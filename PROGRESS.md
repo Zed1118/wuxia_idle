@@ -36,8 +36,8 @@
   - `lib/ui/battle/damage_popup.dart`（新建）：`DamagePopupData` + `DamagePopup`，`SingleTickerProviderStateMixin`，后半段淡出，`criticalFontScale` 从 `AnimationNumbers` 注入
   - `lib/ui/battle/battle_screen.dart`（重构为 StatefulWidget）：`TickerProviderStateMixin` 管理 6 攻击 controller + 1 屏震 controller；`Timer.periodic` 按 actionLog 顺序播放；`_CharacterSlot` Stack(clipBehavior: none) 承载动画包 + 飘字；快进按钮内部控制间隔切换；`dispose()` 保证 7 个 controller 全部释放
   - `test/widget_test.dart`：追加 7 条 T15 测试（dispose 无泄漏/普通飘字/闪避飘字/克制标记/普攻串行/暴击串行/闪避串行），_testAnim 短时序（50ms 间隔）
-  - **注意**：远程沙箱无 Flutter，flutter analyze + flutter test 留 Windows 首跑验收（与 #9/#11/#18 同性质）
-  - 预期测试数：146 + 7 = 153/153
+  - **review 修复**（Mac 端 Opus 4.7）：删 `_CharacterSlot.super.key` 警告 / widget_test 3 处冗余 `const <String>[]` / `AttackAnimationWidget` 改 `config: AnimationNumbers` 注入，三段式比例由 `attackRushMs/attackHoldMs/attackTotalMs` 动态计算（修 yaml 即生效）
+  - `flutter analyze` 0 issues / `flutter test` 153/153（Mac 端实测，已对齐预期）
 
 ## 进行中
 
@@ -58,9 +58,8 @@
 12. **`LevelDiffModifier.diff3OrMore.attacker` 数据层 vs 公式层语义不同**：NumbersConfig 兜底为 `diff2.attacker`(=2.5)，公式层取 `1.0`。Phase 5 收尾时一并把兜底改 1.0
 17. **phase1_tasks T12 §709 笔误**：「三流→绝顶差 2 守方 0.05」错（差 2 守方=0.3，差 3+ 才是 0.05）。"必败"语义仍成立，验收按差 2 实测
 18. **`flutter build web` 被 Isar 阻塞**：`combat/*.dart` 链路通过 `data/models/{character,equipment,technique}.dart` 拉入 `*.g.dart` 64-bit hash 字面量（JS 表示不下）+ Isar `dart:ffi` web 不支持。T14/T15 视觉验收推到 Windows 首跑（与 #9/#11 同性质）。Phase 5 切 Isar 4.x 时一并恢复 web 入口
-19. **T15 远程沙箱无 Flutter，无法运行 flutter analyze + flutter test**：代码通过人工静态审查，预期 0 warnings / 153 tests（base 146 + T15 新增 7）。留 Windows 首跑验收
 
-> 已解决条目（#1/#13/#14/#15/#16）已归档到文末。
+> 已解决条目（#1/#13/#14/#15/#16/#19）已归档到文末。
 
 ## 下一步
 
@@ -82,4 +81,4 @@ T16 Riverpod 串接 → T17 4 套测试场景
 
 ## 归档（已解决挂账）
 
-#1 Riverpod 锁 2.x / #13 yaml b/c max_hp / #14-#15 灵巧暴击 +0.20 与 ×2.0 yaml 化 / #16 战例 E ≤100000（详见 T11 前清账冲刺 commit）。
+#1 Riverpod 锁 2.x / #13 yaml b/c max_hp / #14-#15 灵巧暴击 +0.20 与 ×2.0 yaml 化 / #16 战例 E ≤100000（详见 T11 前清账冲刺 commit）/ #19 T15 远程沙箱无 Flutter（2026-05-10 Mac 本地 review 时实跑 analyze + test 全绿，153/153）。
