@@ -16,6 +16,14 @@ class NumbersConfig {
   /// 单独按 [RealmTier] 索引）。
   final Map<RealmTier, double> defenseRateByTier;
 
+  /// 装备强化每级加成系数（numbers.yaml `equipment.enhancement.bonus_per_level`，
+  /// GDD §6.2 = 0.05）。
+  final double enhancementBonusPerLevel;
+
+  /// 每阶心法的速度加成（numbers.yaml `techniques.tiers[].speed_bonus`，
+  /// 仅主修生效，T09 用）。
+  final Map<TechniqueTier, int> techniqueSpeedBonus;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -25,6 +33,8 @@ class NumbersConfig {
     required this.combat,
     required this.levelDiffModifier,
     required this.defenseRateByTier,
+    required this.enhancementBonusPerLevel,
+    required this.techniqueSpeedBonus,
     required this.raw,
   });
 
@@ -32,6 +42,8 @@ class NumbersConfig {
     final meta = y['meta'] as Map<String, dynamic>;
     final combat = y['combat'] as Map<String, dynamic>;
     final realms = y['realms'] as Map<String, dynamic>;
+    final equipment = y['equipment'] as Map<String, dynamic>;
+    final techniques = y['techniques'] as Map<String, dynamic>;
 
     return NumbersConfig(
       version: meta['version'] as String,
@@ -40,6 +52,11 @@ class NumbersConfig {
         realms['level_diff_modifier'] as Map<String, dynamic>,
       ),
       defenseRateByTier: _parseDefenseRates(realms['tiers'] as List),
+      enhancementBonusPerLevel: ((equipment['enhancement']
+              as Map<String, dynamic>)['bonus_per_level'] as num)
+          .toDouble(),
+      techniqueSpeedBonus:
+          _parseTechniqueSpeedBonus(techniques['tiers'] as List),
       raw: y,
     );
   }
@@ -49,6 +66,15 @@ class NumbersConfig {
     for (final t in tiers) {
       final tier = RealmTier.values.byName(t['tier'] as String);
       m[tier] = (t['defense_rate'] as num).toDouble();
+    }
+    return m;
+  }
+
+  static Map<TechniqueTier, int> _parseTechniqueSpeedBonus(List tiers) {
+    final m = <TechniqueTier, int>{};
+    for (final t in tiers) {
+      final tier = TechniqueTier.values.byName(t['tier'] as String);
+      m[tier] = (t['speed_bonus'] as num).toInt();
     }
     return m;
   }

@@ -13,44 +13,25 @@
   - T01：`flutter create` + Riverpod 2.5 / Isar 3.1 / yaml / intl，`data/` 声明为 asset 根，`*.g.dart` 不入库
   - T02：18 个枚举（91 个值）按 data_schema §2 进 `enums.dart`
   - T03：5 个 @embedded 类 + 2 个 List-as-Map extension，6 用例全过
-- **T04 三个核心 Isar 实体（Character / Equipment / Technique）**（2026-05-10）
-  - `lib/data/models/{character,equipment,technique}.dart` 三个 @collection
-  - 各加 `.create(...)` 工厂方法一次填齐 late 字段；`Equipment.create` 默认填 3 个空 ForgingSlot（索引 1/2/3）
-  - 两个 extension：`EquipmentResonance`（resonanceStage/Bonus/inheritFrom）+ `TechniqueDispersion.disperse`
-  - 顺手补 T03 5 个嵌入对象缺失的 `part 'xxx.g.dart'` 指令（不补则 Equipment/Technique.g.dart 引用 EmbeddedSchema 编译失败，是 T04 阻塞）
-  - `test/data/models/entities_test.dart` 7 用例（factory 默认值 / forgingSlots 自动填齐 / 显式传入保留 / resonance 8 段映射 / inheritFrom 70% / dispersion 半减）全过
-  - `flutter analyze` 0 issues / `flutter test` 14/14 通过 / build_runner 49 outputs
-- **T05 SaveData + IsarSetup（单 slot 简化版）**（2026-05-10）
-  - `lib/data/models/{save_data,inventory_item,game_event}.dart` 三个 @collection（schema §4.1/§4.8/§4.9）
-  - `lib/data/isar_setup.dart`：Phase 1 简化版，仅 `init({slotId, directory?, inspector})` + `close()` + `_ensureSaveData()`，switchSlot/listAllSlots/deleteSlot 加 TODO Phase 5
-  - `lib/data/game_repository.dart`：T07 占位 stub，main 启动序按 phase1_tasks T05 范式调用
-  - `lib/main.dart`：`WidgetsFlutterBinding.ensureInitialized` → `loadAllDefs` → `IsarSetup.init` → `ProviderScope`
-  - `IsarSetup.init` 接受可注入 `directory`，生产用 path_provider，测试传临时目录
-  - `_allSchemas` 当前 6 个（SaveData/Character/Equipment/Technique/InventoryItem/GameEvent），T11+ 追加 StageProgress/AdventureRecord/RetreatSession/DailyChallenge
-  - `test/data/isar_setup_test.dart` 4 用例（首次 init 默认值/再 init 不覆盖原值/三实体 round-trip 字段完整/@Index filter 可查）全过——含 T04 验收剩余 2 条
-  - 用 `Isar.initializeIsarCore(download: true)` 在 dart test 环境下 native lib（首次 ~17s，后续缓存）
-  - `flutter analyze` 0 issues / `flutter test` 18/18 通过
-- **T06 配置类（Defs）**（2026-05-10）
-  - 5 个纯 Dart 类（不入 Isar）：`lib/data/defs/{equipment,technique,skill,stage,realm}_def.dart`，`stage_def.dart` 内含 `EnemyDef` plain class
-  - 全字段 `final` + `const` 构造 + `factory fromYaml(Map)` + `@override toString()`
-  - `fromYaml` 防御性 `(num).toInt()/.toDouble()` 兼容 yaml int/double 写法不一致；枚举走 `Values.byName(...)`；可空字段（schoolBias/parentTechniqueDefId/chapterIndex/towerLayer/narrativeId）显式 null 处理
-  - `StageDef.enemyTeam` 支持长度 0–3（剧情关空数组 / 单 Boss / 群战 3 人均覆盖测试）
-  - 范围按 phase1_tasks T06 钉的 5 个；AdventureDef / SynergyDef / RetreatMapDef 推迟到 Phase 4（schema §5.5–5.7 留白）
-  - `test/data/defs/defs_test.dart` 12 用例（每 Def 全字段 round-trip + 可空字段缺省 + num→int/double 防御性转换 + enemyTeam 空/单/三人）全过
-  - `flutter analyze` 0 issues / `flutter test` 30/30 通过
-- **T07 YAML 加载器 + GameRepository + 占位 fixture**（2026-05-10）
-  - `lib/data/yaml_loader.dart` 递归 deepConvert YamlMap/YamlList → 纯 dart `Map<String,dynamic>`/`List<dynamic>`，便于下游 `as String / as num`
-  - `lib/data/numbers_config.dart`：`combat`（damage/maxHp/speed/critical/evasion）+ `levelDiffModifier` + `defenseRateByTier` 强类型；其余段保留 `raw` Map（按 phase1_tasks T07 §7.2 范围）
-  - `LevelDiffModifier.diff3OrMore.attacker` yaml 是 null，按 phase1_tasks 提示兜底取 `diff2.attacker`
-  - `lib/data/game_repository.dart` 重写：单例 + `loadAllDefs(loader可注入)` + 红线校验（49 行境界 / 装备 baseAttackMax≤2000 / internalForceMax∈[500,15000]）+ getRealm/getRealmByAbsoluteLevel/getEquipment 等便捷方法 + `resetForTest`
-  - 占位 fixture（武侠风命名 + description=TODO_NARRATIVE）：
-    - `data/equipment.yaml` 10 件（xunChang weapon/armor/accessory + xiangYang weapon/armor/accessory + haoJiaHuo weapon/armor/accessory + liQi weapon），数值贴 numbers.yaml 范围
-    - `data/techniques.yaml` 6 本（gangMeng/lingQiao/yinRou × ruMenGong/mingJiaGong）
-    - `data/skills.yaml` 18 招（每本 1 普攻 500 + 1 强力 + 1 大招），ultimate 倍率封顶在心法阶 max_skill_multiplier（ruMenGong 1500 / mingJiaGong 2500）
-    - `data/stages.yaml` 6 关（mainline/纯测试用，每关 3 敌人覆盖 3 流派，难度递增 xueTu→sanLiu→erLiu）
-  - `lib/main.dart` 加 debugPrint counts 日志（仅 kDebugMode），`loadAllDefs` 返回 repo 实例供 main 取数
-  - `test/data/game_repository_test.dart` 14 用例（counts 准 / NumbersConfig 强类型 / diff3 兜底 / 便捷查询 / 红线越界 fail-fast / yaml 错语法 / id 重复 / 改 numbers 立刻反映 / 未初始化抛错）全过
-  - `flutter analyze` 0 issues / `flutter test` 44/44 通过
+- **T04 Character/Equipment/Technique @collection + 工厂 + Resonance/Dispersion extension**（2026-05-10，14/14）
+- **T05 SaveData + IsarSetup（单 slot 简化版，switchSlot/listAllSlots/deleteSlot 留 Phase5）**（2026-05-10，18/18，inspector 验收待 Windows）
+- **T06 5 个 Def 纯 Dart 类（equipment/technique/skill/stage/realm，AdventureDef/SynergyDef/RetreatMapDef 留 Phase4）**（2026-05-10，30/30）
+- **T07 yaml_loader + GameRepository 单例 + 红线校验 + 10/6/18/6 占位 fixture（武侠风命名+TODO_NARRATIVE）**（2026-05-10，44/44，main 加 kDebugMode counts 日志待 Windows 端验）
+- **T08 RealmUtils 境界派生工具**（2026-05-10）
+  - `lib/combat/derived_stats.dart`：6 个静态纯函数（absoluteLevelOf / realmDiffModifier / internalForceMaxOf / defenseRateOf / equipmentTierCapOf / maxEnhanceLevelOf），全部从 `GameRepository.instance` 读 RealmDef + numbers.yaml，**无任何硬编码数值**
+  - `realmDiffModifier` 取 `|attackerTier.index - defenderTier.index|`，差 0/1/2 走 yaml 段；差 3+ attacker 按 GDD §5.5 + phase1_tasks T08 §470 取 `1.0`（不读 yaml `diff_3_or_more.attacker`，因为 yaml 里是 null —— 见挂账 #12）
+  - `equipmentTierCapOf` 用 `realms.firstWhere(tier==）` 取大境界对应 cap（同大境界 7 层共用）
+  - `test/combat/derived_stats_test.dart` 15 用例（含 phase1_tasks T08 §463-466 钉死的 4 条验收：`absoluteLevelOf(zongShi,huaJing)==41` / `realmDiffModifier(yiLiu,sanLiu)→(2.5,0.3)` / `realmDiffModifier(sanLiu,jueDing)→(1.0,0.05)` / `defenseRateOf(yiLiu)==0.20`，加首尾边界与 maxEnhanceLevelOf 角色构造）全过
+  - `flutter analyze` 0 issues / `flutter test` 59/59 通过
+- **T09 CharacterDerivedStats 角色派生属性**（2026-05-10）
+  - `lib/combat/derived_stats.dart` 追加 `CharacterDerivedStats` class：`maxHp` / `speed` / `criticalRate` / `evasionRate` / `effectiveEquipmentAttack` / `effectiveEquipmentHp` / `effectiveEquipmentSpeed`
+  - `NumbersConfig` 扩两段强类型：`enhancementBonusPerLevel`（来自 `equipment.enhancement.bonus_per_level`，0.05）+ `techniqueSpeedBonus: Map<TechniqueTier,int>`（来自 `techniques.tiers[].speed_bonus`，主修生效）
+  - `effectiveEquipmentAttack/Hp/Speed` 严格按 phase1_tasks T09 §515 **乘法连乘**：`base × (1 + enhanceLevel × bonusPerLevel) × resonanceBonus × (1 + 开锋百分比)`；血量无开锋项；开锋仅 `unlocked==true` 的槽位计入
+  - `criticalRate` 顺序：先 `base + agility×perPoint`，再 +0.20（灵巧流派），**最后 clamp**；clamp 到 `max_rate=0.50`
+  - 灵巧 +0.20 暂硬编码（`_lingQiaoCriticalBonus`），yaml `combat.critical` 段未参数化此值（注释 line 74 仅描述）—— 见挂账 #14
+  - 5 战例 maxHp 公式实现验证：A=3850 / B=6600 / C=6180 / D=7760 / E=19500（≤20000 红线）；yaml `max_hp` 字段在 b/c 两例与公式真实值不自洽 —— 见挂账 #13
+  - 21 用例新增（5 战例 + speed 3 + critical 3 + evasion 2 + attack 5 + hp/speed 3）
+  - `flutter analyze` 0 issues / `flutter test` 80/80 通过
 
 ## 进行中
 
@@ -69,10 +50,13 @@
 9. **T05 验收「inspector: true 浏览器看表」未跑**：需要 `flutter run` 实机启动，Mac 端无 Xcode 跑不了 macOS desktop，留给 Windows DeepSeek 端首次跑应用时验。代码已默认开 inspector
 10. **yaml key 命名约定差异**：`numbers.yaml` 用 snake_case（CLAUDE.md §4 规范），内容 yaml（equipment/techniques/skills/stages）用 camelCase（与 schema §5 JSON 示例 + Def.fromYaml 期望对齐）。两套约定按文件类型隔离不冲突
 11. **T07 验收「日志输出 counts」**：Mac 端 `flutter run` 跑不了，已写在 main.dart 的 `kDebugMode` debugPrint 里，留给 Windows DeepSeek 端首次跑应用时看到
+12. **`LevelDiffModifier.diff3OrMore.attacker` 数据层 vs 公式层语义不同**：T07 NumbersConfig 把 yaml 里 null 的字段兜底为 `diff2.attacker`(=2.5)（数据层字段非空保证）；T08 RealmUtils 公式层按 GDD §5.5 + phase1_tasks T08 §470 取 `1.0`（"已经被碾压无须放大"），不读这个字段。两层语义独立，T07 测试不变。后续 Phase 5 收尾时一并把 NumbersConfig 兜底改成 1.0 + 删 T07 这条断言
+13. **numbers.yaml validation_examples b/c 的 max_hp 字段与注释手算不自洽**：example_b expected 7500（注释手算 6600）、example_c expected 6800（注释手算 5180）。公式真实值（按公式 1000+内力*0.7+根骨*500+装备血量）：B=6600、C=6180。建议 DeepSeek/数值同学修 yaml 里的 expected 值与公式对齐；公式实现不背锅，T09 测试以"按公式应得"为准
+14. **灵巧流派暴击 +0.20 未在 numbers.yaml 参数化**：yaml `combat.critical` 段没有 `lingqiao_bonus` 字段（注释 line 74 仅描述）。T09 暂硬编码在 `CharacterDerivedStats._lingQiaoCriticalBonus`。后续 yaml 加字段（建议 `combat.critical.lingqiao_bonus: 0.20`）+ 改 NumbersConfig 读取
 
 ## 下一步
 
-T08 境界派生工具（Week 2 战斗核心起点）→ T09 角色派生属性 → T10 伤害计算器
+T10 伤害计算器（GDD §5.3/§5.4 全公式 + 5 战例 final_damage 验收）→ T11 战斗节点
 
 ## 关键约束（每次开局必读）
 
