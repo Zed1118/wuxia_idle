@@ -15,10 +15,13 @@
   - `numbers.yaml` → `data/numbers.yaml`，pubspec 把 `data/` 声明为 asset
   - `.gitignore` 调整：去 `*.lock` 通配（保留 pubspec.lock）、加 `*.g.dart` 不入库
   - `flutter analyze` 0 issues / `flutter test` 通过 / `dart run build_runner build` 跑通
-
+- **T02 全部枚举定义**（2026-05-10）
+  - `lib/data/models/enums.dart`，按 data_schema.md §2 共 18 个枚举（91 个值）原样搬入
+  - 易错拼写自查通过（xueTu / jueDing / huaJing / qiMeng / chuKui / jueShi）
+  - `flutter analyze` 0 issues / `flutter test` 通过
 ## 进行中
 
-- **T02 全部枚举定义** — `lib/data/models/enums.dart`，按 data_schema.md §2 共 18 个枚举原样搬入
+- **T03 嵌入对象（@Embedded）** — 待开工
 
 ## 已知偏差 / 挂账事项
 
