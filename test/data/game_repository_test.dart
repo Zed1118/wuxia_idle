@@ -1,0 +1,238 @@
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/models/enums.dart';
+
+/// GameRepository + yaml 加载器 + NumbersConfig 集成测试。
+///
+/// 用真实的 `data/*.yaml` 占位 fixture（pubspec 已声明 data/ 是 asset 根，
+/// 这里直接通过文件 IO 加载——`flutter test` 的 cwd 是项目根，所以相对
+/// 路径 `data/xxx.yaml` 可读）。注入式 loader 避免依赖 rootBundle。
+void main() {
+  Future<String> fileLoader(String path) async {
+    final f = File(path);
+    if (!await f.exists()) throw FileSystemException('不存在', path);
+    return f.readAsString();
+  }
+
+  tearDown(GameRepository.resetForTest);
+
+  group('GameRepository.loadAllDefs（占位 fixture）', () {
+    test('加载完整 → counts 与 phase1_tasks T07.7.3 一致', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+
+      expect(repo.realms.length, 49, reason: '49 级境界');
+      expect(repo.equipmentDefs.length, 10, reason: '10 件装备');
+      expect(repo.techniqueDefs.length, 6, reason: '6 本心法');
+      expect(repo.skillDefs.length, 18, reason: '18 招招式');
+      expect(repo.stageDefs.length, 6, reason: '6 个测试关卡');
+      expect(repo.numbers.version, isNotEmpty);
+    });
+
+    test('GameRepository.instance 在 load 后可访问', () async {
+      await GameRepository.loadAllDefs(loader: fileLoader);
+      expect(GameRepository.isLoaded, isTrue);
+      expect(identical(GameRepository.instance, GameRepository.instance),
+          isTrue);
+    });
+
+    test('NumbersConfig 强类型字段（damage_formula / max_hp_formula / 防御率）', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      expect(repo.numbers.combat.damageFormula.equipmentAttackFactor, 1.0);
+      expect(repo.numbers.combat.damageFormula.internalForceFactor, 0.4);
+      expect(repo.numbers.combat.maxHpFormula.internalForceFactor, 0.7);
+      expect(repo.numbers.combat.maxHpFormula.constitutionFactor, 500);
+      expect(repo.numbers.defenseRateByTier[RealmTier.xueTu], 0.05);
+      expect(repo.numbers.defenseRateByTier[RealmTier.wuSheng], 0.35);
+    });
+
+    test('LevelDiffModifier.diff3OrMore.attacker null 兜底为 diff2.attacker', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final m = repo.numbers.levelDiffModifier;
+      expect(m.sameTier.attacker, 1.0);
+      expect(m.diff1.attacker, 1.4);
+      expect(m.diff2.attacker, 2.5);
+      expect(m.diff3OrMore.defender, 0.05);
+      expect(m.diff3OrMore.attacker, m.diff2.attacker,
+          reason: 'yaml 里 attacker=null，按设计兜底取 diff2.attacker');
+    });
+
+    test('便捷查询 getRealmByAbsoluteLevel / getRealm', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final r = repo.getRealmByAbsoluteLevel(28);
+      expect(r.tier, RealmTier.yiLiu);
+      expect(r.layer, RealmLayer.dengFeng);
+      expect(r.equipmentTierCap, EquipmentTier.liQi);
+      expect(r.techniqueTierCap, TechniqueTier.menPaiJueXue);
+
+      final r1 = repo.getRealm(RealmTier.xueTu, RealmLayer.qiMeng);
+      expect(r1.absoluteLevel, 1);
+      expect(r1.internalForceMax, 500);
+
+      final r49 = repo.getRealmByAbsoluteLevel(49);
+      expect(r49.internalForceMax, 15000);
+      expect(r49.equipmentTierCap, EquipmentTier.shenWu);
+    });
+
+    test('getRealmByAbsoluteLevel 越界抛 RangeError', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      expect(() => repo.getRealmByAbsoluteLevel(0), throwsRangeError);
+      expect(() => repo.getRealmByAbsoluteLevel(50), throwsRangeError);
+    });
+
+    test('getEquipment / getTechnique / getSkill / getStage 按 id 命中', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      expect(
+        repo.getEquipment('weapon_haojiahuo_qing_feng_jian').name,
+        '青锋剑',
+      );
+      expect(
+        repo.getTechnique('tech_gangmeng_mingjia').school,
+        TechniqueSchool.gangMeng,
+      );
+      expect(
+        repo.getSkill('skill_lingqiao_jichu_basic').type,
+        SkillType.normalAttack,
+      );
+      expect(
+        repo.getStage('mainline_test_06').enemyTeam.length,
+        3,
+      );
+    });
+
+    test('未配置的 id → 抛 StateError', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      expect(() => repo.getEquipment('not_exist'), throwsStateError);
+      expect(() => repo.getTechnique('not_exist'), throwsStateError);
+      expect(() => repo.getSkill('not_exist'), throwsStateError);
+      expect(() => repo.getStage('not_exist'), throwsStateError);
+    });
+
+    test('占位 fixture 红线均通过（武器 baseAttackMax ≤ 2000、内力 ∈ [500,15000]）',
+        () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      for (final e in repo.equipmentDefs.values) {
+        expect(e.baseAttackMax, lessThanOrEqualTo(2000));
+        expect(e.baseAttackMin, lessThanOrEqualTo(e.baseAttackMax));
+      }
+      for (final r in repo.realms) {
+        expect(r.internalForceMax, inInclusiveRange(500, 15000));
+      }
+    });
+  });
+
+  group('红线 fail-fast', () {
+    test('装备 baseAttackMax > 2000 → 启动失败抛 StateError', () async {
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('equipment.yaml')) {
+          return '''
+equipment:
+  - id: weapon_evil
+    name: 越界武器
+    tier: shenWu
+    slot: weapon
+    baseAttackMin: 100
+    baseAttackMax: 9999
+    baseHealthMin: 0
+    baseHealthMax: 0
+    baseSpeedMin: 0
+    baseSpeedMax: 10
+    presetLoreIds: []
+    dropSourceTags: []
+    iconPath: x.png
+''';
+        }
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('baseAttackMax'),
+        )),
+      );
+    });
+
+    test('yaml 故意写错语法 → 抛异常（fail fast，不静默兜底）', () async {
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('skills.yaml')) {
+          return '{ this is : not valid yaml: oops:::';
+        }
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(anything),
+      );
+    });
+
+    test('id 重复 → 抛 StateError', () async {
+      Future<String> dupeLoader(String path) async {
+        if (path.endsWith('techniques.yaml')) {
+          return '''
+techniques:
+  - id: tech_dup
+    name: 重复 1
+    tier: ruMenGong
+    school: gangMeng
+    description: TODO
+    skillIds: []
+    internalForceGrowthBonus: 1.0
+    speedBonus: 0
+    acquireSourceTags: []
+  - id: tech_dup
+    name: 重复 2
+    tier: ruMenGong
+    school: lingQiao
+    description: TODO
+    skillIds: []
+    internalForceGrowthBonus: 1.0
+    speedBonus: 0
+    acquireSourceTags: []
+''';
+        }
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: dupeLoader),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('重复 def id'),
+        )),
+      );
+    });
+  });
+
+  group('改 numbers 反映 (T07 验收 #2)', () {
+    test('替换 numbers.yaml equipment_attack_factor=2.0 → 立刻生效', () async {
+      Future<String> patchedLoader(String path) async {
+        if (path.endsWith('numbers.yaml')) {
+          final original = await fileLoader(path);
+          // 把平衡值 1.0 临时改成 2.0，确认 NumbersConfig 反映该改动
+          return original.replaceFirst(
+            'equipment_attack_factor: 1.0',
+            'equipment_attack_factor: 2.0',
+          );
+        }
+        return fileLoader(path);
+      }
+
+      final repo = await GameRepository.loadAllDefs(loader: patchedLoader);
+      expect(repo.numbers.combat.damageFormula.equipmentAttackFactor, 2.0);
+    });
+  });
+
+  group('未初始化访问保护', () {
+    test('未调用 loadAllDefs 直接访问 instance → 抛 StateError', () {
+      // tearDown 已 reset，此 test 内不调 load
+      expect(GameRepository.isLoaded, isFalse);
+      expect(() => GameRepository.instance, throwsStateError);
+    });
+  });
+}

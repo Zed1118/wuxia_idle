@@ -1,0 +1,160 @@
+# =============================================================================
+# equipment.yaml · 装备占位 fixture（T07）
+# =============================================================================
+# 共 10 件：覆盖寻常货 / 像样货 / 好家伙 三阶全槽位 + 利器武器 1 把。
+# 数值范围对齐 numbers.yaml `equipment.tiers` 段（不越红线）。
+# 武侠风命名由 Opus 自 roll；description / 典故文案归 DeepSeek，本表只填 id 引用。
+#
+# 字段命名遵循 schema data_schema.md §5.1（camelCase），
+# 与 EquipmentDef.fromYaml 期望对齐；numbers.yaml 用 snake_case 是另一套约定。
+# =============================================================================
+
+equipment:
+
+  # === 寻常货 ·  学徒境界开放 ===
+  - id: weapon_xunchang_tie_jian
+    name: 铁剑
+    tier: xunChang
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 100
+    baseAttackMax: 150
+    baseHealthMin: 0
+    baseHealthMax: 0
+    baseSpeedMin: 0
+    baseSpeedMax: 10
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch1"]
+    iconPath: assets/equipment/weapon_xunchang_tie_jian.png
+
+  - id: armor_xunchang_bu_yi
+    name: 粗布衣
+    tier: xunChang
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 100
+    baseHealthMax: 200
+    baseSpeedMin: 0
+    baseSpeedMax: 5
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch1"]
+    iconPath: assets/equipment/armor_xunchang_bu_yi.png
+
+  - id: accessory_xunchang_yu_pei
+    name: 玉佩
+    tier: xunChang
+    slot: accessory
+    baseAttackMin: 20
+    baseAttackMax: 40
+    baseHealthMin: 50
+    baseHealthMax: 100
+    baseSpeedMin: 0
+    baseSpeedMax: 8
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch1"]
+    iconPath: assets/equipment/accessory_xunchang_yu_pei.png
+
+  # === 像样货 · 三流境界开放 ===
+  - id: weapon_xiangyang_gang_dao
+    name: 钢刀
+    tier: xiangYang
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 180
+    baseAttackMax: 280
+    baseHealthMin: 0
+    baseHealthMax: 50
+    baseSpeedMin: 5
+    baseSpeedMax: 20
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch2"]
+    iconPath: assets/equipment/weapon_xiangyang_gang_dao.png
+
+  - id: armor_xiangyang_pi_jia
+    name: 皮甲
+    tier: xiangYang
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 250
+    baseHealthMax: 450
+    baseSpeedMin: 0
+    baseSpeedMax: 10
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch2"]
+    iconPath: assets/equipment/armor_xiangyang_pi_jia.png
+
+  - id: accessory_xiangyang_yin_jie
+    name: 银戒
+    tier: xiangYang
+    slot: accessory
+    baseAttackMin: 50
+    baseAttackMax: 90
+    baseHealthMin: 100
+    baseHealthMax: 200
+    baseSpeedMin: 5
+    baseSpeedMax: 15
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch2"]
+    iconPath: assets/equipment/accessory_xiangyang_yin_jie.png
+
+  # === 好家伙 · 二流境界开放 ===
+  - id: weapon_haojiahuo_qing_feng_jian
+    name: 青锋剑
+    tier: haoJiaHuo
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 320
+    baseAttackMax: 450
+    baseHealthMin: 0
+    baseHealthMax: 100
+    baseSpeedMin: 10
+    baseSpeedMax: 30
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch3", "tower_15"]
+    iconPath: assets/equipment/weapon_haojiahuo_qing_feng_jian.png
+
+  - id: armor_haojiahuo_jin_pao
+    name: 锦袍
+    tier: haoJiaHuo
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 450
+    baseHealthMax: 750
+    baseSpeedMin: 5
+    baseSpeedMax: 15
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch3"]
+    iconPath: assets/equipment/armor_haojiahuo_jin_pao.png
+
+  - id: accessory_haojiahuo_yu_pei_lao
+    name: 古玉佩
+    tier: haoJiaHuo
+    slot: accessory
+    baseAttackMin: 100
+    baseAttackMax: 160
+    baseHealthMin: 200
+    baseHealthMax: 350
+    baseSpeedMin: 10
+    baseSpeedMax: 25
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch3"]
+    iconPath: assets/equipment/accessory_haojiahuo_yu_pei_lao.png
+
+  # === 利器 · 一流境界开放 · Demo 主线最高级武器 ===
+  - id: weapon_liqi_long_quan
+    name: 龙泉剑
+    tier: liQi
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 480
+    baseAttackMax: 650
+    baseHealthMin: 0
+    baseHealthMax: 150
+    baseSpeedMin: 20
+    baseSpeedMax: 45
+    presetLoreIds: []
+    dropSourceTags: ["tower_25", "yiLiu_quest"]
+    iconPath: assets/equipment/weapon_liqi_long_quan.png

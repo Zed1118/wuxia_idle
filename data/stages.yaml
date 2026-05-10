@@ -1,0 +1,297 @@
+# =============================================================================
+# stages.yaml · 关卡占位 fixture（T07）
+# =============================================================================
+# 共 6 关：纯测试关卡，stageType 全填 mainline（phase1_tasks T07 §7.3 指定）。
+# 每关 3 敌人，三流派各一（gangMeng / lingQiao / yinRou），便于后续 T17 测试场景。
+# 难度递增覆盖学徒 → 三流 → 二流。
+#
+# narrativeId 全留 null（占位阶段不挂叙事）。
+# baseHp / baseAttack 数值估算：
+#   xueTu  (内力 500-1100)：HP 1500-3500、Atk 80-150
+#   sanLiu (内力 1200-2000)：HP 3000-7000、Atk 250-450
+#   erLiu  (内力 2200-3500)：HP 6000-11000、Atk 550-900
+# =============================================================================
+
+stages:
+
+  # === 测试关 1 · 学徒 / 启蒙（3 弱敌）===
+  - id: mainline_test_01
+    name: 山道试剑
+    stageType: mainline
+    chapterIndex: 1
+    requiredRealm: xueTu
+    enemyTeam:
+      - id: enemy_xueTu_thug_a
+        name: 流民甲
+        realmTier: xueTu
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 1500
+        baseAttack: 80
+        baseSpeed: 100
+        skillIds: [skill_gangmeng_jichu_basic]
+        iconPath: assets/enemies/thug_a.png
+      - id: enemy_xueTu_thug_b
+        name: 流民乙
+        realmTier: xueTu
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 1300
+        baseAttack: 90
+        baseSpeed: 115
+        skillIds: [skill_lingqiao_jichu_basic]
+        iconPath: assets/enemies/thug_b.png
+      - id: enemy_xueTu_thug_c
+        name: 流民丙
+        realmTier: xueTu
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 1400
+        baseAttack: 85
+        baseSpeed: 105
+        skillIds: [skill_yinrou_jichu_basic]
+        iconPath: assets/enemies/thug_c.png
+    isBossStage: false
+    dropEquipmentDefIds: [armor_xunchang_bu_yi]
+    dropItemDefIds: []
+    baseExpReward: 50
+    difficultyMultiplier: 1.0
+
+  # === 测试关 2 · 学徒 / 圆熟（强一些的山贼）===
+  - id: mainline_test_02
+    name: 林间伏击
+    stageType: mainline
+    chapterIndex: 1
+    requiredRealm: xueTu
+    enemyTeam:
+      - id: enemy_xueTu_bandit_a
+        name: 山贼头
+        realmTier: xueTu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 3000
+        baseAttack: 130
+        baseSpeed: 110
+        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
+        iconPath: assets/enemies/bandit_head.png
+      - id: enemy_xueTu_bandit_b
+        name: 山贼乙
+        realmTier: xueTu
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 2400
+        baseAttack: 110
+        baseSpeed: 120
+        skillIds: [skill_lingqiao_jichu_basic]
+        iconPath: assets/enemies/bandit_b.png
+      - id: enemy_xueTu_bandit_c
+        name: 山贼丙
+        realmTier: xueTu
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 2500
+        baseAttack: 115
+        baseSpeed: 105
+        skillIds: [skill_yinrou_jichu_basic]
+        iconPath: assets/enemies/bandit_c.png
+    isBossStage: false
+    dropEquipmentDefIds: [accessory_xunchang_yu_pei, weapon_xunchang_tie_jian]
+    dropItemDefIds: []
+    baseExpReward: 120
+    difficultyMultiplier: 1.2
+
+  # === 测试关 3 · 三流 / 启蒙 ===
+  - id: mainline_test_03
+    name: 镖局护送
+    stageType: mainline
+    chapterIndex: 2
+    requiredRealm: sanLiu
+    enemyTeam:
+      - id: enemy_sanLiu_thief_a
+        name: 黑衣杀手
+        realmTier: sanLiu
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 3500
+        baseAttack: 280
+        baseSpeed: 150
+        skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
+        iconPath: assets/enemies/black_killer.png
+      - id: enemy_sanLiu_thief_b
+        name: 江湖客甲
+        realmTier: sanLiu
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 4200
+        baseAttack: 260
+        baseSpeed: 130
+        skillIds: [skill_gangmeng_jichu_basic]
+        iconPath: assets/enemies/jianghu_a.png
+      - id: enemy_sanLiu_thief_c
+        name: 江湖客乙
+        realmTier: sanLiu
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 3800
+        baseAttack: 270
+        baseSpeed: 140
+        skillIds: [skill_yinrou_jichu_basic]
+        iconPath: assets/enemies/jianghu_b.png
+    isBossStage: false
+    dropEquipmentDefIds:
+      - weapon_xiangyang_gang_dao
+      - armor_xiangyang_pi_jia
+    dropItemDefIds: []
+    baseExpReward: 350
+    difficultyMultiplier: 1.5
+
+  # === 测试关 4 · 三流 / 圆熟 ===
+  - id: mainline_test_04
+    name: 黑风寨
+    stageType: mainline
+    chapterIndex: 2
+    requiredRealm: sanLiu
+    enemyTeam:
+      - id: enemy_sanLiu_chief_a
+        name: 寨主
+        realmTier: sanLiu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 6500
+        baseAttack: 420
+        baseSpeed: 145
+        skillIds:
+          - skill_gangmeng_jichu_basic
+          - skill_gangmeng_jichu_skill
+          - skill_gangmeng_jichu_ult
+        iconPath: assets/enemies/zhaizhu.png
+      - id: enemy_sanLiu_chief_b
+        name: 副寨主
+        realmTier: sanLiu
+        realmLayer: huaJing
+        school: lingQiao
+        baseHp: 5200
+        baseAttack: 380
+        baseSpeed: 165
+        skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
+        iconPath: assets/enemies/fu_zhaizhu.png
+      - id: enemy_sanLiu_chief_c
+        name: 师爷
+        realmTier: sanLiu
+        realmLayer: huaJing
+        school: yinRou
+        baseHp: 5000
+        baseAttack: 360
+        baseSpeed: 155
+        skillIds: [skill_yinrou_jichu_basic, skill_yinrou_jichu_skill]
+        iconPath: assets/enemies/shiye.png
+    isBossStage: true
+    dropEquipmentDefIds:
+      - weapon_haojiahuo_qing_feng_jian
+      - accessory_xiangyang_yin_jie
+    dropItemDefIds: []
+    baseExpReward: 800
+    difficultyMultiplier: 1.7
+
+  # === 测试关 5 · 二流 / 启蒙 ===
+  - id: mainline_test_05
+    name: 武林会
+    stageType: mainline
+    chapterIndex: 3
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_master_a
+        name: 名门弟子
+        realmTier: erLiu
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 7000
+        baseAttack: 600
+        baseSpeed: 175
+        skillIds:
+          - skill_lingqiao_mingjia_basic
+          - skill_lingqiao_mingjia_skill
+        iconPath: assets/enemies/mingmen_a.png
+      - id: enemy_erLiu_master_b
+        name: 江湖前辈
+        realmTier: erLiu
+        realmLayer: ruMen
+        school: gangMeng
+        baseHp: 8500
+        baseAttack: 580
+        baseSpeed: 160
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+        iconPath: assets/enemies/jianghu_qianbei.png
+      - id: enemy_erLiu_master_c
+        name: 暗夜使者
+        realmTier: erLiu
+        realmLayer: ruMen
+        school: yinRou
+        baseHp: 7500
+        baseAttack: 600
+        baseSpeed: 170
+        skillIds:
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+        iconPath: assets/enemies/anye.png
+    isBossStage: false
+    dropEquipmentDefIds: [armor_haojiahuo_jin_pao]
+    dropItemDefIds: []
+    baseExpReward: 1500
+    difficultyMultiplier: 2.0
+
+  # === 测试关 6 · 二流 / 圆熟 · Boss 关 ===
+  - id: mainline_test_06
+    name: 一战封王
+    stageType: mainline
+    chapterIndex: 3
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_boss
+        name: 武林霸主
+        realmTier: erLiu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 11000
+        baseAttack: 820
+        baseSpeed: 185
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+          - skill_gangmeng_mingjia_ult
+        iconPath: assets/enemies/wulin_bazhu.png
+      - id: enemy_erLiu_boss_lt_a
+        name: 左护法
+        realmTier: erLiu
+        realmLayer: huaJing
+        school: lingQiao
+        baseHp: 8500
+        baseAttack: 720
+        baseSpeed: 195
+        skillIds:
+          - skill_lingqiao_mingjia_basic
+          - skill_lingqiao_mingjia_skill
+          - skill_lingqiao_mingjia_ult
+        iconPath: assets/enemies/zuo_hufa.png
+      - id: enemy_erLiu_boss_lt_b
+        name: 右护法
+        realmTier: erLiu
+        realmLayer: huaJing
+        school: yinRou
+        baseHp: 9000
+        baseAttack: 700
+        baseSpeed: 180
+        skillIds:
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+          - skill_yinrou_mingjia_ult
+        iconPath: assets/enemies/you_hufa.png
+    isBossStage: true
+    dropEquipmentDefIds:
+      - weapon_liqi_long_quan
+      - accessory_haojiahuo_yu_pei_lao
+    dropItemDefIds: []
+    baseExpReward: 3500
+    difficultyMultiplier: 2.5

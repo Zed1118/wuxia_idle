@@ -1,0 +1,220 @@
+# =============================================================================
+# skills.yaml · 招式占位 fixture（T07）
+# =============================================================================
+# 共 18 招：6 本心法 × 3 招（normalAttack / powerSkill / ultimate）。
+#
+# 倍率约束（numbers.yaml `techniques.tiers.max_skill_multiplier`）：
+#   ruMenGong cap = 1500；mingJiaGong cap = 2500。
+#   入门功的 ultimate 因受心法阶 cap 限制，倍率 ≤ 1500（小于参考"5000+"
+#   是合理的——低阶心法的"大招"本身威力有限），等高阶心法上来再放威力。
+#
+# normalAttack 倍率统一 500（GDD §5.3 强制）。
+# requiresManualTrigger：仅 ultimate 为 true（GDD §5.3 大招由玩家手动放）。
+# description 占位 TODO_NARRATIVE。
+# =============================================================================
+
+skills:
+
+  # ─── 刚猛 · 入门功 ───
+  - id: skill_gangmeng_jichu_basic
+    name: 直拳
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_jichu
+    visualEffect: punch_basic
+
+  - id: skill_gangmeng_jichu_skill
+    name: 重击
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1200
+    internalForceCost: 100
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_jichu
+    visualEffect: heavy_punch
+
+  - id: skill_gangmeng_jichu_ult
+    name: 怒涛拳
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 1500
+    internalForceCost: 300
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_jichu
+    visualEffect: rage_wave_punch
+
+  # ─── 灵巧 · 入门功 ───
+  - id: skill_lingqiao_jichu_basic
+    name: 快剑
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_jichu
+    visualEffect: swift_sword
+
+  - id: skill_lingqiao_jichu_skill
+    name: 连环刺
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1100
+    internalForceCost: 90
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_jichu
+    visualEffect: chain_thrust
+
+  - id: skill_lingqiao_jichu_ult
+    name: 流光剑
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 1500
+    internalForceCost: 280
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_jichu
+    visualEffect: glow_sword
+
+  # ─── 阴柔 · 入门功 ───
+  - id: skill_yinrou_jichu_basic
+    name: 飘叶手
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_jichu
+    visualEffect: leaf_palm
+
+  - id: skill_yinrou_jichu_skill
+    name: 暗影掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1000
+    internalForceCost: 80
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_jichu
+    visualEffect: shadow_palm
+
+  - id: skill_yinrou_jichu_ult
+    name: 摧心指
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 1500
+    internalForceCost: 320
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_jichu
+    visualEffect: heart_shatter
+
+  # ─── 刚猛 · 名家功 ───
+  - id: skill_gangmeng_mingjia_basic
+    name: 沉拳
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_mingjia
+    visualEffect: deep_punch
+
+  - id: skill_gangmeng_mingjia_skill
+    name: 裂石掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1800
+    internalForceCost: 180
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_mingjia
+    visualEffect: rock_split_palm
+
+  - id: skill_gangmeng_mingjia_ult
+    name: 崩山击
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2500
+    internalForceCost: 500
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_mingjia
+    visualEffect: mountain_break
+
+  # ─── 灵巧 · 名家功 ───
+  - id: skill_lingqiao_mingjia_basic
+    name: 疾风剑
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_mingjia
+    visualEffect: gale_sword
+
+  - id: skill_lingqiao_mingjia_skill
+    name: 燕回式
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1700
+    internalForceCost: 160
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_mingjia
+    visualEffect: swallow_return
+
+  - id: skill_lingqiao_mingjia_ult
+    name: 御风斩
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2500
+    internalForceCost: 480
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_mingjia
+    visualEffect: wind_slash
+
+  # ─── 阴柔 · 名家功 ───
+  - id: skill_yinrou_mingjia_basic
+    name: 玉女拈花
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_mingjia
+    visualEffect: jade_flower
+
+  - id: skill_yinrou_mingjia_skill
+    name: 寒星掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1600
+    internalForceCost: 150
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_mingjia
+    visualEffect: cold_star_palm
+
+  - id: skill_yinrou_mingjia_ult
+    name: 落英缤纷
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2500
+    internalForceCost: 520
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_mingjia
+    visualEffect: falling_petals

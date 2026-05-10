@@ -1,0 +1,96 @@
+# =============================================================================
+# techniques.yaml · 心法占位 fixture（T07）
+# =============================================================================
+# 共 6 本：3 流派（gangMeng / lingQiao / yinRou）× 2 阶（入门功 + 名家功）。
+# 每本含 3 招（普攻 / 强力 / 大招），招式定义见 skills.yaml。
+# description 占位填 TODO_NARRATIVE，正式文案归 DeepSeek（data/narratives/）。
+# 数值参考 numbers.yaml `techniques.tiers`：
+#   ruMenGong → growth 1.05 / speed 0
+#   mingJiaGong → growth 1.15 / speed 10
+# =============================================================================
+
+techniques:
+
+  # === 刚猛 · 入门功 ===
+  - id: tech_gangmeng_jichu
+    name: 刚猛入门
+    tier: ruMenGong
+    school: gangMeng
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_gangmeng_jichu_basic
+      - skill_gangmeng_jichu_skill
+      - skill_gangmeng_jichu_ult
+    internalForceGrowthBonus: 1.05
+    speedBonus: 0
+    acquireSourceTags: ["starter"]
+
+  # === 灵巧 · 入门功 ===
+  - id: tech_lingqiao_jichu
+    name: 灵巧入门
+    tier: ruMenGong
+    school: lingQiao
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_lingqiao_jichu_basic
+      - skill_lingqiao_jichu_skill
+      - skill_lingqiao_jichu_ult
+    internalForceGrowthBonus: 1.05
+    speedBonus: 0
+    acquireSourceTags: ["starter"]
+
+  # === 阴柔 · 入门功 ===
+  - id: tech_yinrou_jichu
+    name: 阴柔入门
+    tier: ruMenGong
+    school: yinRou
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_yinrou_jichu_basic
+      - skill_yinrou_jichu_skill
+      - skill_yinrou_jichu_ult
+    internalForceGrowthBonus: 1.05
+    speedBonus: 0
+    acquireSourceTags: ["starter"]
+
+  # === 刚猛 · 名家功 ===
+  - id: tech_gangmeng_mingjia
+    name: 刚猛名家
+    tier: mingJiaGong
+    school: gangMeng
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_gangmeng_mingjia_basic
+      - skill_gangmeng_mingjia_skill
+      - skill_gangmeng_mingjia_ult
+    internalForceGrowthBonus: 1.15
+    speedBonus: 10
+    acquireSourceTags: ["mainline_ch3"]
+
+  # === 灵巧 · 名家功 ===
+  - id: tech_lingqiao_mingjia
+    name: 灵巧名家
+    tier: mingJiaGong
+    school: lingQiao
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_lingqiao_mingjia_basic
+      - skill_lingqiao_mingjia_skill
+      - skill_lingqiao_mingjia_ult
+    internalForceGrowthBonus: 1.15
+    speedBonus: 10
+    acquireSourceTags: ["mainline_ch3"]
+
+  # === 阴柔 · 名家功 ===
+  - id: tech_yinrou_mingjia
+    name: 阴柔名家
+    tier: mingJiaGong
+    school: yinRou
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_yinrou_mingjia_basic
+      - skill_yinrou_mingjia_skill
+      - skill_yinrou_mingjia_ult
+    internalForceGrowthBonus: 1.15
+    speedBonus: 10
+    acquireSourceTags: ["mainline_ch3"]

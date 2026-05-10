@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,7 +7,17 @@ import 'data/isar_setup.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await GameRepository.loadAllDefs();
+  final repo = await GameRepository.loadAllDefs();
+  if (kDebugMode) {
+    debugPrint(
+      '[GameRepository] 已加载 ${repo.realms.length} 行境界 / '
+      '${repo.equipmentDefs.length} 件装备 / '
+      '${repo.techniqueDefs.length} 本心法 / '
+      '${repo.skillDefs.length} 招招式 / '
+      '${repo.stageDefs.length} 个关卡 '
+      '(numbers v${repo.numbers.version})',
+    );
+  }
   await IsarSetup.init();
   runApp(const ProviderScope(child: WuxiaApp()));
 }
