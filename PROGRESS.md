@@ -22,16 +22,26 @@
   - `lib/ui/strings.dart`：`UiStrings` UI 静态中文集中位置（与 `enum_localizations.dart` 同性质，便于 i18n 迁出）。当前收：`battleTitle` / `tickPrefix` / `battleLog` / `emptyLog` / `ultimate` / `fastForward`
   - `lib/ui/battle/hp_bar.dart`：通用比例条 Stack 三层（轨道 / `FractionallySizedBox` 填充 / 居中文本）。`isInternalForce=true` 走内力蓝，否则走 HP 三段色；`max≤0` clamp 0 不崩
   - `lib/ui/battle/character_avatar.dart`：圆头像首字（`name.characters.first` 防 BMP 外字符）+ 流派色 4px 边框 + 名字 + 境界（走 `EnumL10n.realm`）+ HP 条 14px + 内力条 9px。`isAlive=false` 整体 `Opacity(0.3)` 落 §794 验收
-  - `lib/ui/battle/battle_screen.dart`：`Scaffold > Column[Header, Expanded(Row[LogSidebar 220px, BattleField]), BottomBar]`。顶栏标题走 `UiStrings.battleTitle(aliveLeft, aliveRight)` + tick + 战斗结束态高亮 `EnumL10n.battleResult`；日志栏倒序滚动渲染 `BattleLog.formatAction`；战场 Row+Expanded 左右两队 Column 对称（不用 Stack+Positioned，§798）；底栏 3 个 `_UltimateButton`（按角色第一个 `SkillType.ultimate` + `currentInternalForce ≥ cost` + `cooldown ≤ 0` 判活）+ 1 个 `_FastForwardButton`。`onUltimate` / `onFastForward` 默认 null（T16 接 Riverpod 时注入）
-  - `lib/ui/battle/battle_demo.dart`：T14 视觉目测 mock，**不走** `BattleCharacter.fromCharacter`（绕开 Isar 实体），直接构造 6 角色：覆盖 3 流派 / HP 满-中-残三档 / 右队 #2「毒娘子」`isAlive=false` 满足 §789-794 四项验收
+  - `lib/ui/battle/battle_screen.dart`（T14 初版）：静态布局，StatelessWidget
+  - `lib/ui/battle/battle_demo.dart`：T14 视觉目测 mock，直接构造 6 角色覆盖 3 流派/满-中-残/死亡
   - `lib/main.dart`：home 改 `BattleScreen(state: BattleDemo.build())`，`IsarSetup.init()` 加 `kIsWeb` 守卫
-  - `test/widget_test.dart`：升级 T01 占位为 BattleScreen 集成验。两条用例：`战斗 3 v 2` 标题 + 6 个 `CharacterAvatar` + 抽 3 角色名渲染（左队名同时出现在头像下方与大招按钮里 = 2 次，右队仅头像 1 次）/ 死亡角色 subtree 内 `Opacity.opacity == 0.3`。窗口 `setSurfaceSize(1280, 720)` 锁 16:9（默认 800×600 会触发 Column 溢出，与生产无关）
   - `flutter analyze` 0 issues / `flutter test` 146/146（widget +2 - 旧 startup smoke -1）
   - 挂账 #18 新增
+- **T15 攻击动画 + 伤害飘字**（2026-05-10）
+  - `data/numbers.yaml`：新增 `animation` 段（前冲/停顿/后撤/飘字/快进/屏震时序 11 键）
+  - `lib/data/numbers_config.dart`：新增 `AnimationNumbers` 类（含 `const defaults` 供测试），`NumbersConfig` 新增 `animation` 字段
+  - `lib/ui/theme/colors.dart`：追加 `popupNormal/popupCritical/popupDodge` 三色
+  - `lib/ui/strings.dart`：追加 `dodge/counterUp/counterDown`
+  - `lib/ui/battle/attack_animation.dart`（新建）：`AttackAnimationWidget` 无状态，外部注入 AnimationController，`_computeOffset` 三段式 easeIn/停顿/easeOut；HP 条随 CharacterAvatar 同体平移
+  - `lib/ui/battle/damage_popup.dart`（新建）：`DamagePopupData` + `DamagePopup`，`SingleTickerProviderStateMixin`，后半段淡出，`criticalFontScale` 从 `AnimationNumbers` 注入
+  - `lib/ui/battle/battle_screen.dart`（重构为 StatefulWidget）：`TickerProviderStateMixin` 管理 6 攻击 controller + 1 屏震 controller；`Timer.periodic` 按 actionLog 顺序播放；`_CharacterSlot` Stack(clipBehavior: none) 承载动画包 + 飘字；快进按钮内部控制间隔切换；`dispose()` 保证 7 个 controller 全部释放
+  - `test/widget_test.dart`：追加 7 条 T15 测试（dispose 无泄漏/普通飘字/闪避飘字/克制标记/普攻串行/暴击串行/闪避串行），_testAnim 短时序（50ms 间隔）
+  - **注意**：远程沙箱无 Flutter，flutter analyze + flutter test 留 Windows 首跑验收（与 #9/#11/#18 同性质）
+  - 预期测试数：146 + 7 = 153/153
 
 ## 进行中
 
-- 无（T14 完成，下一步 T15 攻击动画 + 伤害飘字）
+- 无（T15 完成，下一步 T16 Riverpod 串接）
 
 ## 已知偏差 / 挂账事项
 
@@ -47,13 +57,14 @@
 11. **T07 验收 counts 日志**：Mac 跑不了 `flutter run`，已写 main.dart kDebugMode，留 Windows 首跑验
 12. **`LevelDiffModifier.diff3OrMore.attacker` 数据层 vs 公式层语义不同**：NumbersConfig 兜底为 `diff2.attacker`(=2.5)，公式层取 `1.0`。Phase 5 收尾时一并把兜底改 1.0
 17. **phase1_tasks T12 §709 笔误**：「三流→绝顶差 2 守方 0.05」错（差 2 守方=0.3，差 3+ 才是 0.05）。"必败"语义仍成立，验收按差 2 实测
-18. **`flutter build web` 被 Isar 阻塞**：`combat/*.dart` 链路通过 `data/models/{character,equipment,technique}.dart` 拉入 `*.g.dart` 64-bit hash 字面量（JS 表示不下）+ Isar `dart:ffi` web 不支持。T14 视觉验收推到 Windows 首跑（与 #9/#11 同性质）。Phase 5 切 Isar 4.x 时一并恢复 web 入口
+18. **`flutter build web` 被 Isar 阻塞**：`combat/*.dart` 链路通过 `data/models/{character,equipment,technique}.dart` 拉入 `*.g.dart` 64-bit hash 字面量（JS 表示不下）+ Isar `dart:ffi` web 不支持。T14/T15 视觉验收推到 Windows 首跑（与 #9/#11 同性质）。Phase 5 切 Isar 4.x 时一并恢复 web 入口
+19. **T15 远程沙箱无 Flutter，无法运行 flutter analyze + flutter test**：代码通过人工静态审查，预期 0 warnings / 153 tests（base 146 + T15 新增 7）。留 Windows 首跑验收
 
 > 已解决条目（#1/#13/#14/#15/#16）已归档到文末。
 
 ## 下一步
 
-T15 攻击动画 + 伤害飘字 → T16 Riverpod 串接 → T17 4 套测试场景
+T16 Riverpod 串接 → T17 4 套测试场景
 
 ## 关键约束（每次开局必读）
 
