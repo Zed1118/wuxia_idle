@@ -24,6 +24,13 @@ class NumbersConfig {
   /// 仅主修生效，T09 用）。
   final Map<TechniqueTier, int> techniqueSpeedBonus;
 
+  /// 9 层修炼度对应的伤害倍率（numbers.yaml `techniques.cultivation.layers[].bonus_multiplier`，
+  /// 1.00 ~ 3.00，GDD §4.3 / §5.4，T10 最终伤害公式用）。
+  final Map<CultivationLayer, double> cultivationMultiplier;
+
+  /// 3×3 流派克制矩阵（numbers.yaml `techniques.schools`，GDD §4.4 / §5.4，T10 用）。
+  final SchoolCounterMatrix schoolCounter;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -35,6 +42,8 @@ class NumbersConfig {
     required this.defenseRateByTier,
     required this.enhancementBonusPerLevel,
     required this.techniqueSpeedBonus,
+    required this.cultivationMultiplier,
+    required this.schoolCounter,
     required this.raw,
   });
 
@@ -57,6 +66,12 @@ class NumbersConfig {
           .toDouble(),
       techniqueSpeedBonus:
           _parseTechniqueSpeedBonus(techniques['tiers'] as List),
+      cultivationMultiplier: _parseCultivationMultiplier(
+        techniques['cultivation'] as Map<String, dynamic>,
+      ),
+      schoolCounter: SchoolCounterMatrix.fromYaml(
+        techniques['schools'] as Map<String, dynamic>,
+      ),
       raw: y,
     );
   }
@@ -77,6 +92,89 @@ class NumbersConfig {
       m[tier] = (t['speed_bonus'] as num).toInt();
     }
     return m;
+  }
+
+  static Map<CultivationLayer, double> _parseCultivationMultiplier(
+    Map<String, dynamic> cultivation,
+  ) {
+    final layers = cultivation['layers'] as List;
+    final m = <CultivationLayer, double>{};
+    for (final l in layers) {
+      final layer = CultivationLayer.values.byName(l['layer'] as String);
+      m[layer] = (l['bonus_multiplier'] as num).toDouble();
+    }
+    return m;
+  }
+}
+
+/// 3×3 流派克制矩阵（numbers.yaml `techniques.schools`）。
+///
+/// 关系：刚猛 → 阴柔；阴柔 → 灵巧；灵巧 → 刚猛。
+/// `multiplierFor(attacker, defender)`：
+/// - attacker 克 defender → [counter]（1.25）
+/// - attacker 被 defender 克 → [countered]（0.75）
+/// - 同流派或非克制关系 → [neutral]（1.00）
+///
+/// **不要写嵌套 if-else**（phase1_tasks T10 §583）。本类用 attacker→target 单向
+/// 查表 + `multiplierFor` 双向判断 + `extraEffectFor` 取克制特效字符串。
+class SchoolCounterMatrix {
+  /// `_counterTarget[A] == B` 表示 A 单向克制 B。
+  final Map<TechniqueSchool, TechniqueSchool> _counterTarget;
+
+  /// `_extraEffect[A]` 是 A 触发克制时附带的额外效果字符串（如 `extra_quake_dmg`）。
+  final Map<TechniqueSchool, String> _extraEffect;
+
+  /// 克制方伤害倍率（GDD §4.4，1.25）。
+  final double counter;
+
+  /// 被克制方伤害倍率（0.75）。
+  final double countered;
+
+  /// 中性 / 同流派伤害倍率（1.00）。
+  final double neutral;
+
+  const SchoolCounterMatrix({
+    required Map<TechniqueSchool, TechniqueSchool> counterTarget,
+    required Map<TechniqueSchool, String> extraEffect,
+    required this.counter,
+    required this.countered,
+    required this.neutral,
+  })  : _counterTarget = counterTarget,
+        _extraEffect = extraEffect;
+
+  factory SchoolCounterMatrix.fromYaml(Map<String, dynamic> y) {
+    final relations = y['counter_relations'] as List;
+    final tgt = <TechniqueSchool, TechniqueSchool>{};
+    final eff = <TechniqueSchool, String>{};
+    var counter = 0.0;
+    for (final r in relations) {
+      final atk = TechniqueSchool.values.byName(r['attacker'] as String);
+      final t = TechniqueSchool.values.byName(r['target'] as String);
+      tgt[atk] = t;
+      eff[atk] = r['extra_effect'] as String;
+      // 所有 counter_relations 的 damage_multiplier 一致，取最后一条即可
+      counter = (r['damage_multiplier'] as num).toDouble();
+    }
+    return SchoolCounterMatrix(
+      counterTarget: tgt,
+      extraEffect: eff,
+      counter: counter,
+      countered: (y['countered_multiplier'] as num).toDouble(),
+      neutral: (y['neutral_multiplier'] as num).toDouble(),
+    );
+  }
+
+  /// attacker → defender 的伤害倍率。
+  double multiplierFor(TechniqueSchool attacker, TechniqueSchool defender) {
+    if (_counterTarget[attacker] == defender) return counter;
+    if (_counterTarget[defender] == attacker) return countered;
+    return neutral;
+  }
+
+  /// attacker 克制 defender 时的额外效果字符串；否则返回 null。
+  String? extraEffectFor(TechniqueSchool attacker, TechniqueSchool defender) {
+    if (_counterTarget[attacker] == defender) return _extraEffect[attacker];
+    return null;
   }
 }
 

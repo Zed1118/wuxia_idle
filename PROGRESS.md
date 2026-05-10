@@ -32,6 +32,17 @@
   - 5 战例 maxHp 公式实现验证：A=3850 / B=6600 / C=6180 / D=7760 / E=19500（≤20000 红线）；yaml `max_hp` 字段在 b/c 两例与公式真实值不自洽 —— 见挂账 #13
   - 21 用例新增（5 战例 + speed 3 + critical 3 + evasion 2 + attack 5 + hp/speed 3）
   - `flutter analyze` 0 issues / `flutter test` 80/80 通过
+- **T10 伤害计算器（核心）**（2026-05-10）
+  - `lib/combat/damage_calculator.dart`：`AttackContext` / `AttackResult` / `DamageCalculator.calculate`
+  - 7 阶段流水：闪避 → 基础伤害 → 修炼度 → 流派克制 → 暴击 → 防御 → 境界差，全部系数从 NumbersConfig 走、零硬编码魔数
+  - `NumbersConfig` 再扩两段：`cultivationMultiplier: Map<CultivationLayer,double>`（9 层 1.0–3.0）+ `SchoolCounterMatrix`（3×3 attacker→target 单向查表，`multiplierFor` / `extraEffectFor` 双向判断，**未用嵌套 if-else**）
+  - 暴击：`forceCritical || roll<critRate`；倍率刚猛/阴柔走 `combat.critical.base_damage_multiplier`(1.5)，灵巧走 `_lingQiaoCriticalDamageMultiplier`(2.0) —— 见挂账 #15
+  - 境界差：高打低用 attackerMod、低打高用 defenderMod、同 1.0；attacker/defender 分两位置返回到 [AttackResult]
+  - 闪避走 `ctx.rng ?? Random()`；测试全部用 `Random(seed)` 复现（seed=99 主线、seed=42 闪避验证）
+  - `formulaBreakdown` 形如 `(600*0.4 + 130 + 500) * 1.0 * 1.0 * 1.0 * 0.95 * 1.0 = 826 [atkLv=2,defLv=1]`
+  - 验收：5 战例 A/B/C/D 与 yaml `validation_examples.calculated_damage` 误差 0.2%–1.2%（均 ≤5%）；战例 E 公式输出 ~52416（与 phase1_tasks "≤30000" 不自洽 —— 见挂账 #16）；流派 6 组矩阵均符
+  - 21 用例新增（5 战例 + 流派 6 + 闪避 2 + 暴击 3 + 境界差 3 + breakdown 2）
+  - `flutter analyze` 0 issues / `flutter test` 101/101 通过
 
 ## 进行中
 
@@ -53,10 +64,12 @@
 12. **`LevelDiffModifier.diff3OrMore.attacker` 数据层 vs 公式层语义不同**：T07 NumbersConfig 把 yaml 里 null 的字段兜底为 `diff2.attacker`(=2.5)（数据层字段非空保证）；T08 RealmUtils 公式层按 GDD §5.5 + phase1_tasks T08 §470 取 `1.0`（"已经被碾压无须放大"），不读这个字段。两层语义独立，T07 测试不变。后续 Phase 5 收尾时一并把 NumbersConfig 兜底改成 1.0 + 删 T07 这条断言
 13. **numbers.yaml validation_examples b/c 的 max_hp 字段与注释手算不自洽**：example_b expected 7500（注释手算 6600）、example_c expected 6800（注释手算 5180）。公式真实值（按公式 1000+内力*0.7+根骨*500+装备血量）：B=6600、C=6180。建议 DeepSeek/数值同学修 yaml 里的 expected 值与公式对齐；公式实现不背锅，T09 测试以"按公式应得"为准
 14. **灵巧流派暴击 +0.20 未在 numbers.yaml 参数化**：yaml `combat.critical` 段没有 `lingqiao_bonus` 字段（注释 line 74 仅描述）。T09 暂硬编码在 `CharacterDerivedStats._lingQiaoCriticalBonus`。后续 yaml 加字段（建议 `combat.critical.lingqiao_bonus: 0.20`）+ 改 NumbersConfig 读取
+15. **灵巧流派暴击伤害倍率 2.0 未参数化**：与 #14 同根。T10 在 `DamageCalculator._lingQiaoCriticalDamageMultiplier` 硬编码 2.0（phase1_tasks T10 §584 简化）。后续 yaml 一并补 `combat.critical.lingqiao_damage_multiplier: 2.0`
+16. **phase1_tasks T10 §576 战例 E "≤30000" 与公式真实值不自洽**：yaml validation_examples E 无 `calculated_damage` 字段；按公式（cult 3.0 × 流派 1.0 × 暴击 1.5 × 防御 0.65）输出 ~52416，远超 30000。yaml expected_outcome 自己也只说"约 19500 一击致死"。T10 测试改用宽松上限 `<100000`（防崩盘），并保留挂账。后续要么调高 phase1_tasks 验收线，要么调低战例 E 配置数值
 
 ## 下一步
 
-T10 伤害计算器（GDD §5.3/§5.4 全公式 + 5 战例 final_damage 验收）→ T11 战斗节点
+T11 战斗状态机数据结构（BattleCharacter 快照 + immutable BattleState） → T12 战斗引擎 + AI
 
 ## 关键约束（每次开局必读）
 
