@@ -476,7 +476,6 @@ class _CharacterSlot extends StatelessWidget {
   final void Function(int slotKey, int popupId) onPopupComplete;
 
   const _CharacterSlot({
-    super.key,
     required this.character,
     required this.isLeftTeam,
     required this.attackController,
@@ -495,7 +494,7 @@ class _CharacterSlot extends StatelessWidget {
         AttackAnimationWidget(
           animation: attackController,
           isLeftTeam: isLeftTeam,
-          rushOffsetPx: animConfig.attackRushOffsetPx,
+          config: animConfig,
           child: CharacterAvatar(character: character),
         ),
         // 飘字：向上堆叠，index 越大越靠上（避免重叠）。

@@ -36,7 +36,7 @@ const _normalResult = AttackResult(
   criticalMultiplier: 1.0,
   defenseRate: 0.15,
   evasionRate: 0.05,
-  appliedEffects: const <String>[],
+  appliedEffects: <String>[],
   formulaBreakdown: 'test',
 );
 
@@ -51,7 +51,7 @@ const _criticalResult = AttackResult(
   criticalMultiplier: 1.5,
   defenseRate: 0.15,
   evasionRate: 0.05,
-  appliedEffects: const <String>[],
+  appliedEffects: <String>[],
   formulaBreakdown: 'crit test',
 );
 
@@ -66,7 +66,7 @@ const _dodgeResult = AttackResult(
   criticalMultiplier: 1.0,
   defenseRate: 0.0,
   evasionRate: 0.15,
-  appliedEffects: const <String>[],
+  appliedEffects: <String>[],
   formulaBreakdown: 'dodged',
 );
 
