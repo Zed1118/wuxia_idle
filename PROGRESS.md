@@ -19,9 +19,16 @@
   - `lib/data/models/enums.dart`，按 data_schema.md §2 共 18 个枚举（91 个值）原样搬入
   - 易错拼写自查通过（xueTu / jueDing / huaJing / qiMeng / chuKui / jueShi）
   - `flutter analyze` 0 issues / `flutter test` 通过
+- **T03 嵌入对象（@Embedded）**（2026-05-10）
+  - 5 个 @embedded 类：`attributes.dart` / `forging_slot.dart` / `lore.dart` / `skill_usage_entry.dart` / `reward_entry.dart`
+  - 2 个 List-as-Map extension：`MapLikeOnSkillUsage`（countOf/increment）+ `MapLikeOnRewards`（quantityOf）
+  - `Lore.addedAt` 默认值用 `DateTime(2000)` 防 isar_generator 偶发报错（phase1_tasks T03 提示）
+  - `test/data/models/extensions_test.dart` 6 用例（追加/累加/原对象回写/不存在 key/命中/空 List）全过
+  - `flutter analyze` 0 issues / `flutter test` 7/7 通过
+
 ## 进行中
 
-- **T03 嵌入对象（@Embedded）** — 待开工
+- **T04 三个核心 Isar 实体（Character / Equipment / Technique）** — 待开工，估时 1 天
 
 ## 已知偏差 / 挂账事项
 
