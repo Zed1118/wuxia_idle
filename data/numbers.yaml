@@ -78,6 +78,8 @@ combat:
     max_rate: 0.50                   # 暴击率硬上限 50%
     base_damage_multiplier: 1.5      # 暴击伤害基础倍率
     max_damage_multiplier: 2.5       # 暴击伤害最高倍率（堆心法/装备后）
+    lingqiao_critical_bonus: 0.20    # 灵巧流派额外暴击率 +20%（GDD §4.4，T09 用）
+    lingqiao_damage_multiplier: 2.0  # 灵巧流派暴击时的伤害倍率（phase1_tasks T10 §584 简化值，T10 用）
 
   # --- 闪避率（由身法决定，与速度共享身法属性）---
   evasion:
@@ -1052,7 +1054,7 @@ validation_examples:
       critical: 1.00
     defender:
       realm: "erLiu / yuanShu (lv 19)"
-      max_hp: 7500                       # 1000 + 3000*0.7 + 6*500 + 500(装备血量) = 6600
+      max_hp: 6600                       # 1000 + 3000*0.7 + 6*500 + 500(装备血量) = 6600（公式真实值）
       defense_rate: 0.15                 # 二流 15%
     calculated_damage: "(3000*0.4 + 580 + 1500) * 1.75 * 1.0 * 1.0 * 0.85 * 1.0 = 4889"
     expected_outcome: "在 2000-8000 红线内 ✓；约 2 击致死，强力技能节奏合理"
@@ -1072,7 +1074,7 @@ validation_examples:
       realm_diff_modifier: 0.7           # 低境界打高境界（守方修正）
     defender:
       realm: "erLiu / ruMen (lv 16)"
-      max_hp: 6800                       # 1000 + 2400*0.7 + 6*500 + 500 = 4180+500 ≈ 5180 → 估算
+      max_hp: 6180                       # 1000 + 2400*0.7 + 6*500 + 500 = 1000+1680+3000+500 = 6180（公式真实值）
       defense_rate: 0.15                 # 二流
     calculated_damage: "(2000*0.4 + 280 + 1500) * 1.30 * 1.0 * 1.0 * 0.85 * 0.7 = 1972"
     expected_outcome: "勉强达到普通伤害下限 2000；约 4 击致死，三流挑战二流确实吃力 ✓"

@@ -14,20 +14,13 @@ import 'derived_stats.dart';
 /// 闪避判定 → 基础伤害 → 心法修炼度 → 流派克制 → 暴击 → 防御率 → 境界差。
 ///
 /// **公式系数全部从 [NumbersConfig] 读**，不在本文件硬编码 0.4 / 1.0 / 0.7
-/// 等魔数（phase1_tasks T10 §581 强制）。
+/// 等魔数（phase1_tasks T10 §581 强制）。包括灵巧流派暴击倍率
+/// (`combat.critical.lingqiao_damage_multiplier`)。
 ///
 /// **测试可复现**：[AttackContext.rng] 字段允许注入 [Random.new](seed)，
 /// 不传时回退到全局 [Random]。
-///
-/// **未参数化的硬编码**（PROGRESS.md 挂账 #15）：
-/// - 灵巧流派暴击伤害倍率 [_lingQiaoCriticalDamageMultiplier]（=2.0）
-///   未在 numbers.yaml `combat.critical` 段，与 #14 灵巧 +0.20 暴击率同根。
 class DamageCalculator {
   DamageCalculator._();
-
-  /// 灵巧流派暴击伤害倍率（GDD §4.4 / phase1_tasks T10 §584 简化为 2.0）。
-  /// 未在 numbers.yaml 参数化，见 PROGRESS.md 挂账 #15。
-  static const double _lingQiaoCriticalDamageMultiplier = 2.0;
 
   /// 计算一次攻击的最终伤害。
   ///
@@ -87,7 +80,7 @@ class DamageCalculator {
     final isCritical = ctx.forceCritical || rng.nextDouble() < critRate;
     final critMult = isCritical
         ? (ctx.attacker.school == TechniqueSchool.lingQiao
-            ? _lingQiaoCriticalDamageMultiplier
+            ? n.combat.critical.lingqiaoDamageMultiplier
             : n.combat.critical.baseDamageMultiplier)
         : 1.0;
 

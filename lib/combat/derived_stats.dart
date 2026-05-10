@@ -132,11 +132,12 @@ class CharacterDerivedStats {
   /// **最后**统一 clamp 到 [0, maxRate]（phase1_tasks T09 §514）。
   ///
   /// `school` 取自角色当前主修流派（[Character.school]，可空：无主修时按基础算）。
+  /// 灵巧 +0.20 来自 yaml `combat.critical.lingqiao_critical_bonus`，不硬编码。
   static double criticalRate(Character c, NumbersConfig n) {
     final cfg = n.combat.critical;
     var rate = cfg.baseRate + c.attributes.agility * cfg.agilityPerPointRate;
     if (c.school == TechniqueSchool.lingQiao) {
-      rate += _lingQiaoCriticalBonus;
+      rate += cfg.lingqiaoCriticalBonus;
     }
     return rate.clamp(0.0, cfg.maxRate);
   }
@@ -154,7 +155,7 @@ class CharacterDerivedStats {
   /// 寻常货 +0 共鸣生疏无开锋时返回 baseAttack（验收 §508）。
   static int effectiveEquipmentAttack(Equipment eq, NumbersConfig n) {
     final enhance = 1 + eq.enhanceLevel * n.enhancementBonusPerLevel;
-    final resonance = eq.resonanceBonus;
+    final resonance = eq.resonanceBonus(n);
     final forgePct = _forgingBonusPct(eq, ForgingSlotType.attack);
     return (eq.baseAttack * enhance * resonance * (1 + forgePct)).toInt();
   }
@@ -163,21 +164,17 @@ class CharacterDerivedStats {
   /// 血量没有"开锋槽位加成"类型（forging.slots 中无 `hp` 类型）。
   static int effectiveEquipmentHp(Equipment eq, NumbersConfig n) {
     final enhance = 1 + eq.enhanceLevel * n.enhancementBonusPerLevel;
-    final resonance = eq.resonanceBonus;
+    final resonance = eq.resonanceBonus(n);
     return (eq.baseHealth * enhance * resonance).toInt();
   }
 
   /// 装备速度 = baseSpeed × 强化 × 共鸣 × (1 + Σspeed 开锋槽位百分比 / 100)。
   static int effectiveEquipmentSpeed(Equipment eq, NumbersConfig n) {
     final enhance = 1 + eq.enhanceLevel * n.enhancementBonusPerLevel;
-    final resonance = eq.resonanceBonus;
+    final resonance = eq.resonanceBonus(n);
     final forgePct = _forgingBonusPct(eq, ForgingSlotType.speed);
     return (eq.baseSpeed * enhance * resonance * (1 + forgePct)).toInt();
   }
-
-  /// 灵巧流派暴击率额外 +20%（GDD §4.4）。这是"流派"级语义系数，
-  /// 不在 numbers.yaml `combat.critical` 段——独立写在此处。
-  static const double _lingQiaoCriticalBonus = 0.20;
 
   /// 累加指定 [type] 的开锋槽位 bonusValue（百分比，如 15 表示 +15%），返回小数（0.15）。
   /// 仅 `unlocked == true` 的槽位计入。

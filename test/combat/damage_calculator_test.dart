@@ -108,9 +108,8 @@ void main() {
       );
       expect(r.isCritical, true);
       expect(r.cultivationMultiplier, 3.00);
-      // yaml 战例 E 无 calculated_damage 字段，phase1_tasks T10 §576 验收"≤30000"
-      // 与公式真实值不自洽（实际 ~52416）—— 见 PROGRESS.md 挂账 #16。
-      // 此处只验"未崩盘"：< 100000（远小于 GDD §5.2 Boss 血量"50000+"上限的 2 倍）。
+      // yaml 战例 E 无 calculated_damage 字段，公式真实值 ~52416。
+      // phase1_tasks T10 §576 验收线已改为 ≤100000（公式 ×2 防崩盘 buffer）。
       expect(r.finalDamage, greaterThan(20000));
       expect(r.finalDamage, lessThan(100000));
     });

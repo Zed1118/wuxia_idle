@@ -31,6 +31,18 @@ class NumbersConfig {
   /// 3×3 流派克制矩阵（numbers.yaml `techniques.schools`，GDD §4.4 / §5.4，T10 用）。
   final SchoolCounterMatrix schoolCounter;
 
+  /// 4 段共鸣度配置（numbers.yaml `equipment.resonance.stages`，GDD §6.4）。
+  /// 顺序：生疏 → 趁手 → 默契 → 心剑通灵；最后一段 [maxBattleCount] 为 null（无上限）。
+  final List<ResonanceStageConfig> resonanceStages;
+
+  /// 师承遗物的共鸣度保留比例（numbers.yaml `equipment.resonance.inheritance_retention`，
+  /// GDD §6.4 = 0.7）。
+  final double resonanceInheritanceRetention;
+
+  /// 散功代价：原主修心法修炼度保留比例（numbers.yaml `techniques.dispersion.cultivation_penalty`，
+  /// GDD §4.3 = 0.5）。
+  final double dispersionCultivationPenalty;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -44,6 +56,9 @@ class NumbersConfig {
     required this.techniqueSpeedBonus,
     required this.cultivationMultiplier,
     required this.schoolCounter,
+    required this.resonanceStages,
+    required this.resonanceInheritanceRetention,
+    required this.dispersionCultivationPenalty,
     required this.raw,
   });
 
@@ -72,6 +87,15 @@ class NumbersConfig {
       schoolCounter: SchoolCounterMatrix.fromYaml(
         techniques['schools'] as Map<String, dynamic>,
       ),
+      resonanceStages: _parseResonanceStages(
+        equipment['resonance'] as Map<String, dynamic>,
+      ),
+      resonanceInheritanceRetention: ((equipment['resonance']
+              as Map<String, dynamic>)['inheritance_retention'] as num)
+          .toDouble(),
+      dispersionCultivationPenalty: ((techniques['dispersion']
+              as Map<String, dynamic>)['cultivation_penalty'] as num)
+          .toDouble(),
       raw: y,
     );
   }
@@ -105,6 +129,40 @@ class NumbersConfig {
     }
     return m;
   }
+
+  static List<ResonanceStageConfig> _parseResonanceStages(
+    Map<String, dynamic> resonance,
+  ) {
+    final stages = resonance['stages'] as List;
+    return [
+      for (final s in stages)
+        ResonanceStageConfig(
+          stage: ResonanceStage.values.byName(s['stage'] as String),
+          minBattleCount:
+              ((s['battle_count_range'] as List)[0] as num).toInt(),
+          maxBattleCount:
+              ((s['battle_count_range'] as List)[1] as num?)?.toInt(),
+          bonusMultiplier: (s['bonus_multiplier'] as num).toDouble(),
+        ),
+    ];
+  }
+}
+
+/// 单段共鸣度配置（numbers.yaml `equipment.resonance.stages[]`）。
+///
+/// `maxBattleCount == null` 表示该段为最高段，无 battleCount 上限。
+class ResonanceStageConfig {
+  final ResonanceStage stage;
+  final int minBattleCount;
+  final int? maxBattleCount;
+  final double bonusMultiplier;
+
+  const ResonanceStageConfig({
+    required this.stage,
+    required this.minBattleCount,
+    required this.maxBattleCount,
+    required this.bonusMultiplier,
+  });
 }
 
 /// 3×3 流派克制矩阵（numbers.yaml `techniques.schools`）。
@@ -282,12 +340,20 @@ class CriticalConfig {
   final double baseDamageMultiplier;
   final double maxDamageMultiplier;
 
+  /// 灵巧流派额外暴击率（GDD §4.4 = 0.20，T09 用）。
+  final double lingqiaoCriticalBonus;
+
+  /// 灵巧流派暴击时的伤害倍率（phase1_tasks T10 §584 简化为 2.0，T10 用）。
+  final double lingqiaoDamageMultiplier;
+
   const CriticalConfig({
     required this.baseRate,
     required this.agilityPerPointRate,
     required this.maxRate,
     required this.baseDamageMultiplier,
     required this.maxDamageMultiplier,
+    required this.lingqiaoCriticalBonus,
+    required this.lingqiaoDamageMultiplier,
   });
 
   factory CriticalConfig.fromYaml(Map<String, dynamic> y) {
@@ -297,6 +363,10 @@ class CriticalConfig {
       maxRate: (y['max_rate'] as num).toDouble(),
       baseDamageMultiplier: (y['base_damage_multiplier'] as num).toDouble(),
       maxDamageMultiplier: (y['max_damage_multiplier'] as num).toDouble(),
+      lingqiaoCriticalBonus:
+          (y['lingqiao_critical_bonus'] as num).toDouble(),
+      lingqiaoDamageMultiplier:
+          (y['lingqiao_damage_multiplier'] as num).toDouble(),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 
+import '../numbers_config.dart';
 import 'enums.dart';
 import 'skill_usage_entry.dart';
 
@@ -72,12 +73,15 @@ class Technique {
 
 /// 散功扩展（data_schema.md §4.4 / GDD §6 散功代价）。
 ///
-/// 修炼度 ×0.5；调用方还需把角色当前内力 ×0.5（在应用层做）。
+/// 修炼度按 [NumbersConfig.dispersionCultivationPenalty] (=0.5) 衰减；
+/// 调用方还需把角色当前内力 ×0.5（在应用层做，对应 yaml
+/// `techniques.dispersion.internal_force_penalty`）。
 /// `cultivationLayer` 不在此处回退，由应用层根据新的 progress 重算。
 extension TechniqueDispersion on Technique {
-  void disperse() {
+  void disperse(NumbersConfig n) {
     wasMainBeforeReset = true;
-    cultivationProgress = (cultivationProgress * 0.5).toInt();
+    cultivationProgress =
+        (cultivationProgress * n.dispersionCultivationPenalty).toInt();
     role = TechniqueRole.assist;
   }
 }

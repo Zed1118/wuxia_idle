@@ -44,7 +44,7 @@ Windows 单平台、买断制、写实武侠挂机游戏。Flutter Desktop，3v3
 | 层 | 选型 | 备注 |
 |---|---|---|
 | 引擎 | Flutter Desktop (Windows) | 只 Windows，不出 Mac / Linux |
-| 状态管理 | **Riverpod 3.x** | 已锁定，不引入 BLoC 等其他方案 |
+| 状态管理 | **Riverpod**（Phase 1 锁 2.x，与 phase1_tasks 一致；Phase 5 收尾再迁 3.x） | 不引入 BLoC 等其他方案 |
 | 本地存储 | Isar | 角色、装备、进度、共鸣度计数等 |
 | 云端 | Supabase + Edge Function | **仅**排行榜，不做账号同步 |
 | 战斗表现 | 纯 Flutter Widget + AnimationController | 不引入 Flame 等游戏引擎 |

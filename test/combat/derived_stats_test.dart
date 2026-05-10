@@ -181,7 +181,8 @@ void main() {
       );
       final eq = _mkEquip(baseHealth: 500);
       expect(CharacterDerivedStats.maxHp(c, [eq], n), 6600);
-      // 注：yaml expected 7500 vs 注释手算 6600 不自洽（PROGRESS 挂账 #13）。
+      // numbers.yaml validation_examples.b/c 的 max_hp 注释已对齐公式真实值
+      // (b=6600, c=6180)，由清账冲刺修正；公式实现保持权威。
     });
 
     test('战例 C：erLiu/ruMen 内力2400/根骨6/装备血500 → 6180', () {
@@ -194,7 +195,7 @@ void main() {
       );
       final eq = _mkEquip(baseHealth: 500);
       expect(CharacterDerivedStats.maxHp(c, [eq], n), 6180);
-      // 注：yaml expected 6800 / 注释手算 5180 都与公式真实值 6180 不一致（挂账 #13）。
+      // numbers.yaml 已修正 expected=6180 与公式对齐。
     });
 
     test('战例 D：yiLiu/qiMeng 内力3800/根骨6/装备血1100 → 7760', () {

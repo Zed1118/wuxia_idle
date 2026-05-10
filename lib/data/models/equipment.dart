@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 
+import '../numbers_config.dart';
 import 'enums.dart';
 import 'forging_slot.dart';
 import 'lore.dart';
@@ -99,32 +100,34 @@ class Equipment {
 }
 
 /// 派生属性扩展（不入库，data_schema.md §4.3）。
+///
+/// 阈值/倍率/继承保留比例全部从 [NumbersConfig] 读，不硬编码（GDD §5.6）。
 extension EquipmentResonance on Equipment {
-  ResonanceStage get resonanceStage {
-    if (battleCount < 100) return ResonanceStage.shengShu;
-    if (battleCount < 500) return ResonanceStage.chenShou;
-    if (battleCount < 2000) return ResonanceStage.moQi;
-    return ResonanceStage.xinJianTongLing;
-  }
-
-  /// 共鸣度数值加成（GDD §6.4）。
-  double get resonanceBonus {
-    switch (resonanceStage) {
-      case ResonanceStage.shengShu:
-        return 1.0;
-      case ResonanceStage.chenShou:
-        return 1.10;
-      case ResonanceStage.moQi:
-        return 1.20;
-      case ResonanceStage.xinJianTongLing:
-        return 1.30;
+  /// 当前 [battleCount] 落入的共鸣段。
+  /// 顺序遍历 yaml `equipment.resonance.stages`，命中第一个 `[min, max)` 区间。
+  /// 最高段 `maxBattleCount == null` 表示无上限。
+  ResonanceStage resonanceStage(NumbersConfig n) {
+    for (final s in n.resonanceStages) {
+      final inMin = battleCount >= s.minBattleCount;
+      final inMax = s.maxBattleCount == null || battleCount < s.maxBattleCount!;
+      if (inMin && inMax) return s.stage;
     }
+    return n.resonanceStages.last.stage;
   }
 
-  /// 师承传承时调用：保留 70% 共鸣度，标记为遗物。
-  void inheritFrom(int previousOwnerId) {
+  /// 共鸣度数值加成（GDD §6.4，1.0 / 1.10 / 1.20 / 1.30）。
+  double resonanceBonus(NumbersConfig n) {
+    final stage = resonanceStage(n);
+    return n.resonanceStages
+        .firstWhere((s) => s.stage == stage)
+        .bonusMultiplier;
+  }
+
+  /// 师承传承时调用：保留 [NumbersConfig.resonanceInheritanceRetention]
+  /// (=0.7) 的 battleCount，标记为遗物。
+  void inheritFrom(int previousOwnerId, NumbersConfig n) {
     previousOwnerCharacterIds.add(previousOwnerId);
-    battleCount = (battleCount * 0.7).toInt();
+    battleCount = (battleCount * n.resonanceInheritanceRetention).toInt();
     isLineageHeritage = true;
   }
 }

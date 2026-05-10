@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/models/attributes.dart';
 import 'package:wuxia_idle/data/models/character.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
@@ -6,8 +9,25 @@ import 'package:wuxia_idle/data/models/equipment.dart';
 import 'package:wuxia_idle/data/models/forging_slot.dart';
 import 'package:wuxia_idle/data/models/skill_usage_entry.dart';
 import 'package:wuxia_idle/data/models/technique.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
 
 void main() {
+  // 共鸣/散功 extension 改为读 NumbersConfig（清账 #14/#15 同根方案的延伸）：
+  // EquipmentResonance.resonanceStage(n) / resonanceBonus(n) / inheritFrom(_, n)
+  // 与 TechniqueDispersion.disperse(n) 都需要从 numbers.yaml 读阈值与系数。
+  late final NumbersConfig n;
+
+  setUpAll(() async {
+    await GameRepository.loadAllDefs(loader: (path) async {
+      final f = File(path);
+      if (!await f.exists()) throw FileSystemException('不存在', path);
+      return f.readAsString();
+    });
+    n = GameRepository.instance.numbers;
+  });
+
+  tearDownAll(GameRepository.resetForTest);
+
   group('Character.create', () {
     test('应一次填齐所有 late 字段并允许默认值兜底', () {
       final attrs = Attributes()
@@ -110,8 +130,8 @@ void main() {
           obtainedFrom: 't',
           battleCount: entry.key,
         );
-        expect(e.resonanceStage, entry.value.$1, reason: 'battleCount=${entry.key}');
-        expect(e.resonanceBonus, entry.value.$2, reason: 'battleCount=${entry.key}');
+        expect(e.resonanceStage(n), entry.value.$1, reason: 'battleCount=${entry.key}');
+        expect(e.resonanceBonus(n), entry.value.$2, reason: 'battleCount=${entry.key}');
       }
     });
 
@@ -125,7 +145,7 @@ void main() {
         battleCount: 1000,
       );
 
-      e.inheritFrom(7);
+      e.inheritFrom(7, n);
 
       expect(e.battleCount, 700);
       expect(e.isLineageHeritage, isTrue);
@@ -169,7 +189,7 @@ void main() {
         ],
       );
 
-      tech.disperse();
+      tech.disperse(n);
 
       expect(tech.cultivationProgress, 240);
       expect(tech.role, TechniqueRole.assist);
