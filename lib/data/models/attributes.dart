@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
 
+part 'attributes.g.dart';
+
 /// 四项基础属性（data_schema.md §3.1 / GDD §4.1）。
 ///
 /// 出生时按规则生成，单项 1-10、总和 16-24，不可重 roll。

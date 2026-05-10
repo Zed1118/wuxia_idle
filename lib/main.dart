@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() {
-  runApp(const WuxiaApp());
+import 'data/game_repository.dart';
+import 'data/isar_setup.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await GameRepository.loadAllDefs();
+  await IsarSetup.init();
+  runApp(const ProviderScope(child: WuxiaApp()));
 }
 
 class WuxiaApp extends StatelessWidget {

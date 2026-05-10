@@ -37,3 +37,9 @@ desktop.ini
 # 项目其它
 # =====================================================================
 *.log
+
+# Isar.initializeIsarCore(download: true) 在 dart test 环境下载的 native lib
+# （Mac 跑 isar_setup_test 时拉到项目根，平台特定，不入库）
+libisar.dylib
+libisar.so
+isar.dll

@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
 
+part 'skill_usage_entry.g.dart';
+
 /// 招式使用次数（data_schema.md §3.4）。
 ///
 /// 嵌入在 `Technique.skillUsageCount` 中模拟 `Map<String, int>`，

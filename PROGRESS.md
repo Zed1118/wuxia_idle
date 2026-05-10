@@ -25,10 +25,27 @@
   - `Lore.addedAt` 默认值用 `DateTime(2000)` 防 isar_generator 偶发报错（phase1_tasks T03 提示）
   - `test/data/models/extensions_test.dart` 6 用例（追加/累加/原对象回写/不存在 key/命中/空 List）全过
   - `flutter analyze` 0 issues / `flutter test` 7/7 通过
+- **T04 三个核心 Isar 实体（Character / Equipment / Technique）**（2026-05-10）
+  - `lib/data/models/{character,equipment,technique}.dart` 三个 @collection
+  - 各加 `.create(...)` 工厂方法一次填齐 late 字段；`Equipment.create` 默认填 3 个空 ForgingSlot（索引 1/2/3）
+  - 两个 extension：`EquipmentResonance`（resonanceStage/Bonus/inheritFrom）+ `TechniqueDispersion.disperse`
+  - 顺手补 T03 5 个嵌入对象缺失的 `part 'xxx.g.dart'` 指令（不补则 Equipment/Technique.g.dart 引用 EmbeddedSchema 编译失败，是 T04 阻塞）
+  - `test/data/models/entities_test.dart` 7 用例（factory 默认值 / forgingSlots 自动填齐 / 显式传入保留 / resonance 8 段映射 / inheritFrom 70% / dispersion 半减）全过
+  - `flutter analyze` 0 issues / `flutter test` 14/14 通过 / build_runner 49 outputs
+- **T05 SaveData + IsarSetup（单 slot 简化版）**（2026-05-10）
+  - `lib/data/models/{save_data,inventory_item,game_event}.dart` 三个 @collection（schema §4.1/§4.8/§4.9）
+  - `lib/data/isar_setup.dart`：Phase 1 简化版，仅 `init({slotId, directory?, inspector})` + `close()` + `_ensureSaveData()`，switchSlot/listAllSlots/deleteSlot 加 TODO Phase 5
+  - `lib/data/game_repository.dart`：T07 占位 stub，main 启动序按 phase1_tasks T05 范式调用
+  - `lib/main.dart`：`WidgetsFlutterBinding.ensureInitialized` → `loadAllDefs` → `IsarSetup.init` → `ProviderScope`
+  - `IsarSetup.init` 接受可注入 `directory`，生产用 path_provider，测试传临时目录
+  - `_allSchemas` 当前 6 个（SaveData/Character/Equipment/Technique/InventoryItem/GameEvent），T11+ 追加 StageProgress/AdventureRecord/RetreatSession/DailyChallenge
+  - `test/data/isar_setup_test.dart` 4 用例（首次 init 默认值/再 init 不覆盖原值/三实体 round-trip 字段完整/@Index filter 可查）全过——含 T04 验收剩余 2 条
+  - 用 `Isar.initializeIsarCore(download: true)` 在 dart test 环境下 native lib（首次 ~17s，后续缓存）
+  - `flutter analyze` 0 issues / `flutter test` 18/18 通过
 
 ## 进行中
 
-- **T04 三个核心 Isar 实体（Character / Equipment / Technique）** — 待开工，估时 1 天
+- **T06 配置类（Defs）** — 待开工，估时 1 天
 
 ## 已知偏差 / 挂账事项
 
@@ -40,10 +57,11 @@
 6. **GDD §5.3/§5.6 公式系数 vs numbers.yaml**：GDD 字面 ×8 / ×5 是「口误」，代码以 numbers.yaml 平衡值（×1.0 / ×0.7）为准。GDD 文字暂不修
 7. **numbers.yaml 节气列表混入「中秋」**：中秋是农历节日不是节气。GDD 没明确要求 24 节气，待定
 8. **CLAUDE.md §12 待人类决策清单 13 条**：境界层 vs 修炼度层重名、属性单项分布、+20+ 强化曲线等。Phase 1 实现到对应位置时按需提问
+9. **T05 验收「inspector: true 浏览器看表」未跑**：需要 `flutter run` 实机启动，Mac 端无 Xcode 跑不了 macOS desktop，留给 Windows DeepSeek 端首次跑应用时验。代码已默认开 inspector
 
 ## 下一步
 
-T02 枚举定义（0.5 天）→ T03 嵌入对象（0.5 天）→ T04 三个核心 Isar 实体（1 天）→ Week 1 收尾 T05/T06/T07
+T06 配置类 Defs（1 天）→ T07 YAML 加载器 + GameRepository 真实实现（Week 1 收尾）→ T08 境界派生工具
 
 ## 关键约束（每次开局必读）
 

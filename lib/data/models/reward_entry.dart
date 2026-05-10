@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
 
+part 'reward_entry.g.dart';
+
 /// 奖励条目（data_schema.md §3.5）。
 ///
 /// 嵌入在 `RetreatSession.estimatedRewards` / `actualRewards` 中。

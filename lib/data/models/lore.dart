@@ -1,5 +1,7 @@
 import 'package:isar/isar.dart';
 
+part 'lore.g.dart';
+
 /// 装备典故（data_schema.md §3.3 / GDD §6.6）。
 ///
 /// 预设典故由 yaml 加载初始化，延续典故由战斗事件动态追加。

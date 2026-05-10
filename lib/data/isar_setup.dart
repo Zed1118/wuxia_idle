@@ -1,0 +1,84 @@
+import 'dart:io';
+
+import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'models/character.dart';
+import 'models/equipment.dart';
+import 'models/game_event.dart';
+import 'models/inventory_item.dart';
+import 'models/save_data.dart';
+import 'models/technique.dart';
+
+/// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。
+///
+/// **Phase 1 简化**：只支持单槽位（slotId=1）。多槽切换 / 列表 / 删除
+/// 推迟到 Phase 5（见类内 TODO Phase 5 标注）。
+///
+/// 文件命名仍按 `wuxia_save_slot{slotId}.isar`，便于 Phase 5 扩展。
+class IsarSetup {
+  static late Isar instance;
+  static int currentSlotId = 1;
+
+  /// 全部持久化 schema 清单（data_schema.md §7.1）。
+  ///
+  /// Phase 1 仅 6 个：SaveData / Character / Equipment / Technique /
+  /// InventoryItem / GameEvent。剩余 StageProgress / AdventureRecord /
+  /// RetreatSession / DailyChallenge 在后续任务（T11+）建模时追加。
+  static const _allSchemas = [
+    SaveDataSchema,
+    CharacterSchema,
+    EquipmentSchema,
+    TechniqueSchema,
+    InventoryItemSchema,
+    GameEventSchema,
+  ];
+
+  /// 当前 schema 对应的存档版本（写入新建 SaveData.saveVersion）。
+  static const _currentSaveVersion = '0.1.0';
+
+  /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
+  static Future<void> init({
+    int slotId = 1,
+    Directory? directory,
+    bool inspector = true,
+  }) async {
+    assert(slotId >= 1 && slotId <= 3, 'slotId 必须是 1/2/3');
+
+    final dir = directory ?? await getApplicationDocumentsDirectory();
+    instance = await Isar.open(
+      _allSchemas,
+      directory: dir.path,
+      name: 'wuxia_save_slot$slotId',
+      inspector: inspector,
+    );
+    currentSlotId = slotId;
+
+    await _ensureSaveData();
+  }
+
+  /// 启动时确保 SaveData 单例存在；不存在则建一行默认值。
+  static Future<SaveData> _ensureSaveData() async {
+    final existing = await instance.saveDatas.get(0);
+    if (existing != null) return existing;
+
+    final now = DateTime.now();
+    final fresh = SaveData()
+      ..id = 0
+      ..slotId = currentSlotId
+      ..saveVersion = _currentSaveVersion
+      ..createdAt = now
+      ..lastSavedAt = now
+      ..lastOnlineAt = now;
+    await instance.writeTxn(() => instance.saveDatas.put(fresh));
+    return fresh;
+  }
+
+  static Future<void> close() async {
+    await instance.close();
+  }
+
+  // TODO Phase 5: switchSlot(int newSlotId) — 切换存档槽位
+  // TODO Phase 5: listAllSlots() — 存档选择界面用
+  // TODO Phase 5: deleteSlot(int slotId) — 删除指定槽位
+}
