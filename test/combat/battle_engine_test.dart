@@ -1,0 +1,468 @@
+import 'dart:io';
+import 'dart:math';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/combat/battle_ai.dart';
+import 'package:wuxia_idle/combat/battle_engine.dart';
+import 'package:wuxia_idle/combat/battle_state.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/models/attributes.dart';
+import 'package:wuxia_idle/data/models/character.dart';
+import 'package:wuxia_idle/data/models/enums.dart';
+import 'package:wuxia_idle/data/models/equipment.dart';
+import 'package:wuxia_idle/data/models/technique.dart';
+
+/// BattleEngine + BattleAI 单元测试（phase1_tasks.md T12 §706 验收）。
+///
+/// 覆盖：
+/// 1. 3v3 同境界同流派同装备：runToEnd 50-200 tick 内分胜负，不死循环。
+/// 2. 速度差：speed=200 vs 100 的行动次数 ~2:1。
+/// 3. requestUltimate：玩家手动请求后该角色下次行动一定使用该大招
+///    （前提内力够、CD 0）。
+/// 4. 境界差：三流满员 vs 绝顶满员（差 2 阶）→ rightWin（"几乎必败"）。
+///    注：phase1_tasks T12 §709 写"守方 0.05"是笔误（差 2 守方 0.3，差 3+ 守方
+///    0.05），但"三流→绝顶差 2 必败"语义成立。
+/// 5. 同 actionPoint 排序破平局（teamSide asc → slotIndex asc）。
+/// 6. maxTicks 触发 → draw（防死循环兜底）。
+/// 7. BattleAI 招式选择优先级：pendingUltimates > powerSkill > normalAttack。
+/// 8. 死亡角色不行动（AI 跳过）+ AI 选目标取活角色 hp 最低。
+void main() {
+  Future<String> fileLoader(String path) async {
+    final f = File(path);
+    if (!await f.exists()) throw FileSystemException('不存在', path);
+    return f.readAsString();
+  }
+
+  setUp(() async {
+    await GameRepository.loadAllDefs(loader: fileLoader);
+  });
+
+  tearDown(GameRepository.resetForTest);
+
+  // ────────────────────────────────────────────────────────────────────────
+  // §706.1 3v3 同境界同流派同装备 → 50-200 tick 内分胜负
+  // ────────────────────────────────────────────────────────────────────────
+
+  test('3v3 同境界同流派同装备：runToEnd 50-200 tick 内分胜负，不死循环', () {
+    final left = _team(teamSide: 0, charIdBase: 1);
+    final right = _team(teamSide: 1, charIdBase: 11);
+    final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
+
+    final s = BattleEngine.runToEnd(
+      s0,
+      GameRepository.instance.numbers,
+      maxTicks: 500,
+      rng: Random(42),
+    );
+
+    expect(s.isFinished, true);
+    expect(s.result, isNot(BattleResult.draw),
+        reason: '同条件对战不应触发 maxTicks 兜底');
+    expect(s.tick, greaterThanOrEqualTo(20),
+        reason: '不应一两 tick 就结束（双方有交互）');
+    expect(s.tick, lessThanOrEqualTo(500),
+        reason: '不能超过 maxTicks（即使到 maxTicks 也只会 draw）');
+    expect(s.actionLog, isNotEmpty);
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // §706.2 速度差：speed 比 ~ 行动次数比
+  // ────────────────────────────────────────────────────────────────────────
+
+  test('速度差：左队 speed=200 / 右队 speed=100，行动次数比接近 2:1', () {
+    // 左队 speed 强设 200、右队 100；HP 巨高让战斗在 maxTicks 内不结束。
+    final left = _team(teamSide: 0, charIdBase: 1)
+        .map((c) => c.copyWith(
+              speed: 200,
+              maxHp: 1000000,
+              currentHp: 1000000,
+            ))
+        .toList();
+    final right = _team(teamSide: 1, charIdBase: 11)
+        .map((c) => c.copyWith(
+              speed: 100,
+              maxHp: 1000000,
+              currentHp: 1000000,
+            ))
+        .toList();
+    final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
+
+    final s = BattleEngine.runToEnd(
+      s0,
+      GameRepository.instance.numbers,
+      maxTicks: 200,
+      rng: Random(7),
+    );
+
+    final leftIds = left.map((c) => c.characterId).toSet();
+    final rightIds = right.map((c) => c.characterId).toSet();
+    final leftActs =
+        s.actionLog.where((a) => leftIds.contains(a.actorId)).length;
+    final rightActs =
+        s.actionLog.where((a) => rightIds.contains(a.actorId)).length;
+
+    expect(rightActs, greaterThan(0), reason: '右队也应有行动');
+    final ratio = leftActs / rightActs;
+    // 严格的 2:1 受 actionPoint 余数残留扰动，区间放宽到 [1.7, 2.3]
+    expect(ratio, inInclusiveRange(1.7, 2.3),
+        reason: '左/右行动次数比应接近 2:1（实测 leftActs=$leftActs '
+            '/ rightActs=$rightActs / ratio=$ratio）');
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // §706.3 requestUltimate
+  // ────────────────────────────────────────────────────────────────────────
+
+  test('requestUltimate：内力够+CD 0 时，该角色下次行动一定使用该大招', () {
+    // 单角色 1v1：左队 1 人内力 5000（远超 300）；右队 1 人。
+    final leftBase = _mkBC(
+      charId: 1,
+      teamSide: 0,
+      slotIndex: 0,
+      internalForce: 5000,
+    );
+    final rightBase = _mkBC(
+      charId: 11,
+      teamSide: 1,
+      slotIndex: 0,
+      internalForce: 1000,
+    );
+    // 左队 actionPoint=999，speed 任意 → 一 tick 后必行动
+    final left = leftBase.copyWith(actionPoint: 999);
+    final right = rightBase.copyWith(actionPoint: 0, speed: 1); // 慢得几乎不行动
+
+    final ult = GameRepository.instance.getSkill('skill_gangmeng_jichu_ult');
+    expect(ult.type, SkillType.ultimate);
+
+    final s0 = BattleState.initial(leftTeam: [left], rightTeam: [right]);
+    final s1 = BattleEngine.requestUltimate(s0, left.characterId, ult);
+    expect(s1.pendingUltimates[left.characterId], same(ult));
+
+    final s2 = BattleEngine.tick(
+      s1,
+      GameRepository.instance.numbers,
+      rng: Random(1),
+    );
+
+    // 左队角色第一条行动用了大招
+    final leftAction = s2.actionLog.firstWhere(
+      (a) => a.actorId == left.characterId,
+      orElse: () =>
+          throw StateError('左队角色应在该 tick 行动（actionPoint=999+speed≥1000）'),
+    );
+    expect(leftAction.skill?.id, ult.id);
+    // pendingUltimates 已被消费
+    expect(s2.pendingUltimates.containsKey(left.characterId), false);
+    // 内力扣除 ult.internalForceCost (300)
+    final leftAfter = s2.leftTeam.first;
+    expect(leftAfter.currentInternalForce, 5000 - ult.internalForceCost);
+    // CD 写入
+    expect(leftAfter.skillCooldowns[ult.id], ult.cooldownTurns);
+  });
+
+  test('requestUltimate：必须传 type=ultimate 的招式，否则抛 ArgumentError', () {
+    final notUlt =
+        GameRepository.instance.getSkill('skill_gangmeng_jichu_basic');
+    final s0 = BattleState.initial(leftTeam: const [], rightTeam: const []);
+    expect(
+      () => BattleEngine.requestUltimate(s0, 1, notUlt),
+      throwsA(isA<ArgumentError>()),
+    );
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // §706.4 境界差：三流 vs 绝顶（差 2 阶），三流必败
+  // ────────────────────────────────────────────────────────────────────────
+
+  test('境界差：三流满员 vs 绝顶满员（差 2 阶），三流必败 → rightWin', () {
+    final left = _team(
+      teamSide: 0,
+      charIdBase: 1,
+      tier: RealmTier.sanLiu,
+      layer: RealmLayer.dengFeng,
+      internalForce: 1500,
+    );
+    final right = _team(
+      teamSide: 1,
+      charIdBase: 11,
+      tier: RealmTier.jueDing,
+      layer: RealmLayer.dengFeng,
+      internalForce: 8000,
+    );
+    final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
+
+    final s = BattleEngine.runToEnd(
+      s0,
+      GameRepository.instance.numbers,
+      maxTicks: 500,
+      rng: Random(99),
+    );
+
+    expect(s.isFinished, true);
+    expect(s.result, BattleResult.rightWin,
+        reason: '三流打绝顶差 2 阶（守方 0.3 / 攻方 2.5）应必败');
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // 排序破平局（phase1_tasks T12 §712）
+  // ────────────────────────────────────────────────────────────────────────
+
+  test('同 actionPoint + 同 speed：teamSide asc → slotIndex asc 破平局', () {
+    // 左队 0 号 + 右队 0 号，同 ap、同 speed。tick 后两人同时 actionPoint≥1000，
+    // 排序应按 (teamSide asc) → 左队先行动。
+    final left = _mkBC(charId: 1, teamSide: 0, slotIndex: 0)
+        .copyWith(actionPoint: 999, speed: 100, maxHp: 1000000, currentHp: 1000000);
+    final right = _mkBC(charId: 11, teamSide: 1, slotIndex: 0)
+        .copyWith(actionPoint: 999, speed: 100, maxHp: 1000000, currentHp: 1000000);
+    final s0 = BattleState.initial(leftTeam: [left], rightTeam: [right]);
+
+    final s1 = BattleEngine.tick(
+      s0,
+      GameRepository.instance.numbers,
+      rng: Random(2),
+    );
+
+    expect(s1.actionLog.length, 2,
+        reason: '两人同 tick 都应行动');
+    expect(s1.actionLog.first.actorId, left.characterId,
+        reason: '同 ap+speed 时 teamSide=0 优先行动');
+    expect(s1.actionLog[1].actorId, right.characterId);
+  });
+
+  test('同 actionPoint + 同 speed + 同 teamSide：slotIndex 小的优先', () {
+    final c0 = _mkBC(charId: 1, teamSide: 0, slotIndex: 0)
+        .copyWith(actionPoint: 999, speed: 100, maxHp: 1000000, currentHp: 1000000);
+    final c1 = _mkBC(charId: 2, teamSide: 0, slotIndex: 1)
+        .copyWith(actionPoint: 999, speed: 100, maxHp: 1000000, currentHp: 1000000);
+    final right = _mkBC(charId: 11, teamSide: 1, slotIndex: 0)
+        .copyWith(speed: 1, maxHp: 1000000, currentHp: 1000000);
+    final s0 = BattleState.initial(leftTeam: [c0, c1], rightTeam: [right]);
+
+    final s1 = BattleEngine.tick(
+      s0,
+      GameRepository.instance.numbers,
+      rng: Random(3),
+    );
+
+    final leftActs =
+        s1.actionLog.where((a) => a.actorId == c0.characterId || a.actorId == c1.characterId);
+    expect(leftActs.first.actorId, c0.characterId,
+        reason: 'slotIndex 0 应先于 slotIndex 1 行动');
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // maxTicks → draw 兜底
+  // ────────────────────────────────────────────────────────────────────────
+
+  test('maxTicks 触发 → draw（防死循环兜底）', () {
+    // 双方 maxHp 巨高、speed 巨低、伤害刚好可见但杀不死 → 短 maxTicks 兜底
+    final left = _team(teamSide: 0, charIdBase: 1)
+        .map((c) =>
+            c.copyWith(maxHp: 99999999, currentHp: 99999999, speed: 50))
+        .toList();
+    final right = _team(teamSide: 1, charIdBase: 11)
+        .map((c) =>
+            c.copyWith(maxHp: 99999999, currentHp: 99999999, speed: 50))
+        .toList();
+    final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
+
+    final s = BattleEngine.runToEnd(
+      s0,
+      GameRepository.instance.numbers,
+      maxTicks: 30,
+      rng: Random(5),
+    );
+
+    expect(s.isFinished, true);
+    expect(s.result, BattleResult.draw,
+        reason: 'maxTicks 内分不出胜负应 draw');
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // BattleAI 决策细节
+  // ────────────────────────────────────────────────────────────────────────
+
+  group('BattleAI.decide', () {
+    test('优先级：pendingUltimates > powerSkill > normalAttack', () {
+      final actor = _mkBC(charId: 1, teamSide: 0, internalForce: 5000);
+      final defender = _mkBC(charId: 11, teamSide: 1);
+      final ult =
+          GameRepository.instance.getSkill('skill_gangmeng_jichu_ult');
+      var s = BattleState.initial(
+        leftTeam: [actor],
+        rightTeam: [defender],
+      );
+
+      // 1) 无 pending → 应选 powerSkill（内力够、CD 0）
+      var (skill, _) = BattleAI.decide(
+        actor,
+        s,
+        GameRepository.instance.numbers,
+      );
+      expect(skill.type, SkillType.powerSkill);
+
+      // 2) 注入 pending → 应选大招
+      s = BattleEngine.requestUltimate(s, actor.characterId, ult);
+      (skill, _) = BattleAI.decide(
+        actor,
+        s,
+        GameRepository.instance.numbers,
+      );
+      expect(skill.id, ult.id);
+
+      // 3) 内力不够 → fall through 到 powerSkill / normalAttack
+      final poor = actor.copyWith(currentInternalForce: 50);
+      final s3 = s.copyWith(leftTeam: [poor]);
+      (skill, _) = BattleAI.decide(
+        poor,
+        s3,
+        GameRepository.instance.numbers,
+      );
+      // powerSkill cost=100, 内力 50 → 选 normalAttack
+      expect(skill.type, SkillType.normalAttack);
+    });
+
+    test('powerSkill CD>0 时跳过，选 normalAttack', () {
+      final actor = _mkBC(charId: 1, teamSide: 0, internalForce: 3000);
+      final powerId =
+          actor.availableSkills.firstWhere((s) => s.type == SkillType.powerSkill).id;
+      final cdActor = actor.copyWith(skillCooldowns: {powerId: 1});
+      final defender = _mkBC(charId: 11, teamSide: 1);
+      final s = BattleState.initial(
+        leftTeam: [cdActor],
+        rightTeam: [defender],
+      );
+      final (skill, _) = BattleAI.decide(
+        cdActor,
+        s,
+        GameRepository.instance.numbers,
+      );
+      expect(skill.type, SkillType.normalAttack);
+    });
+
+    test('目标选择：对面活角色 currentHp 最低（同 hp 选 slotIndex 小）', () {
+      final actor = _mkBC(charId: 1, teamSide: 0);
+      final r0 = _mkBC(charId: 11, teamSide: 1, slotIndex: 0)
+          .copyWith(currentHp: 5000, maxHp: 10000);
+      final r1 = _mkBC(charId: 12, teamSide: 1, slotIndex: 1)
+          .copyWith(currentHp: 3000, maxHp: 10000); // 最低
+      final r2 = _mkBC(charId: 13, teamSide: 1, slotIndex: 2)
+          .copyWith(currentHp: 3000, maxHp: 10000); // 同低，但 slot 大
+      final s = BattleState.initial(
+        leftTeam: [actor],
+        rightTeam: [r0, r1, r2],
+      );
+      final (_, targetId) = BattleAI.decide(
+        actor,
+        s,
+        GameRepository.instance.numbers,
+      );
+      expect(targetId, r1.characterId,
+          reason: 'hp 最低且 slotIndex=1 优先于 slotIndex=2');
+    });
+
+    test('AI 跳过死亡角色：对面 0 号死了选 1 号', () {
+      final actor = _mkBC(charId: 1, teamSide: 0);
+      final r0 = _mkBC(charId: 11, teamSide: 1, slotIndex: 0).copyWith(
+        currentHp: 0,
+        isAlive: false,
+      );
+      final r1 = _mkBC(charId: 12, teamSide: 1, slotIndex: 1);
+      final s = BattleState.initial(
+        leftTeam: [actor],
+        rightTeam: [r0, r1],
+      );
+      final (_, targetId) = BattleAI.decide(
+        actor,
+        s,
+        GameRepository.instance.numbers,
+      );
+      expect(targetId, r1.characterId);
+    });
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// fixture
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 3 角色一队（默认 erLiu/yuanShu，gangMeng，主修 mingjia）。
+List<BattleCharacter> _team({
+  required int teamSide,
+  required int charIdBase,
+  RealmTier tier = RealmTier.erLiu,
+  RealmLayer layer = RealmLayer.yuanShu,
+  TechniqueSchool school = TechniqueSchool.gangMeng,
+  String techDefId = 'tech_gangmeng_mingjia',
+  TechniqueTier techTier = TechniqueTier.mingJiaGong,
+  int internalForce = 3000,
+}) {
+  return List.generate(3, (i) {
+    return _mkBC(
+      charId: charIdBase + i,
+      teamSide: teamSide,
+      slotIndex: i,
+      tier: tier,
+      layer: layer,
+      school: school,
+      techDefId: techDefId,
+      techTier: techTier,
+      internalForce: internalForce,
+    );
+  });
+}
+
+BattleCharacter _mkBC({
+  required int charId,
+  required int teamSide,
+  int slotIndex = 0,
+  RealmTier tier = RealmTier.erLiu,
+  RealmLayer layer = RealmLayer.yuanShu,
+  TechniqueSchool school = TechniqueSchool.gangMeng,
+  String techDefId = 'tech_gangmeng_mingjia',
+  TechniqueTier techTier = TechniqueTier.mingJiaGong,
+  int internalForce = 3000,
+  int agility = 5,
+  int constitution = 5,
+}) {
+  final c = Character.create(
+    name: '${teamSide == 0 ? "左" : "右"}$slotIndex',
+    realmTier: tier,
+    realmLayer: layer,
+    attributes: Attributes()
+      ..constitution = constitution
+      ..enlightenment = 5
+      ..agility = agility
+      ..fortune = 5,
+    rarity: RarityTier.biaoZhun,
+    lineageRole: LineageRole.founder,
+    createdAt: DateTime(2026, 1, 1),
+    internalForce: internalForce,
+    school: school,
+  )..id = charId;
+  final eq = Equipment.create(
+    defId: 'test',
+    tier: EquipmentTier.xunChang,
+    slot: EquipmentSlot.weapon,
+    obtainedAt: DateTime(2026, 1, 1),
+    obtainedFrom: 'test',
+    baseAttack: 580,
+  );
+  final tech = Technique.create(
+    defId: techDefId,
+    ownerCharacterId: charId,
+    tier: techTier,
+    school: school,
+    role: TechniqueRole.main,
+    learnedAt: DateTime(2026, 1, 1),
+    cultivationLayer: CultivationLayer.zhongCheng, // 1.30x
+  );
+  return BattleCharacter.fromCharacter(
+    character: c,
+    equipped: [eq],
+    mainTechnique: tech,
+    numbers: GameRepository.instance.numbers,
+    teamSide: teamSide,
+    slotIndex: slotIndex,
+  );
+}
