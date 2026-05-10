@@ -18,4 +18,9 @@ class UiStrings {
   static const String emptyLog = '（无动作）';
   static const String ultimate = '大招';
   static const String fastForward = '快进';
+
+  // 伤害飘字（T15）
+  static const String dodge = '闪';
+  static const String counterUp = '⬆';
+  static const String counterDown = '⬇';
 }

@@ -43,6 +43,9 @@ class NumbersConfig {
   /// GDD §4.3 = 0.5）。
   final double dispersionCultivationPenalty;
 
+  /// 动画时序配置（numbers.yaml `animation`，T15）。
+  final AnimationNumbers animation;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -59,6 +62,7 @@ class NumbersConfig {
     required this.resonanceStages,
     required this.resonanceInheritanceRetention,
     required this.dispersionCultivationPenalty,
+    required this.animation,
     required this.raw,
   });
 
@@ -96,6 +100,9 @@ class NumbersConfig {
       dispersionCultivationPenalty: ((techniques['dispersion']
               as Map<String, dynamic>)['cultivation_penalty'] as num)
           .toDouble(),
+      animation: AnimationNumbers.fromYaml(
+        y['animation'] as Map<String, dynamic>,
+      ),
       raw: y,
     );
   }
@@ -418,6 +425,70 @@ class LevelDiffModifier {
         attacker: (raw3['attacker'] as num?)?.toDouble() ?? diff2.attacker,
         defender: (raw3['defender'] as num).toDouble(),
       ),
+    );
+  }
+}
+
+/// 动画时序配置（numbers.yaml `animation`，T15）。
+///
+/// 所有时间单位 ms，位移单位逻辑像素。提供 [defaults] 常量供测试和 fallback 使用。
+class AnimationNumbers {
+  final int attackRushMs;
+  final int attackHoldMs;
+  final int attackRetreatMs;
+  final double attackRushOffsetPx;
+  final double damagePopupFloatPx;
+  final int damagePopupMs;
+  final int actionIntervalMs;
+  final int fastForwardIntervalMs;
+  final double shakeOffsetPx;
+  final int shakeDurationMs;
+  final double criticalFontScale;
+
+  const AnimationNumbers({
+    required this.attackRushMs,
+    required this.attackHoldMs,
+    required this.attackRetreatMs,
+    required this.attackRushOffsetPx,
+    required this.damagePopupFloatPx,
+    required this.damagePopupMs,
+    required this.actionIntervalMs,
+    required this.fastForwardIntervalMs,
+    required this.shakeOffsetPx,
+    required this.shakeDurationMs,
+    required this.criticalFontScale,
+  });
+
+  /// 默认值与 numbers.yaml 保持一致，用于测试或无法加载 yaml 的场景。
+  static const AnimationNumbers defaults = AnimationNumbers(
+    attackRushMs: 150,
+    attackHoldMs: 100,
+    attackRetreatMs: 150,
+    attackRushOffsetPx: 40.0,
+    damagePopupFloatPx: 50.0,
+    damagePopupMs: 800,
+    actionIntervalMs: 800,
+    fastForwardIntervalMs: 100,
+    shakeOffsetPx: 3.0,
+    shakeDurationMs: 100,
+    criticalFontScale: 1.5,
+  );
+
+  int get attackTotalMs => attackRushMs + attackHoldMs + attackRetreatMs;
+
+  factory AnimationNumbers.fromYaml(Map<String, dynamic> y) {
+    return AnimationNumbers(
+      attackRushMs: (y['attack_rush_ms'] as num).toInt(),
+      attackHoldMs: (y['attack_hold_ms'] as num).toInt(),
+      attackRetreatMs: (y['attack_retreat_ms'] as num).toInt(),
+      attackRushOffsetPx: (y['attack_rush_offset_px'] as num).toDouble(),
+      damagePopupFloatPx: (y['damage_popup_float_px'] as num).toDouble(),
+      damagePopupMs: (y['damage_popup_ms'] as num).toInt(),
+      actionIntervalMs: (y['action_interval_ms'] as num).toInt(),
+      fastForwardIntervalMs: (y['fast_forward_interval_ms'] as num).toInt(),
+      shakeOffsetPx: (y['shake_offset_px'] as num).toDouble(),
+      shakeDurationMs: (y['shake_duration_ms'] as num).toInt(),
+      criticalFontScale: (y['critical_font_scale'] as num).toDouble(),
     );
   }
 }
