@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/game_repository.dart';
 import 'data/isar_setup.dart';
+import 'ui/battle/battle_demo.dart';
+import 'ui/battle/battle_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +20,10 @@ Future<void> main() async {
       '(numbers v${repo.numbers.version})',
     );
   }
-  await IsarSetup.init();
+  // Isar 不支持 web，T14 web 目测时跳过；desktop 仍走持久化初始化。
+  if (!kIsWeb) {
+    await IsarSetup.init();
+  }
   runApp(const ProviderScope(child: WuxiaApp()));
 }
 
@@ -27,16 +32,11 @@ class WuxiaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: '挂机武侠',
-      home: Scaffold(
-        body: Center(
-          child: Text(
-            '启动成功',
-            style: TextStyle(fontSize: 32),
-          ),
-        ),
-      ),
+      theme: ThemeData.dark(useMaterial3: true),
+      debugShowCheckedModeBanner: false,
+      home: BattleScreen(state: BattleDemo.build()),
     );
   }
 }
