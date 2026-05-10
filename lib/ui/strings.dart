@@ -23,4 +23,11 @@ class UiStrings {
   static const String dodge = '闪';
   static const String counterUp = '⬆';
   static const String counterDown = '⬇';
+
+  // 战斗结算（T16）
+  static const String close = '关闭';
+
+  /// 战斗结算 dialog 内容：`总伤害 X  暴击 Y 次  用时 Z tick`。
+  static String battleSummary(int totalDamage, int critCount, int totalTicks) =>
+      '总伤害 $totalDamage    暴击 $critCount 次    用时 $totalTicks tick';
 }
