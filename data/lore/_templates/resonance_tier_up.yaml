@@ -1,0 +1,7 @@
+template_id: resonance_tier_up
+trigger_event: resonance_tier_up
+placeholders: [resonance_tier]
+text: |
+  与持有者的共鸣臻至{resonance_tier}之境。
+  兵器不再是工具，是延伸。从此出招之时，人不必再想，
+  手也不必再动——在人与手之间，这道兵刃已经有了自己的念头。

@@ -1,0 +1,6 @@
+template_id: rescue_npc
+trigger_event: rescue_npc
+placeholders: [npc_name, location, weather]
+text: |
+  {weather}的{location}，此物曾护住{npc_name}一条性命。
+  那人日后远走他乡，再未回来。此物的刃口上，从此多了一道浅痕。

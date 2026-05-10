@@ -1,0 +1,15 @@
+# Flutter
+.dart_tool/
+build/
+*.iml
+.idea/
+.vscode/
+*.lock
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project specific
+*.log

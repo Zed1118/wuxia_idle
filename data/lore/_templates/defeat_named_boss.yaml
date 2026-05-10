@@ -1,0 +1,6 @@
+template_id: defeat_named_boss
+trigger_event: defeat_named_boss
+placeholders: [boss_name, location, season]
+text: |
+  {season}的{location}一战，此剑曾饮{boss_name}之血。
+  自那以后，剑身似比往日更沉了几分。

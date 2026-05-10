@@ -1,0 +1,7 @@
+template_id: master_legacy
+trigger_event: master_legacy
+placeholders: [master_name, disciple_name, season]
+text: |
+  {season}，此物由{master_name}亲手交予{disciple_name}。
+  交予之际，师父只说一言。一言之后，此物便不再属于他了。
+  此后经年，握住它的人总觉得柄上还有前人的余温。

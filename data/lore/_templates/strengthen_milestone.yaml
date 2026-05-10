@@ -1,0 +1,6 @@
+template_id: strengthen_milestone
+trigger_event: strengthen_milestone
+placeholders: [level, smith_name]
+text: |
+  经{smith_name}之手锻至+{level}之后，此物焕然。
+  锻者说：「刃是新的，魂是旧的。你要对得起它。」

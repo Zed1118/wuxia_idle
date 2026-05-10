@@ -1,0 +1,7 @@
+template_id: breakthrough_realm
+trigger_event: breakthrough_realm
+placeholders: [realm_name, location]
+text: |
+  在{location}，持此物入{realm_name}之境。
+  那一刻兵器轻鸣，像是说了句什么。持者从此将它握得更稳了几分——
+  不是因为功力涨了，是因为它不肯再抖。

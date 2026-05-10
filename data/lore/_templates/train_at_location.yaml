@@ -1,0 +1,7 @@
+template_id: train_at_location
+trigger_event: train_at_location
+placeholders: [location, move_name, count]
+text: |
+  在{location}苦练{count}次{move_name}之后，
+  一招一式浸入骨血。出招时不再去想招式名叫什么——
+  手自己知道。
