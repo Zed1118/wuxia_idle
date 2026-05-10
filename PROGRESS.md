@@ -68,6 +68,7 @@
 12. **`LevelDiffModifier.diff3OrMore.attacker` 数据层 vs 公式层语义不同**：NumbersConfig 兜底为 `diff2.attacker`(=2.5)，公式层取 `1.0`。Phase 5 收尾时一并把兜底改 1.0
 17. **phase1_tasks T12 §709 笔误**：「三流→绝顶差 2 守方 0.05」错（差 2 守方=0.3，差 3+ 才是 0.05）。"必败"语义仍成立，验收按差 2 实测
 18. **`flutter build web` 被 Isar 阻塞**：`combat/*.dart` 链路通过 `data/models/{character,equipment,technique}.dart` 拉入 `*.g.dart` 64-bit hash 字面量（JS 表示不下）+ Isar `dart:ffi` web 不支持。T14/T15 视觉验收推到 Windows 首跑（与 #9/#11 同性质）。Phase 5 切 Isar 4.x 时一并恢复 web 入口
+20. **Windows 端 Flutter 环境未装好（2026-05-11）**：T15/T16 视觉验收（攻击动画 / 飘字 / 大招按钮真实战斗 / spec §16 rebuild 颗粒度）暂时挂起。Mac 本地 analyze + test 全绿且 widget test 覆盖核心交互（156/156，含按下置灰 / 解除 / 结算 dialog），决定**不阻塞 Phase 1 推进**——T17 直接基于 `feat/t16-riverpod-wiring` 继续开新分支。Windows 环境就绪后一并补验
 
 > 已解决条目（#1/#13/#14/#15/#16/#19）已归档到文末。
 
