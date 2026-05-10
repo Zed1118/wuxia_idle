@@ -1,0 +1,58 @@
+name: wuxia_idle
+description: "挂机武侠 · 写实武侠挂机游戏（Demo）"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 状态管理（Phase 1 锁定 Riverpod 2.x，与 phase1_tasks.md T01 一致）
+  flutter_riverpod: ^2.5.0
+  riverpod_annotation: ^2.3.0
+
+  # 本地存储
+  isar: ^3.1.0
+  isar_flutter_libs: ^3.1.0
+  path_provider: ^2.1.0
+
+  # 配置加载与时间格式化
+  yaml: ^3.1.2
+  intl: ^0.19.0
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+  # 代码生成
+  build_runner: ^2.4.0
+  isar_generator: ^3.1.0
+  riverpod_generator: ^2.3.0
+
+  # 注：原计划接入的 riverpod_lint 与 isar_generator 3.x 在 analyzer 版本上互斥
+  # （isar_generator 锁 analyzer <6，riverpod_lint 要 analyzer ≥6），暂不引入。
+  # custom_lint 可独立使用，但缺了规则包意义不大，一并先不引入。
+  # 等 Phase 5 切 Isar 4.x 时再补上。
+
+flutter:
+  uses-material-design: true
+
+  # data/ 直接声明为 asset（Mac 端的 numbers.yaml 与 DeepSeek 端的 narratives/lore/events 共用此根目录）
+  # Flutter 不递归子目录，需逐个声明
+  assets:
+    - data/
+    - data/events/
+    - data/lore/
+    - data/lore/_templates/
+    - data/narratives/chapters/
+    - data/narratives/stages/
+    - data/narratives/codex/
+    - data/narratives/techniques/
+    - data/narratives/techniques/insights/
