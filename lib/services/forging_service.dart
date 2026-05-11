@@ -1,3 +1,5 @@
+import 'package:isar/isar.dart';
+
 import '../data/defs/equipment_def.dart';
 import '../data/models/enums.dart';
 import '../data/models/equipment.dart';
@@ -121,5 +123,16 @@ class ForgingService {
     slot.bonusValue = bonus;
 
     return ForgeResult.success;
+  }
+
+  /// T32 #22b：将 [forge] 的 in-place 改写（forgingSlots 修改）落地到 Isar。
+  /// 开锋无物料消耗（GDD §6.5），writeTxn 只需 `equipments.put(eq)`。
+  static Future<void> persistResult({
+    required Equipment eq,
+    required Isar isar,
+  }) async {
+    await isar.writeTxn(() async {
+      await isar.equipments.put(eq);
+    });
   }
 }

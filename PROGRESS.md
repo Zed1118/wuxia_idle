@@ -46,10 +46,15 @@
   - `lib/ui/technique_panel/technique_panel_screen.dart`（新建）：按 tier index desc 分组渲染，每条 tile 流派色条+主修/辅修标签+cultivationLayer+进度条+数值；主修边框 schoolColor 实色 width=2，辅修 alpha 0.6 width=1.5；辅修 tile 尾部「设为主修」TextButton → 弹 dialog → 二确通过 → `DispelService.dispel` in-place + invalidate 4 个 family + SnackBar「散功完成」；**不 writeTxn**（沿用挂账 #22，T32 一并补）
   - widget 测试 4/4：分组渲染（入门功+常练功 2 group + 主修 1/辅修 2）/ 「设为主修」按钮仅辅修可见 / dialog 三行文案（内力 1000→500 / 修炼度 800→400 / 层回退 warning）/ 取消后 character+main+assist 状态全部不变
   - 累计 300/300 测试，0 issues
+- **T32 子提交 1+2 #22a/#22b writeTxn 销账**（2026-05-11，分支 feat/phase2-equipment）
+  - 新增 `EnhancementService.persistResult` / `ForgingService.persistResult` / `DispelService.persistResult` 三个 static 包 writeTxn；强化扣 mojianshi + 增/减 jieJing，开锋仅 eq.put，散功 putAll(ch+oldMain+newMain)。物料 row 不存在 fail-fast `StateError`（种子阶段必创）
+  - widget 端 `enhance_dialog` / `forging_panel` / `technique_panel_screen` _persist/_onForgeTap/_onSetAsMain 调 service.persistResult + `Isar.getInstance` guard 旁路 widget test + invalidate 各 provider
+  - 测试旁路决策：testWidgets 默认 FakeAsync 与真 Isar 异步 IO 不兼容（pumpAndSettle 在 AnimationController 不结束 + `Isar.findFirst` 不前进），widget test 不接真 Isar；新建 `test/services/{enhancement,forge,dispel}_persist_test.dart` 普通 test 真 Isar 验落地，8 用例
+  - 累计 308/308 测试，0 issues
 
 ## 进行中
 
-- Phase 2 Week 3 推进中（T28/T29/T30/T31 完成），分支 feat/phase2-equipment。下一步进 T32（验收冲刺：4 测试场景 + Phase 2 验收 + tag v0.2.0-phase2 + 挂账 #22 writeTxn 补漏）
+- Phase 2 Week 3 推进中（T28/T29/T30/T31 + T32 #22a/#22b 完成），分支 feat/phase2-equipment。下一步进 T32 子提交 3-5（MainMenu + Phase2TestMenu + Phase2SeedService → phase2_scenarios_test.dart → 验收 tag v0.2.0-phase2 三分支合并）
 
 ## 已知偏差 / 挂账事项
 
@@ -65,13 +70,16 @@
 17. **phase1_tasks T12 §709 笔误**：差 2 守方 0.05 错（实际差 2 守方=0.3，差 3+ 才 0.05），「必败」语义仍成立
 18. **`flutter build web` 被 Isar 阻塞**：dart:ffi web 不支持，Phase 5 切 Isar 4.x 时一并恢复
 21. **shake / tier 颜色 / 金光效果未抽 helper**：battle_screen / enhance_dialog 各 inline 一份 sin 公式；character_panel / enhance_dialog / inventory_screen 各 inline 一份 `_tierColor` 映射。Phase 5 抽 `lib/ui/effects/screen_shake.dart` + `lib/ui/theme/tier_colors.dart`
-22. **T29 强化未真扣 inventory + 未 writeTxn 回 Isar**：dialog in-place 改 eq.enhanceLevel 仅 setState 反馈，关闭后 invalidate 重读 Isar 是旧值。T32 视觉验收冲刺补：在 enhance 成功 / 失败分支扣 mojianshi / 增 crystal + `writeTxn(eq.put + inventory.put)` + `ref.invalidate(inventoryQuantityByTypeProvider(...))`
+23. **widget test 不接真 Isar**：testWidgets FakeAsync 与 `Isar.findFirst` / writeTxn 异步 IO 不兼容；当前 widget 端在 `_persist` 加 `Isar.getInstance` guard 测试旁路，真落地走 service-level test。Phase 5 Riverpod 3.x + IsarProvider 注入时再统一
 
-> 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20）见文末归档。
+> 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#22）见文末归档。
 
 ## 下一步
 
-T32 验收冲刺（phase2_tasks §492-509）：调试菜单第二屏 4 场景（P1 强化曲线 +0→+19 / P2 共鸣度 battleCount=99 → 100 触发趁手 / P3 散功代价数值校验 / P4 强化+开锋+共鸣全栈对比裸装）+ `phase2_scenarios_test.dart` 4 场景数值单测 + Phase 2 main.dart 入口接入 + 挂账 #22 writeTxn 补漏（T29 强化扣 inventory + Isar 写回）+ Windows 视觉验收 + tag v0.2.0-phase2 三分支 no-ff 合并。**模型建议 sonnet 4.6**。
+T32 子提交 3-5（phase2_tasks §492-509）：
+1. **子提交 3 MainMenu + Phase2TestMenu + Phase2SeedService**：lib/ui/main_menu.dart 5 按钮分发（Phase1 战斗 / Phase2 调试 / 角色 / 仓库 / 心法）；phase2_test_menu.dart 4 场景按钮 P1-P4；Phase2SeedService writeTxn 写种子（含 mojianshi/jieJing 两行 fail-fast 兼容）
+2. **子提交 4 phase2_scenarios_test.dart**：4 场景纯数值断言（P1 强化曲线 / P2 共鸣 99→100 / P3 散功 10000+1500→5000+750 / P4 +19+forge+共鸣 vs 裸装）
+3. **子提交 5 验收**：Windows Pen 视觉验收 + tag v0.2.0-phase2 + 三分支 no-ff 合并 main + 写 phase2_summary.md。**模型建议 sonnet 4.6**。
 
 ## 关键约束（每次开局必读）
 
@@ -90,7 +98,7 @@ T32 验收冲刺（phase2_tasks §492-509）：调试菜单第二屏 4 场景（
 ## 归档（已解决挂账 + Phase 1 详条）
 
 ### 已解决挂账
-#1 Riverpod 锁 2.x / #5 T17 笔误"差 2"→"差 3"（T17 commit 修） / #13 yaml b/c max_hp / #14-#15 灵巧暴击 +0.20 与 ×2.0 yaml 化 / #16 战例 E ≤100000（详见 T11 前清账冲刺 commit）/ #19 T15 远程沙箱无 Flutter（2026-05-10 Mac 本地 review 时实跑 analyze + test 全绿，153/153）/ #20 T15/T16/T17 Windows 视觉验收（2026-05-11，5 截图 4 场景 A2613/B1.67×/C1.92×/D8370 全部命中）
+#1 Riverpod 锁 2.x / #5 T17 笔误"差 2"→"差 3"（T17 commit 修） / #13 yaml b/c max_hp / #14-#15 灵巧暴击 +0.20 与 ×2.0 yaml 化 / #16 战例 E ≤100000（详见 T11 前清账冲刺 commit）/ #19 T15 远程沙箱无 Flutter（2026-05-10 Mac 本地 review 时实跑 analyze + test 全绿，153/153）/ #20 T15/T16/T17 Windows 视觉验收（2026-05-11，5 截图 4 场景 A2613/B1.67×/C1.92×/D8370 全部命中）/ #22 T32 #22a/#22b：3 个 service.persistResult + widget 端 `Isar.getInstance` guard + service-level test 验落地（2026-05-11，308/308）
 
 ### Phase 1 详条
 T01-T18 每个任务的文件清单 / 公式 / 用例数 / 验收结论已迁至 `phase1_summary.md` + git log v0.1.0-phase1 前 commits（约 25 条带 `[Tnn]` 前缀），本表不再展开
