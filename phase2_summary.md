@@ -1,8 +1,8 @@
 # Phase 2 交付总结
 
-> **状态**：骨架草稿（T32 子提交 5 验收完成后填充实测数据），不要在 Pen 视觉验收完成前据此对外发版。
+> **状态**：v0.2.0-phase2 交付（T32 子提交 5 视觉验收 2026-05-11 完成）。
 
-**里程碑**：v0.2.0-phase2（待 tag，预计 2026-05-11）  
+**里程碑**：v0.2.0-phase2（2026-05-11 tag）  
 **范围**：T19-T32，装备系统 + 心法系统 + 战斗联动 + 4 调试场景验收
 
 ---
@@ -42,7 +42,7 @@
 | 场景 | 关键断言 | 预期 | 实测 | 误差 |
 |---|---|---|---|---|
 | P1 强化曲线 | +1-10 段固定 100% 成功（10 次蒙卡 0 失败） | 100% | 100% | 0% |
-| P1 强化曲线 | +14-15 蒙卡 1000 次成功率 ≈ 75% | 0.70-0.80 | 待填 | ≤ 5% |
+| P1 强化曲线 | +14-15 蒙卡 1000 次成功率 ≈ 75% | 0.70-0.80 | 0.759 (seed=42) | 1.2% |
 | P1 强化曲线 | cap=19 时 +0→+19 走完 + 第 20 次 capped | capped | capped | — |
 | P2 共鸣触发 | battleCount=99 → shengShu / bonus=1.0 | 1.00 | 1.00 | 0% |
 | P2 共鸣触发 | battleCount=100 → chenShou / bonus=1.10 | 1.10 | 1.10 | 0% |
@@ -53,7 +53,16 @@
 | P4 全栈对比 | +19 + xinJianTongLing(×1.30) = base × 2.535 | 253 | 253 | 0% |
 | P4 全栈对比 | 全栈 (+ forge attack +15%) ≈ base × 2.915，比裸装 2.92× | 291 / 2.92× | 命中 | 0% |
 
-> Windows 视觉验收（Pen 端，T32 子提交 5）：补 5-6 截图覆盖 MainMenu / Phase2TestMenu / P1 InventoryScreen / P1 EnhanceDialog / P3 TechniquePanelScreen / P3 DispelConfirmDialog。
+### 视觉验收（Windows Pen，2026-05-11，6 截图）
+
+| # | 截图 | 关键验收点 | 结论 |
+|---|---|---|---|
+| 1 | [MainMenu](docs/screenshots/phase2/01_main_menu.png) | 标题「挂机武侠·调试主菜单」+ 5 按钮顺序 + 副标题摘要 | ✅ |
+| 2 | [Phase2TestMenu](docs/screenshots/phase2/02_phase2_test_menu.png) | P1/P2/P3/P4 4 场景按钮 + 种子摘要副标题 | ✅ |
+| 3 | [P1 装备仓库](docs/screenshots/phase2/03_p1_inventory.png) | 利器(1) / +0 / tier 金色 / 「生疏」开锋状态 | ⚠️ 装备名未渲染（见挂账 #24） |
+| 4 | [P1 强化弹窗](docs/screenshots/phase2/04_p1_enhance_dialog.png) | 强化/开锋 Tab / 100% 成功率 / 磨剑石 1000 / 心血结晶 100 / +0→+1 预览 | ✅ 数值全对（装备名同 #24） |
+| 5 | [P3 心法面板](docs/screenshots/phase2/05_p3_technique_panel.png) | 主修刚猛/圆满 1500/1500 + 辅修阴柔/大成 0/900 + 设为主修按钮 | ✅ |
+| 6 | [P3 散功二确](docs/screenshots/phase2/06_p3_dispel_dialog.png) | 内力 10000→5000 / 修炼度 1500→750 / 红字层回退 warning / 取消+确认散功 | ✅ |
 
 ---
 
@@ -63,6 +72,7 @@
 |---|---|---|---|
 | #22 P2/P4 战斗 stub | Phase2TestMenu P2/P4 跳 InventoryScreen/CharacterPanel 看 fixture | 中 | character_to_battle 转换 helper 留 Phase 3 接师徒传承一并做 |
 | #23 widget test 不接真 Isar | testWidgets FakeAsync 与 Isar 异步 IO 不兼容 | 中 | Phase 5 Riverpod 3.x + IsarProvider 注入时统一 |
+| #24 装备名未渲染 | inventory_row + enhance_dialog 显示「武器」而非「龙泉剑」（EquipmentDef.name 未接 UI） | 中 | T32 子提交 5 Pen 视觉验收发现，不影响数值/流程，Phase 3 起手第一个 fixup |
 | #2 lib/ 目录 flat vs CLAUDE.md DDD | — | 低 | Phase 5 整理 |
 | #4 IDS_REGISTRY.md 自报错（143 vs 实际 238） | — | 低 | 等 DeepSeek 改 |
 | #18 flutter build web 被 Isar dart:ffi 阻塞 | — | 中 | Phase 5 切 Isar 4.x |
@@ -80,7 +90,7 @@
 | Phase 2 场景测试（phase2_scenarios_test，11 用例） | <1 秒（纯数值，无 Isar） |
 | Phase 2 service 真 Isar 测试（4 个 \*\_persist\_test，13 用例） | ~2 秒（含 setUp/tearDown Isar 启停） |
 | `flutter analyze` | 0 issues（~2 秒） |
-| 战斗 UI 动画 FPS / 强化 100 连点延迟 | 待 Windows 端 Pen 视觉验收（spec §F1-F3） |
+| 战斗 UI 动画 FPS / 强化 100 连点延迟 | 暂未采集（本次仅做视觉验收，FPS profiler 留 Phase 3 接入） |
 
 ---
 
