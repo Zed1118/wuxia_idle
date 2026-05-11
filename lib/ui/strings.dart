@@ -79,4 +79,35 @@ class UiStrings {
   static const String techniqueEmpty = '未学';
   static const String noMainTechnique = '未修主修';
   static const String dashPlaceholder = '—';
+
+  // 仓库 / 强化对话框（T29）
+  static const String inventoryTitle = '装备仓库';
+  static const String inventoryEmpty = '仓库空空如也';
+  static const String enhanceDialogTitle = '强化';
+  static const String enhanceButton = '强化';
+  static const String guaranteeButton = '保底成功';
+  static const String enhanceCapped = '已达上限';
+  static const String successLabel = '强化成功';
+  static const String failureLabel = '强化失败';
+
+  /// 强化预览：`+5 → +6`。
+  static String enhancePreview(int oldLevel, int newLevel) =>
+      '+$oldLevel → +$newLevel';
+
+  /// 磨剑石余量 / 需求：`磨剑石 X / Y`。
+  static String mojianshiUsage(int current, int cost) =>
+      '磨剑石 $current / $cost';
+
+  /// 心血结晶余量：`心血结晶 X`。
+  static String crystalAvailable(int qty) => '心血结晶 $qty';
+
+  /// 保底所需结晶：`保底 X 颗`。
+  static String guaranteeCost(int cost) => '保底 $cost 颗';
+
+  /// 失败提示：`+1 心血结晶`（GDD §6.3 每次失败必给 1 颗）。
+  static String crystalGained(int gained) => '+$gained 心血结晶';
+
+  static const String metricSuccessRate = '成功率';
+  static const String metricMaterial = '材料';
+  static const String metricCrystal = '结晶';
 }
