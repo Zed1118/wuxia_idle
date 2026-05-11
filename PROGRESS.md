@@ -35,10 +35,11 @@
 - **T34 MainlineProgressService + Isar collection**（2026-05-11，feat/phase3-mainline）：新 @collection MainlineProgress（saveDataId / currentChapterIndex / clearedStageIds / clearedAt 同序）；service 静态 4 API（getOrCreate 幂等 / availableStages 三态按 prev 链排序 / recordVictory 幂等 append / chapterCompleted）；StageStatus enum；IsarSetup schema 加 + saveVersion 0.1.0→0.2.0；test 加 12 用例（接真 Isar + 临时目录），累计 353/353
 - **T35 章节列表 + 关卡列表 UI + 接 main_menu**（2026-05-11，feat/phase3-mainline）：mainline_providers 3 个（progress / chapterStages family / chapterCompleted family）；ChapterListScreen 3 章卡（cleared ✓ / inProgress 高亮 / locked 灰锁）；StageListScreen 三态行（cleared 绿勾 / available 主色 / locked 锁 + 「通关前一关解锁」）；main_menu 加「主线」按钮（顶部首位）+ 包 SingleChildScrollView 防 6 按钮溢出；T37 落地前点 available 弹 SnackBar 占位；test 加 6 widget 用例（chapter 3 + stage 3）+ main_menu_test 6 按钮顺序更新，累计 359/359
 - **T36 NarrativeLoader + 剧情阅读 UI**（2026-05-11，feat/phase3-mainline）：lib/data/narrative_loader.dart NarrativeContent + load 注入式 + 缺文件/损坏/非 map 顶层全部兜底 placeholder（不抛异常）；lib/ui/narrative/narrative_reader_screen.dart 一段一页 + 「继续/完成」按钮 + 跳过 + placeholder 弱提示（⚠ 剧情占位）+ 段落淡入；test 加 11 用例（loader 7 + screen 4），累计 370/370
+- **T37 关卡进入流程串联**（2026-05-11，feat/phase3-mainline，**销 PROGRESS #22 P2/P4 战斗 stub**）：lib/services/stage_battle_setup.dart 装配 (左,右) BattleCharacter（左从 SaveData.activeCharacterIds 取角色 + 装备 + 主修 → fromCharacter；右 EnemyDef → BattleCharacter，characterId 用 -(slot+1) 防冲突）；lib/ui/mainline/stage_entry_flow.dart runStageFlow async 串联 opening → battle → victory/defeat；BattleScreen 加 onVictory/onDefeat 可选回调（保留 onBattleEnd 兼容旧入口）；stage_list_screen onTap 接 runStageFlow；test 加 6 + 改 1（StageBattleSetup 6 用例接真 Isar + stage_list 占位用例改成验证 NarrativeReader 进入），累计 377/377
 
 ## 进行中
 
-- **T37** 关卡进入流程串联：opening → 战斗 → victory/defeat（BattleScreen 参数化 + recordVictory 回调）
+- **T38** docs/NARRATIVE_SCHEMA.md（DeepSeek 端格式约定 + 文件命名 / 字段 / 占位行为）
 
 ## 已知偏差 / 挂账事项
 
