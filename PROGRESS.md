@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 3 Week 1 已交付**（v0.3.0-w1，2026-05-11，主线最小闭环跑通）。Week 2-3（爬塔 / 闭关 / 奇遇 / 师徒 / 武学领悟）待用户拍板切法（候选 A-E 见 `phase3_summary.md`）。
+**Phase 3 Week 2 进行中**（爬塔 30 层 T40-T46，2026-05-11 启动）。Week 1 v0.3.0-w1 已交付。Week 2 切 A 爬塔，与 §12 待决项零依赖；详条 `phase3_tasks.md` §Week 2，5 minor 决策已拍板（境界曲线 / 不退层 / 复用奖励池 / 不重置 / 重打不发奖）。
 
 ## 已完成
 
@@ -39,10 +39,11 @@
 - **T38 docs/NARRATIVE_SCHEMA.md**（2026-05-11，feat/phase3-mainline）：给 DeepSeek 端的剧情 yaml 格式约定（文件命名 / id 字段 / paragraphs / 占位 fallback / Week 1 待写 12 文件清单 / 章节标题映射），不动数值文档
 - **T39 Pen 视觉验收 + tag v0.3.0-w1**（2026-05-11，feat/phase3-mainline → main no-ff）：8 截图归档 docs/screenshots/phase3_w1/（主菜单 / 章节 / 关卡 / 剧情占位 / 战斗准备失败兜底 / P3 心法面板 / 战斗中 / 战斗胜利 dialog）；victory placeholder + cleared stage list 链路经 Pen 操作确认正常（视觉同 04+03 设计）；phase3_summary.md 起头（Week 1 交付清单 + 截图清单 + 已知偏差 + Week 2 候选议题 A-E）；Pen 端 377/377 + analyze 0 已 SSH 验证
 - **v0.3.0-w1 tag + main 合并**（2026-05-11）：Phase 3 Week 1 主线最小闭环交付，feat/phase3-mainline → main no-ff；详见 phase3_summary.md
+- **T40 towers.yaml schema + TowerFloorDef + 30 层 fixture**（2026-05-11，feat/phase3-tower）：`enum TowerBossKind { minor, major }` + `enum TowerFloorStatus` 加 enums.dart；`lib/data/defs/tower_floor_def.dart` 新建（floorIndex/requiredRealm/enemyTeam/bossKind/narrativeOpening|VictoryId/dropTable + fromYaml + isBoss getter）；`data/towers.yaml` 30 层 fixture（每 5 层升一阶学徒→宗师，普通层单兵 HP 800→10000 / ATK 200→1500 线性，Boss × 1.5，1/2/3 人队 ×1.0/0.7/0.55 scale）；GameRepository 加 towerFloors 字段 + 加载 towers.yaml + `_enforceTowerRedLines`（30 层连续 / Boss 严格 5·10·15·20·25·30 / 普通层 narrative 必为 null / 敌人数 [1,3] / Boss 1 人 / baseHp ≤ 50000）+ `getTowerFloor` 便捷查询；test 加 13 用例（fromYaml 3 + 集成 6 + fail-fast 4），累计 390/390
 
 ## 进行中
 
-- —（Phase 3 Week 1 v0.3.0-w1 已交付，等用户拍 Week 2 切法）
+- **T41** TowerProgress @collection + TowerProgressService（getOrCreate / availableFloor / recordClear / recordDefeat / canChallenge / floorList）+ IsarSetup schema 注册 + saveVersion 0.2.0→0.3.0
 
 ## 已知偏差 / 挂账事项
 
@@ -65,12 +66,16 @@
 
 ## 下一步
 
-Phase 3 Week 2 候选切法（待用户拍板，详条 phase3_summary.md）：
-- A 爬塔 30 层（与主线最解耦，最容易 Week 2 完整跑通，**推荐**）
-- B 闭关地图 5 张（待决 §12 #5）
-- C 奇遇 20-30（待决 §12 #6）
-- D 师徒传承（待决 §12 #10/#11）
-- E 武学领悟 30-50 招（待决 §12 #6）
+Phase 3 Week 2 已拍板走 A 爬塔，T40-T46 详条已落 `phase3_tasks.md`：
+- **T40** towers.yaml schema + TowerFloorDef + 30 层 fixture（当前）
+- **T41** TowerProgress @collection + TowerProgressService
+- **T42** 爬塔列表 UI + 进度展示 + main_menu「问鼎九霄」入口
+- **T43** tower_entry_flow（普通层 / Boss 层差异化流程）
+- **T44** 爬塔奖励 hook（扩 DropService，重打不发奖）
+- **T45** test + analyze 双绿（预期累计 ≥ 410）
+- **T46** Pen 视觉验收 + tag v0.3.0-w2
+
+Week 3 候选（待 Week 2 跑通后再拆）：B 闭关 / C 奇遇 / D 师徒 / E 武学领悟（多个待决 §12 #5/#6/#10/#11）
 
 > CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 

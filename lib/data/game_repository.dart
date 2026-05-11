@@ -5,6 +5,7 @@ import 'defs/realm_def.dart';
 import 'defs/skill_def.dart';
 import 'defs/stage_def.dart';
 import 'defs/technique_def.dart';
+import 'defs/tower_floor_def.dart';
 import 'models/enums.dart';
 import 'numbers_config.dart';
 import 'yaml_loader.dart';
@@ -37,6 +38,10 @@ class GameRepository {
   final Map<String, SkillDef> skillDefs;
   final Map<String, StageDef> stageDefs;
 
+  /// 爬塔 30 层，按 floorIndex 升序（1..30）。
+  /// 索引方式：`towerFloors[floorIndex - 1]`（红线校验保证 1-30 连续唯一）。
+  final List<TowerFloorDef> towerFloors;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -44,6 +49,7 @@ class GameRepository {
     required this.techniqueDefs,
     required this.skillDefs,
     required this.stageDefs,
+    required this.towerFloors,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -60,6 +66,7 @@ class GameRepository {
     final techniquesRaw = parseYamlMap(await load('data/techniques.yaml'));
     final skillsRaw = parseYamlMap(await load('data/skills.yaml'));
     final stagesRaw = parseYamlMap(await load('data/stages.yaml'));
+    final towersRaw = parseYamlMap(await load('data/towers.yaml'));
 
     final numbers = NumbersConfig.fromYaml(numbersRaw);
     final realms = _parseRealms(numbersRaw['realms'] as Map<String, dynamic>);
@@ -83,6 +90,10 @@ class GameRepository {
       StageDef.fromYaml,
       idOf: (d) => d.id,
     );
+    final towerFloors = ((towersRaw['floors'] as List?) ?? const [])
+        .map((e) => TowerFloorDef.fromYaml(Map<String, dynamic>.from(e as Map)))
+        .toList(growable: false)
+      ..sort((a, b) => a.floorIndex.compareTo(b.floorIndex));
 
     final repo = GameRepository._(
       numbers: numbers,
@@ -91,6 +102,7 @@ class GameRepository {
       techniqueDefs: techniqueDefs,
       skillDefs: skillDefs,
       stageDefs: stageDefs,
+      towerFloors: towerFloors,
     );
     repo._enforceRedLines();
     _instance = repo;
@@ -185,6 +197,78 @@ class GameRepository {
         );
       }
     }
+
+    // Phase 3 T40：爬塔 30 层校验
+    //   - floorIndex 1-30 连续唯一
+    //   - bossKind 严格在 5/10/15/20/25/30
+    //   - 普通层 narrativeOpeningId / narrativeVictoryId 必须为 null
+    //   - Boss HP ≤ 50000（§5.4 红线）
+    _enforceTowerRedLines();
+  }
+
+  void _enforceTowerRedLines() {
+    if (towerFloors.isEmpty) return; // 允许测试 fixture 不带 towers
+    if (towerFloors.length != 30) {
+      throw StateError(
+        '爬塔层数应为 30，实际 ${towerFloors.length}',
+      );
+    }
+    const minorBossFloors = {5, 15, 25};
+    const majorBossFloors = {10, 20, 30};
+    final seen = <int>{};
+    for (var i = 0; i < towerFloors.length; i++) {
+      final f = towerFloors[i];
+      if (f.floorIndex != i + 1) {
+        throw StateError(
+          '爬塔层不连续：期望 floorIndex=${i + 1}，实际 ${f.floorIndex}',
+        );
+      }
+      if (!seen.add(f.floorIndex)) {
+        throw StateError('爬塔 floorIndex 重复：${f.floorIndex}');
+      }
+      // Boss 分布严格校验
+      final expectedKind = minorBossFloors.contains(f.floorIndex)
+          ? TowerBossKind.minor
+          : majorBossFloors.contains(f.floorIndex)
+              ? TowerBossKind.major
+              : null;
+      if (f.bossKind != expectedKind) {
+        throw StateError(
+          '爬塔 floor=${f.floorIndex} bossKind=${f.bossKind?.name ?? "null"}，'
+          '期望 ${expectedKind?.name ?? "null"}',
+        );
+      }
+      // 普通层不得带 narrative
+      if (f.bossKind == null &&
+          (f.narrativeOpeningId != null || f.narrativeVictoryId != null)) {
+        throw StateError(
+          '爬塔 floor=${f.floorIndex} 普通层不应配 narrative',
+        );
+      }
+      // 每层 1-3 个敌人
+      if (f.enemyTeam.isEmpty || f.enemyTeam.length > 3) {
+        throw StateError(
+          '爬塔 floor=${f.floorIndex} 敌人数 ${f.enemyTeam.length}，'
+          '应 ∈ [1, 3]',
+        );
+      }
+      // Boss 层固定 1 个敌人
+      if (f.bossKind != null && f.enemyTeam.length != 1) {
+        throw StateError(
+          '爬塔 Boss floor=${f.floorIndex} 应为 1 个敌人，'
+          '实际 ${f.enemyTeam.length}',
+        );
+      }
+      // §5.4 红线：Boss HP ≤ 50000
+      for (final e in f.enemyTeam) {
+        if (e.baseHp > 50000) {
+          throw StateError(
+            '红线越界：爬塔 floor=${f.floorIndex} enemy=${e.id} '
+            'baseHp=${e.baseHp} > 50000',
+          );
+        }
+      }
+    }
   }
 
   /// 测试用：清空全局实例。生产代码不要调用。
@@ -226,4 +310,12 @@ class GameRepository {
   StageDef getStage(String defId) =>
       stageDefs[defId] ??
       (throw StateError('StageDef 未配置: $defId'));
+
+  /// 取第 N 层爬塔（1-30）。越界抛 [RangeError]。
+  TowerFloorDef getTowerFloor(int floorIndex) {
+    if (floorIndex < 1 || floorIndex > 30) {
+      throw RangeError('爬塔 floorIndex 必须 ∈ [1, 30]，实际 $floorIndex');
+    }
+    return towerFloors[floorIndex - 1];
+  }
 }
