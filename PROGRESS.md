@@ -24,43 +24,22 @@
   - T26 战斗结算 hooks：`BattleResolutionService` 纯函数；装备 battleCount++ / 主修走 CultivationService / 辅修仅计数 / `DropService.rollDrops` 联动；防御 assert participatingCharacters 必在双方；战败平局也结算；13 测试
   - T27 装备掉落服务：`sealed class DropEntry`(EquipmentDrop/ItemDrop) + `StageDef.dropTable` yaml + `DropService.rollDrops` 纯函数；17 测试
   - 累计 270/270 测试，0 issues。详条见 git log T23-T27 commits
-- **T28 角色面板 UI**（2026-05-11，分支 feat/phase2-equipment）
-  - 中文化 enum 补 5 组（cultivationLayer/equipmentTier/techniqueTier/equipmentSlot/resonanceStage）+ UiStrings 补角色面板标签 + 格式化函数
-  - `lib/providers/character_providers.dart`：3 个 `@riverpod` family 异步读 Isar；`lib/ui/character_panel/character_panel_screen.dart`：4 块布局，不显示装备/心法名字，速度无主修时显示 `—`
-  - widget 测试 4/4，累计 287/287，0 issues
-- **T29 装备仓库 UI + 强化对话框**（2026-05-11，分支 feat/phase2-equipment）
-  - `rng_provider` autoDispose `@riverpod Rng` 暴露 `DefaultRng()`；`inventory_providers` `inventoryQuantityByTypeProvider(ItemType)` + `allEquipmentsProvider`(按 tier desc 排序)
-  - `enhance_dialog`：`+N→+N+1` 预览 + 成功率/磨剑石/结晶余量；强化按钮走 `tryEnhance(cap=49, rng, mojianshiQty)`；保底按钮走 `useCrystalToGuarantee`；成功 → 边框金色 lerp + AnimatedScale；失败 → inline shake（battle_screen 同公式 4px）+「+1 心血结晶」红 banner；**不直接 writeTxn**（挂账 #22）
-  - `inventory_screen`：tier 7 阶 ExpansionTile 分组 + 点击 row 弹 EnhanceDialog + invalidate
-  - widget 测试 5/5；累计 292/292 测试，0 issues
-- **T30 开锋 UI**（2026-05-11，分支 feat/phase2-equipment）
-  - `enum_localizations`：补 `ForgingSlotType` 中文化（攻击/速度/吸血/破甲/专属技能）；`strings`：补 tab/已开锋/解锁提示/确认开锋 AlertDialog/`forgingBonusLabel(type, X)`
-  - `lib/ui/enhancement/forging_panel.dart`（新建）：3 槽卡片 → 未解锁灰 + 「强化到 +N 解锁」/ 已解锁未开锋 Wrap+OutlinedButton 词条选项 / 已开锋显示「<类型> +X%」+「已开锋」灰色标签；点击词条 → showDialog AlertDialog 二次确认 → `ForgingService.forge` in-place 改；槽 2 互斥 + 槽 3 specialSkillCandidates 空 等全部 delegate 给 `ForgingService.availableTypesForSlot`
-  - `enhance_dialog`：加 `TabController(length=2)` + 顶部 TabBar(强化/开锋) + TabBarView(height=420)；新增可选 `EquipmentDef? def` 参数，null 时 forging tab 显占位
-  - `inventory_screen`：弹 dialog 前 `try { def = GameRepository.instance.getEquipment(eq.defId) } catch { def = null }`，fixture/未知 defId 自动 fallback
-  - widget 测试 4/4：3 槽锁定 → 3 个解锁提示 / 槽 1 已开 attack + L15 → 槽 2 词条不含「攻击」/ 槽 3 specialSkillCandidates 空 → 「该装备无专属技能」/ 已开锋槽显示「<type> +X%」+「已开锋」NWidgets
-  - 累计 296/296 测试，0 issues
-- **T31 心法面板 UI + 散功 dialog**（2026-05-11，分支 feat/phase2-equipment）
-  - `character_providers`：补 `characterAllTechniquesProvider(characterId)` async family，串 main + assist 复用 `techniqueByIdProvider`；`UiStrings` 补 T31 段（techniquePanelTitle / setAsMainButton / dispelDialogTitle / dispelCostInternalForce / dispelCostCultivation / dispelLayerWarning / dispelConfirm / dispelSuccess）
-  - `lib/ui/technique_panel/dispel_dialog.dart`（新建）：`DispelConfirmDialog` ConsumerWidget，AlertDialog 二确，双重代价系数走 `NumbersConfig.dispersion*Penalty`(=0.5)，三行：内力/修炼度/层回退 warning；仅返回 true/false，不直接调 service
-  - `lib/ui/technique_panel/technique_panel_screen.dart`（新建）：按 tier index desc 分组渲染，每条 tile 流派色条+主修/辅修标签+cultivationLayer+进度条+数值；主修边框 schoolColor 实色 width=2，辅修 alpha 0.6 width=1.5；辅修 tile 尾部「设为主修」TextButton → 弹 dialog → 二确通过 → `DispelService.dispel` in-place + invalidate 4 个 family + SnackBar「散功完成」；**不 writeTxn**（沿用挂账 #22，T32 一并补）
-  - widget 测试 4/4：分组渲染（入门功+常练功 2 group + 主修 1/辅修 2）/ 「设为主修」按钮仅辅修可见 / dialog 三行文案（内力 1000→500 / 修炼度 800→400 / 层回退 warning）/ 取消后 character+main+assist 状态全部不变
-  - 累计 300/300 测试，0 issues
-- **T32 子提交 1+2 #22a/#22b writeTxn 销账**（2026-05-11，分支 feat/phase2-equipment）
-  - 新增 `EnhancementService.persistResult` / `ForgingService.persistResult` / `DispelService.persistResult` 三个 static 包 writeTxn；强化扣 mojianshi + 增/减 jieJing，开锋仅 eq.put，散功 putAll(ch+oldMain+newMain)。物料 row 不存在 fail-fast `StateError`（种子阶段必创）
-  - widget 端 `enhance_dialog` / `forging_panel` / `technique_panel_screen` _persist/_onForgeTap/_onSetAsMain 调 service.persistResult + `Isar.getInstance` guard 旁路 widget test + invalidate 各 provider
-  - 测试旁路决策：testWidgets 默认 FakeAsync 与真 Isar 异步 IO 不兼容（pumpAndSettle 在 AnimationController 不结束 + `Isar.findFirst` 不前进），widget test 不接真 Isar；新建 `test/services/{enhancement,forge,dispel}_persist_test.dart` 普通 test 真 Isar 验落地，8 用例
-  - 累计 308/308 测试，0 issues
-- **T32 子提交 3 MainMenu + Phase2TestMenu + Phase2SeedService**（2026-05-11，分支 feat/phase2-equipment）
-  - 3a `lib/services/phase2_seed_service.dart`：4 场景静态种子工厂 seedP1/P2/P3/P4 + 共用 _clearAll(5 业务 collection)；每场景必创 moJianShi/xinXueJieJing 两行匹配 persistResult fail-fast；角色固定 id=1。`test/services/phase2_seed_service_test.dart` 真 Isar 5 用例（4 场景 fixture + clear 语义）
-  - 3b `lib/ui/main_menu.dart`：5 按钮分发 Phase1 战斗/Phase2 调试/角色/装备/心法。`lib/ui/debug/phase2_test_menu.dart`：4 场景按钮 P1-P4 onTap → seedPx → push（P1/P2→InventoryScreen；P3→TechniquePanelScreen；P4→CharacterPanelScreen）+ _busy guard + 错误 SnackBar 兜底；P2/P4 战斗 stub 跳 UI 看 fixture（spec B 方案，character_to_battle 转换 helper 留 Phase 3）。`UiStrings` 补 mainMenu/phase2Menu/scenarioP1-P4 11 段
-  - 3c `lib/main.dart` home: BattleTestMenu → MainMenu
-  - 3d `test/ui/main_menu/{main_menu,phase2_test_menu}_test.dart` 9 用例（5 + 4）：button label/顺序/InkWell count + Phase1/Phase2 路由可达 + Phase2 tap → IsarSetup 未 init → SnackBar 兜底
-  - 累计 322/322 测试（+14），0 issues。下一步 Windows Pen 视觉验收 4 场景 UI 跑通
+- **Phase 2 Week 3 UI**（2026-05-11，分支 feat/phase2-equipment，T28-T31 详条见 git log + phase2_tasks.md）
+  - T28 角色面板 UI：4 块布局 + characterProviders 3 family + 速度无主修兜底 `—`；4 widget test，累计 287
+  - T29 装备仓库 UI + EnhanceDialog：rng_provider + inventory_providers + 预览/强化/保底/shake/金光；5 widget test，累计 292
+  - T30 开锋 UI：TabBar 切换强化/开锋 + ForgingPanel 3 槽 + AlertDialog 二确 + ForgingSlotType 中文化；4 widget test，累计 296
+  - T31 心法面板 UI + DispelConfirmDialog：tier 分组渲染 + 主修/辅修边框区分 + 二确散功 + characterAllTechniquesProvider；4 widget test，累计 300
+- **T32 销账 #22 + 4 场景验收基建**（2026-05-11，分支 feat/phase2-equipment，详条见 git log T32 #22a-#22f + 子提交 4）
+  - #22a/#22b widget→Isar writeTxn 落地：3 个 service.persistResult 静态方法 + widget 端 `Isar.getInstance` guard 旁路 widget test；新建 3 个 \*\_persist\_test 真 Isar 8 用例（挂账 #23：testWidgets FakeAsync vs Isar IO 不兼容 → service-level test 验落地）
+  - #22c Phase2SeedService：4 场景静态种子 seedP1-P4 + writeTxn 清 5 业务 collection + 物料行 fail-fast 兼容 + 角色固定 id=1；5 真 Isar 用例
+  - #22d MainMenu + Phase2TestMenu：5 按钮分发 + 4 场景 onTap → seedPx → push（P2/P4 战斗 stub 跳 InventoryScreen，character_to_battle 留 Phase 3）；9 widget test
+  - #22e main.dart home: BattleTestMenu → MainMenu
+  - 子提交 4 phase2_scenarios_test：4 group 11 用例纯数值断言（P1 强化 +14-15 蒙卡 75% / P2 共鸣 99→100 / P3 散功 yuanMan→daCheng / P4 全栈 2.92×）
+  - 累计 333/333 测试（+25 vs T31），0 issues。下一步子提交 5 Windows Pen 视觉验收 + tag
 
 ## 进行中
 
-- Phase 2 Week 3 推进中（T28/T29/T30/T31 + T32 #22a-#22f 完成），分支 feat/phase2-equipment 已超前 origin 4 commit 待 push。下一步进 T32 子提交 4 phase2_scenarios_test.dart 纯数值断言 + 子提交 5 验收 tag v0.2.0-phase2 三分支合并
+- T32 子提交 5 待 Windows Pen 视觉验收（5-6 截图：MainMenu / Phase2TestMenu / P1 InventoryScreen+EnhanceDialog / P3 TechniquePanelScreen+DispelDialog），通过后 tag v0.2.0-phase2 + 三分支 no-ff 合并 main + 填充 phase2_summary.md 数据。分支 feat/phase2-equipment 已超前 origin 1 commit 待 push
 
 ## 已知偏差 / 挂账事项
 
@@ -82,10 +61,11 @@
 
 ## 下一步
 
-T32 子提交 4-5（phase2_tasks §492-509）：
-1. **子提交 4 phase2_scenarios_test.dart**：4 场景纯数值断言（P1 强化曲线 / P2 共鸣 99→100 / P3 散功 10000+1500→5000+750 / P4 +19+forge+共鸣 vs 裸装）
-2. **子提交 5 验收**：Windows Pen 视觉验收 4 场景 UI 跑通 + tag v0.2.0-phase2 + 三分支 no-ff 合并 main + 写 phase2_summary.md。**模型建议 sonnet 4.6**。
-3. **推进前先 push**：feat/phase2-equipment 当前超前 origin 4 commit（#22c-#22f），push 后让 Windows Pen pull 视觉验收。
+T32 子提交 5 验收（phase2_tasks §505-509）：
+1. **push 本地 commit**：当前 feat/phase2-equipment 超前 origin 1 commit（子提交 4），push 让 Pen 拉新单测一起跑
+2. **Windows Pen 视觉验收**：5-6 截图覆盖 MainMenu / Phase2TestMenu / P1 InventoryScreen+EnhanceDialog / P3 TechniquePanelScreen+DispelDialog（prompt 已发用户）
+3. **填充 phase2_summary.md**：把 P1 蒙卡实测 + Pen 截图链接 + 性能基准（强化 100 连点延迟 / FPS）补全
+4. **tag + 合并**：tag v0.2.0-phase2 + `git merge --no-ff feat/phase2-equipment` 到 main（与 Phase 1 同策略）
 
 ## 关键约束（每次开局必读）
 
