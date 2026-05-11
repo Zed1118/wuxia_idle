@@ -51,10 +51,16 @@
   - widget 端 `enhance_dialog` / `forging_panel` / `technique_panel_screen` _persist/_onForgeTap/_onSetAsMain 调 service.persistResult + `Isar.getInstance` guard 旁路 widget test + invalidate 各 provider
   - 测试旁路决策：testWidgets 默认 FakeAsync 与真 Isar 异步 IO 不兼容（pumpAndSettle 在 AnimationController 不结束 + `Isar.findFirst` 不前进），widget test 不接真 Isar；新建 `test/services/{enhancement,forge,dispel}_persist_test.dart` 普通 test 真 Isar 验落地，8 用例
   - 累计 308/308 测试，0 issues
+- **T32 子提交 3 MainMenu + Phase2TestMenu + Phase2SeedService**（2026-05-11，分支 feat/phase2-equipment）
+  - 3a `lib/services/phase2_seed_service.dart`：4 场景静态种子工厂 seedP1/P2/P3/P4 + 共用 _clearAll(5 业务 collection)；每场景必创 moJianShi/xinXueJieJing 两行匹配 persistResult fail-fast；角色固定 id=1。`test/services/phase2_seed_service_test.dart` 真 Isar 5 用例（4 场景 fixture + clear 语义）
+  - 3b `lib/ui/main_menu.dart`：5 按钮分发 Phase1 战斗/Phase2 调试/角色/装备/心法。`lib/ui/debug/phase2_test_menu.dart`：4 场景按钮 P1-P4 onTap → seedPx → push（P1/P2→InventoryScreen；P3→TechniquePanelScreen；P4→CharacterPanelScreen）+ _busy guard + 错误 SnackBar 兜底；P2/P4 战斗 stub 跳 UI 看 fixture（spec B 方案，character_to_battle 转换 helper 留 Phase 3）。`UiStrings` 补 mainMenu/phase2Menu/scenarioP1-P4 11 段
+  - 3c `lib/main.dart` home: BattleTestMenu → MainMenu
+  - 3d `test/ui/main_menu/{main_menu,phase2_test_menu}_test.dart` 9 用例（5 + 4）：button label/顺序/InkWell count + Phase1/Phase2 路由可达 + Phase2 tap → IsarSetup 未 init → SnackBar 兜底
+  - 累计 322/322 测试（+14），0 issues。下一步 Windows Pen 视觉验收 4 场景 UI 跑通
 
 ## 进行中
 
-- Phase 2 Week 3 推进中（T28/T29/T30/T31 + T32 #22a/#22b 完成），分支 feat/phase2-equipment。下一步进 T32 子提交 3-5（MainMenu + Phase2TestMenu + Phase2SeedService → phase2_scenarios_test.dart → 验收 tag v0.2.0-phase2 三分支合并）
+- Phase 2 Week 3 推进中（T28/T29/T30/T31 + T32 #22a-#22f 完成），分支 feat/phase2-equipment 已超前 origin 4 commit 待 push。下一步进 T32 子提交 4 phase2_scenarios_test.dart 纯数值断言 + 子提交 5 验收 tag v0.2.0-phase2 三分支合并
 
 ## 已知偏差 / 挂账事项
 
@@ -76,10 +82,10 @@
 
 ## 下一步
 
-T32 子提交 3-5（phase2_tasks §492-509）：
-1. **子提交 3 MainMenu + Phase2TestMenu + Phase2SeedService**：lib/ui/main_menu.dart 5 按钮分发（Phase1 战斗 / Phase2 调试 / 角色 / 仓库 / 心法）；phase2_test_menu.dart 4 场景按钮 P1-P4；Phase2SeedService writeTxn 写种子（含 mojianshi/jieJing 两行 fail-fast 兼容）
-2. **子提交 4 phase2_scenarios_test.dart**：4 场景纯数值断言（P1 强化曲线 / P2 共鸣 99→100 / P3 散功 10000+1500→5000+750 / P4 +19+forge+共鸣 vs 裸装）
-3. **子提交 5 验收**：Windows Pen 视觉验收 + tag v0.2.0-phase2 + 三分支 no-ff 合并 main + 写 phase2_summary.md。**模型建议 sonnet 4.6**。
+T32 子提交 4-5（phase2_tasks §492-509）：
+1. **子提交 4 phase2_scenarios_test.dart**：4 场景纯数值断言（P1 强化曲线 / P2 共鸣 99→100 / P3 散功 10000+1500→5000+750 / P4 +19+forge+共鸣 vs 裸装）
+2. **子提交 5 验收**：Windows Pen 视觉验收 4 场景 UI 跑通 + tag v0.2.0-phase2 + 三分支 no-ff 合并 main + 写 phase2_summary.md。**模型建议 sonnet 4.6**。
+3. **推进前先 push**：feat/phase2-equipment 当前超前 origin 4 commit（#22c-#22f），push 后让 Windows Pen pull 视觉验收。
 
 ## 关键约束（每次开局必读）
 
