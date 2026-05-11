@@ -131,4 +131,21 @@ class UiStrings {
   /// 已开锋词条：`攻击 +15%`。
   static String forgingBonusLabel(String typeLabel, int bonus) =>
       '$typeLabel +$bonus%';
+
+  // 心法面板 / 散功 dialog（T31）
+  static const String techniquePanelTitle = '心法面板';
+  static const String techniquePanelEmpty = '尚未学习任何心法';
+  static const String setAsMainButton = '设为主修';
+  static const String dispelDialogTitle = '散功换主修';
+  static const String dispelLayerWarning = '修炼度层可能回退';
+  static const String dispelConfirm = '确认散功';
+  static const String dispelSuccess = '散功完成';
+
+  /// 散功代价 · 内力：`内力 X → Y`。
+  static String dispelCostInternalForce(int before, int after) =>
+      '内力 $before → $after';
+
+  /// 散功代价 · 修炼度:`修炼度 X → Y`。
+  static String dispelCostCultivation(int before, int after) =>
+      '修炼度 $before → $after';
 }

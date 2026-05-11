@@ -40,10 +40,16 @@
   - `inventory_screen`：弹 dialog 前 `try { def = GameRepository.instance.getEquipment(eq.defId) } catch { def = null }`，fixture/未知 defId 自动 fallback
   - widget 测试 4/4：3 槽锁定 → 3 个解锁提示 / 槽 1 已开 attack + L15 → 槽 2 词条不含「攻击」/ 槽 3 specialSkillCandidates 空 → 「该装备无专属技能」/ 已开锋槽显示「<type> +X%」+「已开锋」NWidgets
   - 累计 296/296 测试，0 issues
+- **T31 心法面板 UI + 散功 dialog**（2026-05-11，分支 feat/phase2-equipment）
+  - `character_providers`：补 `characterAllTechniquesProvider(characterId)` async family，串 main + assist 复用 `techniqueByIdProvider`；`UiStrings` 补 T31 段（techniquePanelTitle / setAsMainButton / dispelDialogTitle / dispelCostInternalForce / dispelCostCultivation / dispelLayerWarning / dispelConfirm / dispelSuccess）
+  - `lib/ui/technique_panel/dispel_dialog.dart`（新建）：`DispelConfirmDialog` ConsumerWidget，AlertDialog 二确，双重代价系数走 `NumbersConfig.dispersion*Penalty`(=0.5)，三行：内力/修炼度/层回退 warning；仅返回 true/false，不直接调 service
+  - `lib/ui/technique_panel/technique_panel_screen.dart`（新建）：按 tier index desc 分组渲染，每条 tile 流派色条+主修/辅修标签+cultivationLayer+进度条+数值；主修边框 schoolColor 实色 width=2，辅修 alpha 0.6 width=1.5；辅修 tile 尾部「设为主修」TextButton → 弹 dialog → 二确通过 → `DispelService.dispel` in-place + invalidate 4 个 family + SnackBar「散功完成」；**不 writeTxn**（沿用挂账 #22，T32 一并补）
+  - widget 测试 4/4：分组渲染（入门功+常练功 2 group + 主修 1/辅修 2）/ 「设为主修」按钮仅辅修可见 / dialog 三行文案（内力 1000→500 / 修炼度 800→400 / 层回退 warning）/ 取消后 character+main+assist 状态全部不变
+  - 累计 300/300 测试，0 issues
 
 ## 进行中
 
-- Phase 2 Week 3 推进中（T28/T29/T30 完成），分支 feat/phase2-equipment。下一步进 T31（心法面板 UI + 散功 dialog）
+- Phase 2 Week 3 推进中（T28/T29/T30/T31 完成），分支 feat/phase2-equipment。下一步进 T32（验收冲刺：4 测试场景 + Phase 2 验收 + tag v0.2.0-phase2 + 挂账 #22 writeTxn 补漏）
 
 ## 已知偏差 / 挂账事项
 
@@ -65,7 +71,7 @@
 
 ## 下一步
 
-T31 心法面板 UI + 散功 dialog（phase2_tasks §468-490）：已学心法列表（按 tier 分组）每条显示 名字/tier/流派/当前修炼度层/进度条；主修标签高亮，辅修最多 3 个；点击辅修 →「设为主修」按钮 → 弹散功 dialog（显示双重代价「内力 X→X/2 / 原主修修炼度 Y→Y/2 / 修炼度层可能回退」）→ 二次确认 → 调 `DispelService.dispel`；widget 测试 ≥ 4（已学列表分组 / 主修高亮 / 散功 dialog 双重代价文案 / 二次确认取消不触发 dispel）+ Windows 视觉验收。**模型建议 sonnet 4.6**。
+T32 验收冲刺（phase2_tasks §492-509）：调试菜单第二屏 4 场景（P1 强化曲线 +0→+19 / P2 共鸣度 battleCount=99 → 100 触发趁手 / P3 散功代价数值校验 / P4 强化+开锋+共鸣全栈对比裸装）+ `phase2_scenarios_test.dart` 4 场景数值单测 + Phase 2 main.dart 入口接入 + 挂账 #22 writeTxn 补漏（T29 强化扣 inventory + Isar 写回）+ Windows 视觉验收 + tag v0.2.0-phase2 三分支 no-ff 合并。**模型建议 sonnet 4.6**。
 
 ## 关键约束（每次开局必读）
 
