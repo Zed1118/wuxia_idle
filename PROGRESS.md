@@ -51,16 +51,14 @@
 18. **`flutter build web` 被 Isar 阻塞**：dart:ffi web 不支持，Phase 5 切 Isar 4.x 时一并恢复
 21. **shake / tier 颜色 / 金光效果未抽 helper**：battle_screen / enhance_dialog 各 inline 一份 sin 公式；character_panel / enhance_dialog / inventory_screen 各 inline 一份 `_tierColor` 映射。Phase 5 抽 `lib/ui/effects/screen_shake.dart` + `lib/ui/theme/tier_colors.dart`
 23. **widget test 不接真 Isar**：testWidgets FakeAsync 与 `Isar.findFirst` / writeTxn 异步 IO 不兼容；当前 widget 端在 `_persist` 加 `Isar.getInstance` guard 测试旁路，真落地走 service-level test。Phase 5 Riverpod 3.x + IsarProvider 注入时再统一
-24. **装备名未渲染**：inventory_row + enhance_dialog 显示「武器」而非 EquipmentDef.name（如「龙泉剑」），T32 子提交 5 Pen 视觉验收发现，不影响数值/流程，Phase 3 起手第一个 fixup
 
-> 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#22）见文末归档。
+> 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#22/#24）见文末归档。
 
 ## 下一步
 
 Phase 3 起点：
-1. **挂账 #24 fixup**：inventory_row + enhance_dialog 接 EquipmentDef.name（独立 commit `[T33] #24 fixup: 装备名显示` + widget test）
-2. **Phase 3 规划讨论**：主线 15-20 关 / 爬塔 30 层 / 闭关地图 5 / 奇遇 20-30 / 师徒传承 / 武学领悟 30-50 招（GDD §7-§8，Demo 总量见 CLAUDE.md §7）—— 先讨论范围与里程碑再开 phase3_tasks.md
-3. **CLAUDE.md §12 待决项 13 条**：实现到对应位置时按需提问
+1. **Phase 3 规划讨论**：主线 15-20 关 / 爬塔 30 层 / 闭关地图 5 / 奇遇 20-30 / 师徒传承 / 武学领悟 30-50 招（GDD §7-§8，Demo 总量见 CLAUDE.md §7）—— 跨模块大改，建议升 xhigh 后开 phase3_tasks.md
+2. **CLAUDE.md §12 待决项 13 条**：实现到对应位置时按需提问
 
 ## 关键约束（每次开局必读）
 
@@ -79,7 +77,7 @@ Phase 3 起点：
 ## 归档（已解决挂账 + Phase 1 详条）
 
 ### 已解决挂账
-#1 Riverpod 锁 2.x / #5 T17 笔误"差 2"→"差 3"（T17 commit 修） / #13 yaml b/c max_hp / #14-#15 灵巧暴击 +0.20 与 ×2.0 yaml 化 / #16 战例 E ≤100000（详见 T11 前清账冲刺 commit）/ #19 T15 远程沙箱无 Flutter（2026-05-10 Mac 本地 review 时实跑 analyze + test 全绿，153/153）/ #20 T15/T16/T17 Windows 视觉验收（2026-05-11，5 截图 4 场景 A2613/B1.67×/C1.92×/D8370 全部命中）/ #22 T32 #22a/#22b：3 个 service.persistResult + widget 端 `Isar.getInstance` guard + service-level test 验落地（2026-05-11，308/308）/ Phase 2 全交付 v0.2.0-phase2（2026-05-11，merge 5efe8d5）：T19-T32 装备+心法+战斗联动+UI+4场景验收+6截图，333/333 测试
+#1 Riverpod 锁 2.x / #5 T17 笔误"差 2"→"差 3"（T17 commit 修） / #13 yaml b/c max_hp / #14-#15 灵巧暴击 +0.20 与 ×2.0 yaml 化 / #16 战例 E ≤100000（详见 T11 前清账冲刺 commit）/ #19 T15 远程沙箱无 Flutter（2026-05-10 Mac 本地 review 时实跑 analyze + test 全绿，153/153）/ #20 T15/T16/T17 Windows 视觉验收（2026-05-11，5 截图 4 场景 A2613/B1.67×/C1.92×/D8370 全部命中）/ #22 T32 #22a/#22b：3 个 service.persistResult + widget 端 `Isar.getInstance` guard + service-level test 验落地（2026-05-11，308/308）/ Phase 2 全交付 v0.2.0-phase2（2026-05-11，merge 5efe8d5）：T19-T32 装备+心法+战斗联动+UI+4场景验收+6截图，333/333 测试 / #24 装备名未渲染（2026-05-11，fix/24-equipment-name）：inventory_row + enhance_dialog 接 EquipmentDef.name + Flexible/ellipsis 兜底 + 2 widget test，335/335
 
 ### Phase 1 详条
 T01-T18 每个任务的文件清单 / 公式 / 用例数 / 验收结论已迁至 `phase1_summary.md` + git log v0.1.0-phase1 前 commits（约 25 条带 `[Tnn]` 前缀），本表不再展开

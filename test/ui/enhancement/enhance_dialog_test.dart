@@ -143,6 +143,46 @@ void main() {
     final btn = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
     expect(btn.onPressed, isNull, reason: '材料 0 时强化按钮应 disabled');
   });
+
+  testWidgets('传入 def → header 显示装备名（#24 fixup 验收）', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final def = GameRepository.instance.getEquipment('weapon_liqi_long_quan');
+    final eq = Equipment.create(
+      defId: def.id,
+      tier: def.tier,
+      slot: def.slot,
+      obtainedAt: DateTime(2026, 5, 11),
+      obtainedFrom: 'test',
+      baseAttack: def.baseAttackMin,
+      enhanceLevel: 0,
+    )..id = 1;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          inventoryQuantityByTypeProvider(ItemType.moJianShi).overrideWith(
+            (ref) async => 1000,
+          ),
+          inventoryQuantityByTypeProvider(ItemType.xinXueJieJing).overrideWith(
+            (ref) async => 100,
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Center(child: EnhanceDialog(equipment: eq, def: def)),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('龙泉剑'), findsOneWidget,
+        reason: 'EnhanceDialog header 应渲染 def.name');
+  });
 }
 
 /// 测试用 Rng：固定 nextDouble 返回值，nextInt/pick 兜底。

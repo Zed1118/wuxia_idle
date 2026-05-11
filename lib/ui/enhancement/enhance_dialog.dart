@@ -254,7 +254,12 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _Header(equipment: eq, targetLevel: targetLevel, scale: _scaleCtrl),
+          _Header(
+            equipment: eq,
+            def: widget.def,
+            targetLevel: targetLevel,
+            scale: _scaleCtrl,
+          ),
           const SizedBox(height: 16),
           _MetricsRow(
             successRate: atCap ? null : successRate,
@@ -309,11 +314,13 @@ class _Header extends StatelessWidget {
     required this.equipment,
     required this.targetLevel,
     required this.scale,
+    this.def,
   });
 
   final Equipment equipment;
   final int targetLevel;
   final AnimationController scale;
+  final EquipmentDef? def;
 
   @override
   Widget build(BuildContext context) {
@@ -347,6 +354,17 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (def != null) ...[
+                  Text(
+                    def!.name,
+                    style: const TextStyle(
+                      color: WuxiaColors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                ],
                 Text(
                   EnumL10n.equipmentSlot(equipment.slot),
                   style: const TextStyle(
