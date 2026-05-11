@@ -19,7 +19,9 @@
 
 ## 进行中
 
-- **T42** 爬塔层列表 UI + 进度展示 + main_menu「问鼎九霄」入口（tower_floor_list_screen / tower_floor_card 三态+Boss边框 / tower_providers 2 个 + 顶部进度卡 + 7 按钮顺序）
+- **T42 ✅** 爬塔层列表 UI + 进度展示 + main_menu「问鼎九霄」入口（commit `41530aa`，411/411 测试）：tower_providers（2 FutureProvider）/ tower_floor_list_screen（AppBar+进度卡+ListView.builder 30行+initState 一次性滚到 available）/ tower_floor_card（三态+Boss金紫边框+推荐境界chip+cleared重打AlertDialog）/ main_menu 7 按钮顺序 / strings.dart 爬塔标签 / 6 widget test
+- **T43 ✅** 爬塔进入流程串联（commit `e8b35c6`，416/416 测试）：tower_entry_flow（runTowerFlow async 状态机 opening→battle→victory/defeat）+ _TowerBattleHost + @visibleForTesting DI + StageBattleSetup 重构（buildEnemyTeam public / _buildPlayerTeam private / buildTeamsForTower 爬塔版）+ 5 widget test
+- **T44** 爬塔奖励 hook（扩 DropService，isFirstClear 控发奖，当前）
 
 ## 已知偏差 / 挂账事项
 
@@ -45,8 +47,8 @@
 Phase 3 Week 2（爬塔，详条 `phase3_tasks.md` §Week 2）：
 - ✅ **T40** towers.yaml + TowerFloorDef + 30 层 fixture（390/390）
 - ✅ **T41** TowerProgress + TowerProgressService + saveVersion 0.3.0（405/405）
-- **T42** 爬塔层列表 UI + main_menu 入口（当前）
-- **T43** tower_entry_flow（普通层 / Boss 层差异化）
+- ✅ **T42** 爬塔层列表 UI + main_menu 入口（411/411）
+- ✅ **T43** 爬塔进入流程串联（416/416）
 - **T44** 爬塔奖励 hook（扩 DropService，isFirstClear 控发奖）
 - **T45** test + analyze 双绿（预期 ≥ 410）
 - **T46** Pen 视觉验收 + tag v0.3.0-w2
