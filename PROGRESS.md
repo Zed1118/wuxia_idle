@@ -43,6 +43,10 @@
   - `BattleScreen` 加 hint 横幅 + onBattleEnd 回调；main.dart home 改 BattleTestMenu
   - 4 场景：A 同境界速度对决 / B 全面克制循环 1.667× / C +12默契纯武器 ×1.92（IF=0）/ D 差 3 境界碾压（绝顶7020一击杀三流6000血）
   - 修正挂账 #5（T17 笔误"差 2"→"差 3"）；test 160/160；分支 feat/t17-test-scenarios 24ff82c
+- **T18 Phase 1 验收**（2026-05-11）
+  - flutter analyze 0 issues / flutter test 160/160 全绿
+  - feat/t15 / feat/t16 / feat/t17 三分支 no-ff 合并 main；tag v0.1.0-phase1 推送
+  - phase1_summary.md：功能清单 / 5 战例数值对照（误差 ≤1.1%）/ 已知问题 / 性能基准
 - **T16 Riverpod 串接 + 大招触发 + 结算 overlay**（2026-05-10）
   - `lib/providers/battle_providers.dart`（新建，`@riverpod` 代码生成）：`numbersConfigProvider` 包装 GameRepository 单例 / `BattleNotifier` (startBattle / requestUltimate / `advance` 连续 tick 直到 actionLog 增长或战斗结束) / `leftTeamProvider` / `rightTeamProvider` / `battleResultProvider`
   - **`advance()` 与 spec 偏差说明**：spec §16.1 写 `advanceTick()` 单 tick，实际改为连续 tick 直到出 action。原因：单 tick 是 actionPoint += speed 的最小时间单位，不一定有人 ≥1000 行动；若 UI Timer 间隔=单 tick 则慢角色场景看大段空白。`maxConsecutiveTicks=100` 兜底
@@ -56,7 +60,7 @@
 
 ## 进行中
 
-- 无（T17 完成，下一步 T18 Phase 1 验收）
+- 无（Phase 1 全部完成，v0.1.0-phase1 已打 tag 并推送）
 
 ## 已知偏差 / 挂账事项
 
@@ -78,7 +82,7 @@
 
 ## 下一步
 
-T18 Phase 1 验收（合并 main + 视觉验收 + 文档收尾）
+Phase 2 装备系统（掉落 / 强化 / 开锋 / 共鸣度递增）+ 心法系统（学习 / 修炼度 / 散功）
 
 ## 关键约束（每次开局必读）
 
