@@ -74,4 +74,64 @@ class EnumL10n {
       _ => key,
     };
   }
+
+  /// 心法修炼度 9 层（GDD §4.3，与境界 7 层 [realmLayer] 严格不同名）。
+  static String cultivationLayer(CultivationLayer l) {
+    return switch (l) {
+      CultivationLayer.chuKui => '初窥',
+      CultivationLayer.xiaoCheng => '小成',
+      CultivationLayer.zhongCheng => '中成',
+      CultivationLayer.daCheng => '大成',
+      CultivationLayer.yuanMan => '圆满',
+      CultivationLayer.dianFeng => '巅峰',
+      CultivationLayer.tongShen => '通神',
+      CultivationLayer.wuXia => '无瑕',
+      CultivationLayer.jiJing => '极境',
+    };
+  }
+
+  /// 装备品阶（GDD §3.2，与境界一一对应）。
+  static String equipmentTier(EquipmentTier t) {
+    return switch (t) {
+      EquipmentTier.xunChang => '寻常货',
+      EquipmentTier.xiangYang => '像样货',
+      EquipmentTier.haoJiaHuo => '好家伙',
+      EquipmentTier.liQi => '利器',
+      EquipmentTier.zhongQi => '重器',
+      EquipmentTier.baoWu => '宝物',
+      EquipmentTier.shenWu => '神物',
+    };
+  }
+
+  /// 心法品阶（GDD §3.3）。
+  static String techniqueTier(TechniqueTier t) {
+    return switch (t) {
+      TechniqueTier.ruMenGong => '入门功',
+      TechniqueTier.changLianGong => '常练功',
+      TechniqueTier.mingJiaGong => '名家功',
+      TechniqueTier.menPaiJueXue => '门派绝学',
+      TechniqueTier.jiangHuMiChuan => '江湖秘传',
+      TechniqueTier.shiChuanShenGong => '失传神功',
+      TechniqueTier.chuanShuoShenGong => '传说神功',
+    };
+  }
+
+  /// 装备槽位（GDD §6.5）。
+  static String equipmentSlot(EquipmentSlot s) {
+    return switch (s) {
+      EquipmentSlot.weapon => '武器',
+      EquipmentSlot.armor => '护甲',
+      EquipmentSlot.accessory => '饰品',
+    };
+  }
+
+  /// 共鸣度阶段（GDD §6.4）。
+  static String resonanceStage(ResonanceStage s) {
+    return switch (s) {
+      ResonanceStage.shengShu => '生疏',
+      ResonanceStage.chenShou => '趁手',
+      ResonanceStage.moQi => '默契',
+      ResonanceStage.xinJianTongLing => '心剑通灵',
+    };
+  }
 }
