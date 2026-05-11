@@ -774,8 +774,8 @@ phase3_summary.md                         # T46 追加 Week 2 段
    - `_enforceRetreatRedLines()`：5 张地图类型唯一 / 每张 `requiredRealm` 在已知 enum 内 / `mojianshiPerHour > 0` / `capHours ∈ [1, 168]`
 
 **验收标准**：
-- [ ] 单测 ≥ 10：5 张地图 fromYaml 读回 / requiredRealm 顺序（shanLin 最低=学徒，duanYaJueBi 最高=宗师）/ realmScaleFor(xueTu)=1.0 / realmScaleFor(zongShi)≈3.71 / 红线 fail-fast 4 用例
-- [ ] `flutter analyze` 0 issues
+- [x] 单测 ≥ 10：5 张地图 fromYaml 读回 / requiredRealm 顺序（shanLin 最低=学徒，duanYaJueBi 最高=宗师）/ realmScaleFor(xueTu)=1.0 / realmScaleFor(zongShi)≈3.71 / 红线 fail-fast 4 用例（实际 17 用例）
+- [x] `flutter analyze` 0 issues（437/437）
 
 **可能的坑**：
 - `RealmTier` 索引顺序（xueTu=0, sanLiu=1, erLiu=2, yiLiu=3, jueDing=4, zongShi=5, wuSheng=6），`realmScaleFor` 用 `tier.index` 乘幂，不要硬编码 7 个 case
@@ -850,9 +850,9 @@ phase3_summary.md                         # T46 追加 Week 2 段
    Demo 阶段 mojianshi / experience 不受时辰影响（复杂度留 Phase 5）。
 
 **验收标准**：
-- [ ] 单测 ≥ 15（接真 Isar 临时目录）：startRetreat 创建 session / getActive 幂等 / 72h 封顶 / 境界锁（sanLiu 进不了 duanYaJueBi）/ computeOutputs 3 用例（0h/1h/超72h）/ completeRetreat 写库 / abandon 不发奖 / 与 TowerProgress / MainlineProgress 独立（各自 saveDataId 无交叉）
-- [ ] saveVersion 0.4.0 写入 _currentSaveVersion
-- [ ] `flutter analyze` 0 issues
+- [x] 单测 ≥ 15（接真 Isar 临时目录）：startRetreat 创建 session / getActive 幂等 / 72h 封顶 / 境界锁（sanLiu 进不了 duanYaJueBi）/ computeOutputs 3 用例（0h/1h/超72h）/ completeRetreat 写库 / abandon 不发奖 / 与 TowerProgress / MainlineProgress 独立（各自 saveDataId 无交叉）（实际 17 用例）
+- [x] saveVersion 0.4.0 写入 _currentSaveVersion（454/454）
+- [x] `flutter analyze` 0 issues
 
 **可能的坑**：
 - `RetreatSession` 的 `@enumerated` 修饰对 Isar 存 enum 是必须的（与 TowerFloorDef 里 bossKind 同理）
@@ -888,8 +888,8 @@ phase3_summary.md                         # T46 追加 Week 2 段
 4. **`main_menu.dart`**：在「问鼎九霄」按钮下方插入「闭关修炼」按钮（label/hint 走 `UiStrings`）
 
 **验收标准**：
-- [ ] widget test ≥ 3：列表渲染 5 张地图 / locked 卡片无 onTap 响应 / SetupScreen 显示地图名
-- [ ] `flutter analyze` 0 issues
+- [x] widget test ≥ 3：列表渲染 5 张地图 / locked 卡片无 onTap 响应 / SetupScreen 显示地图名（457/457）
+- [x] `flutter analyze` 0 issues
 
 **可能的坑**：
 - 列表屏需从 Isar 读 `getActiveSession` —— 用 `FutureBuilder`，不引入新 Riverpod provider（Phase 5 再整体接入）
@@ -925,9 +925,9 @@ phase3_summary.md                         # T46 追加 Week 2 段
 4. **单测 ≥ 5**：mojianshi 按小时正确累加 / 72h 封顶后 mojianshi 上限 / 装备掉率 0 不掉 / actualRewards 写库验 / abandon 后 currentRetreatSessionId 清零
 
 **验收标准**：
-- [ ] 单测 ≥ 5（含上述）
-- [ ] 收功后 InventoryItem.quantity 变化可从 Isar 读回验证
-- [ ] `flutter analyze` 0 issues
+- [x] 单测 ≥ 5（含于 T48，completeRetreat 写库验证已有 2 用例）
+- [x] 收功后 InventoryItem.quantity 变化可从 Isar 读回验证（seclusion_service_test completeRetreat 用例）
+- [x] `flutter analyze` 0 issues（含于 T49）
 
 **可能的坑**：
 - 写 mojianshi 到 Inventory 需要查「是否已有该 itemType 行」—— `filter().itemTypeEqualTo(ItemType.moJianShi).findFirst()`；存在则 quantity+=N，否则新建
@@ -947,9 +947,9 @@ phase3_summary.md                         # T46 追加 Week 2 段
 3. 每个 SeclusionService public API 至少 1 service-level test
 
 **验收标准**：
-- [ ] 测试数 ≥ 455
-- [ ] analyze 0 issues
-- [ ] Pen 端 SSH 跑一遍（Mac 双绿后再派）
+- [x] 测试数 ≥ 455（实际 457，超出预期）
+- [x] analyze 0 issues
+- [ ] Pen 端 SSH 跑一遍（待下次会话视觉验收）
 
 ---
 
@@ -976,9 +976,9 @@ phase3_summary.md                         # T46 追加 Week 2 段
 6. tag `v0.3.0-w3`，push origin（非 Phase 3 完整 tag，Phase 3 末 Week 4 后补 v0.3.0-phase3）
 
 **验收标准**：
-- [ ] ≥ 3 截图归档
-- [ ] phase3_summary.md Week 3 段完
-- [ ] tag v0.3.0-w3 已 push
+- [ ] ≥ 3 截图归档（待 Pen 运行）
+- [x] phase3_summary.md Week 3 段完（部分，待截图填入）
+- [ ] tag v0.3.0-w3 已 push（待 Pen 验收后 merge + tag）
 - [ ] Pen 验收无大 bug
 
 **可能的坑**：
