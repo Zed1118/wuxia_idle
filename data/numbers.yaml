@@ -674,6 +674,12 @@ techniques:
     internal_force_penalty: 0.50      # 当前内力 -50%（不归零）
     cultivation_penalty: 0.50         # 原主修心法修炼度 -50%
 
+  # --- 学习成本（phase2_tasks T23，Pen 拍板）---
+  # Demo 阶段统一固定值；领悟点来源待 GDD §7.2 武学领悟系统实装后接入
+  learning_cost:
+    assist: 100                       # 学辅修消耗领悟点
+    main: 500                         # 学主修消耗领悟点
+
   # --- 三流派克制（GDD §4.4，强制规则）---
   # 关系：刚猛 → 阴柔 → 灵巧 → 刚猛（成环）
   schools:
