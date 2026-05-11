@@ -20,6 +20,10 @@ class NumbersConfig {
   /// GDD §6.2 = 0.05）。
   final double enhancementBonusPerLevel;
 
+  /// 强化系统配置（numbers.yaml `equipment.enhancement` + `equipment.xinxue_jiejing`，
+  /// T20 用）。
+  final EnhancementConfig enhancement;
+
   /// 每阶心法的速度加成（numbers.yaml `techniques.tiers[].speed_bonus`，
   /// 仅主修生效，T09 用）。
   final Map<TechniqueTier, int> techniqueSpeedBonus;
@@ -56,6 +60,7 @@ class NumbersConfig {
     required this.levelDiffModifier,
     required this.defenseRateByTier,
     required this.enhancementBonusPerLevel,
+    required this.enhancement,
     required this.techniqueSpeedBonus,
     required this.cultivationMultiplier,
     required this.schoolCounter,
@@ -83,6 +88,10 @@ class NumbersConfig {
       enhancementBonusPerLevel: ((equipment['enhancement']
               as Map<String, dynamic>)['bonus_per_level'] as num)
           .toDouble(),
+      enhancement: EnhancementConfig.fromYaml(
+        enhancement: equipment['enhancement'] as Map<String, dynamic>,
+        xinxueJiejing: equipment['xinxue_jiejing'] as Map<String, dynamic>,
+      ),
       techniqueSpeedBonus:
           _parseTechniqueSpeedBonus(techniques['tiers'] as List),
       cultivationMultiplier: _parseCultivationMultiplier(
@@ -154,6 +163,188 @@ class NumbersConfig {
     ];
   }
 }
+
+/// 强化系统配置（numbers.yaml `equipment.enhancement` + `equipment.xinxue_jiejing`，
+/// T20）。
+///
+/// 解析后的三类查询表：
+///   - [successCurve]：成功率 + 失败惩罚（按 targetLevel 区间）
+///   - [mojianshiCost]：每次强化消耗（按 targetLevel 区间）
+///   - [crystalGuarantees]：心血结晶保底消耗（按 targetLevel 区间，部分段无保底）
+///
+/// `successRate == null` 表示该段走 [_fallbackFormula]（GDD +20-49 段
+/// `max(0.30, 0.50 - 0.02 × (level - 19))`）。targetLevel 指**强化目标等级**
+/// （即当前 enhanceLevel + 1）。
+class EnhancementConfig {
+  final List<EnhanceLevelBracket> successCurve;
+  final List<MaterialCostBracket> mojianshiCost;
+  final List<CrystalGuaranteeBracket> crystalGuarantees;
+
+  /// 每次强化失败必得心血结晶数（GDD §6.3 = 1）。
+  final int crystalGainPerFailure;
+
+  /// 永不破防降级（GDD §6.2 红线）。Phase 2 必须为 true，
+  /// false 时 EnhancementService 会 fail-fast。
+  final bool neverDegrade;
+
+  const EnhancementConfig({
+    required this.successCurve,
+    required this.mojianshiCost,
+    required this.crystalGuarantees,
+    required this.crystalGainPerFailure,
+    required this.neverDegrade,
+  });
+
+  factory EnhancementConfig.fromYaml({
+    required Map<String, dynamic> enhancement,
+    required Map<String, dynamic> xinxueJiejing,
+  }) {
+    return EnhancementConfig(
+      successCurve: _parseSuccessCurve(enhancement['success_curve'] as List),
+      mojianshiCost: _parseMaterialCost(enhancement['mojianshi_cost'] as List),
+      crystalGuarantees: _parseCrystalGuarantees(
+        xinxueJiejing['guaranteed_success_costs'] as List,
+      ),
+      crystalGainPerFailure:
+          (xinxueJiejing['gain_per_failure'] as num).toInt(),
+      neverDegrade: enhancement['never_degrade'] as bool? ?? true,
+    );
+  }
+
+  /// 取 [targetLevel]（=enhanceLevel + 1）的成功率。yaml `success_rate: null`
+  /// 段走 [_fallbackFormula]（+20-49 段公式）。
+  double successRateFor(int targetLevel) {
+    final bracket = _findBracket(successCurve, targetLevel);
+    return bracket.successRate ?? _fallbackFormula(targetLevel);
+  }
+
+  /// 取 [targetLevel] 的失败惩罚类型。
+  MaterialPenalty materialPenaltyFor(int targetLevel) =>
+      _findBracket(successCurve, targetLevel).materialPenalty;
+
+  /// 取 [targetLevel] 的磨剑石消耗。
+  int mojianshiCostFor(int targetLevel) {
+    for (final b in mojianshiCost) {
+      if (targetLevel >= b.minLevel && targetLevel <= b.maxLevel) {
+        return b.cost;
+      }
+    }
+    throw StateError('mojianshi_cost 缺少 targetLevel=$targetLevel 的覆盖区间');
+  }
+
+  /// 取 [targetLevel] 的心血结晶保底消耗，null 表示该段无保底（+1-13）。
+  int? crystalCostToGuarantee(int targetLevel) {
+    for (final b in crystalGuarantees) {
+      if (targetLevel >= b.minLevel && targetLevel <= b.maxLevel) {
+        return b.crystalCost;
+      }
+    }
+    return null;
+  }
+
+  EnhanceLevelBracket _findBracket(
+    List<EnhanceLevelBracket> brackets,
+    int targetLevel,
+  ) {
+    for (final b in brackets) {
+      if (targetLevel >= b.minLevel && targetLevel <= b.maxLevel) return b;
+    }
+    throw StateError('success_curve 缺少 targetLevel=$targetLevel 的覆盖区间');
+  }
+
+  /// GDD §12 #3 决议：+20-49 段公式 `max(0.30, 0.50 - 0.02 × (level - 19))`。
+  static double _fallbackFormula(int targetLevel) {
+    final raw = 0.50 - 0.02 * (targetLevel - 19);
+    return raw < 0.30 ? 0.30 : raw;
+  }
+
+  static List<EnhanceLevelBracket> _parseSuccessCurve(List raw) {
+    return [
+      for (final e in raw)
+        EnhanceLevelBracket(
+          minLevel: ((e['level_range'] as List)[0] as num).toInt(),
+          maxLevel: ((e['level_range'] as List)[1] as num).toInt(),
+          successRate: (e['success_rate'] as num?)?.toDouble(),
+          materialPenalty: _parsePenalty(e['material_penalty'] as String),
+        ),
+    ];
+  }
+
+  static List<MaterialCostBracket> _parseMaterialCost(List raw) {
+    return [
+      for (final e in raw)
+        MaterialCostBracket(
+          minLevel: ((e['level_range'] as List)[0] as num).toInt(),
+          maxLevel: ((e['level_range'] as List)[1] as num).toInt(),
+          cost: (e['cost'] as num).toInt(),
+        ),
+    ];
+  }
+
+  static List<CrystalGuaranteeBracket> _parseCrystalGuarantees(List raw) {
+    return [
+      for (final e in raw)
+        CrystalGuaranteeBracket(
+          minLevel: ((e['level_range'] as List)[0] as num).toInt(),
+          maxLevel: ((e['level_range'] as List)[1] as num).toInt(),
+          crystalCost: (e['crystal_cost'] as num).toInt(),
+        ),
+    ];
+  }
+
+  static MaterialPenalty _parsePenalty(String s) {
+    switch (s) {
+      case 'none':
+        return MaterialPenalty.none;
+      case 'half':
+        return MaterialPenalty.half;
+      case 'full':
+        return MaterialPenalty.full;
+      default:
+        throw StateError('未知 material_penalty: $s');
+    }
+  }
+}
+
+class EnhanceLevelBracket {
+  final int minLevel;
+  final int maxLevel;
+  final double? successRate;
+  final MaterialPenalty materialPenalty;
+
+  const EnhanceLevelBracket({
+    required this.minLevel,
+    required this.maxLevel,
+    required this.successRate,
+    required this.materialPenalty,
+  });
+}
+
+class MaterialCostBracket {
+  final int minLevel;
+  final int maxLevel;
+  final int cost;
+
+  const MaterialCostBracket({
+    required this.minLevel,
+    required this.maxLevel,
+    required this.cost,
+  });
+}
+
+class CrystalGuaranteeBracket {
+  final int minLevel;
+  final int maxLevel;
+  final int crystalCost;
+
+  const CrystalGuaranteeBracket({
+    required this.minLevel,
+    required this.maxLevel,
+    required this.crystalCost,
+  });
+}
+
+enum MaterialPenalty { none, half, full }
 
 /// 单段共鸣度配置（numbers.yaml `equipment.resonance.stages[]`）。
 ///
