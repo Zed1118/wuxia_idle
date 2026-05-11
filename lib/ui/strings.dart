@@ -42,4 +42,41 @@ class UiStrings {
   static const String hintB = '观察点：左队全面克制右队（×1.25 攻 / ×0.75 受），差距约 1.67 倍';
   static const String hintC = '观察点：纯武器攻击对比（IF=0），+12强化+默契 = ×1.92 基础攻，伤害约为裸装 1.9 倍';
   static const String hintD = '观察点：低境界（三流）打高境界（绝顶）守方修正 ×0.05，几乎打不动';
+
+  // 角色面板（T28）
+  static const String panelAttributes = '基础属性';
+  static const String panelDerived = '派生数值';
+  static const String panelEquipment = '装备';
+  static const String panelTechnique = '心法';
+
+  static const String attrConstitution = '根骨';
+  static const String attrEnlightenment = '悟性';
+  static const String attrAgility = '身法';
+  static const String attrFortune = '机缘';
+
+  static const String statHp = '生命';
+  static const String statInternalForce = '内力';
+  static const String statSpeed = '速度';
+  static const String statCriticalRate = '暴击率';
+  static const String statEvasionRate = '闪避率';
+
+  /// 内力当前/上限文案：`X / Y`。
+  static String internalForceValue(int current, int max) => '$current / $max';
+
+  /// 修炼度进度文案：`X / Y`。
+  static String cultivationProgress(int current, int next) => '$current / $next';
+
+  /// 百分比小数 → `X%`（向下取整以避免视觉超额，与战斗调试一致）。
+  static String percent(double rate) => '${(rate * 100).toInt()}%';
+
+  /// 强化等级文案：`+N`（N=0 不省略，仍显示 `+0` 表示未强化）。
+  static String enhanceLevel(int level) => '+$level';
+
+  static const String techniqueRoleMain = '主修';
+  static const String techniqueRoleAssist = '辅修';
+
+  static const String slotEmpty = '未装备';
+  static const String techniqueEmpty = '未学';
+  static const String noMainTechnique = '未修主修';
+  static const String dashPlaceholder = '—';
 }
