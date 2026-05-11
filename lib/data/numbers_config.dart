@@ -1,3 +1,4 @@
+import 'defs/seclusion_map_def.dart';
 import 'models/enums.dart';
 
 /// 数值总配置（numbers.yaml 全量包装）。
@@ -75,6 +76,9 @@ class NumbersConfig {
   /// 动画时序配置（numbers.yaml `animation`，T15）。
   final AnimationNumbers animation;
 
+  /// 闭关地图配置（numbers.yaml `retreat`，Phase 3 T47）。
+  final RetreatConfig retreat;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -98,6 +102,7 @@ class NumbersConfig {
     required this.dispersionInternalForcePenalty,
     required this.learningCost,
     required this.animation,
+    required this.retreat,
     required this.raw,
   });
 
@@ -156,6 +161,9 @@ class NumbersConfig {
       ),
       animation: AnimationNumbers.fromYaml(
         y['animation'] as Map<String, dynamic>,
+      ),
+      retreat: RetreatConfig.fromYaml(
+        y['retreat'] as Map<String, dynamic>,
       ),
       raw: y,
     );
@@ -847,5 +855,64 @@ class LearningCostConfig {
       case TechniqueRole.assist:
         return assist;
     }
+  }
+}
+
+/// 闭关系统配置（numbers.yaml `retreat`，Phase 3 T47）。
+///
+/// 包含 5 张地图定义、可选时长、境界缩放系数、封顶小时数、
+/// 基础装备掉落概率。
+class RetreatConfig {
+  final List<SeclusionMapDef> maps;
+
+  /// 可选闭关时长（小时），通常 [1, 4, 12]。
+  final List<int> durationHours;
+
+  /// 每升一大境界，产出倍率乘以此系数（默认 1.3）。
+  final double realmScalePerTier;
+
+  /// 离线结算封顶小时数（超出部分不累积）。
+  final int capHours;
+
+  /// 基础装备触发概率，与地图 equipmentDropRate 相乘后为最终掉落概率。
+  final double baseEquipDropProbability;
+
+  const RetreatConfig({
+    required this.maps,
+    required this.durationHours,
+    required this.realmScalePerTier,
+    required this.capHours,
+    required this.baseEquipDropProbability,
+  });
+
+  factory RetreatConfig.fromYaml(Map<String, dynamic> y) {
+    final rawMaps = y['maps'] as List;
+    final rawDurations = y['durations'] as List;
+    return RetreatConfig(
+      maps: [
+        for (final m in rawMaps)
+          SeclusionMapDef.fromYaml(m as Map<String, dynamic>),
+      ],
+      durationHours: [
+        for (final d in rawDurations) (d['hours'] as num).toInt(),
+      ],
+      realmScalePerTier: (y['realm_scale_per_tier'] as num).toDouble(),
+      capHours: (y['cap_hours'] as num).toInt(),
+      baseEquipDropProbability:
+          (y['base_equip_drop_probability'] as num).toDouble(),
+    );
+  }
+
+  /// 给定境界大阶的产出缩放倍率：`realmScalePerTier ^ tier.index`。
+  ///
+  /// [RealmTier.xueTu].index == 0 → 1.0；
+  /// [RealmTier.zongShi].index == 5 → 1.3^5 ≈ 3.71。
+  double realmScaleFor(RealmTier tier) {
+    if (tier.index == 0) return 1.0;
+    var scale = 1.0;
+    for (var i = 0; i < tier.index; i++) {
+      scale *= realmScalePerTier;
+    }
+    return scale;
   }
 }
