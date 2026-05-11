@@ -38,6 +38,11 @@
   - `test/widget_test.dart`：追加 7 条 T15 测试（dispose 无泄漏/普通飘字/闪避飘字/克制标记/普攻串行/暴击串行/闪避串行），_testAnim 短时序（50ms 间隔）
   - **review 修复**（Mac 端 Opus 4.7）：删 `_CharacterSlot.super.key` 警告 / widget_test 3 处冗余 `const <String>[]` / `AttackAnimationWidget` 改 `config: AnimationNumbers` 注入，三段式比例由 `attackRushMs/attackHoldMs/attackTotalMs` 动态计算（修 yaml 即生效）
   - `flutter analyze` 0 issues / `flutter test` 153/153（Mac 端实测，已对齐预期）
+- **T17 4 套战斗测试场景**（2026-05-11）
+  - `lib/ui/debug/battle_test_menu.dart`（新建）：BattleTestMenu 调试菜单 + ScenarioLauncher + 4 场景工厂（内存对象不写 Isar）
+  - `BattleScreen` 加 hint 横幅 + onBattleEnd 回调；main.dart home 改 BattleTestMenu
+  - 4 场景：A 同境界速度对决 / B 全面克制循环 1.667× / C +12默契纯武器 ×1.92（IF=0）/ D 差 3 境界碾压（绝顶7020一击杀三流6000血）
+  - 修正挂账 #5（T17 笔误"差 2"→"差 3"）；test 160/160；分支 feat/t17-test-scenarios 24ff82c
 - **T16 Riverpod 串接 + 大招触发 + 结算 overlay**（2026-05-10）
   - `lib/providers/battle_providers.dart`（新建，`@riverpod` 代码生成）：`numbersConfigProvider` 包装 GameRepository 单例 / `BattleNotifier` (startBattle / requestUltimate / `advance` 连续 tick 直到 actionLog 增长或战斗结束) / `leftTeamProvider` / `rightTeamProvider` / `battleResultProvider`
   - **`advance()` 与 spec 偏差说明**：spec §16.1 写 `advanceTick()` 单 tick，实际改为连续 tick 直到出 action。原因：单 tick 是 actionPoint += speed 的最小时间单位，不一定有人 ≥1000 行动；若 UI Timer 间隔=单 tick 则慢角色场景看大段空白。`maxConsecutiveTicks=100` 兜底
@@ -51,14 +56,13 @@
 
 ## 进行中
 
-- 无（T16 完成，下一步 T17 4 套测试场景）
+- 无（T17 完成，下一步 T18 Phase 1 验收）
 
 ## 已知偏差 / 挂账事项
 
 2. **lib/ 目录结构**：CLAUDE.md 写 DDD（`core/features/shared`），实际用 phase1_tasks 的 flat。Phase 5 整理
 3. **`riverpod_lint` 砍掉**：与 `isar_generator 3.x` analyzer 互斥，Phase 5 切 Isar 4.x 时再补
 4. **IDS_REGISTRY.md 自报「143 个内容 ID」错误**：实际 238 个。等 DeepSeek 改文末
-5. **phase1_tasks.md T17 场景 D 笔误**：「差 2」应为「差 3」（三流→绝顶）。做 T17 时改
 6. **GDD §5.3/§5.6 公式系数 vs numbers.yaml**：GDD 字面 ×8 / ×5 是「口误」，代码以 yaml 平衡值（×1.0 / ×0.7）为准
 7. **numbers.yaml 节气列表混入「中秋」**：中秋是农历节日不是节气。GDD 没明确 24 节气，待定
 8. **CLAUDE.md §12 待人类决策清单 13 条**：境界/修炼度层重名等。Phase 1 实现到对应位置时按需提问
@@ -74,7 +78,7 @@
 
 ## 下一步
 
-T17 4 套测试场景 → T18 Phase 1 验收
+T18 Phase 1 验收（合并 main + 视觉验收 + 文档收尾）
 
 ## 关键约束（每次开局必读）
 
