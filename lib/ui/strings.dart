@@ -243,4 +243,10 @@ class UiStrings {
   static String towerFloorLabel(int floorIndex) => '第 $floorIndex 层';
   static String towerFloorEnemies(int count) => '$count 名敌人';
   static String towerRequiredRealm(String realmName) => '推荐 $realmName';
+
+  static const String towerDropSource = '爬塔奖励';
+  static const String towerVictoryConfirm = '确定';
+  static const String towerReplayNoReward = '已重打通关，重打不发奖';
+  static const String towerFirstClearLabel = '首通奖励：';
+  static const String towerFirstClearNoReward = '首通！本层无固定奖励。';
 }

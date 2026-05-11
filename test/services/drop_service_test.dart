@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
+import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/services/drop_service.dart';
 import 'package:wuxia_idle/utils/rng.dart';
@@ -42,6 +43,13 @@ void main() {
         presetLoreIds: [],
         dropSourceTags: [],
         iconPath: '',
+      );
+
+  TowerFloorDef floorWith(List<DropEntry> table) => TowerFloorDef(
+        floorIndex: 1,
+        requiredRealm: RealmTier.xueTu,
+        enemyTeam: const [],
+        dropTable: table,
       );
 
   StageDef stageWith(List<DropEntry> table) => StageDef(
@@ -353,6 +361,60 @@ void main() {
         }),
         throwsA(isA<FormatException>()),
       );
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // T44 rollTowerRewards 覆盖
+  // ──────────────────────────────────────────────────────────────────────────
+
+  group('rollTowerRewards（T44）', () {
+    test('dropTable 为空 → 返回 isEmpty 的 DropResult', () {
+      final result = service().rollTowerRewards(floorWith(const []), DefaultRng());
+      expect(result.isEmpty, isTrue);
+    });
+
+    test('装备 dropChance=1.0 → 掉一件装备，obtainedFrom=「爬塔奖励」', () {
+      final svc = DropService(
+        equipmentDefLookup: lookup,
+        defaultObtainedFrom: '爬塔奖励',
+      );
+      final result = svc.rollTowerRewards(
+        floorWith(const [
+          EquipmentDrop(equipmentDefId: 'test_weapon_tie_jian', dropChance: 1.0),
+        ]),
+        DefaultRng(seed: 0),
+      );
+      expect(result.equipments.length, 1);
+      expect(result.equipments.first.defId, 'test_weapon_tie_jian');
+      expect(result.equipments.first.obtainedFrom, '爬塔奖励');
+    });
+
+    test('物品 dropChance=1.0 → 物品 quantity 落区间内', () {
+      final result = service().rollTowerRewards(
+        floorWith(const [
+          ItemDrop(
+            inventoryItemDefId: 'item_mojianshi',
+            quantityMin: 1,
+            quantityMax: 3,
+            dropChance: 1.0,
+          ),
+        ]),
+        DefaultRng(seed: 7),
+      );
+      expect(result.items.length, 1);
+      expect(result.items.first.quantity, inInclusiveRange(1, 3));
+    });
+
+    test('dropChance=0.0 → 必不掉（与 rollDrops 概率逻辑一致）', () {
+      final result = service().rollTowerRewards(
+        floorWith(const [
+          EquipmentDrop(
+              equipmentDefId: 'test_weapon_tie_jian', dropChance: 0.0),
+        ]),
+        _MockRng(doubles: const [0.0]),
+      );
+      expect(result.isEmpty, isTrue);
     });
   });
 }

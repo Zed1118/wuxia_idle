@@ -6,6 +6,7 @@ import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/data/models/tower_progress.dart';
 import 'package:wuxia_idle/providers/tower_providers.dart';
 import 'package:wuxia_idle/services/tower_progress_service.dart';
+import 'package:wuxia_idle/ui/strings.dart';
 import 'package:wuxia_idle/ui/tower/tower_entry_flow.dart';
 
 /// T43 runTowerFlow widget 测试（@visibleForTesting DI 注入）。
@@ -81,6 +82,11 @@ void main() {
     await tester.tap(find.text('start'));
     await tester.pumpAndSettle();
 
+    // 胜利 dialog 出现 → 确认
+    expect(find.text(UiStrings.towerVictoryConfirm), findsOneWidget);
+    await tester.tap(find.text(UiStrings.towerVictoryConfirm));
+    await tester.pumpAndSettle();
+
     expect(recordedFloor, equals(normalFloor.floorIndex));
     expect(find.text('done'), findsOneWidget);
   });
@@ -123,6 +129,10 @@ void main() {
     await tester.tap(find.text('start'));
     await tester.pumpAndSettle();
 
+    // 胜利 dialog（首通）→ 确认
+    await tester.tap(find.text(UiStrings.towerVictoryConfirm));
+    await tester.pumpAndSettle();
+
     expect(find.text('done'), findsOneWidget);
     expect(find.textContaining('error'), findsNothing);
   });
@@ -139,6 +149,10 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
+    await tester.pumpAndSettle();
+
+    // 胜利 dialog（重打）→ 确认
+    await tester.tap(find.text(UiStrings.towerVictoryConfirm));
     await tester.pumpAndSettle();
 
     expect(find.text('done'), findsOneWidget);
@@ -161,6 +175,10 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
+    await tester.pumpAndSettle();
+
+    // 胜利 dialog（Boss 层首通）→ 确认
+    await tester.tap(find.text(UiStrings.towerVictoryConfirm));
     await tester.pumpAndSettle();
 
     expect(recordedFloor, equals(bossFloor.floorIndex));
