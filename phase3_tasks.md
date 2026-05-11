@@ -721,16 +721,269 @@ phase3_summary.md                         # T46 追加 Week 2 段
 
 ---
 
-## Week 3：待 Week 2 跑通后再拆
+## Week 3：闭关地图（B 方向，2026-05-11 确认）
 
-候选方向（GDD §7-§8 + CLAUDE §7）：
+> 方向决策：B 闭关地图。§12 #5 产出公式决议：×1.3/tier 境界缩放，72h 上限封顶，
+> mojianshi 整数掉落 + 装备按地图 dropRate 单次抽检。
 
-- **B 闭关地图 5 张**：兵器/心法/属性/共鸣/... 偏向不同（§12 #5 待决：每小时产出公式）
-- **C 奇遇 20-30**：encounters.yaml 触发条件（Mac）+ events/ 文案（DeepSeek），机缘值累积规则待决（§12 #6）
-- **D 师徒传承**：祖师+大弟子+二弟子 数据 model + 遗物三系锁死校验，§12 #10/#11 待决
-- **E 武学领悟 30-50 招**：插槽机制 + 触发条件，§12 #6 机缘值累积待决
+### T47 · SeclusionMapDef + numbers.yaml 补字段 + GameRepository 加载
 
-Week 2 收尾时跟用户讨论 Week 3 切法，重新走「kickoff → 拆任务 → 落档」流程。
+- **预估时长**：0.5 天
+- **依赖任务**：无（独立可并行）
+- **涉及文件**：`data/numbers.yaml`（补 2 字段）、`lib/data/defs/seclusion_map_def.dart`（新建）、`lib/data/numbers_config.dart`（加 `RetreatConfig`）、`lib/data/game_repository.dart`（加 `seclusionMaps` 字段 + 红线）、`test/seclusion_map_def_test.dart`（新建）
+
+**任务内容**：
+
+1. **numbers.yaml 补字段**（`retreat` 段末追加）：
+   ```yaml
+   realm_scale_per_tier: 1.3   # 每升一大阶，产出倍率 ×1.3
+   cap_hours: 72               # 离线结算封顶（小时）
+   ```
+
+2. **`SeclusionMapDef`**（`lib/data/defs/seclusion_map_def.dart`）：
+   ```dart
+   class SeclusionMapDef {
+     final RetreatMapType mapType;
+     final String mapName;
+     final RealmTier requiredRealm;
+     final double experiencePerHour;
+     final double mojianshiPerHour;
+     final double equipmentDropRate;   // 1.0 = 基础，1.5 = +50%
+     final double techniqueLearnRate;
+     final double internalForceGrowth;
+     // fromYaml 工厂
+   }
+   ```
+
+3. **`NumbersConfig` 加 `RetreatConfig`**（仿 `EnhancementConfig` 模式）：
+   ```dart
+   class RetreatConfig {
+     final List<SeclusionMapDef> maps;  // 5 张
+     final List<int> durationHours;    // [1, 4, 12]
+     final double realmScalePerTier;   // 1.3
+     final int capHours;               // 72
+     // fromYaml; realmScaleFor(RealmTier) → 1.3^tierIndex
+   }
+   ```
+   `NumbersConfig` 新增 `final RetreatConfig retreat`，`fromYaml` 解析 `y['retreat']`。
+
+4. **`GameRepository`**：
+   - 新增 `final List<SeclusionMapDef> seclusionMaps`
+   - 加载：`_config.retreat.maps`
+   - `SeclusionMapDef getSeclusionMap(RetreatMapType)` 便捷查询
+   - `_enforceRetreatRedLines()`：5 张地图类型唯一 / 每张 `requiredRealm` 在已知 enum 内 / `mojianshiPerHour > 0` / `capHours ∈ [1, 168]`
+
+**验收标准**：
+- [ ] 单测 ≥ 10：5 张地图 fromYaml 读回 / requiredRealm 顺序（shanLin 最低=学徒，duanYaJueBi 最高=宗师）/ realmScaleFor(xueTu)=1.0 / realmScaleFor(zongShi)≈3.71 / 红线 fail-fast 4 用例
+- [ ] `flutter analyze` 0 issues
+
+**可能的坑**：
+- `RealmTier` 索引顺序（xueTu=0, sanLiu=1, erLiu=2, yiLiu=3, jueDing=4, zongShi=5, wuSheng=6），`realmScaleFor` 用 `tier.index` 乘幂，不要硬编码 7 个 case
+- numbers.yaml `map_type` 值是 camelCase（`shanLin`），与 enum name 一致，直接 `byName` 即可
+
+---
+
+### T48 · RetreatSession @collection + SeclusionService
+
+- **预估时长**：1 天
+- **依赖任务**：T47
+- **涉及文件**：`lib/data/models/enums.dart`（加 `RetreatStatus`）、`lib/data/models/retreat_session.dart`（新建 + codegen）、`lib/data/isar_setup.dart`（加 schema + 升 saveVersion）、`lib/services/seclusion_service.dart`（新建）、`test/seclusion_service_test.dart`（新建）
+
+**任务内容**：
+
+1. **`enum RetreatStatus { active, completed, abandoned }`** → 加到 `enums.dart`
+
+2. **`@collection RetreatSession`**（`lib/data/models/retreat_session.dart`）：
+   ```dart
+   @collection
+   class RetreatSession {
+     Id id = Isar.autoIncrement;
+     int saveDataId = 0;
+     @enumerated late RetreatMapType mapType;
+     int durationHours = 0;        // 计划时长（1/4/12）
+     late DateTime startedAt;
+     DateTime? completedAt;        // null = 进行中或已放弃
+     @enumerated RetreatStatus status = RetreatStatus.active;
+     List<RewardEntry> actualRewards = [];   // 收功时填入
+   }
+   ```
+   运行 `flutter pub run build_runner build --delete-conflicting-outputs` 生成 `.g.dart`。
+
+3. **`IsarSetup`**：加 `RetreatSessionSchema` → `_allSchemas`；saveVersion 0.3.0 → 0.4.0。
+
+4. **`SeclusionService`**（`lib/services/seclusion_service.dart`）：
+   ```dart
+   class SeclusionService {
+     // startRetreat({mapType, durationHours, saveDataId, now}) → RetreatSession
+     //   校验：canEnterMap(mapType, charRealm) → bool（境界锁）
+     //   已有 active session 则先调 abandonRetreat
+     //   写 Character.currentRetreatSessionId = session.id
+     //
+     // getActiveSession(saveDataId) → RetreatSession?
+     //
+     // computeOutputs({session, charRealm, now, realmScale}) → RetreatOutputs
+     //   actualHours = min(elapsed, session.durationHours, capHours)
+     //   mojianshi = (mojianshiPerHour × actualHours × realmScale × dayBonus).floor()
+     //   equipDropRolls = 1（per session，不按小时重复）
+     //
+     // completeRetreat({session, charRealm, rng, now}) → RetreatOutputs
+     //   写 completedAt / status=completed / actualRewards
+     //   清 Character.currentRetreatSessionId = null
+     //
+     // abandonRetreat(session) → void
+     //   只写 status=abandoned，不发奖
+   }
+   ```
+
+   **`RetreatOutputs`** typedef / class（可用 record 类型）：
+   ```dart
+   typedef RetreatOutputs = ({
+     double actualHours,
+     int mojianshi,
+     List<DropEntry> equipmentDrops,   // 从 DropService 取
+     int experiencePoints,
+   });
+   ```
+
+   **时辰加成**（`TimeOfDayPeriod`）：`startedAt` 时刻决定，不动态切换。
+   子时(23:00-01:00) → `internalForceGrowth × 1.2`；正午(11:00-13:00) → 仅刚猛流派 technique learn rate × 1.2；其他 → ×1.0。
+   Demo 阶段 mojianshi / experience 不受时辰影响（复杂度留 Phase 5）。
+
+**验收标准**：
+- [ ] 单测 ≥ 15（接真 Isar 临时目录）：startRetreat 创建 session / getActive 幂等 / 72h 封顶 / 境界锁（sanLiu 进不了 duanYaJueBi）/ computeOutputs 3 用例（0h/1h/超72h）/ completeRetreat 写库 / abandon 不发奖 / 与 TowerProgress / MainlineProgress 独立（各自 saveDataId 无交叉）
+- [ ] saveVersion 0.4.0 写入 _currentSaveVersion
+- [ ] `flutter analyze` 0 issues
+
+**可能的坑**：
+- `RetreatSession` 的 `@enumerated` 修饰对 Isar 存 enum 是必须的（与 TowerFloorDef 里 bossKind 同理）
+- 写 `Character.currentRetreatSessionId` 需要在同一 writeTxn 或确保顺序，别两次独立 txn 导致不一致
+- `DropService.rollDrops` 已有，直接传 `dropTable` 即可；不要在 SeclusionService 里重实现抽奖逻辑
+
+---
+
+### T49 · 闭关地图列表 UI + 进入流程 + main_menu 入口
+
+- **预估时长**：1 天
+- **依赖任务**：T48
+- **涉及文件**：`lib/ui/seclusion/`（新建目录）：`seclusion_map_list_screen.dart` / `seclusion_setup_screen.dart` / `active_retreat_screen.dart`；`lib/ui/main_menu.dart`（加入口）；`lib/ui/strings.dart`（加字符串常量）；widget tests
+
+**任务内容**：
+
+1. **`SeclusionMapListScreen`**：
+   - 5 张地图卡片列表，每张显示：地图名 / 特色产出描述 / 解锁境界
+   - 三态：locked（灰色 + 境界要求）/ available（可进入）/ active（进行中，显示剩余时间倒计时）
+   - 顶部 `_ActiveBanner`：有活跃 session 时显示地图名 + 剩余时间 +「收功」按钮
+
+2. **`SeclusionSetupScreen`**（从 available 卡片 onTap 进入）：
+   - 显示地图详情（5 项产出基础值 × 境界缩放 = 预估产出）
+   - 三档时长按钮（1h / 4h / 12h）+ 时辰加成提示（当前时辰是否有 bonus）
+   - 「开始闭关」确认按钮 → `SeclusionService.startRetreat` → push `ActiveRetreatScreen`
+
+3. **`ActiveRetreatScreen`**：
+   - 显示地图名 + 开始时间 + 预计结束时间 + 进度条（elapsed/durationHours）
+   - 「提前收功」按钮 + 确认 dialog → `SeclusionService.completeRetreat` → push 收功结果
+   - 已超时（elapsed > durationHours）时进度条满、按钮变「收功」（不再说"提前"）
+   - **不做实时 Timer**：屏幕打开时算一次，无自动刷新（Demo 足够）
+
+4. **`main_menu.dart`**：在「问鼎九霄」按钮下方插入「闭关修炼」按钮（label/hint 走 `UiStrings`）
+
+**验收标准**：
+- [ ] widget test ≥ 3：列表渲染 5 张地图 / locked 卡片无 onTap 响应 / SetupScreen 显示地图名
+- [ ] `flutter analyze` 0 issues
+
+**可能的坑**：
+- 列表屏需从 Isar 读 `getActiveSession` —— 用 `FutureBuilder`，不引入新 Riverpod provider（Phase 5 再整体接入）
+- 进度条数值用 `min(elapsed, durationHours)` 防超出 [0,1]
+
+---
+
+### T50 · 闭关结算 + 奖励分发 + 收功弹窗
+
+- **预估时长**：0.5 天
+- **依赖任务**：T49
+- **涉及文件**：`lib/services/seclusion_service.dart`（completeRetreat 接 DropService）、`lib/ui/seclusion/retreat_result_screen.dart`（新建）、`lib/services/drop_service.dart`（确认 rollDrops 接口兼容）、单测
+
+**任务内容**：
+
+1. **结算完整路径**（`SeclusionService.completeRetreat`）：
+   - 调 `computeOutputs` 得到 `actualHours / mojianshi / experiencePoints`
+   - 调 `DropService.rollDrops(mapDef.dropTable, rng)` 抽装备（`mapDef.equipmentDropRate` 作为概率权重，见下）
+   - 将 mojianshi 写入 `InventoryItem`（`ItemType.moJianShi`，走已有 inventory writeTxn 模式）
+   - `actualRewards` 写回 `RetreatSession`（mojianshi key + 装备 defId key）
+   - **experiencePoints**：当前 Character 无 exp 字段 → Demo 阶段写入 `GameEvent`（type=retreatCompleted）记录，不改 Character schema
+
+2. **装备抽检接口**：
+   - Demo 阶段 5 张地图没有独立 dropTable yaml —— 用 `equipmentDropRate` 作为"是否触发一次抽检"的概率：
+     `if (rng.nextDouble() < mapDef.equipmentDropRate × 0.1)` → 触发一次 `DropService.rollDrops` 从 equipment.yaml 按阶随机抽
+   - `0.1` 是基础掉率系数，写入 numbers.yaml `retreat.base_equip_drop_probability: 0.1`
+
+3. **`RetreatResultScreen`**（收功弹窗 / 独立屏）：
+   - 显示：地图名 / 实际挂机时长 / 奖励列表（磨剑石 N 颗 + 装备（若有））
+   - 「返回」按钮回 main_menu
+   - 空奖励（0 mojianshi + 无装备）也正常显示（"此次收获甚微"）
+
+4. **单测 ≥ 5**：mojianshi 按小时正确累加 / 72h 封顶后 mojianshi 上限 / 装备掉率 0 不掉 / actualRewards 写库验 / abandon 后 currentRetreatSessionId 清零
+
+**验收标准**：
+- [ ] 单测 ≥ 5（含上述）
+- [ ] 收功后 InventoryItem.quantity 变化可从 Isar 读回验证
+- [ ] `flutter analyze` 0 issues
+
+**可能的坑**：
+- 写 mojianshi 到 Inventory 需要查「是否已有该 itemType 行」—— `filter().itemTypeEqualTo(ItemType.moJianShi).findFirst()`；存在则 quantity+=N，否则新建
+- DropService 现有 `rollDrops` 参数签名可能与 seclusion 调用姿势不匹配，提前确认接口再写调用端代码
+
+---
+
+### T51 · 全量 test + analyze 双绿
+
+- **预估时长**：0.5 天
+- **依赖任务**：T47-T50
+- **涉及文件**：所有上述 test 文件
+
+**任务内容**：
+1. `flutter test` 全绿，预期累计 ≥ 455（420 + Week 3 约 33+）
+2. `flutter analyze` 0 issues
+3. 每个 SeclusionService public API 至少 1 service-level test
+
+**验收标准**：
+- [ ] 测试数 ≥ 455
+- [ ] analyze 0 issues
+- [ ] Pen 端 SSH 跑一遍（Mac 双绿后再派）
+
+---
+
+### T52 · Pen 视觉验收 + 截图归档 + tag v0.3.0-w3
+
+- **预估时长**：0.5 天
+- **依赖任务**：T51
+- **涉及文件**：`docs/screenshots/phase3_w3/`、`phase3_summary.md`（追加 Week 3 段）、`PROGRESS.md`
+
+**任务内容**：
+
+1. Mac 端预演：test + analyze 双绿
+2. 派 Pen 端拉最新代码 + `flutter run -d windows` 走完一遍闭关流程：
+   - 主菜单 → 闭关修炼 → 地图列表（5 张，4 锁 1 可进）
+   - 进入山林（学徒可进）→ 选 1h → 开始闭关 → ActiveRetreatScreen 倒计时
+   - 强制触发收功（调试：修改 startedAt 为 2h 前）→ 收功弹窗 → 奖励显示
+   - 验证 Inventory 磨剑石数量变化
+3. 截图归档 ≥ 3 张到 `docs/screenshots/phase3_w3/`：
+   - 01 主菜单（含「闭关修炼」按钮）
+   - 02 闭关地图列表（5 张三态）
+   - 03 收功弹窗（奖励列表）
+4. `phase3_summary.md` 追加 Week 3 段（T47-T52 清单 + 测试数 + 截图链接）
+5. PROGRESS.md 更新
+6. tag `v0.3.0-w3`，push origin（非 Phase 3 完整 tag，Phase 3 末 Week 4 后补 v0.3.0-phase3）
+
+**验收标准**：
+- [ ] ≥ 3 截图归档
+- [ ] phase3_summary.md Week 3 段完
+- [ ] tag v0.3.0-w3 已 push
+- [ ] Pen 验收无大 bug
+
+**可能的坑**：
+- Isar schema 升版（0.4.0）Pen 端旧存档会报 schema mismatch → 告知 Pen 先删 AppData 存档再跑
+- 调试用 startedAt 回拨：可在 SeclusionSetupScreen 加隐藏按钮（Debug flag 判断），不改 service 逻辑
 
 ---
 
