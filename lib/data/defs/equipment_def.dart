@@ -19,6 +19,10 @@ class EquipmentDef {
   final List<String> dropSourceTags;
   final String iconPath;
 
+  /// 开锋第 3 槽（+19 解锁）可选的专属技能 def id 列表（T21 新增）。
+  /// yaml 缺省时为空，UI 表现为"该装备暂无专属技能"。
+  final List<String> specialSkillCandidates;
+
   const EquipmentDef({
     required this.id,
     required this.name,
@@ -34,6 +38,7 @@ class EquipmentDef {
     required this.presetLoreIds,
     required this.dropSourceTags,
     required this.iconPath,
+    this.specialSkillCandidates = const [],
   });
 
   factory EquipmentDef.fromYaml(Map<String, dynamic> y) {
@@ -58,6 +63,10 @@ class EquipmentDef {
         (y['dropSourceTags'] as List? ?? const []).map((e) => e as String),
       ),
       iconPath: y['iconPath'] as String,
+      specialSkillCandidates: List<String>.from(
+        (y['specialSkillCandidates'] as List? ?? const [])
+            .map((e) => e as String),
+      ),
     );
   }
 

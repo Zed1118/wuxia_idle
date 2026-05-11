@@ -24,6 +24,9 @@ class NumbersConfig {
   /// T20 用）。
   final EnhancementConfig enhancement;
 
+  /// 开锋系统配置（numbers.yaml `equipment.forging`，T21 用）。
+  final ForgingConfig forging;
+
   /// 每阶心法的速度加成（numbers.yaml `techniques.tiers[].speed_bonus`，
   /// 仅主修生效，T09 用）。
   final Map<TechniqueTier, int> techniqueSpeedBonus;
@@ -61,6 +64,7 @@ class NumbersConfig {
     required this.defenseRateByTier,
     required this.enhancementBonusPerLevel,
     required this.enhancement,
+    required this.forging,
     required this.techniqueSpeedBonus,
     required this.cultivationMultiplier,
     required this.schoolCounter,
@@ -91,6 +95,9 @@ class NumbersConfig {
       enhancement: EnhancementConfig.fromYaml(
         enhancement: equipment['enhancement'] as Map<String, dynamic>,
         xinxueJiejing: equipment['xinxue_jiejing'] as Map<String, dynamic>,
+      ),
+      forging: ForgingConfig.fromYaml(
+        equipment['forging'] as Map<String, dynamic>,
       ),
       techniqueSpeedBonus:
           _parseTechniqueSpeedBonus(techniques['tiers'] as List),
@@ -345,6 +352,71 @@ class CrystalGuaranteeBracket {
 }
 
 enum MaterialPenalty { none, half, full }
+
+/// 开锋系统配置（numbers.yaml `equipment.forging`，T21）。
+///
+/// 3 个槽分别在 +10 / +15 / +19 解锁。槽 2 受 yaml `constraint` 字段约束
+/// "不能与开锋一相同类型"，由 [ForgingSlotConfig.excludePreviousSlotType]
+/// 标记（解析时识别字符串）。
+class ForgingConfig {
+  final List<ForgingSlotConfig> slots;
+
+  const ForgingConfig({required this.slots});
+
+  factory ForgingConfig.fromYaml(Map<String, dynamic> y) {
+    return ForgingConfig(
+      slots: [
+        for (final s in y['slots'] as List)
+          ForgingSlotConfig.fromYaml(s as Map<String, dynamic>),
+      ],
+    );
+  }
+
+  /// 按 [slotIndex]（1/2/3）取槽配置。越界抛 [StateError]。
+  ForgingSlotConfig slotByIndex(int slotIndex) {
+    for (final s in slots) {
+      if (s.slotIndex == slotIndex) return s;
+    }
+    throw StateError('ForgingConfig 缺少 slotIndex=$slotIndex 的配置');
+  }
+}
+
+class ForgingSlotConfig {
+  final int slotIndex;
+  final int unlockAtEnhanceLevel;
+  final List<ForgingSlotType> availableTypes;
+  final Map<ForgingSlotType, int> bonusValue;
+
+  /// yaml `constraint` 字段不为空时为 true（当前仅 slot 2 = "不能与开锋一相同类型"）。
+  final bool excludePreviousSlotType;
+
+  const ForgingSlotConfig({
+    required this.slotIndex,
+    required this.unlockAtEnhanceLevel,
+    required this.availableTypes,
+    required this.bonusValue,
+    required this.excludePreviousSlotType,
+  });
+
+  factory ForgingSlotConfig.fromYaml(Map<String, dynamic> y) {
+    final available = [
+      for (final t in y['available_types'] as List)
+        ForgingSlotType.values.byName(t as String),
+    ];
+    final bonusRaw = y['bonus_value'] as Map<String, dynamic>;
+    final bonus = <ForgingSlotType, int>{
+      for (final e in bonusRaw.entries)
+        ForgingSlotType.values.byName(e.key): (e.value as num).toInt(),
+    };
+    return ForgingSlotConfig(
+      slotIndex: (y['slot_index'] as num).toInt(),
+      unlockAtEnhanceLevel: (y['unlock_at_enhance_level'] as num).toInt(),
+      availableTypes: available,
+      bonusValue: bonus,
+      excludePreviousSlotType: y['constraint'] != null,
+    );
+  }
+}
 
 /// 单段共鸣度配置（numbers.yaml `equipment.resonance.stages[]`）。
 ///
