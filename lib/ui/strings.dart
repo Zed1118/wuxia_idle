@@ -215,4 +215,32 @@ class UiStrings {
       _ => '',
     };
   }
+
+  // ── Phase 3 爬塔（T42）──
+
+  static const String mainMenuTower = '问鼎九霄';
+  static const String mainMenuTowerHint = '30 层，无限重试，永久记录';
+
+  static const String towerTitle = '问鼎九霄';
+
+  static const String towerBossMinor = '小 Boss';
+  static const String towerBossMajor = '大 Boss';
+
+  static const String towerFloorLocked = '通关前一层解锁';
+  static const String towerFloorChallenge = '挑战';
+
+  static const String towerReplayTitle = '已通关';
+  static const String towerReplayBody = '已通关，是否重打？（重打不发奖）';
+  static const String towerReplayConfirm = '重打';
+  static const String towerReplayCancel = '取消';
+
+  static const String towerEntryPlaceholder = '爬塔进入流程待 T43 接入';
+
+  static String towerProgressCleared(int cleared) => '已通 $cleared / 30 层';
+  static String towerProgressAttempts(int n) => '总尝试 $n 次';
+  static String towerProgressDefeats(int n) => '失败 $n 次';
+
+  static String towerFloorLabel(int floorIndex) => '第 $floorIndex 层';
+  static String towerFloorEnemies(int count) => '$count 名敌人';
+  static String towerRequiredRealm(String realmName) => '推荐 $realmName';
 }
