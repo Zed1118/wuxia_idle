@@ -1,11 +1,16 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../combat/battle_state.dart';
 import '../../data/defs/skill_def.dart';
 import '../../data/models/enums.dart';
+import '../../providers/battle_providers.dart';
+import 'battle_screen.dart';
 
-/// T14 静态布局目测用的 mock [BattleState]（不依赖 GameRepository）。
+/// T14 / T15 / T16 视觉目测用的 mock 战斗数据（不依赖 GameRepository）。
 ///
 /// **不走 [BattleCharacter.fromCharacter]**——那个工厂需要 Isar 实体 + 心法定义；
-/// T14 只验布局，直接用构造函数填字段更轻。覆盖 4 项验收：
+/// 视觉目测只验 UI 表现，直接用构造函数填字段更轻。覆盖 4 项验收：
 ///   - 左 3 右 3 对称
 ///   - HP 比例不同（满血 / 中血 / 残血）
 ///   - 三个流派颜色都出现
@@ -68,7 +73,10 @@ class BattleDemo {
     );
   }
 
-  static BattleState build() {
+  /// 返回 (左队, 右队) mock 数据，供 [BattleNotifier.startBattle] 注入。
+  /// T15 时返回完整 [BattleState] 直接喂给 BattleScreen，T16 切 Riverpod 后
+  /// 改为返回原始 team list，由 [BattleDemoLauncher] 调 startBattle 推到 notifier。
+  static (List<BattleCharacter>, List<BattleCharacter>) mockTeams() {
     final left = [
       _make(
         id: 1,
@@ -152,6 +160,35 @@ class BattleDemo {
         isAlive: false,
       ),
     ];
-    return BattleState.initial(leftTeam: left, rightTeam: right);
+    return (left, right);
   }
+}
+
+/// Demo 启动器（phase1_tasks T16）：把 mock 数据推到 [BattleNotifier]，
+/// 然后挂 [BattleScreen]。
+///
+/// initState 中用 `addPostFrameCallback` 调 startBattle，避免在 build 期改
+/// state（Riverpod 报错）。launcher 自身不渲染战斗 UI，转交给 BattleScreen
+/// 通过 `ref.watch` 读取状态。
+class BattleDemoLauncher extends ConsumerStatefulWidget {
+  const BattleDemoLauncher({super.key});
+
+  @override
+  ConsumerState<BattleDemoLauncher> createState() =>
+      _BattleDemoLauncherState();
+}
+
+class _BattleDemoLauncherState extends ConsumerState<BattleDemoLauncher> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final (left, right) = BattleDemo.mockTeams();
+      ref.read(battleNotifierProvider.notifier).startBattle(left, right);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const BattleScreen();
 }

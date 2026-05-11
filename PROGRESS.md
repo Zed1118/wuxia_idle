@@ -38,10 +38,20 @@
   - `test/widget_test.dart`：追加 7 条 T15 测试（dispose 无泄漏/普通飘字/闪避飘字/克制标记/普攻串行/暴击串行/闪避串行），_testAnim 短时序（50ms 间隔）
   - **review 修复**（Mac 端 Opus 4.7）：删 `_CharacterSlot.super.key` 警告 / widget_test 3 处冗余 `const <String>[]` / `AttackAnimationWidget` 改 `config: AnimationNumbers` 注入，三段式比例由 `attackRushMs/attackHoldMs/attackTotalMs` 动态计算（修 yaml 即生效）
   - `flutter analyze` 0 issues / `flutter test` 153/153（Mac 端实测，已对齐预期）
+- **T16 Riverpod 串接 + 大招触发 + 结算 overlay**（2026-05-10）
+  - `lib/providers/battle_providers.dart`（新建，`@riverpod` 代码生成）：`numbersConfigProvider` 包装 GameRepository 单例 / `BattleNotifier` (startBattle / requestUltimate / `advance` 连续 tick 直到 actionLog 增长或战斗结束) / `leftTeamProvider` / `rightTeamProvider` / `battleResultProvider`
+  - **`advance()` 与 spec 偏差说明**：spec §16.1 写 `advanceTick()` 单 tick，实际改为连续 tick 直到出 action。原因：单 tick 是 actionPoint += speed 的最小时间单位，不一定有人 ≥1000 行动；若 UI Timer 间隔=单 tick 则慢角色场景看大段空白。`maxConsecutiveTicks=100` 兜底
+  - `lib/ui/battle/battle_screen.dart`（改 ConsumerStatefulWidget）：移除 state/onUltimate/onFastForward 参数；`ref.listen` 三类边沿（team 从空→非空启动 Timer / actionLog 增长触发动画+解除大招置灰 / result 翻转弹 dialog）；team 空时 placeholder
+  - `lib/ui/battle/battle_demo.dart`：`BattleDemo.build()`→`mockTeams()` 返回 `(left, right)`；新增 `BattleDemoLauncher`（initState `addPostFrameCallback` 调 startBattle）
+  - `lib/main.dart`：home 改 `const BattleDemoLauncher()`
+  - 大招按钮：本地 `Set<int> _disabledUltimateChars` 置灰（不污染 BattleState），按下加 / actor 行动后移除；`_isUltimateReady` 检查 alive + 内力 + CD
+  - 结算 overlay：result 翻转 → `addPostFrameCallback` → `showDialog`（避免 build 期 setState）；`UiStrings.battleSummary` 显示总伤害/暴击次数/用时 tick
+  - `test/widget_test.dart`：`_TestBattleNotifier`（advance no-op 避免测试触发 numbersConfigProvider）+ ProviderScope override pumpBattle helper；T16 新增 3 用例（结算 dialog / 大招按钮 enabled 状态 / 按下置灰+解除）
+  - `flutter analyze` 0 issues / `flutter test` 156/156（base 153 + T16 新增 3）
 
 ## 进行中
 
-- 无（T15 完成，下一步 T16 Riverpod 串接）
+- 无（T16 完成，下一步 T17 4 套测试场景）
 
 ## 已知偏差 / 挂账事项
 
@@ -58,12 +68,13 @@
 12. **`LevelDiffModifier.diff3OrMore.attacker` 数据层 vs 公式层语义不同**：NumbersConfig 兜底为 `diff2.attacker`(=2.5)，公式层取 `1.0`。Phase 5 收尾时一并把兜底改 1.0
 17. **phase1_tasks T12 §709 笔误**：「三流→绝顶差 2 守方 0.05」错（差 2 守方=0.3，差 3+ 才是 0.05）。"必败"语义仍成立，验收按差 2 实测
 18. **`flutter build web` 被 Isar 阻塞**：`combat/*.dart` 链路通过 `data/models/{character,equipment,technique}.dart` 拉入 `*.g.dart` 64-bit hash 字面量（JS 表示不下）+ Isar `dart:ffi` web 不支持。T14/T15 视觉验收推到 Windows 首跑（与 #9/#11 同性质）。Phase 5 切 Isar 4.x 时一并恢复 web 入口
+20. **Windows 端 Flutter 环境未装好（2026-05-11）**：T15/T16 视觉验收（攻击动画 / 飘字 / 大招按钮真实战斗 / spec §16 rebuild 颗粒度）暂时挂起。Mac 本地 analyze + test 全绿且 widget test 覆盖核心交互（156/156，含按下置灰 / 解除 / 结算 dialog），决定**不阻塞 Phase 1 推进**——T17 直接基于 `feat/t16-riverpod-wiring` 继续开新分支。Windows 环境就绪后一并补验
 
 > 已解决条目（#1/#13/#14/#15/#16/#19）已归档到文末。
 
 ## 下一步
 
-T16 Riverpod 串接 → T17 4 套测试场景
+T17 4 套测试场景 → T18 Phase 1 验收
 
 ## 关键约束（每次开局必读）
 

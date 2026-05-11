@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../combat/battle_log.dart';
 import '../../combat/battle_state.dart';
@@ -10,6 +11,7 @@ import '../../combat/enum_localizations.dart';
 import '../../data/defs/skill_def.dart';
 import '../../data/models/enums.dart';
 import '../../data/numbers_config.dart';
+import '../../providers/battle_providers.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
 import 'attack_animation.dart';
@@ -23,33 +25,31 @@ class _PopupEntry {
   const _PopupEntry({required this.id, required this.data});
 }
 
-/// 3v3 战斗主屏（phase1_tasks T14 静态布局 + T15 攻击动画 + 伤害飘字）。
+/// 3v3 战斗主屏（phase1_tasks T14 静态布局 + T15 动画/飘字 + T16 Riverpod 串接）。
 ///
-/// 从 T15 起改为 StatefulWidget，使用 TickerProviderStateMixin 统一管理
-/// 6 个攻击 AnimationController + 1 个屏震 AnimationController。
-/// Timer 驱动 actionLog 顺序播放，每个 action 触发攻击动画 + 飘字。
+/// **T16 起切换到 [ConsumerStatefulWidget]**：状态来源从外部 `state` 参数改为
+/// [battleNotifierProvider]。Timer 不再播放预算 actionLog，而是驱动
+/// [BattleNotifier.advance]，引擎实时 tick 产生新 action 后由 `ref.listen`
+/// 触发动画。结构：
+/// - `ref.watch(battleNotifierProvider)` 提供子组件渲染数据
+/// - `ref.listen` 三类边沿：team 从空 → 非空启动 Timer / actionLog 增长触发
+///   动画 + 解除大招置灰 / result 翻转弹结算 dialog
 ///
-/// [animConfig] 默认为 [AnimationNumbers.defaults]（与 numbers.yaml 同值），
-/// 测试时可传入更短的时序以加速。
-class BattleScreen extends StatefulWidget {
-  final BattleState state;
+/// [animConfig] 默认 [AnimationNumbers.defaults]（与 numbers.yaml 同值）；
+/// 测试可注入更短时序加速。
+class BattleScreen extends ConsumerStatefulWidget {
   final AnimationNumbers animConfig;
-  final void Function(int slotIndex)? onUltimate;
-  final VoidCallback? onFastForward;
 
   const BattleScreen({
     super.key,
-    required this.state,
     this.animConfig = AnimationNumbers.defaults,
-    this.onUltimate,
-    this.onFastForward,
   });
 
   @override
-  State<BattleScreen> createState() => _BattleScreenState();
+  ConsumerState<BattleScreen> createState() => _BattleScreenState();
 }
 
-class _BattleScreenState extends State<BattleScreen>
+class _BattleScreenState extends ConsumerState<BattleScreen>
     with TickerProviderStateMixin {
   // 6 个攻击动画 controller（slotKey = teamSide*3 + slotIndex）
   late final List<AnimationController> _attackControllers;
@@ -61,10 +61,16 @@ class _BattleScreenState extends State<BattleScreen>
   final Map<int, List<_PopupEntry>> _popups = {};
   int _nextPopupId = 0;
 
-  // 播放指针 & 定时器
-  int _playingIndex = 0;
+  // 实时 tick 定时器（advance() 驱动）
   Timer? _playTimer;
   bool _isFastForward = false;
+
+  // 大招按钮按下后置灰：char.id ∈ set 时按钮 disabled，下次该角色行动后解除。
+  // **本地 state，不污染 BattleState**（spec §16.2 注：UI 状态属于 UI 层）。
+  final Set<int> _disabledUltimateChars = {};
+
+  // 战斗结算 dialog 已显示标志，避免 result 字段连续触发多次弹窗
+  bool _resultDialogShown = false;
 
   // ─── 生命周期 ────────────────────────────────────────────────────────────
 
@@ -82,7 +88,7 @@ class _BattleScreenState extends State<BattleScreen>
       vsync: this,
       duration: Duration(milliseconds: widget.animConfig.shakeDurationMs),
     );
-    _startTimer();
+    // Timer 不在 initState 启动，等 ref.listen 看到 startBattle 完成后再启动。
   }
 
   @override
@@ -95,41 +101,37 @@ class _BattleScreenState extends State<BattleScreen>
     super.dispose();
   }
 
-  // ─── 播放逻辑 ────────────────────────────────────────────────────────────
+  // ─── Timer / advance 驱动 ────────────────────────────────────────────────
 
   void _startTimer() {
     _playTimer?.cancel();
     final interval = _isFastForward
         ? widget.animConfig.fastForwardIntervalMs
         : widget.animConfig.actionIntervalMs;
-    if (widget.state.actionLog.isEmpty) return;
     _playTimer = Timer.periodic(
       Duration(milliseconds: interval),
-      (_) => _advancePlayback(),
+      (_) {
+        if (!mounted) return;
+        ref.read(battleNotifierProvider.notifier).advance();
+      },
     );
   }
 
-  void _advancePlayback() {
-    if (_playingIndex >= widget.state.actionLog.length) {
-      _playTimer?.cancel();
-      return;
-    }
-    final action = widget.state.actionLog[_playingIndex];
-    _playingIndex++;
-    _playAction(action);
+  void _toggleFastForward() {
+    setState(() => _isFastForward = !_isFastForward);
+    if (_playTimer != null) _startTimer();
   }
 
-  void _playAction(BattleAction action) {
-    // 攻击者前冲动画
-    final actor = _findCharacter(action.actorId);
+  // ─── 动画 / 飘字 ─────────────────────────────────────────────────────────
+
+  void _playAction(BattleAction action, BattleState s) {
+    final actor = _findCharacter(action.actorId, s);
     if (actor != null) {
       final key = _slotKey(actor.teamSide, actor.slotIndex);
       _attackControllers[key].forward(from: 0.0);
     }
-
-    // 伤害飘字
     if (action.attackResult != null && action.targetId != null) {
-      final target = _findCharacter(action.targetId!);
+      final target = _findCharacter(action.targetId!, s);
       if (target != null) {
         _spawnPopup(target, action.attackResult!);
       }
@@ -140,11 +142,9 @@ class _BattleScreenState extends State<BattleScreen>
     final key = _slotKey(target.teamSide, target.slotIndex);
     final data = _buildPopupData(result);
     final entry = _PopupEntry(id: _nextPopupId++, data: data);
-
     setState(() {
       (_popups[key] ??= []).add(entry);
     });
-
     if (result.isCritical) {
       _shakeCtrl.forward(from: 0.0);
     }
@@ -173,21 +173,86 @@ class _BattleScreenState extends State<BattleScreen>
     });
   }
 
-  void _toggleFastForward() {
-    setState(() => _isFastForward = !_isFastForward);
-    _startTimer();
-    widget.onFastForward?.call();
+  // ─── 大招 ────────────────────────────────────────────────────────────────
+
+  void _onUltimatePressed(int slotIndex) {
+    final s = ref.read(battleNotifierProvider);
+    if (slotIndex >= s.leftTeam.length) return;
+    final c = s.leftTeam[slotIndex];
+    final ultimate = _findUltimateOf(c);
+    if (!_isUltimateReady(c, ultimate)) return;
+    if (_disabledUltimateChars.contains(c.characterId)) return;
+
+    ref
+        .read(battleNotifierProvider.notifier)
+        .requestUltimate(c.characterId, ultimate!);
+    setState(() => _disabledUltimateChars.add(c.characterId));
+  }
+
+  static SkillDef? _findUltimateOf(BattleCharacter c) {
+    for (final skill in c.availableSkills) {
+      if (skill.type == SkillType.ultimate) return skill;
+    }
+    return null;
+  }
+
+  static bool _isUltimateReady(BattleCharacter c, SkillDef? ultimate) {
+    if (!c.isAlive || ultimate == null) return false;
+    final cd = c.skillCooldowns[ultimate.id] ?? 0;
+    return c.currentInternalForce >= ultimate.internalForceCost && cd <= 0;
+  }
+
+  // ─── 结算 dialog ─────────────────────────────────────────────────────────
+
+  void _showResultDialog(BattleResult result, BattleState s) {
+    if (_resultDialogShown || !mounted) return;
+    _resultDialogShown = true;
+
+    final totalDamage = s.actionLog
+        .map((a) => a.attackResult?.finalDamage ?? 0)
+        .fold<int>(0, (sum, d) => sum + d);
+    final critCount = s.actionLog
+        .where((a) => a.attackResult?.isCritical ?? false)
+        .length;
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: WuxiaColors.panel,
+        title: Text(
+          EnumL10n.battleResult(result),
+          style: const TextStyle(
+            color: WuxiaColors.resultHighlight,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          UiStrings.battleSummary(totalDamage, critCount, s.tick),
+          style: const TextStyle(color: WuxiaColors.textPrimary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(
+              UiStrings.close,
+              style: TextStyle(color: WuxiaColors.textSecondary),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ─── 工具方法 ─────────────────────────────────────────────────────────────
 
   static int _slotKey(int teamSide, int slotIndex) => teamSide * 3 + slotIndex;
 
-  BattleCharacter? _findCharacter(int characterId) {
-    for (final c in widget.state.leftTeam) {
+  BattleCharacter? _findCharacter(int characterId, BattleState s) {
+    for (final c in s.leftTeam) {
       if (c.characterId == characterId) return c;
     }
-    for (final c in widget.state.rightTeam) {
+    for (final c in s.rightTeam) {
       if (c.characterId == characterId) return c;
     }
     return null;
@@ -197,10 +262,52 @@ class _BattleScreenState extends State<BattleScreen>
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(battleNotifierProvider);
+
+    ref.listen<BattleState>(battleNotifierProvider, (prev, next) {
+      // 1. 启动 Timer：team 从空 → 非空且未结束
+      final wasEmpty = prev == null || prev.leftTeam.isEmpty;
+      if (wasEmpty && next.leftTeam.isNotEmpty && !next.isFinished) {
+        _startTimer();
+      }
+
+      // 2. 战斗结束：停 timer + 弹结算 dialog（postFrame 避免 build 期 setState）
+      if ((prev?.result == null) && next.result != null) {
+        _playTimer?.cancel();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _showResultDialog(next.result!, next);
+        });
+      }
+
+      // 3. actionLog 新增：触发动画 + 解除大招按钮置灰
+      if (prev != null && next.actionLog.length > prev.actionLog.length) {
+        final newActions = next.actionLog.sublist(prev.actionLog.length);
+        for (final a in newActions) {
+          _playAction(a, next);
+        }
+        if (_disabledUltimateChars.isNotEmpty) {
+          setState(() {
+            for (final a in newActions) {
+              _disabledUltimateChars.remove(a.actorId);
+            }
+          });
+        }
+      }
+    });
+
+    // team 空时（startBattle 还未调用）渲染 placeholder
+    if (state.leftTeam.isEmpty && state.rightTeam.isEmpty) {
+      return const Scaffold(
+        backgroundColor: WuxiaColors.background,
+        body: Center(
+          child: CircularProgressIndicator(color: WuxiaColors.textMuted),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       body: SafeArea(
-        // 屏震：AnimatedBuilder 只重建 Transform，避免整棵树 setState
         child: AnimatedBuilder(
           animation: _shakeCtrl,
           builder: (ctx, child) {
@@ -214,15 +321,15 @@ class _BattleScreenState extends State<BattleScreen>
           },
           child: Column(
             children: [
-              _Header(state: widget.state),
+              _Header(state: state),
               Expanded(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _LogSidebar(state: widget.state),
+                    _LogSidebar(state: state),
                     Expanded(
                       child: _BattleField(
-                        state: widget.state,
+                        state: state,
                         attackControllers: _attackControllers,
                         popups: _popups,
                         animConfig: widget.animConfig,
@@ -233,9 +340,11 @@ class _BattleScreenState extends State<BattleScreen>
                 ),
               ),
               _BottomBar(
-                state: widget.state,
-                onUltimate: widget.onUltimate,
+                state: state,
+                disabledUltimateChars: _disabledUltimateChars,
+                onUltimate: _onUltimatePressed,
                 onFastForward: _toggleFastForward,
+                isFastForward: _isFastForward,
               ),
             ],
           ),
@@ -490,17 +599,20 @@ class _CharacterSlot extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // CharacterAvatar（含 HP/内力条）整体随攻击动画平移
         AttackAnimationWidget(
           animation: attackController,
           isLeftTeam: isLeftTeam,
           config: animConfig,
           child: CharacterAvatar(character: character),
         ),
-        // 飘字：向上堆叠，index 越大越靠上（避免重叠）。
-        // 静态方法消除闭包捕获歧义，每个 popup 独立持有 entry 引用。
         for (var i = 0; i < slotPopups.length; i++)
-          _buildPopupPositioned(i, slotPopups[i], animConfig, slotKey, onPopupComplete),
+          _buildPopupPositioned(
+            i,
+            slotPopups[i],
+            animConfig,
+            slotKey,
+            onPopupComplete,
+          ),
       ],
     );
   }
@@ -532,13 +644,17 @@ class _CharacterSlot extends StatelessWidget {
 
 class _BottomBar extends StatelessWidget {
   final BattleState state;
-  final void Function(int slotIndex)? onUltimate;
-  final VoidCallback? onFastForward;
+  final Set<int> disabledUltimateChars;
+  final void Function(int slotIndex) onUltimate;
+  final VoidCallback onFastForward;
+  final bool isFastForward;
 
   const _BottomBar({
     required this.state,
-    this.onUltimate,
-    this.onFastForward,
+    required this.disabledUltimateChars,
+    required this.onUltimate,
+    required this.onFastForward,
+    required this.isFastForward,
   });
 
   @override
@@ -556,12 +672,17 @@ class _BottomBar extends StatelessWidget {
           for (var i = 0; i < 3; i++) ...[
             _UltimateButton(
               character: i < state.leftTeam.length ? state.leftTeam[i] : null,
-              onPressed: onUltimate == null ? null : () => onUltimate!(i),
+              disabledByPress: i < state.leftTeam.length &&
+                  disabledUltimateChars.contains(state.leftTeam[i].characterId),
+              onPressed: () => onUltimate(i),
             ),
             if (i < 2) const SizedBox(width: 8),
           ],
           const Spacer(),
-          _FastForwardButton(onPressed: onFastForward),
+          _FastForwardButton(
+            onPressed: onFastForward,
+            isActive: isFastForward,
+          ),
         ],
       ),
     );
@@ -570,29 +691,24 @@ class _BottomBar extends StatelessWidget {
 
 class _UltimateButton extends StatelessWidget {
   final BattleCharacter? character;
-  final VoidCallback? onPressed;
+  final bool disabledByPress;
+  final VoidCallback onPressed;
 
-  const _UltimateButton({this.character, this.onPressed});
-
-  static SkillDef? _findUltimate(BattleCharacter c) {
-    for (final skill in c.availableSkills) {
-      if (skill.type == SkillType.ultimate) return skill;
-    }
-    return null;
-  }
+  const _UltimateButton({
+    required this.character,
+    required this.disabledByPress,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
     final c = character;
-    SkillDef? ultimate;
-    bool ready = false;
-    if (c != null && c.isAlive) {
-      ultimate = _findUltimate(c);
-      if (ultimate != null) {
-        final cd = c.skillCooldowns[ultimate.id] ?? 0;
-        ready = c.currentInternalForce >= ultimate.internalForceCost && cd <= 0;
-      }
-    }
+    final ultimate = c == null
+        ? null
+        : _BattleScreenState._findUltimateOf(c);
+    final ready = c != null &&
+        _BattleScreenState._isUltimateReady(c, ultimate) &&
+        !disabledByPress;
 
     final activeColor = c == null
         ? WuxiaColors.buttonDisabled
@@ -636,8 +752,9 @@ class _UltimateButton extends StatelessWidget {
 }
 
 class _FastForwardButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  const _FastForwardButton({this.onPressed});
+  final VoidCallback onPressed;
+  final bool isActive;
+  const _FastForwardButton({required this.onPressed, required this.isActive});
 
   @override
   Widget build(BuildContext context) {
@@ -647,8 +764,14 @@ class _FastForwardButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: WuxiaColors.textPrimary,
-          side: const BorderSide(color: WuxiaColors.textSecondary),
+          foregroundColor: isActive
+              ? WuxiaColors.resultHighlight
+              : WuxiaColors.textPrimary,
+          side: BorderSide(
+            color: isActive
+                ? WuxiaColors.resultHighlight
+                : WuxiaColors.textSecondary,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(6),
           ),
