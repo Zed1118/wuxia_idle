@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:wuxia_idle/combat/battle_state.dart';
 import 'package:wuxia_idle/combat/damage_calculator.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
+import 'package:wuxia_idle/providers/battle_providers.dart';
 import 'package:wuxia_idle/ui/battle/battle_demo.dart';
 import 'package:wuxia_idle/ui/battle/battle_screen.dart';
 import 'package:wuxia_idle/ui/battle/character_avatar.dart';
 import 'package:wuxia_idle/ui/battle/damage_popup.dart';
 
-/// 短时序动画配置，加速 T15 widget test 运行。
+/// 短时序动画配置，加速 widget test 运行。
 const _testAnim = AnimationNumbers(
   attackRushMs: 10,
   attackHoldMs: 10,
@@ -24,7 +26,6 @@ const _testAnim = AnimationNumbers(
   criticalFontScale: 1.5,
 );
 
-/// 完整 AttackResult（const 构造，用于 mock 数据）。
 const _normalResult = AttackResult(
   finalDamage: 1500,
   isCritical: false,
@@ -70,44 +71,76 @@ const _dodgeResult = AttackResult(
   formulaBreakdown: 'dodged',
 );
 
-// ─── 测试入口 ────────────────────────────────────────────────────────────────
+/// 测试专用 BattleNotifier：
+/// - `build()` 返回外部注入的初始 state（mock 队伍 + 空 actionLog）。
+/// - `advance()` 改为 no-op，避免 Timer 触发时调 [numbersConfigProvider]
+///   读 `GameRepository.instance` 崩溃（测试环境不加载 yaml）。
+/// - `appendActions` / `setResult` 让测试手动驱动 actionLog 与 result，模拟
+///   引擎产生的结果。
+class _TestBattleNotifier extends BattleNotifier {
+  final BattleState _initial;
+  _TestBattleNotifier(this._initial);
 
-/// T14 静态布局 smoke test：BattleScreen 用 BattleDemo mock 状态渲染不崩，
-/// 6 个角色全部出现，标题反映存活人数（左 3 / 右 2，因 demo 右队 #2 已死）。
-///
-/// T15 追加：AnimationController dispose / 飘字渲染 / actionLog 串行播放。
-///
-/// 窗口锁 1280×720（phase1_tasks T14 §791 16:9 验收基线，desktop 默认尺寸）。
+  @override
+  BattleState build() => _initial;
+
+  @override
+  void advance({int maxConsecutiveTicks = 100}) {
+    // no-op：测试通过 appendActions 显式驱动
+  }
+
+  void appendActions(List<BattleAction> actions) {
+    state = state.copyWith(
+      actionLog: [...state.actionLog, ...actions],
+    );
+  }
+
+  void setResult(BattleResult result) {
+    state = state.copyWith(result: result);
+  }
+}
+
 void main() {
   Future<void> setSurface(WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
   }
 
-  Future<void> pumpBattle(WidgetTester tester) async {
+  /// pump BattleScreen with override notifier，返回 notifier 引用供测试控制。
+  Future<_TestBattleNotifier> pumpBattle(
+    WidgetTester tester, {
+    BattleState? initialState,
+  }) async {
     await setSurface(tester);
+    final (left, right) = BattleDemo.mockTeams();
+    final init = initialState ??
+        BattleState.initial(leftTeam: left, rightTeam: right);
+
+    late _TestBattleNotifier notifier;
     await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData.dark(useMaterial3: true),
-        home: BattleScreen(state: BattleDemo.build()),
+      ProviderScope(
+        overrides: [
+          battleNotifierProvider.overrideWith(() {
+            notifier = _TestBattleNotifier(init);
+            return notifier;
+          }),
+        ],
+        child: const MaterialApp(
+          home: BattleScreen(animConfig: _testAnim),
+        ),
       ),
     );
+    return notifier;
   }
 
-  // ── T14 ─────────────────────────────────────────────────────────────────
+  // ── T14 静态布局 ────────────────────────────────────────────────────────
 
   testWidgets('BattleScreen 渲染 3v3 + 顶栏 + 6 个 CharacterAvatar',
       (WidgetTester tester) async {
     await pumpBattle(tester);
 
-    // 顶栏标题：左 3 活 / 右 2 活
     expect(find.text('战斗 3 v 2'), findsOneWidget);
-
-    // 6 个 CharacterAvatar
     expect(find.byType(CharacterAvatar), findsNWidgets(6));
-
-    // 角色名字渲染（左队角色名同时出现在头像下方与底栏大招按钮里 = 2 次；
-    // 右队仅在头像下方 = 1 次）。
     expect(find.text('萧夜寒'), findsNWidgets(2));
     expect(find.text('黑风寨主'), findsOneWidget);
     expect(find.text('毒娘子'), findsOneWidget);
@@ -116,7 +149,6 @@ void main() {
   testWidgets('死亡角色 opacity = 0.3', (WidgetTester tester) async {
     await pumpBattle(tester);
 
-    // demo 右队 #2「毒娘子」isAlive=false，CharacterAvatar 内层 Opacity=0.3
     final avatars = tester.widgetList<CharacterAvatar>(
       find.byType(CharacterAvatar),
     );
@@ -134,23 +166,16 @@ void main() {
     expect(opacity.opacity, 0.3);
   });
 
-  // ── T15 ─────────────────────────────────────────────────────────────────
+  // ── T15 dispose ─────────────────────────────────────────────────────────
 
   testWidgets('BattleScreen 7 个 AnimationController 正确 dispose，无 ticker 泄漏',
       (WidgetTester tester) async {
-    await setSurface(tester);
-    await tester.pumpWidget(
-      MaterialApp(
-        home: BattleScreen(
-          state: BattleDemo.build(),
-          animConfig: _testAnim,
-        ),
-      ),
-    );
+    await pumpBattle(tester);
     // 替换为空 widget 触发 _BattleScreenState.dispose()
-    // Flutter test framework 会在 tearDown 检查 ticker 泄漏，泄漏则测试失败
     await tester.pumpWidget(const MaterialApp(home: SizedBox()));
   });
+
+  // ── DamagePopup 独立测试（不依赖 Riverpod） ────────────────────────────
 
   testWidgets('DamagePopup 普通伤害显示数字', (WidgetTester tester) async {
     const data = DamagePopupData(id: 0, text: '2400', type: PopupType.normal);
@@ -212,83 +237,126 @@ void main() {
     expect(find.text('⬆'), findsOneWidget);
   });
 
-  testWidgets('actionLog 串行播放 - 普攻飘字在触发后出现', (WidgetTester tester) async {
-    final baseState = BattleDemo.build();
-    // actorId=1（萧夜寒 left[0]）攻击 targetId=11（黑风寨主 right[0]）
-    const action = BattleAction(
-      tick: 1,
-      actorId: 1,
-      targetId: 11,
-      attackResult: _normalResult,
-      description: '普攻测试',
-    );
-    final state = baseState.copyWith(actionLog: [action]);
+  // ── T16 actionLog 增长 → ref.listen → 触发动画 ──────────────────────────
 
-    await setSurface(tester);
-    await tester.pumpWidget(
-      MaterialApp(
-        home: BattleScreen(state: state, animConfig: _testAnim),
-      ),
-    );
-
-    // 定时器尚未触发，无飘字
+  testWidgets('actionLog 增长 - 普攻飘字出现', (WidgetTester tester) async {
+    final notifier = await pumpBattle(tester);
     expect(find.byType(DamagePopup), findsNothing);
 
-    // 推进超过 actionIntervalMs（50ms），触发第一次 timer callback
-    await tester.pump(const Duration(milliseconds: 60));
-    await tester.pump(); // 处理 setState
+    notifier.appendActions(const [
+      BattleAction(
+        tick: 1,
+        actorId: 1, // 萧夜寒 left[0]
+        targetId: 11, // 黑风寨主 right[0]
+        attackResult: _normalResult,
+        description: '普攻测试',
+      ),
+    ]);
+    await tester.pump(); // ref.listen → setState
+    await tester.pump(); // setState → build
 
-    // 飘字应出现，显示伤害数字
     expect(find.byType(DamagePopup), findsOneWidget);
     expect(find.text('1500'), findsOneWidget);
   });
 
-  testWidgets('actionLog 串行播放 - 暴击飘字出现显示伤害数字',
+  testWidgets('actionLog 增长 - 暴击飘字出现显示伤害数字',
       (WidgetTester tester) async {
-    final baseState = BattleDemo.build();
-    const action = BattleAction(
-      tick: 1,
-      actorId: 2,   // 柳青衫 left[1]
-      targetId: 12, // 影刺 right[1]
-      attackResult: _criticalResult,
-      description: '暴击测试',
-    );
-    final state = baseState.copyWith(actionLog: [action]);
-
-    await setSurface(tester);
-    await tester.pumpWidget(
-      MaterialApp(
-        home: BattleScreen(state: state, animConfig: _testAnim),
+    final notifier = await pumpBattle(tester);
+    notifier.appendActions(const [
+      BattleAction(
+        tick: 1,
+        actorId: 2, // 柳青衫 left[1]
+        targetId: 12, // 影刺 right[1]
+        attackResult: _criticalResult,
+        description: '暴击测试',
       ),
-    );
-
-    // 推进超过 actionIntervalMs（50ms），timer 触发
-    await tester.pump(const Duration(milliseconds: 60));
+    ]);
+    await tester.pump();
     await tester.pump();
     expect(find.text('3600'), findsOneWidget);
   });
 
-  testWidgets('actionLog 串行播放 - 闪避飘字显示「闪」字',
+  testWidgets('actionLog 增长 - 闪避飘字显示「闪」字',
       (WidgetTester tester) async {
-    final baseState = BattleDemo.build();
-    const action = BattleAction(
-      tick: 1,
-      actorId: 11, // 黑风寨主 right[0]
-      targetId: 1, // 萧夜寒 left[0]
-      attackResult: _dodgeResult,
-      description: '闪避测试',
-    );
-    final state = baseState.copyWith(actionLog: [action]);
-
-    await setSurface(tester);
-    await tester.pumpWidget(
-      MaterialApp(
-        home: BattleScreen(state: state, animConfig: _testAnim),
+    final notifier = await pumpBattle(tester);
+    notifier.appendActions(const [
+      BattleAction(
+        tick: 1,
+        actorId: 11,
+        targetId: 1,
+        attackResult: _dodgeResult,
+        description: '闪避测试',
       ),
-    );
-
-    await tester.pump(const Duration(milliseconds: 60));
+    ]);
+    await tester.pump();
     await tester.pump();
     expect(find.text('闪'), findsOneWidget);
+  });
+
+  // ── T16 新增 ────────────────────────────────────────────────────────────
+
+  testWidgets('T16 战斗结束 → 弹出结算 dialog', (WidgetTester tester) async {
+    final notifier = await pumpBattle(tester);
+    expect(find.byType(AlertDialog), findsNothing);
+
+    notifier.setResult(BattleResult.leftWin);
+    await tester.pump(); // ref.listen → addPostFrameCallback
+    await tester.pump(); // postFrame → showDialog
+
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('关闭'), findsOneWidget);
+  });
+
+  testWidgets('T16 大招按钮 - 内力不够 / 内力够 enabled 状态正确',
+      (WidgetTester tester) async {
+    // BattleDemo mock 数据：
+    //   left[0] 萧夜寒  currentIf=5400 cost=800 → ready
+    //   left[1] 柳青衫  currentIf=1800 cost=800 → ready
+    //   left[2] 苏锦书  currentIf=600  cost=800 → NOT ready（内力不够）
+    await pumpBattle(tester);
+
+    final buttons = tester
+        .widgetList<ElevatedButton>(find.byType(ElevatedButton))
+        .toList();
+    expect(buttons.length, 3, reason: '底栏 3 个大招按钮');
+    expect(buttons[0].enabled, true, reason: 'left[0] 萧夜寒 内力够');
+    expect(buttons[1].enabled, true, reason: 'left[1] 柳青衫 内力够');
+    expect(buttons[2].enabled, false, reason: 'left[2] 苏锦书 内力不够');
+  });
+
+  testWidgets('T16 大招按下后置灰，actor 行动后解除',
+      (WidgetTester tester) async {
+    final notifier = await pumpBattle(tester);
+
+    // 按下 left[0] 萧夜寒大招
+    await tester.tap(find.byType(ElevatedButton).first);
+    await tester.pump();
+
+    // 按钮置灰
+    final buttonsAfterTap = tester
+        .widgetList<ElevatedButton>(find.byType(ElevatedButton))
+        .toList();
+    expect(buttonsAfterTap[0].enabled, false,
+        reason: '按下后立刻置灰，避免连按');
+
+    // 模拟 actor (id=1=萧夜寒) 行动（actionLog 新增）
+    notifier.appendActions(const [
+      BattleAction(
+        tick: 1,
+        actorId: 1,
+        targetId: 11,
+        attackResult: _normalResult,
+        description: '萧夜寒行动',
+      ),
+    ]);
+    await tester.pump();
+    await tester.pump();
+
+    // 按钮解除置灰
+    final buttonsAfterAction = tester
+        .widgetList<ElevatedButton>(find.byType(ElevatedButton))
+        .toList();
+    expect(buttonsAfterAction[0].enabled, true,
+        reason: 'actor 行动后大招按钮恢复可用');
   });
 }
