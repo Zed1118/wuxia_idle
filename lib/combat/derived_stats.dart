@@ -74,6 +74,18 @@ class RealmUtils {
     return r.equipmentTierCap;
   }
 
+  /// 该大境界对应的可修炼心法品阶上限（GDD §5.3 三系锁死）。
+  ///
+  /// 与 [equipmentTierCapOf] 同源（RealmDef 同时持有装备 / 心法两个 cap），
+  /// 同大境界 7 层共用同一 `techniqueTierCap`。
+  static TechniqueTier techniqueTierCapOf(RealmTier tier) {
+    final r = GameRepository.instance.realms
+        .firstWhere((r) => r.tier == tier,
+            orElse: () =>
+                throw StateError('未找到境界 ${tier.name} 的 RealmDef'));
+    return r.techniqueTierCap;
+  }
+
   /// 强化等级上限 = absoluteLevel（GDD §6.2，最高 49）。
   static int maxEnhanceLevelOf(Character c) {
     return absoluteLevelOf(c.realmTier, c.realmLayer);
@@ -184,5 +196,23 @@ class CharacterDerivedStats {
       if (s.unlocked && s.type == type) sum += s.bonusValue;
     }
     return sum / 100.0;
+  }
+
+  /// 内力上限（含师承遗物 +5% 叠加，phase2_tasks T22 / GDD §6.1）。
+  ///
+  /// `Character.internalForceMax` 是基础值（由境界 / 心法 / 修为决定，调用方
+  /// 已算好）。本方法在其上叠加每件 [Equipment.isLineageHeritage] 装备的
+  /// `lineageInternalForceMaxBonus`（默认 0.05 / 件，独立叠加）。
+  ///
+  /// 例：基础 10000 + 4 件师承遗物 → 10000 × 1.20 = 12000。
+  static int internalForceMaxWithLineage(
+    Character c,
+    List<Equipment> equipped,
+    NumbersConfig n,
+  ) {
+    final heritageCount =
+        equipped.where((e) => e.isLineageHeritage).length;
+    final mult = 1.0 + heritageCount * n.lineageInternalForceMaxBonus;
+    return (c.internalForceMax * mult).toInt();
   }
 }
