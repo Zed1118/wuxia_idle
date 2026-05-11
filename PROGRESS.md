@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 2 已交付**（v0.2.0-phase2，2026-05-11）。Phase 3 待规划（主线关卡 / 爬塔 / 闭关地图 / 奇遇 / 师徒传承 / 武学领悟）。
+**Phase 3 Week 1 启动**（2026-05-11，B 改良版：主线最小闭环优先）。Week 1 任务 T33-T39 详条见 `phase3_tasks.md`。Week 2-3（爬塔 / 闭关 / 奇遇 / 师徒 / 武学领悟）待 Week 1 跑通后再拆。
 
 ## 已完成
 
@@ -34,7 +34,7 @@
 
 ## 进行中
 
-- —（Phase 2 已交付 v0.2.0-phase2，Phase 3 待规划，先 fixup 挂账 #24 再开 phase3_tasks.md）
+- **T33** stages.yaml schema 升级 + StageDef 扩字段（prevStageId / narrativeOpeningId / narrativeVictoryId）+ 6 关 fixture backfill
 
 ## 已知偏差 / 挂账事项
 
@@ -56,9 +56,16 @@
 
 ## 下一步
 
-Phase 3 起点：
-1. **Phase 3 规划讨论**：主线 15-20 关 / 爬塔 30 层 / 闭关地图 5 / 奇遇 20-30 / 师徒传承 / 武学领悟 30-50 招（GDD §7-§8，Demo 总量见 CLAUDE.md §7）—— 跨模块大改，建议升 xhigh 后开 phase3_tasks.md
-2. **CLAUDE.md §12 待决项 13 条**：实现到对应位置时按需提问
+Phase 3 Week 1 路线（详条 phase3_tasks.md）：
+1. **T33** stages.yaml schema 升级（当前）
+2. **T34** MainlineProgressService + Isar MainlineProgress collection
+3. **T35** 章节列表 + 关卡列表 UI + 接 main_menu
+4. **T36** 主线剧情阅读 UI + NarrativeLoader（缺文件兜底「[剧情待补]」）
+5. **T37** 关卡进入流程串联
+6. **T38** docs/NARRATIVE_SCHEMA.md
+7. **T39** Pen 视觉验收 + tag v0.3.0-w1
+
+> CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 
 ## 关键约束（每次开局必读）
 
