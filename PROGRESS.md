@@ -34,6 +34,15 @@
   - **算法 A（Pen 拍板）**：散功后 progress×0.5，layer 不变；服务层 `_recalcLayerByRollback` 向下回退直到 progress >= prev→current 的 progress_required；progress 直接继承到回退后的 layer
   - 副作用全 in-place：内力 ×0.5 floor / 旧主修 progress×0.5+role=assist+layer 回退 / 新主修 role=main / Character.mainTechniqueId 切 / assistTechniqueIds 移除新主修后塞旧主修；满 3 时旧主修丢弃（调用方决定回背包）
   - 单测 12/12；累计 253/253 测试，0 issues
+- **T26 战斗结算 hooks**（2026-05-11，分支 feat/phase2-equipment）
+  - `lib/services/battle_resolution.dart`（新建）：`BattleResolutionService.resolve({finalState, participatingCharacters, equipmentsByCharacter, techniquesByCharacter, stageDef, rng, progressToNextMap, techniqueDefLookup, dropService})` 返回 `BattleResolutionResult(updatedEquipmentIds, skillUsageIncrements, cultivationEvents, dropResult)`；纯函数 + in-place 修改 Equipment/Technique（与 T20-T25 风格一致），不写 Isar
+  - 流程：反推 actionLog 得 `Map<actorId, Map<skillId, count>>`（skill==null 跳过）→ 参战 3 件装备 battleCount++ → 主修走 `CultivationService.recordSkillUsage(delta=N)` 一次完成 skillUsage++ + progress + 升层；辅修仅 `skillUsageCount.increment` 不升层（GDD 设定）；最后调 `DropService.rollDrops`
+  - 主修多 skill 多次调用合并为单 `CultivationProgressResult`（oldLayer=战前层 / newLayer=战后层 / layersGained=累加）
+  - 防御 assert：participatingCharacters 必须出现在 finalState 双方某队，否则 StateError；战败/平局也结算（spec §338）；skillId 不属于该角色任何心法 → 忽略
+  - `lib/providers/battle_providers.dart` 扩展：`dropServiceProvider`（@riverpod 注入 `GameRepository.getEquipment` 作 lookup）+ `BattleNotifier.resolveBattle({participatingCharacters, equipmentsByCharacter, techniquesByCharacter, stageDef, rng})`（state.result 未翻转抛 StateError，由 caller 在 ref.listen 翻转边沿调用）
+  - 单测 13/13：装备 +1 / 战败也涨 / 跨层 99+2→xiaoCheng / 辅修不升层 / skill==null 不计 / 多角色独立 / 板凳角色不动 / 防御 assert StateError / DropService 联动必掉 / 主修多 skill 合并 layersGained=2 / 未知 skill 忽略 / 平局也涨 / skillUsageIncrements 汇总 by techniqueId
+  - 累计 283/283 测试，0 issues
+  - widget 测试简化为内存对象单测（Pen 拍板 4），未走 in-memory Isar
 - **T27 装备掉落服务**（2026-05-11，分支 feat/phase2-equipment）
   - `lib/data/defs/drop_entry.dart`（新建）：`sealed class DropEntry` + `EquipmentDrop` / `ItemDrop`；`fromYaml` 按 `equipmentDefId` / `inventoryItemDefId` 二选一分发；quantity 支持缺省 [1,1] / 单数字 [n,n] / `[min, max]` 三种写法；fail-fast 校验
   - `lib/data/defs/stage_def.dart`：扩 `dropTable: List<DropEntry>`（默认空，向后兼容）；旧 `dropEquipmentDefIds` / `dropItemDefIds` 保留为 Phase 1 占位，Phase 5 整理时再清
@@ -43,7 +52,7 @@
 
 ## 进行中
 
-- Phase 2 Week 2 心法 + 战斗联动（T26 待开），分支 feat/phase2-equipment
+- Phase 2 Week 2 全部完成（T23-T27），分支 feat/phase2-equipment。下一步进 Week 3（T28+ UI）
 
 ## 已知偏差 / 挂账事项
 
@@ -63,7 +72,9 @@
 
 ## 下一步
 
-T26 战斗结算 hooks：`BattleResolutionService.resolve({finalState, participatingCharacters, stageDef, rng})` → 装备 battleCount++（参战 3 件，未参战不算） + 心法 skillUsageCount[skillId] 反推 actionLog 累加 + 主修调 `CultivationService.recordSkillUsage` 升层 + 调 `DropService.rollDrops`（T27✅）入背包；纯结果返回，副作用归 caller；`BattleNotifier` 扩展 result 翻转 hook + `battleResolutionServiceProvider` 注入；单测 ≥10 + widget 测试 1 fakeIsar/in-memory。**模型建议保持 opus 4.7**。
+T28 角色面板 UI（角色属性 / 装备槽 / 心法槽 / 派生数值汇总）：`characterByIdProvider` family / `equipmentByIdProvider` family / `techniqueByIdProvider` family；顶部姓名+境界+流派色、中部 4 属性 + 派生数值、装备区 3 槽（+N 强化 + 共鸣阶段）、心法区主修+3 辅修槽+修炼度进度条；widget 测试 ≥ 4 + Windows 视觉验收。**模型建议 sonnet 4.6**（UI 布局 + Riverpod family，无复杂算法）。
+
+⚠️ T26 完成是 Week 2 收尾，建议**先 commit T26 等 review + 视觉验收 T26 联动效果**（先打通 BattleResolutionResult 接到 Battle UI 看升层提示）再开 T28。
 
 ## 关键约束（每次开局必读）
 
