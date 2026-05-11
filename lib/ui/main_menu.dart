@@ -8,6 +8,7 @@ import 'mainline/chapter_list_screen.dart';
 import 'strings.dart';
 import 'technique_panel/technique_panel_screen.dart';
 import 'theme/colors.dart';
+import 'tower/tower_floor_list_screen.dart';
 
 /// 调试主菜单（phase2_tasks.md T32 §492-509 子提交 3b）。
 ///
@@ -57,6 +58,12 @@ class MainMenu extends StatelessWidget {
                   label: UiStrings.mainMenuMainline,
                   hint: UiStrings.mainMenuMainlineHint,
                   onTap: () => _push(context, const ChapterListScreen()),
+                ),
+                const SizedBox(height: 16),
+                _MenuButton(
+                  label: UiStrings.mainMenuTower,
+                  hint: UiStrings.mainMenuTowerHint,
+                  onTap: () => _push(context, const TowerFloorListScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
