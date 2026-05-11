@@ -171,6 +171,27 @@ enum StageStatus {
   cleared,
 }
 
+/// 爬塔 Boss 层类型（Phase 3 T40，GDD §8.2 + CLAUDE §7）。
+///
+/// 30 层共 6 Boss：
+///   - minor：小 Boss，分布在 5 / 15 / 25 层
+///   - major：大 Boss，分布在 10 / 20 / 30 层
+///
+/// 普通层 bossKind 为 null。
+enum TowerBossKind {
+  minor,
+  major,
+}
+
+/// 爬塔层解锁状态（Phase 3 T41）。
+///
+/// 与 [StageStatus] 同义但隔离，避免主线 / 爬塔 enum 复用产生跨模块耦合。
+enum TowerFloorStatus {
+  locked,
+  available,
+  cleared,
+}
+
 /// 闭关地图（GDD §8.3）。
 enum RetreatMapType {
   shanLin,       // 山林（平均产出）

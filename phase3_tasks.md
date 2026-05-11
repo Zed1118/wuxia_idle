@@ -380,17 +380,357 @@ phase3_summary.md                          # T39 起头
 
 ---
 
-## Week 2-3：待 Week 1 跑通后再拆
+## Week 2：爬塔 30 层（T40-T46）
+
+> **目标**：在 Week 1 主线最小闭环基础上，加一个**与主线完全解耦**的爬塔系统。30 层结构（3 小 Boss [5/15/25] + 3 大 Boss [10/20/30] + 24 普通层），每 5 层升一阶（学徒 → 三流 → 二流 → 一流 → 绝顶 → 宗师，武圣留 Phase 4 飞升），玩家可无限重试，永久记录最高通关层。
+>
+> **切法**：A 爬塔（kickoff §四之 A 候选），与 §12 待决项零依赖；沿用 Week 1 节奏（schema → service → UI → 串联 → 验收）。
+
+### 0.6 Week 2 已拍板的 minor 决策（2026-05-11）
+
+| 决策项 | 决议 | 依据 |
+|---|---|---|
+| 30 层境界曲线 | 每 5 层升一阶，1-5 学徒 / 6-10 三流 / 11-15 二流 / 16-20 一流 / 21-25 绝顶 / 26-30 宗师；Boss 层在该阶巅峰 + HP/攻 ×1.5 | GDD §3 7 阶节奏；武圣留 Phase 4 飞升 |
+| 失败惩罚 | 不退层，保留最高记录，无限重试 | 与主线 onDefeat 行为一致；GDD §5.1 反主流"不做留存焦虑" |
+| 奖励池 | 复用现有 equipment.yaml + materials，按层数推荐阶位 | 不增 Demo 内容量；GDD §7 装备 30-50 件总配额已含 |
+| 重置/赛季 | 不做重置、无赛季、永久记录最高层 | Demo 阶段；GDD §12 也未列 |
+| 重打已通层是否发奖 | **不发奖**（recordClear service 端返回 isFirstClear，UI 端只对 true 发奖） | CLAUDE §5.1 反主流 + §5.5 在线=离线，防刷 |
+
+### 0.7 Week 2 任务依赖图
+
+```
+Week 1 完成线（v0.3.0-w1）
+                  │
+                  ▼
+         T40 towers.yaml schema
+         + TowerFloorDef + 30 层 fixture
+                  │
+                  ▼
+         T41 TowerProgressService
+         + Isar TowerProgress collection
+                  │
+        ┌─────────┼─────────┐
+        ▼         ▼         ▼
+       T42       T43       T44
+   爬塔列表 UI  进入流程串联  奖励 hook
+        │         │         │
+        └─────┬───┴────┬────┘
+              ▼        ▼
+            T45 单测 + analyze
+              │
+              ▼
+         T46 Pen 验收 + tag v0.3.0-w2
+```
+
+### 0.8 目录结构（在 Week 1 基础上扩）
+
+```
+lib/
+├── data/
+│   ├── defs/
+│   │   └── tower_floor_def.dart         # T40 新建
+│   └── models/
+│       ├── tower_progress.dart           # T41 新建（@collection）
+│       └── tower_progress.g.dart         # T41 build_runner 生成
+├── services/
+│   └── tower_progress_service.dart      # T41 新建
+├── ui/
+│   └── tower/                            # T42/T43 新建
+│       ├── tower_floor_list_screen.dart # T42
+│       ├── tower_floor_card.dart        # T42（三态 + Boss 视觉）
+│       └── tower_entry_flow.dart        # T43
+├── providers/
+│   └── tower_providers.dart              # T42 新建
+data/
+└── towers.yaml                           # T40 新建（30 层 fixture）
+docs/screenshots/phase3_w2/               # T46 归档
+phase3_summary.md                         # T46 追加 Week 2 段
+```
+
+---
+
+### T40 · towers.yaml schema + TowerFloorDef + 30 层 fixture
+
+- **预估时长**：0.5 天
+- **依赖任务**：Week 1 v0.3.0-w1 已交付
+- **涉及文件**：`lib/data/defs/tower_floor_def.dart`、`data/towers.yaml`、`lib/data/game_repository.dart`（红线校验扩展）、`lib/data/models/enums.dart`（加 TowerBossKind）、单测
+
+**任务内容**：
+
+1. `lib/data/defs/tower_floor_def.dart` 新建：
+   - `int floorIndex`（1-30，唯一）
+   - `RealmTier requiredRealm`（推荐境界，UI 提示用，**不做硬挡**——挑战自由，难度自然惩罚）
+   - `List<EnemyDef> enemyTeam`（复用 Phase 1 EnemyDef）
+   - `TowerBossKind? bossKind`（enum: minor / major / null）
+   - `String? narrativeOpeningId` / `String? narrativeVictoryId`（**仅 Boss 层**可有，普通层必须 null）
+   - `List<DropEntry> dropTable`（复用 Phase 2 DropEntry sealed class）
+
+2. `enum TowerBossKind { minor, major }` 加 `lib/data/models/enums.dart` + `enum_localizations.dart` 中文映射
+
+3. `data/towers.yaml`：30 层 fixture
+   - 境界曲线（5 层一阶）：1-5 学徒 / 6-10 三流 / 11-15 二流 / 16-20 一流 / 21-25 绝顶 / 26-30 宗师
+   - Boss 节点：5/15/25 minor + 10/20/30 major（共 6 Boss）
+   - 敌人 HP：普通层从 800 → 12000 线性插值；Boss 层在该阶巅峰 ×1.5（不破 §5.4 玩家血 20000 / Boss 50000+ 红线）
+   - 敌人攻击：守 §5.2 普伤 ≤8000；普通层 200 → 2500；Boss 层 ×1.5
+   - 敌人数量：1-10 层 1 人 / 11-20 层 2 人 / 21-30 层 3 人；Boss 层固定 1 人但 HP/攻拉满
+   - 奖励：每 5 层一阶段奖励池（参考 equipment.yaml 阶位），Boss 层保底掉对应阶装备一件
+
+4. `GameRepository._enforceRedLines` 扩展：
+   - 30 层 floorIndex 唯一性 + 1-30 连续
+   - Boss 分布严格在 5/10/15/20/25/30（其他层 bossKind 必须 null）
+   - 普通层 narrativeOpeningId/VictoryId 必须为 null（Boss 层可有可无）
+   - 数值红线复用 §5.4（普伤 ≤8000、Boss 血 ≤50000）
+
+**验收标准**：
+- [ ] 单测 ≥ 8 用例：fromYaml 解析 / 30 层全部加载 / Boss 分布校验 fail-fast / 数值红线 fail-fast / 境界曲线断言 / 普通层 narrative 为 null 校验 / floorIndex 连续性 / 1-30 唯一性
+- [ ] `flutter analyze` 0 issues
+- [ ] 现有测试不破
+
+**可能的坑**：
+- TowerFloorDef **不要继承 StageDef** 或共享父类——爬塔与主线两套模型，让 schema 演化解耦
+- `narrativeOpeningId` 在 Boss 层可空（Demo 早期 DeepSeek 还没补）；缺文件 NarrativeLoader 已兜底
+- 30 层数值表手工填易出错，建议写个 Dart 脚本算曲线再 dump yaml 到 `tools/`，**脚本不进 lib/**
+
+---
+
+### T41 · TowerProgress @collection + TowerProgressService
+
+- **预估时长**：1 天
+- **依赖任务**：T40
+- **涉及文件**：`lib/data/models/tower_progress.dart`、`lib/services/tower_progress_service.dart`、`lib/data/isar_setup.dart`（schema 注册 + saveVersion 推进）、单测
+
+**任务内容**：
+
+1. `lib/data/models/tower_progress.dart` 新建 `@collection`：
+   - `Id id = Isar.autoIncrement`
+   - `int saveDataId`（关联 SaveData，固定 1）
+   - `int highestClearedFloor`（默认 0，1-30）
+   - `DateTime? highestClearedAt`
+   - `int totalAttempts`（累计尝试次数，含失败）
+   - `int totalDefeats`（累计失败次数）
+   - `DateTime createdAt`
+   - **不存** 每层个体记录、不存 run-by-run 详情——Demo 阶段只关心"最高层 + 总览统计"
+
+2. `lib/services/tower_progress_service.dart` 新建：
+   - `Future<TowerProgress> getOrCreate({required int saveDataId})`：拿不到就建
+   - `int availableFloor(TowerProgress progress)`：返回 `highestClearedFloor + 1`（封顶 30）
+   - `Future<List<({TowerFloorDef def, TowerFloorStatus status})>> floorList({required TowerProgress progress, required List<TowerFloorDef> allFloors})`：30 行三态
+   - `Future<bool> recordClear({required int floorIndex, required DateTime now})`：仅当 `floorIndex == highestClearedFloor + 1` 时更新 highest + clearedAt 并返回 `true`（首通）；重打返回 `false`；totalAttempts++ 永远执行
+   - `Future<void> recordDefeat({required DateTime now})`：totalAttempts++ + totalDefeats++（不影响 highestClearedFloor）
+   - `bool canChallenge({required TowerProgress progress, required int floorIndex})`：`floorIndex <= highestClearedFloor + 1`
+
+3. `enum TowerFloorStatus { locked, available, cleared }`（放 `lib/data/models/enums.dart`）
+
+4. `IsarSetup.schemas` 加 TowerProgressSchema；`saveVersion` 0.2.0 → 0.3.0
+
+5. writeTxn 一律走 `IsarSetup.instance.writeTxn(...)`
+
+**验收标准**：
+- [ ] 单测 ≥ 10 用例（接真 Isar，参考 `mainline_progress_service_test`）：
+  - getOrCreate 首次/二次 / availableFloor 三状态 / recordClear 首通返回 true 更新 highest / 重打返回 false / 跳层挑战非法（虽然 service 不强校验，UI 端 canChallenge 拦截）/ recordDefeat 不影响 highest / floorList 30 行三态分布 / canChallenge 边界（highest+1 可挑、highest+2 不可）
+- [ ] `flutter analyze` 0 issues
+- [ ] 与 MainlineProgressService 完全独立（不互相 import）
+
+**可能的坑**：
+- highestClearedFloor 用 int 不用 List<bool>——单调递增便于推理
+- recordClear 用 set 而非 ++，防止状态机错乱
+- saveVersion 推进 0.2.0 → 0.3.0 写迁移注释占位（Demo 不写真迁移）；Phase 5 多存档/迁移时统一收
+
+---
+
+### T42 · 爬塔层列表 UI + 进度展示 + main_menu 入口
+
+- **预估时长**：1 天
+- **依赖任务**：T41
+- **涉及文件**：`lib/ui/tower/tower_floor_list_screen.dart`、`lib/ui/tower/tower_floor_card.dart`、`lib/providers/tower_providers.dart`、`lib/ui/main_menu.dart`、`lib/ui/strings.dart`、widget test
+
+**任务内容**：
+
+1. `lib/providers/tower_providers.dart`：
+   - `towerProgressProvider`（FutureProvider）：调 `getOrCreate(saveDataId: 1)`
+   - `towerFloorListProvider`（FutureProvider）：调 `floorList(progress, allFloors)`
+
+2. `tower_floor_list_screen.dart`：
+   - AppBar 标题「问鼎九霄」（走 strings.dart）
+   - 顶部进度卡：`已通 X/30 层` + `总尝试 N 次` + `失败 M 次`
+   - 主体：30 行垂直列表（ListView.builder），每行用 TowerFloorCard
+   - 首次进入自动滚动到 `highestClearedFloor + 1`（initState 一次性，不循环 setState）
+
+3. `tower_floor_card.dart`：
+   - 普通层 cleared：✓ 绿勾 + 灰底
+   - 普通层 available：主色按钮 + 「挑战」chip
+   - 普通层 locked：灰 + 锁图标 + 「通关前一层解锁」
+   - Boss 层（minor/major）：金/紫色边框（outline，避免与 cleared 灰底冲突）+ 「小 Boss / 大 Boss」标签 + 推荐境界 chip
+   - 点 available → push TowerEntryFlow（T43）
+   - 点 cleared → 弹 AlertDialog「已通关，是否重打？（重打不发奖）」二确
+
+4. `main_menu.dart`：
+   - 加「问鼎九霄」按钮，位置主线下方（第二位）
+   - 按钮副标题：「30 层，无限重试，永久记录」
+   - 按钮顺序：主线 → 问鼎九霄 → Phase1 调试 → Phase2 调试 → 角色 → 装备 → 心法（7 按钮，SingleChildScrollView 已在 Week 1 T35 加好）
+
+5. `lib/ui/strings.dart` 加爬塔相关 UI 标签
+
+**验收标准**：
+- [ ] widget test ≥ 6 用例（不接真 Isar，FakeProgress fixture）：
+  - 30 行渲染 / 三态分布渲染 / Boss 层视觉差异（边框颜色）/ 点 available 跳转 TowerEntryFlow / 点 locked 不响应 / 点 cleared 弹重打确认 dialog
+- [ ] `flutter analyze` 0 issues
+- [ ] 文案全走 strings.dart
+- [ ] main_menu 7 按钮顺序与上述一致
+
+**可能的坑**：
+- 30 行长列表性能：用 ListView.builder + 不 inline 一次性 build 30 widget
+- 自动滚动到 highest+1 在首次进入触发即可
+- Boss 层视觉强化用 outline color 而非 background
+
+---
+
+### T43 · 爬塔进入流程串联（tower_entry_flow.dart）
+
+- **预估时长**：1 天
+- **依赖任务**：T42
+- **涉及文件**：`lib/ui/tower/tower_entry_flow.dart`、`lib/services/stage_battle_setup.dart`（小重构抽公共函数）、widget test
+
+**任务内容**：
+
+1. `tower_entry_flow.dart`：状态机（参考 Week 1 stage_entry_flow.dart）
+   - 入参：`TowerFloorDef floor`
+   - 阶段 1：Boss 层（`bossKind != null`）且 `narrativeOpeningId` 非空 → push NarrativeReaderScreen → onFinish 进阶段 2；普通层直接跳到阶段 2
+   - 阶段 2：用 StageBattleSetup 装配 BattleCharacter；push BattleScreen（onVictory/onDefeat 回调）
+   - 阶段 3a（onVictory）：
+     - 调 `TowerProgressService.recordClear(floorIndex)` → 拿 `isFirstClear` → invalidate `towerProgressProvider`
+     - 调 `DropService.rollTowerRewards`（**仅 isFirstClear == true 时**，T44 接入）
+     - Boss 层 + narrativeVictoryId 非空 → push NarrativeReaderScreen → onFinish pop 回 TowerFloorListScreen
+     - 普通层或无 victory narrative → 直接 pop
+   - 阶段 3b（onDefeat）：调 `recordDefeat` → 直接 pop 回 TowerFloorListScreen（不掉装备、不退层）
+
+2. **BattleScreen 不动**：Week 1 T37 已参数化（onVictory/onDefeat），复用现有 API
+
+3. **左队装配**：从 `SaveData.activeCharacterIds` 取角色 + 装备 + 主修（与主线一致；挂账 #25 P1 fixture 缺主修问题在爬塔同样适用，Phase 4 一起修）
+
+4. `stage_battle_setup.dart` 小重构：抽 `_buildEnemyTeam(List<EnemyDef>)` 公共函数（StageDef 与 TowerFloorDef 共用敌人装配逻辑）
+
+**验收标准**：
+- [ ] widget test ≥ 5 用例：
+  - 普通层流程：无 opening → 战斗（mock 胜）→ recordClear → pop
+  - Boss 层流程：opening → 战斗（mock 胜）→ victory → recordClear → pop
+  - 战败：recordDefeat 被调，recordClear 不调，pop
+  - Boss 层无 narrative：placeholder 兜底（Week 1 T36 NarrativeLoader 已验证）
+  - 重打已通层：recordClear 返回 false，奖励不发（验证 isFirstClear 分支）
+- [ ] `flutter analyze` 0 issues
+- [ ] Week 1 stage_entry_flow.dart 测试不破
+
+**可能的坑**：
+- `_buildEnemyTeam` 抽公共函数注意 StageDef 与 TowerFloorDef enemyTeam 字段名一致
+- recordDefeat / recordClear 是 async writeTxn，UI 不要 await 阻塞动画——unawaited + try/catch + 失败弹 SnackBar
+- 两次 writeTxn（TowerProgress + Inventory）**不嵌套**，与 Phase 2 BattleResolutionService 模式一致
+
+---
+
+### T44 · 爬塔奖励 hook（扩展 DropService）
+
+- **预估时长**：0.5 天
+- **依赖任务**：T43
+- **涉及文件**：`lib/services/drop_service.dart`（扩展）、`lib/ui/tower/tower_entry_flow.dart`（接入）、单测
+
+**任务内容**：
+
+1. 扩展 `DropService`（**不新建 service**，守 CLAUDE 全局「不做未要求的抽象」）：
+   - `List<DropEntry> rollTowerRewards(TowerFloorDef floor, Rng rng)`：与 `rollDrops`（Phase 2 T27）同接口，从 floor.dropTable 抽
+   - Boss 层 dropTable 概率拉满（保底掉一件该阶装备）
+
+2. 在 `tower_entry_flow.dart` 阶段 3a 接入：
+   - recordClear 返回 isFirstClear == true → rollTowerRewards → 走现有 inventory writeTxn 入库
+   - 战胜界面 dialog 显示掉落清单（复用 Phase 2 战斗结算 dialog 模板）
+   - isFirstClear == false → 不发奖，dialog 仍显示「已重打通关」但奖励区显示「重打不发奖」
+
+3. **不引入新道具**：所有奖励项必须在 equipment.yaml / materials yaml 已有 id 池内
+
+**验收标准**：
+- [ ] 单测 ≥ 4 用例：普通层抽奖 / Boss 层保底掉该阶装备 / 重打不发奖（isFirstClear == false 路径）/ dropTable 空时返回空列表
+- [ ] 战斗胜利 dialog 渲染奖励清单 + 重打区分提示
+- [ ] `flutter analyze` 0 issues
+
+**可能的坑**：
+- recordClear 返回 bool 是 service 端契约，UI 端必须拿这个 bool 决定奖励发放——别在 UI 端重算"是否首通"
+- 奖励 inventory writeTxn 与 TowerProgress writeTxn 是**两次**（不嵌套）
+
+---
+
+### T45 · 单测/widget test 全绿 + analyze
+
+- **预估时长**：0.5 天
+- **依赖任务**：T40-T44
+- **涉及文件**：所有上述 test 文件
+
+**任务内容**：
+1. `flutter test` 全绿，预期累计 ≥ 410（Week 1 末 377 + Week 2 约 33+）
+2. `flutter analyze` 0 issues
+3. 新代码覆盖率不强制指标，但每个 service public API 至少 1 用例
+
+**验收标准**：
+- [ ] 测试数 ≥ 410
+- [ ] analyze 0 issues
+- [ ] Pen 端 SSH 跑一遍验证 Windows 端也绿（Mac 端 analyze + test 双绿后再派 Pen）
+
+---
+
+### T46 · Pen 视觉验收 + 截图归档 + tag v0.3.0-w2
+
+- **预估时长**：0.5 天
+- **依赖任务**：T45
+- **涉及文件**：`docs/screenshots/phase3_w2/`、`phase3_summary.md`（追加 Week 2 段）、`PROGRESS.md`
+
+**任务内容**：
+
+1. Mac 端预演：test + analyze 双绿
+2. 派 Pen 端拉最新代码 + flutter run -d windows 走完一遍爬塔流程：
+   - 主菜单 → 问鼎九霄 → 1 层挑战（普通层）→ 战斗胜 → 奖励 dialog → 回列表 02 解锁
+   - 跳到 5 层（小 Boss）：opening 占位 → 战斗 → victory 占位 → 奖励
+   - 跳到 10 层（大 Boss）：同上 + 大 Boss 视觉验证
+   - 战败一次验证 recordDefeat + 不退层
+   - 重打 1 层验证「重打不发奖」提示
+3. 截图归档（6-8 张）到 `docs/screenshots/phase3_w2/`：
+   - 01 主菜单加问鼎九霄按钮（7 按钮顺序）
+   - 02 爬塔列表（顶部进度卡 + 30 行三态 + Boss 边框）
+   - 03 普通层战斗
+   - 04 小 Boss opening 占位
+   - 05 大 Boss 战斗中
+   - 06 战斗胜利 + 奖励 dialog（首通）
+   - 07 重打通关 dialog（无奖励）
+   - 08 战败 SnackBar
+4. `phase3_summary.md` 追加 Week 2 段：
+   - 交付清单（T40-T46）
+   - 累计测试数（377 → 410+）
+   - 8 截图链接
+   - Week 3 议题（B 闭关 / C 奇遇 / D 师徒 / E 武学领悟 哪个先；§12 待决项先决）
+5. PROGRESS.md 销账 Week 2
+6. 主分支合并：feat/phase3-tower → main no-ff
+7. tag `v0.3.0-w2`，push origin
+
+**验收标准**：
+- [ ] 6-8 截图归档
+- [ ] phase3_summary.md Week 2 段追加完
+- [ ] PROGRESS.md 已销账 Week 2
+- [ ] tag v0.3.0-w2 已 push
+- [ ] Pen 验收无大 bug（小 bug 挂账 PROGRESS）
+
+**可能的坑**：
+- 同 Week 1 T39：Pen 端拉新代码必须 stop 旧 flutter run + 全量重启（hot reload 不刷新 Isar schema）
+- v0.3.0-w2 不是 Phase 3 完整交付，正式 v0.3.0-phase3 留 Week 3 末
+
+---
+
+## Week 3：待 Week 2 跑通后再拆
 
 候选方向（GDD §7-§8 + CLAUDE §7）：
 
-- **爬塔 30 层**：3 小 Boss [5/15/25] + 3 大 Boss [10/20/30]，新 TowerProgress collection + 闯关流程 UI
-- **闭关地图 5 张**：兵器/心法/属性/共鸣/... 偏向不同（CLAUDE §12 #5 待决：每小时产出公式）
-- **奇遇 20-30**：encounters.yaml 触发条件（Mac）+ events/ 文案（DeepSeek），机缘值累积规则待决（§12 #6）
-- **师徒传承**：祖师+大弟子+二弟子 数据 model + 遗物三系锁死校验，§12 #10/#11 待决
-- **武学领悟 30-50 招**：插槽机制 + 触发条件，§12 #6 机缘值累积待决
+- **B 闭关地图 5 张**：兵器/心法/属性/共鸣/... 偏向不同（§12 #5 待决：每小时产出公式）
+- **C 奇遇 20-30**：encounters.yaml 触发条件（Mac）+ events/ 文案（DeepSeek），机缘值累积规则待决（§12 #6）
+- **D 师徒传承**：祖师+大弟子+二弟子 数据 model + 遗物三系锁死校验，§12 #10/#11 待决
+- **E 武学领悟 30-50 招**：插槽机制 + 触发条件，§12 #6 机缘值累积待决
 
-Week 1 收尾时跟用户讨论 Week 2 切法，重新走「kickoff §四 → 拆任务 → 落档」流程。
+Week 2 收尾时跟用户讨论 Week 3 切法，重新走「kickoff → 拆任务 → 落档」流程。
 
 ---
 
