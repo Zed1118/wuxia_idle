@@ -1,5 +1,9 @@
 # T32 子提交 5 Windows 视觉验收 + 收尾 Handoff
 
+> **✅ 已完结于 2026-05-11**：Pen 视觉验收完成（6 截图 5 ✅ + 1 ⚠️ → 衍生 #24 已 fix），
+> tag `v0.2.0-phase2` 已发布（merge `5efe8d5`），#24 fixup 已合并（`5ce76f5`）。
+> 本文件作为 Phase 2 收尾历史留档，**新会话请改读 `PHASE3_KICKOFF.md`**。
+>
 > **状态**：Mac 端代码完工（333/333 全绿），等 Windows Pen 视觉验收反馈。  
 > **建立日期**：2026-05-11  
 > **下次会话起手必读**：本文件 + `PROGRESS.md` + `phase2_summary.md` 骨架。
