@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-**Phase 3 Week 2 进行中**（爬塔 30 层 T40-T46，2026-05-11 启动）。Week 1 v0.3.0-w1 已交付。Week 2 切 A 爬塔，与 §12 待决项零依赖；详条 `phase3_tasks.md` §Week 2，5 minor 决策已拍板（境界曲线 / 不退层 / 复用奖励池 / 不重置 / 重打不发奖）。
+**Phase 3 Week 2 已完成**（tag v0.3.0-w2，2026-05-11 merge）。爬塔 30 层全交付：towers.yaml + TowerFloorDef + TowerProgress + TowerProgressService + 层列表 UI + 进入流程串联 + 奖励 hook + Pen 视觉验收（3 截图）。420/420 测试，analyze 0 issues。
+
+**下一阶段**：Phase 3 Week 3 候选（B 闭关 / C 奇遇 / D 师徒 / E 武学领悟），多个 §12 待决项（#5/#6/#10/#11）需先决策再拆任务。
 
 ## 已完成
 
@@ -19,11 +21,7 @@
 
 ## 进行中
 
-- **T42 ✅** 爬塔层列表 UI + 进度展示 + main_menu「问鼎九霄」入口（commit `41530aa`，411/411 测试）：tower_providers（2 FutureProvider）/ tower_floor_list_screen（AppBar+进度卡+ListView.builder 30行+initState 一次性滚到 available）/ tower_floor_card（三态+Boss金紫边框+推荐境界chip+cleared重打AlertDialog）/ main_menu 7 按钮顺序 / strings.dart 爬塔标签 / 6 widget test
-- **T43 ✅** 爬塔进入流程串联（commit `e8b35c6`，416/416 测试）：tower_entry_flow（runTowerFlow async 状态机 opening→battle→victory/defeat）+ _TowerBattleHost + @visibleForTesting DI + StageBattleSetup 重构（buildEnemyTeam public / _buildPlayerTeam private / buildTeamsForTower 爬塔版）+ 5 widget test
-- **T44 ✅** 爬塔奖励 hook（commit `2ff976d`，420/420 测试）：DropService.rollTowerRewards + _persistDrops Isar writeTxn + _showVictoryDialog 首通列掉落/重打无奖励 + 4 unit test
-- **T45 ✅** 全量 test + analyze 双绿（420/420，analyze 0 issues，T44 提交内同步完成）
-- **T46** Pen 视觉验收 + tag v0.3.0-w2（当前）
+（无，Week 2 全部完成）
 
 ## 已知偏差 / 挂账事项
 
@@ -53,9 +51,7 @@ Phase 3 Week 2（爬塔，详条 `phase3_tasks.md` §Week 2）：
 - ✅ **T43** 爬塔进入流程串联（416/416）
 - ✅ **T44** 爬塔奖励 hook（420/420）
 - ✅ **T45** 全量 test + analyze 双绿（420/420）
-- **T46** Pen 视觉验收 + tag v0.3.0-w2
-- **T45** test + analyze 双绿（预期 ≥ 410）
-- **T46** Pen 视觉验收 + tag v0.3.0-w2
+- ✅ **T46** Pen 视觉验收 + tag v0.3.0-w2（3 截图：主菜单/楼层列表/战斗入口，merge → main）
 
 Week 3 候选（待 Week 2 跑通后再拆）：B 闭关 / C 奇遇 / D 师徒 / E 武学领悟（多个待决 §12 #5/#6/#10/#11）
 
