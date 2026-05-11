@@ -1,6 +1,7 @@
 import '../data/defs/drop_entry.dart';
 import '../data/defs/equipment_def.dart';
 import '../data/defs/stage_def.dart';
+import '../data/defs/tower_floor_def.dart';
 import '../data/models/equipment.dart';
 import '../utils/rng.dart';
 import 'equipment_factory.dart';
@@ -66,15 +67,23 @@ class DropService {
   /// 对 [stage.dropTable] 逐条独立判定，返回汇总结果。
   ///
   /// `dropTable` 为空 → 直接返回空 [DropResult]，不调 rng。
-  DropResult rollDrops(StageDef stage, Rng rng) {
-    if (stage.dropTable.isEmpty) {
-      return const DropResult(equipments: [], items: []);
-    }
+  DropResult rollDrops(StageDef stage, Rng rng) =>
+      _rollTable(stage.dropTable, rng);
+
+  /// 爬塔首通奖励（T44）：与 [rollDrops] 同逻辑，从 [floor.dropTable] 抽。
+  ///
+  /// **重打不发奖**由调用方（[runTowerFlow]）用 isFirstClear 控制；
+  /// 此方法本身不感知首通状态。
+  DropResult rollTowerRewards(TowerFloorDef floor, Rng rng) =>
+      _rollTable(floor.dropTable, rng);
+
+  DropResult _rollTable(List<DropEntry> table, Rng rng) {
+    if (table.isEmpty) return const DropResult(equipments: [], items: []);
 
     final equipments = <Equipment>[];
     final items = <ItemDropResult>[];
 
-    for (final entry in stage.dropTable) {
+    for (final entry in table) {
       // 边界：dropChance=1.0 必掉，dropChance=0.0 必不掉
       // nextDouble() ∈ [0.0, 1.0)，所以 chance=0 → 0 < 0 false 永不命中；
       // chance=1.0 → 永远命中（任何 [0, 1) 值都 < 1.0）

@@ -2,6 +2,7 @@ import 'package:isar/isar.dart';
 
 import '../combat/battle_state.dart';
 import '../data/defs/stage_def.dart';
+import '../data/defs/tower_floor_def.dart';
 import '../data/game_repository.dart';
 import '../data/isar_setup.dart';
 import '../data/models/character.dart';
@@ -25,15 +26,37 @@ import '../data/models/technique.dart';
 class StageBattleSetup {
   StageBattleSetup._();
 
-  /// 拼装 (left, right) 战斗双方，准备调 `startBattle`。
-  ///
-  /// 玩家方：从 SaveData.activeCharacterIds 拿出战角色（≤3）；空时回退到
-  /// `characters.where().findFirst()`（兜底单人，Phase 2 P1 fixture 路径）。
+  /// 拼装 (left, right) 战斗双方，准备调 `startBattle`（主线关卡版）。
   static Future<(List<BattleCharacter>, List<BattleCharacter>)>
       buildTeams(StageDef stage) async {
-    final isar = IsarSetup.instance;
+    final left = await _buildPlayerTeam(IsarSetup.instance);
+    final right = buildEnemyTeam(stage.enemyTeam);
+    return (left, right);
+  }
 
-    // ── 左队（玩家方）──
+  /// 拼装 (left, right) 战斗双方，准备调 `startBattle`（爬塔版）。
+  ///
+  /// 左队装配逻辑与 [buildTeams] 完全一致；右队用 [TowerFloorDef.enemyTeam]。
+  static Future<(List<BattleCharacter>, List<BattleCharacter>)>
+      buildTeamsForTower(TowerFloorDef floor) async {
+    final left = await _buildPlayerTeam(IsarSetup.instance);
+    final right = buildEnemyTeam(floor.enemyTeam);
+    return (left, right);
+  }
+
+  /// 将 [EnemyDef] 列表装配为右队 [BattleCharacter] 列表（最多 3 人）。
+  ///
+  /// 主线 [buildTeams] 与爬塔 [buildTeamsForTower] 共用，避免重复。
+  static List<BattleCharacter> buildEnemyTeam(List<EnemyDef> enemies) {
+    final right = <BattleCharacter>[];
+    for (var i = 0; i < enemies.length && i < 3; i++) {
+      right.add(_enemyToBattle(enemy: enemies[i], slotIndex: i));
+    }
+    return right;
+  }
+
+  /// 从 Isar 拉玩家方（左队）：优先 activeCharacterIds，空则兜底 findFirst。
+  static Future<List<BattleCharacter>> _buildPlayerTeam(Isar isar) async {
     final save = await isar.saveDatas.get(0);
     final ids = save?.activeCharacterIds ?? const [];
     final players = <Character>[];
@@ -46,7 +69,7 @@ class StageBattleSetup {
       final fallback = await isar.characters.where().findFirst();
       if (fallback == null) {
         throw StateError(
-          'StageBattleSetup.buildTeams: Isar 没有任何 Character（先跑 P1 种子）',
+          'StageBattleSetup: Isar 没有任何 Character（先跑 P1 种子）',
         );
       }
       players.add(fallback);
@@ -59,14 +82,7 @@ class StageBattleSetup {
         slotIndex: i,
       ));
     }
-
-    // ── 右队（敌人）──
-    final right = <BattleCharacter>[];
-    for (var i = 0; i < stage.enemyTeam.length && i < 3; i++) {
-      right.add(_enemyToBattle(enemy: stage.enemyTeam[i], slotIndex: i));
-    }
-
-    return (left, right);
+    return left;
   }
 
   static Future<BattleCharacter> _playerToBattle({
