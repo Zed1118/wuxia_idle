@@ -33,3 +33,27 @@ Future<Equipment?> equipmentById(EquipmentByIdRef ref, int id) async {
 Future<Technique?> techniqueById(TechniqueByIdRef ref, int id) async {
   return IsarSetup.instance.techniques.get(id);
 }
+
+/// 角色已学全部心法（phase2_tasks.md T31 §472）。
+///
+/// 顺序：mainTechniqueId（若有）→ assistTechniqueIds 原序。复用
+/// [techniqueByIdProvider] 单条 family，测试中可以 override 单条心法即生效。
+/// 任一 id 在 Isar 缺失（返回 null）会被丢掉，不抛错——和角色面板兜底一致。
+@riverpod
+Future<List<Technique>> characterAllTechniques(
+  CharacterAllTechniquesRef ref,
+  int characterId,
+) async {
+  final ch = await ref.watch(characterByIdProvider(characterId).future);
+  if (ch == null) return [];
+  final ids = <int>[
+    if (ch.mainTechniqueId != null) ch.mainTechniqueId!,
+    ...ch.assistTechniqueIds,
+  ];
+  final techs = <Technique>[];
+  for (final id in ids) {
+    final t = await ref.watch(techniqueByIdProvider(id).future);
+    if (t != null) techs.add(t);
+  }
+  return techs;
+}
