@@ -31,10 +31,11 @@
   - T31 心法面板 UI + DispelConfirmDialog：tier 分组渲染 + 主修/辅修边框区分 + 二确散功 + characterAllTechniquesProvider；4 widget test，累计 300
 - **T32 销账 #22 + 4 场景验收 + 视觉验收**（2026-05-11，详条 git log T32 #22a-#22f + 子提交 4-5 + docs/screenshots/phase2/）：service.persistResult writeTxn / Phase2SeedService / MainMenu+Phase2TestMenu / phase2_scenarios_test 11 用例 / 6 截图 5✅+1⚠️（#24 装备名）；累计 333/333，0 issues
 - **v0.2.0-phase2 tag + main 合并**（2026-05-11，merge 5efe8d5）：Phase 2 装备+心法系统交付，feat/phase2-equipment → main no-ff；详见 phase2_summary.md
+- **T33 stages.yaml schema 升级**（2026-05-11，feat/phase3-mainline）：StageDef 加 prevStageId / narrativeOpeningId / narrativeVictoryId 三字段 + @Deprecated 旧 narrativeId；6 关 fixture backfill 链成 3 章 × 2 关；GameRepository.\_enforceRedLines 加 stage 链路校验（prev 必须存在 + 同章不跨）；test 加 6 用例（defs 3 + repo 链路 3），累计 341/341
 
 ## 进行中
 
-- **T33** stages.yaml schema 升级 + StageDef 扩字段（prevStageId / narrativeOpeningId / narrativeVictoryId）+ 6 关 fixture backfill
+- **T34** MainlineProgressService + Isar `MainlineProgress` collection（getOrCreate / availableStages / recordVictory / chapterCompleted）
 
 ## 已知偏差 / 挂账事项
 
