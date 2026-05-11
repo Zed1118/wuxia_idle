@@ -31,6 +31,11 @@ class WuxiaColors {
   static const Color resultHighlight = Color(0xFFE8C547);
   static const Color buttonDisabled = Color(0xFF3A3A3A);
 
+  // 伤害飘字色（T15）
+  static const Color popupNormal = Color(0xFFFFFFFF);    // 普通伤害：白
+  static const Color popupCritical = Color(0xFFFFD700);  // 暴击：金
+  static const Color popupDodge = Color(0xFF9E9E9E);     // 闪避：灰
+
   static Color schoolColor(TechniqueSchool s) => switch (s) {
         TechniqueSchool.gangMeng => gangMeng,
         TechniqueSchool.lingQiao => lingQiao,
