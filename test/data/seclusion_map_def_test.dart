@@ -30,7 +30,7 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────
 
   group('SeclusionMapDef.fromYaml', () {
-    Map<String, dynamic> _mapYaml({
+    Map<String, dynamic> mapYaml({
       String mapType = 'shanLin',
       String mapName = '山林',
       String requiredRealm = 'xueTu',
@@ -54,7 +54,7 @@ void main() {
         };
 
     test('山林 - 学徒可进，基础产出正确', () {
-      final def = SeclusionMapDef.fromYaml(_mapYaml());
+      final def = SeclusionMapDef.fromYaml(mapYaml());
       expect(def.mapType, RetreatMapType.shanLin);
       expect(def.mapName, '山林');
       expect(def.requiredRealm, RealmTier.xueTu);
@@ -65,7 +65,7 @@ void main() {
 
     test('古剑冢 - 三流可进，兵器掉率 1.5', () {
       final def = SeclusionMapDef.fromYaml(
-        _mapYaml(
+        mapYaml(
           mapType: 'guJianZhong',
           mapName: '古剑冢',
           requiredRealm: 'sanLiu',
@@ -81,7 +81,7 @@ void main() {
 
     test('断崖绝壁 - 宗师可进，全维度 1.5', () {
       final def = SeclusionMapDef.fromYaml(
-        _mapYaml(
+        mapYaml(
           mapType: 'duanYaJueBi',
           mapName: '断崖绝壁',
           requiredRealm: 'zongShi',
@@ -99,7 +99,7 @@ void main() {
 
     test('藏经阁 - 心法领悟 1.5', () {
       final def = SeclusionMapDef.fromYaml(
-        _mapYaml(
+        mapYaml(
           mapType: 'cangJingGe',
           mapName: '藏经阁',
           requiredRealm: 'sanLiu',
@@ -113,7 +113,7 @@ void main() {
 
     test('悬崖瀑布 - 内力增长 1.5', () {
       final def = SeclusionMapDef.fromYaml(
-        _mapYaml(
+        mapYaml(
           mapType: 'xuanYaPuBu',
           mapName: '悬崖瀑布',
           requiredRealm: 'erLiu',
@@ -134,7 +134,7 @@ void main() {
     late RetreatConfig config;
 
     setUp(() {
-      config = RetreatConfig(
+      config = const RetreatConfig(
         maps: [],
         durationHours: [1, 4, 12],
         realmScalePerTier: 1.3,
@@ -214,50 +214,6 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────
 
   group('_enforceSeclusionRedLines fail-fast', () {
-    Map<String, dynamic> _baseMap(String mapType, String realm) => {
-          'map_type': mapType,
-          'map_name': mapType,
-          'required_realm': realm,
-          'base_outputs': {
-            'experience_per_hour': 100,
-            'mojianshi_per_hour': 1.0,
-            'equipment_drop_rate': 1.0,
-            'technique_learn_rate': 1.0,
-            'internal_force_growth': 1.0,
-          },
-        };
-
-    Future<GameRepository> _loadWithOverride({
-      List<Map<String, dynamic>>? maps,
-      int capHours = 72,
-      double mojianshi = 1.0,
-    }) {
-      final effectiveMaps = maps ??
-          [
-            _baseMap('shanLin', 'xueTu'),
-            _baseMap('guJianZhong', 'sanLiu'),
-            _baseMap('cangJingGe', 'sanLiu'),
-            _baseMap('xuanYaPuBu', 'erLiu'),
-            _baseMap('duanYaJueBi', 'zongShi'),
-          ];
-      for (final m in effectiveMaps) {
-        (m['base_outputs'] as Map<String, dynamic>)['mojianshi_per_hour'] =
-            mojianshi;
-      }
-      return GameRepository.loadAllDefs(
-        loader: (path) {
-          if (path == 'data/numbers.yaml') {
-            final file = File(path);
-            return file.readAsString().then((raw) {
-              // 直接用文件 loader，不替换 numbers.yaml；依赖真实 yaml 跑，red-line 通过
-              return raw;
-            });
-          }
-          return fileLoader(path);
-        },
-      );
-    }
-
     test('getSeclusionMap 未知类型抛 StateError', () async {
       await GameRepository.loadAllDefs(loader: fileLoader);
       // 所有 5 种 enum 值在 numbers.yaml 都已配置；此处用一个无效场景测 error path
@@ -268,7 +224,7 @@ void main() {
     test('mojianshiPerHour 必须 > 0 — 直接构造验证', () {
       // _enforceSeclusionRedLines 在 GameRepository 内部调用，
       // 此处通过直接校验逻辑用 SeclusionMapDef 构造验证语义正确
-      final def = SeclusionMapDef(
+      const def = SeclusionMapDef(
         mapType: RetreatMapType.shanLin,
         mapName: '山林',
         requiredRealm: RealmTier.xueTu,
@@ -284,7 +240,7 @@ void main() {
 
     test('capHours 非法时 StateError（直接传坏 config 验证）', () {
       expect(
-        () => RetreatConfig(
+        () => const RetreatConfig(
           maps: [],
           durationHours: [1],
           realmScalePerTier: 1.3,
