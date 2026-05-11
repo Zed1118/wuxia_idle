@@ -29,19 +29,21 @@
   - `lib/providers/character_providers.dart`：3 个 `@riverpod` family 异步读 Isar；`lib/ui/character_panel/character_panel_screen.dart`：4 块布局，不显示装备/心法名字，速度无主修时显示 `—`
   - widget 测试 4/4，累计 287/287，0 issues
 - **T29 装备仓库 UI + 强化对话框**（2026-05-11，分支 feat/phase2-equipment）
-  - `lib/providers/rng_provider.dart`：autoDispose `@riverpod Rng rng()` 暴露 `DefaultRng()`；测试 `.overrideWithValue(stub)` 注入确定性 Rng
-  - `lib/providers/inventory_providers.dart`：`inventoryQuantityByTypeProvider(ItemType)` 按 itemType filter Isar 返回数量（不存在=0）；`allEquipmentsProvider` 一次性 findAll + 按 tier desc 排序
-  - `lib/ui/strings.dart`：补强化对话框文案（标题/按钮/预览/材料/结晶/失败结晶提示等）
-  - `lib/ui/enhancement/enhance_dialog.dart`：ConsumerStatefulWidget；显示 `+N→+N+1` 预览 + 成功率(`config.successRateFor`) + 磨剑石余量/cost + 心血结晶余量；强化按钮走 `EnhancementService.tryEnhance(eq, cap=49, rng, mojianshiQty, config)`；保底按钮走 `useCrystalToGuarantee`；**cap 硬顶 49**（Pen 拍板，仓库不携 character）
-  - 成功反馈：边框金色 lerp + AnimatedScale `1 + sin(t*π)*0.15` 弹一下；失败反馈：inline shake（同 battle_screen sin 公式，4px 偏移）+「+1 心血结晶」红色 banner
-  - `lib/ui/inventory/inventory_screen.dart`：`allEquipmentsProvider` AsyncValue.when → 按 tier 7 阶分组 → 每 tier 一个 ExpansionTile（initiallyExpanded=true）；点击 row → `showDialog` 弹 EnhanceDialog，关闭后 `ref.invalidate(allEquipmentsProvider)`
-  - **不直接 writeTxn 写回 Isar**（T29 简化，dialog 内 in-place 改 eq.enhanceLevel 仅 setState 反馈；持久化扣 inventory 归 T32 视觉验收冲刺补，挂账 #22）
-  - widget 测试 5/5：仓库列表 3 tier ExpansionTile + +N / 对话框打开显示预览 + 成功率行 / Rng 0.01 成功 + 新 +N / Rng 0.99 失败 + 「+1 心血结晶」 + +N 不变 / mojianshiQty=0 时 ElevatedButton disabled
-  - 累计 292/292 测试，0 issues
+  - `rng_provider` autoDispose `@riverpod Rng` 暴露 `DefaultRng()`；`inventory_providers` `inventoryQuantityByTypeProvider(ItemType)` + `allEquipmentsProvider`(按 tier desc 排序)
+  - `enhance_dialog`：`+N→+N+1` 预览 + 成功率/磨剑石/结晶余量；强化按钮走 `tryEnhance(cap=49, rng, mojianshiQty)`；保底按钮走 `useCrystalToGuarantee`；成功 → 边框金色 lerp + AnimatedScale；失败 → inline shake（battle_screen 同公式 4px）+「+1 心血结晶」红 banner；**不直接 writeTxn**（挂账 #22）
+  - `inventory_screen`：tier 7 阶 ExpansionTile 分组 + 点击 row 弹 EnhanceDialog + invalidate
+  - widget 测试 5/5；累计 292/292 测试，0 issues
+- **T30 开锋 UI**（2026-05-11，分支 feat/phase2-equipment）
+  - `enum_localizations`：补 `ForgingSlotType` 中文化（攻击/速度/吸血/破甲/专属技能）；`strings`：补 tab/已开锋/解锁提示/确认开锋 AlertDialog/`forgingBonusLabel(type, X)`
+  - `lib/ui/enhancement/forging_panel.dart`（新建）：3 槽卡片 → 未解锁灰 + 「强化到 +N 解锁」/ 已解锁未开锋 Wrap+OutlinedButton 词条选项 / 已开锋显示「<类型> +X%」+「已开锋」灰色标签；点击词条 → showDialog AlertDialog 二次确认 → `ForgingService.forge` in-place 改；槽 2 互斥 + 槽 3 specialSkillCandidates 空 等全部 delegate 给 `ForgingService.availableTypesForSlot`
+  - `enhance_dialog`：加 `TabController(length=2)` + 顶部 TabBar(强化/开锋) + TabBarView(height=420)；新增可选 `EquipmentDef? def` 参数，null 时 forging tab 显占位
+  - `inventory_screen`：弹 dialog 前 `try { def = GameRepository.instance.getEquipment(eq.defId) } catch { def = null }`，fixture/未知 defId 自动 fallback
+  - widget 测试 4/4：3 槽锁定 → 3 个解锁提示 / 槽 1 已开 attack + L15 → 槽 2 词条不含「攻击」/ 槽 3 specialSkillCandidates 空 → 「该装备无专属技能」/ 已开锋槽显示「<type> +X%」+「已开锋」NWidgets
+  - 累计 296/296 测试，0 issues
 
 ## 进行中
 
-- Phase 2 Week 3 推进中（T28/T29 完成），分支 feat/phase2-equipment。下一步进 T30（开锋 UI tab）
+- Phase 2 Week 3 推进中（T28/T29/T30 完成），分支 feat/phase2-equipment。下一步进 T31（心法面板 UI + 散功 dialog）
 
 ## 已知偏差 / 挂账事项
 
@@ -63,7 +65,7 @@
 
 ## 下一步
 
-T30 开锋 UI（phase2_tasks §443-465）：在 T29 强化对话框底部加「开锋」tab；3 个槽位卡片（+10/+15/+19 解锁）；未解锁灰色 + 「强化到 +N 解锁」；已解锁未开锋显示可选词条（attack/speed/lifesteal/pierce），点击 → `ForgingService.forge`；槽 2 过滤掉槽 1 已选类型；槽 3 specialSkill 候选空时显示「该装备无专属技能」；widget 测试 ≥ 4 + Windows 视觉验收 +9→+10 时槽 1 自动可用。**模型建议 sonnet 4.6**。
+T31 心法面板 UI + 散功 dialog（phase2_tasks §468-490）：已学心法列表（按 tier 分组）每条显示 名字/tier/流派/当前修炼度层/进度条；主修标签高亮，辅修最多 3 个；点击辅修 →「设为主修」按钮 → 弹散功 dialog（显示双重代价「内力 X→X/2 / 原主修修炼度 Y→Y/2 / 修炼度层可能回退」）→ 二次确认 → 调 `DispelService.dispel`；widget 测试 ≥ 4（已学列表分组 / 主修高亮 / 散功 dialog 双重代价文案 / 二次确认取消不触发 dispel）+ Windows 视觉验收。**模型建议 sonnet 4.6**。
 
 ## 关键约束（每次开局必读）
 

@@ -134,4 +134,15 @@ class EnumL10n {
       ResonanceStage.xinJianTongLing => '心剑通灵',
     };
   }
+
+  /// 开锋槽位类型（GDD §6.5）。
+  static String forgingSlotType(ForgingSlotType t) {
+    return switch (t) {
+      ForgingSlotType.attack => '攻击',
+      ForgingSlotType.speed => '速度',
+      ForgingSlotType.lifesteal => '吸血',
+      ForgingSlotType.pierce => '破甲',
+      ForgingSlotType.specialSkill => '专属技能',
+    };
+  }
 }

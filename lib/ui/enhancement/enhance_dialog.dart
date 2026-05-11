@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../combat/enum_localizations.dart';
+import '../../data/defs/equipment_def.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/equipment.dart';
 import '../../providers/battle_providers.dart';
@@ -12,6 +13,7 @@ import '../../providers/rng_provider.dart';
 import '../../services/enhancement_service.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
+import 'forging_panel.dart';
 
 /// 强化对话框（phase2_tasks T29 §426-430）。
 ///
@@ -24,9 +26,14 @@ import '../theme/colors.dart';
 /// - **不直接扣 inventory**：T29 简化，扣材料 + writeTxn + invalidate 归
 ///   T32 视觉验收冲刺补；测试中直接 mock rng 控成功 / 失败。
 class EnhanceDialog extends ConsumerStatefulWidget {
-  const EnhanceDialog({super.key, required this.equipment});
+  const EnhanceDialog({super.key, required this.equipment, this.def});
 
   final Equipment equipment;
+
+  /// 装备 def，仅 [ForgingPanel] 槽 3 specialSkill 校验需要。InventoryScreen
+  /// 弹窗前查 [GameRepository.getEquipment]；fixture 测试可传 null（forging
+  /// tab 仅退化到 specialSkillCandidates=[] 路径）。
+  final EquipmentDef? def;
 
   @override
   ConsumerState<EnhanceDialog> createState() => _EnhanceDialogState();
@@ -39,6 +46,7 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
 
   late final AnimationController _shakeCtrl;
   late final AnimationController _scaleCtrl;
+  late final TabController _tabCtrl;
   EnhanceResult? _lastResult;
 
   @override
@@ -52,12 +60,14 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
+    _tabCtrl = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
     _shakeCtrl.dispose();
     _scaleCtrl.dispose();
+    _tabCtrl.dispose();
     super.dispose();
   }
 
@@ -114,19 +124,63 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: (mojianshiAsync.hasValue && crystalAsync.hasValue)
-              ? _buildBody(
-                  mojianshiQty: mojianshiAsync.value!,
-                  crystalQty: crystalAsync.value!,
-                )
-              : const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-        ),
+        child: (mojianshiAsync.hasValue && crystalAsync.hasValue)
+            ? _buildTabs(
+                mojianshiQty: mojianshiAsync.value!,
+                crystalQty: crystalAsync.value!,
+              )
+            : const Padding(
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: Center(child: CircularProgressIndicator()),
+              ),
       ),
+    );
+  }
+
+  Widget _buildTabs({required int mojianshiQty, required int crystalQty}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TabBar(
+          controller: _tabCtrl,
+          labelColor: WuxiaColors.textPrimary,
+          unselectedLabelColor: WuxiaColors.textMuted,
+          indicatorColor: WuxiaColors.resultHighlight,
+          tabs: const [
+            Tab(text: UiStrings.tabEnhance),
+            Tab(text: UiStrings.tabForging),
+          ],
+        ),
+        SizedBox(
+          height: 420,
+          child: TabBarView(
+            controller: _tabCtrl,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: _buildBody(
+                  mojianshiQty: mojianshiQty,
+                  crystalQty: crystalQty,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: widget.def == null
+                    ? const Center(
+                        child: Text(
+                          UiStrings.dashPlaceholder,
+                          style: TextStyle(color: WuxiaColors.textMuted),
+                        ),
+                      )
+                    : ForgingPanel(
+                        equipment: widget.equipment,
+                        def: widget.def!,
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
