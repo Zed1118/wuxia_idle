@@ -70,6 +70,13 @@
   - 升层逻辑：increment skillUsage → progress += delta → while (layer != jiJing && progress >= progressToNext) 消耗升层 + 切换 progressToNext；jiJing 时保留升上来的 progressToNext 值（=6500）作封顶上限
   - 单测 12/12：cultivationProgressToNext 解析 ×2 / 单次累积 / 跨层 +1 / 多层连升 +1000 / 一次塞 5000 +5 层 / 16250 全升 / 30000 封顶 / 20000 不封顶 / jiJing 再加封顶 / skillId 同/异累计
   - 累计 241/241 测试，0 issues
+- **T27 装备掉落服务**（2026-05-11，分支 feat/phase2-equipment）
+  - `lib/data/defs/drop_entry.dart`（新建）：`sealed class DropEntry` + `EquipmentDrop`(equipmentDefId + dropChance) / `ItemDrop`(inventoryItemDefId + quantityMin/Max + dropChance)；`fromYaml` 工厂分发（按 `equipmentDefId` / `inventoryItemDefId` 二选一），quantity 支持缺省 [1,1] / 单数字 [n,n] / `[min, max]` 三种写法；fail-fast 校验 dropChance ∈ [0,1] / quantity min≤max / 二选一
+  - `lib/data/defs/stage_def.dart`：扩 `dropTable: List<DropEntry>`（默认空，向后兼容）；旧 `dropEquipmentDefIds` / `dropItemDefIds` 保留为 Phase 1 占位字段，Phase 5 整理时再清
+  - `lib/services/drop_service.dart`（新建）：`DropService.rollDrops(StageDef, Rng) → DropResult(equipments, items)` 纯函数，不写 Isar；遍历 dropTable 每条独立 `rng.nextDouble() < dropChance`；装备命中调 `EquipmentFactory.fromDef`（T19）走 def 范围 roll；物品命中 quantity 范围 roll；注入式 `equipmentDefLookup` + `now` 便于测试
+  - `data/stages.yaml`：mainline_test_02（普通关：30% 铁剑 + 必掉磨剑石 1-3）+ mainline_test_06（Boss 关：必掉龙泉剑 + 50% 玉佩 + 必掉心血结晶 5-8）；其他 4 关 dropTable 留空（T28 视觉验收时再补，Pen 拍板：本阶段先 2 关）
+  - 单测 16 + 1（game_repository）：空 dropTable 不调 rng / chance=0 必不掉 / chance=1 必掉 / quantity range 200 次 ∈ [1,3] / 单点 quantity / 蒙卡 1000 次 0.3 ∈ [25%,35%] / 混合 entry / 同种子确定性 / DropEntry.fromYaml 7 个解析分支 / 真实 stages.yaml load 后 _02/_06 dropTable 命中
+  - 累计 270/270 测试，0 issues
 - **T25 散功服务**（2026-05-11，分支 feat/phase2-equipment）
   - `lib/data/numbers_config.dart`：补 `dispersionInternalForcePenalty`（=0.5，Phase 1 时漏接）
   - `lib/services/dispel_service.dart`（新建）：`DispelService.dispel({ch, mainTech, newMainTech, n})` 返回 `DispelResult`；3 类校验失败 fail-fast（旧主修非 main / 新主修不属于该角色 / 新主修非 assist）
@@ -112,9 +119,9 @@
 
 ## 下一步
 
-T26 战斗结算 hooks（回写 battleCount / skillUsageCount / 掉落 / 心血结晶）：BattleResolutionService.resolve / 调 CultivationService.recordSkillUsage / 接 BattleNotifier 翻转 result 时触发 / **依赖 T27 DropService**（spec §327 顺序：T27 早于 T26 做掉落）
+T26 战斗结算 hooks：`BattleResolutionService.resolve({finalState, participatingCharacters, stageDef, rng})` → 装备 battleCount++（参战 3 件，未参战不算） + 心法 skillUsageCount[skillId] 反推 actionLog 累加 + 主修调 `CultivationService.recordSkillUsage` 升层 + 调 `DropService.rollDrops`（T27✅）入背包；纯结果返回，副作用归 caller；`BattleNotifier` 扩展 result 翻转 hook + `battleResolutionServiceProvider` 注入；单测 ≥10 + widget 测试 1 fakeIsar/in-memory。**模型建议保持 opus 4.7**（战斗联动 + Riverpod + actionLog 反推复杂度高）。
 
-⚠️ T25 完成是切换子系统的好节点（数值层 → 战斗联动 + Riverpod 扩展），建议**先 commit T25 + /clear** 再开 T26。
+⚠️ T27 完成是 commit/review 节点（数值层最后一块），建议**先 commit T27 等 review** 再开 T26。
 
 ## 关键约束（每次开局必读）
 

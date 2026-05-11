@@ -101,6 +101,20 @@ void main() {
       );
     });
 
+    test('T27 dropTable 解析 → mainline_test_02 / _06 dropTable 非空，'
+        '其他关卡 dropTable 为空（向后兼容）', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final s2 = repo.getStage('mainline_test_02');
+      expect(s2.dropTable.length, 2,
+          reason: '山道伏击：低概率铁剑 + 必掉磨剑石');
+      final s6 = repo.getStage('mainline_test_06');
+      expect(s6.dropTable.length, 3,
+          reason: 'Boss 关：龙泉剑 + 50% 玉佩 + 必掉心血结晶');
+      final s1 = repo.getStage('mainline_test_01');
+      expect(s1.dropTable, isEmpty,
+          reason: '未配 dropTable 的关卡保持空列表（不影响旧 fixture）');
+    });
+
     test('未配置的 id → 抛 StateError', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       expect(() => repo.getEquipment('not_exist'), throwsStateError);
