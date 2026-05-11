@@ -56,6 +56,7 @@
 18. **`flutter build web` 被 Isar 阻塞**：dart:ffi web 不支持，Phase 5 切 Isar 4.x 时一并恢复
 21. **shake / tier 颜色 / 金光效果未抽 helper**：battle_screen / enhance_dialog 各 inline 一份 sin 公式；character_panel / enhance_dialog / inventory_screen 各 inline 一份 `_tierColor` 映射。Phase 5 抽 `lib/ui/effects/screen_shake.dart` + `lib/ui/theme/tier_colors.dart`
 23. **widget test 不接真 Isar**：testWidgets FakeAsync 与 `Isar.findFirst` / writeTxn 异步 IO 不兼容；当前 widget 端在 `_persist` 加 `Isar.getInstance` guard 测试旁路，真落地走 service-level test。Phase 5 Riverpod 3.x + IsarProvider 注入时再统一
+24. **装备名未渲染**：inventory_row + enhance_dialog 显示「武器」而非 EquipmentDef.name（如「龙泉剑」），T32 子提交 5 Pen 视觉验收发现，不影响数值/流程，Phase 3 起手第一个 fixup
 
 > 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#22）见文末归档。
 
