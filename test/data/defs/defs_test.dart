@@ -270,6 +270,71 @@ void main() {
       expect(def.enemyTeam.length, 3);
       expect(def.enemyTeam[2].name, '山贼2');
     });
+
+    // ── T33 Phase 3 schema 升级：prevStageId / narrativeOpening/VictoryId ──
+
+    test('T33 新字段全填：prevStageId + narrativeOpeningId + narrativeVictoryId',
+        () {
+      final def = StageDef.fromYaml({
+        'id': 'mainline_test_02',
+        'name': '林间伏击',
+        'stageType': 'mainline',
+        'chapterIndex': 1,
+        'prevStageId': 'mainline_test_01',
+        'narrativeOpeningId': 'mainline_test_02_opening',
+        'narrativeVictoryId': 'mainline_test_02_victory',
+        'requiredRealm': 'xueTu',
+        'enemyTeam': const [],
+        'dropEquipmentDefIds': const [],
+        'dropItemDefIds': const [],
+        'baseExpReward': 0,
+        'difficultyMultiplier': 1.0,
+      });
+
+      expect(def.prevStageId, 'mainline_test_01');
+      expect(def.narrativeOpeningId, 'mainline_test_02_opening');
+      expect(def.narrativeVictoryId, 'mainline_test_02_victory');
+    });
+
+    test('T33 新字段全缺省：章节首关（无 prev）+ 暂未挂剧情', () {
+      final def = StageDef.fromYaml({
+        'id': 'mainline_test_01',
+        'name': '山道试剑',
+        'stageType': 'mainline',
+        'chapterIndex': 1,
+        'requiredRealm': 'xueTu',
+        'enemyTeam': const [],
+        'dropEquipmentDefIds': const [],
+        'dropItemDefIds': const [],
+        'baseExpReward': 0,
+        'difficultyMultiplier': 1.0,
+      });
+
+      expect(def.prevStageId, isNull);
+      expect(def.narrativeOpeningId, isNull);
+      expect(def.narrativeVictoryId, isNull);
+    });
+
+    test('T33 deprecated narrativeId 仍可解析（Phase 5 整理前向后兼容）', () {
+      // ignore: deprecated_member_use
+      final def = StageDef.fromYaml({
+        'id': 'legacy_stage',
+        'name': '旧关卡',
+        'stageType': 'mainline',
+        'chapterIndex': 1,
+        'requiredRealm': 'xueTu',
+        'enemyTeam': const [],
+        'narrativeId': 'narr_legacy',
+        'dropEquipmentDefIds': const [],
+        'dropItemDefIds': const [],
+        'baseExpReward': 0,
+        'difficultyMultiplier': 1.0,
+      });
+
+      // ignore: deprecated_member_use
+      expect(def.narrativeId, 'narr_legacy');
+      expect(def.prevStageId, isNull);
+    });
   });
 
   group('RealmDef.fromYaml', () {

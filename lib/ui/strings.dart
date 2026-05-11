@@ -172,4 +172,47 @@ class UiStrings {
   /// 散功代价 · 修炼度:`修炼度 X → Y`。
   static String dispelCostCultivation(int before, int after) =>
       '修炼度 $before → $after';
+
+  // ── Phase 3 主线（T35）──
+
+  static const String mainMenuMainline = '主线';
+  static const String mainMenuMainlineHint = '3 章 6 关，按章节顺序解锁';
+
+  static const String chapterListTitle = '主线 · 章节';
+  static const String chapter1Title = '第一章 · 学武出山';
+  static const String chapter2Title = '第二章 · 武林初识';
+  static const String chapter3Title = '第三章 · 名扬江湖';
+  static const String chapter1Hint = '初出茅庐，山道试剑、林间伏击';
+  static const String chapter2Hint = '镖局护送、黑风寨剿匪';
+  static const String chapter3Hint = '武林会、一战封王';
+
+  static const String chapterStatusLocked = '未解锁';
+  static const String chapterStatusInProgress = '进行中';
+  static const String chapterStatusCompleted = '已完成';
+
+  static const String stageListLocked = '锁';
+  static const String stageListAvailable = '可挑战';
+  static const String stageListCleared = '✓ 已通关';
+  static const String stageListPrevHint = '通关前一关解锁';
+  static const String stageListEmpty = '该章暂无关卡';
+
+  /// 章节标题路由：按 chapterIndex 返回对应中文标题。
+  static String chapterTitle(int chapterIndex) {
+    return switch (chapterIndex) {
+      1 => chapter1Title,
+      2 => chapter2Title,
+      3 => chapter3Title,
+      _ => '第 $chapterIndex 章',
+    };
+  }
+
+  /// 章节简介路由。
+  static String chapterHint(int chapterIndex) {
+    return switch (chapterIndex) {
+      1 => chapter1Hint,
+      2 => chapter2Hint,
+      3 => chapter3Hint,
+      _ => '',
+    };
+  }
 }

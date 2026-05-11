@@ -43,14 +43,22 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 顶部提示文案（T17 测试场景用）；null 则不显示。
   final String? hint;
 
-  /// 战斗结束关闭 dialog 后的回调（T17 返回调试菜单用）；null 则无额外动作。
+  /// 战斗结束关闭 dialog 后的通用回调（T17 返回调试菜单用）；null 则无额外动作。
   final VoidCallback? onBattleEnd;
+
+  /// Phase 3 T37：左队胜（玩家胜）回调；null 走 [onBattleEnd] 兼容旧入口。
+  final VoidCallback? onVictory;
+
+  /// Phase 3 T37：左队败 / 平局回调；null 走 [onBattleEnd] 兼容旧入口。
+  final VoidCallback? onDefeat;
 
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
     this.hint,
     this.onBattleEnd,
+    this.onVictory,
+    this.onDefeat,
   });
 
   @override
@@ -244,9 +252,17 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             onPressed: () {
               Navigator.of(ctx).pop();
               widget.onBattleEnd?.call();
+              // Phase 3 T37：按结果分发胜/败回调（与 onBattleEnd 并存，向后兼容）
+              if (result == BattleResult.leftWin) {
+                widget.onVictory?.call();
+              } else {
+                widget.onDefeat?.call();
+              }
             },
             child: Text(
-              widget.onBattleEnd != null
+              widget.onBattleEnd != null ||
+                      widget.onVictory != null ||
+                      widget.onDefeat != null
                   ? UiStrings.backToMenu
                   : UiStrings.close,
               style: const TextStyle(color: WuxiaColors.textSecondary),

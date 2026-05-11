@@ -1,11 +1,19 @@
 # =============================================================================
-# stages.yaml · 关卡占位 fixture（T07）
+# stages.yaml · 主线关卡（T07 占位 + T33 Phase 3 schema 升级）
 # =============================================================================
-# 共 6 关：纯测试关卡，stageType 全填 mainline（phase1_tasks T07 §7.3 指定）。
-# 每关 3 敌人，三流派各一（gangMeng / lingQiao / yinRou），便于后续 T17 测试场景。
+# 共 6 关：3 章 × 2 关，stageType 全填 mainline。
+# 每关 3 敌人，三流派各一（gangMeng / lingQiao / yinRou）。
 # 难度递增覆盖学徒 → 三流 → 二流。
 #
-# narrativeId 全留 null（占位阶段不挂叙事）。
+# Phase 3 T33 字段约定：
+#   prevStageId          —— 章节内顺序解锁（章节首关为 null/缺省）；与本关同
+#                           chapterIndex（GameRepository._enforceRedLines 校验）
+#   narrativeOpeningId   —— 进入关卡前播放的剧情 id（联结
+#                           data/narratives/<id>.yaml；缺文件由 NarrativeLoader
+#                           兜底「[剧情待补]」，运行期不挂）
+#   narrativeVictoryId   —— 战斗胜利后播放的剧情 id；战败不触发
+#   narrativeId          —— Phase 1 字段，已 @Deprecated；Phase 5 整理时清
+#
 # baseHp / baseAttack 数值估算：
 #   xueTu  (内力 500-1100)：HP 1500-3500、Atk 80-150
 #   sanLiu (内力 1200-2000)：HP 3000-7000、Atk 250-450
@@ -19,6 +27,9 @@ stages:
     name: 山道试剑
     stageType: mainline
     chapterIndex: 1
+    # Ch1 首关，无 prevStageId
+    narrativeOpeningId: mainline_test_01_opening
+    narrativeVictoryId: mainline_test_01_victory
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_xueTu_thug_a
@@ -62,6 +73,9 @@ stages:
     name: 林间伏击
     stageType: mainline
     chapterIndex: 1
+    prevStageId: mainline_test_01
+    narrativeOpeningId: mainline_test_02_opening
+    narrativeVictoryId: mainline_test_02_victory
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_xueTu_bandit_a
@@ -112,6 +126,9 @@ stages:
     name: 镖局护送
     stageType: mainline
     chapterIndex: 2
+    # Ch2 首关，无 prevStageId
+    narrativeOpeningId: mainline_test_03_opening
+    narrativeVictoryId: mainline_test_03_victory
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_sanLiu_thief_a
@@ -157,6 +174,9 @@ stages:
     name: 黑风寨
     stageType: mainline
     chapterIndex: 2
+    prevStageId: mainline_test_03
+    narrativeOpeningId: mainline_test_04_opening
+    narrativeVictoryId: mainline_test_04_victory
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_sanLiu_chief_a
@@ -205,6 +225,9 @@ stages:
     name: 武林会
     stageType: mainline
     chapterIndex: 3
+    # Ch3 首关，无 prevStageId
+    narrativeOpeningId: mainline_test_05_opening
+    narrativeVictoryId: mainline_test_05_victory
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_erLiu_master_a
@@ -254,6 +277,9 @@ stages:
     name: 一战封王
     stageType: mainline
     chapterIndex: 3
+    prevStageId: mainline_test_05
+    narrativeOpeningId: mainline_test_06_opening
+    narrativeVictoryId: mainline_test_06_victory
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_erLiu_boss

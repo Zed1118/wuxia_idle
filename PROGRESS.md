@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 3 Week 1 启动**（2026-05-11，B 改良版：主线最小闭环优先）。Week 1 任务 T33-T39 详条见 `phase3_tasks.md`。Week 2-3（爬塔 / 闭关 / 奇遇 / 师徒 / 武学领悟）待 Week 1 跑通后再拆。
+**Phase 3 Week 1 已交付**（v0.3.0-w1，2026-05-11，主线最小闭环跑通）。Week 2-3（爬塔 / 闭关 / 奇遇 / 师徒 / 武学领悟）待用户拍板切法（候选 A-E 见 `phase3_summary.md`）。
 
 ## 已完成
 
@@ -31,10 +31,18 @@
   - T31 心法面板 UI + DispelConfirmDialog：tier 分组渲染 + 主修/辅修边框区分 + 二确散功 + characterAllTechniquesProvider；4 widget test，累计 300
 - **T32 销账 #22 + 4 场景验收 + 视觉验收**（2026-05-11，详条 git log T32 #22a-#22f + 子提交 4-5 + docs/screenshots/phase2/）：service.persistResult writeTxn / Phase2SeedService / MainMenu+Phase2TestMenu / phase2_scenarios_test 11 用例 / 6 截图 5✅+1⚠️（#24 装备名）；累计 333/333，0 issues
 - **v0.2.0-phase2 tag + main 合并**（2026-05-11，merge 5efe8d5）：Phase 2 装备+心法系统交付，feat/phase2-equipment → main no-ff；详见 phase2_summary.md
+- **T33 stages.yaml schema 升级**（2026-05-11，feat/phase3-mainline）：StageDef 加 prevStageId / narrativeOpeningId / narrativeVictoryId 三字段 + @Deprecated 旧 narrativeId；6 关 fixture backfill 链成 3 章 × 2 关；GameRepository.\_enforceRedLines 加 stage 链路校验（prev 必须存在 + 同章不跨）；test 加 6 用例（defs 3 + repo 链路 3），累计 341/341
+- **T34 MainlineProgressService + Isar collection**（2026-05-11，feat/phase3-mainline）：新 @collection MainlineProgress（saveDataId / currentChapterIndex / clearedStageIds / clearedAt 同序）；service 静态 4 API（getOrCreate 幂等 / availableStages 三态按 prev 链排序 / recordVictory 幂等 append / chapterCompleted）；StageStatus enum；IsarSetup schema 加 + saveVersion 0.1.0→0.2.0；test 加 12 用例（接真 Isar + 临时目录），累计 353/353
+- **T35 章节列表 + 关卡列表 UI + 接 main_menu**（2026-05-11，feat/phase3-mainline）：mainline_providers 3 个（progress / chapterStages family / chapterCompleted family）；ChapterListScreen 3 章卡（cleared ✓ / inProgress 高亮 / locked 灰锁）；StageListScreen 三态行（cleared 绿勾 / available 主色 / locked 锁 + 「通关前一关解锁」）；main_menu 加「主线」按钮（顶部首位）+ 包 SingleChildScrollView 防 6 按钮溢出；T37 落地前点 available 弹 SnackBar 占位；test 加 6 widget 用例（chapter 3 + stage 3）+ main_menu_test 6 按钮顺序更新，累计 359/359
+- **T36 NarrativeLoader + 剧情阅读 UI**（2026-05-11，feat/phase3-mainline）：lib/data/narrative_loader.dart NarrativeContent + load 注入式 + 缺文件/损坏/非 map 顶层全部兜底 placeholder（不抛异常）；lib/ui/narrative/narrative_reader_screen.dart 一段一页 + 「继续/完成」按钮 + 跳过 + placeholder 弱提示（⚠ 剧情占位）+ 段落淡入；test 加 11 用例（loader 7 + screen 4），累计 370/370
+- **T37 关卡进入流程串联**（2026-05-11，feat/phase3-mainline，**销 PROGRESS #22 P2/P4 战斗 stub**）：lib/services/stage_battle_setup.dart 装配 (左,右) BattleCharacter（左从 SaveData.activeCharacterIds 取角色 + 装备 + 主修 → fromCharacter；右 EnemyDef → BattleCharacter，characterId 用 -(slot+1) 防冲突）；lib/ui/mainline/stage_entry_flow.dart runStageFlow async 串联 opening → battle → victory/defeat；BattleScreen 加 onVictory/onDefeat 可选回调（保留 onBattleEnd 兼容旧入口）；stage_list_screen onTap 接 runStageFlow；test 加 6 + 改 1（StageBattleSetup 6 用例接真 Isar + stage_list 占位用例改成验证 NarrativeReader 进入），累计 377/377
+- **T38 docs/NARRATIVE_SCHEMA.md**（2026-05-11，feat/phase3-mainline）：给 DeepSeek 端的剧情 yaml 格式约定（文件命名 / id 字段 / paragraphs / 占位 fallback / Week 1 待写 12 文件清单 / 章节标题映射），不动数值文档
+- **T39 Pen 视觉验收 + tag v0.3.0-w1**（2026-05-11，feat/phase3-mainline → main no-ff）：8 截图归档 docs/screenshots/phase3_w1/（主菜单 / 章节 / 关卡 / 剧情占位 / 战斗准备失败兜底 / P3 心法面板 / 战斗中 / 战斗胜利 dialog）；victory placeholder + cleared stage list 链路经 Pen 操作确认正常（视觉同 04+03 设计）；phase3_summary.md 起头（Week 1 交付清单 + 截图清单 + 已知偏差 + Week 2 候选议题 A-E）；Pen 端 377/377 + analyze 0 已 SSH 验证
+- **v0.3.0-w1 tag + main 合并**（2026-05-11）：Phase 3 Week 1 主线最小闭环交付，feat/phase3-mainline → main no-ff；详见 phase3_summary.md
 
 ## 进行中
 
-- **T33** stages.yaml schema 升级 + StageDef 扩字段（prevStageId / narrativeOpeningId / narrativeVictoryId）+ 6 关 fixture backfill
+- —（Phase 3 Week 1 v0.3.0-w1 已交付，等用户拍 Week 2 切法）
 
 ## 已知偏差 / 挂账事项
 
@@ -51,19 +59,18 @@
 18. **`flutter build web` 被 Isar 阻塞**：dart:ffi web 不支持，Phase 5 切 Isar 4.x 时一并恢复
 21. **shake / tier 颜色 / 金光效果未抽 helper**：battle_screen / enhance_dialog 各 inline 一份 sin 公式；character_panel / enhance_dialog / inventory_screen 各 inline 一份 `_tierColor` 映射。Phase 5 抽 `lib/ui/effects/screen_shake.dart` + `lib/ui/theme/tier_colors.dart`
 23. **widget test 不接真 Isar**：testWidgets FakeAsync 与 `Isar.findFirst` / writeTxn 异步 IO 不兼容；当前 widget 端在 `_persist` 加 `Isar.getInstance` guard 测试旁路，真落地走 service-level test。Phase 5 Riverpod 3.x + IsarProvider 注入时再统一
+25. **Phase2SeedService.seedP1 缺主修，主线进入需先跑 P3**：T37 验收时发现 P1 fixture（沿用 Phase 2 spec：仅装备+材料）无主修心法，导致 P1 → 主线进战斗 StageBattleSetup fail-fast。临时 workaround：用户/Pen 在主菜单点「Phase 2 调试场景 → P3 散功代价」种子后再回主线即可。Phase 4 重写 fixture 时让 Demo 默认入口直通主线战斗
 
 > 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#22/#24）见文末归档。
 
 ## 下一步
 
-Phase 3 Week 1 路线（详条 phase3_tasks.md）：
-1. **T33** stages.yaml schema 升级（当前）
-2. **T34** MainlineProgressService + Isar MainlineProgress collection
-3. **T35** 章节列表 + 关卡列表 UI + 接 main_menu
-4. **T36** 主线剧情阅读 UI + NarrativeLoader（缺文件兜底「[剧情待补]」）
-5. **T37** 关卡进入流程串联
-6. **T38** docs/NARRATIVE_SCHEMA.md
-7. **T39** Pen 视觉验收 + tag v0.3.0-w1
+Phase 3 Week 2 候选切法（待用户拍板，详条 phase3_summary.md）：
+- A 爬塔 30 层（与主线最解耦，最容易 Week 2 完整跑通，**推荐**）
+- B 闭关地图 5 张（待决 §12 #5）
+- C 奇遇 20-30（待决 §12 #6）
+- D 师徒传承（待决 §12 #10/#11）
+- E 武学领悟 30-50 招（待决 §12 #6）
 
 > CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 

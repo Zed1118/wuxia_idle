@@ -159,6 +159,18 @@ enum StageType {
   tower,     // 爬塔（问鼎江湖，GDD §8.2）
 }
 
+/// 关卡解锁状态（Phase 3 T34 主线进度）。
+///
+/// UI 三态渲染：
+///   - locked    → 灰色 + 锁图标，点击无响应
+///   - available → 主色按钮，点击进入 StageEntryFlow
+///   - cleared   → 绿勾，点击可重玩（不再触发首通逻辑）
+enum StageStatus {
+  locked,
+  available,
+  cleared,
+}
+
 /// 闭关地图（GDD §8.3）。
 enum RetreatMapType {
   shanLin,       // 山林（平均产出）
