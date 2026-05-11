@@ -40,9 +40,17 @@ class _PopupEntry {
 class BattleScreen extends ConsumerStatefulWidget {
   final AnimationNumbers animConfig;
 
+  /// 顶部提示文案（T17 测试场景用）；null 则不显示。
+  final String? hint;
+
+  /// 战斗结束关闭 dialog 后的回调（T17 返回调试菜单用）；null 则无额外动作。
+  final VoidCallback? onBattleEnd;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
+    this.hint,
+    this.onBattleEnd,
   });
 
   @override
@@ -233,10 +241,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
-              UiStrings.close,
-              style: TextStyle(color: WuxiaColors.textSecondary),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              widget.onBattleEnd?.call();
+            },
+            child: Text(
+              widget.onBattleEnd != null
+                  ? UiStrings.backToMenu
+                  : UiStrings.close,
+              style: const TextStyle(color: WuxiaColors.textSecondary),
             ),
           ),
         ],
@@ -321,6 +334,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
           },
           child: Column(
             children: [
+              if (widget.hint != null) _HintBanner(hint: widget.hint!),
               _Header(state: state),
               Expanded(
                 child: Row(
@@ -348,6 +362,29 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── 场景 hint 横幅（T17）─────────────────────────────────────────────────
+
+class _HintBanner extends StatelessWidget {
+  final String hint;
+  const _HintBanner({required this.hint});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      color: const Color(0xFF2A3A2A),
+      child: Text(
+        hint,
+        style: const TextStyle(
+          color: Color(0xFF8BC28B),
+          fontSize: 13,
         ),
       ),
     );
