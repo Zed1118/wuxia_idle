@@ -20,6 +20,13 @@ class NumbersConfig {
   /// GDD §6.2 = 0.05）。
   final double enhancementBonusPerLevel;
 
+  /// 强化系统配置（numbers.yaml `equipment.enhancement` + `equipment.xinxue_jiejing`，
+  /// T20 用）。
+  final EnhancementConfig enhancement;
+
+  /// 开锋系统配置（numbers.yaml `equipment.forging`，T21 用）。
+  final ForgingConfig forging;
+
   /// 每阶心法的速度加成（numbers.yaml `techniques.tiers[].speed_bonus`，
   /// 仅主修生效，T09 用）。
   final Map<TechniqueTier, int> techniqueSpeedBonus;
@@ -27,6 +34,13 @@ class NumbersConfig {
   /// 9 层修炼度对应的伤害倍率（numbers.yaml `techniques.cultivation.layers[].bonus_multiplier`，
   /// 1.00 ~ 3.00，GDD §4.3 / §5.4，T10 最终伤害公式用）。
   final Map<CultivationLayer, double> cultivationMultiplier;
+
+  /// 修炼度升下一层所需的招式使用次数（numbers.yaml
+  /// `techniques.cultivation.progress_to_next[].progress_required`，phase2_tasks T24 用）。
+  ///
+  /// key = from_layer（当前层），value = 升下一层所需 progress。
+  /// **仅 8 个 entry**（jiJing 是 9 层中最高层，没有下一层；查询时需先判 layer != jiJing）。
+  final Map<CultivationLayer, int> cultivationProgressToNext;
 
   /// 3×3 流派克制矩阵（numbers.yaml `techniques.schools`，GDD §4.4 / §5.4，T10 用）。
   final SchoolCounterMatrix schoolCounter;
@@ -39,9 +53,24 @@ class NumbersConfig {
   /// GDD §6.4 = 0.7）。
   final double resonanceInheritanceRetention;
 
+  /// 师承遗物的内力上限加成（numbers.yaml `equipment.lineage_heritage.internal_force_max_bonus`，
+  /// GDD §6.1 = 0.05）。
+  /// Phase 2 决议：每件 isLineageHeritage=true 装备**独立叠加** +5%（§12 #10 待 Pen
+  /// 拍板，本阶段按"独立叠加"实现）。T22 用。
+  final double lineageInternalForceMaxBonus;
+
   /// 散功代价：原主修心法修炼度保留比例（numbers.yaml `techniques.dispersion.cultivation_penalty`，
   /// GDD §4.3 = 0.5）。
   final double dispersionCultivationPenalty;
+
+  /// 散功代价：当前内力扣减比例（numbers.yaml `techniques.dispersion.internal_force_penalty`，
+  /// GDD §4.3 = 0.5，phase2_tasks T25 用）。
+  /// 散功后 ch.internalForce = (internalForce * (1 - 此值)).toInt()。
+  final double dispersionInternalForcePenalty;
+
+  /// 心法学习成本（numbers.yaml `techniques.learning_cost`，phase2_tasks T23）。
+  /// Demo 阶段固定值：辅修 100 / 主修 500 领悟点。
+  final LearningCostConfig learningCost;
 
   /// 动画时序配置（numbers.yaml `animation`，T15）。
   final AnimationNumbers animation;
@@ -56,12 +85,18 @@ class NumbersConfig {
     required this.levelDiffModifier,
     required this.defenseRateByTier,
     required this.enhancementBonusPerLevel,
+    required this.enhancement,
+    required this.forging,
     required this.techniqueSpeedBonus,
     required this.cultivationMultiplier,
+    required this.cultivationProgressToNext,
     required this.schoolCounter,
     required this.resonanceStages,
     required this.resonanceInheritanceRetention,
+    required this.lineageInternalForceMaxBonus,
     required this.dispersionCultivationPenalty,
+    required this.dispersionInternalForcePenalty,
+    required this.learningCost,
     required this.animation,
     required this.raw,
   });
@@ -83,9 +118,19 @@ class NumbersConfig {
       enhancementBonusPerLevel: ((equipment['enhancement']
               as Map<String, dynamic>)['bonus_per_level'] as num)
           .toDouble(),
+      enhancement: EnhancementConfig.fromYaml(
+        enhancement: equipment['enhancement'] as Map<String, dynamic>,
+        xinxueJiejing: equipment['xinxue_jiejing'] as Map<String, dynamic>,
+      ),
+      forging: ForgingConfig.fromYaml(
+        equipment['forging'] as Map<String, dynamic>,
+      ),
       techniqueSpeedBonus:
           _parseTechniqueSpeedBonus(techniques['tiers'] as List),
       cultivationMultiplier: _parseCultivationMultiplier(
+        techniques['cultivation'] as Map<String, dynamic>,
+      ),
+      cultivationProgressToNext: _parseCultivationProgressToNext(
         techniques['cultivation'] as Map<String, dynamic>,
       ),
       schoolCounter: SchoolCounterMatrix.fromYaml(
@@ -97,9 +142,18 @@ class NumbersConfig {
       resonanceInheritanceRetention: ((equipment['resonance']
               as Map<String, dynamic>)['inheritance_retention'] as num)
           .toDouble(),
+      lineageInternalForceMaxBonus: ((equipment['lineage_heritage']
+              as Map<String, dynamic>)['internal_force_max_bonus'] as num)
+          .toDouble(),
       dispersionCultivationPenalty: ((techniques['dispersion']
               as Map<String, dynamic>)['cultivation_penalty'] as num)
           .toDouble(),
+      dispersionInternalForcePenalty: ((techniques['dispersion']
+              as Map<String, dynamic>)['internal_force_penalty'] as num)
+          .toDouble(),
+      learningCost: LearningCostConfig.fromYaml(
+        techniques['learning_cost'] as Map<String, dynamic>,
+      ),
       animation: AnimationNumbers.fromYaml(
         y['animation'] as Map<String, dynamic>,
       ),
@@ -137,6 +191,19 @@ class NumbersConfig {
     return m;
   }
 
+  static Map<CultivationLayer, int> _parseCultivationProgressToNext(
+    Map<String, dynamic> cultivation,
+  ) {
+    final entries = cultivation['progress_to_next'] as List;
+    final m = <CultivationLayer, int>{};
+    for (final e in entries) {
+      final fromLayer =
+          CultivationLayer.values.byName(e['from_layer'] as String);
+      m[fromLayer] = (e['progress_required'] as num).toInt();
+    }
+    return m;
+  }
+
   static List<ResonanceStageConfig> _parseResonanceStages(
     Map<String, dynamic> resonance,
   ) {
@@ -152,6 +219,253 @@ class NumbersConfig {
           bonusMultiplier: (s['bonus_multiplier'] as num).toDouble(),
         ),
     ];
+  }
+}
+
+/// 强化系统配置（numbers.yaml `equipment.enhancement` + `equipment.xinxue_jiejing`，
+/// T20）。
+///
+/// 解析后的三类查询表：
+///   - [successCurve]：成功率 + 失败惩罚（按 targetLevel 区间）
+///   - [mojianshiCost]：每次强化消耗（按 targetLevel 区间）
+///   - [crystalGuarantees]：心血结晶保底消耗（按 targetLevel 区间，部分段无保底）
+///
+/// `successRate == null` 表示该段走 [_fallbackFormula]（GDD +20-49 段
+/// `max(0.30, 0.50 - 0.02 × (level - 19))`）。targetLevel 指**强化目标等级**
+/// （即当前 enhanceLevel + 1）。
+class EnhancementConfig {
+  final List<EnhanceLevelBracket> successCurve;
+  final List<MaterialCostBracket> mojianshiCost;
+  final List<CrystalGuaranteeBracket> crystalGuarantees;
+
+  /// 每次强化失败必得心血结晶数（GDD §6.3 = 1）。
+  final int crystalGainPerFailure;
+
+  /// 永不破防降级（GDD §6.2 红线）。Phase 2 必须为 true，
+  /// false 时 EnhancementService 会 fail-fast。
+  final bool neverDegrade;
+
+  const EnhancementConfig({
+    required this.successCurve,
+    required this.mojianshiCost,
+    required this.crystalGuarantees,
+    required this.crystalGainPerFailure,
+    required this.neverDegrade,
+  });
+
+  factory EnhancementConfig.fromYaml({
+    required Map<String, dynamic> enhancement,
+    required Map<String, dynamic> xinxueJiejing,
+  }) {
+    return EnhancementConfig(
+      successCurve: _parseSuccessCurve(enhancement['success_curve'] as List),
+      mojianshiCost: _parseMaterialCost(enhancement['mojianshi_cost'] as List),
+      crystalGuarantees: _parseCrystalGuarantees(
+        xinxueJiejing['guaranteed_success_costs'] as List,
+      ),
+      crystalGainPerFailure:
+          (xinxueJiejing['gain_per_failure'] as num).toInt(),
+      neverDegrade: enhancement['never_degrade'] as bool? ?? true,
+    );
+  }
+
+  /// 取 [targetLevel]（=enhanceLevel + 1）的成功率。yaml `success_rate: null`
+  /// 段走 [_fallbackFormula]（+20-49 段公式）。
+  double successRateFor(int targetLevel) {
+    final bracket = _findBracket(successCurve, targetLevel);
+    return bracket.successRate ?? _fallbackFormula(targetLevel);
+  }
+
+  /// 取 [targetLevel] 的失败惩罚类型。
+  MaterialPenalty materialPenaltyFor(int targetLevel) =>
+      _findBracket(successCurve, targetLevel).materialPenalty;
+
+  /// 取 [targetLevel] 的磨剑石消耗。
+  int mojianshiCostFor(int targetLevel) {
+    for (final b in mojianshiCost) {
+      if (targetLevel >= b.minLevel && targetLevel <= b.maxLevel) {
+        return b.cost;
+      }
+    }
+    throw StateError('mojianshi_cost 缺少 targetLevel=$targetLevel 的覆盖区间');
+  }
+
+  /// 取 [targetLevel] 的心血结晶保底消耗，null 表示该段无保底（+1-13）。
+  int? crystalCostToGuarantee(int targetLevel) {
+    for (final b in crystalGuarantees) {
+      if (targetLevel >= b.minLevel && targetLevel <= b.maxLevel) {
+        return b.crystalCost;
+      }
+    }
+    return null;
+  }
+
+  EnhanceLevelBracket _findBracket(
+    List<EnhanceLevelBracket> brackets,
+    int targetLevel,
+  ) {
+    for (final b in brackets) {
+      if (targetLevel >= b.minLevel && targetLevel <= b.maxLevel) return b;
+    }
+    throw StateError('success_curve 缺少 targetLevel=$targetLevel 的覆盖区间');
+  }
+
+  /// GDD §12 #3 决议：+20-49 段公式 `max(0.30, 0.50 - 0.02 × (level - 19))`。
+  static double _fallbackFormula(int targetLevel) {
+    final raw = 0.50 - 0.02 * (targetLevel - 19);
+    return raw < 0.30 ? 0.30 : raw;
+  }
+
+  static List<EnhanceLevelBracket> _parseSuccessCurve(List raw) {
+    return [
+      for (final e in raw)
+        EnhanceLevelBracket(
+          minLevel: ((e['level_range'] as List)[0] as num).toInt(),
+          maxLevel: ((e['level_range'] as List)[1] as num).toInt(),
+          successRate: (e['success_rate'] as num?)?.toDouble(),
+          materialPenalty: _parsePenalty(e['material_penalty'] as String),
+        ),
+    ];
+  }
+
+  static List<MaterialCostBracket> _parseMaterialCost(List raw) {
+    return [
+      for (final e in raw)
+        MaterialCostBracket(
+          minLevel: ((e['level_range'] as List)[0] as num).toInt(),
+          maxLevel: ((e['level_range'] as List)[1] as num).toInt(),
+          cost: (e['cost'] as num).toInt(),
+        ),
+    ];
+  }
+
+  static List<CrystalGuaranteeBracket> _parseCrystalGuarantees(List raw) {
+    return [
+      for (final e in raw)
+        CrystalGuaranteeBracket(
+          minLevel: ((e['level_range'] as List)[0] as num).toInt(),
+          maxLevel: ((e['level_range'] as List)[1] as num).toInt(),
+          crystalCost: (e['crystal_cost'] as num).toInt(),
+        ),
+    ];
+  }
+
+  static MaterialPenalty _parsePenalty(String s) {
+    switch (s) {
+      case 'none':
+        return MaterialPenalty.none;
+      case 'half':
+        return MaterialPenalty.half;
+      case 'full':
+        return MaterialPenalty.full;
+      default:
+        throw StateError('未知 material_penalty: $s');
+    }
+  }
+}
+
+class EnhanceLevelBracket {
+  final int minLevel;
+  final int maxLevel;
+  final double? successRate;
+  final MaterialPenalty materialPenalty;
+
+  const EnhanceLevelBracket({
+    required this.minLevel,
+    required this.maxLevel,
+    required this.successRate,
+    required this.materialPenalty,
+  });
+}
+
+class MaterialCostBracket {
+  final int minLevel;
+  final int maxLevel;
+  final int cost;
+
+  const MaterialCostBracket({
+    required this.minLevel,
+    required this.maxLevel,
+    required this.cost,
+  });
+}
+
+class CrystalGuaranteeBracket {
+  final int minLevel;
+  final int maxLevel;
+  final int crystalCost;
+
+  const CrystalGuaranteeBracket({
+    required this.minLevel,
+    required this.maxLevel,
+    required this.crystalCost,
+  });
+}
+
+enum MaterialPenalty { none, half, full }
+
+/// 开锋系统配置（numbers.yaml `equipment.forging`，T21）。
+///
+/// 3 个槽分别在 +10 / +15 / +19 解锁。槽 2 受 yaml `constraint` 字段约束
+/// "不能与开锋一相同类型"，由 [ForgingSlotConfig.excludePreviousSlotType]
+/// 标记（解析时识别字符串）。
+class ForgingConfig {
+  final List<ForgingSlotConfig> slots;
+
+  const ForgingConfig({required this.slots});
+
+  factory ForgingConfig.fromYaml(Map<String, dynamic> y) {
+    return ForgingConfig(
+      slots: [
+        for (final s in y['slots'] as List)
+          ForgingSlotConfig.fromYaml(s as Map<String, dynamic>),
+      ],
+    );
+  }
+
+  /// 按 [slotIndex]（1/2/3）取槽配置。越界抛 [StateError]。
+  ForgingSlotConfig slotByIndex(int slotIndex) {
+    for (final s in slots) {
+      if (s.slotIndex == slotIndex) return s;
+    }
+    throw StateError('ForgingConfig 缺少 slotIndex=$slotIndex 的配置');
+  }
+}
+
+class ForgingSlotConfig {
+  final int slotIndex;
+  final int unlockAtEnhanceLevel;
+  final List<ForgingSlotType> availableTypes;
+  final Map<ForgingSlotType, int> bonusValue;
+
+  /// yaml `constraint` 字段不为空时为 true（当前仅 slot 2 = "不能与开锋一相同类型"）。
+  final bool excludePreviousSlotType;
+
+  const ForgingSlotConfig({
+    required this.slotIndex,
+    required this.unlockAtEnhanceLevel,
+    required this.availableTypes,
+    required this.bonusValue,
+    required this.excludePreviousSlotType,
+  });
+
+  factory ForgingSlotConfig.fromYaml(Map<String, dynamic> y) {
+    final available = [
+      for (final t in y['available_types'] as List)
+        ForgingSlotType.values.byName(t as String),
+    ];
+    final bonusRaw = y['bonus_value'] as Map<String, dynamic>;
+    final bonus = <ForgingSlotType, int>{
+      for (final e in bonusRaw.entries)
+        ForgingSlotType.values.byName(e.key): (e.value as num).toInt(),
+    };
+    return ForgingSlotConfig(
+      slotIndex: (y['slot_index'] as num).toInt(),
+      unlockAtEnhanceLevel: (y['unlock_at_enhance_level'] as num).toInt(),
+      availableTypes: available,
+      bonusValue: bonus,
+      excludePreviousSlotType: y['constraint'] != null,
+    );
   }
 }
 
@@ -505,5 +819,33 @@ class TierMod {
       attacker: (y['attacker'] as num).toDouble(),
       defender: (y['defender'] as num).toDouble(),
     );
+  }
+}
+
+/// 心法学习成本（numbers.yaml `techniques.learning_cost`，phase2_tasks T23）。
+///
+/// Demo 阶段统一固定值，按 [TechniqueRole] 区分主修 / 辅修。领悟点来源待
+/// GDD §7.2 武学领悟系统实装；本配置仅描述消耗端。
+class LearningCostConfig {
+  final int assist;
+  final int main;
+
+  const LearningCostConfig({required this.assist, required this.main});
+
+  factory LearningCostConfig.fromYaml(Map<String, dynamic> y) {
+    return LearningCostConfig(
+      assist: (y['assist'] as num).toInt(),
+      main: (y['main'] as num).toInt(),
+    );
+  }
+
+  /// 按 [role] 取消耗。
+  int costFor(TechniqueRole role) {
+    switch (role) {
+      case TechniqueRole.main:
+        return main;
+      case TechniqueRole.assist:
+        return assist;
+    }
   }
 }
