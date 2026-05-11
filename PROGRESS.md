@@ -53,6 +53,23 @@
   - T21 开锋服务 + EquipmentDef.specialSkillCandidates（18 用例：3 槽 unlock / 槽 2 互斥 / specialSkill 三类校验）
   - T22 装备战斗加成整合 + 师承内力上限 + 11 战例验收（+0/+12/+19/+49 / 全栈 883 / 师承 0/1/4 件）
   - 累计 219/219 测试，0 issues
+- **Windows 视觉验收 T15/T16/T17**（2026-05-11，Pen 实测 5 张截图）
+  - A 同境界普伤 2613（区间 2000-8000 ✅）/ B 克制比值 3852/2311=1.67×（与 banner 精确匹配）/ C +12默契vs裸装 1142/595=1.92×（精确）/ D 1v3 绝顶 8370 一击杀三流 6000
+  - 攻击动画 + 飘字（普伤/暴击/闪避三色）+ 击杀标记 + HP 三段色 + 内力蓝 + Opacity 0.3 死亡淡化 + 大招 IF<阈值置灰 全部正常
+  - 中文 BMP 外字符（降世神拳等）显示无缺字；BattleTestMenu / 4 场景启动 / battle_screen Riverpod 串接全部生效
+- **T23 心法学习服务**（2026-05-11，分支 feat/phase2-equipment）
+  - `data/numbers.yaml` 新增 `techniques.learning_cost`（assist=100 / main=500，Pen 拍板）
+  - `lib/data/numbers_config.dart`：新增 `LearningCostConfig`（assist/main + `costFor(role)`），`NumbersConfig` 加字段 + fromYaml 接 `techniques.learning_cost`
+  - `lib/combat/derived_stats.dart`：新增 `RealmUtils.techniqueTierCapOf(RealmTier) → TechniqueTier`（仿 equipmentTierCapOf，从已有 RealmDef.techniqueTierCap 取）
+  - `lib/services/technique_learning.dart`（新建）：`TechniqueLearningService.learn(...)` 返回 `TechniqueLearningResult`；4 类校验 fail-fast 顺序：tier 上限 → 主修存在 → 辅修槽满 → 领悟点；服务**只构造 Technique 实例**，写 Isar / 改 Character 字段归调用方（与 EnhancementService 一致）
+  - 单测 10/10：LearningCostConfig 解析 ×2 / 4 类失败分支 + 校验顺序 / 主修+辅修+刚好达 tier 上限 ×3 成功路径
+  - 累计 229/229 测试，0 issues
+- **T24 修炼度累积**（2026-05-11，分支 feat/phase2-equipment）
+  - `lib/data/numbers_config.dart`：新增 `Map<CultivationLayer, int> cultivationProgressToNext`（解析 `techniques.cultivation.progress_to_next`，仅 8 entry，jiJing 不收录）
+  - `lib/services/cultivation_service.dart`（新建）：`CultivationService.recordSkillUsage({tech, skillId, progressToNextMap, delta=1})` 返回 `CultivationProgressResult(didLevelUp / oldLayer / newLayer / layersGained / currentProgress / currentProgressToNext)`；in-place 修改 Technique（与 EnhancementService 一致）
+  - 升层逻辑：increment skillUsage → progress += delta → while (layer != jiJing && progress >= progressToNext) 消耗升层 + 切换 progressToNext；jiJing 时保留升上来的 progressToNext 值（=6500）作封顶上限
+  - 单测 12/12：cultivationProgressToNext 解析 ×2 / 单次累积 / 跨层 +1 / 多层连升 +1000 / 一次塞 5000 +5 层 / 16250 全升 / 30000 封顶 / 20000 不封顶 / jiJing 再加封顶 / skillId 同/异累计
+  - 累计 241/241 测试，0 issues
 - **T16 Riverpod 串接 + 大招触发 + 结算 overlay**（2026-05-10）
   - `lib/providers/battle_providers.dart`（新建，`@riverpod` 代码生成）：`numbersConfigProvider` 包装 GameRepository 单例 / `BattleNotifier` (startBattle / requestUltimate / `advance` 连续 tick 直到 actionLog 增长或战斗结束) / `leftTeamProvider` / `rightTeamProvider` / `battleResultProvider`
   - **`advance()` 与 spec 偏差说明**：spec §16.1 写 `advanceTick()` 单 tick，实际改为连续 tick 直到出 action。原因：单 tick 是 actionPoint += speed 的最小时间单位，不一定有人 ≥1000 行动；若 UI Timer 间隔=单 tick 则慢角色场景看大段空白。`maxConsecutiveTicks=100` 兜底
@@ -81,14 +98,15 @@
 11. **T07 验收 counts 日志**：Mac 跑不了 `flutter run`，已写 main.dart kDebugMode，留 Windows 首跑验
 12. **`LevelDiffModifier.diff3OrMore.attacker` 数据层 vs 公式层语义不同**：NumbersConfig 兜底为 `diff2.attacker`(=2.5)，公式层取 `1.0`。Phase 5 收尾时一并把兜底改 1.0
 17. **phase1_tasks T12 §709 笔误**：「三流→绝顶差 2 守方 0.05」错（差 2 守方=0.3，差 3+ 才是 0.05）。"必败"语义仍成立，验收按差 2 实测
-18. **`flutter build web` 被 Isar 阻塞**：`combat/*.dart` 链路通过 `data/models/{character,equipment,technique}.dart` 拉入 `*.g.dart` 64-bit hash 字面量（JS 表示不下）+ Isar `dart:ffi` web 不支持。T14/T15 视觉验收推到 Windows 首跑（与 #9/#11 同性质）。Phase 5 切 Isar 4.x 时一并恢复 web 入口
-20. **Windows 端 Flutter 环境未装好（2026-05-11）**：T15/T16 视觉验收（攻击动画 / 飘字 / 大招按钮真实战斗 / spec §16 rebuild 颗粒度）暂时挂起。Mac 本地 analyze + test 全绿且 widget test 覆盖核心交互（156/156，含按下置灰 / 解除 / 结算 dialog），决定**不阻塞 Phase 1 推进**——T17 直接基于 `feat/t16-riverpod-wiring` 继续开新分支。Windows 环境就绪后一并补验
+18. **`flutter build web` 被 Isar 阻塞**：`combat/*.dart` 链路通过 `data/models/{character,equipment,technique}.dart` 拉入 `*.g.dart` 64-bit hash 字面量（JS 表示不下）+ Isar `dart:ffi` web 不支持。Phase 5 切 Isar 4.x 时一并恢复 web 入口
 
-> 已解决条目（#1/#13/#14/#15/#16/#19）已归档到文末。
+> 已解决条目（#1/#13/#14/#15/#16/#19/#20）已归档到文末。
 
 ## 下一步
 
-T23 心法学习服务（领悟点消耗 / tier 检查 / yaml 加 techniques.learning_cost 段）
+T25 散功服务（双重惩罚 + cultivationLayer 重算）：DispelService.dispel / 内力 ×0.5 / progress ×0.5 / 反查 progressToNext 回退 layer / 6+ 用例
+
+⚠️ T25 涉及 cultivationLayer 反向重算（progress×0.5 后跨层回退 + 加上前层差额），算法易错。开工前建议升 opus 4.7（已在），写一个 `_recalcLayerFromProgress` 纯函数单独覆盖。
 
 ## 关键约束（每次开局必读）
 
@@ -106,4 +124,4 @@ T23 心法学习服务（领悟点消耗 / tier 检查 / yaml 加 techniques.lea
 
 ## 归档（已解决挂账）
 
-#1 Riverpod 锁 2.x / #13 yaml b/c max_hp / #14-#15 灵巧暴击 +0.20 与 ×2.0 yaml 化 / #16 战例 E ≤100000（详见 T11 前清账冲刺 commit）/ #19 T15 远程沙箱无 Flutter（2026-05-10 Mac 本地 review 时实跑 analyze + test 全绿，153/153）。
+#1 Riverpod 锁 2.x / #13 yaml b/c max_hp / #14-#15 灵巧暴击 +0.20 与 ×2.0 yaml 化 / #16 战例 E ≤100000（详见 T11 前清账冲刺 commit）/ #19 T15 远程沙箱无 Flutter（2026-05-10 Mac 本地 review 时实跑 analyze + test 全绿，153/153）/ #20 T15/T16/T17 Windows 视觉验收（2026-05-11，5 截图 4 场景 A2613/B1.67×/C1.92×/D8370 全部命中）。

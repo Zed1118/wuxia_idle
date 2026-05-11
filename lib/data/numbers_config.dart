@@ -35,6 +35,13 @@ class NumbersConfig {
   /// 1.00 ~ 3.00，GDD §4.3 / §5.4，T10 最终伤害公式用）。
   final Map<CultivationLayer, double> cultivationMultiplier;
 
+  /// 修炼度升下一层所需的招式使用次数（numbers.yaml
+  /// `techniques.cultivation.progress_to_next[].progress_required`，phase2_tasks T24 用）。
+  ///
+  /// key = from_layer（当前层），value = 升下一层所需 progress。
+  /// **仅 8 个 entry**（jiJing 是 9 层中最高层，没有下一层；查询时需先判 layer != jiJing）。
+  final Map<CultivationLayer, int> cultivationProgressToNext;
+
   /// 3×3 流派克制矩阵（numbers.yaml `techniques.schools`，GDD §4.4 / §5.4，T10 用）。
   final SchoolCounterMatrix schoolCounter;
 
@@ -56,6 +63,10 @@ class NumbersConfig {
   /// GDD §4.3 = 0.5）。
   final double dispersionCultivationPenalty;
 
+  /// 心法学习成本（numbers.yaml `techniques.learning_cost`，phase2_tasks T23）。
+  /// Demo 阶段固定值：辅修 100 / 主修 500 领悟点。
+  final LearningCostConfig learningCost;
+
   /// 动画时序配置（numbers.yaml `animation`，T15）。
   final AnimationNumbers animation;
 
@@ -73,11 +84,13 @@ class NumbersConfig {
     required this.forging,
     required this.techniqueSpeedBonus,
     required this.cultivationMultiplier,
+    required this.cultivationProgressToNext,
     required this.schoolCounter,
     required this.resonanceStages,
     required this.resonanceInheritanceRetention,
     required this.lineageInternalForceMaxBonus,
     required this.dispersionCultivationPenalty,
+    required this.learningCost,
     required this.animation,
     required this.raw,
   });
@@ -111,6 +124,9 @@ class NumbersConfig {
       cultivationMultiplier: _parseCultivationMultiplier(
         techniques['cultivation'] as Map<String, dynamic>,
       ),
+      cultivationProgressToNext: _parseCultivationProgressToNext(
+        techniques['cultivation'] as Map<String, dynamic>,
+      ),
       schoolCounter: SchoolCounterMatrix.fromYaml(
         techniques['schools'] as Map<String, dynamic>,
       ),
@@ -126,6 +142,9 @@ class NumbersConfig {
       dispersionCultivationPenalty: ((techniques['dispersion']
               as Map<String, dynamic>)['cultivation_penalty'] as num)
           .toDouble(),
+      learningCost: LearningCostConfig.fromYaml(
+        techniques['learning_cost'] as Map<String, dynamic>,
+      ),
       animation: AnimationNumbers.fromYaml(
         y['animation'] as Map<String, dynamic>,
       ),
@@ -159,6 +178,19 @@ class NumbersConfig {
     for (final l in layers) {
       final layer = CultivationLayer.values.byName(l['layer'] as String);
       m[layer] = (l['bonus_multiplier'] as num).toDouble();
+    }
+    return m;
+  }
+
+  static Map<CultivationLayer, int> _parseCultivationProgressToNext(
+    Map<String, dynamic> cultivation,
+  ) {
+    final entries = cultivation['progress_to_next'] as List;
+    final m = <CultivationLayer, int>{};
+    for (final e in entries) {
+      final fromLayer =
+          CultivationLayer.values.byName(e['from_layer'] as String);
+      m[fromLayer] = (e['progress_required'] as num).toInt();
     }
     return m;
   }
@@ -778,5 +810,33 @@ class TierMod {
       attacker: (y['attacker'] as num).toDouble(),
       defender: (y['defender'] as num).toDouble(),
     );
+  }
+}
+
+/// 心法学习成本（numbers.yaml `techniques.learning_cost`，phase2_tasks T23）。
+///
+/// Demo 阶段统一固定值，按 [TechniqueRole] 区分主修 / 辅修。领悟点来源待
+/// GDD §7.2 武学领悟系统实装；本配置仅描述消耗端。
+class LearningCostConfig {
+  final int assist;
+  final int main;
+
+  const LearningCostConfig({required this.assist, required this.main});
+
+  factory LearningCostConfig.fromYaml(Map<String, dynamic> y) {
+    return LearningCostConfig(
+      assist: (y['assist'] as num).toInt(),
+      main: (y['main'] as num).toInt(),
+    );
+  }
+
+  /// 按 [role] 取消耗。
+  int costFor(TechniqueRole role) {
+    switch (role) {
+      case TechniqueRole.main:
+        return main;
+      case TechniqueRole.assist:
+        return assist;
+    }
   }
 }
