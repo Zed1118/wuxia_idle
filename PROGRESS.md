@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 1 战斗系统**（phase1_tasks.md 定义的 T01–T18），目标 3 周交付。
+**Phase 2 装备 + 心法系统**（phase2_tasks.md 定义的 T19-T32），目标 3 周交付。Phase 1 已完成（v0.1.0-phase1）。
 
 ## 已完成
 
@@ -82,7 +82,7 @@
 
 ## 下一步
 
-Phase 2 装备系统（掉落 / 强化 / 开锋 / 共鸣度递增）+ 心法系统（学习 / 修炼度 / 散功）
+T19 EquipmentFactory + RNG 抽象（分支 feat/phase2-equipment）。phase2_tasks.md 已落 14 任务计划 + Pen 拍板 3 项
 
 ## 关键约束（每次开局必读）
 
