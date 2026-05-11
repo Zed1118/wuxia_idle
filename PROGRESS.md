@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 2 装备 + 心法系统**（phase2_tasks.md 定义的 T19-T32），目标 3 周交付。Phase 1 已完成（v0.1.0-phase1）。
+**Phase 2 已交付**（v0.2.0-phase2，2026-05-11）。Phase 3 待规划（主线关卡 / 爬塔 / 闭关地图 / 奇遇 / 师徒传承 / 武学领悟）。
 
 ## 已完成
 
@@ -29,17 +29,12 @@
   - T29 装备仓库 UI + EnhanceDialog：rng_provider + inventory_providers + 预览/强化/保底/shake/金光；5 widget test，累计 292
   - T30 开锋 UI：TabBar 切换强化/开锋 + ForgingPanel 3 槽 + AlertDialog 二确 + ForgingSlotType 中文化；4 widget test，累计 296
   - T31 心法面板 UI + DispelConfirmDialog：tier 分组渲染 + 主修/辅修边框区分 + 二确散功 + characterAllTechniquesProvider；4 widget test，累计 300
-- **T32 销账 #22 + 4 场景验收基建**（2026-05-11，分支 feat/phase2-equipment，详条见 git log T32 #22a-#22f + 子提交 4）
-  - #22a/#22b widget→Isar writeTxn 落地：3 个 service.persistResult 静态方法 + widget 端 `Isar.getInstance` guard 旁路 widget test；新建 3 个 \*\_persist\_test 真 Isar 8 用例（挂账 #23：testWidgets FakeAsync vs Isar IO 不兼容 → service-level test 验落地）
-  - #22c Phase2SeedService：4 场景静态种子 seedP1-P4 + writeTxn 清 5 业务 collection + 物料行 fail-fast 兼容 + 角色固定 id=1；5 真 Isar 用例
-  - #22d MainMenu + Phase2TestMenu：5 按钮分发 + 4 场景 onTap → seedPx → push（P2/P4 战斗 stub 跳 InventoryScreen，character_to_battle 留 Phase 3）；9 widget test
-  - #22e main.dart home: BattleTestMenu → MainMenu
-  - 子提交 4 phase2_scenarios_test：4 group 11 用例纯数值断言（P1 强化 +14-15 蒙卡 75% / P2 共鸣 99→100 / P3 散功 yuanMan→daCheng / P4 全栈 2.92×）
-  - 累计 333/333 测试（+25 vs T31），0 issues。下一步子提交 5 Windows Pen 视觉验收 + tag
+- **T32 销账 #22 + 4 场景验收 + 视觉验收**（2026-05-11，详条 git log T32 #22a-#22f + 子提交 4-5 + docs/screenshots/phase2/）：service.persistResult writeTxn / Phase2SeedService / MainMenu+Phase2TestMenu / phase2_scenarios_test 11 用例 / 6 截图 5✅+1⚠️（#24 装备名）；累计 333/333，0 issues
+- **v0.2.0-phase2 tag + main 合并**（2026-05-11，merge 5efe8d5）：Phase 2 装备+心法系统交付，feat/phase2-equipment → main no-ff；详见 phase2_summary.md
 
 ## 进行中
 
-- T32 子提交 5 待 Windows Pen 视觉验收（5-6 截图：MainMenu / Phase2TestMenu / P1 InventoryScreen+EnhanceDialog / P3 TechniquePanelScreen+DispelDialog），通过后 tag v0.2.0-phase2 + 三分支 no-ff 合并 main + 填充 phase2_summary.md 数据。分支 feat/phase2-equipment 已超前 origin 1 commit 待 push
+- —（Phase 2 已交付 v0.2.0-phase2，Phase 3 待规划，先 fixup 挂账 #24 再开 phase3_tasks.md）
 
 ## 已知偏差 / 挂账事项
 
@@ -62,11 +57,10 @@
 
 ## 下一步
 
-T32 子提交 5 验收（phase2_tasks §505-509）：
-1. **push 本地 commit**：当前 feat/phase2-equipment 超前 origin 1 commit（子提交 4），push 让 Pen 拉新单测一起跑
-2. **Windows Pen 视觉验收**：5-6 截图覆盖 MainMenu / Phase2TestMenu / P1 InventoryScreen+EnhanceDialog / P3 TechniquePanelScreen+DispelDialog（prompt 已发用户）
-3. **填充 phase2_summary.md**：把 P1 蒙卡实测 + Pen 截图链接 + 性能基准（强化 100 连点延迟 / FPS）补全
-4. **tag + 合并**：tag v0.2.0-phase2 + `git merge --no-ff feat/phase2-equipment` 到 main（与 Phase 1 同策略）
+Phase 3 起点：
+1. **挂账 #24 fixup**：inventory_row + enhance_dialog 接 EquipmentDef.name（独立 commit `[T33] #24 fixup: 装备名显示` + widget test）
+2. **Phase 3 规划讨论**：主线 15-20 关 / 爬塔 30 层 / 闭关地图 5 / 奇遇 20-30 / 师徒传承 / 武学领悟 30-50 招（GDD §7-§8，Demo 总量见 CLAUDE.md §7）—— 先讨论范围与里程碑再开 phase3_tasks.md
+3. **CLAUDE.md §12 待决项 13 条**：实现到对应位置时按需提问
 
 ## 关键约束（每次开局必读）
 
@@ -85,7 +79,7 @@ T32 子提交 5 验收（phase2_tasks §505-509）：
 ## 归档（已解决挂账 + Phase 1 详条）
 
 ### 已解决挂账
-#1 Riverpod 锁 2.x / #5 T17 笔误"差 2"→"差 3"（T17 commit 修） / #13 yaml b/c max_hp / #14-#15 灵巧暴击 +0.20 与 ×2.0 yaml 化 / #16 战例 E ≤100000（详见 T11 前清账冲刺 commit）/ #19 T15 远程沙箱无 Flutter（2026-05-10 Mac 本地 review 时实跑 analyze + test 全绿，153/153）/ #20 T15/T16/T17 Windows 视觉验收（2026-05-11，5 截图 4 场景 A2613/B1.67×/C1.92×/D8370 全部命中）/ #22 T32 #22a/#22b：3 个 service.persistResult + widget 端 `Isar.getInstance` guard + service-level test 验落地（2026-05-11，308/308）
+#1 Riverpod 锁 2.x / #5 T17 笔误"差 2"→"差 3"（T17 commit 修） / #13 yaml b/c max_hp / #14-#15 灵巧暴击 +0.20 与 ×2.0 yaml 化 / #16 战例 E ≤100000（详见 T11 前清账冲刺 commit）/ #19 T15 远程沙箱无 Flutter（2026-05-10 Mac 本地 review 时实跑 analyze + test 全绿，153/153）/ #20 T15/T16/T17 Windows 视觉验收（2026-05-11，5 截图 4 场景 A2613/B1.67×/C1.92×/D8370 全部命中）/ #22 T32 #22a/#22b：3 个 service.persistResult + widget 端 `Isar.getInstance` guard + service-level test 验落地（2026-05-11，308/308）/ Phase 2 全交付 v0.2.0-phase2（2026-05-11，merge 5efe8d5）：T19-T32 装备+心法+战斗联动+UI+4场景验收+6截图，333/333 测试
 
 ### Phase 1 详条
 T01-T18 每个任务的文件清单 / 公式 / 用例数 / 验收结论已迁至 `phase1_summary.md` + git log v0.1.0-phase1 前 commits（约 25 条带 `[Tnn]` 前缀），本表不再展开
