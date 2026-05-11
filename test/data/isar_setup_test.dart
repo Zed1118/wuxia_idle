@@ -45,8 +45,8 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.2.0',
-          reason: 'Phase 3 T34 升 schema：加 MainlineProgress collection');
+      expect(save.saveVersion, '0.3.0',
+          reason: 'Phase 3 T41 升 schema：加 TowerProgress collection');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);
