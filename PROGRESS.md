@@ -32,10 +32,11 @@
 - **T32 销账 #22 + 4 场景验收 + 视觉验收**（2026-05-11，详条 git log T32 #22a-#22f + 子提交 4-5 + docs/screenshots/phase2/）：service.persistResult writeTxn / Phase2SeedService / MainMenu+Phase2TestMenu / phase2_scenarios_test 11 用例 / 6 截图 5✅+1⚠️（#24 装备名）；累计 333/333，0 issues
 - **v0.2.0-phase2 tag + main 合并**（2026-05-11，merge 5efe8d5）：Phase 2 装备+心法系统交付，feat/phase2-equipment → main no-ff；详见 phase2_summary.md
 - **T33 stages.yaml schema 升级**（2026-05-11，feat/phase3-mainline）：StageDef 加 prevStageId / narrativeOpeningId / narrativeVictoryId 三字段 + @Deprecated 旧 narrativeId；6 关 fixture backfill 链成 3 章 × 2 关；GameRepository.\_enforceRedLines 加 stage 链路校验（prev 必须存在 + 同章不跨）；test 加 6 用例（defs 3 + repo 链路 3），累计 341/341
+- **T34 MainlineProgressService + Isar collection**（2026-05-11，feat/phase3-mainline）：新 @collection MainlineProgress（saveDataId / currentChapterIndex / clearedStageIds / clearedAt 同序）；service 静态 4 API（getOrCreate 幂等 / availableStages 三态按 prev 链排序 / recordVictory 幂等 append / chapterCompleted）；StageStatus enum；IsarSetup schema 加 + saveVersion 0.1.0→0.2.0；test 加 12 用例（接真 Isar + 临时目录），累计 353/353
 
 ## 进行中
 
-- **T34** MainlineProgressService + Isar `MainlineProgress` collection（getOrCreate / availableStages / recordVictory / chapterCompleted）
+- **T35** 章节列表 + 关卡列表 UI + 接 main_menu（mainline_providers + chapter_list_screen + stage_list_screen + StageStatus 三态渲染）
 
 ## 已知偏差 / 挂账事项
 
