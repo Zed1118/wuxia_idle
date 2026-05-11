@@ -34,10 +34,11 @@
 - **T33 stages.yaml schema 升级**（2026-05-11，feat/phase3-mainline）：StageDef 加 prevStageId / narrativeOpeningId / narrativeVictoryId 三字段 + @Deprecated 旧 narrativeId；6 关 fixture backfill 链成 3 章 × 2 关；GameRepository.\_enforceRedLines 加 stage 链路校验（prev 必须存在 + 同章不跨）；test 加 6 用例（defs 3 + repo 链路 3），累计 341/341
 - **T34 MainlineProgressService + Isar collection**（2026-05-11，feat/phase3-mainline）：新 @collection MainlineProgress（saveDataId / currentChapterIndex / clearedStageIds / clearedAt 同序）；service 静态 4 API（getOrCreate 幂等 / availableStages 三态按 prev 链排序 / recordVictory 幂等 append / chapterCompleted）；StageStatus enum；IsarSetup schema 加 + saveVersion 0.1.0→0.2.0；test 加 12 用例（接真 Isar + 临时目录），累计 353/353
 - **T35 章节列表 + 关卡列表 UI + 接 main_menu**（2026-05-11，feat/phase3-mainline）：mainline_providers 3 个（progress / chapterStages family / chapterCompleted family）；ChapterListScreen 3 章卡（cleared ✓ / inProgress 高亮 / locked 灰锁）；StageListScreen 三态行（cleared 绿勾 / available 主色 / locked 锁 + 「通关前一关解锁」）；main_menu 加「主线」按钮（顶部首位）+ 包 SingleChildScrollView 防 6 按钮溢出；T37 落地前点 available 弹 SnackBar 占位；test 加 6 widget 用例（chapter 3 + stage 3）+ main_menu_test 6 按钮顺序更新，累计 359/359
+- **T36 NarrativeLoader + 剧情阅读 UI**（2026-05-11，feat/phase3-mainline）：lib/data/narrative_loader.dart NarrativeContent + load 注入式 + 缺文件/损坏/非 map 顶层全部兜底 placeholder（不抛异常）；lib/ui/narrative/narrative_reader_screen.dart 一段一页 + 「继续/完成」按钮 + 跳过 + placeholder 弱提示（⚠ 剧情占位）+ 段落淡入；test 加 11 用例（loader 7 + screen 4），累计 370/370
 
 ## 进行中
 
-- **T36** 主线剧情阅读 UI + NarrativeLoader（缺文件兜底「[剧情待补]」+ 段落淡入 + onFinish 回调）
+- **T37** 关卡进入流程串联：opening → 战斗 → victory/defeat（BattleScreen 参数化 + recordVictory 回调）
 
 ## 已知偏差 / 挂账事项
 
