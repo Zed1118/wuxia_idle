@@ -144,15 +144,15 @@ class _Row extends ConsumerWidget {
     final eq = equipment;
     final color = _tierColor(eq.tier);
     final resonance = eq.resonanceStage(numbers);
+    EquipmentDef? def;
+    try {
+      def = GameRepository.instance.getEquipment(eq.defId);
+    } catch (_) {
+      // fixture / unknown defId → ForgingPanel 用 null 兜底，row 不渲染装备名
+      def = null;
+    }
     return InkWell(
       onTap: () async {
-        EquipmentDef? def;
-        try {
-          def = GameRepository.instance.getEquipment(eq.defId);
-        } catch (_) {
-          // fixture / unknown defId → ForgingPanel 用 null 兜底
-          def = null;
-        }
         await showDialog<void>(
           context: context,
           builder: (_) => EnhanceDialog(equipment: eq, def: def),
@@ -187,6 +187,20 @@ class _Row extends ConsumerWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
+            if (def != null) ...[
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  def.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
             const Spacer(),
             Text(
               EnumL10n.resonanceStage(resonance),

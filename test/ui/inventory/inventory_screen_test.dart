@@ -92,4 +92,35 @@ void main() {
     expect(find.text('护甲'), findsOneWidget);
     expect(find.text('饰品'), findsOneWidget);
   });
+
+  testWidgets('真实 defId → row 显示装备名（#24 fixup 验收）', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final def = GameRepository.instance.getEquipment('weapon_liqi_long_quan');
+    final eq = Equipment.create(
+      defId: def.id,
+      tier: def.tier,
+      slot: def.slot,
+      obtainedAt: DateTime(2026, 5, 11),
+      obtainedFrom: 'test',
+      baseAttack: def.baseAttackMin,
+      enhanceLevel: 0,
+    )..id = 100;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          allEquipmentsProvider.overrideWith((ref) async => [eq]),
+        ],
+        child: const MaterialApp(home: InventoryScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('龙泉剑'), findsOneWidget,
+        reason: 'inventory row 应渲染 EquipmentDef.name');
+  });
 }
