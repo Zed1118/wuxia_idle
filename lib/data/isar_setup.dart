@@ -8,6 +8,7 @@ import 'models/equipment.dart';
 import 'models/game_event.dart';
 import 'models/inventory_item.dart';
 import 'models/mainline_progress.dart';
+import 'models/retreat_session.dart';
 import 'models/save_data.dart';
 import 'models/technique.dart';
 import 'models/tower_progress.dart';
@@ -26,8 +27,8 @@ class IsarSetup {
   ///
   /// Phase 1 起 6 个：SaveData / Character / Equipment / Technique /
   /// InventoryItem / GameEvent。Phase 3 T34 加 MainlineProgress；
-  /// Phase 3 T41 加 TowerProgress。
-  /// 剩余 AdventureRecord / RetreatSession / DailyChallenge 在后续任务建模时追加。
+  /// Phase 3 T41 加 TowerProgress；Phase 3 T48 加 RetreatSession。
+  /// 剩余 AdventureRecord / DailyChallenge 在后续任务建模时追加。
   static const _allSchemas = [
     SaveDataSchema,
     CharacterSchema,
@@ -37,12 +38,14 @@ class IsarSetup {
     GameEventSchema,
     MainlineProgressSchema,
     TowerProgressSchema,
+    RetreatSessionSchema,
   ];
 
   /// 当前 schema 对应的存档版本（写入新建 SaveData.saveVersion）。
   /// Phase 3 T34 schema 加 MainlineProgress collection → 升 0.2.0；
-  /// Phase 3 T41 加 TowerProgress collection → 升 0.3.0。
-  static const _currentSaveVersion = '0.3.0';
+  /// Phase 3 T41 加 TowerProgress collection → 升 0.3.0；
+  /// Phase 3 T48 加 RetreatSession collection → 升 0.4.0。
+  static const _currentSaveVersion = '0.4.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
