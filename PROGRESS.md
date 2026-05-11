@@ -47,6 +47,12 @@
   - flutter analyze 0 issues / flutter test 160/160 全绿
   - feat/t15 / feat/t16 / feat/t17 三分支 no-ff 合并 main；tag v0.1.0-phase1 推送
   - phase1_summary.md：功能清单 / 5 战例数值对照（误差 ≤1.1%）/ 已知问题 / 性能基准
+- **Phase 2 Week 1 数值层装备**（2026-05-11，分支 feat/phase2-equipment）
+  - T19 EquipmentFactory + Rng 抽象（10 用例：固定种子复现 / 蒙特卡洛区间 / fail-fast）
+  - T20 强化服务 + 心血结晶（20 用例：4 段成功率 / +20-49 公式 / penalty half/full / 保底 3 段 / 1000 次蒙特卡洛 ±5%）
+  - T21 开锋服务 + EquipmentDef.specialSkillCandidates（18 用例：3 槽 unlock / 槽 2 互斥 / specialSkill 三类校验）
+  - T22 装备战斗加成整合 + 师承内力上限 + 11 战例验收（+0/+12/+19/+49 / 全栈 883 / 师承 0/1/4 件）
+  - 累计 219/219 测试，0 issues
 - **T16 Riverpod 串接 + 大招触发 + 结算 overlay**（2026-05-10）
   - `lib/providers/battle_providers.dart`（新建，`@riverpod` 代码生成）：`numbersConfigProvider` 包装 GameRepository 单例 / `BattleNotifier` (startBattle / requestUltimate / `advance` 连续 tick 直到 actionLog 增长或战斗结束) / `leftTeamProvider` / `rightTeamProvider` / `battleResultProvider`
   - **`advance()` 与 spec 偏差说明**：spec §16.1 写 `advanceTick()` 单 tick，实际改为连续 tick 直到出 action。原因：单 tick 是 actionPoint += speed 的最小时间单位，不一定有人 ≥1000 行动；若 UI Timer 间隔=单 tick 则慢角色场景看大段空白。`maxConsecutiveTicks=100` 兜底
@@ -60,7 +66,7 @@
 
 ## 进行中
 
-- 无（Phase 1 全部完成，v0.1.0-phase1 已打 tag 并推送）
+- Phase 2 Week 2 心法 + 战斗联动（T23-T27），分支 feat/phase2-equipment（暂沿用，T28+ UI 阶段再分）
 
 ## 已知偏差 / 挂账事项
 
@@ -82,7 +88,7 @@
 
 ## 下一步
 
-T19 EquipmentFactory + RNG 抽象（分支 feat/phase2-equipment）。phase2_tasks.md 已落 14 任务计划 + Pen 拍板 3 项
+T23 心法学习服务（领悟点消耗 / tier 检查 / yaml 加 techniques.learning_cost 段）
 
 ## 关键约束（每次开局必读）
 
