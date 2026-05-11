@@ -13,11 +13,19 @@ import 'package:wuxia_idle/utils/rng.dart';
 
 /// T29 EnhanceDialog widget 测试（phase2_tasks.md §433-434）。
 ///
-/// 4 用例（外加 inventory_screen_test 1 用例 = ≥5 总数）：
+/// 4 用例：
 /// - 对话框打开 → 显示 +N → +N+1 预览
-/// - mock Rng nextDouble=0.01 → success banner + 新 +N
-/// - mock Rng nextDouble=0.99 → failure banner + 「+1 心血结晶」
+/// - mock Rng nextDouble=0.01 → success banner + eq.enhanceLevel +1（service in-place）
+/// - mock Rng nextDouble=0.99 → failure banner + 「+1 心血结晶」+ eq 不变
 /// - mojianshi=0 → 强化按钮 disabled
+///
+/// **T32 #22a 后写回 Isar 的真落地验证不在本文件**：testWidgets 默认 FakeAsync
+/// 与真 Isar 异步 IO 不兼容（pumpAndSettle 在 AnimationController 不结束 +
+/// Isar.findFirst 不前进），切换真 Isar 跑不通。Widget 层 [EnhanceDialog._persist]
+/// 用 [Isar.getInstance] 探测，未初始化时 no-op；本测试保持 ProviderScope.override
+/// 纯内存模式只验 UI + service in-place 改写，Isar 真落地由
+/// `test/services/enhancement_persist_test.dart` 接 [EnhancementService.persistResult]
+/// 覆盖（不依赖 Flutter binding）。
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
