@@ -3,8 +3,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../combat/battle_engine.dart';
 import '../combat/battle_state.dart';
 import '../data/defs/skill_def.dart';
+import '../data/defs/stage_def.dart';
 import '../data/game_repository.dart';
+import '../data/models/character.dart';
+import '../data/models/equipment.dart';
+import '../data/models/technique.dart';
 import '../data/numbers_config.dart';
+import '../services/battle_resolution.dart';
+import '../services/drop_service.dart';
+import '../utils/rng.dart';
 
 part 'battle_providers.g.dart';
 
@@ -15,6 +22,14 @@ part 'battle_providers.g.dart';
 @riverpod
 NumbersConfig numbersConfig(NumbersConfigRef ref) =>
     GameRepository.instance.numbers;
+
+/// 装备掉落服务（T27 DropService）的 provider。
+///
+/// 走 [GameRepository] 单例查 EquipmentDef；测试中可 override 注入 mock。
+@riverpod
+DropService dropService(DropServiceRef ref) => DropService(
+      equipmentDefLookup: GameRepository.instance.getEquipment,
+    );
 
 /// 战斗状态 Notifier（phase1_tasks T16.1）。
 ///
@@ -79,6 +94,43 @@ class BattleNotifier extends _$BattleNotifier {
       consumed++;
     }
     state = s;
+  }
+
+  /// 战斗结算 hook（phase2_tasks T26 §340）。
+  ///
+  /// caller 在 result 翻转后调用（typically `ref.listen(battleResultProvider,
+  /// (prev, next) { if (prev == null && next != null) notifier.resolveBattle(...); })`）。
+  /// 服务 in-place 修改 Equipment / Technique，调用方负责 Isar `writeTxn` 写回 +
+  /// `BattleResolutionResult.dropResult` 装备入背包 + UI 升层提示。
+  ///
+  /// 战斗未结束抛 StateError——防 caller 误调（spec §338 战败也结算，但仍要
+  /// finalState 已结束）。
+  BattleResolutionResult resolveBattle({
+    required List<Character> participatingCharacters,
+    required Map<int, List<Equipment>> equipmentsByCharacter,
+    required Map<int, List<Technique>> techniquesByCharacter,
+    required StageDef stageDef,
+    required Rng rng,
+  }) {
+    if (!state.isFinished) {
+      throw StateError(
+        'BattleNotifier.resolveBattle: 战斗未结束 (state.result == null)，'
+        '不能 resolve',
+      );
+    }
+    final numbers = ref.read(numbersConfigProvider);
+    final dropSvc = ref.read(dropServiceProvider);
+    return BattleResolutionService.resolve(
+      finalState: state,
+      participatingCharacters: participatingCharacters,
+      equipmentsByCharacter: equipmentsByCharacter,
+      techniquesByCharacter: techniquesByCharacter,
+      stageDef: stageDef,
+      rng: rng,
+      progressToNextMap: numbers.cultivationProgressToNext,
+      techniqueDefLookup: GameRepository.instance.getTechnique,
+      dropService: dropSvc,
+    );
   }
 }
 
