@@ -165,6 +165,26 @@ class GameRepository {
         );
       }
     }
+    // Phase 3 T33：stage 链路校验。prevStageId 必须能找到，
+    // 且与本关同 chapterIndex（防跨章引用 / 错字 id）。
+    for (final s in stageDefs.values) {
+      final prev = s.prevStageId;
+      if (prev == null) continue;
+      final prevDef = stageDefs[prev];
+      if (prevDef == null) {
+        throw StateError(
+          'stage ${s.id} prevStageId=$prev 引用不存在的关卡',
+        );
+      }
+      if (s.chapterIndex != null &&
+          prevDef.chapterIndex != null &&
+          s.chapterIndex != prevDef.chapterIndex) {
+        throw StateError(
+          'stage ${s.id} (ch=${s.chapterIndex}) 与 prevStageId=$prev '
+          '(ch=${prevDef.chapterIndex}) 跨章引用',
+        );
+      }
+    }
   }
 
   /// 测试用：清空全局实例。生产代码不要调用。

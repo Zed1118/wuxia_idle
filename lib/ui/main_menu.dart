@@ -4,6 +4,7 @@ import 'character_panel/character_panel_screen.dart';
 import 'debug/battle_test_menu.dart';
 import 'debug/phase2_test_menu.dart';
 import 'inventory/inventory_screen.dart';
+import 'mainline/chapter_list_screen.dart';
 import 'strings.dart';
 import 'technique_panel/technique_panel_screen.dart';
 import 'theme/colors.dart';
@@ -36,10 +37,12 @@ class MainMenu extends StatelessWidget {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                 const Text(
                   UiStrings.mainMenuTitle,
                   textAlign: TextAlign.center,
@@ -50,6 +53,12 @@ class MainMenu extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 48),
+                _MenuButton(
+                  label: UiStrings.mainMenuMainline,
+                  hint: UiStrings.mainMenuMainlineHint,
+                  onTap: () => _push(context, const ChapterListScreen()),
+                ),
+                const SizedBox(height: 16),
                 _MenuButton(
                   label: UiStrings.mainMenuPhase1,
                   hint: UiStrings.mainMenuPhase1Hint,
@@ -90,6 +99,7 @@ class MainMenu extends StatelessWidget {
                   ),
                 ),
               ],
+              ),
             ),
           ),
         ),

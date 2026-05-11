@@ -1,0 +1,247 @@
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:isar/isar.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/data/models/enums.dart';
+import 'package:wuxia_idle/data/models/mainline_progress.dart';
+import 'package:wuxia_idle/services/mainline_progress_service.dart';
+
+/// Phase 3 T34 · MainlineProgressService 真 Isar 落地测试。
+///
+/// 沿用 phase2_seed_service_test 的 setUp：临时目录 + IsarSetup.init +
+/// GameRepository.loadAllDefs（从文件系统加载）。
+void main() {
+  late Directory tempDir;
+
+  setUpAll(() async {
+    await Isar.initializeIsarCore(download: true);
+    if (!GameRepository.isLoaded) {
+      await GameRepository.loadAllDefs(
+        loader: (path) => File(path).readAsString(),
+      );
+    }
+  });
+
+  setUp(() async {
+    tempDir = await Directory.systemTemp.createTemp('wuxia_mainline_test_');
+    await IsarSetup.init(directory: tempDir, inspector: false);
+  });
+
+  tearDown(() async {
+    if (Isar.getInstance('wuxia_save_slot1') != null) {
+      await IsarSetup.close();
+    }
+    if (await tempDir.exists()) {
+      await tempDir.delete(recursive: true);
+    }
+  });
+
+  group('getOrCreate', () {
+    test('首次调用 → 建一行 + 默认 currentChapterIndex=1 + 空 cleared 列表',
+        () async {
+      final p = await MainlineProgressService.getOrCreate(saveDataId: 1);
+      expect(p.saveDataId, 1);
+      expect(p.currentChapterIndex, 1);
+      expect(p.clearedStageIds, isEmpty);
+      expect(p.clearedAt, isEmpty);
+      expect(p.id, isNot(Isar.autoIncrement),
+          reason: 'put 后应分配真实 id');
+    });
+
+    test('二次调用同 saveDataId → 复用同一行（id 不变 + 字段一致）', () async {
+      final p1 = await MainlineProgressService.getOrCreate(saveDataId: 1);
+      final p2 = await MainlineProgressService.getOrCreate(saveDataId: 1);
+      expect(p2.id, p1.id);
+      expect(
+        await IsarSetup.instance.mainlineProgress.count(),
+        1,
+        reason: '不重复建行',
+      );
+    });
+  });
+
+  group('availableStages', () {
+    test('Ch1 全新进度 → 首关 available + 02 locked', () async {
+      final p = await MainlineProgressService.getOrCreate(saveDataId: 1);
+      final entries = MainlineProgressService.availableStages(
+        progress: p,
+        chapterIndex: 1,
+      );
+      expect(entries.length, 2);
+      expect(entries[0].def.id, 'mainline_test_01');
+      expect(entries[0].status, StageStatus.available);
+      expect(entries[1].def.id, 'mainline_test_02');
+      expect(entries[1].status, StageStatus.locked);
+    });
+
+    test('Ch1 首关已通 → 01 cleared + 02 available', () async {
+      await MainlineProgressService.getOrCreate(saveDataId: 1);
+      await MainlineProgressService.recordVictory(
+        stageId: 'mainline_test_01',
+        now: DateTime(2026, 5, 11),
+      );
+      final p =
+          await MainlineProgressService.getOrCreate(saveDataId: 1);
+      final entries = MainlineProgressService.availableStages(
+        progress: p,
+        chapterIndex: 1,
+      );
+      expect(entries[0].status, StageStatus.cleared);
+      expect(entries[1].status, StageStatus.available);
+    });
+
+    test('Ch1 全通 → 两关都 cleared', () async {
+      await MainlineProgressService.getOrCreate(saveDataId: 1);
+      await MainlineProgressService.recordVictory(
+        stageId: 'mainline_test_01',
+        now: DateTime(2026, 5, 11),
+      );
+      await MainlineProgressService.recordVictory(
+        stageId: 'mainline_test_02',
+        now: DateTime(2026, 5, 12),
+      );
+      final p =
+          await MainlineProgressService.getOrCreate(saveDataId: 1);
+      final entries = MainlineProgressService.availableStages(
+        progress: p,
+        chapterIndex: 1,
+      );
+      expect(entries.every((e) => e.status == StageStatus.cleared), isTrue);
+    });
+
+    test('Ch2 / Ch3 各自独立解锁链（不会串到 Ch1 的 cleared 集）', () async {
+      await MainlineProgressService.getOrCreate(saveDataId: 1);
+      await MainlineProgressService.recordVictory(
+        stageId: 'mainline_test_01',
+        now: DateTime(2026, 5, 11),
+      );
+      final p =
+          await MainlineProgressService.getOrCreate(saveDataId: 1);
+
+      // Ch2 首关仍 available（与 Ch1 无关）
+      final ch2 = MainlineProgressService.availableStages(
+        progress: p,
+        chapterIndex: 2,
+      );
+      expect(ch2[0].def.id, 'mainline_test_03');
+      expect(ch2[0].status, StageStatus.available);
+      expect(ch2[1].status, StageStatus.locked);
+
+      // Ch3 同理
+      final ch3 = MainlineProgressService.availableStages(
+        progress: p,
+        chapterIndex: 3,
+      );
+      expect(ch3[0].def.id, 'mainline_test_05');
+      expect(ch3[0].status, StageStatus.available);
+    });
+  });
+
+  group('recordVictory', () {
+    test('首通 → append clearedStageIds + clearedAt 同序', () async {
+      await MainlineProgressService.getOrCreate(saveDataId: 1);
+      final t = DateTime(2026, 5, 11, 14, 30);
+      await MainlineProgressService.recordVictory(
+        stageId: 'mainline_test_01',
+        now: t,
+      );
+      final p =
+          await MainlineProgressService.getOrCreate(saveDataId: 1);
+      expect(p.clearedStageIds, ['mainline_test_01']);
+      expect(p.clearedAt, [t]);
+    });
+
+    test('重复通关同一 stage → 不重复 append（保留首通时间）', () async {
+      await MainlineProgressService.getOrCreate(saveDataId: 1);
+      final t1 = DateTime(2026, 5, 11);
+      final t2 = DateTime(2026, 5, 12);
+      await MainlineProgressService.recordVictory(
+        stageId: 'mainline_test_01',
+        now: t1,
+      );
+      await MainlineProgressService.recordVictory(
+        stageId: 'mainline_test_01',
+        now: t2,
+      );
+      final p =
+          await MainlineProgressService.getOrCreate(saveDataId: 1);
+      expect(p.clearedStageIds.length, 1);
+      expect(p.clearedAt, [t1], reason: '保留首通时间');
+    });
+
+    test('未先 getOrCreate 直接 recordVictory → StateError', () async {
+      expect(
+        () => MainlineProgressService.recordVictory(
+          stageId: 'mainline_test_01',
+          now: DateTime(2026, 5, 11),
+        ),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('MainlineProgress 未初始化'),
+        )),
+      );
+    });
+  });
+
+  group('chapterCompleted', () {
+    test('Ch1 全通 → true', () async {
+      await MainlineProgressService.getOrCreate(saveDataId: 1);
+      await MainlineProgressService.recordVictory(
+        stageId: 'mainline_test_01',
+        now: DateTime(2026, 5, 11),
+      );
+      await MainlineProgressService.recordVictory(
+        stageId: 'mainline_test_02',
+        now: DateTime(2026, 5, 12),
+      );
+      final p =
+          await MainlineProgressService.getOrCreate(saveDataId: 1);
+      expect(
+        MainlineProgressService.chapterCompleted(
+          progress: p,
+          chapterIndex: 1,
+        ),
+        isTrue,
+      );
+    });
+
+    test('Ch1 仅通首关 → false', () async {
+      await MainlineProgressService.getOrCreate(saveDataId: 1);
+      await MainlineProgressService.recordVictory(
+        stageId: 'mainline_test_01',
+        now: DateTime(2026, 5, 11),
+      );
+      final p =
+          await MainlineProgressService.getOrCreate(saveDataId: 1);
+      expect(
+        MainlineProgressService.chapterCompleted(
+          progress: p,
+          chapterIndex: 1,
+        ),
+        isFalse,
+      );
+    });
+
+    test('全新进度 → 任意章节 false', () async {
+      final p =
+          await MainlineProgressService.getOrCreate(saveDataId: 1);
+      expect(
+        MainlineProgressService.chapterCompleted(
+          progress: p,
+          chapterIndex: 1,
+        ),
+        isFalse,
+      );
+      expect(
+        MainlineProgressService.chapterCompleted(
+          progress: p,
+          chapterIndex: 3,
+        ),
+        isFalse,
+      );
+    });
+  });
+}
