@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../combat/enum_localizations.dart';
+import '../../data/defs/equipment_def.dart';
+import '../../data/game_repository.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/equipment.dart';
 import '../../data/numbers_config.dart';
@@ -145,9 +147,16 @@ class _Row extends ConsumerWidget {
     final resonance = eq.resonanceStage(numbers);
     return InkWell(
       onTap: () async {
+        EquipmentDef? def;
+        try {
+          def = GameRepository.instance.getEquipment(eq.defId);
+        } catch (_) {
+          // fixture / unknown defId → ForgingPanel 用 null 兜底
+          def = null;
+        }
         await showDialog<void>(
           context: context,
-          builder: (_) => EnhanceDialog(equipment: eq),
+          builder: (_) => EnhanceDialog(equipment: eq, def: def),
         );
         ref.invalidate(allEquipmentsProvider);
       },

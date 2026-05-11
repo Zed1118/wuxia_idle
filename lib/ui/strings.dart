@@ -110,4 +110,25 @@ class UiStrings {
   static const String metricSuccessRate = '成功率';
   static const String metricMaterial = '材料';
   static const String metricCrystal = '结晶';
+
+  // 开锋（T30）
+  static const String tabEnhance = '强化';
+  static const String tabForging = '开锋';
+  static const String forgingForged = '已开锋';
+  static const String forgingNoSpecialSkill = '该装备无专属技能';
+  static const String forgingConfirmTitle = '确认开锋';
+  static const String forgingConfirmBody =
+      '开锋一旦下手不能更改。确认在此槽位开锋？';
+  static const String forgingConfirmOk = '确认';
+  static const String forgingConfirmCancel = '取消';
+
+  /// 槽位标题：`槽 1` / `槽 2` / `槽 3`。
+  static String forgingSlotTitle(int slotIndex) => '槽 $slotIndex';
+
+  /// 未解锁文案：`强化到 +N 解锁`。
+  static String forgingUnlockHint(int unlockAtLevel) => '强化到 +$unlockAtLevel 解锁';
+
+  /// 已开锋词条：`攻击 +15%`。
+  static String forgingBonusLabel(String typeLabel, int bonus) =>
+      '$typeLabel +$bonus%';
 }
