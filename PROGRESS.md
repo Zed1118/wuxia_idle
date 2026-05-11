@@ -21,7 +21,10 @@
 
 ## 进行中
 
-（无，Week 2 全部完成）
+**Phase 3 Week 3 闭关地图**（feat/phase3-seclusion，2026-05-11）：
+- ✅ **T47** SeclusionMapDef + numbers.yaml 补字段 + GameRepository 加载（437/437）
+- ✅ **T48** RetreatSession @collection + SeclusionService（454/454）
+- 🔄 **T49** 闭关地图列表 UI + 进入流程 + main_menu 入口（进行中）
 
 ## 已知偏差 / 挂账事项
 
