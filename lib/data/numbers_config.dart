@@ -63,6 +63,11 @@ class NumbersConfig {
   /// GDD §4.3 = 0.5）。
   final double dispersionCultivationPenalty;
 
+  /// 散功代价：当前内力扣减比例（numbers.yaml `techniques.dispersion.internal_force_penalty`，
+  /// GDD §4.3 = 0.5，phase2_tasks T25 用）。
+  /// 散功后 ch.internalForce = (internalForce * (1 - 此值)).toInt()。
+  final double dispersionInternalForcePenalty;
+
   /// 心法学习成本（numbers.yaml `techniques.learning_cost`，phase2_tasks T23）。
   /// Demo 阶段固定值：辅修 100 / 主修 500 领悟点。
   final LearningCostConfig learningCost;
@@ -90,6 +95,7 @@ class NumbersConfig {
     required this.resonanceInheritanceRetention,
     required this.lineageInternalForceMaxBonus,
     required this.dispersionCultivationPenalty,
+    required this.dispersionInternalForcePenalty,
     required this.learningCost,
     required this.animation,
     required this.raw,
@@ -141,6 +147,9 @@ class NumbersConfig {
           .toDouble(),
       dispersionCultivationPenalty: ((techniques['dispersion']
               as Map<String, dynamic>)['cultivation_penalty'] as num)
+          .toDouble(),
+      dispersionInternalForcePenalty: ((techniques['dispersion']
+              as Map<String, dynamic>)['internal_force_penalty'] as num)
           .toDouble(),
       learningCost: LearningCostConfig.fromYaml(
         techniques['learning_cost'] as Map<String, dynamic>,
