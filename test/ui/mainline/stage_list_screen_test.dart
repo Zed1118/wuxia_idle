@@ -76,7 +76,7 @@ void main() {
     expect(find.byIcon(Icons.lock), findsNothing);
   });
 
-  testWidgets('点 available 关卡 → 弹 SnackBar 占位（T37 接 StageEntryFlow 前）',
+  testWidgets('点 available 关卡 → 进入剧情阅读屏（T37 流程串联，缺文件走 placeholder）',
       (tester) async {
     await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
 
@@ -84,7 +84,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.textContaining('T37'), findsOneWidget,
-        reason: '占位 SnackBar 标记 T37 待接');
+    // runStageFlow → NarrativeLoader.load('mainline_test_01_opening')
+    // widget test 中 rootBundle 不可用 → 兜底 placeholder → 推 NarrativeReaderScreen
+    expect(find.textContaining('剧情占位'), findsOneWidget,
+        reason: 'placeholder 弱提示标识进入了 NarrativeReaderScreen');
+    expect(find.textContaining('mainline_test_01_opening'), findsOneWidget);
   });
 }

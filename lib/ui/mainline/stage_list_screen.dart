@@ -7,6 +7,7 @@ import '../../providers/mainline_providers.dart';
 import '../../services/mainline_progress_service.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
+import 'stage_entry_flow.dart';
 
 /// 章节内关卡列表（Phase 3 T35）。
 ///
@@ -61,26 +62,17 @@ class StageListScreen extends ConsumerWidget {
                     status: entry.status,
                     onTap: entry.status == StageStatus.locked
                         ? null
-                        : () => _onStageTap(context, entry.def, entry.status),
+                        : () => runStageFlow(
+                              context: context,
+                              ref: ref,
+                              stage: entry.def,
+                            ),
                   ),
                 );
               },
             );
           },
         ),
-      ),
-    );
-  }
-
-  void _onStageTap(BuildContext context, StageDef def, StageStatus status) {
-    // T35 占位：T37 StageEntryFlow 落地后改 push 进入流程。
-    final label = status == StageStatus.cleared
-        ? '${def.name}（已通关，T37 接重玩流程）'
-        : '${def.name}（T37 接 StageEntryFlow）';
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(label),
-        duration: const Duration(seconds: 2),
       ),
     );
   }
