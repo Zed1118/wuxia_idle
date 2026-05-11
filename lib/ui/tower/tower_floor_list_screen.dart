@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/defs/tower_floor_def.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/tower_progress.dart';
 import '../../providers/tower_providers.dart';
 import '../../services/tower_progress_service.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
+import 'tower_entry_flow.dart';
 import 'tower_floor_card.dart';
 
 /// 爬塔层列表屏幕（Phase 3 T42）。
@@ -52,13 +54,9 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
     });
   }
 
-  void _onChallenge(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(UiStrings.towerEntryPlaceholder),
-        duration: Duration(seconds: 2),
-      ),
-    );
+  void _onChallenge(BuildContext context, TowerFloorDef def) {
+    // ignore: discarded_futures - fire-and-forget 导航模式，与 runStageFlow 一致
+    runTowerFlow(context: context, ref: ref, floor: def);
   }
 
   @override
@@ -102,7 +100,8 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
                       itemBuilder: (ctx, i) => TowerFloorCard(
                         key: ValueKey(entries[i].def.floorIndex),
                         entry: entries[i],
-                        onChallenge: () => _onChallenge(context),
+                        onChallenge: () =>
+                            _onChallenge(context, entries[i].def),
                       ),
                     ),
                   ),

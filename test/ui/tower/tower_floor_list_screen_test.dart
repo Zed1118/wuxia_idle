@@ -107,18 +107,17 @@ void main() {
     expect(find.text(UiStrings.towerBossMinor), findsOneWidget);
   });
 
-  testWidgets('点 available 层 → 触发 SnackBar 占位', (tester) async {
+  testWidgets('点 available 层 → 进入战斗准备（Isar 未初始化显示准备失败）', (tester) async {
     final progress = mkProgress();
     await pumpScreen(tester, progress: progress);
 
     await tester.tap(find.text(UiStrings.towerFloorLabel(1)));
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
 
-    expect(find.text(UiStrings.towerEntryPlaceholder), findsOneWidget);
+    expect(find.textContaining('战斗准备失败'), findsOneWidget);
   });
 
-  testWidgets('点 locked 层 → 无响应（无 dialog / SnackBar）', (tester) async {
+  testWidgets('点 locked 层 → 无响应（无 dialog / 无导航）', (tester) async {
     final progress = mkProgress(highest: 0);
     await pumpScreen(tester, progress: progress);
 
@@ -127,10 +126,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byType(AlertDialog), findsNothing);
-    expect(find.text(UiStrings.towerEntryPlaceholder), findsNothing);
+    expect(find.textContaining('战斗准备失败'), findsNothing);
   });
 
-  testWidgets('点 cleared 层 → 弹重打确认 dialog，确认后触发 SnackBar', (tester) async {
+  testWidgets('点 cleared 层 → 弹重打确认 dialog，确认后进入战斗准备', (tester) async {
     final progress = mkProgress(highest: 3, attempts: 3);
     // 4000px 确保 floor 1（cleared）可见
     await pumpScreen(
@@ -147,9 +146,8 @@ void main() {
     expect(find.text(UiStrings.towerReplayBody), findsOneWidget);
 
     await tester.tap(find.text(UiStrings.towerReplayConfirm));
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
 
-    expect(find.text(UiStrings.towerEntryPlaceholder), findsOneWidget);
+    expect(find.textContaining('战斗准备失败'), findsOneWidget);
   });
 }
