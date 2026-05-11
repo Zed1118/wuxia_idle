@@ -46,6 +46,12 @@ class NumbersConfig {
   /// GDD §6.4 = 0.7）。
   final double resonanceInheritanceRetention;
 
+  /// 师承遗物的内力上限加成（numbers.yaml `equipment.lineage_heritage.internal_force_max_bonus`，
+  /// GDD §6.1 = 0.05）。
+  /// Phase 2 决议：每件 isLineageHeritage=true 装备**独立叠加** +5%（§12 #10 待 Pen
+  /// 拍板，本阶段按"独立叠加"实现）。T22 用。
+  final double lineageInternalForceMaxBonus;
+
   /// 散功代价：原主修心法修炼度保留比例（numbers.yaml `techniques.dispersion.cultivation_penalty`，
   /// GDD §4.3 = 0.5）。
   final double dispersionCultivationPenalty;
@@ -70,6 +76,7 @@ class NumbersConfig {
     required this.schoolCounter,
     required this.resonanceStages,
     required this.resonanceInheritanceRetention,
+    required this.lineageInternalForceMaxBonus,
     required this.dispersionCultivationPenalty,
     required this.animation,
     required this.raw,
@@ -112,6 +119,9 @@ class NumbersConfig {
       ),
       resonanceInheritanceRetention: ((equipment['resonance']
               as Map<String, dynamic>)['inheritance_retention'] as num)
+          .toDouble(),
+      lineageInternalForceMaxBonus: ((equipment['lineage_heritage']
+              as Map<String, dynamic>)['internal_force_max_bonus'] as num)
           .toDouble(),
       dispersionCultivationPenalty: ((techniques['dispersion']
               as Map<String, dynamic>)['cultivation_penalty'] as num)

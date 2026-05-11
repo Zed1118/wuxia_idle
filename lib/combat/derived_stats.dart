@@ -185,4 +185,22 @@ class CharacterDerivedStats {
     }
     return sum / 100.0;
   }
+
+  /// 内力上限（含师承遗物 +5% 叠加，phase2_tasks T22 / GDD §6.1）。
+  ///
+  /// `Character.internalForceMax` 是基础值（由境界 / 心法 / 修为决定，调用方
+  /// 已算好）。本方法在其上叠加每件 [Equipment.isLineageHeritage] 装备的
+  /// `lineageInternalForceMaxBonus`（默认 0.05 / 件，独立叠加）。
+  ///
+  /// 例：基础 10000 + 4 件师承遗物 → 10000 × 1.20 = 12000。
+  static int internalForceMaxWithLineage(
+    Character c,
+    List<Equipment> equipped,
+    NumbersConfig n,
+  ) {
+    final heritageCount =
+        equipped.where((e) => e.isLineageHeritage).length;
+    final mult = 1.0 + heritageCount * n.lineageInternalForceMaxBonus;
+    return (c.internalForceMax * mult).toInt();
+  }
 }
