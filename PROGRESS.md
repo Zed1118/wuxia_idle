@@ -70,6 +70,14 @@
   - 升层逻辑：increment skillUsage → progress += delta → while (layer != jiJing && progress >= progressToNext) 消耗升层 + 切换 progressToNext；jiJing 时保留升上来的 progressToNext 值（=6500）作封顶上限
   - 单测 12/12：cultivationProgressToNext 解析 ×2 / 单次累积 / 跨层 +1 / 多层连升 +1000 / 一次塞 5000 +5 层 / 16250 全升 / 30000 封顶 / 20000 不封顶 / jiJing 再加封顶 / skillId 同/异累计
   - 累计 241/241 测试，0 issues
+- **T25 散功服务**（2026-05-11，分支 feat/phase2-equipment）
+  - `lib/data/numbers_config.dart`：补 `dispersionInternalForcePenalty`（=0.5，Phase 1 时漏接）
+  - `lib/services/dispel_service.dart`（新建）：`DispelService.dispel({ch, mainTech, newMainTech, n})` 返回 `DispelResult`；3 类校验失败 fail-fast（旧主修非 main / 新主修不属于该角色 / 新主修非 assist）
+  - **算法 A（Pen 拍板）**：散功后 progress×0.5（disperse extension 已做），layer 不变；服务层 `_recalcLayerByRollback` 向下回退直到 progress >= prev→current 的 progress_required；progress 直接继承到回退后的 layer（不加 prev_required）
+  - 副作用全 in-place：内力 ×0.5 floor / 旧主修 progress×0.5+role=assist+layer 回退 / 新主修 role=main / Character.mainTechniqueId 切 / assistTechniqueIds 移除新主修后塞旧主修；满 3 时旧主修丢弃（oldTechniqueDiscarded=true，调用方决定回背包）
+  - GameEvent 触发归 caller（与其他服务一致）
+  - 单测 12/12：3 失败分支 / 内力 5000→2500 / 5001→2500 floor / yuanMan/1500→daCheng/750 退一层 / yuanMan/2000→yuanMan/1000 不退 / dianFeng/1600→daCheng/800 退两层 / chuKui 边界 / mainTechId 切换 / 槽满旧主修丢弃 / 散功后 recordSkillUsage 接力升层
+  - 累计 253/253 测试，0 issues
 - **T16 Riverpod 串接 + 大招触发 + 结算 overlay**（2026-05-10）
   - `lib/providers/battle_providers.dart`（新建，`@riverpod` 代码生成）：`numbersConfigProvider` 包装 GameRepository 单例 / `BattleNotifier` (startBattle / requestUltimate / `advance` 连续 tick 直到 actionLog 增长或战斗结束) / `leftTeamProvider` / `rightTeamProvider` / `battleResultProvider`
   - **`advance()` 与 spec 偏差说明**：spec §16.1 写 `advanceTick()` 单 tick，实际改为连续 tick 直到出 action。原因：单 tick 是 actionPoint += speed 的最小时间单位，不一定有人 ≥1000 行动；若 UI Timer 间隔=单 tick 则慢角色场景看大段空白。`maxConsecutiveTicks=100` 兜底
@@ -104,9 +112,9 @@
 
 ## 下一步
 
-T25 散功服务（双重惩罚 + cultivationLayer 重算）：DispelService.dispel / 内力 ×0.5 / progress ×0.5 / 反查 progressToNext 回退 layer / 6+ 用例
+T26 战斗结算 hooks（回写 battleCount / skillUsageCount / 掉落 / 心血结晶）：BattleResolutionService.resolve / 调 CultivationService.recordSkillUsage / 接 BattleNotifier 翻转 result 时触发 / **依赖 T27 DropService**（spec §327 顺序：T27 早于 T26 做掉落）
 
-⚠️ T25 涉及 cultivationLayer 反向重算（progress×0.5 后跨层回退 + 加上前层差额），算法易错。开工前建议升 opus 4.7（已在），写一个 `_recalcLayerFromProgress` 纯函数单独覆盖。
+⚠️ T25 完成是切换子系统的好节点（数值层 → 战斗联动 + Riverpod 扩展），建议**先 commit T25 + /clear** 再开 T26。
 
 ## 关键约束（每次开局必读）
 
