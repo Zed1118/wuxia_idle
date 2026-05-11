@@ -223,6 +223,110 @@ techniques:
     });
   });
 
+  group('Phase 3 T33 · stage 链路校验', () {
+    test('6 关 fixture 全部带正确的 prev 链 + opening/victory id', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+
+      // Ch1
+      final s1 = repo.getStage('mainline_test_01');
+      final s2 = repo.getStage('mainline_test_02');
+      expect(s1.prevStageId, isNull, reason: 'Ch1 首关');
+      expect(s1.narrativeOpeningId, 'mainline_test_01_opening');
+      expect(s1.narrativeVictoryId, 'mainline_test_01_victory');
+      expect(s2.prevStageId, 'mainline_test_01');
+      expect(s2.chapterIndex, 1);
+
+      // Ch2
+      final s3 = repo.getStage('mainline_test_03');
+      final s4 = repo.getStage('mainline_test_04');
+      expect(s3.prevStageId, isNull);
+      expect(s4.prevStageId, 'mainline_test_03');
+      expect(s4.chapterIndex, 2);
+
+      // Ch3
+      final s5 = repo.getStage('mainline_test_05');
+      final s6 = repo.getStage('mainline_test_06');
+      expect(s5.prevStageId, isNull);
+      expect(s6.prevStageId, 'mainline_test_05');
+      expect(s6.chapterIndex, 3);
+    });
+
+    test('prevStageId 引用不存在的 stage → 启动失败抛 StateError', () async {
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('stages.yaml')) {
+          return '''
+stages:
+  - id: orphan_stage
+    name: 孤儿关
+    stageType: mainline
+    chapterIndex: 1
+    prevStageId: ghost_stage_does_not_exist
+    requiredRealm: xueTu
+    enemyTeam: []
+    isBossStage: false
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    baseExpReward: 0
+    difficultyMultiplier: 1.0
+''';
+        }
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('引用不存在的关卡'),
+        )),
+      );
+    });
+
+    test('prevStageId 跨章引用 → 启动失败抛 StateError', () async {
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('stages.yaml')) {
+          return '''
+stages:
+  - id: ch1_stage
+    name: 第一章关
+    stageType: mainline
+    chapterIndex: 1
+    requiredRealm: xueTu
+    enemyTeam: []
+    isBossStage: false
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    baseExpReward: 0
+    difficultyMultiplier: 1.0
+  - id: ch2_stage_wrong_prev
+    name: 第二章关错引第一章
+    stageType: mainline
+    chapterIndex: 2
+    prevStageId: ch1_stage
+    requiredRealm: sanLiu
+    enemyTeam: []
+    isBossStage: false
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    baseExpReward: 0
+    difficultyMultiplier: 1.0
+''';
+        }
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('跨章引用'),
+        )),
+      );
+    });
+  });
+
   group('改 numbers 反映 (T07 验收 #2)', () {
     test('替换 numbers.yaml equipment_attack_factor=2.0 → 立刻生效', () async {
       Future<String> patchedLoader(String path) async {

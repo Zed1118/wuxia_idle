@@ -18,7 +18,22 @@ class StageDef {
   final RealmTier requiredRealm;
   final List<EnemyDef> enemyTeam;
   final bool isBossStage;
+
+  /// Phase 3 起拆为 [narrativeOpeningId] + [narrativeVictoryId]，保留向后兼容。
+  @Deprecated('Phase 3 起拆为 narrativeOpeningId / narrativeVictoryId')
   final String? narrativeId;
+
+  /// 章节内顺序解锁：本关需要 prevStageId 已通关才能挑战；章节首关为 null。
+  /// 必须与本关同 [chapterIndex]（[GameRepository._enforceRedLines] 校验）。
+  final String? prevStageId;
+
+  /// 进入关卡时播放的开场剧情 id（联结 `data/narratives/<id>.yaml`，
+  /// 缺文件由 `NarrativeLoader` 兜底「[剧情待补]」）。
+  final String? narrativeOpeningId;
+
+  /// 战斗胜利后播放的剧情 id；战败不触发。
+  final String? narrativeVictoryId;
+
   final List<String> dropEquipmentDefIds;
   final List<String> dropItemDefIds;
   final List<DropEntry> dropTable;
@@ -34,7 +49,11 @@ class StageDef {
     required this.requiredRealm,
     required this.enemyTeam,
     required this.isBossStage,
+    // ignore: deprecated_member_use_from_same_package
     this.narrativeId,
+    this.prevStageId,
+    this.narrativeOpeningId,
+    this.narrativeVictoryId,
     required this.dropEquipmentDefIds,
     required this.dropItemDefIds,
     this.dropTable = const [],
@@ -54,7 +73,11 @@ class StageDef {
           .map((e) => EnemyDef.fromYaml(Map<String, dynamic>.from(e as Map)))
           .toList(growable: false),
       isBossStage: y['isBossStage'] as bool? ?? false,
+      // ignore: deprecated_member_use_from_same_package
       narrativeId: y['narrativeId'] as String?,
+      prevStageId: y['prevStageId'] as String?,
+      narrativeOpeningId: y['narrativeOpeningId'] as String?,
+      narrativeVictoryId: y['narrativeVictoryId'] as String?,
       dropEquipmentDefIds: List<String>.from(
         (y['dropEquipmentDefIds'] as List? ?? const []).map((e) => e as String),
       ),
