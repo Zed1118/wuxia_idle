@@ -2,9 +2,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar/isar.dart';
 
 import '../../combat/enum_localizations.dart';
 import '../../data/defs/equipment_def.dart';
+import '../../data/isar_setup.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/equipment.dart';
 import '../../providers/battle_providers.dart';
@@ -15,7 +17,11 @@ import '../strings.dart';
 import '../theme/colors.dart';
 import 'forging_panel.dart';
 
-/// 强化对话框（phase2_tasks T29 §426-430）。
+/// T32 #22a：Isar 实例名（与 [IsarSetup.init] 默认 slot=1 同源）。Widget
+/// 层用 [Isar.getInstance] 探测；测试不 init Isar 时早返回，生产路径永远命中。
+const _isarInstanceName = 'wuxia_save_slot1';
+
+/// 强化对话框（phase2_tasks T29 §426-430 + T32 #22a writeTxn 补漏）。
 ///
 /// 设计：
 /// - **cap 硬顶 49**（Pen 拍板）：仓库视角不携带 character，强化能否 +N
@@ -23,8 +29,15 @@ import 'forging_panel.dart';
 /// - 成功反馈：边框金色 + AnimatedScale 弹一下（200ms）。
 /// - 失败反馈：内联 shake（同 [BattleScreen] sin 公式，挂账 #21 Phase 5
 ///   抽出 `lib/ui/effects/screen_shake.dart` helper）。
-/// - **不直接扣 inventory**：T29 简化，扣材料 + writeTxn + invalidate 归
-///   T32 视觉验收冲刺补；测试中直接 mock rng 控成功 / 失败。
+/// - **writeTxn 持久化**（T32 #22a 销账）：调 service in-place 后委托给
+///   [EnhancementService.persistResult] 包 writeTxn —— eq.put / mojianshi row.put /
+///   jieJing row.put 全部落地；末尾本 widget invalidate inventory + allEquipments
+///   触发 UI 重读。
+/// - **结晶 row fail-fast**：InventoryItem(itemType=xinXueJieJing) 行不存在
+///   时直接抛 [StateError]——种子阶段必须创建（Phase2SeedService 在主菜单
+///   Phase 2 入口预先 writeTxn 写入 mojianshi/jieJing 两行 quantity=0）。
+/// - **测试旁路**：widget test 不 init Isar 时 [_persist] 自动 no-op（用
+///   [Isar.getInstance] 探测）；真落地验证由 enhancement_persist_test 覆盖。
 class EnhanceDialog extends ConsumerStatefulWidget {
   const EnhanceDialog({super.key, required this.equipment, this.def});
 
@@ -84,7 +97,7 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     }
   }
 
-  void _onEnhance(int mojianshiQty) {
+  Future<void> _onEnhance(int mojianshiQty) async {
     final config = ref.read(numbersConfigProvider).enhancement;
     final rng = ref.read(rngProvider);
     final result = EnhancementService.tryEnhance(
@@ -94,10 +107,15 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
       currentMojianshi: mojianshiQty,
       config: config,
     );
+    if (result.outcome == EnhanceOutcome.success ||
+        result.outcome == EnhanceOutcome.failure) {
+      await _persist(result);
+    }
+    if (!mounted) return;
     _runFeedback(result);
   }
 
-  void _onGuarantee(int crystalQty) {
+  Future<void> _onGuarantee(int crystalQty) async {
     final config = ref.read(numbersConfigProvider).enhancement;
     final result = EnhancementService.useCrystalToGuarantee(
       eq: widget.equipment,
@@ -105,7 +123,31 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
       currentCrystals: crystalQty,
       config: config,
     );
+    if (result.outcome == EnhanceOutcome.success) {
+      await _persist(result);
+    }
+    if (!mounted) return;
     _runFeedback(result);
+  }
+
+  /// T32 #22a：副作用落地 — 委托给 [EnhancementService.persistResult] 做
+  /// writeTxn，本方法只负责 Isar 实例探测 + invalidate riverpod provider。
+  ///
+  /// **测试旁路**：testWidgets 在 FakeAsync 下不兼容真 Isar 异步 IO，widget
+  /// 测试默认不 init Isar；此处用 [Isar.getInstance] 探测，未初始化时 no-op
+  /// 早返回。生产路径永远命中。Isar 真落地验证由 service 层 test 覆盖
+  /// （`test/services/enhancement_persist_test.dart`）。
+  Future<void> _persist(EnhanceResult result) async {
+    if (Isar.getInstance(_isarInstanceName) == null) return;
+    await EnhancementService.persistResult(
+      eq: widget.equipment,
+      result: result,
+      isar: IsarSetup.instance,
+    );
+    if (!mounted) return;
+    ref.invalidate(inventoryQuantityByTypeProvider(ItemType.moJianShi));
+    ref.invalidate(inventoryQuantityByTypeProvider(ItemType.xinXueJieJing));
+    ref.invalidate(allEquipmentsProvider);
   }
 
   @override
@@ -235,15 +277,22 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
               else ...[
                 if (crystalCost != null)
                   TextButton(
-                    onPressed:
-                        canGuarantee ? () => _onGuarantee(crystalQty) : null,
+                    onPressed: canGuarantee
+                        ? () {
+                            _onGuarantee(crystalQty);
+                          }
+                        : null,
                     child: Text(
                       '${UiStrings.guaranteeButton}（${UiStrings.guaranteeCost(crystalCost)}）',
                     ),
                   ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: canEnhance ? () => _onEnhance(mojianshiQty) : null,
+                  onPressed: canEnhance
+                      ? () {
+                          _onEnhance(mojianshiQty);
+                        }
+                      : null,
                   child: const Text(UiStrings.enhanceButton),
                 ),
               ],

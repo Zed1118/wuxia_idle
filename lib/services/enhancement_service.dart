@@ -1,4 +1,8 @@
+import 'package:isar/isar.dart';
+
+import '../data/models/enums.dart';
 import '../data/models/equipment.dart';
+import '../data/models/inventory_item.dart';
 import '../data/numbers_config.dart';
 import '../utils/rng.dart';
 
@@ -175,6 +179,53 @@ class EnhancementService {
       crystalsSpent: crystalCost,
       successRate: 1.0,
     );
+  }
+
+  /// T32 #22a：将 [tryEnhance] / [useCrystalToGuarantee] 的 in-place 改写
+  /// 落地到 Isar，副作用合并到一个 writeTxn：
+  /// 1. 成功 outcome → `equipments.put(eq)`（enhanceLevel 已被 service +1）
+  /// 2. `result.mojianshiSpent > 0` → 扣 mojianshi 行 quantity
+  /// 3. `result.crystalsGained / crystalsSpent > 0` → 增 / 扣 jieJing 行
+  ///
+  /// 材料行不存在直接抛 [StateError]（fail-fast，种子阶段必创）。Widget 层
+  /// 调用此方法后自行 invalidate riverpod provider。
+  static Future<void> persistResult({
+    required Equipment eq,
+    required EnhanceResult result,
+    required Isar isar,
+  }) async {
+    await isar.writeTxn(() async {
+      if (result.outcome == EnhanceOutcome.success) {
+        await isar.equipments.put(eq);
+      }
+      if (result.mojianshiSpent > 0) {
+        final row = await isar.inventoryItems
+            .filter()
+            .itemTypeEqualTo(ItemType.moJianShi)
+            .findFirst();
+        if (row == null) {
+          throw StateError(
+            'InventoryItem(itemType=moJianShi) 行不存在；种子阶段必须创建',
+          );
+        }
+        row.quantity -= result.mojianshiSpent;
+        await isar.inventoryItems.put(row);
+      }
+      if (result.crystalsGained > 0 || result.crystalsSpent > 0) {
+        final row = await isar.inventoryItems
+            .filter()
+            .itemTypeEqualTo(ItemType.xinXueJieJing)
+            .findFirst();
+        if (row == null) {
+          throw StateError(
+            'InventoryItem(itemType=xinXueJieJing) 行不存在；种子阶段必须创建',
+          );
+        }
+        row.quantity += result.crystalsGained;
+        row.quantity -= result.crystalsSpent;
+        await isar.inventoryItems.put(row);
+      }
+    });
   }
 
   /// 强化上限：`min(49, characterAbsoluteLevel)`。学徒-启蒙 absoluteLevel=1
