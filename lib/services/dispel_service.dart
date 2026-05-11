@@ -1,3 +1,5 @@
+import 'package:isar/isar.dart';
+
 import '../data/models/character.dart';
 import '../data/models/enums.dart';
 import '../data/models/technique.dart';
@@ -126,6 +128,22 @@ class DispelService {
       progressToNextAfter: mainTech.cultivationProgressToNext,
       oldTechniqueDiscarded: oldDiscarded,
     );
+  }
+
+  /// T32 #22b：将 [dispel] 的 in-place 改写（ch.internalForce / mainTechniqueId /
+  /// assistTechniqueIds、mainTech.disperse、newMainTech.role=main）落地 Isar。
+  /// writeTxn 内 putAll 3 个对象。无物料消耗（散功代价是数值代价，已写进对象内）。
+  static Future<void> persistResult({
+    required Character ch,
+    required Technique mainTech,
+    required Technique newMainTech,
+    required Isar isar,
+  }) async {
+    await isar.writeTxn(() async {
+      await isar.characters.put(ch);
+      await isar.techniques.put(mainTech);
+      await isar.techniques.put(newMainTech);
+    });
   }
 
   /// 反向重算算法 A（Pen 拍板）：

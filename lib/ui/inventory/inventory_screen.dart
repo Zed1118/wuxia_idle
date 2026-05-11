@@ -13,15 +13,14 @@ import '../enhancement/enhance_dialog.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
 
-/// 装备仓库（phase2_tasks T29 §424-425）。
+/// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账）。
 ///
 /// 一次性 `findAll` 整表展示，按 tier 分段（神物→寻常货 7 阶，已在
 /// [allEquipmentsProvider] 中排序）。点击 row 弹 [EnhanceDialog]。
 ///
-/// **不直接 writeTxn**：dialog 内 in-place 修改 `enhanceLevel`，关闭后
-/// 由 caller invalidate 让 UI 重读 Isar；持久化（writeTxn）归 T32 视觉验收
-/// 冲刺补全（挂账 PROGRESS.md）。Dialog 内 setState 能看到 +N 变化，
-/// 验收强化反馈足够。
+/// 持久化 writeTxn 由 [EnhanceDialog] / [ForgingPanel] 自身在调用 service
+/// 后委托给各 service.persistResult 完成；本组件 dialog close 后再 invalidate
+/// [allEquipmentsProvider] 重读最新装备。
 class InventoryScreen extends ConsumerWidget {
   const InventoryScreen({super.key});
 

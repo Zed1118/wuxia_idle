@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar/isar.dart';
 
 import '../../combat/enum_localizations.dart';
+import '../../data/isar_setup.dart';
 import '../../data/models/character.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/technique.dart';
@@ -12,17 +14,22 @@ import '../strings.dart';
 import '../theme/colors.dart';
 import 'dispel_dialog.dart';
 
-/// 心法面板（phase2_tasks.md T31 §468-490）。
+/// T32 #22b：Isar 实例名（与 [IsarSetup.init] 默认 slot=1 同源）。widget test
+/// 未 init Isar 时 _onSetAsMain 跳过 persistResult；生产路径永远命中。
+const _isarInstanceName = 'wuxia_save_slot1';
+
+/// 心法面板（phase2_tasks.md T31 §468-490 + T32 #22b writeTxn 补漏）。
 ///
 /// 单角色版面，按 characterId 取数。布局：
 /// - AppBar 标题 [UiStrings.techniquePanelTitle]
 /// - 已学心法按 [TechniqueTier] 高→低 分组，每组一段 section header
 /// - 每条心法 tile：流派色条 / 主修-辅修标签 / 流派 / cultivationLayer / 进度条 / 数值
 /// - 辅修 tile 尾部带「设为主修」按钮 → 弹 [DispelConfirmDialog] 二确 →
-///   `DispelService.dispel(...)` + invalidate providers + SnackBar 反馈
+///   `DispelService.dispel(...)` + [DispelService.persistResult] writeTxn 落地 +
+///   invalidate 4 个 provider + SnackBar 反馈
 ///
-/// **不写回 Isar**（沿用挂账 #22 决策，T32 视觉验收冲刺补 writeTxn）；
-/// service in-place 改 [Character] / [Technique] 对象足够触发当前 UI 重读。
+/// **测试旁路**：widget test FakeAsync 不兼容真 Isar 异步 IO；未 init Isar
+/// 时 persistResult 跳过。真落地由 `test/services/dispel_persist_test.dart` 覆盖。
 class TechniquePanelScreen extends ConsumerWidget {
   const TechniquePanelScreen({super.key, required this.characterId});
 
@@ -256,6 +263,16 @@ class _TechniqueTile extends ConsumerWidget {
       n: n,
     );
     if (!result.success) return;
+
+    // T32 #22b：落地 Isar putAll ch/oldMain/newMain。测试旁路：未 init Isar 时跳过。
+    if (Isar.getInstance(_isarInstanceName) != null) {
+      await DispelService.persistResult(
+        ch: character,
+        mainTech: mainTech,
+        newMainTech: technique,
+        isar: IsarSetup.instance,
+      );
+    }
 
     ref.invalidate(characterByIdProvider(character.id));
     ref.invalidate(characterAllTechniquesProvider(character.id));
