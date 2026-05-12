@@ -208,6 +208,13 @@ enum TimeOfDayPeriod {
   other,    // 其他时段（无加成）
 }
 
+/// 闭关 session 状态（Phase 3 T48）。
+enum RetreatStatus {
+  active,     // 进行中（未收功）
+  completed,  // 已收功
+  abandoned,  // 已放弃（切换地图时旧 session 置此）
+}
+
 /// 背包物品类型。
 enum ItemType {
   moJianShi,        // 磨剑石（强化材料）

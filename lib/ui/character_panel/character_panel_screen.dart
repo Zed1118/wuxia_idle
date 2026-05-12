@@ -11,6 +11,7 @@ import '../../providers/battle_providers.dart';
 import '../../providers/character_providers.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
+import '../theme/tier_colors.dart';
 
 /// 角色面板（phase2_tasks.md T28 §392-414）。
 ///
@@ -207,7 +208,10 @@ class _DerivedStatsSection extends ConsumerWidget {
             _renderStats(
               context,
               ref,
-              equipped: equipped.map((a) => a.value).whereType<Equipment>().toList(),
+              equipped: equipped
+                  .map((a) => a.value)
+                  .whereType<Equipment>()
+                  .toList(),
               mainTech: mainAsync.value,
             ),
         ],
@@ -222,9 +226,11 @@ class _DerivedStatsSection extends ConsumerWidget {
       character.equippedAccessoryId,
     ];
     return ids
-        .map((id) => id == null
-            ? const AsyncData<Equipment?>(null)
-            : ref.watch(equipmentByIdProvider(id)))
+        .map(
+          (id) => id == null
+              ? const AsyncData<Equipment?>(null)
+              : ref.watch(equipmentByIdProvider(id)),
+        )
         .toList();
   }
 
@@ -256,10 +262,7 @@ class _DerivedStatsSection extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-              child: _LabeledValue(
-                label: UiStrings.statHp,
-                value: '$hp',
-              ),
+              child: _LabeledValue(label: UiStrings.statHp, value: '$hp'),
             ),
             Expanded(
               child: _LabeledValue(
@@ -407,7 +410,7 @@ class _EquipmentSlotTile extends ConsumerWidget {
             ),
           );
         }
-        final tierColor = _tierColor(eq.tier);
+        final tierColor = tierColorForEquipment(eq.tier);
         final resonance = eq.resonanceStage(n);
         return _SlotShell(
           borderColor: tierColor,
@@ -502,10 +505,7 @@ class _MainTechniqueTile extends ConsumerWidget {
           children: [
             Text(
               UiStrings.techniqueRoleMain,
-              style: TextStyle(
-                color: WuxiaColors.textMuted,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
             ),
             SizedBox(width: 8),
             Text(
@@ -540,8 +540,8 @@ class _MainTechniqueTile extends ConsumerWidget {
         final progress = t.cultivationProgressToNext == 0
             ? 0.0
             : (t.cultivationProgress / t.cultivationProgressToNext)
-                .clamp(0.0, 1.0)
-                .toDouble();
+                  .clamp(0.0, 1.0)
+                  .toDouble();
         return _TechniqueShell(
           borderColor: schoolColor,
           child: Column(
@@ -738,10 +738,7 @@ class _LabeledValue extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: WuxiaColors.textMuted,
-            fontSize: 11,
-          ),
+          style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 11),
         ),
         const SizedBox(height: 2),
         Text(
@@ -796,20 +793,4 @@ class _TechniqueShell extends StatelessWidget {
       child: child,
     );
   }
-}
-
-/// 装备阶颜色（与战斗 UI 风格延续，从 [WuxiaColors] 派生）。
-///
-/// Phase 2 简化：寻常/像样/好家伙 → 灰 / 普 / 蓝调；利器以上 → 暖色。
-/// 全部色值已存在 [WuxiaColors]；此处仅做映射，不引入新颜色定义。
-Color _tierColor(EquipmentTier t) {
-  return switch (t) {
-    EquipmentTier.xunChang => WuxiaColors.textMuted,
-    EquipmentTier.xiangYang => WuxiaColors.textSecondary,
-    EquipmentTier.haoJiaHuo => WuxiaColors.internalForce,
-    EquipmentTier.liQi => WuxiaColors.lingQiao,
-    EquipmentTier.zhongQi => WuxiaColors.gangMeng,
-    EquipmentTier.baoWu => WuxiaColors.yinRou,
-    EquipmentTier.shenWu => WuxiaColors.resultHighlight,
-  };
 }

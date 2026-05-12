@@ -249,4 +249,37 @@ class UiStrings {
   static const String towerReplayNoReward = '已重打通关，重打不发奖';
   static const String towerFirstClearLabel = '首通奖励：';
   static const String towerFirstClearNoReward = '首通！本层无固定奖励。';
+
+  // ─── 闭关修炼（Phase 3 T49）─────────────────────────────────────────────
+
+  static const String mainMenuSeclusion = '闭关修炼';
+  static const String mainMenuSeclusionHint = '5 张地图，离线挂机，最长 72 小时';
+
+  static const String seclusionTitle = '闭关修炼';
+  static const String seclusionMapLocked = '境界不足，尚未解锁';
+  static const String seclusionMapAvailable = '进入';
+  static const String seclusionMapActive = '进行中';
+
+  static const String seclusionSetupTitle = '选择时长';
+  static const String seclusionSetupStartButton = '开始闭关';
+
+  static const String activeRetreatTitle = '闭关中';
+  static const String activeRetreatCollect = '收功';
+  static const String activeRetreatEarlyCollect = '提前收功';
+  static const String activeRetreatConfirmTitle = '确认提前收功';
+  static const String activeRetreatConfirmBody = '现在收功将按实际时间结算，是否确认？';
+  static const String activeRetreatConfirm = '确认';
+  static const String activeRetreatCancel = '取消';
+
+  static const String seclusionResultTitle = '闭关收获';
+  static const String seclusionResultEmpty = '此次收获甚微';
+  static const String seclusionResultBack = '返回';
+
+  static String seclusionRequiredRealm(String realmName) => '需要境界：$realmName';
+  static String seclusionDurationLabel(int hours) => '$hours 小时';
+  static String seclusionMojianshi(int n) => '磨剑石 × $n';
+  static String seclusionActualHours(double h) =>
+      '实际挂机 ${h.toStringAsFixed(1)} 小时';
+  static String seclusionExpected(String key, double perHour) =>
+      '$key：${perHour.toStringAsFixed(1)}/h';
 }

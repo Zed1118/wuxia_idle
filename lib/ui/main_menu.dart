@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../data/models/enums.dart';
 import 'character_panel/character_panel_screen.dart';
 import 'debug/battle_test_menu.dart';
 import 'debug/phase2_test_menu.dart';
 import 'inventory/inventory_screen.dart';
 import 'mainline/chapter_list_screen.dart';
+import 'seclusion/seclusion_map_list_screen.dart';
 import 'strings.dart';
 import 'technique_panel/technique_panel_screen.dart';
 import 'theme/colors.dart';
@@ -64,6 +66,18 @@ class MainMenu extends StatelessWidget {
                   label: UiStrings.mainMenuTower,
                   hint: UiStrings.mainMenuTowerHint,
                   onTap: () => _push(context, const TowerFloorListScreen()),
+                ),
+                const SizedBox(height: 16),
+                _MenuButton(
+                  label: UiStrings.mainMenuSeclusion,
+                  hint: UiStrings.mainMenuSeclusionHint,
+                  onTap: () => _push(
+                    context,
+                    const SeclusionMapListScreen(
+                      charRealmTier: RealmTier.xueTu,
+                      characterId: _defaultCharacterId,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
