@@ -89,8 +89,9 @@ class RetreatResultScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () =>
-                      Navigator.of(context).popUntil((r) => r.isFirst),
+                  // 经 pushReplacement 链回 list；list 收 true 触发 refresh。
+                  // 不用 popUntil(isFirst) — 会把 list 也弹掉退到主菜单。
+                  onPressed: () => Navigator.of(context).pop(true),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: WuxiaColors.gangMeng,
                     foregroundColor: WuxiaColors.textPrimary,
