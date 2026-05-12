@@ -998,3 +998,137 @@ phase3_summary.md                         # T46 追加 Week 2 段
    - PROGRESS.md 更新「进行中」→「已完成」
    - commit 用 `[Tnn]` 前缀 + 中文简明描述
    - 不 push 单 commit，按 T 任务批次 push（减少 CI 噪音）
+
+---
+
+## §Week 4 候选 spec 草案（待人类决策再拆 T 任务）
+
+> 本节只做方向草案，供 Opus 重置后 review；不代表 Week 4 已拍板。
+> 正式实现前必须先确认对应 §12 待决项，并把选定方向拆成 T53+ 任务。
+
+### C. 奇遇系统
+
+**GDD 锚点**：
+- §8.2（用户口径：奇遇；当前 GDD 文件中 §8.2 标题为爬塔，正式拆任务前需校正锚点）
+- §6.1（机缘属性关联：江湖商店折扣、奇遇所得高阶装备）
+- 补充参考：§4.1 机缘属性、§7.2 武学领悟示例、§8.4 Demo 奇遇事件 20-30
+
+**§12 待决项映射**：
+- #6 武学领悟「机缘值」累积规则未定。奇遇触发同样依赖机缘，需先决定机缘值来源、阈值、衰减或冷却。
+
+**数据 schema 草案：`data/encounters.yaml`（Mac 端）**
+- `id`：唯一 id，必须与 `data/events/<id>.yaml` 文件名和文件内 `id` 严格相等
+- `type`：事件类型，如 `technique_insight` / `rare_equipment` / `trial` / `karma`
+- `trigger`：触发条件块，建议字段含 `biome`、`weather`、`enemy_class`、`kill_count_threshold`、`retreat_map_type`、`stage_id`、`tower_floor_min`
+- `fortune_required`：机缘属性门槛
+- `enlightenment_required`：悟性门槛，可空
+- `realm_min` / `realm_max`：境界窗口，可空
+- `reward`：结构化奖励，如 `unlock_technique_id`、`equipment_def_id`、`skill_id`、`attribute_bonus`
+- `cooldown_days`：真实日冷却，避免反复触发
+- `weight`：同条件下随机权重
+- `enabled_in_demo`：Demo 开关，避免未来内容提前露出
+
+**与 DeepSeek 文案联结**：
+- `data/events/<id>.yaml` 归 DeepSeek，Mac 端不写不改。
+- 加载层必须强校验：`encounters.yaml.id == events/<id>.yaml.id`，任一端缺失对应 id 直接抛错，不静默跳过。
+- 示例参照 `AGENTS.md §8.1`：Mac 写触发条件与数值，DeepSeek 写 title/opening/choices/outcome 文本。
+
+**预估 T 任务数**：6
+- schema + EncounterDef
+- repository 加载与 id 联结校验
+- EncounterService 触发判定
+- 奇遇结果结算 hook
+- 奇遇入口 / 事件阅读 UI
+- 测试 + Pen 验收
+
+**风险 / 依赖**：
+- 机缘属性目前没有完整系统实现，需要先查 GDD §4.1 / §6.1 并确认 §12 #6。
+- DeepSeek 端 `data/events/` 文本节奏会影响联结校验策略；若文案未齐，需决定是 fail-fast 还是 Demo 白名单兜底。
+
+⚠ 待人类决策再拆 T 任务，本节仅 spec 草案
+
+### D. 师徒系统
+
+**GDD 锚点**：
+- §7.1 师徒传承
+
+**§12 待决项映射**：
+- #10 师承遗物传递时机 / 多徒弟继承规则 / 传承 buff 是否累代叠加 / 同部位装备冲突处理
+- #11 祖师爷门派 buff 的具体内容、数值范围与 Demo 阶段接口
+
+**数据 schema 草案：`data/masters.yaml`（Mac 端）**
+- `id`：唯一 id，如 `founder` / `first_disciple` / `second_disciple`
+- `lineage_role`：`founder` / `disciple`
+- `slot_index`：Demo 固定 0-2，对应祖师 + 大弟子 + 二弟子
+- `unlock_realm`：解锁境界，如一流解锁收徒
+- `default_realm` / `default_layer`：Demo 初始境界
+- `attribute_profile`：四属性模板或 roll 规则引用
+- `starting_technique_ids`：初始心法
+- `starting_equipment_ids`：初始装备 def id
+- `heritage_policy`：遗物传承策略占位，如 `none` / `on_ascension` / `manual`
+- `founder_buff_key`：祖师 buff 引用，占位可空
+- `enabled_in_demo`：Demo 开关
+
+**师承遗物数据位置待定**：
+- 方案 A：继续挂在 `equipment.yaml`，装备 def 增 `lineage_heritage` / `legacy_bonus` 字段，实例层沿用 `Equipment.isLineageHeritage`。
+- 方案 B：单独 `lineage_heritages.yaml`，把遗物规则从普通装备池拆出。
+- 当前建议先不定案；§12 #10 未决前只写接口草案，不落代码。
+
+**预估 T 任务数**：5-7
+- masters.yaml schema + MasterDef
+- Character / Lineage service 查询与 Demo 三角色初始化
+- 师承遗物约束校验
+- 祖师 buff 接口占位
+- 师徒 UI 面板
+- 测试 + Pen 验收
+- 若涉及装备规则，再追加 schema 迁移任务
+
+**风险 / 依赖**：
+- 飞升机制 Demo 不做（GDD §12 已说明），但 §7.1 又把传位和祖师 buff 绑定在飞升后；Demo 怎么呈现师徒，需要先讨论。
+- 师承遗物已明确受三系锁死约束，任何「低境界装备神物遗物」路径都必须拦截。
+
+⚠ 待人类决策再拆 T 任务，本节仅 spec 草案
+
+### E. 武学领悟
+
+**GDD 锚点**：
+- §7.2 武学领悟（替代抽卡）
+
+**§12 待决项映射**：
+- #6 机缘值累积规则
+- §7.2 中「挂机 / 探索时累积机缘值」的具体来源、阈值、触发频率未定
+
+**数据 schema 草案：`data/insights.yaml`（Mac 端）**
+- `id`：唯一 id，如 `bamboo_listen_rain`
+- `skill_id`：被解锁的招式 id，指向 `data/skills.yaml`
+- `unlock_technique_id`：关联心法 id，可空；用于「领悟招式同时解锁心法」路径
+- `required_technique_id`：要求已学心法，可空
+- `required_school`：刚猛 / 灵巧 / 阴柔，可空
+- `trigger`：触发条件块，建议含 `biome`、`weather`、`retreat_map_type`、`enemy_class`、`kill_count_threshold`、`skill_usage_threshold`
+- `fortune_value_required`：机缘值门槛，不等同基础属性机缘，具体累积规则待决
+- `enlightenment_required`：悟性门槛，可空
+- `realm_min`：最低境界
+- `cooldown_days`：真实日冷却
+- `narrative_id`：可选联结到 `data/events/<id>.yaml` 或 `data/narratives/techniques/insights/<id>.yaml`，归 DeepSeek 端
+- `enabled_in_demo`：Demo 开关
+
+**Demo 内容量目标**：
+- 30-50 招
+- 20-30 个触发条件
+- 触发条件可复用，避免 50 招全写独立复杂条件
+
+**预估 T 任务数**：6-8
+- insights.yaml schema + InsightDef
+- InsightProgress / 机缘值记录模型
+- InsightService 触发与去重
+- 与 TechniqueLearning / CultivationService 的边界梳理
+- 领悟事件 UI
+- DeepSeek 文案联结校验
+- 测试 + Pen 验收
+- 若机缘值需全局离线累积，再追加挂机结算任务
+
+**风险 / 依赖**：
+- 与现有 `TechniqueLearningService` 耦合较高：当前学习用领悟点成本，武学领悟可能绕过或补充该路径。
+- #6 不决，无法判断机缘值是按时间、击杀、闭关地图、悟性/机缘属性，还是多源累积。
+
+⚠ 待人类决策再拆 T 任务，本节仅 spec 草案
