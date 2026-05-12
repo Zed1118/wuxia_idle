@@ -5,9 +5,9 @@
 
 ## 当前阶段
 
-**Phase 3 Week 2 已完成**（tag v0.3.0-w2，2026-05-11 merge）。爬塔 30 层全交付：towers.yaml + TowerFloorDef + TowerProgress + TowerProgressService + 层列表 UI + 进入流程串联 + 奖励 hook + Pen 视觉验收（3 截图）。420/420 测试，analyze 0 issues。
+**Phase 3 Week 3 T47-T51 已完成**（feat/phase3-seclusion，tag 待 v0.3.0-w3）。闭关 5 张地图数据 / RetreatSession / SeclusionService / 4 UI 屏 / main_menu 入口均已落地；457/457 测试，analyze 0 issues。
 
-**下一阶段**：Phase 3 Week 3 候选（B 闭关 / C 奇遇 / D 师徒 / E 武学领悟），多个 §12 待决项（#5/#6/#10/#11）需先决策再拆任务。
+**当前阻塞**：T52 Pen 视觉验收待用户明天 Windows 物理机跑，通过后 merge feat/phase3-seclusion → main → tag v0.3.0-w3。
 
 ## 已完成
 
@@ -18,14 +18,11 @@
 - **Phase 3 Week 1 T33-T39 主线最小闭环**（2026-05-11，tag v0.3.0-w1，feat/phase3-mainline → main）：stages.yaml schema 升级（prevStageId / narrativeOpeningId / narrativeVictoryId）+ 6 关 backfill 3 章 × 2 关 / MainlineProgress @collection + MainlineProgressService 4 API / 章节列表 + 关卡列表 UI + 主线按钮接 main_menu / NarrativeLoader 缺文件兜底「[剧情待补]」 + 阅读 UI / StageBattleSetup + runStageFlow 串联 opening → battle → victory/defeat / docs/NARRATIVE_SCHEMA.md / 8 Pen 截图归档。累计 377/377（+42）。详条 `phase3_summary.md` §Week 1 + git log T33-T39。**销 #22**
 - **T40 towers.yaml schema + TowerFloorDef + 30 层 fixture**（2026-05-11，feat/phase3-tower，commit `511264e`）：`enum TowerBossKind { minor, major }` + `TowerFloorStatus` 加 enums.dart；`lib/data/defs/tower_floor_def.dart` 新建（floorIndex/requiredRealm/enemyTeam/bossKind/narrativeOpening|VictoryId/dropTable + fromYaml + isBoss）；`data/towers.yaml` 30 层 fixture（每 5 层升一阶学徒→宗师，普通层单兵 HP 800→10000 / ATK 200→1500 线性，Boss × 1.5，1/2/3 人队 ×1.0/0.7/0.55 scale）；GameRepository 加 towerFloors + `_enforceTowerRedLines`（30 层连续 / Boss 严格 5·10·15·20·25·30 / 普通层 narrative 必 null / 敌人数 [1,3] / Boss 1 人 / baseHp ≤ 50000）+ `getTowerFloor` 便捷查询；test 加 13 用例（fromYaml 3 + 集成 6 + fail-fast 4），累计 390/390
 - **T41 TowerProgress @collection + TowerProgressService**（2026-05-11，feat/phase3-tower）：`@collection TowerProgress`（saveDataId/highestClearedFloor/highestClearedAt/totalAttempts/totalDefeats/createdAt）；service 6 API（getOrCreate 幂等 / availableFloor 封顶 30 / canChallenge 边界 / floorList 30 行三态 / **recordClear 返回 `({isFirstClear, highestAfter})`**：仅 floorIndex==highest+1 才 ++ 否则 isFirstClear=false 不抛 / recordDefeat 仅增统计不退层）；IsarSetup 加 TowerProgressSchema + saveVersion 0.2.0→0.3.0；isar_setup_test 同步改期望值；test 加 15 用例（接真 Isar 临时目录，覆盖跳层非法/与 MainlineProgress 独立校验），累计 405/405
+- **Phase 3 Week 3 T47-T51 闭关地图**（2026-05-11，feat/phase3-seclusion，tag 待 T52 后 `v0.3.0-w3`，commit `ff7230a`/`5135c7b`/`0286529`/`033e07e`）：5 张闭关地图 fixture（mountain/cave/temple/lake/ancient_battlefield）+ `SeclusionMapDef` + `RetreatConfig` / `RetreatSession @collection` + `SeclusionService`（start/compute/complete/abandon）/ 地图列表、选时长、进行中、收功结果 4 UI 屏 + main_menu「闭关修炼」入口 / saveVersion 0.3.0→0.4.0。405→457（+52）测试，analyze 0 issues；T52 Pen 视觉验收待跑。
 
 ## 进行中
 
-**Phase 3 Week 3 闭关地图**（feat/phase3-seclusion，2026-05-11）：
-- ✅ **T47** SeclusionMapDef + numbers.yaml 补字段 + GameRepository 加载（437/437）
-- ✅ **T48** RetreatSession @collection + SeclusionService（454/454）
-- ✅ **T49** 闭关 UI 四屏 + main_menu 入口 + 3 widget 测试（457/457）
-- 🔄 **T50** 全量 test + analyze 双绿 + Pen 视觉验收 + tag（进行中）
+**Phase 3 Week 3 收尾**：T52 Pen 视觉验收（待用户明天 Windows 物理机跑 → merge feat/phase3-seclusion → main → tag v0.3.0-w3）。
 
 ## 已知偏差 / 挂账事项
 
@@ -48,16 +45,10 @@
 
 ## 下一步
 
-Phase 3 Week 2（爬塔，详条 `phase3_tasks.md` §Week 2）：
-- ✅ **T40** towers.yaml + TowerFloorDef + 30 层 fixture（390/390）
-- ✅ **T41** TowerProgress + TowerProgressService + saveVersion 0.3.0（405/405）
-- ✅ **T42** 爬塔层列表 UI + main_menu 入口（411/411）
-- ✅ **T43** 爬塔进入流程串联（416/416）
-- ✅ **T44** 爬塔奖励 hook（420/420）
-- ✅ **T45** 全量 test + analyze 双绿（420/420）
-- ✅ **T46** Pen 视觉验收 + tag v0.3.0-w2（3 截图：主菜单/楼层列表/战斗入口，merge → main）
-
-Week 3 候选（待 Week 2 跑通后再拆）：B 闭关 / C 奇遇 / D 师徒 / E 武学领悟（多个待决 §12 #5/#6/#10/#11）
+Week 4 候选方向（待人类决策具体方向后再拆 T 任务；详草案见 `phase3_tasks.md` 末尾新增节）：
+- **C 奇遇系统**：需先决 §12 #6 机缘值累积规则，且与 DeepSeek `data/events/` 协同。
+- **D 师徒系统**：需先决 §12 #10 师承遗物细则 + #11 祖师爷门派 buff。
+- **E 武学领悟**：需先决 §12 #6，并评估与现有 TechniqueLearning 的耦合成本。
 
 > CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 
