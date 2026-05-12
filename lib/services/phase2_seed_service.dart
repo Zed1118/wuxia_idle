@@ -183,14 +183,16 @@ class Phase2SeedService {
     required int jieJing,
   }) async {
     final now = DateTime.now();
+    // defId 统一为 item_* 体系（与 towers.yaml / stages.yaml drop + tower_entry_flow
+    // 映射对齐），避免同 ItemType 多 defId 行分裂。
     final moj = InventoryItem()
-      ..defId = ItemType.moJianShi.name
+      ..defId = 'item_mojianshi'
       ..itemType = ItemType.moJianShi
       ..quantity = mojianshi
       ..firstObtainedAt = now
       ..lastObtainedAt = now;
     final jie = InventoryItem()
-      ..defId = ItemType.xinXueJieJing.name
+      ..defId = 'item_xinxuejiejing'
       ..itemType = ItemType.xinXueJieJing
       ..quantity = jieJing
       ..firstObtainedAt = now

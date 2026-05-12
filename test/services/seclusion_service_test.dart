@@ -332,6 +332,48 @@ void main() {
       expect(ch?.currentRetreatSessionId, isNull);
     });
 
+    test('收功 merge 既有 item_mojianshi 行（防 defId 分裂回归）', () async {
+      // 预先写入与 Phase2SeedService / tower drop 同体系的 defId='item_mojianshi'
+      final now = DateTime(2026, 5, 12, 9, 0);
+      final seeded = InventoryItem()
+        ..defId = 'item_mojianshi'
+        ..itemType = ItemType.moJianShi
+        ..quantity = 10
+        ..firstObtainedAt = now
+        ..lastObtainedAt = now;
+      await IsarSetup.instance.writeTxn(
+        () => IsarSetup.instance.inventoryItems.put(seeded),
+      );
+
+      final start = DateTime(2026, 5, 12, 10, 0);
+      final session = await SeclusionService.startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 4,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      final out = await SeclusionService.completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start.add(const Duration(hours: 4)),
+      );
+
+      // 必须仍只有 1 行 moJianShi（不能新建 'mojianshi' 那种分裂行）
+      final all = await IsarSetup.instance.inventoryItems
+          .filter()
+          .itemTypeEqualTo(ItemType.moJianShi)
+          .findAll();
+      expect(all.length, 1, reason: '同 ItemType 不可分裂多 defId 行');
+      expect(all.first.defId, 'item_mojianshi');
+      expect(all.first.quantity, 10 + out.mojianshi);
+    });
+
     test('收功后 InventoryItem.moJianShi 数量增加', () async {
       final start = DateTime(2026, 5, 11, 10, 0);
       final session = await SeclusionService.startRetreat(

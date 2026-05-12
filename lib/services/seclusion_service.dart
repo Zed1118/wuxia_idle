@@ -198,10 +198,12 @@ class SeclusionService {
 
     await isar.writeTxn(() async {
       // 1. 写 mojianshi → InventoryItem
+      // defId 统一为 'item_mojianshi'，与 towers.yaml / stages.yaml drop 体系
+      // 及 tower_entry_flow._itemTypeOf 映射对齐，避免同 ItemType 多 defId 分裂。
       if (outputs.mojianshi > 0) {
         await _addInventoryItem(
           isar,
-          defId: 'mojianshi',
+          defId: 'item_mojianshi',
           itemType: ItemType.moJianShi,
           quantity: outputs.mojianshi,
           now: now,
@@ -212,7 +214,7 @@ class SeclusionService {
       final rewards = <RewardEntry>[];
       if (outputs.mojianshi > 0) {
         rewards.add(RewardEntry()
-          ..rewardKey = 'mojianshi'
+          ..rewardKey = 'item_mojianshi'
           ..quantity = outputs.mojianshi);
       }
       session
@@ -287,10 +289,7 @@ class SeclusionService {
     required int quantity,
     required DateTime now,
   }) async {
-    final existing = await isar.inventoryItems
-        .filter()
-        .defIdEqualTo(defId)
-        .findFirst();
+    final existing = await isar.inventoryItems.getByDefId(defId);
     if (existing != null) {
       existing.quantity += quantity;
       existing.lastObtainedAt = now;
