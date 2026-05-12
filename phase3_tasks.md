@@ -1172,3 +1172,121 @@ phase3_summary.md                         # T46 追加 Week 2 段
 
 推荐只在「人类接受先定 #6 的最小版本」后起手 **C 奇遇系统**。理由：C 与现有代码耦合最低，先做 `EncounterDef`、`encounters.yaml` schema、id 联结校验和只读 UI 入口，返工面相对小；D 的师承遗物规则和 E 的心法学习路径都更容易牵动已实现系统。  
 ⚠ 待人类决策：若 #6 今晚不能定，不建议开 C/E 服务层实现；最多继续做文档或 schema 草案。
+
+### §起手 issue 清单（C/D/E 三方向各自展开）
+
+#### C. 奇遇系统
+
+Issue C-1：机缘基础属性与机缘值是否同一套资源
+- 阻塞：是
+- 关联 §12 决策项：#6
+- 建议回答方式：人类决策
+- 备注：`lib/data/models/attributes.dart` 已有 `Attributes.fortune`，注释写明影响奇遇触发率；但没有“机缘值”累计模型。需要决定奇遇直接读基础属性，还是新增可累计/消耗的 fortune value。
+
+Issue C-2：奇遇真实 GDD 锚点是否补成独立章节
+- 阻塞：否（影响 Week 4 spec 与 PR 描述口径）
+- 关联 §12 决策项：#6
+- 建议回答方式：翻 GDD 找答案
+- 备注：当前草案已修正为散见 §4.1 / §6.1 / §7.2 / §8.4 / §9.1 / §10.1 / §11.2；若 GDD 后续补独立“奇遇系统”章节，schema 文档和任务锚点要同步。
+
+Issue C-3：`encounters.yaml` ↔ `events/<id>.yaml` 联结缺失时是否 fail-fast
+- 阻塞：是
+- 关联 §12 决策项：#6
+- 建议回答方式：跟 DeepSeek 端协调
+- 备注：AGENTS §8.1 要求 id 严格相等且任一端缺失直接抛错；但当前 `data/events/` 已有 26 个文案文件，`data/encounters.yaml` 未创建。起手时要决定先按 events 反建触发条件，还是让 DeepSeek 等 Mac 端 id 清单。
+
+Issue C-4：奇遇触发源是否接主线、爬塔、闭关三条入口
+- 阻塞：否（影响服务 hook 拆分顺序）
+- 关联 §12 决策项：#6
+- 建议回答方式：人类决策
+- 备注：现有可接点包括主线胜利、爬塔胜利、闭关收功；若三处同时接，测试面变大。可先定 Demo 第一版只接一处，剩余入口留 schema 字段。
+
+Issue C-5：奇遇奖励是否允许给高阶装备/心法但暂不可用
+- 阻塞：否（影响 reward schema 校验）
+- 关联 §12 决策项：#6
+- 建议回答方式：人类决策
+- 备注：AGENTS §5.3 已明确高于当前境界的物品可获得、可携带、可观摩，但不可装备/修炼；EncounterService 需要只发放，不绕过 `canEquip` / `canPractice`。
+
+Issue C-6：Demo 20-30 个奇遇的最小可验收粒度
+- 阻塞：否（影响 T 任务验收）
+- 关联 §12 决策项：#6
+- 建议回答方式：跟 DeepSeek 端协调
+- 备注：若 Week 4 只做系统骨架，可先放 3-5 个 fixture；若要对齐 Demo 目标，需要 Mac `encounters.yaml` 与 DeepSeek `events/` 同步到 20-30 个 id。
+
+#### D. 师徒系统
+
+Issue D-1：飞升 Demo 不做时，师徒系统在 Demo 如何呈现
+- 阻塞：是
+- 关联 §12 决策项：#10 / #11
+- 建议回答方式：人类决策
+- 备注：GDD §7.1 把传位、祖师 buff 与飞升绑定，但 Demo §12 不做飞升。需要决定 Week 4 是做三角色展示/上阵，还是做“未来接口 + 无飞升占位”。
+
+Issue D-2：师承遗物传递规则
+- 阻塞：是
+- 关联 §12 决策项：#10
+- 建议回答方式：人类决策
+- 备注：已确定师承遗物受三系锁死；仍需定传递时机、继承人、多徒弟归属、buff 是否累代叠加、同部位已有装备时如何处理。
+
+Issue D-3：祖师爷门派 buff 内容与数值范围
+- 阻塞：是（若做 buff）；否（若只做角色展示）
+- 关联 §12 决策项：#11
+- 建议回答方式：人类决策
+- 备注：`numbers.yaml` 目前 `founder_ancestor_buff.enabled_when_alive: false`、`sect_wide_buff: null`。如果 Week 4 要留接口，需决定 buff key、目标属性、数值上限与是否进入 Demo。
+
+Issue D-4：3 个师徒角色属性来源
+- 阻塞：是
+- 关联 §12 决策项：#2 / #10
+- 建议回答方式：人类决策
+- 备注：`Character` 已有 `lineageRole`、`masterId`、`discipleIds`、`isFounder` 字段，但没有 `masters.yaml`。需要决定祖师/大弟子/二弟子是固定模板、按 CharacterGenerator roll，还是由剧情/种子创建。
+
+Issue D-5：师徒角色是否进入 3v3 active team
+- 阻塞：否（影响 UI 与 StageBattleSetup）
+- 关联 §12 决策项：#10
+- 建议回答方式：试做后再说
+- 备注：当前 `StageBattleSetup` 从 `SaveData.activeCharacterIds` 拉玩家队伍，最多 3 人正好能承载师徒；但 UI 尚无换人/排阵入口。
+
+Issue D-6：师徒数据 schema 放 `masters.yaml` 还是复用 Character seed
+- 阻塞：否（影响数据边界）
+- 关联 §12 决策项：#10 / #11
+- 建议回答方式：人类决策
+- 备注：草案写 `data/masters.yaml`，但现有 Isar `Character` 已能表达师徒关系。需要决定 yaml 只是初始模板，还是长期角色定义数据源。
+
+#### E. 武学领悟
+
+Issue E-1：与现有 TechniqueLearningService 的边界
+- 阻塞：是
+- 关联 §12 决策项：#6
+- 建议回答方式：人类决策
+- 备注：`TechniqueLearningService` 当前用领悟点学习心法，服务只构造 `Technique`，不写 Isar。武学领悟要决定是解锁 `SkillDef`、解锁 `TechniqueDef`，还是给学习折扣/资格。
+
+Issue E-2：机缘值累积规则与 C 方向共享
+- 阻塞：是
+- 关联 §12 决策项：#6
+- 建议回答方式：人类决策
+- 备注：E 的 `fortune_value_required` 与 C 的奇遇触发都依赖 #6；若两个方向都要用，需要同一套 `InsightProgress` / fortune value 模型，避免重复计数。
+
+Issue E-3：30-50 招式与 20-30 触发条件的数据组织方式
+- 阻塞：是
+- 关联 §12 决策项：#6
+- 建议回答方式：人类决策
+- 备注：当前 `data/skills.yaml` 只有 18 招，且全部挂在 6 本心法下；`SkillDef.parentTechniqueDefId` 注释已允许为空表示独立领悟产出。需要决定新招直接扩 `skills.yaml`，触发条件放 `insights.yaml`，还是按流派拆文件。
+
+Issue E-4：领悟叙事联结走 events 还是 narratives/techniques/insights
+- 阻塞：否（影响 DeepSeek 协作）
+- 关联 §12 决策项：#6
+- 建议回答方式：跟 DeepSeek 端协调
+- 备注：当前 `data/narratives/techniques/insights/` 已有 35 个文案文件；草案允许 `data/events/<id>.yaml` 或 narratives 子目录。需要统一 id 命名与加载策略。
+
+Issue E-5：触发条件是否复用战斗 skillUsageCount
+- 阻塞：否（影响实现路径）
+- 关联 §12 决策项：#6
+- 建议回答方式：试做后再说
+- 备注：`Technique.skillUsageCount` 已记录招式使用次数，可支撑 `skill_usage_threshold`；但击杀数、天气、biome、retreat_map_type 等条件尚无统一统计模型。
+
+Issue E-6：已领悟招式如何进入战斗可用列表
+- 阻塞：是
+- 关联 §12 决策项：#6
+- 建议回答方式：人类决策
+- 备注：`Character.learnedSkillIds` 字段已存在，但 BattleCharacter 当前主要从心法 `skillIds` 装配技能。需要决定独立领悟招式是直接加入可用技能，还是必须绑定到主修/辅修心法。
+
+⚠ 待人类决策：上述 issue 只列阻塞点与协作点，不代表 Week 4 方向已拍板。
