@@ -95,25 +95,25 @@
 
 ---
 
-## Week 3 · 闭关地图（T47-T52，2026-05-11，进行中）
+## Week 3 · 闭关地图（T47-T52，2026-05-11，T52 待验收）
 
 **目标**：5 张离线闭关地图全流程：地图列表 → 选时长 → 挂机计时 → 收功结算 → 奖励写库。
 §12 #5 产出公式决议：境界缩放 ×1.3/tier，离线封顶 72h，mojianshi 整数 + 单次装备抽检。
 
 **分支**：`feat/phase3-seclusion`（未 merge，等 Pen 视觉验收后 merge → main，tag v0.3.0-w3）。
 
-### 交付清单（截至 2026-05-11 会话末）
+### 交付清单
 
 | T | 内容 | 测试 |
 |---|---|---|
-| T47 ✅ | numbers.yaml 补 `realm_scale_per_tier`/`cap_hours`/`base_equip_drop_probability`；`SeclusionMapDef` + `RetreatConfig`；`GameRepository.seclusionMaps` + `_enforceSeclusionRedLines`（5 张 / 唯一 type / mojianshi>0 / cap[1,168]） | +17（437/437）|
-| T48 ✅ | `RetreatStatus` enum；`RetreatSession @collection`；`SeclusionService`（canEnterMap / getActiveSession / startRetreat / computeOutputs / completeRetreat / abandonRetreat）；`RetreatOutputs` typedef（record）；IsarSetup 加 schema + saveVersion 0.3.0→0.4.0 | +17（454/454）|
-| T49 ✅ | `SeclusionMapListScreen`（5 张三态 + ActiveBanner）/ `SeclusionSetupScreen`（产出预览+时长选择）/ `ActiveRetreatScreen`（进度条+收功弹窗）/ `RetreatResultScreen`（奖励清单）；`MainMenu` 加「闭关修炼」入口；`UiStrings` 补全；widget test ×3；analyze 0 issues | +3（457/457）|
-| T50 | 含于 T48/T49（completeRetreat 完整实现 + RetreatResultScreen + DropService hook） | — |
-| T51 | 含于 T49（457/457 全绿，analyze 0 issues） | — |
+| T47 ✅ | 5 张闭关地图 fixture（mountain/cave/temple/lake/ancient_battlefield 口径，对应山林/古剑冢/藏经阁/悬崖瀑布/断崖绝壁）；numbers.yaml 补 `realm_scale_per_tier` / `cap_hours` / `base_equip_drop_probability`；`SeclusionMapDef` + `RetreatConfig`；`GameRepository.seclusionMaps` + `_enforceSeclusionRedLines`（5 张 / 唯一 type / mojianshi>0 / cap[1,168]） | +17（437/437）|
+| T48 ✅ | `RetreatStatus` enum；`RetreatSession @collection`；`SeclusionService`（canEnterMap / getActiveSession / startRetreat / computeOutputs / completeRetreat / abandonRetreat）；`computeOutputs` 纯函数与 `completeRetreat` 写库分离；`RetreatOutputs` record typedef；IsarSetup 加 schema + saveVersion 0.3.0→0.4.0 | +17（454/454）|
+| T49 ✅ | `SeclusionMapListScreen`（5 张三态 + ActiveBanner）/ `SeclusionSetupScreen`（产出预览 + 时长选择）/ `ActiveRetreatScreen`（进度条 + 收功确认）/ `RetreatResultScreen`（奖励清单）；`MainMenu` 加「闭关修炼」入口；`UiStrings` 补全；widget test ×3 | +3（457/457）|
+| T50 ✅ | 含于 T48/T49：`completeRetreat` 完整实现，磨剑石写入 `InventoryItem`，收功结果页展示实际挂机时长与奖励清单；装备抽检保留 Phase 4 dropTable 扩展点 | — |
+| T51 ✅ | 全量 `flutter test` + `flutter analyze` 双绿 | 457/457，0 issues |
 | T52 🔄 | Pen 视觉验收 ≥ 3 截图 + tag v0.3.0-w3 | 待完成 |
 
-**当前测试数**：457 / analyze 0 issues。
+**累计测试**：405（Week 2 T41 后基线）→ 457（Week 3 T51，+52）/ analyze 0 issues。
 
 ### 关键设计决策
 
@@ -121,7 +121,7 @@
 - **widget test 不依赖 Isar**：`testWidgets` FakeAsync 与 Isar 真 I/O 不兼容（tearDown 卡死）；map list 用 `FutureBuilder` 的 `snap.error` 静默处理，map def 渲染走 `GameRepository`；SetupScreen 直接注入 mapDef 测试
 - **saveVersion 升级**：0.3.0 → 0.4.0（RetreatSession schema），Pen 端首次运行需删旧存档
 
-### 待完成（下次会话）
+### 待完成（T52）
 
 1. **Pen 视觉验收**：拉 `feat/phase3-seclusion` → `flutter run -d windows` 走完闭关全流程
    - Pen 端首次运行需删旧存档（`%APPDATA%\wuxia_idle` 或类似路径）
