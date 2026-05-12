@@ -13,8 +13,10 @@ import '../../providers/battle_providers.dart';
 import '../../providers/inventory_providers.dart';
 import '../../providers/rng_provider.dart';
 import '../../services/enhancement_service.dart';
+import '../effects/screen_shake.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
+import '../theme/tier_colors.dart';
 import 'forging_panel.dart';
 
 /// T32 #22a：Isar 实例名（与 [IsarSetup.init] 默认 slot=1 同源）。Widget
@@ -27,8 +29,7 @@ const _isarInstanceName = 'wuxia_save_slot1';
 /// - **cap 硬顶 49**（Pen 拍板）：仓库视角不携带 character，强化能否 +N
 ///   由 yaml success_curve + 玩家材料决策决定。
 /// - 成功反馈：边框金色 + AnimatedScale 弹一下（200ms）。
-/// - 失败反馈：内联 shake（同 [BattleScreen] sin 公式，挂账 #21 Phase 5
-///   抽出 `lib/ui/effects/screen_shake.dart` helper）。
+/// - 失败反馈：共享 screen shake helper。
 /// - **writeTxn 持久化**（T32 #22a 销账）：调 service in-place 后委托给
 ///   [EnhancementService.persistResult] 包 writeTxn —— eq.put / mojianshi row.put /
 ///   jieJing row.put 全部落地；末尾本 widget invalidate inventory + allEquipments
@@ -55,7 +56,6 @@ class EnhanceDialog extends ConsumerStatefulWidget {
 class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     with TickerProviderStateMixin {
   static const int _capHardLimit = 49;
-  static const double _shakeOffsetPx = 4.0;
 
   late final AnimationController _shakeCtrl;
   late final AnimationController _scaleCtrl;
@@ -161,9 +161,7 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
 
     return Dialog(
       backgroundColor: WuxiaColors.panel,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(6),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
         child: (mojianshiAsync.hasValue && crystalAsync.hasValue)
@@ -233,7 +231,9 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     final targetLevel = atCap ? eq.enhanceLevel : eq.enhanceLevel + 1;
     final successRate = atCap ? 0.0 : config.successRateFor(targetLevel);
     final mojianshiCost = atCap ? 0 : config.mojianshiCostFor(targetLevel);
-    final crystalCost = atCap ? null : config.crystalCostToGuarantee(targetLevel);
+    final crystalCost = atCap
+        ? null
+        : config.crystalCostToGuarantee(targetLevel);
 
     final canEnhance = !atCap && mojianshiQty >= mojianshiCost;
     final canGuarantee =
@@ -242,11 +242,8 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     return AnimatedBuilder(
       animation: _shakeCtrl,
       builder: (ctx, child) {
-        final v = _shakeCtrl.value;
-        final shakeAmt =
-            v == 0 ? 0.0 : math.sin(v * 2 * math.pi) * _shakeOffsetPx;
         return Transform.translate(
-          offset: Offset(shakeAmt, shakeAmt * 0.5),
+          offset: screenShakeOffset(t: _shakeCtrl.value),
           child: child,
         );
       },
@@ -324,7 +321,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tierColor = _tierColor(equipment.tier);
+    final tierColor = tierColorForEquipment(equipment.tier);
     return AnimatedBuilder(
       animation: scale,
       builder: (ctx, child) {
@@ -376,7 +373,7 @@ class _Header extends StatelessWidget {
                 Text(
                   EnumL10n.equipmentTier(equipment.tier),
                   style: TextStyle(
-                    color: _tierColor(equipment.tier),
+                    color: tierColorForEquipment(equipment.tier),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -427,8 +424,7 @@ class _MetricsRow extends StatelessWidget {
         _StatLine(
           label: UiStrings.metricMaterial,
           value: UiStrings.mojianshiUsage(mojianshiQty, mojianshiCost),
-          valueColor:
-              mojianshiQty < mojianshiCost ? WuxiaColors.hpLow : null,
+          valueColor: mojianshiQty < mojianshiCost ? WuxiaColors.hpLow : null,
         ),
         const SizedBox(height: 4),
         _StatLine(
@@ -455,10 +451,7 @@ class _StatLine extends StatelessWidget {
           width: 72,
           child: Text(
             label,
-            style: const TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
         ),
         Text(
@@ -496,7 +489,10 @@ class _ResultBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+          Text(
+            label,
+            style: TextStyle(color: color, fontWeight: FontWeight.w600),
+          ),
           const Spacer(),
           if (isFailure && r.crystalsGained > 0)
             Text(
@@ -516,17 +512,4 @@ class _ResultBanner extends StatelessWidget {
       ),
     );
   }
-}
-
-/// 装备阶颜色（与 [character_panel_screen] 同源映射）。Phase 5 抽工具类合并。
-Color _tierColor(EquipmentTier t) {
-  return switch (t) {
-    EquipmentTier.xunChang => WuxiaColors.textMuted,
-    EquipmentTier.xiangYang => WuxiaColors.textSecondary,
-    EquipmentTier.haoJiaHuo => WuxiaColors.internalForce,
-    EquipmentTier.liQi => WuxiaColors.lingQiao,
-    EquipmentTier.zhongQi => WuxiaColors.gangMeng,
-    EquipmentTier.baoWu => WuxiaColors.yinRou,
-    EquipmentTier.shenWu => WuxiaColors.resultHighlight,
-  };
 }

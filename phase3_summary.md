@@ -91,11 +91,44 @@
 
 ### 下一 Week 议题
 
-Week 3 候选（开工前需先决 §12 待决项）：
+→ 已决策：B 闭关地图（见 Week 3 节）。
 
-- **B. 闭关地图 5 张**：需先决 §12 #5（每小时产出公式 / 挂机结算规则）
-- **C. 奇遇 20-30**：需先决 §12 #6（机缘值累积规则），与 DeepSeek 端 events/ 联动
-- **D. 师徒传承**：需先决 §12 #10/#11（传递时机 / 多徒弟继承 / 祖师爷 buff 内容）
-- **E. 武学领悟 30-50 招**：需先决 §12 #6（同 C）
+---
 
-建议先讨论 B 或 C，两者都有 §12 待决项但范围可控；D/E 牵涉更多未知量。
+## Week 3 · 闭关地图（T47-T52，2026-05-11，T52 待验收）
+
+**目标**：5 张离线闭关地图全流程：地图列表 → 选时长 → 挂机计时 → 收功结算 → 奖励写库。
+§12 #5 产出公式决议：境界缩放 ×1.3/tier，离线封顶 72h，mojianshi 整数 + 单次装备抽检。
+
+**分支**：`feat/phase3-seclusion`（未 merge，等 Pen 视觉验收后 merge → main，tag v0.3.0-w3）。
+
+### 交付清单
+
+| T | 内容 | 测试 |
+|---|---|---|
+| T47 ✅ | 5 张闭关地图 fixture（mountain/cave/temple/lake/ancient_battlefield 口径，对应山林/古剑冢/藏经阁/悬崖瀑布/断崖绝壁）；numbers.yaml 补 `realm_scale_per_tier` / `cap_hours` / `base_equip_drop_probability`；`SeclusionMapDef` + `RetreatConfig`；`GameRepository.seclusionMaps` + `_enforceSeclusionRedLines`（5 张 / 唯一 type / mojianshi>0 / cap[1,168]） | +17（437/437）|
+| T48 ✅ | `RetreatStatus` enum；`RetreatSession @collection`；`SeclusionService`（canEnterMap / getActiveSession / startRetreat / computeOutputs / completeRetreat / abandonRetreat）；`computeOutputs` 纯函数与 `completeRetreat` 写库分离；`RetreatOutputs` record typedef；IsarSetup 加 schema + saveVersion 0.3.0→0.4.0 | +17（454/454）|
+| T49 ✅ | `SeclusionMapListScreen`（5 张三态 + ActiveBanner）/ `SeclusionSetupScreen`（产出预览 + 时长选择）/ `ActiveRetreatScreen`（进度条 + 收功确认）/ `RetreatResultScreen`（奖励清单）；`MainMenu` 加「闭关修炼」入口；`UiStrings` 补全；widget test ×3 | +3（457/457）|
+| T50 ✅ | 含于 T48/T49：`completeRetreat` 完整实现，磨剑石写入 `InventoryItem`，收功结果页展示实际挂机时长与奖励清单；装备抽检保留 Phase 4 dropTable 扩展点 | — |
+| T51 ✅ | 全量 `flutter test` + `flutter analyze` 双绿 | 457/457，0 issues |
+| T52 🔄 | Pen 视觉验收 ≥ 3 截图 + tag v0.3.0-w3 | 待完成 |
+
+**累计测试**：405（Week 2 T41 后基线）→ 457（Week 3 T51，+52）/ analyze 0 issues。
+
+### 关键设计决策
+
+- **离线结算公式**：`actualHours = min(elapsed, durationHours, 72)`；`mojianshi = floor(perHour × actualHours × 1.3^tierIndex × timeDayBonus)`；子时（23:00/00:xx）加成 ×1.2
+- **widget test 不依赖 Isar**：`testWidgets` FakeAsync 与 Isar 真 I/O 不兼容（tearDown 卡死）；map list 用 `FutureBuilder` 的 `snap.error` 静默处理，map def 渲染走 `GameRepository`；SetupScreen 直接注入 mapDef 测试
+- **saveVersion 升级**：0.3.0 → 0.4.0（RetreatSession schema），Pen 端首次运行需删旧存档
+
+### 待完成（T52）
+
+1. **Pen 视觉验收**：拉 `feat/phase3-seclusion` → `flutter run -d windows` 走完闭关全流程
+   - Pen 端首次运行需删旧存档（`%APPDATA%\wuxia_idle` 或类似路径）
+   - 截图归档至 `docs/screenshots/phase3_w3/`（≥3 张）
+2. **phase3_tasks.md** T52 验收标准打勾
+3. **merge → main + tag v0.3.0-w3**
+
+### 下一 Week 议题
+
+Week 4 候选：C 奇遇（需先决 §12 #6）/ D 师徒传承（需先决 §12 #10/#11）/ E 武学领悟（同 §12 #6）。

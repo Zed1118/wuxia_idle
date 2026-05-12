@@ -18,32 +18,53 @@
 
 ## 关卡（stages）
 
-### 第一章 · 学武出山
+### 第一章 · 学武出山（opening / victory / defeat）
 | ID | 标题 | 文案文件 |
 |---|---|---|
-| stage_01_01_shan_men_zhi_wai | 山门之外 | stage_01_01.yaml |
-| stage_01_02_huang_shan_ye_dian | 荒山野店 | stage_01_02.yaml |
-| stage_01_03_hei_feng_ling | 黑风岭 | stage_01_03.yaml |
-| stage_01_04_luo_yang_cheng_wai | 洛阳城外 | stage_01_04.yaml |
-| stage_01_05_feng_yu_du_kou | 风雨渡口 | stage_01_05.yaml |
+| stage_01_01_opening | 山门之外 · 启 | stage_01_01_opening.yaml |
+| stage_01_01_victory | 山门之外 · 终 | stage_01_01_victory.yaml |
+| stage_01_02_opening | 荒山野店 · 启 | stage_01_02_opening.yaml |
+| stage_01_02_victory | 荒山野店 · 终 | stage_01_02_victory.yaml |
+| stage_01_03_opening | 黑风岭 · 启 | stage_01_03_opening.yaml |
+| stage_01_03_victory | 黑风岭 · 终 | stage_01_03_victory.yaml |
+| stage_01_04_opening | 洛阳城外 · 启 | stage_01_04_opening.yaml |
+| stage_01_04_victory | 洛阳城外 · 终 | stage_01_04_victory.yaml |
+| stage_01_04_defeat | 洛阳城外 · 败 | stage_01_04_defeat.yaml |
+| stage_01_05_opening | 风雨渡口 · 启 | stage_01_05_opening.yaml |
+| stage_01_05_victory | 风雨渡口 · 终 | stage_01_05_victory.yaml |
+| stage_01_05_defeat | 风雨渡口 · 败 | stage_01_05_defeat.yaml |
 
-### 第二章 · 武林初识
+### 第二章 · 武林初识（opening / victory / defeat）
 | ID | 标题 | 文案文件 |
 |---|---|---|
-| stage_02_01_cheng_nan_ke_zhan | 城南客栈 | stage_02_01.yaml |
-| stage_02_02_cha_guan_lun_jian | 茶馆论剑 | stage_02_02.yaml |
-| stage_02_03_chun_shui_tang | 春水堂 | stage_02_03.yaml |
-| stage_02_04_cheng_wai_xiao_chang | 城外校场 | stage_02_04.yaml |
-| stage_02_05_xiang_zhong_ye_yu | 巷中夜雨 | stage_02_05.yaml |
+| stage_02_01_opening | 城南客栈 · 启 | stage_02_01_opening.yaml |
+| stage_02_01_victory | 城南客栈 · 终 | stage_02_01_victory.yaml |
+| stage_02_02_opening | 茶馆论剑 · 启 | stage_02_02_opening.yaml |
+| stage_02_02_victory | 茶馆论剑 · 终 | stage_02_02_victory.yaml |
+| stage_02_03_opening | 春水堂 · 启 | stage_02_03_opening.yaml |
+| stage_02_03_victory | 春水堂 · 终 | stage_02_03_victory.yaml |
+| stage_02_04_opening | 城外校场 · 启 | stage_02_04_opening.yaml |
+| stage_02_04_victory | 城外校场 · 终 | stage_02_04_victory.yaml |
+| stage_02_04_defeat | 城外校场 · 败 | stage_02_04_defeat.yaml |
+| stage_02_05_opening | 巷中夜雨 · 启 | stage_02_05_opening.yaml |
+| stage_02_05_victory | 巷中夜雨 · 终 | stage_02_05_victory.yaml |
+| stage_02_05_defeat | 巷中夜雨 · 败 | stage_02_05_defeat.yaml |
 
-### 第三章 · 名扬江湖
+### 第三章 · 名扬江湖（opening / victory / defeat）
 | ID | 标题 | 文案文件 |
 |---|---|---|
-| stage_03_01_gu_dao_xi_feng | 古道西风 | stage_03_01.yaml |
-| stage_03_02_xu_chang_lei_tai | 许昌擂台 | stage_03_02.yaml |
-| stage_03_03_shan_si_ye_hua | 山寺夜话 | stage_03_03.yaml |
-| stage_03_04_yan_men_jiu_shi | 雁门旧事 | stage_03_04.yaml |
-| stage_03_05_yi_jian_feng_ming | 一剑封名 | stage_03_05.yaml |
+| stage_03_01_opening | 古道西风 · 启 | stage_03_01_opening.yaml |
+| stage_03_01_victory | 古道西风 · 终 | stage_03_01_victory.yaml |
+| stage_03_02_opening | 许昌擂台 · 启 | stage_03_02_opening.yaml |
+| stage_03_02_victory | 许昌擂台 · 终 | stage_03_02_victory.yaml |
+| stage_03_03_opening | 山寺夜话 · 启 | stage_03_03_opening.yaml |
+| stage_03_03_victory | 山寺夜话 · 终 | stage_03_03_victory.yaml |
+| stage_03_04_opening | 雁门旧事 · 启 | stage_03_04_opening.yaml |
+| stage_03_04_victory | 雁门旧事 · 终 | stage_03_04_victory.yaml |
+| stage_03_04_defeat | 雁门旧事 · 败 | stage_03_04_defeat.yaml |
+| stage_03_05_opening | 一剑封名 · 启 | stage_03_05_opening.yaml |
+| stage_03_05_victory | 一剑封名 · 终 | stage_03_05_victory.yaml |
+| stage_03_05_defeat | 一剑封名 · 败 | stage_03_05_defeat.yaml |
 
 ## 装备（equipment）
 
@@ -459,4 +480,5 @@
 
 | 日期 | 版本 | 变更内容 |
 |---|---|---|
-| 2026-05-10 | v1.0 | 初始注册，含全部 143 个内容 ID |
+| 2026-05-10 | v1.0 | 初始注册，含全部 259 个内容 ID |
+| 2026-05-12 | v1.1 | stages 拆分 _opening/_victory/_defeat + paragraphs[] schema 对齐 |

@@ -2,6 +2,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import 'defs/equipment_def.dart';
 import 'defs/realm_def.dart';
+import 'defs/seclusion_map_def.dart';
 import 'defs/skill_def.dart';
 import 'defs/stage_def.dart';
 import 'defs/technique_def.dart';
@@ -42,6 +43,9 @@ class GameRepository {
   /// 索引方式：`towerFloors[floorIndex - 1]`（红线校验保证 1-30 连续唯一）。
   final List<TowerFloorDef> towerFloors;
 
+  /// 闭关地图 5 张（numbers.yaml `retreat.maps`，Phase 3 T47）。
+  final List<SeclusionMapDef> seclusionMaps;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -50,6 +54,7 @@ class GameRepository {
     required this.skillDefs,
     required this.stageDefs,
     required this.towerFloors,
+    required this.seclusionMaps,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -103,6 +108,7 @@ class GameRepository {
       skillDefs: skillDefs,
       stageDefs: stageDefs,
       towerFloors: towerFloors,
+      seclusionMaps: numbers.retreat.maps,
     );
     repo._enforceRedLines();
     _instance = repo;
@@ -204,6 +210,9 @@ class GameRepository {
     //   - 普通层 narrativeOpeningId / narrativeVictoryId 必须为 null
     //   - Boss HP ≤ 50000（§5.4 红线）
     _enforceTowerRedLines();
+
+    // Phase 3 T47：闭关地图 5 张校验
+    _enforceSeclusionRedLines();
   }
 
   void _enforceTowerRedLines() {
@@ -271,6 +280,32 @@ class GameRepository {
     }
   }
 
+  void _enforceSeclusionRedLines() {
+    if (seclusionMaps.length != 5) {
+      throw StateError('闭关地图应为 5 张，实际 ${seclusionMaps.length}');
+    }
+    final seen = <RetreatMapType>{};
+    for (final m in seclusionMaps) {
+      if (!seen.add(m.mapType)) {
+        throw StateError('闭关地图类型重复：${m.mapType.name}');
+      }
+      if (!RetreatMapType.values.contains(m.mapType)) {
+        throw StateError('未知闭关地图类型：${m.mapType.name}');
+      }
+      if (m.mojianshiPerHour <= 0) {
+        throw StateError(
+          '闭关地图 ${m.mapType.name} mojianshiPerHour 必须 > 0',
+        );
+      }
+    }
+    final config = numbers.retreat;
+    if (config.capHours < 1 || config.capHours > 168) {
+      throw StateError(
+        '闭关 capHours=${config.capHours}，应 ∈ [1, 168]',
+      );
+    }
+  }
+
   /// 测试用：清空全局实例。生产代码不要调用。
   static void resetForTest() {
     _instance = null;
@@ -318,4 +353,12 @@ class GameRepository {
     }
     return towerFloors[floorIndex - 1];
   }
+
+  /// 按地图类型取闭关地图定义。未配置时抛 [StateError]。
+  SeclusionMapDef getSeclusionMap(RetreatMapType mapType) =>
+      seclusionMaps.firstWhere(
+        (m) => m.mapType == mapType,
+        orElse: () =>
+            throw StateError('SeclusionMapDef 未配置: ${mapType.name}'),
+      );
 }

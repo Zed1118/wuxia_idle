@@ -315,6 +315,228 @@ void main() {
       expect(stars, 5);
     });
   });
+
+  group('边界 case 增量覆盖 - I2', () {
+    test('境界差 0：同境界 realm=1.0', () {
+      final r = _calcBoundary();
+      // 期望值 = (1000*0.4 + 100 + 500) * 1.0 * 1.0 * 1.0 * 0.95 * 1.0 = 950
+      expect(r.finalDamage, 950);
+      expect(r.realmDiffAttackerMod, 1.0);
+      expect(r.realmDiffDefenderMod, 1.0);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('境界差 1：高打低使用 attackerMod=1.4', () {
+      final r = _calcBoundary(attackerTier: RealmTier.sanLiu);
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.0 * 0.95 * 1.4 = 1330
+      expect(r.finalDamage, 1330);
+      expect(r.realmDiffAttackerMod, 1.4);
+      expect(r.formulaBreakdown, contains('* 1.4'));
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('境界差 1：低打高使用 defenderMod=0.7', () {
+      final r = _calcBoundary(defenderTier: RealmTier.sanLiu);
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.0 * 0.90 * 0.7 = 630
+      expect(r.finalDamage, 630);
+      expect(r.realmDiffDefenderMod, 0.7);
+      expect(r.formulaBreakdown, contains('* 0.7'));
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('境界差 2：高打低使用 attackerMod=2.5', () {
+      final r = _calcBoundary(attackerTier: RealmTier.erLiu);
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.0 * 0.95 * 2.5 = 2375
+      expect(r.finalDamage, 2375);
+      expect(r.realmDiffAttackerMod, 2.5);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('境界差 2：低打高使用 defenderMod=0.3', () {
+      final r = _calcBoundary(defenderTier: RealmTier.erLiu);
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.0 * 0.85 * 0.3 = 255
+      expect(r.finalDamage, 255);
+      expect(r.realmDiffDefenderMod, 0.3);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('境界差 3+：低打高使用 defenderMod=0.05 近免疫', () {
+      final r = _calcBoundary(defenderTier: RealmTier.yiLiu);
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.0 * 0.80 * 0.05 = 40
+      expect(r.finalDamage, 40);
+      expect(r.realmDiffDefenderMod, 0.05);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('境界差 3+：高打低 attackerMod 按公式语义保持 1.0', () {
+      final r = _calcBoundary(attackerTier: RealmTier.yiLiu);
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.0 * 0.95 * 1.0 = 950
+      expect(r.finalDamage, 950);
+      expect(r.realmDiffAttackerMod, 1.0);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('暴击 1.0：未暴击保持原伤害', () {
+      final r = _calcBoundary();
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.0 * 0.95 * 1.0 = 950
+      expect(r.isCritical, false);
+      expect(r.criticalMultiplier, 1.0);
+      expect(r.finalDamage, 950);
+    });
+
+    test('暴击 1.5：非灵巧 forceCritical', () {
+      final r = _calcBoundary(forceCritical: true);
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.5 * 0.95 * 1.0 = 1425
+      expect(r.isCritical, true);
+      expect(r.criticalMultiplier, 1.5);
+      expect(r.finalDamage, 1425);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('暴击 2.0：灵巧 forceCritical', () {
+      final r = _calcBoundary(
+        attackerSchool: TechniqueSchool.lingQiao,
+        defenderSchool: TechniqueSchool.lingQiao,
+        forceCritical: true,
+      );
+      // 期望值 = 1000 * 1.0 * 1.0 * 2.0 * 0.95 * 1.0 = 1900
+      expect(r.isCritical, true);
+      expect(r.criticalMultiplier, 2.0);
+      expect(r.finalDamage, 1900);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('暴击配置上限：numbers 保留 2.5，但当前公式实际输出不超过 2.0', () {
+      final r = _calcBoundary(
+        attackerSchool: TechniqueSchool.lingQiao,
+        defenderSchool: TechniqueSchool.lingQiao,
+        forceCritical: true,
+      );
+      // 期望值 = 当前实现读取 lingqiaoDamageMultiplier=2.0；maxDamageMultiplier=2.5 尚未进入公式。
+      expect(
+        GameRepository.instance.numbers.combat.critical.maxDamageMultiplier,
+        2.5,
+      );
+      expect(r.criticalMultiplier, lessThanOrEqualTo(2.0));
+      expect(r.finalDamage, 1900);
+    });
+
+    test('流派克制：刚猛 vs 阴柔 = 1.25', () {
+      final r = _calcBoundary(defenderSchool: TechniqueSchool.yinRou);
+      // 期望值 = 1000 * 1.0 * 1.25 * 1.0 * 0.95 * 1.0 = 1187.5 → 1187
+      expect(r.schoolCounterMultiplier, 1.25);
+      expect(r.finalDamage, 1187);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('流派克制：灵巧 vs 刚猛 = 1.25', () {
+      final r = _calcBoundary(attackerSchool: TechniqueSchool.lingQiao);
+      // 期望值 = 1000 * 1.0 * 1.25 * 1.0 * 0.95 * 1.0 = 1187.5 → 1187
+      expect(r.schoolCounterMultiplier, 1.25);
+      expect(r.finalDamage, 1187);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('流派克制：阴柔 vs 灵巧 = 1.25', () {
+      final r = _calcBoundary(
+        attackerSchool: TechniqueSchool.yinRou,
+        defenderSchool: TechniqueSchool.lingQiao,
+      );
+      // 期望值 = 1000 * 1.0 * 1.25 * 1.0 * 0.95 * 1.0 = 1187.5 → 1187
+      expect(r.schoolCounterMultiplier, 1.25);
+      expect(r.finalDamage, 1187);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('流派中性：同流派 = 1.0', () {
+      final r = _calcBoundary();
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.0 * 0.95 * 1.0 = 950
+      expect(r.schoolCounterMultiplier, 1.0);
+      expect(r.finalDamage, 950);
+    });
+
+    test('流派反向被克：刚猛 vs 灵巧 = 0.75', () {
+      final r = _calcBoundary(defenderSchool: TechniqueSchool.lingQiao);
+      // 期望值 = 1000 * 1.0 * 0.75 * 1.0 * 0.95 * 1.0 = 712.5 → 712
+      expect(r.schoolCounterMultiplier, 0.75);
+      expect(r.finalDamage, 712);
+    });
+
+    test('修炼度 1.0：初窥无加成', () {
+      final r = _calcBoundary(cultivationLayer: CultivationLayer.chuKui);
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.0 * 0.95 * 1.0 = 950
+      expect(r.cultivationMultiplier, 1.0);
+      expect(r.finalDamage, 950);
+    });
+
+    test('修炼度 2.0：巅峰中段加成', () {
+      final r = _calcBoundary(cultivationLayer: CultivationLayer.dianFeng);
+      // 期望值 = 1000 * 2.0 * 1.0 * 1.0 * 0.95 * 1.0 = 1900
+      expect(r.cultivationMultiplier, 2.0);
+      expect(r.finalDamage, 1900);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('修炼度 3.0：极境满加成', () {
+      final r = _calcBoundary(cultivationLayer: CultivationLayer.jiJing);
+      // 期望值 = 1000 * 3.0 * 1.0 * 1.0 * 0.95 * 1.0 = 2850
+      expect(r.cultivationMultiplier, 3.0);
+      expect(r.finalDamage, 2850);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('红线触线：普攻构造 7900-7999 区间且小于 8000', () {
+      final r = _calcBoundary(
+        internalForce: 14775,
+        equipmentAttack: 2000,
+        skillPower: 500,
+      );
+      // 期望值 = (14775*0.4 + 2000 + 500) * 1.0 * 1.0 * 1.0 * 0.95 * 1.0 = 7989.5 → 7989
+      expect(r.finalDamage, 7989);
+      expect(r.finalDamage, inInclusiveRange(7900, 7999));
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('红线触线：装备攻击 = 2000 上限可接受', () {
+      final r = _calcBoundary(equipmentAttack: 2000);
+      // 期望值 = (1000*0.4 + 2000 + 500) * 1.0 * 1.0 * 1.0 * 0.95 * 1.0 = 2755
+      expect(r.formulaBreakdown, contains('+ 2000'));
+      expect(r.finalDamage, 2755);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('红线触线：内力 = 15000 上限可接受', () {
+      final r = _calcBoundary(internalForce: 15000, equipmentAttack: 0);
+      // 期望值 = (15000*0.4 + 0 + 500) * 1.0 * 1.0 * 1.0 * 0.95 * 1.0 = 6175
+      expect(r.formulaBreakdown, contains('(15000*0.4 + 0 + 500)'));
+      expect(r.finalDamage, 6175);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('边界：内力 = 0 且装备攻击 = 0 只剩招式倍率', () {
+      final r = _calcBoundary(internalForce: 0, equipmentAttack: 0);
+      // 期望值 = (0*0.4 + 0 + 500) * 1.0 * 1.0 * 1.0 * 0.95 * 1.0 = 475
+      expect(r.finalDamage, 475);
+      expect(r.finalDamage, lessThan(8000));
+    });
+
+    test('防御率低档：学徒 0.05 → 防御乘区 0.95', () {
+      final r = _calcBoundary(defenderTier: RealmTier.xueTu);
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.0 * (1-0.05) * 1.0 = 950
+      expect(r.defenseRate, 0.05);
+      expect(r.finalDamage, 950);
+    });
+
+    test('防御率高档：武圣 0.35 → 防御乘区 0.65', () {
+      final r = _calcBoundary(
+        attackerTier: RealmTier.wuSheng,
+        defenderTier: RealmTier.wuSheng,
+      );
+      // 期望值 = 1000 * 1.0 * 1.0 * 1.0 * (1-0.35) * 1.0 = 650
+      expect(r.defenseRate, 0.35);
+      expect(r.finalDamage, 650);
+    });
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -534,6 +756,54 @@ AttackResult _calcWithSchools({
   return DamageCalculator.calculate(ctx, GameRepository.instance.numbers);
 }
 
+AttackResult _calcBoundary({
+  RealmTier attackerTier = RealmTier.xueTu,
+  RealmLayer attackerLayer = RealmLayer.qiMeng,
+  RealmTier defenderTier = RealmTier.xueTu,
+  RealmLayer defenderLayer = RealmLayer.qiMeng,
+  int internalForce = 1000,
+  int equipmentAttack = 100,
+  int skillPower = 500,
+  TechniqueSchool attackerSchool = TechniqueSchool.gangMeng,
+  TechniqueSchool defenderSchool = TechniqueSchool.gangMeng,
+  CultivationLayer cultivationLayer = CultivationLayer.chuKui,
+  bool forceCritical = false,
+}) {
+  final attacker = _mkChar(
+    tier: attackerTier,
+    layer: attackerLayer,
+    internalForce: internalForce,
+    agility: 0,
+    school: attackerSchool,
+  );
+  final defender = _mkChar(
+    tier: defenderTier,
+    layer: defenderLayer,
+    internalForce: 1000,
+    agility: 0,
+    school: defenderSchool,
+  );
+  final ctx = AttackContext(
+    attacker: attacker,
+    attackerEquipped: [_mkEquip(baseAttack: equipmentAttack)],
+    attackerMainTech: _mkTech(
+      tier: TechniqueTier.ruMenGong,
+      school: attackerSchool,
+      layer: cultivationLayer,
+    ),
+    skill: _mkSkill(power: skillPower, type: SkillType.normalAttack),
+    defender: defender,
+    defenderEquipped: const [],
+    defenderMainTech: _mkTech(
+      tier: TechniqueTier.ruMenGong,
+      school: defenderSchool,
+    ),
+    forceCritical: forceCritical,
+    rng: Random(99),
+  );
+  return DamageCalculator.calculate(ctx, GameRepository.instance.numbers);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 工具
 // ─────────────────────────────────────────────────────────────────────────────
@@ -541,8 +811,12 @@ AttackResult _calcWithSchools({
 void _expectWithin5Percent(int actual, int expected) {
   final diff = (actual - expected).abs();
   final ratio = diff / expected;
-  expect(ratio, lessThanOrEqualTo(0.05),
-      reason: 'actual=$actual / expected=$expected / 偏差 ${(ratio * 100).toStringAsFixed(2)}%');
+  expect(
+    ratio,
+    lessThanOrEqualTo(0.05),
+    reason:
+        'actual=$actual / expected=$expected / 偏差 ${(ratio * 100).toStringAsFixed(2)}%',
+  );
 }
 
 Character _mkChar({
@@ -573,7 +847,11 @@ Character _mkChar({
   );
 }
 
-Equipment _mkEquip({int baseAttack = 0, int baseHealth = 0, int baseSpeed = 0}) {
+Equipment _mkEquip({
+  int baseAttack = 0,
+  int baseHealth = 0,
+  int baseSpeed = 0,
+}) {
   return Equipment.create(
     defId: 'test',
     tier: EquipmentTier.xunChang,
