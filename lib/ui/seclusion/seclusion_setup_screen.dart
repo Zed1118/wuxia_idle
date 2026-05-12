@@ -60,8 +60,12 @@ class _SeclusionSetupScreenState extends State<SeclusionSetupScreen> {
       );
 
       if (!mounted) return;
-      final nav = Navigator.of(context);
-      await nav.pushReplacement<void, void>(
+      // setup 用 pushReplacement → active 接管路由槽位。后续 active →
+      // pushReplacement(result) → result.pop(true) 经 pushReplacement 链
+      // 把 true 传回 list 的 push<bool>(setup) future（Flutter Navigator
+      // 旧路由 popped 被 chain 到替换路由的 popped）。setup 不能在此处再
+      // pop——会误弹 result 让用户看不到结算页。
+      await Navigator.of(context).pushReplacement<bool, bool>(
         MaterialPageRoute(
           builder: (_) => ActiveRetreatScreen(
             session: session,
@@ -71,8 +75,6 @@ class _SeclusionSetupScreenState extends State<SeclusionSetupScreen> {
           ),
         ),
       );
-      // 返回 true 给 list screen 触发刷新
-      nav.pop(true);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

@@ -97,7 +97,9 @@ class _ActiveRetreatScreenState extends State<ActiveRetreatScreen> {
       );
 
       if (!mounted) return;
-      await Navigator.of(context).pushReplacement<void, void>(
+      // 同 setup：active 用 pushReplacement → result 接管路由槽位。result
+      // 关闭时 pop(true) 经 pushReplacement 链回到 list 的 push<bool>(setup)。
+      await Navigator.of(context).pushReplacement<bool, bool>(
         MaterialPageRoute(
           builder: (_) => RetreatResultScreen(
             mapDef: widget.mapDef,
