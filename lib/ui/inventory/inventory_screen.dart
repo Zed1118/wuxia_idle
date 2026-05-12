@@ -12,6 +12,7 @@ import '../../providers/inventory_providers.dart';
 import '../enhancement/enhance_dialog.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
+import '../theme/tier_colors.dart';
 
 /// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账）。
 ///
@@ -96,7 +97,7 @@ class _TierGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _tierColor(tier);
+    final color = tierColorForEquipment(tier);
     return Card(
       color: WuxiaColors.panel,
       shape: RoundedRectangleBorder(
@@ -142,7 +143,7 @@ class _Row extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final eq = equipment;
-    final color = _tierColor(eq.tier);
+    final color = tierColorForEquipment(eq.tier);
     final resonance = eq.resonanceStage(numbers);
     EquipmentDef? def;
     try {
@@ -214,18 +215,4 @@ class _Row extends ConsumerWidget {
       ),
     );
   }
-}
-
-/// 装备阶颜色（与 [character_panel_screen] / [enhance_dialog] 同源）。
-/// Phase 5 抽工具类合并三处映射。
-Color _tierColor(EquipmentTier t) {
-  return switch (t) {
-    EquipmentTier.xunChang => WuxiaColors.textMuted,
-    EquipmentTier.xiangYang => WuxiaColors.textSecondary,
-    EquipmentTier.haoJiaHuo => WuxiaColors.internalForce,
-    EquipmentTier.liQi => WuxiaColors.lingQiao,
-    EquipmentTier.zhongQi => WuxiaColors.gangMeng,
-    EquipmentTier.baoWu => WuxiaColors.yinRou,
-    EquipmentTier.shenWu => WuxiaColors.resultHighlight,
-  };
 }
