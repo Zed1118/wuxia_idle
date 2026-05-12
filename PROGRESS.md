@@ -5,11 +5,11 @@
 
 ## 当前阶段
 
-**Phase 3 Week 3 T47-T51 已完成**（feat/phase3-seclusion，tag 待 v0.3.0-w3）。闭关 5 张地图数据 / RetreatSession / SeclusionService / 4 UI 屏 / main_menu 入口均已落地；457/457 测试，analyze 0 issues。
+**Phase 3 Week 3 已交付**（tag `v0.3.0-w3`，merge d37d09d，2026-05-12）。闭关 5 张地图 + RetreatSession + SeclusionService + 4 UI 屏 + main_menu 入口；T52 Pen Windows 视觉验收通过（result 完整+返回 list 刷新 OK；多路写入 InventoryItem 不分裂 OK）。457/457 测试，analyze 0 issues。
 
-**2026-05-12 外部审查清账**：P1 #2 磨剑石 defId 三分裂 → 统一为 'item_mojianshi' + Seclusion/Phase2 走 getByDefId merge + 防分裂回归 test；P2 #3 闭关导航二次 pop → 删 setup 末 pop / result 改 pop(true) / 全链 pushReplacement chain。P1 #1 narrative schema 对齐方案 B：DeepSeek 端已交付 36 文件拆分 + IDS_REGISTRY 同步（commit 32ae3f3），**Mac 端接手未开工** — handoff 在 `docs/handoff/p1_1_mac_handoff_2026-05-12.md`，新会话开局直接读这份。P2 #4 主菜单硬编码 留挂账 #26。
-
-**当前阻塞**：T52 Pen 视觉验收待用户明天 Windows 物理机跑（重点验：① 闭关收功后 result 显示完整、按返回正确回到 list 且刷新 ② 同 ItemType 在 Phase2 种子+闭关+爬塔多路写入后 InventoryItem 不分裂），通过后 merge feat/phase3-seclusion → main → tag v0.3.0-w3。
+**下一步双选**（待用户决策）：
+- **A. P1 #1 narrative schema Mac 端接手**（唯一已有 handoff 的事项）：DeepSeek 端 32ae3f3 已交付 36 文件拆分 + IDS_REGISTRY 同步，Mac 端 NarrativeLoader 子目录扫描 + stages.yaml 6 关 id 迁移 + 防回归 test 待开工。详情见 `docs/handoff/p1_1_mac_handoff_2026-05-12.md`。**当前 main 主线剧情显示「[剧情待补]」兜底**，越早接越早消 regression。
+- **B. Phase 3 Week 4 起手**（C 奇遇 / D 师徒 / E 武学领悟）：需先决 §12 待人类决策项，详草案见 `phase3_tasks.md` 末尾。
 
 ## 已完成
 
@@ -20,11 +20,11 @@
 - **Phase 3 Week 1 T33-T39 主线最小闭环**（2026-05-11，tag v0.3.0-w1，feat/phase3-mainline → main）：stages.yaml schema 升级（prevStageId / narrativeOpeningId / narrativeVictoryId）+ 6 关 backfill 3 章 × 2 关 / MainlineProgress @collection + MainlineProgressService 4 API / 章节列表 + 关卡列表 UI + 主线按钮接 main_menu / NarrativeLoader 缺文件兜底「[剧情待补]」 + 阅读 UI / StageBattleSetup + runStageFlow 串联 opening → battle → victory/defeat / docs/NARRATIVE_SCHEMA.md / 8 Pen 截图归档。累计 377/377（+42）。详条 `phase3_summary.md` §Week 1 + git log T33-T39。**销 #22**
 - **T40 towers.yaml schema + TowerFloorDef + 30 层 fixture**（2026-05-11，feat/phase3-tower，commit `511264e`）：`enum TowerBossKind { minor, major }` + `TowerFloorStatus` 加 enums.dart；`lib/data/defs/tower_floor_def.dart` 新建（floorIndex/requiredRealm/enemyTeam/bossKind/narrativeOpening|VictoryId/dropTable + fromYaml + isBoss）；`data/towers.yaml` 30 层 fixture（每 5 层升一阶学徒→宗师，普通层单兵 HP 800→10000 / ATK 200→1500 线性，Boss × 1.5，1/2/3 人队 ×1.0/0.7/0.55 scale）；GameRepository 加 towerFloors + `_enforceTowerRedLines`（30 层连续 / Boss 严格 5·10·15·20·25·30 / 普通层 narrative 必 null / 敌人数 [1,3] / Boss 1 人 / baseHp ≤ 50000）+ `getTowerFloor` 便捷查询；test 加 13 用例（fromYaml 3 + 集成 6 + fail-fast 4），累计 390/390
 - **T41 TowerProgress @collection + TowerProgressService**（2026-05-11，feat/phase3-tower）：`@collection TowerProgress`（saveDataId/highestClearedFloor/highestClearedAt/totalAttempts/totalDefeats/createdAt）；service 6 API（getOrCreate 幂等 / availableFloor 封顶 30 / canChallenge 边界 / floorList 30 行三态 / **recordClear 返回 `({isFirstClear, highestAfter})`**：仅 floorIndex==highest+1 才 ++ 否则 isFirstClear=false 不抛 / recordDefeat 仅增统计不退层）；IsarSetup 加 TowerProgressSchema + saveVersion 0.2.0→0.3.0；isar_setup_test 同步改期望值；test 加 15 用例（接真 Isar 临时目录，覆盖跳层非法/与 MainlineProgress 独立校验），累计 405/405
-- **Phase 3 Week 3 T47-T51 闭关地图**（2026-05-11，feat/phase3-seclusion，tag 待 T52 后 `v0.3.0-w3`，commit `ff7230a`/`5135c7b`/`0286529`/`033e07e`）：5 张闭关地图 fixture（mountain/cave/temple/lake/ancient_battlefield）+ `SeclusionMapDef` + `RetreatConfig` / `RetreatSession @collection` + `SeclusionService`（start/compute/complete/abandon）/ 地图列表、选时长、进行中、收功结果 4 UI 屏 + main_menu「闭关修炼」入口 / saveVersion 0.3.0→0.4.0。405→457（+52）测试，analyze 0 issues；T52 Pen 视觉验收待跑。
+- **Phase 3 Week 3 T47-T52 闭关地图 v0.3.0-w3 交付**（2026-05-11/12，tag `v0.3.0-w3`，merge d37d09d）：5 张闭关地图 fixture（mountain/cave/temple/lake/ancient_battlefield）+ `SeclusionMapDef` + `RetreatConfig` / `RetreatSession @collection` + `SeclusionService`（start/compute/complete/abandon）/ 地图列表、选时长、进行中、收功结果 4 UI 屏 + main_menu「闭关修炼」入口 / saveVersion 0.3.0→0.4.0。405→457（+52）测试，analyze 0 issues。**T52 Pen Windows 视觉验收通过**（2026-05-12）：① 收功后 result 显示完整 + 返回 list 刷新 OK ② 同 ItemType 经 Phase2/闭关/爬塔多路写入后 InventoryItem 不分裂 OK。同 merge 一并带入 DeepSeek 端 narrative schema 拆分（32ae3f3），Mac 端 NarrativeLoader 适配挂账 #27 待开工。
 
 ## 进行中
 
-**Phase 3 Week 3 收尾**：T52 Pen 视觉验收（待用户明天 Windows 物理机跑 → merge feat/phase3-seclusion → main → tag v0.3.0-w3）。
+（无）Week 3 已收尾，等待用户决策下一步方向（见「当前阶段」段 A/B 双选）。
 
 ## 已知偏差 / 挂账事项
 
@@ -45,7 +45,7 @@
 27. **narrative schema 接口未对齐（P1 #1）**：DeepSeek 端 2026-05-12 已完成 36 文件拆分 + paragraphs[] schema 对齐（commit 32ae3f3）。Mac 端待接手：NarrativeLoader 加子目录扫描 + stages.yaml 6 关 id 迁移到 stage_NN_NN 体系 + 防回归 test。完整 handoff 见 `docs/handoff/p1_1_mac_handoff_2026-05-12.md`。defeat hook + 9 关扩容**不在本次 scope**，留 Phase 4 W1
 28. **闭关 widget 端到端 test 缺失（P2 #3 后续）**：P2 #3 修复了 setup→active→result 导航链，但 SeclusionService 是 static 方法无法 mock，widget test 接真 Isar 阻塞（#23 同源），暂只能靠 Pen 视觉验收兜底。Phase 5 service 注入后补「开始闭关 → 收功 → 返回 list 刷新」端到端 widget test
 
-> 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#21/#22/#24）见文末归档。
+> 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#21/#22/#24，T52 Pen 视觉验收 2026-05-12）见文末归档。
 
 ## 下一步
 
