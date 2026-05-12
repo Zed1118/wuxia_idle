@@ -7,7 +7,7 @@
 
 **Phase 3 Week 3 T47-T51 已完成**（feat/phase3-seclusion，tag 待 v0.3.0-w3）。闭关 5 张地图数据 / RetreatSession / SeclusionService / 4 UI 屏 / main_menu 入口均已落地；457/457 测试，analyze 0 issues。
 
-**2026-05-12 外部审查清账**：P1 #2 磨剑石 defId 三分裂（'mojianshi' / 'moJianShi' / 'item_mojianshi'）→ 统一为 'item_mojianshi' + Seclusion/Phase2 走 getByDefId merge + 新增防分裂回归 test；P2 #3 闭关导航二次 pop（setup 多余 nav.pop + result popUntil isFirst 误弹 list）→ 删 setup 末 pop / result 改 pop(true) / setup→active→result 全链 pushReplacement chain 把 true 透传回 list。P1 #1 narrative schema 接口 + P2 #4 主菜单硬编码 character 留挂账。
+**2026-05-12 外部审查清账**：P1 #2 磨剑石 defId 三分裂 → 统一为 'item_mojianshi' + Seclusion/Phase2 走 getByDefId merge + 防分裂回归 test；P2 #3 闭关导航二次 pop → 删 setup 末 pop / result 改 pop(true) / 全链 pushReplacement chain。P1 #1 narrative schema 对齐方案 B：DeepSeek 端已交付 36 文件拆分 + IDS_REGISTRY 同步（commit 32ae3f3），**Mac 端接手未开工** — handoff 在 `docs/handoff/p1_1_mac_handoff_2026-05-12.md`，新会话开局直接读这份。P2 #4 主菜单硬编码 留挂账 #26。
 
 **当前阻塞**：T52 Pen 视觉验收待用户明天 Windows 物理机跑（重点验：① 闭关收功后 result 显示完整、按返回正确回到 list 且刷新 ② 同 ItemType 在 Phase2 种子+闭关+爬塔多路写入后 InventoryItem 不分裂），通过后 merge feat/phase3-seclusion → main → tag v0.3.0-w3。
 
@@ -42,7 +42,7 @@
 23. **widget test 不接真 Isar**：testWidgets FakeAsync 与 `Isar.findFirst` / writeTxn 异步 IO 不兼容；当前 widget 端在 `_persist` 加 `Isar.getInstance` guard 测试旁路，真落地走 service-level test。Phase 5 Riverpod 3.x + IsarProvider 注入时再统一
 25. **Phase2SeedService.seedP1 缺主修，主线进入需先跑 P3**：T37 验收时发现 P1 fixture（沿用 Phase 2 spec：仅装备+材料）无主修心法，导致 P1 → 主线进战斗 StageBattleSetup fail-fast。临时 workaround：用户/Pen 在主菜单点「Phase 2 调试场景 → P3 散功代价」种子后再回主线即可。Phase 4 重写 fixture 时让 Demo 默认入口直通主线战斗
 26. **闭关入口硬编码 characterId=1 / RealmTier.xueTu**：`main_menu.dart:77-78` 写死，与存档当前角色境界脱节（玩家若已进阶到二流/圆熟，闭关地图解锁判定与 realmScale 倍率仍按学徒算）。与挂账 #25 同源（Demo 缺单一 character 视角注入），Phase 4 fixture 改造时一并处理
-27. **narrative schema 接口未对齐（P1 #1）**：`NarrativeLoader` 期望扁平 `data/narratives/<id>.yaml` + `{id,title,paragraphs[]}`；DeepSeek 已写在子目录 `data/narratives/stages/stage_NN_NN.yaml`，schema 用 `{id,title,opening,post_victory}` 单文件双段；stages.yaml 又另套 id 体系 `mainline_test_NN_opening/_victory`（且 stages.yaml 仅 6 关，DeepSeek 出了 15 关）。**已与用户拍板方案 B**：改 stages.yaml + 通知 DeepSeek 拆文件统一 paragraphs[] schema。需协调 Pen 端 + 起 NARRATIVE_SCHEMA v2 + 重排 stages.yaml id/扩容到 15 关，Week 4 起手前完成
+27. **narrative schema 接口未对齐（P1 #1）**：DeepSeek 端 2026-05-12 已完成 36 文件拆分 + paragraphs[] schema 对齐（commit 32ae3f3）。Mac 端待接手：NarrativeLoader 加子目录扫描 + stages.yaml 6 关 id 迁移到 stage_NN_NN 体系 + 防回归 test。完整 handoff 见 `docs/handoff/p1_1_mac_handoff_2026-05-12.md`。defeat hook + 9 关扩容**不在本次 scope**，留 Phase 4 W1
 28. **闭关 widget 端到端 test 缺失（P2 #3 后续）**：P2 #3 修复了 setup→active→result 导航链，但 SeclusionService 是 static 方法无法 mock，widget test 接真 Isar 阻塞（#23 同源），暂只能靠 Pen 视觉验收兜底。Phase 5 service 注入后补「开始闭关 → 收功 → 返回 list 刷新」端到端 widget test
 
 > 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#21/#22/#24）见文末归档。
