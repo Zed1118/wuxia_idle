@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +11,7 @@ import '../../data/defs/skill_def.dart';
 import '../../data/models/enums.dart';
 import '../../data/numbers_config.dart';
 import '../../providers/battle_providers.dart';
+import '../effects/screen_shake.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
 import 'attack_animation.dart';
@@ -124,13 +124,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     final interval = _isFastForward
         ? widget.animConfig.fastForwardIntervalMs
         : widget.animConfig.actionIntervalMs;
-    _playTimer = Timer.periodic(
-      Duration(milliseconds: interval),
-      (_) {
-        if (!mounted) return;
-        ref.read(battleNotifierProvider.notifier).advance();
-      },
-    );
+    _playTimer = Timer.periodic(Duration(milliseconds: interval), (_) {
+      if (!mounted) return;
+      ref.read(battleNotifierProvider.notifier).advance();
+    });
   }
 
   void _toggleFastForward() {
@@ -340,11 +337,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         child: AnimatedBuilder(
           animation: _shakeCtrl,
           builder: (ctx, child) {
-            final v = _shakeCtrl.value;
-            final shakeAmt =
-                math.sin(v * 2 * math.pi) * widget.animConfig.shakeOffsetPx;
             return Transform.translate(
-              offset: Offset(shakeAmt, shakeAmt * 0.5),
+              offset: screenShakeOffset(
+                t: _shakeCtrl.value,
+                amplitude: widget.animConfig.shakeOffsetPx,
+              ),
               child: child,
             );
           },
@@ -398,10 +395,7 @@ class _HintBanner extends StatelessWidget {
       color: const Color(0xFF2A3A2A),
       child: Text(
         hint,
-        style: const TextStyle(
-          color: Color(0xFF8BC28B),
-          fontSize: 13,
-        ),
+        style: const TextStyle(color: Color(0xFF8BC28B), fontSize: 13),
       ),
     );
   }
@@ -725,17 +719,15 @@ class _BottomBar extends StatelessWidget {
           for (var i = 0; i < 3; i++) ...[
             _UltimateButton(
               character: i < state.leftTeam.length ? state.leftTeam[i] : null,
-              disabledByPress: i < state.leftTeam.length &&
+              disabledByPress:
+                  i < state.leftTeam.length &&
                   disabledUltimateChars.contains(state.leftTeam[i].characterId),
               onPressed: () => onUltimate(i),
             ),
             if (i < 2) const SizedBox(width: 8),
           ],
           const Spacer(),
-          _FastForwardButton(
-            onPressed: onFastForward,
-            isActive: isFastForward,
-          ),
+          _FastForwardButton(onPressed: onFastForward, isActive: isFastForward),
         ],
       ),
     );
@@ -756,10 +748,9 @@ class _UltimateButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = character;
-    final ultimate = c == null
-        ? null
-        : _BattleScreenState._findUltimateOf(c);
-    final ready = c != null &&
+    final ultimate = c == null ? null : _BattleScreenState._findUltimateOf(c);
+    final ready =
+        c != null &&
         _BattleScreenState._isUltimateReady(c, ultimate) &&
         !disabledByPress;
 
@@ -778,9 +769,7 @@ class _UltimateButton extends StatelessWidget {
           foregroundColor: WuxiaColors.textPrimary,
           disabledForegroundColor: WuxiaColors.textMuted,
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -825,9 +814,7 @@ class _FastForwardButton extends StatelessWidget {
                 ? WuxiaColors.resultHighlight
                 : WuxiaColors.textSecondary,
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
         child: const Text(
           UiStrings.fastForward,
