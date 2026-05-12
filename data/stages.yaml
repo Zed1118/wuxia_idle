@@ -23,13 +23,14 @@
 stages:
 
   # === 测试关 1 · 学徒 / 启蒙（3 弱敌）===
-  - id: mainline_test_01
+  # P1 #1 2026-05-12 stage_id 迁移：mainline_test_01 → stage_01_01（对齐 DeepSeek narrative）
+  - id: stage_01_01
     name: 山道试剑
     stageType: mainline
     chapterIndex: 1
     # Ch1 首关，无 prevStageId
-    narrativeOpeningId: mainline_test_01_opening
-    narrativeVictoryId: mainline_test_01_victory
+    narrativeOpeningId: stage_01_01_opening
+    narrativeVictoryId: stage_01_01_victory
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_xueTu_thug_a
@@ -69,13 +70,13 @@ stages:
     difficultyMultiplier: 1.0
 
   # === 测试关 2 · 学徒 / 圆熟（强一些的山贼）===
-  - id: mainline_test_02
+  - id: stage_01_02
     name: 林间伏击
     stageType: mainline
     chapterIndex: 1
-    prevStageId: mainline_test_01
-    narrativeOpeningId: mainline_test_02_opening
-    narrativeVictoryId: mainline_test_02_victory
+    prevStageId: stage_01_01
+    narrativeOpeningId: stage_01_02_opening
+    narrativeVictoryId: stage_01_02_victory
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_xueTu_bandit_a
@@ -122,13 +123,13 @@ stages:
     difficultyMultiplier: 1.2
 
   # === 测试关 3 · 三流 / 启蒙 ===
-  - id: mainline_test_03
+  - id: stage_02_01
     name: 镖局护送
     stageType: mainline
     chapterIndex: 2
     # Ch2 首关，无 prevStageId
-    narrativeOpeningId: mainline_test_03_opening
-    narrativeVictoryId: mainline_test_03_victory
+    narrativeOpeningId: stage_02_01_opening
+    narrativeVictoryId: stage_02_01_victory
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_sanLiu_thief_a
@@ -170,13 +171,13 @@ stages:
     difficultyMultiplier: 1.5
 
   # === 测试关 4 · 三流 / 圆熟 ===
-  - id: mainline_test_04
+  - id: stage_02_02
     name: 黑风寨
     stageType: mainline
     chapterIndex: 2
-    prevStageId: mainline_test_03
-    narrativeOpeningId: mainline_test_04_opening
-    narrativeVictoryId: mainline_test_04_victory
+    prevStageId: stage_02_01
+    narrativeOpeningId: stage_02_02_opening
+    narrativeVictoryId: stage_02_02_victory
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_sanLiu_chief_a
@@ -221,13 +222,13 @@ stages:
     difficultyMultiplier: 1.7
 
   # === 测试关 5 · 二流 / 启蒙 ===
-  - id: mainline_test_05
+  - id: stage_03_01
     name: 武林会
     stageType: mainline
     chapterIndex: 3
     # Ch3 首关，无 prevStageId
-    narrativeOpeningId: mainline_test_05_opening
-    narrativeVictoryId: mainline_test_05_victory
+    narrativeOpeningId: stage_03_01_opening
+    narrativeVictoryId: stage_03_01_victory
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_erLiu_master_a
@@ -273,13 +274,13 @@ stages:
     difficultyMultiplier: 2.0
 
   # === 测试关 6 · 二流 / 圆熟 · Boss 关 ===
-  - id: mainline_test_06
+  - id: stage_03_02
     name: 一战封王
     stageType: mainline
     chapterIndex: 3
-    prevStageId: mainline_test_05
-    narrativeOpeningId: mainline_test_06_opening
-    narrativeVictoryId: mainline_test_06_victory
+    prevStageId: stage_03_01
+    narrativeOpeningId: stage_03_02_opening
+    narrativeVictoryId: stage_03_02_victory
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_erLiu_boss

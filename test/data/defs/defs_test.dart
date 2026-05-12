@@ -276,13 +276,13 @@ void main() {
     test('T33 新字段全填：prevStageId + narrativeOpeningId + narrativeVictoryId',
         () {
       final def = StageDef.fromYaml({
-        'id': 'mainline_test_02',
+        'id': 'stage_01_02',
         'name': '林间伏击',
         'stageType': 'mainline',
         'chapterIndex': 1,
-        'prevStageId': 'mainline_test_01',
-        'narrativeOpeningId': 'mainline_test_02_opening',
-        'narrativeVictoryId': 'mainline_test_02_victory',
+        'prevStageId': 'stage_01_01',
+        'narrativeOpeningId': 'stage_01_02_opening',
+        'narrativeVictoryId': 'stage_01_02_victory',
         'requiredRealm': 'xueTu',
         'enemyTeam': const [],
         'dropEquipmentDefIds': const [],
@@ -291,14 +291,14 @@ void main() {
         'difficultyMultiplier': 1.0,
       });
 
-      expect(def.prevStageId, 'mainline_test_01');
-      expect(def.narrativeOpeningId, 'mainline_test_02_opening');
-      expect(def.narrativeVictoryId, 'mainline_test_02_victory');
+      expect(def.prevStageId, 'stage_01_01');
+      expect(def.narrativeOpeningId, 'stage_01_02_opening');
+      expect(def.narrativeVictoryId, 'stage_01_02_victory');
     });
 
     test('T33 新字段全缺省：章节首关（无 prev）+ 暂未挂剧情', () {
       final def = StageDef.fromYaml({
-        'id': 'mainline_test_01',
+        'id': 'stage_01_01',
         'name': '山道试剑',
         'stageType': 'mainline',
         'chapterIndex': 1,

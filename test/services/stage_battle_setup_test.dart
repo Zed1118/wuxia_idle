@@ -38,10 +38,10 @@ void main() {
     }
   });
 
-  test('P3 种子（含主修）+ mainline_test_01 → 左队 1 人 + 右队 3 名敌人',
+  test('P3 种子（含主修）+ stage_01_01 → 左队 1 人 + 右队 3 名敌人',
       () async {
     await Phase2SeedService.seedP3();
-    final stage = GameRepository.instance.getStage('mainline_test_01');
+    final stage = GameRepository.instance.getStage('stage_01_01');
 
     final (left, right) = await StageBattleSetup.buildTeams(stage);
 
@@ -50,7 +50,7 @@ void main() {
     expect(left.first.teamSide, 0);
     expect(left.first.slotIndex, 0);
 
-    expect(right.length, 3, reason: 'mainline_test_01 三敌');
+    expect(right.length, 3, reason: 'stage_01_01 三敌');
     expect(right[0].name, '流民甲');
     expect(right[1].name, '流民乙');
     expect(right[2].name, '流民丙');
@@ -59,11 +59,11 @@ void main() {
   test('敌人 BattleCharacter 字段映射：baseHp/Attack/Speed → maxHp/EqAtk/speed',
       () async {
     await Phase2SeedService.seedP3();
-    final stage = GameRepository.instance.getStage('mainline_test_01');
+    final stage = GameRepository.instance.getStage('stage_01_01');
 
     final (_, right) = await StageBattleSetup.buildTeams(stage);
 
-    // mainline_test_01 流民甲：baseHp 1500 / baseAttack 80 / baseSpeed 100
+    // stage_01_01 流民甲：baseHp 1500 / baseAttack 80 / baseSpeed 100
     expect(right[0].maxHp, 1500);
     expect(right[0].currentHp, 1500);
     expect(right[0].totalEquipmentAttack, 80);
@@ -74,7 +74,7 @@ void main() {
 
   test('敌人 characterId 用负数防冲突（-1/-2/-3）', () async {
     await Phase2SeedService.seedP3();
-    final stage = GameRepository.instance.getStage('mainline_test_01');
+    final stage = GameRepository.instance.getStage('stage_01_01');
 
     final (left, right) = await StageBattleSetup.buildTeams(stage);
 
@@ -94,7 +94,7 @@ void main() {
       s!.activeCharacterIds = [1];
       await IsarSetup.instance.saveDatas.put(s);
     });
-    final stage = GameRepository.instance.getStage('mainline_test_01');
+    final stage = GameRepository.instance.getStage('stage_01_01');
 
     final (left, _) = await StageBattleSetup.buildTeams(stage);
     expect(left.length, 1);
@@ -102,7 +102,7 @@ void main() {
   });
 
   test('Isar 没任何 Character → throw StateError', () async {
-    final stage = GameRepository.instance.getStage('mainline_test_01');
+    final stage = GameRepository.instance.getStage('stage_01_01');
 
     await expectLater(
       StageBattleSetup.buildTeams(stage),
@@ -117,7 +117,7 @@ void main() {
   test('P1 种子（无主修心法）→ buildTeams throw 「未修主修」', () async {
     // P1 fixture 只有装备 + 物料，不创建心法（参考 phase2_seed_service.dart:35-53）
     await Phase2SeedService.seedP1();
-    final stage = GameRepository.instance.getStage('mainline_test_01');
+    final stage = GameRepository.instance.getStage('stage_01_01');
 
     await expectLater(
       StageBattleSetup.buildTeams(stage),
@@ -129,10 +129,10 @@ void main() {
     );
   });
 
-  test('mainline_test_06 Boss 关：右队 3 名 + 都标 isBossStage 不影响转换',
+  test('stage_03_02 Boss 关：右队 3 名 + 都标 isBossStage 不影响转换',
       () async {
     await Phase2SeedService.seedP3();
-    final stage = GameRepository.instance.getStage('mainline_test_06');
+    final stage = GameRepository.instance.getStage('stage_03_02');
     expect(stage.isBossStage, isTrue);
 
     final (_, right) = await StageBattleSetup.buildTeams(stage);
