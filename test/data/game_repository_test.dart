@@ -96,21 +96,21 @@ void main() {
         SkillType.normalAttack,
       );
       expect(
-        repo.getStage('mainline_test_06').enemyTeam.length,
+        repo.getStage('stage_03_02').enemyTeam.length,
         3,
       );
     });
 
-    test('T27 dropTable 解析 → mainline_test_02 / _06 dropTable 非空，'
+    test('T27 dropTable 解析 → stage_01_02 / _06 dropTable 非空，'
         '其他关卡 dropTable 为空（向后兼容）', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
-      final s2 = repo.getStage('mainline_test_02');
+      final s2 = repo.getStage('stage_01_02');
       expect(s2.dropTable.length, 2,
           reason: '山道伏击：低概率铁剑 + 必掉磨剑石');
-      final s6 = repo.getStage('mainline_test_06');
+      final s6 = repo.getStage('stage_03_02');
       expect(s6.dropTable.length, 3,
           reason: 'Boss 关：龙泉剑 + 50% 玉佩 + 必掉心血结晶');
-      final s1 = repo.getStage('mainline_test_01');
+      final s1 = repo.getStage('stage_01_01');
       expect(s1.dropTable, isEmpty,
           reason: '未配 dropTable 的关卡保持空列表（不影响旧 fixture）');
     });
@@ -228,26 +228,26 @@ techniques:
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
       // Ch1
-      final s1 = repo.getStage('mainline_test_01');
-      final s2 = repo.getStage('mainline_test_02');
+      final s1 = repo.getStage('stage_01_01');
+      final s2 = repo.getStage('stage_01_02');
       expect(s1.prevStageId, isNull, reason: 'Ch1 首关');
-      expect(s1.narrativeOpeningId, 'mainline_test_01_opening');
-      expect(s1.narrativeVictoryId, 'mainline_test_01_victory');
-      expect(s2.prevStageId, 'mainline_test_01');
+      expect(s1.narrativeOpeningId, 'stage_01_01_opening');
+      expect(s1.narrativeVictoryId, 'stage_01_01_victory');
+      expect(s2.prevStageId, 'stage_01_01');
       expect(s2.chapterIndex, 1);
 
       // Ch2
-      final s3 = repo.getStage('mainline_test_03');
-      final s4 = repo.getStage('mainline_test_04');
+      final s3 = repo.getStage('stage_02_01');
+      final s4 = repo.getStage('stage_02_02');
       expect(s3.prevStageId, isNull);
-      expect(s4.prevStageId, 'mainline_test_03');
+      expect(s4.prevStageId, 'stage_02_01');
       expect(s4.chapterIndex, 2);
 
       // Ch3
-      final s5 = repo.getStage('mainline_test_05');
-      final s6 = repo.getStage('mainline_test_06');
+      final s5 = repo.getStage('stage_03_01');
+      final s6 = repo.getStage('stage_03_02');
       expect(s5.prevStageId, isNull);
-      expect(s6.prevStageId, 'mainline_test_05');
+      expect(s6.prevStageId, 'stage_03_01');
       expect(s6.chapterIndex, 3);
     });
 

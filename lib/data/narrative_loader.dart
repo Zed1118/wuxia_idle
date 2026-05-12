@@ -2,17 +2,18 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import 'yaml_loader.dart';
 
-/// 主线/章节剧情内容（Phase 3 T36，对应 `data/narratives/<id>.yaml`）。
+/// 主线/章节剧情内容（Phase 3 T36，对应 `data/narratives/<id>.yaml`
+/// 或 `data/narratives/stages/<id>.yaml`）。
 ///
 /// 数据 ↔ 文案隔离原则（GDD §8.1）：StageDef 数值在 stages.yaml；剧情文本
 /// 在 narratives/，通过 `narrativeOpeningId` / `narrativeVictoryId` 联结。
 ///
 /// **schema**（DeepSeek 端按此填写，详见 `docs/NARRATIVE_SCHEMA.md`）：
 /// ```yaml
-/// id: mainline_test_01_opening   # 必须等于文件名（不含 .yaml）
-/// title: 山道试剑                 # 可空
+/// id: stage_01_01_opening   # 必须等于文件名（不含 .yaml）
+/// title: 山门之外 · 启        # 可空
 /// paragraphs:
-///   - 山雾未散，你立于青石之上……
+///   - 山门已经看不见了。
 ///   - 三道身影自林中涌出。
 /// ```
 class NarrativeContent {
@@ -49,7 +50,7 @@ class NarrativeContent {
   }
 }
 
-/// 主线剧情加载器（Phase 3 T36）。
+/// 主线剧情加载器（Phase 3 T36；P1 #1 2026-05-12 加 stages/ 子目录扫描）。
 ///
 /// **缺文件 / 解析失败兜底**：返回 [NarrativeContent.placeholder]，单段
 /// 「[剧情待补：$id]」。**不抛异常**——区别于 [GameRepository] 的 fail-fast：
@@ -57,21 +58,32 @@ class NarrativeContent {
 class NarrativeLoader {
   NarrativeLoader._();
 
-  /// 从 `data/narratives/<narrativeId>.yaml` 加载内容；缺文件兜底。
+  /// 扫描顺序（固定契约）：
+  /// 1. `data/narratives/<id>.yaml`（扁平，兼容旧 narrative）
+  /// 2. `data/narratives/stages/<id>.yaml`（DeepSeek 拆分体系）
+  /// 都失败 → [NarrativeContent.placeholder]
+  static const _scanPaths = [
+    'data/narratives/',
+    'data/narratives/stages/',
+  ];
+
+  /// 从扁平或 stages/ 子目录加载剧情内容；都缺则兜底。
   ///
   /// `loader` 注入用于测试；生产走 [rootBundle.loadString]。
   static Future<NarrativeContent> load(
     String narrativeId, {
     Future<String> Function(String)? loader,
   }) async {
-    try {
-      final raw = await (loader ?? rootBundle.loadString)(
-        'data/narratives/$narrativeId.yaml',
-      );
-      final y = parseYamlMap(raw);
-      return NarrativeContent.fromYaml(y);
-    } catch (_) {
-      return NarrativeContent.placeholder(narrativeId);
+    final fn = loader ?? rootBundle.loadString;
+    for (final prefix in _scanPaths) {
+      try {
+        final raw = await fn('$prefix$narrativeId.yaml');
+        final y = parseYamlMap(raw);
+        return NarrativeContent.fromYaml(y);
+      } catch (_) {
+        // 继续尝试下一路径
+      }
     }
+    return NarrativeContent.placeholder(narrativeId);
   }
 }

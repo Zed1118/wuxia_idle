@@ -69,14 +69,14 @@ void main() {
   });
 
   testWidgets('placeholder 顶部弱提示「⚠ 剧情占位」可见', (tester) async {
-    final c = NarrativeContent.placeholder('mainline_test_01_opening');
+    final c = NarrativeContent.placeholder('stage_01_01_opening');
     await tester.pumpWidget(wrap(NarrativeReaderScreen(
       content: c,
       fallbackTitle: '关卡名',
     )));
 
     expect(find.textContaining('剧情占位'), findsOneWidget);
-    expect(find.textContaining('mainline_test_01_opening'), findsOneWidget);
+    expect(find.textContaining('stage_01_01_opening'), findsOneWidget);
   });
 
   testWidgets('「跳过」按钮直接 finish + pop', (tester) async {

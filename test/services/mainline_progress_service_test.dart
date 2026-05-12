@@ -70,16 +70,16 @@ void main() {
         chapterIndex: 1,
       );
       expect(entries.length, 2);
-      expect(entries[0].def.id, 'mainline_test_01');
+      expect(entries[0].def.id, 'stage_01_01');
       expect(entries[0].status, StageStatus.available);
-      expect(entries[1].def.id, 'mainline_test_02');
+      expect(entries[1].def.id, 'stage_01_02');
       expect(entries[1].status, StageStatus.locked);
     });
 
     test('Ch1 首关已通 → 01 cleared + 02 available', () async {
       await MainlineProgressService.getOrCreate(saveDataId: 1);
       await MainlineProgressService.recordVictory(
-        stageId: 'mainline_test_01',
+        stageId: 'stage_01_01',
         now: DateTime(2026, 5, 11),
       );
       final p =
@@ -95,11 +95,11 @@ void main() {
     test('Ch1 全通 → 两关都 cleared', () async {
       await MainlineProgressService.getOrCreate(saveDataId: 1);
       await MainlineProgressService.recordVictory(
-        stageId: 'mainline_test_01',
+        stageId: 'stage_01_01',
         now: DateTime(2026, 5, 11),
       );
       await MainlineProgressService.recordVictory(
-        stageId: 'mainline_test_02',
+        stageId: 'stage_01_02',
         now: DateTime(2026, 5, 12),
       );
       final p =
@@ -114,7 +114,7 @@ void main() {
     test('Ch2 / Ch3 各自独立解锁链（不会串到 Ch1 的 cleared 集）', () async {
       await MainlineProgressService.getOrCreate(saveDataId: 1);
       await MainlineProgressService.recordVictory(
-        stageId: 'mainline_test_01',
+        stageId: 'stage_01_01',
         now: DateTime(2026, 5, 11),
       );
       final p =
@@ -125,7 +125,7 @@ void main() {
         progress: p,
         chapterIndex: 2,
       );
-      expect(ch2[0].def.id, 'mainline_test_03');
+      expect(ch2[0].def.id, 'stage_02_01');
       expect(ch2[0].status, StageStatus.available);
       expect(ch2[1].status, StageStatus.locked);
 
@@ -134,7 +134,7 @@ void main() {
         progress: p,
         chapterIndex: 3,
       );
-      expect(ch3[0].def.id, 'mainline_test_05');
+      expect(ch3[0].def.id, 'stage_03_01');
       expect(ch3[0].status, StageStatus.available);
     });
   });
@@ -144,12 +144,12 @@ void main() {
       await MainlineProgressService.getOrCreate(saveDataId: 1);
       final t = DateTime(2026, 5, 11, 14, 30);
       await MainlineProgressService.recordVictory(
-        stageId: 'mainline_test_01',
+        stageId: 'stage_01_01',
         now: t,
       );
       final p =
           await MainlineProgressService.getOrCreate(saveDataId: 1);
-      expect(p.clearedStageIds, ['mainline_test_01']);
+      expect(p.clearedStageIds, ['stage_01_01']);
       expect(p.clearedAt, [t]);
     });
 
@@ -158,11 +158,11 @@ void main() {
       final t1 = DateTime(2026, 5, 11);
       final t2 = DateTime(2026, 5, 12);
       await MainlineProgressService.recordVictory(
-        stageId: 'mainline_test_01',
+        stageId: 'stage_01_01',
         now: t1,
       );
       await MainlineProgressService.recordVictory(
-        stageId: 'mainline_test_01',
+        stageId: 'stage_01_01',
         now: t2,
       );
       final p =
@@ -174,7 +174,7 @@ void main() {
     test('未先 getOrCreate 直接 recordVictory → StateError', () async {
       expect(
         () => MainlineProgressService.recordVictory(
-          stageId: 'mainline_test_01',
+          stageId: 'stage_01_01',
           now: DateTime(2026, 5, 11),
         ),
         throwsA(isA<StateError>().having(
@@ -190,11 +190,11 @@ void main() {
     test('Ch1 全通 → true', () async {
       await MainlineProgressService.getOrCreate(saveDataId: 1);
       await MainlineProgressService.recordVictory(
-        stageId: 'mainline_test_01',
+        stageId: 'stage_01_01',
         now: DateTime(2026, 5, 11),
       );
       await MainlineProgressService.recordVictory(
-        stageId: 'mainline_test_02',
+        stageId: 'stage_01_02',
         now: DateTime(2026, 5, 12),
       );
       final p =
@@ -211,7 +211,7 @@ void main() {
     test('Ch1 仅通首关 → false', () async {
       await MainlineProgressService.getOrCreate(saveDataId: 1);
       await MainlineProgressService.recordVictory(
-        stageId: 'mainline_test_01',
+        stageId: 'stage_01_01',
         now: DateTime(2026, 5, 11),
       );
       final p =

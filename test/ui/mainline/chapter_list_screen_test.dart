@@ -63,7 +63,7 @@ void main() {
   testWidgets('Ch1 全通 → Ch1 ✓ + Ch2 进行中 + Ch3 锁', (tester) async {
     await pumpScreen(
       tester,
-      mkProgress(cleared: ['mainline_test_01', 'mainline_test_02']),
+      mkProgress(cleared: ['stage_01_01', 'stage_01_02']),
     );
 
     expect(find.byIcon(Icons.check_circle), findsOneWidget,
@@ -77,12 +77,12 @@ void main() {
     await pumpScreen(
       tester,
       mkProgress(cleared: const [
-        'mainline_test_01',
-        'mainline_test_02',
-        'mainline_test_03',
-        'mainline_test_04',
-        'mainline_test_05',
-        'mainline_test_06',
+        'stage_01_01',
+        'stage_01_02',
+        'stage_02_01',
+        'stage_02_02',
+        'stage_03_01',
+        'stage_03_02',
       ]),
     );
 

@@ -68,7 +68,7 @@ void main() {
     await pumpScreen(
       tester,
       chapterIndex: 1,
-      progress: mkProgress(cleared: const ['mainline_test_01']),
+      progress: mkProgress(cleared: const ['stage_01_01']),
     );
 
     expect(find.text(UiStrings.stageListCleared), findsOneWidget);
@@ -76,7 +76,7 @@ void main() {
     expect(find.byIcon(Icons.lock), findsNothing);
   });
 
-  testWidgets('点 available 关卡 → 进入剧情阅读屏（T37 流程串联，缺文件走 placeholder）',
+  testWidgets('点 available 关卡 → 进入剧情阅读屏（T37 流程串联，P1 #1 真实剧情加载）',
       (tester) async {
     await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
 
@@ -84,10 +84,13 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    // runStageFlow → NarrativeLoader.load('mainline_test_01_opening')
-    // widget test 中 rootBundle 不可用 → 兜底 placeholder → 推 NarrativeReaderScreen
-    expect(find.textContaining('剧情占位'), findsOneWidget,
-        reason: 'placeholder 弱提示标识进入了 NarrativeReaderScreen');
-    expect(find.textContaining('mainline_test_01_opening'), findsOneWidget);
+    // runStageFlow → NarrativeLoader.load('stage_01_01_opening')
+    // P1 #1 后 NarrativeLoader 扫 data/narratives/stages/ 子目录，
+    // widget test 中 rootBundle 能读到 pubspec 声明的真实 asset →
+    // 加载 DeepSeek 写的「山门之外 · 启」，不走 placeholder
+    expect(find.textContaining('剧情占位'), findsNothing,
+        reason: 'P1 #1 narrative schema 对齐后真实文案已可加载，不再兜底');
+    expect(find.text('山门之外 · 启'), findsOneWidget,
+        reason: 'DeepSeek narrative title 渲染（stage_01_01_opening.yaml）');
   });
 }
