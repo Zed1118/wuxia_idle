@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 3 Week 7 T63 装备扩 35 件**(2026-05-13,Mac 代码完成)。详条见「已完成」末。前置 Phase 5 W6 全交付(2026-05-14,tag v0.3.0-w6 merge main HEAD a26eaec,详条 docs/handoff/week6_full_closeout_2026-05-14.md)。
+**Phase 3 Week 8 T64 心法扩 21 本 + 招式扩 63 招**(2026-05-13)。详条见「已完成」末。W7 T63 / W6(详条 docs/handoff/week6_full_closeout_2026-05-14.md)同左。
 
 ## 已完成
 
@@ -28,11 +28,12 @@
 - **Phase 3 Week 5 T60 stage_entry_flow 战败 narrative hook + 销账 #29**（2026-05-13）：runStageFlow 战败分支改写——若 `stage.narrativeDefeatId != null && context.mounted` → push NarrativeReaderScreen（content 走 NarrativeLoader.load，缺文件兜底「[剧情待补]」），看完 pop 回 stage list；不记录进度 / 不掉装备（Phase 4 再加战败结算）。章内普通关（无 narrativeDefeatId）战败分支保留旧行为直接返回 list。dartdoc 注释更新「3b. defeat」段说明 Boss 关 vs 普通关分流
 - **Phase 3 Week 5 T62 Pen Windows 视觉验收 + 2 旁支 fix + tag v0.3.0-w5**（2026-05-13，Pen 14:56-15:23）：6 截图归档 `docs/screenshots/phase3_w5/`。**核心销账截图 06**：风雨渡口·败 NarrativeReaderScreen 标题 + 文案「撑伞的人没有追。他只是站在雨里，看着你退回渡口。」+ 1/3 分页 + 继续按钮（T60 defeat hook 视觉落地）。**截图 05** 战斗右队胜 0v2 17 tick 玩家方全阵亡（erLiu 跨 2 阶设计生效）。**旁支 fix 1**：CharacterPanelScreen 无返回按钮（T56 加 Tab 时遗漏）→ commit `87387ad` AppBar + BackButton（canPop 才显示）。**旁支 fix 2**：stage_01_05 原 xueTu yuanShu 玩家方碾压（10 tick 左队胜 21673 总伤）→ balance commit `73c1f37` 跨 2 阶到 erLiu（撑伞高人 10000HP 750Atk / 渡口刀客剑客 9000HP 700-720Atk），设计语义「章末大 Boss 暗示需升阶」。phase3_summary.md Week 5 段完整 + tag v0.3.0-w5 push origin
 - **Phase 5 W6 升级 + 架构重构 tag v0.3.0-w6**(2026-05-14):isar→isar_community 3.3.2 / flutter_riverpod 3.x / riverpod_annotation 4.x / riverpod_generator 4.x / analyzer 5.x→9.x。8 个有 Isar 依赖的 service 改实例化 + 构造函数接 Isar;新 `IsarSetup.instanceOrNull` + nullable isarProvider + 9 个 service provider,widget test 自动短路(替代旧 widget `Isar.getInstance` guard,4 处全删)。**销账 #23**(架构层面)。530/530 测试,详条 `docs/handoff/week6_full_closeout_2026-05-14.md`
-- **Phase 3 Week 7 T63 装备 fixture 扩 10→35 件 + 覆盖度红线**(2026-05-13):equipment.yaml 按 7 阶 × 5 件重写(weapon 3 三流派各 1 + armor 1 + accessory 1,新增 25 件);命名风格延续武侠朴实(折刀/软鞭/玄花斧/缠丝索/玄铁甲/翡玉佩/破阵锤/青虚剑/毒龙索/银鳞甲/青玉环/玄天斧/长虹剑/血莲鞭/金丝甲/玉龙佩/破军刀/天问剑/幻梦鞭/玄黄袍/昆仑佩 等);数值范围严格照搬 numbers.yaml tier 段(零审计);drop_source_tags 占位(tower_30/jueDing_unlock/zongShi_unlock/wuSheng_unlock,Phase 4 掉装备 service 完善后回填)。GameRepository 抽 `_enforceEquipmentRedLines` 方法:既有单件 baseAttackMax ≤ 2000 + 区间合法 + 新增覆盖度三件套(每阶 ≥5 件 / 每阶 weapon 三流派齐 / armor + accessory 各 ≥1);流程在 _enforceMasterRedLines 之前保证 fail-fast 优先级正确。test +2 fail-fast(某阶 <5 件 / 某阶 weapon 流派缺失),期望 equipmentDefs.length 10→35,累计 530 → 532 测试
+- **Phase 3 Week 7 T63 装备 fixture 扩 10→35 件 + 覆盖度红线**(2026-05-13):equipment.yaml 7 阶 × 5 件重写(weapon 3 三流派 + armor 1 + accessory 1);数值范围照搬 numbers.yaml tier 段;drop_source_tags 占位(Phase 4 回填)。GameRepository 抽 `_enforceEquipmentRedLines`:单件 baseAttackMax ≤ 2000 + 覆盖度三件套(每阶 ≥5 件 / 每阶 weapon 三流派齐 / armor + accessory 各 ≥1)。test +2 fail-fast,累计 530 → 532
+- **Phase 3 Week 8 T64 心法扩 6→21 本 + 招式扩 18→63 招 + 覆盖度红线**(2026-05-13):techniques.yaml 按 7 阶 × 3 流派重写(+15 本,changLian/menPai/jiangHu/shiChuan/chuanShuo 各 3 流派);skills.yaml 21×3=63 招,每本 basic/skill/ult 各 1,数值梯度 basic=500/skill=80%cap/ult=cap(对齐 numbers.yaml `techniques.tiers.max_skill_multiplier` 软约定);命名(常练:横扫拳/破甲掌/穿云剑/万剑诀/拂袖手/销魂指 等;绝学:落雷掌/怒龙翻/燕回身/流星剑/鬼影爪/摄魂引;秘传:裂山掌/霸王击/凌波剑/御剑诀/魅影手/摧魂咒;失传:玄武拳/天崩裂/太虚剑/长虹经天/蛛丝手/阴煞印;传说:玄黄拳/九霄龙吟/太初剑/万象归元/幽冥指/无相劫)。GameRepository 加 `_enforceTechniqueRedLines`:7 阶 × 3 流派组合每个 ≥1 本 + 每本 skillIds.length==3 + 每本 3 招 type 精确 {normalAttack, powerSkill, ultimate} + 每招 parentTechniqueDefId 指向自身。test +2 fail-fast(组合缺失 / 招式 type 错位),累计 532 → 534
 
 ## 进行中
 
-**Phase 3 Week 7 T63 装备扩 35 件 ✅**(2026-05-13)。Mac 端代码完成 532/532。下一步:commit + push,Pen 视觉验收非必需(纯 fixture + 红线,无 UI 改动)。
+**Phase 3 Week 8 T64 心法扩 21 本 ✅**(2026-05-13)。Mac 端代码完成 534/534。无 UI 改动,Pen 视觉验收非必需。
 
 ## 已知偏差 / 挂账事项
 
@@ -58,7 +59,7 @@
 
 ## 下一步
 
-W8 候选(W7 后):D 心法扩 20-30(同 T63 套路,纯 fixture)/ A 爬塔 UI(schema 已 W2 ready,缺 UI 串联)/ Phase 4 战斗结算扩展(掉装备/境界/散功代价,需先讨论范围)/ #30 闭关 3 维度(§12 #7 节气清单阻塞)/ C 奇遇 + E 武学领悟(§12 #6 机缘值规则阻塞)。
+W9 候选(W8 后):A 爬塔 UI(schema 已 W2 ready,缺 UI 串联)/ Phase 4 战斗结算扩展(掉装备/境界/散功代价,需先讨论范围)/ #30 闭关 3 维度(§12 #7 节气清单阻塞)/ C 奇遇 + E 武学领悟(§12 #6 机缘值规则阻塞)。
 
 > CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 

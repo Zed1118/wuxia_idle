@@ -1,17 +1,26 @@
 # =============================================================================
-# techniques.yaml · 心法占位 fixture（T07）
+# techniques.yaml · 心法 fixture（Phase 3 Week 8 T64 扩 21 本）
 # =============================================================================
-# 共 6 本：3 流派（gangMeng / lingQiao / yinRou）× 2 阶（入门功 + 名家功）。
-# 每本含 3 招（普攻 / 强力 / 大招），招式定义见 skills.yaml。
-# description 占位填 TODO_NARRATIVE，正式文案归 DeepSeek（data/narratives/）。
-# 数值参考 numbers.yaml `techniques.tiers`：
-#   ruMenGong → growth 1.05 / speed 0
-#   mingJiaGong → growth 1.15 / speed 10
+# 共 21 本：7 阶 × 3 流派（gangMeng / lingQiao / yinRou）。每本含 3 招
+# （normalAttack / powerSkill / ultimate），招式定义见 skills.yaml。
+#
+# internalForceGrowthBonus / speedBonus 严格对齐 numbers.yaml `techniques.tiers`
+# 段（同 T63 装备:数值零审计风险,fixture 端遵守 numbers.yaml 上下限）。
+#
+# acquireSourceTags 占位（Phase 4/E 接入实际获取路径后回填）：
+#   - ruMenGong:starter
+#   - changLianGong:mainline_ch1
+#   - mingJiaGong:mainline_ch3
+#   - menPaiJueXue:mainline_ch3 + tower_15
+#   - jiangHuMiChuan:tower_25
+#   - shiChuanShenGong / chuanShuoShenGong:wuxue_lingwu(Phase E 武学领悟,§12 #6 阻塞)
+#
+# description 占位 TODO_NARRATIVE,正式文案归 DeepSeek(data/narratives/)。
 # =============================================================================
 
 techniques:
 
-  # === 刚猛 · 入门功 ===
+  # === 第 1 阶 入门功 · 学徒境界开放 ===
   - id: tech_gangmeng_jichu
     name: 刚猛入门
     tier: ruMenGong
@@ -25,7 +34,6 @@ techniques:
     speedBonus: 0
     acquireSourceTags: ["starter"]
 
-  # === 灵巧 · 入门功 ===
   - id: tech_lingqiao_jichu
     name: 灵巧入门
     tier: ruMenGong
@@ -39,7 +47,6 @@ techniques:
     speedBonus: 0
     acquireSourceTags: ["starter"]
 
-  # === 阴柔 · 入门功 ===
   - id: tech_yinrou_jichu
     name: 阴柔入门
     tier: ruMenGong
@@ -53,7 +60,47 @@ techniques:
     speedBonus: 0
     acquireSourceTags: ["starter"]
 
-  # === 刚猛 · 名家功 ===
+  # === 第 2 阶 常练功 · 三流境界开放 ===
+  - id: tech_gangmeng_changlian
+    name: 刚猛常练
+    tier: changLianGong
+    school: gangMeng
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_gangmeng_changlian_basic
+      - skill_gangmeng_changlian_skill
+      - skill_gangmeng_changlian_ult
+    internalForceGrowthBonus: 1.10
+    speedBonus: 5
+    acquireSourceTags: ["mainline_ch1"]
+
+  - id: tech_lingqiao_changlian
+    name: 灵巧常练
+    tier: changLianGong
+    school: lingQiao
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_lingqiao_changlian_basic
+      - skill_lingqiao_changlian_skill
+      - skill_lingqiao_changlian_ult
+    internalForceGrowthBonus: 1.10
+    speedBonus: 5
+    acquireSourceTags: ["mainline_ch1"]
+
+  - id: tech_yinrou_changlian
+    name: 阴柔常练
+    tier: changLianGong
+    school: yinRou
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_yinrou_changlian_basic
+      - skill_yinrou_changlian_skill
+      - skill_yinrou_changlian_ult
+    internalForceGrowthBonus: 1.10
+    speedBonus: 5
+    acquireSourceTags: ["mainline_ch1"]
+
+  # === 第 3 阶 名家功 · 二流境界开放 ===
   - id: tech_gangmeng_mingjia
     name: 刚猛名家
     tier: mingJiaGong
@@ -67,7 +114,6 @@ techniques:
     speedBonus: 10
     acquireSourceTags: ["mainline_ch3"]
 
-  # === 灵巧 · 名家功 ===
   - id: tech_lingqiao_mingjia
     name: 灵巧名家
     tier: mingJiaGong
@@ -81,7 +127,6 @@ techniques:
     speedBonus: 10
     acquireSourceTags: ["mainline_ch3"]
 
-  # === 阴柔 · 名家功 ===
   - id: tech_yinrou_mingjia
     name: 阴柔名家
     tier: mingJiaGong
@@ -94,3 +139,163 @@ techniques:
     internalForceGrowthBonus: 1.15
     speedBonus: 10
     acquireSourceTags: ["mainline_ch3"]
+
+  # === 第 4 阶 门派绝学 · 一流境界开放 ===
+  - id: tech_gangmeng_menpai
+    name: 刚猛绝学
+    tier: menPaiJueXue
+    school: gangMeng
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_gangmeng_menpai_basic
+      - skill_gangmeng_menpai_skill
+      - skill_gangmeng_menpai_ult
+    internalForceGrowthBonus: 1.25
+    speedBonus: 15
+    acquireSourceTags: ["mainline_ch3", "tower_15"]
+
+  - id: tech_lingqiao_menpai
+    name: 灵巧绝学
+    tier: menPaiJueXue
+    school: lingQiao
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_lingqiao_menpai_basic
+      - skill_lingqiao_menpai_skill
+      - skill_lingqiao_menpai_ult
+    internalForceGrowthBonus: 1.25
+    speedBonus: 15
+    acquireSourceTags: ["mainline_ch3", "tower_15"]
+
+  - id: tech_yinrou_menpai
+    name: 阴柔绝学
+    tier: menPaiJueXue
+    school: yinRou
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_yinrou_menpai_basic
+      - skill_yinrou_menpai_skill
+      - skill_yinrou_menpai_ult
+    internalForceGrowthBonus: 1.25
+    speedBonus: 15
+    acquireSourceTags: ["mainline_ch3", "tower_15"]
+
+  # === 第 5 阶 江湖秘传 · 绝顶境界开放 ===
+  - id: tech_gangmeng_jianghu
+    name: 刚猛秘传
+    tier: jiangHuMiChuan
+    school: gangMeng
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_gangmeng_jianghu_basic
+      - skill_gangmeng_jianghu_skill
+      - skill_gangmeng_jianghu_ult
+    internalForceGrowthBonus: 1.40
+    speedBonus: 25
+    acquireSourceTags: ["tower_25"]
+
+  - id: tech_lingqiao_jianghu
+    name: 灵巧秘传
+    tier: jiangHuMiChuan
+    school: lingQiao
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_lingqiao_jianghu_basic
+      - skill_lingqiao_jianghu_skill
+      - skill_lingqiao_jianghu_ult
+    internalForceGrowthBonus: 1.40
+    speedBonus: 25
+    acquireSourceTags: ["tower_25"]
+
+  - id: tech_yinrou_jianghu
+    name: 阴柔秘传
+    tier: jiangHuMiChuan
+    school: yinRou
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_yinrou_jianghu_basic
+      - skill_yinrou_jianghu_skill
+      - skill_yinrou_jianghu_ult
+    internalForceGrowthBonus: 1.40
+    speedBonus: 25
+    acquireSourceTags: ["tower_25"]
+
+  # === 第 6 阶 失传神功 · 宗师境界开放 ===
+  - id: tech_gangmeng_shichuan
+    name: 刚猛失传
+    tier: shiChuanShenGong
+    school: gangMeng
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_gangmeng_shichuan_basic
+      - skill_gangmeng_shichuan_skill
+      - skill_gangmeng_shichuan_ult
+    internalForceGrowthBonus: 1.60
+    speedBonus: 40
+    acquireSourceTags: ["wuxue_lingwu"]
+
+  - id: tech_lingqiao_shichuan
+    name: 灵巧失传
+    tier: shiChuanShenGong
+    school: lingQiao
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_lingqiao_shichuan_basic
+      - skill_lingqiao_shichuan_skill
+      - skill_lingqiao_shichuan_ult
+    internalForceGrowthBonus: 1.60
+    speedBonus: 40
+    acquireSourceTags: ["wuxue_lingwu"]
+
+  - id: tech_yinrou_shichuan
+    name: 阴柔失传
+    tier: shiChuanShenGong
+    school: yinRou
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_yinrou_shichuan_basic
+      - skill_yinrou_shichuan_skill
+      - skill_yinrou_shichuan_ult
+    internalForceGrowthBonus: 1.60
+    speedBonus: 40
+    acquireSourceTags: ["wuxue_lingwu"]
+
+  # === 第 7 阶 传说神功 · 武圣境界开放 ===
+  - id: tech_gangmeng_chuanshuo
+    name: 刚猛传说
+    tier: chuanShuoShenGong
+    school: gangMeng
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_gangmeng_chuanshuo_basic
+      - skill_gangmeng_chuanshuo_skill
+      - skill_gangmeng_chuanshuo_ult
+    internalForceGrowthBonus: 2.00
+    speedBonus: 60
+    acquireSourceTags: ["wuxue_lingwu_top"]
+
+  - id: tech_lingqiao_chuanshuo
+    name: 灵巧传说
+    tier: chuanShuoShenGong
+    school: lingQiao
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_lingqiao_chuanshuo_basic
+      - skill_lingqiao_chuanshuo_skill
+      - skill_lingqiao_chuanshuo_ult
+    internalForceGrowthBonus: 2.00
+    speedBonus: 60
+    acquireSourceTags: ["wuxue_lingwu_top"]
+
+  - id: tech_yinrou_chuanshuo
+    name: 阴柔传说
+    tier: chuanShuoShenGong
+    school: yinRou
+    description: TODO_NARRATIVE
+    skillIds:
+      - skill_yinrou_chuanshuo_basic
+      - skill_yinrou_chuanshuo_skill
+      - skill_yinrou_chuanshuo_ult
+    internalForceGrowthBonus: 2.00
+    speedBonus: 60
+    acquireSourceTags: ["wuxue_lingwu_top"]

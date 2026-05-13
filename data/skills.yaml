@@ -1,19 +1,25 @@
 # =============================================================================
-# skills.yaml · 招式占位 fixture（T07）
+# skills.yaml · 招式 fixture（Phase 3 Week 8 T64 扩 63 招）
 # =============================================================================
-# 共 18 招：6 本心法 × 3 招（normalAttack / powerSkill / ultimate）。
+# 共 63 招：21 本心法 × 3 招（normalAttack / powerSkill / ultimate）。
 #
-# 倍率约束（numbers.yaml `techniques.tiers.max_skill_multiplier`）：
-#   ruMenGong cap = 1500；mingJiaGong cap = 2500。
-#   入门功的 ultimate 因受心法阶 cap 限制，倍率 ≤ 1500（小于参考"5000+"
-#   是合理的——低阶心法的"大招"本身威力有限），等高阶心法上来再放威力。
+# 倍率约束（numbers.yaml `techniques.tiers.max_skill_multiplier`，软约定,
+# 当前仅 fixture 端遵守,代码暂无 enforce;Phase 5 cleanup 时加强校验）：
+#   ruMenGong cap=1500 / changLianGong cap=2000 / mingJiaGong cap=2500
+#   menPaiJueXue cap=3000 / jiangHuMiChuan cap=4000
+#   shiChuanShenGong cap=5500 / chuanShuoShenGong cap=8000
 #
-# normalAttack 倍率统一 500（GDD §5.3 强制）。
-# requiresManualTrigger：仅 ultimate 为 true（GDD §5.3 大招由玩家手动放）。
+# 梯度规则:basic powerMultiplier=500 (GDD §5.3 强制) / skill=80% cap / ult=cap
+# internalForceCost / cooldownTurns 按 tier 递增,ult 全部 cd=5 + manualTrigger=true
+# requiresManualTrigger:仅 ultimate 为 true（GDD §5.3 大招由玩家手动放）。
 # description 占位 TODO_NARRATIVE。
 # =============================================================================
 
 skills:
+
+  # ───────────────────────────────────────────
+  # 第 1 阶 入门功 · ruMenGong (cap=1500)
+  # ───────────────────────────────────────────
 
   # ─── 刚猛 · 入门功 ───
   - id: skill_gangmeng_jichu_basic
@@ -117,6 +123,116 @@ skills:
     parentTechniqueDefId: tech_yinrou_jichu
     visualEffect: heart_shatter
 
+  # ───────────────────────────────────────────
+  # 第 2 阶 常练功 · changLianGong (cap=2000)
+  # ───────────────────────────────────────────
+
+  # ─── 刚猛 · 常练功 ───
+  - id: skill_gangmeng_changlian_basic
+    name: 横扫拳
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_changlian
+    visualEffect: sweep_punch
+
+  - id: skill_gangmeng_changlian_skill
+    name: 破甲掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1600
+    internalForceCost: 130
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_changlian
+    visualEffect: armor_break_palm
+
+  - id: skill_gangmeng_changlian_ult
+    name: 山岳震
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2000
+    internalForceCost: 380
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_changlian
+    visualEffect: mountain_tremor
+
+  # ─── 灵巧 · 常练功 ───
+  - id: skill_lingqiao_changlian_basic
+    name: 穿云剑
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_changlian
+    visualEffect: cloud_pierce_sword
+
+  - id: skill_lingqiao_changlian_skill
+    name: 旋身刺
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1600
+    internalForceCost: 130
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_changlian
+    visualEffect: twirl_thrust
+
+  - id: skill_lingqiao_changlian_ult
+    name: 万剑诀
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2000
+    internalForceCost: 380
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_changlian
+    visualEffect: ten_thousand_swords
+
+  # ─── 阴柔 · 常练功 ───
+  - id: skill_yinrou_changlian_basic
+    name: 拂袖手
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_changlian
+    visualEffect: sleeve_wave
+
+  - id: skill_yinrou_changlian_skill
+    name: 隐影爪
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1600
+    internalForceCost: 130
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_changlian
+    visualEffect: hidden_claw
+
+  - id: skill_yinrou_changlian_ult
+    name: 销魂指
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2000
+    internalForceCost: 380
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_changlian
+    visualEffect: soul_breaking_finger
+
+  # ───────────────────────────────────────────
+  # 第 3 阶 名家功 · mingJiaGong (cap=2500)
+  # ───────────────────────────────────────────
+
   # ─── 刚猛 · 名家功 ───
   - id: skill_gangmeng_mingjia_basic
     name: 沉拳
@@ -218,3 +334,427 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_mingjia
     visualEffect: falling_petals
+
+  # ───────────────────────────────────────────
+  # 第 4 阶 门派绝学 · menPaiJueXue (cap=3000)
+  # ───────────────────────────────────────────
+
+  # ─── 刚猛 · 门派绝学 ───
+  - id: skill_gangmeng_menpai_basic
+    name: 落雷掌
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_menpai
+    visualEffect: thunder_palm
+
+  - id: skill_gangmeng_menpai_skill
+    name: 千斤坠
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2400
+    internalForceCost: 220
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_menpai
+    visualEffect: thousand_pound_fall
+
+  - id: skill_gangmeng_menpai_ult
+    name: 怒龙翻
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 3000
+    internalForceCost: 620
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_menpai
+    visualEffect: angry_dragon_overturn
+
+  # ─── 灵巧 · 门派绝学 ───
+  - id: skill_lingqiao_menpai_basic
+    name: 燕回身
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_menpai
+    visualEffect: swallow_turn
+
+  - id: skill_lingqiao_menpai_skill
+    name: 追风刺
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2400
+    internalForceCost: 220
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_menpai
+    visualEffect: wind_chasing_thrust
+
+  - id: skill_lingqiao_menpai_ult
+    name: 流星剑
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 3000
+    internalForceCost: 620
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_menpai
+    visualEffect: meteor_sword
+
+  # ─── 阴柔 · 门派绝学 ───
+  - id: skill_yinrou_menpai_basic
+    name: 鬼影爪
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_menpai
+    visualEffect: ghost_claw
+
+  - id: skill_yinrou_menpai_skill
+    name: 蚀骨指
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2400
+    internalForceCost: 220
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_menpai
+    visualEffect: bone_corroding_finger
+
+  - id: skill_yinrou_menpai_ult
+    name: 摄魂引
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 3000
+    internalForceCost: 620
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_menpai
+    visualEffect: soul_capture
+
+  # ───────────────────────────────────────────
+  # 第 5 阶 江湖秘传 · jiangHuMiChuan (cap=4000)
+  # ───────────────────────────────────────────
+
+  # ─── 刚猛 · 江湖秘传 ───
+  - id: skill_gangmeng_jianghu_basic
+    name: 裂山掌
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_jianghu
+    visualEffect: mountain_split_palm
+
+  - id: skill_gangmeng_jianghu_skill
+    name: 撼地拳
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3200
+    internalForceCost: 280
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_jianghu
+    visualEffect: earth_shaking_punch
+
+  - id: skill_gangmeng_jianghu_ult
+    name: 霸王击
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 4000
+    internalForceCost: 800
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_jianghu
+    visualEffect: overlord_strike
+
+  # ─── 灵巧 · 江湖秘传 ───
+  - id: skill_lingqiao_jianghu_basic
+    name: 凌波剑
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_jianghu
+    visualEffect: wave_walking_sword
+
+  - id: skill_lingqiao_jianghu_skill
+    name: 翻云式
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3200
+    internalForceCost: 280
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_jianghu
+    visualEffect: cloud_overturn
+
+  - id: skill_lingqiao_jianghu_ult
+    name: 御剑诀
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 4000
+    internalForceCost: 800
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_jianghu
+    visualEffect: flying_sword_art
+
+  # ─── 阴柔 · 江湖秘传 ───
+  - id: skill_yinrou_jianghu_basic
+    name: 魅影手
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_jianghu
+    visualEffect: charm_shadow_hand
+
+  - id: skill_yinrou_jianghu_skill
+    name: 噬心爪
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3200
+    internalForceCost: 280
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_jianghu
+    visualEffect: heart_devouring_claw
+
+  - id: skill_yinrou_jianghu_ult
+    name: 摧魂咒
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 4000
+    internalForceCost: 800
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_jianghu
+    visualEffect: soul_destroying_curse
+
+  # ───────────────────────────────────────────
+  # 第 6 阶 失传神功 · shiChuanShenGong (cap=5500)
+  # ───────────────────────────────────────────
+
+  # ─── 刚猛 · 失传神功 ───
+  - id: skill_gangmeng_shichuan_basic
+    name: 玄武拳
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_shichuan
+    visualEffect: black_tortoise_punch
+
+  - id: skill_gangmeng_shichuan_skill
+    name: 镇岳掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 4400
+    internalForceCost: 380
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_shichuan
+    visualEffect: mountain_suppression
+
+  - id: skill_gangmeng_shichuan_ult
+    name: 天崩裂
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 5500
+    internalForceCost: 1100
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_shichuan
+    visualEffect: heaven_breaking
+
+  # ─── 灵巧 · 失传神功 ───
+  - id: skill_lingqiao_shichuan_basic
+    name: 太虚剑
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_shichuan
+    visualEffect: void_sword
+
+  - id: skill_lingqiao_shichuan_skill
+    name: 紫电步
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 4400
+    internalForceCost: 380
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_shichuan
+    visualEffect: purple_lightning_step
+
+  - id: skill_lingqiao_shichuan_ult
+    name: 长虹经天
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 5500
+    internalForceCost: 1100
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_shichuan
+    visualEffect: rainbow_across_sky
+
+  # ─── 阴柔 · 失传神功 ───
+  - id: skill_yinrou_shichuan_basic
+    name: 蛛丝手
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_shichuan
+    visualEffect: spider_silk_hand
+
+  - id: skill_yinrou_shichuan_skill
+    name: 蚀魂爪
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 4400
+    internalForceCost: 380
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_shichuan
+    visualEffect: soul_eroding_claw
+
+  - id: skill_yinrou_shichuan_ult
+    name: 阴煞印
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 5500
+    internalForceCost: 1100
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_shichuan
+    visualEffect: shadow_seal
+
+  # ───────────────────────────────────────────
+  # 第 7 阶 传说神功 · chuanShuoShenGong (cap=8000)
+  # ───────────────────────────────────────────
+
+  # ─── 刚猛 · 传说神功 ───
+  - id: skill_gangmeng_chuanshuo_basic
+    name: 玄黄拳
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_chuanshuo
+    visualEffect: primordial_punch
+
+  - id: skill_gangmeng_chuanshuo_skill
+    name: 乾坤掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 6400
+    internalForceCost: 550
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_chuanshuo
+    visualEffect: cosmos_palm
+
+  - id: skill_gangmeng_chuanshuo_ult
+    name: 九霄龙吟
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 8000
+    internalForceCost: 1600
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_chuanshuo
+    visualEffect: dragon_roar_ninth_heaven
+
+  # ─── 灵巧 · 传说神功 ───
+  - id: skill_lingqiao_chuanshuo_basic
+    name: 太初剑
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_chuanshuo
+    visualEffect: primal_sword
+
+  - id: skill_lingqiao_chuanshuo_skill
+    name: 紫霞凌虚
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 6400
+    internalForceCost: 550
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_chuanshuo
+    visualEffect: purple_cloud_ascend
+
+  - id: skill_lingqiao_chuanshuo_ult
+    name: 万象归元
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 8000
+    internalForceCost: 1600
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_chuanshuo
+    visualEffect: myriad_return_origin
+
+  # ─── 阴柔 · 传说神功 ───
+  - id: skill_yinrou_chuanshuo_basic
+    name: 幽冥指
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_chuanshuo
+    visualEffect: nether_finger
+
+  - id: skill_yinrou_chuanshuo_skill
+    name: 九幽手
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 6400
+    internalForceCost: 550
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_chuanshuo
+    visualEffect: ninefold_underworld_hand
+
+  - id: skill_yinrou_chuanshuo_ult
+    name: 无相劫
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 8000
+    internalForceCost: 1600
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_chuanshuo
+    visualEffect: formless_calamity
