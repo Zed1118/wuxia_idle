@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 4 W11 victory 路径接 resolveBattle 完成 + 销账 #32**(2026-05-13,xhigh)。主线 + 爬塔双端 victory 路径已接 `BattleResolutionService.resolve`:装备 battleCount / 心法 skillUsage / 主修升层 / 关卡 drop 全在生产路径落地。W10 与 W11 路径对称(victory ±stageDef / defeat Boss stage / defeat 普通关跳 / defeat tower 跳)。546/546,analyze 0 issues。下一步 W12 候选见末段。
+**Phase 5 收尾 #12 LevelDiff 语义统一 + 销账 #12**(2026-05-13,high)。数据层 `LevelDiffModifier.fromYaml` 把 `diff_3_or_more.attacker: null` 兜底从 `diff2.attacker(2.5)` 改 `1.0`(GDD §5.5「已碾压无须放大」单位元);公式层 `RealmUtils.realmDiffModifier` switch 第 4 分支改走 `mod.diff3OrMore`,删除「公式层硬编码 1.0」特例。两端语义统一,无运行时行为变化。546/546,analyze 0 issues。下一步 W12 候选见末段。
 
 ## 已完成
 
@@ -48,7 +48,7 @@
 8. **CLAUDE.md §12 待人类决策清单 13 条**：境界/修炼度层重名等，实现到对应位置时按需提问
 9/11. **T05/T07 验收**：Mac 无 Xcode 跑不了 desktop，留 Windows 首跑验
 10. **yaml key 命名约定差异**：numbers.yaml snake_case，内容 yaml camelCase，按文件类型隔离不冲突
-12. **`LevelDiffModifier.diff3OrMore.attacker` 数据层 vs 公式层语义不同**：NumbersConfig 兜底为 diff2.attacker(=2.5)，公式层取 1.0，Phase 5 收尾改
+~~12. LevelDiffModifier 数据层 vs 公式层语义不同~~ **已销账（2026-05-13 Phase 5 收尾）**：`LevelDiffModifier.fromYaml` null 兜底从 `diff2.attacker(2.5)` 改 `1.0`，`RealmUtils.realmDiffModifier` switch 第 4 分支统一走数据层，两端语义统一无硬编码
 17. **phase1_tasks T12 §709 笔误**：差 2 守方 0.05 错（实际差 2 守方=0.3，差 3+ 才 0.05），「必败」语义仍成立
 ~~18. flutter build web 被 Isar 阻塞~~ **W6 验证为伪挂账（2026-05-14）**：项目无 web platform target（GDD §2 Windows 单平台），isar_community 仍 native-only 不重要
 ~~23. widget test 不接真 Isar~~ **架构层面已销账（2026-05-14 W6-S2）**：service 实例化 + nullable propagation 替代旧 widget _persist 的 Isar.getInstance guard。widget 端 `ref.read(xxxServiceProvider)` 返回 null 时短路。FakeAsync vs 真 Isar 的底层不兼容仍在,但不再污染生产代码
@@ -64,7 +64,7 @@
 
 ## 下一步
 
-W12 候选(W10+W11 Phase 4 全交付,#32 销账):**Pen Windows 视觉验收 W7+W8+W9+W10+W11 五周累积一并派**(用户在线时,W11 验收点:主线胜利后装备 battleCount 真 ++ + 心法 progress 真累 + 关卡 drop 装备入背包) / Phase 5 收尾 #2 DDD 目录 + #12 LevelDiff + #28 闭关 e2e widget(W6 后理论可走 ProviderScope.overrides 注入 tempDir Isar) / #30 闭关 3 维度(§12 #7 节气清单 + 农历库阻塞) / C 奇遇 + E 武学领悟(§12 #6 机缘值规则阻塞)。
+W12 候选(W10+W11 Phase 4 全交付,#32 销账;Phase 5 #12 销账):**Pen Windows 视觉验收 W7+W8+W9+W10+W11 五周累积一并派**(用户在线时,W11 验收点:主线胜利后装备 battleCount 真 ++ + 心法 progress 真累 + 关卡 drop 装备入背包) / Phase 5 收尾 #2 DDD 目录 + #28 闭关 e2e widget(W6 后理论可走 ProviderScope.overrides 注入 tempDir Isar) / #30 闭关 3 维度(§12 #7 节气清单 + 农历库阻塞) / C 奇遇 + E 武学领悟(§12 #6 机缘值规则阻塞)。
 
 > CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 

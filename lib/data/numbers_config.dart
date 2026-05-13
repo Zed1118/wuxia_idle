@@ -741,7 +741,7 @@ class EvasionConfig {
 /// 境界差距修正（GDD §5.5，强制规则）。
 ///
 /// `diff3OrMore.attacker` 在 yaml 里是 `null`（"已碾压无需放大"），
-/// 此处按 phase1_tasks T07 提示默认取 [diff2.attacker] 作为兜底（≈2.5）。
+/// 数据层兜底为 `1.0`（单位元，与公式层 GDD §5.5「不放大」语义统一）。
 class LevelDiffModifier {
   final TierMod sameTier;
   final TierMod diff1;
@@ -764,7 +764,7 @@ class LevelDiffModifier {
       diff1: TierMod.fromYaml(y['diff_1_tier'] as Map<String, dynamic>),
       diff2: diff2,
       diff3OrMore: TierMod(
-        attacker: (raw3['attacker'] as num?)?.toDouble() ?? diff2.attacker,
+        attacker: (raw3['attacker'] as num?)?.toDouble() ?? 1.0,
         defender: (raw3['defender'] as num).toDouble(),
       ),
     );

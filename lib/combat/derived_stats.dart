@@ -10,10 +10,9 @@ import '../data/numbers_config.dart';
 /// 所有方法纯函数，从 [GameRepository.instance] 读 49 行 RealmDef 表与
 /// numbers.yaml 的 `levelDiffModifier`，**不硬编码任何数值**。
 ///
-/// **差 3+ 阶 attacker 修正的公式语义**：
-/// numbers.yaml `diff_3_or_more.attacker: null`，T07 NumbersConfig 把它兜底
-/// 为 `diff2.attacker`(=2.5) 仅为数据层字段非空保证；公式层按 GDD §5.5 +
-/// phase1_tasks T08 §470 取 `1.0`（"已经被碾压无须放大"），不读这个字段。
+/// **差 3+ 阶 attacker 修正**：numbers.yaml `diff_3_or_more.attacker: null`，
+/// 数据层 [LevelDiffModifier.fromYaml] 兜底为 `1.0`（GDD §5.5「已碾压无须放大」），
+/// 公式层直接走数据层 [LevelDiffModifier.diff3OrMore]，**不再硬编码 1.0**。
 class RealmUtils {
   RealmUtils._();
 
@@ -43,10 +42,9 @@ class RealmUtils {
       0 => mod.sameTier,
       1 => mod.diff1,
       2 => mod.diff2,
-      _ => null,
+      _ => mod.diff3OrMore,
     };
-    if (tm != null) return (tm.attacker, tm.defender);
-    return (1.0, mod.diff3OrMore.defender);
+    return (tm.attacker, tm.defender);
   }
 
   /// 该层境界的内力上限（RealmDef.internalForceMax）。
