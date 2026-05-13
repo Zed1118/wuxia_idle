@@ -35,30 +35,39 @@ void main() {
     ..fortune = 5;
 
   Character mkCharacter({
+    int id = 1,
+    String name = '测试者',
+    RealmTier realmTier = RealmTier.xueTu,
+    LineageRole lineageRole = LineageRole.founder,
+    int internalForceMax = 500,
     int? mainTechniqueId,
     List<int>? assistTechniqueIds,
     int? weaponId,
     int? armorId,
     int? accessoryId,
+    int? masterId,
+    List<int>? discipleIds,
   }) {
     final now = DateTime(2026, 5, 11);
     return Character.create(
-      name: '测试者',
-      realmTier: RealmTier.xueTu,
+      name: name,
+      realmTier: realmTier,
       realmLayer: RealmLayer.qiMeng,
       attributes: mkAttrs(),
       rarity: RarityTier.biaoZhun,
-      lineageRole: LineageRole.founder,
+      lineageRole: lineageRole,
       createdAt: now,
       internalForce: 200,
-      internalForceMax: 500,
+      internalForceMax: internalForceMax,
       school: TechniqueSchool.gangMeng,
       mainTechniqueId: mainTechniqueId,
       assistTechniqueIds: assistTechniqueIds,
       equippedWeaponId: weaponId,
       equippedArmorId: armorId,
       equippedAccessoryId: accessoryId,
-    )..id = 1;
+      masterId: masterId,
+      discipleIds: discipleIds,
+    )..id = id;
   }
 
   Equipment mkEquipment({
@@ -67,9 +76,11 @@ void main() {
     int enhanceLevel = 0,
     int battleCount = 0,
     EquipmentTier tier = EquipmentTier.xunChang,
+    String? defId,
+    bool isLineageHeritage = false,
   }) {
     return Equipment.create(
-      defId: 'test_eq_$id',
+      defId: defId ?? 'test_eq_$id',
       tier: tier,
       slot: slot,
       obtainedAt: DateTime(2026, 5, 11),
@@ -79,6 +90,7 @@ void main() {
       baseSpeed: 10,
       enhanceLevel: enhanceLevel,
       battleCount: battleCount,
+      isLineageHeritage: isLineageHeritage,
     )..id = id;
   }
 
@@ -104,18 +116,28 @@ void main() {
   Future<void> pumpPanel(
     WidgetTester tester, {
     required Character character,
+    Map<int, Character> extraCharacters = const {},
+    List<int>? activeIds,
     Map<int, Equipment> equipments = const {},
     Map<int, Technique> techniques = const {},
   }) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
+    final ids = activeIds ??
+        <int>[character.id, ...extraCharacters.keys];
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          activeCharacterIdsProvider.overrideWith((ref) async => ids),
           characterByIdProvider(character.id).overrideWith(
             (ref) async => character,
           ),
+          for (final entry in extraCharacters.entries)
+            characterByIdProvider(entry.key).overrideWith(
+              (ref) async => entry.value,
+            ),
           for (final entry in equipments.entries)
             equipmentByIdProvider(entry.key).overrideWith(
               (ref) async => entry.value,
@@ -130,8 +152,9 @@ void main() {
         ),
       ),
     );
-    // 三次 pump 让 family Future 完成 + AsyncValue 翻转 + 子 Consumer rebuild。
+    // 四次 pump 让 activeCharacterIdsProvider + family Future 完成 + AsyncValue 翻转 + 子 Consumer rebuild。
     // 不用 pumpAndSettle：CircularProgressIndicator 是无限动画会卡。
+    await tester.pump();
     await tester.pump();
     await tester.pump();
     await tester.pump();
@@ -230,5 +253,179 @@ void main() {
     expect(indicator.value, closeTo(0.5, 1e-9));
     expect(find.text('50 / 100'), findsOneWidget);
     expect(find.text('主修'), findsOneWidget);
+  });
+
+  // ── T56 用例 5：3 角色 Tab 切换 ────────────────────────────────────────
+
+  testWidgets('activeCharacterIds=[1,2,3] → 3 Tab label 渲染 + 默认显示首位姓名',
+      (tester) async {
+    final founder = mkCharacter(
+      id: 1,
+      name: '祖师爷',
+      lineageRole: LineageRole.founder,
+      discipleIds: [2, 3],
+    );
+    final first = mkCharacter(
+      id: 2,
+      name: '大弟子A',
+      lineageRole: LineageRole.disciple,
+      masterId: 1,
+    );
+    final second = mkCharacter(
+      id: 3,
+      name: '二弟子B',
+      lineageRole: LineageRole.disciple,
+      masterId: 1,
+    );
+
+    await pumpPanel(
+      tester,
+      character: founder,
+      extraCharacters: {2: first, 3: second},
+    );
+
+    // 3 个 Tab label 都在
+    expect(find.text('祖师'), findsOneWidget);
+    expect(find.text('大弟子'), findsOneWidget);
+    expect(find.text('二弟子'), findsOneWidget);
+    // 默认首屏祖师爷姓名可见
+    expect(find.text('祖师爷'), findsOneWidget);
+    expect(find.text('大弟子A'), findsNothing);
+  });
+
+  testWidgets('tap 大弟子 Tab → 切到 character 2，祖师内容消失',
+      (tester) async {
+    final founder = mkCharacter(
+      id: 1,
+      name: '祖师爷',
+      lineageRole: LineageRole.founder,
+      discipleIds: [2, 3],
+    );
+    final first = mkCharacter(
+      id: 2,
+      name: '大弟子A',
+      lineageRole: LineageRole.disciple,
+      masterId: 1,
+    );
+    final second = mkCharacter(
+      id: 3,
+      name: '二弟子B',
+      lineageRole: LineageRole.disciple,
+      masterId: 1,
+    );
+
+    await pumpPanel(
+      tester,
+      character: founder,
+      extraCharacters: {2: first, 3: second},
+    );
+
+    expect(find.text('祖师爷'), findsOneWidget);
+
+    await tester.tap(find.text('大弟子'));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    // 切换后顶部姓名变更
+    expect(find.text('大弟子A'), findsOneWidget);
+    // 祖师爷顶部姓名消失（lineage section 师父行也可能出现祖师爷，
+    // 所以 findsOneWidget 即可，不可断言 findsNothing）
+    expect(find.text('祖师爷'), findsOneWidget); // 在「师父」行
+  });
+
+  // ── T56 用例 6：师承段渲染 ─────────────────────────────────────────────
+
+  testWidgets('师承段：师父行 + 徒弟列表 join + 传记占位 + 遗物名',
+      (tester) async {
+    final founder = mkCharacter(
+      id: 1,
+      name: '祖师爷',
+      lineageRole: LineageRole.founder,
+      discipleIds: [2, 3],
+      weaponId: 100,
+      armorId: 101,
+    );
+    final first = mkCharacter(
+      id: 2,
+      name: '大弟子A',
+      lineageRole: LineageRole.disciple,
+      masterId: 1,
+    );
+    final second = mkCharacter(
+      id: 3,
+      name: '二弟子B',
+      lineageRole: LineageRole.disciple,
+      masterId: 1,
+    );
+    final sword = mkEquipment(
+      id: 100,
+      slot: EquipmentSlot.weapon,
+      defId: 'weapon_liqi_long_quan',
+      isLineageHeritage: true,
+    );
+    final armor = mkEquipment(
+      id: 101,
+      slot: EquipmentSlot.armor,
+      defId: 'armor_haojiahuo_jin_pao',
+      isLineageHeritage: true,
+    );
+
+    await pumpPanel(
+      tester,
+      character: founder,
+      extraCharacters: {2: first, 3: second},
+      equipments: {100: sword, 101: armor},
+    );
+
+    // 师承段标题
+    expect(find.text('师承'), findsOneWidget);
+    expect(find.text('师父'), findsOneWidget);
+    expect(find.text('徒弟'), findsOneWidget);
+    expect(find.text('传记'), findsOneWidget);
+    expect(find.text('遗物'), findsOneWidget);
+
+    // 祖师无师父 → 「无」
+    expect(find.text('无'), findsOneWidget);
+    // 徒弟列表 join
+    expect(find.text('大弟子A / 二弟子B'), findsOneWidget);
+    // 传记占位
+    expect(find.text('[传记待补]'), findsOneWidget);
+    // 遗物名（从 GameRepository.equipmentDefs 解析）
+    expect(find.text('龙泉剑 / 锦袍'), findsOneWidget);
+  });
+
+  // ── T56 用例 7：祖师内力上限 lineage +10% buff 落 UI ──────────────────
+
+  testWidgets('祖师装 2 件 lineage heritage → 内力上限显示 base × 1.10',
+      (tester) async {
+    // base 10000 → × (1 + 2×0.05) = 11000
+    final founder = mkCharacter(
+      id: 1,
+      name: '祖师爷',
+      lineageRole: LineageRole.founder,
+      internalForceMax: 10000,
+      weaponId: 100,
+      armorId: 101,
+    );
+    final sword = mkEquipment(
+      id: 100,
+      slot: EquipmentSlot.weapon,
+      isLineageHeritage: true,
+    );
+    final armor = mkEquipment(
+      id: 101,
+      slot: EquipmentSlot.armor,
+      isLineageHeritage: true,
+    );
+
+    await pumpPanel(
+      tester,
+      character: founder,
+      equipments: {100: sword, 101: armor},
+    );
+
+    // internalForceValue 格式: "200 / 11000"（current=200 固定，max=11000）
+    expect(find.text('200 / 11000'), findsOneWidget);
   });
 }

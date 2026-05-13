@@ -75,6 +75,21 @@ class UiStrings {
   static const String panelEquipment = '装备';
   static const String panelTechnique = '心法';
 
+  // 师承段（T56）
+  static const String panelLineage = '师承';
+  static const String lineageMasterLabel = '师父';
+  static const String lineageDisciplesLabel = '徒弟';
+  static const String lineageBiographyLabel = '传记';
+  static const String lineageHeritageLabel = '遗物';
+  static const String lineageBiographyPlaceholder = '[传记待补]';
+  static const String lineageNoMaster = '无';
+  static const String lineageNoDisciples = '无';
+  static const String lineageNoHeritage = '无';
+
+  /// 师承 Tab 标签：按 activeCharacterIds 顺序展示。
+  /// 与 Phase2SeedService.seedMasterDisciple 槽位约定锁死（slot0=祖师 / 1=大弟子 / 2=二弟子）。
+  static const List<String> lineageTabLabels = ['祖师', '大弟子', '二弟子'];
+
   static const String attrConstitution = '根骨';
   static const String attrEnlightenment = '悟性';
   static const String attrAgility = '身法';
