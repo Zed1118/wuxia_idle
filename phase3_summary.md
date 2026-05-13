@@ -132,3 +132,59 @@
 ### 下一 Week 议题
 
 Week 4 候选：C 奇遇（需先决 §12 #6）/ D 师徒传承（需先决 §12 #10/#11）/ E 武学领悟（同 §12 #6）。
+
+---
+
+## Week 4 · 师徒系统 D（T53-T58，2026-05-13，T58 待 Pen 验收）
+
+**目标**：Demo §7.1 师徒传承落地：3 角色（祖师 + 大弟子 + 二弟子）schema + 种子 service + 师承遗物 +5% 内力 buff + 角色面板 Tab 切换 + 「师承」段 UI + 3v3 默认入阵集成测试。
+
+**方向选定（D 而非 C/E）**：D 不被 §12 #6（机缘值累积规则）阻塞；§12 #10/#11（师承遗物细则/祖师 buff 内容）在 Demo 不做飞升前提下全部消解；Character 字段（lineageRole / masterId / discipleIds / isFounder）已留位。决策链详 `docs/handoff/week4_d_minimal_spec_2026-05-13.md` 与 `docs/handoff/week4_t53_t55_closeout_2026-05-13.md`。
+
+**分支 / tag**：main no-branch（feat 直接 commit main），收尾 tag `v0.3.0-w4`。
+
+### 交付清单
+
+| T | 内容 | 测试 |
+|---|---|---|
+| T53 ✅ | `data/masters.yaml` 3 师徒 fixture（方案 A 降级：祖师一流/大弟子二流/二弟子三流）+ `MasterDef` + `AttributeProfile` 纯 Dart；`GameRepository.masters` + `_enforceMasterRedLines` 7 项（数量 3 / slotIndex 连续 / role 对应 slot / founder 唯一 / 不允许 wuSheng / 属性单项 [1,10] 总和 [16,24] / 三系锁死 starting tier ≤ defaultRealm）+ `getMasterBySlot` / `getFounderMaster` | +10（495→505）|
+| T54 ✅ | `Phase2SeedService.seedMasterDisciple` 一次 writeTxn：3 师徒 + 双向关系 + 9 件装备（EquipmentFactory.fromDef）+ 4 本心法（祖师 main+assist / 2 弟子 main）+ SaveData.activeCharacterIds=[1,2,3] + founderCharacterId=1 + 2000 mojianshi/200 jeJing 基础物料；P5 按钮接 phase2_test_menu 跳 CharacterPanelScreen；**销账 #25**（P1 缺主修 → seedMasterDisciple 路径 3 师徒齐主修，buildTeams stage_01_01 不再 fail-fast）| +6（505→511）|
+| T55 ✅ | `EquipmentDef.isLineageHeritage` 字段 + fromYaml 读 key；`equipment.yaml` 标 2 件遗物 fixture（龙泉剑 weapon_liqi_long_quan + 锦袍 armor_haojiahuo_jin_pao）；`EquipmentFactory.fromDef` 函数体 OR `def.isLineageHeritage`（drop/师承种子统一）；`GameRepository` 启用祖师遗物红线（祖师 startingEquipmentIds 必须 ≥ 1 件 def.isLineageHeritage=true）| +5（511→516）|
+| T56 ✅ | `CharacterPanelScreen` 改 ConsumerStatefulWidget + 顶部 TabBar 三段（祖师/大弟子/二弟子，按 `activeCharacterIdsProvider` 顺序）+ `_LineageSection`（师父/徒弟/「[传记待补]」/遗物名）；新 `activeCharacterIdsProvider`；`MainMenu` 改 ConsumerWidget + `_SeclusionMenuButton` Riverpod `.when()` 异步读首位角色 realmTier，loading→Opacity 0.4 disabled；**销账 #26**（main_menu 闭关入口硬编码 characterId=1/RealmTier.xueTu 已移除）| +6（516→522）|
+| T57 ✅ | `test/services/master_disciple_battle_test.dart` 6 用例端到端：装配完整 / 境界对齐 masters.yaml / 装备+招式+内力正确 / 祖师 maxInternalForce 含 lineage +10% / victory leftWin / defeat path 不阻塞；**T55 战斗路径补齐**：`BattleCharacter.fromCharacter` 之前 `maxInternalForce: character.internalForceMax` 未走 lineage 版（仅 UI 接），改用 `CharacterDerivedStats.internalForceMaxWithLineage` —— "祖师战斗内力 +5%" 现真正落地战斗路径 | +7（522→529）|
+| T58 🔄 | Pen 视觉验收 ≥ 3 截图 + tag v0.3.0-w4 + 本 summary Week 4 段完结 | 待完成 |
+
+**累计测试**：495（Week 3 末 P1 #1 后基线）→ 529（Week 4 T57 末，+34）/ analyze 0 issues。
+
+### 关键设计决策
+
+- **方案 A 降级（祖师一流而非宗师）**：原 spec 写祖师宗师/大弟子绝顶/二弟子一流，T53 阶段 A 审计发现 yaml 不支持 —— `equipment.yaml` 最高阶到 `liQi`（一流），`techniques.yaml` 最高阶到 `mingJia`（二流）。0 改动 yaml 选 A，且契合 GDD §7.1「一流（结丹）解锁收徒」锚点
+- **§12 #10/#11 Demo 期消解**：关键洞察 = Demo 不做飞升 → §10 (a/b/c/d) + §11 buff 内容全部不发生（无传位/无继承/无累代/无冲突）；`numbers.yaml founder_ancestor_buff.enabled_when_alive: false` 已锁 Demo 不实现
+- **`LineageRole` 实际值**：`founder/disciple/grandDisciple`（不是 spec 写的 firstDisciple/secondDisciple）；大/二弟子都是 `disciple`，靠 `activeCharacterIds` 的 slot 顺序区分
+- **isLineageHeritage 引入策略**：EquipmentFactory.fromDef 函数体内 OR `def.isLineageHeritage`（保参数签名不变，drop/师承种子调用方零改动，参数保留为奇遇赠送临时遗物等场景的 override 通道）
+- **T55 commit 描述误导教训**："derived_stats.internalForceMaxWithLineage 已存在" ≠ "战斗路径已接入"；T55 当时只在 UI 验证显示对，BattleCharacter.fromCharacter 没改；T57 写集成测试时一查才发现 —— 典型 [上层 fail 掩盖下层 bug]
+
+### 销账
+
+- **#25** P1 fixture 缺主修 → T54 seedMasterDisciple 路径销账（P1 fixture 本身保留无主修体例，玩家走 P5 入口进战斗）
+- **#26** main_menu 闭关入口硬编码 → T56 Riverpod `.when()` 异步读销账
+
+### 待完成（T58）
+
+1. **Pen 视觉验收**（派单 prompt 见 commit message）：拉 main → `flutter build windows --release` → 跑游戏走流程
+   - 清旧存档（schema 仍 0.4.0，理论上不必清，但 activeCharacterIds 从 1 个变 3 个可能触发字段长度差异，**保险清**）
+   - 路径：P5 师徒种子 → 角色面板查 3 师徒 Tab + 师承段 → 主线 stage_01_01 → 看 3 师徒同阵 victory
+2. **截图归档** ≥ 3 张至 `docs/screenshots/phase3_w4/`：
+   - 01 P5 种子按钮已加入 phase2_test_menu
+   - 02 角色面板 Tab 三段切换 + 师承 section 渲染（祖师视角 + 大/二弟子视角）
+   - 03 主线 stage_01_01 战斗 3 师徒同阵 victory log
+3. **本 summary** T58 行打勾 + 视觉验收截图表格
+4. **tag v0.3.0-w4** push origin
+
+### 下一 Week 议题
+
+Week 5 候选（保留 §Week 4 候选 spec 草案）：
+- C 奇遇（需先决 §12 #6 机缘值累积规则）
+- E 武学领悟（同 §12 #6）
+- F 主线扩到 15 关（P1 #1 留尾，与 narrative defeat hook 9 关扩容一起做）
+- Phase 5 收尾（DDD 目录整理 / Riverpod 3.x / Isar 4.x / flutter build web 解锁）
