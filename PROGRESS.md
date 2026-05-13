@@ -5,9 +5,7 @@
 
 ## 当前阶段
 
-**Phase 5 W6 全交付**（2026-05-14，分支 `feat/phase5-w6-isar-riverpod-major-upgrade`，3 commits：`1e937df` c1-c4 升级 + `4bee3c4` PROGRESS 同步 + `f305bde` c5-c7 service 实例化）。原计划 S1/S2 分两 tag,pub solver 实测强绑必须合并升级；reality check 出 "Isar 4.x" 在 pub.dev 只有 dev,真路是 fork `isar_community 3.3.2`（drop-in 兼容,仍 native-only）。**升级链**：isar→isar_community 3.3.2 / flutter_riverpod 3.x / riverpod_annotation 4.x / riverpod_generator 4.x / analyzer 5.x→9.x（解 #3 上限部分）。**Service 实例化 + nullable propagation**：8 个有 Isar 依赖的 service 改实例化 + 构造函数接 Isar；新 `IsarSetup.instanceOrNull` + nullable isarProvider + 9 个 service provider，widget test 自动短路（替代旧 widget `Isar.getInstance` guard，4 处全删）。**销账 #23** 架构层面解决（widget 端 guard 散点 → provider 端集中处理）。533 改动文件 +611/-448 行（c1-c4 +237/-161 / c5+ +374/-287）。analyze 0 issues / test 530/530。
-
-**下一步**：feat 分支待 merge main + tag `v0.3.0-w6` push origin（用户决策 merge 策略）。W6 之后候选见「下一步」段。
+**Phase 3 Week 7 T63 装备扩 35 件**(2026-05-13,Mac 代码完成)。详条见「已完成」末。前置 Phase 5 W6 全交付(2026-05-14,tag v0.3.0-w6 merge main HEAD a26eaec,详条 docs/handoff/week6_full_closeout_2026-05-14.md)。
 
 ## 已完成
 
@@ -29,10 +27,12 @@
 - **Phase 3 Week 5 T59 stages.yaml 6→15 关 + narrativeDefeatId schema**（2026-05-13）：StageDef 加 `narrativeDefeatId`（fromYaml + 构造函数）/ stages.yaml 全量重写 3 章 × 5 关（Ch1 学徒 1.0→1.8 / Ch2 三流 1.5→2.3 / Ch3 二流 2.0→2.8 难度递增）/ 章末两关 4/5 isBossStage=true 配 defeat 文案对齐 DeepSeek 6 个 defeat 文件（stage_NN_04/05_defeat.yaml）/ 数值梯度按 GDD §3 三阶守红线（xueTu HP 1500-3500、sanLiu HP 3500-7000、erLiu HP 7000-11000） / 现 6 关数值层与 DeepSeek narrative 编号不对齐的旧账一并修（stage_02_02 黑风寨 Boss → 改为 sanLiu 中段「茶馆论剑」普通关、stage_03_02 一战封王 → 改为 erLiu 中段「许昌擂台」、章末大 Boss 重定位到 stage_NN_05）。**新增 GameRepository._enforceMainlineRedLines**：mainline 总数=15 / 3 章 × 5 关 / narrativeDefeatId 必须仅在 isBossStage=true 关。test/data/game_repository_test 新增「主线 15 关红线」用例 + 既有 5 个测试期望同步更新（stageDefs.length 6→15 / dropTable 计数 / mainline_progress_service Ch1 全通=5 关 / chapter_list_screen 全 15 关通关 / stage_list_screen 5 关全名 + 锁数）。529 → 530 测试，analyze 0 issues
 - **Phase 3 Week 5 T60 stage_entry_flow 战败 narrative hook + 销账 #29**（2026-05-13）：runStageFlow 战败分支改写——若 `stage.narrativeDefeatId != null && context.mounted` → push NarrativeReaderScreen（content 走 NarrativeLoader.load，缺文件兜底「[剧情待补]」），看完 pop 回 stage list；不记录进度 / 不掉装备（Phase 4 再加战败结算）。章内普通关（无 narrativeDefeatId）战败分支保留旧行为直接返回 list。dartdoc 注释更新「3b. defeat」段说明 Boss 关 vs 普通关分流
 - **Phase 3 Week 5 T62 Pen Windows 视觉验收 + 2 旁支 fix + tag v0.3.0-w5**（2026-05-13，Pen 14:56-15:23）：6 截图归档 `docs/screenshots/phase3_w5/`。**核心销账截图 06**：风雨渡口·败 NarrativeReaderScreen 标题 + 文案「撑伞的人没有追。他只是站在雨里，看着你退回渡口。」+ 1/3 分页 + 继续按钮（T60 defeat hook 视觉落地）。**截图 05** 战斗右队胜 0v2 17 tick 玩家方全阵亡（erLiu 跨 2 阶设计生效）。**旁支 fix 1**：CharacterPanelScreen 无返回按钮（T56 加 Tab 时遗漏）→ commit `87387ad` AppBar + BackButton（canPop 才显示）。**旁支 fix 2**：stage_01_05 原 xueTu yuanShu 玩家方碾压（10 tick 左队胜 21673 总伤）→ balance commit `73c1f37` 跨 2 阶到 erLiu（撑伞高人 10000HP 750Atk / 渡口刀客剑客 9000HP 700-720Atk），设计语义「章末大 Boss 暗示需升阶」。phase3_summary.md Week 5 段完整 + tag v0.3.0-w5 push origin
+- **Phase 5 W6 升级 + 架构重构 tag v0.3.0-w6**(2026-05-14):isar→isar_community 3.3.2 / flutter_riverpod 3.x / riverpod_annotation 4.x / riverpod_generator 4.x / analyzer 5.x→9.x。8 个有 Isar 依赖的 service 改实例化 + 构造函数接 Isar;新 `IsarSetup.instanceOrNull` + nullable isarProvider + 9 个 service provider,widget test 自动短路(替代旧 widget `Isar.getInstance` guard,4 处全删)。**销账 #23**(架构层面)。530/530 测试,详条 `docs/handoff/week6_full_closeout_2026-05-14.md`
+- **Phase 3 Week 7 T63 装备 fixture 扩 10→35 件 + 覆盖度红线**(2026-05-13):equipment.yaml 按 7 阶 × 5 件重写(weapon 3 三流派各 1 + armor 1 + accessory 1,新增 25 件);命名风格延续武侠朴实(折刀/软鞭/玄花斧/缠丝索/玄铁甲/翡玉佩/破阵锤/青虚剑/毒龙索/银鳞甲/青玉环/玄天斧/长虹剑/血莲鞭/金丝甲/玉龙佩/破军刀/天问剑/幻梦鞭/玄黄袍/昆仑佩 等);数值范围严格照搬 numbers.yaml tier 段(零审计);drop_source_tags 占位(tower_30/jueDing_unlock/zongShi_unlock/wuSheng_unlock,Phase 4 掉装备 service 完善后回填)。GameRepository 抽 `_enforceEquipmentRedLines` 方法:既有单件 baseAttackMax ≤ 2000 + 区间合法 + 新增覆盖度三件套(每阶 ≥5 件 / 每阶 weapon 三流派齐 / armor + accessory 各 ≥1);流程在 _enforceMasterRedLines 之前保证 fail-fast 优先级正确。test +2 fail-fast(某阶 <5 件 / 某阶 weapon 流派缺失),期望 equipmentDefs.length 10→35,累计 530 → 532 测试
 
 ## 进行中
 
-**Phase 3 Week 5 F 全交付**（2026-05-13，tag v0.3.0-w5）。T59-T62 全部 ✅，530/530 测试 + 6 截图视觉验收通过 + 销账 #29。等 Week 6 方向决策。
+**Phase 3 Week 7 T63 装备扩 35 件 ✅**(2026-05-13)。Mac 端代码完成 532/532。下一步:commit + push,Pen 视觉验收非必需(纯 fixture + 红线,无 UI 改动)。
 
 ## 已知偏差 / 挂账事项
 
@@ -58,9 +58,7 @@
 
 ## 下一步
 
-**Phase 5 W6 待 merge main + tag** ：feat 分支 3 commits 已落,等用户拍板 merge 策略（fast-forward 保留 3 commits / squash 合一个）+ 打 tag `v0.3.0-w6` push origin。
-
-W6 之后候选：W7+ Phase 4 战斗结算扩展 / B 装备扩 30-50 / D 心法扩 20-30 / A 爬塔 UI（schema 已 ready）/ #30 闭关 3 维度（§12 #7 节气清单阻塞）/ C 奇遇 + E 武学领悟（§12 #6 机缘值规则阻塞）。
+W8 候选(W7 后):D 心法扩 20-30(同 T63 套路,纯 fixture)/ A 爬塔 UI(schema 已 W2 ready,缺 UI 串联)/ Phase 4 战斗结算扩展(掉装备/境界/散功代价,需先讨论范围)/ #30 闭关 3 维度(§12 #7 节气清单阻塞)/ C 奇遇 + E 武学领悟(§12 #6 机缘值规则阻塞)。
 
 > CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 

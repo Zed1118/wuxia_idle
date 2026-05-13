@@ -23,7 +23,8 @@ void main() {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
       expect(repo.realms.length, 49, reason: '49 级境界');
-      expect(repo.equipmentDefs.length, 10, reason: '10 件装备');
+      expect(repo.equipmentDefs.length, 35,
+          reason: '35 件装备（Phase 3 Week 7 T63 扩 7 阶 × 5 件）');
       expect(repo.techniqueDefs.length, 6, reason: '6 本心法');
       expect(repo.skillDefs.length, 18, reason: '18 招招式');
       expect(repo.stageDefs.length, 15, reason: '主线 15 关（Phase 3 Week 5 T59 扩容）');
@@ -194,6 +195,129 @@ equipment:
           (e) => e.message,
           'message',
           contains('baseAttackMax'),
+        )),
+      );
+    });
+
+    test('T63 装备覆盖度：某阶 < 5 件 → 抛 StateError', () async {
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('equipment.yaml')) {
+          return '''
+equipment:
+  - id: weapon_lone
+    name: 孤剑
+    tier: xunChang
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 100
+    baseAttackMax: 150
+    baseHealthMin: 0
+    baseHealthMax: 0
+    baseSpeedMin: 0
+    baseSpeedMax: 10
+    presetLoreIds: []
+    dropSourceTags: []
+    iconPath: x.png
+''';
+        }
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('覆盖度不足'),
+        )),
+      );
+    });
+
+    test('T63 装备覆盖度：某阶 weapon 流派缺失 → 抛 StateError', () async {
+      // 5 件 xunChang 满足数量 + armor + accessory,但 weapon 全 lingQiao,
+      // 缺 gangMeng/yinRou 流派武器
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('equipment.yaml')) {
+          return '''
+equipment:
+  - id: weapon_a
+    name: 剑甲
+    tier: xunChang
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 100
+    baseAttackMax: 150
+    baseHealthMin: 0
+    baseHealthMax: 0
+    baseSpeedMin: 0
+    baseSpeedMax: 10
+    presetLoreIds: []
+    dropSourceTags: []
+    iconPath: x.png
+  - id: weapon_b
+    name: 剑乙
+    tier: xunChang
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 100
+    baseAttackMax: 150
+    baseHealthMin: 0
+    baseHealthMax: 0
+    baseSpeedMin: 0
+    baseSpeedMax: 10
+    presetLoreIds: []
+    dropSourceTags: []
+    iconPath: x.png
+  - id: armor_a
+    name: 甲
+    tier: xunChang
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 100
+    baseHealthMax: 200
+    baseSpeedMin: 0
+    baseSpeedMax: 5
+    presetLoreIds: []
+    dropSourceTags: []
+    iconPath: x.png
+  - id: accessory_a
+    name: 佩甲
+    tier: xunChang
+    slot: accessory
+    baseAttackMin: 20
+    baseAttackMax: 40
+    baseHealthMin: 50
+    baseHealthMax: 100
+    baseSpeedMin: 0
+    baseSpeedMax: 8
+    presetLoreIds: []
+    dropSourceTags: []
+    iconPath: x.png
+  - id: accessory_b
+    name: 佩乙
+    tier: xunChang
+    slot: accessory
+    baseAttackMin: 20
+    baseAttackMax: 40
+    baseHealthMin: 50
+    baseHealthMax: 100
+    baseSpeedMin: 0
+    baseSpeedMax: 8
+    presetLoreIds: []
+    dropSourceTags: []
+    iconPath: x.png
+''';
+        }
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('流派武器'),
         )),
       );
     });
