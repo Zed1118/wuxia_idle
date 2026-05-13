@@ -8,7 +8,9 @@ import '../../data/defs/stage_def.dart';
 import '../../data/game_repository.dart';
 import '../../data/isar_setup.dart';
 import '../../data/models/character.dart';
+import '../../data/models/enums.dart';
 import '../../data/models/equipment.dart';
+import '../../data/models/inventory_item.dart';
 import '../../data/models/save_data.dart';
 import '../../data/models/technique.dart';
 import '../../data/narrative_loader.dart';
@@ -87,6 +89,9 @@ Future<void> runStageFlow({
   }
 
   // ── victory ──
+  // Phase 4 W11 #32 销账：装备 battleCount / 心法 skillUsage / 主修升层 + 关卡 drop 落地
+  await _applyVictoryResolution(ref: ref, stage: stage);
+
   await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
     stageId: stage.id,
     now: DateTime.now(),
@@ -225,6 +230,114 @@ class DefeatLossEntry {
     this.newLayerLabel,
     this.layersRolledBack = 0,
   });
+}
+
+/// Phase 4 W11 #32 销账：主线 victory 路径战斗结算。
+///
+/// 从 Isar 拉玩家方角色 + 心法 + 装备 → 跑 [BattleResolutionService.resolve]
+/// (isVictory=true) → in-place battleCount/skillUsage/cultivationProgress 累积 +
+/// stage.dropTable roll 出装备/物品 → writeTxn putAll + 装备 owner=null 入背包 +
+/// items 写/更新 inventoryItems。
+///
+/// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 默默返回，不阻塞
+/// victory narrative 流（与 _applyBossDefeatPenalty 一致风格）。
+Future<void> _applyVictoryResolution({
+  required WidgetRef ref,
+  required StageDef stage,
+}) async {
+  final isar = IsarSetup.instanceOrNull;
+  if (isar == null) return;
+  final finalState = ref.read(battleProvider);
+  if (!finalState.isFinished) return;
+
+  final save = await isar.saveDatas.get(0);
+  final ids = save?.activeCharacterIds ?? const <int>[];
+  if (ids.isEmpty) return;
+
+  final characters = <Character>[];
+  final equipsByCh = <int, List<Equipment>>{};
+  final techsByCh = <int, List<Technique>>{};
+  for (final cid in ids) {
+    final c = await isar.characters.get(cid);
+    if (c == null) continue;
+    characters.add(c);
+
+    final eqs = <Equipment>[];
+    for (final eqId in [
+      c.equippedWeaponId,
+      c.equippedArmorId,
+      c.equippedAccessoryId,
+    ]) {
+      if (eqId == null) continue;
+      final e = await isar.equipments.get(eqId);
+      if (e != null) eqs.add(e);
+    }
+    equipsByCh[c.id] = eqs;
+
+    final ts = await isar.techniques
+        .where()
+        .filter()
+        .ownerCharacterIdEqualTo(c.id)
+        .findAll();
+    techsByCh[c.id] = ts;
+  }
+  if (characters.isEmpty) return;
+
+  final numbers = ref.read(numbersConfigProvider);
+  final dropSvc = ref.read(dropServiceProvider);
+
+  final result = BattleResolutionService.resolve(
+    finalState: finalState,
+    participatingCharacters: characters,
+    equipmentsByCharacter: equipsByCh,
+    techniquesByCharacter: techsByCh,
+    stageDef: stage,
+    rng: DefaultRng(),
+    progressToNextMap: numbers.cultivationProgressToNext,
+    techniqueDefLookup: GameRepository.instance.getTechnique,
+    dropService: dropSvc,
+    isVictory: true,
+  );
+
+  final now = DateTime.now();
+  await isar.writeTxn(() async {
+    // in-place 副作用（battleCount / skillUsage / 主修 progress + layer）
+    await isar.characters.putAll(characters);
+    for (final list in techsByCh.values) {
+      if (list.isNotEmpty) await isar.techniques.putAll(list);
+    }
+    for (final list in equipsByCh.values) {
+      if (list.isNotEmpty) await isar.equipments.putAll(list);
+    }
+    // drops：装备 owner=null 入背包 + items 写/更新 inventoryItems
+    if (result.dropResult.equipments.isNotEmpty) {
+      await isar.equipments.putAll(result.dropResult.equipments);
+    }
+    for (final item in result.dropResult.items) {
+      final existing = await isar.inventoryItems.getByDefId(item.defId);
+      if (existing != null) {
+        existing.quantity += item.quantity;
+        existing.lastObtainedAt = now;
+        await isar.inventoryItems.put(existing);
+      } else {
+        await isar.inventoryItems.put(
+          InventoryItem()
+            ..defId = item.defId
+            ..itemType = _itemTypeOfMainline(item.defId)
+            ..quantity = item.quantity
+            ..firstObtainedAt = now
+            ..lastObtainedAt = now,
+        );
+      }
+    }
+  });
+}
+
+/// 主线 victory drop items 的 ItemType 推断（与 tower _itemTypeOf 同源）。
+ItemType _itemTypeOfMainline(String defId) {
+  if (defId == 'item_mojianshi') return ItemType.moJianShi;
+  if (defId == 'item_xinxuejiejing') return ItemType.xinXueJieJing;
+  return ItemType.miscMaterial;
 }
 
 /// Boss 关战败：从 Isar 拉玩家方角色 + 心法 + 装备，跑

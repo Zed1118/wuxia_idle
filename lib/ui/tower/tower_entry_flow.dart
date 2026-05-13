@@ -3,16 +3,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:isar_community/isar.dart';
+
 import '../../data/defs/tower_floor_def.dart';
 import '../../data/game_repository.dart';
 import '../../data/isar_setup.dart';
+import '../../data/models/character.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/equipment.dart';
 import '../../data/models/inventory_item.dart';
+import '../../data/models/save_data.dart';
+import '../../data/models/technique.dart';
 import '../../data/narrative_loader.dart';
 import '../../providers/battle_providers.dart';
 import '../../providers/isar_provider.dart';
 import '../../providers/tower_providers.dart';
+import '../../services/battle_resolution.dart';
 import '../../services/drop_service.dart';
 import '../../services/stage_battle_setup.dart';
 import '../../services/tower_progress_service.dart';
@@ -93,6 +99,11 @@ Future<void> runTowerFlow({
     clearResult = (isFirstClear: false, highestAfter: 0);
   }
 
+  // Phase 4 W11 #32 销账：爬塔 victory 战斗结算（装备 battleCount / 心法 skillUsage /
+  // 主修升层 in-place + writeTxn putAll）。drops 仍走下方 rollTowerRewards 路径，
+  // 首通才发奖控制不变（stageDef=null 让 service.resolve 不内部 roll drops）。
+  await _applyTowerVictoryResolution(ref: ref);
+
   // ── drops（isFirstClear 控发奖；重打不发奖 CLAUDE §5.1 防刷）──
   DropResult drops = const DropResult(equipments: [], items: []);
   if (clearResult.isFirstClear && GameRepository.isLoaded) {
@@ -154,6 +165,82 @@ Future<bool> _runTowerBattle({
   );
   if (!completer.isCompleted) completer.complete(false);
   return completer.future;
+}
+
+/// Phase 4 W11 #32 销账：爬塔 victory 战斗结算（in-place 副作用 + 写回 Isar）。
+///
+/// 与主线 `_applyVictoryResolution` 体例对齐，但传 `stageDef: null` 让
+/// [BattleResolutionService.resolve] 不内部 roll drops（爬塔走 rollTowerRewards
+/// + isFirstClear 首通发奖控制，落地在 _persistDrops；此函数仅取
+/// battleCount / skillUsage / cultivationEvents 副作用）。
+///
+/// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 默默返回，不阻塞
+/// victory dialog / narrative。
+Future<void> _applyTowerVictoryResolution({required WidgetRef ref}) async {
+  final isar = ref.read(isarProvider);
+  if (isar == null) return;
+  final finalState = ref.read(battleProvider);
+  if (!finalState.isFinished) return;
+
+  final save = await isar.saveDatas.get(0);
+  final ids = save?.activeCharacterIds ?? const <int>[];
+  if (ids.isEmpty) return;
+
+  final characters = <Character>[];
+  final equipsByCh = <int, List<Equipment>>{};
+  final techsByCh = <int, List<Technique>>{};
+  for (final cid in ids) {
+    final c = await isar.characters.get(cid);
+    if (c == null) continue;
+    characters.add(c);
+
+    final eqs = <Equipment>[];
+    for (final eqId in [
+      c.equippedWeaponId,
+      c.equippedArmorId,
+      c.equippedAccessoryId,
+    ]) {
+      if (eqId == null) continue;
+      final e = await isar.equipments.get(eqId);
+      if (e != null) eqs.add(e);
+    }
+    equipsByCh[c.id] = eqs;
+
+    final ts = await isar.techniques
+        .where()
+        .filter()
+        .ownerCharacterIdEqualTo(c.id)
+        .findAll();
+    techsByCh[c.id] = ts;
+  }
+  if (characters.isEmpty) return;
+
+  final numbers = ref.read(numbersConfigProvider);
+  final dropSvc = ref.read(dropServiceProvider);
+
+  BattleResolutionService.resolve(
+    finalState: finalState,
+    participatingCharacters: characters,
+    equipmentsByCharacter: equipsByCh,
+    techniquesByCharacter: techsByCh,
+    rng: DefaultRng(),
+    progressToNextMap: numbers.cultivationProgressToNext,
+    techniqueDefLookup: GameRepository.instance.getTechnique,
+    dropService: dropSvc,
+    isVictory: true,
+    // stageDef: null —— 爬塔不走 service 内部 roll drops；drops 在外层
+    // rollTowerRewards + _persistDrops 单独控制（首通才发奖）
+  );
+
+  await isar.writeTxn(() async {
+    await isar.characters.putAll(characters);
+    for (final list in techsByCh.values) {
+      if (list.isNotEmpty) await isar.techniques.putAll(list);
+    }
+    for (final list in equipsByCh.values) {
+      if (list.isNotEmpty) await isar.equipments.putAll(list);
+    }
+  });
 }
 
 /// Isar 持久化爬塔掉落（W6 nullable propagation：isarProvider 为 null 时短路，测试安全）。
