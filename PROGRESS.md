@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 5 收尾 #12 LevelDiff 语义统一 + #28 探路终结**(2026-05-13)。#12 销账:数据层 `LevelDiffModifier.fromYaml` null 兜底从 `diff2.attacker(2.5)` 改 `1.0`(GDD §5.5「已碾压无须放大」),公式层 `RealmUtils.realmDiffModifier` switch 第 4 分支改走 `mod.diff3OrMore`,两端语义统一,运行时零变化。#28 探路终结(xhigh,5 轮失败):W6 后 service 注入完成但屏未接 provider(W6 drift),真 Isar widget e2e 在 fake_async vs native Isar zone 边界不可解(详 #28 挂账),要真解需 3 屏 Consumer 化 + service interface(Phase 5 DDD 级),留 Pen 兜底。546/546,analyze 0 issues。下一步 W12 候选见末段。
+**W13 Codex 探路 fixture 阻断修复**(2026-05-14,xhigh)。Codex 桌面 Pen Windows 视觉验收首跑暴露 3 个产品/fixture 阻断,Mac 端修复:① tower/stage entry_flow ensure `getOrCreate` 解 W6 重构遗留的 provider 副作用 race(recordClear/Defeat/Victory 抛 StateError 被 catch (_) 静默吞)+ catch 加 debugPrint;② 装备 tile 加 `#N` battleCount 数字 + 心法 tile 加 `skillUsage:N` 总计(视觉验收能从截图直接读 ++);③ `Phase2SeedService.seedVisualCheckW7W11()` + Phase2TestMenu「VC」按钮,sema mark Ch1 01-04 cleared 让 stage_01_05 可直挑(节省 5-7min 真通关)。**548/548**(+2 个 seedVisualCheck test),analyze 0 issues。Codex 重派单待 commit + push 后用同一份 dispatch 再跑。
 
 ## 已完成
 

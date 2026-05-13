@@ -590,12 +590,27 @@ class _EquipmentSlotTile extends ConsumerWidget {
                 style: TextStyle(color: tierColor, fontSize: 13),
               ),
               const SizedBox(height: 4),
-              Text(
-                EnumL10n.resonanceStage(resonance),
-                style: const TextStyle(
-                  color: WuxiaColors.textSecondary,
-                  fontSize: 12,
-                ),
+              // W12 fix: 视觉验收 debug 字段——battleCount 数字直显
+              // 之前只显「生疏/趁手/...」共鸣段 chip，Codex 无法验证 victory 后 ++；
+              // 与 resonance 同行节省高度（_SlotShell 固定 88px 不溢出）
+              Row(
+                children: [
+                  Text(
+                    EnumL10n.resonanceStage(resonance),
+                    style: const TextStyle(
+                      color: WuxiaColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '#${eq.battleCount}',
+                    style: const TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

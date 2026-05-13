@@ -92,7 +92,11 @@ Future<void> runStageFlow({
   // Phase 4 W11 #32 销账：装备 battleCount / 心法 skillUsage / 主修升层 + 关卡 drop 落地
   await _applyVictoryResolution(ref: ref, stage: stage);
 
-  await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
+  // W12 fix: provider 副作用 getOrCreate 与 recordVictory 存在 race（W6 重构遗留），
+  // 主动 ensure 避免 MainlineProgress 未初始化时抛 StateError
+  final svc = MainlineProgressService(isar: IsarSetup.instance);
+  await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+  await svc.recordVictory(
     stageId: stage.id,
     now: DateTime.now(),
   );

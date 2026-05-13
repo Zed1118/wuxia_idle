@@ -57,6 +57,8 @@ class UiStrings {
   static const String hintP4 = '+0 强化到 +19 + 开锋 + 默契满，对比裸装伤害';
   static const String scenarioP5 = 'P5 · 师徒种子';
   static const String hintP5 = '祖师一流 + 大弟子二流 + 二弟子三流，3 师徒入阵可直接进战斗';
+  static const String scenarioVc = 'VC · W7-W11 视觉验收预设';
+  static const String hintVc = '在 P5 基础上标 Ch1 01-04 通关，直接挑战 stage_01_05';
 
   // 调试菜单（T17）
   static const String testMenuTitle = '战斗测试场景';
