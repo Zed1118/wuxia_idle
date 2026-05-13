@@ -141,6 +141,11 @@ class BattleCharacter {
     }
 
     final maxHp = CharacterDerivedStats.maxHp(character, equipped, numbers);
+    final maxIf = CharacterDerivedStats.internalForceMaxWithLineage(
+      character,
+      equipped,
+      numbers,
+    );
     final speed = CharacterDerivedStats.speed(
       character,
       equipped,
@@ -168,7 +173,7 @@ class BattleCharacter {
       school: school,
       maxHp: maxHp,
       currentHp: maxHp,
-      maxInternalForce: character.internalForceMax,
+      maxInternalForce: maxIf,
       currentInternalForce: character.internalForce,
       speed: speed,
       criticalRate: critRate,
