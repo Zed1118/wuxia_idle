@@ -222,6 +222,12 @@ Future<void> _applyTowerVictoryResolution({required WidgetRef ref}) async {
         .filter()
         .ownerCharacterIdEqualTo(c.id)
         .findAll();
+    // W13 fix: Isar @embedded list 反序列化为 fixed-length,
+    // skillUsageCount.increment 走 add 分支会抛 UnsupportedError。
+    // 转 growable copy 让后续 _accumulateSkillUsage 可写。
+    for (final t in ts) {
+      t.skillUsageCount = List.of(t.skillUsageCount);
+    }
     techsByCh[c.id] = ts;
   }
   if (characters.isEmpty) return;

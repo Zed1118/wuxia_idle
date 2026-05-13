@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**W13 Codex 探路 fixture 阻断修复**(2026-05-14,xhigh)。Codex 桌面 Pen Windows 视觉验收首跑暴露 3 个产品/fixture 阻断,Mac 端修复:① tower/stage entry_flow ensure `getOrCreate` 解 W6 重构遗留的 provider 副作用 race(recordClear/Defeat/Victory 抛 StateError 被 catch (_) 静默吞)+ catch 加 debugPrint;② 装备 tile 加 `#N` battleCount 数字 + 心法 tile 加 `skillUsage:N` 总计(视觉验收能从截图直接读 ++);③ `Phase2SeedService.seedVisualCheckW7W11()` + Phase2TestMenu「VC」按钮,sema mark Ch1 01-04 cleared 让 stage_01_05 可直挑(节省 5-7min 真通关)。**548/548**(+2 个 seedVisualCheck test),analyze 0 issues。Codex 重派单待 commit + push 后用同一份 dispatch 再跑。
+**W13 Codex 探路 + 三轮 fixture/生产 bug 链式修复**(2026-05-14,xhigh)。Codex 桌面 Pen Windows 视觉验收两轮探路,Mac 端修复 4 处:① tower/stage entry_flow ensure `getOrCreate` 解 W6 重构 race(StateError 被 catch (_) 静默吞)+ catch 加 debugPrint;② 装备 tile 加 `#N` battleCount + 心法 tile 加 `skillUsage:N`(视觉验收硬证据);③ `Phase2SeedService.seedVisualCheckW7W11()` + Phase2TestMenu「VC」按钮(节省 5-7min 真通关);④ **W13 Isar fixed-length list 生产 bug**:`Technique.skillUsageCount` 是 `@embedded List`,Isar findAll 反序列化 fixed-length,`MapLikeOnSkillUsage.increment` line 29 add 抛 `UnsupportedError`,阻断主线 victory / 爬塔 victory / Boss defeat **三条结算链** —— W11 #32 销账 service test 只测内存 list 漏掉。caller 端 `List.of()` 转 growable + 新加 3 case 真持久化回归 test(`skill_usage_persist_test.dart`)。**551/551**(+3),analyze 0 issues。Codex 第二轮 closeout 暴露 ④ 是「catch 加 debugPrint」修复的直接价值产出。
 
 ## 已完成
 
