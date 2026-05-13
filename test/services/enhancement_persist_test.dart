@@ -107,10 +107,9 @@ void main() {
     );
     expect(result.outcome, EnhanceOutcome.success);
 
-    await EnhancementService.persistResult(
+    await EnhancementService(isar: IsarSetup.instance).persistResult(
       eq: eq,
       result: result,
-      isar: IsarSetup.instance,
     );
 
     final eqBack = await IsarSetup.instance.equipments.get(eq.id);
@@ -145,10 +144,9 @@ void main() {
     );
     expect(result.outcome, EnhanceOutcome.failure);
 
-    await EnhancementService.persistResult(
+    await EnhancementService(isar: IsarSetup.instance).persistResult(
       eq: eq,
       result: result,
-      isar: IsarSetup.instance,
     );
 
     // 失败路径未 put eq（service 也未改 enhanceLevel）
@@ -184,10 +182,9 @@ void main() {
     expect(result.outcome, EnhanceOutcome.success);
     expect(result.crystalsSpent, greaterThan(0));
 
-    await EnhancementService.persistResult(
+    await EnhancementService(isar: IsarSetup.instance).persistResult(
       eq: eq,
       result: result,
-      isar: IsarSetup.instance,
     );
 
     final eqBack = await IsarSetup.instance.equipments.get(eq.id);
@@ -215,10 +212,9 @@ void main() {
     );
 
     expect(
-      () => EnhancementService.persistResult(
+      () => EnhancementService(isar: IsarSetup.instance).persistResult(
         eq: eq,
         result: result,
-        isar: IsarSetup.instance,
       ),
       throwsA(isA<StateError>()),
     );
@@ -239,10 +235,9 @@ void main() {
     );
 
     expect(
-      () => EnhancementService.persistResult(
+      () => EnhancementService(isar: IsarSetup.instance).persistResult(
         eq: eq,
         result: result,
-        isar: IsarSetup.instance,
       ),
       throwsA(isA<StateError>()),
     );

@@ -37,16 +37,21 @@ class SeclusionMapListScreen extends StatefulWidget {
 class _SeclusionMapListScreenState extends State<SeclusionMapListScreen> {
   late Future<RetreatSession?> _activeFuture;
 
+  Future<RetreatSession?> _fetchActive() {
+    final isar = IsarSetup.instanceOrNull;
+    if (isar == null) return Future.value(null);
+    return SeclusionService(isar: isar).getActiveSession(IsarSetup.currentSlotId);
+  }
+
   @override
   void initState() {
     super.initState();
-    _activeFuture = SeclusionService.getActiveSession(IsarSetup.currentSlotId);
+    _activeFuture = _fetchActive();
   }
 
   void _refresh() {
     setState(() {
-      _activeFuture =
-          SeclusionService.getActiveSession(IsarSetup.currentSlotId);
+      _activeFuture = _fetchActive();
     });
   }
 

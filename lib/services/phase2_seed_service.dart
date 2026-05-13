@@ -2,7 +2,6 @@ import 'package:isar_community/isar.dart';
 
 import '../data/defs/master_def.dart';
 import '../data/game_repository.dart';
-import '../data/isar_setup.dart';
 import '../data/models/attributes.dart';
 import '../data/models/character.dart';
 import '../data/models/enums.dart';
@@ -29,18 +28,20 @@ import 'equipment_factory.dart';
 /// [TechniquePanelScreen] 直接传 `characterId=1`。装备 / 心法 id 由
 /// `Isar.autoIncrement` 决定（clear 后从 1 起）。
 class Phase2SeedService {
-  Phase2SeedService._();
+  const Phase2SeedService({required this.isar});
+
+  final Isar isar;
 
   /// 场景 P1：强化曲线（玩家手动连点 +0 → +19 看成功率分布）。
   ///
   /// - 1 个二流·圆熟角色（absoluteLevel=19，cap +19 与 spec 对齐）
   /// - 1 件 +0 利器武器，已装备在角色身上
   /// - 1000 磨剑石 / 100 心血结晶（足够走完 +19 曲线）
-  static Future<void> seedP1() async {
-    final isar = IsarSetup.instance;
+  Future<void> seedP1() async {
+    final isar = this.isar;
 
     await isar.writeTxn(() async {
-      await _clearAll(isar);
+      await _clearAll();
 
       final eq = _buildLiQiWeapon(enhanceLevel: 0, battleCount: 0);
       await isar.equipments.put(eq);
@@ -52,7 +53,7 @@ class Phase2SeedService {
       eq.ownerCharacterId = ch.id;
       await isar.equipments.put(eq);
 
-      await _seedMaterials(isar, mojianshi: 1000, jieJing: 100);
+      await _seedMaterials( mojianshi: 1000, jieJing: 100);
     });
   }
 
@@ -61,11 +62,11 @@ class Phase2SeedService {
   /// 子提交 3 不直接接战斗（character_to_battle 转换 helper 留 Phase 3），
   /// 种子写完后 UI 跳 InventoryScreen 让玩家观察 battleCount=99 的装备；
   /// 共鸣 99→100 的数值正确性走子提交 4 phase2_scenarios_test 纯单测覆盖。
-  static Future<void> seedP2() async {
-    final isar = IsarSetup.instance;
+  Future<void> seedP2() async {
+    final isar = this.isar;
 
     await isar.writeTxn(() async {
-      await _clearAll(isar);
+      await _clearAll();
 
       final eq = _buildLiQiWeapon(enhanceLevel: 0, battleCount: 99);
       await isar.equipments.put(eq);
@@ -77,7 +78,7 @@ class Phase2SeedService {
       eq.ownerCharacterId = ch.id;
       await isar.equipments.put(eq);
 
-      await _seedMaterials(isar, mojianshi: 2000, jieJing: 200);
+      await _seedMaterials( mojianshi: 2000, jieJing: 200);
     });
   }
 
@@ -92,12 +93,12 @@ class Phase2SeedService {
   /// - 1 角色 internalForce=10000 / internalForceMax=10000
   /// - 主修：刚猛/名家功 cultivationLayer=yuanMan / progress=1500
   /// - 辅修：阴柔/名家功 cultivationLayer=daCheng（供玩家在面板上点"设为主修"）
-  static Future<void> seedP3() async {
-    final isar = IsarSetup.instance;
+  Future<void> seedP3() async {
+    final isar = this.isar;
     final numbers = GameRepository.instance.numbers;
 
     await isar.writeTxn(() async {
-      await _clearAll(isar);
+      await _clearAll();
 
       final main = _buildTechnique(
         defId: 'tech_gangmeng_mingjia',
@@ -134,7 +135,7 @@ class Phase2SeedService {
       assist.ownerCharacterId = ch.id;
       await isar.techniques.putAll([main, assist]);
 
-      await _seedMaterials(isar, mojianshi: 2000, jieJing: 200);
+      await _seedMaterials( mojianshi: 2000, jieJing: 200);
     });
   }
 
@@ -148,11 +149,11 @@ class Phase2SeedService {
   /// - 装备 A：+0 利器武器 battleCount=2000（已装备在角色身上）
   /// - 装备 B：+0 利器武器 battleCount=0（裸装对照，未装备）
   /// - 2000 磨剑石 / 200 心血结晶（强化到 +19 足够 + 余裕）
-  static Future<void> seedP4() async {
-    final isar = IsarSetup.instance;
+  Future<void> seedP4() async {
+    final isar = this.isar;
 
     await isar.writeTxn(() async {
-      await _clearAll(isar);
+      await _clearAll();
 
       final eqMain = _buildLiQiWeapon(enhanceLevel: 0, battleCount: 2000);
       final eqRef = _buildLiQiWeapon(enhanceLevel: 0, battleCount: 0);
@@ -166,7 +167,7 @@ class Phase2SeedService {
       // eqRef 留在背包（ownerCharacterId=null）
       await isar.equipments.put(eqMain);
 
-      await _seedMaterials(isar, mojianshi: 2000, jieJing: 200);
+      await _seedMaterials( mojianshi: 2000, jieJing: 200);
     });
   }
 
@@ -182,15 +183,15 @@ class Phase2SeedService {
   ///
   /// 与 P1-P4 一致：每次 `_clearAll` 重新写入（不做幂等），可反复点 P5 reseed。
   /// SaveData 主体不动，仅写入 `activeCharacterIds` / `founderCharacterId`。
-  static Future<void> seedMasterDisciple() async {
-    final isar = IsarSetup.instance;
+  Future<void> seedMasterDisciple() async {
+    final isar = this.isar;
     final repo = GameRepository.instance;
     final masters = repo.masters;
     final rng = DefaultRng();
     final now = DateTime.now();
 
     await isar.writeTxn(() async {
-      await _clearAll(isar);
+      await _clearAll();
 
       // 1. 创建 3 角色，祖师固定 id=1（与既有 main_menu / character_panel 对齐）。
       //    大弟子 / 二弟子由 Isar autoIncrement → id=2 / id=3。
@@ -245,14 +246,14 @@ class Phase2SeedService {
       }
 
       // 5. 基础物料（让玩家进 P5 后可立即试强化）。
-      await _seedMaterials(isar, mojianshi: 2000, jieJing: 200);
+      await _seedMaterials( mojianshi: 2000, jieJing: 200);
     });
   }
 
   // ── private helpers ────────────────────────────────────────────────────────
 
   /// 清空业务 collection（保留 SaveData）。装备 / 心法 / 角色 / 物品 / 事件全清。
-  static Future<void> _clearAll(Isar isar) async {
+  Future<void> _clearAll() async {
     await isar.characters.clear();
     await isar.equipments.clear();
     await isar.techniques.clear();
@@ -260,8 +261,7 @@ class Phase2SeedService {
     await isar.gameEvents.clear();
   }
 
-  static Future<void> _seedMaterials(
-    Isar isar, {
+  Future<void> _seedMaterials({
     required int mojianshi,
     required int jieJing,
   }) async {

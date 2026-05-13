@@ -13,7 +13,7 @@ part 'tower_providers.g.dart';
 /// 触发刷新，[towerFloorListProvider] 自动级联。
 @riverpod
 Future<TowerProgress> towerProgress(Ref ref) async {
-  return TowerProgressService.getOrCreate(
+  return TowerProgressService(isar: IsarSetup.instance).getOrCreate(
     saveDataId: IsarSetup.currentSlotId,
   );
 }

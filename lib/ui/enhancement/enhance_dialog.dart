@@ -2,15 +2,14 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar_community/isar.dart';
 
 import '../../combat/enum_localizations.dart';
 import '../../data/defs/equipment_def.dart';
-import '../../data/isar_setup.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/equipment.dart';
 import '../../providers/battle_providers.dart';
 import '../../providers/inventory_providers.dart';
+import '../../providers/isar_provider.dart';
 import '../../providers/rng_provider.dart';
 import '../../services/enhancement_service.dart';
 import '../effects/screen_shake.dart';
@@ -18,10 +17,6 @@ import '../strings.dart';
 import '../theme/colors.dart';
 import '../theme/tier_colors.dart';
 import 'forging_panel.dart';
-
-/// T32 #22a：Isar 实例名（与 [IsarSetup.init] 默认 slot=1 同源）。Widget
-/// 层用 [Isar.getInstance] 探测；测试不 init Isar 时早返回，生产路径永远命中。
-const _isarInstanceName = 'wuxia_save_slot1';
 
 /// 强化对话框（phase2_tasks T29 §426-430 + T32 #22a writeTxn 补漏）。
 ///
@@ -131,19 +126,18 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
   }
 
   /// T32 #22a：副作用落地 — 委托给 [EnhancementService.persistResult] 做
-  /// writeTxn，本方法只负责 Isar 实例探测 + invalidate riverpod provider。
+  /// writeTxn，本方法只负责拿 service + invalidate riverpod provider。
   ///
-  /// **测试旁路**：testWidgets 在 FakeAsync 下不兼容真 Isar 异步 IO，widget
-  /// 测试默认不 init Isar；此处用 [Isar.getInstance] 探测，未初始化时 no-op
-  /// 早返回。生产路径永远命中。Isar 真落地验证由 service 层 test 覆盖
+  /// **测试旁路（Phase 5 W6-S2 重构）**：testWidgets 在 FakeAsync 下不兼容
+  /// 真 Isar 异步 IO，widget 测试默认不 init Isar；此处通过
+  /// [enhancementServiceProvider] 读 service,Isar 未 init 时 service 为 null,
+  /// 短路返回（替代旧的 `Isar.getInstance` 探测）。生产路径永远非空。
+  /// Isar 真落地验证由 service 层 test 覆盖
   /// （`test/services/enhancement_persist_test.dart`）。
   Future<void> _persist(EnhanceResult result) async {
-    if (Isar.getInstance(_isarInstanceName) == null) return;
-    await EnhancementService.persistResult(
-      eq: widget.equipment,
-      result: result,
-      isar: IsarSetup.instance,
-    );
+    final service = ref.read(enhancementServiceProvider);
+    if (service == null) return;
+    await service.persistResult(eq: widget.equipment, result: result);
     if (!mounted) return;
     ref.invalidate(inventoryQuantityByTypeProvider(ItemType.moJianShi));
     ref.invalidate(inventoryQuantityByTypeProvider(ItemType.xinXueJieJing));

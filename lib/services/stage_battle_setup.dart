@@ -4,7 +4,6 @@ import '../combat/battle_state.dart';
 import '../data/defs/stage_def.dart';
 import '../data/defs/tower_floor_def.dart';
 import '../data/game_repository.dart';
-import '../data/isar_setup.dart';
 import '../data/models/character.dart';
 import '../data/models/enums.dart';
 import '../data/models/equipment.dart';
@@ -24,12 +23,15 @@ import '../data/models/technique.dart';
 /// **negative id 约定**：敌人 [BattleCharacter.characterId] 用 `-(slotIndex+1)`，
 /// 避免与玩家 Isar autoIncrement id 冲突。
 class StageBattleSetup {
-  StageBattleSetup._();
+  const StageBattleSetup({required this.isar});
+
+  final Isar isar;
 
   /// 拼装 (left, right) 战斗双方，准备调 `startBattle`（主线关卡版）。
-  static Future<(List<BattleCharacter>, List<BattleCharacter>)>
-      buildTeams(StageDef stage) async {
-    final left = await _buildPlayerTeam(IsarSetup.instance);
+  Future<(List<BattleCharacter>, List<BattleCharacter>)> buildTeams(
+    StageDef stage,
+  ) async {
+    final left = await _buildPlayerTeam();
     final right = buildEnemyTeam(stage.enemyTeam);
     return (left, right);
   }
@@ -37,16 +39,17 @@ class StageBattleSetup {
   /// 拼装 (left, right) 战斗双方，准备调 `startBattle`（爬塔版）。
   ///
   /// 左队装配逻辑与 [buildTeams] 完全一致；右队用 [TowerFloorDef.enemyTeam]。
-  static Future<(List<BattleCharacter>, List<BattleCharacter>)>
-      buildTeamsForTower(TowerFloorDef floor) async {
-    final left = await _buildPlayerTeam(IsarSetup.instance);
+  Future<(List<BattleCharacter>, List<BattleCharacter>)> buildTeamsForTower(
+    TowerFloorDef floor,
+  ) async {
+    final left = await _buildPlayerTeam();
     final right = buildEnemyTeam(floor.enemyTeam);
     return (left, right);
   }
 
   /// 将 [EnemyDef] 列表装配为右队 [BattleCharacter] 列表（最多 3 人）。
   ///
-  /// 主线 [buildTeams] 与爬塔 [buildTeamsForTower] 共用，避免重复。
+  /// 主线 [buildTeams] 与爬塔 [buildTeamsForTower] 共用，避免重复。纯函数,保持 static。
   static List<BattleCharacter> buildEnemyTeam(List<EnemyDef> enemies) {
     final right = <BattleCharacter>[];
     for (var i = 0; i < enemies.length && i < 3; i++) {
@@ -56,7 +59,7 @@ class StageBattleSetup {
   }
 
   /// 从 Isar 拉玩家方（左队）：优先 activeCharacterIds，空则兜底 findFirst。
-  static Future<List<BattleCharacter>> _buildPlayerTeam(Isar isar) async {
+  Future<List<BattleCharacter>> _buildPlayerTeam() async {
     final save = await isar.saveDatas.get(0);
     final ids = save?.activeCharacterIds ?? const [];
     final players = <Character>[];
@@ -77,7 +80,6 @@ class StageBattleSetup {
     final left = <BattleCharacter>[];
     for (var i = 0; i < players.length && i < 3; i++) {
       left.add(await _playerToBattle(
-        isar: isar,
         character: players[i],
         slotIndex: i,
       ));
@@ -85,8 +87,7 @@ class StageBattleSetup {
     return left;
   }
 
-  static Future<BattleCharacter> _playerToBattle({
-    required Isar isar,
+  Future<BattleCharacter> _playerToBattle({
     required Character character,
     required int slotIndex,
   }) async {

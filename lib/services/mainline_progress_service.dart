@@ -20,14 +20,15 @@ typedef StageEntry = ({StageDef def, StageStatus status});
 /// 与 [BattleResolutionService] 解耦：Phase 3 由 UI（StageEntryFlow）在
 /// onVictory 回调里显式调 recordVictory；Phase 4 再考虑接进战斗结算 hook。
 class MainlineProgressService {
-  MainlineProgressService._();
+  const MainlineProgressService({required this.isar});
+
+  final Isar isar;
 
   /// 拿不到对应 saveDataId 的行就建一行（默认 currentChapterIndex=1，
   /// clearedStageIds/clearedAt 空）。
-  static Future<MainlineProgress> getOrCreate({
+  Future<MainlineProgress> getOrCreate({
     required int saveDataId,
   }) async {
-    final isar = IsarSetup.instance;
     final existing = await isar.mainlineProgress
         .filter()
         .saveDataIdEqualTo(saveDataId)
@@ -93,11 +94,10 @@ class MainlineProgressService {
   ///
   /// **注意**：调用方负责保证 stageId 真实存在（GameRepository.getStage）；
   /// 本服务不做 stageId 合法性校验，避免每次写都全表查。
-  static Future<void> recordVictory({
+  Future<void> recordVictory({
     required String stageId,
     required DateTime now,
   }) async {
-    final isar = IsarSetup.instance;
     await isar.writeTxn(() async {
       final progress = await isar.mainlineProgress
           .filter()

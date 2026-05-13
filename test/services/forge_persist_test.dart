@@ -71,9 +71,8 @@ void main() {
     expect(eq.forgingSlots[0].unlocked, isTrue);
     expect(eq.forgingSlots[0].type, ForgingSlotType.attack);
 
-    await ForgingService.persistResult(
+    await ForgingService(isar: IsarSetup.instance).persistResult(
       eq: eq,
-      isar: IsarSetup.instance,
     );
 
     // 关闭再开,确认真落盘
@@ -106,9 +105,8 @@ void main() {
     );
     expect(result, ForgeResult.success);
 
-    await ForgingService.persistResult(
+    await ForgingService(isar: IsarSetup.instance).persistResult(
       eq: eq,
-      isar: IsarSetup.instance,
     );
 
     final eqBack = await IsarSetup.instance.equipments.get(eq.id);

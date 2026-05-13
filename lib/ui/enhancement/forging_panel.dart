@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar_community/isar.dart';
 
 import '../../combat/enum_localizations.dart';
 import '../../data/defs/equipment_def.dart';
-import '../../data/isar_setup.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/equipment.dart';
 import '../../data/models/forging_slot.dart';
 import '../../providers/battle_providers.dart';
 import '../../providers/inventory_providers.dart';
+import '../../providers/isar_provider.dart';
 import '../../services/forging_service.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
-
-/// T32 #22b：Isar 实例名（与 [IsarSetup.init] 默认 slot=1 同源）。widget test
-/// 未 init Isar 时 _persist 早返回 no-op；生产路径永远命中。
-const _isarInstanceName = 'wuxia_save_slot1';
 
 /// 开锋面板（phase2_tasks T30 §449-456）。
 ///
@@ -86,13 +81,11 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
       config: config,
     );
     if (result == ForgeResult.success) {
-      // T32 #22b：落地 Isar + invalidate inventory 仓库重读。
-      // 测试旁路：未 init Isar 时早返回（widget test FakeAsync 不兼容真 Isar IO）。
-      if (Isar.getInstance(_isarInstanceName) != null) {
-        await ForgingService.persistResult(
-          eq: widget.equipment,
-          isar: IsarSetup.instance,
-        );
+      // T32 #22b（Phase 5 W6-S2 重构）：落地 Isar + invalidate inventory 仓库重读。
+      // 测试旁路：未 init Isar 时 service 为 null,短路（替代旧 Isar.getInstance guard）。
+      final service = ref.read(forgingServiceProvider);
+      if (service != null) {
+        await service.persistResult(eq: widget.equipment);
         if (!mounted) return;
         ref.invalidate(allEquipmentsProvider);
       }

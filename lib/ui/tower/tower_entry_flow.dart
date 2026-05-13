@@ -6,6 +6,7 @@ import 'package:isar_community/isar.dart';
 
 import '../../data/defs/tower_floor_def.dart';
 import '../../data/game_repository.dart';
+import '../../data/isar_setup.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/equipment.dart';
 import '../../data/models/inventory_item.dart';
@@ -71,7 +72,7 @@ Future<void> runTowerFlow({
       unawaited(defeatRecorderForTest().catchError((_) {}));
     } else {
       unawaited(
-        TowerProgressService.recordDefeat(now: DateTime.now())
+        TowerProgressService(isar: IsarSetup.instance).recordDefeat(now: DateTime.now())
             .catchError((_) {}),
       );
     }
@@ -83,7 +84,7 @@ Future<void> runTowerFlow({
   try {
     clearResult = clearRecorderForTest != null
         ? await clearRecorderForTest(floor.floorIndex)
-        : await TowerProgressService.recordClear(
+        : await TowerProgressService(isar: IsarSetup.instance).recordClear(
             floorIndex: floor.floorIndex,
             now: DateTime.now(),
           );
@@ -243,7 +244,7 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
       if (!mounted) return;
       try {
         final (left, right) =
-            await StageBattleSetup.buildTeamsForTower(widget.floor);
+            await StageBattleSetup(isar: IsarSetup.instance).buildTeamsForTower(widget.floor);
         if (!mounted) return;
         ref.read(battleProvider.notifier).startBattle(left, right);
       } catch (e) {

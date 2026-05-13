@@ -74,7 +74,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    // Phase2SeedService.seedP1 走 IsarSetup.instance，widget test 环境未 init
+    // Phase2SeedService(isar: IsarSetup.instance).seedP1 走 IsarSetup.instance，widget test 环境未 init
     // → 抛 StateError；_seedAndPush catch 后 SnackBar 文案含「种子失败」前缀。
     expect(
       find.textContaining('种子失败'),

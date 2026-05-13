@@ -1,7 +1,6 @@
 import 'package:isar_community/isar.dart';
 
 import '../data/defs/seclusion_map_def.dart';
-import '../data/isar_setup.dart';
 import '../data/models/character.dart';
 import '../data/models/enums.dart';
 import '../data/models/equipment.dart';
@@ -35,7 +34,9 @@ typedef RetreatOutputs = ({
 ///   - mojianshi = floor(perHour × actualHours × realmScale × dayBonus)
 ///   - 装备抽检：per session 单次，概率 = equipmentDropRate × baseEquipDropProbability
 class SeclusionService {
-  SeclusionService._();
+  const SeclusionService({required this.isar});
+
+  final Isar isar;
 
   // ─────────────────────────────────────────────────────────────────────────
   // 公开 API
@@ -44,6 +45,8 @@ class SeclusionService {
   /// 当前存档是否可以进入指定地图（境界锁）。
   ///
   /// [charRealmTier] 为角色当前大阶。
+  ///
+  /// 纯函数：不用 Isar,保持 static。
   static bool canEnterMap({
     required RetreatMapType mapType,
     required RealmTier charRealmTier,
@@ -54,8 +57,8 @@ class SeclusionService {
   }
 
   /// 取当前 active session；无活跃 session 返回 null。
-  static Future<RetreatSession?> getActiveSession(int saveDataId) async {
-    return IsarSetup.instance.retreatSessions
+  Future<RetreatSession?> getActiveSession(int saveDataId) async {
+    return isar.retreatSessions
         .filter()
         .saveDataIdEqualTo(saveDataId)
         .statusEqualTo(RetreatStatus.active)
@@ -66,7 +69,7 @@ class SeclusionService {
   ///   1. 境界校验（不满足抛 [StateError]）
   ///   2. abandon 旧 active session（若有）
   ///   3. 写新 [RetreatSession] + 更新 [Character.currentRetreatSessionId]
-  static Future<RetreatSession> startRetreat({
+  Future<RetreatSession> startRetreat({
     required RetreatMapType mapType,
     required int durationHours,
     required int saveDataId,
@@ -86,7 +89,6 @@ class SeclusionService {
       );
     }
 
-    final isar = IsarSetup.instance;
     late RetreatSession created;
 
     await isar.writeTxn(() async {
@@ -176,7 +178,7 @@ class SeclusionService {
   ///   2. 写 mojianshi 进 InventoryItem
   ///   3. 更新 session：completedAt / status / actualRewards
   ///   4. 清 Character.currentRetreatSessionId
-  static Future<RetreatOutputs> completeRetreat({
+  Future<RetreatOutputs> completeRetreat({
     required RetreatSession session,
     required int characterId,
     required RealmTier charRealmTier,
@@ -193,8 +195,6 @@ class SeclusionService {
       now: now,
       rng: rng,
     );
-
-    final isar = IsarSetup.instance;
 
     await isar.writeTxn(() async {
       // 1. 写 mojianshi → InventoryItem
@@ -235,12 +235,11 @@ class SeclusionService {
   }
 
   /// 放弃闭关（切换地图 / 主动放弃）：仅更新状态，不发奖。
-  static Future<void> abandonRetreat({
+  Future<void> abandonRetreat({
     required RetreatSession session,
     required int characterId,
     required DateTime now,
   }) async {
-    final isar = IsarSetup.instance;
     await isar.writeTxn(() async {
       session
         ..completedAt = now

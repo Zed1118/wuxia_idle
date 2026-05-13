@@ -59,7 +59,7 @@ void main() {
   }
 
   test('seedP1 → 1 角色 + 1 件 +0 利器装备 + 1000 磨剑石 / 100 心血结晶', () async {
-    await Phase2SeedService.seedP1();
+    await Phase2SeedService(isar: IsarSetup.instance).seedP1();
 
     final isar = IsarSetup.instance;
     expect(await isar.characters.count(), 1);
@@ -87,7 +87,7 @@ void main() {
   });
 
   test('seedP2 → battleCount=99 装备 + 充足材料', () async {
-    await Phase2SeedService.seedP2();
+    await Phase2SeedService(isar: IsarSetup.instance).seedP2();
 
     final isar = IsarSetup.instance;
     expect(await isar.equipments.count(), 1);
@@ -101,7 +101,7 @@ void main() {
   });
 
   test('seedP3 → IF 10000 + yuanMan/1500 主修 + daCheng 辅修', () async {
-    await Phase2SeedService.seedP3();
+    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
 
     final isar = IsarSetup.instance;
     expect(await isar.characters.count(), 1);
@@ -136,7 +136,7 @@ void main() {
 
   test('seedP4 → 2 件 +0 利器（主 battleCount=2000 已装 / 对照 battleCount=0 未装）',
       () async {
-    await Phase2SeedService.seedP4();
+    await Phase2SeedService(isar: IsarSetup.instance).seedP4();
 
     final isar = IsarSetup.instance;
     expect(await isar.characters.count(), 1);
@@ -163,11 +163,11 @@ void main() {
   });
 
   test('clear 语义：seedP1 会清掉前一次 seedP3 的全部数据，只留新 fixture', () async {
-    await Phase2SeedService.seedP3();
+    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
     final isar = IsarSetup.instance;
     expect(await isar.techniques.count(), 2);
 
-    await Phase2SeedService.seedP1();
+    await Phase2SeedService(isar: IsarSetup.instance).seedP1();
 
     expect(await isar.characters.count(), 1);
     expect(await isar.equipments.count(), 1);
@@ -186,7 +186,7 @@ void main() {
 
   test('seedMasterDisciple → 3 师徒 + 师徒关系双向 + 祖师 id=1 + 默认入阵',
       () async {
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final isar = IsarSetup.instance;
 
     expect(await isar.characters.count(), 3);
@@ -222,7 +222,7 @@ void main() {
 
   test('seedMasterDisciple → 3 师徒各自有主修 + 装备齐 weapon/armor/accessory',
       () async {
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final isar = IsarSetup.instance;
 
     for (final id in [1, 2, 3]) {
@@ -243,7 +243,7 @@ void main() {
   });
 
   test('seedMasterDisciple → 主修流派透传到 character.school', () async {
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final isar = IsarSetup.instance;
 
     final founder = await isar.characters.get(1);
@@ -258,8 +258,8 @@ void main() {
 
   test('seedMasterDisciple 反复调用 reseed 一致（_clearAll 保证干净）',
       () async {
-    await Phase2SeedService.seedMasterDisciple();
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final isar = IsarSetup.instance;
 
     expect(await isar.characters.count(), 3);
@@ -271,23 +271,23 @@ void main() {
 
   test('销账 #25：seedMasterDisciple 后 stage_01_01 buildTeams 不再 fail-fast',
       () async {
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final stage = GameRepository.instance.getStage('stage_01_01');
 
     // 不抛"未修主修"——3 师徒都有 mainTechniqueId
-    final (left, right) = await StageBattleSetup.buildTeams(stage);
+    final (left, right) = await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
     expect(left.length, 3, reason: '玩家左队 3 师徒入阵');
     expect(right, isNotEmpty, reason: 'stage_01_01 enemyTeam 非空');
   });
 
   test('seedMasterDisciple 后 P1 → 业务表清空但 SaveData.activeCharacterIds 不动',
       () async {
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final isar = IsarSetup.instance;
     final saveBefore = await isar.saveDatas.get(0);
     expect(saveBefore!.activeCharacterIds.length, 3);
 
-    await Phase2SeedService.seedP1();
+    await Phase2SeedService(isar: IsarSetup.instance).seedP1();
     expect(await isar.characters.count(), 1);
 
     final saveAfter = await isar.saveDatas.get(0);

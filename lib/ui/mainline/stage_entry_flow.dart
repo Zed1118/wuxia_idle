@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/defs/stage_def.dart';
+import '../../data/isar_setup.dart';
 import '../../data/narrative_loader.dart';
 import '../../providers/battle_providers.dart';
 import '../../providers/mainline_providers.dart';
@@ -66,7 +67,7 @@ Future<void> runStageFlow({
   }
 
   // ── victory ──
-  await MainlineProgressService.recordVictory(
+  await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
     stageId: stage.id,
     now: DateTime.now(),
   );
@@ -139,7 +140,7 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       try {
-        final (left, right) = await StageBattleSetup.buildTeams(widget.stage);
+        final (left, right) = await StageBattleSetup(isar: IsarSetup.instance).buildTeams(widget.stage);
         if (!mounted) return;
         ref.read(battleProvider.notifier).startBattle(left, right);
       } catch (e) {

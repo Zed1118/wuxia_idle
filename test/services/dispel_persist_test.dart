@@ -112,11 +112,10 @@ void main() {
     );
     expect(result.success, isTrue);
 
-    await DispelService.persistResult(
+    await DispelService(isar: IsarSetup.instance).persistResult(
       ch: ch,
       mainTech: mainTech,
       newMainTech: assistTech,
-      isar: isar,
     );
 
     // 关闭再读，验证落盘

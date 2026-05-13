@@ -36,6 +36,10 @@ dev_dependencies:
   isar_community_generator: ^3.3.2
   riverpod_generator: ^4.0.0
 
+  # Phase 5 W6-S2 #3 暂仍未解：custom_lint 0.8.x 锁 analyzer ^7.5/^8,
+  # riverpod_lint 3.1.1+ 锁 ^9,不兼容 riverpod_generator 4.x 链路。
+  # 等 custom_lint 升级支持 analyzer ^9 再补 riverpod_lint。
+
 flutter:
   uses-material-design: true
 
