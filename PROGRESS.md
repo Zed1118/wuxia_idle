@@ -5,9 +5,9 @@
 
 ## 当前阶段
 
-**Phase 3 Week 4 D 师徒系统 T53+T54 完成**（2026-05-13，commits `9349626`/`ed8b183`）。T53 落 masters.yaml schema + MasterDef + GameRepository 红线校验。T54 落 `Phase2SeedService.seedMasterDisciple`（祖师 id=1 复用 + 大/二弟子新建，装 9 装备 + 4 心法 + SaveData 默认入阵），P5 入口接入主菜单。**销账 #25**（service-level test 验证 seedMasterDisciple 后 stage_01_01 buildTeams 不再 fail-fast）。495 → 511 测试（+16），analyze 0 issues。
+**Phase 3 Week 4 D 师徒系统 T53+T54+T55 完成**（2026-05-13，commits `9349626`/`ed8b183`/`1418176`）。T53 schema + 红线 / T54 seedMasterDisciple service + P5 入口（销 #25）/ T55 EquipmentDef.isLineageHeritage + equipment.yaml 标 2 件遗物 + 祖师遗物红线启用。**师承遗物 +5% 内力上限 buff 在 Demo 战斗路径首次落地**（祖师 starting 含 2 件遗物 → BattleCharacter 装配时自动叠加）。495 → 516 测试（+21），analyze 0 issues。
 
-**下一步**：T55 EquipmentDef.isLineageHeritage 字段 + equipment.yaml 标 2-3 件 + 回 T53 启用祖师遗物校验。详 `phase3_tasks.md` 末 Week 4 段。
+**下一步**：T56 角色面板「师承」段 UI（含「[传记待补]」占位）+ 顺手清挂账 #26（main_menu 闭关入口硬编码 characterId=1）。详 `phase3_tasks.md` 末 Week 4 段。
 
 ## 已完成
 
@@ -22,10 +22,11 @@
 - **P1 #1 narrative schema Mac 端接手**（2026-05-12，销账 #27）：NarrativeLoader 扫 `data/narratives/stages/` 子目录（扁平→子目录→placeholder 三段兜底）；stages.yaml 6 关 stage_id 迁移 `mainline_test_NN → stage_NN_NN`，narrativeOpeningId/VictoryId + prevStageId 全链对齐 DeepSeek 拆分；全仓库 ~67 处 hard-coded `mainline_test_0` 引用 sed 批量重命名；narrative_loader_test 新增 2 case（扁平缺失→子目录命中 + 双缺失调用顺序契约）；stage_list_screen_test 「点关卡进剧情」case 改证「真实文案『山门之外 · 启』可加载」。**widget 端验证 main 主线剧情已脱离 placeholder regression**。493→495 测试，analyze 0 issues。涉及 10 文件 +172/-106。
 - **Phase 3 Week 4 T53 masters.yaml schema + MasterDef + 红线校验**（2026-05-13，commit `9349626`）：`lib/data/defs/master_def.dart` 新建（MasterDef + AttributeProfile 纯 Dart 不入 Isar）；`data/masters.yaml` 3 角色 fixture（祖师一流/大弟子二流/二弟子三流，方案 A 降级避飞升）；`GameRepository.masters` 字段 + `_enforceMasterRedLines` 7 项（3 条 / slotIndex 连续 / role 与 slot 对应 / founder 唯一 / 不允许 wuSheng / 属性单项 1-10 总和 16-24 / 三系锁死 starting tier ≤ defaultRealm）+ `getMasterBySlot` / `getFounderMaster` 便捷查询；test +10（MasterDef.fromYaml 3 + 师徒红线 fail-fast 7），累计 495 → 505。祖师遗物 isLineageHeritage 校验留 TODO 待 T55
 - **Phase 3 Week 4 T54 seedMasterDisciple + P5 入口 + 销账 #25**（2026-05-13，commit `ed8b183`）：`Phase2SeedService.seedMasterDisciple` 一次 writeTxn 完成 3 师徒 + 双向关系 + 9 件装备（EquipmentFactory.fromDef 标准 roll）+ 4 本心法（祖师 main+assist / 2 弟子 main 各 1）+ SaveData.activeCharacterIds=[1,2,3] + founderCharacterId=1 + 基础物料 2000 磨剑石/200 心血结晶；P5 按钮接入 `phase2_test_menu` 跳 CharacterPanelScreen；test +6（3 师徒结构 / 装备心法齐 / 主修流派透传 / reseed 一致 / 与 P1 切换边界 / **销账 #25：buildTeams 不再 fail-fast**）+ widget test 4→5 同步，累计 505 → 511
+- **Phase 3 Week 4 T55 EquipmentDef.isLineageHeritage + 祖师遗物红线启用**（2026-05-13，commit `1418176`）：EquipmentDef 加 `isLineageHeritage` 字段 + fromYaml 读 key（camelCase 对齐 schoolBias 体例）；equipment.yaml 标 2 件遗物 fixture（祖师传家剑 weapon_liqi_long_quan + 传家护甲 armor_haojiahuo_jin_pao），仅加一行不动平衡值；EquipmentFactory.fromDef 函数体 OR `def.isLineageHeritage` → drop / 师承种子统一行为，参数保留为 override；GameRepository 启用祖师遗物红线（解 T53 TODO，祖师 startingEquipmentIds 必须 ≥ 1 件 def.isLineageHeritage=true）；test +5（fromYaml 字段 1 + Factory 透传 3 + 红线 fail-fast 1），累计 511 → 516。**运行时副作用**：祖师战斗内力上限自动 +5%（GDD §5.3 师承遗物 buff 在 Demo 路径首次落地，derived_stats.internalForceMaxWithLineage 已存在）
 
 ## 进行中
 
-**Phase 3 Week 4 D 师徒系统**：T53 ✅ + T54 ✅（511/511，销 #25）。下一步 T55 `EquipmentDef.isLineageHeritage` + `equipment.yaml` 标 2-3 件遗物 + 回 T53 启用祖师遗物红线校验。挂账 #26（main_menu 闭关入口硬编码 characterId=1/RealmTier.xueTu）剥到 T56 一并处理。
+**Phase 3 Week 4 D 师徒系统**：T53 ✅ + T54 ✅（销 #25）+ T55 ✅（516/516，祖师 +5% 内力 buff 落地）。下一步 T56 角色面板「师承」段 UI + 顺手清挂账 #26（main_menu 闭关入口硬编码 characterId=1/RealmTier.xueTu）。
 
 ## 已知偏差 / 挂账事项
 
