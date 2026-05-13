@@ -185,6 +185,10 @@ class GameRepository {
     }
     // Phase 3 Week 7 T63：装备 fixture 扩 35 件,校验单件红线 + 覆盖度
     _enforceEquipmentRedLines();
+
+    // Phase 3 Week 8 T64：心法 fixture 扩 21 本,7 阶 × 3 流派覆盖度
+    //   + 每本 3 招 type 精确 normalAttack/powerSkill/ultimate
+    _enforceTechniqueRedLines();
     // Phase 3 T33：stage 链路校验。prevStageId 必须能找到，
     // 且与本关同 chapterIndex（防跨章引用 / 错字 id）。
     for (final s in stageDefs.values) {
@@ -223,6 +227,60 @@ class GameRepository {
 
     // Phase 3 Week 4 T53：师徒 3 角色校验
     _enforceMasterRedLines();
+  }
+
+  /// 心法 + 招式红线（Phase 3 Week 8 T64）：
+  /// - 覆盖度：7 阶 × 3 流派 = 21 个 (tier,school) 组合每个 ≥ 1 本
+  /// - 每本：skillIds.length == 3
+  /// - 每本对应的 3 招 type 必须精确为 {normalAttack, powerSkill, ultimate}
+  /// - 每招 parentTechniqueDefId 必须指向自身所属 technique
+  ///
+  /// 允许测试 fixture 不带 techniqueDefs(为空时整体跳过)。
+  void _enforceTechniqueRedLines() {
+    if (techniqueDefs.isEmpty) return;
+    for (final tier in TechniqueTier.values) {
+      for (final school in TechniqueSchool.values) {
+        final hit = techniqueDefs.values
+            .any((t) => t.tier == tier && t.school == school);
+        if (!hit) {
+          throw StateError(
+            '心法覆盖度不足：缺 ${tier.name}/${school.name} 组合',
+          );
+        }
+      }
+    }
+    for (final t in techniqueDefs.values) {
+      if (t.skillIds.length != 3) {
+        throw StateError(
+          '心法 ${t.id} skillIds.length=${t.skillIds.length},应 == 3',
+        );
+      }
+      final types = <SkillType>{};
+      for (final sid in t.skillIds) {
+        final s = skillDefs[sid];
+        if (s == null) {
+          throw StateError('心法 ${t.id} 引用不存在的 skill: $sid');
+        }
+        if (s.parentTechniqueDefId != t.id) {
+          throw StateError(
+            '心法 ${t.id} 招式 $sid parentTechniqueDefId='
+            '${s.parentTechniqueDefId},应指向自身',
+          );
+        }
+        types.add(s.type);
+      }
+      const required = {
+        SkillType.normalAttack,
+        SkillType.powerSkill,
+        SkillType.ultimate,
+      };
+      if (types.length != required.length || !types.containsAll(required)) {
+        throw StateError(
+          '心法 ${t.id} 招式 type 分布 $types,'
+          '应精确为 {normalAttack, powerSkill, ultimate}',
+        );
+      }
+    }
   }
 
   /// 装备红线（Phase 3 Week 7 T63）：

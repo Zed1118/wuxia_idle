@@ -25,8 +25,9 @@ void main() {
       expect(repo.realms.length, 49, reason: '49 级境界');
       expect(repo.equipmentDefs.length, 35,
           reason: '35 件装备（Phase 3 Week 7 T63 扩 7 阶 × 5 件）');
-      expect(repo.techniqueDefs.length, 6, reason: '6 本心法');
-      expect(repo.skillDefs.length, 18, reason: '18 招招式');
+      expect(repo.techniqueDefs.length, 21,
+          reason: '21 本心法（Phase 3 Week 8 T64 扩 7 阶 × 3 流派）');
+      expect(repo.skillDefs.length, 63, reason: '63 招招式（21 心法 × 3 招）');
       expect(repo.stageDefs.length, 15, reason: '主线 15 关（Phase 3 Week 5 T59 扩容）');
       expect(repo.numbers.version, isNotEmpty);
     });
@@ -229,6 +230,70 @@ equipment:
           (e) => e.message,
           'message',
           contains('覆盖度不足'),
+        )),
+      );
+    });
+
+    test('T64 心法覆盖度：缺 (tier,school) 组合 → 抛 StateError', () async {
+      // techniques.yaml 只塞 1 本 → 7×3=21 组合缺一堆,覆盖度先抛
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('techniques.yaml')) {
+          return '''
+techniques:
+  - id: tech_solo
+    name: 孤本
+    tier: ruMenGong
+    school: gangMeng
+    description: TODO
+    skillIds: []
+    internalForceGrowthBonus: 1.0
+    speedBonus: 0
+    acquireSourceTags: []
+''';
+        }
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('心法覆盖度不足'),
+        )),
+      );
+    });
+
+    test('T64 心法每本 3 招 type 分布:ult 被改成 normalAttack → 抛 StateError',
+        () async {
+      // 真实 techniques.yaml 全 21 本通过覆盖度 → 走每本校验
+      // skills.yaml 把 jichu gangMeng ult 的 type 改成 normalAttack → 该本 types 分布错
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('skills.yaml')) {
+          final original = await fileLoader(path);
+          // skill_gangmeng_jichu_ult 的 type: ultimate → normalAttack
+          return original.replaceFirst(
+            '''
+  - id: skill_gangmeng_jichu_ult
+    name: 怒涛拳
+    description: TODO_NARRATIVE
+    type: ultimate''',
+            '''
+  - id: skill_gangmeng_jichu_ult
+    name: 怒涛拳
+    description: TODO_NARRATIVE
+    type: normalAttack''',
+          );
+        }
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('应精确为'),
         )),
       );
     });
