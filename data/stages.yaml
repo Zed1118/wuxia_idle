@@ -1,34 +1,38 @@
 # =============================================================================
-# stages.yaml · 主线关卡（T07 占位 + T33 Phase 3 schema 升级）
+# stages.yaml · 主线 15 关（Phase 3 Week 5 扩容）
 # =============================================================================
-# 共 6 关：3 章 × 2 关，stageType 全填 mainline。
-# 每关 3 敌人，三流派各一（gangMeng / lingQiao / yinRou）。
-# 难度递增覆盖学徒 → 三流 → 二流。
+# 共 15 关：3 章 × 5 关，stageType 全填 mainline。
+# 每关 3 敌人（StageDef.enemyTeam 上限 3）；三流派分布尽量覆盖 gangMeng /
+# lingQiao / yinRou。难度按章递增 xueTu → sanLiu → erLiu。
 #
-# Phase 3 T33 字段约定：
-#   prevStageId          —— 章节内顺序解锁（章节首关为 null/缺省）；与本关同
-#                           chapterIndex（GameRepository._enforceRedLines 校验）
-#   narrativeOpeningId   —— 进入关卡前播放的剧情 id（联结
-#                           data/narratives/<id>.yaml；缺文件由 NarrativeLoader
-#                           兜底「[剧情待补]」，运行期不挂）
-#   narrativeVictoryId   —— 战斗胜利后播放的剧情 id；战败不触发
+# Phase 3 Week 5 schema：在 T33 三段 narrative 基础上加 `narrativeDefeatId`。
+#   narrativeOpeningId   —— 进入关卡前播放（联结 data/narratives/stages/<id>.yaml）
+#   narrativeVictoryId   —— 战斗胜利后播放
+#   narrativeDefeatId    —— 战斗失败后播放（**仅章末两关 4/5 配置**，对齐
+#                           DeepSeek narrative 已铺设的 6 个 defeat 文件）
 #   narrativeId          —— Phase 1 字段，已 @Deprecated；Phase 5 整理时清
 #
+# Boss 关分布：每章 4/5 关为 Boss（isBossStage=true），章末 5 关为大 Boss。
+# Boss 关同时配 narrativeDefeatId；普通 1/2/3 关战败直接返回 stage list，不触发剧情。
+#
 # baseHp / baseAttack 数值估算：
-#   xueTu  (内力 500-1100)：HP 1500-3500、Atk 80-150
-#   sanLiu (内力 1200-2000)：HP 3000-7000、Atk 250-450
-#   erLiu  (内力 2200-3500)：HP 6000-11000、Atk 550-900
+#   xueTu  (内力 500-1100)：HP 1500-3500、Atk 80-160
+#   sanLiu (内力 1200-2000)：HP 3500-7000、Atk 260-470
+#   erLiu  (内力 2200-3500)：HP 7000-11000、Atk 580-900
+# 章末大 Boss 数值贴章上限，暗示需升下一阶。
 # =============================================================================
 
 stages:
 
-  # === 测试关 1 · 学徒 / 启蒙（3 弱敌）===
-  # P1 #1 2026-05-12 stage_id 迁移：mainline_test_01 → stage_01_01（对齐 DeepSeek narrative）
+  # ─────────────────────────────────────────────────────────────────────
+  # Ch1 · 学武出山（xueTu 学徒）
+  # ─────────────────────────────────────────────────────────────────────
+
+  # === stage_01_01 · 山门之外（首关）===
   - id: stage_01_01
-    name: 山道试剑
+    name: 山门之外
     stageType: mainline
     chapterIndex: 1
-    # Ch1 首关，无 prevStageId
     narrativeOpeningId: stage_01_01_opening
     narrativeVictoryId: stage_01_01_victory
     requiredRealm: xueTu
@@ -69,9 +73,9 @@ stages:
     baseExpReward: 50
     difficultyMultiplier: 1.0
 
-  # === 测试关 2 · 学徒 / 圆熟（强一些的山贼）===
+  # === stage_01_02 · 荒山野店（中段路霸）===
   - id: stage_01_02
-    name: 林间伏击
+    name: 荒山野店
     stageType: mainline
     chapterIndex: 1
     prevStageId: stage_01_01
@@ -79,12 +83,62 @@ stages:
     narrativeVictoryId: stage_01_02_victory
     requiredRealm: xueTu
     enemyTeam:
-      - id: enemy_xueTu_bandit_a
-        name: 山贼头
+      - id: enemy_xueTu_rufflian_a
+        name: 茶店掌柜
         realmTier: xueTu
-        realmLayer: yuanShu
+        realmLayer: ruMen
         school: gangMeng
-        baseHp: 3000
+        baseHp: 2100
+        baseAttack: 105
+        baseSpeed: 100
+        skillIds: [skill_gangmeng_jichu_basic]
+        iconPath: assets/enemies/ruffian_a.png
+      - id: enemy_xueTu_rufflian_b
+        name: 山道伏客
+        realmTier: xueTu
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 1900
+        baseAttack: 115
+        baseSpeed: 120
+        skillIds: [skill_lingqiao_jichu_basic]
+        iconPath: assets/enemies/ruffian_b.png
+      - id: enemy_xueTu_rufflian_c
+        name: 闲汉
+        realmTier: xueTu
+        realmLayer: ruMen
+        school: yinRou
+        baseHp: 2000
+        baseAttack: 110
+        baseSpeed: 110
+        skillIds: [skill_yinrou_jichu_basic]
+        iconPath: assets/enemies/ruffian_c.png
+    isBossStage: false
+    dropEquipmentDefIds: [accessory_xunchang_yu_pei]
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_mojianshi
+        quantity: [1, 3]
+        dropChance: 1.0
+    baseExpReward: 120
+    difficultyMultiplier: 1.2
+
+  # === stage_01_03 · 黑风岭（山贼伏击）===
+  - id: stage_01_03
+    name: 黑风岭
+    stageType: mainline
+    chapterIndex: 1
+    prevStageId: stage_01_02
+    narrativeOpeningId: stage_01_03_opening
+    narrativeVictoryId: stage_01_03_victory
+    requiredRealm: xueTu
+    enemyTeam:
+      - id: enemy_xueTu_bandit_a
+        name: 独眼大汉
+        realmTier: xueTu
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 2900
         baseAttack: 130
         baseSpeed: 110
         skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
@@ -94,9 +148,9 @@ stages:
         realmTier: xueTu
         realmLayer: jingTong
         school: lingQiao
-        baseHp: 2400
-        baseAttack: 110
-        baseSpeed: 120
+        baseHp: 2500
+        baseAttack: 120
+        baseSpeed: 125
         skillIds: [skill_lingqiao_jichu_basic]
         iconPath: assets/enemies/bandit_b.png
       - id: enemy_xueTu_bandit_c
@@ -104,30 +158,148 @@ stages:
         realmTier: xueTu
         realmLayer: jingTong
         school: yinRou
-        baseHp: 2500
-        baseAttack: 115
-        baseSpeed: 105
+        baseHp: 2600
+        baseAttack: 125
+        baseSpeed: 115
         skillIds: [skill_yinrou_jichu_basic]
         iconPath: assets/enemies/bandit_c.png
     isBossStage: false
-    dropEquipmentDefIds: [accessory_xunchang_yu_pei, weapon_xunchang_tie_jian]
+    dropEquipmentDefIds: [weapon_xunchang_tie_jian]
     dropItemDefIds: []
-    # T27 测试用 dropTable（普通关：低概率铁剑 + 必掉 1-3 颗磨剑石）
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
-        dropChance: 0.30
+        dropChance: 0.40
       - inventoryItemDefId: item_mojianshi
-        quantity: [1, 3]
+        quantity: [2, 4]
         dropChance: 1.0
-    baseExpReward: 120
-    difficultyMultiplier: 1.2
+    baseExpReward: 200
+    difficultyMultiplier: 1.4
 
-  # === 测试关 3 · 三流 / 启蒙 ===
+  # === stage_01_04 · 洛阳城外（小 Boss · 青衫汉子）===
+  - id: stage_01_04
+    name: 洛阳城外
+    stageType: mainline
+    chapterIndex: 1
+    prevStageId: stage_01_03
+    narrativeOpeningId: stage_01_04_opening
+    narrativeVictoryId: stage_01_04_victory
+    narrativeDefeatId: stage_01_04_defeat
+    requiredRealm: xueTu
+    enemyTeam:
+      - id: enemy_xueTu_qingshan
+        name: 青衫汉子
+        realmTier: xueTu
+        realmLayer: dengFeng
+        school: lingQiao
+        baseHp: 3200
+        baseAttack: 145
+        baseSpeed: 140
+        skillIds:
+          - skill_lingqiao_jichu_basic
+          - skill_lingqiao_jichu_skill
+        iconPath: assets/enemies/qingshan.png
+      - id: enemy_xueTu_gateguard_a
+        name: 城兵甲
+        realmTier: xueTu
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 3000
+        baseAttack: 135
+        baseSpeed: 110
+        skillIds: [skill_gangmeng_jichu_basic]
+        iconPath: assets/enemies/gateguard_a.png
+      - id: enemy_xueTu_gateguard_b
+        name: 城兵乙
+        realmTier: xueTu
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 2900
+        baseAttack: 130
+        baseSpeed: 115
+        skillIds: [skill_yinrou_jichu_basic]
+        iconPath: assets/enemies/gateguard_b.png
+    isBossStage: true
+    dropEquipmentDefIds: [weapon_xunchang_tie_jian, accessory_xunchang_yu_pei]
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_xunchang_tie_jian
+        dropChance: 0.60
+      - inventoryItemDefId: item_mojianshi
+        quantity: [3, 5]
+        dropChance: 1.0
+    baseExpReward: 350
+    difficultyMultiplier: 1.6
+
+  # === stage_01_05 · 风雨渡口（章末大 Boss · 撑伞高人）===
+  - id: stage_01_05
+    name: 风雨渡口
+    stageType: mainline
+    chapterIndex: 1
+    prevStageId: stage_01_04
+    narrativeOpeningId: stage_01_05_opening
+    narrativeVictoryId: stage_01_05_victory
+    narrativeDefeatId: stage_01_05_defeat
+    requiredRealm: xueTu
+    enemyTeam:
+      - id: enemy_xueTu_umbrella
+        name: 撑伞高人
+        realmTier: xueTu
+        realmLayer: yuanShu
+        school: yinRou
+        baseHp: 3500
+        baseAttack: 160
+        baseSpeed: 150
+        skillIds:
+          - skill_yinrou_jichu_basic
+          - skill_yinrou_jichu_skill
+          - skill_yinrou_jichu_ult
+        iconPath: assets/enemies/umbrella.png
+      - id: enemy_xueTu_dock_a
+        name: 渡口刀客
+        realmTier: xueTu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 3300
+        baseAttack: 150
+        baseSpeed: 120
+        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
+        iconPath: assets/enemies/dock_a.png
+      - id: enemy_xueTu_dock_b
+        name: 渡口剑客
+        realmTier: xueTu
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 3200
+        baseAttack: 155
+        baseSpeed: 135
+        skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
+        iconPath: assets/enemies/dock_b.png
+    isBossStage: true
+    dropEquipmentDefIds:
+      - armor_xunchang_bu_yi
+      - accessory_xunchang_yu_pei
+      - weapon_xunchang_tie_jian
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_xunchang_tie_jian
+        dropChance: 1.0
+      - equipmentDefId: armor_xunchang_bu_yi
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [1, 2]
+        dropChance: 1.0
+    baseExpReward: 600
+    difficultyMultiplier: 1.8
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Ch2 · 武林初识（sanLiu 三流）
+  # ─────────────────────────────────────────────────────────────────────
+
+  # === stage_02_01 · 镖局护送（首关）===
   - id: stage_02_01
     name: 镖局护送
     stageType: mainline
     chapterIndex: 2
-    # Ch2 首关，无 prevStageId
     narrativeOpeningId: stage_02_01_opening
     narrativeVictoryId: stage_02_01_victory
     requiredRealm: sanLiu
@@ -170,9 +342,9 @@ stages:
     baseExpReward: 350
     difficultyMultiplier: 1.5
 
-  # === 测试关 4 · 三流 / 圆熟 ===
+  # === stage_02_02 · 茶馆论剑（中段比武）===
   - id: stage_02_02
-    name: 黑风寨
+    name: 茶馆论剑
     stageType: mainline
     chapterIndex: 2
     prevStageId: stage_02_01
@@ -180,53 +352,236 @@ stages:
     narrativeVictoryId: stage_02_02_victory
     requiredRealm: sanLiu
     enemyTeam:
-      - id: enemy_sanLiu_chief_a
-        name: 寨主
+      - id: enemy_sanLiu_elder
+        name: 花白胡子老者
         realmTier: sanLiu
-        realmLayer: yuanShu
+        realmLayer: ruMen
         school: gangMeng
-        baseHp: 6500
-        baseAttack: 420
+        baseHp: 4800
+        baseAttack: 340
         baseSpeed: 145
         skillIds:
           - skill_gangmeng_jichu_basic
           - skill_gangmeng_jichu_skill
+        iconPath: assets/enemies/elder_grey.png
+      - id: enemy_sanLiu_kibitzer_a
+        name: 旁观武人甲
+        realmTier: sanLiu
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 4500
+        baseAttack: 320
+        baseSpeed: 155
+        skillIds: [skill_lingqiao_jichu_basic]
+        iconPath: assets/enemies/kibitzer_a.png
+      - id: enemy_sanLiu_kibitzer_b
+        name: 旁观武人乙
+        realmTier: sanLiu
+        realmLayer: ruMen
+        school: yinRou
+        baseHp: 4400
+        baseAttack: 330
+        baseSpeed: 150
+        skillIds: [skill_yinrou_jichu_basic]
+        iconPath: assets/enemies/kibitzer_b.png
+    isBossStage: false
+    dropEquipmentDefIds: [accessory_xiangyang_yin_jie]
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_mojianshi
+        quantity: [3, 5]
+        dropChance: 1.0
+    baseExpReward: 550
+    difficultyMultiplier: 1.7
+
+  # === stage_02_03 · 春水堂（铸剑铺试剑）===
+  - id: stage_02_03
+    name: 春水堂
+    stageType: mainline
+    chapterIndex: 2
+    prevStageId: stage_02_02
+    narrativeOpeningId: stage_02_03_opening
+    narrativeVictoryId: stage_02_03_victory
+    requiredRealm: sanLiu
+    enemyTeam:
+      - id: enemy_sanLiu_shaonian
+        name: 春水堂少年
+        realmTier: sanLiu
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 5100
+        baseAttack: 380
+        baseSpeed: 165
+        skillIds:
+          - skill_lingqiao_jichu_basic
+          - skill_lingqiao_jichu_skill
+        iconPath: assets/enemies/shaonian.png
+      - id: enemy_sanLiu_swordtester_a
+        name: 试剑客
+        realmTier: sanLiu
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 5500
+        baseAttack: 400
+        baseSpeed: 145
+        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
+        iconPath: assets/enemies/swordtester_a.png
+      - id: enemy_sanLiu_swordtester_b
+        name: 散修客
+        realmTier: sanLiu
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 5300
+        baseAttack: 390
+        baseSpeed: 150
+        skillIds: [skill_yinrou_jichu_basic]
+        iconPath: assets/enemies/swordtester_b.png
+    isBossStage: false
+    dropEquipmentDefIds: [weapon_xiangyang_gang_dao]
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_xiangyang_gang_dao
+        dropChance: 0.50
+      - inventoryItemDefId: item_mojianshi
+        quantity: [3, 6]
+        dropChance: 1.0
+    baseExpReward: 800
+    difficultyMultiplier: 1.9
+
+  # === stage_02_04 · 城外校场（小 Boss · 棍法光头汉）===
+  - id: stage_02_04
+    name: 城外校场
+    stageType: mainline
+    chapterIndex: 2
+    prevStageId: stage_02_03
+    narrativeOpeningId: stage_02_04_opening
+    narrativeVictoryId: stage_02_04_victory
+    narrativeDefeatId: stage_02_04_defeat
+    requiredRealm: sanLiu
+    enemyTeam:
+      - id: enemy_sanLiu_guntou
+        name: 光头汉子
+        realmTier: sanLiu
+        realmLayer: huaJing
+        school: gangMeng
+        baseHp: 6000
+        baseAttack: 430
+        baseSpeed: 150
+        skillIds:
+          - skill_gangmeng_jichu_basic
+          - skill_gangmeng_jichu_skill
           - skill_gangmeng_jichu_ult
-        iconPath: assets/enemies/zhaizhu.png
-      - id: enemy_sanLiu_chief_b
-        name: 副寨主
+        iconPath: assets/enemies/guntou.png
+      - id: enemy_sanLiu_langren_a
+        name: 校场浪人
         realmTier: sanLiu
         realmLayer: huaJing
         school: lingQiao
-        baseHp: 5200
-        baseAttack: 380
+        baseHp: 5700
+        baseAttack: 410
         baseSpeed: 165
         skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
-        iconPath: assets/enemies/fu_zhaizhu.png
-      - id: enemy_sanLiu_chief_c
-        name: 师爷
+        iconPath: assets/enemies/langren_a.png
+      - id: enemy_sanLiu_langren_b
+        name: 校场刀客
         realmTier: sanLiu
         realmLayer: huaJing
         school: yinRou
-        baseHp: 5000
-        baseAttack: 360
+        baseHp: 5800
+        baseAttack: 420
         baseSpeed: 155
         skillIds: [skill_yinrou_jichu_basic, skill_yinrou_jichu_skill]
-        iconPath: assets/enemies/shiye.png
+        iconPath: assets/enemies/langren_b.png
+    isBossStage: true
+    dropEquipmentDefIds:
+      - weapon_xiangyang_gang_dao
+      - armor_xiangyang_pi_jia
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_xiangyang_gang_dao
+        dropChance: 0.80
+      - equipmentDefId: armor_xiangyang_pi_jia
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [1, 3]
+        dropChance: 1.0
+    baseExpReward: 1100
+    difficultyMultiplier: 2.1
+
+  # === stage_02_05 · 巷中夜雨（章末大 Boss · 不留剑鞘青衫人）===
+  - id: stage_02_05
+    name: 巷中夜雨
+    stageType: mainline
+    chapterIndex: 2
+    prevStageId: stage_02_04
+    narrativeOpeningId: stage_02_05_opening
+    narrativeVictoryId: stage_02_05_victory
+    narrativeDefeatId: stage_02_05_defeat
+    requiredRealm: sanLiu
+    enemyTeam:
+      - id: enemy_sanLiu_qingshan_main
+        name: 青衫剑客
+        realmTier: sanLiu
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 7000
+        baseAttack: 470
+        baseSpeed: 175
+        skillIds:
+          - skill_lingqiao_jichu_basic
+          - skill_lingqiao_jichu_skill
+          - skill_lingqiao_jichu_ult
+        iconPath: assets/enemies/qingshan_main.png
+      - id: enemy_sanLiu_killer_a
+        name: 巷口杀手
+        realmTier: sanLiu
+        realmLayer: yuanShu
+        school: yinRou
+        baseHp: 6500
+        baseAttack: 450
+        baseSpeed: 160
+        skillIds:
+          - skill_yinrou_jichu_basic
+          - skill_yinrou_jichu_skill
+          - skill_yinrou_jichu_ult
+        iconPath: assets/enemies/killer_a.png
+      - id: enemy_sanLiu_killer_b
+        name: 巷尾杀手
+        realmTier: sanLiu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 6800
+        baseAttack: 460
+        baseSpeed: 155
+        skillIds:
+          - skill_gangmeng_jichu_basic
+          - skill_gangmeng_jichu_skill
+        iconPath: assets/enemies/killer_b.png
     isBossStage: true
     dropEquipmentDefIds:
       - weapon_haojiahuo_qing_feng_jian
       - accessory_xiangyang_yin_jie
     dropItemDefIds: []
-    baseExpReward: 800
-    difficultyMultiplier: 1.7
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_qing_feng_jian
+        dropChance: 0.70
+      - equipmentDefId: accessory_xiangyang_yin_jie
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [3, 5]
+        dropChance: 1.0
+    baseExpReward: 1800
+    difficultyMultiplier: 2.3
 
-  # === 测试关 5 · 二流 / 启蒙 ===
+  # ─────────────────────────────────────────────────────────────────────
+  # Ch3 · 名扬江湖（erLiu 二流）
+  # ─────────────────────────────────────────────────────────────────────
+
+  # === stage_03_01 · 武林会（首关）===
   - id: stage_03_01
     name: 武林会
     stageType: mainline
     chapterIndex: 3
-    # Ch3 首关，无 prevStageId
     narrativeOpeningId: stage_03_01_opening
     narrativeVictoryId: stage_03_01_victory
     requiredRealm: erLiu
@@ -273,9 +628,9 @@ stages:
     baseExpReward: 1500
     difficultyMultiplier: 2.0
 
-  # === 测试关 6 · 二流 / 圆熟 · Boss 关 ===
+  # === stage_03_02 · 许昌擂台（中段擂台战）===
   - id: stage_03_02
-    name: 一战封王
+    name: 许昌擂台
     stageType: mainline
     chapterIndex: 3
     prevStageId: stage_03_01
@@ -283,58 +638,240 @@ stages:
     narrativeVictoryId: stage_03_02_victory
     requiredRealm: erLiu
     enemyTeam:
-      - id: enemy_erLiu_boss
-        name: 武林霸主
+      - id: enemy_erLiu_guntou_zhu
+        name: 擂主光头汉
         realmTier: erLiu
-        realmLayer: yuanShu
+        realmLayer: ruMen
         school: gangMeng
-        baseHp: 11000
-        baseAttack: 820
-        baseSpeed: 185
+        baseHp: 8800
+        baseAttack: 700
+        baseSpeed: 170
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+        iconPath: assets/enemies/guntou_zhu.png
+      - id: enemy_erLiu_taixia_a
+        name: 台下挑战者
+        realmTier: erLiu
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 8200
+        baseAttack: 670
+        baseSpeed: 180
+        skillIds:
+          - skill_lingqiao_mingjia_basic
+          - skill_lingqiao_mingjia_skill
+        iconPath: assets/enemies/taixia_a.png
+      - id: enemy_erLiu_taixia_b
+        name: 旁观高手
+        realmTier: erLiu
+        realmLayer: ruMen
+        school: yinRou
+        baseHp: 8000
+        baseAttack: 680
+        baseSpeed: 165
+        skillIds:
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+        iconPath: assets/enemies/taixia_b.png
+    isBossStage: false
+    dropEquipmentDefIds:
+      - weapon_haojiahuo_qing_feng_jian
+      - armor_haojiahuo_jin_pao
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_qing_feng_jian
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [2, 4]
+        dropChance: 1.0
+    baseExpReward: 2200
+    difficultyMultiplier: 2.2
+
+  # === stage_03_03 · 山寺夜话（中段奇遇战）===
+  - id: stage_03_03
+    name: 山寺夜话
+    stageType: mainline
+    chapterIndex: 3
+    prevStageId: stage_03_02
+    narrativeOpeningId: stage_03_03_opening
+    narrativeVictoryId: stage_03_03_victory
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_seng_huiyi
+        name: 灰袍僧人
+        realmTier: erLiu
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 9200
+        baseAttack: 740
+        baseSpeed: 175
+        skillIds:
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+        iconPath: assets/enemies/seng_huiyi.png
+      - id: enemy_erLiu_seng_a
+        name: 寺中沙弥
+        realmTier: erLiu
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 8900
+        baseAttack: 720
+        baseSpeed: 160
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+        iconPath: assets/enemies/seng_a.png
+      - id: enemy_erLiu_seng_b
+        name: 寺中行者
+        realmTier: erLiu
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 9000
+        baseAttack: 730
+        baseSpeed: 170
+        skillIds:
+          - skill_lingqiao_mingjia_basic
+          - skill_lingqiao_mingjia_skill
+        iconPath: assets/enemies/seng_b.png
+    isBossStage: false
+    dropEquipmentDefIds: [accessory_haojiahuo_yu_pei_lao]
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [2, 5]
+        dropChance: 1.0
+    baseExpReward: 2800
+    difficultyMultiplier: 2.4
+
+  # === stage_03_04 · 雁门旧事（小 Boss · 疤脸汉子）===
+  - id: stage_03_04
+    name: 雁门旧事
+    stageType: mainline
+    chapterIndex: 3
+    prevStageId: stage_03_03
+    narrativeOpeningId: stage_03_04_opening
+    narrativeVictoryId: stage_03_04_victory
+    narrativeDefeatId: stage_03_04_defeat
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_balian
+        name: 疤脸汉子
+        realmTier: erLiu
+        realmLayer: huaJing
+        school: gangMeng
+        baseHp: 10000
+        baseAttack: 800
+        baseSpeed: 175
         skillIds:
           - skill_gangmeng_mingjia_basic
           - skill_gangmeng_mingjia_skill
           - skill_gangmeng_mingjia_ult
-        iconPath: assets/enemies/wulin_bazhu.png
-      - id: enemy_erLiu_boss_lt_a
-        name: 左护法
+        iconPath: assets/enemies/balian.png
+      - id: enemy_erLiu_tongmen_a
+        name: 雁门同伙甲
         realmTier: erLiu
         realmLayer: huaJing
         school: lingQiao
-        baseHp: 8500
-        baseAttack: 720
+        baseHp: 9500
+        baseAttack: 770
+        baseSpeed: 185
+        skillIds:
+          - skill_lingqiao_mingjia_basic
+          - skill_lingqiao_mingjia_skill
+        iconPath: assets/enemies/tongmen_a.png
+      - id: enemy_erLiu_tongmen_b
+        name: 雁门同伙乙
+        realmTier: erLiu
+        realmLayer: huaJing
+        school: yinRou
+        baseHp: 9700
+        baseAttack: 780
+        baseSpeed: 170
+        skillIds:
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+        iconPath: assets/enemies/tongmen_b.png
+    isBossStage: true
+    dropEquipmentDefIds:
+      - armor_haojiahuo_jin_pao
+      - accessory_haojiahuo_yu_pei_lao
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: armor_haojiahuo_jin_pao
+        dropChance: 0.80
+      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+        dropChance: 0.60
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [3, 6]
+        dropChance: 1.0
+    baseExpReward: 4000
+    difficultyMultiplier: 2.6
+
+  # === stage_03_05 · 一剑封名（章末大 Boss · 灰衣人）===
+  - id: stage_03_05
+    name: 一剑封名
+    stageType: mainline
+    chapterIndex: 3
+    prevStageId: stage_03_04
+    narrativeOpeningId: stage_03_05_opening
+    narrativeVictoryId: stage_03_05_victory
+    narrativeDefeatId: stage_03_05_defeat
+    requiredRealm: erLiu
+    enemyTeam:
+      - id: enemy_erLiu_huiyi
+        name: 灰衣人
+        realmTier: erLiu
+        realmLayer: yuanShu
+        school: yinRou
+        baseHp: 11000
+        baseAttack: 900
+        baseSpeed: 190
+        skillIds:
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+          - skill_yinrou_mingjia_ult
+        iconPath: assets/enemies/huiyi.png
+      - id: enemy_erLiu_shidi_a
+        name: 灰衣师弟
+        realmTier: erLiu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 10500
+        baseAttack: 850
+        baseSpeed: 175
+        skillIds:
+          - skill_gangmeng_mingjia_basic
+          - skill_gangmeng_mingjia_skill
+          - skill_gangmeng_mingjia_ult
+        iconPath: assets/enemies/shidi_a.png
+      - id: enemy_erLiu_shidi_b
+        name: 灰衣师妹
+        realmTier: erLiu
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 10300
+        baseAttack: 870
         baseSpeed: 195
         skillIds:
           - skill_lingqiao_mingjia_basic
           - skill_lingqiao_mingjia_skill
           - skill_lingqiao_mingjia_ult
-        iconPath: assets/enemies/zuo_hufa.png
-      - id: enemy_erLiu_boss_lt_b
-        name: 右护法
-        realmTier: erLiu
-        realmLayer: huaJing
-        school: yinRou
-        baseHp: 9000
-        baseAttack: 700
-        baseSpeed: 180
-        skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-          - skill_yinrou_mingjia_ult
-        iconPath: assets/enemies/you_hufa.png
+        iconPath: assets/enemies/shidi_b.png
     isBossStage: true
     dropEquipmentDefIds:
       - weapon_liqi_long_quan
       - accessory_haojiahuo_yu_pei_lao
     dropItemDefIds: []
-    # T27 测试用 dropTable（Boss 关：必掉龙泉剑 + 50% 玉佩老 + 必掉心血结晶 5-8）
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 1.0
       - equipmentDefId: accessory_haojiahuo_yu_pei_lao
-        dropChance: 0.50
+        dropChance: 0.60
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [5, 8]
         dropChance: 1.0
-    baseExpReward: 3500
-    difficultyMultiplier: 2.5
+    baseExpReward: 6000
+    difficultyMultiplier: 2.8

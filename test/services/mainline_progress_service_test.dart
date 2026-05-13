@@ -63,17 +63,20 @@ void main() {
   });
 
   group('availableStages', () {
-    test('Ch1 全新进度 → 首关 available + 02 locked', () async {
+    test('Ch1 全新进度 → 首关 available + 后续全 locked', () async {
       final p = await MainlineProgressService.getOrCreate(saveDataId: 1);
       final entries = MainlineProgressService.availableStages(
         progress: p,
         chapterIndex: 1,
       );
-      expect(entries.length, 2);
+      expect(entries.length, 5, reason: 'Phase 3 Week 5 扩到每章 5 关');
       expect(entries[0].def.id, 'stage_01_01');
       expect(entries[0].status, StageStatus.available);
       expect(entries[1].def.id, 'stage_01_02');
       expect(entries[1].status, StageStatus.locked);
+      for (var i = 2; i < entries.length; i++) {
+        expect(entries[i].status, StageStatus.locked);
+      }
     });
 
     test('Ch1 首关已通 → 01 cleared + 02 available', () async {
@@ -92,22 +95,21 @@ void main() {
       expect(entries[1].status, StageStatus.available);
     });
 
-    test('Ch1 全通 → 两关都 cleared', () async {
+    test('Ch1 全通（5 关）→ 全部 cleared', () async {
       await MainlineProgressService.getOrCreate(saveDataId: 1);
-      await MainlineProgressService.recordVictory(
-        stageId: 'stage_01_01',
-        now: DateTime(2026, 5, 11),
-      );
-      await MainlineProgressService.recordVictory(
-        stageId: 'stage_01_02',
-        now: DateTime(2026, 5, 12),
-      );
+      for (var i = 1; i <= 5; i++) {
+        await MainlineProgressService.recordVictory(
+          stageId: 'stage_01_0$i',
+          now: DateTime(2026, 5, 10 + i),
+        );
+      }
       final p =
           await MainlineProgressService.getOrCreate(saveDataId: 1);
       final entries = MainlineProgressService.availableStages(
         progress: p,
         chapterIndex: 1,
       );
+      expect(entries.length, 5);
       expect(entries.every((e) => e.status == StageStatus.cleared), isTrue);
     });
 
@@ -187,16 +189,14 @@ void main() {
   });
 
   group('chapterCompleted', () {
-    test('Ch1 全通 → true', () async {
+    test('Ch1 全通（5 关）→ true', () async {
       await MainlineProgressService.getOrCreate(saveDataId: 1);
-      await MainlineProgressService.recordVictory(
-        stageId: 'stage_01_01',
-        now: DateTime(2026, 5, 11),
-      );
-      await MainlineProgressService.recordVictory(
-        stageId: 'stage_01_02',
-        now: DateTime(2026, 5, 12),
-      );
+      for (var i = 1; i <= 5; i++) {
+        await MainlineProgressService.recordVictory(
+          stageId: 'stage_01_0$i',
+          now: DateTime(2026, 5, 10 + i),
+        );
+      }
       final p =
           await MainlineProgressService.getOrCreate(saveDataId: 1);
       expect(

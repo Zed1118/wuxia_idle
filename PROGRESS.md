@@ -5,9 +5,9 @@
 
 ## 当前阶段
 
-**Phase 3 Week 4 D 师徒系统全交付**（2026-05-13，tag `v0.3.0-w4`）。T53 schema + T54 P5 种子 + T55 isLineageHeritage + T56 角色面板 Tab + 师承段 UI + T57 3v3 装配链集成测试 + T58 Pen 视觉验收 8 截图全部通过。**T56/T57/T55 lineage buff 三大交付 UI 实测落地**：祖师 UI 内力 3800/4180（含 +10% lineage）/ 师承段 4 行完整渲染（含 GameRepository 解析的「龙泉剑/锦袍」）/ stage_01_01 3v3 同阵 7 tick 速胜 + 3 流派克制全部触发。累计 529 测试，analyze 0 issues。**销账 #25 + #26**。
+**Phase 3 Week 5 F 主线扩 15 关 + 战败 hook 代码完成**（2026-05-13，待 Pen 视觉验收）。T59 stages.yaml 6→15 关 + narrativeDefeatId schema + 主线红线（3 章×5 关，4/5 Boss 关必配 defeat）/ T60 stage_entry_flow 战败路径 push NarrativeReaderScreen（销账 #29 战败 hook）。**章末两关 4/5 才有 Boss + defeat 文案**（章内 1/2/3 普通关战败直接返回 stage list），对齐 DeepSeek 已铺 30 个 narrative 文件 + 6 个 defeat。累计 530/530 测试，analyze 0 issues。
 
-**下一步**：Phase 3 Week 5 方向待选。候选：C 奇遇（需先决 §12 #6 机缘值累积规则）/ E 武学领悟（同 §12 #6）/ F 主线扩到 15 关（与 narrative defeat hook 一起）/ Phase 5 收尾（DDD 整理 / Riverpod 3.x / Isar 4.x）。
+**下一步**：T61 commit + PROGRESS.md / T62 Pen 视觉验收 + tag v0.3.0-w5。
 
 ## 已完成
 
@@ -26,10 +26,12 @@
 - **Phase 3 Week 4 T56 角色面板「师承」段 UI + 销账 #26**（2026-05-13）：`CharacterPanelScreen` 改 ConsumerStatefulWidget，顶部 TabBar 三段切换（祖师/大弟子/二弟子，按 `activeCharacterIdsProvider` 顺序，构造参数指首屏 Tab）；新增 `_LineageSection`（4 行：师父姓名 / 徒弟姓名 join / 「[传记待补]」占位 / 遗物名 join，遗物名走 GameRepository.equipmentDefs[defId].name）；新增 `activeCharacterIdsProvider`（读 SaveData.activeCharacterIds）；MainMenu 改 ConsumerWidget + 新建 `_SeclusionMenuButton`（Riverpod `.when()` 异步读首位角色 realmTier，loading→Opacity 0.4 disabled，error/null→ fallback id=1/xueTu），**销账 #26**（main_menu.dart:77-78 硬编码已移除）；character_panel test +4（3 Tab 渲染 / Tab 切换 / 师承段 4 行 / 内力 lineage +10%）+ main_menu test +2（按钮 Opacity 1.0/0.4），累计 516 → 522。UI 视觉验收留 Windows Pen
 - **Phase 3 Week 4 T57 3v3 默认入阵 + 战斗集成测试 + T55 战斗路径补齐**（2026-05-13）：`test/services/master_disciple_battle_test.dart` 6 用例端到端：3 师徒装配完整 / 境界对齐 masters.yaml / 装备攻击+招式+内力正确 / 祖师 maxInternalForce 含 lineage +10% / victory leftWin / defeat path 不阻塞（人造 left 全员阵亡 → isFinished + 非 leftWin + availableSkills 保留）。**顺手修 T55 commit message 误导**：`BattleCharacter.fromCharacter` 之前 `maxInternalForce: character.internalForceMax`（直接字段值不含 lineage），改用 `CharacterDerivedStats.internalForceMaxWithLineage(character, equipped, numbers)` —— T55 "祖师战斗内力 +5%" 现真正落地战斗路径，不仅 UI；battle_state_test +1（师承遗物 2 件 → maxInternalForce 含 +10%）。累计 522 → 529（+7）
 - **Phase 3 Week 4 T58 Pen 视觉验收 + tag v0.3.0-w4**（2026-05-13，Pen 13:44-13:53 一气呵成）：8 截图归档 `docs/screenshots/phase3_w4/`，覆盖 P5 种子按钮 / 角色面板 3 Tab 切换（祖师/大弟子/二弟子各 1 张）/ 师承段 4 行完整 / 山门之外·启 narrative / stage_01_01 3v3 victory + 战斗日志 / 关卡列表通关旁证。**核心验收点**：祖师 UI 内力 3800/4180（lineage +10% 实测落地）/ 师承段「龙泉剑/锦袍」遗物名走 GameRepository 解析 / 3v3 同阵 7 tick 速胜 / 刚猛+灵巧+阴柔三流派克制 ×0.75 全部触发。**Pen 端首跑环境基线失败**根因：T56 新加 `activeCharacterIdsProvider` 但 `*.g.dart` 全 gitignored，Pen 本地缺生成产物 → spec 补 build_runner 步骤后通过（memory `feedback_wuxia_pen_build_runner.md` 记新踩坑）。phase3_summary.md Week 4 段完整 + tag v0.3.0-w4 push origin
+- **Phase 3 Week 5 T59 stages.yaml 6→15 关 + narrativeDefeatId schema**（2026-05-13）：StageDef 加 `narrativeDefeatId`（fromYaml + 构造函数）/ stages.yaml 全量重写 3 章 × 5 关（Ch1 学徒 1.0→1.8 / Ch2 三流 1.5→2.3 / Ch3 二流 2.0→2.8 难度递增）/ 章末两关 4/5 isBossStage=true 配 defeat 文案对齐 DeepSeek 6 个 defeat 文件（stage_NN_04/05_defeat.yaml）/ 数值梯度按 GDD §3 三阶守红线（xueTu HP 1500-3500、sanLiu HP 3500-7000、erLiu HP 7000-11000） / 现 6 关数值层与 DeepSeek narrative 编号不对齐的旧账一并修（stage_02_02 黑风寨 Boss → 改为 sanLiu 中段「茶馆论剑」普通关、stage_03_02 一战封王 → 改为 erLiu 中段「许昌擂台」、章末大 Boss 重定位到 stage_NN_05）。**新增 GameRepository._enforceMainlineRedLines**：mainline 总数=15 / 3 章 × 5 关 / narrativeDefeatId 必须仅在 isBossStage=true 关。test/data/game_repository_test 新增「主线 15 关红线」用例 + 既有 5 个测试期望同步更新（stageDefs.length 6→15 / dropTable 计数 / mainline_progress_service Ch1 全通=5 关 / chapter_list_screen 全 15 关通关 / stage_list_screen 5 关全名 + 锁数）。529 → 530 测试，analyze 0 issues
+- **Phase 3 Week 5 T60 stage_entry_flow 战败 narrative hook + 销账 #29**（2026-05-13）：runStageFlow 战败分支改写——若 `stage.narrativeDefeatId != null && context.mounted` → push NarrativeReaderScreen（content 走 NarrativeLoader.load，缺文件兜底「[剧情待补]」），看完 pop 回 stage list；不记录进度 / 不掉装备（Phase 4 再加战败结算）。章内普通关（无 narrativeDefeatId）战败分支保留旧行为直接返回 list。dartdoc 注释更新「3b. defeat」段说明 Boss 关 vs 普通关分流。test 复用既有 stage_battle_setup_test 的「stage_03_05 章末大 Boss」用例验 narrativeDefeatId 解析（widget 端 defeat path 等 Pen 视觉验收 T62）
 
 ## 进行中
 
-**Phase 3 Week 4 D 师徒系统全交付**（2026-05-13，tag v0.3.0-w4）。T53-T58 全部 ✅，529/529 测试 + 8 截图视觉验收通过 + 销账 #25/#26。等 Week 5 方向决策。
+**Phase 3 Week 5 F 主线扩 15 关代码完成**（2026-05-13）。T59 + T60 全部 ✅，530/530 测试 + analyze 0 issues + 销账 #29。等 T61 commit + T62 Pen 视觉验收。
 
 ## 已知偏差 / 挂账事项
 
@@ -48,20 +50,20 @@
 ~~25. Phase2SeedService.seedP1 缺主修~~ **已销账（2026-05-13 T54）**：seedMasterDisciple 路径 3 师徒齐主修，主菜单点 P5 后可直接进主线战斗。P1 fixture 自身仍是无主修（保留体例），玩家从 P1 入口进战斗的旧路径未修复——若需修复请走 P5 入口
 ~~26. 闭关入口硬编码 characterId=1 / RealmTier.xueTu~~ **已销账（2026-05-13 T56）**：`MainMenu` 改 ConsumerWidget，`_SeclusionMenuButton` Riverpod `.when()` 异步读 `activeCharacterIdsProvider` 首位 + `characterByIdProvider(firstId)` 解析 realmTier；loading 时按钮 Opacity 0.4 disabled，error/空 fallback 到 `id=1/xueTu`（保留旧默认作为不可达兜底）
 28. **闭关 widget 端到端 test 缺失（P2 #3 后续）**：P2 #3 修复了 setup→active→result 导航链，但 SeclusionService 是 static 方法无法 mock，widget test 接真 Isar 阻塞（#23 同源），暂只能靠 Pen 视觉验收兜底。Phase 5 service 注入后补「开始闭关 → 收功 → 返回 list 刷新」端到端 widget test
-29. **defeat hook + 9 关扩容**（P1 #1 留尾）：narrative defeat 6 文件已交付但 stage_entry_flow 战败路径暂未接；stages.yaml 6 关 fixture 未扩到 15 关。Phase 4 W1 主线引导 UI 一起做
+~~29. defeat hook + 9 关扩容~~ **已销账（2026-05-13 T59+T60）**：stages.yaml 扩到 15 关（3 章×5 关）+ narrativeDefeatId schema + GameRepository 主线红线 + stage_entry_flow 战败路径 push NarrativeReaderScreen（Boss 关 4/5 才触发，普通关战败直接返回）。对齐 DeepSeek 30 narrative + 6 defeat 文件。仅 Pen 视觉验收 T62 待跑
 30. **闭关 3 个扩展维度未接 service**（§12 #5 收口留尾，2026-05-13）：`numbers.yaml retreat` 已配 `technique_learn_rate` / `internal_force_growth` / 节气日 +30% / 正午阳刚 +20%，但 `seclusion_service.computeOutputs` 仅消费 mojianshi/experience/equipmentDropRate/子时。前两项依赖 Character 修炼度/内力字段（与挂账 #25/#26 同源），节气日依赖农历库 + 完整节气清单（与挂账 #7 同源）。Phase 4 fixture 改造 + 农历库选型后一并接入
 
 > 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#21/#22/#24/#26/#27，T52 Pen 视觉验收 2026-05-12）见文末归档。
 
 ## 下一步
 
-Week 4 方向已选 **D 师徒系统**（2026-05-13）：
+Week 5 方向已选 **F 主线扩到 15 关 + narrative defeat hook**（2026-05-13，T59+T60 代码已交付）。
 
-**选 D 理由**：(1) 不被 §12 #6 阻塞（C/E 核心阻塞）；(2) 代码骨架最齐 —— Character 已有 `lineageRole/masterId/discipleIds/isFounder` 字段、numbers.yaml 已留 `founder_ancestor_buff` key；(3) Demo §7-§8 硬指标，迟早要做；(4) 不牵动战斗公式回归面。
+**章节结构决策**（用户 2026-05-13 拍板 4 件）：(1) 3 章×5 关；(2) 战败 narrative_defeat 后回关卡列表（不阻断重试）；(3) Mac 先上 stages.yaml，DeepSeek narrative 实际已全部铺好（章末两关有 defeat 文案）；(4) effort 升 xhigh。
 
-**起手前阻塞**：§12 #10（师承遗物细则）+ #11（祖师爷 buff 内容）。**最小决策版本草案**：`docs/handoff/week4_d_minimal_spec_2026-05-13.md`，待用户拍板后拆 T53+ 任务。
+**待办**：T61 commit + T62 Pen Windows 视觉验收（15 关全列表 + 章末 Boss 关 defeat narrative 截图 + 关卡列表三态）+ tag v0.3.0-w5。
 
-C / E 草案保留在 `phase3_tasks.md` 末，等 §12 #6 拍板后再选先后。
+C 奇遇 / E 武学领悟草案保留在 `phase3_tasks.md` 末，等 §12 #6（机缘值累积规则）拍板后再选先后。挂账 #30 闭关 3 维度扩展同源 §12 #7（节气清单）阻塞。
 
 > CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 

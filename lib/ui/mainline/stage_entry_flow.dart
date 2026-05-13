@@ -21,7 +21,8 @@ import '../narrative/narrative_reader_screen.dart';
 ///      onVictory / onDefeat 回调（Completer 转 Future）
 ///   3a. victory：异步 recordVictory + invalidate progress provider；若
 ///       narrativeVictoryId 非空 → push 第二段剧情
-///   3b. defeat：直接退出，不掉装备 / 不记录（Phase 4 再加战败结算）
+///   3b. defeat：若 narrativeDefeatId 非空（章末 Boss 关）→ push 战败剧情；
+///       不记录进度 / 不掉装备，返回 stage list（Phase 3 Week 5 销账 #29）
 ///
 /// **不嵌套 widget**：每段结束后栈上仅剩 stage_list_screen，避免多层 pop。
 Future<void> runStageFlow({
@@ -47,9 +48,24 @@ Future<void> runStageFlow({
   if (!context.mounted) return;
   final won = await _runBattle(context: context, ref: ref, stage: stage);
 
-  // ── victory / defeat ──
-  if (!won) return; // 战败：不记录、不推 victory 剧情，直接返回 stage list
+  // ── defeat ──
+  if (!won) {
+    if (stage.narrativeDefeatId != null && context.mounted) {
+      final defeat = await NarrativeLoader.load(stage.narrativeDefeatId!);
+      if (!context.mounted) return;
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => NarrativeReaderScreen(
+            content: defeat,
+            fallbackTitle: '${stage.name} · 战败',
+          ),
+        ),
+      );
+    }
+    return; // 战败不记录、不推 victory 剧情
+  }
 
+  // ── victory ──
   await MainlineProgressService.recordVictory(
     stageId: stage.id,
     now: DateTime.now(),
