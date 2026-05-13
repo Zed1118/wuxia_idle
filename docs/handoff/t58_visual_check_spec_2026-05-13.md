@@ -24,6 +24,15 @@ git log --oneline -3
 #   e698190 feat(ui): [T56] 角色面板「师承」段 + Tab 三角色切换 + 销账 #26
 ```
 
+**重要：先跑 build_runner**（T56 新加了 `activeCharacterIdsProvider`，`*.g.dart` 是 gitignored 不在仓库内）：
+
+```powershell
+"F:\Flutter SDK\flutter_windows_3.41.5-stable\flutter\bin\flutter" pub run build_runner build --delete-conflicting-outputs
+# 或：dart run build_runner build --delete-conflicting-outputs
+```
+
+期望末尾输出 `Succeeded after Xs with N outputs`。失败立刻报回，停止验收。
+
 跑基线确认：
 
 ```powershell
