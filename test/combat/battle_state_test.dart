@@ -102,6 +102,59 @@ void main() {
       expect(bc.maxInternalForce, c.internalForceMax);
     });
 
+    test('师承遗物 2 件 → maxInternalForce 含 +10% lineage buff（T55 战斗路径补齐）',
+        () {
+      final c = _mkChar(
+        tier: RealmTier.erLiu,
+        layer: RealmLayer.yuanShu,
+        internalForce: 5000,
+        school: TechniqueSchool.gangMeng,
+      );
+      // base internalForceMax 由 _mkChar 默认（500）
+      final heritage1 = _mkEquip(baseAttack: 100)..isLineageHeritage = true;
+      final heritage2 = _mkEquip(baseAttack: 100)
+        ..slot = EquipmentSlot.armor
+        ..isLineageHeritage = true;
+      final tech = _mkTech(
+        defId: 'tech_gangmeng_jichu',
+        tier: TechniqueTier.ruMenGong,
+        school: TechniqueSchool.gangMeng,
+      );
+      final n = GameRepository.instance.numbers;
+
+      final bc = BattleCharacter.fromCharacter(
+        character: c,
+        equipped: [heritage1, heritage2],
+        mainTechnique: tech,
+        numbers: n,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+
+      // 期望 == internalForceMaxWithLineage 直接计算结果
+      expect(
+        bc.maxInternalForce,
+        CharacterDerivedStats.internalForceMaxWithLineage(
+          c,
+          [heritage1, heritage2],
+          n,
+        ),
+      );
+      // 显式数值：base 500 × (1 + 2 × 0.05) = 550
+      expect(bc.maxInternalForce, 550);
+      // 无遗物对照（用同 character 装非 lineage 装备）
+      final plain = _mkEquip(baseAttack: 100);
+      final bcPlain = BattleCharacter.fromCharacter(
+        character: c,
+        equipped: [plain],
+        mainTechnique: tech,
+        numbers: n,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      expect(bcPlain.maxInternalForce, 500);
+    });
+
     test('actionPoint=0 / isAlive=true / 空 cooldowns / 空 buffs 初始',
         () {
       final c = _mkChar(

@@ -5,9 +5,9 @@
 
 ## 当前阶段
 
-**Phase 3 Week 4 D 师徒系统 T56 角色面板「师承」段 UI 完成**（2026-05-13）。CharacterPanelScreen 改 ConsumerStatefulWidget + 顶部 Tab 三角色切换（祖师/大弟子/二弟子，按 activeCharacterIds 顺序）/ 新增「师承」section（师父/徒弟/传记占位/遗物名）/ main_menu 闭关入口 Riverpod `.when()` 化，按 SaveData.activeCharacterIds 首位动态读 characterId+realmTier，loading 时按钮 Opacity 0.4 disabled（**销账 #26**）。516 → 522 测试（+6：character_panel +4 / main_menu +2），analyze 0 issues。
+**Phase 3 Week 4 D 师徒系统 T57 3v3 默认入阵 + 战斗集成测试完成**（2026-05-13）。`test/services/master_disciple_battle_test.dart` 端到端覆盖 P5 seed → buildTeams(stage_01_01) → BattleState.initial → BattleEngine.runToEnd 装配链（3 师徒境界对齐 yiLiu/erLiu/sanLiu / 装备攻击非零 / 主修招式非空 / 祖师 maxInternalForce 含 lineage +10% buff / victory leftWin / 人造 defeat path 不阻塞）。**顺手修 T55 commit 描述误导**：BattleCharacter.fromCharacter line 171 之前直接读 `character.internalForceMax` 未走 lineage 版，T57 装配链 test 暴露后改用 `internalForceMaxWithLineage(character, equipped, numbers)`，T55 "祖师战斗内力 +5%" 现真正落地。522 → 529 测试（+7：battle_state lineage 1 + master_disciple_battle 6），analyze 0 issues。
 
-**下一步**：T57+ Week 4 师徒系统剩余任务（待 spec 拉齐）/ 或选择 Phase 3 后续方向（C 奇遇 待 §12 #6 决策 / E 武学领悟 待 §12 #6）。详 `phase3_tasks.md` 末 Week 4 段。
+**下一步**：T58 收尾 + tag v0.3.0-w4 + 派 Pen Windows 视觉验收（角色面板 Tab/师承段 + 主线 3 师徒同阵 victory 截图归档 ≥ 3 张）。
 
 ## 已完成
 
@@ -24,10 +24,11 @@
 - **Phase 3 Week 4 T54 seedMasterDisciple + P5 入口 + 销账 #25**（2026-05-13，commit `ed8b183`）：`Phase2SeedService.seedMasterDisciple` 一次 writeTxn 完成 3 师徒 + 双向关系 + 9 件装备（EquipmentFactory.fromDef 标准 roll）+ 4 本心法（祖师 main+assist / 2 弟子 main 各 1）+ SaveData.activeCharacterIds=[1,2,3] + founderCharacterId=1 + 基础物料 2000 磨剑石/200 心血结晶；P5 按钮接入 `phase2_test_menu` 跳 CharacterPanelScreen；test +6（3 师徒结构 / 装备心法齐 / 主修流派透传 / reseed 一致 / 与 P1 切换边界 / **销账 #25：buildTeams 不再 fail-fast**）+ widget test 4→5 同步，累计 505 → 511
 - **Phase 3 Week 4 T55 EquipmentDef.isLineageHeritage + 祖师遗物红线启用**（2026-05-13，commit `1418176`）：EquipmentDef 加 `isLineageHeritage` 字段 + fromYaml 读 key（camelCase 对齐 schoolBias 体例）；equipment.yaml 标 2 件遗物 fixture（祖师传家剑 weapon_liqi_long_quan + 传家护甲 armor_haojiahuo_jin_pao），仅加一行不动平衡值；EquipmentFactory.fromDef 函数体 OR `def.isLineageHeritage` → drop / 师承种子统一行为，参数保留为 override；GameRepository 启用祖师遗物红线（解 T53 TODO，祖师 startingEquipmentIds 必须 ≥ 1 件 def.isLineageHeritage=true）；test +5（fromYaml 字段 1 + Factory 透传 3 + 红线 fail-fast 1），累计 511 → 516。**运行时副作用**：祖师战斗内力上限自动 +5%（GDD §5.3 师承遗物 buff 在 Demo 路径首次落地，derived_stats.internalForceMaxWithLineage 已存在）
 - **Phase 3 Week 4 T56 角色面板「师承」段 UI + 销账 #26**（2026-05-13）：`CharacterPanelScreen` 改 ConsumerStatefulWidget，顶部 TabBar 三段切换（祖师/大弟子/二弟子，按 `activeCharacterIdsProvider` 顺序，构造参数指首屏 Tab）；新增 `_LineageSection`（4 行：师父姓名 / 徒弟姓名 join / 「[传记待补]」占位 / 遗物名 join，遗物名走 GameRepository.equipmentDefs[defId].name）；新增 `activeCharacterIdsProvider`（读 SaveData.activeCharacterIds）；MainMenu 改 ConsumerWidget + 新建 `_SeclusionMenuButton`（Riverpod `.when()` 异步读首位角色 realmTier，loading→Opacity 0.4 disabled，error/null→ fallback id=1/xueTu），**销账 #26**（main_menu.dart:77-78 硬编码已移除）；character_panel test +4（3 Tab 渲染 / Tab 切换 / 师承段 4 行 / 内力 lineage +10%）+ main_menu test +2（按钮 Opacity 1.0/0.4），累计 516 → 522。UI 视觉验收留 Windows Pen
+- **Phase 3 Week 4 T57 3v3 默认入阵 + 战斗集成测试 + T55 战斗路径补齐**（2026-05-13）：`test/services/master_disciple_battle_test.dart` 6 用例端到端：3 师徒装配完整 / 境界对齐 masters.yaml / 装备攻击+招式+内力正确 / 祖师 maxInternalForce 含 lineage +10% / victory leftWin / defeat path 不阻塞（人造 left 全员阵亡 → isFinished + 非 leftWin + availableSkills 保留）。**顺手修 T55 commit message 误导**：`BattleCharacter.fromCharacter` 之前 `maxInternalForce: character.internalForceMax`（直接字段值不含 lineage），改用 `CharacterDerivedStats.internalForceMaxWithLineage(character, equipped, numbers)` —— T55 "祖师战斗内力 +5%" 现真正落地战斗路径，不仅 UI；battle_state_test +1（师承遗物 2 件 → maxInternalForce 含 +10%）。累计 522 → 529（+7）
 
 ## 进行中
 
-**Phase 3 Week 4 D 师徒系统**：T53 ✅ + T54 ✅（销 #25）+ T55 ✅（祖师 +5% 内力 buff 落地）+ T56 ✅（522/522，UI 三角色 Tab + 师承段 + 销 #26）。Week 4 D 数据/service/UI 子系统全部到位，下一步看 T57+ spec 拉齐 / 或换 Phase 3 其他方向。
+**Phase 3 Week 4 D 师徒系统**：T53 ✅ + T54 ✅（销 #25）+ T55 ✅ + T56 ✅（销 #26）+ T57 ✅（529/529，3v3 装配链端到端 + T55 战斗路径补齐）。Week 4 D 数据/service/UI/集成测试子系统全到位。下一步 T58 收尾 + Pen 视觉验收 + tag v0.3.0-w4。
 
 ## 已知偏差 / 挂账事项
 
