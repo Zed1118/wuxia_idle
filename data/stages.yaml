@@ -230,9 +230,9 @@ stages:
     baseExpReward: 350
     difficultyMultiplier: 1.6
 
-  # === stage_01_05 · 风雨渡口（章末大 Boss · 撑伞高人，跨阶 sanLiu 设计）===
-  # 章末大 Boss 跨阶到 sanLiu，玩家方 xueTu 攻击 ×0.7、被 sanLiu 攻击 ×1.4
-  # —— 暗示「玩家必须升 sanLiu 才能稳过」的设计意图（GDD §3 三阶节奏）
+  # === stage_01_05 · 风雨渡口（章末大 Boss · 撑伞高人，跨 2 阶 erLiu 设计）===
+  # 章末大 Boss 跨阶到 erLiu，玩家方 xueTu 攻击 ×0.3（近破防免疫）、
+  # 被 erLiu 攻击 ×2.5（高伤一击）—— 明确暗示「未升阶不可挑战」（GDD §3 三阶节奏）
   - id: stage_01_05
     name: 风雨渡口
     stageType: mainline
@@ -243,38 +243,38 @@ stages:
     narrativeDefeatId: stage_01_05_defeat
     requiredRealm: xueTu
     enemyTeam:
-      - id: enemy_sanLiu_umbrella
+      - id: enemy_erLiu_umbrella
         name: 撑伞高人
-        realmTier: sanLiu
+        realmTier: erLiu
         realmLayer: yuanShu
         school: yinRou
-        baseHp: 9000
-        baseAttack: 480
-        baseSpeed: 180
+        baseHp: 10000
+        baseAttack: 750
+        baseSpeed: 200
         skillIds:
-          - skill_yinrou_jichu_basic
-          - skill_yinrou_jichu_skill
-          - skill_yinrou_jichu_ult
+          - skill_yinrou_mingjia_basic
+          - skill_yinrou_mingjia_skill
+          - skill_yinrou_mingjia_ult
         iconPath: assets/enemies/umbrella.png
-      - id: enemy_sanLiu_dock_a
+      - id: enemy_erLiu_dock_a
         name: 渡口刀客
-        realmTier: sanLiu
+        realmTier: erLiu
         realmLayer: huaJing
         school: gangMeng
-        baseHp: 8500
-        baseAttack: 450
-        baseSpeed: 160
-        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
+        baseHp: 9000
+        baseAttack: 700
+        baseSpeed: 175
+        skillIds: [skill_gangmeng_mingjia_basic, skill_gangmeng_mingjia_skill]
         iconPath: assets/enemies/dock_a.png
-      - id: enemy_sanLiu_dock_b
+      - id: enemy_erLiu_dock_b
         name: 渡口剑客
-        realmTier: sanLiu
+        realmTier: erLiu
         realmLayer: huaJing
         school: lingQiao
-        baseHp: 8500
-        baseAttack: 460
-        baseSpeed: 170
-        skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
+        baseHp: 9000
+        baseAttack: 720
+        baseSpeed: 185
+        skillIds: [skill_lingqiao_mingjia_basic, skill_lingqiao_mingjia_skill]
         iconPath: assets/enemies/dock_b.png
     isBossStage: true
     dropEquipmentDefIds:
