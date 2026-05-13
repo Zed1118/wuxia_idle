@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 3 Week 8 T64 心法扩 21 本 + 招式扩 63 招**(2026-05-13)。详条见「已完成」末。W7 T63 / W6(详条 docs/handoff/week6_full_closeout_2026-05-14.md)同左。
+**Phase 3 Week 9 A 爬塔 UI 自审完成**(2026-05-13)。自审发现 W9 A 实际在 W2(T42-T46)已交付,详条见「已完成」末。本次会话只做 W6 drift 收尾(`_persistDrops` 迁 `isarProvider`)。534/534,analyze 0 issues。下一步候选见末段。
 
 ## 已完成
 
@@ -30,10 +30,11 @@
 - **Phase 5 W6 升级 + 架构重构 tag v0.3.0-w6**(2026-05-14):isar→isar_community 3.3.2 / flutter_riverpod 3.x / riverpod_annotation 4.x / riverpod_generator 4.x / analyzer 5.x→9.x。8 个有 Isar 依赖的 service 改实例化 + 构造函数接 Isar;新 `IsarSetup.instanceOrNull` + nullable isarProvider + 9 个 service provider,widget test 自动短路(替代旧 widget `Isar.getInstance` guard,4 处全删)。**销账 #23**(架构层面)。530/530 测试,详条 `docs/handoff/week6_full_closeout_2026-05-14.md`
 - **Phase 3 Week 7 T63 装备 fixture 扩 10→35 件 + 覆盖度红线**(2026-05-13):equipment.yaml 7 阶 × 5 件重写(weapon 3 三流派 + armor 1 + accessory 1);数值范围照搬 numbers.yaml tier 段;drop_source_tags 占位(Phase 4 回填)。GameRepository 抽 `_enforceEquipmentRedLines`:单件 baseAttackMax ≤ 2000 + 覆盖度三件套(每阶 ≥5 件 / 每阶 weapon 三流派齐 / armor + accessory 各 ≥1)。test +2 fail-fast,累计 530 → 532
 - **Phase 3 Week 8 T64 心法扩 6→21 本 + 招式扩 18→63 招 + 覆盖度红线**(2026-05-13):techniques.yaml 按 7 阶 × 3 流派重写(+15 本,changLian/menPai/jiangHu/shiChuan/chuanShuo 各 3 流派);skills.yaml 21×3=63 招,每本 basic/skill/ult 各 1,数值梯度 basic=500/skill=80%cap/ult=cap(对齐 numbers.yaml `techniques.tiers.max_skill_multiplier` 软约定);命名(常练:横扫拳/破甲掌/穿云剑/万剑诀/拂袖手/销魂指 等;绝学:落雷掌/怒龙翻/燕回身/流星剑/鬼影爪/摄魂引;秘传:裂山掌/霸王击/凌波剑/御剑诀/魅影手/摧魂咒;失传:玄武拳/天崩裂/太虚剑/长虹经天/蛛丝手/阴煞印;传说:玄黄拳/九霄龙吟/太初剑/万象归元/幽冥指/无相劫)。GameRepository 加 `_enforceTechniqueRedLines`:7 阶 × 3 流派组合每个 ≥1 本 + 每本 skillIds.length==3 + 每本 3 招 type 精确 {normalAttack, powerSkill, ultimate} + 每招 parentTechniqueDefId 指向自身。test +2 fail-fast(组合缺失 / 招式 type 错位),累计 532 → 534
+- **Phase 3 Week 2 T42-T46 详条补录 + Week 9 A 自审 + W6 drift 收尾**(2026-05-13,自主推进会话):**自审发现** W9 候选 A「爬塔 UI 串联」实际在 W2 已交付完整(commits `41530aa` T42 / `e8b35c6` T43 / `2ff976d` T44 / `2452650` T45 / `0b25229` T46,merge `74d30bd` v0.3.0-w2)——main_menu 加「问鼎九霄」入口(第二位) / TowerFloorListScreen 30 层 ListView + 顶部进度卡(已通/尝试/失败)+ 一次性滚到 available 层 / TowerFloorCard cleared/available/locked 三态 + Boss minor(金)/major(紫)outline 边框 + 「小/大 Boss」chip + 重打二确 AlertDialog / runTowerFlow async 状态机串联 opening→battle→victory(recordClear+isFirstClear 控发奖)/defeat(recordDefeat unawaited)+ Boss narrative(opening + victory) + DropService.rollTowerRewards + _showVictoryDialog;widget test 11 用例(`tower_floor_list_screen_test` 6 + `tower_entry_flow_test` 5,后者用 @visibleForTesting DI 旁路真 Isar)。**本次会话** 仅做 W6 drift 收尾:`tower_entry_flow.dart` `_persistDrops` 从 `Isar.getInstance()` 迁到 `ref.read(isarProvider)`(对齐 W6 §3.2 nullable propagation 模板,移除 tower 路径仅存的 `Isar.getInstance` 调用,`isar_community` import 同步删)。test 534/534(无新增,纯重构,语义不变),analyze 0 issues。**Pen 视觉验收待派(W7+W8+W9 累积)**。新加 main_menu「tap 问鼎九霄 → TowerFloorListScreen 渲染」widget test 因 `pumpAndSettle` 死循环踩坑挂账 #31,W2 已有 11 个 tower widget test 已覆盖核心路径,未硬塞
 
 ## 进行中
 
-**Phase 3 Week 8 T64 心法扩 21 本 ✅**(2026-05-13)。Mac 端代码完成 534/534。无 UI 改动,Pen 视觉验收非必需。
+**Phase 3 W9 A 爬塔 UI 自审 + W6 drift 收尾 ✅**(2026-05-13)。Mac 端 534/534,analyze 0 issues。Pen 视觉验收待派(W7+W8+W9 三周一并,用户在线时派)。
 
 ## 已知偏差 / 挂账事项
 
@@ -54,12 +55,13 @@
 28. **闭关 widget 端到端 test 缺失（P2 #3 后续）**：P2 #3 修复了 setup→active→result 导航链，但 SeclusionService 是 static 方法无法 mock，widget test 接真 Isar 阻塞（#23 同源），暂只能靠 Pen 视觉验收兜底。Phase 5 service 注入后补「开始闭关 → 收功 → 返回 list 刷新」端到端 widget test
 ~~29. defeat hook + 9 关扩容~~ **已销账（2026-05-13 T59+T60）**：stages.yaml 扩到 15 关（3 章×5 关）+ narrativeDefeatId schema + GameRepository 主线红线 + stage_entry_flow 战败路径 push NarrativeReaderScreen（Boss 关 4/5 才触发，普通关战败直接返回）。对齐 DeepSeek 30 narrative + 6 defeat 文件。仅 Pen 视觉验收 T62 待跑
 30. **闭关 3 个扩展维度未接 service**（§12 #5 收口留尾，2026-05-13）：`numbers.yaml retreat` 已配 `technique_learn_rate` / `internal_force_growth` / 节气日 +30% / 正午阳刚 +20%，但 `seclusion_service.computeOutputs` 仅消费 mojianshi/experience/equipmentDropRate/子时。前两项依赖 Character 修炼度/内力字段（与挂账 #25/#26 同源），节气日依赖农历库 + 完整节气清单（与挂账 #7 同源）。Phase 4 fixture 改造 + 农历库选型后一并接入
+31. **main_menu「tap 问鼎九霄 → TowerFloorListScreen」widget test 写不出**(2026-05-13 W9 自审踩坑):试加该 case 时无论 `pumpAndSettle` 还是有界 `pump(Duration)*N` 都跑超 10 分钟 testWidgets 默认 timeout——疑因 `MainMenu` 同时 watch `activeCharacterIdsProvider` + `characterByIdProvider(1)`(无 override)+ tap 后 push `TowerFloorListScreen` 又 watch tower providers + AppBar 路由动画 + InkWell ripple,异步 future 链 + 帧 ticker 冲突,虚拟时间推进无法收敛。已有 11 个 tower widget test(`tower_floor_list_screen_test` 6 + `tower_entry_flow_test` 5)已覆盖 W9 完工标准核心路径(三态/Boss/recordClear/recordDefeat),nav 路径不再硬塞。后续若要补:或者拆 `MainMenu` 内 _SeclusionMenuButton 为可注入 stub,或者用 `Navigator.observers` 验路由 push 而不实际渲染目标屏
 
 > 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#21/#22/#24/#26/#27，T52 Pen 视觉验收 2026-05-12）见文末归档。
 
 ## 下一步
 
-W9 候选(W8 后):A 爬塔 UI(schema 已 W2 ready,缺 UI 串联)/ Phase 4 战斗结算扩展(掉装备/境界/散功代价,需先讨论范围)/ #30 闭关 3 维度(§12 #7 节气清单阻塞)/ C 奇遇 + E 武学领悟(§12 #6 机缘值规则阻塞)。
+W10 候选(W9 自审后,A/B/D 已全部交付):**首推 Phase 4 战斗结算扩展**(掉装备/掉境界/散功代价,需先讨论范围,**建议升 opus**) / Pen Windows 视觉验收 W7+W8+W9 三周累积一并派(用户在线时) / Phase 5 收尾 #2 DDD 目录 + #12 LevelDiff + #28 闭关 e2e widget(W6 后理论可走 ProviderScope.overrides 注入 tempDir Isar) / #30 闭关 3 维度(§12 #7 节气清单 + 农历库阻塞) / C 奇遇 + E 武学领悟(§12 #6 机缘值规则阻塞)。
 
 > CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 
