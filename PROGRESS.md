@@ -5,9 +5,9 @@
 
 ## 当前阶段
 
-**Phase 3 Week 4 D 师徒系统 T53+T54+T55 完成**（2026-05-13，commits `9349626`/`ed8b183`/`1418176`）。T53 schema + 红线 / T54 seedMasterDisciple service + P5 入口（销 #25）/ T55 EquipmentDef.isLineageHeritage + equipment.yaml 标 2 件遗物 + 祖师遗物红线启用。**师承遗物 +5% 内力上限 buff 在 Demo 战斗路径首次落地**（祖师 starting 含 2 件遗物 → BattleCharacter 装配时自动叠加）。495 → 516 测试（+21），analyze 0 issues。
+**Phase 3 Week 4 D 师徒系统 T56 角色面板「师承」段 UI 完成**（2026-05-13）。CharacterPanelScreen 改 ConsumerStatefulWidget + 顶部 Tab 三角色切换（祖师/大弟子/二弟子，按 activeCharacterIds 顺序）/ 新增「师承」section（师父/徒弟/传记占位/遗物名）/ main_menu 闭关入口 Riverpod `.when()` 化，按 SaveData.activeCharacterIds 首位动态读 characterId+realmTier，loading 时按钮 Opacity 0.4 disabled（**销账 #26**）。516 → 522 测试（+6：character_panel +4 / main_menu +2），analyze 0 issues。
 
-**下一步**：T56 角色面板「师承」段 UI（含「[传记待补]」占位）+ 顺手清挂账 #26（main_menu 闭关入口硬编码 characterId=1）。详 `phase3_tasks.md` 末 Week 4 段。
+**下一步**：T57+ Week 4 师徒系统剩余任务（待 spec 拉齐）/ 或选择 Phase 3 后续方向（C 奇遇 待 §12 #6 决策 / E 武学领悟 待 §12 #6）。详 `phase3_tasks.md` 末 Week 4 段。
 
 ## 已完成
 
@@ -23,10 +23,11 @@
 - **Phase 3 Week 4 T53 masters.yaml schema + MasterDef + 红线校验**（2026-05-13，commit `9349626`）：`lib/data/defs/master_def.dart` 新建（MasterDef + AttributeProfile 纯 Dart 不入 Isar）；`data/masters.yaml` 3 角色 fixture（祖师一流/大弟子二流/二弟子三流，方案 A 降级避飞升）；`GameRepository.masters` 字段 + `_enforceMasterRedLines` 7 项（3 条 / slotIndex 连续 / role 与 slot 对应 / founder 唯一 / 不允许 wuSheng / 属性单项 1-10 总和 16-24 / 三系锁死 starting tier ≤ defaultRealm）+ `getMasterBySlot` / `getFounderMaster` 便捷查询；test +10（MasterDef.fromYaml 3 + 师徒红线 fail-fast 7），累计 495 → 505。祖师遗物 isLineageHeritage 校验留 TODO 待 T55
 - **Phase 3 Week 4 T54 seedMasterDisciple + P5 入口 + 销账 #25**（2026-05-13，commit `ed8b183`）：`Phase2SeedService.seedMasterDisciple` 一次 writeTxn 完成 3 师徒 + 双向关系 + 9 件装备（EquipmentFactory.fromDef 标准 roll）+ 4 本心法（祖师 main+assist / 2 弟子 main 各 1）+ SaveData.activeCharacterIds=[1,2,3] + founderCharacterId=1 + 基础物料 2000 磨剑石/200 心血结晶；P5 按钮接入 `phase2_test_menu` 跳 CharacterPanelScreen；test +6（3 师徒结构 / 装备心法齐 / 主修流派透传 / reseed 一致 / 与 P1 切换边界 / **销账 #25：buildTeams 不再 fail-fast**）+ widget test 4→5 同步，累计 505 → 511
 - **Phase 3 Week 4 T55 EquipmentDef.isLineageHeritage + 祖师遗物红线启用**（2026-05-13，commit `1418176`）：EquipmentDef 加 `isLineageHeritage` 字段 + fromYaml 读 key（camelCase 对齐 schoolBias 体例）；equipment.yaml 标 2 件遗物 fixture（祖师传家剑 weapon_liqi_long_quan + 传家护甲 armor_haojiahuo_jin_pao），仅加一行不动平衡值；EquipmentFactory.fromDef 函数体 OR `def.isLineageHeritage` → drop / 师承种子统一行为，参数保留为 override；GameRepository 启用祖师遗物红线（解 T53 TODO，祖师 startingEquipmentIds 必须 ≥ 1 件 def.isLineageHeritage=true）；test +5（fromYaml 字段 1 + Factory 透传 3 + 红线 fail-fast 1），累计 511 → 516。**运行时副作用**：祖师战斗内力上限自动 +5%（GDD §5.3 师承遗物 buff 在 Demo 路径首次落地，derived_stats.internalForceMaxWithLineage 已存在）
+- **Phase 3 Week 4 T56 角色面板「师承」段 UI + 销账 #26**（2026-05-13）：`CharacterPanelScreen` 改 ConsumerStatefulWidget，顶部 TabBar 三段切换（祖师/大弟子/二弟子，按 `activeCharacterIdsProvider` 顺序，构造参数指首屏 Tab）；新增 `_LineageSection`（4 行：师父姓名 / 徒弟姓名 join / 「[传记待补]」占位 / 遗物名 join，遗物名走 GameRepository.equipmentDefs[defId].name）；新增 `activeCharacterIdsProvider`（读 SaveData.activeCharacterIds）；MainMenu 改 ConsumerWidget + 新建 `_SeclusionMenuButton`（Riverpod `.when()` 异步读首位角色 realmTier，loading→Opacity 0.4 disabled，error/null→ fallback id=1/xueTu），**销账 #26**（main_menu.dart:77-78 硬编码已移除）；character_panel test +4（3 Tab 渲染 / Tab 切换 / 师承段 4 行 / 内力 lineage +10%）+ main_menu test +2（按钮 Opacity 1.0/0.4），累计 516 → 522。UI 视觉验收留 Windows Pen
 
 ## 进行中
 
-**Phase 3 Week 4 D 师徒系统**：T53 ✅ + T54 ✅（销 #25）+ T55 ✅（516/516，祖师 +5% 内力 buff 落地）。下一步 T56 角色面板「师承」段 UI + 顺手清挂账 #26（main_menu 闭关入口硬编码 characterId=1/RealmTier.xueTu）。
+**Phase 3 Week 4 D 师徒系统**：T53 ✅ + T54 ✅（销 #25）+ T55 ✅（祖师 +5% 内力 buff 落地）+ T56 ✅（522/522，UI 三角色 Tab + 师承段 + 销 #26）。Week 4 D 数据/service/UI 子系统全部到位，下一步看 T57+ spec 拉齐 / 或换 Phase 3 其他方向。
 
 ## 已知偏差 / 挂账事项
 
@@ -43,12 +44,12 @@
 18. **`flutter build web` 被 Isar 阻塞**：dart:ffi web 不支持，Phase 5 切 Isar 4.x 时一并恢复
 23. **widget test 不接真 Isar**：testWidgets FakeAsync 与 `Isar.findFirst` / writeTxn 异步 IO 不兼容；当前 widget 端在 `_persist` 加 `Isar.getInstance` guard 测试旁路，真落地走 service-level test。Phase 5 Riverpod 3.x + IsarProvider 注入时再统一
 ~~25. Phase2SeedService.seedP1 缺主修~~ **已销账（2026-05-13 T54）**：seedMasterDisciple 路径 3 师徒齐主修，主菜单点 P5 后可直接进主线战斗。P1 fixture 自身仍是无主修（保留体例），玩家从 P1 入口进战斗的旧路径未修复——若需修复请走 P5 入口
-26. **闭关入口硬编码 characterId=1 / RealmTier.xueTu**：`main_menu.dart:77-78` 写死，与存档当前角色境界脱节（玩家若已进阶到二流/圆熟，闭关地图解锁判定与 realmScale 倍率仍按学徒算）。与挂账 #25 同源（Demo 缺单一 character 视角注入），Phase 4 fixture 改造时一并处理
+~~26. 闭关入口硬编码 characterId=1 / RealmTier.xueTu~~ **已销账（2026-05-13 T56）**：`MainMenu` 改 ConsumerWidget，`_SeclusionMenuButton` Riverpod `.when()` 异步读 `activeCharacterIdsProvider` 首位 + `characterByIdProvider(firstId)` 解析 realmTier；loading 时按钮 Opacity 0.4 disabled，error/空 fallback 到 `id=1/xueTu`（保留旧默认作为不可达兜底）
 28. **闭关 widget 端到端 test 缺失（P2 #3 后续）**：P2 #3 修复了 setup→active→result 导航链，但 SeclusionService 是 static 方法无法 mock，widget test 接真 Isar 阻塞（#23 同源），暂只能靠 Pen 视觉验收兜底。Phase 5 service 注入后补「开始闭关 → 收功 → 返回 list 刷新」端到端 widget test
 29. **defeat hook + 9 关扩容**（P1 #1 留尾）：narrative defeat 6 文件已交付但 stage_entry_flow 战败路径暂未接；stages.yaml 6 关 fixture 未扩到 15 关。Phase 4 W1 主线引导 UI 一起做
 30. **闭关 3 个扩展维度未接 service**（§12 #5 收口留尾，2026-05-13）：`numbers.yaml retreat` 已配 `technique_learn_rate` / `internal_force_growth` / 节气日 +30% / 正午阳刚 +20%，但 `seclusion_service.computeOutputs` 仅消费 mojianshi/experience/equipmentDropRate/子时。前两项依赖 Character 修炼度/内力字段（与挂账 #25/#26 同源），节气日依赖农历库 + 完整节气清单（与挂账 #7 同源）。Phase 4 fixture 改造 + 农历库选型后一并接入
 
-> 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#21/#22/#24/#27，T52 Pen 视觉验收 2026-05-12）见文末归档。
+> 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#21/#22/#24/#26/#27，T52 Pen 视觉验收 2026-05-12）见文末归档。
 
 ## 下一步
 

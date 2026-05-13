@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../combat/derived_stats.dart';
 import '../../combat/enum_localizations.dart';
+import '../../data/game_repository.dart';
 import '../../data/models/character.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/equipment.dart';
@@ -13,28 +14,39 @@ import '../strings.dart';
 import '../theme/colors.dart';
 import '../theme/tier_colors.dart';
 
-/// 角色面板（phase2_tasks.md T28 §392-414）。
+/// 角色面板（phase2_tasks.md T28 + Phase 3 Week 4 T56）。
 ///
-/// 单角色版面，按 characterId 取数。布局：
-/// - 顶部：姓名 / 境界 / 流派色条
-/// - 中部：4 项属性 + 5 项派生数值
+/// T28 单角色版面 → T56 顶部 Tab 三角色切换 + 「师承」段。布局：
+/// - 顶部：TabBar（祖师 / 大弟子 / 二弟子）从 [activeCharacterIdsProvider] 读 id
+/// - 中部：姓名 / 境界 / 流派色条 / 4 项属性 / 5 项派生数值（含师承 +5% 内力上限）
 /// - 装备区：3 槽（武器 / 护甲 / 饰品），未装备显示灰色占位
 /// - 心法区：主修高亮 + 3 辅修槽 + 修炼度进度条
+/// - 师承段：师父 / 徒弟 / 传记占位 / 师承遗物列表
 ///
-/// 不显示装备/心法名字（spec §403/§404 未要求，避免硬编码中文文案风险）。
-/// 速度无主修时显示 [UiStrings.dashPlaceholder]；其他派生数值始终可算。
-class CharacterPanelScreen extends ConsumerWidget {
+/// `initialCharacterId` 构造参数指定首屏 Tab；其他 Tab 切换走内部 state。
+/// 不显示装备/心法名字（spec §403/§404 未要求，避免硬编码中文文案风险），
+/// 但师承遗物 section 显示装备名（走 GameRepository.getEquipment(defId).name）。
+class CharacterPanelScreen extends ConsumerStatefulWidget {
   const CharacterPanelScreen({super.key, required this.characterId});
 
+  /// 首屏展示的角色 id（与既有 main_menu / Phase2SeedService 对齐）。
   final int characterId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(characterByIdProvider(characterId));
+  ConsumerState<CharacterPanelScreen> createState() =>
+      _CharacterPanelScreenState();
+}
+
+class _CharacterPanelScreenState extends ConsumerState<CharacterPanelScreen> {
+  late int _selectedCharacterId = widget.characterId;
+
+  @override
+  Widget build(BuildContext context) {
+    final idsAsync = ref.watch(activeCharacterIdsProvider);
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       body: SafeArea(
-        child: async.when(
+        child: idsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
@@ -42,14 +54,140 @@ class CharacterPanelScreen extends ConsumerWidget {
               style: const TextStyle(color: WuxiaColors.hpLow),
             ),
           ),
-          data: (c) => c == null
-              ? const Center(
-                  child: Text(
-                    '角色不存在',
-                    style: TextStyle(color: WuxiaColors.textMuted),
-                  ),
-                )
-              : _Body(character: c),
+          data: (ids) => _PanelWithTabs(
+            ids: ids.isEmpty ? [widget.characterId] : ids,
+            selectedId: _selectedCharacterId,
+            onSelect: (id) => setState(() => _selectedCharacterId = id),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PanelWithTabs extends ConsumerWidget {
+  const _PanelWithTabs({
+    required this.ids,
+    required this.selectedId,
+    required this.onSelect,
+  });
+
+  final List<int> ids;
+  final int selectedId;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 若构造时传入的 characterId 不在 activeCharacterIds 内（例如老存档），
+    // 兜底切到第一位，避免渲染 _Body 时 character 一直 null。
+    final effectiveId = ids.contains(selectedId) ? selectedId : ids.first;
+    final async = ref.watch(characterByIdProvider(effectiveId));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _LineageTabBar(
+          ids: ids,
+          selectedId: effectiveId,
+          onSelect: onSelect,
+        ),
+        Expanded(
+          child: async.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(
+              child: SelectableText(
+                'load error: $e',
+                style: const TextStyle(color: WuxiaColors.hpLow),
+              ),
+            ),
+            data: (c) => c == null
+                ? const Center(
+                    child: Text(
+                      '角色不存在',
+                      style: TextStyle(color: WuxiaColors.textMuted),
+                    ),
+                  )
+                : _Body(character: c),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LineageTabBar extends StatelessWidget {
+  const _LineageTabBar({
+    required this.ids,
+    required this.selectedId,
+    required this.onSelect,
+  });
+
+  final List<int> ids;
+  final int selectedId;
+  final ValueChanged<int> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: const BoxDecoration(
+        color: WuxiaColors.panel,
+        border: Border(
+          bottom: BorderSide(color: WuxiaColors.border),
+        ),
+      ),
+      child: Row(
+        children: [
+          for (var i = 0; i < ids.length && i < UiStrings.lineageTabLabels.length; i++)
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: i == ids.length - 1 ? 0 : 8),
+                child: _LineageTab(
+                  label: UiStrings.lineageTabLabels[i],
+                  selected: ids[i] == selectedId,
+                  onTap: () => onSelect(ids[i]),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LineageTab extends StatelessWidget {
+  const _LineageTab({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? WuxiaColors.textPrimary : WuxiaColors.textMuted;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? WuxiaColors.avatarFill : Colors.transparent,
+          border: Border.all(
+            color: selected ? WuxiaColors.textPrimary : WuxiaColors.border,
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 14,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          ),
         ),
       ),
     );
@@ -77,6 +215,8 @@ class _Body extends StatelessWidget {
           _EquipmentSection(character: character),
           const SizedBox(height: 16),
           _TechniqueSection(character: character),
+          const SizedBox(height: 16),
+          _LineageSection(character: character),
         ],
       ),
     );
@@ -680,6 +820,200 @@ class _AssistTechniqueTile extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 师承段（T56，GDD §7.1）
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _LineageSection extends ConsumerWidget {
+  const _LineageSection({required this.character});
+
+  final Character character;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return _PanelCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _SectionTitle(UiStrings.panelLineage),
+          const SizedBox(height: 8),
+          _LineageMasterRow(masterId: character.masterId),
+          const SizedBox(height: 6),
+          _LineageDisciplesRow(discipleIds: character.discipleIds),
+          const SizedBox(height: 6),
+          const _LineageBiographyRow(),
+          const SizedBox(height: 6),
+          _LineageHeritageRow(character: character),
+        ],
+      ),
+    );
+  }
+}
+
+class _LineageMasterRow extends ConsumerWidget {
+  const _LineageMasterRow({required this.masterId});
+
+  final int? masterId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (masterId == null) {
+      return const _LineageRow(
+        label: UiStrings.lineageMasterLabel,
+        value: UiStrings.lineageNoMaster,
+      );
+    }
+    final async = ref.watch(characterByIdProvider(masterId!));
+    return async.when(
+      loading: () => const _LineageRow(
+        label: UiStrings.lineageMasterLabel,
+        value: UiStrings.dashPlaceholder,
+      ),
+      error: (e, _) => _LineageRow(
+        label: UiStrings.lineageMasterLabel,
+        value: '$e',
+        valueColor: WuxiaColors.hpLow,
+      ),
+      data: (m) => _LineageRow(
+        label: UiStrings.lineageMasterLabel,
+        value: m == null ? UiStrings.lineageNoMaster : m.name,
+      ),
+    );
+  }
+}
+
+class _LineageDisciplesRow extends ConsumerWidget {
+  const _LineageDisciplesRow({required this.discipleIds});
+
+  final List<int> discipleIds;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (discipleIds.isEmpty) {
+      return const _LineageRow(
+        label: UiStrings.lineageDisciplesLabel,
+        value: UiStrings.lineageNoDisciples,
+      );
+    }
+    final asyncs = discipleIds
+        .map((id) => ref.watch(characterByIdProvider(id)))
+        .toList();
+    if (asyncs.any((a) => a.isLoading)) {
+      return const _LineageRow(
+        label: UiStrings.lineageDisciplesLabel,
+        value: UiStrings.dashPlaceholder,
+      );
+    }
+    final names = asyncs
+        .map((a) => a.value)
+        .whereType<Character>()
+        .map((c) => c.name)
+        .toList();
+    return _LineageRow(
+      label: UiStrings.lineageDisciplesLabel,
+      value: names.isEmpty ? UiStrings.lineageNoDisciples : names.join(' / '),
+    );
+  }
+}
+
+class _LineageBiographyRow extends StatelessWidget {
+  const _LineageBiographyRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _LineageRow(
+      label: UiStrings.lineageBiographyLabel,
+      value: UiStrings.lineageBiographyPlaceholder,
+      valueColor: WuxiaColors.textMuted,
+    );
+  }
+}
+
+class _LineageHeritageRow extends ConsumerWidget {
+  const _LineageHeritageRow({required this.character});
+
+  final Character character;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ids = [
+      character.equippedWeaponId,
+      character.equippedArmorId,
+      character.equippedAccessoryId,
+    ].whereType<int>().toList();
+    if (ids.isEmpty) {
+      return const _LineageRow(
+        label: UiStrings.lineageHeritageLabel,
+        value: UiStrings.lineageNoHeritage,
+      );
+    }
+    final asyncs = ids.map((id) => ref.watch(equipmentByIdProvider(id))).toList();
+    if (asyncs.any((a) => a.isLoading)) {
+      return const _LineageRow(
+        label: UiStrings.lineageHeritageLabel,
+        value: UiStrings.dashPlaceholder,
+      );
+    }
+    final heritage = asyncs
+        .map((a) => a.value)
+        .whereType<Equipment>()
+        .where((e) => e.isLineageHeritage)
+        .toList();
+    final names = heritage.map(_resolveName).toList();
+    return _LineageRow(
+      label: UiStrings.lineageHeritageLabel,
+      value: names.isEmpty ? UiStrings.lineageNoHeritage : names.join(' / '),
+    );
+  }
+
+  String _resolveName(Equipment eq) {
+    if (!GameRepository.isLoaded) return eq.defId;
+    return GameRepository.instance.equipmentDefs[eq.defId]?.name ?? eq.defId;
+  }
+}
+
+class _LineageRow extends StatelessWidget {
+  const _LineageRow({
+    required this.label,
+    required this.value,
+    this.valueColor = WuxiaColors.textPrimary,
+  });
+
+  final String label;
+  final String value;
+  final Color valueColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 56,
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: WuxiaColors.textMuted,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              color: valueColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

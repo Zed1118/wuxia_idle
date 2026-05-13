@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/isar_setup.dart';
 import '../data/models/character.dart';
 import '../data/models/equipment.dart';
+import '../data/models/save_data.dart';
 import '../data/models/technique.dart';
 
 part 'character_providers.g.dart';
@@ -32,6 +33,16 @@ Future<Equipment?> equipmentById(EquipmentByIdRef ref, int id) async {
 @riverpod
 Future<Technique?> techniqueById(TechniqueByIdRef ref, int id) async {
   return IsarSetup.instance.techniques.get(id);
+}
+
+/// 当前出战角色 id 列表（T56）。
+///
+/// 从 [SaveData.activeCharacterIds] 读取，character_panel Tab 切换 + main_menu
+/// 闭关入口角色定位的单一信源。空列表表示尚未 seed（兜底由 UI 处理）。
+@riverpod
+Future<List<int>> activeCharacterIds(ActiveCharacterIdsRef ref) async {
+  final save = await IsarSetup.instance.saveDatas.get(0);
+  return List<int>.from(save?.activeCharacterIds ?? const []);
 }
 
 /// 角色已学全部心法（phase2_tasks.md T31 §472）。

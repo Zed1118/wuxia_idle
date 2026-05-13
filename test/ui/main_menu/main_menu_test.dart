@@ -1,6 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/data/models/attributes.dart';
+import 'package:wuxia_idle/data/models/character.dart';
+import 'package:wuxia_idle/data/models/enums.dart';
+import 'package:wuxia_idle/providers/character_providers.dart';
 import 'package:wuxia_idle/ui/main_menu.dart';
 import 'package:wuxia_idle/ui/strings.dart';
 
@@ -83,5 +89,80 @@ void main() {
     expect(find.text(UiStrings.scenarioP2), findsOneWidget);
     expect(find.text(UiStrings.scenarioP3), findsOneWidget);
     expect(find.text(UiStrings.scenarioP4), findsOneWidget);
+  });
+
+  // ── T56 销账 #26：闭关入口 FutureBuilder 化 ────────────────────────────
+
+  testWidgets('闭关按钮：activeCharacterIds 加载完成 → Opacity=1.0 enabled',
+      (tester) async {
+    final now = DateTime(2026, 5, 13);
+    final founder = Character.create(
+      name: '祖师',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      attributes: Attributes()
+        ..constitution = 5
+        ..enlightenment = 5
+        ..agility = 5
+        ..fortune = 5,
+      rarity: RarityTier.tianCai,
+      lineageRole: LineageRole.founder,
+      createdAt: now,
+    )..id = 1;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          activeCharacterIdsProvider.overrideWith((ref) async => [1]),
+          characterByIdProvider(1).overrideWith((ref) async => founder),
+        ],
+        child: const MaterialApp(home: MainMenu()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    // 闭关按钮可见
+    expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
+
+    // 找到闭关 label 文本所在子树中的 Opacity widget
+    final opacity = tester.widget<Opacity>(
+      find
+          .ancestor(
+            of: find.text(UiStrings.mainMenuSeclusion),
+            matching: find.byType(Opacity),
+          )
+          .first,
+    );
+    expect(opacity.opacity, 1.0);
+  });
+
+  testWidgets('闭关按钮：activeCharacterIds 仍 loading → Opacity=0.4 disabled',
+      (tester) async {
+    final never = Completer<List<int>>();
+    final neverCh = Completer<Character?>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          activeCharacterIdsProvider.overrideWith((ref) => never.future),
+          characterByIdProvider(1).overrideWith((ref) => neverCh.future),
+        ],
+        child: const MaterialApp(home: MainMenu()),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
+    final opacity = tester.widget<Opacity>(
+      find
+          .ancestor(
+            of: find.text(UiStrings.mainMenuSeclusion),
+            matching: find.byType(Opacity),
+          )
+          .first,
+    );
+    expect(opacity.opacity, 0.4);
   });
 }
