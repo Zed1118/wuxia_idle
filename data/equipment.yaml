@@ -128,6 +128,7 @@ equipment:
     presetLoreIds: []
     dropSourceTags: ["mainline_ch3"]
     iconPath: assets/equipment/armor_haojiahuo_jin_pao.png
+    isLineageHeritage: true   # 师承遗物（祖师传家护甲，GDD §6.1 + Phase 3 W4 T55）
 
   - id: accessory_haojiahuo_yu_pei_lao
     name: 古玉佩
@@ -158,3 +159,4 @@ equipment:
     presetLoreIds: []
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_long_quan.png
+    isLineageHeritage: true   # 师承遗物（祖师传家武器，GDD §6.1 + Phase 3 W4 T55）

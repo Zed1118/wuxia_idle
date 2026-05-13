@@ -23,6 +23,16 @@ class EquipmentDef {
   /// yaml 缺省时为空，UI 表现为"该装备暂无专属技能"。
   final List<String> specialSkillCandidates;
 
+  /// 师承遗物标记（Phase 3 Week 4 T55，GDD §6.1 + §5.3 例外说明）。
+  ///
+  /// `true` 时：[EquipmentFactory.fromDef] 会自动把生成的 [Equipment.isLineageHeritage]
+  /// 设为 true，进而触发 [derived_stats.internalForceMaxWithLineage] 的 +5%
+  /// 内力上限 buff（numbers.yaml `lineage_heritage.internal_force_max_bonus`）。
+  ///
+  /// **三系锁死不放开**：遗物可获得 / 可携带，但徒弟境界未达对应阶时不可装备。
+  /// yaml 缺省 false。
+  final bool isLineageHeritage;
+
   const EquipmentDef({
     required this.id,
     required this.name,
@@ -39,6 +49,7 @@ class EquipmentDef {
     required this.dropSourceTags,
     required this.iconPath,
     this.specialSkillCandidates = const [],
+    this.isLineageHeritage = false,
   });
 
   factory EquipmentDef.fromYaml(Map<String, dynamic> y) {
@@ -67,6 +78,7 @@ class EquipmentDef {
         (y['specialSkillCandidates'] as List? ?? const [])
             .map((e) => e as String),
       ),
+      isLineageHeritage: (y['isLineageHeritage'] as bool?) ?? false,
     );
   }
 

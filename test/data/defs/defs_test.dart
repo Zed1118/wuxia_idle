@@ -61,6 +61,27 @@ void main() {
       expect(def.schoolBias, isNull);
       expect(def.presetLoreIds, isEmpty);
       expect(def.dropSourceTags, isEmpty);
+      // T55：缺省 isLineageHeritage 应为 false
+      expect(def.isLineageHeritage, isFalse);
+    });
+
+    test('isLineageHeritage: true 读出后 def.isLineageHeritage = true（T55）', () {
+      final def = EquipmentDef.fromYaml({
+        'id': 'weapon_heritage_test',
+        'name': '传家剑',
+        'tier': 'liQi',
+        'slot': 'weapon',
+        'baseAttackMin': 500,
+        'baseAttackMax': 700,
+        'baseHealthMin': 0,
+        'baseHealthMax': 100,
+        'baseSpeedMin': 20,
+        'baseSpeedMax': 40,
+        'iconPath': 'x.png',
+        'isLineageHeritage': true,
+      });
+
+      expect(def.isLineageHeritage, isTrue);
     });
 
     test('num → int 防御性转换（yaml 数字写法不一致也能吃下）', () {

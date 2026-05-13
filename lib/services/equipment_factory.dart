@@ -48,7 +48,10 @@ class EquipmentFactory {
       obtainedAt: obtainedAt,
       obtainedFrom: obtainedFrom,
       ownerCharacterId: ownerCharacterId,
-      isLineageHeritage: isLineageHeritage,
+      // T55：def.isLineageHeritage=true 的遗物装备无论谁生成都自动标遗物
+      // （drop / 师承种子 / 商店 都对齐）；参数 isLineageHeritage 作为额外
+      // override 通道保留（如奇遇赠送的临时遗物可强制标，不依赖 def）。
+      isLineageHeritage: isLineageHeritage || def.isLineageHeritage,
     );
   }
 

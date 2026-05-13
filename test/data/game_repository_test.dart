@@ -544,6 +544,43 @@ masters:
       );
     });
 
+    test('T55：祖师 startingEquipmentIds 无 isLineageHeritage 装备 → 抛 StateError',
+        () async {
+      // 祖师 starting 只挂寻常货武器（非遗物），缺师承遗物
+      const broken = '''
+masters:
+  - id: founder
+    lineageRole: founder
+    slotIndex: 0
+    defaultRealm: yiLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+    startingEquipmentIds:
+      - weapon_xunchang_tie_jian
+  - id: first_disciple
+    lineageRole: disciple
+    slotIndex: 1
+    defaultRealm: erLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+  - id: second_disciple
+    lineageRole: disciple
+    slotIndex: 2
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+''';
+
+      expect(
+        GameRepository.loadAllDefs(loader: mastersLoader(broken)),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('isLineageHeritage'),
+        )),
+      );
+    });
+
     test('startingTechniqueId 在 techniques.yaml 不存在 → 抛 StateError', () async {
       const broken = '''
 masters:

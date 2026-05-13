@@ -296,7 +296,7 @@ class GameRepository {
     }
   }
 
-  /// Phase 3 Week 4 T53：师徒 3 角色红线。
+  /// Phase 3 Week 4 T53 + T55：师徒 3 角色红线。
   ///
   /// 校验项：
   ///   - 必须 3 条；slotIndex 0/1/2 各一不重不漏
@@ -306,9 +306,8 @@ class GameRepository {
   ///   - AttributeProfile 4 项单项 ∈ [1, 10]，总和 ∈ [16, 24]（GDD §4.1）
   ///   - startingTechniqueIds / startingEquipmentIds 全部 id 须在对应 def map 中
   ///   - 三系锁死：starting 装备/心法 tier index ≤ defaultRealm index
-  ///
-  /// TODO（T55 完成后启用）：祖师 startingEquipmentIds 至少含 1 件
-  /// `EquipmentDef.isLineageHeritage == true`。当前 EquipmentDef 还没有该字段。
+  ///   - **T55 启用**：祖师 startingEquipmentIds 至少含 1 件
+  ///     `EquipmentDef.isLineageHeritage == true`（师承遗物开篇即有）
   void _enforceMasterRedLines() {
     if (masters.length != 3) {
       throw StateError('师徒角色应为 3 条，实际 ${masters.length}');
@@ -400,6 +399,16 @@ class GameRepository {
     }
     if (founderCount != 1) {
       throw StateError('师徒 founder 数量应为 1，实际 $founderCount');
+    }
+    // T55：祖师 startingEquipmentIds 必须至少含 1 件师承遗物。
+    final founder = masters[0];
+    final hasHeritage = founder.startingEquipmentIds
+        .any((id) => equipmentDefs[id]?.isLineageHeritage == true);
+    if (!hasHeritage) {
+      throw StateError(
+        '师徒 ${founder.id}（祖师）startingEquipmentIds 必须至少含 1 件 '
+        'isLineageHeritage=true 的装备（GDD §6.1 + Phase 3 W4 T55）',
+      );
     }
   }
 
