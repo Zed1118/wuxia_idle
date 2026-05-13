@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 5 收尾 #12 LevelDiff 语义统一 + 销账 #12**(2026-05-13,high)。数据层 `LevelDiffModifier.fromYaml` 把 `diff_3_or_more.attacker: null` 兜底从 `diff2.attacker(2.5)` 改 `1.0`(GDD §5.5「已碾压无须放大」单位元);公式层 `RealmUtils.realmDiffModifier` switch 第 4 分支改走 `mod.diff3OrMore`,删除「公式层硬编码 1.0」特例。两端语义统一,无运行时行为变化。546/546,analyze 0 issues。下一步 W12 候选见末段。
+**Phase 5 收尾 #12 LevelDiff 语义统一 + #28 探路终结**(2026-05-13)。#12 销账:数据层 `LevelDiffModifier.fromYaml` null 兜底从 `diff2.attacker(2.5)` 改 `1.0`(GDD §5.5「已碾压无须放大」),公式层 `RealmUtils.realmDiffModifier` switch 第 4 分支改走 `mod.diff3OrMore`,两端语义统一,运行时零变化。#28 探路终结(xhigh,5 轮失败):W6 后 service 注入完成但屏未接 provider(W6 drift),真 Isar widget e2e 在 fake_async vs native Isar zone 边界不可解(详 #28 挂账),要真解需 3 屏 Consumer 化 + service interface(Phase 5 DDD 级),留 Pen 兜底。546/546,analyze 0 issues。下一步 W12 候选见末段。
 
 ## 已完成
 
@@ -54,7 +54,7 @@
 ~~23. widget test 不接真 Isar~~ **架构层面已销账（2026-05-14 W6-S2）**：service 实例化 + nullable propagation 替代旧 widget _persist 的 Isar.getInstance guard。widget 端 `ref.read(xxxServiceProvider)` 返回 null 时短路。FakeAsync vs 真 Isar 的底层不兼容仍在,但不再污染生产代码
 ~~25. Phase2SeedService.seedP1 缺主修~~ **已销账（2026-05-13 T54）**：seedMasterDisciple 路径 3 师徒齐主修，主菜单点 P5 后可直接进主线战斗。P1 fixture 自身仍是无主修（保留体例），玩家从 P1 入口进战斗的旧路径未修复——若需修复请走 P5 入口
 ~~26. 闭关入口硬编码 characterId=1 / RealmTier.xueTu~~ **已销账（2026-05-13 T56）**：`MainMenu` 改 ConsumerWidget，`_SeclusionMenuButton` Riverpod `.when()` 异步读 `activeCharacterIdsProvider` 首位 + `characterByIdProvider(firstId)` 解析 realmTier；loading 时按钮 Opacity 0.4 disabled，error/空 fallback 到 `id=1/xueTu`（保留旧默认作为不可达兜底）
-28. **闭关 widget 端到端 test 缺失（P2 #3 后续）**：P2 #3 修复了 setup→active→result 导航链，但 SeclusionService 是 static 方法无法 mock，widget test 接真 Isar 阻塞（#23 同源），暂只能靠 Pen 视觉验收兜底。Phase 5 service 注入后补「开始闭关 → 收功 → 返回 list 刷新」端到端 widget test
+28. **闭关 widget 端到端 test 缺失（W6 后 5 轮探路无解，2026-05-13 xhigh）**：W6 已把 SeclusionService 改 instance + 加 `seclusionServiceProvider`（架构层消解），但 3 屏（list/setup/active）仍直接走 `IsarSetup.instance`（W6 drift）。**真 Isar tempDir + tester.runAsync(Future.delayed) + InkWell ancestor finder 全部失败根因**：`_activeFuture` 在 fake_async zone 创建（initState）→ native Isar ffi completion callback 派发回创建 zone（fake_async），fake_async 不消费 → `await _activeFuture` 永远 stuck → push 不发生 → testWidgets 10min 超时。要真解需 ① 3 屏改 ConsumerStatefulWidget + 走 provider ② 抽 SeclusionServiceContract abstract 让 provider 注 fake（无 Isar）→ e2e 在纯 fake_async 完成。工作量超单挂账范围（≈Phase 5 #2 DDD 级）。现阶段留 Pen 视觉验收兜底（list+setup 各屏独立渲染已有 `seclusion_map_list_screen_test` 覆盖）
 ~~29. defeat hook + 9 关扩容~~ **已销账（2026-05-13 T59+T60）**：stages.yaml 扩到 15 关（3 章×5 关）+ narrativeDefeatId schema + GameRepository 主线红线 + stage_entry_flow 战败路径 push NarrativeReaderScreen（Boss 关 4/5 才触发，普通关战败直接返回）。对齐 DeepSeek 30 narrative + 6 defeat 文件。仅 Pen 视觉验收 T62 待跑
 30. **闭关 3 个扩展维度未接 service**（§12 #5 收口留尾，2026-05-13）：`numbers.yaml retreat` 已配 `technique_learn_rate` / `internal_force_growth` / 节气日 +30% / 正午阳刚 +20%，但 `seclusion_service.computeOutputs` 仅消费 mojianshi/experience/equipmentDropRate/子时。前两项依赖 Character 修炼度/内力字段（与挂账 #25/#26 同源），节气日依赖农历库 + 完整节气清单（与挂账 #7 同源）。Phase 4 fixture 改造 + 农历库选型后一并接入
 ~~32. victory 路径未接 BattleResolutionService~~ **已销账(2026-05-13 W11,commit `a2de8a2`)**:主线 `_applyVictoryResolution` + 爬塔 `_applyTowerVictoryResolution` 双端体例落地,与 W10 `_applyBossDefeatPenalty` 对齐;service 端 stageDef 改 nullable 兼容 tower 路径不内部 roll drops;W10/W11 路径对称完成
@@ -64,7 +64,7 @@
 
 ## 下一步
 
-W12 候选(W10+W11 Phase 4 全交付,#32 销账;Phase 5 #12 销账):**Pen Windows 视觉验收 W7+W8+W9+W10+W11 五周累积一并派**(用户在线时,W11 验收点:主线胜利后装备 battleCount 真 ++ + 心法 progress 真累 + 关卡 drop 装备入背包) / Phase 5 收尾 #2 DDD 目录 + #28 闭关 e2e widget(W6 后理论可走 ProviderScope.overrides 注入 tempDir Isar) / #30 闭关 3 维度(§12 #7 节气清单 + 农历库阻塞) / C 奇遇 + E 武学领悟(§12 #6 机缘值规则阻塞)。
+W12 候选(W10+W11 Phase 4 全交付,Phase 5 #12 销账,#28 探路终结判不可解):**Pen Windows 视觉验收 W7+W8+W9+W10+W11 五周累积一并派**(用户在线时,W11 验收点:主线胜利后装备 battleCount 真 ++ + 心法 progress 真累 + 关卡 drop 装备入背包) / Phase 5 收尾 #2 DDD 目录(若顺手做 + 屏 Consumer 化收尾 → 可重新捡回 #28) / #30 闭关 3 维度(§12 #7 节气清单 + 农历库阻塞) / C 奇遇 + E 武学领悟(§12 #6 机缘值规则阻塞)。
 
 > CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 
