@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar_community/isar.dart';
 
 import '../../data/defs/tower_floor_def.dart';
 import '../../data/game_repository.dart';
@@ -12,6 +11,7 @@ import '../../data/models/equipment.dart';
 import '../../data/models/inventory_item.dart';
 import '../../data/narrative_loader.dart';
 import '../../providers/battle_providers.dart';
+import '../../providers/isar_provider.dart';
 import '../../providers/tower_providers.dart';
 import '../../services/drop_service.dart';
 import '../../services/stage_battle_setup.dart';
@@ -100,7 +100,7 @@ Future<void> runTowerFlow({
       equipmentDefLookup: GameRepository.instance.getEquipment,
       defaultObtainedFrom: UiStrings.towerDropSource,
     ).rollTowerRewards(floor, DefaultRng());
-    await _persistDrops(drops);
+    await _persistDrops(ref, drops);
   }
 
   if (context.mounted) ref.invalidate(towerProgressProvider);
@@ -156,10 +156,10 @@ Future<bool> _runTowerBattle({
   return completer.future;
 }
 
-/// Isar 持久化爬塔掉落（Isar.getInstance 为 null 时短路，测试安全）。
-Future<void> _persistDrops(DropResult drops) async {
+/// Isar 持久化爬塔掉落（W6 nullable propagation：isarProvider 为 null 时短路，测试安全）。
+Future<void> _persistDrops(WidgetRef ref, DropResult drops) async {
   if (drops.isEmpty) return;
-  final isar = Isar.getInstance();
+  final isar = ref.read(isarProvider);
   if (isar == null) return;
   final now = DateTime.now();
   await isar.writeTxn(() async {
