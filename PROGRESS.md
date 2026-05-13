@@ -5,9 +5,9 @@
 
 ## 当前阶段
 
-**Phase 3 Week 4 D 师徒系统 T57 3v3 默认入阵 + 战斗集成测试完成**（2026-05-13）。`test/services/master_disciple_battle_test.dart` 端到端覆盖 P5 seed → buildTeams(stage_01_01) → BattleState.initial → BattleEngine.runToEnd 装配链（3 师徒境界对齐 yiLiu/erLiu/sanLiu / 装备攻击非零 / 主修招式非空 / 祖师 maxInternalForce 含 lineage +10% buff / victory leftWin / 人造 defeat path 不阻塞）。**顺手修 T55 commit 描述误导**：BattleCharacter.fromCharacter line 171 之前直接读 `character.internalForceMax` 未走 lineage 版，T57 装配链 test 暴露后改用 `internalForceMaxWithLineage(character, equipped, numbers)`，T55 "祖师战斗内力 +5%" 现真正落地。522 → 529 测试（+7：battle_state lineage 1 + master_disciple_battle 6），analyze 0 issues。
+**Phase 3 Week 4 D 师徒系统全交付**（2026-05-13，tag `v0.3.0-w4`）。T53 schema + T54 P5 种子 + T55 isLineageHeritage + T56 角色面板 Tab + 师承段 UI + T57 3v3 装配链集成测试 + T58 Pen 视觉验收 8 截图全部通过。**T56/T57/T55 lineage buff 三大交付 UI 实测落地**：祖师 UI 内力 3800/4180（含 +10% lineage）/ 师承段 4 行完整渲染（含 GameRepository 解析的「龙泉剑/锦袍」）/ stage_01_01 3v3 同阵 7 tick 速胜 + 3 流派克制全部触发。累计 529 测试，analyze 0 issues。**销账 #25 + #26**。
 
-**下一步**：T58 收尾 + tag v0.3.0-w4 + 派 Pen Windows 视觉验收（角色面板 Tab/师承段 + 主线 3 师徒同阵 victory 截图归档 ≥ 3 张）。
+**下一步**：Phase 3 Week 5 方向待选。候选：C 奇遇（需先决 §12 #6 机缘值累积规则）/ E 武学领悟（同 §12 #6）/ F 主线扩到 15 关（与 narrative defeat hook 一起）/ Phase 5 收尾（DDD 整理 / Riverpod 3.x / Isar 4.x）。
 
 ## 已完成
 
@@ -25,10 +25,11 @@
 - **Phase 3 Week 4 T55 EquipmentDef.isLineageHeritage + 祖师遗物红线启用**（2026-05-13，commit `1418176`）：EquipmentDef 加 `isLineageHeritage` 字段 + fromYaml 读 key（camelCase 对齐 schoolBias 体例）；equipment.yaml 标 2 件遗物 fixture（祖师传家剑 weapon_liqi_long_quan + 传家护甲 armor_haojiahuo_jin_pao），仅加一行不动平衡值；EquipmentFactory.fromDef 函数体 OR `def.isLineageHeritage` → drop / 师承种子统一行为，参数保留为 override；GameRepository 启用祖师遗物红线（解 T53 TODO，祖师 startingEquipmentIds 必须 ≥ 1 件 def.isLineageHeritage=true）；test +5（fromYaml 字段 1 + Factory 透传 3 + 红线 fail-fast 1），累计 511 → 516。**运行时副作用**：祖师战斗内力上限自动 +5%（GDD §5.3 师承遗物 buff 在 Demo 路径首次落地，derived_stats.internalForceMaxWithLineage 已存在）
 - **Phase 3 Week 4 T56 角色面板「师承」段 UI + 销账 #26**（2026-05-13）：`CharacterPanelScreen` 改 ConsumerStatefulWidget，顶部 TabBar 三段切换（祖师/大弟子/二弟子，按 `activeCharacterIdsProvider` 顺序，构造参数指首屏 Tab）；新增 `_LineageSection`（4 行：师父姓名 / 徒弟姓名 join / 「[传记待补]」占位 / 遗物名 join，遗物名走 GameRepository.equipmentDefs[defId].name）；新增 `activeCharacterIdsProvider`（读 SaveData.activeCharacterIds）；MainMenu 改 ConsumerWidget + 新建 `_SeclusionMenuButton`（Riverpod `.when()` 异步读首位角色 realmTier，loading→Opacity 0.4 disabled，error/null→ fallback id=1/xueTu），**销账 #26**（main_menu.dart:77-78 硬编码已移除）；character_panel test +4（3 Tab 渲染 / Tab 切换 / 师承段 4 行 / 内力 lineage +10%）+ main_menu test +2（按钮 Opacity 1.0/0.4），累计 516 → 522。UI 视觉验收留 Windows Pen
 - **Phase 3 Week 4 T57 3v3 默认入阵 + 战斗集成测试 + T55 战斗路径补齐**（2026-05-13）：`test/services/master_disciple_battle_test.dart` 6 用例端到端：3 师徒装配完整 / 境界对齐 masters.yaml / 装备攻击+招式+内力正确 / 祖师 maxInternalForce 含 lineage +10% / victory leftWin / defeat path 不阻塞（人造 left 全员阵亡 → isFinished + 非 leftWin + availableSkills 保留）。**顺手修 T55 commit message 误导**：`BattleCharacter.fromCharacter` 之前 `maxInternalForce: character.internalForceMax`（直接字段值不含 lineage），改用 `CharacterDerivedStats.internalForceMaxWithLineage(character, equipped, numbers)` —— T55 "祖师战斗内力 +5%" 现真正落地战斗路径，不仅 UI；battle_state_test +1（师承遗物 2 件 → maxInternalForce 含 +10%）。累计 522 → 529（+7）
+- **Phase 3 Week 4 T58 Pen 视觉验收 + tag v0.3.0-w4**（2026-05-13，Pen 13:44-13:53 一气呵成）：8 截图归档 `docs/screenshots/phase3_w4/`，覆盖 P5 种子按钮 / 角色面板 3 Tab 切换（祖师/大弟子/二弟子各 1 张）/ 师承段 4 行完整 / 山门之外·启 narrative / stage_01_01 3v3 victory + 战斗日志 / 关卡列表通关旁证。**核心验收点**：祖师 UI 内力 3800/4180（lineage +10% 实测落地）/ 师承段「龙泉剑/锦袍」遗物名走 GameRepository 解析 / 3v3 同阵 7 tick 速胜 / 刚猛+灵巧+阴柔三流派克制 ×0.75 全部触发。**Pen 端首跑环境基线失败**根因：T56 新加 `activeCharacterIdsProvider` 但 `*.g.dart` 全 gitignored，Pen 本地缺生成产物 → spec 补 build_runner 步骤后通过（memory `feedback_wuxia_pen_build_runner.md` 记新踩坑）。phase3_summary.md Week 4 段完整 + tag v0.3.0-w4 push origin
 
 ## 进行中
 
-**Phase 3 Week 4 D 师徒系统**：T53 ✅ + T54 ✅（销 #25）+ T55 ✅ + T56 ✅（销 #26）+ T57 ✅（529/529，3v3 装配链端到端 + T55 战斗路径补齐）。Week 4 D 数据/service/UI/集成测试子系统全到位。下一步 T58 收尾 + Pen 视觉验收 + tag v0.3.0-w4。
+**Phase 3 Week 4 D 师徒系统全交付**（2026-05-13，tag v0.3.0-w4）。T53-T58 全部 ✅，529/529 测试 + 8 截图视觉验收通过 + 销账 #25/#26。等 Week 5 方向决策。
 
 ## 已知偏差 / 挂账事项
 

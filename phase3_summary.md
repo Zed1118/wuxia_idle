@@ -152,7 +152,7 @@ Week 4 候选：C 奇遇（需先决 §12 #6）/ D 师徒传承（需先决 §12
 | T55 ✅ | `EquipmentDef.isLineageHeritage` 字段 + fromYaml 读 key；`equipment.yaml` 标 2 件遗物 fixture（龙泉剑 weapon_liqi_long_quan + 锦袍 armor_haojiahuo_jin_pao）；`EquipmentFactory.fromDef` 函数体 OR `def.isLineageHeritage`（drop/师承种子统一）；`GameRepository` 启用祖师遗物红线（祖师 startingEquipmentIds 必须 ≥ 1 件 def.isLineageHeritage=true）| +5（511→516）|
 | T56 ✅ | `CharacterPanelScreen` 改 ConsumerStatefulWidget + 顶部 TabBar 三段（祖师/大弟子/二弟子，按 `activeCharacterIdsProvider` 顺序）+ `_LineageSection`（师父/徒弟/「[传记待补]」/遗物名）；新 `activeCharacterIdsProvider`；`MainMenu` 改 ConsumerWidget + `_SeclusionMenuButton` Riverpod `.when()` 异步读首位角色 realmTier，loading→Opacity 0.4 disabled；**销账 #26**（main_menu 闭关入口硬编码 characterId=1/RealmTier.xueTu 已移除）| +6（516→522）|
 | T57 ✅ | `test/services/master_disciple_battle_test.dart` 6 用例端到端：装配完整 / 境界对齐 masters.yaml / 装备+招式+内力正确 / 祖师 maxInternalForce 含 lineage +10% / victory leftWin / defeat path 不阻塞；**T55 战斗路径补齐**：`BattleCharacter.fromCharacter` 之前 `maxInternalForce: character.internalForceMax` 未走 lineage 版（仅 UI 接），改用 `CharacterDerivedStats.internalForceMaxWithLineage` —— "祖师战斗内力 +5%" 现真正落地战斗路径 | +7（522→529）|
-| T58 🔄 | Pen 视觉验收 ≥ 3 截图 + tag v0.3.0-w4 + 本 summary Week 4 段完结 | 待完成 |
+| T58 ✅ | Pen 视觉验收 8 截图 + tag v0.3.0-w4 + 本 summary Week 4 段完结 | — |
 
 **累计测试**：495（Week 3 末 P1 #1 后基线）→ 529（Week 4 T57 末，+34）/ analyze 0 issues。
 
@@ -169,17 +169,20 @@ Week 4 候选：C 奇遇（需先决 §12 #6）/ D 师徒传承（需先决 §12
 - **#25** P1 fixture 缺主修 → T54 seedMasterDisciple 路径销账（P1 fixture 本身保留无主修体例，玩家走 P5 入口进战斗）
 - **#26** main_menu 闭关入口硬编码 → T56 Riverpod `.when()` 异步读销账
 
-### 待完成（T58）
+### 视觉验收（Pen Windows，2026-05-13 13:44-13:53）
 
-1. **Pen 视觉验收**（派单 prompt 见 commit message）：拉 main → `flutter build windows --release` → 跑游戏走流程
-   - 清旧存档（schema 仍 0.4.0，理论上不必清，但 activeCharacterIds 从 1 个变 3 个可能触发字段长度差异，**保险清**）
-   - 路径：P5 师徒种子 → 角色面板查 3 师徒 Tab + 师承段 → 主线 stage_01_01 → 看 3 师徒同阵 victory
-2. **截图归档** ≥ 3 张至 `docs/screenshots/phase3_w4/`：
-   - 01 P5 种子按钮已加入 phase2_test_menu
-   - 02 角色面板 Tab 三段切换 + 师承 section 渲染（祖师视角 + 大/二弟子视角）
-   - 03 主线 stage_01_01 战斗 3 师徒同阵 victory log
-3. **本 summary** T58 行打勾 + 视觉验收截图表格
-4. **tag v0.3.0-w4** push origin
+| # | 截图 | 验收点 |
+|---|---|---|
+| 01 | [01_phase2_menu_with_p5.png](screenshots/phase3_w4/01_phase2_menu_with_p5.png) | Phase 2 调试场景 5 个按钮 P1/P2/P3/P4/**P5 师徒种子**，描述对齐方案 A 降级（祖师一流+大弟子二流+二弟子三流） |
+| 03 | [03_panel_founder.png](screenshots/phase3_w4/03_panel_founder.png) | 角色面板顶部 3 Tab 渲染：[祖师*高亮]/[大弟子]/[二弟子]；祖师一流·启蒙 / 4 属性（5/7/5/5）/ 派生数值 **内力 3800/4180**（base 3800 × 1.10 = 4180，**lineage +10% buff 在 UI 落地**）/ 装备槽 武器利器/护甲好家伙/饰品好家伙 / 心法主修名家功 |
+| 04 | [04_panel_lineage_section.png](screenshots/phase3_w4/04_panel_lineage_section.png) | 祖师下半屏师承段 4 行完整渲染：师父=无 / 徒弟=大弟子/二弟子 / 传记=[传记待补] / **遗物=龙泉剑 / 锦袍**（GameRepository.equipmentDefs[defId].name 解析正确） |
+| 05 | [05_panel_first_disciple.png](screenshots/phase3_w4/05_panel_first_disciple.png) | 大弟子 Tab：高亮切换正常，姓名/境界（二流·启蒙）/装备阶（好家伙+像样货）/心法（名家功）/师承段 师父=祖师/徒弟=无；**内力 2200/2200 不含 buff**（大弟子无遗物，验证 lineage 仅祖师独立叠加） |
+| 06 | [06_panel_second_disciple.png](screenshots/phase3_w4/06_panel_second_disciple.png) | 二弟子 Tab：三流·启蒙 / 装备阶降到像样货+寻常货（三系锁死正确）/ 心法主修=入门功（三流对应 tier） |
+| 07 | [07_narrative_opening.png](screenshots/phase3_w4/07_narrative_opening.png) | 旁证：山门之外·启 真实文案（NarrativeLoader 子目录扫描 + P1 #1 narrative schema 迁移工作正常） |
+| 08 | [08_battle_3v3_victory.png](screenshots/phase3_w4/08_battle_3v3_victory.png) | **stage_01_01 战斗 3v0 victory**：左队 3 师徒全活（祖师 7094/7094 / 大弟子 5687/5687 / 二弟子 4071/4071）/ 右队 3 流民全死 / 7 tick 速胜 / 战斗日志显示 3 师徒分别用裂石掌/燕回式/暗影掌击杀 3 流民，**刚猛/灵巧/阴柔 3 流派克制 ×0.75 全部触发** |
+| 09 | [09_stage_list_cleared.png](screenshots/phase3_w4/09_stage_list_cleared.png) | 旁证：第一章关卡列表 山道试剑 ✓ 已通关 + 林间伏击 可挑战（MainlineProgress 写库 + prev 链解锁工作正常） |
+
+**T58 验收结论**：T56 师承 Tab UI / T57 装配链端到端 / T55 战斗路径 lineage buff 三大核心交付**视觉全部通过**。缺一张 `02_main_menu_after_p5.png`（主菜单 8 按钮 + 闭关按钮不灰），后续截图证明游戏一路跑通，不补。
 
 ### 下一 Week 议题
 
