@@ -353,4 +353,230 @@ stages:
       expect(() => GameRepository.instance, throwsStateError);
     });
   });
+
+  group('Phase 3 Week 4 T53 · 师徒红线校验', () {
+    // 用 brokenLoader 注入 data/masters.yaml 文本；其余文件走真实 fileLoader。
+    Future<String> Function(String) mastersLoader(String yaml) {
+      return (String path) async {
+        if (path.endsWith('masters.yaml')) return yaml;
+        return fileLoader(path);
+      };
+    }
+
+    test('占位 fixture 3 角色加载 + getMasterBySlot / getFounderMaster', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      expect(repo.masters.length, 3);
+      expect(repo.masters[0].lineageRole, LineageRole.founder);
+      expect(repo.masters[1].lineageRole, LineageRole.disciple);
+      expect(repo.masters[2].lineageRole, LineageRole.disciple);
+      expect(repo.getMasterBySlot(0).id, 'founder');
+      expect(repo.getMasterBySlot(2).id, 'second_disciple');
+      expect(repo.getFounderMaster().id, 'founder');
+      expect(() => repo.getMasterBySlot(3), throwsRangeError);
+    });
+
+    test('slotIndex 重复 → 抛 StateError', () async {
+      const broken = '''
+masters:
+  - id: founder
+    lineageRole: founder
+    slotIndex: 0
+    defaultRealm: yiLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+  - id: dup_slot
+    lineageRole: disciple
+    slotIndex: 0
+    defaultRealm: erLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+  - id: second_disciple
+    lineageRole: disciple
+    slotIndex: 2
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+''';
+
+      expect(
+        GameRepository.loadAllDefs(loader: mastersLoader(broken)),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('slotIndex'),
+        )),
+      );
+    });
+
+    test('slot=0 不是 founder → 抛 StateError', () async {
+      const broken = '''
+masters:
+  - id: wrong_founder
+    lineageRole: disciple
+    slotIndex: 0
+    defaultRealm: yiLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+  - id: first_disciple
+    lineageRole: disciple
+    slotIndex: 1
+    defaultRealm: erLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+  - id: second_disciple
+    lineageRole: disciple
+    slotIndex: 2
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+''';
+
+      expect(
+        GameRepository.loadAllDefs(loader: mastersLoader(broken)),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('founder'),
+        )),
+      );
+    });
+
+    test('defaultRealm=wuSheng → 抛 StateError（飞升锚点）', () async {
+      const broken = '''
+masters:
+  - id: founder
+    lineageRole: founder
+    slotIndex: 0
+    defaultRealm: wuSheng
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+  - id: first_disciple
+    lineageRole: disciple
+    slotIndex: 1
+    defaultRealm: erLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+  - id: second_disciple
+    lineageRole: disciple
+    slotIndex: 2
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+''';
+
+      expect(
+        GameRepository.loadAllDefs(loader: mastersLoader(broken)),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('wuSheng'),
+        )),
+      );
+    });
+
+    test('attributeProfile 总和越界（>24）→ 抛 StateError', () async {
+      const broken = '''
+masters:
+  - id: founder
+    lineageRole: founder
+    slotIndex: 0
+    defaultRealm: yiLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 10, enlightenment: 10, agility: 8, fortune: 1}
+  - id: first_disciple
+    lineageRole: disciple
+    slotIndex: 1
+    defaultRealm: erLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+  - id: second_disciple
+    lineageRole: disciple
+    slotIndex: 2
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+''';
+
+      expect(
+        GameRepository.loadAllDefs(loader: mastersLoader(broken)),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('total='),
+        )),
+      );
+    });
+
+    test('starting equipment tier 超出 defaultRealm 三系锁死 → 抛 StateError',
+        () async {
+      // 二弟子三流 (cap=xiangYang) 但 starting 给 liQi 武器
+      const broken = '''
+masters:
+  - id: founder
+    lineageRole: founder
+    slotIndex: 0
+    defaultRealm: yiLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+  - id: first_disciple
+    lineageRole: disciple
+    slotIndex: 1
+    defaultRealm: erLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+  - id: second_disciple
+    lineageRole: disciple
+    slotIndex: 2
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+    startingEquipmentIds:
+      - weapon_liqi_long_quan
+''';
+
+      expect(
+        GameRepository.loadAllDefs(loader: mastersLoader(broken)),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('三系锁死'),
+        )),
+      );
+    });
+
+    test('startingTechniqueId 在 techniques.yaml 不存在 → 抛 StateError', () async {
+      const broken = '''
+masters:
+  - id: founder
+    lineageRole: founder
+    slotIndex: 0
+    defaultRealm: yiLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+    startingTechniqueIds:
+      - tech_does_not_exist
+  - id: first_disciple
+    lineageRole: disciple
+    slotIndex: 1
+    defaultRealm: erLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+  - id: second_disciple
+    lineageRole: disciple
+    slotIndex: 2
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+''';
+
+      expect(
+        GameRepository.loadAllDefs(loader: mastersLoader(broken)),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('未在 techniques.yaml'),
+        )),
+      );
+    });
+  });
 }

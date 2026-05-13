@@ -1,0 +1,68 @@
+# 师徒角色配置（GDD §7.1 / phase3_tasks Week 4 T53）
+# Demo 阶段固定 3 角色：祖师（玩家本人）+ 大弟子 + 二弟子。
+# 飞升机制 Demo 不做，所有 defaultRealm 严格 < wuSheng。
+# 决策依据：docs/handoff/week4_d_minimal_spec_2026-05-13.md 方案 A
+# 三系锁死：starting 装备/心法 tier 必须 ≤ defaultRealm 对应的 cap。
+
+masters:
+
+  # === 祖师（玩家本人）—— 一流 · 启蒙 ===
+  # 一流境界 → equipment cap=liQi（利器）/ technique cap=menPaiJueXue（门派绝学）
+  - id: founder
+    lineageRole: founder
+    slotIndex: 0
+    defaultRealm: yiLiu
+    defaultLayer: qiMeng
+    attributeProfile:
+      constitution: 5
+      enlightenment: 7
+      agility: 5
+      fortune: 5
+    startingTechniqueIds:
+      - tech_gangmeng_mingjia
+      - tech_lingqiao_jichu
+    startingEquipmentIds:
+      - weapon_liqi_long_quan
+      - armor_haojiahuo_jin_pao
+      - accessory_haojiahuo_yu_pei_lao
+    enabledInDemo: true
+
+  # === 大弟子 —— 二流 · 启蒙 ===
+  # 二流境界 → equipment cap=haoJiaHuo（好家伙）/ technique cap=mingJiaGong（名家功）
+  - id: first_disciple
+    lineageRole: disciple
+    slotIndex: 1
+    defaultRealm: erLiu
+    defaultLayer: qiMeng
+    attributeProfile:
+      constitution: 5
+      enlightenment: 4
+      agility: 6
+      fortune: 4
+    startingTechniqueIds:
+      - tech_lingqiao_mingjia
+    startingEquipmentIds:
+      - weapon_haojiahuo_qing_feng_jian
+      - armor_xiangyang_pi_jia
+      - accessory_xiangyang_yin_jie
+    enabledInDemo: true
+
+  # === 二弟子 —— 三流 · 启蒙 ===
+  # 三流境界 → equipment cap=xiangYangHuo（像样货）/ technique cap=changLianGong（常练功）
+  - id: second_disciple
+    lineageRole: disciple
+    slotIndex: 2
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    attributeProfile:
+      constitution: 4
+      enlightenment: 4
+      agility: 4
+      fortune: 5
+    startingTechniqueIds:
+      - tech_yinrou_jichu
+    startingEquipmentIds:
+      - weapon_xiangyang_gang_dao
+      - armor_xunchang_bu_yi
+      - accessory_xunchang_yu_pei
+    enabledInDemo: true
