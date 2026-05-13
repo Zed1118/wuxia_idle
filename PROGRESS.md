@@ -5,9 +5,9 @@
 
 ## 当前阶段
 
-**Phase 3 Week 5 F 主线扩 15 关 + 战败 hook 全交付**（2026-05-13，tag `v0.3.0-w5`）。T59 stages.yaml 6→15 关 + narrativeDefeatId schema + 主线红线 / T60 stage_entry_flow 战败 hook（销账 #29）/ T62 Pen 视觉验收 6 截图。**核心销账截图**：「风雨渡口·败」narrative 显示「撑伞的人没有追」文案，defeat 分支 push NarrativeReaderScreen 工作正常。期间发现 + 处理 2 个旁支：CharacterPanelScreen 无返回按钮（T56 遗漏）已 fix；stage_01_05 数值估算偏低（xueTu 玩家碾压）已 balance 跨 2 阶到 erLiu（章末 Boss 强制升阶设计）。累计 530/530 测试，analyze 0 issues。**销账 #29**。
+**Phase 5 W6 升级路 c1-c4 已落地**（2026-05-14，分支 `feat/phase5-w6-isar-riverpod-major-upgrade`，commit `1e937df`）。原计划 S1 (Riverpod 3.x) / S2 (Isar 4.x) 分两 tag,pub solver 实测后强绑必须合并升级；同时 reality check 出 "Isar 4.x" 在 pub.dev 只有 dev,真路是 fork `isar_community 3.3.2`（drop-in 兼容,但仍 native-only 不解 #18 web build）。本 commit 完成 c1 pubspec 升级 + c2 38 处 isar import 迁移 + c3 修 riverpod 2→3 breaking（18 处 `*Ref`→`Ref` / 9 处 `battleNotifierProvider`→`battleProvider`，mechanical 一波过）+ c4 新建 `lib/providers/isar_provider.dart`（isarProvider/gameRepositoryProvider 基础设施）。530/530 测试 + analyze 0 issues。
 
-**下一步**：Phase 3 Week 6 方向待选。剩余候选：Phase 5 收尾（不依赖外部决策）/ 挂账 #30 闭关 3 维度（阻塞 §12 #7 节气清单）/ C 奇遇、E 武学领悟（阻塞 §12 #6 机缘值规则）。
+**下一步**：c5（11 service 中 9 个实例化 + provider 注入 + widget `Isar.getInstance` guard 清理,解 #23）/ c6（49 test 改 ProviderScope.overrides 注入 Isar）/ c7（补 riverpod_lint 解 #3 + flutter build web 试跑确认 #18 状态）→ 整体 tag `v0.3.0-w6` push main。c5 是实质重构大头（预估 ~600-900 行 diff）,推到下次会话独立做。
 
 ## 已完成
 
@@ -58,13 +58,9 @@
 
 ## 下一步
 
-Week 5 方向已选 **F 主线扩到 15 关 + narrative defeat hook**（2026-05-13，T59+T60 代码已交付）。
+**Phase 5 W6 升级路 c5/c6/c7**（在 `feat/phase5-w6-isar-riverpod-major-upgrade` 上,c1-c4 已 commit `1e937df`）：c5 = 9 service 实例化 + provider 注入 + 4 处 widget guard 清理（预估 ~600-900 行 diff,解 #23）；c6 = 49 test 改 ProviderScope.overrides；c7 = 补 riverpod_lint 解 #3 + 试 flutter build web 确认 #18 状态 → tag `v0.3.0-w6` push main。**c5 推到下次会话独立做**（避免本会话超载,task list 已留状态）。
 
-**章节结构决策**（用户 2026-05-13 拍板 4 件）：(1) 3 章×5 关；(2) 战败 narrative_defeat 后回关卡列表（不阻断重试）；(3) Mac 先上 stages.yaml，DeepSeek narrative 实际已全部铺好（章末两关有 defeat 文案）；(4) effort 升 xhigh。
-
-**待办**：T61 commit + T62 Pen Windows 视觉验收（15 关全列表 + 章末 Boss 关 defeat narrative 截图 + 关卡列表三态）+ tag v0.3.0-w5。
-
-C 奇遇 / E 武学领悟草案保留在 `phase3_tasks.md` 末，等 §12 #6（机缘值累积规则）拍板后再选先后。挂账 #30 闭关 3 维度扩展同源 §12 #7（节气清单）阻塞。
+W6 之后候选：W7+ Phase 4 战斗结算扩展 / B 装备扩 30-50 / D 心法扩 20-30 / A 爬塔 UI（schema 已 ready）/ #30 闭关 3 维度（§12 #7 节气清单阻塞）/ C 奇遇 + E 武学领悟（§12 #6 机缘值规则阻塞）。
 
 > CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 
