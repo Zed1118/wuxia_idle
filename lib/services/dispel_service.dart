@@ -49,6 +49,43 @@ enum DispelOutcome {
   newMainTechIsNotAssist,          // newMainTech.role != assist（必须从已学辅修挑）
 }
 
+/// Boss 战败被动散功结果（Phase 4 W10）。
+///
+/// 与 [DispelResult] 区别：
+///   - **不换主修**：mainTech.role 保持 main，wasMainBeforeReset 不动
+///   - **无 outcome enum**：调用方只对「有 mainTech 的参战角色」调用，无 fail-fast 分支
+///   - **chuKui+progress=0 仍调用**：算 ×0.5 后仍为 0，layersRolledBack=0，无副作用
+class DefeatPenaltyResult {
+  final int internalForceBefore;
+  final int internalForceAfter;
+
+  /// applyDefeatPenalty 调用前的 cultivationLayer。
+  final CultivationLayer oldLayer;
+
+  /// progress ×0.5 + layer 反向重算后的 cultivationLayer。
+  final CultivationLayer newLayer;
+
+  /// 反向重算回退了几层（0 表示没回退）。
+  final int layersRolledBack;
+
+  final int progressBefore;
+  final int progressAfter;
+  final int progressToNextAfter;
+
+  const DefeatPenaltyResult({
+    required this.internalForceBefore,
+    required this.internalForceAfter,
+    required this.oldLayer,
+    required this.newLayer,
+    required this.layersRolledBack,
+    required this.progressBefore,
+    required this.progressAfter,
+    required this.progressToNextAfter,
+  });
+
+  bool get didRollback => layersRolledBack > 0;
+}
+
 /// 散功服务（GDD §6 散功代价 / §4.3，phase2_tasks T25 §297-321）。
 ///
 /// 双重惩罚（design 底线）：
@@ -146,6 +183,53 @@ class DispelService {
       await isar.techniques.put(mainTech);
       await isar.techniques.put(newMainTech);
     });
+  }
+
+  /// Boss 战败被动散功（Phase 4 W10）。调用方对每个**有主修**的参战角色调用一次。
+  ///
+  /// 与 [dispel] 区别（同复用 [_recalcLayerByRollback] 算法 A）：
+  ///   - **不换主修**：不动 mainTech.role / wasMainBeforeReset / ch.mainTechniqueId
+  ///   - **不调 [TechniqueDispersion.disperse]**：disperse 会同时改 role=assist + wasMainBeforeReset=true，
+  ///     这两步在战败被动场景**绝对不要**做（玩家本次没换主修，下次仍用同一本）
+  ///   - **使用独立 penalty 系数**：n.defeatBoss\* 系列（语义独立于 dispersion）
+  ///
+  /// 副作用：in-place 写 ch.internalForce + mainTech.cultivationProgress + cultivationLayer +
+  /// cultivationProgressToNext。Isar 持久化由 caller 负责（同 dispel 的体例）。
+  static DefeatPenaltyResult applyDefeatPenalty({
+    required Character ch,
+    required Technique mainTech,
+    required NumbersConfig n,
+  }) {
+    final ifBefore = ch.internalForce;
+    final progressBefore = mainTech.cultivationProgress;
+    final layerBefore = mainTech.cultivationLayer;
+
+    ch.internalForce =
+        (ch.internalForce * (1 - n.defeatBossInternalForcePenalty)).toInt();
+    mainTech.cultivationProgress =
+        (mainTech.cultivationProgress * (1 - n.defeatBossCultivationPenalty))
+            .toInt();
+
+    final layersRolledBack = _recalcLayerByRollback(
+      mainTech,
+      n.cultivationProgressToNext,
+    );
+
+    if (mainTech.cultivationLayer != CultivationLayer.jiJing) {
+      mainTech.cultivationProgressToNext =
+          n.cultivationProgressToNext[mainTech.cultivationLayer]!;
+    }
+
+    return DefeatPenaltyResult(
+      internalForceBefore: ifBefore,
+      internalForceAfter: ch.internalForce,
+      oldLayer: layerBefore,
+      newLayer: mainTech.cultivationLayer,
+      layersRolledBack: layersRolledBack,
+      progressBefore: progressBefore,
+      progressAfter: mainTech.cultivationProgress,
+      progressToNextAfter: mainTech.cultivationProgressToNext,
+    );
   }
 
   /// 反向重算算法 A（Pen 拍板）：

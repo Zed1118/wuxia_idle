@@ -14,6 +14,7 @@ class NarrativeReaderScreen extends StatefulWidget {
     required this.content,
     required this.fallbackTitle,
     this.onFinish,
+    this.topBanner,
   });
 
   /// 已加载的剧情内容（由调用方提前 `NarrativeLoader.load`）。
@@ -23,6 +24,10 @@ class NarrativeReaderScreen extends StatefulWidget {
   final String fallbackTitle;
 
   final VoidCallback? onFinish;
+
+  /// Phase 4 W10：占位提示下方的可选 banner，用于 Boss 战败损失摘要等。
+  /// null 时不展示。
+  final Widget? topBanner;
 
   @override
   State<NarrativeReaderScreen> createState() => _NarrativeReaderScreenState();
@@ -116,6 +121,7 @@ class _NarrativeReaderScreenState extends State<NarrativeReaderScreen>
                     ),
                   ),
                 ),
+              if (widget.topBanner != null) widget.topBanner!,
               Expanded(
                 child: Center(
                   child: SingleChildScrollView(

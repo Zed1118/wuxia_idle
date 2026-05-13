@@ -6,8 +6,10 @@ import '../data/models/enums.dart';
 import '../data/models/equipment.dart';
 import '../data/models/skill_usage_entry.dart';
 import '../data/models/technique.dart';
+import '../data/numbers_config.dart';
 import '../utils/rng.dart';
 import 'cultivation_service.dart';
+import 'dispel_service.dart';
 import 'drop_service.dart';
 
 /// 战斗结算服务的汇总返回（phase2_tasks T26 §324-356）。
@@ -32,13 +34,20 @@ class BattleResolutionResult {
   final Map<int, CultivationProgressResult> cultivationEvents;
 
   /// 关卡掉落（T27 DropService 结果）。装备 `ownerCharacterId == null` 入背包。
+  /// 战败路径恒为 `DropResult(equipments: [], items: [])`。
   final DropResult dropResult;
+
+  /// Phase 4 W10：Boss 关战败时每个有主修的参战角色的被动散功结果。
+  /// 胜利 / 普通关战败时**恒为空 map**。
+  /// 见 [DispelService.applyDefeatPenalty]。
+  final Map<int, DefeatPenaltyResult> defeatPenaltyByCharacter;
 
   const BattleResolutionResult({
     required this.updatedEquipmentIds,
     required this.skillUsageIncrements,
     required this.cultivationEvents,
     required this.dropResult,
+    this.defeatPenaltyByCharacter = const {},
   });
 
   @override
@@ -46,7 +55,8 @@ class BattleResolutionResult {
       'BattleResolutionResult(eq=${updatedEquipmentIds.length}, '
       'tech=${skillUsageIncrements.length}, '
       'levelUp=${cultivationEvents.values.where((e) => e.didLevelUp).length}, '
-      'drops=$dropResult)';
+      'drops=$dropResult, '
+      'defeatPenalty=${defeatPenaltyByCharacter.length})';
 }
 
 /// 战斗结算 hooks（phase2_tasks T26 §324-356）。
@@ -86,6 +96,8 @@ class BattleResolutionService {
     required Map<CultivationLayer, int> progressToNextMap,
     required TechniqueDef Function(String defId) techniqueDefLookup,
     required DropService dropService,
+    bool isVictory = true,
+    NumbersConfig? numbersConfig,
   }) {
     _assertAllParticipated(finalState, participatingCharacters);
 
@@ -127,14 +139,40 @@ class BattleResolutionService {
       );
     }
 
-    // 3. 掉落
-    final dropResult = dropService.rollDrops(stageDef, rng);
+    // 3. 掉落（战败不掉）
+    final dropResult = isVictory
+        ? dropService.rollDrops(stageDef, rng)
+        : const DropResult(equipments: [], items: []);
+
+    // 4. Phase 4 W10：Boss 关战败 → 对每个有主修的参战角色应用被动散功
+    final defeatPenalty = <int, DefeatPenaltyResult>{};
+    if (!isVictory && stageDef.isBossStage) {
+      if (numbersConfig == null) {
+        throw ArgumentError(
+          'BattleResolutionService.resolve: Boss 关战败必须传 numbersConfig '
+          '（用于 DispelService.applyDefeatPenalty 的 defeatBoss* 系数）',
+        );
+      }
+      for (final ch in participatingCharacters) {
+        final mainTechId = ch.mainTechniqueId;
+        if (mainTechId == null) continue;
+        final techs = techniquesByCharacter[ch.id] ?? const <Technique>[];
+        final mainTech = _findById(techs, mainTechId);
+        if (mainTech == null) continue;
+        defeatPenalty[ch.id] = DispelService.applyDefeatPenalty(
+          ch: ch,
+          mainTech: mainTech,
+          n: numbersConfig,
+        );
+      }
+    }
 
     return BattleResolutionResult(
       updatedEquipmentIds: updatedEquipmentIds,
       skillUsageIncrements: skillUsageIncrements,
       cultivationEvents: cultivationEvents,
       dropResult: dropResult,
+      defeatPenaltyByCharacter: defeatPenalty,
     );
   }
 

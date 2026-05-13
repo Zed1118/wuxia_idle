@@ -79,6 +79,33 @@ void main() {
     expect(find.textContaining('stage_01_01_opening'), findsOneWidget);
   });
 
+  testWidgets('Phase 4 W10 · topBanner 参数：传入则在剧情上方渲染，不传则不存在', (tester) async {
+    const c = NarrativeContent(
+      id: 'defeat',
+      title: '风雨渡口 · 败',
+      paragraphs: ['撑伞的人没有追。'],
+      isPlaceholder: false,
+    );
+    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
+      content: c,
+      fallbackTitle: 'fb',
+      topBanner: Padding(
+        padding: EdgeInsets.all(8),
+        child: Text('LOSS_BANNER_MARKER'),
+      ),
+    )));
+    expect(find.text('LOSS_BANNER_MARKER'), findsOneWidget,
+        reason: 'topBanner 应渲染到剧情上方');
+    expect(find.text('撑伞的人没有追。'), findsOneWidget);
+
+    // 不传 topBanner 时不存在
+    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
+      content: c,
+      fallbackTitle: 'fb',
+    )));
+    expect(find.text('LOSS_BANNER_MARKER'), findsNothing);
+  });
+
   testWidgets('「跳过」按钮直接 finish + pop', (tester) async {
     var finished = false;
     const c = NarrativeContent(

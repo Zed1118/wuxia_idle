@@ -317,4 +317,113 @@ void main() {
       expect(r2.newLayer, CultivationLayer.dianFeng);
     });
   });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Phase 4 W10：Boss 战败被动散功（applyDefeatPenalty）
+  // ────────────────────────────────────────────────────────────────────────────
+
+  group('Phase 4 W10 · applyDefeatPenalty Boss 战败被动散功', () {
+    test('基本流程：内力 ×0.5 + progress ×0.5 + layer 回退 + role 不动', () {
+      // yuanMan/1500 → progress=750；prev(daCheng→yuanMan req)=900；
+      // 750<900 → 回退 daCheng；prev(zhongCheng→daCheng req)=500；
+      // 750>=500 → 停。期望：daCheng/750，progressToNext=900（daCheng→yuanMan）
+      final ch = newChar(internalForce: 8000);
+      final mainT = newTech(
+        id: 10,
+        ownerCharId: 1,
+        role: TechniqueRole.main,
+        layer: CultivationLayer.yuanMan,
+        progress: 1500,
+        progressToNext: 1500,
+      );
+      final r = DispelService.applyDefeatPenalty(
+        ch: ch,
+        mainTech: mainT,
+        n: n,
+      );
+      expect(ch.internalForce, 4000);
+      expect(mainT.cultivationProgress, 750);
+      expect(mainT.cultivationLayer, CultivationLayer.daCheng);
+      expect(mainT.cultivationProgressToNext, 900);
+      expect(r.layersRolledBack, 1);
+      expect(r.oldLayer, CultivationLayer.yuanMan);
+      expect(r.newLayer, CultivationLayer.daCheng);
+      expect(r.internalForceBefore, 8000);
+      expect(r.internalForceAfter, 4000);
+      expect(r.progressBefore, 1500);
+      expect(r.didRollback, isTrue);
+      // role / wasMainBeforeReset 必须不动（区别于 dispel）
+      expect(mainT.role, TechniqueRole.main);
+      expect(mainT.wasMainBeforeReset, isFalse);
+    });
+
+    test('chuKui + progress=0 边界：无副作用、layersRolledBack=0', () {
+      final ch = newChar(internalForce: 100);
+      final mainT = newTech(
+        id: 10,
+        ownerCharId: 1,
+        role: TechniqueRole.main,
+        layer: CultivationLayer.chuKui,
+        progress: 0,
+        progressToNext: 100,
+      );
+      final r = DispelService.applyDefeatPenalty(
+        ch: ch,
+        mainTech: mainT,
+        n: n,
+      );
+      expect(ch.internalForce, 50); // 内力仍按比例扣
+      expect(mainT.cultivationProgress, 0);
+      expect(mainT.cultivationLayer, CultivationLayer.chuKui);
+      expect(mainT.cultivationProgressToNext, 100);
+      expect(r.layersRolledBack, 0);
+      expect(r.didRollback, isFalse);
+    });
+
+    test('单层回退：xiaoCheng/100 → progress=50 < chuKui→xiaoCheng req=100 → 回退 chuKui/50', () {
+      final ch = newChar(internalForce: 1000);
+      final mainT = newTech(
+        id: 10,
+        ownerCharId: 1,
+        role: TechniqueRole.main,
+        layer: CultivationLayer.xiaoCheng,
+        progress: 100,
+        progressToNext: 250,
+      );
+      final r = DispelService.applyDefeatPenalty(
+        ch: ch,
+        mainTech: mainT,
+        n: n,
+      );
+      expect(mainT.cultivationLayer, CultivationLayer.chuKui);
+      expect(mainT.cultivationProgress, 50);
+      expect(mainT.cultivationProgressToNext, 100);
+      expect(r.layersRolledBack, 1);
+      expect(ch.internalForce, 500);
+    });
+
+    test('role 保持 main：DispelService.dispel 之后状态分叉对照', () {
+      // 防回归：与 dispel 路径区别——defeat 后 mainTech 仍是 role=main，
+      // wasMainBeforeReset=false，下次战斗仍以同本心法升修炼度。
+      final ch = newChar(internalForce: 4000);
+      final mainT = newTech(
+        id: 10,
+        ownerCharId: 1,
+        role: TechniqueRole.main,
+        layer: CultivationLayer.daCheng,
+        progress: 900,
+        progressToNext: 900,
+      );
+      DispelService.applyDefeatPenalty(ch: ch, mainTech: mainT, n: n);
+      expect(mainT.role, TechniqueRole.main);
+      // 再走一次 CultivationService.recordSkillUsage 验证升层逻辑能正常累积
+      final r1 = CultivationService.recordSkillUsage(
+        tech: mainT,
+        skillId: 'skill_a',
+        progressToNextMap: n.cultivationProgressToNext,
+        delta: 5000,
+      );
+      expect(r1.didLevelUp, isTrue);
+    });
+  });
 }
