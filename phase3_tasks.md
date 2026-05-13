@@ -1139,7 +1139,7 @@ phase3_summary.md                         # T46 追加 Week 2 段
 
 | 待决项 | 对应方向 | 是否阻塞起手 | 建议讨论顺序 | 备注 |
 |---|---|---|---|---|
-| #5 闭关 5 张地图具体产出公式 | Week 3 B 闭关收尾 | 不阻塞 C/D/E；阻塞 T52 后归档口径 | 1 | Week 3 已按 `1.3^tierIndex`、72h 封顶、磨剑石整数、单次装备抽检部分实现。需确认是否还有遗留（如经验/内力/心法概率是否纳入后续），若无遗留，应在进度文档中标为已决。 |
+| ~~#5 闭关 5 张地图具体产出公式~~ | ~~Week 3 B 闭关收尾~~ | — | — | **已决（2026-05-13 Mac Opus 复核）**：核心闭环——`realm_scale_per_tier=1.3`、`cap_hours=72`、`base_equip_drop_probability=0.1`、5 地图 5 维度基础产出、子时 +20% 全部落实；T52 Pen 视觉验收通过。3 个扩展维度（`technique_learn_rate` / `internal_force_growth` / 节气日 +30% + 正午阳刚 +20%）未接入 service，作为新挂账 #30 留 Phase 4/Week 5。 |
 | #6 机缘值累积规则 | C 奇遇 / E 武学领悟 | 阻塞 C/E 正式起手 | 2 | 需要决定机缘值来源（时间/击杀/闭关/属性）、阈值、冷却、是否离线累积。C 可先做纯 schema 草案，但服务层触发逻辑会被 #6 直接影响。 |
 | #10 师承遗物细节 | D 师徒系统 | 阻塞 D 正式起手 | 3 | 已确定师承遗物受三系锁死；仍需定传递时机、多徒弟归属、buff 是否累代、同部位冲突处理。 |
 | #11 祖师爷门派 buff 内容 | D 师徒系统 | 阻塞 D 的 buff 接口；不阻塞纯角色展示 | 4 | Demo 不做飞升，但若 D 起手就留接口，需要先定 buff 类型和数值范围；否则只能做无 buff 的三角色展示。 |
@@ -1290,3 +1290,224 @@ Issue E-6：已领悟招式如何进入战斗可用列表
 - 备注：`Character.learnedSkillIds` 字段已存在，但 BattleCharacter 当前主要从心法 `skillIds` 装配技能。需要决定独立领悟招式是直接加入可用技能，还是必须绑定到主修/辅修心法。
 
 ⚠ 待人类决策：上述 issue 只列阻塞点与协作点，不代表 Week 4 方向已拍板。
+
+---
+
+## Phase 3 Week 4 任务清单（D 师徒系统）
+
+> **方向已选** D 师徒（2026-05-13），D-1/D-2/D-3 三决策点全部按推荐方案 A。
+> 详细论证 + 不做清单 + 决策落地见 `docs/handoff/week4_d_minimal_spec_2026-05-13.md`。
+> C 奇遇 / E 武学领悟仍在 §Week 4 候选 spec 草案 节保留，等 §12 #6 拍板后再排先后。
+
+### Week 4 入场前置
+
+- 起手前 base：main = 9bb799c，495/495 测试，analyze 0 issues
+- §12 #5 已收口（2026-05-13），3 维度扩展挂账 #30
+- §12 #10/#11 在 Demo 范围内全部推迟到 1.0 飞升机制，本 Week 不碰
+- 与挂账 #25 P1 fixture 缺主修协调：T54 seed 改造一并修；与 #26 闭关入口硬编码 characterId=1 同源，T54 顺手清
+
+---
+
+### T53 · masters.yaml schema + MasterDef + GameRepository 加载 + 红线校验
+
+- **预估时长**：0.5 天
+- **依赖任务**：— （起手）
+- **涉及文件**：`data/masters.yaml`（新）、`lib/data/defs/master_def.dart`（新）、`lib/data/game_repository.dart`（加 `masters` + `loadMasters` + `_enforceMasterRedLines`）、`test/master_def_test.dart`（新）
+
+**任务内容**：
+
+1. **新建 `data/masters.yaml`**（3 条，camelCase）：
+   - `id`：`founder` / `firstDisciple` / `secondDisciple`
+   - `lineageRole`：对齐 `enum LineageRole`（founder / firstDisciple / secondDisciple，已存在）
+   - `slotIndex`：0 / 1 / 2
+   - `defaultRealm`：宗师 / 绝顶 / 一流（递减一阶，全部 < 武圣，不触碰飞升锚点）
+   - `defaultLayer`：每阶第 1 层（`qiMeng` 对齐 RealmStratum）
+   - `attributeProfile`：4 项 `{strength, agility, fortune, enlightenment}` 固定模板，总和 16-24（GDD §4.1）。建议祖师 22 / 大弟子 19 / 二弟子 17
+   - `startingTechniqueIds`：1 主修 + 1 辅修，id 须在 `techniques.yaml` 存在
+   - `startingEquipmentIds`：3 件，id 须在 `equipment.yaml` 存在；**祖师 starting 至少含 1 件 `isLineageHeritage: true`**（与 T55 协调）
+   - `enabledInDemo`：true
+
+2. **新建 `lib/data/defs/master_def.dart`**：
+   - 不可变值对象 + `fromYaml` 工厂（参照 `equipment_def.dart` 体例）
+   - 内嵌 `AttributeProfile` 子类型 `{strength, agility, fortune, enlightenment}`
+
+3. **`GameRepository` 接入**：
+   - 加字段 `final List<MasterDef> masters`
+   - 加方法 `Future<List<MasterDef>> _loadMasters()`，从 `data/masters.yaml` 解析
+   - `_enforceMasterRedLines()`：
+     - 必须正好 3 条；slotIndex 必须 0/1/2 各一不重不漏
+     - lineageRole 必须三选一不重复
+     - **defaultRealm 不允许 `wuSheng`**（飞升锚点）
+     - startingTechniqueIds / startingEquipmentIds 全部 id 必须能在 techniques/equipment def 表中找到
+     - **祖师 startingEquipmentIds 必须含至少 1 件 `EquipmentDef.isLineageHeritage == true`** —— 此校验需 T55 完成后才能生效，T53 spec 先留 TODO 注释
+     - attributeProfile 4 项总和 ∈ [16, 24]
+
+4. **单测 ≥ 6**（`test/master_def_test.dart`）：
+   - fromYaml 3 角色正常加载
+   - slotIndex 缺失/重复 fail-fast
+   - lineageRole 重复 fail-fast
+   - defaultRealm=wuSheng fail-fast
+   - 任意 startingTechniqueId 不存在 fail-fast
+   - attributeProfile 总和越界 fail-fast
+
+**验收标准**：
+- [ ] 单测 ≥ 6 全绿
+- [ ] `flutter analyze` 0 issues
+- [ ] 累计测试 495 → ≥ 501
+
+**可能的坑**：
+- pubspec.yaml 是否已声明 `data/masters.yaml` 为 asset：现有 `data/*.yaml` 是 glob 还是逐文件声明？若逐文件，T53 需加一行
+- AttributeProfile 与现有 `lib/data/models/attributes.dart` 的关系：是否复用 Attributes，还是 def 层独立？建议**def 层独立**，避免 Isar `@embedded` 污染纯 Dart def
+- 祖师遗物校验 TODO：T55 完成后回 T53 启用，commit 时连带补单测
+
+---
+
+### T54 · seedMasterDisciple service + Demo 入口接入 + 清挂账 #25/#26
+
+- **预估时长**：0.5-1 天
+- **依赖任务**：T53
+- **涉及文件**：`lib/services/phase2_seed_service.dart`（加 `seedMasterDisciple` 或独立服务）、`lib/services/save_data_service.dart`（如有）、`lib/ui/debug/phase2_test_menu.dart`（加调试入口）、`lib/ui/main_menu.dart`（清挂账 #26 硬编码）、`test/master_disciple_seed_test.dart`（新）
+
+**任务内容**：
+
+1. **seed 服务**：
+   - 接受 `MasterDef` 列表，按 slotIndex 顺序：
+     - **祖师 slot 0**：**复用既有玩家 Character**（按当前 saveDataId 找 characterId=1 或 SaveData.activeCharacterIds 首位），追加 `isFounder = true / lineageRole = founder`；不另建 founder Character（决策点 1 落地）
+     - **大/二弟子**：新建 2 个 Character，各按 def.defaultRealm/Layer/attributeProfile 写入；`masterId = founderId`
+   - 写关系：祖师 `discipleIds = [大弟子id, 二弟子id]`
+   - 学心法：调既有 `TechniqueLearningService.learn`（或类似 API）按 def.startingTechniqueIds 装上；主修 + 辅修
+   - 装装备：调 `EquipmentFactory.generate` 按 def.startingEquipmentIds 生成 Equipment 实例，写入 InventoryItem 然后 equip（祖师含 1 件 isLineageHeritage）
+   - **SaveData.activeCharacterIds**：写入 [founderId, 大弟子id, 二弟子id]，默认 3 师徒同阵
+   - **幂等**：若已 seed（discipleIds 已非空）则跳过
+
+2. **Demo 入口**：
+   - `phase2_test_menu.dart` 增第 5 个按钮 "P5 师徒种子"，onTap 调 seedMasterDisciple
+   - **可选**：与挂账 #25 协调 —— seedP1 改造为「装备+材料+心法主修+师徒种子」一站式，主菜单 P1 后可直接进主线/爬塔/闭关战斗，不再 fail-fast
+
+3. **清挂账 #26**：
+   - `main_menu.dart:77-78` 硬编码 `characterId=1 / RealmTier.xueTu` 改为从 `SaveData.activeCharacterIds` 首位读 + Character.currentRealmTier
+   - 闭关入口随存档真实角色境界判定地图解锁
+
+4. **单测 ≥ 5**：
+   - seed 一次后 Character 表正确生成 3 条（祖师复用 + 2 弟子新建）
+   - 师徒关系字段双向正确（祖师 discipleIds、弟子 masterId）
+   - 幂等：连续调 2 次只 seed 1 次
+   - activeCharacterIds = 3 个 id
+   - 祖师装备里至少 1 件 isLineageHeritage
+
+**验收标准**：
+- [ ] 单测 ≥ 5 全绿；累计 ≥ 506
+- [ ] `flutter analyze` 0 issues
+- [ ] **挂账 #25 销账**：P1 → 主线战斗不再 fail-fast（service-level test 验证）
+- [ ] **挂账 #26 销账**：闭关地图按存档真实境界判定（service-level test 验证）
+
+**可能的坑**：
+- "复用既有玩家 Character" 的 saveData 上下文：若没有 SaveData/Character 入口（Demo 首次启动尚未 P1 种子时），seed 应 fail-fast 提示「请先 P1 种子」**或**自动先调 seedP1。建议前者，保持入口契约清晰
+- EquipmentFactory 现有签名是否支持指定 def + 强制生成（不抽包）：T54 起手前确认；若不支持，需要为种子场景加旁路 API
+- 与挂账 #23 widget test 不接真 Isar 的协调：单测走 service-level，不写 widget test
+
+---
+
+### T55 · EquipmentDef.isLineageHeritage 字段 + equipment.yaml fixture 标记
+
+- **预估时长**：0.3 天
+- **依赖任务**：T53（schema）、与 T54 并行可
+- **涉及文件**：`lib/data/defs/equipment_def.dart`、`data/equipment.yaml`、`lib/services/equipment_factory.dart`（透传字段）、`test/equipment_def_test.dart`、`test/equipment_factory_test.dart`
+
+**任务内容**：
+
+1. `EquipmentDef` 加 `final bool isLineageHeritage`（缺省 false），`fromYaml` 读 `isLineageHeritage` key（不存在则 false）
+2. `equipment.yaml` 选 2-3 件**祖师可装备阶**（宗师阶或更低，对齐 T53 祖师 defaultRealm=宗师）的装备，加 `isLineageHeritage: true`
+3. `EquipmentFactory.generate` 把 `def.isLineageHeritage` 透传到 `Equipment.isLineageHeritage`
+4. **回 T53 启用祖师遗物红线校验**：补 `_enforceMasterRedLines` 的 TODO + 配套单测
+5. 单测 ≥ 3：fromYaml 字段读 true / 缺省 false / EquipmentFactory 生成后 Equipment.isLineageHeritage 正确
+
+**验收标准**：
+- [ ] 单测 ≥ 3 全绿；累计 ≥ 509
+- [ ] `flutter analyze` 0 issues
+- [ ] equipment.yaml 至少 2 件标记，与祖师 starting 至少 1 件对齐
+
+**可能的坑**：
+- 标记的 2-3 件遗物**不要**改动既有平衡参数（attack/health/speed/tier），只加 `isLineageHeritage: true` 一行；避免影响 Phase 1/2 战斗测试期望
+- numbers.yaml `lineage_heritage.internal_force_max_bonus: 0.05` 的应用点：当前 BattleCharacter 装配是否消费？若未，**本 T 不做**，列为新挂账（buff 效果落地另起一 T 或挂 Phase 4）
+
+---
+
+### T56 · 角色页签「师承」段 UI + 师徒展示
+
+- **预估时长**：0.5-1 天
+- **依赖任务**：T54
+- **涉及文件**：`lib/ui/character/character_panel_screen.dart`（或既有角色面板）、`lib/ui/strings.dart`（占位字符串）、widget test
+
+**任务内容**：
+
+1. 在角色面板加「师承」段：
+   - 「师父：XX（境界 · 层）」/「徒弟：[大弟子（境界·层）, 二弟子（境界·层）]」
+   - 祖师页签显示「开派祖师」标识 + 「[传记待补]」占位（决策点 3 落地，DeepSeek 文案到位后自然替换）
+2. 主菜单加「师徒」入口 **或** 角色面板平铺 3 角色切换 —— 建议**后者**，复用既有 character_panel_screen，最小改动
+3. widget test：rootBundle 加载 masters.yaml + 3 角色卡片可见 + 师徒关系字段渲染正确
+4. **不做**：换人 UI、收徒 UI、传位动作
+
+**验收标准**：
+- [ ] widget test ≥ 3
+- [ ] `flutter analyze` 0 issues；累计 ≥ 512
+- [ ] 截图：祖师视角、大弟子视角各 1 张（T58 一并验收）
+
+**可能的坑**：
+- 既有 character_panel_screen 是按 characterId=1 硬编码的（与挂账 #26 同源）；T54 清完应该已经支持切换 active 角色，但要复核
+
+---
+
+### T57 · 3v3 默认入阵 + 战斗集成测试
+
+- **预估时长**：0.5 天
+- **依赖任务**：T54
+- **涉及文件**：`lib/services/battle_engine.dart` 或 `lib/services/stage_battle_setup.dart`（核对 activeCharacterIds 读取链）、`test/master_disciple_battle_test.dart`（新）
+
+**任务内容**：
+
+1. T54 已把 3 个 id 写进 `SaveData.activeCharacterIds` —— 复核 `StageBattleSetup` / `BattleCharacter` 装配链能否正确装配 3 师徒（境界/装备/心法/属性都到位）
+2. service-level 集成测试：seed 师徒 → 跑 stage_01_01 → battle 结束有 victory log → 3 师徒各自属性/技能正确进入战斗
+3. **不做**：换人 UI、阵型摆位、师徒协同 buff
+
+**验收标准**：
+- [ ] 集成测试 ≥ 2（victory case + defeat case）
+- [ ] `flutter analyze` 0 issues；累计 ≥ 514
+
+**可能的坑**：
+- 大弟子/二弟子境界（绝顶/一流）vs 主线 stage_01_01 敌人境界差很大 → 境界差异修正会让战斗一边倒。T57 是「装配正确性」测试，**不验平衡**；平衡问题挂 Phase 5
+
+---
+
+### T58 · 全量 test + analyze 双绿 + Pen 视觉验收 + tag v0.3.0-w4
+
+- **预估时长**：0.5 天
+- **依赖任务**：T53-T57
+- **涉及文件**：`docs/screenshots/phase3_w4/`、`phase3_summary.md`（追加 Week 4 段）、`PROGRESS.md`
+
+**任务内容**：
+
+1. Mac 端预演：test + analyze 双绿，累计 ≥ 514
+2. 派 Pen 端：
+   - 拉新 main + `flutter build windows --release` + 跑游戏
+   - 清开发态存档（`%APPDATA%\com.example.wuxia_idle`，schema 升版 0.4.0 → 0.5.0 必清）
+   - 走流程：P5 师徒种子 → 角色面板查 3 师徒卡片 → 进主线 stage_01_01 → 看 3 师徒同阵 victory
+3. 截图归档 ≥ 3 张到 `docs/screenshots/phase3_w4/`：
+   - 01 P5 种子按钮已加入
+   - 02 角色面板「师承」段（祖师 + 2 弟子可见）
+   - 03 主线战斗 3 师徒同阵
+4. `phase3_summary.md` 追加 Week 4 段（T53-T58 + 测试数 + 截图链接 + 挂账 #25/#26 销账）
+5. `PROGRESS.md` 更新
+6. tag `v0.3.0-w4`，push origin
+
+**验收标准**：
+- [ ] ≥ 3 截图归档
+- [ ] phase3_summary.md Week 4 段完
+- [ ] tag v0.3.0-w4 已 push
+- [ ] Pen 验收无大 bug
+- [ ] 挂账 #25 / #26 PROGRESS 标销
+
+**可能的坑**：
+- Isar schema 升版（祖师 isFounder / discipleIds 字段已存在，本 Week 不升 schema，**但** activeCharacterIds 增到 3 个可能触发 SaveData 字段长度差异 → 测一下旧存档兼容）
+- 大弟子/二弟子境界过高，stage_01_01 可能秒杀 boss，截图战斗看着可能很扯；可以接受，截图说明清楚即可
+

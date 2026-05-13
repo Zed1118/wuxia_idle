@@ -7,7 +7,7 @@
 
 **P1 #1 narrative schema Mac 端接手完成**（2026-05-12，销账 #27）。NarrativeLoader 加 stages/ 子目录扫描 + stages.yaml 6 关 id 迁移 `mainline_test_NN → stage_NN_NN` + narrative id 全链对齐 DeepSeek 拆分体系；widget test 已验证「真实剧情『山门之外 · 启』可加载，不再走 placeholder」。493→495 测试（+2 防回归 case），analyze 0 issues。
 
-**下一步**：Phase 3 Week 4 起手（C 奇遇 / D 师徒 / E 武学领悟），需先决 §12 待人类决策项，详草案见 `phase3_tasks.md` 末尾。
+**下一步**：Phase 3 Week 4 起手方向已选 **D 师徒系统**（2026-05-13 Mac Opus 复核选定）。§12 #5 闭关产出公式收口为「已决，3 维度扩展挂账 #30」；#10/#11 师徒决策最小版本草案见 `docs/handoff/week4_d_minimal_spec_2026-05-13.md`，待用户拍板后再拆 T53+ 任务。
 
 ## 已完成
 
@@ -23,7 +23,7 @@
 
 ## 进行中
 
-（无）Week 3 已收尾，等待用户决策下一步方向（见「当前阶段」段 A/B 双选）。
+**Phase 3 Week 4 D 师徒系统**（2026-05-13 起手）：T53 spec 已写（masters.yaml schema + MasterDef + 红线校验），3 个决策点（D-1/D-2/D-3）全部按推荐方案 A 拍板。T54 顺手清挂账 #25/#26。详 `phase3_tasks.md` 末 Week 4 段。
 
 ## 已知偏差 / 挂账事项
 
@@ -43,15 +43,19 @@
 26. **闭关入口硬编码 characterId=1 / RealmTier.xueTu**：`main_menu.dart:77-78` 写死，与存档当前角色境界脱节（玩家若已进阶到二流/圆熟，闭关地图解锁判定与 realmScale 倍率仍按学徒算）。与挂账 #25 同源（Demo 缺单一 character 视角注入），Phase 4 fixture 改造时一并处理
 28. **闭关 widget 端到端 test 缺失（P2 #3 后续）**：P2 #3 修复了 setup→active→result 导航链，但 SeclusionService 是 static 方法无法 mock，widget test 接真 Isar 阻塞（#23 同源），暂只能靠 Pen 视觉验收兜底。Phase 5 service 注入后补「开始闭关 → 收功 → 返回 list 刷新」端到端 widget test
 29. **defeat hook + 9 关扩容**（P1 #1 留尾）：narrative defeat 6 文件已交付但 stage_entry_flow 战败路径暂未接；stages.yaml 6 关 fixture 未扩到 15 关。Phase 4 W1 主线引导 UI 一起做
+30. **闭关 3 个扩展维度未接 service**（§12 #5 收口留尾，2026-05-13）：`numbers.yaml retreat` 已配 `technique_learn_rate` / `internal_force_growth` / 节气日 +30% / 正午阳刚 +20%，但 `seclusion_service.computeOutputs` 仅消费 mojianshi/experience/equipmentDropRate/子时。前两项依赖 Character 修炼度/内力字段（与挂账 #25/#26 同源），节气日依赖农历库 + 完整节气清单（与挂账 #7 同源）。Phase 4 fixture 改造 + 农历库选型后一并接入
 
 > 已解决条目（#1/#5/#13/#14/#15/#16/#19/#20/#21/#22/#24/#27，T52 Pen 视觉验收 2026-05-12）见文末归档。
 
 ## 下一步
 
-Week 4 候选方向（待人类决策具体方向后再拆 T 任务；详草案见 `phase3_tasks.md` 末尾新增节）：
-- **C 奇遇系统**：需先决 §12 #6 机缘值累积规则，且与 DeepSeek `data/events/` 协同。
-- **D 师徒系统**：需先决 §12 #10 师承遗物细则 + #11 祖师爷门派 buff。
-- **E 武学领悟**：需先决 §12 #6，并评估与现有 TechniqueLearning 的耦合成本。
+Week 4 方向已选 **D 师徒系统**（2026-05-13）：
+
+**选 D 理由**：(1) 不被 §12 #6 阻塞（C/E 核心阻塞）；(2) 代码骨架最齐 —— Character 已有 `lineageRole/masterId/discipleIds/isFounder` 字段、numbers.yaml 已留 `founder_ancestor_buff` key；(3) Demo §7-§8 硬指标，迟早要做；(4) 不牵动战斗公式回归面。
+
+**起手前阻塞**：§12 #10（师承遗物细则）+ #11（祖师爷 buff 内容）。**最小决策版本草案**：`docs/handoff/week4_d_minimal_spec_2026-05-13.md`，待用户拍板后拆 T53+ 任务。
+
+C / E 草案保留在 `phase3_tasks.md` 末，等 §12 #6 拍板后再选先后。
 
 > CLAUDE.md §12 #1（境界 vs 修炼度名重叠）实质消解：Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名，见 `enum_localizations.dart:39,78` 注释；文档与代码已分叉，CLAUDE.md 是禁碰文件不改，此处记录即可。
 
