@@ -73,11 +73,11 @@ void main() {
       expect(m.$2, 0.3);
     });
 
-    test('差 3 大境界（低打高）→ (1.0, 0.05)，attacker 走公式语义不读 yaml', () {
+    test('差 3 大境界（低打高）→ (1.0, 0.05)，attacker 走数据层兜底 1.0', () {
       final m =
           RealmUtils.realmDiffModifier(RealmTier.sanLiu, RealmTier.jueDing);
       expect(m.$1, 1.0,
-          reason: 'GDD §5.5 / phase1_tasks T08 §470：碾压无须放大，attacker=1.0');
+          reason: 'GDD §5.5：碾压无须放大，attacker=1.0（数据层与公式层语义统一）');
       expect(m.$2, 0.05);
     });
 

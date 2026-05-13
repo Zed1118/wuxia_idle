@@ -52,15 +52,15 @@ void main() {
       expect(repo.numbers.defeatBossCultivationPenalty, 0.50);
     });
 
-    test('LevelDiffModifier.diff3OrMore.attacker null 兜底为 diff2.attacker', () async {
+    test('LevelDiffModifier.diff3OrMore.attacker null 兜底为 1.0', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final m = repo.numbers.levelDiffModifier;
       expect(m.sameTier.attacker, 1.0);
       expect(m.diff1.attacker, 1.4);
       expect(m.diff2.attacker, 2.5);
       expect(m.diff3OrMore.defender, 0.05);
-      expect(m.diff3OrMore.attacker, m.diff2.attacker,
-          reason: 'yaml 里 attacker=null，按设计兜底取 diff2.attacker');
+      expect(m.diff3OrMore.attacker, 1.0,
+          reason: 'yaml attacker=null → 数据层兜底 1.0（GDD §5.5 已碾压无须放大）');
     });
 
     test('便捷查询 getRealmByAbsoluteLevel / getRealm', () async {

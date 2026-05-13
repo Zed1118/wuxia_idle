@@ -107,7 +107,7 @@ realms:
       attacker: 2.5
       defender: 0.3
     diff_3_or_more:      # 差 3+ 大境界（基本免疫）
-      attacker: null     # 已经是碾压，无需再放大；按 ×2.5 上限处理即可
+      attacker: null     # 已碾压无须放大；数据层兜底 1.0（单位元，与公式层语义统一）
       defender: 0.05     # 低境界打高境界仅 5% 伤害
 
   # --- 49 级境界完整数值表 ---
