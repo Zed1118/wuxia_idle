@@ -5,9 +5,9 @@
 
 ## 当前阶段
 
-**Phase 5 W6 升级路 c1-c4 已落地**（2026-05-14，分支 `feat/phase5-w6-isar-riverpod-major-upgrade`，commit `1e937df`）。原计划 S1 (Riverpod 3.x) / S2 (Isar 4.x) 分两 tag,pub solver 实测后强绑必须合并升级；同时 reality check 出 "Isar 4.x" 在 pub.dev 只有 dev,真路是 fork `isar_community 3.3.2`（drop-in 兼容,但仍 native-only 不解 #18 web build）。本 commit 完成 c1 pubspec 升级 + c2 38 处 isar import 迁移 + c3 修 riverpod 2→3 breaking（18 处 `*Ref`→`Ref` / 9 处 `battleNotifierProvider`→`battleProvider`，mechanical 一波过）+ c4 新建 `lib/providers/isar_provider.dart`（isarProvider/gameRepositoryProvider 基础设施）。530/530 测试 + analyze 0 issues。
+**Phase 5 W6 全交付**（2026-05-14，分支 `feat/phase5-w6-isar-riverpod-major-upgrade`，3 commits：`1e937df` c1-c4 升级 + `4bee3c4` PROGRESS 同步 + `f305bde` c5-c7 service 实例化）。原计划 S1/S2 分两 tag,pub solver 实测强绑必须合并升级；reality check 出 "Isar 4.x" 在 pub.dev 只有 dev,真路是 fork `isar_community 3.3.2`（drop-in 兼容,仍 native-only）。**升级链**：isar→isar_community 3.3.2 / flutter_riverpod 3.x / riverpod_annotation 4.x / riverpod_generator 4.x / analyzer 5.x→9.x（解 #3 上限部分）。**Service 实例化 + nullable propagation**：8 个有 Isar 依赖的 service 改实例化 + 构造函数接 Isar；新 `IsarSetup.instanceOrNull` + nullable isarProvider + 9 个 service provider，widget test 自动短路（替代旧 widget `Isar.getInstance` guard，4 处全删）。**销账 #23** 架构层面解决（widget 端 guard 散点 → provider 端集中处理）。533 改动文件 +611/-448 行（c1-c4 +237/-161 / c5+ +374/-287）。analyze 0 issues / test 530/530。
 
-**下一步**：c5（11 service 中 9 个实例化 + provider 注入 + widget `Isar.getInstance` guard 清理,解 #23）/ c6（49 test 改 ProviderScope.overrides 注入 Isar）/ c7（补 riverpod_lint 解 #3 + flutter build web 试跑确认 #18 状态）→ 整体 tag `v0.3.0-w6` push main。c5 是实质重构大头（预估 ~600-900 行 diff）,推到下次会话独立做。
+**下一步**：feat 分支待 merge main + tag `v0.3.0-w6` push origin（用户决策 merge 策略）。W6 之后候选见「下一步」段。
 
 ## 已完成
 
@@ -37,7 +37,7 @@
 ## 已知偏差 / 挂账事项
 
 2. **lib/ 目录结构**：CLAUDE.md 写 DDD，实际用 phase1_tasks 的 flat。Phase 5 整理
-3. **`riverpod_lint` 砍掉**：与 `isar_generator 3.x` analyzer 互斥，Phase 5 切 Isar 4.x 时再补
+3. **`riverpod_lint` 仍未引入**（W6 重评估）：analyzer 已升 ^9 解开 isar 链路上限,但 custom_lint 0.8.x 锁 analyzer ^7.5/^8 与 riverpod_generator 4.x 链路 ^9 互斥；等 custom_lint 升级支持 analyzer ^9 再补
 4. **IDS_REGISTRY.md 自报「143 个内容 ID」错误**：实际 238 个，等 DeepSeek 改
 6. **GDD §5.3/§5.6 公式系数 vs numbers.yaml**：GDD 字面 ×8 / ×5 是「口误」，代码以 yaml 平衡值（×1.0 / ×0.7）为准
 7. **numbers.yaml 节气列表混入「中秋」**：中秋是农历节日不是节气，GDD 没明确 24 节气，待定
@@ -46,8 +46,8 @@
 10. **yaml key 命名约定差异**：numbers.yaml snake_case，内容 yaml camelCase，按文件类型隔离不冲突
 12. **`LevelDiffModifier.diff3OrMore.attacker` 数据层 vs 公式层语义不同**：NumbersConfig 兜底为 diff2.attacker(=2.5)，公式层取 1.0，Phase 5 收尾改
 17. **phase1_tasks T12 §709 笔误**：差 2 守方 0.05 错（实际差 2 守方=0.3，差 3+ 才 0.05），「必败」语义仍成立
-18. **`flutter build web` 被 Isar 阻塞**：dart:ffi web 不支持，Phase 5 切 Isar 4.x 时一并恢复
-23. **widget test 不接真 Isar**：testWidgets FakeAsync 与 `Isar.findFirst` / writeTxn 异步 IO 不兼容；当前 widget 端在 `_persist` 加 `Isar.getInstance` guard 测试旁路，真落地走 service-level test。Phase 5 Riverpod 3.x + IsarProvider 注入时再统一
+~~18. flutter build web 被 Isar 阻塞~~ **W6 验证为伪挂账（2026-05-14）**：项目无 web platform target（GDD §2 Windows 单平台），isar_community 仍 native-only 不重要
+~~23. widget test 不接真 Isar~~ **架构层面已销账（2026-05-14 W6-S2）**：service 实例化 + nullable propagation 替代旧 widget _persist 的 Isar.getInstance guard。widget 端 `ref.read(xxxServiceProvider)` 返回 null 时短路。FakeAsync vs 真 Isar 的底层不兼容仍在,但不再污染生产代码
 ~~25. Phase2SeedService.seedP1 缺主修~~ **已销账（2026-05-13 T54）**：seedMasterDisciple 路径 3 师徒齐主修，主菜单点 P5 后可直接进主线战斗。P1 fixture 自身仍是无主修（保留体例），玩家从 P1 入口进战斗的旧路径未修复——若需修复请走 P5 入口
 ~~26. 闭关入口硬编码 characterId=1 / RealmTier.xueTu~~ **已销账（2026-05-13 T56）**：`MainMenu` 改 ConsumerWidget，`_SeclusionMenuButton` Riverpod `.when()` 异步读 `activeCharacterIdsProvider` 首位 + `characterByIdProvider(firstId)` 解析 realmTier；loading 时按钮 Opacity 0.4 disabled，error/空 fallback 到 `id=1/xueTu`（保留旧默认作为不可达兜底）
 28. **闭关 widget 端到端 test 缺失（P2 #3 后续）**：P2 #3 修复了 setup→active→result 导航链，但 SeclusionService 是 static 方法无法 mock，widget test 接真 Isar 阻塞（#23 同源），暂只能靠 Pen 视觉验收兜底。Phase 5 service 注入后补「开始闭关 → 收功 → 返回 list 刷新」端到端 widget test
@@ -58,7 +58,7 @@
 
 ## 下一步
 
-**Phase 5 W6 升级路 c5/c6/c7**（在 `feat/phase5-w6-isar-riverpod-major-upgrade` 上,c1-c4 已 commit `1e937df`）：c5 = 9 service 实例化 + provider 注入 + 4 处 widget guard 清理（预估 ~600-900 行 diff,解 #23）；c6 = 49 test 改 ProviderScope.overrides；c7 = 补 riverpod_lint 解 #3 + 试 flutter build web 确认 #18 状态 → tag `v0.3.0-w6` push main。**c5 推到下次会话独立做**（避免本会话超载,task list 已留状态）。
+**Phase 5 W6 待 merge main + tag** ：feat 分支 3 commits 已落,等用户拍板 merge 策略（fast-forward 保留 3 commits / squash 合一个）+ 打 tag `v0.3.0-w6` push origin。
 
 W6 之后候选：W7+ Phase 4 战斗结算扩展 / B 装备扩 30-50 / D 心法扩 20-30 / A 爬塔 UI（schema 已 ready）/ #30 闭关 3 维度（§12 #7 节气清单阻塞）/ C 奇遇 + E 武学领悟（§12 #6 机缘值规则阻塞）。
 
