@@ -34,7 +34,9 @@ enum ForgeResult {
 /// 接收 [ForgingConfig] + 可选 [EquipmentDef]（仅槽 3 specialSkill 校验时需要）。
 /// in-place 修改 [Equipment.forgingSlots]。
 class ForgingService {
-  ForgingService._();
+  const ForgingService({required this.isar});
+
+  final Isar isar;
 
   /// 当前可在 [slotIndex] 上开锋的类型列表。
   ///
@@ -127,10 +129,7 @@ class ForgingService {
 
   /// T32 #22b：将 [forge] 的 in-place 改写（forgingSlots 修改）落地到 Isar。
   /// 开锋无物料消耗（GDD §6.5），writeTxn 只需 `equipments.put(eq)`。
-  static Future<void> persistResult({
-    required Equipment eq,
-    required Isar isar,
-  }) async {
+  Future<void> persistResult({required Equipment eq}) async {
     await isar.writeTxn(() async {
       await isar.equipments.put(eq);
     });

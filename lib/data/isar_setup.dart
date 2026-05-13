@@ -20,7 +20,18 @@ import 'models/tower_progress.dart';
 ///
 /// 文件命名仍按 `wuxia_save_slot{slotId}.isar`，便于 Phase 5 扩展。
 class IsarSetup {
-  static late Isar instance;
+  static Isar? _instance;
+
+  /// 已初始化的 Isar 实例（生产路径用）。未 init 时抛 [StateError],
+  /// 强制调用方先跑 [init]。
+  static Isar get instance =>
+      _instance ??
+      (throw StateError('IsarSetup 未初始化,请先 await IsarSetup.init()'));
+
+  /// 探测式 getter（Phase 5 W6-S2 引入,供 [isarProvider] 走 nullable
+  /// propagation）：未 init 时返回 null,不抛错。生产路径走 [instance]。
+  static Isar? get instanceOrNull => _instance;
+
   static int currentSlotId = 1;
 
   /// 全部持久化 schema 清单（data_schema.md §7.1）。
@@ -56,7 +67,7 @@ class IsarSetup {
     assert(slotId >= 1 && slotId <= 3, 'slotId 必须是 1/2/3');
 
     final dir = directory ?? await getApplicationDocumentsDirectory();
-    instance = await Isar.open(
+    _instance = await Isar.open(
       _allSchemas,
       directory: dir.path,
       name: 'wuxia_save_slot$slotId',
@@ -69,7 +80,8 @@ class IsarSetup {
 
   /// 启动时确保 SaveData 单例存在；不存在则建一行默认值。
   static Future<SaveData> _ensureSaveData() async {
-    final existing = await instance.saveDatas.get(0);
+    final isar = instance;
+    final existing = await isar.saveDatas.get(0);
     if (existing != null) return existing;
 
     final now = DateTime.now();
@@ -80,12 +92,13 @@ class IsarSetup {
       ..createdAt = now
       ..lastSavedAt = now
       ..lastOnlineAt = now;
-    await instance.writeTxn(() => instance.saveDatas.put(fresh));
+    await isar.writeTxn(() => isar.saveDatas.put(fresh));
     return fresh;
   }
 
   static Future<void> close() async {
-    await instance.close();
+    await _instance?.close();
+    _instance = null;
   }
 
   // TODO Phase 5: switchSlot(int newSlotId) — 切换存档槽位

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../data/isar_setup.dart';
 import '../../services/phase2_seed_service.dart';
 import '../character_panel/character_panel_screen.dart';
 import '../inventory/inventory_screen.dart';
@@ -75,7 +76,7 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                   label: UiStrings.scenarioP1,
                   hint: UiStrings.hintP1,
                   onTap: () => _seedAndPush(
-                    Phase2SeedService.seedP1,
+                    () => Phase2SeedService(isar: IsarSetup.instance).seedP1(),
                     () => const InventoryScreen(),
                   ),
                 ),
@@ -84,7 +85,7 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                   label: UiStrings.scenarioP2,
                   hint: UiStrings.hintP2,
                   onTap: () => _seedAndPush(
-                    Phase2SeedService.seedP2,
+                    () => Phase2SeedService(isar: IsarSetup.instance).seedP2(),
                     () => const InventoryScreen(),
                   ),
                 ),
@@ -93,7 +94,7 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                   label: UiStrings.scenarioP3,
                   hint: UiStrings.hintP3,
                   onTap: () => _seedAndPush(
-                    Phase2SeedService.seedP3,
+                    () => Phase2SeedService(isar: IsarSetup.instance).seedP3(),
                     () => const TechniquePanelScreen(
                       characterId: _defaultCharacterId,
                     ),
@@ -104,7 +105,7 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                   label: UiStrings.scenarioP4,
                   hint: UiStrings.hintP4,
                   onTap: () => _seedAndPush(
-                    Phase2SeedService.seedP4,
+                    () => Phase2SeedService(isar: IsarSetup.instance).seedP4(),
                     () => const CharacterPanelScreen(
                       characterId: _defaultCharacterId,
                     ),
@@ -115,7 +116,7 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                   label: UiStrings.scenarioP5,
                   hint: UiStrings.hintP5,
                   onTap: () => _seedAndPush(
-                    Phase2SeedService.seedMasterDisciple,
+                    () => Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple(),
                     () => const CharacterPanelScreen(
                       characterId: _defaultCharacterId,
                     ),

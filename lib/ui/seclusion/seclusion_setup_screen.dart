@@ -49,7 +49,7 @@ class _SeclusionSetupScreenState extends State<SeclusionSetupScreen> {
     setState(() => _isStarting = true);
 
     try {
-      final session = await SeclusionService.startRetreat(
+      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
         mapType: widget.mapDef.mapType,
         durationHours: _selectedHours,
         saveDataId: IsarSetup.currentSlotId,

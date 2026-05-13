@@ -105,7 +105,7 @@ void main() {
   group('startRetreat', () {
     test('正常创建 active session，character.currentRetreatSessionId 同步', () async {
       final now = DateTime(2026, 5, 11, 10, 0);
-      final session = await SeclusionService.startRetreat(
+      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
         mapType: RetreatMapType.shanLin,
         durationHours: 4,
         saveDataId: kSaveDataId,
@@ -127,7 +127,7 @@ void main() {
 
     test('境界不足抛 StateError', () async {
       await expectLater(
-        () => SeclusionService.startRetreat(
+        () => SeclusionService(isar: IsarSetup.instance).startRetreat(
           mapType: RetreatMapType.duanYaJueBi,
           durationHours: 1,
           saveDataId: kSaveDataId,
@@ -142,7 +142,7 @@ void main() {
 
     test('旧 active session 被 abandon，新 session 变 active', () async {
       final t1 = DateTime(2026, 5, 11, 10, 0);
-      final s1 = await SeclusionService.startRetreat(
+      final s1 = await SeclusionService(isar: IsarSetup.instance).startRetreat(
         mapType: RetreatMapType.shanLin,
         durationHours: 1,
         saveDataId: kSaveDataId,
@@ -153,7 +153,7 @@ void main() {
       );
 
       final t2 = DateTime(2026, 5, 11, 11, 0);
-      final s2 = await SeclusionService.startRetreat(
+      final s2 = await SeclusionService(isar: IsarSetup.instance).startRetreat(
         mapType: RetreatMapType.shanLin,
         durationHours: 4,
         saveDataId: kSaveDataId,
@@ -181,11 +181,11 @@ void main() {
 
   group('getActiveSession', () {
     test('无活跃 session 时返回 null', () async {
-      expect(await SeclusionService.getActiveSession(kSaveDataId), isNull);
+      expect(await SeclusionService(isar: IsarSetup.instance).getActiveSession(kSaveDataId), isNull);
     });
 
     test('startRetreat 后可取回 active session', () async {
-      await SeclusionService.startRetreat(
+      await SeclusionService(isar: IsarSetup.instance).startRetreat(
         mapType: RetreatMapType.shanLin,
         durationHours: 1,
         saveDataId: kSaveDataId,
@@ -194,7 +194,7 @@ void main() {
         maps: GameRepository.instance.seclusionMaps,
         now: DateTime.now(),
       );
-      final active = await SeclusionService.getActiveSession(kSaveDataId);
+      final active = await SeclusionService(isar: IsarSetup.instance).getActiveSession(kSaveDataId);
       expect(active, isNotNull);
       expect(active!.status, RetreatStatus.active);
     });
@@ -300,7 +300,7 @@ void main() {
   group('completeRetreat', () {
     test('收功后 session.status=completed + actualRewards 有 mojianshi', () async {
       final start = DateTime(2026, 5, 11, 10, 0);
-      final session = await SeclusionService.startRetreat(
+      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
         mapType: RetreatMapType.shanLin,
         durationHours: 4,
         saveDataId: kSaveDataId,
@@ -311,7 +311,7 @@ void main() {
       );
 
       final completeAt = start.add(const Duration(hours: 4));
-      final out = await SeclusionService.completeRetreat(
+      final out = await SeclusionService(isar: IsarSetup.instance).completeRetreat(
         session: session,
         characterId: kCharId,
         charRealmTier: RealmTier.xueTu,
@@ -346,7 +346,7 @@ void main() {
       );
 
       final start = DateTime(2026, 5, 12, 10, 0);
-      final session = await SeclusionService.startRetreat(
+      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
         mapType: RetreatMapType.shanLin,
         durationHours: 4,
         saveDataId: kSaveDataId,
@@ -355,7 +355,7 @@ void main() {
         maps: GameRepository.instance.seclusionMaps,
         now: start,
       );
-      final out = await SeclusionService.completeRetreat(
+      final out = await SeclusionService(isar: IsarSetup.instance).completeRetreat(
         session: session,
         characterId: kCharId,
         charRealmTier: RealmTier.xueTu,
@@ -376,7 +376,7 @@ void main() {
 
     test('收功后 InventoryItem.moJianShi 数量增加', () async {
       final start = DateTime(2026, 5, 11, 10, 0);
-      final session = await SeclusionService.startRetreat(
+      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
         mapType: RetreatMapType.shanLin,
         durationHours: 4,
         saveDataId: kSaveDataId,
@@ -385,7 +385,7 @@ void main() {
         maps: GameRepository.instance.seclusionMaps,
         now: start,
       );
-      await SeclusionService.completeRetreat(
+      await SeclusionService(isar: IsarSetup.instance).completeRetreat(
         session: session,
         characterId: kCharId,
         charRealmTier: RealmTier.xueTu,
@@ -409,7 +409,7 @@ void main() {
 
   group('abandonRetreat', () {
     test('abandon 后 status=abandoned + 不发奖 + character id 清零', () async {
-      final session = await SeclusionService.startRetreat(
+      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
         mapType: RetreatMapType.shanLin,
         durationHours: 4,
         saveDataId: kSaveDataId,
@@ -418,7 +418,7 @@ void main() {
         maps: GameRepository.instance.seclusionMaps,
         now: DateTime(2026, 5, 11, 10, 0),
       );
-      await SeclusionService.abandonRetreat(
+      await SeclusionService(isar: IsarSetup.instance).abandonRetreat(
         session: session,
         characterId: kCharId,
         now: DateTime(2026, 5, 11, 11, 0),
@@ -446,7 +446,7 @@ void main() {
 
   group('saveDataId 隔离', () {
     test('saveDataId=2 的 session 不干扰 saveDataId=1', () async {
-      await SeclusionService.startRetreat(
+      await SeclusionService(isar: IsarSetup.instance).startRetreat(
         mapType: RetreatMapType.shanLin,
         durationHours: 1,
         saveDataId: 2,
@@ -455,7 +455,7 @@ void main() {
         maps: GameRepository.instance.seclusionMaps,
         now: DateTime.now(),
       );
-      final active1 = await SeclusionService.getActiveSession(1);
+      final active1 = await SeclusionService(isar: IsarSetup.instance).getActiveSession(1);
       expect(active1, isNull, reason: 'saveDataId=1 应无 active session');
     });
   });

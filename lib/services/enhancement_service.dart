@@ -64,14 +64,23 @@ enum EnhanceOutcome {
 ///
 /// 强化上限 = `min(49, characterAbsoluteLevel)`（GDD §6.2，与持有者境界
 /// 总层数挂钩）。`absoluteLevel` 由 [RealmUtils.absoluteLevelOf] 计算。
+///
+/// Phase 5 W6-S2 改实例化：构造函数接 [Isar],原 static API 改实例方法。
+/// 通过 `ref.read(enhancementServiceProvider)` 注入（nullable,widget test
+/// 未 init Isar 时为 null,调用方短路）。
 class EnhancementService {
-  EnhancementService._();
+  const EnhancementService({required this.isar});
+
+  final Isar isar;
 
   /// 单次强化尝试。结果写入 [eq]（成功时 enhanceLevel++）+ 返回详细 [EnhanceResult]
   /// 供 UI 展示与调用方扣材料。
   ///
   /// 调用方根据 [EnhanceResult] 自行扣 [currentMojianshi] / 加 [crystalsGained]
   /// 到玩家库存（本服务**不直接修改**库存数量，保持纯函数 + Isar 写入分离）。
+  ///
+  /// 保持 static：纯函数无 Isar 依赖,widget test 在未 init Isar 时仍可调
+  /// （`_persist` 才走 instance 路径 + nullable 短路）。
   static EnhanceResult tryEnhance({
     required Equipment eq,
     required int characterAbsoluteLevel,
@@ -137,6 +146,8 @@ class EnhancementService {
   /// [EnhanceOutcome.noGuaranteeAvailable]。
   ///
   /// 成功必扣 [CrystalGuaranteeBracket.crystalCost] 颗结晶；调用方自行扣库存。
+  ///
+  /// 同 [tryEnhance],保持 static：纯函数无 Isar 依赖。
   static EnhanceResult useCrystalToGuarantee({
     required Equipment eq,
     required int characterAbsoluteLevel,
@@ -189,10 +200,9 @@ class EnhancementService {
   ///
   /// 材料行不存在直接抛 [StateError]（fail-fast，种子阶段必创）。Widget 层
   /// 调用此方法后自行 invalidate riverpod provider。
-  static Future<void> persistResult({
+  Future<void> persistResult({
     required Equipment eq,
     required EnhanceResult result,
-    required Isar isar,
   }) async {
     await isar.writeTxn(() async {
       if (result.outcome == EnhanceOutcome.success) {

@@ -68,8 +68,11 @@ enum DispelOutcome {
 /// 自行触发（与 EnhancementService / TechniqueLearningService 一致：服务返回结果，
 /// 副作用之 Isar 写入 / 事件流归 caller）。
 class DispelService {
-  DispelService._();
+  const DispelService({required this.isar});
 
+  final Isar isar;
+
+  /// 纯函数：dispel 不用 Isar,保持 static（方便 caller 不需 service instance）。
   static DispelResult dispel({
     required Character ch,
     required Technique mainTech,
@@ -133,11 +136,10 @@ class DispelService {
   /// T32 #22b：将 [dispel] 的 in-place 改写（ch.internalForce / mainTechniqueId /
   /// assistTechniqueIds、mainTech.disperse、newMainTech.role=main）落地 Isar。
   /// writeTxn 内 putAll 3 个对象。无物料消耗（散功代价是数值代价，已写进对象内）。
-  static Future<void> persistResult({
+  Future<void> persistResult({
     required Character ch,
     required Technique mainTech,
     required Technique newMainTech,
-    required Isar isar,
   }) async {
     await isar.writeTxn(() async {
       await isar.characters.put(ch);

@@ -24,13 +24,14 @@ typedef TowerClearResult = ({bool isFirstClear, int highestAfter});
 ///     已结束才报错破坏 UX。totalAttempts++ 永远执行。
 ///   - recordDefeat 不影响 highestClearedFloor，只增统计。
 class TowerProgressService {
-  TowerProgressService._();
+  const TowerProgressService({required this.isar});
+
+  final Isar isar;
 
   /// 拿不到对应 saveDataId 的行就建一行（默认 highestClearedFloor=0）。
-  static Future<TowerProgress> getOrCreate({
+  Future<TowerProgress> getOrCreate({
     required int saveDataId,
   }) async {
-    final isar = IsarSetup.instance;
     final existing = await isar.towerProgress
         .filter()
         .saveDataIdEqualTo(saveDataId)
@@ -95,11 +96,10 @@ class TowerProgressService {
   ///
   /// 调用方应根据 `isFirstClear` 决定是否走 [DropService.rollTowerRewards]
   /// 发奖（[CLAUDE.md §5.1] 反主流：重打不发奖防刷）。
-  static Future<TowerClearResult> recordClear({
+  Future<TowerClearResult> recordClear({
     required int floorIndex,
     required DateTime now,
   }) async {
-    final isar = IsarSetup.instance;
     late TowerClearResult result;
     await isar.writeTxn(() async {
       final progress = await isar.towerProgress
@@ -129,10 +129,9 @@ class TowerProgressService {
   }
 
   /// 战败：只增 totalAttempts + totalDefeats，不影响 highestClearedFloor。
-  static Future<void> recordDefeat({
+  Future<void> recordDefeat({
     required DateTime now,
   }) async {
-    final isar = IsarSetup.instance;
     await isar.writeTxn(() async {
       final progress = await isar.towerProgress
           .filter()

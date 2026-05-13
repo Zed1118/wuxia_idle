@@ -12,7 +12,7 @@ part 'mainline_providers.g.dart';
 /// recordVictory 后调用 `ref.invalidate(mainlineProgressProvider)` 触发刷新。
 @riverpod
 Future<MainlineProgress> mainlineProgress(Ref ref) async {
-  return MainlineProgressService.getOrCreate(
+  return MainlineProgressService(isar: IsarSetup.instance).getOrCreate(
     saveDataId: IsarSetup.currentSlotId,
   );
 }

@@ -3,23 +3,99 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../data/game_repository.dart';
 import '../data/isar_setup.dart';
+import '../services/dispel_service.dart';
+import '../services/enhancement_service.dart';
+import '../services/forging_service.dart';
+import '../services/mainline_progress_service.dart';
+import '../services/phase2_seed_service.dart';
+import '../services/seclusion_service.dart';
+import '../services/stage_battle_setup.dart';
+import '../services/tower_progress_service.dart';
 
 part 'isar_provider.g.dart';
 
-/// Isar 实例 provider（Phase 5 W6-S2 引入）。
+/// Isar 实例 provider（Phase 5 W6-S2 引入，nullable propagation 主干）。
 ///
-/// 生产路径：`main()` 中 [IsarSetup.init] 跑完后即可 `ref.read(isarProvider)` 读取。
-/// 测试路径：`ProviderScope(overrides: [isarProvider.overrideWithValue(testIsar)])`
-/// 注入真 Isar（tempDir）或 mock，替代旧的 `Isar.getInstance(...)` guard。
+/// 生产路径：`main()` 中 [IsarSetup.init] 跑完后非 null,直接读用。
+/// 测试路径：widget test 不 init Isar 时返回 null,由 service provider
+/// 进一步传递 nullable —— 替代旧的 widget 端 `Isar.getInstance` guard。
 ///
-/// 与 [gameRepositoryProvider] 一起承担"静态单例 → DI"的过渡，逐步解
-/// 挂账 #23（widget test 不接真 Isar 旁路）。
+/// 实现：走 [IsarSetup.instanceOrNull]（探测式 getter,未 init 不抛）。
 @riverpod
-Isar isar(Ref ref) => IsarSetup.instance;
+Isar? isar(Ref ref) => IsarSetup.instanceOrNull;
 
-/// GameRepository 单例 provider（Phase 5 W6-S2 引入）。
+/// GameRepository 单例 provider。生产代码 main() 中 [GameRepository.loadAllDefs]
+/// 完成后即可读。widget test setUpAll 通常预先 load。
 ///
-/// 生产路径：`main()` 中 [GameRepository.loadAllDefs] 完成后即可读。
-/// 测试路径：`gameRepositoryProvider.overrideWithValue(testRepo)` 注入测试用 repo。
+/// 不 nullable：GameRepository 是项目启动必备,即使测试也通过 setUpAll
+/// 加载,不存在"不 load 跑测试"的合理场景。
 @riverpod
 GameRepository gameRepository(Ref ref) => GameRepository.instance;
+
+// =========================================================================
+// Service providers（Phase 5 W6-S2 引入,nullable propagation 链）
+//
+// 每个 service 持有 Isar 实例,通过 isarProvider 派生。isar 为 null 时
+// service 也为 null —— widget 端短路返回,替代旧的散点 Isar.getInstance guard。
+// =========================================================================
+
+/// [EnhancementService] provider。Isar 未 init 时为 null,widget 端 `_persist`
+/// 用 `service == null` 短路（替代旧的 `Isar.getInstance(_isarInstanceName)` guard）。
+@riverpod
+EnhancementService? enhancementService(Ref ref) {
+  final isarInstance = ref.watch(isarProvider);
+  return isarInstance == null ? null : EnhancementService(isar: isarInstance);
+}
+
+/// [ForgingService] provider。同 [enhancementServiceProvider] 模式。
+@riverpod
+ForgingService? forgingService(Ref ref) {
+  final isarInstance = ref.watch(isarProvider);
+  return isarInstance == null ? null : ForgingService(isar: isarInstance);
+}
+
+/// [DispelService] provider。同上模式。
+@riverpod
+DispelService? dispelService(Ref ref) {
+  final isarInstance = ref.watch(isarProvider);
+  return isarInstance == null ? null : DispelService(isar: isarInstance);
+}
+
+/// [Phase2SeedService] provider。
+@riverpod
+Phase2SeedService? phase2SeedService(Ref ref) {
+  final isarInstance = ref.watch(isarProvider);
+  return isarInstance == null ? null : Phase2SeedService(isar: isarInstance);
+}
+
+/// [MainlineProgressService] provider。
+@riverpod
+MainlineProgressService? mainlineProgressService(Ref ref) {
+  final isarInstance = ref.watch(isarProvider);
+  return isarInstance == null
+      ? null
+      : MainlineProgressService(isar: isarInstance);
+}
+
+/// [TowerProgressService] provider。
+@riverpod
+TowerProgressService? towerProgressService(Ref ref) {
+  final isarInstance = ref.watch(isarProvider);
+  return isarInstance == null
+      ? null
+      : TowerProgressService(isar: isarInstance);
+}
+
+/// [SeclusionService] provider。
+@riverpod
+SeclusionService? seclusionService(Ref ref) {
+  final isarInstance = ref.watch(isarProvider);
+  return isarInstance == null ? null : SeclusionService(isar: isarInstance);
+}
+
+/// [StageBattleSetup] provider。
+@riverpod
+StageBattleSetup? stageBattleSetup(Ref ref) {
+  final isarInstance = ref.watch(isarProvider);
+  return isarInstance == null ? null : StageBattleSetup(isar: isarInstance);
+}

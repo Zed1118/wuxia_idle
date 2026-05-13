@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar_community/isar.dart';
 
 import '../../combat/enum_localizations.dart';
-import '../../data/isar_setup.dart';
 import '../../data/models/character.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/technique.dart';
 import '../../providers/battle_providers.dart';
 import '../../providers/character_providers.dart';
+import '../../providers/isar_provider.dart';
 import '../../services/dispel_service.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
 import 'dispel_dialog.dart';
-
-/// T32 #22b：Isar 实例名（与 [IsarSetup.init] 默认 slot=1 同源）。widget test
-/// 未 init Isar 时 _onSetAsMain 跳过 persistResult；生产路径永远命中。
-const _isarInstanceName = 'wuxia_save_slot1';
 
 /// 心法面板（phase2_tasks.md T31 §468-490 + T32 #22b writeTxn 补漏）。
 ///
@@ -264,13 +259,14 @@ class _TechniqueTile extends ConsumerWidget {
     );
     if (!result.success) return;
 
-    // T32 #22b：落地 Isar putAll ch/oldMain/newMain。测试旁路：未 init Isar 时跳过。
-    if (Isar.getInstance(_isarInstanceName) != null) {
-      await DispelService.persistResult(
+    // T32 #22b（Phase 5 W6-S2 重构）：落地 Isar putAll ch/oldMain/newMain。
+    // 测试旁路：未 init Isar 时 service 为 null,短路。
+    final dispelSvc = ref.read(dispelServiceProvider);
+    if (dispelSvc != null) {
+      await dispelSvc.persistResult(
         ch: character,
         mainTech: mainTech,
         newMainTech: technique,
-        isar: IsarSetup.instance,
       );
     }
 

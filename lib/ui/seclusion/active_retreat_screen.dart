@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/defs/seclusion_map_def.dart';
 import '../../data/game_repository.dart';
+import '../../data/isar_setup.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/retreat_session.dart';
 import '../../services/seclusion_service.dart';
@@ -14,7 +15,7 @@ import 'retreat_result_screen.dart';
 /// 显示地图名、开始/结束时间、进度条（elapsed/durationHours）。
 /// 不做实时 Timer；打开时计算一次，无自动刷新（Demo 足够）。
 ///
-/// 「提前收功」/「收功」按钮 → confirm dialog → SeclusionService.completeRetreat
+/// 「提前收功」/「收功」按钮 → confirm dialog → SeclusionService(isar: IsarSetup.instance).completeRetreat
 /// → push RetreatResultScreen。
 class ActiveRetreatScreen extends StatefulWidget {
   final RetreatSession session;
@@ -87,7 +88,7 @@ class _ActiveRetreatScreenState extends State<ActiveRetreatScreen> {
     setState(() => _isCollecting = true);
 
     try {
-      final outputs = await SeclusionService.completeRetreat(
+      final outputs = await SeclusionService(isar: IsarSetup.instance).completeRetreat(
         session: widget.session,
         characterId: widget.characterId,
         charRealmTier: widget.charRealmTier,

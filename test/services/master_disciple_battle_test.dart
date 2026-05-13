@@ -14,8 +14,8 @@ import 'package:wuxia_idle/services/stage_battle_setup.dart';
 
 /// Phase 3 Week 4 T57 师徒系统 3v3 默认入阵 + 战斗集成测试。
 ///
-/// 目的：复核 [Phase2SeedService.seedMasterDisciple] 落地后，
-/// [StageBattleSetup.buildTeams] → [BattleState.initial] → [BattleEngine.runToEnd]
+/// 目的：复核 [Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple] 落地后，
+/// [StageBattleSetup(isar: IsarSetup.instance).buildTeams] → [BattleState.initial] → [BattleEngine.runToEnd]
 /// 全链路能正确装配 3 师徒（境界/装备/心法/师承遗物 buff），战斗可推进到 victory/defeat
 /// 终态而不挂起或抛异常。
 ///
@@ -52,10 +52,10 @@ void main() {
 
   test('P5 seed → buildTeams(stage_01_01) → 左队 3 师徒装配完整',
       () async {
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final stage = GameRepository.instance.getStage('stage_01_01');
 
-    final (left, right) = await StageBattleSetup.buildTeams(stage);
+    final (left, right) = await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
 
     expect(left.length, 3, reason: '3 师徒（祖师 + 大弟子 + 二弟子）全部入阵');
     expect(right.length, 3, reason: 'stage_01_01 三敌');
@@ -75,10 +75,10 @@ void main() {
 
   test('P5 seed → 左队境界对齐 masters.yaml（祖师 yiLiu / 大弟子 erLiu / 二弟子 sanLiu）',
       () async {
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final stage = GameRepository.instance.getStage('stage_01_01');
 
-    final (left, _) = await StageBattleSetup.buildTeams(stage);
+    final (left, _) = await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
 
     expect(left[0].realmTier, RealmTier.yiLiu, reason: '祖师一流（方案 A）');
     expect(left[1].realmTier, RealmTier.erLiu, reason: '大弟子二流');
@@ -87,10 +87,10 @@ void main() {
 
   test('P5 seed → 3 师徒装备攻击 + 主修招式 + 内力上限均正确装配',
       () async {
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final stage = GameRepository.instance.getStage('stage_01_01');
 
-    final (left, _) = await StageBattleSetup.buildTeams(stage);
+    final (left, _) = await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
 
     for (final bc in left) {
       expect(bc.totalEquipmentAttack, greaterThan(0),
@@ -104,10 +104,10 @@ void main() {
 
   test('P5 seed → 祖师 maxInternalForce 含师承遗物 +10% buff（T55 战斗路径补齐验证）',
       () async {
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final stage = GameRepository.instance.getStage('stage_01_01');
 
-    final (left, _) = await StageBattleSetup.buildTeams(stage);
+    final (left, _) = await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
     final founder = left[0];
 
     // 祖师持久化字段（character.internalForceMax）是 base，BattleCharacter 应
@@ -124,10 +124,10 @@ void main() {
 
   test('P5 victory：3 师徒 vs stage_01_01 流民 → runToEnd result=leftWin',
       () async {
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final stage = GameRepository.instance.getStage('stage_01_01');
 
-    final (left, right) = await StageBattleSetup.buildTeams(stage);
+    final (left, right) = await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
     final s0 = BattleState.initial(leftTeam: left, rightTeam: right);
 
     final s = BattleEngine.runToEnd(
@@ -147,10 +147,10 @@ void main() {
 
   test('P5 装配链产物：人造 left 全员阵亡 → runToEnd 不抛、isFinished、非 leftWin',
       () async {
-    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final stage = GameRepository.instance.getStage('stage_01_01');
 
-    final (originalLeft, right) = await StageBattleSetup.buildTeams(stage);
+    final (originalLeft, right) = await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
     // 装配链产物按 buildTeams 全量生成，仅 copyWith 把 left 三人翻死，验证
     // BattleEngine 跑到 isFinished 终态（draw 或 rightWin 皆可），不挂起不抛。
     // 注：BattleEngine 不主动检查 initial state，需要某 actor 行动后才判胜负；
