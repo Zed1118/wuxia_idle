@@ -11,7 +11,7 @@ part 'mainline_providers.g.dart';
 /// Phase 3 仅一个存档，saveDataId = [IsarSetup.currentSlotId]（默认 1）。
 /// recordVictory 后调用 `ref.invalidate(mainlineProgressProvider)` 触发刷新。
 @riverpod
-Future<MainlineProgress> mainlineProgress(MainlineProgressRef ref) async {
+Future<MainlineProgress> mainlineProgress(Ref ref) async {
   return MainlineProgressService.getOrCreate(
     saveDataId: IsarSetup.currentSlotId,
   );
@@ -22,7 +22,7 @@ Future<MainlineProgress> mainlineProgress(MainlineProgressRef ref) async {
 /// 依赖 [mainlineProgressProvider]，前者刷新自动级联。
 @riverpod
 Future<List<StageEntry>> chapterStages(
-  ChapterStagesRef ref,
+  Ref ref,
   int chapterIndex,
 ) async {
   final progress = await ref.watch(mainlineProgressProvider.future);
@@ -35,7 +35,7 @@ Future<List<StageEntry>> chapterStages(
 /// 指定章节是否全通（chapter list 上 ✓ 标识用）。
 @riverpod
 Future<bool> chapterCompleted(
-  ChapterCompletedRef ref,
+  Ref ref,
   int chapterIndex,
 ) async {
   final progress = await ref.watch(mainlineProgressProvider.future);

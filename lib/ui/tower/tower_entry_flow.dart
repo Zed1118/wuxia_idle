@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../data/defs/tower_floor_def.dart';
 import '../../data/game_repository.dart';
@@ -245,7 +245,7 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
         final (left, right) =
             await StageBattleSetup.buildTeamsForTower(widget.floor);
         if (!mounted) return;
-        ref.read(battleNotifierProvider.notifier).startBattle(left, right);
+        ref.read(battleProvider.notifier).startBattle(left, right);
       } catch (e) {
         if (!mounted) return;
         setState(() => _setupError = e.toString());

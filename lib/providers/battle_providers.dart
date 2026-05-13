@@ -20,14 +20,14 @@ part 'battle_providers.g.dart';
 /// 启动时 `GameRepository.loadAllDefs()` 完成后即可读。测试中可通过
 /// `numbersConfigProvider.overrideWithValue(testNumbers)` 注入。
 @riverpod
-NumbersConfig numbersConfig(NumbersConfigRef ref) =>
+NumbersConfig numbersConfig(Ref ref) =>
     GameRepository.instance.numbers;
 
 /// 装备掉落服务（T27 DropService）的 provider。
 ///
 /// 走 [GameRepository] 单例查 EquipmentDef；测试中可 override 注入 mock。
 @riverpod
-DropService dropService(DropServiceRef ref) => DropService(
+DropService dropService(Ref ref) => DropService(
       equipmentDefLookup: GameRepository.instance.getEquipment,
     );
 
@@ -140,15 +140,15 @@ class BattleNotifier extends _$BattleNotifier {
 /// 再细化到单角色 currentHp（spec §16.1 注：「每个角色一个 currentHp 单独
 /// provider 也不过分」）。
 @riverpod
-List<BattleCharacter> leftTeam(LeftTeamRef ref) =>
-    ref.watch(battleNotifierProvider).leftTeam;
+List<BattleCharacter> leftTeam(Ref ref) =>
+    ref.watch(battleProvider).leftTeam;
 
 @riverpod
-List<BattleCharacter> rightTeam(RightTeamRef ref) =>
-    ref.watch(battleNotifierProvider).rightTeam;
+List<BattleCharacter> rightTeam(Ref ref) =>
+    ref.watch(battleProvider).rightTeam;
 
 /// 派生 provider：战斗结果。`null` = 进行中；非空 = 已结束。
 /// UI 用 `ref.listen` 监听非空翻转触发结算 overlay。
 @riverpod
-BattleResult? battleResult(BattleResultRef ref) =>
-    ref.watch(battleNotifierProvider).result;
+BattleResult? battleResult(Ref ref) =>
+    ref.watch(battleProvider).result;

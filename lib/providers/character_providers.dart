@@ -14,7 +14,7 @@ part 'character_providers.g.dart';
 /// `characterByIdProvider(id).overrideWith((ref) async => fixture)` 注入，
 /// 不打开真实 Isar。返回 null 表示未找到，由 UI 兜底（"角色不存在"）。
 @riverpod
-Future<Character?> characterById(CharacterByIdRef ref, int id) async {
+Future<Character?> characterById(Ref ref, int id) async {
   return IsarSetup.instance.characters.get(id);
 }
 
@@ -23,7 +23,7 @@ Future<Character?> characterById(CharacterByIdRef ref, int id) async {
 /// `Character.equippedWeaponId / equippedArmorId / equippedAccessoryId`
 /// 可空，UI 调用方需先判空再 watch。
 @riverpod
-Future<Equipment?> equipmentById(EquipmentByIdRef ref, int id) async {
+Future<Equipment?> equipmentById(Ref ref, int id) async {
   return IsarSetup.instance.equipments.get(id);
 }
 
@@ -31,7 +31,7 @@ Future<Equipment?> equipmentById(EquipmentByIdRef ref, int id) async {
 ///
 /// 用于查 `Character.mainTechniqueId` 与 `assistTechniqueIds`。
 @riverpod
-Future<Technique?> techniqueById(TechniqueByIdRef ref, int id) async {
+Future<Technique?> techniqueById(Ref ref, int id) async {
   return IsarSetup.instance.techniques.get(id);
 }
 
@@ -40,7 +40,7 @@ Future<Technique?> techniqueById(TechniqueByIdRef ref, int id) async {
 /// 从 [SaveData.activeCharacterIds] 读取，character_panel Tab 切换 + main_menu
 /// 闭关入口角色定位的单一信源。空列表表示尚未 seed（兜底由 UI 处理）。
 @riverpod
-Future<List<int>> activeCharacterIds(ActiveCharacterIdsRef ref) async {
+Future<List<int>> activeCharacterIds(Ref ref) async {
   final save = await IsarSetup.instance.saveDatas.get(0);
   return List<int>.from(save?.activeCharacterIds ?? const []);
 }
@@ -52,7 +52,7 @@ Future<List<int>> activeCharacterIds(ActiveCharacterIdsRef ref) async {
 /// 任一 id 在 Isar 缺失（返回 null）会被丢掉，不抛错——和角色面板兜底一致。
 @riverpod
 Future<List<Technique>> characterAllTechniques(
-  CharacterAllTechniquesRef ref,
+  Ref ref,
   int characterId,
 ) async {
   final ch = await ref.watch(characterByIdProvider(characterId).future);

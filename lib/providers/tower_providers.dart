@@ -12,7 +12,7 @@ part 'tower_providers.g.dart';
 /// recordClear / recordDefeat 后调用 `ref.invalidate(towerProgressProvider)`
 /// 触发刷新，[towerFloorListProvider] 自动级联。
 @riverpod
-Future<TowerProgress> towerProgress(TowerProgressRef ref) async {
+Future<TowerProgress> towerProgress(Ref ref) async {
   return TowerProgressService.getOrCreate(
     saveDataId: IsarSetup.currentSlotId,
   );
@@ -22,7 +22,7 @@ Future<TowerProgress> towerProgress(TowerProgressRef ref) async {
 ///
 /// 依赖 [towerProgressProvider]，进度刷新后自动级联。
 @riverpod
-Future<List<TowerFloorEntry>> towerFloorList(TowerFloorListRef ref) async {
+Future<List<TowerFloorEntry>> towerFloorList(Ref ref) async {
   final progress = await ref.watch(towerProgressProvider.future);
   return TowerProgressService.floorList(
     progress: progress,

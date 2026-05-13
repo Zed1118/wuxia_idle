@@ -141,7 +141,7 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
       try {
         final (left, right) = await StageBattleSetup.buildTeams(widget.stage);
         if (!mounted) return;
-        ref.read(battleNotifierProvider.notifier).startBattle(left, right);
+        ref.read(battleProvider.notifier).startBattle(left, right);
       } catch (e) {
         if (!mounted) return;
         setState(() => _setupError = e.toString());

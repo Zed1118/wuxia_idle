@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../data/defs/equipment_def.dart';
 import '../data/models/enums.dart';

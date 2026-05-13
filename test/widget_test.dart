@@ -120,7 +120,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          battleNotifierProvider.overrideWith(() {
+          battleProvider.overrideWith(() {
             notifier = _TestBattleNotifier(init);
             return notifier;
           }),

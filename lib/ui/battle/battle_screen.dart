@@ -28,10 +28,10 @@ class _PopupEntry {
 /// 3v3 战斗主屏（phase1_tasks T14 静态布局 + T15 动画/飘字 + T16 Riverpod 串接）。
 ///
 /// **T16 起切换到 [ConsumerStatefulWidget]**：状态来源从外部 `state` 参数改为
-/// [battleNotifierProvider]。Timer 不再播放预算 actionLog，而是驱动
+/// [battleProvider]。Timer 不再播放预算 actionLog，而是驱动
 /// [BattleNotifier.advance]，引擎实时 tick 产生新 action 后由 `ref.listen`
 /// 触发动画。结构：
-/// - `ref.watch(battleNotifierProvider)` 提供子组件渲染数据
+/// - `ref.watch(battleProvider)` 提供子组件渲染数据
 /// - `ref.listen` 三类边沿：team 从空 → 非空启动 Timer / actionLog 增长触发
 ///   动画 + 解除大招置灰 / result 翻转弹结算 dialog
 ///
@@ -126,7 +126,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         : widget.animConfig.actionIntervalMs;
     _playTimer = Timer.periodic(Duration(milliseconds: interval), (_) {
       if (!mounted) return;
-      ref.read(battleNotifierProvider.notifier).advance();
+      ref.read(battleProvider.notifier).advance();
     });
   }
 
@@ -189,7 +189,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // ─── 大招 ────────────────────────────────────────────────────────────────
 
   void _onUltimatePressed(int slotIndex) {
-    final s = ref.read(battleNotifierProvider);
+    final s = ref.read(battleProvider);
     if (slotIndex >= s.leftTeam.length) return;
     final c = s.leftTeam[slotIndex];
     final ultimate = _findUltimateOf(c);
@@ -197,7 +197,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     if (_disabledUltimateChars.contains(c.characterId)) return;
 
     ref
-        .read(battleNotifierProvider.notifier)
+        .read(battleProvider.notifier)
         .requestUltimate(c.characterId, ultimate!);
     setState(() => _disabledUltimateChars.add(c.characterId));
   }
@@ -288,9 +288,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(battleNotifierProvider);
+    final state = ref.watch(battleProvider);
 
-    ref.listen<BattleState>(battleNotifierProvider, (prev, next) {
+    ref.listen<BattleState>(battleProvider, (prev, next) {
       // 1. 启动 Timer：team 从空 → 非空且未结束
       final wasEmpty = prev == null || prev.leftTeam.isEmpty;
       if (wasEmpty && next.leftTeam.isNotEmpty && !next.isFinished) {
