@@ -899,6 +899,78 @@ void main() {
       );
     });
 
+    test('Phase 4 W11 #32: stageDef=null + victory → dropResult 空 + battleCount/skillUsage 仍累', () {
+      // 爬塔 victory 路径体例：service 不内部 roll drops（stageDef=null），caller
+      // 自己处理（rollTowerRewards 外层）。但 battleCount/skillUsage 副作用必须照走。
+      final ch = buildCharacter(id: 1, mainTechId: 200);
+      ch.internalForce = 5000;
+      final w = buildEquipment(id: 100, slot: EquipmentSlot.weapon);
+      final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+      final skill = buildSkill('skill_main_a');
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 5,
+        result: BattleResult.leftWin,
+        actionLog: [
+          buildAction(actorId: 1, skill: skill),
+          buildAction(actorId: 1, skill: skill),
+        ],
+      );
+
+      final result = BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch],
+        equipmentsByCharacter: {1: [w]},
+        techniquesByCharacter: {1: [mainTech]},
+        // stageDef 故意不传（null）
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) =>
+            buildTechDef(id: id, skillIds: const ['skill_main_a']),
+        dropService: dropSvc(),
+        isVictory: true,
+      );
+
+      expect(result.dropResult.isEmpty, isTrue,
+          reason: 'stageDef=null 时 service 不内部 roll drops');
+      expect(w.battleCount, 1, reason: '装备 battleCount 仍累');
+      expect(mainTech.cultivationProgress, 2,
+          reason: '心法 progress 仍累（每次 +1）');
+      expect(result.defeatPenaltyByCharacter, isEmpty);
+    });
+
+    test('Phase 4 W11 #32: stageDef=null + defeat → 不触发 Boss 散功（无 isBossStage 信号）', () {
+      // tower defeat 路径不走 stage Boss 战败散功（用户决策 ① 只 stage Boss 触发）
+      final ch = buildCharacter(id: 1, mainTechId: 200);
+      ch.internalForce = 5000;
+      final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 5,
+        result: BattleResult.rightWin,
+        actionLog: const [],
+      );
+
+      final result = BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: {1: [mainTech]},
+        // stageDef=null + isVictory=false：不进 Boss 散功分支
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        isVictory: false,
+        numbersConfig: numbersCfg,
+      );
+
+      expect(result.defeatPenaltyByCharacter, isEmpty);
+      expect(ch.internalForce, 5000, reason: 'tower defeat 不动玩家内力');
+    });
+
     test('Boss 战败 + 角色无主修：跳过该角色，无 entry 写入 map', () {
       final ch = buildCharacter(id: 1, mainTechId: null);
       ch.internalForce = 6000;

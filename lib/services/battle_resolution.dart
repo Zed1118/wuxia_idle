@@ -91,11 +91,11 @@ class BattleResolutionService {
     required List<Character> participatingCharacters,
     required Map<int, List<Equipment>> equipmentsByCharacter,
     required Map<int, List<Technique>> techniquesByCharacter,
-    required StageDef stageDef,
     required Rng rng,
     required Map<CultivationLayer, int> progressToNextMap,
     required TechniqueDef Function(String defId) techniqueDefLookup,
     required DropService dropService,
+    StageDef? stageDef,
     bool isVictory = true,
     NumbersConfig? numbersConfig,
   }) {
@@ -139,14 +139,15 @@ class BattleResolutionService {
       );
     }
 
-    // 3. 掉落（战败不掉）
-    final dropResult = isVictory
+    // 3. 掉落（战败不掉；victory + stageDef==null 时 caller 自处理 drops 不在此 roll）
+    final dropResult = (isVictory && stageDef != null)
         ? dropService.rollDrops(stageDef, rng)
         : const DropResult(equipments: [], items: []);
 
     // 4. Phase 4 W10：Boss 关战败 → 对每个有主修的参战角色应用被动散功
+    // tower 路径 stageDef=null 时 defeat 永远不进此分支（Boss 战败散功仅主线触发）
     final defeatPenalty = <int, DefeatPenaltyResult>{};
-    if (!isVictory && stageDef.isBossStage) {
+    if (!isVictory && stageDef != null && stageDef.isBossStage) {
       if (numbersConfig == null) {
         throw ArgumentError(
           'BattleResolutionService.resolve: Boss 关战败必须传 numbersConfig '
