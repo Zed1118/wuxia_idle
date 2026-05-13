@@ -34,6 +34,10 @@ class StageDef {
   /// 战斗胜利后播放的剧情 id；战败不触发。
   final String? narrativeVictoryId;
 
+  /// 战斗失败后播放的剧情 id（Phase 3 Week 5）；通常只在章末 Boss 关（4/5）配置，
+  /// 章内普通关战败直接返回 stage list（缺文件由 NarrativeLoader 兜底）。
+  final String? narrativeDefeatId;
+
   final List<String> dropEquipmentDefIds;
   final List<String> dropItemDefIds;
   final List<DropEntry> dropTable;
@@ -54,6 +58,7 @@ class StageDef {
     this.prevStageId,
     this.narrativeOpeningId,
     this.narrativeVictoryId,
+    this.narrativeDefeatId,
     required this.dropEquipmentDefIds,
     required this.dropItemDefIds,
     this.dropTable = const [],
@@ -78,6 +83,7 @@ class StageDef {
       prevStageId: y['prevStageId'] as String?,
       narrativeOpeningId: y['narrativeOpeningId'] as String?,
       narrativeVictoryId: y['narrativeVictoryId'] as String?,
+      narrativeDefeatId: y['narrativeDefeatId'] as String?,
       dropEquipmentDefIds: List<String>.from(
         (y['dropEquipmentDefIds'] as List? ?? const []).map((e) => e as String),
       ),

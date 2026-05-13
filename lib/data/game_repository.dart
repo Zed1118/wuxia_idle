@@ -217,6 +217,11 @@ class GameRepository {
       }
     }
 
+    // Phase 3 Week 5 T59：主线 15 关校验
+    //   - mainline stages 总数 = 15，按 chapterIndex 分 3 章 × 5 关
+    //   - narrativeDefeatId 必须仅在 isBossStage=true 关配置
+    _enforceMainlineRedLines();
+
     // Phase 3 T40：爬塔 30 层校验
     //   - floorIndex 1-30 连续唯一
     //   - bossKind 严格在 5/10/15/20/25/30
@@ -505,4 +510,55 @@ class GameRepository {
 
   /// 取祖师定义（slotIndex=0），等价于 `getMasterBySlot(0)`。
   MasterDef getFounderMaster() => masters[0];
+
+  /// Phase 3 Week 5 T59：主线 15 关红线。
+  ///
+  /// 校验项：
+  ///   - mainline stages 总数 == 15
+  ///   - 按 chapterIndex 分 3 章，每章 5 关
+  ///   - narrativeDefeatId != null 时 isBossStage 必须 true（避免章内
+  ///     普通关误配 defeat 文案）
+  ///
+  /// 章内具体哪几关是 Boss 由 yaml 决定（当前约定 4/5 为 Boss），但本红线
+  /// 不硬绑位置，只要求 defeat 文案与 Boss 标记一致。
+  void _enforceMainlineRedLines() {
+    final mainlines = stageDefs.values
+        .where((s) => s.stageType == StageType.mainline)
+        .toList();
+    if (mainlines.isEmpty) return; // 允许测试 fixture 不带主线
+    if (mainlines.length != 15) {
+      throw StateError(
+        '主线关卡应为 15 关，实际 ${mainlines.length}',
+      );
+    }
+    final byChapter = <int, List<StageDef>>{};
+    for (final s in mainlines) {
+      final ch = s.chapterIndex;
+      if (ch == null) {
+        throw StateError('主线 stage ${s.id} 缺 chapterIndex');
+      }
+      byChapter.putIfAbsent(ch, () => []).add(s);
+    }
+    for (final ch in [1, 2, 3]) {
+      final inCh = byChapter[ch] ?? const [];
+      if (inCh.length != 5) {
+        throw StateError(
+          '主线 ch=$ch 应有 5 关，实际 ${inCh.length}',
+        );
+      }
+    }
+    if (byChapter.keys.any((ch) => ch < 1 || ch > 3)) {
+      throw StateError(
+        '主线 chapterIndex 应 ∈ {1, 2, 3}，实际 ${byChapter.keys.toList()..sort()}',
+      );
+    }
+    for (final s in mainlines) {
+      if (s.narrativeDefeatId != null && !s.isBossStage) {
+        throw StateError(
+          '主线 stage ${s.id} 配 narrativeDefeatId 但 isBossStage=false，'
+          '战败剧情只应在 Boss 关触发',
+        );
+      }
+    }
+  }
 }

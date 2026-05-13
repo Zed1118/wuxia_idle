@@ -60,10 +60,16 @@ void main() {
     expect(find.byIcon(Icons.check_circle), findsNothing);
   });
 
-  testWidgets('Ch1 全通 → Ch1 ✓ + Ch2 进行中 + Ch3 锁', (tester) async {
+  testWidgets('Ch1 全通（5 关）→ Ch1 ✓ + Ch2 进行中 + Ch3 锁', (tester) async {
     await pumpScreen(
       tester,
-      mkProgress(cleared: ['stage_01_01', 'stage_01_02']),
+      mkProgress(cleared: const [
+        'stage_01_01',
+        'stage_01_02',
+        'stage_01_03',
+        'stage_01_04',
+        'stage_01_05',
+      ]),
     );
 
     expect(find.byIcon(Icons.check_circle), findsOneWidget,
@@ -73,18 +79,12 @@ void main() {
     expect(find.byIcon(Icons.lock), findsOneWidget, reason: 'Ch3 仍锁');
   });
 
-  testWidgets('全 6 关通关 → 3 章都 ✓，无锁', (tester) async {
-    await pumpScreen(
-      tester,
-      mkProgress(cleared: const [
-        'stage_01_01',
-        'stage_01_02',
-        'stage_02_01',
-        'stage_02_02',
-        'stage_03_01',
-        'stage_03_02',
-      ]),
-    );
+  testWidgets('全 15 关通关 → 3 章都 ✓，无锁', (tester) async {
+    final cleared = <String>[
+      for (final ch in [1, 2, 3])
+        for (final idx in [1, 2, 3, 4, 5]) 'stage_0${ch}_0$idx',
+    ];
+    await pumpScreen(tester, mkProgress(cleared: cleared));
 
     expect(find.byIcon(Icons.check_circle), findsNWidgets(3));
     expect(find.byIcon(Icons.lock), findsNothing);

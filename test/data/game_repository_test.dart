@@ -26,7 +26,7 @@ void main() {
       expect(repo.equipmentDefs.length, 10, reason: '10 件装备');
       expect(repo.techniqueDefs.length, 6, reason: '6 本心法');
       expect(repo.skillDefs.length, 18, reason: '18 招招式');
-      expect(repo.stageDefs.length, 6, reason: '6 个测试关卡');
+      expect(repo.stageDefs.length, 15, reason: '主线 15 关（Phase 3 Week 5 T59 扩容）');
       expect(repo.numbers.version, isNotEmpty);
     });
 
@@ -101,18 +101,46 @@ void main() {
       );
     });
 
-    test('T27 dropTable 解析 → stage_01_02 / _06 dropTable 非空，'
-        '其他关卡 dropTable 为空（向后兼容）', () async {
+    test('T27 dropTable 解析 → stage_01_02 / 03_05 dropTable 非空，'
+        '未配关卡 dropTable 为空（向后兼容）', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final s2 = repo.getStage('stage_01_02');
-      expect(s2.dropTable.length, 2,
-          reason: '山道伏击：低概率铁剑 + 必掉磨剑石');
-      final s6 = repo.getStage('stage_03_02');
-      expect(s6.dropTable.length, 3,
-          reason: 'Boss 关：龙泉剑 + 50% 玉佩 + 必掉心血结晶');
+      expect(s2.dropTable.length, 1,
+          reason: '荒山野店：必掉磨剑石');
+      final sFinal = repo.getStage('stage_03_05');
+      expect(sFinal.dropTable.length, 3,
+          reason: '章末大 Boss：龙泉剑 + 60% 玉佩 + 必掉心血结晶');
       final s1 = repo.getStage('stage_01_01');
       expect(s1.dropTable, isEmpty,
-          reason: '未配 dropTable 的关卡保持空列表（不影响旧 fixture）');
+          reason: '未配 dropTable 的关卡保持空列表');
+    });
+
+    test('Phase 3 Week 5 主线 15 关红线：3 章 × 5 关 + 4/5 关 isBossStage', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final mainlines = repo.stageDefs.values
+          .where((s) => s.stageType == StageType.mainline)
+          .toList();
+      expect(mainlines.length, 15);
+      for (final ch in [1, 2, 3]) {
+        final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();
+        expect(inCh.length, 5, reason: 'Ch$ch 应有 5 关');
+      }
+      // 章末两关 4/5 是 Boss + 配 narrativeDefeatId；1/2/3 关非 Boss + 无 defeat
+      for (final ch in [1, 2, 3]) {
+        for (final idx in [1, 2, 3, 4, 5]) {
+          final id = 'stage_0${ch}_0$idx';
+          final s = repo.getStage(id);
+          if (idx >= 4) {
+            expect(s.isBossStage, isTrue, reason: '$id 应为 Boss 关');
+            expect(s.narrativeDefeatId, isNotNull,
+                reason: '$id 应配 narrativeDefeatId');
+          } else {
+            expect(s.isBossStage, isFalse, reason: '$id 非 Boss 关');
+            expect(s.narrativeDefeatId, isNull,
+                reason: '$id 不应配 narrativeDefeatId');
+          }
+        }
+      }
     });
 
     test('未配置的 id → 抛 StateError', () async {

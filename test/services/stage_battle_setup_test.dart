@@ -129,15 +129,16 @@ void main() {
     );
   });
 
-  test('stage_03_02 Boss 关：右队 3 名 + 都标 isBossStage 不影响转换',
+  test('stage_03_05 章末大 Boss：右队 3 名 + isBossStage=true 不影响转换',
       () async {
     await Phase2SeedService.seedP3();
-    final stage = GameRepository.instance.getStage('stage_03_02');
+    final stage = GameRepository.instance.getStage('stage_03_05');
     expect(stage.isBossStage, isTrue);
+    expect(stage.narrativeDefeatId, 'stage_03_05_defeat');
 
     final (_, right) = await StageBattleSetup.buildTeams(stage);
     expect(right.length, 3);
-    expect(right[0].name, '武林霸主');
+    expect(right[0].name, '灰衣人');
     expect(right[0].maxHp, 11000); // baseHp from yaml
   });
 }

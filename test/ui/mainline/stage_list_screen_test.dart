@@ -49,22 +49,25 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('Ch1 全新进度 → 01 可挑战 + 02 锁 + 提示文案', (tester) async {
+  testWidgets('Ch1 全新进度 → 5 关渲染：01 可挑战 + 02-05 全锁', (tester) async {
     await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
 
-    // 01 关名 + 02 关名都渲染
-    expect(find.text('山道试剑'), findsOneWidget);
-    expect(find.text('林间伏击'), findsOneWidget);
+    // Ch1 5 关全名渲染
+    expect(find.text('山门之外'), findsOneWidget);
+    expect(find.text('荒山野店'), findsOneWidget);
+    expect(find.text('黑风岭'), findsOneWidget);
+    expect(find.text('洛阳城外'), findsOneWidget);
+    expect(find.text('风雨渡口'), findsOneWidget);
 
-    // 01 是 available（chip 文案）；02 锁
+    // 01 是 available（chip 文案）；02-05 锁（4 个锁图标）
     expect(find.text(UiStrings.stageListAvailable), findsOneWidget);
-    expect(find.byIcon(Icons.lock), findsOneWidget);
-    expect(find.text(UiStrings.stageListPrevHint), findsOneWidget,
+    expect(find.byIcon(Icons.lock), findsNWidgets(4));
+    expect(find.text(UiStrings.stageListPrevHint), findsNWidgets(4),
         reason: '锁关卡显示「通关前一关解锁」副标题');
     expect(find.textContaining(UiStrings.stageListCleared), findsNothing);
   });
 
-  testWidgets('Ch1 通过 01 → 01 cleared + 02 available', (tester) async {
+  testWidgets('Ch1 通过 01 → 01 cleared + 02 available + 03-05 锁', (tester) async {
     await pumpScreen(
       tester,
       chapterIndex: 1,
@@ -73,14 +76,14 @@ void main() {
 
     expect(find.text(UiStrings.stageListCleared), findsOneWidget);
     expect(find.text(UiStrings.stageListAvailable), findsOneWidget);
-    expect(find.byIcon(Icons.lock), findsNothing);
+    expect(find.byIcon(Icons.lock), findsNWidgets(3));
   });
 
   testWidgets('点 available 关卡 → 进入剧情阅读屏（T37 流程串联，P1 #1 真实剧情加载）',
       (tester) async {
     await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
 
-    await tester.tap(find.text('山道试剑'));
+    await tester.tap(find.text('山门之外'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
