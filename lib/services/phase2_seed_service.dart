@@ -1,5 +1,6 @@
 import 'package:isar/isar.dart';
 
+import '../data/defs/master_def.dart';
 import '../data/game_repository.dart';
 import '../data/isar_setup.dart';
 import '../data/models/attributes.dart';
@@ -8,7 +9,10 @@ import '../data/models/enums.dart';
 import '../data/models/equipment.dart';
 import '../data/models/game_event.dart';
 import '../data/models/inventory_item.dart';
+import '../data/models/save_data.dart';
 import '../data/models/technique.dart';
+import '../utils/rng.dart';
+import 'equipment_factory.dart';
 
 /// Phase 2 调试场景种子工厂（phase2_tasks.md T32 §492-509 子提交 3）。
 ///
@@ -166,6 +170,85 @@ class Phase2SeedService {
     });
   }
 
+  /// 场景 P5：师徒系统种子（Phase 3 Week 4 T54）。
+  ///
+  /// Demo §7.1 师徒传承：3 角色（祖师 + 大弟子 + 二弟子）依 `data/masters.yaml`
+  /// 定义初始化，全部入 [SaveData.activeCharacterIds] 默认入阵 → P5 后可直接
+  /// 进主线/爬塔/闭关战斗（清挂账 #25：P1 缺主修不能直接打）。
+  ///
+  /// 决策依据：`docs/handoff/week4_d_minimal_spec_2026-05-13.md` 方案 A。
+  /// 祖师=玩家本人由 `MasterDef.lineageRole=founder` + `Character.isFounder=true`
+  /// 体现；不另建独立 founder NPC。
+  ///
+  /// 与 P1-P4 一致：每次 `_clearAll` 重新写入（不做幂等），可反复点 P5 reseed。
+  /// SaveData 主体不动，仅写入 `activeCharacterIds` / `founderCharacterId`。
+  static Future<void> seedMasterDisciple() async {
+    final isar = IsarSetup.instance;
+    final repo = GameRepository.instance;
+    final masters = repo.masters;
+    final rng = DefaultRng();
+    final now = DateTime.now();
+
+    await isar.writeTxn(() async {
+      await _clearAll(isar);
+
+      // 1. 创建 3 角色，祖师固定 id=1（与既有 main_menu / character_panel 对齐）。
+      //    大弟子 / 二弟子由 Isar autoIncrement → id=2 / id=3。
+      final founder = _buildMasterCharacter(masters[0], now: now)..id = 1;
+      await isar.characters.put(founder);
+      final firstDisciple = _buildMasterCharacter(masters[1], now: now);
+      await isar.characters.put(firstDisciple);
+      final secondDisciple = _buildMasterCharacter(masters[2], now: now);
+      await isar.characters.put(secondDisciple);
+
+      // 2. 师徒关系（双向）。
+      founder.discipleIds = [firstDisciple.id, secondDisciple.id];
+      firstDisciple.masterId = founder.id;
+      secondDisciple.masterId = founder.id;
+
+      // 3. 按 slot 顺序装备 + 学心法。
+      //    顺序：先装备/学心法（会写回 character 的 equippedXxxId / mainTechniqueId 字段），
+      //    最后 putAll 一次性把 character 改动持久化。
+      final pairs = [
+        (masters[0], founder),
+        (masters[1], firstDisciple),
+        (masters[2], secondDisciple),
+      ];
+      for (final pair in pairs) {
+        await _equipMasterStarting(
+          isar,
+          character: pair.$2,
+          defIds: pair.$1.startingEquipmentIds,
+          rng: rng,
+          now: now,
+        );
+        await _learnMasterStarting(
+          isar,
+          character: pair.$2,
+          techDefIds: pair.$1.startingTechniqueIds,
+          now: now,
+        );
+      }
+      await isar.characters.putAll([founder, firstDisciple, secondDisciple]);
+
+      // 4. SaveData.activeCharacterIds 默认入阵 3 师徒（清挂账 #25 P1 缺主修）。
+      final save = await isar.saveDatas.get(0);
+      if (save != null) {
+        save.activeCharacterIds = [
+          founder.id,
+          firstDisciple.id,
+          secondDisciple.id,
+        ];
+        save.founderCharacterId = founder.id;
+        save.sectName ??= '我的门派';
+        await isar.saveDatas.put(save);
+      }
+
+      // 5. 基础物料（让玩家进 P5 后可立即试强化）。
+      await _seedMaterials(isar, mojianshi: 2000, jieJing: 200);
+    });
+  }
+
   // ── private helpers ────────────────────────────────────────────────────────
 
   /// 清空业务 collection（保留 SaveData）。装备 / 心法 / 角色 / 物品 / 事件全清。
@@ -270,5 +353,126 @@ class Phase2SeedService {
       cultivationProgress: cultivationProgress,
       cultivationProgressToNext: cultivationProgressToNext,
     );
+  }
+
+  // ── seedMasterDisciple helpers (Phase 3 Week 4 T54) ────────────────────────
+
+  /// 按 [MasterDef] 构造 Character（slotIndex 决定占位名，T56 接 DeepSeek 文案后替换）。
+  ///
+  /// `internalForce` 满血默认（境界对应 [RealmDef.internalForceMax]）。
+  static Character _buildMasterCharacter(
+    MasterDef def, {
+    required DateTime now,
+  }) {
+    final realmDef = GameRepository.instance.getRealm(
+      def.defaultRealm,
+      def.defaultLayer,
+    );
+    return Character.create(
+      name: _defaultMasterName(def),
+      realmTier: def.defaultRealm,
+      realmLayer: def.defaultLayer,
+      attributes: Attributes()
+        ..constitution = def.attributeProfile.constitution
+        ..enlightenment = def.attributeProfile.enlightenment
+        ..agility = def.attributeProfile.agility
+        ..fortune = def.attributeProfile.fortune,
+      rarity: RarityTier.biaoZhun,
+      lineageRole: def.lineageRole,
+      isFounder: def.lineageRole == LineageRole.founder,
+      createdAt: now,
+      internalForce: realmDef.internalForceMax,
+      internalForceMax: realmDef.internalForceMax,
+      experienceToNextLayer: realmDef.experienceToNext,
+      isActive: true,
+    );
+  }
+
+  static String _defaultMasterName(MasterDef def) {
+    switch (def.slotIndex) {
+      case 0:
+        return '祖师';
+      case 1:
+        return '大弟子';
+      case 2:
+        return '二弟子';
+      default:
+        return '师徒_${def.id}';
+    }
+  }
+
+  /// 按 [defIds] 顺序生成装备实例并装在 [character] 对应槽位上。
+  ///
+  /// 通过 [EquipmentFactory.fromDef] 走标准 roll 路径（与 DropService 一致），
+  /// 自动设 `ownerCharacterId`。同 slot 多件覆盖（后写入的胜出）。
+  static Future<void> _equipMasterStarting(
+    Isar isar, {
+    required Character character,
+    required List<String> defIds,
+    required Rng rng,
+    required DateTime now,
+  }) async {
+    final repo = GameRepository.instance;
+    for (final id in defIds) {
+      final def = repo.getEquipment(id);
+      final eq = EquipmentFactory.fromDef(
+        def,
+        rng: rng,
+        obtainedAt: now,
+        obtainedFrom: 'master_starting',
+        ownerCharacterId: character.id,
+      );
+      await isar.equipments.put(eq);
+      switch (def.slot) {
+        case EquipmentSlot.weapon:
+          character.equippedWeaponId = eq.id;
+          break;
+        case EquipmentSlot.armor:
+          character.equippedArmorId = eq.id;
+          break;
+        case EquipmentSlot.accessory:
+          character.equippedAccessoryId = eq.id;
+          break;
+      }
+    }
+  }
+
+  /// 按 [techDefIds] 顺序学心法：首项 [TechniqueRole.main]，其余 [TechniqueRole.assist]。
+  ///
+  /// 不走 [TechniqueLearningService.learn]（种子场景跳过 fail-fast 校验 +
+  /// 不消耗领悟点）。直接构造 [Technique] 实例并写 Isar，同步 character 的
+  /// `mainTechniqueId` / `assistTechniqueIds` / `school`（主修流派透传）。
+  static Future<void> _learnMasterStarting(
+    Isar isar, {
+    required Character character,
+    required List<String> techDefIds,
+    required DateTime now,
+  }) async {
+    final repo = GameRepository.instance;
+    final numbers = repo.numbers;
+    for (var i = 0; i < techDefIds.length; i++) {
+      final def = repo.getTechnique(techDefIds[i]);
+      final role = i == 0 ? TechniqueRole.main : TechniqueRole.assist;
+      final tech = Technique.create(
+        defId: def.id,
+        ownerCharacterId: character.id,
+        tier: def.tier,
+        school: def.school,
+        role: role,
+        learnedAt: now,
+        cultivationProgressToNext:
+            numbers.cultivationProgressToNext[CultivationLayer.chuKui]!,
+      );
+      await isar.techniques.put(tech);
+      if (role == TechniqueRole.main) {
+        character.mainTechniqueId = tech.id;
+        character.school = def.school;
+      } else {
+        character.assistTechniqueIds = [
+          ...character.assistTechniqueIds,
+          tech.id,
+        ];
+      }
+    }
   }
 }
