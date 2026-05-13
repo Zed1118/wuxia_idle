@@ -5,9 +5,9 @@
 
 ## 当前阶段
 
-**Phase 3 Week 5 F 主线扩 15 关 + 战败 hook 代码完成**（2026-05-13，待 Pen 视觉验收）。T59 stages.yaml 6→15 关 + narrativeDefeatId schema + 主线红线（3 章×5 关，4/5 Boss 关必配 defeat）/ T60 stage_entry_flow 战败路径 push NarrativeReaderScreen（销账 #29 战败 hook）。**章末两关 4/5 才有 Boss + defeat 文案**（章内 1/2/3 普通关战败直接返回 stage list），对齐 DeepSeek 已铺 30 个 narrative 文件 + 6 个 defeat。累计 530/530 测试，analyze 0 issues。
+**Phase 3 Week 5 F 主线扩 15 关 + 战败 hook 全交付**（2026-05-13，tag `v0.3.0-w5`）。T59 stages.yaml 6→15 关 + narrativeDefeatId schema + 主线红线 / T60 stage_entry_flow 战败 hook（销账 #29）/ T62 Pen 视觉验收 6 截图。**核心销账截图**：「风雨渡口·败」narrative 显示「撑伞的人没有追」文案，defeat 分支 push NarrativeReaderScreen 工作正常。期间发现 + 处理 2 个旁支：CharacterPanelScreen 无返回按钮（T56 遗漏）已 fix；stage_01_05 数值估算偏低（xueTu 玩家碾压）已 balance 跨 2 阶到 erLiu（章末 Boss 强制升阶设计）。累计 530/530 测试，analyze 0 issues。**销账 #29**。
 
-**下一步**：T61 commit + PROGRESS.md / T62 Pen 视觉验收 + tag v0.3.0-w5。
+**下一步**：Phase 3 Week 6 方向待选。剩余候选：Phase 5 收尾（不依赖外部决策）/ 挂账 #30 闭关 3 维度（阻塞 §12 #7 节气清单）/ C 奇遇、E 武学领悟（阻塞 §12 #6 机缘值规则）。
 
 ## 已完成
 
@@ -27,11 +27,12 @@
 - **Phase 3 Week 4 T57 3v3 默认入阵 + 战斗集成测试 + T55 战斗路径补齐**（2026-05-13）：`test/services/master_disciple_battle_test.dart` 6 用例端到端：3 师徒装配完整 / 境界对齐 masters.yaml / 装备攻击+招式+内力正确 / 祖师 maxInternalForce 含 lineage +10% / victory leftWin / defeat path 不阻塞（人造 left 全员阵亡 → isFinished + 非 leftWin + availableSkills 保留）。**顺手修 T55 commit message 误导**：`BattleCharacter.fromCharacter` 之前 `maxInternalForce: character.internalForceMax`（直接字段值不含 lineage），改用 `CharacterDerivedStats.internalForceMaxWithLineage(character, equipped, numbers)` —— T55 "祖师战斗内力 +5%" 现真正落地战斗路径，不仅 UI；battle_state_test +1（师承遗物 2 件 → maxInternalForce 含 +10%）。累计 522 → 529（+7）
 - **Phase 3 Week 4 T58 Pen 视觉验收 + tag v0.3.0-w4**（2026-05-13，Pen 13:44-13:53 一气呵成）：8 截图归档 `docs/screenshots/phase3_w4/`，覆盖 P5 种子按钮 / 角色面板 3 Tab 切换（祖师/大弟子/二弟子各 1 张）/ 师承段 4 行完整 / 山门之外·启 narrative / stage_01_01 3v3 victory + 战斗日志 / 关卡列表通关旁证。**核心验收点**：祖师 UI 内力 3800/4180（lineage +10% 实测落地）/ 师承段「龙泉剑/锦袍」遗物名走 GameRepository 解析 / 3v3 同阵 7 tick 速胜 / 刚猛+灵巧+阴柔三流派克制 ×0.75 全部触发。**Pen 端首跑环境基线失败**根因：T56 新加 `activeCharacterIdsProvider` 但 `*.g.dart` 全 gitignored，Pen 本地缺生成产物 → spec 补 build_runner 步骤后通过（memory `feedback_wuxia_pen_build_runner.md` 记新踩坑）。phase3_summary.md Week 4 段完整 + tag v0.3.0-w4 push origin
 - **Phase 3 Week 5 T59 stages.yaml 6→15 关 + narrativeDefeatId schema**（2026-05-13）：StageDef 加 `narrativeDefeatId`（fromYaml + 构造函数）/ stages.yaml 全量重写 3 章 × 5 关（Ch1 学徒 1.0→1.8 / Ch2 三流 1.5→2.3 / Ch3 二流 2.0→2.8 难度递增）/ 章末两关 4/5 isBossStage=true 配 defeat 文案对齐 DeepSeek 6 个 defeat 文件（stage_NN_04/05_defeat.yaml）/ 数值梯度按 GDD §3 三阶守红线（xueTu HP 1500-3500、sanLiu HP 3500-7000、erLiu HP 7000-11000） / 现 6 关数值层与 DeepSeek narrative 编号不对齐的旧账一并修（stage_02_02 黑风寨 Boss → 改为 sanLiu 中段「茶馆论剑」普通关、stage_03_02 一战封王 → 改为 erLiu 中段「许昌擂台」、章末大 Boss 重定位到 stage_NN_05）。**新增 GameRepository._enforceMainlineRedLines**：mainline 总数=15 / 3 章 × 5 关 / narrativeDefeatId 必须仅在 isBossStage=true 关。test/data/game_repository_test 新增「主线 15 关红线」用例 + 既有 5 个测试期望同步更新（stageDefs.length 6→15 / dropTable 计数 / mainline_progress_service Ch1 全通=5 关 / chapter_list_screen 全 15 关通关 / stage_list_screen 5 关全名 + 锁数）。529 → 530 测试，analyze 0 issues
-- **Phase 3 Week 5 T60 stage_entry_flow 战败 narrative hook + 销账 #29**（2026-05-13）：runStageFlow 战败分支改写——若 `stage.narrativeDefeatId != null && context.mounted` → push NarrativeReaderScreen（content 走 NarrativeLoader.load，缺文件兜底「[剧情待补]」），看完 pop 回 stage list；不记录进度 / 不掉装备（Phase 4 再加战败结算）。章内普通关（无 narrativeDefeatId）战败分支保留旧行为直接返回 list。dartdoc 注释更新「3b. defeat」段说明 Boss 关 vs 普通关分流。test 复用既有 stage_battle_setup_test 的「stage_03_05 章末大 Boss」用例验 narrativeDefeatId 解析（widget 端 defeat path 等 Pen 视觉验收 T62）
+- **Phase 3 Week 5 T60 stage_entry_flow 战败 narrative hook + 销账 #29**（2026-05-13）：runStageFlow 战败分支改写——若 `stage.narrativeDefeatId != null && context.mounted` → push NarrativeReaderScreen（content 走 NarrativeLoader.load，缺文件兜底「[剧情待补]」），看完 pop 回 stage list；不记录进度 / 不掉装备（Phase 4 再加战败结算）。章内普通关（无 narrativeDefeatId）战败分支保留旧行为直接返回 list。dartdoc 注释更新「3b. defeat」段说明 Boss 关 vs 普通关分流
+- **Phase 3 Week 5 T62 Pen Windows 视觉验收 + 2 旁支 fix + tag v0.3.0-w5**（2026-05-13，Pen 14:56-15:23）：6 截图归档 `docs/screenshots/phase3_w5/`。**核心销账截图 06**：风雨渡口·败 NarrativeReaderScreen 标题 + 文案「撑伞的人没有追。他只是站在雨里，看着你退回渡口。」+ 1/3 分页 + 继续按钮（T60 defeat hook 视觉落地）。**截图 05** 战斗右队胜 0v2 17 tick 玩家方全阵亡（erLiu 跨 2 阶设计生效）。**旁支 fix 1**：CharacterPanelScreen 无返回按钮（T56 加 Tab 时遗漏）→ commit `87387ad` AppBar + BackButton（canPop 才显示）。**旁支 fix 2**：stage_01_05 原 xueTu yuanShu 玩家方碾压（10 tick 左队胜 21673 总伤）→ balance commit `73c1f37` 跨 2 阶到 erLiu（撑伞高人 10000HP 750Atk / 渡口刀客剑客 9000HP 700-720Atk），设计语义「章末大 Boss 暗示需升阶」。phase3_summary.md Week 5 段完整 + tag v0.3.0-w5 push origin
 
 ## 进行中
 
-**Phase 3 Week 5 F 主线扩 15 关代码完成**（2026-05-13）。T59 + T60 全部 ✅，530/530 测试 + analyze 0 issues + 销账 #29。等 T61 commit + T62 Pen 视觉验收。
+**Phase 3 Week 5 F 全交付**（2026-05-13，tag v0.3.0-w5）。T59-T62 全部 ✅，530/530 测试 + 6 截图视觉验收通过 + 销账 #29。等 Week 6 方向决策。
 
 ## 已知偏差 / 挂账事项
 
