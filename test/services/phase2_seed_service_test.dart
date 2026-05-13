@@ -8,8 +8,10 @@ import 'package:wuxia_idle/data/models/character.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/data/models/equipment.dart';
 import 'package:wuxia_idle/data/models/inventory_item.dart';
+import 'package:wuxia_idle/data/models/save_data.dart';
 import 'package:wuxia_idle/data/models/technique.dart';
 import 'package:wuxia_idle/services/phase2_seed_service.dart';
+import 'package:wuxia_idle/services/stage_battle_setup.dart';
 
 /// T32 子提交 3a：[Phase2SeedService] 真 Isar 落地测试。
 ///
@@ -178,5 +180,122 @@ void main() {
     final eq = await isar.equipments.where().findFirst();
     expect(eq?.defId, 'weapon_liqi_long_quan');
     expect(eq?.battleCount, 0);
+  });
+
+  // ── Phase 3 Week 4 T54 · seedMasterDisciple ────────────────────────────────
+
+  test('seedMasterDisciple → 3 师徒 + 师徒关系双向 + 祖师 id=1 + 默认入阵',
+      () async {
+    await Phase2SeedService.seedMasterDisciple();
+    final isar = IsarSetup.instance;
+
+    expect(await isar.characters.count(), 3);
+
+    final founder = await isar.characters.get(1);
+    expect(founder, isNotNull);
+    expect(founder!.lineageRole, LineageRole.founder);
+    expect(founder.isFounder, isTrue);
+    expect(founder.realmTier, RealmTier.yiLiu);
+    expect(founder.discipleIds.length, 2);
+    expect(founder.name, '祖师');
+
+    final firstDisciple = await isar.characters.get(founder.discipleIds[0]);
+    expect(firstDisciple!.lineageRole, LineageRole.disciple);
+    expect(firstDisciple.realmTier, RealmTier.erLiu);
+    expect(firstDisciple.masterId, 1);
+    expect(firstDisciple.name, '大弟子');
+
+    final secondDisciple = await isar.characters.get(founder.discipleIds[1]);
+    expect(secondDisciple!.lineageRole, LineageRole.disciple);
+    expect(secondDisciple.realmTier, RealmTier.sanLiu);
+    expect(secondDisciple.masterId, 1);
+    expect(secondDisciple.name, '二弟子');
+
+    final save = await isar.saveDatas.get(0);
+    expect(save!.activeCharacterIds, [
+      founder.id,
+      firstDisciple.id,
+      secondDisciple.id,
+    ]);
+    expect(save.founderCharacterId, 1);
+  });
+
+  test('seedMasterDisciple → 3 师徒各自有主修 + 装备齐 weapon/armor/accessory',
+      () async {
+    await Phase2SeedService.seedMasterDisciple();
+    final isar = IsarSetup.instance;
+
+    for (final id in [1, 2, 3]) {
+      final ch = await isar.characters.get(id);
+      expect(ch!.mainTechniqueId, isNotNull, reason: '$id 必须有主修');
+      if (id == 1) {
+        expect(ch.assistTechniqueIds.length, 1);
+      } else {
+        expect(ch.assistTechniqueIds, isEmpty);
+      }
+      expect(ch.equippedWeaponId, isNotNull);
+      expect(ch.equippedArmorId, isNotNull);
+      expect(ch.equippedAccessoryId, isNotNull);
+    }
+
+    expect(await isar.equipments.count(), 9);
+    expect(await isar.techniques.count(), 4);
+  });
+
+  test('seedMasterDisciple → 主修流派透传到 character.school', () async {
+    await Phase2SeedService.seedMasterDisciple();
+    final isar = IsarSetup.instance;
+
+    final founder = await isar.characters.get(1);
+    expect(founder!.school, TechniqueSchool.gangMeng);
+
+    final firstDisciple = await isar.characters.get(2);
+    expect(firstDisciple!.school, TechniqueSchool.lingQiao);
+
+    final secondDisciple = await isar.characters.get(3);
+    expect(secondDisciple!.school, TechniqueSchool.yinRou);
+  });
+
+  test('seedMasterDisciple 反复调用 reseed 一致（_clearAll 保证干净）',
+      () async {
+    await Phase2SeedService.seedMasterDisciple();
+    await Phase2SeedService.seedMasterDisciple();
+    final isar = IsarSetup.instance;
+
+    expect(await isar.characters.count(), 3);
+    expect(await isar.equipments.count(), 9);
+    expect(await isar.techniques.count(), 4);
+    final founder = await isar.characters.get(1);
+    expect(founder!.discipleIds.length, 2);
+  });
+
+  test('销账 #25：seedMasterDisciple 后 stage_01_01 buildTeams 不再 fail-fast',
+      () async {
+    await Phase2SeedService.seedMasterDisciple();
+    final stage = GameRepository.instance.getStage('stage_01_01');
+
+    // 不抛"未修主修"——3 师徒都有 mainTechniqueId
+    final (left, right) = await StageBattleSetup.buildTeams(stage);
+    expect(left.length, 3, reason: '玩家左队 3 师徒入阵');
+    expect(right, isNotEmpty, reason: 'stage_01_01 enemyTeam 非空');
+  });
+
+  test('seedMasterDisciple 后 P1 → 业务表清空但 SaveData.activeCharacterIds 不动',
+      () async {
+    await Phase2SeedService.seedMasterDisciple();
+    final isar = IsarSetup.instance;
+    final saveBefore = await isar.saveDatas.get(0);
+    expect(saveBefore!.activeCharacterIds.length, 3);
+
+    await Phase2SeedService.seedP1();
+    expect(await isar.characters.count(), 1);
+
+    final saveAfter = await isar.saveDatas.get(0);
+    // P1 不动 SaveData（既有体例）→ activeCharacterIds 残留指向已被 _clearAll
+    // 清掉的 id=2/3。这是已知的 P1 fixture 缺陷（挂账 #25），seedMasterDisciple
+    // 自己不破坏既有体例。
+    expect(saveAfter!.activeCharacterIds, [1, 2, 3]);
+    expect(await isar.characters.get(2), isNull);
+    expect(await isar.characters.get(3), isNull);
   });
 }

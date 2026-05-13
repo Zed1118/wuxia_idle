@@ -55,6 +55,8 @@ class UiStrings {
   static const String hintP2 = 'battleCount=99 装备，下场战斗 →100 触发"趁手"+10%';
   static const String hintP3 = '主修 yuanMan/1500 + IF 10000，散功后 daCheng/750 + IF 5000';
   static const String hintP4 = '+0 强化到 +19 + 开锋 + 默契满，对比裸装伤害';
+  static const String scenarioP5 = 'P5 · 师徒种子';
+  static const String hintP5 = '祖师一流 + 大弟子二流 + 二弟子三流，3 师徒入阵可直接进战斗';
 
   // 调试菜单（T17）
   static const String testMenuTitle = '战斗测试场景';

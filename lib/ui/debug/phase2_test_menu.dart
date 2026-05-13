@@ -110,6 +110,17 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
+                _ScenarioButton(
+                  label: UiStrings.scenarioP5,
+                  hint: UiStrings.hintP5,
+                  onTap: () => _seedAndPush(
+                    Phase2SeedService.seedMasterDisciple,
+                    () => const CharacterPanelScreen(
+                      characterId: _defaultCharacterId,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
