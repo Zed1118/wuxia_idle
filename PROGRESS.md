@@ -5,9 +5,9 @@
 
 ## 当前阶段
 
-**Phase 3 Week 4 D 师徒系统 T53 完成**（2026-05-13，commit `9349626`）。masters.yaml 3 角色 schema + MasterDef + GameRepository 红线校验（7 项）+ 便捷查询。3 角色按方案 A 降级（祖师一流/大弟子二流/二弟子三流），避免 yaml 高阶装备/心法缺失 + 不触碰飞升锚点 wuSheng。495 → 505 测试（+10：MasterDef 3 + 师徒红线 fail-fast 7），analyze 0 issues。祖师遗物 isLineageHeritage 校验留 TODO 待 T55。
+**Phase 3 Week 4 D 师徒系统 T53+T54 完成**（2026-05-13，commits `9349626`/`ed8b183`）。T53 落 masters.yaml schema + MasterDef + GameRepository 红线校验。T54 落 `Phase2SeedService.seedMasterDisciple`（祖师 id=1 复用 + 大/二弟子新建，装 9 装备 + 4 心法 + SaveData 默认入阵），P5 入口接入主菜单。**销账 #25**（service-level test 验证 seedMasterDisciple 后 stage_01_01 buildTeams 不再 fail-fast）。495 → 511 测试（+16），analyze 0 issues。
 
-**下一步**：T54 seedMasterDisciple service + Demo 入口接入 + 顺手清挂账 #25/#26。详 `phase3_tasks.md` 末 Week 4 段。
+**下一步**：T55 EquipmentDef.isLineageHeritage 字段 + equipment.yaml 标 2-3 件 + 回 T53 启用祖师遗物校验。详 `phase3_tasks.md` 末 Week 4 段。
 
 ## 已完成
 
@@ -21,10 +21,11 @@
 - **Phase 3 Week 3 T47-T52 闭关地图 v0.3.0-w3 交付**（2026-05-11/12，tag `v0.3.0-w3`，merge d37d09d）：5 张闭关地图 fixture（mountain/cave/temple/lake/ancient_battlefield）+ `SeclusionMapDef` + `RetreatConfig` / `RetreatSession @collection` + `SeclusionService`（start/compute/complete/abandon）/ 地图列表、选时长、进行中、收功结果 4 UI 屏 + main_menu「闭关修炼」入口 / saveVersion 0.3.0→0.4.0。405→457（+52）测试，analyze 0 issues。**T52 Pen Windows 视觉验收通过**（2026-05-12）：① 收功后 result 显示完整 + 返回 list 刷新 OK ② 同 ItemType 经 Phase2/闭关/爬塔多路写入后 InventoryItem 不分裂 OK。同 merge 一并带入 DeepSeek 端 narrative schema 拆分（32ae3f3），Mac 端 NarrativeLoader 适配挂账 #27 待开工。
 - **P1 #1 narrative schema Mac 端接手**（2026-05-12，销账 #27）：NarrativeLoader 扫 `data/narratives/stages/` 子目录（扁平→子目录→placeholder 三段兜底）；stages.yaml 6 关 stage_id 迁移 `mainline_test_NN → stage_NN_NN`，narrativeOpeningId/VictoryId + prevStageId 全链对齐 DeepSeek 拆分；全仓库 ~67 处 hard-coded `mainline_test_0` 引用 sed 批量重命名；narrative_loader_test 新增 2 case（扁平缺失→子目录命中 + 双缺失调用顺序契约）；stage_list_screen_test 「点关卡进剧情」case 改证「真实文案『山门之外 · 启』可加载」。**widget 端验证 main 主线剧情已脱离 placeholder regression**。493→495 测试，analyze 0 issues。涉及 10 文件 +172/-106。
 - **Phase 3 Week 4 T53 masters.yaml schema + MasterDef + 红线校验**（2026-05-13，commit `9349626`）：`lib/data/defs/master_def.dart` 新建（MasterDef + AttributeProfile 纯 Dart 不入 Isar）；`data/masters.yaml` 3 角色 fixture（祖师一流/大弟子二流/二弟子三流，方案 A 降级避飞升）；`GameRepository.masters` 字段 + `_enforceMasterRedLines` 7 项（3 条 / slotIndex 连续 / role 与 slot 对应 / founder 唯一 / 不允许 wuSheng / 属性单项 1-10 总和 16-24 / 三系锁死 starting tier ≤ defaultRealm）+ `getMasterBySlot` / `getFounderMaster` 便捷查询；test +10（MasterDef.fromYaml 3 + 师徒红线 fail-fast 7），累计 495 → 505。祖师遗物 isLineageHeritage 校验留 TODO 待 T55
+- **Phase 3 Week 4 T54 seedMasterDisciple + P5 入口 + 销账 #25**（2026-05-13，commit `ed8b183`）：`Phase2SeedService.seedMasterDisciple` 一次 writeTxn 完成 3 师徒 + 双向关系 + 9 件装备（EquipmentFactory.fromDef 标准 roll）+ 4 本心法（祖师 main+assist / 2 弟子 main 各 1）+ SaveData.activeCharacterIds=[1,2,3] + founderCharacterId=1 + 基础物料 2000 磨剑石/200 心血结晶；P5 按钮接入 `phase2_test_menu` 跳 CharacterPanelScreen；test +6（3 师徒结构 / 装备心法齐 / 主修流派透传 / reseed 一致 / 与 P1 切换边界 / **销账 #25：buildTeams 不再 fail-fast**）+ widget test 4→5 同步，累计 505 → 511
 
 ## 进行中
 
-**Phase 3 Week 4 D 师徒系统**：T53 ✅（commit 9349626，505/505）。下一步 T54 seedMasterDisciple service + Demo 入口 + 顺手清挂账 #25/#26。T53 留 TODO：祖师 startingEquipment 至少含 1 件 `isLineageHeritage=true` 的校验，待 T55 完成 EquipmentDef 字段扩展后启用。
+**Phase 3 Week 4 D 师徒系统**：T53 ✅ + T54 ✅（511/511，销 #25）。下一步 T55 `EquipmentDef.isLineageHeritage` + `equipment.yaml` 标 2-3 件遗物 + 回 T53 启用祖师遗物红线校验。挂账 #26（main_menu 闭关入口硬编码 characterId=1/RealmTier.xueTu）剥到 T56 一并处理。
 
 ## 已知偏差 / 挂账事项
 
@@ -40,7 +41,7 @@
 17. **phase1_tasks T12 §709 笔误**：差 2 守方 0.05 错（实际差 2 守方=0.3，差 3+ 才 0.05），「必败」语义仍成立
 18. **`flutter build web` 被 Isar 阻塞**：dart:ffi web 不支持，Phase 5 切 Isar 4.x 时一并恢复
 23. **widget test 不接真 Isar**：testWidgets FakeAsync 与 `Isar.findFirst` / writeTxn 异步 IO 不兼容；当前 widget 端在 `_persist` 加 `Isar.getInstance` guard 测试旁路，真落地走 service-level test。Phase 5 Riverpod 3.x + IsarProvider 注入时再统一
-25. **Phase2SeedService.seedP1 缺主修，主线进入需先跑 P3**：T37 验收时发现 P1 fixture（沿用 Phase 2 spec：仅装备+材料）无主修心法，导致 P1 → 主线进战斗 StageBattleSetup fail-fast。临时 workaround：用户/Pen 在主菜单点「Phase 2 调试场景 → P3 散功代价」种子后再回主线即可。Phase 4 重写 fixture 时让 Demo 默认入口直通主线战斗
+~~25. Phase2SeedService.seedP1 缺主修~~ **已销账（2026-05-13 T54）**：seedMasterDisciple 路径 3 师徒齐主修，主菜单点 P5 后可直接进主线战斗。P1 fixture 自身仍是无主修（保留体例），玩家从 P1 入口进战斗的旧路径未修复——若需修复请走 P5 入口
 26. **闭关入口硬编码 characterId=1 / RealmTier.xueTu**：`main_menu.dart:77-78` 写死，与存档当前角色境界脱节（玩家若已进阶到二流/圆熟，闭关地图解锁判定与 realmScale 倍率仍按学徒算）。与挂账 #25 同源（Demo 缺单一 character 视角注入），Phase 4 fixture 改造时一并处理
 28. **闭关 widget 端到端 test 缺失（P2 #3 后续）**：P2 #3 修复了 setup→active→result 导航链，但 SeclusionService 是 static 方法无法 mock，widget test 接真 Isar 阻塞（#23 同源），暂只能靠 Pen 视觉验收兜底。Phase 5 service 注入后补「开始闭关 → 收功 → 返回 list 刷新」端到端 widget test
 29. **defeat hook + 9 关扩容**（P1 #1 留尾）：narrative defeat 6 文件已交付但 stage_entry_flow 战败路径暂未接；stages.yaml 6 关 fixture 未扩到 15 关。Phase 4 W1 主线引导 UI 一起做
