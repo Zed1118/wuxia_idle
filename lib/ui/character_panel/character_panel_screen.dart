@@ -45,6 +45,13 @@ class _CharacterPanelScreenState extends ConsumerState<CharacterPanelScreen> {
     final idsAsync = ref.watch(activeCharacterIdsProvider);
     return Scaffold(
       backgroundColor: WuxiaColors.background,
+      appBar: AppBar(
+        backgroundColor: WuxiaColors.background,
+        title: const Text('角色面板'),
+        leading: Navigator.of(context).canPop()
+            ? BackButton(onPressed: () => Navigator.of(context).pop())
+            : null,
+      ),
       body: SafeArea(
         child: idsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
