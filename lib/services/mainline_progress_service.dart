@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../data/defs/stage_def.dart';
 import '../data/game_repository.dart';

@@ -10,4 +10,4 @@ part 'rng_provider.g.dart';
 /// 测试：`rngProvider.overrideWithValue(DefaultRng(seed: 42))` 或自定义 stub。
 /// AutoDispose 以便跨 dialog 自然重建；同一 dialog 内 ref.read 只取一次。
 @riverpod
-Rng rng(RngRef ref) => DefaultRng();
+Rng rng(Ref ref) => DefaultRng();

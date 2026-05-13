@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../data/defs/seclusion_map_def.dart';
 import '../data/isar_setup.dart';

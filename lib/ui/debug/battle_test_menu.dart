@@ -334,7 +334,7 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final (left, right) = widget.teamsFactory();
-      ref.read(battleNotifierProvider.notifier).startBattle(left, right);
+      ref.read(battleProvider.notifier).startBattle(left, right);
     });
   }
 

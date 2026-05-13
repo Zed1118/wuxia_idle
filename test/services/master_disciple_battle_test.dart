@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/combat/battle_engine.dart';
 import 'package:wuxia_idle/combat/battle_state.dart';
 import 'package:wuxia_idle/data/game_repository.dart';

@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../data/isar_setup.dart';
@@ -17,7 +17,7 @@ part 'inventory_providers.g.dart';
 /// 后 `ref.invalidate(inventoryQuantityByTypeProvider(type))` 触发刷新。
 @riverpod
 Future<int> inventoryQuantityByType(
-  InventoryQuantityByTypeRef ref,
+  Ref ref,
   ItemType type,
 ) async {
   final item = await IsarSetup.instance.inventoryItems
@@ -33,7 +33,7 @@ Future<int> inventoryQuantityByType(
 /// Demo 装备量上限 30-50 件，整表加载够用）。Phase 5 多存档时再切到
 /// `ownerCharacterId` 过滤。
 @riverpod
-Future<List<Equipment>> allEquipments(AllEquipmentsRef ref) async {
+Future<List<Equipment>> allEquipments(Ref ref) async {
   final list = await IsarSetup.instance.equipments.where().findAll();
   list.sort((a, b) {
     final cmp = b.tier.index.compareTo(a.tier.index);

@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../combat/battle_state.dart';
 import '../data/defs/stage_def.dart';

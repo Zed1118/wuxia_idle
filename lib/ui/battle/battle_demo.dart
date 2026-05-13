@@ -185,7 +185,7 @@ class _BattleDemoLauncherState extends ConsumerState<BattleDemoLauncher> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final (left, right) = BattleDemo.mockTeams();
-      ref.read(battleNotifierProvider.notifier).startBattle(left, right);
+      ref.read(battleProvider.notifier).startBattle(left, right);
     });
   }
 
