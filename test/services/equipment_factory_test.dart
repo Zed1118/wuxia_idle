@@ -277,4 +277,62 @@ void main() {
 
     expect(() => DefaultRng().pick(<int>[]), throwsArgumentError);
   });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // 11. T55：def.isLineageHeritage 透传到 Equipment.isLineageHeritage
+  // ────────────────────────────────────────────────────────────────────────────
+
+  group('T55 · isLineageHeritage 透传', () {
+    EquipmentDef heritageDef() => const EquipmentDef(
+          id: 'test_heritage_weapon',
+          name: '传家剑',
+          tier: EquipmentTier.liQi,
+          slot: EquipmentSlot.weapon,
+          baseAttackMin: 500,
+          baseAttackMax: 500,
+          baseHealthMin: 0,
+          baseHealthMax: 0,
+          baseSpeedMin: 30,
+          baseSpeedMax: 30,
+          presetLoreIds: [],
+          dropSourceTags: [],
+          iconPath: '',
+          isLineageHeritage: true,
+        );
+
+    test('def.isLineageHeritage=true → Equipment.isLineageHeritage=true（参数不传）',
+        () {
+      final eq = EquipmentFactory.fromDef(
+        heritageDef(),
+        rng: DefaultRng(seed: 1),
+        obtainedAt: t,
+        obtainedFrom: 'master_starting',
+      );
+      expect(eq.isLineageHeritage, isTrue);
+    });
+
+    test('def.isLineageHeritage=false → 参数 isLineageHeritage=true 仍生效（override）',
+        () {
+      // 普通 def + 调用方强制标遗物（如奇遇赠送的临时遗物路径）
+      final eq = EquipmentFactory.fromDef(
+        weaponDef(),
+        rng: DefaultRng(seed: 1),
+        obtainedAt: t,
+        obtainedFrom: 'encounter_grant',
+        isLineageHeritage: true,
+      );
+      expect(eq.isLineageHeritage, isTrue);
+    });
+
+    test('def.isLineageHeritage=false + 参数缺省 → Equipment.isLineageHeritage=false',
+        () {
+      final eq = EquipmentFactory.fromDef(
+        weaponDef(),
+        rng: DefaultRng(seed: 1),
+        obtainedAt: t,
+        obtainedFrom: '掉落',
+      );
+      expect(eq.isLineageHeritage, isFalse);
+    });
+  });
 }
