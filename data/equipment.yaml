@@ -1,17 +1,22 @@
 # =============================================================================
-# equipment.yaml · 装备占位 fixture（T07）
+# equipment.yaml · 装备 fixture（Phase 3 Week 7 T63 扩 35 件）
 # =============================================================================
-# 共 10 件：覆盖寻常货 / 像样货 / 好家伙 三阶全槽位 + 利器武器 1 把。
-# 数值范围对齐 numbers.yaml `equipment.tiers` 段（不越红线）。
-# 武侠风命名由 Opus 自 roll；description / 典故文案归 DeepSeek，本表只填 id 引用。
+# 共 35 件：7 阶 × 5 件（weapon 3 三流派各 1 + armor 1 + accessory 1）。
+# 数值范围严格对齐 numbers.yaml `equipment.tiers` 段（每件 def 取 tier 全范围,
+# EquipmentFactory.fromDef 实例化时再 roll 个体差异）。
 #
 # 字段命名遵循 schema data_schema.md §5.1（camelCase），
 # 与 EquipmentDef.fromYaml 期望对齐；numbers.yaml 用 snake_case 是另一套约定。
+#
+# drop_source_tags 当前为占位（Phase 4 掉装备 service 完善后回填实际掉表）：
+#   - 寻常货/像样货/好家伙 → mainline_ch1/2/3 + tower_5/15
+#   - 利器/重器           → tower_25/30 + yiLiu_quest / jueDing_unlock
+#   - 宝物/神物           → zongShi_unlock / wuSheng_unlock（高阶解锁占位）
 # =============================================================================
 
 equipment:
 
-  # === 寻常货 ·  学徒境界开放 ===
+  # === 第 1 阶 寻常货 · 学徒境界开放 ===
   - id: weapon_xunchang_tie_jian
     name: 铁剑
     tier: xunChang
@@ -26,6 +31,36 @@ equipment:
     presetLoreIds: []
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_tie_jian.png
+
+  - id: weapon_xunchang_zhe_dao
+    name: 折刀
+    tier: xunChang
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 100
+    baseAttackMax: 150
+    baseHealthMin: 0
+    baseHealthMax: 0
+    baseSpeedMin: 0
+    baseSpeedMax: 10
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch1"]
+    iconPath: assets/equipment/weapon_xunchang_zhe_dao.png
+
+  - id: weapon_xunchang_ruan_bian
+    name: 软鞭
+    tier: xunChang
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 100
+    baseAttackMax: 150
+    baseHealthMin: 0
+    baseHealthMax: 0
+    baseSpeedMin: 0
+    baseSpeedMax: 10
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch1"]
+    iconPath: assets/equipment/weapon_xunchang_ruan_bian.png
 
   - id: armor_xunchang_bu_yi
     name: 粗布衣
@@ -55,7 +90,7 @@ equipment:
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/accessory_xunchang_yu_pei.png
 
-  # === 像样货 · 三流境界开放 ===
+  # === 第 2 阶 像样货 · 三流境界开放 ===
   - id: weapon_xiangyang_gang_dao
     name: 钢刀
     tier: xiangYang
@@ -70,6 +105,36 @@ equipment:
     presetLoreIds: []
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_gang_dao.png
+
+  - id: weapon_xiangyang_chang_jian
+    name: 长剑
+    tier: xiangYang
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 180
+    baseAttackMax: 280
+    baseHealthMin: 0
+    baseHealthMax: 50
+    baseSpeedMin: 5
+    baseSpeedMax: 20
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch2"]
+    iconPath: assets/equipment/weapon_xiangyang_chang_jian.png
+
+  - id: weapon_xiangyang_jiu_jie_bian
+    name: 九节鞭
+    tier: xiangYang
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 180
+    baseAttackMax: 280
+    baseHealthMin: 0
+    baseHealthMax: 50
+    baseSpeedMin: 5
+    baseSpeedMax: 20
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch2"]
+    iconPath: assets/equipment/weapon_xiangyang_jiu_jie_bian.png
 
   - id: armor_xiangyang_pi_jia
     name: 皮甲
@@ -99,7 +164,7 @@ equipment:
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/accessory_xiangyang_yin_jie.png
 
-  # === 好家伙 · 二流境界开放 ===
+  # === 第 3 阶 好家伙 · 二流境界开放 ===
   - id: weapon_haojiahuo_qing_feng_jian
     name: 青锋剑
     tier: haoJiaHuo
@@ -114,6 +179,36 @@ equipment:
     presetLoreIds: []
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_qing_feng_jian.png
+
+  - id: weapon_haojiahuo_xuan_hua_fu
+    name: 玄花斧
+    tier: haoJiaHuo
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 320
+    baseAttackMax: 450
+    baseHealthMin: 0
+    baseHealthMax: 100
+    baseSpeedMin: 10
+    baseSpeedMax: 30
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch3", "tower_15"]
+    iconPath: assets/equipment/weapon_haojiahuo_xuan_hua_fu.png
+
+  - id: weapon_haojiahuo_chan_si_suo
+    name: 缠丝索
+    tier: haoJiaHuo
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 320
+    baseAttackMax: 450
+    baseHealthMin: 0
+    baseHealthMax: 100
+    baseSpeedMin: 10
+    baseSpeedMax: 30
+    presetLoreIds: []
+    dropSourceTags: ["mainline_ch3", "tower_15"]
+    iconPath: assets/equipment/weapon_haojiahuo_chan_si_suo.png
 
   - id: armor_haojiahuo_jin_pao
     name: 锦袍
@@ -144,7 +239,7 @@ equipment:
     dropSourceTags: ["mainline_ch3"]
     iconPath: assets/equipment/accessory_haojiahuo_yu_pei_lao.png
 
-  # === 利器 · 一流境界开放 · Demo 主线最高级武器 ===
+  # === 第 4 阶 利器 · 一流境界开放 · Demo 主线最高级装备 ===
   - id: weapon_liqi_long_quan
     name: 龙泉剑
     tier: liQi
@@ -160,3 +255,283 @@ equipment:
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_long_quan.png
     isLineageHeritage: true   # 师承遗物（祖师传家武器，GDD §6.1 + Phase 3 W4 T55）
+
+  - id: weapon_liqi_pan_long_dao
+    name: 盘龙刀
+    tier: liQi
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 480
+    baseAttackMax: 650
+    baseHealthMin: 0
+    baseHealthMax: 150
+    baseSpeedMin: 20
+    baseSpeedMax: 45
+    presetLoreIds: []
+    dropSourceTags: ["tower_25", "yiLiu_quest"]
+    iconPath: assets/equipment/weapon_liqi_pan_long_dao.png
+
+  - id: weapon_liqi_lian_zi_bian
+    name: 链子鞭
+    tier: liQi
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 480
+    baseAttackMax: 650
+    baseHealthMin: 0
+    baseHealthMax: 150
+    baseSpeedMin: 20
+    baseSpeedMax: 45
+    presetLoreIds: []
+    dropSourceTags: ["tower_25", "yiLiu_quest"]
+    iconPath: assets/equipment/weapon_liqi_lian_zi_bian.png
+
+  - id: armor_liqi_xuan_tie_jia
+    name: 玄铁甲
+    tier: liQi
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 700
+    baseHealthMax: 1100
+    baseSpeedMin: 10
+    baseSpeedMax: 25
+    presetLoreIds: []
+    dropSourceTags: ["tower_25", "yiLiu_quest"]
+    iconPath: assets/equipment/armor_liqi_xuan_tie_jia.png
+
+  - id: accessory_liqi_fei_yu_pei
+    name: 翡玉佩
+    tier: liQi
+    slot: accessory
+    baseAttackMin: 180
+    baseAttackMax: 280
+    baseHealthMin: 350
+    baseHealthMax: 550
+    baseSpeedMin: 20
+    baseSpeedMax: 35
+    presetLoreIds: []
+    dropSourceTags: ["tower_25", "yiLiu_quest"]
+    iconPath: assets/equipment/accessory_liqi_fei_yu_pei.png
+
+  # === 第 5 阶 重器 · 绝顶境界开放（Demo 高阶，主线未覆盖） ===
+  - id: weapon_zhongqi_po_zhen_chui
+    name: 破阵锤
+    tier: zhongQi
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 700
+    baseAttackMax: 950
+    baseHealthMin: 50
+    baseHealthMax: 250
+    baseSpeedMin: 30
+    baseSpeedMax: 60
+    presetLoreIds: []
+    dropSourceTags: ["tower_30", "jueDing_unlock"]
+    iconPath: assets/equipment/weapon_zhongqi_po_zhen_chui.png
+
+  - id: weapon_zhongqi_qing_xu_jian
+    name: 青虚剑
+    tier: zhongQi
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 700
+    baseAttackMax: 950
+    baseHealthMin: 50
+    baseHealthMax: 250
+    baseSpeedMin: 30
+    baseSpeedMax: 60
+    presetLoreIds: []
+    dropSourceTags: ["tower_30", "jueDing_unlock"]
+    iconPath: assets/equipment/weapon_zhongqi_qing_xu_jian.png
+
+  - id: weapon_zhongqi_du_long_suo
+    name: 毒龙索
+    tier: zhongQi
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 700
+    baseAttackMax: 950
+    baseHealthMin: 50
+    baseHealthMax: 250
+    baseSpeedMin: 30
+    baseSpeedMax: 60
+    presetLoreIds: []
+    dropSourceTags: ["tower_30", "jueDing_unlock"]
+    iconPath: assets/equipment/weapon_zhongqi_du_long_suo.png
+
+  - id: armor_zhongqi_yin_lin_jia
+    name: 银鳞甲
+    tier: zhongQi
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 1100
+    baseHealthMax: 1600
+    baseSpeedMin: 15
+    baseSpeedMax: 35
+    presetLoreIds: []
+    dropSourceTags: ["tower_30", "jueDing_unlock"]
+    iconPath: assets/equipment/armor_zhongqi_yin_lin_jia.png
+
+  - id: accessory_zhongqi_qing_yu_huan
+    name: 青玉环
+    tier: zhongQi
+    slot: accessory
+    baseAttackMin: 280
+    baseAttackMax: 420
+    baseHealthMin: 550
+    baseHealthMax: 850
+    baseSpeedMin: 30
+    baseSpeedMax: 50
+    presetLoreIds: []
+    dropSourceTags: ["tower_30", "jueDing_unlock"]
+    iconPath: assets/equipment/accessory_zhongqi_qing_yu_huan.png
+
+  # === 第 6 阶 宝物 · 宗师境界开放（Demo 高阶占位） ===
+  - id: weapon_baowu_xuan_tian_fu
+    name: 玄天斧
+    tier: baoWu
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 1000
+    baseAttackMax: 1400
+    baseHealthMin: 100
+    baseHealthMax: 400
+    baseSpeedMin: 45
+    baseSpeedMax: 75
+    presetLoreIds: []
+    dropSourceTags: ["zongShi_unlock"]
+    iconPath: assets/equipment/weapon_baowu_xuan_tian_fu.png
+
+  - id: weapon_baowu_chang_hong_jian
+    name: 长虹剑
+    tier: baoWu
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 1000
+    baseAttackMax: 1400
+    baseHealthMin: 100
+    baseHealthMax: 400
+    baseSpeedMin: 45
+    baseSpeedMax: 75
+    presetLoreIds: []
+    dropSourceTags: ["zongShi_unlock"]
+    iconPath: assets/equipment/weapon_baowu_chang_hong_jian.png
+
+  - id: weapon_baowu_xue_lian_bian
+    name: 血莲鞭
+    tier: baoWu
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 1000
+    baseAttackMax: 1400
+    baseHealthMin: 100
+    baseHealthMax: 400
+    baseSpeedMin: 45
+    baseSpeedMax: 75
+    presetLoreIds: []
+    dropSourceTags: ["zongShi_unlock"]
+    iconPath: assets/equipment/weapon_baowu_xue_lian_bian.png
+
+  - id: armor_baowu_jin_si_jia
+    name: 金丝甲
+    tier: baoWu
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 1600
+    baseHealthMax: 2300
+    baseSpeedMin: 25
+    baseSpeedMax: 50
+    presetLoreIds: []
+    dropSourceTags: ["zongShi_unlock"]
+    iconPath: assets/equipment/armor_baowu_jin_si_jia.png
+
+  - id: accessory_baowu_yu_long_pei
+    name: 玉龙佩
+    tier: baoWu
+    slot: accessory
+    baseAttackMin: 420
+    baseAttackMax: 600
+    baseHealthMin: 850
+    baseHealthMax: 1300
+    baseSpeedMin: 45
+    baseSpeedMax: 70
+    presetLoreIds: []
+    dropSourceTags: ["zongShi_unlock"]
+    iconPath: assets/equipment/accessory_baowu_yu_long_pei.png
+
+  # === 第 7 阶 神物 · 武圣境界开放（Demo 顶阶占位） ===
+  - id: weapon_shenwu_po_jun_dao
+    name: 破军刀
+    tier: shenWu
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 1500
+    baseAttackMax: 2000
+    baseHealthMin: 200
+    baseHealthMax: 500
+    baseSpeedMin: 65
+    baseSpeedMax: 100
+    presetLoreIds: []
+    dropSourceTags: ["wuSheng_unlock"]
+    iconPath: assets/equipment/weapon_shenwu_po_jun_dao.png
+
+  - id: weapon_shenwu_tian_wen_jian
+    name: 天问剑
+    tier: shenWu
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 1500
+    baseAttackMax: 2000
+    baseHealthMin: 200
+    baseHealthMax: 500
+    baseSpeedMin: 65
+    baseSpeedMax: 100
+    presetLoreIds: []
+    dropSourceTags: ["wuSheng_unlock"]
+    iconPath: assets/equipment/weapon_shenwu_tian_wen_jian.png
+
+  - id: weapon_shenwu_huan_meng_bian
+    name: 幻梦鞭
+    tier: shenWu
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 1500
+    baseAttackMax: 2000
+    baseHealthMin: 200
+    baseHealthMax: 500
+    baseSpeedMin: 65
+    baseSpeedMax: 100
+    presetLoreIds: []
+    dropSourceTags: ["wuSheng_unlock"]
+    iconPath: assets/equipment/weapon_shenwu_huan_meng_bian.png
+
+  - id: armor_shenwu_xuan_huang_pao
+    name: 玄黄袍
+    tier: shenWu
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 2300
+    baseHealthMax: 3000
+    baseSpeedMin: 40
+    baseSpeedMax: 70
+    presetLoreIds: []
+    dropSourceTags: ["wuSheng_unlock"]
+    iconPath: assets/equipment/armor_shenwu_xuan_huang_pao.png
+
+  - id: accessory_shenwu_kun_lun_pei
+    name: 昆仑佩
+    tier: shenWu
+    slot: accessory
+    baseAttackMin: 600
+    baseAttackMax: 850
+    baseHealthMin: 1300
+    baseHealthMax: 1800
+    baseSpeedMin: 65
+    baseSpeedMax: 95
+    presetLoreIds: []
+    dropSourceTags: ["wuSheng_unlock"]
+    iconPath: assets/equipment/accessory_shenwu_kun_lun_pei.png

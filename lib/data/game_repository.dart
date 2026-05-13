@@ -183,19 +183,8 @@ class GameRepository {
         );
       }
     }
-    for (final e in equipmentDefs.values) {
-      if (e.baseAttackMax > 2000) {
-        throw StateError(
-          '红线越界：装备 ${e.id} baseAttackMax=${e.baseAttackMax} > 2000',
-        );
-      }
-      if (e.baseAttackMin < 0 || e.baseAttackMin > e.baseAttackMax) {
-        throw StateError(
-          '装备 ${e.id} baseAttackMin/Max 不合法：'
-          '${e.baseAttackMin}/${e.baseAttackMax}',
-        );
-      }
-    }
+    // Phase 3 Week 7 T63：装备 fixture 扩 35 件,校验单件红线 + 覆盖度
+    _enforceEquipmentRedLines();
     // Phase 3 T33：stage 链路校验。prevStageId 必须能找到，
     // 且与本关同 chapterIndex（防跨章引用 / 错字 id）。
     for (final s in stageDefs.values) {
@@ -234,6 +223,54 @@ class GameRepository {
 
     // Phase 3 Week 4 T53：师徒 3 角色校验
     _enforceMasterRedLines();
+  }
+
+  /// 装备红线（Phase 3 Week 7 T63）：
+  /// - 单件：baseAttackMax ≤ 2000（GDD §5.4 红线）/ baseAttackMin 区间合法
+  /// - 覆盖度：每阶（7 阶）≥ 5 件 / 每阶 weapon 三流派各 ≥ 1 / armor + accessory 各 ≥ 1
+  ///
+  /// 允许测试 fixture 缺装备段(equipmentDefs 为空时跳过覆盖度,仅放过 master/stage 等独立测试)。
+  void _enforceEquipmentRedLines() {
+    for (final e in equipmentDefs.values) {
+      if (e.baseAttackMax > 2000) {
+        throw StateError(
+          '红线越界：装备 ${e.id} baseAttackMax=${e.baseAttackMax} > 2000',
+        );
+      }
+      if (e.baseAttackMin < 0 || e.baseAttackMin > e.baseAttackMax) {
+        throw StateError(
+          '装备 ${e.id} baseAttackMin/Max 不合法：'
+          '${e.baseAttackMin}/${e.baseAttackMax}',
+        );
+      }
+    }
+    if (equipmentDefs.isEmpty) return;
+    for (final tier in EquipmentTier.values) {
+      final tierItems = equipmentDefs.values.where((e) => e.tier == tier);
+      if (tierItems.length < 5) {
+        throw StateError(
+          '装备覆盖度不足：${tier.name} 阶共 ${tierItems.length} 件,应 ≥ 5',
+        );
+      }
+      final weapons = tierItems.where((e) => e.slot == EquipmentSlot.weapon);
+      final armors = tierItems.where((e) => e.slot == EquipmentSlot.armor);
+      final accessories =
+          tierItems.where((e) => e.slot == EquipmentSlot.accessory);
+      if (armors.isEmpty) {
+        throw StateError('装备覆盖度不足：${tier.name} 阶缺 armor');
+      }
+      if (accessories.isEmpty) {
+        throw StateError('装备覆盖度不足：${tier.name} 阶缺 accessory');
+      }
+      for (final school in TechniqueSchool.values) {
+        final hit = weapons.any((w) => w.schoolBias == school);
+        if (!hit) {
+          throw StateError(
+            '装备覆盖度不足：${tier.name} 阶缺 ${school.name} 流派武器',
+          );
+        }
+      }
+    }
   }
 
   void _enforceTowerRedLines() {
