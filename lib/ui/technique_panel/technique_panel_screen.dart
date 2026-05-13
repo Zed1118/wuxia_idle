@@ -212,6 +212,16 @@ class _TechniqueTile extends ConsumerWidget {
                   fontSize: 11,
                 ),
               ),
+              const SizedBox(width: 12),
+              // W12 fix: 视觉验收 debug 字段——skillUsage 累计总数
+              // progress 只反映主修升层节奏，看不到「这场战斗到底累了几次 skill」
+              Text(
+                'skillUsage: ${technique.skillUsageCount.fold<int>(0, (s, e) => s + e.count)}',
+                style: const TextStyle(
+                  color: WuxiaColors.textMuted,
+                  fontSize: 11,
+                ),
+              ),
               const Spacer(),
               if (!isMain && character.mainTechniqueId != null)
                 TextButton(

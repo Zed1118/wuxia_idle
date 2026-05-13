@@ -63,10 +63,14 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+            // W12 fix: 6 个按钮在 800x600 surface 下高度临界，SingleChildScrollView
+            // 包裹兜底；正常窗口下视觉不变（仍居中）
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                 if (_busy)
                   const Padding(
                     padding: EdgeInsets.only(bottom: 16),
@@ -122,7 +126,19 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                     ),
                   ),
                 ),
-              ],
+                const SizedBox(height: 16),
+                _ScenarioButton(
+                  label: UiStrings.scenarioVc,
+                  hint: UiStrings.hintVc,
+                  onTap: () => _seedAndPush(
+                    () => Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW7W11(),
+                    () => const CharacterPanelScreen(
+                      characterId: _defaultCharacterId,
+                    ),
+                  ),
+                ),
+                ],
+              ),
             ),
           ),
         ),

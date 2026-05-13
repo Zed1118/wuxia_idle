@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 
 import '../data/defs/master_def.dart';
 import '../data/game_repository.dart';
+import '../data/isar_setup.dart';
 import '../data/models/attributes.dart';
 import '../data/models/character.dart';
 import '../data/models/enums.dart';
@@ -12,6 +13,7 @@ import '../data/models/save_data.dart';
 import '../data/models/technique.dart';
 import '../utils/rng.dart';
 import 'equipment_factory.dart';
+import 'mainline_progress_service.dart';
 
 /// Phase 2 调试场景种子工厂（phase2_tasks.md T32 §492-509 子提交 3）。
 ///
@@ -248,6 +250,35 @@ class Phase2SeedService {
       // 5. 基础物料（让玩家进 P5 后可立即试强化）。
       await _seedMaterials( mojianshi: 2000, jieJing: 200);
     });
+  }
+
+  /// W7-W11 视觉验收专用 seed（W12 fix:Codex 视觉验收前置预设）。
+  ///
+  /// 在 [seedMasterDisciple] 基础上额外 mark Ch1 01-04 通关:
+  /// - **场景 D / E（W11）**:`stage_01_01` 可重打验 victory 副作用,
+  ///   `stage_01_05` 可挑战验 drop 入背包
+  /// - **场景 G（W10）**:`stage_01_05` 章末大 Boss 可直接挑战,
+  ///   无需先真通 Ch1 01-04 节省 5-7 分钟
+  /// - 不动装备/心法（沿用 [seedMasterDisciple]）
+  ///
+  /// stage_01_05 平衡 drift(W7-W8 后 P5 实力可边缘胜)挂账 #33,
+  /// **派单时若仍胜出**改用「stage_01_05 不点大招」让玩家方负伤更多。
+  Future<void> seedVisualCheckW7W11() async {
+    // 1. 跑师徒种子（装备 / 心法 / activeCharacterIds 全套）
+    await seedMasterDisciple();
+
+    // 2. mark Ch1 01-04 cleared 让 stage_01_05 可挑战
+    final svc = MainlineProgressService(isar: isar);
+    await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    final now = DateTime.now();
+    for (final stageId in const [
+      'stage_01_01',
+      'stage_01_02',
+      'stage_01_03',
+      'stage_01_04',
+    ]) {
+      await svc.recordVictory(stageId: stageId, now: now);
+    }
   }
 
   // ── private helpers ────────────────────────────────────────────────────────

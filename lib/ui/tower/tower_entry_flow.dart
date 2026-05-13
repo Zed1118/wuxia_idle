@@ -77,10 +77,15 @@ Future<void> runTowerFlow({
     if (defeatRecorderForTest != null) {
       unawaited(defeatRecorderForTest().catchError((_) {}));
     } else {
-      unawaited(
-        TowerProgressService(isar: IsarSetup.instance).recordDefeat(now: DateTime.now())
-            .catchError((_) {}),
-      );
+      // W12 fix: provider 副作用 getOrCreate 与 record* 存在 race（W6 重构遗留），
+      // 主动 ensure 避免 recordDefeat 抛 StateError 后被 catchError 静默吞掉
+      unawaited(() async {
+        final svc = TowerProgressService(isar: IsarSetup.instance);
+        await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+        await svc.recordDefeat(now: DateTime.now());
+      }().catchError((e, st) {
+        debugPrint('runTowerFlow recordDefeat failed: $e\n$st');
+      }));
     }
     return;
   }
@@ -88,14 +93,20 @@ Future<void> runTowerFlow({
   // ── victory ──
   TowerClearResult clearResult;
   try {
-    clearResult = clearRecorderForTest != null
-        ? await clearRecorderForTest(floor.floorIndex)
-        : await TowerProgressService(isar: IsarSetup.instance).recordClear(
-            floorIndex: floor.floorIndex,
-            now: DateTime.now(),
-          );
-  } catch (_) {
-    // Isar 未初始化（test env）→ 视为重打非首通
+    if (clearRecorderForTest != null) {
+      clearResult = await clearRecorderForTest(floor.floorIndex);
+    } else {
+      // W12 fix: 同 defeat 分支，ensure getOrCreate 避免 race
+      final svc = TowerProgressService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+      clearResult = await svc.recordClear(
+        floorIndex: floor.floorIndex,
+        now: DateTime.now(),
+      );
+    }
+  } catch (e, st) {
+    // 加 log 便于诊断（W12 之前是 catch (_) 静默吞，Codex 视觉验收无法追踪根因）
+    debugPrint('runTowerFlow recordClear unexpected failure: $e\n$st');
     clearResult = (isFirstClear: false, highestAfter: 0);
   }
 

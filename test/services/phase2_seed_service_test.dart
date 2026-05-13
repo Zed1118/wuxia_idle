@@ -8,6 +8,7 @@ import 'package:wuxia_idle/data/models/character.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/data/models/equipment.dart';
 import 'package:wuxia_idle/data/models/inventory_item.dart';
+import 'package:wuxia_idle/data/models/mainline_progress.dart';
 import 'package:wuxia_idle/data/models/save_data.dart';
 import 'package:wuxia_idle/data/models/technique.dart';
 import 'package:wuxia_idle/services/phase2_seed_service.dart';
@@ -297,5 +298,39 @@ void main() {
     expect(saveAfter!.activeCharacterIds, [1, 2, 3]);
     expect(await isar.characters.get(2), isNull);
     expect(await isar.characters.get(3), isNull);
+  });
+
+  // ── W12 fix · seedVisualCheckW7W11 ──────────────────────────────────────────
+
+  test('seedVisualCheckW7W11 → 师徒齐 + Ch1 01-04 标 cleared + stage_01_05 可挑战',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW7W11();
+    final isar = IsarSetup.instance;
+
+    // 1. 师徒种子保留（沿用 seedMasterDisciple 行为）
+    expect(await isar.characters.count(), 3);
+    final save = await isar.saveDatas.get(0);
+    expect(save!.activeCharacterIds, [1, 2, 3]);
+
+    // 2. MainlineProgress 含 4 个 stage_01_xx
+    final progress = await isar.mainlineProgress.where().findFirst();
+    expect(progress, isNotNull);
+    expect(progress!.clearedStageIds, [
+      'stage_01_01',
+      'stage_01_02',
+      'stage_01_03',
+      'stage_01_04',
+    ]);
+    expect(progress.clearedAt.length, 4);
+  });
+
+  test('seedVisualCheckW7W11 反复调用 → MainlineProgress 幂等不重复 append',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW7W11();
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW7W11();
+    final isar = IsarSetup.instance;
+    final progress = await isar.mainlineProgress.where().findFirst();
+    expect(progress!.clearedStageIds.length, 4,
+        reason: 'recordVictory 幂等：重复种子不重复 append');
   });
 }
