@@ -5,9 +5,9 @@
 
 ## 当前阶段
 
-**P1 #1 narrative schema Mac 端接手完成**（2026-05-12，销账 #27）。NarrativeLoader 加 stages/ 子目录扫描 + stages.yaml 6 关 id 迁移 `mainline_test_NN → stage_NN_NN` + narrative id 全链对齐 DeepSeek 拆分体系；widget test 已验证「真实剧情『山门之外 · 启』可加载，不再走 placeholder」。493→495 测试（+2 防回归 case），analyze 0 issues。
+**Phase 3 Week 4 D 师徒系统 T53 完成**（2026-05-13，commit `9349626`）。masters.yaml 3 角色 schema + MasterDef + GameRepository 红线校验（7 项）+ 便捷查询。3 角色按方案 A 降级（祖师一流/大弟子二流/二弟子三流），避免 yaml 高阶装备/心法缺失 + 不触碰飞升锚点 wuSheng。495 → 505 测试（+10：MasterDef 3 + 师徒红线 fail-fast 7），analyze 0 issues。祖师遗物 isLineageHeritage 校验留 TODO 待 T55。
 
-**下一步**：Phase 3 Week 4 起手方向已选 **D 师徒系统**（2026-05-13 Mac Opus 复核选定）。§12 #5 闭关产出公式收口为「已决，3 维度扩展挂账 #30」；#10/#11 师徒决策最小版本草案见 `docs/handoff/week4_d_minimal_spec_2026-05-13.md`，待用户拍板后再拆 T53+ 任务。
+**下一步**：T54 seedMasterDisciple service + Demo 入口接入 + 顺手清挂账 #25/#26。详 `phase3_tasks.md` 末 Week 4 段。
 
 ## 已完成
 
@@ -20,10 +20,11 @@
 - **T41 TowerProgress @collection + TowerProgressService**（2026-05-11，feat/phase3-tower）：`@collection TowerProgress`（saveDataId/highestClearedFloor/highestClearedAt/totalAttempts/totalDefeats/createdAt）；service 6 API（getOrCreate 幂等 / availableFloor 封顶 30 / canChallenge 边界 / floorList 30 行三态 / **recordClear 返回 `({isFirstClear, highestAfter})`**：仅 floorIndex==highest+1 才 ++ 否则 isFirstClear=false 不抛 / recordDefeat 仅增统计不退层）；IsarSetup 加 TowerProgressSchema + saveVersion 0.2.0→0.3.0；isar_setup_test 同步改期望值；test 加 15 用例（接真 Isar 临时目录，覆盖跳层非法/与 MainlineProgress 独立校验），累计 405/405
 - **Phase 3 Week 3 T47-T52 闭关地图 v0.3.0-w3 交付**（2026-05-11/12，tag `v0.3.0-w3`，merge d37d09d）：5 张闭关地图 fixture（mountain/cave/temple/lake/ancient_battlefield）+ `SeclusionMapDef` + `RetreatConfig` / `RetreatSession @collection` + `SeclusionService`（start/compute/complete/abandon）/ 地图列表、选时长、进行中、收功结果 4 UI 屏 + main_menu「闭关修炼」入口 / saveVersion 0.3.0→0.4.0。405→457（+52）测试，analyze 0 issues。**T52 Pen Windows 视觉验收通过**（2026-05-12）：① 收功后 result 显示完整 + 返回 list 刷新 OK ② 同 ItemType 经 Phase2/闭关/爬塔多路写入后 InventoryItem 不分裂 OK。同 merge 一并带入 DeepSeek 端 narrative schema 拆分（32ae3f3），Mac 端 NarrativeLoader 适配挂账 #27 待开工。
 - **P1 #1 narrative schema Mac 端接手**（2026-05-12，销账 #27）：NarrativeLoader 扫 `data/narratives/stages/` 子目录（扁平→子目录→placeholder 三段兜底）；stages.yaml 6 关 stage_id 迁移 `mainline_test_NN → stage_NN_NN`，narrativeOpeningId/VictoryId + prevStageId 全链对齐 DeepSeek 拆分；全仓库 ~67 处 hard-coded `mainline_test_0` 引用 sed 批量重命名；narrative_loader_test 新增 2 case（扁平缺失→子目录命中 + 双缺失调用顺序契约）；stage_list_screen_test 「点关卡进剧情」case 改证「真实文案『山门之外 · 启』可加载」。**widget 端验证 main 主线剧情已脱离 placeholder regression**。493→495 测试，analyze 0 issues。涉及 10 文件 +172/-106。
+- **Phase 3 Week 4 T53 masters.yaml schema + MasterDef + 红线校验**（2026-05-13，commit `9349626`）：`lib/data/defs/master_def.dart` 新建（MasterDef + AttributeProfile 纯 Dart 不入 Isar）；`data/masters.yaml` 3 角色 fixture（祖师一流/大弟子二流/二弟子三流，方案 A 降级避飞升）；`GameRepository.masters` 字段 + `_enforceMasterRedLines` 7 项（3 条 / slotIndex 连续 / role 与 slot 对应 / founder 唯一 / 不允许 wuSheng / 属性单项 1-10 总和 16-24 / 三系锁死 starting tier ≤ defaultRealm）+ `getMasterBySlot` / `getFounderMaster` 便捷查询；test +10（MasterDef.fromYaml 3 + 师徒红线 fail-fast 7），累计 495 → 505。祖师遗物 isLineageHeritage 校验留 TODO 待 T55
 
 ## 进行中
 
-**Phase 3 Week 4 D 师徒系统**（2026-05-13 起手）：T53 spec 已写（masters.yaml schema + MasterDef + 红线校验），3 个决策点（D-1/D-2/D-3）全部按推荐方案 A 拍板。T54 顺手清挂账 #25/#26。详 `phase3_tasks.md` 末 Week 4 段。
+**Phase 3 Week 4 D 师徒系统**：T53 ✅（commit 9349626，505/505）。下一步 T54 seedMasterDisciple service + Demo 入口 + 顺手清挂账 #25/#26。T53 留 TODO：祖师 startingEquipment 至少含 1 件 `isLineageHeritage=true` 的校验，待 T55 完成 EquipmentDef 字段扩展后启用。
 
 ## 已知偏差 / 挂账事项
 
