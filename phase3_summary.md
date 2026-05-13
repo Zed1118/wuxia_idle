@@ -191,3 +191,68 @@ Week 5 候选（保留 §Week 4 候选 spec 草案）：
 - E 武学领悟（同 §12 #6）
 - F 主线扩到 15 关（P1 #1 留尾，与 narrative defeat hook 9 关扩容一起做）
 - Phase 5 收尾（DDD 目录整理 / Riverpod 3.x / Isar 4.x / flutter build web 解锁）
+
+---
+
+## Week 5 · F 主线扩 15 关 + 战败 narrative hook（2026-05-13，tag `v0.3.0-w5`）
+
+### 起手 4 决策（用户拍板）
+
+1. 章节结构：**3 章 × 5 关**（对齐 GDD §7 Demo 3 章）
+2. 战败 UX：**narrative_defeat 看完返回 stage list**（不阻断重试 / 不计 cleared）
+3. DeepSeek 协作：Mac 先上 stages.yaml，narrative 文案 DeepSeek 端**已铺满 30 opening+victory + 6 defeat 文件**（章末两关 4/5 才有 defeat）
+4. effort 升 **xhigh**（跨子系统 + 双端协作 + 挂账收尾，决策点多）
+
+### 实施清单
+
+#### T59 stages.yaml 6→15 关 + schema 加 narrativeDefeatId
+- `StageDef` 加 `narrativeDefeatId` 字段（fromYaml + 构造函数）
+- `stages.yaml` 重写 3 章×5 关，数值梯度：Ch1 xueTu 1.0→1.8 / Ch2 sanLiu 1.5→2.3 / Ch3 erLiu 2.0→2.8
+- 章末 4/5 关 `isBossStage=true` + 配 `narrativeDefeatId`
+- 修旧 6 关数值层与 DeepSeek narrative 编号不对齐的隐藏 bug：
+  - stage_02_02「黑风寨 Boss」→ 改为 sanLiu 中段「茶馆论剑」普通关
+  - stage_03_02「一战封王 大 Boss」→ 改为 erLiu 中段「许昌擂台」普通关
+  - 章末大 Boss 重定位 stage_NN_05
+- `GameRepository._enforceMainlineRedLines`：mainline 总数=15 / 3 章×5 关 / narrativeDefeatId 必须仅在 isBossStage=true 关
+- test +1（主线 15 关红线）+ 既有 5 个测试期望同步更新
+
+#### T60 stage_entry_flow 接 defeat narrative + 销账 #29
+- `runStageFlow` 战败分支：若 `stage.narrativeDefeatId != null && context.mounted` → push NarrativeReaderScreen → 看完 pop 回 stage list
+- 不记录进度、不掉装备（Phase 4 再加战败结算）
+- 章内 1/2/3 普通关无 defeat → 战败直接返回（hook 分流由 yaml schema 决定）
+
+#### T62 Pen 视觉验收（2026-05-13 14:56-15:23）
+
+| # | 截图 | 验收点 |
+|---|---|---|
+| 01 | [01_chapter_list_all_locked.png](screenshots/phase3_w5/01_chapter_list_all_locked.png) | ChapterListScreen 3 章三态：Ch1 学武出山「进行中」/ Ch2 武林初识「锁」/ Ch3 名扬江湖「锁」 |
+| 02 | [02_ch1_5stages_all_locked.png](screenshots/phase3_w5/02_ch1_5stages_all_locked.png) | Ch1 StageListScreen **5 关全名渲染**：山门之外（已通关）/ 荒山野店（可挑战）/ 黑风岭/洛阳城外/风雨渡口（锁，「通关前一关解锁」副标题） |
+| 03 | [03_pre_balance_stage_01_05_win.png](screenshots/phase3_w5/03_pre_balance_stage_01_05_win.png) | 数值平衡迭代前证据：原 xueTu 数值章末 Boss 玩家方碾压（10 tick 左队胜 21673 总伤），证明 T59 估算偏低 → balance commit 跨阶到 erLiu |
+| 04 | [04_ch1_all_cleared.png](screenshots/phase3_w5/04_ch1_all_cleared.png) | 5 关 ✓ 已通关旁证（balance 前），证明 prev 链解锁 + recordVictory 工作 |
+| 05 | [05_stage_01_05_battle_defeat.png](screenshots/phase3_w5/05_stage_01_05_battle_defeat.png) | **balance 后**风雨渡口战斗右队胜 0v2，17 tick，敌方撑伞高人 10000/10000 满血、渡口刀客 9000/9000、渡口剑客 5252/9000 几乎满血；玩家方 3 角色全员阵亡（erLiu 跨 2 阶设计生效，攻×0.3 守×2.5）|
+| 06 | [06_stage_01_05_defeat_narrative.png](screenshots/phase3_w5/06_stage_01_05_defeat_narrative.png) | **核心销账截图**：NarrativeReaderScreen「**风雨渡口·败**」标题 + 文案「撑伞的人没有追。他只是站在雨里，看着你退回渡口。」+ 1/3 分页 + 「继续」按钮。**T60 stage_entry_flow defeat hook 视觉验收通过，销账 #29** |
+
+**T62 中途发现 + 处理**：
+- **CharacterPanelScreen 无返回按钮**（T56 加 Tab 时遗漏）→ fix commit 加 AppBar + BackButton（canPop 才显示）
+- **stage_01_05 数值估算偏低**（xueTu 玩家碾压）→ balance commit 跨 2 阶到 erLiu（设计意图：章末大 Boss 暗示「未升阶不可挑战」）
+
+### Week 5 销账
+
+- **#29** narrative defeat hook + 9 关扩容 → T59+T60 双交付销账
+
+### Week 5 commits
+
+```
+73c1f37 balance(stage_01_05): 章末大 Boss 跨 2 阶到 erLiu（强制升阶设计）
+4fb22f4 balance(stage_01_05): 章末大 Boss 跨阶升 sanLiu（暗示需升阶，intermediate）
+87387ad fix(character-panel): 加 AppBar + 返回按钮（T56 遗留 UX 盲区）
+c272914 docs(t62): Pen 视觉验收 spec + 截图目录预留
+f4bad18 feat(phase3-w5): T59 主线 6→15 关 + T60 战败 narrative hook（销账 #29）
+```
+
+### 下一 Week 议题
+
+剩余候选（按建议顺序）：
+- **Phase 5 收尾**（DDD 目录整理 / Riverpod 3.x / Isar 4.x / flutter build web 解锁）— 不依赖外部决策
+- **挂账 #30** 闭关 3 维度扩展（与 §12 #7 节气清单 + 农历库选型同源）
+- **C 奇遇 / E 武学领悟**（阻塞 §12 #6 机缘值累积规则，需用户先决）
