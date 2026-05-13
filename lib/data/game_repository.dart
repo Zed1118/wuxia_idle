@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'defs/equipment_def.dart';
+import 'defs/master_def.dart';
 import 'defs/realm_def.dart';
 import 'defs/seclusion_map_def.dart';
 import 'defs/skill_def.dart';
@@ -46,6 +47,10 @@ class GameRepository {
   /// 闭关地图 5 张（numbers.yaml `retreat.maps`，Phase 3 T47）。
   final List<SeclusionMapDef> seclusionMaps;
 
+  /// 师徒角色 3 条，按 slotIndex 升序（0=祖师 / 1=大弟子 / 2=二弟子）。
+  /// 索引方式：`masters[slotIndex]`（红线校验保证 0-2 连续唯一）。
+  final List<MasterDef> masters;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -55,6 +60,7 @@ class GameRepository {
     required this.stageDefs,
     required this.towerFloors,
     required this.seclusionMaps,
+    required this.masters,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -100,6 +106,12 @@ class GameRepository {
         .toList(growable: false)
       ..sort((a, b) => a.floorIndex.compareTo(b.floorIndex));
 
+    final mastersRaw = parseYamlMap(await load('data/masters.yaml'));
+    final masters = ((mastersRaw['masters'] as List?) ?? const [])
+        .map((e) => MasterDef.fromYaml(Map<String, dynamic>.from(e as Map)))
+        .toList(growable: false)
+      ..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
+
     final repo = GameRepository._(
       numbers: numbers,
       realms: realms,
@@ -109,6 +121,7 @@ class GameRepository {
       stageDefs: stageDefs,
       towerFloors: towerFloors,
       seclusionMaps: numbers.retreat.maps,
+      masters: masters,
     );
     repo._enforceRedLines();
     _instance = repo;
@@ -213,6 +226,9 @@ class GameRepository {
 
     // Phase 3 T47：闭关地图 5 张校验
     _enforceSeclusionRedLines();
+
+    // Phase 3 Week 4 T53：师徒 3 角色校验
+    _enforceMasterRedLines();
   }
 
   void _enforceTowerRedLines() {
@@ -277,6 +293,113 @@ class GameRepository {
           );
         }
       }
+    }
+  }
+
+  /// Phase 3 Week 4 T53：师徒 3 角色红线。
+  ///
+  /// 校验项：
+  ///   - 必须 3 条；slotIndex 0/1/2 各一不重不漏
+  ///   - slotIndex=0 必须 founder，slotIndex=1/2 必须 disciple
+  ///   - founder 仅 1 个；不允许 grandDisciple（Demo 不做徒孙）
+  ///   - defaultRealm 严格 < wuSheng（Demo 不做飞升锚点）
+  ///   - AttributeProfile 4 项单项 ∈ [1, 10]，总和 ∈ [16, 24]（GDD §4.1）
+  ///   - startingTechniqueIds / startingEquipmentIds 全部 id 须在对应 def map 中
+  ///   - 三系锁死：starting 装备/心法 tier index ≤ defaultRealm index
+  ///
+  /// TODO（T55 完成后启用）：祖师 startingEquipmentIds 至少含 1 件
+  /// `EquipmentDef.isLineageHeritage == true`。当前 EquipmentDef 还没有该字段。
+  void _enforceMasterRedLines() {
+    if (masters.length != 3) {
+      throw StateError('师徒角色应为 3 条，实际 ${masters.length}');
+    }
+    final seenSlots = <int>{};
+    var founderCount = 0;
+    for (var i = 0; i < masters.length; i++) {
+      final m = masters[i];
+      if (m.slotIndex != i) {
+        throw StateError(
+          '师徒 slotIndex 不连续：期望 $i，实际 ${m.slotIndex}（id=${m.id}）',
+        );
+      }
+      if (!seenSlots.add(m.slotIndex)) {
+        throw StateError('师徒 slotIndex 重复：${m.slotIndex}');
+      }
+      // slot 与 role 对应
+      if (m.slotIndex == 0) {
+        if (m.lineageRole != LineageRole.founder) {
+          throw StateError(
+            '师徒 slot=0 必须为 founder，实际 ${m.lineageRole.name}（id=${m.id}）',
+          );
+        }
+        founderCount++;
+      } else {
+        if (m.lineageRole != LineageRole.disciple) {
+          throw StateError(
+            '师徒 slot=${m.slotIndex} 必须为 disciple，'
+            '实际 ${m.lineageRole.name}（id=${m.id}）',
+          );
+        }
+      }
+      // 飞升锚点
+      if (m.defaultRealm == RealmTier.wuSheng) {
+        throw StateError(
+          '师徒 ${m.id} defaultRealm=wuSheng，Demo 阶段不允许（飞升锚点）',
+        );
+      }
+      // AttributeProfile 范围
+      final ap = m.attributeProfile;
+      for (final entry in <String, int>{
+        'constitution': ap.constitution,
+        'enlightenment': ap.enlightenment,
+        'agility': ap.agility,
+        'fortune': ap.fortune,
+      }.entries) {
+        if (entry.value < 1 || entry.value > 10) {
+          throw StateError(
+            '师徒 ${m.id} attributeProfile.${entry.key}=${entry.value}，'
+            '应 ∈ [1, 10]',
+          );
+        }
+      }
+      if (ap.total < 16 || ap.total > 24) {
+        throw StateError(
+          '师徒 ${m.id} attributeProfile.total=${ap.total}，应 ∈ [16, 24]',
+        );
+      }
+      // starting id 存在性 + 三系锁死
+      final realmIdx = m.defaultRealm.index;
+      for (final techId in m.startingTechniqueIds) {
+        final tech = techniqueDefs[techId];
+        if (tech == null) {
+          throw StateError(
+            '师徒 ${m.id} startingTechniqueId=$techId 未在 techniques.yaml 中',
+          );
+        }
+        if (tech.tier.index > realmIdx) {
+          throw StateError(
+            '师徒 ${m.id} 心法 $techId tier=${tech.tier.name} '
+            '超出 defaultRealm=${m.defaultRealm.name} 的三系锁死上限',
+          );
+        }
+      }
+      for (final equipId in m.startingEquipmentIds) {
+        final eq = equipmentDefs[equipId];
+        if (eq == null) {
+          throw StateError(
+            '师徒 ${m.id} startingEquipmentId=$equipId 未在 equipment.yaml 中',
+          );
+        }
+        if (eq.tier.index > realmIdx) {
+          throw StateError(
+            '师徒 ${m.id} 装备 $equipId tier=${eq.tier.name} '
+            '超出 defaultRealm=${m.defaultRealm.name} 的三系锁死上限',
+          );
+        }
+      }
+    }
+    if (founderCount != 1) {
+      throw StateError('师徒 founder 数量应为 1，实际 $founderCount');
     }
   }
 
@@ -361,4 +484,16 @@ class GameRepository {
         orElse: () =>
             throw StateError('SeclusionMapDef 未配置: ${mapType.name}'),
       );
+
+  /// 按 slotIndex 取师徒定义（0=祖师 / 1=大弟子 / 2=二弟子）。
+  /// 越界抛 [RangeError]。
+  MasterDef getMasterBySlot(int slotIndex) {
+    if (slotIndex < 0 || slotIndex > 2) {
+      throw RangeError('师徒 slotIndex 必须 ∈ [0, 2]，实际 $slotIndex');
+    }
+    return masters[slotIndex];
+  }
+
+  /// 取祖师定义（slotIndex=0），等价于 `getMasterBySlot(0)`。
+  MasterDef getFounderMaster() => masters[0];
 }

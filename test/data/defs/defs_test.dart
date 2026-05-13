@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
+import 'package:wuxia_idle/data/defs/master_def.dart';
 import 'package:wuxia_idle/data/defs/realm_def.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
@@ -373,6 +374,81 @@ void main() {
       expect(def.internalForceMax, 15000);
       expect(def.equipmentTierCap, EquipmentTier.shenWu);
       expect(def.techniqueTierCap, TechniqueTier.chuanShuoShenGong);
+    });
+  });
+
+  group('MasterDef.fromYaml（Phase 3 Week 4 T53）', () {
+    test('全字段解析 + AttributeProfile 总和正确', () {
+      final def = MasterDef.fromYaml({
+        'id': 'founder',
+        'lineageRole': 'founder',
+        'slotIndex': 0,
+        'defaultRealm': 'yiLiu',
+        'defaultLayer': 'qiMeng',
+        'attributeProfile': {
+          'constitution': 5,
+          'enlightenment': 7,
+          'agility': 5,
+          'fortune': 5,
+        },
+        'startingTechniqueIds': ['tech_gangmeng_mingjia'],
+        'startingEquipmentIds': ['weapon_liqi_long_quan'],
+        'enabledInDemo': true,
+      });
+
+      expect(def.id, 'founder');
+      expect(def.lineageRole, LineageRole.founder);
+      expect(def.slotIndex, 0);
+      expect(def.defaultRealm, RealmTier.yiLiu);
+      expect(def.defaultLayer, RealmLayer.qiMeng);
+      expect(def.attributeProfile.constitution, 5);
+      expect(def.attributeProfile.enlightenment, 7);
+      expect(def.attributeProfile.total, 22);
+      expect(def.startingTechniqueIds, ['tech_gangmeng_mingjia']);
+      expect(def.startingEquipmentIds, ['weapon_liqi_long_quan']);
+      expect(def.enabledInDemo, isTrue);
+      expect(def.toString(), contains('founder'));
+    });
+
+    test('enabledInDemo 缺省 → true / starting 列表缺省 → 空 List', () {
+      final def = MasterDef.fromYaml({
+        'id': 'first_disciple',
+        'lineageRole': 'disciple',
+        'slotIndex': 1,
+        'defaultRealm': 'erLiu',
+        'defaultLayer': 'qiMeng',
+        'attributeProfile': {
+          'constitution': 5,
+          'enlightenment': 4,
+          'agility': 6,
+          'fortune': 4,
+        },
+      });
+
+      expect(def.enabledInDemo, isTrue);
+      expect(def.startingTechniqueIds, isEmpty);
+      expect(def.startingEquipmentIds, isEmpty);
+      expect(def.attributeProfile.total, 19);
+    });
+
+    test('num → int 防御性转换（yaml 数字写法不一致也能吃下）', () {
+      final def = MasterDef.fromYaml({
+        'id': 'second_disciple',
+        'lineageRole': 'disciple',
+        'slotIndex': 2.0,
+        'defaultRealm': 'sanLiu',
+        'defaultLayer': 'qiMeng',
+        'attributeProfile': {
+          'constitution': 4.0,
+          'enlightenment': 4,
+          'agility': 4,
+          'fortune': 5.0,
+        },
+      });
+
+      expect(def.slotIndex, 2);
+      expect(def.attributeProfile.constitution, 4);
+      expect(def.attributeProfile.total, 17);
     });
   });
 }
