@@ -674,6 +674,14 @@ techniques:
     internal_force_penalty: 0.50      # 当前内力 -50%（不归零）
     cultivation_penalty: 0.50         # 原主修心法修炼度 -50%
 
+  # --- 战败代价（Phase 4 W10，Boss 关战败被动触发）---
+  # 仅 stages.yaml isBossStage=true 的关卡战败时对参战角色主修生效。
+  # 普通关战败不触发（试错免费）。与 dispersion 数值同 0.50 但语义独立——
+  # dispersion=玩家主动换主修，defeat=Boss 战败被动惩罚（不换主修，progress + layer 回退）。
+  defeat:
+    boss_internal_force_penalty: 0.50 # 战败后角色当前内力 ×0.5（floor）
+    boss_cultivation_penalty: 0.50    # 战败后主修 progress ×0.5（再走 layer 反向重算）
+
   # --- 学习成本（phase2_tasks T23，Pen 拍板）---
   # Demo 阶段统一固定值；领悟点来源待 GDD §7.2 武学领悟系统实装后接入
   learning_cost:

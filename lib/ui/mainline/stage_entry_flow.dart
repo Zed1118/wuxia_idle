@@ -2,16 +2,25 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../data/defs/stage_def.dart';
+import '../../data/game_repository.dart';
 import '../../data/isar_setup.dart';
+import '../../data/models/character.dart';
+import '../../data/models/equipment.dart';
+import '../../data/models/save_data.dart';
+import '../../data/models/technique.dart';
 import '../../data/narrative_loader.dart';
 import '../../providers/battle_providers.dart';
 import '../../providers/mainline_providers.dart';
+import '../../services/battle_resolution.dart';
 import '../../services/mainline_progress_service.dart';
 import '../../services/stage_battle_setup.dart';
+import '../../utils/rng.dart';
 import '../battle/battle_screen.dart';
 import '../narrative/narrative_reader_screen.dart';
+import '../theme/colors.dart';
 
 /// Phase 3 T37 关卡进入流程串联。
 ///
@@ -51,6 +60,16 @@ Future<void> runStageFlow({
 
   // ── defeat ──
   if (!won) {
+    // Phase 4 W10: Boss 关战败结算（被动散功 + battleCount + skillUsage 落地）。
+    // 普通关战败仍直接返，不结算（试错免费）。
+    Widget? lossBanner;
+    if (stage.isBossStage) {
+      final summary = await _applyBossDefeatPenalty(ref: ref, stage: stage);
+      if (summary.isNotEmpty) {
+        lossBanner = _DefeatLossBanner(entries: summary);
+      }
+    }
+
     if (stage.narrativeDefeatId != null && context.mounted) {
       final defeat = await NarrativeLoader.load(stage.narrativeDefeatId!);
       if (!context.mounted) return;
@@ -59,11 +78,12 @@ Future<void> runStageFlow({
           builder: (_) => NarrativeReaderScreen(
             content: defeat,
             fallbackTitle: '${stage.name} · 战败',
+            topBanner: lossBanner,
           ),
         ),
       );
     }
-    return; // 战败不记录、不推 victory 剧情
+    return; // 战败不记录主线进度、不推 victory 剧情
   }
 
   // ── victory ──
@@ -178,6 +198,221 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
           Navigator.of(context).pop();
         }
       },
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Phase 4 W10: Boss 战败结算
+// ──────────────────────────────────────────────────────────────────────────
+
+/// 损失摘要 entry：用于 [_DefeatLossBanner] 渲染单角色一行。
+class DefeatLossEntry {
+  final String characterName;
+  final int internalForceBefore;
+  final int internalForceAfter;
+  final String? techniqueName;
+  final String? oldLayerLabel;
+  final String? newLayerLabel;
+  final int layersRolledBack;
+
+  const DefeatLossEntry({
+    required this.characterName,
+    required this.internalForceBefore,
+    required this.internalForceAfter,
+    this.techniqueName,
+    this.oldLayerLabel,
+    this.newLayerLabel,
+    this.layersRolledBack = 0,
+  });
+}
+
+/// Boss 关战败：从 Isar 拉玩家方角色 + 心法 + 装备，跑
+/// [BattleResolutionService.resolve]（isVictory=false），写回 Isar，返回
+/// 用于 UI 损失摘要展示的轻量结构。
+///
+/// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 返回空 list，
+/// caller 不展示 banner（不阻塞剧情流）。
+Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
+  required WidgetRef ref,
+  required StageDef stage,
+}) async {
+  final isar = IsarSetup.instanceOrNull;
+  if (isar == null) return const [];
+  final finalState = ref.read(battleProvider);
+  if (!finalState.isFinished) return const [];
+
+  final save = await isar.saveDatas.get(0);
+  final ids = save?.activeCharacterIds ?? const <int>[];
+  if (ids.isEmpty) return const [];
+
+  final characters = <Character>[];
+  final equipsByCh = <int, List<Equipment>>{};
+  final techsByCh = <int, List<Technique>>{};
+  for (final cid in ids) {
+    final c = await isar.characters.get(cid);
+    if (c == null) continue;
+    characters.add(c);
+
+    final eqs = <Equipment>[];
+    for (final eqId in [
+      c.equippedWeaponId,
+      c.equippedArmorId,
+      c.equippedAccessoryId,
+    ]) {
+      if (eqId == null) continue;
+      final e = await isar.equipments.get(eqId);
+      if (e != null) eqs.add(e);
+    }
+    equipsByCh[c.id] = eqs;
+
+    final ts = await isar.techniques
+        .where()
+        .filter()
+        .ownerCharacterIdEqualTo(c.id)
+        .findAll();
+    techsByCh[c.id] = ts;
+  }
+  if (characters.isEmpty) return const [];
+
+  final numbers = ref.read(numbersConfigProvider);
+  final dropSvc = ref.read(dropServiceProvider);
+
+  final result = BattleResolutionService.resolve(
+    finalState: finalState,
+    participatingCharacters: characters,
+    equipmentsByCharacter: equipsByCh,
+    techniquesByCharacter: techsByCh,
+    stageDef: stage,
+    rng: DefaultRng(),
+    progressToNextMap: numbers.cultivationProgressToNext,
+    techniqueDefLookup: GameRepository.instance.getTechnique,
+    dropService: dropSvc,
+    isVictory: false,
+    numbersConfig: numbers,
+  );
+
+  // 写回 Isar：受影响的 character + 所有 technique + 所有装备
+  await isar.writeTxn(() async {
+    await isar.characters.putAll(characters);
+    for (final list in techsByCh.values) {
+      if (list.isNotEmpty) await isar.techniques.putAll(list);
+    }
+    for (final list in equipsByCh.values) {
+      if (list.isNotEmpty) await isar.equipments.putAll(list);
+    }
+  });
+
+  // 构造损失摘要：只展示有 defeatPenalty 的角色
+  final entries = <DefeatLossEntry>[];
+  for (final ch in characters) {
+    final p = result.defeatPenaltyByCharacter[ch.id];
+    if (p == null) continue;
+    final mainTechId = ch.mainTechniqueId;
+    final mainTech = mainTechId == null
+        ? null
+        : techsByCh[ch.id]?.firstWhere(
+            (t) => t.id == mainTechId,
+            orElse: () => techsByCh[ch.id]!.first,
+          );
+    String? techName;
+    if (mainTech != null) {
+      try {
+        techName = GameRepository.instance.getTechnique(mainTech.defId).name;
+      } catch (_) {
+        techName = null;
+      }
+    }
+    entries.add(DefeatLossEntry(
+      characterName: ch.name,
+      internalForceBefore: p.internalForceBefore,
+      internalForceAfter: p.internalForceAfter,
+      techniqueName: techName,
+      oldLayerLabel: p.didRollback ? _layerLabel(p.oldLayer) : null,
+      newLayerLabel: p.didRollback ? _layerLabel(p.newLayer) : null,
+      layersRolledBack: p.layersRolledBack,
+    ));
+  }
+  return entries;
+}
+
+String _layerLabel(dynamic layer) => switch (layer.name as String) {
+      'chuKui' => '初窥',
+      'xiaoCheng' => '小成',
+      'zhongCheng' => '中成',
+      'daCheng' => '大成',
+      'yuanMan' => '圆满',
+      'dianFeng' => '巅峰',
+      'tongShen' => '通神',
+      'wuXia' => '无瑕',
+      'jiJing' => '极境',
+      _ => layer.toString(),
+    };
+
+/// 战败损失摘要 banner（Phase 4 W10）。
+///
+/// 渲染于 [NarrativeReaderScreen] 顶部（在占位提示下方）。每个 entry 一行：
+/// 「{角色} 内力 {before}→{after} · {心法} {oldLayer}→{newLayer} (-{N}层)」
+class _DefeatLossBanner extends StatelessWidget {
+  const _DefeatLossBanner({required this.entries});
+
+  final List<DefeatLossEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    if (entries.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: WuxiaColors.hpLow.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: WuxiaColors.hpLow.withValues(alpha: 0.45),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(bottom: 6),
+            child: Text(
+              '战败 · 散功代价',
+              style: TextStyle(
+                color: WuxiaColors.hpLow,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          for (final e in entries) _entryLine(e),
+        ],
+      ),
+    );
+  }
+
+  Widget _entryLine(DefeatLossEntry e) {
+    final ifSegment = '内力 ${e.internalForceBefore}→${e.internalForceAfter}';
+    String? techSegment;
+    if (e.techniqueName != null && e.layersRolledBack > 0) {
+      techSegment =
+          '${e.techniqueName} ${e.oldLayerLabel}→${e.newLayerLabel} (-${e.layersRolledBack}层)';
+    } else if (e.techniqueName != null) {
+      techSegment = '${e.techniqueName} 修炼度回退';
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Text(
+        techSegment == null
+            ? '${e.characterName}  $ifSegment'
+            : '${e.characterName}  $ifSegment  ·  $techSegment',
+        style: const TextStyle(
+          color: WuxiaColors.textPrimary,
+          fontSize: 12.5,
+          height: 1.4,
+        ),
+      ),
     );
   }
 }

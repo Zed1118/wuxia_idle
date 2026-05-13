@@ -69,6 +69,18 @@ class NumbersConfig {
   /// 散功后 ch.internalForce = (internalForce * (1 - 此值)).toInt()。
   final double dispersionInternalForcePenalty;
 
+  /// 战败代价：Boss 关战败时角色当前内力扣减比例（numbers.yaml
+  /// `techniques.defeat.boss_internal_force_penalty`，Phase 4 W10 = 0.5）。
+  /// 战败后 ch.internalForce = (internalForce * (1 - 此值)).toInt()。
+  /// 仅 stages.yaml isBossStage=true 的关卡战败时由 DispelService.applyDefeatPenalty 消费。
+  final double defeatBossInternalForcePenalty;
+
+  /// 战败代价：Boss 关战败时主修 progress 扣减比例（numbers.yaml
+  /// `techniques.defeat.boss_cultivation_penalty`，Phase 4 W10 = 0.5）。
+  /// 战败后 mainTech.cultivationProgress = (progress * (1 - 此值)).toInt()，
+  /// 再走 layer 反向重算（算法 A，与 DispelService.dispel 一致）。
+  final double defeatBossCultivationPenalty;
+
   /// 心法学习成本（numbers.yaml `techniques.learning_cost`，phase2_tasks T23）。
   /// Demo 阶段固定值：辅修 100 / 主修 500 领悟点。
   final LearningCostConfig learningCost;
@@ -100,6 +112,8 @@ class NumbersConfig {
     required this.lineageInternalForceMaxBonus,
     required this.dispersionCultivationPenalty,
     required this.dispersionInternalForcePenalty,
+    required this.defeatBossInternalForcePenalty,
+    required this.defeatBossCultivationPenalty,
     required this.learningCost,
     required this.animation,
     required this.retreat,
@@ -155,6 +169,12 @@ class NumbersConfig {
           .toDouble(),
       dispersionInternalForcePenalty: ((techniques['dispersion']
               as Map<String, dynamic>)['internal_force_penalty'] as num)
+          .toDouble(),
+      defeatBossInternalForcePenalty: ((techniques['defeat']
+              as Map<String, dynamic>)['boss_internal_force_penalty'] as num)
+          .toDouble(),
+      defeatBossCultivationPenalty: ((techniques['defeat']
+              as Map<String, dynamic>)['boss_cultivation_penalty'] as num)
           .toDouble(),
       learningCost: LearningCostConfig.fromYaml(
         techniques['learning_cost'] as Map<String, dynamic>,

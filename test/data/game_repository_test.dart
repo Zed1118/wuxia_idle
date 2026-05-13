@@ -47,6 +47,9 @@ void main() {
       expect(repo.numbers.combat.maxHpFormula.constitutionFactor, 500);
       expect(repo.numbers.defenseRateByTier[RealmTier.xueTu], 0.05);
       expect(repo.numbers.defenseRateByTier[RealmTier.wuSheng], 0.35);
+      // Phase 4 W10 战败代价（与 dispersion 同 0.50 但字段独立）
+      expect(repo.numbers.defeatBossInternalForcePenalty, 0.50);
+      expect(repo.numbers.defeatBossCultivationPenalty, 0.50);
     });
 
     test('LevelDiffModifier.diff3OrMore.attacker null 兜底为 diff2.attacker', () async {

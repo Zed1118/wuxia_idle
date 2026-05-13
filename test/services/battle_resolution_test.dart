@@ -14,6 +14,7 @@ import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/data/models/equipment.dart';
 import 'package:wuxia_idle/data/models/skill_usage_entry.dart';
 import 'package:wuxia_idle/data/models/technique.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/services/battle_resolution.dart';
 import 'package:wuxia_idle/services/drop_service.dart';
 import 'package:wuxia_idle/utils/rng.dart';
@@ -21,12 +22,14 @@ import 'package:wuxia_idle/utils/rng.dart';
 /// T26 BattleResolutionService 验收（phase2_tasks T26 §324-356）。
 void main() {
   late Map<CultivationLayer, int> progressMap;
+  late NumbersConfig numbersCfg;
 
   setUpAll(() async {
     final repo = await GameRepository.loadAllDefs(
       loader: (path) => File(path).readAsString(),
     );
     progressMap = repo.numbers.cultivationProgressToNext;
+    numbersCfg = repo.numbers;
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -37,7 +40,7 @@ void main() {
 
   Character buildCharacter({
     required int id,
-    required int mainTechId,
+    required int? mainTechId,
     String name = '测试角色',
   }) {
     final attrs = Attributes()
@@ -159,14 +162,18 @@ void main() {
         acquireSourceTags: const [],
       );
 
-  StageDef buildStage({List<DropEntry> dropTable = const []}) => StageDef(
+  StageDef buildStage({
+    List<DropEntry> dropTable = const [],
+    bool isBossStage = false,
+  }) =>
+      StageDef(
         id: 'stage_test',
         name: '测试关',
         stageType: StageType.mainline,
         chapterIndex: 1,
         requiredRealm: RealmTier.xueTu,
         enemyTeam: const [],
-        isBossStage: false,
+        isBossStage: isBossStage,
         dropEquipmentDefIds: const [],
         dropItemDefIds: const [],
         dropTable: dropTable,
@@ -733,5 +740,192 @@ void main() {
 
     expect(result.skillUsageIncrements[200], {'skill_main_a': 2});
     expect(result.skillUsageIncrements[201], {'skill_assist_a': 1});
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Phase 4 W10：战败结算扩展（Boss 关被动散功）
+  // ──────────────────────────────────────────────────────────────────────────
+
+  group('Phase 4 W10 · Boss 战败被动散功 hook', () {
+    test('Boss 战败：主修触发 applyDefeatPenalty + 内力 ×0.5 + progress ×0.5', () {
+      final ch = buildCharacter(id: 1, mainTechId: 200);
+      ch.internalForce = 8000;
+      final w = buildEquipment(id: 100, slot: EquipmentSlot.weapon);
+      final mainTech = buildTechnique(
+        id: 200,
+        ownerCharId: 1,
+        defId: 'tech_main',
+        layer: CultivationLayer.yuanMan,
+        progress: 1500,
+        progressToNext: 1500,
+      );
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 5,
+        result: BattleResult.rightWin,
+        actionLog: const [],
+      );
+
+      final result = BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch],
+        equipmentsByCharacter: {1: [w]},
+        techniquesByCharacter: {1: [mainTech]},
+        stageDef: buildStage(isBossStage: true),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        isVictory: false,
+        numbersConfig: numbersCfg,
+      );
+
+      expect(result.defeatPenaltyByCharacter.length, 1);
+      final p = result.defeatPenaltyByCharacter[1]!;
+      expect(p.internalForceBefore, 8000);
+      expect(p.internalForceAfter, 4000);
+      expect(p.oldLayer, CultivationLayer.yuanMan);
+      expect(p.newLayer, CultivationLayer.daCheng);
+      expect(p.layersRolledBack, 1);
+      expect(ch.internalForce, 4000);
+      expect(mainTech.cultivationProgress, 750);
+      expect(mainTech.cultivationLayer, CultivationLayer.daCheng);
+      // role 不动，下次战斗仍按主修走
+      expect(mainTech.role, TechniqueRole.main);
+      // 战败也算 battleCount（spec §338 沿用）
+      expect(w.battleCount, 1);
+      // 不掉装备 / 物品
+      expect(result.dropResult.isEmpty, isTrue);
+    });
+
+    test('普通关战败：不触发散功，dropResult 空，battleCount 仍 ++', () {
+      final ch = buildCharacter(id: 1, mainTechId: 200);
+      ch.internalForce = 5000;
+      final w = buildEquipment(id: 100, slot: EquipmentSlot.weapon);
+      final mainTech = buildTechnique(
+        id: 200,
+        ownerCharId: 1,
+        defId: 'tech_main',
+        layer: CultivationLayer.daCheng,
+        progress: 800,
+        progressToNext: 900,
+      );
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 5,
+        result: BattleResult.rightWin,
+        actionLog: const [],
+      );
+
+      final result = BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch],
+        equipmentsByCharacter: {1: [w]},
+        techniquesByCharacter: {1: [mainTech]},
+        stageDef: buildStage(isBossStage: false), // 普通关
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        isVictory: false,
+        numbersConfig: numbersCfg,
+      );
+
+      expect(result.defeatPenaltyByCharacter, isEmpty);
+      expect(ch.internalForce, 5000); // 不动
+      expect(mainTech.cultivationProgress, 800);
+      expect(mainTech.cultivationLayer, CultivationLayer.daCheng);
+      expect(w.battleCount, 1); // 普通战败也累 battleCount
+      expect(result.dropResult.isEmpty, isTrue);
+    });
+
+    test('胜利路径：defeatPenaltyByCharacter 恒空（不论 isBossStage）', () {
+      final ch = buildCharacter(id: 1, mainTechId: 200);
+      ch.internalForce = 5000;
+      final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 5,
+        result: BattleResult.leftWin,
+        actionLog: const [],
+      );
+
+      final result = BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: {1: [mainTech]},
+        stageDef: buildStage(isBossStage: true),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        // isVictory 默认 true，无 numbersConfig 也合法
+      );
+
+      expect(result.defeatPenaltyByCharacter, isEmpty);
+      expect(ch.internalForce, 5000);
+    });
+
+    test('Boss 战败 + numbersConfig=null → ArgumentError', () {
+      final ch = buildCharacter(id: 1, mainTechId: 200);
+      final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 5,
+        result: BattleResult.rightWin,
+        actionLog: const [],
+      );
+
+      expect(
+        () => BattleResolutionService.resolve(
+          finalState: state,
+          participatingCharacters: [ch],
+          equipmentsByCharacter: const {},
+          techniquesByCharacter: {1: [mainTech]},
+          stageDef: buildStage(isBossStage: true),
+          rng: DefaultRng(seed: 1),
+          progressToNextMap: progressMap,
+          techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+          dropService: dropSvc(),
+          isVictory: false,
+          // 故意不传 numbersConfig
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('Boss 战败 + 角色无主修：跳过该角色，无 entry 写入 map', () {
+      final ch = buildCharacter(id: 1, mainTechId: null);
+      ch.internalForce = 6000;
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 5,
+        result: BattleResult.rightWin,
+        actionLog: const [],
+      );
+
+      final result = BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: const {},
+        stageDef: buildStage(isBossStage: true),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        isVictory: false,
+        numbersConfig: numbersCfg,
+      );
+
+      expect(result.defeatPenaltyByCharacter, isEmpty);
+      expect(ch.internalForce, 6000);
+    });
   });
 }
