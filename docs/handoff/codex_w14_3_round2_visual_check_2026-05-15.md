@@ -8,11 +8,11 @@
 
 ## 1. 结论
 
-中等线达成: R2-1 / R2-2 / R2-3 / R2-4 四张必收截图齐。
+完美线达成: R2-1 / R2-2 / R2-3 / R2-4 四张必收截图齐,追加 R2-5 / R2-6 选做截图齐。
 
 最低线也达成: 大弟子 slot 填充态 + bottom sheet 7 招列表 + 4 lock 清楚可见。
 
-选做 R2-5 / R2-6 未纳入验收: 执行卸下探路时 Codex 桌面窗口抢到前台,反证截图不干净;未保留为正式证据。
+补跑说明: 首轮 R2-5 / R2-6 因 Codex 桌面窗口抢前台未纳入验收;本轮将游戏窗口置顶并按窗口矩形换算绝对坐标后重跑,证据干净。
 
 ---
 
@@ -38,8 +38,8 @@
 | R2-2 大弟子 bottom sheet | `docs/screenshots/w14_3_round2_disciple1_bottom_sheet.png` | PASS | 7 招按 tier 1-7 排列;tier 1-2 可选,tier 3 当前,tier 4-7 lock,共 4 lock |
 | R2-3 二弟子更多锁 | `docs/screenshots/w14_3_round2_disciple2_more_locks.png` | PASS | 二弟子 sanLiu:tier 1-2 可选,tier 3-7 lock,共 5 lock |
 | R2-4 祖师更少锁 | `docs/screenshots/w14_3_round2_founder_fewer_locks.png` | PASS | 祖师 yiLiu:tier 1-4 可选,tier 5-7 lock,共 3 lock |
-| R2-5 大弟子卸下 | 无 | SKIP | 前台被 Codex 桌面遮挡,未保留污染截图 |
-| R2-6 大弟子改装 tier 2 | 无 | SKIP | 未继续执行,避免污染主验收状态 |
+| R2-5 大弟子卸下 | `docs/screenshots/w14_3_round2_disciple1_unequip.png` | PASS | 大弟子点「卸下」后 slot 为空态,显示「未装备奇遇招式」+「选择招式」 |
+| R2-6 大弟子改装 tier 2 | `docs/screenshots/w14_3_round2_disciple1_equip_new.png` | PASS | 从 bottom sheet 选择 tier 2「暗器初探」后 slot 显示新 skill + tier 2 / 倍率 1700 / 卸下按钮 |
 
 ---
 
@@ -78,6 +78,7 @@
 - `Get-Process WuxiaRun` 不够,实际进程名是 `wuxia_idle`。`WuxiaRun Running` 与桌面窗口可见仍需用 `MainWindowHandle` 核验。
 - 旧 `wuxia_idle` 进程会锁住 `Debug\data\flutter_assets\kernel_blob.bin`,导致 `flutter build windows --debug` 在 CMake install 阶段报 `Invalid argument` / 用户映射区域占用。关掉旧进程后重建通过。
 - Codex 桌面窗口会在长操作后抢前台;截图前最好强制 `SetWindowPos(HWND_TOPMOST)` 把游戏窗口置前,再取消 topmost。
+- PowerShell 鼠标点击坐标要按 `GetWindowRect` 换算为屏幕绝对坐标。窗口固定在 `(20,20)` 时,直接拿截图相对坐标会偏 20px,按钮边缘点击可能无效。
 
 ---
 
@@ -97,6 +98,8 @@
 - `docs/screenshots/w14_3_round2_disciple1_bottom_sheet.png`
 - `docs/screenshots/w14_3_round2_disciple2_more_locks.png`
 - `docs/screenshots/w14_3_round2_founder_fewer_locks.png`
+- `docs/screenshots/w14_3_round2_disciple1_unequip.png`
+- `docs/screenshots/w14_3_round2_disciple1_equip_new.png`
 
 新增 closeout:
 
