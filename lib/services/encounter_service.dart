@@ -106,6 +106,42 @@ class EncounterService {
     });
   }
 
+  /// 挂机时长累积(C-W14-2)。
+  ///
+  /// 闭关 [SeclusionService.completeRetreat] 在写产出 txn 内调用,按
+  /// `actualHours × 60` 喂分钟。biome/weather 任一为 null 跳过该维度
+  /// (闭关地图未标 biome/weather 时 noop,不抛错)。
+  ///
+  /// W13 教训:写前 `List.of` 转 growable。
+  Future<void> recordIdleMinutes({
+    required int saveDataId,
+    required EncounterBiome? biome,
+    required EncounterWeather? weather,
+    required int minutes,
+  }) async {
+    if (minutes <= 0) return;
+    if (biome == null && weather == null) return;
+    await isar.writeTxn(() async {
+      final progress = await isar.encounterProgress
+          .filter()
+          .saveDataIdEqualTo(saveDataId)
+          .findFirst();
+      if (progress == null) {
+        throw StateError(
+          'EncounterProgress 未初始化:getOrCreate 未在 recordIdleMinutes 前调用',
+        );
+      }
+      // W13 fixed-length list 教训
+      progress.biomeMinutes = List.of(progress.biomeMinutes);
+      progress.weatherMinutes = List.of(progress.weatherMinutes);
+      if (biome != null) progress.biomeMinutes.addMinutes(biome, minutes);
+      if (weather != null) {
+        progress.weatherMinutes.addMinutes(weather, minutes);
+      }
+      await isar.encounterProgress.put(progress);
+    });
+  }
+
   /// 评估所有可触发的 encounter。
   ///
   /// 流程:
@@ -232,6 +268,9 @@ class EncounterService {
   }
 
   /// trigger 全满足判定(纯函数,无 IO,便于测试)。
+  ///
+  /// 多维度 AND 语义:fortune + schoolKill + biomeMinutes + weatherMinutes
+  /// 任一不满足直接返 false。任一维度配空 map = 该维度免审。
   static bool _checkTrigger(
     EncounterDef def,
     EncounterProgress progress,
@@ -243,6 +282,18 @@ class EncounterService {
     // 每流派击杀阈值
     for (final entry in def.trigger.schoolKillThreshold.entries) {
       if (progress.schoolKillCounts.countOf(entry.key) < entry.value) {
+        return false;
+      }
+    }
+    // 每 biome 挂机分钟阈值(C-W14-2)
+    for (final entry in def.trigger.biomeMinutes.entries) {
+      if (progress.biomeMinutes.minutesOf(entry.key) < entry.value) {
+        return false;
+      }
+    }
+    // 每 weather 挂机分钟阈值(C-W14-2)
+    for (final entry in def.trigger.weatherMinutes.entries) {
+      if (progress.weatherMinutes.minutesOf(entry.key) < entry.value) {
         return false;
       }
     }

@@ -19,6 +19,14 @@ class SeclusionMapDef {
   final double techniqueLearnRate;
   final double internalForceGrowth;
 
+  /// 场景生境(C-W14-2)。闭关 actualHours 通过
+  /// [EncounterService.recordIdleMinutes] 喂 biome 累计分钟。null = 未标。
+  final EncounterBiome? biome;
+
+  /// 默认天气(C-W14-2)。闭关挂机的天气当前简化为地图级常量(GDD §7.3 节气
+  /// 系统留 §12 #7 决策)。null = clear 不喂。
+  final EncounterWeather? weather;
+
   const SeclusionMapDef({
     required this.mapType,
     required this.mapName,
@@ -28,6 +36,8 @@ class SeclusionMapDef {
     required this.equipmentDropRate,
     required this.techniqueLearnRate,
     required this.internalForceGrowth,
+    this.biome,
+    this.weather,
   });
 
   factory SeclusionMapDef.fromYaml(Map<String, dynamic> y) {
@@ -41,6 +51,12 @@ class SeclusionMapDef {
       equipmentDropRate: (outputs['equipment_drop_rate'] as num).toDouble(),
       techniqueLearnRate: (outputs['technique_learn_rate'] as num).toDouble(),
       internalForceGrowth: (outputs['internal_force_growth'] as num).toDouble(),
+      biome: (y['biome'] as String?) == null
+          ? null
+          : EncounterBiome.values.byName(y['biome'] as String),
+      weather: (y['weather'] as String?) == null
+          ? null
+          : EncounterWeather.values.byName(y['weather'] as String),
     );
   }
 }

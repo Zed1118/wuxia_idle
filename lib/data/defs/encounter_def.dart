@@ -80,36 +80,59 @@ class OutcomeDef {
 
 /// 触发条件(C-W14-1 决策点 Q1:多维度 counter,无全局机缘值)。
 ///
-/// Phase 1 只实现 [schoolKillThreshold](已击败某流派敌人 N 个)+ [fortuneRequired]
-/// (机缘属性下限,软概率系数门槛)。biome / weather 等 C-W14-2 补 stages 字段后加。
+/// **C-W14-2 扩展**:在 W14-1 的 [schoolKillThreshold] + [fortuneRequired]
+/// 基础上,加 [biomeMinutes] + [weatherMinutes] 多维度。biome/weather 累计
+/// 走 [EncounterService.recordIdleMinutes](闭关 actualHours × 60 喂)。
 ///
-/// 多 school 阈值同时配时,**全部满足才触发**(AND 语义)。
+/// 多维度阈值**全部满足才触发**(AND 语义)。任一维度配空 map = 该维度无门槛。
 class EncounterTrigger {
   /// 每流派的击杀阈值。例:`{lingQiao: 100}` = 击败 100 个灵巧流派敌人。
-  /// 多 school 时全部满足才算 trigger 通过。
   final Map<TechniqueSchool, int> schoolKillThreshold;
+  /// 在某 biome 累积分钟数门槛(C-W14-2)。例:`{bambooForest: 600}` =
+  /// 在竹林场景累计 10 小时挂机。
+  final Map<EncounterBiome, int> biomeMinutes;
+  /// 在某 weather 累积分钟数门槛(C-W14-2)。例:`{rain: 120}` = 在雨天
+  /// 累计 2 小时挂机。
+  final Map<EncounterWeather, int> weatherMinutes;
   /// 机缘属性下限。`fortune < this` 时不参与软概率计算,直接 0 概率。
   /// `null` 表示无下限(任何 fortune 都参与)。
   final int? fortuneRequired;
 
   const EncounterTrigger({
     this.schoolKillThreshold = const {},
+    this.biomeMinutes = const {},
+    this.weatherMinutes = const {},
     this.fortuneRequired,
   });
 
   factory EncounterTrigger.fromYaml(Map<String, dynamic> y) {
-    final raw = y['schoolKillThreshold'] as Map?;
-    final m = <TechniqueSchool, int>{};
-    if (raw != null) {
-      for (final entry in raw.entries) {
-        m[TechniqueSchool.values.byName(entry.key as String)] =
-            (entry.value as num).toInt();
-      }
-    }
     return EncounterTrigger(
-      schoolKillThreshold: Map.unmodifiable(m),
+      schoolKillThreshold: Map.unmodifiable(_parseEnumIntMap(
+        y['schoolKillThreshold'] as Map?,
+        (k) => TechniqueSchool.values.byName(k),
+      )),
+      biomeMinutes: Map.unmodifiable(_parseEnumIntMap(
+        y['biomeMinutes'] as Map?,
+        (k) => EncounterBiome.values.byName(k),
+      )),
+      weatherMinutes: Map.unmodifiable(_parseEnumIntMap(
+        y['weatherMinutes'] as Map?,
+        (k) => EncounterWeather.values.byName(k),
+      )),
       fortuneRequired: (y['fortuneRequired'] as num?)?.toInt(),
     );
+  }
+
+  static Map<E, int> _parseEnumIntMap<E extends Enum>(
+    Map? raw,
+    E Function(String) parseKey,
+  ) {
+    final out = <E, int>{};
+    if (raw == null) return out;
+    for (final entry in raw.entries) {
+      out[parseKey(entry.key as String)] = (entry.value as num).toInt();
+    }
+    return out;
   }
 }
 

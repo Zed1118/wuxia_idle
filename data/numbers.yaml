@@ -818,6 +818,8 @@ retreat:
         equipment_drop_rate: 1.0             # 基础掉率（无加成）
         technique_learn_rate: 1.0
         internal_force_growth: 1.0
+      biome: mountainForest                  # C-W14-2 奇遇触发维度
+      weather: clear
 
     # === 古剑冢：兵器掉率 +50% ===
     - map_type: guJianZhong
@@ -829,6 +831,8 @@ retreat:
         equipment_drop_rate: 1.5             # 兵器掉率 +50%（GDD §8.3）
         technique_learn_rate: 1.0
         internal_force_growth: 1.0
+      biome: swordTomb
+      weather: mist
 
     # === 藏经阁：心法领悟 +50% ===
     - map_type: cangJingGe
@@ -840,6 +844,8 @@ retreat:
         equipment_drop_rate: 1.0
         technique_learn_rate: 1.5            # 心法领悟 +50%
         internal_force_growth: 1.0
+      biome: temple
+      weather: clear
 
     # === 悬崖瀑布：内力增长 +50% ===
     - map_type: xuanYaPuBu
@@ -851,6 +857,8 @@ retreat:
         equipment_drop_rate: 1.0
         technique_learn_rate: 1.0
         internal_force_growth: 1.5           # 内力增长 +50%
+      biome: cliffWaterfall
+      weather: rain
 
     # === 断崖绝壁：宗师专属，全维度高产出 ===
     - map_type: duanYaJueBi
@@ -862,6 +870,8 @@ retreat:
         equipment_drop_rate: 1.5             # 全维度都加 50%
         technique_learn_rate: 1.5
         internal_force_growth: 1.5
+      biome: cliff
+      weather: snow
 
   # --- 时辰加成（GDD §7.3）---
   # 加成基于"开始闭关时刻"，不会因为跨时辰而动态切换

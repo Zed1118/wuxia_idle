@@ -88,10 +88,17 @@ TowerProgressService? towerProgressService(Ref ref) {
 }
 
 /// [SeclusionService] provider。
+///
+/// C-W14-2:同时注入 [EncounterService],让 [SeclusionService.completeRetreat]
+/// 在 actualHours 完成后能喂 biome/weather 累计分钟给奇遇系统。
 @riverpod
 SeclusionService? seclusionService(Ref ref) {
   final isarInstance = ref.watch(isarProvider);
-  return isarInstance == null ? null : SeclusionService(isar: isarInstance);
+  if (isarInstance == null) return null;
+  return SeclusionService(
+    isar: isarInstance,
+    encounterService: EncounterService(isar: isarInstance),
+  );
 }
 
 /// [StageBattleSetup] provider。

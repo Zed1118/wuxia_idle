@@ -83,3 +83,272 @@ encounters:
         type: attributeBonus
         attributeKey: fortune
         attributeDelta: 1
+
+  # =============================================================================
+  # Phase 4 W14-2 扩 12 条:覆盖 biomeMinutes / weatherMinutes 多维度触发
+  # ----------------------------------------------------------------------------
+  # 累计来源:
+  #   - biomeMinutes / weatherMinutes 走 SeclusionService.completeRetreat
+  #     的 actualHours × 60(闭关挂机)
+  #   - 战斗 hook 当前不喂 biome/weather 累计(战斗时长太短无意义)
+  # events/<id>.yaml 文案 DeepSeek 异步补,加载层 placeholder 兜底(W14-1 体例)。
+  # =============================================================================
+
+  # ───────────────────────────────────────────────
+  # 4. gu_jian_zhong_yin · 古剑冢拾遗
+  #    techniqueInsight · 古剑冢闭关 1 小时 + 雾日 30 分 → 拾古剑
+  # ───────────────────────────────────────────────
+  - id: gu_jian_zhong_yin
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        swordTomb: 60
+      weatherMinutes:
+        mist: 30
+      fortuneRequired: 4
+    baseProbability: 0.5
+    outcomeMapping:
+      find_relic_sword:
+        type: unlockSkill
+        skillId: skill_encounter_relic_blade
+      polish_sword:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 5. cang_jing_ge_wu · 藏经阁悟道
+  #    techniqueInsight · 藏经阁累计 2 小时 → 悟性 +1 或机缘 +1
+  # ───────────────────────────────────────────────
+  - id: cang_jing_ge_wu
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        temple: 120
+      fortuneRequired: 3
+    baseProbability: 0.45
+    outcomeMapping:
+      deep_meditation:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+      read_classic:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 6. shan_lin_qi_yu · 山林奇遇
+  #    fortuneEvent · 山林 1.5 小时,早期奇遇(门槛低)
+  # ───────────────────────────────────────────────
+  - id: shan_lin_qi_yu
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        mountainForest: 90
+      fortuneRequired: 2
+    baseProbability: 0.4
+    outcomeMapping:
+      help_traveller:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+      hunt_beast:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 7. xuan_ya_pu_bu_li_lian · 悬崖瀑布历练
+  #    techniqueInsight · 瀑布 1h + 雨 1h → 解水气招式 或 根骨 +1
+  # ───────────────────────────────────────────────
+  - id: xuan_ya_pu_bu_li_lian
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        cliffWaterfall: 60
+      weatherMinutes:
+        rain: 60
+      fortuneRequired: 5
+    baseProbability: 0.55
+    outcomeMapping:
+      withstand_water:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+      merge_with_water:
+        type: unlockSkill
+        skillId: skill_encounter_water_qi
+
+  # ───────────────────────────────────────────────
+  # 8. duan_ya_chui_lian · 断崖锤炼
+  #    techniqueInsight · 断崖 1h + 雪 1h(高门槛,后期)
+  # ───────────────────────────────────────────────
+  - id: duan_ya_chui_lian
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        cliff: 60
+      weatherMinutes:
+        snow: 60
+      fortuneRequired: 7
+    baseProbability: 0.5
+    outcomeMapping:
+      endure_cold:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+      shatter_ice:
+        type: unlockSkill
+        skillId: skill_encounter_ice_break
+
+  # ───────────────────────────────────────────────
+  # 9. shan_dao_wu_zhe · 山道雾遮
+  #    fortuneEvent · 山道 30min + 雾 30min,中前期
+  # ───────────────────────────────────────────────
+  - id: shan_dao_wu_zhe
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        mountainPath: 30
+      weatherMinutes:
+        mist: 30
+      fortuneRequired: 3
+    baseProbability: 0.4
+    outcomeMapping:
+      help_lost:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+      ignore_passerby:
+        type: none
+
+  # ───────────────────────────────────────────────
+  # 10. xiao_zhen_wen_yi · 小镇问翳
+  #     fortuneEvent · 客栈 1 小时,fortune 软概率
+  # ───────────────────────────────────────────────
+  - id: xiao_zhen_wen_yi
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        inn: 60
+      fortuneRequired: 4
+    baseProbability: 0.35
+    outcomeMapping:
+      share_drink:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+      eavesdrop:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 11. ye_xing_xun_dao · 夜行寻道
+  #     techniqueInsight · 夜 1 小时,可领悟夜战招式
+  # ───────────────────────────────────────────────
+  - id: ye_xing_xun_dao
+    type: techniqueInsight
+    trigger:
+      weatherMinutes:
+        night: 60
+      fortuneRequired: 5
+    baseProbability: 0.35
+    outcomeMapping:
+      moonlight_practice:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
+      hidden_battle:
+        type: unlockSkill
+        skillId: skill_encounter_night_strike
+
+  # ───────────────────────────────────────────────
+  # 12. du_kou_chun_yu · 渡口春雨
+  #     fortuneEvent · 渡口 45min + 雨 1h
+  # ───────────────────────────────────────────────
+  - id: du_kou_chun_yu
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        dock: 45
+      weatherMinutes:
+        rain: 60
+      fortuneRequired: 4
+    baseProbability: 0.4
+    outcomeMapping:
+      wait_boatman:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+      help_stranger:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 13. qun_xia_tu · 群侠图
+  #     techniqueInsight · 校场 30min + 击败 gangMeng 5 → 解锁刚猛招
+  # ───────────────────────────────────────────────
+  - id: qun_xia_tu
+    type: techniqueInsight
+    trigger:
+      schoolKillThreshold:
+        gangMeng: 5
+      biomeMinutes:
+        drillGround: 30
+      fortuneRequired: 3
+    baseProbability: 0.4
+    outcomeMapping:
+      admire_master:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+      challenge_winner:
+        type: unlockSkill
+        skillId: skill_encounter_drill_strike
+
+  # ───────────────────────────────────────────────
+  # 14. lu_pang_xian_xian · 路旁闲贤
+  #     fortuneEvent · 镖路 1 小时,fortune 软概率
+  # ───────────────────────────────────────────────
+  - id: lu_pang_xian_xian
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        escortRoad: 60
+      fortuneRequired: 4
+    baseProbability: 0.4
+    outcomeMapping:
+      listen_tale:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+      share_food:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 15. gu_dao_xue_ji · 古道雪迹
+  #     fortuneEvent · 山道 30min + 雪 30min,中期
+  # ───────────────────────────────────────────────
+  - id: gu_dao_xue_ji
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        mountainPath: 30
+      weatherMinutes:
+        snow: 30
+      fortuneRequired: 5
+    baseProbability: 0.4
+    outcomeMapping:
+      track_footprints:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
+      rest_at_pavilion:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1

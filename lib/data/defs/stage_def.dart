@@ -44,6 +44,15 @@ class StageDef {
   final int baseExpReward;
   final double difficultyMultiplier;
 
+  /// 场景生境(C-W14-2)。null = 未标(向后兼容旧 yaml + 测试 fixture)。
+  /// 用于奇遇 [EncounterTrigger.biomeMinutes] 匹配维度 + 战斗 victory 喂奇遇
+  /// recordKill 时附带 biome 累计(战斗 hook 当前只走 schoolKill 维度)。
+  final EncounterBiome? biome;
+
+  /// 天气/时段(C-W14-2)。null = 默认 clear 不喂(无累计)。配置时显式标
+  /// `rain`/`snow`/`mist`/`night` 才会被 [EncounterTrigger.weatherMinutes] 看到。
+  final EncounterWeather? weather;
+
   const StageDef({
     required this.id,
     required this.name,
@@ -64,6 +73,8 @@ class StageDef {
     this.dropTable = const [],
     required this.baseExpReward,
     required this.difficultyMultiplier,
+    this.biome,
+    this.weather,
   });
 
   factory StageDef.fromYaml(Map<String, dynamic> y) {
@@ -95,6 +106,12 @@ class StageDef {
           .toList(growable: false),
       baseExpReward: (y['baseExpReward'] as num).toInt(),
       difficultyMultiplier: (y['difficultyMultiplier'] as num).toDouble(),
+      biome: (y['biome'] as String?) == null
+          ? null
+          : EncounterBiome.values.byName(y['biome'] as String),
+      weather: (y['weather'] as String?) == null
+          ? null
+          : EncounterWeather.values.byName(y['weather'] as String),
     );
   }
 

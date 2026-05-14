@@ -340,4 +340,240 @@ void main() {
       expect(p.unlockedSkillIds, isEmpty);
     });
   });
+
+  // ========================================================================
+  // C-W14-2:biome / weather 维度
+  // ========================================================================
+
+  group('recordIdleMinutes + biome/weather 累加', () {
+    test('biome+weather 同 call → 两个 list 各 +N',
+        () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: EncounterBiome.swordTomb,
+        weather: EncounterWeather.mist,
+        minutes: 60,
+      );
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: EncounterBiome.swordTomb,
+        weather: EncounterWeather.mist,
+        minutes: 30,
+      );
+
+      final p = await IsarSetup.instance.encounterProgress
+          .filter()
+          .saveDataIdEqualTo(1)
+          .findFirst();
+      expect(p!.biomeMinutes.minutesOf(EncounterBiome.swordTomb), 90);
+      expect(p.weatherMinutes.minutesOf(EncounterWeather.mist), 90);
+    });
+
+    test('仅 biome / 仅 weather / 都 null 行为',
+        () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: EncounterBiome.temple,
+        weather: null,
+        minutes: 45,
+      );
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: null,
+        weather: EncounterWeather.rain,
+        minutes: 30,
+      );
+      // 都 null 应 noop
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: null,
+        weather: null,
+        minutes: 999,
+      );
+      // minutes 0 应 noop
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: EncounterBiome.temple,
+        weather: EncounterWeather.rain,
+        minutes: 0,
+      );
+
+      final p = await IsarSetup.instance.encounterProgress
+          .filter()
+          .saveDataIdEqualTo(1)
+          .findFirst();
+      expect(p!.biomeMinutes.minutesOf(EncounterBiome.temple), 45);
+      expect(p.weatherMinutes.minutesOf(EncounterWeather.rain), 30);
+      // 未喂的维度仍 0
+      expect(p.biomeMinutes.minutesOf(EncounterBiome.swordTomb), 0);
+    });
+
+    test(
+        'recordIdleMinutes 多次累加 fixed-length list 不抛(W13 教训回归)',
+        () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      // 第一次 record 后,findFirst 重新拉的 list 是 fixed-length;
+      // 第二次 record 进 `addMinutes`(新 enum 走 add 分支)若不 List.of 会抛。
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: EncounterBiome.mountainForest,
+        weather: null,
+        minutes: 30,
+      );
+      // 新 biome 走 add 分支
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: EncounterBiome.bambooForest,
+        weather: EncounterWeather.snow,
+        minutes: 60,
+      );
+      final p = await IsarSetup.instance.encounterProgress
+          .filter()
+          .saveDataIdEqualTo(1)
+          .findFirst();
+      expect(p!.biomeMinutes.minutesOf(EncounterBiome.mountainForest), 30);
+      expect(p.biomeMinutes.minutesOf(EncounterBiome.bambooForest), 60);
+      expect(p.weatherMinutes.minutesOf(EncounterWeather.snow), 60);
+    });
+  });
+
+  group('evaluateTriggers 多维度 AND 语义', () {
+    EncounterDef mkMultiDim({
+      Map<TechniqueSchool, int> school = const {},
+      Map<EncounterBiome, int> biome = const {},
+      Map<EncounterWeather, int> weather = const {},
+      int? fortune,
+    }) {
+      return EncounterDef(
+        id: 'enc_multi',
+        type: EncounterType.techniqueInsight,
+        trigger: EncounterTrigger(
+          schoolKillThreshold: school,
+          biomeMinutes: biome,
+          weatherMinutes: weather,
+          fortuneRequired: fortune,
+        ),
+        baseProbability: 1.0,
+        outcomeMapping: const {
+          'ok': OutcomeDef(type: OutcomeType.none),
+        },
+      );
+    }
+
+    test('biomeMinutes 未达 → 不触发', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: EncounterBiome.swordTomb,
+        weather: null,
+        minutes: 30,
+      );
+      final def = mkMultiDim(biome: {EncounterBiome.swordTomb: 60});
+      final hit = await svc.evaluateTriggers(
+        saveDataId: 1,
+        attributes: _mkAttrs(),
+        encounters: [def],
+        rng: _FixedRng(0.0),
+      );
+      expect(hit, isNull);
+    });
+
+    test('weatherMinutes 未达 → 不触发', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: null,
+        weather: EncounterWeather.rain,
+        minutes: 30,
+      );
+      final def = mkMultiDim(weather: {EncounterWeather.rain: 60});
+      final hit = await svc.evaluateTriggers(
+        saveDataId: 1,
+        attributes: _mkAttrs(),
+        encounters: [def],
+        rng: _FixedRng(0.0),
+      );
+      expect(hit, isNull);
+    });
+
+    test('biome + weather 全达 → 触发', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: EncounterBiome.cliffWaterfall,
+        weather: EncounterWeather.rain,
+        minutes: 60,
+      );
+      final def = mkMultiDim(
+        biome: {EncounterBiome.cliffWaterfall: 60},
+        weather: {EncounterWeather.rain: 60},
+      );
+      final hit = await svc.evaluateTriggers(
+        saveDataId: 1,
+        attributes: _mkAttrs(),
+        encounters: [def],
+        rng: _FixedRng(0.0),
+      );
+      expect(hit, isNotNull);
+      expect(hit!.id, 'enc_multi');
+    });
+
+    test('school + biome + weather 三维度都满足才触发', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      // 喂全套
+      await svc.recordKill(
+        saveDataId: 1,
+        defeatedSchools: const [
+          TechniqueSchool.gangMeng,
+          TechniqueSchool.gangMeng,
+          TechniqueSchool.gangMeng,
+          TechniqueSchool.gangMeng,
+          TechniqueSchool.gangMeng,
+        ],
+      );
+      await svc.recordIdleMinutes(
+        saveDataId: 1,
+        biome: EncounterBiome.drillGround,
+        weather: null,
+        minutes: 30,
+      );
+      final def = mkMultiDim(
+        school: {TechniqueSchool.gangMeng: 5},
+        biome: {EncounterBiome.drillGround: 30},
+        fortune: 3,
+      );
+      final hit = await svc.evaluateTriggers(
+        saveDataId: 1,
+        attributes: _mkAttrs(),
+        encounters: [def],
+        rng: _FixedRng(0.0),
+      );
+      expect(hit, isNotNull);
+
+      // 缺一维:school 不够,应失败
+      final defStricter = mkMultiDim(
+        school: {TechniqueSchool.gangMeng: 99},
+        biome: {EncounterBiome.drillGround: 30},
+        fortune: 3,
+      );
+      final missHit = await svc.evaluateTriggers(
+        saveDataId: 1,
+        attributes: _mkAttrs(),
+        encounters: [defStricter],
+        rng: _FixedRng(0.0),
+      );
+      expect(missHit, isNull);
+    });
+  });
 }

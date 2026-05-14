@@ -80,6 +80,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 50
     difficultyMultiplier: 1.0
+    biome: mountainForest
+    weather: clear
 
   # === stage_01_02 · 荒山野店（中段路霸）===
   - id: stage_01_02
@@ -130,6 +132,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 120
     difficultyMultiplier: 1.2
+    biome: inn
+    weather: clear
 
   # === stage_01_03 · 黑风岭（山贼伏击）===
   - id: stage_01_03
@@ -182,6 +186,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 200
     difficultyMultiplier: 1.4
+    biome: mountainPath
+    weather: mist
 
   # === stage_01_04 · 洛阳城外（小 Boss · 青衫汉子）===
   - id: stage_01_04
@@ -237,6 +243,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 350
     difficultyMultiplier: 1.6
+    biome: cityWall
+    weather: clear
 
   # === stage_01_05 · 风雨渡口（章末大 Boss · 撑伞高人，跨 2 阶 erLiu 设计）===
   # 章末大 Boss 跨阶到 erLiu，玩家方 xueTu 攻击 ×0.3（近破防免疫）、
@@ -300,6 +308,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 600
     difficultyMultiplier: 1.8
+    biome: dock
+    weather: rain
 
   # ─────────────────────────────────────────────────────────────────────
   # Ch2 · 武林初识（sanLiu 三流）
@@ -351,6 +361,8 @@ stages:
     dropItemDefIds: []
     baseExpReward: 350
     difficultyMultiplier: 1.5
+    biome: escortRoad
+    weather: clear
 
   # === stage_02_02 · 茶馆论剑（中段比武）===
   - id: stage_02_02
@@ -403,6 +415,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 550
     difficultyMultiplier: 1.7
+    biome: teaHouse
+    weather: clear
 
   # === stage_02_03 · 春水堂（铸剑铺试剑）===
   - id: stage_02_03
@@ -457,6 +471,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 800
     difficultyMultiplier: 1.9
+    biome: smithy
+    weather: clear
 
   # === stage_02_04 · 城外校场（小 Boss · 棍法光头汉）===
   - id: stage_02_04
@@ -517,6 +533,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 1100
     difficultyMultiplier: 2.1
+    biome: drillGround
+    weather: clear
 
   # === stage_02_05 · 巷中夜雨（章末大 Boss · 不留剑鞘青衫人）===
   - id: stage_02_05
@@ -582,6 +600,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 1800
     difficultyMultiplier: 2.3
+    biome: alley
+    weather: night
 
   # ─────────────────────────────────────────────────────────────────────
   # Ch3 · 名扬江湖（erLiu 二流）
@@ -637,6 +657,8 @@ stages:
     dropItemDefIds: []
     baseExpReward: 1500
     difficultyMultiplier: 2.0
+    biome: cityWall
+    weather: clear
 
   # === stage_03_02 · 许昌擂台（中段擂台战）===
   - id: stage_03_02
@@ -697,6 +719,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 2200
     difficultyMultiplier: 2.2
+    biome: drillGround
+    weather: clear
 
   # === stage_03_03 · 山寺夜话（中段奇遇战）===
   - id: stage_03_03
@@ -755,6 +779,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 2800
     difficultyMultiplier: 2.4
+    biome: temple
+    weather: night
 
   # === stage_03_04 · 雁门旧事（小 Boss · 疤脸汉子）===
   - id: stage_03_04
@@ -819,6 +845,8 @@ stages:
         dropChance: 1.0
     baseExpReward: 4000
     difficultyMultiplier: 2.6
+    biome: mountainPath
+    weather: mist
 
   # === stage_03_05 · 一剑封名（章末大 Boss · 灰衣人）===
   - id: stage_03_05
@@ -885,3 +913,5 @@ stages:
         dropChance: 1.0
     baseExpReward: 6000
     difficultyMultiplier: 2.8
+    biome: drillGround
+    weather: night

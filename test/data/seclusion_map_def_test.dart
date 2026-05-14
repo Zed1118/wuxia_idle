@@ -124,6 +124,22 @@ void main() {
       expect(def.internalForceGrowth, 1.5);
       expect(def.requiredRealm, RealmTier.erLiu);
     });
+
+    // C-W14-2:biome / weather 字段解析
+    test('biome / weather 字段解析(C-W14-2)', () {
+      final y = mapYaml();
+      y['biome'] = 'mountainForest';
+      y['weather'] = 'rain';
+      final def = SeclusionMapDef.fromYaml(y);
+      expect(def.biome, EncounterBiome.mountainForest);
+      expect(def.weather, EncounterWeather.rain);
+    });
+
+    test('biome / weather 未配 → null(向后兼容)', () {
+      final def = SeclusionMapDef.fromYaml(mapYaml());
+      expect(def.biome, isNull);
+      expect(def.weather, isNull);
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────

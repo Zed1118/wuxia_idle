@@ -272,6 +272,23 @@ class GameRepository {
           );
         }
       }
+      // C-W14-2:biome/weather 分钟阈值 > 0
+      for (final entry in def.trigger.biomeMinutes.entries) {
+        if (entry.value <= 0) {
+          throw StateError(
+            'encounter ${def.id} biome ${entry.key.name} '
+            'minutes=${entry.value} 必须 > 0',
+          );
+        }
+      }
+      for (final entry in def.trigger.weatherMinutes.entries) {
+        if (entry.value <= 0) {
+          throw StateError(
+            'encounter ${def.id} weather ${entry.key.name} '
+            'minutes=${entry.value} 必须 > 0',
+          );
+        }
+      }
       final fr = def.trigger.fortuneRequired;
       if (fr != null && (fr < 1 || fr > 10)) {
         throw StateError(

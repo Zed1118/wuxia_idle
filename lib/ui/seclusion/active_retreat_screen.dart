@@ -5,6 +5,7 @@ import '../../data/game_repository.dart';
 import '../../data/isar_setup.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/retreat_session.dart';
+import '../../services/encounter_service.dart';
 import '../../services/seclusion_service.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
@@ -88,7 +89,14 @@ class _ActiveRetreatScreenState extends State<ActiveRetreatScreen> {
     setState(() => _isCollecting = true);
 
     try {
-      final outputs = await SeclusionService(isar: IsarSetup.instance).completeRetreat(
+      // C-W14-2:注入 encounterService,让 completeRetreat 写产出后能喂
+      // biome/weather 累计给奇遇系统(ActiveRetreatScreen 不是 Consumer,
+      // 不走 provider 直接 new,生产路径行为一致)。
+      final svc = SeclusionService(
+        isar: IsarSetup.instance,
+        encounterService: EncounterService(isar: IsarSetup.instance),
+      );
+      final outputs = await svc.completeRetreat(
         session: widget.session,
         characterId: widget.characterId,
         charRealmTier: widget.charRealmTier,

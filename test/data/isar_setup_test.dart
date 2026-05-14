@@ -45,8 +45,9 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.5.0',
-          reason: 'Phase 4 W14-1 升 schema:加 EncounterProgress collection');
+      expect(save.saveVersion, '0.6.0',
+          reason:
+              'Phase 4 W14-2 升 schema:EncounterProgress 加 biome/weather minutes 嵌入');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);

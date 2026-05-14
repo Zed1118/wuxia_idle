@@ -26,6 +26,7 @@ import '../../services/stage_battle_setup.dart';
 import '../../services/tower_progress_service.dart';
 import '../../utils/rng.dart';
 import '../battle/battle_screen.dart';
+import '../encounter/encounter_hook.dart';
 import '../narrative/narrative_reader_screen.dart';
 import '../strings.dart';
 
@@ -161,6 +162,16 @@ Future<void> runTowerFlow({
       ),
     );
   }
+
+  // Phase 4 W14-2:爬塔 victory 也接奇遇 hook(与主线共享 encounter_hook)。
+  // 放在 victory narrative 之后,与 stage_entry_flow 体例一致。
+  if (!context.mounted) return;
+  await runEncounterHookAfterVictory(
+    context: context,
+    ref: ref,
+    defeatedSchools:
+        floor.enemyTeam.map((e) => e.school).toList(growable: false),
+  );
 }
 
 /// 推 BattleScreen 并 wait 胜/败回调。
