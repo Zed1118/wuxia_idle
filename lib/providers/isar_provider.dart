@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/game_repository.dart';
 import '../data/isar_setup.dart';
 import '../services/dispel_service.dart';
+import '../services/encounter_service.dart';
 import '../services/enhancement_service.dart';
 import '../services/forging_service.dart';
 import '../services/mainline_progress_service.dart';
@@ -98,4 +99,11 @@ SeclusionService? seclusionService(Ref ref) {
 StageBattleSetup? stageBattleSetup(Ref ref) {
   final isarInstance = ref.watch(isarProvider);
   return isarInstance == null ? null : StageBattleSetup(isar: isarInstance);
+}
+
+/// [EncounterService] provider(Phase 4 W14-1)。
+@riverpod
+EncounterService? encounterService(Ref ref) {
+  final isarInstance = ref.watch(isarProvider);
+  return isarInstance == null ? null : EncounterService(isar: isarInstance);
 }

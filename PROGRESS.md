@@ -5,10 +5,11 @@
 
 ## 当前阶段
 
-**W7-W11 五周累积视觉验收闭环 tag v0.4.0-w11**(2026-05-14,Codex 4 轮迭代 + Mac 端 6 处链式修复)。Codex 桌面 Pen Windows 视觉验收 4 轮跑通,**6/7 必收硬证据视觉通过**(D battleCount #0→#1 / 心法 0/100→1/100 / F 重打不发奖但副作用累 / G banner / G 内力 1900/4180 / 11/12 dialog)。Mac 端修复链:① tower/stage entry_flow ensure `getOrCreate` 解 W6 重构 race(StateError 被 catch (_) 静默吞)+ catch 加 debugPrint;② 装备/心法 tile 加数字直显;③ Phase2TestMenu「VC」按钮 mark Ch1 01-04 cleared;④ **Isar fixed-length list 生产 bug**:`Technique.skillUsageCount` `@embedded List` findAll 反序列化 fixed-length,caller 端 `List.of()` 转 growable;⑤ 战斗结算 invalidate 5 个 family provider(`_invalidateCharacterFamilyAfterCombat`);⑥ stage_01_01 加 onboarding dropTable(100% 护甲 + 100% 1 磨剑石,GDD §10.2 教程节奏)。**552/552**(+5 W13 累积 test),analyze 0 issues。**预防性 audit**:全仓 `catch (_)` 4 处全合理 + 其他 Isar `@embedded List` 无 fixed-length 风险。tag `v0.4.0-w11` 闭合 W7-W11 五周累积。
+**Phase 4 W14-1 C 任务 vertical slice**(2026-05-14,xhigh)。GDD §7.2 奇遇/武学领悟系统从 0 → 端到端跑通,Unified type 模型(技击悟/机缘/试炼/因果)。决策点 4 条全 lock:多维度 counter 触发(无全局机缘值)+ 武学领悟是奇遇的一个 type + fortune 软概率 `p = base * (1 + fortune/20)` + outcome 三类(unlockSkill / attributeBonus +1 / skip)。**实现栈**:① `EncounterDef` + 4 枚举(`EncounterType` / `OutcomeType` / `AttributeKey` / `EncounterTrigger`)+ yaml fromYaml;② Isar `EncounterProgress` collection(triggered list / 4 属性累计 / 奇遇专属 unlockedSkillIds / `SchoolKillCount` @embedded);③ `EncounterService`(recordKill / evaluateTriggers / applyOutcome / lifetime cap 5 enforce,W13 教训 `List.of` 转 growable + catch 加 debugPrint);④ `data/encounters.yaml` 3 条 vertical slice(bamboo_listen_rain lingQiao 100 杀 → 解锁招式 + cha_ting_dui_ju 3 流派 10 杀 + du_ke_wen_dao 纯 fortune);⑤ stage_entry_flow victory hook 接入 `_checkAndShowEncounter`(放 victory narrative 之后);⑥ `EncounterDialog` 三段式 UI(opening + choices + outcome body)+ outcome SnackBar 摘要;⑦ `EncounterEventLoader` 按需加载 events 文案(沿用 narrative 体例,placeholder 兜底);⑧ IsarSetup schema 升 0.5.0 加 EncounterProgressSchema;⑨ `encounterServiceProvider`。**+20 test**(10 service + 10 yaml parse),**572/572**,analyze 0 issues。biome / weather / 挂机 tick / 闭关 hook 留 C-W14-2,events 26 文件中 23 个 outcome map 留 C-W14-2/3 扩。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
+- **Phase 4 W14-1 C 任务 vertical slice tag v0.4.0-w11**(2026-05-14,xhigh):GDD §7.2 奇遇/武学领悟系统 0→1。新建 `EncounterDef` + 4 枚举 + `EncounterProgress` Isar collection + `EncounterService`(recordKill / evaluateTriggers fortune 软概率 / applyOutcome lifetime cap 5) + 3 条 encounters.yaml + UI 三段式 dialog + 战斗 victory hook。20 新 test,**572/572**(W13 552 → +20)。详条 §当前阶段
 - **Phase 5 W6 升级 + 架构重构 tag v0.3.0-w6**(2026-05-14):isar→isar_community 3.3.2 / flutter_riverpod 3.x / riverpod_annotation 4.x / riverpod_generator 4.x / analyzer 5.x→9.x。8 个有 Isar 依赖的 service 改实例化 + 构造函数接 Isar;新 `IsarSetup.instanceOrNull` + nullable isarProvider + 9 个 service provider,widget test 自动短路。**销账 #23**(架构层面)。530/530 测试,详条 `docs/handoff/week6_full_closeout_2026-05-14.md`
 - **Phase 3 Week 7 T63 装备 fixture 扩 10→35 件 + 覆盖度红线**(2026-05-13):equipment.yaml 7 阶 × 5 件重写;GameRepository `_enforceEquipmentRedLines`(单件 baseAttackMax ≤ 2000 + 三件套覆盖)。test +2,532/532
 - **Phase 3 Week 8 T64 心法扩 6→21 本 + 招式扩 18→63 招 + 覆盖度红线**(2026-05-13):techniques.yaml 7 阶 × 3 流派 + skills.yaml 21×3=63 招;GameRepository `_enforceTechniqueRedLines`(组合 + 3 招 type + parent 指向)。test +2,534/534
@@ -36,10 +37,11 @@
 
 ## 下一步
 
-W14 候选(W7-W11 + W13 fix 链已 tag v0.4.0-w11 闭环):
+W14-2/3 候选(W14-1 vertical slice 已落):
+- **C-W14-2 奇遇扩字段 + 闭关 tick + 扩 encounter**(high):stages.yaml/seclusion 加 biome/weather + EncounterDef 加多维度 trigger + seclusion_service tickIdle hook + encounters.yaml 扩 10-15 条
+- **C-W14-3 余 events 全 map + UI 精修 + Pen 视觉验收**(medium):26 个 events outcome 全 map + dialog 节奏细化 + Codex 桌面 Pen 跑视觉验收
 - **Phase 5 #2 DDD 目录整理 + 屏 Consumer 化收尾**(xhigh,可重新捡回 #28 闭关 widget e2e)
 - **#30 闭关 3 维度接 service**(§12 #7 节气清单 + 农历库阻塞,先解人类决策)
-- **C 奇遇 + E 武学领悟**(§12 #6 机缘值规则阻塞,先解人类决策)
 - **#34 stage drop 视觉验收 Pen 环境改善**(配 ≥1080 屏幕 + 库存页快捷入口,然后 Codex 重跑补 #10)
 - **Pen-only T64 test fail 排查**(`.dart_tool/build` cache stale 推测,Mac 端不重现)
 
