@@ -5,6 +5,7 @@ import '../data/game_repository.dart';
 import '../data/isar_setup.dart';
 import '../data/models/attributes.dart';
 import '../data/models/character.dart';
+import '../data/models/encounter_progress.dart';
 import '../data/models/enums.dart';
 import '../data/models/equipment.dart';
 import '../data/models/game_event.dart';
@@ -12,6 +13,7 @@ import '../data/models/inventory_item.dart';
 import '../data/models/save_data.dart';
 import '../data/models/technique.dart';
 import '../utils/rng.dart';
+import 'encounter_service.dart';
 import 'equipment_factory.dart';
 import 'mainline_progress_service.dart';
 
@@ -279,6 +281,60 @@ class Phase2SeedService {
     ]) {
       await svc.recordVictory(stageId: stageId, now: now);
     }
+  }
+
+  /// W14-3 视觉验收专用 seed(下批 Codex 完整 EncounterSkillSection 验收用)。
+  ///
+  /// 在 [seedVisualCheckW7W11] 基础上预 unlock 7 个 encounter skill(tier 1-7 各
+  /// 1 个,取该 tier 在 [GameRepository.allEncounterSkills] 中首个 id),并把
+  /// 大弟子(id=2,境界 erLiu / tier index 2)预装备一个 tier 3 skill。Codex
+  /// 跑 EncounterSkillSection 时可观察:
+  ///   - 大弟子 slot 填充态(已装备 + 卸下按钮)
+  ///   - bottom sheet 中 tier 4-7 显示 lock icon disabled
+  ///   - 切换师徒 3 人(yiLiu / erLiu / sanLiu)看不同 lock 行为
+  ///
+  /// 不修改师徒境界 — 沿用 `data/masters.yaml` defaultRealm 天然分层
+  /// (祖师 yiLiu 可装 ≤4 / 大弟子 erLiu ≤3 / 二弟子 sanLiu ≤2)。
+  ///
+  /// EncounterProgress 走 [EncounterService.getOrCreate] 拿单行(沿 W14-1 体例,
+  /// 与战斗 hook / idle tick / applyOutcome 共享同行)。其内含 writeTxn,与外层
+  /// 修改字段 txn 分离(W14-2 嵌套 writeTxn 教训)。
+  Future<void> seedVisualCheckW14_3() async {
+    await seedVisualCheckW7W11();
+
+    final repo = GameRepository.instance;
+    final byTier = <int, List<String>>{};
+    for (final s in repo.allEncounterSkills) {
+      final t = s.tier;
+      if (t == null) continue;
+      byTier.putIfAbsent(t, () => []).add(s.id);
+    }
+
+    final unlocked = <String>[
+      for (var t = 1; t <= 7; t++)
+        if (byTier[t]?.isNotEmpty ?? false) byTier[t]!.first,
+    ];
+    final equippedSkillId =
+        (byTier[3]?.isNotEmpty ?? false) ? byTier[3]!.first : null;
+
+    final encounterService = EncounterService(isar: isar);
+    final progress = await encounterService.getOrCreate(
+      saveDataId: IsarSetup.currentSlotId,
+    );
+
+    await isar.writeTxn(() async {
+      progress.unlockedSkillIds = unlocked;
+      await isar.encounterProgress.put(progress);
+
+      if (equippedSkillId != null) {
+        // 大弟子 id=2(seedMasterDisciple: founder=1 / 大弟子 autoInc=2 / 二弟子=3)
+        final disciple = await isar.characters.get(2);
+        if (disciple != null) {
+          disciple.equippedEncounterSkillId = equippedSkillId;
+          await isar.characters.put(disciple);
+        }
+      }
+    });
   }
 
   // ── private helpers ────────────────────────────────────────────────────────
