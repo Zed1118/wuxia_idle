@@ -1,0 +1,445 @@
+# =============================================================================
+# encounter_skills.yaml · 奇遇专属招式池(C-W14-3-A)
+# =============================================================================
+# 共 35 招,覆盖 7 阶,每阶 5 招。**与 skills.yaml(21 心法 × 3 招 = 63 招)
+# 完全独立**:
+#   - parentTechniqueDefId 必须为空(SkillDef 注释:"为空表示武学领悟独立产出")
+#   - tier 必填 1-7(skills.yaml 招式 tier 留空)
+#   - id 必须以 skill_encounter_ 开头
+#
+# 加载/红线:GameRepository._loadEncounterSkills + _enforceEncounterSkillRedLines
+# 玩家通过奇遇 outcome(OutcomeType.unlockSkill)解锁,持久到
+# EncounterProgress.unlockedSkillIds(账号级 unlock 池),通过
+# Character.equippedEncounterSkillId 单 slot 装备(角色级)。
+#
+# 倍率上限(沿用 numbers.yaml techniques.tiers.max_skill_multiplier):
+#   tier 1 ≤ 1500 / tier 2 ≤ 2000 / tier 3 ≤ 2500 / tier 4 ≤ 3000
+#   tier 5 ≤ 4000 / tier 6 ≤ 5500 / tier 7 ≤ 8000
+#
+# 既有 6 招(W14-1/W14-2 已在 encounters.yaml unlockSkill outcome 引用)
+# 必须包含,标 (★) 标记:
+#   - skill_encounter_ting_yu_jian   (tier 3)
+#   - skill_encounter_drill_strike   (tier 3)
+#   - skill_encounter_relic_blade    (tier 4)
+#   - skill_encounter_water_qi       (tier 5)
+#   - skill_encounter_night_strike   (tier 5)
+#   - skill_encounter_ice_break      (tier 6)
+#
+# description 占位 TODO_NARRATIVE,DeepSeek 后续补文案(同 skills.yaml 体例)。
+# requiresManualTrigger:仅 ultimate=true。
+# =============================================================================
+
+encounter_skills:
+
+  # ───────────────────────────────────────────
+  # 第 1 阶(cap 1500)早期 unlock,无 fortune 要求
+  # ───────────────────────────────────────────
+
+  - id: skill_encounter_jichu_buxi
+    name: 基础步息
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 600
+    internalForceCost: 50
+    cooldownTurns: 1
+    requiresManualTrigger: false
+    visualEffect: footwork_basic
+    tier: 1
+
+  - id: skill_encounter_pu_xi_tu
+    name: 朴息图
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 900
+    internalForceCost: 80
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    visualEffect: breathing_basic
+    tier: 1
+
+  - id: skill_encounter_jian_bu
+    name: 渐步
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 750
+    internalForceCost: 60
+    cooldownTurns: 1
+    requiresManualTrigger: false
+    visualEffect: lightfoot_step
+    tier: 1
+
+  - id: skill_encounter_qi_yu_jue
+    name: 起欲诀
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1200
+    internalForceCost: 120
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    visualEffect: focus_strike
+    tier: 1
+
+  - id: skill_encounter_tun_tu
+    name: 吞吐
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1100
+    internalForceCost: 100
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    visualEffect: breathing_advanced
+    tier: 1
+
+  # ───────────────────────────────────────────
+  # 第 2 阶(cap 2000)寻常奇遇
+  # ───────────────────────────────────────────
+
+  - id: skill_encounter_jian_yi
+    name: 剑意萌芽
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1600
+    internalForceCost: 140
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    visualEffect: sword_sprout
+    tier: 2
+
+  - id: skill_encounter_qiu_quan
+    name: 求拳
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1400
+    internalForceCost: 120
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    visualEffect: fist_seeking
+    tier: 2
+
+  - id: skill_encounter_an_qi
+    name: 暗器初探
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1700
+    internalForceCost: 150
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    visualEffect: hidden_weapon
+    tier: 2
+
+  - id: skill_encounter_pai_yun_zhang
+    name: 排云掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1900
+    internalForceCost: 170
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    visualEffect: palm_cloud
+    tier: 2
+
+  - id: skill_encounter_huo_du
+    name: 活渡
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1500
+    internalForceCost: 130
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    visualEffect: dodge_flow
+    tier: 2
+
+  # ───────────────────────────────────────────
+  # 第 3 阶(cap 2500)技巧期 · 含 ting_yu_jian + drill_strike(★)
+  # ───────────────────────────────────────────
+
+  - id: skill_encounter_ting_yu_jian
+    name: 听雨剑
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2300
+    internalForceCost: 200
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    visualEffect: sword_rain_listen
+    tier: 3
+
+  - id: skill_encounter_drill_strike
+    name: 校场连击
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2100
+    internalForceCost: 180
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    visualEffect: drill_combo
+    tier: 3
+
+  - id: skill_encounter_wu_xia_yi
+    name: 武侠意
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2400
+    internalForceCost: 220
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    visualEffect: wuxia_intent
+    tier: 3
+
+  - id: skill_encounter_huo_quan
+    name: 火拳
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1900
+    internalForceCost: 170
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    visualEffect: fist_flame
+    tier: 3
+
+  - id: skill_encounter_xuan_jian
+    name: 玄剑
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2200
+    internalForceCost: 190
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    visualEffect: sword_mystic
+    tier: 3
+
+  # ───────────────────────────────────────────
+  # 第 4 阶(cap 3000)秘传期 · 含 relic_blade(★)
+  # ───────────────────────────────────────────
+
+  - id: skill_encounter_relic_blade
+    name: 古剑遗韵
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2800
+    internalForceCost: 240
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    visualEffect: ancient_sword
+    tier: 4
+
+  - id: skill_encounter_qing_feng_jian
+    name: 清风剑
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2700
+    internalForceCost: 230
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    visualEffect: sword_breeze
+    tier: 4
+
+  - id: skill_encounter_lie_huo
+    name: 烈火诀
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2900
+    internalForceCost: 260
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    visualEffect: fire_fury
+    tier: 4
+
+  - id: skill_encounter_xuan_yin
+    name: 玄阴指
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2600
+    internalForceCost: 220
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    visualEffect: finger_dark
+    tier: 4
+
+  - id: skill_encounter_fei_xian
+    name: 飞仙步
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3000
+    internalForceCost: 270
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    visualEffect: lightfoot_immortal
+    tier: 4
+
+  # ───────────────────────────────────────────
+  # 第 5 阶(cap 4000)江湖期 · 含 water_qi + night_strike(★)
+  # ───────────────────────────────────────────
+
+  - id: skill_encounter_water_qi
+    name: 流水气功
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3700
+    internalForceCost: 320
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    visualEffect: water_flow
+    tier: 5
+
+  - id: skill_encounter_night_strike
+    name: 夜行袭
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3500
+    internalForceCost: 300
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    visualEffect: night_strike
+    tier: 5
+
+  - id: skill_encounter_lei_dian
+    name: 雷电诀
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 4000
+    internalForceCost: 380
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    visualEffect: thunder_bolt
+    tier: 5
+
+  - id: skill_encounter_jin_gang
+    name: 金刚不坏
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3800
+    internalForceCost: 340
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    visualEffect: vajra_body
+    tier: 5
+
+  - id: skill_encounter_shan_he
+    name: 山河剑
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3900
+    internalForceCost: 350
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    visualEffect: sword_mountains_rivers
+    tier: 5
+
+  # ───────────────────────────────────────────
+  # 第 6 阶(cap 5500)失传期 · 含 ice_break(★)
+  # ───────────────────────────────────────────
+
+  - id: skill_encounter_ice_break
+    name: 冰封斩
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 4500
+    internalForceCost: 400
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    visualEffect: ice_freeze_slash
+    tier: 6
+
+  - id: skill_encounter_xuan_bing
+    name: 玄冰诀
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 5200
+    internalForceCost: 450
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    visualEffect: ice_mystic
+    tier: 6
+
+  - id: skill_encounter_lie_yan
+    name: 烈焰焚天
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 5500
+    internalForceCost: 480
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    visualEffect: flame_heaven
+    tier: 6
+
+  - id: skill_encounter_qian_kun
+    name: 乾坤掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 5000
+    internalForceCost: 430
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    visualEffect: palm_qiankun
+    tier: 6
+
+  - id: skill_encounter_chen_xin
+    name: 沉心诀
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 4800
+    internalForceCost: 410
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    visualEffect: heart_calm
+    tier: 6
+
+  # ───────────────────────────────────────────
+  # 第 7 阶(cap 8000)传说期 · 5 招大招级
+  # ───────────────────────────────────────────
+
+  - id: skill_encounter_long_yin
+    name: 龙吟九霄
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 7500
+    internalForceCost: 600
+    cooldownTurns: 6
+    requiresManualTrigger: true
+    visualEffect: dragon_roar
+    tier: 7
+
+  - id: skill_encounter_feng_qi
+    name: 凤起九天
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 8000
+    internalForceCost: 650
+    cooldownTurns: 6
+    requiresManualTrigger: true
+    visualEffect: phoenix_rise
+    tier: 7
+
+  - id: skill_encounter_yi_jian
+    name: 一剑封名
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 7800
+    internalForceCost: 620
+    cooldownTurns: 6
+    requiresManualTrigger: true
+    visualEffect: sword_seal_fame
+    tier: 7
+
+  - id: skill_encounter_wu_ming
+    name: 无名诀
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 7000
+    internalForceCost: 560
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    visualEffect: nameless_strike
+    tier: 7
+
+  - id: skill_encounter_tian_dao
+    name: 天道一线
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 6800
+    internalForceCost: 540
+    cooldownTurns: 6
+    requiresManualTrigger: true
+    visualEffect: heaven_path
+    tier: 7

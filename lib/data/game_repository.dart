@@ -57,6 +57,12 @@ class GameRepository {
   /// events 文案走 [EncounterEventLoader] 按需 load(narrative_loader 体例)。
   final Map<String, EncounterDef> encounterDefs;
 
+  /// 奇遇专属招式 id 集合(C-W14-3-A,encounter_skills.yaml 加载)。
+  /// 与 [skillDefs] 共享 runtime 类型 [SkillDef],但通过此 set 可快速筛
+  /// 出"奇遇所得"招式,供 UI / 红线 / battle 装载使用。也可用
+  /// `skillDefs[id]!.isEncounterSkill` 等价判断。
+  final Set<String> encounterSkillIds;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -68,6 +74,7 @@ class GameRepository {
     required this.seclusionMaps,
     required this.masters,
     required this.encounterDefs,
+    required this.encounterSkillIds,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -103,6 +110,34 @@ class GameRepository {
       SkillDef.fromYaml,
       idOf: (d) => d.id,
     );
+
+    // Phase 4 W14-3-A:奇遇专属招式池(独立 yaml,与 skills.yaml 同 SkillDef 类型,
+    // 合并到同 Map;允许测试 fixture 不带,空 set 让红线层 noop)。
+    final encounterSkillIds = <String>{};
+    try {
+      final encounterSkillsRaw =
+          parseYamlMap(await load('data/encounter_skills.yaml'));
+      final encounterSkills = _parseDefMap(
+        encounterSkillsRaw['encounter_skills'] as List,
+        SkillDef.fromYaml,
+        idOf: (d) => d.id,
+      );
+      for (final entry in encounterSkills.entries) {
+        if (skillDefs.containsKey(entry.key)) {
+          throw StateError(
+            'encounter_skills.yaml 与 skills.yaml id 冲突: ${entry.key}',
+          );
+        }
+        skillDefs[entry.key] = entry.value;
+        encounterSkillIds.add(entry.key);
+      }
+    } on StateError {
+      // 显式 collision 抛出的 StateError 透传,fail fast
+      rethrow;
+    } catch (e) {
+      // test fixture 不带 encounter_skills.yaml 时静默,生产路径仍由
+      // _enforceEncounterSkillRedLines 校验 unlock 引用一致性。
+    }
     final stageDefs = _parseDefMap(
       stagesRaw['stages'] as List,
       StageDef.fromYaml,
@@ -144,6 +179,7 @@ class GameRepository {
       seclusionMaps: numbers.retreat.maps,
       masters: masters,
       encounterDefs: encounterDefs,
+      encounterSkillIds: encounterSkillIds,
     );
     repo._enforceRedLines();
     _instance = repo;
@@ -252,6 +288,68 @@ class GameRepository {
 
     // Phase 4 W14-1 C-1:encounter fixture 校验(若加载到)
     _enforceEncounterRedLines();
+
+    // Phase 4 W14-3-A:encounter_skills.yaml 校验 + unlock 引用一致性
+    _enforceEncounterSkillRedLines();
+  }
+
+  /// 奇遇招式红线(C-W14-3-A):
+  /// - 每招 tier ∈ [1, 7]
+  /// - parentTechniqueDefId == null(必须独立于心法体系)
+  /// - powerMultiplier ≤ 对应 tier cap(沿用 numbers.yaml techniques.tiers
+  ///   max_skill_multiplier,1500/2000/2500/3000/4000/5500/8000)
+  /// - 所有 encounterDefs unlockSkill outcome 引用的 skillId **必须存在于
+  ///   encounter skill 池**(强校验,缺失抛 StateError,绑死 yaml 联结)
+  ///
+  /// 测试 fixture 不带 encounter_skills.yaml 时 encounterSkillIds 为空集,
+  /// 跳过 cap 校验,但 unlock 引用一致性仍校验(encounters.yaml 在场时)。
+  void _enforceEncounterSkillRedLines() {
+    const tierCaps = [1500, 2000, 2500, 3000, 4000, 5500, 8000];
+    for (final id in encounterSkillIds) {
+      final s = skillDefs[id]!;
+      final tier = s.tier;
+      if (tier == null || tier < 1 || tier > 7) {
+        throw StateError(
+          'encounter skill $id tier=$tier,应 ∈ [1, 7]',
+        );
+      }
+      if (s.parentTechniqueDefId != null) {
+        throw StateError(
+          'encounter skill $id parentTechniqueDefId='
+          '${s.parentTechniqueDefId},应为空(独立于心法体系)',
+        );
+      }
+      final cap = tierCaps[tier - 1];
+      if (s.powerMultiplier > cap) {
+        throw StateError(
+          'encounter skill $id tier=$tier powerMultiplier='
+          '${s.powerMultiplier} 越界,应 ≤ $cap',
+        );
+      }
+      // GDD §5.4 红线:全游戏招式 powerMultiplier ≤ 8000
+      if (s.powerMultiplier > 8000) {
+        throw StateError(
+          'encounter skill $id powerMultiplier=${s.powerMultiplier} > 8000',
+        );
+      }
+    }
+    // unlock 引用一致性:encounters.yaml 的所有 unlockSkill outcome
+    // 必须能在 encounter skill 池里找到 def(且必须是 encounter skill,
+    // 不许借用普通心法招式)。
+    if (encounterDefs.isNotEmpty && encounterSkillIds.isNotEmpty) {
+      for (final def in encounterDefs.values) {
+        for (final outcome in def.outcomeMapping.values) {
+          if (outcome.skillId == null) continue;
+          final sid = outcome.skillId!;
+          if (!encounterSkillIds.contains(sid)) {
+            throw StateError(
+              'encounter ${def.id} unlockSkill 引用 $sid '
+              '不在 encounter skill 池(encounter_skills.yaml)',
+            );
+          }
+        }
+      }
+    }
   }
 
   /// 奇遇红线(Phase 4 W14-1):
@@ -684,6 +782,20 @@ class GameRepository {
     list.sort((a, b) => a.id.compareTo(b.id));
     return list;
   }
+
+  /// 全部奇遇专属招式,按 (tier, id) 排序(C-W14-3-A,UI 装备面板用)。
+  List<SkillDef> get allEncounterSkills {
+    final list = encounterSkillIds.map((id) => skillDefs[id]!).toList();
+    list.sort((a, b) {
+      final t = (a.tier ?? 0).compareTo(b.tier ?? 0);
+      if (t != 0) return t;
+      return a.id.compareTo(b.id);
+    });
+    return list;
+  }
+
+  /// 判断给定 skill id 是否为奇遇招式(C-W14-3-A)。
+  bool isEncounterSkill(String id) => encounterSkillIds.contains(id);
 
   /// Phase 3 Week 5 T59：主线 15 关红线。
   ///

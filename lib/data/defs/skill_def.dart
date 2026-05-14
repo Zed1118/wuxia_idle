@@ -3,6 +3,8 @@ import '../models/enums.dart';
 /// 招式配置（data_schema.md §5.3，纯 Dart，不入 Isar）。
 ///
 /// `parentTechniqueDefId` 为空时，表示该招式由"武学领悟"独立产出（GDD §7.2）。
+/// `tier` 仅 encounter skill 填 1-7(沿用 GDD §5.2 七阶节奏 + §5.3 三系锁死),
+/// 普通心法招式 tier 留空。
 class SkillDef {
   final String id;
   final String name;
@@ -14,6 +16,7 @@ class SkillDef {
   final bool requiresManualTrigger;
   final String? parentTechniqueDefId;
   final String visualEffect;
+  final int? tier;
 
   const SkillDef({
     required this.id,
@@ -26,7 +29,11 @@ class SkillDef {
     required this.requiresManualTrigger,
     this.parentTechniqueDefId,
     required this.visualEffect,
+    this.tier,
   });
+
+  /// 奇遇招式 = parentTechniqueDefId 为空 & tier 非空。
+  bool get isEncounterSkill => parentTechniqueDefId == null && tier != null;
 
   factory SkillDef.fromYaml(Map<String, dynamic> y) {
     return SkillDef(
@@ -40,6 +47,7 @@ class SkillDef {
       requiresManualTrigger: y['requiresManualTrigger'] as bool,
       parentTechniqueDefId: y['parentTechniqueDefId'] as String?,
       visualEffect: y['visualEffect'] as String,
+      tier: (y['tier'] as num?)?.toInt(),
     );
   }
 

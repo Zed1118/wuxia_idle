@@ -13,6 +13,7 @@ import '../../providers/character_providers.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
 import '../theme/tier_colors.dart';
+import 'encounter_skill_section.dart';
 
 /// 角色面板（phase2_tasks.md T28 + Phase 3 Week 4 T56）。
 ///
@@ -222,6 +223,8 @@ class _Body extends StatelessWidget {
           _EquipmentSection(character: character),
           const SizedBox(height: 16),
           _TechniqueSection(character: character),
+          const SizedBox(height: 16),
+          EncounterSkillSection(character: character),
           const SizedBox(height: 16),
           _LineageSection(character: character),
         ],

@@ -29,7 +29,12 @@ void main() {
           reason: '35 件装备（Phase 3 Week 7 T63 扩 7 阶 × 5 件）');
       expect(repo.techniqueDefs.length, 21,
           reason: '21 本心法（Phase 3 Week 8 T64 扩 7 阶 × 3 流派）');
-      expect(repo.skillDefs.length, 63, reason: '63 招招式（21 心法 × 3 招）');
+      // W14-3-A:skills.yaml 63 招(21 心法 × 3 招) + encounter_skills.yaml
+      // 35 招(7 阶 × 5)合并到同一 Map = 98。
+      expect(repo.skillDefs.length, 98,
+          reason: '63 心法招(skills.yaml) + 35 奇遇招(encounter_skills.yaml)');
+      expect(repo.encounterSkillIds.length, 35,
+          reason: 'encounter_skills.yaml 35 招(7 阶 × 5)');
       expect(repo.stageDefs.length, 15, reason: '主线 15 关（Phase 3 Week 5 T59 扩容）');
       expect(repo.numbers.version, isNotEmpty);
     });
