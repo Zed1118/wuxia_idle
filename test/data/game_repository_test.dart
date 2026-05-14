@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
+import 'package:wuxia_idle/services/drop_service.dart';
+import 'package:wuxia_idle/utils/rng.dart';
 
 /// GameRepository + yaml 加载器 + NumbersConfig 集成测试。
 ///
@@ -119,6 +121,28 @@ void main() {
       final s1 = repo.getStage('stage_01_01');
       expect(s1.dropTable.length, 2,
           reason: '新手第一关 onboarding：100% 寻常布衣 + 100% 1 磨剑石');
+    });
+
+    test('W13-v3 #10 兜底：DropService.rollDrops(stage_01_01) 100% 掉护甲 + 磨剑石',
+        () async {
+      // Codex v4 视觉验收 #10 未取得硬截图(GUI/RDP 操作问题),用 service 层
+      // 直接验证 dropTable 配置在 DropService 路径上真生效,作为视觉缺失的代码层兜底。
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final stage = repo.getStage('stage_01_01');
+      final svc = DropService(equipmentDefLookup: repo.getEquipment);
+
+      // 跑 5 次,因 dropChance=1.0 每次都应该 1 装备 + 1 物料,验证非概率 flake
+      for (var i = 0; i < 5; i++) {
+        final result = svc.rollDrops(stage, DefaultRng(seed: i));
+        expect(result.equipments.length, 1,
+            reason: 'iter $i:armor_xunchang_bu_yi 100% 必掉');
+        expect(result.equipments.first.defId, 'armor_xunchang_bu_yi');
+        expect(result.items.length, 1,
+            reason: 'iter $i:item_mojianshi 100% 必掉');
+        expect(result.items.first.defId, 'item_mojianshi');
+        expect(result.items.first.quantity, 1,
+            reason: 'iter $i:quantity [1,1] 永远 1');
+      }
     });
 
     test('Phase 3 Week 5 主线 15 关红线：3 章 × 5 关 + 4/5 关 isBossStage', () async {
