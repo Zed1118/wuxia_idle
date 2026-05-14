@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**W13 Codex 探路 + 三轮 fixture/生产 bug 链式修复**(2026-05-14,xhigh)。Codex 桌面 Pen Windows 视觉验收两轮探路,Mac 端修复 4 处:① tower/stage entry_flow ensure `getOrCreate` 解 W6 重构 race(StateError 被 catch (_) 静默吞)+ catch 加 debugPrint;② 装备 tile 加 `#N` battleCount + 心法 tile 加 `skillUsage:N`(视觉验收硬证据);③ `Phase2SeedService.seedVisualCheckW7W11()` + Phase2TestMenu「VC」按钮(节省 5-7min 真通关);④ **W13 Isar fixed-length list 生产 bug**:`Technique.skillUsageCount` 是 `@embedded List`,findAll 反序列化 fixed-length,`MapLikeOnSkillUsage.increment` line 29 add 抛 `UnsupportedError`,阻断主线 victory / 爬塔 victory / Boss defeat 三条结算链 — caller 端 `List.of()` 转 growable + 新加 3 case 真持久化回归 test。**551/551**,analyze 0 issues。**预防性 audit**:全仓 `catch (_)` 4 处全合理 + 其他 Isar `@embedded List` 字段无 fixed-length 风险(SkillUsageEntry 是单点,非系统性陷阱)。**Codex 第三轮回报**:5/7 必收硬证据通过(D battleCount #0→#1 / 心法 0/100→1/100 / F 重打不发奖但副作用累 / G banner)。⑤ #15 散功 banner 显 1900 但角色面板仍 3800 → 加 invalidate 5 个 family provider(`_invalidateCharacterFamilyAfterCombat` helper);⑥ #10 stage_01_01 无 dropTable → 加 100% 护甲 + 100% 1 磨剑石(GDD §10.2 教程节奏 + D 验收稳定)。**551/551**,analyze 0 issues。第四轮重派待跑。
+**W7-W11 五周累积视觉验收闭环 tag v0.4.0-w11**(2026-05-14,Codex 4 轮迭代 + Mac 端 6 处链式修复)。Codex 桌面 Pen Windows 视觉验收 4 轮跑通,**6/7 必收硬证据视觉通过**(D battleCount #0→#1 / 心法 0/100→1/100 / F 重打不发奖但副作用累 / G banner / G 内力 1900/4180 / 11/12 dialog)。Mac 端修复链:① tower/stage entry_flow ensure `getOrCreate` 解 W6 重构 race(StateError 被 catch (_) 静默吞)+ catch 加 debugPrint;② 装备/心法 tile 加数字直显;③ Phase2TestMenu「VC」按钮 mark Ch1 01-04 cleared;④ **Isar fixed-length list 生产 bug**:`Technique.skillUsageCount` `@embedded List` findAll 反序列化 fixed-length,caller 端 `List.of()` 转 growable;⑤ 战斗结算 invalidate 5 个 family provider(`_invalidateCharacterFamilyAfterCombat`);⑥ stage_01_01 加 onboarding dropTable(100% 护甲 + 100% 1 磨剑石,GDD §10.2 教程节奏)。**552/552**(+5 W13 累积 test),analyze 0 issues。**预防性 audit**:全仓 `catch (_)` 4 处全合理 + 其他 Isar `@embedded List` 无 fixed-length 风险。tag `v0.4.0-w11` 闭合 W7-W11 五周累积。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
@@ -30,18 +30,18 @@
 - 28. **闭关 widget e2e test 缺失**(2026-05-13 xhigh 5 轮探路无解):W6 后 service 注入完成但 3 屏(list/setup/active)仍走 `IsarSetup.instance`(W6 drift)。`fake_async vs native Isar zone 边界`不可解,真解需 ≈ Phase 5 #2 DDD 级(3 屏 Consumer 化 + service interface),留 Pen 视觉验收兜底
 - 30. **闭关 3 个扩展维度未接 service**(§12 #5 收口留尾):numbers.yaml retreat 已配 technique_learn_rate / internal_force_growth / 节气日 / 正午阳刚,但 `seclusion_service.computeOutputs` 未消费;依赖 §12 #7 节气清单 + 农历库
 - 31. **main_menu「问鼎九霄」widget test 写不出**(2026-05-13 W9 自审踩坑):`pumpAndSettle` 死循环,多 provider+Navigator 链异步 future + 帧 ticker 冲突。已有 11 个 tower widget test 覆盖核心,nav 路径不再硬塞
+- 34. **#10 stage drop 视觉验收未取得硬截图**(2026-05-14 Codex v4):RDP 高度 + 1280×900 窗口下 Codex 主菜单底部入口/滚动操作不稳定,跑了 stage_01_01 victory 但没成功进库存页拍到新增装备。代码层 service test 兜底验证 dropTable 配置生效(`game_repository_test` line 124+)。后续视觉验收建议给 Pen 配 ≥1080 屏幕高 + 库存页快捷入口
 
 > 已销账条目(#1/#5/#12/#13/#14/#15/#16/#18/#19/#20/#21/#22/#23/#24/#25/#26/#27/#29/#32)详见末尾归档。
 
 ## 下一步
 
-**W13 Codex 第三轮重派跑期中**(2026-05-14)。预期回报后:
-- 必收 7 张全拿到 → SSH pull + push origin + 打 tag `v0.4.0-w11` → W7-W11 五周累积闭环
-- G 场景仍胜(stage_01_05 平衡 drift)→ 起 #33 挂账 + 调 yaml fallback
-- E drop 概率太低 → 多打几次 / 调 dropTable
-- 又冒新 bug → 第四轮迭代
-
-W14 候选(取决于 v0.4.0-w11 收尾结果):**Phase 5 #2 DDD 目录整理 + 屏 Consumer 化收尾**(可重新捡回 #28) / **#30 闭关 3 维度接 service**(§12 #7 节气清单 + 农历库阻塞) / **C 奇遇 + E 武学领悟**(§12 #6 机缘值规则阻塞)。
+W14 候选(W7-W11 + W13 fix 链已 tag v0.4.0-w11 闭环):
+- **Phase 5 #2 DDD 目录整理 + 屏 Consumer 化收尾**(xhigh,可重新捡回 #28 闭关 widget e2e)
+- **#30 闭关 3 维度接 service**(§12 #7 节气清单 + 农历库阻塞,先解人类决策)
+- **C 奇遇 + E 武学领悟**(§12 #6 机缘值规则阻塞,先解人类决策)
+- **#34 stage drop 视觉验收 Pen 环境改善**(配 ≥1080 屏幕 + 库存页快捷入口,然后 Codex 重跑补 #10)
+- **Pen-only T64 test fail 排查**(`.dart_tool/build` cache stale 推测,Mac 端不重现)
 
 > CLAUDE.md §12 #1(境界 vs 修炼度名重叠)实质消解:Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名,见 `enum_localizations.dart:39,78`。
 
