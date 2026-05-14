@@ -59,6 +59,9 @@ class UiStrings {
   static const String hintP5 = '祖师一流 + 大弟子二流 + 二弟子三流，3 师徒入阵可直接进战斗';
   static const String scenarioVc = 'VC · W7-W11 视觉验收预设';
   static const String hintVc = '在 P5 基础上标 Ch1 01-04 通关，直接挑战 stage_01_05';
+  static const String scenarioVc14_3 = 'VC · W14-3 奇遇 skill 视觉验收预设';
+  static const String hintVc14_3 =
+      '在 VC 基础上预 unlock 7 招（tier 1-7 各 1）+ 大弟子装 tier 3，看 lock icon 行为';
 
   // 调试菜单（T17）
   static const String testMenuTitle = '战斗测试场景';

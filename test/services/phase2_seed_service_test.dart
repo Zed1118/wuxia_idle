@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/models/character.dart';
+import 'package:wuxia_idle/data/models/encounter_progress.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/data/models/equipment.dart';
 import 'package:wuxia_idle/data/models/inventory_item.dart';
@@ -332,5 +333,60 @@ void main() {
     final progress = await isar.mainlineProgress.where().findFirst();
     expect(progress!.clearedStageIds.length, 4,
         reason: 'recordVictory 幂等：重复种子不重复 append');
+  });
+
+  // ── W14-3 fix · seedVisualCheckW14_3 ────────────────────────────────────────
+
+  test('seedVisualCheckW14_3 → EncounterProgress.unlockedSkillIds 覆盖 tier 1-7',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW14_3();
+    final isar = IsarSetup.instance;
+
+    final progress = await isar.encounterProgress.where().findFirst();
+    expect(progress, isNotNull, reason: '应通过 EncounterService.getOrCreate 创建');
+    expect(progress!.unlockedSkillIds.length, 7,
+        reason: 'tier 1-7 各取 1 个 encounter skill');
+
+    // 各 unlocked id 都能在 repo 中找到 + 对应 tier 唯一覆盖 1-7
+    final repo = GameRepository.instance;
+    final unlockedTiers = <int>{};
+    for (final id in progress.unlockedSkillIds) {
+      final skill = repo.getSkill(id);
+      expect(skill.isEncounterSkill, isTrue,
+          reason: '$id 应是 encounter skill');
+      unlockedTiers.add(skill.tier!);
+    }
+    expect(unlockedTiers, {1, 2, 3, 4, 5, 6, 7});
+  });
+
+  test('seedVisualCheckW14_3 → 大弟子 (id=2) 预装备 tier 3 encounter skill',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW14_3();
+    final isar = IsarSetup.instance;
+
+    final disciple = await isar.characters.get(2);
+    expect(disciple, isNotNull);
+    expect(disciple!.equippedEncounterSkillId, isNotNull,
+        reason: '大弟子 slot 应填充 1 个 encounter skill');
+
+    final equipped = GameRepository.instance.getSkill(
+      disciple.equippedEncounterSkillId!,
+    );
+    expect(equipped.isEncounterSkill, isTrue);
+    expect(equipped.tier, 3,
+        reason: '大弟子 erLiu (RealmTier.index=2) 装 tier 3 通过锁死校验');
+  });
+
+  test('seedVisualCheckW14_3 反复调用 → unlock 池仍 7（覆盖而非 append）',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW14_3();
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW14_3();
+    final isar = IsarSetup.instance;
+
+    final progress = await isar.encounterProgress.where().findFirst();
+    expect(progress!.unlockedSkillIds.length, 7,
+        reason: '反复调用 → unlockedSkillIds 覆盖,不重复 append');
+    final disciple = await isar.characters.get(2);
+    expect(disciple!.equippedEncounterSkillId, isNotNull);
   });
 }
