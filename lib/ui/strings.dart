@@ -62,6 +62,10 @@ class UiStrings {
   static const String scenarioVc14_3 = 'VC · W14-3 奇遇 skill 视觉验收预设';
   static const String hintVc14_3 =
       '在 VC 基础上预 unlock 7 招（tier 1-7 各 1）+ 大弟子装 tier 3，看 lock icon 行为';
+  static const String scenarioVcEvent = 'VC-EVENT · 触发奇遇 debug';
+  static const String hintVcEvent =
+      '绕过软概率，直接选 encounter id 触发 dialog + outcome 流（visual check 用）';
+  static const String encounterDebugPickerTitle = 'VC-EVENT · 触发奇遇';
 
   // 调试菜单（T17）
   static const String testMenuTitle = '战斗测试场景';

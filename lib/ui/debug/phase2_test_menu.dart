@@ -7,6 +7,7 @@ import '../inventory/inventory_screen.dart';
 import '../strings.dart';
 import '../technique_panel/technique_panel_screen.dart';
 import '../theme/colors.dart';
+import 'encounter_debug_picker.dart';
 
 /// Phase 2 调试场景菜单（phase2_tasks.md T32 §492-509 子提交 3b/3d）。
 ///
@@ -146,6 +147,16 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                         .seedVisualCheckW14_3(),
                     () => const CharacterPanelScreen(
                       characterId: _defaultCharacterId,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _ScenarioButton(
+                  label: UiStrings.scenarioVcEvent,
+                  hint: UiStrings.hintVcEvent,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const EncounterDebugPickerScreen(),
                     ),
                   ),
                 ),
