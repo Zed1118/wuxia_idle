@@ -1,0 +1,265 @@
+import 'package:flutter/material.dart';
+
+import '../../data/defs/encounter_def.dart';
+import '../../data/encounter_event_loader.dart';
+import '../../services/encounter_service.dart';
+import '../theme/colors.dart';
+
+/// 奇遇 / 武学领悟弹窗(Phase 4 W14-1)。
+///
+/// 三段式:
+///   1. opening:title + opening 文字(`events/[id].yaml`)
+///   2. choices:按钮列表(choice.text → onTap select)
+///   3. outcome:body 文字 + outcome 应用结果摘要(EncounterService 返回值)
+///
+/// 不引入 Riverpod 弹窗集成 — caller(stage_entry_flow)负责 service 调用,
+/// dialog 只负责呈现 + 返回 outcome_id(string)。
+///
+/// 设计参考 GDD §1 + §5.7:水墨克制色调,不教程化,文字慢节奏。
+///
+/// 返回值:玩家选的 outcome_id(用于 caller 调 [EncounterService.applyOutcome])。
+/// null = 玩家系统返回键关闭(未选,等价 skip 但不写 Isar)。
+Future<String?> showEncounterDialog({
+  required BuildContext context,
+  required EncounterDef def,
+  required EncounterContent content,
+}) {
+  return showDialog<String>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => _EncounterDialog(def: def, content: content),
+  );
+}
+
+class _EncounterDialog extends StatefulWidget {
+  const _EncounterDialog({required this.def, required this.content});
+
+  final EncounterDef def;
+  final EncounterContent content;
+
+  @override
+  State<_EncounterDialog> createState() => _EncounterDialogState();
+}
+
+class _EncounterDialogState extends State<_EncounterDialog> {
+  EncounterChoice? _selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = _selected;
+    return Dialog(
+      backgroundColor: WuxiaColors.panel,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: WuxiaColors.border),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _TitleBar(title: widget.content.title ?? '机缘'),
+              const SizedBox(height: 20),
+              if (selected == null) ...[
+                _OpeningText(text: widget.content.opening),
+                const SizedBox(height: 24),
+                ...widget.content.choices.map(
+                  (c) => _ChoiceButton(
+                    text: c.text,
+                    onTap: () => setState(() => _selected = c),
+                  ),
+                ),
+              ] else ...[
+                _OutcomeBody(text: selected.body),
+                const SizedBox(height: 24),
+                _ConfirmButton(
+                  onTap: () => Navigator.of(context).pop(selected.outcomeId),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TitleBar extends StatelessWidget {
+  const _TitleBar({required this.title});
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(Icons.auto_awesome,
+            color: WuxiaColors.resultHighlight, size: 18),
+        const SizedBox(width: 8),
+        const Text(
+          '机缘',
+          style: TextStyle(
+            color: WuxiaColors.textMuted,
+            fontSize: 13,
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              color: WuxiaColors.textPrimary,
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 1,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _OpeningText extends StatelessWidget {
+  const _OpeningText({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: WuxiaColors.textSecondary,
+        fontSize: 15,
+        height: 1.8,
+      ),
+    );
+  }
+}
+
+
+class _OutcomeBody extends StatelessWidget {
+  const _OutcomeBody({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = text.isNotEmpty ? text : '此情此景,已铭于心。';
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: WuxiaColors.background,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: WuxiaColors.border),
+      ),
+      child: Text(
+        shown,
+        style: const TextStyle(
+          color: WuxiaColors.textPrimary,
+          fontSize: 15,
+          height: 1.8,
+        ),
+      ),
+    );
+  }
+}
+
+class _ChoiceButton extends StatelessWidget {
+  const _ChoiceButton({required this.text, required this.onTap});
+  final String text;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+          decoration: BoxDecoration(
+            color: WuxiaColors.sidebar,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: WuxiaColors.border),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.chevron_right,
+                  color: WuxiaColors.textMuted, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontSize: 15,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ConfirmButton extends StatelessWidget {
+  const _ConfirmButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: onTap,
+        style: TextButton.styleFrom(
+          foregroundColor: WuxiaColors.resultHighlight,
+          padding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        ),
+        child: const Text(
+          '行路 →',
+          style: TextStyle(fontSize: 15, letterSpacing: 2),
+        ),
+      ),
+    );
+  }
+}
+
+/// outcome 应用后的摘要呈现(SnackBar,Phase 1 vertical slice 用)。
+///
+/// caller stage_entry_flow 在 [EncounterService.applyOutcome] 返回后调,
+/// SnackBar 在底部弹一句话告知玩家"领悟新招"/"机缘 +1"/"已达生涯上限"。
+void showEncounterOutcomeBanner({
+  required BuildContext context,
+  required OutcomeApplied applied,
+}) {
+  final message = switch (applied) {
+    UnlockSkillApplied(:final skillId) => '领悟新招:$skillId',
+    AttributeBonusApplied(:final key, :final delta) =>
+      '${_attrLabel(key)} +$delta',
+    AttributeCapReached(:final cap) => '已达生涯造化极限(总加 $cap)',
+    NoneOutcome() => '心中默念,继续前行',
+  };
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      backgroundColor: WuxiaColors.panel,
+      duration: const Duration(seconds: 3),
+    ),
+  );
+}
+
+String _attrLabel(AttributeKey k) => switch (k) {
+      AttributeKey.constitution => '根骨',
+      AttributeKey.enlightenment => '悟性',
+      AttributeKey.agility => '身法',
+      AttributeKey.fortune => '机缘',
+    };

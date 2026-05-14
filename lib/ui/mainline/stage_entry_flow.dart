@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
+import '../../data/defs/encounter_def.dart';
 import '../../data/defs/stage_def.dart';
+import '../../data/encounter_event_loader.dart';
 import '../../data/game_repository.dart';
 import '../../data/isar_setup.dart';
 import '../../data/models/character.dart';
@@ -18,11 +20,14 @@ import '../../providers/battle_providers.dart';
 import '../../providers/character_providers.dart';
 import '../../providers/inventory_providers.dart';
 import '../../providers/mainline_providers.dart';
+import '../../providers/rng_provider.dart';
 import '../../services/battle_resolution.dart';
+import '../../services/encounter_service.dart';
 import '../../services/mainline_progress_service.dart';
 import '../../services/stage_battle_setup.dart';
 import '../../utils/rng.dart';
 import '../battle/battle_screen.dart';
+import '../encounter/encounter_dialog.dart';
 import '../narrative/narrative_reader_screen.dart';
 import '../theme/colors.dart';
 
@@ -123,6 +128,96 @@ Future<void> runStageFlow({
       ),
     );
   }
+
+  // Phase 4 W14-1 C-1:奇遇/武学领悟触发检查。
+  // 放在 victory narrative 之后:通关剧情是这关的收尾,奇遇作为下一段开端。
+  if (!context.mounted) return;
+  await _checkAndShowEncounter(context: context, ref: ref, stage: stage);
+}
+
+/// 战斗 victory 之后的奇遇触发流程(Phase 4 W14-1)。
+///
+/// 步骤:
+///   1. recordKill:遍历 stage.enemyTeam.school +1
+///   2. evaluateTriggers:取角色 fortune,按 base * (1 + fortune/20) 软概率 roll
+///   3. 若返回 def != null → markTriggered + load events 文案 + 弹 dialog
+///   4. 玩家选 outcome → applyOutcome + SnackBar 摘要
+///
+/// 任何异常(Isar 未 ready / 无 character / 空 encounters)静默返回,
+/// 不破坏 victory narrative 流(沿用 _applyVictoryResolution 风格)。
+Future<void> _checkAndShowEncounter({
+  required BuildContext context,
+  required WidgetRef ref,
+  required StageDef stage,
+}) async {
+  final isar = IsarSetup.instanceOrNull;
+  if (isar == null) return;
+
+  final encounters = GameRepository.instance.allEncounters;
+  if (encounters.isEmpty) return;
+
+  final schools =
+      stage.enemyTeam.map((e) => e.school).toList(growable: false);
+  if (schools.isEmpty) return;
+
+  final svc = EncounterService(isar: isar);
+  // W13 教训:同 tower/stage entry_flow ensure getOrCreate 解 race
+  await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+  try {
+    await svc.recordKill(
+      saveDataId: IsarSetup.currentSlotId,
+      defeatedSchools: schools,
+    );
+  } catch (e, st) {
+    // W13 教训:catch 加 debugPrint 留诊断信息
+    debugPrint('EncounterService.recordKill 失败:$e\n$st');
+    return;
+  }
+
+  // 取主角(slot 0,SaveData.activeCharacterIds.first)的 fortune
+  final save = await isar.saveDatas.get(0);
+  final founderId =
+      save?.activeCharacterIds.isNotEmpty == true ? save!.activeCharacterIds.first : null;
+  if (founderId == null) return;
+  final founder = await isar.characters.get(founderId);
+  if (founder == null) return;
+
+  EncounterDef? triggered;
+  try {
+    triggered = await svc.evaluateTriggers(
+      saveDataId: IsarSetup.currentSlotId,
+      attributes: founder.attributes,
+      encounters: encounters,
+      rng: ref.read(rngProvider),
+    );
+  } catch (e, st) {
+    debugPrint('EncounterService.evaluateTriggers 失败:$e\n$st');
+    return;
+  }
+  if (triggered == null) return;
+
+  await svc.markTriggered(
+    saveDataId: IsarSetup.currentSlotId,
+    encounterId: triggered.id,
+  );
+
+  if (!context.mounted) return;
+  final content = await EncounterEventLoader.load(triggered.id);
+  if (!context.mounted) return;
+  final outcomeId = await showEncounterDialog(
+    context: context,
+    def: triggered,
+    content: content,
+  );
+  if (outcomeId == null) return;
+
+  final applied = await svc.applyOutcome(
+    saveDataId: IsarSetup.currentSlotId,
+    encounter: triggered,
+    outcomeId: outcomeId,
+  );
+  if (!context.mounted) return;
+  showEncounterOutcomeBanner(context: context, applied: applied);
 }
 
 /// W13-v3 fix: 战斗结算(victory / Boss defeat)后必须 invalidate 角色相关

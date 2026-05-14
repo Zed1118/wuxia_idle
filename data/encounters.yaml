@@ -1,0 +1,85 @@
+# =============================================================================
+# encounters.yaml · 奇遇 / 武学领悟数值定义(Phase 4 W14-1 C 任务 vertical slice)
+# =============================================================================
+# 与 data/events/<id>.yaml(DeepSeek 文案)通过 id 一一对应,加载层强校验。
+#
+# Phase 1 (C-W14-1) 范围:
+#   - 仅 school 维度 trigger(无 biome/weather,等 W14-2 补 stages 字段)
+#   - 仅 techniqueInsight + fortuneEvent 两种 type
+#   - outcome 3 类:unlockSkill / attributeBonus / none(skip)
+#   - 3 条 vertical slice + 后续 W14-2 扩 15-20 条
+#
+# 触发概率公式(C-W14-1 决策点 Q3):
+#   p = baseProbability * (1 + fortune / 20)
+#   fortune ∈ [1,10] → 系数 [1.05, 1.5]
+#
+# 红线(GameRepository._enforceEncounterRedLines):
+#   - baseProbability ∈ [0, 1]
+#   - 每 encounter 的 events/<id>.yaml 必须存在
+#   - events 文件 choices[].outcome_id(除 skip)必须全部在 outcomeMapping 中
+# =============================================================================
+
+encounters:
+
+  # ───────────────────────────────────────────────
+  # 1. bamboo_listen_rain · 听雨悟剑
+  #    techniqueInsight · 击败 100 名灵巧流派敌人触发(GDD §7.2 example)
+  # ───────────────────────────────────────────────
+  - id: bamboo_listen_rain
+    type: techniqueInsight
+    trigger:
+      schoolKillThreshold:
+        lingQiao: 100
+      fortuneRequired: 3
+    baseProbability: 0.4
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_ting_yu_jian
+      practice_partial:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
+      # skip 不必显式配,默认 OutcomeType.none
+
+  # ───────────────────────────────────────────────
+  # 2. cha_ting_dui_ju · 茶亭对局
+  #    fortuneEvent · 击败任何流派 30 名敌人后,fortune 软概率
+  # ───────────────────────────────────────────────
+  - id: cha_ting_dui_ju
+    type: fortuneEvent
+    trigger:
+      schoolKillThreshold:
+        gangMeng: 10
+        lingQiao: 10
+        yinRou: 10
+      fortuneRequired: 5
+    baseProbability: 0.35
+    outcomeMapping:
+      aggressive_win:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+      defend_draw:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 3. du_ke_wen_dao · 渡客问道
+  #    fortuneEvent · 仅 fortune 软概率,无 school 门槛(早期奇遇)
+  # ───────────────────────────────────────────────
+  - id: du_ke_wen_dao
+    type: fortuneEvent
+    trigger:
+      fortuneRequired: 4
+    baseProbability: 0.5
+    outcomeMapping:
+      gain_wisdom:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+      learn_secret:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1

@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'defs/encounter_def.dart';
 import 'defs/equipment_def.dart';
 import 'defs/master_def.dart';
 import 'defs/realm_def.dart';
@@ -51,6 +52,11 @@ class GameRepository {
   /// 索引方式：`masters[slotIndex]`（红线校验保证 0-2 连续唯一）。
   final List<MasterDef> masters;
 
+  /// 奇遇 / 武学领悟定义(Phase 4 W14-1 C-1)。
+  /// Phase 1 vertical slice 3 条;W14-2 扩 15-20 条。
+  /// events 文案走 [EncounterEventLoader] 按需 load(narrative_loader 体例)。
+  final Map<String, EncounterDef> encounterDefs;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -61,6 +67,7 @@ class GameRepository {
     required this.towerFloors,
     required this.seclusionMaps,
     required this.masters,
+    required this.encounterDefs,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -112,6 +119,20 @@ class GameRepository {
         .toList(growable: false)
       ..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
 
+    // Phase 4 W14-1:encounters.yaml 允许测试 fixture 不带(catch 失败 → 空 map)。
+    Map<String, EncounterDef> encounterDefs = const {};
+    try {
+      final encountersRaw = parseYamlMap(await load('data/encounters.yaml'));
+      encounterDefs = _parseDefMap(
+        encountersRaw['encounters'] as List,
+        EncounterDef.fromYaml,
+        idOf: (d) => d.id,
+      );
+    } catch (e) {
+      // test fixture 不带 encounters.yaml 时静默,生产路径仍 fail-fast on
+      // 红线校验阶段(_enforceEncounterRedLines 检查非空与字段合法)。
+    }
+
     final repo = GameRepository._(
       numbers: numbers,
       realms: realms,
@@ -122,6 +143,7 @@ class GameRepository {
       towerFloors: towerFloors,
       seclusionMaps: numbers.retreat.maps,
       masters: masters,
+      encounterDefs: encounterDefs,
     );
     repo._enforceRedLines();
     _instance = repo;
@@ -227,6 +249,36 @@ class GameRepository {
 
     // Phase 3 Week 4 T53：师徒 3 角色校验
     _enforceMasterRedLines();
+
+    // Phase 4 W14-1 C-1:encounter fixture 校验(若加载到)
+    _enforceEncounterRedLines();
+  }
+
+  /// 奇遇红线(Phase 4 W14-1):
+  /// - id 唯一(已由 _parseDefMap 保证)
+  /// - baseProbability ∈ [0, 1](已由 fromYaml 保证)
+  /// - schoolKillThreshold 各值 > 0
+  /// - fortuneRequired ∈ [1, 10] 或 null
+  /// - attributeBonus outcome 的 attributeKey 必须 != null(已由 fromYaml 保证)
+  /// - unlockSkill outcome 的 skillId 非空(已由 fromYaml 保证)
+  void _enforceEncounterRedLines() {
+    if (encounterDefs.isEmpty) return;
+    for (final def in encounterDefs.values) {
+      for (final entry in def.trigger.schoolKillThreshold.entries) {
+        if (entry.value <= 0) {
+          throw StateError(
+            'encounter ${def.id} school ${entry.key.name} '
+            'threshold=${entry.value} 必须 > 0',
+          );
+        }
+      }
+      final fr = def.trigger.fortuneRequired;
+      if (fr != null && (fr < 1 || fr > 10)) {
+        throw StateError(
+          'encounter ${def.id} fortuneRequired=$fr 应 ∈ [1, 10]',
+        );
+      }
+    }
   }
 
   /// 心法 + 招式红线（Phase 3 Week 8 T64）：
@@ -605,6 +657,16 @@ class GameRepository {
 
   /// 取祖师定义（slotIndex=0），等价于 `getMasterBySlot(0)`。
   MasterDef getFounderMaster() => masters[0];
+
+  /// 取 encounter 定义,未配置返回 null(避免 caller try/catch)。
+  EncounterDef? findEncounter(String id) => encounterDefs[id];
+
+  /// 全部 encounter 列表,按 id 字典序(便于测试稳定 + UI 列表)。
+  List<EncounterDef> get allEncounters {
+    final list = encounterDefs.values.toList(growable: false);
+    list.sort((a, b) => a.id.compareTo(b.id));
+    return list;
+  }
 
   /// Phase 3 Week 5 T59：主线 15 关红线。
   ///
