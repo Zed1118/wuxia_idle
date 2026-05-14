@@ -1,10 +1,12 @@
-# 项目 ID 注册表 v1.0
+# 项目 ID 注册表 v1.2
 
 > 本文档是项目所有 ID 的权威注册表。Mac 端数值 yaml 与 DeepSeek 端文案文件均须使用此处定义的 ID。
 > ID 一旦分配不可随意修改，新增 ID 在本文件末尾追加并标注版本。
 >
+> **ID 总数**：326（ch 3 + stage 36 + eq 45 + tech 22 + move 102 + adv 26 + codex 18 + tpl 7 + encounter_skill 35 + W14-2 encounter 12 + biome 15 + weather 5）
+>
 > **格式**：`[前缀]_[层级/章节]_[拼音名称]`
-> **前缀对照**：`ch`=章节 `stage`=关卡 `eq`=装备 `tech`=心法 `move`=招式 `adv`=奇遇 `codex`=百科
+> **前缀对照**：`ch`=章节 `stage`=关卡 `eq`=装备 `tech`=心法 `move`=招式 `adv`=奇遇 `codex`=百科 `skill_encounter_`=奇遇招式 `enc_`=奇遇事件(新版) `biome_`=区域 `weather_`=天气
 
 ---
 
@@ -461,6 +463,130 @@
 
 ---
 
+## 奇遇事件（W14-2 扩充 · encounters.yaml）
+
+> 本表为 Phase 4 W14-2 新增 12 条奇遇，与 `data/encounters.yaml` id 一一对应。
+> 沿用 `enc_` 前缀（新版 encounter 系统，区别于旧版 `adv_` 前缀的 26 条奇遇）。
+
+| ID | 标题 | 触发维度 | 文案文件 |
+|---|---|---|---|
+| enc_gu_jian_zhong_yin | 古剑冢拾遗 | biome:swordTomb + weather:mist | gu_jian_zhong_yin.yaml |
+| enc_cang_jing_ge_wu | 藏经阁悟道 | biome:temple | cang_jing_ge_wu.yaml |
+| enc_shan_lin_qi_yu | 山林奇遇 | biome:mountainForest | shan_lin_qi_yu.yaml |
+| enc_xuan_ya_pu_bu_li_lian | 悬崖瀑布历练 | biome:cliffWaterfall + weather:rain | xuan_ya_pu_bu_li_lian.yaml |
+| enc_duan_ya_chui_lian | 断崖锤炼 | biome:cliff + weather:snow | duan_ya_chui_lian.yaml |
+| enc_shan_dao_wu_zhe | 山道雾遮 | biome:mountainPath + weather:mist | shan_dao_wu_zhe.yaml |
+| enc_xiao_zhen_wen_yi | 小镇问翳 | biome:inn | xiao_zhen_wen_yi.yaml |
+| enc_ye_xing_xun_dao | 夜行寻道 | weather:night | ye_xing_xun_dao.yaml |
+| enc_du_kou_chun_yu | 渡口春雨 | biome:dock + weather:rain | du_kou_chun_yu.yaml |
+| enc_qun_xia_tu | 群侠图 | biome:drillGround + school:gangMeng | qun_xia_tu.yaml |
+| enc_lu_pang_xian_xian | 路旁闲贤 | biome:escortRoad | lu_pang_xian_xian.yaml |
+| enc_gu_dao_xue_ji | 古道雪迹 | biome:mountainPath + weather:snow | gu_dao_xue_ji.yaml |
+
+> 注：W14-1 的 3 条奇遇（bamboo_listen_rain / cha_ting_dui_ju / du_ke_wen_dao）已在旧版 adventures 表以 `adv_` 前缀登记，此处不重复。
+
+## 奇遇技能（W14-3-A · encounter_skills.yaml）
+
+> 共 35 招，覆盖 7 阶每阶 5 招。ID 以 `skill_encounter_` 开头，与 `skills.yaml` 心法招式独立。
+> 玩家通过奇遇 outcome(unlockSkill)解锁，持久到 EncounterProgress.unlockedSkillIds。
+
+### 第 1 阶（cap 1500）
+| ID | 名称 |
+|---|---|
+| skill_encounter_jichu_buxi | 基础步息 |
+| skill_encounter_pu_xi_tu | 朴息图 |
+| skill_encounter_jian_bu | 渐步 |
+| skill_encounter_qi_yu_jue | 起欲诀 |
+| skill_encounter_tun_tu | 吞吐 |
+
+### 第 2 阶（cap 2000）
+| ID | 名称 |
+|---|---|
+| skill_encounter_jian_yi | 剑意萌芽 |
+| skill_encounter_qiu_quan | 求拳 |
+| skill_encounter_an_qi | 暗器初探 |
+| skill_encounter_pai_yun_zhang | 排云掌 |
+| skill_encounter_huo_du | 活渡 |
+
+### 第 3 阶（cap 2500）
+| ID | 名称 |
+|---|---|
+| skill_encounter_ting_yu_jian | 听雨剑 |
+| skill_encounter_drill_strike | 校场连击 |
+| skill_encounter_wu_xia_yi | 武侠意 |
+| skill_encounter_huo_quan | 火拳 |
+| skill_encounter_xuan_jian | 玄剑 |
+
+### 第 4 阶（cap 3000）
+| ID | 名称 |
+|---|---|
+| skill_encounter_relic_blade | 古剑遗韵 |
+| skill_encounter_qing_feng_jian | 清风剑 |
+| skill_encounter_lie_huo | 烈火诀 |
+| skill_encounter_xuan_yin | 玄阴指 |
+| skill_encounter_fei_xian | 飞仙步 |
+
+### 第 5 阶（cap 4000）
+| ID | 名称 |
+|---|---|
+| skill_encounter_water_qi | 流水气功 |
+| skill_encounter_night_strike | 夜行袭 |
+| skill_encounter_lei_dian | 雷电诀 |
+| skill_encounter_jin_gang | 金刚不坏 |
+| skill_encounter_shan_he | 山河剑 |
+
+### 第 6 阶（cap 5500）
+| ID | 名称 |
+|---|---|
+| skill_encounter_ice_break | 冰封斩 |
+| skill_encounter_xuan_bing | 玄冰诀 |
+| skill_encounter_lie_yan | 烈焰焚天 |
+| skill_encounter_qian_kun | 乾坤掌 |
+| skill_encounter_chen_xin | 沉心诀 |
+
+### 第 7 阶（cap 8000）
+| ID | 名称 |
+|---|---|
+| skill_encounter_long_yin | 龙吟九霄 |
+| skill_encounter_feng_qi | 凤起九天 |
+| skill_encounter_yi_jian | 一剑封名 |
+| skill_encounter_wu_ming | 无名诀 |
+| skill_encounter_tian_dao | 天道一线 |
+
+## 区域枚举（biome · W14-2 引入）
+
+> 共 15 值，用于 encounter trigger `biomeMinutes` 维度。名义前缀 `biome_`。
+
+| ID | 中文名 |
+|---|---|
+| biome_sword_tomb | 古剑冢 |
+| biome_temple | 藏经阁 |
+| biome_mountain_forest | 山林 |
+| biome_cliff_waterfall | 悬崖瀑布 |
+| biome_cliff | 断崖 |
+| biome_mountain_path | 山道 |
+| biome_inn | 客栈 |
+| biome_dock | 渡口 |
+| biome_drill_ground | 校场 |
+| biome_escort_road | 镖路 |
+| biome_zhulin | 竹林 |
+| biome_shan_ya | 山崖 |
+| biome_huang_sha | 黄沙 |
+| biome_huang_yuan | 荒原 |
+| biome_lao_jing | 老井 |
+
+## 天气枚举（weather · W14-2 引入）
+
+> 共 5 值，用于 encounter trigger `weatherMinutes` 维度。名义前缀 `weather_`。
+
+| ID | 中文名 |
+|---|---|
+| weather_rain | 雨 |
+| weather_mist | 雾 |
+| weather_snow | 雪 |
+| weather_night | 夜 |
+| weather_clear | 晴 |
+
 ## ID 前缀速查
 
 | 前缀 | 类别 | 示例 |
@@ -472,7 +598,11 @@
 | tech_tier[1-7]_ | 心法（按品阶） | tech_tier4_chun_shui_jian_fa |
 | move_ | 心法招式 | move_fu_hu_jiang_long |
 | move_insight_ | 武学领悟招式 | move_insight_ting_yu_jian |
-| adv_ | 奇遇事件 | adv_zhu_lin_ting_yu |
+| adv_ | 奇遇事件（旧版） | adv_zhu_lin_ting_yu |
+| enc_ | 奇遇事件（W14-2+） | enc_gu_jian_zhong_yin |
+| skill_encounter_ | 奇遇招式 | skill_encounter_ting_yu_jian |
+| biome_ | 区域 | biome_sword_tomb |
+| weather_ | 天气 | weather_rain |
 | codex_ | 百科条目 | codex_realm |
 | tpl_ | 延续典故模板 | tpl_defeat_named_boss |
 
@@ -482,3 +612,4 @@
 |---|---|---|
 | 2026-05-10 | v1.0 | 初始注册，含全部 259 个内容 ID |
 | 2026-05-12 | v1.1 | stages 拆分 _opening/_victory/_defeat + paragraphs[] schema 对齐 |
+| 2026-05-15 | v1.2 | W14-4 audit: 修正总数 143→326, 补 W14-2 encounter 12 ID + W14-3-A encounter_skill 35 ID + biome 15 + weather 5
