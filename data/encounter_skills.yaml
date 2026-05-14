@@ -163,6 +163,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: sword_rain_listen
     tier: 3
+    narrativeInsightId: ting_yu_jian   # W14-4 audit 唯一已匹配 insight(显式映射,#36)
 
   - id: skill_encounter_drill_strike
     name: 校场连击

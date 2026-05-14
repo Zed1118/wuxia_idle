@@ -87,6 +87,24 @@ void main() {
       expect(s.isEncounterSkill, isTrue);
     });
 
+    test('ting_yu_jian narrativeInsightId 显式映射 insights/ting_yu_jian (#36)',
+        () {
+      final s = GameRepository.instance.skillDefs[
+          'skill_encounter_ting_yu_jian']!;
+      expect(s.narrativeInsightId, 'ting_yu_jian',
+          reason: 'W14-4 audit 唯一已匹配 insight 需显式落地');
+    });
+
+    test('encounter skill 池中除 ting_yu_jian 外 narrativeInsightId 均为 null',
+        () {
+      for (final id in GameRepository.instance.encounterSkillIds) {
+        final s = GameRepository.instance.skillDefs[id]!;
+        if (id == 'skill_encounter_ting_yu_jian') continue;
+        expect(s.narrativeInsightId, isNull,
+            reason: '其余 34 招暂无映射,DeepSeek 后续按需填(#36)');
+      }
+    });
+
     test('ice_break tier=6 / cap=5500 内(后期奇遇)', () {
       final s = GameRepository.instance.skillDefs[
           'skill_encounter_ice_break']!;
