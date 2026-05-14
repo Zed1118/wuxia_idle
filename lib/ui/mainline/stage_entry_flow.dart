@@ -15,6 +15,8 @@ import '../../data/models/save_data.dart';
 import '../../data/models/technique.dart';
 import '../../data/narrative_loader.dart';
 import '../../providers/battle_providers.dart';
+import '../../providers/character_providers.dart';
+import '../../providers/inventory_providers.dart';
 import '../../providers/mainline_providers.dart';
 import '../../services/battle_resolution.dart';
 import '../../services/mainline_progress_service.dart';
@@ -69,6 +71,10 @@ Future<void> runStageFlow({
       final summary = await _applyBossDefeatPenalty(ref: ref, stage: stage);
       if (summary.isNotEmpty) {
         lossBanner = _DefeatLossBanner(entries: summary);
+        // W13-v3 fix: writeTxn 写回 character.internalForce / mainTech.layer
+        // 后必须 invalidate provider 缓存,否则下次进角色面板/心法面板仍读旧值
+        // (Codex v3 截图 15 暴露:banner 显 3800→1900,但面板仍 3800)
+        _invalidateCharacterFamilyAfterCombat(ref);
       }
     }
 
@@ -91,6 +97,8 @@ Future<void> runStageFlow({
   // ── victory ──
   // Phase 4 W11 #32 销账：装备 battleCount / 心法 skillUsage / 主修升层 + 关卡 drop 落地
   await _applyVictoryResolution(ref: ref, stage: stage);
+  // W13-v3 fix: 同 defeat 分支,invalidate character/equipment/technique family
+  _invalidateCharacterFamilyAfterCombat(ref);
 
   // W12 fix: provider 副作用 getOrCreate 与 recordVictory 存在 race（W6 重构遗留），
   // 主动 ensure 避免 MainlineProgress 未初始化时抛 StateError
@@ -115,6 +123,24 @@ Future<void> runStageFlow({
       ),
     );
   }
+}
+
+/// W13-v3 fix: 战斗结算(victory / Boss defeat)后必须 invalidate 角色相关
+/// family provider,否则下次进角色面板/心法面板/仓库读到 Riverpod 缓存的
+/// 旧 Character / Equipment / Technique(虽然 Isar 已写入新值)。
+///
+/// **触发场景**:
+/// - 主线 victory:battleCount / cultivationProgress 累 + 关卡 drop 入背包
+/// - 主线 Boss defeat:internalForce ×0.5 + cultivationLayer 回退
+/// - 爬塔 victory:battleCount / cultivationProgress 累(同主线)
+///
+/// 实测根因:Codex v3 截图 15「banner 显 3800→1900,角色面板仍 3800/4180」。
+void _invalidateCharacterFamilyAfterCombat(WidgetRef ref) {
+  ref.invalidate(characterByIdProvider);
+  ref.invalidate(equipmentByIdProvider);
+  ref.invalidate(techniqueByIdProvider);
+  ref.invalidate(characterAllTechniquesProvider);
+  ref.invalidate(allEquipmentsProvider);
 }
 
 /// 推 BattleScreen 并 wait 胜/败回调；返回 true=胜，false=败/平。

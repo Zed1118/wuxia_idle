@@ -70,6 +70,14 @@ stages:
     isBossStage: false
     dropEquipmentDefIds: [armor_xunchang_bu_yi]
     dropItemDefIds: []
+    # W13-v3 fix: 新手第一关 onboarding(GDD §10.2 教程节奏),100% 掉 1 件
+    # 寻常护甲 + 1 块磨剑石,让玩家第一次胜利就拿到装备 + 物料 reward feedback
+    dropTable:
+      - equipmentDefId: armor_xunchang_bu_yi
+        dropChance: 1.0
+      - inventoryItemDefId: item_mojianshi
+        quantity: [1, 1]
+        dropChance: 1.0
     baseExpReward: 50
     difficultyMultiplier: 1.0
 
