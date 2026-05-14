@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/defs/encounter_def.dart';
+import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/models/attributes.dart';
+import 'package:wuxia_idle/data/models/character.dart';
 import 'package:wuxia_idle/data/models/encounter_progress.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/services/encounter_service.dart';
@@ -574,6 +576,178 @@ void main() {
         rng: _FixedRng(0.0),
       );
       expect(missHit, isNull);
+    });
+  });
+
+  group('equipEncounterSkill / unequipEncounterSkill (C-W14-3-A)', () {
+    // 测试用 character 在 Isar 内的最小构造,境界可注入。realm 7 值
+    // index 0-6,tier 1-7 等于 index+1。
+    Future<int> seedCharacter({
+      required RealmTier tier,
+      String? equippedEncounterSkillId,
+    }) async {
+      final isar = IsarSetup.instance;
+      final c = Character.create(
+        name: '测试侠',
+        realmTier: tier,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes()
+          ..constitution = 5
+          ..enlightenment = 5
+          ..agility = 5
+          ..fortune = 5,
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.disciple,
+        createdAt: DateTime.now(),
+        equippedEncounterSkillId: equippedEncounterSkillId,
+      );
+      return isar.writeTxn(() => isar.characters.put(c));
+    }
+
+    // 真实 yaml 加载后,encounter_skills.yaml 应在场。从中拿
+    // skill_encounter_ting_yu_jian(tier 3,W14-1 ★)做测试目标。
+    SkillDef tier3Skill() =>
+        GameRepository.instance.skillDefs['skill_encounter_ting_yu_jian']!;
+
+    test('成功路径:境界达标 + 已 unlock → EquipSucceeded', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      // erLiu (index 2) >= tier 3 - 1 = 2 ✅
+      final cid = await seedCharacter(tier: RealmTier.erLiu);
+      final progress = await svc.getOrCreate(saveDataId: 1);
+      await IsarSetup.instance.writeTxn(() async {
+        progress.unlockedSkillIds = ['skill_encounter_ting_yu_jian'];
+        await IsarSetup.instance.encounterProgress.put(progress);
+      });
+
+      final skill = tier3Skill();
+      final r = await svc.equipEncounterSkill(
+        characterId: cid,
+        skillDef: skill,
+        saveDataId: 1,
+      );
+      expect(r, isA<EquipSucceeded>());
+      final after = await IsarSetup.instance.characters.get(cid);
+      expect(after!.equippedEncounterSkillId, skill.id);
+    });
+
+    test('未 unlock → EquipNotUnlocked,不写 character', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      final cid = await seedCharacter(tier: RealmTier.zongShi); // 高境界
+      await svc.getOrCreate(saveDataId: 1);
+      // unlockedSkillIds 留空
+
+      final skill = tier3Skill();
+      final r = await svc.equipEncounterSkill(
+        characterId: cid,
+        skillDef: skill,
+        saveDataId: 1,
+      );
+      expect(r, isA<EquipNotUnlocked>());
+      expect((r as EquipNotUnlocked).skillId, skill.id);
+      final after = await IsarSetup.instance.characters.get(cid);
+      expect(after!.equippedEncounterSkillId, isNull);
+    });
+
+    test('境界不足 → EquipTierLocked,不写 character', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      // xueTu (index 0) < tier 3 - 1 = 2 ❌
+      final cid = await seedCharacter(tier: RealmTier.xueTu);
+      final progress = await svc.getOrCreate(saveDataId: 1);
+      await IsarSetup.instance.writeTxn(() async {
+        progress.unlockedSkillIds = ['skill_encounter_ting_yu_jian'];
+        await IsarSetup.instance.encounterProgress.put(progress);
+      });
+
+      final skill = tier3Skill();
+      final r = await svc.equipEncounterSkill(
+        characterId: cid,
+        skillDef: skill,
+        saveDataId: 1,
+      );
+      expect(r, isA<EquipTierLocked>());
+      final tl = r as EquipTierLocked;
+      expect(tl.requiredTier, 3);
+      expect(tl.currentTier, RealmTier.xueTu);
+      final after = await IsarSetup.instance.characters.get(cid);
+      expect(after!.equippedEncounterSkillId, isNull);
+    });
+
+    test('character 不存在 → EquipNotFound', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      final r = await svc.equipEncounterSkill(
+        characterId: 9999,
+        skillDef: tier3Skill(),
+        saveDataId: 1,
+      );
+      expect(r, isA<EquipNotFound>());
+    });
+
+    test('非奇遇 skill 注入 → EquipNotFound(防误调)', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      // 普通心法招式,parentTechniqueDefId 非空 → isEncounterSkill=false
+      final fake = const SkillDef(
+        id: 'skill_gangmeng_jichu_basic',
+        name: 'fake',
+        description: '',
+        type: SkillType.normalAttack,
+        powerMultiplier: 500,
+        internalForceCost: 0,
+        cooldownTurns: 0,
+        requiresManualTrigger: false,
+        parentTechniqueDefId: 'tech_gangmeng_jichu',
+        visualEffect: 'punch',
+      );
+      final r = await svc.equipEncounterSkill(
+        characterId: 1,
+        skillDef: fake,
+        saveDataId: 1,
+      );
+      expect(r, isA<EquipNotFound>());
+    });
+
+    test('canEquipEncounterSkillByTier 静态函数', () {
+      // 三流 (index 1) tier 2 ✅
+      expect(
+        EncounterService.canEquipEncounterSkillByTier(
+          realmTier: RealmTier.sanLiu,
+          skillTier: 2,
+        ),
+        isTrue,
+      );
+      // 三流 (index 1) tier 3 ❌(需 index >= 2)
+      expect(
+        EncounterService.canEquipEncounterSkillByTier(
+          realmTier: RealmTier.sanLiu,
+          skillTier: 3,
+        ),
+        isFalse,
+      );
+      // 武圣 (index 6) tier 7 ✅
+      expect(
+        EncounterService.canEquipEncounterSkillByTier(
+          realmTier: RealmTier.wuSheng,
+          skillTier: 7,
+        ),
+        isTrue,
+      );
+    });
+
+    test('unequipEncounterSkill 返回 hadEquipped,清字段', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      final cid = await seedCharacter(
+        tier: RealmTier.erLiu,
+        equippedEncounterSkillId: 'skill_encounter_ting_yu_jian',
+      );
+
+      final had = await svc.unequipEncounterSkill(characterId: cid);
+      expect(had, isTrue);
+      final after = await IsarSetup.instance.characters.get(cid);
+      expect(after!.equippedEncounterSkillId, isNull);
+
+      // 再次卸下 → hadEquipped=false
+      final hadAgain = await svc.unequipEncounterSkill(characterId: cid);
+      expect(hadAgain, isFalse);
     });
   });
 }

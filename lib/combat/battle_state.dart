@@ -161,9 +161,16 @@ class BattleCharacter {
 
     final techDef =
         GameRepository.instance.getTechnique(mainTechnique.defId);
-    final skills = techDef.skillIds
-        .map((id) => GameRepository.instance.getSkill(id))
-        .toList(growable: false);
+    // 主修 3 招(GDD §4.2 主修绑定);C-W14-3-A:角色装备的奇遇 skill 作为
+    // 第 4 招(可选)。getSkill 共享 skillDefs Map(skills.yaml + encounter_skills.yaml
+    // 加载合并),encounter skill 与心法招式 runtime 同型(SkillDef)。
+    final skills = <SkillDef>[
+      ...techDef.skillIds.map((id) => GameRepository.instance.getSkill(id)),
+    ];
+    final encSkillId = character.equippedEncounterSkillId;
+    if (encSkillId != null) {
+      skills.add(GameRepository.instance.getSkill(encSkillId));
+    }
 
     return BattleCharacter(
       characterId: character.id,

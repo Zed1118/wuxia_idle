@@ -42,6 +42,14 @@ class Character {
 
   List<String> learnedSkillIds = [];
 
+  /// 装备的奇遇专属招式 id(C-W14-3-A,单 slot)。
+  ///
+  /// **每角色独立**(平行 equippedWeaponId 等),奇遇 unlock 池是账号级
+  /// (EncounterProgress.unlockedSkillIds),装备 slot 是角色级。装/卸经
+  /// [EncounterService.equipEncounterSkill] / [unequipEncounterSkill],
+  /// canEquip 检查境界 ≥ tier(GDD §5.3 三系锁死)。
+  String? equippedEncounterSkillId;
+
   @Index()
   bool isActive = false;
 
@@ -84,6 +92,7 @@ class Character {
     int? equippedArmorId,
     int? equippedAccessoryId,
     List<String>? learnedSkillIds,
+    String? equippedEncounterSkillId,
     bool isActive = false,
     bool isInRetreat = false,
     int? currentRetreatSessionId,
@@ -113,6 +122,7 @@ class Character {
       ..equippedArmorId = equippedArmorId
       ..equippedAccessoryId = equippedAccessoryId
       ..learnedSkillIds = learnedSkillIds ?? []
+      ..equippedEncounterSkillId = equippedEncounterSkillId
       ..isActive = isActive
       ..isInRetreat = isInRetreat
       ..currentRetreatSessionId = currentRetreatSessionId

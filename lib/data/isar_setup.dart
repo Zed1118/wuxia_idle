@@ -60,7 +60,8 @@ class IsarSetup {
   /// Phase 3 T48 加 RetreatSession collection → 升 0.4.0。
   /// Phase 4 W14-1 加 EncounterProgress collection → 升 0.5.0。
   /// Phase 4 W14-2 EncounterProgress 加 biomeMinutes/weatherMinutes 嵌入 → 升 0.6.0。
-  static const _currentSaveVersion = '0.6.0';
+  /// Phase 4 W14-3-A Character 加 equippedEncounterSkillId String? → 升 0.7.0。
+  static const _currentSaveVersion = '0.7.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({

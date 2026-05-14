@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:isar_community/isar.dart';
 
 import '../data/defs/encounter_def.dart';
+import '../data/defs/skill_def.dart';
 import '../data/isar_setup.dart';
 import '../data/models/attributes.dart';
+import '../data/models/character.dart';
 import '../data/models/encounter_progress.dart';
 import '../data/models/enums.dart';
 import '../utils/rng.dart';
@@ -34,6 +37,38 @@ class AttributeCapReached extends OutcomeApplied {
 
 class NoneOutcome extends OutcomeApplied {
   const NoneOutcome();
+}
+
+/// 装备奇遇 skill 结果(C-W14-3-A,sealed 便于 UI exhaustive switch)。
+sealed class EquipEncounterSkillResult {
+  const EquipEncounterSkillResult();
+}
+
+class EquipSucceeded extends EquipEncounterSkillResult {
+  final String skillId;
+  const EquipSucceeded(this.skillId);
+}
+
+/// 该 skillId 不在 [EncounterProgress.unlockedSkillIds] 内(玩家未通过奇遇 unlock)。
+class EquipNotUnlocked extends EquipEncounterSkillResult {
+  final String skillId;
+  const EquipNotUnlocked(this.skillId);
+}
+
+/// 角色境界未达 skill.tier(GDD §5.3 三系锁死)。
+class EquipTierLocked extends EquipEncounterSkillResult {
+  final int requiredTier;
+  final RealmTier currentTier;
+  const EquipTierLocked({
+    required this.requiredTier,
+    required this.currentTier,
+  });
+}
+
+/// 角色 / skill 不存在(配置错或并发删除)。
+class EquipNotFound extends EquipEncounterSkillResult {
+  final String reason;
+  const EquipNotFound(this.reason);
 }
 
 /// 奇遇 / 武学领悟服务(C-W14-1)。
@@ -266,6 +301,94 @@ class EncounterService {
     });
     return result;
   }
+
+  /// 装备奇遇 skill 到 character(C-W14-3-A)。
+  ///
+  /// 检查顺序(短路返回):
+  ///   1. Character / EncounterProgress 存在
+  ///   2. skillDef 必须是奇遇 skill(`isEncounterSkill == true`)
+  ///   3. skillId 在 [EncounterProgress.unlockedSkillIds]
+  ///   4. character.realmTier.index >= skillDef.tier - 1(境界 ≥ tier)
+  ///
+  /// 通过后 `character.equippedEncounterSkillId = skillId`,写 Isar。
+  ///
+  /// 返回 [EquipEncounterSkillResult] sealed,UI 端 exhaustive switch 渲染。
+  Future<EquipEncounterSkillResult> equipEncounterSkill({
+    required int characterId,
+    required SkillDef skillDef,
+    required int saveDataId,
+  }) async {
+    if (!skillDef.isEncounterSkill) {
+      return EquipNotFound('skill ${skillDef.id} 不是奇遇招式');
+    }
+    final tier = skillDef.tier!;
+    EquipEncounterSkillResult result = const EquipNotFound('未初始化');
+    try {
+      await isar.writeTxn(() async {
+        final character = await isar.characters.get(characterId);
+        if (character == null) {
+          result = EquipNotFound('character #$characterId 不存在');
+          return;
+        }
+        final progress = await isar.encounterProgress
+            .filter()
+            .saveDataIdEqualTo(saveDataId)
+            .findFirst();
+        if (progress == null) {
+          result = EquipNotFound('EncounterProgress slot=$saveDataId 未初始化');
+          return;
+        }
+        if (!progress.unlockedSkillIds.contains(skillDef.id)) {
+          result = EquipNotUnlocked(skillDef.id);
+          return;
+        }
+        // RealmTier 7 值:xueTu(0)/sanLiu(1)/erLiu(2)/yiLiu(3)/jueDing(4)/
+        // zongShi(5)/wuSheng(6)。tier 1-7 ↔ index 0-6。
+        if (character.realmTier.index < tier - 1) {
+          result = EquipTierLocked(
+            requiredTier: tier,
+            currentTier: character.realmTier,
+          );
+          return;
+        }
+        character.equippedEncounterSkillId = skillDef.id;
+        await isar.characters.put(character);
+        result = EquipSucceeded(skillDef.id);
+      });
+    } catch (e, st) {
+      debugPrint('equipEncounterSkill failed: $e\n$st');
+      rethrow;
+    }
+    return result;
+  }
+
+  /// 卸下 character 的奇遇 skill slot(返回 true 表示原本有装备)。
+  Future<bool> unequipEncounterSkill({required int characterId}) async {
+    var hadEquipped = false;
+    try {
+      await isar.writeTxn(() async {
+        final character = await isar.characters.get(characterId);
+        if (character == null) return;
+        hadEquipped = character.equippedEncounterSkillId != null;
+        if (!hadEquipped) return;
+        character.equippedEncounterSkillId = null;
+        await isar.characters.put(character);
+      });
+    } catch (e, st) {
+      debugPrint('unequipEncounterSkill failed: $e\n$st');
+      rethrow;
+    }
+    return hadEquipped;
+  }
+
+  /// 静态 canEquip 校验(纯函数,UI 装备面板 disabled 判定用)。
+  ///
+  /// 不查 unlock 池(caller 已知 progress);仅校验 tier 锁死。
+  static bool canEquipEncounterSkillByTier({
+    required RealmTier realmTier,
+    required int skillTier,
+  }) =>
+      realmTier.index >= skillTier - 1;
 
   /// trigger 全满足判定(纯函数,无 IO,便于测试)。
   ///

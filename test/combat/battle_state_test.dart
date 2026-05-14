@@ -221,6 +221,40 @@ void main() {
             .getSkill('skill_gangmeng_jichu_basic')),
       );
     });
+
+    test('C-W14-3-A:equippedEncounterSkillId 非空 → 4 招(主修 3 + 奇遇 1)',
+        () {
+      final c = _mkChar(
+        tier: RealmTier.erLiu,
+        layer: RealmLayer.ruMen,
+        internalForce: 100,
+        school: TechniqueSchool.gangMeng,
+      );
+      c.equippedEncounterSkillId = 'skill_encounter_ting_yu_jian';
+      final tech = _mkTech(
+        defId: 'tech_gangmeng_jichu',
+        tier: TechniqueTier.ruMenGong,
+        school: TechniqueSchool.gangMeng,
+      );
+      final bc = BattleCharacter.fromCharacter(
+        character: c,
+        equipped: const [],
+        mainTechnique: tech,
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      expect(bc.availableSkills.length, 4,
+          reason: '主修 3 招 + 奇遇 slot 1 招');
+      expect(
+        bc.availableSkills.last.id,
+        'skill_encounter_ting_yu_jian',
+        reason: '奇遇 skill 排在主修 3 招之后',
+      );
+      // tier 标记验证奇遇 skill 加载到位
+      expect(bc.availableSkills.last.tier, 3);
+      expect(bc.availableSkills.last.isEncounterSkill, isTrue);
+    });
   });
 
   // ────────────────────────────────────────────────────────────────────────
