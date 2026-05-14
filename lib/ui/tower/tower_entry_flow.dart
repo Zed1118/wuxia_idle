@@ -16,6 +16,8 @@ import '../../data/models/save_data.dart';
 import '../../data/models/technique.dart';
 import '../../data/narrative_loader.dart';
 import '../../providers/battle_providers.dart';
+import '../../providers/character_providers.dart';
+import '../../providers/inventory_providers.dart';
 import '../../providers/isar_provider.dart';
 import '../../providers/tower_providers.dart';
 import '../../services/battle_resolution.dart';
@@ -114,6 +116,13 @@ Future<void> runTowerFlow({
   // 主修升层 in-place + writeTxn putAll）。drops 仍走下方 rollTowerRewards 路径，
   // 首通才发奖控制不变（stageDef=null 让 service.resolve 不内部 roll drops）。
   await _applyTowerVictoryResolution(ref: ref);
+  // W13-v3 fix: invalidate character/equipment/technique family,否则下次进
+  // 角色面板看到 Riverpod 缓存的旧 battleCount / cultivationProgress
+  ref.invalidate(characterByIdProvider);
+  ref.invalidate(equipmentByIdProvider);
+  ref.invalidate(techniqueByIdProvider);
+  ref.invalidate(characterAllTechniquesProvider);
+  ref.invalidate(allEquipmentsProvider);
 
   // ── drops（isFirstClear 控发奖；重打不发奖 CLAUDE §5.1 防刷）──
   DropResult drops = const DropResult(equipments: [], items: []);

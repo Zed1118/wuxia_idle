@@ -107,7 +107,7 @@ void main() {
     });
 
     test('T27 dropTable 解析 → stage_01_02 / 03_05 dropTable 非空，'
-        '未配关卡 dropTable 为空（向后兼容）', () async {
+        '其他未配关卡 dropTable 为空（向后兼容）', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final s2 = repo.getStage('stage_01_02');
       expect(s2.dropTable.length, 1,
@@ -115,9 +115,10 @@ void main() {
       final sFinal = repo.getStage('stage_03_05');
       expect(sFinal.dropTable.length, 3,
           reason: '章末大 Boss：龙泉剑 + 60% 玉佩 + 必掉心血结晶');
+      // W13-v3:stage_01_01 加 onboarding dropTable(必掉护甲 + 1 磨剑石)
       final s1 = repo.getStage('stage_01_01');
-      expect(s1.dropTable, isEmpty,
-          reason: '未配 dropTable 的关卡保持空列表');
+      expect(s1.dropTable.length, 2,
+          reason: '新手第一关 onboarding：100% 寻常布衣 + 100% 1 磨剑石');
     });
 
     test('Phase 3 Week 5 主线 15 关红线：3 章 × 5 关 + 4/5 关 isBossStage', () async {
