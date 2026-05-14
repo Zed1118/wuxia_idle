@@ -5,10 +5,11 @@
 
 ## 当前阶段
 
-**Phase 4 W14 整批闭环 tag `v0.5.1-w14`**(2026-05-15)。W14-1 vertical slice → W14-2 biome/weather + 闭关 idle tick → W14-3 整体闭环(A skill 池 / B 12 events 文案 / C dialog 节奏 + Codex 视觉验收 / seed)→ round2 EncounterSkillSection 完整态 Codex 4/4 PASS → VC-EVENT 强制触发 debug picker → W14-4 DeepSeek audit(lore 45 + events 23 orphan 归档 + IDS_REGISTRY 143→326)。**610/610 测试,analyze 0 issues**。整批 commits `8ecdbe3...89028a7`。
+**Phase 4 W15 开局,A + B 串行推进**(2026-05-15)。**A: #35 35 装备 lore 文案补**已派单 DeepSeek(`docs/handoff/week15_deepseek_dispatch_35_lore_2026-05-15.md`,目标 65 段拉 GDD §6.6 0→65)。**B: #36 insights↔encounter_skill 显式映射** Mac 端已落地:`SkillDef.narrativeInsightId: String?` nullable 字段 + fromYaml 读 + ting_yu_jian 首条真实映射数据落地 + 4 红线测试(2 fromYaml case + 1 ting_yu_jian 断言 + 1 其余 34 招 null 兜底)。**614/614 测试(W14 610 → +4),analyze 0 issues**。SkillDef 是纯 Dart 类不入 Isar,无需 schema 升版 / build_runner。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
+- **Phase 4 W15 #36 SkillDef.narrativeInsightId nullable 映射字段**(2026-05-15,opus):W14-4 audit 暴露 insights(35 篇 `move_insight_*` 中文诗意命名)vs encounter_skills(35 招 `skill_encounter_*` 拼音功能命名)2 体系独立、命名 1/35 巧合。Mac 端在 SkillDef 加 `narrativeInsightId: String?`(纯 Dart class 不入 Isar,无 schema 升版),`fromYaml` 读 nullable 字段,encounter_skills.yaml `ting_yu_jian` 那条加 `narrativeInsightId: ting_yu_jian` 作首条真实映射(W14-4 audit 唯一已匹配,其余 34 招留空待 DeepSeek 后续填)。test +4(2 fromYaml case + 2 yaml 红线),**614/614**。**销账 #36**。
 - **Phase 4 W14 整批闭环 tag `v0.5.1-w14`**(2026-05-14 to 2026-05-15,xhigh):① **W14-3-A** 奇遇专属 skill 池(`data/encounter_skills.yaml` 35 招 / 7 阶 × 5,SkillDef 加 nullable tier + isEncounterSkill + Character.equippedEncounterSkillId schema 0.6.0→0.7.0 + EncounterService.equipEncounterSkill sealed result GDD §5.3 三系锁死 + BattleCharacter 3+1 + EncounterSkillSection widget,+17 test);② **W14-3-B** DeepSeek 12 条 events 文案;③ **W14-3-C** EncounterDialog 节奏(入场 fade 500ms + opening↔outcome AnimatedSwitcher 420ms FadeTransition)+ Codex Pen round1 视觉验收 6 张截图 5 PASS + 1 WARN(fade-in 中间帧抓不到非 bug);④ `seedVisualCheckW14_3` fixture(预 unlock tier 1-7 各 1 + 大弟子 erLiu 装 tier 3 + Phase2TestMenu「VC14_3」按钮);⑤ **round2** Codex Pen 完整 EncounterSkillSection 验收 4/4 PASS(slot 填充 / bottom sheet 7 招 / 师徒 3/4/5 lock 验证 + 切角色 TabBar T56 早有 + bottom sheet 第 7 项 1280×900 略贴底建议加 padding);⑥ **VC-EVENT 强制触发 debug picker**(`lib/ui/debug/encounter_debug_picker.dart`,Phase2TestMenu 第 8 按钮,绕过软概率 — 为下次 dialog 视觉验收做工具);⑦ **W14-4 DeepSeek audit**(lore 45 orphan 全归档 `_archive/`/ events 23 orphan 归档 / insights vs encounter_skills 1/35 match 推荐保留 2 体系 / IDS_REGISTRY.md 143→326 + 补 W14-2/W14-3 新 ID v1.2)。**610/610**(W14-2 590 → +20 net),analyze 0 issues。详 `docs/handoff/week14_3a_encounter_skill_pool_2026-05-14.md` / `codex_w14_3_round2_visual_check_2026-05-15.md` / `deepseek_audit_w14_4_2026-05-15.md`
 - **Phase 4 W14-2 C 任务 biome/weather + 闭关 idle tick + tower 接入**(2026-05-14,high):W14-1 单 school 维度扩到 4 维 AND(school + biome 60+ values 累计 + weather 5 values 累计 + fortune)。EncounterBiome 15 值 / EncounterWeather 5 值枚举,stages.yaml 15 关 + numbers.yaml 5 闭关图 全标 biome/weather。SeclusionService 注入 encounterService 闭关收功喂 actualHours×60 累计(分两 txn,嵌套 writeTxn 限制)。runEncounterHookAfterVictory 抽到 encounter_hook.dart 共享,stage + tower 双端 victory 都接奇遇。encounters.yaml 3→15 条。schema 升 0.5.0→0.6.0。18 新 test,**590/590**(W14-1 572 → +18)。详 handoff `week14_2_biome_weather_idle_tick_2026-05-14.md`
 - **Phase 4 W14-1 C 任务 vertical slice tag v0.4.0-w11**(2026-05-14,xhigh):GDD §7.2 奇遇/武学领悟系统 0→1。新建 `EncounterDef` + 4 枚举 + `EncounterProgress` Isar collection + `EncounterService`(recordKill / evaluateTriggers fortune 软概率 / applyOutcome lifetime cap 5) + 3 条 encounters.yaml + UI 三段式 dialog + 战斗 victory hook。20 新 test,**572/572**(W13 552 → +20)。
@@ -34,16 +35,17 @@
 - 31. **main_menu「问鼎九霄」widget test 写不出**(2026-05-13 W9 自审踩坑):`pumpAndSettle` 死循环,多 provider+Navigator 链异步 future + 帧 ticker 冲突。已有 11 个 tower widget test 覆盖核心,nav 路径不再硬塞
 - 34. **#10 stage drop 视觉验收未取得硬截图**(2026-05-14 Codex v4):RDP 高度 + 1280×900 窗口下 Codex 主菜单底部入口/滚动操作不稳定,跑了 stage_01_01 victory 但没成功进库存页拍到新增装备。代码层 service test 兜底验证 dropTable 配置生效(`game_repository_test` line 124+)。后续视觉验收建议给 Pen 配 ≥1080 屏幕高 + 库存页快捷入口
 - 35. **35 装备 0 lore 文案 Demo 硬缺口**(2026-05-15 W14-4 audit):lore 45 yaml 全是旧 `eq_tier*` 命名(`sheng_xiu_jian` 等),与 equipment.yaml 35 件新命名(`weapon_xunchang_tie_jian`)完全不通,已 `_archive/`。GDD §6.6 Demo 50-80 段目标 → 当前 0 段。下波派 DeepSeek 用新命名重写或映射归档段
-- 36. **insights ↔ encounter_skill 显式映射缺**(2026-05-15 W14-4 audit):35 insights(move_insight_*)vs 35 encounter_skills(skill_encounter_*)1/35 命名 match(仅 ting_yu_jian 巧合)。两套独立体系,Mac 端需在 SkillDef 加 `narrativeInsightId` 字段做显式映射,DeepSeek 配文案
+- ~~36. insights ↔ encounter_skill 显式映射缺~~(**2026-05-15 W15 销账**:Mac 端 `SkillDef.narrativeInsightId` nullable 已落,encounter_skills.yaml `ting_yu_jian` 首条真实映射已填,test +4 全过 614/614)
 - 37. **23 events orphan 部分可挂回 encounters.yaml**(2026-05-15 W14-4 audit):23 orphan events(duan_qiao_can_yue / feng_xue_gu_dian / 等)文案完整在 `data/events/_archive/`,Mac 端扩 encounters.yaml trigger 条件 + 重新放回可激活(数值/内容双端协作)
 
-> 已销账条目(#1/#4/#5/#12/#13/#14/#15/#16/#18/#19/#20/#21/#22/#23/#24/#25/#26/#27/#29/#32)详见末尾归档。
+> 已销账条目(#1/#4/#5/#12/#13/#14/#15/#16/#18/#19/#20/#21/#22/#23/#24/#25/#26/#27/#29/#32/#36)详见末尾归档。
 
 ## 下一步
 
-W14 整批闭环 tag `v0.5.1-w14`。下波候选:
-- **#35 35 装备 lore 文案补**(高,DeepSeek 主):用 equipment.yaml 新命名(`weapon_xunchang_tie_jian` 等)重写 35 段典故,拉 Demo §6.6 目标 50+ 段
-- **#36 insights ↔ encounter_skill 显式映射**(中,Mac+DeepSeek):Mac 加 `SkillDef.narrativeInsightId` schema 字段 + DeepSeek 配映射文案
+W15 A + B 串行开工(2026-05-15)。下波候选:
+- **A. #35 35 装备 lore 文案补**(高,**进行中** · DeepSeek Pen 端跑,Mac 派单 commit `d929875`):本批 65 段(寻常货~神物 5+5+10+10+15+15+15 段),分 2 commit(5 件抽审 + 30 件批量),完成销账 #35
+- **B. #36 insights ↔ encounter_skill 映射**(已销账)
+- **dialog visual check round3 派 Codex**(low,用 VC-EVENT picker 跑 W14-2 新 12 条 events 文案验收 + bottom sheet 第 7 项 padding polish)
 - **#37 23 orphan events 挂回**(中,数值/内容协作):扩 encounters.yaml trigger 条件 + 重新激活 `_archive/` 中 23 条
 - **dialog visual check round3 派 Codex**(low,用 VC-EVENT picker 跑 W14-2 新 12 条 events 文案验收 + R2-5/R2-6 装/卸链路追派 + bottom sheet 第 7 项 padding polish)
 - **W14-3-A 收尾**:扩 encounter outcome 引用 tier 1-2 / tier 7 池里的招式补 7 阶覆盖度;victory 装奇遇 skill 后 NarrativeReader 提示(参考散功 banner)

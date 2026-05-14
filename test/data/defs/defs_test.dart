@@ -192,6 +192,44 @@ void main() {
       expect(def.parentTechniqueDefId, isNull);
       expect(def.type, SkillType.powerSkill);
     });
+
+    test('narrativeInsightId 缺省 → null (#36 nullable 兼容)', () {
+      final def = SkillDef.fromYaml({
+        'id': 'skill_encounter_no_insight',
+        'name': '无映射招式',
+        'description': '占位',
+        'type': 'powerSkill',
+        'powerMultiplier': 1500,
+        'internalForceCost': 200,
+        'cooldownTurns': 2,
+        'requiresManualTrigger': false,
+        'parentTechniqueDefId': null,
+        'visualEffect': 'placeholder',
+        'tier': 3,
+      });
+
+      expect(def.narrativeInsightId, isNull);
+    });
+
+    test('narrativeInsightId 显式填入 → 字段读出 (#36)', () {
+      final def = SkillDef.fromYaml({
+        'id': 'skill_encounter_ting_yu_jian',
+        'name': '听雨剑',
+        'description': 'TODO',
+        'type': 'powerSkill',
+        'powerMultiplier': 2300,
+        'internalForceCost': 200,
+        'cooldownTurns': 3,
+        'requiresManualTrigger': false,
+        'parentTechniqueDefId': null,
+        'visualEffect': 'sword_rain_listen',
+        'tier': 3,
+        'narrativeInsightId': 'ting_yu_jian',
+      });
+
+      expect(def.narrativeInsightId, 'ting_yu_jian');
+      expect(def.isEncounterSkill, isTrue);
+    });
   });
 
   group('StageDef + EnemyDef.fromYaml', () {

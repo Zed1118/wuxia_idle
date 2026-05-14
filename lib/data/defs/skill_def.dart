@@ -5,6 +5,10 @@ import '../models/enums.dart';
 /// `parentTechniqueDefId` 为空时，表示该招式由"武学领悟"独立产出（GDD §7.2）。
 /// `tier` 仅 encounter skill 填 1-7(沿用 GDD §5.2 七阶节奏 + §5.3 三系锁死),
 /// 普通心法招式 tier 留空。
+/// `narrativeInsightId` 是 encounter skill 显式指向 insight 文案文件名
+/// (`data/narratives/techniques/insights/<id>.yaml`) 的可选关联,
+/// 用于把数值招式池(skill_encounter_*)与文案池(move_insight_*/中文诗意命名)
+/// 显式挂钩(W14-4 audit #36)。普通心法招式留空。
 class SkillDef {
   final String id;
   final String name;
@@ -17,6 +21,7 @@ class SkillDef {
   final String? parentTechniqueDefId;
   final String visualEffect;
   final int? tier;
+  final String? narrativeInsightId;
 
   const SkillDef({
     required this.id,
@@ -30,6 +35,7 @@ class SkillDef {
     this.parentTechniqueDefId,
     required this.visualEffect,
     this.tier,
+    this.narrativeInsightId,
   });
 
   /// 奇遇招式 = parentTechniqueDefId 为空 & tier 非空。
@@ -48,6 +54,7 @@ class SkillDef {
       parentTechniqueDefId: y['parentTechniqueDefId'] as String?,
       visualEffect: y['visualEffect'] as String,
       tier: (y['tier'] as num?)?.toInt(),
+      narrativeInsightId: y['narrativeInsightId'] as String?,
     );
   }
 
