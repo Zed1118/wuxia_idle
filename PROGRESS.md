@@ -43,8 +43,8 @@
 
 ## 下一步
 
-W15 A + B 双销账 + C 待发(2026-05-15)。下波候选:
-- **C. dialog round3 Codex 验**(**待发** · 派单 commit `8138271`):用 VC-EVENT picker 验 W14-2 新 12 events 文案 + dialog 节奏,主截图 6 对(opening + outcome)+ 可选 6 张 quick scan
+W15 A + B 双销账 + C 待发(2026-05-15)。**会话 closeout 见 `docs/handoff/week15_open_session_closeout_2026-05-15.md`**。下波候选:
+- **C. dialog round3 Codex 验**(**待发** · 派单 commit `8138271`,Codex 提示词在 closeout §5.5):用 VC-EVENT picker 验 W14-2 新 12 events 文案 + dialog 节奏,主截图 6 对(opening + outcome)+ 可选 6 张 quick scan
 - **#37 23 orphan events 挂回**(中,数值/内容协作):扩 encounters.yaml trigger 条件 + 重新激活 `_archive/` 中 23 条
 - **dialog visual check round3 派 Codex**(low,用 VC-EVENT picker 跑 W14-2 新 12 条 events 文案验收 + R2-5/R2-6 装/卸链路追派 + bottom sheet 第 7 项 padding polish)
 - **W14-3-A 收尾**:扩 encounter outcome 引用 tier 1-2 / tier 7 池里的招式补 7 阶覆盖度;victory 装奇遇 skill 后 NarrativeReader 提示(参考散功 banner)
