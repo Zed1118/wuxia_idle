@@ -201,6 +201,44 @@ enum RetreatMapType {
   duanYaJueBi,   // 断崖绝壁（仅宗师以上可去）
 }
 
+/// 场景生境(C-W14-2 奇遇 trigger 维度)。
+///
+/// 与 [RetreatMapType] 区别:RetreatMapType 是"闭关地图 id",
+/// EncounterBiome 是"场景类型"(可跨地图/关卡复用)。例:`shanLin` 闭关 +
+/// stage_01_01 山门外都是 [mountainForest]。
+///
+/// stages.yaml / numbers.yaml retreat.maps 配置时**允许空字段**(向后兼容,
+/// 不强求每关都标 biome)。但若配,必须是下面枚举值之一,加载层强校验。
+enum EncounterBiome {
+  mountainPath,    // 山道(stage_01_03 黑风岭 / stage_03_04 雁门旧事)
+  inn,             // 客栈茶店(stage_01_02 荒山野店)
+  dock,            // 渡口水滨(stage_01_05 风雨渡口)
+  cityWall,        // 城外/城内(stage_01_04 洛阳城外 / stage_03_01 武林会)
+  escortRoad,      // 镖路官道(stage_02_01 镖局护送)
+  teaHouse,        // 茶馆茶亭(stage_02_02 茶馆论剑 / 奇遇 cha_ting_dui_ju)
+  smithy,          // 铸剑铺(stage_02_03 春水堂)
+  drillGround,     // 校场擂台(stage_02_04 / stage_03_02 / stage_03_05)
+  alley,           // 巷弄(stage_02_05 巷中夜雨)
+  temple,          // 寺院经阁(stage_03_03 山寺夜话 / 闭关 cangJingGe)
+  mountainForest,  // 山林(stage_01_01 山门外 / 闭关 shanLin)
+  swordTomb,       // 古剑冢(闭关 guJianZhong)
+  cliffWaterfall,  // 悬崖瀑布(闭关 xuanYaPuBu)
+  cliff,           // 断崖绝壁(闭关 duanYaJueBi)
+  bambooForest,    // 竹林(奇遇 bamboo_listen_rain · GDD §7.2 example)
+}
+
+/// 天气/时段(C-W14-2 奇遇 trigger 维度)。
+///
+/// Demo 阶段 5 个值。[night] 严格不是天气而是时段,为 schema 简化合并入此枚举,
+/// 不另起 TimeOfDayPhase 维度。clear 是默认"无特别天气"。
+enum EncounterWeather {
+  clear,    // 晴(默认)
+  rain,     // 雨(stage_01_05 风雨渡口 / 闭关 xuanYaPuBu)
+  snow,     // 雪(闭关 duanYaJueBi)
+  mist,     // 雾(stage_01_03 黑风岭 / 闭关 guJianZhong)
+  night,    // 夜(stage_02_05 巷中夜雨 / stage_03_03 山寺夜话)
+}
+
 /// 时辰（闭关加成用，GDD §7.3）。
 enum TimeOfDayPeriod {
   ziShi,    // 子时 23:00-1:00

@@ -7,8 +7,10 @@ import 'package:wuxia_idle/data/models/attributes.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/models/character.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
+import 'package:wuxia_idle/data/models/encounter_progress.dart';
 import 'package:wuxia_idle/data/models/inventory_item.dart';
 import 'package:wuxia_idle/data/models/retreat_session.dart';
+import 'package:wuxia_idle/services/encounter_service.dart';
 import 'package:wuxia_idle/services/seclusion_service.dart';
 
 /// Phase 3 T48 · SeclusionService 真 Isar 落地测试。
@@ -437,6 +439,112 @@ void main() {
           .itemTypeEqualTo(ItemType.moJianShi)
           .findFirst();
       expect(item, isNull, reason: 'abandon 不发磨剑石');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // C-W14-2:idle tick hook 喂 biome/weather 累计给奇遇
+  // ─────────────────────────────────────────────────────────────────────────
+
+  group('C-W14-2 idle tick → EncounterProgress', () {
+    test('完成 4 小时闭关 → 喂 biome/weather × 240min', () async {
+      final encSvc = EncounterService(isar: IsarSetup.instance);
+      final svc = SeclusionService(
+        isar: IsarSetup.instance,
+        encounterService: encSvc,
+      );
+      // numbers.yaml 已配 shanLin biome=mountainForest weather=clear,
+      // 但 weather=clear 也会被喂(只要 biome/weather 任一非 null)
+      final session = await svc.startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 4,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: DateTime(2026, 5, 14, 12, 0),
+      );
+
+      await svc.completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        // 4h 整满
+        now: DateTime(2026, 5, 14, 16, 0),
+      );
+
+      final p = await IsarSetup.instance.encounterProgress
+          .filter()
+          .saveDataIdEqualTo(kSaveDataId)
+          .findFirst();
+      expect(p, isNotNull, reason: 'idle tick 应 ensure getOrCreate');
+      expect(p!.biomeMinutes.minutesOf(EncounterBiome.mountainForest), 240);
+      expect(p.weatherMinutes.minutesOf(EncounterWeather.clear), 240);
+    });
+
+    test('encounterService=null → 无 idle tick 副作用', () async {
+      // 不注入 encounterService(默认 null)
+      final svc = SeclusionService(isar: IsarSetup.instance);
+      final session = await svc.startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 1,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: DateTime(2026, 5, 14, 12, 0),
+      );
+      await svc.completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: DateTime(2026, 5, 14, 13, 0),
+      );
+      // EncounterProgress 行根本未创建(idle tick 短路)
+      final p = await IsarSetup.instance.encounterProgress
+          .filter()
+          .saveDataIdEqualTo(kSaveDataId)
+          .findFirst();
+      expect(p, isNull, reason: 'encounterService 未注入 → idle tick 短路');
+    });
+
+    test('actualHours=0(start 与 now 同刻)→ 无 idle tick',
+        () async {
+      final encSvc = EncounterService(isar: IsarSetup.instance);
+      final svc = SeclusionService(
+        isar: IsarSetup.instance,
+        encounterService: encSvc,
+      );
+      final start = DateTime(2026, 5, 14, 12, 0);
+      final session = await svc.startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 4,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      // 立即收功(actualHours = 0)
+      await svc.completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      final p = await IsarSetup.instance.encounterProgress
+          .filter()
+          .saveDataIdEqualTo(kSaveDataId)
+          .findFirst();
+      // actualHours=0 → minutes=0 → _feedEncounterIdleMinutes 短路,
+      // 不会调 getOrCreate → 进度未建
+      expect(p, isNull);
     });
   });
 

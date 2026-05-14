@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 
 import '../data/defs/seclusion_map_def.dart';
@@ -9,6 +10,7 @@ import '../data/models/retreat_session.dart';
 import '../data/models/reward_entry.dart';
 import '../data/numbers_config.dart';
 import '../utils/rng.dart';
+import 'encounter_service.dart';
 
 /// 闭关产出汇总（Phase 3 T48）。
 ///
@@ -34,9 +36,16 @@ typedef RetreatOutputs = ({
 ///   - mojianshi = floor(perHour × actualHours × realmScale × dayBonus)
 ///   - 装备抽检：per session 单次，概率 = equipmentDropRate × baseEquipDropProbability
 class SeclusionService {
-  const SeclusionService({required this.isar});
+  const SeclusionService({
+    required this.isar,
+    this.encounterService,
+  });
 
   final Isar isar;
+
+  /// 奇遇服务(C-W14-2)。null = 不喂 biome/weather 累计(测试 fixture 默认)。
+  /// 生产路径 provider 注入,完成闭关后按 `actualHours × 60` 喂分钟。
+  final EncounterService? encounterService;
 
   // ─────────────────────────────────────────────────────────────────────────
   // 公开 API
@@ -231,7 +240,46 @@ class SeclusionService {
       }
     });
 
+    // C-W14-2 idle tick:writeTxn 外单独喂奇遇 biome/weather 累计。
+    // 嵌套 writeTxn 会抛 IsarError,故分开两个 txn。原子性损失可接受:
+    // mojianshi 已落地,idle tick 失败仅缺少奇遇累计,不破坏闭关数据。
+    await _feedEncounterIdleMinutes(
+      session: session,
+      saveDataId: session.saveDataId,
+      maps: maps,
+      actualHours: outputs.actualHours,
+    );
+
     return outputs;
+  }
+
+  /// 闭关 actualHours 累计喂给 EncounterService(C-W14-2)。
+  ///
+  /// 异常静默 + debugPrint(W13 教训:catch 加日志,不影响主流程)。
+  Future<void> _feedEncounterIdleMinutes({
+    required RetreatSession session,
+    required int saveDataId,
+    required List<SeclusionMapDef> maps,
+    required double actualHours,
+  }) async {
+    final svc = encounterService;
+    if (svc == null) return;
+    if (actualHours <= 0) return;
+    final def = _getDef(session.mapType, maps);
+    if (def.biome == null && def.weather == null) return;
+    final minutes = (actualHours * 60).floor();
+    if (minutes <= 0) return;
+    try {
+      await svc.getOrCreate(saveDataId: saveDataId);
+      await svc.recordIdleMinutes(
+        saveDataId: saveDataId,
+        biome: def.biome,
+        weather: def.weather,
+        minutes: minutes,
+      );
+    } catch (e, st) {
+      debugPrint('SeclusionService.idle tick failed: $e\n$st');
+    }
   }
 
   /// 放弃闭关（切换地图 / 主动放弃）：仅更新状态，不发奖。

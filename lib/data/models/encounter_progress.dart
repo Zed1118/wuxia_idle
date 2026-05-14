@@ -30,6 +30,13 @@ class EncounterProgress {
   /// 按流派的击杀累积。@embedded 列表 + MapLike extension 模拟 Map。
   List<SchoolKillCount> schoolKillCounts = [];
 
+  /// 按 biome 挂机累积分钟数(C-W14-2)。MapLike 体例,同 schoolKillCounts。
+  /// 通过 [EncounterService.recordIdleMinutes] 累加(闭关 actualHours × 60)。
+  List<BiomeMinutes> biomeMinutes = [];
+
+  /// 按 weather 挂机累积分钟数(C-W14-2)。MapLike 体例,同 biomeMinutes。
+  List<WeatherMinutes> weatherMinutes = [];
+
   /// 生涯累积属性微调点数(分 4 字段)。GDD §4.1 line 183 总和 ≤ 5。
   int attributeGainsConstitution = 0;
   int attributeGainsEnlightenment = 0;
@@ -61,6 +68,22 @@ class SchoolKillCount {
   int count = 0;
 }
 
+/// 按 biome 挂机累计分钟 @embedded(C-W14-2,同 [SchoolKillCount] 体例)。
+@embedded
+class BiomeMinutes {
+  @enumerated
+  EncounterBiome biome = EncounterBiome.mountainForest;
+  int minutes = 0;
+}
+
+/// 按 weather 挂机累计分钟 @embedded(C-W14-2,同 [SchoolKillCount] 体例)。
+@embedded
+class WeatherMinutes {
+  @enumerated
+  EncounterWeather weather = EncounterWeather.clear;
+  int minutes = 0;
+}
+
 /// 在 [List] of [SchoolKillCount] 上模拟 Map 语义。
 ///
 /// **重要**:Isar findAll 反序列化 list 为 fixed-length(W13 教训
@@ -86,5 +109,51 @@ extension MapLikeOnSchoolKill on List<SchoolKillCount> {
     add(SchoolKillCount()
       ..school = school
       ..count = delta);
+  }
+}
+
+/// 同 [MapLikeOnSchoolKill] 体例,作用于 biome 分钟 list(C-W14-2)。
+extension MapLikeOnBiomeMinutes on List<BiomeMinutes> {
+  int minutesOf(EncounterBiome biome) {
+    for (final e in this) {
+      if (e.biome == biome) return e.minutes;
+    }
+    return 0;
+  }
+
+  void addMinutes(EncounterBiome biome, int delta) {
+    if (delta <= 0) return;
+    for (final e in this) {
+      if (e.biome == biome) {
+        e.minutes += delta;
+        return;
+      }
+    }
+    add(BiomeMinutes()
+      ..biome = biome
+      ..minutes = delta);
+  }
+}
+
+/// 同 [MapLikeOnSchoolKill] 体例,作用于 weather 分钟 list(C-W14-2)。
+extension MapLikeOnWeatherMinutes on List<WeatherMinutes> {
+  int minutesOf(EncounterWeather weather) {
+    for (final e in this) {
+      if (e.weather == weather) return e.minutes;
+    }
+    return 0;
+  }
+
+  void addMinutes(EncounterWeather weather, int delta) {
+    if (delta <= 0) return;
+    for (final e in this) {
+      if (e.weather == weather) {
+        e.minutes += delta;
+        return;
+      }
+    }
+    add(WeatherMinutes()
+      ..weather = weather
+      ..minutes = delta);
   }
 }
