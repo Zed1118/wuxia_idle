@@ -42,7 +42,19 @@ class _EncounterDialog extends StatefulWidget {
 }
 
 class _EncounterDialogState extends State<_EncounterDialog> {
+  static const _entryDuration = Duration(milliseconds: 500);
+  static const _switchDuration = Duration(milliseconds: 420);
+
   EncounterChoice? _selected;
+  bool _entered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _entered = true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,32 +69,95 @@ class _EncounterDialogState extends State<_EncounterDialog> {
         constraints: const BoxConstraints(maxWidth: 600),
         child: Padding(
           padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _TitleBar(title: widget.content.title ?? '机缘'),
-              const SizedBox(height: 20),
-              if (selected == null) ...[
-                _OpeningText(text: widget.content.opening),
-                const SizedBox(height: 24),
-                ...widget.content.choices.map(
-                  (c) => _ChoiceButton(
-                    text: c.text,
-                    onTap: () => setState(() => _selected = c),
+          child: AnimatedOpacity(
+            opacity: _entered ? 1.0 : 0.0,
+            duration: _entryDuration,
+            curve: Curves.easeOut,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _TitleBar(title: widget.content.title ?? '机缘'),
+                const SizedBox(height: 20),
+                AnimatedSwitcher(
+                  duration: _switchDuration,
+                  switchInCurve: Curves.easeIn,
+                  switchOutCurve: Curves.easeOut,
+                  transitionBuilder: (child, animation) => FadeTransition(
+                    opacity: animation,
+                    child: child,
                   ),
-                ),
-              ] else ...[
-                _OutcomeBody(text: selected.body),
-                const SizedBox(height: 24),
-                _ConfirmButton(
-                  onTap: () => Navigator.of(context).pop(selected.outcomeId),
+                  child: selected == null
+                      ? _OpeningStage(
+                          key: const ValueKey('opening'),
+                          opening: widget.content.opening,
+                          choices: widget.content.choices,
+                          onSelect: (c) => setState(() => _selected = c),
+                        )
+                      : _OutcomeStage(
+                          key: const ValueKey('outcome'),
+                          choice: selected,
+                          onConfirm: () =>
+                              Navigator.of(context).pop(selected.outcomeId),
+                        ),
                 ),
               ],
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _OpeningStage extends StatelessWidget {
+  const _OpeningStage({
+    super.key,
+    required this.opening,
+    required this.choices,
+    required this.onSelect,
+  });
+
+  final String opening;
+  final List<EncounterChoice> choices;
+  final ValueChanged<EncounterChoice> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _OpeningText(text: opening),
+        const SizedBox(height: 24),
+        ...choices.map(
+          (c) => _ChoiceButton(text: c.text, onTap: () => onSelect(c)),
+        ),
+      ],
+    );
+  }
+}
+
+class _OutcomeStage extends StatelessWidget {
+  const _OutcomeStage({
+    super.key,
+    required this.choice,
+    required this.onConfirm,
+  });
+
+  final EncounterChoice choice;
+  final VoidCallback onConfirm;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _OutcomeBody(text: choice.body),
+        const SizedBox(height: 24),
+        _ConfirmButton(onTap: onConfirm),
+      ],
     );
   }
 }
