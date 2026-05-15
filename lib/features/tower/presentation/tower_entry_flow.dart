@@ -5,30 +5,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:isar_community/isar.dart';
 
-import '../../data/defs/tower_floor_def.dart';
-import '../../data/game_repository.dart';
-import '../../data/isar_setup.dart';
-import '../../data/models/character.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/equipment.dart';
-import '../../data/models/inventory_item.dart';
-import '../../data/models/save_data.dart';
-import '../../data/models/technique.dart';
-import '../../data/narrative_loader.dart';
-import '../../providers/battle_providers.dart';
-import '../../providers/character_providers.dart';
-import '../../providers/inventory_providers.dart';
-import '../../providers/isar_provider.dart';
-import '../../providers/tower_providers.dart';
-import '../../services/battle_resolution.dart';
-import '../../services/drop_service.dart';
-import '../../services/stage_battle_setup.dart';
-import '../../services/tower_progress_service.dart';
-import '../../utils/rng.dart';
-import '../battle/battle_screen.dart';
-import '../encounter/encounter_hook.dart';
-import '../narrative/narrative_reader_screen.dart';
-import '../strings.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../../../data/models/character.dart';
+import '../../../data/models/enums.dart';
+import '../../../data/models/equipment.dart';
+import '../../../data/models/inventory_item.dart';
+import '../../../data/models/save_data.dart';
+import '../../../data/models/technique.dart';
+import '../../../data/narrative_loader.dart';
+import '../../../providers/battle_providers.dart';
+import '../../../providers/character_providers.dart';
+import '../../../providers/inventory_providers.dart';
+import '../../../providers/isar_provider.dart';
+import '../../../services/battle_resolution.dart';
+import '../../../services/drop_service.dart';
+import '../../../services/stage_battle_setup.dart';
+import '../../../ui/battle/battle_screen.dart';
+import '../../../ui/encounter/encounter_hook.dart';
+import '../../../ui/narrative/narrative_reader_screen.dart';
+import '../../../ui/strings.dart';
+import '../../../utils/rng.dart';
+import '../application/tower_progress_service.dart';
+import '../application/tower_providers.dart';
+import '../domain/tower_floor_def.dart';
 
 /// Phase 3 T43 爬塔进入流程串联。
 ///

@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/data/models/tower_progress.dart';
-import 'package:wuxia_idle/providers/tower_providers.dart';
-import 'package:wuxia_idle/services/tower_progress_service.dart';
+import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
+import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
+import 'package:wuxia_idle/features/tower/presentation/tower_floor_list_screen.dart';
 import 'package:wuxia_idle/ui/strings.dart';
-import 'package:wuxia_idle/ui/tower/tower_floor_list_screen.dart';
 
 /// T42 TowerFloorListScreen widget 测试（不接真实 Isar）。
 ///

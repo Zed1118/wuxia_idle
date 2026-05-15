@@ -1,9 +1,9 @@
 import 'package:isar_community/isar.dart';
 
-import '../data/defs/tower_floor_def.dart';
-import '../data/isar_setup.dart';
-import '../data/models/enums.dart';
-import '../data/models/tower_progress.dart';
+import '../../../data/isar_setup.dart';
+import '../../../data/models/enums.dart';
+import '../domain/tower_floor_def.dart';
+import '../domain/tower_progress.dart';
 
 /// 单层 + 解锁状态（[TowerProgressService.floorList] 返回值）。
 typedef TowerFloorEntry = ({TowerFloorDef def, TowerFloorStatus status});

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/data/models/tower_progress.dart';
-import 'package:wuxia_idle/providers/tower_providers.dart';
-import 'package:wuxia_idle/services/tower_progress_service.dart';
+import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
+import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
+import 'package:wuxia_idle/features/tower/presentation/tower_entry_flow.dart';
 import 'package:wuxia_idle/ui/strings.dart';
-import 'package:wuxia_idle/ui/tower/tower_entry_flow.dart';
 
 /// T43 runTowerFlow widget 测试（@visibleForTesting DI 注入）。
 ///

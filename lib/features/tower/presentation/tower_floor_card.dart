@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../combat/enum_localizations.dart' show EnumL10n;
-import '../../data/models/enums.dart';
-import '../../services/tower_progress_service.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../combat/enum_localizations.dart' show EnumL10n;
+import '../../../data/models/enums.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
+import '../application/tower_progress_service.dart';
 
 /// 爬塔层卡片（Phase 3 T42）。
 ///

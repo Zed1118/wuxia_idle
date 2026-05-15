@@ -12,7 +12,7 @@ import '../features/seclusion/presentation/seclusion_map_list_screen.dart';
 import 'strings.dart';
 import 'technique_panel/technique_panel_screen.dart';
 import 'theme/colors.dart';
-import 'tower/tower_floor_list_screen.dart';
+import '../features/tower/presentation/tower_floor_list_screen.dart';
 
 /// 调试主菜单（phase2_tasks.md T32 §492-509 子提交 3b + T56 闭关入口 FutureBuilder 化）。
 ///

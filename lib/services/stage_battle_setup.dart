@@ -2,7 +2,7 @@ import 'package:isar_community/isar.dart';
 
 import '../combat/battle_state.dart';
 import '../data/defs/stage_def.dart';
-import '../data/defs/tower_floor_def.dart';
+import '../features/tower/domain/tower_floor_def.dart';
 import '../data/game_repository.dart';
 import '../data/models/character.dart';
 import '../data/models/enums.dart';
