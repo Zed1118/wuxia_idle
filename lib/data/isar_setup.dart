@@ -9,7 +9,7 @@ import 'models/equipment.dart';
 import 'models/game_event.dart';
 import 'models/inventory_item.dart';
 import 'models/mainline_progress.dart';
-import 'models/retreat_session.dart';
+import '../features/seclusion/domain/retreat_session.dart';
 import 'models/save_data.dart';
 import 'models/technique.dart';
 import 'models/tower_progress.dart';

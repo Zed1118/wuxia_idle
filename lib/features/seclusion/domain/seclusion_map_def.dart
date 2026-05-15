@@ -1,4 +1,4 @@
-import '../models/enums.dart';
+import '../../../data/models/enums.dart';
 
 /// 闭关地图定义（numbers.yaml `retreat.maps[]`，Phase 3 T47）。
 ///

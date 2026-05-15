@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/defs/seclusion_map_def.dart';
-import '../../data/game_repository.dart';
-import '../../data/isar_setup.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/retreat_session.dart';
-import '../../services/seclusion_service.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../../../data/models/enums.dart';
+import '../../../providers/isar_provider.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
+import '../domain/retreat_session.dart';
+import '../domain/seclusion_map_def.dart';
 import 'active_retreat_screen.dart';
 
 /// 闭关时长选择屏（Phase 3 T49）。
 ///
 /// 显示地图详情（每小时产出估算 × 境界缩放）+ 三档时长按钮。
 /// 点击「开始闭关」：abandon 旧 session（若有）→ startRetreat → push ActiveRetreatScreen。
-class SeclusionSetupScreen extends StatefulWidget {
+class SeclusionSetupScreen extends ConsumerStatefulWidget {
   final SeclusionMapDef mapDef;
   final RealmTier charRealmTier;
   final int characterId;
@@ -29,10 +30,11 @@ class SeclusionSetupScreen extends StatefulWidget {
   });
 
   @override
-  State<SeclusionSetupScreen> createState() => _SeclusionSetupScreenState();
+  ConsumerState<SeclusionSetupScreen> createState() =>
+      _SeclusionSetupScreenState();
 }
 
-class _SeclusionSetupScreenState extends State<SeclusionSetupScreen> {
+class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
   int _selectedHours = 4;
   bool _isStarting = false;
 
@@ -49,7 +51,11 @@ class _SeclusionSetupScreenState extends State<SeclusionSetupScreen> {
     setState(() => _isStarting = true);
 
     try {
-      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
+      final svc = ref.read(seclusionServiceProvider);
+      if (svc == null) {
+        throw StateError('seclusionServiceProvider unavailable (isar null)');
+      }
+      final session = await svc.startRetreat(
         mapType: widget.mapDef.mapType,
         durationHours: _selectedHours,
         saveDataId: IsarSetup.currentSlotId,

@@ -1,4 +1,4 @@
-import 'defs/seclusion_map_def.dart';
+import '../features/seclusion/domain/seclusion_map_def.dart';
 import 'models/enums.dart';
 
 /// 数值总配置（numbers.yaml 全量包装）。

@@ -4,7 +4,7 @@ import 'defs/encounter_def.dart';
 import 'defs/equipment_def.dart';
 import 'defs/master_def.dart';
 import 'defs/realm_def.dart';
-import 'defs/seclusion_map_def.dart';
+import '../features/seclusion/domain/seclusion_map_def.dart';
 import 'defs/skill_def.dart';
 import 'defs/stage_def.dart';
 import 'defs/technique_def.dart';

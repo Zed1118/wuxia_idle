@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../combat/enum_localizations.dart';
-import '../../data/defs/seclusion_map_def.dart';
-import '../../data/game_repository.dart';
-import '../../data/isar_setup.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/retreat_session.dart';
-import '../../services/seclusion_service.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../combat/enum_localizations.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../../../data/models/enums.dart';
+import '../../../providers/isar_provider.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
+import '../application/seclusion_service.dart';
+import '../domain/retreat_session.dart';
+import '../domain/seclusion_map_def.dart';
 import 'active_retreat_screen.dart';
 import 'seclusion_setup_screen.dart';
 
@@ -17,8 +19,8 @@ import 'seclusion_setup_screen.dart';
 /// 显示 5 张地图三态：locked（境界不足）/ available（可进入）/ active（进行中）。
 /// 顶部 banner 在有活跃 session 时显示地图名 + 剩余时间 +「收功/查看」按钮。
 ///
-/// 不使用新 Riverpod provider；用 [FutureBuilder] 加载 Isar 数据。
-class SeclusionMapListScreen extends StatefulWidget {
+/// W15 Phase 5 #2:改 ConsumerStatefulWidget，走 seclusionServiceProvider 注入。
+class SeclusionMapListScreen extends ConsumerStatefulWidget {
   /// 当前玩家境界（由上层注入，Demo 阶段固定 characterId=1）。
   final RealmTier charRealmTier;
   final int characterId;
@@ -30,17 +32,18 @@ class SeclusionMapListScreen extends StatefulWidget {
   });
 
   @override
-  State<SeclusionMapListScreen> createState() =>
+  ConsumerState<SeclusionMapListScreen> createState() =>
       _SeclusionMapListScreenState();
 }
 
-class _SeclusionMapListScreenState extends State<SeclusionMapListScreen> {
+class _SeclusionMapListScreenState
+    extends ConsumerState<SeclusionMapListScreen> {
   late Future<RetreatSession?> _activeFuture;
 
   Future<RetreatSession?> _fetchActive() {
-    final isar = IsarSetup.instanceOrNull;
-    if (isar == null) return Future.value(null);
-    return SeclusionService(isar: isar).getActiveSession(IsarSetup.currentSlotId);
+    final svc = ref.read(seclusionServiceProvider);
+    if (svc == null) return Future.value(null);
+    return svc.getActiveSession(IsarSetup.currentSlotId);
   }
 
   @override

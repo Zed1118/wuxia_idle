@@ -1,16 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 
-import '../data/defs/seclusion_map_def.dart';
-import '../data/models/character.dart';
-import '../data/models/enums.dart';
-import '../data/models/equipment.dart';
-import '../data/models/inventory_item.dart';
-import '../data/models/retreat_session.dart';
-import '../data/models/reward_entry.dart';
-import '../data/numbers_config.dart';
-import '../utils/rng.dart';
-import 'encounter_service.dart';
+import '../../../data/models/character.dart';
+import '../../../data/models/enums.dart';
+import '../../../data/models/equipment.dart';
+import '../../../data/models/inventory_item.dart';
+import '../../../data/models/reward_entry.dart';
+import '../../../data/numbers_config.dart';
+import '../../../services/encounter_service.dart';
+import '../../../utils/rng.dart';
+import '../domain/retreat_session.dart';
+import '../domain/seclusion_map_def.dart';
 
 /// 闭关产出汇总（Phase 3 T48 / W15 #30 扩 2 维度）。
 ///
