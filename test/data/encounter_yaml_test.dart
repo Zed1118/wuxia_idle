@@ -18,10 +18,10 @@ void main() {
   });
 
   group('encounters.yaml 加载', () {
-    test('15 条 encounter 全部解析成功 (W14-1 3 + W14-2 12)', () {
+    test('21 条 encounter 全部解析成功 (W14-1 3 + W14-2 12 + W15 6)', () {
       final repo = GameRepository.instance;
-      expect(repo.encounterDefs.length, 15,
-          reason: 'W14-1 3 条 vertical slice + W14-2 12 条 biome/weather 扩');
+      expect(repo.encounterDefs.length, 21,
+          reason: 'W14-1 3 + W14-2 12 + W15 #37 部分挂回 6');
       // W14-1 3 条必须仍在
       expect(
         repo.encounterDefs.keys,
@@ -39,6 +39,19 @@ void main() {
           'duan_ya_chui_lian',
           'ye_xing_xun_dao',
         }),
+      );
+      // W15 #37 6 条挂回核对
+      expect(
+        repo.encounterDefs.keys,
+        containsAll({
+          'xue_ye_gu_qin',
+          'feng_xue_gu_dian',
+          'ye_du_gu_chuan',
+          'han_mei_ying_xue',
+          'xing_chen_wu_dao',
+          'qiu_ye_wei_qi',
+        }),
+        reason: 'W15 #37 部分挂回 6 条:雨雪夜主题为主',
       );
     });
 
