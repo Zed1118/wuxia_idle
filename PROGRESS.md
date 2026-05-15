@@ -53,7 +53,7 @@
 
 ## 下一步
 
-W15 整批闭环 tag `v0.5.2-w15`(2026-05-15)。**整批 closeout 见 `docs/handoff/week15_full_closeout_2026-05-15.md`**(§5.5 修正版 + #38 反审撤回详 §3.6)。下波候选:
+W15 整批闭环 tag `v0.5.2-w15`(2026-05-15)+ 本会话反审 + C-2 收尾(2026-05-15)。**本会话 closeout `docs/handoff/week15_audit_c2_closeout_2026-05-15.md`** + **W15 整批 closeout `week15_full_closeout_2026-05-15.md`**(§5.5 修正版 + #38 反审撤回详 §3.6)。下波候选:
 - **等 DeepSeek polish closeout**(派单已发 `deepseek_w15_polish_dispatch_2026-05-15.md`,二合一:35 招 description + 翳字 polish,~1.5-2h)
 - **C-1 收尾 扩 outcome 引用 tier 1-2/7 池**(DeepSeek closeout 后,新 encounter 套餐:Mac 数值 + DeepSeek 文案;tier 1-2 池 0 引用 / tier 7 池 4/5 未引用,缺口大)
 - **Pen 端视觉验收装备详情屏**(真机渲染需 Pen flutter run + InventoryScreen 进装备 → 详情屏看 lore 段排版 + 强化/开锋按钮分流;Codex 可上)
