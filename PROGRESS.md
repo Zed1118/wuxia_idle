@@ -51,7 +51,7 @@
 
 ## 下一步
 
-W15 三销账 + EquipmentDetailScreen 显化 lore + Codex round3 6/6 PASS + DeepSeek 22 招映射全闭环(2026-05-15)。下波候选:
+W15 整批闭环 tag `v0.5.2-w15`(2026-05-15)。**整批 closeout 见 `docs/handoff/week15_full_closeout_2026-05-15.md`**(§5 下波候选 + DeepSeek polish 派单草案)。下波候选:
 - **Pen 端视觉验收装备详情屏**(下波重点,真机渲染需 Pen flutter run + InventoryScreen 进装备 → 详情屏看 lore 段排版 + 强化/开锋按钮分流;Codex 可上)
 - **DeepSeek encounter_skills 35 招 description 文案补**(全 35 招仍 TODO_NARRATIVE,closeout §4 留挂账)
 - **#37 23 orphan events 挂回**(中,数值/内容协作):扩 encounters.yaml trigger 条件 + 重新激活 `_archive/` 中 23 条
