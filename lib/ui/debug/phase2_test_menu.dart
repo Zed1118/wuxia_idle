@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/isar_setup.dart';
 import '../../services/phase2_seed_service.dart';
-import '../character_panel/character_panel_screen.dart';
+import '../../features/character_panel/presentation/character_panel_screen.dart';
 import '../inventory/inventory_screen.dart';
 import '../strings.dart';
 import '../technique_panel/technique_panel_screen.dart';

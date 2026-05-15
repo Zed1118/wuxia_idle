@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/enums.dart';
 import '../providers/character_providers.dart';
-import 'character_panel/character_panel_screen.dart';
+import '../features/character_panel/presentation/character_panel_screen.dart';
 import 'debug/battle_test_menu.dart';
 import 'debug/phase2_test_menu.dart';
 import 'inventory/inventory_screen.dart';

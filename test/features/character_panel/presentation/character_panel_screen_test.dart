@@ -10,7 +10,7 @@ import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/data/models/equipment.dart';
 import 'package:wuxia_idle/data/models/technique.dart';
 import 'package:wuxia_idle/providers/character_providers.dart';
-import 'package:wuxia_idle/ui/character_panel/character_panel_screen.dart';
+import 'package:wuxia_idle/features/character_panel/presentation/character_panel_screen.dart';
 
 /// T28 角色面板 widget 测试（phase2_tasks.md §407）。
 ///

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../combat/enum_localizations.dart';
-import '../../data/defs/skill_def.dart';
-import '../../data/game_repository.dart';
-import '../../data/models/character.dart';
-import '../../features/encounter/domain/encounter_progress.dart';
-import '../../data/models/enums.dart';
-import '../../providers/character_providers.dart';
-import '../../providers/isar_provider.dart';
-import '../../features/encounter/application/encounter_service.dart';
-import '../theme/colors.dart';
+import '../../../combat/enum_localizations.dart';
+import '../../../data/defs/skill_def.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/models/character.dart';
+import '../../encounter/domain/encounter_progress.dart';
+import '../../../data/models/enums.dart';
+import '../../../providers/character_providers.dart';
+import '../../../providers/isar_provider.dart';
+import '../../encounter/application/encounter_service.dart';
+import '../../../ui/theme/colors.dart';
 
 /// 奇遇招式装备段(C-W14-3-A)。
 ///
