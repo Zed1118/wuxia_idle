@@ -35,7 +35,12 @@ import 'forging_panel.dart';
 /// - **测试旁路**：widget test 不 init Isar 时 [_persist] 自动 no-op（用
 ///   [Isar.getInstance] 探测）；真落地验证由 enhancement_persist_test 覆盖。
 class EnhanceDialog extends ConsumerStatefulWidget {
-  const EnhanceDialog({super.key, required this.equipment, this.def});
+  const EnhanceDialog({
+    super.key,
+    required this.equipment,
+    this.def,
+    this.initialTab = 0,
+  });
 
   final Equipment equipment;
 
@@ -43,6 +48,9 @@ class EnhanceDialog extends ConsumerStatefulWidget {
   /// 弹窗前查 [GameRepository.getEquipment]；fixture 测试可传 null（forging
   /// tab 仅退化到 specialSkillCandidates=[] 路径）。
   final EquipmentDef? def;
+
+  /// 初始 Tab(0=强化 / 1=开锋)。EquipmentDetailScreen 按钮分流入口用。
+  final int initialTab;
 
   @override
   ConsumerState<EnhanceDialog> createState() => _EnhanceDialogState();
@@ -68,7 +76,11 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-    _tabCtrl = TabController(length: 2, vsync: this);
+    _tabCtrl = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTab.clamp(0, 1),
+    );
   }
 
   @override

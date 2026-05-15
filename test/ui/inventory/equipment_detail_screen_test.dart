@@ -1,0 +1,218 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/data/defs/equipment_def.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/lore_loader.dart';
+import 'package:wuxia_idle/data/models/enums.dart';
+import 'package:wuxia_idle/data/models/equipment.dart';
+import 'package:wuxia_idle/ui/inventory/equipment_detail_screen.dart';
+
+/// EquipmentDetailScreen widget 测试(W15 LoreLoader 接入下一步)。
+///
+/// 5 用例:
+/// - 基础渲染:tier / slot / school / 攻血速 / +N / 共鸣度阶段全显
+/// - lore 段渲染:fake loader 注入 3 段 → 3 段文本可见 + 分隔符
+/// - placeholder 兜底:loader 返回 placeholder → "典故待补"提示
+/// - presetLoreIds 为空:跳过加载 → "典故待补"
+/// - 强化按钮 tap → EnhanceDialog 弹起(initialTab=0)
+void main() {
+  setUpAll(() async {
+    if (!GameRepository.isLoaded) {
+      await GameRepository.loadAllDefs(
+        loader: (path) => File(path).readAsString(),
+      );
+    }
+  });
+
+  Equipment mkEq({
+    required EquipmentDef def,
+    int enhanceLevel = 0,
+    int battleCount = 0,
+  }) {
+    return Equipment.create(
+      defId: def.id,
+      tier: def.tier,
+      slot: def.slot,
+      obtainedAt: DateTime(2026, 5, 11),
+      obtainedFrom: 'test',
+      baseAttack: def.baseAttackMin,
+      baseHealth: def.baseHealthMin,
+      baseSpeed: def.baseSpeedMin,
+      enhanceLevel: enhanceLevel,
+      battleCount: battleCount,
+    )..id = 1;
+  }
+
+  Future<LoreContent> Function(String) fakeLoader({
+    required List<String> segments,
+    String name = '测试装备',
+  }) {
+    return (loreId) async => LoreContent(
+          id: loreId,
+          name: name,
+          defaultLore: segments.map((t) => LoreSegment(text: t)).toList(),
+          isPlaceholder: false,
+        );
+  }
+
+  testWidgets('基础信息卡:tier / slot / 攻血速 / +N / 共鸣度全显', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final def = GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+    final eq = mkEq(def: def, enhanceLevel: 12, battleCount: 1240);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: EquipmentDetailScreen(
+            equipment: eq,
+            def: def,
+            loreLoader: fakeLoader(segments: const ['一段']),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(def.name), findsOneWidget);
+    expect(find.text('神物'), findsOneWidget);
+    expect(find.text('武器'), findsOneWidget);
+    expect(find.text('+12'), findsOneWidget);
+    expect(find.text('战斗 1240 次'), findsOneWidget);
+    expect(find.text('攻击'), findsOneWidget);
+    expect(find.text('血量'), findsOneWidget);
+    expect(find.text('速度'), findsOneWidget);
+  });
+
+  testWidgets('lore 3 段全渲染 + 段间分隔', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final def = GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+    final eq = mkEq(def: def);
+
+    const segments = [
+      '段一文本',
+      '段二文本',
+      '段三文本',
+    ];
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: EquipmentDetailScreen(
+            equipment: eq,
+            def: def,
+            loreLoader: fakeLoader(segments: segments),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('◇ 典故 ◇'), findsOneWidget);
+    expect(find.text('段一文本'), findsOneWidget);
+    expect(find.text('段二文本'), findsOneWidget);
+    expect(find.text('段三文本'), findsOneWidget);
+    expect(find.text('· · ·'), findsNWidgets(2),
+        reason: '3 段之间应有 2 个 · · · 分隔符');
+  });
+
+  testWidgets('loader 返回 placeholder → "典故待补"', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final def = GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+    final eq = mkEq(def: def);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: EquipmentDetailScreen(
+            equipment: eq,
+            def: def,
+            loreLoader: (id) async => LoreContent.placeholder(id),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('典故待补'), findsOneWidget);
+  });
+
+  testWidgets('presetLoreIds 为空 → 跳过加载 → "典故待补"', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    // 手造 def,presetLoreIds 为空
+    const def = EquipmentDef(
+      id: 'test_no_lore',
+      name: '无典故装备',
+      tier: EquipmentTier.xunChang,
+      slot: EquipmentSlot.weapon,
+      baseAttackMin: 10,
+      baseAttackMax: 20,
+      baseHealthMin: 0,
+      baseHealthMax: 0,
+      baseSpeedMin: 0,
+      baseSpeedMax: 0,
+      presetLoreIds: [],
+      dropSourceTags: [],
+      iconPath: 'placeholder',
+    );
+    final eq = mkEq(def: def);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: EquipmentDetailScreen(
+            equipment: eq,
+            def: def,
+            loreLoader: (_) async {
+              fail('presetLoreIds 空时不应调 loader');
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('典故待补'), findsOneWidget);
+  });
+
+  testWidgets('强化按钮 tap → EnhanceDialog 弹起', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final def = GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+    final eq = mkEq(def: def);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: EquipmentDetailScreen(
+            equipment: eq,
+            def: def,
+            loreLoader: fakeLoader(segments: const ['x']),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 详情屏底部「强化」按钮(避免和 Tab 的「强化」混淆,详情屏 _Btn 才是 tap 目标)
+    final enhanceBtn = find.widgetWithText(InkWell, '强化');
+    expect(enhanceBtn, findsOneWidget);
+    await tester.tap(enhanceBtn);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // EnhanceDialog 弹起后,Dialog widget 会出现
+    expect(find.byType(Dialog), findsOneWidget);
+  });
+}

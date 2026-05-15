@@ -13,6 +13,7 @@ import '../enhancement/enhance_dialog.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
 import '../theme/tier_colors.dart';
+import 'equipment_detail_screen.dart';
 
 /// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账）。
 ///
@@ -154,10 +155,21 @@ class _Row extends ConsumerWidget {
     }
     return InkWell(
       onTap: () async {
-        await showDialog<void>(
-          context: context,
-          builder: (_) => EnhanceDialog(equipment: eq, def: def),
-        );
+        // def 非空走详情屏(W15 LoreLoader 接入后);def == null(fixture /
+        // 未知 defId)兜底直弹 EnhanceDialog,保持向后兼容。
+        if (def != null) {
+          await Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) =>
+                  EquipmentDetailScreen(equipment: eq, def: def!),
+            ),
+          );
+        } else {
+          await showDialog<void>(
+            context: context,
+            builder: (_) => EnhanceDialog(equipment: eq, def: def),
+          );
+        }
         ref.invalidate(allEquipmentsProvider);
       },
       child: Container(
