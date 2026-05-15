@@ -5,7 +5,7 @@ import '../../services/phase2_seed_service.dart';
 import '../../features/character_panel/presentation/character_panel_screen.dart';
 import '../../features/inventory/presentation/inventory_screen.dart';
 import '../strings.dart';
-import '../technique_panel/technique_panel_screen.dart';
+import '../../features/technique_panel/presentation/technique_panel_screen.dart';
 import '../theme/colors.dart';
 import 'encounter_debug_picker.dart';
 

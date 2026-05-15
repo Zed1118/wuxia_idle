@@ -10,7 +10,7 @@ import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/data/models/technique.dart';
 import 'package:wuxia_idle/providers/character_providers.dart';
 import 'package:wuxia_idle/ui/strings.dart';
-import 'package:wuxia_idle/ui/technique_panel/technique_panel_screen.dart';
+import 'package:wuxia_idle/features/technique_panel/presentation/technique_panel_screen.dart';
 
 /// T31 心法面板 widget 测试（phase2_tasks.md §483）。
 ///
