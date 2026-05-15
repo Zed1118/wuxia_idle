@@ -9,6 +9,7 @@ import 'defs/skill_def.dart';
 import 'defs/stage_def.dart';
 import 'defs/technique_def.dart';
 import 'defs/tower_floor_def.dart';
+import 'lore_loader.dart';
 import 'models/enums.dart';
 import 'numbers_config.dart';
 import 'yaml_loader.dart';
@@ -182,8 +183,47 @@ class GameRepository {
       encounterSkillIds: encounterSkillIds,
     );
     repo._enforceRedLines();
+    await _validatePresetLoreReferences(equipmentDefs, load);
     _instance = repo;
     return repo;
+  }
+
+  /// Phase 4 W15:装备 preset 典故 yaml 引用一致性校验。
+  ///
+  /// 对每个 [EquipmentDef.presetLoreIds] 元素 await [LoreLoader.load]:
+  /// - 加载失败 / placeholder 兜底 → StateError(yaml 缺失或语法错)
+  /// - LoreContent.id != 引用 loreId → StateError(yaml 内 id 不自洽)
+  /// - defaultLore 段为空 → StateError(空文件不算 lore)
+  ///
+  /// 兼容 test fixture:装备 presetLoreIds 为空时整个跳过(不触 yaml),
+  /// 仅在真实 equipment.yaml 引用 lore 时才异步校验。
+  ///
+  /// 串行 await(35 文件量级,启动开销 < 50ms,不并发避免压垮 rootBundle)。
+  static Future<void> _validatePresetLoreReferences(
+    Map<String, EquipmentDef> equipmentDefs,
+    Future<String> Function(String) load,
+  ) async {
+    for (final def in equipmentDefs.values) {
+      for (final loreId in def.presetLoreIds) {
+        final content = await LoreLoader.load(loreId, loader: load);
+        if (content.isPlaceholder) {
+          throw StateError(
+            '装备 ${def.id} presetLoreIds 引用 $loreId,'
+            'data/lore/$loreId.yaml 缺失或解析失败',
+          );
+        }
+        if (content.id != loreId) {
+          throw StateError(
+            '装备 ${def.id} presetLore $loreId yaml 内 id=${content.id} 不自洽',
+          );
+        }
+        if (content.defaultLore.isEmpty) {
+          throw StateError(
+            '装备 ${def.id} presetLore $loreId default_lore 段为空',
+          );
+        }
+      }
+    }
   }
 
   /// 把 numbers.yaml 嵌套的 `realms.tiers[].layers[]` 展平为 49 行 [RealmDef]。
