@@ -25,7 +25,8 @@
 #   - skill_encounter_night_strike   (tier 5)
 #   - skill_encounter_ice_break      (tier 6)
 #
-# description 占位 TODO_NARRATIVE,DeepSeek 后续补文案(同 skills.yaml 体例)。
+# description 体例:1-2 句武学描述,不写数值/网游词汇/UI 名词
+# (W15 polish 已补全 35 招,DeepSeek closeout `b922972`)。
 # requiresManualTrigger:仅 ultimate=true。
 # =============================================================================
 
