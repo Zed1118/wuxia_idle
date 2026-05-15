@@ -7,7 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/data/models/equipment.dart';
 import 'package:wuxia_idle/providers/inventory_providers.dart';
-import 'package:wuxia_idle/ui/inventory/inventory_screen.dart';
+import 'package:wuxia_idle/features/inventory/presentation/inventory_screen.dart';
 
 /// T29 InventoryScreen widget 测试（phase2_tasks.md §433）。
 ///
