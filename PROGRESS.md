@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 4 W15 真闭环:D + r2 fixture + round2 视觉 + polish 全销账**(2026-05-15)。本会话开做 D(#37 第 2 批挂回 7 条 tier 1-2/6/7 unlockSkill 补)+ Mac 端起 `seedVisualCheckW15R2` fixture(P5 base + 6 件 tier 5-7 装备入背包)+ 起 round2 派单 spec。**Codex 一人接两份派单**(用户发错给 Codex 但效果都成立):①round2 装备详情屏 9/9 截图 8 PASS + 1 WARN(仓库 15 件单屏装不下,非 bug)②W15 polish 35 招 description + 翳→隐 全做完。Mac 端审 35 招 + 翳→隐:**通过**(武学气质 / 数值红线 / 网游词汇 / UI 名词全无违规;22 招 insight 主题统一性高;7 ultimate 大招气质足)。修 2 处遗漏注释(encounter_skills 头注释 + encounters 翳字注释)。**633/633 测试**,analyze 0 issues。Encounter 总数 21→28。#37 挂账 17 → 剩 10。
+**Phase 4 W15 真闭环:D + r2 fixture + round2 视觉 + polish 全销账**(2026-05-15)。本会话 closeout `docs/handoff/week15_real_closeout_2026-05-15.md`,tag `v0.5.3-w15-final`(锚 W15 真闭环,链接到 v0.5.2-w15 整批锚点之后)。本会话开做 D(#37 第 2 批挂回 7 条 tier 1-2/6/7 unlockSkill 补)+ Mac 端起 `seedVisualCheckW15R2` fixture(P5 base + 6 件 tier 5-7 装备入背包)+ 起 round2 派单 spec。**Codex 一人接两份派单**(用户发错给 Codex 但效果都成立):①round2 装备详情屏 9/9 截图 8 PASS + 1 WARN(仓库 15 件单屏装不下,非 bug)②W15 polish 35 招 description + 翳→隐 全做完。Mac 端审 35 招 + 翳→隐:**通过**(武学气质 / 数值红线 / 网游词汇 / UI 名词全无违规;22 招 insight 主题统一性高;7 ultimate 大招气质足)。修 2 处遗漏注释(encounter_skills 头注释 + encounters 翳字注释)。memory 扩 2 条(Codex 双备份角色 / Pen GUI row click 不稳 widget 捕获 fallback)。**633/633 测试**,analyze 0 issues。Encounter 总数 21→28。#37 挂账 17 → 剩 10。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
