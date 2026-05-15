@@ -28,7 +28,7 @@ equipment:
     baseHealthMax: 0
     baseSpeedMin: 0
     baseSpeedMax: 10
-    presetLoreIds: []
+    presetLoreIds: [weapon_xunchang_tie_jian]
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_tie_jian.png
 
@@ -43,7 +43,7 @@ equipment:
     baseHealthMax: 0
     baseSpeedMin: 0
     baseSpeedMax: 10
-    presetLoreIds: []
+    presetLoreIds: [weapon_xunchang_zhe_dao]
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_zhe_dao.png
 
@@ -58,7 +58,7 @@ equipment:
     baseHealthMax: 0
     baseSpeedMin: 0
     baseSpeedMax: 10
-    presetLoreIds: []
+    presetLoreIds: [weapon_xunchang_ruan_bian]
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_ruan_bian.png
 
@@ -72,7 +72,7 @@ equipment:
     baseHealthMax: 200
     baseSpeedMin: 0
     baseSpeedMax: 5
-    presetLoreIds: []
+    presetLoreIds: [armor_xunchang_bu_yi]
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/armor_xunchang_bu_yi.png
 
@@ -86,7 +86,7 @@ equipment:
     baseHealthMax: 100
     baseSpeedMin: 0
     baseSpeedMax: 8
-    presetLoreIds: []
+    presetLoreIds: [accessory_xunchang_yu_pei]
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/accessory_xunchang_yu_pei.png
 
@@ -102,7 +102,7 @@ equipment:
     baseHealthMax: 50
     baseSpeedMin: 5
     baseSpeedMax: 20
-    presetLoreIds: []
+    presetLoreIds: [weapon_xiangyang_gang_dao]
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_gang_dao.png
 
@@ -117,7 +117,7 @@ equipment:
     baseHealthMax: 50
     baseSpeedMin: 5
     baseSpeedMax: 20
-    presetLoreIds: []
+    presetLoreIds: [weapon_xiangyang_chang_jian]
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_chang_jian.png
 
@@ -132,7 +132,7 @@ equipment:
     baseHealthMax: 50
     baseSpeedMin: 5
     baseSpeedMax: 20
-    presetLoreIds: []
+    presetLoreIds: [weapon_xiangyang_jiu_jie_bian]
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_jiu_jie_bian.png
 
@@ -146,7 +146,7 @@ equipment:
     baseHealthMax: 450
     baseSpeedMin: 0
     baseSpeedMax: 10
-    presetLoreIds: []
+    presetLoreIds: [armor_xiangyang_pi_jia]
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/armor_xiangyang_pi_jia.png
 
@@ -160,7 +160,7 @@ equipment:
     baseHealthMax: 200
     baseSpeedMin: 5
     baseSpeedMax: 15
-    presetLoreIds: []
+    presetLoreIds: [accessory_xiangyang_yin_jie]
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/accessory_xiangyang_yin_jie.png
 
@@ -176,7 +176,7 @@ equipment:
     baseHealthMax: 100
     baseSpeedMin: 10
     baseSpeedMax: 30
-    presetLoreIds: []
+    presetLoreIds: [weapon_haojiahuo_qing_feng_jian]
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_qing_feng_jian.png
 
@@ -191,7 +191,7 @@ equipment:
     baseHealthMax: 100
     baseSpeedMin: 10
     baseSpeedMax: 30
-    presetLoreIds: []
+    presetLoreIds: [weapon_haojiahuo_xuan_hua_fu]
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_xuan_hua_fu.png
 
@@ -206,7 +206,7 @@ equipment:
     baseHealthMax: 100
     baseSpeedMin: 10
     baseSpeedMax: 30
-    presetLoreIds: []
+    presetLoreIds: [weapon_haojiahuo_chan_si_suo]
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_chan_si_suo.png
 
@@ -220,7 +220,7 @@ equipment:
     baseHealthMax: 750
     baseSpeedMin: 5
     baseSpeedMax: 15
-    presetLoreIds: []
+    presetLoreIds: [armor_haojiahuo_jin_pao]
     dropSourceTags: ["mainline_ch3"]
     iconPath: assets/equipment/armor_haojiahuo_jin_pao.png
     isLineageHeritage: true   # 师承遗物（祖师传家护甲，GDD §6.1 + Phase 3 W4 T55）
@@ -235,7 +235,7 @@ equipment:
     baseHealthMax: 350
     baseSpeedMin: 10
     baseSpeedMax: 25
-    presetLoreIds: []
+    presetLoreIds: [accessory_haojiahuo_yu_pei_lao]
     dropSourceTags: ["mainline_ch3"]
     iconPath: assets/equipment/accessory_haojiahuo_yu_pei_lao.png
 
@@ -251,7 +251,7 @@ equipment:
     baseHealthMax: 150
     baseSpeedMin: 20
     baseSpeedMax: 45
-    presetLoreIds: []
+    presetLoreIds: [weapon_liqi_long_quan]
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_long_quan.png
     isLineageHeritage: true   # 师承遗物（祖师传家武器，GDD §6.1 + Phase 3 W4 T55）
@@ -267,7 +267,7 @@ equipment:
     baseHealthMax: 150
     baseSpeedMin: 20
     baseSpeedMax: 45
-    presetLoreIds: []
+    presetLoreIds: [weapon_liqi_pan_long_dao]
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_pan_long_dao.png
 
@@ -282,7 +282,7 @@ equipment:
     baseHealthMax: 150
     baseSpeedMin: 20
     baseSpeedMax: 45
-    presetLoreIds: []
+    presetLoreIds: [weapon_liqi_lian_zi_bian]
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_lian_zi_bian.png
 
@@ -296,7 +296,7 @@ equipment:
     baseHealthMax: 1100
     baseSpeedMin: 10
     baseSpeedMax: 25
-    presetLoreIds: []
+    presetLoreIds: [armor_liqi_xuan_tie_jia]
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/armor_liqi_xuan_tie_jia.png
 
@@ -310,7 +310,7 @@ equipment:
     baseHealthMax: 550
     baseSpeedMin: 20
     baseSpeedMax: 35
-    presetLoreIds: []
+    presetLoreIds: [accessory_liqi_fei_yu_pei]
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/accessory_liqi_fei_yu_pei.png
 
@@ -326,7 +326,7 @@ equipment:
     baseHealthMax: 250
     baseSpeedMin: 30
     baseSpeedMax: 60
-    presetLoreIds: []
+    presetLoreIds: [weapon_zhongqi_po_zhen_chui]
     dropSourceTags: ["tower_30", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_po_zhen_chui.png
 
@@ -341,7 +341,7 @@ equipment:
     baseHealthMax: 250
     baseSpeedMin: 30
     baseSpeedMax: 60
-    presetLoreIds: []
+    presetLoreIds: [weapon_zhongqi_qing_xu_jian]
     dropSourceTags: ["tower_30", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_qing_xu_jian.png
 
@@ -356,7 +356,7 @@ equipment:
     baseHealthMax: 250
     baseSpeedMin: 30
     baseSpeedMax: 60
-    presetLoreIds: []
+    presetLoreIds: [weapon_zhongqi_du_long_suo]
     dropSourceTags: ["tower_30", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_du_long_suo.png
 
@@ -370,7 +370,7 @@ equipment:
     baseHealthMax: 1600
     baseSpeedMin: 15
     baseSpeedMax: 35
-    presetLoreIds: []
+    presetLoreIds: [armor_zhongqi_yin_lin_jia]
     dropSourceTags: ["tower_30", "jueDing_unlock"]
     iconPath: assets/equipment/armor_zhongqi_yin_lin_jia.png
 
@@ -384,7 +384,7 @@ equipment:
     baseHealthMax: 850
     baseSpeedMin: 30
     baseSpeedMax: 50
-    presetLoreIds: []
+    presetLoreIds: [accessory_zhongqi_qing_yu_huan]
     dropSourceTags: ["tower_30", "jueDing_unlock"]
     iconPath: assets/equipment/accessory_zhongqi_qing_yu_huan.png
 
@@ -400,7 +400,7 @@ equipment:
     baseHealthMax: 400
     baseSpeedMin: 45
     baseSpeedMax: 75
-    presetLoreIds: []
+    presetLoreIds: [weapon_baowu_xuan_tian_fu]
     dropSourceTags: ["zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_xuan_tian_fu.png
 
@@ -415,7 +415,7 @@ equipment:
     baseHealthMax: 400
     baseSpeedMin: 45
     baseSpeedMax: 75
-    presetLoreIds: []
+    presetLoreIds: [weapon_baowu_chang_hong_jian]
     dropSourceTags: ["zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_chang_hong_jian.png
 
@@ -430,7 +430,7 @@ equipment:
     baseHealthMax: 400
     baseSpeedMin: 45
     baseSpeedMax: 75
-    presetLoreIds: []
+    presetLoreIds: [weapon_baowu_xue_lian_bian]
     dropSourceTags: ["zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_xue_lian_bian.png
 
@@ -444,7 +444,7 @@ equipment:
     baseHealthMax: 2300
     baseSpeedMin: 25
     baseSpeedMax: 50
-    presetLoreIds: []
+    presetLoreIds: [armor_baowu_jin_si_jia]
     dropSourceTags: ["zongShi_unlock"]
     iconPath: assets/equipment/armor_baowu_jin_si_jia.png
 
@@ -458,7 +458,7 @@ equipment:
     baseHealthMax: 1300
     baseSpeedMin: 45
     baseSpeedMax: 70
-    presetLoreIds: []
+    presetLoreIds: [accessory_baowu_yu_long_pei]
     dropSourceTags: ["zongShi_unlock"]
     iconPath: assets/equipment/accessory_baowu_yu_long_pei.png
 
@@ -474,7 +474,7 @@ equipment:
     baseHealthMax: 500
     baseSpeedMin: 65
     baseSpeedMax: 100
-    presetLoreIds: []
+    presetLoreIds: [weapon_shenwu_po_jun_dao]
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/weapon_shenwu_po_jun_dao.png
 
@@ -489,7 +489,7 @@ equipment:
     baseHealthMax: 500
     baseSpeedMin: 65
     baseSpeedMax: 100
-    presetLoreIds: []
+    presetLoreIds: [weapon_shenwu_tian_wen_jian]
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/weapon_shenwu_tian_wen_jian.png
 
@@ -504,7 +504,7 @@ equipment:
     baseHealthMax: 500
     baseSpeedMin: 65
     baseSpeedMax: 100
-    presetLoreIds: []
+    presetLoreIds: [weapon_shenwu_huan_meng_bian]
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/weapon_shenwu_huan_meng_bian.png
 
@@ -518,7 +518,7 @@ equipment:
     baseHealthMax: 3000
     baseSpeedMin: 40
     baseSpeedMax: 70
-    presetLoreIds: []
+    presetLoreIds: [armor_shenwu_xuan_huang_pao]
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/armor_shenwu_xuan_huang_pao.png
 
@@ -532,6 +532,6 @@ equipment:
     baseHealthMax: 1800
     baseSpeedMin: 65
     baseSpeedMax: 95
-    presetLoreIds: []
+    presetLoreIds: [accessory_shenwu_kun_lun_pei]
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/accessory_shenwu_kun_lun_pei.png
