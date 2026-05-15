@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../combat/derived_stats.dart';
-import '../../combat/enum_localizations.dart';
-import '../../data/game_repository.dart';
-import '../../data/models/character.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/equipment.dart';
-import '../../data/models/technique.dart';
-import '../../providers/battle_providers.dart';
-import '../../providers/character_providers.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
-import '../theme/tier_colors.dart';
+import '../../../combat/derived_stats.dart';
+import '../../../combat/enum_localizations.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/models/character.dart';
+import '../../../data/models/enums.dart';
+import '../../../data/models/equipment.dart';
+import '../../../data/models/technique.dart';
+import '../../../providers/battle_providers.dart';
+import '../../../providers/character_providers.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
+import '../../../ui/theme/tier_colors.dart';
 import 'encounter_skill_section.dart';
 
 /// 角色面板（phase2_tasks.md T28 + Phase 3 Week 4 T56）。
