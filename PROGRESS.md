@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Phase 4 W15 共鸣/强化/开锋视觉验收真闭环 + C-1 收尾**(2026-05-15,HEAD `6db64c9`)。W15 真闭环 v0.5.3-w15-final 之后三合一全闭:① B 派单 fixture push(`d0e0266`)— seedVisualCheckW15Resonance 6 件武器矩阵覆盖共鸣 4 阶段 / 强化 +0/+5/+10/+15/+19 / 开锋 0/1/2/3 槽 / 1 件师承遗物强制标;② A 任务 C-1 收尾(`0171038`)— encounters 28→30 挂 huang_miao_jiu_seng/jiu_lou_jue_yin 补 tier 7 long_yin/wu_ming 引用;③ Codex Pen 真 GUI 视觉验收(`dd6c592`)— 11 张主截图 **10 PASS + 1 WARN**(1280×900 仓库装不下,非 bug)未走 widget fallback,本批模板成熟;④ FAIL fix(`6db64c9`)— equipment_detail_screen.dart:148 师承遗物 chip 读 `def` 改读 `equipment` 实例字段(覆盖奇遇 override / 师承传承 / fixture 强制标 3 路径),widget test +3 写约束语义(实例标 / 实例不标 / def 自带 propagate)。grep 全 lib/ 同类只此 1 处。**643/643**(W15 真闭环 633 → +10),analyze 0 issues。本批不另打 tag(v0.5.3-w15-final 保留 W15 锚点,unless 用户要求)。
+**Phase 4 W15 共鸣/强化/开锋视觉验收真闭环 + C-1 收尾**(2026-05-15,HEAD `6011fca`,closeout `docs/handoff/week15_resonance_closeout_2026-05-15.md` §5 下次开局必读)。W15 真闭环 v0.5.3-w15-final 之后三合一全闭:① B 派单 fixture push(`d0e0266`)— seedVisualCheckW15Resonance 6 件武器矩阵覆盖共鸣 4 阶段 / 强化 +0/+5/+10/+15/+19 / 开锋 0/1/2/3 槽 / 1 件师承遗物强制标;② A 任务 C-1 收尾(`0171038`)— encounters 28→30 挂 huang_miao_jiu_seng/jiu_lou_jue_yin 补 tier 7 long_yin/wu_ming 引用;③ Codex Pen 真 GUI 视觉验收(`dd6c592`)— 11 张主截图 **10 PASS + 1 WARN**(1280×900 仓库装不下,非 bug)未走 widget fallback,本批模板成熟;④ FAIL fix(`6db64c9`)— equipment_detail_screen.dart:148 师承遗物 chip 读 `def` 改读 `equipment` 实例字段(覆盖奇遇 override / 师承传承 / fixture 强制标 3 路径),widget test +3 写约束语义(实例标 / 实例不标 / def 自带 propagate)。grep 全 lib/ 同类只此 1 处。**643/643**(W15 真闭环 633 → +10),analyze 0 issues。本批不另打 tag(v0.5.3-w15-final 保留 W15 锚点,unless 用户要求)。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
