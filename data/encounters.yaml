@@ -656,3 +656,45 @@ encounters:
       gain_wisdom:
         type: unlockSkill
         skillId: skill_encounter_feng_qi
+
+  # ───────────────────────────────────────────────
+  # 29. huang_miao_jiu_seng · 荒庙旧僧
+  #     techniqueInsight · 寺院经阁 90min + 机缘 7,tier 7 long_yin 师承之招
+  #     主题:师父凉州旧识 + 剑鞘内龙吟,呼应 narrativeInsightId long_yin_shen_jian
+  # ───────────────────────────────────────────────
+  - id: huang_miao_jiu_seng
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        temple: 90
+      fortuneRequired: 7
+    baseProbability: 0.2
+    outcomeMapping:
+      learn_healing:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+      learn_lore:
+        type: unlockSkill
+        skillId: skill_encounter_long_yin
+
+  # ───────────────────────────────────────────────
+  # 30. jiu_lou_jue_yin · 酒楼绝饮
+  #     techniqueInsight · 客栈茶店 90min + 机缘 7,tier 7 wu_ming 无名诀
+  #     主题:剑不出鞘 / 千里路后无名之招,呼应 narrativeInsightId gu_dao_xi_feng
+  # ───────────────────────────────────────────────
+  - id: jiu_lou_jue_yin
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        inn: 90
+      fortuneRequired: 7
+    baseProbability: 0.2
+    outcomeMapping:
+      earn_respect:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+      clever_avoid:
+        type: unlockSkill
+        skillId: skill_encounter_wu_ming

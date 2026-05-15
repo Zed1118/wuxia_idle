@@ -18,11 +18,14 @@ void main() {
   });
 
   group('encounters.yaml 加载', () {
-    test('28 条 encounter 全部解析成功 (W14-1 3 + W14-2 12 + W15 6 + W15-r2 7)',
+    test(
+        '30 条 encounter 全部解析成功 '
+        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2)',
         () {
       final repo = GameRepository.instance;
-      expect(repo.encounterDefs.length, 28,
-          reason: 'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + W15 #37 第 2 批 7');
+      expect(repo.encounterDefs.length, 30,
+          reason:
+              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2');
       // W14-1 3 条必须仍在
       expect(
         repo.encounterDefs.keys,
@@ -67,6 +70,12 @@ void main() {
           'jue_ding_feng_qi',
         }),
         reason: 'W15 #37 第 2 批 7 条:tier 1-2/6/7 池 unlockSkill 补',
+      );
+      // W15 C-1 收尾 2 条挂回核对(tier 7 long_yin / wu_ming 引用补)
+      expect(
+        repo.encounterDefs.keys,
+        containsAll({'huang_miao_jiu_seng', 'jiu_lou_jue_yin'}),
+        reason: 'W15 C-1 收尾 2 条:tier 7 long_yin / wu_ming 池 unlockSkill 补',
       );
     });
 
@@ -182,6 +191,58 @@ void main() {
       expect(def.trigger.schoolKillThreshold[TechniqueSchool.gangMeng], 5);
       expect(def.trigger.biomeMinutes[EncounterBiome.drillGround], 30);
       expect(def.trigger.fortuneRequired, 3);
+    });
+  });
+
+  // C-W15 收尾:tier 7 long_yin / wu_ming 引用补
+  group('encounters.yaml W15 C-1 收尾 2 条', () {
+    test('huang_miao_jiu_seng · temple 90 + fortune 7 + unlock long_yin', () {
+      final def =
+          GameRepository.instance.findEncounter('huang_miao_jiu_seng')!;
+      expect(def.type, EncounterType.techniqueInsight);
+      expect(def.trigger.biomeMinutes[EncounterBiome.temple], 90);
+      expect(def.trigger.fortuneRequired, 7);
+      expect(def.baseProbability, closeTo(0.2, 1e-9));
+
+      final healing = def.outcomeMapping['learn_healing']!;
+      expect(healing.type, OutcomeType.attributeBonus);
+      expect(healing.attributeKey, AttributeKey.constitution);
+      expect(healing.attributeDelta, 1);
+
+      final lore = def.outcomeMapping['learn_lore']!;
+      expect(lore.type, OutcomeType.unlockSkill);
+      expect(lore.skillId, 'skill_encounter_long_yin');
+    });
+
+    test('jiu_lou_jue_yin · inn 90 + fortune 7 + unlock wu_ming', () {
+      final def = GameRepository.instance.findEncounter('jiu_lou_jue_yin')!;
+      expect(def.type, EncounterType.techniqueInsight);
+      expect(def.trigger.biomeMinutes[EncounterBiome.inn], 90);
+      expect(def.trigger.fortuneRequired, 7);
+      expect(def.baseProbability, closeTo(0.2, 1e-9));
+
+      final respect = def.outcomeMapping['earn_respect']!;
+      expect(respect.type, OutcomeType.attributeBonus);
+      expect(respect.attributeKey, AttributeKey.constitution);
+      expect(respect.attributeDelta, 1);
+
+      final avoid = def.outcomeMapping['clever_avoid']!;
+      expect(avoid.type, OutcomeType.unlockSkill);
+      expect(avoid.skillId, 'skill_encounter_wu_ming');
+    });
+
+    test('C-1 收尾后 tier 7 long_yin / wu_ming 被 encounter 引用', () {
+      final repo = GameRepository.instance;
+      final allUnlockSkillIds = <String>{
+        for (final enc in repo.allEncounters)
+          for (final outcome in enc.outcomeMapping.values)
+            if (outcome.type == OutcomeType.unlockSkill && outcome.skillId != null)
+              outcome.skillId!,
+      };
+      expect(allUnlockSkillIds, contains('skill_encounter_long_yin'),
+          reason: 'C-1 收尾后 long_yin 必须被 encounter outcome 引用');
+      expect(allUnlockSkillIds, contains('skill_encounter_wu_ming'),
+          reason: 'C-1 收尾后 wu_ming 必须被 encounter outcome 引用');
     });
   });
 
