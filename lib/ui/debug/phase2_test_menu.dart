@@ -160,6 +160,16 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
+                _ScenarioButton(
+                  label: UiStrings.scenarioVc15R2,
+                  hint: UiStrings.hintVc15R2,
+                  onTap: () => _seedAndPush(
+                    () => Phase2SeedService(isar: IsarSetup.instance)
+                        .seedVisualCheckW15R2(),
+                    () => const InventoryScreen(),
+                  ),
+                ),
                 ],
               ),
             ),

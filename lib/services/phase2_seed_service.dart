@@ -337,6 +337,54 @@ class Phase2SeedService {
     });
   }
 
+  /// W15-r2 装备详情屏 round2 验收专用 seed。
+  ///
+  /// 在 [seedVisualCheckW7W11] 基础上额外入 6 件 tier 5-7 装备到背包(祖师
+  /// `ownerCharacterId=1` 但不入 equippedXxxId 槽位 — 境界一流锁死)。
+  /// Codex round2 可观察:
+  ///   - 重器/宝物/神物 3 段 lore 完整排版(超 round1 已验的 1-2 段)
+  ///   - 装备详情屏 → 实际强化 +1 动画(P5 已含 2000 墨剑石 / 200 心血结晶)
+  ///   - 共鸣度阶段切换 / 师承遗物 chip(若 def 标 isLineageHeritage)
+  ///
+  /// 6 件覆盖 weapon/armor/accessory 三 slot × tier 5/6/7 各 2 件:
+  ///   - 重器(tier 5):青虚剑 / 银鳞甲
+  ///   - 宝物(tier 6):长虹剑 / 金丝甲
+  ///   - 神物(tier 7):天问剑 / 昆仑佩
+  ///
+  /// 装备 ownerCharacterId=1(祖师持有)但**不入 equippedXxxId** — 境界锁死纪律
+  /// (GDD §5.3 一流 ≤ tier 4)。InventoryScreen `allEquipments` 不按 owner
+  /// 过滤,这 6 件会以背包态显示在 ExpansionTile tier 5-7 分组。
+  Future<void> seedVisualCheckW15R2() async {
+    await seedVisualCheckW7W11();
+
+    final repo = GameRepository.instance;
+    final rng = DefaultRng();
+    final now = DateTime.now();
+
+    const tier57DefIds = <String>[
+      'weapon_zhongqi_qing_xu_jian',
+      'armor_zhongqi_yin_lin_jia',
+      'weapon_baowu_chang_hong_jian',
+      'armor_baowu_jin_si_jia',
+      'weapon_shenwu_tian_wen_jian',
+      'accessory_shenwu_kun_lun_pei',
+    ];
+
+    await isar.writeTxn(() async {
+      for (final id in tier57DefIds) {
+        final def = repo.getEquipment(id);
+        final eq = EquipmentFactory.fromDef(
+          def,
+          rng: rng,
+          obtainedAt: now,
+          obtainedFrom: 'visual_check_w15_r2',
+          ownerCharacterId: 1,
+        );
+        await isar.equipments.put(eq);
+      }
+    });
+  }
+
   // ── private helpers ────────────────────────────────────────────────────────
 
   /// 清空业务 collection（保留 SaveData）。装备 / 心法 / 角色 / 物品 / 事件全清。

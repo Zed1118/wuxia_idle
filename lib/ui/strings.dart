@@ -65,6 +65,9 @@ class UiStrings {
   static const String scenarioVcEvent = 'VC-EVENT · 触发奇遇 debug';
   static const String hintVcEvent =
       '绕过软概率，直接选 encounter id 触发 dialog + outcome 流（visual check 用）';
+  static const String scenarioVc15R2 = 'VC15-r2 · tier 5-7 装备入背包';
+  static const String hintVc15R2 =
+      '在 VC 基础上额外入 6 件重器/宝物/神物入背包（祖师 owner 不装备），看 3 段 lore + 强化流程';
   static const String encounterDebugPickerTitle = 'VC-EVENT · 触发奇遇';
 
   // 调试菜单（T17）

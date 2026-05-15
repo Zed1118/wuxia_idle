@@ -389,4 +389,53 @@ void main() {
     final disciple = await isar.characters.get(2);
     expect(disciple!.equippedEncounterSkillId, isNotNull);
   });
+
+  // ── W15-r2 · seedVisualCheckW15R2 ────────────────────────────────────────────
+
+  test(
+      'seedVisualCheckW15R2 → 6 件 tier 5-7 装备入背包 + 不入 equippedXxxId 槽位',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW15R2();
+    final isar = IsarSetup.instance;
+
+    final allEqs = await isar.equipments.where().findAll();
+    // base seedMasterDisciple 9 件起手 + W15-r2 6 件 = 15 件
+    expect(allEqs.length, 15, reason: 'P5 9 件起手 + r2 6 件 = 15');
+
+    final r2 = allEqs
+        .where((e) => e.obtainedFrom == 'visual_check_w15_r2')
+        .toList();
+    expect(r2.length, 6, reason: 'r2 obtainedFrom 标记 6 件');
+
+    // tier 5-7 各 2 件覆盖 weapon/armor/accessory
+    final tiers = r2.map((e) => e.tier).toSet();
+    expect(
+      tiers,
+      containsAll({EquipmentTier.zhongQi, EquipmentTier.baoWu, EquipmentTier.shenWu}),
+      reason: 'r2 必含 tier 5/6/7 各装备',
+    );
+
+    // 6 件全 ownerCharacterId=1(祖师持有,但不入 equippedXxxId)
+    expect(r2.every((e) => e.ownerCharacterId == 1), isTrue);
+    final founder = await isar.characters.get(1);
+    final r2Ids = r2.map((e) => e.id).toSet();
+    expect(r2Ids.contains(founder!.equippedWeaponId), isFalse,
+        reason: '境界一流锁死,tier 5-7 不可装备(GDD §5.3)');
+    expect(r2Ids.contains(founder.equippedArmorId), isFalse);
+    expect(r2Ids.contains(founder.equippedAccessoryId), isFalse);
+  });
+
+  test('seedVisualCheckW15R2 含 VC 基础(Ch1 01-04 cleared + 3 师徒)', () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW15R2();
+    final isar = IsarSetup.instance;
+
+    // 3 师徒(沿用 seedVisualCheckW7W11 → seedMasterDisciple)
+    final chars = await isar.characters.where().findAll();
+    expect(chars.length, 3);
+
+    // Ch1 01-04 cleared(沿用 seedVisualCheckW7W11)
+    final progress = await isar.mainlineProgress.where().findFirst();
+    expect(progress!.clearedStageIds,
+        containsAll({'stage_01_01', 'stage_01_02', 'stage_01_03', 'stage_01_04'}));
+  });
 }
