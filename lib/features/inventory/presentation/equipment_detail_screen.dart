@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../combat/enum_localizations.dart';
-import '../../data/defs/equipment_def.dart';
-import '../../data/lore_loader.dart';
-import '../../data/models/equipment.dart';
-import '../../providers/battle_providers.dart';
-import '../../providers/inventory_providers.dart';
-import '../enhancement/enhance_dialog.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
-import '../theme/tier_colors.dart';
+import '../../../combat/enum_localizations.dart';
+import '../../../data/defs/equipment_def.dart';
+import '../../../data/lore_loader.dart';
+import '../../../data/models/equipment.dart';
+import '../../../providers/battle_providers.dart';
+import '../../../providers/inventory_providers.dart';
+import '../../../ui/enhancement/enhance_dialog.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
+import '../../../ui/theme/tier_colors.dart';
 
 /// 装备详情屏(Phase 4 W15 LoreLoader 接入下一步)。
 ///

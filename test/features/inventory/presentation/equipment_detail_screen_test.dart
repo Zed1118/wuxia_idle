@@ -8,7 +8,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/lore_loader.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/data/models/equipment.dart';
-import 'package:wuxia_idle/ui/inventory/equipment_detail_screen.dart';
+import 'package:wuxia_idle/features/inventory/presentation/equipment_detail_screen.dart';
 import 'package:wuxia_idle/ui/strings.dart';
 
 /// EquipmentDetailScreen widget 测试(W15 LoreLoader 接入下一步)。
