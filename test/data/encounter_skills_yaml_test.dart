@@ -95,14 +95,63 @@ void main() {
           reason: 'W14-4 audit 唯一已匹配 insight 需显式落地');
     });
 
-    test('encounter skill 池中除 ting_yu_jian 外 narrativeInsightId 均为 null',
+    test('encounter skill 池 narrativeInsightId 引用全部命中 insights 池',
         () {
+      // W15 DeepSeek 34 招映射 closeout 后:22 招填 / 13 招留空保留 2 体系独立。
+      // 红线:每条 narrativeInsightId 必须是 35 篇 insight 的合法 id(自洽校验)。
+      // 不强制覆盖度 — 留空合法(W14-4 audit 推荐保留 2 体系独立性)。
+      const knownInsights = <String>{
+        'bamboo_listen_rain',
+        'can_bei_zhang_feng',
+        'can_juan_can_zhao',
+        'can_yang_ru_xue',
+        'cang_long_zhua',
+        'du_jiang_bei_wang',
+        'feng_zhong_can_zhu',
+        'gu_dao_xi_feng',
+        'gu_miao_zhong_sheng',
+        'han_feng_che_gu',
+        'han_ya_du_jiang',
+        'huang_sha_bi_ri',
+        'jing_di_wang_yue',
+        'ku_chan_bu_dong',
+        'liu_shui_wu_qing',
+        'long_yin_shen_jian',
+        'luo_ye_gui_gen',
+        'ming_deng_zhi_yin',
+        'po_feng_yi_ji',
+        'po_lang_yi_dao',
+        'qi_mai_tong_shen',
+        'qiu_shui_tian_ya',
+        'shan_quan_ji_jian',
+        'shuang_dong_qian_li',
+        'shuang_jiang_man_tian',
+        'tie_suo_heng_jiang',
+        'ting_yu_jian',
+        'wu_hen_zhi_ji',
+        'xiao_xiang_ye_yu',
+        'xing_luo_qi_qi',
+        'xue_ye_wu_hen',
+        'yan_hui_xu_ying',
+        'ye_luo_wu_sheng',
+        'yi_dian_qian_jun',
+        'yi_qi_jue_chen',
+        'yue_xia_du_ying',
+      };
       for (final id in GameRepository.instance.encounterSkillIds) {
         final s = GameRepository.instance.skillDefs[id]!;
-        if (id == 'skill_encounter_ting_yu_jian') continue;
-        expect(s.narrativeInsightId, isNull,
-            reason: '其余 34 招暂无映射,DeepSeek 后续按需填(#36)');
+        final ref = s.narrativeInsightId;
+        if (ref == null) continue;
+        expect(knownInsights, contains(ref),
+            reason: '$id narrativeInsightId=$ref 不在 35 篇 insights 中');
       }
+    });
+
+    test('ting_yu_jian 仍是 narrativeInsightId 映射的锚点(#36 不退)', () {
+      // 保护 W15 #36 销账锚点不被未来变更不慎清除。
+      final s = GameRepository.instance.skillDefs[
+          'skill_encounter_ting_yu_jian']!;
+      expect(s.narrativeInsightId, 'ting_yu_jian');
     });
 
     test('ice_break tier=6 / cap=5500 内(后期奇遇)', () {
