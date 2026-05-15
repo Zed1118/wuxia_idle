@@ -7,11 +7,11 @@ import 'package:wuxia_idle/data/models/attributes.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/models/character.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/data/models/encounter_progress.dart';
 import 'package:wuxia_idle/data/models/inventory_item.dart';
+import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
+import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
-import 'package:wuxia_idle/services/encounter_service.dart';
 
 /// Phase 3 T48 · SeclusionService 真 Isar 落地测试。
 void main() {

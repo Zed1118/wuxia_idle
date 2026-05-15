@@ -1,4 +1,4 @@
-import '../models/enums.dart';
+import '../../../data/models/enums.dart';
 
 /// 奇遇 / 武学领悟 type 枚举(GDD §7.2 + CLAUDE §8.1)。
 ///

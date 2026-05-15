@@ -22,7 +22,7 @@ import '../../../services/battle_resolution.dart';
 import '../../../services/drop_service.dart';
 import '../../../services/stage_battle_setup.dart';
 import '../../../ui/battle/battle_screen.dart';
-import '../../../ui/encounter/encounter_hook.dart';
+import '../../encounter/presentation/encounter_hook.dart';
 import '../../../ui/narrative/narrative_reader_screen.dart';
 import '../../../ui/strings.dart';
 import '../../../utils/rng.dart';

@@ -5,11 +5,11 @@ import '../../combat/enum_localizations.dart';
 import '../../data/defs/skill_def.dart';
 import '../../data/game_repository.dart';
 import '../../data/models/character.dart';
-import '../../data/models/encounter_progress.dart';
+import '../../features/encounter/domain/encounter_progress.dart';
 import '../../data/models/enums.dart';
 import '../../providers/character_providers.dart';
 import '../../providers/isar_provider.dart';
-import '../../services/encounter_service.dart';
+import '../../features/encounter/application/encounter_service.dart';
 import '../theme/colors.dart';
 
 /// 奇遇招式装备段(C-W14-3-A)。

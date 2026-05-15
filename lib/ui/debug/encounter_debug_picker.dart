@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/defs/encounter_def.dart';
-import '../../data/encounter_event_loader.dart';
 import '../../data/game_repository.dart';
 import '../../data/isar_setup.dart';
-import '../../services/encounter_service.dart';
-import '../encounter/encounter_dialog.dart';
+import '../../features/encounter/application/encounter_service.dart';
+import '../../features/encounter/domain/encounter_def.dart';
+import '../../features/encounter/domain/encounter_event_loader.dart';
+import '../../features/encounter/presentation/encounter_dialog.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
 

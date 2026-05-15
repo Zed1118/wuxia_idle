@@ -7,8 +7,8 @@ import '../../../data/models/equipment.dart';
 import '../../../data/models/inventory_item.dart';
 import '../../../data/models/reward_entry.dart';
 import '../../../data/numbers_config.dart';
-import '../../../services/encounter_service.dart';
 import '../../../utils/rng.dart';
+import '../../encounter/application/encounter_service.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 

@@ -3,9 +3,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../data/game_repository.dart';
 import '../data/isar_setup.dart';
-import '../data/models/encounter_progress.dart';
+import '../features/encounter/domain/encounter_progress.dart';
 import '../services/dispel_service.dart';
-import '../services/encounter_service.dart';
+import '../features/encounter/application/encounter_service.dart';
 import '../services/enhancement_service.dart';
 import '../services/forging_service.dart';
 import '../features/mainline/application/mainline_progress_service.dart';

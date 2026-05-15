@@ -5,7 +5,7 @@ import '../data/game_repository.dart';
 import '../data/isar_setup.dart';
 import '../data/models/attributes.dart';
 import '../data/models/character.dart';
-import '../data/models/encounter_progress.dart';
+import '../features/encounter/domain/encounter_progress.dart';
 import '../data/models/enums.dart';
 import '../data/models/equipment.dart';
 import '../data/models/game_event.dart';
@@ -13,7 +13,7 @@ import '../data/models/inventory_item.dart';
 import '../data/models/save_data.dart';
 import '../data/models/technique.dart';
 import '../utils/rng.dart';
-import 'encounter_service.dart';
+import '../features/encounter/application/encounter_service.dart';
 import 'equipment_factory.dart';
 import '../features/mainline/application/mainline_progress_service.dart';
 

@@ -2,15 +2,15 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:wuxia_idle/data/defs/encounter_def.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/models/attributes.dart';
 import 'package:wuxia_idle/data/models/character.dart';
-import 'package:wuxia_idle/data/models/encounter_progress.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/services/encounter_service.dart';
+import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
+import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
+import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/utils/rng.dart';
 
 /// Phase 4 W14-1 · EncounterService 真 Isar 落地测试。

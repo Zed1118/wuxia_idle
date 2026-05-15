@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/defs/encounter_def.dart';
-import '../../data/encounter_event_loader.dart';
-import '../../data/game_repository.dart';
-import '../../data/isar_setup.dart';
-import '../../data/models/character.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/save_data.dart';
-import '../../providers/rng_provider.dart';
-import '../../services/encounter_service.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../../../data/models/character.dart';
+import '../../../data/models/enums.dart';
+import '../../../data/models/save_data.dart';
+import '../../../providers/rng_provider.dart';
+import '../application/encounter_service.dart';
+import '../domain/encounter_def.dart';
+import '../domain/encounter_event_loader.dart';
 import 'encounter_dialog.dart';
 
 /// 战斗 victory 后的奇遇触发统一 hook(Phase 4 W14-2)。

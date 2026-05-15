@@ -13,8 +13,8 @@ import 'package:wuxia_idle/features/seclusion/presentation/active_retreat_screen
 import 'package:wuxia_idle/features/seclusion/presentation/retreat_result_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_map_list_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_setup_screen.dart';
+import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/providers/isar_provider.dart';
-import 'package:wuxia_idle/services/encounter_service.dart';
 import 'package:wuxia_idle/ui/strings.dart';
 
 /// W15 Phase 5 #2 · 闭关 widget e2e test(销 #28 老挂账)。
