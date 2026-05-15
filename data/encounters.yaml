@@ -224,7 +224,7 @@ encounters:
         type: none
 
   # ───────────────────────────────────────────────
-  # 10. xiao_zhen_wen_yi · 小镇问翳
+  # 10. xiao_zhen_wen_yi · 小镇问隐
   #     fortuneEvent · 客栈 1 小时,fortune 软概率
   # ───────────────────────────────────────────────
   - id: xiao_zhen_wen_yi
