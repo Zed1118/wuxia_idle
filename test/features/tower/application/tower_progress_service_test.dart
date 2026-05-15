@@ -5,7 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/data/models/mainline_progress.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 

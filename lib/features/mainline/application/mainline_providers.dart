@@ -1,8 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../data/isar_setup.dart';
-import '../data/models/mainline_progress.dart';
-import '../services/mainline_progress_service.dart';
+import '../../../data/isar_setup.dart';
+import '../domain/mainline_progress.dart';
+import 'mainline_progress_service.dart';
 
 part 'mainline_providers.g.dart';
 

@@ -15,7 +15,7 @@ import '../data/models/technique.dart';
 import '../utils/rng.dart';
 import 'encounter_service.dart';
 import 'equipment_factory.dart';
-import 'mainline_progress_service.dart';
+import '../features/mainline/application/mainline_progress_service.dart';
 
 /// Phase 2 调试场景种子工厂（phase2_tasks.md T32 §492-509 子提交 3）。
 ///

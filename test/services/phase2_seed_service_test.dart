@@ -9,7 +9,7 @@ import 'package:wuxia_idle/data/models/encounter_progress.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/data/models/equipment.dart';
 import 'package:wuxia_idle/data/models/inventory_item.dart';
-import 'package:wuxia_idle/data/models/mainline_progress.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/data/models/save_data.dart';
 import 'package:wuxia_idle/data/models/technique.dart';
 import 'package:wuxia_idle/services/phase2_seed_service.dart';

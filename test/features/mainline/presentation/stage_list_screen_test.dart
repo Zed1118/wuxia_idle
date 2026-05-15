@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/data/models/mainline_progress.dart';
-import 'package:wuxia_idle/providers/mainline_providers.dart';
-import 'package:wuxia_idle/ui/mainline/stage_list_screen.dart';
+import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/mainline/presentation/stage_list_screen.dart';
 import 'package:wuxia_idle/ui/strings.dart';
 
 /// T35 StageListScreen widget 测试。
