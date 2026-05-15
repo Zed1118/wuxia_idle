@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
-import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/services/drop_service.dart';
 import 'package:wuxia_idle/utils/rng.dart';

@@ -12,7 +12,7 @@ import 'models/mainline_progress.dart';
 import '../features/seclusion/domain/retreat_session.dart';
 import 'models/save_data.dart';
 import 'models/technique.dart';
-import 'models/tower_progress.dart';
+import '../features/tower/domain/tower_progress.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。
 ///

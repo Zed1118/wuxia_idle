@@ -8,7 +8,7 @@ import '../features/seclusion/domain/seclusion_map_def.dart';
 import 'defs/skill_def.dart';
 import 'defs/stage_def.dart';
 import 'defs/technique_def.dart';
-import 'defs/tower_floor_def.dart';
+import '../features/tower/domain/tower_floor_def.dart';
 import 'lore_loader.dart';
 import 'models/enums.dart';
 import 'numbers_config.dart';

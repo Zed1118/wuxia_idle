@@ -1,6 +1,6 @@
-import '../models/enums.dart';
-import 'drop_entry.dart';
-import 'stage_def.dart' show EnemyDef;
+import '../../../data/defs/drop_entry.dart';
+import '../../../data/defs/stage_def.dart' show EnemyDef;
+import '../../../data/models/enums.dart';
 
 /// 爬塔层配置（Phase 3 T40，GDD §8.2 + CLAUDE §7）。
 ///

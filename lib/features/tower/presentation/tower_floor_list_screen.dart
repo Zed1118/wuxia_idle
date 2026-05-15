@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/defs/tower_floor_def.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/tower_progress.dart';
-import '../../providers/tower_providers.dart';
-import '../../services/tower_progress_service.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../data/models/enums.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
+import '../application/tower_progress_service.dart';
+import '../application/tower_providers.dart';
+import '../domain/tower_floor_def.dart';
+import '../domain/tower_progress.dart';
 import 'tower_entry_flow.dart';
 import 'tower_floor_card.dart';
 

@@ -6,8 +6,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/models/enums.dart';
 import 'package:wuxia_idle/data/models/mainline_progress.dart';
-import 'package:wuxia_idle/data/models/tower_progress.dart';
-import 'package:wuxia_idle/services/tower_progress_service.dart';
+import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 
 /// Phase 3 T41 · TowerProgressService 真 Isar 落地测试。
 ///

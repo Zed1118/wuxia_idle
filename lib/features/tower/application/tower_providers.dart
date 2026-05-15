@@ -1,9 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../data/game_repository.dart';
-import '../data/isar_setup.dart';
-import '../data/models/tower_progress.dart';
-import '../services/tower_progress_service.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../domain/tower_progress.dart';
+import 'tower_progress_service.dart';
 
 part 'tower_providers.g.dart';
 
