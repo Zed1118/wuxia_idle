@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../providers/mainline_providers.dart';
-import '../../services/mainline_progress_service.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
+import '../application/mainline_progress_service.dart';
+import '../application/mainline_providers.dart';
 import 'stage_list_screen.dart';
 
 /// 主线章节列表（Phase 3 T35）。

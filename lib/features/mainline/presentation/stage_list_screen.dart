@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/defs/stage_def.dart';
-import '../../data/models/enums.dart';
-import '../../providers/mainline_providers.dart';
-import '../../services/mainline_progress_service.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../data/defs/stage_def.dart';
+import '../../../data/models/enums.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
+import '../application/mainline_progress_service.dart';
+import '../application/mainline_providers.dart';
 import 'stage_entry_flow.dart';
 
 /// 章节内关卡列表（Phase 3 T35）。

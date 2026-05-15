@@ -8,7 +8,7 @@ import 'models/encounter_progress.dart';
 import 'models/equipment.dart';
 import 'models/game_event.dart';
 import 'models/inventory_item.dart';
-import 'models/mainline_progress.dart';
+import '../features/mainline/domain/mainline_progress.dart';
 import '../features/seclusion/domain/retreat_session.dart';
 import 'models/save_data.dart';
 import 'models/technique.dart';
