@@ -145,7 +145,12 @@ class _InfoCard extends ConsumerWidget {
                   color: WuxiaColors.textSecondary,
                 ),
               ],
-              if (def.isLineageHeritage) ...[
+              // W15 后波 fix:读 equipment 实例字段而非 def 字段。
+              // 实例 isLineageHeritage 覆盖 3 条路径:① def 自带(初始化时
+              // EquipmentFactory.fromDef 将 def→实例 propagate)② 奇遇赠送
+              // 临时遗物 override(EquipmentFactory 参数通道,T55 注释)
+              // ③ 师承传承时 inheritFrom() 标记。读 def 漏掉 ②③。
+              if (equipment.isLineageHeritage) ...[
                 const SizedBox(width: 8),
                 const _Chip(
                   text: UiStrings.lineageHeritageLabel,
