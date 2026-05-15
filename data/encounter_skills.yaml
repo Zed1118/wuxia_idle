@@ -67,6 +67,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: lightfoot_step
     tier: 1
+    narrativeInsightId: wu_hen_zhi_ji   # 渐步↔无痕之迹:步法融入前人之迹
 
   - id: skill_encounter_qi_yu_jue
     name: 起欲诀
@@ -104,6 +105,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: sword_sprout
     tier: 2
+    narrativeInsightId: can_juan_can_zhao   # 剑意萌芽↔残卷残招:从残缺中悟招
 
   - id: skill_encounter_qiu_quan
     name: 求拳
@@ -137,6 +139,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: palm_cloud
     tier: 2
+    narrativeInsightId: can_bei_zhang_feng   # 排云掌↔残碑掌风:掌力隔空投射
 
   - id: skill_encounter_huo_du
     name: 活渡
@@ -148,6 +151,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: dodge_flow
     tier: 2
+    narrativeInsightId: yan_hui_xu_ying   # 活渡↔燕回虚影:闪避虚影身法
 
   # ───────────────────────────────────────────
   # 第 3 阶(cap 2500)技巧期 · 含 ting_yu_jian + drill_strike(★)
@@ -175,6 +179,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: drill_combo
     tier: 3
+    narrativeInsightId: po_feng_yi_ji   # 校场连击↔破风一击:校场擂台练就的实战拳
 
   - id: skill_encounter_wu_xia_yi
     name: 武侠意
@@ -197,6 +202,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: fist_flame
     tier: 3
+    narrativeInsightId: can_yang_ru_xue   # 火拳↔残阳如血:火/残阳红色意象
 
   - id: skill_encounter_xuan_jian
     name: 玄剑
@@ -208,6 +214,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: sword_mystic
     tier: 3
+    narrativeInsightId: xiao_xiang_ye_yu   # 玄剑↔潇湘夜雨:连绵不绝如夜雨敲窗
 
   # ───────────────────────────────────────────
   # 第 4 阶(cap 3000)秘传期 · 含 relic_blade(★)
@@ -234,6 +241,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: sword_breeze
     tier: 4
+    narrativeInsightId: qiu_shui_tian_ya   # 清风剑↔秋水天涯:剑客孤旅/微妙剑势
 
   - id: skill_encounter_lie_huo
     name: 烈火诀
@@ -256,6 +264,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: finger_dark
     tier: 4
+    narrativeInsightId: han_feng_che_gu   # 玄阴指↔寒风彻骨:阴寒气息彻骨
 
   - id: skill_encounter_fei_xian
     name: 飞仙步
@@ -267,6 +276,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: lightfoot_immortal
     tier: 4
+    narrativeInsightId: yi_qi_jue_chen   # 飞仙步↔一气绝尘:极速身法屏息冲刺
 
   # ───────────────────────────────────────────
   # 第 5 阶(cap 4000)江湖期 · 含 water_qi + night_strike(★)
@@ -282,6 +292,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: water_flow
     tier: 5
+    narrativeInsightId: liu_shui_wu_qing   # 流水气功↔流水无情:连绵不断流水之势
 
   - id: skill_encounter_night_strike
     name: 夜行袭
@@ -293,6 +304,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: night_strike
     tier: 5
+    narrativeInsightId: ye_luo_wu_sheng   # 夜行袭↔叶落无声:潜行无声暗袭
 
   - id: skill_encounter_lei_dian
     name: 雷电诀
@@ -315,6 +327,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: vajra_body
     tier: 5
+    narrativeInsightId: tie_suo_heng_jiang   # 金刚不坏↔铁索横江:不可逾越的防御屏障
 
   - id: skill_encounter_shan_he
     name: 山河剑
@@ -326,6 +339,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: sword_mountains_rivers
     tier: 5
+    narrativeInsightId: shan_quan_ji_jian   # 山河剑↔山泉激涧:山水剑意激流之势
 
   # ───────────────────────────────────────────
   # 第 6 阶(cap 5500)失传期 · 含 ice_break(★)
@@ -341,6 +355,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: ice_freeze_slash
     tier: 6
+    narrativeInsightId: shuang_dong_qian_li   # 冰封斩↔霜冻千里:极寒冻结地面
 
   - id: skill_encounter_xuan_bing
     name: 玄冰诀
@@ -352,6 +367,7 @@ encounter_skills:
     requiresManualTrigger: true
     visualEffect: ice_mystic
     tier: 6
+    narrativeInsightId: shuang_jiang_man_tian   # 玄冰诀↔霜降漫天:寒气弥漫周身三步
 
   - id: skill_encounter_lie_yan
     name: 烈焰焚天
@@ -385,6 +401,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: heart_calm
     tier: 6
+    narrativeInsightId: ku_chan_bu_dong   # 沉心诀↔枯禅不动:禅定心不动剑不动
 
   # ───────────────────────────────────────────
   # 第 7 阶(cap 8000)传说期 · 5 招大招级
@@ -400,6 +417,7 @@ encounter_skills:
     requiresManualTrigger: true
     visualEffect: dragon_roar
     tier: 7
+    narrativeInsightId: long_yin_shen_jian   # 龙吟九霄↔龙吟深涧:名字+剑鸣龙吟双重命中
 
   - id: skill_encounter_feng_qi
     name: 凤起九天
@@ -422,6 +440,7 @@ encounter_skills:
     requiresManualTrigger: true
     visualEffect: sword_seal_fame
     tier: 7
+    narrativeInsightId: yi_dian_qian_jun   # 一剑封名↔一点千钧:凝练一击定乾坤
 
   - id: skill_encounter_wu_ming
     name: 无名诀
@@ -433,6 +452,7 @@ encounter_skills:
     requiresManualTrigger: false
     visualEffect: nameless_strike
     tier: 7
+    narrativeInsightId: gu_dao_xi_feng   # 无名诀↔古道西风:走千里路自然迈出的没有名字的招
 
   - id: skill_encounter_tian_dao
     name: 天道一线
@@ -444,3 +464,4 @@ encounter_skills:
     requiresManualTrigger: true
     visualEffect: heaven_path
     tier: 7
+    narrativeInsightId: jing_di_wang_yue   # 天道一线↔井底望月:以狭缝窥天道的逆转视角
