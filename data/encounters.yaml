@@ -352,3 +352,151 @@ encounters:
         type: attributeBonus
         attributeKey: constitution
         attributeDelta: 1
+
+  # =============================================================================
+  # Phase 4 W15 扩 6 条:#37 orphan events 挂回(雨雪夜主题为主,B1 方案)
+  # =============================================================================
+  # 来源:data/events/_archive/ 中 W14-4 audit 23 orphan,本批挂回 6 条,
+  # 覆盖 snow/night 稀缺 weather + temple/inn/dock/mountainPath/mountainForest/
+  # teaHouse 6 biome,3 unlockSkill + 3 attributeBonus 半对半。
+  # 引用 encounter_skills 池 3 招:xuan_jian (tier 3) / xuan_yin (tier 4) /
+  # tian_dao (tier 7 ★ 高阶后期),3 招均与 DeepSeek 34 招 narrativeInsightId
+  # 映射体系内的 insight 关联(xuan_jian↔xiao_xiang_ye_yu / xuan_yin↔han_feng_che_gu
+  # / tian_dao↔jing_di_wang_yue),内容统一性高。
+
+  # ───────────────────────────────────────────────
+  # 16. xue_ye_gu_qin · 雪夜古琴
+  #     techniqueInsight · 庙宇 30min + 雪 30min + 夜 30min + 机缘 6,中期偏文
+  # ───────────────────────────────────────────────
+  - id: xue_ye_gu_qin
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        temple: 30
+      weatherMinutes:
+        snow: 30
+        night: 30
+      fortuneRequired: 6
+    baseProbability: 0.35
+    outcomeMapping:
+      restore_memory:
+        type: unlockSkill
+        skillId: skill_encounter_xuan_jian
+      learn_melody:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 17. feng_xue_gu_dian · 风雪古店
+  #     fortuneEvent · 客栈 45min + 雪 45min + 机缘 3,中期通用
+  # ───────────────────────────────────────────────
+  - id: feng_xue_gu_dian
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        inn: 45
+      weatherMinutes:
+        snow: 45
+      fortuneRequired: 3
+    baseProbability: 0.4
+    outcomeMapping:
+      learn_hunting:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+      get_divination:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 18. ye_du_gu_chuan · 夜渡孤船
+  #     fortuneEvent · 渡口 30min + 夜 60min + 机缘 4,中期
+  # ───────────────────────────────────────────────
+  - id: ye_du_gu_chuan
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        dock: 30
+      weatherMinutes:
+        night: 60
+      fortuneRequired: 4
+    baseProbability: 0.4
+    outcomeMapping:
+      cross_danger:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+      negotiate:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 19. han_mei_ying_xue · 寒梅映雪
+  #     techniqueInsight · 山道 45min + 雪 45min + 机缘 5,中期
+  # ───────────────────────────────────────────────
+  - id: han_mei_ying_xue
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        mountainPath: 45
+      weatherMinutes:
+        snow: 45
+      fortuneRequired: 5
+    baseProbability: 0.35
+    outcomeMapping:
+      share_tea:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+      hear_vow:
+        type: unlockSkill
+        skillId: skill_encounter_xuan_yin
+
+  # ───────────────────────────────────────────────
+  # 20. xing_chen_wu_dao · 星辰悟道
+  #     techniqueInsight · 山林 60min + 夜 60min + 晴 60min + 机缘 8,后期高门槛
+  # ───────────────────────────────────────────────
+  - id: xing_chen_wu_dao
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        mountainForest: 60
+      weatherMinutes:
+        night: 60
+        clear: 60
+      fortuneRequired: 8
+    baseProbability: 0.25
+    outcomeMapping:
+      celestial_insight:
+        type: unlockSkill
+        skillId: skill_encounter_tian_dao
+      meditate:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 2
+
+  # ───────────────────────────────────────────────
+  # 21. qiu_ye_wei_qi · 秋夜围棋
+  #     fortuneEvent · 茶亭 45min + 夜 30min + 机缘 4,中期
+  # ───────────────────────────────────────────────
+  - id: qiu_ye_wei_qi
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        teaHouse: 45
+      weatherMinutes:
+        night: 30
+      fortuneRequired: 4
+    baseProbability: 0.4
+    outcomeMapping:
+      aggressive_win:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+      ask_direction:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
