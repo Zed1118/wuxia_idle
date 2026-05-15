@@ -10,7 +10,7 @@ import '../features/inventory/presentation/inventory_screen.dart';
 import '../features/mainline/presentation/chapter_list_screen.dart';
 import '../features/seclusion/presentation/seclusion_map_list_screen.dart';
 import 'strings.dart';
-import 'technique_panel/technique_panel_screen.dart';
+import '../features/technique_panel/presentation/technique_panel_screen.dart';
 import 'theme/colors.dart';
 import '../features/tower/presentation/tower_floor_list_screen.dart';
 

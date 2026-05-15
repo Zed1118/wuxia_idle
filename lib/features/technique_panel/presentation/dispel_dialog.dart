@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/models/character.dart';
-import '../../data/models/technique.dart';
-import '../../providers/battle_providers.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../data/models/character.dart';
+import '../../../data/models/technique.dart';
+import '../../../providers/battle_providers.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
 
 /// 散功二次确认 dialog（phase2_tasks.md T31 §477-479）。
 ///

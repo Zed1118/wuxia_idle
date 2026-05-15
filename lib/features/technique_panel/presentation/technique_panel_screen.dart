@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../combat/enum_localizations.dart';
-import '../../data/models/character.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/technique.dart';
-import '../../providers/battle_providers.dart';
-import '../../providers/character_providers.dart';
-import '../../providers/isar_provider.dart';
-import '../../services/dispel_service.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../combat/enum_localizations.dart';
+import '../../../data/models/character.dart';
+import '../../../data/models/enums.dart';
+import '../../../data/models/technique.dart';
+import '../../../providers/battle_providers.dart';
+import '../../../providers/character_providers.dart';
+import '../../../providers/isar_provider.dart';
+import '../../../services/dispel_service.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
 import 'dispel_dialog.dart';
 
 /// 心法面板（phase2_tasks.md T31 §468-490 + T32 #22b writeTxn 补漏）。
