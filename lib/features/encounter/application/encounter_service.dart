@@ -1,14 +1,14 @@
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:isar_community/isar.dart';
 
-import '../data/defs/encounter_def.dart';
-import '../data/defs/skill_def.dart';
-import '../data/isar_setup.dart';
-import '../data/models/attributes.dart';
-import '../data/models/character.dart';
-import '../data/models/encounter_progress.dart';
-import '../data/models/enums.dart';
-import '../utils/rng.dart';
+import '../../../data/defs/skill_def.dart';
+import '../../../data/isar_setup.dart';
+import '../../../data/models/attributes.dart';
+import '../../../data/models/character.dart';
+import '../../../data/models/enums.dart';
+import '../../../utils/rng.dart';
+import '../domain/encounter_def.dart';
+import '../domain/encounter_progress.dart';
 
 /// 单条 trigger 候选(internal,evaluateTriggers 返回)。
 typedef TriggerableEncounter = ({EncounterDef def, double probability});

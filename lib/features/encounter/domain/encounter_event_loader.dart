@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'yaml_loader.dart';
+import '../../../data/yaml_loader.dart';
 
 /// 奇遇文案 `events/[id].yaml`(DeepSeek 维护)按需加载器(Phase 4 W14-1)。
 ///

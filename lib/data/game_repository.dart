@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'defs/encounter_def.dart';
+import '../features/encounter/domain/encounter_def.dart';
 import 'defs/equipment_def.dart';
 import 'defs/master_def.dart';
 import 'defs/realm_def.dart';

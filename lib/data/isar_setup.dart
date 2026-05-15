@@ -4,7 +4,7 @@ import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'models/character.dart';
-import 'models/encounter_progress.dart';
+import '../features/encounter/domain/encounter_progress.dart';
 import 'models/equipment.dart';
 import 'models/game_event.dart';
 import 'models/inventory_item.dart';

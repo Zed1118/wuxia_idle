@@ -20,7 +20,7 @@ import '../../../providers/inventory_providers.dart';
 import '../../../services/battle_resolution.dart';
 import '../../../services/stage_battle_setup.dart';
 import '../../../ui/battle/battle_screen.dart';
-import '../../../ui/encounter/encounter_hook.dart';
+import '../../encounter/presentation/encounter_hook.dart';
 import '../../../ui/narrative/narrative_reader_screen.dart';
 import '../../../ui/theme/colors.dart';
 import '../../../utils/rng.dart';

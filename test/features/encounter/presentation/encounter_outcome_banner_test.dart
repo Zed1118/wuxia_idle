@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/data/defs/encounter_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/services/encounter_service.dart';
-import 'package:wuxia_idle/ui/encounter/encounter_dialog.dart';
+import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
+import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
+import 'package:wuxia_idle/features/encounter/presentation/encounter_dialog.dart';
 
 /// showEncounterOutcomeBanner widget 测试(W15 C-2 收尾)。
 ///

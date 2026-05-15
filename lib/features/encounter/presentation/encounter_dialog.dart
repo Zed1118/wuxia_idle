@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../data/defs/encounter_def.dart';
-import '../../data/encounter_event_loader.dart';
-import '../../data/game_repository.dart';
-import '../../services/encounter_service.dart';
-import '../theme/colors.dart';
+import '../../../data/game_repository.dart';
+import '../../../ui/theme/colors.dart';
+import '../application/encounter_service.dart';
+import '../domain/encounter_def.dart';
+import '../domain/encounter_event_loader.dart';
 
 /// 奇遇 / 武学领悟弹窗(Phase 4 W14-1)。
 ///
