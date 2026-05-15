@@ -500,3 +500,159 @@ encounters:
         type: attributeBonus
         attributeKey: enlightenment
         attributeDelta: 1
+
+  # =============================================================================
+  # Phase 4 W15 第 2 批扩 7 条:#37 orphan events 挂回(补 tier 1-2/6/7 池)
+  # =============================================================================
+  # 来源:data/events/_archive/ 第 2 批,主题适配 + 招式名贴合:
+  #   - tier 1 (早期池 0→2):shi_dao_shou_hu/mu_chan_dui_yin
+  #     → jichu_buxi 基础步息(教桩) / qi_yu_jue 起欲诀(听蝉内息)
+  #   - tier 2 (早期池 0→2):huang_sha_ke_zhan/xiang_ye_shen_ji
+  #     → pai_yun_zhang 排云掌(沉肩坠肘) / jian_yi 剑意萌芽(执旧剑)
+  #   - tier 6 (中后期池 0→1):luo_hua_jian_yuan
+  #     → chen_xin 沉心(梨花慢剑接花)
+  #   - tier 7 (高门槛池 1→3):shan_ya_can_bei/jue_ding_feng_qi
+  #     → yi_jian 一剑封名(掌印一寸) / feng_qi 凤起九天(山巅风袍)
+  # 7 unlockSkill + 7 attributeBonus 半对半。skip 自动 OutcomeType.none。
+
+  # ───────────────────────────────────────────────
+  # 22. shi_dao_shou_hu · 石岛守护
+  #     fortuneEvent · 渡口 30min + 机缘 3,早期 tier 1
+  # ───────────────────────────────────────────────
+  - id: shi_dao_shou_hu
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        dock: 30
+      fortuneRequired: 3
+    baseProbability: 0.4
+    outcomeMapping:
+      disarm_gesture:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+      teach_stance:
+        type: unlockSkill
+        skillId: skill_encounter_jichu_buxi
+
+  # ───────────────────────────────────────────────
+  # 23. mu_chan_dui_yin · 暮蝉对饮
+  #     fortuneEvent · 茶亭 60min + 机缘 3,早期 tier 1
+  # ───────────────────────────────────────────────
+  - id: mu_chan_dui_yin
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        teaHouse: 60
+      fortuneRequired: 3
+    baseProbability: 0.4
+    outcomeMapping:
+      share_moment:
+        type: unlockSkill
+        skillId: skill_encounter_qi_yu_jue
+      hear_regret:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 24. huang_sha_ke_zhan · 黄沙客栈
+  #     fortuneEvent · 客栈 60min + 机缘 4,中早期 tier 2
+  # ───────────────────────────────────────────────
+  - id: huang_sha_ke_zhan
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        inn: 60
+      fortuneRequired: 4
+    baseProbability: 0.35
+    outcomeMapping:
+      endurance_test:
+        type: unlockSkill
+        skillId: skill_encounter_pai_yun_zhang
+      earn_gratitude:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 25. xiang_ye_shen_ji · 乡野神祭
+  #     fortuneEvent · 城外/村落 45min + 机缘 4,中早期 tier 2
+  # ───────────────────────────────────────────────
+  - id: xiang_ye_shen_ji
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        cityWall: 45
+      fortuneRequired: 4
+    baseProbability: 0.4
+    outcomeMapping:
+      bless_weapon:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+      lead_ritual:
+        type: unlockSkill
+        skillId: skill_encounter_jian_yi
+
+  # ───────────────────────────────────────────────
+  # 26. luo_hua_jian_yuan · 落花剑缘
+  #     techniqueInsight · 山林 60min + 雾 30min + 机缘 6,中后期 tier 6
+  # ───────────────────────────────────────────────
+  - id: luo_hua_jian_yuan
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        mountainForest: 60
+      weatherMinutes:
+        mist: 30
+      fortuneRequired: 6
+    baseProbability: 0.3
+    outcomeMapping:
+      sparring:
+        type: unlockSkill
+        skillId: skill_encounter_chen_xin
+      observe:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 27. shan_ya_can_bei · 山崖残碑
+  #     techniqueInsight · 断崖 60min + 机缘 7,后期 tier 7 高门槛
+  # ───────────────────────────────────────────────
+  - id: shan_ya_can_bei
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        cliff: 60
+      fortuneRequired: 7
+    baseProbability: 0.25
+    outcomeMapping:
+      learn_history:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+      resonate_power:
+        type: unlockSkill
+        skillId: skill_encounter_yi_jian
+
+  # ───────────────────────────────────────────────
+  # 28. jue_ding_feng_qi · 绝顶风起
+  #     techniqueInsight · 断崖 90min + 机缘 8,后期 tier 7 最高门槛
+  # ───────────────────────────────────────────────
+  - id: jue_ding_feng_qi
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        cliff: 90
+      fortuneRequired: 8
+    baseProbability: 0.2
+    outcomeMapping:
+      share_silence:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+      gain_wisdom:
+        type: unlockSkill
+        skillId: skill_encounter_feng_qi
