@@ -4,7 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 [`WINDOWS_DEEPSEEK_GUIDE.md`](./WINDOWS_DEEPSEEK_GUIDE.md)（你不写文案，但需要知道它在哪、长什么样）。
 >
-> **版本：v1.2**
+> **版本：v1.3**
+> v1.3 变更摘要（2026-05-15）：§12.1 #7 加现状备注——`SeclusionService.computeOutputs` 已接 4 维度（节气日 +30% / 子时 +20% 只乘内力 / techniqueLearnPoints / internalForcePoints），正午阳刚 +20% 因本条 #7 流派 extra_effect 未决暂未消费，加成乘到哪个维度也待 #7 决议后才能落代码。
 > v1.2 变更摘要（2026-05-15）：§12 待决清单收口——13 条经 W1-W15 实装默认决议 10 条 + 本批方案 A 决议节气清单 1 条，剩 2 条进对应系统再拍板。§12 拆 §12.1（未决）/ §12.2（已消解归档）两段。
 > v1.1 变更摘要：状态管理锁定 Riverpod 3.x；爬塔 Boss 数修正为 3 小 + 3 大；§6 增散功代价公式；§5.3 明确师承遗物纳入三系锁死；新增 §12 待人类决策清单；§1 末加 GDD 快速索引；§8 加 yaml 联结示例。
 
@@ -285,7 +286,7 @@ choices:
 
 | # | 待决项 | 阻塞范围 | 待决细项 |
 |---|---|---|---|
-| 7 | **三流派克制 extra_effect 数值** | 战斗系统进阶 | `numbers.yaml techniques.schools.counter_relations` 仅字符串描述（`extra_quake_dmg` / `crit_rate_+0.20` / `internal_injury`）。① 刚猛额外震伤具体数值（固定值 / 公式 / 招式倍率%）② 阴柔内伤 debuff 持续回合（回合制 vs 时长制）③ 是否可叠加。**注**：灵巧暴击率 +0.20 已在 §6 公式实装（`numbers.yaml combat.critical.lingqiao_critical_bonus`），剩下刚猛/阴柔两支未定。 |
+| 7 | **三流派克制 extra_effect 数值** | 战斗系统进阶 + 闭关正午加成 | `numbers.yaml techniques.schools.counter_relations` 仅字符串描述（`extra_quake_dmg` / `crit_rate_+0.20` / `internal_injury`）。① 刚猛额外震伤具体数值（固定值 / 公式 / 招式倍率%）② 阴柔内伤 debuff 持续回合（回合制 vs 时长制）③ 是否可叠加。**注**：灵巧暴击率 +0.20 已在 §6 公式实装（`numbers.yaml combat.critical.lingqiao_critical_bonus`），剩下刚猛/阴柔两支未定。**v1.3 新增阻塞范围**：`SeclusionService.computeOutputs` 已接 4 维度但**正午阳刚 +20%** 未消费——`time_of_day_bonus.zhengWu` `effect: yang_school_techniques` 需要「角色当前主修是否刚猛流派」的判定 + 加成乘到哪个产出维度（techniqueLearnPoints? internalForcePoints? mojianshi?），均待 #7 决议后才能落代码。 |
 | 10 | **师承遗物规则层** | Phase 4-5 师徒系统 | numbers.yaml `inheritance.heritage_items` 数值已配（每代 1-2 件 + 内力 +5% + 共鸣度保留 70%）。**仍待决**：① 传递时机（飞升自动 vs 任意时点手动）② 多徒弟时谁继承 ③ 传承 buff 是否累代叠加（2 代师承 = +10%?）④ 当前已装备同部位时如何冲突解决。 |
 
 **§12.1 备注**（Demo 不阻塞但需归档）：
