@@ -68,6 +68,9 @@ class UiStrings {
   static const String scenarioVc15R2 = 'VC15-r2 · tier 5-7 装备入背包';
   static const String hintVc15R2 =
       '在 VC 基础上额外入 6 件重器/宝物/神物入背包（祖师 owner 不装备），看 3 段 lore + 强化流程';
+  static const String scenarioVc15Resonance = 'VC15-res · 共鸣/强化/开锋光谱';
+  static const String hintVc15Resonance =
+      '6 件武器覆盖共鸣 4 阶段 + 强化 +0/+5/+10/+15/+19 + 开锋 0/1/2/3 槽 + 师承遗物 1 件';
   static const String encounterDebugPickerTitle = 'VC-EVENT · 触发奇遇';
 
   // 调试菜单（T17）

@@ -385,6 +385,92 @@ class Phase2SeedService {
     });
   }
 
+  /// W15 下波 共鸣度 / 多次强化 / 开锋槽 build 视觉验收 seed
+  /// (round2 closeout §8 留挂账)。
+  ///
+  /// 在 [seedVisualCheckW7W11] 基础上额外入 6 件武器到背包,各件预设不同的
+  /// `battleCount` / `enhanceLevel` / `forgingSlots` 配置,让 Codex 一次性
+  /// 看完三个维度的"段位光谱"。装备 `ownerCharacterId=1`(祖师持有)但**不入
+  /// equippedXxxId**(避免境界锁死与默认槽位冲突,W15-r2 体例延续)。
+  ///
+  /// 6 件覆盖矩阵(全部选与 P5 师徒 starting_equipment **不重复** 的 defId,
+  /// 避免 Codex 视觉验收背包内同 def 重复展示):
+  ///
+  /// | # | defId                              | tier | battleCount | enhance | 开锋槽 | 共鸣段     | 师承遗物 |
+  /// |---|------------------------------------|------|-------------|---------|--------|------------|----------|
+  /// | 1 | weapon_xunchang_tie_jian           | 1    | 0           | 0       | 0      | 生疏       | 否       |
+  /// | 2 | weapon_xiangyang_chang_jian        | 2    | 200         | 5       | 0      | 趁手 +10%  | 否       |
+  /// | 3 | weapon_haojiahuo_xuan_hua_fu       | 3    | 800         | 10      | 1      | 默契 +20%  | 否       |
+  /// | 4 | weapon_liqi_pan_long_dao           | 4    | 2500        | 15      | 2      | 心剑通灵    | **强制** |
+  /// | 5 | weapon_zhongqi_qing_xu_jian        | 5    | 1500        | 19      | 3      | 默契       | 否       |
+  /// | 6 | weapon_shenwu_tian_wen_jian        | 7    | 5000        | 0       | 0      | 心剑通灵    | 否       |
+  ///
+  /// 开锋配置(numbers.yaml `equipment.forging.slots` 锚定):
+  ///   - slot1 unlocked at +10:`attack` +15(numbers.yaml `bonus_value.attack`)
+  ///   - slot2 unlocked at +15:`speed` +20(`bonus_value.speed`,与 slot1 不同 type
+  ///     符合 "不能与开锋一相同" 约束)
+  ///   - slot3 unlocked at +19:`specialSkill` bonusValue=1(`specialSkillId` 不填,
+  ///     UI 仅显槽位 unlocked + type chip)
+  ///
+  /// 师承遗物:`weapon_liqi_pan_long_dao` def **不**自带 `isLineageHeritage`
+  /// (def 自带的两件 `weapon_liqi_long_quan` / `armor_haojiahuo_jin_pao` 已被
+  /// P5 师徒装上),fixture 通过 `EquipmentFactory.fromDef(... isLineageHeritage:
+  /// true)` 强制标(W4 T55 留的 override 通道)。Codex 应看到「师承遗物」chip。
+  Future<void> seedVisualCheckW15Resonance() async {
+    await seedVisualCheckW7W11();
+
+    final repo = GameRepository.instance;
+    final rng = DefaultRng();
+    final now = DateTime.now();
+
+    const specs = <_ResonanceSpec>[
+      _ResonanceSpec('weapon_xunchang_tie_jian', 0, 0, 0),
+      _ResonanceSpec('weapon_xiangyang_chang_jian', 200, 5, 0),
+      _ResonanceSpec('weapon_haojiahuo_xuan_hua_fu', 800, 10, 1),
+      _ResonanceSpec(
+        'weapon_liqi_pan_long_dao',
+        2500,
+        15,
+        2,
+        forceLineageHeritage: true,
+      ),
+      _ResonanceSpec('weapon_zhongqi_qing_xu_jian', 1500, 19, 3),
+      _ResonanceSpec('weapon_shenwu_tian_wen_jian', 5000, 0, 0),
+    ];
+
+    await isar.writeTxn(() async {
+      for (final spec in specs) {
+        final def = repo.getEquipment(spec.defId);
+        final eq = EquipmentFactory.fromDef(
+          def,
+          rng: rng,
+          obtainedAt: now,
+          obtainedFrom: 'visual_check_w15_resonance',
+          ownerCharacterId: 1,
+          isLineageHeritage: spec.forceLineageHeritage,
+        );
+        eq.battleCount = spec.battleCount;
+        eq.enhanceLevel = spec.enhanceLevel;
+        for (var i = 0; i < spec.forgedSlots; i++) {
+          final slot = eq.forgingSlots[i];
+          slot.unlocked = true;
+          switch (slot.slotIndex) {
+            case 1:
+              slot.type = ForgingSlotType.attack;
+              slot.bonusValue = 15;
+            case 2:
+              slot.type = ForgingSlotType.speed;
+              slot.bonusValue = 20;
+            case 3:
+              slot.type = ForgingSlotType.specialSkill;
+              slot.bonusValue = 1;
+          }
+        }
+        await isar.equipments.put(eq);
+      }
+    });
+  }
+
   // ── private helpers ────────────────────────────────────────────────────────
 
   /// 清空业务 collection（保留 SaveData）。装备 / 心法 / 角色 / 物品 / 事件全清。
@@ -610,4 +696,20 @@ class Phase2SeedService {
       }
     }
   }
+}
+
+class _ResonanceSpec {
+  const _ResonanceSpec(
+    this.defId,
+    this.battleCount,
+    this.enhanceLevel,
+    this.forgedSlots, {
+    this.forceLineageHeritage = false,
+  });
+
+  final String defId;
+  final int battleCount;
+  final int enhanceLevel;
+  final int forgedSlots;
+  final bool forceLineageHeritage;
 }
