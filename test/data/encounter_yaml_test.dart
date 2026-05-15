@@ -18,10 +18,11 @@ void main() {
   });
 
   group('encounters.yaml 加载', () {
-    test('21 条 encounter 全部解析成功 (W14-1 3 + W14-2 12 + W15 6)', () {
+    test('28 条 encounter 全部解析成功 (W14-1 3 + W14-2 12 + W15 6 + W15-r2 7)',
+        () {
       final repo = GameRepository.instance;
-      expect(repo.encounterDefs.length, 21,
-          reason: 'W14-1 3 + W14-2 12 + W15 #37 部分挂回 6');
+      expect(repo.encounterDefs.length, 28,
+          reason: 'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + W15 #37 第 2 批 7');
       // W14-1 3 条必须仍在
       expect(
         repo.encounterDefs.keys,
@@ -40,7 +41,7 @@ void main() {
           'ye_xing_xun_dao',
         }),
       );
-      // W15 #37 6 条挂回核对
+      // W15 #37 第 1 批 6 条挂回核对
       expect(
         repo.encounterDefs.keys,
         containsAll({
@@ -51,7 +52,21 @@ void main() {
           'xing_chen_wu_dao',
           'qiu_ye_wei_qi',
         }),
-        reason: 'W15 #37 部分挂回 6 条:雨雪夜主题为主',
+        reason: 'W15 #37 第 1 批 6 条挂回:雨雪夜主题为主',
+      );
+      // W15 #37 第 2 批 7 条挂回核对(tier 1-2/6/7 池补)
+      expect(
+        repo.encounterDefs.keys,
+        containsAll({
+          'shi_dao_shou_hu',
+          'mu_chan_dui_yin',
+          'huang_sha_ke_zhan',
+          'xiang_ye_shen_ji',
+          'luo_hua_jian_yuan',
+          'shan_ya_can_bei',
+          'jue_ding_feng_qi',
+        }),
+        reason: 'W15 #37 第 2 批 7 条:tier 1-2/6/7 池 unlockSkill 补',
       );
     });
 
