@@ -5,10 +5,11 @@
 
 ## 当前阶段
 
-**Phase 4 W15 反审 + C-2 + D + r2 fixture + round2 派单**(2026-05-15)。本会话开做 D(#37 第 2 批挂回 7 条 tier 1-2/6/7 unlockSkill 补)+ Mac 端起 `seedVisualCheckW15R2` fixture(P5 base + 6 件 tier 5-7 装备入背包) + 起 Phase2TestMenu 第 9 按钮 + 起 round2 派单 spec `codex_dispatch_w15_equipment_detail_round2_2026-05-15.md`。**633/633 测试**,analyze 0 issues。Encounter 总数 21→28,接近 GDD §8.4 上限 20-30。#37 挂账 17 → 剩 10(主题不适配)。下波两路并行:Codex 接 round2 派单(3 段 lore + 实际强化)/ DeepSeek polish 派单待回(35 招 description + 翳字)。
+**Phase 4 W15 真闭环:D + r2 fixture + round2 视觉 + polish 全销账**(2026-05-15)。本会话开做 D(#37 第 2 批挂回 7 条 tier 1-2/6/7 unlockSkill 补)+ Mac 端起 `seedVisualCheckW15R2` fixture(P5 base + 6 件 tier 5-7 装备入背包)+ 起 round2 派单 spec。**Codex 一人接两份派单**(用户发错给 Codex 但效果都成立):①round2 装备详情屏 9/9 截图 8 PASS + 1 WARN(仓库 15 件单屏装不下,非 bug)②W15 polish 35 招 description + 翳→隐 全做完。Mac 端审 35 招 + 翳→隐:**通过**(武学气质 / 数值红线 / 网游词汇 / UI 名词全无违规;22 招 insight 主题统一性高;7 ultimate 大招气质足)。修 2 处遗漏注释(encounter_skills 头注释 + encounters 翳字注释)。**633/633 测试**,analyze 0 issues。Encounter 总数 21→28。#37 挂账 17 → 剩 10。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
+- **Phase 4 W15 polish + round2 视觉验收双闭环**(2026-05-15,Codex 接单):用户发 DeepSeek polish 派单给 Codex(原本要给 DeepSeek),Codex 一人接两份活。**round2 视觉** closeout `ed0ca93`:9/9 截图 8 PASS + 1 WARN(仓库列表 1280×900 单屏装不下 15 件,需 scroll,非 bug)/ 2-7 张 tier 5-7 装备详情屏 3 段 lore 全 PASS / 段间「· · ·」分隔成立 / tier 色克制 / 8 强化 dialog 弹起 + 9 强化 +1 成功反馈 / 共鸣度 chip 显「生疏」「战斗 0 次」/ 师承遗物 chip 代码路径确认。注:Codex 用 临时 widget 视觉捕获(GUI 鼠标点击 row click 不稳),非真 GUI 流程截图,材料扣除不写回 Isar 但界面成立。**W15 polish** closeout `b922972`:① 35 招 description 100% 补完(commit `3eed3d7`)— 22 招映射 narrativeInsightId 与对应 insight 主题统一性强(听雨剑/无名诀/沉心/水气/校场连击 等呼应度高)/ 13 招留空按 name 自由发挥 / 7 ultimate(雷电诀/玄冰诀/烈焰焚天/龙吟九霄/凤起九天/一剑封名/天道一线)加大招气质;② 翳→隐(commit `af190de`)— 「小镇问翳」→「小镇问隐」更通用且贴合事件隐世老者主题。Mac 端复审通过:0 数值红线 / 0 网游词汇 / 0 UI 名词 / 武学气质浓厚。修 2 处遗漏注释(`encounter_skills.yaml` 头注释 TODO_NARRATIVE 占位说明 / `encounters.yaml` line 227 「小镇问翳」),commit `05c64b3`。**633/633** + analyze 0 issues。W15 真闭环。
 - **Phase 4 W15 #37 第 2 批挂回 7 条 + W15-r2 fixture + round2 派单**(2026-05-15,opus):D 起手 commit `20a4ddf`,`git mv _archive/<id>.yaml events/<id>.yaml` × 7 + encounters.yaml 加 7 entry(21→28):**shi_dao_shou_hu**(dock+f3,unlock jichu_buxi tier 1 + enlightenment+1)/ **mu_chan_dui_yin**(teaHouse+f3,unlock qi_yu_jue tier 1 + enlightenment+1)/ **huang_sha_ke_zhan**(inn+f4,unlock pai_yun_zhang tier 2 + constitution+1)/ **xiang_ye_shen_ji**(cityWall+f4,fortune+1 + unlock jian_yi tier 2)/ **luo_hua_jian_yuan**(mountainForest+mist+f6,unlock chen_xin tier 6 + enlightenment+1)/ **shan_ya_can_bei**(cliff+f7,enlightenment+1 + unlock yi_jian tier 7)/ **jue_ding_feng_qi**(cliff+f8,enlightenment+1 + unlock feng_qi tier 7)。7 unlockSkill + 7 attributeBonus,**tier 1-2 池 0→4 引用,tier 6 chen_xin 首引,tier 7 池 1→3 引用**(C-1 缺口 一部分销账)。encounter_yaml_test 21→28 + 加 W15-r2 7 id 集合核对块。**W15-r2 fixture** commit `93288ec`:`seedVisualCheckW15R2` 在 `seedVisualCheckW7W11` 基础上额外入 6 件 tier 5-7 装备到背包(祖师 owner 不入 equippedXxxId,GDD §5.3 境界一流锁死)— 重器(青虚剑/银鳞甲)/ 宝物(长虹剑/金丝甲)/ 神物(天问剑/昆仑佩),覆盖 weapon/armor/accessory 三 slot × tier 5/6/7,test +2,Phase2TestMenu 8→9 按钮(VC15-r2)widget test 同步扩。**633/633**(W15-r1 631 → +2)analyze 0 issues。**round2 派单** `docs/handoff/codex_dispatch_w15_equipment_detail_round2_2026-05-15.md` 已写:9 张目标截图(1 仓库 15 件 + 6 张 tier 5-7 详情屏 3 段 lore + 2 张实际强化 +1)+ 共鸣度/师承遗物 chip 顺手观察。**#37 挂账 17 → 剩 10**(主题不适配:duan_qiao/gu_chuan/huang_cun/huang_yuan/jiang_xin/jiu_lou/huang_miao/qing_lou/lao_jing/yu_zhong)。Demo 奇遇总数 28 接近 GDD §8.4 上限 20-30。
 - **Phase 4 W15 C-2 收尾 奇遇 outcome banner 显 SkillDef.name**(2026-05-15,opus):W14-3-A 收尾 C-2 子项。`encounter_dialog.dart` `showEncounterOutcomeBanner` UnlockSkillApplied 摘要从 raw skillId(`skill_encounter_ting_yu_jian`)升级为 SkillDef.name 中文招名(「听雨剑」)。`_resolveSkillName` 通过 `GameRepository.instance.skillDefs[skillId]?.name ?? skillId` lookup,GameRepository 未加载 / id 未注册时降级回 raw id(test fixture 不全 / yaml race 兜底,无 throw)。`test/ui/encounter/encounter_outcome_banner_test.dart` 新建 4 widget test(已知 skill name / 未注册降级 / AttributeBonus / NoneOutcome),**631/631**,analyze 0 issues。C-1(扩 outcome 引用 tier 1-2/7 池)留下波蹔 DeepSeek polish closeout 后派"新 encounter 套餐"。
 - **Phase 4 W15 #38 反审撤回 + closeout 数字纠错 + memory 沉淀 3 条**(2026-05-15,opus):W15 整批闭环后开局即查,Mac 端复审 35 件 yaml 段数撞二重错:① closeout §3.6 自审"实测 70 段"是加和算术错,5+5+10+10+15+15+15 = **75 段**(实际派单全量交付);② 像样货 5 件 1 段是 W15 #35 派单 §3.2 明文规定"各 1 段",**DeepSeek 没漏配**;③ Codex 装备详情屏 04 WARN 是 spec 抄了错误 PROGRESS"预期 2 段",纠正后**详情屏 7/7 PASS**。**挂账 #38 撤回**。DeepSeek polish 派单从三合一减为二合一(35 招 description + 翳字),独立 dispatch 文档 `docs/handoff/deepseek_w15_polish_dispatch_2026-05-15.md`。memory 沉淀 3 条:`reference_pen_wuxia_flutter_run` 补 schtasks Access denied → Start-Process fallback / 新建 `feedback_red_line_test_semantics`(W15 #36 红线被自己写死的教训,写约束语义不写瞬时事实) / 新建 `feedback_closeout_numbers_grep`(closeout 数字必 grep 实测,自审 grep 后加和也要复测,本会话写完 memory 立刻撞二重错的活实例)。
@@ -54,17 +55,15 @@
 
 ## 下一步
 
-W15 整批闭环 tag `v0.5.2-w15`(2026-05-15)+ 反审 + C-2 + D + r2 fixture + round2 派单(2026-05-15)。两路并行:
-- **A. Codex round2 装备详情屏视觉验收**(派单已发 `codex_dispatch_w15_equipment_detail_round2_2026-05-15.md`,9 张目标截图,~1h Pen Codex)
-- **B. DeepSeek polish closeout 待回**(派单 `deepseek_w15_polish_dispatch_2026-05-15.md` 二合一:35 招 description + 翳字 polish,~1.5-2h Pen Windows)
-
-其它下波候选:
-- **C-1 收尾 扩 outcome 引用**(本会话第 2 批挂 7 条已补 tier 1-2/6/7 池缺口一部分;剩 tier 7 still 池中 long_yin/wu_ming 未引用,留下波)
+W15 真闭环(2026-05-15)。tag v0.5.2-w15 留作整批锚点,本批 polish + round2 + r2 fixture 不另打 tag(unless 用户要求)。下波候选:
+- **C-1 收尾 扩 outcome 引用**(剩 tier 7 long_yin / wu_ming 未被 encounter 引用,可挑剩 10 orphan 或新写 encounter 套餐)
 - **#30 闭关 3 维度接 service**(§12 #7 节气清单 + 农历库阻塞,先解人类决策)
 - **Phase 5 #2 DDD 目录整理 + 屏 Consumer 化收尾**(xhigh,可重新捡回 #28 闭关 widget e2e)
 - **#34 stage drop 视觉验收 Pen 环境改善**(配 ≥1080 屏幕 + 库存页快捷入口)
 - **Pen-only T64 test fail 排查**(`.dart_tool/build` cache stale 推测,Mac 端不重现)
-- **#37 第 3 批挂回(可选)**:剩 10 主题不适配的 orphan,如需扩 encounter 池可挑 huang_miao_jiu_seng/qing_lou_can_meng 等做纯 attributeBonus 心境向(无武学 unlock 也成立)
+- **共鸣度阶段切换 + 多次强化 + 开锋槽 build** 视觉验收(round2 closeout §8 留挂账)
+- **真 GUI 鼠标点击 row click 稳定化**(round2 §7 工程教训,影响下次 Pen Codex 视觉验收效率)
+- **#37 第 3 批挂回(可选)**:剩 10 主题不适配的 orphan,如需扩 encounter 池可挑 huang_miao_jiu_seng/qing_lou_can_meng 等做纯 attributeBonus 心境向
 
 > CLAUDE.md §12 #1(境界 vs 修炼度名重叠)实质消解:Phase 1 已用「启蒙/入门/熟练/精通/圆熟/化境/登峰」vs「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」严格不同名,见 `enum_localizations.dart:39,78`。
 
