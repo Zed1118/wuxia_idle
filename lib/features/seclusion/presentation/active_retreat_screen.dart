@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/defs/seclusion_map_def.dart';
-import '../../data/game_repository.dart';
-import '../../data/isar_setup.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/retreat_session.dart';
-import '../../services/encounter_service.dart';
-import '../../services/seclusion_service.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/models/enums.dart';
+import '../../../providers/isar_provider.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
+import '../domain/retreat_session.dart';
+import '../domain/seclusion_map_def.dart';
 import 'retreat_result_screen.dart';
 
 /// 闭关进行中屏幕（Phase 3 T49）。
@@ -18,7 +17,7 @@ import 'retreat_result_screen.dart';
 ///
 /// 「提前收功」/「收功」按钮 → confirm dialog → SeclusionService(isar: IsarSetup.instance).completeRetreat
 /// → push RetreatResultScreen。
-class ActiveRetreatScreen extends StatefulWidget {
+class ActiveRetreatScreen extends ConsumerStatefulWidget {
   final RetreatSession session;
   final SeclusionMapDef mapDef;
   final int characterId;
@@ -33,10 +32,11 @@ class ActiveRetreatScreen extends StatefulWidget {
   });
 
   @override
-  State<ActiveRetreatScreen> createState() => _ActiveRetreatScreenState();
+  ConsumerState<ActiveRetreatScreen> createState() =>
+      _ActiveRetreatScreenState();
 }
 
-class _ActiveRetreatScreenState extends State<ActiveRetreatScreen> {
+class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
   bool _isCollecting = false;
 
   bool get _isDone {
@@ -89,13 +89,12 @@ class _ActiveRetreatScreenState extends State<ActiveRetreatScreen> {
     setState(() => _isCollecting = true);
 
     try {
-      // C-W14-2:注入 encounterService,让 completeRetreat 写产出后能喂
-      // biome/weather 累计给奇遇系统(ActiveRetreatScreen 不是 Consumer,
-      // 不走 provider 直接 new,生产路径行为一致)。
-      final svc = SeclusionService(
-        isar: IsarSetup.instance,
-        encounterService: EncounterService(isar: IsarSetup.instance),
-      );
+      // C-W14-2:provider 注入 encounterService,让 completeRetreat 写产出后能喂
+      // biome/weather 累计给奇遇系统。W15 Phase 5 #2 改 Consumer 化销 #28。
+      final svc = ref.read(seclusionServiceProvider);
+      if (svc == null) {
+        throw StateError('seclusionServiceProvider unavailable (isar null)');
+      }
       final outputs = await svc.completeRetreat(
         session: widget.session,
         characterId: widget.characterId,

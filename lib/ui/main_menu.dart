@@ -8,7 +8,7 @@ import 'debug/battle_test_menu.dart';
 import 'debug/phase2_test_menu.dart';
 import 'inventory/inventory_screen.dart';
 import 'mainline/chapter_list_screen.dart';
-import 'seclusion/seclusion_map_list_screen.dart';
+import '../features/seclusion/presentation/seclusion_map_list_screen.dart';
 import 'strings.dart';
 import 'technique_panel/technique_panel_screen.dart';
 import 'theme/colors.dart';

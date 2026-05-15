@@ -1,7 +1,7 @@
 import 'package:isar_community/isar.dart';
 
-import 'enums.dart';
-import 'reward_entry.dart';
+import '../../../data/models/enums.dart';
+import '../../../data/models/reward_entry.dart';
 
 part 'retreat_session.g.dart';
 

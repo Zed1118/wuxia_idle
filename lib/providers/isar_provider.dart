@@ -10,7 +10,7 @@ import '../services/enhancement_service.dart';
 import '../services/forging_service.dart';
 import '../services/mainline_progress_service.dart';
 import '../services/phase2_seed_service.dart';
-import '../services/seclusion_service.dart';
+import '../features/seclusion/application/seclusion_service.dart';
 import '../services/stage_battle_setup.dart';
 import '../services/tower_progress_service.dart';
 

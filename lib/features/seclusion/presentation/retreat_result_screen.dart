@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../data/defs/seclusion_map_def.dart';
-import '../../services/seclusion_service.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
+import '../application/seclusion_service.dart';
+import '../domain/seclusion_map_def.dart';
 
 /// 闭关收功结果屏幕（Phase 3 T49/T50）。
 ///
