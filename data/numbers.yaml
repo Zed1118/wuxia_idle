@@ -914,6 +914,19 @@ retreat:
   cap_hours: 72                  # 离线结算封顶小时数（超出不累积）
   base_equip_drop_probability: 0.1  # 基础装备触发概率，与 equipmentDropRate 相乘
 
+  # --- 心法领悟 / 内力增长基础锚点（#30 闭关 3 维度接 service,2026-05-15）---
+  # technique_learn_rate / internal_force_growth 是地图特色乘数（0.5~1.5），
+  # 这两个字段提供「每小时基础点数」锚点，computeOutputs 公式：
+  #   techniqueLearnPoints = floor(base × def.techniqueLearnRate × hours × realmScale × solarBonus)
+  #   internalForcePoints  = floor(base × def.internalForceGrowth × hours × realmScale × solarBonus × ziShiBonus)
+  # 推算依据：
+  #   - 内力锚点 5：学徒山林 72h cap +360 内力（500→860 涨 17%）；断崖宗师 72h +2007 内力。
+  #     红线内力 15000（GDD §5.4），不破上限。
+  #   - 心法锚点 0.5：山林 72h +36 progress；藏经阁 sanLiu 72h +91 progress（≈ 初窥→小成 100）；
+  #     极境 6500 progress 即便顶级闭关也需 100+ 天，合「极境=老玩家追求」（GDD）。
+  base_internal_force_per_hour: 5      # 内力每小时基础点数
+  base_technique_learn_per_hour: 0.5   # 心法领悟每小时基础点数
+
 # =============================================================================
 # 8. 30 层爬塔"问鼎江湖"
 # =============================================================================

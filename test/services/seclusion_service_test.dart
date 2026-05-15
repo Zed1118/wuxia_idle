@@ -236,8 +236,8 @@ void main() {
       expect(out.actualHours, closeTo(0.0, 0.01));
     });
 
-    test('1 小时学徒山林 → mojianshi = floor(1.0 × 1 × 1.0 × dayBonus)', () {
-      final start = DateTime(2026, 5, 11, 10, 0); // 上午 10 点，无时辰加成
+    test('1 小时学徒山林 → mojianshi = floor(perHour × hours × scale × solarBonus)', () {
+      final start = DateTime(2026, 5, 11, 10, 0); // 上午 10 点非子时非节气
       final now = start.add(const Duration(hours: 1));
       final session = makeSession(durationHours: 4, startedAt: start);
       final out = SeclusionService.computeOutputs(
@@ -280,9 +280,11 @@ void main() {
       expect(out.actualHours, closeTo(72.0, 0.01));
     });
 
-    test('子时加成（23:00 开始）→ mojianshi 乘 1.2', () {
+    test('子时加成（23:00 开始）只乘 internalForcePoints，不影响 mojianshi', () {
+      // W15 #30 语义修正：原 `_timeDayBonus` 子时×1.2 全产出加成是 bug，
+      // yaml 实际 effect: internal_force_growth 只乘内力维度。
       final start = DateTime(2026, 5, 11, 23, 0); // 子时
-      final now = start.add(const Duration(hours: 1));
+      final now = start.add(const Duration(hours: 4));
       final session = makeSession(durationHours: 4, startedAt: start);
       final out = SeclusionService.computeOutputs(
         session: session,
@@ -291,7 +293,141 @@ void main() {
         maps: GameRepository.instance.seclusionMaps,
         now: now,
       );
-      expect(out.mojianshi, 1); // floor(1.0 × 1h × 1.0 × 1.2) = floor(1.2) = 1
+      // mojianshi 山林 perHour=1.0,xueTu scale=1.0,无节气 → floor(1.0×4×1.0)=4
+      // 子时不参与 mojianshi 公式 → 4 而非 floor(4×1.2)=4(此处 floor 巧合相同，
+      // 用 experiencePoints 反例更明确)
+      expect(out.mojianshi, 4);
+      // experience 山林 perHour=100,无节气 → floor(100×4×1.0)=400
+      // 子时同样不参与 experience 公式 → 400 而非 floor(400×1.2)=480
+      expect(out.experiencePoints, 400);
+      // internalForce 山林 base=5,internalForceGrowth=1.0,xueTu scale=1.0,
+      // 子时×1.2 → floor(5×1.0×4×1.0×1.0×1.2)=floor(24.0)=24
+      expect(out.internalForcePoints, 24);
+    });
+
+    test('平时（非子时）internalForcePoints 不受子时加成', () {
+      final start = DateTime(2026, 5, 11, 10, 0); // 上午 10 点非子时
+      final now = start.add(const Duration(hours: 4));
+      final session = makeSession(durationHours: 4, startedAt: start);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+      // floor(5×1.0×4×1.0×1.0×1.0)=20
+      expect(out.internalForcePoints, 20);
+    });
+
+    test('节气日（立春 2026-02-04 上午 10:00）→ 全产出 ×1.30', () {
+      // 节气日 +30% 应用到所有 4 维度，子时此时未触发
+      final start = DateTime(2026, 2, 4, 10, 0);
+      final now = start.add(const Duration(hours: 4));
+      final session = makeSession(durationHours: 4, startedAt: start);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+      // mojianshi floor(1.0×4×1.0×1.30)=5
+      expect(out.mojianshi, 5);
+      // experience floor(100×4×1.0×1.30)=520
+      expect(out.experiencePoints, 520);
+      // internalForce floor(5×1.0×4×1.0×1.30×1.0)=26
+      expect(out.internalForcePoints, 26);
+    });
+
+    test('节气日 + 子时叠加（冬至 2026-12-22 23:00）→ 内力维度全乘', () {
+      final start = DateTime(2026, 12, 22, 23, 0); // 冬至子时
+      final now = start.add(const Duration(hours: 4));
+      final session = makeSession(durationHours: 4, startedAt: start);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+      // internalForce floor(5×1.0×4×1.0×1.30×1.20)=floor(31.2)=31
+      expect(out.internalForcePoints, 31);
+      // mojianshi 不受子时加成，仅节气 floor(1.0×4×1.0×1.30)=5
+      expect(out.mojianshi, 5);
+    });
+
+    test('藏经阁 techniqueLearnRate=1.5 → techniqueLearnPoints 翻 1.5 倍', () {
+      // 藏经阁 base techniqueLearnRate=1.5，对比山林 1.0
+      final start = DateTime(2026, 5, 11, 10, 0); // 非节气非子时
+      final now = start.add(const Duration(hours: 4));
+      final cangJingSession = RetreatSession()
+        ..id = 2
+        ..saveDataId = kSaveDataId
+        ..mapType = RetreatMapType.cangJingGe
+        ..durationHours = 4
+        ..startedAt = start
+        ..status = RetreatStatus.active
+        ..actualRewards = [];
+      // 藏经阁要 sanLiu 境界，scale=1.3
+      final out = SeclusionService.computeOutputs(
+        session: cangJingSession,
+        charRealmTier: RealmTier.sanLiu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+      // techniqueLearn floor(0.5×1.5×4×1.3×1.0)=floor(3.9)=3
+      expect(out.techniqueLearnPoints, 3);
+      // 山林 sanLiu 对照：floor(0.5×1.0×4×1.3×1.0)=floor(2.6)=2
+    });
+
+    test('悬崖瀑布 internalForceGrowth=1.5 → internalForcePoints 翻 1.5 倍', () {
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final now = start.add(const Duration(hours: 4));
+      final xuanYaSession = RetreatSession()
+        ..id = 3
+        ..saveDataId = kSaveDataId
+        ..mapType = RetreatMapType.xuanYaPuBu
+        ..durationHours = 4
+        ..startedAt = start
+        ..status = RetreatStatus.active
+        ..actualRewards = [];
+      // 悬崖瀑布要 erLiu 境界,scale=1.3^2=1.69
+      final out = SeclusionService.computeOutputs(
+        session: xuanYaSession,
+        charRealmTier: RealmTier.erLiu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+      // internalForce floor(5×1.5×4×1.69×1.0×1.0)=floor(50.7)=50
+      expect(out.internalForcePoints, 50);
+    });
+
+    test('cap 72h 边界 + 断崖宗师全 buff 不超 999999 红线', () {
+      // 断崖绝壁 zongShi 72h cap + 子时 + 节气：极限场景验红线 clamp
+      final start = DateTime(2026, 2, 4, 23, 0); // 立春 + 子时
+      final now = start.add(const Duration(hours: 200)); // 远超 cap
+      final session = RetreatSession()
+        ..id = 4
+        ..saveDataId = kSaveDataId
+        ..mapType = RetreatMapType.duanYaJueBi
+        ..durationHours = 1000
+        ..startedAt = start
+        ..status = RetreatStatus.active
+        ..actualRewards = [];
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.zongShi,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+      expect(out.actualHours, closeTo(72.0, 0.01));
+      // internalForce floor(5×1.5×72×3.713×1.30×1.20)=floor(3126.6)=3126
+      expect(out.internalForcePoints, lessThan(999999));
+      expect(out.internalForcePoints, greaterThan(3000));
     });
   });
 

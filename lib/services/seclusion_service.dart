@@ -12,17 +12,20 @@ import '../data/numbers_config.dart';
 import '../utils/rng.dart';
 import 'encounter_service.dart';
 
-/// 闭关产出汇总（Phase 3 T48）。
+/// 闭关产出汇总（Phase 3 T48 / W15 #30 扩 2 维度）。
 ///
-/// 由 [SeclusionService.computeOutputs] 返回，[completeRetreat] 写入 Isar。
+/// 由 [SeclusionService.computeOutputs] 返回，[completeRetreat] 写入 Isar
+/// （当前仅 mojianshi 落 InventoryItem，其余 3 项是占位数值由后续系统消费）。
 typedef RetreatOutputs = ({
   double actualHours,
   int mojianshi,
   List<Equipment> equipmentDrops,
   int experiencePoints,
+  int techniqueLearnPoints,
+  int internalForcePoints,
 });
 
-/// 闭关系统服务（Phase 3 T48）。
+/// 闭关系统服务（Phase 3 T48 / W15 #30 扩 3 维度）。
 ///
 /// 全静态方法，依赖注入 [RetreatConfig] + [Rng]（测试可 mock）。
 /// 与 [TowerProgressService] / [MainlineProgressService] 完全独立：
@@ -33,8 +36,17 @@ typedef RetreatOutputs = ({
 ///     先调 [_abandonActive]（内部方法）
 ///   - [computeOutputs] 纯函数（不写 Isar），由 [completeRetreat] 调用
 ///   - actualHours = min(elapsed, durationHours, capHours)
-///   - mojianshi = floor(perHour × actualHours × realmScale × dayBonus)
+///   - 加成均按 `session.startedAt` 时刻判定（不跨日切换 — GDD §7.3）：
+///     * solarBonus = 1.30 if startedAt 是节气日 else 1.00（按月日比对，忽略年）
+///     * ziShi = 23:00-01:00 → internalForce 维度 ×1.20，其他维度不受影响
+///   - mojianshi      = floor(def.mojianshiPerHour      × actualHours × realmScale × solarBonus)
+///   - experiencePts  = floor(def.experiencePerHour     × actualHours × realmScale × solarBonus)
+///   - techniqueLearn = floor(config.baseTechniqueLearnPerHour × def.techniqueLearnRate
+///                            × actualHours × realmScale × solarBonus)
+///   - internalForce  = floor(config.baseInternalForcePerHour  × def.internalForceGrowth
+///                            × actualHours × realmScale × solarBonus × ziShiBonus)
 ///   - 装备抽检：per session 单次，概率 = equipmentDropRate × baseEquipDropProbability
+///   - 正午阳刚 +20% 未消费 — 依赖 §12 #7 流派 extra_effect 决议，留挂账
 class SeclusionService {
   const SeclusionService({
     required this.isar,
@@ -155,14 +167,38 @@ class SeclusionService {
     final actualHours = _clamp(elapsed, 0, _min(planned, cap));
 
     final scale = config.realmScaleFor(charRealmTier);
-    final dayBonus = _timeDayBonus(session.startedAt);
+    final solarBonus = config.isSolarTermDay(session.startedAt)
+        ? config.solarTermMultiplier
+        : 1.0;
+    final ziShiBonus = _isZiShi(session.startedAt)
+        ? config.ziShiInternalForceMultiplier
+        : 1.0;
 
-    final mojianshi = (def.mojianshiPerHour * actualHours * scale * dayBonus)
+    final mojianshi = (def.mojianshiPerHour * actualHours * scale * solarBonus)
         .floor()
         .clamp(0, 999999);
 
     final experiencePoints =
-        (def.experiencePerHour * actualHours * scale).floor().clamp(0, 999999);
+        (def.experiencePerHour * actualHours * scale * solarBonus)
+            .floor()
+            .clamp(0, 999999);
+
+    final techniqueLearnPoints = (config.baseTechniqueLearnPerHour *
+            def.techniqueLearnRate *
+            actualHours *
+            scale *
+            solarBonus)
+        .floor()
+        .clamp(0, 999999);
+
+    final internalForcePoints = (config.baseInternalForcePerHour *
+            def.internalForceGrowth *
+            actualHours *
+            scale *
+            solarBonus *
+            ziShiBonus)
+        .floor()
+        .clamp(0, 999999);
 
     // 装备抽检：每 session 单次，概率 = equipmentDropRate × base
     final effectiveRng = rng ?? DefaultRng();
@@ -179,6 +215,8 @@ class SeclusionService {
       mojianshi: mojianshi,
       equipmentDrops: equipDrops,
       experiencePoints: experiencePoints,
+      techniqueLearnPoints: techniqueLearnPoints,
+      internalForcePoints: internalForcePoints,
     );
   }
 
@@ -316,12 +354,12 @@ class SeclusionService {
             throw StateError('SeclusionMapDef 未找到: ${mapType.name}'),
       );
 
-  /// 时辰加成（只影响磨剑石/经验，子时×1.2，其余×1.0；Demo 阶段简化）。
-  static double _timeDayBonus(DateTime startedAt) {
+  /// 是否为子时（23:00-01:00 含）。
+  /// W15 #30 修正：原 `_timeDayBonus` 把子时×1.2 当全产出加成是 bug，
+  /// yaml 实际定义 `effect: internal_force_growth` 只乘内力维度。
+  static bool _isZiShi(DateTime startedAt) {
     final h = startedAt.hour;
-    // 子时 23:00-01:00（含）
-    if (h == 23 || h == 0) return 1.2;
-    return 1.0;
+    return h == 23 || h == 0;
   }
 
   static double _min(double a, double b) => a < b ? a : b;

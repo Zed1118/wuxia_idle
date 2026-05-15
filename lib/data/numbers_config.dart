@@ -881,7 +881,7 @@ class LearningCostConfig {
 /// 闭关系统配置（numbers.yaml `retreat`，Phase 3 T47）。
 ///
 /// 包含 5 张地图定义、可选时长、境界缩放系数、封顶小时数、
-/// 基础装备掉落概率。
+/// 基础装备掉落概率、节气日加成、子时内力加成（#30 闭关 3 维度接 service）。
 class RetreatConfig {
   final List<SeclusionMapDef> maps;
 
@@ -897,17 +897,55 @@ class RetreatConfig {
   /// 基础装备触发概率，与地图 equipmentDropRate 相乘后为最终掉落概率。
   final double baseEquipDropProbability;
 
+  /// 内力每小时基础点数（#30）。
+  final double baseInternalForcePerHour;
+
+  /// 心法领悟每小时基础点数（#30）。
+  final double baseTechniqueLearnPerHour;
+
+  /// 节气日加成倍率（默认 1.30，全产出 +30%）。
+  final double solarTermMultiplier;
+
+  /// 节气日清单（公历 month/day，§12 #13 方案 A 决议:不引入农历库，
+  /// 年际偏差仅 1 天可接受）。每条 `(month, day)` 元组。
+  final List<({int month, int day})> solarTermDays;
+
+  /// 子时内力加成倍率（默认 1.20，只乘 internalForcePoints 维度，不乘其他产出）。
+  final double ziShiInternalForceMultiplier;
+
   const RetreatConfig({
     required this.maps,
     required this.durationHours,
     required this.realmScalePerTier,
     required this.capHours,
     required this.baseEquipDropProbability,
+    required this.baseInternalForcePerHour,
+    required this.baseTechniqueLearnPerHour,
+    required this.solarTermMultiplier,
+    required this.solarTermDays,
+    required this.ziShiInternalForceMultiplier,
   });
 
   factory RetreatConfig.fromYaml(Map<String, dynamic> y) {
     final rawMaps = y['maps'] as List;
     final rawDurations = y['durations'] as List;
+    final rawSolar = y['solar_term_bonus'] as Map<String, dynamic>;
+    final rawTimeOfDay = y['time_of_day_bonus'] as List;
+    // 提取子时（period=ziShi）的 multiplier，effect=internal_force_growth
+    final ziShi = rawTimeOfDay.firstWhere(
+      (e) => (e as Map)['period'] == 'ziShi',
+      orElse: () => <String, dynamic>{'multiplier': 1.0},
+    ) as Map;
+    final solarDays = (rawSolar['days_2026'] as List)
+        .map((e) {
+          final dateStr = (e as Map)['date'] as String;
+          final parts = dateStr.split('-');
+          return (
+            month: int.parse(parts[1]),
+            day: int.parse(parts[2]),
+          );
+        })
+        .toList(growable: false);
     return RetreatConfig(
       maps: [
         for (final m in rawMaps)
@@ -920,7 +958,22 @@ class RetreatConfig {
       capHours: (y['cap_hours'] as num).toInt(),
       baseEquipDropProbability:
           (y['base_equip_drop_probability'] as num).toDouble(),
+      baseInternalForcePerHour:
+          (y['base_internal_force_per_hour'] as num).toDouble(),
+      baseTechniqueLearnPerHour:
+          (y['base_technique_learn_per_hour'] as num).toDouble(),
+      solarTermMultiplier: (rawSolar['multiplier'] as num).toDouble(),
+      solarTermDays: solarDays,
+      ziShiInternalForceMultiplier: (ziShi['multiplier'] as num).toDouble(),
     );
+  }
+
+  /// 当前日期是否落在节气日（按 month/day 比对，忽略年份 — 方案 A 跨年容忍 1 天偏差）。
+  bool isSolarTermDay(DateTime when) {
+    for (final d in solarTermDays) {
+      if (when.month == d.month && when.day == d.day) return true;
+    }
+    return false;
   }
 
   /// 给定境界大阶的产出缩放倍率：`realmScalePerTier ^ tier.index`。
