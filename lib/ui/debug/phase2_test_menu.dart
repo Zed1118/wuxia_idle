@@ -170,6 +170,16 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                     () => const InventoryScreen(),
                   ),
                 ),
+                const SizedBox(height: 16),
+                _ScenarioButton(
+                  label: UiStrings.scenarioVc15Resonance,
+                  hint: UiStrings.hintVc15Resonance,
+                  onTap: () => _seedAndPush(
+                    () => Phase2SeedService(isar: IsarSetup.instance)
+                        .seedVisualCheckW15Resonance(),
+                    () => const InventoryScreen(),
+                  ),
+                ),
                 ],
               ),
             ),
