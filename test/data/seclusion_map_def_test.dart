@@ -156,6 +156,11 @@ void main() {
         realmScalePerTier: 1.3,
         capHours: 72,
         baseEquipDropProbability: 0.1,
+        baseInternalForcePerHour: 5,
+        baseTechniqueLearnPerHour: 0.5,
+        solarTermMultiplier: 1.3,
+        solarTermDays: [],
+        ziShiInternalForceMultiplier: 1.2,
       );
     });
 
@@ -262,6 +267,11 @@ void main() {
           realmScalePerTier: 1.3,
           capHours: -1, // 构造层不校验，校验在 GameRepository._enforceSeclusionRedLines
           baseEquipDropProbability: 0.1,
+          baseInternalForcePerHour: 5,
+          baseTechniqueLearnPerHour: 0.5,
+          solarTermMultiplier: 1.3,
+          solarTermDays: [],
+          ziShiInternalForceMultiplier: 1.2,
         ).capHours,
         returnsNormally, // 构造不抛，校验在 repository 层
       );
