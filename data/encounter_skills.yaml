@@ -37,7 +37,7 @@ encounter_skills:
 
   - id: skill_encounter_jichu_buxi
     name: 基础步息
-    description: TODO_NARRATIVE
+    description: 吐纳之间脚下生根，每一步都踩在气息的节拍上，稳而不滞。
     type: powerSkill
     powerMultiplier: 600
     internalForceCost: 50
@@ -48,7 +48,7 @@ encounter_skills:
 
   - id: skill_encounter_pu_xi_tu
     name: 朴息图
-    description: TODO_NARRATIVE
+    description: 以最简单的一呼一吸调和周身气血，朴拙之中藏着吐纳法的本源。
     type: powerSkill
     powerMultiplier: 900
     internalForceCost: 80
@@ -59,7 +59,7 @@ encounter_skills:
 
   - id: skill_encounter_jian_bu
     name: 渐步
-    description: TODO_NARRATIVE
+    description: 脚步渐次而进，每一步叠在前一步的余韵之上，行如流水不落痕迹。
     type: powerSkill
     powerMultiplier: 750
     internalForceCost: 60
@@ -71,7 +71,7 @@ encounter_skills:
 
   - id: skill_encounter_qi_yu_jue
     name: 起欲诀
-    description: TODO_NARRATIVE
+    description: 将全身之意聚于一点，欲发未发之际气势已先至——真正的一击在出手之前。
     type: powerSkill
     powerMultiplier: 1200
     internalForceCost: 120
@@ -82,7 +82,7 @@ encounter_skills:
 
   - id: skill_encounter_tun_tu
     name: 吞吐
-    description: TODO_NARRATIVE
+    description: 一吞一吐间丹田鼓荡，浊气排尽清气灌顶——呼吸本身就是功法。
     type: powerSkill
     powerMultiplier: 1100
     internalForceCost: 100
@@ -97,7 +97,7 @@ encounter_skills:
 
   - id: skill_encounter_jian_yi
     name: 剑意萌芽
-    description: TODO_NARRATIVE
+    description: 从一本残破的旧剑谱中悟出半式，招虽不全，剑意却已破土而出。
     type: powerSkill
     powerMultiplier: 1600
     internalForceCost: 140
@@ -109,7 +109,7 @@ encounter_skills:
 
   - id: skill_encounter_qiu_quan
     name: 求拳
-    description: TODO_NARRATIVE
+    description: 不追求招式华美，只求一拳一拳地追问——怎样的出拳才算对。
     type: powerSkill
     powerMultiplier: 1400
     internalForceCost: 120
@@ -120,7 +120,7 @@ encounter_skills:
 
   - id: skill_encounter_an_qi
     name: 暗器初探
-    description: TODO_NARRATIVE
+    description: 袖中藏刃，腕底翻花。江湖行走的第一课：明枪易挡，暗箭难防。
     type: powerSkill
     powerMultiplier: 1700
     internalForceCost: 150
@@ -131,7 +131,7 @@ encounter_skills:
 
   - id: skill_encounter_pai_yun_zhang
     name: 排云掌
-    description: TODO_NARRATIVE
+    description: 掌风破空擦出锐响，如指甲划过石碑。隔空一掌，云开雾散。
     type: powerSkill
     powerMultiplier: 1900
     internalForceCost: 170
@@ -143,7 +143,7 @@ encounter_skills:
 
   - id: skill_encounter_huo_du
     name: 活渡
-    description: TODO_NARRATIVE
+    description: 身形向前一闪，原地只留一道虚影——渡的不是河，是对手的判断。
     type: powerSkill
     powerMultiplier: 1500
     internalForceCost: 130
@@ -159,7 +159,7 @@ encounter_skills:
 
   - id: skill_encounter_ting_yu_jian
     name: 听雨剑
-    description: TODO_NARRATIVE
+    description: 静坐听雨，剑随雨势。雨密则剑密，雨稀则剑稀——周身雨意尽化为剑意。
     type: powerSkill
     powerMultiplier: 2300
     internalForceCost: 200
@@ -171,7 +171,7 @@ encounter_skills:
 
   - id: skill_encounter_drill_strike
     name: 校场连击
-    description: TODO_NARRATIVE
+    description: 校场上千百次重复凝成的一拳——破风之声未落，拳已至面，快过对方的一个念头。
     type: powerSkill
     powerMultiplier: 2100
     internalForceCost: 180
@@ -183,7 +183,7 @@ encounter_skills:
 
   - id: skill_encounter_wu_xia_yi
     name: 武侠意
-    description: TODO_NARRATIVE
+    description: 心中自有一片江湖。剑未出鞘，侠意已至——这不是招式，是武人的风骨。
     type: powerSkill
     powerMultiplier: 2400
     internalForceCost: 220
@@ -194,7 +194,7 @@ encounter_skills:
 
   - id: skill_encounter_huo_quan
     name: 火拳
-    description: TODO_NARRATIVE
+    description: 拳出如落日般炽烈，低光直射对方面门——灼热的拳风从暗处来，光明也有暗角。
     type: powerSkill
     powerMultiplier: 1900
     internalForceCost: 170
@@ -206,7 +206,7 @@ encounter_skills:
 
   - id: skill_encounter_xuan_jian
     name: 玄剑
-    description: TODO_NARRATIVE
+    description: 剑招如潇湘夜雨连绵不绝。每一剑不重，但剑剑相连——对方不是被剑打败的，是被"怎么还不完"打败的。
     type: powerSkill
     powerMultiplier: 2200
     internalForceCost: 190
@@ -222,7 +222,7 @@ encounter_skills:
 
   - id: skill_encounter_relic_blade
     name: 古剑遗韵
-    description: TODO_NARRATIVE
+    description: 一柄不知来历的古剑，握在手中剑身自鸣——前主人的余韵尚未散尽，借你之手再走一程。
     type: powerSkill
     powerMultiplier: 2800
     internalForceCost: 240
@@ -233,7 +233,7 @@ encounter_skills:
 
   - id: skill_encounter_qing_feng_jian
     name: 清风剑
-    description: TODO_NARRATIVE
+    description: 剑尖自斜下掠向斜上，取的不是要害，是对手的下一招。秋水时至，一剑天涯。
     type: powerSkill
     powerMultiplier: 2700
     internalForceCost: 230
@@ -245,7 +245,7 @@ encounter_skills:
 
   - id: skill_encounter_lie_huo
     name: 烈火诀
-    description: TODO_NARRATIVE
+    description: 内力催动，掌心滚烫如握炭火。一掌拍出热浪扑面——灼的是气，不是皮肉。
     type: powerSkill
     powerMultiplier: 2900
     internalForceCost: 260
@@ -256,7 +256,7 @@ encounter_skills:
 
   - id: skill_encounter_xuan_yin
     name: 玄阴指
-    description: TODO_NARRATIVE
+    description: 一指递出，指尖未至寒意已透骨。不是内力深厚——是你把体温让渡给了风。
     type: powerSkill
     powerMultiplier: 2600
     internalForceCost: 220
@@ -268,7 +268,7 @@ encounter_skills:
 
   - id: skill_encounter_fei_xian
     name: 飞仙步
-    description: TODO_NARRATIVE
+    description: 屏住一口气冲出十余丈，身法快到临界——这招不攻不守，只在距离上做足文章。
     type: powerSkill
     powerMultiplier: 3000
     internalForceCost: 270
@@ -284,7 +284,7 @@ encounter_skills:
 
   - id: skill_encounter_water_qi
     name: 流水气功
-    description: TODO_NARRATIVE
+    description: 气走周身如涧水涌流，连绵不断。不管对方怎么挡，你只管自己流到哪——流水无情，从不回头。
     type: powerSkill
     powerMultiplier: 3700
     internalForceCost: 320
@@ -296,7 +296,7 @@ encounter_skills:
 
   - id: skill_encounter_night_strike
     name: 夜行袭
-    description: TODO_NARRATIVE
+    description: 收束全身气息，步伐比落叶更轻。站到对方身后三秒不破——三秒，就是一条命。
     type: powerSkill
     powerMultiplier: 3500
     internalForceCost: 300
@@ -308,7 +308,7 @@ encounter_skills:
 
   - id: skill_encounter_lei_dian
     name: 雷电诀
-    description: TODO_NARRATIVE
+    description: 引天地之气入体，一掌劈下雷光乍现。此招含天威，一招之后须散功调息良久。
     type: ultimate
     powerMultiplier: 4000
     internalForceCost: 380
@@ -319,7 +319,7 @@ encounter_skills:
 
   - id: skill_encounter_jin_gang
     name: 金刚不坏
-    description: TODO_NARRATIVE
+    description: 内劲在身前画一道弧，如一堵看不见的墙横在江面——铁索拦江，万夫莫开。
     type: powerSkill
     powerMultiplier: 3800
     internalForceCost: 340
@@ -331,7 +331,7 @@ encounter_skills:
 
   - id: skill_encounter_shan_he
     name: 山河剑
-    description: TODO_NARRATIVE
+    description: 剑走激流之势，剑尖至剑柄连续震动，如山泉激荡石涧——贯穿力层层叠加，一剑比三剑。
     type: powerSkill
     powerMultiplier: 3900
     internalForceCost: 350
@@ -347,7 +347,7 @@ encounter_skills:
 
   - id: skill_encounter_ice_break
     name: 冰封斩
-    description: TODO_NARRATIVE
+    description: 极寒之气从双臂推出，剑刃过处地面结一层薄霜——先失足，后中剑。这招不杀人，只争一瞬。
     type: powerSkill
     powerMultiplier: 4500
     internalForceCost: 400
@@ -359,7 +359,7 @@ encounter_skills:
 
   - id: skill_encounter_xuan_bing
     name: 玄冰诀
-    description: TODO_NARRATIVE
+    description: 寒气自丹田外放，周身三步之内温度骤降。握兵器的那只手关节凝了霜——慢了，就再也快不起来。
     type: ultimate
     powerMultiplier: 5200
     internalForceCost: 450
@@ -371,7 +371,7 @@ encounter_skills:
 
   - id: skill_encounter_lie_yan
     name: 烈焰焚天
-    description: TODO_NARRATIVE
+    description: 内力化火，一掌推出烈焰如幕卷过长空。此招一出周身真气几乎掏空，不负焚天之名。
     type: ultimate
     powerMultiplier: 5500
     internalForceCost: 480
@@ -382,7 +382,7 @@ encounter_skills:
 
   - id: skill_encounter_qian_kun
     name: 乾坤掌
-    description: TODO_NARRATIVE
+    description: 左掌托天右掌按地，一掌推出如翻覆乾坤——借的是天地之势，不是自身蛮力。
     type: powerSkill
     powerMultiplier: 5000
     internalForceCost: 430
@@ -393,7 +393,7 @@ encounter_skills:
 
   - id: skill_encounter_chen_xin
     name: 沉心诀
-    description: TODO_NARRATIVE
+    description: 身不动，心不动，剑亦不动。静到蝉落在肩上开始鸣叫——它们当你是树。出手不在动，在意。
     type: powerSkill
     powerMultiplier: 4800
     internalForceCost: 410
@@ -409,7 +409,7 @@ encounter_skills:
 
   - id: skill_encounter_long_yin
     name: 龙吟九霄
-    description: TODO_NARRATIVE
+    description: 剑在鞘中微抽半寸，鞘口发出沉浑如龙吟的低鸣。对方听见这声时退了半步——半步之间，剑已出鞘。
     type: ultimate
     powerMultiplier: 7500
     internalForceCost: 600
@@ -421,7 +421,7 @@ encounter_skills:
 
   - id: skill_encounter_feng_qi
     name: 凤起九天
-    description: TODO_NARRATIVE
+    description: 全身真气冲顶，一剑自下而上撩起，剑光如凤翼展开——起手时身在地，剑落时已在天。
     type: ultimate
     powerMultiplier: 8000
     internalForceCost: 650
@@ -432,7 +432,7 @@ encounter_skills:
 
   - id: skill_encounter_yi_jian
     name: 一剑封名
-    description: TODO_NARRATIVE
+    description: 凝全身之力于剑尖一点——不劈不砍，只在心口前轻轻一落。这一剑下去，你的名字便被江湖记住。
     type: ultimate
     powerMultiplier: 7800
     internalForceCost: 620
@@ -444,7 +444,7 @@ encounter_skills:
 
   - id: skill_encounter_wu_ming
     name: 无名诀
-    description: TODO_NARRATIVE
+    description: 将一路踩地、挥剑、转身融为一式。这一招没有名字——走完千里路之后，腿自然会迈出这一步。
     type: powerSkill
     powerMultiplier: 7000
     internalForceCost: 560
@@ -456,7 +456,7 @@ encounter_skills:
 
   - id: skill_encounter_tian_dao
     name: 天道一线
-    description: TODO_NARRATIVE
+    description: 从极低处看向高处，劣势化为预知。天只有一线宽，但对方无论从哪来，都必经过这一线的正中。
     type: ultimate
     powerMultiplier: 6800
     internalForceCost: 540
