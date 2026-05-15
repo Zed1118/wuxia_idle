@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/defs/encounter_def.dart';
 import '../../data/encounter_event_loader.dart';
+import '../../data/game_repository.dart';
 import '../../services/encounter_service.dart';
 import '../theme/colors.dart';
 
@@ -312,12 +313,16 @@ class _ConfirmButton extends StatelessWidget {
 ///
 /// caller stage_entry_flow 在 [EncounterService.applyOutcome] 返回后调,
 /// SnackBar 在底部弹一句话告知玩家"领悟新招"/"机缘 +1"/"已达生涯上限"。
+///
+/// W15 C-2 收尾:UnlockSkillApplied 摘要从 raw skillId 升级为 SkillDef.name
+/// 中文招名(玩家不再看见 `skill_encounter_xxx`)。GameRepository 未加载或
+/// id 未注册时降级回 raw id(test fixture 不全 / yaml race 兜底)。
 void showEncounterOutcomeBanner({
   required BuildContext context,
   required OutcomeApplied applied,
 }) {
   final message = switch (applied) {
-    UnlockSkillApplied(:final skillId) => '领悟新招:$skillId',
+    UnlockSkillApplied(:final skillId) => '领悟新招:${_resolveSkillName(skillId)}',
     AttributeBonusApplied(:final key, :final delta) =>
       '${_attrLabel(key)} +$delta',
     AttributeCapReached(:final cap) => '已达生涯造化极限(总加 $cap)',
@@ -330,6 +335,11 @@ void showEncounterOutcomeBanner({
       duration: const Duration(seconds: 3),
     ),
   );
+}
+
+String _resolveSkillName(String skillId) {
+  if (!GameRepository.isLoaded) return skillId;
+  return GameRepository.instance.skillDefs[skillId]?.name ?? skillId;
 }
 
 String _attrLabel(AttributeKey k) => switch (k) {

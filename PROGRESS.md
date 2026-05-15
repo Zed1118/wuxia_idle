@@ -9,6 +9,8 @@
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
+- **Phase 4 W15 C-2 收尾 奇遇 outcome banner 显 SkillDef.name**(2026-05-15,opus):W14-3-A 收尾 C-2 子项。`encounter_dialog.dart` `showEncounterOutcomeBanner` UnlockSkillApplied 摘要从 raw skillId(`skill_encounter_ting_yu_jian`)升级为 SkillDef.name 中文招名(「听雨剑」)。`_resolveSkillName` 通过 `GameRepository.instance.skillDefs[skillId]?.name ?? skillId` lookup,GameRepository 未加载 / id 未注册时降级回 raw id(test fixture 不全 / yaml race 兜底,无 throw)。`test/ui/encounter/encounter_outcome_banner_test.dart` 新建 4 widget test(已知 skill name / 未注册降级 / AttributeBonus / NoneOutcome),**631/631**,analyze 0 issues。C-1(扩 outcome 引用 tier 1-2/7 池)留下波蹔 DeepSeek polish closeout 后派"新 encounter 套餐"。
+- **Phase 4 W15 #38 反审撤回 + closeout 数字纠错 + memory 沉淀 3 条**(2026-05-15,opus):W15 整批闭环后开局即查,Mac 端复审 35 件 yaml 段数撞二重错:① closeout §3.6 自审"实测 70 段"是加和算术错,5+5+10+10+15+15+15 = **75 段**(实际派单全量交付);② 像样货 5 件 1 段是 W15 #35 派单 §3.2 明文规定"各 1 段",**DeepSeek 没漏配**;③ Codex 装备详情屏 04 WARN 是 spec 抄了错误 PROGRESS"预期 2 段",纠正后**详情屏 7/7 PASS**。**挂账 #38 撤回**。DeepSeek polish 派单从三合一减为二合一(35 招 description + 翳字),独立 dispatch 文档 `docs/handoff/deepseek_w15_polish_dispatch_2026-05-15.md`。memory 沉淀 3 条:`reference_pen_wuxia_flutter_run` 补 schtasks Access denied → Start-Process fallback / 新建 `feedback_red_line_test_semantics`(W15 #36 红线被自己写死的教训,写约束语义不写瞬时事实) / 新建 `feedback_closeout_numbers_grep`(closeout 数字必 grep 实测,自审 grep 后加和也要复测,本会话写完 memory 立刻撞二重错的活实例)。
 - **Phase 4 W15 Codex 装备详情屏视觉验收 7/7 PASS**(2026-05-15,Codex Pen,~~原报 6/7 PASS 1 WARN~~ 反审纠正):派单 `2a4c19a` → closeout `e67659c`,7 张目标截图齐(`docs/screenshots/w15_equipment_detail/`):01 仓库列表 4 tier 分组 PASS / 02 利器龙泉剑 2 段 PASS / 03 好家伙青锋剑 2 段 PASS / **04 像样货钢刀 1 段 PASS**(原 WARN 已纠正 — 派单 §3.2 规定像样货各 1 段)/ 05 寻常货布衣 1 段 PASS / 06 强化 Tab 0 PASS / 07 开锋 Tab 1 PASS。视觉/节奏/工程三层反馈:信息卡 chip+三围层级清楚 / tier 颜色映射明显 / 段间「· · ·」分隔稳定 / Navigator.push 详情屏过渡自然 / EnhanceDialog initialTab 分流正确 / scroll 无卡顿。原 04 WARN 是 Mac 端装备详情屏派单 spec 误抄了错误 PROGRESS 的"预期 2 段",反审纠正后实际 PASS。
 - **Phase 4 W15 像样货 lore 段数审计反审纠错**(2026-05-15,W15 整批闭环后开局即查):整批闭环 closeout §3.6 自审"实测 70 段"双重错。① 加和算术错:寻常货 5×1=5 / 像样货 5×1=5 / 好家伙 5×2=10 / 利器 5×2=10 / 重器 5×3=15 / 宝物 5×3=15 / 神物 5×3=15 加起来是 **75 段不是 70 段**(罗列对、加和错)。② 像样货 5 件 1 段不是 DeepSeek 漏配,是 W15 #35 派单 §3.2 明文规定:`week15_deepseek_dispatch_35_lore_2026-05-15.md:57` "第 2 阶 · 像样货(三流境界开放,主线 ch2)· 各 1 段"。所以**实测 75 段 = 派单全量交付,无缺口**。Codex 装备详情屏 04 像样货钢刀 WARN 是 spec 抄了错误 PROGRESS"预期 2 段"导致,实际 PASS — 装备详情屏整体 **7/7 PASS**。**挂账 #38 撤回**,A 派单从 3 项改 2 项(只剩 35 招 description + "翳"字 polish)。教训:写完 `feedback_closeout_numbers_grep.md` memory 立刻复审撞二重错,memory 教训的活实例。
 - **Phase 4 W15 #37 23 orphan events 部分挂回 6 条**(2026-05-15,opus):W14-4 audit 暴露 23 orphan events 文案完整但加载 0 命中,本会话 B1 方案挂回 6 条雨雪夜主题(数据/文案双端 Mac 独作:文案 _archive/ 已有,Mac 端写 trigger + outcome)。`git mv _archive/<id>.yaml events/<id>.yaml` × 6 + encounters.yaml 加 6 entry(15 → 21):**xue_ye_gu_qin** (techniqueInsight, temple+snow+night+fortune≥6, unlock xuan_jian tier 3 + enlightenment +1) / **feng_xue_gu_dian** (fortuneEvent, inn+snow+fortune≥3, constitution +1 + fortune +1) / **ye_du_gu_chuan** (fortuneEvent, dock+night+fortune≥4, constitution +1 + enlightenment +1) / **han_mei_ying_xue** (techniqueInsight, mountainPath+snow+fortune≥5, enlightenment +1 + unlock xuan_yin tier 4) / **xing_chen_wu_dao** (techniqueInsight, mountainForest+night+clear+fortune≥8 ★ 高门槛, unlock tian_dao tier 7 ★ + enlightenment +2) / **qiu_ye_wei_qi** (fortuneEvent, teaHouse+night+fortune≥4, fortune +1 + enlightenment +1)。3 unlock + 3 attributeBonus 半对半,unlock 3 招 (xuan_jian/xuan_yin/tian_dao) 跨 tier 3/4/7 均散,均已被 DeepSeek 22 招 narrativeInsightId 映射(内容统一性高)。**encounter_yaml_test** "15 条全解析" 红线测试更新到 21 + 加 6 条核对断言,**627/627** 仍全过,analyze 0 issues。Demo 奇遇总数 15 → 21,接近 GDD §8.4 下限 20。**#37 挂账由"23 全悬"改为"剩 17 待评估"**,后续会话或下波 DeepSeek 派单评估悬崖/青楼/荒原等 17 条主题。
@@ -51,12 +53,11 @@
 
 ## 下一步
 
-W15 整批闭环 tag `v0.5.2-w15`(2026-05-15)。**整批 closeout 见 `docs/handoff/week15_full_closeout_2026-05-15.md`**(§5 下波候选 + DeepSeek polish 派单草案)。下波候选:
-- **Pen 端视觉验收装备详情屏**(下波重点,真机渲染需 Pen flutter run + InventoryScreen 进装备 → 详情屏看 lore 段排版 + 强化/开锋按钮分流;Codex 可上)
-- **DeepSeek encounter_skills 35 招 description 文案补**(全 35 招仍 TODO_NARRATIVE,closeout §4 留挂账)
-- **#37 23 orphan events 挂回**(中,数值/内容协作):扩 encounters.yaml trigger 条件 + 重新激活 `_archive/` 中 23 条
-- **"翳"字 polish**:r3-5 xiao_zhen_wen_yi 标题字过于生僻,DeepSeek 可选改更常见字(非强制)
-- **W14-3-A 收尾**:扩 encounter outcome 引用 tier 1-2 / tier 7 池里的招式补 7 阶覆盖度;victory 装奇遇 skill 后 NarrativeReader 提示(参考散功 banner)
+W15 整批闭环 tag `v0.5.2-w15`(2026-05-15)。**整批 closeout 见 `docs/handoff/week15_full_closeout_2026-05-15.md`**(§5.5 修正版 + #38 反审撤回详 §3.6)。下波候选:
+- **等 DeepSeek polish closeout**(派单已发 `deepseek_w15_polish_dispatch_2026-05-15.md`,二合一:35 招 description + 翳字 polish,~1.5-2h)
+- **C-1 收尾 扩 outcome 引用 tier 1-2/7 池**(DeepSeek closeout 后,新 encounter 套餐:Mac 数值 + DeepSeek 文案;tier 1-2 池 0 引用 / tier 7 池 4/5 未引用,缺口大)
+- **Pen 端视觉验收装备详情屏**(真机渲染需 Pen flutter run + InventoryScreen 进装备 → 详情屏看 lore 段排版 + 强化/开锋按钮分流;Codex 可上)
+- **#37 23 orphan events 第 2 批挂回**(剩 17 条:悬崖/青楼/荒原/古船/古井等主题)
 - **Phase 5 #2 DDD 目录整理 + 屏 Consumer 化收尾**(xhigh,可重新捡回 #28 闭关 widget e2e)
 - **#30 闭关 3 维度接 service**(§12 #7 节气清单 + 农历库阻塞,先解人类决策)
 - **#34 stage drop 视觉验收 Pen 环境改善**(配 ≥1080 屏幕 + 库存页快捷入口)
