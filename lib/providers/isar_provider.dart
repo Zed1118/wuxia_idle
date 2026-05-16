@@ -6,8 +6,6 @@ import '../data/isar_setup.dart';
 import '../features/encounter/domain/encounter_progress.dart';
 import '../features/dispel/application/dispel_service.dart';
 import '../features/encounter/application/encounter_service.dart';
-import '../features/equipment/application/enhancement_service.dart';
-import '../features/equipment/application/forging_service.dart';
 import '../features/mainline/application/mainline_progress_service.dart';
 import '../services/phase2_seed_service.dart';
 import '../features/seclusion/application/seclusion_service.dart';
@@ -39,22 +37,12 @@ GameRepository gameRepository(Ref ref) => GameRepository.instance;
 //
 // 每个 service 持有 Isar 实例,通过 isarProvider 派生。isar 为 null 时
 // service 也为 null —— widget 端短路返回,替代旧的散点 Isar.getInstance guard。
+//
+// 注:enhancementServiceProvider / forgingServiceProvider 已抽到
+// lib/features/equipment/application/equipment_service_providers.dart
+// (Phase 5 #3 第 5 批 C 任务)。其余 9 个 service provider 留此处,留待
+// 后续 D/E 批次整体拆分(基础设施层不应反向 import features/)。
 // =========================================================================
-
-/// [EnhancementService] provider。Isar 未 init 时为 null,widget 端 `_persist`
-/// 用 `service == null` 短路（替代旧的 `Isar.getInstance(_isarInstanceName)` guard）。
-@riverpod
-EnhancementService? enhancementService(Ref ref) {
-  final isarInstance = ref.watch(isarProvider);
-  return isarInstance == null ? null : EnhancementService(isar: isarInstance);
-}
-
-/// [ForgingService] provider。同 [enhancementServiceProvider] 模式。
-@riverpod
-ForgingService? forgingService(Ref ref) {
-  final isarInstance = ref.watch(isarProvider);
-  return isarInstance == null ? null : ForgingService(isar: isarInstance);
-}
 
 /// [DispelService] provider。同上模式。
 @riverpod

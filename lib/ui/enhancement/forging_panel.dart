@@ -8,8 +8,8 @@ import '../../core/domain/equipment.dart';
 import '../../core/domain/forging_slot.dart';
 import '../../core/application/battle_providers.dart';
 import '../../core/application/inventory_providers.dart';
-import '../../providers/isar_provider.dart';
 import '../../features/equipment/application/forging_service.dart';
+import '../../features/equipment/application/equipment_service_providers.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
 
