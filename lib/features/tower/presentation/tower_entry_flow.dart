@@ -26,7 +26,7 @@ import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
-import '../../../ui/narrative/narrative_reader_screen.dart';
+import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../application/tower_progress_service.dart';
