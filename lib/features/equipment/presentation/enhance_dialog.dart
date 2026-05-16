@@ -9,7 +9,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
-import '../../../providers/rng_provider.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../application/enhancement_service.dart';
 import '../application/equipment_service_providers.dart';
 import '../../../shared/effects/screen_shake.dart';

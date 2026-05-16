@@ -6,7 +6,7 @@ import '../../../data/isar_setup.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
-import '../../../providers/rng_provider.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../application/encounter_service.dart';
 import '../domain/encounter_def.dart';
 import '../domain/encounter_event_loader.dart';
