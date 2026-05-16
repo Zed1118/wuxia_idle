@@ -13,7 +13,7 @@ import '../../../data/numbers_config.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../ui/effects/screen_shake.dart';
 import '../../../ui/strings.dart';
-import '../../../ui/theme/colors.dart';
+import '../../../shared/theme/colors.dart';
 import 'attack_animation.dart';
 import 'character_avatar.dart';
 import 'damage_popup.dart';

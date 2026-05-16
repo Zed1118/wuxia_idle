@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../ui/strings.dart';
-import '../../../ui/theme/colors.dart';
+import '../../../shared/theme/colors.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/character_advancement_service.dart';
 

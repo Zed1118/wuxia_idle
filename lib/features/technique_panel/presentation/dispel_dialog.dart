@@ -5,7 +5,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/technique.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../ui/strings.dart';
-import '../../../ui/theme/colors.dart';
+import '../../../shared/theme/colors.dart';
 
 /// 散功二次确认 dialog（phase2_tasks.md T31 §477-479）。
 ///

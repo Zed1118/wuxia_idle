@@ -11,8 +11,8 @@ import '../../../core/domain/technique.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../ui/strings.dart';
-import '../../../ui/theme/colors.dart';
-import '../../../ui/theme/tier_colors.dart';
+import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/tier_colors.dart';
 import 'encounter_skill_section.dart';
 
 /// 角色面板（phase2_tasks.md T28 + Phase 3 Week 4 T56）。

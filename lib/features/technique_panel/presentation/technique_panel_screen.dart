@@ -10,7 +10,7 @@ import '../../../core/application/character_providers.dart';
 import '../../dispel/application/dispel_service.dart';
 import '../../dispel/application/dispel_service_providers.dart';
 import '../../../ui/strings.dart';
-import '../../../ui/theme/colors.dart';
+import '../../../shared/theme/colors.dart';
 import 'dispel_dialog.dart';
 
 /// 心法面板（phase2_tasks.md T31 §468-490 + T32 #22b writeTxn 补漏）。

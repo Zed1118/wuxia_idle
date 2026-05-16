@@ -11,7 +11,7 @@ import '../../../core/application/inventory_providers.dart';
 import '../application/forging_service.dart';
 import '../application/equipment_service_providers.dart';
 import '../../../ui/strings.dart';
-import '../../../ui/theme/colors.dart';
+import '../../../shared/theme/colors.dart';
 
 /// 开锋面板（phase2_tasks T30 §449-456）。
 ///

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../../core/domain/enums.dart';
 import '../../../ui/strings.dart';
-import '../../../ui/theme/colors.dart';
+import '../../../shared/theme/colors.dart';
 import '../application/tower_progress_service.dart';
 
 /// 爬塔层卡片（Phase 3 T42）。

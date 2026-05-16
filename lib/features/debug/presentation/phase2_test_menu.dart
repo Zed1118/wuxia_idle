@@ -6,7 +6,7 @@ import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../../ui/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
-import '../../../ui/theme/colors.dart';
+import '../../../shared/theme/colors.dart';
 import 'encounter_debug_picker.dart';
 
 /// Phase 2 调试场景菜单（phase2_tasks.md T32 §492-509 子提交 3b/3d）。

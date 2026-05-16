@@ -14,8 +14,8 @@ import '../application/enhancement_service.dart';
 import '../application/equipment_service_providers.dart';
 import '../../../ui/effects/screen_shake.dart';
 import '../../../ui/strings.dart';
-import '../../../ui/theme/colors.dart';
-import '../../../ui/theme/tier_colors.dart';
+import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/tier_colors.dart';
 import 'forging_panel.dart';
 
 /// 强化对话框（phase2_tasks T29 §426-430 + T32 #22a writeTxn 补漏）。

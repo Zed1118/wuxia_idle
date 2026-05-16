@@ -9,8 +9,8 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../../ui/strings.dart';
-import '../../../ui/theme/colors.dart';
-import '../../../ui/theme/tier_colors.dart';
+import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/tier_colors.dart';
 
 /// 装备详情屏(Phase 4 W15 LoreLoader 接入下一步)。
 ///
