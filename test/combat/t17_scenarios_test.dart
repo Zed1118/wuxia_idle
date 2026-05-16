@@ -151,13 +151,14 @@ void main() {
       ),
       repo.numbers,
     );
-    // 刚猛方（左队=teamSide 0）的伤害
+    // 刚猛方（左队=teamSide 0）的主伤害(§12.1 #7 v1.4:刚猛克阴柔追加 +500 震伤,
+    // 主乘式比 1.25/0.75=1.667 仍稳定;比 finalDamage 会撞 quakeDamage 干扰)。
     final counterDmg = counterState.actionLog
         .where((a) =>
             a.attackResult != null &&
             !a.attackResult!.isDodged &&
             a.actorId == 1)
-        .map((a) => a.attackResult!.finalDamage)
+        .map((a) => a.attackResult!.mainDamage)
         .first;
 
     // 阴柔 vs 刚猛（阴柔被克制）- 实际是"被克制方打克制方"
@@ -168,18 +169,19 @@ void main() {
       ),
       repo.numbers,
     );
-    // 阴柔方（左队=teamSide 0）的伤害
+    // 阴柔方（左队=teamSide 0）的主伤害(阴柔克灵巧才追加 internal_injury,
+    // 此处阴柔打刚猛是被克制,无附加效果,mainDamage = finalDamage)。
     final counteredDmg = counteredState.actionLog
         .where((a) =>
             a.attackResult != null &&
             !a.attackResult!.isDodged &&
             a.actorId == 3)
-        .map((a) => a.attackResult!.finalDamage)
+        .map((a) => a.attackResult!.mainDamage)
         .first;
 
     final ratio = counterDmg / counteredDmg;
     expect(ratio, closeTo(1.667, 0.05),
-        reason: '克制/被克制比值应约 1.667，实际 ${ratio.toStringAsFixed(3)}');
+        reason: '克制/被克制主伤害比值应约 1.667，实际 ${ratio.toStringAsFixed(3)}');
   });
 
   // ────────────────────────────────────────────────────────────────────────────

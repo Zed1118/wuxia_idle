@@ -423,9 +423,12 @@ void main() {
 
     test('流派克制：刚猛 vs 阴柔 = 1.25', () {
       final r = _calcBoundary(defenderSchool: TechniqueSchool.yinRou);
-      // 期望值 = 1000 * 1.0 * 1.25 * 1.0 * 0.95 * 1.0 = 1187.5 → 1187
+      // 主伤害 = 1000 * 1.0 * 1.25 * 1.0 * 0.95 * 1.0 = 1187.5 → 1187
+      // §12.1 #7 v1.4:刚猛克阴柔追加 +500 固定震伤(独立加值,不进 raw 乘式)
       expect(r.schoolCounterMultiplier, 1.25);
-      expect(r.finalDamage, 1187);
+      expect(r.mainDamage, 1187);
+      expect(r.quakeDamage, 500);
+      expect(r.finalDamage, 1687);
       expect(r.finalDamage, lessThan(8000));
     });
 
@@ -460,6 +463,36 @@ void main() {
       // 期望值 = 1000 * 1.0 * 0.75 * 1.0 * 0.95 * 1.0 = 712.5 → 712
       expect(r.schoolCounterMultiplier, 0.75);
       expect(r.finalDamage, 712);
+    });
+
+    // §12.1 #7 v1.4:刚猛克阴柔附带 +500 固定震伤 — 主乘式外独立加值。
+
+    test('§12.1 #7 震伤:刚猛 vs 阴柔 → quakeDamage=500 finalDamage=mainDamage+500',
+        () {
+      final r = _calcBoundary(defenderSchool: TechniqueSchool.yinRou);
+      expect(r.schoolCounterMultiplier, 1.25, reason: '主乘式仍是 1.25');
+      expect(r.quakeDamage, 500, reason: '震伤固定 +500');
+      expect(r.finalDamage, r.mainDamage + 500, reason: '震伤与主伤害同 tick 叠加');
+    });
+
+    test('§12.1 #7 震伤:非刚猛 attacker → quakeDamage=0(只有刚猛触发)',
+        () {
+      final lqVsGangMeng =
+          _calcBoundary(attackerSchool: TechniqueSchool.lingQiao);
+      expect(lqVsGangMeng.quakeDamage, 0, reason: '灵巧 vs 刚猛 不应触发震伤');
+      final yrVsLq = _calcBoundary(
+        attackerSchool: TechniqueSchool.yinRou,
+        defenderSchool: TechniqueSchool.lingQiao,
+      );
+      expect(yrVsLq.quakeDamage, 0, reason: '阴柔 vs 灵巧 不应触发震伤');
+    });
+
+    test('§12.1 #7 震伤:刚猛 vs 非阴柔 → quakeDamage=0(克制不成立)', () {
+      final gmVsGm = _calcBoundary();
+      expect(gmVsGm.quakeDamage, 0, reason: '刚猛 vs 刚猛(中性)不触发');
+      final gmVsLq =
+          _calcBoundary(defenderSchool: TechniqueSchool.lingQiao);
+      expect(gmVsLq.quakeDamage, 0, reason: '刚猛 vs 灵巧(被克制)不触发');
     });
 
     test('修炼度 1.0：初窥无加成', () {

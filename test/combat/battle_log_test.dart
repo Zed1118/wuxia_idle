@@ -356,6 +356,8 @@ AttackResult _normalHit({
 }) {
   return AttackResult(
     finalDamage: damage,
+    mainDamage: damage,
+    quakeDamage: 0,
     isCritical: isCritical,
     isDodged: false,
     schoolCounterMultiplier: schoolMult,

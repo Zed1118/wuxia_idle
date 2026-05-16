@@ -161,6 +161,9 @@ void main() {
         solarTermMultiplier: 1.3,
         solarTermDays: [],
         ziShiInternalForceMultiplier: 1.2,
+        zhengWuYangSchoolMultiplier: 1.2,
+        zhengWuTargetAttribute: 'internal_force_points',
+        zhengWuAppliesToSchool: TechniqueSchool.gangMeng,
       );
     });
 
@@ -272,6 +275,9 @@ void main() {
           solarTermMultiplier: 1.3,
           solarTermDays: [],
           ziShiInternalForceMultiplier: 1.2,
+          zhengWuYangSchoolMultiplier: 1.2,
+          zhengWuTargetAttribute: 'internal_force_points',
+          zhengWuAppliesToSchool: TechniqueSchool.gangMeng,
         ).capHours,
         returnsNormally, // 构造不抛，校验在 repository 层
       );
