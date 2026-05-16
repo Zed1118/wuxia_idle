@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/battle/domain/enum_localizations.dart';
-import '../../data/defs/equipment_def.dart';
-import '../../core/domain/enums.dart';
-import '../../core/domain/equipment.dart';
-import '../../core/domain/forging_slot.dart';
-import '../../core/application/battle_providers.dart';
-import '../../core/application/inventory_providers.dart';
-import '../../features/equipment/application/forging_service.dart';
-import '../../features/equipment/application/equipment_service_providers.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../battle/domain/enum_localizations.dart';
+import '../../../data/defs/equipment_def.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/equipment.dart';
+import '../../../core/domain/forging_slot.dart';
+import '../../../core/application/battle_providers.dart';
+import '../../../core/application/inventory_providers.dart';
+import '../application/forging_service.dart';
+import '../application/equipment_service_providers.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
 
 /// 开锋面板（phase2_tasks T30 §449-456）。
 ///

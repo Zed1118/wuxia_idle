@@ -7,7 +7,7 @@ import '../../../data/lore_loader.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
-import '../../../ui/enhancement/enhance_dialog.dart';
+import '../../equipment/presentation/enhance_dialog.dart';
 import '../../../ui/strings.dart';
 import '../../../ui/theme/colors.dart';
 import '../../../ui/theme/tier_colors.dart';
