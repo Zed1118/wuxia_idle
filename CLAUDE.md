@@ -4,7 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 [`WINDOWS_DEEPSEEK_GUIDE.md`](./WINDOWS_DEEPSEEK_GUIDE.md)（你不写文案，但需要知道它在哪、长什么样）。
 >
-> **版本：v1.4**
+> **版本：v1.5**
+> v1.5 变更摘要（2026-05-16）：§12.1 #10 师承遗物规则层 4 子项决议收口——① 传递时机:武圣飞升时自动传(GDD §7.1 原意,Demo 不实装飞升 → Phase 5+ 激活) ② 多徒弟归属:玩家进选件界面逐件分配(给主动权 + UI 包不复杂) ③ 累代叠加:只取当代不叠加(数值不爆炸,5 代不会撑红线;UI 可显传承链路但 buff 不叠) ④ 同部位冲突:自动卸下原装入背包 + 新遗物入槽(sane default,不做装备分解违反 §5.1)。numbers.yaml `inheritance.heritage_items` 加 4 规则字段(`transfer_trigger: ascend_to_wusheng` / `multi_disciple_allocation: player_pick` / `stack_across_generations: false` / `conflict_slot_resolution: auto_swap`)。**§12.1 真硬阻塞清零**,Phase 5 师徒系统升级路径无 schema 歧义。
 > v1.4 变更摘要（2026-05-16）：§12.1 #7 三流派 extra_effect 数值拍板收口——刚猛震伤每招 +500 固定(穿透防御不暴击) / 阴柔内伤 N=3 守方 tick × 200/tick 固定(穿透防御 + 同源刷新覆盖) / 正午阳刚 +20% 乘到 `internalForcePoints` 维度且仅 `school=gangMeng` 角色触发。numbers.yaml 加 4 子段(`combat.schools.gang_meng_quake` / `combat.schools.yin_rou_internal_injury` / `retreat.time_of_day_bonus[zhengWu].target_attribute` / `applies_to_school`)。代码层 damage_calculator 震伤分支 + BattleState internalInjurySlot + battle_engine tick 衰减 + seclusion_service 正午阳刚 wire 同期落地。§12.1 #7 → §12.2 归档,剩 #10 师承遗物 1 条。
 > v1.3 变更摘要（2026-05-15）：§12.1 #7 加现状备注——`SeclusionService.computeOutputs` 已接 4 维度（节气日 +30% / 子时 +20% 只乘内力 / techniqueLearnPoints / internalForcePoints），正午阳刚 +20% 因本条 #7 流派 extra_effect 未决暂未消费，加成乘到哪个维度也待 #7 决议后才能落代码。
 > v1.2 变更摘要（2026-05-15）：§12 待决清单收口——13 条经 W1-W15 实装默认决议 10 条 + 本批方案 A 决议节气清单 1 条，剩 2 条进对应系统再拍板。§12 拆 §12.1（未决）/ §12.2（已消解归档）两段。
@@ -279,19 +280,15 @@ choices:
 - 涉及配置 schema 变化：标题前加 `[schema]`，并在 PR 描述中列影响的 yaml 文件
 - 普通代码改动可省略前缀
 
-## 12. 待人类决策清单（v1.4 收口）
+## 12. 待人类决策清单（v1.5 收口 · §12.1 清零）
 
-> v1.4（2026-05-16）：§12.1 #7 三流派 extra_effect 数值拍板收口（详 v1.4 变更摘要 + §12.2 归档），剩 **1 条**(#10 师承遗物规则)真硬阻塞待拍板。完整销账见 §12.2 归档。
+> v1.5（2026-05-16）：§12.1 #10 师承遗物规则层 4 子项决议收口（详 v1.5 变更摘要 + §12.2 归档），**§12.1 真硬阻塞清零**。所有 13 条原始待决条目已 100% 收口(11 条 yaml/代码层默认决议 + 2 条本批方案 A / v1.4 / v1.5 决议)。完整销账见 §12.2 归档。
 
-### §12.1 未决项（进对应系统实装时停下问人类）
+### §12.1 未决项
 
-| # | 待决项 | 阻塞范围 | 待决细项 |
-|---|---|---|---|
-| 10 | **师承遗物规则层** | Phase 4-5 师徒系统 | numbers.yaml `inheritance.heritage_items` 数值已配（每代 1-2 件 + 内力 +5% + 共鸣度保留 70%）。**仍待决**：① 传递时机（飞升自动 vs 任意时点手动）② 多徒弟时谁继承 ③ 传承 buff 是否累代叠加（2 代师承 = +10%?）④ 当前已装备同部位时如何冲突解决。 |
+**无**(2026-05-16 v1.5 全收口)。后续进 Phase 5 师徒系统升级 / 1.0 版本扩展系统时若出现新待决项,在此区段重开。
 
-**§12.1 备注**（Demo 不阻塞但需归档）：
-- **#11** 祖师爷门派 buff：`numbers.yaml inheritance.founder_ancestor_buff.enabled_when_alive: false` 显式 Demo 不实现，1.0 版本再设计。
-- **#12** 江湖商店折扣公式：Demo 内容总量表（§7）未列江湖商店，1.0 版需要时再补。
+`#11` 祖师爷 Demo 不实装(`inheritance.founder_ancestor_buff.enabled_when_alive: false`)/ `#12` 江湖商店 Demo 不列(`§7` 内容总量表无)— 已知 Demo 不阻塞挂账,Phase 5+ 自然实装时再回头。
 
 ### §12.2 已消解归档（W1-W15 实装中默认决议）
 
@@ -307,6 +304,9 @@ choices:
 | 9 | 人剑合一招式定义位置 | `numbers.yaml combat.resonance.unlocks_joint_skill: true`（默契阶段解锁）+ `skills.reference_multipliers.joint_skill.base: 4500`，**统一固定倍率，不绑流派/不绑装备类型**，由共鸣度系统统管 |
 | 13 | 节气日完整清单 | v1.2 决议方案 A（2026-05-15）：12 个节气均匀覆盖四季，公历 hardcode 不引入农历库；删除原中秋（属农历节日非节气）。已落 `numbers.yaml retreat.solar_term_bonus.days_2026` |
 | 7 | 三流派 extra_effect 数值 + 正午阳刚定向 | v1.4 决议（2026-05-16）：① 刚猛震伤每招 +500 固定(穿透防御不暴击,主攻击命中才触发);② 阴柔内伤 N=3 守方 tick × 200/tick 固定(穿透防御 + 同源刷新覆盖,可致死);③ 正午阳刚 +20% 乘到 `internalForcePoints` 维度且仅 `character.school==gangMeng` 触发;④ 灵巧 crit_rate +0.20 已在 §6 公式实装 (v1.0 起)。已落 `numbers.yaml combat.schools.gang_meng_quake / yin_rou_internal_injury / retreat.time_of_day_bonus[zhengWu].target_attribute & applies_to_school` + 代码层 damage_calculator 震伤分支 / BattleState internalInjurySlot / battle_engine tick 衰减 / seclusion_service 正午阳刚 wire |
+| 10 | 师承遗物规则层(4 子项)| v1.5 决议(2026-05-16):① 传递时机:武圣飞升时自动传(GDD §7.1 原意,Demo 不实装飞升 → Phase 5+ 激活);② 多徒弟归属:玩家进选件界面逐件分配;③ 累代叠加:只取当代不叠加(数值不爆炸 + UI 可显传承链路但 buff 不叠);④ 同部位冲突:自动卸下原装入背包 + 新遗物入槽。已落 `numbers.yaml inheritance.heritage_items` 加 4 规则字段(`transfer_trigger=ascend_to_wusheng` / `multi_disciple_allocation=player_pick` / `stack_across_generations=false` / `conflict_slot_resolution=auto_swap`)。**代码层 Phase 5+ 师徒升级时按此实装,本批仅规则层锚定**。 |
+| 11 | 祖师爷门派 buff(Demo 不实装)| `numbers.yaml inheritance.founder_ancestor_buff.enabled_when_alive: false` 显式 Demo 不实现,1.0 版本再设计 |
+| 12 | 江湖商店折扣公式(Demo 不列)| Demo 内容总量表(§7)未列江湖商店,1.0 版需要时再补 |
 
 ---
 
