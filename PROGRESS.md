@@ -24,12 +24,12 @@
 - ~~6. **GDD §5.3/§5.6 公式系数 vs numbers.yaml**~~(**2026-05-16 v1.6 销账**:GDD §5.3 装备攻击 ×8 → ×1.0 + §5.6 内力 ×5 → ×0.7,各加历史脚注;CLAUDE.md §6 镜像公式块同步对齐 + 升 v1.6;代码以 yaml 为准早已平衡到位无代码改动)
 - ~~7. numbers.yaml 节气列表混入「中秋」~~(**2026-05-15 §12 收口销账**:本批方案 A 删中秋 + 补 4 节气(雨水/谷雨/处暑/小雪)凑 12 节气,均为节气非节日)
 - ~~8. CLAUDE.md §12 收口剩 1 条~~(**2026-05-16 v1.5 §12.1 真硬阻塞清零**):#10 师承遗物 4 子项决议落 numbers.yaml 4 字段(`transfer_trigger=ascend_to_wusheng` / `multi_disciple_allocation=player_pick` / `stack_across_generations=false` / `conflict_slot_resolution=auto_swap`)。代码层 Phase 5+ 师徒升级时按此实装,本批仅规则层锚定。**13 条原始待决全 100% 收口**,详 §12.2 归档
-- 9/11. **T05/T07 验收**:Mac 无 Xcode 跑不了 desktop,留 Windows 首跑验
-- 10. **yaml key 命名约定差异**:numbers.yaml snake_case,内容 yaml camelCase,按文件类型隔离不冲突
+- ~~9/11. T05/T07 验收 Mac 无 Xcode 跑不了 desktop~~(**2026-05-17 W17 长期挂账冲刺销账**:W7-W11 Codex visual check + W14/W15/W16/W17 多轮 Windows debug build 实跑 SaveData 持久化 + YAML 加载 + GameRepository 全链 7 节验收 PASS,T05/T07 早已生产稳定。挂账保留至今因 PROGRESS 长期未清,本批冲刺补销)
+- ~~10. yaml key 命名约定差异:numbers.yaml snake_case,内容 yaml camelCase~~(**2026-05-17 W17 长期挂账冲刺销账**:按文件类型隔离设计已落,numbers.yaml 走 snake_case YAML key,内容 yaml 走 camelCase YAML key,加载层各自 fromYaml 解析互不影响,从未冲突过;不是 bug 是设计选择)
 - ~~17. **phase1_tasks T12 §709 笔误**~~(**2026-05-17 反审撤回**:Mac 端 grep 复审 phase1_tasks.md §463「差 2 大境界 → (2.5, 0.3)」+ §464「差 3+ → (1.0, 0.05)」+ §709「三流满员去打绝顶满员…守方 0.05 修正」三处全部正确(三流 index=1 / 绝顶 index=4 差 3 阶,0.05 是对的)。**phase1_tasks 实际无笔误**,本挂账条目早期记忆错误)
 - ~~28. 闭关 widget e2e test 缺失~~(**2026-05-15 Phase 5 #2 销账**:3 屏 Consumer 化后 `_FakeSeclusionService implements SeclusionService` + `seclusionServiceProvider.overrideWithValue(fake)` 绕过 native Isar zone,4 e2e widget test 全过(list→setup→active→result 导航 + confirm dialog 双路径)。W6 drift 5 轮探路无解的"fake_async vs native Isar zone 边界"真解 = Consumer 化把边界封死在 provider override 之下,fake_async 不再必要)
 - ~~30. 闭关 3 个扩展维度未接 service~~(**2026-05-15 销账**:`SeclusionService.computeOutputs` 已接 technique_learn_rate / internal_force_growth / 节气日 +30% / 子时 +20%(只乘内力维度,修原 bug);RetreatOutputs typedef 加 techniqueLearnPoints / internalForcePoints;numbers.yaml 加 base_internal_force_per_hour=5 / base_technique_learn_per_hour=0.5 锚点。test +6,649/649。**正午阳刚 +20% 留 §12.1 #7 实装阻塞**,本批不接)
-- 31. **main_menu「问鼎九霄」widget test 写不出**(2026-05-13 W9 自审踩坑):`pumpAndSettle` 死循环,多 provider+Navigator 链异步 future + 帧 ticker 冲突。已有 11 个 tower widget test 覆盖核心,nav 路径不再硬塞
+- ~~31. main_menu「问鼎九霄」widget test 写不出~~(**2026-05-17 W17 长期挂账冲刺销账**:NavigatorObserver mock 套路绕过 pumpAndSettle 死循环 — 子类 `_RecordingNavigatorObserver` 记录 `didPush`,tap 后单帧 `tester.pump()` 不 settle 子屏(TowerFloorListScreen.build 内 `towerProgressProvider` AsyncValue.loading 不阻塞断言),验证 push 增量(initial 1 + tap 后 1 = 2)。W6 drift 5 轮探路无解的"多 provider+Navigator 链异步 future + 帧 ticker 冲突"真解 = **不验证子屏内容,只验 Navigator.push 触发**;Phase 5 #2 销账 #28 套路(Consumer 化 + provider override)的轻量化版本。test +1,765/765 全过)
 - ~~34. #10 stage drop 视觉验收完整闭环~~(**2026-05-16 Codex round2 全 PASS**):W15 P3 同期 + 后续 A/B 三批 + Codex E/round2 真机视觉验收 5 张截图收口。Codex round2 closeout `codex_w15_victory_dialog_visual_check_2026-05-16.md` **6 PASS / 1 WARN / 0 FAIL**(WARN = 增量 build 缓存假象工程教训,非产品 bug,已沉淀 memory):A1/B1/C1 drop banner 中文「磨剑石 ×N」✅(F1 ItemType.fromDefId 修复生效)+ A1/B1/C1 升层 3 行 banner ✅(F2 VC15-fresh seed 解锁 + 升层链路验证 yaml.experience_to_next=50 → qiMeng→ruMen→shuLian→jingTong 3 层连升)+ A2 dialog→narrative→encounter hook 链路完整 + D1/D2 物料 Tab 真硬截图首达(D2 累积态磨剑石 ×104 精确匹配 dropTable A1+B1+C1 累积值 +4)
 - ~~35. 35 装备 0 lore 文案 Demo 硬缺口~~(**2026-05-15 W15 销账**:DeepSeek 35 yaml × 75 段交付 commit `7aea49d`,GDD §6.6 0→75 首达标,1 错字已修)
 - ~~36. insights ↔ encounter_skill 显式映射缺~~(**2026-05-15 W15 销账**:Mac 端 `SkillDef.narrativeInsightId` nullable 已落,encounter_skills.yaml `ting_yu_jian` 首条真实映射已填,test +4 全过 614/614)
@@ -37,11 +37,11 @@
 - ~~38. 像样货 5 件 lore 缺第 2 段~~(**2026-05-15 反审撤回**:整批闭环后 Mac 端 grep 复审 35 件 yaml 实测**75 段不是 70 段**(closeout §3.6 各阶罗列加和 5+5+10+10+15+15+15 = 75 算成 70)。**像样货 5 件 1 段是 W15 #35 派单 §3.2 明文规定体例**(`week15_deepseek_dispatch_35_lore_2026-05-15.md:57` "第 2 阶 · 像样货 · 各 1 段"),DeepSeek 没漏配。Codex 装备详情屏 04 WARN 是 spec 误抄错误 PROGRESS 数字,实际**详情屏 7/7 PASS**)
 - ~~39. **物料 Tab 行右侧 defId 显示**~~(**2026-05-16 销账**:`_MaterialRow` 删 raw `item.defId` Text widget,行内仅保留本地化「磨剑石 × N」/「心血结晶 × N」,Expanded 简化为直接 Text;widget test line 201 期望反转 `findsOneWidget` → `findsNothing` + reason 注;723/723 全过)
 
-> 已销账条目(#1/#2/#3/#4/#5/#6/#8/#12/#13/#14/#15/#16/#17/#18/#19/#20/#21/#22/#23/#24/#25/#26/#27/#28/#29/#30/#32/#34/#35/#36/#39)详见末尾归档。
+> 已销账条目(#1/#2/#3/#4/#5/#6/#8/#9/#10/#11/#12/#13/#14/#15/#16/#17/#18/#19/#20/#21/#22/#23/#24/#25/#26/#27/#28/#29/#30/#31/#32/#34/#35/#36/#39)详见末尾归档。**W17 长期挂账冲刺销账 4 条 #9/#10/#11/#31**,剩余仅 #37(6 events orphan 主题不适配,留 _archive)。
 
 ## 下一步
 
-**W17 候选 E 已完工 LineagePanelScreen 师徒名单**(2026-05-17,opus high ~1h45min)。下波待用户拍板。候选(性价比序):**G** Codex Pen 视觉验收 LineagePanelScreen(主菜单按钮 + 师徒名单页 空态/完整态 截图)sonnet 1-2h;**F** mainline+tower victory integration test sonnet 1-2h(易撞 #31 长期低优先)。
+**W17 候选 E + G 派单 + 长期挂账冲刺 4 销账**(2026-05-17)已收口。① **E** LineagePanelScreen 师徒名单实装(opus high ~1h45min,commit `9dcfe8a`);② **G** Codex Pen 视觉验收派单(commit `cbb2352`,等 Pen closeout 回填);③ **长期挂账冲刺销账 4 条 #9/#10/#11/#31**:#9/#11 T05/T07 Windows 已验(W7-W11 多轮)/ #10 yaml key 命名设计选择非 bug / **#31 NavigatorObserver mock 套路绕过 pumpAndSettle 死循环**(W6 drift 5 轮探路真解:不验证子屏内容,只验 Navigator.push 触发,Phase 5 #2 #28 套路轻量化版本)。剩余仅 #37(6 events orphan 主题不适配,留 _archive)。**765/765 + analyze 0 issues**。下波待用户拍板(候选:**F** mainline+tower victory integration test sonnet 1-2h 现#31 套路加持下风险降低 / 长期挂账冲刺已完结 / W18 起步预研需大方向)。
 
 ## 关键约束(每次开局必读)
 

@@ -97,6 +97,42 @@ void main() {
     expect(find.text(UiStrings.scenarioP4), findsOneWidget);
   });
 
+  // ── W17 长期挂账 #31 销账探路:NavigatorObserver mock 套路 ──────────────
+  //
+  // W6 drift 5 轮探路无解的「main_menu 问鼎九霄 widget test pumpAndSettle 死循环」
+  // 根因:tap 后 push TowerFloorListScreen,其内部 watch towerProgressProvider +
+  // Isar 异步 future + CircularProgressIndicator 无限动画,pumpAndSettle 永不
+  // 完成。Phase 5 #2 销账 #28 用 Consumer 化 + provider override 套路绕过同类
+  // 边界,本批用更轻量套路:**不 settle 子屏 build,只验 Navigator.push 触发**。
+  //
+  // 用法:NavigatorObserver 子类记录 didPush,tap 后单帧 pump(不 pumpAndSettle),
+  // 验证 push 增量(initial 1 次 + tap 后 1 次 = 2 次)。子屏内部 build 即使抛错
+  // 或仍在 loading 也不阻塞 test(单帧 pump 不进死循环)。
+
+  testWidgets('tap 问鼎九霄 → Navigator.push 触发(不 settle 子屏,#31 销账)',
+      (tester) async {
+    final observer = _RecordingNavigatorObserver();
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          navigatorObservers: [observer],
+          home: const MainMenu(),
+        ),
+      ),
+    );
+    // 验证 initial push(MainMenu 自身)已记录
+    expect(observer.pushedRoutes.length, 1);
+
+    await tester.tap(find.text(UiStrings.mainMenuTower));
+    await tester.pump(); // 单帧,不 settle:子屏 TowerFloorListScreen 内部
+                        // towerProgressProvider AsyncValue.loading 不阻塞断言
+
+    // tap 后应有 1 次新 push(TowerFloorListScreen)
+    expect(observer.pushedRoutes.length, 2);
+    // 验证最新 push 是 MaterialPageRoute(_push 包装)
+    expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
+  });
+
   // ── T56 销账 #26：闭关入口 FutureBuilder 化 ────────────────────────────
 
   testWidgets('闭关按钮：activeCharacterIds 加载完成 → Opacity=1.0 enabled',
@@ -294,4 +330,16 @@ void main() {
     expect(find.text('今日：元宵'), findsOneWidget);
     expect(find.text('今日：春节'), findsNothing);
   });
+}
+
+/// 记录 Navigator.push 调用的 observer(W17 #31 销账):
+/// 测试 tap 按钮触发 push 时使用,代替对子屏的真实 build/settle。
+class _RecordingNavigatorObserver extends NavigatorObserver {
+  final pushedRoutes = <Route<dynamic>>[];
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    pushedRoutes.add(route);
+    super.didPush(route, previousRoute);
+  }
 }
