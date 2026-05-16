@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/numbers_config.dart';
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 
 /// 伤害飘字类型（phase1_tasks T15 §15.2）。

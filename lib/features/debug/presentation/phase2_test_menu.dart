@@ -4,7 +4,7 @@ import '../../../data/isar_setup.dart';
 import '../application/phase2_seed_service.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../inventory/presentation/inventory_screen.dart';
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
 import 'encounter_debug_picker.dart';

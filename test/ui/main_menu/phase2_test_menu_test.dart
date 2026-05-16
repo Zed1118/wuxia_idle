@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/debug/presentation/phase2_test_menu.dart';
-import 'package:wuxia_idle/ui/strings.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 /// T32 子提交 3d：[Phase2TestMenu] widget 测试（T54 扩到 5 按钮含 P5 师徒；
 /// W12 fix 扩到 6 按钮含 VC W7-W11；W14-3 扩到 7 按钮含 VC14_3 奇遇 skill 视觉验收；

@@ -6,7 +6,7 @@ import 'package:wuxia_idle/features/cultivation/application/character_advancemen
 import 'package:wuxia_idle/features/cultivation/presentation/advancement_summary.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_victory_dialog.dart';
-import 'package:wuxia_idle/ui/strings.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 StageDef _stage() => const StageDef(
       id: 'stage_test_01',

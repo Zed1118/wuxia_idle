@@ -7,7 +7,7 @@ import '../../encounter/application/encounter_service.dart';
 import '../../encounter/domain/encounter_def.dart';
 import '../../encounter/domain/encounter_event_loader.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 
 /// 奇遇强制触发 debug picker(W14-3 round2 之后追加)。

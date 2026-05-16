@@ -8,7 +8,7 @@ import 'package:wuxia_idle/features/tower/application/tower_progress_service.dar
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_floor_list_screen.dart';
-import 'package:wuxia_idle/ui/strings.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 /// T42 TowerFloorListScreen widget 测试（不接真实 Isar）。
 ///

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/technique.dart';
 import '../../../core/application/battle_providers.dart';
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 
 /// 散功二次确认 dialog（phase2_tasks.md T31 §477-479）。

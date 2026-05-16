@@ -7,7 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/chapter_list_screen.dart';
-import 'package:wuxia_idle/ui/strings.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 /// T35 ChapterListScreen widget 测试。
 ///

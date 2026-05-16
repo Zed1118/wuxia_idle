@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';

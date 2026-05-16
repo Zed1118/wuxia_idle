@@ -9,7 +9,7 @@ import '../features/debug/presentation/phase2_test_menu.dart';
 import '../features/inventory/presentation/inventory_screen.dart';
 import '../features/mainline/presentation/chapter_list_screen.dart';
 import '../features/seclusion/presentation/seclusion_map_list_screen.dart';
-import 'strings.dart';
+import '../shared/strings.dart';
 import '../features/technique_panel/presentation/technique_panel_screen.dart';
 import '../shared/theme/colors.dart';
 import '../features/tower/presentation/tower_floor_list_screen.dart';
