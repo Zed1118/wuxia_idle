@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
-import '../../../providers/isar_provider.dart';
+import '../application/seclusion_service_providers.dart';
 import '../../../ui/strings.dart';
 import '../../../ui/theme/colors.dart';
 import '../domain/retreat_session.dart';

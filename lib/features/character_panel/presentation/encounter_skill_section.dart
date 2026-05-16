@@ -8,8 +8,8 @@ import '../../../core/domain/character.dart';
 import '../../encounter/domain/encounter_progress.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/application/character_providers.dart';
-import '../../../providers/isar_provider.dart';
 import '../../encounter/application/encounter_service.dart';
+import '../../encounter/application/encounter_service_providers.dart';
 import '../../../ui/theme/colors.dart';
 
 /// 奇遇招式装备段(C-W14-3-A)。
