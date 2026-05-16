@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/domain/enums.dart';
 import '../../../data/isar_setup.dart';
 import '../application/phase2_seed_service.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
+import '../../festival/application/festival_service_providers.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
@@ -192,6 +196,8 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 16),
+                const _FestivalOverrideButton(),
                 ],
               ),
             ),
@@ -200,6 +206,98 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
       ),
     );
   }
+}
+
+/// W16 DEBUG · 切今日节日按钮。
+///
+/// 显示当前 `debugFestivalOverride` 状态（无覆盖 / 覆盖到 X 节日），onTap 弹
+/// SimpleDialog 列 7 选项（6 节日 + 清除覆盖），点击后通过
+/// `debugFestivalOverrideProvider.notifier.apply / clear` 写状态，SnackBar 反馈。
+///
+/// 非节日日（全年 359 天）`_TodayFestivalChip` 默认不显，本入口让 Mac 端在
+/// debug build 现场切节日验证 chip 6 节日视觉效果。
+class _FestivalOverrideButton extends ConsumerWidget {
+  const _FestivalOverrideButton();
+
+  Future<void> _showDialog(BuildContext context, WidgetRef ref) async {
+    final selection = await showDialog<_FestivalDialogResult>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        backgroundColor: WuxiaColors.panel,
+        title: const Text(
+          UiStrings.debugFestivalOverrideDialogTitle,
+          style: TextStyle(color: WuxiaColors.textPrimary),
+        ),
+        children: [
+          for (final f in Festival.values)
+            SimpleDialogOption(
+              onPressed: () => Navigator.of(ctx).pop(
+                _FestivalDialogResult.apply(f),
+              ),
+              child: Text(
+                EnumL10n.festival(f),
+                style: const TextStyle(color: WuxiaColors.textPrimary),
+              ),
+            ),
+          const Divider(color: WuxiaColors.border),
+          SimpleDialogOption(
+            onPressed: () => Navigator.of(ctx).pop(
+              const _FestivalDialogResult.clear(),
+            ),
+            child: const Text(
+              UiStrings.debugFestivalOverrideClear,
+              style: TextStyle(color: WuxiaColors.textSecondary),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (selection == null || !context.mounted) return;
+    final notifier = ref.read(debugFestivalOverrideProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
+    if (selection.isClear) {
+      notifier.clear();
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(UiStrings.debugFestivalOverrideSnackCleared),
+        ),
+      );
+    } else {
+      notifier.apply(selection.festival);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            UiStrings.debugFestivalOverrideSnack(
+              EnumL10n.festival(selection.festival!),
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final override = ref.watch(debugFestivalOverrideProvider);
+    final hint = override == null
+        ? UiStrings.debugFestivalOverrideHintNone
+        : UiStrings.debugFestivalOverrideHint(EnumL10n.festival(override));
+    return _ScenarioButton(
+      label: UiStrings.debugFestivalOverrideLabel,
+      hint: hint,
+      onTap: () => _showDialog(context, ref),
+    );
+  }
+}
+
+class _FestivalDialogResult {
+  const _FestivalDialogResult.apply(Festival this.festival) : isClear = false;
+  const _FestivalDialogResult.clear()
+      : festival = null,
+        isClear = true;
+
+  final Festival? festival;
+  final bool isClear;
 }
 
 class _ScenarioButton extends StatelessWidget {
