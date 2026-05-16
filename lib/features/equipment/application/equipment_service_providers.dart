@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../providers/isar_provider.dart';
+import '../../../data/isar_provider.dart';
 import 'enhancement_service.dart';
 import 'forging_service.dart';
 

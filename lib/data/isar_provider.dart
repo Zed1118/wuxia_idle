@@ -1,8 +1,8 @@
 import 'package:isar_community/isar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../data/game_repository.dart';
-import '../data/isar_setup.dart';
+import 'game_repository.dart';
+import 'isar_setup.dart';
 
 part 'isar_provider.g.dart';
 

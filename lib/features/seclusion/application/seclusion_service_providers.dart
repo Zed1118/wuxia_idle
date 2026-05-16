@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../providers/isar_provider.dart';
+import '../../../data/isar_provider.dart';
 import '../../encounter/application/encounter_service.dart';
 import 'seclusion_service.dart';
 
