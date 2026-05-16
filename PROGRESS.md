@@ -31,7 +31,7 @@
 - ~~34. #10 stage drop 视觉验收完整闭环~~(**2026-05-16 Codex round2 全 PASS**):W15 P3 同期 + 后续 A/B 三批 + Codex E/round2 真机视觉验收 5 张截图收口。Codex round2 closeout `codex_w15_victory_dialog_visual_check_2026-05-16.md` **6 PASS / 1 WARN / 0 FAIL**(WARN = 增量 build 缓存假象工程教训,非产品 bug,已沉淀 memory):A1/B1/C1 drop banner 中文「磨剑石 ×N」✅(F1 ItemType.fromDefId 修复生效)+ A1/B1/C1 升层 3 行 banner ✅(F2 VC15-fresh seed 解锁 + 升层链路验证 yaml.experience_to_next=50 → qiMeng→ruMen→shuLian→jingTong 3 层连升)+ A2 dialog→narrative→encounter hook 链路完整 + D1/D2 物料 Tab 真硬截图首达(D2 累积态磨剑石 ×104 精确匹配 dropTable A1+B1+C1 累积值 +4)
 - ~~35. 35 装备 0 lore 文案 Demo 硬缺口~~(**2026-05-15 W15 销账**:DeepSeek 35 yaml × 75 段交付 commit `7aea49d`,GDD §6.6 0→75 首达标,1 错字已修)
 - ~~36. insights ↔ encounter_skill 显式映射缺~~(**2026-05-15 W15 销账**:Mac 端 `SkillDef.narrativeInsightId` nullable 已落,encounter_skills.yaml `ting_yu_jian` 首条真实映射已填,test +4 全过 614/614)
-- 37. **8 events orphan 剩余可后续挂回**(原 23 → 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 → 余 8):C-1 收尾 2 条(huang_miao_jiu_seng → long_yin tier 7 / jiu_lou_jue_yin → wu_ming tier 7)。剩余 8 条主题不适配(duan_qiao_can_yue/gu_chuan_deng_ying/huang_cun_yao_ren/huang_yuan_yi_zhong/jiang_xin_ye_hua/qing_lou_can_meng/lao_jing_hui_xiang/yu_zhong_qiao_men),心境/江湖故事/邪门调子无对应武学,留 _archive/ 不动
+- 37. **6 events orphan 剩余可后续挂回**(原 23 → 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W17 polish-C 2 → 余 6):W17 polish-C 挂回 2 条(huang_yuan_yi_zhong → qiu_quan tier 2 / jiang_xin_ye_hua → wu_xia_yi tier 3)。剩余 6 条主题不适配(duan_qiao_can_yue/gu_chuan_deng_ying/huang_cun_yao_ren/qing_lou_can_meng/lao_jing_hui_xiang/yu_zhong_qiao_men),心境/江湖故事/邪门调子/音律无对应武学,留 _archive/ 不动
 - ~~38. 像样货 5 件 lore 缺第 2 段~~(**2026-05-15 反审撤回**:整批闭环后 Mac 端 grep 复审 35 件 yaml 实测**75 段不是 70 段**(closeout §3.6 各阶罗列加和 5+5+10+10+15+15+15 = 75 算成 70)。**像样货 5 件 1 段是 W15 #35 派单 §3.2 明文规定体例**(`week15_deepseek_dispatch_35_lore_2026-05-15.md:57` "第 2 阶 · 像样货 · 各 1 段"),DeepSeek 没漏配。Codex 装备详情屏 04 WARN 是 spec 误抄错误 PROGRESS 数字,实际**详情屏 7/7 PASS**)
 - ~~39. **物料 Tab 行右侧 defId 显示**~~(**2026-05-16 销账**:`_MaterialRow` 删 raw `item.defId` Text widget,行内仅保留本地化「磨剑石 × N」/「心血结晶 × N」,Expanded 简化为直接 Text;widget test line 201 期望反转 `findsOneWidget` → `findsNothing` + reason 注;723/723 全过)
 
@@ -39,7 +39,7 @@
 
 ## 下一步
 
-**W17 候选 B 全链闭环 + D 双销账 + 3 段并行预研已收口**,等用户拍板下波。候选(性价比序):**polish-C** 余 8 events orphan 挂回 2 条 sonnet 15-30 min(预研 `wuxia_orphan_events_rematch_prep_2026-05-17.md`); **polish-D** D-#3 plugin 启用 sonnet 15 min(预研 `wuxia_d3_plugin_enable_dry_run_2026-05-17.md`);**E** 师徒名单 UI panel sonnet 1-2h(预研 `wuxia_phase5_master_disciple_prep_2026-05-17.md`,**估时由 opus xhigh 4h+ 修正为 sonnet 1-2h**);**F** mainline+tower victory integration test sonnet 1-2h(易撞 #31 长期低优先)。
+**W17 polish-C 销账**(2026-05-17 sonnet ~15 min):#37 余 8→6,挂回 2 条(huang_yuan_yi_zhong → skill_encounter_qiu_quan / jiang_xin_ye_hua → skill_encounter_wu_xia_yi),encounters.yaml 38→40 + events 2 git mv 出 _archive/ + encounter_yaml_test 38→40 + qiu_quan/wu_xia_yi 引用红线,**761/761 + analyze 0 issues**。等用户拍板下波。候选(性价比序):**polish-D** D-#3 plugin 启用 sonnet 15 min(预研 `wuxia_d3_plugin_enable_dry_run_2026-05-17.md`);**E** 师徒名单 UI panel sonnet 1-2h(预研 `wuxia_phase5_master_disciple_prep_2026-05-17.md`,**估时由 opus xhigh 4h+ 修正为 sonnet 1-2h**);**F** mainline+tower victory integration test sonnet 1-2h(易撞 #31 长期低优先)。
 
 ## 关键约束(每次开局必读)
 
