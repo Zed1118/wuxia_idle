@@ -310,6 +310,8 @@ class UiStrings {
   static String seclusionRequiredRealm(String realmName) => '需要境界：$realmName';
   static String seclusionDurationLabel(int hours) => '$hours 小时';
   static String seclusionMojianshi(int n) => '磨剑石 × $n';
+  static String seclusionInternalForce(int n) => '内力 +$n';
+  static String seclusionInsightPoints(int n) => '心法领悟点 +$n';
   static String seclusionActualHours(double h) =>
       '实际挂机 ${h.toStringAsFixed(1)} 小时';
   static String seclusionExpected(String key, double perHour) =>

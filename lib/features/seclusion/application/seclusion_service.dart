@@ -270,9 +270,18 @@ class SeclusionService {
         ..actualRewards = rewards;
       await isar.retreatSessions.put(session);
 
-      // 3. 清 character.currentRetreatSessionId
+      // 3. 写 Character:internalForce(clamp internalForceMax) + insightPoints 累加,
+      //    清 currentRetreatSessionId(W15 #30 第 2 期消费层接入)
       final ch = await isar.characters.get(characterId);
       if (ch != null) {
+        if (outputs.internalForcePoints > 0) {
+          final next = ch.internalForce + outputs.internalForcePoints;
+          ch.internalForce =
+              next > ch.internalForceMax ? ch.internalForceMax : next;
+        }
+        if (outputs.techniqueLearnPoints > 0) {
+          ch.insightPoints += outputs.techniqueLearnPoints;
+        }
         ch.currentRetreatSessionId = null;
         await isar.characters.put(ch);
       }

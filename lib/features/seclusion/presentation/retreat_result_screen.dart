@@ -24,7 +24,12 @@ class RetreatResultScreen extends StatelessWidget {
     final mojianshi = outputs.mojianshi;
     final actualHours = outputs.actualHours;
     final equipDrops = outputs.equipmentDrops;
-    final hasReward = mojianshi > 0 || equipDrops.isNotEmpty;
+    final internalForce = outputs.internalForcePoints;
+    final insightPoints = outputs.techniqueLearnPoints;
+    final hasReward = mojianshi > 0 ||
+        equipDrops.isNotEmpty ||
+        internalForce > 0 ||
+        insightPoints > 0;
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -75,6 +80,16 @@ class RetreatResultScreen extends StatelessWidget {
                   _RewardRow(
                     icon: Icons.construction,
                     label: UiStrings.seclusionMojianshi(mojianshi),
+                  ),
+                if (internalForce > 0)
+                  _RewardRow(
+                    icon: Icons.bolt,
+                    label: UiStrings.seclusionInternalForce(internalForce),
+                  ),
+                if (insightPoints > 0)
+                  _RewardRow(
+                    icon: Icons.auto_stories,
+                    label: UiStrings.seclusionInsightPoints(insightPoints),
                   ),
                 for (final eq in equipDrops)
                   _RewardRow(
