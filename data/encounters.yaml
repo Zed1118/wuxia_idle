@@ -818,3 +818,43 @@ encounters:
         type: attributeBonus
         attributeKey: fortune
         attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 37. chu_xi_ci_sui · 辞岁
+  #    fortuneEvent · 除夕(2026-02-16)当日 + fortune 软门槛
+  # ───────────────────────────────────────────────
+  - id: chu_xi_ci_sui
+    type: fortuneEvent
+    trigger:
+      festivalRequired: chuXi
+      fortuneRequired: 4
+    baseProbability: 0.5
+    outcomeMapping:
+      ci_sui_path_a:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+      ci_sui_path_b:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 38. qing_ming_yu_si · 雨思
+  #    fortuneEvent · 清明(2026-04-05)当日 + fortune 软门槛
+  # ───────────────────────────────────────────────
+  - id: qing_ming_yu_si
+    type: fortuneEvent
+    trigger:
+      festivalRequired: qingMingJie
+      fortuneRequired: 4
+    baseProbability: 0.5
+    outcomeMapping:
+      yu_si_path_a:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+      yu_si_path_b:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
