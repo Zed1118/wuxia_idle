@@ -12,7 +12,7 @@ import '../../../core/domain/game_event.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
-import '../../../utils/rng.dart';
+import '../../../shared/utils/rng.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../equipment/application/equipment_factory.dart';
 import '../../mainline/application/mainline_progress_service.dart';

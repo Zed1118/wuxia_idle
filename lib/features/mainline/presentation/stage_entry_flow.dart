@@ -26,7 +26,7 @@ import '../../encounter/presentation/encounter_hook.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../../ui/narrative/narrative_reader_screen.dart';
 import '../../../shared/theme/colors.dart';
-import '../../../utils/rng.dart';
+import '../../../shared/utils/rng.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import 'stage_victory_dialog.dart';

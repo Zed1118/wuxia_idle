@@ -8,7 +8,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/features/equipment/application/enhancement_service.dart';
-import 'package:wuxia_idle/utils/rng.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// T32 #22a EnhancementService.persistResult 真 Isar 落地测试。
 ///

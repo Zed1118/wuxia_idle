@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
-import 'package:wuxia_idle/utils/rng.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// GameRepository + yaml 加载器 + NumbersConfig 集成测试。
 ///

@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../utils/rng.dart';
+import '../shared/utils/rng.dart';
 
 part 'rng_provider.g.dart';
 
