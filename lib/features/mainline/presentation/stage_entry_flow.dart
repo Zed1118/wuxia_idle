@@ -21,12 +21,15 @@ import '../../battle/application/battle_resolution.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
+import '../../equipment/application/drop_service.dart';
 import '../../../ui/narrative/narrative_reader_screen.dart';
 import '../../../ui/theme/colors.dart';
 import '../../../utils/rng.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
+import 'stage_victory_dialog.dart';
 
 /// Phase 3 T37 关卡进入流程串联。
 ///
@@ -98,7 +101,7 @@ Future<void> runStageFlow({
 
   // ── victory ──
   // Phase 4 W11 #32 销账：装备 battleCount / 心法 skillUsage / 主修升层 + 关卡 drop 落地
-  await _applyVictoryResolution(ref: ref, stage: stage);
+  final outcome = await _applyVictoryResolution(ref: ref, stage: stage);
   // W13-v3 fix: 同 defeat 分支,invalidate character/equipment/technique family
   _invalidateCharacterFamilyAfterCombat(ref);
 
@@ -111,6 +114,17 @@ Future<void> runStageFlow({
     now: DateTime.now(),
   );
   ref.invalidate(mainlineProgressProvider);
+
+  // W15 #30 P3 后续 A:victory dialog 显 drop + 升层 banner;outcome=null 时
+  // (Isar 未 ready / characters 空)兜底跳过 dialog 不阻塞剧情流。
+  if (outcome != null && context.mounted) {
+    await showStageVictoryDialog(
+      context: context,
+      stage: stage,
+      drops: outcome.drops,
+      advancements: outcome.advancements,
+    );
+  }
 
   if (stage.narrativeVictoryId != null) {
     if (!context.mounted) return;
@@ -282,20 +296,24 @@ class DefeatLossEntry {
 /// stage.dropTable roll 出装备/物品 → writeTxn putAll + 装备 owner=null 入背包 +
 /// items 写/更新 inventoryItems。
 ///
-/// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 默默返回，不阻塞
-/// victory narrative 流（与 _applyBossDefeatPenalty 一致风格）。
-Future<void> _applyVictoryResolution({
+/// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 返回 null，
+/// caller 跳过 victory dialog（与 _applyBossDefeatPenalty 一致风格）。
+///
+/// W15 #30 P3 后续 A:返回 `(drops, advancements)` 供 caller push
+/// [showStageVictoryDialog] 显 drop + 升层 banner。
+Future<({DropResult drops, List<AdvancementEntry> advancements})?>
+    _applyVictoryResolution({
   required WidgetRef ref,
   required StageDef stage,
 }) async {
   final isar = IsarSetup.instanceOrNull;
-  if (isar == null) return;
+  if (isar == null) return null;
   final finalState = ref.read(battleProvider);
-  if (!finalState.isFinished) return;
+  if (!finalState.isFinished) return null;
 
   final save = await isar.saveDatas.get(0);
   final ids = save?.activeCharacterIds ?? const <int>[];
-  if (ids.isEmpty) return;
+  if (ids.isEmpty) return null;
 
   final characters = <Character>[];
   final equipsByCh = <int, List<Equipment>>{};
@@ -330,7 +348,7 @@ Future<void> _applyVictoryResolution({
     }
     techsByCh[c.id] = ts;
   }
-  if (characters.isEmpty) return;
+  if (characters.isEmpty) return null;
 
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
@@ -350,14 +368,17 @@ Future<void> _applyVictoryResolution({
 
   // W15 #30 第 3 期:active 3 character 每人 += stage.baseExpReward + 升层。
   // 全员 full(Demo §10 不平摊,鼓励多角色养成);apply in-place 改 character,
-  // 后续 putAll 写入。Phase 4 UI 用 result 显示升层 banner(本批暂不暂存)。
+  // 后续 putAll 写入。
+  // W15 #30 P3 后续 A:收集 AdvancementResult 暂存供 victory dialog banner。
+  final advancements = <AdvancementEntry>[];
   if (stage.baseExpReward > 0) {
     for (final c in characters) {
-      CharacterAdvancementService.applyExperience(
+      final r = CharacterAdvancementService.applyExperience(
         c,
         stage.baseExpReward,
         realmLookup: GameRepository.instance.getRealm,
       );
+      advancements.add(AdvancementEntry(chName: c.name, result: r));
     }
   }
 
@@ -393,6 +414,8 @@ Future<void> _applyVictoryResolution({
       }
     }
   });
+
+  return (drops: result.dropResult, advancements: advancements);
 }
 
 /// 主线 victory drop items 的 ItemType 推断（与 tower _itemTypeOf 同源）。

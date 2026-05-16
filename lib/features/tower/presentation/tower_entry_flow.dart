@@ -23,6 +23,7 @@ import '../../../features/equipment/application/drop_service.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../../ui/narrative/narrative_reader_screen.dart';
 import '../../../ui/strings.dart';
@@ -119,7 +120,8 @@ Future<void> runTowerFlow({
   // 首通才发奖控制不变（stageDef=null 让 service.resolve 不内部 roll drops）。
   // W15 #30 P3:isFirstClear 时 EXP 写回 + 升层(沿 drops 首通发奖体例,
   // 防刷塔无脑刷 EXP)。
-  await _applyTowerVictoryResolution(
+  // W15 #30 P3 后续 A:收 advancements 暂存供 victory dialog banner。
+  final advancements = await _applyTowerVictoryResolution(
     ref: ref,
     floor: floor,
     isFirstClear: clearResult.isFirstClear,
@@ -151,6 +153,7 @@ Future<void> runTowerFlow({
       floor: floor,
       isFirstClear: clearResult.isFirstClear,
       drops: drops,
+      advancements: advancements,
     );
   }
 
@@ -215,21 +218,24 @@ Future<bool> _runTowerBattle({
 /// W15 #30 P3:[isFirstClear] 时 active 3 character 每人 += floor.baseExpReward
 /// + 升层(沿 drops 首通发奖体例,防刷塔无脑刷 EXP)。
 ///
-/// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 默默返回，不阻塞
-/// victory dialog / narrative。
-Future<void> _applyTowerVictoryResolution({
+/// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 返回空 list，
+/// caller dialog 仅显 drop 部分不显升层 banner（不阻塞 victory dialog / narrative）。
+///
+/// W15 #30 P3 后续 A:返回升层结果 list 供 caller push `_showVictoryDialog`
+/// 时显多角色升层 banner。
+Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
   required WidgetRef ref,
   required TowerFloorDef floor,
   required bool isFirstClear,
 }) async {
   final isar = ref.read(isarProvider);
-  if (isar == null) return;
+  if (isar == null) return const [];
   final finalState = ref.read(battleProvider);
-  if (!finalState.isFinished) return;
+  if (!finalState.isFinished) return const [];
 
   final save = await isar.saveDatas.get(0);
   final ids = save?.activeCharacterIds ?? const <int>[];
-  if (ids.isEmpty) return;
+  if (ids.isEmpty) return const [];
 
   final characters = <Character>[];
   final equipsByCh = <int, List<Equipment>>{};
@@ -264,7 +270,7 @@ Future<void> _applyTowerVictoryResolution({
     }
     techsByCh[c.id] = ts;
   }
-  if (characters.isEmpty) return;
+  if (characters.isEmpty) return const [];
 
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
@@ -284,15 +290,17 @@ Future<void> _applyTowerVictoryResolution({
   );
 
   // W15 #30 P3:isFirstClear 时 active 3 character 每人 += floor.baseExpReward
-  // + 升层(重打不发奖,沿 drops 体例防刷)。Phase 4 UI 用 result 显示升层
-  // banner(本批暂不暂存)。
+  // + 升层(重打不发奖,沿 drops 体例防刷)。
+  // W15 #30 P3 后续 A:收集 AdvancementResult 供 victory dialog banner。
+  final advancements = <AdvancementEntry>[];
   if (isFirstClear && floor.baseExpReward > 0) {
     for (final c in characters) {
-      CharacterAdvancementService.applyExperience(
+      final r = CharacterAdvancementService.applyExperience(
         c,
         floor.baseExpReward,
         realmLookup: GameRepository.instance.getRealm,
       );
+      advancements.add(AdvancementEntry(chName: c.name, result: r));
     }
   }
 
@@ -305,6 +313,8 @@ Future<void> _applyTowerVictoryResolution({
       if (list.isNotEmpty) await isar.equipments.putAll(list);
     }
   });
+
+  return advancements;
 }
 
 /// Isar 持久化爬塔掉落（W6 nullable propagation：isarProvider 为 null 时短路，测试安全）。
@@ -345,11 +355,14 @@ ItemType _itemTypeOf(String defId) {
 }
 
 /// 胜利奖励弹窗：首通显示掉落清单，重打显示「重打不发奖」。
+///
+/// W15 #30 P3 后续 A:加 advancements 参数,首通时在 drop 列后追升层 banner。
 Future<void> _showVictoryDialog({
   required BuildContext context,
   required TowerFloorDef floor,
   required bool isFirstClear,
   required DropResult drops,
+  required List<AdvancementEntry> advancements,
 }) async {
   await showDialog<void>(
     context: context,
@@ -357,7 +370,7 @@ Future<void> _showVictoryDialog({
     builder: (ctx) => AlertDialog(
       title: Text(UiStrings.towerFloorLabel(floor.floorIndex)),
       content: isFirstClear
-          ? _FirstClearContent(drops: drops)
+          ? _FirstClearContent(drops: drops, advancements: advancements)
           : const Text(UiStrings.towerReplayNoReward),
       actions: [
         TextButton(
@@ -435,14 +448,21 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
 }
 
 /// 首通奖励清单（DropResult 非空时列条目，空则显示「无固定奖励」）。
+///
+/// W15 #30 P3 后续 A:drop 列后追多角色升层 banner([AdvancementSummary])。
 class _FirstClearContent extends StatelessWidget {
-  const _FirstClearContent({required this.drops});
+  const _FirstClearContent({
+    required this.drops,
+    required this.advancements,
+  });
 
   final DropResult drops;
+  final List<AdvancementEntry> advancements;
 
   @override
   Widget build(BuildContext context) {
-    if (drops.isEmpty) {
+    final hasAdvanced = advancements.any((e) => e.result.didAdvance);
+    if (drops.isEmpty && !hasAdvanced) {
       return const Text(UiStrings.towerFirstClearNoReward);
     }
     final lines = <String>[
@@ -456,13 +476,21 @@ class _FirstClearContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(UiStrings.towerFirstClearLabel),
-        const SizedBox(height: 4),
-        for (final line in lines)
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: Text('· $line'),
-          ),
+        if (drops.isEmpty)
+          const Text(UiStrings.towerFirstClearNoReward)
+        else ...[
+          const Text(UiStrings.towerFirstClearLabel),
+          const SizedBox(height: 4),
+          for (final line in lines)
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Text('· $line'),
+            ),
+        ],
+        if (hasAdvanced) ...[
+          const SizedBox(height: 12),
+          AdvancementSummary(entries: advancements),
+        ],
       ],
     );
   }
