@@ -20,7 +20,7 @@ lib/services/seclusion_service.dart         → lib/features/seclusion/applicati
 lib/data/models/retreat_session.dart        → lib/features/seclusion/domain/retreat_session.dart
 lib/data/models/retreat_session.g.dart      → lib/features/seclusion/domain/retreat_session.g.dart
 lib/data/defs/seclusion_map_def.dart        → lib/features/seclusion/domain/seclusion_map_def.dart
-lib/providers/isar_provider.dart 抽出       → lib/features/seclusion/application/seclusion_providers.dart
+lib/data/isar_provider.dart 抽出       → lib/features/seclusion/application/seclusion_providers.dart
 lib/ui/seclusion/*.dart × 4                 → lib/features/seclusion/presentation/*.dart
 test/* 镜像迁                                → test/features/seclusion/{domain,application,presentation}/*
 ```

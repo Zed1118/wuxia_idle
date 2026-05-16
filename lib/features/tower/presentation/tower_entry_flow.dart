@@ -17,7 +17,7 @@ import '../../../data/narrative_loader.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
-import '../../../providers/isar_provider.dart';
+import '../../../data/isar_provider.dart';
 import '../../battle/application/battle_resolution.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../../features/equipment/application/drop_service.dart';

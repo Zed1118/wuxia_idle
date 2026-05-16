@@ -2,7 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../data/isar_setup.dart';
-import '../../../providers/isar_provider.dart';
+import '../../../data/isar_provider.dart';
 import '../domain/encounter_progress.dart';
 import 'encounter_service.dart';
 
