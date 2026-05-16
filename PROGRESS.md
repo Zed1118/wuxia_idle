@@ -5,6 +5,8 @@
 
 ## 当前阶段
 
+**W15 收尾 G+F 合批 polish 双销账 + 文档对齐**(2026-05-16,opus high,~40min)。**G 任务销账 #39 物料 Tab 行右侧 defId 隐藏**:`_MaterialRow`(lib/features/inventory/presentation/inventory_screen.dart:369)删除右侧 raw `item.defId` Text widget,行内仅保留本地化「磨剑石 × 1234」(`UiStrings.materialQuantity`),Expanded 简化为直接 Text;dartdoc 同步注更新「#39 round2 polish 隐藏 defId」语义。widget test line 201 期望反转(`findsOneWidget` → `findsNothing` + reason 注),其余 4 用例(空态/2 行 enum 顺序/quantity==0 过滤/默认 Tab)不动。**F 任务销账 #6 GDD §5.3/§5.6 公式 vs numbers.yaml 文档对齐**:GDD §5.3 line 269 装备攻击 `× 8 → × 1.0` + §5.6 line 305 内力 `× 5 → × 0.7`,各加历史脚注引到 `numbers.yaml combat.damage_formula.equipment_attack_factor / max_hp_formula.internal_force_factor`(yaml 早已平衡到位,代码以 yaml 为准 0 改动);CLAUDE.md §6 镜像公式块同步对齐 + 升版本 v1.5 → **v1.6** 加变更摘要。出手速度 ×8 与 yaml `agility_factor: 8` 本就一致无改动。**723/723** + analyze 0 issues。**W15 真硬挂账清零**:#6/#39 双销账后剩余挂账 #2(lib 目录 DDD 重构)/ #3(riverpod_lint)/ #9-11(W6 验收 + yaml 命名 + T05/T07)/ #17(phase1 笔误)/ #31(main_menu widget test)/ #37(8 events orphan)均为长期挂账无紧迫感。
+
 **Codex round2 重跑全 PASS + #34 完整闭环 + W15 §12.1 全收口里程碑**(2026-05-16,closeout `codex_w15_victory_dialog_round2_visual_check_2026-05-16.md` 6 PASS / 1 WARN / 0 FAIL)。**A1 stage_01_01**: 磨剑石 ×1 中文 + 3 角色「学徒入门」3 行升层;**A2** dialog 关闭后进 narrative + 顺带触发奇遇「渡客问道」(dialog→narrative→encounter hook 链路完整);**B1 stage_01_02**: 磨剑石 ×2 + 「学徒熟练」;**C1 塔 floor1 首通**: 磨剑石 ×1 + 「学徒精通」(3 层连升 xueTu·qiMeng→ruMen→shuLian→jingTong 数值锚点精确);**D1/D2 物料 Tab**: 起步 100 → 累积 104(精确匹配 stage drop A1+B1+C1 +4)。**1 WARN = 增量 build 缓存假象**(`flutter build windows --debug` 增量后 GUI 仍旧产物,`flutter clean` + 重建解决),工程教训非产品 bug 已沉淀 memory `feedback_codex_pen_windows_visual_check`。**销账 #34 完整闭环**(从 WARN 闭环升级)+ 加 #39 polish 候选(D1/D2 行右侧 defId 显示,closeout §7 推荐隐藏,不阻断 #34)。**Codex round2 派单跑中 fixture hotfix:VC15-fresh 补主修心法**(2026-05-16,Codex Pen 报 blocker `StageBattleSetup: 角色 祖师 未修主修,无法进入战斗`,Mac 端 inline 修 commit d6509ec):F2 写 fixture 时漏看战斗入口硬约束(BattleCharacter.fromCharacter line 122-128 强制 character.school != null + StageBattleSetup 强制 mainTechniqueId != null),纠错:VC15-fresh 3 角色各学 1 个 tier 0 入门功(`tech_gangmeng_jichu` / `tech_lingqiao_jichu` / `tech_yinrou_jichu`),沿 `_learnMasterStarting` helper 写 mainTechniqueId + school + cultivationProgressToNext。**3 流派分布顺手覆盖正午阳刚 + §12.1 #7 v1.4 战斗 1/3 触发场景**。widget test 4 个相应改写(0 心法 → 3 主修 + 3 流派各 1 + tier=ruMenGong + role=main);**722/722 + analyze 0 issues**。
 
 **W15 §12.1 #7 三流派 extra_effect 数值 v1.4 决议 + 代码层全链路落地**(2026-05-16,opus xhigh ~2.5h,closeout `week15_section12_7_school_extra_effects_2026-05-16.md`)。**§12.1 #7 由 W1-W15 起阻塞战斗系统进阶 + 闭关正午加成的 3 条 sub-decision 全收口**:① **刚猛克阴柔附带 +500 固定震伤**(穿透防御不暴击,主攻击命中才触发);② **阴柔克灵巧附带内伤 debuff**(N=3 守方 tick × 200/tick 固定,穿透防御 + 同源刷新覆盖,可致死);③ **正午阳刚 +20%** 加成乘到 `internalForcePoints` 维度且仅 `character.school==gangMeng` 触发(W15 #30 闭关 3 维度 service 时挂的 v1.3 阻塞同期解锁)。**numbers.yaml +4 子段** + **CLAUDE.md v1.4** + **代码层全链路**:NumbersConfig 新建 `GangMengQuakeConfig` / `YinRouInternalInjuryConfig` + RetreatConfig 加 3 字段 + damage_calculator / battle_engine `_calculateInBattle` 加 quakeDamage 独立加值(AttackResult 加 `mainDamage` / `quakeDamage` 字段) + BattleState 加 `InternalInjurySlot` immutable class + BattleCharacter 加 `internalInjury` 槽 + `_unset` sentinel copyWith + battle_engine `_resolveAction` 入口扣 dot(致死跳过行动 + 写 BattleAction「内伤崩裂」)+ 末尾 refresh debuff(stackRule=refresh 覆盖) + seclusion_service `_isZhengWu` 新加 + `computeOutputs` 加 `charSchool` 可选参数 + completeRetreat writeTxn 外预读 character.school。**722/722** + analyze 0 issues(原 708 + 14 新增:damage_calculator 震伤 3 / battle_engine internal_injury 状态机 5 / seclusion 正午阳刚 3 / numbers.yaml v1.4 数值红线 3)。**销账 §12.1 #7 → §12.2 归档**,§12.1 剩 #10 师承遗物 1 条真硬阻塞。
@@ -39,7 +41,7 @@
 
 - 2. **lib/ 目录结构**:CLAUDE.md 写 DDD,实际用 phase1_tasks 的 flat。Phase 5 整理
 - 3. **`riverpod_lint` 未引入**(W6 重评估):custom_lint 0.8.x 锁 analyzer ^7.5/^8 与 link 4.x ^9 互斥,等 custom_lint 升级
-- 6. **GDD §5.3/§5.6 公式系数 vs numbers.yaml**:GDD 字面 ×8/×5 是「口误」,代码以 yaml 平衡值为准
+- ~~6. **GDD §5.3/§5.6 公式系数 vs numbers.yaml**~~(**2026-05-16 v1.6 销账**:GDD §5.3 装备攻击 ×8 → ×1.0 + §5.6 内力 ×5 → ×0.7,各加历史脚注;CLAUDE.md §6 镜像公式块同步对齐 + 升 v1.6;代码以 yaml 为准早已平衡到位无代码改动)
 - ~~7. numbers.yaml 节气列表混入「中秋」~~(**2026-05-15 §12 收口销账**:本批方案 A 删中秋 + 补 4 节气(雨水/谷雨/处暑/小雪)凑 12 节气,均为节气非节日)
 - ~~8. CLAUDE.md §12 收口剩 1 条~~(**2026-05-16 v1.5 §12.1 真硬阻塞清零**):#10 师承遗物 4 子项决议落 numbers.yaml 4 字段(`transfer_trigger=ascend_to_wusheng` / `multi_disciple_allocation=player_pick` / `stack_across_generations=false` / `conflict_slot_resolution=auto_swap`)。代码层 Phase 5+ 师徒升级时按此实装,本批仅规则层锚定。**13 条原始待决全 100% 收口**,详 §12.2 归档
 - 9/11. **T05/T07 验收**:Mac 无 Xcode 跑不了 desktop,留 Windows 首跑验
@@ -53,13 +55,13 @@
 - ~~36. insights ↔ encounter_skill 显式映射缺~~(**2026-05-15 W15 销账**:Mac 端 `SkillDef.narrativeInsightId` nullable 已落,encounter_skills.yaml `ting_yu_jian` 首条真实映射已填,test +4 全过 614/614)
 - 37. **8 events orphan 剩余可后续挂回**(原 23 → 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 → 余 8):C-1 收尾 2 条(huang_miao_jiu_seng → long_yin tier 7 / jiu_lou_jue_yin → wu_ming tier 7)。剩余 8 条主题不适配(duan_qiao_can_yue/gu_chuan_deng_ying/huang_cun_yao_ren/huang_yuan_yi_zhong/jiang_xin_ye_hua/qing_lou_can_meng/lao_jing_hui_xiang/yu_zhong_qiao_men),心境/江湖故事/邪门调子无对应武学,留 _archive/ 不动
 - ~~38. 像样货 5 件 lore 缺第 2 段~~(**2026-05-15 反审撤回**:整批闭环后 Mac 端 grep 复审 35 件 yaml 实测**75 段不是 70 段**(closeout §3.6 各阶罗列加和 5+5+10+10+15+15+15 = 75 算成 70)。**像样货 5 件 1 段是 W15 #35 派单 §3.2 明文规定体例**(`week15_deepseek_dispatch_35_lore_2026-05-15.md:57` "第 2 阶 · 像样货 · 各 1 段"),DeepSeek 没漏配。Codex 装备详情屏 04 WARN 是 spec 误抄错误 PROGRESS 数字,实际**详情屏 7/7 PASS**)
-- 39. **物料 Tab 行右侧 defId 显示**(2026-05-16 round2 closeout §7 polish 候选):D1/D2 主行文本已本地化为「磨剑石 ×N」/「心血结晶 ×N」但右侧仍显示 `item_mojianshi` / `item_xinxuejiejing` raw defId,Codex 建议「后续如要更克制可隐藏右侧调试 id」。**不阻断 #34 闭环**,Phase 5+ UI polish 时统一处理
+- ~~39. **物料 Tab 行右侧 defId 显示**~~(**2026-05-16 销账**:`_MaterialRow` 删 raw `item.defId` Text widget,行内仅保留本地化「磨剑石 × N」/「心血结晶 × N」,Expanded 简化为直接 Text;widget test line 201 期望反转 `findsOneWidget` → `findsNothing` + reason 注;723/723 全过)
 
-> 已销账条目(#1/#4/#5/#8/#12/#13/#14/#15/#16/#18/#19/#20/#21/#22/#23/#24/#25/#26/#27/#28/#29/#30/#32/#34/#35/#36)详见末尾归档。
+> 已销账条目(#1/#4/#5/#6/#8/#12/#13/#14/#15/#16/#18/#19/#20/#21/#22/#23/#24/#25/#26/#27/#28/#29/#30/#32/#34/#35/#36/#39)详见末尾归档。
 
 ## 下一步
 
-**W15 §12.1 全收口 + #34 stage drop 验收完整闭环里程碑**。下波候选(全无紧迫感,可分阶段推进):**C. mainline+tower victory 写回 widget integration test**(sonnet 1-2h,本批 dialog 单元 test 已覆盖,e2e 可选)/ **E. Phase 5 #3 lib 目录结构清理(挂账 #2)**(opus 2-3h,工程量大)/ **F. 挂账 #6 GDD §5.3/§5.6 公式系数 vs numbers.yaml 文档对齐**(sonnet 30min 文档型)/ **G. #39 物料 Tab 行右侧 defId 隐藏 polish**(sonnet 15-30min,closeout §7 推荐改进)。或停手等下一个里程碑触发。
+**W15 收尾 G+F 合批后真硬挂账清零里程碑**(#6 + #39 双销账,723/723)。下波候选(全无紧迫感,可分阶段推进):**C. mainline+tower victory 写回 widget integration test**(sonnet 1-2h,本批 dialog 单元 test 已覆盖,e2e 可选)/ **E. Phase 5 #3 lib 目录结构清理(挂账 #2)**(opus 2-3h,工程量大,需 Phase 0 grep 两维度)。或停手等下一个里程碑(W16 / 1.0 扩展系统启动)触发。
 
 ## 关键约束(每次开局必读)
 
