@@ -615,6 +615,17 @@ void main() {
     test('internalForce 累加 clamp 至 internalForceMax 上限', () async {
       // 把 fixture 内力顶到 max(500=500),收功后 internalForce 应仍为 max
       // (fixture setUp 默认 internalForce=500 internalForceMax=500,直接复用)
+      //
+      // W15 #30 第 3 期:屏蔽 EXP 升层副作用(EXP=400 + 默认
+      // experienceToNextLayer=100 会触发升层拉新 internalForceMax,断言
+      // `internalForce == internalForceMax` 破)。显式抬 999999 让此 test
+      // 仅验内力 clamp 边界,升层断言交给 advancement_service 单测。
+      await IsarSetup.instance.writeTxn(() async {
+        final ch = await IsarSetup.instance.characters.get(kCharId);
+        ch!.experienceToNextLayer = 999999;
+        await IsarSetup.instance.characters.put(ch);
+      });
+
       final start = DateTime(2026, 5, 11, 10, 0);
       final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
         mapType: RetreatMapType.shanLin,
@@ -640,6 +651,85 @@ void main() {
       expect(ch?.internalForce, ch?.internalForceMax,
           reason: '超 max 必须 clamp');
       expect(ch?.internalForce, 500);
+    });
+
+    // W15 #30 第 3 期 experiencePoints 消费层接入 ───────────────────────────
+
+    test('收功后 Character.experience 累加 experiencePoints + 升层', () async {
+      // fixture xueTu.qiMeng experienceToNextLayer=100(Character.create default,
+      // 非 yaml 真值 50)→ EXP=400 山林 4h 触发跨 3 层升至 jingTong。
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 4,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      final result = await SeclusionService(isar: IsarSetup.instance).completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start.add(const Duration(hours: 4)),
+      );
+
+      expect(result.experiencePoints, 400);
+      expect(result.advancement, isNotNull);
+      expect(result.advancement!.didAdvance, isTrue);
+      // 400 EXP - 100(qiMeng) - 80(ruMen) - 120(shuLian) = 100 剩 < jingTong 170
+      expect(result.advancement!.layersGained, 3);
+      expect(result.advancement!.tierAfter, RealmTier.xueTu);
+      expect(result.advancement!.layerAfter, RealmLayer.jingTong);
+
+      final ch = await IsarSetup.instance.characters.get(kCharId);
+      expect(ch?.realmLayer, RealmLayer.jingTong);
+      expect(ch?.experience, 100);
+      // jingTong yaml experience_to_next=170 / internalForceMax=800
+      expect(ch?.experienceToNextLayer, 170);
+      expect(ch?.internalForceMax, 800);
+    });
+
+    test('收功 EXP 累加但不足以升层 → advancement.didAdvance=false', () async {
+      // 显式抬 experienceToNextLayer 远大于 400 EXP,确认 advancement 标记
+      // didAdvance=false(layersGained=0)而非 null。
+      await IsarSetup.instance.writeTxn(() async {
+        final ch = await IsarSetup.instance.characters.get(kCharId);
+        ch!.experienceToNextLayer = 999999;
+        await IsarSetup.instance.characters.put(ch);
+      });
+
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 4,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      final result = await SeclusionService(isar: IsarSetup.instance).completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start.add(const Duration(hours: 4)),
+      );
+
+      expect(result.experiencePoints, 400);
+      expect(result.advancement, isNotNull);
+      expect(result.advancement!.didAdvance, isFalse);
+      expect(result.advancement!.layersGained, 0);
+
+      final ch = await IsarSetup.instance.characters.get(kCharId);
+      expect(ch?.experience, 400, reason: 'EXP 累加但不升层');
+      expect(ch?.realmLayer, RealmLayer.qiMeng);
+      expect(ch?.internalForceMax, 500);
     });
   });
 
