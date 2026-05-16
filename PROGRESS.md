@@ -60,7 +60,7 @@
 
 ## 下一步
 
-**W16 全收口后下波**:A. Codex Pen 视觉验收派单(_TodayFestivalChip 6 节日 chip + 主菜单整图,Mac debug override 切节日不依赖系统时间)— 草稿待写; B. 扩 Festival enum 至 chuXi(除夕)/ qingMingJie(清明既节气又节日)语义区分; C. mainline+tower victory widget integration test(易撞 #31 pumpAndSettle 坑,性价比低,长期候选); D. 长期挂账冲刺(#3 riverpod_lint / #9-11 / #17 / #31 / #37 余 8 events orphan)。
+**Codex Pen W16 节日 chip 视觉验收派单已发**(2026-05-16,派单 `docs/handoff/codex_dispatch_w16_festival_chip_visual_check_2026-05-16.md`):7 张截图(6 节日 chip + 1 张无覆盖 baseline),Codex 用 Mac 端 Phase2TestMenu「DEBUG · 切今日节日」入口切节日,无需调系统时间。等 Codex 在 Pen Windows 接单 closeout。**等待期下波候选**:B. 扩 Festival enum 至 chuXi(除夕)/ qingMingJie(清明既节气又节日)语义区分; C. mainline+tower victory widget integration test(易撞 #31 pumpAndSettle 坑,性价比低,长期候选); D. 长期挂账冲刺(#3 riverpod_lint / #9-11 / #17 / #31 / #37 余 8 events orphan)。
 
 ## 关键约束(每次开局必读)
 
