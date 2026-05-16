@@ -479,10 +479,17 @@ class Phase2SeedService {
   /// `CharacterAdvancementService.applyExperience` 用 yaml 配置
   /// (xueTu.qiMeng experience_to_next=50)触发升层 banner。
   ///
-  /// 不学心法、不装备装备(GDD §5.3 三系锁死,学徒只能装备 tier 0 寻常货,
-  /// 防止派单 fixture 漂移)。物料给 100 磨剑石 + 10 心血结晶,够 victory drop
+  /// **3 角色各学 1 个 tier 0 入门功**(`tech_gangmeng_jichu` / `tech_lingqiao_jichu` /
+  /// `tech_yinrou_jichu`),设 mainTechniqueId + character.school 满足
+  /// `StageBattleSetup` / `BattleCharacter.fromCharacter` 主修非空硬约束。
+  /// 不装备装备(GDD §5.3 三系锁死,学徒只能装备 tier 0 寻常货,本批 fixture
+  /// 故意 0 装备避免漂移)。物料给 100 磨剑石 + 10 心血结晶,够 victory drop
   /// 累积观察。SaveData.activeCharacterIds / founderCharacterId 沿
   /// [seedMasterDisciple] 体例。
+  ///
+  /// 流派分布:祖师 gangMeng / 大弟子 lingQiao / 二弟子 yinRou — 顺手覆盖
+  /// 正午阳刚(只祖师享受 +20%)+ 战斗中 1/3 概率触发刚猛震伤 / 阴柔内伤
+  /// 等本批新落地 §12.1 #7 v1.4 数值的真实命中场景。
   Future<void> seedVisualCheckW15Fresh() async {
     final isar = this.isar;
     final now = DateTime.now();
@@ -530,6 +537,28 @@ class Phase2SeedService {
       founder.discipleIds = [firstDisciple.id, secondDisciple.id];
       firstDisciple.masterId = founder.id;
       secondDisciple.masterId = founder.id;
+
+      // 3 角色各学 1 tier 0 入门功(round2 修:StageBattleSetup 强制主修非空)。
+      // 沿 _learnMasterStarting 体例:首项 main + 写 mainTechniqueId + school。
+      await _learnMasterStarting(
+        isar,
+        character: founder,
+        techDefIds: const ['tech_gangmeng_jichu'],
+        now: now,
+      );
+      await _learnMasterStarting(
+        isar,
+        character: firstDisciple,
+        techDefIds: const ['tech_lingqiao_jichu'],
+        now: now,
+      );
+      await _learnMasterStarting(
+        isar,
+        character: secondDisciple,
+        techDefIds: const ['tech_yinrou_jichu'],
+        now: now,
+      );
+
       await isar.characters.putAll([founder, firstDisciple, secondDisciple]);
 
       final save = await isar.saveDatas.get(0);
