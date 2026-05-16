@@ -11,7 +11,7 @@ import '../../../data/defs/skill_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/application/battle_providers.dart';
-import '../../../ui/effects/screen_shake.dart';
+import '../../../shared/effects/screen_shake.dart';
 import '../../../ui/strings.dart';
 import '../../../shared/theme/colors.dart';
 import 'attack_animation.dart';

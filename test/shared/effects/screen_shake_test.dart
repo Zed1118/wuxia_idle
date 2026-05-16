@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/ui/effects/screen_shake.dart';
+import 'package:wuxia_idle/shared/effects/screen_shake.dart';
 
 void main() {
   group('screenShakeOffset', () {
