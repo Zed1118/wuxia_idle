@@ -582,6 +582,11 @@ void main() {
       expect(ch.experience, 0,
           reason: '${ch.name} experience=0(派单要求 EXP 从 0 起,通关后稳触发升层)');
       expect(ch.isActive, isTrue, reason: '${ch.name} 必须入阵');
+      // round2 fix:战斗入口硬约束 — 主修心法不能为空。
+      expect(ch.mainTechniqueId, isNotNull,
+          reason: '${ch.name} 必须有主修心法(StageBattleSetup 硬约束)');
+      expect(ch.school, isNotNull,
+          reason: '${ch.name} 必须有主修流派(BattleCharacter.fromCharacter 硬约束)');
     }
 
     final save = await isar.saveDatas.get(0);
@@ -607,15 +612,28 @@ void main() {
     expect(await isar.encounterProgress.count(), 0, reason: '奇遇进度清零');
   });
 
-  test('seedVisualCheckW15Fresh → 0 装备 0 心法(三系锁死 + 派单 fixture 干净)',
+  test('seedVisualCheckW15Fresh → 0 装备 + 3 主修心法 + 3 流派分布 + 物料起步态',
       () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW15Fresh();
     final isar = IsarSetup.instance;
 
     expect(await isar.equipments.count(), 0,
         reason: 'GDD §5.3 锁死:学徒只能装备 tier 0 寻常货,不预装备避免 fixture 漂移');
-    expect(await isar.techniques.count(), 0,
-        reason: '学徒不预学心法,派单时玩家可观察纯 EXP 升层 banner');
+    // round2 fix:每角色 1 个 tier 0 入门功(StageBattleSetup 硬约束),3 流派各 1。
+    final techs = await isar.techniques.where().findAll();
+    expect(techs.length, 3,
+        reason: '3 角色各 1 主修(刚猛入门 / 灵巧入门 / 阴柔入门)');
+    final schoolSet = techs.map((t) => t.school).toSet();
+    expect(schoolSet, {
+      TechniqueSchool.gangMeng,
+      TechniqueSchool.lingQiao,
+      TechniqueSchool.yinRou,
+    }, reason: '3 流派各 1 — 顺手覆盖正午阳刚 + §12.1 #7 v1.4 战斗 1/3 触发场景');
+    for (final t in techs) {
+      expect(t.tier, TechniqueTier.ruMenGong,
+          reason: 'tier 0 入门功(学徒境界三系锁死合规)');
+      expect(t.role, TechniqueRole.main, reason: '本批仅 main,不预学辅修');
+    }
 
     expect(await readQty(ItemType.moJianShi), 100);
     expect(await readQty(ItemType.xinXueJieJing), 10);
