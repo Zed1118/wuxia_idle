@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/retreat_result_screen.dart';
 import 'package:wuxia_idle/ui/strings.dart';
 
-SeclusionMapDef _mkMapDef() => SeclusionMapDef(
+SeclusionMapDef _mkMapDef() => const SeclusionMapDef(
       mapType: RetreatMapType.shanLin,
       mapName: '山林',
       requiredRealm: RealmTier.xueTu,
@@ -20,13 +21,14 @@ SeclusionMapDef _mkMapDef() => SeclusionMapDef(
       weather: null,
     );
 
-RetreatOutputs _mkOutputs({
+RetreatResult _mkResult({
   double actualHours = 4.0,
   int mojianshi = 0,
   List<Equipment> drops = const [],
   int experience = 0,
   int techniqueLearn = 0,
   int internalForce = 0,
+  AdvancementResult? advancement,
 }) =>
     (
       actualHours: actualHours,
@@ -35,24 +37,26 @@ RetreatOutputs _mkOutputs({
       experiencePoints: experience,
       techniqueLearnPoints: techniqueLearn,
       internalForcePoints: internalForce,
+      advancement: advancement,
     );
 
-Future<void> _pump(WidgetTester tester, RetreatOutputs outputs) async {
+Future<void> _pump(WidgetTester tester, RetreatResult result) async {
   await tester.pumpWidget(
     MaterialApp(
-      home: RetreatResultScreen(mapDef: _mkMapDef(), outputs: outputs),
+      home: RetreatResultScreen(mapDef: _mkMapDef(), result: result),
     ),
   );
 }
 
 void main() {
-  group('RetreatResultScreen W15 #30 4 维度展示', () {
-    testWidgets('4 维度全有 → 4 行 + 实际时长', (tester) async {
+  group('RetreatResultScreen W15 #30 5 维度展示', () {
+    testWidgets('5 维度全有 → 5 行 + 实际时长', (tester) async {
       await _pump(
         tester,
-        _mkOutputs(
+        _mkResult(
           actualHours: 4.0,
           mojianshi: 12,
+          experience: 400,
           techniqueLearn: 5,
           internalForce: 30,
         ),
@@ -61,22 +65,24 @@ void main() {
       expect(find.text('山林'), findsOneWidget);
       expect(find.text(UiStrings.seclusionActualHours(4.0)), findsOneWidget);
       expect(find.text(UiStrings.seclusionMojianshi(12)), findsOneWidget);
+      expect(find.text(UiStrings.seclusionExperience(400)), findsOneWidget);
       expect(find.text(UiStrings.seclusionInternalForce(30)), findsOneWidget);
       expect(find.text(UiStrings.seclusionInsightPoints(5)), findsOneWidget);
       expect(find.text(UiStrings.seclusionResultEmpty), findsNothing);
     });
 
     testWidgets('只有 internalForce → 仅显内力行', (tester) async {
-      await _pump(tester, _mkOutputs(internalForce: 24));
+      await _pump(tester, _mkResult(internalForce: 24));
 
       expect(find.text(UiStrings.seclusionInternalForce(24)), findsOneWidget);
       expect(find.text(UiStrings.seclusionMojianshi(0)), findsNothing);
       expect(find.text(UiStrings.seclusionInsightPoints(0)), findsNothing);
+      expect(find.text(UiStrings.seclusionExperience(0)), findsNothing);
       expect(find.text(UiStrings.seclusionResultEmpty), findsNothing);
     });
 
     testWidgets('只有 techniqueLearn → 仅显领悟点行', (tester) async {
-      await _pump(tester, _mkOutputs(techniqueLearn: 3));
+      await _pump(tester, _mkResult(techniqueLearn: 3));
 
       expect(find.text(UiStrings.seclusionInsightPoints(3)), findsOneWidget);
       expect(find.text(UiStrings.seclusionMojianshi(0)), findsNothing);
@@ -84,26 +90,109 @@ void main() {
       expect(find.text(UiStrings.seclusionResultEmpty), findsNothing);
     });
 
-    testWidgets('4 维度全 0 → 显空收获文案', (tester) async {
-      await _pump(tester, _mkOutputs());
+    testWidgets('只有 experience → 仅显经验行', (tester) async {
+      await _pump(tester, _mkResult(experience: 250));
+
+      expect(find.text(UiStrings.seclusionExperience(250)), findsOneWidget);
+      expect(find.text(UiStrings.seclusionMojianshi(0)), findsNothing);
+      expect(find.text(UiStrings.seclusionResultEmpty), findsNothing);
+    });
+
+    testWidgets('5 维度全 0 → 显空收获文案', (tester) async {
+      await _pump(tester, _mkResult());
 
       expect(find.text(UiStrings.seclusionResultEmpty), findsOneWidget);
       expect(find.textContaining('磨剑石'), findsNothing);
       expect(find.textContaining('内力'), findsNothing);
       expect(find.textContaining('心法领悟点'), findsNothing);
+      expect(find.textContaining('经验'), findsNothing);
     });
 
     testWidgets('mojianshi + internalForce + insight 混合 → 3 行,不显空文案',
         (tester) async {
       await _pump(
         tester,
-        _mkOutputs(mojianshi: 8, internalForce: 50, techniqueLearn: 2),
+        _mkResult(mojianshi: 8, internalForce: 50, techniqueLearn: 2),
       );
 
       expect(find.text(UiStrings.seclusionMojianshi(8)), findsOneWidget);
       expect(find.text(UiStrings.seclusionInternalForce(50)), findsOneWidget);
       expect(find.text(UiStrings.seclusionInsightPoints(2)), findsOneWidget);
       expect(find.text(UiStrings.seclusionResultEmpty), findsNothing);
+    });
+  });
+
+  group('RetreatResultScreen W15 #30 P3 升层 banner', () {
+    AdvancementResult mkAdv({
+      required int layers,
+      required RealmTier tierAfter,
+      required RealmLayer layerAfter,
+    }) =>
+        AdvancementResult(
+          layersGained: layers,
+          tierBefore: RealmTier.xueTu,
+          layerBefore: RealmLayer.qiMeng,
+          tierAfter: tierAfter,
+          layerAfter: layerAfter,
+          internalForceMaxBefore: 500,
+          internalForceMaxAfter: 800,
+        );
+
+    testWidgets('升 1 层 → 显「突破至 学徒精通」', (tester) async {
+      await _pump(
+        tester,
+        _mkResult(
+          experience: 400,
+          advancement: mkAdv(
+            layers: 1,
+            tierAfter: RealmTier.xueTu,
+            layerAfter: RealmLayer.jingTong,
+          ),
+        ),
+      );
+
+      expect(find.text('突破至 学徒精通'), findsOneWidget);
+    });
+
+    testWidgets('跨 tier 升 4 层 → 显「连破 4 层 → 三流入门」', (tester) async {
+      await _pump(
+        tester,
+        _mkResult(
+          experience: 2000,
+          advancement: mkAdv(
+            layers: 4,
+            tierAfter: RealmTier.sanLiu,
+            layerAfter: RealmLayer.ruMen,
+          ),
+        ),
+      );
+
+      expect(find.text('连破 4 层 → 三流入门'), findsOneWidget);
+    });
+
+    testWidgets('advancement 为 null → 无升层 banner', (tester) async {
+      await _pump(tester, _mkResult(experience: 50, advancement: null));
+
+      expect(find.textContaining('突破'), findsNothing);
+      expect(find.textContaining('连破'), findsNothing);
+    });
+
+    testWidgets('advancement layersGained=0 → didAdvance=false → 无 banner',
+        (tester) async {
+      await _pump(
+        tester,
+        _mkResult(
+          experience: 30,
+          advancement: mkAdv(
+            layers: 0,
+            tierAfter: RealmTier.xueTu,
+            layerAfter: RealmLayer.qiMeng,
+          ),
+        ),
+      );
+
+      expect(find.textContaining('突破'), findsNothing);
+      expect(find.textContaining('连破'), findsNothing);
     });
   });
 }

@@ -29,7 +29,7 @@ import 'package:wuxia_idle/ui/strings.dart';
 class _FakeSeclusionService implements SeclusionService {
   RetreatSession? activeSession;
   late RetreatSession Function() startFactory;
-  late RetreatOutputs Function() completeFactory;
+  late RetreatResult Function() completeFactory;
   int startCallCount = 0;
   int completeCallCount = 0;
 
@@ -58,7 +58,7 @@ class _FakeSeclusionService implements SeclusionService {
   }
 
   @override
-  Future<RetreatOutputs> completeRetreat({
+  Future<RetreatResult> completeRetreat({
     required RetreatSession session,
     required int characterId,
     required RealmTier charRealmTier,
@@ -170,15 +170,16 @@ void main() {
       (tester) async {
     // session 已超时(2h elapsed > 1h plan → done=true)
     final session = mkSession();
-    final outputs = (
+    final result = (
       actualHours: 1.0,
       mojianshi: 100,
       equipmentDrops: <Equipment>[],
       experiencePoints: 50,
       techniqueLearnPoints: 5,
       internalForcePoints: 30,
+      advancement: null,
     );
-    final fake = _FakeSeclusionService()..completeFactory = () => outputs;
+    final fake = _FakeSeclusionService()..completeFactory = () => result;
     final def = GameRepository.instance.getSeclusionMap(RetreatMapType.shanLin);
 
     await tester.pumpWidget(
@@ -219,15 +220,16 @@ void main() {
       startedAt: DateTime.now().subtract(const Duration(minutes: 30)),
       durationHours: 1,
     );
-    final outputs = (
+    final result = (
       actualHours: 0.5,
       mojianshi: 50,
       equipmentDrops: <Equipment>[],
       experiencePoints: 25,
       techniqueLearnPoints: 2,
       internalForcePoints: 15,
+      advancement: null,
     );
-    final fake = _FakeSeclusionService()..completeFactory = () => outputs;
+    final fake = _FakeSeclusionService()..completeFactory = () => result;
     final def = GameRepository.instance.getSeclusionMap(RetreatMapType.shanLin);
 
     await tester.pumpWidget(
