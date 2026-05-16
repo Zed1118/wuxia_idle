@@ -690,6 +690,7 @@ techniques:
 
   # --- 三流派克制（GDD §4.4，强制规则）---
   # 关系：刚猛 → 阴柔 → 灵巧 → 刚猛（成环）
+  # CLAUDE.md §12.1 #7 收口 v1.4(2026-05-16):extra_effect 数值落地。
   schools:
     counter_relations:
       - attacker: gangMeng              # 刚猛
@@ -708,6 +709,28 @@ techniques:
     # 被克制系数
     countered_multiplier: 0.75          # 被克制时输出 ×0.75
     neutral_multiplier: 1.00            # 同流派或非克制关系时 ×1.0
+
+    # --- 刚猛额外震伤（§12.1 #7 决议)---
+    # 主攻击命中且流派克制成立(gangMeng → yinRou)时,追加固定 quake_dmg 数值,
+    # 与主伤害同 tick 叠加。穿透守方防御率(语义上是"震"的硬伤),不暴击(暴击只乘主伤害)。
+    # 主攻击闪避 → 震伤也不触发(走主攻击 hit/dodge 判定)。
+    gang_meng_quake:
+      damage: 500                       # 固定每招 +500 震伤
+      pierces_defense: true             # 穿透守方防御率
+      pierces_critical: true            # 不被暴击乘(独立于 critical_multiplier)
+      follows_main_hit: true            # 主攻击命中才触发,闪避不触发
+
+    # --- 阴柔内伤 debuff（§12.1 #7 决议)---
+    # 主攻击命中且流派克制成立(yinRou → lingQiao)时,在守方身上施加内伤槽:
+    # N=3 守方 tick + 每 tick 扣 200 固定。穿透守方防御率(纯穿透),可致死。
+    # 同源刷新(覆盖):同一施加者再次命中同一守方 → 重置 N=3 + 不叠层数。
+    # 不同流派 debuff 各占独立 slot(本批仅阴柔内伤 1 种 dot 类 debuff)。
+    yin_rou_internal_injury:
+      turns_persist: 3                  # 守方 tick 数,首次结算从下一守方 tick 起
+      damage_per_tick: 200              # 每 tick 扣 200 固定(玩家 max_hp 20000 约 3% / Boss 50000 约 1.2%)
+      pierces_defense: true             # 穿透守方防御率
+      stack_rule: "refresh"             # 刷新持续(覆盖):重置 turns_persist,不叠层数
+      follows_main_hit: true            # 主攻击命中才施加,闪避不施加
 
 # =============================================================================
 # 5. 招式倍率参考表
@@ -884,6 +907,9 @@ retreat:
       time_range: ["11:00", "13:00"]
       effect: "yang_school_techniques"       # 阳刚类武学（刚猛流派）+20%
       multiplier: 1.20
+      # CLAUDE.md §12.1 #7 收口 v1.4(2026-05-16):正午阳刚 +20% 加成定向落地。
+      target_attribute: "internal_force_points"  # 加成乘到 internalForcePoints(刚猛=内力外放对应)
+      applies_to_school: "gangMeng"          # 仅主修刚猛流派 character 触发,非刚猛 character 不加成
     - period: other
       time_range: null                       # 其他时段无加成
       effect: null

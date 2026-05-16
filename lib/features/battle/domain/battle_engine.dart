@@ -157,19 +157,73 @@ class BattleEngine {
     return null;
   }
 
-  /// 单次行动结算：AI 选招/目标 → 伤害计算 → 应用伤害 + 扣内力 + 写 CD →
-  /// actionPoint -= 1000 → 写 BattleAction → 死亡 / 胜负判定。
+  /// 单次行动结算:阴柔内伤 dot 结算(若 actor 有内伤槽)→ AI 选招/目标 →
+  /// 伤害计算 → 应用伤害 + 扣内力 + 写 CD → actionPoint -= 1000 → 写 BattleAction
+  /// → 死亡 / 胜负判定 → 阴柔克灵巧 refresh internalInjury slot on defender。
   static BattleState _resolveAction(
     BattleState state,
     BattleCharacter actor,
     NumbersConfig n,
     Random rng,
   ) {
-    final (skill, targetId) = BattleAI.decide(actor, state, n);
+    // === 0. 阴柔内伤 dot 结算(§12.1 #7 v1.4)===
+    // actor 出手前若有内伤槽 + remainingTurns > 0,先承受 1 次 dot:
+    //   - 穿透防御直接扣 damagePerTick
+    //   - turns -= 1,用尽则清空 slot
+    //   - 致死则写 BattleAction 内伤崩裂 + 胜负判定 + return,跳过本次行动
+    var preActor = actor;
+    var preState = state;
+    final inj = actor.internalInjury;
+    if (inj != null && inj.remainingTurns > 0) {
+      final hpAfterDot = (actor.currentHp - inj.damagePerTick).clamp(0, actor.maxHp);
+      final remaining = inj.remainingTurns - 1;
+      preActor = actor.copyWith(
+        currentHp: hpAfterDot,
+        isAlive: hpAfterDot > 0,
+        internalInjury: remaining > 0
+            ? InternalInjurySlot(
+                remainingTurns: remaining,
+                damagePerTick: inj.damagePerTick,
+              )
+            : null,
+      );
+      final leftDot = preState.leftTeam.toList();
+      final rightDot = preState.rightTeam.toList();
+      _replaceById(actor.teamSide == 0 ? leftDot : rightDot, preActor);
+      final dotAction = BattleAction(
+        tick: preState.tick,
+        actorId: actor.characterId,
+        description: preActor.isAlive
+            ? '${actor.name} 内伤发作,扣 ${inj.damagePerTick} 血'
+            : '${actor.name} 内伤崩裂,经脉俱断',
+      );
+      preState = preState.copyWith(
+        leftTeam: List.unmodifiable(leftDot),
+        rightTeam: List.unmodifiable(rightDot),
+        actionLog: [...preState.actionLog, dotAction],
+      );
+      // 致死 → 胜负判定 + return(跳过本次行动)
+      if (!preActor.isAlive) {
+        final leftAliveDot = preState.leftTeam.any((c) => c.isAlive);
+        final rightAliveDot = preState.rightTeam.any((c) => c.isAlive);
+        if (!leftAliveDot && !rightAliveDot) {
+          return preState.copyWith(result: BattleResult.draw);
+        }
+        if (!leftAliveDot) {
+          return preState.copyWith(result: BattleResult.rightWin);
+        }
+        if (!rightAliveDot) {
+          return preState.copyWith(result: BattleResult.leftWin);
+        }
+        return preState;
+      }
+    }
+
+    final (skill, targetId) = BattleAI.decide(preActor, preState, n);
     final target = _findById(
-      state,
+      preState,
       targetId,
-      actor.teamSide == 0 ? 1 : 0,
+      preActor.teamSide == 0 ? 1 : 0,
     );
     if (target == null) {
       throw StateError(
@@ -178,7 +232,7 @@ class BattleEngine {
     }
 
     final result = _calculateInBattle(
-      attacker: actor,
+      attacker: preActor,
       defender: target,
       skill: skill,
       n: n,
@@ -190,51 +244,63 @@ class BattleEngine {
       0,
       target.maxHp,
     );
+    // 阴柔 → 灵巧 命中 → refresh/施加内伤槽(§12.1 #7 v1.4):
+    // 同源刷新(覆盖)语义 = 直接覆盖原 slot 不叠层。
+    InternalInjurySlot? newInjury = target.internalInjury;
+    if (!result.isDodged &&
+        preActor.school == TechniqueSchool.yinRou &&
+        target.school == TechniqueSchool.lingQiao) {
+      newInjury = InternalInjurySlot(
+        remainingTurns: n.schoolCounter.yinRouInternalInjury.turnsPersist,
+        damagePerTick: n.schoolCounter.yinRouInternalInjury.damagePerTick,
+      );
+    }
     final targetAfter = target.copyWith(
       currentHp: newTargetHp,
       isAlive: newTargetHp > 0,
+      internalInjury: newInjury,
     );
 
     // 攻方扣内力 + 写 CD + actionPoint -= 1000（保留余数）
-    final newCd = Map<String, int>.from(actor.skillCooldowns);
+    final newCd = Map<String, int>.from(preActor.skillCooldowns);
     if (skill.cooldownTurns > 0) {
       newCd[skill.id] = skill.cooldownTurns;
     }
-    final actorAfter = actor.copyWith(
+    final actorAfter = preActor.copyWith(
       currentInternalForce:
-          actor.currentInternalForce - skill.internalForceCost,
+          preActor.currentInternalForce - skill.internalForceCost,
       skillCooldowns: Map.unmodifiable(newCd),
-      actionPoint: actor.actionPoint - 1000,
+      actionPoint: preActor.actionPoint - 1000,
     );
 
     // 写回队伍
-    final left = state.leftTeam.toList();
-    final right = state.rightTeam.toList();
-    _replaceById(actor.teamSide == 0 ? left : right, actorAfter);
-    _replaceById(target.teamSide == 0 ? left : right, targetAfter);
+    final left = preState.leftTeam.toList();
+    final right = preState.rightTeam.toList();
+    _replaceById(actorAfter.teamSide == 0 ? left : right, actorAfter);
+    _replaceById(targetAfter.teamSide == 0 ? left : right, targetAfter);
 
     // 写 BattleAction
     final action = BattleAction(
-      tick: state.tick,
-      actorId: actor.characterId,
+      tick: preState.tick,
+      actorId: actorAfter.characterId,
       targetId: target.characterId,
       skill: skill,
       attackResult: result,
-      description: _formatAction(actor, targetAfter, skill, result),
+      description: _formatAction(actorAfter, targetAfter, skill, result),
     );
 
     // 消费 pendingUltimates[actor.characterId]（无论本次是否真用上大招）
-    Map<int, SkillDef> newPending = state.pendingUltimates;
-    if (state.pendingUltimates.containsKey(actor.characterId)) {
-      final m = Map<int, SkillDef>.from(state.pendingUltimates)
-        ..remove(actor.characterId);
+    Map<int, SkillDef> newPending = preState.pendingUltimates;
+    if (preState.pendingUltimates.containsKey(actorAfter.characterId)) {
+      final m = Map<int, SkillDef>.from(preState.pendingUltimates)
+        ..remove(actorAfter.characterId);
       newPending = Map.unmodifiable(m);
     }
 
-    final next = state.copyWith(
+    final next = preState.copyWith(
       leftTeam: List.unmodifiable(left),
       rightTeam: List.unmodifiable(right),
-      actionLog: [...state.actionLog, action],
+      actionLog: [...preState.actionLog, action],
       pendingUltimates: newPending,
     );
 
@@ -340,7 +406,15 @@ class BattleEngine {
 
     final raw =
         base * cultMult * schoolMult * critMult * defMult * realmMult;
-    final finalDamage = raw.toInt();
+    final mainDamage = raw.toInt();
+
+    // 刚猛克阴柔附带震伤(§12.1 #7 v1.4):穿透防御不暴击,与主伤害同 tick 叠加。
+    var quakeDamage = 0;
+    if (attacker.school == TechniqueSchool.gangMeng &&
+        defender.school == TechniqueSchool.yinRou) {
+      quakeDamage = n.schoolCounter.gangMengQuake.damage;
+    }
+    final finalDamage = mainDamage + quakeDamage;
 
     final effects = <String>[];
     if (extraEffect != null) effects.add(extraEffect);
@@ -349,10 +423,14 @@ class BattleEngine {
         ' + $eqAtk + ${skill.powerMultiplier})'
         ' * ${_fmt(cultMult)} * ${_fmt(schoolMult)} * ${_fmt(critMult)}'
         ' * ${_fmt(defMult)} * ${_fmt(realmMult)}'
-        ' = $finalDamage [atkLv=$atkLevel,defLv=$defLevel]';
+        ' = $mainDamage'
+        '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
+        ' [atkLv=$atkLevel,defLv=$defLevel]';
 
     return AttackResult(
       finalDamage: finalDamage,
+      mainDamage: mainDamage,
+      quakeDamage: quakeDamage,
       isCritical: isCritical,
       isDodged: false,
       schoolCounterMultiplier: schoolMult,
