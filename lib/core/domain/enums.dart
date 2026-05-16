@@ -259,7 +259,20 @@ enum ItemType {
   xinXueJieJing,    // 心血结晶（强化保底，GDD §6.3）
   jingYanDan,       // 经验丹
   techniqueScroll,  // 心法秘籍
-  miscMaterial,     // 杂项材料
+  miscMaterial;     // 杂项材料
+
+  /// 根据已知 item defId 推断 [ItemType]，未知 id 兜底 [miscMaterial]。
+  /// 入库（tower/mainline 写背包）与展示（victory dialog drop banner）共用。
+  static ItemType fromDefId(String defId) {
+    switch (defId) {
+      case 'item_mojianshi':
+        return ItemType.moJianShi;
+      case 'item_xinxuejiejing':
+        return ItemType.xinXueJieJing;
+      default:
+        return ItemType.miscMaterial;
+    }
+  }
 }
 
 /// 游戏事件类型（"昨晚发生的事"，GDD §9.2）。

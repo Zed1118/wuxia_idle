@@ -71,6 +71,9 @@ class UiStrings {
   static const String scenarioVc15Resonance = 'VC15-res · 共鸣/强化/开锋光谱';
   static const String hintVc15Resonance =
       '6 件武器覆盖共鸣 4 阶段 + 强化 +0/+5/+10/+15/+19 + 开锋 0/1/2/3 槽 + 师承遗物 1 件';
+  static const String scenarioVc15Fresh = 'VC15-fresh · 3 active 学徒启蒙(升层 banner 验收)';
+  static const String hintVc15Fresh =
+      '3 active 全员 xueTu·qiMeng + experience=0 + 主线塔进度清零,通 stage_01_01 触发升层多行 banner';
   static const String encounterDebugPickerTitle = 'VC-EVENT · 触发奇遇';
 
   // 调试菜单（T17）
