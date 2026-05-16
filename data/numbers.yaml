@@ -961,18 +961,23 @@ retreat:
 # 后续年份由 yaml 加 days_<year> 段（沿用 solar_term_bonus.days_2026 体例）。
 # 不引入农历库，与 §12 #13 决议保持一致。
 #
-# 6 个传统节日：春节 / 元宵 / 端午 / 七夕 / 中秋 / 重阳（覆盖一年四季）。
+# 8 个传统节日：除夕 / 春节 / 元宵 / 清明 / 端午 / 七夕 / 中秋 / 重阳（覆盖一年四季）。
 # 中秋虽是农历节日，与节气 solar_term_bonus 早期混入「中秋」（§7 挂账）语义不同 ——
 # solar_term_bonus 24 节气表已删中秋，festivals 这边重新作为节日列入。
+# 清明既是节气（retreat.solar_term_bonus.days_2026 中存在）也是节日 —— 两通道独立各走各的
+# （GDD §8.4 节日通道独立于节气通道），同一天双重身份不冲突。
+# W17 D-#3 销账后 W17 B 任务扩 chuXi/qingMingJie。
 
 festivals:
   days_2026:
-    - {festival: chunJie,   date: "2026-02-17"}  # 春节   农历正月初一
-    - {festival: yuanXiao,  date: "2026-03-03"}  # 元宵   农历正月十五
-    - {festival: duanWu,    date: "2026-06-19"}  # 端午   农历五月初五
-    - {festival: qiXi,      date: "2026-08-19"}  # 七夕   农历七月初七
-    - {festival: zhongQiu,  date: "2026-09-25"}  # 中秋   农历八月十五
-    - {festival: chongYang, date: "2026-10-18"}  # 重阳   农历九月初九
+    - {festival: chuXi,       date: "2026-02-16"}  # 除夕   农历腊月最后一天
+    - {festival: chunJie,     date: "2026-02-17"}  # 春节   农历正月初一
+    - {festival: yuanXiao,    date: "2026-03-03"}  # 元宵   农历正月十五
+    - {festival: qingMingJie, date: "2026-04-05"}  # 清明   公历清明节
+    - {festival: duanWu,      date: "2026-06-19"}  # 端午   农历五月初五
+    - {festival: qiXi,        date: "2026-08-19"}  # 七夕   农历七月初七
+    - {festival: zhongQiu,    date: "2026-09-25"}  # 中秋   农历八月十五
+    - {festival: chongYang,   date: "2026-10-18"}  # 重阳   农历九月初九
 
 # =============================================================================
 # 8. 30 层爬塔"问鼎江湖"

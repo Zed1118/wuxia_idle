@@ -165,11 +165,13 @@ class EnumL10n {
     };
   }
 
-  /// 农历节日（W16 GDD §12.4 接口预留）。Demo 阶段 6 个传统节日。
+  /// 农历节日（W16 framework + W17 扩 chuXi/qingMingJie）。Demo 阶段 8 个传统节日。
   static String festival(Festival f) {
     return switch (f) {
+      Festival.chuXi => '除夕',
       Festival.chunJie => '春节',
       Festival.yuanXiao => '元宵',
+      Festival.qingMingJie => '清明',
       Festival.duanWu => '端午',
       Festival.qiXi => '七夕',
       Festival.zhongQiu => '中秋',
