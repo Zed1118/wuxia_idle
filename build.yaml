@@ -1,0 +1,13 @@
+targets:
+  $default:
+    builders:
+      # 限定 isar_community_generator 仅扫 entity 目录(core/domain + features/*/domain)。
+      # 默认 builder 扫全 lib/ 时若遇 widget/function 上的不可识别注解(如 riverpod_lint 的
+      # @Dependencies([provider]))会 resolve 失败。
+      # W17 polish-D 启用 riverpod_lint plugin 后 tower 模块出现 @Dependencies 标注,触发本
+      # 限定。
+      isar_community_generator:isar_community_generator:
+        generate_for:
+          include:
+            - lib/core/domain/**.dart
+            - lib/features/*/domain/**.dart
