@@ -7,7 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
-import 'package:wuxia_idle/providers/rng_provider.dart';
+import 'package:wuxia_idle/shared/utils/rng_provider.dart';
 import 'package:wuxia_idle/features/equipment/presentation/enhance_dialog.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
