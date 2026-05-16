@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/narrative_loader.dart';
-import 'package:wuxia_idle/ui/narrative/narrative_reader_screen.dart';
+import 'package:wuxia_idle/features/narrative/presentation/narrative_reader_screen.dart';
 
 /// T36 NarrativeReaderScreen widget 测试。
 void main() {

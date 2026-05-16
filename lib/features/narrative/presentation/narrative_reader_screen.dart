@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../data/narrative_loader.dart';
-import '../../shared/theme/colors.dart';
+import '../../../data/narrative_loader.dart';
+import '../../../shared/theme/colors.dart';
 
 /// 主线剧情阅读屏（Phase 3 T36）。
 ///
