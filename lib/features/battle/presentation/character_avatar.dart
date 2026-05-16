@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../features/battle/domain/battle_state.dart';
-import '../../features/battle/domain/enum_localizations.dart';
-import '../theme/colors.dart';
+import '../domain/battle_state.dart';
+import '../domain/enum_localizations.dart';
+import '../../../ui/theme/colors.dart';
 import 'hp_bar.dart';
 
 /// 战斗角色头像（phase1_tasks.md T14 §784）。

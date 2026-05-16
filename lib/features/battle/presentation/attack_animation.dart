@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../data/numbers_config.dart';
+import '../../../data/numbers_config.dart';
 
 /// 攻击三段式位移动画包装（phase1_tasks T15 §15.1）。
 ///

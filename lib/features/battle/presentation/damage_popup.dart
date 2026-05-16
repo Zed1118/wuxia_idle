@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../data/numbers_config.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../data/numbers_config.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
 
 /// 伤害飘字类型（phase1_tasks T15 §15.2）。
 enum PopupType { normal, critical, dodge }

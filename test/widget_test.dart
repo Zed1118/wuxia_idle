@@ -6,10 +6,10 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
-import 'package:wuxia_idle/ui/battle/battle_demo.dart';
-import 'package:wuxia_idle/ui/battle/battle_screen.dart';
-import 'package:wuxia_idle/ui/battle/character_avatar.dart';
-import 'package:wuxia_idle/ui/battle/damage_popup.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
+import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
+import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
+import 'package:wuxia_idle/features/battle/presentation/damage_popup.dart';
 
 /// 短时序动画配置，加速 widget test 运行。
 const _testAnim = AnimationNumbers(

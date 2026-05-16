@@ -19,7 +19,7 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../services/battle_resolution.dart';
 import '../../../services/stage_battle_setup.dart';
-import '../../../ui/battle/battle_screen.dart';
+import '../../battle/presentation/battle_screen.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../../ui/narrative/narrative_reader_screen.dart';
 import '../../../ui/theme/colors.dart';
