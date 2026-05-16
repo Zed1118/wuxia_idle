@@ -265,5 +265,30 @@ void main() {
         throwsA(isA<ArgumentError>()),
       );
     });
+
+    // W16 GDD §12.4 festivalRequired 解析
+    test('festivalRequired=null（缺字段）→ trigger.festivalRequired=null', () {
+      final t = EncounterTrigger.fromYaml({});
+      expect(t.festivalRequired, isNull);
+    });
+
+    test('festivalRequired=chunJie → 正确解析为 Festival.chunJie', () {
+      final t = EncounterTrigger.fromYaml({'festivalRequired': 'chunJie'});
+      expect(t.festivalRequired, Festival.chunJie);
+    });
+
+    test('festivalRequired=zhongQiu → 正确解析为 Festival.zhongQiu', () {
+      final t = EncounterTrigger.fromYaml({'festivalRequired': 'zhongQiu'});
+      expect(t.festivalRequired, Festival.zhongQiu);
+    });
+
+    test('未知 festival 枚举值 → 抛错', () {
+      expect(
+        () => EncounterTrigger.fromYaml({
+          'festivalRequired': 'unknownFestival_oops',
+        }),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
   });
 }

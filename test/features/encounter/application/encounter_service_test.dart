@@ -255,6 +255,101 @@ void main() {
       );
       expect(result, isNull, reason: '已在 triggeredEncounterIds 中应被跳过');
     });
+
+    // ── W16 GDD §12.4 节日活动 · festival 维度 ─────────────────────
+
+    test('festivalRequired=chunJie + festivalToday=null → 不触发', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      final def = const EncounterDef(
+        id: 'enc_festival_chun_jie',
+        type: EncounterType.fortuneEvent,
+        trigger: EncounterTrigger(festivalRequired: Festival.chunJie),
+        baseProbability: 1.0,
+        outcomeMapping: {
+          'gain': OutcomeDef(
+            type: OutcomeType.attributeBonus,
+            attributeKey: AttributeKey.fortune,
+          ),
+        },
+      );
+      final result = await svc.evaluateTriggers(
+        saveDataId: 1,
+        attributes: _mkAttrs(fortune: 9),
+        encounters: [def],
+        rng: _FixedRng(0.0),
+        // festivalToday 不传 → null,非节日
+      );
+      expect(result, isNull, reason: 'festivalRequired 非 null 但今日非节日');
+    });
+
+    test('festivalRequired=chunJie + festivalToday=yuanXiao → 不触发(不同节日)',
+        () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      final def = const EncounterDef(
+        id: 'enc_festival_chun_jie_2',
+        type: EncounterType.fortuneEvent,
+        trigger: EncounterTrigger(festivalRequired: Festival.chunJie),
+        baseProbability: 1.0,
+        outcomeMapping: {
+          'gain': OutcomeDef(
+            type: OutcomeType.attributeBonus,
+            attributeKey: AttributeKey.fortune,
+          ),
+        },
+      );
+      final result = await svc.evaluateTriggers(
+        saveDataId: 1,
+        attributes: _mkAttrs(fortune: 9),
+        encounters: [def],
+        rng: _FixedRng(0.0),
+        festivalToday: Festival.yuanXiao,
+      );
+      expect(result, isNull, reason: 'festivalRequired=chunJie 但今日是元宵');
+    });
+
+    test('festivalRequired=chunJie + festivalToday=chunJie + rng < p → 触发',
+        () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      final def = const EncounterDef(
+        id: 'enc_festival_chun_jie_3',
+        type: EncounterType.fortuneEvent,
+        trigger: EncounterTrigger(festivalRequired: Festival.chunJie),
+        baseProbability: 1.0,
+        outcomeMapping: {
+          'gain': OutcomeDef(
+            type: OutcomeType.attributeBonus,
+            attributeKey: AttributeKey.fortune,
+          ),
+        },
+      );
+      final result = await svc.evaluateTriggers(
+        saveDataId: 1,
+        attributes: _mkAttrs(fortune: 5),
+        encounters: [def],
+        rng: _FixedRng(0.5), // p = 1.0 * 1.25 = 1.25,0.5 < 1.25 → 触发
+        festivalToday: Festival.chunJie,
+      );
+      expect(result?.id, def.id);
+    });
+
+    test('festivalRequired=null + festivalToday=chunJie → 触发(节日维度免审)',
+        () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      final def = _mkFortune();
+      final result = await svc.evaluateTriggers(
+        saveDataId: 1,
+        attributes: _mkAttrs(fortune: 9),
+        encounters: [def],
+        rng: _FixedRng(0.0),
+        festivalToday: Festival.chunJie,
+      );
+      expect(result?.id, def.id,
+          reason: 'festivalRequired=null → 任何节日/非节日都通过该维度');
+    });
   });
 
   group('applyOutcome', () {

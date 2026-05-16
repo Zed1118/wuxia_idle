@@ -164,4 +164,16 @@ class EnumL10n {
       ItemType.miscMaterial => '杂项材料',
     };
   }
+
+  /// 农历节日（W16 GDD §12.4 接口预留）。Demo 阶段 6 个传统节日。
+  static String festival(Festival f) {
+    return switch (f) {
+      Festival.chunJie => '春节',
+      Festival.yuanXiao => '元宵',
+      Festival.duanWu => '端午',
+      Festival.qiXi => '七夕',
+      Festival.zhongQiu => '中秋',
+      Festival.chongYang => '重阳',
+    };
+  }
 }

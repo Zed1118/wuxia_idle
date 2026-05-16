@@ -246,6 +246,22 @@ enum TimeOfDayPeriod {
   other,    // 其他时段（无加成）
 }
 
+/// 农历节日（GDD §12.4 W16 接口预留）。
+///
+/// **不影响数值红线**（GDD §12.4 明文「节日活动：不影响数值」）—— 仅用作
+/// encounter trigger 维度 + UI「今日节日」chip 显示。农历转公历按年 hardcode
+/// 在 numbers.yaml `festivals.days_2026`（沿用节气 §12 #13 决议体例，不引入农历库）。
+///
+/// Demo 阶段 6 个真实传统节日：春节 / 元宵 / 端午 / 七夕 / 中秋 / 重阳。
+enum Festival {
+  chunJie,    // 春节   农历正月初一
+  yuanXiao,   // 元宵   农历正月十五
+  duanWu,     // 端午   农历五月初五
+  qiXi,       // 七夕   农历七月初七
+  zhongQiu,   // 中秋   农历八月十五
+  chongYang,  // 重阳   农历九月初九
+}
+
 /// 闭关 session 状态（Phase 3 T48）。
 enum RetreatStatus {
   active,     // 进行中（未收功）

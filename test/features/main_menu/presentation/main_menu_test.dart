@@ -7,6 +7,8 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
+import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import 'package:wuxia_idle/features/festival/application/festival_service_providers.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -164,5 +166,50 @@ void main() {
           .first,
     );
     expect(opacity.opacity, 0.4);
+  });
+
+  // ── W16 GDD §12.4 节日活动 · 今日节日 chip ──────────────────────────
+
+  testWidgets('节日 chip：todayFestival=null（非节日）→ 不显示「今日：」前缀',
+      (tester) async {
+    // 默认 ProviderScope 无 override → festivalServiceProvider 返 null（test
+    // 不加载 GameRepository）→ todayFestivalProvider 返 null → chip 不渲染。
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: MainMenu()),
+      ),
+    );
+    expect(find.textContaining('今日：'), findsNothing);
+  });
+
+  testWidgets('节日 chip：todayFestival=chunJie → 显示「今日：春节」',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          todayFestivalProvider.overrideWith((ref) => Festival.chunJie),
+        ],
+        child: const MaterialApp(home: MainMenu()),
+      ),
+    );
+    expect(
+      find.text(
+        UiStrings.mainMenuTodayFestival(EnumL10n.festival(Festival.chunJie)),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('节日 chip：todayFestival=zhongQiu → 显示「今日：中秋」',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          todayFestivalProvider.overrideWith((ref) => Festival.zhongQiu),
+        ],
+        child: const MaterialApp(home: MainMenu()),
+      ),
+    );
+    expect(find.text('今日：中秋'), findsOneWidget);
   });
 }

@@ -84,6 +84,10 @@ class OutcomeDef {
 /// 基础上,加 [biomeMinutes] + [weatherMinutes] 多维度。biome/weather 累计
 /// 走 [EncounterService.recordIdleMinutes](闭关 actualHours × 60 喂)。
 ///
+/// **W16 扩展**:加 [festivalRequired]。仅在指定节日当天触发(对接
+/// `numbers.yaml festivals.days_2026`)。GDD §12.4 接口预留 —— 节日活动不影响
+/// 数值，仅作为 encounter trigger 维度（限定剧情）。
+///
 /// 多维度阈值**全部满足才触发**(AND 语义)。任一维度配空 map = 该维度无门槛。
 class EncounterTrigger {
   /// 每流派的击杀阈值。例:`{lingQiao: 100}` = 击败 100 个灵巧流派敌人。
@@ -97,12 +101,16 @@ class EncounterTrigger {
   /// 机缘属性下限。`fortune < this` 时不参与软概率计算,直接 0 概率。
   /// `null` 表示无下限(任何 fortune 都参与)。
   final int? fortuneRequired;
+  /// W16 节日触发门槛。`null` 表示无门槛(任何日子都参与)；
+  /// 非 null 时仅在该节日当天通过 [EncounterService] `festivalToday` 维度匹配时才触发。
+  final Festival? festivalRequired;
 
   const EncounterTrigger({
     this.schoolKillThreshold = const {},
     this.biomeMinutes = const {},
     this.weatherMinutes = const {},
     this.fortuneRequired,
+    this.festivalRequired,
   });
 
   factory EncounterTrigger.fromYaml(Map<String, dynamic> y) {
@@ -120,6 +128,9 @@ class EncounterTrigger {
         (k) => EncounterWeather.values.byName(k),
       )),
       fortuneRequired: (y['fortuneRequired'] as num?)?.toInt(),
+      festivalRequired: y['festivalRequired'] == null
+          ? null
+          : Festival.values.byName(y['festivalRequired'] as String),
     );
   }
 

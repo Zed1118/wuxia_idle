@@ -34,6 +34,12 @@ class UiStrings {
 
   // 主菜单（T32 子提交 3b）
   static const String mainMenuTitle = '挂机武侠 · 调试主菜单';
+
+  /// 主菜单「今日节日」chip（W16 GDD §12.4）。
+  /// [festivalName] 走 [EnumL10n.festival]，例：「今日：春节」。
+  static String mainMenuTodayFestival(String festivalName) =>
+      '今日：$festivalName';
+
   static const String mainMenuPhase1 = 'Phase 1 战斗测试';
   static const String mainMenuPhase1Hint = '4 个 3v3 战斗场景（基础对决 / 流派克制 / 装备影响 / 境界差距）';
   static const String mainMenuPhase2 = 'Phase 2 调试场景';
