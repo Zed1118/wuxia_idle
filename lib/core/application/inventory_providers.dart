@@ -1,10 +1,10 @@
 import 'package:isar_community/isar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../data/isar_setup.dart';
-import '../core/domain/enums.dart';
-import '../core/domain/equipment.dart';
-import '../core/domain/inventory_item.dart';
+import '../../data/isar_setup.dart';
+import '../domain/enums.dart';
+import '../domain/equipment.dart';
+import '../domain/inventory_item.dart';
 
 part 'inventory_providers.g.dart';
 

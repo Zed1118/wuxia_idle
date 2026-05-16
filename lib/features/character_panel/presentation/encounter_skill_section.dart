@@ -7,7 +7,7 @@ import '../../../data/game_repository.dart';
 import '../../../core/domain/character.dart';
 import '../../encounter/domain/encounter_progress.dart';
 import '../../../core/domain/enums.dart';
-import '../../../providers/character_providers.dart';
+import '../../../core/application/character_providers.dart';
 import '../../../providers/isar_provider.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../../ui/theme/colors.dart';

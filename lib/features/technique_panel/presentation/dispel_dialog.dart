@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/character.dart';
 import '../../../core/domain/technique.dart';
-import '../../../providers/battle_providers.dart';
+import '../../../core/application/battle_providers.dart';
 import '../../../ui/strings.dart';
 import '../../../ui/theme/colors.dart';
 

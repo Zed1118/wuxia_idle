@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/combat/battle_state.dart';
 import 'package:wuxia_idle/combat/damage_calculator.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
-import 'package:wuxia_idle/providers/battle_providers.dart';
+import 'package:wuxia_idle/core/application/battle_providers.dart';
 import 'package:wuxia_idle/ui/battle/battle_demo.dart';
 import 'package:wuxia_idle/ui/battle/battle_screen.dart';
 import 'package:wuxia_idle/ui/battle/character_avatar.dart';

@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
-import 'package:wuxia_idle/providers/inventory_providers.dart';
+import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/providers/rng_provider.dart';
 import 'package:wuxia_idle/ui/enhancement/enhance_dialog.dart';
 import 'package:wuxia_idle/utils/rng.dart';
