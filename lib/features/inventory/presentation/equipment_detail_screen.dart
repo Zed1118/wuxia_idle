@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../combat/enum_localizations.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../data/lore_loader.dart';
-import '../../../data/models/equipment.dart';
+import '../../../core/domain/equipment.dart';
 import '../../../providers/battle_providers.dart';
 import '../../../providers/inventory_providers.dart';
 import '../../../ui/enhancement/enhance_dialog.dart';

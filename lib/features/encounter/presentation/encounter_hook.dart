@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
-import '../../../data/models/character.dart';
-import '../../../data/models/enums.dart';
-import '../../../data/models/save_data.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/save_data.dart';
 import '../../../providers/rng_provider.dart';
 import '../application/encounter_service.dart';
 import '../domain/encounter_def.dart';

@@ -1,4 +1,4 @@
-import '../models/enums.dart';
+import '../../core/domain/enums.dart';
 
 /// 师徒角色定义（GDD §7.1，Phase 3 Week 4 T53）。
 ///

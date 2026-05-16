@@ -6,11 +6,11 @@ import 'package:wuxia_idle/combat/battle_ai.dart';
 import 'package:wuxia_idle/combat/battle_engine.dart';
 import 'package:wuxia_idle/combat/battle_state.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/data/models/attributes.dart';
-import 'package:wuxia_idle/data/models/character.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/data/models/equipment.dart';
-import 'package:wuxia_idle/data/models/technique.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 
 /// BattleEngine + BattleAI 单元测试（phase1_tasks.md T12 §706 验收）。
 ///

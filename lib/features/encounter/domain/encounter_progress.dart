@@ -1,6 +1,6 @@
 import 'package:isar_community/isar.dart';
 
-import '../../../data/models/enums.dart';
+import '../../../core/domain/enums.dart';
 
 part 'encounter_progress.g.dart';
 

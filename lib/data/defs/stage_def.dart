@@ -1,4 +1,4 @@
-import '../models/enums.dart';
+import '../../core/domain/enums.dart';
 import 'drop_entry.dart';
 
 /// 关卡配置（data_schema.md §5.4，纯 Dart，不入 Isar）。

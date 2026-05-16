@@ -3,9 +3,9 @@ import 'package:isar_community/isar.dart';
 
 import '../../../data/defs/skill_def.dart';
 import '../../../data/isar_setup.dart';
-import '../../../data/models/attributes.dart';
-import '../../../data/models/character.dart';
-import '../../../data/models/enums.dart';
+import '../../../core/domain/attributes.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
 import '../../../utils/rng.dart';
 import '../domain/encounter_def.dart';
 import '../domain/encounter_progress.dart';

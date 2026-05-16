@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../data/models/character.dart';
-import '../../../data/models/technique.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/technique.dart';
 import '../../../providers/battle_providers.dart';
 import '../../../ui/strings.dart';
 import '../../../ui/theme/colors.dart';

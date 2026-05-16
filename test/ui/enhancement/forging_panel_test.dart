@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/data/models/equipment.dart';
-import 'package:wuxia_idle/data/models/forging_slot.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/ui/enhancement/forging_panel.dart';
 
 /// T30 ForgingPanel widget 测试（phase2_tasks.md §458-459）。

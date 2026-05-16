@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../combat/enum_localizations.dart';
 import '../../data/defs/equipment_def.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/equipment.dart';
-import '../../data/models/forging_slot.dart';
+import '../../core/domain/enums.dart';
+import '../../core/domain/equipment.dart';
+import '../../core/domain/forging_slot.dart';
 import '../../providers/battle_providers.dart';
 import '../../providers/inventory_providers.dart';
 import '../../providers/isar_provider.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../data/models/enums.dart';
+import '../../../core/domain/enums.dart';
 import '../../../ui/strings.dart';
 import '../../../ui/theme/colors.dart';
 import '../application/tower_progress_service.dart';

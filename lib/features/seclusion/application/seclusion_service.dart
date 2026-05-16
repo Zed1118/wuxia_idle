@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 
-import '../../../data/models/character.dart';
-import '../../../data/models/enums.dart';
-import '../../../data/models/equipment.dart';
-import '../../../data/models/inventory_item.dart';
-import '../../../data/models/reward_entry.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/equipment.dart';
+import '../../../core/domain/inventory_item.dart';
+import '../../../core/domain/reward_entry.dart';
 import '../../../data/numbers_config.dart';
 import '../../../utils/rng.dart';
 import '../../encounter/application/encounter_service.dart';

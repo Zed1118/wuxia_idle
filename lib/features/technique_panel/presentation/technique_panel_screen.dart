@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../combat/enum_localizations.dart';
-import '../../../data/models/character.dart';
-import '../../../data/models/enums.dart';
-import '../../../data/models/technique.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/technique.dart';
 import '../../../providers/battle_providers.dart';
 import '../../../providers/character_providers.dart';
 import '../../../providers/isar_provider.dart';

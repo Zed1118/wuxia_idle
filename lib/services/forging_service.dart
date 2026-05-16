@@ -1,8 +1,8 @@
 import 'package:isar_community/isar.dart';
 
 import '../data/defs/equipment_def.dart';
-import '../data/models/enums.dart';
-import '../data/models/equipment.dart';
+import '../core/domain/enums.dart';
+import '../core/domain/equipment.dart';
 import '../data/numbers_config.dart';
 
 /// 开锋结果（phase2_tasks T21）。

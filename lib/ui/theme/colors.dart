@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/enums.dart';
+import '../../core/domain/enums.dart';
 
 /// 战斗 UI 颜色（phase1_tasks.md T14 §799）。
 ///

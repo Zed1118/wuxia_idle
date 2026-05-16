@@ -1,8 +1,8 @@
 import 'package:isar_community/isar.dart';
 
-import '../data/models/enums.dart';
-import '../data/models/equipment.dart';
-import '../data/models/inventory_item.dart';
+import '../core/domain/enums.dart';
+import '../core/domain/equipment.dart';
+import '../core/domain/inventory_item.dart';
 import '../data/numbers_config.dart';
 import '../utils/rng.dart';
 

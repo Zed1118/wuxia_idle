@@ -1,4 +1,4 @@
-import '../models/enums.dart';
+import '../../core/domain/enums.dart';
 
 /// 装备配置（data_schema.md §5.1，纯 Dart，不入 Isar）。
 ///

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/enums.dart';
+import '../../core/domain/enums.dart';
 import 'colors.dart';
 
 /// Shared tier color mapping for equipment UI.

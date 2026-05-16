@@ -1,10 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../data/isar_setup.dart';
-import '../data/models/character.dart';
-import '../data/models/equipment.dart';
-import '../data/models/save_data.dart';
-import '../data/models/technique.dart';
+import '../core/domain/character.dart';
+import '../core/domain/equipment.dart';
+import '../core/domain/save_data.dart';
+import '../core/domain/technique.dart';
 
 part 'character_providers.g.dart';
 

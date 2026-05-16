@@ -16,7 +16,7 @@ import 'yaml_loader.dart';
 ///       (略)
 /// ```
 ///
-/// 与 [Lore] (`lib/data/models/lore.dart`,Isar @embedded) 区别:
+/// 与 [Lore] (`lib/core/domain/lore.dart`,Isar @embedded) 区别:
 /// - [LoreContent]/[LoreSegment]:**纯 Dart 文件加载层**,按需 read yaml,
 ///   不入库,供装备详情页 / 江湖见闻录等 UI 实时渲染
 /// - [Lore]:**Isar @embedded 持久层**,留给"延续典故"(战斗事件动态追加,

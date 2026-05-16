@@ -1,11 +1,11 @@
 import '../combat/battle_state.dart';
 import '../data/defs/stage_def.dart';
 import '../data/defs/technique_def.dart';
-import '../data/models/character.dart';
-import '../data/models/enums.dart';
-import '../data/models/equipment.dart';
-import '../data/models/skill_usage_entry.dart';
-import '../data/models/technique.dart';
+import '../core/domain/character.dart';
+import '../core/domain/enums.dart';
+import '../core/domain/equipment.dart';
+import '../core/domain/skill_usage_entry.dart';
+import '../core/domain/technique.dart';
 import '../data/numbers_config.dart';
 import '../utils/rng.dart';
 import 'cultivation_service.dart';

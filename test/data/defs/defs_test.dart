@@ -5,7 +5,7 @@ import 'package:wuxia_idle/data/defs/realm_def.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 
 void main() {
   group('EquipmentDef.fromYaml', () {

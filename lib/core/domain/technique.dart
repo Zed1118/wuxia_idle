@@ -1,6 +1,6 @@
 import 'package:isar_community/isar.dart';
 
-import '../numbers_config.dart';
+import '../../data/numbers_config.dart';
 import 'enums.dart';
 import 'skill_usage_entry.dart';
 

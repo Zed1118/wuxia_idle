@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/services/equipment_factory.dart';
 import 'package:wuxia_idle/utils/rng.dart';
 

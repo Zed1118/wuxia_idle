@@ -1,8 +1,8 @@
 import '../combat/derived_stats.dart';
 import '../data/defs/technique_def.dart';
-import '../data/models/character.dart';
-import '../data/models/enums.dart';
-import '../data/models/technique.dart';
+import '../core/domain/character.dart';
+import '../core/domain/enums.dart';
+import '../core/domain/technique.dart';
 import '../data/numbers_config.dart';
 
 /// 心法学习结果（phase2_tasks T23）。

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/defs/stage_def.dart';
-import '../../../data/models/enums.dart';
+import '../../../core/domain/enums.dart';
 import '../../../ui/strings.dart';
 import '../../../ui/theme/colors.dart';
 import '../application/mainline_progress_service.dart';

@@ -2,7 +2,7 @@ import '../data/defs/drop_entry.dart';
 import '../data/defs/equipment_def.dart';
 import '../data/defs/stage_def.dart';
 import '../features/tower/domain/tower_floor_def.dart';
-import '../data/models/equipment.dart';
+import '../core/domain/equipment.dart';
 import '../utils/rng.dart';
 import 'equipment_factory.dart';
 
