@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/game_repository.dart';
-import '../../data/isar_setup.dart';
-import '../../features/encounter/application/encounter_service.dart';
-import '../../features/encounter/domain/encounter_def.dart';
-import '../../features/encounter/domain/encounter_event_loader.dart';
-import '../../features/encounter/presentation/encounter_dialog.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../../encounter/application/encounter_service.dart';
+import '../../encounter/domain/encounter_def.dart';
+import '../../encounter/domain/encounter_event_loader.dart';
+import '../../encounter/presentation/encounter_dialog.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
 
 /// 奇遇强制触发 debug picker(W14-3 round2 之后追加)。
 ///

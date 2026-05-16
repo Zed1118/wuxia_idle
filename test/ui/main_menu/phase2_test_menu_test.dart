@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/ui/debug/phase2_test_menu.dart';
+import 'package:wuxia_idle/features/debug/presentation/phase2_test_menu.dart';
 import 'package:wuxia_idle/ui/strings.dart';
 
 /// T32 子提交 3d：[Phase2TestMenu] widget 测试（T54 扩到 5 按钮含 P5 师徒；
