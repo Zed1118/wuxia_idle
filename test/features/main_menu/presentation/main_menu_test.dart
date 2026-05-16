@@ -212,4 +212,82 @@ void main() {
     );
     expect(find.text('今日：中秋'), findsOneWidget);
   });
+
+  // ── W16 DEBUG · debugFestivalOverride 路径 widget test ──────────────────
+  //
+  // 上面 3 个测试走 `todayFestivalProvider.overrideWith`（widget test 直接
+  // 注入）。下面 6 个测试走 `debugFestivalOverrideProvider.notifier.apply / clear`
+  // 真实生产路径，覆盖 4 个上面未测节日（元宵/端午/七夕/重阳）+ clear 路径 +
+  // 二次 apply 覆盖路径。
+  //
+  // 测路径：NotifierProvider state 变 → todayFestival 读 override 优先 →
+  // _TodayFestivalChip rebuild 显应景中文。
+
+  Future<ProviderContainer> pumpAndContainer(WidgetTester tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: MainMenu()),
+      ),
+    );
+    return ProviderScope.containerOf(
+      tester.element(find.byType(MainMenu)),
+    );
+  }
+
+  testWidgets('debug override · apply yuanXiao → chip 显示「今日：元宵」',
+      (tester) async {
+    final container = await pumpAndContainer(tester);
+    container.read(debugFestivalOverrideProvider.notifier).apply(Festival.yuanXiao);
+    await tester.pump();
+    expect(find.text('今日：元宵'), findsOneWidget);
+  });
+
+  testWidgets('debug override · apply duanWu → chip 显示「今日：端午」',
+      (tester) async {
+    final container = await pumpAndContainer(tester);
+    container.read(debugFestivalOverrideProvider.notifier).apply(Festival.duanWu);
+    await tester.pump();
+    expect(find.text('今日：端午'), findsOneWidget);
+  });
+
+  testWidgets('debug override · apply qiXi → chip 显示「今日：七夕」',
+      (tester) async {
+    final container = await pumpAndContainer(tester);
+    container.read(debugFestivalOverrideProvider.notifier).apply(Festival.qiXi);
+    await tester.pump();
+    expect(find.text('今日：七夕'), findsOneWidget);
+  });
+
+  testWidgets('debug override · apply chongYang → chip 显示「今日：重阳」',
+      (tester) async {
+    final container = await pumpAndContainer(tester);
+    container.read(debugFestivalOverrideProvider.notifier).apply(Festival.chongYang);
+    await tester.pump();
+    expect(find.text('今日：重阳'), findsOneWidget);
+  });
+
+  testWidgets('debug override · apply chunJie 后 clear → chip 不显示',
+      (tester) async {
+    final container = await pumpAndContainer(tester);
+    final notifier = container.read(debugFestivalOverrideProvider.notifier);
+    notifier.apply(Festival.chunJie);
+    await tester.pump();
+    expect(find.text('今日：春节'), findsOneWidget);
+    notifier.clear();
+    await tester.pump();
+    expect(find.textContaining('今日：'), findsNothing);
+  });
+
+  testWidgets('debug override · apply chunJie 后 apply yuanXiao → 覆盖切到「今日：元宵」',
+      (tester) async {
+    final container = await pumpAndContainer(tester);
+    final notifier = container.read(debugFestivalOverrideProvider.notifier);
+    notifier.apply(Festival.chunJie);
+    await tester.pump();
+    expect(find.text('今日：春节'), findsOneWidget);
+    notifier.apply(Festival.yuanXiao);
+    await tester.pump();
+    expect(find.text('今日：元宵'), findsOneWidget);
+    expect(find.text('今日：春节'), findsNothing);
+  });
 }

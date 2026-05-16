@@ -19,13 +19,13 @@ void main() {
 
   group('encounters.yaml 加载', () {
     test(
-        '30 条 encounter 全部解析成功 '
-        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2)',
+        '36 条 encounter 全部解析成功 '
+        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6)',
         () {
       final repo = GameRepository.instance;
-      expect(repo.encounterDefs.length, 30,
+      expect(repo.encounterDefs.length, 36,
           reason:
-              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2');
+              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6');
       // W14-1 3 条必须仍在
       expect(
         repo.encounterDefs.keys,
@@ -76,6 +76,19 @@ void main() {
         repo.encounterDefs.keys,
         containsAll({'huang_miao_jiu_seng', 'jiu_lou_jue_yin'}),
         reason: 'W15 C-1 收尾 2 条:tier 7 long_yin / wu_ming 池 unlockSkill 补',
+      );
+      // W16 节日 encounter 6 条核对(GDD §12.4 接口预留首批落)
+      expect(
+        repo.encounterDefs.keys,
+        containsAll({
+          'chun_jie_shou_sui',
+          'yuan_xiao_guan_deng',
+          'duan_wu_du_long_zhou',
+          'qi_xi_xi_qiao',
+          'zhong_qiu_yue_xia_du',
+          'chong_yang_deng_gao',
+        }),
+        reason: 'W16 节日 encounter 6 条:春节/元宵/端午/七夕/中秋/重阳 各 1 条',
       );
     });
 

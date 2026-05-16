@@ -82,6 +82,17 @@ class UiStrings {
       '3 active 全员 xueTu·qiMeng + experience=0 + 主线塔进度清零,通 stage_01_01 触发升层多行 banner';
   static const String encounterDebugPickerTitle = 'VC-EVENT · 触发奇遇';
 
+  // W16 节日 chip DEBUG 覆盖入口（Phase2TestMenu）
+  static const String debugFestivalOverrideLabel = 'DEBUG · 切今日节日';
+  static const String debugFestivalOverrideHintNone = '当前无覆盖（走真实日期）';
+  static String debugFestivalOverrideHint(String festivalName) =>
+      '当前覆盖：$festivalName';
+  static const String debugFestivalOverrideDialogTitle = '切今日节日（DEBUG）';
+  static const String debugFestivalOverrideClear = '清除覆盖';
+  static String debugFestivalOverrideSnack(String festivalName) =>
+      '已覆盖今日为：$festivalName';
+  static const String debugFestivalOverrideSnackCleared = '已清除节日覆盖';
+
   // 调试菜单（T17）
   static const String testMenuTitle = '战斗测试场景';
   static const String scenarioA = 'A · 同境界基础对决';
