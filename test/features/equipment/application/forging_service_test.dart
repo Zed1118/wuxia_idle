@@ -6,7 +6,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
-import 'package:wuxia_idle/services/forging_service.dart';
+import 'package:wuxia_idle/features/equipment/application/forging_service.dart';
 
 /// T21 ForgingService 验收（phase2_tasks T21 §225-247）。
 void main() {

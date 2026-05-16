@@ -16,7 +16,7 @@ import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/application/battle_resolution.dart';
-import 'package:wuxia_idle/services/drop_service.dart';
+import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/utils/rng.dart';
 
 /// T26 BattleResolutionService 验收（phase2_tasks T26 §324-356）。

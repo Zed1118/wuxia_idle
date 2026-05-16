@@ -1,10 +1,10 @@
 import 'package:isar_community/isar.dart';
 
-import '../core/domain/enums.dart';
-import '../core/domain/equipment.dart';
-import '../core/domain/inventory_item.dart';
-import '../data/numbers_config.dart';
-import '../utils/rng.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/equipment.dart';
+import '../../../core/domain/inventory_item.dart';
+import '../../../data/numbers_config.dart';
+import '../../../utils/rng.dart';
 
 /// 强化结果（phase2_tasks T20）。
 ///

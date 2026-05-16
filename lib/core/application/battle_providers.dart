@@ -10,7 +10,7 @@ import '../domain/equipment.dart';
 import '../domain/technique.dart';
 import '../../data/numbers_config.dart';
 import '../../features/battle/application/battle_resolution.dart';
-import '../../services/drop_service.dart';
+import '../../features/equipment/application/drop_service.dart';
 import '../../utils/rng.dart';
 
 part 'battle_providers.g.dart';
