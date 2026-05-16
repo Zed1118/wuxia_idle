@@ -43,3 +43,7 @@ desktop.ini
 libisar.dylib
 libisar.so
 isar.dll
+
+# Nightshift dispatcher runtime (auto-created)
+.nightshift/logs/
+.nightshift/status/
