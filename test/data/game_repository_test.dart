@@ -15,7 +15,10 @@ void main() {
   Future<String> fileLoader(String path) async {
     final f = File(path);
     if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
+    // Windows git 默认 core.autocrlf=true 会把 yaml checkout 成 CRLF,
+    // 而 broken loader 内用 Dart 多行字面量(LF)做 replaceFirst,
+    // 不 normalize 则 needle 永远 miss,fail-fast test 不抛 StateError。
+    return (await f.readAsString()).replaceAll('\r\n', '\n');
   }
 
   tearDown(GameRepository.resetForTest);
