@@ -3,7 +3,7 @@ import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../tower/domain/tower_floor_def.dart';
 import '../../../core/domain/equipment.dart';
-import '../../../utils/rng.dart';
+import '../../../shared/utils/rng.dart';
 import 'equipment_factory.dart';
 
 /// 单条物品掉落结果（DropResult.items 元素）。

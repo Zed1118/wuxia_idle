@@ -11,7 +11,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
-import 'package:wuxia_idle/utils/rng.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// Phase 4 W14-1 · EncounterService 真 Isar 落地测试。
 ///

@@ -8,7 +8,7 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/reward_entry.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
-import '../../../utils/rng.dart';
+import '../../../shared/utils/rng.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../domain/retreat_session.dart';

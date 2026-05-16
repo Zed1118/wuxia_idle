@@ -11,7 +11,7 @@ import '../domain/technique.dart';
 import '../../data/numbers_config.dart';
 import '../../features/battle/application/battle_resolution.dart';
 import '../../features/equipment/application/drop_service.dart';
-import '../../utils/rng.dart';
+import '../../shared/utils/rng.dart';
 
 part 'battle_providers.g.dart';
 

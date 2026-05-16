@@ -6,7 +6,7 @@ import '../../../data/isar_setup.dart';
 import '../../../core/domain/attributes.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
-import '../../../utils/rng.dart';
+import '../../../shared/utils/rng.dart';
 import '../domain/encounter_def.dart';
 import '../domain/encounter_progress.dart';
 

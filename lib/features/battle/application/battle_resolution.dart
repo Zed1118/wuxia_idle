@@ -7,7 +7,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/skill_usage_entry.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/numbers_config.dart';
-import '../../../utils/rng.dart';
+import '../../../shared/utils/rng.dart';
 import '../../cultivation/application/cultivation_service.dart';
 import '../../dispel/application/dispel_service.dart';
 import '../../../features/equipment/application/drop_service.dart';
