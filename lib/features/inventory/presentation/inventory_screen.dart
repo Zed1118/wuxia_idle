@@ -6,6 +6,7 @@ import '../../../data/defs/equipment_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
+import '../../../core/domain/inventory_item.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
@@ -15,46 +16,103 @@ import '../../../ui/theme/colors.dart';
 import '../../../ui/theme/tier_colors.dart';
 import 'equipment_detail_screen.dart';
 
-/// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账）。
+/// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账 +
+/// W15 #30 P3 后续 A 物料 Tab）。
 ///
-/// 一次性 `findAll` 整表展示，按 tier 分段（神物→寻常货 7 阶，已在
-/// [allEquipmentsProvider] 中排序）。点击 row 弹 [EnhanceDialog]。
-///
-/// 持久化 writeTxn 由 [EnhanceDialog] / [ForgingPanel] 自身在调用 service
-/// 后委托给各 service.persistResult 完成；本组件 dialog close 后再 invalidate
-/// [allEquipmentsProvider] 重读最新装备。
+/// 2 Tab：装备 / 物料。装备 Tab 一次性 `findAll` 整表展示，按 tier 分段
+/// （神物→寻常货 7 阶，已在 [allEquipmentsProvider] 中排序）。点击 row
+/// 走 [EquipmentDetailScreen] 或 [EnhanceDialog]。物料 Tab 一次性
+/// `findAll` 整表展示（[allInventoryItemsProvider]），按 [ItemType] enum
+/// 顺序分组（磨剑石 / 心血结晶 / 经验丹 / 心法秘籍 / 杂项材料），目前
+/// Demo 仅磨剑石 + 心血结晶有生产路径。
 class InventoryScreen extends ConsumerWidget {
   const InventoryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(allEquipmentsProvider);
-    return Scaffold(
-      backgroundColor: WuxiaColors.background,
-      appBar: AppBar(
-        title: const Text(UiStrings.inventoryTitle),
-        backgroundColor: WuxiaColors.sidebar,
-        foregroundColor: WuxiaColors.textPrimary,
-      ),
-      body: SafeArea(
-        child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(
-            child: SelectableText(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow),
-            ),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: WuxiaColors.background,
+        appBar: AppBar(
+          title: const Text(UiStrings.inventoryTitle),
+          backgroundColor: WuxiaColors.sidebar,
+          foregroundColor: WuxiaColors.textPrimary,
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: UiStrings.inventoryTabEquipment),
+              Tab(text: UiStrings.inventoryTabMaterial),
+            ],
+            labelColor: WuxiaColors.textPrimary,
+            unselectedLabelColor: WuxiaColors.textMuted,
+            indicatorColor: WuxiaColors.textPrimary,
           ),
-          data: (list) => list.isEmpty
-              ? const Center(
-                  child: Text(
-                    UiStrings.inventoryEmpty,
-                    style: TextStyle(color: WuxiaColors.textMuted),
-                  ),
-                )
-              : _List(equipments: list),
+        ),
+        body: const SafeArea(
+          child: TabBarView(
+            children: [
+              _EquipmentTab(),
+              _MaterialTab(),
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _EquipmentTab extends ConsumerWidget {
+  const _EquipmentTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(allEquipmentsProvider);
+    return async.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(
+        child: SelectableText(
+          'load error: $e',
+          style: const TextStyle(color: WuxiaColors.hpLow),
+        ),
+      ),
+      data: (list) => list.isEmpty
+          ? const Center(
+              child: Text(
+                UiStrings.inventoryEmpty,
+                style: TextStyle(color: WuxiaColors.textMuted),
+              ),
+            )
+          : _List(equipments: list),
+    );
+  }
+}
+
+class _MaterialTab extends ConsumerWidget {
+  const _MaterialTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(allInventoryItemsProvider);
+    return async.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(
+        child: SelectableText(
+          'load error: $e',
+          style: const TextStyle(color: WuxiaColors.hpLow),
+        ),
+      ),
+      data: (list) {
+        final nonEmpty = list.where((it) => it.quantity > 0).toList();
+        if (nonEmpty.isEmpty) {
+          return const Center(
+            child: Text(
+              UiStrings.inventoryMaterialEmpty,
+              style: TextStyle(color: WuxiaColors.textMuted),
+            ),
+          );
+        }
+        return _MaterialList(items: nonEmpty);
+      },
     );
   }
 }
@@ -171,6 +229,7 @@ class _Row extends ConsumerWidget {
           );
         }
         ref.invalidate(allEquipmentsProvider);
+        ref.invalidate(allInventoryItemsProvider);
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -224,6 +283,126 @@ class _Row extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 物料列表（W15 #30 P3 后续 A）。
+///
+/// 入参已按 [ItemType] enum 顺序排序（[allInventoryItemsProvider] 保证），
+/// 同 itemType 内按 quantity 倒序。按 itemType 分组渲染：每组一个
+/// ExpansionTile（沿装备 [_TierGroup] 体例），组标题 = 中文物料名 + 行数；
+/// 行内显示「磨剑石 × 1234」与 defId。
+class _MaterialList extends StatelessWidget {
+  const _MaterialList({required this.items});
+
+  final List<InventoryItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final groups = <ItemType, List<InventoryItem>>{};
+    for (final it in items) {
+      groups.putIfAbsent(it.itemType, () => []).add(it);
+    }
+    final types = groups.keys.toList()
+      ..sort((a, b) => a.index.compareTo(b.index));
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      itemCount: types.length,
+      itemBuilder: (ctx, i) {
+        final type = types[i];
+        final rows = groups[type]!;
+        return _MaterialGroup(type: type, items: rows);
+      },
+    );
+  }
+}
+
+class _MaterialGroup extends StatelessWidget {
+  const _MaterialGroup({required this.type, required this.items});
+
+  final ItemType type;
+  final List<InventoryItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = EnumL10n.itemType(type);
+    return Card(
+      color: WuxiaColors.panel,
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(color: WuxiaColors.border),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        iconColor: WuxiaColors.textPrimary,
+        collapsedIconColor: WuxiaColors.textPrimary,
+        title: Row(
+          children: [
+            Container(width: 3, height: 18, color: WuxiaColors.textPrimary),
+            const SizedBox(width: 8),
+            Text(
+              name,
+              style: const TextStyle(
+                color: WuxiaColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '(${items.length})',
+              style: const TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        children:
+            items.map((it) => _MaterialRow(item: it, name: name)).toList(),
+      ),
+    );
+  }
+}
+
+class _MaterialRow extends StatelessWidget {
+  const _MaterialRow({required this.item, required this.name});
+
+  final InventoryItem item;
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: const BoxDecoration(
+        color: WuxiaColors.avatarFill,
+        border: Border(
+          left: BorderSide(color: WuxiaColors.textPrimary, width: 3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              UiStrings.materialQuantity(name, item.quantity),
+              style: const TextStyle(
+                color: WuxiaColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Text(
+            item.defId,
+            style: const TextStyle(
+              color: WuxiaColors.textMuted,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }

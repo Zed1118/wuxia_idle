@@ -145,4 +145,15 @@ class EnumL10n {
       ForgingSlotType.specialSkill => '专属技能',
     };
   }
+
+  /// 背包物品类型（W15 #30 P3 后续 A · 物料 Tab）。
+  static String itemType(ItemType t) {
+    return switch (t) {
+      ItemType.moJianShi => '磨剑石',
+      ItemType.xinXueJieJing => '心血结晶',
+      ItemType.jingYanDan => '经验丹',
+      ItemType.techniqueScroll => '心法秘籍',
+      ItemType.miscMaterial => '杂项材料',
+    };
+  }
 }
