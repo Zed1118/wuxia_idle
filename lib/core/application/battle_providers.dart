@@ -1,17 +1,17 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../combat/battle_engine.dart';
-import '../combat/battle_state.dart';
-import '../data/defs/skill_def.dart';
-import '../data/defs/stage_def.dart';
-import '../data/game_repository.dart';
-import '../core/domain/character.dart';
-import '../core/domain/equipment.dart';
-import '../core/domain/technique.dart';
-import '../data/numbers_config.dart';
-import '../services/battle_resolution.dart';
-import '../services/drop_service.dart';
-import '../utils/rng.dart';
+import '../../combat/battle_engine.dart';
+import '../../combat/battle_state.dart';
+import '../../data/defs/skill_def.dart';
+import '../../data/defs/stage_def.dart';
+import '../../data/game_repository.dart';
+import '../domain/character.dart';
+import '../domain/equipment.dart';
+import '../domain/technique.dart';
+import '../../data/numbers_config.dart';
+import '../../services/battle_resolution.dart';
+import '../../services/drop_service.dart';
+import '../../utils/rng.dart';
 
 part 'battle_providers.g.dart';
 

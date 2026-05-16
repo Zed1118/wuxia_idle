@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/providers/character_providers.dart';
+import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/ui/main_menu.dart';
 import 'package:wuxia_idle/ui/strings.dart';
 

@@ -9,7 +9,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
-import 'package:wuxia_idle/providers/character_providers.dart';
+import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/character_panel_screen.dart';
 
 /// T28 角色面板 widget 测试（phase2_tasks.md §407）。

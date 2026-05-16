@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../combat/battle_state.dart';
 import '../../data/defs/skill_def.dart';
 import '../../core/domain/enums.dart';
-import '../../providers/battle_providers.dart';
+import '../../core/application/battle_providers.dart';
 import '../battle/battle_screen.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
