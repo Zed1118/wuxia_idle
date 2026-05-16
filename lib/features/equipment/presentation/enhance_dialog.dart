@@ -13,7 +13,7 @@ import '../../../providers/rng_provider.dart';
 import '../application/enhancement_service.dart';
 import '../application/equipment_service_providers.dart';
 import '../../../shared/effects/screen_shake.dart';
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import 'forging_panel.dart';

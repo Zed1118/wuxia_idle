@@ -6,7 +6,7 @@ import 'package:wuxia_idle/features/cultivation/application/character_advancemen
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/retreat_result_screen.dart';
-import 'package:wuxia_idle/ui/strings.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 SeclusionMapDef _mkMapDef() => const SeclusionMapDef(
       mapType: RetreatMapType.shanLin,

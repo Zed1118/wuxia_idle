@@ -6,7 +6,7 @@ import '../../../data/defs/skill_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../battle/presentation/battle_screen.dart';
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 
 // ─── 场景数据工厂（内存构造，不写 Isar）───────────────────────────────────────

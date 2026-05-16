@@ -9,7 +9,7 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../dispel/application/dispel_service.dart';
 import '../../dispel/application/dispel_service_providers.dart';
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import 'dispel_dialog.dart';
 

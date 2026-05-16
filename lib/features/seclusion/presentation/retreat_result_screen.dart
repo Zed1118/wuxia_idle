@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../features/battle/domain/enum_localizations.dart';
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../application/seclusion_service.dart';

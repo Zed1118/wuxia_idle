@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../../core/domain/enums.dart';
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../application/tower_progress_service.dart';
 

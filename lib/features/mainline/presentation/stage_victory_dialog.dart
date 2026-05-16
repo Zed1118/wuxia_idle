@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../cultivation/presentation/advancement_summary.dart';

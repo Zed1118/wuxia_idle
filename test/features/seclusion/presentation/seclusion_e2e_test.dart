@@ -15,7 +15,7 @@ import 'package:wuxia_idle/features/seclusion/presentation/seclusion_map_list_sc
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_setup_screen.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service_providers.dart';
-import 'package:wuxia_idle/ui/strings.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 /// W15 Phase 5 #2 · 闭关 widget e2e test(销 #28 老挂账)。
 ///

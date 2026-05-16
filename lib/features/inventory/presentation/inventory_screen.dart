@@ -11,7 +11,7 @@ import '../../../data/numbers_config.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
-import '../../../ui/strings.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import 'equipment_detail_screen.dart';
