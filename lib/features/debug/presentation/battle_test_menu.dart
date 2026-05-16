@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/battle/domain/battle_state.dart';
-import '../../data/defs/skill_def.dart';
-import '../../core/domain/enums.dart';
-import '../../core/application/battle_providers.dart';
-import '../../features/battle/presentation/battle_screen.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
+import '../../battle/domain/battle_state.dart';
+import '../../../data/defs/skill_def.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/application/battle_providers.dart';
+import '../../battle/presentation/battle_screen.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
 
 // ─── 场景数据工厂（内存构造，不写 Isar）───────────────────────────────────────
 

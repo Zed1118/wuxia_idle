@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../data/isar_setup.dart';
-import '../../features/debug/application/phase2_seed_service.dart';
-import '../../features/character_panel/presentation/character_panel_screen.dart';
-import '../../features/inventory/presentation/inventory_screen.dart';
-import '../strings.dart';
-import '../../features/technique_panel/presentation/technique_panel_screen.dart';
-import '../theme/colors.dart';
+import '../../../data/isar_setup.dart';
+import '../application/phase2_seed_service.dart';
+import '../../character_panel/presentation/character_panel_screen.dart';
+import '../../inventory/presentation/inventory_screen.dart';
+import '../../../ui/strings.dart';
+import '../../technique_panel/presentation/technique_panel_screen.dart';
+import '../../../ui/theme/colors.dart';
 import 'encounter_debug_picker.dart';
 
 /// Phase 2 调试场景菜单（phase2_tasks.md T32 §492-509 子提交 3b/3d）。

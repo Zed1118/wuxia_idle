@@ -9,7 +9,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 
 /// T17 4 套测试场景的数值验收（phase1_tasks T17 §921-926）。
 ///
-/// 场景数据与 [lib/ui/debug/battle_test_menu.dart] _ScenarioData 完全镜像，
+/// 场景数据与 [lib/features/debug/presentation/battle_test_menu.dart] _ScenarioData 完全镜像，
 /// 确保 UI 里看到的数值与这里验收的一致。
 void main() {
   late GameRepository repo;
