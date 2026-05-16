@@ -75,6 +75,14 @@ class EnumL10n {
     };
   }
 
+  /// §12.1 #7 v1.4 阴柔内伤 dot 发作日志(actor 未死亡)。
+  static String internalInjuryTick(String actorName, int damage) =>
+      '$actorName 内伤发作,扣 $damage 血';
+
+  /// §12.1 #7 v1.4 阴柔内伤 dot 致死日志(actor 死亡)。
+  static String internalInjuryFatal(String actorName) =>
+      '$actorName 内伤崩裂,经脉俱断';
+
   /// 心法修炼度 9 层（GDD §4.3，与境界 7 层 [realmLayer] 严格不同名）。
   static String cultivationLayer(CultivationLayer l) {
     return switch (l) {
