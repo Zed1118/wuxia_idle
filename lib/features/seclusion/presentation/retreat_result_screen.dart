@@ -1,35 +1,41 @@
 import 'package:flutter/material.dart';
 
+import '../../../features/battle/domain/enum_localizations.dart';
 import '../../../ui/strings.dart';
 import '../../../ui/theme/colors.dart';
+import '../../cultivation/application/character_advancement_service.dart';
 import '../application/seclusion_service.dart';
 import '../domain/seclusion_map_def.dart';
 
-/// 闭关收功结果屏幕（Phase 3 T49/T50）。
+/// 闭关收功结果屏幕（Phase 3 T49/T50 / W15 #30 P3 扩 EXP + 升层 banner）。
 ///
-/// 显示：地图名 / 实际挂机时长 / 奖励清单（磨剑石 N 颗 + 装备（若有））。
+/// 显示：地图名 / 实际挂机时长 / 5 维奖励清单（磨剑石 / 经验 / 内力 / 心法
+/// 领悟点 / 装备）/ 升层 banner（若本次收功触发升层,显示「突破至 X·Y」）。
 /// 「返回」按钮弹回主菜单（popUntil root）。
 class RetreatResultScreen extends StatelessWidget {
   final SeclusionMapDef mapDef;
-  final RetreatOutputs outputs;
+  final RetreatResult result;
 
   const RetreatResultScreen({
     super.key,
     required this.mapDef,
-    required this.outputs,
+    required this.result,
   });
 
   @override
   Widget build(BuildContext context) {
-    final mojianshi = outputs.mojianshi;
-    final actualHours = outputs.actualHours;
-    final equipDrops = outputs.equipmentDrops;
-    final internalForce = outputs.internalForcePoints;
-    final insightPoints = outputs.techniqueLearnPoints;
+    final mojianshi = result.mojianshi;
+    final actualHours = result.actualHours;
+    final equipDrops = result.equipmentDrops;
+    final internalForce = result.internalForcePoints;
+    final insightPoints = result.techniqueLearnPoints;
+    final experience = result.experiencePoints;
+    final advancement = result.advancement;
     final hasReward = mojianshi > 0 ||
         equipDrops.isNotEmpty ||
         internalForce > 0 ||
-        insightPoints > 0;
+        insightPoints > 0 ||
+        experience > 0;
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -81,6 +87,11 @@ class RetreatResultScreen extends StatelessWidget {
                     icon: Icons.construction,
                     label: UiStrings.seclusionMojianshi(mojianshi),
                   ),
+                if (experience > 0)
+                  _RewardRow(
+                    icon: Icons.trending_up,
+                    label: UiStrings.seclusionExperience(experience),
+                  ),
                 if (internalForce > 0)
                   _RewardRow(
                     icon: Icons.bolt,
@@ -96,6 +107,13 @@ class RetreatResultScreen extends StatelessWidget {
                     icon: Icons.sports_martial_arts,
                     label: eq.defId,
                   ),
+              ],
+
+              // 升层 banner(本批 W15 #30 P3 加,advancement 非 null 且
+              // didAdvance 才显)
+              if (advancement != null && advancement.didAdvance) ...[
+                const SizedBox(height: 16),
+                _AdvancementBanner(advancement: advancement),
               ],
 
               const Spacer(),
@@ -145,6 +163,52 @@ class _RewardRow extends StatelessWidget {
             style: const TextStyle(
               color: WuxiaColors.textPrimary,
               fontSize: 15,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdvancementBanner extends StatelessWidget {
+  final AdvancementResult advancement;
+
+  const _AdvancementBanner({required this.advancement});
+
+  @override
+  Widget build(BuildContext context) {
+    final tierAfter = advancement.tierAfter;
+    final layerAfter = advancement.layerAfter;
+    final layers = advancement.layersGained;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: WuxiaColors.gangMeng.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: WuxiaColors.gangMeng.withValues(alpha: 0.6),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.auto_awesome,
+            color: WuxiaColors.gangMeng,
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              UiStrings.seclusionAdvancement(
+                EnumL10n.realm(tierAfter, layerAfter),
+                layers,
+              ),
+              style: const TextStyle(
+                color: WuxiaColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

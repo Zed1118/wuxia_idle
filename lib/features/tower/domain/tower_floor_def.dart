@@ -20,6 +20,7 @@ import '../../../core/domain/enums.dart';
 ///   - floorIndex ∈ [1, 30] 唯一且连续
 ///   - bossKind 仅在 5/10/15/20/25/30 层非 null
 ///   - 普通层 narrativeOpeningId / narrativeVictoryId 必须为 null
+///   - baseExpReward ≥ 0
 class TowerFloorDef {
   /// 层号，1-30，唯一且连续（[GameRepository._enforceRedLines] 校验）。
   final int floorIndex;
@@ -45,6 +46,14 @@ class TowerFloorDef {
   /// **重打不发奖**（[TowerProgressService.recordClear] 返回 isFirstClear 控制）。
   final List<DropEntry> dropTable;
 
+  /// 通关基础经验奖励（W15 #30 第 3 期）。
+  ///
+  /// 曲线：普通层 80×floorIndex / 小 Boss(5/15/25) ×2 / 大 Boss(10/20/30) ×3。
+  /// 30 层全清总 EXP ≈ 5.04w(stages.yaml 15 关总 ≈ 2.6w),塔承担「中盘 layer
+  /// 推进主力」与主线开局 + 闭关挂机长尾形成 3 系互补。重打不发奖由
+  /// [TowerProgressService.recordClear] 控制(isFirstClear)。
+  final int baseExpReward;
+
   const TowerFloorDef({
     required this.floorIndex,
     required this.requiredRealm,
@@ -53,6 +62,7 @@ class TowerFloorDef {
     this.narrativeOpeningId,
     this.narrativeVictoryId,
     this.dropTable = const [],
+    this.baseExpReward = 0,
   });
 
   /// 是否为 Boss 层（任意 minor / major）。
@@ -73,6 +83,7 @@ class TowerFloorDef {
       dropTable: ((y['dropTable'] as List?) ?? const [])
           .map((e) => DropEntry.fromYaml(Map<String, dynamic>.from(e as Map)))
           .toList(growable: false),
+      baseExpReward: (y['baseExpReward'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -80,5 +91,6 @@ class TowerFloorDef {
   String toString() =>
       'TowerFloorDef(floor=$floorIndex, '
       'realm=${requiredRealm.name}, '
-      'boss=${bossKind?.name ?? "-"}, enemies=${enemyTeam.length})';
+      'boss=${bossKind?.name ?? "-"}, enemies=${enemyTeam.length}, '
+      'exp=$baseExpReward)';
 }

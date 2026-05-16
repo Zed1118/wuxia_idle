@@ -20,6 +20,7 @@ import '../../../core/application/inventory_providers.dart';
 import '../../battle/application/battle_resolution.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/presentation/battle_screen.dart';
+import '../../cultivation/application/character_advancement_service.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../../ui/narrative/narrative_reader_screen.dart';
 import '../../../ui/theme/colors.dart';
@@ -347,9 +348,22 @@ Future<void> _applyVictoryResolution({
     isVictory: true,
   );
 
+  // W15 #30 第 3 期:active 3 character 每人 += stage.baseExpReward + 升层。
+  // 全员 full(Demo §10 不平摊,鼓励多角色养成);apply in-place 改 character,
+  // 后续 putAll 写入。Phase 4 UI 用 result 显示升层 banner(本批暂不暂存)。
+  if (stage.baseExpReward > 0) {
+    for (final c in characters) {
+      CharacterAdvancementService.applyExperience(
+        c,
+        stage.baseExpReward,
+        realmLookup: GameRepository.instance.getRealm,
+      );
+    }
+  }
+
   final now = DateTime.now();
   await isar.writeTxn(() async {
-    // in-place 副作用（battleCount / skillUsage / 主修 progress + layer）
+    // in-place 副作用（battleCount / skillUsage / 主修 progress + layer + EXP）
     await isar.characters.putAll(characters);
     for (final list in techsByCh.values) {
       if (list.isNotEmpty) await isar.techniques.putAll(list);

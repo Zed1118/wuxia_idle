@@ -35,6 +35,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 1
+    baseExpReward: 80
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_tower_01
@@ -53,6 +54,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 2
+    baseExpReward: 160
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_tower_02
@@ -71,6 +73,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 3
+    baseExpReward: 240
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_tower_03
@@ -91,6 +94,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 4
+    baseExpReward: 320
     requiredRealm: xueTu
     enemyTeam:
       - id: enemy_tower_04
@@ -112,6 +116,7 @@ floors:
 
   # === Floor 5 · 小 Boss · 学徒 dengFeng ===
   - floorIndex: 5
+    baseExpReward: 800
     requiredRealm: xueTu
     bossKind: minor
     narrativeOpeningId: tower_05_opening
@@ -142,6 +147,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 6
+    baseExpReward: 480
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_tower_06
@@ -160,6 +166,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 7
+    baseExpReward: 560
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_tower_07
@@ -178,6 +185,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 8
+    baseExpReward: 640
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_tower_08
@@ -198,6 +206,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 9
+    baseExpReward: 720
     requiredRealm: sanLiu
     enemyTeam:
       - id: enemy_tower_09
@@ -219,6 +228,7 @@ floors:
 
   # === Floor 10 · 大 Boss · 三流 dengFeng ===
   - floorIndex: 10
+    baseExpReward: 2400
     requiredRealm: sanLiu
     bossKind: major
     narrativeOpeningId: tower_10_opening
@@ -251,6 +261,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 11
+    baseExpReward: 880
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_tower_11a
@@ -279,6 +290,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 12
+    baseExpReward: 960
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_tower_12a
@@ -307,6 +319,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 13
+    baseExpReward: 1040
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_tower_13a
@@ -337,6 +350,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 14
+    baseExpReward: 1120
     requiredRealm: erLiu
     enemyTeam:
       - id: enemy_tower_14a
@@ -368,6 +382,7 @@ floors:
 
   # === Floor 15 · 小 Boss · 二流 dengFeng ===
   - floorIndex: 15
+    baseExpReward: 2400
     requiredRealm: erLiu
     bossKind: minor
     narrativeOpeningId: tower_15_opening
@@ -400,6 +415,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 16
+    baseExpReward: 1280
     requiredRealm: yiLiu
     enemyTeam:
       - id: enemy_tower_16a
@@ -428,6 +444,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 17
+    baseExpReward: 1360
     requiredRealm: yiLiu
     enemyTeam:
       - id: enemy_tower_17a
@@ -456,6 +473,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 18
+    baseExpReward: 1440
     requiredRealm: yiLiu
     enemyTeam:
       - id: enemy_tower_18a
@@ -489,6 +507,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 19
+    baseExpReward: 1520
     requiredRealm: yiLiu
     enemyTeam:
       - id: enemy_tower_19a
@@ -526,6 +545,7 @@ floors:
 
   # === Floor 20 · 大 Boss · 一流 dengFeng ===
   - floorIndex: 20
+    baseExpReward: 4800
     requiredRealm: yiLiu
     bossKind: major
     narrativeOpeningId: tower_20_opening
@@ -559,6 +579,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 21
+    baseExpReward: 1680
     requiredRealm: jueDing
     enemyTeam:
       - id: enemy_tower_21a
@@ -597,6 +618,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 22
+    baseExpReward: 1760
     requiredRealm: jueDing
     enemyTeam:
       - id: enemy_tower_22a
@@ -635,6 +657,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 23
+    baseExpReward: 1840
     requiredRealm: jueDing
     enemyTeam:
       - id: enemy_tower_23a
@@ -678,6 +701,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 24
+    baseExpReward: 1920
     requiredRealm: jueDing
     enemyTeam:
       - id: enemy_tower_24a
@@ -728,6 +752,7 @@ floors:
 
   # === Floor 25 · 小 Boss · 绝顶 dengFeng ===
   - floorIndex: 25
+    baseExpReward: 4000
     requiredRealm: jueDing
     bossKind: minor
     narrativeOpeningId: tower_25_opening
@@ -761,6 +786,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 26
+    baseExpReward: 2080
     requiredRealm: zongShi
     enemyTeam:
       - id: enemy_tower_26a
@@ -808,6 +834,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 27
+    baseExpReward: 2160
     requiredRealm: zongShi
     enemyTeam:
       - id: enemy_tower_27a
@@ -855,6 +882,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 28
+    baseExpReward: 2240
     requiredRealm: zongShi
     enemyTeam:
       - id: enemy_tower_28a
@@ -904,6 +932,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 29
+    baseExpReward: 2320
     requiredRealm: zongShi
     enemyTeam:
       - id: enemy_tower_29a
@@ -956,6 +985,7 @@ floors:
 
   # === Floor 30 · 大 Boss · 宗师 dengFeng · 终关 ===
   - floorIndex: 30
+    baseExpReward: 7200
     requiredRealm: zongShi
     bossKind: major
     narrativeOpeningId: tower_30_opening

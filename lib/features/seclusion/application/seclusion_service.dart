@@ -6,16 +6,17 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/reward_entry.dart';
+import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../utils/rng.dart';
+import '../../cultivation/application/character_advancement_service.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 
 /// 闭关产出汇总（Phase 3 T48 / W15 #30 扩 2 维度）。
 ///
-/// 由 [SeclusionService.computeOutputs] 返回，[completeRetreat] 写入 Isar
-/// （当前仅 mojianshi 落 InventoryItem，其余 3 项是占位数值由后续系统消费）。
+/// 由 [SeclusionService.computeOutputs] 返回，[completeRetreat] 写入 Isar。
 typedef RetreatOutputs = ({
   double actualHours,
   int mojianshi,
@@ -23,6 +24,22 @@ typedef RetreatOutputs = ({
   int experiencePoints,
   int techniqueLearnPoints,
   int internalForcePoints,
+});
+
+/// 闭关收功完整结果(W15 #30 第 3 期扩 advancement)。
+///
+/// 包含 [RetreatOutputs] 所有字段 + 可选 [AdvancementResult]。advancement 非
+/// null 表示本次收功触发了升层(`outputs.experiencePoints > 0` 后调用
+/// [CharacterAdvancementService.applyExperience] 的结果);为 null 表示无
+/// EXP 累加或 EXP 累加但未跨阈值。
+typedef RetreatResult = ({
+  double actualHours,
+  int mojianshi,
+  List<Equipment> equipmentDrops,
+  int experiencePoints,
+  int techniqueLearnPoints,
+  int internalForcePoints,
+  AdvancementResult? advancement,
 });
 
 /// 闭关系统服务（Phase 3 T48 / W15 #30 扩 3 维度）。
@@ -225,7 +242,7 @@ class SeclusionService {
   ///   2. 写 mojianshi 进 InventoryItem
   ///   3. 更新 session：completedAt / status / actualRewards
   ///   4. 清 Character.currentRetreatSessionId
-  Future<RetreatOutputs> completeRetreat({
+  Future<RetreatResult> completeRetreat({
     required RetreatSession session,
     required int characterId,
     required RealmTier charRealmTier,
@@ -242,6 +259,10 @@ class SeclusionService {
       now: now,
       rng: rng,
     );
+
+    // W15 #30 第 3 期:applyExperience 返回值,在 writeTxn 内闭包 assign,
+    // 跨 writeTxn 暴露给 caller 用于 UI 升层 banner。
+    AdvancementResult? advancement;
 
     await isar.writeTxn(() async {
       // 1. 写 mojianshi → InventoryItem
@@ -270,8 +291,13 @@ class SeclusionService {
         ..actualRewards = rewards;
       await isar.retreatSessions.put(session);
 
-      // 3. 写 Character:internalForce(clamp internalForceMax) + insightPoints 累加,
-      //    清 currentRetreatSessionId(W15 #30 第 2 期消费层接入)
+      // 3. 写 Character:internalForce(clamp old max) + insightPoints 累加 +
+      //    experience 写回 + 升层(W15 #30 第 2 期 + 第 3 期消费层接入),
+      //    清 currentRetreatSessionId。
+      //
+      // applyExperience 后置于 internalForce clamp:升层拉新 internalForceMax 时
+      // 不立即填新 cap,玩家走下次闭关自然填(GDD §5.1 反留存焦虑,升层奖励
+      // 不"回血")。
       final ch = await isar.characters.get(characterId);
       if (ch != null) {
         if (outputs.internalForcePoints > 0) {
@@ -281,6 +307,13 @@ class SeclusionService {
         }
         if (outputs.techniqueLearnPoints > 0) {
           ch.insightPoints += outputs.techniqueLearnPoints;
+        }
+        if (outputs.experiencePoints > 0) {
+          advancement = CharacterAdvancementService.applyExperience(
+            ch,
+            outputs.experiencePoints,
+            realmLookup: GameRepository.instance.getRealm,
+          );
         }
         ch.currentRetreatSessionId = null;
         await isar.characters.put(ch);
@@ -297,7 +330,15 @@ class SeclusionService {
       actualHours: outputs.actualHours,
     );
 
-    return outputs;
+    return (
+      actualHours: outputs.actualHours,
+      mojianshi: outputs.mojianshi,
+      equipmentDrops: outputs.equipmentDrops,
+      experiencePoints: outputs.experiencePoints,
+      techniqueLearnPoints: outputs.techniqueLearnPoints,
+      internalForcePoints: outputs.internalForcePoints,
+      advancement: advancement,
+    );
   }
 
   /// 闭关 actualHours 累计喂给 EncounterService(C-W14-2)。

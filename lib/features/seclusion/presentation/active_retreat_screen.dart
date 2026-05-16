@@ -95,7 +95,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
       if (svc == null) {
         throw StateError('seclusionServiceProvider unavailable (isar null)');
       }
-      final outputs = await svc.completeRetreat(
+      final result = await svc.completeRetreat(
         session: widget.session,
         characterId: widget.characterId,
         charRealmTier: widget.charRealmTier,
@@ -111,7 +111,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
         MaterialPageRoute(
           builder: (_) => RetreatResultScreen(
             mapDef: widget.mapDef,
-            outputs: outputs,
+            result: result,
           ),
         ),
       );
