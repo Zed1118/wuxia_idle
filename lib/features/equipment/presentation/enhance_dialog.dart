@@ -12,7 +12,7 @@ import '../../../core/application/inventory_providers.dart';
 import '../../../providers/rng_provider.dart';
 import '../application/enhancement_service.dart';
 import '../application/equipment_service_providers.dart';
-import '../../../ui/effects/screen_shake.dart';
+import '../../../shared/effects/screen_shake.dart';
 import '../../../ui/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
