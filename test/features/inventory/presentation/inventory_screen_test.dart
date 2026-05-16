@@ -198,7 +198,9 @@ void main() {
 
     // 分组标题（磨剑石 × 1）+ 行内数量「磨剑石 × 2001」
     expect(find.text('磨剑石 × 2001'), findsOneWidget);
-    expect(find.text('item_mojianshi'), findsOneWidget);
+    // #39 round2 polish:raw defId 已隐藏,行右侧不再泄露调试 id 给玩家
+    expect(find.text('item_mojianshi'), findsNothing,
+        reason: '#39 polish 后 _MaterialRow 不再显示 raw defId');
     // 不显示其他 itemType 分组
     expect(find.text('心血结晶'), findsNothing);
     expect(find.text('暂无物料'), findsNothing);

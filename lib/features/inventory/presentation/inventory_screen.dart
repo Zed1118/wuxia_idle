@@ -288,12 +288,12 @@ class _Row extends ConsumerWidget {
   }
 }
 
-/// 物料列表（W15 #30 P3 后续 A）。
+/// 物料列表（W15 #30 P3 后续 A · #39 round2 polish 隐藏 defId）。
 ///
 /// 入参已按 [ItemType] enum 顺序排序（[allInventoryItemsProvider] 保证），
 /// 同 itemType 内按 quantity 倒序。按 itemType 分组渲染：每组一个
 /// ExpansionTile（沿装备 [_TierGroup] 体例），组标题 = 中文物料名 + 行数；
-/// 行内显示「磨剑石 × 1234」与 defId。
+/// 行内仅显示「磨剑石 × 1234」（raw defId 已隐藏，避免暴露调试 id 给玩家）。
 class _MaterialList extends StatelessWidget {
   const _MaterialList({required this.items});
 
@@ -383,26 +383,13 @@ class _MaterialRow extends StatelessWidget {
           left: BorderSide(color: WuxiaColors.textPrimary, width: 3),
         ),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              UiStrings.materialQuantity(name, item.quantity),
-              style: const TextStyle(
-                color: WuxiaColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          Text(
-            item.defId,
-            style: const TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 12,
-            ),
-          ),
-        ],
+      child: Text(
+        UiStrings.materialQuantity(name, item.quantity),
+        style: const TextStyle(
+          color: WuxiaColors.textPrimary,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
