@@ -22,6 +22,7 @@ import '../../battle/application/battle_resolution.dart';
 import '../../../features/equipment/application/drop_service.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/presentation/battle_screen.dart';
+import '../../cultivation/application/character_advancement_service.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../../ui/narrative/narrative_reader_screen.dart';
 import '../../../ui/strings.dart';
@@ -116,7 +117,13 @@ Future<void> runTowerFlow({
   // Phase 4 W11 #32 销账：爬塔 victory 战斗结算（装备 battleCount / 心法 skillUsage /
   // 主修升层 in-place + writeTxn putAll）。drops 仍走下方 rollTowerRewards 路径，
   // 首通才发奖控制不变（stageDef=null 让 service.resolve 不内部 roll drops）。
-  await _applyTowerVictoryResolution(ref: ref);
+  // W15 #30 P3:isFirstClear 时 EXP 写回 + 升层(沿 drops 首通发奖体例,
+  // 防刷塔无脑刷 EXP)。
+  await _applyTowerVictoryResolution(
+    ref: ref,
+    floor: floor,
+    isFirstClear: clearResult.isFirstClear,
+  );
   // W13-v3 fix: invalidate character/equipment/technique family,否则下次进
   // 角色面板看到 Riverpod 缓存的旧 battleCount / cultivationProgress
   ref.invalidate(characterByIdProvider);
@@ -205,9 +212,16 @@ Future<bool> _runTowerBattle({
 /// + isFirstClear 首通发奖控制，落地在 _persistDrops；此函数仅取
 /// battleCount / skillUsage / cultivationEvents 副作用）。
 ///
+/// W15 #30 P3:[isFirstClear] 时 active 3 character 每人 += floor.baseExpReward
+/// + 升层(沿 drops 首通发奖体例,防刷塔无脑刷 EXP)。
+///
 /// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 默默返回，不阻塞
 /// victory dialog / narrative。
-Future<void> _applyTowerVictoryResolution({required WidgetRef ref}) async {
+Future<void> _applyTowerVictoryResolution({
+  required WidgetRef ref,
+  required TowerFloorDef floor,
+  required bool isFirstClear,
+}) async {
   final isar = ref.read(isarProvider);
   if (isar == null) return;
   final finalState = ref.read(battleProvider);
@@ -268,6 +282,19 @@ Future<void> _applyTowerVictoryResolution({required WidgetRef ref}) async {
     // stageDef: null —— 爬塔不走 service 内部 roll drops；drops 在外层
     // rollTowerRewards + _persistDrops 单独控制（首通才发奖）
   );
+
+  // W15 #30 P3:isFirstClear 时 active 3 character 每人 += floor.baseExpReward
+  // + 升层(重打不发奖,沿 drops 体例防刷)。Phase 4 UI 用 result 显示升层
+  // banner(本批暂不暂存)。
+  if (isFirstClear && floor.baseExpReward > 0) {
+    for (final c in characters) {
+      CharacterAdvancementService.applyExperience(
+        c,
+        floor.baseExpReward,
+        realmLookup: GameRepository.instance.getRealm,
+      );
+    }
+  }
 
   await isar.writeTxn(() async {
     await isar.characters.putAll(characters);

@@ -312,6 +312,9 @@ class UiStrings {
   static String seclusionMojianshi(int n) => '磨剑石 × $n';
   static String seclusionInternalForce(int n) => '内力 +$n';
   static String seclusionInsightPoints(int n) => '心法领悟点 +$n';
+  static String seclusionExperience(int n) => '经验 +$n';
+  static String seclusionAdvancement(String realmAfter, int layers) =>
+      layers == 1 ? '突破至 $realmAfter' : '连破 $layers 层 → $realmAfter';
   static String seclusionActualHours(double h) =>
       '实际挂机 ${h.toStringAsFixed(1)} 小时';
   static String seclusionExpected(String key, double perHour) =>
