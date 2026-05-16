@@ -539,6 +539,108 @@ void main() {
       expect(item, isNotNull);
       expect(item!.quantity, greaterThan(0));
     });
+
+    // W15 #30 第 2 期消费层接入 ──────────────────────────────────────────────
+
+    test('收功后 Character.internalForce 累加 internalForcePoints', () async {
+      // 把 fixture 角色 internalForce 重置低位 + max 抬高,留出累加空间
+      await IsarSetup.instance.writeTxn(() async {
+        final ch = await IsarSetup.instance.characters.get(kCharId);
+        ch!.internalForce = 100;
+        ch.internalForceMax = 10000;
+        await IsarSetup.instance.characters.put(ch);
+      });
+
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 4,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      final out = await SeclusionService(isar: IsarSetup.instance).completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start.add(const Duration(hours: 4)),
+      );
+
+      expect(out.internalForcePoints, greaterThan(0));
+      final ch = await IsarSetup.instance.characters.get(kCharId);
+      expect(ch?.internalForce, 100 + out.internalForcePoints);
+    });
+
+    test('收功后 Character.insightPoints 累加 techniqueLearnPoints', () async {
+      // 山林 techniqueLearnRate=1.0,base=0.5/hr,xueTu scale=1.0
+      // 4h → floor(0.5×1.0×4×1.0)=2,需要 cangJingGe 才更高
+      // cangJingGe requiredRealm=sanLiu,先把 fixture 角色境界升上去
+      await IsarSetup.instance.writeTxn(() async {
+        final ch = await IsarSetup.instance.characters.get(kCharId);
+        ch!.realmTier = RealmTier.sanLiu;
+        await IsarSetup.instance.characters.put(ch);
+      });
+
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
+        mapType: RetreatMapType.cangJingGe,
+        durationHours: 4,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.sanLiu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      final before = await IsarSetup.instance.characters.get(kCharId);
+      final beforePts = before!.insightPoints;
+
+      final out = await SeclusionService(isar: IsarSetup.instance).completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.sanLiu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start.add(const Duration(hours: 4)),
+      );
+
+      expect(out.techniqueLearnPoints, greaterThan(0));
+      final after = await IsarSetup.instance.characters.get(kCharId);
+      expect(after?.insightPoints, beforePts + out.techniqueLearnPoints);
+    });
+
+    test('internalForce 累加 clamp 至 internalForceMax 上限', () async {
+      // 把 fixture 内力顶到 max(500=500),收功后 internalForce 应仍为 max
+      // (fixture setUp 默认 internalForce=500 internalForceMax=500,直接复用)
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session = await SeclusionService(isar: IsarSetup.instance).startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 4,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      final out = await SeclusionService(isar: IsarSetup.instance).completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start.add(const Duration(hours: 4)),
+      );
+
+      expect(out.internalForcePoints, greaterThan(0),
+          reason: '前置:闭关确实算出内力增长');
+      final ch = await IsarSetup.instance.characters.get(kCharId);
+      expect(ch?.internalForce, ch?.internalForceMax,
+          reason: '超 max 必须 clamp');
+      expect(ch?.internalForce, 500);
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────

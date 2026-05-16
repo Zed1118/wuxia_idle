@@ -25,6 +25,12 @@ class Character {
   int experience = 0;
   int experienceToNextLayer = 100;
 
+  /// 心法领悟点 wallet（W15 #30 闭关 techniqueLearnPoints 落点 / GDD §7.2）。
+  ///
+  /// 闭关收功累加，[TechniqueLearningService.learn] 生产路径将从此读。
+  /// Demo 单角色为主，每角色独立 wallet，不做跨角色共享（祖师攒徒孙不继承）。
+  int insightPoints = 0;
+
   late Attributes attributes;
 
   @Enumerated(EnumType.name)
@@ -85,6 +91,7 @@ class Character {
     int internalForceMax = 500,
     int experience = 0,
     int experienceToNextLayer = 100,
+    int insightPoints = 0,
     TechniqueSchool? school,
     int? mainTechniqueId,
     List<int>? assistTechniqueIds,
@@ -115,6 +122,7 @@ class Character {
       ..internalForceMax = internalForceMax
       ..experience = experience
       ..experienceToNextLayer = experienceToNextLayer
+      ..insightPoints = insightPoints
       ..school = school
       ..mainTechniqueId = mainTechniqueId
       ..assistTechniqueIds = assistTechniqueIds ?? []
