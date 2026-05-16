@@ -39,13 +39,13 @@
 ## 已知偏差 / 挂账事项
 
 - ~~2. **lib/ 目录结构**~~(**2026-05-16 Phase 5 #3 第 6 批销账**:lib/ 100% 对齐 CLAUDE.md §3 — core/{domain,application}/ + data/{defs/,*.dart,isar_provider} + features/{14 feature 含新增 main_menu / narrative}/ + shared/{effects,theme,utils,strings.dart}/ + main.dart;lib/ui/ + lib/utils/ + lib/providers/ + lib/data/models 4 目录消失;9 commit + 1 rmdir-only step + 0 codegen regen;closeout `week15_phase5_3_lib_structure_finalization_2026-05-16.md`)
-- 3. **`riverpod_lint` 未引入**(W6 重评估):custom_lint 0.8.x 锁 analyzer ^7.5/^8 与 link 4.x ^9 互斥,等 custom_lint 升级
+- ~~3. **`riverpod_lint` 未引入**~~(**2026-05-17 W17 D-#3 半销账**:`riverpod_lint 3.1.3` 已抛弃 custom_lint 转用 `analysis_server_plugin`,原阻塞描述过时。本批 pubspec.yaml 加 dev_dep `riverpod_lint: ^3.1.3` resolve 通过 + .g.dart 重生 + 759/759 + analyze 0 issues。**plugin 启用留 follow-up**:启用需 analysis_options.yaml 加 `plugins: riverpod_lint: ^3.1.3` 段,启用后将出 3 处 dependency 标注 warning(tower_providers `towerProgress` 加 `@Riverpod(dependencies: [])` + tower_floor_list_screen ConsumerStatefulWidget 加 `@Dependencies([towerProgress])` + tower_entry_flow runTowerFlow 函数加 `@Dependencies([towerProgress])`)。Phase 5+ 引入 family/scoped override 时再启用)
 - ~~6. **GDD §5.3/§5.6 公式系数 vs numbers.yaml**~~(**2026-05-16 v1.6 销账**:GDD §5.3 装备攻击 ×8 → ×1.0 + §5.6 内力 ×5 → ×0.7,各加历史脚注;CLAUDE.md §6 镜像公式块同步对齐 + 升 v1.6;代码以 yaml 为准早已平衡到位无代码改动)
 - ~~7. numbers.yaml 节气列表混入「中秋」~~(**2026-05-15 §12 收口销账**:本批方案 A 删中秋 + 补 4 节气(雨水/谷雨/处暑/小雪)凑 12 节气,均为节气非节日)
 - ~~8. CLAUDE.md §12 收口剩 1 条~~(**2026-05-16 v1.5 §12.1 真硬阻塞清零**):#10 师承遗物 4 子项决议落 numbers.yaml 4 字段(`transfer_trigger=ascend_to_wusheng` / `multi_disciple_allocation=player_pick` / `stack_across_generations=false` / `conflict_slot_resolution=auto_swap`)。代码层 Phase 5+ 师徒升级时按此实装,本批仅规则层锚定。**13 条原始待决全 100% 收口**,详 §12.2 归档
 - 9/11. **T05/T07 验收**:Mac 无 Xcode 跑不了 desktop,留 Windows 首跑验
 - 10. **yaml key 命名约定差异**:numbers.yaml snake_case,内容 yaml camelCase,按文件类型隔离不冲突
-- 17. **phase1_tasks T12 §709 笔误**:差 2 守方 0.05 错(实际差 2 守方=0.3,差 3+ 才 0.05),「必败」语义仍成立
+- ~~17. **phase1_tasks T12 §709 笔误**~~(**2026-05-17 反审撤回**:Mac 端 grep 复审 phase1_tasks.md §463「差 2 大境界 → (2.5, 0.3)」+ §464「差 3+ → (1.0, 0.05)」+ §709「三流满员去打绝顶满员…守方 0.05 修正」三处全部正确(三流 index=1 / 绝顶 index=4 差 3 阶,0.05 是对的)。**phase1_tasks 实际无笔误**,本挂账条目早期记忆错误)
 - ~~28. 闭关 widget e2e test 缺失~~(**2026-05-15 Phase 5 #2 销账**:3 屏 Consumer 化后 `_FakeSeclusionService implements SeclusionService` + `seclusionServiceProvider.overrideWithValue(fake)` 绕过 native Isar zone,4 e2e widget test 全过(list→setup→active→result 导航 + confirm dialog 双路径)。W6 drift 5 轮探路无解的"fake_async vs native Isar zone 边界"真解 = Consumer 化把边界封死在 provider override 之下,fake_async 不再必要)
 - ~~30. 闭关 3 个扩展维度未接 service~~(**2026-05-15 销账**:`SeclusionService.computeOutputs` 已接 technique_learn_rate / internal_force_growth / 节气日 +30% / 子时 +20%(只乘内力维度,修原 bug);RetreatOutputs typedef 加 techniqueLearnPoints / internalForcePoints;numbers.yaml 加 base_internal_force_per_hour=5 / base_technique_learn_per_hour=0.5 锚点。test +6,649/649。**正午阳刚 +20% 留 §12.1 #7 实装阻塞**,本批不接)
 - 31. **main_menu「问鼎九霄」widget test 写不出**(2026-05-13 W9 自审踩坑):`pumpAndSettle` 死循环,多 provider+Navigator 链异步 future + 帧 ticker 冲突。已有 11 个 tower widget test 覆盖核心,nav 路径不再硬塞
@@ -56,7 +56,7 @@
 - ~~38. 像样货 5 件 lore 缺第 2 段~~(**2026-05-15 反审撤回**:整批闭环后 Mac 端 grep 复审 35 件 yaml 实测**75 段不是 70 段**(closeout §3.6 各阶罗列加和 5+5+10+10+15+15+15 = 75 算成 70)。**像样货 5 件 1 段是 W15 #35 派单 §3.2 明文规定体例**(`week15_deepseek_dispatch_35_lore_2026-05-15.md:57` "第 2 阶 · 像样货 · 各 1 段"),DeepSeek 没漏配。Codex 装备详情屏 04 WARN 是 spec 误抄错误 PROGRESS 数字,实际**详情屏 7/7 PASS**)
 - ~~39. **物料 Tab 行右侧 defId 显示**~~(**2026-05-16 销账**:`_MaterialRow` 删 raw `item.defId` Text widget,行内仅保留本地化「磨剑石 × N」/「心血结晶 × N」,Expanded 简化为直接 Text;widget test line 201 期望反转 `findsOneWidget` → `findsNothing` + reason 注;723/723 全过)
 
-> 已销账条目(#1/#2/#4/#5/#6/#8/#12/#13/#14/#15/#16/#18/#19/#20/#21/#22/#23/#24/#25/#26/#27/#28/#29/#30/#32/#34/#35/#36/#39)详见末尾归档。
+> 已销账条目(#1/#2/#3/#4/#5/#6/#8/#12/#13/#14/#15/#16/#17/#18/#19/#20/#21/#22/#23/#24/#25/#26/#27/#28/#29/#30/#32/#34/#35/#36/#39)详见末尾归档。
 
 ## 下一步
 
