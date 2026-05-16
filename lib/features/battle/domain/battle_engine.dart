@@ -4,6 +4,7 @@ import '../../../data/defs/skill_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/numbers_config.dart';
 import 'battle_ai.dart';
+import 'enum_localizations.dart';
 import 'battle_state.dart';
 import 'damage_calculator.dart';
 import 'derived_stats.dart';
@@ -194,8 +195,8 @@ class BattleEngine {
         tick: preState.tick,
         actorId: actor.characterId,
         description: preActor.isAlive
-            ? '${actor.name} 内伤发作,扣 ${inj.damagePerTick} 血'
-            : '${actor.name} 内伤崩裂,经脉俱断',
+            ? EnumL10n.internalInjuryTick(actor.name, inj.damagePerTick)
+            : EnumL10n.internalInjuryFatal(actor.name),
       );
       preState = preState.copyWith(
         leftTeam: List.unmodifiable(leftDot),

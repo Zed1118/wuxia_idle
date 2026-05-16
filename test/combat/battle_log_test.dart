@@ -87,6 +87,21 @@ void main() {
       expect(EnumL10n.attackEffect('unknown_xyz'), 'unknown_xyz');
     });
 
+    test('§12.1 #7 v1.4 内伤 dot 日志:发作 + 致死 2 种工厂', () {
+      // 约束语义:工厂方法注入 actorName 而非 inline 写中文,违反 §5.6 红线时 grep 可发现。
+      final tick = EnumL10n.internalInjuryTick('祖师', 200);
+      expect(tick, contains('祖师'));
+      expect(tick, contains('200'));
+      expect(tick, contains('内伤'),
+          reason: '内伤发作日志必含「内伤」关键字便于玩家识别');
+      final fatal = EnumL10n.internalInjuryFatal('祖师');
+      expect(fatal, contains('祖师'));
+      expect(fatal, contains('内伤'),
+          reason: '内伤致死日志必含「内伤」关键字');
+      // tick 与 fatal 必不同 — 避免玩家分不清「还在掉」vs「已死」。
+      expect(tick, isNot(fatal));
+    });
+
     test('realm(tier, layer) 拼接', () {
       expect(EnumL10n.realm(RealmTier.wuSheng, RealmLayer.dengFeng), '武圣登峰');
     });
