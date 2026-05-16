@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../ui/strings.dart';
 import '../../../ui/theme/colors.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/drop_service.dart';
 
@@ -52,7 +54,8 @@ class StageVictoryContent extends StatelessWidget {
         GameRepository.isLoaded
             ? GameRepository.instance.getEquipment(eq.defId).name
             : eq.defId,
-      for (final item in drops.items) '${item.defId} ×${item.quantity}',
+      for (final item in drops.items)
+        '${EnumL10n.itemType(ItemType.fromDefId(item.defId))} ×${item.quantity}',
     ];
     return Column(
       mainAxisSize: MainAxisSize.min,

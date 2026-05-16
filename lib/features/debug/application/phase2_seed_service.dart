@@ -16,6 +16,8 @@ import '../../../utils/rng.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../equipment/application/equipment_factory.dart';
 import '../../mainline/application/mainline_progress_service.dart';
+import '../../mainline/domain/mainline_progress.dart';
+import '../../tower/domain/tower_progress.dart';
 
 /// Phase 2 调试场景种子工厂（phase2_tasks.md T32 §492-509 子提交 3）。
 ///
@@ -468,6 +470,81 @@ class Phase2SeedService {
         }
         await isar.equipments.put(eq);
       }
+    });
+  }
+
+  /// W15 P3 后续 F2 视觉验收专用 seed(Codex E 二轮派单的升层 banner 取景):
+  /// 3 active 角色全员 [RealmTier.xueTu]·[RealmLayer.qiMeng] + experience=0,
+  /// 主线 / 塔 / 奇遇进度全清。配合 stage_01_01 / 塔 floor1 通关后,
+  /// `CharacterAdvancementService.applyExperience` 用 yaml 配置
+  /// (xueTu.qiMeng experience_to_next=50)触发升层 banner。
+  ///
+  /// 不学心法、不装备装备(GDD §5.3 三系锁死,学徒只能装备 tier 0 寻常货,
+  /// 防止派单 fixture 漂移)。物料给 100 磨剑石 + 10 心血结晶,够 victory drop
+  /// 累积观察。SaveData.activeCharacterIds / founderCharacterId 沿
+  /// [seedMasterDisciple] 体例。
+  Future<void> seedVisualCheckW15Fresh() async {
+    final isar = this.isar;
+    final now = DateTime.now();
+    final realmDef = GameRepository.instance.getRealm(
+      RealmTier.xueTu,
+      RealmLayer.qiMeng,
+    );
+
+    await isar.writeTxn(() async {
+      await _clearAll();
+      await isar.mainlineProgress.clear();
+      await isar.towerProgress.clear();
+      await isar.encounterProgress.clear();
+
+      Character buildFresh({required String name, required bool isFounder}) {
+        return Character.create(
+          name: name,
+          realmTier: RealmTier.xueTu,
+          realmLayer: RealmLayer.qiMeng,
+          attributes: Attributes()
+            ..constitution = 6
+            ..enlightenment = 6
+            ..agility = 6
+            ..fortune = 6,
+          rarity: RarityTier.biaoZhun,
+          lineageRole:
+              isFounder ? LineageRole.founder : LineageRole.disciple,
+          createdAt: now,
+          internalForce: realmDef.internalForceMax,
+          internalForceMax: realmDef.internalForceMax,
+          experience: 0,
+          experienceToNextLayer: realmDef.experienceToNext,
+          isActive: true,
+          isFounder: isFounder,
+        );
+      }
+
+      final founder = buildFresh(name: '祖师', isFounder: true)..id = 1;
+      await isar.characters.put(founder);
+      final firstDisciple = buildFresh(name: '大弟子', isFounder: false);
+      await isar.characters.put(firstDisciple);
+      final secondDisciple = buildFresh(name: '二弟子', isFounder: false);
+      await isar.characters.put(secondDisciple);
+
+      founder.discipleIds = [firstDisciple.id, secondDisciple.id];
+      firstDisciple.masterId = founder.id;
+      secondDisciple.masterId = founder.id;
+      await isar.characters.putAll([founder, firstDisciple, secondDisciple]);
+
+      final save = await isar.saveDatas.get(0);
+      if (save != null) {
+        save.activeCharacterIds = [
+          founder.id,
+          firstDisciple.id,
+          secondDisciple.id,
+        ];
+        save.founderCharacterId = founder.id;
+        save.sectName ??= '我的门派';
+        await isar.saveDatas.put(save);
+      }
+
+      await _seedMaterials(mojianshi: 100, jieJing: 10);
     });
   }
 

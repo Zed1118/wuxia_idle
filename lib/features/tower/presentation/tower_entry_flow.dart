@@ -19,6 +19,7 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../providers/isar_provider.dart';
 import '../../battle/application/battle_resolution.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../../../features/equipment/application/drop_service.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/presentation/battle_screen.dart';
@@ -337,7 +338,7 @@ Future<void> _persistDrops(WidgetRef ref, DropResult drops) async {
         await isar.inventoryItems.put(
           InventoryItem()
             ..defId = item.defId
-            ..itemType = _itemTypeOf(item.defId)
+            ..itemType = ItemType.fromDefId(item.defId)
             ..quantity = item.quantity
             ..firstObtainedAt = now
             ..lastObtainedAt = now,
@@ -345,13 +346,6 @@ Future<void> _persistDrops(WidgetRef ref, DropResult drops) async {
       }
     }
   });
-}
-
-/// 根据已知 item defId 推断 [ItemType]；未知 id 兜底 [ItemType.miscMaterial]。
-ItemType _itemTypeOf(String defId) {
-  if (defId == 'item_mojianshi') return ItemType.moJianShi;
-  if (defId == 'item_xinxuejiejing') return ItemType.xinXueJieJing;
-  return ItemType.miscMaterial;
 }
 
 /// 胜利奖励弹窗：首通显示掉落清单，重打显示「重打不发奖」。
@@ -470,7 +464,8 @@ class _FirstClearContent extends StatelessWidget {
         GameRepository.isLoaded
             ? GameRepository.instance.getEquipment(eq.defId).name
             : eq.defId,
-      for (final item in drops.items) '${item.defId} ×${item.quantity}',
+      for (final item in drops.items)
+        '${EnumL10n.itemType(ItemType.fromDefId(item.defId))} ×${item.quantity}',
     ];
     return Column(
       mainAxisSize: MainAxisSize.min,
