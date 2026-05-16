@@ -50,6 +50,8 @@ class UiStrings {
   static const String mainMenuInventoryHint = '查看 / 强化 / 开锋装备';
   static const String mainMenuTechniques = '心法面板';
   static const String mainMenuTechniquesHint = '查看主修 / 辅修 / 散功换主修';
+  static const String mainMenuLineage = '师徒名单';
+  static const String mainMenuLineageHint = '查看祖师与弟子的传承链路';
 
   // Phase 2 调试场景（T32 子提交 3d）
   static const String phase2MenuTitle = 'Phase 2 调试场景';
@@ -124,6 +126,15 @@ class UiStrings {
   /// 师承 Tab 标签：按 activeCharacterIds 顺序展示。
   /// 与 Phase2SeedService.seedMasterDisciple 槽位约定锁死（slot0=祖师 / 1=大弟子 / 2=二弟子）。
   static const List<String> lineageTabLabels = ['祖师', '大弟子', '二弟子'];
+
+  // 师徒名单 panel（W17 候选 E）
+  static const String lineagePanelTitle = '师徒名单';
+  static const String lineagePanelDisciplesSection = '弟子';
+  static const String lineagePanelHeritageSection = '师承遗物';
+  static const String lineagePanelNoFounder = '祖师未定';
+  static const String lineagePanelNoDisciples = '尚无弟子';
+  static const String lineagePanelNoHeritage = '尚未拥有师承遗物';
+  static String lineagePanelHeritageCount(int n) => '$n 件';
 
   static const String attrConstitution = '根骨';
   static const String attrEnlightenment = '悟性';

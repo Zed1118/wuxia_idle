@@ -5,6 +5,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/application/character_providers.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
+import '../../character_panel/presentation/lineage_panel_screen.dart';
 import '../../debug/presentation/battle_test_menu.dart';
 import '../../debug/presentation/phase2_test_menu.dart';
 import '../../festival/application/festival_service_providers.dart';
@@ -16,12 +17,13 @@ import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
 
-/// 调试主菜单（phase2_tasks.md T32 §492-509 子提交 3b + T56 闭关入口 FutureBuilder 化）。
+/// 调试主菜单（phase2_tasks.md T32 §492-509 子提交 3b + T56 闭关入口 FutureBuilder 化 + W17 候选 E 师徒名单入口）。
 ///
-/// `main.dart` 的新 `home`，取代 [BattleTestMenu]。8 个按钮串接：
+/// `main.dart` 的新 `home`，取代 [BattleTestMenu]。9 个按钮串接：
 /// - Phase 1 战斗测试 → [BattleTestMenu]（沿用 T17 入口）
 /// - Phase 2 调试场景 → [Phase2TestMenu]（T32 子提交 3d 新建）
 /// - 角色面板 → [CharacterPanelScreen]，初始 `characterId=1`（T56 内部 Tab 可切换 3 角色）
+/// - 师徒名单 → [LineagePanelScreen]（W17 候选 E 全局关系视图）
 /// - 闭关修炼 → [SeclusionMapListScreen]，**异步**读 SaveData 首位角色 + 境界（销账 #26）
 /// - 装备仓库 → [InventoryScreen]
 /// - 心法面板 → [TechniquePanelScreen]，固定 `characterId=1`
@@ -102,6 +104,12 @@ class MainMenu extends ConsumerWidget {
                       characterId: _defaultCharacterId,
                     ),
                   ),
+                ),
+                const SizedBox(height: 16),
+                _MenuButton(
+                  label: UiStrings.mainMenuLineage,
+                  hint: UiStrings.mainMenuLineageHint,
+                  onTap: () => _push(context, const LineagePanelScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
