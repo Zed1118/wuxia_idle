@@ -698,3 +698,123 @@ encounters:
       clever_avoid:
         type: unlockSkill
         skillId: skill_encounter_wu_ming
+
+  # ───────────────────────────────────────────────
+  # 31. chun_jie_shou_sui · 守岁夜
+  #    fortuneEvent · 春节(2026-02-17)当日 + fortune 软门槛
+  # ───────────────────────────────────────────────
+  - id: chun_jie_shou_sui
+    type: fortuneEvent
+    trigger:
+      festivalRequired: chunJie
+      fortuneRequired: 4
+    baseProbability: 0.5
+    outcomeMapping:
+      shou_sui_path_a:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+      shou_sui_path_b:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 32. yuan_xiao_guan_deng · 观灯夜
+  #    fortuneEvent · 元宵(2026-03-03)当日 + fortune 软门槛
+  # ───────────────────────────────────────────────
+  - id: yuan_xiao_guan_deng
+    type: fortuneEvent
+    trigger:
+      festivalRequired: yuanXiao
+      fortuneRequired: 4
+    baseProbability: 0.5
+    outcomeMapping:
+      guan_deng_path_a:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+      guan_deng_path_b:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 33. duan_wu_du_long_zhou · 渡龙舟
+  #    fortuneEvent · 端午(2026-06-19)当日 + fortune 软门槛
+  # ───────────────────────────────────────────────
+  - id: duan_wu_du_long_zhou
+    type: fortuneEvent
+    trigger:
+      festivalRequired: duanWu
+      fortuneRequired: 4
+    baseProbability: 0.5
+    outcomeMapping:
+      du_long_zhou_path_a:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+      du_long_zhou_path_b:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 34. qi_xi_xi_qiao · 乞巧夜
+  #    fortuneEvent · 七夕(2026-08-19)当日 + fortune 软门槛
+  # ───────────────────────────────────────────────
+  - id: qi_xi_xi_qiao
+    type: fortuneEvent
+    trigger:
+      festivalRequired: qiXi
+      fortuneRequired: 4
+    baseProbability: 0.5
+    outcomeMapping:
+      xi_qiao_path_a:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
+      xi_qiao_path_b:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 35. zhong_qiu_yue_xia_du · 月下独酌
+  #    fortuneEvent · 中秋(2026-09-25)当日 + fortune 软门槛
+  # ───────────────────────────────────────────────
+  - id: zhong_qiu_yue_xia_du
+    type: fortuneEvent
+    trigger:
+      festivalRequired: zhongQiu
+      fortuneRequired: 4
+    baseProbability: 0.5
+    outcomeMapping:
+      yue_xia_du_path_a:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+      yue_xia_du_path_b:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 36. chong_yang_deng_gao · 登高
+  #    fortuneEvent · 重阳(2026-10-18)当日 + fortune 软门槛
+  # ───────────────────────────────────────────────
+  - id: chong_yang_deng_gao
+    type: fortuneEvent
+    trigger:
+      festivalRequired: chongYang
+      fortuneRequired: 4
+    baseProbability: 0.5
+    outcomeMapping:
+      deng_gao_path_a:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+      deng_gao_path_b:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
