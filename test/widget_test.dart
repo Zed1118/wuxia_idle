@@ -28,6 +28,8 @@ const _testAnim = AnimationNumbers(
 
 const _normalResult = AttackResult(
   finalDamage: 1500,
+  mainDamage: 1500,
+  quakeDamage: 0,
   isCritical: false,
   isDodged: false,
   schoolCounterMultiplier: 1.0,
@@ -43,6 +45,8 @@ const _normalResult = AttackResult(
 
 const _criticalResult = AttackResult(
   finalDamage: 3600,
+  mainDamage: 3600,
+  quakeDamage: 0,
   isCritical: true,
   isDodged: false,
   schoolCounterMultiplier: 1.0,
@@ -58,6 +62,8 @@ const _criticalResult = AttackResult(
 
 const _dodgeResult = AttackResult(
   finalDamage: 0,
+  mainDamage: 0,
+  quakeDamage: 0,
   isCritical: false,
   isDodged: true,
   schoolCounterMultiplier: 1.0,

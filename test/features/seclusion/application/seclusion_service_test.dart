@@ -405,6 +405,69 @@ void main() {
       expect(out.internalForcePoints, 50);
     });
 
+    test('§12.1 #7 正午 + 刚猛 → internalForcePoints ×1.2', () {
+      // 正午 11:00,刚猛角色,xueTu,山林:internalForce floor(5×1.0×4×1.0×1.0×1.0×1.2)=24
+      final start = DateTime(2026, 5, 11, 11, 0); // 正午
+      final now = start.add(const Duration(hours: 4));
+      final session = makeSession(durationHours: 4, startedAt: start);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+        charSchool: TechniqueSchool.gangMeng,
+      );
+      expect(out.internalForcePoints, 24,
+          reason: '正午 + 刚猛 → internalForcePoints ×1.2');
+      // 其他维度不受 zhengWu 加成
+      expect(out.mojianshi, 4, reason: '正午 mojianshi 不加成');
+      expect(out.experiencePoints, 400, reason: '正午 experience 不加成');
+    });
+
+    test('§12.1 #7 正午但非刚猛 → internalForcePoints 不加成', () {
+      final start = DateTime(2026, 5, 11, 11, 0);
+      final now = start.add(const Duration(hours: 4));
+      final session = makeSession(durationHours: 4, startedAt: start);
+      // 非刚猛(灵巧)
+      final outLq = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+        charSchool: TechniqueSchool.lingQiao,
+      );
+      expect(outLq.internalForcePoints, 20,
+          reason: '灵巧角色正午不享受阳刚加成,基准 20');
+      // null(老 caller 没传 school)
+      final outNull = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+      expect(outNull.internalForcePoints, 20,
+          reason: '不传 charSchool 默认 null → 不加成,沿老体例兼容');
+    });
+
+    test('§12.1 #7 刚猛但非正午 → internalForcePoints 不加成', () {
+      final start = DateTime(2026, 5, 11, 10, 0); // 上午 10 点非正午
+      final now = start.add(const Duration(hours: 4));
+      final session = makeSession(durationHours: 4, startedAt: start);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+        charSchool: TechniqueSchool.gangMeng,
+      );
+      expect(out.internalForcePoints, 20,
+          reason: '刚猛在非正午不享受 zhengWu 加成,基准 20');
+    });
+
     test('cap 72h 边界 + 断崖宗师全 buff 不超 999999 红线', () {
       // 断崖绝壁 zongShi 72h cap + 子时 + 节气：极限场景验红线 clamp
       final start = DateTime(2026, 2, 4, 23, 0); // 立春 + 子时

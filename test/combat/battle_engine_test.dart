@@ -380,6 +380,140 @@ void main() {
       expect(targetId, r1.characterId);
     });
   });
+
+  // §12.1 #7 v1.4 阴柔克灵巧内伤 debuff 状态机 ────────────────────────────────
+  group('§12.1 #7 阴柔内伤 debuff', () {
+    test('阴柔 → 灵巧 命中 → defender 加 InternalInjurySlot(turns=3 dmg=200)',
+        () {
+      final n = GameRepository.instance.numbers;
+      final atk = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        school: TechniqueSchool.yinRou,
+        techDefId: 'tech_yinrou_mingjia',
+      ).copyWith(actionPoint: 1000);
+      final def = _mkBC(
+        charId: 11,
+        teamSide: 1,
+        school: TechniqueSchool.lingQiao,
+        techDefId: 'tech_lingqiao_mingjia',
+      );
+      var s = BattleState.initial(leftTeam: [atk], rightTeam: [def]);
+      s = BattleEngine.tick(s, n, rng: Random(0));
+      final defAfter = s.rightTeam.first;
+      expect(defAfter.internalInjury, isNotNull,
+          reason: '阴柔命中灵巧应施加 internalInjury slot');
+      expect(defAfter.internalInjury!.remainingTurns,
+          n.schoolCounter.yinRouInternalInjury.turnsPersist);
+      expect(defAfter.internalInjury!.damagePerTick,
+          n.schoolCounter.yinRouInternalInjury.damagePerTick);
+    });
+
+    test('内伤 dot:守方下次出手 → 扣 damagePerTick + turns-=1', () {
+      final n = GameRepository.instance.numbers;
+      // 守方刚猛(避免命中刚猛的中性反向触发其他效果),设 actionPoint=1000 立即出手。
+      final injured = _mkBC(
+        charId: 11,
+        teamSide: 1,
+        school: TechniqueSchool.lingQiao,
+        techDefId: 'tech_lingqiao_mingjia',
+      ).copyWith(
+        actionPoint: 1000,
+        internalInjury: const InternalInjurySlot(
+          remainingTurns: 3,
+          damagePerTick: 200,
+        ),
+      );
+      final foe = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        school: TechniqueSchool.gangMeng,
+      );
+      var s = BattleState.initial(leftTeam: [foe], rightTeam: [injured]);
+      final hpBefore = injured.currentHp;
+      s = BattleEngine.tick(s, n, rng: Random(0));
+      final injuredAfter = s.rightTeam.first;
+      expect(injuredAfter.currentHp, lessThanOrEqualTo(hpBefore - 200),
+          reason: 'dot 扣 200(可能还叠上来自 foe 的攻击,故 ≤)');
+      expect(injuredAfter.internalInjury, isNotNull);
+      expect(injuredAfter.internalInjury!.remainingTurns, 2,
+          reason: 'turns 衰减 1');
+    });
+
+    test('内伤 turns=1 → 出手扣 dot 后 → slot 清空(null)', () {
+      final n = GameRepository.instance.numbers;
+      final injured = _mkBC(
+        charId: 11,
+        teamSide: 1,
+        school: TechniqueSchool.lingQiao,
+        techDefId: 'tech_lingqiao_mingjia',
+      ).copyWith(
+        actionPoint: 1000,
+        internalInjury: const InternalInjurySlot(
+          remainingTurns: 1,
+          damagePerTick: 200,
+        ),
+      );
+      final foe = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        school: TechniqueSchool.gangMeng,
+      );
+      var s = BattleState.initial(leftTeam: [foe], rightTeam: [injured]);
+      s = BattleEngine.tick(s, n, rng: Random(0));
+      expect(s.rightTeam.first.internalInjury, isNull,
+          reason: 'turns=1 用尽 → slot 清空');
+    });
+
+    test('同源刷新:阴柔再次命中已带内伤的灵巧 → remainingTurns 重置不叠层', () {
+      final n = GameRepository.instance.numbers;
+      final attacker = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        school: TechniqueSchool.yinRou,
+        techDefId: 'tech_yinrou_mingjia',
+      ).copyWith(actionPoint: 1000);
+      final defender = _mkBC(
+        charId: 11,
+        teamSide: 1,
+        school: TechniqueSchool.lingQiao,
+        techDefId: 'tech_lingqiao_mingjia',
+      ).copyWith(
+        internalInjury: const InternalInjurySlot(
+          remainingTurns: 1, // 老 slot 还剩 1 turn
+          damagePerTick: 200,
+        ),
+      );
+      var s = BattleState.initial(leftTeam: [attacker], rightTeam: [defender]);
+      s = BattleEngine.tick(s, n, rng: Random(0));
+      final defAfter = s.rightTeam.first;
+      expect(defAfter.internalInjury, isNotNull);
+      expect(defAfter.internalInjury!.remainingTurns,
+          n.schoolCounter.yinRouInternalInjury.turnsPersist,
+          reason: '刷新覆盖:重置 turns 到 3,不是叠 1+3=4 也不是延长');
+    });
+
+    test('闪避:阴柔被闪避不施加内伤(followsMainHit)', () {
+      // 通过给 defender 极高 evasion 强制闪避。
+      final n = GameRepository.instance.numbers;
+      final attacker = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        school: TechniqueSchool.yinRou,
+        techDefId: 'tech_yinrou_mingjia',
+      ).copyWith(actionPoint: 1000);
+      final defender = _mkBC(
+        charId: 11,
+        teamSide: 1,
+        school: TechniqueSchool.lingQiao,
+        techDefId: 'tech_lingqiao_mingjia',
+      ).copyWith(evasionRate: 1.0); // 100% 闪避
+      var s = BattleState.initial(leftTeam: [attacker], rightTeam: [defender]);
+      s = BattleEngine.tick(s, n, rng: Random(0));
+      expect(s.rightTeam.first.internalInjury, isNull,
+          reason: '主攻击闪避 → 不施加 internal_injury');
+    });
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
