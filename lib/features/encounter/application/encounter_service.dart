@@ -181,9 +181,14 @@ class EncounterService {
   ///
   /// 流程:
   ///   1. 过滤已触发的 id
-  ///   2. trigger 全部满足(schoolKillThreshold AND 全过 + fortune >= required)
+  ///   2. trigger 全部满足(schoolKillThreshold AND 全过 + fortune >= required
+  ///      + W16 festivalRequired)
   ///   3. 软概率公式 p = baseProbability * (1 + fortune/20),roll rng
   ///   4. 返回首个 roll 通过的 encounter(防止一次战斗连弹多个)
+  ///
+  /// [festivalToday] 由 caller(encounter_hook)从 [FestivalService.todayFestival]
+  /// 取值后注入(W16 GDD §12.4)。null 表示今日非节日,任何 trigger 配
+  /// `festivalRequired != null` 的 encounter 都不触发。
   ///
   /// caller(stage_entry_flow / tower_entry_flow)拿到非 null 后弹 UI。
   /// UI 关闭(玩家选/skip)后调 [applyOutcome] + [markTriggered]。
@@ -192,6 +197,7 @@ class EncounterService {
     required Attributes attributes,
     required List<EncounterDef> encounters,
     required Rng rng,
+    Festival? festivalToday,
   }) async {
     final progress = await isar.encounterProgress
         .filter()
@@ -203,7 +209,7 @@ class EncounterService {
 
     for (final def in encounters) {
       if (triggered.contains(def.id)) continue;
-      if (!_checkTrigger(def, progress, attributes)) continue;
+      if (!_checkTrigger(def, progress, attributes, festivalToday)) continue;
 
       final p = def.baseProbability * (1 + attributes.fortune / 20.0);
       if (rng.nextDouble() < p) {
@@ -393,11 +399,13 @@ class EncounterService {
   /// trigger 全满足判定(纯函数,无 IO,便于测试)。
   ///
   /// 多维度 AND 语义:fortune + schoolKill + biomeMinutes + weatherMinutes
-  /// 任一不满足直接返 false。任一维度配空 map = 该维度免审。
+  /// + W16 festivalRequired 任一不满足直接返 false。
+  /// 任一维度配空 map = 该维度免审；festivalRequired=null 同义免审。
   static bool _checkTrigger(
     EncounterDef def,
     EncounterProgress progress,
     Attributes attributes,
+    Festival? festivalToday,
   ) {
     // fortune 下限
     final required = def.trigger.fortuneRequired;
@@ -420,6 +428,11 @@ class EncounterService {
         return false;
       }
     }
+    // W16 节日维度（GDD §12.4）。festivalRequired 非 null 时必须等于今日节日。
+    final festRequired = def.trigger.festivalRequired;
+    if (festRequired != null && festRequired != festivalToday) {
+      return false;
+    }
     return true;
   }
 }
@@ -439,11 +452,13 @@ extension EncounterServiceCurrentSlot on EncounterService {
     required Attributes attributes,
     required List<EncounterDef> encounters,
     required Rng rng,
+    Festival? festivalToday,
   }) =>
       evaluateTriggers(
         saveDataId: IsarSetup.currentSlotId,
         attributes: attributes,
         encounters: encounters,
         rng: rng,
+        festivalToday: festivalToday,
       );
 }

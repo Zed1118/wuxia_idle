@@ -7,6 +7,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../shared/utils/rng_provider.dart';
+import '../../festival/application/festival_service_providers.dart';
 import '../application/encounter_service.dart';
 import '../domain/encounter_def.dart';
 import '../domain/encounter_event_loader.dart';
@@ -63,6 +64,7 @@ Future<void> runEncounterHookAfterVictory({
       attributes: founder.attributes,
       encounters: encounters,
       rng: ref.read(rngProvider),
+      festivalToday: ref.read(todayFestivalProvider),
     );
   } catch (e, st) {
     debugPrint('EncounterService.evaluateTriggers 失败:$e\n$st');

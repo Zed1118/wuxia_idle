@@ -91,6 +91,13 @@ class NumbersConfig {
   /// 闭关地图配置（numbers.yaml `retreat`，Phase 3 T47）。
   final RetreatConfig retreat;
 
+  /// 农历节日配置（numbers.yaml `festivals`，W16 GDD §12.4 接口预留）。
+  ///
+  /// 不影响数值红线（GDD §12.4 明文「节日活动：不影响数值」）。仅用于
+  /// encounter trigger 维度 + UI「今日节日」chip 显示。fixture 不带
+  /// `festivals` 段时 [FestivalConfig.empty]。
+  final FestivalConfig festivals;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -117,6 +124,7 @@ class NumbersConfig {
     required this.learningCost,
     required this.animation,
     required this.retreat,
+    required this.festivals,
     required this.raw,
   });
 
@@ -184,6 +192,9 @@ class NumbersConfig {
       ),
       retreat: RetreatConfig.fromYaml(
         y['retreat'] as Map<String, dynamic>,
+      ),
+      festivals: FestivalConfig.fromYaml(
+        y['festivals'] as Map<String, dynamic>?,
       ),
       raw: y,
     );
@@ -1086,5 +1097,55 @@ class RetreatConfig {
       scale *= realmScalePerTier;
     }
     return scale;
+  }
+}
+
+/// 农历节日配置（numbers.yaml `festivals`，W16 GDD §12.4 接口预留）。
+///
+/// **不影响数值红线**（GDD §12.4 明文「节日活动：不影响数值」）—— 仅作为
+/// encounter trigger 维度 + UI「今日节日」chip 显示来源。
+///
+/// 农历转公历每年不同，先 hardcode 2026 年，后续年份扩 yaml 加 `days_YYYY` 段
+/// (沿用 [RetreatConfig.solarTermDays] 体例)。**不引入农历库**，与 §12 #13
+/// 决议保持一致。
+///
+/// fixture 不带 `festivals` 段（test yaml）时构造 [FestivalConfig.empty]：
+/// [festivalOn] 永远返回 null（无任何节日触发），不破坏既有 fixture。
+class FestivalConfig {
+  /// 节日日期清单。`(festival, month, day)` 三元组按 yaml 顺序保留。
+  final List<({Festival festival, int month, int day})> days;
+
+  const FestivalConfig({required this.days});
+
+  /// 空配置（fixture / test yaml 不带 festivals 段时用）。
+  static const FestivalConfig empty = FestivalConfig(days: []);
+
+  factory FestivalConfig.fromYaml(Map<String, dynamic>? y) {
+    if (y == null) return empty;
+    final rawDays = y['days_2026'] as List?;
+    if (rawDays == null) return empty;
+    final parsed = <({Festival festival, int month, int day})>[];
+    for (final raw in rawDays) {
+      final entry = raw as Map;
+      final festival =
+          Festival.values.byName(entry['festival'] as String);
+      final dateStr = entry['date'] as String;
+      final parts = dateStr.split('-');
+      parsed.add((
+        festival: festival,
+        month: int.parse(parts[1]),
+        day: int.parse(parts[2]),
+      ));
+    }
+    return FestivalConfig(days: List.unmodifiable(parsed));
+  }
+
+  /// 给定日期是否为节日。按 month/day 比对（忽略年份，沿用 solarTermDays 体例）。
+  /// 同 month/day 多个节日的情况（实际中不会发生）返回**第一个**命中。
+  Festival? festivalOn(DateTime when) {
+    for (final d in days) {
+      if (when.month == d.month && when.day == d.day) return d.festival;
+    }
+    return null;
   }
 }

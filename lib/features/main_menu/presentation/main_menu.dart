@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/application/character_providers.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../debug/presentation/battle_test_menu.dart';
 import '../../debug/presentation/phase2_test_menu.dart';
+import '../../festival/application/festival_service_providers.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
@@ -59,6 +61,7 @@ class MainMenu extends ConsumerWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const _TodayFestivalChip(),
                 const SizedBox(height: 48),
                 _MenuButton(
                   label: UiStrings.mainMenuMainline,
@@ -174,6 +177,40 @@ class _SeclusionMenuButton extends ConsumerWidget {
                   characterId: characterId,
                 ),
               ),
+    );
+  }
+}
+
+/// 今日节日 chip（W16 GDD §12.4）。
+///
+/// 今日是节日 → 标题下方显示「今日：春节」chip；非节日 → 渲染零高度
+/// `SizedBox.shrink()`（不占空间，不影响既有 layout test）。
+class _TodayFestivalChip extends ConsumerWidget {
+  const _TodayFestivalChip();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final festival = ref.watch(todayFestivalProvider);
+    if (festival == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: WuxiaColors.panel,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: WuxiaColors.border),
+          ),
+          child: Text(
+            UiStrings.mainMenuTodayFestival(EnumL10n.festival(festival)),
+            style: const TextStyle(
+              color: WuxiaColors.textSecondary,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
