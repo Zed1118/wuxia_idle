@@ -1040,11 +1040,20 @@ inheritance:
   demo_max_characters: 3                     # Demo 阶段最多 3 角色：祖师 + 大弟子 + 二弟子
 
   # --- 师承遗物（GDD §6.1）---
+  # CLAUDE.md §12.1 #10 收口 v1.5(2026-05-16) 规则层 4 子项决议:
+  # Q1 传递时机:武圣飞升时自动传(GDD §7.1 原意,Demo 不实装飞升 → Phase 5+ 激活)
+  # Q2 多徒弟归属:玩家进选件界面逐件分配(给主动权 + 后期 UI 包不复杂)
+  # Q3 多代叠加:只取当代不叠加(数值不爆炸,5 代不会 +25%;UI 可显传承链路但 buff 不叠)
+  # Q4 同部位冲突:自动卸下原装入背包 + 新遗物入槽(sane default,不做装备分解违反 §5.1)
   heritage_items:
     pieces_per_generation_min: 1             # 每代师父传 1-2 件
     pieces_per_generation_max: 2
     auto_buff_internal_force_max: 0.05       # 师承遗物自带 +5% 内力上限 buff
     resonance_retention: 0.7                 # 共鸣度保留 70%
+    transfer_trigger: "ascend_to_wusheng"    # v1.5:仅武圣飞升触发(Demo 不激活)
+    multi_disciple_allocation: "player_pick" # v1.5:玩家逐件选分配(非自动)
+    stack_across_generations: false          # v1.5:只取当代不累代叠加
+    conflict_slot_resolution: "auto_swap"    # v1.5:同部位自动 swap 原装回背包
 
   # --- 祖师爷 buff（GDD §7.1，飞升后）---
   founder_ancestor_buff:
