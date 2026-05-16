@@ -12,7 +12,7 @@ import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
-import 'package:wuxia_idle/services/phase2_seed_service.dart';
+import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 
 /// T32 子提交 3a：[Phase2SeedService] 真 Isar 落地测试。

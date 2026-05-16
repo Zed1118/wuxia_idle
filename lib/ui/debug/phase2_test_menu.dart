@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/isar_setup.dart';
-import '../../services/phase2_seed_service.dart';
+import '../../features/debug/application/phase2_seed_service.dart';
 import '../../features/character_panel/presentation/character_panel_screen.dart';
 import '../../features/inventory/presentation/inventory_screen.dart';
 import '../strings.dart';
