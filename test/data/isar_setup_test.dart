@@ -45,9 +45,9 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.7.0',
+      expect(save.saveVersion, '0.8.0',
           reason:
-              'Phase 4 W14-3-A 升 schema:Character 加 equippedEncounterSkillId');
+              'W15 #30 第 2 期升 schema:Character 加 insightPoints int 领悟点 wallet');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);
