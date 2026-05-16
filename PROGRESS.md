@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**W15 #30 第 2 期 内力 + 心法领悟点消费层接入 Character**(2026-05-16,HEAD `250dd38` 已 push,opus xhigh,closeout `docs/handoff/week15_30_phase2_consumption_layer_2026-05-16.md`)。#30 第 1 期 `RetreatOutputs` 加 2 维度仅「只算不发奖」,本批落 Character。① Character schema +`int insightPoints=0` 字段(Isar bump,build_runner 自动 regen `character.g.dart`,旧 save 默认 0 无迁移成本);② `SeclusionService.completeRetreat` writeTxn 加 `ch.internalForce = clamp(+internalForcePoints, 0, internalForceMax)` + `ch.insightPoints += techniqueLearnPoints`;③ `RetreatResultScreen` 加 2 行展示(`bolt` icon 内力 + `auto_stories` icon 心法领悟点),`hasReward` 判断扩 2 → 4 维;④ `UiStrings` 加 `seclusionInternalForce` / `seclusionInsightPoints` 工厂方法。test +8(service 3:internalForce 写回 / insightPoints 写回 / cap clamp;widget 5:4 维全 / 仅内力 / 仅领悟点 / 空收获 / 3 维混合)。**661/661** + analyze 0 issues + 单 commit 零回退。**Phase 5 重构告段后第一个新业务功能落地**:#30 闭环 internalForce + techniqueLearn 2 维度,experiencePoints 同口径但独立任务(升 RealmLayer/RealmTier 链路 cross-system)。**Q1 用户拍板 A1 角色级 wallet** 而非账号级或喂修炼度(`feedback_avoid_over_engineer_abstraction` 复证:Demo 单角色场景多,跨角色共享 wallet 提前抽象=over-engineering)。**Q2 用户拍板「只做 2 维」** 严守 H scope。
+**W15 #30 第 2 期 内力 + 心法领悟点消费层接入 Character**(2026-05-16,HEAD `fa77a0e` 已 push(3 commit:feat `250dd38` + docs `6a04f0d` + saveVersion 修救 `fa77a0e`),opus xhigh,closeout `docs/handoff/week15_30_phase2_consumption_layer_2026-05-16.md`)。#30 第 1 期 `RetreatOutputs` 加 2 维度仅「只算不发奖」,本批落 Character。① Character schema +`int insightPoints=0` 字段(Isar bump,build_runner 自动 regen `character.g.dart`,旧 save 默认 0 无迁移成本);② `SeclusionService.completeRetreat` writeTxn 加 `ch.internalForce = clamp(+internalForcePoints, 0, internalForceMax)` + `ch.insightPoints += techniqueLearnPoints`;③ `RetreatResultScreen` 加 2 行展示(`bolt` icon 内力 + `auto_stories` icon 心法领悟点),`hasReward` 判断扩 2 → 4 维;④ `UiStrings` 加 `seclusionInternalForce` / `seclusionInsightPoints` 工厂方法。test +8(service 3:internalForce 写回 / insightPoints 写回 / cap clamp;widget 5:4 维全 / 仅内力 / 仅领悟点 / 空收获 / 3 维混合)。**661/661** + analyze 0 issues + 单 commit 零回退。**Phase 5 重构告段后第一个新业务功能落地**:#30 闭环 internalForce + techniqueLearn 2 维度,experiencePoints 同口径但独立任务(升 RealmLayer/RealmTier 链路 cross-system)。**Q1 用户拍板 A1 角色级 wallet** 而非账号级或喂修炼度(`feedback_avoid_over_engineer_abstraction` 复证:Demo 单角色场景多,跨角色共享 wallet 提前抽象=over-engineering)。**Q2 用户拍板「只做 2 维」** 严守 H scope。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
@@ -60,7 +60,7 @@
 
 ## 下一步
 
-**W15 #30 第 2 期消费层接入完成**,HEAD `250dd38` 已 push。下波 3 候选(详 #30 第 2 期 closeout §6):
+**W15 #30 第 2 期消费层接入完成**,HEAD `fa77a0e` 已 push(3 commit:feat `250dd38` + docs `6a04f0d` + saveVersion 修救 `fa77a0e`)。下波 3 候选(详 #30 第 2 期 closeout §6):
 - **G. Pen-only T64 test fail 排查**(sonnet 30min):老挂账,短平快首推
 - **F. #34 stage drop 视觉验收 Pen 环境改善**(Codex 派单 1h):老挂账,需借鼠标
 - **新业务候选**:experiencePoints 消费层接入(opus xhigh 2-3h),升层链路 cross-system 跨主线/塔/闭关三贡献源,Demo §10 锚点。可作为 #30 同体例第 3 期收尾
