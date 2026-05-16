@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/game_repository.dart';
 import 'data/isar_setup.dart';
-import 'ui/main_menu.dart';
+import 'features/main_menu/presentation/main_menu.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

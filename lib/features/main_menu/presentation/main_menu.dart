@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/domain/enums.dart';
-import '../core/application/character_providers.dart';
-import '../features/character_panel/presentation/character_panel_screen.dart';
-import '../features/debug/presentation/battle_test_menu.dart';
-import '../features/debug/presentation/phase2_test_menu.dart';
-import '../features/inventory/presentation/inventory_screen.dart';
-import '../features/mainline/presentation/chapter_list_screen.dart';
-import '../features/seclusion/presentation/seclusion_map_list_screen.dart';
-import '../shared/strings.dart';
-import '../features/technique_panel/presentation/technique_panel_screen.dart';
-import '../shared/theme/colors.dart';
-import '../features/tower/presentation/tower_floor_list_screen.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/application/character_providers.dart';
+import '../../character_panel/presentation/character_panel_screen.dart';
+import '../../debug/presentation/battle_test_menu.dart';
+import '../../debug/presentation/phase2_test_menu.dart';
+import '../../inventory/presentation/inventory_screen.dart';
+import '../../mainline/presentation/chapter_list_screen.dart';
+import '../../seclusion/presentation/seclusion_map_list_screen.dart';
+import '../../../shared/strings.dart';
+import '../../technique_panel/presentation/technique_panel_screen.dart';
+import '../../../shared/theme/colors.dart';
+import '../../tower/presentation/tower_floor_list_screen.dart';
 
 /// 调试主菜单（phase2_tasks.md T32 §492-509 子提交 3b + T56 闭关入口 FutureBuilder 化）。
 ///
