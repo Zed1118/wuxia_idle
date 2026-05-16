@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**W15 #30 P3 后续 A · InventoryScreen 物料 Tab**(2026-05-16,opus ~1h,closeout `week15_30_phase3_followup_inventory_material_tab_2026-05-16.md`)。InventoryScreen 加 `DefaultTabController` 2 Tab(装备/物料),物料 Tab **0→1** 落地。新建 `allInventoryItemsProvider`(沿 `allEquipmentsProvider` 体例)+ `EnumL10n.itemType` 5 映射 + `_MaterialList / _MaterialGroup / _MaterialRow` 按 ItemType enum 顺序分组(reserved enum 0 行不显示,避免暴露未实装)+ `_Row.onTap` close 多 invalidate 物料 provider。Phase 0 grep 半完成模式判定准确(schema 已落 + 全表 provider 0 caller),**0 schema 改 + 0 saveVersion bump**。**701/701** + analyze 0 issues(原 690 + 11 新增:6 EnumL10n.itemType 全覆盖红线 + 5 inventory widget test:空 / 1 行 / 2 行按 enum 顺序 / quantity==0 过滤 / TabBar 默认装备 Tab)。**销账 PROGRESS §65 候选 A.3** + **Codex F #34 完整闭环**(victory drop banner 1/2 上批 + 物料 Tab 2/2 本批,挂账 #34 完全销账)。
+**Codex E victory dialog 视觉验收 closeout 回**(2026-05-16,Pen Codex,closeout `codex_w15_victory_dialog_visual_check_2026-05-16.md`,commit `39d2663`)。**5 张正式截图 + 评级 2 PASS / 3 WARN / 0 FAIL**(A1 stage_01_01 WARN / A2 narrative 衔接 PASS / B1 stage_01_02 WARN / C1 塔 floor2 首通 WARN 补拍因 P5 已通 1/30 / C2 塔 floor2 重打 PASS)。3 WARN 归 2 类:**① item_mojianshi 未本地化为「磨剑石」**(`stage_victory_dialog.dart:55` 真 UI bug,装备走 `getEquipment(...).name` 体例对,item 漏了)**② 未验到升层多行 banner**(P5 fixture 漂移,实测「祖师一流+大弟子二流+二弟子三流」+ stage_01_01/01_02/塔低层 EXP 不足升层,**不是代码 bug**)。**#34 状态调整为「WARN 闭环」**(victory dialog 已能显示掉落 + 物料 Tab 已落,但材料本地化 + 升层 banner 真机未验)。**下波 G → F1 → F2 → F3 一波走**:G PROGRESS 调整 → F1 抽 `ItemType.fromDefId` + 修本地化 → F2 新增 P5-Fresh debug seed(3 active 学徒启蒙 + 进度清零)→ F3 Codex Pen 二轮派单。
 
 
 ## 已完成(近 W6 起,早期归档见末尾)
@@ -54,17 +54,17 @@
 - ~~28. 闭关 widget e2e test 缺失~~(**2026-05-15 Phase 5 #2 销账**:3 屏 Consumer 化后 `_FakeSeclusionService implements SeclusionService` + `seclusionServiceProvider.overrideWithValue(fake)` 绕过 native Isar zone,4 e2e widget test 全过(list→setup→active→result 导航 + confirm dialog 双路径)。W6 drift 5 轮探路无解的"fake_async vs native Isar zone 边界"真解 = Consumer 化把边界封死在 provider override 之下,fake_async 不再必要)
 - ~~30. 闭关 3 个扩展维度未接 service~~(**2026-05-15 销账**:`SeclusionService.computeOutputs` 已接 technique_learn_rate / internal_force_growth / 节气日 +30% / 子时 +20%(只乘内力维度,修原 bug);RetreatOutputs typedef 加 techniqueLearnPoints / internalForcePoints;numbers.yaml 加 base_internal_force_per_hour=5 / base_technique_learn_per_hour=0.5 锚点。test +6,649/649。**正午阳刚 +20% 留 §12.1 #7 实装阻塞**,本批不接)
 - 31. **main_menu「问鼎九霄」widget test 写不出**(2026-05-13 W9 自审踩坑):`pumpAndSettle` 死循环,多 provider+Navigator 链异步 future + 帧 ticker 冲突。已有 11 个 tower widget test 覆盖核心,nav 路径不再硬塞
-- ~~34. #10 stage drop 视觉验收未取得硬截图~~(**2026-05-16 W15 P3 同期 + 后续 A 完整闭环**:Codex F 派单 closeout `codex_w15_stage_drop_visual_check_2026-05-16.md` 3 WARN 闭环;3 张主截图齐 dropTable 配置生效硬证据;剩 2 UI 缺口已在 W15 #30 P3 后续 A 两批落地 —— **1/2 victory drop banner**(`week15_30_phase3_followup_victory_dialog_2026-05-16.md`,主线 victory 0→1 新建 dialog + 塔 `_FirstClearContent` 重构兼容升层场景)+ **2/2 物料 Tab**(`week15_30_phase3_followup_inventory_material_tab_2026-05-16.md`,InventoryScreen 加 TabBar 装备/物料 + `_MaterialList` 按 ItemType enum 顺序分组)。**#34 完整闭环**)
+- 34. **#10 stage drop 视觉验收 WARN 闭环**(2026-05-16 W15 P3 同期 + 后续 A 两批 + Codex E):Codex F 派单 closeout `codex_w15_stage_drop_visual_check_2026-05-16.md` 3 WARN 闭环;3 张主截图齐 dropTable 配置生效硬证据;2 UI 缺口已在 W15 #30 P3 后续 A 两批落地 —— **1/2 victory drop banner**(`week15_30_phase3_followup_victory_dialog_2026-05-16.md`)+ **2/2 物料 Tab**(`week15_30_phase3_followup_inventory_material_tab_2026-05-16.md`)。**Codex E 真机视觉验收回**(`codex_w15_victory_dialog_visual_check_2026-05-16.md` 2 PASS / 3 WARN):剩 2 子项挂账 —— **#34a item_mojianshi 未本地化为「磨剑石」**(真 UI bug,`stage_victory_dialog.dart:55` 漏 `getEquipment(...).name` 体例)+ **#34b 升层多行 banner 真机未验**(P5 fixture 是「祖师一流+大弟子二流+二弟子三流」EXP 不够升层,非代码 bug;下波 F2 新增 P5-Fresh debug seed 铺路 + F3 派单)。物料 Tab 真硬截图也并入 F3 二轮派单
 - ~~35. 35 装备 0 lore 文案 Demo 硬缺口~~(**2026-05-15 W15 销账**:DeepSeek 35 yaml × 75 段交付 commit `7aea49d`,GDD §6.6 0→75 首达标,1 错字已修)
 - ~~36. insights ↔ encounter_skill 显式映射缺~~(**2026-05-15 W15 销账**:Mac 端 `SkillDef.narrativeInsightId` nullable 已落,encounter_skills.yaml `ting_yu_jian` 首条真实映射已填,test +4 全过 614/614)
 - 37. **8 events orphan 剩余可后续挂回**(原 23 → 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 → 余 8):C-1 收尾 2 条(huang_miao_jiu_seng → long_yin tier 7 / jiu_lou_jue_yin → wu_ming tier 7)。剩余 8 条主题不适配(duan_qiao_can_yue/gu_chuan_deng_ying/huang_cun_yao_ren/huang_yuan_yi_zhong/jiang_xin_ye_hua/qing_lou_can_meng/lao_jing_hui_xiang/yu_zhong_qiao_men),心境/江湖故事/邪门调子无对应武学,留 _archive/ 不动
 - ~~38. 像样货 5 件 lore 缺第 2 段~~(**2026-05-15 反审撤回**:整批闭环后 Mac 端 grep 复审 35 件 yaml 实测**75 段不是 70 段**(closeout §3.6 各阶罗列加和 5+5+10+10+15+15+15 = 75 算成 70)。**像样货 5 件 1 段是 W15 #35 派单 §3.2 明文规定体例**(`week15_deepseek_dispatch_35_lore_2026-05-15.md:57` "第 2 阶 · 像样货 · 各 1 段"),DeepSeek 没漏配。Codex 装备详情屏 04 WARN 是 spec 误抄错误 PROGRESS 数字,实际**详情屏 7/7 PASS**)
 
-> 已销账条目(#1/#4/#5/#12/#13/#14/#15/#16/#18/#19/#20/#21/#22/#23/#24/#25/#26/#27/#28/#29/#30/#32/#34/#35/#36)详见末尾归档。
+> 已销账条目(#1/#4/#5/#12/#13/#14/#15/#16/#18/#19/#20/#21/#22/#23/#24/#25/#26/#27/#28/#29/#30/#32/#35/#36)详见末尾归档。
 
 ## 下一步
 
-**W15 #30 P3 后续 A 全 3 批完工 + #34 完整闭环**。下波 4 候选 — **B. §12.1 #7 三流派 extra_effect 数值拍板**(sonnet 30-60min 讨论) / **C. §12.1 #10 师承遗物规则拍板**(sonnet 30-60min 讨论) / **D. mainline+tower victory 写回 widget integration test**(sonnet 1-2h,e2e 可选) / **E. 主线 victory dialog + 物料 Tab Codex Pen 视觉验收**(派单已发 victory dialog,待 closeout 回;物料 Tab 可并入二轮派单)。Codex E 派单异步等回。
+**Codex E victory dialog 视觉验收回 2 PASS / 3 WARN,本波 G → F1 → F2 → F3 一波走**:G PROGRESS 调整(本批)→ **F1** 抽 `ItemType.fromDefId` 到 `core/domain/enums.dart` + 修 `stage_victory_dialog.dart:55` 本地化(tower_entry_flow `_inferItemType` 同步收口)→ **F2** 新增 P5-Fresh debug seed(3 active 全员 `xueTu.qiMeng` + experience=0 + internalForce=500/500 + 主线塔进度清零)+ Phase2TestMenu 新按钮 → **F3** Codex Pen 二轮派单(P5-Fresh seed + 升层 banner 验 + 本地化后 drop banner 验 + 物料 Tab 2 屏)。其他候选 B/C/D 留下波。
 
 ## 关键约束(每次开局必读)
 
