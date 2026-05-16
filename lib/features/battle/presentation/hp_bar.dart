@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../ui/theme/colors.dart';
+import '../../../shared/theme/colors.dart';
 
 /// 通用比例条（phase1_tasks.md T14 §785-786）。
 ///

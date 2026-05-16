@@ -5,7 +5,7 @@ import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../application/seclusion_service_providers.dart';
 import '../../../ui/strings.dart';
-import '../../../ui/theme/colors.dart';
+import '../../../shared/theme/colors.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'retreat_result_screen.dart';

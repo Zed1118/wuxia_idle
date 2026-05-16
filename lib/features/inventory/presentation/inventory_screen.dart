@@ -12,8 +12,8 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../../ui/strings.dart';
-import '../../../ui/theme/colors.dart';
-import '../../../ui/theme/tier_colors.dart';
+import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/tier_colors.dart';
 import 'equipment_detail_screen.dart';
 
 /// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账 +

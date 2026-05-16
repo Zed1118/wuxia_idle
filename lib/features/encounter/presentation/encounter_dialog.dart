@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/game_repository.dart';
-import '../../../ui/theme/colors.dart';
+import '../../../shared/theme/colors.dart';
 import '../application/encounter_service.dart';
 import '../domain/encounter_def.dart';
 import '../domain/encounter_event_loader.dart';

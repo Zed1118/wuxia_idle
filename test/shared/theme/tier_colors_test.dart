@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/ui/theme/colors.dart';
-import 'package:wuxia_idle/ui/theme/tier_colors.dart';
+import 'package:wuxia_idle/shared/theme/colors.dart';
+import 'package:wuxia_idle/shared/theme/tier_colors.dart';
 
 void main() {
   group('tierColorForEquipment', () {
