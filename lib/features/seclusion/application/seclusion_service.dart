@@ -175,6 +175,7 @@ class SeclusionService {
     required RetreatConfig config,
     required List<SeclusionMapDef> maps,
     required DateTime now,
+    TechniqueSchool? charSchool,
     Rng? rng,
   }) {
     final def = _getDef(session.mapType, maps);
@@ -190,6 +191,13 @@ class SeclusionService {
     final ziShiBonus = _isZiShi(session.startedAt)
         ? config.ziShiInternalForceMultiplier
         : 1.0;
+    // CLAUDE.md §12.1 #7 v1.4:正午 + 角色主修 == applies_to_school(gangMeng)
+    // 时,internalForcePoints 维度乘 zhengWuYangSchoolMultiplier(1.20)。
+    // 非刚猛角色 / 非正午 → 系数 1.0 无加成。
+    final zhengWuBonus =
+        (_isZhengWu(session.startedAt) && charSchool == config.zhengWuAppliesToSchool)
+            ? config.zhengWuYangSchoolMultiplier
+            : 1.0;
 
     final mojianshi = (def.mojianshiPerHour * actualHours * scale * solarBonus)
         .floor()
@@ -213,7 +221,8 @@ class SeclusionService {
             actualHours *
             scale *
             solarBonus *
-            ziShiBonus)
+            ziShiBonus *
+            zhengWuBonus)
         .floor()
         .clamp(0, 999999);
 
@@ -251,12 +260,18 @@ class SeclusionService {
     required DateTime now,
     Rng? rng,
   }) async {
+    // CLAUDE.md §12.1 #7 v1.4:正午阳刚 +20% 需要角色主修流派 — writeTxn 外
+    // 提前读 character.school(后续 writeTxn 内 read 写回 ch 沿原 W15 #30 第 3 期体例),
+    // seclusion 完工低频,2 次 read 开销可忽略。
+    final preCharForBonus = await isar.characters.get(characterId);
+
     final outputs = computeOutputs(
       session: session,
       charRealmTier: charRealmTier,
       config: config,
       maps: maps,
       now: now,
+      charSchool: preCharForBonus?.school,
       rng: rng,
     );
 
@@ -410,6 +425,13 @@ class SeclusionService {
   static bool _isZiShi(DateTime startedAt) {
     final h = startedAt.hour;
     return h == 23 || h == 0;
+  }
+
+  /// 是否为正午(11:00-13:00,左闭右开 = h ∈ {11, 12})。
+  /// CLAUDE.md §12.1 #7 v1.4:仅刚猛流派角色在正午时段闭关 internalForcePoints 维度 +20%。
+  static bool _isZhengWu(DateTime startedAt) {
+    final h = startedAt.hour;
+    return h == 11 || h == 12;
   }
 
   static double _min(double a, double b) => a < b ? a : b;

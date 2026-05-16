@@ -76,6 +76,11 @@ class BattleCharacter {
   final int teamSide;
   final int slotIndex;
 
+  /// 阴柔克灵巧附带内伤 debuff 槽(CLAUDE.md §12.1 #7 v1.4)。
+  /// null = 无 debuff;非 null = 守方下 [InternalInjurySlot.remainingTurns] 次
+  /// 自己出手时每次承受 [InternalInjurySlot.damagePerTick] 固定伤害。
+  final InternalInjurySlot? internalInjury;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -98,6 +103,7 @@ class BattleCharacter {
     required this.isAlive,
     required this.teamSide,
     required this.slotIndex,
+    this.internalInjury,
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -219,6 +225,7 @@ class BattleCharacter {
     bool? isAlive,
     int? teamSide,
     int? slotIndex,
+    Object? internalInjury = _unset,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -244,6 +251,9 @@ class BattleCharacter {
       isAlive: isAlive ?? this.isAlive,
       teamSide: teamSide ?? this.teamSide,
       slotIndex: slotIndex ?? this.slotIndex,
+      internalInjury: identical(internalInjury, _unset)
+          ? this.internalInjury
+          : internalInjury as InternalInjurySlot?,
     );
   }
 
@@ -253,7 +263,39 @@ class BattleCharacter {
       '${realmTier.name}/${realmLayer.name}, ${school.name}, '
       'hp=$currentHp/$maxHp, if=$currentInternalForce/$maxInternalForce, '
       'spd=$speed, crit=${criticalRate.toStringAsFixed(2)}, '
-      'ap=$actionPoint, alive=$isAlive, team=$teamSide#$slotIndex)';
+      'ap=$actionPoint, alive=$isAlive, team=$teamSide#$slotIndex'
+      '${internalInjury != null ? ", injury=$internalInjury" : ""})';
+}
+
+/// 阴柔克灵巧附带内伤 debuff 槽(CLAUDE.md §12.1 #7 v1.4 决议)。
+///
+/// 命中且 attacker=yinRou / defender=lingQiao 时,在守方身上施加内伤槽。
+/// 守方下 [remainingTurns] 次自己出手时,每次承受 [damagePerTick] 固定伤害
+/// (穿透防御率,可致死)。同源刷新(覆盖):重复触发重置 remainingTurns + 不叠层。
+class InternalInjurySlot {
+  /// 剩余结算次数(每次守方自己出手扣 1)。
+  final int remainingTurns;
+
+  /// 每次结算扣的固定伤害(numbers.yaml `yin_rou_internal_injury.damage_per_tick`)。
+  final int damagePerTick;
+
+  const InternalInjurySlot({
+    required this.remainingTurns,
+    required this.damagePerTick,
+  });
+
+  @override
+  String toString() =>
+      'InternalInjurySlot(turns=$remainingTurns, dmg=$damagePerTick)';
+
+  @override
+  bool operator ==(Object other) =>
+      other is InternalInjurySlot &&
+      other.remainingTurns == remainingTurns &&
+      other.damagePerTick == damagePerTick;
+
+  @override
+  int get hashCode => Object.hash(remainingTurns, damagePerTick);
 }
 
 /// 战斗整体状态（phase1_tasks.md T11 §625 + T12 §698）。

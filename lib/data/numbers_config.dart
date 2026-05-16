@@ -540,12 +540,20 @@ class SchoolCounterMatrix {
   /// 中性 / 同流派伤害倍率（1.00）。
   final double neutral;
 
+  /// 刚猛克阴柔附带震伤(CLAUDE.md §12.1 #7 v1.4 决议)。
+  final GangMengQuakeConfig gangMengQuake;
+
+  /// 阴柔克灵巧附带内伤 debuff(CLAUDE.md §12.1 #7 v1.4 决议)。
+  final YinRouInternalInjuryConfig yinRouInternalInjury;
+
   const SchoolCounterMatrix({
     required Map<TechniqueSchool, TechniqueSchool> counterTarget,
     required Map<TechniqueSchool, String> extraEffect,
     required this.counter,
     required this.countered,
     required this.neutral,
+    required this.gangMengQuake,
+    required this.yinRouInternalInjury,
   })  : _counterTarget = counterTarget,
         _extraEffect = extraEffect;
 
@@ -568,6 +576,12 @@ class SchoolCounterMatrix {
       counter: counter,
       countered: (y['countered_multiplier'] as num).toDouble(),
       neutral: (y['neutral_multiplier'] as num).toDouble(),
+      gangMengQuake: GangMengQuakeConfig.fromYaml(
+        y['gang_meng_quake'] as Map<String, dynamic>,
+      ),
+      yinRouInternalInjury: YinRouInternalInjuryConfig.fromYaml(
+        y['yin_rou_internal_injury'] as Map<String, dynamic>,
+      ),
     );
   }
 
@@ -582,6 +596,66 @@ class SchoolCounterMatrix {
   String? extraEffectFor(TechniqueSchool attacker, TechniqueSchool defender) {
     if (_counterTarget[attacker] == defender) return _extraEffect[attacker];
     return null;
+  }
+}
+
+/// 刚猛克阴柔额外震伤配置(numbers.yaml `combat.schools.gang_meng_quake`)。
+///
+/// CLAUDE.md §12.1 #7 v1.4 决议:主攻击命中后追加固定 damage,与主伤害同 tick 叠加。
+/// 穿透守方防御率(`piercesDefense=true`),不被暴击乘(`piercesCritical=true`),
+/// 主攻击闪避则震伤不触发(`followsMainHit=true`)。
+class GangMengQuakeConfig {
+  final int damage;
+  final bool piercesDefense;
+  final bool piercesCritical;
+  final bool followsMainHit;
+
+  const GangMengQuakeConfig({
+    required this.damage,
+    required this.piercesDefense,
+    required this.piercesCritical,
+    required this.followsMainHit,
+  });
+
+  factory GangMengQuakeConfig.fromYaml(Map<String, dynamic> y) {
+    return GangMengQuakeConfig(
+      damage: (y['damage'] as num).toInt(),
+      piercesDefense: y['pierces_defense'] as bool,
+      piercesCritical: y['pierces_critical'] as bool,
+      followsMainHit: y['follows_main_hit'] as bool,
+    );
+  }
+}
+
+/// 阴柔克灵巧内伤 debuff 配置(numbers.yaml `combat.schools.yin_rou_internal_injury`)。
+///
+/// CLAUDE.md §12.1 #7 v1.4 决议:主攻击命中后在守方身上施加内伤槽,
+/// `turnsPersist` 守方 tick 内每 tick 扣 `damagePerTick` 固定值。
+/// 穿透防御率(`piercesDefense=true`),可致死。
+/// 同源刷新(`stackRule=refresh`):重复触发重置 turns 不叠层。
+class YinRouInternalInjuryConfig {
+  final int turnsPersist;
+  final int damagePerTick;
+  final bool piercesDefense;
+  final String stackRule;
+  final bool followsMainHit;
+
+  const YinRouInternalInjuryConfig({
+    required this.turnsPersist,
+    required this.damagePerTick,
+    required this.piercesDefense,
+    required this.stackRule,
+    required this.followsMainHit,
+  });
+
+  factory YinRouInternalInjuryConfig.fromYaml(Map<String, dynamic> y) {
+    return YinRouInternalInjuryConfig(
+      turnsPersist: (y['turns_persist'] as num).toInt(),
+      damagePerTick: (y['damage_per_tick'] as num).toInt(),
+      piercesDefense: y['pierces_defense'] as bool,
+      stackRule: y['stack_rule'] as String,
+      followsMainHit: y['follows_main_hit'] as bool,
+    );
   }
 }
 
@@ -913,6 +987,15 @@ class RetreatConfig {
   /// 子时内力加成倍率（默认 1.20，只乘 internalForcePoints 维度，不乘其他产出）。
   final double ziShiInternalForceMultiplier;
 
+  /// 正午阳刚加成倍率(默认 1.20,CLAUDE.md §12.1 #7 v1.4 决议)。
+  final double zhengWuYangSchoolMultiplier;
+
+  /// 正午阳刚加成的目标产出维度(本批决议 internal_force_points)。
+  final String zhengWuTargetAttribute;
+
+  /// 正午阳刚加成生效的角色主修流派(本批决议 gangMeng)。
+  final TechniqueSchool zhengWuAppliesToSchool;
+
   const RetreatConfig({
     required this.maps,
     required this.durationHours,
@@ -924,6 +1007,9 @@ class RetreatConfig {
     required this.solarTermMultiplier,
     required this.solarTermDays,
     required this.ziShiInternalForceMultiplier,
+    required this.zhengWuYangSchoolMultiplier,
+    required this.zhengWuTargetAttribute,
+    required this.zhengWuAppliesToSchool,
   });
 
   factory RetreatConfig.fromYaml(Map<String, dynamic> y) {
@@ -935,6 +1021,15 @@ class RetreatConfig {
     final ziShi = rawTimeOfDay.firstWhere(
       (e) => (e as Map)['period'] == 'ziShi',
       orElse: () => <String, dynamic>{'multiplier': 1.0},
+    ) as Map;
+    // 正午(period=zhengWu)v1.4 加成定向落到 internal_force_points + 仅 gangMeng 触发。
+    final zhengWu = rawTimeOfDay.firstWhere(
+      (e) => (e as Map)['period'] == 'zhengWu',
+      orElse: () => <String, dynamic>{
+        'multiplier': 1.0,
+        'target_attribute': 'internal_force_points',
+        'applies_to_school': 'gangMeng',
+      },
     ) as Map;
     final solarDays = (rawSolar['days_2026'] as List)
         .map((e) {
@@ -965,6 +1060,10 @@ class RetreatConfig {
       solarTermMultiplier: (rawSolar['multiplier'] as num).toDouble(),
       solarTermDays: solarDays,
       ziShiInternalForceMultiplier: (ziShi['multiplier'] as num).toDouble(),
+      zhengWuYangSchoolMultiplier: (zhengWu['multiplier'] as num).toDouble(),
+      zhengWuTargetAttribute: zhengWu['target_attribute'] as String,
+      zhengWuAppliesToSchool:
+          TechniqueSchool.values.byName(zhengWu['applies_to_school'] as String),
     );
   }
 

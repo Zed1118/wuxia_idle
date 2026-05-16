@@ -124,7 +124,19 @@ class DamageCalculator {
     // === 8. 合并 ===
     final raw =
         base * cultMult * schoolMult * critMult * defMult * realmMult;
-    final finalDamage = raw.toInt();
+    final mainDamage = raw.toInt();
+
+    // === 9. 刚猛克阴柔附带震伤(§12.1 #7 v1.4 决议)===
+    // 主攻击命中且 attacker=gangMeng / defender=yinRou 时,追加固定 quake_dmg。
+    // 穿透守方防御率 + 不被暴击乘(独立加值,不进 raw 乘式)。
+    var quakeDamage = 0;
+    final atkSchool = ctx.attackerMainTech.school;
+    final defSchool = ctx.defenderMainTech.school;
+    if (atkSchool == TechniqueSchool.gangMeng &&
+        defSchool == TechniqueSchool.yinRou) {
+      quakeDamage = n.schoolCounter.gangMengQuake.damage;
+    }
+    final finalDamage = mainDamage + quakeDamage;
 
     final effects = <String>[];
     if (extraEffect != null) effects.add(extraEffect);
@@ -138,11 +150,14 @@ class DamageCalculator {
         ' * ${_fmt(critMult)}'
         ' * ${_fmt(defMult)}'
         ' * ${_fmt(realmMult)}'
-        ' = $finalDamage'
+        ' = $mainDamage'
+        '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
         ' [atkLv=$atkLevel,defLv=$defLevel]';
 
     return AttackResult(
       finalDamage: finalDamage,
+      mainDamage: mainDamage,
+      quakeDamage: quakeDamage,
       isCritical: isCritical,
       isDodged: false,
       schoolCounterMultiplier: schoolMult,
@@ -200,8 +215,15 @@ class AttackContext {
 
 /// 一次攻击的输出（phase1_tasks.md T10 §545）。
 class AttackResult {
-  /// 取整后的最终伤害。被闪避时为 0。
+  /// 取整后的最终伤害(主伤害 + 震伤)。被闪避时为 0。
   final int finalDamage;
+
+  /// 主攻击伤害(乘修炼度/克制/暴击/防御/境界差后取整,不含震伤)。
+  /// CLAUDE.md §12.1 #7 v1.4 决议:震伤作为独立加值,与主伤害分离便于 log 展示。
+  final int mainDamage;
+
+  /// 刚猛克阴柔附带震伤(穿透防御不暴击)。中性/被克/其他流派分支为 0。
+  final int quakeDamage;
 
   /// 是否暴击。
   final bool isCritical;
@@ -241,6 +263,8 @@ class AttackResult {
 
   const AttackResult({
     required this.finalDamage,
+    required this.mainDamage,
+    required this.quakeDamage,
     required this.isCritical,
     required this.isDodged,
     required this.schoolCounterMultiplier,
@@ -261,6 +285,8 @@ class AttackResult {
   }) {
     return AttackResult(
       finalDamage: 0,
+      mainDamage: 0,
+      quakeDamage: 0,
       isCritical: false,
       isDodged: true,
       schoolCounterMultiplier: 1.0,

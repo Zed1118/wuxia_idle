@@ -4,7 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 [`WINDOWS_DEEPSEEK_GUIDE.md`](./WINDOWS_DEEPSEEK_GUIDE.md)（你不写文案，但需要知道它在哪、长什么样）。
 >
-> **版本：v1.3**
+> **版本：v1.4**
+> v1.4 变更摘要（2026-05-16）：§12.1 #7 三流派 extra_effect 数值拍板收口——刚猛震伤每招 +500 固定(穿透防御不暴击) / 阴柔内伤 N=3 守方 tick × 200/tick 固定(穿透防御 + 同源刷新覆盖) / 正午阳刚 +20% 乘到 `internalForcePoints` 维度且仅 `school=gangMeng` 角色触发。numbers.yaml 加 4 子段(`combat.schools.gang_meng_quake` / `combat.schools.yin_rou_internal_injury` / `retreat.time_of_day_bonus[zhengWu].target_attribute` / `applies_to_school`)。代码层 damage_calculator 震伤分支 + BattleState internalInjurySlot + battle_engine tick 衰减 + seclusion_service 正午阳刚 wire 同期落地。§12.1 #7 → §12.2 归档,剩 #10 师承遗物 1 条。
 > v1.3 变更摘要（2026-05-15）：§12.1 #7 加现状备注——`SeclusionService.computeOutputs` 已接 4 维度（节气日 +30% / 子时 +20% 只乘内力 / techniqueLearnPoints / internalForcePoints），正午阳刚 +20% 因本条 #7 流派 extra_effect 未决暂未消费，加成乘到哪个维度也待 #7 决议后才能落代码。
 > v1.2 变更摘要（2026-05-15）：§12 待决清单收口——13 条经 W1-W15 实装默认决议 10 条 + 本批方案 A 决议节气清单 1 条，剩 2 条进对应系统再拍板。§12 拆 §12.1（未决）/ §12.2（已消解归档）两段。
 > v1.1 变更摘要：状态管理锁定 Riverpod 3.x；爬塔 Boss 数修正为 3 小 + 3 大；§6 增散功代价公式；§5.3 明确师承遗物纳入三系锁死；新增 §12 待人类决策清单；§1 末加 GDD 快速索引；§8 加 yaml 联结示例。
@@ -278,15 +279,14 @@ choices:
 - 涉及配置 schema 变化：标题前加 `[schema]`，并在 PR 描述中列影响的 yaml 文件
 - 普通代码改动可省略前缀
 
-## 12. 待人类决策清单（v1.2 收口）
+## 12. 待人类决策清单（v1.4 收口）
 
-> v1.2（2026-05-15）：W1-W15 实装过程中，本表 13 条已收口 10 条（8 条数值层/代码层默认决议 + 2 条 Demo 不做）+ 1 条本批方案 A 决议。进 Phase 5 前剩 **2 条真硬阻塞**待拍板。完整销账见 §12.2 归档。
+> v1.4（2026-05-16）：§12.1 #7 三流派 extra_effect 数值拍板收口（详 v1.4 变更摘要 + §12.2 归档），剩 **1 条**(#10 师承遗物规则)真硬阻塞待拍板。完整销账见 §12.2 归档。
 
 ### §12.1 未决项（进对应系统实装时停下问人类）
 
 | # | 待决项 | 阻塞范围 | 待决细项 |
 |---|---|---|---|
-| 7 | **三流派克制 extra_effect 数值** | 战斗系统进阶 + 闭关正午加成 | `numbers.yaml techniques.schools.counter_relations` 仅字符串描述（`extra_quake_dmg` / `crit_rate_+0.20` / `internal_injury`）。① 刚猛额外震伤具体数值（固定值 / 公式 / 招式倍率%）② 阴柔内伤 debuff 持续回合（回合制 vs 时长制）③ 是否可叠加。**注**：灵巧暴击率 +0.20 已在 §6 公式实装（`numbers.yaml combat.critical.lingqiao_critical_bonus`），剩下刚猛/阴柔两支未定。**v1.3 新增阻塞范围**：`SeclusionService.computeOutputs` 已接 4 维度但**正午阳刚 +20%** 未消费——`time_of_day_bonus.zhengWu` `effect: yang_school_techniques` 需要「角色当前主修是否刚猛流派」的判定 + 加成乘到哪个产出维度（techniqueLearnPoints? internalForcePoints? mojianshi?），均待 #7 决议后才能落代码。 |
 | 10 | **师承遗物规则层** | Phase 4-5 师徒系统 | numbers.yaml `inheritance.heritage_items` 数值已配（每代 1-2 件 + 内力 +5% + 共鸣度保留 70%）。**仍待决**：① 传递时机（飞升自动 vs 任意时点手动）② 多徒弟时谁继承 ③ 传承 buff 是否累代叠加（2 代师承 = +10%?）④ 当前已装备同部位时如何冲突解决。 |
 
 **§12.1 备注**（Demo 不阻塞但需归档）：
@@ -306,6 +306,7 @@ choices:
 | 8 | 心法速度加成 | `numbers.yaml techniques.tiers[*].speed_bonus`：7 阶 0/5/10/15/25/40/60，直接进 GDD §5.6 公式，无独立上限 |
 | 9 | 人剑合一招式定义位置 | `numbers.yaml combat.resonance.unlocks_joint_skill: true`（默契阶段解锁）+ `skills.reference_multipliers.joint_skill.base: 4500`，**统一固定倍率，不绑流派/不绑装备类型**，由共鸣度系统统管 |
 | 13 | 节气日完整清单 | v1.2 决议方案 A（2026-05-15）：12 个节气均匀覆盖四季，公历 hardcode 不引入农历库；删除原中秋（属农历节日非节气）。已落 `numbers.yaml retreat.solar_term_bonus.days_2026` |
+| 7 | 三流派 extra_effect 数值 + 正午阳刚定向 | v1.4 决议（2026-05-16）：① 刚猛震伤每招 +500 固定(穿透防御不暴击,主攻击命中才触发);② 阴柔内伤 N=3 守方 tick × 200/tick 固定(穿透防御 + 同源刷新覆盖,可致死);③ 正午阳刚 +20% 乘到 `internalForcePoints` 维度且仅 `character.school==gangMeng` 触发;④ 灵巧 crit_rate +0.20 已在 §6 公式实装 (v1.0 起)。已落 `numbers.yaml combat.schools.gang_meng_quake / yin_rou_internal_injury / retreat.time_of_day_bonus[zhengWu].target_attribute & applies_to_school` + 代码层 damage_calculator 震伤分支 / BattleState internalInjurySlot / battle_engine tick 衰减 / seclusion_service 正午阳刚 wire |
 
 ---
 
