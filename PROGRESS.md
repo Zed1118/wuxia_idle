@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Codex E victory dialog 视觉验收 closeout 回**(2026-05-16,Pen Codex,closeout `codex_w15_victory_dialog_visual_check_2026-05-16.md`,commit `39d2663`)。**5 张正式截图 + 评级 2 PASS / 3 WARN / 0 FAIL**(A1 stage_01_01 WARN / A2 narrative 衔接 PASS / B1 stage_01_02 WARN / C1 塔 floor2 首通 WARN 补拍因 P5 已通 1/30 / C2 塔 floor2 重打 PASS)。3 WARN 归 2 类:**① item_mojianshi 未本地化为「磨剑石」**(`stage_victory_dialog.dart:55` 真 UI bug,装备走 `getEquipment(...).name` 体例对,item 漏了)**② 未验到升层多行 banner**(P5 fixture 漂移,实测「祖师一流+大弟子二流+二弟子三流」+ stage_01_01/01_02/塔低层 EXP 不足升层,**不是代码 bug**)。**#34 状态调整为「WARN 闭环」**(victory dialog 已能显示掉落 + 物料 Tab 已落,但材料本地化 + 升层 banner 真机未验)。**下波 G → F1 → F2 → F3 一波走**:G PROGRESS 调整 → F1 抽 `ItemType.fromDefId` + 修本地化 → F2 新增 P5-Fresh debug seed(3 active 学徒启蒙 + 进度清零)→ F3 Codex Pen 二轮派单。
+**W15 §12.1 #7 三流派 extra_effect 数值 v1.4 决议 + 代码层全链路落地**(2026-05-16,opus xhigh ~2.5h,closeout `week15_section12_7_school_extra_effects_2026-05-16.md`)。**§12.1 #7 由 W1-W15 起阻塞战斗系统进阶 + 闭关正午加成的 3 条 sub-decision 全收口**:① **刚猛克阴柔附带 +500 固定震伤**(穿透防御不暴击,主攻击命中才触发);② **阴柔克灵巧附带内伤 debuff**(N=3 守方 tick × 200/tick 固定,穿透防御 + 同源刷新覆盖,可致死);③ **正午阳刚 +20%** 加成乘到 `internalForcePoints` 维度且仅 `character.school==gangMeng` 触发(W15 #30 闭关 3 维度 service 时挂的 v1.3 阻塞同期解锁)。**numbers.yaml +4 子段** + **CLAUDE.md v1.4** + **代码层全链路**:NumbersConfig 新建 `GangMengQuakeConfig` / `YinRouInternalInjuryConfig` + RetreatConfig 加 3 字段 + damage_calculator / battle_engine `_calculateInBattle` 加 quakeDamage 独立加值(AttackResult 加 `mainDamage` / `quakeDamage` 字段) + BattleState 加 `InternalInjurySlot` immutable class + BattleCharacter 加 `internalInjury` 槽 + `_unset` sentinel copyWith + battle_engine `_resolveAction` 入口扣 dot(致死跳过行动 + 写 BattleAction「内伤崩裂」)+ 末尾 refresh debuff(stackRule=refresh 覆盖) + seclusion_service `_isZhengWu` 新加 + `computeOutputs` 加 `charSchool` 可选参数 + completeRetreat writeTxn 外预读 character.school。**722/722** + analyze 0 issues(原 708 + 14 新增:damage_calculator 震伤 3 / battle_engine internal_injury 状态机 5 / seclusion 正午阳刚 3 / numbers.yaml v1.4 数值红线 3)。**销账 §12.1 #7 → §12.2 归档**,§12.1 剩 #10 师承遗物 1 条真硬阻塞。
 
 
 ## 已完成(近 W6 起,早期归档见末尾)
@@ -47,7 +47,7 @@
 - 3. **`riverpod_lint` 未引入**(W6 重评估):custom_lint 0.8.x 锁 analyzer ^7.5/^8 与 link 4.x ^9 互斥,等 custom_lint 升级
 - 6. **GDD §5.3/§5.6 公式系数 vs numbers.yaml**:GDD 字面 ×8/×5 是「口误」,代码以 yaml 平衡值为准
 - ~~7. numbers.yaml 节气列表混入「中秋」~~(**2026-05-15 §12 收口销账**:本批方案 A 删中秋 + 补 4 节气(雨水/谷雨/处暑/小雪)凑 12 节气,均为节气非节日)
-- 8. **CLAUDE.md §12 收口剩 2 条**(2026-05-15 v1.2 收口):#7 三流派 extra_effect 数值(刚猛震伤值 / 阴柔 debuff 持续回合 / 是否叠加,战斗系统进阶时阻塞) / #10 师承遗物规则层(传递时机 / 多徒弟谁继承 / 累代叠加 / 同部位冲突,Phase 4-5 师徒系统时阻塞)。已消解 10 条 + 本批决议 1 条详 §12.2 归档
+- 8. **CLAUDE.md §12 收口剩 1 条**(2026-05-16 v1.4 收口):**#10 师承遗物规则层**(传递时机 / 多徒弟谁继承 / 累代叠加 / 同部位冲突,Phase 4-5 师徒系统时阻塞)。已消解 11 条(#7 v1.4 决议 2026-05-16 全链路落地 + 10 条早期默认决议)+ 1 条本批方案 A 决议(#13 节气清单)详 §12.2 归档
 - 9/11. **T05/T07 验收**:Mac 无 Xcode 跑不了 desktop,留 Windows 首跑验
 - 10. **yaml key 命名约定差异**:numbers.yaml snake_case,内容 yaml camelCase,按文件类型隔离不冲突
 - 17. **phase1_tasks T12 §709 笔误**:差 2 守方 0.05 错(实际差 2 守方=0.3,差 3+ 才 0.05),「必败」语义仍成立
@@ -64,7 +64,7 @@
 
 ## 下一步
 
-**Codex E victory dialog 视觉验收回 2 PASS / 3 WARN,本波 G → F1 → F2 → F3 一波走**:G PROGRESS 调整(本批)→ **F1** 抽 `ItemType.fromDefId` 到 `core/domain/enums.dart` + 修 `stage_victory_dialog.dart:55` 本地化(tower_entry_flow `_inferItemType` 同步收口)→ **F2** 新增 P5-Fresh debug seed(3 active 全员 `xueTu.qiMeng` + experience=0 + internalForce=500/500 + 主线塔进度清零)+ Phase2TestMenu 新按钮 → **F3** Codex Pen 二轮派单(P5-Fresh seed + 升层 banner 验 + 本地化后 drop banner 验 + 物料 Tab 2 屏)。其他候选 B/C/D 留下波。
+**§12.1 #7 v1.4 收口完成,Codex Pen round2 派单跑中**(异步等)。下波候选 — **A. Codex round2 closeout 回销账**(等 Codex 跑完 5-10min PROGRESS 调整)/ **B. §12.1 #10 师承遗物规则拍板**(sonnet 30-60min 讨论,剩 §12.1 1 条最后挂账) / **C. mainline+tower victory 写回 widget integration test**(sonnet 1-2h,本批 dialog 单元 test 已覆盖,e2e 可选) / **D. battle_log 加内伤崩裂 / 震伤命中文案**(sonnet 30min,本批 BattleAction `description` 已 inline 简易显示,可正式接入 enum_localizations.dart)。
 
 ## 关键约束(每次开局必读)
 
