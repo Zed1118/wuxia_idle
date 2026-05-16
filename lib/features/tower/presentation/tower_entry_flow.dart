@@ -19,7 +19,7 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../providers/isar_provider.dart';
 import '../../battle/application/battle_resolution.dart';
-import '../../../services/drop_service.dart';
+import '../../../features/equipment/application/drop_service.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../encounter/presentation/encounter_hook.dart';

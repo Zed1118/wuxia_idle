@@ -11,7 +11,7 @@ import '../../core/application/battle_providers.dart';
 import '../../core/application/inventory_providers.dart';
 import '../../providers/isar_provider.dart';
 import '../../providers/rng_provider.dart';
-import '../../services/enhancement_service.dart';
+import '../../features/equipment/application/enhancement_service.dart';
 import '../effects/screen_shake.dart';
 import '../strings.dart';
 import '../theme/colors.dart';

@@ -5,7 +5,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
-import 'package:wuxia_idle/services/enhancement_service.dart';
+import 'package:wuxia_idle/features/equipment/application/enhancement_service.dart';
 import 'package:wuxia_idle/utils/rng.dart';
 
 /// T20 EnhancementService 验收（phase2_tasks T20 §187-219）。

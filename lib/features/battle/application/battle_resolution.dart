@@ -10,7 +10,7 @@ import '../../../data/numbers_config.dart';
 import '../../../utils/rng.dart';
 import '../../cultivation/application/cultivation_service.dart';
 import '../../dispel/application/dispel_service.dart';
-import '../../../services/drop_service.dart';
+import '../../../features/equipment/application/drop_service.dart';
 
 /// 战斗结算服务的汇总返回（phase2_tasks T26 §324-356）。
 ///

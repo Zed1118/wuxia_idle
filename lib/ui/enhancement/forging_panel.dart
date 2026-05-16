@@ -9,7 +9,7 @@ import '../../core/domain/forging_slot.dart';
 import '../../core/application/battle_providers.dart';
 import '../../core/application/inventory_providers.dart';
 import '../../providers/isar_provider.dart';
-import '../../services/forging_service.dart';
+import '../../features/equipment/application/forging_service.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
 
