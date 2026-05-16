@@ -19,13 +19,13 @@ void main() {
 
   group('encounters.yaml 加载', () {
     test(
-        '38 条 encounter 全部解析成功 '
-        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2)',
+        '40 条 encounter 全部解析成功 '
+        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2)',
         () {
       final repo = GameRepository.instance;
-      expect(repo.encounterDefs.length, 38,
+      expect(repo.encounterDefs.length, 40,
           reason:
-              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6 + W17 节日 2');
+              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2');
       // W14-1 3 条必须仍在
       expect(
         repo.encounterDefs.keys,
@@ -99,6 +99,27 @@ void main() {
         }),
         reason: 'W17 节日 encounter 2 条:除夕/清明 各 1 条',
       );
+      // W17 polish-C 2 条挂回核对(#37 余 8 → 余 6;qiu_quan / wu_xia_yi 池补)
+      expect(
+        repo.encounterDefs.keys,
+        containsAll({
+          'huang_yuan_yi_zhong',
+          'jiang_xin_ye_hua',
+        }),
+        reason: 'W17 polish-C 2 条:荒原遗冢→求拳 / 江心夜话→武侠意',
+      );
+      // W17 polish-C 挂回后 qiu_quan / wu_xia_yi 必须被 encounter outcome 引用
+      final allUnlockSkillIds = <String>{
+        for (final enc in repo.allEncounters)
+          for (final outcome in enc.outcomeMapping.values)
+            if (outcome.type == OutcomeType.unlockSkill &&
+                outcome.skillId != null)
+              outcome.skillId!,
+      };
+      expect(allUnlockSkillIds, contains('skill_encounter_qiu_quan'),
+          reason: 'W17 polish-C 挂回后 qiu_quan 必须被 encounter outcome 引用');
+      expect(allUnlockSkillIds, contains('skill_encounter_wu_xia_yi'),
+          reason: 'W17 polish-C 挂回后 wu_xia_yi 必须被 encounter outcome 引用');
     });
 
     test('bamboo_listen_rain · techniqueInsight + lingQiao 100 + 解锁招式',

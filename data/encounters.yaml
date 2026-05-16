@@ -858,3 +858,47 @@ encounters:
         type: attributeBonus
         attributeKey: constitution
         attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 39. huang_yuan_yi_zhong · 荒原遗冢
+  #    techniqueInsight · 山道 60min + fortune 4 → 解 qiu_quan(求拳 tier 2)
+  #    W17 polish-C #37 挂回:40 年磨棍痕 ↔ 求拳「一拳一拳追问怎样出拳才算对」
+  # ───────────────────────────────────────────────
+  - id: huang_yuan_yi_zhong
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        mountainPath: 60
+      fortuneRequired: 4
+    baseProbability: 0.35
+    outcomeMapping:
+      sense_echo:
+        type: unlockSkill
+        skillId: skill_encounter_qiu_quan
+      find_relic:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # 40. jiang_xin_ye_hua · 江心夜话
+  #    fortuneEvent · 渡口 30min + 夜 60min + fortune 5 → 解 wu_xia_yi(武侠意 tier 3)
+  #    W17 polish-C #37 挂回:老少江上传承 ↔ 武侠意「剑未出鞘侠意已至」
+  # ───────────────────────────────────────────────
+  - id: jiang_xin_ye_hua
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        dock: 30
+      weatherMinutes:
+        night: 60
+      fortuneRequired: 5
+    baseProbability: 0.4
+    outcomeMapping:
+      learn_legend:
+        type: unlockSkill
+        skillId: skill_encounter_wu_xia_yi
+      bond_with_young:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
