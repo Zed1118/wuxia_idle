@@ -76,7 +76,8 @@ void main() {
     testWidgets('item drop + 无升层 → 显 drop 条目', (tester) async {
       await _pumpContent(tester, _itemDrops(), const []);
       expect(find.text(UiStrings.stageVictoryDropLabel), findsOneWidget);
-      expect(find.textContaining('item_mojianshi ×2'), findsOneWidget);
+      expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
+      expect(find.textContaining('item_mojianshi'), findsNothing);
       expect(find.byIcon(Icons.auto_awesome), findsNothing);
     });
 
@@ -95,7 +96,8 @@ void main() {
         AdvancementEntry(chName: '甲', result: _advanced()),
         AdvancementEntry(chName: '乙', result: _flat()),
       ]);
-      expect(find.textContaining('item_mojianshi ×2'), findsOneWidget);
+      expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
+      expect(find.textContaining('item_mojianshi'), findsNothing);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
       expect(find.textContaining('甲 · 突破至'), findsOneWidget);
       expect(find.textContaining('乙'), findsNothing);
@@ -105,7 +107,8 @@ void main() {
       await _pumpContent(tester, _itemDrops(), [
         AdvancementEntry(chName: '甲', result: _flat()),
       ]);
-      expect(find.textContaining('item_mojianshi ×2'), findsOneWidget);
+      expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
+      expect(find.textContaining('item_mojianshi'), findsNothing);
       expect(find.byIcon(Icons.auto_awesome), findsNothing);
     });
   });

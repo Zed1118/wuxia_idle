@@ -10,6 +10,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
@@ -563,5 +564,81 @@ void main() {
     expect(oneForged.forgingSlots[0].type, ForgingSlotType.attack);
     expect(oneForged.forgingSlots[1].unlocked, isFalse);
     expect(oneForged.forgingSlots[2].unlocked, isFalse);
+  });
+
+  // ── W15 P3 后续 F2 · seedVisualCheckW15Fresh ────────────────────────────────
+
+  test('seedVisualCheckW15Fresh → 3 active 全员 xueTu.qiMeng + experience=0',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW15Fresh();
+    final isar = IsarSetup.instance;
+
+    final chars = await isar.characters.where().findAll();
+    expect(chars.length, 3,
+        reason: '祖师 + 大弟子 + 二弟子,3 角色入 SaveData.activeCharacterIds');
+    for (final ch in chars) {
+      expect(ch.realmTier, RealmTier.xueTu, reason: '${ch.name} 必须 xueTu');
+      expect(ch.realmLayer, RealmLayer.qiMeng, reason: '${ch.name} 必须 qiMeng');
+      expect(ch.experience, 0,
+          reason: '${ch.name} experience=0(派单要求 EXP 从 0 起,通关后稳触发升层)');
+      expect(ch.isActive, isTrue, reason: '${ch.name} 必须入阵');
+    }
+
+    final save = await isar.saveDatas.get(0);
+    expect(save!.activeCharacterIds, [1, 2, 3],
+        reason: '3 角色全入 activeCharacterIds');
+    expect(save.founderCharacterId, 1, reason: 'id=1 为 founder');
+  });
+
+  test('seedVisualCheckW15Fresh → 主线 / 塔 / 奇遇 progress 全清', () async {
+    // 1. 先用 VC seed 制造主线 4 关 cleared + tower 历史
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW7W11();
+    final isar = IsarSetup.instance;
+    final mainBefore = await isar.mainlineProgress.where().findFirst();
+    expect(mainBefore!.clearedStageIds.length, 4,
+        reason: 'precondition:VC seed 有主线 4 关进度');
+
+    // 2. 切换到 W15Fresh 应清空所有进度
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW15Fresh();
+
+    expect(await isar.mainlineProgress.count(), 0,
+        reason: '主线进度清零');
+    expect(await isar.towerProgress.count(), 0, reason: '塔进度清零');
+    expect(await isar.encounterProgress.count(), 0, reason: '奇遇进度清零');
+  });
+
+  test('seedVisualCheckW15Fresh → 0 装备 0 心法(三系锁死 + 派单 fixture 干净)',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW15Fresh();
+    final isar = IsarSetup.instance;
+
+    expect(await isar.equipments.count(), 0,
+        reason: 'GDD §5.3 锁死:学徒只能装备 tier 0 寻常货,不预装备避免 fixture 漂移');
+    expect(await isar.techniques.count(), 0,
+        reason: '学徒不预学心法,派单时玩家可观察纯 EXP 升层 banner');
+
+    expect(await readQty(ItemType.moJianShi), 100);
+    expect(await readQty(ItemType.xinXueJieJing), 10);
+  });
+
+  test('seedVisualCheckW15Fresh 反复调用 → experience 回 0(派单可反复 reseed)',
+      () async {
+    final isar = IsarSetup.instance;
+    await Phase2SeedService(isar: isar).seedVisualCheckW15Fresh();
+
+    // 模拟玩家通 stage_01_01 累积 EXP
+    final founder = await isar.characters.get(1);
+    await isar.writeTxn(() async {
+      founder!.experience = 30;
+      await isar.characters.put(founder);
+    });
+    final dirty = await isar.characters.get(1);
+    expect(dirty!.experience, 30, reason: 'precondition:EXP 已脏');
+
+    // reseed
+    await Phase2SeedService(isar: isar).seedVisualCheckW15Fresh();
+    final fresh = await isar.characters.get(1);
+    expect(fresh!.experience, 0,
+        reason: 'reseed 后 EXP 回 0,派单时无须手动清存档');
   });
 }
