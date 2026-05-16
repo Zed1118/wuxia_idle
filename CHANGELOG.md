@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-05-17 · W17 DeepSeek 节日 encounter chuXi/qingMingJie 2 文案落地
+
+- `data/encounters.yaml` 末尾追加 2 entry（37 chu_xi_ci_sui / 38 qing_ming_yu_si），36→38
+- 新建 `data/events/chu_xi_ci_sui.yaml`（辞岁 · 除夕烟花镜店意象） + `data/events/qing_ming_yu_si.yaml`（雨思 · 清明纸鸢踏青意象）
+- 除夕 vs 春节/清明 vs 中秋 差异化到位，零代码改/零数值红线撞击
+- 3 commits push origin/main：`ae9bb67` 文案落地 → `9a18245` closeout 验收
+- 派单 `docs/handoff/deepseek_w17_festival_extend_dispatch_2026-05-17.md` | closeout `docs/handoff/deepseek_w17_festival_extend_closeout_2026-05-17.md`
+
 ## 2026-05-15 · W15 #35 装备 lore 命名对齐重写
 
 - 全 35 件装备按新命名约定 `<slot>_<tier>_<拼音>` 重写 lore，落地 `data/lore/`
