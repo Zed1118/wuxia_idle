@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:wuxia_idle/combat/battle_state.dart';
-import 'package:wuxia_idle/combat/damage_calculator.dart';
+import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
 import 'package:wuxia_idle/ui/battle/battle_demo.dart';

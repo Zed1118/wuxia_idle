@@ -1,9 +1,9 @@
-import '../data/game_repository.dart';
-import '../core/domain/character.dart';
-import '../core/domain/enums.dart';
-import '../core/domain/equipment.dart';
-import '../core/domain/technique.dart';
-import '../data/numbers_config.dart';
+import '../../../data/game_repository.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/equipment.dart';
+import '../../../core/domain/technique.dart';
+import '../../../data/numbers_config.dart';
 
 /// 境界派生工具（phase1_tasks.md T08）。
 ///

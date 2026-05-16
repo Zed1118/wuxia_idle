@@ -1,6 +1,6 @@
 /// UI 静态中文标签（phase1_tasks.md T14）。
 ///
-/// 与 [lib/combat/enum_localizations.dart] 同性质：Phase 1 把"代码内中文"集中
+/// 与 [lib/features/battle/domain/enum_localizations.dart] 同性质：Phase 1 把"代码内中文"集中
 /// 一处便于以后 i18n 迁出。enum_localizations 负责战斗调试日志，本文件负责 UI
 /// 标签（标题 / 按钮 / 占位符等）。
 ///

@@ -1,4 +1,4 @@
-import '../combat/battle_state.dart';
+import '../features/battle/domain/battle_state.dart';
 import '../data/defs/stage_def.dart';
 import '../data/defs/technique_def.dart';
 import '../core/domain/character.dart';

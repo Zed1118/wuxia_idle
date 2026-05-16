@@ -1,4 +1,4 @@
-import '../combat/derived_stats.dart';
+import '../features/battle/domain/derived_stats.dart';
 import '../data/defs/technique_def.dart';
 import '../core/domain/character.dart';
 import '../core/domain/enums.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../combat/enum_localizations.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/character.dart';

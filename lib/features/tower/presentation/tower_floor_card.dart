@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../combat/enum_localizations.dart' show EnumL10n;
+import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../../core/domain/enums.dart';
 import '../../../ui/strings.dart';
 import '../../../ui/theme/colors.dart';

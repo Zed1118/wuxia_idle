@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../combat/enum_localizations.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../data/lore_loader.dart';
 import '../../../core/domain/equipment.dart';
