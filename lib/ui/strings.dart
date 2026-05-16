@@ -282,6 +282,24 @@ class UiStrings {
   static const String towerFirstClearLabel = '首通奖励：';
   static const String towerFirstClearNoReward = '首通！本层无固定奖励。';
 
+  // ─── 主线 victory dialog（W15 #30 P3 后续 A 任务）────────────────────────
+
+  static const String stageVictoryTitle = '战斗胜利';
+  static const String stageVictoryConfirm = '继续';
+  static const String stageVictoryDropLabel = '掉落：';
+  static const String stageVictoryNoDrop = '本战无固定掉落';
+
+  // ─── 升层 banner 多角色版（mainline / tower 共用）─────────────────────
+
+  static String advancementForCharacter(
+    String chName,
+    String realmAfter,
+    int layers,
+  ) =>
+      layers == 1
+          ? '$chName · 突破至 $realmAfter'
+          : '$chName · 连破 $layers 层 → $realmAfter';
+
   // ─── 闭关修炼（Phase 3 T49）─────────────────────────────────────────────
 
   static const String mainMenuSeclusion = '闭关修炼';
