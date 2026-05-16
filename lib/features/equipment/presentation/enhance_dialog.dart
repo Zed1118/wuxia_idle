@@ -3,19 +3,19 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/battle/domain/enum_localizations.dart';
-import '../../data/defs/equipment_def.dart';
-import '../../core/domain/enums.dart';
-import '../../core/domain/equipment.dart';
-import '../../core/application/battle_providers.dart';
-import '../../core/application/inventory_providers.dart';
-import '../../providers/rng_provider.dart';
-import '../../features/equipment/application/enhancement_service.dart';
-import '../../features/equipment/application/equipment_service_providers.dart';
-import '../effects/screen_shake.dart';
-import '../strings.dart';
-import '../theme/colors.dart';
-import '../theme/tier_colors.dart';
+import '../../battle/domain/enum_localizations.dart';
+import '../../../data/defs/equipment_def.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/equipment.dart';
+import '../../../core/application/battle_providers.dart';
+import '../../../core/application/inventory_providers.dart';
+import '../../../providers/rng_provider.dart';
+import '../application/enhancement_service.dart';
+import '../application/equipment_service_providers.dart';
+import '../../../ui/effects/screen_shake.dart';
+import '../../../ui/strings.dart';
+import '../../../ui/theme/colors.dart';
+import '../../../ui/theme/tier_colors.dart';
 import 'forging_panel.dart';
 
 /// 强化对话框（phase2_tasks T29 §426-430 + T32 #22a writeTxn 补漏）。

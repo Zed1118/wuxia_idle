@@ -8,7 +8,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/providers/rng_provider.dart';
-import 'package:wuxia_idle/ui/enhancement/enhance_dialog.dart';
+import 'package:wuxia_idle/features/equipment/presentation/enhance_dialog.dart';
 import 'package:wuxia_idle/utils/rng.dart';
 
 /// T29 EnhanceDialog widget 测试（phase2_tasks.md §433-434）。
