@@ -11,7 +11,7 @@ part 'tower_providers.g.dart';
 ///
 /// recordClear / recordDefeat 后调用 `ref.invalidate(towerProgressProvider)`
 /// 触发刷新，[towerFloorListProvider] 自动级联。
-@riverpod
+@Riverpod(dependencies: [])
 Future<TowerProgress> towerProgress(Ref ref) async {
   return TowerProgressService(isar: IsarSetup.instance).getOrCreate(
     saveDataId: IsarSetup.currentSlotId,
@@ -21,7 +21,7 @@ Future<TowerProgress> towerProgress(Ref ref) async {
 /// 30 层列表含三态 status（Phase 3 T42）。
 ///
 /// 依赖 [towerProgressProvider]，进度刷新后自动级联。
-@riverpod
+@Riverpod(dependencies: [towerProgress])
 Future<List<TowerFloorEntry>> towerFloorList(Ref ref) async {
   final progress = await ref.watch(towerProgressProvider.future);
   return TowerProgressService.floorList(

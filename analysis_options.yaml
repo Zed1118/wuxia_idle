@@ -9,15 +9,17 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
-# riverpod_lint 已装 dev_dependencies 但 plugin 暂未启用。
-# 启用方式：本段加 `plugins: { riverpod_lint: ^3.1.3 }`。
-# 启用后将出 3 处 dependency 标注 warning：
-#   - tower_providers.dart: 给 towerProgress 加 @Riverpod(dependencies: [])
-#   - tower_floor_list_screen.dart: ConsumerStatefulWidget 加 @Dependencies([towerProgress])
-#   - tower_entry_flow.dart: runTowerFlow 函数加 @Dependencies([towerProgress])
-# Follow-up: Phase 5+ 引入 family/scoped override 时再启用并修。
+# riverpod_lint plugin 已启用(W17 polish-D 销账 #3 follow-up,2026-05-17)。
+# 3 处 dependency 标注已加:
+#   - tower_providers.dart: towerProgress @Riverpod(dependencies: [])
+#     + towerFloorList @Riverpod(dependencies: [towerProgress])
+#   - tower_floor_list_screen.dart: @Dependencies([towerProgress])
+#   - tower_entry_flow.dart: runTowerFlow @Dependencies([towerProgress])
+# Phase 5+ 引入 family/scoped override 时按本套路继续标注。
 
 analyzer:
+  plugins:
+    - riverpod_lint
   exclude:
     - "**/*.g.dart"          # 生成代码不参与分析
     - "**/*.freezed.dart"

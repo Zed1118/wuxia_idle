@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
@@ -16,6 +17,7 @@ import 'tower_floor_card.dart';
 /// 顶部进度卡显示已通层数 / 总尝试 / 失败次数。
 /// 主体 30 行 [TowerFloorCard]，首次进入自动滚到 available 层（一次性）。
 /// 点 available 弹 SnackBar 占位（T43 落地后改 push TowerEntryFlow）。
+@Dependencies([towerProgress])
 class TowerFloorListScreen extends ConsumerStatefulWidget {
   const TowerFloorListScreen({super.key});
 

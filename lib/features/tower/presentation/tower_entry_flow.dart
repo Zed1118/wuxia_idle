@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/experimental/scope.dart';
 
 import 'package:isar_community/isar.dart';
 
@@ -45,6 +46,7 @@ import '../domain/tower_floor_def.dart';
 ///
 /// [battleRunnerForTest] / [clearRecorderForTest] / [defeatRecorderForTest]
 /// 仅供 widget test 注入，生产端勿传（[@visibleForTesting]）。
+@Dependencies([towerProgress])
 Future<void> runTowerFlow({
   required BuildContext context,
   required WidgetRef ref,
