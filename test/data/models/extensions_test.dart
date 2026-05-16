@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/data/models/reward_entry.dart';
-import 'package:wuxia_idle/data/models/skill_usage_entry.dart';
+import 'package:wuxia_idle/core/domain/reward_entry.dart';
+import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 
 void main() {
   group('MapLikeOnSkillUsage', () {

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/data/models/save_data.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/services/phase2_seed_service.dart';
 import 'package:wuxia_idle/services/stage_battle_setup.dart';
 

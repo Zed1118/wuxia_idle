@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 
 /// Phase 3 T40 · towers.yaml schema + TowerFloorDef + 30 层 fixture
 ///

@@ -6,8 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/lore_loader.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/data/models/equipment.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/features/inventory/presentation/equipment_detail_screen.dart';
 import 'package:wuxia_idle/ui/strings.dart';
 

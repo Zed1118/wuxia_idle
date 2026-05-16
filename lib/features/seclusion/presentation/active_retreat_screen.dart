@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
-import '../../../data/models/enums.dart';
+import '../../../core/domain/enums.dart';
 import '../../../providers/isar_provider.dart';
 import '../../../ui/strings.dart';
 import '../../../ui/theme/colors.dart';

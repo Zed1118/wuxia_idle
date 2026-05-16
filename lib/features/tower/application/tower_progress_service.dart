@@ -1,7 +1,7 @@
 import 'package:isar_community/isar.dart';
 
 import '../../../data/isar_setup.dart';
-import '../../../data/models/enums.dart';
+import '../../../core/domain/enums.dart';
 import '../domain/tower_floor_def.dart';
 import '../domain/tower_progress.dart';
 

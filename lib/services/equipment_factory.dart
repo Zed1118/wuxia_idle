@@ -1,5 +1,5 @@
 import '../data/defs/equipment_def.dart';
-import '../data/models/equipment.dart';
+import '../core/domain/equipment.dart';
 import '../utils/rng.dart';
 
 /// 装备实例工厂（phase2_tasks T19）。

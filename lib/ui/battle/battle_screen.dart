@@ -8,7 +8,7 @@ import '../../combat/battle_state.dart';
 import '../../combat/damage_calculator.dart';
 import '../../combat/enum_localizations.dart';
 import '../../data/defs/skill_def.dart';
-import '../../data/models/enums.dart';
+import '../../core/domain/enums.dart';
 import '../../data/numbers_config.dart';
 import '../../providers/battle_providers.dart';
 import '../effects/screen_shake.dart';

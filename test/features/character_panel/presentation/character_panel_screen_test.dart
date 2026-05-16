@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/data/models/attributes.dart';
-import 'package:wuxia_idle/data/models/character.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/data/models/equipment.dart';
-import 'package:wuxia_idle/data/models/technique.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/providers/character_providers.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/character_panel_screen.dart';
 

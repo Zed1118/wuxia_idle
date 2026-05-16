@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../combat/battle_state.dart';
 import '../../data/defs/skill_def.dart';
-import '../../data/models/enums.dart';
+import '../../core/domain/enums.dart';
 import '../../providers/battle_providers.dart';
 import 'battle_screen.dart';
 

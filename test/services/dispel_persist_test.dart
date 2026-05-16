@@ -4,10 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/data/models/attributes.dart';
-import 'package:wuxia_idle/data/models/character.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/data/models/technique.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/services/dispel_service.dart';
 
 /// T32 #22b DispelService.persistResult 真 Isar 落地测试。

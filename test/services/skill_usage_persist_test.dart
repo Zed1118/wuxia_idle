@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/data/models/skill_usage_entry.dart';
-import 'package:wuxia_idle/data/models/technique.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 
 /// W13 fix 回归：Isar `@embedded List<SkillUsageEntry>` 反序列化为
 /// fixed-length list，`MapLikeOnSkillUsage.increment` 走 add 分支会抛

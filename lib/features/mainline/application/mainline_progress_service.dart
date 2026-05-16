@@ -3,7 +3,7 @@ import 'package:isar_community/isar.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
-import '../../../data/models/enums.dart';
+import '../../../core/domain/enums.dart';
 import '../domain/mainline_progress.dart';
 
 /// 单条章节关卡 + 解锁状态（[MainlineProgressService.availableStages] 返回值）。

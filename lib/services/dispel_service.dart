@@ -1,8 +1,8 @@
 import 'package:isar_community/isar.dart';
 
-import '../data/models/character.dart';
-import '../data/models/enums.dart';
-import '../data/models/technique.dart';
+import '../core/domain/character.dart';
+import '../core/domain/enums.dart';
+import '../core/domain/technique.dart';
 import '../data/numbers_config.dart';
 
 /// 散功结果（phase2_tasks T25）。

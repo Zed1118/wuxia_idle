@@ -1,4 +1,4 @@
-import '../models/enums.dart';
+import '../../core/domain/enums.dart';
 
 /// 境界配置（data_schema.md §5.8，纯 Dart，不入 Isar）。
 ///

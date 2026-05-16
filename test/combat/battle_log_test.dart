@@ -8,11 +8,11 @@ import 'package:wuxia_idle/combat/battle_state.dart';
 import 'package:wuxia_idle/combat/damage_calculator.dart';
 import 'package:wuxia_idle/combat/enum_localizations.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/data/models/attributes.dart';
-import 'package:wuxia_idle/data/models/character.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/data/models/equipment.dart';
-import 'package:wuxia_idle/data/models/technique.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 
 /// BattleLog + EnumL10n 单元测试（phase1_tasks.md T13 §746-748 验收）。
 ///

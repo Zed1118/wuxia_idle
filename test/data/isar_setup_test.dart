@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/data/models/attributes.dart';
-import 'package:wuxia_idle/data/models/character.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
-import 'package:wuxia_idle/data/models/equipment.dart';
-import 'package:wuxia_idle/data/models/forging_slot.dart';
-import 'package:wuxia_idle/data/models/save_data.dart';
-import 'package:wuxia_idle/data/models/skill_usage_entry.dart';
-import 'package:wuxia_idle/data/models/technique.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/forging_slot.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 
 /// IsarSetup + 三个核心 Collection 的 round-trip 集成测试
 /// （覆盖 T04 验收剩余 2 条 + T05 验收 SaveData 默认值/再打开读出）。

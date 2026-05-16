@@ -1,9 +1,9 @@
 import '../data/defs/skill_def.dart';
 import '../data/game_repository.dart';
-import '../data/models/character.dart';
-import '../data/models/enums.dart';
-import '../data/models/equipment.dart';
-import '../data/models/technique.dart';
+import '../core/domain/character.dart';
+import '../core/domain/enums.dart';
+import '../core/domain/equipment.dart';
+import '../core/domain/technique.dart';
 import '../data/numbers_config.dart';
 import 'damage_calculator.dart';
 import 'derived_stats.dart';

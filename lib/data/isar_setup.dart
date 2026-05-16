@@ -3,15 +3,15 @@ import 'dart:io';
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'models/character.dart';
+import '../core/domain/character.dart';
 import '../features/encounter/domain/encounter_progress.dart';
-import 'models/equipment.dart';
-import 'models/game_event.dart';
-import 'models/inventory_item.dart';
+import '../core/domain/equipment.dart';
+import '../core/domain/game_event.dart';
+import '../core/domain/inventory_item.dart';
 import '../features/mainline/domain/mainline_progress.dart';
 import '../features/seclusion/domain/retreat_session.dart';
-import 'models/save_data.dart';
-import 'models/technique.dart';
+import '../core/domain/save_data.dart';
+import '../core/domain/technique.dart';
 import '../features/tower/domain/tower_progress.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。

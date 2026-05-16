@@ -5,7 +5,7 @@ import 'package:wuxia_idle/combat/battle_engine.dart';
 import 'package:wuxia_idle/combat/battle_state.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/data/models/enums.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 
 /// T17 4 套测试场景的数值验收（phase1_tasks T17 §921-926）。
 ///
