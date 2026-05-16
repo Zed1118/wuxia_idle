@@ -7,13 +7,13 @@ import 'package:wuxia_idle/ui/strings.dart';
 /// T32 子提交 3d：[Phase2TestMenu] widget 测试（T54 扩到 5 按钮含 P5 师徒；
 /// W12 fix 扩到 6 按钮含 VC W7-W11；W14-3 扩到 7 按钮含 VC14_3 奇遇 skill 视觉验收；
 /// W15-r2 扩到 9 按钮含 VC15-r2 tier 5-7 装备入背包；
-/// W15-resonance 扩到 10 按钮含 VC15-res 共鸣/强化/开锋光谱）。
+/// W15-resonance 扩到 10 按钮含 VC15-res;W15 P3 后续 F2 扩到 11 按钮含 VC15-fresh）。
 ///
 /// 4 用例覆盖：
-///   - 10 场景按钮 label + hint 全部可见且顺序正确
-///     (P1 → P2 → P3 → P4 → P5 → VC → VC14_3 → VC-EVENT → VC15-r2 → VC15-res)
+///   - 11 场景按钮 label + hint 全部可见且顺序正确
+///     (P1 → P2 → P3 → P4 → P5 → VC → VC14_3 → VC-EVENT → VC15-r2 → VC15-res → VC15-fresh)
 ///   - AppBar 标题 phase2MenuTitle 可见
-///   - 10 个 _ScenarioButton InkWell 可点
+///   - 11 个 _ScenarioButton InkWell 可点
 ///   - tap P1 → seedP1 在 widget test 环境 IsarSetup 未 init → catch 后 SnackBar
 ///     显示「种子失败」（覆盖 _seedAndPush 完整 try/catch/finally 流程 + UI 反馈）
 ///
@@ -31,9 +31,9 @@ void main() {
     expect(find.text(UiStrings.phase2MenuTitle), findsOneWidget);
   });
 
-  testWidgets('10 场景按钮 label + hint 全部可见且顺序正确', (tester) async {
-    // VC15-res 在 1280×720 默认 surface 下可能贴底,扩大测试 viewport 容纳 10 按钮。
-    await tester.binding.setSurfaceSize(const Size(1280, 1200));
+  testWidgets('11 场景按钮 label + hint 全部可见且顺序正确', (tester) async {
+    // VC15-fresh 加入后扩大 viewport 容纳 11 按钮。
+    await tester.binding.setSurfaceSize(const Size(1280, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(app());
 
@@ -48,8 +48,9 @@ void main() {
     expect(find.text(UiStrings.scenarioVcEvent), findsOneWidget);
     expect(find.text(UiStrings.scenarioVc15R2), findsOneWidget);
     expect(find.text(UiStrings.scenarioVc15Resonance), findsOneWidget);
+    expect(find.text(UiStrings.scenarioVc15Fresh), findsOneWidget);
 
-    // hint(10 段全部不重复,作为独立断言)
+    // hint(11 段全部不重复,作为独立断言)
     expect(find.text(UiStrings.hintP1), findsOneWidget);
     expect(find.text(UiStrings.hintP2), findsOneWidget);
     expect(find.text(UiStrings.hintP3), findsOneWidget);
@@ -60,8 +61,9 @@ void main() {
     expect(find.text(UiStrings.hintVcEvent), findsOneWidget);
     expect(find.text(UiStrings.hintVc15R2), findsOneWidget);
     expect(find.text(UiStrings.hintVc15Resonance), findsOneWidget);
+    expect(find.text(UiStrings.hintVc15Fresh), findsOneWidget);
 
-    // 顺序:从上到下 P1 → P2 → P3 → P4 → P5 → VC → VC14_3 → VC-EVENT → VC15-r2 → VC15-res
+    // 顺序:从上到下 P1 → P2 → P3 → P4 → P5 → VC → VC14_3 → VC-EVENT → VC15-r2 → VC15-res → VC15-fresh
     final p1Y = tester.getCenter(find.text(UiStrings.scenarioP1)).dy;
     final p2Y = tester.getCenter(find.text(UiStrings.scenarioP2)).dy;
     final p3Y = tester.getCenter(find.text(UiStrings.scenarioP3)).dy;
@@ -73,6 +75,8 @@ void main() {
     final vc15R2Y = tester.getCenter(find.text(UiStrings.scenarioVc15R2)).dy;
     final vc15ResY =
         tester.getCenter(find.text(UiStrings.scenarioVc15Resonance)).dy;
+    final vc15FreshY =
+        tester.getCenter(find.text(UiStrings.scenarioVc15Fresh)).dy;
     expect(p1Y < p2Y, isTrue);
     expect(p2Y < p3Y, isTrue);
     expect(p3Y < p4Y, isTrue);
@@ -82,15 +86,16 @@ void main() {
     expect(vc14_3Y < vcEventY, isTrue);
     expect(vcEventY < vc15R2Y, isTrue);
     expect(vc15R2Y < vc15ResY, isTrue);
+    expect(vc15ResY < vc15FreshY, isTrue);
   });
 
-  testWidgets('10 个场景按钮均为 InkWell(可点)', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(1280, 1200));
+  testWidgets('11 个场景按钮均为 InkWell(可点)', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(app());
-    // AppBar 默认 implyLeading 在 home 模式下不渲染 back button;10 个 _ScenarioButton
-    // 各 1 个 InkWell,预期恰好 10 个。
-    expect(find.byType(InkWell), findsNWidgets(10));
+    // AppBar 默认 implyLeading 在 home 模式下不渲染 back button;11 个 _ScenarioButton
+    // 各 1 个 InkWell,预期恰好 11 个。
+    expect(find.byType(InkWell), findsNWidgets(11));
   });
 
   testWidgets('tap P1 → IsarSetup 未 init → SnackBar 显示「种子失败」',
