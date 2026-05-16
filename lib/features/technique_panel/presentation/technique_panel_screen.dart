@@ -8,7 +8,7 @@ import '../../../core/domain/technique.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../providers/isar_provider.dart';
-import '../../../services/dispel_service.dart';
+import '../../dispel/application/dispel_service.dart';
 import '../../../ui/strings.dart';
 import '../../../ui/theme/colors.dart';
 import 'dispel_dialog.dart';

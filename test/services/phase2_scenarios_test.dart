@@ -8,7 +8,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
-import 'package:wuxia_idle/services/dispel_service.dart';
+import 'package:wuxia_idle/features/dispel/application/dispel_service.dart';
 import 'package:wuxia_idle/services/enhancement_service.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
 import 'package:wuxia_idle/utils/rng.dart';

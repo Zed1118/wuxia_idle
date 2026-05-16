@@ -5,7 +5,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
-import 'package:wuxia_idle/services/cultivation_service.dart';
+import 'package:wuxia_idle/features/cultivation/application/cultivation_service.dart';
 
 /// T24 CultivationService 验收（phase2_tasks T24 §269-293）。
 ///

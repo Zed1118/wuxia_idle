@@ -1,6 +1,6 @@
-import '../core/domain/enums.dart';
-import '../core/domain/skill_usage_entry.dart';
-import '../core/domain/technique.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/skill_usage_entry.dart';
+import '../../../core/domain/technique.dart';
 
 /// 修炼度累积结果（phase2_tasks T24）。
 ///

@@ -8,7 +8,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
-import 'package:wuxia_idle/services/dispel_service.dart';
+import 'package:wuxia_idle/features/dispel/application/dispel_service.dart';
 
 /// T32 #22b DispelService.persistResult 真 Isar 落地测试。
 ///
