@@ -42,3 +42,19 @@ Future<List<Equipment>> allEquipments(Ref ref) async {
   });
   return list;
 }
+
+/// 仓库所有物料列表（W15 #30 P3 后续 A · 物料 Tab）。
+///
+/// 一次性 `findAll` 整表，按 [ItemType] enum 顺序排（moJianShi → ... →
+/// miscMaterial），同 itemType 内按 quantity 倒序。quantity == 0 的行
+/// 仍返回（让 UI 决定是否显示空态）。
+@riverpod
+Future<List<InventoryItem>> allInventoryItems(Ref ref) async {
+  final list = await IsarSetup.instance.inventoryItems.where().findAll();
+  list.sort((a, b) {
+    final cmp = a.itemType.index.compareTo(b.itemType.index);
+    if (cmp != 0) return cmp;
+    return b.quantity.compareTo(a.quantity);
+  });
+  return list;
+}

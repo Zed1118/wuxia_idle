@@ -139,6 +139,14 @@ class UiStrings {
   // 仓库 / 强化对话框（T29）
   static const String inventoryTitle = '装备仓库';
   static const String inventoryEmpty = '仓库空空如也';
+
+  // 仓库 Tab（W15 #30 P3 后续 A · 物料 Tab）
+  static const String inventoryTabEquipment = '装备';
+  static const String inventoryTabMaterial = '物料';
+  static const String inventoryMaterialEmpty = '暂无物料';
+
+  /// 物料行文案：`磨剑石 × 1234`。
+  static String materialQuantity(String name, int qty) => '$name × $qty';
   static const String enhanceDialogTitle = '强化';
   static const String enhanceButton = '强化';
   static const String guaranteeButton = '保底成功';
