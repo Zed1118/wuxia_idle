@@ -24,8 +24,8 @@ FestivalService? festivalService(Ref ref) {
 
 /// DEBUG 节日覆盖 NotifierProvider（W16 Mac 端视觉验收用 2026-05-16）。
 ///
-/// 非节日日（全年 359 天）`_TodayFestivalChip` 默认不显，无法在 Mac 端
-/// debug build 现场验证 chip 6 节日各自显示效果。本 Notifier 持可变
+/// 非节日日（全年 357 天）`_TodayFestivalChip` 默认不显，无法在 Mac 端
+/// debug build 现场验证 chip 8 节日各自显示效果。本 Notifier 持可变
 /// `Festival?` 覆盖值，[todayFestival] 读 override 优先于 `FestivalService`。
 ///
 /// 设计：

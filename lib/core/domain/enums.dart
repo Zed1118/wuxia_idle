@@ -252,14 +252,20 @@ enum TimeOfDayPeriod {
 /// encounter trigger 维度 + UI「今日节日」chip 显示。农历转公历按年 hardcode
 /// 在 numbers.yaml `festivals.days_2026`（沿用节气 §12 #13 决议体例，不引入农历库）。
 ///
-/// Demo 阶段 6 个真实传统节日：春节 / 元宵 / 端午 / 七夕 / 中秋 / 重阳。
+/// Demo 阶段 8 个真实传统节日：除夕 / 春节 / 元宵 / 清明 / 端午 / 七夕 / 中秋 / 重阳。
+///
+/// 清明既是节气也是节日：节气走 numbers.yaml `retreat.solar_term_bonus.days_2026`
+/// (闭关 +30% 维度),节日走 `festivals.days_2026` 配 encounter trigger 维度 + chip。
+/// 同日双重身份不冲突,各走各通道(GDD §8.4 节日通道独立于节气通道)。
 enum Festival {
-  chunJie,    // 春节   农历正月初一
-  yuanXiao,   // 元宵   农历正月十五
-  duanWu,     // 端午   农历五月初五
-  qiXi,       // 七夕   农历七月初七
-  zhongQiu,   // 中秋   农历八月十五
-  chongYang,  // 重阳   农历九月初九
+  chuXi,        // 除夕   农历腊月最后一天（春节前一天）
+  chunJie,      // 春节   农历正月初一
+  yuanXiao,     // 元宵   农历正月十五
+  qingMingJie,  // 清明   公历清明节（既节气又节日）
+  duanWu,       // 端午   农历五月初五
+  qiXi,         // 七夕   农历七月初七
+  zhongQiu,     // 中秋   农历八月十五
+  chongYang,    // 重阳   农历九月初九
 }
 
 /// 闭关 session 状态（Phase 3 T48）。

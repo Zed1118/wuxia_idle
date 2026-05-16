@@ -211,11 +211,11 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
 /// W16 DEBUG · 切今日节日按钮。
 ///
 /// 显示当前 `debugFestivalOverride` 状态（无覆盖 / 覆盖到 X 节日），onTap 弹
-/// SimpleDialog 列 7 选项（6 节日 + 清除覆盖），点击后通过
+/// SimpleDialog 列 9 选项（8 节日 + 清除覆盖），点击后通过
 /// `debugFestivalOverrideProvider.notifier.apply / clear` 写状态，SnackBar 反馈。
 ///
-/// 非节日日（全年 359 天）`_TodayFestivalChip` 默认不显，本入口让 Mac 端在
-/// debug build 现场切节日验证 chip 6 节日视觉效果。
+/// 非节日日（全年 357 天）`_TodayFestivalChip` 默认不显，本入口让 Mac 端在
+/// debug build 现场切节日验证 chip 8 节日视觉效果。
 class _FestivalOverrideButton extends ConsumerWidget {
   const _FestivalOverrideButton();
 

@@ -12,21 +12,23 @@ import 'package:wuxia_idle/features/festival/application/festival_service.dart';
 ///   - FestivalService.festivalOn 透传 + todayFestival 走 DateTime.now()
 void main() {
   group('FestivalConfig.fromYaml', () {
-    test('正常 yaml（与 numbers.yaml 段对齐）解析 6 节日', () {
+    test('正常 yaml（与 numbers.yaml 段对齐）解析 8 节日', () {
       final cfg = FestivalConfig.fromYaml({
         'days_2026': [
+          {'festival': 'chuXi', 'date': '2026-02-16'},
           {'festival': 'chunJie', 'date': '2026-02-17'},
           {'festival': 'yuanXiao', 'date': '2026-03-03'},
+          {'festival': 'qingMingJie', 'date': '2026-04-05'},
           {'festival': 'duanWu', 'date': '2026-06-19'},
           {'festival': 'qiXi', 'date': '2026-08-19'},
           {'festival': 'zhongQiu', 'date': '2026-09-25'},
           {'festival': 'chongYang', 'date': '2026-10-18'},
         ],
       });
-      expect(cfg.days.length, 6);
-      expect(cfg.days.first.festival, Festival.chunJie);
+      expect(cfg.days.length, 8);
+      expect(cfg.days.first.festival, Festival.chuXi);
       expect(cfg.days.first.month, 2);
-      expect(cfg.days.first.day, 17);
+      expect(cfg.days.first.day, 16);
       expect(cfg.days.last.festival, Festival.chongYang);
       expect(cfg.days.last.month, 10);
       expect(cfg.days.last.day, 18);
