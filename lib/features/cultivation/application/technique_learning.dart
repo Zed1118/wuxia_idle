@@ -1,9 +1,9 @@
-import '../features/battle/domain/derived_stats.dart';
-import '../data/defs/technique_def.dart';
-import '../core/domain/character.dart';
-import '../core/domain/enums.dart';
-import '../core/domain/technique.dart';
-import '../data/numbers_config.dart';
+import '../../battle/domain/derived_stats.dart';
+import '../../../data/defs/technique_def.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/technique.dart';
+import '../../../data/numbers_config.dart';
 
 /// 心法学习结果（phase2_tasks T23）。
 ///

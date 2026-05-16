@@ -1,21 +1,21 @@
 import 'package:isar_community/isar.dart';
 
-import '../data/defs/master_def.dart';
-import '../data/game_repository.dart';
-import '../data/isar_setup.dart';
-import '../core/domain/attributes.dart';
-import '../core/domain/character.dart';
-import '../features/encounter/domain/encounter_progress.dart';
-import '../core/domain/enums.dart';
-import '../core/domain/equipment.dart';
-import '../core/domain/game_event.dart';
-import '../core/domain/inventory_item.dart';
-import '../core/domain/save_data.dart';
-import '../core/domain/technique.dart';
-import '../utils/rng.dart';
-import '../features/encounter/application/encounter_service.dart';
-import '../features/equipment/application/equipment_factory.dart';
-import '../features/mainline/application/mainline_progress_service.dart';
+import '../../../data/defs/master_def.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../../../core/domain/attributes.dart';
+import '../../../core/domain/character.dart';
+import '../../encounter/domain/encounter_progress.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/equipment.dart';
+import '../../../core/domain/game_event.dart';
+import '../../../core/domain/inventory_item.dart';
+import '../../../core/domain/save_data.dart';
+import '../../../core/domain/technique.dart';
+import '../../../utils/rng.dart';
+import '../../encounter/application/encounter_service.dart';
+import '../../equipment/application/equipment_factory.dart';
+import '../../mainline/application/mainline_progress_service.dart';
 
 /// Phase 2 调试场景种子工厂（phase2_tasks.md T32 §492-509 子提交 3）。
 ///

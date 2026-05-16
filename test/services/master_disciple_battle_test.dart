@@ -9,7 +9,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/services/phase2_seed_service.dart';
+import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 
 /// Phase 3 Week 4 T57 师徒系统 3v3 默认入阵 + 战斗集成测试。

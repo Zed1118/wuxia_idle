@@ -7,7 +7,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
-import 'package:wuxia_idle/services/technique_learning.dart';
+import 'package:wuxia_idle/features/cultivation/application/technique_learning.dart';
 
 /// T23 TechniqueLearningService 验收（phase2_tasks T23 §244-265）。
 ///
