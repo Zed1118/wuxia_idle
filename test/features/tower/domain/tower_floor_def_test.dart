@@ -20,7 +20,7 @@ void main() {
   Future<String> fileLoader(String path) async {
     final f = File(path);
     if (!await f.exists()) throw FileSystemException('不存在', path);
-    return f.readAsString();
+    return (await f.readAsString()).replaceAll('\r\n', '\n');
   }
 
   tearDown(GameRepository.resetForTest);
@@ -281,7 +281,8 @@ void main() {
 /// 读真 towers.yaml，按 `- floorIndex:` 切成 30 块，让 mutator 改若干块，
 /// 然后拼回 yaml 字符串。用于构造 fail-fast 测试的 broken fixture。
 String _buildBrokenTowersYaml(void Function(List<String> floorBlocks) mutator) {
-  final raw = File('data/towers.yaml').readAsStringSync();
+  final raw =
+      File('data/towers.yaml').readAsStringSync().replaceAll('\r\n', '\n');
   // 找 "floors:" header 后面所有 - floorIndex: N 起始的块
   final headerEnd = raw.indexOf('floors:');
   if (headerEnd < 0) {
