@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../combat/battle_engine.dart';
-import '../../combat/battle_state.dart';
+import '../../features/battle/domain/battle_engine.dart';
+import '../../features/battle/domain/battle_state.dart';
 import '../../data/defs/skill_def.dart';
 import '../../data/defs/stage_def.dart';
 import '../../data/game_repository.dart';

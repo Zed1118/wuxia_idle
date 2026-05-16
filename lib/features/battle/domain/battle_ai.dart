@@ -1,6 +1,6 @@
-import '../data/defs/skill_def.dart';
-import '../core/domain/enums.dart';
-import '../data/numbers_config.dart';
+import '../../../data/defs/skill_def.dart';
+import '../../../core/domain/enums.dart';
+import '../../../data/numbers_config.dart';
 import 'battle_state.dart';
 
 /// 战斗 AI（phase1_tasks.md T12 §683）。

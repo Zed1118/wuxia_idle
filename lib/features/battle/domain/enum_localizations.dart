@@ -1,4 +1,4 @@
-import '../core/domain/enums.dart';
+import '../../../core/domain/enums.dart';
 import 'battle_state.dart' show BattleResult;
 
 /// enum 与战斗 effect 字符串的中文化（phase1_tasks.md T13 §750）。

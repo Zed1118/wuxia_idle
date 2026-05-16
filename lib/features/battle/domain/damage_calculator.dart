@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import '../core/domain/character.dart';
-import '../core/domain/enums.dart';
-import '../core/domain/equipment.dart';
-import '../core/domain/technique.dart';
-import '../data/defs/skill_def.dart';
-import '../data/numbers_config.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/equipment.dart';
+import '../../../core/domain/technique.dart';
+import '../../../data/defs/skill_def.dart';
+import '../../../data/numbers_config.dart';
 import 'derived_stats.dart';
 
 /// 伤害计算器（phase1_tasks.md T10）。

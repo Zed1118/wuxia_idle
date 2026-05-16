@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../combat/battle_state.dart';
-import '../../combat/enum_localizations.dart';
+import '../../features/battle/domain/battle_state.dart';
+import '../../features/battle/domain/enum_localizations.dart';
 import '../theme/colors.dart';
 import 'hp_bar.dart';
 

@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../combat/battle_log.dart';
-import '../../combat/battle_state.dart';
-import '../../combat/damage_calculator.dart';
-import '../../combat/enum_localizations.dart';
+import '../../features/battle/domain/battle_log.dart';
+import '../../features/battle/domain/battle_state.dart';
+import '../../features/battle/domain/damage_calculator.dart';
+import '../../features/battle/domain/enum_localizations.dart';
 import '../../data/defs/skill_def.dart';
 import '../../core/domain/enums.dart';
 import '../../data/numbers_config.dart';

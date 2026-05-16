@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../combat/enum_localizations.dart';
+import '../../features/battle/domain/enum_localizations.dart';
 import '../../data/defs/equipment_def.dart';
 import '../../core/domain/enums.dart';
 import '../../core/domain/equipment.dart';

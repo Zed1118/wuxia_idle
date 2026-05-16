@@ -10,7 +10,7 @@ import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/services/dispel_service.dart';
 import 'package:wuxia_idle/services/enhancement_service.dart';
-import 'package:wuxia_idle/combat/derived_stats.dart';
+import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
 import 'package:wuxia_idle/utils/rng.dart';
 
 /// Phase 2 调试场景数值断言（phase2_tasks.md T32 §492-509 子提交 4）。
