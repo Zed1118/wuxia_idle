@@ -19,13 +19,13 @@ void main() {
 
   group('encounters.yaml 加载', () {
     test(
-        '36 条 encounter 全部解析成功 '
-        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6)',
+        '38 条 encounter 全部解析成功 '
+        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2)',
         () {
       final repo = GameRepository.instance;
-      expect(repo.encounterDefs.length, 36,
+      expect(repo.encounterDefs.length, 38,
           reason:
-              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6');
+              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6 + W17 节日 2');
       // W14-1 3 条必须仍在
       expect(
         repo.encounterDefs.keys,
@@ -89,6 +89,15 @@ void main() {
           'chong_yang_deng_gao',
         }),
         reason: 'W16 节日 encounter 6 条:春节/元宵/端午/七夕/中秋/重阳 各 1 条',
+      );
+      // W17 节日 encounter 2 条核对(framework 扩 chuXi/qingMingJie)
+      expect(
+        repo.encounterDefs.keys,
+        containsAll({
+          'chu_xi_ci_sui',
+          'qing_ming_yu_si',
+        }),
+        reason: 'W17 节日 encounter 2 条:除夕/清明 各 1 条',
       );
     });
 
