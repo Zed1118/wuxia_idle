@@ -15,7 +15,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
-import 'package:wuxia_idle/services/battle_resolution.dart';
+import 'package:wuxia_idle/features/battle/application/battle_resolution.dart';
 import 'package:wuxia_idle/services/drop_service.dart';
 import 'package:wuxia_idle/utils/rng.dart';
 

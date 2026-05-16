@@ -6,7 +6,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/services/phase2_seed_service.dart';
-import 'package:wuxia_idle/services/stage_battle_setup.dart';
+import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 
 /// T37 StageBattleSetup 真 Isar 落地测试。
 ///

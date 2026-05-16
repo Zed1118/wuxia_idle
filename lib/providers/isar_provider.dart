@@ -4,14 +4,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/game_repository.dart';
 import '../data/isar_setup.dart';
 import '../features/encounter/domain/encounter_progress.dart';
-import '../services/dispel_service.dart';
+import '../features/dispel/application/dispel_service.dart';
 import '../features/encounter/application/encounter_service.dart';
 import '../services/enhancement_service.dart';
 import '../services/forging_service.dart';
 import '../features/mainline/application/mainline_progress_service.dart';
 import '../services/phase2_seed_service.dart';
 import '../features/seclusion/application/seclusion_service.dart';
-import '../services/stage_battle_setup.dart';
+import '../features/battle/application/stage_battle_setup.dart';
 import '../features/tower/application/tower_progress_service.dart';
 
 part 'isar_provider.g.dart';

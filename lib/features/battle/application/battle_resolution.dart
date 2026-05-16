@@ -1,16 +1,16 @@
-import '../features/battle/domain/battle_state.dart';
-import '../data/defs/stage_def.dart';
-import '../data/defs/technique_def.dart';
-import '../core/domain/character.dart';
-import '../core/domain/enums.dart';
-import '../core/domain/equipment.dart';
-import '../core/domain/skill_usage_entry.dart';
-import '../core/domain/technique.dart';
-import '../data/numbers_config.dart';
-import '../utils/rng.dart';
-import 'cultivation_service.dart';
-import 'dispel_service.dart';
-import 'drop_service.dart';
+import '../domain/battle_state.dart';
+import '../../../data/defs/stage_def.dart';
+import '../../../data/defs/technique_def.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
+import '../../../core/domain/equipment.dart';
+import '../../../core/domain/skill_usage_entry.dart';
+import '../../../core/domain/technique.dart';
+import '../../../data/numbers_config.dart';
+import '../../../utils/rng.dart';
+import '../../cultivation/application/cultivation_service.dart';
+import '../../dispel/application/dispel_service.dart';
+import '../../../services/drop_service.dart';
 
 /// 战斗结算服务的汇总返回（phase2_tasks T26 §324-356）。
 ///
