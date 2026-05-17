@@ -306,6 +306,25 @@ class UiStrings {
   static const String mainMenuTower = '问鼎九霄';
   static const String mainMenuTowerHint = '30 层，无限重试，永久记录';
 
+  // ── P0.2 #40 排行榜(本地榜,D 方案 Demo 不接 Supabase backend)──
+
+  static const String mainMenuLeaderboard = '排行榜';
+  static const String mainMenuLeaderboardHint = '最高通关层 / 最佳耗时 / 累计挑战';
+
+  static const String leaderboardTitle = '排行榜';
+  static const String leaderboardEmpty = '尚未通关任何爬塔层';
+  static const String leaderboardHighestLayer = '最高通关层';
+  static const String leaderboardLayerSuffix = '层';
+  static const String leaderboardBestClearTime = '最佳通关耗时';
+  static const String leaderboardTotalAttempts = '累计挑战次数';
+  static const String leaderboardWinRate = '胜率';
+  static const String leaderboardNoData = '—';
+
+  static String leaderboardDurationSeconds(int seconds) => '$seconds 秒';
+  static String leaderboardDurationMinutes(int minutes, int seconds) =>
+      '$minutes 分 $seconds 秒';
+  static String leaderboardWinRatePct(int pct) => '$pct%';
+
   static const String towerTitle = '问鼎九霄';
 
   static const String towerBossMinor = '小 Boss';

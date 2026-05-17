@@ -15,6 +15,7 @@ import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
+import '../../tower/presentation/leaderboard_screen.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
 
 /// 调试主菜单（phase2_tasks.md T32 §492-509 子提交 3b + T56 闭关入口 FutureBuilder 化 + W17 候选 E 师徒名单入口）。
@@ -75,6 +76,12 @@ class MainMenu extends ConsumerWidget {
                   label: UiStrings.mainMenuTower,
                   hint: UiStrings.mainMenuTowerHint,
                   onTap: () => _push(context, const TowerFloorListScreen()),
+                ),
+                const SizedBox(height: 16),
+                _MenuButton(
+                  label: UiStrings.mainMenuLeaderboard,
+                  hint: UiStrings.mainMenuLeaderboardHint,
+                  onTap: () => _push(context, const LeaderboardScreen()),
                 ),
                 const SizedBox(height: 16),
                 _SeclusionMenuButton(
