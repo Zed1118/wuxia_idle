@@ -31,16 +31,3 @@ Future<List<StageEntry>> chapterStages(
     chapterIndex: chapterIndex,
   );
 }
-
-/// 指定章节是否全通（chapter list 上 ✓ 标识用）。
-@riverpod
-Future<bool> chapterCompleted(
-  Ref ref,
-  int chapterIndex,
-) async {
-  final progress = await ref.watch(mainlineProgressProvider.future);
-  return MainlineProgressService.chapterCompleted(
-    progress: progress,
-    chapterIndex: chapterIndex,
-  );
-}
