@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/game_event.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
@@ -265,5 +266,132 @@ void main() {
           all[1].occurredAt.isAtSameMomentAs(all[0].occurredAt),
       isTrue,
     );
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Phase 5 延续典故 hook case
+  // ─────────────────────────────────────────────────────────────────────────
+
+  test('#8 bossDefeated 传 warbornEquipment → 每件追加 lore isPreset=false',
+      () async {
+    final isar = IsarSetup.instance;
+    final svc = GameEventService(isar);
+    final eq1 = Equipment.create(
+      defId: 'sword_qiu_ji',
+      tier: EquipmentTier.liQi,
+      slot: EquipmentSlot.weapon,
+      baseAttack: 100,
+      obtainedAt: DateTime(2026, 1, 1),
+      obtainedFrom: 'test',
+    );
+    final eq2 = Equipment.create(
+      defId: 'armor_qiu_ji',
+      tier: EquipmentTier.liQi,
+      slot: EquipmentSlot.armor,
+      obtainedAt: DateTime(2026, 1, 1),
+      obtainedFrom: 'test',
+    );
+    await isar.writeTxn(() async {
+      await isar.equipments.putAll([eq1, eq2]);
+      await svc.recordBossDefeated(
+        characterId: 10,
+        stageId: 'stage_01_05',
+        stageName: '夜袭山贼营',
+        bossName: '黑面阎罗',
+        warbornEquipment: [eq1, eq2],
+      );
+    });
+
+    final after1 = await isar.equipments.get(eq1.id);
+    final after2 = await isar.equipments.get(eq2.id);
+    expect(after1!.lores, hasLength(1));
+    expect(after2!.lores, hasLength(1));
+    expect(after1.lores.first.isPreset, isFalse);
+    expect(after1.lores.first.triggerEventDesc, contains('bossDefeated'));
+    expect(after2.lores.first.isPreset, isFalse);
+  });
+
+  test('#8 bossDefeated 不传 warbornEquipment → 无 lore 副作用', () async {
+    final isar = IsarSetup.instance;
+    final svc = GameEventService(isar);
+    final eq = Equipment.create(
+      defId: 'sword_qiu_ji',
+      tier: EquipmentTier.liQi,
+      slot: EquipmentSlot.weapon,
+      baseAttack: 100,
+      obtainedAt: DateTime(2026, 1, 1),
+      obtainedFrom: 'test',
+    );
+    await isar.writeTxn(() async {
+      await isar.equipments.put(eq);
+      await svc.recordBossDefeated(
+        characterId: 10,
+        stageId: 'stage_01_05',
+        stageName: '夜袭山贼营',
+        bossName: '黑面阎罗',
+      );
+    });
+    final after = await isar.equipments.get(eq.id);
+    expect(after!.lores, isEmpty);
+  });
+
+  test('#3 equipmentObtained 传 equipment → 追加首段延续 lore', () async {
+    final isar = IsarSetup.instance;
+    final svc = GameEventService(isar);
+    final eq = Equipment.create(
+      defId: 'sword_xun_chang',
+      tier: EquipmentTier.xunChang,
+      slot: EquipmentSlot.weapon,
+      baseAttack: 50,
+      obtainedAt: DateTime(2026, 1, 1),
+      obtainedFrom: 'test',
+    );
+    await isar.writeTxn(() async {
+      await isar.equipments.put(eq);
+      await svc.recordEquipmentObtained(
+        characterId: null,
+        equipmentId: eq.id,
+        equipmentDefId: 'sword_xun_chang',
+        equipmentName: '寻常剑',
+        source: '夜袭山贼营',
+        equipment: eq,
+      );
+    });
+    final after = await isar.equipments.get(eq.id);
+    expect(after!.lores, hasLength(1));
+    expect(after.lores.first.isPreset, isFalse);
+    expect(after.lores.first.text.contains('寻常剑'), isTrue);
+    expect(after.lores.first.text.contains('夜袭山贼营'), isTrue);
+  });
+
+  test('多次 bossDefeated 同装备 → lore 累加(防刷由 caller 端 isFirstClear 兜底)',
+      () async {
+    final isar = IsarSetup.instance;
+    final svc = GameEventService(isar);
+    final eq = Equipment.create(
+      defId: 'sword_qiu_ji',
+      tier: EquipmentTier.liQi,
+      slot: EquipmentSlot.weapon,
+      baseAttack: 100,
+      obtainedAt: DateTime(2026, 1, 1),
+      obtainedFrom: 'test',
+    );
+    await isar.writeTxn(() async {
+      await isar.equipments.put(eq);
+      for (var i = 0; i < 3; i++) {
+        await svc.recordBossDefeated(
+          characterId: 10,
+          stageId: 'stage_01_05',
+          stageName: '夜袭山贼营',
+          bossName: '黑面阎罗',
+          warbornEquipment: [eq],
+        );
+      }
+    });
+    final after = await isar.equipments.get(eq.id);
+    // service 不防刷:3 次调用累加 3 段(caller 端 isFirstClear 防刷,见
+    // stage_entry_flow / tower_entry_flow #8 hook 条件)。
+    expect(after!.lores, hasLength(3));
+    expect(after.lores.every((l) => !l.isPreset), isTrue);
   });
 }

@@ -389,11 +389,13 @@ Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
       final bossName = floor.enemyTeam.isNotEmpty
           ? floor.enemyTeam.last.name
           : UiStrings.towerFloorLabel(floor.floorIndex);
+      final warborn = equipsByCh[founderId] ?? const <Equipment>[];
       await events.recordBossDefeated(
         characterId: founderId,
         stageId: 'tower_floor_${floor.floorIndex}',
         stageName: UiStrings.towerFloorLabel(floor.floorIndex),
         bossName: bossName,
+        warbornEquipment: warborn,
       );
     }
   });
@@ -449,6 +451,7 @@ Future<void> _persistDrops(
           equipmentDefId: drop.defId,
           equipmentName: def.name,
           source: source,
+          equipment: drop,
         );
       }
     }

@@ -500,4 +500,17 @@ class UiStrings {
   static String gameEventBossTitle(String bossName) => '斩 $bossName';
   static String gameEventBossSummary(String bossName, String stageName) =>
       '于「$stageName」一战胜 $bossName，江湖见闻。';
+
+  // ── P1 #42 Phase 5 · 延续典故文案模板(GDD §6.6,挂账 #44 推 Phase 2 抽 yaml)──
+  // 当前 Dart 端模板违反 CLAUDE.md §5.6,接受作为占位,挂账 #44 推 DeepSeek
+  // 端写 data/lore/<id>.yaml 的 continued_lore 字段池。
+
+  static String continuedLoreObtained(String equipName, String source) =>
+      '于「$source」得此 $equipName，初见锋芒。';
+
+  static String continuedLoreBossDefeated(String bossName, String stageName) =>
+      '$bossName 一战，伴你穿身，沾血未崩。';
+
+  // ── P1 #42 Phase 5 · EquipmentDetailScreen 延续典故 chip ──
+  static const String continuedLoreChipLabel = '延续';
 }

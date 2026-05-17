@@ -480,6 +480,7 @@ Future<({DropResult drops, List<AdvancementEntry> advancements})?>
         equipmentDefId: drop.defId,
         equipmentName: def.name,
         source: stage.name,
+        equipment: drop,
       );
     }
     for (final entry in advancements) {
@@ -497,11 +498,13 @@ Future<({DropResult drops, List<AdvancementEntry> advancements})?>
       final bossName = stage.enemyTeam.isNotEmpty
           ? stage.enemyTeam.last.name
           : stage.name;
+      final warborn = equipsByCh[founderId] ?? const <Equipment>[];
       await events.recordBossDefeated(
         characterId: founderId,
         stageId: stage.id,
         stageName: stage.name,
         bossName: bossName,
+        warbornEquipment: warborn,
       );
     }
   });
