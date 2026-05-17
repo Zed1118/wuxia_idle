@@ -82,6 +82,9 @@ class UiStrings {
   static const String scenarioVc15Fresh = 'VC15-fresh · 3 active 学徒启蒙(升层 banner 验收)';
   static const String hintVc15Fresh =
       '3 active 全员 xueTu·qiMeng + experience=0 + 主线塔进度清零,通 stage_01_01 触发升层多行 banner';
+  static const String scenarioVc18A1 = 'VC18-A1 · 心法相生 5 组合视觉验收预设';
+  static const String hintVc18A1 =
+      '5 角色一流·启蒙 + main/assist 配对覆盖 5 相生组合各 1 命中,切 Tab 看 chip + 进 stage_01_05 看 HpBar/内力条数字注入';
   static const String encounterDebugPickerTitle = 'VC-EVENT · 触发奇遇';
 
   // W16 节日 chip DEBUG 覆盖入口（Phase2TestMenu）
@@ -125,7 +128,15 @@ class UiStrings {
 
   /// 师承 Tab 标签：按 activeCharacterIds 顺序展示。
   /// 与 Phase2SeedService.seedMasterDisciple 槽位约定锁死（slot0=祖师 / 1=大弟子 / 2=二弟子）。
-  static const List<String> lineageTabLabels = ['祖师', '大弟子', '二弟子'];
+  /// W18-A1 扩到 5 槽供 [seedVisualCheckW18A1] debug fixture 一次显 5 相生组合角色;
+  /// 正常 P5 主线 ids.length=3 仍只显前 3,无视觉影响(GDD §7.1 demo_max_characters=3 不变)。
+  static const List<String> lineageTabLabels = [
+    '祖师',
+    '大弟子',
+    '二弟子',
+    '三弟子',
+    '四弟子',
+  ];
 
   // 师徒名单 panel（W17 候选 E）
   static const String lineagePanelTitle = '师徒名单';
