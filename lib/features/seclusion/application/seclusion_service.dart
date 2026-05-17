@@ -13,6 +13,7 @@ import '../../../core/domain/technique.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../encounter/application/encounter_service.dart';
+import '../../event/application/game_event_service.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 
@@ -347,6 +348,23 @@ class SeclusionService {
         }
         ch.currentRetreatSessionId = null;
         await isar.characters.put(ch);
+
+        // P1 #42 Phase 2:GameEvent 写入 — 闭关完成 + (升层时)境界突破。
+        // 同 writeTxn 内原子,不开嵌套 writeTxn(GameEventService 内部 put 不开)。
+        final events = GameEventService(isar);
+        final mapDef = _getDef(session.mapType, maps);
+        await events.recordRetreatCompleted(
+          characterId: characterId,
+          characterName: ch.name,
+          actualHours: outputs.actualHours.round(),
+          mapName: mapDef.mapName,
+        );
+        if (advancement != null && advancement!.didAdvance) {
+          await events.recordRealmBreakthrough(
+            character: ch,
+            result: advancement!,
+          );
+        }
       }
     });
 

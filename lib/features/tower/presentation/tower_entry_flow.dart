@@ -27,6 +27,7 @@ import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
+import '../../event/application/game_event_service.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
@@ -151,7 +152,7 @@ Future<void> runTowerFlow({
       equipmentDefLookup: GameRepository.instance.getEquipment,
       defaultObtainedFrom: UiStrings.towerDropSource,
     ).rollTowerRewards(floor, DefaultRng());
-    await _persistDrops(ref, drops);
+    await _persistDrops(ref, drops, floor: floor);
   }
 
   // ── leaderboard sync(P0.2 #40 Phase 3,D 方案 Noop placeholder)──
@@ -310,7 +311,7 @@ Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
 
-  BattleResolutionService.resolve(
+  final battleResult = BattleResolutionService.resolve(
     finalState: finalState,
     participatingCharacters: characters,
     equipmentsByCharacter: equipsByCh,
@@ -320,6 +321,7 @@ Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
     techniqueDefLookup: GameRepository.instance.getTechnique,
     dropService: dropSvc,
     isVictory: true,
+    numbersConfig: numbers,
     // stageDef: null —— 爬塔不走 service 内部 roll drops；drops 在外层
     // rollTowerRewards + _persistDrops 单独控制（首通才发奖）
   );
@@ -339,6 +341,7 @@ Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
     }
   }
 
+  final founderId = save?.founderCharacterId;
   await isar.writeTxn(() async {
     await isar.characters.putAll(characters);
     for (final list in techsByCh.values) {
@@ -347,17 +350,71 @@ Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
     for (final list in equipsByCh.values) {
       if (list.isNotEmpty) await isar.equipments.putAll(list);
     }
+
+    // P1 #42 Phase 2:GameEvent 写入(同 writeTxn 原子)。
+    // #6 realmBreakthrough 每角色判 didAdvance;#7 resonanceUpgraded 战斗中跨档;
+    // #8 bossDefeated 仅 floor.isBoss && isFirstClear 防刷(沿 drops 体例)。
+    final events = GameEventService(isar);
+    final allEquips =
+        equipsByCh.values.expand((list) => list).toList(growable: false);
+    for (final eqId in battleResult.resonanceUpgradedEquipmentIds) {
+      Equipment? eq;
+      for (final e in allEquips) {
+        if (e.id == eqId) {
+          eq = e;
+          break;
+        }
+      }
+      if (eq == null) continue;
+      final def = GameRepository.instance.getEquipment(eq.defId);
+      await events.recordResonanceUpgraded(
+        characterId: eq.ownerCharacterId ?? founderId ?? 0,
+        equipmentId: eq.id,
+        equipmentName: def.name,
+        newStage: eq.resonanceStage(numbers).index + 1,
+      );
+    }
+    for (final entry in advancements) {
+      if (!entry.result.didAdvance) continue;
+      final ch = characters.firstWhere(
+        (c) => c.name == entry.chName,
+        orElse: () => characters.first,
+      );
+      await events.recordRealmBreakthrough(
+        character: ch,
+        result: entry.result,
+      );
+    }
+    if (floor.isBoss && isFirstClear && founderId != null) {
+      final bossName = floor.enemyTeam.isNotEmpty
+          ? floor.enemyTeam.last.name
+          : UiStrings.towerFloorLabel(floor.floorIndex);
+      await events.recordBossDefeated(
+        characterId: founderId,
+        stageId: 'tower_floor_${floor.floorIndex}',
+        stageName: UiStrings.towerFloorLabel(floor.floorIndex),
+        bossName: bossName,
+      );
+    }
   });
 
   return advancements;
 }
 
 /// Isar 持久化爬塔掉落（W6 nullable propagation：isarProvider 为 null 时短路，测试安全）。
-Future<void> _persistDrops(WidgetRef ref, DropResult drops) async {
+///
+/// P1 #42 Phase 2:加 [floor] 入参,内部同事务写入 #3 equipmentObtained GameEvent。
+Future<void> _persistDrops(
+  WidgetRef ref,
+  DropResult drops, {
+  TowerFloorDef? floor,
+}) async {
   if (drops.isEmpty) return;
   final isar = ref.read(isarProvider);
   if (isar == null) return;
   final now = DateTime.now();
+  final save = await isar.saveDatas.get(0);
+  final founderId = save?.founderCharacterId;
   await isar.writeTxn(() async {
     if (drops.equipments.isNotEmpty) {
       await isar.equipments.putAll(drops.equipments);
@@ -376,6 +433,22 @@ Future<void> _persistDrops(WidgetRef ref, DropResult drops) async {
             ..quantity = item.quantity
             ..firstObtainedAt = now
             ..lastObtainedAt = now,
+        );
+      }
+    }
+
+    // P1 #42 Phase 2:GameEvent #3 equipmentObtained(同事务原子)。
+    if (drops.equipments.isNotEmpty && floor != null) {
+      final events = GameEventService(isar);
+      final source = UiStrings.towerFloorLabel(floor.floorIndex);
+      for (final drop in drops.equipments) {
+        final def = GameRepository.instance.getEquipment(drop.defId);
+        await events.recordEquipmentObtained(
+          characterId: founderId,
+          equipmentId: drop.id,
+          equipmentDefId: drop.defId,
+          equipmentName: def.name,
+          source: source,
         );
       }
     }

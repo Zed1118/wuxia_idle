@@ -91,6 +91,11 @@ Future<void> runEncounterHookAfterVictory({
     saveDataId: IsarSetup.currentSlotId,
     encounter: triggered,
     outcomeId: outcomeId,
+    // P1 #42 Phase 2:GameEvent 写入 caller-provided 上下文。
+    founderCharacterId: founderId,
+    encounterTitle: content.title ?? triggered.id,
+    skillNameLookup: (sid) =>
+        GameRepository.instance.skillDefs[sid]?.name ?? sid,
   );
   if (!context.mounted) return;
   showEncounterOutcomeBanner(context: context, applied: applied);
