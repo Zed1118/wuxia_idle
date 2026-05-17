@@ -43,7 +43,8 @@ void main() {
   Widget harness({
     required TowerFloorDef floor,
     required Future<bool> Function() battleRunner,
-    required Future<TowerClearResult> Function(int floorIndex) clearRecorder,
+    required Future<TowerClearResult> Function(int floorIndex, int elapsedMs)
+        clearRecorder,
     required Future<void> Function() defeatRecorder,
     TowerProgress? progress,
   }) {
@@ -71,7 +72,7 @@ void main() {
     await tester.pumpWidget(harness(
       floor: normalFloor,
       battleRunner: () async => true,
-      clearRecorder: (floorIndex) async {
+      clearRecorder: (floorIndex, elapsedMs) async {
         recordedFloor = floorIndex;
         return (isFirstClear: true, highestAfter: floorIndex);
       },
@@ -98,7 +99,7 @@ void main() {
     await tester.pumpWidget(harness(
       floor: normalFloor,
       battleRunner: () async => false,
-      clearRecorder: (floorIndex) async {
+      clearRecorder: (floorIndex, elapsedMs) async {
         clearCalled = true;
         return (isFirstClear: false, highestAfter: 0);
       },
@@ -120,7 +121,7 @@ void main() {
     await tester.pumpWidget(harness(
       floor: normalFloor,
       battleRunner: () async => true,
-      clearRecorder: (floorIndex) async =>
+      clearRecorder: (floorIndex, elapsedMs) async =>
           (isFirstClear: true, highestAfter: floorIndex),
       defeatRecorder: () async {},
     ));
@@ -141,7 +142,7 @@ void main() {
     await tester.pumpWidget(harness(
       floor: normalFloor,
       battleRunner: () async => true,
-      clearRecorder: (floorIndex) async =>
+      clearRecorder: (floorIndex, elapsedMs) async =>
           (isFirstClear: false, highestAfter: normalFloor.floorIndex),
       defeatRecorder: () async {},
       progress: mkProgress(highest: normalFloor.floorIndex),
@@ -166,7 +167,7 @@ void main() {
     await tester.pumpWidget(harness(
       floor: bossFloor,
       battleRunner: () async => true,
-      clearRecorder: (floorIndex) async {
+      clearRecorder: (floorIndex, elapsedMs) async {
         recordedFloor = floorIndex;
         return (isFirstClear: true, highestAfter: floorIndex);
       },
@@ -199,7 +200,8 @@ class _HarnessPage extends ConsumerStatefulWidget {
 
   final TowerFloorDef floor;
   final Future<bool> Function() battleRunner;
-  final Future<TowerClearResult> Function(int floorIndex) clearRecorder;
+  final Future<TowerClearResult> Function(int floorIndex, int elapsedMs)
+      clearRecorder;
   final Future<void> Function() defeatRecorder;
 
   @override

@@ -94,11 +94,19 @@ class TowerProgressService {
   ///   - 否则（重打 / 跳层 / 越界）`isFirstClear == false`，highest 不变。
   ///   - 无论是否首通，`totalAttempts++` 永远执行。
   ///
+  /// P0.2 #40 Phase 2 扩展:
+  ///   - [elapsedMs] 本次通关耗时(从战斗 setup 完成到 onVictory 回调触发);
+  ///   - 首通时写 perFloorClearTimes[floorIndex - 1] = elapsedMs(重打不覆盖);
+  ///   - 重算 bestClearTime = min(perFloorClearTimes 中非 0 值);
+  ///   - 任何通关(首通/重打)都更新 lastClearedAt;
+  ///   - 跳层/越界时 perFloorClearTimes / bestClearTime 不动(对齐 highest 不变)。
+  ///
   /// 调用方应根据 `isFirstClear` 决定是否走 [DropService.rollTowerRewards]
   /// 发奖（[CLAUDE.md §5.1] 反主流：重打不发奖防刷）。
   Future<TowerClearResult> recordClear({
     required int floorIndex,
     required DateTime now,
+    required int elapsedMs,
   }) async {
     late TowerClearResult result;
     await isar.writeTxn(() async {
@@ -118,7 +126,31 @@ class TowerProgressService {
       if (isFirstClear) {
         progress.highestClearedFloor = floorIndex;
         progress.highestClearedAt = now;
+
+        // P0.2 #40 Phase 2:首通锁耗时,重打不覆盖
+        // List<int> @embedded findFirst 反序列化为 fixed-length,
+        // 必须 List.from 转 growable 再写(memory feedback_isar_pitfalls §2)
+        final times = List<int>.from(progress.perFloorClearTimes);
+        while (times.length < floorIndex - 1) {
+          times.add(0); // 跳层占位(canChallenge 已拦,理论不可达,守 invariant)
+        }
+        if (times.length == floorIndex - 1) {
+          times.add(elapsedMs);
+        } else if (times[floorIndex - 1] == 0) {
+          times[floorIndex - 1] = elapsedMs; // 历史空位补首通
+        }
+        progress.perFloorClearTimes = times;
+
+        // 重算 bestClearTime 派生(min over 非 0 值)
+        final nonZero = times.where((t) => t > 0);
+        progress.bestClearTime = nonZero.isEmpty
+            ? null
+            : nonZero.reduce((a, b) => a < b ? a : b);
       }
+
+      // P0.2 #40 Phase 2:任何通关(首通/重打/跳层)都更新 lastClearedAt
+      progress.lastClearedAt = now;
+
       await isar.towerProgress.put(progress);
       result = (
         isFirstClear: isFirstClear,
