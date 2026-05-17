@@ -12,12 +12,12 @@ import 'package:wuxia_idle/features/festival/application/festival_service_provid
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
-/// T32 子提交 3b：[MainMenu] widget 测试（T42 加「问鼎九霄」T49 加「闭关修炼」+ W17 候选 E 加「师徒名单」后扩 9 个）。
+/// T32 子提交 3b：[MainMenu] widget 测试（T42 加「问鼎九霄」T49 加「闭关修炼」+ W17 候选 E 加「师徒名单」+ P0.2 #40 加「排行榜」后扩 10 个）。
 ///
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
-///   - 9 个菜单按钮 label + 顺序匹配（主线 / 问鼎九霄 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法）
-///   - 共 9 个 InkWell（按钮全部可点）
+///   - 10 个菜单按钮 label + 顺序匹配（主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法）
+///   - 共 10 个 InkWell（按钮全部可点）
 ///   - Tap "Phase 1 战斗测试" → push BattleTestMenu
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
@@ -35,11 +35,12 @@ void main() {
     expect(find.text(UiStrings.mainMenuTitle), findsOneWidget);
   });
 
-  testWidgets('9 个菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('10 个菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTower), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuLeaderboard), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase1), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase2), findsOneWidget);
@@ -48,9 +49,10 @@ void main() {
     expect(find.text(UiStrings.mainMenuInventory), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTechniques), findsOneWidget);
 
-    // 顺序：主线 / 问鼎九霄 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法
+    // 顺序：主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法
     final mainY = tester.getCenter(find.text(UiStrings.mainMenuMainline)).dy;
     final towY = tester.getCenter(find.text(UiStrings.mainMenuTower)).dy;
+    final lbY = tester.getCenter(find.text(UiStrings.mainMenuLeaderboard)).dy;
     final secY = tester.getCenter(find.text(UiStrings.mainMenuSeclusion)).dy;
     final p1Y = tester.getCenter(find.text(UiStrings.mainMenuPhase1)).dy;
     final p2Y = tester.getCenter(find.text(UiStrings.mainMenuPhase2)).dy;
@@ -59,7 +61,8 @@ void main() {
     final invY = tester.getCenter(find.text(UiStrings.mainMenuInventory)).dy;
     final tcY = tester.getCenter(find.text(UiStrings.mainMenuTechniques)).dy;
     expect(mainY < towY, isTrue);
-    expect(towY < secY, isTrue);
+    expect(towY < lbY, isTrue);
+    expect(lbY < secY, isTrue);
     expect(secY < p1Y, isTrue);
     expect(p1Y < p2Y, isTrue);
     expect(p2Y < chY, isTrue);
@@ -68,9 +71,9 @@ void main() {
     expect(invY < tcY, isTrue);
   });
 
-  testWidgets('9 个菜单按钮均为 InkWell（可点）', (tester) async {
+  testWidgets('10 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(InkWell), findsNWidgets(9));
+    expect(find.byType(InkWell), findsNWidgets(10));
   });
 
   testWidgets('tap Phase 1 战斗测试 → 进入 BattleTestMenu（找到 testMenuTitle / scenarioA）',
@@ -86,6 +89,10 @@ void main() {
   testWidgets('tap Phase 2 调试场景 → 进入 Phase2TestMenu（找到 scenarioP1 等 4 场景）',
       (tester) async {
     await tester.pumpWidget(app());
+    // P0.2 #40 加排行榜按钮后 Phase 2 下移到第 6 位,默认 800x600 viewport 临界
+    // 需 ensureVisible scroll 进可见区再 tap(SingleChildScrollView 体例)
+    await tester.ensureVisible(find.text(UiStrings.mainMenuPhase2));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(UiStrings.mainMenuPhase2));
     await tester.pumpAndSettle();
 
