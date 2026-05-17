@@ -21,8 +21,8 @@ WORKTREE_BASE="/Users/a10506/Desktop"
 TASK_TIMEOUT_MIN=50
 TASK_BUDGET_USD=5
 INTER_TASK_BUFFER_SEC=30
-TASKS=(T01 T02 T03 T04 T05 T06)
-LAST_TASK="T06"  # bash 3.2 (macOS default) doesn't support ${TASKS[-1]}
+TASKS=(T01 T02 T03 T04 T05 T06 T07 T08)
+LAST_TASK="T08"  # bash 3.2 (macOS default) doesn't support ${TASKS[-1]}
 
 # === Setup ===
 mkdir -p "$NIGHTSHIFT/logs" "$NIGHTSHIFT/status"
@@ -62,12 +62,6 @@ run_task() {
   } > "$status_file"
 
   # Pre-checks
-  if [ ! -d "$worktree" ]; then
-    log "  FAIL: worktree missing → status=skipped"
-    echo "status=skipped" >> "$status_file"
-    echo "reason=worktree_missing" >> "$status_file"
-    return 0
-  fi
   if [ ! -f "$prompt" ]; then
     log "  FAIL: prompt missing → status=skipped"
     echo "status=skipped" >> "$status_file"
@@ -75,11 +69,22 @@ run_task() {
     return 0
   fi
 
-  # Dry-run early exit
+  # Dry-run early exit (BEFORE worktree side-effects)
   if [ "$DRY_RUN" = "true" ]; then
-    log "  DRY RUN: would claude --print < $prompt in $worktree"
+    log "  DRY RUN: would auto-create worktree $worktree + claude --print < $prompt"
     echo "status=dry_run" >> "$status_file"
     return 0
+  fi
+
+  # Auto-create worktree if missing (uses -B to overwrite any leftover branch)
+  if [ ! -d "$worktree" ]; then
+    log "  Auto-creating worktree $worktree from main (branch nightshift/$task)"
+    if ! (cd "$PROJECT_ROOT" && git worktree add -f "$worktree" -B "nightshift/$task" main) >> "$DISPATCHER_LOG" 2>&1; then
+      log "  FAIL: worktree create → status=skipped"
+      echo "status=skipped" >> "$status_file"
+      echo "reason=worktree_create_failed" >> "$status_file"
+      return 0
+    fi
   fi
 
   # Idempotency: if worktree already has commit "nightshift $task", skip claude

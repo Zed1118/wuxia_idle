@@ -1,115 +1,124 @@
-# Nightshift Plan - 2026-05-17 二次跑(W17 dispatcher 修复后验证)
-Window: 立即 launch → ~6h
-Total tasks: 6
+# Nightshift Plan - 2026-05-18 P1 #42 Phase 1 4 子系统 widget test 加固
+Window: 立即 launch → 用户睡眠 8h 内(实际预期 2-3h 跑完)
+Total tasks: 8
 Dispatcher interval: 40m (timeout 50m + 30s inter-task buffer)
+HEAD baseline: 217ddf7 (main, 0 issues + 971/971)
 
-> **二次跑目标**:验证 dispatcher 修复后 3 处(bash 3.2 兼容 / idempotency / verify 含 build_runner)的健壮性。沿用 W17 首跑全 skippable + 低-中风险体例;主战场切「数据一致性扫描」+「目录审计」+「PROGRESS 行数清理」+「CharacterPanelScreen 边界 test」+「SUMMARY」混合配方。
+> **本批主题**:P1 #42 Phase 1 收口(GameEventService / HomeFeedScreen / BaikeScreen / 延续典故 hook 4 子系统)widget test edge 加固。25 new test 预期(testWidgets +20 / test +5),全 test/ 新增 0 lib/ 改动。
+>
+> **吸取昨天教训**:① 不盲信 6h window 必填(`feedback_claude_print_task_duration`);② 旧 SUMMARY 数据 baseline 必重 grep 实测(`feedback_closeout_numbers_grep`);③ dispatcher auto-create worktree(-B 覆盖,免手工)+ build_runner 显式 `--delete-conflicting-outputs`。
 
-## T01: encounter id 一致性扫描
+## T01: HomeFeedScreen 相对时间剩 4 档 edge
 - status: pending
-- depends: []
-- worktree: ../wuxia-idle-T01
+- worktree: ../wuxia-idle-T01 (auto-created by dispatcher)
 - skippable: true
-- timeout_min: 45
+- timeout_min: 50
 - risk: low
 - goal: |
-    扫描 `data/encounters.yaml` 40 id ↔ `data/events/*.yaml` 40 文件 ↔ `data/events/_archive/*.yaml` 6 orphan 双向对账,产出唯一新文件 `docs/handoff/wuxia_encounter_id_consistency_2026-05-17.md`(统计 + 双向对账 + 结论 + 后续维护建议)。0 漂移即基线建立。
+    6 档相对时间(刚才/N分钟/N小时/昨天/N天前/月日)现有 test 只覆盖 2 档。补剩 4 档 widget test 各 1 个,产出唯一新文件 `test/features/home_feed/presentation/home_feed_screen_time_format_test.dart`(testWidgets +4)。
     完整 prompt:`.nightshift/prompts/T01.md`。
-    不动 lib/ data/ test/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
-- verify: |
-    bash .nightshift/prompts/T01.verify.sh
-    # = test -f doc + grep 关键章节 + git log + flutter pub get + dart run build_runner + dart analyze
-- rollback: |
-    git reset --hard HEAD && git clean -fd
+    不动 lib/ data/ 其他 test/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
+- verify: bash .nightshift/prompts/T01.verify.sh
+- rollback: git reset --hard HEAD && git clean -fd
 
-## T02: equipment id ↔ lore yaml 一致性扫描
+## T02: HomeFeedScreen 快速领取按钮行为 edge
 - status: pending
-- depends: [T01]
 - worktree: ../wuxia-idle-T02
-- skippable: true
-- timeout_min: 45
-- risk: low
-- goal: |
-    扫描 `data/equipment.yaml` 35 id ↔ `data/lore/*.yaml` 35 文件 双向对账 + 7 阶分布抽样校验,产出唯一新文件 `docs/handoff/wuxia_equipment_lore_id_consistency_2026-05-17.md`。
-    完整 prompt:`.nightshift/prompts/T02.md`。
-    不动 lib/ data/ test/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
-- verify: |
-    bash .nightshift/prompts/T02.verify.sh
-    # = test -f doc + grep 关键章节 + git log + flutter pub get + dart run build_runner + dart analyze
-- rollback: |
-    git reset --hard HEAD && git clean -fd
-
-## T03: CharacterPanelScreen 边界用例
-- status: pending
-- depends: [T02]
-- worktree: ../wuxia-idle-T03
 - skippable: true
 - timeout_min: 50
 - risk: low-mid
 - goal: |
-    读现有 `test/features/character_panel/presentation/character_panel_screen_test.dart`(431 行 主体例)+ W17 T04 产物 `lineage_panel_screen_edge_test.dart`(245 行 边界模板)学体例。
-    新增 3-5 边界用例,产出唯一新文件 `test/features/character_panel/presentation/character_panel_screen_edge_test.dart`(候选:character 主属性极端值 / 无装备态 / 无心法态 / tab 切换序 / school=null 兜底 / 装备 tier 与角色 realm 边界 — 任选 3+)。
-    红线遵守约束语义不写瞬时事实(参 `feedback_red_line_test_semantics`)。
-    完整 prompt:`.nightshift/prompts/T03.md`。
-    不动现有 test 文件,不动 lib/,不动 GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
-- verify: |
-    bash .nightshift/prompts/T03.verify.sh
-    # = test -f new test + git log + flutter pub get + dart run build_runner + dart analyze + flutter test 新文件全过
-- rollback: |
-    git reset --hard HEAD && git clean -fd
+    快速领取按钮当前只测 visible 未测 tap / 重复点 / 空 list 容错。补 3 个 widget test,产出唯一新文件 `test/features/home_feed/presentation/home_feed_screen_quick_claim_test.dart`(testWidgets +3)。
+    完整 prompt:`.nightshift/prompts/T02.md`。
+- verify: bash .nightshift/prompts/T02.verify.sh
 
-## T04: PROGRESS.md 行数清理
+## T03: HomeFeedProviders markAllFeedRead 边界 edge
 - status: pending
-- depends: [T03]
-- worktree: ../wuxia-idle-T04
-- skippable: true
-- timeout_min: 45
-- risk: low
-- goal: |
-    当前 PROGRESS.md ~83 行,逼近 100 红线。**T04 是唯一允许动 PROGRESS 的 nightshift task**。
-    压缩到 < 80 行(留 20 行 buffer):
-    - 当前阶段最旧 W16 节日段一句话化
-    - 已销账 ~~划掉~~ 条目列表化或一句话归档
-    - 强保留最新 W17 段 + 下一步 + 关键约束 + 远程仓库 + 归档段
-    完整 prompt:`.nightshift/prompts/T04.md`。
-    不动 lib/ data/ test/ docs/ assets/ GDD CLAUDE numbers IDS_REGISTRY。**只动 PROGRESS.md 一个文件**。
-- verify: |
-    bash .nightshift/prompts/T04.verify.sh
-    # = wc -l < 80 + grep 5 个 ## 段保留 + 最新 W17 锚点保留 + git log + flutter pub get + dart run build_runner + dart analyze
-- rollback: |
-    git reset --hard HEAD && git clean -fd
-
-## T05: lib/ 目录结构审计
-- status: pending
-- depends: [T04]
-- worktree: ../wuxia-idle-T05
-- skippable: true
-- timeout_min: 45
-- risk: low
-- goal: |
-    对照 CLAUDE.md §3 期望目录结构(`core/{domain,application}/` + `data/` + `features/<X>/{domain,application,presentation}/` 14 feature + `shared/`),扫描实际 lib/ 树,产出唯一新文件 `docs/handoff/wuxia_lib_structure_audit_2026-05-17.md`(目录树快照 + 14 feature 三态完整性表 + §3 期望对账 + 漂移清单 + 后续维护建议)。预期 0 漂移(Phase 5 #3 第 6 批 finalization 销账后)。
-    完整 prompt:`.nightshift/prompts/T05.md`。
-    不动 lib/ data/ test/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
-- verify: |
-    bash .nightshift/prompts/T05.verify.sh
-    # = test -f doc + grep 关键章节 + git log + flutter pub get + dart run build_runner + dart analyze
-- rollback: |
-    git reset --hard HEAD && git clean -fd
-
-## T06: 今晚 SUMMARY 二次跑
-- status: pending
-- depends: [T05]
-- worktree: ../wuxia-idle-T06
+- worktree: ../wuxia-idle-T03
 - skippable: true
 - timeout_min: 50
 - risk: low
 - goal: |
-    读 `.nightshift/status/T0[1-5].status` + `git log --all --oneline` + `flutter analyze` + `flutter test`(可能慢 2-3 min)。
-    产出唯一新文件 `.nightshift/SUMMARY.md`(覆盖旧的):任务执行状态表 / git commits 一览 / 测试 analyze 状态 / **dispatcher 健壮性验证表(本批二次跑核心目标)** / 早上 review 清单 / 已知偏差 / 分支清单 / 启动到结束时间。
+    markAllFeedRead 顶级函数当前测「基础批量 mark」未测 Isar null / 已全读再 mark idempotent / mark 后 feed 顺序不乱。补 3 个 test,产出唯一新文件 `test/features/home_feed/application/home_feed_providers_mark_all_edge_test.dart`(test +3)。
+    完整 prompt:`.nightshift/prompts/T03.md`。
+- verify: bash .nightshift/prompts/T03.verify.sh
+
+## T04: BaikeScreen 典故 tab 7 阶分组 + 段数 edge
+- status: pending
+- worktree: ../wuxia-idle-T04
+- skippable: true
+- timeout_min: 50
+- risk: low-mid
+- goal: |
+    典故 tab 当前测「加载/未加载」二分,未细化 7 阶顺序严格性 / presetLoreIds 段数 0/1/N 三态。补 4 个 widget test,产出唯一新文件 `test/features/baike/presentation/baike_screen_tier_group_test.dart`(testWidgets +4)。
+    完整 prompt:`.nightshift/prompts/T04.md`。
+- verify: bash .nightshift/prompts/T04.verify.sh
+
+## T05: BaikeScreen MainMenu 11 按钮导航 + 6 档时间 override edge
+- status: pending
+- worktree: ../wuxia-idle-T05
+- skippable: true
+- timeout_min: 50
+- risk: low-mid
+- goal: |
+    MainMenu 10→11 按钮新增「江湖见闻录」入口 0 导航 test 覆盖 + 见闻 tab 6 档时间 override 未详化。补 3 个 widget test,产出唯一新文件 `test/features/baike/presentation/baike_screen_navigation_test.dart`(testWidgets +3)。
+    完整 prompt:`.nightshift/prompts/T05.md`。
+- verify: bash .nightshift/prompts/T05.verify.sh
+
+## T06: EquipmentDetailScreen _LoreSection 延续典故渲染(0→1)【最高价值】
+- status: pending
+- worktree: ../wuxia-idle-T06
+- skippable: true
+- timeout_min: 50
+- risk: mid
+- goal: |
+    **本批 0→1 最高价值缺口**。`_LoreSection` widget(P1 #42 Phase 5 新加 equipment 参数 + preset/continued 段顺序 + `_ContinuedLoreChip` 墨青色)0 widget test 覆盖。补 5 个 widget test:仅 preset / 仅延续 / 混排顺序 / 都空 / `_ContinuedLoreChip` 颜色。产出唯一新文件 `test/features/inventory/presentation/equipment_detail_screen_lore_section_test.dart`(testWidgets +5)。
     完整 prompt:`.nightshift/prompts/T06.md`。
-    不动 lib/ test/ docs/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY,只产 `.nightshift/SUMMARY.md`。
-- verify: |
-    bash .nightshift/prompts/T06.verify.sh
-    # = test -f SUMMARY + grep 关键章节(含 dispatcher 健壮性验证)+ git log
-- rollback: |
-    git reset --hard HEAD && git clean -fd
+- verify: bash .nightshift/prompts/T06.verify.sh
+
+## T07: GameEventService #4 接口 + #9 路由 edge
+- status: pending
+- worktree: ../wuxia-idle-T07
+- skippable: true
+- timeout_min: 45
+- risk: low
+- goal: |
+    14 现有 test 覆盖主路径 + safety,未细化 #4 lineageInherited placeholder + #9 founder/disciple 路由分支反向断言。补 3-5 test,产出唯一新文件 `test/features/event/application/game_event_service_lineage_routing_edge_test.dart`(test +3-5)。
+    完整 prompt:`.nightshift/prompts/T07.md`。
+- verify: bash .nightshift/prompts/T07.verify.sh
+
+## T08: SUMMARY 生成(收尾)
+- status: pending
+- worktree: ../wuxia-idle-T08
+- skippable: true
+- timeout_min: 30
+- risk: low
+- goal: |
+    读 T01-T07 status / commit / 测试结果,产出唯一新文件 `.nightshift/SUMMARY.md`(覆盖旧的)含:任务执行表 / commits / 测试状态 / 早上 review 三 phase 清单 / 已知偏差 / 下一波候选 / dispatcher 健壮性观察 / 启动到结束时间。
+    完整 prompt:`.nightshift/prompts/T08.md`。
+- verify: bash .nightshift/prompts/T08.verify.sh
+
+---
+
+## 启动
+
+```bash
+bash /Users/a10506/Desktop/挂机武侠/.nightshift/launch.sh
+```
+
+`launch.sh` 内含 `caffeinate -dimsu nohup ... &` + disown,关闭 Terminal 不影响 dispatcher。
+
+## Dry-run(睡前必跑一次,已验证)
+
+```bash
+bash /Users/a10506/Desktop/挂机武侠/.nightshift/dispatcher.sh --dry-run
+```
+
+打印「会调度哪些 task / 用哪些 prompt」不真启 claude,< 5s 完成。
+
+## 早上检查入口
+
+```bash
+cat /Users/a10506/Desktop/挂机武侠/.nightshift/SUMMARY.md
+ls /Users/a10506/Desktop/挂机武侠/.nightshift/status/
+```
