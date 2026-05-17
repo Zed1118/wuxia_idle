@@ -1,5 +1,6 @@
 # 挂机武侠 · 1.0 版本路线图
 
+> **v1.2** · 修订日 2026-05-17 晚续 · 状态:**P0 阶段 4 项 100% 收口**(P0.1 #38 / P0.2 strategy 重构 / P0.3 #41 决议 + 新销账段 spec 起步段闭环)
 > **v1.0** · 起草日 2026-05-17 · 状态:**已 launched(开发未启动,P0 待开工)**
 > 决策来源会话:Mac + Opus 4.7,W18 起步段全收口当晚
 > 路线图本身是规划文档,实际推进可能因实测调整 — 修订记录见末尾
@@ -51,15 +52,16 @@
 - **前置依赖**:无(P0 起手)
 - **阻塞影响**:P2 第二条主线扩到武圣体验路径全依赖此
 
-### P0.2 battle_engine 抽 strategy 层
-- **估时**:opus xhigh ~6-12h(实测可能更长,P0 早期 design review 决定是否分 2-3 batch)
-- **产物**:
-  - `BattleStrategy` 抽象基类 + `DefaultGroundStrategy`(地面 3v3 实装)
-  - damage_calculator / battle_state / battle_runner 链路改用 strategy injection
-  - Demo 阶段无视觉差异(默认注入 DefaultGroundStrategy)
-  - e2e test:Demo 内所有战斗场景全过(15 主线关 + 30 爬塔层 + 5 闭关地图)
-- **前置依赖**:无(可与 P0.1 并行)
-- **阻塞影响**:P3 §12.3 轻功对决 / 群战 / PVP 全依赖此抽象层
+### P0.2 battle_engine 抽 strategy 层 — **✅ 2026-05-17 销账**(v1.2)
+- **实测**:Mac + Opus 4.7 xhigh ~2h(vs 预估 6-12h 快 3-5×,Batch 1+2 同会话续跑)
+- **产物**(详 `docs/handoff/p0_battle_strategy_closeout_2026-05-17.md`):
+  - `BattleStrategy` 抽象基类(3 method 粗粒度)+ `DefaultGroundStrategy`(地面 3v3 实装,11 method 搬迁公式零变化)
+  - `BattleEngine` 改 facade(467 → 50 行)委派 const DefaultGroundStrategy()
+  - `BattleNotifier` 接 strategy injection(_strategy instance field + startBattle 可选参数)
+  - e2e 红线压测 `test/balance/battle_strategy_e2e_test.dart` 333 行 55 case(主线 15 + 爬塔 30 + 心法相生 5 + backwards compat 5,单文件 ~3s 全过)
+- **commit 链(4 commit 全 push)**:`6748582` [arch] Phase 1 → `456349b` [refactor] Phase 2 → `14d62b1` [refactor] Phase 3 → `68a6365` [test] Phase 4
+- **校正记录**:闭关地图实测 0 战斗(spec §2.4 reality check 修正原 R4 prompt "5 闭关地图战斗"误解)
+- **阻塞解除**:P3 §12.3 三战斗形态(轻功 / 群战 / PVP)扩展时 implements BattleStrategy + startBattle 传自定义实装即可 plug-in,生产 4 callsite 不必改
 
 > **P0.3 itch.io Demo 公开免费版** — **2026-05-17 v1.1 砍**(方案 C 决议):聚焦游戏本身,MSIX + itch.io + Sentry + Google 表单 5 项全推 P5.4b closed beta + Steam Demo 版。
 
@@ -267,5 +269,6 @@ P2 文案大扩 ────→ P4.2 翻译(可选)
 
 ## 修订记录
 
+- **v1.2**(2026-05-17 晚续,P0 strategy 重构销账):Mac + Opus 4.7 xhigh ~2h(vs 6-12h 预估快 3-5×),Batch 1+2 同会话续跑。① P0.2 段从「待开工」改为销账(实测 + 产物清单 + 4 commit 链 + 校正记录:闭关地图实测 0 战斗);② P0 阶段 4 项 100% 收口(P0.1 / P0.2 / P0.3 决议 + 新销账)。详 closeout `docs/handoff/p0_battle_strategy_closeout_2026-05-17.md`。
 - **v1.1**(2026-05-17 晚续,#41 决议方案 C):Mac + Opus 4.7,「聚焦游戏本身」原则下决议方案 C 砍 P0.3 itch.io Demo 公开整段。① 删 P0.3 段(MSIX + itch.io + Sentry + Google 表单 5 项推 P5.4b);② R6 对策改 P5.4b closed beta + Google 表单 + Steam Demo 版;③ 关键决策记录加「itch.io 中间发布砍」条 + 时间线表 P0 交付物移除 itch.io Demo;④ 加 P5.4b 新段;⑤ 依赖图更新;⑥ PROGRESS #41 从挂账段删除归档。**P0 真正剩余 1 项:battle_engine 抽 strategy 层重构**(原 P0.2 升回 P0,opus xhigh 6-12h)。
 - **v1.0**(2026-05-17,起草):Mac + Opus 4.7 起草,W18 起步段全收口当晚。用户拍板:激进派 + 三者并行按依赖排 + AI 美术 + 一次性 1.0 上线 + 第二条主线放宽 5-6 月 + 砍婚姻后代 + 砍 MOD + Phase 5 第 7 批插 P0 + itch.io Demo 纳入 P0。
