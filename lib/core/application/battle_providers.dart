@@ -1,7 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../features/battle/domain/battle_engine.dart';
 import '../../features/battle/domain/battle_state.dart';
+import '../../features/battle/domain/strategy/battle_strategy.dart';
+import '../../features/battle/domain/strategy/default_ground_strategy.dart';
 import '../../data/defs/skill_def.dart';
 import '../../data/defs/stage_def.dart';
 import '../../data/game_repository.dart';
@@ -48,6 +49,14 @@ DropService dropService(Ref ref) => DropService(
 /// initState 中调用 [startBattle] 注入双方角色。
 @riverpod
 class BattleNotifier extends _$BattleNotifier {
+  /// 当前战斗 strategy(1.0 路线图 P0 抽 strategy 层重构,详
+  /// `docs/handoff/p0_battle_strategy_spec.md`)。
+  ///
+  /// 默认 [DefaultGroundStrategy](Demo 阶段唯一实装);P3 §12.3 三战斗形态
+  /// 扩展时 startBattle 传 LightFootStrategy / MassBattleStrategy /
+  /// PvpStrategy 即可换形态,advance / requestUltimate 自动走对应实装。
+  BattleStrategy _strategy = const DefaultGroundStrategy();
+
   @override
   BattleState build() => BattleState.initial(
         leftTeam: const [],
@@ -55,10 +64,15 @@ class BattleNotifier extends _$BattleNotifier {
       );
 
   /// 启动新战斗：重置 state 为 initial，actionLog / pendingUltimates 全清。
+  ///
+  /// [strategy] 可选注入当前战斗形态(默认 [DefaultGroundStrategy] 地面 3v3
+  /// 半横版);P3 三战斗形态扩展时挂自己的 [BattleStrategy] 实装即可。
   void startBattle(
     List<BattleCharacter> leftTeam,
-    List<BattleCharacter> rightTeam,
-  ) {
+    List<BattleCharacter> rightTeam, {
+    BattleStrategy? strategy,
+  }) {
+    _strategy = strategy ?? const DefaultGroundStrategy();
     state = BattleState.initial(leftTeam: leftTeam, rightTeam: rightTeam);
   }
 
@@ -67,7 +81,7 @@ class BattleNotifier extends _$BattleNotifier {
   /// 标记 pending；该角色下次行动时 [BattleAI] 优先消费。若内力 / CD 不满足，
   /// 引擎会跳过并从 pendingUltimates 移除（一次机会，不留到下次）。
   void requestUltimate(int characterId, SkillDef ultimate) {
-    state = BattleEngine.requestUltimate(state, characterId, ultimate);
+    state = _strategy.requestUltimate(state, characterId, ultimate);
   }
 
   /// UI Timer 驱动的状态前进（phase1_tasks T16.1 spec 字面写 `advanceTick`，
@@ -79,8 +93,8 @@ class BattleNotifier extends _$BattleNotifier {
   /// 战斗结束**，UI 体验上每次 Timer 触发都对应一次动画。
   ///
   /// [maxConsecutiveTicks] 兜底：境界差 3+ 双方近免疫时，多次连续无 action
-  /// 也会被 [BattleEngine.runToEnd] 的 1000 maxTicks 兜住，但单次 advance
-  /// 不该卡死 UI 线程，限到 100。
+  /// 也会被 strategy 内部 maxTicks 兜住，但单次 advance 不该卡死 UI 线程，
+  /// 限到 100。
   void advance({int maxConsecutiveTicks = 100}) {
     if (state.isFinished) return;
     final n = ref.read(numbersConfigProvider);
@@ -90,7 +104,7 @@ class BattleNotifier extends _$BattleNotifier {
     while (s.actionLog.length == originalLogLen &&
         !s.isFinished &&
         consumed < maxConsecutiveTicks) {
-      s = BattleEngine.tick(s, n);
+      s = _strategy.tick(s, n);
       consumed++;
     }
     state = s;
