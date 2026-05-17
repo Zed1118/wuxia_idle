@@ -10,6 +10,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
+import '../../cultivation/application/synergy_service.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
@@ -650,7 +651,93 @@ class _TechniqueSection extends StatelessWidget {
               );
             }),
           ),
+          // W18-A1 心法相生 chip(GDD §4.5):0/1 个,命中即显
+          _SynergyChip(character: character),
         ],
+      ),
+    );
+  }
+}
+
+/// W18-A1 心法相生 chip(GDD §4.5)。
+///
+/// watch 主修 + 第 1 辅修两个 [techniqueByIdProvider],都 ready 后调
+/// [SynergyService.detectActive] 同步判定;命中即显 name + multiplier 摘要
+/// chip,否则隐藏(0/1 个,与服务层语义一致)。
+class _SynergyChip extends ConsumerWidget {
+  const _SynergyChip({required this.character});
+
+  final Character character;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mainId = character.mainTechniqueId;
+    if (mainId == null || character.assistTechniqueIds.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final assistId = character.assistTechniqueIds.first;
+    final mainAsync = ref.watch(techniqueByIdProvider(mainId));
+    final assistAsync = ref.watch(techniqueByIdProvider(assistId));
+
+    if (!mainAsync.hasValue || !assistAsync.hasValue) {
+      return const SizedBox.shrink();
+    }
+    final mainTech = mainAsync.value;
+    final assistTech = assistAsync.value;
+    if (mainTech == null || assistTech == null) {
+      return const SizedBox.shrink();
+    }
+
+    final synergy = SynergyService.detectActive(
+      character: character,
+      ownedTechniques: [mainTech, assistTech],
+      techDefLookup: (defId) =>
+          GameRepository.instance.techniqueDefs[defId],
+      synergies: GameRepository.instance.synergies,
+    );
+    if (synergy == null) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: WuxiaColors.panel,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: WuxiaColors.resultHighlight.withValues(alpha: 0.6),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.auto_awesome,
+              size: 14,
+              color: WuxiaColors.resultHighlight,
+            ),
+            const SizedBox(width: 6),
+            const Text(
+              UiStrings.synergyActiveLabel,
+              style: TextStyle(
+                color: WuxiaColors.resultHighlight,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${synergy.name} · ${synergy.multipliers.summary()}',
+                style: const TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 12.5,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import 'defs/realm_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import 'defs/skill_def.dart';
 import 'defs/stage_def.dart';
+import 'defs/synergy_def.dart';
 import 'defs/technique_def.dart';
 import '../features/tower/domain/tower_floor_def.dart';
 import 'lore_loader.dart';
@@ -64,6 +65,12 @@ class GameRepository {
   /// `skillDefs[id]!.isEncounterSkill` 等价判断。
   final Set<String> encounterSkillIds;
 
+  /// 心法相生 def(W18-A1,GDD §4.5)。
+  /// data/synergies.yaml 加载。test fixture 不带 yaml 时为空 list。
+  /// detectActive 遍历此 list,优先级 schoolPair > sameSchool > sameTier
+  /// 由 SynergyService 实施。
+  final List<SynergyDef> synergies;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -76,6 +83,7 @@ class GameRepository {
     required this.masters,
     required this.encounterDefs,
     required this.encounterSkillIds,
+    required this.synergies,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -169,6 +177,19 @@ class GameRepository {
       // 红线校验阶段(_enforceEncounterRedLines 检查非空与字段合法)。
     }
 
+    // W18-A1:心法相生 yaml(允许 test fixture 不带,空 list)。生产路径
+    // 红线校验在 _enforceSynergyRedLines 强制 ≥ 5 + multiplier 范围。
+    List<SynergyDef> synergies = const [];
+    try {
+      final synergiesRaw = parseYamlMap(await load('data/synergies.yaml'));
+      synergies = ((synergiesRaw['synergies'] as List?) ?? const [])
+          .map((e) =>
+              SynergyDef.fromYaml(Map<String, dynamic>.from(e as Map)))
+          .toList(growable: false);
+    } catch (e) {
+      // test fixture 不带 synergies.yaml 时静默
+    }
+
     final repo = GameRepository._(
       numbers: numbers,
       realms: realms,
@@ -181,6 +202,7 @@ class GameRepository {
       masters: masters,
       encounterDefs: encounterDefs,
       encounterSkillIds: encounterSkillIds,
+      synergies: synergies,
     );
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);
@@ -331,6 +353,58 @@ class GameRepository {
 
     // Phase 4 W14-3-A:encounter_skills.yaml 校验 + unlock 引用一致性
     _enforceEncounterSkillRedLines();
+
+    // W18-A1:心法相生 yaml 校验(空 list 兼容 test fixture)
+    _enforceSynergyRedLines();
+  }
+
+  /// W18-A1 心法相生红线(GDD §4.5 + numbers 红线对齐):
+  /// - id 唯一(由 _parseDefMap 已保证,此处不重校)
+  /// - multiplier 各项 ≥ 0 ≤ 0.30(防数值膨胀)
+  /// - schoolPair 类型必须配 mainSchool + assistSchool 且两者不同
+  /// - sameSchool / sameTier 类型不应配 mainSchool / assistSchool
+  /// - synergies 非空时 ≥ 5(GDD §4.5 "5-8 个隐藏组合")— test fixture
+  ///   不带 yaml 时 list 为空,跳过下限校验
+  void _enforceSynergyRedLines() {
+    if (synergies.isEmpty) return;
+    if (synergies.length < 5) {
+      throw StateError(
+        'synergies.yaml 至少 5 组合(GDD §4.5),实际 ${synergies.length}',
+      );
+    }
+    final seen = <String>{};
+    for (final s in synergies) {
+      if (!seen.add(s.id)) {
+        throw StateError('synergy id 重复: ${s.id}');
+      }
+      if (!s.multipliers.isWithinRedLine) {
+        throw StateError(
+          'synergy ${s.id} multiplier 越界(应各项 ∈ [0, 0.30])',
+        );
+      }
+      switch (s.requirementType) {
+        case SynergyRequirementType.schoolPair:
+          if (s.mainSchool == null || s.assistSchool == null) {
+            throw StateError(
+              'synergy ${s.id} schoolPair 必须配 mainSchool + assistSchool',
+            );
+          }
+          if (s.mainSchool == s.assistSchool) {
+            throw StateError(
+              'synergy ${s.id} schoolPair main/assist 不能相同(同流派走 sameSchool 类型)',
+            );
+          }
+          break;
+        case SynergyRequirementType.sameSchool:
+        case SynergyRequirementType.sameTier:
+          if (s.mainSchool != null || s.assistSchool != null) {
+            throw StateError(
+              'synergy ${s.id} ${s.requirementType.name} 不应配 mainSchool/assistSchool',
+            );
+          }
+          break;
+      }
+    }
   }
 
   /// 奇遇招式红线(C-W14-3-A):
