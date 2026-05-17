@@ -1,12 +1,11 @@
-# Nightshift Plan - 2026-05-17
-Window: 22:30 → 04:30 (6h)
+# Nightshift Plan - 2026-05-17 二次跑(W17 dispatcher 修复后验证)
+Window: 立即 launch → ~6h
 Total tasks: 6
 Dispatcher interval: 40m (timeout 50m + 30s inter-task buffer)
 
-> **Sprint 修正说明**(模板假设 vs 项目实际):
-> 模板「3v3 战斗 MVP」与项目实际不符 — 3v3 自动战斗 Phase 1 已完成,Demo 几乎全闭环,当前 W17 候选 E 师徒名单刚收口。今晚 6 task 全部**低-中低风险**,**全部 skippable: true**(无阻塞链),T01-T03/T05 doc 类(0 lib/ 改动),T04 纯新增 test,T06 SUMMARY。无 high risk 战斗核心改动(当前项目核心战斗稳定,改它无必要)。
+> **二次跑目标**:验证 dispatcher 修复后 3 处(bash 3.2 兼容 / idempotency / verify 含 build_runner)的健壮性。沿用 W17 首跑全 skippable + 低-中风险体例;主战场切「数据一致性扫描」+「目录审计」+「PROGRESS 行数清理」+「CharacterPanelScreen 边界 test」+「SUMMARY」混合配方。
 
-## T01: #37 永封档
+## T01: encounter id 一致性扫描
 - status: pending
 - depends: []
 - worktree: ../wuxia-idle-T01
@@ -14,75 +13,73 @@ Dispatcher interval: 40m (timeout 50m + 30s inter-task buffer)
 - timeout_min: 45
 - risk: low
 - goal: |
-    读 `PROGRESS.md` 挂账 #37 段 + `data/events/_archive/` 6 yaml 文件(duan_qiao_can_yue / gu_chuan_deng_ying / huang_cun_yao_ren / qing_lou_can_meng / lao_jing_hui_xiang / yu_zhong_qiao_men)opening 字段 + (可选)GDD §8.4 主题清单。
-    产出唯一新文件 `docs/handoff/wuxia_w17_orphan_events_permanent_archive_2026-05-17.md`(背景 / 6 文件逐文件主题分析 / 不挂回理由 / 永封档决议 / PROGRESS 销账建议)。
+    扫描 `data/encounters.yaml` 40 id ↔ `data/events/*.yaml` 40 文件 ↔ `data/events/_archive/*.yaml` 6 orphan 双向对账,产出唯一新文件 `docs/handoff/wuxia_encounter_id_consistency_2026-05-17.md`(统计 + 双向对账 + 结论 + 后续维护建议)。0 漂移即基线建立。
     完整 prompt:`.nightshift/prompts/T01.md`。
-    不动 lib/ data/(含 _archive 内) GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
+    不动 lib/ data/ test/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
 - verify: |
     bash .nightshift/prompts/T01.verify.sh
-    # = test -f doc + grep 关键字 + git log 验证 commit + flutter pub get + dart analyze --fatal-infos
+    # = test -f doc + grep 关键章节 + git log + flutter pub get + dart run build_runner + dart analyze
 - rollback: |
     git reset --hard HEAD && git clean -fd
 
-## T02: pattern 审计
+## T02: equipment id ↔ lore yaml 一致性扫描
 - status: pending
 - depends: [T01]
 - worktree: ../wuxia-idle-T02
 - skippable: true
 - timeout_min: 45
-- risk: low-mid
+- risk: low
 - goal: |
-    全仓 `grep -rn "pumpAndSettle" test/ --include="*.dart"`,对每处 hit 分类风险(A 低 / B 中 / C 高候选)。
-    读 `test/features/main_menu/presentation/main_menu_test.dart` 末尾 `_RecordingNavigatorObserver` 实现学套路(commit `4aa54fa` 加)。
-    产出唯一新文件 `docs/handoff/wuxia_widget_test_pattern_audit_2026-05-17.md`(套路源码 + 全仓扫描 + 推荐替换清单 + follow-up)。
+    扫描 `data/equipment.yaml` 35 id ↔ `data/lore/*.yaml` 35 文件 双向对账 + 7 阶分布抽样校验,产出唯一新文件 `docs/handoff/wuxia_equipment_lore_id_consistency_2026-05-17.md`。
     完整 prompt:`.nightshift/prompts/T02.md`。
-    不动 lib/ test/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
+    不动 lib/ data/ test/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
 - verify: |
     bash .nightshift/prompts/T02.verify.sh
-    # = test -f doc + grep 关键字 + git log + flutter pub get + dart analyze --fatal-infos
+    # = test -f doc + grep 关键章节 + git log + flutter pub get + dart run build_runner + dart analyze
 - rollback: |
     git reset --hard HEAD && git clean -fd
 
-## T03: 死代码 scan
+## T03: CharacterPanelScreen 边界用例
 - status: pending
 - depends: [T02]
 - worktree: ../wuxia-idle-T03
 - skippable: true
 - timeout_min: 50
-- risk: low
+- risk: low-mid
 - goal: |
-    扫描 4 维度死代码:A 死 provider(@riverpod 定义 0 引用)/ B 0-lib-consumer service / C 未引用 private function / D extension on entity 类硬编码嫌疑。
-    GDD 锚点交叉验证(参 `feedback_riverpod_codegen_provider_split` cookbook 死 provider 决策矩阵)。
-    产出唯一新文件 `docs/handoff/wuxia_dead_code_scan_2026-05-17.md`(4 类候选 + GDD 锚点验证 + 删/保留决策建议 + 总结)。
-    **只报告不删代码**。
+    读现有 `test/features/character_panel/presentation/character_panel_screen_test.dart`(431 行 主体例)+ W17 T04 产物 `lineage_panel_screen_edge_test.dart`(245 行 边界模板)学体例。
+    新增 3-5 边界用例,产出唯一新文件 `test/features/character_panel/presentation/character_panel_screen_edge_test.dart`(候选:character 主属性极端值 / 无装备态 / 无心法态 / tab 切换序 / school=null 兜底 / 装备 tier 与角色 realm 边界 — 任选 3+)。
+    红线遵守约束语义不写瞬时事实(参 `feedback_red_line_test_semantics`)。
     完整 prompt:`.nightshift/prompts/T03.md`。
-    不动 lib/ test/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
+    不动现有 test 文件,不动 lib/,不动 GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
 - verify: |
     bash .nightshift/prompts/T03.verify.sh
-    # = test -f doc + grep 4 类章节 + git log + flutter pub get + dart analyze --fatal-infos
+    # = test -f new test + git log + flutter pub get + dart run build_runner + dart analyze + flutter test 新文件全过
 - rollback: |
     git reset --hard HEAD && git clean -fd
 
-## T04: LineagePanel 边界
+## T04: PROGRESS.md 行数清理
 - status: pending
 - depends: [T03]
 - worktree: ../wuxia-idle-T04
 - skippable: true
-- timeout_min: 50
-- risk: mid
+- timeout_min: 45
+- risk: low
 - goal: |
-    读现有 `test/features/character_panel/presentation/lineage_panel_screen_test.dart`(3 widget test)学体例 + `lib/features/character_panel/application/lineage_info_provider.dart` 看 view model 注入字段。
-    新增 3-5 边界用例,产出唯一新文件 `test/features/character_panel/presentation/lineage_panel_screen_edge_test.dart`(大量 heritage / 多 disciples / heritage 空但 founder 在 / school=null 兜底 / 等 — 任选 3+)。
-    红线遵守约束语义不写瞬时事实(参 `feedback_red_line_test_semantics`)。
+    当前 PROGRESS.md ~83 行,逼近 100 红线。**T04 是唯一允许动 PROGRESS 的 nightshift task**。
+    压缩到 < 80 行(留 20 行 buffer):
+    - 当前阶段最旧 W16 节日段一句话化
+    - 已销账 ~~划掉~~ 条目列表化或一句话归档
+    - 强保留最新 W17 段 + 下一步 + 关键约束 + 远程仓库 + 归档段
     完整 prompt:`.nightshift/prompts/T04.md`。
-    不动现有 test 文件,不动 lib/,不动 GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
+    不动 lib/ data/ test/ docs/ assets/ GDD CLAUDE numbers IDS_REGISTRY。**只动 PROGRESS.md 一个文件**。
 - verify: |
     bash .nightshift/prompts/T04.verify.sh
-    # = test -f new test + git log + flutter pub get + dart analyze + flutter test 新文件全过
+    # = wc -l < 80 + grep 5 个 ## 段保留 + 最新 W17 锚点保留 + git log + flutter pub get + dart run build_runner + dart analyze
 - rollback: |
     git reset --hard HEAD && git clean -fd
 
-## T05: NavigatorObs doc
+## T05: lib/ 目录结构审计
 - status: pending
 - depends: [T04]
 - worktree: ../wuxia-idle-T05
@@ -90,17 +87,16 @@ Dispatcher interval: 40m (timeout 50m + 30s inter-task buffer)
 - timeout_min: 45
 - risk: low
 - goal: |
-    读 `test/features/main_menu/presentation/main_menu_test.dart` 末尾 `_RecordingNavigatorObserver` + PROGRESS #31 段 + Phase 5 #2 销账 #28 历史。
-    产出唯一新文件 `docs/handoff/wuxia_navigator_observer_mock_pattern_2026-05-17.md`(问题陈述 / 套路源码 / 适用场景 / 与 #28 套路对比表 / 后续复用清单)。
+    对照 CLAUDE.md §3 期望目录结构(`core/{domain,application}/` + `data/` + `features/<X>/{domain,application,presentation}/` 14 feature + `shared/`),扫描实际 lib/ 树,产出唯一新文件 `docs/handoff/wuxia_lib_structure_audit_2026-05-17.md`(目录树快照 + 14 feature 三态完整性表 + §3 期望对账 + 漂移清单 + 后续维护建议)。预期 0 漂移(Phase 5 #3 第 6 批 finalization 销账后)。
     完整 prompt:`.nightshift/prompts/T05.md`。
-    不动 lib/ test/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
+    不动 lib/ data/ test/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY。
 - verify: |
     bash .nightshift/prompts/T05.verify.sh
-    # = test -f doc + grep 关键字段 + git log + flutter pub get + dart analyze --fatal-infos
+    # = test -f doc + grep 关键章节 + git log + flutter pub get + dart run build_runner + dart analyze
 - rollback: |
     git reset --hard HEAD && git clean -fd
 
-## T06: 今晚 SUMMARY
+## T06: 今晚 SUMMARY 二次跑
 - status: pending
 - depends: [T05]
 - worktree: ../wuxia-idle-T06
@@ -108,12 +104,12 @@ Dispatcher interval: 40m (timeout 50m + 30s inter-task buffer)
 - timeout_min: 50
 - risk: low
 - goal: |
-    读 `.nightshift/status/T0[1-5].status`(各 task 状态文件)+ `git log --all --oneline | head -30` + `flutter analyze` + `flutter test`(可能慢 2-3 min)。
-    产出唯一新文件 `.nightshift/SUMMARY.md`(任务执行状态表 / git commits 一览 / 测试 analyze 状态 / 早上 review 清单 / 已知偏差 / 分支清单 / 启动到结束时间)。
+    读 `.nightshift/status/T0[1-5].status` + `git log --all --oneline` + `flutter analyze` + `flutter test`(可能慢 2-3 min)。
+    产出唯一新文件 `.nightshift/SUMMARY.md`(覆盖旧的):任务执行状态表 / git commits 一览 / 测试 analyze 状态 / **dispatcher 健壮性验证表(本批二次跑核心目标)** / 早上 review 清单 / 已知偏差 / 分支清单 / 启动到结束时间。
     完整 prompt:`.nightshift/prompts/T06.md`。
-    不动 lib/ test/ docs/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY,只产 .nightshift/SUMMARY.md。
+    不动 lib/ test/ docs/ GDD CLAUDE PROGRESS numbers IDS_REGISTRY,只产 `.nightshift/SUMMARY.md`。
 - verify: |
     bash .nightshift/prompts/T06.verify.sh
-    # = test -f SUMMARY + grep 关键章节 + git log 验证 commit
+    # = test -f SUMMARY + grep 关键章节(含 dispatcher 健壮性验证)+ git log
 - rollback: |
     git reset --hard HEAD && git clean -fd
