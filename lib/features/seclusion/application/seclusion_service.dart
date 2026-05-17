@@ -9,7 +9,9 @@ import '../../../core/domain/reward_entry.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/utils/rng.dart';
+import '../../../core/domain/technique.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/application/synergy_service.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
@@ -176,6 +178,7 @@ class SeclusionService {
     required List<SeclusionMapDef> maps,
     required DateTime now,
     TechniqueSchool? charSchool,
+    double synergyInternalForceGrowthPct = 0.0,
     Rng? rng,
   }) {
     final def = _getDef(session.mapType, maps);
@@ -216,13 +219,17 @@ class SeclusionService {
         .floor()
         .clamp(0, 999999);
 
+    // W18-A1.2 心法相生 internalForceGrowthPct 乘进 internalForcePoints
+    // (闭关产出维度,与战斗 init internalForceMaxPct 分管;数值红线 ≤ 0.30 + 1.0
+    // 基底 → 最大 1.30 倍 clamp 后仍 ≤ 999999)。
     final internalForcePoints = (config.baseInternalForcePerHour *
             def.internalForceGrowth *
             actualHours *
             scale *
             solarBonus *
             ziShiBonus *
-            zhengWuBonus)
+            zhengWuBonus *
+            (1.0 + synergyInternalForceGrowthPct))
         .floor()
         .clamp(0, 999999);
 
@@ -265,6 +272,13 @@ class SeclusionService {
     // seclusion 完工低频,2 次 read 开销可忽略。
     final preCharForBonus = await isar.characters.get(characterId);
 
+    // W18-A1.2:闭关收功时查 character 的心法相生(主修 + 第 1 辅修),
+    // 命中 internalForceGrowthPct 注入 computeOutputs 内力维度。读 tech 在
+    // writeTxn 外(seclusion 完工低频,2-3 次 isar.get 开销可忽略),拿不到
+    // character / tech → growthPct 默认 0.0(无相生),整链 fallthrough。
+    final synergyGrowthPct =
+        await _detectSynergyGrowthPct(preCharForBonus);
+
     final outputs = computeOutputs(
       session: session,
       charRealmTier: charRealmTier,
@@ -272,6 +286,7 @@ class SeclusionService {
       maps: maps,
       now: now,
       charSchool: preCharForBonus?.school,
+      synergyInternalForceGrowthPct: synergyGrowthPct,
       rng: rng,
     );
 
@@ -354,6 +369,33 @@ class SeclusionService {
       internalForcePoints: outputs.internalForcePoints,
       advancement: advancement,
     );
+  }
+
+  /// W18-A1.2 心法相生 internalForceGrowthPct 检测(闭关收功用)。
+  ///
+  /// 沿 [StageBattleSetup._playerToBattle] 体例,读 character 主修 + 第 1 辅修
+  /// tech → [SynergyService.detectActive] → 提取
+  /// `synergy.multipliers.internalForceGrowthPct`(0.0 - 0.30,红线 ≤ 0.30)。
+  /// 任一条件缺失返 0.0(无相生):character / mainTechniqueId / mainTech /
+  /// assistTech / synergies 全集任一缺。
+  Future<double> _detectSynergyGrowthPct(Character? character) async {
+    if (character == null) return 0.0;
+    final mainId = character.mainTechniqueId;
+    if (mainId == null) return 0.0;
+    if (character.assistTechniqueIds.isEmpty) return 0.0;
+    final mainTech = await isar.techniques.get(mainId);
+    if (mainTech == null) return 0.0;
+    final assistTech =
+        await isar.techniques.get(character.assistTechniqueIds.first);
+    if (assistTech == null) return 0.0;
+    final synergy = SynergyService.detectActive(
+      character: character,
+      ownedTechniques: [mainTech, assistTech],
+      techDefLookup: (defId) =>
+          GameRepository.instance.techniqueDefs[defId],
+      synergies: GameRepository.instance.synergies,
+    );
+    return synergy?.multipliers.internalForceGrowthPct ?? 0.0;
   }
 
   /// 闭关 actualHours 累计喂给 EncounterService(C-W14-2)。

@@ -25,9 +25,9 @@
 
 synergies:
 
-  # ── 1. 阴阳调和:刚阳与阴柔相济,内息圆融(攻速血 3 维中等 buff) ──────────
-  # 原设计含 defensePct=0.10(防御),W18-A1 战斗 init 注入不消费 defense
-  # (需 damage_calculator hook,后续 batch);合并到 hpPct 0.20(防血同向)
+  # ── 1. 阴阳调和:刚阳与阴柔相济,内息圆融(攻速防血 4 维中等 buff) ──────────
+  # W18-A1.2 恢复原设计 defensePct=0.10(battle_engine 加法注入到 defender.defenseRate,
+  # GDD §5.5 防御率叠加,realm max 0.35 + synergy 0.10 = 0.45 ≤ 红线 0.65)。
   - id: synergy_yin_yang_he_xie
     name: 阴阳调和
     description: 刚阳与阴柔本是两极,主刚辅阴时内息圆融,百骸通泰
@@ -38,6 +38,7 @@ synergies:
     multipliers:
       attackPct: 0.10
       speedPct: 0.10
+      defensePct: 0.10
       hpPct: 0.20
 
   # ── 2. 刚柔并济:刚猛为骨,灵巧为筋(身法侧重) ──────────────────────────
@@ -72,10 +73,10 @@ synergies:
     multipliers:
       attackPct: 0.20
 
-  # ── 5. 同辈互补:主辅同 tier,境界齐头(内力上限侧重) ───────────────────
-  # 原设计含 internalForceGrowthPct=0.25(增长率),W18-A1 战斗 init 注入
-  # 不消费 growth(闭关/战后字段,后续 batch 接 seclusion-growth hook)。
-  # 仅 internalForceMaxPct=0.25 已足够体现"内力相生"主题。
+  # ── 5. 同辈互补:主辅同 tier,境界齐头(内力上限 + 闭关增长双维) ────────
+  # W18-A1.2 恢复原设计 internalForceGrowthPct(seclusion_service.computeOutputs
+  # 在 internalForcePoints 末乘 (1 + growthPct))。原 0.25 太高,新平衡到 0.10
+  # 与 maxPct 0.25 分担,合计语义「内力相生」更克制(单维 ≤ 红线 0.30)。
   - id: synergy_tong_bei_hu_bu
     name: 同辈互补
     description: 主辅同辈,境界齐头并进,内力相生
@@ -83,3 +84,4 @@ synergies:
       type: sameTier
     multipliers:
       internalForceMaxPct: 0.25
+      internalForceGrowthPct: 0.10

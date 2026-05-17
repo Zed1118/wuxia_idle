@@ -373,12 +373,10 @@ class BattleEngine {
             : n.combat.critical.baseDamageMultiplier)
         : 1.0;
 
-    final defRate = n.defenseRateByTier[defender.realmTier];
-    if (defRate == null) {
-      throw StateError(
-        'numbers.yaml defenseRateByTier 缺 ${defender.realmTier.name}',
-      );
-    }
+    // W18-A1.2 改用 defender.defenseRate(BattleCharacter view layer 缓存),
+    // 既覆盖 numbers.yaml realm 派生 base 值,也叠加相生 defensePct 注入
+    // (StageBattleSetup._applySynergy 加法注入,clamp ≤ 0.95)。
+    final defRate = defender.defenseRate;
     final defMult = 1.0 - defRate;
 
     final atkLevel = RealmUtils.absoluteLevelOf(

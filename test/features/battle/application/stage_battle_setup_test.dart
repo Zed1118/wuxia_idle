@@ -141,4 +141,53 @@ void main() {
     expect(right[0].name, '灰衣人');
     expect(right[0].maxHp, 11000); // baseHp from yaml
   });
+
+  // ── W18-A1.2 心法相生 6 字段注入(defensePct 加法叠加 defenseRate) ──────
+
+  test('VC18-A1 A·阴阳 BattleCharacter defenseRate = realm base + synergy defensePct',
+      () async {
+    // VC18-A1 fixture:A·阴阳(组合 1 阴阳调和)= schoolPair gangMeng+yinRou
+    // multipliers:hpPct 0.20 / defensePct 0.10(W18-A1.2 新增)
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
+    final stage = GameRepository.instance.getStage('stage_01_01');
+
+    final (left, _) =
+        await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
+
+    // 玩家方前 3 角色 = A·阴阳 / B·刚柔 / C·阴影(seed activeIds [1,2,3,4,5]
+    // 前 3 进战)
+    final a = left[0]; // A·阴阳
+    final b = left[1]; // B·刚柔
+    final c = left[2]; // C·阴影
+
+    // yiLiu base defenseRate = 0.20(numbers.yaml realms.tiers[yiLiu].defense_rate)
+    // A·阴阳 命中相生 → +0.10 加法 → 0.30(< clamp 0.95 上限)
+    expect(a.defenseRate, closeTo(0.30, 1e-9),
+        reason: 'A·阴阳 相生 defensePct=0.10 加法叠加 yiLiu base 0.20 → 0.30');
+    // B·刚柔 命中相生 但 multipliers 无 defensePct → 仍 base 0.20
+    expect(b.defenseRate, closeTo(0.20, 1e-9),
+        reason: 'B·刚柔 相生 multipliers 无 defensePct,defenseRate 保持 base');
+    // C·阴影 同理(组合 3 阴影迅捷只有 attack/speed)
+    expect(c.defenseRate, closeTo(0.20, 1e-9),
+        reason: 'C·阴影 相生 multipliers 无 defensePct,defenseRate 保持 base');
+  });
+
+  test('Codex 视觉验收 A:B:C maxHp ratio 回归(7992 / 6660 / 6660)',
+      () async {
+    // W18-A1 Codex 视觉验收(closeout `codex_w18_a1_synergy_visual_check_2026-05-17.md`)
+    // 实测 A:B = 7992 / 6660 = 1.20 精准命中 hpPct=0.20。本回归 test 锚定
+    // 此数字防 base maxHp 派生公式 / hpPct 注入计算漂移。
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
+    final stage = GameRepository.instance.getStage('stage_01_01');
+
+    final (left, _) =
+        await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
+
+    expect(left[0].maxHp, 7992,
+        reason: 'A·阴阳 maxHp = base 6660 × 1.20 = 7992(Codex 实测锚)');
+    expect(left[1].maxHp, 6660,
+        reason: 'B·刚柔 无 hpPct,maxHp = base(1000 + 3800×0.7 + 6×500 = 6660)');
+    expect(left[2].maxHp, 6660,
+        reason: 'C·阴影 同 B,无 hpPct');
+  });
 }

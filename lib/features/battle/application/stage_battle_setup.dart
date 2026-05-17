@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 
 import '../domain/battle_state.dart';
+import '../domain/derived_stats.dart' show RealmUtils;
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/synergy_def.dart';
 import '../../tower/domain/tower_floor_def.dart';
@@ -136,9 +137,10 @@ class StageBattleSetup {
       slotIndex: slotIndex,
     );
 
-    // W18-A1 心法相生 buff 注入(GDD §4.5)。命中即 copyWith 调整 maxHp/
-    // speed/totalEquipmentAttack/maxInternalForce 4 字段;defensePct /
-    // internalForceGrowthPct 字段当前不消费(W18-A2+ 后续 batch 接 hook)。
+    // W18-A1 心法相生 buff 注入(GDD §4.5)。命中即 copyWith 调整 maxHp/speed/
+    // totalEquipmentAttack/maxInternalForce/defenseRate 5 字段(W18-A1.2 补
+    // defensePct → defenseRate 加法叠加);internalForceGrowthPct 在
+    // [SeclusionService.computeOutputs] 消费(战斗 init 不涉)。
     final synergy = SynergyService.detectActive(
       character: character,
       ownedTechniques: ownedTechs,
@@ -155,6 +157,11 @@ class StageBattleSetup {
   /// 上游派生公式已经过 §5.4(maxHp ≤ 20000 / 装备攻击 ≤ 2000)保护,multiplier
   /// 上限 0.30 在 _enforceSynergyRedLines 保证。currentHp/currentInternalForce
   /// 跟 max 同比例放大(战斗起点保持满血 / 当前内力上限按比例)。
+  ///
+  /// W18-A1.2 补 [SynergyMultipliers.defensePct] → defenseRate 加法叠加
+  /// (realm max 0.35 + synergy 0.30 = 0.65 ≤ §5.5 红线安全)。
+  /// [SynergyMultipliers.internalForceGrowthPct] 在 [SeclusionService.computeOutputs]
+  /// 消费(战斗 init 不影响)。
   static BattleCharacter _applySynergy(
     BattleCharacter base,
     SynergyMultipliers m,
@@ -165,6 +172,8 @@ class StageBattleSetup {
         (base.totalEquipmentAttack * (1 + m.attackPct)).round();
     var newMaxIf = (base.maxInternalForce * (1 + m.internalForceMaxPct)).round();
     if (newMaxIf > 15000) newMaxIf = 15000;
+    // W18-A1.2 加法叠加,clamp ≤ 0.95 防止减伤 100% 极端值
+    final newDefenseRate = (base.defenseRate + m.defensePct).clamp(0.0, 0.95);
     // currentHp 起点跟 maxHp 一致(战斗起点满血,fromCharacter 保证)
     final newCurHp = newMaxHp;
     // currentInternalForce 不超新 max(若原 currentInternalForce 已 ≤ maxIf 仍取原值)
@@ -178,6 +187,7 @@ class StageBattleSetup {
       totalEquipmentAttack: newAttack,
       maxInternalForce: newMaxIf,
       currentInternalForce: newCurIf,
+      defenseRate: newDefenseRate,
     );
   }
 
@@ -209,6 +219,7 @@ class StageBattleSetup {
       speed: enemy.baseSpeed,
       criticalRate: 0.05,
       evasionRate: 0.05,
+      defenseRate: RealmUtils.defenseRateOf(enemy.realmTier),
       totalEquipmentAttack: enemy.baseAttack,
       mainCultivationLayer: CultivationLayer.daCheng,
       availableSkills: skills,

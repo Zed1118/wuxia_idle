@@ -59,6 +59,7 @@ class BattleDemo {
       speed: 200,
       criticalRate: 0.2,
       evasionRate: 0.05,
+      defenseRate: 0.10,
       totalEquipmentAttack: 800,
       mainCultivationLayer: CultivationLayer.daCheng,
       availableSkills: withUltimate
