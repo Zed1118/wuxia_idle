@@ -45,12 +45,13 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.9.0',
+      expect(save.saveVersion, '0.10.0',
           reason:
-              'P0.2 #40 Phase 1 升 schema:TowerProgress 加 perFloorClearTimes/bestClearTime/lastClearedAt');
+              'P1 #42 Phase 1 升 schema:SaveData 加 tutorialStep(留 §10 P1.x 接口)');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);
+      expect(save.tutorialStep, 0);
       expect(save.highestTowerLayer, 0);
       // 三个时间字段应是非常接近 now 的同一时刻
       final now = DateTime.now();
