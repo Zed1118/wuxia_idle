@@ -3,7 +3,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/equipment.dart';
 import '../../../core/domain/game_event.dart';
+import '../../../core/domain/lore.dart';
 import '../../../data/isar_provider.dart';
 import '../../../features/battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
@@ -64,12 +66,15 @@ class GameEventService {
   /// #3 获得装备
   ///
   /// [characterId] 可空(掉落进背包时 ownerCharacterId == null,事件归挂主角)。
+  /// [equipment] 非空时同事务追加首段延续典故(P1 #42 Phase 5 / GDD §6.6)。
+  /// 文案 Dart 端模板,挂账 #44 推 Phase 2 抽 yaml。
   Future<void> recordEquipmentObtained({
     required int? characterId,
     required int equipmentId,
     required String equipmentDefId,
     required String equipmentName,
     required String source,
+    Equipment? equipment,
   }) async {
     await isar.gameEvents.put(GameEvent()
       ..eventType = GameEventType.equipmentObtained
@@ -79,6 +84,19 @@ class GameEventService {
       ..relatedEntityIds = [equipmentDefId, equipmentId.toString()]
       ..occurredAt = DateTime.now()
       ..isRead = false);
+
+    if (equipment != null) {
+      final now = DateTime.now();
+      equipment.lores = [
+        ...equipment.lores,
+        Lore()
+          ..text = UiStrings.continuedLoreObtained(equipmentName, source)
+          ..isPreset = false
+          ..addedAt = now
+          ..triggerEventDesc = 'equipmentObtained:$source',
+      ];
+      await isar.equipments.put(equipment);
+    }
   }
 
   /// #5 武学领悟
@@ -149,11 +167,14 @@ class GameEventService {
   ///
   /// caller 必先判 isFirstClear(主线读 `MainlineProgress.clearedStageIds`,
   /// 爬塔已有 `clearResult.isFirstClear`),防刷塔重复触发。
+  /// [warbornEquipment] 非空时为每件主战装备同事务追加一段延续典故
+  /// (P1 #42 Phase 5 / GDD §6.6)。文案 Dart 端模板,挂账 #44 推 Phase 2 抽 yaml。
   Future<void> recordBossDefeated({
     required int characterId,
     required String stageId,
     required String stageName,
     required String bossName,
+    List<Equipment> warbornEquipment = const [],
   }) async {
     await isar.gameEvents.put(GameEvent()
       ..eventType = GameEventType.bossDefeated
@@ -163,6 +184,21 @@ class GameEventService {
       ..relatedEntityIds = [stageId]
       ..occurredAt = DateTime.now()
       ..isRead = false);
+
+    if (warbornEquipment.isNotEmpty) {
+      final now = DateTime.now();
+      for (final eq in warbornEquipment) {
+        eq.lores = [
+          ...eq.lores,
+          Lore()
+            ..text = UiStrings.continuedLoreBossDefeated(bossName, stageName)
+            ..isPreset = false
+            ..addedAt = now
+            ..triggerEventDesc = 'bossDefeated:$stageId',
+        ];
+      }
+      await isar.equipments.putAll(warbornEquipment);
+    }
   }
 }
 

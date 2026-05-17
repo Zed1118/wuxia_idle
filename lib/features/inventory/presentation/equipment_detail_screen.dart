@@ -96,7 +96,12 @@ class _EquipmentDetailScreenState
               color: WuxiaColors.border,
               height: 1,
             )),
-            Expanded(child: _LoreSection(future: _loreFuture)),
+            Expanded(
+              child: _LoreSection(
+                future: _loreFuture,
+                equipment: widget.equipment,
+              ),
+            ),
             _ActionBar(
               tierColor: color,
               onEnhance: () => _openEnhance(0),
@@ -274,12 +279,15 @@ class _StatRow extends StatelessWidget {
 }
 
 class _LoreSection extends StatelessWidget {
-  const _LoreSection({required this.future});
+  const _LoreSection({required this.future, required this.equipment});
 
   final Future<LoreContent?> future;
+  final Equipment equipment;
 
   @override
   Widget build(BuildContext context) {
+    final continued = equipment.lores.where((l) => !l.isPreset).toList()
+      ..sort((a, b) => a.addedAt.compareTo(b.addedAt));
     return FutureBuilder<LoreContent?>(
       future: future,
       builder: (ctx, snap) {
@@ -287,7 +295,8 @@ class _LoreSection extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         final content = snap.data;
-        if (content == null || content.isPlaceholder) {
+        final hasPreset = content != null && !content.isPlaceholder;
+        if (!hasPreset && continued.isEmpty) {
           return const Center(
             child: Text(
               '典故待补',
@@ -309,12 +318,29 @@ class _LoreSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            for (int i = 0; i < content.defaultLore.length; i++) ...[
-              if (i > 0) const _SegmentDivider(),
+            if (hasPreset)
+              for (int i = 0; i < content.defaultLore.length; i++) ...[
+                if (i > 0) const _SegmentDivider(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    content.defaultLore[i].text,
+                    style: const TextStyle(
+                      color: WuxiaColors.textPrimary,
+                      fontSize: 14,
+                      height: 1.8,
+                    ),
+                  ),
+                ),
+              ],
+            for (final lore in continued) ...[
+              const _SegmentDivider(),
+              const _ContinuedLoreChip(),
+              const SizedBox(height: 8),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Text(
-                  content.defaultLore[i].text,
+                  lore.text,
                   style: const TextStyle(
                     color: WuxiaColors.textPrimary,
                     fontSize: 14,
@@ -326,6 +352,37 @@ class _LoreSection extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// 延续典故段落标志 chip(P1 #42 Phase 5)。
+class _ContinuedLoreChip extends StatelessWidget {
+  const _ContinuedLoreChip();
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: WuxiaColors.internalForce.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: WuxiaColors.internalForce,
+            width: 0.5,
+          ),
+        ),
+        child: const Text(
+          UiStrings.continuedLoreChipLabel,
+          style: TextStyle(
+            color: WuxiaColors.internalForce,
+            fontSize: 11,
+            letterSpacing: 2,
+          ),
+        ),
+      ),
     );
   }
 }
