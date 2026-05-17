@@ -100,12 +100,15 @@ void main() {
     required TechniqueRole role,
     int cultivationProgress = 0,
     int cultivationProgressToNext = 100,
+    String? defId,
+    TechniqueTier tier = TechniqueTier.ruMenGong,
+    TechniqueSchool school = TechniqueSchool.gangMeng,
   }) {
     return Technique.create(
-      defId: 'test_tech_$id',
+      defId: defId ?? 'test_tech_$id',
       ownerCharacterId: ownerId,
-      tier: TechniqueTier.ruMenGong,
-      school: TechniqueSchool.gangMeng,
+      tier: tier,
+      school: school,
       role: role,
       learnedAt: DateTime(2026, 5, 11),
       cultivationProgress: cultivationProgress,
@@ -427,5 +430,82 @@ void main() {
 
     // internalForceValue 格式: "200 / 11000"（current=200 固定，max=11000）
     expect(find.text('200 / 11000'), findsOneWidget);
+  });
+
+  // ── W18-A1 用例 8:心法相生 chip ────────────────────────────────────────
+
+  testWidgets('主修 gangMeng + 辅修 yinRou → 阴阳调和 chip 显示',
+      (tester) async {
+    final character = mkCharacter(
+      mainTechniqueId: 30,
+      assistTechniqueIds: [31],
+    );
+    final main = mkTechnique(
+      id: 30,
+      ownerId: 1,
+      role: TechniqueRole.main,
+      defId: 'tech_gangmeng_jichu',
+      tier: TechniqueTier.ruMenGong,
+      school: TechniqueSchool.gangMeng,
+    );
+    final assist = mkTechnique(
+      id: 31,
+      ownerId: 1,
+      role: TechniqueRole.assist,
+      defId: 'tech_yinrou_jichu',
+      tier: TechniqueTier.ruMenGong,
+      school: TechniqueSchool.yinRou,
+    );
+
+    await pumpPanel(
+      tester,
+      character: character,
+      techniques: {30: main, 31: assist},
+    );
+
+    expect(find.text('相生'), findsOneWidget,
+        reason: 'UiStrings.synergyActiveLabel chip 显示');
+    expect(find.textContaining('阴阳调和'), findsOneWidget,
+        reason: 'synergy_yin_yang_he_xie name');
+  });
+
+  testWidgets('未修主修 / 无辅修 → 不显相生 chip', (tester) async {
+    final character = mkCharacter(); // no main / no assist
+    await pumpPanel(tester, character: character);
+
+    expect(find.text('相生'), findsNothing);
+  });
+
+  testWidgets('主辅同流派 gangMeng+gangMeng → 同流派精进 chip(sameSchool 命中)',
+      (tester) async {
+    final character = mkCharacter(
+      mainTechniqueId: 40,
+      assistTechniqueIds: [41],
+    );
+    final main = mkTechnique(
+      id: 40,
+      ownerId: 1,
+      role: TechniqueRole.main,
+      defId: 'tech_gangmeng_jichu',
+      tier: TechniqueTier.ruMenGong,
+      school: TechniqueSchool.gangMeng,
+    );
+    final assist = mkTechnique(
+      id: 41,
+      ownerId: 1,
+      role: TechniqueRole.assist,
+      defId: 'tech_gangmeng_changlian',
+      tier: TechniqueTier.changLianGong,
+      school: TechniqueSchool.gangMeng,
+    );
+
+    await pumpPanel(
+      tester,
+      character: character,
+      techniques: {40: main, 41: assist},
+    );
+
+    expect(find.text('相生'), findsOneWidget);
+    expect(find.textContaining('同流派精进'), findsOneWidget);
   });
 }

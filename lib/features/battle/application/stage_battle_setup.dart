@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 
 import '../domain/battle_state.dart';
 import '../../../data/defs/stage_def.dart';
+import '../../../data/defs/synergy_def.dart';
 import '../../tower/domain/tower_floor_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/character.dart';
@@ -9,6 +10,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
+import '../../cultivation/application/synergy_service.dart';
 
 /// 关卡战斗准备（Phase 3 T37，对应 PROGRESS #22 销账）。
 ///
@@ -115,13 +117,67 @@ class StageBattleSetup {
       );
     }
 
-    return BattleCharacter.fromCharacter(
+    // W18-A1:加载第 1 辅修(若有)供 SynergyService 检测心法相生。
+    // assistTechniqueIds 为空 / Isar 找不到 → ownedTechniques 只含 main,
+    // detectActive 因 assist 缺失返 null,正常 fallthrough。
+    final ownedTechs = <Technique>[mainTech];
+    if (character.assistTechniqueIds.isNotEmpty) {
+      final assistTech =
+          await isar.techniques.get(character.assistTechniqueIds.first);
+      if (assistTech != null) ownedTechs.add(assistTech);
+    }
+
+    final base = BattleCharacter.fromCharacter(
       character: character,
       equipped: equipped,
       mainTechnique: mainTech,
       numbers: GameRepository.instance.numbers,
       teamSide: 0,
       slotIndex: slotIndex,
+    );
+
+    // W18-A1 心法相生 buff 注入(GDD §4.5)。命中即 copyWith 调整 maxHp/
+    // speed/totalEquipmentAttack/maxInternalForce 4 字段;defensePct /
+    // internalForceGrowthPct 字段当前不消费(W18-A2+ 后续 batch 接 hook)。
+    final synergy = SynergyService.detectActive(
+      character: character,
+      ownedTechniques: ownedTechs,
+      techDefLookup: (defId) =>
+          GameRepository.instance.techniqueDefs[defId],
+      synergies: GameRepository.instance.synergies,
+    );
+    return synergy == null ? base : _applySynergy(base, synergy.multipliers);
+  }
+
+  /// 把 [SynergyMultipliers] 应用到 [BattleCharacter] 4 个标量字段(view layer)。
+  ///
+  /// 数值红线 cap:maxInternalForce ≤ 15000(GDD §5.4)。其他字段 cap 由
+  /// 上游派生公式已经过 §5.4(maxHp ≤ 20000 / 装备攻击 ≤ 2000)保护,multiplier
+  /// 上限 0.30 在 _enforceSynergyRedLines 保证。currentHp/currentInternalForce
+  /// 跟 max 同比例放大(战斗起点保持满血 / 当前内力上限按比例)。
+  static BattleCharacter _applySynergy(
+    BattleCharacter base,
+    SynergyMultipliers m,
+  ) {
+    final newMaxHp = (base.maxHp * (1 + m.hpPct)).round();
+    final newSpeed = (base.speed * (1 + m.speedPct)).round();
+    final newAttack =
+        (base.totalEquipmentAttack * (1 + m.attackPct)).round();
+    var newMaxIf = (base.maxInternalForce * (1 + m.internalForceMaxPct)).round();
+    if (newMaxIf > 15000) newMaxIf = 15000;
+    // currentHp 起点跟 maxHp 一致(战斗起点满血,fromCharacter 保证)
+    final newCurHp = newMaxHp;
+    // currentInternalForce 不超新 max(若原 currentInternalForce 已 ≤ maxIf 仍取原值)
+    final newCurIf = base.currentInternalForce > newMaxIf
+        ? newMaxIf
+        : base.currentInternalForce;
+    return base.copyWith(
+      maxHp: newMaxHp,
+      currentHp: newCurHp,
+      speed: newSpeed,
+      totalEquipmentAttack: newAttack,
+      maxInternalForce: newMaxIf,
+      currentInternalForce: newCurIf,
     );
   }
 

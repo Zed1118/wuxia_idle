@@ -40,6 +40,9 @@ void main() {
           reason: 'encounter_skills.yaml 35 招(7 阶 × 5)');
       expect(repo.stageDefs.length, 15, reason: '主线 15 关（Phase 3 Week 5 T59 扩容）');
       expect(repo.numbers.version, isNotEmpty);
+      // W18-A1:synergies.yaml 5 组合(GDD §4.5 ≥ 5)
+      expect(repo.synergies.length, 5,
+          reason: '心法相生 5 组合(GDD §4.5 ≥ 5 下限)');
     });
 
     test('GameRepository.instance 在 load 后可访问', () async {

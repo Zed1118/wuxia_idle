@@ -167,6 +167,9 @@ class UiStrings {
   static const String noMainTechnique = '未修主修';
   static const String dashPlaceholder = '—';
 
+  // W18-A1 心法相生(GDD §4.5,CharacterPanel chip 显示)
+  static const String synergyActiveLabel = '相生';
+
   // 仓库 / 强化对话框（T29）
   static const String inventoryTitle = '装备仓库';
   static const String inventoryEmpty = '仓库空空如也';
