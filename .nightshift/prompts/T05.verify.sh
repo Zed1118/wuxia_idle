@@ -9,5 +9,6 @@ grep -q "单帧" "$DOC" || { echo "VERIFY FAIL: missing 单帧 description"; exi
 grep -q "#28" "$DOC" || { echo "VERIFY FAIL: missing #28 comparison"; exit 1; }
 git log -1 --pretty=%s | grep -q "nightshift T05" || { echo "VERIFY FAIL: no nightshift T05 commit"; exit 1; }
 flutter pub get >/dev/null 2>&1
+dart run build_runner build >/dev/null 2>&1 || { echo "VERIFY WARN: build_runner non-zero, continuing"; }
 flutter analyze --fatal-infos >/dev/null 2>&1 || { echo "VERIFY FAIL: dart analyze"; exit 1; }
 echo "VERIFY PASS: T05"

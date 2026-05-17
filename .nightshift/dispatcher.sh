@@ -22,6 +22,7 @@ TASK_TIMEOUT_MIN=50
 TASK_BUDGET_USD=5
 INTER_TASK_BUFFER_SEC=30
 TASKS=(T01 T02 T03 T04 T05 T06)
+LAST_TASK="T06"  # bash 3.2 (macOS default) doesn't support ${TASKS[-1]}
 
 # === Setup ===
 mkdir -p "$NIGHTSHIFT/logs" "$NIGHTSHIFT/status"
@@ -81,24 +82,31 @@ run_task() {
     return 0
   fi
 
-  # Run claude with timeout + budget (perl alarm = cross-platform timeout)
-  log "  Running claude --print (timeout ${TASK_TIMEOUT_MIN}m, budget \$${TASK_BUDGET_USD})"
-  (
-    cd "$worktree" || exit 99
-    perl -e 'alarm shift; exec @ARGV' "$((TASK_TIMEOUT_MIN * 60))" \
-      claude \
-        --print \
-        --model sonnet \
-        --permission-mode bypassPermissions \
-        --max-budget-usd "$TASK_BUDGET_USD" \
-        --no-session-persistence \
-        --add-dir "$worktree" \
-      < "$prompt" \
-      >> "$task_log" 2>&1
-  )
-  local claude_exit=$?
-  log "  claude exit=$claude_exit"
-  echo "claude_exit=$claude_exit" >> "$status_file"
+  # Idempotency: if worktree already has commit "nightshift $task", skip claude
+  local claude_exit=0
+  if (cd "$worktree" && git log -1 --pretty=%s 2>/dev/null | grep -q "nightshift $task"); then
+    log "  IDEMPOTENT: worktree already has nightshift $task commit, skip claude (verify only)"
+    echo "claude_exit=skipped_idempotent" >> "$status_file"
+  else
+    # Run claude with timeout + budget (perl alarm = cross-platform timeout)
+    log "  Running claude --print (timeout ${TASK_TIMEOUT_MIN}m, budget \$${TASK_BUDGET_USD})"
+    (
+      cd "$worktree" || exit 99
+      perl -e 'alarm shift; exec @ARGV' "$((TASK_TIMEOUT_MIN * 60))" \
+        claude \
+          --print \
+          --model sonnet \
+          --permission-mode bypassPermissions \
+          --max-budget-usd "$TASK_BUDGET_USD" \
+          --no-session-persistence \
+          --add-dir "$worktree" \
+        < "$prompt" \
+        >> "$task_log" 2>&1
+    )
+    claude_exit=$?
+    log "  claude exit=$claude_exit"
+    echo "claude_exit=$claude_exit" >> "$status_file"
+  fi
 
   # Run verify.sh (in worktree)
   local verify_exit=0
@@ -127,8 +135,8 @@ run_task() {
   fi
   echo "finished=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$status_file"
 
-  # Inter-task buffer
-  if [ "$task" != "${TASKS[-1]}" ]; then
+  # Inter-task buffer (bash 3.2 compat: no ${TASKS[-1]})
+  if [ "$task" != "$LAST_TASK" ]; then
     log "  Sleeping ${INTER_TASK_BUFFER_SEC}s before next task"
     sleep "$INTER_TASK_BUFFER_SEC"
   fi

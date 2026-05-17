@@ -8,5 +8,6 @@ grep -q "pumpAndSettle" "$DOC" || { echo "VERIFY FAIL: missing pumpAndSettle aud
 grep -q "_RecordingNavigatorObserver" "$DOC" || { echo "VERIFY FAIL: missing _RecordingNavigatorObserver pattern"; exit 1; }
 git log -1 --pretty=%s | grep -q "nightshift T02" || { echo "VERIFY FAIL: no nightshift T02 commit"; exit 1; }
 flutter pub get >/dev/null 2>&1
+dart run build_runner build >/dev/null 2>&1 || { echo "VERIFY WARN: build_runner non-zero, continuing"; }
 flutter analyze --fatal-infos >/dev/null 2>&1 || { echo "VERIFY FAIL: dart analyze"; exit 1; }
 echo "VERIFY PASS: T02"
