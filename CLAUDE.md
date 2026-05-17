@@ -4,7 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 [`WINDOWS_DEEPSEEK_GUIDE.md`](./WINDOWS_DEEPSEEK_GUIDE.md)（你不写文案，但需要知道它在哪、长什么样）。
 >
-> **版本：v1.6**
+> **版本：v1.7**
+> v1.7 变更摘要（2026-05-17 W18 全收口外部审查后对齐）：§7 Demo 必交付内容量表与 GDD v1.2 §8.4 同步——「奇遇 20-30」混算口径拆为「武学领悟触发 20-30 / 基础奇遇 15-25 / 节日 encounter 6-10」3 独立维度;主线字数上限 5000→7000(实测 6778);节日 encounter 6→8 备注(W17 扩 chuXi/qingMingJie);「Demo 阶段不要做」清单「节日活动」加备注(W16/W17 节日 encounter 内容层已落,系统级仍按 GDD §12.4 留 1.0)。**PROGRESS 外部审查 P1 #5 #6 销账**。
 > v1.6 变更摘要（2026-05-16）：§6 核心公式块 GDD §5.3/§5.6 公式系数口误对齐——基础伤害公式装备攻击系数 ×8 → ×1.0（Phase 1 平衡前后差异，防装备轴数值膨胀）；最大血量公式内力系数 ×5 → ×0.7（Phase 1 平衡前后差异，防玩家血量超 §5.2 红线 20,000）。出手速度 ×8 无变动。GDD.md §5.3/§5.6 同步对齐 + 加历史脚注。代码以 `numbers.yaml damage_formula.equipment_attack_factor / max_hp_formula.internal_force_factor` 为准（早已平衡到位）。**PROGRESS 挂账 #6 销账**。
 > v1.5 变更摘要（2026-05-16）：§12.1 #10 师承遗物规则层 4 子项决议收口——① 传递时机:武圣飞升时自动传(GDD §7.1 原意,Demo 不实装飞升 → Phase 5+ 激活) ② 多徒弟归属:玩家进选件界面逐件分配(给主动权 + UI 包不复杂) ③ 累代叠加:只取当代不叠加(数值不爆炸,5 代不会撑红线;UI 可显传承链路但 buff 不叠) ④ 同部位冲突:自动卸下原装入背包 + 新遗物入槽(sane default,不做装备分解违反 §5.1)。numbers.yaml `inheritance.heritage_items` 加 4 规则字段(`transfer_trigger: ascend_to_wusheng` / `multi_disciple_allocation: player_pick` / `stack_across_generations: false` / `conflict_slot_resolution: auto_swap`)。**§12.1 真硬阻塞清零**,Phase 5 师徒系统升级路径无 schema 歧义。
 > v1.4 变更摘要（2026-05-16）：§12.1 #7 三流派 extra_effect 数值拍板收口——刚猛震伤每招 +500 固定(穿透防御不暴击) / 阴柔内伤 N=3 守方 tick × 200/tick 固定(穿透防御 + 同源刷新覆盖) / 正午阳刚 +20% 乘到 `internalForcePoints` 维度且仅 `school=gangMeng` 角色触发。numbers.yaml 加 4 子段(`combat.schools.gang_meng_quake` / `combat.schools.yin_rou_internal_injury` / `retreat.time_of_day_bonus[zhengWu].target_attribute` / `applies_to_school`)。代码层 damage_calculator 震伤分支 + BattleState internalInjurySlot + battle_engine tick 衰减 + seclusion_service 正午阳刚 wire 同期落地。§12.1 #7 → §12.2 归档,剩 #10 师承遗物 1 条。
@@ -191,19 +192,21 @@ Demo 必交付内容量：
 |---|---|
 | 主线关卡 | 15–20 |
 | 章节 | 3 章（学武出山 / 武林初识 / 名扬江湖） |
-| 主线剧情字数 | 3,000–5,000 |
+| 主线剧情字数 | 3,000–7,000 |
 | **爬塔** | **30 层（3 小 Boss [5 / 15 / 25 层] + 3 大 Boss [10 / 20 / 30 层]）** |
 | 闭关地图 | 5 |
-| 奇遇 | 20–30 |
+| 武学领悟触发（techniqueInsight encounter） | 20–30 |
+| 基础奇遇（fortuneEvent，非节日） | 15–25 |
+| 节日 encounter（festivalRequired 独立通道） | 6–10 |
 | 装备 | 30–50（覆盖 7 阶，每阶 5–7） |
 | 心法 | 20–30（覆盖 7 阶 + 3 流派） |
 | 典故 | 50–80 段 |
-| 武学领悟 | 30–50 招 + 20–30 触发条件 |
+| 武学领悟招式 | 30–50 招 |
 | 心法相生组合 | ≥ 5 |
 | 师徒角色 | 祖师 + 大弟子 + 二弟子（共 3） |
 
 **Demo 阶段不要做**（GDD §12 已留接口，碰都不碰）：
-江湖恩怨 / 心魔 / 门派事件 / 婚姻后代 / 帮派 / 声望 / 轻功对决 / 群战 / PVP / 第二条主线 / 节日活动 / MOD / 跨周目元数据。
+江湖恩怨 / 心魔 / 门派事件 / 婚姻后代 / 帮派 / 声望 / 轻功对决 / 群战 / PVP / 第二条主线 / **节日活动系统级**(W16/W17 节日 encounter 内容层已落 ✅,但 §12.4 系统级活动框架留 1.0) / MOD / 跨周目元数据。
 
 ## 8. 工作流
 
