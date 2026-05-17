@@ -11,6 +11,7 @@ grep -q "PROGRESS 销账建议" "$DOC" || { echo "VERIFY FAIL: missing section '
 git log -1 --pretty=%s | grep -q "nightshift T01" || { echo "VERIFY FAIL: no nightshift T01 commit on branch"; exit 1; }
 # Project still healthy (no lib/ changes per scope)
 flutter pub get >/dev/null 2>&1
+dart run build_runner build >/dev/null 2>&1 || { echo "VERIFY WARN: build_runner non-zero, continuing"; }
 flutter analyze --fatal-infos 2>&1 | tail -5
 flutter analyze --fatal-infos >/dev/null 2>&1 || { echo "VERIFY FAIL: dart analyze"; exit 1; }
 echo "VERIFY PASS: T01"
