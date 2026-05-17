@@ -15,6 +15,8 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
+import 'package:wuxia_idle/features/cultivation/application/synergy_service.dart';
+import 'package:wuxia_idle/data/defs/synergy_def.dart';
 
 /// T32 子提交 3a：[Phase2SeedService] 真 Isar 落地测试。
 ///
@@ -658,5 +660,142 @@ void main() {
     final fresh = await isar.characters.get(1);
     expect(fresh!.experience, 0,
         reason: 'reseed 后 EXP 回 0,派单时无须手动清存档');
+  });
+
+  // ── W18-A1 心法相生 fixture · seedVisualCheckW18A1 ─────────────────────────
+
+  test('seedVisualCheckW18A1 → 5 角色 yiLiu.qiMeng + activeCharacterIds 全塞 + 主修非空',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
+    final isar = IsarSetup.instance;
+
+    final chars = await isar.characters.where().findAll();
+    expect(chars.length, 5,
+        reason: '5 角色对应 5 相生组合各 1 命中(覆盖 GameRepository.synergies 5 id 全集)');
+    for (final ch in chars) {
+      expect(ch.realmTier, RealmTier.yiLiu,
+          reason: '${ch.name} 必须 yiLiu(equipment cap=liQi / technique cap=menPaiJueXue,mingJiaGong+changLianGong 全在三系锁死安全区)');
+      expect(ch.realmLayer, RealmLayer.qiMeng);
+      expect(ch.isActive, isTrue,
+          reason: '${ch.name} 必须入阵,TabBar 才能切换显 chip');
+      expect(ch.mainTechniqueId, isNotNull,
+          reason: '${ch.name} 必须有主修(SynergyService.detectActive 硬约束 + StageBattleSetup)');
+      expect(ch.assistTechniqueIds.isNotEmpty, isTrue,
+          reason: '${ch.name} 必须有第 1 辅修(SynergyService.detectActive 用 assistTechniqueIds.first)');
+      expect(ch.school, isNotNull,
+          reason: '${ch.name} 必须有主修流派(BattleCharacter.fromCharacter 硬约束)');
+    }
+
+    final save = await isar.saveDatas.get(0);
+    expect(save!.activeCharacterIds.length, 5,
+        reason: '5 角色全入 activeCharacterIds,CharacterPanelScreen TabBar 显 5 个(lineageTabLabels 扩 3→5 配套)');
+    expect(save.founderCharacterId, 1,
+        reason: 'A·阴阳 id=1 为 founder(沿既有体例)');
+  });
+
+  // 红线:5 角色通过 SynergyService.detectActive 命中的 synergy.id 集合
+  // 必须 == GameRepository.synergies 全集。本约束是覆盖性语义,不写具体
+  // 「角色 A 命中 synergy_yin_yang_he_xie」映射;改 yaml 5 组合 id 时 fixture
+  // 仍需 5 角色全覆盖,该 test 是 W18-A1 fixture 与 yaml 一致性的雷达。
+  test('seedVisualCheckW18A1 → 5 角色 detectActive 命中集合 = synergies yaml 全集',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
+    final isar = IsarSetup.instance;
+    final repo = GameRepository.instance;
+
+    final allTechs = await isar.techniques.where().findAll();
+    final chars = await isar.characters.where().findAll();
+    expect(chars.length, 5);
+
+    final hitIds = <String>{};
+    for (final ch in chars) {
+      final owned = allTechs
+          .where((t) => t.ownerCharacterId == ch.id)
+          .toList(growable: false);
+      final synergy = SynergyService.detectActive(
+        character: ch,
+        ownedTechniques: owned,
+        techDefLookup: (defId) => repo.techniqueDefs[defId],
+        synergies: repo.synergies,
+      );
+      expect(synergy, isNotNull,
+          reason: '${ch.name} 必须恰好命中 1 个相生组合(seed 配对设计要求)');
+      hitIds.add(synergy!.id);
+    }
+
+    final yamlIds = repo.synergies.map((s) => s.id).toSet();
+    expect(hitIds, yamlIds,
+        reason: '5 角色命中的 synergy id 集合 == yaml 5 组合全集(覆盖性红线;'
+            '若 yaml 加/改/删 synergy 必须同步改 seedVisualCheckW18A1 配对)');
+    expect(hitIds.length, 5,
+        reason: '5 角色 → 5 唯一 synergy(无重复命中,即 5 角色之间无 fixture 冗余)');
+  });
+
+  // 优先级覆盖红线:5 角色命中的 requirementType 必须覆盖 schoolPair / sameSchool /
+  // sameTier 3 类(分别 3 / 1 / 1 个,与 SynergyService.detectActive 优先级
+  // 遍历策略 schoolPair > sameSchool > sameTier 对齐)。
+  test('seedVisualCheckW18A1 → 5 角色 requirementType 覆盖 3 类(schoolPair*3/sameSchool*1/sameTier*1)',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
+    final isar = IsarSetup.instance;
+    final repo = GameRepository.instance;
+
+    final allTechs = await isar.techniques.where().findAll();
+    final chars = await isar.characters.where().findAll();
+
+    final typeCount = <SynergyRequirementType, int>{};
+    for (final ch in chars) {
+      final owned = allTechs
+          .where((t) => t.ownerCharacterId == ch.id)
+          .toList(growable: false);
+      final synergy = SynergyService.detectActive(
+        character: ch,
+        ownedTechniques: owned,
+        techDefLookup: (defId) => repo.techniqueDefs[defId],
+        synergies: repo.synergies,
+      );
+      typeCount[synergy!.requirementType] =
+          (typeCount[synergy.requirementType] ?? 0) + 1;
+    }
+
+    expect(typeCount[SynergyRequirementType.schoolPair], 3,
+        reason: '3 角色覆盖 schoolPair(gangMeng+yinRou / gangMeng+lingQiao / yinRou+lingQiao)');
+    expect(typeCount[SynergyRequirementType.sameSchool], 1,
+        reason: '1 角色覆盖 sameSchool(优先级先于 sameTier)');
+    expect(typeCount[SynergyRequirementType.sameTier], 1,
+        reason: '1 角色覆盖 sameTier(主辅顺序刻意避开 schoolPair 定义,走兜底类型)');
+  });
+
+  test('seedVisualCheckW18A1 → 主线 / 塔 / 奇遇 progress 全清 + Ch1 01-04 cleared',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
+    final isar = IsarSetup.instance;
+
+    final main = await isar.mainlineProgress.where().findFirst();
+    expect(main, isNotNull, reason: 'getOrCreate 在 seed 结尾建过 1 行');
+    expect(main!.clearedStageIds, ['stage_01_01', 'stage_01_02', 'stage_01_03', 'stage_01_04'],
+        reason: 'Ch1 01-04 cleared,Codex 可直挑 stage_01_05 拿战斗注入截图');
+    expect(await isar.towerProgress.count(), 0, reason: '塔进度清零');
+    expect(await isar.encounterProgress.count(), 0, reason: '奇遇进度清零');
+  });
+
+  test('seedVisualCheckW18A1 反复调用 → 5 角色仍 5(派单可反复 reseed)',
+      () async {
+    final isar = IsarSetup.instance;
+    await Phase2SeedService(isar: isar).seedVisualCheckW18A1();
+
+    // 模拟玩家通 stage_01_05 + 累积 EXP + 改 main tech
+    final chA = await isar.characters.get(1);
+    await isar.writeTxn(() async {
+      chA!.experience = 100;
+      await isar.characters.put(chA);
+    });
+
+    // reseed
+    await Phase2SeedService(isar: isar).seedVisualCheckW18A1();
+    final chars = await isar.characters.where().findAll();
+    expect(chars.length, 5, reason: 'reseed 后仍 5 角色,_clearAll 把脏数据清光');
+    final freshA = chars.firstWhere((c) => c.name == 'A·阴阳');
+    expect(freshA.experience, 0, reason: 'reseed 后 A·阴阳 EXP 回 0');
   });
 }

@@ -577,6 +577,149 @@ class Phase2SeedService {
     });
   }
 
+  /// W18-A1 心法相生视觉验收专用 seed(本批 Codex Pen 验收 5 组合各 1 命中)。
+  ///
+  /// 在 `_clearAll` + 三 progress clear 基础上写 5 角色,每角色 main + assist
+  /// tech 配对触发恰好 1 个相生组合,5 角色合起来覆盖
+  /// [GameRepository.synergies] 5 个 id 全集(red-line: 集合相等,见
+  /// `phase2_seed_service_test.dart` W18-A1 段)。
+  ///
+  /// | # | 角色      | main tech              | assist tech            | 命中优先级               |
+  /// |---|-----------|------------------------|------------------------|---------------------------|
+  /// | 1 | A·阴阳    | tech_gangmeng_mingjia  | tech_yinrou_mingjia    | schoolPair(组合 1)       |
+  /// | 2 | B·刚柔    | tech_gangmeng_mingjia  | tech_lingqiao_mingjia  | schoolPair(组合 2)       |
+  /// | 3 | C·阴影    | tech_yinrou_mingjia    | tech_lingqiao_mingjia  | schoolPair(组合 3)       |
+  /// | 4 | D·同流派  | tech_yinrou_mingjia    | tech_yinrou_changlian  | sameSchool(组合 4)       |
+  /// | 5 | E·同辈    | tech_lingqiao_mingjia  | tech_yinrou_mingjia    | sameTier(组合 5)         |
+  ///
+  /// 5 角色全 yiLiu·qiMeng(equipment cap=liQi / technique cap=menPaiJueXue,
+  /// mingJiaGong + changLianGong 全在三系锁死 GDD §5.3 安全区)+
+  /// activeCharacterIds 全塞,CharacterPanelScreen TabBar 显 5 个角色供 Codex
+  /// 切 5 Tab 拿 5 张 chip 截图(`lineageTabLabels` 扩 3→5 配套)。
+  ///
+  /// 战斗注入观测点([StageBattleSetup._applySynergy] 4 字段实装):
+  ///   - A·阴阳 hpPct 0.20 → HpBar maxHp 数字 vs 基线 P5(同境界)
+  ///   - B·刚柔 speedPct 0.25 → 出手节奏(speed 不显数字)
+  ///   - C·阴影 attackPct 0.15 + speedPct 0.15 → DamagePopup 数值
+  ///   - D·同流派 attackPct 0.20 → DamagePopup 数值
+  ///   - E·同辈 internalForceMaxPct 0.25 → 内力条 max 数字
+  ///
+  /// 优先级避坑:E·同辈 main=lingQiao + assist=yinRou(顺序与组合 3 main=yinRou+
+  /// assist=lingQiao 反),不撞 schoolPair → 走 sameTier;D·同流派 main + assist
+  /// 同 school(yinRou)→ 走 sameSchool(优先级先于 sameTier,即便 tier 不等
+  /// changLianGong vs mingJiaGong)。
+  ///
+  /// mark Ch1 01-04 cleared(沿 [seedVisualCheckW7W11]),Codex 可直挑
+  /// stage_01_05 拿战斗注入截图。物料 100 磨剑石 + 10 心血结晶(沿
+  /// [seedVisualCheckW15Fresh])。
+  Future<void> seedVisualCheckW18A1() async {
+    final isar = this.isar;
+    final now = DateTime.now();
+    final realmDef = GameRepository.instance.getRealm(
+      RealmTier.yiLiu,
+      RealmLayer.qiMeng,
+    );
+
+    await isar.writeTxn(() async {
+      await _clearAll();
+      await isar.mainlineProgress.clear();
+      await isar.towerProgress.clear();
+      await isar.encounterProgress.clear();
+
+      Character buildA1({required String name, required bool isFounder}) {
+        return Character.create(
+          name: name,
+          realmTier: RealmTier.yiLiu,
+          realmLayer: RealmLayer.qiMeng,
+          attributes: Attributes()
+            ..constitution = 6
+            ..enlightenment = 6
+            ..agility = 6
+            ..fortune = 6,
+          rarity: RarityTier.biaoZhun,
+          lineageRole:
+              isFounder ? LineageRole.founder : LineageRole.disciple,
+          createdAt: now,
+          internalForce: realmDef.internalForceMax,
+          internalForceMax: realmDef.internalForceMax,
+          experience: 0,
+          experienceToNextLayer: realmDef.experienceToNext,
+          isActive: true,
+          isFounder: isFounder,
+        );
+      }
+
+      // 5 角色:祖师 = A·阴阳(占 id=1 与既有体例一致),其余 4 弟子。
+      final chA = buildA1(name: 'A·阴阳', isFounder: true)..id = 1;
+      await isar.characters.put(chA);
+      final chB = buildA1(name: 'B·刚柔', isFounder: false);
+      await isar.characters.put(chB);
+      final chC = buildA1(name: 'C·阴影', isFounder: false);
+      await isar.characters.put(chC);
+      final chD = buildA1(name: 'D·同流派', isFounder: false);
+      await isar.characters.put(chD);
+      final chE = buildA1(name: 'E·同辈', isFounder: false);
+      await isar.characters.put(chE);
+
+      // 师徒关系:祖师 A 名下 4 弟子(沿 seedMasterDisciple 双向写法)。
+      chA.discipleIds = [chB.id, chC.id, chD.id, chE.id];
+      chB.masterId = chA.id;
+      chC.masterId = chA.id;
+      chD.masterId = chA.id;
+      chE.masterId = chA.id;
+
+      // 5 角色 main+assist tech 配对(W18-A1 心法相生 5 组合各 1 命中)。
+      final pairs = <(Character, List<String>)>[
+        (chA, const ['tech_gangmeng_mingjia', 'tech_yinrou_mingjia']),
+        (chB, const ['tech_gangmeng_mingjia', 'tech_lingqiao_mingjia']),
+        (chC, const ['tech_yinrou_mingjia', 'tech_lingqiao_mingjia']),
+        (chD, const ['tech_yinrou_mingjia', 'tech_yinrou_changlian']),
+        (chE, const ['tech_lingqiao_mingjia', 'tech_yinrou_mingjia']),
+      ];
+      for (final pair in pairs) {
+        await _learnMasterStarting(
+          isar,
+          character: pair.$1,
+          techDefIds: pair.$2,
+          now: now,
+        );
+      }
+
+      await isar.characters.putAll([chA, chB, chC, chD, chE]);
+
+      final save = await isar.saveDatas.get(0);
+      if (save != null) {
+        save.activeCharacterIds = [
+          chA.id,
+          chB.id,
+          chC.id,
+          chD.id,
+          chE.id,
+        ];
+        save.founderCharacterId = chA.id;
+        save.sectName ??= '我的门派';
+        await isar.saveDatas.put(save);
+      }
+
+      await _seedMaterials(mojianshi: 100, jieJing: 10);
+    });
+
+    // mark Ch1 01-04 cleared(沿 seedVisualCheckW7W11),让 Codex 直挑
+    // stage_01_05 拿战斗注入截图。MainlineProgressService 自带 writeTxn,
+    // 需在外层 writeTxn 之外调用。
+    final svc = MainlineProgressService(isar: isar);
+    await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    final cleared = DateTime.now();
+    for (final stageId in const [
+      'stage_01_01',
+      'stage_01_02',
+      'stage_01_03',
+      'stage_01_04',
+    ]) {
+      await svc.recordVictory(stageId: stageId, now: cleared);
+    }
+  }
+
   // ── private helpers ────────────────────────────────────────────────────────
 
   /// 清空业务 collection（保留 SaveData）。装备 / 心法 / 角色 / 物品 / 事件全清。

@@ -197,6 +197,18 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                _ScenarioButton(
+                  label: UiStrings.scenarioVc18A1,
+                  hint: UiStrings.hintVc18A1,
+                  onTap: () => _seedAndPush(
+                    () => Phase2SeedService(isar: IsarSetup.instance)
+                        .seedVisualCheckW18A1(),
+                    () => const CharacterPanelScreen(
+                      characterId: _defaultCharacterId,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 const _FestivalOverrideButton(),
                 ],
               ),
