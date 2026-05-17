@@ -52,6 +52,18 @@ void main() {
           reason: 'put 后应分配真实 id');
     });
 
+    test('P0.2 #40 Phase 1 新加 3 字段默认值', () async {
+      // 约束语义:新存档 3 字段默认值符合 schema 设计,排行榜 UI 空态可读
+      // (memory feedback_red_line_test_semantics 实践:测约束不测瞬时具体值)
+      final p = await TowerProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
+      expect(p.perFloorClearTimes, isEmpty,
+          reason: 'List<int> 默认空,recordClear 时按 floorIndex 写入');
+      expect(p.bestClearTime, isNull,
+          reason: 'null 语义 = 无通关数据,UI 显「—」');
+      expect(p.lastClearedAt, isNull,
+          reason: 'null 语义 = 无任何通关,UI 不显最近活跃时间');
+    });
+
     test('二次调用同 saveDataId → 复用同一行（不重复建）', () async {
       final p1 = await TowerProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
       final p2 = await TowerProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
