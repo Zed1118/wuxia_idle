@@ -440,8 +440,8 @@ equipment:
     slot: armor
     baseAttackMin: 0
     baseAttackMax: 0
-    baseHealthMin: 1600
-    baseHealthMax: 2300
+    baseHealthMin: 1400
+    baseHealthMax: 2000
     baseSpeedMin: 25
     baseSpeedMax: 50
     presetLoreIds: [armor_baowu_jin_si_jia]
@@ -454,8 +454,8 @@ equipment:
     slot: accessory
     baseAttackMin: 420
     baseAttackMax: 600
-    baseHealthMin: 850
-    baseHealthMax: 1300
+    baseHealthMin: 750
+    baseHealthMax: 1100
     baseSpeedMin: 45
     baseSpeedMax: 70
     presetLoreIds: [accessory_baowu_yu_long_pei]
@@ -470,8 +470,8 @@ equipment:
     schoolBias: gangMeng
     baseAttackMin: 1500
     baseAttackMax: 2000
-    baseHealthMin: 200
-    baseHealthMax: 500
+    baseHealthMin: 150
+    baseHealthMax: 350
     baseSpeedMin: 65
     baseSpeedMax: 100
     presetLoreIds: [weapon_shenwu_po_jun_dao]
@@ -485,8 +485,8 @@ equipment:
     schoolBias: lingQiao
     baseAttackMin: 1500
     baseAttackMax: 2000
-    baseHealthMin: 200
-    baseHealthMax: 500
+    baseHealthMin: 150
+    baseHealthMax: 350
     baseSpeedMin: 65
     baseSpeedMax: 100
     presetLoreIds: [weapon_shenwu_tian_wen_jian]
@@ -500,8 +500,8 @@ equipment:
     schoolBias: yinRou
     baseAttackMin: 1500
     baseAttackMax: 2000
-    baseHealthMin: 200
-    baseHealthMax: 500
+    baseHealthMin: 150
+    baseHealthMax: 350
     baseSpeedMin: 65
     baseSpeedMax: 100
     presetLoreIds: [weapon_shenwu_huan_meng_bian]
@@ -514,8 +514,8 @@ equipment:
     slot: armor
     baseAttackMin: 0
     baseAttackMax: 0
-    baseHealthMin: 2300
-    baseHealthMax: 3000
+    baseHealthMin: 1750
+    baseHealthMax: 2300
     baseSpeedMin: 40
     baseSpeedMax: 70
     presetLoreIds: [armor_shenwu_xuan_huang_pao]
@@ -528,8 +528,8 @@ equipment:
     slot: accessory
     baseAttackMin: 600
     baseAttackMax: 850
-    baseHealthMin: 1300
-    baseHealthMax: 1800
+    baseHealthMin: 1000
+    baseHealthMax: 1400
     baseSpeedMin: 65
     baseSpeedMax: 95
     presetLoreIds: [accessory_shenwu_kun_lun_pei]
