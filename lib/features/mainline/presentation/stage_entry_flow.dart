@@ -44,10 +44,19 @@ import 'stage_victory_dialog.dart';
 ///       不记录进度 / 不掉装备，返回 stage list（Phase 3 Week 5 销账 #29）
 ///
 /// **不嵌套 widget**：每段结束后栈上仅剩 stage_list_screen，避免多层 pop。
+///
+/// [battleRunnerForTest] / [victoryRecorderForTest] / [bossDefeatPenaltyForTest]
+/// 仅供 widget test 注入,生产端勿传。设计对齐爬塔 `runTowerFlow` DI 三件套
+/// ([@visibleForTesting])。
 Future<void> runStageFlow({
   required BuildContext context,
   required WidgetRef ref,
   required StageDef stage,
+  @visibleForTesting Future<bool> Function()? battleRunnerForTest,
+  @visibleForTesting Future<void> Function(String stageId)? victoryRecorderForTest,
+  @visibleForTesting
+  Future<List<DefeatLossEntry>> Function(StageDef stage)?
+      bossDefeatPenaltyForTest,
 }) async {
   // ── opening ──
   if (stage.narrativeOpeningId != null) {
@@ -65,7 +74,12 @@ Future<void> runStageFlow({
 
   // ── battle ──
   if (!context.mounted) return;
-  final won = await _runBattle(context: context, ref: ref, stage: stage);
+  final bool won;
+  if (battleRunnerForTest != null) {
+    won = await battleRunnerForTest();
+  } else {
+    won = await _runBattle(context: context, ref: ref, stage: stage);
+  }
 
   // ── defeat ──
   if (!won) {
@@ -73,7 +87,9 @@ Future<void> runStageFlow({
     // 普通关战败仍直接返，不结算（试错免费）。
     Widget? lossBanner;
     if (stage.isBossStage) {
-      final summary = await _applyBossDefeatPenalty(ref: ref, stage: stage);
+      final summary = bossDefeatPenaltyForTest != null
+          ? await bossDefeatPenaltyForTest(stage)
+          : await _applyBossDefeatPenalty(ref: ref, stage: stage);
       if (summary.isNotEmpty) {
         lossBanner = _DefeatLossBanner(entries: summary);
         // W13-v3 fix: writeTxn 写回 character.internalForce / mainTech.layer
@@ -107,13 +123,17 @@ Future<void> runStageFlow({
 
   // W12 fix: provider 副作用 getOrCreate 与 recordVictory 存在 race（W6 重构遗留），
   // 主动 ensure 避免 MainlineProgress 未初始化时抛 StateError
-  final svc = MainlineProgressService(isar: IsarSetup.instance);
-  await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
-  await svc.recordVictory(
-    stageId: stage.id,
-    now: DateTime.now(),
-  );
-  ref.invalidate(mainlineProgressProvider);
+  if (victoryRecorderForTest != null) {
+    await victoryRecorderForTest(stage.id);
+  } else {
+    final svc = MainlineProgressService(isar: IsarSetup.instance);
+    await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    await svc.recordVictory(
+      stageId: stage.id,
+      now: DateTime.now(),
+    );
+    ref.invalidate(mainlineProgressProvider);
+  }
 
   // W15 #30 P3 后续 A:victory dialog 显 drop + 升层 banner;outcome=null 时
   // (Isar 未 ready / characters 空)兜底跳过 dialog 不阻塞剧情流。
