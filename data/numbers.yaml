@@ -57,12 +57,16 @@ combat:
 
   # --- 最大血量公式 ---
   # GDD §5.6：血量 = 1000 + 内力 × 5 + 根骨 × 500 + 装备血量
-  # 平衡后：   血量 = 1000 + 内力 × 0.7 + 根骨 × 500 + 装备血量
-  # 设计目标：武圣·登峰满根骨 ≤ 20000（§5.2 玩家血量上限）
+  # Phase 1 平衡： 血量 = 1000 + 内力 × 0.7 + 根骨 × 500 + 装备血量
+  # P0.1 #38 重平衡(2026-05-17,方案 D):
+  #   血量 = 1000 + 内力 × 0.5 + 根骨 × 400 + 装备血量
+  # 设计目标:全 7 阶 dengFeng + const 10 + 装备 hp_max 满 极值 ≤ 16667
+  #          (心法相生 hpPct 0.20 加成后 ≤ 20000 §5.4 红线,不靠 cap 兜底)
+  # 实测极值(方案 D):wuSheng 16550 / zongShi 14750 / 全阶过红线
   max_hp_formula:
-    base: 1000                       # 基础血量（GDD 原值）
-    internal_force_factor: 0.7       # 内力系数（GDD 原写 5，平衡后调为 0.7）
-    constitution_factor: 500         # 根骨系数（GDD 原值，每点 +500）
+    base: 1000                       # 基础血量(GDD 原值)
+    internal_force_factor: 0.5       # 内力系数(GDD 原写 5,Phase 1 调 0.7,P0.1 #38 方案 D 调 0.5)
+    constitution_factor: 400         # 根骨系数(GDD 原写 500,P0.1 #38 方案 D 调 400)
 
   # --- 出手速度公式（GDD §5.6 原值，无需调整）---
   # 速度 = 100 + 身法 × 8 + 装备速度 + 心法速度加成
@@ -396,7 +400,7 @@ equipment:
   #
   # 数值校验：
   #   - 装备攻击上限 2000（GDD §5.2 红线）→ 神物·武器 1500-2000 ✓
-  #   - 装备血量贡献 ≤ 3000（避免单装备血量超过基础）→ 神物·护甲 2000-3000 ✓
+  #   - 装备血量贡献 ≤ 3000（避免单装备血量超过基础）→ 神物·护甲 1750-2300 ✓(P0.1 #38 方案 D 重平衡)
   #   - 装备速度贡献 ≤ 100（避免速度膨胀）→ 神物·武器 65-100 ✓
 
   tiers:
@@ -437,18 +441,22 @@ equipment:
       accessory: {attack_min: 280, attack_max: 420, hp_min: 550,  hp_max: 850,  speed_min: 30, speed_max: 50}
 
     # === 第 6 阶 宝物 · 宗师境界开放 ===
+    # P0.1 #38 方案 D 重平衡(2026-05-17):armor hp 2300→2000 / accessory hp 1300→1100
+    # (min 端按比例收窄:armor 1600→1400 / accessory 850→750)
     - tier: baoWu
       tier_name: "宝物"
       weapon:    {attack_min: 1000, attack_max: 1400, hp_min: 100, hp_max: 400, speed_min: 45, speed_max: 75}
-      armor:     {attack_min: 0,    attack_max: 0,    hp_min: 1600, hp_max: 2300, speed_min: 25, speed_max: 50}
-      accessory: {attack_min: 420,  attack_max: 600,  hp_min: 850,  hp_max: 1300, speed_min: 45, speed_max: 70}
+      armor:     {attack_min: 0,    attack_max: 0,    hp_min: 1400, hp_max: 2000, speed_min: 25, speed_max: 50}
+      accessory: {attack_min: 420,  attack_max: 600,  hp_min: 750,  hp_max: 1100, speed_min: 45, speed_max: 70}
 
     # === 第 7 阶 神物 · 武圣境界开放 ===
+    # P0.1 #38 方案 D 重平衡(2026-05-17):weapon hp 500→350 / armor hp 3000→2300 / accessory hp 1800→1400
+    # (min 端按比例收窄:weapon 200→150 / armor 2300→1750 / accessory 1300→1000)
     - tier: shenWu
       tier_name: "神物"
-      weapon:    {attack_min: 1500, attack_max: 2000, hp_min: 200, hp_max: 500, speed_min: 65, speed_max: 100}
-      armor:     {attack_min: 0,    attack_max: 0,    hp_min: 2300, hp_max: 3000, speed_min: 40, speed_max: 70}
-      accessory: {attack_min: 600,  attack_max: 850,  hp_min: 1300, hp_max: 1800, speed_min: 65, speed_max: 95}
+      weapon:    {attack_min: 1500, attack_max: 2000, hp_min: 150, hp_max: 350, speed_min: 65, speed_max: 100}
+      armor:     {attack_min: 0,    attack_max: 0,    hp_min: 1750, hp_max: 2300, speed_min: 40, speed_max: 70}
+      accessory: {attack_min: 600,  attack_max: 850,  hp_min: 1000, hp_max: 1400, speed_min: 65, speed_max: 95}
 
   # --- 强化系统（GDD §6.2）---
   enhancement:
@@ -1142,7 +1150,7 @@ validation_examples:
       critical: 1.00                     # 无暴击
     defender:
       realm: "xueTu / qiMeng (lv 1)"
-      max_hp: 3700                       # 1000 + 500*0.7 + 5*500 = 1000+350+2500 = 3850 → 估算 3700
+      max_hp: 3250                       # P0.1 #38: 1000 + 500*0.5 + 5*400 = 1000+250+2000 = 3250(新公式)
       defense_rate: 0.05                 # 学徒 5%
     calculated_damage: "(600*0.4 + 130*1.0 + 500) * 1.0 * 1.0 * 1.0 * (1-0.05) * 1.0 = 826"
     expected_outcome: "约 4 击致死，节奏适合新手期教学战斗 ✓"
@@ -1161,7 +1169,7 @@ validation_examples:
       critical: 1.00
     defender:
       realm: "erLiu / yuanShu (lv 19)"
-      max_hp: 6600                       # 1000 + 3000*0.7 + 6*500 + 500(装备血量) = 6600（公式真实值）
+      max_hp: 5400                       # P0.1 #38: 1000 + 3000*0.5 + 6*400 + 500 = 1000+1500+2400+500 = 5400(新公式)
       defense_rate: 0.15                 # 二流 15%
     calculated_damage: "(3000*0.4 + 580 + 1500) * 1.75 * 1.0 * 1.0 * 0.85 * 1.0 = 4889"
     expected_outcome: "在 2000-8000 红线内 ✓；约 2 击致死，强力技能节奏合理"
@@ -1181,7 +1189,7 @@ validation_examples:
       realm_diff_modifier: 0.7           # 低境界打高境界（守方修正）
     defender:
       realm: "erLiu / ruMen (lv 16)"
-      max_hp: 6180                       # 1000 + 2400*0.7 + 6*500 + 500 = 1000+1680+3000+500 = 6180（公式真实值）
+      max_hp: 5100                       # P0.1 #38: 1000 + 2400*0.5 + 6*400 + 500 = 1000+1200+2400+500 = 5100(新公式)
       defense_rate: 0.15                 # 二流
     calculated_damage: "(2000*0.4 + 280 + 1500) * 1.30 * 1.0 * 1.0 * 0.85 * 0.7 = 1972"
     expected_outcome: "勉强达到普通伤害下限 2000；约 4 击致死，三流挑战二流确实吃力 ✓"
@@ -1200,7 +1208,7 @@ validation_examples:
       critical: 2.00                     # 暴击
     defender:
       realm: "yiLiu / qiMeng (lv 22)"
-      max_hp: 7860                       # 1000 + 3800*0.7 + 6*500 + 1100 = 1000+2660+3000+1100 = 7760
+      max_hp: 6400                       # P0.1 #38: 1000 + 3800*0.5 + 6*400 + 1100 = 1000+1900+2400+1100 = 6400(新公式)
       defense_rate: 0.20                 # 一流
     calculated_damage: "(5000*0.4 + 600 + 5500) * 1.75 * 1.25 * 2.0 * 0.80 * 1.0 = 28525"
     expected_outcome: "破万达成（28525），符合 GDD §5.2 大招暴击'上万'目标 ✓；一击秒杀"
@@ -1220,7 +1228,7 @@ validation_examples:
       critical: 2.50                     # 顶级暴击
     defender:
       realm: "wuSheng / dengFeng (lv 49)"
-      max_hp: 19500                      # 1000 + 15000*0.7 + 10*500 + 3000 = 19500（接近 20000 上限）
+      max_hp: 15500                      # P0.1 #38: 1000 + 15000*0.5 + 10*400 + 3000 = 1000+7500+4000+3000 = 15500(新公式,装备血裸值不含强化)
       defense_rate: 0.35                 # 武圣
     note: "本战例数据用于压力测试，确保武圣境界数值不崩盘"
     expected_outcome: "约 19500 / 19500 几乎一击致死，符合武圣对决'电光石火'氛围 ✓；血量未超 20000 红线 ✓"

@@ -38,18 +38,19 @@ void main() {
     };
 
     // 7 tier base 数值矩阵:每 tier 用"该 tier 玩家可达 base maxHp 极值"
-    // (1000 + internalForce × 0.7 + constitution 10 × 500 + 神物级装备 hp)。
-    // wushen tier 满满当当 ≈ 21800 已破 §5.4 红线(挂账 Phase 5 / 1.0
-    // 数值平衡;本批 applySynergy 加 cap 20000 兜底)。
+    // (P0.1 #38 方案 D 重平衡后:1000 + internalForce × 0.5 + constitution 10 × 400
+    //  + 该 tier 装备 hp_max 满)。全 7 阶 base ≤ 16667 设计目标(spec §2),
+    // hpPct 0.20 加成后 ≤ 20000 §5.4 红线,日常路径不再触发 cap。
+    // 实测极值:wushen 16550 / zongshi 14750 / 全阶过红线(详 closeout 矩阵)。
     const tierBaseStats = <RealmTier, ({int baseMaxHp, int baseMaxIf, double baseDefRate})>{
-      RealmTier.xueTu: (baseMaxHp: 2200, baseMaxIf: 1100, baseDefRate: 0.05),
-      RealmTier.sanLiu: (baseMaxHp: 3500, baseMaxIf: 2000, baseDefRate: 0.10),
-      RealmTier.erLiu: (baseMaxHp: 5500, baseMaxIf: 3500, baseDefRate: 0.15),
-      RealmTier.yiLiu: (baseMaxHp: 8000, baseMaxIf: 5700, baseDefRate: 0.20),
-      RealmTier.jueDing: (baseMaxHp: 11500, baseMaxIf: 9000, baseDefRate: 0.25),
-      RealmTier.zongShi: (baseMaxHp: 15500, baseMaxIf: 12500, baseDefRate: 0.30),
-      // wushen 满 base 已破 §5.4 (~21800) — applySynergy cap 必须生效
-      RealmTier.wuSheng: (baseMaxHp: 21800, baseMaxIf: 15000, baseDefRate: 0.35),
+      RealmTier.xueTu: (baseMaxHp: 5850, baseMaxIf: 1100, baseDefRate: 0.05),
+      RealmTier.sanLiu: (baseMaxHp: 6700, baseMaxIf: 2000, baseDefRate: 0.10),
+      RealmTier.erLiu: (baseMaxHp: 7950, baseMaxIf: 3500, baseDefRate: 0.15),
+      RealmTier.yiLiu: (baseMaxHp: 9650, baseMaxIf: 5700, baseDefRate: 0.20),
+      RealmTier.jueDing: (baseMaxHp: 12200, baseMaxIf: 9000, baseDefRate: 0.25),
+      RealmTier.zongShi: (baseMaxHp: 14750, baseMaxIf: 12500, baseDefRate: 0.30),
+      // wushen 满 base 16550 ≤ 16667 spec §2 目标 + hpPct 0.20 → 19860 ≤ 20000
+      RealmTier.wuSheng: (baseMaxHp: 16550, baseMaxIf: 15000, baseDefRate: 0.35),
     };
 
     /// 极简 base BattleCharacter 构造 helper(填默认值,只接关键 6 字段)。
@@ -125,11 +126,15 @@ void main() {
     }
 
     // ── 4 极端 base case(暴露 cap 生效路径)──────────────────────────
-    test('极端 1:wushen base maxHp 21800 + hpPct 0.20 → applySynergy cap 20000',
+    test('极端 1·历史回归:wushen 人造旧值 base maxHp 21800 + hpPct 0.20 → applySynergy cap 仍兜到 20000',
         () {
+      // P0.1 #38 方案 D 重平衡(2026-05-17)后,wushen 真实 base 极值降到 16550
+      // (详上文 tierBaseStats),日常路径不再触发 cap。本 case 用人造旧值 21800
+      // (#38 重平衡前数值)模拟「未来若数值再次膨胀」或「装备强化/共鸣双乘后
+      // 极值超 16667」场景,验证 cap 仍能作 second-line defense 兜底。
       final base = buildBase(
         tier: RealmTier.wuSheng,
-        maxHp: 21800, // 已破红线 base(数值平衡问题,挂账 Phase 5 / 1.0)
+        maxHp: 21800, // 人造极值,模拟 #38 前破红线 base
         maxIf: 15000,
         defRate: 0.35,
       );
@@ -141,6 +146,28 @@ void main() {
       expect(result.maxHp, 20000,
           reason: 'applySynergy maxHp cap 必须把 26160 截到 20000');
       expect(result.currentHp, 20000, reason: 'currentHp 跟 maxHp 同步 cap');
+    });
+
+    test('极端 1·新基线回归:wushen 真实极值 16550 + hpPct 0.20 → 19860 ≤ 20000 不触发 cap',
+        () {
+      // P0.1 #38 方案 D 收口锚点:wushen base 16550 自洽 ≤ 16667,
+      // hpPct 0.20 加成后 19860 ≤ 20000 红线,validates spec §6
+      // 「日常路径不再 trigger cap」(applySynergy cap 仅作 second-line defense)。
+      final base = buildBase(
+        tier: RealmTier.wuSheng,
+        maxHp: 16550, // P0.1 #38 后 wushen 真实极值
+        maxIf: 15000,
+        defRate: 0.35,
+      );
+      final result = StageBattleSetup.applySynergy(
+        base,
+        const SynergyMultipliers(hpPct: 0.20),
+      );
+      // 16550 × 1.20 = 19860,< 20000 → 不触发 cap
+      expect(result.maxHp, 19860,
+          reason: 'P0.1 #38 后 wushen 极值 + hpPct 0.20 自然落在红线内,无须 cap');
+      expect(result.maxHp, lessThan(20000),
+          reason: 'spec §6:日常路径 base × hpPct ≤ 20000,不依赖 cap 兜底');
     });
 
     test('极端 2:wushen base maxIf 15000 + maxPct 0.25 → cap 15000',

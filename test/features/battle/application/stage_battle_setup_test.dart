@@ -172,22 +172,24 @@ void main() {
         reason: 'C·阴影 相生 multipliers 无 defensePct,defenseRate 保持 base');
   });
 
-  test('Codex 视觉验收 A:B:C maxHp ratio 回归(7992 / 6660 / 6660)',
+  test('Codex 视觉验收 A:B:C maxHp ratio 回归(6360 / 5300 / 5300)',
       () async {
     // W18-A1 Codex 视觉验收(closeout `codex_w18_a1_synergy_visual_check_2026-05-17.md`)
-    // 实测 A:B = 7992 / 6660 = 1.20 精准命中 hpPct=0.20。本回归 test 锚定
-    // 此数字防 base maxHp 派生公式 / hpPct 注入计算漂移。
+    // 原实测 A:B = 7992 / 6660 = 1.20 命中 hpPct=0.20。
+    // P0.1 #38 方案 D 重平衡(2026-05-17)后:max_hp_formula 0.7→0.5 / 500→400,
+    // yiLiu·qiMeng + const 6 + 无装备 base 6660 → 5300,A 极值 7992 → 6360。
+    // A:B = 6360 / 5300 = 1.20 比例不变,锚定继续防 hpPct 注入计算漂移。
     await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
     final stage = GameRepository.instance.getStage('stage_01_01');
 
     final (left, _) =
         await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
 
-    expect(left[0].maxHp, 7992,
-        reason: 'A·阴阳 maxHp = base 6660 × 1.20 = 7992(Codex 实测锚)');
-    expect(left[1].maxHp, 6660,
-        reason: 'B·刚柔 无 hpPct,maxHp = base(1000 + 3800×0.7 + 6×500 = 6660)');
-    expect(left[2].maxHp, 6660,
+    expect(left[0].maxHp, 6360,
+        reason: 'A·阴阳 maxHp = base 5300 × 1.20 = 6360(P0.1 #38 后新锚)');
+    expect(left[1].maxHp, 5300,
+        reason: 'B·刚柔 无 hpPct,maxHp = base(1000 + 3800×0.5 + 6×400 = 5300)');
+    expect(left[2].maxHp, 5300,
         reason: 'C·阴影 同 B,无 hpPct');
   });
 

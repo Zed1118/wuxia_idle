@@ -160,7 +160,10 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────
 
   group('CharacterDerivedStats.maxHp（5 战例公式实现验证）', () {
-    test('战例 A：xueTu/qiMeng 山贼 内力500/根骨5/装备0 → 3850', () {
+    // P0.1 #38 方案 D 重平衡(2026-05-17):max_hp_formula 0.7→0.5 / 500→400。
+    // 5 战例预期值同步从旧公式 (1000+IF×0.7+const×500+equip) 更新到
+    // 新公式 (1000+IF×0.5+const×400+equip),验证公式系数改动生效。
+    test('战例 A：xueTu/qiMeng 山贼 内力500/根骨5/装备0 → 3250', () {
       final n = GameRepository.instance.numbers;
       final c = _mkChar(
         tier: RealmTier.xueTu,
@@ -168,10 +171,11 @@ void main() {
         internalForce: 500,
         constitution: 5,
       );
-      expect(CharacterDerivedStats.maxHp(c, [], n), 3850);
+      // 新:1000 + 500×0.5 + 5×400 + 0 = 1000 + 250 + 2000 = 3250
+      expect(CharacterDerivedStats.maxHp(c, [], n), 3250);
     });
 
-    test('战例 B：erLiu/yuanShu 内力3000/根骨6/装备血500 → 6600', () {
+    test('战例 B：erLiu/yuanShu 内力3000/根骨6/装备血500 → 5400', () {
       final n = GameRepository.instance.numbers;
       final c = _mkChar(
         tier: RealmTier.erLiu,
@@ -180,12 +184,11 @@ void main() {
         constitution: 6,
       );
       final eq = _mkEquip(baseHealth: 500);
-      expect(CharacterDerivedStats.maxHp(c, [eq], n), 6600);
-      // numbers.yaml validation_examples.b/c 的 max_hp 注释已对齐公式真实值
-      // (b=6600, c=6180)，由清账冲刺修正；公式实现保持权威。
+      // 新:1000 + 3000×0.5 + 6×400 + 500 = 1000 + 1500 + 2400 + 500 = 5400
+      expect(CharacterDerivedStats.maxHp(c, [eq], n), 5400);
     });
 
-    test('战例 C：erLiu/ruMen 内力2400/根骨6/装备血500 → 6180', () {
+    test('战例 C：erLiu/ruMen 内力2400/根骨6/装备血500 → 5100', () {
       final n = GameRepository.instance.numbers;
       final c = _mkChar(
         tier: RealmTier.erLiu,
@@ -194,11 +197,11 @@ void main() {
         constitution: 6,
       );
       final eq = _mkEquip(baseHealth: 500);
-      expect(CharacterDerivedStats.maxHp(c, [eq], n), 6180);
-      // numbers.yaml 已修正 expected=6180 与公式对齐。
+      // 新:1000 + 2400×0.5 + 6×400 + 500 = 1000 + 1200 + 2400 + 500 = 5100
+      expect(CharacterDerivedStats.maxHp(c, [eq], n), 5100);
     });
 
-    test('战例 D：yiLiu/qiMeng 内力3800/根骨6/装备血1100 → 7760', () {
+    test('战例 D：yiLiu/qiMeng 内力3800/根骨6/装备血1100 → 6400', () {
       final n = GameRepository.instance.numbers;
       final c = _mkChar(
         tier: RealmTier.yiLiu,
@@ -207,10 +210,11 @@ void main() {
         constitution: 6,
       );
       final eq = _mkEquip(baseHealth: 1100);
-      expect(CharacterDerivedStats.maxHp(c, [eq], n), 7760);
+      // 新:1000 + 3800×0.5 + 6×400 + 1100 = 1000 + 1900 + 2400 + 1100 = 6400
+      expect(CharacterDerivedStats.maxHp(c, [eq], n), 6400);
     });
 
-    test('战例 E：wuSheng/dengFeng 内力15000/根骨10/装备血3000 → 19500（≤红线 20000）', () {
+    test('战例 E：wuSheng/dengFeng 内力15000/根骨10/装备血3000 → 15500（≤红线 20000）', () {
       final n = GameRepository.instance.numbers;
       final c = _mkChar(
         tier: RealmTier.wuSheng,
@@ -219,8 +223,9 @@ void main() {
         constitution: 10,
       );
       final eq = _mkEquip(baseHealth: 3000);
+      // 新:1000 + 15000×0.5 + 10×400 + 3000 = 1000 + 7500 + 4000 + 3000 = 15500
       final hp = CharacterDerivedStats.maxHp(c, [eq], n);
-      expect(hp, 19500);
+      expect(hp, 15500);
       expect(hp, lessThanOrEqualTo(20000), reason: 'GDD §5.2 玩家血量红线');
     });
   });
