@@ -261,8 +261,8 @@ void main() {
 ///
 /// **不写具体数字**(memory `feedback_red_line_test_semantics`):
 ///   - maxHp ≤ 20000(§5.4 玩家血量红线)
-///   - maxInternalForce ≤ 15000(§5.4 内力红线 + _applySynergy cap)
-///   - defenseRate ∈ [0.0, 0.95](_applySynergy clamp,§5.5 减伤 100% 防 bug)
+///   - maxInternalForce ≤ 15000(§5.4 内力红线 + applySynergy cap)
+///   - defenseRate ∈ [0.0, 0.95](applySynergy clamp,§5.5 减伤 100% 防 bug)
 ///   - currentHp ≤ maxHp / currentInternalForce ≤ maxInternalForce(派生不变式)
 ///   - speed > 0 / totalEquipmentAttack ≥ 0(非负 + 非零 speed 防卡死战斗)
 void _expectRedLines(dynamic ch) {
@@ -271,11 +271,11 @@ void _expectRedLines(dynamic ch) {
   expect(ch.currentHp, lessThanOrEqualTo(ch.maxHp),
       reason: '${ch.name} currentHp ≤ maxHp 派生不变式');
   expect(ch.maxInternalForce, lessThanOrEqualTo(15000),
-      reason: '${ch.name} maxInternalForce ${ch.maxInternalForce} 不破 §5.4 内力红线 15000(_applySynergy cap)');
+      reason: '${ch.name} maxInternalForce ${ch.maxInternalForce} 不破 §5.4 内力红线 15000(applySynergy cap)');
   expect(ch.currentInternalForce, lessThanOrEqualTo(ch.maxInternalForce),
       reason: '${ch.name} currentInternalForce ≤ maxInternalForce 派生不变式');
   expect(ch.defenseRate, inInclusiveRange(0.0, 0.95),
-      reason: '${ch.name} defenseRate ${ch.defenseRate} 必在 _applySynergy clamp [0.0, 0.95]');
+      reason: '${ch.name} defenseRate ${ch.defenseRate} 必在 applySynergy clamp [0.0, 0.95]');
   expect(ch.speed, greaterThan(0),
       reason: '${ch.name} speed > 0(防战斗卡死,actionPoint 增量必须正)');
   expect(ch.totalEquipmentAttack, greaterThanOrEqualTo(0),

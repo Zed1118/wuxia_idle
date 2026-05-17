@@ -63,7 +63,7 @@ class BattleCharacter {
   /// 守方防御率(GDD §5.5,应用项为 `1 - defenseRate`)。
   ///
   /// W18-A1.2 从 numbers.yaml `defenseRateByTier[realmTier]` 派生 base 值,
-  /// [StageBattleSetup._applySynergy] 命中相生时加法注入 `defensePct`,
+  /// [StageBattleSetup.applySynergy] 命中相生时加法注入 `defensePct`,
   /// battle_engine 用 `defender.defenseRate` 替代查 numbers.yaml(view layer
   /// 缓存 + synergy 加成共存)。
   final double defenseRate;
