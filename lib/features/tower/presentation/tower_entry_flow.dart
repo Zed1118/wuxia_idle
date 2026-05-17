@@ -154,6 +154,31 @@ Future<void> runTowerFlow({
     await _persistDrops(ref, drops);
   }
 
+  // ── leaderboard sync(P0.2 #40 Phase 3,D 方案 Noop placeholder)──
+  // 仅 isFirstClear 触发(GDD §5.1 反主流防刷,与 drops 同纪律);
+  // 整段 try-catch 兜底(IsarSetup 未 init / progress 读失败时降级,
+  // unawaited reportClear 内再 catchError 防 Future 飘错);
+  // memory feedback_layered_bugs 警示:留 log 不静默吞 + 下层 bug 不掩盖主流程。
+  // 接 Supabase 时只换 leaderboardSyncProvider 注入,本 hook 0 改动。
+  if (clearResult.isFirstClear) {
+    try {
+      final sync = ref.read(leaderboardSyncProvider);
+      final svc = TowerProgressService(isar: IsarSetup.instance);
+      final progress =
+          await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+      unawaited(sync.reportClear(
+        highestFloor: progress.highestClearedFloor,
+        bestClearTimeMs: progress.bestClearTime,
+        totalAttempts: progress.totalAttempts,
+        clearedAt: progress.lastClearedAt ?? DateTime.now(),
+      ).catchError((e, st) {
+        debugPrint('runTowerFlow leaderboardSync reportClear failed: $e\n$st');
+      }));
+    } catch (e, st) {
+      debugPrint('runTowerFlow leaderboardSync setup failed: $e\n$st');
+    }
+  }
+
   if (context.mounted) ref.invalidate(towerProgressProvider);
 
   // ── victory dialog ──
