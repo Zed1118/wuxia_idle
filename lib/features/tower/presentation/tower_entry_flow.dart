@@ -53,7 +53,8 @@ Future<void> runTowerFlow({
   required TowerFloorDef floor,
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
-  Future<TowerClearResult> Function(int floorIndex)? clearRecorderForTest,
+  Future<TowerClearResult> Function(int floorIndex, int elapsedMs)?
+      clearRecorderForTest,
   @visibleForTesting Future<void> Function()? defeatRecorderForTest,
 }) async {
   // ── opening（仅 Boss 层）──
@@ -72,12 +73,17 @@ Future<void> runTowerFlow({
 
   // ── battle ──
   if (!context.mounted) return;
+  // P0.2 #40 Phase 2:计时本次战斗耗时(从 BattleScreen push 起到 onVictory/Defeat
+  // 回调触发,含 push/pop 动画 ≈ 600ms 误差,可接受;不为 test 注入路径计时)
+  final stopwatch = Stopwatch()..start();
   final bool won;
   if (battleRunnerForTest != null) {
     won = await battleRunnerForTest();
   } else {
     won = await _runTowerBattle(context: context, ref: ref, floor: floor);
   }
+  stopwatch.stop();
+  final elapsedMs = stopwatch.elapsedMilliseconds;
 
   // ── defeat ──
   if (!won) {
@@ -102,7 +108,7 @@ Future<void> runTowerFlow({
   TowerClearResult clearResult;
   try {
     if (clearRecorderForTest != null) {
-      clearResult = await clearRecorderForTest(floor.floorIndex);
+      clearResult = await clearRecorderForTest(floor.floorIndex, elapsedMs);
     } else {
       // W12 fix: 同 defeat 分支，ensure getOrCreate 避免 race
       final svc = TowerProgressService(isar: IsarSetup.instance);
@@ -110,6 +116,7 @@ Future<void> runTowerFlow({
       clearResult = await svc.recordClear(
         floorIndex: floor.floorIndex,
         now: DateTime.now(),
+        elapsedMs: elapsedMs,
       );
     }
   } catch (e, st) {
