@@ -320,6 +320,65 @@ void main() {
       expect(out.internalForcePoints, 20);
     });
 
+    // W18-A1.2 心法相生 internalForceGrowthPct 注入 internalForcePoints 维度
+    test(
+        'W18-A1.2 synergyInternalForceGrowthPct=0.10 → internalForcePoints × 1.10',
+        () {
+      final start = DateTime(2026, 5, 11, 10, 0); // 上午 10 点非子时
+      final now = start.add(const Duration(hours: 4));
+      final session = makeSession(durationHours: 4, startedAt: start);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+        synergyInternalForceGrowthPct: 0.10, // 组合 5 同辈互补 yaml 数值
+      );
+      // floor(5×1.0×4×1.0×1.0×1.0×1.0×1.10)=floor(22.0)=22
+      expect(out.internalForcePoints, 22,
+          reason: '相生 internalForceGrowthPct=0.10 → 内力产出 20 → 22');
+    });
+
+    test(
+        'W18-A1.2 synergyInternalForceGrowthPct=0.0(默认参数)→ internalForcePoints 不变',
+        () {
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final now = start.add(const Duration(hours: 4));
+      final session = makeSession(durationHours: 4, startedAt: start);
+      // 不显式传 synergyInternalForceGrowthPct → 默认 0.0
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+      expect(out.internalForcePoints, 20,
+          reason: '默认参数 0.0 → (1 + 0.0) = 1.0 倍,与回归基线一致');
+    });
+
+    test(
+        'W18-A1.2 synergyInternalForceGrowthPct 仅影响 internalForcePoints,不影响其他 3 维度',
+        () {
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final now = start.add(const Duration(hours: 4));
+      final session = makeSession(durationHours: 4, startedAt: start);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+        synergyInternalForceGrowthPct: 0.10,
+      );
+      // mojianshi / experience / techniqueLearn 公式中不含 synergyGrowthPct
+      // 项,数值与基线一致(回归断言)
+      expect(out.mojianshi, 4, reason: 'mojianshi 不受相生 growth 影响');
+      expect(out.experiencePoints, 400,
+          reason: 'experience 不受相生 growth 影响');
+    });
+
     test('节气日（立春 2026-02-04 上午 10:00）→ 全产出 ×1.30', () {
       // 节气日 +30% 应用到所有 4 维度，子时此时未触发
       final start = DateTime(2026, 2, 4, 10, 0);

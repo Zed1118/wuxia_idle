@@ -123,6 +123,7 @@ void main() {
         speed: 100,
         criticalRate: 0.1,
         evasionRate: 0.1,
+        defenseRate: 0.05,
         totalEquipmentAttack: 100,
         mainCultivationLayer: CultivationLayer.chuKui,
         availableSkills: const [],

@@ -65,6 +65,7 @@ void main() {
         speed: speed,
         criticalRate: critRate,
         evasionRate: 0.05,
+        defenseRate: 0.10,
         totalEquipmentAttack: eqAtk,
         mainCultivationLayer: cultivation,
         availableSkills: skills,

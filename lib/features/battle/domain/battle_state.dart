@@ -60,6 +60,14 @@ class BattleCharacter {
   final double criticalRate;
   final double evasionRate;
 
+  /// 守方防御率(GDD §5.5,应用项为 `1 - defenseRate`)。
+  ///
+  /// W18-A1.2 从 numbers.yaml `defenseRateByTier[realmTier]` 派生 base 值,
+  /// [StageBattleSetup._applySynergy] 命中相生时加法注入 `defensePct`,
+  /// battle_engine 用 `defender.defenseRate` 替代查 numbers.yaml(view layer
+  /// 缓存 + synergy 加成共存)。
+  final double defenseRate;
+
   /// 已穿装备的攻击合计（已应用强化 × 共鸣 × 开锋）。战斗中不变，伤害公式
   /// 基础项直接读这个值，避免每 tick 回算（phase1_tasks T11 §657 派生快照）。
   final int totalEquipmentAttack;
@@ -94,6 +102,7 @@ class BattleCharacter {
     required this.speed,
     required this.criticalRate,
     required this.evasionRate,
+    required this.defenseRate,
     required this.totalEquipmentAttack,
     required this.mainCultivationLayer,
     required this.availableSkills,
@@ -160,6 +169,7 @@ class BattleCharacter {
     );
     final critRate = CharacterDerivedStats.criticalRate(character, numbers);
     final evRate = CharacterDerivedStats.evasionRate(character, numbers);
+    final defRate = RealmUtils.defenseRateOf(character.realmTier);
     final totalEqAtk = equipped.fold<int>(
       0,
       (sum, e) => sum + CharacterDerivedStats.effectiveEquipmentAttack(e, numbers),
@@ -191,6 +201,7 @@ class BattleCharacter {
       speed: speed,
       criticalRate: critRate,
       evasionRate: evRate,
+      defenseRate: defRate,
       totalEquipmentAttack: totalEqAtk,
       mainCultivationLayer: mainTechnique.cultivationLayer,
       availableSkills: List.unmodifiable(skills),
@@ -216,6 +227,7 @@ class BattleCharacter {
     int? speed,
     double? criticalRate,
     double? evasionRate,
+    double? defenseRate,
     int? totalEquipmentAttack,
     CultivationLayer? mainCultivationLayer,
     List<SkillDef>? availableSkills,
@@ -240,6 +252,7 @@ class BattleCharacter {
       speed: speed ?? this.speed,
       criticalRate: criticalRate ?? this.criticalRate,
       evasionRate: evasionRate ?? this.evasionRate,
+      defenseRate: defenseRate ?? this.defenseRate,
       totalEquipmentAttack:
           totalEquipmentAttack ?? this.totalEquipmentAttack,
       mainCultivationLayer:
