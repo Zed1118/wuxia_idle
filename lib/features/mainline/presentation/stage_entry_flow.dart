@@ -24,11 +24,13 @@ import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../equipment/application/drop_service.dart';
+import '../../event/application/game_event_service.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/utils/rng.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
+import '../domain/mainline_progress.dart';
 import 'stage_victory_dialog.dart';
 
 /// Phase 3 T37 关卡进入流程串联。
@@ -384,6 +386,7 @@ Future<({DropResult drops, List<AdvancementEntry> advancements})?>
     techniqueDefLookup: GameRepository.instance.getTechnique,
     dropService: dropSvc,
     isVictory: true,
+    numbersConfig: numbers,
   );
 
   // W15 #30 第 3 期:active 3 character 每人 += stage.baseExpReward + 升层。
@@ -401,6 +404,17 @@ Future<({DropResult drops, List<AdvancementEntry> advancements})?>
       advancements.add(AdvancementEntry(chName: c.name, result: r));
     }
   }
+
+  // P1 #42 Phase 2:isFirstClear snapshot(writeTxn 之前 read MainlineProgress,
+  // 含 stageId 即 repeat,不含即首通 → bossDefeated 防刷)。
+  final mainlineProgressSnapshot = await isar.mainlineProgress
+      .filter()
+      .saveDataIdEqualTo(IsarSetup.currentSlotId)
+      .findFirst();
+  final isFirstClearStage = !(mainlineProgressSnapshot?.clearedStageIds
+          .contains(stage.id) ??
+      false);
+  final founderId = save?.founderCharacterId;
 
   final now = DateTime.now();
   await isar.writeTxn(() async {
@@ -432,6 +446,63 @@ Future<({DropResult drops, List<AdvancementEntry> advancements})?>
             ..lastObtainedAt = now,
         );
       }
+    }
+
+    // P1 #42 Phase 2:GameEvent 写入(同 writeTxn 原子)。
+    // #3 equipmentObtained 每件 drop 装备一条;#6 realmBreakthrough 每角色判
+    // didAdvance;#7 resonanceUpgraded 战斗中跨档装备;#8 bossDefeated 仅
+    // isBossStage && isFirstClearStage 触发。
+    final events = GameEventService(isar);
+    final allEquips =
+        equipsByCh.values.expand((list) => list).toList(growable: false);
+    for (final eqId in result.resonanceUpgradedEquipmentIds) {
+      Equipment? eq;
+      for (final e in allEquips) {
+        if (e.id == eqId) {
+          eq = e;
+          break;
+        }
+      }
+      if (eq == null) continue;
+      final def = GameRepository.instance.getEquipment(eq.defId);
+      await events.recordResonanceUpgraded(
+        characterId: eq.ownerCharacterId ?? founderId ?? 0,
+        equipmentId: eq.id,
+        equipmentName: def.name,
+        newStage: eq.resonanceStage(numbers).index + 1,
+      );
+    }
+    for (final drop in result.dropResult.equipments) {
+      final def = GameRepository.instance.getEquipment(drop.defId);
+      await events.recordEquipmentObtained(
+        characterId: founderId,
+        equipmentId: drop.id,
+        equipmentDefId: drop.defId,
+        equipmentName: def.name,
+        source: stage.name,
+      );
+    }
+    for (final entry in advancements) {
+      if (!entry.result.didAdvance) continue;
+      final ch = characters.firstWhere(
+        (c) => c.name == entry.chName,
+        orElse: () => characters.first,
+      );
+      await events.recordRealmBreakthrough(
+        character: ch,
+        result: entry.result,
+      );
+    }
+    if (stage.isBossStage && isFirstClearStage && founderId != null) {
+      final bossName = stage.enemyTeam.isNotEmpty
+          ? stage.enemyTeam.last.name
+          : stage.name;
+      await events.recordBossDefeated(
+        characterId: founderId,
+        stageId: stage.id,
+        stageName: stage.name,
+        bossName: bossName,
+      );
     }
   });
 

@@ -7,6 +7,7 @@ import '../../../core/domain/attributes.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/utils/rng.dart';
+import '../../event/application/game_event_service.dart';
 import '../domain/encounter_def.dart';
 import '../domain/encounter_progress.dart';
 
@@ -253,6 +254,9 @@ class EncounterService {
     required int saveDataId,
     required EncounterDef encounter,
     required String outcomeId,
+    int? founderCharacterId,
+    String? encounterTitle,
+    String? Function(String skillId)? skillNameLookup,
   }) async {
     final outcome = encounter.resolveOutcome(outcomeId);
 
@@ -303,6 +307,29 @@ class EncounterService {
 
         case OutcomeType.none:
           result = const NoneOutcome();
+      }
+
+      // P1 #42 Phase 2:GameEvent 写入(同 writeTxn 原子)。
+      // #2 adventureTriggered 必发(任何 outcomeId 都算"奇遇触发了");
+      // #5 skillEnlightened 条件发(unlockSkill outcome,且 result 实际 new skill)。
+      // founderCharacterId 由 caller 从 save.founderCharacterId 传入,
+      // null 时跳过(test fixture 路径不必传)。
+      if (founderCharacterId != null) {
+        final events = GameEventService(isar);
+        await events.recordAdventureTriggered(
+          characterId: founderCharacterId,
+          encounterId: encounter.id,
+          encounterTitle: encounterTitle ?? encounter.id,
+        );
+        if (result is UnlockSkillApplied) {
+          final sid = (result as UnlockSkillApplied).skillId;
+          final skillName = skillNameLookup?.call(sid) ?? sid;
+          await events.recordSkillEnlightened(
+            characterId: founderCharacterId,
+            skillId: sid,
+            skillName: skillName,
+          );
+        }
       }
     });
     return result;

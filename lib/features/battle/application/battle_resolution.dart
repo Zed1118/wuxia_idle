@@ -42,12 +42,18 @@ class BattleResolutionResult {
   /// 见 [DispelService.applyDefeatPenalty]。
   final Map<int, DefeatPenaltyResult> defeatPenaltyByCharacter;
 
+  /// P1 #42 Phase 2:本场战斗内 `resonanceStage` 跨档晋升的装备 id 列表。
+  /// caller 用于 GameEvent #7 resonanceUpgraded 写入。仅 `resolve` 传入
+  /// `numbersConfig` 时填充,否则恒空。
+  final List<int> resonanceUpgradedEquipmentIds;
+
   const BattleResolutionResult({
     required this.updatedEquipmentIds,
     required this.skillUsageIncrements,
     required this.cultivationEvents,
     required this.dropResult,
     this.defeatPenaltyByCharacter = const {},
+    this.resonanceUpgradedEquipmentIds = const [],
   });
 
   @override
@@ -114,13 +120,26 @@ class BattleResolutionService {
     final updatedEquipmentIds = <int>[];
     final skillUsageIncrements = <int, Map<String, int>>{};
     final cultivationEvents = <int, CultivationProgressResult>{};
+    // P1 #42 Phase 2:#7 resonanceUpgraded — battleCount++ 前后 stage 跨档则记录。
+    // numbersConfig 非 null 时才 detect(victory 路径 caller 传,defeat 路径不关心)。
+    final resonanceUpgradedEquipmentIds = <int>[];
 
     // 2. 对每个参战角色：装备 battleCount++ + 心法 skillUsageCount + 主修升层
+    final resonanceNumbers = numbersConfig;
     for (final ch in participatingCharacters) {
       // 2a. 装备 battleCount++
       final equips = equipmentsByCharacter[ch.id] ?? const <Equipment>[];
       for (final eq in equips) {
+        final stageBefore = resonanceNumbers != null
+            ? eq.resonanceStage(resonanceNumbers)
+            : null;
         eq.battleCount += 1;
+        if (resonanceNumbers != null && stageBefore != null) {
+          final stageAfter = eq.resonanceStage(resonanceNumbers);
+          if (stageAfter != stageBefore) {
+            resonanceUpgradedEquipmentIds.add(eq.id);
+          }
+        }
         updatedEquipmentIds.add(eq.id);
       }
 
@@ -174,6 +193,7 @@ class BattleResolutionService {
       cultivationEvents: cultivationEvents,
       dropResult: dropResult,
       defeatPenaltyByCharacter: defeatPenalty,
+      resonanceUpgradedEquipmentIds: resonanceUpgradedEquipmentIds,
     );
   }
 

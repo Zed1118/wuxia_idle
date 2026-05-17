@@ -409,4 +409,44 @@ class UiStrings {
       '实际挂机 ${h.toStringAsFixed(1)} 小时';
   static String seclusionExpected(String key, double perHour) =>
       '$key：${perHour.toStringAsFixed(1)}/h';
+
+  // ── P1 #42 Phase 2 · GameEvent 9 type 文案模板(GDD §9.2 昨晚发生的事)──
+
+  // #1 retreatCompleted
+  static const String gameEventRetreatTitle = '闭关收功';
+  static String gameEventRetreatSummary(
+          String charName, int actualHours, String mapName) =>
+      '$charName 于「$mapName」闭关 $actualHours 时，今晨收功。';
+
+  // #2 adventureTriggered
+  static String gameEventAdventureSummary(String encounterTitle) =>
+      '江湖偶遇：$encounterTitle。';
+
+  // #3 equipmentObtained
+  static String gameEventEquipmentTitle(String equipName) => '得 $equipName';
+  static String gameEventEquipmentSummary(String equipName, String source) =>
+      '于「$source」得 $equipName，藏入囊中。';
+
+  // #5 skillEnlightened
+  static String gameEventSkillTitle(String skillName) => '悟得「$skillName」';
+  static String gameEventSkillSummary(String skillName) =>
+      '心头一动，悟得武学「$skillName」。';
+
+  // #6 realmBreakthrough(主角) / #9 disciplePromoted(弟子)
+  static const String gameEventBreakthroughTitle = '境界突破';
+  static String gameEventDiscipleTitle(String discipleName) =>
+      '$discipleName 突破';
+  static String gameEventBreakthroughSummary(String charName, String realm) =>
+      '$charName 修为精进，已至 $realm。';
+
+  // #7 resonanceUpgraded
+  static String gameEventResonanceTitle(String equipName) =>
+      '$equipName 共鸣晋阶';
+  static String gameEventResonanceSummary(String equipName, int newStage) =>
+      '$equipName 历经血战，共鸣度晋至第 $newStage 阶。';
+
+  // #8 bossDefeated
+  static String gameEventBossTitle(String bossName) => '斩 $bossName';
+  static String gameEventBossSummary(String bossName, String stageName) =>
+      '于「$stageName」一战胜 $bossName，江湖见闻。';
 }
