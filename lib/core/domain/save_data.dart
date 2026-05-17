@@ -40,4 +40,8 @@ class SaveData {
   int highestTowerLayer = 0;
 
   DateTime? towerLeaderboardSyncedAt;
+
+  /// 新手引导步骤(P1 #42 Phase 2 §10 P1.x 消费)。
+  /// 本批 schema 落地 0 业务读写,留接口给 §10 引导骨架按节奏递增解锁。
+  int tutorialStep = 0;
 }
