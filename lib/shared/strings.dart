@@ -410,6 +410,17 @@ class UiStrings {
   static String seclusionExpected(String key, double perHour) =>
       '$key：${perHour.toStringAsFixed(1)}/h';
 
+  // ── P1 #42 Phase 4 · BaikeScreen 江湖见闻录(GDD §10.2 第 3 方式)──
+
+  static const String mainMenuBaike = '江湖见闻录';
+  static const String mainMenuBaikeHint = '记事与典故,永久可查';
+
+  static const String baikeScreenTitle = '江湖见闻录';
+  static const String baikeTabFeed = '见闻';
+  static const String baikeTabLore = '典故';
+  static const String baikeFeedEmpty = '尚无见闻,且看下回。';
+  static const String baikeLoreEmpty = '装备尚浅,典故未集。';
+
   // ── P1 #42 Phase 3 · HomeFeedScreen 上线第一屏(GDD §9.2)──
 
   static const String homeFeedTitle = '江湖见闻';
