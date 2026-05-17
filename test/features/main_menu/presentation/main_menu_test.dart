@@ -35,7 +35,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuTitle), findsOneWidget);
   });
 
-  testWidgets('10 个菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('11 个菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -46,10 +46,11 @@ void main() {
     expect(find.text(UiStrings.mainMenuPhase2), findsOneWidget);
     expect(find.text(UiStrings.mainMenuCharacterPanel), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLineage), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuBaike), findsOneWidget);
     expect(find.text(UiStrings.mainMenuInventory), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTechniques), findsOneWidget);
 
-    // 顺序：主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法
+    // 顺序：主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 江湖见闻录 / 装备 / 心法
     final mainY = tester.getCenter(find.text(UiStrings.mainMenuMainline)).dy;
     final towY = tester.getCenter(find.text(UiStrings.mainMenuTower)).dy;
     final lbY = tester.getCenter(find.text(UiStrings.mainMenuLeaderboard)).dy;
@@ -58,6 +59,7 @@ void main() {
     final p2Y = tester.getCenter(find.text(UiStrings.mainMenuPhase2)).dy;
     final chY = tester.getCenter(find.text(UiStrings.mainMenuCharacterPanel)).dy;
     final linY = tester.getCenter(find.text(UiStrings.mainMenuLineage)).dy;
+    final bkY = tester.getCenter(find.text(UiStrings.mainMenuBaike)).dy;
     final invY = tester.getCenter(find.text(UiStrings.mainMenuInventory)).dy;
     final tcY = tester.getCenter(find.text(UiStrings.mainMenuTechniques)).dy;
     expect(mainY < towY, isTrue);
@@ -67,13 +69,14 @@ void main() {
     expect(p1Y < p2Y, isTrue);
     expect(p2Y < chY, isTrue);
     expect(chY < linY, isTrue);
-    expect(linY < invY, isTrue);
+    expect(linY < bkY, isTrue);
+    expect(bkY < invY, isTrue);
     expect(invY < tcY, isTrue);
   });
 
-  testWidgets('10 个菜单按钮均为 InkWell（可点）', (tester) async {
+  testWidgets('11 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(InkWell), findsNWidgets(10));
+    expect(find.byType(InkWell), findsNWidgets(11));
   });
 
   testWidgets('tap Phase 1 战斗测试 → 进入 BattleTestMenu（找到 testMenuTitle / scenarioA）',

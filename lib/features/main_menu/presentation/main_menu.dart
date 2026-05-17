@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/application/character_providers.dart';
+import '../../baike/presentation/baike_screen.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
@@ -117,6 +118,12 @@ class MainMenu extends ConsumerWidget {
                   label: UiStrings.mainMenuLineage,
                   hint: UiStrings.mainMenuLineageHint,
                   onTap: () => _push(context, const LineagePanelScreen()),
+                ),
+                const SizedBox(height: 16),
+                _MenuButton(
+                  label: UiStrings.mainMenuBaike,
+                  hint: UiStrings.mainMenuBaikeHint,
+                  onTap: () => _push(context, const BaikeScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
