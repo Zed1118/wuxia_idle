@@ -902,3 +902,96 @@ encounters:
         type: attributeBonus
         attributeKey: fortune
         attributeDelta: 1
+
+
+  # ───────────────────────────────────────────────
+  # W18-A2 #41 jiao_chang_chu_wu · 校场初悟
+  #    techniqueInsight · 校场 30min + 击败刚猛敌 50 → 解 pu_xi_tu(蒲息图 tier 1)
+  #    最早期 hook:玩家 stage_02_04 / stage_03_02 校场关卡天然触发
+  # ───────────────────────────────────────────────
+  - id: jiao_chang_chu_wu
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        drillGround: 30
+      schoolKillThreshold:
+        gangMeng: 50
+      fortuneRequired: 3
+    baseProbability: 0.45
+    outcomeMapping:
+      forge_basics:
+        type: unlockSkill
+        skillId: skill_encounter_pu_xi_tu
+      observe_stance:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # W18-A2 #42 an_xiang_xi_zhe · 暗巷习蛰
+  #    techniqueInsight · 巷弄 45min + 夜 20min + fortune 4 → 解 an_qi(暗器 tier 2)
+  #    阴柔向 hook:stage_02_05 巷中夜雨 + 闭关夜挂机契合
+  # ───────────────────────────────────────────────
+  - id: an_xiang_xi_zhe
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        alley: 45
+      weatherMinutes:
+        night: 20
+      fortuneRequired: 4
+    baseProbability: 0.4
+    outcomeMapping:
+      ambush_practice:
+        type: unlockSkill
+        skillId: skill_encounter_an_qi
+      hide_stance:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # W18-A2 #43 tie_pu_lian_quan · 铁铺炼拳
+  #    techniqueInsight · 铸剑铺 60min + 击败刚猛敌 200 + fortune 4 → 解 huo_quan(火拳 tier 3)
+  #    中期 hook:stage_02_03 春水堂 + 装备强化场景
+  # ───────────────────────────────────────────────
+  - id: tie_pu_lian_quan
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        smithy: 60
+      schoolKillThreshold:
+        gangMeng: 200
+      fortuneRequired: 4
+    baseProbability: 0.45
+    outcomeMapping:
+      forge_punch:
+        type: unlockSkill
+        skillId: skill_encounter_huo_quan
+      hammer_grip:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # W18-A2 #44 liu_zhi_jian_ying · 柳枝剑影
+  #    techniqueInsight · 瀑布悬崖 75min + 击败灵巧敌 300 + fortune 6 → 解 qing_feng_jian(清风剑 tier 4)
+  #    中后期 hook:闭关 xuanYaPuBu 长挂机契合 + 灵巧侧 build
+  # ───────────────────────────────────────────────
+  - id: liu_zhi_jian_ying
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        cliffWaterfall: 75
+      schoolKillThreshold:
+        lingQiao: 300
+      fortuneRequired: 6
+    baseProbability: 0.4
+    outcomeMapping:
+      wind_sword:
+        type: unlockSkill
+        skillId: skill_encounter_qing_feng_jian
+      river_step:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
