@@ -190,4 +190,94 @@ void main() {
     expect(left[2].maxHp, 6660,
         reason: 'C·阴影 同 B,无 hpPct');
   });
+
+  // ── W18-A1.2 hot-loop 红线压测 ─────────────────────────────────────────
+  // 复用 VC18-A1 fixture(5 角色 yiLiu tier × 5 synergy 全命中)做 6 字段
+  // 注入后红线压测。断言"上界约束"不写具体数字(memory
+  // `feedback_red_line_test_semantics`)。
+  //
+  // 当前 fixture 数值远低红线(yiLiu tier),压不到 §5.4 极值;真正"压数值"
+  // 验证需 wushen tier + 神物级装备 fixture,留挂账给 Phase 5 / 1.0 实装
+  // (PROGRESS 已记)。本批做:6 字段全消费回归保护 + 红线语义不变式断言。
+
+  test('hot-loop A: 3 schoolPair synergy(阴阳/刚柔/阴影)6 字段 ≤ §5.4 红线',
+      () async {
+    // 默认 activeCharacterIds=[1..5] 前 3 进 left = A·阴阳 / B·刚柔 / C·阴影
+    // 覆盖 3/3 schoolPair 类型(gangMeng+yinRou / gangMeng+lingQiao / yinRou+lingQiao)
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
+    final stage = GameRepository.instance.getStage('stage_01_01');
+
+    final (left, _) =
+        await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
+
+    expect(left.length, 3, reason: 'stage_01_01 玩家方前 3 角色');
+    for (final ch in left) {
+      _expectRedLines(ch);
+    }
+  });
+
+  test('hot-loop B: sameSchool + sameTier synergy(同流派精进/同辈互补)6 字段 ≤ §5.4 红线',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
+    // 重排 activeCharacterIds 让 D·同流派 / E·同辈进 left[0]/[1]
+    // (覆盖 sameSchool / sameTier 剩余 2 synergy 类型)
+    await IsarSetup.instance.writeTxn(() async {
+      final s = await IsarSetup.instance.saveDatas.get(0);
+      s!.activeCharacterIds = [4, 5, 1]; // D / E / A 兜底第 3
+      await IsarSetup.instance.saveDatas.put(s);
+    });
+    final stage = GameRepository.instance.getStage('stage_01_01');
+
+    final (left, _) =
+        await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
+
+    expect(left.length, 3, reason: 'stage_01_01 玩家方 3 角色');
+    for (final ch in left) {
+      _expectRedLines(ch);
+    }
+  });
+
+  test('hot-loop C: defenseRate clamp 0.95 防御率 100% 极端 bug',
+      () async {
+    // 用 VC18-A1 fixture A·阴阳:yiLiu base defenseRate=0.20 + synergy 0.10
+    // 加法叠加 = 0.30(远低 clamp 0.95)。本 case 断言 clamp 逻辑生效
+    // 防回归(若未来 synergy defensePct 提升到 0.80 与 realm 高 tier 0.35
+    // 叠加 = 1.15 应被 clamp 到 0.95 不破)
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
+    final stage = GameRepository.instance.getStage('stage_01_01');
+
+    final (left, _) =
+        await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
+
+    // 所有角色 defenseRate ∈ [0.0, 0.95](clamp 上下界)
+    for (final ch in left) {
+      expect(ch.defenseRate, inInclusiveRange(0.0, 0.95),
+          reason: '${ch.name} defenseRate ${ch.defenseRate} 必在 clamp [0.0, 0.95]');
+    }
+  });
+}
+
+/// hot-loop 红线压测断言 helper:6 字段 + 派生不变式上界。
+///
+/// **不写具体数字**(memory `feedback_red_line_test_semantics`):
+///   - maxHp ≤ 20000(§5.4 玩家血量红线)
+///   - maxInternalForce ≤ 15000(§5.4 内力红线 + _applySynergy cap)
+///   - defenseRate ∈ [0.0, 0.95](_applySynergy clamp,§5.5 减伤 100% 防 bug)
+///   - currentHp ≤ maxHp / currentInternalForce ≤ maxInternalForce(派生不变式)
+///   - speed > 0 / totalEquipmentAttack ≥ 0(非负 + 非零 speed 防卡死战斗)
+void _expectRedLines(dynamic ch) {
+  expect(ch.maxHp, lessThanOrEqualTo(20000),
+      reason: '${ch.name} maxHp ${ch.maxHp} 不破 §5.4 玩家血量红线 20000');
+  expect(ch.currentHp, lessThanOrEqualTo(ch.maxHp),
+      reason: '${ch.name} currentHp ≤ maxHp 派生不变式');
+  expect(ch.maxInternalForce, lessThanOrEqualTo(15000),
+      reason: '${ch.name} maxInternalForce ${ch.maxInternalForce} 不破 §5.4 内力红线 15000(_applySynergy cap)');
+  expect(ch.currentInternalForce, lessThanOrEqualTo(ch.maxInternalForce),
+      reason: '${ch.name} currentInternalForce ≤ maxInternalForce 派生不变式');
+  expect(ch.defenseRate, inInclusiveRange(0.0, 0.95),
+      reason: '${ch.name} defenseRate ${ch.defenseRate} 必在 _applySynergy clamp [0.0, 0.95]');
+  expect(ch.speed, greaterThan(0),
+      reason: '${ch.name} speed > 0(防战斗卡死,actionPoint 增量必须正)');
+  expect(ch.totalEquipmentAttack, greaterThanOrEqualTo(0),
+      reason: '${ch.name} totalEquipmentAttack ≥ 0(非负)');
 }
