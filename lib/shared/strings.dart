@@ -410,6 +410,46 @@ class UiStrings {
   static String seclusionExpected(String key, double perHour) =>
       '$key：${perHour.toStringAsFixed(1)}/h';
 
+  // ── P1 #42 Phase 3 · HomeFeedScreen 上线第一屏(GDD §9.2)──
+
+  static const String homeFeedTitle = '江湖见闻';
+  static const String homeFeedEmptyHint = '江湖初醒，昨夜风平浪静。';
+  static const String homeFeedQuickClaimLabel = '直入江湖';
+
+  /// GameEvent occurredAt 相对时间格式(GDD §9.2 "昨晚发生的事"调子)。
+  ///
+  /// 阈值:
+  /// - < 5 分钟:"刚才"
+  /// - 5-59 分钟:"$N 分钟前"
+  /// - 1-23 小时:"$N 小时前"
+  /// - 同一日:"今日 HH:MM"
+  /// - 1 日前:"昨日 HH:MM"
+  /// - 2-6 日前:"$N 日前"
+  /// - > 7 日:"MM-DD"
+  static String homeFeedRelativeTime(DateTime occurredAt, DateTime now) {
+    final diff = now.difference(occurredAt);
+    if (diff.inMinutes < 5) return '刚才';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} 分钟前';
+    if (diff.inHours < 24 && now.day == occurredAt.day) {
+      final hh = occurredAt.hour.toString().padLeft(2, '0');
+      final mm = occurredAt.minute.toString().padLeft(2, '0');
+      return '今日 $hh:$mm';
+    }
+    final daysAgo = now
+        .difference(
+            DateTime(occurredAt.year, occurredAt.month, occurredAt.day))
+        .inDays;
+    if (daysAgo == 1) {
+      final hh = occurredAt.hour.toString().padLeft(2, '0');
+      final mm = occurredAt.minute.toString().padLeft(2, '0');
+      return '昨日 $hh:$mm';
+    }
+    if (daysAgo < 7) return '$daysAgo 日前';
+    final mm = occurredAt.month.toString().padLeft(2, '0');
+    final dd = occurredAt.day.toString().padLeft(2, '0');
+    return '$mm-$dd';
+  }
+
   // ── P1 #42 Phase 2 · GameEvent 9 type 文案模板(GDD §9.2 昨晚发生的事)──
 
   // #1 retreatCompleted

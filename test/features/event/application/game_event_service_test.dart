@@ -122,7 +122,7 @@ void main() {
       lineageRole: LineageRole.founder,
       createdAt: DateTime(2026, 1, 1),
     );
-    final result = AdvancementResult(
+    const result = AdvancementResult(
       layersGained: 1,
       tierBefore: RealmTier.xueTu,
       layerBefore: RealmLayer.dengFeng,
@@ -153,7 +153,7 @@ void main() {
       lineageRole: LineageRole.disciple,
       createdAt: DateTime(2026, 1, 1),
     );
-    final result = AdvancementResult(
+    const result = AdvancementResult(
       layersGained: 1,
       tierBefore: RealmTier.sanLiu,
       layerBefore: RealmLayer.dengFeng,
@@ -222,7 +222,7 @@ void main() {
       lineageRole: LineageRole.founder,
       createdAt: DateTime(2026, 1, 1),
     );
-    final noOp = AdvancementResult(
+    const noOp = AdvancementResult(
       layersGained: 0,
       tierBefore: RealmTier.xueTu,
       layerBefore: RealmLayer.qiMeng,

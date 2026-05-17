@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/game_repository.dart';
 import 'data/isar_setup.dart';
-import 'features/main_menu/presentation/main_menu.dart';
+import 'features/home_feed/presentation/home_feed_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +35,7 @@ class WuxiaApp extends StatelessWidget {
       title: '挂机武侠',
       theme: ThemeData.dark(useMaterial3: true),
       debugShowCheckedModeBanner: false,
-      home: const MainMenu(),
+      home: const HomeFeedScreen(),
     );
   }
 }
