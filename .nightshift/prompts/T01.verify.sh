@@ -1,12 +1,13 @@
 #!/bin/bash
-# T01 verify · #37 永封档 doc
+# T01 verify · encounter id 一致性扫描 doc
 set -e
-DOC="docs/handoff/wuxia_w17_orphan_events_permanent_archive_2026-05-17.md"
+DOC="docs/handoff/wuxia_encounter_id_consistency_2026-05-17.md"
 test -f "$DOC" || { echo "VERIFY FAIL: $DOC missing"; exit 1; }
-grep -q "永久封档" "$DOC" || { echo "VERIFY FAIL: missing key '永久封档'"; exit 1; }
-grep -q "duan_qiao_can_yue" "$DOC" || { echo "VERIFY FAIL: missing file ref duan_qiao_can_yue"; exit 1; }
-grep -q "yu_zhong_qiao_men" "$DOC" || { echo "VERIFY FAIL: missing file ref yu_zhong_qiao_men"; exit 1; }
-grep -q "PROGRESS 销账建议" "$DOC" || { echo "VERIFY FAIL: missing section 'PROGRESS 销账建议'"; exit 1; }
+grep -q "encounter id 一致性扫描" "$DOC" || { echo "VERIFY FAIL: missing title"; exit 1; }
+grep -q "encounters.yaml" "$DOC" || { echo "VERIFY FAIL: missing encounters.yaml ref"; exit 1; }
+grep -q "data/events" "$DOC" || { echo "VERIFY FAIL: missing data/events ref"; exit 1; }
+grep -q "_archive" "$DOC" || { echo "VERIFY FAIL: missing _archive ref"; exit 1; }
+grep -q "双向对账" "$DOC" || { echo "VERIFY FAIL: missing section 双向对账"; exit 1; }
 # Verify task did commit
 git log -1 --pretty=%s | grep -q "nightshift T01" || { echo "VERIFY FAIL: no nightshift T01 commit on branch"; exit 1; }
 # Project still healthy (no lib/ changes per scope)
