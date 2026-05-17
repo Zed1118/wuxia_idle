@@ -597,7 +597,7 @@ class Phase2SeedService {
   /// activeCharacterIds 全塞,CharacterPanelScreen TabBar 显 5 个角色供 Codex
   /// 切 5 Tab 拿 5 张 chip 截图(`lineageTabLabels` 扩 3→5 配套)。
   ///
-  /// 战斗注入观测点([StageBattleSetup._applySynergy] 4 字段实装):
+  /// 战斗注入观测点([StageBattleSetup.applySynergy] 4 字段实装):
   ///   - A·阴阳 hpPct 0.20 → HpBar maxHp 数字 vs 基线 P5(同境界)
   ///   - B·刚柔 speedPct 0.25 → 出手节奏(speed 不显数字)
   ///   - C·阴影 attackPct 0.15 + speedPct 0.15 → DamagePopup 数值

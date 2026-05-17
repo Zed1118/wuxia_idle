@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:isar_community/isar.dart';
 
 import '../domain/battle_state.dart';
@@ -148,30 +149,40 @@ class StageBattleSetup {
           GameRepository.instance.techniqueDefs[defId],
       synergies: GameRepository.instance.synergies,
     );
-    return synergy == null ? base : _applySynergy(base, synergy.multipliers);
+    return synergy == null ? base : applySynergy(base, synergy.multipliers);
   }
 
   /// 把 [SynergyMultipliers] 应用到 [BattleCharacter] 4 个标量字段(view layer)。
   ///
-  /// 数值红线 cap:maxInternalForce ≤ 15000(GDD §5.4)。其他字段 cap 由
-  /// 上游派生公式已经过 §5.4(maxHp ≤ 20000 / 装备攻击 ≤ 2000)保护,multiplier
-  /// 上限 0.30 在 _enforceSynergyRedLines 保证。currentHp/currentInternalForce
+  /// 数值红线 cap:
+  ///   - maxInternalForce ≤ 15000(§5.4)
+  ///   - maxHp ≤ 20000(§5.4,W18-A1.2 hot-loop 升级版加 cap,沿 maxIf cap 体例)
+  ///
+  /// 装备攻击 ≤ 2000 是 §5.4 单装备红线(equipment.yaml 单件 baseAttack 上限),
+  /// 角色 totalEquipmentAttack 是 3 件求和不在 §5.4 红线范畴,applySynergy 不 cap。
+  /// multiplier 上限 0.30 在 _enforceSynergyRedLines 保证。currentHp/currentInternalForce
   /// 跟 max 同比例放大(战斗起点保持满血 / 当前内力上限按比例)。
   ///
   /// W18-A1.2 补 [SynergyMultipliers.defensePct] → defenseRate 加法叠加
   /// (realm max 0.35 + synergy 0.30 = 0.65 ≤ §5.5 红线安全)。
   /// [SynergyMultipliers.internalForceGrowthPct] 在 [SeclusionService.computeOutputs]
   /// 消费(战斗 init 不影响)。
-  static BattleCharacter _applySynergy(
+  ///
+  /// **@visibleForTesting**:测试矩阵 7 tier × 5 synergy 极端 base 派生压测
+  /// 需要直接调用本静态方法绕过 Isar,沿 [TowerEntryFlow.runTowerFlow] /
+  /// [StageEntryFlow.runStageFlow] battleRunnerForTest 体例。
+  @visibleForTesting
+  static BattleCharacter applySynergy(
     BattleCharacter base,
     SynergyMultipliers m,
   ) {
-    final newMaxHp = (base.maxHp * (1 + m.hpPct)).round();
+    var newMaxHp = (base.maxHp * (1 + m.hpPct)).round();
+    if (newMaxHp > 20000) newMaxHp = 20000; // §5.4 玩家血量红线(W18-A1.2 升级版加)
     final newSpeed = (base.speed * (1 + m.speedPct)).round();
     final newAttack =
         (base.totalEquipmentAttack * (1 + m.attackPct)).round();
     var newMaxIf = (base.maxInternalForce * (1 + m.internalForceMaxPct)).round();
-    if (newMaxIf > 15000) newMaxIf = 15000;
+    if (newMaxIf > 15000) newMaxIf = 15000; // §5.4 内力红线
     // W18-A1.2 加法叠加,clamp ≤ 0.95 防止减伤 100% 极端值
     final newDefenseRate = (base.defenseRate + m.defensePct).clamp(0.0, 0.95);
     // currentHp 起点跟 maxHp 一致(战斗起点满血,fromCharacter 保证)

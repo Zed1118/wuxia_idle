@@ -375,7 +375,7 @@ class BattleEngine {
 
     // W18-A1.2 改用 defender.defenseRate(BattleCharacter view layer 缓存),
     // 既覆盖 numbers.yaml realm 派生 base 值,也叠加相生 defensePct 注入
-    // (StageBattleSetup._applySynergy 加法注入,clamp ≤ 0.95)。
+    // (StageBattleSetup.applySynergy 加法注入,clamp ≤ 0.95)。
     final defRate = defender.defenseRate;
     final defMult = 1.0 - defRate;
 
