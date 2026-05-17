@@ -19,13 +19,13 @@ void main() {
 
   group('encounters.yaml 加载', () {
     test(
-        '40 条 encounter 全部解析成功 '
-        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2)',
+        '44 条 encounter 全部解析成功 '
+        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 4)',
         () {
       final repo = GameRepository.instance;
-      expect(repo.encounterDefs.length, 40,
+      expect(repo.encounterDefs.length, 44,
           reason:
-              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2');
+              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 触发条件 4');
       // W14-1 3 条必须仍在
       expect(
         repo.encounterDefs.keys,
@@ -162,8 +162,9 @@ void main() {
           GameRepository.instance.allEncounters.map((e) => e.id).toList();
       final sorted = [...ids]..sort();
       expect(ids, sorted, reason: 'allEncounters 必须字典序');
-      // W14-1 3 条仍在头部位次(id 字典序 b/c/d 排前面)
-      expect(ids.first, 'bamboo_listen_rain');
+      // 包含校验(约束语义,不锚瞬时 first 位次,memory
+      // feedback_red_line_test_semantics:后续加 encounter id 字典序在前)
+      expect(ids, contains('bamboo_listen_rain'));
     });
 
     test('findEncounter 未配返回 null(避免 caller try/catch)', () {
