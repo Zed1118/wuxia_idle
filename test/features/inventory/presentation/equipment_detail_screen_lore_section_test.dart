@@ -187,8 +187,8 @@ void main() {
                 id: id,
                 name: 'test',
                 defaultLore: [
-                  LoreSegment(text: 'preset段A'),
-                  LoreSegment(text: 'preset段B'),
+                  const LoreSegment(text: 'preset段A'),
+                  const LoreSegment(text: 'preset段B'),
                 ],
                 isPlaceholder: false,
               ),
