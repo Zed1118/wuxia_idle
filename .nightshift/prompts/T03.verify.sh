@@ -1,14 +1,44 @@
 #!/bin/bash
-# T03 verify · markAllFeedRead 边界 edge
-set -e
-TEST_FILE="test/features/home_feed/application/home_feed_providers_mark_all_edge_test.dart"
-test -f "$TEST_FILE" || { echo "VERIFY FAIL: $TEST_FILE missing"; exit 1; }
-grep -q "void main()" "$TEST_FILE" || { echo "VERIFY FAIL: no void main()"; exit 1; }
-grep -cE "^\s*(test|testWidgets)\(" "$TEST_FILE" | awk '{ if ($1 < 3) { print "VERIFY FAIL: test count <3 (got " $1 ")"; exit 1 } }'
+# T03 verify · #37 6 orphan event 决议归档
+set -uo pipefail
+TARGET="docs/handoff/p1_37_orphan_decree_2026-05-19.md"
+test -f "$TARGET" || { echo "VERIFY FAIL: $TARGET missing"; exit 1; }
+
+# 1. 行数 ≤ 100 + 20% buffer
+LINES=$(wc -l < "$TARGET" | tr -d ' ')
+if [ "$LINES" -gt 120 ]; then
+  echo "VERIFY FAIL: decree md $LINES 行 > 120 严重超 100"
+  exit 1
+fi
+
+# 2. 4 段结构齐
+for section in "§1" "§2" "§3" "§4"; do
+  grep -q "$section" "$TARGET" || { echo "VERIFY FAIL: 段 '$section' 缺"; exit 1; }
+done
+
+# 3. 6 orphan id 全提及
+for orphan in "duan_qiao_can_yue" "gu_chuan_deng_ying" "huang_cun_yao_ren" "lao_jing_hui_xiang" "qing_lou_can_meng" "yu_zhong_qiao_men"; do
+  grep -q "$orphan" "$TARGET" || { echo "VERIFY FAIL: orphan $orphan 未审"; exit 1; }
+done
+
+# 4. 决议关键词(挂回 OR 永封档)出现
+grep -qE "挂回|永封档|永久归档" "$TARGET" || { echo "VERIFY FAIL: 决议关键词缺"; exit 1; }
+
+# 5. yaml 未被改动(钉死)
+git diff --name-only HEAD~1 | grep -E "^data/(encounters\.yaml|events/)" && {
+  echo "VERIFY FAIL: T03 改动 data/encounters.yaml 或 data/events/ 违反钉死红线"
+  exit 1
+} || true
+
+# 6. commit message check
 git log -1 --pretty=%s | grep -q "nightshift T03" || { echo "VERIFY FAIL: no nightshift T03 commit"; exit 1; }
-flutter pub get >/dev/null 2>&1
-dart run build_runner build --delete-conflicting-outputs >/dev/null 2>&1 || { echo "VERIFY WARN: build_runner non-zero"; }
-flutter analyze --fatal-infos >/dev/null 2>&1 || { echo "VERIFY FAIL: dart analyze"; exit 1; }
-flutter test "$TEST_FILE" 2>&1 | tail -10
-flutter test "$TEST_FILE" >/dev/null 2>&1 || { echo "VERIFY FAIL: new test not passing"; exit 1; }
-echo "VERIFY PASS: T03"
+
+# 7. 仅 docs/handoff/ 改动
+CHANGED_OUTSIDE=$(git show --name-only HEAD | grep -vE "^commit|^Author|^Date|^docs/handoff/|^$|^docs\(nightshift" || true)
+if [ -n "$CHANGED_OUTSIDE" ]; then
+  echo "VERIFY FAIL: T03 改动越界:"
+  echo "$CHANGED_OUTSIDE"
+  exit 1
+fi
+
+echo "VERIFY PASS: T03 (decree md $LINES 行)"

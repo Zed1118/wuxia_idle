@@ -1,7 +1,7 @@
 #!/bin/bash
-# Nightshift dispatcher · 挂机武侠 · 2026-05-17
+# Nightshift dispatcher · 挂机武侠 · 2026-05-19
 #
-# Sequentially runs 6 atomic Claude tasks, each in its own git worktree.
+# Sequentially runs 10 atomic Claude tasks, each in its own git worktree.
 # Each task: claude --print < prompt → run verify.sh → log status.
 # All tasks skippable: true, no blocking chain.
 #
@@ -21,8 +21,8 @@ WORKTREE_BASE="/Users/a10506/Desktop"
 TASK_TIMEOUT_MIN=50
 TASK_BUDGET_USD=5
 INTER_TASK_BUFFER_SEC=30
-TASKS=(T01 T02 T03 T04 T05 T06 T07 T08)
-LAST_TASK="T08"  # bash 3.2 (macOS default) doesn't support ${TASKS[-1]}
+TASKS=(T01 T02 T03 T04 T05 T06 T07 T08 T09 T10)
+LAST_TASK="T10"  # bash 3.2 (macOS default) doesn't support ${TASKS[-1]}
 
 # === Setup ===
 mkdir -p "$NIGHTSHIFT/logs" "$NIGHTSHIFT/status"

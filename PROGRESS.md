@@ -57,7 +57,9 @@
 
 ## 下一步
 
-**P1 #42 Phase 2 §10 P1.x+P1.y+P1.z + P2 扩段 100% 全闭环里程碑**(2026-05-18,Mac+DeepSeek 双端 1086 pass + 1 skip + 0 issues,HEAD `8f85fd4`)。**已收口**:① ~~DeepSeek combat_advanced 8/8 满收口~~;② ~~P1.z P2 扩段 11 lore 入库 8→19~~。**下波候选**:③ **§10 P1.x 5.2 扩段**(DeepSeek 5 yaml 扩 5-7 段,30-60min);④ **#44 延续典故文案抽 yaml**(Mac+DeepSeek 双端 4-7h);⑤ **美术 PoC + 水墨 LoRA**(opus xhigh + 用户主导 6-10h);⑥ **挂账冲刺**(#37 6 orphan / #43 高阶占位 / §12.4 1.0 框架,sonnet 3-5h)。
+**P1 #42 Phase 2 §10 P1.x+P1.y+P1.z + P2 扩段 100% 全闭环里程碑**(2026-05-18,Mac+DeepSeek 双端 1086 pass + 1 skip + 0 issues,HEAD `3d24af1`)。**已收口**:① ~~DeepSeek combat_advanced 8/8 满收口~~;② ~~P1.z P2 扩段 11 lore 入库 8→19~~。**下波候选**:③ **§10 P1.x 5.2 扩段**(DeepSeek 5 yaml 扩 5-7 段,30-60min);④ **#44 延续典故文案抽 yaml**(Mac+DeepSeek 双端 4-7h);⑤ **美术 PoC + 水墨 LoRA**(opus xhigh + 用户主导 6-10h);⑥ **挂账冲刺**(#37 6 orphan / #43 高阶占位 / §12.4 1.0 框架,sonnet 3-5h)。
+
+**🌙 Nightshift 2026-05-19 dispatched**(10 worktree × 串行 sonnet,~5-6h 预计,8h 窗内完成):T01 PROGRESS 清理 / T02 #43 audit / T03 #37 决议 / T04-T06 Codex+Tutorial widget test 加固 / T07-T09 typedef+死代码+lib 结构 audit / T10 SUMMARY。spec 见 `.nightshift/TASKS.md` + handoff `docs/handoff/nightshift_20260519_handoff.md`。dry-run 10/10 PASS。
 
 ## 关键约束(每次开局必读)
 
