@@ -24,18 +24,13 @@ void main() {
     }
   });
 
-  // ── A: MainMenu 11 按钮中含「江湖见闻录」────────────────────────────────
+  // ── A: 「江湖见闻录」按钮可见(B 测试前置 sanity)──────────────────────────
   //
-  // 断言约束语义:按钮数 ≥11（InkWell 集合大小），不写位置 index。
-  // 「江湖见闻录」存在性通过文案匹配（UiStrings.mainMenuBaike）覆盖。
-  testWidgets('A: MainMenu 含 ≥11 个 InkWell 且「江湖见闻录」按钮存在', (tester) async {
+  // 11 按钮全集断言已在 main_menu_test.dart「11 个菜单按钮 label 全部可见且顺序正确」
+  // 覆盖,本测试只单点检查 B 测试依赖的「江湖见闻录」按钮 fixture。
+  testWidgets('A: MainMenu 含「江湖见闻录」按钮(B 测试前置 sanity)', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: MainMenu())),
-    );
-    expect(
-      find.byType(InkWell),
-      findsAtLeastNWidgets(11),
-      reason: 'MainMenu 至少 11 个 _MenuButton（含「江湖见闻录」）',
     );
     expect(find.text(UiStrings.mainMenuBaike), findsOneWidget);
   });

@@ -64,8 +64,13 @@ void main() {
     ..isPreset = false
     ..addedAt = addedAt ?? DateTime(2026, 5, 17);
 
-  // 辅助:无 presetLoreIds 的测试用 EquipmentDef
-  EquipmentDef emptyDef(String id, String name) => EquipmentDef(
+  // 辅助:测试用 EquipmentDef,presetLoreIds 可注入,解耦生产 yaml id。
+  EquipmentDef testDef(
+    String id,
+    String name, {
+    List<String> presetLoreIds = const [],
+  }) =>
+      EquipmentDef(
         id: id,
         name: name,
         tier: EquipmentTier.xunChang,
@@ -76,10 +81,13 @@ void main() {
         baseHealthMax: 0,
         baseSpeedMin: 0,
         baseSpeedMax: 0,
-        presetLoreIds: [],
-        dropSourceTags: [],
+        presetLoreIds: presetLoreIds,
+        dropSourceTags: const [],
         iconPath: 'placeholder',
       );
+
+  // 兼容旧调用 (B/D/E):无 presetLoreIds
+  EquipmentDef emptyDef(String id, String name) => testDef(id, name);
 
   group('_LoreSection 延续典故渲染', () {
     const surfaceSize = Size(1280, 900);
@@ -89,8 +97,12 @@ void main() {
       await tester.binding.setSurfaceSize(surfaceSize);
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      final def =
-          GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+      // 本地 fixture:def 注入 3 个 preset id,fake loreLoader 返回 3 段 segments
+      final def = testDef(
+        'test_preset_only',
+        'preset 专用装备',
+        presetLoreIds: const ['p_a', 'p_b', 'p_c'],
+      );
       final eq = mkEq(def: def); // lores: [] 默认无延续
 
       await tester.pumpWidget(
@@ -166,8 +178,12 @@ void main() {
       await tester.binding.setSurfaceSize(surfaceSize);
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      final def =
-          GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+      // 本地 fixture:def 注入 2 preset id,fake loreLoader 返回 2 段(preset段A/B)
+      final def = testDef(
+        'test_mixed',
+        '混排测试装备',
+        presetLoreIds: const ['p_mix_a', 'p_mix_b'],
+      );
       final eq = mkEq(
         def: def,
         lores: [
