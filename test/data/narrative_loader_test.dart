@@ -133,5 +133,52 @@ paragraphs:
       expect(c.paragraphs.length, 1);
       expect(c.paragraphs.first, contains('test_id'));
     });
+
+    test('placeholder mandatory 默认 false(占位剧情不强制)', () {
+      final c = NarrativeContent.placeholder('test_id');
+      expect(c.mandatory, isFalse);
+    });
+  });
+
+  group('P1 #42 Phase 2 §10 P1.x · mandatory 字段', () {
+    test('yaml 无 mandatory 字段 → 默认 false(向后兼容)', () async {
+      Future<String> mockLoader(String path) async => '''
+id: stage_old
+title: 老剧情
+paragraphs:
+  - 段落
+''';
+      final c = await NarrativeLoader.load('stage_old', loader: mockLoader);
+      expect(c.mandatory, isFalse);
+      expect(c.isPlaceholder, isFalse);
+    });
+
+    test('yaml mandatory: true → mandatory=true(强制引导)', () async {
+      Future<String> mockLoader(String path) async => '''
+id: stage_01_01_opening
+title: 山道试剑
+mandatory: true
+paragraphs:
+  - 师父说:握剑要紧。
+''';
+      final c = await NarrativeLoader.load(
+        'stage_01_01_opening',
+        loader: mockLoader,
+      );
+      expect(c.mandatory, isTrue);
+      expect(c.id, 'stage_01_01_opening');
+      expect(c.title, '山道试剑');
+    });
+
+    test('yaml mandatory: false 显式 → mandatory=false', () async {
+      Future<String> mockLoader(String path) async => '''
+id: x
+mandatory: false
+paragraphs:
+  - 一段
+''';
+      final c = await NarrativeLoader.load('x', loader: mockLoader);
+      expect(c.mandatory, isFalse);
+    });
   });
 }

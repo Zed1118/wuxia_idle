@@ -50,6 +50,7 @@ class UiStrings {
   static const String mainMenuInventoryHint = '查看 / 强化 / 开锋装备';
   static const String mainMenuTechniques = '心法面板';
   static const String mainMenuTechniquesHint = '查看主修 / 辅修 / 散功换主修';
+  static const String mainMenuTechniquesLockedHint = '通过第三关后开放';
   static const String mainMenuLineage = '师徒名单';
   static const String mainMenuLineageHint = '查看祖师与弟子的传承链路';
 
@@ -376,6 +377,7 @@ class UiStrings {
 
   static const String mainMenuSeclusion = '闭关修炼';
   static const String mainMenuSeclusionHint = '5 张地图，离线挂机，最长 72 小时';
+  static const String mainMenuSeclusionLockedHint = '通关第一章后开放';
 
   static const String seclusionTitle = '闭关修炼';
   static const String seclusionMapLocked = '境界不足，尚未解锁';
