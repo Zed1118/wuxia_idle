@@ -14,6 +14,7 @@ import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../event/application/game_event_service.dart';
+import '../../tutorial/application/tutorial_service.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 
@@ -364,6 +365,12 @@ class SeclusionService {
             character: ch,
             result: advancement!,
           );
+          // P1 #42 Phase 2 §10 P1.y:仅主角(founder)达一流 → 推 step 6
+          // (GDD §7.1 收徒门槛是开派祖师的事,disciple 升层不算)。
+          if (ch.lineageRole == LineageRole.founder) {
+            final tutorialSvc = TutorialService(isar);
+            await tutorialSvc.advanceForRealmBreakthrough(advancement!.tierAfter);
+          }
         }
       }
     });

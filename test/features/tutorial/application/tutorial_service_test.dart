@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
@@ -121,5 +122,135 @@ void main() {
 
     await isar.writeTxn(() => svc.advanceForStageCleared('stage_01_02'));
     expect(await svc.getCurrentStep(), 5, reason: '低关回头不应回退已达 step');
+  });
+
+  // ── P1.y · step 6/7/8 业务门槛 hook ──────────────────────────────────
+
+  group('§10 P1.y · 高阶 hook', () {
+    test('advanceForRealmBreakthrough(yiLiu) 从 step 5 → step 6', () async {
+      await seedSave(initialStep: 5);
+      final isar = IsarSetup.instance;
+      final svc = TutorialService(isar);
+
+      await isar.writeTxn(() => svc.advanceForRealmBreakthrough(RealmTier.yiLiu));
+
+      expect(await svc.getCurrentStep(), 6);
+    });
+
+    test('advanceForRealmBreakthrough(yiLiu 及以上各 tier)均推 step 6', () async {
+      for (final tier in [
+        RealmTier.yiLiu,
+        RealmTier.jueDing,
+        RealmTier.zongShi,
+        RealmTier.wuSheng,
+      ]) {
+        await seedSave(initialStep: 5);
+        final isar = IsarSetup.instance;
+        final svc = TutorialService(isar);
+
+        await isar.writeTxn(() => svc.advanceForRealmBreakthrough(tier));
+
+        expect(await svc.getCurrentStep(), 6,
+            reason: '$tier (>= yiLiu) 应推到 step 6');
+        await IsarSetup.close();
+        await IsarSetup.init(directory: tempDir, inspector: false);
+      }
+    });
+
+    test('advanceForRealmBreakthrough(三流及以下)→ no-op', () async {
+      await seedSave(initialStep: 5);
+      final isar = IsarSetup.instance;
+      final svc = TutorialService(isar);
+
+      await isar.writeTxn(() => svc.advanceForRealmBreakthrough(RealmTier.xueTu));
+      expect(await svc.getCurrentStep(), 5);
+
+      await isar.writeTxn(() => svc.advanceForRealmBreakthrough(RealmTier.sanLiu));
+      expect(await svc.getCurrentStep(), 5);
+
+      await isar.writeTxn(() => svc.advanceForRealmBreakthrough(RealmTier.erLiu));
+      expect(await svc.getCurrentStep(), 5,
+          reason: '二流 < 一流 也不应推到 step 6');
+    });
+
+    test('advanceForFirstAdventure → step 7', () async {
+      await seedSave(initialStep: 6);
+      final isar = IsarSetup.instance;
+      final svc = TutorialService(isar);
+
+      await isar.writeTxn(() => svc.advanceForFirstAdventure());
+      expect(await svc.getCurrentStep(), 7);
+
+      // 第 2 次靠 advanceToStep 单调 no-op
+      await isar.writeTxn(() => svc.advanceForFirstAdventure());
+      expect(await svc.getCurrentStep(), 7);
+    });
+
+    test('advanceForFirstEnhanceLevel10 → step 8', () async {
+      await seedSave(initialStep: 7);
+      final isar = IsarSetup.instance;
+      final svc = TutorialService(isar);
+
+      await isar.writeTxn(() => svc.advanceForFirstEnhanceLevel10());
+      expect(await svc.getCurrentStep(), 8);
+
+      // 第 2 次 no-op
+      await isar.writeTxn(() => svc.advanceForFirstEnhanceLevel10());
+      expect(await svc.getCurrentStep(), 8);
+    });
+  });
+
+  // ── P1.y · markHintRead / getHintsRead ──────────────────────────────
+
+  group('§10 P1.y · banner 已读状', () {
+    test('markHintRead(6) → tutorialHintsRead = [6]', () async {
+      await seedSave();
+      final isar = IsarSetup.instance;
+      final svc = TutorialService(isar);
+
+      await isar.writeTxn(() => svc.markHintRead(6));
+
+      expect(await svc.getHintsRead(), [6]);
+    });
+
+    test('markHintRead 6/7/8 顺序 → [6,7,8]', () async {
+      await seedSave();
+      final isar = IsarSetup.instance;
+      final svc = TutorialService(isar);
+
+      await isar.writeTxn(() => svc.markHintRead(6));
+      await isar.writeTxn(() => svc.markHintRead(7));
+      await isar.writeTxn(() => svc.markHintRead(8));
+
+      expect(await svc.getHintsRead(), [6, 7, 8]);
+    });
+
+    test('markHintRead(6) 二次 → no-op(单调追加)', () async {
+      await seedSave();
+      final isar = IsarSetup.instance;
+      final svc = TutorialService(isar);
+
+      await isar.writeTxn(() => svc.markHintRead(6));
+      await isar.writeTxn(() => svc.markHintRead(6));
+
+      expect(await svc.getHintsRead(), [6]);
+    });
+
+    test('markHintRead 越界(5/9/0)→ no-op', () async {
+      await seedSave();
+      final isar = IsarSetup.instance;
+      final svc = TutorialService(isar);
+
+      await isar.writeTxn(() => svc.markHintRead(5));
+      await isar.writeTxn(() => svc.markHintRead(9));
+      await isar.writeTxn(() => svc.markHintRead(0));
+
+      expect(await svc.getHintsRead(), isEmpty);
+    });
+
+    test('getHintsRead 未 seed SaveData → []', () async {
+      final svc = TutorialService(IsarSetup.instance);
+      expect(await svc.getHintsRead(), isEmpty);
+    });
   });
 }

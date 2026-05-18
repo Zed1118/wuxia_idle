@@ -8,9 +8,11 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
+import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// Phase 4 W14-1 · EncounterService 真 Isar 落地测试。
@@ -435,6 +437,60 @@ void main() {
           .findFirst();
       expect(p!.attributeGainsTotal, 0);
       expect(p.unlockedSkillIds, isEmpty);
+    });
+
+    test('P1.y · founderCharacterId 传入 → tutorialStep 推到 7', () async {
+      // seed SaveData tutorialStep=6(已达收徒)
+      await IsarSetup.instance.writeTxn(() async {
+        await IsarSetup.instance.saveDatas.put(SaveData()
+          ..slotId = IsarSetup.currentSlotId
+          ..saveVersion = '0.11.0'
+          ..createdAt = DateTime.now()
+          ..lastSavedAt = DateTime.now()
+          ..lastOnlineAt = DateTime.now()
+          ..tutorialStep = 6);
+      });
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      final def = _mkInsight();
+
+      await svc.applyOutcome(
+        saveDataId: 1,
+        encounter: def,
+        outcomeId: 'insight_success',
+        founderCharacterId: 42, // 非 null → 走 tutorialSvc.advanceForFirstAdventure
+        encounterTitle: 'test',
+      );
+
+      final tutorialSvc = TutorialService(IsarSetup.instance);
+      expect(await tutorialSvc.getCurrentStep(), 7,
+          reason: '首次奇遇触发 founderCharacterId != null → 推 step 7');
+    });
+
+    test('P1.y · founderCharacterId=null → tutorialStep 不推进', () async {
+      await IsarSetup.instance.writeTxn(() async {
+        await IsarSetup.instance.saveDatas.put(SaveData()
+          ..slotId = IsarSetup.currentSlotId
+          ..saveVersion = '0.11.0'
+          ..createdAt = DateTime.now()
+          ..lastSavedAt = DateTime.now()
+          ..lastOnlineAt = DateTime.now()
+          ..tutorialStep = 6);
+      });
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      final def = _mkInsight();
+
+      await svc.applyOutcome(
+        saveDataId: 1,
+        encounter: def,
+        outcomeId: 'insight_success',
+        // founderCharacterId: null(test fixture 路径)
+      );
+
+      final tutorialSvc = TutorialService(IsarSetup.instance);
+      expect(await tutorialSvc.getCurrentStep(), 6,
+          reason: 'founderCharacterId=null 不入 GameEvent / tutorial 路径');
     });
   });
 

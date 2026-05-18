@@ -7,7 +7,9 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/equipment/application/enhancement_service.dart';
+import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// T32 #22a EnhancementService.persistResult 真 Isar 落地测试。
@@ -241,6 +243,79 @@ void main() {
       ),
       throwsA(isA<StateError>()),
     );
+  });
+
+  // ── 6) P1.y · step 8 hook ────────────────────────────────────────
+
+  test('P1.y · success 到 enhanceLevel=10 → tutorialStep 推到 8', () async {
+    // seed SaveData(P1.y TutorialService 依赖)
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.saveDatas.put(SaveData()
+        ..slotId = IsarSetup.currentSlotId
+        ..saveVersion = '0.11.0'
+        ..createdAt = DateTime.now()
+        ..lastSavedAt = DateTime.now()
+        ..lastOnlineAt = DateTime.now()
+        ..tutorialStep = 7);
+    });
+    await seedInventory(type: ItemType.moJianShi, quantity: 10000);
+    await seedInventory(type: ItemType.xinXueJieJing, quantity: 5);
+    final eq = await seedEq(enhanceLevel: 9);
+
+    final config = GameRepository.instance.numbers.enhancement;
+    final result = EnhancementService.tryEnhance(
+      eq: eq,
+      characterAbsoluteLevel: 49,
+      rng: _StubRng(0), // 必成功
+      currentMojianshi: await readQty(ItemType.moJianShi),
+      config: config,
+    );
+    expect(result.outcome, EnhanceOutcome.success);
+    expect(eq.enhanceLevel, 10);
+
+    await EnhancementService(isar: IsarSetup.instance).persistResult(
+      eq: eq,
+      result: result,
+    );
+
+    final tutorialSvc = TutorialService(IsarSetup.instance);
+    expect(await tutorialSvc.getCurrentStep(), 8,
+        reason: '强化 +10 触发 step 8(GDD §6.5 开锋锚点)');
+  });
+
+  test('P1.y · success 到 enhanceLevel=9 → tutorialStep 不推进', () async {
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.saveDatas.put(SaveData()
+        ..slotId = IsarSetup.currentSlotId
+        ..saveVersion = '0.11.0'
+        ..createdAt = DateTime.now()
+        ..lastSavedAt = DateTime.now()
+        ..lastOnlineAt = DateTime.now()
+        ..tutorialStep = 7);
+    });
+    await seedInventory(type: ItemType.moJianShi, quantity: 10000);
+    await seedInventory(type: ItemType.xinXueJieJing, quantity: 5);
+    final eq = await seedEq(enhanceLevel: 8);
+
+    final config = GameRepository.instance.numbers.enhancement;
+    final result = EnhancementService.tryEnhance(
+      eq: eq,
+      characterAbsoluteLevel: 49,
+      rng: _StubRng(0),
+      currentMojianshi: await readQty(ItemType.moJianShi),
+      config: config,
+    );
+    expect(result.outcome, EnhanceOutcome.success);
+    expect(eq.enhanceLevel, 9);
+
+    await EnhancementService(isar: IsarSetup.instance).persistResult(
+      eq: eq,
+      result: result,
+    );
+
+    final tutorialSvc = TutorialService(IsarSetup.instance);
+    expect(await tutorialSvc.getCurrentStep(), 7,
+        reason: '+9 未到开锋锚点不推 step 8');
   });
 }
 

@@ -29,6 +29,7 @@ import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../event/application/game_event_service.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
+import '../../tutorial/application/tutorial_service.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../application/tower_progress_service.dart';
@@ -374,6 +375,7 @@ Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
         newStage: eq.resonanceStage(numbers).index + 1,
       );
     }
+    final tutorialSvc = TutorialService(isar);
     for (final entry in advancements) {
       if (!entry.result.didAdvance) continue;
       final ch = characters.firstWhere(
@@ -384,6 +386,10 @@ Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
         character: ch,
         result: entry.result,
       );
+      // P1 #42 Phase 2 §10 P1.y:主角达一流 → 推 step 6(收徒门槛)。
+      if (founderId != null && ch.id == founderId) {
+        await tutorialSvc.advanceForRealmBreakthrough(entry.result.tierAfter);
+      }
     }
     if (floor.isBoss && isFirstClear && founderId != null) {
       final bossName = floor.enemyTeam.isNotEmpty

@@ -24,3 +24,14 @@ Future<int> currentTutorialStep(Ref ref) async {
   if (svc == null) return 0;
   return svc.getCurrentStep();
 }
+
+/// 当前 banner 已读 step 集(P1.y · 默认 `[]`)。
+///
+/// `TutorialBannerCard.onTap` 调 markHintRead 后端 `ref.invalidate` 触发
+/// MainMenu 顶部 banner 隐藏。
+@riverpod
+Future<List<int>> currentTutorialHintsRead(Ref ref) async {
+  final svc = ref.watch(tutorialServiceProvider);
+  if (svc == null) return const [];
+  return svc.getHintsRead();
+}

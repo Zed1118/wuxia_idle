@@ -11,6 +11,7 @@ import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/festival/application/festival_service_providers.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
+import 'package:wuxia_idle/features/tutorial/presentation/tutorial_banner_card.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 /// T32 子提交 3b：[MainMenu] widget 测试（T42 加「问鼎九霄」T49 加「闭关修炼」+ W17 候选 E 加「师徒名单」+ P0.2 #40 加「排行榜」后扩 10 个）。
@@ -451,6 +452,92 @@ void main() {
             .first,
       );
       expect(opacity.opacity, 0.4);
+    });
+  });
+
+  // ── P1 #42 Phase 2 §10 P1.y · TutorialBannerCard 顶部 banner 渲染 ──────
+
+  group('§10 P1.y · banner 顶部渲染', () {
+    Character founder(DateTime now) => Character.create(
+          name: '祖师',
+          realmTier: RealmTier.yiLiu,
+          realmLayer: RealmLayer.qiMeng,
+          attributes: Attributes()..constitution = 5..enlightenment = 5
+            ..agility = 5..fortune = 5,
+          rarity: RarityTier.tianCai,
+          lineageRole: LineageRole.founder,
+          createdAt: now,
+        )..id = 1;
+
+    Widget appWith({required int step, required List<int> hintsRead}) {
+      final ch = founder(DateTime(2026, 5, 18));
+      return ProviderScope(
+        overrides: [
+          currentTutorialStepProvider.overrideWith((ref) async => step),
+          currentTutorialHintsReadProvider
+              .overrideWith((ref) async => hintsRead),
+          activeCharacterIdsProvider.overrideWith((ref) async => [1]),
+          characterByIdProvider(1).overrideWith((ref) async => ch),
+        ],
+        child: const MaterialApp(home: MainMenu()),
+      );
+    }
+
+    testWidgets('step=0 → 不显 banner', (tester) async {
+      await tester.pumpWidget(appWith(step: 0, hintsRead: []));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(TutorialBannerCard), findsNothing);
+    });
+
+    testWidgets('step=5 → 不显 banner(< 6 不入 hint 表)', (tester) async {
+      await tester.pumpWidget(appWith(step: 5, hintsRead: []));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(TutorialBannerCard), findsNothing);
+    });
+
+    testWidgets('step=6 + hintsRead=[] → 显 step 6 banner', (tester) async {
+      await tester.pumpWidget(appWith(step: 6, hintsRead: []));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(TutorialBannerCard), findsOneWidget);
+      expect(find.text(UiStrings.tutorialHintStep6Title), findsOneWidget);
+    });
+
+    testWidgets('step=6 + hintsRead=[6] → 不显 banner(已读)', (tester) async {
+      await tester.pumpWidget(appWith(step: 6, hintsRead: [6]));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(TutorialBannerCard), findsNothing);
+    });
+
+    testWidgets('step=8 + hintsRead=[] → 显 step 6 banner(取第 1 unread)',
+        (tester) async {
+      await tester.pumpWidget(appWith(step: 8, hintsRead: []));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(TutorialBannerCard), findsOneWidget);
+      expect(find.text(UiStrings.tutorialHintStep6Title), findsOneWidget,
+          reason: 'R3 风险处置:同时多 unread 取最早 step');
+      expect(find.text(UiStrings.tutorialHintStep7Title), findsNothing);
+      expect(find.text(UiStrings.tutorialHintStep8Title), findsNothing);
+    });
+
+    testWidgets('step=8 + hintsRead=[6,7] → 显 step 8 banner', (tester) async {
+      await tester.pumpWidget(appWith(step: 8, hintsRead: [6, 7]));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(TutorialBannerCard), findsOneWidget);
+      expect(find.text(UiStrings.tutorialHintStep8Title), findsOneWidget);
+    });
+
+    testWidgets('step=8 + hintsRead=[6,7,8] → 不显 banner(全已读)',
+        (tester) async {
+      await tester.pumpWidget(appWith(step: 8, hintsRead: [6, 7, 8]));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(TutorialBannerCard), findsNothing);
     });
   });
 }

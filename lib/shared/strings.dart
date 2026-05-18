@@ -379,6 +379,18 @@ class UiStrings {
   static const String mainMenuSeclusionHint = '5 张地图，离线挂机，最长 72 小时';
   static const String mainMenuSeclusionLockedHint = '通关第一章后开放';
 
+  // ── P1 #42 Phase 2 §10 P1.y · 新手引导 banner 文案(GDD §10.2 第 2 方式)──
+  // 3 条对应 tutorialStep 6/7/8(收徒 / 奇遇 / 装备开锋),50-100 字短介绍。
+  static const String tutorialHintStep6Title = '收徒资格已达成';
+  static const String tutorialHintStep6Body =
+      '内功已至一流境界,可以收徒了。开派祖师才能将一身所学传承下去 —— 待你择一可造之材为徒,武林便多一位你的弟子。';
+  static const String tutorialHintStep7Title = '江湖奇遇初体验';
+  static const String tutorialHintStep7Body =
+      '江湖见闻初触。在挂机与探索中,你将渐次邂逅各种奇遇 —— 听雨悟剑、瀑下持戟,皆可能引出未传之秘技。机缘所在,各凭悟性。';
+  static const String tutorialHintStep8Title = '装备开锋已可寻';
+  static const String tutorialHintStep8Body =
+      '宝器初成。装备强化至 +10 已具开锋资格 —— 攻、速、吸、破,可任选一道为剑铸魂。一柄长剑亦可有破甲与吸血两副面目。';
+
   static const String seclusionTitle = '闭关修炼';
   static const String seclusionMapLocked = '境界不足，尚未解锁';
   static const String seclusionMapAvailable = '进入';
