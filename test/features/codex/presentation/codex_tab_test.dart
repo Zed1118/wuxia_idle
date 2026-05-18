@@ -112,4 +112,105 @@ void main() {
     expect(find.text(UiStrings.codexUnlockedHint(4, 8)), findsOneWidget);
     expect(find.text(UiStrings.codexUnlockedHint(4, 15)), findsNothing);
   });
+
+  // ── T05 Nightshift 边界 case ──────────────────────────────────────────────
+
+  testWidgets('矩阵 step=2:chip「已解锁 2 / 8」+ lock 数=step>2 机制条目数', (tester) async {
+    await pumpCodexTab(tester, step: 2);
+    expect(find.text(UiStrings.codexUnlockedHint(2, 8)), findsOneWidget);
+    final locked = CodexIndex.entries
+        .where((e) => e.category.isMechanic && (e.step ?? 0) > 2)
+        .length;
+    expect(find.byIcon(Icons.lock_outline), findsNWidgets(locked));
+  });
+
+  testWidgets('矩阵 step=4:chip「已解锁 4 / 8」+ lock 数=step>4 机制条目数', (tester) async {
+    await pumpCodexTab(tester, step: 4);
+    expect(find.text(UiStrings.codexUnlockedHint(4, 8)), findsOneWidget);
+    final locked = CodexIndex.entries
+        .where((e) => e.category.isMechanic && (e.step ?? 0) > 4)
+        .length;
+    expect(find.byIcon(Icons.lock_outline), findsNWidgets(locked));
+  });
+
+  testWidgets('step=10 超出 clamp 至 8:chip「已解锁 8 / 8」无锁图标', (tester) async {
+    await pumpCodexTab(tester, step: 10);
+    expect(find.text(UiStrings.codexUnlockedHint(8, 8)), findsOneWidget);
+    expect(find.byIcon(Icons.lock_outline), findsNothing);
+  });
+
+  testWidgets('全锁 step=0:每条 locked 机制条目显示 codexLockedBody 文案', (tester) async {
+    await pumpCodexTab(tester, step: 0);
+    expect(find.text(UiStrings.codexLockedBody), findsNWidgets(mechanicCount));
+  });
+
+  testWidgets('step=1:step≤1 机制条目解锁,其余锁定 + chip「已解锁 1 / 8」', (tester) async {
+    await pumpCodexTab(tester, step: 1);
+    expect(find.text(UiStrings.codexUnlockedHint(1, 8)), findsOneWidget);
+    final locked = CodexIndex.entries
+        .where((e) => e.category.isMechanic && (e.step ?? 0) > 1)
+        .length;
+    expect(find.byIcon(Icons.lock_outline), findsNWidgets(locked));
+  });
+
+  testWidgets('lore SectionHeader 不受 step 影响(step=1 时也渲染)', (tester) async {
+    await pumpCodexTab(tester, step: 1);
+    expect(find.text(UiStrings.codexLoreSectionTitle), findsOneWidget);
+  });
+
+  testWidgets('provider error fallback:step=0 不崩溃 + 机制全锁', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 3000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        currentTutorialStepProvider.overrideWith(
+          (ref) async => throw Exception('test error'),
+        ),
+      ],
+      child: const MaterialApp(home: Scaffold(body: CodexTab())),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.codexUnlockedHint(0, 8)), findsOneWidget);
+    expect(find.byIcon(Icons.lock_outline), findsNWidgets(mechanicCount));
+  });
+
+  testWidgets('A 组补充阅读不计入 chip 分母(step=8 分母固定 8 非 mechanicCount)', (tester) async {
+    await pumpCodexTab(tester, step: 8);
+    expect(find.text(UiStrings.codexUnlockedHint(8, 8)), findsOneWidget);
+    expect(find.byIcon(Icons.lock_outline), findsNothing);
+    // A 组 4 条挂机制 category,mechanicCount > 8;分母不随 A 组增加
+    if (mechanicCount != 8) {
+      expect(
+        find.text(UiStrings.codexUnlockedHint(mechanicCount, mechanicCount)),
+        findsNothing,
+      );
+    }
+  });
+
+  testWidgets('viewport 800×3000:末尾 lore entry title 在渲染树中可 find', (tester) async {
+    await pumpCodexTab(tester, step: 8);
+    final lastLoreEntry =
+        CodexIndex.entries.lastWhere((e) => e.category.isLore);
+    final title =
+        GameRepository.instance.codexEntries[lastLoreEntry.id]?.title;
+    expect(title, isNotNull, reason: '末尾 lore md 未加载,P2 应已落齐');
+    expect(find.text(title!), findsOneWidget);
+  });
+
+  testWidgets('lore 渲染顺序 = CodexIndex 登记顺序(前两条 Y 坐标升序)', (tester) async {
+    await pumpCodexTab(tester, step: 8);
+    final loreEntries =
+        CodexIndex.entries.where((e) => e.category.isLore).toList();
+    if (loreEntries.length >= 2) {
+      final firstTitle =
+          GameRepository.instance.codexEntries[loreEntries.first.id]?.title;
+      final secondTitle =
+          GameRepository.instance.codexEntries[loreEntries[1].id]?.title;
+      if (firstTitle != null && secondTitle != null) {
+        final firstY = tester.getTopLeft(find.text(firstTitle)).dy;
+        final secondY = tester.getTopLeft(find.text(secondTitle)).dy;
+        expect(firstY, lessThan(secondY));
+      }
+    }
+  });
 }
