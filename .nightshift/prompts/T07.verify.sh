@@ -1,14 +1,34 @@
 #!/bin/bash
-# T07 verify · #4 接口 + #9 路由 edge
-set -e
-TEST_FILE="test/features/event/application/game_event_service_lineage_routing_edge_test.dart"
-test -f "$TEST_FILE" || { echo "VERIFY FAIL: $TEST_FILE missing"; exit 1; }
-grep -q "void main()" "$TEST_FILE" || { echo "VERIFY FAIL: no void main()"; exit 1; }
-grep -cE "^\s*(test|testWidgets)\(" "$TEST_FILE" | awk '{ if ($1 < 3) { print "VERIFY FAIL: test count <3 (got " $1 ")"; exit 1 } }'
+# T07 verify · typedef/extension 死字段周期审计
+set -uo pipefail
+TARGET="docs/handoff/typedef_extension_audit_2026-05-19.md"
+test -f "$TARGET" || { echo "VERIFY FAIL: $TARGET missing"; exit 1; }
+
+# 1. 行数 ≤ 100 + 20% buffer
+LINES=$(wc -l < "$TARGET" | tr -d ' ')
+if [ "$LINES" -gt 120 ]; then
+  echo "VERIFY FAIL: audit md $LINES 行 > 120 严重超 100"
+  exit 1
+fi
+
+# 2. 4 段结构齐
+for section in "§1" "§2" "§3" "§4"; do
+  grep -q "$section" "$TARGET" || { echo "VERIFY FAIL: 段 '$section' 缺"; exit 1; }
+done
+
+# 3. 关键 keyword
+grep -qE "Extension|extension" "$TARGET" || { echo "VERIFY FAIL: extension 关键词缺"; exit 1; }
+grep -qE "lib/data/defs|def file" "$TARGET" || { echo "VERIFY FAIL: defs 段缺"; exit 1; }
+
+# 4. commit message check
 git log -1 --pretty=%s | grep -q "nightshift T07" || { echo "VERIFY FAIL: no nightshift T07 commit"; exit 1; }
-flutter pub get >/dev/null 2>&1
-dart run build_runner build --delete-conflicting-outputs >/dev/null 2>&1 || { echo "VERIFY WARN: build_runner non-zero"; }
-flutter analyze --fatal-infos >/dev/null 2>&1 || { echo "VERIFY FAIL: dart analyze"; exit 1; }
-flutter test "$TEST_FILE" 2>&1 | tail -10
-flutter test "$TEST_FILE" >/dev/null 2>&1 || { echo "VERIFY FAIL: new test not passing"; exit 1; }
-echo "VERIFY PASS: T07"
+
+# 5. 仅 docs/handoff/ 改动
+CHANGED_OUTSIDE=$(git show --name-only HEAD | grep -vE "^commit|^Author|^Date|^docs/handoff/|^$|^docs\(nightshift" || true)
+if [ -n "$CHANGED_OUTSIDE" ]; then
+  echo "VERIFY FAIL: T07 改动越界:"
+  echo "$CHANGED_OUTSIDE"
+  exit 1
+fi
+
+echo "VERIFY PASS: T07 (audit md $LINES 行)"
