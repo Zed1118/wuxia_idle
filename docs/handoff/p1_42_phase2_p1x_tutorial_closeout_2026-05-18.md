@@ -155,3 +155,37 @@ spec 预估 +21,实际 +25 = spec +4(边界 case 顺手补:advanceToStep 等值 
 - Phase 0 reality check 两维 grep(memory `feedback_phase0_grep_two_axes`)
 - 强依赖 phase 链 ≠ subagent 并行(memory `feedback_subagent_parallel_vs_serial`)
 - service 多表原子写入 → caller 持锁体例(本批实战确认,对齐 GameEventService 体例)
+
+## 9. DeepSeek 端交付销账(2026-05-18 当日)
+
+**DeepSeek 端 Windows commit `f64883e`** ─ `[content] Ch1 opening 加 mandatory: true`(范围 5.1 最小动作,~5min)。
+
+### 9.1 DeepSeek SUMMARY 摘录
+
+| 文件 | mandatory | 位置 | 段数 | 字数 |
+|---|---|---|---|---|
+| stage_01_01_opening.yaml | true (L3) | title 后 paragraphs 前 | 2 | 44 字 |
+| stage_01_02_opening.yaml | true (L3) | title 后 paragraphs 前 | 3 | 61 字 |
+| stage_01_03_opening.yaml | true (L3) | title 后 paragraphs 前 | 3 | 71 字 |
+| stage_01_04_opening.yaml | true (L3) | title 后 paragraphs 前 | 3 | 76 字 |
+| stage_01_05_opening.yaml | true (L3) | title 后 paragraphs 前 | 3 | 75 字 |
+
+### 9.2 Mac 端自审 5/5 ✅
+
+| # | 自审点 | 实测 | 状态 |
+|---|---|---|---|
+| 1 | 5 yaml 全部含 `mandatory: true` | `grep ^mandatory data/narratives/stages/stage_01_0{1..5}_opening.yaml` 全命中 | ✅ |
+| 2 | 字段位置规范(L3 title 后 paragraphs 前) | 5/5 命中 | ✅ |
+| 3 | NarrativeContent.fromYaml 解析无回归 | flutter test 1057 pass + 1 skip = 1058(与 P1.y baseline 一致)| ✅ |
+| 4 | flutter analyze 无新增 issue | 0 issues(ran in 23.1s)| ✅ |
+| 5 | 5.1 最小动作范围(仅加字段不改文案) | git diff stage_01_0{1..5} 仅 `+mandatory: true` 1 行/文件 | ✅ |
+
+### 9.3 联动效果
+
+- `NarrativeContent.fromYaml`(P1.x Phase 3 Mac 端落)读 `mandatory: true` 字段
+- `NarrativeReaderScreen` AppBar.actions 条件渲染:Ch1 5 opening 剧情触发时**不显跳过按钮 / PopScope 物理返回**(P1.x Phase 3 Mac 端落)
+- 玩家通关 Ch1 关 1-5 时,opening 剧情**强制看完才能继续战斗**,对齐 GDD §10.2 第 1 方式"剧情包装的强制引导(前 30 分钟)"设计意图
+
+### 9.4 P1.x 100% 闭环
+
+§10 P1.x **范围 B 双端交付完整**:Mac 端 Phase 1-3(tutorialStep 业务读写 + MainMenu 灰显 + NarrativeContent.mandatory wire)+ DeepSeek 端 5 yaml mandatory 标注(5.1 最小动作)。5.2 扩段(2-3 段 → 5-7 段,师父留下的叮嘱/教学暗喻)留 P1.y/P1.z 收口后另起 small 任务滚动落地,不阻塞 P1.x 销账。
