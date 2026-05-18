@@ -159,3 +159,80 @@ spec 方案 B 预估 +12-15,实际 +19 = spec +4(顺手补 `totalChars` getter t
 | 3️⃣ 江湖见闻录百科 | P1.z CodexTab + 8 条 md(7 现成 + 1 待派) | 本 closeout |
 
 **P1 #42 100% 销账**(Phase 1 §9 主屏 + 江湖见闻录 + 延续典故 hook + GameEvent 7 type + Phase 2 P1.x/y/z 三种引导方式)。剩余 §10 收口动作:DeepSeek 补 combat_advanced.md(~30min)→ 8/8 满收口。
+
+## 10. P2 扩段同日销账(2026-05-18 当日延续)
+
+DeepSeek combat_advanced.md 交付后(8/8 满收口),Mac 端 Opus 4.7 同会话延续 P2 扩段:11 现成 lore md(2026-05-10 W18-A3 已落但未入 CodexIndex)全入,机制百科从 8 条扩到 19 条。**spec** `p1_42_phase2_p1z_p2_spec.md`(253 行)+ **reality check** `p1_42_phase2_p1z_p2_reality_check_2026-05-18.md`(193 行)。
+
+### 10.1 产出明细
+
+- HEAD `8f85fd4`(P2 单 commit:`feat(codex): P1 #42 Phase 2 §10 P1.z P2 扩段 11 lore 入库`),`f1d982a → 8f85fd4`,10 文件 +274 / -56
+- P1.z 主 spec 漏笔 fix:`d4009ba`(`[fix] P1.z codex_tab_test 档 8 加载后 lock_outline 断言更新` · DeepSeek 派单 spec 未写交付后 fix 步骤,事后补)
+- P2 文档沉淀:`f1d982a`(reality check + spec 两文件 +484 行)
+
+### 10.2 enum / domain 改动
+
+| 文件 | 改动 |
+|---|---|
+| `codex_category.dart` | 加 `lore` 值;`step` getter 改 `int?`(8 档 1-8 / lore null);新增 `isMechanic` / `isLore` 派生 |
+| `codex_entry.dart` | `final int step` → `final int? step` |
+| `codex_index.dart` | `entries` 8→19(8 档 + 4 A 组挂相应 category + 7 B 组挂 lore 按主题顺序);`CodexIndexEntry.step` getter 改 `int?` |
+| `game_repository.dart` | `_enforceCodexRedLines` step 唯一性废除(A 组挂同档共存);机制 step ∈ [1,8] + lore step==null + 字数 200-550 + 段非空 保留;import codex_category |
+| `codex_providers.dart` | `unlockedCodexCount` provider 语义改:已解锁机制档数 = `step.clamp(0,8)`(A 组不增加分子,符合 GDD §10.1 8 档节奏) |
+| `codex_tab.dart` | 分两段渲染:headerText + 12 机制 tile + SectionHeader「江湖背景」+ 7 lore tile;lore 永远 unlocked;chip 分母固定 8;`_LoreSectionHeader` inline 不抽 shared |
+| `strings.dart` | 加 `codexLoreSectionTitle = '江湖背景'` const |
+
+### 10.3 测试增量(baseline 1076 → 1086,+10)
+
+| 测试文件 | 改动 |
+|---|---|
+| `codex_tab_test.dart` | 重写 4 旧 case(原"档 8 缺仍灰显"→"机制段全锁 N 条")+ 加 3 P2 新 case(SectionHeader 渲染位置 / lore step=0 也可见可点 / chip 分母 8 不受 lore 影响);viewport 800x3000(memory `feedback_listview_widget_test_viewport` 沉淀) |
+| `codex_loader_test.dart` | 4→5 case(语义化引用 `CodexIndex.entries.length` / 加 lore md 缺失 graceful 跳过) |
+| `codex_entry_test.dart` | 加 P2 group 6 case(lore.step==null + 8 档 isMechanic + entries 分组 12/7/19 + id 唯一 + lore fromMd + A 组挂机制) |
+
+### 10.4 spec vs 实测对锚
+
+| 项 | spec(sonnet) | 实测(opus xhigh) | 倍率 |
+|---|---|---|---|
+| Phase 1 enum+entries | 20-30min | ~10min | ~2-3× |
+| Phase 2 application+UI | 30-45min | ~15min | ~2-3× |
+| Phase 3 测试 | 30-45min | ~20min(含 1 设计 bug fix + 1 unused import 清) | ~1.5-2× |
+| 工程(build_runner / analyze / test / commit) | 10-15min | ~10min | ~1× |
+| **总** | **1.5-2.25h** | **~55min** | **~2× 锚点** |
+
+memory `feedback_opus_xhigh_interactive_duration` 第 8 次锚点(P1.z P2 ~55min vs spec 1.5-2.25h)。**特点:本批 P2 不属复杂任务清单**(非算法/schema/RLS/并发),用 opus 4.7 主对话直接落,sonnet spec baseline 实测仍快 ~2×。
+
+### 10.5 设计调整 vs spec
+
+| # | spec 写 | 实测改 | 原因 |
+|---|---|---|---|
+| 1 | `_enforceCodexRedLines` step ≤ 2 / 档(1 首批 + 1 补充阅读) | step 唯一性废除,只校验机制 step ∈ [1,8] / lore step==null | spec 没考虑 A 组在 enhancement 档挂了 2 条(strengthening + weapon_forging),导致 step=2 共 3 条触发红线;Phase 0 reality check 维度遗漏 |
+| 2 | `unlockedCodexCount` 分子 = "已解锁机制条目数"(max 12) | 改 "已解锁机制档数" = `step.clamp(0,8)`(max 8) | spec 设计让 chip 分子最大 12 > 分母 8,玩家困惑;改"档数"对齐 GDD §10.1 8 档解锁节奏叙事 |
+
+### 10.6 19 条机制百科最终归属
+
+| Category | 条目 | step | 数量 |
+|---|---|---|---|
+| `combat`(档 1) | realm / equipment_tiers | 1 | 2 |
+| `enhancement`(档 2) | resonance / strengthening / weapon_forging | 2 | 3 |
+| `techniques`(档 3) | techniques_and_styles / lost_techniques | 3 | 2 |
+| `schoolCounter`(档 4) | three_styles_detail | 4 | 1 |
+| `seclusion`(档 5) | retreat | 5 | 1 |
+| `lineage`(档 6) | master_disciple | 6 | 1 |
+| `encounter`(档 7) | encounter_system | 7 | 1 |
+| `advanced`(档 8) | combat_advanced | 8 | 1 |
+| `lore`(永久) | hidden_weapons / battle_taboos / jianghu_medicine / jianghu_rules / jianghu_ranks / major_sects / famous_battles | null | 7 |
+| **合计** | | | **19** |
+
+### 10.7 下波候选刷新(本会话 P1.z 主 + P2 全收口后)
+
+| # | 任务 | 模型 | 时长 | 备注 |
+|---|---|---|---|---|
+| 1 | ~~DeepSeek P1.z 派单交付 combat_advanced.md~~ | — | — | ✅ 已收口(本批) |
+| 2 | ~~P1.z P2 扩段(11 lore 入库)~~ | — | — | ✅ 已收口(本批) |
+| 3 | §10 P1.x 5.2 扩段(stage 2-3 段 → 5-7 段) | DeepSeek | 30-60min | P1.x P2 滚动,师父教学暗喻插入 |
+| 4 | #44 延续典故文案抽 yaml | Mac sonnet + DeepSeek | 4-7h | Phase 5 UiStrings 中文模板违反 §5.6 |
+| 5 | 美术 PoC + 水墨 LoRA 调研 | opus xhigh + 用户主导 | 6-10h | 用户主导技术选型 |
+| 6 | 挂账冲刺 #37 + #43 + §12.4 1.0 框架预设计 | sonnet | 3-5h | — |
+
+**§10 闭环 + P2 扩段双里程碑达成**:三方式 100% 闭环(P1.x/y/z)+ 机制百科 8 → 19(P1.z + P2 同日延续)。P1 #42 内核全收口,后续都是滚动扩段或独立子主题。
