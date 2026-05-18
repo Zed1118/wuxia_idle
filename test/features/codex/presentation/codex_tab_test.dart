@@ -41,15 +41,15 @@ void main() {
 
   testWidgets('部分解锁(step=5):前 5 条解锁 + 后 3 条灰显', (tester) async {
     await pumpCodexTab(tester, step: 5);
-    // 已加载 7 条 md(档 8 缺),step=5 解锁 1-5 共 5 条 + 6/7/8 各 1 灰显
+    // 已加载 8 条 md,step=5 解锁 1-5 共 5 条 + 6/7/8 各 1 灰显
     expect(find.byIcon(Icons.lock_outline), findsNWidgets(3));
     expect(find.text(UiStrings.codexUnlockedHint(5, 8)), findsOneWidget);
   });
 
-  testWidgets('全解锁(step=8):7 条 md 已加载条目全显 + 档 8 缺仍灰显', (tester) async {
+  testWidgets('全解锁(step=8):8 条 md 全加载 + 0 灰显', (tester) async {
     await pumpCodexTab(tester, step: 8);
-    // 档 8 md (combat_advanced) DeepSeek 派单前缺失,仍走灰显占位
-    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+    // 2026-05-18 DeepSeek 交付 combat_advanced.md 后档 8 不再缺,8/8 全显。
+    expect(find.byIcon(Icons.lock_outline), findsNothing);
     expect(find.text(UiStrings.codexUnlockedHint(8, 8)), findsOneWidget);
   });
 
