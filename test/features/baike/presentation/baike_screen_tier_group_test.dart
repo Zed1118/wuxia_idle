@@ -99,7 +99,7 @@ String _buildEquipmentYaml() {
       final isHeritage =
           tier == EquipmentTier.liQi && school == TechniqueSchool.gangMeng;
       buf.write('''  - id: t_${t}_w_$s
-    name: 测${t}${s}
+    name: 测$t$s
     tier: $t
     slot: weapon
     schoolBias: $s
@@ -117,7 +117,7 @@ String _buildEquipmentYaml() {
     }
     // 护甲
     buf.write('''  - id: t_${t}_armor
-    name: 测${t}护甲
+    name: 测$t护甲
     tier: $t
     slot: armor
     baseAttackMin: 0
@@ -133,7 +133,7 @@ String _buildEquipmentYaml() {
 ''');
     // 饰品
     buf.write('''  - id: t_${t}_acc
-    name: 测${t}饰品
+    name: 测$t饰品
     tier: $t
     slot: accessory
     baseAttackMin: 0
@@ -228,7 +228,7 @@ void main() {
   tearDownAll(GameRepository.resetForTest);
 
   // 切典故 tab 的公共辅助：拉大 viewport 确保 ListView.builder 全量构建
-  Future<void> _goToLoreTab(WidgetTester tester) async {
+  Future<void> goToLoreTab(WidgetTester tester) async {
     addTearDown(tester.view.reset);
     tester.view.physicalSize = const Size(800, 6000);
     tester.view.devicePixelRatio = 1.0;
@@ -242,7 +242,7 @@ void main() {
   testWidgets('A. 典故 tab 7 阶 heading 顺序严格 ≡ EquipmentTier.values', (
     tester,
   ) async {
-    await _goToLoreTab(tester);
+    await goToLoreTab(tester);
 
     // EquipmentTier.values 白名单定义"正确顺序"——不写「第 1 个是寻常货」
     final tierL10ns =
@@ -262,7 +262,7 @@ void main() {
   });
 
   testWidgets('B. presetLoreIds 空列表 → 渲染「0 段典故」', (tester) async {
-    await _goToLoreTab(tester);
+    await goToLoreTab(tester);
 
     final def = GameRepository.instance.equipmentDefs['t_test_zero']!;
     expect(def.presetLoreIds, isEmpty, reason: '测试前提：fixture t_test_zero 段数为 0');
@@ -275,7 +275,7 @@ void main() {
   });
 
   testWidgets('C. presetLoreIds 恰好 1 段 → 渲染「1 段典故」', (tester) async {
-    await _goToLoreTab(tester);
+    await goToLoreTab(tester);
 
     final def = GameRepository.instance.equipmentDefs['t_test_one']!;
     expect(def.presetLoreIds.length, equals(1), reason: '测试前提：fixture t_test_one 段数为 1');
@@ -287,7 +287,7 @@ void main() {
   });
 
   testWidgets('D. presetLoreIds N 段混合(1/3/5) → 集合等价各显对应段数', (tester) async {
-    await _goToLoreTab(tester);
+    await goToLoreTab(tester);
 
     final testIds = ['t_test_one', 't_test_three', 't_test_five'];
     final defs =
