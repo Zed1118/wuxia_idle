@@ -33,7 +33,7 @@ List<GameEvent> _unreadEvents(int n) {
   );
 }
 
-/// 封装 pumpWidget — 避免 3 个 test 重复写 MaterialApp + ProviderScope。
+/// 封装 pumpWidget — A/C 测试用(isarProvider 默认 null,markAllFeedRead no-op)。
 Future<_RouteObserver> _pumpScreen(
   WidgetTester tester, {
   required List<GameEvent> events,
@@ -69,8 +69,13 @@ void main() {
     });
 
     testWidgets(
-        'B: 非空 list 点快速领取——markAllFeedRead 路径经过（isar=null no-op）, pushReplacement 触发',
+        'B: 非空 list 点快速领取——markAllFeedRead 路径经过(isar=null no-op), pushReplacement 触发',
         (tester) async {
+      // 注:本批本想用真 Isar spy 验证 markAllFeedRead 副作用,但 widget test 环境
+      // 下 isar.writeTxn 与 Flutter event loop 死锁(测试 10min timeout 确认)。
+      // markAllFeedRead 真实副作用语义由独立 unit test
+      // home_feed_providers_mark_all_edge_test.dart 用 test() (非 testWidgets) +
+      // 真 Isar 完整覆盖(3 case)。本 widget test 只验路径经过 + 导航,不重复 spy。
       final obs = await _pumpScreen(tester, events: _unreadEvents(3));
 
       expect(find.text('事件0'), findsOneWidget);
