@@ -17,6 +17,8 @@ import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
 import '../../tutorial/application/tutorial_providers.dart';
+import '../../tutorial/domain/tutorial_hint_def.dart';
+import '../../tutorial/presentation/tutorial_banner_card.dart';
 import '../../tower/presentation/leaderboard_screen.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
 
@@ -46,11 +48,28 @@ class MainMenu extends ConsumerWidget {
   static const int _techniquesUnlockStep = 3;
   static const int _seclusionUnlockStep = 5;
 
+  /// P1.y · 取 [TutorialHintDef.all] 中第 1 个 `step <= currentStep` 且
+  /// `step ∉ hintsRead` 的 hint。无未读 hint → null(spec R3 风险处置:
+  /// 避免 step 已到 8 但 6/7/8 都未读时同时显 3 banner)。
+  static TutorialHintDef? _firstUnreadHint(int currentStep, List<int> hintsRead) {
+    for (final def in TutorialHintDef.all) {
+      if (def.step <= currentStep && !hintsRead.contains(def.step)) {
+        return def;
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // P1 #42 Phase 2 §10 P1.x:tutorialStep 门槛 wire(loading 时按 0 兜底)。
     final stepAsync = ref.watch(currentTutorialStepProvider);
     final step = stepAsync.maybeWhen(data: (s) => s, orElse: () => 0);
+    // P1 #42 Phase 2 §10 P1.y:取第 1 个未读 hint(R3 风险处置,避免同时显多 banner)。
+    final hintsReadAsync = ref.watch(currentTutorialHintsReadProvider);
+    final hintsRead =
+        hintsReadAsync.maybeWhen(data: (l) => l, orElse: () => const <int>[]);
+    final activeHint = _firstUnreadHint(step, hintsRead);
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -74,6 +93,7 @@ class MainMenu extends ConsumerWidget {
                   ),
                 ),
                 const _TodayFestivalChip(),
+                if (activeHint != null) TutorialBannerCard(hint: activeHint),
                 const SizedBox(height: 48),
                 _MenuButton(
                   label: UiStrings.mainMenuMainline,

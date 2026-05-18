@@ -8,6 +8,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/utils/rng.dart';
 import '../../event/application/game_event_service.dart';
+import '../../tutorial/application/tutorial_service.dart';
 import '../domain/encounter_def.dart';
 import '../domain/encounter_progress.dart';
 
@@ -330,6 +331,10 @@ class EncounterService {
             skillName: skillName,
           );
         }
+        // P1 #42 Phase 2 §10 P1.y:第 1 次奇遇触发 → 推 step 7。
+        // 第 2 次起靠 [advanceToStep] 单调 no-op,无需独立 first 字段。
+        final tutorialSvc = TutorialService(isar);
+        await tutorialSvc.advanceForFirstAdventure();
       }
     });
     return result;

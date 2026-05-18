@@ -26,6 +26,7 @@ import '../../encounter/presentation/encounter_hook.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../event/application/game_event_service.dart';
 import '../../tutorial/application/tutorial_providers.dart';
+import '../../tutorial/application/tutorial_service.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/utils/rng.dart';
@@ -486,6 +487,7 @@ Future<({DropResult drops, List<AdvancementEntry> advancements})?>
         equipment: drop,
       );
     }
+    final tutorialSvc = TutorialService(isar);
     for (final entry in advancements) {
       if (!entry.result.didAdvance) continue;
       final ch = characters.firstWhere(
@@ -496,6 +498,12 @@ Future<({DropResult drops, List<AdvancementEntry> advancements})?>
         character: ch,
         result: entry.result,
       );
+      // P1 #42 Phase 2 §10 P1.y:主角达一流 → 推 step 6(收徒门槛)。
+      // 沿 ch == characters.first 判定主角(test fixture 多角色升层时只对
+      // founder 推进,与 founderId 路径保持一致)。
+      if (founderId != null && ch.id == founderId) {
+        await tutorialSvc.advanceForRealmBreakthrough(entry.result.tierAfter);
+      }
     }
     if (stage.isBossStage && isFirstClearStage && founderId != null) {
       final bossName = stage.enemyTeam.isNotEmpty

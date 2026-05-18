@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/encounter/application/encounter_service.dart
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
+import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 
 /// Phase 3 T48 · SeclusionService 真 Isar 落地测试。
 void main() {
@@ -852,6 +853,82 @@ void main() {
       expect(ch?.experience, 400, reason: 'EXP 累加但不升层');
       expect(ch?.realmLayer, RealmLayer.qiMeng);
       expect(ch?.internalForceMax, 500);
+    });
+
+    // ── P1.y · step 6 hook ─────────────────────────────────────────
+
+    test('P1.y · founder 升层到 yiLiu → tutorialStep 推到 6', () async {
+      await IsarSetup.instance.writeTxn(() async {
+        final ch = await IsarSetup.instance.characters.get(kCharId);
+        ch!
+          ..realmTier = RealmTier.erLiu
+          ..realmLayer = RealmLayer.dengFeng
+          ..experienceToNextLayer = 50;
+        await IsarSetup.instance.characters.put(ch);
+      });
+
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session =
+          await SeclusionService(isar: IsarSetup.instance).startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 4,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.erLiu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      await SeclusionService(isar: IsarSetup.instance).completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.erLiu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start.add(const Duration(hours: 4)),
+      );
+
+      final ch = await IsarSetup.instance.characters.get(kCharId);
+      expect(ch?.realmTier, RealmTier.yiLiu, reason: '应升到一流');
+
+      final tutorialSvc = TutorialService(IsarSetup.instance);
+      expect(await tutorialSvc.getCurrentStep(), 6,
+          reason: 'founder 达一流 → 推 step 6');
+    });
+
+    test('P1.y · disciple 升层到 yiLiu → tutorialStep 不推进', () async {
+      await IsarSetup.instance.writeTxn(() async {
+        final ch = await IsarSetup.instance.characters.get(kCharId);
+        ch!
+          ..realmTier = RealmTier.erLiu
+          ..realmLayer = RealmLayer.dengFeng
+          ..experienceToNextLayer = 50
+          ..lineageRole = LineageRole.disciple;
+        await IsarSetup.instance.characters.put(ch);
+      });
+
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session =
+          await SeclusionService(isar: IsarSetup.instance).startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 4,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.erLiu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      await SeclusionService(isar: IsarSetup.instance).completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.erLiu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start.add(const Duration(hours: 4)),
+      );
+
+      final tutorialSvc = TutorialService(IsarSetup.instance);
+      expect(await tutorialSvc.getCurrentStep(), 0,
+          reason: 'disciple 升层不触发 step 6(GDD §7.1 收徒是 founder 的事)');
     });
   });
 

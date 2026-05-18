@@ -5,6 +5,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/utils/rng.dart';
+import '../../tutorial/application/tutorial_service.dart';
 
 /// 强化结果（phase2_tasks T20）。
 ///
@@ -207,6 +208,12 @@ class EnhancementService {
     await isar.writeTxn(() async {
       if (result.outcome == EnhanceOutcome.success) {
         await isar.equipments.put(eq);
+        // P1 #42 Phase 2 §10 P1.y:成功强化到 +10 → 推 step 8(GDD §6.5
+        // 开锋锚点)。第 2 次靠 [advanceToStep] 单调 no-op。
+        if (eq.enhanceLevel >= 10) {
+          final tutorialSvc = TutorialService(isar);
+          await tutorialSvc.advanceForFirstEnhanceLevel10();
+        }
       }
       if (result.mojianshiSpent > 0) {
         final row = await isar.inventoryItems

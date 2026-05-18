@@ -45,13 +45,14 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.10.0',
+      expect(save.saveVersion, '0.11.0',
           reason:
-              'P1 #42 Phase 1 升 schema:SaveData 加 tutorialStep(留 §10 P1.x 接口)');
+              'P1 #42 Phase 2 §10 P1.y 升 schema:SaveData 加 tutorialHintsRead(banner 已读状)');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);
       expect(save.tutorialStep, 0);
+      expect(save.tutorialHintsRead, isEmpty);
       expect(save.highestTowerLayer, 0);
       // 三个时间字段应是非常接近 now 的同一时刻
       final now = DateTime.now();
@@ -78,6 +79,20 @@ void main() {
       expect(reopened!.createdAt, originalCreatedAt);
       expect(reopened.sectName, '青锋门');
       expect(reopened.highestTowerLayer, 7);
+    });
+
+    test('P1.y tutorialHintsRead 写入 [6,7] → close → reopen 读出 [6,7]', () async {
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      await IsarSetup.instance.writeTxn(() async {
+        final s = await IsarSetup.instance.saveDatas.get(0);
+        s!.tutorialHintsRead = [6, 7];
+        await IsarSetup.instance.saveDatas.put(s);
+      });
+      await IsarSetup.close();
+
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      final reopened = await IsarSetup.instance.saveDatas.get(0);
+      expect(reopened!.tutorialHintsRead, [6, 7]);
     });
 
     test('Character / Equipment / Technique 写入 + 读出字段完整一致', () async {

@@ -44,4 +44,9 @@ class SaveData {
   /// 新手引导步骤(P1 #42 Phase 2 §10 P1.x 消费)。
   /// 本批 schema 落地 0 业务读写,留接口给 §10 引导骨架按节奏递增解锁。
   int tutorialStep = 0;
+
+  /// 新手引导 banner 已读状(P1 #42 Phase 2 §10 P1.y)。
+  /// 值域 `{6, 7, 8}`,玩家点 banner 后 `markHintRead(step)` 同事务 add。
+  /// 单调追加不删,UI 端取 `step ∈ {6,7,8} && step ∉ tutorialHintsRead` 渲染。
+  List<int> tutorialHintsRead = [];
 }
