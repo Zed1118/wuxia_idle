@@ -1,6 +1,9 @@
 import 'package:flutter/services.dart' show rootBundle;
 
+import '../features/codex/domain/codex_entry.dart';
+import '../features/codex/domain/codex_index.dart';
 import '../features/encounter/domain/encounter_def.dart';
+import 'codex_loader.dart';
 import 'defs/equipment_def.dart';
 import 'defs/master_def.dart';
 import 'defs/realm_def.dart';
@@ -71,6 +74,13 @@ class GameRepository {
   /// 由 SynergyService 实施。
   final List<SynergyDef> synergies;
 
+  /// P1 #42 Phase 2 §10 P1.z 机制百科条目(GDD §10.2 第 3 方式)。
+  ///
+  /// 从 `data/narratives/codex/<id>.md` 加载,id 由 [CodexIndex.entries] 登记。
+  /// **graceful**:test fixture 不带 md 时为空 map;档 8 `combat_advanced.md`
+  /// DeepSeek 派单前缺失时跳过该条(其余 7 条仍加载),不阻塞主流程。
+  final Map<String, CodexEntry> codexEntries;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -84,6 +94,7 @@ class GameRepository {
     required this.encounterDefs,
     required this.encounterSkillIds,
     required this.synergies,
+    required this.codexEntries,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -190,6 +201,12 @@ class GameRepository {
       // test fixture 不带 synergies.yaml 时静默
     }
 
+    // P1.z 机制百科 md(graceful;档 8 缺失或 fixture 不带均允许空 map)。
+    final codexList = await CodexLoader.loadAll(loader: load);
+    final codexEntries = <String, CodexEntry>{
+      for (final e in codexList) e.id: e,
+    };
+
     final repo = GameRepository._(
       numbers: numbers,
       realms: realms,
@@ -203,6 +220,7 @@ class GameRepository {
       encounterDefs: encounterDefs,
       encounterSkillIds: encounterSkillIds,
       synergies: synergies,
+      codexEntries: codexEntries,
     );
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);
@@ -356,6 +374,40 @@ class GameRepository {
 
     // W18-A1:心法相生 yaml 校验(空 list 兼容 test fixture)
     _enforceSynergyRedLines();
+
+    // P1.z 机制百科 md 校验(空 map 兼容 test fixture;graceful 缺档 8)
+    _enforceCodexRedLines();
+  }
+
+  /// P1.z 机制百科红线(GDD §10.2 第 3 方式):
+  /// - 加载到的 entry id 必须在 [CodexIndex.entries] 登记(graceful loader 已保证)
+  /// - step ∈ [1, 8]
+  /// - step 唯一(每档 ≤ 1 条 P1.z 首批)
+  /// - paragraphs 总字数 ∈ [200, 550](放宽 +50,three_styles_detail 543)
+  /// - paragraphs 非空
+  void _enforceCodexRedLines() {
+    if (codexEntries.isEmpty) return; // test fixture 兼容
+    final stepsSeen = <int>{};
+    for (final e in codexEntries.values) {
+      if (CodexIndex.byId(e.id) == null) {
+        throw StateError('codex entry ${e.id} 不在 CodexIndex.entries 登记');
+      }
+      if (e.step < 1 || e.step > 8) {
+        throw StateError('codex entry ${e.id} step=${e.step} 应 ∈ [1, 8]');
+      }
+      if (!stepsSeen.add(e.step)) {
+        throw StateError('codex entry ${e.id} step=${e.step} 重复(P1.z 每档 ≤ 1 条)');
+      }
+      if (e.paragraphs.isEmpty) {
+        throw StateError('codex entry ${e.id} paragraphs 为空');
+      }
+      final chars = e.totalChars;
+      if (chars < 200 || chars > 550) {
+        throw StateError(
+          'codex entry ${e.id} 字数=$chars,应 ∈ [200, 550](GDD §10.2)',
+        );
+      }
+    }
   }
 
   /// W18-A1 心法相生红线(GDD §4.5 + numbers 红线对齐):
