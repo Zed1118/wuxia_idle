@@ -8,21 +8,22 @@ import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../codex/presentation/codex_tab.dart';
 import '../../home_feed/application/home_feed_providers.dart';
 
-/// 江湖见闻录(P1 #42 Phase 4 / GDD §10.2 第 3 方式百科)。
+/// 江湖见闻录(P1 #42 Phase 4/P1.z / GDD §10.2 第 3 方式百科)。
 ///
-/// 2 tab:
+/// 3 tab:
 ///   - 见闻:GameEvent 全量列表(分页 limit=50,沿 HomeFeed 体例倒序金色文字)
 ///   - 典故:按 7 阶分组装备清单,显化 [EquipmentDef.presetLoreIds] 引用数
-///     (Phase 4 仅显占位,延续典故详情留 Phase 5 EquipmentDetailScreen 混排)
+///   - 机制(P1.z):8 条机制百科条目(GDD §10.2 第 3 方式,§10.1 8 档对齐解锁)
 class BaikeScreen extends StatelessWidget {
   const BaikeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         backgroundColor: WuxiaColors.background,
         appBar: AppBar(
@@ -38,6 +39,7 @@ class BaikeScreen extends StatelessWidget {
             tabs: [
               Tab(text: UiStrings.baikeTabFeed),
               Tab(text: UiStrings.baikeTabLore),
+              Tab(text: UiStrings.baikeTabCodex),
             ],
           ),
         ),
@@ -45,6 +47,7 @@ class BaikeScreen extends StatelessWidget {
           children: [
             _FeedTab(),
             _LoreTab(),
+            CodexTab(),
           ],
         ),
       ),

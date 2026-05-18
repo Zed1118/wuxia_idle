@@ -432,8 +432,17 @@ class UiStrings {
   static const String baikeScreenTitle = '江湖见闻录';
   static const String baikeTabFeed = '见闻';
   static const String baikeTabLore = '典故';
+  static const String baikeTabCodex = '机制';
   static const String baikeFeedEmpty = '尚无见闻,且看下回。';
   static const String baikeLoreEmpty = '装备尚浅,典故未集。';
+  static const String baikeCodexEmpty = '机制百科尚未编纂。';
+
+  // P1 #42 Phase 2 §10 P1.z 机制百科条目状态
+  static const String codexLockedTitle = '待解锁';
+  static const String codexLockedBody = '修行未至,机缘未到。';
+  static const String codexUnlockedHintLabel = '已解锁';
+  static String codexUnlockedHint(int unlocked, int total) =>
+      '$codexUnlockedHintLabel $unlocked / $total';
 
   // ── P1 #42 Phase 3 · HomeFeedScreen 上线第一屏(GDD §9.2)──
 
