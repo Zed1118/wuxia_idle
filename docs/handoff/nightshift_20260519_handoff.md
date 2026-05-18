@@ -42,6 +42,23 @@ bash /Users/a10506/Desktop/挂机武侠/.nightshift/launch.sh
 | 任务间文件冲突 | TASKS.md 冲突排雷表已验,**0 file overlap**,cherry-pick 全干净 |
 | audit task 误改 yaml/lib | T03/T08 verify.sh 钉死改动越界 → exit 1 |
 
+## ⚠️ 紧急 addendum(2026-05-19 01:21 实跑发现)
+
+**发现 2 个 bug,夜班继续跑但**:
+
+1. **T01 真失败(API max output token 32K cap)**:PROGRESS.md 整文件重写超 sonnet output cap,**status=skipped,产出 0**。早上需主对话 opus 5min 单独跑 PROGRESS 清理。
+2. **T02-T10 verify "改动越界" 检测有 grep bug**(`git show --name-only HEAD` 含 commit msg body 中文行被误抓),**会导致 status 全 skipped 但 commit 实际生成**:
+   - T02 `a3ec749 docs(nightshift T02): #43 高阶占位 audit` 实际 ✓ 50 行 md
+   - T03 `8ca6d3d docs(nightshift T03): #37 6 orphan event 决议归档` 实际 ✓ 47 行 md
+
+**早上 review 核心动作改**:**不依赖 `status=completed`,直接 git log --all --oneline | grep nightshift 看 commit + cherry-pick 各分支 HEAD**(即使 status=skipped,commit 实际生成 + 文件实际可用)。
+
+**T04-T10 预测**:test 加固 + audit task 同 bug 多半会 skipped 但 commit 仍生成,cherry-pick 仍可救。T10 SUMMARY 自动产出会显得"全失败",**忽略 SUMMARY 直接看 git log**。
+
+**memory 沉淀**:`feedback_nightshift_max_output_token` + `feedback_nightshift_verify_changedoutside_bug`,下次夜班 dispatcher.sh + verify.sh 模板必修。
+
+---
+
 ## 早上检查 3 phase 清单
 
 ### Phase A · 阅 SUMMARY + 状态(5min)
