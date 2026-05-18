@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart' show rootBundle;
 
+import '../features/codex/domain/codex_category.dart';
 import '../features/codex/domain/codex_entry.dart';
 import '../features/codex/domain/codex_index.dart';
 import '../features/encounter/domain/encounter_def.dart';
@@ -381,22 +382,30 @@ class GameRepository {
 
   /// P1.z 机制百科红线(GDD §10.2 第 3 方式):
   /// - 加载到的 entry id 必须在 [CodexIndex.entries] 登记(graceful loader 已保证)
-  /// - step ∈ [1, 8]
-  /// - step 唯一(每档 ≤ 1 条 P1.z 首批)
+  /// - 机制条目(isMechanic):step ∈ [1, 8]
+  /// - lore 条目(isLore):step == null
   /// - paragraphs 总字数 ∈ [200, 550](放宽 +50,three_styles_detail 543)
   /// - paragraphs 非空
+  ///
+  /// P2 扩段:A 组 4 篇补充阅读挂相同机制 category 与 P1.z 首批共存(同档可多条),
+  /// 故 step 唯一性已废除;id 唯一性由 [CodexIndex.byId] + Map 加载层保证。
   void _enforceCodexRedLines() {
     if (codexEntries.isEmpty) return; // test fixture 兼容
-    final stepsSeen = <int>{};
     for (final e in codexEntries.values) {
       if (CodexIndex.byId(e.id) == null) {
         throw StateError('codex entry ${e.id} 不在 CodexIndex.entries 登记');
       }
-      if (e.step < 1 || e.step > 8) {
-        throw StateError('codex entry ${e.id} step=${e.step} 应 ∈ [1, 8]');
-      }
-      if (!stepsSeen.add(e.step)) {
-        throw StateError('codex entry ${e.id} step=${e.step} 重复(P1.z 每档 ≤ 1 条)');
+      final step = e.step;
+      if (e.category.isMechanic) {
+        if (step == null || step < 1 || step > 8) {
+          throw StateError(
+            'codex entry ${e.id} 机制条目 step=$step 应 ∈ [1, 8]',
+          );
+        }
+      } else if (e.category.isLore && step != null) {
+        throw StateError(
+          'codex entry ${e.id} lore 条目 step=$step 应为 null',
+        );
       }
       if (e.paragraphs.isEmpty) {
         throw StateError('codex entry ${e.id} paragraphs 为空');

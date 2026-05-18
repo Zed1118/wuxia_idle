@@ -7,7 +7,8 @@ import 'codex_index.dart';
 /// 解析规范见 [CodexEntry.fromMd]。
 class CodexEntry {
   final String id;
-  final int step;
+  /// 8 档机制 1-8;lore 江湖背景 null(永久可查不 gate)。P2 扩段沉淀。
+  final int? step;
   final String title;
   final CodexCategory category;
   final List<String> paragraphs;

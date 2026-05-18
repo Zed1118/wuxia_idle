@@ -443,6 +443,8 @@ class UiStrings {
   static const String codexUnlockedHintLabel = '已解锁';
   static String codexUnlockedHint(int unlocked, int total) =>
       '$codexUnlockedHintLabel $unlocked / $total';
+  // P2 扩段:江湖背景段标题(永久可查,与 8 档机制分段)
+  static const String codexLoreSectionTitle = '江湖背景';
 
   // ── P1 #42 Phase 3 · HomeFeedScreen 上线第一屏(GDD §9.2)──
 

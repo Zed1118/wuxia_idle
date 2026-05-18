@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:wuxia_idle/features/codex/domain/codex_category.dart';
 import 'package:wuxia_idle/features/codex/domain/codex_entry.dart';
+import 'package:wuxia_idle/features/codex/domain/codex_index.dart';
 
 void main() {
   group('CodexEntry.fromMd', () {
@@ -74,6 +75,64 @@ void main() {
       expect(CodexCategory.lineage.step, 6);
       expect(CodexCategory.encounter.step, 7);
       expect(CodexCategory.advanced.step, 8);
+    });
+  });
+
+  // ── P2 扩段:lore + isMechanic / isLore 派生 ────────────────────────────────
+  group('P2 扩段', () {
+    test('CodexCategory.lore.step == null(永久可查不 gate)', () {
+      expect(CodexCategory.lore.step, isNull);
+      expect(CodexCategory.lore.isMechanic, isFalse);
+      expect(CodexCategory.lore.isLore, isTrue);
+    });
+
+    test('8 档机制 isMechanic == true && isLore == false', () {
+      for (final c in CodexCategory.values.where((c) => c != CodexCategory.lore)) {
+        expect(c.isMechanic, isTrue, reason: '$c 应 isMechanic');
+        expect(c.isLore, isFalse, reason: '$c 不应 isLore');
+        expect(c.step, isNotNull, reason: '$c step 不应 null');
+      }
+    });
+
+    test('CodexIndex.entries 分组数:8 档首批 + 4 A 组 + 7 lore = 19', () {
+      final mechanic = CodexIndex.entries.where((e) => e.category.isMechanic);
+      final lore = CodexIndex.entries.where((e) => e.category.isLore);
+      // 机制总数 = 8 P1.z 首批 + 4 A 组补充阅读 = 12
+      expect(mechanic.length, 12);
+      // lore 总数 = B 组 7
+      expect(lore.length, 7);
+      expect(CodexIndex.entries.length, 19);
+    });
+
+    test('CodexIndex.entries 每条 id 唯一', () {
+      final ids = CodexIndex.entries.map((e) => e.id).toList();
+      expect(ids.toSet().length, ids.length, reason: 'id 重复登记');
+    });
+
+    test('lore 条目 fromMd → step null', () {
+      const raw = '# 江湖九流\n\n比境界更民间的叫法是「流」。\n\n学徒不算流。';
+      final entry = CodexEntry.fromMd(id: 'jianghu_ranks', raw: raw);
+      expect(entry.id, 'jianghu_ranks');
+      expect(entry.category, CodexCategory.lore);
+      expect(entry.step, isNull);
+      expect(entry.category.isLore, isTrue);
+    });
+
+    test('A 组补充阅读条目挂相应机制 category(step 派生 1-8)', () {
+      // 语义化:不写死 id → step 映射,只校验 isMechanic + step != null
+      const aGroupIds = {
+        'equipment_tiers',
+        'strengthening',
+        'weapon_forging',
+        'lost_techniques',
+      };
+      for (final id in aGroupIds) {
+        final entry = CodexIndex.byId(id);
+        expect(entry, isNotNull, reason: '$id 未登记');
+        expect(entry!.category.isMechanic, isTrue, reason: '$id 应挂机制');
+        expect(entry.step, isNotNull, reason: '$id step 应非 null');
+        expect(entry.step, inInclusiveRange(1, 8));
+      }
     });
   });
 }
