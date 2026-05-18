@@ -197,3 +197,118 @@ memory `feedback_opus_xhigh_interactive_duration` 锚点:本批预估 opus xhigh
 - ❌ BaikeScreen Tab 不一致(2 tab → 3 tab 必须改 length + TabBar + TabBarView 同步)
 - ❌ DeepSeek 端文案出现招式名 / 网游词 / 大场面(沿 W18-A3 lore 派单纪律)
 - ❌ Phase 1 不跑 build_runner 就动 codex_entry domain(若用 @riverpod 注解需 build_runner)
+
+---
+
+## 12. 方案 B 调整(2026-05-18 Phase 0 reality check #2)
+
+**Phase 0 漏看发现**:`data/narratives/codex/` 已存 18 md 文件(2026-05-10 早期 Phase 1 落,assets 段已注册),字数 317-543 字完美对齐 §10.2「200-500 字」范围,**7/8 档现成内容已有**,Phase 3 DeepSeek 工作量从 3-5h 砍到 30min。
+
+### 12.1 18 md → §10.1 8 档映射
+
+| step | md(复用) | 字数 | 内容定位 |
+|---|---|---|---|
+| 1 战斗+境界+掉落 | `realm.md`(境界)| 317 | 7 阶 49 级 + 进阶节奏 |
+| 2 强化+共鸣 | `strengthening.md`(强化与磨剑石)| 329 | **Q5b 二选一**(或合并)|
+| 2 强化+共鸣 | `resonance.md`(共鸣度·人剑合一)| 423 | 同上 |
+| 3 心法 | `techniques_and_styles.md`(心法与流派)| 371 | 主修+辅修+流派概览 |
+| 4 三流派 | `three_styles_detail.md`(三流派详解)| 543 | 刚猛/灵巧/阴柔克制环(略超 500 字 OK)|
+| 5 闭关 | `retreat.md`(闭关与时辰)| 426 | 时辰+地点+节气 |
+| 6 师徒 | `master_disciple.md`(师徒传承)| 337 | 收徒+师承遗物+传承哲学 |
+| 7 奇遇+领悟 | `encounter_system.md`(奇遇与机缘)| 396 | fortune 属性+触发条件+招式池 |
+| 8 开锋+结晶+相生 | **缺**,DeepSeek 补 1 篇(`combat_advanced.md` 或类似 id)| — | 开锋 3 槽 + 心血结晶 + 心法相生 5 组合 |
+
+**扩展条目**(P2 滚动):equipment_tiers / weapon_forging / battle_taboos / famous_battles / hidden_weapons / jianghu_medicine / jianghu_ranks / jianghu_rules / lost_techniques / major_sects(共 10 篇)— 江湖背景文,不绑 §10.1 8 档,P1.z 不收录。
+
+### 12.2 spec 方案 B 改动撤销/调整
+
+| 原 spec 条目 | 方案 B 调整 |
+|---|---|
+| Q1 yaml 载体目录 `data/codex/` | **撤销**,复用 `data/narratives/codex/`(已有 18 md,DeepSeek 领地)|
+| §4 yaml schema 设计 | **撤销**,内容载体保持 .md(首行 `# 标题` + 段落空行切分,沿 NarrativeLoader md 体例) |
+| §5 Phase 1 文件:`lib/data/codex_loader.dart` | **保留**,但解析 md 不解析 yaml(读 md → title 首行 # + paragraphs 按 \n\n 切分) |
+| §5 Phase 1 文件:`lib/features/codex/domain/codex_entry.dart` | **保留**,字段不变(id/step/title/category/paragraphs),`fromMd(String raw)` 替代 `fromYaml(Map)` |
+| §5 Phase 1 文件:`lib/features/codex/domain/codex_index.dart` | **新增**,Dart const map `idToStep` + `idToCategory`(8 条绑定 + 扩展空间),Mac 端写,**不含中文文案,只含 id 字符串 + step int + category enum** 符合 CLAUDE.md §5.6 |
+| §5 Phase 1 文件:`lib/data/game_repository.dart` 红线校验 | **保留 + 简化**,8 条 entry 全在 + step 唯一 + paragraphs 总字数 ∈ [200,550](放宽 +50 因 three_styles_detail 543)|
+| §5 Phase 1 文件:`pubspec.yaml` | **0 改动**(`data/narratives/codex/` 已注册)|
+| §5 Phase 3 DeepSeek 派单 | **大幅缩水**:只派 1 篇 md(档 8 开锋+结晶+相生),~30min;不重写 7 现成 |
+| §6 测试增量 | 从 +20 调整为 **+12-15**:codex_entry md 解析 +3 / codex_loader md scan +2 / game_repository 红线 +3 / codex_providers +3 / codex_tab +5 / codex_entry_detail +2 / baike_screen 改 1 = +18 实际(放宽估计)|
+| §9 估时 | Mac 端从 1h50min → **~1h**(opus xhigh 同会话);DeepSeek 端从 3-5h → **~30min**;总 ~1.5h |
+
+### 12.3 新增 Q5b 拍板
+
+**档 2 强化+共鸣**:strengthening.md(329 字)+ resonance.md(423 字)如何处理?
+
+- 选项 1:**只收 resonance.md**(更深的机制 + 文学性强 + 423 字最贴 200-500 范围) — **推荐**
+- 选项 2:只收 strengthening.md(强化是 §10.1 档 2 直接落点)
+- 选项 3:两篇合并成 1 条 `enhancement_and_resonance` 新 md(让 DeepSeek 合 → DeepSeek 端 30min)
+
+**Mac 端默认选 1**(resonance.md 收档 2,strengthening.md 留 P2 扩段),DeepSeek 端 P3 只需补档 8 即可。strengthening.md 内容不浪费,留 P2 第 2 批扩段时入库。
+
+### 12.4 lib/features/codex/domain/codex_index.dart 设计预览
+
+```dart
+// lib/features/codex/domain/codex_index.dart
+//
+// P1.z 8 档机制百科条目绑定(对齐 GDD §10.1 8 档解锁节奏)。
+// 仅含 id 字符串 + step int + CodexCategory enum,无中文文案。
+// 文案存于 data/narratives/codex/<id>.md(DeepSeek 领地)。
+
+import 'codex_category.dart';
+
+class CodexIndex {
+  CodexIndex._();
+
+  /// P1.z 首批 8 条机制百科条目(对齐 §10.1 8 档)。
+  ///
+  /// 扩展条目(equipment_tiers / weapon_forging / battle_taboos 等)留 P2 滚动。
+  static const List<({String id, int step, CodexCategory category})> entries = [
+    (id: 'realm',                  step: 1, category: CodexCategory.combat),
+    (id: 'resonance',              step: 2, category: CodexCategory.enhancement),
+    (id: 'techniques_and_styles',  step: 3, category: CodexCategory.techniques),
+    (id: 'three_styles_detail',    step: 4, category: CodexCategory.schoolCounter),
+    (id: 'retreat',                step: 5, category: CodexCategory.seclusion),
+    (id: 'master_disciple',        step: 6, category: CodexCategory.lineage),
+    (id: 'encounter_system',       step: 7, category: CodexCategory.encounter),
+    (id: 'combat_advanced',        step: 8, category: CodexCategory.advanced), // DeepSeek P3 补
+  ];
+}
+```
+
+### 12.5 md 解析规范(CodexEntry.fromMd)
+
+```
+input:
+  # 境界
+  
+  武学一道，自古以来便有「九品」之分。然江湖人言粗犷，
+  不问九品而论「流」——三流、二流、一流，再上去就是...
+  
+  每一阶又分七层：启蒙、入门、熟练、精通、圆熟、化境、登峰。
+  若按老镖师的话讲...
+
+output:
+  CodexEntry(
+    id: 'realm',                    // 从文件名(不含 .md)
+    step: 1,                        // 从 CodexIndex.entries 反查
+    title: '境界',                  // 首行 `# 标题` 去 `# `
+    category: CodexCategory.combat, // 从 CodexIndex.entries 反查
+    paragraphs: [
+      '武学一道，自古以来便有「九品」之分。然江湖人言粗犷，\n不问九品而论「流」——三流、二流、一流，再上去就是...',
+      '每一阶又分七层：启蒙、入门、熟练、精通、圆熟、化境、登峰。\n若按老镖师的话讲...',
+    ],
+  )
+```
+
+切段规则:连续 2+ 换行(`\n\s*\n`)分段,段内单换行保留。
+
+### 12.6 调整后估时
+
+| Phase | 时长(opus xhigh 同会话)|
+|---|---|
+| Phase 1 数据/领域(md loader + index + entry + repository hook) | ~25min |
+| Phase 2 Application/UI | ~50min |
+| Phase 3 DeepSeek 派单 spec(1 篇 md)| ~10min |
+| Phase 4 收口 | ~15min |
+| **Mac 端合计** | **~1h40min** vs 原 spec sonnet baseline 3.5-5h |
+| DeepSeek 端 P3 文案 | **~30min**(1 篇 md × 300-500 字)|
