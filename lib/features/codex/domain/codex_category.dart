@@ -1,6 +1,7 @@
 /// P1 #42 Phase 2 §10 P1.z 机制百科分类(对齐 GDD §10.1 8 档解锁节奏)。
 ///
-/// 每个 [CodexCategory] 对应 §10.1 的一档,与 [SaveData.tutorialStep] 1-8 映射。
+/// 8 档机制 [combat]-[advanced] 对应 §10.1 解锁档,与 [SaveData.tutorialStep] 1-8 映射;
+/// [lore] 为 P2 扩段加入的「江湖背景」,无 tutorialStep gating(GDD §10.2 永久可查)。
 enum CodexCategory {
   /// 档 1:战斗 + 境界 + 装备掉落。
   combat,
@@ -25,11 +26,14 @@ enum CodexCategory {
 
   /// 档 8:装备开锋 + 心血结晶 + 心法相生。
   advanced,
+
+  /// P2 扩段:江湖背景文(无 tutorialStep,永久可查)。
+  lore,
 }
 
 extension CodexCategoryStep on CodexCategory {
-  /// 返回该 category 对应的 §10.1 解锁档(1-8)。
-  int get step {
+  /// 8 档机制返回对应解锁档(1-8);[lore] 返回 null(永久可查不 gate)。
+  int? get step {
     switch (this) {
       case CodexCategory.combat:
         return 1;
@@ -47,6 +51,14 @@ extension CodexCategoryStep on CodexCategory {
         return 7;
       case CodexCategory.advanced:
         return 8;
+      case CodexCategory.lore:
+        return null;
     }
   }
+
+  /// 是否为 8 档机制条目(用于 UI 分段 + unlockedCount 分母 = 8)。
+  bool get isMechanic => step != null;
+
+  /// 是否为 lore 江湖背景条目(永远 unlocked)。
+  bool get isLore => this == CodexCategory.lore;
 }

@@ -5,12 +5,17 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../application/codex_providers.dart';
+import '../domain/codex_category.dart';
 import 'codex_entry_detail.dart';
 
 /// P1 #42 Phase 2 §10 P1.z BaikeScreen 第 3 tab「机制」(GDD §10.2 第 3 方式)。
 ///
-/// 永久可见 + 未达 [tutorialStepProvider] 的条目灰显占位「待解锁」;
-/// 已解锁条目 InkWell push [CodexEntryDetail]。
+/// 永久可见。**P2 扩段后**结构分两段:
+/// - **机制段**(8 档 + 4 A 组补充阅读 = 12 条):未达 tutorialStep 灰显「待解锁」+
+///   锁图标 + 解锁后 InkWell push [CodexEntryDetail]
+/// - **江湖背景段**(7 lore):永久可查(GDD §10.2),无 gating,直接 push detail
+///
+/// 顶部 chip 分母固定 8(8 档机制解锁节奏),lore 不计入分子分母。
 class CodexTab extends ConsumerWidget {
   const CodexTab({super.key});
 
@@ -39,10 +44,29 @@ class _CodexListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unlocked = items.where((it) => it.indexEntry.step <= step).length;
+    // 分两段:机制 (isMechanic) + lore (isLore)。entries 登记顺序已保证前 12 机制 + 后 7 lore。
+    final mechanicItems = items
+        .where((it) => it.indexEntry.category.isMechanic)
+        .toList(growable: false);
+    final loreItems = items
+        .where((it) => it.indexEntry.category.isLore)
+        .toList(growable: false);
+    // 顶部 chip = 「已解锁 N / 8」,分子 = 当前 step 解锁的「机制档数」,分母固定 8。
+    // A 组 4 补充阅读虽挂相同档但不增加分子(8 档节奏是核心叙事,见 unlockedCodexCount provider)。
+    final unlockedMechanic = step.clamp(0, 8);
+
+    // index 布局:
+    //   0                                   → headerText (已解锁 N/8)
+    //   1..mechanicItems.length             → 机制 tile
+    //   mechanicItems.length + 1            → lore SectionHeader (若 loreItems 非空)
+    //   后续                                 → lore tile
+    final hasLore = loreItems.isNotEmpty;
+    final loreHeaderIndex = mechanicItems.length + 1;
+    final itemCount = 1 + mechanicItems.length + (hasLore ? 1 : 0) + loreItems.length;
+
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      itemCount: items.length + 1,
+      itemCount: itemCount,
       separatorBuilder: (_, _) =>
           const Divider(height: 1, color: WuxiaColors.border),
       itemBuilder: (context, index) {
@@ -50,7 +74,7 @@ class _CodexListView extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Text(
-              UiStrings.codexUnlockedHint(unlocked, items.length),
+              UiStrings.codexUnlockedHint(unlockedMechanic, 8),
               style: const TextStyle(
                 color: WuxiaColors.textMuted,
                 fontSize: 12,
@@ -58,9 +82,19 @@ class _CodexListView extends StatelessWidget {
             ),
           );
         }
-        final item = items[index - 1];
-        final unlockedItem = item.indexEntry.step <= step && item.isLoaded;
-        return _CodexListTile(item: item, unlocked: unlockedItem);
+        if (index <= mechanicItems.length) {
+          final item = mechanicItems[index - 1];
+          final s = item.indexEntry.step ?? 0;
+          final unlockedItem = s <= step && item.isLoaded;
+          return _CodexListTile(item: item, unlocked: unlockedItem);
+        }
+        if (hasLore && index == loreHeaderIndex) {
+          return const _LoreSectionHeader();
+        }
+        final loreIndex = index - loreHeaderIndex - 1;
+        final item = loreItems[loreIndex];
+        // lore 永远 unlocked;若 md 缺失(item.isLoaded == false)仍显 locked 占位(graceful)。
+        return _CodexListTile(item: item, unlocked: item.isLoaded);
       },
     );
   }
@@ -145,6 +179,26 @@ class _CodexListTile extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LoreSectionHeader extends StatelessWidget {
+  const _LoreSectionHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(top: 24, bottom: 8),
+      child: Text(
+        UiStrings.codexLoreSectionTitle,
+        style: TextStyle(
+          color: WuxiaColors.textMuted,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.2,
         ),
       ),
     );
