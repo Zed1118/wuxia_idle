@@ -97,4 +97,44 @@ void main() {
     expect(find.byType(InkWell), findsOneWidget,
         reason: 'banner 必须能点击触发 markHintRead');
   });
+
+  // ─── 边界 & 派生(纯 unit test,不用 testWidgets) ───────────────────────
+
+  group('派生', () {
+    test('byStep 正向 — 6/7/8 各返回对应 instance', () {
+      final h6 = TutorialHintDef.byStep(6);
+      expect(h6, isNotNull, reason: 'step 6 应存在');
+      expect(h6!.step, 6);
+      expect(h6.title, UiStrings.tutorialHintStep6Title);
+
+      final h7 = TutorialHintDef.byStep(7);
+      expect(h7, isNotNull, reason: 'step 7 应存在');
+      expect(h7!.step, 7);
+      expect(h7.title, UiStrings.tutorialHintStep7Title);
+
+      final h8 = TutorialHintDef.byStep(8);
+      expect(h8, isNotNull, reason: 'step 8 应存在');
+      expect(h8!.step, 8);
+      expect(h8.title, UiStrings.tutorialHintStep8Title);
+    });
+
+    test('byStep(99) → null fallback', () {
+      expect(TutorialHintDef.byStep(99), isNull,
+          reason: '超出 6-8 范围返回 null');
+    });
+  });
+
+  group('边界', () {
+    test('byStep(5) → null(step 6 下界 -1)', () {
+      expect(TutorialHintDef.byStep(5), isNull);
+    });
+
+    test('byStep(9) → null(step 8 上界 +1)', () {
+      expect(TutorialHintDef.byStep(9), isNull);
+    });
+
+    test('byStep(-1) → null(负值越界)', () {
+      expect(TutorialHintDef.byStep(-1), isNull);
+    });
+  });
 }
