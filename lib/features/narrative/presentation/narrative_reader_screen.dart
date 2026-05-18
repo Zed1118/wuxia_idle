@@ -88,15 +88,18 @@ class _NarrativeReaderScreenState extends State<NarrativeReaderScreen>
         title: Text(title),
         backgroundColor: WuxiaColors.sidebar,
         foregroundColor: WuxiaColors.textPrimary,
-        actions: [
-          TextButton(
-            onPressed: _finish,
-            child: const Text(
-              '跳过',
-              style: TextStyle(color: WuxiaColors.textSecondary),
-            ),
-          ),
-        ],
+        // P1 #42 Phase 2 §10 P1.x:mandatory=true(yaml 标注)隐藏跳过按钮。
+        actions: c.mandatory
+            ? const <Widget>[]
+            : [
+                TextButton(
+                  onPressed: _finish,
+                  child: const Text(
+                    '跳过',
+                    style: TextStyle(color: WuxiaColors.textSecondary),
+                  ),
+                ),
+              ],
       ),
       body: SafeArea(
         child: Padding(

@@ -4,6 +4,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/enums.dart';
+import '../../tutorial/application/tutorial_service.dart';
 import '../domain/mainline_progress.dart';
 
 /// 单条章节关卡 + 解锁状态（[MainlineProgressService.availableStages] 返回值）。
@@ -94,9 +95,14 @@ class MainlineProgressService {
   ///
   /// **注意**：调用方负责保证 stageId 真实存在（GameRepository.getStage）；
   /// 本服务不做 stageId 合法性校验，避免每次写都全表查。
+  ///
+  /// P1 #42 Phase 2 §10 P1.x:可选注入 [tutorialService],在同 writeTxn 内
+  /// 原子推进 [SaveData.tutorialStep](Ch1 stage_01_0X → step X)。
+  /// 测试 / debug seed 路径默认 null,不触发引导递增。
   Future<void> recordVictory({
     required String stageId,
     required DateTime now,
+    TutorialService? tutorialService,
   }) async {
     await isar.writeTxn(() async {
       final progress = await isar.mainlineProgress
@@ -114,6 +120,7 @@ class MainlineProgressService {
       progress.clearedStageIds = [...progress.clearedStageIds, stageId];
       progress.clearedAt = [...progress.clearedAt, now];
       await isar.mainlineProgress.put(progress);
+      await tutorialService?.advanceForStageCleared(stageId);
     });
   }
 

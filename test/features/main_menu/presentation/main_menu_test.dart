@@ -10,6 +10,7 @@ import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/festival/application/festival_service_providers.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
+import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 /// T32 子提交 3b：[MainMenu] widget 测试（T42 加「问鼎九霄」T49 加「闭关修炼」+ W17 候选 E 加「师徒名单」+ P0.2 #40 加「排行榜」后扩 10 个）。
@@ -167,6 +168,8 @@ void main() {
         overrides: [
           activeCharacterIdsProvider.overrideWith((ref) async => [1]),
           characterByIdProvider(1).overrideWith((ref) async => founder),
+          // P1 #42 Phase 2 §10 P1.x:闭关 enabled 需 step ≥ 5
+          currentTutorialStepProvider.overrideWith((ref) async => 5),
         ],
         child: const MaterialApp(home: MainMenu()),
       ),
@@ -339,6 +342,116 @@ void main() {
     await tester.pump();
     expect(find.text('今日：元宵'), findsOneWidget);
     expect(find.text('今日：春节'), findsNothing);
+  });
+
+  // ── P1 #42 Phase 2 §10 P1.x · tutorialStep 灰显门槛 ──────────────────────
+
+  group('§10 P1.x · tutorialStep 灰显门槛', () {
+    Character founder(DateTime now) => Character.create(
+          name: '祖师',
+          realmTier: RealmTier.yiLiu,
+          realmLayer: RealmLayer.qiMeng,
+          attributes: Attributes()
+            ..constitution = 5
+            ..enlightenment = 5
+            ..agility = 5
+            ..fortune = 5,
+          rarity: RarityTier.tianCai,
+          lineageRole: LineageRole.founder,
+          createdAt: now,
+        )..id = 1;
+
+    Widget appWithStep(int step) {
+      final ch = founder(DateTime(2026, 5, 18));
+      return ProviderScope(
+        overrides: [
+          currentTutorialStepProvider.overrideWith((ref) async => step),
+          activeCharacterIdsProvider.overrideWith((ref) async => [1]),
+          characterByIdProvider(1).overrideWith((ref) async => ch),
+        ],
+        child: const MaterialApp(home: MainMenu()),
+      );
+    }
+
+    testWidgets('step=0 → 心法 + 闭关 显锁定文案(灰显)', (tester) async {
+      await tester.pumpWidget(appWithStep(0));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuTechniquesLockedHint), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuSeclusionLockedHint), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuTechniquesHint), findsNothing);
+      expect(find.text(UiStrings.mainMenuSeclusionHint), findsNothing);
+    });
+
+    testWidgets('step=2 → 心法 + 闭关 仍灰显(均未到门槛)', (tester) async {
+      await tester.pumpWidget(appWithStep(2));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuTechniquesLockedHint), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuSeclusionLockedHint), findsOneWidget);
+    });
+
+    testWidgets('step=3 → 心法解锁(普通 hint),闭关仍灰', (tester) async {
+      await tester.pumpWidget(appWithStep(3));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuTechniquesHint), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuTechniquesLockedHint), findsNothing);
+      expect(find.text(UiStrings.mainMenuSeclusionLockedHint), findsOneWidget);
+    });
+
+    testWidgets('step=5 → 心法 + 闭关 全解锁(普通 hint)', (tester) async {
+      await tester.pumpWidget(appWithStep(5));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuTechniquesHint), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuSeclusionHint), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuTechniquesLockedHint), findsNothing);
+      expect(find.text(UiStrings.mainMenuSeclusionLockedHint), findsNothing);
+    });
+
+    testWidgets('step=8(未来值)→ 全解锁(向上兼容)', (tester) async {
+      await tester.pumpWidget(appWithStep(8));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuTechniquesHint), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuSeclusionHint), findsOneWidget);
+    });
+
+    testWidgets(
+        '闭关 step=5 + character 仍 loading → 仍 disabled(loading 优先级保留)',
+        (tester) async {
+      final neverIds = Completer<List<int>>();
+      final neverCh = Completer<Character?>();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentTutorialStepProvider.overrideWith((ref) async => 5),
+            activeCharacterIdsProvider.overrideWith((ref) => neverIds.future),
+            characterByIdProvider(1).overrideWith((ref) => neverCh.future),
+          ],
+          child: const MaterialApp(home: MainMenu()),
+        ),
+      );
+      await tester.pump();
+
+      // 闭关 step=5 已过门槛,但 character loading → 仍 Opacity 0.4 disabled
+      final opacity = tester.widget<Opacity>(
+        find
+            .ancestor(
+              of: find.text(UiStrings.mainMenuSeclusion),
+              matching: find.byType(Opacity),
+            )
+            .first,
+      );
+      expect(opacity.opacity, 0.4);
+    });
   });
 }
 

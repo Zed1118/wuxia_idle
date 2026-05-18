@@ -16,6 +16,7 @@ import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
+import '../../tutorial/application/tutorial_providers.dart';
 import '../../tower/presentation/leaderboard_screen.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
 
@@ -42,8 +43,15 @@ class MainMenu extends ConsumerWidget {
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => child));
   }
 
+  static const int _techniquesUnlockStep = 3;
+  static const int _seclusionUnlockStep = 5;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // P1 #42 Phase 2 §10 P1.x:tutorialStep 门槛 wire(loading 时按 0 兜底)。
+    final stepAsync = ref.watch(currentTutorialStepProvider);
+    final step = stepAsync.maybeWhen(data: (s) => s, orElse: () => 0);
+
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       body: SafeArea(
@@ -89,6 +97,7 @@ class MainMenu extends ConsumerWidget {
                   defaultCharacterId: _defaultCharacterId,
                   defaultRealmTier: _defaultRealmTier,
                   onPush: (screen) => _push(context, screen),
+                  tutorialLocked: step < _seclusionUnlockStep,
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
@@ -134,7 +143,10 @@ class MainMenu extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _MenuButton(
                   label: UiStrings.mainMenuTechniques,
-                  hint: UiStrings.mainMenuTechniquesHint,
+                  hint: step < _techniquesUnlockStep
+                      ? UiStrings.mainMenuTechniquesLockedHint
+                      : UiStrings.mainMenuTechniquesHint,
+                  disabled: step < _techniquesUnlockStep,
                   onTap: () => _push(
                     context,
                     const TechniquePanelScreen(
@@ -162,11 +174,16 @@ class _SeclusionMenuButton extends ConsumerWidget {
     required this.defaultCharacterId,
     required this.defaultRealmTier,
     required this.onPush,
+    this.tutorialLocked = false,
   });
 
   final int defaultCharacterId;
   final RealmTier defaultRealmTier;
   final void Function(Widget screen) onPush;
+
+  /// P1 #42 Phase 2 §10 P1.x:tutorialStep < 5 时显示灰显 + 引导文案,
+  /// 与 [loading] 并联灰显(任一为真即禁用)。
+  final bool tutorialLocked;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -186,12 +203,15 @@ class _SeclusionMenuButton extends ConsumerWidget {
     );
     final realmTier = character?.realmTier ?? defaultRealmTier;
     final characterId = character?.id ?? defaultCharacterId;
+    final disabled = loading || tutorialLocked;
 
     return _MenuButton(
       label: UiStrings.mainMenuSeclusion,
-      hint: UiStrings.mainMenuSeclusionHint,
-      disabled: loading,
-      onTap: loading
+      hint: tutorialLocked
+          ? UiStrings.mainMenuSeclusionLockedHint
+          : UiStrings.mainMenuSeclusionHint,
+      disabled: disabled,
+      onTap: disabled
           ? null
           : () => onPush(
                 SeclusionMapListScreen(

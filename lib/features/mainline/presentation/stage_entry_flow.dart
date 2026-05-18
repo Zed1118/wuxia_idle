@@ -25,6 +25,7 @@ import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../event/application/game_event_service.dart';
+import '../../tutorial/application/tutorial_providers.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/utils/rng.dart';
@@ -133,8 +134,10 @@ Future<void> runStageFlow({
     await svc.recordVictory(
       stageId: stage.id,
       now: DateTime.now(),
+      tutorialService: ref.read(tutorialServiceProvider),
     );
     ref.invalidate(mainlineProgressProvider);
+    ref.invalidate(currentTutorialStepProvider);
   }
 
   // W15 #30 P3 后续 A:victory dialog 显 drop + 升层 banner;outcome=null 时

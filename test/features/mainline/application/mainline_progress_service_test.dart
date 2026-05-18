@@ -5,8 +5,10 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_progress_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 
 /// Phase 3 T34 · MainlineProgressService 真 Isar 落地测试。
 ///
@@ -185,6 +187,66 @@ void main() {
           contains('MainlineProgress 未初始化'),
         )),
       );
+    });
+  });
+
+  group('recordVictory · tutorialService hook(§10 P1.x)', () {
+    Future<void> seedSave() async {
+      final isar = IsarSetup.instance;
+      await isar.writeTxn(() async {
+        await isar.saveDatas.put(SaveData()
+          ..slotId = IsarSetup.currentSlotId
+          ..saveVersion = '0.10.0'
+          ..createdAt = DateTime(2026, 5, 11)
+          ..lastSavedAt = DateTime(2026, 5, 11)
+          ..lastOnlineAt = DateTime(2026, 5, 11)
+          ..tutorialStep = 0);
+      });
+    }
+
+    test('通 stage_01_03 + 注入 tutorialService → SaveData.tutorialStep 递增',
+        () async {
+      await seedSave();
+      final isar = IsarSetup.instance;
+      await MainlineProgressService(isar: isar).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(isar: isar).recordVictory(
+        stageId: 'stage_01_03',
+        now: DateTime(2026, 5, 13),
+        tutorialService: TutorialService(isar),
+      );
+
+      final tutorialSvc = TutorialService(isar);
+      expect(await tutorialSvc.getCurrentStep(), 3);
+    });
+
+    test('通 stage_02_01 + 注入 tutorialService → 非 Ch1 不递增 step',
+        () async {
+      await seedSave();
+      final isar = IsarSetup.instance;
+      await MainlineProgressService(isar: isar).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(isar: isar).recordVictory(
+        stageId: 'stage_02_01',
+        now: DateTime(2026, 5, 11),
+        tutorialService: TutorialService(isar),
+      );
+
+      final tutorialSvc = TutorialService(isar);
+      expect(await tutorialSvc.getCurrentStep(), 0);
+    });
+
+    test('tutorialService=null(默认)→ recordVictory 不读 SaveData,step 不变',
+        () async {
+      await seedSave();
+      final isar = IsarSetup.instance;
+      await MainlineProgressService(isar: isar).getOrCreate(saveDataId: 1);
+      await MainlineProgressService(isar: isar).recordVictory(
+        stageId: 'stage_01_03',
+        now: DateTime(2026, 5, 11),
+      );
+
+      final tutorialSvc = TutorialService(isar);
+      expect(await tutorialSvc.getCurrentStep(), 0,
+          reason: 'tutorialService 未注入时不触发递增(向后兼容)');
     });
   });
 

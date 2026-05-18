@@ -24,11 +24,18 @@ class NarrativeContent {
   /// 缺文件 / 解析失败时的兜底标记。UI 可显示弱提示。
   final bool isPlaceholder;
 
+  /// P1 #42 Phase 2 §10 P1.x:强制引导剧情(不可跳过)。
+  ///
+  /// yaml `mandatory: true` → Reader Screen 隐藏「跳过」按钮。
+  /// 缺省 false 向后兼容(现有 stage / tower 剧情不动)。
+  final bool mandatory;
+
   const NarrativeContent({
     required this.id,
     this.title,
     required this.paragraphs,
     required this.isPlaceholder,
+    this.mandatory = false,
   });
 
   factory NarrativeContent.placeholder(String id) => NarrativeContent(
@@ -46,6 +53,7 @@ class NarrativeContent {
         (y['paragraphs'] as List? ?? const []).map((e) => e.toString()),
       ),
       isPlaceholder: false,
+      mandatory: y['mandatory'] as bool? ?? false,
     );
   }
 }

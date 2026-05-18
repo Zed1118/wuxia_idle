@@ -137,4 +137,93 @@ void main() {
     expect(finished, isTrue);
     expect(find.text('段1'), findsNothing);
   });
+
+  // ── P1 #42 Phase 2 §10 P1.x · mandatory 隐藏「跳过」按钮 ─────────────────
+
+  testWidgets('mandatory=false(默认)→「跳过」按钮可见', (tester) async {
+    const c = NarrativeContent(
+      id: 'x',
+      title: '普通',
+      paragraphs: ['段落 A', '段落 B'],
+      isPlaceholder: false,
+    );
+    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
+      content: c,
+      fallbackTitle: 'fb',
+    )));
+    expect(find.text('跳过'), findsOneWidget);
+  });
+
+  testWidgets('mandatory=true → 「跳过」按钮不可见(强制引导)', (tester) async {
+    const c = NarrativeContent(
+      id: 'tutorial',
+      title: '师父教学',
+      paragraphs: ['段落 A', '段落 B'],
+      isPlaceholder: false,
+      mandatory: true,
+    );
+    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
+      content: c,
+      fallbackTitle: 'fb',
+    )));
+    expect(find.text('跳过'), findsNothing);
+    expect(find.text('段落 A'), findsOneWidget,
+        reason: '首段正常渲染,只 Skip 按钮被隐');
+  });
+
+  testWidgets('mandatory=true + 中段「继续」仍可推进', (tester) async {
+    const c = NarrativeContent(
+      id: 'tutorial',
+      title: '强制章',
+      paragraphs: ['段 A', '段 B', '段 C'],
+      isPlaceholder: false,
+      mandatory: true,
+    );
+    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
+      content: c,
+      fallbackTitle: 'fb',
+    )));
+    expect(find.text('继续'), findsOneWidget);
+    expect(find.text('跳过'), findsNothing);
+
+    await tester.tap(find.text('继续'));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('段 B'), findsOneWidget);
+  });
+
+  testWidgets('mandatory=true + 末段「完成」按钮触发 onFinish + pop',
+      (tester) async {
+    var finished = false;
+    const c = NarrativeContent(
+      id: 'tutorial',
+      title: '末段强制',
+      paragraphs: ['只一段'],
+      isPlaceholder: false,
+      mandatory: true,
+    );
+    await tester.pumpWidget(wrap(Builder(builder: (ctx) {
+      return ElevatedButton(
+        onPressed: () => Navigator.of(ctx).push(MaterialPageRoute<void>(
+          builder: (_) => NarrativeReaderScreen(
+            content: c,
+            fallbackTitle: 'fb',
+            onFinish: () => finished = true,
+          ),
+        )),
+        child: const Text('open'),
+      );
+    })));
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('完成'), findsOneWidget);
+    expect(find.text('跳过'), findsNothing,
+        reason: 'mandatory 末段不显跳过');
+
+    await tester.tap(find.text('完成'));
+    await tester.pumpAndSettle();
+
+    expect(finished, isTrue);
+  });
 }
