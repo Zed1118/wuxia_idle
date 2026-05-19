@@ -1,8 +1,19 @@
-# WINDOWS_DEEPSEEK_GUIDE.md
+# WINDOWS_DEEPSEEK_GUIDE.md(已归档 · DEPRECATED)
 
+> **⚠️ 归档说明(2026-05-19,CLAUDE.md v1.8 协作模式切换)**:
+> DeepSeek 端文案产线于 2026-05-19 退役,Mac+Opus 4.7 单端接管 `data/lore/` + `data/narratives/` + `data/events/` 全部文案产出。
+> 触发动因:P1 #44 35 件装备延续典故 ≈ 280 条文案补齐由 Mac 端接手,Opus 4.7 古风克制文学能力足够,链路简化为单端无跨端协作开销。
+>
+> **本文不再活跃维护,仅作历史参考**。Mac 端文案产出风格请直接参 GDD §6.6 装备典故 + §10.2 江湖见闻录百科 + `data/lore/_templates/` + 已落优秀范例(如 `data/lore/weapon_shenwu_tian_wen_jian.yaml` / `data/lore/weapon_xunchang_tie_jian.yaml`)。
+>
+> 配套设计文档:[`GDD.md`](../../GDD.md)(项目全景) / [`CLAUDE.md`](../../CLAUDE.md)(单端工作规范)。
+>
+> ---
+>
+> **以下是原文档 v1.0(2026-XX-XX 起 DeepSeek 端用,2026-05-19 归档)**:
+>
 > Windows 端 Claude Code + DeepSeek 的内容生产工作指引。
 > 你（DeepSeek）只产文本，不动代码、不动数值。
-> 配套设计文档：[`GDD.md`](./GDD.md)（项目全景）、[`CLAUDE.md`](./CLAUDE.md)（Mac 端代码侧规范）。
 >
 > **版本：v1.0**
 
