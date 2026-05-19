@@ -217,6 +217,18 @@ encounter_skills:
     tier: 3
     narrativeInsightId: xiao_xiang_ye_yu   # 玄剑↔潇湘夜雨:连绵不绝如夜雨敲窗
 
+  # T02 nightshift · tier 3 +1(联结 qing_lin_si_yu 领悟)
+  - id: skill_encounter_tian_xin_ting_yu
+    name: 天心听雨
+    description: 心如止水之时，雨声落入剑势，每一击都与天地的节拍合而为一。
+    type: powerSkill
+    powerMultiplier: 2200
+    internalForceCost: 180
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    visualEffect: rain_listen_blade
+    tier: 3
+
   # ───────────────────────────────────────────
   # 第 4 阶(cap 3000)秘传期 · 含 relic_blade(★)
   # ───────────────────────────────────────────
@@ -278,6 +290,29 @@ encounter_skills:
     visualEffect: lightfoot_immortal
     tier: 4
     narrativeInsightId: yi_qi_jue_chen   # 飞仙步↔一气绝尘:极速身法屏息冲刺
+
+  # T02 nightshift · tier 4 +2(联结 gu_dao_chi_jian + mo_jian_ru_yu 领悟)
+  - id: skill_encounter_gu_dao_jian_yi
+    name: 孤岛剑意
+    description: 孤悬海上的礁石上，一剑出鞘，风浪皆静。剑意所向，无人可挡。
+    type: powerSkill
+    powerMultiplier: 2700
+    internalForceCost: 280
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    visualEffect: lonely_isle_blade
+    tier: 4
+
+  - id: skill_encounter_mo_jian_xiang_xin
+    name: 磨剑相心
+    description: 磨砺心中执念，剑锋直指自己。一招破出，敌我之间已无分别。
+    type: powerSkill
+    powerMultiplier: 2600
+    internalForceCost: 260
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    visualEffect: self_blade_meditation
+    tier: 4
 
   # ───────────────────────────────────────────
   # 第 5 阶(cap 4000)江湖期 · 含 water_qi + night_strike(★)
@@ -341,6 +376,29 @@ encounter_skills:
     visualEffect: sword_mountains_rivers
     tier: 5
     narrativeInsightId: shan_quan_ji_jian   # 山河剑↔山泉激涧:山水剑意激流之势
+
+  # T02 nightshift · tier 5 +2(联结 xue_ye_xing_kong + chuan_long_dan_xin 领悟)
+  - id: skill_encounter_xue_ye_xing_yi
+    name: 雪夜星意
+    description: 雪夜抬头，星河流转。剑光化作流星，一闪即逝，亦一闪定生死。
+    type: powerSkill
+    powerMultiplier: 3600
+    internalForceCost: 400
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    visualEffect: snow_night_star
+    tier: 5
+
+  - id: skill_encounter_chuan_long_xiao_ge
+    name: 穿龙啸歌
+    description: 心中之龙横空出世，啸声震动山河。一啸之中，万千兵戈尽化齑粉。
+    type: ultimate
+    powerMultiplier: 3900
+    internalForceCost: 500
+    cooldownTurns: 6
+    requiresManualTrigger: true
+    visualEffect: dragon_roar_ultimate
+    tier: 5
 
   # ───────────────────────────────────────────
   # 第 6 阶(cap 5500)失传期 · 含 ice_break(★)

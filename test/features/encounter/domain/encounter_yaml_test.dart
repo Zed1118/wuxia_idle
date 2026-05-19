@@ -19,13 +19,13 @@ void main() {
 
   group('encounters.yaml 加载', () {
     test(
-        '45 条 encounter 全部解析成功 '
-        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 4 + P1 #37 yu_zhong_qiao_men 挂回 1)',
+        '54 条 encounter 全部解析成功 '
+        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 4 + P1 #37 yu_zhong_qiao_men 挂回 1 + T02 nightshift 9)',
         () {
       final repo = GameRepository.instance;
-      expect(repo.encounterDefs.length, 45,
+      expect(repo.encounterDefs.length, 54,
           reason:
-              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 触发条件 4 + P1 #37 yu_zhong_qiao_men 挂回 1');
+              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 触发条件 4 + P1 #37 yu_zhong_qiao_men 挂回 1 + T02 nightshift 9(领悟 5 + 奇遇 4)');
       // W14-1 3 条必须仍在
       expect(
         repo.encounterDefs.keys,
@@ -333,6 +333,51 @@ void main() {
         }),
         throwsA(isA<ArgumentError>()),
       );
+    });
+  });
+
+  // T02 nightshift · 武学领悟 +5 + 基础奇遇 +4 联结红线
+  group('encounters.yaml T02 nightshift 新增 9 条', () {
+    test('5 新武学领悟联结 5 新 encounter_skill(id 一致 + skill 存在)', () {
+      final newInsights = [
+        ('qing_lin_si_yu', 'skill_encounter_tian_xin_ting_yu'),
+        ('gu_dao_chi_jian', 'skill_encounter_gu_dao_jian_yi'),
+        ('mo_jian_ru_yu', 'skill_encounter_mo_jian_xiang_xin'),
+        ('xue_ye_xing_kong', 'skill_encounter_xue_ye_xing_yi'),
+        ('chuan_long_dan_xin', 'skill_encounter_chuan_long_xiao_ge'),
+      ];
+      final repo = GameRepository.instance;
+      for (final entry in newInsights) {
+        final encId = entry.$1;
+        final skillId = entry.$2;
+        final enc = repo.findEncounter(encId)!;
+        expect(enc.type, EncounterType.techniqueInsight,
+            reason: '$encId 应为 techniqueInsight');
+        final unlockOutcome = enc.outcomeMapping['insight_success']!;
+        expect(unlockOutcome.type, OutcomeType.unlockSkill,
+            reason: '$encId insight_success 应为 unlockSkill');
+        expect(unlockOutcome.skillId, skillId,
+            reason: '$encId insight_success 应解锁 $skillId');
+        expect(repo.encounterSkillIds, contains(skillId),
+            reason: '$skillId 应在 encounter_skills.yaml 已定义');
+      }
+    });
+
+    test('4 新基础奇遇 fortuneEvent(无 festivalRequired)', () {
+      final newFortunes = [
+        'qin_lou_fang_you',
+        'gu_si_qiu_shu',
+        'ma_kuai_song_hua',
+        'xian_zhou_yi_lu',
+      ];
+      final repo = GameRepository.instance;
+      for (final id in newFortunes) {
+        final enc = repo.findEncounter(id)!;
+        expect(enc.type, EncounterType.fortuneEvent,
+            reason: '$id 应为 fortuneEvent');
+        expect(enc.trigger.festivalRequired, isNull,
+            reason: '$id 是非节日 fortuneEvent');
+      }
     });
   });
 }
