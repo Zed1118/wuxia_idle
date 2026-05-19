@@ -7,6 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/codex/domain/codex_category.dart';
 import 'package:wuxia_idle/features/codex/domain/codex_index.dart';
 import 'package:wuxia_idle/features/codex/presentation/codex_entry_detail.dart';
+import 'package:wuxia_idle/features/codex/application/codex_providers.dart';
 import 'package:wuxia_idle/features/codex/presentation/codex_tab.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -185,6 +186,26 @@ void main() {
         findsNothing,
       );
     }
+  });
+
+  testWidgets('chip 走 [unlockedCodexCountProvider]:override provider → 5,step=2 时 chip 仍显「5 / 8」',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 3000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        currentTutorialStepProvider.overrideWith((ref) async => 2),
+        unlockedCodexCountProvider.overrideWith((ref) async => 5),
+      ],
+      child: const MaterialApp(home: Scaffold(body: CodexTab())),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.codexUnlockedHint(5, 8)), findsOneWidget);
+    // mechanic gating 仍走 step=2(provider 不影响 lock 数)
+    final locked = CodexIndex.entries
+        .where((e) => e.category.isMechanic && (e.step ?? 0) > 2)
+        .length;
+    expect(find.byIcon(Icons.lock_outline), findsNWidgets(locked));
   });
 
   testWidgets('viewport 800×3000:末尾 lore entry title 在渲染树中可 find', (tester) async {
