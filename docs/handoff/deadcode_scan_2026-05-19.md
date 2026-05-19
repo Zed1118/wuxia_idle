@@ -16,7 +16,7 @@
 | 4 | `lib/core/application/inventory_providers.dart` | 1 |
 | 5 | `lib/features/baike/presentation/baike_screen.dart` | 1 |
 
-> 其余 13 文件各 1 hint。所有 hint 均在 test/ 或 lib/features/debug/，不涉及核心业务路径。
+> 其余 13 文件各 1 hint。**hint 主要集中在 test/ 与 lib/features/debug/**(~80%),少量散落 `lib/core/application/inventory_providers.dart`(1 hint)和 `lib/features/baike/presentation/baike_screen.dart`(1 hint)等核心路径,需逐文件确认是否真死(可能是延迟使用)。`dart fix --apply` 一键修即可,不阻塞主流程。
 
 ## §2 @riverpod provider 0 引用 candidates
 
