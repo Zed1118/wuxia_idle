@@ -32,16 +32,23 @@
 | duan_qiao_can_yue | **永封档** | biome=废桥(无key),3 outcomes 全为民事行为(修桥/听故事/留银),零武学钩子 | — |
 | gu_chuan_deng_ying | **永封档** | dock×night 槽已饱和(#18 ye_du_gu_chuan + #40 jiang_xin_ye_hua),hermit诗意但无武学输出 | — |
 | huang_cun_yao_ren | **永封档** | 邪门/恐怖调子与写实武侠基调异质;biome=荒村(无key);uncover_truth/confront_horror无法映射至 attributeBonus/unlockSkill | — |
-| lao_jing_hui_xiang | **条件挂回** | discover_secret(断剑)→ fortune+1 / hear_whisper → enlightenment+1 映射合理;武侠味足;biome拟合inn牵强但可接受 | type=fortuneEvent / biome=inn / weather=none / discover_secret→fortune+1 / hear_whisper→enlightenment+1 |
+| lao_jing_hui_xiang | **永封档**(2026-05-19 拍板) | ① fortuneEvent 池 16/15 不饥渴;② biome=inn 拟合"枯井"语义膨胀;③ inn 槽 yu_zhong_qiao_men rain×inn 已饱和;④ "神秘幽寒"调子异质于 fortuneEvent 主流"江湖奇缘";⑤ _archive/ 留档,Phase 5+ 若开 biome=well 直接启用 | — |
 | qing_lou_can_meng | **永封档** | 音律系统 Demo 不做(GDD §8.4);outcomes(connect_string/meditate_silence)无武学输出;青楼调子与项目基调不完全契合 | — |
 | yu_zhong_qiao_men | **推荐挂回** | rain×inn 槽位空缺;hear_stories→fortune+1 / learn_legend→enlightenment+1 映射清晰;江湖名册设定风格吻合 | type=fortuneEvent / biome=inn / weather=rain / hear_stories→fortune+1 / learn_legend→enlightenment+1 |
 
 ## §4 closeout
 
-本批 audit 结论:6 条 orphan 中 **4 条永封档**(废桥/邪门/音律/dock饱和),**2 条建议挂回**(yu_zhong_qiao_men 强推荐;lao_jing_hui_xiang 条件性,biome拟合略牵强)。
+本批 audit 终态决议:6 条 orphan 中 **5 条永封档**(废桥 / 邪门 / 音律 / dock饱和 / **lao_jing_hui_xiang 2026-05-19 拍板永封档**),**1 条挂回**(yu_zhong_qiao_men 2026-05-19 已实装 rain×inn)。
 
-若下波挂回 yu_zhong_qiao_men:需补 encounters.yaml 1 条(rain×inn,type=fortuneEvent) + 在 events/ 落对应 yaml → fortuneEvent基础数从 16→17,仍在 GDD 范围内;估时 0.5h(yaml写入+加载层校验);红线:lucky断剑 fortune+1 不超 §5.4 属性上限(fortune 属性点最大 10,依据 CLAUDE.md §12.2 #2 v1.2 决议 + `numbers.yaml character.attributes.point_per_attribute_max: 10` 实测落地,+1 合规)。lao_jing_hui_xiang 可同批挂回,biome inn拟合需在 encounter comment 注明「枯井概念映射」。techniqueInsight 当前刚到下限(20),后续补充优先级高于本批 fortuneEvent 挂回。
+**yu_zhong_qiao_men 已实装**(2026-05-19,HEAD `3a1315e`):encounters.yaml +1 条(rain×inn,type=fortuneEvent)+ events/ 落对应 yaml → fortuneEvent基础数 16→17,仍在 GDD §8.4 范围内(15-25)。
 
-**#37 挂账状态**:4条永封档已归档完毕;2条挂回待用户拍板后下波实装,挂账保留至拍板。
+**lao_jing_hui_xiang 永封档拍板理由**(2026-05-19 用户拍板):
+- ① fortuneEvent 池 16/15 不饥渴,无挂回压力
+- ② biome=inn 拟合"枯井"语义膨胀,需 encounter comment 注释属"打补丁"
+- ③ inn 槽 yu_zhong_qiao_men rain×inn 刚饱和,再添挤
+- ④ "神秘幽寒"调子异质于 fortuneEvent 主流"江湖奇缘"
+- ⑤ _archive/ 留档,Phase 5+ 若开 biome=well/abandoned_well 直接启用
 
-**优先级判定**: fortuneEvent 基础(16)≥ 15 → 不强求挂回;techniqueInsight(20)= 下限 → 下波更优先补 techniqueInsight 类 orphan(本批6条无此类型可转)。
+**#37 挂账状态**:**全销账**(6 条 = 5 永封档 + 1 挂回实装)。
+
+**优先级判定**: fortuneEvent 基础(17)≥ 15 → 不强求新增;techniqueInsight(20)= 下限 → 下波 P1 #43 高阶占位补 18 条 skill 时连带补 techniqueInsight 类 encounter(本批 6 条无此类型可转)。
