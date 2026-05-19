@@ -590,7 +590,7 @@ floors:
         baseHp: 3950
         baseAttack: 600
         baseSpeed: 190
-        skillIds: [skill_gangmeng_mingjia_basic, skill_gangmeng_mingjia_skill]
+        skillIds: [skill_gangmeng_jianghu_basic]
         iconPath: assets/enemies/zuo_hufa.png
       - id: enemy_tower_21b
         name: 绝顶高手（刀）
@@ -600,7 +600,7 @@ floors:
         baseHp: 3950
         baseAttack: 600
         baseSpeed: 200
-        skillIds: [skill_lingqiao_mingjia_basic, skill_lingqiao_mingjia_skill]
+        skillIds: [skill_lingqiao_jianghu_basic]
         iconPath: assets/enemies/black_killer.png
       - id: enemy_tower_21c
         name: 绝顶高手（掌）
@@ -610,9 +610,11 @@ floors:
         baseHp: 3950
         baseAttack: 600
         baseSpeed: 185
-        skillIds: [skill_yinrou_mingjia_basic, skill_yinrou_mingjia_skill]
+        skillIds: [skill_yinrou_jianghu_basic]
         iconPath: assets/enemies/anye.png
     dropTable:
+      - equipmentDefId: weapon_zhongqi_po_zhen_chui
+        dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 3]
         dropChance: 1.0
@@ -629,7 +631,7 @@ floors:
         baseHp: 4100
         baseAttack: 650
         baseSpeed: 195
-        skillIds: [skill_gangmeng_mingjia_basic, skill_gangmeng_mingjia_skill]
+        skillIds: [skill_gangmeng_jianghu_basic]
         iconPath: assets/enemies/wulin_bazhu.png
       - id: enemy_tower_22b
         name: 绝顶护法（乙）
@@ -639,7 +641,7 @@ floors:
         baseHp: 4100
         baseAttack: 650
         baseSpeed: 205
-        skillIds: [skill_lingqiao_mingjia_basic, skill_lingqiao_mingjia_skill]
+        skillIds: [skill_lingqiao_jianghu_basic]
         iconPath: assets/enemies/fu_zhaizhu.png
       - id: enemy_tower_22c
         name: 绝顶护法（丙）
@@ -649,9 +651,11 @@ floors:
         baseHp: 4100
         baseAttack: 650
         baseSpeed: 190
-        skillIds: [skill_yinrou_mingjia_basic, skill_yinrou_mingjia_skill]
+        skillIds: [skill_yinrou_jianghu_basic]
         iconPath: assets/enemies/you_hufa.png
     dropTable:
+      - equipmentDefId: armor_zhongqi_yin_lin_jia
+        dropChance: 0.40
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 3]
         dropChance: 1.0
@@ -669,9 +673,8 @@ floors:
         baseAttack: 700
         baseSpeed: 205
         skillIds:
-          - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
-          - skill_lingqiao_mingjia_ult
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
         iconPath: assets/enemies/zuo_hufa.png
       - id: enemy_tower_23b
         name: 名门长老（乙）
@@ -681,7 +684,7 @@ floors:
         baseHp: 4300
         baseAttack: 700
         baseSpeed: 195
-        skillIds: [skill_gangmeng_mingjia_basic, skill_gangmeng_mingjia_skill]
+        skillIds: [skill_gangmeng_jianghu_basic, skill_gangmeng_jianghu_skill]
         iconPath: assets/enemies/jianghu_qianbei.png
       - id: enemy_tower_23c
         name: 名门长老（丙）
@@ -691,11 +694,13 @@ floors:
         baseHp: 4300
         baseAttack: 700
         baseSpeed: 200
-        skillIds: [skill_yinrou_mingjia_basic, skill_yinrou_mingjia_skill]
+        skillIds: [skill_yinrou_jianghu_basic, skill_yinrou_jianghu_skill]
         iconPath: assets/enemies/shiye.png
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 0.30
+      - equipmentDefId: weapon_zhongqi_du_long_suo
+        dropChance: 0.40
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 3]
         dropChance: 1.0
@@ -713,9 +718,8 @@ floors:
         baseAttack: 700
         baseSpeed: 200
         skillIds:
-          - skill_gangmeng_mingjia_basic
-          - skill_gangmeng_mingjia_skill
-          - skill_gangmeng_mingjia_ult
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
         iconPath: assets/enemies/wulin_bazhu.png
       - id: enemy_tower_24b
         name: 武林名宿（乙）
@@ -726,9 +730,8 @@ floors:
         baseAttack: 700
         baseSpeed: 210
         skillIds:
-          - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
-          - skill_lingqiao_mingjia_ult
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
         iconPath: assets/enemies/fu_zhaizhu.png
       - id: enemy_tower_24c
         name: 武林名宿（丙）
@@ -739,12 +742,13 @@ floors:
         baseAttack: 700
         baseSpeed: 195
         skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-          - skill_yinrou_mingjia_ult
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
         iconPath: assets/enemies/you_hufa.png
     dropTable:
       - equipmentDefId: armor_haojiahuo_jin_pao
+        dropChance: 0.50
+      - equipmentDefId: accessory_zhongqi_qing_yu_huan
         dropChance: 0.50
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 3]
@@ -767,14 +771,16 @@ floors:
         baseAttack: 1900
         baseSpeed: 230
         skillIds:
-          - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
-          - skill_lingqiao_mingjia_ult
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+          - skill_lingqiao_jianghu_ult
         iconPath: assets/enemies/wulin_bazhu.png
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 1.0
       - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+        dropChance: 1.0
+      - equipmentDefId: weapon_zhongqi_qing_xu_jian
         dropChance: 1.0
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [6, 10]
@@ -798,9 +804,7 @@ floors:
         baseAttack: 750
         baseSpeed: 215
         skillIds:
-          - skill_gangmeng_mingjia_basic
-          - skill_gangmeng_mingjia_skill
-          - skill_gangmeng_mingjia_ult
+          - skill_gangmeng_shichuan_basic
         iconPath: assets/enemies/wulin_bazhu.png
       - id: enemy_tower_26b
         name: 宗师弟子（乙）
@@ -811,9 +815,7 @@ floors:
         baseAttack: 750
         baseSpeed: 225
         skillIds:
-          - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
-          - skill_lingqiao_mingjia_ult
+          - skill_lingqiao_shichuan_basic
         iconPath: assets/enemies/zuo_hufa.png
       - id: enemy_tower_26c
         name: 宗师弟子（丙）
@@ -824,11 +826,11 @@ floors:
         baseAttack: 750
         baseSpeed: 220
         skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-          - skill_yinrou_mingjia_ult
+          - skill_yinrou_shichuan_basic
         iconPath: assets/enemies/anye.png
     dropTable:
+      - equipmentDefId: weapon_baowu_xuan_tian_fu
+        dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 5]
         dropChance: 1.0
@@ -846,9 +848,7 @@ floors:
         baseAttack: 750
         baseSpeed: 225
         skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-          - skill_yinrou_mingjia_ult
+          - skill_yinrou_shichuan_basic
         iconPath: assets/enemies/shiye.png
       - id: enemy_tower_27b
         name: 宗师真传（乙）
@@ -859,9 +859,7 @@ floors:
         baseAttack: 750
         baseSpeed: 215
         skillIds:
-          - skill_gangmeng_mingjia_basic
-          - skill_gangmeng_mingjia_skill
-          - skill_gangmeng_mingjia_ult
+          - skill_gangmeng_shichuan_basic
         iconPath: assets/enemies/wulin_bazhu.png
       - id: enemy_tower_27c
         name: 宗师真传（丙）
@@ -872,11 +870,11 @@ floors:
         baseAttack: 750
         baseSpeed: 230
         skillIds:
-          - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
-          - skill_lingqiao_mingjia_ult
+          - skill_lingqiao_shichuan_basic
         iconPath: assets/enemies/black_killer.png
     dropTable:
+      - equipmentDefId: armor_baowu_jin_si_jia
+        dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 5]
         dropChance: 1.0
@@ -894,9 +892,8 @@ floors:
         baseAttack: 800
         baseSpeed: 220
         skillIds:
-          - skill_gangmeng_mingjia_basic
-          - skill_gangmeng_mingjia_skill
-          - skill_gangmeng_mingjia_ult
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill
         iconPath: assets/enemies/zuo_hufa.png
       - id: enemy_tower_28b
         name: 宗师护法（乙）
@@ -907,9 +904,8 @@ floors:
         baseAttack: 800
         baseSpeed: 230
         skillIds:
-          - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
-          - skill_lingqiao_mingjia_ult
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
         iconPath: assets/enemies/you_hufa.png
       - id: enemy_tower_28c
         name: 宗师护法（丙）
@@ -920,13 +916,14 @@ floors:
         baseAttack: 800
         baseSpeed: 225
         skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-          - skill_yinrou_mingjia_ult
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
         iconPath: assets/enemies/anye.png
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 0.50
+      - equipmentDefId: weapon_baowu_chang_hong_jian
+        dropChance: 0.40
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 5]
         dropChance: 1.0
@@ -944,9 +941,8 @@ floors:
         baseAttack: 800
         baseSpeed: 235
         skillIds:
-          - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
-          - skill_lingqiao_mingjia_ult
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
         iconPath: assets/enemies/wulin_bazhu.png
       - id: enemy_tower_29b
         name: 宗师亲传（乙）
@@ -957,9 +953,8 @@ floors:
         baseAttack: 800
         baseSpeed: 225
         skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-          - skill_yinrou_mingjia_ult
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
         iconPath: assets/enemies/fu_zhaizhu.png
       - id: enemy_tower_29c
         name: 宗师亲传（丙）
@@ -970,14 +965,15 @@ floors:
         baseAttack: 800
         baseSpeed: 220
         skillIds:
-          - skill_gangmeng_mingjia_basic
-          - skill_gangmeng_mingjia_skill
-          - skill_gangmeng_mingjia_ult
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill
         iconPath: assets/enemies/jianghu_qianbei.png
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 0.50
       - equipmentDefId: armor_haojiahuo_jin_pao
+        dropChance: 0.50
+      - equipmentDefId: accessory_baowu_yu_long_pei
         dropChance: 0.50
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 5]
@@ -1000,9 +996,9 @@ floors:
         baseAttack: 2250
         baseSpeed: 245
         skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-          - skill_yinrou_mingjia_ult
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
+          - skill_yinrou_shichuan_ult
         iconPath: assets/enemies/wulin_bazhu.png
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
@@ -1011,6 +1007,10 @@ floors:
         dropChance: 1.0
       - equipmentDefId: armor_haojiahuo_jin_pao
         dropChance: 1.0
+      - equipmentDefId: weapon_baowu_xue_lian_bian
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_jin_si_jia
+        dropChance: 0.50
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [10, 15]
         dropChance: 1.0

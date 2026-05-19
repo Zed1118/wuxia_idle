@@ -10,8 +10,9 @@
 #
 # drop_source_tags 当前为占位（Phase 4 掉装备 service 完善后回填实际掉表）：
 #   - 寻常货/像样货/好家伙 → mainline_ch1/2/3 + tower_5/15
-#   - 利器/重器           → tower_25/30 + yiLiu_quest / jueDing_unlock
-#   - 宝物/神物           → zongShi_unlock / wuSheng_unlock（高阶解锁占位）
+#   - 利器/重器           → tower_25 + yiLiu_quest / jueDing_unlock
+#   - 宝物                → tower_30 + zongShi_unlock
+#   - 神物                → wuSheng_unlock（Phase 4+ 飞升机制后定义,Demo 玩家境界 ≤ zongShi 不可装备）
 # =============================================================================
 
 equipment:
@@ -327,7 +328,7 @@ equipment:
     baseSpeedMin: 30
     baseSpeedMax: 60
     presetLoreIds: [weapon_zhongqi_po_zhen_chui]
-    dropSourceTags: ["tower_30", "jueDing_unlock"]
+    dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_po_zhen_chui.png
 
   - id: weapon_zhongqi_qing_xu_jian
@@ -342,7 +343,7 @@ equipment:
     baseSpeedMin: 30
     baseSpeedMax: 60
     presetLoreIds: [weapon_zhongqi_qing_xu_jian]
-    dropSourceTags: ["tower_30", "jueDing_unlock"]
+    dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_qing_xu_jian.png
 
   - id: weapon_zhongqi_du_long_suo
@@ -357,7 +358,7 @@ equipment:
     baseSpeedMin: 30
     baseSpeedMax: 60
     presetLoreIds: [weapon_zhongqi_du_long_suo]
-    dropSourceTags: ["tower_30", "jueDing_unlock"]
+    dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_du_long_suo.png
 
   - id: armor_zhongqi_yin_lin_jia
@@ -371,7 +372,7 @@ equipment:
     baseSpeedMin: 15
     baseSpeedMax: 35
     presetLoreIds: [armor_zhongqi_yin_lin_jia]
-    dropSourceTags: ["tower_30", "jueDing_unlock"]
+    dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/armor_zhongqi_yin_lin_jia.png
 
   - id: accessory_zhongqi_qing_yu_huan
@@ -385,7 +386,7 @@ equipment:
     baseSpeedMin: 30
     baseSpeedMax: 50
     presetLoreIds: [accessory_zhongqi_qing_yu_huan]
-    dropSourceTags: ["tower_30", "jueDing_unlock"]
+    dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/accessory_zhongqi_qing_yu_huan.png
 
   # === 第 6 阶 宝物 · 宗师境界开放（Demo 高阶占位） ===
@@ -401,7 +402,7 @@ equipment:
     baseSpeedMin: 45
     baseSpeedMax: 75
     presetLoreIds: [weapon_baowu_xuan_tian_fu]
-    dropSourceTags: ["zongShi_unlock"]
+    dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_xuan_tian_fu.png
 
   - id: weapon_baowu_chang_hong_jian
@@ -416,7 +417,7 @@ equipment:
     baseSpeedMin: 45
     baseSpeedMax: 75
     presetLoreIds: [weapon_baowu_chang_hong_jian]
-    dropSourceTags: ["zongShi_unlock"]
+    dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_chang_hong_jian.png
 
   - id: weapon_baowu_xue_lian_bian
@@ -431,7 +432,7 @@ equipment:
     baseSpeedMin: 45
     baseSpeedMax: 75
     presetLoreIds: [weapon_baowu_xue_lian_bian]
-    dropSourceTags: ["zongShi_unlock"]
+    dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_xue_lian_bian.png
 
   - id: armor_baowu_jin_si_jia
@@ -445,7 +446,7 @@ equipment:
     baseSpeedMin: 25
     baseSpeedMax: 50
     presetLoreIds: [armor_baowu_jin_si_jia]
-    dropSourceTags: ["zongShi_unlock"]
+    dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/armor_baowu_jin_si_jia.png
 
   - id: accessory_baowu_yu_long_pei
@@ -459,7 +460,7 @@ equipment:
     baseSpeedMin: 45
     baseSpeedMax: 70
     presetLoreIds: [accessory_baowu_yu_long_pei]
-    dropSourceTags: ["zongShi_unlock"]
+    dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/accessory_baowu_yu_long_pei.png
 
   # === 第 7 阶 神物 · 武圣境界开放（Demo 顶阶占位） ===
