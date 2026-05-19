@@ -1019,3 +1019,177 @@ encounters:
         type: attributeBonus
         attributeKey: enlightenment
         attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # T02 nightshift · 武学领悟 +5 + 基础奇遇 +4 (2026-05-20)
+  #   GDD §8.4 Demo 内容总量对齐:
+  #     techniqueInsight 20 → 25(目标 20-30 中位)
+  #     fortuneEvent 非节日 17 → 21(目标 15-25 中位)
+  #   联结 5 个新 encounter_skill(skill_encounter_tian_xin_ting_yu /
+  #     gu_dao_jian_yi / mo_jian_xiang_xin / xue_ye_xing_yi / chuan_long_xiao_ge)
+  # ───────────────────────────────────────────────
+
+  # 21. qing_lin_si_yu · 青林思雨(lingQiao 100 kill,tier 3 领悟)
+  - id: qing_lin_si_yu
+    type: techniqueInsight
+    trigger:
+      schoolKillThreshold:
+        lingQiao: 100
+      fortuneRequired: 3
+    baseProbability: 0.4
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_tian_xin_ting_yu
+      practice_partial:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
+
+  # 22. gu_dao_chi_jian · 孤岛持剑(gangMeng 150 kill,tier 4 领悟)
+  - id: gu_dao_chi_jian
+    type: techniqueInsight
+    trigger:
+      schoolKillThreshold:
+        gangMeng: 150
+      fortuneRequired: 4
+    baseProbability: 0.35
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_gu_dao_jian_yi
+      practice_partial:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+
+  # 23. mo_jian_ru_yu · 磨剑入魇(yinRou 120 kill,tier 4 领悟)
+  - id: mo_jian_ru_yu
+    type: techniqueInsight
+    trigger:
+      schoolKillThreshold:
+        yinRou: 120
+      fortuneRequired: 4
+    baseProbability: 0.35
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_mo_jian_xiang_xin
+      practice_partial:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # 24. xue_ye_xing_kong · 雪夜星空(lingQiao 200 kill,tier 5 领悟)
+  - id: xue_ye_xing_kong
+    type: techniqueInsight
+    trigger:
+      schoolKillThreshold:
+        lingQiao: 200
+      fortuneRequired: 5
+    baseProbability: 0.3
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_xue_ye_xing_yi
+      practice_partial:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 2
+
+  # 25. chuan_long_dan_xin · 穿龙丹心(gangMeng 250 kill,tier 5 领悟)
+  - id: chuan_long_dan_xin
+    type: techniqueInsight
+    trigger:
+      schoolKillThreshold:
+        gangMeng: 250
+      fortuneRequired: 6
+    baseProbability: 0.25
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_chuan_long_xiao_ge
+      practice_partial:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 2
+
+  # 26. qin_lou_fang_you · 琴楼访友(文人奇遇)
+  - id: qin_lou_fang_you
+    type: fortuneEvent
+    trigger:
+      schoolKillThreshold:
+        gangMeng: 20
+        lingQiao: 20
+        yinRou: 20
+      fortuneRequired: 6
+    baseProbability: 0.3
+    outcomeMapping:
+      qin_he:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 2
+      qin_du:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+
+  # 27. gu_si_qiu_shu · 古寺求书(求学奇遇)
+  - id: gu_si_qiu_shu
+    type: fortuneEvent
+    trigger:
+      schoolKillThreshold:
+        gangMeng: 30
+        lingQiao: 30
+        yinRou: 30
+      fortuneRequired: 7
+    baseProbability: 0.28
+    outcomeMapping:
+      seng_shou:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 2
+      seng_zhi:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 2
+
+  # 28. ma_kuai_song_hua · 马快送花(江湖侠义)
+  - id: ma_kuai_song_hua
+    type: fortuneEvent
+    trigger:
+      schoolKillThreshold:
+        gangMeng: 15
+        lingQiao: 15
+        yinRou: 15
+      fortuneRequired: 5
+    baseProbability: 0.35
+    outcomeMapping:
+      shou_xin:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 2
+      huan_yi:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+
+  # 29. xian_zhou_yi_lu · 仙舟驿路(行旅奇遇)
+  - id: xian_zhou_yi_lu
+    type: fortuneEvent
+    trigger:
+      schoolKillThreshold:
+        gangMeng: 50
+        lingQiao: 50
+        yinRou: 50
+      fortuneRequired: 8
+    baseProbability: 0.22
+    outcomeMapping:
+      lu_yu:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 2
+      lu_xing:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1

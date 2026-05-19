@@ -22,9 +22,10 @@ void main() {
   });
 
   group('encounter_skills.yaml 加载', () {
-    test('35 招全部解析(7 阶 × 5)', () {
+    test('40 招全部解析(原 7 阶 × 5 共 35 + T02 nightshift +5)', () {
       final ids = GameRepository.instance.encounterSkillIds;
-      expect(ids.length, 35);
+      expect(ids.length, 40,
+          reason: '35 原招 + T02 nightshift +5(tier 3+1 / tier 4+2 / tier 5+2)');
     });
 
     test('6 个 W14-1/W14-2 引用的 unlock id 全部存在', () {
