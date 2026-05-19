@@ -152,9 +152,6 @@ default_lore:
   });
 
   group('P1 #44 · 35 件 continued_lore 池红线', () {
-    const deepSeekPending =
-        'P1 #44 待 DeepSeek 35 件文案落地后启用,见 docs/handoff/p1_44_red_line_acceptance_spec.md';
-
     test(
       '5 strict red line:漏件 / 占位符白名单 / 占位符分池 / 长度 / 网游词',
       () async {
@@ -222,7 +219,6 @@ default_lore:
               'continued_lore_boss_defeated', bossDefeatedAllowed);
         }
       },
-      skip: deepSeekPending,
     );
 
     test(
@@ -280,7 +276,6 @@ default_lore:
           }
         }
       },
-      skip: deepSeekPending,
     );
   });
 }
