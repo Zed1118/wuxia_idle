@@ -40,7 +40,7 @@
 
 本批 audit 结论:6 条 orphan 中 **4 条永封档**(废桥/邪门/音律/dock饱和),**2 条建议挂回**(yu_zhong_qiao_men 强推荐;lao_jing_hui_xiang 条件性,biome拟合略牵强)。
 
-若下波挂回 yu_zhong_qiao_men:需补 encounters.yaml 1 条(rain×inn,type=fortuneEvent) + 在 events/ 落对应 yaml → fortuneEvent基础数从 16→17,仍在 GDD 范围内;估时 0.5h(yaml写入+加载层校验);红线:lucky断剑 fortune+1 不超 §5.4 属性上限(fortune 属性点最大10,+1合规)。lao_jing_hui_xiang 可同批挂回,biome inn拟合需在 encounter comment 注明「枯井概念映射」。techniqueInsight 当前刚到下限(20),后续补充优先级高于本批 fortuneEvent 挂回。
+若下波挂回 yu_zhong_qiao_men:需补 encounters.yaml 1 条(rain×inn,type=fortuneEvent) + 在 events/ 落对应 yaml → fortuneEvent基础数从 16→17,仍在 GDD 范围内;估时 0.5h(yaml写入+加载层校验);红线:lucky断剑 fortune+1 不超 §5.4 属性上限(fortune 属性点最大 10,依据 CLAUDE.md §12.2 #2 v1.2 决议 + `numbers.yaml character.attributes.point_per_attribute_max: 10` 实测落地,+1 合规)。lao_jing_hui_xiang 可同批挂回,biome inn拟合需在 encounter comment 注明「枯井概念映射」。techniqueInsight 当前刚到下限(20),后续补充优先级高于本批 fortuneEvent 挂回。
 
 **#37 挂账状态**:4条永封档已归档完毕;2条挂回待用户拍板后下波实装,挂账保留至拍板。
 
