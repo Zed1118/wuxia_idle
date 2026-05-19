@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/character.dart';
@@ -5,6 +7,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/game_event.dart';
 import '../../../core/domain/lore.dart';
+import '../../../data/lore_loader.dart';
 import '../../../features/battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../cultivation/application/character_advancement_service.dart';
@@ -24,7 +27,50 @@ import '../../cultivation/application/character_advancement_service.dart';
 class GameEventService {
   final Isar isar;
 
-  GameEventService(this.isar);
+  /// P1 #44 · LoreLoader 注入(测试用 stub)。默认 null → 跑生产路径
+  /// [LoreLoader.load](rootBundle 读 `data/lore/<id>.yaml`)。
+  final Future<LoreContent> Function(String loreId)? loreLoader;
+
+  /// P1 #44 · Random 注入(测试用 deterministic seed)。默认 null → new Random()。
+  final Random? random;
+
+  GameEventService(this.isar, {this.loreLoader, this.random});
+
+  /// P1 #44 · 占位符替换(简单 String.replaceAll)。
+  String _applyPlaceholders(String template, Map<String, String> vars) {
+    var result = template;
+    vars.forEach((key, value) {
+      result = result.replaceAll('{$key}', value);
+    });
+    return result;
+  }
+
+  /// P1 #44 · 延续典故池随机抽 + 占位符替换 + fallback。
+  ///
+  /// 流程:
+  /// 1. LoreLoader.load(loreId)
+  /// 2. placeholder / 对应池为空 → 返回 [fallback](UiStrings Dart 模板兜底)
+  /// 3. 池非空 → Random 抽一条 + 占位符替换
+  ///
+  /// `{equip_name}` 不在 vars 内(yaml 按装备拆池,文案直接写具体兵器名,
+  /// 不变量化);仅 `{source}` / `{boss_name}` / `{stage_name}` 走变量。
+  Future<String> _resolveContinuedLore({
+    required String loreId,
+    required bool isBossDefeated,
+    required Map<String, String> vars,
+    required String fallback,
+  }) async {
+    final loader = loreLoader ?? LoreLoader.load;
+    final lore = await loader(loreId);
+    if (lore.isPlaceholder) return fallback;
+    final pool = isBossDefeated
+        ? lore.continuedLoreBossDefeatedPool
+        : lore.continuedLoreObtainedPool;
+    if (pool.isEmpty) return fallback;
+    final rnd = random ?? Random();
+    final pick = pool[rnd.nextInt(pool.length)];
+    return _applyPlaceholders(pick.text, vars);
+  }
 
   /// #1 闭关完成
   Future<void> recordRetreatCompleted({
@@ -63,7 +109,8 @@ class GameEventService {
   ///
   /// [characterId] 可空(掉落进背包时 ownerCharacterId == null,事件归挂主角)。
   /// [equipment] 非空时同事务追加首段延续典故(P1 #42 Phase 5 / GDD §6.6)。
-  /// 文案 Dart 端模板,挂账 #44 推 Phase 2 抽 yaml。
+  /// P1 #44:延续典故走 LoreLoader 读 yaml 池 + 纯随机抽;池为空 / 文件缺失
+  /// fallback 到 [UiStrings.continuedLoreObtained] Dart 模板。
   Future<void> recordEquipmentObtained({
     required int? characterId,
     required int equipmentId,
@@ -83,10 +130,16 @@ class GameEventService {
 
     if (equipment != null) {
       final now = DateTime.now();
+      final loreText = await _resolveContinuedLore(
+        loreId: equipmentDefId,
+        isBossDefeated: false,
+        vars: {'source': source},
+        fallback: UiStrings.continuedLoreObtained(equipmentName, source),
+      );
       equipment.lores = [
         ...equipment.lores,
         Lore()
-          ..text = UiStrings.continuedLoreObtained(equipmentName, source)
+          ..text = loreText
           ..isPreset = false
           ..addedAt = now
           ..triggerEventDesc = 'equipmentObtained:$source',
@@ -164,7 +217,9 @@ class GameEventService {
   /// caller 必先判 isFirstClear(主线读 `MainlineProgress.clearedStageIds`,
   /// 爬塔已有 `clearResult.isFirstClear`),防刷塔重复触发。
   /// [warbornEquipment] 非空时为每件主战装备同事务追加一段延续典故
-  /// (P1 #42 Phase 5 / GDD §6.6)。文案 Dart 端模板,挂账 #44 推 Phase 2 抽 yaml。
+  /// (P1 #42 Phase 5 / GDD §6.6)。P1 #44:每件装备各自走 LoreLoader 读
+  /// yaml 池 + 纯随机抽;池为空 / 文件缺失 fallback 到
+  /// [UiStrings.continuedLoreBossDefeated] Dart 模板。
   Future<void> recordBossDefeated({
     required int characterId,
     required String stageId,
@@ -184,10 +239,16 @@ class GameEventService {
     if (warbornEquipment.isNotEmpty) {
       final now = DateTime.now();
       for (final eq in warbornEquipment) {
+        final loreText = await _resolveContinuedLore(
+          loreId: eq.defId,
+          isBossDefeated: true,
+          vars: {'boss_name': bossName, 'stage_name': stageName},
+          fallback: UiStrings.continuedLoreBossDefeated(bossName, stageName),
+        );
         eq.lores = [
           ...eq.lores,
           Lore()
-            ..text = UiStrings.continuedLoreBossDefeated(bossName, stageName)
+            ..text = loreText
             ..isPreset = false
             ..addedAt = now
             ..triggerEventDesc = 'bossDefeated:$stageId',
