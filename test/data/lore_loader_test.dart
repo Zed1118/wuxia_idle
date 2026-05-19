@@ -150,4 +150,137 @@ default_lore:
       }
     });
   });
+
+  group('P1 #44 · 35 件 continued_lore 池红线', () {
+    const deepSeekPending =
+        'P1 #44 待 DeepSeek 35 件文案落地后启用,见 docs/handoff/p1_44_red_line_acceptance_spec.md';
+
+    test(
+      '5 strict red line:漏件 / 占位符白名单 / 占位符分池 / 长度 / 网游词',
+      () async {
+        final dir = Directory('data/lore');
+        final files = dir
+            .listSync()
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.yaml'))
+            .toList()
+          ..sort((a, b) => a.path.compareTo(b.path));
+        expect(files.length, 35);
+
+        final placeholderPattern = RegExp(r'\{(\w+)\}');
+        const allPlaceholders = {'source', 'boss_name', 'stage_name'};
+        const obtainedAllowed = {'source'};
+        const bossDefeatedAllowed = {'boss_name', 'stage_name'};
+        const gameWords = [
+          '传说之', '史诗', '神级', '无敌', '最强', '究极', '霸气', '逆天',
+          'legendary', 'epic',
+        ];
+
+        for (final f in files) {
+          final basename = f.uri.pathSegments.last.replaceAll('.yaml', '');
+          final c = await LoreLoader.load(
+            basename,
+            loader: (p) => File(p).readAsString(),
+          );
+
+          expect(c.continuedLoreObtainedPool.length, inInclusiveRange(3, 5),
+              reason:
+                  '$basename: continued_lore_obtained 池数 ${c.continuedLoreObtainedPool.length} 不在 [3, 5]');
+          expect(c.continuedLoreBossDefeatedPool.length, inInclusiveRange(3, 5),
+              reason:
+                  '$basename: continued_lore_boss_defeated 池数 ${c.continuedLoreBossDefeatedPool.length} 不在 [3, 5]');
+
+          void validatePool(
+              List<LoreSegment> pool, String poolName, Set<String> poolAllowed) {
+            for (var i = 0; i < pool.length; i++) {
+              final text = pool[i].text;
+              expect(text.trim().isNotEmpty, isTrue,
+                  reason: '$basename / $poolName / 条 $i: text 空白');
+              expect(text.length, lessThanOrEqualTo(300),
+                  reason: '$basename / $poolName / 条 $i: text 超长 ${text.length} 字');
+
+              for (final m in placeholderPattern.allMatches(text)) {
+                final variable = m.group(1)!;
+                expect(allPlaceholders.contains(variable), isTrue,
+                    reason:
+                        '$basename / $poolName / 条 $i: 未约定占位符 {$variable}');
+                expect(poolAllowed.contains(variable), isTrue,
+                    reason:
+                        '$basename / $poolName / 条 $i: 占位符 {$variable} 不属于此池');
+              }
+
+              for (final word in gameWords) {
+                expect(text.contains(word), isFalse,
+                    reason: '$basename / $poolName / 条 $i: 含网游词「$word」');
+              }
+            }
+          }
+
+          validatePool(c.continuedLoreObtainedPool, 'continued_lore_obtained',
+              obtainedAllowed);
+          validatePool(c.continuedLoreBossDefeatedPool,
+              'continued_lore_boss_defeated', bossDefeatedAllowed);
+        }
+      },
+      skip: deepSeekPending,
+    );
+
+    test(
+      'soft · 文风审计(emoji / < 10 字 / 同池重复)— print warning 不 fail',
+      () async {
+        final dir = Directory('data/lore');
+        final files = dir
+            .listSync()
+            .whereType<File>()
+            .where((f) => f.path.endsWith('.yaml'))
+            .toList()
+          ..sort((a, b) => a.path.compareTo(b.path));
+
+        final emojiPattern = RegExp(
+          r'[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]',
+          unicode: true,
+        );
+        final warnings = <String>[];
+
+        for (final f in files) {
+          final basename = f.uri.pathSegments.last.replaceAll('.yaml', '');
+          final c = await LoreLoader.load(
+            basename,
+            loader: (p) => File(p).readAsString(),
+          );
+
+          void auditPool(List<LoreSegment> pool, String poolName) {
+            final seen = <String>{};
+            for (var i = 0; i < pool.length; i++) {
+              final text = pool[i].text;
+              if (emojiPattern.hasMatch(text)) {
+                warnings.add('$basename / $poolName / 条 $i: 含 emoji');
+              }
+              if (text.length < 10) {
+                warnings.add(
+                    '$basename / $poolName / 条 $i: text 仅 ${text.length} 字 < 10 疑似敷衍');
+              }
+              if (!seen.add(text)) {
+                warnings.add('$basename / $poolName / 条 $i: 同池重复 text');
+              }
+            }
+          }
+
+          auditPool(c.continuedLoreObtainedPool, 'continued_lore_obtained');
+          auditPool(
+              c.continuedLoreBossDefeatedPool, 'continued_lore_boss_defeated');
+        }
+
+        if (warnings.isNotEmpty) {
+          // ignore: avoid_print
+          print('\n[P1 #44 文风审计 warning] ${warnings.length} 条:');
+          for (final w in warnings) {
+            // ignore: avoid_print
+            print('  - $w');
+          }
+        }
+      },
+      skip: deepSeekPending,
+    );
+  });
 }
