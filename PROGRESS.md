@@ -5,6 +5,8 @@
 
 ## 当前阶段
 
+**P1 #43 高阶占位补齐 · jueDing/zongShi 段战斗内容全到位**(2026-05-19 傍晚,sonnet ~50min)。**audit 误判 27 条 skill 已全落不新增**(jianghu/shichuan/chuanshuo,memory `feedback_audit_report_phase0_verify` 实战)。towers.yaml 21-30 阶梯 skillIds(21-22/26-27 basic only / 23-24/28-29 +skill / 25/30 Boss +ult)+ dropTable 阶梯加 zhongQi(21-25 5 件)/baoWu(26-30 5 件)全覆盖 + equipment.yaml 10 件 dropSourceTags 修正(zhongQi tower_30→tower_25 audit 误判,baoWu zongShi_unlock→[tower_30, zongShi_unlock],shenWu Phase 4+ 飞升机制后补)。test **1117 pass + 1 skip + 0 issues** 无回归。详 `docs/handoff/p1_43_higher_tier_closeout_2026-05-19.md`。
+
 **P1 #44 延续典故文案抽 yaml · Mac 端 wire 完成**(2026-05-19 下午续推进,sonnet ~50min)。LoreContent 加 `continued_lore_obtained` / `continued_lore_boss_defeated` 双池 + GameEventService 走 LoreLoader 纯随机抽 + 占位符替换(`{source}`/`{boss_name}`/`{stage_name}`,`{equip_name}` 由 yaml 直写具体兵器名)+ fallback 兜底。test +6 case → **1117 pass + 1 skip + 0 issues**。DeepSeek 端派单 spec `docs/handoff/p1_44_deepseek_continued_lore_spec.md` 待补 35 件装备各 2 池 3-5 条文案(预估 3-5h)。
 
 **Nightshift 2026-05-19 夜班 9 task 销账 + 外部审查修正**(2026-05-19 上午,Mac+Opus 主对话 ~30min)。10 worktree 串行 sonnet --print 跑 1h17min,T02-T09 8 task 实际产出 OK + T01 真失败(API 32K output cap)。**cherry-pick 8 commit 合 main + 外部审查 3 修正**:T02 audit Demo 30 层验收强化 / T03 fortune 最大 10 加来源引用 / T08 deadcode §1 内部矛盾修。**测试 1086→1111 pass + 1 skip + analyze 0 issues**,HEAD `352cdb4`。**沉淀 3 memory bug**:`feedback_nightshift_max_output_token` / `feedback_nightshift_verify_changedoutside_bug` / `feedback_flutter_analyze_fatal_errors_invalid`(修正旧 `feedback_nightshift_verify_lint_severity`)。本批 T01 修正:PROGRESS.md 98→<80 行 + W17-W18 详条迁出归档。**T08 chip + T07/T08 死代码 + #37 yu_zhong_qiao_men 挂回 续推进**(2026-05-19 sonnet ~45min):① `_CodexListView` 接 chip provider;② 删 `StageDef.narrativeId` @Deprecated + 3 死 provider(`leftTeam`/`rightTeam`/`gameEventService`)+ defs_test T33 + 占位字段 Phase 0 grep 保留;③ T03 yu_zhong_qiao_men 挂回(`fortuneEvent` rain×inn,encounters.yaml +1 条 / 文件 mv archive→events,fortuneEvent 16→17)。新沉淀 memory `feedback_audit_report_phase0_verify`(audit 推 7 项实测 4 项真死)。→ **1111 pass + 1 skip + 0 issues**。详 `docs/handoff/nightshift_20260519_handoff.md`(含 emergency addendum)+ T10 SUMMARY(`/Users/a10506/Desktop/wuxia-idle-T10/.nightshift/SUMMARY.md`)。
@@ -13,7 +15,7 @@
 
 **P1 #42 Phase 1 销账 + nightshift 加固**(2026-05-17/18):6 phase 一波收口 971/971(§9 上线第一屏 + 江湖见闻录 + 延续典故 hook + GameEvent 7 type);nightshift 8 task widget test 加固 997/997(2026-05-18 凌晨 sonnet 2h 5m)。新挂账 #44 延续典故文案抽 yaml。详 closeout `p1_42_phase1_closeout_2026-05-17.md`。
 
-**W18 + P0 全收口 + 1.0 路线图 launched**(2026-05-17):W18-A1+A1.2+A2+A3+hot-loop 升级版 100% 全收口(864/864),Demo §7 12/12 GUI 全 ✅,内容总量表 7/7 全达 GDD §8.4。P0 4 项 100% 收口(#38 maxHp 重平衡方案 D 873/873 / #40 本地排行榜 888/888 / #41 itch.io 砍方案 C / P0 battle_engine strategy 抽层 943/943)。`docs/ROADMAP_1_0.md` v1.1 起草,16 月总时长(2026-06 → 2027-09),P0-P5 阶段划分 + 6 项风险。
+> W18 + P0 全收口 + 1.0 路线图 launched(2026-05-17)详条已迁出归档,见末尾「### W17-W18 详条迁出 2026-05-19」段。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
@@ -21,16 +23,14 @@
 
 ## 已知偏差 / 挂账事项
 
-- ~~37 全销账~~(2026-05-19):6 条 orphan = **5 永封档**(废桥 / 邪门 / 音律 / dock饱和 / lao_jing_hui_xiang 2026-05-19 拍板永封档)+ **1 挂回实装**(yu_zhong_qiao_men rain×inn,HEAD `3a1315e`),fortuneEvent 17/15-25,详 `docs/handoff/p1_37_orphan_decree_2026-05-19.md`
-- ~~38/40/41/42 销账~~(2026-05-17/18):#38 maxHp 重平衡方案 D 873/873 / #40 本地排行榜 888/888 / #41 itch.io 砍方案 C 推 P5.4b / #42 §10 三方式 + P2 扩段全闭环;详归档段 W17-W18 详条迁出
-- 43. **高阶内容占位**(T02 audit 2026-05-19):equipment 10 件 dropSourceTags 占位 + towers 21-30 层 skillIds/dropTable 占位。**Demo 30 层是必交付内容**(GDD §7 + CLAUDE.md §7),爬塔验收前 21-30 层必须补齐(或降级:至少补 25/30 两 Boss 层 + placeholder 明示);推荐方案 A 在 P1.1 起手补 18 条 skill + baoWu 掉表,详 `docs/handoff/p1_43_higher_tier_placeholders_audit_2026-05-19.md`
+- ~~37 / 38 / 40 / 41 / 42 / 43 全销账~~(2026-05-17/18/19):#37 详 `p1_37_orphan_decree_2026-05-19.md`;#38/40/41/42 详末尾 W17-W18 详条段;#43 详顶段 + `p1_43_higher_tier_closeout_2026-05-19.md`
 - 44. **延续典故文案抽 yaml**(部分销账 2026-05-19):Mac 端 wire 完成(详顶段),DeepSeek 端待补 35 件装备各 2 池文案
 
-> 已销账条目(#1-#37/#38-#42/#45)详见末尾归档。**剩余 P1**:#43 / #44 文案。
+> 已销账条目(#1-#43/#45)详见末尾归档。**剩余 P1**:#44 文案。
 
 ## 下一步
 
-**下波候选**(优先级排):① **#44 DeepSeek 35 件文案补齐**(DeepSeek 主导 3-5h,Mac 端到位后加红线 case 验收 + 可选删 Dart fallback);② **#43 高阶占位补齐**(P1.1 起手 5-8h **建议 opus xhigh**,Demo 必交付);③ **美术 PoC + 水墨 LoRA**(opus + 用户主导 6-10h);④ **lao_jing_hui_xiang 拍板**(挂回 inn 拟合 vs 继续封档,5-10min)。
+**下波候选**(优先级排):① **#44 DeepSeek 35 件文案补齐**(DeepSeek 主导 3-5h,Mac 端到位后红线 case 验收);② **美术 PoC + 水墨 LoRA**(opus + 用户主导 6-10h,M4 硬门槛,技术选型先讨论);③ **P1.2+ 章节扩展 / 心法相生设计**(待 #44 闭环后排期)。
 
 ## 关键约束(每次开局必读)
 
