@@ -25,7 +25,7 @@ techniques:
     name: 刚猛入门
     tier: ruMenGong
     school: gangMeng
-    description: TODO_NARRATIVE
+    description: 马步扎了三个月,师傅说先把站桩练到三炷香不动,力才贯得到指节。
     skillIds:
       - skill_gangmeng_jichu_basic
       - skill_gangmeng_jichu_skill
@@ -38,7 +38,7 @@ techniques:
     name: 灵巧入门
     tier: ruMenGong
     school: lingQiao
-    description: TODO_NARRATIVE
+    description: 梅花桩上走百回,脚下生根眼里有路,这门功夫的门槛才算跨过一半。
     skillIds:
       - skill_lingqiao_jichu_basic
       - skill_lingqiao_jichu_skill
@@ -51,7 +51,7 @@ techniques:
     name: 阴柔入门
     tier: ruMenGong
     school: yinRou
-    description: TODO_NARRATIVE
+    description: 师父教吐纳,呼六吸四,先把一缕内息养在丹田,三月不散方算入门。
     skillIds:
       - skill_yinrou_jichu_basic
       - skill_yinrou_jichu_skill
@@ -65,7 +65,7 @@ techniques:
     name: 刚猛常练
     tier: changLianGong
     school: gangMeng
-    description: TODO_NARRATIVE
+    description: 师门正传的百炼拳,走过几个州的拳师都说,这套功夫练得久了会认人。
     skillIds:
       - skill_gangmeng_changlian_basic
       - skill_gangmeng_changlian_skill
@@ -78,7 +78,7 @@ techniques:
     name: 灵巧常练
     tier: changLianGong
     school: lingQiao
-    description: TODO_NARRATIVE
+    description: 镖局快脚常练的身法,趟过北地几条官道,脚下生风,身轻如燕。
     skillIds:
       - skill_lingqiao_changlian_basic
       - skill_lingqiao_changlian_skill
@@ -91,7 +91,7 @@ techniques:
     name: 阴柔常练
     tier: changLianGong
     school: yinRou
-    description: TODO_NARRATIVE
+    description: 老药庐三代相传的吐纳法,内息温养,走得慢却走得远。
     skillIds:
       - skill_yinrou_changlian_basic
       - skill_yinrou_changlian_skill
@@ -105,7 +105,7 @@ techniques:
     name: 刚猛名家
     tier: mingJiaGong
     school: gangMeng
-    description: TODO_NARRATIVE
+    description: 北地周家拳七代相传,拳意认人;练到第五年,这套拳才算愿意收你。
     skillIds:
       - skill_gangmeng_mingjia_basic
       - skill_gangmeng_mingjia_skill
@@ -118,7 +118,7 @@ techniques:
     name: 灵巧名家
     tier: mingJiaGong
     school: lingQiao
-    description: TODO_NARRATIVE
+    description: 江南徐家三代练身法,绕过三层布幔不动一片;看裂纹便知功夫走到第几纹。
     skillIds:
       - skill_lingqiao_mingjia_basic
       - skill_lingqiao_mingjia_skill
@@ -131,7 +131,7 @@ techniques:
     name: 阴柔名家
     tier: mingJiaGong
     school: yinRou
-    description: TODO_NARRATIVE
+    description: 川中医家七代积下的内功,气息绵长,走完一周天要三炷香。
     skillIds:
       - skill_yinrou_mingjia_basic
       - skill_yinrou_mingjia_skill
@@ -145,7 +145,7 @@ techniques:
     name: 刚猛绝学
     tier: menPaiJueXue
     school: gangMeng
-    description: TODO_NARRATIVE
+    description: 寺门重拳,沾过血的更沉;老和尚说,这套拳第七层后每出一拳,自己也少一分轻。
     skillIds:
       - skill_gangmeng_menpai_basic
       - skill_gangmeng_menpai_skill
@@ -158,7 +158,7 @@ techniques:
     name: 灵巧绝学
     tier: menPaiJueXue
     school: lingQiao
-    description: TODO_NARRATIVE
+    description: 武当三十六步,鸣若刀风过耳;练到第九层,鞋底先出一道裂痕。
     skillIds:
       - skill_lingqiao_menpai_basic
       - skill_lingqiao_menpai_skill
@@ -171,7 +171,7 @@ techniques:
     name: 阴柔绝学
     tier: menPaiJueXue
     school: yinRou
-    description: TODO_NARRATIVE
+    description: 峨眉内功,饮血而养气;师太说,越深越静,越静越冷。
     skillIds:
       - skill_yinrou_menpai_basic
       - skill_yinrou_menpai_skill
@@ -185,7 +185,7 @@ techniques:
     name: 刚猛秘传
     tier: jiangHuMiChuan
     school: gangMeng
-    description: TODO_NARRATIVE
+    description: 经卷首页只刻「惟刚」二字,后附一篇,言刚者不折,折者非刚。
     skillIds:
       - skill_gangmeng_jianghu_basic
       - skill_gangmeng_jianghu_skill
@@ -198,7 +198,7 @@ techniques:
     name: 灵巧秘传
     tier: jiangHuMiChuan
     school: lingQiao
-    description: TODO_NARRATIVE
+    description: 残卷上写「轻到极致是重」,云中三式,练到末式时人不动而风自起。
     skillIds:
       - skill_lingqiao_jianghu_basic
       - skill_lingqiao_jianghu_skill
@@ -211,7 +211,7 @@ techniques:
     name: 阴柔秘传
     tier: jiangHuMiChuan
     school: yinRou
-    description: TODO_NARRATIVE
+    description: 残页扉前刻「清静无为」,练到第七层时周身百脉自通,气息无声。
     skillIds:
       - skill_yinrou_jianghu_basic
       - skill_yinrou_jianghu_skill
@@ -225,7 +225,7 @@ techniques:
     name: 刚猛失传
     tier: shiChuanShenGong
     school: gangMeng
-    description: TODO_NARRATIVE
+    description: 相传应天而鸣,一拳出时四野闻雷;旧典说,这套功夫认手不认人。
     skillIds:
       - skill_gangmeng_shichuan_basic
       - skill_gangmeng_shichuan_skill
@@ -238,7 +238,7 @@ techniques:
     name: 灵巧失传
     tier: shiChuanShenGong
     school: lingQiao
-    description: TODO_NARRATIVE
+    description: 古卷说,此身法是借给凡人三日的;过了第四日,再快也快不过来时。
     skillIds:
       - skill_lingqiao_shichuan_basic
       - skill_lingqiao_shichuan_skill
@@ -251,7 +251,7 @@ techniques:
     name: 阴柔失传
     tier: shiChuanShenGong
     school: yinRou
-    description: TODO_NARRATIVE
+    description: 古残卷记:内息一动,百兽伏地;练成之人不爱声响,也不爱被人看见。
     skillIds:
       - skill_yinrou_shichuan_basic
       - skill_yinrou_shichuan_skill
@@ -265,7 +265,7 @@ techniques:
     name: 刚猛传说
     tier: chuanShuoShenGong
     school: gangMeng
-    description: TODO_NARRATIVE
+    description: 相传习者一拳出,山岳俯首;但人是过路的,拳风留在山里,人已不在。
     skillIds:
       - skill_gangmeng_chuanshuo_basic
       - skill_gangmeng_chuanshuo_skill
@@ -278,7 +278,7 @@ techniques:
     name: 灵巧传说
     tier: chuanShuoShenGong
     school: lingQiao
-    description: TODO_NARRATIVE
+    description: 古经只一句:人是过路。练到末层时,身如风过,连影子也带不走。
     skillIds:
       - skill_lingqiao_chuanshuo_basic
       - skill_lingqiao_chuanshuo_skill
@@ -291,7 +291,7 @@ techniques:
     name: 阴柔传说
     tier: chuanShuoShenGong
     school: yinRou
-    description: TODO_NARRATIVE
+    description: 古玉残篇记,山住进玉里,息归于元;练成之人,不在山中,也不在江湖。
     skillIds:
       - skill_yinrou_chuanshuo_basic
       - skill_yinrou_chuanshuo_skill
