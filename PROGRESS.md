@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**Nightshift 2026-05-19 夜班 9 task 销账 + 外部审查修正**(2026-05-19 上午,Mac+Opus 主对话 ~30min)。10 worktree 串行 sonnet --print 跑 1h17min,T02-T09 8 task 实际产出 OK + T01 真失败(API 32K output cap)。**cherry-pick 8 commit 合 main + 外部审查 3 修正**:T02 audit Demo 30 层验收强化 / T03 fortune 最大 10 加来源引用 / T08 deadcode §1 内部矛盾修。**测试 1086→1111 pass + 1 skip + analyze 0 issues**,HEAD `352cdb4`。**沉淀 3 memory bug**:`feedback_nightshift_max_output_token` / `feedback_nightshift_verify_changedoutside_bug` / `feedback_flutter_analyze_fatal_errors_invalid`(修正旧 `feedback_nightshift_verify_lint_severity`)。本批 T01 修正:PROGRESS.md 98→<80 行 + W17-W18 详条迁出归档。**T08 chip + T07/T08 死代码全销账**(2026-05-19 续 sonnet ~30min):① `_CodexListView` → `ConsumerWidget` 接 `unlockedCodexCountProvider` chip;② 删 `StageDef.narrativeId` @Deprecated + 3 死 provider(`leftTeam`/`rightTeam`/`gameEventService`)+ defs_test T33 deprecated test。占位字段(`dropEquipment/Item/Source/AcquireSourceTags` 等)Phase 0 grep 确认 yaml 占位/Phase 5 预埋/test 在用,**保留**。→ **1111 pass + 1 skip + 0 issues**。详 `docs/handoff/nightshift_20260519_handoff.md`(含 emergency addendum)+ T10 SUMMARY(`/Users/a10506/Desktop/wuxia-idle-T10/.nightshift/SUMMARY.md`)。
+**Nightshift 2026-05-19 夜班 9 task 销账 + 外部审查修正**(2026-05-19 上午,Mac+Opus 主对话 ~30min)。10 worktree 串行 sonnet --print 跑 1h17min,T02-T09 8 task 实际产出 OK + T01 真失败(API 32K output cap)。**cherry-pick 8 commit 合 main + 外部审查 3 修正**:T02 audit Demo 30 层验收强化 / T03 fortune 最大 10 加来源引用 / T08 deadcode §1 内部矛盾修。**测试 1086→1111 pass + 1 skip + analyze 0 issues**,HEAD `352cdb4`。**沉淀 3 memory bug**:`feedback_nightshift_max_output_token` / `feedback_nightshift_verify_changedoutside_bug` / `feedback_flutter_analyze_fatal_errors_invalid`(修正旧 `feedback_nightshift_verify_lint_severity`)。本批 T01 修正:PROGRESS.md 98→<80 行 + W17-W18 详条迁出归档。**T08 chip + T07/T08 死代码 + #37 yu_zhong_qiao_men 挂回 续推进**(2026-05-19 sonnet ~45min):① `_CodexListView` 接 chip provider;② 删 `StageDef.narrativeId` @Deprecated + 3 死 provider(`leftTeam`/`rightTeam`/`gameEventService`)+ defs_test T33 + 占位字段 Phase 0 grep 保留;③ T03 yu_zhong_qiao_men 挂回(`fortuneEvent` rain×inn,encounters.yaml +1 条 / 文件 mv archive→events,fortuneEvent 16→17)。新沉淀 memory `feedback_audit_report_phase0_verify`(audit 推 7 项实测 4 项真死)。→ **1111 pass + 1 skip + 0 issues**。详 `docs/handoff/nightshift_20260519_handoff.md`(含 emergency addendum)+ T10 SUMMARY(`/Users/a10506/Desktop/wuxia-idle-T10/.nightshift/SUMMARY.md`)。
 
 **P1 #42 Phase 2 §10 P1.x+P1.y+P1.z + P2 扩段 100% 全闭环里程碑**(2026-05-18,Mac+DeepSeek 双端 1086 pass + 1 skip + 0 issues,HEAD 同期 `8f85fd4`)。**§10 三方式 100% 全闭环**:1️⃣ 强制引导(P1.x,DeepSeek 5 yaml mandatory: true) + 2️⃣ 气泡 banner(P1.y,TutorialBannerCard step 6-8 hook) + 3️⃣ 见闻录百科(P1.z,CodexTab 19 条 = 12 机制 + 7 lore,P2 扩段)。Phase 0 reality check 实战 `feedback_phase0_grep_two_axes` 发现 `data/narratives/codex/` 已存 18 md。新沉淀 `feedback_listview_widget_test_viewport`(ListView ≥ 8 行扩 800x3000 viewport)。详 closeout `p1_42_phase2_p1{x,y,z}_*_2026-05-18.md`。
 
@@ -19,7 +19,7 @@ W15 主战场详条 20 段 + W17-W18 详条 11 段均已归档。详条迁出归
 
 ## 已知偏差 / 挂账事项
 
-- 37. **6 events orphan**(T03 audit 2026-05-19 决议):4 永封档 + 2 建议挂回(yu_zhong_qiao_men rain×inn 强推荐 / lao_jing_hui_xiang biome 拟合略牵强);拍板后下波实装,详 `docs/handoff/p1_37_orphan_decree_2026-05-19.md`
+- 37. **6 events orphan 部分销账**(2026-05-19):4 永封档归档 + yu_zhong_qiao_men 挂回 fortuneEvent rain×inn(2026-05-19 实装);`lao_jing_hui_xiang` biome inn 拟合略牵强 + decree 提示 techniqueInsight 池补充优先级更高,**暂留待拍板**(挂回或继续永封档),详 `docs/handoff/p1_37_orphan_decree_2026-05-19.md`
 - ~~38/40/41/42 销账~~(2026-05-17/18):#38 maxHp 重平衡方案 D 873/873 / #40 本地排行榜 888/888 / #41 itch.io 砍方案 C 推 P5.4b / #42 §10 三方式 + P2 扩段全闭环;详归档段 W17-W18 详条迁出
 - 43. **高阶内容占位**(T02 audit 2026-05-19):equipment 10 件 dropSourceTags 占位 + towers 21-30 层 skillIds/dropTable 占位。**Demo 30 层是必交付内容**(GDD §7 + CLAUDE.md §7),爬塔验收前 21-30 层必须补齐(或降级:至少补 25/30 两 Boss 层 + placeholder 明示);推荐方案 A 在 P1.1 起手补 18 条 skill + baoWu 掉表,详 `docs/handoff/p1_43_higher_tier_placeholders_audit_2026-05-19.md`
 - 44. **延续典故文案抽 yaml**(2026-05-17 挂):UiStrings 中文模板违反 §5.6,推 LoreLoader 扩 + GameEventService 改读 yaml。Mac sonnet 1-2h + DeepSeek 3-5h,优先级 P2
@@ -29,7 +29,7 @@ W15 主战场详条 20 段 + W17-W18 详条 11 段均已归档。详条迁出归
 
 ## 下一步
 
-**下波候选**(优先级排):① **T03 挂回 yu_zhong_qiao_men**(rain×inn 槽位空缺 0.5-1h Mac + DeepSeek);② **#44 延续典故文案抽 yaml**(4-7h);③ **#43 高阶占位补齐**(P1.1 起手 5-8h);④ **美术 PoC + 水墨 LoRA**(opus + 用户主导 6-10h)。
+**下波候选**(优先级排):① **#44 延续典故文案抽 yaml**(4-7h Mac + DeepSeek);② **#43 高阶占位补齐**(P1.1 起手 5-8h **建议 opus xhigh**,Demo 必交付);③ **美术 PoC + 水墨 LoRA**(opus + 用户主导 6-10h);④ **lao_jing_hui_xiang 拍板**(挂回 inn 拟合 vs 继续封档,5-10min)。
 
 ## 关键约束(每次开局必读)
 

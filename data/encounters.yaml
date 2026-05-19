@@ -995,3 +995,27 @@ encounters:
         type: attributeBonus
         attributeKey: agility
         attributeDelta: 1
+
+  # ───────────────────────────────────────────────
+  # P1 #37 yu_zhong_qiao_men · 雨中敲门(2026-05-19 挂回)
+  #    fortuneEvent · 客栈 45min + 雨 45min + 机缘 3,中期通用(rain×inn 槽位空缺挂回)
+  #    decree 详 docs/handoff/p1_37_orphan_decree_2026-05-19.md
+  # ───────────────────────────────────────────────
+  - id: yu_zhong_qiao_men
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        inn: 45
+      weatherMinutes:
+        rain: 45
+      fortuneRequired: 3
+    baseProbability: 0.4
+    outcomeMapping:
+      hear_stories:
+        type: attributeBonus
+        attributeKey: fortune
+        attributeDelta: 1
+      learn_legend:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
