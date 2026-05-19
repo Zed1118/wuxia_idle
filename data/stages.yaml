@@ -10,7 +10,6 @@
 #   narrativeVictoryId   —— 战斗胜利后播放
 #   narrativeDefeatId    —— 战斗失败后播放（**仅章末两关 4/5 配置**，对齐
 #                           DeepSeek narrative 已铺设的 6 个 defeat 文件）
-#   narrativeId          —— Phase 1 字段，已 @Deprecated；Phase 5 整理时清
 #
 # Boss 关分布：每章 4/5 关为 Boss（isBossStage=true），章末 5 关为大 Boss。
 # Boss 关同时配 narrativeDefeatId；普通 1/2/3 关战败直接返回 stage list，不触发剧情。
