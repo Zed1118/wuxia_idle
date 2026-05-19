@@ -85,3 +85,47 @@ synergies:
     multipliers:
       internalForceMaxPct: 0.25
       internalForceGrowthPct: 0.10
+
+  # ── 6. 刚阴互制:主阴辅刚,以柔克刚,守者难破(防血侧重) ────────────────
+  # 与第 1「阴阳调和」(主刚辅阴 atk+spd+def+hp 4 维)互为反向,本组 def+hp 2 维
+  # 语义「以守为攻」体现阴柔为主时的守者百骸坚韧。
+  # 数值核:realm max defense 0.35 + synergy 0.15 = 0.50 ≤ §5.5 红线 0.65;
+  # hpPct 0.15 ≤ 0.30 红线下不会突破。
+  - id: synergy_gang_yin_hu_zhi
+    name: 刚阴互制
+    description: 主修阴柔,辅修刚阳,以柔克刚,守者百骸坚韧
+    requirement:
+      type: schoolPair
+      mainSchool: yinRou
+      assistSchool: gangMeng
+    multipliers:
+      defensePct: 0.15
+      hpPct: 0.15
+
+  # ── 7. 灵刚汇流:主灵辅刚,身法为先,刚为根脉(攻速并重) ──────────────
+  # 与第 2「刚柔并济」(主刚辅灵 spd 0.25)互为反向,但本组 atk+spd 双维而非单 spd,
+  # 语义「灵巧借刚为根」体现攻击力强化。各维 ≤ §5.4 红线。
+  - id: synergy_ling_gang_hui_liu
+    name: 灵刚汇流
+    description: 主修灵巧,辅修刚阳,身法迅捷而招招带力
+    requirement:
+      type: schoolPair
+      mainSchool: lingQiao
+      assistSchool: gangMeng
+    multipliers:
+      attackPct: 0.10
+      speedPct: 0.20
+
+  # ── 8. 灵阴归一:主灵辅阴,如影随形,内息内化(速度+内力上限双维) ──────
+  # 与第 3「阴影迅捷」(主阴辅灵 atk+spd)互为反向,本组速度 + 内力上限组合,
+  # 语义「身法快+内力深」体现绝顶之上的内化境界。各维 ≤ §5.4 红线。
+  - id: synergy_ling_yin_gui_yi
+    name: 灵阴归一
+    description: 主修灵巧,辅修阴柔,如影随形,内息归元
+    requirement:
+      type: schoolPair
+      mainSchool: lingQiao
+      assistSchool: yinRou
+    multipliers:
+      speedPct: 0.10
+      internalForceMaxPct: 0.20

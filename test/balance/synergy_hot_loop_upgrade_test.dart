@@ -229,5 +229,69 @@ void main() {
       expect(result.maxInternalForce, 15000);
       expect(result.defenseRate, 0.95);
     });
+
+    // ── nightshift T01:+3 组合(5→8)红线 case ─────────────────────────
+    // 对应 data/synergies.yaml 新增 6/7/8 组合,deterministic 直接构造
+    // SynergyMultipliers(沿用本 test fixture 模式,不读 yaml),验证:
+    //   ① multipliers 各维 ≤ 0.30 (SynergyMultipliers.isWithinRedLine getter)
+    //   ② wushen base + new synergy → applySynergy 不破 §5.4 红线
+    test('hot-loop C1:synergy_gang_yin_hu_zhi (def 0.15 + hp 0.15) 各维 ≤ 0.30 + 实战 ≤ §5.4 红线',
+        () {
+      const m = SynergyMultipliers(defensePct: 0.15, hpPct: 0.15);
+      expect(m.defensePct, 0.15);
+      expect(m.hpPct, 0.15);
+      expect(m.isWithinRedLine, isTrue,
+          reason: '6. 刚阴互制 各 multiplier ≤ 0.30');
+      // wushen base defRate 0.35 + synergy 0.15 = 0.50 ≤ §5.5 红线 0.65
+      final base = buildBase(
+        tier: RealmTier.wuSheng,
+        maxHp: 16550,
+        maxIf: 15000,
+        defRate: 0.35,
+      );
+      final result = StageBattleSetup.applySynergy(base, m);
+      expectRedLines(result, label: 'wushen × 刚阴互制');
+      expect(result.defenseRate, lessThanOrEqualTo(0.65),
+          reason: '0.35 + 0.15 = 0.50 ≤ §5.5 防御率红线 0.65');
+    });
+
+    test('hot-loop C2:synergy_ling_gang_hui_liu (atk 0.10 + spd 0.20) 各维 ≤ 0.30 + 实战 ≤ §5.4 红线',
+        () {
+      const m = SynergyMultipliers(attackPct: 0.10, speedPct: 0.20);
+      expect(m.attackPct, 0.10);
+      expect(m.speedPct, 0.20);
+      expect(m.isWithinRedLine, isTrue,
+          reason: '7. 灵刚汇流 各 multiplier ≤ 0.30');
+      final base = buildBase(
+        tier: RealmTier.wuSheng,
+        maxHp: 16550,
+        maxIf: 15000,
+        defRate: 0.35,
+        school: TechniqueSchool.lingQiao,
+      );
+      final result = StageBattleSetup.applySynergy(base, m);
+      expectRedLines(result, label: 'wushen × 灵刚汇流');
+    });
+
+    test('hot-loop C3:synergy_ling_yin_gui_yi (spd 0.10 + ifMax 0.20) 各维 ≤ 0.30 + 实战 ≤ §5.4 红线',
+        () {
+      const m = SynergyMultipliers(speedPct: 0.10, internalForceMaxPct: 0.20);
+      expect(m.speedPct, 0.10);
+      expect(m.internalForceMaxPct, 0.20);
+      expect(m.isWithinRedLine, isTrue,
+          reason: '8. 灵阴归一 各 multiplier ≤ 0.30');
+      // wushen base maxIf 12500 × (1 + 0.20) = 15000 = §5.4 内力红线(=,不破)
+      final base = buildBase(
+        tier: RealmTier.wuSheng,
+        maxHp: 16550,
+        maxIf: 12500,
+        defRate: 0.35,
+        school: TechniqueSchool.lingQiao,
+      );
+      final result = StageBattleSetup.applySynergy(base, m);
+      expectRedLines(result, label: 'wushen × 灵阴归一');
+      expect(result.maxInternalForce, lessThanOrEqualTo(15000),
+          reason: '12500 × 1.20 = 15000 = §5.4 内力红线');
+    });
   });
 }
