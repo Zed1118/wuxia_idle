@@ -21,12 +21,12 @@
 
 ## 已知偏差 / 挂账事项
 
-- 37. **6 events orphan 部分销账**(2026-05-19):4 永封档归档 + yu_zhong_qiao_men 挂回 fortuneEvent rain×inn(2026-05-19 实装);`lao_jing_hui_xiang` biome inn 拟合略牵强 + decree 提示 techniqueInsight 池补充优先级更高,**暂留待拍板**(挂回或继续永封档),详 `docs/handoff/p1_37_orphan_decree_2026-05-19.md`
+- ~~37 全销账~~(2026-05-19):6 条 orphan = **5 永封档**(废桥 / 邪门 / 音律 / dock饱和 / lao_jing_hui_xiang 2026-05-19 拍板永封档)+ **1 挂回实装**(yu_zhong_qiao_men rain×inn,HEAD `3a1315e`),fortuneEvent 17/15-25,详 `docs/handoff/p1_37_orphan_decree_2026-05-19.md`
 - ~~38/40/41/42 销账~~(2026-05-17/18):#38 maxHp 重平衡方案 D 873/873 / #40 本地排行榜 888/888 / #41 itch.io 砍方案 C 推 P5.4b / #42 §10 三方式 + P2 扩段全闭环;详归档段 W17-W18 详条迁出
 - 43. **高阶内容占位**(T02 audit 2026-05-19):equipment 10 件 dropSourceTags 占位 + towers 21-30 层 skillIds/dropTable 占位。**Demo 30 层是必交付内容**(GDD §7 + CLAUDE.md §7),爬塔验收前 21-30 层必须补齐(或降级:至少补 25/30 两 Boss 层 + placeholder 明示);推荐方案 A 在 P1.1 起手补 18 条 skill + baoWu 掉表,详 `docs/handoff/p1_43_higher_tier_placeholders_audit_2026-05-19.md`
 - 44. **延续典故文案抽 yaml**(部分销账 2026-05-19):Mac 端 wire 完成(详顶段),DeepSeek 端待补 35 件装备各 2 池文案
 
-> 已销账条目(#1-#36/#38-#42/#45)详见末尾归档。**剩余 P1**:#37 / #43 / #44。
+> 已销账条目(#1-#37/#38-#42/#45)详见末尾归档。**剩余 P1**:#43 / #44 文案。
 
 ## 下一步
 
