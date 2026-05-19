@@ -256,7 +256,6 @@ void main() {
           },
         ],
         'isBossStage': true,
-        'narrativeId': 'narr_tower_15_boss',
         'dropEquipmentDefIds': ['weapon_ghost_blade', 'armor_dark_robe'],
         'dropItemDefIds': ['item_mojianshi', 'item_xinxuejiejing'],
         'baseExpReward': 1500,
@@ -271,7 +270,6 @@ void main() {
       expect(def.enemyTeam.first.realmLayer, RealmLayer.huaJing);
       expect(def.enemyTeam.first.school, TechniqueSchool.lingQiao);
       expect(def.isBossStage, isTrue);
-      expect(def.narrativeId, 'narr_tower_15_boss');
       expect(def.difficultyMultiplier, 1.85);
       expect(def.toString(), contains('tower_layer_15'));
       expect(def.toString(), contains('enemies=1'));
@@ -285,7 +283,6 @@ void main() {
         'chapterIndex': 1,
         'requiredRealm': 'xueTu',
         'enemyTeam': const [],
-        'narrativeId': 'narr_ch1_opening',
         'dropEquipmentDefIds': const [],
         'dropItemDefIds': const [],
         'baseExpReward': 0,
@@ -375,26 +372,6 @@ void main() {
       expect(def.narrativeVictoryId, isNull);
     });
 
-    test('T33 deprecated narrativeId 仍可解析（Phase 5 整理前向后兼容）', () {
-      // ignore: deprecated_member_use
-      final def = StageDef.fromYaml({
-        'id': 'legacy_stage',
-        'name': '旧关卡',
-        'stageType': 'mainline',
-        'chapterIndex': 1,
-        'requiredRealm': 'xueTu',
-        'enemyTeam': const [],
-        'narrativeId': 'narr_legacy',
-        'dropEquipmentDefIds': const [],
-        'dropItemDefIds': const [],
-        'baseExpReward': 0,
-        'difficultyMultiplier': 1.0,
-      });
-
-      // ignore: deprecated_member_use
-      expect(def.narrativeId, 'narr_legacy');
-      expect(def.prevStageId, isNull);
-    });
   });
 
   group('RealmDef.fromYaml', () {

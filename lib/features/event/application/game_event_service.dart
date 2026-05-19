@@ -1,17 +1,13 @@
 import 'package:isar_community/isar.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/game_event.dart';
 import '../../../core/domain/lore.dart';
-import '../../../data/isar_provider.dart';
 import '../../../features/battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../cultivation/application/character_advancement_service.dart';
-
-part 'game_event_service.g.dart';
 
 /// GameEvent 9 type 写入 helper(P1 #42 Phase 2)。
 ///
@@ -23,8 +19,8 @@ part 'game_event_service.g.dart';
 /// - **#4 techniqueLearned 不实装**:0 业务 caller(`TechniqueLearningService.learn`
 ///   只 test/seed 调,Phase 5+ §7.2 武学领悟 UI 实装才能挂)
 ///
-/// **GameEvent 表打开方式**:caller 通过 [gameEventServiceProvider] 取 service
-/// 实例,在 caller 的 writeTxn 内 await 调用对应 record method 即可。
+/// **GameEvent 表打开方式**:caller 端在 writeTxn 内 `GameEventService(isar)` 直接实例化
+/// (5 处 caller 体例:tower/seclusion/encounter/mainline 已稳定),调用对应 record method 即可。
 class GameEventService {
   final Isar isar;
 
@@ -202,11 +198,3 @@ class GameEventService {
   }
 }
 
-/// nullable propagation(沿 [isarProvider] 体例):Isar 未 init 时返回 null,
-/// caller 端 null-coalesce 跳过事件写入(test 路径自然 skip)。
-@riverpod
-GameEventService? gameEventService(Ref ref) {
-  final isar = ref.watch(isarProvider);
-  if (isar == null) return null;
-  return GameEventService(isar);
-}

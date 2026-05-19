@@ -148,19 +148,6 @@ class BattleNotifier extends _$BattleNotifier {
   }
 }
 
-/// 派生 provider：左队（避免整 [BattleState] 引用变化触发整屏 rebuild）。
-///
-/// Phase 1 先做 team 级颗粒度，Windows 首跑 inspector 验若仍整屏 rebuild
-/// 再细化到单角色 currentHp（spec §16.1 注：「每个角色一个 currentHp 单独
-/// provider 也不过分」）。
-@riverpod
-List<BattleCharacter> leftTeam(Ref ref) =>
-    ref.watch(battleProvider).leftTeam;
-
-@riverpod
-List<BattleCharacter> rightTeam(Ref ref) =>
-    ref.watch(battleProvider).rightTeam;
-
 /// 派生 provider：战斗结果。`null` = 进行中；非空 = 已结束。
 /// UI 用 `ref.listen` 监听非空翻转触发结算 overlay。
 @riverpod
