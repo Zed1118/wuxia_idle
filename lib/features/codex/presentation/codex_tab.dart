@@ -36,14 +36,14 @@ class CodexTab extends ConsumerWidget {
   }
 }
 
-class _CodexListView extends StatelessWidget {
+class _CodexListView extends ConsumerWidget {
   const _CodexListView({required this.items, required this.step});
 
   final List<CodexListItem> items;
   final int step;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // 分两段:机制 (isMechanic) + lore (isLore)。entries 登记顺序已保证前 12 机制 + 后 7 lore。
     final mechanicItems = items
         .where((it) => it.indexEntry.category.isMechanic)
@@ -51,9 +51,10 @@ class _CodexListView extends StatelessWidget {
     final loreItems = items
         .where((it) => it.indexEntry.category.isLore)
         .toList(growable: false);
-    // 顶部 chip = 「已解锁 N / 8」,分子 = 当前 step 解锁的「机制档数」,分母固定 8。
-    // A 组 4 补充阅读虽挂相同档但不增加分子(8 档节奏是核心叙事,见 unlockedCodexCount provider)。
-    final unlockedMechanic = step.clamp(0, 8);
+    // 顶部 chip = 「已解锁 N / 8」,分子走 [unlockedCodexCountProvider](派生于 tutorialStep clamp [0,8]);
+    // loading/error fallback 用 inline step.clamp 保旧行为不破。A 组 4 补充阅读不计入分子。
+    final unlockedMechanic =
+        ref.watch(unlockedCodexCountProvider).value ?? step.clamp(0, 8);
 
     // index 布局:
     //   0                                   → headerText (已解锁 N/8)
