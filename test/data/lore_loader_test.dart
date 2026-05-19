@@ -65,6 +65,48 @@ name: 空段装备
       final c = await LoreLoader.load('top_list', loader: mockLoader);
       expect(c.isPlaceholder, isTrue);
     });
+
+    test('P1 #44 · continued_lore_obtained / continued_lore_boss_defeated 池解析',
+        () async {
+      Future<String> mockLoader(String path) async => '''
+id: weapon_test
+name: 测试剑
+default_lore:
+  - text: |
+      preset 段 1。
+continued_lore_obtained:
+  - text: |
+      于「{source}」初见此剑,寒光乍现。
+  - text: |
+      初遇于{source},剑身犹温。
+continued_lore_boss_defeated:
+  - text: |
+      斩 {boss_name} 于 {stage_name},此剑沾血未崩。
+''';
+      final c = await LoreLoader.load('weapon_test', loader: mockLoader);
+      expect(c.defaultLore.length, 1);
+      expect(c.continuedLoreObtainedPool.length, 2);
+      expect(c.continuedLoreObtainedPool[0].text,
+          '于「{source}」初见此剑,寒光乍现。');
+      expect(c.continuedLoreObtainedPool[1].text, '初遇于{source},剑身犹温。');
+      expect(c.continuedLoreBossDefeatedPool.length, 1);
+      expect(c.continuedLoreBossDefeatedPool[0].text,
+          '斩 {boss_name} 于 {stage_name},此剑沾血未崩。');
+    });
+
+    test('P1 #44 · continued_lore_* 字段缺省 → 空池(仍非占位)', () async {
+      Future<String> mockLoader(String path) async => '''
+id: weapon_test
+name: 测试剑
+default_lore:
+  - text: |
+      preset 段 1。
+''';
+      final c = await LoreLoader.load('weapon_test', loader: mockLoader);
+      expect(c.continuedLoreObtainedPool, isEmpty);
+      expect(c.continuedLoreBossDefeatedPool, isEmpty);
+      expect(c.isPlaceholder, isFalse);
+    });
   });
 
   group('LoreContent.placeholder', () {
@@ -74,6 +116,8 @@ name: 空段装备
       expect(c.id, 'test_id');
       expect(c.name, '');
       expect(c.defaultLore, isEmpty);
+      expect(c.continuedLoreObtainedPool, isEmpty);
+      expect(c.continuedLoreBossDefeatedPool, isEmpty);
     });
   });
 
