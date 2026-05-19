@@ -7,7 +7,7 @@
 
 **P1 #43 高阶占位补齐 · jueDing/zongShi 段战斗内容全到位**(2026-05-19 傍晚,sonnet ~50min)。**audit 误判 27 条 skill 已全落不新增**(jianghu/shichuan/chuanshuo,memory `feedback_audit_report_phase0_verify` 实战)。towers.yaml 21-30 阶梯 skillIds(21-22/26-27 basic only / 23-24/28-29 +skill / 25/30 Boss +ult)+ dropTable 阶梯加 zhongQi(21-25 5 件)/baoWu(26-30 5 件)全覆盖 + equipment.yaml 10 件 dropSourceTags 修正(zhongQi tower_30→tower_25 audit 误判,baoWu zongShi_unlock→[tower_30, zongShi_unlock],shenWu Phase 4+ 飞升机制后补)。test **1117 pass + 1 skip + 0 issues** 无回归。详 `docs/handoff/p1_43_higher_tier_closeout_2026-05-19.md`。
 
-**P1 #44 延续典故文案抽 yaml · 协作模式 v1.8 切单端 + Mac 接手文案补齐**(2026-05-19,opus xhigh,Phase 0 ~10min)。**协作模式切换**:DeepSeek 端文案产线退役,Mac+Opus 4.7 单端接管 `data/lore/` + `data/narratives/` + `data/events/`。CLAUDE.md v1.8 同步(§3 目录所有权 / §8 工作流表单行 / §9 红线第 3 条删) + `WINDOWS_DEEPSEEK_GUIDE.md` 归档至 `docs/_archive/` + memory `project_wuxia_idle` 协作段更新。**Mac 端 wire 全闭环**(本日早段):LoreContent + GameEventService + 占位符 + fallback + 红线 case 5 strict + 1 soft(默认 skip),test 1117 pass + 3 skip + 0 issues。**下波动作**:Mac 端 35 件 × 2 池 ≈ 280 条文案补齐 7 批(按 tier 分)+ 红线 case 启用 + closeout。HEAD 待 Phase 1 推进。
+**P1 #44 延续典故文案抽 yaml · Mac 接手 280 条文案全补齐 + 协作模式 v1.8 切单端**(2026-05-19,opus xhigh ~1h)。**Phase 0 协作切换**:CLAUDE.md v1.8 / WINDOWS_DEEPSEEK_GUIDE 归档至 `docs/_archive/` / memory `project_wuxia_idle` + PROGRESS 同步。**Phase 1 文案 7 批**:寻常货/像样货/好家伙/利器/重器/宝物/神物 各 5 件 共 280 条新文案 + 80 default_lore = 360 总条数;沿 default_lore 35 件既有人物口吻延续 + Tier 风格梯度 7 阶递进 + 占位符纪律 obtained=source/boss=boss_name+stage_name 无串池 + 通篇无网游词。**Phase 2 红线验收**:5 strict + 1 soft 全过 0 warning,flutter test **1119 pass + 1 skip + 0 issues**。HEAD `99f4733`(本会话 8 commit:`33408ba` 协作切换 / `fc2b101`→`f4ca535` 7 批文案 / `99f4733` 红线启用,全 push origin/main)。详 `docs/handoff/p1_44_mac_takeover_closeout_2026-05-19.md`。
 
 **Nightshift 2026-05-19 夜班 9 task 销账 + 外部审查修正**(2026-05-19 上午,Mac+Opus 主对话 ~30min)。10 worktree 串行 sonnet --print 跑 1h17min,T02-T09 8 task 实际产出 OK + T01 真失败(API 32K output cap)。**cherry-pick 8 commit 合 main + 外部审查 3 修正**:T02 audit Demo 30 层验收强化 / T03 fortune 最大 10 加来源引用 / T08 deadcode §1 内部矛盾修。**测试 1086→1111 pass + 1 skip + analyze 0 issues**,HEAD `352cdb4`。**沉淀 3 memory bug**:`feedback_nightshift_max_output_token` / `feedback_nightshift_verify_changedoutside_bug` / `feedback_flutter_analyze_fatal_errors_invalid`(修正旧 `feedback_nightshift_verify_lint_severity`)。本批 T01 修正:PROGRESS.md 98→<80 行 + W17-W18 详条迁出归档。**T08 chip + T07/T08 死代码 + #37 yu_zhong_qiao_men 挂回 续推进**(2026-05-19 sonnet ~45min):① `_CodexListView` 接 chip provider;② 删 `StageDef.narrativeId` @Deprecated + 3 死 provider(`leftTeam`/`rightTeam`/`gameEventService`)+ defs_test T33 + 占位字段 Phase 0 grep 保留;③ T03 yu_zhong_qiao_men 挂回(`fortuneEvent` rain×inn,encounters.yaml +1 条 / 文件 mv archive→events,fortuneEvent 16→17)。新沉淀 memory `feedback_audit_report_phase0_verify`(audit 推 7 项实测 4 项真死)。→ **1111 pass + 1 skip + 0 issues**。详 `docs/handoff/nightshift_20260519_handoff.md`(含 emergency addendum)+ T10 SUMMARY(`/Users/a10506/Desktop/wuxia-idle-T10/.nightshift/SUMMARY.md`)。
 
@@ -23,14 +23,13 @@
 
 ## 已知偏差 / 挂账事项
 
-- ~~37 / 38 / 40 / 41 / 42 / 43 全销账~~(2026-05-17/18/19):#37 详 `p1_37_orphan_decree_2026-05-19.md`;#38/40/41/42 详末尾 W17-W18 详条段;#43 详顶段 + `p1_43_higher_tier_closeout_2026-05-19.md`
-- 44. **延续典故文案抽 yaml**(部分销账 2026-05-19):Mac 端 wire 完成(详顶段),DeepSeek 端待补 35 件装备各 2 池文案
+- ~~37 / 38 / 40 / 41 / 42 / 43 / 44 全销账~~(2026-05-17/18/19):#37 详 `p1_37_orphan_decree_2026-05-19.md`;#38/40/41/42 详末尾 W17-W18 详条段;#43 详顶段 + `p1_43_higher_tier_closeout_2026-05-19.md`;#44 详顶段 + `p1_44_mac_takeover_closeout_2026-05-19.md`
 
-> 已销账条目(#1-#43/#45)详见末尾归档。**剩余 P1**:#44 文案。
+> 已销账条目(#1-#45)详见末尾归档。**P1 阶段全销账 ✅**(2026-05-19 #44 收尾)。
 
 ## 下一步
 
-**下波候选**(优先级排):① **#44 DeepSeek 35 件文案补齐**(DeepSeek 主导 3-5h,Mac 端到位后红线 case 验收);② **美术 PoC + 水墨 LoRA**(opus + 用户主导 6-10h,M4 硬门槛,技术选型先讨论);③ **P1.2+ 章节扩展 / 心法相生设计**(待 #44 闭环后排期)。
+**下波候选**(优先级排):① **美术 PoC + 水墨 LoRA 调研**(opus xhigh + 用户主导 6-10h,M4 硬门槛,技术选型先讨论:AI 出图工具链 SD/Flux/MJ + LoRA 训练数据 + Demo 35 装备首批出图节奏 + 风格基调 GDD §1 水墨克制);② **P1.2+ 章节扩展 / 心法相生设计**(Phase 0 grep 起手:synergies.yaml/章节/§4.5 相生组合);③ **Phase 5+ 师徒系统升级**(路线图远期,GDD §7.1 飞升机制)。
 
 ## 关键约束(每次开局必读)
 
