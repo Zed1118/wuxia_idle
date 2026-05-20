@@ -851,6 +851,7 @@ retreat:
         internal_force_growth: 1.0
       biome: mountainForest                  # C-W14-2 奇遇触发维度
       weather: clear
+      image_path: assets/maps/shanLin.png
 
     # === 古剑冢：兵器掉率 +50% ===
     - map_type: guJianZhong
@@ -864,6 +865,7 @@ retreat:
         internal_force_growth: 1.0
       biome: swordTomb
       weather: mist
+      image_path: assets/maps/guJianZhong.png
 
     # === 藏经阁：心法领悟 +50% ===
     - map_type: cangJingGe
@@ -877,6 +879,7 @@ retreat:
         internal_force_growth: 1.0
       biome: temple
       weather: clear
+      image_path: assets/maps/cangJingGe.png
 
     # === 悬崖瀑布：内力增长 +50% ===
     - map_type: xuanYaPuBu
@@ -890,6 +893,7 @@ retreat:
         internal_force_growth: 1.5           # 内力增长 +50%
       biome: cliffWaterfall
       weather: rain
+      image_path: assets/maps/xuanYaPuBu.png
 
     # === 断崖绝壁：宗师专属，全维度高产出 ===
     - map_type: duanYaJueBi
@@ -903,6 +907,7 @@ retreat:
         internal_force_growth: 1.5
       biome: cliff
       weather: snow
+      image_path: assets/maps/duanYaJueBi.png
 
   # --- 时辰加成（GDD §7.3）---
   # 加成基于"开始闭关时刻"，不会因为跨时辰而动态切换

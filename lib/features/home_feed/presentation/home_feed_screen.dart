@@ -34,6 +34,19 @@ class HomeFeedScreen extends ConsumerWidget {
         ),
         elevation: 0,
         automaticallyImplyLeading: false,
+        actions: [
+          // M4 PoC #46 美术 Stage 2 W6 收官:水墨红印章落款,水墨克制氛围锚点。
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Image.asset(
+              'assets/ui/seal_red.png',
+              width: 36,
+              height: 36,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(

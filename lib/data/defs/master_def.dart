@@ -18,6 +18,7 @@ class MasterDef {
   final List<String> startingTechniqueIds;
   final List<String> startingEquipmentIds;
   final bool enabledInDemo;
+  final String? portraitPath;
 
   const MasterDef({
     required this.id,
@@ -29,6 +30,7 @@ class MasterDef {
     required this.startingTechniqueIds,
     required this.startingEquipmentIds,
     required this.enabledInDemo,
+    this.portraitPath,
   });
 
   factory MasterDef.fromYaml(Map<String, dynamic> y) {
@@ -50,6 +52,7 @@ class MasterDef {
             .map((e) => e as String),
       ),
       enabledInDemo: (y['enabledInDemo'] as bool?) ?? true,
+      portraitPath: y['portraitPath'] as String?,
     );
   }
 

@@ -27,6 +27,9 @@ class SeclusionMapDef {
   /// 系统留 §12 #7 决策)。null = clear 不喂。
   final EncounterWeather? weather;
 
+  /// 地图大图资源路径(M4 PoC #46 美术 Stage 2 W6 收官 5 地图 9.0/10)。
+  final String? imagePath;
+
   const SeclusionMapDef({
     required this.mapType,
     required this.mapName,
@@ -38,6 +41,7 @@ class SeclusionMapDef {
     required this.internalForceGrowth,
     this.biome,
     this.weather,
+    this.imagePath,
   });
 
   factory SeclusionMapDef.fromYaml(Map<String, dynamic> y) {
@@ -57,6 +61,7 @@ class SeclusionMapDef {
       weather: (y['weather'] as String?) == null
           ? null
           : EncounterWeather.values.byName(y['weather'] as String),
+      imagePath: y['image_path'] as String?,
     );
   }
 }

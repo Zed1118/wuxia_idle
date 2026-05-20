@@ -257,6 +257,31 @@ class _MapCard extends StatelessWidget {
           ),
           child: Row(
             children: [
+              if (def.imagePath != null) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.asset(
+                    def.imagePath!,
+                    width: 96,
+                    height: 64,
+                    fit: BoxFit.cover,
+                    color: locked
+                        ? Colors.black.withValues(alpha: 0.5)
+                        : null,
+                    colorBlendMode: locked ? BlendMode.darken : null,
+                    errorBuilder: (_, _, _) => Container(
+                      width: 96,
+                      height: 64,
+                      color: WuxiaColors.background,
+                      child: const Icon(
+                        Icons.landscape,
+                        color: WuxiaColors.textMuted,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

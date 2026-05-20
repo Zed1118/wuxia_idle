@@ -9,6 +9,9 @@
 class UiStrings {
   UiStrings._();
 
+  /// 应用标题(splash screen / window title)。
+  static const String appTitle = '挂机武侠';
+
   /// 战斗顶栏标题：`战斗 N v M`，N/M 为双方存活人数。
   static String battleTitle(int leftAlive, int rightAlive) =>
       '战斗 $leftAlive v $rightAlive';
