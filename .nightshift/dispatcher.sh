@@ -1,9 +1,16 @@
 #!/bin/bash
-# Nightshift dispatcher · 挂机武侠 · 2026-05-19
+# Nightshift dispatcher · 挂机武侠 · 2026-05-20 (Demo §8.4 gap-fill, opus)
 #
-# Sequentially runs 10 atomic Claude tasks, each in its own git worktree.
+# Sequentially runs 8 atomic Claude tasks, each in its own git worktree.
 # Each task: claude --print < prompt → run verify.sh → log status.
 # All tasks skippable: true, no blocking chain.
+#
+# 2026-05-20 变更:
+#   - model sonnet → opus(用户钉死全 task 用 opus 4.7,文学/数值/审计/spec 起草都要 opus 质量)
+#   - TASK_TIMEOUT_MIN 50 → 75(opus 慢 1.5-2x)
+#   - TASK_BUDGET_USD 5 → 8(opus 贵约 1.6x;8 task × $8 = $64 总预算上限)
+#   - 加 CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000(memory feedback_nightshift_max_output_token)
+#   - verify.sh 模板用 git diff-tree 不 git show --name-only(memory feedback_nightshift_verify_changedoutside_bug)
 #
 # Usage:
 #   bash .nightshift/dispatcher.sh            # real run
@@ -18,11 +25,16 @@ set -uo pipefail
 PROJECT_ROOT="/Users/a10506/Desktop/挂机武侠"
 NIGHTSHIFT="$PROJECT_ROOT/.nightshift"
 WORKTREE_BASE="/Users/a10506/Desktop"
-TASK_TIMEOUT_MIN=50
-TASK_BUDGET_USD=5
+TASK_TIMEOUT_MIN=75
+TASK_BUDGET_USD=8
 INTER_TASK_BUFFER_SEC=30
-TASKS=(T01 T02 T03 T04 T05 T06 T07 T08 T09 T10)
-LAST_TASK="T10"  # bash 3.2 (macOS default) doesn't support ${TASKS[-1]}
+TASKS=(T01 T02 T03 T04 T05 T06 T07 T08)
+LAST_TASK="T08"  # bash 3.2 (macOS default) doesn't support ${TASKS[-1]}
+CLAUDE_MODEL="opus"
+
+# Export max output token cap to avoid 32K default truncation
+# (memory feedback_nightshift_max_output_token 2026-05-19 教训)
+export CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000
 
 # === Setup ===
 mkdir -p "$NIGHTSHIFT/logs" "$NIGHTSHIFT/status"
@@ -94,13 +106,13 @@ run_task() {
     echo "claude_exit=skipped_idempotent" >> "$status_file"
   else
     # Run claude with timeout + budget (perl alarm = cross-platform timeout)
-    log "  Running claude --print (timeout ${TASK_TIMEOUT_MIN}m, budget \$${TASK_BUDGET_USD})"
+    log "  Running claude --print (model $CLAUDE_MODEL, timeout ${TASK_TIMEOUT_MIN}m, budget \$${TASK_BUDGET_USD})"
     (
       cd "$worktree" || exit 99
       perl -e 'alarm shift; exec @ARGV' "$((TASK_TIMEOUT_MIN * 60))" \
         claude \
           --print \
-          --model sonnet \
+          --model "$CLAUDE_MODEL" \
           --permission-mode bypassPermissions \
           --max-budget-usd "$TASK_BUDGET_USD" \
           --no-session-persistence \
