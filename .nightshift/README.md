@@ -87,9 +87,32 @@ done
 1. **Claude --print 网络依赖**:Anthropic API 调用,代理 hook 不在 claude 命令清单。如果半夜代理断 → 所有 task 全 SKIPPED。
 2. **flutter pub get 网络依赖**:verify 时跑 pub get 拉缓存外依赖。pub cache 已预热则 30s 内,否则 fail。
 3. **Mac sleep**:`caffeinate -dimsu` 兜底防 sleep,但若 macOS 强制更新 / 蓝牙断连等可能仍中断。
-4. **API budget**:每 task `--max-budget-usd 5`(sonnet 50 min 约 $1-2),6 task 共预算 $30。实际不会用完。
-5. **首次跑无 sanity test**:dispatcher 没在 nightshift 实测过,可能有 bug。建议睡前 `--dry-run` 一次。
-6. **worktree 内首次 build_runner 缺失**:.g.dart gitignored 不在 worktree。T04 verify 需要 flutter test,若 codegen 缺失会 fail → T04 SKIPPED 不阻塞 T05/T06。
+4. **API budget**:每 task `--max-budget-usd 8`(opus 短 task < $2 实测),8 task 共预算 $64。实际不会用完。
+5. **worktree 内首次 build_runner 缺失**:.g.dart gitignored 不在 worktree。verify 模板已含 fail-fast build_runner(memory `feedback_nightshift_build_runner_silent_fail`)。
+
+## ⚠️ verify.sh 必须套 VERIFY_TEMPLATE.sh(2026-05-20 起)
+
+`.nightshift/VERIFY_TEMPLATE.sh` 是 verify.sh 的 helper 函数库,**修补 4 个 nightshift 历史 bug**:
+1. count 写死期望(memory `feedback_nightshift_verify_count_baseline`)→ `verify_count_delta` baseline+delta 算式
+2. `git show --name-only` 中文 commit msg body 误抓(memory `feedback_nightshift_verify_changedoutside_bug`)→ `verify_changed_files_only` 用 `git diff-tree`
+3. build_runner 静默失败(memory `feedback_nightshift_build_runner_silent_fail`)→ `verify_build_runner_strict` fail-fast + tee log
+4. `--fatal-errors` 非法 flag(memory `feedback_flutter_analyze_fatal_errors_invalid`)→ `verify_analyze_clean` 用 `--fatal-warnings`
+
+**新 verify.sh 体例**(每个 T0X.verify.sh 顶部):
+```bash
+#!/bin/bash
+source "$(dirname "$0")/../VERIFY_TEMPLATE.sh"
+verify_init "T01"
+verify_file_exists "data/synergies.yaml"
+verify_count_delta "data/synergies.yaml" "^  - id: synergy_" 3 "synergies"
+verify_blacklist_words "data/synergies.yaml"
+verify_build_runner_strict
+verify_analyze_clean
+verify_local_tests "test/balance/synergy_hot_loop_upgrade_test.dart"
+verify_commit_message "nightshift T01"
+verify_changed_files_only "data/synergies\.yaml|test/balance/synergy_hot_loop_upgrade_test\.dart"
+verify_done
+```
 
 ## 容错保证
 

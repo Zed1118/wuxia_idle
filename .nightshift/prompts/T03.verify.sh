@@ -1,44 +1,60 @@
 #!/bin/bash
-# T03 verify · #37 6 orphan event 决议归档
+# T03 verify · techniques.yaml 21 本 description 占位 → 真文案
 set -uo pipefail
-TARGET="docs/handoff/p1_37_orphan_decree_2026-05-19.md"
-test -f "$TARGET" || { echo "VERIFY FAIL: $TARGET missing"; exit 1; }
 
-# 1. 行数 ≤ 100 + 20% buffer
-LINES=$(wc -l < "$TARGET" | tr -d ' ')
-if [ "$LINES" -gt 120 ]; then
-  echo "VERIFY FAIL: decree md $LINES 行 > 120 严重超 100"
+YAML="data/techniques.yaml"
+test -f "$YAML" || { echo "VERIFY FAIL: $YAML missing"; exit 1; }
+
+# 1. 0 占位剩
+TODO=$(grep -c "description: TODO_NARRATIVE" "$YAML" || true)
+if [ "$TODO" -ne 0 ]; then
+  echo "VERIFY FAIL: TODO_NARRATIVE 还有 $TODO 处"
   exit 1
 fi
 
-# 2. 4 段结构齐
-for section in "§1" "§2" "§3" "§4"; do
-  grep -q "$section" "$TARGET" || { echo "VERIFY FAIL: 段 '$section' 缺"; exit 1; }
-done
-
-# 3. 6 orphan id 全提及
-for orphan in "duan_qiao_can_yue" "gu_chuan_deng_ying" "huang_cun_yao_ren" "lao_jing_hui_xiang" "qing_lou_can_meng" "yu_zhong_qiao_men"; do
-  grep -q "$orphan" "$TARGET" || { echo "VERIFY FAIL: orphan $orphan 未审"; exit 1; }
-done
-
-# 4. 决议关键词(挂回 OR 永封档)出现
-grep -qE "挂回|永封档|永久归档" "$TARGET" || { echo "VERIFY FAIL: 决议关键词缺"; exit 1; }
-
-# 5. yaml 未被改动(钉死)
-git diff --name-only HEAD~1 | grep -E "^data/(encounters\.yaml|events/)" && {
-  echo "VERIFY FAIL: T03 改动 data/encounters.yaml 或 data/events/ 违反钉死红线"
+# 2. techniques 总数不变 = 21
+COUNT=$(grep -c "^  - id: tech_" "$YAML")
+if [ "$COUNT" -ne 21 ]; then
+  echo "VERIFY FAIL: techniques count $COUNT != 21"
   exit 1
-} || true
+fi
 
-# 6. commit message check
+# 3. 黑名单词 0 命中
+for word in legendary epic 史诗 神器 传说级 无敌 最强 究极 霸气 逆天 刀光剑影 血溅; do
+  if grep -q "$word" "$YAML"; then
+    echo "VERIFY FAIL: 黑名单词 '$word' 出现"
+    exit 1
+  fi
+done
+
+# 4. description 字段计数 = 21(不多不少)
+DESC_COUNT=$(grep -c "^    description:" "$YAML")
+if [ "$DESC_COUNT" -ne 21 ]; then
+  echo "VERIFY FAIL: description 字段 $DESC_COUNT != 21"
+  exit 1
+fi
+
+# 5. flutter pub get + analyze
+flutter pub get >/dev/null 2>&1 || { echo "VERIFY FAIL: pub get"; exit 1; }
+dart run build_runner build --delete-conflicting-outputs >/dev/null 2>&1 || echo "VERIFY WARN: build_runner"
+flutter analyze --fatal-warnings >/dev/null 2>&1 || { echo "VERIFY FAIL: analyze"; exit 1; }
+
+# 6. techniques loader test pass(若存在)
+if [ -f test/data/techniques_loader_test.dart ]; then
+  flutter test test/data/techniques_loader_test.dart >/dev/null 2>&1 \
+    || { echo "VERIFY FAIL: techniques_loader_test 不通过"; exit 1; }
+fi
+
+# 7. commit message
 git log -1 --pretty=%s | grep -q "nightshift T03" || { echo "VERIFY FAIL: no nightshift T03 commit"; exit 1; }
 
-# 7. 仅 docs/handoff/ 改动
-CHANGED_OUTSIDE=$(git show --name-only HEAD | grep -vE "^commit|^Author|^Date|^docs/handoff/|^$|^docs\(nightshift" || true)
+# 8. 改动越界
+CHANGED=$(git diff-tree --no-commit-id --name-only -r HEAD)
+CHANGED_OUTSIDE=$(echo "$CHANGED" | grep -vE "^data/techniques\.yaml$|^$" || true)
 if [ -n "$CHANGED_OUTSIDE" ]; then
   echo "VERIFY FAIL: T03 改动越界:"
   echo "$CHANGED_OUTSIDE"
   exit 1
 fi
 
-echo "VERIFY PASS: T03 (decree md $LINES 行)"
+echo "VERIFY PASS: T03 (description 21 处全填,techniques=$COUNT)"

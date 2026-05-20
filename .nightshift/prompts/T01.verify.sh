@@ -1,31 +1,55 @@
 #!/bin/bash
-# T01 verify · PROGRESS.md 96 行清理 → < 80
+# T01 verify · 心法相生 +3 + 红线 test
 set -uo pipefail
-TARGET="PROGRESS.md"
-test -f "$TARGET" || { echo "VERIFY FAIL: $TARGET missing"; exit 1; }
 
-# 1. 行数 < 80
-LINES=$(wc -l < "$TARGET" | tr -d ' ')
-if [ "$LINES" -ge 80 ]; then
-  echo "VERIFY FAIL: PROGRESS.md $LINES 行(目标 < 80)"
+YAML="data/synergies.yaml"
+TEST="test/balance/synergy_hot_loop_upgrade_test.dart"
+
+test -f "$YAML" || { echo "VERIFY FAIL: $YAML missing"; exit 1; }
+test -f "$TEST" || { echo "VERIFY FAIL: $TEST missing"; exit 1; }
+
+# 1. synergies 总数 = 8
+COUNT=$(grep -c "^  - id: synergy_" "$YAML")
+if [ "$COUNT" -ne 8 ]; then
+  echo "VERIFY FAIL: synergies count $COUNT != 8"
   exit 1
 fi
 
-# 2. 关键挂账 # 仍存
-for hashtag in "#37" "#43" "#44"; do
-  grep -q "$hashtag" "$TARGET" || { echo "VERIFY FAIL: 挂账 $hashtag 丢失"; exit 1; }
-done
-# 3. 已销账标记 ✅ 仍存
-for done_marker in "#38" "#40" "#41" "#42"; do
-  grep -q "$done_marker" "$TARGET" || { echo "VERIFY FAIL: 已销账 $done_marker 标记丢失"; exit 1; }
+# 2. 3 个新 id 都在
+for id in synergy_gang_yin_hu_zhi synergy_ling_gang_hui_liu synergy_ling_yin_gui_yi; do
+  grep -q "id: $id" "$YAML" || { echo "VERIFY FAIL: $id missing"; exit 1; }
 done
 
-# 4. 顶段「当前阶段」仍有内容
-grep -q "## 当前阶段" "$TARGET" || { echo "VERIFY FAIL: 顶段标题丢失"; exit 1; }
-# 5. 归档段「### W17-W18 详条迁出」已新增
-grep -q "W17-W18 详条迁出" "$TARGET" || { echo "VERIFY FAIL: W17-W18 归档段未新增"; exit 1; }
+# 3. hot-loop C1/C2/C3 test 都在
+for tag in "hot-loop C1" "hot-loop C2" "hot-loop C3"; do
+  grep -q "$tag" "$TEST" || { echo "VERIFY FAIL: '$tag' missing"; exit 1; }
+done
 
-# 6. commit message check
+# 4. flutter 工具链
+flutter pub get >/dev/null 2>&1 || { echo "VERIFY FAIL: pub get"; exit 1; }
+dart run build_runner build --delete-conflicting-outputs >/dev/null 2>&1 || echo "VERIFY WARN: build_runner non-zero"
+
+# 5. analyze --fatal-warnings(不 --fatal-infos,memory feedback_flutter_analyze_fatal_errors_invalid)
+flutter analyze --fatal-warnings >/dev/null 2>&1 || { echo "VERIFY FAIL: analyze"; exit 1; }
+
+# 6. 局部 test pass(synergy 3 个相关 test 文件)
+flutter test test/data/defs/synergy_def_test.dart >/dev/null 2>&1 \
+  || { echo "VERIFY FAIL: synergy_def_test 不通过"; exit 1; }
+flutter test "$TEST" >/dev/null 2>&1 \
+  || { echo "VERIFY FAIL: synergy_hot_loop_upgrade_test 不通过"; exit 1; }
+flutter test test/features/cultivation/application/synergy_service_test.dart >/dev/null 2>&1 \
+  || { echo "VERIFY FAIL: synergy_service_test 不通过"; exit 1; }
+
+# 7. commit message
 git log -1 --pretty=%s | grep -q "nightshift T01" || { echo "VERIFY FAIL: no nightshift T01 commit"; exit 1; }
 
-echo "VERIFY PASS: T01 (PROGRESS.md $LINES 行)"
+# 8. 改动越界(memory feedback_nightshift_verify_changedoutside_bug 用 git diff-tree)
+CHANGED=$(git diff-tree --no-commit-id --name-only -r HEAD)
+CHANGED_OUTSIDE=$(echo "$CHANGED" | grep -vE "^data/synergies\.yaml$|^test/balance/synergy_hot_loop_upgrade_test\.dart$|^$" || true)
+if [ -n "$CHANGED_OUTSIDE" ]; then
+  echo "VERIFY FAIL: T01 改动越界:"
+  echo "$CHANGED_OUTSIDE"
+  exit 1
+fi
+
+echo "VERIFY PASS: T01 (synergies=$COUNT, 3 hot-loop C cases)"
