@@ -41,6 +41,18 @@ class TechniquePanelScreen extends ConsumerWidget {
         backgroundColor: WuxiaColors.panel,
         foregroundColor: WuxiaColors.textPrimary,
         title: const Text(UiStrings.techniquePanelTitle),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Image.asset(
+              'assets/ui/lotus_icon.png',
+              width: 24,
+              height: 24,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: chAsync.when(

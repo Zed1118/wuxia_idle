@@ -121,6 +121,18 @@ class _SeclusionMapListScreenState
         title: const Text(UiStrings.seclusionTitle),
         backgroundColor: WuxiaColors.sidebar,
         foregroundColor: WuxiaColors.textPrimary,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Image.asset(
+              'assets/ui/meditation_icon.png',
+              width: 24,
+              height: 24,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: FutureBuilder<RetreatSession?>(
