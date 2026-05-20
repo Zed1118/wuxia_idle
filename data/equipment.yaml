@@ -32,6 +32,7 @@ equipment:
     presetLoreIds: [weapon_xunchang_tie_jian]
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_tie_jian.png
+    detailPath: assets/equipment/weapon_xunchang_tie_jian_detail.png
 
   - id: weapon_xunchang_zhe_dao
     name: 折刀
@@ -47,6 +48,7 @@ equipment:
     presetLoreIds: [weapon_xunchang_zhe_dao]
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_zhe_dao.png
+    detailPath: assets/equipment/weapon_xunchang_zhe_dao_detail.png
 
   - id: weapon_xunchang_ruan_bian
     name: 软鞭
@@ -62,6 +64,7 @@ equipment:
     presetLoreIds: [weapon_xunchang_ruan_bian]
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_ruan_bian.png
+    detailPath: assets/equipment/weapon_xunchang_ruan_bian_detail.png
 
   - id: armor_xunchang_bu_yi
     name: 粗布衣
@@ -76,6 +79,7 @@ equipment:
     presetLoreIds: [armor_xunchang_bu_yi]
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/armor_xunchang_bu_yi.png
+    detailPath: assets/equipment/armor_xunchang_bu_yi_detail.png
 
   - id: accessory_xunchang_yu_pei
     name: 玉佩
@@ -90,6 +94,7 @@ equipment:
     presetLoreIds: [accessory_xunchang_yu_pei]
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/accessory_xunchang_yu_pei.png
+    detailPath: assets/equipment/accessory_xunchang_yu_pei_detail.png
 
   # === 第 2 阶 像样货 · 三流境界开放 ===
   - id: weapon_xiangyang_gang_dao
@@ -106,6 +111,7 @@ equipment:
     presetLoreIds: [weapon_xiangyang_gang_dao]
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_gang_dao.png
+    detailPath: assets/equipment/weapon_xiangyang_gang_dao_detail.png
 
   - id: weapon_xiangyang_chang_jian
     name: 长剑
@@ -121,6 +127,7 @@ equipment:
     presetLoreIds: [weapon_xiangyang_chang_jian]
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_chang_jian.png
+    detailPath: assets/equipment/weapon_xiangyang_chang_jian_detail.png
 
   - id: weapon_xiangyang_jiu_jie_bian
     name: 九节鞭
@@ -136,6 +143,7 @@ equipment:
     presetLoreIds: [weapon_xiangyang_jiu_jie_bian]
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_jiu_jie_bian.png
+    detailPath: assets/equipment/weapon_xiangyang_jiu_jie_bian_detail.png
 
   - id: armor_xiangyang_pi_jia
     name: 皮甲
@@ -150,6 +158,7 @@ equipment:
     presetLoreIds: [armor_xiangyang_pi_jia]
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/armor_xiangyang_pi_jia.png
+    detailPath: assets/equipment/armor_xiangyang_pi_jia_detail.png
 
   - id: accessory_xiangyang_yin_jie
     name: 银戒
@@ -164,6 +173,7 @@ equipment:
     presetLoreIds: [accessory_xiangyang_yin_jie]
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/accessory_xiangyang_yin_jie.png
+    detailPath: assets/equipment/accessory_xiangyang_yin_jie_detail.png
 
   # === 第 3 阶 好家伙 · 二流境界开放 ===
   - id: weapon_haojiahuo_qing_feng_jian
@@ -180,6 +190,7 @@ equipment:
     presetLoreIds: [weapon_haojiahuo_qing_feng_jian]
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_qing_feng_jian.png
+    detailPath: assets/equipment/weapon_haojiahuo_qing_feng_jian_detail.png
 
   - id: weapon_haojiahuo_xuan_hua_fu
     name: 玄花斧
@@ -195,6 +206,7 @@ equipment:
     presetLoreIds: [weapon_haojiahuo_xuan_hua_fu]
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_xuan_hua_fu.png
+    detailPath: assets/equipment/weapon_haojiahuo_xuan_hua_fu_detail.png
 
   - id: weapon_haojiahuo_chan_si_suo
     name: 缠丝索
@@ -210,6 +222,7 @@ equipment:
     presetLoreIds: [weapon_haojiahuo_chan_si_suo]
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_chan_si_suo.png
+    detailPath: assets/equipment/weapon_haojiahuo_chan_si_suo_detail.png
 
   - id: armor_haojiahuo_jin_pao
     name: 锦袍
@@ -224,6 +237,7 @@ equipment:
     presetLoreIds: [armor_haojiahuo_jin_pao]
     dropSourceTags: ["mainline_ch3"]
     iconPath: assets/equipment/armor_haojiahuo_jin_pao.png
+    detailPath: assets/equipment/armor_haojiahuo_jin_pao_detail.png
     isLineageHeritage: true   # 师承遗物（祖师传家护甲，GDD §6.1 + Phase 3 W4 T55）
 
   - id: accessory_haojiahuo_yu_pei_lao
@@ -239,6 +253,7 @@ equipment:
     presetLoreIds: [accessory_haojiahuo_yu_pei_lao]
     dropSourceTags: ["mainline_ch3"]
     iconPath: assets/equipment/accessory_haojiahuo_yu_pei_lao.png
+    detailPath: assets/equipment/accessory_haojiahuo_yu_pei_lao_detail.png
 
   # === 第 4 阶 利器 · 一流境界开放 · Demo 主线最高级装备 ===
   - id: weapon_liqi_long_quan
@@ -255,6 +270,7 @@ equipment:
     presetLoreIds: [weapon_liqi_long_quan]
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_long_quan.png
+    detailPath: assets/equipment/weapon_liqi_long_quan_detail.png
     isLineageHeritage: true   # 师承遗物（祖师传家武器，GDD §6.1 + Phase 3 W4 T55）
 
   - id: weapon_liqi_pan_long_dao
@@ -271,6 +287,7 @@ equipment:
     presetLoreIds: [weapon_liqi_pan_long_dao]
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_pan_long_dao.png
+    detailPath: assets/equipment/weapon_liqi_pan_long_dao_detail.png
 
   - id: weapon_liqi_lian_zi_bian
     name: 链子鞭
@@ -286,6 +303,7 @@ equipment:
     presetLoreIds: [weapon_liqi_lian_zi_bian]
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_lian_zi_bian.png
+    detailPath: assets/equipment/weapon_liqi_lian_zi_bian_detail.png
 
   - id: armor_liqi_xuan_tie_jia
     name: 玄铁甲
@@ -300,6 +318,7 @@ equipment:
     presetLoreIds: [armor_liqi_xuan_tie_jia]
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/armor_liqi_xuan_tie_jia.png
+    detailPath: assets/equipment/armor_liqi_xuan_tie_jia_detail.png
 
   - id: accessory_liqi_fei_yu_pei
     name: 翡玉佩
@@ -314,6 +333,7 @@ equipment:
     presetLoreIds: [accessory_liqi_fei_yu_pei]
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/accessory_liqi_fei_yu_pei.png
+    detailPath: assets/equipment/accessory_liqi_fei_yu_pei_detail.png
 
   # === 第 5 阶 重器 · 绝顶境界开放（Demo 高阶，主线未覆盖） ===
   - id: weapon_zhongqi_po_zhen_chui
@@ -330,6 +350,7 @@ equipment:
     presetLoreIds: [weapon_zhongqi_po_zhen_chui]
     dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_po_zhen_chui.png
+    detailPath: assets/equipment/weapon_zhongqi_po_zhen_chui_detail.png
 
   - id: weapon_zhongqi_qing_xu_jian
     name: 青虚剑
@@ -345,6 +366,7 @@ equipment:
     presetLoreIds: [weapon_zhongqi_qing_xu_jian]
     dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_qing_xu_jian.png
+    detailPath: assets/equipment/weapon_zhongqi_qing_xu_jian_detail.png
 
   - id: weapon_zhongqi_du_long_suo
     name: 毒龙索
@@ -360,6 +382,7 @@ equipment:
     presetLoreIds: [weapon_zhongqi_du_long_suo]
     dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_du_long_suo.png
+    detailPath: assets/equipment/weapon_zhongqi_du_long_suo_detail.png
 
   - id: armor_zhongqi_yin_lin_jia
     name: 银鳞甲
@@ -374,6 +397,7 @@ equipment:
     presetLoreIds: [armor_zhongqi_yin_lin_jia]
     dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/armor_zhongqi_yin_lin_jia.png
+    detailPath: assets/equipment/armor_zhongqi_yin_lin_jia_detail.png
 
   - id: accessory_zhongqi_qing_yu_huan
     name: 青玉环
@@ -388,6 +412,7 @@ equipment:
     presetLoreIds: [accessory_zhongqi_qing_yu_huan]
     dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/accessory_zhongqi_qing_yu_huan.png
+    detailPath: assets/equipment/accessory_zhongqi_qing_yu_huan_detail.png
 
   # === 第 6 阶 宝物 · 宗师境界开放（Demo 高阶占位） ===
   - id: weapon_baowu_xuan_tian_fu
@@ -404,6 +429,7 @@ equipment:
     presetLoreIds: [weapon_baowu_xuan_tian_fu]
     dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_xuan_tian_fu.png
+    detailPath: assets/equipment/weapon_baowu_xuan_tian_fu_detail.png
 
   - id: weapon_baowu_chang_hong_jian
     name: 长虹剑
@@ -419,6 +445,7 @@ equipment:
     presetLoreIds: [weapon_baowu_chang_hong_jian]
     dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_chang_hong_jian.png
+    detailPath: assets/equipment/weapon_baowu_chang_hong_jian_detail.png
 
   - id: weapon_baowu_xue_lian_bian
     name: 血莲鞭
@@ -434,6 +461,7 @@ equipment:
     presetLoreIds: [weapon_baowu_xue_lian_bian]
     dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_xue_lian_bian.png
+    detailPath: assets/equipment/weapon_baowu_xue_lian_bian_detail.png
 
   - id: armor_baowu_jin_si_jia
     name: 金丝甲
@@ -448,6 +476,7 @@ equipment:
     presetLoreIds: [armor_baowu_jin_si_jia]
     dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/armor_baowu_jin_si_jia.png
+    detailPath: assets/equipment/armor_baowu_jin_si_jia_detail.png
 
   - id: accessory_baowu_yu_long_pei
     name: 玉龙佩
@@ -462,6 +491,7 @@ equipment:
     presetLoreIds: [accessory_baowu_yu_long_pei]
     dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/accessory_baowu_yu_long_pei.png
+    detailPath: assets/equipment/accessory_baowu_yu_long_pei_detail.png
 
   # === 第 7 阶 神物 · 武圣境界开放（Demo 顶阶占位） ===
   - id: weapon_shenwu_po_jun_dao
@@ -478,6 +508,7 @@ equipment:
     presetLoreIds: [weapon_shenwu_po_jun_dao]
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/weapon_shenwu_po_jun_dao.png
+    detailPath: assets/equipment/weapon_shenwu_po_jun_dao_detail.png
 
   - id: weapon_shenwu_tian_wen_jian
     name: 天问剑
@@ -493,6 +524,7 @@ equipment:
     presetLoreIds: [weapon_shenwu_tian_wen_jian]
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/weapon_shenwu_tian_wen_jian.png
+    detailPath: assets/equipment/weapon_shenwu_tian_wen_jian_detail.png
 
   - id: weapon_shenwu_huan_meng_bian
     name: 幻梦鞭
@@ -508,6 +540,7 @@ equipment:
     presetLoreIds: [weapon_shenwu_huan_meng_bian]
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/weapon_shenwu_huan_meng_bian.png
+    detailPath: assets/equipment/weapon_shenwu_huan_meng_bian_detail.png
 
   - id: armor_shenwu_xuan_huang_pao
     name: 玄黄袍
@@ -522,6 +555,7 @@ equipment:
     presetLoreIds: [armor_shenwu_xuan_huang_pao]
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/armor_shenwu_xuan_huang_pao.png
+    detailPath: assets/equipment/armor_shenwu_xuan_huang_pao_detail.png
 
   - id: accessory_shenwu_kun_lun_pei
     name: 昆仑佩
@@ -536,3 +570,4 @@ equipment:
     presetLoreIds: [accessory_shenwu_kun_lun_pei]
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/accessory_shenwu_kun_lun_pei.png
+    detailPath: assets/equipment/accessory_shenwu_kun_lun_pei_detail.png

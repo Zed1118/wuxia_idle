@@ -55,3 +55,9 @@ flutter:
     - data/narratives/codex/
     - data/narratives/techniques/
     - data/narratives/techniques/insights/
+
+    # M4 PoC #46 美术资源(2026-05-20 Stage 2 收官 89 张归位)
+    - assets/equipment/
+    - assets/characters/
+    - assets/maps/
+    - assets/ui/

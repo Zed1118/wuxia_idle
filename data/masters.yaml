@@ -26,6 +26,7 @@ masters:
       - armor_haojiahuo_jin_pao
       - accessory_haojiahuo_yu_pei_lao
     enabledInDemo: true
+    portraitPath: assets/characters/founder.png
 
   # === 大弟子 —— 二流 · 启蒙 ===
   # 二流境界 → equipment cap=haoJiaHuo（好家伙）/ technique cap=mingJiaGong（名家功）
@@ -46,6 +47,7 @@ masters:
       - armor_xiangyang_pi_jia
       - accessory_xiangyang_yin_jie
     enabledInDemo: true
+    portraitPath: assets/characters/first_disciple.png
 
   # === 二弟子 —— 三流 · 启蒙 ===
   # 三流境界 → equipment cap=xiangYangHuo（像样货）/ technique cap=changLianGong（常练功）
@@ -66,3 +68,4 @@ masters:
       - armor_xunchang_bu_yi
       - accessory_xunchang_yu_pei
     enabledInDemo: true
+    portraitPath: assets/characters/second_disciple.png

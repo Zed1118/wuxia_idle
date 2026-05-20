@@ -19,6 +19,10 @@ class EquipmentDef {
   final List<String> dropSourceTags;
   final String iconPath;
 
+  /// 装备详情大图路径(M4 PoC #46 美术 Stage 2 收官 35 件 detail 大图,典故弹窗用)。
+  /// yaml 缺省 null,Phase 3 UI 接入阶段 35 件全填。
+  final String? detailPath;
+
   /// 开锋第 3 槽（+19 解锁）可选的专属技能 def id 列表（T21 新增）。
   /// yaml 缺省时为空，UI 表现为"该装备暂无专属技能"。
   final List<String> specialSkillCandidates;
@@ -48,6 +52,7 @@ class EquipmentDef {
     required this.presetLoreIds,
     required this.dropSourceTags,
     required this.iconPath,
+    this.detailPath,
     this.specialSkillCandidates = const [],
     this.isLineageHeritage = false,
   });
@@ -74,6 +79,7 @@ class EquipmentDef {
         (y['dropSourceTags'] as List? ?? const []).map((e) => e as String),
       ),
       iconPath: y['iconPath'] as String,
+      detailPath: y['detailPath'] as String?,
       specialSkillCandidates: List<String>.from(
         (y['specialSkillCandidates'] as List? ?? const [])
             .map((e) => e as String),
