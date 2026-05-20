@@ -444,6 +444,34 @@ class GameRepository {
         );
       }
       switch (s.requirementType) {
+        case SynergyRequirementType.specificTechniques:
+          if (s.requiredMainTechniqueId == null ||
+              s.requiredAssistTechniqueId == null) {
+            throw StateError(
+              'synergy ${s.id} specificTechniques 必须配 '
+              'mainTechniqueId + assistTechniqueId',
+            );
+          }
+          if (s.mainSchool != null || s.assistSchool != null) {
+            throw StateError(
+              'synergy ${s.id} specificTechniques 不应配 mainSchool/assistSchool',
+            );
+          }
+          if (techniqueDefs.isNotEmpty &&
+              !techniqueDefs.containsKey(s.requiredMainTechniqueId)) {
+            throw StateError(
+              'synergy ${s.id} requiredMainTechniqueId='
+              '${s.requiredMainTechniqueId} 不存在于 techniques.yaml',
+            );
+          }
+          if (techniqueDefs.isNotEmpty &&
+              !techniqueDefs.containsKey(s.requiredAssistTechniqueId)) {
+            throw StateError(
+              'synergy ${s.id} requiredAssistTechniqueId='
+              '${s.requiredAssistTechniqueId} 不存在于 techniques.yaml',
+            );
+          }
+          break;
         case SynergyRequirementType.schoolPair:
           if (s.mainSchool == null || s.assistSchool == null) {
             throw StateError(
@@ -455,12 +483,25 @@ class GameRepository {
               'synergy ${s.id} schoolPair main/assist 不能相同(同流派走 sameSchool 类型)',
             );
           }
+          if (s.requiredMainTechniqueId != null ||
+              s.requiredAssistTechniqueId != null) {
+            throw StateError(
+              'synergy ${s.id} schoolPair 不应配 mainTechniqueId/assistTechniqueId',
+            );
+          }
           break;
         case SynergyRequirementType.sameSchool:
         case SynergyRequirementType.sameTier:
           if (s.mainSchool != null || s.assistSchool != null) {
             throw StateError(
               'synergy ${s.id} ${s.requirementType.name} 不应配 mainSchool/assistSchool',
+            );
+          }
+          if (s.requiredMainTechniqueId != null ||
+              s.requiredAssistTechniqueId != null) {
+            throw StateError(
+              'synergy ${s.id} ${s.requirementType.name} '
+              '不应配 mainTechniqueId/assistTechniqueId',
             );
           }
           break;

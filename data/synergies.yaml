@@ -116,7 +116,29 @@ synergies:
       attackPct: 0.10
       speedPct: 0.20
 
-  # ── 注:原 synergy 8「灵阴归一」(lingQiao+yinRou schoolPair)在 2026-05-20
+  # ── 8. 太极初成:主刚猛传说 + 辅阴柔传说,两极合元(specificTechniques 类型) ──
+  # 2026-05-21 候选 2 实装 · GDD §4.5 触上限 8 重设计 · 新 SynergyRequirementType.
+  # specificTechniques 枚举值 · 贴 GDD §4.5 原意「具体心法对」彩蛋(九阳+九阴
+  # 类例子)· 优先级最高(detectActive 遍历 specificTechniques > schoolPair >
+  # sameSchool > sameTier),避免被 synergy 1「阴阳调和」(gangMeng+yinRou
+  # schoolPair)抢走 · 数值红线:attack 0.20 + def 0.15(realm max 0.35 + 0.15 =
+  # 0.50 ≤ §5.5 红线 0.65)+ internalForceMax 0.25(挨 0.30 红线)+ hp 0.10,
+  # 「攻防内 4 维强化 + 彩蛋触上限」语义。
+  - id: synergy_tai_ji_chu_cheng
+    name: 太极初成
+    description: 主修刚猛传说,辅修阴柔传说,两极合元,内气如太极转动不息
+    requirement:
+      type: specificTechniques
+      mainTechniqueId: tech_gangmeng_chuanshuo
+      assistTechniqueId: tech_yinrou_chuanshuo
+    multipliers:
+      attackPct: 0.20
+      defensePct: 0.15
+      hpPct: 0.10
+      internalForceMaxPct: 0.25
+
+  # ── 注:GDD §4.5 5-8 范围,本 yaml 现 8 满足上限。原 synergy 8「灵阴归一」
+  # (lingQiao+yinRou schoolPair)在 2026-05-20
   # cherry-pick 后回退,因 6 schoolPair 全覆盖 main/assist 方向后 sameTier 红线
   # 无法独立触发(E 角色 lingQiao+yinRou 会被 8 抢走)。GDD §4.5 5-8 范围,7 仍
   # 满足。下次扩 §4.5 上限 8 需重设计 1 个非 schoolPair 类型组合(如 sameTier

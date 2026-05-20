@@ -6,9 +6,11 @@ import '../../../data/defs/technique_def.dart';
 /// W18-A1 · 心法相生检测服务(GDD §4.5)。
 ///
 /// 对单角色 (mainTech, assistTech[0]) 组合应用 [SynergyDef.matches],按
-/// 优先级 [SynergyRequirementType.schoolPair] >
-/// [SynergyRequirementType.sameSchool] > [SynergyRequirementType.sameTier]
-/// 找到首个命中即返回(单角色至多 1 个相生激活,与 UI chip 0/1 显示一致)。
+/// 优先级 [SynergyRequirementType.specificTechniques] >
+/// [SynergyRequirementType.schoolPair] > [SynergyRequirementType.sameSchool] >
+/// [SynergyRequirementType.sameTier] 找到首个命中即返回(单角色至多 1 个相生
+/// 激活,与 UI chip 0/1 显示一致)。candidate 2(2026-05-21)加 specificTechniques
+/// 作最高优先级,贴 GDD §4.5 原意「具体心法对」彩蛋。
 ///
 /// 调用位置:
 /// - [StageBattleSetup.buildTeams](战斗 init 时注入 multiplier)
@@ -42,8 +44,9 @@ class SynergyService {
     final assistDef = techDefLookup(assistTech.defId);
     if (mainDef == null || assistDef == null) return null;
 
-    // 严格优先级:schoolPair > sameSchool > sameTier。
-    // 遍历每个 type 内部按 yaml 声明顺序,首个命中即返。
+    // 严格优先级:specificTechniques > schoolPair > sameSchool > sameTier。
+    // enum 声明顺序 = 优先级顺序,遍历 values 自动按优先级。每个 type 内部
+    // 按 yaml 声明顺序,首个命中即返。
     for (final type in SynergyRequirementType.values) {
       for (final s in synergies) {
         if (s.requirementType != type) continue;
@@ -52,6 +55,8 @@ class SynergyService {
           assistSchool: assistDef.school,
           mainTier: mainDef.tier,
           assistTier: assistDef.tier,
+          mainTechniqueId: mainTech.defId,
+          assistTechniqueId: assistTech.defId,
         )) {
           return s;
         }
