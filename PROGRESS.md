@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**M4 PoC #46 美术 Stage 2 W1 第 1 批 8/8 完工 · 寻常货剩 4 件全过验收**(2026-05-20 续,主对话 opus xhigh ~45min)。折刀/软鞭/粗布衣/玉佩 × 2 张 = **8 张 1024×1024 PNG** 全规范命名于 `~/Desktop/MJ_Stage2_W1/`。**风格一致度 ~85% / 类型识别度 ≥ 90% / 寻常货精致度梯度可读 / GDD §1 水墨克制守住**。唯二瑕疵接受不重抽:折叠铰链特性不显(寻常货 ROI 不值得)+ 玉佩 icon 偏鲜绿。**Stage 2 累计 8/~75 张(11%)**,Fast 实耗 ~20min 与预算一致(剩 ~13h 月配额够 W2-W6)。**新增 2 memory**:`feedback_mj_url_paste_order`(URL 贴顺序不必按截图行序 + 命名前 Read 验证)+ `feedback_mj_wuxia_prompt_pitfalls` 加第 11 条(MJ CDN curl 被 Cloudflare bot challenge 挡 + Playwright MCP browser_navigate + evaluate fetch base64 + filename + sed strip JSON quote + base64 -d 绕方案)。**下波**:Stage 2 W2 第 2 批像样货 5 件 10 张(~30min Fast)。详 `docs/handoff/art_poc_stage2_w1_closeout_2026-05-20.md`。
+**M4 PoC #46 美术 Stage 2 W1+W2 第 1+2 批 18/18 完工 · 寻常货 4 件 + 像样货 5 件全过验收**(2026-05-20 续,主对话 opus xhigh ~100min)。W1 寻常货 8 张 + W2 像样货 10 张 全 1024×1024 PNG 规范命名于 `~/Desktop/MJ_Stage2_W{1,2}/`。**风格一致度 ~85% / 类型识别度 W1 ≥ 90% / W2 ~85%(九节鞭拖整体)/ 像样货精致度梯度可读 / GDD §1 水墨克制守住**。W2 平均 ~7.9/10,九节鞭 V1-V5 演进 5 轮失败接受通用链鞭 borderline 7.5/10(MJ 训练数据缺) + 钢刀形态偏短 + 皮甲 icon 偏 vest 瑕疵接受。**Stage 2 累计 18/~75 张(24%)**,Fast 实耗 W1 ~20min + W2 ~30min = ~50min 与预算一致(剩 ~12.5h 月配额够 W3-W6)。**新增 2 memory + 补 2 条**:`feedback_mj_url_paste_order`(W1)+ `feedback_mj_wuxia_prompt_pitfalls` 加第 11 条(W1:Cloudflare 反爬 + Playwright 绕)+ 第 12 条(W2:九节鞭 V1-V5 演进失败 + 1.0 LoRA 补样本方案 + 链鞭 V5 prompt 模板 + `--no` 大扩黑名单)。**下波**:Stage 2 W3 第 3 批好家伙+利器 5 件 10 张(~30min Fast,链子鞭借用 V5 通用链鞭模板)。详 `docs/handoff/art_poc_stage2_w{1,2}_closeout_2026-05-20.md`。
 
 > M4 PoC #46 Stage 0+1+1.5 + Stage 2 spec 详条见 `art_poc_stage{0_ref_exploration,1_closeout,1_5_equipment,2_full_production}_2026-05-20.md`。
 
