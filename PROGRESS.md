@@ -5,11 +5,11 @@
 
 ## 当前阶段
 
+**M4 PoC #46 美术 Stage 0 spec 起草 · MJ v7 Standard 路径锁定**(2026-05-20,主对话 opus xhigh ~1h)。4 维度技术选型 4 项拍板:① **风格 暗黑厚涂水墨**(GDD §1 水墨克制 + ChatGPT 11 张样图审美北极星);② **工具链 MJ v7 Standard $30 月付主用 + ChatGPT Plus 副用辅助**(prompt 翻译 / 风格分析,**不出生产图**);③ **装备 混合双轨**(列表清晰 icon + 详情厚涂大图);④ **节奏 Stage 0 → 1 → 2**(ref 探索 → PoC 5 装备 → 量产 35+ 装备 / 3 角色 / 5 场景 / UI)。**重大改向**:推翻"ChatGPT 11 张当 MJ `--sref`",改"MJ 自跑一组 ref 候选"(**工具同源原则**)。**产物**:`docs/art_ref/chatgpt_baseline/` 归档 11 张(30MB 不进 build)+ `docs/handoff/art_poc_stage0_ref_exploration_2026-05-20.md` spec(3 套候选 prompt A 极致水墨 / B 暗黑沉郁 / C 山水意境 + MJ 操作手册 + 评估清单 + Stage 0→1 路径 + fal.ai LoRA 降级备案)。**1.0 路线图加权 ~25% → ~26%**(M4 启动 1/4)。**下一步**:用户订 MJ + 跑 Stage 0 12-20 张候选。
+
 **P1 #45 Demo §8.4 polish nightshift + cherry-pick 全收口**(2026-05-20,opus --print 8 task 34min + 主对话 cherry-pick + fix ~1h)。**Nightshift 8 task 全 OK**(03:18→03:52):T01 心法相生 +3→+2 回退 / T02 encounters +9 + skills +5 / T03 techniques.yaml 21 处 description 占位填实 / T04 武学领悟招式 narrative +5 / T05 events narrative +4 / T06 心法 narrative +4 / T07 Phase 5+ 师徒升级 spec 起草 / T08 closeout。**4 verify fail 全是脚本 bug,产出 0 真失败**,沉淀 4 memory + VERIFY_TEMPLATE.sh 修补下次 nightshift。**T01 设计 bug 发现 + 修复**:6 schoolPair 全覆盖方向后 sameTier 红线无空间,删 synergy_ling_yin_gui_yi 回 7 + 扩 fixture 5→7 角色。**Demo §8.4 14/14 全达标**(心法相生 5→7 中位 / 武学领悟 20→25 / 基础奇遇 17→21 / 招式 36→41)。HEAD `9f6c649`(本会话 9 commit 全 push origin/main),**flutter test 1123 pass + 1 skip + 0 fail / analyze 0 issues**。**1.0 路线图加权 ~22% → ~25%**。详 `docs/handoff/p1_45_demo_polish_closeout_2026-05-20.md`。
 
-**P1 #44 延续典故文案抽 yaml · Mac 接手 280 条文案全补齐 + 协作模式 v1.8 切单端**(2026-05-19,opus xhigh ~1h)。**Phase 0 协作切换**:CLAUDE.md v1.8 / WINDOWS_DEEPSEEK_GUIDE 归档至 `docs/_archive/` / memory `project_wuxia_idle` + PROGRESS 同步。**Phase 1 文案 7 批**:寻常货/像样货/好家伙/利器/重器/宝物/神物 各 5 件 共 280 条新文案 + 80 default_lore = 360 总条数;沿 default_lore 35 件既有人物口吻延续 + Tier 风格梯度 7 阶递进 + 占位符纪律 obtained=source/boss=boss_name+stage_name 无串池 + 通篇无网游词。**Phase 2 红线验收**:5 strict + 1 soft 全过 0 warning,flutter test **1119 pass + 1 skip + 0 issues**。HEAD `99f4733`(本会话 8 commit:`33408ba` 协作切换 / `fc2b101`→`f4ca535` 7 批文案 / `99f4733` 红线启用,全 push origin/main)。详 `docs/handoff/p1_44_mac_takeover_closeout_2026-05-19.md`。
-
-> P1 #43 高阶占位补齐 / Nightshift 2026-05-19 / P1 #42 Phase 1+2 详条已迁出归档,见末尾「### W17-W18 详条迁出 2026-05-19」段。
+> P1 #43 / Nightshift 2026-05-19 / P1 #42 Phase 1+2 / P1 #44 延续典故文案抽 yaml 详条已迁出归档,见末尾「### W17-W18 详条迁出 2026-05-19/20」段。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
@@ -56,8 +56,9 @@
 
 ### W17-W18 详条迁出 2026-05-19/20
 
-夜班 T01 PROGRESS 清理批次 + 2026-05-20 #45 迁出 4 段(完整内容见各 closeout):
+夜班 T01 PROGRESS 清理批次 + 2026-05-20 #45/#46 迁出 5 段(完整内容见各 closeout):
 
+- **P1 #44 延续典故文案抽 yaml · Mac 接手 280 条文案全补齐 + 协作模式 v1.8 切单端**(2026-05-19,opus xhigh ~1h):Phase 0 协作切换 CLAUDE.md v1.8 + WINDOWS_DEEPSEEK_GUIDE 归档 + Phase 1 7 批 280 条文案(Tier 风格梯度 7 阶 + 占位符 obtained/boss 无串池 + 通篇无网游词)+ Phase 2 红线 1119 pass 0 issues,HEAD `99f4733`,详 `docs/handoff/p1_44_mac_takeover_closeout_2026-05-19.md`
 - **P1 #43 高阶占位补齐 · jueDing/zongShi 段战斗内容全到位**(2026-05-19 傍晚,sonnet ~50min):audit 误判 27 条 skill 已全落不新增,towers.yaml 21-30 阶梯 skillIds/dropTable + equipment.yaml 10 件 dropSourceTags 修正,1117 pass + 0 issues,详 `p1_43_higher_tier_closeout_2026-05-19.md`
 - **Nightshift 2026-05-19 夜班 9 task 销账 + 外部审查修正**(2026-05-19,Mac+Opus ~30min):10 worktree 串行 sonnet --print 1h17min,8 task 产出 OK + T01 API 32K output cap 真失败,cherry-pick 8 commit + 外部审查 3 修正(T02 audit / T03 fortune / T08 deadcode),1086→1111 pass,沉淀 3 memory bug,详 `nightshift_20260519_handoff.md`
 - **P1 #42 Phase 2 §10 P1.x+P1.y+P1.z + P2 扩段 100% 全闭环里程碑**(2026-05-18,Mac+DeepSeek 双端 1086 pass + 0 issues,HEAD `8f85fd4`):§10 三方式 100% 全闭环(强制引导 + 气泡 banner + 见闻录百科 19 条),Phase 0 reality check 发现 codex/ 已存 18 md,新沉淀 `feedback_listview_widget_test_viewport`,详 `p1_42_phase2_p1{x,y,z}_*_2026-05-18.md`
