@@ -577,12 +577,17 @@ class Phase2SeedService {
     });
   }
 
-  /// W18-A1 心法相生视觉验收专用 seed(本批 Codex Pen 验收 5 组合各 1 命中)。
+  /// W18-A1 心法相生视觉验收专用 seed(本批 Codex Pen 验收 7 组合各 1 命中)。
   ///
-  /// 在 `_clearAll` + 三 progress clear 基础上写 5 角色,每角色 main + assist
-  /// tech 配对触发恰好 1 个相生组合,5 角色合起来覆盖
-  /// [GameRepository.synergies] 5 个 id 全集(red-line: 集合相等,见
+  /// 在 `_clearAll` + 三 progress clear 基础上写 7 角色,每角色 main + assist
+  /// tech 配对触发恰好 1 个相生组合,7 角色合起来覆盖
+  /// [GameRepository.synergies] 7 个 id 全集(red-line: 集合相等,见
   /// `phase2_seed_service_test.dart` W18-A1 段)。
+  ///
+  /// **2026-05-20 nightshift T01 +2(原 +3 回退 1)**:加 F·刚阴(synergy 6)+
+  /// G·灵刚(synergy 7),共 7 角色对应 7 synergy。原计划 +3 触 §4.5 上限 8
+  /// 因 6 schoolPair 全覆盖方向后 sameTier 红线无法独立触发(E·同辈被抢)而
+  /// 回退 synergy 8(灵阴归一)。yaml 7 仍满足 GDD §4.5 5-8 范围。
   ///
   /// | # | 角色      | main tech              | assist tech            | 命中优先级               |
   /// |---|-----------|------------------------|------------------------|---------------------------|
@@ -591,6 +596,8 @@ class Phase2SeedService {
   /// | 3 | C·阴影    | tech_yinrou_mingjia    | tech_lingqiao_mingjia  | schoolPair(组合 3)       |
   /// | 4 | D·同流派  | tech_yinrou_mingjia    | tech_yinrou_changlian  | sameSchool(组合 4)       |
   /// | 5 | E·同辈    | tech_lingqiao_mingjia  | tech_yinrou_mingjia    | sameTier(组合 5)         |
+  /// | 6 | F·刚阴    | tech_yinrou_mingjia    | tech_gangmeng_mingjia  | schoolPair(组合 6 反 1)  |
+  /// | 7 | G·灵刚    | tech_lingqiao_mingjia  | tech_gangmeng_mingjia  | schoolPair(组合 7 反 2)  |
   ///
   /// 5 角色全 yiLiu·qiMeng(equipment cap=liQi / technique cap=menPaiJueXue,
   /// mingJiaGong + changLianGong 全在三系锁死 GDD §5.3 安全区)+
@@ -649,7 +656,7 @@ class Phase2SeedService {
         );
       }
 
-      // 5 角色:祖师 = A·阴阳(占 id=1 与既有体例一致),其余 4 弟子。
+      // 7 角色:祖师 = A·阴阳(占 id=1 与既有体例一致),其余 6 弟子。
       final chA = buildA1(name: 'A·阴阳', isFounder: true)..id = 1;
       await isar.characters.put(chA);
       final chB = buildA1(name: 'B·刚柔', isFounder: false);
@@ -660,21 +667,29 @@ class Phase2SeedService {
       await isar.characters.put(chD);
       final chE = buildA1(name: 'E·同辈', isFounder: false);
       await isar.characters.put(chE);
+      final chF = buildA1(name: 'F·刚阴', isFounder: false);
+      await isar.characters.put(chF);
+      final chG = buildA1(name: 'G·灵刚', isFounder: false);
+      await isar.characters.put(chG);
 
-      // 师徒关系:祖师 A 名下 4 弟子(沿 seedMasterDisciple 双向写法)。
-      chA.discipleIds = [chB.id, chC.id, chD.id, chE.id];
+      // 师徒关系:祖师 A 名下 6 弟子(沿 seedMasterDisciple 双向写法)。
+      chA.discipleIds = [chB.id, chC.id, chD.id, chE.id, chF.id, chG.id];
       chB.masterId = chA.id;
       chC.masterId = chA.id;
       chD.masterId = chA.id;
       chE.masterId = chA.id;
+      chF.masterId = chA.id;
+      chG.masterId = chA.id;
 
-      // 5 角色 main+assist tech 配对(W18-A1 心法相生 5 组合各 1 命中)。
+      // 7 角色 main+assist tech 配对(W18-A1 心法相生 7 组合各 1 命中)。
       final pairs = <(Character, List<String>)>[
         (chA, const ['tech_gangmeng_mingjia', 'tech_yinrou_mingjia']),
         (chB, const ['tech_gangmeng_mingjia', 'tech_lingqiao_mingjia']),
         (chC, const ['tech_yinrou_mingjia', 'tech_lingqiao_mingjia']),
         (chD, const ['tech_yinrou_mingjia', 'tech_yinrou_changlian']),
         (chE, const ['tech_lingqiao_mingjia', 'tech_yinrou_mingjia']),
+        (chF, const ['tech_yinrou_mingjia', 'tech_gangmeng_mingjia']),
+        (chG, const ['tech_lingqiao_mingjia', 'tech_gangmeng_mingjia']),
       ];
       for (final pair in pairs) {
         await _learnMasterStarting(
@@ -685,7 +700,7 @@ class Phase2SeedService {
         );
       }
 
-      await isar.characters.putAll([chA, chB, chC, chD, chE]);
+      await isar.characters.putAll([chA, chB, chC, chD, chE, chF, chG]);
 
       final save = await isar.saveDatas.get(0);
       if (save != null) {
@@ -695,6 +710,8 @@ class Phase2SeedService {
           chC.id,
           chD.id,
           chE.id,
+          chF.id,
+          chG.id,
         ];
         save.founderCharacterId = chA.id;
         save.sectName ??= '我的门派';

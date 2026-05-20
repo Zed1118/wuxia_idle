@@ -273,25 +273,8 @@ void main() {
       expectRedLines(result, label: 'wushen × 灵刚汇流');
     });
 
-    test('hot-loop C3:synergy_ling_yin_gui_yi (spd 0.10 + ifMax 0.20) 各维 ≤ 0.30 + 实战 ≤ §5.4 红线',
-        () {
-      const m = SynergyMultipliers(speedPct: 0.10, internalForceMaxPct: 0.20);
-      expect(m.speedPct, 0.10);
-      expect(m.internalForceMaxPct, 0.20);
-      expect(m.isWithinRedLine, isTrue,
-          reason: '8. 灵阴归一 各 multiplier ≤ 0.30');
-      // wushen base maxIf 12500 × (1 + 0.20) = 15000 = §5.4 内力红线(=,不破)
-      final base = buildBase(
-        tier: RealmTier.wuSheng,
-        maxHp: 16550,
-        maxIf: 12500,
-        defRate: 0.35,
-        school: TechniqueSchool.lingQiao,
-      );
-      final result = StageBattleSetup.applySynergy(base, m);
-      expectRedLines(result, label: 'wushen × 灵阴归一');
-      expect(result.maxInternalForce, lessThanOrEqualTo(15000),
-          reason: '12500 × 1.20 = 15000 = §5.4 内力红线');
-    });
+    // 注:原 hot-loop C3 (synergy_ling_yin_gui_yi) 在 2026-05-20 回退,
+    // 因 6 schoolPair 全覆盖 main/assist 方向后 sameTier 红线无法独立触发。
+    // 详 data/synergies.yaml 行 119-123 注释 + memory feedback_red_line_test_semantics。
   });
 }

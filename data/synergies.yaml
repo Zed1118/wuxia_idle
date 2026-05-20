@@ -116,16 +116,8 @@ synergies:
       attackPct: 0.10
       speedPct: 0.20
 
-  # ── 8. 灵阴归一:主灵辅阴,如影随形,内息内化(速度+内力上限双维) ──────
-  # 与第 3「阴影迅捷」(主阴辅灵 atk+spd)互为反向,本组速度 + 内力上限组合,
-  # 语义「身法快+内力深」体现绝顶之上的内化境界。各维 ≤ §5.4 红线。
-  - id: synergy_ling_yin_gui_yi
-    name: 灵阴归一
-    description: 主修灵巧,辅修阴柔,如影随形,内息归元
-    requirement:
-      type: schoolPair
-      mainSchool: lingQiao
-      assistSchool: yinRou
-    multipliers:
-      speedPct: 0.10
-      internalForceMaxPct: 0.20
+  # ── 注:原 synergy 8「灵阴归一」(lingQiao+yinRou schoolPair)在 2026-05-20
+  # cherry-pick 后回退,因 6 schoolPair 全覆盖 main/assist 方向后 sameTier 红线
+  # 无法独立触发(E 角色 lingQiao+yinRou 会被 8 抢走)。GDD §4.5 5-8 范围,7 仍
+  # 满足。下次扩 §4.5 上限 8 需重设计 1 个非 schoolPair 类型组合(如 sameTier
+  # 高阶变体或新 SynergyRequirementType 枚举值),memory feedback_red_line_test_semantics 教训。
