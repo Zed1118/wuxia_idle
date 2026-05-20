@@ -5,15 +5,16 @@
 
 ## 当前阶段
 
-**2026-05-21 主对话 3 波连击 ✅**(Mac opus high ~3h):候选 1 「1.0 Demo §7 UI 完善阶段」实装 + 候选 3 Pen 工作树脏态处理 + 候选 5 round 2 视觉验收派单。本会话 HEAD `9d5cb65`(全 push origin/main),1123 pass + 0 issues maintained。
+**2026-05-21 主对话 5 波连击 ✅**(Mac opus high+xhigh ~5h + Codex Pen 异步):候选 1 美术接入 + 候选 3 Pen 脏态 + 候选 5 round 2 视觉验收 9/9 PASS + 候选 2 synergy 8 重设计。本会话 HEAD `d8b98ff`(全 push origin/main),1127 pass + 1 skip + 0 fail / analyze 0 issues。
 
-- **候选 1**(commit `3b5c36e` 7 文件 +226/-45,~1h):Phase 0 四维 reality check 拍板降档(opus xhigh → high)+ scope Option B。3 主接入 = inventory `_Row` 56×56 iconPath / equipment_detail 180h detailPath 大图 + paper_bg 背景 / lineage `_CharacterChip` 80×80 portraitPath(slotIndex 派生 GameRepository.masters);8 UI 资源全消费 = paper_bg / mountain_bg(MainMenu 远景)/ ink_divider / coin_icon / lotus_icon / meditation_icon / scroll_vertical / scroll_horizontal。**M4 #46 候选 1 全闭环 ✅,P1.3 美术 PoC ~100%,1.0 Demo §7 UI 完善阶段 ~99% 收口(89/89 美术资源全接入)**。
-- **候选 3**(Mac SSH 远程 ~20min,无代码 commit 仅 git ops):Pen F: 仓库脏态根因 = **partial clone 错配 promisor remote**(`https://github.com/...` URL key 挂 promisor + filter=blob:none,所有 PNG blob missing)。fix 链:`git config --unset` × 2 + `git fetch --refetch origin` + `git reset --hard origin/main`。Pen F: HEAD `0f8bde3` 同步 ✅,stash@{0} 安全网保留。`handoff §3` 原方案 A/B/C 冷启动均不必要。
-- **候选 5**(派单方 Mac 起 spec commit `9d5cb65` + Pen 端 prep OK,异步执行中):round 2 视觉验收 9 张图覆盖 6 Screen + 8 UI 资源 + 1 baseline。Pen `git pull` + `flutter clean` + `flutter pub get` 已就绪,等用户 Pen 桌面起 Codex 跑 spec。
+- **候选 1**(commit `3b5c36e` 7 文件 +226/-45,~1h):Phase 0 reality check 拍板降档 opus xhigh→high + scope Option B。3 主接入 = inventory `_Row` 56×56 iconPath / equipment_detail 180h detailPath 大图 + paper_bg 背景 / lineage `_CharacterChip` 80×80 portraitPath;8 UI 资源全消费(paper/mountain/ink_divider/coin/lotus/meditation/scroll_v/h)。**M4 #46 候选 1 全闭环,P1.3 美术 PoC ~100%,1.0 Demo §7 UI 完善阶段 ~99% 收口(89/89 美术接入)**。
+- **候选 3**(Mac SSH 远程 ~20min,无代码 commit 仅 git ops):Pen F: 仓库脏态根因 = **partial clone 错配 promisor remote**(`https://github.com/...` URL key 挂 promisor + filter=blob:none,PNG blob 全 missing)。fix 链:`git config --unset` ×2 + `git fetch --refetch origin` + `git reset --hard origin/main`。stash@{0} 安全网保留。handoff §3 冷启动方案均不必要。
+- **候选 5**(派单 commit `9d5cb65` + Codex Pen commit `6a6c21a` round 2 closeout):**Codex Pen 视觉验收 9/9 PASS ✅**(9 张图全落 docs/screenshots/round2_*.png)。M4 #46 候选 1 实测视觉收口 100%(round 1 4/4 + round 2 9/9 = 13 张图覆盖 8 Screen + 8 UI 资源 + 2 baseline)。
+- **候选 2**(commit `d8b98ff` 7 文件 +209/-19,opus xhigh ~1.5h):**心法相生 §4.5 触上限 8 重设计 ✅**。加 `SynergyRequirementType.specificTechniques` 新枚举值(优先级最高)+ `requiredMainTechniqueId/requiredAssistTechniqueId` 字段 + matches 签名加 id 参数 + detectActive 优先级链 + game_repository 红线校验(必填 + techniqueDefs containsKey)+ yaml synergy 8「太极初成」(主刚猛传说 + 辅阴柔传说,attack/def/hp/internalForceMax 4 维 ≤ §5.4 红线 0.30)+ 4 新 test case + phase2_seed fixture 期望调整。**Demo §8.4 心法相生从 7 → 8(GDD §4.5 上限触满 ✅)**。
 
-**4 教训 sink**:① Phase 0 四维 grep 实战再印证「目录已建 vs 0→1 大改」误判 ② widget test Image.asset errorBuilder 触发不稳,Column 同挂图+文本 fallback(memory `feedback_image_asset_error_builder` 扩展)③ partial clone promisor 错配 unset + refetch 救场(新 memory `feedback_git_partial_clone_promisor_eof`)④ Phase 0 reality check 驱动 spec 降档 + 缩 scope,工程纪律最佳实践。
+**5 教训 sink**:① Phase 0 四维 grep 再印证「目录已建 vs 0→1 大改」误判 ② widget test Image.asset errorBuilder 触发不稳 Column 同挂图+文本 fallback(memory `feedback_image_asset_error_builder` 扩展)③ partial clone promisor 错配 unset+refetch 救场(新 memory `feedback_git_partial_clone_promisor_eof`)④ Phase 0 reality check 驱动 spec 降档+缩 scope ⑤ GDD 原意 vs yaml 实现的「精神回归」(W18-A1.2 schoolPair 抽象类型是落地简化,specificTechniques 才贴 GDD §4.5 「九阳+九阴」原意彩蛋)。
 
-**下波**:① **等 Codex round 2 closeout**(异步)② 候选 2 心法相生 §4.5 触上限 8 重设计(sonnet+opus 1-2h,可并行)③ 候选 4 P2 主线启动准备(远期)。
+**下波**:① 候选 4 P2 主线启动准备(opus xhigh 远期,Demo polish 100% 完工后)② 章节扩展 Ch4+(1.0 路线图远期)③ 美术 LoRA 训练数据扩充(候选 4 衍生)。
 
 > 2026-05-20 4 段(stage_audit 阶段审查 / assets 归位 Flutter UI 接入 / Stage 2 W1-W6 量产收官 / P1 #45 Demo §8.4 polish nightshift)+ 2026-05-21 候选 1 round 1 视觉验收 1 段 已归档,见末尾「### M4 #46 美术详条迁出 2026-05-20/21」+ `docs/handoff/` 各 closeout。
 
