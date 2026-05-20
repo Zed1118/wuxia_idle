@@ -240,6 +240,22 @@ class _Row extends ConsumerWidget {
         ),
         child: Row(
           children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                border: Border.all(color: color, width: 1),
+                color: WuxiaColors.avatarFill,
+              ),
+              child: def == null
+                  ? null
+                  : Image.asset(
+                      def.iconPath,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
+            ),
+            const SizedBox(width: 12),
             SizedBox(
               width: 52,
               child: Text(
@@ -383,13 +399,25 @@ class _MaterialRow extends StatelessWidget {
           left: BorderSide(color: WuxiaColors.textPrimary, width: 3),
         ),
       ),
-      child: Text(
-        UiStrings.materialQuantity(name, item.quantity),
-        style: const TextStyle(
-          color: WuxiaColors.textPrimary,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Row(
+        children: [
+          Image.asset(
+            'assets/ui/coin_icon.png',
+            width: 16,
+            height: 16,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => const SizedBox(width: 16, height: 16),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            UiStrings.materialQuantity(name, item.quantity),
+            style: const TextStyle(
+              color: WuxiaColors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -73,8 +73,24 @@ class MainMenu extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
-      body: SafeArea(
-        child: Center(
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 200,
+            child: Opacity(
+              opacity: 0.25,
+              child: Image.asset(
+                'assets/ui/mountain_bg.png',
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: SingleChildScrollView(
@@ -179,6 +195,8 @@ class MainMenu extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+        ],
       ),
     );
   }

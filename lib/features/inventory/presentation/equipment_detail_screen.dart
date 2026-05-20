@@ -88,27 +88,58 @@ class _EquipmentDetailScreenState
         foregroundColor: WuxiaColors.textPrimary,
         iconTheme: const IconThemeData(color: WuxiaColors.textPrimary),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _InfoCard(equipment: widget.equipment, def: widget.def),
-            const SizedBox(width: double.infinity, child: Divider(
-              color: WuxiaColors.border,
-              height: 1,
-            )),
-            Expanded(
-              child: _LoreSection(
-                future: _loreFuture,
-                equipment: widget.equipment,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.12,
+              child: Image.asset(
+                'assets/ui/paper_bg.png',
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
             ),
-            _ActionBar(
-              tierColor: color,
-              onEnhance: () => _openEnhance(0),
-              onForge: () => _openEnhance(1),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                if (widget.def.detailPath != null)
+                  Container(
+                    width: double.infinity,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      color: WuxiaColors.panel,
+                      border: Border(
+                        bottom: BorderSide(color: color, width: 2),
+                      ),
+                    ),
+                    child: Image.asset(
+                      widget.def.detailPath!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) =>
+                          Container(color: WuxiaColors.panel),
+                    ),
+                  ),
+                _InfoCard(equipment: widget.equipment, def: widget.def),
+                const SizedBox(width: double.infinity, child: Divider(
+                  color: WuxiaColors.border,
+                  height: 1,
+                )),
+                Expanded(
+                  child: _LoreSection(
+                    future: _loreFuture,
+                    equipment: widget.equipment,
+                  ),
+                ),
+                _ActionBar(
+                  tierColor: color,
+                  onEnhance: () => _openEnhance(0),
+                  onForge: () => _openEnhance(1),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -392,17 +423,29 @@ class _SegmentDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 12),
-      child: Center(
-        child: Text(
-          '· · ·',
-          style: TextStyle(
-            color: WuxiaColors.textMuted,
-            fontSize: 14,
-            letterSpacing: 6,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            'assets/ui/ink_divider.png',
+            height: 8,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
-        ),
+          const SizedBox(height: 2),
+          const Center(
+            child: Text(
+              '· · ·',
+              style: TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 14,
+                letterSpacing: 6,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

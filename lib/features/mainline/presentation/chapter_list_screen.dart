@@ -31,6 +31,18 @@ class ChapterListScreen extends ConsumerWidget {
         title: const Text(UiStrings.chapterListTitle),
         backgroundColor: WuxiaColors.sidebar,
         foregroundColor: WuxiaColors.textPrimary,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(36),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+            child: Image.asset(
+              'assets/ui/scroll_horizontal.png',
+              height: 28,
+              fit: BoxFit.fitWidth,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+        ),
       ),
       body: SafeArea(
         child: async.when(

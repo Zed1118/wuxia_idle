@@ -52,6 +52,15 @@ class _Body extends StatelessWidget {
 
   final LineageInfo info;
 
+  /// 按 slotIndex 0/1/2 解析 masters[i].portraitPath。
+  /// GameRepository 未加载 / 越界 / 缺字段时 null,_CharacterChip 走 4×28 竖条 fallback。
+  String? _portraitForSlot(int slotIndex) {
+    if (!GameRepository.isLoaded) return null;
+    final masters = GameRepository.instance.masters;
+    if (slotIndex < 0 || slotIndex >= masters.length) return null;
+    return masters[slotIndex].portraitPath;
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -59,9 +68,27 @@ class _Body extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _FounderSection(founder: info.founder),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Image.asset(
+              'assets/ui/scroll_vertical.png',
+              height: 80,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+          _FounderSection(
+            founder: info.founder,
+            portraitPath: _portraitForSlot(0),
+          ),
           const SizedBox(height: 16),
-          _DisciplesSection(disciples: info.disciples),
+          _DisciplesSection(
+            disciples: info.disciples,
+            portraitPaths: List.generate(
+              info.disciples.length,
+              (i) => _portraitForSlot(i + 1),
+            ),
+          ),
           const SizedBox(height: 16),
           _HeritageSection(equipments: info.heritageEquipments),
         ],
@@ -71,9 +98,10 @@ class _Body extends StatelessWidget {
 }
 
 class _FounderSection extends StatelessWidget {
-  const _FounderSection({required this.founder});
+  const _FounderSection({required this.founder, this.portraitPath});
 
   final Character? founder;
+  final String? portraitPath;
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +114,10 @@ class _FounderSection extends StatelessWidget {
           if (founder == null)
             const _EmptyText(UiStrings.lineagePanelNoFounder)
           else
-            _CharacterChip(character: founder!),
+            _CharacterChip(
+              character: founder!,
+              portraitPath: portraitPath,
+            ),
         ],
       ),
     );
@@ -94,9 +125,13 @@ class _FounderSection extends StatelessWidget {
 }
 
 class _DisciplesSection extends StatelessWidget {
-  const _DisciplesSection({required this.disciples});
+  const _DisciplesSection({
+    required this.disciples,
+    this.portraitPaths = const [],
+  });
 
   final List<Character> disciples;
+  final List<String?> portraitPaths;
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +146,11 @@ class _DisciplesSection extends StatelessWidget {
           else
             for (var i = 0; i < disciples.length; i++) ...[
               if (i > 0) const SizedBox(height: 8),
-              _CharacterChip(character: disciples[i]),
+              _CharacterChip(
+                character: disciples[i],
+                portraitPath:
+                    i < portraitPaths.length ? portraitPaths[i] : null,
+              ),
             ],
         ],
       ),
@@ -159,9 +198,10 @@ class _HeritageSection extends StatelessWidget {
 }
 
 class _CharacterChip extends StatelessWidget {
-  const _CharacterChip({required this.character});
+  const _CharacterChip({required this.character, this.portraitPath});
 
   final Character character;
+  final String? portraitPath;
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +217,23 @@ class _CharacterChip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(width: 4, height: 28, color: schoolColor),
+          if (portraitPath == null)
+            Container(width: 4, height: 28, color: schoolColor)
+          else
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                border: Border.all(color: schoolColor, width: 1),
+                color: WuxiaColors.avatarFill,
+              ),
+              child: Image.asset(
+                portraitPath!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) =>
+                    Container(color: WuxiaColors.avatarFill),
+              ),
+            ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
