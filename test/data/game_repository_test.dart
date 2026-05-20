@@ -40,9 +40,10 @@ void main() {
           reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
       expect(repo.stageDefs.length, 15, reason: '主线 15 关（Phase 3 Week 5 T59 扩容）');
       expect(repo.numbers.version, isNotEmpty);
-      // 2026-05-20 T01 +2:synergies.yaml 7 组合(原 5 + 新 2,GDD §4.5 5-8)
-      expect(repo.synergies.length, 7,
-          reason: '心法相生 7 组合(GDD §4.5 5-8;原 +3 因 sameTier 无空间回退 1 个)');
+      // 2026-05-21 候选 2:synergies.yaml 8 组合(原 7 + 新 1「太极初成」
+      // specificTechniques 类型,GDD §4.5 触上限 8)
+      expect(repo.synergies.length, 8,
+          reason: '心法相生 8 组合(GDD §4.5 上限,候选 2 加 specificTechniques 类型)');
     });
 
     test('GameRepository.instance 在 load 后可访问', () async {

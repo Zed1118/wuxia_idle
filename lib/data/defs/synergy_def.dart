@@ -1,10 +1,15 @@
 import '../../core/domain/enums.dart';
 
-/// 心法相生 requirement 类型(W18-A1, GDD §4.5)。
+/// 心法相生 requirement 类型(W18-A1 + 候选 2 2026-05-21 加 specificTechniques,GDD §4.5)。
 ///
-/// 严格优先级:[schoolPair] > [sameSchool] > [sameTier]。同时命中多类时
-/// 取最严格的类型(detectActive 遍历顺序保证)。
+/// 严格优先级:[specificTechniques] > [schoolPair] > [sameSchool] > [sameTier]。
+/// 同时命中多类时取最严格的类型(detectActive 遍历顺序保证)。
 enum SynergyRequirementType {
+  /// 主修+辅修严格指定具体心法 ID 对(GDD §4.5 原意「九阳+九阴」类彩蛋)。
+  /// 需配 [SynergyDef.requiredMainTechniqueId] + [SynergyDef.requiredAssistTechniqueId]。
+  /// 优先级最高(detectActive 遍历时先匹配此类型),避免被 schoolPair 抢走。
+  specificTechniques,
+
   /// 主修+辅修严格指定流派组合(如 gangMeng+yinRou)。需配 [SynergyDef.mainSchool]
   /// + [SynergyDef.assistSchool],且两者必须不同。
   schoolPair,
@@ -116,6 +121,14 @@ class SynergyDef {
   /// 仅 [requirementType] == [SynergyRequirementType.schoolPair] 时有效。
   final TechniqueSchool? assistSchool;
 
+  /// 仅 [requirementType] == [SynergyRequirementType.specificTechniques] 时有效。
+  /// 必填(GameRepository 红线校验 + id 存在于 techniques 集合)。
+  final String? requiredMainTechniqueId;
+
+  /// 仅 [requirementType] == [SynergyRequirementType.specificTechniques] 时有效。
+  /// 必填(GameRepository 红线校验 + id 存在于 techniques 集合)。
+  final String? requiredAssistTechniqueId;
+
   final SynergyMultipliers multipliers;
 
   const SynergyDef({
@@ -125,17 +138,25 @@ class SynergyDef {
     required this.requirementType,
     this.mainSchool,
     this.assistSchool,
+    this.requiredMainTechniqueId,
+    this.requiredAssistTechniqueId,
     required this.multipliers,
   });
 
-  /// 判定给定 (mainSchool, assistSchool, mainTier, assistTier) 是否命中本相生。
+  /// 判定给定 (mainSchool, assistSchool, mainTier, assistTier, mainTechniqueId,
+  /// assistTechniqueId) 是否命中本相生。
   bool matches({
     required TechniqueSchool mainSchool,
     required TechniqueSchool assistSchool,
     required TechniqueTier mainTier,
     required TechniqueTier assistTier,
+    required String mainTechniqueId,
+    required String assistTechniqueId,
   }) {
     switch (requirementType) {
+      case SynergyRequirementType.specificTechniques:
+        return requiredMainTechniqueId == mainTechniqueId &&
+            requiredAssistTechniqueId == assistTechniqueId;
       case SynergyRequirementType.schoolPair:
         return this.mainSchool == mainSchool &&
             this.assistSchool == assistSchool;
@@ -164,6 +185,8 @@ class SynergyDef {
       assistSchool: req['assistSchool'] == null
           ? null
           : TechniqueSchool.values.byName(req['assistSchool'] as String),
+      requiredMainTechniqueId: req['mainTechniqueId'] as String?,
+      requiredAssistTechniqueId: req['assistTechniqueId'] as String?,
       multipliers: SynergyMultipliers.fromYaml(
         (y['multipliers'] as Map?)?.cast<String, dynamic>(),
       ),

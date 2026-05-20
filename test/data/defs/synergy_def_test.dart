@@ -90,6 +90,8 @@ void main() {
           assistSchool: TechniqueSchool.yinRou,
           mainTier: TechniqueTier.ruMenGong,
           assistTier: TechniqueTier.changLianGong,
+          mainTechniqueId: "main",
+          assistTechniqueId: "assist",
         ),
         isTrue,
       );
@@ -102,6 +104,8 @@ void main() {
           assistSchool: TechniqueSchool.gangMeng,
           mainTier: TechniqueTier.ruMenGong,
           assistTier: TechniqueTier.ruMenGong,
+          mainTechniqueId: "main",
+          assistTechniqueId: "assist",
         ),
         isFalse,
       );
@@ -114,6 +118,8 @@ void main() {
           assistSchool: TechniqueSchool.lingQiao,
           mainTier: TechniqueTier.ruMenGong,
           assistTier: TechniqueTier.ruMenGong,
+          mainTechniqueId: "main",
+          assistTechniqueId: "assist",
         ),
         isFalse,
       );
@@ -126,6 +132,8 @@ void main() {
           assistSchool: TechniqueSchool.lingQiao,
           mainTier: TechniqueTier.ruMenGong,
           assistTier: TechniqueTier.chuanShuoShenGong,
+          mainTechniqueId: "main",
+          assistTechniqueId: "assist",
         ),
         isTrue,
       );
@@ -138,6 +146,8 @@ void main() {
           assistSchool: TechniqueSchool.yinRou,
           mainTier: TechniqueTier.ruMenGong,
           assistTier: TechniqueTier.ruMenGong,
+          mainTechniqueId: "main",
+          assistTechniqueId: "assist",
         ),
         isFalse,
       );
@@ -150,6 +160,8 @@ void main() {
           assistSchool: TechniqueSchool.yinRou,
           mainTier: TechniqueTier.menPaiJueXue,
           assistTier: TechniqueTier.menPaiJueXue,
+          mainTechniqueId: "main",
+          assistTechniqueId: "assist",
         ),
         isTrue,
       );
@@ -162,6 +174,62 @@ void main() {
           assistSchool: TechniqueSchool.gangMeng,
           mainTier: TechniqueTier.ruMenGong,
           assistTier: TechniqueTier.changLianGong,
+          mainTechniqueId: "main",
+          assistTechniqueId: "assist",
+        ),
+        isFalse,
+      );
+    });
+  });
+
+  group('SynergyDef.matches specificTechniques(候选 2 2026-05-21)', () {
+    const specific = SynergyDef(
+      id: 'synergy_tai_ji_chu_cheng',
+      name: '太极初成',
+      description: '',
+      requirementType: SynergyRequirementType.specificTechniques,
+      requiredMainTechniqueId: 'tech_gangmeng_chuanshuo',
+      requiredAssistTechniqueId: 'tech_yinrou_chuanshuo',
+      multipliers: SynergyMultipliers(attackPct: 0.20),
+    );
+
+    test('specificTechniques 命中:mainTechId + assistTechId 全等', () {
+      expect(
+        specific.matches(
+          mainSchool: TechniqueSchool.gangMeng,
+          assistSchool: TechniqueSchool.yinRou,
+          mainTier: TechniqueTier.chuanShuoShenGong,
+          assistTier: TechniqueTier.chuanShuoShenGong,
+          mainTechniqueId: 'tech_gangmeng_chuanshuo',
+          assistTechniqueId: 'tech_yinrou_chuanshuo',
+        ),
+        isTrue,
+      );
+    });
+
+    test('specificTechniques 不命中:mainTechId 错', () {
+      expect(
+        specific.matches(
+          mainSchool: TechniqueSchool.gangMeng,
+          assistSchool: TechniqueSchool.yinRou,
+          mainTier: TechniqueTier.chuanShuoShenGong,
+          assistTier: TechniqueTier.chuanShuoShenGong,
+          mainTechniqueId: 'tech_gangmeng_shichuan',
+          assistTechniqueId: 'tech_yinrou_chuanshuo',
+        ),
+        isFalse,
+      );
+    });
+
+    test('specificTechniques 不命中:assistTechId 错', () {
+      expect(
+        specific.matches(
+          mainSchool: TechniqueSchool.gangMeng,
+          assistSchool: TechniqueSchool.yinRou,
+          mainTier: TechniqueTier.chuanShuoShenGong,
+          assistTier: TechniqueTier.chuanShuoShenGong,
+          mainTechniqueId: 'tech_gangmeng_chuanshuo',
+          assistTechniqueId: 'tech_yinrou_shichuan',
         ),
         isFalse,
       );
@@ -201,6 +269,28 @@ void main() {
         'multipliers': {'internalForceMaxPct': 0.25},
       });
       expect(s.requirementType, equals(SynergyRequirementType.sameTier));
+      expect(s.mainSchool, isNull);
+      expect(s.assistSchool, isNull);
+    });
+
+    test('specificTechniques 类型 mainTechniqueId/assistTechniqueId 解析', () {
+      final s = SynergyDef.fromYaml({
+        'id': 'synergy_tai_ji_chu_cheng',
+        'name': '太极初成',
+        'description': '',
+        'requirement': {
+          'type': 'specificTechniques',
+          'mainTechniqueId': 'tech_gangmeng_chuanshuo',
+          'assistTechniqueId': 'tech_yinrou_chuanshuo',
+        },
+        'multipliers': {'attackPct': 0.20},
+      });
+      expect(
+        s.requirementType,
+        equals(SynergyRequirementType.specificTechniques),
+      );
+      expect(s.requiredMainTechniqueId, equals('tech_gangmeng_chuanshuo'));
+      expect(s.requiredAssistTechniqueId, equals('tech_yinrou_chuanshuo'));
       expect(s.mainSchool, isNull);
       expect(s.assistSchool, isNull);
     });

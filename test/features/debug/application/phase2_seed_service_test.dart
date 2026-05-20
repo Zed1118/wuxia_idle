@@ -723,13 +723,21 @@ void main() {
       hitIds.add(synergy!.id);
     }
 
-    final yamlIds = repo.synergies.map((s) => s.id).toSet();
-    expect(hitIds, yamlIds,
-        reason: '7 角色命中的 synergy id 集合 == yaml 7 组合全集(覆盖性红线;'
-            '若 yaml 加/改/删 synergy 必须同步改 seedVisualCheckW18A1 配对)');
+    // 候选 2 2026-05-21 加 synergy 8 specificTechniques(主刚猛传说+辅阴柔传说),
+    // 需 chuanShuoShenGong tier 心法,本 fixture 5 角色全 yiLiu·qiMeng (technique
+    // cap=menPaiJueXue)无法触发,故 yaml 全集需过滤掉 specificTechniques 类型。
+    final yamlIdsNonSpecific = repo.synergies
+        .where((s) =>
+            s.requirementType != SynergyRequirementType.specificTechniques)
+        .map((s) => s.id)
+        .toSet();
+    expect(hitIds, yamlIdsNonSpecific,
+        reason: '7 角色命中的 synergy id 集合 == yaml 非 specificTechniques 类型全集'
+            '(覆盖性红线;若 yaml 加/改/删非 specificTech 类 synergy 必须同步改 '
+            'seedVisualCheckW18A1 配对)');
     expect(hitIds.length, 7,
-        reason: '7 角色 → 7 唯一 synergy(2026-05-20 T01 +2;'
-            '原 +3 触上限 8 因 sameTier 红线无空间回退,详 phase2_seed_service.dart 注释)');
+        reason: '7 角色 → 7 唯一 synergy(候选 2 加 synergy 8 specificTech 因 fixture '
+            '角色境界 cap 不进 W18-A1 fixture,留后续 chuanShuoShenGong fixture 验证)');
   });
 
   // 优先级覆盖红线:5 角色命中的 requirementType 必须覆盖 schoolPair / sameSchool /
