@@ -129,7 +129,7 @@ class UiStrings {
 
   /// 师承 Tab 标签：按 activeCharacterIds 顺序展示。
   /// 与 Phase2SeedService.seedMasterDisciple 槽位约定锁死（slot0=祖师 / 1=大弟子 / 2=二弟子）。
-  /// W18-A1 扩到 5 槽供 [seedVisualCheckW18A1] debug fixture 一次显 5 相生组合角色;
+  /// 2026-05-20 T01 +2 扩到 7 槽供 [seedVisualCheckW18A1] debug fixture 一次显 7 相生组合角色;
   /// 正常 P5 主线 ids.length=3 仍只显前 3,无视觉影响(GDD §7.1 demo_max_characters=3 不变)。
   static const List<String> lineageTabLabels = [
     '祖师',
@@ -137,6 +137,8 @@ class UiStrings {
     '二弟子',
     '三弟子',
     '四弟子',
+    '五弟子',
+    '六弟子',
   ];
 
   // 师徒名单 panel（W17 候选 E）

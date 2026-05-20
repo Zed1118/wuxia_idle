@@ -664,14 +664,14 @@ void main() {
 
   // ── W18-A1 心法相生 fixture · seedVisualCheckW18A1 ─────────────────────────
 
-  test('seedVisualCheckW18A1 → 5 角色 yiLiu.qiMeng + activeCharacterIds 全塞 + 主修非空',
+  test('seedVisualCheckW18A1 → 7 角色 yiLiu.qiMeng + activeCharacterIds 全塞 + 主修非空',
       () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
     final isar = IsarSetup.instance;
 
     final chars = await isar.characters.where().findAll();
-    expect(chars.length, 5,
-        reason: '5 角色对应 5 相生组合各 1 命中(覆盖 GameRepository.synergies 5 id 全集)');
+    expect(chars.length, 7,
+        reason: '7 角色对应 7 相生组合各 1 命中(覆盖 GameRepository.synergies 7 id 全集,2026-05-20 T01 +2)');
     for (final ch in chars) {
       expect(ch.realmTier, RealmTier.yiLiu,
           reason: '${ch.name} 必须 yiLiu(equipment cap=liQi / technique cap=menPaiJueXue,mingJiaGong+changLianGong 全在三系锁死安全区)');
@@ -687,17 +687,17 @@ void main() {
     }
 
     final save = await isar.saveDatas.get(0);
-    expect(save!.activeCharacterIds.length, 5,
-        reason: '5 角色全入 activeCharacterIds,CharacterPanelScreen TabBar 显 5 个(lineageTabLabels 扩 3→5 配套)');
+    expect(save!.activeCharacterIds.length, 7,
+        reason: '7 角色全入 activeCharacterIds,CharacterPanelScreen TabBar 显 7 个(lineageTabLabels 扩 5→7 配套)');
     expect(save.founderCharacterId, 1,
         reason: 'A·阴阳 id=1 为 founder(沿既有体例)');
   });
 
-  // 红线:5 角色通过 SynergyService.detectActive 命中的 synergy.id 集合
+  // 红线:7 角色通过 SynergyService.detectActive 命中的 synergy.id 集合
   // 必须 == GameRepository.synergies 全集。本约束是覆盖性语义,不写具体
-  // 「角色 A 命中 synergy_yin_yang_he_xie」映射;改 yaml 5 组合 id 时 fixture
-  // 仍需 5 角色全覆盖,该 test 是 W18-A1 fixture 与 yaml 一致性的雷达。
-  test('seedVisualCheckW18A1 → 5 角色 detectActive 命中集合 = synergies yaml 全集',
+  // 「角色 A 命中 synergy_yin_yang_he_xie」映射;改 yaml id 时 fixture
+  // 仍需 N 角色全覆盖,该 test 是 W18-A1 fixture 与 yaml 一致性的雷达。
+  test('seedVisualCheckW18A1 → 7 角色 detectActive 命中集合 = synergies yaml 全集',
       () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckW18A1();
     final isar = IsarSetup.instance;
@@ -705,7 +705,7 @@ void main() {
 
     final allTechs = await isar.techniques.where().findAll();
     final chars = await isar.characters.where().findAll();
-    expect(chars.length, 5);
+    expect(chars.length, 7);
 
     final hitIds = <String>{};
     for (final ch in chars) {
@@ -725,10 +725,11 @@ void main() {
 
     final yamlIds = repo.synergies.map((s) => s.id).toSet();
     expect(hitIds, yamlIds,
-        reason: '5 角色命中的 synergy id 集合 == yaml 5 组合全集(覆盖性红线;'
+        reason: '7 角色命中的 synergy id 集合 == yaml 7 组合全集(覆盖性红线;'
             '若 yaml 加/改/删 synergy 必须同步改 seedVisualCheckW18A1 配对)');
-    expect(hitIds.length, 5,
-        reason: '5 角色 → 5 唯一 synergy(无重复命中,即 5 角色之间无 fixture 冗余)');
+    expect(hitIds.length, 7,
+        reason: '7 角色 → 7 唯一 synergy(2026-05-20 T01 +2;'
+            '原 +3 触上限 8 因 sameTier 红线无空间回退,详 phase2_seed_service.dart 注释)');
   });
 
   // 优先级覆盖红线:5 角色命中的 requirementType 必须覆盖 schoolPair / sameSchool /
@@ -758,12 +759,12 @@ void main() {
           (typeCount[synergy.requirementType] ?? 0) + 1;
     }
 
-    expect(typeCount[SynergyRequirementType.schoolPair], 3,
-        reason: '3 角色覆盖 schoolPair(gangMeng+yinRou / gangMeng+lingQiao / yinRou+lingQiao)');
+    expect(typeCount[SynergyRequirementType.schoolPair], 5,
+        reason: '5 角色覆盖 schoolPair(原 3 + 2 新反向:yinRou+gangMeng / lingQiao+gangMeng)');
     expect(typeCount[SynergyRequirementType.sameSchool], 1,
         reason: '1 角色覆盖 sameSchool(优先级先于 sameTier)');
     expect(typeCount[SynergyRequirementType.sameTier], 1,
-        reason: '1 角色覆盖 sameTier(主辅顺序刻意避开 schoolPair 定义,走兜底类型)');
+        reason: '1 角色覆盖 sameTier(E·同辈 lingQiao+yinRou,刻意避开 schoolPair 6 方向中的此对)');
   });
 
   test('seedVisualCheckW18A1 → 主线 / 塔 / 奇遇 progress 全清 + Ch1 01-04 cleared',
@@ -779,7 +780,7 @@ void main() {
     expect(await isar.encounterProgress.count(), 0, reason: '奇遇进度清零');
   });
 
-  test('seedVisualCheckW18A1 反复调用 → 5 角色仍 5(派单可反复 reseed)',
+  test('seedVisualCheckW18A1 反复调用 → 7 角色仍 7(派单可反复 reseed)',
       () async {
     final isar = IsarSetup.instance;
     await Phase2SeedService(isar: isar).seedVisualCheckW18A1();
@@ -794,7 +795,7 @@ void main() {
     // reseed
     await Phase2SeedService(isar: isar).seedVisualCheckW18A1();
     final chars = await isar.characters.where().findAll();
-    expect(chars.length, 5, reason: 'reseed 后仍 5 角色,_clearAll 把脏数据清光');
+    expect(chars.length, 7, reason: 'reseed 后仍 7 角色,_clearAll 把脏数据清光');
     final freshA = chars.firstWhere((c) => c.name == 'A·阴阳');
     expect(freshA.experience, 0, reason: 'reseed 后 A·阴阳 EXP 回 0');
   });

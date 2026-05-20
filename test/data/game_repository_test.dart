@@ -32,17 +32,17 @@ void main() {
           reason: '35 件装备（Phase 3 Week 7 T63 扩 7 阶 × 5 件）');
       expect(repo.techniqueDefs.length, 21,
           reason: '21 本心法（Phase 3 Week 8 T64 扩 7 阶 × 3 流派）');
-      // W14-3-A:skills.yaml 63 招(21 心法 × 3 招) + encounter_skills.yaml
-      // 35 招(7 阶 × 5)合并到同一 Map = 98。
-      expect(repo.skillDefs.length, 98,
-          reason: '63 心法招(skills.yaml) + 35 奇遇招(encounter_skills.yaml)');
-      expect(repo.encounterSkillIds.length, 35,
-          reason: 'encounter_skills.yaml 35 招(7 阶 × 5)');
+      // 2026-05-20 P1 #45 nightshift:skills.yaml 63 招 + encounter_skills.yaml
+      // 40 招(W14-3-A 35 + T02 +5)合并 = 103。
+      expect(repo.skillDefs.length, 103,
+          reason: '63 心法招(skills.yaml) + 40 奇遇招(encounter_skills.yaml,T02 +5)');
+      expect(repo.encounterSkillIds.length, 40,
+          reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
       expect(repo.stageDefs.length, 15, reason: '主线 15 关（Phase 3 Week 5 T59 扩容）');
       expect(repo.numbers.version, isNotEmpty);
-      // W18-A1:synergies.yaml 5 组合(GDD §4.5 ≥ 5)
-      expect(repo.synergies.length, 5,
-          reason: '心法相生 5 组合(GDD §4.5 ≥ 5 下限)');
+      // 2026-05-20 T01 +2:synergies.yaml 7 组合(原 5 + 新 2,GDD §4.5 5-8)
+      expect(repo.synergies.length, 7,
+          reason: '心法相生 7 组合(GDD §4.5 5-8;原 +3 因 sameTier 无空间回退 1 个)');
     });
 
     test('GameRepository.instance 在 load 后可访问', () async {
