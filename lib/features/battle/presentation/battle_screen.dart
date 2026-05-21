@@ -146,14 +146,18 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     if (action.attackResult != null && action.targetId != null) {
       final target = _findCharacter(action.targetId!, s);
       if (target != null) {
-        _spawnPopup(target, action.attackResult!);
+        _spawnPopup(target, action.attackResult!, actor);
       }
     }
   }
 
-  void _spawnPopup(BattleCharacter target, AttackResult result) {
+  void _spawnPopup(
+    BattleCharacter target,
+    AttackResult result,
+    BattleCharacter? attacker,
+  ) {
     final key = _slotKey(target.teamSide, target.slotIndex);
-    final data = _buildPopupData(result);
+    final data = _buildPopupData(result, attacker);
     final entry = _PopupEntry(id: _nextPopupId++, data: data);
     setState(() {
       (_popups[key] ??= []).add(entry);
@@ -163,7 +167,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     }
   }
 
-  DamagePopupData _buildPopupData(AttackResult result) {
+  DamagePopupData _buildPopupData(
+    AttackResult result,
+    BattleCharacter? attacker,
+  ) {
     if (result.isDodged) {
       return DamagePopupData(
         id: _nextPopupId,
@@ -171,12 +178,16 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         type: PopupType.dodge,
       );
     }
+    // P1.1 候选 3-c:仅暴击 + attacker 主修武器 xinJianTongLing → 剑鸣浮字
+    final hasSwordSong =
+        result.isCritical && (attacker?.swordSongResonanceActive ?? false);
     return DamagePopupData(
       id: _nextPopupId,
       text: result.finalDamage.toString(),
       type: result.isCritical ? PopupType.critical : PopupType.normal,
       hasCounterUp: result.schoolCounterMultiplier > 1.0,
       hasCounterDown: result.schoolCounterMultiplier < 1.0,
+      hasSwordSong: hasSwordSong,
     );
   }
 

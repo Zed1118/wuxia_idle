@@ -10,12 +10,15 @@ enum PopupType { normal, critical, dodge }
 /// 单次伤害飘字的数据载体。
 ///
 /// [id] 用于 Map key + widget key，保证同一角色多个飘字不混淆。
+/// [hasSwordSong] = P1.1 候选 3-c,attacker 武器达 xinJianTongLing 共鸣 +
+/// 本次暴击时为 true → 浮字旁追加「✦剑鸣」红字。
 class DamagePopupData {
   final int id;
   final String text;
   final PopupType type;
   final bool hasCounterUp;
   final bool hasCounterDown;
+  final bool hasSwordSong;
 
   const DamagePopupData({
     required this.id,
@@ -23,6 +26,7 @@ class DamagePopupData {
     required this.type,
     this.hasCounterUp = false,
     this.hasCounterDown = false,
+    this.hasSwordSong = false,
   });
 }
 
@@ -155,6 +159,21 @@ class _PopupContent extends StatelessWidget {
                 color: data.hasCounterUp
                     ? WuxiaColors.popupCritical
                     : WuxiaColors.popupDodge,
+              ),
+            ),
+          ),
+        ],
+        // P1.1 候选 3-c:暴击 + 主修武器 xinJianTongLing → 「✦剑鸣」浮字。
+        if (data.hasSwordSong) ...[
+          const SizedBox(width: 4),
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              UiStrings.swordSongHint,
+              style: TextStyle(
+                fontSize: fontSize * 0.65,
+                color: WuxiaColors.popupCritical,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
