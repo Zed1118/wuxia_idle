@@ -102,7 +102,7 @@ void main() {
     }
   });
 
-  test('P5 seed → 祖师 maxInternalForce 含师承遗物 +10% buff（T55 战斗路径补齐验证）',
+  test('P5 seed → 祖师 maxInternalForce 含师承遗物 +10% × 祖师爷 +5% buff（T55 + P1.1 E.5）',
       () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedMasterDisciple();
     final stage = GameRepository.instance.getStage('stage_01_01');
@@ -111,13 +111,14 @@ void main() {
     final founder = left[0];
 
     // 祖师持久化字段（character.internalForceMax）是 base，BattleCharacter 应
-    // 含 lineage +10%（2 件 isLineageHeritage 遗物）。
+    // 含 lineage +10%（2 件 isLineageHeritage 遗物）× 祖师爷 buff +5%(P1.1 A1 E.5)。
     final founderChar = await IsarSetup.instance.characters.get(1);
     final baseIfMax = founderChar!.internalForceMax;
     expect(founder.maxInternalForce, greaterThan(baseIfMax),
-        reason: '祖师 BattleCharacter maxInternalForce 必须含 lineage buff');
-    // 两件遗物各 +5% → ≈ × 1.10（int 截断后差 0-1）
-    expect(founder.maxInternalForce, baseIfMax + (baseIfMax * 0.10).toInt());
+        reason: '祖师 BattleCharacter maxInternalForce 必须含 lineage + founder buff');
+    // 两件遗物 1.10 × 祖师爷 buff 1.05 = 1.155
+    expect(founder.maxInternalForce, (baseIfMax * 1.155).toInt(),
+        reason: 'lineage (+10%) × founder_ancestor_buff (+5%) 合并');
   });
 
   // ── BattleEngine 端到端 ────────────────────────────────────────────────

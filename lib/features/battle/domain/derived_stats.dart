@@ -99,11 +99,15 @@ class CharacterDerivedStats {
 
   /// 最大血量 = base + 内力*ifFactor + 根骨*conFactor + Σ装备血量(应用强化/共鸣)。
   /// 系数全部来自 numbers.yaml `combat.max_hp_formula`。
+  ///
+  /// **P1.1 A1 E.5**:可选 `founderBuffActive=true` 时叠加 `founder_ancestor_buff.max_hp_pct`
+  /// (apply_to_disciples_only=false 时 founder 自身也享)。caller 端按 active 状态注入。
   static int maxHp(
     Character c,
     List<Equipment> equipped,
-    NumbersConfig n,
-  ) {
+    NumbersConfig n, {
+    bool founderBuffActive = false,
+  }) {
     final f = n.combat.maxHpFormula;
     var hp = f.base.toDouble();
     hp += c.internalForce * f.internalForceFactor;
@@ -111,7 +115,19 @@ class CharacterDerivedStats {
     for (final eq in equipped) {
       hp += effectiveEquipmentHp(eq, n);
     }
+    if (founderBuffActive &&
+        _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
+      hp *= (1.0 + n.founderAncestorBuff.maxHpPct);
+    }
     return hp.toInt();
+  }
+
+  /// 判定祖师爷 buff 是否作用于角色 [c](P1.1 A1 E.5)。
+  /// `apply_to_disciples_only=true` 时仅 disciple 享受;false 时全 active 享。
+  static bool _founderBuffAppliesTo(Character c, FounderAncestorBuff buff) {
+    if (!buff.isActive) return false;
+    if (buff.applyToDisciplesOnly && c.isFounder) return false;
+    return true;
   }
 
   /// 出手速度 = base + 身法*agFactor + Σ装备速度 + 主修心法 speed_bonus。
@@ -143,11 +159,22 @@ class CharacterDerivedStats {
   ///
   /// `school` 取自角色当前主修流派（[Character.school]，可空：无主修时按基础算）。
   /// 灵巧 +0.20 来自 yaml `combat.critical.lingqiao_critical_bonus`，不硬编码。
-  static double criticalRate(Character c, NumbersConfig n) {
+  ///
+  /// **P1.1 A1 E.5**:可选 `founderBuffActive=true` 时叠加 `crit_rate_bonus`(绝对值
+  /// 直接加,clamp 前)。jingong 流派 + buff 同时存在时累加叠加,clamp 兜底防破 maxRate。
+  static double criticalRate(
+    Character c,
+    NumbersConfig n, {
+    bool founderBuffActive = false,
+  }) {
     final cfg = n.combat.critical;
     var rate = cfg.baseRate + c.attributes.agility * cfg.agilityPerPointRate;
     if (c.school == TechniqueSchool.lingQiao) {
       rate += cfg.lingqiaoCriticalBonus;
+    }
+    if (founderBuffActive &&
+        _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
+      rate += n.founderAncestorBuff.critRateBonus;
     }
     return rate.clamp(0.0, cfg.maxRate);
   }
@@ -203,14 +230,23 @@ class CharacterDerivedStats {
   /// `lineageInternalForceMaxBonus`（默认 0.05 / 件，独立叠加）。
   ///
   /// 例：基础 10000 + 4 件师承遗物 → 10000 × 1.20 = 12000。
+  ///
+  /// **P1.1 A1 E.5**:可选 `founderBuffActive=true` 时叠加
+  /// `founder_ancestor_buff.internal_force_max_pct`(继师承叠加后再乘)。
+  /// caller 端按 active 状态注入。
   static int internalForceMaxWithLineage(
     Character c,
     List<Equipment> equipped,
-    NumbersConfig n,
-  ) {
+    NumbersConfig n, {
+    bool founderBuffActive = false,
+  }) {
     final heritageCount =
         equipped.where((e) => e.isLineageHeritage).length;
-    final mult = 1.0 + heritageCount * n.lineageInternalForceMaxBonus;
+    var mult = 1.0 + heritageCount * n.lineageInternalForceMaxBonus;
+    if (founderBuffActive &&
+        _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
+      mult *= (1.0 + n.founderAncestorBuff.internalForceMaxPct);
+    }
     return (c.internalForceMax * mult).toInt();
   }
 }
