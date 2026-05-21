@@ -134,7 +134,7 @@ floors:
           - skill_gangmeng_jichu_basic
           - skill_gangmeng_jichu_skill
           - skill_gangmeng_jichu_ult
-        iconPath: assets/enemies/zhaizhu.png
+        iconPath: assets/enemies/tower_boss_05.png
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
         dropChance: 1.0
@@ -246,7 +246,7 @@ floors:
           - skill_lingqiao_jichu_basic
           - skill_lingqiao_jichu_skill
           - skill_lingqiao_jichu_ult
-        iconPath: assets/enemies/fu_zhaizhu.png
+        iconPath: assets/enemies/tower_boss_10.png
     dropTable:
       - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 1.0
@@ -400,7 +400,7 @@ floors:
           - skill_yinrou_mingjia_basic
           - skill_yinrou_mingjia_skill
           - skill_yinrou_mingjia_ult
-        iconPath: assets/enemies/wulin_bazhu.png
+        iconPath: assets/enemies/tower_boss_15.png
     dropTable:
       - equipmentDefId: weapon_haojiahuo_qing_feng_jian
         dropChance: 1.0
@@ -563,7 +563,7 @@ floors:
           - skill_gangmeng_mingjia_basic
           - skill_gangmeng_mingjia_skill
           - skill_gangmeng_mingjia_ult
-        iconPath: assets/enemies/wulin_bazhu.png
+        iconPath: assets/enemies/tower_boss_20.png
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 1.0
@@ -774,7 +774,7 @@ floors:
           - skill_lingqiao_jianghu_basic
           - skill_lingqiao_jianghu_skill
           - skill_lingqiao_jianghu_ult
-        iconPath: assets/enemies/wulin_bazhu.png
+        iconPath: assets/enemies/tower_boss_25.png
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 1.0
@@ -999,7 +999,7 @@ floors:
           - skill_yinrou_shichuan_basic
           - skill_yinrou_shichuan_skill
           - skill_yinrou_shichuan_ult
-        iconPath: assets/enemies/wulin_bazhu.png
+        iconPath: assets/enemies/tower_boss_30.png
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 1.0
