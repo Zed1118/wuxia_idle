@@ -52,6 +52,11 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// Phase 3 T37：左队败 / 平局回调；null 走 [onBattleEnd] 兼容旧入口。
   final VoidCallback? onDefeat;
 
+  /// M4 Stage 3 美术(2026-05-21):战斗屏场景背景 png 路径。
+  /// caller 从 StageDef.sceneBackgroundPath / TowerFloorDef.sceneBackgroundPath 注入。
+  /// null 或 errorBuilder 触发时降级到 [WuxiaColors.background] 兜底。
+  final String? sceneBackgroundPath;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
@@ -59,6 +64,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.onBattleEnd,
     this.onVictory,
     this.onDefeat,
+    this.sceneBackgroundPath,
   });
 
   @override
@@ -342,51 +348,65 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       );
     }
 
+    final hasScene = widget.sceneBackgroundPath != null &&
+        widget.sceneBackgroundPath!.isNotEmpty;
     return Scaffold(
       backgroundColor: WuxiaColors.background,
-      body: SafeArea(
-        child: AnimatedBuilder(
-          animation: _shakeCtrl,
-          builder: (ctx, child) {
-            return Transform.translate(
-              offset: screenShakeOffset(
-                t: _shakeCtrl.value,
-                amplitude: widget.animConfig.shakeOffsetPx,
+      body: Stack(
+        children: [
+          if (hasScene)
+            Positioned.fill(
+              child: Image.asset(
+                widget.sceneBackgroundPath!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
-              child: child,
-            );
-          },
-          child: Column(
-            children: [
-              if (widget.hint != null) _HintBanner(hint: widget.hint!),
-              _Header(state: state),
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _LogSidebar(state: state),
-                    Expanded(
-                      child: _BattleField(
-                        state: state,
-                        attackControllers: _attackControllers,
-                        popups: _popups,
-                        animConfig: widget.animConfig,
-                        onPopupComplete: _removePopup,
-                      ),
+            ),
+          SafeArea(
+            child: AnimatedBuilder(
+              animation: _shakeCtrl,
+              builder: (ctx, child) {
+                return Transform.translate(
+                  offset: screenShakeOffset(
+                    t: _shakeCtrl.value,
+                    amplitude: widget.animConfig.shakeOffsetPx,
+                  ),
+                  child: child,
+                );
+              },
+              child: Column(
+                children: [
+                  if (widget.hint != null) _HintBanner(hint: widget.hint!),
+                  _Header(state: state),
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _LogSidebar(state: state),
+                        Expanded(
+                          child: _BattleField(
+                            state: state,
+                            attackControllers: _attackControllers,
+                            popups: _popups,
+                            animConfig: widget.animConfig,
+                            onPopupComplete: _removePopup,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  _BottomBar(
+                    state: state,
+                    disabledUltimateChars: _disabledUltimateChars,
+                    onUltimate: _onUltimatePressed,
+                    onFastForward: _toggleFastForward,
+                    isFastForward: _isFastForward,
+                  ),
+                ],
               ),
-              _BottomBar(
-                state: state,
-                disabledUltimateChars: _disabledUltimateChars,
-                onUltimate: _onUltimatePressed,
-                onFastForward: _toggleFastForward,
-                isFastForward: _isFastForward,
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

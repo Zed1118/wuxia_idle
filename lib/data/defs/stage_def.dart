@@ -49,6 +49,11 @@ class StageDef {
   /// `rain`/`snow`/`mist`/`night` 才会被 [EncounterTrigger.weatherMinutes] 看到。
   final EncounterWeather? weather;
 
+  /// M4 Stage 3 美术(2026-05-21):战斗屏场景背景 png 路径。
+  /// 仅主线核心关卡在 yaml 配置(章节开篇关 + 章末 BOSS 关);
+  /// null 时 battle_screen 走 backgroundColor 兜底。
+  final String? sceneBackgroundPath;
+
   const StageDef({
     required this.id,
     required this.name,
@@ -69,6 +74,7 @@ class StageDef {
     required this.difficultyMultiplier,
     this.biome,
     this.weather,
+    this.sceneBackgroundPath,
   });
 
   factory StageDef.fromYaml(Map<String, dynamic> y) {
@@ -104,6 +110,7 @@ class StageDef {
       weather: (y['weather'] as String?) == null
           ? null
           : EncounterWeather.values.byName(y['weather'] as String),
+      sceneBackgroundPath: y['sceneBackgroundPath'] as String?,
     );
   }
 
