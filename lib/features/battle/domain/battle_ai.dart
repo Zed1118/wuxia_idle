@@ -43,6 +43,15 @@ class BattleAI {
       return pending;
     }
 
+    // 1.5) P1.1 候选 3-b:共鸣度满级解锁的「人剑合一」(jointSkill)
+    // 自动放(稀有招式 = 共鸣度回报体感,介于 pending 和 powerSkill 之间);
+    // 多件武器共鸣解锁也只注入一次(fromCharacter 去重),所以 first 即可。
+    for (final s in actor.availableSkills) {
+      if (s.type != SkillType.jointSkill) continue;
+      if (!_canUse(actor, s)) continue;
+      return s;
+    }
+
     // 2) 强力技能：内力够 + CD 0，多个挑 powerMultiplier 最高的
     SkillDef? bestPower;
     for (final s in actor.availableSkills) {

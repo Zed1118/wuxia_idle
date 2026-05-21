@@ -532,6 +532,109 @@ void main() {
       expect(a.attackResult, null);
     });
   });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // P1.1 候选 3-b:joint_skill 注入(共鸣度满级解锁「人剑合一」)
+  // ────────────────────────────────────────────────────────────────────────
+
+  group('P1.1 候选 3-b · joint_skill 注入', () {
+    Character _player() => _mkChar(
+          tier: RealmTier.erLiu,
+          layer: RealmLayer.yuanShu,
+          internalForce: 3000,
+          school: TechniqueSchool.gangMeng,
+        );
+    Technique _tech() => _mkTech(
+          defId: 'tech_gangmeng_mingjia',
+          tier: TechniqueTier.mingJiaGong,
+          school: TechniqueSchool.gangMeng,
+        );
+
+    Equipment _weaponWith({required int battleCount}) {
+      final e = _mkEquip(baseAttack: 580);
+      e.battleCount = battleCount;
+      return e;
+    }
+
+    test('武器 battleCount=0 (shengShu) → availableSkills 不含 joint_skill', () {
+      final bc = BattleCharacter.fromCharacter(
+        character: _player(),
+        equipped: [_weaponWith(battleCount: 0)],
+        mainTechnique: _tech(),
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      expect(
+        bc.availableSkills.any((s) => s.id == 'skill_joint_skill'),
+        isFalse,
+        reason: 'shengShu 阶 unlocksJointSkill=false',
+      );
+    });
+
+    test('武器 battleCount=500 (moQi) → 含 joint_skill', () {
+      final bc = BattleCharacter.fromCharacter(
+        character: _player(),
+        equipped: [_weaponWith(battleCount: 500)],
+        mainTechnique: _tech(),
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      final js = bc.availableSkills.where((s) => s.id == 'skill_joint_skill');
+      expect(js.length, 1, reason: 'moQi 阶 unlocksJointSkill=true');
+      expect(js.first.type, SkillType.jointSkill);
+      expect(js.first.powerMultiplier, 4500,
+          reason: 'numbers.yaml reference_multipliers.joint_skill.base = 4500');
+    });
+
+    test('武器 battleCount=2000 (xinJianTongLing) → 含 joint_skill', () {
+      final bc = BattleCharacter.fromCharacter(
+        character: _player(),
+        equipped: [_weaponWith(battleCount: 2000)],
+        mainTechnique: _tech(),
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      expect(
+        bc.availableSkills.any((s) => s.id == 'skill_joint_skill'),
+        isTrue,
+        reason: 'xinJianTongLing 阶 unlocksJointSkill=true',
+      );
+    });
+
+    test('无武器装备 → 不含 joint_skill', () {
+      final bc = BattleCharacter.fromCharacter(
+        character: _player(),
+        equipped: const [],
+        mainTechnique: _tech(),
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      expect(
+        bc.availableSkills.any((s) => s.id == 'skill_joint_skill'),
+        isFalse,
+      );
+    });
+
+    test('多件武器共鸣解锁也只注入一次(去重)', () {
+      // 注:fromCharacter equipped 列表正常 ≤ 3(weapon/armor/accessory),
+      // 但若 future 多武器槽,验注入去重逻辑。当前 single weapon 已满足。
+      final bc = BattleCharacter.fromCharacter(
+        character: _player(),
+        equipped: [_weaponWith(battleCount: 2000)],
+        mainTechnique: _tech(),
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      final jsCount =
+          bc.availableSkills.where((s) => s.id == 'skill_joint_skill').length;
+      expect(jsCount, 1);
+    });
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

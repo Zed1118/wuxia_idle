@@ -8,6 +8,15 @@ import '../../../data/numbers_config.dart';
 import 'damage_calculator.dart';
 import 'derived_stats.dart';
 
+// P1.1 候选 3-b:resonanceStages 查找的 orElse fallback(防御性,正常情况不触发,
+// numbers.yaml 4 stage 全配)。
+const _shengShuFallback = ResonanceStageConfig(
+  stage: ResonanceStage.shengShu,
+  minBattleCount: 0,
+  maxBattleCount: 0,
+  bonusMultiplier: 1.0,
+);
+
 /// 战斗最终结局（phase1_tasks.md T11 §635）。
 enum BattleResult { leftWin, rightWin, draw }
 
@@ -197,6 +206,24 @@ class BattleCharacter {
     final encSkillId = character.equippedEncounterSkillId;
     if (encSkillId != null) {
       skills.add(GameRepository.instance.getSkill(encSkillId));
+    }
+    // P1.1 候选 3-b:玩家方/师徒 NPC 任一武器 resonanceStage 达到 unlocksJointSkill
+    // 阶(numbers.yaml `resonance.stages` 默契/心剑通灵)→ 注入 joint_skill 作为
+    // 第 4/5 招。GDD §6.4 共鸣度满级解锁「人剑合一」。fromCharacter 唯一 caller
+    // 是 _playerToBattle,敌人走 _enemyToBattle 不享。test fixture 缺
+    // skill_joint_skill 时 silent skip(containsKey 守护)。
+    final hasJointSkillUnlocked = equipped.any((e) {
+      if (e.slot != EquipmentSlot.weapon) return false;
+      final stage = e.resonanceStage(numbers);
+      final cfg = numbers.resonanceStages
+          .firstWhere((c) => c.stage == stage, orElse: () => _shengShuFallback);
+      return cfg.unlocksJointSkill;
+    });
+    if (hasJointSkillUnlocked) {
+      final repo = GameRepository.instance;
+      if (repo.skillDefs.containsKey('skill_joint_skill')) {
+        skills.add(repo.getSkill('skill_joint_skill'));
+      }
     }
 
     return BattleCharacter(

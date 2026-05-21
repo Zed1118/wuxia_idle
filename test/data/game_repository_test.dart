@@ -34,8 +34,10 @@ void main() {
           reason: '21 本心法（Phase 3 Week 8 T64 扩 7 阶 × 3 流派）');
       // 2026-05-20 P1 #45 nightshift:skills.yaml 63 招 + encounter_skills.yaml
       // 40 招(W14-3-A 35 + T02 +5)合并 = 103。
-      expect(repo.skillDefs.length, 103,
-          reason: '63 心法招(skills.yaml) + 40 奇遇招(encounter_skills.yaml,T02 +5)');
+      // 2026-05-21 P1.1 候选 3-b:skills.yaml +1(skill_joint_skill,共鸣度满级解锁)
+      // → skills 64 + encounter 40 = 104。
+      expect(repo.skillDefs.length, 104,
+          reason: '64 心法/共鸣招(skills.yaml,含 joint_skill) + 40 奇遇招');
       expect(repo.encounterSkillIds.length, 40,
           reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
       expect(repo.stageDefs.length, 15, reason: '主线 15 关（Phase 3 Week 5 T59 扩容）');

@@ -322,6 +322,92 @@ void main() {
       expect(skill.type, SkillType.normalAttack);
     });
 
+    // P1.1 候选 3-b:joint_skill 优先级 = pending > jointSkill > powerSkill > normal
+    test('joint_skill 优先级:weapon 共鸣 moQi + 内力够 → pick joint_skill', () {
+      final actor = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        internalForce: 5000,
+        weaponBattleCount: 500, // moQi 阶 unlocksJointSkill=true
+      );
+      final defender = _mkBC(charId: 11, teamSide: 1);
+      final s = BattleState.initial(
+        leftTeam: [actor],
+        rightTeam: [defender],
+      );
+      final (skill, _) = BattleAI.decide(
+        actor,
+        s,
+        GameRepository.instance.numbers,
+      );
+      expect(skill.id, 'skill_joint_skill');
+      expect(skill.type, SkillType.jointSkill);
+    });
+
+    test('joint_skill 内力不够 (250) → fall through 到 powerSkill', () {
+      final actor = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        internalForce: 200, // < 250 joint_skill cost, > 100 powerSkill cost
+        weaponBattleCount: 500,
+      );
+      final defender = _mkBC(charId: 11, teamSide: 1);
+      final s = BattleState.initial(
+        leftTeam: [actor],
+        rightTeam: [defender],
+      );
+      final (skill, _) = BattleAI.decide(
+        actor,
+        s,
+        GameRepository.instance.numbers,
+      );
+      expect(skill.type, SkillType.powerSkill);
+    });
+
+    test('joint_skill cd>0 → fall through 到 powerSkill', () {
+      final actor = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        internalForce: 5000,
+        weaponBattleCount: 500,
+      );
+      final cdActor =
+          actor.copyWith(skillCooldowns: const {'skill_joint_skill': 2});
+      final defender = _mkBC(charId: 11, teamSide: 1);
+      final s = BattleState.initial(
+        leftTeam: [cdActor],
+        rightTeam: [defender],
+      );
+      final (skill, _) = BattleAI.decide(
+        cdActor,
+        s,
+        GameRepository.instance.numbers,
+      );
+      expect(skill.type, SkillType.powerSkill);
+    });
+
+    test('pendingUltimate 优先级仍高于 joint_skill', () {
+      final actor = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        internalForce: 5000,
+        weaponBattleCount: 500,
+      );
+      final ult = GameRepository.instance.getSkill('skill_gangmeng_mingjia_ult');
+      final defender = _mkBC(charId: 11, teamSide: 1);
+      var s = BattleState.initial(
+        leftTeam: [actor],
+        rightTeam: [defender],
+      );
+      s = BattleEngine.requestUltimate(s, actor.characterId, ult);
+      final (skill, _) = BattleAI.decide(
+        actor,
+        s,
+        GameRepository.instance.numbers,
+      );
+      expect(skill.id, ult.id, reason: 'pendingUlt > jointSkill');
+    });
+
     test('powerSkill CD>0 时跳过，选 normalAttack', () {
       final actor = _mkBC(charId: 1, teamSide: 0, internalForce: 3000);
       final powerId =
@@ -558,6 +644,7 @@ BattleCharacter _mkBC({
   int internalForce = 3000,
   int agility = 5,
   int constitution = 5,
+  int weaponBattleCount = 0, // P1.1 候选 3-b:控共鸣度 stage 注入 joint_skill
 }) {
   final c = Character.create(
     name: '${teamSide == 0 ? "左" : "右"}$slotIndex',
@@ -581,7 +668,7 @@ BattleCharacter _mkBC({
     obtainedAt: DateTime(2026, 1, 1),
     obtainedFrom: 'test',
     baseAttack: 580,
-  );
+  )..battleCount = weaponBattleCount;
   final tech = Technique.create(
     defId: techDefId,
     ownerCharacterId: charId,
