@@ -7,20 +7,20 @@ import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import 'stage_list_screen.dart';
 
-/// 主线章节列表（Phase 3 T35）。
+/// 主线章节列表（Phase 3 T35,2026-05-21 P2 Ch4 扩 4 章）。
 ///
-/// 列 3 章（学武出山 / 武林初识 / 名扬江湖），状态：
-///   - cleared 已通过：右上 ✓ 标识，可重入
-///   - inProgress 进行中：主色边框高亮（章节内仍有未通关卡）
-///   - locked 未解锁：灰色 + 锁图标，点击无响应
+/// 列 4 章(学武出山 / 武林初识 / 名扬江湖 / 西出阳关),状态:
+///   - cleared 已通过:右上 ✓ 标识,可重入
+///   - inProgress 进行中:主色边框高亮(章节内仍有未通关卡)
+///   - locked 未解锁:灰色 + 锁图标,点击无响应
 ///
-/// 章节解锁规则：
+/// 章节解锁规则:
 ///   - Ch1 永远 unlocked
 ///   - ChN (N>1) unlocked ⟺ ChN-1 全通
 class ChapterListScreen extends ConsumerWidget {
   const ChapterListScreen({super.key});
 
-  static const List<int> _chapters = [1, 2, 3];
+  static const List<int> _chapters = [1, 2, 3, 4];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

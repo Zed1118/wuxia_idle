@@ -40,7 +40,7 @@ void main() {
           reason: '64 心法/共鸣招(skills.yaml,含 joint_skill) + 40 奇遇招');
       expect(repo.encounterSkillIds.length, 40,
           reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
-      expect(repo.stageDefs.length, 15, reason: '主线 15 关（Phase 3 Week 5 T59 扩容）');
+      expect(repo.stageDefs.length, 20, reason: '主线 20 关（2026-05-21 P2 Ch4 扩,4 章 × 5 关)');
       expect(repo.numbers.version, isNotEmpty);
       // 2026-05-21 候选 2:synergies.yaml 8 组合(原 7 + 新 1「太极初成」
       // specificTechniques 类型,GDD §4.5 触上限 8)
@@ -186,18 +186,19 @@ void main() {
       }
     });
 
-    test('Phase 3 Week 5 主线 15 关红线：3 章 × 5 关 + 4/5 关 isBossStage', () async {
+    test('主线 20 关红线:4 章 × 5 关 + 4/5 关 isBossStage(2026-05-21 P2 Ch4 扩)',
+        () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final mainlines = repo.stageDefs.values
           .where((s) => s.stageType == StageType.mainline)
           .toList();
-      expect(mainlines.length, 15);
-      for (final ch in [1, 2, 3]) {
+      expect(mainlines.length, 20);
+      for (final ch in [1, 2, 3, 4]) {
         final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();
         expect(inCh.length, 5, reason: 'Ch$ch 应有 5 关');
       }
-      // 章末两关 4/5 是 Boss + 配 narrativeDefeatId；1/2/3 关非 Boss + 无 defeat
-      for (final ch in [1, 2, 3]) {
+      // 章末两关 4/5 是 Boss + 配 narrativeDefeatId;1/2/3 关非 Boss + 无 defeat
+      for (final ch in [1, 2, 3, 4]) {
         for (final idx in [1, 2, 3, 4, 5]) {
           final id = 'stage_0${ch}_0$idx';
           final s = repo.getStage(id);

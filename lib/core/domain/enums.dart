@@ -225,6 +225,8 @@ enum EncounterBiome {
   cliffWaterfall,  // 悬崖瀑布(闭关 xuanYaPuBu)
   cliff,           // 断崖绝壁(闭关 duanYaJueBi)
   bambooForest,    // 竹林(奇遇 bamboo_listen_rain · GDD §7.2 example)
+  desert,          // 大漠戈壁(stage_04_03 沙海迷踪 / 1.0 P2 西域续章)
+  frontier,        // 边塞关隘(stage_04_02 玉门古道 / stage_04_05 嘉峪关)
 }
 
 /// 天气/时段(C-W14-2 奇遇 trigger 维度)。
