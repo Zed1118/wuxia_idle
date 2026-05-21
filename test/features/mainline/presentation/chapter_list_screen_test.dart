@@ -46,21 +46,22 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('全新进度 → 3 章卡渲染，Ch1 进行中 + Ch2/3 锁', (tester) async {
+  testWidgets('全新进度 → 4 章卡渲染,Ch1 进行中 + Ch2/3/4 锁', (tester) async {
     await pumpScreen(tester, mkProgress());
 
     expect(find.text(UiStrings.chapter1Title), findsOneWidget);
     expect(find.text(UiStrings.chapter2Title), findsOneWidget);
     expect(find.text(UiStrings.chapter3Title), findsOneWidget);
+    expect(find.text(UiStrings.chapter4Title), findsOneWidget);
 
     expect(find.text(UiStrings.chapterStatusInProgress), findsOneWidget,
         reason: '只有 Ch1 进行中');
-    expect(find.byIcon(Icons.lock), findsNWidgets(2),
-        reason: 'Ch2 + Ch3 都锁');
+    expect(find.byIcon(Icons.lock), findsNWidgets(3),
+        reason: 'Ch2 + Ch3 + Ch4 都锁');
     expect(find.byIcon(Icons.check_circle), findsNothing);
   });
 
-  testWidgets('Ch1 全通（5 关）→ Ch1 ✓ + Ch2 进行中 + Ch3 锁', (tester) async {
+  testWidgets('Ch1 全通(5 关)→ Ch1 ✓ + Ch2 进行中 + Ch3/4 锁', (tester) async {
     await pumpScreen(
       tester,
       mkProgress(cleared: const [
@@ -76,17 +77,18 @@ void main() {
         reason: 'Ch1 cleared');
     expect(find.text(UiStrings.chapterStatusInProgress), findsOneWidget,
         reason: 'Ch2 解锁进行中');
-    expect(find.byIcon(Icons.lock), findsOneWidget, reason: 'Ch3 仍锁');
+    expect(find.byIcon(Icons.lock), findsNWidgets(2),
+        reason: 'Ch3 + Ch4 仍锁');
   });
 
-  testWidgets('全 15 关通关 → 3 章都 ✓，无锁', (tester) async {
+  testWidgets('全 20 关通关 → 4 章都 ✓,无锁', (tester) async {
     final cleared = <String>[
-      for (final ch in [1, 2, 3])
+      for (final ch in [1, 2, 3, 4])
         for (final idx in [1, 2, 3, 4, 5]) 'stage_0${ch}_0$idx',
     ];
     await pumpScreen(tester, mkProgress(cleared: cleared));
 
-    expect(find.byIcon(Icons.check_circle), findsNWidgets(3));
+    expect(find.byIcon(Icons.check_circle), findsNWidgets(4));
     expect(find.byIcon(Icons.lock), findsNothing);
     expect(find.text(UiStrings.chapterStatusInProgress), findsNothing);
   });

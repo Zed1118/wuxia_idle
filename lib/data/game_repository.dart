@@ -1141,26 +1141,22 @@ class GameRepository {
   /// 判断给定 skill id 是否为奇遇招式(C-W14-3-A)。
   bool isEncounterSkill(String id) => encounterSkillIds.contains(id);
 
-  /// Phase 3 Week 5 T59：主线 15 关红线。
+  /// Phase 3 Week 5 T59 主线红线(2026-05-21 P2 Ch4 spec 漏检放开:动态 chapter 数)。
   ///
-  /// 校验项：
-  ///   - mainline stages 总数 == 15
-  ///   - 按 chapterIndex 分 3 章，每章 5 关
-  ///   - narrativeDefeatId != null 时 isBossStage 必须 true（避免章内
-  ///     普通关误配 defeat 文案）
+  /// 校验项:
+  ///   - mainline stages 总数 == 5 * chapterCount(每章 5 关固定)
+  ///   - chapterIndex 必须从 1 起连续递增({1..N},不跳号)
+  ///   - 每个 chapter 必须正好 5 关
+  ///   - narrativeDefeatId != null 时 isBossStage 必须 true(避免章内
+  ///     普通关误配 defeat 文案)
   ///
-  /// 章内具体哪几关是 Boss 由 yaml 决定（当前约定 4/5 为 Boss），但本红线
-  /// 不硬绑位置，只要求 defeat 文案与 Boss 标记一致。
+  /// 章内具体哪几关是 Boss 由 yaml 决定(当前约定 4/5 为 Boss),但本红线
+  /// 不硬绑位置,只要求 defeat 文案与 Boss 标记一致。
   void _enforceMainlineRedLines() {
     final mainlines = stageDefs.values
         .where((s) => s.stageType == StageType.mainline)
         .toList();
     if (mainlines.isEmpty) return; // 允许测试 fixture 不带主线
-    if (mainlines.length != 15) {
-      throw StateError(
-        '主线关卡应为 15 关，实际 ${mainlines.length}',
-      );
-    }
     final byChapter = <int, List<StageDef>>{};
     for (final s in mainlines) {
       final ch = s.chapterIndex;
@@ -1169,23 +1165,35 @@ class GameRepository {
       }
       byChapter.putIfAbsent(ch, () => []).add(s);
     }
-    for (final ch in [1, 2, 3]) {
-      final inCh = byChapter[ch] ?? const [];
-      if (inCh.length != 5) {
+    final chapters = byChapter.keys.toList()..sort();
+    final maxCh = chapters.last;
+    // 必须从 1 起连续递增(不跳号)
+    for (var i = 0; i < chapters.length; i++) {
+      if (chapters[i] != i + 1) {
         throw StateError(
-          '主线 ch=$ch 应有 5 关，实际 ${inCh.length}',
+          '主线 chapterIndex 必须从 1 起连续递增,实际 $chapters',
         );
       }
     }
-    if (byChapter.keys.any((ch) => ch < 1 || ch > 3)) {
+    // 每章必须正好 5 关
+    for (final ch in chapters) {
+      final inCh = byChapter[ch]!;
+      if (inCh.length != 5) {
+        throw StateError(
+          '主线 ch=$ch 应有 5 关,实际 ${inCh.length}',
+        );
+      }
+    }
+    // 总数 == 5 * chapterCount
+    if (mainlines.length != 5 * maxCh) {
       throw StateError(
-        '主线 chapterIndex 应 ∈ {1, 2, 3}，实际 ${byChapter.keys.toList()..sort()}',
+        '主线关卡应为 ${5 * maxCh} 关($maxCh 章 × 5 关),实际 ${mainlines.length}',
       );
     }
     for (final s in mainlines) {
       if (s.narrativeDefeatId != null && !s.isBossStage) {
         throw StateError(
-          '主线 stage ${s.id} 配 narrativeDefeatId 但 isBossStage=false，'
+          '主线 stage ${s.id} 配 narrativeDefeatId 但 isBossStage=false,'
           '战败剧情只应在 Boss 关触发',
         );
       }

@@ -26,7 +26,7 @@ import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 ///   装备 / 数值平衡漂移)
 ///
 /// 4 组覆盖:
-/// 1. 主线 15 关 e2e(P3 种子单角色对 stage 三敌人)
+/// 1. 主线 20 关 e2e(P3 种子单角色对 stage 三敌人,2026-05-21 P2 Ch4 扩)
 /// 2. 爬塔 30 层 e2e(同上 + buildTeamsForTower 路径)
 /// 3. 心法相生 5 组合 e2e(VC18-A1 fixture 5 角色切 activeCharacterIds 各 1)
 /// 4. backwards compat 5 case(BattleEngine facade 与 DefaultGroundStrategy
@@ -42,10 +42,10 @@ void main() {
   });
 
   // ────────────────────────────────────────────────────────────────────────
-  // 组 1+2:45 战斗场景 e2e(主线 15 + 爬塔 30,共享 Isar + seedP3)
+  // 组 1+2:50 战斗场景 e2e(主线 20 + 爬塔 30,共享 Isar + seedP3)
   // ────────────────────────────────────────────────────────────────────────
 
-  group('45 战斗场景 e2e(主线 15 + 爬塔 30)', () {
+  group('50 战斗场景 e2e(主线 20 + 爬塔 30)', () {
     late Directory tempDir;
 
     setUpAll(() async {
@@ -87,11 +87,12 @@ void main() {
           reason: 'tick 不超 maxTicks');
     }
 
-    group('主线 15 关', () {
+    group('主线 20 关', () {
       const stageIds = [
         'stage_01_01', 'stage_01_02', 'stage_01_03', 'stage_01_04', 'stage_01_05',
         'stage_02_01', 'stage_02_02', 'stage_02_03', 'stage_02_04', 'stage_02_05',
         'stage_03_01', 'stage_03_02', 'stage_03_03', 'stage_03_04', 'stage_03_05',
+        'stage_04_01', 'stage_04_02', 'stage_04_03', 'stage_04_04', 'stage_04_05',
       ];
       for (final stageId in stageIds) {
         test('$stageId runToEnd 不抛 + result 有解', () async {

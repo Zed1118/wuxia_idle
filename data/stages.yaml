@@ -914,3 +914,335 @@ stages:
     difficultyMultiplier: 2.8
     biome: drillGround
     weather: night
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Ch4 · 西出阳关(yiLiu 一流,1.0 P2 第二条主线第 1 章,2026-05-21 P2 启动)
+  # ─────────────────────────────────────────────────────────────────────
+  # 跨度:中原 → 河西走廊 → 玉门关 → 大漠 → 嘉峪关西凉
+  # 末 Boss(stage_04_05)跨阶 jueDing·qiMeng,暗示玩家需升 jueDing 才能轻取
+  # narrativeOpeningId / VictoryId / DefeatId 留 Phase 2.3 narratives batch 补
+  # ─────────────────────────────────────────────────────────────────────
+
+  # === stage_04_01 · 阳关初渡(首关 · 河西走廊流寇)===
+  - id: stage_04_01
+    name: 阳关初渡
+    stageType: mainline
+    chapterIndex: 4
+    narrativeOpeningId: stage_04_01_opening
+    narrativeVictoryId: stage_04_01_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_liukou_a
+        name: 流寇头领
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 7200
+        baseAttack: 720
+        baseSpeed: 170
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+        iconPath: assets/enemies/liukou_a.png
+      - id: enemy_yiLiu_liukou_b
+        name: 流寇副手
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 6800
+        baseAttack: 750
+        baseSpeed: 180
+        skillIds:
+          - skill_lingqiao_menpai_basic
+        iconPath: assets/enemies/liukou_b.png
+      - id: enemy_yiLiu_liukou_c
+        name: 流寇刀手
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 7000
+        baseAttack: 730
+        baseSpeed: 165
+        skillIds:
+          - skill_yinrou_menpai_basic
+        iconPath: assets/enemies/liukou_c.png
+    isBossStage: false
+    dropEquipmentDefIds:
+      - weapon_liqi_long_quan
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_liqi_long_quan
+        dropChance: 0.80
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [6, 9]
+        dropChance: 1.0
+    baseExpReward: 10000
+    difficultyMultiplier: 3.0
+    biome: mountainForest
+    weather: clear
+
+  # === stage_04_02 · 古道行商(玉门古道驿站)===
+  - id: stage_04_02
+    name: 古道行商
+    stageType: mainline
+    chapterIndex: 4
+    prevStageId: stage_04_01
+    narrativeOpeningId: stage_04_02_opening
+    narrativeVictoryId: stage_04_02_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_guard_a
+        name: 玉门关把总
+        realmTier: yiLiu
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 8500
+        baseAttack: 820
+        baseSpeed: 175
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+          - skill_gangmeng_menpai_ult
+        iconPath: assets/enemies/guard_a.png
+      - id: enemy_yiLiu_guard_b
+        name: 西凉骑士
+        realmTier: yiLiu
+        realmLayer: ruMen
+        school: lingQiao
+        baseHp: 8000
+        baseAttack: 850
+        baseSpeed: 190
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+        iconPath: assets/enemies/guard_b.png
+      - id: enemy_yiLiu_guard_c
+        name: 商队护卫
+        realmTier: yiLiu
+        realmLayer: shuLian
+        school: yinRou
+        baseHp: 8200
+        baseAttack: 800
+        baseSpeed: 170
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+        iconPath: assets/enemies/guard_c.png
+    isBossStage: false
+    dropEquipmentDefIds:
+      - weapon_liqi_pan_long_dao
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_liqi_pan_long_dao
+        dropChance: 0.70
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [7, 10]
+        dropChance: 1.0
+    baseExpReward: 12000
+    difficultyMultiplier: 3.1
+    biome: frontier
+    weather: clear
+
+  # === stage_04_03 · 沙海迷踪(大漠戈壁沙匪)===
+  - id: stage_04_03
+    name: 沙海迷踪
+    stageType: mainline
+    chapterIndex: 4
+    prevStageId: stage_04_02
+    narrativeOpeningId: stage_04_03_opening
+    narrativeVictoryId: stage_04_03_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_shafei_a
+        name: 沙匪头领
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 9500
+        baseAttack: 950
+        baseSpeed: 180
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+          - skill_gangmeng_menpai_ult
+        iconPath: assets/enemies/shafei_a.png
+      - id: enemy_yiLiu_shafei_b
+        name: 沙盗刀手
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 9000
+        baseAttack: 920
+        baseSpeed: 175
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+          - skill_yinrou_menpai_ult
+        iconPath: assets/enemies/shafei_b.png
+      - id: enemy_yiLiu_shafei_c
+        name: 沙盗弓手
+        realmTier: yiLiu
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 8800
+        baseAttack: 980
+        baseSpeed: 200
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+          - skill_lingqiao_menpai_ult
+        iconPath: assets/enemies/shafei_c.png
+    isBossStage: false
+    dropEquipmentDefIds:
+      - weapon_liqi_lian_zi_bian
+      - accessory_haojiahuo_yu_pei_lao
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_liqi_lian_zi_bian
+        dropChance: 0.70
+      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [8, 11]
+        dropChance: 1.0
+    baseExpReward: 14000
+    difficultyMultiplier: 3.2
+    biome: desert
+    weather: mist
+
+  # === stage_04_04 · 西凉论剑(小 Boss · 西凉武林名宿)===
+  - id: stage_04_04
+    name: 西凉论剑
+    stageType: mainline
+    chapterIndex: 4
+    prevStageId: stage_04_03
+    narrativeOpeningId: stage_04_04_opening
+    narrativeVictoryId: stage_04_04_victory
+    narrativeDefeatId: stage_04_04_defeat
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_xiliangboss
+        name: 西凉武林名宿
+        realmTier: yiLiu
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 11500
+        baseAttack: 1050
+        baseSpeed: 195
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+          - skill_gangmeng_menpai_ult
+        iconPath: assets/enemies/xiliangboss.png
+      - id: enemy_yiLiu_xiliang_a
+        name: 武林名宿之徒
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 10500
+        baseAttack: 1000
+        baseSpeed: 200
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+        iconPath: assets/enemies/xiliang_a.png
+      - id: enemy_yiLiu_xiliang_b
+        name: 武林名宿之徒
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 10500
+        baseAttack: 1020
+        baseSpeed: 185
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+        iconPath: assets/enemies/xiliang_b.png
+    isBossStage: true
+    dropEquipmentDefIds:
+      - weapon_liqi_lian_zi_bian
+      - accessory_haojiahuo_yu_pei_lao
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_liqi_lian_zi_bian
+        dropChance: 1.0
+      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+        dropChance: 0.60
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [9, 12]
+        dropChance: 1.0
+    baseExpReward: 16000
+    difficultyMultiplier: 3.3
+    biome: drillGround
+    weather: clear
+
+  # === stage_04_05 · 阳关一决(章末大 Boss · 西凉霸主跨阶 jueDing)===
+  - id: stage_04_05
+    name: 阳关一决
+    stageType: mainline
+    chapterIndex: 4
+    prevStageId: stage_04_04
+    narrativeOpeningId: stage_04_05_opening
+    narrativeVictoryId: stage_04_05_victory
+    narrativeDefeatId: stage_04_05_defeat
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_jueDing_xiliangbazhu
+        name: 西凉霸主
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 15500
+        baseAttack: 1250
+        baseSpeed: 215
+        skillIds:
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
+          - skill_yinrou_jianghu_ult
+        iconPath: assets/enemies/xiliangbazhu.png
+      - id: enemy_yiLiu_bazhu_zuofu
+        name: 西凉左护法
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: gangMeng
+        baseHp: 13000
+        baseAttack: 1150
+        baseSpeed: 200
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+          - skill_gangmeng_menpai_ult
+        iconPath: assets/enemies/bazhu_zuofu.png
+      - id: enemy_yiLiu_bazhu_youfu
+        name: 西凉右护法
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: lingQiao
+        baseHp: 12500
+        baseAttack: 1100
+        baseSpeed: 210
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+          - skill_lingqiao_menpai_ult
+        iconPath: assets/enemies/bazhu_youfu.png
+    isBossStage: true
+    dropEquipmentDefIds:
+      - weapon_zhongqi_qing_xu_jian
+      - accessory_zhongqi_qing_yu_huan
+      - armor_baowu_jin_si_jia
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_qing_xu_jian
+        dropChance: 1.0
+      - equipmentDefId: accessory_zhongqi_qing_yu_huan
+        dropChance: 0.50
+      - equipmentDefId: armor_baowu_jin_si_jia
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [10, 14]
+        dropChance: 1.0
+    baseExpReward: 20000
+    difficultyMultiplier: 3.5
+    biome: frontier
+    weather: night
