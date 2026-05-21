@@ -5,20 +5,22 @@
 
 ## 当前阶段
 
-**2026-05-21 主对话 5 波连击 ✅**(Mac opus high+xhigh ~5h + Codex Pen 异步):候选 1 美术接入 + 候选 3 Pen 脏态 + 候选 5 round 2 视觉验收 9/9 PASS + 候选 2 synergy 8 重设计。本会话 HEAD `d8b98ff`(全 push origin/main),1127 pass + 1 skip + 0 fail / analyze 0 issues。
+**2026-05-21 主对话 P2 启动准备 audit + 6 决策拍板 ✅ + 桌面 8 nightshift worktree 清理**(Mac opus xhigh ~50min,无代码 commit):候选 4 第二条主线 audit + 全方案 A 拍板(D5 简化为单门槛)+ 保守路径拍板 + 桌面 8 worktree 清理。HEAD `99dccdd`(与 origin/main 同步),1127 pass / analyze 0 issues 不变。
 
-- **候选 1**(commit `3b5c36e` 7 文件 +226/-45,~1h):Phase 0 reality check 拍板降档 opus xhigh→high + scope Option B。3 主接入 = inventory `_Row` 56×56 iconPath / equipment_detail 180h detailPath 大图 + paper_bg 背景 / lineage `_CharacterChip` 80×80 portraitPath;8 UI 资源全消费(paper/mountain/ink_divider/coin/lotus/meditation/scroll_v/h)。**M4 #46 候选 1 全闭环,P1.3 美术 PoC ~100%,1.0 Demo §7 UI 完善阶段 ~99% 收口(89/89 美术接入)**。
-- **候选 3**(Mac SSH 远程 ~20min,无代码 commit 仅 git ops):Pen F: 仓库脏态根因 = **partial clone 错配 promisor remote**(`https://github.com/...` URL key 挂 promisor + filter=blob:none,PNG blob 全 missing)。fix 链:`git config --unset` ×2 + `git fetch --refetch origin` + `git reset --hard origin/main`。stash@{0} 安全网保留。handoff §3 冷启动方案均不必要。
-- **候选 5**(派单 commit `9d5cb65` + Codex Pen commit `6a6c21a` round 2 closeout):**Codex Pen 视觉验收 9/9 PASS ✅**(9 张图全落 docs/screenshots/round2_*.png)。M4 #46 候选 1 实测视觉收口 100%(round 1 4/4 + round 2 9/9 = 13 张图覆盖 8 Screen + 8 UI 资源 + 2 baseline)。
-- **候选 2**(commit `d8b98ff` 7 文件 +209/-19,opus xhigh ~1.5h):**心法相生 §4.5 触上限 8 重设计 ✅**。加 `SynergyRequirementType.specificTechniques` 新枚举值(优先级最高)+ `requiredMainTechniqueId/requiredAssistTechniqueId` 字段 + matches 签名加 id 参数 + detectActive 优先级链 + game_repository 红线校验(必填 + techniqueDefs containsKey)+ yaml synergy 8「太极初成」(主刚猛传说 + 辅阴柔传说,attack/def/hp/internalForceMax 4 维 ≤ §5.4 红线 0.30)+ 4 新 test case + phase2_seed fixture 期望调整。**Demo §8.4 心法相生从 7 → 8(GDD §4.5 上限触满 ✅)**。
+- **Phase 0 reality check 四维 grep**:维度 A schema 0 命中 mainlineId 层 / 维度 B 8 caller 耦合 / 维度 C `lib/features/mainline/` 已建 9 文件 1576 行 / 维度 D ChapterListScreen `_chapters=[1,2,3]` 硬编码 + 单入口 main_menu.dart:117
+- **6 决策 ✅ 拍板**(详 `docs/handoff/p2_mainline_audit_2026-05-21.md` §9):
+  - D1 `MainlineProgress`+`StageDef` 加 `mainlineId` String
+  - D2 String("primary"/"secondary")
+  - D3 secondary 复用 ch1-3 + `stage_p2_*` prefix(UI 显示「序章/中卷/终卷」语义标签)
+  - D4 ChapterListScreen 内分两段(MainMenu 不加按钮)
+  - D5 **仅 Ch3 全通**(单门槛简化 · erLiu 保留作 service assert)
+  - D6 第二主线不触发 tutorial(if mainlineId=='primary' 守卫)
+- **执行路径 ✅ 拍板:保守路径**(audit §10):当前会话停在 audit 拍板 → 下波 P1.1 A1/A3/A4 收口(sonnet 各 1-3h ≈ 1 工作日)→ 下下波 P1.2 §12 江湖恩怨+声望(opus xhigh 6-8h 独立模块)→ 再下波 P2.1.0 schema(opus xhigh 4-6h)
+- **桌面清理**:8 nightshift/T01-T08 worktree(2026-05-20 P1 #45 nightshift 隔离环境,内容已 cherry-pick 到 main)全 `git worktree remove` 收尾 · 桌面只剩主仓库 `挂机武侠` · 8 nightshift/T0X branch 暂保留待拍板删除
 
-**5 教训 sink**:① Phase 0 四维 grep 再印证「目录已建 vs 0→1 大改」误判 ② widget test Image.asset errorBuilder 触发不稳 Column 同挂图+文本 fallback(memory `feedback_image_asset_error_builder` 扩展)③ partial clone promisor 错配 unset+refetch 救场(新 memory `feedback_git_partial_clone_promisor_eof`)④ Phase 0 reality check 驱动 spec 降档+缩 scope ⑤ GDD 原意 vs yaml 实现的「精神回归」(W18-A1.2 schoolPair 抽象类型是落地简化,specificTechniques 才贴 GDD §4.5 「九阳+九阴」原意彩蛋)。
+**下波 ⭐**:P1.1 A1/A3/A4 收口(sonnet 各 1-3h,先做最快见效的 Demo polish)。
 
-**下波**:① 候选 4 P2 主线启动准备(opus xhigh 远期,Demo polish 100% 完工后)② 章节扩展 Ch4+(1.0 路线图远期)③ 美术 LoRA 训练数据扩充(候选 4 衍生)。
-
-> 2026-05-20 4 段(stage_audit 阶段审查 / assets 归位 Flutter UI 接入 / Stage 2 W1-W6 量产收官 / P1 #45 Demo §8.4 polish nightshift)+ 2026-05-21 候选 1 round 1 视觉验收 1 段 已归档,见末尾「### M4 #46 美术详条迁出 2026-05-20/21」+ `docs/handoff/` 各 closeout。
-
-> P1 #43 / Nightshift 2026-05-19 / P1 #42 Phase 1+2 / P1 #44 延续典故文案抽 yaml 详条已迁出归档,见末尾「### W17-W18 详条迁出 2026-05-19/20」段。
+> 归档段「### M4 #46 美术详条迁出 2026-05-20/21」+「### W17-W18 详条迁出 2026-05-19/20」+ `docs/handoff/` 各 closeout。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
@@ -29,10 +31,6 @@
 - ~~37 / 38 / 40 / 41 / 42 / 43 / 44 / 45 全销账~~(2026-05-17/18/19/20):#37 详 `p1_37_orphan_decree_2026-05-19.md`;#38/40/41/42 详末尾 W17-W18 详条段;#43 详 `p1_43_higher_tier_closeout_2026-05-19.md`;#44 详 `p1_44_mac_takeover_closeout_2026-05-19.md`;#45 详顶段 + `p1_45_demo_polish_closeout_2026-05-20.md`
 
 > 已销账条目(#1-#45)详见末尾归档。**P1 阶段全销账 ✅** + **Demo §8.4 14/14 全达标 ✅**(2026-05-20 #45 收尾)。
-
-## 下一步
-
-**下波候选**(优先级排):① **美术 PoC + 水墨 LoRA 调研**(opus xhigh + 用户主导 6-10h,M4 硬门槛,技术选型先讨论:AI 出图工具链 SD/Flux/MJ + LoRA 训练数据 + Demo 35 装备首批出图节奏 + 风格基调 GDD §1 水墨克制);② **P1.2+ 章节扩展 / 心法相生设计**(Phase 0 grep 起手:synergies.yaml/章节/§4.5 相生组合);③ **Phase 5+ 师徒系统升级**(路线图远期,GDD §7.1 飞升机制)。
 
 ## 关键约束(每次开局必读)
 
@@ -79,9 +77,7 @@
 - **P0.1 #38 maxHp 重平衡**(2026-05-17 晚,Mac+Opus xhigh ~2h):方案 D 多 lever 组合 864→873 + analyze 0,详 `p0_38_maxhp_rebalance_closeout_2026-05-17.md`
 - **外部审查 + 6 项收尾计划**(2026-05-17 晚):奇遇口径 3 维度 + 节日数对齐 + 主线字数 5000→7000 + #38 spec 起草
 - **1.0 路线图 launched + W18 全收口**(2026-05-17 晚):Demo §7 12/12 全 ✅,`docs/ROADMAP_1_0.md` v1.0(后 v1.1),16 月总时长 P0-P5 阶段
-- **W18-A1.2 hot-loop 升级 + A3 +5 lore 双端 + maxHp cap hotfix**(2026-05-17):synergy_hot_loop_upgrade_test +39 case,864/864,#38 暴露
-- **W18-A1.2 hot-loop 红线压测 + A3 派单 spec**(2026-05-17):825/825,memory `feedback_red_line_test_semantics` 实践
-- **W18-A1.2 心法相生 6 字段全消费 + W18-A2 副产物 4 event yaml**(2026-05-17):damage_calculator + seclusion hook 822/822,DeepSeek 4 events 落地
+- **W18-A1.2 hot-loop / 红线压测 / 心法相生 6 字段消费 + A3 lore 双端 + maxHp cap hotfix**(2026-05-17 3 段合并):synergy_hot_loop_upgrade_test +39 / 825→864 pass / DeepSeek 4 events / #38 暴露 / memory `feedback_red_line_test_semantics` 实践
 - **W18-A1 Codex 视觉验收 6 PASS / 1 WARN + Demo §7 GUI 收尾**(2026-05-17):7 截图全核完,A:B ratio = 1.20 命中
 - **W18-A1 Codex 视觉验收派单准备**(2026-05-17):fixture self-check + 派单 spec 7 截图,phase2_seed_service.seedVisualCheckW18A1 5 角色全 yiLiu 配对
 
