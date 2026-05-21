@@ -274,6 +274,7 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
     }
     return BattleScreen(
       hint: widget.stage.name,
+      sceneBackgroundPath: widget.stage.sceneBackgroundPath,
       onVictory: () {
         widget.onVictory();
         // 自己 pop，让 runStageFlow 的 push await 解开

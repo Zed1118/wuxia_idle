@@ -54,6 +54,10 @@ class TowerFloorDef {
   /// [TowerProgressService.recordClear] 控制(isFirstClear)。
   final int baseExpReward;
 
+  /// M4 Stage 3 美术(2026-05-21):战斗屏场景背景 png 路径。
+  /// 仅爬塔 BOSS 层(5/10/15/20/25/30)在 yaml 配置;null 时 battle_screen 走 backgroundColor 兜底。
+  final String? sceneBackgroundPath;
+
   const TowerFloorDef({
     required this.floorIndex,
     required this.requiredRealm,
@@ -63,6 +67,7 @@ class TowerFloorDef {
     this.narrativeVictoryId,
     this.dropTable = const [],
     this.baseExpReward = 0,
+    this.sceneBackgroundPath,
   });
 
   /// 是否为 Boss 层（任意 minor / major）。
@@ -84,6 +89,7 @@ class TowerFloorDef {
           .map((e) => DropEntry.fromYaml(Map<String, dynamic>.from(e as Map)))
           .toList(growable: false),
       baseExpReward: (y['baseExpReward'] as num?)?.toInt() ?? 0,
+      sceneBackgroundPath: y['sceneBackgroundPath'] as String?,
     );
   }
 
