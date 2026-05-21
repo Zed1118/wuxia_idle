@@ -95,11 +95,13 @@
 ## P2 第二条主线主战场(M5-M10,6 月)
 
 ### P2.1 §12.4 第二条主线 3 章
-- 主线 15-20 关(一流→绝顶→宗师→武圣,玩家境界路径)
-- DeepSeek 文案 +6-10k 字
+- 主线 15-20 关(一流→绝顶→宗师→武圣,玩家境界路径) — **拟升档 25-30 关上限**(Ch4 已落 + Ch5/Ch6 spec 起草前正式拍板,GDD §8.4 Demo 表保持不动)
+- DeepSeek 文案 +6-10k 字 — **Mac+Opus 单端文案产线(v1.8 CLAUDE.md 起 DeepSeek 退役)**
 - 装备扩 35→80(每阶 5-7 件 → 全 7 阶 80 件)
 - 心法扩 21→50(全 7 阶 × 3 流派,每阶 ~7 心法)
-- 典故扩 80→160(DeepSeek 每装备 2 段 anecdote → 7 阶 80 件 × 2 段)
+- 典故扩 80→160(每装备 2 段 anecdote → 7 阶 80 件 × 2 段)
+
+**※ Ch4「西出阳关」P1 启动**(2026-05-21 桥头堡 ✅):yiLiu 全章 + 跨 jueDing·qiMeng 末 Boss(西凉霸主三人组 · 沉默克敌出手即决型 + 留 hook Ch5/Ch6 西凉小铜镜遗物)+ 西北边塞地理(玉门关 / 河西走廊 / 大漠 / 嘉峪关)+ ~5,880 字 narrative(10 段 stage v1 + 1 段 stage_04_04_defeat v1 + 1 段 stage_04_05_defeat v1)+ ~1,420 字 chapter_04 章首尾 v1。本批 ~50% P2.1 字数预算(预算 +6-10k 字 / Ch4 落 ~5,880,留 Ch5/Ch6 各 ~3,000)。详 spec `docs/handoff/p1_x_chapter4_spec_2026-05-21.md` + closeout `docs/handoff/p1_x_chapter4_phase2_batch1_closeout_2026-05-21.md`。
 
 ### P2.2 §12.1 心魔系统
 - 高境界突破前心魔关卡(剧情化的内心战斗)

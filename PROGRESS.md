@@ -9,11 +9,14 @@
 
 **P1.3 美术线 75% → ~80%**(89 + 22 = 111 张落 app)。**P2 第二条主线 ~5% → ~25%**(Ch4 5 关数值落,narratives 待 Batch 2.3)。
 
-**2026-05-21 晚 候选 2 Ch4「西出阳关」Phase 2.1+2.1.5+2.2 实装 ✅**(Mac+Opus xhigh ~1.5h,commit `4f7fb6d` push):**5 关 stages.yaml entry 落地 + 主线红线放开 4 章 20 关 + UI/strings 适配 + 5 test fixture 适配**。**Phase 0/1 spec 漏检披露 ⭐**:`_enforceMainlineRedLines` 硬绑 15/3 章 + ChapterListScreen `_chapters [1,2,3]` 硬绑 + 5+ test 硬绑 15 全包修(Phase 0 4 维 grep 漏 schema/UI/test fixture 维度)。改动总览:① enums.dart EncounterBiome + desert/frontier ② game_repository.dart 红线放开动态 5*chapterCount ③ chapter_list_screen.dart 4 章 + strings.dart chapter4Title「西出阳关」④ stages.yaml 5 关 entry(HP 7,200→15,500 / Atk 720→1,250 全 §5.4 红线内 / dropTable zhongqi_qing_xu_jian 1.0 给 Ch5 起步)⑤ Isar codegen 重生 ⑥ test fixture 4 章 20 关 8 文件 395+ inserts。**1177 pass / 0 analyze**。
+**2026-05-21 晚 候选 2 Ch4「西出阳关」Phase 2.1-2.4 全收口 ✅**(Mac+Opus xhigh ~2.5h 合计,6 commit push):**Ch4 1.0 P2 第二条主线第 1 章数值 + narrative + doc 全到位**。
+- **Batch 2.1+2.1.5+2.2 实装**(`4f7fb6d`):5 关 stages.yaml entry + 主线红线放开 4 章 20 关 + UI/strings 适配 + 8 文件 395+ inserts(EncounterBiome desert/frontier + game_repository 红线 + chapter_list 4 章 + stages.yaml HP 7,200→15,500 / dropTable zhongqi_qing_xu_jian 1.0 给 Ch5 起步)
+- **Batch 2.3.①+② v1 narrative 13 文件 ~5,880 纯正文字**(`be9ac31` + `0c8175b`,**v1 草稿用户审稿通过**):4 拍板文化叙事弧落地 — ① 章首释然(许昌→酒泉,师父遗言承上)② 章末「已知不足」顿悟(yiLiu→jueDing 拐点)③ 末 Boss 沉默克敌(三招手势 + 小铜镜 hook Ch5/Ch6)④ Tier 7 阶风格锚定「沉着/肃杀/老练/冷静」+ 西北风物词 + 嘉峪关社会词 + 黑名单词 0 命中
+- **Batch 2.4 doc 同步**(本批,~30min):GDD v1.3 顶部摘要 + §8.1 注释 Demo 锁 3 章 + §12.4 第二条主线行加 Ch4 启动备注 + Ch5/Ch6 升档预期(25-30 关) + ROADMAP_1_0 P2.1 加 Ch4 桥头堡子项
 
-**2026-05-21 晚续 候选 2 Ch4 Batch 2.3.①+② v1 全 13 文件 ~5,880 纯正文字 ✅**(Mac+Opus xhigh ~1.5h,3 commit `be9ac31` + `4bdb90d` + `0c8175b` push):**4 拍板文化叙事弧落地** ⭐ — ① 章首释然(自许昌→潼关→长安灞桥→陇右→酒泉,师父遗言「看不懂的就先走一走」承上)② 章末「已知不足」顿悟(yiLiu→jueDing 拐点,师父遗言「听那处地方的风」终听懂一半)③ 末 Boss 沉默克敌(灰袍人三招手势 + 留小铜镜 hook Ch5/Ch6)④ Batch 2.3 拆 3 子波。**13 文件**:chapter_04.yaml 章首尾(~1,100 字 v1) + 10 段 stage narratives(~4,460 字 opus 单写)+ stage_04_05_defeat(~320 字 v1)。Tier 7 阶风格锚定「沉着/肃杀/老练/冷静」+ 西北风物词 + 嘉峪关社会词「西凉/校场/边军/酒葫芦」。**黑名单词 0 命中**。子波 ② 字数 1,432 字符对齐 spec 1,420 预算 ⭐ 100%。1177 pass / 0 analyze 不破。**v1 草稿待用户审稿**:情感顶峰段(epilogue 顿悟 + defeat 落败)opus 单写可能空洞,等用户局部 Edit 精修指点。详 commit `be9ac31`/`0c8175b` + spec `p1_x_chapter4_spec_2026-05-21.md`。
+**1177 pass / 0 analyze 不破**。**P2 第二条主线 ~25% → ~80%**(Ch4 narrative + 数值 + GDD/ROADMAP doc 全到位,剩 Batch 2.5 R5 红线压测 + closeout)。详 commit + spec [`p1_x_chapter4_spec_2026-05-21.md`](docs/handoff/p1_x_chapter4_spec_2026-05-21.md) + closeout [`p1_x_chapter4_phase2_batch1_closeout_2026-05-21.md`](docs/handoff/p1_x_chapter4_phase2_batch1_closeout_2026-05-21.md)。
 
-**Phase 2 剩余**:① **用户审稿 v1 草稿**(chapter_04 prologue/epilogue + stage_04_05_defeat,~1,420 字,Tier 7 阶风格锚定,情感顶峰段可指点局部精修)② **Batch 2.4 同步**(GDD §12.5 P2 启动备注 + §7 容量决议主线 20/20 上限 + PROGRESS + ROADMAP_1_0)③ **Batch 2.5 收尾**(R5 末 Boss 跨阶红线压测 case + closeout)。
+**Phase 2 剩余**:**Batch 2.5 收尾**(R5 末 Boss 跨阶红线压测 case + Phase 2 完整 closeout,opus xhigh ~1-2h)。
 
 **Ch4 Phase 1 spec**:[`p1_x_chapter4_spec_2026-05-21.md`](docs/handoff/p1_x_chapter4_spec_2026-05-21.md)(325 行)+ Phase 0 [`p1_x_chapter4_phase0_reality_check_2026-05-21.md`](docs/handoff/p1_x_chapter4_phase0_reality_check_2026-05-21.md)(227 行)。
 
