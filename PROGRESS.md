@@ -5,21 +5,19 @@
 
 ## 当前阶段
 
-**2026-05-21 主对话 P1.1 候选 1+2 ✅**(Mac opus xhigh ~5h):候选 1 A1 E.1 收徒弹窗 + 候选 2 A1 E.5 祖师爷 buff 一波连击。HEAD `<候选 2 commit 即将创建>`,1127→1147 pass(+20 净)/ analyze 0 issues / saveVersion 0.12.0。
+**2026-05-21 主对话 P1.1 候选 3 A3 共鸣度满级体验 ✅**(Mac opus xhigh ~3h):4 子任务 3a/3b/3d/3c 串行收口。HEAD `225ee8e`,1147 → **1170 pass**(+23)/ analyze 0 issues / saveVersion 0.12.0(不动)。详 `p1_1_a3_resonance_closeout_2026-05-21.md`。
 
-**候选 2 A1 E.5 祖师爷 buff(opus xhigh ~1.5h)**:
-- Phase 0:`founder_ancestor_buff` 全仓 0 代码引用(纯 yaml 占位),**0→1 全新落地**
-- **决议 E.5.A**(用户拍板):enabled_when_alive: false→true,玩家本人=祖师即享 buff,作用 active 全员(`apply_to_disciples_only: false`)
-- 实装:numbers.yaml flip + sect_wide_buff 4 字段(internal_force_max_pct=0.05 / max_hp_pct=0.05 / crit_rate_bonus=0.02 / cultivation_progress_pct=0.03)+ `FounderAncestorBuff` 强类型 class + `FounderBuffService` (active 含 founder 时激活) + provider
-- derived_stats 接入:maxHp / internalForceMaxWithLineage / criticalRate 各加可选 `founderBuffActive: bool`(默认 false 不破现有 caller);**stage_battle_setup 端 caller 接入** + **character_panel_screen UI 显示接入**
-- LineagePanelScreen 加「祖师爷光环」摆台(4 行 buff 数值显示)
-- test +8(NumbersConfig load + service 4 case + disabled 兜底 + 红线说明)+ 2 test 期望值更新(master_disciple buff 1.10×1.05=1.155 / stage_setup VC18-A1 maxHp +5%)
+**候选 3-a banner**(`3cb9918` ~30min):victory dialog 加共鸣度晋阶 sub-row,mainline + tower 双路径接入,体例对齐升层 banner。新增 `ResonanceUpgradeNotice` + `ResonanceUpgradeBanner` widget,test +4。
 
-**候选 1 A1 E.1 收徒弹窗(opus xhigh ~3.5h)**:audit + 5 决策拍板(方案 3 inactive 池 / D1.b 列表 outside / D2.b 3 NPC / D3.a 一次性 / D4.b 完整 UI)+ 新 5 文件 + 改 8 文件 + +12 test。saveVersion 0.11.0 → 0.12.0。详 `p1_1_a1_recruitment_closeout_2026-05-21.md`。
+**候选 3-b joint_skill battle 释放**(`15ff8aa` ~1.2h):**核心改动**。skills.yaml 新增 `skill_joint_skill`(mult=4500/cost=250/cd=4);`ResonanceStageConfig` 加 unlocksJointSkill + hasSwordSongEffect 字段(yaml 2 字段之前未读);`fromCharacter` 玩家方任一武器达 moQi 阶 → 注入 joint_skill;battle_ai 优先级 pending > jointSkill > powerSkill > normalAttack 自动放。红线 GDD §5.4 大招暴击 4500×2.5×3.0×1.25×0.65=27,421 < 100,000 ✅。test +9(+1 fix)。
 
-**候选 3 A3 共鸣度 Phase 0 已落 audit 暂停**:实际工作量 **5.5-9h opus xhigh**(不是 closeout §6.1 估的 2-4h),5 个设计点需 grill,拆 4 子任务(3a banner / 3b release / 3c sword_song / 3d 拆分提示),VFX 风险。详 `p1_1_a3_resonance_phase0_audit_2026-05-21.md`。
+**候选 3-d equipment_detail 信息透明 section**(`9e54cf9` ~25min):语义校正(用户确认)— closeout §6.1 「拆分加成来源」实际可落地是「共鸣度晋升信息透明」(当前 bonus +X% / ✦ 已解锁人剑合一 / ✦ 暴击附带剑鸣 / 距下一阶 N 战),与 3b/3c 形成回路。test +3。
 
-**下波 ⭐**:**新会话续推候选 3+4**(本会话 /clear 后)。开局读 PROGRESS 顶段 + 候选 1/2 closeout + 候选 3 audit,grill 5 设计点后起 spec。
+**候选 3-c sword_song 暴击剑鸣浮字**(`225ee8e` ~40min):纯文字降级(audit §2.4 选 a,VFX 留 Phase 5+ 美术阶段)。BattleCharacter 加 swordSongResonanceActive 字段(xinJianTongLing 阶武器自动激活);damage_popup `_PopupContent` 在 counter 后追加「✦剑鸣」红字。新建 damage_popup_test 5 case + battle_state_test +3。
+
+**下波 ⭐**:**P1.1 候选 4 A4 开锋 build 内容扩**(35 件装备开锋方案 audit);或 **P1.1 全收口 closeout + 更 CLAUDE.md §12.2 #11**(founder_ancestor_buff Demo 不实装表述需更新为已激活)。详 `p1_1_a3_resonance_closeout_2026-05-21.md` §7 候选表。
+
+**候选 1+2 已收(2026-05-21 早段)**:候选 1 A1 E.1 收徒弹窗(commit `86618f1`,~3.5h xhigh)+ 候选 2 A1 E.5 祖师爷 buff(commit `a0eae82`,~1.5h xhigh)。详 `p1_1_a1_recruitment_closeout_2026-05-21.md` + `p1_1_a1_founder_buff_closeout_2026-05-21.md`。
 
 > 归档段「### M4 #46 美术详条迁出 2026-05-20/21」+「### W17-W18 详条迁出 2026-05-19/20」+ `docs/handoff/` 各 closeout。
 
