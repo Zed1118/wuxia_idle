@@ -5,9 +5,15 @@ import '../domain/enum_localizations.dart';
 import '../../../shared/theme/colors.dart';
 import 'hp_bar.dart';
 
-/// 战斗角色头像（phase1_tasks.md T14 §784）。
+/// 战斗角色头像（phase1_tasks.md T14 §784;M4 Stage 3 2026-05-21 美术接入)。
 ///
-/// 占位用首字 + 流派色边框 CircleAvatar，下方依次：名字 / 境界 / HP 条 / 内力条。
+/// 主入口:[BattleCharacter.iconPath] 非空且非空串时,走 [Image.asset] + ClipOval
+/// (圆形遮罩 + 流派色 4px 边框)。无图或 errorBuilder 触发时降级到
+/// [_FirstGlyphAvatar](首字 + 流派色边框 CircleAvatar)。
+///
+/// **widget test 不加载 pubspec assets**(memory feedback_image_asset_error_builder),
+/// 所有 Image.asset 必须挂 errorBuilder 守 1172 test 不破。
+///
 /// `character.isAlive == false` 时整体 opacity 0.3（§794 死亡变灰验收）。
 class CharacterAvatar extends StatelessWidget {
   final BattleCharacter character;
@@ -27,30 +33,43 @@ class CharacterAvatar extends StatelessWidget {
     final firstGlyph = character.name.characters.isEmpty
         ? '?'
         : character.name.characters.first;
+    final hasIcon =
+        character.iconPath != null && character.iconPath!.isNotEmpty;
+
+    final Widget avatar = hasIcon
+        ? Container(
+            width: avatarSize,
+            height: avatarSize,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: color, width: 4),
+              color: WuxiaColors.avatarFill,
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                character.iconPath!,
+                width: avatarSize,
+                height: avatarSize,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => _FirstGlyphAvatar(
+                  avatarSize: avatarSize,
+                  color: color,
+                  firstGlyph: firstGlyph,
+                ),
+              ),
+            ),
+          )
+        : _FirstGlyphAvatar(
+            avatarSize: avatarSize,
+            color: color,
+            firstGlyph: firstGlyph,
+          );
 
     final content = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Container(
-          width: avatarSize,
-          height: avatarSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: color, width: 4),
-            color: WuxiaColors.avatarFill,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            firstGlyph,
-            style: TextStyle(
-              fontSize: avatarSize * 0.42,
-              color: WuxiaColors.textPrimary,
-              fontWeight: FontWeight.bold,
-              height: 1,
-            ),
-          ),
-        ),
+        avatar,
         const SizedBox(height: 6),
         Text(
           character.name,
@@ -92,6 +111,42 @@ class CharacterAvatar extends StatelessWidget {
     return Opacity(
       opacity: character.isAlive ? 1.0 : 0.3,
       child: content,
+    );
+  }
+}
+
+/// 占位头像:首字 + 流派色 4px 边框 CircleAvatar 风格(原 character_avatar 占位降级)。
+class _FirstGlyphAvatar extends StatelessWidget {
+  final double avatarSize;
+  final Color color;
+  final String firstGlyph;
+
+  const _FirstGlyphAvatar({
+    required this.avatarSize,
+    required this.color,
+    required this.firstGlyph,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: avatarSize,
+      height: avatarSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: color, width: 4),
+        color: WuxiaColors.avatarFill,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        firstGlyph,
+        style: TextStyle(
+          fontSize: avatarSize * 0.42,
+          color: WuxiaColors.textPrimary,
+          fontWeight: FontWeight.bold,
+          height: 1,
+        ),
+      ),
     );
   }
 }

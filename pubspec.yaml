@@ -61,3 +61,8 @@ flutter:
     - assets/characters/
     - assets/maps/
     - assets/ui/
+
+    # M4 Stage 3 量产(2026-05-21 ~50 张 BOSS / 场景 / 心法卷轴)
+    - assets/enemies/
+    - assets/scenes/
+    - assets/techniques/
