@@ -5,19 +5,11 @@
 
 ## 当前阶段
 
-**2026-05-21 主对话 P1.1 候选 3 A3 共鸣度满级体验 ✅**(Mac opus xhigh ~3h):4 子任务 3a/3b/3d/3c 串行收口。HEAD `225ee8e`,1147 → **1170 pass**(+23)/ analyze 0 issues / saveVersion 0.12.0(不动)。详 `p1_1_a3_resonance_closeout_2026-05-21.md`。
+**2026-05-21 主对话 P1.1 候选 4 A4 开锋 build 内容扩 ✅**(Mac opus xhigh ~50min):audit + 实装一波,grill 4 项全走推荐(G1.a 不参与 / G2.b N=2 / G3.a 复用 / G4.a 不动 lore)。1170 → **1172 pass**(+2)/ analyze 0 issues / saveVersion 0.12.0(不动)。21 件 weapon yaml 各填 2 个同流派同阶 skills.yaml 现成招(机械映射 tier↔后缀 / school↔前缀),14 件 armor/accessory 留空走 UI「无专属技能」兜底(早已实装)。**0 代码改动 / 0 schema 改动 / 0 新增 skills.yaml**。详 `p1_1_a4_forging_closeout_2026-05-21.md` + `p1_1_a4_forging_phase0_audit_2026-05-21.md`。
 
-**候选 3-a banner**(`3cb9918` ~30min):victory dialog 加共鸣度晋阶 sub-row,mainline + tower 双路径接入,体例对齐升层 banner。新增 `ResonanceUpgradeNotice` + `ResonanceUpgradeBanner` widget,test +4。
+**P1.1 加权 4/4 全达标 ✅**(候选 1+2+3+4 全收)。详条已迁末尾「### P1.1 候选 1-4 详条迁出 2026-05-21」段。
 
-**候选 3-b joint_skill battle 释放**(`15ff8aa` ~1.2h):**核心改动**。skills.yaml 新增 `skill_joint_skill`(mult=4500/cost=250/cd=4);`ResonanceStageConfig` 加 unlocksJointSkill + hasSwordSongEffect 字段(yaml 2 字段之前未读);`fromCharacter` 玩家方任一武器达 moQi 阶 → 注入 joint_skill;battle_ai 优先级 pending > jointSkill > powerSkill > normalAttack 自动放。红线 GDD §5.4 大招暴击 4500×2.5×3.0×1.25×0.65=27,421 < 100,000 ✅。test +9(+1 fix)。
-
-**候选 3-d equipment_detail 信息透明 section**(`9e54cf9` ~25min):语义校正(用户确认)— closeout §6.1 「拆分加成来源」实际可落地是「共鸣度晋升信息透明」(当前 bonus +X% / ✦ 已解锁人剑合一 / ✦ 暴击附带剑鸣 / 距下一阶 N 战),与 3b/3c 形成回路。test +3。
-
-**候选 3-c sword_song 暴击剑鸣浮字**(`225ee8e` ~40min):纯文字降级(audit §2.4 选 a,VFX 留 Phase 5+ 美术阶段)。BattleCharacter 加 swordSongResonanceActive 字段(xinJianTongLing 阶武器自动激活);damage_popup `_PopupContent` 在 counter 后追加「✦剑鸣」红字。新建 damage_popup_test 5 case + battle_state_test +3。
-
-**下波 ⭐**:**P1.1 候选 4 A4 开锋 build 内容扩**(35 件装备开锋方案 audit);或 **P1.1 全收口 closeout + 更 CLAUDE.md §12.2 #11**(founder_ancestor_buff Demo 不实装表述需更新为已激活)。详 `p1_1_a3_resonance_closeout_2026-05-21.md` §7 候选表。
-
-**候选 1+2 已收(2026-05-21 早段)**:候选 1 A1 E.1 收徒弹窗(commit `86618f1`,~3.5h xhigh)+ 候选 2 A1 E.5 祖师爷 buff(commit `a0eae82`,~1.5h xhigh)。详 `p1_1_a1_recruitment_closeout_2026-05-21.md` + `p1_1_a1_founder_buff_closeout_2026-05-21.md`。
+**下波 ⭐**:**候选 5 P1.1 全收口 + CLAUDE.md §12.2 #11 更新**(founder_ancestor_buff Demo 不实装表述 → 已激活,候选 2 已实装) / 候选 6 Demo §8.4 stage_audit 复跑(P1.1 全完成后审 1.0 位置)。详 `p1_1_a4_forging_closeout_2026-05-21.md` §7 候选表。
 
 > 归档段「### M4 #46 美术详条迁出 2026-05-20/21」+「### W17-W18 详条迁出 2026-05-19/20」+ `docs/handoff/` 各 closeout。
 
@@ -79,6 +71,15 @@
 - **W18-A1.2 hot-loop / 红线压测 / 心法相生 6 字段消费 + A3 lore 双端 + maxHp cap hotfix**(2026-05-17 3 段合并):synergy_hot_loop_upgrade_test +39 / 825→864 pass / DeepSeek 4 events / #38 暴露 / memory `feedback_red_line_test_semantics` 实践
 - **W18-A1 Codex 视觉验收 6 PASS / 1 WARN + Demo §7 GUI 收尾**(2026-05-17):7 截图全核完,A:B ratio = 1.20 命中
 - **W18-A1 Codex 视觉验收派单准备**(2026-05-17):fixture self-check + 派单 spec 7 截图,phase2_seed_service.seedVisualCheckW18A1 5 角色全 yiLiu 配对
+
+### P1.1 候选 1-4 详条迁出 2026-05-21
+
+2026-05-21 主对话 P1.1 4 候选全收口顶段已迁出(完整内容见各 closeout):
+
+- **候选 4 A4 开锋 build 内容扩**(2026-05-21 晚,opus xhigh ~50min):audit + 实装一波,grill 4 项全走推荐(G1.a 不参与 / G2.b N=2 / G3.a 复用 / G4.a 不动 lore)。21 件 weapon yaml 各填 2 个同流派同阶 skills.yaml 现成招(机械映射),14 件 armor/accessory 留空走 UI 兜底。0 代码 / 0 schema / 0 新增 skills.yaml。1170→1172 pass(+2)/ 0 issues。详 `p1_1_a4_forging_closeout_2026-05-21.md` + `p1_1_a4_forging_phase0_audit_2026-05-21.md`
+- **候选 3 A3 共鸣度满级体验**(2026-05-21 午,opus xhigh ~3h):4 子任务 3a/3b/3d/3c 串行收口。3-a banner victory dialog 加共鸣度晋阶 sub-row(`3cb9918` ~30min);3-b joint_skill battle 释放(`15ff8aa` ~1.2h,核心改动)— skills.yaml 新增 `skill_joint_skill`(mult=4500),`ResonanceStageConfig` +2 字段,battle_ai 优先级 pending>jointSkill>powerSkill>normalAttack 自动放,红线 27,421<100,000 ✅;3-d equipment_detail 共鸣度晋升信息透明 section(`9e54cf9` ~25min);3-c sword_song 暴击剑鸣浮字纯文字降级(`225ee8e` ~40min)。1147→1170 pass(+23)/ 0 issues。详 `p1_1_a3_resonance_closeout_2026-05-21.md` + `p1_1_a3_resonance_phase0_audit_2026-05-21.md`
+- **候选 2 A1 E.5 祖师爷 buff**(2026-05-21 早,opus xhigh ~1.5h,commit `a0eae82`):祖师爷在世时门派全员 +X% 加成(GDD §7.1)。`numbers.yaml inheritance.founder_ancestor_buff` 4 字段已激活(enabled_when_alive: true)+ buff 应用层 + UI 显。详 `p1_1_a1_founder_buff_closeout_2026-05-21.md`
+- **候选 1 A1 E.1 收徒弹窗**(2026-05-21 早,opus xhigh ~3.5h,commit `86618f1`):师徒"收徒池"E.1 流程实装 — 池采样 + 弹窗 UI + 入门即学徒境界 + 心法/装备初始化。详 `p1_1_a1_recruitment_closeout_2026-05-21.md` + `p1_1_a1_recruitment_audit_2026-05-21.md`
 
 ### M4 #46 美术详条迁出 2026-05-20/21
 
