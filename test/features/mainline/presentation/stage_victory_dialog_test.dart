@@ -52,12 +52,17 @@ AdvancementResult _flat() => const AdvancementResult(
 Future<void> _pumpContent(
   WidgetTester tester,
   DropResult drops,
-  List<AdvancementEntry> advancements,
-) async {
+  List<AdvancementEntry> advancements, {
+  List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
+}) async {
   await tester.pumpWidget(
     MaterialApp(
       home: Scaffold(
-        body: StageVictoryContent(drops: drops, advancements: advancements),
+        body: StageVictoryContent(
+          drops: drops,
+          advancements: advancements,
+          resonanceUpgrades: resonanceUpgrades,
+        ),
       ),
     ),
   );
@@ -109,6 +114,59 @@ void main() {
       ]);
       expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
       expect(find.textContaining('item_mojianshi'), findsNothing);
+      expect(find.byIcon(Icons.auto_awesome), findsNothing);
+    });
+
+    // P1.1 候选 3-a:共鸣度晋阶 banner
+    testWidgets('empty drops + 1 共鸣晋阶 → 显「共鸣晋阶」label + 1 行 notice',
+        (tester) async {
+      await _pumpContent(
+        tester,
+        _emptyDrops(),
+        const [],
+        resonanceUpgrades: const [
+          ResonanceUpgradeNotice(
+            equipmentName: '青锋剑',
+            newStage: ResonanceStage.moQi,
+          ),
+        ],
+      );
+      expect(find.text(UiStrings.stageVictoryResonanceLabel), findsOneWidget);
+      expect(find.textContaining('「青锋剑」共鸣度晋至 默契'), findsOneWidget);
+      expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
+    });
+
+    testWidgets('多件共鸣晋阶 → 显多行 + 升层 + drop 三段共存', (tester) async {
+      await _pumpContent(
+        tester,
+        _itemDrops(),
+        [AdvancementEntry(chName: '甲', result: _advanced())],
+        resonanceUpgrades: const [
+          ResonanceUpgradeNotice(
+            equipmentName: '青锋剑',
+            newStage: ResonanceStage.moQi,
+          ),
+          ResonanceUpgradeNotice(
+            equipmentName: '玄铁刀',
+            newStage: ResonanceStage.xinJianTongLing,
+          ),
+        ],
+      );
+      expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
+      expect(find.textContaining('甲 · 突破至'), findsOneWidget);
+      expect(find.text(UiStrings.stageVictoryResonanceLabel), findsOneWidget);
+      expect(find.textContaining('青锋剑'), findsOneWidget);
+      expect(find.textContaining('玄铁刀'), findsOneWidget);
+      expect(find.textContaining('默契'), findsOneWidget);
+      expect(find.textContaining('心剑通灵'), findsOneWidget);
+      // 升层 1 icon + 共鸣晋阶 2 icon = 3 icon
+      expect(find.byIcon(Icons.auto_awesome), findsNWidgets(3));
+    });
+
+    testWidgets('empty 三段全空 → 只显「本战无固定掉落」', (tester) async {
+      await _pumpContent(tester, _emptyDrops(), const []);
+      expect(find.text(UiStrings.stageVictoryNoDrop), findsOneWidget);
+      expect(find.text(UiStrings.stageVictoryResonanceLabel), findsNothing);
       expect(find.byIcon(Icons.auto_awesome), findsNothing);
     });
   });

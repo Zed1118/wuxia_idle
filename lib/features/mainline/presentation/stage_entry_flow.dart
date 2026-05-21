@@ -149,6 +149,7 @@ Future<void> runStageFlow({
       stage: stage,
       drops: outcome.drops,
       advancements: outcome.advancements,
+      resonanceUpgrades: outcome.resonanceUpgrades,
     );
   }
 
@@ -327,8 +328,13 @@ class DefeatLossEntry {
 ///
 /// W15 #30 P3 后续 A:返回 `(drops, advancements)` 供 caller push
 /// [showStageVictoryDialog] 显 drop + 升层 banner。
-Future<({DropResult drops, List<AdvancementEntry> advancements})?>
-    _applyVictoryResolution({
+/// P1.1 候选 3-a:record 加 `resonanceUpgrades` 供 dialog 显共鸣度晋阶 sub-row。
+Future<
+    ({
+      DropResult drops,
+      List<AdvancementEntry> advancements,
+      List<ResonanceUpgradeNotice> resonanceUpgrades,
+    })?> _applyVictoryResolution({
   required WidgetRef ref,
   required StageDef stage,
 }) async {
@@ -420,6 +426,9 @@ Future<({DropResult drops, List<AdvancementEntry> advancements})?>
       false);
   final founderId = save?.founderCharacterId;
 
+  // P1.1 候选 3-a:writeTxn 内 push notice,函数末 return 给 caller 传 dialog。
+  final resonanceUpgrades = <ResonanceUpgradeNotice>[];
+
   final now = DateTime.now();
   await isar.writeTxn(() async {
     // in-place 副作用（battleCount / skillUsage / 主修 progress + layer + EXP）
@@ -469,12 +478,18 @@ Future<({DropResult drops, List<AdvancementEntry> advancements})?>
       }
       if (eq == null) continue;
       final def = GameRepository.instance.getEquipment(eq.defId);
+      final stage = eq.resonanceStage(numbers);
       await events.recordResonanceUpgraded(
         characterId: eq.ownerCharacterId ?? founderId ?? 0,
         equipmentId: eq.id,
         equipmentName: def.name,
-        newStage: eq.resonanceStage(numbers).index + 1,
+        newStage: stage.index + 1,
       );
+      // P1.1 候选 3-a:cache notice 供 victory dialog 显共鸣度晋阶 sub-row。
+      resonanceUpgrades.add(ResonanceUpgradeNotice(
+        equipmentName: def.name,
+        newStage: stage,
+      ));
     }
     for (final drop in result.dropResult.equipments) {
       final def = GameRepository.instance.getEquipment(drop.defId);
@@ -520,7 +535,11 @@ Future<({DropResult drops, List<AdvancementEntry> advancements})?>
     }
   });
 
-  return (drops: result.dropResult, advancements: advancements);
+  return (
+    drops: result.dropResult,
+    advancements: advancements,
+    resonanceUpgrades: resonanceUpgrades,
+  );
 }
 
 /// 主线 victory drop items 的 ItemType 推断（与 tower _itemTypeOf 同源）。

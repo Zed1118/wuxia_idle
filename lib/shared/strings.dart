@@ -367,6 +367,11 @@ class UiStrings {
   static const String stageVictoryDropLabel = '掉落：';
   static const String stageVictoryNoDrop = '本战无固定掉落';
 
+  // P1.1 候选 3-a：共鸣度晋阶 banner（victory dialog 内）
+  static const String stageVictoryResonanceLabel = '共鸣晋阶：';
+  static String stageVictoryResonanceUpgrade(String name, String stage) =>
+      '「$name」共鸣度晋至 $stage';
+
   // ─── 升层 banner 多角色版（mainline / tower 共用）─────────────────────
 
   static String advancementForCharacter(
