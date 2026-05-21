@@ -248,6 +248,7 @@ class StageBattleSetup {
       isAlive: true,
       teamSide: 1,
       slotIndex: slotIndex,
+      iconPath: enemy.iconPath,
     );
   }
 }

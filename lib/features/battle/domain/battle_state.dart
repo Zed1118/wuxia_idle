@@ -104,6 +104,11 @@ class BattleCharacter {
   /// fromCharacter 自动算;NPC 走 _enemyToBattle 默认 false。
   final bool swordSongResonanceActive;
 
+  /// M4 Stage 3 美术(2026-05-21):敌方头像 png 路径(EnemyDef.iconPath 直接注入)。
+  /// 玩家方/师徒 NPC 暂为 null(走 character_avatar 首字降级)。
+  /// widget 层走 errorBuilder fallback,无图时降级到 _FirstGlyphAvatar。
+  final String? iconPath;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -129,6 +134,7 @@ class BattleCharacter {
     required this.slotIndex,
     this.internalInjury,
     this.swordSongResonanceActive = false,
+    this.iconPath,
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -262,6 +268,7 @@ class BattleCharacter {
       teamSide: teamSide,
       slotIndex: slotIndex,
       swordSongResonanceActive: swordSongActive,
+      iconPath: null,
     );
   }
 
@@ -290,6 +297,7 @@ class BattleCharacter {
     int? slotIndex,
     Object? internalInjury = _unset,
     bool? swordSongResonanceActive,
+    String? iconPath,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -321,6 +329,7 @@ class BattleCharacter {
           : internalInjury as InternalInjurySlot?,
       swordSongResonanceActive:
           swordSongResonanceActive ?? this.swordSongResonanceActive,
+      iconPath: iconPath ?? this.iconPath,
     );
   }
 
