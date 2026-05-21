@@ -12,6 +12,11 @@ class TechniqueDef {
   final int speedBonus;
   final List<String> acquireSourceTags;
 
+  /// M4 Stage 3 美术(2026-05-21):心法卷轴图 png 路径。
+  /// 仅 3 标志高阶心法在 yaml 配置(失传神功 / 传说神功 / 门派绝学);
+  /// 其余心法 null,UI 走 tier section banner cover(约定路径 `assets/techniques/tier_[name].png`)。
+  final String? imagePath;
+
   const TechniqueDef({
     required this.id,
     required this.name,
@@ -22,6 +27,7 @@ class TechniqueDef {
     required this.internalForceGrowthBonus,
     required this.speedBonus,
     required this.acquireSourceTags,
+    this.imagePath,
   });
 
   factory TechniqueDef.fromYaml(Map<String, dynamic> y) {
@@ -40,6 +46,7 @@ class TechniqueDef {
       acquireSourceTags: List<String>.from(
         (y['acquireSourceTags'] as List? ?? const []).map((e) => e as String),
       ),
+      imagePath: y['imagePath'] as String?,
     );
   }
 

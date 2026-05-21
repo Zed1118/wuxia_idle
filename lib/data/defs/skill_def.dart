@@ -23,6 +23,10 @@ class SkillDef {
   final int? tier;
   final String? narrativeInsightId;
 
+  /// M4 Stage 3 美术(2026-05-21):招式插图 png 路径。
+  /// 仅标志性招式在 yaml 配置;其余 null 走 UI fallback。
+  final String? imagePath;
+
   const SkillDef({
     required this.id,
     required this.name,
@@ -36,6 +40,7 @@ class SkillDef {
     required this.visualEffect,
     this.tier,
     this.narrativeInsightId,
+    this.imagePath,
   });
 
   /// 奇遇招式 = parentTechniqueDefId 为空 & tier 非空。
@@ -55,6 +60,7 @@ class SkillDef {
       visualEffect: y['visualEffect'] as String,
       tier: (y['tier'] as num?)?.toInt(),
       narrativeInsightId: y['narrativeInsightId'] as String?,
+      imagePath: y['imagePath'] as String?,
     );
   }
 
