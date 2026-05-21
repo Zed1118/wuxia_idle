@@ -119,6 +119,16 @@ class _Body extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (final tier in sortedTiers) ...[
+            // M4 Stage 3 美术(2026-05-21):tier section 起手 7 阶卷轴 cover banner。
+            // 约定路径 assets/techniques/tier_<name>.png,无图走 errorBuilder shrink
+            // (widget test 不加载 pubspec assets,memory feedback_image_asset_error_builder)。
+            Image.asset(
+              'assets/techniques/tier_${tier.name}.png',
+              width: double.infinity,
+              height: 60,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Text(
