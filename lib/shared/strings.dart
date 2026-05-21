@@ -372,6 +372,16 @@ class UiStrings {
   static String stageVictoryResonanceUpgrade(String name, String stage) =>
       '「$name」共鸣度晋至 $stage';
 
+  // P1.1 候选 3-d：equipment_detail 共鸣度晋升信息透明 section
+  static String equipmentDetailResonanceBonus(int pct) =>
+      pct == 0 ? '当前无属性加成' : '当前属性加成 +$pct%';
+  static const String equipmentDetailResonanceJointSkill =
+      '✦ 已解锁「人剑合一」招式';
+  static const String equipmentDetailResonanceSwordSong =
+      '✦ 暴击附带「剑鸣」浮字';
+  static String equipmentDetailResonanceNextHint(int remaining, String next) =>
+      '距「$next」尚需 $remaining 战';
+
   // ─── 升层 banner 多角色版（mainline / tower 共用）─────────────────────
 
   static String advancementForCharacter(
