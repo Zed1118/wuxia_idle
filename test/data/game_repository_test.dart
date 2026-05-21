@@ -48,6 +48,32 @@ void main() {
           reason: '心法相生 8 组合(GDD §4.5 上限,候选 2 加 specificTechniques 类型)');
     });
 
+    test('P1.1 A4：21 件 weapon specialSkillCandidates 2 候选 / 14 件 armor+accessory 留空', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final weapons = repo.equipmentDefs.values
+          .where((e) => e.slot == EquipmentSlot.weapon)
+          .toList();
+      final nonWeapons = repo.equipmentDefs.values
+          .where((e) => e.slot != EquipmentSlot.weapon)
+          .toList();
+
+      expect(weapons.length, 21, reason: '7 阶 × 3 流派');
+      expect(nonWeapons.length, 14, reason: '7 阶 × (armor + accessory)');
+
+      for (final w in weapons) {
+        expect(w.specialSkillCandidates, hasLength(2),
+            reason: 'weapon ${w.id} 应配 2 个候选(skill + ult)');
+        for (final skillId in w.specialSkillCandidates) {
+          expect(repo.skillDefs.containsKey(skillId), isTrue,
+              reason: '${w.id} 引用的 $skillId 必须在 skills.yaml 中存在');
+        }
+      }
+      for (final e in nonWeapons) {
+        expect(e.specialSkillCandidates, isEmpty,
+            reason: 'armor/accessory ${e.id} 不参与 specialSkill 槽(G1.a 决议)');
+      }
+    });
+
     test('GameRepository.instance 在 load 后可访问', () async {
       await GameRepository.loadAllDefs(loader: fileLoader);
       expect(GameRepository.isLoaded, isTrue);

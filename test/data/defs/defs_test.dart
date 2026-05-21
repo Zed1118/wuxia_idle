@@ -63,6 +63,33 @@ void main() {
       expect(def.dropSourceTags, isEmpty);
       // T55：缺省 isLineageHeritage 应为 false
       expect(def.isLineageHeritage, isFalse);
+      // P1.1 A4：缺省 specialSkillCandidates 应为空 list
+      expect(def.specialSkillCandidates, isEmpty);
+    });
+
+    test('specialSkillCandidates 显式提供 → 正确读出（P1.1 A4 开锋第 3 槽专属技能候选）', () {
+      final def = EquipmentDef.fromYaml({
+        'id': 'weapon_test_candidates',
+        'name': '示例武器',
+        'tier': 'xunChang',
+        'slot': 'weapon',
+        'schoolBias': 'lingQiao',
+        'baseAttackMin': 100,
+        'baseAttackMax': 150,
+        'baseHealthMin': 0,
+        'baseHealthMax': 0,
+        'baseSpeedMin': 0,
+        'baseSpeedMax': 10,
+        'iconPath': 'x.png',
+        'specialSkillCandidates': [
+          'skill_lingqiao_jichu_skill',
+          'skill_lingqiao_jichu_ult',
+        ],
+      });
+
+      expect(def.specialSkillCandidates, hasLength(2));
+      expect(def.specialSkillCandidates, contains('skill_lingqiao_jichu_skill'));
+      expect(def.specialSkillCandidates, contains('skill_lingqiao_jichu_ult'));
     });
 
     test('isLineageHeritage: true 读出后 def.isLineageHeritage = true（T55）', () {
