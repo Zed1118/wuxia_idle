@@ -5,11 +5,11 @@
 
 ## 当前阶段
 
-**2026-05-21 主对话 P1.1 候选 4 A4 开锋 build 内容扩 ✅**(Mac opus xhigh ~50min):audit + 实装一波,grill 4 项全走推荐(G1.a 不参与 / G2.b N=2 / G3.a 复用 / G4.a 不动 lore)。1170 → **1172 pass**(+2)/ analyze 0 issues / saveVersion 0.12.0(不动)。21 件 weapon yaml 各填 2 个同流派同阶 skills.yaml 现成招(机械映射 tier↔后缀 / school↔前缀),14 件 armor/accessory 留空走 UI「无专属技能」兜底(早已实装)。**0 代码改动 / 0 schema 改动 / 0 新增 skills.yaml**。详 `p1_1_a4_forging_closeout_2026-05-21.md` + `p1_1_a4_forging_phase0_audit_2026-05-21.md`。
+**2026-05-21 主对话 P1.1 候选 5 CLAUDE.md §12 表述对齐 ✅**(Mac opus ~20min,纯 markdown):6 处 Edit — v1.9 顶部摘要 / §12.1 末备注删 #11 / §12.2 #11 反转(候选 2 激活)/ §12.2 #9 补候选 3-b 实装注 / §12.2 #1 enum_localizations 文件路径 / §12.2 #6 encounter 公式行号。**0 代码 / 0 yaml / 0 test 改动**,1172 pass 不动。详 `p1_1_candidate5_claudemd_align_closeout_2026-05-21.md`。
 
-**P1.1 加权 4/4 全达标 ✅**(候选 1+2+3+4 全收)。详条已迁末尾「### P1.1 候选 1-4 详条迁出 2026-05-21」段。
+**P1.1 全收口 ✅**(候选 1+2+3+4 实装 + 候选 5 文档对齐)。详条已迁末尾「### P1.1 候选 1-5 详条迁出 2026-05-21」段。
 
-**下波 ⭐**:**候选 5 P1.1 全收口 + CLAUDE.md §12.2 #11 更新**(founder_ancestor_buff Demo 不实装表述 → 已激活,候选 2 已实装) / 候选 6 Demo §8.4 stage_audit 复跑(P1.1 全完成后审 1.0 位置)。详 `p1_1_a4_forging_closeout_2026-05-21.md` §7 候选表。
+**下波 ⭐**:**候选 6 Demo §8.4 stage_audit 复跑**(opus 25min,P1.1 全完成后审 1.0 路线图位置,对照 2026-05-20 版进度变化) / 候选 7 M4 #46 Stage 3 美术量产决策 / 候选 8 切下一个 1.0 路线图模块(主线 / 师徒升级 / 武学领悟内容扩 / 闭关地图扩)。详候选 5 closeout §6 候选表。
 
 > 归档段「### M4 #46 美术详条迁出 2026-05-20/21」+「### W17-W18 详条迁出 2026-05-19/20」+ `docs/handoff/` 各 closeout。
 
@@ -72,10 +72,11 @@
 - **W18-A1 Codex 视觉验收 6 PASS / 1 WARN + Demo §7 GUI 收尾**(2026-05-17):7 截图全核完,A:B ratio = 1.20 命中
 - **W18-A1 Codex 视觉验收派单准备**(2026-05-17):fixture self-check + 派单 spec 7 截图,phase2_seed_service.seedVisualCheckW18A1 5 角色全 yiLiu 配对
 
-### P1.1 候选 1-4 详条迁出 2026-05-21
+### P1.1 候选 1-5 详条迁出 2026-05-21
 
-2026-05-21 主对话 P1.1 4 候选全收口顶段已迁出(完整内容见各 closeout):
+2026-05-21 主对话 P1.1 5 候选(4 实装 + 1 文档对齐)全收口顶段已迁出(完整内容见各 closeout):
 
+- **候选 5 CLAUDE.md §12 表述对齐**(2026-05-21 晚,opus ~20min,纯 markdown):6 处 Edit — v1.9 顶部摘要 + §12.1 末备注删 #11 + §12.2 #11 反转(候选 2 已激活)+ §12.2 #9 补候选 3-b 实装注 + §12.2 #1 enum_localizations 路径修正 + §12.2 #6 encounter 公式行号修正。**0 代码 / 0 yaml / 0 test 改动**,1172 pass 不动。详 `p1_1_candidate5_claudemd_align_closeout_2026-05-21.md`
 - **候选 4 A4 开锋 build 内容扩**(2026-05-21 晚,opus xhigh ~50min):audit + 实装一波,grill 4 项全走推荐(G1.a 不参与 / G2.b N=2 / G3.a 复用 / G4.a 不动 lore)。21 件 weapon yaml 各填 2 个同流派同阶 skills.yaml 现成招(机械映射),14 件 armor/accessory 留空走 UI 兜底。0 代码 / 0 schema / 0 新增 skills.yaml。1170→1172 pass(+2)/ 0 issues。详 `p1_1_a4_forging_closeout_2026-05-21.md` + `p1_1_a4_forging_phase0_audit_2026-05-21.md`
 - **候选 3 A3 共鸣度满级体验**(2026-05-21 午,opus xhigh ~3h):4 子任务 3a/3b/3d/3c 串行收口。3-a banner victory dialog 加共鸣度晋阶 sub-row(`3cb9918` ~30min);3-b joint_skill battle 释放(`15ff8aa` ~1.2h,核心改动)— skills.yaml 新增 `skill_joint_skill`(mult=4500),`ResonanceStageConfig` +2 字段,battle_ai 优先级 pending>jointSkill>powerSkill>normalAttack 自动放,红线 27,421<100,000 ✅;3-d equipment_detail 共鸣度晋升信息透明 section(`9e54cf9` ~25min);3-c sword_song 暴击剑鸣浮字纯文字降级(`225ee8e` ~40min)。1147→1170 pass(+23)/ 0 issues。详 `p1_1_a3_resonance_closeout_2026-05-21.md` + `p1_1_a3_resonance_phase0_audit_2026-05-21.md`
 - **候选 2 A1 E.5 祖师爷 buff**(2026-05-21 早,opus xhigh ~1.5h,commit `a0eae82`):祖师爷在世时门派全员 +X% 加成(GDD §7.1)。`numbers.yaml inheritance.founder_ancestor_buff` 4 字段已激活(enabled_when_alive: true)+ buff 应用层 + UI 显。详 `p1_1_a1_founder_buff_closeout_2026-05-21.md`

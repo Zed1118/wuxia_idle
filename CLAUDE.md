@@ -4,7 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本：v1.8**
+> **版本：v1.9**
+> v1.9 变更摘要（2026-05-21 P1.1 候选 2/3 实装状态对齐）：§12.2 #11 祖师爷 buff 表述由「Demo 不实装,1.0 版本再设计」→「P1.1 候选 2 已激活,`enabled_when_alive: true`,玩家=祖师享 sect_wide_buff」（commit `a0eae82`,详 `lib/features/inheritance/application/founder_buff_service.dart`）;§12.2 #9 人剑合一追加 P1.1 候选 3-b 实装注（commit `15ff8aa`,`skills.yaml skill_joint_skill` mult=4500 + battle_ai 自动放）;§12.2 #1 enum_localizations 文件路径更新（已迁 `lib/features/battle/domain/`）+ §12.2 #6 encounter 公式行号更新（公式在 `encounter_service.dart:216`）;§12.1 末尾备注删 #11 条目（已实装无需挂账）。**状态对齐,无规则层变化**。
 > v1.8 变更摘要（2026-05-19 P1 #44 协作模式切换）：DeepSeek 端文案产线退役,Mac+Opus 4.7 单端接管 `data/lore/` + `data/narratives/` + `data/events/` 写权限。§3 目录结构 3 个文案目录所有权由 [DeepSeek，禁止编辑] 改为 [你]。§8 工作流表 Windows 行删除,只剩 Mac 单行;冲突解决段简化(单端无跨端冲突)。§9 不要做的事第 3 条「修改 data/narratives/ data/lore/ data/events/」红线删除。**触发动因**:P1 #44 35 件 × 2 池 ≈ 280 条文案补齐 Mac 端接手,Opus 4.7 古风克制文学能力足够,链路简化为单端。WINDOWS_DEEPSEEK_GUIDE.md 移至 `docs/_archive/WINDOWS_DEEPSEEK_GUIDE.md` 加 DEPRECATED 头注。
 > v1.7 变更摘要（2026-05-17 W18 全收口外部审查后对齐）：§7 Demo 必交付内容量表与 GDD v1.2 §8.4 同步——「奇遇 20-30」混算口径拆为「武学领悟触发 20-30 / 基础奇遇 15-25 / 节日 encounter 6-10」3 独立维度;主线字数上限 5000→7000(实测 6778);节日 encounter 6→8 备注(W17 扩 chuXi/qingMingJie);「Demo 阶段不要做」清单「节日活动」加备注(W16/W17 节日 encounter 内容层已落,系统级仍按 GDD §12.4 留 1.0)。**PROGRESS 外部审查 P1 #5 #6 销账**。
 > v1.6 变更摘要（2026-05-16）：§6 核心公式块 GDD §5.3/§5.6 公式系数口误对齐——基础伤害公式装备攻击系数 ×8 → ×1.0（Phase 1 平衡前后差异，防装备轴数值膨胀）；最大血量公式内力系数 ×5 → ×0.7（Phase 1 平衡前后差异，防玩家血量超 §5.2 红线 20,000）。出手速度 ×8 无变动。GDD.md §5.3/§5.6 同步对齐 + 加历史脚注。代码以 `numbers.yaml damage_formula.equipment_attack_factor / max_hp_formula.internal_force_factor` 为准（早已平衡到位）。**PROGRESS 挂账 #6 销账**。
@@ -294,24 +295,24 @@ choices:
 
 **无**(2026-05-16 v1.5 全收口)。后续进 Phase 5 师徒系统升级 / 1.0 版本扩展系统时若出现新待决项,在此区段重开。
 
-`#11` 祖师爷 Demo 不实装(`inheritance.founder_ancestor_buff.enabled_when_alive: false`)/ `#12` 江湖商店 Demo 不列(`§7` 内容总量表无)— 已知 Demo 不阻塞挂账,Phase 5+ 自然实装时再回头。
+`#12` 江湖商店 Demo 不列(`§7` 内容总量表无)— 已知 Demo 不阻塞挂账,Phase 5+ 自然实装时再回头。(`#11` 祖师爷 buff 已于 2026-05-21 P1.1 候选 2 激活,详 §12.2 #11 v1.9 更新)
 
 ### §12.2 已消解归档（W1-W15 实装中默认决议）
 
 | # | 条目 | 实质决议位置 |
 |---|---|---|
-| 1 | 境界 7 层 vs 修炼度 9 层名重叠 | 代码层严格不同名：境界用「启蒙/入门/熟练/精通/圆熟/化境/登峰」，修炼度用「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」，见 `lib/data/enum_localizations.dart:39,78` |
+| 1 | 境界 7 层 vs 修炼度 9 层名重叠 | 代码层严格不同名：境界用「启蒙/入门/熟练/精通/圆熟/化境/登峰」，修炼度用「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」，见 `lib/features/battle/domain/enum_localizations.dart`（`RealmLayer.qiMeng:42 / dengFeng:48` + `CultivationLayer.wuXia:96 / jiJing:97`） |
 | 2 | 单项属性范围 | `numbers.yaml character.attributes`：单项 [1,10] / 总和 [16,24] / 正态 μ=5.5 σ=1.5 / `rerollable: false` |
 | 3 | 强化 +20-49 成功率与材料 | `numbers.yaml equipment.enhancement.success_curve`：`max(0.30, 0.50 - 0.02*(level-19))`，磨剑石 18/25 颗，心血结晶保底 8 颗 |
 | 4 | 暴击系数 + 防御率 | `numbers.yaml combat.critical`：base 5% + 身法 0.5%/点 + 上限 50%，倍率 1.5-2.5（灵巧固定 2.0）；防御率走 `realms.tiers.defense_rate` 按境界固定档（学徒 5%→武圣 35%） |
 | 5 | 闭关产出公式 | `numbers.yaml retreat`：5 地图 base_outputs 各产出 + `realm_scale_per_tier: 1.3` + `cap_hours: 72`（2026-05-11 决议） |
-| 6 | 武学领悟机缘累积规则 | W14-1 简化为「fortune 属性 1-10 静态值 + 软概率 `p = baseProbability * (1 + fortune/20)`」，不再单独累积"机缘值"，见 `encounters.yaml:13` + `encounter_hook.dart:50` |
+| 6 | 武学领悟机缘累积规则 | W14-1 简化为「fortune 属性 1-10 静态值 + 软概率 `p = baseProbability * (1 + fortune/20)`」，不再单独累积"机缘值"，见 `encounters.yaml:13` + `lib/features/encounter/application/encounter_service.dart:216`（公式实装）+ `lib/features/encounter/domain/encounter_def.dart:162`（schema 注释） |
 | 8 | 心法速度加成 | `numbers.yaml techniques.tiers[*].speed_bonus`：7 阶 0/5/10/15/25/40/60，直接进 GDD §5.6 公式，无独立上限 |
-| 9 | 人剑合一招式定义位置 | `numbers.yaml combat.resonance.unlocks_joint_skill: true`（默契阶段解锁）+ `skills.reference_multipliers.joint_skill.base: 4500`，**统一固定倍率，不绑流派/不绑装备类型**，由共鸣度系统统管 |
+| 9 | 人剑合一招式定义位置 | `numbers.yaml combat.resonance.unlocks_joint_skill: true`（默契阶段解锁）+ `skills.reference_multipliers.joint_skill.base: 4500`，**统一固定倍率，不绑流派/不绑装备类型**，由共鸣度系统统管。**v1.9 补**:P1.1 候选 3-b(2026-05-21,commit `15ff8aa`)已实装 battle 释放路径 — `skills.yaml:772 skill_joint_skill`(mult=4500 / cost=250 / cd=4)+ `ResonanceStageConfig.unlocksJointSkill/hasSwordSongEffect` 解析 + `battle_ai` 优先级 `pending>jointSkill>powerSkill>normalAttack`,红线 27,421 < 100,000 ✅ |
 | 13 | 节气日完整清单 | v1.2 决议方案 A（2026-05-15）：12 个节气均匀覆盖四季，公历 hardcode 不引入农历库；删除原中秋（属农历节日非节气）。已落 `numbers.yaml retreat.solar_term_bonus.days_2026` |
 | 7 | 三流派 extra_effect 数值 + 正午阳刚定向 | v1.4 决议（2026-05-16）：① 刚猛震伤每招 +500 固定(穿透防御不暴击,主攻击命中才触发);② 阴柔内伤 N=3 守方 tick × 200/tick 固定(穿透防御 + 同源刷新覆盖,可致死);③ 正午阳刚 +20% 乘到 `internalForcePoints` 维度且仅 `character.school==gangMeng` 触发;④ 灵巧 crit_rate +0.20 已在 §6 公式实装 (v1.0 起)。已落 `numbers.yaml combat.schools.gang_meng_quake / yin_rou_internal_injury / retreat.time_of_day_bonus[zhengWu].target_attribute & applies_to_school` + 代码层 damage_calculator 震伤分支 / BattleState internalInjurySlot / battle_engine tick 衰减 / seclusion_service 正午阳刚 wire |
 | 10 | 师承遗物规则层(4 子项)| v1.5 决议(2026-05-16):① 传递时机:武圣飞升时自动传(GDD §7.1 原意,Demo 不实装飞升 → Phase 5+ 激活);② 多徒弟归属:玩家进选件界面逐件分配;③ 累代叠加:只取当代不叠加(数值不爆炸 + UI 可显传承链路但 buff 不叠);④ 同部位冲突:自动卸下原装入背包 + 新遗物入槽。已落 `numbers.yaml inheritance.heritage_items` 加 4 规则字段(`transfer_trigger=ascend_to_wusheng` / `multi_disciple_allocation=player_pick` / `stack_across_generations=false` / `conflict_slot_resolution=auto_swap`)。**代码层 Phase 5+ 师徒升级时按此实装,本批仅规则层锚定**。 |
-| 11 | 祖师爷门派 buff(Demo 不实装)| `numbers.yaml inheritance.founder_ancestor_buff.enabled_when_alive: false` 显式 Demo 不实现,1.0 版本再设计 |
+| 11 | 祖师爷门派 buff(v1.9 已激活)| **v1.9 反转**:P1.1 候选 2(2026-05-21,commit `a0eae82`)决议方案 E.5.A → `enabled_when_alive: true`,玩家=祖师自享 sect_wide_buff(internal_force_max_pct=0.05 / max_hp_pct=0.05 / crit_rate_bonus=0.02 / cultivation_progress_pct=0.03)。`apply_to_disciples_only: false` 即 active 中 founder + disciple 全员享。Phase 5+ 飞升后再切语义(founder 退 active → buff 作用于新一代继位者)。已落 `lib/features/inheritance/application/founder_buff_service.dart` + `derived_stats.dart` `maxHp / internalForceMaxWithLineage / criticalRate` 各加 `founderBuffActive` 可选参数 + `lineage_panel_screen.dart _FounderBuffSection` UI 显。**P1.1 简化**:玩家本人即 founder 自享 buff;cultivation_progress_pct 修炼度公式接入留 Phase 5+ |
 | 12 | 江湖商店折扣公式(Demo 不列)| Demo 内容总量表(§7)未列江湖商店,1.0 版需要时再补 |
 
 ---
