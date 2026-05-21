@@ -12,20 +12,26 @@ import '../../equipment/application/drop_service.dart';
 /// 主线 victory dialog(W15 #30 P3 后续 A 任务)。
 ///
 /// 体例对齐塔 `_showVictoryDialog`,但主线 victory 此前完全无 dialog,本批新建。
-/// content = drop 列表 + [AdvancementSummary](升层多角色 banner)。
+/// content = drop 列表 + [AdvancementSummary](升层多角色 banner)
+/// + 共鸣度晋阶 sub-row(P1.1 候选 3-a)。
 /// dialog 关闭后由 caller 继续 push `NarrativeReaderScreen` 显胜利剧情。
 Future<void> showStageVictoryDialog({
   required BuildContext context,
   required StageDef stage,
   required DropResult drops,
   required List<AdvancementEntry> advancements,
+  List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
 }) async {
   await showDialog<void>(
     context: context,
     barrierDismissible: false,
     builder: (ctx) => AlertDialog(
       title: Text('${stage.name} · ${UiStrings.stageVictoryTitle}'),
-      content: StageVictoryContent(drops: drops, advancements: advancements),
+      content: StageVictoryContent(
+        drops: drops,
+        advancements: advancements,
+        resonanceUpgrades: resonanceUpgrades,
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(ctx).pop(),
@@ -42,10 +48,12 @@ class StageVictoryContent extends StatelessWidget {
     super.key,
     required this.drops,
     required this.advancements,
+    this.resonanceUpgrades = const [],
   });
 
   final DropResult drops;
   final List<AdvancementEntry> advancements;
+  final List<ResonanceUpgradeNotice> resonanceUpgrades;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +89,80 @@ class StageVictoryContent extends StatelessWidget {
           const SizedBox(height: 12),
           AdvancementSummary(entries: advancements),
         ],
+        if (resonanceUpgrades.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          ResonanceUpgradeBanner(notices: resonanceUpgrades),
+        ],
+      ],
+    );
+  }
+}
+
+/// 单条共鸣度晋阶通知(P1.1 候选 3-a)。
+///
+/// caller(stage_entry_flow / tower_entry_flow)在 GameEvent 写入循环中
+/// 同步 cache 一份,传 victory dialog 显「装备 X 共鸣度晋至 Y 阶」。
+class ResonanceUpgradeNotice {
+  final String equipmentName;
+  final ResonanceStage newStage;
+
+  const ResonanceUpgradeNotice({
+    required this.equipmentName,
+    required this.newStage,
+  });
+
+  @override
+  String toString() =>
+      'ResonanceUpgradeNotice($equipmentName → ${newStage.name})';
+}
+
+/// 共鸣度晋阶 banner(P1.1 候选 3-a)。
+///
+/// 体例对齐 [AdvancementSummary]:label + 每行 icon + 文字。
+/// 公开便于 widget test 直接 pump。
+class ResonanceUpgradeBanner extends StatelessWidget {
+  const ResonanceUpgradeBanner({super.key, required this.notices});
+
+  final List<ResonanceUpgradeNotice> notices;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          UiStrings.stageVictoryResonanceLabel,
+          style: TextStyle(
+            color: WuxiaColors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        for (final n in notices)
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.auto_awesome,
+                  size: 14,
+                  color: WuxiaColors.popupCritical,
+                ),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    UiStrings.stageVictoryResonanceUpgrade(
+                      n.equipmentName,
+                      EnumL10n.resonanceStage(n.newStage),
+                    ),
+                    style: const TextStyle(color: WuxiaColors.textPrimary),
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }

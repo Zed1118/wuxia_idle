@@ -28,6 +28,8 @@ import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../event/application/game_event_service.dart';
+import '../../mainline/presentation/stage_victory_dialog.dart'
+    show ResonanceUpgradeNotice, ResonanceUpgradeBanner;
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../../../shared/strings.dart';
@@ -133,11 +135,14 @@ Future<void> runTowerFlow({
   // W15 #30 P3:isFirstClear 时 EXP 写回 + 升层(沿 drops 首通发奖体例,
   // 防刷塔无脑刷 EXP)。
   // W15 #30 P3 后续 A:收 advancements 暂存供 victory dialog banner。
-  final advancements = await _applyTowerVictoryResolution(
+  // P1.1 候选 3-a:同段收 resonanceUpgrades 供 dialog 显共鸣度晋阶 sub-row。
+  final victoryRes = await _applyTowerVictoryResolution(
     ref: ref,
     floor: floor,
     isFirstClear: clearResult.isFirstClear,
   );
+  final advancements = victoryRes.advancements;
+  final resonanceUpgrades = victoryRes.resonanceUpgrades;
   // W13-v3 fix: invalidate character/equipment/technique family,否则下次进
   // 角色面板看到 Riverpod 缓存的旧 battleCount / cultivationProgress
   ref.invalidate(characterByIdProvider);
@@ -191,6 +196,7 @@ Future<void> runTowerFlow({
       isFirstClear: clearResult.isFirstClear,
       drops: drops,
       advancements: advancements,
+      resonanceUpgrades: resonanceUpgrades,
     );
   }
 
@@ -260,19 +266,28 @@ Future<bool> _runTowerBattle({
 ///
 /// W15 #30 P3 后续 A:返回升层结果 list 供 caller push `_showVictoryDialog`
 /// 时显多角色升层 banner。
-Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
+/// P1.1 候选 3-a:record 加 `resonanceUpgrades` 供 dialog 显共鸣度晋阶 sub-row。
+Future<
+    ({
+      List<AdvancementEntry> advancements,
+      List<ResonanceUpgradeNotice> resonanceUpgrades,
+    })> _applyTowerVictoryResolution({
   required WidgetRef ref,
   required TowerFloorDef floor,
   required bool isFirstClear,
 }) async {
+  const empty = (
+    advancements: <AdvancementEntry>[],
+    resonanceUpgrades: <ResonanceUpgradeNotice>[],
+  );
   final isar = ref.read(isarProvider);
-  if (isar == null) return const [];
+  if (isar == null) return empty;
   final finalState = ref.read(battleProvider);
-  if (!finalState.isFinished) return const [];
+  if (!finalState.isFinished) return empty;
 
   final save = await isar.saveDatas.get(0);
   final ids = save?.activeCharacterIds ?? const <int>[];
-  if (ids.isEmpty) return const [];
+  if (ids.isEmpty) return empty;
 
   final characters = <Character>[];
   final equipsByCh = <int, List<Equipment>>{};
@@ -307,7 +322,7 @@ Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
     }
     techsByCh[c.id] = ts;
   }
-  if (characters.isEmpty) return const [];
+  if (characters.isEmpty) return empty;
 
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
@@ -343,6 +358,8 @@ Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
   }
 
   final founderId = save?.founderCharacterId;
+  // P1.1 候选 3-a:writeTxn 内 push notice,函数末 return 给 caller 传 dialog。
+  final resonanceUpgrades = <ResonanceUpgradeNotice>[];
   await isar.writeTxn(() async {
     await isar.characters.putAll(characters);
     for (final list in techsByCh.values) {
@@ -368,12 +385,18 @@ Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
       }
       if (eq == null) continue;
       final def = GameRepository.instance.getEquipment(eq.defId);
+      final stage = eq.resonanceStage(numbers);
       await events.recordResonanceUpgraded(
         characterId: eq.ownerCharacterId ?? founderId ?? 0,
         equipmentId: eq.id,
         equipmentName: def.name,
-        newStage: eq.resonanceStage(numbers).index + 1,
+        newStage: stage.index + 1,
       );
+      // P1.1 候选 3-a:cache notice 供 victory dialog 显共鸣度晋阶 sub-row。
+      resonanceUpgrades.add(ResonanceUpgradeNotice(
+        equipmentName: def.name,
+        newStage: stage,
+      ));
     }
     final tutorialSvc = TutorialService(isar);
     for (final entry in advancements) {
@@ -406,7 +429,10 @@ Future<List<AdvancementEntry>> _applyTowerVictoryResolution({
     }
   });
 
-  return advancements;
+  return (
+    advancements: advancements,
+    resonanceUpgrades: resonanceUpgrades,
+  );
 }
 
 /// Isar 持久化爬塔掉落（W6 nullable propagation：isarProvider 为 null 时短路，测试安全）。
@@ -473,6 +499,7 @@ Future<void> _showVictoryDialog({
   required bool isFirstClear,
   required DropResult drops,
   required List<AdvancementEntry> advancements,
+  List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
 }) async {
   await showDialog<void>(
     context: context,
@@ -480,7 +507,11 @@ Future<void> _showVictoryDialog({
     builder: (ctx) => AlertDialog(
       title: Text(UiStrings.towerFloorLabel(floor.floorIndex)),
       content: isFirstClear
-          ? _FirstClearContent(drops: drops, advancements: advancements)
+          ? _FirstClearContent(
+              drops: drops,
+              advancements: advancements,
+              resonanceUpgrades: resonanceUpgrades,
+            )
           : const Text(UiStrings.towerReplayNoReward),
       actions: [
         TextButton(
@@ -564,15 +595,18 @@ class _FirstClearContent extends StatelessWidget {
   const _FirstClearContent({
     required this.drops,
     required this.advancements,
+    this.resonanceUpgrades = const [],
   });
 
   final DropResult drops;
   final List<AdvancementEntry> advancements;
+  final List<ResonanceUpgradeNotice> resonanceUpgrades;
 
   @override
   Widget build(BuildContext context) {
     final hasAdvanced = advancements.any((e) => e.result.didAdvance);
-    if (drops.isEmpty && !hasAdvanced) {
+    final hasResonance = resonanceUpgrades.isNotEmpty;
+    if (drops.isEmpty && !hasAdvanced && !hasResonance) {
       return const Text(UiStrings.towerFirstClearNoReward);
     }
     final lines = <String>[
@@ -601,6 +635,10 @@ class _FirstClearContent extends StatelessWidget {
         if (hasAdvanced) ...[
           const SizedBox(height: 12),
           AdvancementSummary(entries: advancements),
+        ],
+        if (hasResonance) ...[
+          const SizedBox(height: 12),
+          ResonanceUpgradeBanner(notices: resonanceUpgrades),
         ],
       ],
     );
