@@ -9,7 +9,9 @@
 
 **P1.3 美术线 75% → ~80%**(89 + 22 = 111 张落 app)。
 
-**下波**:Stage 3 剩 28 张待出图(MJ Moderator 安全级,memory 第 18 条 Type A/B 配方 9.0/10):**场景插画 18 张**(章节开篇 3 + 主线核心关 9 + 闭关章首图 6,主环境 sref + sw 100 + ar 16:9 + stylize 300)+ **心法卷轴 10 张**(7 阶 cover 7 + 3 标志高阶,无 sref + ar 2:3 + stylize 200)。用户解封后(7:40pm 5/21)开始;Mac 端 schema + widget 接入就位,出图归位即激活。
+**2026-05-21 晚 候选 2 主线扩 Ch4 「西出阳关」 Phase 0 + Phase 1 spec 起草 ✅**(Mac+Opus xhigh ~1h,无 commit lib/yaml/GDD 改动,纯 docs/handoff/ 2 doc 552 行):用户拍板候选 2 = 1.0 P2 第二条主线第 1 章(非 Demo §8.4 扩)+ 字数方案 γ(Demo §8.4 不动,Ch4+ 计 P2 +6-10k 字预算)+ 西北路径 + yiLiu 全章 + 末关跨 jueDing。**核心设计**:5 关「阳关初渡 / 古道行商 / 沙海迷踪 / 西凉论剑 / 阳关一决」+ 末 Boss 三人组「西凉霸主(jueDing yinRou)+ 左右护法(yiLiu dengFeng)」+ EncounterBiome 扩 2 enum(`desert` / `frontier`)+ dropTable 引 `weapon_zhongqi_qing_xu_jian` 1.0(给 Ch5 jueDing 起步)+ `armor_baowu_jin_si_jia` 0.4(传承 Ch3 雁门 lore 串联)+ 字数 ~6,140 字(章首尾 ~1,300 + 12 narratives ~4,840)。详 [`p1_x_chapter4_phase0_reality_check_2026-05-21.md`](docs/handoff/p1_x_chapter4_phase0_reality_check_2026-05-21.md)(227 行 · 4 关键发现 + 7 项拍板)+ [`p1_x_chapter4_spec_2026-05-21.md`](docs/handoff/p1_x_chapter4_spec_2026-05-21.md)(325 行 · 10 节设计稿 + 6 风险挂账 + Phase 2 batch 估时 6-10h)。**关键发现 ⭐**:GDD §8.4 字数实测 8,233 字(W18 后扩到位但未对齐 GDD,接受作既成不动)+ schema 完备零扩(stage_def.dart 字段全)+ ROADMAP_1_0 P2 路径明确。
+
+**下波 候选**:① **候选 2 Phase 2 实装**(opus xhigh ~6-10h,batch 2.1 enum 扩 → 2.2 stages.yaml → 2.3 narratives → 2.4 GDD/PROGRESS 同步)— 直接接续 spec;② **候选 1 Stage 3 剩 28 张**(MJ Moderator 安全级 memory 第 18 条 Type A/B 配方 9.0/10:场景 18 主环境 sref + sw 100 + ar 16:9 + stylize 300 / 心法 10 无 sref + ar 2:3 + stylize 200)— 等用户 MJ 解封后(7:40pm 5/21)开始;**节奏 ≤ 8 张/批 + 间隔 ≥ 45 min**(本会话 grill 已锁,memory `feedback_mj_character_batch_v6_evolution` 节奏纪律)。
 
 **P1.1 全收口 ✅**(候选 1+2+3+4 实装 + 候选 5 文档对齐 + 候选 6 audit 复跑)。详条已迁末尾「### P1.1 候选 1-5 详条迁出 2026-05-21」段。
 
