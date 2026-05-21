@@ -5,11 +5,13 @@
 
 ## 当前阶段
 
-**2026-05-21 主对话 候选 6 stage_audit 复跑 ✅**(Mac opus ~30min,commit `825f9ce`,220 行 audit doc):对照 [stage_audit_2026-05-20](docs/handoff/stage_audit_2026-05-20.md) 出 24h 推进报告。核心发现:**P1.1 60% → ~100% ⭐⭐**(单日 20 commit / +49 test / +1998 lib 行,5 候选全收口);Demo §8.4 14/14 持续(心法相生 7→8);代码健康满分(1172 pass / 0 issues / test:code 102%);真硬阻塞 1.0 启动 = 0 项。新增 §1.5 P1.1 24h 推进矩阵 + §3.5 closeout doc 体量(170 docs / 1.8M / 28175 行 ⚠️ 到归档拐点)。详 [`stage_audit_2026-05-21.md`](docs/handoff/stage_audit_2026-05-21.md)。
+**2026-05-21 晚 候选 1 M4 美术 Stage 3 · BOSS 题材 22 张闭环 ✅**(Mac opus xhigh ~3h,4 commit `319e15d` + `f14ba0c` + `7ada9b8` + `e6d5806`):用户拍板二选一 → 候选 1 美术 Stage 3 优先(BOSS + 场景 + 心法卷轴 3 题材,~50 张轻收口,BOSS 优先)。Phase 0 reality check 核心发现 ⭐:character_avatar.dart 占位 widget 改造 1 处 = 60+ enemy iconPath sleeper schema 一次性激活(stages + towers yaml 早锚 + StageDef.iconPath 早 parse 但 widget 没消费)。Phase 1 三 widget 全接入(character_avatar / battle_screen Stack 背景 / technique_panel tier banner)+ 5 def schema 加可空字段。**MJ 出图 22/22** = v1 旧违规版 7 张过 → 触发 Moderator manual review(锁 ~5h)→ v5 合规版 14 张全过 → v6.1 thug_a 老者意境加固 1 张重抽。towers.yaml 6 BOSS iconPath 撞名(F15-30 全占位 wulin_bazhu.png)sed 精确改 6 行 → tower_boss_<floor>.png。1172 pass / 0 analyze 全程不破。详 [`art_stage3_boss_closeout_2026-05-21.md`](docs/handoff/art_stage3_boss_closeout_2026-05-21.md) + Phase 0 [`art_stage3_phase0_reality_check_2026-05-21.md`](docs/handoff/art_stage3_phase0_reality_check_2026-05-21.md)。memory sink:`feedback_mj_character_batch_v6_evolution`(≥10 张大批量 Moderator 累计触发 + v6 进化体例)。
+
+**P1.3 美术线 75% → ~80%**(89 + 22 = 111 张落 app)。
+
+**下波**:Stage 3 剩 28 张待出图(MJ Moderator 安全级,memory 第 18 条 Type A/B 配方 9.0/10):**场景插画 18 张**(章节开篇 3 + 主线核心关 9 + 闭关章首图 6,主环境 sref + sw 100 + ar 16:9 + stylize 300)+ **心法卷轴 10 张**(7 阶 cover 7 + 3 标志高阶,无 sref + ar 2:3 + stylize 200)。用户解封后(7:40pm 5/21)开始;Mac 端 schema + widget 接入就位,出图归位即激活。
 
 **P1.1 全收口 ✅**(候选 1+2+3+4 实装 + 候选 5 文档对齐 + 候选 6 audit 复跑)。详条已迁末尾「### P1.1 候选 1-5 详条迁出 2026-05-21」段。
-
-**下波 ⭐**(audit §5 推荐 grill 拍板):**候选 1 M4 美术 Stage 3** vs **候选 2 主线扩(第 4 章 + 5 关)** 二选一,均直接接续(美术线 P1.3 75% → 100% / Demo §8.4 主线 15→20 上限)。次选 3 武学领悟扩 / 4 师徒 Phase 5+ / 5 闭关地图扩。详 audit §5 候选 ROI 表。
 
 > 归档段「### M4 #46 美术详条迁出 2026-05-20/21」+「### W17-W18 详条迁出 2026-05-19/20」+ `docs/handoff/` 各 closeout。
 
