@@ -382,6 +382,9 @@ class UiStrings {
   static String equipmentDetailResonanceNextHint(int remaining, String next) =>
       '距「$next」尚需 $remaining 战';
 
+  // P1.1 候选 3-c：sword_song 暴击剑鸣浮字（damage_popup 附加）
+  static const String swordSongHint = '✦剑鸣';
+
   // ─── 升层 banner 多角色版（mainline / tower 共用）─────────────────────
 
   static String advancementForCharacter(

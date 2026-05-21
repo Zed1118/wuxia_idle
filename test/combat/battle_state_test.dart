@@ -634,6 +634,67 @@ void main() {
       expect(jsCount, 1);
     });
   });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // P1.1 候选 3-c:sword_song 暴击剑鸣 (xinJianTongLing 阶启用)
+  // ────────────────────────────────────────────────────────────────────────
+
+  group('P1.1 候选 3-c · swordSongResonanceActive', () {
+    Character mkPlayer() => _mkChar(
+          tier: RealmTier.erLiu,
+          layer: RealmLayer.yuanShu,
+          internalForce: 3000,
+          school: TechniqueSchool.gangMeng,
+        );
+    Technique mkTech() => _mkTech(
+          defId: 'tech_gangmeng_mingjia',
+          tier: TechniqueTier.mingJiaGong,
+          school: TechniqueSchool.gangMeng,
+        );
+    Equipment mkWeapon({required int battleCount}) {
+      final e = _mkEquip(baseAttack: 580);
+      e.battleCount = battleCount;
+      return e;
+    }
+
+    test('武器 battleCount=2000 (xinJianTongLing) → swordSongResonanceActive=true',
+        () {
+      final bc = BattleCharacter.fromCharacter(
+        character: mkPlayer(),
+        equipped: [mkWeapon(battleCount: 2000)],
+        mainTechnique: mkTech(),
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      expect(bc.swordSongResonanceActive, isTrue);
+    });
+
+    test('武器 battleCount=500 (moQi) → swordSongResonanceActive=false', () {
+      // moQi 阶 hasSwordSongEffect=false,虽然 unlocksJointSkill=true
+      final bc = BattleCharacter.fromCharacter(
+        character: mkPlayer(),
+        equipped: [mkWeapon(battleCount: 500)],
+        mainTechnique: mkTech(),
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      expect(bc.swordSongResonanceActive, isFalse);
+    });
+
+    test('无武器装备 → swordSongResonanceActive=false', () {
+      final bc = BattleCharacter.fromCharacter(
+        character: mkPlayer(),
+        equipped: const [],
+        mainTechnique: mkTech(),
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      expect(bc.swordSongResonanceActive, isFalse);
+    });
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

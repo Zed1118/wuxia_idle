@@ -98,6 +98,12 @@ class BattleCharacter {
   /// 自己出手时每次承受 [InternalInjurySlot.damagePerTick] 固定伤害。
   final InternalInjurySlot? internalInjury;
 
+  /// P1.1 候选 3-c:任一武器 resonanceStage 达到 hasSwordSongEffect=true 阶
+  /// (xinJianTongLing 心剑通灵)时为 true。该角色暴击时 damage_popup 旁
+  /// 追加「✦剑鸣」浮字(纯文字降级,VFX 留 Phase 5+ 美术阶段)。
+  /// fromCharacter 自动算;NPC 走 _enemyToBattle 默认 false。
+  final bool swordSongResonanceActive;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -122,6 +128,7 @@ class BattleCharacter {
     required this.teamSide,
     required this.slotIndex,
     this.internalInjury,
+    this.swordSongResonanceActive = false,
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -212,13 +219,18 @@ class BattleCharacter {
     // 第 4/5 招。GDD §6.4 共鸣度满级解锁「人剑合一」。fromCharacter 唯一 caller
     // 是 _playerToBattle,敌人走 _enemyToBattle 不享。test fixture 缺
     // skill_joint_skill 时 silent skip(containsKey 守护)。
-    final hasJointSkillUnlocked = equipped.any((e) {
-      if (e.slot != EquipmentSlot.weapon) return false;
+    // P1.1 候选 3-c:同段查 weapon stage cfg.hasSwordSongEffect →
+    // swordSongResonanceActive,xinJianTongLing 阶玩家暴击附带剑鸣浮字。
+    var hasJointSkillUnlocked = false;
+    var swordSongActive = false;
+    for (final e in equipped) {
+      if (e.slot != EquipmentSlot.weapon) continue;
       final stage = e.resonanceStage(numbers);
       final cfg = numbers.resonanceStages
           .firstWhere((c) => c.stage == stage, orElse: () => _shengShuFallback);
-      return cfg.unlocksJointSkill;
-    });
+      if (cfg.unlocksJointSkill) hasJointSkillUnlocked = true;
+      if (cfg.hasSwordSongEffect) swordSongActive = true;
+    }
     if (hasJointSkillUnlocked) {
       final repo = GameRepository.instance;
       if (repo.skillDefs.containsKey('skill_joint_skill')) {
@@ -249,6 +261,7 @@ class BattleCharacter {
       isAlive: true,
       teamSide: teamSide,
       slotIndex: slotIndex,
+      swordSongResonanceActive: swordSongActive,
     );
   }
 
@@ -276,6 +289,7 @@ class BattleCharacter {
     int? teamSide,
     int? slotIndex,
     Object? internalInjury = _unset,
+    bool? swordSongResonanceActive,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -305,6 +319,8 @@ class BattleCharacter {
       internalInjury: identical(internalInjury, _unset)
           ? this.internalInjury
           : internalInjury as InternalInjurySlot?,
+      swordSongResonanceActive:
+          swordSongResonanceActive ?? this.swordSongResonanceActive,
     );
   }
 
