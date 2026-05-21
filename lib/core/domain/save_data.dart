@@ -49,4 +49,19 @@ class SaveData {
   /// 值域 `{6, 7, 8}`,玩家点 banner 后 `markHintRead(step)` 同事务 add。
   /// 单调追加不删,UI 端取 `step ∈ {6,7,8} && step ∉ tutorialHintsRead` 渲染。
   List<int> tutorialHintsRead = [];
+
+  /// 收徒提议已发出(P1.1 A1 E.1,GDD §7.1)。
+  ///
+  /// 玩家在 tutorialStep == 6 时点收徒 banner 进入收徒弹窗,无论接受或拒绝
+  /// (D3.a 一次性 only)弹窗 dismiss 时 markOffered → true。一次性 gate,
+  /// 防止重触发(audit doc 方案 3 + D3.a 决议)。
+  bool recruitmentOffered = false;
+
+  /// 已收徒弟 Character id 列表(P1.1 A1 E.1)。
+  ///
+  /// inactive 池语义(audit doc 方案 3 + I2 决议):**不入** [activeCharacterIds]
+  /// 但 Character 已写 Isar.characters,通过本字段反查「玩家通过收徒新增的弟子」。
+  /// 与 lineageRole=disciple + isFounder=false 联合判定(active 弟子也在该字段,
+  /// 但本字段只含通过收徒新增的)。1.0 后续扩 active 上限时,可作为升级依据。
+  List<int> recruitedDiscipleIds = [];
 }

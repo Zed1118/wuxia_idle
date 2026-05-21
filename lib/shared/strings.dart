@@ -543,4 +543,36 @@ class UiStrings {
 
   // ── P1 #42 Phase 5 · EquipmentDetailScreen 延续典故 chip ──
   static const String continuedLoreChipLabel = '延续';
+
+  // ── P1.1 A1 E.1 · 收徒弹窗(GDD §7.1)──
+  static const String recruitmentDialogTitle = '择徒授业';
+  static const String recruitmentDialogIntro =
+      '内功既至一流,开派祖师可收徒授业。三位投奔者已至门前,可择其一拜入门下;也可暂且谢绝,待来日再议。';
+  static const String recruitmentSchoolGangMengLabel = '刚猛';
+  static const String recruitmentSchoolLingQiaoLabel = '灵巧';
+  static const String recruitmentSchoolYinRouLabel = '阴柔';
+  static const String recruitmentSchoolNoneLabel = '无流派';
+  static const String recruitmentAttrConstitutionLabel = '根骨';
+  static const String recruitmentAttrEnlightenmentLabel = '悟';
+  static const String recruitmentAttrAgilityLabel = '身法';
+  static const String recruitmentAttrFortuneLabel = '机缘';
+  static const String recruitmentAcceptButton = '拜师';
+  static const String recruitmentDeclineButton = '谢绝';
+  static const String recruitmentConfirmTitle = '确认收徒';
+  static String recruitmentConfirmBody(String name) =>
+      '收 $name 为徒,自此师徒名分既定,不可悔改。';
+  static const String recruitmentConfirmYes = '确认';
+  static const String recruitmentConfirmNo = '再想想';
+  static const String recruitmentDeclineConfirmTitle = '谢绝收徒';
+  static const String recruitmentDeclineConfirmBody =
+      '此乃一次性时机,谢绝即此生不再收徒。是否仍要谢绝?';
+  static String recruitmentSuccessSnack(String name) => '$name 已拜入门下';
+  static const String recruitmentDeclineSnack = '已谢绝收徒,门派维持三人';
+  static const String recruitmentStartingTechniqueLabel = '起手心法';
+  static const String recruitmentStartingEquipmentLabel = '起手装备';
+  static const String recruitmentNoStartingTechnique = '无(待师父亲授)';
+
+  // ── P1.1 A1 E.1 · LineagePanelScreen inactive 段 ──
+  static const String lineagePanelInactiveSection = '在册弟子(未出阵)';
+  static const String lineagePanelNoInactive = '尚无在册弟子';
 }

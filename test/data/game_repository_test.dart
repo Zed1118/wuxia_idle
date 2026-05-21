@@ -874,4 +874,151 @@ masters:
       );
     });
   });
+
+  group('P1.1 A1 E.1 · 收徒候选红线校验', () {
+    // 用 recruitLoader 注入 data/recruit_candidates.yaml 文本;其余文件走真实 fileLoader。
+    Future<String> Function(String) recruitLoader(String yaml) {
+      return (String path) async {
+        if (path.endsWith('recruit_candidates.yaml')) return yaml;
+        return fileLoader(path);
+      };
+    }
+
+    test('生产 yaml 3 候选加载 + 维度 ABC 完整', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      expect(repo.recruitCandidates.length, 3,
+          reason: 'D2.b 决议 3 NPC');
+      expect(repo.recruitCandidates['candidate_a']!.school?.name, 'gangMeng');
+      expect(repo.recruitCandidates['candidate_b']!.school?.name, 'lingQiao');
+      expect(repo.recruitCandidates['candidate_c']!.school, isNull);
+      // 全部 disciple 角色(audit M 决议)
+      for (final c in repo.recruitCandidates.values) {
+        expect(c.lineageRole, LineageRole.disciple);
+        expect(c.defaultRealm, RealmTier.sanLiu);
+      }
+    });
+
+    test('候选数 ≠ 3 → 抛 StateError(本批 D2.b 锚 3)', () async {
+      const broken = '''
+recruit_candidates:
+  - id: c1
+    name: '甲'
+    lineageRole: disciple
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    school: gangMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+    startingTechniqueIds: []
+    startingEquipmentIds: []
+    lore: '占位'
+  - id: c2
+    name: '乙'
+    lineageRole: disciple
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    school: lingQiao
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+    startingTechniqueIds: []
+    startingEquipmentIds: []
+    lore: '占位'
+''';
+
+      expect(
+        GameRepository.loadAllDefs(loader: recruitLoader(broken)),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('收徒候选应为 3 条'),
+        )),
+      );
+    });
+
+    test('candidate.lineageRole=founder → 抛 StateError(只能 disciple)', () async {
+      const broken = '''
+recruit_candidates:
+  - id: c1
+    name: '甲'
+    lineageRole: founder
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    school: gangMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+    startingTechniqueIds: []
+    startingEquipmentIds: []
+    lore: '占位'
+  - id: c2
+    name: '乙'
+    lineageRole: disciple
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    school: lingQiao
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+    startingTechniqueIds: []
+    startingEquipmentIds: []
+    lore: '占位'
+  - id: c3
+    name: '丙'
+    lineageRole: disciple
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+    startingTechniqueIds: []
+    startingEquipmentIds: []
+    lore: '占位'
+''';
+
+      expect(
+        GameRepository.loadAllDefs(loader: recruitLoader(broken)),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('必须为 disciple'),
+        )),
+      );
+    });
+
+    test('attributeProfile.total > 24 → 抛 StateError', () async {
+      const broken = '''
+recruit_candidates:
+  - id: c1
+    name: '甲'
+    lineageRole: disciple
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    school: gangMeng
+    attributeProfile: {constitution: 10, enlightenment: 10, agility: 10, fortune: 10}
+    startingTechniqueIds: []
+    startingEquipmentIds: []
+    lore: '占位'
+  - id: c2
+    name: '乙'
+    lineageRole: disciple
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    school: lingQiao
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+    startingTechniqueIds: []
+    startingEquipmentIds: []
+    lore: '占位'
+  - id: c3
+    name: '丙'
+    lineageRole: disciple
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
+    startingTechniqueIds: []
+    startingEquipmentIds: []
+    lore: '占位'
+''';
+
+      expect(
+        GameRepository.loadAllDefs(loader: recruitLoader(broken)),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('应 ∈ [16, 24]'),
+        )),
+      );
+    });
+  });
 }

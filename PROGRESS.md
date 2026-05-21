@@ -5,20 +5,22 @@
 
 ## 当前阶段
 
-**2026-05-21 主对话 P2 启动准备 audit + 6 决策拍板 ✅ + 桌面 8 nightshift worktree 清理**(Mac opus xhigh ~50min,无代码 commit):候选 4 第二条主线 audit + 全方案 A 拍板(D5 简化为单门槛)+ 保守路径拍板 + 桌面 8 worktree 清理。HEAD `99dccdd`(与 origin/main 同步),1127 pass / analyze 0 issues 不变。
+**2026-05-21 主对话 P1.1 A1 师徒 E.1 收徒弹窗实装 ✅**(Mac opus xhigh ~3.5h):方案 3 inactive 池收徒一波闭环 · audit + 5 决策拍板 + 实装 + 12 test 净增 + 0 regress。HEAD `<即将创建>`(待 push origin/main),1139 pass(1127→1139 净 +12)/ analyze 0 issues / saveVersion 0.11.0 → 0.12.0。
 
-- **Phase 0 reality check 四维 grep**:维度 A schema 0 命中 mainlineId 层 / 维度 B 8 caller 耦合 / 维度 C `lib/features/mainline/` 已建 9 文件 1576 行 / 维度 D ChapterListScreen `_chapters=[1,2,3]` 硬编码 + 单入口 main_menu.dart:117
-- **6 决策 ✅ 拍板**(详 `docs/handoff/p2_mainline_audit_2026-05-21.md` §9):
-  - D1 `MainlineProgress`+`StageDef` 加 `mainlineId` String
-  - D2 String("primary"/"secondary")
-  - D3 secondary 复用 ch1-3 + `stage_p2_*` prefix(UI 显示「序章/中卷/终卷」语义标签)
-  - D4 ChapterListScreen 内分两段(MainMenu 不加按钮)
-  - D5 **仅 Ch3 全通**(单门槛简化 · erLiu 保留作 service assert)
-  - D6 第二主线不触发 tutorial(if mainlineId=='primary' 守卫)
-- **执行路径 ✅ 拍板:保守路径**(audit §10):当前会话停在 audit 拍板 → 下波 P1.1 A1/A3/A4 收口(sonnet 各 1-3h ≈ 1 工作日)→ 下下波 P1.2 §12 江湖恩怨+声望(opus xhigh 6-8h 独立模块)→ 再下波 P2.1.0 schema(opus xhigh 4-6h)
-- **桌面清理**:8 nightshift/T01-T08 worktree(2026-05-20 P1 #45 nightshift 隔离环境,内容已 cherry-pick 到 main)全 `git worktree remove` 收尾 · 桌面只剩主仓库 `挂机武侠` · 8 nightshift/T0X branch 暂保留待拍板删除
+- **audit 阶段**(opus xhigh ~30min):`docs/handoff/p1_1_a1_recruitment_audit_2026-05-21.md` 313 行 · Phase 0 四维 grep + 现状校正(closeout §6.1 误写「service 已建」,grep 0 命中)+ 3 方案对比 + 5 决策点(M/D1-D4)
+- **5 决策 ✅ 全拍板**:M=方案 3(inactive 池) · D1.b 列表 outside 即 inactive(无 schema bump for isActive) · D2.b 3 NPC · D3.a 一次性 only · D4.b 完整 UI
+- **实装阶段**(opus xhigh ~3h):新建 5 文件 + 改 8 文件 + 加 12 test
+  - 数据层:`data/recruit_candidates.yaml`(3 NPC 云寒青/柳拂陻/马智远 · 刚猛/灵巧/平衡型) + `lib/data/defs/recruit_candidate_def.dart` + GameRepository load + `_enforceRecruitCandidateRedLines` 红线(fixture-friendly:starting refs 不全则视 fixture 模式静默 skip)
+  - schema bump:`SaveData` 加 `recruitmentOffered: bool` + `recruitedDiscipleIds: List<int>` → saveVersion 0.11.0 → 0.12.0
+  - service:`lib/features/recruitment/application/recruitment_service.dart` 5 method(hasOffered/getRecruitedIds/getCandidates/acceptCandidate/declineRecruitment)+ providers
+  - UI:`RecruitmentDialog` ConsumerStatefulWidget(D4.b 完整体例:portrait + 4 属性 + 流派 chip + 起手心法/装备 + lore + 拜师/谢绝)+ confirm dialog 二次校验
+  - hook:tutorial step 6 banner 加 `onTapOverride` callback → main_menu wire push RecruitmentDialog;step 7/8 仍走原 markHintRead
+  - inactive 池显示:`lineage_info_provider` 加 `inactiveDisciples` 字段 + `LineagePanelScreen` 加 `_InactiveDisciplesSection`
+  - 文案:`strings.dart` 加 16 条 recruitment + 2 条 inactive 段
+- **test +12**:+4 game_repository red line(生产 3 候选 + 数量 ≠ 3 + lineageRole=founder + total>24)+ 8 service unit(hasOffered/getRecruitedIds/getCandidates/decline+幂等/accept+幂等/candidateId 不存在 throw)
+- **未做项**:RecruitmentDialog widget test(GameRepository.loadAllDefs 完整加载体例复杂,留候选 5 收口或下次)
 
-**下波 ⭐**:P1.1 A1/A3/A4 收口(sonnet 各 1-3h,先做最快见效的 Demo polish)。
+**下波 ⭐**:候选 2 A1 师徒 E.5 founder_ancestor_buff(`enabled_when_alive: false → true` + sect_wide_buff 数值激活 + 跨 inheritance/character/save_data/UI 模块,**opus xhigh 1-2h**)。
 
 > 归档段「### M4 #46 美术详条迁出 2026-05-20/21」+「### W17-W18 详条迁出 2026-05-19/20」+ `docs/handoff/` 各 closeout。
 

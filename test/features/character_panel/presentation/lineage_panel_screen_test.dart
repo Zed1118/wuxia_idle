@@ -109,6 +109,7 @@ void main() {
       LineageInfo(
         founder: founder,
         disciples: [d1, d2],
+        inactiveDisciples: const [],
         heritageEquipments: [h1, h2],
       ),
     );
@@ -129,6 +130,7 @@ void main() {
       const LineageInfo(
         founder: null,
         disciples: [],
+        inactiveDisciples: [],
         heritageEquipments: [],
       ),
     );
@@ -155,6 +157,7 @@ void main() {
       LineageInfo(
         founder: founder,
         disciples: const [],
+        inactiveDisciples: const [],
         heritageEquipments: [h],
       ),
     );

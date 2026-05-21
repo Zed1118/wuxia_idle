@@ -12,6 +12,7 @@ import '../../debug/presentation/phase2_test_menu.dart';
 import '../../festival/application/festival_service_providers.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
+import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
@@ -109,7 +110,23 @@ class MainMenu extends ConsumerWidget {
                   ),
                 ),
                 const _TodayFestivalChip(),
-                if (activeHint != null) TutorialBannerCard(hint: activeHint),
+                if (activeHint != null)
+                  TutorialBannerCard(
+                    hint: activeHint,
+                    // P1.1 A1 E.1:step 6 收徒 banner 点击 → push RecruitmentDialog
+                    // (而非默认 markHintRead 关 banner)。dialog 内部完成
+                    // markHintRead + markOffered + invalidate(无论拜师/谢绝)。
+                    // recruitmentOffered=true 时 banner 不会再显(见 _firstUnreadHint)。
+                    onTapOverride: activeHint.step == 6
+                        ? () async {
+                            if (!context.mounted) return;
+                            await Navigator.of(context)
+                                .push<void>(MaterialPageRoute(
+                              builder: (_) => const RecruitmentDialog(),
+                            ));
+                          }
+                        : null,
+                  ),
                 const SizedBox(height: 48),
                 _MenuButton(
                   label: UiStrings.mainMenuMainline,

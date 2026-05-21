@@ -89,6 +89,12 @@ class _Body extends StatelessWidget {
               (i) => _portraitForSlot(i + 1),
             ),
           ),
+          if (info.inactiveDisciples.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _InactiveDisciplesSection(
+              disciples: info.inactiveDisciples,
+            ),
+          ],
           const SizedBox(height: 16),
           _HeritageSection(equipments: info.heritageEquipments),
         ],
@@ -150,6 +156,34 @@ class _DisciplesSection extends StatelessWidget {
                 character: disciples[i],
                 portraitPath:
                     i < portraitPaths.length ? portraitPaths[i] : null,
+              ),
+            ],
+        ],
+      ),
+    );
+  }
+}
+
+class _InactiveDisciplesSection extends StatelessWidget {
+  const _InactiveDisciplesSection({required this.disciples});
+
+  final List<Character> disciples;
+
+  @override
+  Widget build(BuildContext context) {
+    return _PanelCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _SectionTitle(UiStrings.lineagePanelInactiveSection),
+          const SizedBox(height: 8),
+          if (disciples.isEmpty)
+            const _EmptyText(UiStrings.lineagePanelNoInactive)
+          else
+            for (var i = 0; i < disciples.length; i++) ...[
+              if (i > 0) const SizedBox(height: 8),
+              _CharacterChip(
+                character: disciples[i],
               ),
             ],
         ],
