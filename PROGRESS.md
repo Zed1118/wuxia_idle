@@ -17,7 +17,9 @@
 
 **候选 1 A1 E.1 收徒弹窗(opus xhigh ~3.5h)**:audit + 5 决策拍板(方案 3 inactive 池 / D1.b 列表 outside / D2.b 3 NPC / D3.a 一次性 / D4.b 完整 UI)+ 新 5 文件 + 改 8 文件 + +12 test。saveVersion 0.11.0 → 0.12.0。详 `p1_1_a1_recruitment_closeout_2026-05-21.md`。
 
-**下波 ⭐**:候选 3 A3 共鸣度满级体验完整化(joint_skill 倍率 4500 已在 numbers.yaml,表现层 + banner 时机 + 拆分提示 UI,**opus xhigh 2-4h**)。
+**候选 3 A3 共鸣度 Phase 0 已落 audit 暂停**:实际工作量 **5.5-9h opus xhigh**(不是 closeout §6.1 估的 2-4h),5 个设计点需 grill,拆 4 子任务(3a banner / 3b release / 3c sword_song / 3d 拆分提示),VFX 风险。详 `p1_1_a3_resonance_phase0_audit_2026-05-21.md`。
+
+**下波 ⭐**:**新会话续推候选 3+4**(本会话 /clear 后)。开局读 PROGRESS 顶段 + 候选 1/2 closeout + 候选 3 audit,grill 5 设计点后起 spec。
 
 > 归档段「### M4 #46 美术详条迁出 2026-05-20/21」+「### W17-W18 详条迁出 2026-05-19/20」+ `docs/handoff/` 各 closeout。
 
