@@ -758,3 +758,24 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_chuanshuo
     visualEffect: formless_calamity
+
+  # ───────────────────────────────────────────
+  # 共鸣度满级解锁招 · joint_skill(P1.1 候选 3-b)
+  # ───────────────────────────────────────────
+  # 不绑心法 / 不绑流派,由共鸣度系统统管:玩家方任一武器
+  # resonanceStage 达到 unlocksJointSkill=true 阶(默契/心剑通灵)时,
+  # BattleCharacter.fromCharacter 自动注入此招到 availableSkills。
+  # 倍率 4500 与 numbers.yaml `combat.skills.reference_multipliers.joint_skill.base`
+  # 一致(单 source of truth = 此 yaml;numbers.yaml 该字段为文档参考值,
+  # 0 Dart caller)。GDD §5.4 红线:4500 × crit 2.5 × cult 3.0 × school 1.25
+  # = 42,187 < 100,000 大招暴击上限 ✅。
+  - id: skill_joint_skill
+    name: 人剑合一
+    description: TODO_NARRATIVE
+    type: jointSkill
+    powerMultiplier: 4500
+    internalForceCost: 250
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: joint_skill_resonance

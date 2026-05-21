@@ -269,6 +269,8 @@ class NumbersConfig {
           maxBattleCount:
               ((s['battle_count_range'] as List)[1] as num?)?.toInt(),
           bonusMultiplier: (s['bonus_multiplier'] as num).toDouble(),
+          unlocksJointSkill: (s['unlocks_joint_skill'] as bool?) ?? false,
+          hasSwordSongEffect: (s['has_sword_song_effect'] as bool?) ?? false,
         ),
     ];
   }
@@ -604,17 +606,24 @@ class ForgingSlotConfig {
 /// 单段共鸣度配置（numbers.yaml `equipment.resonance.stages[]`）。
 ///
 /// `maxBattleCount == null` 表示该段为最高段，无 battleCount 上限。
+///
+/// P1.1 候选 3-b/c:`unlocksJointSkill` + `hasSwordSongEffect` 让 yaml
+/// 成 unlock 门槛 source of truth(不靠 enum index hardcode)。
 class ResonanceStageConfig {
   final ResonanceStage stage;
   final int minBattleCount;
   final int? maxBattleCount;
   final double bonusMultiplier;
+  final bool unlocksJointSkill;
+  final bool hasSwordSongEffect;
 
   const ResonanceStageConfig({
     required this.stage,
     required this.minBattleCount,
     required this.maxBattleCount,
     required this.bonusMultiplier,
+    this.unlocksJointSkill = false,
+    this.hasSwordSongEffect = false,
   });
 }
 
