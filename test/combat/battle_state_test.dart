@@ -538,19 +538,18 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────
 
   group('P1.1 候选 3-b · joint_skill 注入', () {
-    Character _player() => _mkChar(
+    Character mkPlayer() => _mkChar(
           tier: RealmTier.erLiu,
           layer: RealmLayer.yuanShu,
           internalForce: 3000,
           school: TechniqueSchool.gangMeng,
         );
-    Technique _tech() => _mkTech(
+    Technique mkTech() => _mkTech(
           defId: 'tech_gangmeng_mingjia',
           tier: TechniqueTier.mingJiaGong,
           school: TechniqueSchool.gangMeng,
         );
-
-    Equipment _weaponWith({required int battleCount}) {
+    Equipment mkWeapon({required int battleCount}) {
       final e = _mkEquip(baseAttack: 580);
       e.battleCount = battleCount;
       return e;
@@ -558,9 +557,9 @@ void main() {
 
     test('武器 battleCount=0 (shengShu) → availableSkills 不含 joint_skill', () {
       final bc = BattleCharacter.fromCharacter(
-        character: _player(),
-        equipped: [_weaponWith(battleCount: 0)],
-        mainTechnique: _tech(),
+        character: mkPlayer(),
+        equipped: [mkWeapon(battleCount: 0)],
+        mainTechnique: mkTech(),
         numbers: GameRepository.instance.numbers,
         teamSide: 0,
         slotIndex: 0,
@@ -574,9 +573,9 @@ void main() {
 
     test('武器 battleCount=500 (moQi) → 含 joint_skill', () {
       final bc = BattleCharacter.fromCharacter(
-        character: _player(),
-        equipped: [_weaponWith(battleCount: 500)],
-        mainTechnique: _tech(),
+        character: mkPlayer(),
+        equipped: [mkWeapon(battleCount: 500)],
+        mainTechnique: mkTech(),
         numbers: GameRepository.instance.numbers,
         teamSide: 0,
         slotIndex: 0,
@@ -590,9 +589,9 @@ void main() {
 
     test('武器 battleCount=2000 (xinJianTongLing) → 含 joint_skill', () {
       final bc = BattleCharacter.fromCharacter(
-        character: _player(),
-        equipped: [_weaponWith(battleCount: 2000)],
-        mainTechnique: _tech(),
+        character: mkPlayer(),
+        equipped: [mkWeapon(battleCount: 2000)],
+        mainTechnique: mkTech(),
         numbers: GameRepository.instance.numbers,
         teamSide: 0,
         slotIndex: 0,
@@ -606,9 +605,9 @@ void main() {
 
     test('无武器装备 → 不含 joint_skill', () {
       final bc = BattleCharacter.fromCharacter(
-        character: _player(),
+        character: mkPlayer(),
         equipped: const [],
-        mainTechnique: _tech(),
+        mainTechnique: mkTech(),
         numbers: GameRepository.instance.numbers,
         teamSide: 0,
         slotIndex: 0,
@@ -623,9 +622,9 @@ void main() {
       // 注:fromCharacter equipped 列表正常 ≤ 3(weapon/armor/accessory),
       // 但若 future 多武器槽,验注入去重逻辑。当前 single weapon 已满足。
       final bc = BattleCharacter.fromCharacter(
-        character: _player(),
-        equipped: [_weaponWith(battleCount: 2000)],
-        mainTechnique: _tech(),
+        character: mkPlayer(),
+        equipped: [mkWeapon(battleCount: 2000)],
+        mainTechnique: mkTech(),
         numbers: GameRepository.instance.numbers,
         teamSide: 0,
         slotIndex: 0,

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../battle/domain/enum_localizations.dart';
+import '../../../core/domain/enums.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../data/lore_loader.dart';
+import '../../../data/numbers_config.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
@@ -223,8 +225,107 @@ class _InfoCard extends ConsumerWidget {
               ),
             ],
           ),
+          // P1.1 候选 3-d:共鸣度晋升信息透明 section。
+          // 体例对齐 _Chip 风格,无 VFX,纯文字 hint 显:
+          // ① bonus_multiplier 「攻击 +X%」② unlocks_joint_skill → 已解锁人剑合一
+          // ③ has_sword_song_effect → 暴击附带剑鸣 ④ 距下一阶 N 战 hint
+          _ResonanceDetailsSection(
+            stage: resonance,
+            config: _findStageCfg(n.resonanceStages, resonance),
+            nextStageCfg: _findNextStageCfg(n.resonanceStages, resonance),
+            battleCount: equipment.battleCount,
+          ),
         ],
       ),
+    );
+  }
+
+  static ResonanceStageConfig _findStageCfg(
+    List<ResonanceStageConfig> stages,
+    ResonanceStage current,
+  ) {
+    return stages.firstWhere(
+      (c) => c.stage == current,
+      orElse: () => const ResonanceStageConfig(
+        stage: ResonanceStage.shengShu,
+        minBattleCount: 0,
+        maxBattleCount: 0,
+        bonusMultiplier: 1.0,
+      ),
+    );
+  }
+
+  static ResonanceStageConfig? _findNextStageCfg(
+    List<ResonanceStageConfig> stages,
+    ResonanceStage current,
+  ) {
+    final orderedStages = ResonanceStage.values;
+    final idx = orderedStages.indexOf(current);
+    if (idx < 0 || idx >= orderedStages.length - 1) return null;
+    final nextStage = orderedStages[idx + 1];
+    final match = stages.where((c) => c.stage == nextStage);
+    return match.isEmpty ? null : match.first;
+  }
+}
+
+/// 共鸣度晋升信息透明 section(P1.1 候选 3-d)。
+///
+/// 体例:在 _InfoCard resonance chip 下方,纯文字 hint(无 VFX 无 icon 装饰)。
+/// 与 3-b joint_skill / 3-c sword_song 形成回路:玩家在此 screen 看到武器
+/// 能不能 trigger 这两类解锁招式 + 还差多少战晋阶。
+class _ResonanceDetailsSection extends StatelessWidget {
+  const _ResonanceDetailsSection({
+    required this.stage,
+    required this.config,
+    required this.nextStageCfg,
+    required this.battleCount,
+  });
+
+  final ResonanceStage stage;
+  final ResonanceStageConfig config;
+  final ResonanceStageConfig? nextStageCfg;
+  final int battleCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final bonusPct = ((config.bonusMultiplier - 1.0) * 100).round();
+    final lines = <String>[
+      UiStrings.equipmentDetailResonanceBonus(bonusPct),
+      if (config.unlocksJointSkill) UiStrings.equipmentDetailResonanceJointSkill,
+      if (config.hasSwordSongEffect) UiStrings.equipmentDetailResonanceSwordSong,
+    ];
+    final nextHint = _nextStageHint();
+    if (nextHint != null) lines.add(nextHint);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final line in lines)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                line,
+                style: const TextStyle(
+                  color: WuxiaColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String? _nextStageHint() {
+    final next = nextStageCfg;
+    if (next == null) return null;
+    final remaining = next.minBattleCount - battleCount;
+    if (remaining <= 0) return null;
+    return UiStrings.equipmentDetailResonanceNextHint(
+      remaining,
+      EnumL10n.resonanceStage(next.stage),
     );
   }
 }

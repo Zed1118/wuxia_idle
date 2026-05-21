@@ -311,4 +311,78 @@ void main() {
     // EnhanceDialog 弹起后,Dialog widget 会出现
     expect(find.byType(Dialog), findsOneWidget);
   });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // P1.1 候选 3-d:共鸣度晋升信息透明 section
+  // ────────────────────────────────────────────────────────────────────────
+
+  group('P1.1 候选 3-d · 共鸣度晋升信息透明', () {
+    Future<void> pumpScreen(WidgetTester tester, Equipment eq, EquipmentDef def) async {
+      await tester.binding.setSurfaceSize(const Size(1280, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: EquipmentDetailScreen(
+              equipment: eq,
+              def: def,
+              loreLoader: fakeLoader(segments: const ['x']),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('shengShu(battleCount=0)→ 无加成 + 显距趁手 hint + 无解锁招',
+        (tester) async {
+      final def = GameRepository.instance.getEquipment('weapon_xunchang_tie_jian');
+      final eq = mkEq(def: def, battleCount: 0);
+      await pumpScreen(tester, eq, def);
+
+      expect(find.text(UiStrings.equipmentDetailResonanceBonus(0)),
+          findsOneWidget);
+      expect(find.text(UiStrings.equipmentDetailResonanceJointSkill),
+          findsNothing);
+      expect(find.text(UiStrings.equipmentDetailResonanceSwordSong),
+          findsNothing);
+      // 距趁手尚需 100 战(chenShou.minBattleCount=100)
+      expect(find.text(UiStrings.equipmentDetailResonanceNextHint(100, '趁手')),
+          findsOneWidget);
+    });
+
+    testWidgets('moQi(battleCount=500)→ +20% + 解锁人剑合一 + 距心剑通灵 1500',
+        (tester) async {
+      final def = GameRepository.instance.getEquipment('weapon_xunchang_tie_jian');
+      final eq = mkEq(def: def, battleCount: 500);
+      await pumpScreen(tester, eq, def);
+
+      expect(find.text(UiStrings.equipmentDetailResonanceBonus(20)),
+          findsOneWidget);
+      expect(find.text(UiStrings.equipmentDetailResonanceJointSkill),
+          findsOneWidget);
+      expect(find.text(UiStrings.equipmentDetailResonanceSwordSong),
+          findsNothing,
+          reason: 'moQi 阶 hasSwordSongEffect=false');
+      expect(
+          find.text(UiStrings.equipmentDetailResonanceNextHint(1500, '心剑通灵')),
+          findsOneWidget);
+    });
+
+    testWidgets('xinJianTongLing(battleCount=2000)→ +30% + 两招全解锁 + 无 next hint',
+        (tester) async {
+      final def = GameRepository.instance.getEquipment('weapon_xunchang_tie_jian');
+      final eq = mkEq(def: def, battleCount: 2000);
+      await pumpScreen(tester, eq, def);
+
+      expect(find.text(UiStrings.equipmentDetailResonanceBonus(30)),
+          findsOneWidget);
+      expect(find.text(UiStrings.equipmentDetailResonanceJointSkill),
+          findsOneWidget);
+      expect(find.text(UiStrings.equipmentDetailResonanceSwordSong),
+          findsOneWidget);
+      // 最高阶无下一阶 hint
+      expect(find.textContaining('距'), findsNothing);
+    });
+  });
 }
