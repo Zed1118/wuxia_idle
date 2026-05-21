@@ -45,7 +45,7 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.11.0',
+      expect(save.saveVersion, '0.12.0',
           reason:
               'P1 #42 Phase 2 §10 P1.y 升 schema:SaveData 加 tutorialHintsRead(banner 已读状)');
       expect(save.activeCharacterIds, isEmpty);

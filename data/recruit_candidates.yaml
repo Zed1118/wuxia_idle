@@ -1,0 +1,86 @@
+# 收徒候选 NPC 配置(P1.1 A1 师徒 E.1 · 1.0 路线图 P1.1 系统纵深)
+# GDD §7.1「突破到一流可收徒」+ inheritance.unlock_rules.can_take_disciple_at: yiLiu
+# 决策:audit doc `p1_1_a1_recruitment_audit_2026-05-21.md` 方案 3 + D2.b 3 NPC
+#
+# 3 NPC 设计:
+#   - candidate_a 云寒青 · 刚猛流(根骨偏向,镇守边境出身)
+#   - candidate_b 柳拂陻 · 灵巧流(身法偏向,游侠出身)
+#   - candidate_c 马智远 · 无流派偏向(平衡型,书生出身,starting 心法留空玩家自决)
+#
+# 拜师后 Character 入 Isar 但不入 SaveData.activeCharacterIds(inactive 池语义,
+# 玩家可在 character_panel / lineage_panel 后续操作切换出场)。
+# 三系锁死(CLAUDE.md §5.3):弟子境界 sanLiu qiMeng → 装备/心法 ≤ xiangYangHuo /
+# changLianGong 阶,startingEquipmentIds/startingTechniqueIds 必须对齐。
+
+recruit_candidates:
+
+  # === 候选 A · 云寒青 · 刚猛流 ===
+  - id: candidate_a
+    name: 云寒青
+    lineageRole: disciple
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    school: gangMeng
+    attributeProfile:
+      constitution: 6
+      enlightenment: 5
+      agility: 4
+      fortune: 3
+    startingTechniqueIds:
+      - tech_gangmeng_changlian
+    startingEquipmentIds:
+      - weapon_xiangyang_gang_dao
+      - armor_xiangyang_pi_jia
+    lore: |
+      中州边境镇守手出身。掌中三扫能听奋羊号
+      响一里——这是他十五岁那年与师父走镖
+      路过雁门关学下的真功夫。师父老了，
+      他独自南下，听人说开派祖师在这。
+    portraitPath: assets/characters/recruit_candidate_a.png
+
+  # === 候选 B · 柳拂陻 · 灵巧流 ===
+  - id: candidate_b
+    name: 柳拂陻
+    lineageRole: disciple
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    school: lingQiao
+    attributeProfile:
+      constitution: 3
+      enlightenment: 5
+      agility: 7
+      fortune: 4
+    startingTechniqueIds:
+      - tech_lingqiao_changlian
+    startingEquipmentIds:
+      - weapon_xiangyang_chang_jian
+      - armor_xiangyang_pi_jia
+    lore: |
+      游侠出身。脚程极快，能在屋脊上接连
+      跨七步不落屋瓦。前师父是江南柳家剑客，
+      去年染瘟疫走了。她背一柄薄剑，
+      沿运河北上，听说有位开派祖师收徒。
+    portraitPath: assets/characters/recruit_candidate_b.png
+
+  # === 候选 C · 马智远 · 无流派偏向(平衡型) ===
+  - id: candidate_c
+    name: 马智远
+    lineageRole: disciple
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    school: null
+    attributeProfile:
+      constitution: 5
+      enlightenment: 5
+      agility: 5
+      fortune: 5
+    startingTechniqueIds: []
+    startingEquipmentIds:
+      - weapon_xiangyang_jiu_jie_bian
+      - armor_xiangyang_pi_jia
+    lore: |
+      书生出身。原是中州书院里读经的，二十岁那年
+      看了一本叫《武学纲要》的旧书，从此弃文从武。
+      没师承，只凭残页自练，无流派偏向。
+      境界不高，但路数极正——可造之材。
+    portraitPath: assets/characters/recruit_candidate_c.png

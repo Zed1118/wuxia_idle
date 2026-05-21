@@ -444,7 +444,7 @@ void main() {
       await IsarSetup.instance.writeTxn(() async {
         await IsarSetup.instance.saveDatas.put(SaveData()
           ..slotId = IsarSetup.currentSlotId
-          ..saveVersion = '0.11.0'
+          ..saveVersion = '0.12.0'
           ..createdAt = DateTime.now()
           ..lastSavedAt = DateTime.now()
           ..lastOnlineAt = DateTime.now()
@@ -471,7 +471,7 @@ void main() {
       await IsarSetup.instance.writeTxn(() async {
         await IsarSetup.instance.saveDatas.put(SaveData()
           ..slotId = IsarSetup.currentSlotId
-          ..saveVersion = '0.11.0'
+          ..saveVersion = '0.12.0'
           ..createdAt = DateTime.now()
           ..lastSavedAt = DateTime.now()
           ..lastOnlineAt = DateTime.now()

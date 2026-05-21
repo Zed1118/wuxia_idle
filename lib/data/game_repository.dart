@@ -7,6 +7,7 @@ import '../features/encounter/domain/encounter_def.dart';
 import 'codex_loader.dart';
 import 'defs/equipment_def.dart';
 import 'defs/master_def.dart';
+import 'defs/recruit_candidate_def.dart';
 import 'defs/realm_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import 'defs/skill_def.dart';
@@ -58,6 +59,11 @@ class GameRepository {
   /// 索引方式：`masters[slotIndex]`（红线校验保证 0-2 连续唯一）。
   final List<MasterDef> masters;
 
+  /// 收徒候选 NPC 列表(P1.1 A1 E.1,GDD §7.1)。
+  /// 加载源:`data/recruit_candidates.yaml`,固定 3 候选(audit doc 方案 3 + D2.b)。
+  /// **graceful**:test fixture 不带 yaml 时空 list,RecruitmentService 端兜底。
+  final Map<String, RecruitCandidateDef> recruitCandidates;
+
   /// 奇遇 / 武学领悟定义(Phase 4 W14-1 C-1)。
   /// Phase 1 vertical slice 3 条;W14-2 扩 15-20 条。
   /// events 文案走 [EncounterEventLoader] 按需 load(narrative_loader 体例)。
@@ -92,6 +98,7 @@ class GameRepository {
     required this.towerFloors,
     required this.seclusionMaps,
     required this.masters,
+    required this.recruitCandidates,
     required this.encounterDefs,
     required this.encounterSkillIds,
     required this.synergies,
@@ -175,6 +182,43 @@ class GameRepository {
         .toList(growable: false)
       ..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
 
+    // P1.1 A1 E.1:收徒候选 yaml(允许 test fixture 不带 → 空 map)。
+    // 生产路径红线校验在 _enforceRecruitCandidateRedLines 拦三系锁死违例。
+    // **fixture 兜底**:某些 fixture loader 走 File fallback 读生产 yaml,但
+    // 自己的 techniques/equipment 是 stub → starting* 引用 def 不存在。这种
+    // 情形预先校验 starting refs,不全则视 fixture 模式空 map(不挂到 repo);
+    // 生产 yaml 引用全部对齐,自然 pass 进入严格红线校验。
+    Map<String, RecruitCandidateDef> recruitCandidates = const {};
+    try {
+      final recruitRaw =
+          parseYamlMap(await load('data/recruit_candidates.yaml'));
+      final loaded = _parseDefMap(
+        recruitRaw['recruit_candidates'] as List,
+        RecruitCandidateDef.fromYaml,
+        idOf: (d) => d.id,
+      );
+      var allRefsValid = true;
+      for (final c in loaded.values) {
+        for (final tid in c.startingTechniqueIds) {
+          if (techniqueDefs[tid] == null) {
+            allRefsValid = false;
+            break;
+          }
+        }
+        if (!allRefsValid) break;
+        for (final eid in c.startingEquipmentIds) {
+          if (equipmentDefs[eid] == null) {
+            allRefsValid = false;
+            break;
+          }
+        }
+        if (!allRefsValid) break;
+      }
+      if (allRefsValid) recruitCandidates = loaded;
+    } catch (e) {
+      // test fixture 不带 recruit_candidates.yaml 时静默
+    }
+
     // Phase 4 W14-1:encounters.yaml 允许测试 fixture 不带(catch 失败 → 空 map)。
     Map<String, EncounterDef> encounterDefs = const {};
     try {
@@ -218,6 +262,7 @@ class GameRepository {
       towerFloors: towerFloors,
       seclusionMaps: numbers.retreat.maps,
       masters: masters,
+      recruitCandidates: recruitCandidates,
       encounterDefs: encounterDefs,
       encounterSkillIds: encounterSkillIds,
       synergies: synergies,
@@ -366,6 +411,7 @@ class GameRepository {
 
     // Phase 3 Week 4 T53：师徒 3 角色校验
     _enforceMasterRedLines();
+    _enforceRecruitCandidateRedLines();
 
     // Phase 4 W14-1 C-1:encounter fixture 校验(若加载到)
     _enforceEncounterRedLines();
@@ -892,6 +938,88 @@ class GameRepository {
         '师徒 ${founder.id}（祖师）startingEquipmentIds 必须至少含 1 件 '
         'isLineageHeritage=true 的装备（GDD §6.1 + Phase 3 W4 T55）',
       );
+    }
+  }
+
+  /// P1.1 A1 E.1:收徒候选 NPC 红线(GDD §7.1 + audit 方案 3)。
+  ///
+  /// 校验:
+  /// - 数量 == 3(D2.b 决议)
+  /// - lineageRole 必须 disciple(祖师为玩家本人 = founder,候选只能是 disciple)
+  /// - defaultRealm 不允许 wuSheng(飞升锚点)
+  /// - attributeProfile 单项 [1,10] / total [16,24]
+  /// - startingTechniqueIds / startingEquipmentIds 引用合法 + 三系锁死
+  /// - id 唯一(_parseDefMap 已保证)
+  ///
+  /// 允许 test fixture 不带 yaml → recruitCandidates 空 map → 整个校验跳过。
+  void _enforceRecruitCandidateRedLines() {
+    if (recruitCandidates.isEmpty) return; // fixture 兜底
+    if (recruitCandidates.length != 3) {
+      throw StateError(
+        '收徒候选应为 3 条（audit 方案 3 + D2.b），实际 ${recruitCandidates.length}',
+      );
+    }
+    for (final c in recruitCandidates.values) {
+      if (c.lineageRole != LineageRole.disciple) {
+        throw StateError(
+          '收徒候选 ${c.id} lineageRole=${c.lineageRole.name},必须为 disciple',
+        );
+      }
+      if (c.defaultRealm == RealmTier.wuSheng) {
+        throw StateError(
+          '收徒候选 ${c.id} defaultRealm=wuSheng,Demo + 1.0 P1.1 不允许飞升锚点',
+        );
+      }
+      // AttributeProfile 范围
+      final ap = c.attributeProfile;
+      for (final entry in <String, int>{
+        'constitution': ap.constitution,
+        'enlightenment': ap.enlightenment,
+        'agility': ap.agility,
+        'fortune': ap.fortune,
+      }.entries) {
+        if (entry.value < 1 || entry.value > 10) {
+          throw StateError(
+            '收徒候选 ${c.id} attributeProfile.${entry.key}=${entry.value},'
+            '应 ∈ [1, 10]',
+          );
+        }
+      }
+      if (ap.total < 16 || ap.total > 24) {
+        throw StateError(
+          '收徒候选 ${c.id} attributeProfile.total=${ap.total},应 ∈ [16, 24]',
+        );
+      }
+      // starting id 存在性 + 三系锁死
+      final realmIdx = c.defaultRealm.index;
+      for (final techId in c.startingTechniqueIds) {
+        final tech = techniqueDefs[techId];
+        if (tech == null) {
+          throw StateError(
+            '收徒候选 ${c.id} startingTechniqueId=$techId 未在 techniques.yaml 中',
+          );
+        }
+        if (tech.tier.index > realmIdx) {
+          throw StateError(
+            '收徒候选 ${c.id} 心法 $techId tier=${tech.tier.name} '
+            '超出 defaultRealm=${c.defaultRealm.name} 的三系锁死上限',
+          );
+        }
+      }
+      for (final equipId in c.startingEquipmentIds) {
+        final eq = equipmentDefs[equipId];
+        if (eq == null) {
+          throw StateError(
+            '收徒候选 ${c.id} startingEquipmentId=$equipId 未在 equipment.yaml 中',
+          );
+        }
+        if (eq.tier.index > realmIdx) {
+          throw StateError(
+            '收徒候选 ${c.id} 装备 $equipId tier=${eq.tier.name} '
+            '超出 defaultRealm=${c.defaultRealm.name} 的三系锁死上限',
+          );
+        }
+      }
     }
   }
 

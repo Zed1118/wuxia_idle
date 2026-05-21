@@ -21,7 +21,15 @@ class TutorialBannerCard extends ConsumerWidget {
   /// hint def(必传,父端按 step 查 [TutorialHintDef.byStep])。
   final TutorialHintDef hint;
 
-  const TutorialBannerCard({super.key, required this.hint});
+  /// 点击行为覆盖(P1.1 A1 E.1 加):step 6 收徒 banner 需 push RecruitmentDialog
+  /// 而非只 markHintRead。父端按需注入(默认 null = 走原 markHintRead 路径)。
+  final Future<void> Function()? onTapOverride;
+
+  const TutorialBannerCard({
+    super.key,
+    required this.hint,
+    this.onTapOverride,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,7 +38,7 @@ class TutorialBannerCard extends ConsumerWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _onTap(ref),
+          onTap: () => onTapOverride != null ? onTapOverride!() : _onTap(ref),
           borderRadius: BorderRadius.circular(12),
           child: Stack(
             clipBehavior: Clip.none,
