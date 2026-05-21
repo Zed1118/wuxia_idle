@@ -5,22 +5,19 @@
 
 ## 当前阶段
 
-**2026-05-21 主对话 P1.1 A1 师徒 E.1 收徒弹窗实装 ✅**(Mac opus xhigh ~3.5h):方案 3 inactive 池收徒一波闭环 · audit + 5 决策拍板 + 实装 + 12 test 净增 + 0 regress。HEAD `<即将创建>`(待 push origin/main),1139 pass(1127→1139 净 +12)/ analyze 0 issues / saveVersion 0.11.0 → 0.12.0。
+**2026-05-21 主对话 P1.1 候选 1+2 ✅**(Mac opus xhigh ~5h):候选 1 A1 E.1 收徒弹窗 + 候选 2 A1 E.5 祖师爷 buff 一波连击。HEAD `<候选 2 commit 即将创建>`,1127→1147 pass(+20 净)/ analyze 0 issues / saveVersion 0.12.0。
 
-- **audit 阶段**(opus xhigh ~30min):`docs/handoff/p1_1_a1_recruitment_audit_2026-05-21.md` 313 行 · Phase 0 四维 grep + 现状校正(closeout §6.1 误写「service 已建」,grep 0 命中)+ 3 方案对比 + 5 决策点(M/D1-D4)
-- **5 决策 ✅ 全拍板**:M=方案 3(inactive 池) · D1.b 列表 outside 即 inactive(无 schema bump for isActive) · D2.b 3 NPC · D3.a 一次性 only · D4.b 完整 UI
-- **实装阶段**(opus xhigh ~3h):新建 5 文件 + 改 8 文件 + 加 12 test
-  - 数据层:`data/recruit_candidates.yaml`(3 NPC 云寒青/柳拂陻/马智远 · 刚猛/灵巧/平衡型) + `lib/data/defs/recruit_candidate_def.dart` + GameRepository load + `_enforceRecruitCandidateRedLines` 红线(fixture-friendly:starting refs 不全则视 fixture 模式静默 skip)
-  - schema bump:`SaveData` 加 `recruitmentOffered: bool` + `recruitedDiscipleIds: List<int>` → saveVersion 0.11.0 → 0.12.0
-  - service:`lib/features/recruitment/application/recruitment_service.dart` 5 method(hasOffered/getRecruitedIds/getCandidates/acceptCandidate/declineRecruitment)+ providers
-  - UI:`RecruitmentDialog` ConsumerStatefulWidget(D4.b 完整体例:portrait + 4 属性 + 流派 chip + 起手心法/装备 + lore + 拜师/谢绝)+ confirm dialog 二次校验
-  - hook:tutorial step 6 banner 加 `onTapOverride` callback → main_menu wire push RecruitmentDialog;step 7/8 仍走原 markHintRead
-  - inactive 池显示:`lineage_info_provider` 加 `inactiveDisciples` 字段 + `LineagePanelScreen` 加 `_InactiveDisciplesSection`
-  - 文案:`strings.dart` 加 16 条 recruitment + 2 条 inactive 段
-- **test +12**:+4 game_repository red line(生产 3 候选 + 数量 ≠ 3 + lineageRole=founder + total>24)+ 8 service unit(hasOffered/getRecruitedIds/getCandidates/decline+幂等/accept+幂等/candidateId 不存在 throw)
-- **未做项**:RecruitmentDialog widget test(GameRepository.loadAllDefs 完整加载体例复杂,留候选 5 收口或下次)
+**候选 2 A1 E.5 祖师爷 buff(opus xhigh ~1.5h)**:
+- Phase 0:`founder_ancestor_buff` 全仓 0 代码引用(纯 yaml 占位),**0→1 全新落地**
+- **决议 E.5.A**(用户拍板):enabled_when_alive: false→true,玩家本人=祖师即享 buff,作用 active 全员(`apply_to_disciples_only: false`)
+- 实装:numbers.yaml flip + sect_wide_buff 4 字段(internal_force_max_pct=0.05 / max_hp_pct=0.05 / crit_rate_bonus=0.02 / cultivation_progress_pct=0.03)+ `FounderAncestorBuff` 强类型 class + `FounderBuffService` (active 含 founder 时激活) + provider
+- derived_stats 接入:maxHp / internalForceMaxWithLineage / criticalRate 各加可选 `founderBuffActive: bool`(默认 false 不破现有 caller);**stage_battle_setup 端 caller 接入** + **character_panel_screen UI 显示接入**
+- LineagePanelScreen 加「祖师爷光环」摆台(4 行 buff 数值显示)
+- test +8(NumbersConfig load + service 4 case + disabled 兜底 + 红线说明)+ 2 test 期望值更新(master_disciple buff 1.10×1.05=1.155 / stage_setup VC18-A1 maxHp +5%)
 
-**下波 ⭐**:候选 2 A1 师徒 E.5 founder_ancestor_buff(`enabled_when_alive: false → true` + sect_wide_buff 数值激活 + 跨 inheritance/character/save_data/UI 模块,**opus xhigh 1-2h**)。
+**候选 1 A1 E.1 收徒弹窗(opus xhigh ~3.5h)**:audit + 5 决策拍板(方案 3 inactive 池 / D1.b 列表 outside / D2.b 3 NPC / D3.a 一次性 / D4.b 完整 UI)+ 新 5 文件 + 改 8 文件 + +12 test。saveVersion 0.11.0 → 0.12.0。详 `p1_1_a1_recruitment_closeout_2026-05-21.md`。
+
+**下波 ⭐**:候选 3 A3 共鸣度满级体验完整化(joint_skill 倍率 4500 已在 numbers.yaml,表现层 + banner 时机 + 拆分提示 UI,**opus xhigh 2-4h**)。
 
 > 归档段「### M4 #46 美术详条迁出 2026-05-20/21」+「### W17-W18 详条迁出 2026-05-19/20」+ `docs/handoff/` 各 closeout。
 

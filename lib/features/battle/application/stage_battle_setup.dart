@@ -81,11 +81,17 @@ class StageBattleSetup {
       }
       players.add(fallback);
     }
+    // P1.1 A1 E.5:active 中有 isFounder=true + yaml enabled_when_alive=true → buff 激活。
+    // 一次性算,传给所有 player 的 fromCharacter,避免每人重复 grep。
+    final founderBuffActive =
+        GameRepository.instance.numbers.founderAncestorBuff.isActive &&
+            players.any((c) => c.isFounder);
     final left = <BattleCharacter>[];
     for (var i = 0; i < players.length && i < 3; i++) {
       left.add(await _playerToBattle(
         character: players[i],
         slotIndex: i,
+        founderBuffActive: founderBuffActive,
       ));
     }
     return left;
@@ -94,6 +100,7 @@ class StageBattleSetup {
   Future<BattleCharacter> _playerToBattle({
     required Character character,
     required int slotIndex,
+    bool founderBuffActive = false,
   }) async {
     final equipped = <Equipment>[];
     for (final id in [
@@ -136,6 +143,7 @@ class StageBattleSetup {
       numbers: GameRepository.instance.numbers,
       teamSide: 0,
       slotIndex: slotIndex,
+      founderBuffActive: founderBuffActive,
     );
 
     // W18-A1 心法相生 buff 注入(GDD §4.5)。命中即 copyWith 调整 maxHp/speed/

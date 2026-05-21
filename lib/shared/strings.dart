@@ -575,4 +575,13 @@ class UiStrings {
   // ── P1.1 A1 E.1 · LineagePanelScreen inactive 段 ──
   static const String lineagePanelInactiveSection = '在册弟子(未出阵)';
   static const String lineagePanelNoInactive = '尚无在册弟子';
+
+  // ── P1.1 A1 E.5 · LineagePanelScreen 祖师爷 buff 摆台 ──
+  static const String lineagePanelFounderBuffSection = '祖师爷光环';
+  static const String lineagePanelFounderBuffSubtitle =
+      '开派祖师在堂,门派内众弟子修为得益。作用于出阵全员。';
+  static const String lineagePanelFounderBuffInternalForce = '内力上限';
+  static const String lineagePanelFounderBuffMaxHp = '最大血量';
+  static const String lineagePanelFounderBuffCritRate = '暴击率';
+  static const String lineagePanelFounderBuffCultivation = '修炼度获取';
 }

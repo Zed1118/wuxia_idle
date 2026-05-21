@@ -5,6 +5,7 @@ import '../../battle/domain/enum_localizations.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
@@ -82,6 +83,14 @@ class _Body extends StatelessWidget {
             portraitPath: _portraitForSlot(0),
           ),
           const SizedBox(height: 16),
+          if (GameRepository.isLoaded &&
+              GameRepository.instance.numbers.founderAncestorBuff.isActive)
+            _FounderBuffSection(
+              buff: GameRepository.instance.numbers.founderAncestorBuff,
+            ),
+          if (GameRepository.isLoaded &&
+              GameRepository.instance.numbers.founderAncestorBuff.isActive)
+            const SizedBox(height: 16),
           _DisciplesSection(
             disciples: info.disciples,
             portraitPaths: List.generate(
@@ -158,6 +167,93 @@ class _DisciplesSection extends StatelessWidget {
                     i < portraitPaths.length ? portraitPaths[i] : null,
               ),
             ],
+        ],
+      ),
+    );
+  }
+}
+
+class _FounderBuffSection extends StatelessWidget {
+  const _FounderBuffSection({required this.buff});
+
+  final FounderAncestorBuff buff;
+
+  String _pctLabel(double v) {
+    if (v == 0) return '—';
+    return '+${(v * 100).toStringAsFixed(0)}%';
+  }
+
+  String _absLabel(double v) {
+    if (v == 0) return '—';
+    return '+${(v * 100).toStringAsFixed(0)}%';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _PanelCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _SectionTitle(UiStrings.lineagePanelFounderBuffSection),
+          const SizedBox(height: 8),
+          const Text(
+            UiStrings.lineagePanelFounderBuffSubtitle,
+            style: TextStyle(
+              color: WuxiaColors.textMuted,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _BuffRow(
+            label: UiStrings.lineagePanelFounderBuffInternalForce,
+            value: _pctLabel(buff.internalForceMaxPct),
+          ),
+          _BuffRow(
+            label: UiStrings.lineagePanelFounderBuffMaxHp,
+            value: _pctLabel(buff.maxHpPct),
+          ),
+          _BuffRow(
+            label: UiStrings.lineagePanelFounderBuffCritRate,
+            value: _absLabel(buff.critRateBonus),
+          ),
+          _BuffRow(
+            label: UiStrings.lineagePanelFounderBuffCultivation,
+            value: _pctLabel(buff.cultivationProgressPct),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BuffRow extends StatelessWidget {
+  const _BuffRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: WuxiaColors.textSecondary,
+              fontSize: 13,
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              color: WuxiaColors.resultHighlight,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );

@@ -11,6 +11,7 @@ import '../../../core/domain/technique.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../cultivation/application/synergy_service.dart';
+import '../../inheritance/application/founder_buff_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
@@ -392,17 +393,31 @@ class _DerivedStatsSection extends ConsumerWidget {
     required Technique? mainTech,
   }) {
     final n = ref.watch(numbersConfigProvider);
-    final hp = CharacterDerivedStats.maxHp(character, equipped, n);
+    // P1.1 A1 E.5:祖师爷 buff 激活态,loading/error 默认 false 兜底
+    final founderBuffActive = ref
+        .watch(founderBuffActiveProvider)
+        .maybeWhen(data: (v) => v, orElse: () => false);
+    final hp = CharacterDerivedStats.maxHp(
+      character,
+      equipped,
+      n,
+      founderBuffActive: founderBuffActive,
+    );
     final ifMax = CharacterDerivedStats.internalForceMaxWithLineage(
       character,
       equipped,
       n,
+      founderBuffActive: founderBuffActive,
     );
     final speedText = mainTech == null
         ? UiStrings.dashPlaceholder
         : '${CharacterDerivedStats.speed(character, equipped, mainTech, n)}';
     final critText = UiStrings.percent(
-      CharacterDerivedStats.criticalRate(character, n),
+      CharacterDerivedStats.criticalRate(
+        character,
+        n,
+        founderBuffActive: founderBuffActive,
+      ),
     );
     final evadeText = UiStrings.percent(
       CharacterDerivedStats.evasionRate(character, n),

@@ -1094,10 +1094,22 @@ inheritance:
     stack_across_generations: false          # v1.5:只取当代不累代叠加
     conflict_slot_resolution: "auto_swap"    # v1.5:同部位自动 swap 原装回背包
 
-  # --- 祖师爷 buff（GDD §7.1，飞升后）---
+  # --- 祖师爷 buff（GDD §7.1）---
+  # P1.1 A1 E.5(2026-05-21,1.0 路线图):决议方案 E.5.A,enabled_when_alive: false → true。
+  # 设计依据:GDD §7.1「玩家是开派祖师」直译 — 玩家本人 = active 中 isFounder=true 角色,
+  # 自带 sect_wide_buff 作用于 active 中所有角色(`apply_to_disciples_only: false`)。
+  # CLAUDE.md §12.2 #11 v1.5 原决议「Demo 不实装,1.0 版本再设计」对应 P1.1 阶段激活。
+  # 数值上限:internal_force_max_pct=0.05 + lineage_heritage 4 件 0.20 = 0.25 总,
+  # 基础 15000 × 1.25 = 18750 → 待心法 / 装备血量公式叠加后,
+  # CharacterDerivedStats 公式层 clamp 到 §5.4 红线 internal_force ≤ 15000 / max_hp ≤ 20000。
   founder_ancestor_buff:
-    enabled_when_alive: false                # Demo 阶段未实现飞升
-    sect_wide_buff: null                     # 1.0 版本再设计
+    enabled_when_alive: true                 # P1.1 flip,玩家本人=祖师即享 buff
+    sect_wide_buff:
+      internal_force_max_pct: 0.05           # 内力上限 +5%
+      max_hp_pct: 0.05                       # 最大血量 +5%
+      crit_rate_bonus: 0.02                  # 暴击率 +2% (绝对值)
+      cultivation_progress_pct: 0.03         # 修炼度获取速度 +3% (Phase 5+ 接公式)
+      apply_to_disciples_only: false         # active 中 founder + disciples 全享
 
 # =============================================================================
 # 10. 心法相生组合（GDD §4.5）

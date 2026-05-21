@@ -60,6 +60,13 @@ class NumbersConfig {
   /// 拍板，本阶段按"独立叠加"实现）。T22 用。
   final double lineageInternalForceMaxBonus;
 
+  /// 祖师爷 buff(P1.1 A1 E.5,GDD §7.1)。
+  /// numbers.yaml `inheritance.founder_ancestor_buff`,P1.1 阶段决议方案 E.5.A:
+  /// `enabled_when_alive: true` + 玩家本人=祖师身份,自带 sect_wide_buff 给 active
+  /// 全员(`apply_to_disciples_only: false`)。Phase 5+ 飞升机制实装时,trigger
+  /// 条件扩展(eg. founder.realm >= wuSheng)。
+  final FounderAncestorBuff founderAncestorBuff;
+
   /// 散功代价：原主修心法修炼度保留比例（numbers.yaml `techniques.dispersion.cultivation_penalty`，
   /// GDD §4.3 = 0.5）。
   final double dispersionCultivationPenalty;
@@ -117,6 +124,7 @@ class NumbersConfig {
     required this.resonanceStages,
     required this.resonanceInheritanceRetention,
     required this.lineageInternalForceMaxBonus,
+    required this.founderAncestorBuff,
     required this.dispersionCultivationPenalty,
     required this.dispersionInternalForcePenalty,
     required this.defeatBossInternalForcePenalty,
@@ -172,6 +180,11 @@ class NumbersConfig {
       lineageInternalForceMaxBonus: ((equipment['lineage_heritage']
               as Map<String, dynamic>)['internal_force_max_bonus'] as num)
           .toDouble(),
+      founderAncestorBuff: FounderAncestorBuff.fromYaml(
+        ((y['inheritance'] as Map<String, dynamic>?)
+                ?['founder_ancestor_buff'] as Map<String, dynamic>?) ??
+            const {},
+      ),
       dispersionCultivationPenalty: ((techniques['dispersion']
               as Map<String, dynamic>)['cultivation_penalty'] as num)
           .toDouble(),
@@ -259,6 +272,86 @@ class NumbersConfig {
         ),
     ];
   }
+}
+
+/// 祖师爷 buff(P1.1 A1 E.5,GDD §7.1)。numbers.yaml `inheritance.founder_ancestor_buff`。
+///
+/// 决议方案 E.5.A(2026-05-21):enabled_when_alive: false → true,玩家本人=祖师即享 buff。
+/// CLAUDE.md §12.2 #11 v1.5 原决议「Demo 不实装,1.0 版本再设计」对应 P1.1 阶段激活。
+///
+/// 数值上限(CLAUDE.md §5.4 红线):各 pct 字段 ∈ [0, 0.15] 兜底(单字段 +15% 上限)。
+/// Phase 5+ 飞升机制实装时,扩展 `enabled_when_alive` 语义为「founder 飞升后激活」。
+class FounderAncestorBuff {
+  /// 是否在祖师还活着时即激活(P1.1 简化:true = 玩家本人=祖师自带 buff)。
+  /// Phase 5+:false 表示需要飞升才激活(原 GDD §7.1 语义)。
+  final bool enabledWhenAlive;
+
+  /// 内力上限 % 加成(基础 × (1 + pct))。
+  final double internalForceMaxPct;
+
+  /// 最大血量 % 加成(基础 × (1 + pct))。
+  final double maxHpPct;
+
+  /// 暴击率加成(绝对值,直接加到 critRate 后再 clamp,**不乘 base**)。
+  final double critRateBonus;
+
+  /// 修炼度获取速度 % 加成(本批 yaml 占位 + NumbersConfig 字段,**caller 暂不消费**;
+  /// Phase 5+ 修炼度路径成熟时接入)。
+  final double cultivationProgressPct;
+
+  /// 是否仅对弟子生效(true = 祖师本人不享,false = 全 active 享)。
+  /// P1.1 决议 false(GDD §7.1 玩家本人=祖师,自享 buff)。
+  final bool applyToDisciplesOnly;
+
+  const FounderAncestorBuff({
+    required this.enabledWhenAlive,
+    required this.internalForceMaxPct,
+    required this.maxHpPct,
+    required this.critRateBonus,
+    required this.cultivationProgressPct,
+    required this.applyToDisciplesOnly,
+  });
+
+  /// 全零 disabled 兜底(yaml 段缺失 / sect_wide_buff: null)。
+  static const FounderAncestorBuff disabled = FounderAncestorBuff(
+    enabledWhenAlive: false,
+    internalForceMaxPct: 0,
+    maxHpPct: 0,
+    critRateBonus: 0,
+    cultivationProgressPct: 0,
+    applyToDisciplesOnly: false,
+  );
+
+  factory FounderAncestorBuff.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return disabled;
+    final enabled = (y['enabled_when_alive'] as bool?) ?? false;
+    final swb = y['sect_wide_buff'] as Map<String, dynamic>?;
+    if (swb == null) {
+      return FounderAncestorBuff(
+        enabledWhenAlive: enabled,
+        internalForceMaxPct: 0,
+        maxHpPct: 0,
+        critRateBonus: 0,
+        cultivationProgressPct: 0,
+        applyToDisciplesOnly: false,
+      );
+    }
+    return FounderAncestorBuff(
+      enabledWhenAlive: enabled,
+      internalForceMaxPct:
+          ((swb['internal_force_max_pct'] as num?) ?? 0).toDouble(),
+      maxHpPct: ((swb['max_hp_pct'] as num?) ?? 0).toDouble(),
+      critRateBonus: ((swb['crit_rate_bonus'] as num?) ?? 0).toDouble(),
+      cultivationProgressPct:
+          ((swb['cultivation_progress_pct'] as num?) ?? 0).toDouble(),
+      applyToDisciplesOnly:
+          (swb['apply_to_disciples_only'] as bool?) ?? false,
+    );
+  }
+
+  /// buff 是否处于激活态(P1.1 简化:enabledWhenAlive 即激活)。
+  /// Phase 5+ 飞升实装时本 getter 扩展为「founder 飞升退出 active 后才 true」。
+  bool get isActive => enabledWhenAlive;
 }
 
 /// 强化系统配置（numbers.yaml `equipment.enhancement` + `equipment.xinxue_jiejing`，

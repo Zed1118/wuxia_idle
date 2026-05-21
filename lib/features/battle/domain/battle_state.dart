@@ -133,6 +133,7 @@ class BattleCharacter {
     required NumbersConfig numbers,
     required int teamSide,
     required int slotIndex,
+    bool founderBuffActive = false,
   }) {
     final school = character.school;
     if (school == null) {
@@ -155,11 +156,17 @@ class BattleCharacter {
       throw RangeError.value(slotIndex, 'slotIndex', '必须 ∈ [0, 2]');
     }
 
-    final maxHp = CharacterDerivedStats.maxHp(character, equipped, numbers);
+    final maxHp = CharacterDerivedStats.maxHp(
+      character,
+      equipped,
+      numbers,
+      founderBuffActive: founderBuffActive,
+    );
     final maxIf = CharacterDerivedStats.internalForceMaxWithLineage(
       character,
       equipped,
       numbers,
+      founderBuffActive: founderBuffActive,
     );
     final speed = CharacterDerivedStats.speed(
       character,
@@ -167,7 +174,11 @@ class BattleCharacter {
       mainTechnique,
       numbers,
     );
-    final critRate = CharacterDerivedStats.criticalRate(character, numbers);
+    final critRate = CharacterDerivedStats.criticalRate(
+      character,
+      numbers,
+      founderBuffActive: founderBuffActive,
+    );
     final evRate = CharacterDerivedStats.evasionRate(character, numbers);
     final defRate = RealmUtils.defenseRateOf(character.realmTier);
     final totalEqAtk = equipped.fold<int>(
