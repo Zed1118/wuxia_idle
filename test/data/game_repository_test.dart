@@ -41,7 +41,7 @@ void main() {
           reason: '64 心法/共鸣招(skills.yaml,含 joint_skill) + 40 奇遇招');
       expect(repo.encounterSkillIds.length, 40,
           reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
-      expect(repo.stageDefs.length, 20, reason: '主线 20 关（2026-05-21 P2 Ch4 扩,4 章 × 5 关)');
+      expect(repo.stageDefs.length, 25, reason: '主线 25 关（2026-05-22 P2 Ch5 扩,5 章 × 5 关)');
       expect(repo.numbers.version, isNotEmpty);
       // 2026-05-21 候选 2:synergies.yaml 8 组合(原 7 + 新 1「太极初成」
       // specificTechniques 类型,GDD §4.5 触上限 8)
@@ -187,19 +187,19 @@ void main() {
       }
     });
 
-    test('主线 20 关红线:4 章 × 5 关 + 4/5 关 isBossStage(2026-05-21 P2 Ch4 扩)',
+    test('主线 25 关红线:5 章 × 5 关 + 4/5 关 isBossStage(2026-05-22 P2 Ch5 扩)',
         () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final mainlines = repo.stageDefs.values
           .where((s) => s.stageType == StageType.mainline)
           .toList();
-      expect(mainlines.length, 20);
-      for (final ch in [1, 2, 3, 4]) {
+      expect(mainlines.length, 25);
+      for (final ch in [1, 2, 3, 4, 5]) {
         final inCh = mainlines.where((s) => s.chapterIndex == ch).toList();
         expect(inCh.length, 5, reason: 'Ch$ch 应有 5 关');
       }
       // 章末两关 4/5 是 Boss + 配 narrativeDefeatId;1/2/3 关非 Boss + 无 defeat
-      for (final ch in [1, 2, 3, 4]) {
+      for (final ch in [1, 2, 3, 4, 5]) {
         for (final idx in [1, 2, 3, 4, 5]) {
           final id = 'stage_0${ch}_0$idx';
           final s = repo.getStage(id);
@@ -623,10 +623,10 @@ stages:
     /// Ch5/Ch6 spec 起草前若 stages.yaml prevStageId 写错(打字 / 跨章 / 形成环)
     /// 此 test 拦截。现有 `_enforceRedLines` 只验「引用存在 + 同章」,本 test 补
     /// 「严格单链 N-1」语义。
-    test('R3 主线 4 章 20 关 prevStageId 严格 N→N-1 单链(每章首关 null)',
+    test('R3 主线 5 章 25 关 prevStageId 严格 N→N-1 单链(每章首关 null)',
         () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
-      for (final ch in [1, 2, 3, 4]) {
+      for (final ch in [1, 2, 3, 4, 5]) {
         for (final idx in [1, 2, 3, 4, 5]) {
           final id = 'stage_0${ch}_0$idx';
           final s = repo.getStage(id);
