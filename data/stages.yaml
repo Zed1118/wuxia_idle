@@ -1883,3 +1883,133 @@ stages:
     difficultyMultiplier: 6.1
     biome: mountainForest
     weather: snow
+
+  # ============================================================================
+  # 心魔境 7 关（1.0 P2.2 §12.1 · stageType: innerDemon）
+  # ----------------------------------------------------------------------------
+  # spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md
+  # 7 关拦截 wuSheng 7 层突破：qiMeng → ruMen → ... → dengFeng → 飞升前夜（A1 接管）
+  # enemyTeam 留空：InnerDemonStrategy 动态镜像玩家 character 构造（Batch 2.2 接管）
+  # unlock 链 + required_realm_layer：data/numbers.yaml inner_demon 段
+  # baseExpReward = 0：克己语义，无外物收益；玩家 EXP 由挂机 + 其他关供给
+  # 文案 narrative ids 占位：Batch 2.3 才落 ~3,500 字 opening/victory/defeat × 7 + chapter
+  # ============================================================================
+
+  # === stage_inner_demon_01 · 心魔·贪（求胜心）===
+  - id: stage_inner_demon_01
+    name: 心魔·贪
+    stageType: innerDemon
+    narrativeOpeningId: stage_inner_demon_01_opening
+    narrativeVictoryId: stage_inner_demon_01_victory
+    narrativeDefeatId: stage_inner_demon_01_defeat
+    requiredRealm: wuSheng
+    enemyTeam: []
+    isBossStage: true
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable: []
+    baseExpReward: 0
+    difficultyMultiplier: 6.2
+    biome: innerRealm
+
+  # === stage_inner_demon_02 · 心魔·嗔（回望仇）===
+  - id: stage_inner_demon_02
+    name: 心魔·嗔
+    stageType: innerDemon
+    narrativeOpeningId: stage_inner_demon_02_opening
+    narrativeVictoryId: stage_inner_demon_02_victory
+    narrativeDefeatId: stage_inner_demon_02_defeat
+    requiredRealm: wuSheng
+    enemyTeam: []
+    isBossStage: true
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable: []
+    baseExpReward: 0
+    difficultyMultiplier: 6.4
+    biome: innerRealm
+
+  # === stage_inner_demon_03 · 心魔·痴（执着之过）===
+  - id: stage_inner_demon_03
+    name: 心魔·痴
+    stageType: innerDemon
+    narrativeOpeningId: stage_inner_demon_03_opening
+    narrativeVictoryId: stage_inner_demon_03_victory
+    narrativeDefeatId: stage_inner_demon_03_defeat
+    requiredRealm: wuSheng
+    enemyTeam: []
+    isBossStage: true
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable: []
+    baseExpReward: 0
+    difficultyMultiplier: 6.6
+    biome: innerRealm
+
+  # === stage_inner_demon_04 · 心魔·慢（自满之态）===
+  - id: stage_inner_demon_04
+    name: 心魔·慢
+    stageType: innerDemon
+    narrativeOpeningId: stage_inner_demon_04_opening
+    narrativeVictoryId: stage_inner_demon_04_victory
+    narrativeDefeatId: stage_inner_demon_04_defeat
+    requiredRealm: wuSheng
+    enemyTeam: []
+    isBossStage: true
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable: []
+    baseExpReward: 0
+    difficultyMultiplier: 6.8
+    biome: innerRealm
+
+  # === stage_inner_demon_05 · 心魔·疑（对师父之疑）===
+  - id: stage_inner_demon_05
+    name: 心魔·疑
+    stageType: innerDemon
+    narrativeOpeningId: stage_inner_demon_05_opening
+    narrativeVictoryId: stage_inner_demon_05_victory
+    narrativeDefeatId: stage_inner_demon_05_defeat
+    requiredRealm: wuSheng
+    enemyTeam: []
+    isBossStage: true
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable: []
+    baseExpReward: 0
+    difficultyMultiplier: 7.0
+    biome: innerRealm
+
+  # === stage_inner_demon_06 · 心魔·空（无物之惧）===
+  - id: stage_inner_demon_06
+    name: 心魔·空
+    stageType: innerDemon
+    narrativeOpeningId: stage_inner_demon_06_opening
+    narrativeVictoryId: stage_inner_demon_06_victory
+    narrativeDefeatId: stage_inner_demon_06_defeat
+    requiredRealm: wuSheng
+    enemyTeam: []
+    isBossStage: true
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable: []
+    baseExpReward: 0
+    difficultyMultiplier: 7.2
+    biome: innerRealm
+
+  # === stage_inner_demon_07 · 心魔·真（自己 vs 自己·末关双镜像）===
+  - id: stage_inner_demon_07
+    name: 心魔·真
+    stageType: innerDemon
+    narrativeOpeningId: stage_inner_demon_07_opening
+    narrativeVictoryId: stage_inner_demon_07_victory
+    narrativeDefeatId: stage_inner_demon_07_defeat
+    requiredRealm: wuSheng
+    enemyTeam: []
+    isBossStage: true
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable: []
+    baseExpReward: 0
+    difficultyMultiplier: 7.5
+    biome: innerRealm
