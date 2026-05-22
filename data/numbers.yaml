@@ -1294,12 +1294,22 @@ inner_demon:
     stage_inner_demon_04: 0.16
     stage_inner_demon_05: 0.18
     stage_inner_demon_06: 0.20
-    stage_inner_demon_07: 0.20       # 双镜像 2 副本（§一 末关·心魔·真）
+    stage_inner_demon_07: 0.40       # 末关·心魔·真（Batch 2.5.C 决议:R5.1 实测
+                                     # _07 @ +20% 与 _06 @ +20% 分布完全一致
+                                     # 3/0/47,spec §一「+20% 双镜像 2 副本」未
+                                     # 落地;改 +40% 单副本 YAGNI,不动 BattleState
+                                     # 6v3 架构。§5.4 cap 强加保证不破红线）
 
   mirror_caps:                       # §5.4 数值红线 cap（防玩家 build 超时镜像也超）
-    hp_max: 20000
-    internal_force_max: 15000
-    attack_power_max: 2000
+    hp_max: 20000                    # §5.4 玩家血上限
+    internal_force_max: 15000        # §5.4 内力上限
+    # Batch 2.5.C 决议(2026-05-23):attack_power_max 2000 → 6000。
+    # 原 2000 锚错 §5.4 维度 — GDD §5.4「装备攻击 2000」是 equipment.yaml
+    # 单件 baseAttack 上限,不是角色 totalEquipmentAttack(3 件求和)上限。
+    # 玩家 wuSheng·dengFeng 满 build totalEquipmentAttack ≈ 2850(R5.2 实测),
+    # 镜像 ×(1+buff) clamp 2000 让镜像永远 < 玩家,导致 R5.1 全 rightWins=0。
+    # 改 6000 = 3 件 × §5.4 单件 2000,镜像 +40% buff 真生效。
+    attack_power_max: 6000
 
   failure_penalty:                   # 散功 ×0.5 阉割版（GDD §6 散功公式半惩罚）
     internal_force_multiplier: 0.85

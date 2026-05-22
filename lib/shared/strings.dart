@@ -414,6 +414,10 @@ class UiStrings {
   static const String mainMenuSeclusionHint = '5 张地图，离线挂机，最长 72 小时';
   static const String mainMenuSeclusionLockedHint = '通关第一章后开放';
 
+  // ─── 心魔境（1.0 P2.2 §12.1,Batch 2.5.B 入口）─────────────────────────────
+  static const String mainMenuInnerDemon = '心魔境';
+  static const String mainMenuInnerDemonHint = '7 关克己 · 武圣突破前置';
+
   // ── P1 #42 Phase 2 §10 P1.y · 新手引导 banner 文案(GDD §10.2 第 2 方式)──
   // 3 条对应 tutorialStep 6/7/8(收徒 / 奇遇 / 装备开锋),50-100 字短介绍。
   static const String tutorialHintStep6Title = '收徒资格已达成';
