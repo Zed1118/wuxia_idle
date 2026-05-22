@@ -2013,3 +2013,301 @@ stages:
     baseExpReward: 0
     difficultyMultiplier: 7.5
     biome: innerRealm
+
+  # ============================================================================
+  # Light Foot · 轻功对决(1.0 P3.1 §12.3,GDD v1.11)
+  # ============================================================================
+  # 5 关 yiLiu 3 + jueDing 2 平行支线(不接管 wuSheng 突破链)
+  # 跨 3 terrain(water/rooftop/bamboo)+ 2 高阶混合
+  # unlock 链:stage_06_05 victory → light_foot_01 → 02 → 03 → 04 → 05
+  # numbers.yaml light_foot 段配 terrain_modifiers / stage_terrain / unlock_triggers
+  # ============================================================================
+
+  # === stage_light_foot_01 · 水面踏波(首关 · 渡口流寇)===
+  - id: stage_light_foot_01
+    name: 水面踏波
+    stageType: lightFoot
+    narrativeOpeningId: stage_light_foot_01_opening
+    narrativeVictoryId: stage_light_foot_01_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_lightfoot_shuikou_a
+        name: 渡口水寇
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 7000
+        baseAttack: 720
+        baseSpeed: 175
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+        iconPath: assets/enemies/lightfoot_shuikou_a.png
+      - id: enemy_yiLiu_lightfoot_shuikou_b
+        name: 渡口船工
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 6700
+        baseAttack: 750
+        baseSpeed: 190
+        skillIds:
+          - skill_lingqiao_menpai_basic
+        iconPath: assets/enemies/lightfoot_shuikou_b.png
+      - id: enemy_yiLiu_lightfoot_shuikou_c
+        name: 渡口刀客
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 6800
+        baseAttack: 730
+        baseSpeed: 170
+        skillIds:
+          - skill_yinrou_menpai_basic
+        iconPath: assets/enemies/lightfoot_shuikou_c.png
+    isBossStage: false
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [6, 9]
+        dropChance: 1.0
+    baseExpReward: 4500
+    difficultyMultiplier: 5.0
+    biome: dock
+    terrainBiome: water
+
+  # === stage_light_foot_02 · 屋脊追风(青瓦飞檐 · 城防夜巡)===
+  - id: stage_light_foot_02
+    name: 屋脊追风
+    stageType: lightFoot
+    prevStageId: stage_light_foot_01
+    narrativeOpeningId: stage_light_foot_02_opening
+    narrativeVictoryId: stage_light_foot_02_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_lightfoot_yexun_a
+        name: 城防夜巡
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 9000
+        baseAttack: 900
+        baseSpeed: 185
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+          - skill_gangmeng_menpai_ult
+        iconPath: assets/enemies/lightfoot_yexun_a.png
+      - id: enemy_yiLiu_lightfoot_yexun_b
+        name: 飞檐捕快
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 8500
+        baseAttack: 920
+        baseSpeed: 205
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+        iconPath: assets/enemies/lightfoot_yexun_b.png
+      - id: enemy_yiLiu_lightfoot_yexun_c
+        name: 瓦上刺客
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 8700
+        baseAttack: 880
+        baseSpeed: 195
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+        iconPath: assets/enemies/lightfoot_yexun_c.png
+    isBossStage: false
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [7, 10]
+        dropChance: 1.0
+    baseExpReward: 5500
+    difficultyMultiplier: 5.5
+    biome: cityWall
+    terrainBiome: rooftop
+
+  # === stage_light_foot_03 · 竹海听风(密竹深处 · 江南剑客)===
+  - id: stage_light_foot_03
+    name: 竹海听风
+    stageType: lightFoot
+    prevStageId: stage_light_foot_02
+    narrativeOpeningId: stage_light_foot_03_opening
+    narrativeVictoryId: stage_light_foot_03_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_lightfoot_zhuke_a
+        name: 江南剑客
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: lingQiao
+        baseHp: 10800
+        baseAttack: 1050
+        baseSpeed: 215
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+          - skill_lingqiao_menpai_ult
+        iconPath: assets/enemies/lightfoot_zhuke_a.png
+      - id: enemy_yiLiu_lightfoot_zhuke_b
+        name: 密竹刀客
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: yinRou
+        baseHp: 10500
+        baseAttack: 1080
+        baseSpeed: 200
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+          - skill_yinrou_menpai_ult
+        iconPath: assets/enemies/lightfoot_zhuke_b.png
+      - id: enemy_yiLiu_lightfoot_zhuke_c
+        name: 竹林游侠
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: gangMeng
+        baseHp: 11000
+        baseAttack: 1020
+        baseSpeed: 195
+        skillIds:
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+          - skill_gangmeng_menpai_ult
+        iconPath: assets/enemies/lightfoot_zhuke_c.png
+    isBossStage: false
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [8, 11]
+        dropChance: 1.0
+    baseExpReward: 6500
+    difficultyMultiplier: 6.0
+    biome: bambooForest
+    terrainBiome: bamboo
+
+  # === stage_light_foot_04 · 险崖飞渡(高阶 water · 山涧瀑布)===
+  - id: stage_light_foot_04
+    name: 险崖飞渡
+    stageType: lightFoot
+    prevStageId: stage_light_foot_03
+    narrativeOpeningId: stage_light_foot_04_opening
+    narrativeVictoryId: stage_light_foot_04_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_lightfoot_pubu_a
+        name: 山涧剑客
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 14000
+        baseAttack: 1180
+        baseSpeed: 220
+        skillIds:
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+        iconPath: assets/enemies/lightfoot_pubu_a.png
+      - id: enemy_jueDing_lightfoot_pubu_b
+        name: 瀑布刀客
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 13700
+        baseAttack: 1150
+        baseSpeed: 205
+        skillIds:
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
+        iconPath: assets/enemies/lightfoot_pubu_b.png
+      - id: enemy_jueDing_lightfoot_pubu_c
+        name: 险崖游侠
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 14200
+        baseAttack: 1200
+        baseSpeed: 200
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+        iconPath: assets/enemies/lightfoot_pubu_c.png
+    isBossStage: false
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [10, 13]
+        dropChance: 1.0
+    baseExpReward: 7500
+    difficultyMultiplier: 6.2
+    biome: cliffWaterfall
+    terrainBiome: water
+
+  # === stage_light_foot_05 · 长风万里(高阶 rooftop · 关楼大风)===
+  - id: stage_light_foot_05
+    name: 长风万里
+    stageType: lightFoot
+    prevStageId: stage_light_foot_04
+    narrativeOpeningId: stage_light_foot_05_opening
+    narrativeVictoryId: stage_light_foot_05_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_lightfoot_changfeng_a
+        name: 关楼守将
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 17000
+        baseAttack: 1400
+        baseSpeed: 225
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+          - skill_gangmeng_jianghu_ult
+        iconPath: assets/enemies/lightfoot_changfeng_a.png
+      - id: enemy_jueDing_lightfoot_changfeng_b
+        name: 长风剑客
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 16500
+        baseAttack: 1430
+        baseSpeed: 235
+        skillIds:
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+          - skill_lingqiao_jianghu_ult
+        iconPath: assets/enemies/lightfoot_changfeng_b.png
+      - id: enemy_jueDing_lightfoot_changfeng_c
+        name: 万里刀客
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 16800
+        baseAttack: 1380
+        baseSpeed: 220
+        skillIds:
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
+          - skill_yinrou_jianghu_ult
+        iconPath: assets/enemies/lightfoot_changfeng_c.png
+    isBossStage: true
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [12, 15]
+        dropChance: 1.0
+    baseExpReward: 9000
+    difficultyMultiplier: 6.5
+    biome: frontier
+    terrainBiome: rooftop
