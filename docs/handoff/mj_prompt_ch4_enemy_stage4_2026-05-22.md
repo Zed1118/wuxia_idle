@@ -31,9 +31,9 @@ chinese ink painting style portrait, [文化身份],
 [西北风物词: dusty wind / sandy desert / frontier outpost / weathered face / 
 desert sun glare / sparse grassland / loess landscape], 
 [流派气质词], aged paper texture, monochrome ink wash, 
-restrained palette, no weapon detail, 
+restrained palette, 
 front-facing chest-up composition, 
---ar 1:1 --stylize 150 --v 7
+--ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 ```
 
 ## 15 张具体 prompt 草案
@@ -44,17 +44,17 @@ front-facing chest-up composition,
 liukou_a: 流寇头领
 chinese ink painting style portrait, weathered frontier traveler with stoic 
 expression, dusty wind, loess landscape backdrop, dark brown earthy palette, 
-broad shoulders, no weapon, restrained ink wash, --ar 1:1 --stylize 150 --v 7
+broad shoulders, restrained ink wash, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 
 liukou_b: 流寇副手  
 chinese ink painting style portrait, lean frontier wanderer, agile posture, 
-dusty wind, sparse grassland, slate gray palette, alert eyes, no weapon, 
-restrained ink wash, --ar 1:1 --stylize 150 --v 7
+dusty wind, sparse grassland, slate gray palette, alert eyes, 
+restrained ink wash, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 
 liukou_c: 流寇刀手
 chinese ink painting style portrait, silent frontier wanderer, narrowed eyes, 
-dusty wind, deep purple shadow palette, calm composure, no weapon detail, 
-restrained ink wash, --ar 1:1 --stylize 150 --v 7
+dusty wind, deep purple shadow palette, calm composure, 
+restrained ink wash, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 ```
 
 ### stage_04_02 玉门把总 3 人(古道驿站)
@@ -63,15 +63,15 @@ restrained ink wash, --ar 1:1 --stylize 150 --v 7
 guard_a: 玉门关把总
 chinese ink painting style portrait, frontier gatekeeper authority, weathered 
 official bearing, dust-worn cloak, loess landscape, dark brown palette, 
-no weapon, restrained ink wash, --ar 1:1 --stylize 150 --v 7
+restrained ink wash, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 
 guard_b: 西凉骑士
 chinese ink painting style portrait, agile frontier rider, lean build, slate 
-gray dust-cloak, sparse grassland, alert posture, no weapon, --ar 1:1 --stylize 150 --v 7
+gray dust-cloak, sparse grassland, alert posture, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 
 guard_c: 商队护卫
 chinese ink painting style portrait, silent caravan escort, deep purple cloak, 
-desert sun glare, calm vigilance, no weapon, --ar 1:1 --stylize 150 --v 7
+desert sun glare, calm vigilance, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 ```
 
 ### stage_04_03 沙匪 3 人(大漠迷踪)
@@ -79,15 +79,15 @@ desert sun glare, calm vigilance, no weapon, --ar 1:1 --stylize 150 --v 7
 ```
 shafei_a: 沙匪头领
 chinese ink painting style portrait, desert wanderer leader, sand-weathered 
-face, dark brown palette, sandy desert backdrop, no weapon, --ar 1:1 --stylize 150 --v 7
+face, dark brown palette, sandy desert backdrop, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 
 shafei_b: 沙盗刀手
 chinese ink painting style portrait, silent desert wanderer, deep purple 
-palette, sand dust, narrowed gaze, no weapon, --ar 1:1 --stylize 150 --v 7
+palette, sand dust, narrowed gaze, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 
 shafei_c: 沙盗弓手
 chinese ink painting style portrait, agile desert wanderer, slate gray, 
-sand dust, distant gaze, no weapon, --ar 1:1 --stylize 150 --v 7
+sand dust, distant gaze, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 ```
 
 ### stage_04_04 西凉论剑 3 人(校场)
@@ -95,14 +95,14 @@ sand dust, distant gaze, no weapon, --ar 1:1 --stylize 150 --v 7
 ```
 xiliangboss: 西凉武林名宿
 chinese ink painting style portrait, seasoned frontier elder, dignified beard, 
-loess landscape, dark brown palette with worn jade tone, no weapon, 
-restrained ink wash, --ar 1:1 --stylize 150 --v 7
+loess landscape, dark brown palette with worn jade tone, 
+restrained ink wash, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 
 xiliang_a/b: 武林名宿之徒
 (xiliang_a) slate gray, agile young trainee
 (xiliang_b) deep purple, silent young trainee
 chinese ink painting style portrait, [color] frontier disciple, drill ground 
-backdrop, no weapon, --ar 1:1 --stylize 150 --v 7
+backdrop, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 ```
 
 ### stage_04_05 西凉霸主三人组(末 boss · 跨阶)
@@ -111,16 +111,16 @@ backdrop, no weapon, --ar 1:1 --stylize 150 --v 7
 xiliangbazhu: 西凉霸主(jueDing 跨阶 · 寡言派 · yinRou)
 chinese ink painting style portrait, enigmatic frontier master, gray robe, 
 sparse beard, deep purple ink palette with subtle gold accent, night frontier 
-fortress backdrop, hand raised in restrained gesture, no weapon, 
-restrained ink wash, mysterious atmosphere, --ar 1:1 --stylize 150 --v 7
+fortress backdrop, hand raised in restrained gesture, 
+restrained ink wash, mysterious atmosphere, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 
 bazhu_zuofu: 西凉左护法(yiLiu·dengFeng gangMeng)
 chinese ink painting style portrait, stoic frontier guardian, broad build, 
-dark brown palette, frontier fortress backdrop, no weapon, --ar 1:1 --stylize 150 --v 7
+dark brown palette, frontier fortress backdrop, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 
 bazhu_youfu: 西凉右护法(yiLiu·dengFeng lingQiao)
 chinese ink painting style portrait, agile frontier guardian, lean build, 
-slate gray palette, frontier fortress backdrop, no weapon, --ar 1:1 --stylize 150 --v 7
+slate gray palette, frontier fortress backdrop, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword --v 7
 ```
 
 ## 派单节奏(用户起 MJ Discord 时)
