@@ -4,7 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code + Opus 4.7 维护。修改需附带变更说明。
 >
-> **版本**：v1.7（Ch6「飞升」Phase 2 全收口 ✅ · 1.0 P2 第二条主线全闭环 · 三章弧叙事弧完整)
+> **版本**：v1.8（§12.1 心魔系统 Phase 1 spec 起草拍板 · 1.0 P2.2 子阶段启动)
+>
+> **v1.8 变更**（2026-05-22 晚 §12.1 心魔系统 Phase 1 spec 起草拍板 · 1.0 P2.2 子阶段启动 · ROADMAP_1_0.md:110/200/247):① §12.1「心魔系统」行从纯 1.0 扩展占位升「**1.0 P2.2 Phase 1 spec 拍板**」— 用户拍板 4 主轴(**触发=wuSheng 6 内部 + 1 飞升前置 7 关** / 形态=stages.yaml `stageType: innerDemon`(StageType enum 加第 3 项)/ 数值=**镜像玩家自己 +10-20% + §5.4 红线 cap**(HP ≤20k/内力 ≤15k/装备 ≤2k)/ 失败惩罚=**散功 ×0.5 公式阉割版**(内力 ×0.85 / 主修修炼度 ×0.9 + 「心魔余毒」debuff 闭关 8h 清));② schema 改动最小(StageType enum +`innerDemon` / EncounterBiome enum +`innerRealm` / numbers.yaml `inner_demon` 段 ~25 行 / 7 stage entries);③ codebase 0 心魔引用(Phase 0 完全 grep ✅ B 独立路线);④ unlock 拦截 hook 加 `character_advancement_service.dart:54-67` while-loop 2-3 行(严格 wuSheng tier,不影响 Demo 全境界 + Ch4-6 P2.1 主线);⑤ Phase 2+ 实装估时 ~7-8h opus xhigh(Batch 2.1 schema → 2.2 strategy + service → 2.3 narrative ~3,500 字 → 2.4 GDD/ROADMAP/PROGRESS → 2.5 R1-R5)。**数值红线 §5.4/§5.3/§6 公式完全不动**。**Ch1-Ch6 主线 + Demo 49 层 EXP 自动升层路径完全不变**(`isLayerLocked` 严格 wuSheng 短路)。详 `docs/handoff/p2_x_inner_demon_phase0_reality_check_2026-05-22.md` + `p2_x_inner_demon_spec_2026-05-22.md`。
 >
 > **v1.7 变更**（2026-05-22 午后 Ch6「飞升」Phase 2 全收口 · 1.0 P2 第二条主线全闭环）:① §12.4 Ch6「飞升」行升「Phase 1 spec 起草拍板 · Phase 2 启动」→「**Phase 2 全收口 ✅ · 1.0 P2 第二条主线全闭环**」— 6 commit `15216a0`→`486d39b` 全 push(P0+P1+P2.1+2.2+P2.3.①+P2.3.②);② §12.4.1 字数表 Ch6 ~6,600 预算 → 实测 **~5,800 字**(narrative 13 文件,略低 spec ~10%)+ Ch6 合计 ~18,318 字超 14-20k 上限 ~83%(质感优先 acceptable);③ 师父第三句遗言三章弧完整 — Ch4 epilogue 半懂前一句 / Ch5 epilogue 第三句半解 / Ch6 epilogue **三句话第一次完整连成一句**;④ 物理遗物三章 hook 全闭环 — Ch4 小铜镜 + Ch5「师」字玉佩 + Ch6 epilogue **无物之境**(四件物事并放青石不带走,雪埋);⑤ Tier zongShi 风格梯度词「澄澈 / 无为 / 玄妙 / 化境」全章实测落地。**数值红线 §5.4/§5.3/§6 公式完全不动**。**§12.1 心魔系统不前置依赖**(B 路线 0 contamination,留 P2.2 独立 spec)。详 `docs/handoff/p2_x_chapter6_phase2_full_closeout_2026-05-22.md`。
 >
@@ -625,7 +627,7 @@ data/
 ### 12.1 剧情与世界
 
 - **江湖恩怨系统**：NPC 之间的关系网，杀某人会被其门派追杀。
-- **心魔系统**：高境界突破前需面对心魔关卡，剧情化的内心战斗。
+- **心魔系统**：高境界突破前需面对心魔关卡，剧情化的内心战斗。**v1.8 1.0 P2.2 Phase 1 spec 拍板**:7 关 `stage_inner_demon_01..07` 拦截 wuSheng 7 层突破(qiMeng → ruMen → ... → dengFeng → 飞升前置)+ `InnerDemonStrategy implements BattleStrategy` 镜像玩家 +10-20%(强加 §5.4 cap) + 失败 = 内力 ×0.85 / 主修修炼度 ×0.9 + 「心魔余毒」debuff 闭关 8h 清。详 `docs/handoff/p2_x_inner_demon_spec_2026-05-22.md`。Phase 2+ 实装另起批次。
 - **门派事件**：地图上动态出现的门派冲突、武林大会、寻宝事件。
 
 ### 12.2 角色与社交
