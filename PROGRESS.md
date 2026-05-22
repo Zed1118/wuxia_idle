@@ -5,26 +5,20 @@
 
 ## 当前阶段
 
-**2026-05-21 晚 候选 1 M4 美术 Stage 3 · BOSS 题材 22 张闭环 ✅**(Mac opus xhigh ~3h,4 commit `319e15d` + `f14ba0c` + `7ada9b8` + `e6d5806`):用户拍板二选一 → 候选 1 美术 Stage 3 优先(BOSS + 场景 + 心法卷轴 3 题材,~50 张轻收口,BOSS 优先)。Phase 0 reality check 核心发现 ⭐:character_avatar.dart 占位 widget 改造 1 处 = 60+ enemy iconPath sleeper schema 一次性激活(stages + towers yaml 早锚 + StageDef.iconPath 早 parse 但 widget 没消费)。Phase 1 三 widget 全接入(character_avatar / battle_screen Stack 背景 / technique_panel tier banner)+ 5 def schema 加可空字段。**MJ 出图 22/22** = v1 旧违规版 7 张过 → 触发 Moderator manual review(锁 ~5h)→ v5 合规版 14 张全过 → v6.1 thug_a 老者意境加固 1 张重抽。towers.yaml 6 BOSS iconPath 撞名(F15-30 全占位 wulin_bazhu.png)sed 精确改 6 行 → tower_boss_<floor>.png。1172 pass / 0 analyze 全程不破。详 [`art_stage3_boss_closeout_2026-05-21.md`](docs/handoff/art_stage3_boss_closeout_2026-05-21.md) + Phase 0 [`art_stage3_phase0_reality_check_2026-05-21.md`](docs/handoff/art_stage3_phase0_reality_check_2026-05-21.md)。memory sink:`feedback_mj_character_batch_v6_evolution`(≥10 张大批量 Moderator 累计触发 + v6 进化体例)。
+**2026-05-22 Ch5「征东」1.0 P2 第二条主线第 2 章 Phase 2 全收口 ✅**(Mac+Opus xhigh ~2.5h actual,5 commit `62ba01f` → `d9b7e98` 全 push):**用户 7 项拍板**(章名「征东」/ jueDing 全章 / 推荐文化主轴 / C 复合末 Boss / GDD §12.4.1 同步升 v1.5 / Batch 沿 Ch4 拆 3 子波 / 升 xhigh)。
+- **Phase 1**(`62ba01f` ~30min):Ch5 spec doc 172 行 + GDD v1.4 → v1.5 正式拍板(§12.4.1 标签移除 + §12.4 Ch5 启动条目)
+- **Batch 2.1+2.2**(`9a37db0` ~45min):5 关 stages.yaml entry + 红线层 4 patch(chapter_list / strings / game_repository_test / chapter_list_screen_test / battle_strategy_e2e_test 5 章 25 关动态化)+ HP 14.5k→32k / Atk 1.2k→1.95k 跨阶 zongShi·qiMeng / **EncounterBiome 0 扩**(全复用 17 enum)+ **equipment.yaml 0 扩**(zhongQi/baoWu 现成)+ 1180→1185 pass(+5 e2e)
+- **Batch 2.3.① 子波 1**(`f76028e` ~50min):opus 单写 12 narrative v1(11 stage opening/victory + stage_05_04_defeat + chapter 占位)~4,500 字 / 黑名单 0 命中 / 用户审 v1 通过
+- **Batch 2.3.② 子波 2**(`d9b7e98` ~30min):chapter_05 章首尾精写 ~1,640 字(prologue 小铜镜回取 + 师父第二句承上 / epilogue 镜玉佩并放 + **师父第三句遗言反转** Ch6 hook)+ stage_05_05_defeat ~510 字 / 用户审 v1 通过
+- **narrative 全统计**:13 文件 ~6,638 字 / 师父遗言 3 处贯穿 + 物理遗物 hook 5 处闭环(小铜镜回取→玉佩出场→玉佩兑现→二字并放→defeat 反例)/ Tier jueDing「沉静/从容/通达/入微」全章 / 视角切换沿 Ch4 体例
+- **Batch 2.4 doc 同步**(本批):GDD §12.4 Ch5 行升「Phase 2 全收口 ✅」+ ROADMAP_1_0 P2.1 加 Ch5「征东」子项(P2.1 字数累计 12,518 ≈ 预算上限)+ PROGRESS 顶段(本批)
+- **Batch 2.5 R5 跨阶红线压测 + Phase 2 closeout**:待 ~45min
 
-**P1.3 美术线 75% → ~80%**(89 + 22 = 111 张落 app)。**P2 第二条主线 ~5% → ~25%**(Ch4 5 关数值落,narratives 待 Batch 2.3)。
+**1185 pass / 0 analyze**(+5 Ch5 e2e stage)。**P2 第二条主线 ~85% → ~92%**(Ch4 + Ch5 全收口,留 Ch6 spec 起草)。
 
-**2026-05-21 晚 候选 2 Ch4「西出阳关」Phase 2.1-2.4 全收口 ✅**(Mac+Opus xhigh ~2.5h 合计,6 commit push):**Ch4 1.0 P2 第二条主线第 1 章数值 + narrative + doc 全到位**。
-- **Batch 2.1+2.1.5+2.2 实装**(`4f7fb6d`):5 关 stages.yaml entry + 主线红线放开 4 章 20 关 + UI/strings 适配 + 8 文件 395+ inserts(EncounterBiome desert/frontier + game_repository 红线 + chapter_list 4 章 + stages.yaml HP 7,200→15,500 / dropTable zhongqi_qing_xu_jian 1.0 给 Ch5 起步)
-- **Batch 2.3.①+② v1 narrative 13 文件 ~5,880 纯正文字**(`be9ac31` + `0c8175b`,**v1 草稿用户审稿通过**):4 拍板文化叙事弧落地 — ① 章首释然(许昌→酒泉,师父遗言承上)② 章末「已知不足」顿悟(yiLiu→jueDing 拐点)③ 末 Boss 沉默克敌(三招手势 + 小铜镜 hook Ch5/Ch6)④ Tier 7 阶风格锚定「沉着/肃杀/老练/冷静」+ 西北风物词 + 嘉峪关社会词 + 黑名单词 0 命中
-- **Batch 2.4 doc 同步**(2026-05-21 晚 ~30min):GDD v1.3 顶部摘要 + §8.1 注释 Demo 锁 3 章 + §12.4 第二条主线行加 Ch4 启动备注 + Ch5/Ch6 升档预期(25-30 关) + ROADMAP_1_0 P2.1 加 Ch4 桥头堡子项
-- **Batch 2.5 R5 红线压测 + Phase 2 全收口 closeout**(2026-05-22 凌晨 ~1h):`test/balance/ch4_r5_crosstier_redline_test.dart` 50 种子玩家 yiLiu·dengFeng 满 build vs jueDing 跨阶 boss 三人组 · (leftWins+draws) ≥ rightWins 综合不输面;Phase 2 全收口 closeout 9 commit + 13 narrative + 4 拍板叙事弧 + 工作量复盘 + memory sink 候选 5 项 + Phase 0/1 spec 漏检披露(R0 红线层 5 维 grep)+ PROGRESS 110 → 81 行归档(W17-W18 + P1.1 + M4 美术 3 段合 ~30 行)。详 [`p1_x_chapter4_phase2_full_closeout_2026-05-22.md`](docs/handoff/p1_x_chapter4_phase2_full_closeout_2026-05-22.md)
+**下波 候选**:① **Batch 2.5 R5 跨阶红线压测 + Phase 2 closeout 收口**(本会话续)② **Ch6「飞升」spec 起步**(zongShi+wuSheng 全章 + 飞升前置,用户拍板后)③ MJ Discord 派单 15 张 Ch4 enemy / Codex Pen 视觉验收 / Stage 3 剩 28 张(异步)
 
-**1178 pass / 0 analyze 不破**(原 1177 + R5 跨阶红线压测 +1)。**P2 第二条主线 ~25% → ~85%**(Ch4 1.0 P2 第二条主线第 1 章全收口 ✅,留 Ch5/Ch6 主轴 spec 待用户拍板)。详 commit + spec [`p1_x_chapter4_spec_2026-05-21.md`](docs/handoff/p1_x_chapter4_spec_2026-05-21.md) + full closeout [`p1_x_chapter4_phase2_full_closeout_2026-05-22.md`](docs/handoff/p1_x_chapter4_phase2_full_closeout_2026-05-22.md)。
-
-**2026-05-22 8h overnight + 审查修补 + 3h 全自主托管 全收口 ✅**(累计 4 commit `537c4d4` → `f6b0894`,~5.5h actual):
-- **8h overnight ABCDE 5 批次**(凌晨 ~3.5h):`537c4d4` + `9334c6c` — R5 跨阶红线 + Phase 2 closeout + GDD v1.4 §12.4.1 **1.0 P2 内容总量表草案[待审]** + Ch5 Phase 0 reality check(4 拍板候选)+ 视觉验收派单 spec + lore audit + stage_audit + 5 memory sink(新建 `project_wuxia_idle_ch4_cultural_arc` / `feedback_8h_autonomous_workflow_template` + 更 3)
-- **审查修补**(早间):`bfa7c67` — R5 双边断言修补(+下边界 `rightWins+draws ≥ 1`)+ Ch4 enemy iconPath 15 张缺失 audit 挂账(errorBuilder 兜底)
-- **3h 全自主托管 v2 改进版首跑**(早间 ~1h45min):`9e2a6ee` + `f6b0894` — R3 prevStageId 单链 + R6 dropTable 反向引用 e2e(1180 pass)+ chapter narrative 0 引用 audit + MJ prompt spec(Ch4 enemy 15 张 v6 体例 + `--no` flag)+ 派单 spec 137→66 行精简 + 2 新 memory sink(`feedback_doc_inflation_overnight` + `feedback_audit_report_phase0_verify` 维度 4-5)
-
-**1180 pass / 0 analyze** · 11 新 doc 落地 2026-05-22(含 3h_managed + 8h_autonomous + chapter audit + mj prompt + Ch5 phase0 + GDD §12.4.1 草案 + ...)。
-
-**下波 候选**:① **Ch5 主轴 spec 起草**(用户拍板 4 项后,~2.5-3h opus xhigh / 详 `docs/handoff/p2_ch5_phase0_reality_check_2026-05-22.md`)② **GDD §12.4.1 1.0 P2 内容总量表正式拍板**(草案待审)③ **MJ Discord 派单**(15 张 Ch4 enemy / `mj_prompt_ch4_enemy_stage4_2026-05-22.md` ready) ④ Codex Pen 视觉验收(派单 spec 已 ready) ⑤ Stage 3 剩 28 张(MJ 解封后)
+**2026-05-21/22 历史段归档**(M4 美术 Stage 3 BOSS 22 张闭环 + Ch4 Phase 2.1-2.5 全收口 + 8h overnight + 审查修补 + 3h 托管):详 commit `319e15d` → `f6b0894` 范围 + handoff `art_stage3_boss_closeout` / `p1_x_chapter4_phase2_full_closeout_2026-05-22.md` / `8h_autonomous_handoff_2026-05-22.md` / `3h_managed_handoff_2026-05-22.md`。
 
 **P1.1 全收口 ✅**(候选 1+2+3+4 实装 + 候选 5 文档对齐 + 候选 6 audit 复跑)。详条已迁末尾「### P1.1 候选 1-5 详条迁出 2026-05-21」段。
 
