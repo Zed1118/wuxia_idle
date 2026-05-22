@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
@@ -611,6 +612,69 @@ stages:
           contains('跨章引用'),
         )),
       );
+    });
+
+    /// R3 单链(spec §九 R3 风险挂账):每章 5 关 prevStageId 严格 N→N-1 单链。
+    ///
+    /// 红线断言语义(memory `feedback_red_line_test_semantics`):
+    /// - 每章首关(stage_X_01) prevStageId = null
+    /// - 每章后续关(stage_X_02..05) prevStageId 严格 = stage_X_(N-1)
+    ///
+    /// Ch5/Ch6 spec 起草前若 stages.yaml prevStageId 写错(打字 / 跨章 / 形成环)
+    /// 此 test 拦截。现有 `_enforceRedLines` 只验「引用存在 + 同章」,本 test 补
+    /// 「严格单链 N-1」语义。
+    test('R3 主线 4 章 20 关 prevStageId 严格 N→N-1 单链(每章首关 null)',
+        () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      for (final ch in [1, 2, 3, 4]) {
+        for (final idx in [1, 2, 3, 4, 5]) {
+          final id = 'stage_0${ch}_0$idx';
+          final s = repo.getStage(id);
+          if (idx == 1) {
+            expect(s.prevStageId, isNull,
+                reason: '$id 每章首关 prevStageId 应 null,实际 ${s.prevStageId}');
+          } else {
+            final expected = 'stage_0${ch}_0${idx - 1}';
+            expect(s.prevStageId, expected,
+                reason: '$id prevStageId 应严格 = $expected(单链 N→N-1),'
+                    '实际 ${s.prevStageId}');
+          }
+        }
+      }
+    });
+
+    /// R6 dropTable 反向引用(spec §九 R6 风险挂账 + 2026-05-22 audit 发现):
+    /// stages.yaml dropTable EquipmentDrop.equipmentDefId 必须在 equipment.yaml 存在。
+    ///
+    /// 红线断言语义(memory `feedback_red_line_test_semantics`):
+    /// - 主线 / 爬塔 / 闭关全 stages.yaml dropTable 反向引用全命中
+    /// - 防 Ch5/Ch6 加 dropTable 引用错的 def 至 runtime crash(DropService.rollDrops
+    ///   抛 StateError)
+    ///
+    /// **现有 `_enforceRedLines` 不显式验 dropTable 反向引用** — 本 test 补红线。
+    /// memory `feedback_audit_report_phase0_verify` 维度 4 反向引用 grep 已确认
+    /// Ch4 7/7 命中,但生产层无 test 锁死。
+    test('R6 stages.yaml dropTable equipmentDefId 反向引用全命中', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final equipmentIds = repo.equipmentDefs.keys.toSet();
+
+      for (final stage in repo.stageDefs.values) {
+        // dropTable EquipmentDrop 反向引用
+        for (final entry in stage.dropTable) {
+          if (entry is EquipmentDrop) {
+            expect(equipmentIds.contains(entry.equipmentDefId), isTrue,
+                reason: 'stage ${stage.id} dropTable EquipmentDrop '
+                    '${entry.equipmentDefId} 应在 equipment.yaml 存在 '
+                    '(防 Ch5/Ch6 写错 runtime crash)');
+          }
+        }
+        // dropEquipmentDefIds(占位简化列表)反向引用
+        for (final eqId in stage.dropEquipmentDefIds) {
+          expect(equipmentIds.contains(eqId), isTrue,
+              reason: 'stage ${stage.id} dropEquipmentDefIds 引用 $eqId '
+                  '应在 equipment.yaml 存在');
+        }
+      }
     });
   });
 
