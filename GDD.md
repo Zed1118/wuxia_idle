@@ -4,7 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code + Opus 4.7 维护。修改需附带变更说明。
 >
-> **版本**：v1.6（Ch6「飞升」Phase 1 spec 起草拍板 · 1.0 P2 第二条主线第 3 章 · 末 Boss B 复合)
+> **版本**：v1.7（Ch6「飞升」Phase 2 全收口 ✅ · 1.0 P2 第二条主线全闭环 · 三章弧叙事弧完整)
+>
+> **v1.7 变更**（2026-05-22 午后 Ch6「飞升」Phase 2 全收口 · 1.0 P2 第二条主线全闭环）:① §12.4 Ch6「飞升」行升「Phase 1 spec 起草拍板 · Phase 2 启动」→「**Phase 2 全收口 ✅ · 1.0 P2 第二条主线全闭环**」— 6 commit `15216a0`→`486d39b` 全 push(P0+P1+P2.1+2.2+P2.3.①+P2.3.②);② §12.4.1 字数表 Ch6 ~6,600 预算 → 实测 **~5,800 字**(narrative 13 文件,略低 spec ~10%)+ Ch6 合计 ~18,318 字超 14-20k 上限 ~83%(质感优先 acceptable);③ 师父第三句遗言三章弧完整 — Ch4 epilogue 半懂前一句 / Ch5 epilogue 第三句半解 / Ch6 epilogue **三句话第一次完整连成一句**;④ 物理遗物三章 hook 全闭环 — Ch4 小铜镜 + Ch5「师」字玉佩 + Ch6 epilogue **无物之境**(四件物事并放青石不带走,雪埋);⑤ Tier zongShi 风格梯度词「澄澈 / 无为 / 玄妙 / 化境」全章实测落地。**数值红线 §5.4/§5.3/§6 公式完全不动**。**§12.1 心魔系统不前置依赖**(B 路线 0 contamination,留 P2.2 独立 spec)。详 `docs/handoff/p2_x_chapter6_phase2_full_closeout_2026-05-22.md`。
 >
 > **v1.6 变更**（2026-05-22 午间 Ch6「飞升」Phase 1 spec 起草拍板）:① §12.4 Ch6「飞升」行升「拟 zongShi 全章备注」→「Phase 1 spec 起草拍板 · Phase 2 启动」— 用户拍板 4 主轴(章名「飞升」/ 境界跨度 A:zongShi 全章 + 末 Boss 跨 wuSheng·qiMeng / 文化主轴:师父第三句遗言完整联通 + 西凉霸主本人复出 / 末 Boss B 复合 = wuSheng·qiMeng 西凉霸主本人首次开口 + 2 副 zongShi·dengFeng 西凉三弟子 · Ch4 小铜镜 + Ch5 玉佩双 hook 兑现);② §12.4 Ch5「征东」行升「Phase 2 全收口 ✅ → + Ch6 启动」;③ §12.4.1 字数表 Ch5 (拟 ~4-5k) → 实测 ~6,638 字 + Ch6 (拟 ~4-5k) → 预算 ~6,600 字(沿 Ch5 实测)。Tier zongShi 风格梯度词「澄澈 / 无为 / 玄妙 / 化境」全章 + 物理遗物 hook 收束「无物之境」(承 Ch5 玉佩兑现,Ch6 不留任何物理遗物)。**数值红线 §5.4/§5.3/§6 公式完全不动**。详 `docs/handoff/p2_x_chapter6_spec_2026-05-22.md` + `p2_x_chapter6_phase0_reality_check_2026-05-22.md`。
 >
@@ -643,7 +645,7 @@ data/
 - **第二条主线**：从一流到武圣的后续剧情（再 3 章）。
   - **Ch4「西出阳关」**:2026-05-21/22 P1 启动桥头堡全收口 ✅。yiLiu 全章(qiMeng→dengFeng 完整 7 层)+ 跨 jueDing·qiMeng 末 Boss(西凉霸主三人组 · 沉默克敌出手即决型 + 留 hook Ch5/Ch6 西凉小铜镜遗物)+ 西北边塞地理梯度(中原→河西走廊→玉门→大漠→嘉峪关)+ ~5,880 字 narrative + ~1,420 字 v1 章首尾(opus 单写 Tier 7 阶风格梯度词锚定)+ R5 跨阶红线压测 + GDD v1.3 / ROADMAP / PROGRESS 全联动。详 `docs/handoff/p1_x_chapter4_spec_2026-05-21.md` + `p1_x_chapter4_phase2_full_closeout_2026-05-22.md`。
   - **Ch5「征东」**:2026-05-22 P2 启动 · Phase 2 全收口 ✅ + Ch6 启动。jueDing 全章(qiMeng→dengFeng 完整 7 层)+ 跨 zongShi·qiMeng 末 Boss(C 复合三人组:西凉霸主三弟子 + 中州论剑顶 + 嵩山道宗 · 师承玉佩 hook Ch6)+ 中原东归地理梯度(嘉峪关→灞桥→潼关→渭水→嵩山道观→黄河义渡→中州论剑场→嵩山论剑顶)+ Tier jueDing 风格梯度词「沉静 / 从容 / 通达 / 入微」全章 + **师父遗言 3 处贯穿**(prologue 承上 + stage_05_05_victory 全听懂 + epilogue 第三句反转 hook Ch6)+ **物理遗物 hook 5 处闭环**(回取镜 → 玉佩出场 → 玉佩兑现 → 二字并放 → defeat 反例)+ **narrative 实测 ~6,638 字**(13 文件,对照 Ch4 ~5,880 字)+ 黑名单词 0 命中 + 1185+ pass / 0 analyze。详 `docs/handoff/p2_x_chapter5_spec_2026-05-22.md` + `p2_x_chapter5_phase2_full_closeout_2026-05-22.md`。
-  - **Ch6「飞升」**:2026-05-22 午间 Phase 1 spec 起草拍板 · Phase 2 启动。zongShi 全章(qiMeng→dengFeng 完整 7 层)+ 跨 wuSheng·qiMeng 末 Boss(**B 复合 = 西凉霸主本人首次开口 + 2 副 zongShi·dengFeng 西凉三弟子** · Ch4 小铜镜 + Ch5 玉佩三章 hook 全闭环 + **无物之境收束**承 Ch5 玉佩兑现不留任何物理遗物)+ 中原西渐地理梯度(中州论剑场散场 → 嵩山顶 → 黄河之源 → 昆仑山外 → 昆仑山顶飞升前夜)+ Tier zongShi 风格梯度词「澄澈 / 无为 / 玄妙 / 化境」全章 + **师父遗言第三句完整联通**(prologue 承 Ch5 第三句半解 + stage_06_05_victory 全联通 + epilogue 「下文要自己走」收束)+ 字数预算 ~6.6k 字(沿 Ch5 实测)+ R5 跨阶 wuSheng 红线压测。详 `docs/handoff/p2_x_chapter6_spec_2026-05-22.md` + `p2_x_chapter6_phase0_reality_check_2026-05-22.md`。
+  - **Ch6「飞升」**:2026-05-22 午后 Phase 2 全收口 ✅ · **1.0 P2 第二条主线全闭环**。zongShi 全章(qiMeng→dengFeng 完整 7 层)+ 跨 wuSheng·qiMeng 末 Boss(**B 复合 = 西凉霸主本人首次开口 + 2 副 zongShi·dengFeng 西凉三弟子** · Ch4 小铜镜 + Ch5 玉佩三章 hook 全闭环 + **无物之境收束**四件物事并放青石不带走雪埋)+ 中原西渐地理梯度(中州论剑场散场 → 嵩山再访 → 黄河之源 → 昆仑山外 → 昆仑山顶飞升前夜)+ Tier zongShi 风格梯度词「澄澈 / 无为 / 玄妙 / 化境」全章 + **师父遗言第三句完整联通**(三章弧:Ch4 半懂前一句 / Ch5 第三句半解 / Ch6 三句话第一次完整连成一句)+ **narrative 实测 ~5,800 字**(13 文件:chapter + 10 stage opening/victory + 2 defeat,略低 spec ~6,600 ~10%)+ 黑名单 14 词 0 命中 + 1191 pass / 0 analyze + R5 跨阶 wuSheng 红线压测。详 `docs/handoff/p2_x_chapter6_spec_2026-05-22.md` + `p2_x_chapter6_phase2_full_closeout_2026-05-22.md`。
 
 ### 12.4.1 1.0 P2 内容总量表[v1.5 正式拍板,2026-05-22 用户审稿过]
 
@@ -692,8 +694,8 @@ data/
 | Ch3 名扬江湖(Demo) | ~4,800 字 | chapter_03 + stages 12 文件 | 实测对齐 |
 | **Ch4 西出阳关(1.0 P2)** | **~5,880 字** | **chapter_04 + stages 13 文件** | **2026-05-22 实测 ✅** |
 | **Ch5 征东(1.0 P2)** | **~6,638 字** | **chapter_05 + stages 13 文件** | **2026-05-22 Phase 2 全收口 ✅** |
-| **Ch6 飞升(1.0 P2)** | **~6,600 字**(沿 Ch5 实测) | **chapter_06 + stages 13 文件** | **2026-05-22 Phase 1 spec 起草拍板 ✅** |
-| **合计** | **~27,351 字** | — | **1.0 P2 ~19.1k 字 = 5,880 + 6,638 + 6,600(质感饱满 +35%)** |
+| **Ch6 飞升(1.0 P2)** | **~5,800 字** | **chapter_06 + stages 13 文件** | **2026-05-22 Phase 2 全收口 ✅** |
+| **合计** | **~26,551 字** | — | **1.0 P2 ~18.3k 字 = 5,880 + 6,638 + 5,800(质感饱满 +83% 超 14-20k 上限)** |
 
 #### 内容投放节奏
 

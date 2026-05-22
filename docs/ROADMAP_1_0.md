@@ -105,6 +105,8 @@
 
 **※ Ch5「征东」P2 启动**(2026-05-22 第二条主线第 2 章 ✅):jueDing 全章(qiMeng→dengFeng)+ 跨 zongShi·qiMeng 末 Boss(C 复合三人组 西凉霸主三弟子 + 中州论剑顶 + 嵩山道宗 · 师承玉佩 hook Ch6)+ 中原东归地理(嘉峪关→灞桥→潼关→渭水→嵩山→黄河→嵩山论剑场)+ Tier jueDing「沉静 / 从容 / 通达 / 入微」+ 师父遗言 3 处贯穿 + 物理遗物 hook 5 处闭环(小铜镜回取兑现 + 玉佩出场兑现)+ ~6,638 字 narrative(13 文件:chapter + 10 stage opening/victory + 2 defeat,对照 Ch4 ~5,880 ✅)。本批累计 P2.1 字数 Ch4 5,880 + Ch5 6,638 ≈ 12,518(预算 +6-10k → 已达上限,Ch6 预期 ~5,000 字续作时按比例校准)。详 spec `docs/handoff/p2_x_chapter5_spec_2026-05-22.md` + closeout `p2_x_chapter5_phase2_full_closeout_2026-05-22.md`。
 
+**※ Ch6「飞升」P2 全收口**(2026-05-22 第二条主线第 3 章 ✅ · **1.0 P2 第二条主线全闭环**):zongShi 全章(qiMeng→dengFeng)+ 跨 wuSheng·qiMeng 末 Boss(**B 复合 = 西凉霸主本人首次开口 + 2 副 zongShi·dengFeng 西凉三弟子** · Ch4 小铜镜 + Ch5 玉佩三章 hook 全闭环 + **无物之境收束**承 Ch5 玉佩兑现不留任何物理遗物)+ 中原西渐地理(中州论剑场散场 → 嵩山再访 → 黄河之源 → 昆仑山外 → 昆仑山顶飞升前夜)+ Tier zongShi「澄澈 / 无为 / 玄妙 / 化境」+ **师父第三句遗言完整联通**(prologue 半解 + stage_06_05_victory 全联通 + epilogue 三句话第一次完整连成一句)+ ~5,800 字 narrative(13 文件:chapter + 10 stage opening/victory + 2 defeat)。本批累计 P2.1 字数 Ch4 5,880 + Ch5 6,638 + Ch6 5,800 ≈ 18,318(预算 +6-10k 字 → 实测超 ~83%,质感优先 acceptable)。详 spec `docs/handoff/p2_x_chapter6_spec_2026-05-22.md` + closeout `p2_x_chapter6_phase2_full_closeout_2026-05-22.md`。
+
 ### P2.2 §12.1 心魔系统
 - 高境界突破前心魔关卡(剧情化的内心战斗)
 - 前置依赖:第二条主线推进到关键境界(绝顶 / 宗师)
