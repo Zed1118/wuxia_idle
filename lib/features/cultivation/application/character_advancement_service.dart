@@ -20,6 +20,13 @@ class CharacterAdvancementService {
   /// [realmLookup] 注入便于 test(生产路径走
   /// `GameRepository.instance.getRealm`)。
   ///
+  /// [isLayerLocked] 心魔关 unlock 拦截 hook(1.0 P2.2 §12.1,Batch 2.2.A)。
+  /// 注入函数接 `(nextTier, nextLayer)` 返 true → 升层被拦,EXP 留账不消费
+  /// (GDD §5.1 反留存焦虑 + spec §三 — 玩家挂机攒 EXP,过心魔关后立刻全部
+  /// 消费多 layer)。null = 不拦截(test fixture / Batch 2.2.A 前 caller 默认)。
+  /// 实装见 `lib/features/inner_demon/application/inner_demon_service.dart`
+  /// `InnerDemonService.isLayerLocked`。
+  ///
   /// **副作用(in-place 写 [ch])**:
   ///   - `ch.experience += delta`,while 内累减
   ///   - 升层时 `realmTier` / `realmLayer` 推下一档
@@ -31,6 +38,7 @@ class CharacterAdvancementService {
     Character ch,
     int delta, {
     required RealmDef Function(RealmTier, RealmLayer) realmLookup,
+    bool Function(RealmTier, RealmLayer)? isLayerLocked,
   }) {
     final tierBefore = ch.realmTier;
     final layerBefore = ch.realmLayer;
@@ -57,6 +65,13 @@ class CharacterAdvancementService {
 
       final next = nextLayer(ch.realmTier, ch.realmLayer);
       if (next == null) break; // 安全网:experienceToNextLayer=0 已 break
+
+      // 1.0 P2.2 §12.1 心魔关 unlock 拦截 hook(Batch 2.2.A):
+      // 升入 wuSheng 各 layer 前查心魔关 cleared 集;未 cleared → break
+      // (EXP 不归零,玩家攒着,过关后立刻全部消费多 layer)。
+      if (isLayerLocked != null && isLayerLocked(next.tier, next.layer)) {
+        break;
+      }
 
       ch.experience -= ch.experienceToNextLayer;
       ch.realmTier = next.tier;

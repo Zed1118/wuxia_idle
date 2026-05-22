@@ -1,3 +1,4 @@
+import '../features/inner_demon/domain/inner_demon_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import '../core/domain/enums.dart';
 
@@ -105,6 +106,13 @@ class NumbersConfig {
   /// `festivals` 段时 [FestivalConfig.empty]。
   final FestivalConfig festivals;
 
+  /// 心魔系统配置（numbers.yaml `inner_demon`，1.0 P2.2 §12.1）。
+  ///
+  /// 7 关镜像玩家 character +10-20% 强化 + §5.4 cap + 散功 ×0.5 阉割版失败惩罚。
+  /// fixture 不带 `inner_demon` 段时走 [InnerDemonDef.empty]（unlockTriggers/
+  /// requiredRealmLayer 均空 → isLayerLocked 始终 false，不破现有升层行为）。
+  final InnerDemonDef innerDemon;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -133,6 +141,7 @@ class NumbersConfig {
     required this.animation,
     required this.retreat,
     required this.festivals,
+    required this.innerDemon,
     required this.raw,
   });
 
@@ -208,6 +217,9 @@ class NumbersConfig {
       ),
       festivals: FestivalConfig.fromYaml(
         y['festivals'] as Map<String, dynamic>?,
+      ),
+      innerDemon: InnerDemonDef.fromYaml(
+        y['inner_demon'] as Map<String, dynamic>?,
       ),
       raw: y,
     );
