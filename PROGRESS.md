@@ -5,16 +5,18 @@
 
 ## 当前阶段
 
-**2026-05-22 Ch6「飞升」Phase 2 全收口 ✅ · 1.0 P2 第二条主线全闭环**(Mac+Opus xhigh 3h 无人看管批,6 commit `15216a0` → `486d39b` 全 push origin/main · Ch4+Ch5+Ch6 三章弧叙事完整):
-- **Phase 0 + Phase 1**(`15216a0`+`5db61a8` ~1h):6 维 grep + spec doc 173 行 + GDD v1.5→v1.6 + 用户拍板 4 主轴(章名「飞升」/ zongShi 全章跨 wuSheng·qiMeng / 师父第三句完整联通 + 西凉霸主本人复出 / 末 Boss B 复合)
-- **Batch 2.1+2.2**(`f6379d7` ~45min):data/stages.yaml +5 entries stage_06_01..05(HP 30k→52k / Atk 2.0k→2.7k 跨阶 wuSheng·qiMeng)+ 末 Boss B 复合(主西凉霸主 wuSheng + 2 副 zongShi·dengFeng 三弟子)+ strings.dart + chapter_list + 4 test fixture 扩 6 章 30 关 + **schema 0 扩**(shenWu / chuanshuo 心法 / shichuan skill 全现成)+ 1186→1191 pass(+5 e2e)
-- **Batch 2.3.① 子波 1**(`ea8ea2d` ~45min):11 stage narrative + chapter_06 占位 ~4,700 字 · 玄天斧/雪莲鞭/金丝甲/黄河玉/昆仑佩物理遗物多处闭环 · 黑名单 0 命中
-- **Batch 2.3.② 子波 2**(`486d39b` ~25min):chapter_06 prologue/epilogue 精写 ~1,500 字 + stage_06_05_defeat ~500 字 · **师父三句遗言第一次完整连成一句** + **无物之境收束**(四件物事并放青石不带走雪埋)
-- **narrative 全统计**:13 文件 ~5,800 字 · Tier zongShi「澄澈/无为/玄妙/化境」 · 西凉霸主本人首次开口(三章沉默→飞升前夜对话)· 视角切换沿 Ch4-Ch5
+**2026-05-22 Ch6「飞升」Phase 2 全收口 ✅ + 复盘修补 ✅ · 1.0 P2 第二条主线全闭环**(Mac+Opus xhigh 3h 无人看管批 + ~1h 复盘修补 + 5min memory sink ≈ ~4h5min,**11 commit `15216a0` → `d00e039` 全 push origin/main** · Ch4+Ch5+Ch6 三章弧叙事完整):
+- **Phase 0 + Phase 1**(`15216a0`+`5db61a8` ~1h):reality check 6 维 grep + spec doc 173 行 + GDD v1.5→v1.6 + 用户拍板 4 主轴(章名「飞升」/ zongShi 全章跨 wuSheng·qiMeng / 师父第三句完整联通 + 西凉霸主本人复出 / 末 Boss B 复合)
+- **Batch 2.1+2.2 数值**(`f6379d7` ~45min):stages.yaml +5 entries(HP 30k→52k / Atk 2.0k→2.7k 跨阶 wuSheng·qiMeng)+ 末 Boss B 复合 + UI/test fixture 扩 6 章 30 关 + **schema 0 扩** + 1186→1191 pass
+- **Batch 2.3.①+② narrative**(`ea8ea2d`+`486d39b` ~70min):13 文件 ~5,800 字 + chapter_06 章首尾 + defeat · **师父三句遗言第一次完整连成一句** + **无物之境收束**(四件物事并放青石不带走雪埋)+ 物理遗物三章 hook 全闭环
+- **Batch 2.4 doc + 2.5 R5**(`3bb629e`+`2dea111` ~50min):GDD v1.6→v1.7 + ROADMAP P2.1 加 Ch6 + R5 跨阶 wuSheng 红线 50 种子双边断言一次过(1192 pass)
+- **closeout v1 + handoff v1**(`e546b00` ~15min):100+65 行
+- **复盘修补 6 项**(`d00e039` ~1h):用户提示「评估工作内容」后自查 7 项问题 + 立即修补 — chapter_06 玄妙词补(Tier 词 2/2/0/4 → 2/2/2/5) + epilogue 砍堆叠 + prologue/epilogue 对称(各 ~770 字) + R5 加 print 分布(**实测 1/0/49 = 98% 平局,Ch6 末关「拉锯偏向平局」格局**) + 普伤 spot check ~9 万接近 §5.4 上限 ⚠️ + spec 数值对齐实装 + closeout 100→72 ✅ + handoff 65→63(归 3 类决策)
+- **memory sink 2 项**:`feedback_user_offline_autonomous` 加 Ch6 复盘 6 反例 + 6 教训 / `feedback_doc_inflation_overnight` 加 pattern bug 警示「连续超 +15-30% 不是 acceptable」+ 强制砍法 4 项
 
-**1191 pass / 0 analyze**(+5 Ch6 e2e stage,P2.5 R5 跨阶 wuSheng 红线压测待)。**P2 第二条主线 100% ✅**(Ch4 + Ch5 + Ch6 三章弧 全闭环)。**1.0 进度 ~42% → ~50%**(P2 主线全闭环跳变)。
+**1192 pass / 0 analyze ✅**(+5 Ch6 e2e + 1 R5)。**P2 第二条主线 100% ✅**(Ch4 + Ch5 + Ch6 三章弧全闭环)。**1.0 进度 ~42% → ~50%**。
 
-**下波 候选**:① **P2.5 R5 跨阶 wuSheng 红线压测 + Phase 2 closeout**(本批续 ~35min)② P2.4 GDD v1.6→v1.7 + ROADMAP P2.1 加 Ch6 子项 + PROGRESS(已部分完成)③ 1.0 P3 起步 / §12.1 心魔 spec 起草(P2.2 独立)/ MJ 派单 Ch4-6 enemy ~20 张异步
+**下波 候选**:① **1.0 P3 起步**(§12.1 心魔系统 spec / A1 飞升 E.2/E.3 spec / P3 战斗形态扩 — 多日 spec)② MJ Discord 派单 Ch4-6 enemy ~20 张异步(Ch4 15 + Ch5 6 + Ch6 4-5)③ Codex Pen Windows 视觉验收 Ch4-6 主线 narrative(Pen ~1.5h)④ 用户精修 Ch6 narrative 补到 spec budget(可选 ~30-45min)
 
 **2026-05-21/22 历史段归档**(M4 美术 Stage 3 BOSS 22 张闭环 + Ch4 Phase 2.1-2.5 全收口 + 8h overnight + 审查修补 + 3h 托管):详 commit `319e15d` → `f6b0894` 范围 + handoff `art_stage3_boss_closeout` / `p1_x_chapter4_phase2_full_closeout_2026-05-22.md` / `8h_autonomous_handoff_2026-05-22.md` / `3h_managed_handoff_2026-05-22.md`。
 
