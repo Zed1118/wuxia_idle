@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**2026-05-22 Ch5「征东」1.0 P2 第二条主线第 2 章 Phase 2 全收口 ✅**(Mac+Opus xhigh ~2.5h actual,5 commit `62ba01f` → `d9b7e98` 全 push):**用户 7 项拍板**(章名「征东」/ jueDing 全章 / 推荐文化主轴 / C 复合末 Boss / GDD §12.4.1 同步升 v1.5 / Batch 沿 Ch4 拆 3 子波 / 升 xhigh)。
+**2026-05-22 Ch5「征东」全收口 ✅ + Ch6「飞升」Phase 1 spec 拍板 ✅**(Mac+Opus xhigh ~3.5h Ch5 + ~30min Ch6 P0 + ~30min Ch6 P1,8 commit `62ba01f` → `5db61a8` 全 push origin/main):**Ch5 用户 7 项拍板** + **Ch6 用户 4 主轴拍板**(章名「飞升」/ zongShi 全章跨 wuSheng·qiMeng / 师父第三句完整联通 + 西凉霸主本人复出 / 末 Boss B 复合 = 霸主 + 三弟子合体)。
 - **Phase 1**(`62ba01f` ~30min):Ch5 spec doc 172 行 + GDD v1.4 → v1.5 正式拍板(§12.4.1 标签移除 + §12.4 Ch5 启动条目)
 - **Batch 2.1+2.2**(`9a37db0` ~45min):5 关 stages.yaml entry + 红线层 4 patch(chapter_list / strings / game_repository_test / chapter_list_screen_test / battle_strategy_e2e_test 5 章 25 关动态化)+ HP 14.5k→32k / Atk 1.2k→1.95k 跨阶 zongShi·qiMeng / **EncounterBiome 0 扩**(全复用 17 enum)+ **equipment.yaml 0 扩**(zhongQi/baoWu 现成)+ 1180→1185 pass(+5 e2e)
 - **Batch 2.3.① 子波 1**(`f76028e` ~50min):opus 单写 12 narrative v1(11 stage opening/victory + stage_05_04_defeat + chapter 占位)~4,500 字 / 黑名单 0 命中 / 用户审 v1 通过
@@ -14,9 +14,12 @@
 - **Batch 2.4 doc 同步**(本批):GDD §12.4 Ch5 行升「Phase 2 全收口 ✅」+ ROADMAP_1_0 P2.1 加 Ch5「征东」子项(P2.1 字数累计 12,518 ≈ 预算上限)+ PROGRESS 顶段(本批)
 - **Batch 2.5 R5 跨阶红线压测 + Phase 2 closeout**:待 ~45min
 
-**1185 pass / 0 analyze**(+5 Ch5 e2e stage)。**P2 第二条主线 ~85% → ~92%**(Ch4 + Ch5 全收口,留 Ch6 spec 起草)。
+- **Ch6 Phase 0 reality check**(`15216a0` ~30min):6 维 grep + 最小变更清单(schema 0 扩 / 红线层 Ch5 模板复用 / §12.1 心魔 contamination 0 ✅ / data narratives Ch6 全 0 / 美术异步派单),doc 100 行
+- **Ch6 Phase 1 spec doc + GDD v1.5→v1.6**(`5db61a8` ~30min):spec 173 行(沿 Ch5 体例)+ 5 关数值矩阵(HP 30k→52k / Atk 2k→2.7k)+ 末 Boss B 复合设计(wuSheng·qiMeng 西凉霸主本人 + 2 副 zongShi·dengFeng 三弟子)+ 文化叙事弧 zongShi 风格梯度词 + 师父第三句完整联通 + 无物之境收束 + R5 跨 wuSheng 红线压测预期 + 红线层 4 patch
 
-**下波 候选**:① **Batch 2.5 R5 跨阶红线压测 + Phase 2 closeout 收口**(本会话续)② **Ch6「飞升」spec 起步**(zongShi+wuSheng 全章 + 飞升前置,用户拍板后)③ MJ Discord 派单 15 张 Ch4 enemy / Codex Pen 视觉验收 / Stage 3 剩 28 张(异步)
+**1186 pass / 0 analyze**(+5 Ch5 e2e stage)。**P2 第二条主线 ~92% → ~93%**(Ch4 + Ch5 全收口 + Ch6 Phase 1 spec 拍板,等用户审 spec → Phase 2.1+2.2 启动)。
+
+**下波 候选**:① **Ch6 Phase 2.1+2.2 启动**(stages.yaml 5 关 + 红线层 patch + UI/test fixture 扩 6 章,~45min,等用户审 spec)② MJ Discord 派单 Ch4-6 enemy ~18-20 张 / Codex Pen 视觉验收 / Stage 3 剩 28 张(异步)
 
 **2026-05-21/22 历史段归档**(M4 美术 Stage 3 BOSS 22 张闭环 + Ch4 Phase 2.1-2.5 全收口 + 8h overnight + 审查修补 + 3h 托管):详 commit `319e15d` → `f6b0894` 范围 + handoff `art_stage3_boss_closeout` / `p1_x_chapter4_phase2_full_closeout_2026-05-22.md` / `8h_autonomous_handoff_2026-05-22.md` / `3h_managed_handoff_2026-05-22.md`。
 
