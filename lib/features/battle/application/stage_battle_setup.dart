@@ -13,6 +13,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../cultivation/application/synergy_service.dart';
+import '../../inner_demon/application/inner_demon_service.dart';
 
 /// 关卡战斗准备（Phase 3 T37，对应 PROGRESS #22 销账）。
 ///
@@ -31,12 +32,22 @@ class StageBattleSetup {
 
   final Isar isar;
 
-  /// 拼装 (left, right) 战斗双方，准备调 `startBattle`（主线关卡版）。
+  /// 拼装 (left, right) 战斗双方，准备调 `startBattle`（主线 / 心魔版）。
+  ///
+  /// **心魔关分支**（1.0 P2.2 §12.1，Batch 2.2.B）：stageType == innerDemon
+  /// 时右队走 [InnerDemonService.buildMirrorEnemyTeam] 镜像左队 +10-20% 强化
+  /// （§5.4 cap），不走 yaml `enemyTeam`（心魔关 yaml `enemyTeam: []`）。
   Future<(List<BattleCharacter>, List<BattleCharacter>)> buildTeams(
     StageDef stage,
   ) async {
     final left = await _buildPlayerTeam();
-    final right = buildEnemyTeam(stage.enemyTeam);
+    final right = stage.stageType == StageType.innerDemon
+        ? InnerDemonService.buildMirrorEnemyTeam(
+            playerTeam: left,
+            stageId: stage.id,
+            innerDemonDef: GameRepository.instance.numbers.innerDemon,
+          )
+        : buildEnemyTeam(stage.enemyTeam);
     return (left, right);
   }
 

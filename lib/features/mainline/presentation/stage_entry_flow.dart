@@ -25,6 +25,7 @@ import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../event/application/game_event_service.dart';
+import '../../inner_demon/application/inner_demon_service.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
@@ -406,11 +407,27 @@ Future<
   // W15 #30 P3 后续 A:收集 AdvancementResult 暂存供 victory dialog banner。
   final advancements = <AdvancementEntry>[];
   if (stage.baseExpReward > 0) {
+    // P2.2 §12.1 心魔关 unlock 拦截 hook(Batch 2.2.B):loop 外一次性算 cleared 集
+    // 避免 N character 各查一次 isar(主线 stage_06_05 之后 wuSheng 各 layer 升前
+    // hook 才生效;Demo Ch1-6 路径 hook 短路 false 不影响)。
+    final progress = await isar.mainlineProgress
+        .filter()
+        .saveDataIdEqualTo(IsarSetup.currentSlotId)
+        .findFirst();
+    final clearedSet =
+        progress?.clearedStageIds.toSet() ?? <String>{};
+    final innerDemonDef = GameRepository.instance.numbers.innerDemon;
     for (final c in characters) {
       final r = CharacterAdvancementService.applyExperience(
         c,
         stage.baseExpReward,
         realmLookup: GameRepository.instance.getRealm,
+        isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
+          nextTier: tier,
+          nextLayer: layer,
+          innerDemonDef: innerDemonDef,
+          clearedStageIds: clearedSet,
+        ),
       );
       advancements.add(AdvancementEntry(chName: c.name, result: r));
     }

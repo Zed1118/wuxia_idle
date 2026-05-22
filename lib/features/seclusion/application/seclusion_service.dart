@@ -9,6 +9,8 @@ import '../../../core/domain/reward_entry.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/utils/rng.dart';
+import '../../inner_demon/application/inner_demon_service.dart';
+import '../../mainline/domain/mainline_progress.dart';
 import '../../../core/domain/technique.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/synergy_service.dart';
@@ -341,10 +343,27 @@ class SeclusionService {
           ch.insightPoints += outputs.techniqueLearnPoints;
         }
         if (outputs.experiencePoints > 0) {
+          // P2.2 §12.1 心魔关 unlock 拦截 hook(Batch 2.2.B):wuSheng 各 layer
+          // 升前查 inner_demon stage cleared 集,未通则 EXP 留账不消费(玩家
+          // 挂机攒着,过关后下次闭关一次性消费多 layer)。非 wuSheng tier
+          // (Demo + Ch4-6 路径)hook 短路 false,行为同 1.0 前。
+          final progress = await isar.mainlineProgress
+              .filter()
+              .saveDataIdEqualTo(session.saveDataId)
+              .findFirst();
+          final clearedSet =
+              progress?.clearedStageIds.toSet() ?? <String>{};
+          final innerDemonDef = GameRepository.instance.numbers.innerDemon;
           advancement = CharacterAdvancementService.applyExperience(
             ch,
             outputs.experiencePoints,
             realmLookup: GameRepository.instance.getRealm,
+            isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
+              nextTier: tier,
+              nextLayer: layer,
+              innerDemonDef: innerDemonDef,
+              clearedStageIds: clearedSet,
+            ),
           );
         }
         ch.currentRetreatSessionId = null;
