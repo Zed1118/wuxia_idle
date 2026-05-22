@@ -287,9 +287,12 @@ void main() {
               reason: '$m: §5.4 内力上限 cap');
           expect(m.currentInternalForce, lessThanOrEqualTo(15000),
               reason: '$m: 镜像开战满内力 ≤ §5.4 上限');
-          // §5.4 装备攻击上限 2000
-          expect(m.totalEquipmentAttack, lessThanOrEqualTo(2000),
-              reason: '$m: §5.4 装备攻击上限 cap');
+          // mirror totalEquipmentAttack cap = 3 × §5.4 单件 2000 = 6000
+          // (Batch 2.5.C: 原 2000 锚错 §5.4 维度,§5.4 装备攻击是单件 cap,
+          // 镜像 totalEquipmentAttack 是 3 件求和)
+          expect(m.totalEquipmentAttack, lessThanOrEqualTo(6000),
+              reason: '$m: mirror totalEquipmentAttack cap '
+                  '(3 × §5.4 单件 2000 = 6000)');
           // teamSide 正确
           expect(m.teamSide, 1, reason: '$m: 右队');
         }

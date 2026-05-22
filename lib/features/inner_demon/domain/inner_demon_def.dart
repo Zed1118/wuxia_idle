@@ -50,7 +50,7 @@ class InnerDemonDef {
         mirrorCaps: InnerDemonMirrorCaps(
           hpMax: 20000,
           internalForceMax: 15000,
-          attackPowerMax: 2000,
+          attackPowerMax: 6000,
         ),
         failurePenalty: InnerDemonFailurePenalty(
           internalForceMultiplier: 0.85,
@@ -145,7 +145,7 @@ class InnerDemonMirrorCaps {
       InnerDemonMirrorCaps(
         hpMax: (y['hp_max'] as num?)?.toInt() ?? 20000,
         internalForceMax: (y['internal_force_max'] as num?)?.toInt() ?? 15000,
-        attackPowerMax: (y['attack_power_max'] as num?)?.toInt() ?? 2000,
+        attackPowerMax: (y['attack_power_max'] as num?)?.toInt() ?? 6000,
       );
 }
 

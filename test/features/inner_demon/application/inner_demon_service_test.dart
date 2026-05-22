@@ -18,12 +18,12 @@ InnerDemonDef _fullDef() => const InnerDemonDef(
         'stage_inner_demon_04': 0.16,
         'stage_inner_demon_05': 0.18,
         'stage_inner_demon_06': 0.20,
-        'stage_inner_demon_07': 0.20,
+        'stage_inner_demon_07': 0.40, // Batch 2.5.C 升档(+40% 单副本)
       },
       mirrorCaps: InnerDemonMirrorCaps(
         hpMax: 20000,
         internalForceMax: 15000,
-        attackPowerMax: 2000,
+        attackPowerMax: 6000,
       ),
       failurePenalty: InnerDemonFailurePenalty(
         internalForceMultiplier: 0.85,
@@ -201,7 +201,7 @@ void main() {
         'mirror_caps': {
           'hp_max': 20000,
           'internal_force_max': 15000,
-          'attack_power_max': 2000,
+          'attack_power_max': 6000,
         },
         'failure_penalty': {
           'internal_force_multiplier': 0.85,
@@ -351,27 +351,32 @@ void main() {
     });
 
     test('R3.1 §5.4 红线 cap:player 接近上限 + buff → 镜像不破红线', () {
-      // 玩家 wuSheng·dengFeng 满 build,HP/IF/Attack 接近 §5.4 上限
+      // 玩家 wuSheng·dengFeng 满 build,HP/IF/Attack 接近 cap 上限
+      // (Batch 2.5.C: attack_power_max 2000 → 6000,纠 §5.4 维度锚错。
+      //  §5.4 装备攻击 2000 是单件 cap,镜像 totalEquipmentAttack 是 3 件
+      //  求和;cap 6000 = 3 × §5.4 单件 2000。fullDef stage_inner_demon_07
+      //  buff +40% Batch 2.5.C 升档。)
       final player = _mockPlayer(
         maxHp: 19800,
         maxInternalForce: 14500,
-        totalEquipmentAttack: 1950,
+        totalEquipmentAttack: 5500,
       );
-      // stage_inner_demon_07 +20% buff → 镜像值会爆 §5.4 红线,cap 必须挡住
       final mirrors = InnerDemonService.buildMirrorEnemyTeam(
         playerTeam: [player],
         stageId: 'stage_inner_demon_07',
         innerDemonDef: _fullDef(),
       );
       final m = mirrors[0];
-      // 19800 ×1.20 = 23760 → cap 20000
+      // 19800 ×1.40 = 27720 → cap 20000
       expect(m.maxHp, 20000, reason: '§5.4 玩家血上限 cap');
       expect(m.currentHp, 20000);
-      // 14500 ×1.20 = 17400 → cap 15000
+      // 14500 ×1.40 = 20300 → cap 15000
       expect(m.maxInternalForce, 15000, reason: '§5.4 内力上限 cap');
       expect(m.currentInternalForce, 15000);
-      // 1950 ×1.20 = 2340 → cap 2000
-      expect(m.totalEquipmentAttack, 2000, reason: '§5.4 装备攻击上限 cap');
+      // 5500 ×1.40 = 7700 → cap 6000(3 × §5.4 单件 2000)
+      expect(m.totalEquipmentAttack, 6000,
+          reason: 'Batch 2.5.C: 镜像 totalEquipmentAttack cap '
+              '(3 × §5.4 单件 2000 = 6000)');
     });
 
     test('R3.2 player 远低于 cap + 高 buff → 数值未触 cap 不变形', () {
@@ -382,13 +387,13 @@ void main() {
       );
       final mirrors = InnerDemonService.buildMirrorEnemyTeam(
         playerTeam: [player],
-        stageId: 'stage_inner_demon_07', // +20%
+        stageId: 'stage_inner_demon_07', // +40%(Batch 2.5.C 升档)
         innerDemonDef: _fullDef(),
       );
       final m = mirrors[0];
-      expect(m.maxHp, 6000, reason: '5000 ×1.20,未达 20000 cap');
-      expect(m.maxInternalForce, 3600);
-      expect(m.totalEquipmentAttack, 960);
+      expect(m.maxHp, 7000, reason: '5000 ×1.40,未达 20000 cap');
+      expect(m.maxInternalForce, 4200);
+      expect(m.totalEquipmentAttack, 1120);
     });
 
     test('R3.3 empty def(fixture 兼容)→ 0 buff 镜像保持原样不破', () {

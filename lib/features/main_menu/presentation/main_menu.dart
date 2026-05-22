@@ -11,6 +11,7 @@ import '../../debug/presentation/battle_test_menu.dart';
 import '../../debug/presentation/phase2_test_menu.dart';
 import '../../festival/application/festival_service_providers.dart';
 import '../../inventory/presentation/inventory_screen.dart';
+import '../../inner_demon/presentation/inner_demon_screen.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
@@ -138,6 +139,12 @@ class MainMenu extends ConsumerWidget {
                   label: UiStrings.mainMenuTower,
                   hint: UiStrings.mainMenuTowerHint,
                   onTap: () => _push(context, const TowerFloorListScreen()),
+                ),
+                const SizedBox(height: 16),
+                _MenuButton(
+                  label: UiStrings.mainMenuInnerDemon,
+                  hint: UiStrings.mainMenuInnerDemonHint,
+                  onTap: () => _push(context, const InnerDemonScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
