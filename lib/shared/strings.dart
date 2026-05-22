@@ -267,17 +267,19 @@ class UiStrings {
   // ── Phase 3 主线（T35）──
 
   static const String mainMenuMainline = '主线';
-  static const String mainMenuMainlineHint = '4 章 20 关,按章节顺序解锁';
+  static const String mainMenuMainlineHint = '5 章 25 关,按章节顺序解锁';
 
   static const String chapterListTitle = '主线 · 章节';
   static const String chapter1Title = '第一章 · 学武出山';
   static const String chapter2Title = '第二章 · 武林初识';
   static const String chapter3Title = '第三章 · 名扬江湖';
   static const String chapter4Title = '第四章 · 西出阳关';
+  static const String chapter5Title = '第五章 · 征东';
   static const String chapter1Hint = '初出茅庐，山道试剑、林间伏击';
   static const String chapter2Hint = '镖局护送、黑风寨剿匪';
   static const String chapter3Hint = '武林会、一战封王';
   static const String chapter4Hint = '潼关西行,玉门古道、大漠迷踪、嘉峪关一决';
+  static const String chapter5Hint = '东归长安、嵩山道观、中州论剑大会';
 
   static const String chapterStatusLocked = '未解锁';
   static const String chapterStatusInProgress = '进行中';
@@ -296,6 +298,7 @@ class UiStrings {
       2 => chapter2Title,
       3 => chapter3Title,
       4 => chapter4Title,
+      5 => chapter5Title,
       _ => '第 $chapterIndex 章',
     };
   }
@@ -307,6 +310,7 @@ class UiStrings {
       2 => chapter2Hint,
       3 => chapter3Hint,
       4 => chapter4Hint,
+      5 => chapter5Hint,
       _ => '',
     };
   }

@@ -1246,3 +1246,332 @@ stages:
     difficultyMultiplier: 3.5
     biome: frontier
     weather: night
+
+  # ─────────────────────────────────────────────────────────────────────
+  # 第五章 · 征东(stage_05_01..05)
+  # 1.0 P2 第二条主线第 2 章 · 2026-05-22 P2 启动
+  # 跨度:潼关 → 嵩山道观 → 黄河义渡 → 中州论剑场 → 嵩山论剑顶
+  # 末 Boss(stage_05_05)跨阶 zongShi·qiMeng,C 复合三人组:
+  #   西凉霸主三弟子(主)+ 中州论剑顶 + 嵩山道宗(jueDing·dengFeng 二副)
+  # narrativeOpeningId / VictoryId / DefeatId 留 Phase 2.3 narratives batch 补
+  # ─────────────────────────────────────────────────────────────────────
+
+  # === stage_05_01 · 渭水东渡(首关 · 潼关守将)===
+  - id: stage_05_01
+    name: 渭水东渡
+    stageType: mainline
+    chapterIndex: 5
+    narrativeOpeningId: stage_05_01_opening
+    narrativeVictoryId: stage_05_01_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_tongguan_shoujiang
+        name: 潼关守将
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 14500
+        baseAttack: 1200
+        baseSpeed: 200
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+        iconPath: assets/enemies/tongguan_shoujiang.png
+      - id: enemy_jueDing_weishui_chuangong
+        name: 渭水船工头
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 13500
+        baseAttack: 1180
+        baseSpeed: 210
+        skillIds:
+          - skill_lingqiao_jianghu_basic
+        iconPath: assets/enemies/weishui_chuangong.png
+      - id: enemy_jueDing_changan_daoke
+        name: 长安刀客
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 13800
+        baseAttack: 1150
+        baseSpeed: 195
+        skillIds:
+          - skill_yinrou_jianghu_basic
+        iconPath: assets/enemies/changan_daoke.png
+    isBossStage: false
+    dropEquipmentDefIds:
+      - weapon_zhongqi_po_zhen_chui
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_po_zhen_chui
+        dropChance: 0.70
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [10, 13]
+        dropChance: 1.0
+    baseExpReward: 22000
+    difficultyMultiplier: 3.7
+    biome: mountainForest
+    weather: clear
+
+  # === stage_05_02 · 嵩山道观(中州道家武学初涉)===
+  - id: stage_05_02
+    name: 嵩山道观
+    stageType: mainline
+    chapterIndex: 5
+    prevStageId: stage_05_01
+    narrativeOpeningId: stage_05_02_opening
+    narrativeVictoryId: stage_05_02_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_songshan_daozong_dizi
+        name: 嵩山道宗弟子
+        realmTier: jueDing
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 17000
+        baseAttack: 1350
+        baseSpeed: 215
+        skillIds:
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+          - skill_lingqiao_jianghu_ult
+        iconPath: assets/enemies/songshan_daozong_dizi.png
+      - id: enemy_jueDing_daojia_jianke
+        name: 道家剑客
+        realmTier: jueDing
+        realmLayer: ruMen
+        school: yinRou
+        baseHp: 16500
+        baseAttack: 1300
+        baseSpeed: 220
+        skillIds:
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
+        iconPath: assets/enemies/daojia_jianke.png
+      - id: enemy_jueDing_zhongzhou_wuxue
+        name: 中州武学传人
+        realmTier: jueDing
+        realmLayer: shuLian
+        school: gangMeng
+        baseHp: 16200
+        baseAttack: 1280
+        baseSpeed: 210
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+        iconPath: assets/enemies/zhongzhou_wuxue.png
+    isBossStage: false
+    dropEquipmentDefIds:
+      - weapon_zhongqi_du_long_suo
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_du_long_suo
+        dropChance: 0.70
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [11, 14]
+        dropChance: 1.0
+    baseExpReward: 25000
+    difficultyMultiplier: 3.9
+    biome: temple
+    weather: mist
+
+  # === stage_05_03 · 黄河义渡(黄河渡口夺刀风波)===
+  - id: stage_05_03
+    name: 黄河义渡
+    stageType: mainline
+    chapterIndex: 5
+    prevStageId: stage_05_02
+    narrativeOpeningId: stage_05_03_opening
+    narrativeVictoryId: stage_05_03_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_caobang_duozhu
+        name: 漕帮舵主
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 20500
+        baseAttack: 1500
+        baseSpeed: 230
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+          - skill_gangmeng_jianghu_ult
+        iconPath: assets/enemies/caobang_duozhu.png
+      - id: enemy_jueDing_huanghe_shuikou
+        name: 黄河水寇
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 19800
+        baseAttack: 1450
+        baseSpeed: 240
+        skillIds:
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+          - skill_lingqiao_jianghu_ult
+        iconPath: assets/enemies/huanghe_shuikou.png
+      - id: enemy_jueDing_yidu_jianke
+        name: 义渡剑客
+        realmTier: jueDing
+        realmLayer: shuLian
+        school: yinRou
+        baseHp: 19500
+        baseAttack: 1420
+        baseSpeed: 225
+        skillIds:
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
+        iconPath: assets/enemies/yidu_jianke.png
+    isBossStage: false
+    dropEquipmentDefIds:
+      - armor_zhongqi_yin_lin_jia
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: armor_zhongqi_yin_lin_jia
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [12, 15]
+        dropChance: 1.0
+    baseExpReward: 28000
+    difficultyMultiplier: 4.1
+    biome: dock
+    weather: clear
+
+  # === stage_05_04 · 中州论剑(小 Boss · 中州论剑先锋)===
+  - id: stage_05_04
+    name: 中州论剑
+    stageType: mainline
+    chapterIndex: 5
+    prevStageId: stage_05_03
+    narrativeOpeningId: stage_05_04_opening
+    narrativeVictoryId: stage_05_04_victory
+    narrativeDefeatId: stage_05_04_defeat
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_zhongzhou_lunjian_xianfeng
+        name: 中州论剑先锋
+        realmTier: jueDing
+        realmLayer: yuanShu
+        school: gangMeng
+        baseHp: 24000
+        baseAttack: 1700
+        baseSpeed: 240
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+          - skill_gangmeng_jianghu_ult
+        iconPath: assets/enemies/zhongzhou_lunjian_xianfeng.png
+      - id: enemy_jueDing_zhongzhou_fushou
+        name: 中州论剑副手
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 22500
+        baseAttack: 1620
+        baseSpeed: 235
+        skillIds:
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+        iconPath: assets/enemies/zhongzhou_fushou.png
+      - id: enemy_jueDing_zhongzhou_zhuzhen
+        name: 中州论剑助阵
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 22300
+        baseAttack: 1600
+        baseSpeed: 245
+        skillIds:
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
+        iconPath: assets/enemies/zhongzhou_zhuzhen.png
+    isBossStage: true
+    dropEquipmentDefIds:
+      - weapon_zhongqi_po_zhen_chui
+      - armor_zhongqi_yin_lin_jia
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_zhongqi_po_zhen_chui
+        dropChance: 1.0
+      - equipmentDefId: armor_zhongqi_yin_lin_jia
+        dropChance: 0.60
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [13, 16]
+        dropChance: 1.0
+    baseExpReward: 32000
+    difficultyMultiplier: 4.3
+    biome: drillGround
+    weather: clear
+
+  # === stage_05_05 · 嵩山一决(章末大 Boss · C 复合三人组 · 跨阶 zongShi·qiMeng)===
+  - id: stage_05_05
+    name: 嵩山一决
+    stageType: mainline
+    chapterIndex: 5
+    prevStageId: stage_05_04
+    narrativeOpeningId: stage_05_05_opening
+    narrativeVictoryId: stage_05_05_victory
+    narrativeDefeatId: stage_05_05_defeat
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_zongShi_xiliang_sandizi
+        name: 西凉霸主三弟子
+        realmTier: zongShi
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 32000
+        baseAttack: 1950
+        baseSpeed: 250
+        skillIds:
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
+          - skill_yinrou_shichuan_ult
+        iconPath: assets/enemies/xiliang_sandizi.png
+      - id: enemy_jueDing_zhongzhou_lunjian
+        name: 中州论剑顶
+        realmTier: jueDing
+        realmLayer: dengFeng
+        school: gangMeng
+        baseHp: 27000
+        baseAttack: 1750
+        baseSpeed: 235
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+          - skill_gangmeng_jianghu_ult
+        iconPath: assets/enemies/zhongzhou_lunjian.png
+      - id: enemy_jueDing_songshan_daozong
+        name: 嵩山道宗
+        realmTier: jueDing
+        realmLayer: dengFeng
+        school: lingQiao
+        baseHp: 26000
+        baseAttack: 1700
+        baseSpeed: 245
+        skillIds:
+          - skill_lingqiao_jianghu_basic
+          - skill_lingqiao_jianghu_skill
+          - skill_lingqiao_jianghu_ult
+        iconPath: assets/enemies/songshan_daozong.png
+    isBossStage: true
+    dropEquipmentDefIds:
+      - weapon_baowu_chang_hong_jian
+      - accessory_baowu_yu_long_pei
+      - armor_zhongqi_yin_lin_jia
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_baowu_chang_hong_jian
+        dropChance: 1.0
+      - equipmentDefId: accessory_baowu_yu_long_pei
+        dropChance: 0.50
+      - equipmentDefId: armor_zhongqi_yin_lin_jia
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [14, 18]
+        dropChance: 1.0
+    baseExpReward: 40000
+    difficultyMultiplier: 4.6
+    biome: cityWall
+    weather: night
