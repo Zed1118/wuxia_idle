@@ -186,6 +186,12 @@ void main() {
           }
         }
 
+        // 实测分布(memory `feedback_red_line_test_semantics` 不写瞬时数字断言,
+        // 但 stdout 打印分布让设计验证可见 — 极端 50/0/0 vs 25/15/10 性质不同)
+        // ignore: avoid_print
+        print('R5 Ch6 50 seeds distribution: '
+            'leftWins=$leftWins rightWins=$rightWins draws=$draws');
+
         // 覆盖率:50 种子全跑完(runToEnd 不抛 / result 非 null)
         expect(leftWins + rightWins + draws, 50,
             reason: '50 种子全应有 result(leftWin/rightWin/draw),不应漏跑');

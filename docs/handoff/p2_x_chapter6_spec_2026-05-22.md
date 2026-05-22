@@ -27,12 +27,14 @@
 | 关 | requiredRealm | enemy tier/layer cap | HP cap | Atk cap | Speed cap | difficulty | baseExp | 跨阶 |
 |---|---|---|---|---|---|---|---|---|
 | 06-1 | zongShi | zongShi·qiMeng | 30,000 | 2,000 | 245 | 4.8 | 48,000 | — |
-| 06-2 | zongShi | zongShi·shuLian | 35,000 | 2,200 | 252 | 5.1 | 54,000 | — |
-| 06-3 | zongShi | zongShi·jingTong | 40,000 | 2,400 | 260 | 5.4 | 60,000 | — |
-| 06-4 | zongShi | zongShi·yuanShu(小 Boss)| 45,000 | 2,550 | 268 | 5.7 | 67,000 | — |
+| 06-2 | zongShi | zongShi·shuLian | 33,000 | 2,150 | 252 | 5.1 | 54,000 | — |
+| 06-3 | zongShi | zongShi·jingTong | 36,000 | 2,300 | 260 | 5.4 | 60,000 | — |
+| 06-4 | zongShi | zongShi·yuanShu(小 Boss)| 40,000 | 2,400 | 268 | 5.7 | 67,000 | — |
 | 06-5 | zongShi | dengFeng + **wuSheng·qiMeng**(末 Boss 跨阶)| 52,000 | 2,700 | 280 | 6.1 | 80,000 | ✅ |
 
-**红线自查**:Boss HP 52k 在 §5.4「50,000+ 不进 1M」内 ✅ / baseAttack 2,700 ≠ 装备 attackPower 红线(后者 ≤2,000,装备维度)/ 普伤公式终值由 Phase 2.5 R5 验 ≤8,000。
+> **数值 delta 说明(spec → 实装)**:原 spec 矩阵 30k/35k/40k/45k/52k 等差升档,实装时发现 stage_06_04 yuanShu (45k) > stage_06_05 副 dengFeng (43k) 违反**层数排序**(GDD §3 dengFeng > yuanShu 7 层 > 5 层)。已调整为 30k/33k/36k/40k/52k(stage_06_04 40k < stage_06_05 副 43k ✓ 排序正确)。**实装 commit `f6379d7` 已对齐,本表为修正后矩阵**。
+
+**红线自查**:Boss HP 52k 在 §5.4「50,000+ 不进 1M」内 ✅ / baseAttack 2,700 ≠ 装备 attackPower 红线(后者 ≤2,000,装备维度)/ **普伤 spot check 最坏 case**(主敌 chuanshuo ult `powerMultiplier=8000` × 暴击 1.5 × 修炼度 3.0 × 流派 1.25 × 跨阶 1.4 × 防御 0.7)≈ **~9 万** 接近 GDD §5.4「大招暴击 几万 不许进十万」上限 ⚠️ acceptable 但偏激进 / 普攻 ~4,200 < §5.4 普伤 8,000 红线 ✅。
 
 ### 1.2 5 关 stage 简表(完整 entry 沿 Ch5 stage_05_* 体例)
 
