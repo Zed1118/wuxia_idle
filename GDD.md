@@ -4,7 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code + Opus 4.7 维护。修改需附带变更说明。
 >
-> **版本**:v1.10(§12.1 心魔系统 1.0 P2.2 Batch 2.1-2.5 全收尾 ✅)
+> **版本**:v1.11(§12.3 轻功对决 1.0 P3.1 Phase 1 spec 拍板)
+>
+> **v1.11 变更**(2026-05-23 夜 §12.3 轻功对决 1.0 P3.1 启动 · ROADMAP_1_0.md:130-135 · 8h overnight worktree `feat/p3_1_lightfoot`):① §12.3「轻功对决」行从纯 1.0 P3 占位升「**1.0 P3.1 Phase 1 spec 拍板 · Phase 2 启动**」— 用户拍板 4 主轴(范围=全闭环·战斗形态+5 关+narrative+UI 入口+R5 红线 / 胜负判定=HP 决胜负 + 地形 modifier / push=worktree feat/p3_1_lightfoot 等 review / xhigh);② **4 主轴自主拍板**(memory `feedback_user_offline_autonomous` 用户离线):**5 关 = yiLiu 3 关(water/rooftop/bamboo)+ jueDing 2 关(高阶 water/rooftop)** · diff 5.0-6.5 · 平行支线**不接管 wuSheng 突破链** + terrain modifier ≥15% 单维度有效(memory `feedback_balance_buff_singledim_no_effect`)+ **LightFootStrategy 组合委派 DefaultGroundStrategy 零代码重复**(memory `feedback_avoid_over_engineer_abstraction`)+ UI 入口 main_menu Tower→InnerDemon→**LightFoot** + 轻功 skill 不新增 YAGNI;③ schema 改动:`StageType` enum +1 `lightFoot` / 新建 `TerrainBiome` enum 3 项(water/rooftop/bamboo,与 EncounterBiome 解耦)/ `numbers.yaml light_foot` 段 ~45 行(3 terrain × 4 modifier + 5 stage_terrain + 5 unlock_triggers)/ `stage_light_foot_01..05` 5 entries;④ codebase 0 引用 greenfield(Phase 0 完全 grep ✅)+ BattleStrategy 注入位已 ready(`battle_providers.dart:73 startBattle(strategy: ...)`);⑤ Phase 2+ 实装估时 ~7-7.5h opus xhigh(spec 估 ~9.5h × 0.74×)Batch 2.1 schema → 2.2 strategy → 2.3 narrative + UI → 2.4 R5 + doc。**数值红线 §5.4/§5.3/§6 公式完全不动**(terrain modifier 烘焙到 BattleCharacter stat + clamp ≤0.95 + R5.2 校验)。**Ch1-Ch6 主线 + Demo 49 层 EXP 自动升层 + 心魔 7 关 wuSheng 突破链路径完全不变**(轻功对决独立支线 / isLayerLocked 无 lightFoot 路径)。详 `docs/phase0/p3_1_lightfoot_phase0_2026-05-23.md` + `docs/spec/p3_1_lightfoot_spec_2026-05-23.md`。
 >
 > **v1.10 变更**(2026-05-23 §12.1 心魔系统 Batch 2.5 全收尾 + P2.2 final · ROADMAP_1_0.md:110-113):① §12.1「心魔系统」行从「v1.9 Phase 2 实装完成 ✅」升「**v1.10 Batch 2.1-2.5 全收尾 ✅**」— Batch 2.5.A R5 跨阶红线压测 3 测 e2e(50 种子 × 7 关 / cap §5.4 e2e / unlock 链 e2e)`308bf52` + Batch 2.5.B UI reactive 三态(InnerDemonScreen MainlineProgress.clearedStageIds + unlockTriggers reverse 链查 + cleared/available/locked 三态)+ main_menu 入口 _MenuButton(Tower 后 Leaderboard 前)+ Batch 2.5.C 决议 `b15d34d`;② **Batch 2.5.C inner_demon_07 双镜像决议**:R5.1 实测 7 关分布全 **3/0/47**(玩家 leftWin 6% / rightWin 0% / draws 94%)— `_07 +20%` 与 `_06 +20%` 完全同分布,spec §一末关「双镜像 2 副本」未真正落地;改 `_07 +20% → +40%` 单副本(YAGNI 不动 BattleState 6v3 架构);③ **Batch 2.5.C cap 维度纠正**:`mirror_caps.attack_power_max 2000 → 6000`(spec 锚错 §5.4 维度 — §5.4「装备攻击 2000」是 equipment.yaml 单件 cap,镜像 `totalEquipmentAttack` 是 3 件求和;原 2000 让镜像 attack 永远低于玩家 ~2850,buff 完全无效);④ **挂账留 1.0 P3+**(3 项):BreakthroughBlocker 集成 character_panel(1257 行 ~30-45min)+ inner_demon 战斗机制层调优(R5.1 实测数值层 buff 单维度调整不影响战斗结果,真改需 mirror crit +0.20 / 心魔余毒 debuff 实装 / max_ticks 兜底机制改)+ inner_demon 7 主题 enemy 立绘异步 MJ 派单;⑤ **1220 pass / 0 analyze ✅**(原 1217 + 新 3 R5)。**数值红线 §5.4/§5.3/§6 公式完全不动**。详 `docs/handoff/p2_x_inner_demon_final_closeout_2026-05-23.md`。
 >
@@ -642,7 +644,7 @@ data/
 
 ### 12.3 战斗与玩法
 
-- **轻功对决**：在水面、屋脊、竹林上的特殊战斗形态。
+- **轻功对决**:在水面、屋脊、竹林上的特殊战斗形态。**v1.11 1.0 P3.1 Phase 1 spec 拍板 · Phase 2 启动**(2026-05-23 夜,worktree `feat/p3_1_lightfoot`):5 关 `stage_light_foot_01..05` 跨 yiLiu(qiMeng/jingTong/dengFeng)+ jueDing(qiMeng/jingTong)2 Tier × 3 terrain(water/rooftop/bamboo)+ `LightFootStrategy` 组合委派 `DefaultGroundStrategy`(terrain modifier 烘焙到 BattleCharacter critRate/evasionRate/defenseRate · clamp ≤0.95 防红线破)+ `TerrainBiome` 独立 enum 3 项 + `numbers.yaml light_foot` 段(3 terrain × {crit/evasion/defense/damage} delta)+ 平行支线**不接管 wuSheng 突破链**(`isLayerLocked` 无 lightFoot 路径)+ unlock_triggers 链 `stage_06_05 → light_foot_01 → 02 → 03 → 04 → 05`。Batch 2.1-2.4 实装路径详 `docs/spec/p3_1_lightfoot_spec_2026-05-23.md`。
 - **群战 / 守城战**：5v5 或更大规模的特殊关卡。
 - **生死状 PVP**：异步 PVP，挑战其他玩家阵容（基于 Supabase）。
 
