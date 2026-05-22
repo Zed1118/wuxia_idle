@@ -103,6 +103,8 @@
 
 **※ Ch4「西出阳关」P1 启动**(2026-05-21 桥头堡 ✅):yiLiu 全章 + 跨 jueDing·qiMeng 末 Boss(西凉霸主三人组 · 沉默克敌出手即决型 + 留 hook Ch5/Ch6 西凉小铜镜遗物)+ 西北边塞地理(玉门关 / 河西走廊 / 大漠 / 嘉峪关)+ ~5,880 字 narrative(10 段 stage v1 + 1 段 stage_04_04_defeat v1 + 1 段 stage_04_05_defeat v1)+ ~1,420 字 chapter_04 章首尾 v1。本批 ~50% P2.1 字数预算(预算 +6-10k 字 / Ch4 落 ~5,880,留 Ch5/Ch6 各 ~3,000)。详 spec `docs/handoff/p1_x_chapter4_spec_2026-05-21.md` + closeout `docs/handoff/p1_x_chapter4_phase2_batch1_closeout_2026-05-21.md`。
 
+**※ Ch5「征东」P2 启动**(2026-05-22 第二条主线第 2 章 ✅):jueDing 全章(qiMeng→dengFeng)+ 跨 zongShi·qiMeng 末 Boss(C 复合三人组 西凉霸主三弟子 + 中州论剑顶 + 嵩山道宗 · 师承玉佩 hook Ch6)+ 中原东归地理(嘉峪关→灞桥→潼关→渭水→嵩山→黄河→嵩山论剑场)+ Tier jueDing「沉静 / 从容 / 通达 / 入微」+ 师父遗言 3 处贯穿 + 物理遗物 hook 5 处闭环(小铜镜回取兑现 + 玉佩出场兑现)+ ~6,638 字 narrative(13 文件:chapter + 10 stage opening/victory + 2 defeat,对照 Ch4 ~5,880 ✅)。本批累计 P2.1 字数 Ch4 5,880 + Ch5 6,638 ≈ 12,518(预算 +6-10k → 已达上限,Ch6 预期 ~5,000 字续作时按比例校准)。详 spec `docs/handoff/p2_x_chapter5_spec_2026-05-22.md` + closeout `p2_x_chapter5_phase2_full_closeout_2026-05-22.md`。
+
 ### P2.2 §12.1 心魔系统
 - 高境界突破前心魔关卡(剧情化的内心战斗)
 - 前置依赖:第二条主线推进到关键境界(绝顶 / 宗师)
