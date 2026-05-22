@@ -5,6 +5,17 @@
 
 ## 当前阶段
 
+**2026-05-22 晚 §12.1 心魔系统 Phase 1 spec 起草拍板 + GDD v1.7 → v1.8 ✅ · 1.0 P2.2 子阶段启动**(Mac+Opus xhigh ~1h 接 Ch6 全收口后 · **2 commit `e666e4c` + `4558359` 全 push origin/main** · ROADMAP_1_0.md:110/200/247):
+- **Phase 0 reality check**(`e666e4c` ~30min):5 维 grep — D1 突破 0 玩家主动(character_advancement_service.dart:30 自动 while-loop)/ D2 lib/features/inner_demon/ 新模块 / D3 EncounterType.trial 语义不合 / D4 BattleStrategy plug-in ready / D5 EncounterBiome 缺 innerRealm / D6 散功公式 ×0.5 参 / D7 RealmTier×RealmLayer 49 层 + **4 主轴用户拍板 B+B+A 微调+B** + Phase 0 doc 59 行
+- **Phase 1 spec doc 起草**(`4558359` ~30min):148 行 spec doc + GDD v1.7→v1.8 — 7 关 unlock 矩阵(wuSheng 6 内部 + 1 飞升前置:qiMeng→ruMen→...→dengFeng → 飞升 A1 接管)+ 镜像 +10-20% 强加 §5.4 cap(HP ≤20k / 内力 ≤15k / 装备 ≤2k)+ 散功 ×0.5 阉割版失败惩罚(内力 ×0.85 / 主修修炼度 ×0.9 + 「心魔余毒」debuff 闭关 8h 清)+ StageType/EncounterBiome enum 各 +1 项 + numbers.yaml inner_demon 段 ~25 行 + lib/features/inner_demon/ 新模块(domain InnerDemonDef + application InnerDemonService + InnerDemonStrategy implements BattleStrategy + presentation InnerDemonScreen + BreakthroughBlocker)+ advancement_service unlock hook 2-3 行
+- **数值红线 §5.4/§5.3/§6 不动** + Demo 49 层 EXP 自动升层路径完全不变(isLayerLocked 严格 wuSheng 短路)+ B 路线 0 contamination(Phase 0 codebase 0 心魔引用 verify)
+
+**Phase 2+ 实装估时 ~7-8h opus xhigh**(Batch 2.1 schema → 2.2 strategy+service → 2.3 narrative ~3,500 字 → 2.4 doc → 2.5 R1-R5)。**1.0 进度 ~50% → ~52%**(P2.2 Phase 1 完成,Phase 2 占 P2.2 大头)。
+
+**下波 候选**:① **P2.2 心魔 Phase 2+ 实装**(本批 spec 拍板后接续 ~7-8h opus xhigh)② MJ Discord 派单 Ch4-6 enemy ~20 张异步(Ch4 15 + Ch5 6 + Ch6 4-5)③ Codex Pen Windows 视觉验收 Ch4-6 主线 narrative(Pen ~1.5h)④ 用户精修 Ch6 narrative 补到 spec budget(可选 ~30-45min)
+
+---
+
 **2026-05-22 Ch6「飞升」Phase 2 全收口 ✅ + 复盘修补 ✅ · 1.0 P2 第二条主线全闭环**(Mac+Opus xhigh 3h 无人看管批 + ~1h 复盘修补 + 5min memory sink ≈ ~4h5min,**11 commit `15216a0` → `d00e039` 全 push origin/main** · Ch4+Ch5+Ch6 三章弧叙事完整):
 - **Phase 0 + Phase 1**(`15216a0`+`5db61a8` ~1h):reality check 6 维 grep + spec doc 173 行 + GDD v1.5→v1.6 + 用户拍板 4 主轴(章名「飞升」/ zongShi 全章跨 wuSheng·qiMeng / 师父第三句完整联通 + 西凉霸主本人复出 / 末 Boss B 复合)
 - **Batch 2.1+2.2 数值**(`f6379d7` ~45min):stages.yaml +5 entries(HP 30k→52k / Atk 2.0k→2.7k 跨阶 wuSheng·qiMeng)+ 末 Boss B 复合 + UI/test fixture 扩 6 章 30 关 + **schema 0 扩** + 1186→1191 pass
@@ -16,7 +27,7 @@
 
 **1192 pass / 0 analyze ✅**(+5 Ch6 e2e + 1 R5)。**P2 第二条主线 100% ✅**(Ch4 + Ch5 + Ch6 三章弧全闭环)。**1.0 进度 ~42% → ~50%**。
 
-**下波 候选**:① **1.0 P3 起步**(§12.1 心魔系统 spec / A1 飞升 E.2/E.3 spec / P3 战斗形态扩 — 多日 spec)② MJ Discord 派单 Ch4-6 enemy ~20 张异步(Ch4 15 + Ch5 6 + Ch6 4-5)③ Codex Pen Windows 视觉验收 Ch4-6 主线 narrative(Pen ~1.5h)④ 用户精修 Ch6 narrative 补到 spec budget(可选 ~30-45min)
+**下波候选已被 P2.2 Phase 1 启动覆盖,见顶段下波候选**(原 ① 1.0 P3 起步 → P2.2 心魔 Phase 1 已实现,Phase 2 接续中)。
 
 **2026-05-21/22 历史段归档**(M4 美术 Stage 3 BOSS 22 张闭环 + Ch4 Phase 2.1-2.5 全收口 + 8h overnight + 审查修补 + 3h 托管):详 commit `319e15d` → `f6b0894` 范围 + handoff `art_stage3_boss_closeout` / `p1_x_chapter4_phase2_full_closeout_2026-05-22.md` / `8h_autonomous_handoff_2026-05-22.md` / `3h_managed_handoff_2026-05-22.md`。
 
