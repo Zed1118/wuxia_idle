@@ -253,4 +253,141 @@ void main() {
       expect(ch.internalForceMax, 600);
     });
   });
+
+  // ===========================================================================
+  // Batch 2.2.A R1:心魔 unlock hook 集成(1.0 P2.2 §12.1)
+  // spec: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md §三
+  // ===========================================================================
+  group('Batch 2.2.A R1 · isLayerLocked hook', () {
+    test('R1.1 isLayerLocked=null(default)→ 行为同原 applyExperience', () {
+      final ch = _mkChar(experienceToNextLayer: 50);
+      final r = CharacterAdvancementService.applyExperience(
+        ch,
+        400, // 50+80+120 升到 jingTong,剩 150
+        realmLookup: _lookup,
+      );
+      expect(r.layersGained, 3);
+      expect(ch.realmLayer, RealmLayer.jingTong);
+      expect(ch.experience, 150);
+    });
+
+    test('R1.2 hook 始终 true → 任何升层都被拦,EXP 不消费(GDD §5.1)', () {
+      final ch = _mkChar(experienceToNextLayer: 50);
+      final r = CharacterAdvancementService.applyExperience(
+        ch,
+        400,
+        realmLookup: _lookup,
+        isLayerLocked: (_, _) => true,
+      );
+      expect(r.layersGained, 0);
+      expect(r.didAdvance, isFalse);
+      expect(ch.realmLayer, RealmLayer.qiMeng);
+      expect(ch.experience, 400, reason: 'EXP 留账,玩家挂机攒着等过关后消费');
+      expect(ch.experienceToNextLayer, 50, reason: '阈值不动');
+    });
+
+    test('R1.3 hook 选择性拦:sanLiu·ruMen 拦 → 跨 tier 升后停', () {
+      // 起 xueTu·dengFeng,跨 tier 升 sanLiu·qiMeng(不拦,模拟 wuSheng·qiMeng
+      // 起步层),想再升 ruMen 被拦。注:生产 InnerDemonService 仅对 wuSheng tier
+      // 工作,本 test 用 fixture 已配的 xueTu/sanLiu 验通用 hook integration。
+      // xueTu.dengFeng exp_to_next=400 / sanLiu.qiMeng=500
+      final ch = _mkChar(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.dengFeng,
+        experienceToNextLayer: 400,
+        internalForceMax: 1100,
+      );
+      final r = CharacterAdvancementService.applyExperience(
+        ch,
+        1500, // 升 2 层有余
+        realmLookup: _lookup,
+        isLayerLocked: (tier, layer) =>
+            tier == RealmTier.sanLiu && layer == RealmLayer.ruMen,
+      );
+      // 应升 1 层(xueTu.dengFeng → sanLiu.qiMeng),不再升 ruMen
+      expect(r.layersGained, 1);
+      expect(ch.realmTier, RealmTier.sanLiu);
+      expect(ch.realmLayer, RealmLayer.qiMeng);
+      // EXP 剩 = 1500 - 400 = 1100(sanLiu.qiMeng EXP 留账)
+      expect(ch.experience, 1100);
+    });
+
+    test('R1.4 hook 信任完全:即便拦跨 tier 起步层也确实拦', () {
+      // hook 配置:对 (sanLiu, qiMeng) 跨 tier 起步层返 true — 验证 advancement
+      // 完全信任 hook(不做"qiMeng 跨 tier 自动放行"的额外语义)。生产
+      // InnerDemonService.isLayerLocked 自身 short-circuit qiMeng=false。
+      final ch = _mkChar(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.dengFeng,
+        experienceToNextLayer: 400,
+        internalForceMax: 1100,
+      );
+      final r = CharacterAdvancementService.applyExperience(
+        ch,
+        1000,
+        realmLookup: _lookup,
+        isLayerLocked: (tier, layer) =>
+            tier == RealmTier.sanLiu && layer == RealmLayer.qiMeng,
+      );
+      // hook 拦 → 0 升层,EXP 留账
+      expect(r.layersGained, 0);
+      expect(ch.experience, 1000);
+      expect(ch.realmTier, RealmTier.xueTu);
+      expect(ch.realmLayer, RealmLayer.dengFeng);
+    });
+
+    test('R1.5 hook 阶梯锁:升 3 层后卡(模拟通 3 关后停)', () {
+      // 模拟玩家可升 ruMen/shuLian/jingTong,卡 yuanShu。起 sanLiu·qiMeng
+      // EXP=0,给巨量 EXP。
+      // sanLiu layer exp_to_next: qiMeng=500 / ruMen=700 / shuLian=950 /
+      //                            jingTong=1250 / yuanShu=1600
+      final ch = _mkChar(
+        tier: RealmTier.sanLiu,
+        layer: RealmLayer.qiMeng,
+        experience: 0,
+        experienceToNextLayer: 500,
+        internalForceMax: 1200,
+      );
+      final r = CharacterAdvancementService.applyExperience(
+        ch,
+        10000,
+        realmLookup: _lookup,
+        isLayerLocked: (tier, layer) {
+          if (tier != RealmTier.sanLiu) return false;
+          const blocked = {
+            RealmLayer.yuanShu,
+            RealmLayer.huaJing,
+            RealmLayer.dengFeng,
+          };
+          return blocked.contains(layer);
+        },
+      );
+      // 升 3 层 ruMen / shuLian / jingTong,卡 yuanShu
+      expect(r.layersGained, 3);
+      expect(ch.realmLayer, RealmLayer.jingTong);
+      // EXP 消费 = 500 + 700 + 950 = 2150,剩 7850 留账
+      expect(ch.experience, 7850);
+      expect(ch.experienceToNextLayer, 1250);
+    });
+
+    test('R1.6 拦截时 internalForceMax / experienceToNextLayer 不动', () {
+      final ch = _mkChar(
+        experience: 0,
+        experienceToNextLayer: 50,
+        internalForce: 100,
+        internalForceMax: 500,
+      );
+      CharacterAdvancementService.applyExperience(
+        ch,
+        500,
+        realmLookup: _lookup,
+        isLayerLocked: (_, _) => true,
+      );
+      expect(ch.internalForce, 100, reason: '不回血');
+      expect(ch.internalForceMax, 500, reason: '不动 cap');
+      expect(ch.experienceToNextLayer, 50, reason: '阈值不动');
+      expect(ch.realmTier, RealmTier.xueTu);
+      expect(ch.realmLayer, RealmLayer.qiMeng);
+    });
+  });
 }
