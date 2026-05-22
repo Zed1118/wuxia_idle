@@ -1575,3 +1575,311 @@ stages:
     difficultyMultiplier: 4.6
     biome: cityWall
     weather: night
+
+  # ============================================================
+  # Ch6「飞升」(1.0 P2 第二条主线第 3 章)
+  # zongShi 全章(qiMeng → dengFeng 7 层)+ 末 Boss 跨 wuSheng·qiMeng B 复合
+  # 地理:中州论剑场散场 → 嵩山再访 → 黄河之源 → 昆仑山外 → 昆仑山顶
+  # 数值:HP 30k → 52k / Atk 2k → 2.7k / Speed 245 → 270(§5.4 红线内,Boss HP < 1M)
+  # ============================================================
+
+  # === stage_06_01 · 论剑散场(中州武林大会场地散场,启程嵩山)===
+  - id: stage_06_01
+    name: 论剑散场
+    stageType: mainline
+    chapterIndex: 6
+    narrativeOpeningId: stage_06_01_opening
+    narrativeVictoryId: stage_06_01_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_lunjian_sanchang_xunluo
+        name: 论剑场散场巡逻
+        realmTier: zongShi
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 30000
+        baseAttack: 2000
+        baseSpeed: 245
+        skillIds:
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
+        iconPath: assets/enemies/lunjian_sanchang_xunluo.png
+      - id: enemy_zongShi_zhongzhou_yiyong
+        name: 中州义勇
+        realmTier: zongShi
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 28000
+        baseAttack: 1950
+        baseSpeed: 235
+        skillIds:
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill
+        iconPath: assets/enemies/zhongzhou_yiyong.png
+    isBossStage: false
+    dropEquipmentDefIds:
+      - weapon_baowu_xuan_tian_fu
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_baowu_xuan_tian_fu
+        dropChance: 1.0
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [12, 16]
+        dropChance: 1.0
+    baseExpReward: 48000
+    difficultyMultiplier: 4.8
+    biome: cityWall
+    weather: clear
+
+  # === stage_06_02 · 嵩山再访(Ch5 故地,雾中静坐)===
+  - id: stage_06_02
+    name: 嵩山再访
+    stageType: mainline
+    chapterIndex: 6
+    prevStageId: stage_06_01
+    narrativeOpeningId: stage_06_02_opening
+    narrativeVictoryId: stage_06_02_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_songshan_shouguan
+        name: 嵩山守关
+        realmTier: zongShi
+        realmLayer: shuLian
+        school: yinRou
+        baseHp: 33000
+        baseAttack: 2150
+        baseSpeed: 252
+        skillIds:
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
+        iconPath: assets/enemies/songshan_shouguan.png
+      - id: enemy_zongShi_songshan_xunshanren
+        name: 嵩山巡山人
+        realmTier: zongShi
+        realmLayer: shuLian
+        school: lingQiao
+        baseHp: 31000
+        baseAttack: 2100
+        baseSpeed: 245
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
+        iconPath: assets/enemies/songshan_xunshanren.png
+    isBossStage: false
+    dropEquipmentDefIds:
+      - weapon_baowu_xue_lian_bian
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_baowu_xue_lian_bian
+        dropChance: 1.0
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [13, 17]
+        dropChance: 1.0
+    baseExpReward: 54000
+    difficultyMultiplier: 5.1
+    biome: mountainForest
+    weather: mist
+
+  # === stage_06_03 · 黄河之源(返本之意,水声玄妙)===
+  - id: stage_06_03
+    name: 黄河之源
+    stageType: mainline
+    chapterIndex: 6
+    prevStageId: stage_06_02
+    narrativeOpeningId: stage_06_03_opening
+    narrativeVictoryId: stage_06_03_victory
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_huanghe_yuantou_yufu
+        name: 黄河源头渔人
+        realmTier: zongShi
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 36000
+        baseAttack: 2300
+        baseSpeed: 260
+        skillIds:
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill
+          - skill_gangmeng_shichuan_ult
+        iconPath: assets/enemies/huanghe_yuantou_yufu.png
+      - id: enemy_zongShi_huanghe_jichuang
+        name: 黄河急流人
+        realmTier: zongShi
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 34000
+        baseAttack: 2250
+        baseSpeed: 255
+        skillIds:
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
+        iconPath: assets/enemies/huanghe_jichuang.png
+      - id: enemy_zongShi_huanghe_shuibing
+        name: 黄河水兵
+        realmTier: zongShi
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 33000
+        baseAttack: 2200
+        baseSpeed: 250
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
+        iconPath: assets/enemies/huanghe_shuibing.png
+    isBossStage: false
+    dropEquipmentDefIds:
+      - armor_baowu_jin_si_jia
+      - accessory_baowu_yu_long_pei
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: armor_baowu_jin_si_jia
+        dropChance: 1.0
+      - equipmentDefId: accessory_baowu_yu_long_pei
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [14, 18]
+        dropChance: 1.0
+    baseExpReward: 60000
+    difficultyMultiplier: 5.4
+    biome: dock
+    weather: rain
+
+  # === stage_06_04 · 昆仑山外(小 Boss · 化境前夜最后一关人事)===
+  - id: stage_06_04
+    name: 昆仑山外
+    stageType: mainline
+    chapterIndex: 6
+    prevStageId: stage_06_03
+    narrativeOpeningId: stage_06_04_opening
+    narrativeVictoryId: stage_06_04_victory
+    narrativeDefeatId: stage_06_04_defeat
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_zongShi_kunlun_waimen_shouguan
+        name: 昆仑外门守关
+        realmTier: zongShi
+        realmLayer: yuanShu
+        school: lingQiao
+        baseHp: 40000
+        baseAttack: 2400
+        baseSpeed: 268
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
+          - skill_lingqiao_shichuan_ult
+        iconPath: assets/enemies/kunlun_waimen_shouguan.png
+      - id: enemy_zongShi_kunlun_xiyuan_jianke
+        name: 昆仑西渐剑客
+        realmTier: zongShi
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 37000
+        baseAttack: 2300
+        baseSpeed: 258
+        skillIds:
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill
+        iconPath: assets/enemies/kunlun_xiyuan_jianke.png
+      - id: enemy_zongShi_kunlun_dunke
+        name: 昆仑遁客
+        realmTier: zongShi
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 36000
+        baseAttack: 2270
+        baseSpeed: 265
+        skillIds:
+          - skill_yinrou_shichuan_basic
+          - skill_yinrou_shichuan_skill
+        iconPath: assets/enemies/kunlun_dunke.png
+    isBossStage: true
+    dropEquipmentDefIds:
+      - accessory_shenwu_kun_lun_pei
+      - weapon_baowu_xuan_tian_fu
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: accessory_shenwu_kun_lun_pei
+        dropChance: 1.0
+      - equipmentDefId: weapon_baowu_xuan_tian_fu
+        dropChance: 0.50
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [16, 20]
+        dropChance: 1.0
+    baseExpReward: 67000
+    difficultyMultiplier: 5.7
+    biome: desert
+    weather: clear
+
+  # === stage_06_05 · 昆仑山顶(章末大 Boss · B 复合三人组 · 跨阶 wuSheng·qiMeng)===
+  # 西凉霸主本人首次开口 + 2 副 zongShi·dengFeng 西凉三弟子
+  # Ch4 小铜镜 + Ch5 玉佩三章 hook 全闭环 / 师父第三句遗言完整联通 / 无物之境收束
+  - id: stage_06_05
+    name: 昆仑山顶
+    stageType: mainline
+    chapterIndex: 6
+    prevStageId: stage_06_04
+    narrativeOpeningId: stage_06_05_opening
+    narrativeVictoryId: stage_06_05_victory
+    narrativeDefeatId: stage_06_05_defeat
+    requiredRealm: zongShi
+    enemyTeam:
+      - id: enemy_wuSheng_xiliang_bazhu
+        name: 西凉霸主
+        realmTier: wuSheng
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 52000
+        baseAttack: 2700
+        baseSpeed: 270
+        skillIds:
+          - skill_yinrou_chuanshuo_basic
+          - skill_yinrou_chuanshuo_skill
+          - skill_yinrou_chuanshuo_ult
+        iconPath: assets/enemies/xiliang_bazhu.png
+      - id: enemy_zongShi_xiliang_disciple_gang
+        name: 西凉三弟子·刚猛
+        realmTier: zongShi
+        realmLayer: dengFeng
+        school: gangMeng
+        baseHp: 43000
+        baseAttack: 2200
+        baseSpeed: 250
+        skillIds:
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill
+          - skill_gangmeng_shichuan_ult
+        iconPath: assets/enemies/xiliang_disciple_gang.png
+      - id: enemy_zongShi_xiliang_disciple_ling
+        name: 西凉三弟子·灵巧
+        realmTier: zongShi
+        realmLayer: dengFeng
+        school: lingQiao
+        baseHp: 42000
+        baseAttack: 2150
+        baseSpeed: 260
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
+          - skill_lingqiao_shichuan_ult
+        iconPath: assets/enemies/xiliang_disciple_ling.png
+    isBossStage: true
+    dropEquipmentDefIds:
+      - weapon_shenwu_tian_wen_jian
+      - armor_shenwu_xuan_huang_pao
+      - accessory_baowu_yu_long_pei
+    dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_shenwu_tian_wen_jian
+        dropChance: 1.0
+      - equipmentDefId: armor_shenwu_xuan_huang_pao
+        dropChance: 0.50
+      - equipmentDefId: accessory_baowu_yu_long_pei
+        dropChance: 0.40
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [18, 24]
+        dropChance: 1.0
+    baseExpReward: 80000
+    difficultyMultiplier: 6.1
+    biome: mountainForest
+    weather: snow
