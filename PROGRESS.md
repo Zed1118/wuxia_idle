@@ -5,6 +5,16 @@
 
 ## 当前阶段
 
+**2026-05-22 夜 §12.1 心魔系统 Batch 2.5.A R5 跨阶红线压测 ✅ · 1.0 P2.2 子阶段近收尾**(Mac+Opus xhigh ~45min · **1 commit 待 push origin/main** · 接 Batch 2.1-2.4 全收口 closeout 后):
+- **Batch 2.5.A R5 跨阶红线压测**(~45min):3 测 e2e — R5.1 7 关 × 50 种子双边断言(克己语义 leftWins+draws ≥ rightWins · 全过)+ R5.2 e2e mirror cap §5.4 红线 verify(玩家 dengFeng 满 build maxHp=16550 / maxAttack=2850 · mirror 各字段 ≤ §5.4 cap)+ R5.3 渐进通关 unlock 链 e2e(qiMeng→dengFeng 6 步逐关放行集成 applyExperience + isLayerLocked 真链路)· 1217 → **1220 pass / 0 analyze ✅**
+- **R5.1 关键数据**(支持 2.5.C 决议):7 关分布全 **3/0/47**(玩家 leftWin 6% / rightWin 0% / draws 94%)— inner_demon_07 单副本 +20% 与 _06 +20% **分布完全一致**,spec §一末关「双镜像」未真正落地,数据印证需升级(候选:+40% 单副本 / 扩 BattleState 6v3 / 连战)· 「克己难赢但不输」语义达成(0% 输)但 94% draws 偏高 acceptable
+- **实装调整**(沿 spec):buildPlayerTeam 补传 EquipmentDef baseAttackMax / baseSpeedMax(Ch6 R5 只传 baseHealth 因跨阶 ×1.4/0.7 能区分,inner_demon 同阶同 build 需真实装备攻击/速度);R5.3 applyExperience delta=0 短路 → 喂 1 EXP 触发 while-loop 消费已攒 EXP(GDD §5.1 反留存焦虑)
+- **P2.2 ~92% · 1.0 整体 ~67%**(Batch 2.5.A 完后 Batch 2.5.B UI 集成 + 2.5.C 决议 + closeout 剩 ~55-75min)
+
+**下波 候选**:① ⭐ **Batch 2.5.B UI reactive 集成**(InnerDemonScreen MainlineProgress 三态 + BreakthroughBlocker 接 character_panel + main_menu 路由 ~30min)② Batch 2.5.C inner_demon_07 双镜像决议(R5.1 数据支撑:推荐升 +40% 单副本 YAGNI,实装 ~15min)③ P2.2 final closeout 升 Batch 2.5 全段(~25min)④ MJ Discord 派单 Ch4-6 enemy ~20 张异步 ⑤ Codex Pen Windows 视觉验收
+
+---
+
 **2026-05-22 晚 §12.1 心魔系统 Phase 1 spec + Batch 2.1 schema ✅ · 1.0 P2.2 子阶段推进**(Mac+Opus xhigh 累计 ~1.5h 接 Ch6 全收口后 · **3 commit `e666e4c` + `4558359` + `2903e90` 待 push origin/main** · ROADMAP_1_0.md:110/200/247):
 - **Phase 0 reality check**(`e666e4c` ~30min):5 维 grep — D1 突破 0 玩家主动(character_advancement_service.dart:30 自动 while-loop)/ D2 lib/features/inner_demon/ 新模块 / D3 EncounterType.trial 语义不合 / D4 BattleStrategy plug-in ready / D5 EncounterBiome 缺 innerRealm / D6 散功公式 ×0.5 参 / D7 RealmTier×RealmLayer 49 层 + **4 主轴用户拍板 B+B+A 微调+B** + Phase 0 doc 59 行
 - **Phase 1 spec doc 起草**(`4558359` ~30min):148 行 spec doc + GDD v1.7→v1.8 — 7 关 unlock 矩阵 + 镜像 +10-20% +§5.4 cap + 散功阉割版 + 心魔余毒 8h + StageType/EncounterBiome enum 各 +1 + numbers.yaml inner_demon 段 + lib/features/inner_demon/ 新模块 + advancement_service unlock hook
@@ -15,9 +25,7 @@
 - **Batch 2.4 doc 同步**(`86d55fc` ~15min):GDD.md v1.8 → v1.9(顶部变更摘要 + §12.1 心魔行升「Phase 2 实装完成 ✅」+ commit 范围 e666e4c→a0cbb29 + 实装组件清单)+ docs/ROADMAP_1_0.md P2.2 §12.1 加实装完成详条(沿 Ch6 P2.1 体例 + 调整记录 4 项)+ analyze 0 / inner_demon 19 测全过。**spec 估 ~25min · 实际 15min · 精度 0.60×**。**P2.2 §12.1 心魔系统 doc 全收口 ✅**
 - **数值红线 §5.4/§5.3/§6 不动** + Demo 49 层 EXP 自动升层路径完全不变(isLayerLocked 严格 wuSheng 短路)+ B 路线 0 contamination(Phase 0 codebase 0 心魔引用 verify)
 
-**Phase 2 剩余 ~1-1.5h opus xhigh**(Batch 2.5 R5 跨阶红线压测 ~45min + UI 集成 character_panel/main_menu ~30min → closeout ~25min)。**1.0 进度 ~52% → ~64%**(P2.2 Batch 2.1+2.2+2.3+2.4 全完,doc 全收口 ✅)。
-
-**下波 候选**:① ⭐ **Batch 2.5 R5 红线 + UI 集成**(R5 跨阶 wuSheng 红线压测 50 种子双边断言 + InnerDemonScreen / BreakthroughBlocker reactive 集成 character_panel/main_menu 入口路由 + inner_demon_07 双镜像决议 · ~75min opus xhigh)② P2.2 closeout doc(~25min)③ MJ Discord 派单 Ch4-6 enemy ~20 张异步 ④ Codex Pen Windows 视觉验收
+**1.0 进度 ~52% → ~64%**(P2.2 Batch 2.1-2.4 全完,doc 全收口 ✅;下波候选见顶段「夜」段)。
 
 ---
 
