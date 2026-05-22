@@ -22,7 +22,8 @@ import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 /// (GDD §5.5 境界差距修正:跨 1 阶 攻方 ×1.4 / 守方 ×0.7)。
 ///
 /// **红线断言语义**(memory `feedback_red_line_test_semantics` 实践):
-///   - ✅ 50 种子跑,玩家方 (leftWins + draws) ≥ rightWins(综合不输面)
+///   - ✅ 50 种子跑,玩家方 (leftWins + draws) ≥ rightWins(综合不输面 · 上边界)
+///   - ✅ rightWins + draws ≥ 1(跨阶 boss 仍有威慑 · 下边界 · 防玩家方过强 broken)
 ///   - ✅ 全 50 种子 runToEnd 不抛 + 有 result(覆盖率验证)
 ///   - ❌ 不写「胜率 60% / 32 win」之类瞬时数字(数值层会随心法 / 装备
 ///     平衡漂移)
@@ -188,14 +189,26 @@ void main() {
         expect(leftWins + rightWins + draws, 50,
             reason: '50 种子全应有 result(leftWin/rightWin/draw),不应漏跑');
 
-        // 主红线:玩家方满 build 综合不输面(跨阶不一边倒)
+        // 主红线上边界:玩家方满 build 综合不输面(跨阶不一边倒)
         expect(
           leftWins + draws,
           greaterThanOrEqualTo(rightWins),
-          reason: 'R5 跨阶红线:玩家 yiLiu·dengFeng 满 build vs jueDing·qiMeng '
+          reason: 'R5 上边界:玩家 yiLiu·dengFeng 满 build vs jueDing·qiMeng '
               '西凉霸主三人组 50 种子 (leftWins=$leftWins + draws=$draws) '
               '应 ≥ rightWins=$rightWins — 跨阶不一边倒被压垮(GDD §5.5 '
               '差 1 阶 攻方 ×1.4 守方 ×0.7,玩家方靠装备 + 心法满补境界差)。',
+        );
+
+        // 主红线下边界:跨阶 boss 仍有威慑(防玩家方过强 broken)
+        // 50 leftWins / 0 rightWins / 0 draws 是「敌方完全失效」格局,跨阶设计意图(玩家
+        // 需升 jueDing 才能稳赢,yiLiu·dengFeng 满 build 不该 100% leftWin)被破坏。
+        expect(
+          rightWins + draws,
+          greaterThanOrEqualTo(1),
+          reason: 'R5 下边界:跨阶 boss 三人组威慑应保持(rightWins=$rightWins + '
+              'draws=$draws ≥ 1),不该 50 种子全 leftWin。若 0 → 数值平衡 '
+              '漂移导致敌方过弱,跨阶设计意图被破坏(memory '
+              '`feedback_wuxia_boss_balance_crosstier` 跨 1-2 阶才稳触发战败)。',
         );
       },
     );

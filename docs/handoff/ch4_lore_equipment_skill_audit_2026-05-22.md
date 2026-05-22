@@ -93,6 +93,38 @@
 
 **Ch4 1.0 P2 第二条主线第 1 章数据层完整度 100% ✅**
 
+## 六补 · 复审发现:Ch4 enemy iconPath assets 缺失(P1.3 美术挂账)
+
+> 2026-05-22 复审时跑 `grep "iconPath:" data/stages.yaml | grep stage_04` vs `ls assets/enemies/` 发现 — 本 audit 初稿漏审 iconPath asset 维度。
+
+Ch4 stages.yaml 5 关 enemy 引用 **15 个 enemy png**:
+
+| enemy iconPath | 状态 |
+|---|---|
+| assets/enemies/liukou_a.png / liukou_b.png / liukou_c.png(流寇 3 人,stage_04_01) | ❌ 缺失 |
+| assets/enemies/guard_a.png / guard_b.png / guard_c.png(玉门把总 3 人,stage_04_02) | ❌ 缺失 |
+| assets/enemies/shafei_a.png / shafei_b.png / shafei_c.png(沙匪 3 人,stage_04_03) | ❌ 缺失 |
+| assets/enemies/xiliangboss.png / xiliang_a.png / xiliang_b.png(西凉武林名宿 + 2 副,stage_04_04) | ❌ 缺失 |
+| assets/enemies/xiliangbazhu.png / bazhu_zuofu.png / bazhu_youfu.png(西凉霸主 + 2 护法,stage_04_05) | ❌ 缺失 |
+
+**影响**:运行期 `Image.asset(iconPath)` 抛 → `errorBuilder` 兜底 → 降级到 `_FirstGlyphAvatar`(首字头像 + 流派色边框)。**非破坏性**,但视觉层 Ch4 全章敌人都是首字头像(无立绘)。
+
+**已有兜底**:`lib/features/battle/presentation/character_avatar.dart:54` errorBuilder ✅(memory `feedback_image_asset_error_builder`)。
+
+**挂账**:加入 P1.3 美术线待出图清单(原 Stage 3 场景 18 + 心法 10 = 28 张,本批补 + **Ch4 enemy 15 张** = **43 张待出图**)。
+
+| Stage 3 残留 | Ch4 新增 | 合计 |
+|---|---|---|
+| 场景 18 张 | enemy 15 张 | **43 张待出图**(MJ 解封后批量产) |
+| 心法 10 张 | — | — |
+
+**建议**:
+1. P1.3 美术批次扩到 43 张(Stage 3 后续 + Ch4 enemy stage 4)
+2. MJ 出图 prompt 沿 memory `feedback_mj_character_batch_v6_evolution` v6 体例(去 sref / 武器抽象 / 老者意境慎用)
+3. Ch4 enemy 立绘 prompt 注意西北边塞气质(干燥 / 粗犷 / 风沙)区分中原 enemy 立绘
+
+**沉淀 memory 候选**:`feedback_audit_iconpath_dimension`(audit doc 体例必含 asset 维度,本审初稿漏 → 三维不够,五维要加 asset 维度)。
+
 ---
 
 ## 七 · 1.0 P2 后续待办(本 audit 暴露)
