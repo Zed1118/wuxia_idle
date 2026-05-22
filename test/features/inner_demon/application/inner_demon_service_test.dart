@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/skill_def.dart';
+import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
 import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
 
@@ -9,7 +11,15 @@ import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
 /// inner_demon.required_realm_layer 7 配。
 
 InnerDemonDef _fullDef() => const InnerDemonDef(
-      mirrorBuffPerStage: {},
+      mirrorBuffPerStage: {
+        'stage_inner_demon_01': 0.10,
+        'stage_inner_demon_02': 0.12,
+        'stage_inner_demon_03': 0.14,
+        'stage_inner_demon_04': 0.16,
+        'stage_inner_demon_05': 0.18,
+        'stage_inner_demon_06': 0.20,
+        'stage_inner_demon_07': 0.20,
+      },
       mirrorCaps: InnerDemonMirrorCaps(
         hpMax: 20000,
         internalForceMax: 15000,
@@ -240,4 +250,193 @@ void main() {
       expect(def.failurePenalty.internalForceMultiplier, 0.85);
     });
   });
+
+  // ===========================================================================
+  // Batch 2.2.B R2-R3:buildMirrorEnemyTeam 镜像 enemy 构造
+  // ===========================================================================
+  group('InnerDemonService.buildMirrorEnemyTeam', () {
+    test('R2.1 镜像数值 ×(1+buff)+ 字段重置(stage_inner_demon_01 +10%)', () {
+      final player = _mockPlayer(
+        slotIndex: 0,
+        characterId: 100,
+        name: '玩家·主角',
+        maxHp: 12000,
+        maxInternalForce: 10000,
+        totalEquipmentAttack: 1500,
+      );
+      final def = _fullDef();
+      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+        playerTeam: [player],
+        stageId: 'stage_inner_demon_01',
+        innerDemonDef: def,
+      );
+      expect(mirrors, hasLength(1));
+      final m = mirrors[0];
+      expect(m.maxHp, 13200, reason: '12000 ×1.10');
+      expect(m.currentHp, 13200, reason: '开战满血');
+      expect(m.maxInternalForce, 11000, reason: '10000 ×1.10');
+      expect(m.currentInternalForce, 11000, reason: '开战满内力');
+      expect(m.totalEquipmentAttack, 1650, reason: '1500 ×1.10');
+      // 字段重置
+      expect(m.characterId, -1, reason: 'slotIndex=0 → -1 negative id 防冲突');
+      expect(m.name, '心魔·玩家·主角');
+      expect(m.teamSide, 1, reason: '右队');
+      expect(m.slotIndex, 0);
+      expect(m.actionPoint, 0);
+      expect(m.isAlive, isTrue);
+      expect(m.skillCooldowns, isEmpty);
+      expect(m.activeBuffs, isEmpty);
+      expect(m.internalInjury, isNull);
+      expect(m.iconPath, isNull);
+      // 保留字段:realm / school / speed / crit / mainCultivationLayer
+      expect(m.realmTier, player.realmTier);
+      expect(m.realmLayer, player.realmLayer);
+      expect(m.school, player.school);
+      expect(m.speed, player.speed);
+      expect(m.criticalRate, player.criticalRate);
+      expect(m.mainCultivationLayer, player.mainCultivationLayer);
+    });
+
+    test('R2.2 3v3 镜像:slot/id 各自正确', () {
+      final players = [
+        _mockPlayer(slotIndex: 0, characterId: 100, name: '主角'),
+        _mockPlayer(slotIndex: 1, characterId: 101, name: '徒弟甲'),
+        _mockPlayer(slotIndex: 2, characterId: 102, name: '徒弟乙'),
+      ];
+      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+        playerTeam: players,
+        stageId: 'stage_inner_demon_06',
+        innerDemonDef: _fullDef(),
+      );
+      expect(mirrors, hasLength(3));
+      expect(mirrors[0].characterId, -1);
+      expect(mirrors[1].characterId, -2);
+      expect(mirrors[2].characterId, -3);
+      expect(mirrors[0].name, '心魔·主角');
+      expect(mirrors[1].name, '心魔·徒弟甲');
+      expect(mirrors[2].name, '心魔·徒弟乙');
+      expect(mirrors[0].slotIndex, 0);
+      expect(mirrors[1].slotIndex, 1);
+      expect(mirrors[2].slotIndex, 2);
+      for (final m in mirrors) {
+        expect(m.teamSide, 1);
+      }
+    });
+
+    test('R2.3 def 无该 stage_id 配置 → buff=0 镜像保持原样', () {
+      final player = _mockPlayer(
+        maxHp: 12000,
+        totalEquipmentAttack: 1500,
+      );
+      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+        playerTeam: [player],
+        stageId: 'stage_unknown',
+        innerDemonDef: _fullDef(),
+      );
+      expect(mirrors[0].maxHp, 12000, reason: 'buff=0 → 不强化');
+      expect(mirrors[0].totalEquipmentAttack, 1500);
+    });
+
+    test('R2.4 playerTeam > 3 → 最多 3 镜像(BattleState slot 限制)', () {
+      final players = List.generate(
+        5,
+        (i) => _mockPlayer(slotIndex: i % 3, characterId: 100 + i, name: 'p$i'),
+      );
+      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+        playerTeam: players,
+        stageId: 'stage_inner_demon_01',
+        innerDemonDef: _fullDef(),
+      );
+      expect(mirrors, hasLength(3));
+    });
+
+    test('R3.1 §5.4 红线 cap:player 接近上限 + buff → 镜像不破红线', () {
+      // 玩家 wuSheng·dengFeng 满 build,HP/IF/Attack 接近 §5.4 上限
+      final player = _mockPlayer(
+        maxHp: 19800,
+        maxInternalForce: 14500,
+        totalEquipmentAttack: 1950,
+      );
+      // stage_inner_demon_07 +20% buff → 镜像值会爆 §5.4 红线,cap 必须挡住
+      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+        playerTeam: [player],
+        stageId: 'stage_inner_demon_07',
+        innerDemonDef: _fullDef(),
+      );
+      final m = mirrors[0];
+      // 19800 ×1.20 = 23760 → cap 20000
+      expect(m.maxHp, 20000, reason: '§5.4 玩家血上限 cap');
+      expect(m.currentHp, 20000);
+      // 14500 ×1.20 = 17400 → cap 15000
+      expect(m.maxInternalForce, 15000, reason: '§5.4 内力上限 cap');
+      expect(m.currentInternalForce, 15000);
+      // 1950 ×1.20 = 2340 → cap 2000
+      expect(m.totalEquipmentAttack, 2000, reason: '§5.4 装备攻击上限 cap');
+    });
+
+    test('R3.2 player 远低于 cap + 高 buff → 数值未触 cap 不变形', () {
+      final player = _mockPlayer(
+        maxHp: 5000,
+        maxInternalForce: 3000,
+        totalEquipmentAttack: 800,
+      );
+      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+        playerTeam: [player],
+        stageId: 'stage_inner_demon_07', // +20%
+        innerDemonDef: _fullDef(),
+      );
+      final m = mirrors[0];
+      expect(m.maxHp, 6000, reason: '5000 ×1.20,未达 20000 cap');
+      expect(m.maxInternalForce, 3600);
+      expect(m.totalEquipmentAttack, 960);
+    });
+
+    test('R3.3 empty def(fixture 兼容)→ 0 buff 镜像保持原样不破', () {
+      final player = _mockPlayer(maxHp: 12000, totalEquipmentAttack: 1500);
+      final mirrors = InnerDemonService.buildMirrorEnemyTeam(
+        playerTeam: [player],
+        stageId: 'stage_inner_demon_01',
+        innerDemonDef: InnerDemonDef.empty(),
+      );
+      expect(mirrors[0].maxHp, 12000);
+      expect(mirrors[0].totalEquipmentAttack, 1500);
+    });
+  });
 }
+
+/// 构造测试用 BattleCharacter(skipping fromCharacter 全 pipeline)。
+BattleCharacter _mockPlayer({
+  int slotIndex = 0,
+  int characterId = 100,
+  String name = '玩家',
+  int maxHp = 12000,
+  int maxInternalForce = 10000,
+  int totalEquipmentAttack = 1500,
+  RealmTier realmTier = RealmTier.wuSheng,
+  RealmLayer realmLayer = RealmLayer.qiMeng,
+  TechniqueSchool school = TechniqueSchool.gangMeng,
+}) =>
+    BattleCharacter(
+      characterId: characterId,
+      name: name,
+      realmTier: realmTier,
+      realmLayer: realmLayer,
+      school: school,
+      maxHp: maxHp,
+      currentHp: maxHp,
+      maxInternalForce: maxInternalForce,
+      currentInternalForce: maxInternalForce,
+      speed: 250,
+      criticalRate: 0.15,
+      evasionRate: 0.05,
+      defenseRate: 0.35,
+      totalEquipmentAttack: totalEquipmentAttack,
+      mainCultivationLayer: CultivationLayer.jiJing,
+      availableSkills: const <SkillDef>[],
+      skillCooldowns: const {'skill_a': 2}, // 验证镜像清空 CD
+      activeBuffs: const ['founder_buff'],   // 验证镜像清空 buff
+      actionPoint: 500, // 验证镜像归零
+      isAlive: true,
+      teamSide: 0,
+      slotIndex: slotIndex,
+    );
