@@ -1279,5 +1279,58 @@ animation:
   critical_font_scale: 1.5
 
 # =============================================================================
+# 12. 心魔系统（1.0 P2.2 §12.1，7 关拦截 wuSheng 7 层突破）
+# =============================================================================
+# spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md
+# 模型：镜像玩家 character snapshot +10-20% 强化 / 失败 = 散功 ×0.5 阉割版 + 心魔余毒 8h
+# 4 主轴拍板：B+B+A 微调+B（触发=wuSheng 6 内+1 飞升前=7 关 / 形态=stages.yaml stageType:innerDemon
+#                          / 数值=镜像 +10-20% +§5.4 cap / 惩罚=散功阉割版 + 心魔余毒 8h）
+
+inner_demon:
+  mirror_buff_per_stage:             # 各关镜像 character 强化比例（加到玩家 build snapshot）
+    stage_inner_demon_01: 0.10
+    stage_inner_demon_02: 0.12
+    stage_inner_demon_03: 0.14
+    stage_inner_demon_04: 0.16
+    stage_inner_demon_05: 0.18
+    stage_inner_demon_06: 0.20
+    stage_inner_demon_07: 0.20       # 双镜像 2 副本（§一 末关·心魔·真）
+
+  mirror_caps:                       # §5.4 数值红线 cap（防玩家 build 超时镜像也超）
+    hp_max: 20000
+    internal_force_max: 15000
+    attack_power_max: 2000
+
+  failure_penalty:                   # 散功 ×0.5 阉割版（GDD §6 散功公式半惩罚）
+    internal_force_multiplier: 0.85
+    main_cultivation_multiplier: 0.90
+    sub_cultivation_multiplier: 1.00
+    debuff_id: inner_demon_residue
+    debuff_clear_via_retreat_hours: 8
+
+  residue_debuff:                    # 心魔余毒 buff 效果（闭关 8h 清）
+    battle_output_multiplier: 0.95   # 战斗输出 -5%
+    internal_force_recovery_multiplier: 0.80  # 内力恢复 -20%
+
+  unlock_triggers:                   # 触发关 victory → 下一关 unlock 链
+    stage_06_05: stage_inner_demon_01
+    stage_inner_demon_01: stage_inner_demon_02
+    stage_inner_demon_02: stage_inner_demon_03
+    stage_inner_demon_03: stage_inner_demon_04
+    stage_inner_demon_04: stage_inner_demon_05
+    stage_inner_demon_05: stage_inner_demon_06
+    stage_inner_demon_06: stage_inner_demon_07
+    # stage_inner_demon_07 victory → ascend_a1 飞升 hook（P2.3 spec 接管）
+
+  required_realm_layer:              # 玩家当前境界达到该 layer 才能进入（layer unlock 拦截）
+    stage_inner_demon_01: { tier: wuSheng, layer: qiMeng }
+    stage_inner_demon_02: { tier: wuSheng, layer: ruMen }
+    stage_inner_demon_03: { tier: wuSheng, layer: shuLian }
+    stage_inner_demon_04: { tier: wuSheng, layer: jingTong }
+    stage_inner_demon_05: { tier: wuSheng, layer: yuanShu }
+    stage_inner_demon_06: { tier: wuSheng, layer: huaJing }
+    stage_inner_demon_07: { tier: wuSheng, layer: dengFeng }
+
+# =============================================================================
 # 文件结束
 # =============================================================================

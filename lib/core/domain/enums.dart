@@ -155,8 +155,9 @@ enum LineageRole {
 
 /// 关卡类型。
 enum StageType {
-  mainline,  // 主线（GDD §8.1）
-  tower,     // 爬塔（问鼎江湖，GDD §8.2）
+  mainline,    // 主线（GDD §8.1）
+  tower,       // 爬塔（问鼎江湖，GDD §8.2）
+  innerDemon,  // 心魔关(1.0 P2.2 §12.1,7 关拦截 wuSheng 7 层突破 / 镜像玩家 +10-20%)
 }
 
 /// 关卡解锁状态（Phase 3 T34 主线进度）。
@@ -227,6 +228,7 @@ enum EncounterBiome {
   bambooForest,    // 竹林(奇遇 bamboo_listen_rain · GDD §7.2 example)
   desert,          // 大漠戈壁(stage_04_03 沙海迷踪 / 1.0 P2 西域续章)
   frontier,        // 边塞关隘(stage_04_02 玉门古道 / stage_04_05 嘉峪关)
+  innerRealm,      // 心魔境(1.0 P2.2 §12.1,stage_inner_demon_01..07 抽象内省境)
 }
 
 /// 天气/时段(C-W14-2 奇遇 trigger 维度)。

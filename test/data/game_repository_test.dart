@@ -41,7 +41,18 @@ void main() {
           reason: '64 心法/共鸣招(skills.yaml,含 joint_skill) + 40 奇遇招');
       expect(repo.encounterSkillIds.length, 40,
           reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
-      expect(repo.stageDefs.length, 30, reason: '主线 30 关(2026-05-22 P2 Ch6 扩,6 章 × 5 关)');
+      final mainlineCount = repo.stageDefs.values
+          .where((s) => s.stageType == StageType.mainline)
+          .length;
+      final innerDemonCount = repo.stageDefs.values
+          .where((s) => s.stageType == StageType.innerDemon)
+          .length;
+      expect(mainlineCount, 30,
+          reason: '主线 30 关(2026-05-22 P2 Ch6 扩,6 章 × 5 关)');
+      expect(innerDemonCount, 7,
+          reason: '心魔 7 关(2026-05-22 P2.2 §12.1 Batch 2.1 schema)');
+      expect(repo.stageDefs.length, mainlineCount + innerDemonCount,
+          reason: 'stageDefs 现仅含 mainline + innerDemon 两类');
       expect(repo.numbers.version, isNotEmpty);
       // 2026-05-21 候选 2:synergies.yaml 8 组合(原 7 + 新 1「太极初成」
       // specificTechniques 类型,GDD §4.5 触上限 8)
