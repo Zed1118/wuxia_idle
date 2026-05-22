@@ -17,11 +17,14 @@
 
 **1178 pass / 0 analyze 不破**(原 1177 + R5 跨阶红线压测 +1)。**P2 第二条主线 ~25% → ~85%**(Ch4 1.0 P2 第二条主线第 1 章全收口 ✅,留 Ch5/Ch6 主轴 spec 待用户拍板)。详 commit + spec [`p1_x_chapter4_spec_2026-05-21.md`](docs/handoff/p1_x_chapter4_spec_2026-05-21.md) + full closeout [`p1_x_chapter4_phase2_full_closeout_2026-05-22.md`](docs/handoff/p1_x_chapter4_phase2_full_closeout_2026-05-22.md)。
 
-**Phase 2 全收口 ✅** → 8h autonomous 工作流(2026-05-22 凌晨)批次 B-E 进行中。
+**2026-05-22 8h overnight + 审查修补 + 3h 全自主托管 全收口 ✅**(累计 4 commit `537c4d4` → `f6b0894`,~5.5h actual):
+- **8h overnight ABCDE 5 批次**(凌晨 ~3.5h):`537c4d4` + `9334c6c` — R5 跨阶红线 + Phase 2 closeout + GDD v1.4 §12.4.1 **1.0 P2 内容总量表草案[待审]** + Ch5 Phase 0 reality check(4 拍板候选)+ 视觉验收派单 spec + lore audit + stage_audit + 5 memory sink(新建 `project_wuxia_idle_ch4_cultural_arc` / `feedback_8h_autonomous_workflow_template` + 更 3)
+- **审查修补**(早间):`bfa7c67` — R5 双边断言修补(+下边界 `rightWins+draws ≥ 1`)+ Ch4 enemy iconPath 15 张缺失 audit 挂账(errorBuilder 兜底)
+- **3h 全自主托管 v2 改进版首跑**(早间 ~1h45min):`9e2a6ee` + `f6b0894` — R3 prevStageId 单链 + R6 dropTable 反向引用 e2e(1180 pass)+ chapter narrative 0 引用 audit + MJ prompt spec(Ch4 enemy 15 张 v6 体例 + `--no` flag)+ 派单 spec 137→66 行精简 + 2 新 memory sink(`feedback_doc_inflation_overnight` + `feedback_audit_report_phase0_verify` 维度 4-5)
 
-**Ch4 Phase 1 spec**:[`p1_x_chapter4_spec_2026-05-21.md`](docs/handoff/p1_x_chapter4_spec_2026-05-21.md)(325 行)+ Phase 0 [`p1_x_chapter4_phase0_reality_check_2026-05-21.md`](docs/handoff/p1_x_chapter4_phase0_reality_check_2026-05-21.md)(227 行)。
+**1180 pass / 0 analyze** · 11 新 doc 落地 2026-05-22(含 3h_managed + 8h_autonomous + chapter audit + mj prompt + Ch5 phase0 + GDD §12.4.1 草案 + ...)。
 
-**下波 候选**:① **候选 2 Batch 2.3 narratives**(直接接 Phase 2 主轴,接续度最高);② **候选 1 Stage 3 剩 28 张**(MJ 解封后场景 18 + 心法 10,场景 Type A sref+sw100+ar 16:9+stylize 300 / 心法 Type B 无 sref+ar 2:3+stylize 200,≤8 张/批+间隔 ≥ 45min)。
+**下波 候选**:① **Ch5 主轴 spec 起草**(用户拍板 4 项后,~2.5-3h opus xhigh / 详 `docs/handoff/p2_ch5_phase0_reality_check_2026-05-22.md`)② **GDD §12.4.1 1.0 P2 内容总量表正式拍板**(草案待审)③ **MJ Discord 派单**(15 张 Ch4 enemy / `mj_prompt_ch4_enemy_stage4_2026-05-22.md` ready) ④ Codex Pen 视觉验收(派单 spec 已 ready) ⑤ Stage 3 剩 28 张(MJ 解封后)
 
 **P1.1 全收口 ✅**(候选 1+2+3+4 实装 + 候选 5 文档对齐 + 候选 6 audit 复跑)。详条已迁末尾「### P1.1 候选 1-5 详条迁出 2026-05-21」段。
 
