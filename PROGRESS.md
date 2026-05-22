@@ -11,12 +11,13 @@
 - **Batch 2.1 schema**(`2903e90` ~25min):enums 2 项 + numbers.yaml inner_demon 段 46 行 + stages.yaml stage_inner_demon_01..07 7 entries 占位(心魔·贪/嗔/痴/慢/疑/空/真 · difficulty 6.2-7.5 · enemyTeam[] InnerDemonStrategy 动态镜像 · baseExpReward=0 克己语义)+ test baseline 拆分(mainline 30 + innerDemon 7)+ 1192 pass / 0 analyze
 - **Batch 2.2.A vertical slice**(`71bd0a7` ~45min):InnerDemonDef domain(206 行)+ InnerDemonService.isLayerLocked(55 行)+ NumbersConfig.innerDemon 加载 + applyExperience hook 参数(EXP 留账 §5.1)+ R1 14 测 + 1206 pass / 0 analyze · **spec 估 ~1h · 实际 45min · 精度 0.75×**。Batch 2.2.A 调整:InnerDemonStrategy 不建(YAGNI) + UI 占位推 Batch 2.3 + 3 callers wire 推 Batch 2.2.B
 - **Batch 2.2.B 镜像战斗 + caller wire**(`1a26488` ~50min):InnerDemonService.buildMirrorEnemyTeam(75 行)+ StageBattleSetup.buildTeams innerDemon 分支 + 3 callers wire + R2-R3 7 测 + 1213 pass · spec 估 ~1.5h · 实际 50min · 精度 0.56× · **Batch 2.2 全完**(镜像 enemy 战斗 + layer-lock unlock 拦截 + §5.4 cap 红线 + 3 callers wire production hook 真生效);inner_demon_07 双镜像留 Batch 2.5
-- **Batch 2.3 narrative + UI 占位**(`6bde146` ~50min):22 narrative ~3,900 中文字(chapter ~720 + 7 opening ~280×7 + 7 victory ~150×7 + 7 defeat ~210×7)· Tier wuSheng「湛然/寂照/圆融/化机」+ 7 主题贪/嗔/痴/慢/疑/空/真 · 第二人称「你」(stage)+ 第三人称「李寒」(chapter)· 不破师父三句已完整 + 不再现物理遗物 · InnerDemonScreen ConsumerWidget(列 7 心魔关 + runStageFlow 入口)+ InnerDemonBreakthroughBlocker StatelessWidget(突破被拦提示)+ R4 4 测(21 stage narrative load 全非 placeholder + chapter 文件存在 + content 完整)+ **1217 pass / 0 analyze ✅**(原 1213 + 新 4)。**spec 估 ~1.5h · 实际 50min · 精度 0.56×**。调整:chapter_inner_demon 运行时不 load(与 chapter_06 同体例,纯叙事 doc)+ UI widget reactive 集成 character_panel/main_menu 路由推 Batch 2.5+
+- **Batch 2.3 narrative + UI 占位**(`6bde146` ~50min):22 narrative ~3,900 字(chapter + 7 opening/victory/defeat)+ Tier wuSheng「湛然/寂照/圆融/化机」+ 7 主题贪/嗔/痴/慢/疑/空/真 + InnerDemonScreen + InnerDemonBreakthroughBlocker + R4 4 测 + 1217 pass · spec 估 ~1.5h · 实际 50min · 精度 0.56× · chapter_inner_demon 运行时不 load + UI widget reactive 集成留 Batch 2.5+
+- **Batch 2.4 doc 同步**(`86d55fc` ~15min):GDD.md v1.8 → v1.9(顶部变更摘要 + §12.1 心魔行升「Phase 2 实装完成 ✅」+ commit 范围 e666e4c→a0cbb29 + 实装组件清单)+ docs/ROADMAP_1_0.md P2.2 §12.1 加实装完成详条(沿 Ch6 P2.1 体例 + 调整记录 4 项)+ analyze 0 / inner_demon 19 测全过。**spec 估 ~25min · 实际 15min · 精度 0.60×**。**P2.2 §12.1 心魔系统 doc 全收口 ✅**
 - **数值红线 §5.4/§5.3/§6 不动** + Demo 49 层 EXP 自动升层路径完全不变(isLayerLocked 严格 wuSheng 短路)+ B 路线 0 contamination(Phase 0 codebase 0 心魔引用 verify)
 
-**Phase 2 剩余 ~1.5-2h opus xhigh**(Batch 2.4 doc 同步 ~25min → 2.5 R5 跨阶红线压测 ~45min + UI 集成 character_panel/main_menu ~30min → closeout ~25min)。**1.0 进度 ~52% → ~62%**(P2.2 Batch 2.1+2.2+2.3 全完)。
+**Phase 2 剩余 ~1-1.5h opus xhigh**(Batch 2.5 R5 跨阶红线压测 ~45min + UI 集成 character_panel/main_menu ~30min → closeout ~25min)。**1.0 进度 ~52% → ~64%**(P2.2 Batch 2.1+2.2+2.3+2.4 全完,doc 全收口 ✅)。
 
-**下波 候选**:① ⭐ **Batch 2.4 doc 同步**(GDD §12.1 实装升档 v1.8→v1.9 / ROADMAP_1_0.md P2.2 加「实装 ✅」/ CLAUDE.md 版本对齐 · ~25min opus xhigh)② Batch 2.5 R5 红线 + UI 集成(~75min)③ MJ Discord 派单 Ch4-6 enemy ~20 张异步 ④ Codex Pen Windows 视觉验收
+**下波 候选**:① ⭐ **Batch 2.5 R5 红线 + UI 集成**(R5 跨阶 wuSheng 红线压测 50 种子双边断言 + InnerDemonScreen / BreakthroughBlocker reactive 集成 character_panel/main_menu 入口路由 + inner_demon_07 双镜像决议 · ~75min opus xhigh)② P2.2 closeout doc(~25min)③ MJ Discord 派单 Ch4-6 enemy ~20 张异步 ④ Codex Pen Windows 视觉验收
 
 ---
 
