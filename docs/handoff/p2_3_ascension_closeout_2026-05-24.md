@@ -56,15 +56,20 @@ P2.3 §7.1 飞升 + 遗物 transfer 全闭环 ✅(方向 B + Q1a/Q2c/Q3b/Q4d)· 
 
 - **memory `feedback_isar_pitfalls`** 新增实战例:Isar `@Collection` 实例的 `List<int>` 字段从 db 读出 = fixed-length,`.add()` 抛 `Unsupported operation: Cannot add to a fixed-length list`。修法:reassign 新 list `xs = [...xs, x]`。本批 `Equipment.inheritFrom` 是 W6+ 实装的老代码,但只在 entities_test 用 fresh Equipment 测过(growable list),生产路径 P2.3 飞升首次走 Isar 读 path 才暴露。
 
+## narrative 收口(`8a4b7bd` · 同会话续 ~30min · spec §7)
+
+- **4 yaml ~600 字** `data/narratives/ascension/`:intro 5 段(山顶 → 山门弟子 → 取舍 → 门派存续 → 择物)+ complete 6 段(弟子接物 → 师父别山 → 化境门开)+ pick_hint 4 段(兵刃/甲胄/配饰/分寸)+ disciple_thank 2 段(大徒「下山的路我替您走」+ 二徒「往下走」)
+- **NarrativeLoader 扩 path**:`_scanPaths` 加 `data/narratives/ascension/`(第 3 路径 · 沿 stages/ 体例)+ pubspec assets 同步
+- **AscensionScreen 真消费**:`_RitualBanner` FutureBuilder 加载 intro paragraphs.take(2)(fallback hardcoded ritualHint)+ `_performAscend` 完成 push NarrativeReaderScreen 翻页显 complete 6 段 · pick_hint / disciple_thank 当前仅 R5 加载测验证 UI 留 P5+
+- **narrative R5 加载 3 测** + `narrative_loader_test` 顺手修(_scanPaths 长度 2→3 断言扫描顺序非具体次数 · memory `feedback_red_line_test_semantics`)
+- **风格沉淀**(memory `project_wuxia_idle_ch4_cultural_arc` 续):Ch6 epilogue「无物之境」语义衔接 — 不再引用师父三句遗言(Ch6 epilogue 已闭环) + Tier wuSheng「澄澈/玄妙」散用
+- **1286 pass / 1 skip / 0 analyze**(原 1283 + 3 narrative 测)
+
 ## 挂账下波
 
-- ~~AscendService 主流程~~ ✅
-- ~~AscensionScreen UI~~ ✅
-- ~~LineagePanel 入口~~ ✅
-- ~~R5 红线 5 族~~ ✅
-- ~~Equipment.inheritFrom Isar fixed-length list bug~~ ✅
-- **narrative ~600 字**(spec §7):`data/narratives/ascension/` 4 yaml(intro / complete / pick_hint / disciple_thank)推下批做(loader 接入 + 文案 + R5 narrative reference test)· 当前 AscensionScreen 走 UiStrings 5 段精简文案,UX 闭环不阻塞
+- ~~AscendService 主流程~~ ✅ · ~~AscensionScreen UI~~ ✅ · ~~LineagePanel 入口~~ ✅ · ~~R5 红线 5 族~~ ✅ · ~~Equipment.inheritFrom Isar fixed-length list bug~~ ✅ · ~~narrative ~600 字~~ ✅
 - **Phase 5+ 多代飞升**(`stack_across_generations` / `conflict_slot_resolution` 实装)留 P5+
 - **Phase 5+ 真传位**(大弟子接管 founder 身份)留 P5+
+- **AscensionScreen pick_hint / disciple_thank UI 细化**(可单独 1 小批 · 在 _EquipmentRow / confirm dialog 接入)留 P5+
 
-**会话清理建议**:`不需要清理` — P2.3 子系统完整闭环,下波 narrative / 其他 1.0 P2 收口子任务紧密关联,继续推进 OK。
+**会话清理建议**:`建议清理` — P2.3 完整 5 commit ship · 上下文已堆积较深 · 下波若进入 Pen 视觉验收 / MJ 派单 / P3+ 任务是切换异步路径,新会话起来更紧凑。
