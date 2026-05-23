@@ -162,11 +162,21 @@ class MassBattleWaveIntermission {
   /// wave 间 cd 保留(false = 重置 cd 给玩家下波大招机会)。
   final bool preserveCooldowns;
 
+  /// 死角色 revive 比例(0.0 = 不 revive,0.30 = 复活至 maxHp × 30%)。
+  /// 守城允许中场补给:wave 间死人能短暂回阵,但残血进下波(数量劣势设计意图保留)。
+  final double reviveDeadPct;
+
+  /// 活角色 hp 恢复比例(0.0 = preserveHp 走原值,1.0 = 满 heal 到 maxHp)。
+  /// 与 preserveHp 取 max(短歇 hp 不低于当前残血)。
+  final double aliveHpRecoveryPct;
+
   const MassBattleWaveIntermission({
     required this.resetActionPoint,
     required this.preserveHp,
     required this.preserveInternalForce,
     required this.preserveCooldowns,
+    this.reviveDeadPct = 0.0,
+    this.aliveHpRecoveryPct = 0.0,
   });
 
   /// 默认值(fixture / yaml 段缺失时兜底,与 numbers.yaml 显式配置一致)。
@@ -174,7 +184,9 @@ class MassBattleWaveIntermission {
       : resetActionPoint = true,
         preserveHp = true,
         preserveInternalForce = true,
-        preserveCooldowns = false;
+        preserveCooldowns = false,
+        reviveDeadPct = 1.00,
+        aliveHpRecoveryPct = 1.00;
 
   factory MassBattleWaveIntermission.fromYaml(Map<String, dynamic> y) =>
       MassBattleWaveIntermission(
@@ -183,5 +195,8 @@ class MassBattleWaveIntermission {
         preserveInternalForce:
             (y['preserve_internal_force'] as bool?) ?? true,
         preserveCooldowns: (y['preserve_cooldowns'] as bool?) ?? false,
+        reviveDeadPct: (y['revive_dead_pct'] as num?)?.toDouble() ?? 0.0,
+        aliveHpRecoveryPct:
+            (y['alive_hp_recovery_pct'] as num?)?.toDouble() ?? 0.0,
       );
 }

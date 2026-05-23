@@ -121,6 +121,7 @@ void main() {
           internalForce: realmDef.internalForceMax,
           internalForceMax: realmDef.internalForceMax,
         );
+        character.id = -500 - slotIndex;
         character.school = school;
         final mainTech = Technique.create(
           defId: mainTechDef.id,

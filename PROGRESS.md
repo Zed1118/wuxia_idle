@@ -5,16 +5,18 @@
 
 ## 当前阶段
 
-**2026-05-24 §12.3 群战守城 P3.2 全闭环 ship → main `490a136` + P3.2.C ②a inner_demon 销账 · 1.0 整体 ~82%**(PR #3 squash merge · 9 commit · Mac+Opus xhigh 累计 ~6h):
-- **Batch 2.1-2.4**:`StageType.massBattle` + `Formation` enum 3 项(雁行/八卦/锋矢)+ `numbers.yaml mass_battle` 50 行 + `MassBattleStrategy` 组合委派 `DefaultGroundStrategy`(immutable runToEnd · 仅 leftTeam 烘焙)+ `_intermission` HP+IF preserve / ap+cd reset + 5 关 `stage_mass_battle_01..05`(yiLiu 3 + jueDing 2 · wave 2-4 / enemy 5-7 · diff 6.5-8.5)+ `MassBattleService` + narrative ~2.2k 字 + `MassBattleScreen` + main_menu 13→14 入口 + skill 全复用 LightFoot 18 招(零新增)
-- **Batch 2.5 R5/R6 + doc**:R5.1 5 关 × 50 种子(rightWins=0 全过)+ R5.2 formation cap §5.4 + R5.3 unlock 链 + R5.4 wave 间 preserve · **架构决议**(spec §3 漏点拍板 (C)):runToEnd 一次性 immutable,UI tick wiring 留 Batch 3.x
-- **P3.2.B 残血容差销账**:`residualHpThresholdPct=0.30` 末 draw → leftWin · stage_01 33→46 / stage_02 9→32 wins · 详 `p3_2b_residual_hp_closeout_2026-05-24.md`
-- **P3.2.C 诊断 + ②a 销账**:**真因 = test 路径 `Character.id = Isar.autoIncrement` sentinel 重复 → `_findById` 只返第 1 个 → 实际只玩家 0 号行动**(closeout 3 候选 maxTicks/0 伤害 break/target 全证伪)· 修法 ②a 只动 `inner_demon_r5_redline_test.dart` 1 行加 `character.id = -700-slotIndex` → **R5.1 7 关全 49/1/0**(qiMeng → dengFeng,含 stage_07 +40%) · 消解 Batch 2.5.A「+20% vs +40% 同 3/0/47 分布」伪现象 · production 0 改 · 详 `docs/phase0/p3_2_C_stalemate_diagnose.md` + memory `feedback_isar_autoincrement_test_id_collision` + `feedback_balance_buff_singledim_no_effect` P3.2.C 段
-- **PR rebase 教训**:PR #3 mergeable=CONFLICTING(PROGRESS.md 双线 evolve + session_dispatch doc D/A 冲突)· rebase `--theirs PROGRESS.md` 解 + force-with-lease push 救 · memory `feedback_local_doc_unpushed_remote_squash_diverge` P3.2.C 复盘印证
-- **挂账下波**:mass_battle stage_03+ 真数值挂账 + ch4-6 跨阶 boss 数值挂账 + production assert 防 sentinel(三者合并到「修法 ① 数值大改」一波解,需 xhigh)
-- **1269 pass / 1 skip / 0 analyze ✅** · 数值红线 §5.4/§5.3/§5.5/§6 公式 0 改
+**2026-05-24 P3.2.C 修法 ① 数值大改全闭环 ✅ · 1.0 整体 ~83%**(Mac+Opus xhigh ~1h10min · 直推 main · 10 文件 +101/-37):
+- **3 重真因诊断**(memory `feedback_phase05_diagnose_before_solve` 五轮校准):① 5 R5 test buildOne 漏 sentinel `character.id`(继 ②a 同 bug)② ch4/5/6 test buildEq 漏 `baseAttack/baseSpeed`(玩家方 atk=0 完全无输出)③ mass_battle `_intermission` 不 revive 死人导致 wave 累积数学必输
+- **修法**:① 5 test sentinel fix(对齐 ②a 体例)② ch4/5/6 buildEq +baseAttack/baseSpeed ③ `_intermission` 加 `reviveDeadPct=1.00` + `aliveHpRecoveryPct=1.00`(numbers.yaml + impl + def 2 字段)④ stage_03-05 mass_battle enemy hp/atk 微调 + ch4/ch5 boss enemy hp+25-30%/atk+10%(弥补 buildEq fix 后玩家方真 atk 接通的反向爆破)⑤ production assert `BattleState` 构造 unique characterId(去 const + AssertionError,debug 模式 only)
+- **R5 实测**:mass_battle 5 关 50/0 50/0 37/13 45/5 30/20 ✅ · lightfoot 50 ×5 ✅ · inner_demon 49 ×7 ✅ · ch4/5 50/0 ch6 49/1 ✅ · **全 6 R5 134 pass**
+- **1269 pass / 1 skip / 0 analyze ✅** · 数值红线 §5.4/§5.3/§5.5/§6 公式 0 改 · production debug-only assert 不影响 release
+- 详 `docs/handoff/p3_2_c_fix_1_numerical_overhaul_2026-05-24.md`
 
-**下波 候选**:① **P3.2.C 修法 ① 数值大改**(mass_battle stage_03/04/05 + ch4-6 跨阶 boss 真平衡 + production assert · 升 xhigh · ~3-4h)② P2.3 A1 飞升 + 遗物 transfer(P2 闭环 · 升 xhigh · ~4h+)③ Pen Codex Windows 视觉验收 P3.1 + P3.2(异步 ~1h)④ MJ Discord 派单 Ch4-6 + inner_demon ~25 张(异步)
+**下波 候选**:② P2.3 A1 飞升 + 遗物 transfer(GDD §7.1 + §12.2 #10 · 1.0 P2 闭环 · 升 xhigh · ~4h+)③ Pen Codex Windows 视觉验收 P3.1 + P3.2(异步 ~1h)④ MJ Discord 派单 Ch4-6 + inner_demon ~25 张(异步)
+
+---
+
+**2026-05-24 §12.3 群战守城 P3.2 全闭环 ship → main `490a136` + P3.2.C ②a inner_demon 销账**(PR #3 squash merge · 9 commit · Mac+Opus xhigh 累计 ~6h):Batch 2.1-2.5 + P3.2.B 残血容差 + P3.2.C ②a sentinel fix(`character.id = -700-slotIndex`)+ PR rebase 复盘。详 git log + handoff/`p3_2_c_2a_closeout_2026-05-24.md` + `p3_2b_residual_hp_closeout_2026-05-24.md` + `docs/phase0/p3_2_C_stalemate_diagnose.md` + memory `feedback_isar_autoincrement_test_id_collision` / `feedback_local_doc_unpushed_remote_squash_diverge`。
 
 ---
 

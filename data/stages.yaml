@@ -1192,8 +1192,8 @@ stages:
         realmTier: jueDing
         realmLayer: qiMeng
         school: yinRou
-        baseHp: 15500
-        baseAttack: 1250
+        baseHp: 19375
+        baseAttack: 1375
         baseSpeed: 215
         skillIds:
           - skill_yinrou_jianghu_basic
@@ -1205,8 +1205,8 @@ stages:
         realmTier: yiLiu
         realmLayer: dengFeng
         school: gangMeng
-        baseHp: 13000
-        baseAttack: 1150
+        baseHp: 16250
+        baseAttack: 1265
         baseSpeed: 200
         skillIds:
           - skill_gangmeng_menpai_basic
@@ -1218,8 +1218,8 @@ stages:
         realmTier: yiLiu
         realmLayer: dengFeng
         school: lingQiao
-        baseHp: 12500
-        baseAttack: 1100
+        baseHp: 15625
+        baseAttack: 1210
         baseSpeed: 210
         skillIds:
           - skill_lingqiao_menpai_basic
@@ -1521,8 +1521,8 @@ stages:
         realmTier: zongShi
         realmLayer: qiMeng
         school: yinRou
-        baseHp: 32000
-        baseAttack: 1950
+        baseHp: 41600
+        baseAttack: 2145
         baseSpeed: 250
         skillIds:
           - skill_yinrou_shichuan_basic
@@ -1534,8 +1534,8 @@ stages:
         realmTier: jueDing
         realmLayer: dengFeng
         school: gangMeng
-        baseHp: 27000
-        baseAttack: 1750
+        baseHp: 35100
+        baseAttack: 1925
         baseSpeed: 235
         skillIds:
           - skill_gangmeng_jianghu_basic
@@ -1547,8 +1547,8 @@ stages:
         realmTier: jueDing
         realmLayer: dengFeng
         school: lingQiao
-        baseHp: 26000
-        baseAttack: 1700
+        baseHp: 33800
+        baseAttack: 1870
         baseSpeed: 245
         skillIds:
           - skill_lingqiao_jianghu_basic
@@ -2453,8 +2453,8 @@ stages:
         realmTier: yiLiu
         realmLayer: dengFeng
         school: lingQiao
-        baseHp: 10800
-        baseAttack: 1050
+        baseHp: 8640
+        baseAttack: 893
         baseSpeed: 215
         skillIds:
           - skill_lightfoot_yiliu_lingqiao_basic
@@ -2466,8 +2466,8 @@ stages:
         realmTier: yiLiu
         realmLayer: dengFeng
         school: yinRou
-        baseHp: 10500
-        baseAttack: 1080
+        baseHp: 8400
+        baseAttack: 918
         baseSpeed: 200
         skillIds:
           - skill_lightfoot_yiliu_yinrou_basic
@@ -2479,8 +2479,8 @@ stages:
         realmTier: yiLiu
         realmLayer: dengFeng
         school: gangMeng
-        baseHp: 11000
-        baseAttack: 1020
+        baseHp: 8800
+        baseAttack: 867
         baseSpeed: 195
         skillIds:
           - skill_lightfoot_yiliu_gangmeng_basic
@@ -2514,8 +2514,8 @@ stages:
         realmTier: jueDing
         realmLayer: qiMeng
         school: lingQiao
-        baseHp: 14000
-        baseAttack: 1180
+        baseHp: 10080
+        baseAttack: 953
         baseSpeed: 220
         skillIds:
           - skill_lightfoot_jueding_lingqiao_basic
@@ -2526,8 +2526,8 @@ stages:
         realmTier: jueDing
         realmLayer: qiMeng
         school: yinRou
-        baseHp: 13700
-        baseAttack: 1150
+        baseHp: 9864
+        baseAttack: 929
         baseSpeed: 205
         skillIds:
           - skill_lightfoot_jueding_yinrou_basic
@@ -2538,8 +2538,8 @@ stages:
         realmTier: jueDing
         realmLayer: qiMeng
         school: gangMeng
-        baseHp: 14200
-        baseAttack: 1200
+        baseHp: 10224
+        baseAttack: 969
         baseSpeed: 200
         skillIds:
           - skill_lightfoot_jueding_gangmeng_basic
@@ -2572,8 +2572,8 @@ stages:
         realmTier: jueDing
         realmLayer: jingTong
         school: gangMeng
-        baseHp: 17000
-        baseAttack: 1400
+        baseHp: 12920
+        baseAttack: 1154
         baseSpeed: 225
         skillIds:
           - skill_lightfoot_jueding_gangmeng_basic
@@ -2585,8 +2585,8 @@ stages:
         realmTier: jueDing
         realmLayer: jingTong
         school: lingQiao
-        baseHp: 16500
-        baseAttack: 1430
+        baseHp: 12540
+        baseAttack: 1180
         baseSpeed: 235
         skillIds:
           - skill_lightfoot_jueding_lingqiao_basic
@@ -2598,8 +2598,8 @@ stages:
         realmTier: jueDing
         realmLayer: jingTong
         school: yinRou
-        baseHp: 16800
-        baseAttack: 1380
+        baseHp: 12768
+        baseAttack: 1138
         baseSpeed: 220
         skillIds:
           - skill_lightfoot_jueding_yinrou_basic
