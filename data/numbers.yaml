@@ -1342,5 +1342,49 @@ inner_demon:
     stage_inner_demon_07: { tier: wuSheng, layer: dengFeng }
 
 # =============================================================================
+# 轻功对决配置(1.0 P3.1 §12.3,GDD v1.11)
+# =============================================================================
+# 4 主轴拍板:① 5 关 terrain 分布(yiLiu 3 关 water/rooftop/bamboo + jueDing 2 关
+#                              高阶 water/rooftop)
+#           ② terrain modifier ≥15% 单维度有效(memory feedback_balance_buff_singledim_no_effect)
+#           ③ 架构=LightFootStrategy 组合委派 DefaultGroundStrategy 零代码重复
+#                  (memory feedback_avoid_over_engineer_abstraction)
+#           ④ 平行支线**不接管 wuSheng 突破链**(isLayerLocked 无 lightFoot 路径)
+# 模型:terrain modifier 烘焙到 BattleCharacter critRate/evasionRate/defenseRate
+#      + damage_multiplier(LightFootStrategy.runToEnd 入口一次性应用,双方对等)
+
+light_foot:
+  terrain_modifiers:                 # 3 terrain × {crit/evasion/defense/damage} delta,双方对等
+    water:                           # 水面(渡口/急流):滑步难防 + 水波闪躲
+      critical_rate_delta: 0.00
+      evasion_rate_delta: 0.15
+      defense_rate_delta: -0.10
+      damage_multiplier: 1.00
+    rooftop:                         # 屋脊(青瓦/飞檐):高处优势 + 瓦上劲风
+      critical_rate_delta: 0.10
+      evasion_rate_delta: 0.00
+      defense_rate_delta: -0.05
+      damage_multiplier: 1.15
+    bamboo:                          # 竹林(密竹/江南):竹影遮蔽 + 卸力
+      critical_rate_delta: 0.00
+      evasion_rate_delta: 0.20
+      defense_rate_delta: 0.00
+      damage_multiplier: 0.90
+
+  stage_terrain:                     # 5 关 → terrainBiome 映射(冗余于 stages.yaml,加速 lookup)
+    stage_light_foot_01: water
+    stage_light_foot_02: rooftop
+    stage_light_foot_03: bamboo
+    stage_light_foot_04: water       # 高阶 water(jueDing·qiMeng)
+    stage_light_foot_05: rooftop     # 高阶 rooftop(jueDing·jingTong)
+
+  unlock_triggers:                   # 触发关 victory → 下一关 unlock 链(平行支线 不接管 wuSheng)
+    stage_06_05: stage_light_foot_01
+    stage_light_foot_01: stage_light_foot_02
+    stage_light_foot_02: stage_light_foot_03
+    stage_light_foot_03: stage_light_foot_04
+    stage_light_foot_04: stage_light_foot_05
+
+# =============================================================================
 # 文件结束
 # =============================================================================

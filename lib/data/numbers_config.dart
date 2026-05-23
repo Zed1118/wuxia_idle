@@ -1,4 +1,5 @@
 import '../features/inner_demon/domain/inner_demon_def.dart';
+import '../features/light_foot/domain/light_foot_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import '../core/domain/enums.dart';
 
@@ -113,6 +114,14 @@ class NumbersConfig {
   /// requiredRealmLayer 均空 → isLayerLocked 始终 false，不破现有升层行为）。
   final InnerDemonDef innerDemon;
 
+  /// 轻功对决配置(1.0 P3.1 §12.3,GDD v1.11)。
+  ///
+  /// 5 关 stage_light_foot_01..05 跨 yiLiu/jueDing 2 Tier × 3 terrain
+  /// (water/rooftop/bamboo)平行支线。fixture 不带 `light_foot` 段时走
+  /// [LightFootDef.empty](terrain_modifiers 空 → LightFootStrategy fallback
+  /// neutral modifier 不影响 BattleCharacter stat)。
+  final LightFootDef lightFoot;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -142,6 +151,7 @@ class NumbersConfig {
     required this.retreat,
     required this.festivals,
     required this.innerDemon,
+    required this.lightFoot,
     required this.raw,
   });
 
@@ -220,6 +230,9 @@ class NumbersConfig {
       ),
       innerDemon: InnerDemonDef.fromYaml(
         y['inner_demon'] as Map<String, dynamic>?,
+      ),
+      lightFoot: LightFootDef.fromYaml(
+        y['light_foot'] as Map<String, dynamic>?,
       ),
       raw: y,
     );

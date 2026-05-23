@@ -54,6 +54,11 @@ class StageDef {
   /// null 时 battle_screen 走 backgroundColor 兜底。
   final String? sceneBackgroundPath;
 
+  /// 战斗机制地形(1.0 P3.1 §12.3,GDD v1.11)。
+  /// 仅 `stageType: lightFoot` 关卡配置(LightFootStrategy 烘焙 terrain modifier
+  /// 到 BattleCharacter critRate/evasionRate/defenseRate);其他 stageType null。
+  final TerrainBiome? terrainBiome;
+
   const StageDef({
     required this.id,
     required this.name,
@@ -75,6 +80,7 @@ class StageDef {
     this.biome,
     this.weather,
     this.sceneBackgroundPath,
+    this.terrainBiome,
   });
 
   factory StageDef.fromYaml(Map<String, dynamic> y) {
@@ -111,6 +117,9 @@ class StageDef {
           ? null
           : EncounterWeather.values.byName(y['weather'] as String),
       sceneBackgroundPath: y['sceneBackgroundPath'] as String?,
+      terrainBiome: (y['terrainBiome'] as String?) == null
+          ? null
+          : TerrainBiome.values.byName(y['terrainBiome'] as String),
     );
   }
 

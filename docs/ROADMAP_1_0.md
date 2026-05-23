@@ -134,6 +134,15 @@
 - BattleStrategy 抽象层挂 `LightFootStrategy`
 - 数据:特殊地图 yaml + 轻功招式 yaml
 
+**2026-05-23 P3.1 Batch 2.1-2.4 全收尾 ✅**(8h overnight worktree `feat/p3_1_lightfoot`,8 commit `be7248a → 本`,1238 pass / 0 analyze):
+- **战斗形态全闭环**:`LightFootStrategy` 组合委派 `DefaultGroundStrategy`(零代码重复 + immutable · runToEnd 入口 `applyTerrainTo` bake terrain modifier 烘焙到 BattleCharacter critRate/evasionRate/defenseRate · clamp [0.0, 0.95] 防 §5.4/§5.5 红线破)+ `TerrainBiome` 独立 enum 3 项(water/rooftop/bamboo,与 EncounterBiome 解耦)
+- **5 关 + 数据 schema**:`stage_light_foot_01..05` yiLiu(qiMeng/jingTong/dengFeng) + jueDing(qiMeng/jingTong)2 Tier × 3 terrain + diff 5.0-6.5 + enemyTeam[3] menpai/jianghu skill 体例 + `numbers.yaml light_foot` 段 45 行(3 terrain × 4 modifier + stage_terrain + unlock_triggers)+ `StageDef.terrainBiome` 字段
+- **narrative ~2.1k 字**:`chapter_light_foot` 章首尾(无名轻身术 5 处试炼)+ 10 stage opening/victory(Tier yiLiu「沉着/肃杀/老练」 + jueDing「沉静/从容」风格梯度词 · 五处试炼:踏波 / 追风 / 听风 / 飞渡 / 长风)
+- **UI 入口 + reactive 三态**:`LightFootScreen`(cleared/available/locked)+ `LightFootService.statusOf` + main_menu 入口 Tower → InnerDemon → **LightFoot** → Leaderboard
+- **平行支线**:不接管 wuSheng 突破链(`isLayerLocked` 无 lightFoot 路径)· unlock 链 `stage_06_05 → light_foot_01..05`
+- **R5 跨地形红线 3 测**:R5.1 5 关 × 50 种子分布 50/50/46/50/50 leftWins(平行支线主导 · 与心魔克己 3/0/47 对称)+ R5.2 clamp + §5.4 红线 + R5.3 unlock 链
+- 详 `docs/handoff/p3_1_lightfoot_closeout_2026-05-23.md` + `docs/spec/p3_1_lightfoot_spec_2026-05-23.md` + `docs/phase0/p3_1_lightfoot_phase0_2026-05-23.md`
+
 ### P3.2 §12.3 群战守城
 - 5v5 或更大规模特殊关卡
 - BattleStrategy 抽象层挂 `MassBattleStrategy`
