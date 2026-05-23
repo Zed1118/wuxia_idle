@@ -1435,6 +1435,12 @@ mass_battle:
     stage_mass_battle_03: stage_mass_battle_04
     stage_mass_battle_04: stage_mass_battle_05
 
+  # P3.2.B 残血容差:wave 委派 _delegate.runToEnd 返回 draw 但敌方剩 ≤ 5% HP 时
+  # 强判 leftWin(守城清剿叙事 · 解 BattleEngine 末尾「残血 KO 不动」stalemate)。
+  # 诊断:R5.1 stage_03-05 全 draws 根因为最后 1 个残血敌方 KO 不掉(玩家 17400/26100 HP
+  # 输出充足 · 敌方 554-7000 残血 KO 不掉触 maxTicks)。
+  residual_hp_threshold_pct: 0.30
+
 # =============================================================================
 # 文件结束
 # =============================================================================

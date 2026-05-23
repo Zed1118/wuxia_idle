@@ -12,11 +12,11 @@
 - **Batch 2.4 narrative + UI**(`d7c9b38`):章首尾 + 10 stage opening/victory ~2.2k 字(村/镇/县/关/城 五阶 · 不躁/不乱/不溃/不让/不忧)+ `MassBattleScreen` 三态 reactive 显「N 波 · M 敌 · 阵型 · 难度」+ main_menu 13→14 入口
 - **Batch 2.5 R5/R6 + doc**(本):R5.1 5 关 × 50 种子 leftWins+draws ≥ rightWins(rightWins=0 全过)+ R5.2 formation cap + §5.4 + **仅 leftTeam 差异** + R5.3 unlock 链 e2e + R5.4 wave 间 preserve e2e
 - **架构决议**(spec §3 漏点拍板 (C)):`MassBattleStrategy.runToEnd` 一次性 immutable · R5 测直接调不走 UI · UI tick by tick 战斗 wiring 留 Batch 3.x
-- **挂账 P3.2.B 数值调优**:stage_03/04/05 R5.1 全 draws(玩家 3 vs 累计 17-26 敌 maxTicks=2000 不足)解法候选:wave 间 HP 部分回血 / 后波数值递减 / maxTicks 放宽
+- **P3.2.B 残血容差销账**(本 `+1 commit` ~70min):MassBattleDef +`residualHpThresholdPct=0.30` + MassBattleStrategy.runToEnd 末尾 draw → leftWin 判定 + R5.5 语义测。**stage_01: 33→46 / stage_02: 9→32 wins 显著改善** · stage_03+ 诊断真因为 BattleEngine 底层 stalemate(双方互免疫 wave 内 0 伤害交换)→ 挂账 **P3.2.C**(超数值调优 scope)。详 `docs/handoff/p3_2b_residual_hp_closeout_2026-05-24.md`
 - **挂账 P3.x UI 战斗 wiring**:阵型 dialog + buildWavesFor 公开 + stage_entry_flow massBattle 分支 + BattleScreen 多槽 + wave 切换动画
-- **1268 pass / 0 analyze ✅**(原 1242 + 26)。数值红线 §5.4/§5.3/§5.5/§6 公式完全不动
+- **1269 pass / 0 analyze ✅**(P3.2 收尾 1268 + R5.5 残血容差语义测)。数值红线 §5.4/§5.3/§5.5/§6 公式完全不动
 
-**下波 候选**:① P3.2.B 数值调优(R5.1 stage_03-05 draws · 升 xhigh · ~1-2h)② P3.2 worktree PR squash merge → main · Pen Windows 视觉验收 ③ P2.3 A1 飞升 + 遗物 transfer(P2 闭环 · ~4h+ · 升 xhigh)④ MJ Discord 派单 Ch4-6 + inner_demon 7 enemy ~25 张(异步)
+**下波 候选**:① P3.2.C BattleEngine 底层 stalemate 诊断(超 mass_battle scope · 升 xhigh)② P3.2 worktree PR squash merge → main · Pen Windows 视觉验收 ③ P2.3 A1 飞升 + 遗物 transfer(P2 闭环 · ~4h+ · 升 xhigh)④ inner_demon 战斗机制层调优(P2.2 #2 · ~1.5h)⑤ MJ Discord 派单 Ch4-6 + inner_demon ~25 张(异步)
 
 ---
 

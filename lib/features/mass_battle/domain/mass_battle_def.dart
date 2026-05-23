@@ -27,11 +27,17 @@ class MassBattleDef {
   /// 触发关 victory → 下一关 unlock(如 stage_06_05 → stage_mass_battle_01)。
   final Map<String, String> unlockTriggers;
 
+  /// 残血容差(P3.2.B):wave 委派结果 draw 但敌方剩余 HP ≤ 此比例 → 改判 leftWin
+  /// (守城清剿叙事;免「末尾 1 残血敌人 KO 不掉」stalemate)。
+  /// 范围 [0.0, 1.0],默认 0.05。
+  final double residualHpThresholdPct;
+
   const MassBattleDef({
     required this.formations,
     required this.waveIntermission,
     required this.stageFormations,
     required this.unlockTriggers,
+    this.residualHpThresholdPct = 0.05,
   });
 
   /// numbers.yaml 不含 `mass_battle` 段时的空值(fixture 兼容)。
@@ -80,11 +86,15 @@ class MassBattleDef {
       }
     }
 
+    final residualHpThresholdPct =
+        (y['residual_hp_threshold_pct'] as num?)?.toDouble() ?? 0.05;
+
     return MassBattleDef(
       formations: formations,
       waveIntermission: waveIntermission,
       stageFormations: stageFormations,
       unlockTriggers: unlocks,
+      residualHpThresholdPct: residualHpThresholdPct,
     );
   }
 }

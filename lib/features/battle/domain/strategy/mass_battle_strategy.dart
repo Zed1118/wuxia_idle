@@ -97,9 +97,20 @@ class MassBattleStrategy implements BattleStrategy {
 
     for (var w = 0; w < waveCount; w++) {
       // wave 入口:替换 rightTeam = 本 wave 敌方
-      s = s.copyWith(rightTeam: List.unmodifiable(enemyTeamsPerWave[w]));
+      final waveEnemies = enemyTeamsPerWave[w];
+      final rightEntryHp = waveEnemies.fold<int>(0, (a, c) => a + c.currentHp);
+      s = s.copyWith(rightTeam: List.unmodifiable(waveEnemies));
       // 委派单 wave 战斗
       s = _delegate.runToEnd(s, n, maxTicks: maxTicks, rng: r);
+
+      // P3.2.B 残血容差:draw 时若敌方剩余 HP ≤ 阈值比例 → 改判 leftWin
+      // (守城清剿叙事 · 免「末尾 1 残血敌方 KO 不动 → maxTicks 触 draw」stalemate)。
+      if (s.result == BattleResult.draw && rightEntryHp > 0) {
+        final rightExitHp = s.rightTeam.fold<int>(0, (a, c) => a + c.currentHp);
+        if (rightExitHp <= rightEntryHp * config.residualHpThresholdPct) {
+          s = s.copyWith(result: BattleResult.leftWin);
+        }
+      }
 
       // wave 结算判定:rightWin 或 draw → 整场即终结(守城失败 / 兜底平局)
       if (s.result == BattleResult.rightWin || s.result == BattleResult.draw) {

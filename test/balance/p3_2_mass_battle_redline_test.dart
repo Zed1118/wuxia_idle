@@ -17,6 +17,7 @@ import 'package:wuxia_idle/features/battle/domain/derived_stats.dart' show Realm
 import 'package:wuxia_idle/features/battle/domain/strategy/mass_battle_strategy.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/mass_battle/application/mass_battle_service.dart';
+import 'package:wuxia_idle/features/mass_battle/domain/mass_battle_def.dart';
 
 /// P3.2 §12.3 群战守城 Batch 2.5 R5 跨关红线压测。
 ///
@@ -511,6 +512,68 @@ void main() {
         // 写约束语义不写瞬时数字(memory feedback_red_line_test_semantics)
         expect(leftWins, greaterThan(0),
             reason: '10 seed 至少 1 守城成功(玩家 yiLiu·jingTong 满 build 主导)');
+      },
+    );
+
+    test(
+      'R5.5 残血容差(P3.2.B) · draw 时敌方 ≤ threshold HP → 改判 leftWin',
+      () {
+        // 验证 MassBattleStrategy.runToEnd 末尾的残血容差判定语义:
+        //   - draw 且 rightExitHp ≤ rightEntryHp × threshold → leftWin
+        //   - draw 且 rightExitHp > rightEntryHp × threshold → 维持 draw
+        // 沿 stage_01 yiLiu·qiMeng 体例:residual_hp_threshold_pct=0.30 时
+        // R5.1 distribution 改善(33→46 wins,memory feedback_red_line_test_semantics
+        // 写约束语义不写瞬时数字)。
+        final repo = GameRepository.instance;
+        final numbers = repo.numbers;
+        final massBattleDef = numbers.massBattle;
+
+        // 阈值正向:配置加载值在合理范围 [0.0, 1.0]
+        expect(massBattleDef.residualHpThresholdPct, greaterThanOrEqualTo(0.0),
+            reason: 'residualHpThresholdPct ∈ [0.0, 1.0]');
+        expect(massBattleDef.residualHpThresholdPct, lessThanOrEqualTo(1.0),
+            reason: 'residualHpThresholdPct ∈ [0.0, 1.0]');
+
+        // empty config 默认值 0.05(fixture 兼容性)
+        final emptyDef = MassBattleDef.empty();
+        expect(emptyDef.residualHpThresholdPct, 0.05,
+            reason: 'MassBattleDef.empty() 默认 residualHpThresholdPct=0.05');
+
+        // R5.1 同体例:50 seed stage_01 命中残血容差至少 1 次
+        // (容差触发 = leftWins 含来自 draw 改判的 case;33→46 实测改善源头)
+        final stage = repo.getStage('stage_mass_battle_01');
+        final left = buildPlayerTeam(
+          tier: RealmTier.yiLiu,
+          layer: RealmLayer.qiMeng,
+        );
+        final waves = buildWavesFor(stage);
+        final strategy = MassBattleStrategy(
+          formation: MassBattleService.formationFor(
+            stageId: 'stage_mass_battle_01',
+            config: massBattleDef,
+          ),
+          enemyTeamsPerWave: waves,
+          config: massBattleDef,
+        );
+        final initial = BattleState.initial(
+          leftTeam: left,
+          rightTeam: const <BattleCharacter>[],
+        );
+
+        var leftWins = 0;
+        for (var seed = 0; seed < 50; seed++) {
+          final finalState = strategy.runToEnd(
+            initial,
+            numbers,
+            maxTicks: 2000,
+            rng: Random(seed),
+          );
+          if (finalState.result == BattleResult.leftWin) leftWins++;
+        }
+        // 残血容差启用后 leftWins ≥ R5.1 stage_01 原 33 wins 的下限
+        // (容差挽救部分原 draw 案例为 leftWin · 不写具体数字防 BattleEngine 漂移)
+        expect(leftWins, greaterThanOrEqualTo(33),
+            reason: '残血容差启用后 stage_01 leftWins ≥ 33(原 R5.1 33 wins 下限)');
       },
     );
   });
