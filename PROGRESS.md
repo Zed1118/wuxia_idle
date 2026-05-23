@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**2026-05-24 §12.3 轻功对决 P3.1.B 子批收尾 ✅ · 1.0 P3.1 完整闭环 · 1.0 整体 ~77%**(branch `feat/p3_1_b` 主 cwd · Mac+Opus high 累计 ~1h · spec 估 ~1.5h · 精度 0.67× · **3 commit `31bb7bf` + `ff2a0be` + 本** 待 PR review 合 main):
+**2026-05-24 §12.3 轻功对决 P3.1.B 子批收尾 ✅ · 1.0 P3.1 完整闭环 · 1.0 整体 ~77%**(Mac+Opus high 累计 ~1h · spec 估 ~1.5h · 精度 0.67× · **4 commit squash merge ✅ → main HEAD `b1f9e4d`(PR #2 · 2026-05-24)**):
 - **Batch A · damage_multiplier 接入**(`31bb7bf` ~35min):`BattleCharacter` +`attackPowerMultiplier:double` default=1.0 + copyWith + `default_ground_strategy._calculateInBattle` raw 末乘 atkPowerMult + breakdown 输出 + `LightFootStrategy._bake` 烘焙 `terrain.damageMultiplier` 到 attackPowerMultiplier(双方对等)+ R6 4 测(water 1.0 / rooftop 1.15 / bamboo 0.90 / 双方对等)
 - **Batch B · 18 招 lightfoot 池 + stages 切换**(`ff2a0be` ~20min):`skills.yaml +18` 招 `skill_lightfoot_<tier>_<school>_<type>`(yiLiu 9 招 cap=3000 menpai 倍率 + jueDing 9 招 cap=4000 jianghu 倍率 · parentTechniqueDefId: null 沿 joint_skill 体例)+ `stage_light_foot_01..05` enemyTeam.skillIds 全切到新池(sed 35 次替换)+ repo_test baseline 104→122
 - **架构发现**:`DamageCalculator` 用 `Character`(Isar 实体)是 phase1 公式参考,不参与战斗 — 实际战斗走 `default_ground_strategy._calculateInBattle` 用 `BattleCharacter`,attackPowerMultiplier 加在 BattleCharacter 上接入正确路径
@@ -26,7 +26,7 @@
 - **挂账 1.0 P3.2+**(3 项):damage_multiplier 接入 damage_calculator(P3.1.B ~30min)+ 轻功专属 skill yaml(P3.1.B ~45min)+ Pen Windows 视觉验收(Codex 异步 ~1h)
 - **1238 pass / 0 analyze ✅**(原 1220 + 新 18:15 lightfoot 单测 + 3 R5)。数值红线 §5.4/§5.3/§6 公式不动 · Ch1-Ch6 主线 + Demo 49 层 + 心魔 7 关 wuSheng 突破链路径完全不变(轻功对决独立支线 · isLayerLocked 无 lightFoot 路径)
 
-**下波 候选**:① ⭐ **PR review + merge feat/p3_1_b → main**(起手)② P3.2 群战守城起步(spec 估 3-4h + AI 协作接口扩展 · 升 xhigh)③ P2.3 A1 飞升 + 遗物 transfer(P2 闭环 · ~4h+ · 升 xhigh)④ inner_demon 战斗机制层调优(P2.2 挂账 #2 · ~1.5h)⑤ Pen Windows 视觉验收 P3.1(Codex 异步 ~1h)⑥ MJ Discord 派单 Ch4-6 + inner_demon 7 enemy ~25 张(异步)
+**下波 候选**:① ⭐ P3.2 群战守城起步(spec 估 3-4h + AI 协作接口扩展 · 升 xhigh)② P2.3 A1 飞升 + 遗物 transfer(P2 闭环 · ~4h+ · 升 xhigh)③ inner_demon 战斗机制层调优(P2.2 挂账 #2 · ~1.5h)④ Pen Windows 视觉验收 P3.1(Codex 异步 ~1h)⑤ MJ Discord 派单 Ch4-6 + inner_demon 7 enemy ~25 张(异步)
 
 ---
 
