@@ -807,4 +807,60 @@ void main() {
     final freshA = chars.firstWhere((c) => c.name == 'A·阴阳');
     expect(freshA.experience, 0, reason: 'reseed 后 A·阴阳 EXP 回 0');
   });
+
+  // ── VC-P5+ 飞升流 fixture · seedVisualCheckP5Plus(2026-05-24 H.2)──────
+
+  test('seedVisualCheckP5Plus → founder wuSheng·dengFeng + 2 stage cleared + 师徒 3',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedVisualCheckP5Plus();
+    final isar = IsarSetup.instance;
+
+    // 1. founder = id 1 + wuSheng·dengFeng(飞升 realmAtPeak 子条件 ✅)
+    final founder = await isar.characters.get(1);
+    expect(founder, isNotNull, reason: 'founder id=1 seedMasterDisciple 底座');
+    expect(founder!.realmTier, RealmTier.wuSheng,
+        reason: 'P5+ fixture boost founder 到 wuSheng');
+    expect(founder.realmLayer, RealmLayer.dengFeng,
+        reason: 'P5+ fixture boost founder 到 dengFeng');
+    expect(founder.isFounder, true, reason: '太祖语义保留');
+
+    // 2. MainlineProgress 含 stage_inner_demon_07 + stage_06_05 cleared
+    //    (飞升 innerDemon07Cleared + mainline0605Cleared 2 子条件 ✅)
+    final progress = await isar.mainlineProgress
+        .where()
+        .findFirst();
+    expect(progress, isNotNull, reason: 'MainlineProgress 已建');
+    expect(progress!.clearedStageIds.contains('stage_inner_demon_07'), true,
+        reason: 'inner_demon_07 已 mark cleared');
+    expect(progress.clearedStageIds.contains('stage_06_05'), true,
+        reason: 'stage_06_05 已 mark cleared');
+
+    // 3. 3 师徒 + 大弟子在 active(飞升 hasDiscipleTarget 子条件 ✅)
+    final allChars = await isar.characters.where().findAll();
+    expect(allChars.length, 3,
+        reason: 'seedMasterDisciple 底座 3 角色(founder + 2 disciples)');
+    final save = await isar.saveDatas.get(0);
+    expect(save, isNotNull);
+    expect(save!.activeCharacterIds.length, 3,
+        reason: '全 3 active(founder + 2 disciples)· founder 退 active 在飞升后');
+  });
+
+  test('seedVisualCheckP5Plus 反复调用 → 幂等(MainlineProgress 不 append 重复)',
+      () async {
+    final isar = IsarSetup.instance;
+    // 第 1 跑
+    await Phase2SeedService(isar: isar).seedVisualCheckP5Plus();
+    final progress1 = await isar.mainlineProgress.where().findFirst();
+    final cleared1 = progress1!.clearedStageIds.length;
+
+    // 第 2 跑(reseed)
+    await Phase2SeedService(isar: isar).seedVisualCheckP5Plus();
+    final progress2 = await isar.mainlineProgress.where().findFirst();
+    final cleared2 = progress2!.clearedStageIds.length;
+
+    expect(cleared1, cleared2,
+        reason: '反复调用 cleared 数不变(防 append 重复 · 派单可反复 reseed)');
+    expect(cleared1, 2,
+        reason: '只 inner_demon_07 + stage_06_05 2 关 cleared');
+  });
 }
