@@ -5,15 +5,13 @@
 
 ## 当前阶段
 
-**2026-05-24 §7.1 飞升 + 遗物 transfer P2.3 全闭环 ✅ · 1.0 P2 主线 3 子阶段收口 · 1.0 整体 ~87%**(Mac+Opus xhigh ~2h30min · 4 commit `eaa3e00 → 本` 推 main · 1283 pass / 1 skip / 0 analyze):
-- **方向 B + Q1a/Q2c/Q3b/Q4d 拍板**(spec p2_3_ascension_spec_2026-05-24,125 行):Q1a 不加 isAscended 字段(复用 `isFounder + isActive=false`)/ Q2c lineageRole 不真切传位 P5+ 再切 / Q3b 玩家手动选 1-2 件 player_pick 真消费 / Q4d 3 条件并存(inner_demon_07 + wuSheng·dengFeng + stage_06_05 cleared)
-- **Batch 3.1 schema + Service** `05e2135`:numbers.yaml `ascension.unlock_triggers` 段 + NumbersConfig 扩 HeritageItems(6 字段消费 v1.5 决议 4 规则字段)+ AscensionConfig + AscendService 4 method(eligibility 5 子条件 + listHeritageCandidates + listDiscipleTargets + performAscend caller 持锁 writeTxn)+ 4 Riverpod providers
-- **Batch 3.2 UI** `f8cd163`:AscensionScreen 401 行三段式 ConsumerStatefulWidget(仪式 + 选件 1-2 + DropdownButton 改 disciple + 确认 dialog)+ LineagePanel 末加 _AscensionSection(按钮 + tooltip)+ UiStrings 15 段
-- **Batch 3.3 R5 + 顺手修生产 bug + closeout** 本:R5 5 族 14 测(e2e+5 子条件+player_pick 3+边界 4+§5.4 cap)+ **Equipment.inheritFrom Isar fixed-length list bug 修**(reassign `[...old, new]` · memory `feedback_isar_pitfalls`)+ closeout 65 行 + GDD v1.14 + CLAUDE.md §12.2 #10「P2.3 已实装 ✅」+ ROADMAP P2.3 段
-- **founder_buff_service 0 代码改**:飞升后 founder isActive=false 自然让 `computeBuffActive` 返 false · 数值红线 §5.4 公式完全不动 · Character/Equipment schema 0 改
+**2026-05-24 §7.1 飞升 + 遗物 transfer P2.3 全闭环 ✅ · 1.0 P2 主线 3 子阶段收口 · 1.0 整体 ~88%**(Mac+Opus xhigh 累计 ~3h · 5 commit `eaa3e00 → 8a4b7bd` 推 main · 1286 pass / 1 skip / 0 analyze):
+- **方向 B + Q1a/Q2c/Q3b/Q4d 拍板**(spec p2_3_ascension_spec_2026-05-24):Q1a 不加 isAscended(复用 `isFounder + isActive=false`)/ Q2c lineageRole 不真切 / Q3b player_pick 真消费 / Q4d 3 条件并存
+- **5 commit ship**:`eaa3e00` spec · `05e2135` Batch 3.1 schema + Service(NumbersConfig HeritageItems + AscensionConfig + AscendService 4 method + 4 providers)· `f8cd163` Batch 3.2 UI(AscensionScreen 三段式 + LineagePanel _AscensionSection + UiStrings 15 段)· `eadf4a5` Batch 3.3 R5 14 测 + Equipment.inheritFrom Isar fixed-length bug 修 + doc 收口 · `8a4b7bd` narrative 4 yaml ~600 字 + NarrativeLoader 扩 path + intro/complete UI 接入 + 3 narrative 测
+- **founder_buff_service 0 代码改**:飞升后 founder isActive=false 自然让 buff 退出 · 数值红线 §5.4/§5.3/§5.5/§6 公式 0 改 · Character/Equipment schema 0 改
 - 详 `docs/handoff/p2_3_ascension_closeout_2026-05-24.md`
 
-**下波 候选**:① narrative ~600 字(spec §7 · `data/narratives/ascension/` 4 yaml · sonnet ~1h)② Pen Codex Windows 视觉验收 P3.1 + P3.2 + P2.3(异步 ~1h)③ MJ Discord 派单 Ch4-6 + inner_demon ~25 张(异步)④ P5+ 多代飞升 + 真传位(留 1.0 后)
+**下波 候选**:① Pen Codex Windows 视觉验收 P2.3+P3.1+P3.2(异步 ~1h)② MJ Discord 派单 Ch4-6 + inner_demon ~25 张(异步)③ AscensionScreen pick_hint/disciple_thank UI 细化(P5+ 一并)④ P5+ 多代飞升 + 真传位(留 1.0 后)
 
 ---
 
