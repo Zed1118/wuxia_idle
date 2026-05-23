@@ -109,6 +109,15 @@ class BattleCharacter {
   /// widget 层走 errorBuilder fallback,无图时降级到 _FirstGlyphAvatar。
   final String? iconPath;
 
+  /// 攻击力倍率(P3.1.B 子批 · 2026-05-24)。base 公式末端乘项,default=1.0 表示
+  /// 无修饰。[LightFootStrategy._bake] 在 runToEnd 入口烘焙 terrain `damageMultiplier`
+  /// 到本字段(双方对等),damage_calculator 计算时直接读用。
+  ///
+  /// **不进 base 求和**(不与 totalEquipmentAttack 累加),独立维度乘项。
+  /// **沿 critRate/evasionRate/defenseRate 体例**:default-safe,所有非 lightfoot
+  /// 战斗路径自动得 1.0(fromCharacter / _enemyToBattle 不 expose)。
+  final double attackPowerMultiplier;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -135,6 +144,7 @@ class BattleCharacter {
     this.internalInjury,
     this.swordSongResonanceActive = false,
     this.iconPath,
+    this.attackPowerMultiplier = 1.0,
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -298,6 +308,7 @@ class BattleCharacter {
     Object? internalInjury = _unset,
     bool? swordSongResonanceActive,
     String? iconPath,
+    double? attackPowerMultiplier,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -330,6 +341,8 @@ class BattleCharacter {
       swordSongResonanceActive:
           swordSongResonanceActive ?? this.swordSongResonanceActive,
       iconPath: iconPath ?? this.iconPath,
+      attackPowerMultiplier:
+          attackPowerMultiplier ?? this.attackPowerMultiplier,
     );
   }
 

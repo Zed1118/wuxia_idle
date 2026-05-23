@@ -134,6 +134,55 @@ void main() {
       expect(c.criticalRate, closeTo(0.15, 1e-9));
       expect(c.evasionRate, closeTo(0.05, 1e-9));
       expect(c.defenseRate, closeTo(0.35, 1e-9));
+      expect(c.attackPowerMultiplier, closeTo(1.0, 1e-9));
+    });
+  });
+
+  // P3.1.B(2026-05-24):damage_multiplier 接入 attackPowerMultiplier 验证。
+  // 沿 R5 红线测「写约束语义不写瞬时事实」体例:断言烘焙后字段值与 terrain
+  // modifier 一致(语义),不写具体伤害值(瞬时)。damage_calculator 末乘
+  // 由 default_ground_strategy 串通(已 R5.1 实测 bamboo draws 4→1 印证)。
+  group('LightFootStrategy.applyTerrainTo 烘焙 damage_multiplier 到 attackPowerMultiplier (P3.1.B)',
+      () {
+    test('water terrain → attackPowerMultiplier 1.0(中性)', () {
+      final state = _makeState();
+      final modified = LightFootStrategy.applyTerrainTo(
+        state,
+        terrainBiome: TerrainBiome.water,
+        config: _testConfig(),
+      );
+      expect(modified.leftTeam.first.attackPowerMultiplier, closeTo(1.0, 1e-9));
+    });
+
+    test('rooftop terrain → attackPowerMultiplier 1.15(放大)', () {
+      final state = _makeState();
+      final modified = LightFootStrategy.applyTerrainTo(
+        state,
+        terrainBiome: TerrainBiome.rooftop,
+        config: _testConfig(),
+      );
+      expect(modified.leftTeam.first.attackPowerMultiplier, closeTo(1.15, 1e-9));
+    });
+
+    test('bamboo terrain → attackPowerMultiplier 0.90(削减)', () {
+      final state = _makeState();
+      final modified = LightFootStrategy.applyTerrainTo(
+        state,
+        terrainBiome: TerrainBiome.bamboo,
+        config: _testConfig(),
+      );
+      expect(modified.leftTeam.first.attackPowerMultiplier, closeTo(0.90, 1e-9));
+    });
+
+    test('双方对等:left + right 都被烘焙同一 multiplier', () {
+      final state = _makeState(withRight: true);
+      final modified = LightFootStrategy.applyTerrainTo(
+        state,
+        terrainBiome: TerrainBiome.rooftop,
+        config: _testConfig(),
+      );
+      expect(modified.leftTeam.first.attackPowerMultiplier, closeTo(1.15, 1e-9));
+      expect(modified.rightTeam.first.attackPowerMultiplier, closeTo(1.15, 1e-9));
     });
   });
 }
