@@ -115,6 +115,57 @@ void main() {
       expect(repo.numbers.defeatBossCultivationPenalty, 0.50);
     });
 
+    test('P3.2 Batch 2.1:mass_battle yaml schema 加载完整(formations + wave + stage + unlock)',
+        () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final mb = repo.numbers.massBattle;
+
+      // formations 3 阵型 × 4 字段(沿 yanXing/baGua/fengShi spec §2 数值)
+      expect(mb.formations.length, 3, reason: 'yanXing/baGua/fengShi 3 阵型');
+      final yanXing = mb.formations[Formation.yanXing]!;
+      expect(yanXing.criticalRateDelta, 0.10, reason: '雁行:crit +0.10');
+      expect(yanXing.defenseRateDelta, -0.05, reason: '雁行:defense -0.05');
+      expect(yanXing.evasionRateDelta, 0.00);
+      expect(yanXing.damageMultiplier, 1.00);
+      final baGua = mb.formations[Formation.baGua]!;
+      expect(baGua.defenseRateDelta, 0.10, reason: '八卦:defense +0.10');
+      expect(baGua.evasionRateDelta, 0.05, reason: '八卦:evasion +0.05');
+      expect(baGua.criticalRateDelta, 0.00);
+      expect(baGua.damageMultiplier, 1.00);
+      final fengShi = mb.formations[Formation.fengShi]!;
+      expect(fengShi.damageMultiplier, 1.10, reason: '锋矢:damage ×1.10');
+      expect(fengShi.criticalRateDelta, 0.05, reason: '锋矢:crit +0.05');
+      expect(fengShi.evasionRateDelta, 0.00);
+      expect(fengShi.defenseRateDelta, 0.00);
+
+      // wave_intermission 4 规则(契 §5.5 在线 = 离线 + 守城压力累积)
+      expect(mb.waveIntermission.resetActionPoint, isTrue,
+          reason: 'wave 间 actionPoint 归 0 → 走 tick 不快进');
+      expect(mb.waveIntermission.preserveHp, isTrue,
+          reason: 'wave 间 HP 保留 → 守城压力累积');
+      expect(mb.waveIntermission.preserveInternalForce, isTrue,
+          reason: 'wave 间内力保留 → 限大招使用');
+      expect(mb.waveIntermission.preserveCooldowns, isFalse,
+          reason: 'wave 间 cd 重置 → 给玩家下波大招机会');
+
+      // stage_formations 5 关默认阵型(主题契合,Tier 风格梯度)
+      expect(mb.stageFormations.length, 5);
+      expect(mb.stageFormations['stage_mass_battle_01'], Formation.yanXing);
+      expect(mb.stageFormations['stage_mass_battle_02'], Formation.baGua);
+      expect(mb.stageFormations['stage_mass_battle_03'], Formation.fengShi);
+      expect(mb.stageFormations['stage_mass_battle_04'], Formation.baGua);
+      expect(mb.stageFormations['stage_mass_battle_05'], Formation.fengShi);
+
+      // unlock_triggers 5 项链(沿 light_foot 体例 key=触发,value=解锁的下一关)
+      expect(mb.unlockTriggers.length, 5);
+      expect(mb.unlockTriggers['stage_06_05'], 'stage_mass_battle_01',
+          reason: '平行支线挂 Demo Ch6 末后(沿 LightFoot 体例 stage_06_05 触发)');
+      expect(mb.unlockTriggers['stage_mass_battle_01'], 'stage_mass_battle_02');
+      expect(mb.unlockTriggers['stage_mass_battle_02'], 'stage_mass_battle_03');
+      expect(mb.unlockTriggers['stage_mass_battle_03'], 'stage_mass_battle_04');
+      expect(mb.unlockTriggers['stage_mass_battle_04'], 'stage_mass_battle_05');
+    });
+
     test('LevelDiffModifier.diff3OrMore.attacker null 兜底为 1.0', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final m = repo.numbers.levelDiffModifier;

@@ -1,5 +1,6 @@
 import '../features/inner_demon/domain/inner_demon_def.dart';
 import '../features/light_foot/domain/light_foot_def.dart';
+import '../features/mass_battle/domain/mass_battle_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import '../core/domain/enums.dart';
 
@@ -122,6 +123,15 @@ class NumbersConfig {
   /// neutral modifier 不影响 BattleCharacter stat)。
   final LightFootDef lightFoot;
 
+  /// 群战守城配置(1.0 P3.2 §12.3,GDD v1.13)。
+  ///
+  /// 5 关 stage_mass_battle_01..05 跨 yiLiu/jueDing 2 Tier 平行支线 ·
+  /// wave-based 守城(wave_count 1-4 · enemy_counts 5-7 玩家 3 vs 敌「以少胜多」)·
+  /// 战前阵型 3 选 1(yanXing/baGua/fengShi)烘焙 leftTeam stat。fixture 不带
+  /// `mass_battle` 段时走 [MassBattleDef.empty](formations 空 →
+  /// MassBattleStrategy fallback neutral modifier 不影响 BattleCharacter stat)。
+  final MassBattleDef massBattle;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -152,6 +162,7 @@ class NumbersConfig {
     required this.festivals,
     required this.innerDemon,
     required this.lightFoot,
+    required this.massBattle,
     required this.raw,
   });
 
@@ -233,6 +244,9 @@ class NumbersConfig {
       ),
       lightFoot: LightFootDef.fromYaml(
         y['light_foot'] as Map<String, dynamic>?,
+      ),
+      massBattle: MassBattleDef.fromYaml(
+        y['mass_battle'] as Map<String, dynamic>?,
       ),
       raw: y,
     );

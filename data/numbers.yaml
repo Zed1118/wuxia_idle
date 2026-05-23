@@ -1386,5 +1386,55 @@ light_foot:
     stage_light_foot_04: stage_light_foot_05
 
 # =============================================================================
+# 群战守城(1.0 P3.2 §12.3,GDD v1.13)
+# -----------------------------------------------------------------------------
+# 设计原则:① 玩家 3 vs 敌 5-7「以少胜多」(沿 inner_demon mirror 体例,UI 0 改)
+#           ② wave-based 守城(玩家 HP/IF 跨 wave 保留 / actionPoint+cd wave 间
+#                            重置 / 敌方每 wave 全新生成,§5.5 在线 = 离线)
+#           ③ 战前阵型 3 选 1 烘焙(idempotent + clamp [0.0, 0.95] 防破红线)
+#           ④ 平行支线**不接管 wuSheng 突破链**(isLayerLocked 无 massBattle 路径)
+# 模型:阵型 modifier 烘焙到 leftTeam BattleCharacter critRate/evasionRate/
+#      defenseRate/damageMultiplier(MassBattleStrategy.runToEnd 入口一次性 +
+#      仅玩家 leftTeam 沾,与 LightFoot 双方对等不同 — 阵型是玩家战略选择)
+
+mass_battle:
+  formations:                        # 3 阵型 × {crit/evasion/defense/damage} delta,仅 leftTeam 烘焙
+    yanXing:                         # 雁行:攻势启(crit + 略破防)
+      critical_rate_delta: 0.10
+      evasion_rate_delta: 0.00
+      defense_rate_delta: -0.05
+      damage_multiplier: 1.00
+    baGua:                           # 八卦:守势固(双闪避防)
+      critical_rate_delta: 0.00
+      evasion_rate_delta: 0.05
+      defense_rate_delta: 0.10
+      damage_multiplier: 1.00
+    fengShi:                         # 锋矢:突击强(damage + crit)
+      critical_rate_delta: 0.05
+      evasion_rate_delta: 0.00
+      defense_rate_delta: 0.00
+      damage_multiplier: 1.10
+
+  wave_intermission:                 # wave 间过渡规则(MassBattleStrategy._intermission 消费)
+    reset_action_point: true         # wave 间 actionPoint 归 0(走 tick 不快进 · §5.5)
+    preserve_hp: true                # wave 间 HP 保留(不回血,守城压力累积)
+    preserve_internal_force: true    # wave 间内力保留(限大招使用频率)
+    preserve_cooldowns: false        # wave 间 cd 重置(给玩家下波大招机会)
+
+  stage_formations:                  # 5 关默认阵型(玩家未选时 fallback · 主题契合)
+    stage_mass_battle_01: yanXing    # 守村:山贼围攻 yiLiu·qiMeng 攻势启
+    stage_mass_battle_02: baGua      # 守镇:江湖匪众 yiLiu·jingTong 守势教学
+    stage_mass_battle_03: fengShi    # 守县:他派偷袭 yiLiu·dengFeng 突击教学
+    stage_mass_battle_04: baGua      # 守关:边镇胡骑 jueDing·qiMeng 沉着守关
+    stage_mass_battle_05: fengShi    # 守城:西凉残部 jueDing·jingTong 突击破城
+
+  unlock_triggers:                   # 触发关 victory → 下一关 unlock 链(平行支线 不接管 wuSheng)
+    stage_06_05: stage_mass_battle_01
+    stage_mass_battle_01: stage_mass_battle_02
+    stage_mass_battle_02: stage_mass_battle_03
+    stage_mass_battle_03: stage_mass_battle_04
+    stage_mass_battle_04: stage_mass_battle_05
+
+# =============================================================================
 # 文件结束
 # =============================================================================
