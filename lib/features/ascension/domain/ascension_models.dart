@@ -80,10 +80,16 @@ class AscensionResult {
   /// 受益 disciple.id 清单(去重 · order 按 selections 插入序)。
   final List<int> beneficiaryDiscipleIds;
 
+  /// 接任 founder 身份的弟子 id(P5+ 真传位 · null = 不传位 P2.3 一代飞升兼容路径)。
+  /// 非 null 时:`promotedDisciple.isFounder=true` · founder_buff 自然接管(active 中
+  /// 找到 isFounder=true → buff 激活 · spec `p5_lineage_full_spec` §Q5 0 service 改)。
+  final int? promotedDiscipleId;
+
   const AscensionResult({
     required this.transferredCount,
     required this.founderRetired,
     required this.heritageEquipmentIds,
     required this.beneficiaryDiscipleIds,
+    this.promotedDiscipleId,
   });
 }

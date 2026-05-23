@@ -1089,10 +1089,10 @@ inheritance:
     pieces_per_generation_max: 2
     auto_buff_internal_force_max: 0.05       # 师承遗物自带 +5% 内力上限 buff
     resonance_retention: 0.7                 # 共鸣度保留 70%
-    transfer_trigger: "ascend_to_wusheng"    # v1.5:仅武圣飞升触发(Demo 不激活)
-    multi_disciple_allocation: "player_pick" # v1.5:玩家逐件选分配(非自动)
-    stack_across_generations: false          # v1.5:只取当代不累代叠加
-    conflict_slot_resolution: "auto_swap"    # v1.5:同部位自动 swap 原装回背包
+    transfer_trigger: "ascend_to_wusheng"    # v1.5:仅武圣飞升触发(P2.3 已实装)
+    multi_disciple_allocation: "player_pick" # v1.5:玩家逐件选分配(P2.3 已实装)
+    stack_across_generations: false          # v1.5:只取当代不累代叠加(derived_stats 按 instance count 不按 prev len · spec p5_lineage_full §Q4 加 R5.8 防回退测)
+    conflict_slot_resolution: "auto_swap"    # v1.5:同部位自动 swap(P5+ 真实装 · AscendService.performAscend 副作用 4:disciple.equipped{Slot}Id 接新遗物 · 旧装 owner 不变入背包 · spec §Q3)
 
   # --- 祖师爷 buff（GDD §7.1）---
   # P1.1 A1 E.5(2026-05-21,1.0 路线图):决议方案 E.5.A,enabled_when_alive: false → true。
@@ -1452,11 +1452,13 @@ mass_battle:
 #   ③ founder.realm == wuSheng·dengFeng(顶级境界)
 # 任一未满足 → LineagePanel 飞升按钮 disabled · tooltip 显未达条件清单。
 #
-# transfer 行为 4 字段语义(inheritance.heritage_items v1.5 决议,本批 lib 端消费):
+# transfer 行为 4 字段语义(inheritance.heritage_items v1.5 决议,P2.3+P5+ lib 端消费):
 #   - transfer_trigger=ascend_to_wusheng:仅本批触发(AscendService.performAscend)
 #   - multi_disciple_allocation=player_pick:AscensionScreen 下拉选 disciple
-#   - stack_across_generations=false:Demo 仅一代飞升 · enforce in performAscend
-#   - conflict_slot_resolution=auto_swap:Demo 大弟子飞升前空槽 · YAGNI 不实装 swap
+#   - stack_across_generations=false:derived_stats.dart §244 按 isLineageHeritage instance
+#     count 不按 prev len 累加 buff(P5+ R5.8 加防回退测 · spec p5_lineage_full §Q4)
+#   - conflict_slot_resolution=auto_swap:P5+ 真实装(spec p5_lineage_full §Q3)·
+#     AscendService.performAscend 副作用 4 真消费 disciple 端 equipped{Slot}Id 接新遗物
 
 ascension:
   unlock_triggers:                   # 3 条件并存 · AscendService.computeEligibility 消费

@@ -424,10 +424,12 @@ class FounderAncestorBuff {
 /// 4 规则字段(P2.3 spec Batch 3.1 落地):
 ///   - [transferTrigger] = "ascend_to_wusheng":仅本批触发(non-trigger 路径不传)
 ///   - [multiDiscipleAllocation] = "player_pick":玩家逐件选 disciple(UI 下拉)
-///   - [stackAcrossGenerations] = false:Demo 一代飞升 · 不累代叠加(若 disciple 已戴
-///     遗物再飞升,旧遗物不再视为遗物 / Demo 不实装多代,P5+ 再决定)
-///   - [conflictSlotResolution] = "auto_swap":同部位冲突自动 swap(Demo 大弟子飞升前
-///     装备空槽,YAGNI 不实装 swap · 字段锚定为 P5+ 路径预留)
+///   - [stackAcrossGenerations] = false:不累代叠加(derived_stats §244 按
+///     `isLineageHeritage` instance count 不按 prev len · P5+ R5.8 防回退测 enforce
+///     · spec `p5_lineage_full_spec` §Q4)
+///   - [conflictSlotResolution] = "auto_swap":P5+ 真实装(AscendService.performAscend
+///     副作用 4 真消费 · disciple 端 equipped{Slot}Id 接新遗物 · 旧装 owner 不变入背包
+///     语义 · spec `p5_lineage_full_spec` §Q3)
 ///
 /// 2 数量字段:
 ///   - [piecesPerGenerationMin] = 1 / [piecesPerGenerationMax] = 2:每代传 1-2 件
