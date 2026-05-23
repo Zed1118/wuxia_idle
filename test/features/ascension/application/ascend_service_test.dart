@@ -9,7 +9,6 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/ascension/application/ascend_service.dart';
-import 'package:wuxia_idle/features/ascension/domain/ascension_models.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/inheritance/application/founder_buff_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
@@ -336,6 +335,267 @@ void main() {
       expect(discMult, closeTo(1.10, 1e-9));
       // §5.4 红线由公式层 clamp(基础 15000 × 1.10 = 16500 但 maxIF clamp 15000),
       // 本批 schema 只验 mult 数学不破语义,公式层 enforce 留 CharacterDerivedStats。
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // R5.6 多代飞升 + 真传位 e2e(spec p5_lineage_full_spec §Q1+Q2 · ④+⑤ 合并)
+  // ───────────────────────────────────────────────────────────────────────
+
+  group('R5.6 多代飞升 e2e', () {
+    test('gen1 → gen2 完整链 · 装备 prev 累加 + 各代 buff 接管', () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+      final svc = makeService();
+      final buffSvc = FounderBuffService(isar);
+      final n = GameRepository.instance.numbers;
+
+      // gen1: founder=1 → promoted=2 传 weapon
+      final founder1 = (await isar.characters.get(1))!;
+      final weapon = founder1.equippedWeaponId!;
+      final r1 = await isar.writeTxn(
+        () => svc.performAscend({weapon: 2}, promotedDiscipleId: 2),
+      );
+      expect(r1.promotedDiscipleId, 2);
+      expect(r1.founderRetired, true);
+
+      // weapon prev=[1] · disciple 2 接任 founder 身份
+      expect(
+        (await isar.equipments.get(weapon))!.previousOwnerCharacterIds,
+        [1],
+      );
+      final d2Gen1 = (await isar.characters.get(2))!;
+      expect(d2Gen1.isFounder, true, reason: 'promoted 接任');
+      expect(d2Gen1.equippedWeaponId, weapon, reason: 'auto_swap 自动装备');
+
+      // founder=1 出阵 · isFounder 保 true 「太祖」语义
+      final founder1After = (await isar.characters.get(1))!;
+      expect(founder1After.isActive, false);
+      expect(founder1After.isFounder, true, reason: '太祖保留语义');
+
+      // gen1 buff 接管:active 中 d2.isFounder=true → 激活
+      expect(await buffSvc.computeBuffActive(n), true);
+
+      // gen2 setup: founder=2 升 wuSheng·dengFeng + founderCharacterId=2
+      await isar.writeTxn(() async {
+        final d2 = (await isar.characters.get(2))!;
+        d2.realmTier = RealmTier.wuSheng;
+        d2.realmLayer = RealmLayer.dengFeng;
+        await isar.characters.put(d2);
+        final save = (await isar.saveDatas.get(0))!;
+        save.founderCharacterId = 2;
+        await isar.saveDatas.put(save);
+      });
+
+      // gen2: founder=2 → promoted=3 传同一 weapon(已装在 d2 · auto_swap 接 d3)
+      final r2 = await isar.writeTxn(
+        () => svc.performAscend({weapon: 3}, promotedDiscipleId: 3),
+      );
+      expect(r2.promotedDiscipleId, 3);
+
+      // weapon prev 累加 [1, 2] · owner=3 · isLineageHeritage=true
+      final wAfter2 = (await isar.equipments.get(weapon))!;
+      expect(wAfter2.previousOwnerCharacterIds, [1, 2]);
+      expect(wAfter2.ownerCharacterId, 3);
+      expect(wAfter2.isLineageHeritage, true);
+
+      // disciple 3 接任 · disciple 2 退 active · isFounder 保 true(「太祖」)
+      final d3 = (await isar.characters.get(3))!;
+      expect(d3.isFounder, true);
+      expect(d3.equippedWeaponId, weapon, reason: 'gen2 auto_swap');
+
+      final d2Retired = (await isar.characters.get(2))!;
+      expect(d2Retired.isActive, false);
+      expect(d2Retired.isFounder, true, reason: '太祖保留');
+
+      // gen2 buff 接管:active 中 d3.isFounder=true → 激活
+      expect(await buffSvc.computeBuffActive(n), true);
+    });
+
+    test('promotedDiscipleId=null 兼容 P2.3 一代飞升 · 无 promoted 接管', () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+      final svc = makeService();
+      final buffSvc = FounderBuffService(isar);
+      final n = GameRepository.instance.numbers;
+
+      final founder = (await isar.characters.get(1))!;
+      final weapon = founder.equippedWeaponId!;
+
+      // 不传 promotedDiscipleId(默认 null · P2.3 兼容路径)
+      final r = await isar.writeTxn(
+        () => svc.performAscend({weapon: 2}),
+      );
+      expect(r.promotedDiscipleId, null);
+      expect(r.founderRetired, true);
+
+      // disciple 2 isFounder=false(无 promoted) · auto_swap 仍执行
+      final d2 = (await isar.characters.get(2))!;
+      expect(d2.isFounder, false, reason: '无 promoted · disciple 不接任');
+      expect(d2.equippedWeaponId, weapon,
+          reason: 'auto_swap 与 promoted 解耦');
+
+      // founder buff 全退(无 active isFounder=true · founder 已退 active)
+      expect(await buffSvc.computeBuffActive(n), false);
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // R5.7 conflict_slot_resolution=auto_swap(spec p5_lineage_full_spec §Q3)
+  // ───────────────────────────────────────────────────────────────────────
+
+  group('R5.7 conflict_slot_resolution=auto_swap', () {
+    test('disciple 已戴 weapon Y + armor Z → 传 weapon X + armor X2 → '
+        'swap 新遗物 · 旧装 owner 不变', () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+
+      // setup: disciple 2 已戴 weapon Y + armor Z(原装 owner=2)
+      late int yId;
+      late int zId;
+      await isar.writeTxn(() async {
+        final y = Equipment.create(
+          defId: 'weapon_test_y',
+          tier: EquipmentTier.xunChang,
+          slot: EquipmentSlot.weapon,
+          obtainedAt: DateTime.now(),
+          obtainedFrom: 'test',
+          ownerCharacterId: 2,
+        );
+        final z = Equipment.create(
+          defId: 'armor_test_z',
+          tier: EquipmentTier.xunChang,
+          slot: EquipmentSlot.armor,
+          obtainedAt: DateTime.now(),
+          obtainedFrom: 'test',
+          ownerCharacterId: 2,
+        );
+        yId = await isar.equipments.put(y);
+        zId = await isar.equipments.put(z);
+        final d2 = (await isar.characters.get(2))!;
+        d2.equippedWeaponId = yId;
+        d2.equippedArmorId = zId;
+        await isar.characters.put(d2);
+      });
+
+      final founder = (await isar.characters.get(1))!;
+      final weaponX = founder.equippedWeaponId!;
+      final armorX = founder.equippedArmorId!;
+
+      await isar.writeTxn(
+        () => makeService().performAscend(
+          {weaponX: 2, armorX: 2},
+          promotedDiscipleId: 2,
+        ),
+      );
+
+      // disciple 2 端 equipped*Id 指向新遗物
+      final d2After = (await isar.characters.get(2))!;
+      expect(d2After.equippedWeaponId, weaponX,
+          reason: 'weapon auto_swap');
+      expect(d2After.equippedArmorId, armorX, reason: 'armor auto_swap');
+
+      // 旧 weapon Y + armor Z owner 不变(disciple 2 仍持入背包语义 · §Q3)
+      expect(
+        (await isar.equipments.get(yId))!.ownerCharacterId,
+        2,
+        reason: '旧 weapon Y 仍归 disciple 2',
+      );
+      expect(
+        (await isar.equipments.get(zId))!.ownerCharacterId,
+        2,
+        reason: '旧 armor Z 仍归 disciple 2',
+      );
+    });
+
+    test('accessory enum 分支单独覆盖 · 防 switch 漏分支', () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+
+      // setup: disciple 2 已戴 accessory T
+      late int tId;
+      await isar.writeTxn(() async {
+        final t = Equipment.create(
+          defId: 'accessory_test_t',
+          tier: EquipmentTier.xunChang,
+          slot: EquipmentSlot.accessory,
+          obtainedAt: DateTime.now(),
+          obtainedFrom: 'test',
+          ownerCharacterId: 2,
+        );
+        tId = await isar.equipments.put(t);
+        final d2 = (await isar.characters.get(2))!;
+        d2.equippedAccessoryId = tId;
+        await isar.characters.put(d2);
+      });
+
+      final founder = (await isar.characters.get(1))!;
+      final accessoryX = founder.equippedAccessoryId!;
+
+      await isar.writeTxn(
+        () => makeService().performAscend(
+          {accessoryX: 2},
+          promotedDiscipleId: 2,
+        ),
+      );
+
+      final d2After = (await isar.characters.get(2))!;
+      expect(d2After.equippedAccessoryId, accessoryX,
+          reason: 'accessory enum 分支 auto_swap');
+      expect((await isar.equipments.get(tId))!.ownerCharacterId, 2,
+          reason: '旧 accessory T 仍归 disciple 2');
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // R5.8 stack_across_generations=false enforce(spec p5_lineage_full_spec §Q4)
+  // ───────────────────────────────────────────────────────────────────────
+
+  group('R5.8 stack_across_generations=false enforce', () {
+    test('disciple 装多代 heritage · 按 instance count 不按 prev len 累加(防回退)',
+        () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+      final svc = makeService();
+
+      // gen1: founder=1 → promoted=2 传 weapon(prev=[1])
+      final founder = (await isar.characters.get(1))!;
+      final weapon = founder.equippedWeaponId!;
+      await isar.writeTxn(
+        () => svc.performAscend({weapon: 2}, promotedDiscipleId: 2),
+      );
+
+      // gen2 setup: founder=2 升 wuSheng·dengFeng
+      await isar.writeTxn(() async {
+        final d2 = (await isar.characters.get(2))!;
+        d2.realmTier = RealmTier.wuSheng;
+        d2.realmLayer = RealmLayer.dengFeng;
+        await isar.characters.put(d2);
+        final save = (await isar.saveDatas.get(0))!;
+        save.founderCharacterId = 2;
+        await isar.saveDatas.put(save);
+      });
+
+      // gen2: founder=2 → promoted=3 传同一 weapon(prev=[1,2])
+      await isar.writeTxn(
+        () => svc.performAscend({weapon: 3}, promotedDiscipleId: 3),
+      );
+
+      // weapon prev len=2(多代追加) · isLineageHeritage=true · owner=3
+      final wAfter = (await isar.equipments.get(weapon))!;
+      expect(wAfter.previousOwnerCharacterIds, [1, 2]);
+      expect(wAfter.isLineageHeritage, true);
+
+      // disciple 3 持 1 件 heritage · derived_stats §244 按 instance count 不按
+      // prev len 累加 · 即使 prev len=2 也只算 1 件 +5%(不破 §5.4 红线)
+      final heritageOf3 = await isar.equipments
+          .filter()
+          .ownerCharacterIdEqualTo(3)
+          .isLineageHeritageEqualTo(true)
+          .findAll();
+      expect(heritageOf3.length, 1,
+          reason: 'stack_across=false enforce:1 件 heritage 不因 prev len 累加');
+      // §Q4 防回退:未来 derived_stats 改算法(如改 by prev len)能立即捕获回归。
     });
   });
 }
