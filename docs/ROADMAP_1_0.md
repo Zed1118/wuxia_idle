@@ -141,10 +141,16 @@
 - **0 schema 改 · 0 公式改 · founder_buff_service 0 代码改**(P2.3 留好的 isFounder+isActive 两轴语义自然承载传位)· GDD §12.2 #10 v1.15 + CLAUDE.md v1.10
 - 详 `docs/handoff/p5_lineage_full_closeout_2026-05-24.md` + `docs/spec/p5_lineage_full_spec_2026-05-24.md`
 
-**2026-05-24 凌晨 P5+ UI polish A 批续作 ✅**(8h overnight v2 流批 1/5 · 主 cwd · 2 commit `154211b → 82fb235` 推 main · 1293 pass / 0 analyze · Mac+Opus high ~50min · 精度 0.42-0.55×):
-- **A.1 listDiscipleTargets 加 `!c.isFounder` 过滤防循环传位**(`154211b`):P5+ 真传位后 promoted disciple 的 isFounder=true 但 lineageRole 仍 disciple → 原过滤会让已接任「新祖师」再次入下拉(语义循环)· R5.9 防回退 2 测(gen0 baseline + gen1 promote=2 后 d2 排除 d3 仍在)· R5 测族 18→20
-- **A.2-A.4 UI polish**(`82fb235`):character_panel + LineagePanel 多代传承 chip(prev.length > 1 时显「{N} 代传承」 N = prevLen + 1 · gen2 起才显)+ AscensionScreen confirm dialog 加「门派衣钵:{弟子名}」strong 行 + complete snackbar 追加「 · {弟子名} 接掌门派」+ UiStrings 2 段
-- **8h overnight v2 流 6 批 ABCDEF**(本会话累计 ~3h):A UI polish ship + B 派单 spec(Codex + MJ)+ C stage_audit + D P1.2 Phase 0 地基预备 + E memory sink + 起床 handoff + F narrative 简注 + widget test 4 测(LineagePanel 2 + character_panel 2)
+**2026-05-24 凌晨 P5+ UI polish 续作 + 8h overnight v2 全流 ABCDEFGHI 完结 ✅**(主 cwd · 9 commit `154211b → e2dae9a` 推 main · 1299 pass / 0 analyze · Mac+Opus high 累计 ~2h):
+- **A 批 P5+ UI polish 4 项实装**(`154211b → 4229a12` · 3 commit):listDiscipleTargets isFounder 过滤防循环传位 + R5.9 / 双 UI 多代 chip(character_panel + LineagePanel)/ AscensionScreen dialog/snackbar 含接任弟子名
+- **B 批派单 spec**(`ad145ee`):Codex 14 验收点(P5+ + P3.1 + P3.2 + Ch4-6 + inner_demon)+ MJ 10 张 prompt ready-to-paste(Ch4-6 主敌 3 + inner_demon 7 主题 1 each · v6 模板)
+- **C 批 stage_audit**(`7be8798`):全加权 ~67-70% / 主轴战斗+主线 ~90%(P2/P3 全闭环 + P5+ 飞升前置 ~30%)
+- **D 批 P1.2 江湖恩怨 + 声望 Phase 0**(`a5843d2`):6 维全 greenfield ✅ · Q1-Q5 候选清单留用户起床拍板
+- **E 批起床 handoff**(`f7ced04`):3 类自主决策 + 6 项 first-read + memory sink 2 项追加
+- **F+G 批 narrative + widget test 双 UI 覆盖 + ROADMAP 对齐**(`504dff3` + `63c7e07`):`ascension_lineage_chant.yaml` ~200 字 Tier wuSheng 4 风格梯度 + 多代 chip widget test 4 个 + ROADMAP P2.3 段对齐 P5+ 全实装
+- **H 批 narrative UI 接入 + VC-P5+ fixture seed**(`f70f990`):`AscendService.isLineageContinuation()` + R5.10 2 测(测族 20→22)+ Phase2TestMenu VC-P5+ 按钮 + `seedVisualCheckP5Plus`(B.1 派单 fixture self-check 唯一未就绪 → ✅)
+- **I 批终验**(`e2dae9a`):全仓 1299 pass 终跑 + PROGRESS 100 行卡上限 + handoff TL;DR + 派单 spec fixture self-check 全 ✅ + phase2_test_menu_test 13→14 修
+- **8h overnight v2 实测**:9 批 ~2h opus high · 6 doc 全 ≤上限(audit 72→60 / phase0 98→41 两次主动砍)· code +200 行 / +6 测 / narrative 1 / memory 2
 - 详 `docs/handoff/p5_ui_polish_closeout_2026-05-24.md` + `docs/handoff/8h_autonomous_handoff_2026-05-24.md`
 
 ---
