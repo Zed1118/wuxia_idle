@@ -5,13 +5,15 @@
 
 ## 当前阶段
 
-**2026-05-24 §7.1 飞升 P5+ 多代飞升 + 真传位 ④+⑤ 合并 batch 全闭环 ✅ · 1.0 P2 + P5+ 真传位 · 1.0 整体 ~90%**(Mac+Opus xhigh 累计 ~2h30min · spec 估 5-7h · 精度 0.42× · 4 commit `1e875d6 → 1b1bb86` 推 main · 1291 pass / 1 skip / 0 analyze):
-- **合并方案拍板**(spec p5_lineage_full_spec):Phase 0 发现 ④ 单独做没真多代场景可测(需 ⑤ 真传位 founder promotion 当前置)→ 合并 ④⑤ 一批做 · Q1 player_pick 沿 P2.3 体例 + Q2 不真切 lineageRole + Q3 auto_swap 真实装 + Q4 stack=false 加 R5 防回退 + Q5 founder_buff_service 0 改 + Q6 R5.6/7/8 测族 + Q7 UI 集中 AscensionScreen
-- **4 commit ship**:`1e875d6` spec(96 行) · `a1d17ea` Batch 1.1 Service(performAscend 加 promotedDiscipleId + auto_swap 真实装 · 副作用 7 promoted 接管) · `15fc187` Batch 1.2 UI(AscensionScreen 加 _PromotedDiscipleRow 下拉 + UiStrings 4 段) · `1b1bb86` Batch 1.3 R5.6/R5.7/R5.8 5 测(R5.6 多代 e2e 2 + R5.7 auto_swap 2 + R5.8 stack enforce 1)
-- **0 schema 改 · 0 公式改 · founder_buff_service 0 代码改**:P2.3 留好的 isFounder+isActive 两轴语义自然承载传位(active 中 isFounder=true → buff 激活 · promotedDisciple.isFounder=true 自然接管)· R5.1-5.5 原 14 测全过(向后兼容验证 ✅)
-- 详 `docs/handoff/p5_lineage_full_closeout_2026-05-24.md`
+**2026-05-24 凌晨 §7.1 飞升 P5+ UI polish 续作 ✅ · 8h overnight v2 流批 1/5(A)**(Mac+Opus high ~50min · spec 估 1.5-2h · 精度 0.42-0.55× · 2 commit `154211b → 82fb235` 推 main · 1293 pass / 1 skip / 0 analyze):
+- **A.1 listDiscipleTargets 加 `!isFounder` 过滤防循环传位**(`154211b`):P5+ 真传位后 promoted disciple isFounder=true 但 lineageRole 仍 disciple → 原过滤会让已接任「新祖师」再次入下拉。R5.9 防回退 2 测(gen0 baseline + gen1 promote=2 后 d2 排除 d3 仍在)。R5 测族 18 → 20
+- **A.2 character_panel + A.3 LineagePanel 多代传承 chip**:prev.length > 1 时显「{N} 代传承」(N = prevLen + 1 · gen2 起才显)· _LineageHeritageRow 副行 / _HeritageRow Container chip
+- **A.4 AscensionScreen pick_hint/disciple_thank UI 细化**(`82fb235`):_showConfirmDialog 加 promotedDiscipleName 参数 · dialog Column 显「门派衣钵:{N}」strong 行 · snackbar 追加「 · {N} 接掌门派」· UiStrings 加 2 段
+- 详 `docs/handoff/p5_ui_polish_closeout_2026-05-24.md`(55 行 ≤80 ✅)
 
-**下波 候选**:① 批 2 ⑥ P1.2 江湖恩怨(~6-8h xhigh · 独立 NPC 关系网模块)② Pen Codex Windows 视觉验收 P5+ 多代飞升流(异步 ~1h)③ MJ Discord 派单 Ch4-6 + inner_demon ~25 张(异步)④ P5+ UI polish(character_panel 多代 chip + narrative 「太祖→祖师→新祖师」叙事弧 + listDiscipleTargets 已 promoted 过滤)⑤ AscensionScreen pick_hint/disciple_thank UI 细化(挂账复用)
+**上波 P5+ ④+⑤ 合并 batch**(2026-05-24 · 4 commit `1e875d6 → 1b1bb86` · Opus xhigh ~2h30min):多代飞升 + 真传位完整链 · `performAscend` 加 `promotedDiscipleId` + auto_swap 真实装 + R5.6/5.7/5.8 5 测 · 0 schema/公式/founder_buff_service 改 · 详 `docs/handoff/p5_lineage_full_closeout_2026-05-24.md` + GDD §12.2 #10 v1.15 + CLAUDE.md v1.10
+
+**下波 8h overnight 候选(批 2-5)**:B 视觉验收 + MJ 派单 spec / C 1.0 stage_audit 复跑 / D P1.2 江湖恩怨地基预备(草案不实装)/ E memory sink + 起床 handoff
 
 ---
 
