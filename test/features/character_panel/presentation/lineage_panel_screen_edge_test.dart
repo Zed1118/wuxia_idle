@@ -216,8 +216,10 @@ void main() {
     expect(find.text('师承遗物'), findsOneWidget);
     // 空态文案渲染
     expect(find.text('尚未拥有师承遗物'), findsOneWidget);
-    // 不应出现「N 件」计数（equipments.isNotEmpty 为 false）
-    expect(find.textContaining('件'), findsNothing);
+    // 不应出现「N 件」计数(equipments.isNotEmpty 为 false)。
+    // P2.3 飞升入口后「飞升条件未满足」也含「件」字,改正则精确匹配「数字 件」格式
+    // (memory `feedback_red_line_test_semantics`:test 写约束语义不写孤字 finder)。
+    expect(find.textContaining(RegExp(r'\d+ 件')), findsNothing);
   });
 
   // ── 用例 5：founder school=null → 色条走 textMuted 兜底，不抛错 ──────────

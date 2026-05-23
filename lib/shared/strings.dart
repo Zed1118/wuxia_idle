@@ -626,4 +626,26 @@ class UiStrings {
   static const String lineagePanelFounderBuffMaxHp = '最大血量';
   static const String lineagePanelFounderBuffCritRate = '暴击率';
   static const String lineagePanelFounderBuffCultivation = '修炼度获取';
+
+  // ── P2.3 §7.1 飞升 + 遗物 transfer(spec p2_3_ascension_spec_2026-05-24)──
+  static const String ascensionPanelSection = '飞升渡劫';
+  static const String ascensionPanelHint = '武圣登峰后,可传位遗物于弟子,自此退出江湖。';
+  static const String ascensionPanelButton = '步入飞升';
+  static const String ascensionPanelLocked = '飞升条件未满足';
+  static const String ascensionTitle = '飞升渡劫';
+  static const String ascensionRitualHint =
+      '渡劫之夜,你将取最贴身的一二件兵刃甲胄,亲手赠予弟子。其余之物随你而去。';
+  static const String ascensionPickEquipment = '选 1-2 件遗物传予弟子';
+  static const String ascensionAssignTo = '分配给';
+  static const String ascensionSelectionStatus = '已选 {0} / {1} 件';
+  static const String ascensionConfirmButton = '确认飞升';
+  static const String ascensionConfirmDialogTitle = '飞升渡劫';
+  static const String ascensionConfirmDialogBody =
+      '飞升之后你将退出江湖,门派由弟子继承。\n此举无法回头,确认?';
+  static const String ascensionConfirmDialogOk = '确认飞升';
+  static const String ascensionConfirmDialogCancel = '再思量片刻';
+  static const String ascensionCompleteSnackbar =
+      '飞升渡劫已成 · 已传 {0} 件遗物 · 你已退出江湖';
+  static const String ascensionNoEquipments = '尚无装备可传';
+  static const String ascensionNoDisciples = '尚无可继承弟子';
 }

@@ -9,6 +9,8 @@ import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../ascension/application/ascend_service_providers.dart';
+import '../../ascension/presentation/ascension_screen.dart';
 import '../application/lineage_info_provider.dart';
 
 /// 师徒名单（W17 候选 E，独立 sub-screen）。
@@ -106,6 +108,96 @@ class _Body extends StatelessWidget {
           ],
           const SizedBox(height: 16),
           _HeritageSection(equipments: info.heritageEquipments),
+          const SizedBox(height: 16),
+          const _AscensionSection(),
+        ],
+      ),
+    );
+  }
+}
+
+/// 飞升渡劫入口段(P2.3 §7.1 · spec p2_3_ascension_spec_2026-05-24)。
+///
+/// 5 子条件聚合判定(`ascensionEligibilityProvider`):
+///   - 全 true → 「步入飞升」按钮 enable · 点击 push [AscensionScreen]
+///   - 任一 false → disable · tooltip 显未达条件清单
+class _AscensionSection extends ConsumerWidget {
+  const _AscensionSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(ascensionEligibilityProvider);
+    return _PanelCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _SectionTitle(UiStrings.ascensionPanelSection),
+          const SizedBox(height: 4),
+          const Text(
+            UiStrings.ascensionPanelHint,
+            style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+          async.when(
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
+            error: (e, _) => Text(
+              'load error: $e',
+              style: const TextStyle(color: WuxiaColors.hpLow, fontSize: 12),
+            ),
+            data: (e) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (!e.canAscend && e.missingReasons.isNotEmpty) ...[
+                  for (final r in e.missingReasons)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: Text(
+                        '· $r',
+                        style: const TextStyle(
+                          color: WuxiaColors.textMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                ],
+                SizedBox(
+                  height: 40,
+                  child: ElevatedButton(
+                    onPressed: e.canAscend
+                        ? () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const AscensionScreen(),
+                              ),
+                            )
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: WuxiaColors.resultHighlight,
+                      disabledBackgroundColor: WuxiaColors.buttonDisabled,
+                    ),
+                    child: Text(
+                      e.canAscend
+                          ? UiStrings.ascensionPanelButton
+                          : UiStrings.ascensionPanelLocked,
+                      style: const TextStyle(
+                        color: WuxiaColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
