@@ -5,24 +5,24 @@
 
 ## 当前阶段
 
-**2026-05-24 §12.3 群战守城 P3.2 spec 起步 ✅ · worktree `feat/p3_2_mass_battle` 起 · 1.0 P3.2 启动**(Mac+Opus xhigh 累计 ~1.5h · 主 cwd 1 commit `fb6cfdd` push origin/main):
-- **Phase 0 reality check**(`docs/phase0/p3_2_mass_battle_phase0_2026-05-24.md` 72 行):6 维 grep 收口 — `MassBattleStrategy` 完全 greenfield(2 处注释占位 / 0 enum / 0 yaml)· **数据层 NvN-ready**(`BattleState.leftTeam/rightTeam: List<BattleCharacter>` 不固定 3)· **真痛点 = UI 层 3v3 硬码**(`battle_screen.dart` slotKey/attackController/for i<3)· 邻近目录 light_foot/inner_demon 三层模板成熟
-- **4 题用户拍板**(全推荐方案):Q1 **C** 玩家 3 + 敌方 5-7(沿 inner_demon mirror 体例 · UI 0 改)/ Q2 **d** 战前选阵型 + wave-based 守城 / Q3 **A** 1 strategy MassBattleStrategy 通用(wave_count=1 群战 / =N 守城)/ Q4 **i** 不扩协作 NPC 各自决策(沿 battle_ai 单角色)
-- **spec**(`docs/spec/p3_2_mass_battle_spec_2026-05-24.md` 126 行 9 节):`MassBattleStrategy implements BattleStrategy` 组合委派 `DefaultGroundStrategy` 沿 LightFoot 体例(~140 行)· `Formation` enum 3 选(雁行 crit+0.10/def-0.05 · 八卦 def+0.10/eva+0.05 · 锋矢 dmg×1.10/crit+0.05)· `applyFormationTo` idempotent 烘焙仅玩家 stat clamp [0, 0.95]· wave 间 HP/IF 保留 + actionPoint/cd 重置 + 敌方每 wave 全新生成 · 5 关 yiLiu 3 + jueDing 2 跨 tier diff 6.5-8.5 wave_count 2-4 enemy_counts 5-7 · R5/R6 ~15-20 测 baseline 1242 → ~1260 · Batch 2.1 schema(~45min)→ 2.2 strategy(~1.5h)→ 2.3 stages+service(~1h)→ 2.4 narrative+UI(~1.5h)→ 2.5 R5/R6+doc(~1h)· 估时 ~6-7h xhigh
-- **worktree 起**:`/Users/a10506/Desktop/wuxia_idle_p3_2` @ `feat/p3_2_mass_battle` based on main `fb6cfdd` · pub get + build_runner 24s 66 outputs + analyze 0 issues ✅
-- **下一步**:新会话 cd worktree fresh 起 Batch 2.1 schema(StageType +massBattle / Formation enum / numbers.yaml mass_battle 段 / StageDef massBattleWaveCount/EnemyCounts 字段 / repo 解析 / yaml schema test)~45min
+**2026-05-24 §12.3 群战守城 P3.2 Batch 2.1-2.5 全收尾 ✅ + P3.2.B 残血容差 ship + P3.2.C 诊断完成 · 1.0 整体 ~80%**(worktree `feat/p3_2_mass_battle` · 7 commit `ae97f83 → 62dc86c` · Mac+Opus xhigh 累计 ~5h):
+- **Batch 2.1 schema**(`ae97f83`):`StageType.massBattle` + `Formation` enum 3 项 + `numbers.yaml mass_battle` 段 50 行 + `MassBattleDef`/Modifier/Intermission 类 + `StageDef +massBattleWaveCount/EnemyCounts` 字段
+- **Batch 2.2 strategy**(`0b1296b`):`MassBattleStrategy` 组合委派 `DefaultGroundStrategy`(immutable runToEnd 一次性 wave 循环)+ `applyFormationTo` **仅 leftTeam** 烘焙(关键差异 vs LightFoot 双方对等)+ `_intermission` HP+IF preserve / actionPoint+cd reset + R6 烘焙 7 + wave ctor 4 共 11 单测
+- **Batch 2.3 stages + service**(`35864cc`):`stage_mass_battle_01..05`(yiLiu 3 + jueDing 2 · wave 2-4 / enemy 5-7 · diff 6.5-8.5)+ `MassBattleService.statusOf/orderedStageIds/formationFor` + skill 全复用 LightFoot 18 招(零新增)
+- **Batch 2.4 narrative + UI**(`d7c9b38`):章首尾 + 10 stage opening/victory ~2.2k 字(村/镇/县/关/城 五阶 · 不躁/不乱/不溃/不让/不忧)+ `MassBattleScreen` 三态 reactive 显「N 波 · M 敌 · 阵型 · 难度」+ main_menu 13→14 入口
+- **Batch 2.5 R5/R6 + doc**(本):R5.1 5 关 × 50 种子 leftWins+draws ≥ rightWins(rightWins=0 全过)+ R5.2 formation cap + §5.4 + **仅 leftTeam 差异** + R5.3 unlock 链 e2e + R5.4 wave 间 preserve e2e
+- **架构决议**(spec §3 漏点拍板 (C)):`MassBattleStrategy.runToEnd` 一次性 immutable · R5 测直接调不走 UI · UI tick by tick 战斗 wiring 留 Batch 3.x
+- **P3.2.B 残血容差销账**(`20789a6` ~70min):MassBattleDef +`residualHpThresholdPct=0.30` + runToEnd 末 draw → leftWin + R5.5。**stage_01: 33→46 / stage_02: 9→32 wins** · stage_03+ 挂账 P3.2.C。详 `p3_2b_residual_hp_closeout_2026-05-24.md`
+- **P3.2.C 诊断**(本 `62dc86c` 3h 自主):**真因 = test 路径 Character.id Isar.autoIncrement sentinel 重复 → _findById 只返第 1 个 → 实际只玩家 0 号行动**。closeout 3 候选(maxTicks/0 伤害 break/target)全证伪。Fix 验证 inner_demon 49/1/0 真解,但 mass_battle/ch4-6 暴露真数值挂账 → revert,产 phase0+handoff 2 doc。详 `docs/phase0/p3_2_C_stalemate_diagnose.md` + memory `feedback_isar_autoincrement_test_id_collision`
+- **1269 pass / 0 analyze ✅**(P3.2 收尾 1268 + R5.5 残血容差语义测)。数值红线 §5.4/§5.3/§5.5/§6 公式完全不动
+
+**下波 候选**:① **P3.2.C 修法决策(用户拍板)**:① fix+调数值(大改)/ ② fix+改 R5 expect(降红线 不荐)/ ③ **单独修 inner_demon 孤立销账(推荐)** / ④ 不修 ship Demo(bug 假象)② P3.2 PR #3 squash merge → main · Pen 视觉验收 ③ P2.3 A1 飞升 + 遗物 transfer(~4h+ xhigh)④ MJ Discord 派单 Ch4-6 + inner_demon ~25 张(异步)
 
 ---
 
-**2026-05-24 §12.3 轻功对决 P3.1.B 子批收尾 ✅ · 1.0 P3.1 完整闭环**(Mac+Opus high ~1h · spec 估 1.5h · 精度 0.67× · **4 commit PR #2 squash merge → main HEAD `b1f9e4d` · main 同步 `fb6cfdd`(含 P3.2 spec 起步 commit)**):
-- **Batch A**(`31bb7bf`):`BattleCharacter` +`attackPowerMultiplier:double` default=1.0 + `default_ground_strategy._calculateInBattle` raw 末乘 + `LightFootStrategy._bake` 烘焙 terrain.damageMultiplier(双方对等)+ R6 4 测 · **Batch B**(`ff2a0be`):`skills.yaml +18` 招 lightfoot pool(yiLiu cap=3000 + jueDing cap=4000)+ stages enemyTeam.skillIds 全切。**1242 pass / 0 analyze ✅** · 详 `docs/handoff/p3_1_b_closeout_2026-05-24.md` + `p3_1_b_merge_closeout_2026-05-24.md`(merge diverge 教训 → memory `feedback_local_doc_unpushed_remote_squash_diverge`)
+**2026-05-24 §12.3 轻功对决 P3.1.B 子批收尾 ✅ · 1.0 P3.1 完整闭环**(Mac+Opus high ~1h · 4 commit PR #2 squash merge → main HEAD `b1f9e4d` · 1242 pass / 0 analyze):damage_multiplier 接入 `BattleCharacter.attackPowerMultiplier`(default=1.0 · default_ground_strategy 末乘 · LightFootStrategy._bake 烘焙双方对等)+ skills.yaml +18 招 lightfoot pool(yiLiu cap=3000 + jueDing cap=4000)+ stages.yaml lightfoot 5 关 skillIds 全切。R5.1 实测 50/50/49/50/50 主导格局未变。详 `docs/handoff/p3_1_b_closeout_2026-05-24.md` + memory `feedback_local_doc_unpushed_remote_squash_diverge`
 
----
-
-**2026-05-23 夜 → 2026-05-24 晨 §12.3 轻功对决 P3.1 全收尾 ✅ · 1.0 P3 战斗形态扩展首条主线落地**(8h overnight worktree `feat/p3_1_lightfoot` · Mac+Opus xhigh ~5h · spec 估 9.5h · 精度 0.53× · **PR #1 squash merge → main `eb56480`**):
-- 5 关 `stage_light_foot_01..05` yiLiu 3 + jueDing 2 跨 tier × 3 terrain(water/rooftop/bamboo)· `LightFootStrategy` 组合委派 + `applyTerrainTo` 烘焙 BattleCharacter critRate/evasionRate/defenseRate clamp ≤0.95 · `TerrainBiome` enum 3 · numbers.yaml light_foot 段 45 行 · narrative ~2.1k 字 + UI 入口三态 + R5 跨地形红线 3 测(50/50/46/50/50 leftWins 平行支线主导)。**1238 pass / 0 analyze ✅** · 详 `docs/handoff/p3_1_lightfoot_closeout_2026-05-23.md` + `docs/spec/p3_1_lightfoot_spec_2026-05-23.md`
-
-**下波 候选**:① ⭐ P3.2 Batch 2.1 schema(新会话 cd worktree · ~45min)→ Batch 2.2 strategy(~1.5h)→ 2.3 → 2.4 → 2.5 · 共 ~6-7h xhigh ② P2.3 A1 飞升 + 遗物 transfer(P2 闭环 · ~4h+)③ inner_demon 战斗机制层调优(P2.2 挂账 #2 · ~1.5h)④ Pen Windows 视觉验收 P3.1(Codex 异步 ~1h)⑤ MJ Discord 派单 Ch4-6 + inner_demon 7 enemy ~25 张(异步)
+**2026-05-23 夜 → 2026-05-24 晨 §12.3 轻功对决 P3.1 全收尾 ✅**(8h overnight worktree · 5 commit PR #1 squash → main `eb56480` · 1238 pass / 0 analyze):5 关 stage_light_foot_01..05 跨 yiLiu/jueDing 2 Tier × 3 terrain(water/rooftop/bamboo)· `LightFootStrategy` 组合委派 `DefaultGroundStrategy` 双方对等 bake · narrative ~2.1k 字 + UI 入口 main_menu 12→13 + R5 跨地形红线 3 测 50/50/46/50/50 leftWins。详 `docs/handoff/p3_1_lightfoot_closeout_2026-05-23.md`
 
 ---
 

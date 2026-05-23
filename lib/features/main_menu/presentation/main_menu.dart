@@ -13,6 +13,7 @@ import '../../festival/application/festival_service_providers.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../inner_demon/presentation/inner_demon_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
+import '../../mass_battle/presentation/mass_battle_screen.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
@@ -152,6 +153,12 @@ class MainMenu extends ConsumerWidget {
                   label: UiStrings.mainMenuLightFoot,
                   hint: UiStrings.mainMenuLightFootHint,
                   onTap: () => _push(context, const LightFootScreen()),
+                ),
+                const SizedBox(height: 16),
+                _MenuButton(
+                  label: UiStrings.mainMenuMassBattle,
+                  hint: UiStrings.mainMenuMassBattleHint,
+                  onTap: () => _push(context, const MassBattleScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(

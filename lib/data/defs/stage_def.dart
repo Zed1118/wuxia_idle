@@ -59,6 +59,16 @@ class StageDef {
   /// 到 BattleCharacter critRate/evasionRate/defenseRate);其他 stageType null。
   final TerrainBiome? terrainBiome;
 
+  /// 群战守城 wave 数(1.0 P3.2 §12.3,GDD v1.13)。
+  /// 仅 `stageType: massBattle` 关卡配置(1-4 wave,wave_count=1 即单场群战、
+  /// =N 即多波守城);其他 stageType null。MassBattleStrategy 循环消费。
+  final int? massBattleWaveCount;
+
+  /// 群战守城每 wave 敌人数(1.0 P3.2 §12.3,GDD v1.13)。
+  /// 长度 = [massBattleWaveCount],每元素 5-7(玩家 3 vs 敌 5-7「以少胜多」语境)。
+  /// 仅 `stageType: massBattle` 关卡配置;其他 stageType null。
+  final List<int>? massBattleEnemyCounts;
+
   const StageDef({
     required this.id,
     required this.name,
@@ -81,6 +91,8 @@ class StageDef {
     this.weather,
     this.sceneBackgroundPath,
     this.terrainBiome,
+    this.massBattleWaveCount,
+    this.massBattleEnemyCounts,
   });
 
   factory StageDef.fromYaml(Map<String, dynamic> y) {
@@ -120,6 +132,10 @@ class StageDef {
       terrainBiome: (y['terrainBiome'] as String?) == null
           ? null
           : TerrainBiome.values.byName(y['terrainBiome'] as String),
+      massBattleWaveCount: (y['massBattleWaveCount'] as num?)?.toInt(),
+      massBattleEnemyCounts: (y['massBattleEnemyCounts'] as List?)
+          ?.map((e) => (e as num).toInt())
+          .toList(growable: false),
     );
   }
 

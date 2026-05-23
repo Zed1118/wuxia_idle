@@ -2311,3 +2311,310 @@ stages:
     difficultyMultiplier: 6.5
     biome: frontier
     terrainBiome: rooftop
+
+  # ============================================================================
+  # 1.0 P3.2 §12.3 群战守城 stages(GDD v1.13,2026-05-24)
+  # 5 关 yiLiu 3 + jueDing 2 平行支线(不接管 wuSheng 突破链)
+  # wave-based 守城:玩家 3 vs 敌 5-7「以少胜多」(沿 inner_demon mirror 体例)
+  # unlock 链:stage_06_05 victory → mass_battle_01 → 02 → 03 → 04 → 05
+  # 默认阵型:01 yanXing(攻势启)/ 02 baGua(守势教)/ 03 fengShi(突击教)/
+  #           04 baGua(jueDing 沉着守)/ 05 fengShi(jueDing 破城)
+  # enemyTeam 配 3 模板(三流派覆盖),service 层 buildWavesFor 循环复制扩展到
+  # enemy_counts[w] 个填 wave;wave 间数值不渐强(Batch 2.5 R5.1 实测后再决议)
+  # numbers.yaml mass_battle 段配 formations / wave_intermission / stage_formations /
+  # unlock_triggers · skill 复用 LightFoot 18 招 lightfoot pool(2 阶 × 3 school × 3 type)
+  # ============================================================================
+
+  # === stage_mass_battle_01 · 守村抗匪(山贼围攻 · yiLiu·qiMeng wave=2[5,5])===
+  - id: stage_mass_battle_01
+    name: 守村抗匪
+    stageType: massBattle
+    narrativeOpeningId: stage_mass_battle_01_opening
+    narrativeVictoryId: stage_mass_battle_01_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_massbattle_cunfei_a
+        name: 山贼头目
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 7000
+        baseAttack: 720
+        baseSpeed: 175
+        skillIds:
+          - skill_lightfoot_yiliu_gangmeng_basic
+          - skill_lightfoot_yiliu_gangmeng_skill
+        iconPath: assets/enemies/massbattle_cunfei_a.png
+      - id: enemy_yiLiu_massbattle_cunfei_b
+        name: 山贼弓手
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 6700
+        baseAttack: 750
+        baseSpeed: 190
+        skillIds:
+          - skill_lightfoot_yiliu_lingqiao_basic
+        iconPath: assets/enemies/massbattle_cunfei_b.png
+      - id: enemy_yiLiu_massbattle_cunfei_c
+        name: 山贼刀客
+        realmTier: yiLiu
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 6800
+        baseAttack: 730
+        baseSpeed: 170
+        skillIds:
+          - skill_lightfoot_yiliu_yinrou_basic
+        iconPath: assets/enemies/massbattle_cunfei_c.png
+    isBossStage: false
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [6, 9]
+        dropChance: 1.0
+    baseExpReward: 4800
+    difficultyMultiplier: 6.5
+    biome: mountainPath
+    massBattleWaveCount: 2
+    massBattleEnemyCounts: [5, 5]
+
+  # === stage_mass_battle_02 · 守镇御寇(江湖匪众 · yiLiu·jingTong wave=3[5,6,6])===
+  - id: stage_mass_battle_02
+    name: 守镇御寇
+    stageType: massBattle
+    prevStageId: stage_mass_battle_01
+    narrativeOpeningId: stage_mass_battle_02_opening
+    narrativeVictoryId: stage_mass_battle_02_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_massbattle_zhenkou_a
+        name: 匪众头领
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 9000
+        baseAttack: 900
+        baseSpeed: 185
+        skillIds:
+          - skill_lightfoot_yiliu_gangmeng_basic
+          - skill_lightfoot_yiliu_gangmeng_skill
+          - skill_lightfoot_yiliu_gangmeng_ult
+        iconPath: assets/enemies/massbattle_zhenkou_a.png
+      - id: enemy_yiLiu_massbattle_zhenkou_b
+        name: 匪众游侠
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 8500
+        baseAttack: 920
+        baseSpeed: 205
+        skillIds:
+          - skill_lightfoot_yiliu_lingqiao_basic
+          - skill_lightfoot_yiliu_lingqiao_skill
+        iconPath: assets/enemies/massbattle_zhenkou_b.png
+      - id: enemy_yiLiu_massbattle_zhenkou_c
+        name: 匪众刺客
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 8700
+        baseAttack: 880
+        baseSpeed: 195
+        skillIds:
+          - skill_lightfoot_yiliu_yinrou_basic
+          - skill_lightfoot_yiliu_yinrou_skill
+        iconPath: assets/enemies/massbattle_zhenkou_c.png
+    isBossStage: false
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [7, 10]
+        dropChance: 1.0
+    baseExpReward: 5800
+    difficultyMultiplier: 7.0
+    biome: cityWall
+    massBattleWaveCount: 3
+    massBattleEnemyCounts: [5, 6, 6]
+
+  # === stage_mass_battle_03 · 守县拒敌(他派偷袭 · yiLiu·dengFeng wave=3[6,6,7])===
+  - id: stage_mass_battle_03
+    name: 守县拒敌
+    stageType: massBattle
+    prevStageId: stage_mass_battle_02
+    narrativeOpeningId: stage_mass_battle_03_opening
+    narrativeVictoryId: stage_mass_battle_03_victory
+    requiredRealm: yiLiu
+    enemyTeam:
+      - id: enemy_yiLiu_massbattle_xianjie_a
+        name: 他派宗主
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: lingQiao
+        baseHp: 10800
+        baseAttack: 1050
+        baseSpeed: 215
+        skillIds:
+          - skill_lightfoot_yiliu_lingqiao_basic
+          - skill_lightfoot_yiliu_lingqiao_skill
+          - skill_lightfoot_yiliu_lingqiao_ult
+        iconPath: assets/enemies/massbattle_xianjie_a.png
+      - id: enemy_yiLiu_massbattle_xianjie_b
+        name: 他派护法
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: yinRou
+        baseHp: 10500
+        baseAttack: 1080
+        baseSpeed: 200
+        skillIds:
+          - skill_lightfoot_yiliu_yinrou_basic
+          - skill_lightfoot_yiliu_yinrou_skill
+          - skill_lightfoot_yiliu_yinrou_ult
+        iconPath: assets/enemies/massbattle_xianjie_b.png
+      - id: enemy_yiLiu_massbattle_xianjie_c
+        name: 他派门徒
+        realmTier: yiLiu
+        realmLayer: dengFeng
+        school: gangMeng
+        baseHp: 11000
+        baseAttack: 1020
+        baseSpeed: 195
+        skillIds:
+          - skill_lightfoot_yiliu_gangmeng_basic
+          - skill_lightfoot_yiliu_gangmeng_skill
+          - skill_lightfoot_yiliu_gangmeng_ult
+        iconPath: assets/enemies/massbattle_xianjie_c.png
+    isBossStage: false
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [8, 11]
+        dropChance: 1.0
+    baseExpReward: 6800
+    difficultyMultiplier: 7.5
+    biome: cityWall
+    massBattleWaveCount: 3
+    massBattleEnemyCounts: [6, 6, 7]
+
+  # === stage_mass_battle_04 · 守关御胡(边镇胡骑 · jueDing·qiMeng wave=4[5,6,6,7])===
+  - id: stage_mass_battle_04
+    name: 守关御胡
+    stageType: massBattle
+    prevStageId: stage_mass_battle_03
+    narrativeOpeningId: stage_mass_battle_04_opening
+    narrativeVictoryId: stage_mass_battle_04_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_massbattle_guanqi_a
+        name: 胡骑万夫
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: lingQiao
+        baseHp: 14000
+        baseAttack: 1180
+        baseSpeed: 220
+        skillIds:
+          - skill_lightfoot_jueding_lingqiao_basic
+          - skill_lightfoot_jueding_lingqiao_skill
+        iconPath: assets/enemies/massbattle_guanqi_a.png
+      - id: enemy_jueDing_massbattle_guanqi_b
+        name: 胡骑游骑
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: yinRou
+        baseHp: 13700
+        baseAttack: 1150
+        baseSpeed: 205
+        skillIds:
+          - skill_lightfoot_jueding_yinrou_basic
+          - skill_lightfoot_jueding_yinrou_skill
+        iconPath: assets/enemies/massbattle_guanqi_b.png
+      - id: enemy_jueDing_massbattle_guanqi_c
+        name: 胡骑铁卫
+        realmTier: jueDing
+        realmLayer: qiMeng
+        school: gangMeng
+        baseHp: 14200
+        baseAttack: 1200
+        baseSpeed: 200
+        skillIds:
+          - skill_lightfoot_jueding_gangmeng_basic
+          - skill_lightfoot_jueding_gangmeng_skill
+        iconPath: assets/enemies/massbattle_guanqi_c.png
+    isBossStage: false
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [10, 13]
+        dropChance: 1.0
+    baseExpReward: 7800
+    difficultyMultiplier: 8.0
+    biome: frontier
+    massBattleWaveCount: 4
+    massBattleEnemyCounts: [5, 6, 6, 7]
+
+  # === stage_mass_battle_05 · 守城却敌(西凉残部 · jueDing·jingTong wave=4[6,6,7,7] BOSS)===
+  - id: stage_mass_battle_05
+    name: 守城却敌
+    stageType: massBattle
+    prevStageId: stage_mass_battle_04
+    narrativeOpeningId: stage_mass_battle_05_opening
+    narrativeVictoryId: stage_mass_battle_05_victory
+    requiredRealm: jueDing
+    enemyTeam:
+      - id: enemy_jueDing_massbattle_canbu_a
+        name: 西凉残将
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 17000
+        baseAttack: 1400
+        baseSpeed: 225
+        skillIds:
+          - skill_lightfoot_jueding_gangmeng_basic
+          - skill_lightfoot_jueding_gangmeng_skill
+          - skill_lightfoot_jueding_gangmeng_ult
+        iconPath: assets/enemies/massbattle_canbu_a.png
+      - id: enemy_jueDing_massbattle_canbu_b
+        name: 西凉狂骑
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 16500
+        baseAttack: 1430
+        baseSpeed: 235
+        skillIds:
+          - skill_lightfoot_jueding_lingqiao_basic
+          - skill_lightfoot_jueding_lingqiao_skill
+          - skill_lightfoot_jueding_lingqiao_ult
+        iconPath: assets/enemies/massbattle_canbu_b.png
+      - id: enemy_jueDing_massbattle_canbu_c
+        name: 西凉刺客
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 16800
+        baseAttack: 1380
+        baseSpeed: 220
+        skillIds:
+          - skill_lightfoot_jueding_yinrou_basic
+          - skill_lightfoot_jueding_yinrou_skill
+          - skill_lightfoot_jueding_yinrou_ult
+        iconPath: assets/enemies/massbattle_canbu_c.png
+    isBossStage: true
+    dropEquipmentDefIds: []
+    dropItemDefIds: []
+    dropTable:
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [12, 15]
+        dropChance: 1.0
+    baseExpReward: 9500
+    difficultyMultiplier: 8.5
+    biome: frontier
+    massBattleWaveCount: 4
+    massBattleEnemyCounts: [6, 6, 7, 7]

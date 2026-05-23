@@ -132,6 +132,7 @@ void main() {
           internalForce: wuShengX.internalForceMax,
           internalForceMax: wuShengX.internalForceMax,
         );
+        character.id = -700 - slotIndex;
         character.school = school;
         final mainTech = Technique.create(
           defId: mainTechDef.id,
