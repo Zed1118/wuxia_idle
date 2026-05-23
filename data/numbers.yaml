@@ -1444,5 +1444,29 @@ mass_battle:
   residual_hp_threshold_pct: 0.30
 
 # =============================================================================
+# 12. P2.3 飞升 + 遗物 transfer (GDD §7.1 · spec p2_3_ascension_spec_2026-05-24)
+# =============================================================================
+# 飞升 eligibility 3 条件并存(Q4d 拍板):
+#   ① stage_inner_demon_07 cleared(心魔末关)
+#   ② stage_06_05 cleared(Ch6 末关)
+#   ③ founder.realm == wuSheng·dengFeng(顶级境界)
+# 任一未满足 → LineagePanel 飞升按钮 disabled · tooltip 显未达条件清单。
+#
+# transfer 行为 4 字段语义(inheritance.heritage_items v1.5 决议,本批 lib 端消费):
+#   - transfer_trigger=ascend_to_wusheng:仅本批触发(AscendService.performAscend)
+#   - multi_disciple_allocation=player_pick:AscensionScreen 下拉选 disciple
+#   - stack_across_generations=false:Demo 仅一代飞升 · enforce in performAscend
+#   - conflict_slot_resolution=auto_swap:Demo 大弟子飞升前空槽 · YAGNI 不实装 swap
+
+ascension:
+  unlock_triggers:                   # 3 条件并存 · AscendService.computeEligibility 消费
+    cleared_stages:                  # 双关 cleared 拦截
+      - stage_inner_demon_07
+      - stage_06_05
+    required_realm:                  # 境界拦截 founder == wuSheng·dengFeng
+      tier: wuSheng
+      layer: dengFeng
+
+# =============================================================================
 # 文件结束
 # =============================================================================
