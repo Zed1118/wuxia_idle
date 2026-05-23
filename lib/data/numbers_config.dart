@@ -70,6 +70,19 @@ class NumbersConfig {
   /// 条件扩展(eg. founder.realm >= wuSheng)。
   final FounderAncestorBuff founderAncestorBuff;
 
+  /// 师承遗物 transfer 规则(CLAUDE.md §12.1 #10 v1.5 决议 4 字段 + 2 数量字段)。
+  /// numbers.yaml `inheritance.heritage_items`,P2.3 飞升 lib 端真消费。
+  /// AscendService.performAscend 走 [piecesPerGenerationMin..Max] 校验 +
+  /// [multiDiscipleAllocation]=player_pick 走 UI 玩家分配 + [stackAcrossGenerations]=false
+  /// enforce Demo 一代飞升不累代叠。
+  final HeritageItems heritageItems;
+
+  /// 飞升 eligibility 触发器(spec p2_3_ascension_spec_2026-05-24 Q4d)。
+  /// numbers.yaml `ascension.unlock_triggers`,3 条件并存:cleared_stages 2 关 +
+  /// required_realm 境界。AscendService.computeEligibility 消费。
+  /// fixture 不带 `ascension` 段时走 [AscensionConfig.empty](canAscend 永 false)。
+  final AscensionConfig ascension;
+
   /// 散功代价：原主修心法修炼度保留比例（numbers.yaml `techniques.dispersion.cultivation_penalty`，
   /// GDD §4.3 = 0.5）。
   final double dispersionCultivationPenalty;
@@ -152,6 +165,8 @@ class NumbersConfig {
     required this.resonanceInheritanceRetention,
     required this.lineageInternalForceMaxBonus,
     required this.founderAncestorBuff,
+    required this.heritageItems,
+    required this.ascension,
     required this.dispersionCultivationPenalty,
     required this.dispersionInternalForcePenalty,
     required this.defeatBossInternalForcePenalty,
@@ -214,6 +229,14 @@ class NumbersConfig {
         ((y['inheritance'] as Map<String, dynamic>?)
                 ?['founder_ancestor_buff'] as Map<String, dynamic>?) ??
             const {},
+      ),
+      heritageItems: HeritageItems.fromYaml(
+        ((y['inheritance'] as Map<String, dynamic>?)
+                ?['heritage_items'] as Map<String, dynamic>?) ??
+            const {},
+      ),
+      ascension: AscensionConfig.fromYaml(
+        y['ascension'] as Map<String, dynamic>?,
       ),
       dispersionCultivationPenalty: ((techniques['dispersion']
               as Map<String, dynamic>)['cultivation_penalty'] as num)
@@ -393,6 +416,119 @@ class FounderAncestorBuff {
   /// buff 是否处于激活态(P1.1 简化:enabledWhenAlive 即激活)。
   /// Phase 5+ 飞升实装时本 getter 扩展为「founder 飞升退出 active 后才 true」。
   bool get isActive => enabledWhenAlive;
+}
+
+/// 师承遗物 transfer 规则配置(CLAUDE.md §12.1 #10 v1.5 决议)。
+/// numbers.yaml `inheritance.heritage_items`,P2.3 飞升 lib 端真消费 6 字段。
+///
+/// 4 规则字段(P2.3 spec Batch 3.1 落地):
+///   - [transferTrigger] = "ascend_to_wusheng":仅本批触发(non-trigger 路径不传)
+///   - [multiDiscipleAllocation] = "player_pick":玩家逐件选 disciple(UI 下拉)
+///   - [stackAcrossGenerations] = false:Demo 一代飞升 · 不累代叠加(若 disciple 已戴
+///     遗物再飞升,旧遗物不再视为遗物 / Demo 不实装多代,P5+ 再决定)
+///   - [conflictSlotResolution] = "auto_swap":同部位冲突自动 swap(Demo 大弟子飞升前
+///     装备空槽,YAGNI 不实装 swap · 字段锚定为 P5+ 路径预留)
+///
+/// 2 数量字段:
+///   - [piecesPerGenerationMin] = 1 / [piecesPerGenerationMax] = 2:每代传 1-2 件
+class HeritageItems {
+  final int piecesPerGenerationMin;
+  final int piecesPerGenerationMax;
+  final String transferTrigger;
+  final String multiDiscipleAllocation;
+  final bool stackAcrossGenerations;
+  final String conflictSlotResolution;
+
+  const HeritageItems({
+    required this.piecesPerGenerationMin,
+    required this.piecesPerGenerationMax,
+    required this.transferTrigger,
+    required this.multiDiscipleAllocation,
+    required this.stackAcrossGenerations,
+    required this.conflictSlotResolution,
+  });
+
+  /// 默认值兜底(fixture 不带 `inheritance.heritage_items` 段时)。
+  /// 默认 [1,2] 范围 + v1.5 决议 4 字段值,sane fallback。
+  static const HeritageItems defaults = HeritageItems(
+    piecesPerGenerationMin: 1,
+    piecesPerGenerationMax: 2,
+    transferTrigger: 'ascend_to_wusheng',
+    multiDiscipleAllocation: 'player_pick',
+    stackAcrossGenerations: false,
+    conflictSlotResolution: 'auto_swap',
+  );
+
+  factory HeritageItems.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return defaults;
+    return HeritageItems(
+      piecesPerGenerationMin:
+          (y['pieces_per_generation_min'] as num?)?.toInt() ?? 1,
+      piecesPerGenerationMax:
+          (y['pieces_per_generation_max'] as num?)?.toInt() ?? 2,
+      transferTrigger:
+          (y['transfer_trigger'] as String?) ?? 'ascend_to_wusheng',
+      multiDiscipleAllocation:
+          (y['multi_disciple_allocation'] as String?) ?? 'player_pick',
+      stackAcrossGenerations:
+          (y['stack_across_generations'] as bool?) ?? false,
+      conflictSlotResolution:
+          (y['conflict_slot_resolution'] as String?) ?? 'auto_swap',
+    );
+  }
+}
+
+/// 飞升 eligibility 配置(spec p2_3_ascension_spec_2026-05-24 Q4d)。
+/// numbers.yaml `ascension.unlock_triggers`,P2.3 飞升 lib 端真消费 3 条件并存。
+///
+/// fixture 不带 `ascension` 段(test yaml / 老存档迁移)时走 [AscensionConfig.empty]:
+/// [clearedStagesRequired] 空 + [requiredRealmTier]/[requiredRealmLayer] null
+/// → AscendService.computeEligibility 永返 canAscend=false(安全兜底)。
+class AscensionConfig {
+  /// 飞升前必须 cleared 的 stage_id 清单(双关:`stage_inner_demon_07` + `stage_06_05`)。
+  final List<String> clearedStagesRequired;
+
+  /// 飞升前 founder 必须达到的境界 tier(Q4d 拍板 wuSheng)。null = 无境界拦截。
+  final RealmTier? requiredRealmTier;
+
+  /// 飞升前 founder 必须达到的境界 layer(Q4d 拍板 dengFeng)。null = 无 layer 拦截。
+  final RealmLayer? requiredRealmLayer;
+
+  const AscensionConfig({
+    required this.clearedStagesRequired,
+    required this.requiredRealmTier,
+    required this.requiredRealmLayer,
+  });
+
+  /// 空配置兜底(fixture / test yaml 不带 `ascension` 段)。
+  /// canAscend 永 false,不破现有 fixture 与 e2e test。
+  static const AscensionConfig empty = AscensionConfig(
+    clearedStagesRequired: [],
+    requiredRealmTier: null,
+    requiredRealmLayer: null,
+  );
+
+  factory AscensionConfig.fromYaml(Map<String, dynamic>? y) {
+    if (y == null) return empty;
+    final triggers = y['unlock_triggers'] as Map<String, dynamic>?;
+    if (triggers == null) return empty;
+    final stages = (triggers['cleared_stages'] as List?)
+            ?.map((e) => e as String)
+            .toList(growable: false) ??
+        const [];
+    final realm = triggers['required_realm'] as Map<String, dynamic>?;
+    final tier = realm == null
+        ? null
+        : RealmTier.values.byName(realm['tier'] as String);
+    final layer = realm == null
+        ? null
+        : RealmLayer.values.byName(realm['layer'] as String);
+    return AscensionConfig(
+      clearedStagesRequired: List.unmodifiable(stages),
+      requiredRealmTier: tier,
+      requiredRealmLayer: layer,
+    );
+  }
 }
 
 /// 强化系统配置（numbers.yaml `equipment.enhancement` + `equipment.xinxue_jiejing`，
