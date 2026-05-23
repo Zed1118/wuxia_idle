@@ -779,3 +779,220 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: joint_skill_resonance
+
+  # ───────────────────────────────────────────
+  # 轻功对决专属招(P3.1.B · 2026-05-24)18 招
+  # ───────────────────────────────────────────
+  # 不绑 21 心法生态(parentTechniqueDefId: null,沿 joint_skill 体例);
+  # 沿 menpai / jianghu 阶倍率梯度:
+  #   yiLiu 阶 cap=3000:basic 500 / skill 2400 / ult 3000
+  #   jueDing 阶 cap=4000:basic 500 / skill 3200 / ult 4000
+  # 命名:skill_lightfoot_<tier>_<school>_<type>(tier ∈ {yiliu, jueding})。
+  # 招名取轻功语义(踏波 / 追风 / 听风 / 长虹 / 蜻蜓点水 / 鬼影迷踪 ...),
+  # visualEffect 占位 lightfoot_<id_suffix>,Phase 5 美术阶段绑动画。
+  # stages.yaml stage_light_foot_01..05 enemyTeam.skillIds 切换到本池。
+
+  # ─── 一流 · 刚猛 · 轻功 ───
+  - id: skill_lightfoot_yiliu_gangmeng_basic
+    name: 踏波
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_tread_wave
+
+  - id: skill_lightfoot_yiliu_gangmeng_skill
+    name: 飞檐撞
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2400
+    internalForceCost: 220
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_eaves_smash
+
+  - id: skill_lightfoot_yiliu_gangmeng_ult
+    name: 巨石压顶
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 3000
+    internalForceCost: 620
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_boulder_crush
+
+  # ─── 一流 · 灵巧 · 轻功 ───
+  - id: skill_lightfoot_yiliu_lingqiao_basic
+    name: 追风
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_chase_wind
+
+  - id: skill_lightfoot_yiliu_lingqiao_skill
+    name: 凌虚步
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2400
+    internalForceCost: 220
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_void_step
+
+  - id: skill_lightfoot_yiliu_lingqiao_ult
+    name: 飞燕惊鸿
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 3000
+    internalForceCost: 620
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_swallow_strike
+
+  # ─── 一流 · 阴柔 · 轻功 ───
+  - id: skill_lightfoot_yiliu_yinrou_basic
+    name: 听风
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_listen_wind
+
+  - id: skill_lightfoot_yiliu_yinrou_skill
+    name: 暗影涉
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2400
+    internalForceCost: 220
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_shadow_wade
+
+  - id: skill_lightfoot_yiliu_yinrou_ult
+    name: 幽冥归
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 3000
+    internalForceCost: 620
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_netherworld
+
+  # ─── 绝顶 · 刚猛 · 轻功 ───
+  - id: skill_lightfoot_jueding_gangmeng_basic
+    name: 裂石步
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_rock_split
+
+  - id: skill_lightfoot_jueding_gangmeng_skill
+    name: 撼山扑
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3200
+    internalForceCost: 280
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_mountain_pounce
+
+  - id: skill_lightfoot_jueding_gangmeng_ult
+    name: 万钧落
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 4000
+    internalForceCost: 800
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_ten_thousand_jin
+
+  # ─── 绝顶 · 灵巧 · 轻功 ───
+  - id: skill_lightfoot_jueding_lingqiao_basic
+    name: 长虹贯日
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_rainbow_pierce
+
+  - id: skill_lightfoot_jueding_lingqiao_skill
+    name: 蜻蜓点水
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3200
+    internalForceCost: 280
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_dragonfly_skim
+
+  - id: skill_lightfoot_jueding_lingqiao_ult
+    name: 九霄云外
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 4000
+    internalForceCost: 800
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_beyond_clouds
+
+  # ─── 绝顶 · 阴柔 · 轻功 ───
+  - id: skill_lightfoot_jueding_yinrou_basic
+    name: 横云断
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_cloud_sever
+
+  - id: skill_lightfoot_jueding_yinrou_skill
+    name: 鬼影迷踪
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3200
+    internalForceCost: 280
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_ghost_track
+
+  - id: skill_lightfoot_jueding_yinrou_ult
+    name: 万籁俱寂
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 4000
+    internalForceCost: 800
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: null
+    visualEffect: lightfoot_silent_void
+
