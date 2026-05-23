@@ -125,8 +125,15 @@ extension EquipmentResonance on Equipment {
 
   /// 师承传承时调用：保留 [NumbersConfig.resonanceInheritanceRetention]
   /// (=0.7) 的 battleCount，标记为遗物。
+  ///
+  /// **Isar fixed-length list 兼容**(memory `feedback_isar_pitfalls`):从 Isar
+  /// 读取的实例 `previousOwnerCharacterIds` 是 fixed-length,不能 `.add()`。
+  /// 必须 reassign 新 list(`[...old, new]`)而非 mutate(P2.3 飞升暴露的 bug)。
   void inheritFrom(int previousOwnerId, NumbersConfig n) {
-    previousOwnerCharacterIds.add(previousOwnerId);
+    previousOwnerCharacterIds = [
+      ...previousOwnerCharacterIds,
+      previousOwnerId,
+    ];
     battleCount = (battleCount * n.resonanceInheritanceRetention).toInt();
     isLineageHeritage = true;
   }

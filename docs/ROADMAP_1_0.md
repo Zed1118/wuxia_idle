@@ -120,10 +120,18 @@
 
 **Batch 2.1-2.4 原段**(2026-05-22 夜 ✅):7 关 `stage_inner_demon_01..07` 拦截 wuSheng 7 层突破(qiMeng → ruMen → shuLian → jingTong → yuanShu → huaJing → dengFeng → 飞升前置)+ **镜像战斗**(`InnerDemonService.buildMirrorEnemyTeam` 深拷贝 playerTeam BattleCharacter list ×(1+mirror_buff 0.10→0.20)clamp §5.4 cap 20k/15k/2k · StageBattleSetup.buildTeams innerDemon 分支)+ **unlock 拦截 hook**(`isLayerLocked` 接 advancement_service.applyExperience · EXP 留账 §5.1 · 3 callers seclusion/tower/mainline wire production hook 真生效)+ **失败惩罚**(散功 ×0.5 阉割版:内力 ×0.85 / 主修修炼度 ×0.9 + 「心魔余毒」debuff 闭关 8h 清 · 数值落 numbers.yaml `inner_demon` 段 46 行)+ **narrative ~3,900 字**(chapter ~720 + 7 opening ~280×7 + 7 victory ~150×7 + 7 defeat ~210×7 · Tier wuSheng 风格梯度词「湛然/寂照/圆融/化机」+ 7 主题 贪/嗔/痴/慢/疑/空/真 · 第二人称「你」(stage)+ 第三人称「李寒」(chapter)· 不破师父三句已完整 + 不再现物理遗物)+ **UI 占位**(InnerDemonScreen ConsumerWidget · InnerDemonBreakthroughBlocker StatelessWidget · 集成 character_panel/main_menu 路由留 Batch 2.5+)+ **测试 25 个**(R1 14 hook unit/integration + R2-R3 7 buildMirrorEnemyTeam 数值/slot/§5.4 cap + R4 4 narrative loader)+ **1217 pass / 0 analyze ✅**。**7 commit `e666e4c → a0cbb29` 全 push origin/main**(Phase 0 reality check + Phase 1 spec 148 行 + Batch 2.1 schema + Batch 2.2.A vertical slice + Batch 2.2.B 镜像战斗 + Batch 2.3 narrative + UI + 2 PROGRESS sync)。**spec 估 ~7-8h opus xhigh · 实际 ~4h · 精度 0.5×**(技术 + narrative 混合 batch 整体快于估)。**调整记录**:InnerDemonStrategy implements BattleStrategy 不建(YAGNI)+ inner_demon_07 双镜像单副本 +20% 占位(真双镜像 6v3/连战 留 Batch 2.5 R5)+ chapter_inner_demon 运行时不 load(纯叙事 doc)+ UI widget reactive 集成路由留 Batch 2.5+。**数值红线 §5.4/§5.3/§6 公式完全不动** + **Ch1-Ch6 主线 + Demo 49 层 EXP 自动升层路径完全不变**(`isLayerLocked` 严格 wuSheng 短路 + qiMeng 跨 tier 起步层放行)。详 spec `docs/handoff/p2_x_inner_demon_spec_2026-05-22.md` + Phase 1 closeout `p2_x_inner_demon_phase1_closeout_2026-05-22.md`。Batch 2.5 R5 跨阶红线压测 + UI reactive 集成 + inner_demon_07 双镜像决议另起。
 
-### P2.3 A1 飞升 + 遗物 transfer E.2/E.3
-- E.2 武圣飞升 + 遗物 transfer:全部跨 cultivation / inheritance / character / equipment / save_data 模块,需写 transfer 流程 + ascendToWusheng trigger + 遗物逐件分配 UI(opus xhigh ~4h+)
-- E.3 multi_disciple_allocation player_pick UI(sonnet ~2h)
-- 前置依赖:第二条主线有 wushen 体验路径
+### P2.3 §7.1 飞升 + 遗物 transfer
+
+**2026-05-24 P2.3 Batch 3.1-3.3 全闭环 ✅**(主 cwd · 4 commit `eaa3e00 → 本` 推 main · 1283 pass / 1 skip / 0 analyze · 实测 ~2h30min opus xhigh · spec 估 ~4h · 精度 0.63×):
+- **方向 B + Q1a/Q2c/Q3b/Q4d 拍板**:Q1a `isFounder=true + isActive=false` 出阵复用现字段不加 isAscended / Q2c lineageRole 不真切传位 P5+ 再切语义 / Q3b 玩家手动选 1-2 件 player_pick 真消费 / Q4d 3 条件并存(`stage_inner_demon_07 cleared + wuSheng·dengFeng + stage_06_05 cleared`)
+- **Batch 3.1 schema + Service**(~50min):`data/numbers.yaml` 末加 `ascension.unlock_triggers` 段 + `NumbersConfig` 扩 `HeritageItems`(6 字段消费 v1.5 决议 4 规则字段 transfer_trigger/multi_disciple_allocation/stack_across_generations/conflict_slot_resolution + 2 数量字段)+ `AscensionConfig` 解析 unlock_triggers · `AscendService` 4 method(`computeEligibility` 5 子条件 + missingReasons / `listHeritageCandidates(founderId)` / `listDiscipleTargets` / `performAscend(selections)` caller 持锁 writeTxn)+ 4 Riverpod providers
+- **Batch 3.2 UI**(~55min):`AscensionScreen` 三段式 ConsumerStatefulWidget 401 行(仪式横幅 + 装备多选 1-2 件 + DropdownButton 改 disciple + 确认 dialog → performAscend → snackbar)+ `LineagePanelScreen` 末加 `_AscensionSection`(eligibility 5 子条件聚合 → 「步入飞升」按钮 enable/disable + tooltip 显 missingReasons)+ UiStrings 15 段
+- **Batch 3.3 R5 + closeout**(~30min):R5.1-5.5 5 族 14 测(e2e 1 + eligibility 5 + player_pick 3 + 边界 4 + §5.4 红线 1)+ closeout 65 行 + GDD v1.14 + CLAUDE.md §12.2 #10 「P2.3 已实装 ✅」+ 本段 + PROGRESS 顶段
+- **生产 bug 顺手修**:`Equipment.inheritFrom` 从 Isar 读取实例的 `previousOwnerCharacterIds: List<int>` 是 fixed-length,`.add()` 抛 `Cannot add to a fixed-length list`,改 reassign `[...old, new]`(memory `feedback_isar_pitfalls`)
+- **founder_buff_service 0 代码改**:飞升后 founder isActive=false 自然让 `computeBuffActive` 返 false · 无需扩 trigger
+- **挂账留下批**:narrative ~600 字(spec §7 · `data/narratives/ascension/` 4 yaml)+ P5+ 多代飞升(`stack_across_generations=false` enforce + `conflict_slot_resolution=auto_swap` 实装)+ P5+ 真传位语义(大弟子接管 founder 身份)
+- **数值红线 §5.4/§5.3/§5.5/§6 公式完全不动** · Character/Equipment Isar schema 0 改 · BattleStrategy 接口不动 · 1.0 P2 主线 3 子阶段(P2.1+P2.2 心魔+P2.3 飞升)全闭环 → **1.0 P2 ~87%**
+- 详 `docs/handoff/p2_3_ascension_closeout_2026-05-24.md` + `docs/spec/p2_3_ascension_spec_2026-05-24.md`
 
 ---
 
