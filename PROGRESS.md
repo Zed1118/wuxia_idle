@@ -13,8 +13,7 @@
 - **E 批起床 handoff**(`f7ced04`):40 行 · 3 类自主决策 + 起床 first-read 6 项 + memory sink 2 项追加
 - **F+G 批 P5+ 多代叙事 + widget test 双 UI 覆盖 + ROADMAP 对齐**(`504dff3`+`63c7e07`):`ascension_lineage_chant.yaml`(~200 字 Tier wuSheng 4 风格词均匀)+ 多代 chip widget test 4 个(character_panel 2 + LineagePanel 2)+ ROADMAP P2.3 段对齐 P5+ ✅
 - **H 批 narrative UI 接入 + VC-P5+ fixture**(`f70f990`):AscendService.isLineageContinuation() + R5.10 2 测(测族 20→22)+ Phase2TestMenu 加 VC-P5+ 按钮 + seedVisualCheckP5Plus(B.1 fixture self-check 唯一未就绪项 → ✅)
-- **I 批终验**(`e2dae9a`):全仓 1299 pass + phase2_test_menu_test 13→14 修
-- **J+K+L 批 doc state 对齐 + narrative test + 终验**(`3302ccd` → `12c8fc4`):GDD v1.16 + ROADMAP H/I 补 + ascension_lineage_chant load + Tier 风格词均匀测 + 全仓 1300 终验
+- **I→L 批终验 + doc state 对齐**(`e2dae9a` → `0a34c29`):phase2_test_menu_test 13→14 修 + GDD v1.16 + ROADMAP H/I 补 + ascension_lineage_chant load + Tier 风格词均匀测 + 全仓 1300 pass
 - **上波 P5+ ④+⑤**(2026-05-24 · 4 commit · 详 `p5_lineage_full_closeout`):多代飞升 + 真传位完整链
 
 **8h overnight v2 实测** ⭐:12 批 ~2h15min opus high · 7 doc 全 ≤上限(audit/phase0 两次主动砍) · code +200 行 / +7 测 / narrative 1 / memory 2 · 下波:① P1.2 拍板→spec→实装 ~7-8h xhigh ② Codex Pen 派单(fixture ✅)③ MJ 10 张 ④ P3.3/P3.4 多日
