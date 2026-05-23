@@ -598,4 +598,44 @@ void main() {
       // §Q4 防回退:未来 derived_stats 改算法(如改 by prev len)能立即捕获回归。
     });
   });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // R5.9 listDiscipleTargets 排除已 promoted(`isFounder=true`)防循环传位
+  // ───────────────────────────────────────────────────────────────────────
+
+  group('R5.9 listDiscipleTargets 排除已 promoted', () {
+    test('gen0 baseline:无 promoted · 全 disciple 都在 target list', () async {
+      // 初始 fixture(Phase2SeedService.seedMasterDisciple)= 祖师 1 + 大弟子 2 +
+      // 二弟子 3 全 active · 无 promoted → listDiscipleTargets = [d2, d3]
+      final svc = makeService();
+      final targets = await svc.listDiscipleTargets();
+      final ids = targets.map((c) => c.id).toSet();
+      expect(ids, {2, 3},
+          reason: 'gen0 无 promoted · 全 disciple(且 active + alive)都在 target');
+    });
+
+    test('gen1 promote=2 后 · d2 排除(已接任 isFounder=true) · d3 仍在', () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+      final svc = makeService();
+
+      // gen1: founder=1 → promoted=2 传 weapon · d2.isFounder=true
+      final founder = (await isar.characters.get(1))!;
+      final weapon = founder.equippedWeaponId!;
+      await isar.writeTxn(
+        () => svc.performAscend({weapon: 2}, promotedDiscipleId: 2),
+      );
+
+      // 校验 d2 已 isFounder=true(R5.6 已测,本测顺手 sanity check 防 setup 漂移)
+      expect((await isar.characters.get(2))!.isFounder, true);
+
+      // listDiscipleTargets 不再包含 d2(防循环传位 · 主断言)· d3 仍可作 next gen target
+      final targets = await svc.listDiscipleTargets();
+      final ids = targets.map((c) => c.id).toSet();
+      expect(ids.contains(2), false,
+          reason: 'gen1 promoted d2 已 isFounder=true · UI 下拉不应再列(防循环传位)');
+      expect(ids.contains(3), true,
+          reason: 'd3 仍是普通 disciple · 可作 gen2 promoted target');
+    });
+  });
 }
