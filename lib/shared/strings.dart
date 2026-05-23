@@ -648,4 +648,11 @@ class UiStrings {
       '飞升渡劫已成 · 已传 {0} 件遗物 · 你已退出江湖';
   static const String ascensionNoEquipments = '尚无装备可传';
   static const String ascensionNoDisciples = '尚无可继承弟子';
+
+  // P5+ 真传位(spec p5_lineage_full_spec §Q1+Q2 · ④+⑤ 合并 batch)
+  static const String ascensionPromotedSection = '传位于';
+  static const String ascensionPromotedHint =
+      '飞升后,此弟子接任祖师之位,统领门派 · 享祖师 buff(基础 +5% 内力上限/血量 · +2% 暴击)';
+  static const String ascensionPromotedNone = '不传位(留待来日)';
+  static const String ascensionMultiGenChip = '{0} 代传承';
 }

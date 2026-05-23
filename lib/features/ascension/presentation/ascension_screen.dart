@@ -39,6 +39,11 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
   /// 玩家分配 map(equipmentId → discipleId)。默认每件分给大弟子(disciples[0])。
   final Map<int, int> _assignments = {};
 
+  /// P5+ 真传位 disciple id(spec p5_lineage_full_spec §Q1 player_pick 体例)。
+  /// null = 不传位(P2.3 一代飞升兼容路径 · founder 退江湖但门派无人接管)。
+  /// 默认值在 build() 内 disciplesAsync 数据到达后设为 disciples.first.id(大弟子)。
+  int? _promotedDiscipleId;
+
   bool _isSubmitting = false;
 
   @override
@@ -89,15 +94,19 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
                     ),
                   );
                 }
+                // P5+ 默认大弟子接任(disciples.first · activeCharacterIds 顺序)
+                final promotedId = _promotedDiscipleId ?? disciples.first.id;
                 return _Body(
                   founder: founder,
                   disciples: disciples,
                   selectedIds: _selectedEquipmentIds,
                   assignments: _assignments,
+                  promotedDiscipleId: promotedId,
                   isSubmitting: _isSubmitting,
                   onToggle: _toggleSelection,
                   onAssign: _setAssignment,
-                  onConfirm: () => _showConfirmDialog(disciples.first.id),
+                  onPromote: _setPromotedDisciple,
+                  onConfirm: () => _showConfirmDialog(promotedId),
                   defaultDiscipleId: disciples.first.id,
                 );
               },
@@ -126,7 +135,13 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
     });
   }
 
-  Future<void> _showConfirmDialog(int defaultDiscipleId) async {
+  void _setPromotedDisciple(int? id) {
+    setState(() {
+      _promotedDiscipleId = id;
+    });
+  }
+
+  Future<void> _showConfirmDialog(int promotedDiscipleId) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -152,10 +167,10 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
       ),
     );
     if (confirmed != true) return;
-    await _performAscend();
+    await _performAscend(promotedDiscipleId: promotedDiscipleId);
   }
 
-  Future<void> _performAscend() async {
+  Future<void> _performAscend({required int promotedDiscipleId}) async {
     setState(() => _isSubmitting = true);
     try {
       final svc = ref.read(ascendServiceProvider);
@@ -164,7 +179,10 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
         throw StateError('AscendService 或 Isar 未就绪');
       }
       final result = await isar.writeTxn(
-        () => svc.performAscend(Map.of(_assignments)),
+        () => svc.performAscend(
+          Map.of(_assignments),
+          promotedDiscipleId: promotedDiscipleId,
+        ),
       );
 
       // invalidate 链:eligibility / candidates / disciples / founderBuff /
@@ -218,9 +236,11 @@ class _Body extends ConsumerWidget {
     required this.disciples,
     required this.selectedIds,
     required this.assignments,
+    required this.promotedDiscipleId,
     required this.isSubmitting,
     required this.onToggle,
     required this.onAssign,
+    required this.onPromote,
     required this.onConfirm,
     required this.defaultDiscipleId,
   });
@@ -229,9 +249,11 @@ class _Body extends ConsumerWidget {
   final List<Character> disciples;
   final List<int> selectedIds;
   final Map<int, int> assignments;
+  final int promotedDiscipleId;
   final bool isSubmitting;
   final void Function(int equipmentId, int defaultDiscipleId) onToggle;
   final void Function(int equipmentId, int discipleId) onAssign;
+  final void Function(int? id) onPromote;
   final VoidCallback onConfirm;
   final int defaultDiscipleId;
 
@@ -287,6 +309,12 @@ class _Body extends ConsumerWidget {
                   onAssign: (id) => onAssign(eq.id, id),
                 ),
               ),
+            const SizedBox(height: 20),
+            _PromotedDiscipleRow(
+              disciples: disciples,
+              promotedDiscipleId: promotedDiscipleId,
+              onPromote: onPromote,
+            ),
             const SizedBox(height: 24),
             SizedBox(
               height: 44,
@@ -496,6 +524,66 @@ class _SectionTitle extends StatelessWidget {
         color: WuxiaColors.textPrimary,
         fontSize: 14,
         fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+}
+
+/// P5+ 真传位下拉(spec p5_lineage_full_spec §Q1 player_pick · ④+⑤ 合并 batch)。
+///
+/// 玩家选 1 个 disciple 接任 founder 身份。默认 = activeCharacterIds 顺序第 1
+/// disciple(大弟子)。接任后 `disciple.isFounder=true` · founder_buff_service
+/// 自然接管(active 中找到 isFounder=true → buff 激活 · §Q5 service 0 改)。
+class _PromotedDiscipleRow extends StatelessWidget {
+  const _PromotedDiscipleRow({
+    required this.disciples,
+    required this.promotedDiscipleId,
+    required this.onPromote,
+  });
+
+  final List<Character> disciples;
+  final int promotedDiscipleId;
+  final void Function(int? id) onPromote;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: WuxiaColors.panel.withValues(alpha: 0.6),
+        border: Border.all(color: WuxiaColors.border),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionTitle(UiStrings.ascensionPromotedSection),
+          const SizedBox(height: 4),
+          const Text(
+            UiStrings.ascensionPromotedHint,
+            style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+          ),
+          const SizedBox(height: 8),
+          DropdownButton<int>(
+            value: promotedDiscipleId,
+            dropdownColor: WuxiaColors.panel,
+            isExpanded: true,
+            style: const TextStyle(
+              color: WuxiaColors.textPrimary,
+              fontSize: 13,
+            ),
+            items: [
+              for (final d in disciples)
+                DropdownMenuItem(
+                  value: d.id,
+                  child: Text(d.name),
+                ),
+            ],
+            onChanged: (id) {
+              if (id != null) onPromote(id);
+            },
+          ),
+        ],
       ),
     );
   }
