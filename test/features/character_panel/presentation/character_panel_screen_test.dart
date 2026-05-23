@@ -78,6 +78,7 @@ void main() {
     EquipmentTier tier = EquipmentTier.xunChang,
     String? defId,
     bool isLineageHeritage = false,
+    List<int>? previousOwnerCharacterIds,
   }) {
     return Equipment.create(
       defId: defId ?? 'test_eq_$id',
@@ -91,6 +92,7 @@ void main() {
       enhanceLevel: enhanceLevel,
       battleCount: battleCount,
       isLineageHeritage: isLineageHeritage,
+      previousOwnerCharacterIds: previousOwnerCharacterIds,
     )..id = id;
   }
 
@@ -507,5 +509,61 @@ void main() {
 
     expect(find.text('相生'), findsOneWidget);
     expect(find.textContaining('同流派精进'), findsOneWidget);
+  });
+
+  // ── 用例 13:P5+ 多代 chip · prev.length > 1 显「N 代传承」副行(F.2 续) ──
+
+  testWidgets('character_panel 装 heritage prev=[1,2] → 显「3 代传承」副行',
+      (tester) async {
+    final founder = mkCharacter(
+      id: 1,
+      name: '祖师爷',
+      lineageRole: LineageRole.founder,
+      weaponId: 100,
+    );
+    final weapon = mkEquipment(
+      id: 100,
+      slot: EquipmentSlot.weapon,
+      isLineageHeritage: true,
+      previousOwnerCharacterIds: [1, 2],
+    );
+
+    await pumpPanel(
+      tester,
+      character: founder,
+      equipments: {100: weapon},
+    );
+
+    // gen2 prev.length=2 → chip 副行显「3 代传承」(N = prevLen + 1)
+    expect(find.text('3 代传承'), findsOneWidget,
+        reason: 'P5+ 多代 chip · gen2 主断言');
+  });
+
+  // ── 用例 14:gen1 边界 · prev.length=1 不显 chip ─────────────────────────
+
+  testWidgets('character_panel 装 heritage prev=[1] → 不显多代 chip(gen1 边界)',
+      (tester) async {
+    final founder = mkCharacter(
+      id: 1,
+      name: '祖师爷',
+      lineageRole: LineageRole.founder,
+      weaponId: 100,
+    );
+    final weapon = mkEquipment(
+      id: 100,
+      slot: EquipmentSlot.weapon,
+      isLineageHeritage: true,
+      previousOwnerCharacterIds: [1],
+    );
+
+    await pumpPanel(
+      tester,
+      character: founder,
+      equipments: {100: weapon},
+    );
+
+    // gen1 prev.length=1 不触发 > 1 阈值 · 不应显示任何 N 代传承 chip
+    expect(find.textContaining('代传承'), findsNothing,
+        reason: 'gen1 边界 · 阈值 > 1 严守');
   });
 }
