@@ -413,8 +413,13 @@ class DefaultGroundStrategy implements BattleStrategy {
       realmMult = 1.0;
     }
 
+    // P3.1.B(2026-05-24):末端乘 attacker.attackPowerMultiplier(default=1.0)。
+    // 沿 cult/school/crit/def/realm 体例,独立维度乘项不进 base 求和。
+    // LightFootStrategy._bake 入口烘焙 terrain damage_multiplier 到本字段,
+    // 双方对等(双方 BattleCharacter 都设同值,非 lightfoot 战斗默认 1.0 无修饰)。
+    final atkPowerMult = attacker.attackPowerMultiplier;
     final raw =
-        base * cultMult * schoolMult * critMult * defMult * realmMult;
+        base * cultMult * schoolMult * critMult * defMult * realmMult * atkPowerMult;
     final mainDamage = raw.toInt();
 
     // 刚猛克阴柔附带震伤(§12.1 #7 v1.4):穿透防御不暴击,与主伤害同 tick 叠加。
@@ -432,6 +437,7 @@ class DefaultGroundStrategy implements BattleStrategy {
         ' + $eqAtk + ${skill.powerMultiplier})'
         ' * ${_fmt(cultMult)} * ${_fmt(schoolMult)} * ${_fmt(critMult)}'
         ' * ${_fmt(defMult)} * ${_fmt(realmMult)}'
+        '${atkPowerMult != 1.0 ? ' * ${_fmt(atkPowerMult)}' : ''}'
         ' = $mainDamage'
         '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
         ' [atkLv=$atkLevel,defLv=$defLevel]';

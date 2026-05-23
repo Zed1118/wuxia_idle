@@ -2040,8 +2040,8 @@ stages:
         baseAttack: 720
         baseSpeed: 175
         skillIds:
-          - skill_gangmeng_menpai_basic
-          - skill_gangmeng_menpai_skill
+          - skill_lightfoot_yiliu_gangmeng_basic
+          - skill_lightfoot_yiliu_gangmeng_skill
         iconPath: assets/enemies/lightfoot_shuikou_a.png
       - id: enemy_yiLiu_lightfoot_shuikou_b
         name: 渡口船工
@@ -2052,7 +2052,7 @@ stages:
         baseAttack: 750
         baseSpeed: 190
         skillIds:
-          - skill_lingqiao_menpai_basic
+          - skill_lightfoot_yiliu_lingqiao_basic
         iconPath: assets/enemies/lightfoot_shuikou_b.png
       - id: enemy_yiLiu_lightfoot_shuikou_c
         name: 渡口刀客
@@ -2063,7 +2063,7 @@ stages:
         baseAttack: 730
         baseSpeed: 170
         skillIds:
-          - skill_yinrou_menpai_basic
+          - skill_lightfoot_yiliu_yinrou_basic
         iconPath: assets/enemies/lightfoot_shuikou_c.png
     isBossStage: false
     dropEquipmentDefIds: []
@@ -2095,9 +2095,9 @@ stages:
         baseAttack: 900
         baseSpeed: 185
         skillIds:
-          - skill_gangmeng_menpai_basic
-          - skill_gangmeng_menpai_skill
-          - skill_gangmeng_menpai_ult
+          - skill_lightfoot_yiliu_gangmeng_basic
+          - skill_lightfoot_yiliu_gangmeng_skill
+          - skill_lightfoot_yiliu_gangmeng_ult
         iconPath: assets/enemies/lightfoot_yexun_a.png
       - id: enemy_yiLiu_lightfoot_yexun_b
         name: 飞檐捕快
@@ -2108,8 +2108,8 @@ stages:
         baseAttack: 920
         baseSpeed: 205
         skillIds:
-          - skill_lingqiao_menpai_basic
-          - skill_lingqiao_menpai_skill
+          - skill_lightfoot_yiliu_lingqiao_basic
+          - skill_lightfoot_yiliu_lingqiao_skill
         iconPath: assets/enemies/lightfoot_yexun_b.png
       - id: enemy_yiLiu_lightfoot_yexun_c
         name: 瓦上刺客
@@ -2120,8 +2120,8 @@ stages:
         baseAttack: 880
         baseSpeed: 195
         skillIds:
-          - skill_yinrou_menpai_basic
-          - skill_yinrou_menpai_skill
+          - skill_lightfoot_yiliu_yinrou_basic
+          - skill_lightfoot_yiliu_yinrou_skill
         iconPath: assets/enemies/lightfoot_yexun_c.png
     isBossStage: false
     dropEquipmentDefIds: []
@@ -2153,9 +2153,9 @@ stages:
         baseAttack: 1050
         baseSpeed: 215
         skillIds:
-          - skill_lingqiao_menpai_basic
-          - skill_lingqiao_menpai_skill
-          - skill_lingqiao_menpai_ult
+          - skill_lightfoot_yiliu_lingqiao_basic
+          - skill_lightfoot_yiliu_lingqiao_skill
+          - skill_lightfoot_yiliu_lingqiao_ult
         iconPath: assets/enemies/lightfoot_zhuke_a.png
       - id: enemy_yiLiu_lightfoot_zhuke_b
         name: 密竹刀客
@@ -2166,9 +2166,9 @@ stages:
         baseAttack: 1080
         baseSpeed: 200
         skillIds:
-          - skill_yinrou_menpai_basic
-          - skill_yinrou_menpai_skill
-          - skill_yinrou_menpai_ult
+          - skill_lightfoot_yiliu_yinrou_basic
+          - skill_lightfoot_yiliu_yinrou_skill
+          - skill_lightfoot_yiliu_yinrou_ult
         iconPath: assets/enemies/lightfoot_zhuke_b.png
       - id: enemy_yiLiu_lightfoot_zhuke_c
         name: 竹林游侠
@@ -2179,9 +2179,9 @@ stages:
         baseAttack: 1020
         baseSpeed: 195
         skillIds:
-          - skill_gangmeng_menpai_basic
-          - skill_gangmeng_menpai_skill
-          - skill_gangmeng_menpai_ult
+          - skill_lightfoot_yiliu_gangmeng_basic
+          - skill_lightfoot_yiliu_gangmeng_skill
+          - skill_lightfoot_yiliu_gangmeng_ult
         iconPath: assets/enemies/lightfoot_zhuke_c.png
     isBossStage: false
     dropEquipmentDefIds: []
@@ -2213,8 +2213,8 @@ stages:
         baseAttack: 1180
         baseSpeed: 220
         skillIds:
-          - skill_lingqiao_jianghu_basic
-          - skill_lingqiao_jianghu_skill
+          - skill_lightfoot_jueding_lingqiao_basic
+          - skill_lightfoot_jueding_lingqiao_skill
         iconPath: assets/enemies/lightfoot_pubu_a.png
       - id: enemy_jueDing_lightfoot_pubu_b
         name: 瀑布刀客
@@ -2225,8 +2225,8 @@ stages:
         baseAttack: 1150
         baseSpeed: 205
         skillIds:
-          - skill_yinrou_jianghu_basic
-          - skill_yinrou_jianghu_skill
+          - skill_lightfoot_jueding_yinrou_basic
+          - skill_lightfoot_jueding_yinrou_skill
         iconPath: assets/enemies/lightfoot_pubu_b.png
       - id: enemy_jueDing_lightfoot_pubu_c
         name: 险崖游侠
@@ -2237,8 +2237,8 @@ stages:
         baseAttack: 1200
         baseSpeed: 200
         skillIds:
-          - skill_gangmeng_jianghu_basic
-          - skill_gangmeng_jianghu_skill
+          - skill_lightfoot_jueding_gangmeng_basic
+          - skill_lightfoot_jueding_gangmeng_skill
         iconPath: assets/enemies/lightfoot_pubu_c.png
     isBossStage: false
     dropEquipmentDefIds: []
@@ -2270,9 +2270,9 @@ stages:
         baseAttack: 1400
         baseSpeed: 225
         skillIds:
-          - skill_gangmeng_jianghu_basic
-          - skill_gangmeng_jianghu_skill
-          - skill_gangmeng_jianghu_ult
+          - skill_lightfoot_jueding_gangmeng_basic
+          - skill_lightfoot_jueding_gangmeng_skill
+          - skill_lightfoot_jueding_gangmeng_ult
         iconPath: assets/enemies/lightfoot_changfeng_a.png
       - id: enemy_jueDing_lightfoot_changfeng_b
         name: 长风剑客
@@ -2283,9 +2283,9 @@ stages:
         baseAttack: 1430
         baseSpeed: 235
         skillIds:
-          - skill_lingqiao_jianghu_basic
-          - skill_lingqiao_jianghu_skill
-          - skill_lingqiao_jianghu_ult
+          - skill_lightfoot_jueding_lingqiao_basic
+          - skill_lightfoot_jueding_lingqiao_skill
+          - skill_lightfoot_jueding_lingqiao_ult
         iconPath: assets/enemies/lightfoot_changfeng_b.png
       - id: enemy_jueDing_lightfoot_changfeng_c
         name: 万里刀客
@@ -2296,9 +2296,9 @@ stages:
         baseAttack: 1380
         baseSpeed: 220
         skillIds:
-          - skill_yinrou_jianghu_basic
-          - skill_yinrou_jianghu_skill
-          - skill_yinrou_jianghu_ult
+          - skill_lightfoot_jueding_yinrou_basic
+          - skill_lightfoot_jueding_yinrou_skill
+          - skill_lightfoot_jueding_yinrou_ult
         iconPath: assets/enemies/lightfoot_changfeng_c.png
     isBossStage: true
     dropEquipmentDefIds: []

@@ -32,8 +32,10 @@ import 'default_ground_strategy.dart';
 ///   - rooftop(屋脊):crit +0.10 / damage ×1.15 / defense -0.05
 ///   - bamboo(竹林):evasion +0.20 / damage ×0.90
 ///
-/// damage_multiplier 留 P3.1.B 子批接 damage_calculator(YAGNI,3 项 delta
-/// 已能拉开分布;R5.1 实测后若需要再加)。
+/// **damage_multiplier 接入**(P3.1.B 子批 · 2026-05-24):terrain.damageMultiplier
+/// 烘焙到双方 BattleCharacter.attackPowerMultiplier,damage_calculator base 公式
+/// 末乘读用。沿 crit/evasion/defense delta 体例,双方对等 → 双方 attacker 出招时
+/// 同步放大/缩小(rooftop ×1.15 / bamboo ×0.90 / water 1.0)。
 class LightFootStrategy implements BattleStrategy {
   /// 当前关 terrain(从 stages.yaml `terrainBiome` 字段读 + ctor 注入)。
   final TerrainBiome terrainBiome;
@@ -105,15 +107,17 @@ class LightFootStrategy implements BattleStrategy {
     );
   }
 
-  /// 单角色 stat bake:critRate/evasionRate/defenseRate 加 delta + clamp(0.0, 0.95)。
+  /// 单角色 stat bake:critRate/evasionRate/defenseRate 加 delta + clamp(0.0, 0.95);
+  /// attackPowerMultiplier 直接 set 为 terrain.damageMultiplier(P3.1.B · 双方对等)。
   ///
   /// 不动 maxHp/maxInternalForce/totalEquipmentAttack(§5.4 红线);
-  /// 不动 speed(轻功对决用 terrain modifier 影响出手次数留 P3.1.B)。
+  /// 不动 speed(轻功对决用 terrain modifier 影响出手次数留 P3.2 群战)。
   static BattleCharacter _bake(BattleCharacter c, LightFootTerrainModifier m) {
     return c.copyWith(
       criticalRate: (c.criticalRate + m.criticalRateDelta).clamp(0.0, 0.95),
       evasionRate: (c.evasionRate + m.evasionRateDelta).clamp(0.0, 0.95),
       defenseRate: (c.defenseRate + m.defenseRateDelta).clamp(0.0, 0.95),
+      attackPowerMultiplier: m.damageMultiplier,
     );
   }
 }
