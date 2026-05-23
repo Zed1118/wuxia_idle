@@ -129,9 +129,23 @@
 - **Batch 3.3 R5 + closeout**(~30min):R5.1-5.5 5 族 14 测(e2e 1 + eligibility 5 + player_pick 3 + 边界 4 + §5.4 红线 1)+ closeout 65 行 + GDD v1.14 + CLAUDE.md §12.2 #10 「P2.3 已实装 ✅」+ 本段 + PROGRESS 顶段
 - **生产 bug 顺手修**:`Equipment.inheritFrom` 从 Isar 读取实例的 `previousOwnerCharacterIds: List<int>` 是 fixed-length,`.add()` 抛 `Cannot add to a fixed-length list`,改 reassign `[...old, new]`(memory `feedback_isar_pitfalls`)
 - **founder_buff_service 0 代码改**:飞升后 founder isActive=false 自然让 `computeBuffActive` 返 false · 无需扩 trigger
-- **挂账留下批**:narrative ~600 字(spec §7 · `data/narratives/ascension/` 4 yaml)+ P5+ 多代飞升(`stack_across_generations=false` enforce + `conflict_slot_resolution=auto_swap` 实装)+ P5+ 真传位语义(大弟子接管 founder 身份)
+- **挂账留下批**:~~narrative ~600 字~~ ✅ 已 ship(P2.3 narrative 4 yaml commit `8a4b7bd` · `ascension_intro/pick_hint/disciple_thank/complete`)+ ~~P5+ 多代飞升~~ ✅ 已 ship + ~~P5+ 真传位~~ ✅ 已 ship(P5+ ④+⑤ 合并 batch 见下段)
 - **数值红线 §5.4/§5.3/§5.5/§6 公式完全不动** · Character/Equipment Isar schema 0 改 · BattleStrategy 接口不动 · 1.0 P2 主线 3 子阶段(P2.1+P2.2 心魔+P2.3 飞升)全闭环 → **1.0 P2 ~87%**
 - 详 `docs/handoff/p2_3_ascension_closeout_2026-05-24.md` + `docs/spec/p2_3_ascension_spec_2026-05-24.md`
+
+**2026-05-24 P5+ ④+⑤ 多代飞升 + 真传位完整实装 ✅**(主 cwd · 4 commit `1e875d6 → 1b1bb86` 推 main · 1291 pass / 0 analyze · 实测 ~2h30min opus xhigh · spec 估 ~5-7h · 精度 0.42×):
+- **合并方案**:Phase 0 发现 ④ 单独做没真多代场景可测(需 ⑤ 真传位 founder promotion 当前置)→ ④⑤ 合批
+- **Service**(`a1d17ea`):`performAscend` 加 `promotedDiscipleId: int?` + 副作用 4 auto_swap 真消费(disciple equipped{Slot}Id 接新遗物 · 旧装 owner 不变入背包语义)+ 副作用 7 promoted 接管(promotedDisciple.isFounder=true · founder.isFounder 保 true 太祖语义 · founder_buff_service 0 改自然接管)
+- **UI**(`15fc187`):AscensionScreen 加 `_PromotedDiscipleRow` 下拉(player_pick 体例)+ UiStrings 4 段
+- **R5 测族 14→18**(`1b1bb86`):R5.6 多代 e2e 2 + R5.7 auto_swap 2 + R5.8 stack enforce 1 · R5.1-5.5 原 14 测全过(向后兼容验证 ✅)
+- **0 schema 改 · 0 公式改 · founder_buff_service 0 代码改**(P2.3 留好的 isFounder+isActive 两轴语义自然承载传位)· GDD §12.2 #10 v1.15 + CLAUDE.md v1.10
+- 详 `docs/handoff/p5_lineage_full_closeout_2026-05-24.md` + `docs/spec/p5_lineage_full_spec_2026-05-24.md`
+
+**2026-05-24 凌晨 P5+ UI polish A 批续作 ✅**(8h overnight v2 流批 1/5 · 主 cwd · 2 commit `154211b → 82fb235` 推 main · 1293 pass / 0 analyze · Mac+Opus high ~50min · 精度 0.42-0.55×):
+- **A.1 listDiscipleTargets 加 `!c.isFounder` 过滤防循环传位**(`154211b`):P5+ 真传位后 promoted disciple 的 isFounder=true 但 lineageRole 仍 disciple → 原过滤会让已接任「新祖师」再次入下拉(语义循环)· R5.9 防回退 2 测(gen0 baseline + gen1 promote=2 后 d2 排除 d3 仍在)· R5 测族 18→20
+- **A.2-A.4 UI polish**(`82fb235`):character_panel + LineagePanel 多代传承 chip(prev.length > 1 时显「{N} 代传承」 N = prevLen + 1 · gen2 起才显)+ AscensionScreen confirm dialog 加「门派衣钵:{弟子名}」strong 行 + complete snackbar 追加「 · {弟子名} 接掌门派」+ UiStrings 2 段
+- **8h overnight v2 流 6 批 ABCDEF**(本会话累计 ~3h):A UI polish ship + B 派单 spec(Codex + MJ)+ C stage_audit + D P1.2 Phase 0 地基预备 + E memory sink + 起床 handoff + F narrative 简注 + widget test 4 测(LineagePanel 2 + character_panel 2)
+- 详 `docs/handoff/p5_ui_polish_closeout_2026-05-24.md` + `docs/handoff/8h_autonomous_handoff_2026-05-24.md`
 
 ---
 
