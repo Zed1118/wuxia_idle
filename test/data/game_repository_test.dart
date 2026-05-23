@@ -37,8 +37,10 @@ void main() {
       // 40 招(W14-3-A 35 + T02 +5)合并 = 103。
       // 2026-05-21 P1.1 候选 3-b:skills.yaml +1(skill_joint_skill,共鸣度满级解锁)
       // → skills 64 + encounter 40 = 104。
-      expect(repo.skillDefs.length, 104,
-          reason: '64 心法/共鸣招(skills.yaml,含 joint_skill) + 40 奇遇招');
+      // 2026-05-24 P3.1.B:skills.yaml +18 招轻功专属(2 阶 × 3 school × 3 type)
+      // → skills 82 + encounter 40 = 122。
+      expect(repo.skillDefs.length, 122,
+          reason: '82 心法/共鸣招/轻功招(skills.yaml,含 joint_skill + 18 lightfoot) + 40 奇遇招');
       expect(repo.encounterSkillIds.length, 40,
           reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
       final mainlineCount = repo.stageDefs.values
