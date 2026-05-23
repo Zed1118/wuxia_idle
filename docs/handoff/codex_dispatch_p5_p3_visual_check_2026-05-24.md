@@ -27,10 +27,11 @@
 ## fixture self-check 清单(派单前 Mac 端检查)
 
 - [x] **P5+ A.1-A.4 已 ship**(main HEAD `4229a12`)· `listDiscipleTargets` isFounder 过滤 · 多代 chip · dialog/snackbar promoted 名
-- [ ] **debug seed for P5+**(需补):Phase2TestMenu 加按钮「VC-P5+」一键 boost founder 到 wuSheng·dengFeng + clear stage_06_05 + stage_inner_demon_07 + 大弟子 ≥ 一流 — 否则 Codex 验收 1-6 需手动跑完 wuSheng 全主线(不可能 90min 完成)
-- [x] Ch4-6 narrative 全 25 文件齐(stage opening/victory 各 5 章 5 关 = 50 file · 已 grep 全在)
-- [x] inner_demon 7 关 narrative 全 21 文件齐(opening/victory/defeat 各 7 = 21 · 已 grep 全在)
-- [x] UI 字符串引用 `lib/shared/strings.dart`(派单 prompt 必先 grep 拿实际 value · memory `feedback_codex_pen_windows_visual_check` §2026-05-21 教训)
+- [x] **debug seed for P5+** ✅(H 批 `f70f990` 已 ship):Phase2TestMenu 加 VC-P5+ 按钮 → `seedVisualCheckP5Plus()`(founder boost wuSheng·dengFeng + stage_inner_demon_07/stage_06_05 cleared)+ 直跳 LineagePanelScreen。Codex 跑此 seed 后「步入飞升」按钮自动 enable,90min 内可完成 P0 6 项硬证据截图
+- [x] **P5+ narrative ascension_lineage_chant 已接入**(H.1 `f70f990`):AscendService.isLineageContinuation() pre-flight 判定 + AscensionScreen narrative 条件 load(gen2+ → lineage_chant · gen1 → complete)。Codex 跑 gen2 场景可拿 lineage_chant narrative 截图(需先 perform 1 次 gen1 飞升)
+- [x] Ch4-6 narrative 全 25 文件齐(stage opening/victory 各 5 章 5 关 = 50 file)
+- [x] inner_demon 7 关 narrative 全 21 文件齐
+- [x] UI 字符串引用 `lib/shared/strings.dart`(派单 prompt 必先 grep · memory `feedback_codex_pen_windows_visual_check` §2026-05-21)
 
 ## 派单约束(硬约束)
 

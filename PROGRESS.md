@@ -5,15 +5,18 @@
 
 ## 当前阶段
 
-**2026-05-24 凌晨 §7.1 飞升 P5+ UI polish 续作 ✅ · 8h overnight v2 流批 1/5(A)**(Mac+Opus high ~50min · spec 估 1.5-2h · 精度 0.42-0.55× · 2 commit `154211b → 82fb235` 推 main · 1293 pass / 1 skip / 0 analyze):
-- **A.1 listDiscipleTargets 加 `!isFounder` 过滤防循环传位**(`154211b`):P5+ 真传位后 promoted disciple isFounder=true 但 lineageRole 仍 disciple → 原过滤会让已接任「新祖师」再次入下拉。R5.9 防回退 2 测(gen0 baseline + gen1 promote=2 后 d2 排除 d3 仍在)。R5 测族 18 → 20
-- **A.2 character_panel + A.3 LineagePanel 多代传承 chip**:prev.length > 1 时显「{N} 代传承」(N = prevLen + 1 · gen2 起才显)· _LineageHeritageRow 副行 / _HeritageRow Container chip
-- **A.4 AscensionScreen pick_hint/disciple_thank UI 细化**(`82fb235`):_showConfirmDialog 加 promotedDiscipleName 参数 · dialog Column 显「门派衣钵:{N}」strong 行 · snackbar 追加「 · {N} 接掌门派」· UiStrings 加 2 段
-- 详 `docs/handoff/p5_ui_polish_closeout_2026-05-24.md`(55 行 ≤80 ✅)
+**2026-05-24 凌晨 §7.1 飞升 P5+ UI polish 续作 + 8h overnight v2 全流 ABCDEFGHI 完结 ✅**(Mac+Opus high 累计 ~2h · 9 commit `154211b → f70f990` 推 main · 1297 pass / 1 skip / 0 analyze):
+- **A 批 P5+ UI polish 全闭环**(`154211b → 4229a12` · 3 commit):A.1 listDiscipleTargets 加 `!isFounder` 过滤防循环传位 + R5.9 2 测 / A.2-A.3 character_panel + LineagePanel 多代传承 chip(prev.length > 1 → 「{N} 代传承」)/ A.4 AscensionScreen dialog 加「门派衣钵」strong 行 + snackbar 追加接任名
+- **B 批派单 spec**(`ad145ee`):Codex 14 验收点 spec(65 行)+ MJ 10 张 prompt ready-to-paste(89 行 派单类) · 起床用户手动派
+- **C 批 1.0 stage_audit**(`7be8798`):60 行 · 全加权 ~70% / 主轴战斗+主线 ~90%(P2 + P3 全闭环 + P5+ 飞升前置 ~30%)
+- **D 批 P1.2 江湖恩怨 + 声望 Phase 0**(`a5843d2`):41 行 · 6 维全 greenfield ✅ · Q1-Q5 候选清单留用户起床拍板
+- **E 批起床 handoff**(`f7ced04`):40 行 · 3 类自主决策 + 起床 first-read 6 项 + memory sink 2 项追加
+- **F+G 批 P5+ 多代叙事 + widget test 双 UI 覆盖 + ROADMAP 对齐**(`504dff3`+`63c7e07`):`ascension_lineage_chant.yaml`(~200 字 Tier wuSheng 4 风格词均匀)+ 多代 chip widget test 4 个(character_panel 2 + LineagePanel 2)+ ROADMAP P2.3 段对齐 P5+ ✅
+- **H 批 narrative UI 接入 + VC-P5+ fixture**(`f70f990`):AscendService.isLineageContinuation() + R5.10 2 测(测族 20→22)+ Phase2TestMenu 加 VC-P5+ 按钮 + seedVisualCheckP5Plus(B.1 fixture self-check 唯一未就绪项 → ✅)
+- **I 批终验**(本):全仓 1297 pass / 0 analyze + PROGRESS 更新 + 派单 spec fixture update
+- **上波 P5+ ④+⑤**(2026-05-24 · 4 commit `1e875d6 → 1b1bb86` Opus xhigh ~2h30min · 详 `p5_lineage_full_closeout`):多代飞升 + 真传位完整链
 
-**上波 P5+ ④+⑤ 合并 batch**(2026-05-24 · 4 commit `1e875d6 → 1b1bb86` · Opus xhigh ~2h30min):多代飞升 + 真传位完整链 · `performAscend` 加 `promotedDiscipleId` + auto_swap 真实装 + R5.6/5.7/5.8 5 测 · 0 schema/公式/founder_buff_service 改 · 详 `docs/handoff/p5_lineage_full_closeout_2026-05-24.md` + GDD §12.2 #10 v1.15 + CLAUDE.md v1.10
-
-**下波 8h overnight 候选(批 2-5)**:B 视觉验收 + MJ 派单 spec / C 1.0 stage_audit 复跑 / D P1.2 江湖恩怨地基预备(草案不实装)/ E memory sink + 起床 handoff
+**8h overnight v2 实测** ⭐:9 批 ~2h opus high · 6 doc 全 ≤上限(audit/phase0 两次主动砍) · code +200 行 / +6 测 / narrative 1 / memory 2 · 下波候选:① P1.2 拍板 → spec → 实装 ~7-8h xhigh ② Codex Pen 派单(fixture ✅)③ MJ Discord 10 张(prompt ready)④ P3.3/P3.4 多日
 
 ---
 
