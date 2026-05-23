@@ -52,15 +52,20 @@ void main() {
       final lightFootCount = repo.stageDefs.values
           .where((s) => s.stageType == StageType.lightFoot)
           .length;
+      final massBattleCount = repo.stageDefs.values
+          .where((s) => s.stageType == StageType.massBattle)
+          .length;
       expect(mainlineCount, 30,
           reason: '主线 30 关(2026-05-22 P2 Ch6 扩,6 章 × 5 关)');
       expect(innerDemonCount, 7,
           reason: '心魔 7 关(2026-05-22 P2.2 §12.1 Batch 2.1 schema)');
       expect(lightFootCount, 5,
           reason: '轻功 5 关(2026-05-23 P3.1 §12.3 Batch 2.1 schema)');
+      expect(massBattleCount, 5,
+          reason: '群战守城 5 关(2026-05-24 P3.2 §12.3 Batch 2.3 stages)');
       expect(repo.stageDefs.length,
-          mainlineCount + innerDemonCount + lightFootCount,
-          reason: 'stageDefs 现含 mainline + innerDemon + lightFoot 三类');
+          mainlineCount + innerDemonCount + lightFootCount + massBattleCount,
+          reason: 'stageDefs 现含 mainline + innerDemon + lightFoot + massBattle 四类');
       expect(repo.numbers.version, isNotEmpty);
       // 2026-05-21 候选 2:synergies.yaml 8 组合(原 7 + 新 1「太极初成」
       // specificTechniques 类型,GDD §4.5 触上限 8)
@@ -113,6 +118,119 @@ void main() {
       // Phase 4 W10 战败代价（与 dispersion 同 0.50 但字段独立）
       expect(repo.numbers.defeatBossInternalForcePenalty, 0.50);
       expect(repo.numbers.defeatBossCultivationPenalty, 0.50);
+    });
+
+    test('P3.2 Batch 2.3:5 关 stage_mass_battle_01..05 加载完整(waveCount + enemyCounts + prevStageId 链)',
+        () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final stages = ['01', '02', '03', '04', '05']
+          .map((n) => repo.getStage('stage_mass_battle_$n'))
+          .toList();
+
+      // 5 关全部存在 + stageType + 字段齐
+      for (final s in stages) {
+        expect(s.stageType, StageType.massBattle,
+            reason: '${s.id} stageType 必须 massBattle');
+        expect(s.massBattleWaveCount, isNotNull,
+            reason: '${s.id} 必配 massBattleWaveCount');
+        expect(s.massBattleEnemyCounts, isNotNull,
+            reason: '${s.id} 必配 massBattleEnemyCounts');
+        // wave 数 1-4 + enemy 数 5-7(spec §4 红线)
+        expect(s.massBattleWaveCount, inInclusiveRange(1, 4),
+            reason: '${s.id} waveCount ∈ [1, 4]');
+        expect(s.massBattleEnemyCounts!.length, s.massBattleWaveCount,
+            reason: '${s.id} enemyCounts.length == waveCount');
+        for (final cnt in s.massBattleEnemyCounts!) {
+          expect(cnt, inInclusiveRange(5, 7),
+              reason: '${s.id} 每 wave enemy 数 ∈ [5, 7](以少胜多 spec §1)');
+        }
+        // enemyTeam 3 模板(沿 LightFoot 体例 service 层 buildWavesFor 循环扩展)
+        expect(s.enemyTeam.length, 3,
+            reason: '${s.id} enemyTeam 3 模板(三流派覆盖)');
+      }
+
+      // wave/enemy 具体数值对齐 spec §4 表
+      expect(stages[0].massBattleWaveCount, 2);
+      expect(stages[0].massBattleEnemyCounts, [5, 5]);
+      expect(stages[1].massBattleWaveCount, 3);
+      expect(stages[1].massBattleEnemyCounts, [5, 6, 6]);
+      expect(stages[2].massBattleWaveCount, 3);
+      expect(stages[2].massBattleEnemyCounts, [6, 6, 7]);
+      expect(stages[3].massBattleWaveCount, 4);
+      expect(stages[3].massBattleEnemyCounts, [5, 6, 6, 7]);
+      expect(stages[4].massBattleWaveCount, 4);
+      expect(stages[4].massBattleEnemyCounts, [6, 6, 7, 7]);
+
+      // prevStageId 链(02..05 链到 01,01 无 prevStageId 在 stages.yaml 内
+      // 因为 prev=stage_06_05 跨 stageType,在 numbers.yaml unlock_triggers 配)
+      expect(stages[0].prevStageId, isNull,
+          reason: 'stage_mass_battle_01 chain 起点 stages.yaml 内 prev null');
+      expect(stages[1].prevStageId, 'stage_mass_battle_01');
+      expect(stages[2].prevStageId, 'stage_mass_battle_02');
+      expect(stages[3].prevStageId, 'stage_mass_battle_03');
+      expect(stages[4].prevStageId, 'stage_mass_battle_04');
+
+      // §5.4 Tier 锁死:01-03 yiLiu / 04-05 jueDing
+      expect(stages[0].requiredRealm, RealmTier.yiLiu);
+      expect(stages[1].requiredRealm, RealmTier.yiLiu);
+      expect(stages[2].requiredRealm, RealmTier.yiLiu);
+      expect(stages[3].requiredRealm, RealmTier.jueDing);
+      expect(stages[4].requiredRealm, RealmTier.jueDing);
+
+      // 05 BOSS(沿 LightFoot 末关 isBossStage=true 体例)
+      expect(stages[4].isBossStage, isTrue,
+          reason: 'stage_mass_battle_05 守城卫战 章末 BOSS');
+    });
+
+    test('P3.2 Batch 2.1:mass_battle yaml schema 加载完整(formations + wave + stage + unlock)',
+        () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final mb = repo.numbers.massBattle;
+
+      // formations 3 阵型 × 4 字段(沿 yanXing/baGua/fengShi spec §2 数值)
+      expect(mb.formations.length, 3, reason: 'yanXing/baGua/fengShi 3 阵型');
+      final yanXing = mb.formations[Formation.yanXing]!;
+      expect(yanXing.criticalRateDelta, 0.10, reason: '雁行:crit +0.10');
+      expect(yanXing.defenseRateDelta, -0.05, reason: '雁行:defense -0.05');
+      expect(yanXing.evasionRateDelta, 0.00);
+      expect(yanXing.damageMultiplier, 1.00);
+      final baGua = mb.formations[Formation.baGua]!;
+      expect(baGua.defenseRateDelta, 0.10, reason: '八卦:defense +0.10');
+      expect(baGua.evasionRateDelta, 0.05, reason: '八卦:evasion +0.05');
+      expect(baGua.criticalRateDelta, 0.00);
+      expect(baGua.damageMultiplier, 1.00);
+      final fengShi = mb.formations[Formation.fengShi]!;
+      expect(fengShi.damageMultiplier, 1.10, reason: '锋矢:damage ×1.10');
+      expect(fengShi.criticalRateDelta, 0.05, reason: '锋矢:crit +0.05');
+      expect(fengShi.evasionRateDelta, 0.00);
+      expect(fengShi.defenseRateDelta, 0.00);
+
+      // wave_intermission 4 规则(契 §5.5 在线 = 离线 + 守城压力累积)
+      expect(mb.waveIntermission.resetActionPoint, isTrue,
+          reason: 'wave 间 actionPoint 归 0 → 走 tick 不快进');
+      expect(mb.waveIntermission.preserveHp, isTrue,
+          reason: 'wave 间 HP 保留 → 守城压力累积');
+      expect(mb.waveIntermission.preserveInternalForce, isTrue,
+          reason: 'wave 间内力保留 → 限大招使用');
+      expect(mb.waveIntermission.preserveCooldowns, isFalse,
+          reason: 'wave 间 cd 重置 → 给玩家下波大招机会');
+
+      // stage_formations 5 关默认阵型(主题契合,Tier 风格梯度)
+      expect(mb.stageFormations.length, 5);
+      expect(mb.stageFormations['stage_mass_battle_01'], Formation.yanXing);
+      expect(mb.stageFormations['stage_mass_battle_02'], Formation.baGua);
+      expect(mb.stageFormations['stage_mass_battle_03'], Formation.fengShi);
+      expect(mb.stageFormations['stage_mass_battle_04'], Formation.baGua);
+      expect(mb.stageFormations['stage_mass_battle_05'], Formation.fengShi);
+
+      // unlock_triggers 5 项链(沿 light_foot 体例 key=触发,value=解锁的下一关)
+      expect(mb.unlockTriggers.length, 5);
+      expect(mb.unlockTriggers['stage_06_05'], 'stage_mass_battle_01',
+          reason: '平行支线挂 Demo Ch6 末后(沿 LightFoot 体例 stage_06_05 触发)');
+      expect(mb.unlockTriggers['stage_mass_battle_01'], 'stage_mass_battle_02');
+      expect(mb.unlockTriggers['stage_mass_battle_02'], 'stage_mass_battle_03');
+      expect(mb.unlockTriggers['stage_mass_battle_03'], 'stage_mass_battle_04');
+      expect(mb.unlockTriggers['stage_mass_battle_04'], 'stage_mass_battle_05');
     });
 
     test('LevelDiffModifier.diff3OrMore.attacker null 兜底为 1.0', () async {

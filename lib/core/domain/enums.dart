@@ -159,6 +159,7 @@ enum StageType {
   tower,       // 爬塔（问鼎江湖，GDD §8.2）
   innerDemon,  // 心魔关(1.0 P2.2 §12.1,7 关拦截 wuSheng 7 层突破 / 镜像玩家 +10-20%)
   lightFoot,   // 轻功对决(1.0 P3.1 §12.3,5 关 yiLiu/jueDing 平行支线 / terrain modifier 地形机制)
+  massBattle,  // 群战守城(1.0 P3.2 §12.3,5 关 yiLiu/jueDing 平行支线 / wave-based 守城 + 阵型 3 选 1)
 }
 
 /// 战斗机制地形(1.0 P3.1 §12.3,GDD v1.11)。
@@ -174,6 +175,25 @@ enum TerrainBiome {
   water,    // 水面(渡口/急流):evasion +0.15 / defense -0.10
   rooftop,  // 屋脊(青瓦/飞檐):crit +0.10 / damage ×1.15 / defense -0.05
   bamboo,   // 竹林(密竹/江南):evasion +0.20 / damage ×0.90
+}
+
+/// 群战守城阵型(1.0 P3.2 §12.3,GDD v1.13)。
+///
+/// 战前 3 选 1,进 [MassBattleStrategy] 入口 `applyFormationTo` 一次性烘焙
+/// modifier 到 BattleCharacter critRate/evasionRate/defenseRate/
+/// attackPowerMultiplier(**仅玩家 leftTeam** 生效,敌方不沾;烘焙后 idempotent)。
+///
+/// 阵型数值见 `numbers.yaml mass_battle.formations`,clamp(0.0, 0.95)
+/// 防 §5.4 红线破(沿 LightFootStrategy `_bake` clamp 体例)。
+///
+/// 3 阵型定位:
+///   - [yanXing] 雁行:攻势启 — crit +0.10 / defense -0.05
+///   - [baGua]   八卦:守势固 — defense +0.10 / evasion +0.05
+///   - [fengShi] 锋矢:突击强 — damage ×1.10 / crit +0.05
+enum Formation {
+  yanXing,   // 雁行:攻势 crit +0.10 / defense -0.05
+  baGua,     // 八卦:守势 defense +0.10 / evasion +0.05
+  fengShi,   // 锋矢:突击 damage ×1.10 / crit +0.05
 }
 
 /// 关卡解锁状态（Phase 3 T34 主线进度）。

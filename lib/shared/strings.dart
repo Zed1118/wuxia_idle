@@ -422,6 +422,10 @@ class UiStrings {
   static const String mainMenuLightFoot = '轻功试炼';
   static const String mainMenuLightFootHint = '5 关地形 · 一寸余地';
 
+  // ─── 群战守城（1.0 P3.2 §12.3,Batch 2.4 入口）────────────────────────────
+  static const String mainMenuMassBattle = '守城试炼';
+  static const String mainMenuMassBattleHint = '5 关守城 · 以少胜多';
+
   // ── P1 #42 Phase 2 §10 P1.y · 新手引导 banner 文案(GDD §10.2 第 2 方式)──
   // 3 条对应 tutorialStep 6/7/8(收徒 / 奇遇 / 装备开锋),50-100 字短介绍。
   static const String tutorialHintStep6Title = '收徒资格已达成';

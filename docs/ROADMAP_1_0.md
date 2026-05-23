@@ -155,6 +155,18 @@
 - BattleStrategy 抽象层挂 `MassBattleStrategy`
 - AI 行为:多角色协作(P0 strategy 层可能需要扩展协作接口)
 
+**2026-05-24 P3.2 Batch 2.1-2.5 全收尾 ✅**(worktree `feat/p3_2_mass_battle` · 5 commit `ae97f83 → 本` · 1268 pass / 0 analyze · Mac+Opus xhigh 累计 ~2h · spec 估 ~6-7h · 精度 0.30×):
+- **战斗形态全闭环**:`MassBattleStrategy` 组合委派 `DefaultGroundStrategy`(沿 LightFoot 体例零代码重复 + immutable · runToEnd 入口 `applyFormationTo` 烘焙仅 leftTeam · wave 循环 + `_intermission` actionPoint+cd reset / HP+IF preserve)+ `Formation` enum 3 项(yanXing/baGua/fengShi 雁行/八卦/锋矢)
+- **5 关 + 数据 schema**:`stage_mass_battle_01..05` yiLiu(qiMeng/jingTong/dengFeng) + jueDing(qiMeng/jingTong)2 Tier · wave 2-4 / enemy 5-7「以少胜多」· diff 6.5-8.5 + enemyTeam[3] 模板沿 LightFoot skill 池 18 招(零新增 skill)+ `numbers.yaml mass_battle` 段 50 行(3 formations × 4 字段 + wave_intermission 4 + stage_formations 5 + unlock_triggers 5)+ `StageDef.massBattleWaveCount/EnemyCounts` 字段
+- **narrative ~2.2k 字**:`chapter_mass_battle` 章首尾(无名守城术 5 处试炼 · 不躁/不乱/不溃/不让/不忧)+ 10 stage opening/victory(Tier yiLiu「沉着/肃杀/老练」 + jueDing「沉静/从容」风格梯度词 · 五处试炼:守村/守镇/守县/守关/守城)
+- **UI 入口 + reactive 三态**:`MassBattleScreen`(cleared/available/locked + 显「N 波 · M 敌 · 阵型 · 难度」紧凑信息)+ `MassBattleService.statusOf/orderedStageIds/formationFor` + main_menu 入口 LightFoot → **MassBattle** → Leaderboard(13→14 按钮)
+- **平行支线**:不接管 wuSheng 突破链(`isLayerLocked` 无 massBattle 路径)· unlock 链 `stage_06_05 → mass_battle_01..05`
+- **R5/R6 跨关红线 4 测**:R5.1 5 关 × 50 种子 leftWins+draws ≥ rightWins(rightWins=0 全过 · stage_03/04/05 全 draws 数值平衡挂账 P3.2.B)+ R5.2 formation cap clamp + §5.4 红线 + **仅 leftTeam 关键差异**(vs LightFoot 双方对等)+ R5.3 unlock 链 e2e + R5.4 wave 间 preserve/reset e2e · R6 烘焙 7 + wave 4 共 11 单测(沿 LightFoot 体例)
+- **架构决议**(spec §3 漏的设计风险点 · Batch 2.5 拍板方案 (C)):`MassBattleStrategy.runToEnd` 一次性跑完 wave 循环(strategy 保持 immutable)· R5 红线测**直接调 runToEnd 不走 UI**(UI tick by tick 战斗 wiring 留 Batch 3.x 独立设计 BattleScreen 兼容批量结果 + wave 切换动画 + N 槽 UI · 当前 stage_entry_flow 无 massBattle 分支 → 点击进战斗走 fallback DefaultGround 单场 3v3 头 3 敌 · 不 crash 但非真守城体验)
+- **挂账 P3.2.B 数值调优**:stage_03/04/05 R5.1 全 draws(玩家强 build 也守不下 26 敌 · 累计内力耗尽 · 解法候选:wave 间 HP 部分回血 / 敌方后波数值递减 / maxTicks 放宽)
+- **挂账 P3.x UI 战斗 wiring**:阵型选择 dialog + buildWavesFor 公开 + stage_entry_flow massBattle 分支 + BattleScreen 多槽 UI / wave 切换动画
+- 详 `docs/handoff/p3_2_mass_battle_closeout_2026-05-24.md` + `docs/spec/p3_2_mass_battle_spec_2026-05-24.md` + `docs/phase0/p3_2_mass_battle_phase0_2026-05-24.md`
+
 ### P3.3 §12.3 PVP(Supabase 异步)
 - 排行榜模块已落(Demo 期),扩 PVP
 - 异步:玩家阵容快照上传 → 其他玩家挑战
