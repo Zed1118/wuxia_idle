@@ -89,6 +89,9 @@ class UiStrings {
   static const String scenarioVc18A1 = 'VC18-A1 · 心法相生 5 组合视觉验收预设';
   static const String hintVc18A1 =
       '5 角色一流·启蒙 + main/assist 配对覆盖 5 相生组合各 1 命中,切 Tab 看 chip + 进 stage_01_05 看 HpBar/内力条数字注入';
+  static const String scenarioVcP5Plus = 'VC-P5+ · 飞升流视觉验收预设(Codex 派单)';
+  static const String hintVcP5Plus =
+      '祖师 wuSheng·dengFeng + stage_inner_demon_07 + stage_06_05 cleared · 「步入飞升」按钮 enable · 直跳 AscensionScreen 拿 dialog/snackbar/多代 chip 截图';
   static const String encounterDebugPickerTitle = 'VC-EVENT · 触发奇遇';
 
   // W16 节日 chip DEBUG 覆盖入口（Phase2TestMenu）
