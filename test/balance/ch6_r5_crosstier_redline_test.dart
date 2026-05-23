@@ -91,7 +91,9 @@ void main() {
           slot: def.slot,
           obtainedAt: DateTime(2026, 1, 1),
           obtainedFrom: 'r5_ch6_redline',
+          baseAttack: def.baseAttackMax,
           baseHealth: def.baseHealthMax,
+          baseSpeed: def.baseSpeedMax,
         );
       }
 
@@ -123,6 +125,7 @@ void main() {
           internalForce: zongShiDengFeng.internalForceMax,
           internalForceMax: zongShiDengFeng.internalForceMax,
         );
+        character.id = -300 - slotIndex;
         character.school = school;
         final mainTech = Technique.create(
           defId: shiChuanTechDef.id,

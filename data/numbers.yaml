@@ -1417,9 +1417,11 @@ mass_battle:
 
   wave_intermission:                 # wave 间过渡规则(MassBattleStrategy._intermission 消费)
     reset_action_point: true         # wave 间 actionPoint 归 0(走 tick 不快进 · §5.5)
-    preserve_hp: true                # wave 间 HP 保留(不回血,守城压力累积)
+    preserve_hp: true                # wave 间 HP 保留(与 alive_hp_recovery_pct 取 max)
     preserve_internal_force: true    # wave 间内力保留(限大招使用频率)
     preserve_cooldowns: false        # wave 间 cd 重置(给玩家下波大招机会)
+    revive_dead_pct: 1.00            # 死角色满血复活(P3.2.C 修法 ① · 守城短歇补员 · 平衡 wave 数量劣势)
+    alive_hp_recovery_pct: 1.00      # 活角色 hp 回满 maxHp(P3.2.C 修法 ① · 短歇恢复;与 preserve_hp 取 max 不会反向降 hp)
 
   stage_formations:                  # 5 关默认阵型(玩家未选时 fallback · 主题契合)
     stage_mass_battle_01: yanXing    # 守村:山贼围攻 yiLiu·qiMeng 攻势启

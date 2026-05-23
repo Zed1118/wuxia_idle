@@ -90,7 +90,9 @@ void main() {
           slot: def.slot,
           obtainedAt: DateTime(2026, 1, 1),
           obtainedFrom: 'r5_redline',
+          baseAttack: def.baseAttackMax,
           baseHealth: def.baseHealthMax,
+          baseSpeed: def.baseSpeedMax,
         );
       }
 
@@ -122,6 +124,7 @@ void main() {
           internalForce: yiLiuDengFeng.internalForceMax,
           internalForceMax: yiLiuDengFeng.internalForceMax,
         );
+        character.id = -100 - slotIndex;
         character.school = school;
         final mainTech = Technique.create(
           defId: menPaiTechDef.id,

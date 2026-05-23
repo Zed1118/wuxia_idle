@@ -90,7 +90,9 @@ void main() {
           slot: def.slot,
           obtainedAt: DateTime(2026, 1, 1),
           obtainedFrom: 'r5_ch5_redline',
+          baseAttack: def.baseAttackMax,
           baseHealth: def.baseHealthMax,
+          baseSpeed: def.baseSpeedMax,
         );
       }
 
@@ -122,6 +124,7 @@ void main() {
           internalForce: jueDingDengFeng.internalForceMax,
           internalForceMax: jueDingDengFeng.internalForceMax,
         );
+        character.id = -200 - slotIndex;
         character.school = school;
         final mainTech = Technique.create(
           defId: jiangHuTechDef.id,

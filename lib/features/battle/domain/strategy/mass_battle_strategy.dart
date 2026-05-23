@@ -199,11 +199,27 @@ class MassBattleStrategy implements BattleStrategy {
   BattleState _intermission(BattleState s) {
     final wi = config.waveIntermission;
     final newLeft = s.leftTeam.map((c) {
-      // 仅活角色调整 actionPoint/cd;死角色保持原状(isAlive=false)
-      if (!c.isAlive) return c;
+      // 死角色:reviveDeadPct > 0 时复活至 maxHp × pct(P3.2.C 修法 ① · 守城短歇补员)
+      if (!c.isAlive) {
+        if (wi.reviveDeadPct <= 0) return c;
+        return c.copyWith(
+          isAlive: true,
+          currentHp: (c.maxHp * wi.reviveDeadPct).round(),
+          currentInternalForce:
+              (c.maxInternalForce * wi.reviveDeadPct).round(),
+          actionPoint: 0,
+          skillCooldowns: const <String, int>{},
+        );
+      }
+      // 活角色:aliveHpRecoveryPct > 0 与 preserveHp 取 max(短歇 hp 不低于当前残血)
+      final hpAfterRecovery = wi.aliveHpRecoveryPct > 0
+          ? (c.maxHp * wi.aliveHpRecoveryPct).round().clamp(0, c.maxHp)
+          : (wi.preserveHp ? c.currentHp : c.maxHp);
       return c.copyWith(
         actionPoint: wi.resetActionPoint ? 0 : c.actionPoint,
-        currentHp: wi.preserveHp ? c.currentHp : c.maxHp,
+        currentHp: wi.preserveHp
+            ? (c.currentHp > hpAfterRecovery ? c.currentHp : hpAfterRecovery)
+            : hpAfterRecovery,
         currentInternalForce: wi.preserveInternalForce
             ? c.currentInternalForce
             : c.maxInternalForce,

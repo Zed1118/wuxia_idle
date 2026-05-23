@@ -403,14 +403,34 @@ class BattleState {
   final List<BattleAction> actionLog;
   final Map<int, SkillDef> pendingUltimates;
 
-  const BattleState({
+  BattleState({
     required this.leftTeam,
     required this.rightTeam,
     required this.tick,
     required this.result,
     required this.actionLog,
     this.pendingUltimates = const {},
-  });
+  }) {
+    assert(_assertUniqueIds(leftTeam, 'leftTeam'));
+    assert(_assertUniqueIds(rightTeam, 'rightTeam'));
+  }
+
+  /// P3.2.C 修法 ① · sentinel 防御:同 team characterId 必须唯一,防
+  /// `_findById` 只返第 1 个匹配 → 同 team 仅首角色行动的 bug。仅 debug 模式生效。
+  static bool _assertUniqueIds(List<BattleCharacter> team, String side) {
+    if (team.isEmpty) return true;
+    final ids = <int>{};
+    for (final c in team) {
+      if (!ids.add(c.characterId)) {
+        throw AssertionError(
+          'BattleState: $side characterId=${c.characterId} 重复 '
+          '(team size=${team.length} unique=${ids.length})· '
+          'sentinel/test autoIncrement 漏给 id 触发 P3.2.C 故障模式',
+        );
+      }
+    }
+    return true;
+  }
 
   /// 战斗起始状态（tick=0，无动作日志，result=null，pendingUltimates 空）。
   factory BattleState.initial({
