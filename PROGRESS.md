@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-**2026-05-23 夜 → 2026-05-24 晨 §12.3 轻功对决 P3.1 全收尾 ✅ · 1.0 P3 战斗形态扩展首条主线落地 · 1.0 整体 ~76%**(8h overnight worktree `feat/p3_1_lightfoot` · Mac+Opus xhigh 累计 ~5h · spec 估 ~9.5h · 精度 0.53× · **8 commit `be7248a → 本` push origin/feat/p3_1_lightfoot 等用户起床 PR review**):
+**2026-05-23 夜 → 2026-05-24 晨 §12.3 轻功对决 P3.1 全收尾 ✅ · 1.0 P3 战斗形态扩展首条主线落地 · 1.0 整体 ~76%**(8h overnight worktree `feat/p3_1_lightfoot` · Mac+Opus xhigh 累计 ~5h · spec 估 ~9.5h · 精度 0.53× · **2026-05-24 晨 PR #1 squash merge ✅ → main HEAD `eb56480` · worktree clean · 本地 feat branch -D**):
 - **战斗形态全闭环**(`5b00b96` ~1.5h):`LightFootStrategy` 组合委派 `DefaultGroundStrategy` 零代码重复 + `applyTerrainTo` 入口烘焙 terrain modifier 到 BattleCharacter critRate/evasionRate/defenseRate(clamp 0.0-0.95 防 §5.4/§5.5 红线破)+ `TerrainBiome` 独立 enum 3 项(water/rooftop/bamboo,与 EncounterBiome 解耦)
 - **5 关 + schema**(`53b3741` ~50min):`stage_light_foot_01..05` yiLiu(qiMeng/jingTong/dengFeng)+ jueDing(qiMeng/jingTong)2 Tier × 3 terrain · diff 5.0-6.5 · numbers.yaml light_foot 段 45 行 · StageDef.terrainBiome 字段
 - **narrative ~2.1k 字**(`796a879` ~50min):chapter_light_foot 章首尾(无名轻身术 5 处试炼)+ 10 stage opening/victory + Tier yiLiu「沉着/肃杀/老练」 / jueDing「沉静/从容」风格梯度词
@@ -15,7 +15,7 @@
 - **挂账 1.0 P3.2+**(3 项):damage_multiplier 接入 damage_calculator(P3.1.B ~30min)+ 轻功专属 skill yaml(P3.1.B ~45min)+ Pen Windows 视觉验收(Codex 异步 ~1h)
 - **1238 pass / 0 analyze ✅**(原 1220 + 新 18:15 lightfoot 单测 + 3 R5)。数值红线 §5.4/§5.3/§6 公式不动 · Ch1-Ch6 主线 + Demo 49 层 + 心魔 7 关 wuSheng 突破链路径完全不变(轻功对决独立支线 · isLayerLocked 无 lightFoot 路径)
 
-**下波 候选**:① ⭐ **PR review + merge feat/p3_1_lightfoot → main**(起床后)② P3.1.B 子批(damage_multiplier + 轻功 skill yaml)+ Pen Windows 视觉验收 ③ P3.2 群战守城起步(spec 估 3-4h + AI 协作接口扩展)④ P2.3 A1 飞升 + 遗物 transfer(留 P2 闭环 · ~4h+)⑤ inner_demon 战斗机制层调优(P2.2 挂账 #2 · ~1.5h)
+**下波 候选**:① ⭐ P3.1.B 子批(damage_multiplier + 轻功 skill yaml · ~1.5h)+ Pen Windows 视觉验收(异步)② P3.2 群战守城起步(spec 估 3-4h + AI 协作接口扩展 · 升 xhigh)③ P2.3 A1 飞升 + 遗物 transfer(P2 闭环 · ~4h+ · 升 xhigh)④ inner_demon 战斗机制层调优(P2.2 挂账 #2 · ~1.5h)⑤ MJ Discord 派单 Ch4-6 + inner_demon 7 enemy ~25 张(异步)
 
 ---
 
