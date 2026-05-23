@@ -600,6 +600,49 @@ void main() {
   });
 
   // ───────────────────────────────────────────────────────────────────────
+  // R5.10 isLineageContinuation 多代 narrative 路由(P5+ UI 接入)
+  // ───────────────────────────────────────────────────────────────────────
+
+  group('R5.10 isLineageContinuation 多代 narrative 路由', () {
+    test('gen0 founder(def 自带 heritage 但 prev=[])→ false · 走 ascension_complete',
+        () async {
+      // 初始 fixture seedMasterDisciple 给 founder 装 yaml-def-自带 isLineageHeritage=true
+      // 的装备(weapon_liqi_long_quan 等祖师装),但 prev=[](创世 · 无前任持有者)→
+      // isLineageContinuation 应返 false(本批判定标准:prev.isNotEmpty 而非 isLineageHeritage)
+      final svc = makeService();
+      final result = await svc.isLineageContinuation();
+      expect(result, false,
+          reason: 'gen0 一代飞升 · founder 装 prev=[] 创世遗物 · UI 路径 ascension_complete');
+    });
+
+    test('gen1 飞升后 founder=2 持 heritage weapon → true · 走 ascension_lineage_chant',
+        () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+      final svc = makeService();
+
+      // gen1: founder=1 → promoted=2 传 weapon · d2 自动 equip 新 heritage weapon
+      final founder1 = (await isar.characters.get(1))!;
+      final weapon = founder1.equippedWeaponId!;
+      await isar.writeTxn(
+        () => svc.performAscend({weapon: 2}, promotedDiscipleId: 2),
+      );
+
+      // gen2 setup: founderCharacterId 切到 2
+      await isar.writeTxn(() async {
+        final save = (await isar.saveDatas.get(0))!;
+        save.founderCharacterId = 2;
+        await isar.saveDatas.put(save);
+      });
+
+      // 此时 founder=2 持 heritage weapon(prev=[1])→ isLineageContinuation=true
+      final result = await svc.isLineageContinuation();
+      expect(result, true,
+          reason: 'gen2+ 多代续传 · UI 路径 ascension_lineage_chant');
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
   // R5.9 listDiscipleTargets 排除已 promoted(`isFounder=true`)防循环传位
   // ───────────────────────────────────────────────────────────────────────
 

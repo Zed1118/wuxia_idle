@@ -6,6 +6,7 @@ import '../../../data/isar_setup.dart';
 import '../application/phase2_seed_service.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
+import '../../character_panel/presentation/lineage_panel_screen.dart';
 import '../../festival/application/festival_service_providers.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../../shared/strings.dart';
@@ -206,6 +207,16 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
                     () => const CharacterPanelScreen(
                       characterId: _defaultCharacterId,
                     ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _ScenarioButton(
+                  label: UiStrings.scenarioVcP5Plus,
+                  hint: UiStrings.hintVcP5Plus,
+                  onTap: () => _seedAndPush(
+                    () => Phase2SeedService(isar: IsarSetup.instance)
+                        .seedVisualCheckP5Plus(),
+                    () => const LineagePanelScreen(),
                   ),
                 ),
                 const SizedBox(height: 16),

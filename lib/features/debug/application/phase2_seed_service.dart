@@ -737,6 +737,43 @@ class Phase2SeedService {
     }
   }
 
+  /// VC-P5+ · P5+ 飞升流视觉验收 fixture(2026-05-24 凌晨 8h overnight H 批)
+  ///
+  /// 在 [seedMasterDisciple] 基础上额外:
+  /// - founder boost 到 `wuSheng·dengFeng`(飞升 5 子条件:realmAtPeak ✅)
+  /// - MainlineProgress 写 `stage_inner_demon_07` + `stage_06_05` cleared
+  ///   (飞升 5 子条件:innerDemon07Cleared + mainline0605Cleared ✅)
+  /// - 剩 founderInActive + hasDiscipleTarget 由 seedMasterDisciple 已就绪
+  ///
+  /// Codex Pen 派 `codex_dispatch_p5_p3_visual_check_2026-05-24.md` 14 验收点
+  /// 时,跑此 seed 后 LineagePanel _AscensionSection「步入飞升」按钮自动 enable,
+  /// 90min 内可完成 P0 6 项硬证据截图(不需手跑 wuSheng 全主线)。
+  Future<void> seedVisualCheckP5Plus() async {
+    // 1. 底层 seed:祖师 + 2 弟子 + 装备 + 心法 + active
+    await seedMasterDisciple();
+
+    // 2. 在外层 writeTxn 内 boost founder + 写 MainlineProgress
+    await isar.writeTxn(() async {
+      final founder = await isar.characters.get(1);
+      if (founder != null) {
+        founder.realmTier = RealmTier.wuSheng;
+        founder.realmLayer = RealmLayer.dengFeng;
+        await isar.characters.put(founder);
+      }
+    });
+
+    // 3. 写 MainlineProgress cleared 标签(MainlineProgressService 自带 writeTxn)
+    final svc = MainlineProgressService(isar: isar);
+    await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    final cleared = DateTime.now();
+    for (final stageId in const [
+      'stage_inner_demon_07',
+      'stage_06_05',
+    ]) {
+      await svc.recordVictory(stageId: stageId, now: cleared);
+    }
+  }
+
   // ── private helpers ────────────────────────────────────────────────────────
 
   /// 清空业务 collection（保留 SaveData）。装备 / 心法 / 角色 / 物品 / 事件全清。

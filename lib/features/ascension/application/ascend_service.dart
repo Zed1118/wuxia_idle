@@ -81,6 +81,36 @@ class AscendService {
     );
   }
 
+  /// 当前 founder 是否持有「从前人真传过来」的装备(即「这是 gen2+ 多代飞升」)。
+  ///
+  /// **判定**:不是看 `isLineageHeritage`(def 自带的祖师装备 gen0 起就标 true),
+  /// 而是看 `previousOwnerCharacterIds.isNotEmpty`(真有前任持有者列表 = 多代续传)。
+  /// gen0 founder 装的祖师 def 装备 prev=[](创世遗物,无前任)→ 一代飞升 ·
+  /// gen1+ founder 装的飞升传承装备 prev=[id1,...] → 多代续传。
+  ///
+  /// 用法:UI 层 _performAscend 之前调,选 narrative 文件:
+  /// - true → `ascension_lineage_chant`(P5+ 多代续传弧 · 太祖→师父→我→新弟子)
+  /// - false → `ascension_complete`(P2.3 一代飞升 · 师父别山 + 化境门开)
+  ///
+  /// SaveData / founder 未初始化 → false(安全兜底)。
+  Future<bool> isLineageContinuation() async {
+    final save = await isar.saveDatas.get(0);
+    final founderId = save?.founderCharacterId;
+    if (founderId == null) return false;
+    final founder = await isar.characters.get(founderId);
+    if (founder == null) return false;
+    final ids = [
+      founder.equippedWeaponId,
+      founder.equippedArmorId,
+      founder.equippedAccessoryId,
+    ].whereType<int>().toList();
+    for (final id in ids) {
+      final eq = await isar.equipments.get(id);
+      if (eq != null && eq.previousOwnerCharacterIds.isNotEmpty) return true;
+    }
+    return false;
+  }
+
   /// 玩家 founder 当前所有装备(选件 UI 源 · `ownerCharacterId == founderId`)。
   ///
   /// 不预过滤 `isLineageHeritage`(spec §3:飞升时任选已装备 / 库存皆可)。

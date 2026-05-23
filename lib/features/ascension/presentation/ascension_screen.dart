@@ -208,6 +208,10 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
       if (svc == null || isar == null) {
         throw StateError('AscendService 或 Isar 未就绪');
       }
+      // P5+ narrative 分支:飞升前 founder 是否已持师承遗物(gen2+ 续传场景)。
+      // pre-flight 调,因 performAscend 内 founder isActive=false 会清装备槽。
+      final isContinuation = await svc.isLineageContinuation();
+
       final result = await isar.writeTxn(
         () => svc.performAscend(
           Map.of(_assignments),
@@ -223,10 +227,15 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
       ref.invalidate(lineageInfoProvider);
 
       if (!mounted) return;
-      // 先 push 完成 narrative(ascension_complete · 师父别山 + 化境门开)→
-      // 再 snackbar 摘要 → 最后 pop 回 LineagePanel。
-      final completeNarrative =
-          await NarrativeLoader.load('ascension_complete');
+      // 先 push 完成 narrative → 再 snackbar 摘要 → 最后 pop 回 LineagePanel。
+      // narrative 选择(P5+ 多代续传 vs P2.3 一代飞升):
+      // - gen2+(founder 已持师承遗物 isContinuation=true)→ ascension_lineage_chant
+      //   (太祖→师父→我→新弟子续灯弧 · Tier wuSheng 化机)
+      // - gen1(founder 无师承遗物 isContinuation=false)→ ascension_complete
+      //   (师父别山 + 化境门开 · 一代飞升原体例)
+      final narrativeId =
+          isContinuation ? 'ascension_lineage_chant' : 'ascension_complete';
+      final completeNarrative = await NarrativeLoader.load(narrativeId);
       if (!mounted) return;
       await Navigator.of(context).push<void>(
         MaterialPageRoute<void>(
