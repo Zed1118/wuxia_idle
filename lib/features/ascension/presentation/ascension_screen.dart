@@ -96,6 +96,12 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
                 }
                 // P5+ 默认大弟子接任(disciples.first · activeCharacterIds 顺序)
                 final promotedId = _promotedDiscipleId ?? disciples.first.id;
+                final promotedName = disciples
+                    .firstWhere(
+                      (d) => d.id == promotedId,
+                      orElse: () => disciples.first,
+                    )
+                    .name;
                 return _Body(
                   founder: founder,
                   disciples: disciples,
@@ -106,7 +112,7 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
                   onToggle: _toggleSelection,
                   onAssign: _setAssignment,
                   onPromote: _setPromotedDisciple,
-                  onConfirm: () => _showConfirmDialog(promotedId),
+                  onConfirm: () => _showConfirmDialog(promotedId, promotedName),
                   defaultDiscipleId: disciples.first.id,
                 );
               },
@@ -141,7 +147,10 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
     });
   }
 
-  Future<void> _showConfirmDialog(int promotedDiscipleId) async {
+  Future<void> _showConfirmDialog(
+    int promotedDiscipleId,
+    String promotedDiscipleName,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -150,9 +159,24 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
           UiStrings.ascensionConfirmDialogTitle,
           style: TextStyle(color: WuxiaColors.textPrimary),
         ),
-        content: const Text(
-          UiStrings.ascensionConfirmDialogBody,
-          style: TextStyle(color: WuxiaColors.textPrimary),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              UiStrings.ascensionConfirmDialogBody,
+              style: TextStyle(color: WuxiaColors.textPrimary),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              UiStrings.ascensionConfirmDialogPromotedLine
+                  .replaceFirst('{0}', promotedDiscipleName),
+              style: const TextStyle(
+                color: WuxiaColors.resultHighlight,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -167,10 +191,16 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
       ),
     );
     if (confirmed != true) return;
-    await _performAscend(promotedDiscipleId: promotedDiscipleId);
+    await _performAscend(
+      promotedDiscipleId: promotedDiscipleId,
+      promotedDiscipleName: promotedDiscipleName,
+    );
   }
 
-  Future<void> _performAscend({required int promotedDiscipleId}) async {
+  Future<void> _performAscend({
+    required int promotedDiscipleId,
+    required String promotedDiscipleName,
+  }) async {
     setState(() => _isSubmitting = true);
     try {
       final svc = ref.read(ascendServiceProvider);
@@ -208,15 +238,16 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
         ),
       );
       if (!mounted) return;
+      final baseMsg = UiStrings.ascensionCompleteSnackbar.replaceFirst(
+        '{0}',
+        '${result.transferredCount}',
+      );
+      final promotedMsg = result.promotedDiscipleId != null
+          ? UiStrings.ascensionCompletePromotedSuffix
+              .replaceFirst('{0}', promotedDiscipleName)
+          : '';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            UiStrings.ascensionCompleteSnackbar.replaceFirst(
-              '{0}',
-              '${result.transferredCount}',
-            ),
-          ),
-        ),
+        SnackBar(content: Text('$baseMsg$promotedMsg')),
       );
       Navigator.of(context).pop();
     } catch (e) {
