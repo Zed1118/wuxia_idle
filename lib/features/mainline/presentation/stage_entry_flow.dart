@@ -19,6 +19,7 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../battle/application/battle_resolution.dart';
 import '../../battle/application/stage_battle_setup.dart';
+import '../../battle/domain/strategy/light_foot_strategy.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
@@ -252,7 +253,23 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
       try {
         final (left, right) = await StageBattleSetup(isar: IsarSetup.instance).buildTeams(widget.stage);
         if (!mounted) return;
-        ref.read(battleProvider.notifier).startBattle(left, right);
+        // 1.0 P3.1 §12.3 轻功对决:stageType=lightFoot 注入 LightFootStrategy
+        // (terrain modifier 烘焙到 BattleCharacter critRate/evasionRate/defenseRate
+        // 入口一次,然后委派 DefaultGroundStrategy 跑主循环);其他 stageType
+        // 走默认 DefaultGroundStrategy(BattleNotifier 73 行 fallback)。
+        if (widget.stage.stageType == StageType.lightFoot &&
+            widget.stage.terrainBiome != null) {
+          ref.read(battleProvider.notifier).startBattle(
+                left,
+                right,
+                strategy: LightFootStrategy(
+                  terrainBiome: widget.stage.terrainBiome!,
+                  config: GameRepository.instance.numbers.lightFoot,
+                ),
+              );
+        } else {
+          ref.read(battleProvider.notifier).startBattle(left, right);
+        }
       } catch (e) {
         if (!mounted) return;
         setState(() => _setupError = e.toString());

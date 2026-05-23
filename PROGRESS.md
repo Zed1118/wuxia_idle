@@ -5,13 +5,25 @@
 
 ## 当前阶段
 
+**2026-05-23 夜 → 2026-05-24 晨 §12.3 轻功对决 P3.1 全收尾 ✅ · 1.0 P3 战斗形态扩展首条主线落地 · 1.0 整体 ~76%**(8h overnight worktree `feat/p3_1_lightfoot` · Mac+Opus xhigh 累计 ~5h · spec 估 ~9.5h · 精度 0.53× · **8 commit `be7248a → 本` push origin/feat/p3_1_lightfoot 等用户起床 PR review**):
+- **战斗形态全闭环**(`5b00b96` ~1.5h):`LightFootStrategy` 组合委派 `DefaultGroundStrategy` 零代码重复 + `applyTerrainTo` 入口烘焙 terrain modifier 到 BattleCharacter critRate/evasionRate/defenseRate(clamp 0.0-0.95 防 §5.4/§5.5 红线破)+ `TerrainBiome` 独立 enum 3 项(water/rooftop/bamboo,与 EncounterBiome 解耦)
+- **5 关 + schema**(`53b3741` ~50min):`stage_light_foot_01..05` yiLiu(qiMeng/jingTong/dengFeng)+ jueDing(qiMeng/jingTong)2 Tier × 3 terrain · diff 5.0-6.5 · numbers.yaml light_foot 段 45 行 · StageDef.terrainBiome 字段
+- **narrative ~2.1k 字**(`796a879` ~50min):chapter_light_foot 章首尾(无名轻身术 5 处试炼)+ 10 stage opening/victory + Tier yiLiu「沉着/肃杀/老练」 / jueDing「沉静/从容」风格梯度词
+- **UI 入口 + reactive 三态**(`caf3fa8` ~30min):LightFootScreen cleared/available/locked + LightFootService.statusOf + main_menu 入口 Tower → InnerDemon → **LightFoot** → Leaderboard + strings + main_menu_test 12→13
+- **R5 跨地形红线 3 测**(`0b6a6da` ~30min):R5.1 5 关 × 50 种子分布(实测 50/50/46/50/50 leftWins · 平行支线主导)+ R5.2 clamp + §5.4 红线 + R5.3 unlock 链 e2e
+- **doc 收口**(本)~30min:GDD v1.10→v1.11 §12.3 升「全收尾 ✅」+ ROADMAP P3.1 实装详条 + closeout 78 行 + PROGRESS 顶段
+- **挂账 1.0 P3.2+**(3 项):damage_multiplier 接入 damage_calculator(P3.1.B ~30min)+ 轻功专属 skill yaml(P3.1.B ~45min)+ Pen Windows 视觉验收(Codex 异步 ~1h)
+- **1238 pass / 0 analyze ✅**(原 1220 + 新 18:15 lightfoot 单测 + 3 R5)。数值红线 §5.4/§5.3/§6 公式不动 · Ch1-Ch6 主线 + Demo 49 层 + 心魔 7 关 wuSheng 突破链路径完全不变(轻功对决独立支线 · isLayerLocked 无 lightFoot 路径)
+
+**下波 候选**:① ⭐ **PR review + merge feat/p3_1_lightfoot → main**(起床后)② P3.1.B 子批(damage_multiplier + 轻功 skill yaml)+ Pen Windows 视觉验收 ③ P3.2 群战守城起步(spec 估 3-4h + AI 协作接口扩展)④ P2.3 A1 飞升 + 遗物 transfer(留 P2 闭环 · ~4h+)⑤ inner_demon 战斗机制层调优(P2.2 挂账 #2 · ~1.5h)
+
+---
+
 **2026-05-23 §12.1 心魔系统 Batch 2.1-2.5 全收尾 ✅ · 1.0 P2.2 子阶段闭环**(Mac+Opus xhigh 累计 ~5.25h · spec 估 ~7-8h · 精度 0.66× · **10 commit `e666e4c → b15d34d` 全 push origin/main** · 准备进 1.0 P3):
 - **Batch 2.5.B + 2.5.C**(`b15d34d` ~45min):① UI reactive 三态(InnerDemonScreen `mainlineProgressProvider` + `clearedStageIds` + `unlockTriggers` reverse 链 → cleared/available/locked + main_menu _MenuButton 入口 Tower 后 Leaderboard 前)② **inner_demon_07 决议**:R5.1 数据印证 `_07 +20%` 同 `_06 +20%` 完全同分布(3/0/47),改 +40% 单副本 YAGNI 不动 6v3 架构 ③ **cap 维度纠正**:`mirror_caps.attack_power_max 2000 → 6000` 纠 §5.4 维度(单件 vs 3 件求和)④ 1220 pass / 0 analyze ✅
 - **P2.2 final closeout**(本)~25min:GDD v1.9 → v1.10 + ROADMAP P2.2 final 段 + `docs/handoff/p2_x_inner_demon_final_closeout_2026-05-23.md` 80 行 + 本顶段
 - **挂账 1.0 P3+**(3 项):BreakthroughBlocker 集成 character_panel(1257 行 ~30-45min 推 P3+)+ inner_demon 战斗机制层调优(R5.1 实测数值层 buff 单维度调整不影响战斗结果)+ inner_demon 7 主题 enemy 立绘异步 MJ
 - **1.0 整体 ~70%**(P2.2 子阶段闭环 + Ch4/5/6 主线全闭环 + 心魔系统 7 关接管 wuSheng 突破链 + UI 入口可达)
-
-**下波 候选**:① ⭐ **1.0 P3 起步**(战斗形态扩展:§12.3 轻功对决 / 群战守城 / 心魔机制层调优 / `BreakthroughBlocker` 集成 character_panel)② P2.3 A1 飞升 + 遗物 transfer(E.2/E.3,opus xhigh ~4h+)③ MJ Discord 派单 Ch4-6 + inner_demon 7 主题 enemy ~25 张异步 ④ Codex Pen Windows 视觉验收 ⑤ 1.0 内容补量(装备 35→80 / 心法 21→50 / 典故 80→160)
 
 ---
 

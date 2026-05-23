@@ -158,6 +158,22 @@ enum StageType {
   mainline,    // 主线（GDD §8.1）
   tower,       // 爬塔（问鼎江湖，GDD §8.2）
   innerDemon,  // 心魔关(1.0 P2.2 §12.1,7 关拦截 wuSheng 7 层突破 / 镜像玩家 +10-20%)
+  lightFoot,   // 轻功对决(1.0 P3.1 §12.3,5 关 yiLiu/jueDing 平行支线 / terrain modifier 地形机制)
+}
+
+/// 战斗机制地形(1.0 P3.1 §12.3,GDD v1.11)。
+///
+/// 进 LightFootStrategy 战斗机制,与 [EncounterBiome] 解耦:
+///   - [EncounterBiome] 是 stage 标签层(奇遇 trigger 维度,18 项 mountainPath...)
+///   - [TerrainBiome] 是战斗机制层(LightFootStrategy 烘焙 terrain modifier
+///     到 BattleCharacter critRate/evasionRate/defenseRate/damage delta)
+///
+/// terrain modifier 数值见 `numbers.yaml light_foot.terrain_modifiers`。
+/// 双方对等生效(地形中立),clamp(0.0, 0.95) 防破红线。
+enum TerrainBiome {
+  water,    // 水面(渡口/急流):evasion +0.15 / defense -0.10
+  rooftop,  // 屋脊(青瓦/飞檐):crit +0.10 / damage ×1.15 / defense -0.05
+  bamboo,   // 竹林(密竹/江南):evasion +0.20 / damage ×0.90
 }
 
 /// 关卡解锁状态（Phase 3 T34 主线进度）。
