@@ -118,17 +118,27 @@ class AscendService {
   /// 飞升 transfer 主流程(W · **caller 必须在 `isar.writeTxn` 内 await**)。
   ///
   /// [selections] = `{equipmentId: targetDiscipleCharacterId}` 玩家分配 map。
+  /// [promotedDiscipleId] = P5+ 真传位 disciple(接任 founder 身份)· null = 不传位
+  /// (P2.3 一代飞升兼容路径 · 原 R5.1-5.5 14 测保持)。非 null 时副作用 4 + 7 触发。
   /// 校验失败抛 [StateError](messages 含未达条件 / 字段错误清单)。
   ///
   /// **副作用**:
   ///   1. 每件装备 `inheritFrom(founderId, numbers)`(共鸣 ×0.7 + isLineageHeritage=true +
   ///      previousOwner 链 push)
   ///   2. 每件装备 `ownerCharacterId = targetDiscipleId`(batch transfer)
-  ///   3. founder.isActive=false(出阵 · isAlive 不动 · GDD §7.1 飞升渡劫后仍存在)
-  ///   4. SaveData.activeCharacterIds remove founderId(自动让 founder_buff inactive)
-  ///   5. **不动 founder.isFounder / disciple.lineageRole**(Q2c · 不真传位)
-  ///   6. **不动 founder.realm**(已 wuSheng·dengFeng,飞升非升层)
-  Future<AscensionResult> performAscend(Map<int, int> selections) async {
+  ///   3. founder 端槽位脱钩(equippedWeaponId/ArmorId/AccessoryId 若指本 eq 清空)
+  ///   4. **disciple 端槽位自动接新遗物**(Q3 conflict_slot_resolution=auto_swap):
+  ///      `disciple.equipped{Slot}Id` 指向新 eq.id · 旧装 ownerCharacterId 不变
+  ///      (disciple 仍持入背包语义 · spec `p5_lineage_full_spec` §Q3)
+  ///   5. founder.isActive=false(出阵 · isAlive 不动 · GDD §7.1 飞升渡劫后仍存在)
+  ///   6. SaveData.activeCharacterIds remove founderId
+  ///   7. **promotedDisciple.isFounder=true**(Q1+Q2 · 真传位 · 不动 lineageRole ·
+  ///      founder.isFounder 保 true「太祖」语义 · founder_buff_service 自然接管 · §Q5)
+  ///   8. **不动 founder.realm**(已 wuSheng·dengFeng · 飞升非升层)
+  Future<AscensionResult> performAscend(
+    Map<int, int> selections, {
+    int? promotedDiscipleId,
+  }) async {
     // 1. 5 子条件复查(避 UI invalidate 漏窗口 · 防 race)
     final eligibility = await computeEligibility();
     if (!eligibility.canAscend) {
@@ -174,18 +184,42 @@ class AscendService {
       equipmentsByOrder.add(eq);
     }
 
+    // 3a. promotedDisciple 校验(P5+ 真传位 · spec §Q1)
+    if (promotedDiscipleId != null &&
+        !discipleIds.contains(promotedDiscipleId)) {
+      throw StateError(
+        'promotedDiscipleId $promotedDiscipleId 非 disciple'
+        '(active+alive disciples=$discipleIds)',
+      );
+    }
+
     // 4. transfer 副作用(单 writeTxn · caller 持锁)
     for (final eq in equipmentsByOrder) {
       eq.inheritFrom(founderId, numbers);
       eq.ownerCharacterId = selections[eq.id]!;
-      // 旧装备槽位脱钩:founder 端 equippedWeaponId/ArmorId/AccessoryId
-      // 若指向本 eq,清空(避飞升后 founder 仍 reference 已转走的装备)。
+      // 副作用 3:founder 端槽位脱钩
       if (founder.equippedWeaponId == eq.id) founder.equippedWeaponId = null;
       if (founder.equippedArmorId == eq.id) founder.equippedArmorId = null;
       if (founder.equippedAccessoryId == eq.id) {
         founder.equippedAccessoryId = null;
       }
       await isar.equipments.put(eq);
+
+      // 副作用 4 · Q3 conflict_slot_resolution=auto_swap:disciple 端槽位自动接
+      // 新遗物 · 旧装 ownerCharacterId 不变(disciple 仍持入背包语义 · §Q3)
+      final disciple = (await isar.characters.get(selections[eq.id]!))!;
+      switch (eq.slot) {
+        case EquipmentSlot.weapon:
+          disciple.equippedWeaponId = eq.id;
+          break;
+        case EquipmentSlot.armor:
+          disciple.equippedArmorId = eq.id;
+          break;
+        case EquipmentSlot.accessory:
+          disciple.equippedAccessoryId = eq.id;
+          break;
+      }
+      await isar.characters.put(disciple);
     }
 
     // 5. founder 出阵
@@ -198,6 +232,16 @@ class AscendService {
         .toList();
     await isar.saveDatas.put(save);
 
+    // 7. promotedDisciple 接管 founder 身份(P5+ 真传位 · §Q1+Q2+Q5)
+    //   - promotedDisciple.isFounder=true(不动 lineageRole · 沿 P2.3 Q2c 体例)
+    //   - founder.isFounder 保 true(不切 · 「太祖」语义)
+    //   - founder_buff_service 自然接管(active 中找到 isFounder=true → buff 激活)
+    if (promotedDiscipleId != null) {
+      final promoted = (await isar.characters.get(promotedDiscipleId))!;
+      promoted.isFounder = true;
+      await isar.characters.put(promoted);
+    }
+
     return AscensionResult(
       transferredCount: selections.length,
       founderRetired: true,
@@ -206,6 +250,7 @@ class AscendService {
           .toList(growable: false),
       beneficiaryDiscipleIds:
           selections.values.toSet().toList(growable: false),
+      promotedDiscipleId: promotedDiscipleId,
     );
   }
 
