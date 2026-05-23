@@ -51,6 +51,7 @@ void main() {
     required String defId,
     EquipmentTier tier = EquipmentTier.haoJiaHuo,
     int enhanceLevel = 0,
+    List<int>? previousOwnerCharacterIds,
   }) {
     return Equipment.create(
       defId: defId,
@@ -60,6 +61,7 @@ void main() {
       obtainedFrom: 'test',
       enhanceLevel: enhanceLevel,
       isLineageHeritage: true,
+      previousOwnerCharacterIds: previousOwnerCharacterIds,
     )..id = id;
   }
 
@@ -165,5 +167,69 @@ void main() {
     expect(find.text('祖师陈'), findsOneWidget);
     expect(find.text('尚无弟子'), findsOneWidget);
     expect(find.text('1 件'), findsOneWidget);
+  });
+
+  // ── 用例 4:P5+ 多代 chip · prev.length > 1 显「N 代传承」(F.2) ─────────
+
+  testWidgets('heritage prev.length=2 → 显「3 代传承」chip(P5+ 多代传承)',
+      (tester) async {
+    final founder = mkCharacter(
+      id: 1,
+      name: '祖师陈',
+      lineageRole: LineageRole.founder,
+      isFounder: true,
+    );
+    // gen2 场景:prev=[1, 2] · 太祖 1 → 师父 2 → 当前 founder 3 持有
+    final h = mkHeritage(
+      id: 100,
+      defId: 'qing_yun_jian',
+      previousOwnerCharacterIds: [1, 2],
+    );
+
+    await pumpScreen(
+      tester,
+      LineageInfo(
+        founder: founder,
+        disciples: const [],
+        inactiveDisciples: const [],
+        heritageEquipments: [h],
+      ),
+    );
+
+    // chip 显「3 代传承」(N = prevLen + 1 = 3)· UiStrings.ascensionMultiGenChip '{0} 代传承'
+    expect(find.text('3 代传承'), findsOneWidget,
+        reason: 'gen2 prev.length=2 → 「3 代传承」chip 显示');
+  });
+
+  // ── 用例 5:gen1 边界 · prev.length=1 不触发 chip ─────────────────────────
+
+  testWidgets('heritage prev.length=1 → 不显 chip(gen1 不触发 > 1 阈值)',
+      (tester) async {
+    final founder = mkCharacter(
+      id: 1,
+      name: '祖师陈',
+      lineageRole: LineageRole.founder,
+      isFounder: true,
+    );
+    // gen1 场景:prev=[1] · founder → 当前 founder 2 持有(玩家眼中是「师父传的」不需 chip)
+    final h = mkHeritage(
+      id: 100,
+      defId: 'qing_yun_jian',
+      previousOwnerCharacterIds: [1],
+    );
+
+    await pumpScreen(
+      tester,
+      LineageInfo(
+        founder: founder,
+        disciples: const [],
+        inactiveDisciples: const [],
+        heritageEquipments: [h],
+      ),
+    );
+
+    // gen1 不显 chip · 主断言:findsNothing 「2 代传承」/「N 代传承」类
+    expect(find.textContaining('代传承'), findsNothing,
+        reason: 'gen1 prev.length=1 ≤ 1 阈值 · 不应显示任何 N 代传承 chip');
   });
 }
