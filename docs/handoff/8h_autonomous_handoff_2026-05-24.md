@@ -5,7 +5,7 @@
 
 ## TL;DR
 
-P5+ ④+⑤ 多代飞升 + 真传位实装基础上,A 批续作 4 项 UI polish 全闭环(防循环传位 + 多代 chip + dialog/snackbar 含弟子名)+ R5.9 防回退 2 测。B 批产派单 spec(Codex 14 验收点 + MJ 10 张 prompt ready-to-paste)留用户起床执行。C 批 stage_audit 复跑(~70% 全加权 / ~90% 主轴战斗+主线)。D 批 P1.2 江湖恩怨 + 声望 Phase 0 6 维全 greenfield ✅ + 5 Q&A 候选(留用户拍板)。E 批 memory sink 2 项追加 + 本 handoff。
+**9 批 ABCDEFGHI 完结 ✅**(累计 ~2h opus high · 9 commit `154211b → f70f990` 推 main · 1297 pass / 0 analyze)。**A** P5+ UI polish 全闭环(防循环传位 + 多代 chip + dialog 含弟子名)+ R5.9。**B** Codex 14 验收点 + MJ 10 张 prompt ready-to-paste。**C** stage_audit(全加权 ~70% / 主轴 ~90%)。**D** P1.2 Phase 0 6 维 greenfield + Q1-Q5 候选。**E** memory sink 2 项 + 本 handoff。**F** ascension_lineage_chant narrative + LineagePanel widget test 2。**G** character_panel widget test 2 + ROADMAP 对齐。**H** narrative UI 接入(isLineageContinuation R5.10 2 测)+ VC-P5+ fixture seed(Codex 派单 fixture ✅)。**I** 全仓终验 + PROGRESS/handoff/派单 spec 同步。
 
 ## 自主决策清单(归 3 类)
 
