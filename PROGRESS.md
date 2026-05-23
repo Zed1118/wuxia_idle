@@ -5,13 +5,13 @@
 
 ## 当前阶段
 
-**2026-05-24 §7.1 飞升 + 遗物 transfer P2.3 全闭环 ✅ · 1.0 P2 主线 3 子阶段收口 · 1.0 整体 ~88%**(Mac+Opus xhigh 累计 ~3h · 5 commit `eaa3e00 → 8a4b7bd` 推 main · 1286 pass / 1 skip / 0 analyze):
-- **方向 B + Q1a/Q2c/Q3b/Q4d 拍板**(spec p2_3_ascension_spec_2026-05-24):Q1a 不加 isAscended(复用 `isFounder + isActive=false`)/ Q2c lineageRole 不真切 / Q3b player_pick 真消费 / Q4d 3 条件并存
-- **5 commit ship**:`eaa3e00` spec · `05e2135` Batch 3.1 schema + Service(NumbersConfig HeritageItems + AscensionConfig + AscendService 4 method + 4 providers)· `f8cd163` Batch 3.2 UI(AscensionScreen 三段式 + LineagePanel _AscensionSection + UiStrings 15 段)· `eadf4a5` Batch 3.3 R5 14 测 + Equipment.inheritFrom Isar fixed-length bug 修 + doc 收口 · `8a4b7bd` narrative 4 yaml ~600 字 + NarrativeLoader 扩 path + intro/complete UI 接入 + 3 narrative 测
-- **founder_buff_service 0 代码改**:飞升后 founder isActive=false 自然让 buff 退出 · 数值红线 §5.4/§5.3/§5.5/§6 公式 0 改 · Character/Equipment schema 0 改
-- 详 `docs/handoff/p2_3_ascension_closeout_2026-05-24.md`
+**2026-05-24 §7.1 飞升 P5+ 多代飞升 + 真传位 ④+⑤ 合并 batch 全闭环 ✅ · 1.0 P2 + P5+ 真传位 · 1.0 整体 ~90%**(Mac+Opus xhigh 累计 ~2h30min · spec 估 5-7h · 精度 0.42× · 4 commit `1e875d6 → 1b1bb86` 推 main · 1291 pass / 1 skip / 0 analyze):
+- **合并方案拍板**(spec p5_lineage_full_spec):Phase 0 发现 ④ 单独做没真多代场景可测(需 ⑤ 真传位 founder promotion 当前置)→ 合并 ④⑤ 一批做 · Q1 player_pick 沿 P2.3 体例 + Q2 不真切 lineageRole + Q3 auto_swap 真实装 + Q4 stack=false 加 R5 防回退 + Q5 founder_buff_service 0 改 + Q6 R5.6/7/8 测族 + Q7 UI 集中 AscensionScreen
+- **4 commit ship**:`1e875d6` spec(96 行) · `a1d17ea` Batch 1.1 Service(performAscend 加 promotedDiscipleId + auto_swap 真实装 · 副作用 7 promoted 接管) · `15fc187` Batch 1.2 UI(AscensionScreen 加 _PromotedDiscipleRow 下拉 + UiStrings 4 段) · `1b1bb86` Batch 1.3 R5.6/R5.7/R5.8 5 测(R5.6 多代 e2e 2 + R5.7 auto_swap 2 + R5.8 stack enforce 1)
+- **0 schema 改 · 0 公式改 · founder_buff_service 0 代码改**:P2.3 留好的 isFounder+isActive 两轴语义自然承载传位(active 中 isFounder=true → buff 激活 · promotedDisciple.isFounder=true 自然接管)· R5.1-5.5 原 14 测全过(向后兼容验证 ✅)
+- 详 `docs/handoff/p5_lineage_full_closeout_2026-05-24.md`
 
-**下波 候选**:① Pen Codex Windows 视觉验收 P2.3+P3.1+P3.2(异步 ~1h)② MJ Discord 派单 Ch4-6 + inner_demon ~25 张(异步)③ AscensionScreen pick_hint/disciple_thank UI 细化(P5+ 一并)④ P5+ 多代飞升 + 真传位(留 1.0 后)
+**下波 候选**:① 批 2 ⑥ P1.2 江湖恩怨(~6-8h xhigh · 独立 NPC 关系网模块)② Pen Codex Windows 视觉验收 P5+ 多代飞升流(异步 ~1h)③ MJ Discord 派单 Ch4-6 + inner_demon ~25 张(异步)④ P5+ UI polish(character_panel 多代 chip + narrative 「太祖→祖师→新祖师」叙事弧 + listDiscipleTargets 已 promoted 过滤)⑤ AscensionScreen pick_hint/disciple_thank UI 细化(挂账复用)
 
 ---
 
