@@ -1091,9 +1091,33 @@ class _LineageHeritageRow extends ConsumerWidget {
         .where((e) => e.isLineageHeritage)
         .toList();
     final names = heritage.map(_resolveName).toList();
-    return _LineageRow(
+    final mainRow = _LineageRow(
       label: UiStrings.lineageHeritageLabel,
       value: names.isEmpty ? UiStrings.lineageNoHeritage : names.join(' / '),
+    );
+    if (heritage.isEmpty) return mainRow;
+    // P5+ 多代传承 chip:取所装 heritage 件中 prev len 最大值,> 1 时显「{N} 代
+    // 传承」副行(N = prevLen + 1 算上当前持有者)。语义:gen2 起 chip 才出现
+    // (gen1 prev=[founder] · 玩家眼中只是「师父传的」不需 chip 提醒)。
+    final maxPrevLen = heritage.fold<int>(
+      0,
+      (m, e) => e.previousOwnerCharacterIds.length > m
+          ? e.previousOwnerCharacterIds.length
+          : m,
+    );
+    if (maxPrevLen <= 1) return mainRow;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        mainRow,
+        const SizedBox(height: 2),
+        _LineageRow(
+          label: '',
+          value: UiStrings.ascensionMultiGenChip
+              .replaceFirst('{0}', '${maxPrevLen + 1}'),
+          valueColor: WuxiaColors.textMuted,
+        ),
+      ],
     );
   }
 

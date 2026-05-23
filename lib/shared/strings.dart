@@ -655,4 +655,8 @@ class UiStrings {
       '飞升后,此弟子接任祖师之位,统领门派 · 享祖师 buff(基础 +5% 内力上限/血量 · +2% 暴击)';
   static const String ascensionPromotedNone = '不传位(留待来日)';
   static const String ascensionMultiGenChip = '{0} 代传承';
+
+  // P5+ UI polish 续作(本批)· dialog 内强调传位 + snackbar 追加接任人名
+  static const String ascensionConfirmDialogPromotedLine = '门派衣钵:{0}';
+  static const String ascensionCompletePromotedSuffix = ' · {0} 接掌门派';
 }

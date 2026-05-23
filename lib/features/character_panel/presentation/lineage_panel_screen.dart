@@ -532,6 +532,29 @@ class _HeritageRow extends StatelessWidget {
             ),
           ),
         ],
+        // P5+ 多代传承 chip:prev len > 1 时显「{N} 代传承」(N = prev len + 1)。
+        // 沿 character_panel _LineageHeritageRow 同语义 · gen2 起才显。
+        if (equipment.previousOwnerCharacterIds.length > 1) ...[
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: WuxiaColors.panel,
+              border: Border.all(color: WuxiaColors.border),
+              borderRadius: BorderRadius.circular(2),
+            ),
+            child: Text(
+              UiStrings.ascensionMultiGenChip.replaceFirst(
+                '{0}',
+                '${equipment.previousOwnerCharacterIds.length + 1}',
+              ),
+              style: const TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 11,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
