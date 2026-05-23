@@ -94,11 +94,16 @@ class AscendService {
         .findAll();
   }
 
-  /// active 中 `lineageRole == disciple` 且 `isAlive == true` 的徒弟列表
-  /// (transfer target · UI 下拉源)。
+  /// active 中 `lineageRole == disciple` 且 `isAlive == true` 且 `isFounder == false`
+  /// 的徒弟列表(transfer target · UI 下拉源)。
   ///
   /// SaveData 未初始化 / activeCharacterIds 空 → 空 list。order 按 activeCharacterIds
   /// 顺序(UI 默认选第 1 个 = 大弟子语义)。
+  ///
+  /// P5+ 真传位后 promoted disciple 的 `isFounder=true`(`lineageRole` 仍为 disciple ·
+  /// 沿 spec Q2 不真切语义)→ 必须从 target 列表排除,否则下一代飞升时玩家可能把已
+  /// 接任 founder 身份的「新祖师」再次选作 promoted target(语义循环)。R5.9 防回
+  /// 退测验证。
   Future<List<Character>> listDiscipleTargets() async {
     final save = await isar.saveDatas.get(0);
     if (save == null) return const [];
@@ -110,6 +115,7 @@ class AscendService {
       if (c == null) continue;
       if (c.lineageRole != LineageRole.disciple) continue;
       if (!c.isAlive) continue;
+      if (c.isFounder) continue;
       result.add(c);
     }
     return result;
