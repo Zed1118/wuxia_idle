@@ -105,7 +105,7 @@ paragraphs:
       ], reason: '扫描顺序契约：先扁平后 stages/');
     });
 
-    test('P1 #1 扁平 + stages/ 都不存在 → 调 2 次 loader 后 placeholder 兜底',
+    test('P1 #1 扁平 + stages/ + ascension/ 都不存在 → 各试一次后 placeholder 兜底',
         () async {
       final calls = <String>[];
       Future<String> mockLoader(String path) async {
@@ -118,9 +118,13 @@ paragraphs:
         loader: mockLoader,
       );
       expect(c.isPlaceholder, isTrue);
-      expect(calls.length, 2, reason: '扁平 + 子目录各试一次');
-      expect(calls[0], 'data/narratives/stage_99_99_opening.yaml');
-      expect(calls[1], 'data/narratives/stages/stage_99_99_opening.yaml');
+      // P2.3 加 `data/narratives/ascension/` 后 _scanPaths 长度 3
+      // (memory `feedback_red_line_test_semantics`:断言扫描顺序契约非具体数字)。
+      expect(calls, [
+        'data/narratives/stage_99_99_opening.yaml',
+        'data/narratives/stages/stage_99_99_opening.yaml',
+        'data/narratives/ascension/stage_99_99_opening.yaml',
+      ], reason: '扁平 → stages/ → ascension/ 顺序各试一次');
     });
   });
 

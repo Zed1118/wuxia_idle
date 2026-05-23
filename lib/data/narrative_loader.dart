@@ -69,10 +69,12 @@ class NarrativeLoader {
   /// 扫描顺序（固定契约）：
   /// 1. `data/narratives/<id>.yaml`（扁平，兼容旧 narrative）
   /// 2. `data/narratives/stages/<id>.yaml`（DeepSeek 拆分体系）
+  /// 3. `data/narratives/ascension/<id>.yaml`(P2.3 飞升仪式 narrative · 2026-05-24)
   /// 都失败 → [NarrativeContent.placeholder]
   static const _scanPaths = [
     'data/narratives/',
     'data/narratives/stages/',
+    'data/narratives/ascension/',
   ];
 
   /// 从扁平或 stages/ 子目录加载剧情内容；都缺则兜底。
