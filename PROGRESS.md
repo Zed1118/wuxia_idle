@@ -5,6 +5,17 @@
 
 ## 当前阶段
 
+**2026-05-24 8h overnight v3 派单 ready · 5 worktree 并行**(main HEAD `7c1c195` · 5 worktree 同级 `~/Desktop/wuxia_idle-{ch45-yiliu,mem-sink,pvp-p0,sect-p0,p12-spec}`):
+- A `fix/ch4_5_yiliu_words` sonnet ~2h · Ch4-Ch5 yiLiu 4 风格词补漏
+- B `audit/memory_sink_gdd10` sonnet ~1h · memory sink ready-to-paste + GDD §10 教程审计
+- C `phase0/p3_3_pvp` opus high ~1.5h · P3.3 PVP Phase 0 + Q1-Q5 候选
+- D `phase0/p3_4_sect_event` opus high ~1.5h · P3.4 门派事件 Phase 0 + P1.2 依赖梳理
+- E `feat/p1_2_spec` opus xhigh ~2h · P1.2 江湖恩怨 + 声望 spec 草案(Q1-Q5 默认决议版)
+- 体例:1 子系统 = 1 worktree = 1 会话 · 0 主轴拍板实装 · 完成 → 草稿 PR · 起床串行审 + squash merge
+- 详 `docs/spec/overnight_v3_2026-05-24/_README.md` + 各 worktree spec 5 份
+
+---
+
 **2026-05-24 凌晨 §7.1 飞升 P5+ UI polish 续作 + 8h overnight v2 全流 ABCDEFGHIJKL 完结 ✅**(Mac+Opus high 累计 ~2h15min · 12 commit `154211b → 12c8fc4` 推 main · 1300 pass / 1 skip / 0 analyze):
 - **A 批 P5+ UI polish 全闭环**(`154211b → 4229a12` · 3 commit):A.1 listDiscipleTargets 加 `!isFounder` 过滤防循环传位 + R5.9 2 测 / A.2-A.3 character_panel + LineagePanel 多代传承 chip(prev.length > 1 → 「{N} 代传承」)/ A.4 AscensionScreen dialog 加「门派衣钵」strong 行 + snackbar 追加接任名
 - **B 批派单 spec**(`ad145ee`):Codex 14 验收点 spec(65 行)+ MJ 10 张 prompt ready-to-paste(89 行 派单类) · 起床用户手动派
