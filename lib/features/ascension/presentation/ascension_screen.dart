@@ -5,12 +5,14 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
+import '../../../data/narrative_loader.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/application/lineage_info_provider.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
+import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../application/ascend_service_providers.dart';
 
 /// P2.3 §7.1 飞升 + 遗物 transfer 屏(spec p2_3_ascension_spec_2026-05-24)。
@@ -173,6 +175,21 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
       ref.invalidate(lineageInfoProvider);
 
       if (!mounted) return;
+      // 先 push 完成 narrative(ascension_complete · 师父别山 + 化境门开)→
+      // 再 snackbar 摘要 → 最后 pop 回 LineagePanel。
+      final completeNarrative =
+          await NarrativeLoader.load('ascension_complete');
+      if (!mounted) return;
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (innerCtx) => NarrativeReaderScreen(
+            content: completeNarrative,
+            fallbackTitle: UiStrings.ascensionTitle,
+            onFinish: () => Navigator.of(innerCtx).pop(),
+          ),
+        ),
+      );
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -296,6 +313,8 @@ class _Body extends ConsumerWidget {
   }
 }
 
+/// 仪式横幅 · 异步加载 `ascension_intro` narrative(占 2 段)+ fallback
+/// `UiStrings.ascensionRitualHint`(yaml 缺/解析失败时)。
 class _RitualBanner extends StatelessWidget {
   const _RitualBanner({required this.founderName});
 
@@ -322,13 +341,30 @@ class _RitualBanner extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            UiStrings.ascensionRitualHint,
-            style: TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 13,
-              height: 1.5,
-            ),
+          FutureBuilder<NarrativeContent>(
+            future: NarrativeLoader.load('ascension_intro'),
+            builder: (context, snapshot) {
+              final content = snapshot.data;
+              if (content == null || content.isPlaceholder) {
+                return const Text(
+                  UiStrings.ascensionRitualHint,
+                  style: TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                );
+              }
+              final intro = content.paragraphs.take(2).join('\n\n').trim();
+              return Text(
+                intro.isEmpty ? UiStrings.ascensionRitualHint : intro,
+                style: const TextStyle(
+                  color: WuxiaColors.textMuted,
+                  fontSize: 13,
+                  height: 1.6,
+                ),
+              );
+            },
           ),
         ],
       ),
