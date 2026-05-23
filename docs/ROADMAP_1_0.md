@@ -143,6 +143,13 @@
 - **R5 跨地形红线 3 测**:R5.1 5 关 × 50 种子分布 50/50/46/50/50 leftWins(平行支线主导 · 与心魔克己 3/0/47 对称)+ R5.2 clamp + §5.4 红线 + R5.3 unlock 链
 - 详 `docs/handoff/p3_1_lightfoot_closeout_2026-05-23.md` + `docs/spec/p3_1_lightfoot_spec_2026-05-23.md` + `docs/phase0/p3_1_lightfoot_phase0_2026-05-23.md`
 
+**2026-05-24 P3.1.B 子批全收尾 ✅**(branch `feat/p3_1_b` 主 cwd · 3 commit `31bb7bf` + `ff2a0be` + 本 · 1242 pass / 0 analyze · 实测 ~1h opus high · spec 估 ~1.5h · 精度 0.67×):
+- **Batch A · damage_multiplier 接入 attackPowerMultiplier**:`BattleCharacter` +`attackPowerMultiplier:double` default=1.0 + copyWith + `default_ground_strategy._calculateInBattle` raw 末乘 atkPowerMult + breakdown(沿 cult/school/crit/def/realm 体例,独立维度乘项不进 base 求和)+ `LightFootStrategy._bake` 烘焙 `terrain.damageMultiplier` 到 attackPowerMultiplier(双方对等)+ R6 4 测(water 1.0 / rooftop 1.15 / bamboo 0.90 / 双方对等)
+- **Batch B · 轻功专属 skill 池 18 招 + stages 切换**:`skills.yaml +18` 招 lightfoot pool(`skill_lightfoot_<tier>_<school>_<type>` · yiLiu 9 招 cap=3000 menpai 倍率 + jueDing 9 招 cap=4000 jianghu 倍率 · parentTechniqueDefId: null 沿 joint_skill 体例)+ `stage_light_foot_01..05` enemyTeam.skillIds 全切到新池(sed 35 次替换)+ baseline 104→122
+- **架构发现**:`DamageCalculator` 用 `Character`(Isar 实体)是 phase1 公式参考,不参与战斗;实际战斗走 `DefaultGroundStrategy._calculateInBattle` 用 `BattleCharacter` · attackPowerMultiplier 加在 BattleCharacter 上接入正确路径
+- **R5.1 实测分布**:50/50/49/50/50 leftWins(bamboo stage_03 draws 4→1 · ×0.90 双方等比 → 玩家击杀更稳定,主导格局未变)
+- **挂账留 1.0 P3.2+**:Pen Windows 视觉验收(Codex 异步 ~1h · 非阻塞)
+
 ### P3.2 §12.3 群战守城
 - 5v5 或更大规模特殊关卡
 - BattleStrategy 抽象层挂 `MassBattleStrategy`

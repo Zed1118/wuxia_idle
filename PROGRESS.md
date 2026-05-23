@@ -5,6 +5,17 @@
 
 ## 当前阶段
 
+**2026-05-24 §12.3 轻功对决 P3.1.B 子批收尾 ✅ · 1.0 P3.1 完整闭环 · 1.0 整体 ~77%**(branch `feat/p3_1_b` 主 cwd · Mac+Opus high 累计 ~1h · spec 估 ~1.5h · 精度 0.67× · **3 commit `31bb7bf` + `ff2a0be` + 本** 待 PR review 合 main):
+- **Batch A · damage_multiplier 接入**(`31bb7bf` ~35min):`BattleCharacter` +`attackPowerMultiplier:double` default=1.0 + copyWith + `default_ground_strategy._calculateInBattle` raw 末乘 atkPowerMult + breakdown 输出 + `LightFootStrategy._bake` 烘焙 `terrain.damageMultiplier` 到 attackPowerMultiplier(双方对等)+ R6 4 测(water 1.0 / rooftop 1.15 / bamboo 0.90 / 双方对等)
+- **Batch B · 18 招 lightfoot 池 + stages 切换**(`ff2a0be` ~20min):`skills.yaml +18` 招 `skill_lightfoot_<tier>_<school>_<type>`(yiLiu 9 招 cap=3000 menpai 倍率 + jueDing 9 招 cap=4000 jianghu 倍率 · parentTechniqueDefId: null 沿 joint_skill 体例)+ `stage_light_foot_01..05` enemyTeam.skillIds 全切到新池(sed 35 次替换)+ repo_test baseline 104→122
+- **架构发现**:`DamageCalculator` 用 `Character`(Isar 实体)是 phase1 公式参考,不参与战斗 — 实际战斗走 `default_ground_strategy._calculateInBattle` 用 `BattleCharacter`,attackPowerMultiplier 加在 BattleCharacter 上接入正确路径
+- **R5.1 实测**:50/50/49/50/50 leftWins(bamboo stage_03 draws 4→1 · ×0.90 双方等比 → 玩家击杀更稳定 acceptable · 主导格局未变)
+- **doc 收口**(本)~15min:GDD v1.11→v1.12 §12.3 升「P3.1.B 子批收尾 ✅」+ ROADMAP P3.1.B 详条 + `docs/handoff/p3_1_b_closeout_2026-05-24.md` 78 行 + 本顶段
+- **挂账留 1.0 P3.2+**:Pen Windows 视觉验收 P3.1(Codex 异步 ~1h · 非阻塞)
+- **1242 pass / 0 analyze ✅**(原 1238 + 4 R6 · skill 总数 64→82)。数值红线 §5.4/§5.3/§6 公式形态不变(attackPowerMultiplier 是 BattleCharacter view layer 字段 · 末端独立乘项)
+
+---
+
 **2026-05-23 夜 → 2026-05-24 晨 §12.3 轻功对决 P3.1 全收尾 ✅ · 1.0 P3 战斗形态扩展首条主线落地 · 1.0 整体 ~76%**(8h overnight worktree `feat/p3_1_lightfoot` · Mac+Opus xhigh 累计 ~5h · spec 估 ~9.5h · 精度 0.53× · **2026-05-24 晨 PR #1 squash merge ✅ → main HEAD `eb56480` · worktree clean · 本地 feat branch -D**):
 - **战斗形态全闭环**(`5b00b96` ~1.5h):`LightFootStrategy` 组合委派 `DefaultGroundStrategy` 零代码重复 + `applyTerrainTo` 入口烘焙 terrain modifier 到 BattleCharacter critRate/evasionRate/defenseRate(clamp 0.0-0.95 防 §5.4/§5.5 红线破)+ `TerrainBiome` 独立 enum 3 项(water/rooftop/bamboo,与 EncounterBiome 解耦)
 - **5 关 + schema**(`53b3741` ~50min):`stage_light_foot_01..05` yiLiu(qiMeng/jingTong/dengFeng)+ jueDing(qiMeng/jingTong)2 Tier × 3 terrain · diff 5.0-6.5 · numbers.yaml light_foot 段 45 行 · StageDef.terrainBiome 字段
@@ -15,7 +26,7 @@
 - **挂账 1.0 P3.2+**(3 项):damage_multiplier 接入 damage_calculator(P3.1.B ~30min)+ 轻功专属 skill yaml(P3.1.B ~45min)+ Pen Windows 视觉验收(Codex 异步 ~1h)
 - **1238 pass / 0 analyze ✅**(原 1220 + 新 18:15 lightfoot 单测 + 3 R5)。数值红线 §5.4/§5.3/§6 公式不动 · Ch1-Ch6 主线 + Demo 49 层 + 心魔 7 关 wuSheng 突破链路径完全不变(轻功对决独立支线 · isLayerLocked 无 lightFoot 路径)
 
-**下波 候选**:① ⭐ P3.1.B 子批(damage_multiplier + 轻功 skill yaml · ~1.5h)+ Pen Windows 视觉验收(异步)② P3.2 群战守城起步(spec 估 3-4h + AI 协作接口扩展 · 升 xhigh)③ P2.3 A1 飞升 + 遗物 transfer(P2 闭环 · ~4h+ · 升 xhigh)④ inner_demon 战斗机制层调优(P2.2 挂账 #2 · ~1.5h)⑤ MJ Discord 派单 Ch4-6 + inner_demon 7 enemy ~25 张(异步)
+**下波 候选**:① ⭐ **PR review + merge feat/p3_1_b → main**(起手)② P3.2 群战守城起步(spec 估 3-4h + AI 协作接口扩展 · 升 xhigh)③ P2.3 A1 飞升 + 遗物 transfer(P2 闭环 · ~4h+ · 升 xhigh)④ inner_demon 战斗机制层调优(P2.2 挂账 #2 · ~1.5h)⑤ Pen Windows 视觉验收 P3.1(Codex 异步 ~1h)⑥ MJ Discord 派单 Ch4-6 + inner_demon 7 enemy ~25 张(异步)
 
 ---
 
@@ -27,32 +38,11 @@
 
 ---
 
-**2026-05-22 晚 §12.1 心魔系统 Phase 1 spec + Batch 2.1 schema ✅ · 1.0 P2.2 子阶段推进**(Mac+Opus xhigh 累计 ~1.5h 接 Ch6 全收口后 · **3 commit `e666e4c` + `4558359` + `2903e90` 待 push origin/main** · ROADMAP_1_0.md:110/200/247):
-- **Phase 0 reality check**(`e666e4c` ~30min):5 维 grep — D1 突破 0 玩家主动(character_advancement_service.dart:30 自动 while-loop)/ D2 lib/features/inner_demon/ 新模块 / D3 EncounterType.trial 语义不合 / D4 BattleStrategy plug-in ready / D5 EncounterBiome 缺 innerRealm / D6 散功公式 ×0.5 参 / D7 RealmTier×RealmLayer 49 层 + **4 主轴用户拍板 B+B+A 微调+B** + Phase 0 doc 59 行
-- **Phase 1 spec doc 起草**(`4558359` ~30min):148 行 spec doc + GDD v1.7→v1.8 — 7 关 unlock 矩阵 + 镜像 +10-20% +§5.4 cap + 散功阉割版 + 心魔余毒 8h + StageType/EncounterBiome enum 各 +1 + numbers.yaml inner_demon 段 + lib/features/inner_demon/ 新模块 + advancement_service unlock hook
-- **Batch 2.1 schema**(`2903e90` ~25min):enums 2 项 + numbers.yaml inner_demon 段 46 行 + stages.yaml stage_inner_demon_01..07 7 entries 占位(心魔·贪/嗔/痴/慢/疑/空/真 · difficulty 6.2-7.5 · enemyTeam[] InnerDemonStrategy 动态镜像 · baseExpReward=0 克己语义)+ test baseline 拆分(mainline 30 + innerDemon 7)+ 1192 pass / 0 analyze
-- **Batch 2.2.A vertical slice**(`71bd0a7` ~45min):InnerDemonDef domain(206 行)+ InnerDemonService.isLayerLocked(55 行)+ NumbersConfig.innerDemon 加载 + applyExperience hook 参数(EXP 留账 §5.1)+ R1 14 测 + 1206 pass / 0 analyze · **spec 估 ~1h · 实际 45min · 精度 0.75×**。Batch 2.2.A 调整:InnerDemonStrategy 不建(YAGNI) + UI 占位推 Batch 2.3 + 3 callers wire 推 Batch 2.2.B
-- **Batch 2.2.B 镜像战斗 + caller wire**(`1a26488` ~50min):InnerDemonService.buildMirrorEnemyTeam(75 行)+ StageBattleSetup.buildTeams innerDemon 分支 + 3 callers wire + R2-R3 7 测 + 1213 pass · spec 估 ~1.5h · 实际 50min · 精度 0.56× · **Batch 2.2 全完**(镜像 enemy 战斗 + layer-lock unlock 拦截 + §5.4 cap 红线 + 3 callers wire production hook 真生效);inner_demon_07 双镜像留 Batch 2.5
-- **Batch 2.3 narrative + UI 占位**(`6bde146` ~50min):22 narrative ~3,900 字(chapter + 7 opening/victory/defeat)+ Tier wuSheng「湛然/寂照/圆融/化机」+ 7 主题贪/嗔/痴/慢/疑/空/真 + InnerDemonScreen + InnerDemonBreakthroughBlocker + R4 4 测 + 1217 pass · spec 估 ~1.5h · 实际 50min · 精度 0.56× · chapter_inner_demon 运行时不 load + UI widget reactive 集成留 Batch 2.5+
-- **Batch 2.4 doc 同步**(`86d55fc` ~15min):GDD.md v1.8 → v1.9(顶部变更摘要 + §12.1 心魔行升「Phase 2 实装完成 ✅」+ commit 范围 e666e4c→a0cbb29 + 实装组件清单)+ docs/ROADMAP_1_0.md P2.2 §12.1 加实装完成详条(沿 Ch6 P2.1 体例 + 调整记录 4 项)+ analyze 0 / inner_demon 19 测全过。**spec 估 ~25min · 实际 15min · 精度 0.60×**。**P2.2 §12.1 心魔系统 doc 全收口 ✅**
-- **数值红线 §5.4/§5.3/§6 不动** + Demo 49 层 EXP 自动升层路径完全不变(isLayerLocked 严格 wuSheng 短路)+ B 路线 0 contamination(Phase 0 codebase 0 心魔引用 verify)
-
-**1.0 进度 ~52% → ~64%**(P2.2 Batch 2.1-2.4 全完,doc 全收口 ✅;下波候选见顶段「夜」段)。
+**2026-05-22 晚 §12.1 心魔系统 P2.2 Phase 1+2 历史段归档**:Phase 0 reality check + Phase 1 spec doc + Batch 2.1-2.4 全 7 commit `e666e4c → 86d55fc` 已被 P2.2 Batch 2.5 final 段(上)汇总。详 `docs/handoff/p2_x_inner_demon_phase1_closeout_2026-05-22.md`。
 
 ---
 
-**2026-05-22 Ch6「飞升」Phase 2 全收口 ✅ + 复盘修补 ✅ · 1.0 P2 第二条主线全闭环**(Mac+Opus xhigh 3h 无人看管批 + ~1h 复盘修补 + 5min memory sink ≈ ~4h5min,**11 commit `15216a0` → `d00e039` 全 push origin/main** · Ch4+Ch5+Ch6 三章弧叙事完整):
-- **Phase 0 + Phase 1**(`15216a0`+`5db61a8` ~1h):reality check 6 维 grep + spec doc 173 行 + GDD v1.5→v1.6 + 用户拍板 4 主轴(章名「飞升」/ zongShi 全章跨 wuSheng·qiMeng / 师父第三句完整联通 + 西凉霸主本人复出 / 末 Boss B 复合)
-- **Batch 2.1+2.2 数值**(`f6379d7` ~45min):stages.yaml +5 entries(HP 30k→52k / Atk 2.0k→2.7k 跨阶 wuSheng·qiMeng)+ 末 Boss B 复合 + UI/test fixture 扩 6 章 30 关 + **schema 0 扩** + 1186→1191 pass
-- **Batch 2.3.①+② narrative**(`ea8ea2d`+`486d39b` ~70min):13 文件 ~5,800 字 + chapter_06 章首尾 + defeat · **师父三句遗言第一次完整连成一句** + **无物之境收束**(四件物事并放青石不带走雪埋)+ 物理遗物三章 hook 全闭环
-- **Batch 2.4 doc + 2.5 R5**(`3bb629e`+`2dea111` ~50min):GDD v1.6→v1.7 + ROADMAP P2.1 加 Ch6 + R5 跨阶 wuSheng 红线 50 种子双边断言一次过(1192 pass)
-- **closeout v1 + handoff v1**(`e546b00` ~15min):100+65 行
-- **复盘修补 6 项**(`d00e039` ~1h):用户提示「评估工作内容」后自查 7 项问题 + 立即修补 — chapter_06 玄妙词补(Tier 词 2/2/0/4 → 2/2/2/5) + epilogue 砍堆叠 + prologue/epilogue 对称(各 ~770 字) + R5 加 print 分布(**实测 1/0/49 = 98% 平局,Ch6 末关「拉锯偏向平局」格局**) + 普伤 spot check ~9 万接近 §5.4 上限 ⚠️ + spec 数值对齐实装 + closeout 100→72 ✅ + handoff 65→63(归 3 类决策)
-- **memory sink 2 项**:`feedback_user_offline_autonomous` 加 Ch6 复盘 6 反例 + 6 教训 / `feedback_doc_inflation_overnight` 加 pattern bug 警示「连续超 +15-30% 不是 acceptable」+ 强制砍法 4 项
-
-**1192 pass / 0 analyze ✅**(+5 Ch6 e2e + 1 R5)。**P2 第二条主线 100% ✅**(Ch4 + Ch5 + Ch6 三章弧全闭环)。**1.0 进度 ~42% → ~50%**。
-
-**下波候选已被 P2.2 Phase 1 启动覆盖,见顶段下波候选**(原 ① 1.0 P3 起步 → P2.2 心魔 Phase 1 已实现,Phase 2 接续中)。
+**2026-05-22 Ch6「飞升」Phase 2 全收口 ✅ + 复盘修补 ✅ · 1.0 P2 第二条主线全闭环**(~4h5min · 11 commit `15216a0 → d00e039` 全 push origin/main · 三章弧 Ch4+Ch5+Ch6 叙事完整):13 文件 ~5,800 字 + chapter_06 飞升 + 师父三句遗言第一次完整连成 + 无物之境收束 + R5 跨阶 wuSheng 红线一次过 + 复盘 6 项修补(epilogue 对称 / 普伤 ~9 万 spot check / closeout 100→72)。详 `docs/handoff/p2_x_chapter6_ascension_phase2_closeout_2026-05-22.md` + memory sink `feedback_user_offline_autonomous` / `feedback_doc_inflation_overnight`。**1.0 进度 ~42% → ~50%**。
 
 **2026-05-21/22 历史段归档**(M4 美术 Stage 3 BOSS 22 张闭环 + Ch4 Phase 2.1-2.5 全收口 + 8h overnight + 审查修补 + 3h 托管):详 commit `319e15d` → `f6b0894` 范围 + handoff `art_stage3_boss_closeout` / `p1_x_chapter4_phase2_full_closeout_2026-05-22.md` / `8h_autonomous_handoff_2026-05-22.md` / `3h_managed_handoff_2026-05-22.md`。
 
@@ -87,12 +77,7 @@
 
 ### 已解决挂账(逆时序)
 
-- **W12-W13 销账**(2026-05-14):#12 / #23 / #28 / #32
-- **W4-W5 销账**(2026-05-13):#25 / #26 / #29
-- **W3 销账**(2026-05-12):#27
-- **W1-W2 销账**(2026-05-11):#22 / #24
-- **Phase 1-2 销账**(2026-05-10/11):#1 / #5 / #13 / #14-15 / #16 / #19 / #20 / #21
-- **W6 验证为伪挂账**:#18(项目无 web target)
+- **Phase 1-2 + W1-W13 全销账**(2026-05-10..14):#1/5/12-16/19-29/32(逐周详 git log)+ #18 验证为伪挂账(项目无 web target)
 
 ### Phase 1-4 早期详条已迁出
 
