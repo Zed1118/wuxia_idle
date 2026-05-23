@@ -5,18 +5,19 @@
 
 ## 当前阶段
 
-**2026-05-24 P3.2.C 修法 ① 数值大改全闭环 ✅ · 1.0 整体 ~83%**(Mac+Opus xhigh ~1h10min · 直推 main · 10 文件 +101/-37):
-- **3 重真因诊断**(memory `feedback_phase05_diagnose_before_solve` 五轮校准):① 5 R5 test buildOne 漏 sentinel `character.id`(继 ②a 同 bug)② ch4/5/6 test buildEq 漏 `baseAttack/baseSpeed`(玩家方 atk=0 完全无输出)③ mass_battle `_intermission` 不 revive 死人导致 wave 累积数学必输
-- **修法**:① 5 test sentinel fix(对齐 ②a 体例)② ch4/5/6 buildEq +baseAttack/baseSpeed ③ `_intermission` 加 `reviveDeadPct=1.00` + `aliveHpRecoveryPct=1.00`(numbers.yaml + impl + def 2 字段)④ stage_03-05 mass_battle enemy hp/atk 微调 + ch4/ch5 boss enemy hp+25-30%/atk+10%(弥补 buildEq fix 后玩家方真 atk 接通的反向爆破)⑤ production assert `BattleState` 构造 unique characterId(去 const + AssertionError,debug 模式 only)
-- **R5 实测**:mass_battle 5 关 50/0 50/0 37/13 45/5 30/20 ✅ · lightfoot 50 ×5 ✅ · inner_demon 49 ×7 ✅ · ch4/5 50/0 ch6 49/1 ✅ · **全 6 R5 134 pass**
-- **1269 pass / 1 skip / 0 analyze ✅** · 数值红线 §5.4/§5.3/§5.5/§6 公式 0 改 · production debug-only assert 不影响 release
-- 详 `docs/handoff/p3_2_c_fix_1_numerical_overhaul_2026-05-24.md`
+**2026-05-24 §7.1 飞升 + 遗物 transfer P2.3 全闭环 ✅ · 1.0 P2 主线 3 子阶段收口 · 1.0 整体 ~87%**(Mac+Opus xhigh ~2h30min · 4 commit `eaa3e00 → 本` 推 main · 1283 pass / 1 skip / 0 analyze):
+- **方向 B + Q1a/Q2c/Q3b/Q4d 拍板**(spec p2_3_ascension_spec_2026-05-24,125 行):Q1a 不加 isAscended 字段(复用 `isFounder + isActive=false`)/ Q2c lineageRole 不真切传位 P5+ 再切 / Q3b 玩家手动选 1-2 件 player_pick 真消费 / Q4d 3 条件并存(inner_demon_07 + wuSheng·dengFeng + stage_06_05 cleared)
+- **Batch 3.1 schema + Service** `05e2135`:numbers.yaml `ascension.unlock_triggers` 段 + NumbersConfig 扩 HeritageItems(6 字段消费 v1.5 决议 4 规则字段)+ AscensionConfig + AscendService 4 method(eligibility 5 子条件 + listHeritageCandidates + listDiscipleTargets + performAscend caller 持锁 writeTxn)+ 4 Riverpod providers
+- **Batch 3.2 UI** `f8cd163`:AscensionScreen 401 行三段式 ConsumerStatefulWidget(仪式 + 选件 1-2 + DropdownButton 改 disciple + 确认 dialog)+ LineagePanel 末加 _AscensionSection(按钮 + tooltip)+ UiStrings 15 段
+- **Batch 3.3 R5 + 顺手修生产 bug + closeout** 本:R5 5 族 14 测(e2e+5 子条件+player_pick 3+边界 4+§5.4 cap)+ **Equipment.inheritFrom Isar fixed-length list bug 修**(reassign `[...old, new]` · memory `feedback_isar_pitfalls`)+ closeout 65 行 + GDD v1.14 + CLAUDE.md §12.2 #10「P2.3 已实装 ✅」+ ROADMAP P2.3 段
+- **founder_buff_service 0 代码改**:飞升后 founder isActive=false 自然让 `computeBuffActive` 返 false · 数值红线 §5.4 公式完全不动 · Character/Equipment schema 0 改
+- 详 `docs/handoff/p2_3_ascension_closeout_2026-05-24.md`
 
-**下波 候选**:② P2.3 A1 飞升 + 遗物 transfer(GDD §7.1 + §12.2 #10 · 1.0 P2 闭环 · 升 xhigh · ~4h+)③ Pen Codex Windows 视觉验收 P3.1 + P3.2(异步 ~1h)④ MJ Discord 派单 Ch4-6 + inner_demon ~25 张(异步)
+**下波 候选**:① narrative ~600 字(spec §7 · `data/narratives/ascension/` 4 yaml · sonnet ~1h)② Pen Codex Windows 视觉验收 P3.1 + P3.2 + P2.3(异步 ~1h)③ MJ Discord 派单 Ch4-6 + inner_demon ~25 张(异步)④ P5+ 多代飞升 + 真传位(留 1.0 后)
 
 ---
 
-**2026-05-24 §12.3 群战守城 P3.2 全闭环 ship → main `490a136` + P3.2.C ②a inner_demon 销账**(PR #3 squash merge · 9 commit · Mac+Opus xhigh 累计 ~6h):Batch 2.1-2.5 + P3.2.B 残血容差 + P3.2.C ②a sentinel fix(`character.id = -700-slotIndex`)+ PR rebase 复盘。详 git log + handoff/`p3_2_c_2a_closeout_2026-05-24.md` + `p3_2b_residual_hp_closeout_2026-05-24.md` + `docs/phase0/p3_2_C_stalemate_diagnose.md` + memory `feedback_isar_autoincrement_test_id_collision` / `feedback_local_doc_unpushed_remote_squash_diverge`。
+**2026-05-24 §12.3 群战守城 P3.2 全闭环 + P3.2.B 残血容差 + P3.2.C ①+②a 数值/sentinel 双修**(PR #3 squash merge · 9 commit + 直推 ~16 commit · Mac+Opus xhigh 累计 ~7h):Batch 2.1-2.5 + P3.2.B 残血容差 + P3.2.C ②a sentinel(`character.id = -700-slotIndex`) + P3.2.C 修法 ① 3 真因(sentinel/buildEq/_intermission)+ R5 全过 · 1269 pass。详 git log + handoff/`p3_2_c_fix_1_numerical_overhaul_2026-05-24.md` + `p3_2_c_2a_closeout_2026-05-24.md` + `p3_2b_residual_hp_closeout_2026-05-24.md` + memory `feedback_isar_autoincrement_test_id_collision` / `feedback_local_doc_unpushed_remote_squash_diverge`。
 
 ---
 
