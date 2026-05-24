@@ -5,6 +5,10 @@
 
 ## 当前阶段
 
+**2026-05-24 中午 nightshift v2 通用挂机工作流首跑 ✅**(Mac+Opus ~30min · main HEAD `676be95` · 4 commit `a38b84c → 676be95` push origin/main + feat/p1_2_spec `a443905` push 触发 PR #6 更新):5 task(T01 P1.2 spec 4 项 fix → PR #6 + T02 BreakthroughBlocker 集成 character_panel 1302 pass + T03 inner_demon 7 主题 MJ prompt 138 行 + T04 P3.4 spec 160 行 + T05 P3.3 spec 160 行)+ v2 verify P0 修补 5 项(A1 禁 cd / A2 verify_diff_contains / A3 blacklist 跳 --no / A4 verify_section_titles / A5 spec 体例容差)+ idempotent 重跑 4/4 verify pass 0 API cost。详 `docs/handoff/nightshift_v2_first_run_closeout_2026-05-24.md` + memory `feedback_nightshift_v2_first_run_lessons` + `feedback_opus_nightshift_speed_v2`(opus --print ×0.10-0.18,3h 窗 doc/spec 塞 15-20 task)。**v3 顶段 #6 E pending → push 完成销账**。
+
+---
+
 **2026-05-24 8h overnight v3 派单 4/5 PR squash merged ✅**(main HEAD `a6812c2` · 5 worktree 真并行 wall clock ~8min · 5 reviewer agent 并行审 均分 8.9/10):
 - ✅ #4 C `phase0/p3_3_pvp` 10/10 · ✅ #5 D `phase0/p3_4_sect_event` 9.5/10 · ✅ #8 B `audit/memory_sink_gdd10` 9/10 · ✅ #7 A `fix/ch4_5_yiliu_words` 8→10/10(1 字 fix「老练得→地」)
 - ⏸ **#6 E `feat/p1_2_spec` 8/10 改后 merge**(4 项 minor fix:§3 数值阈值梯度 / §1 OUT 心魔引用 / §7 R5.6 grep→dart 断言 / §2 Reputation composite index)· worktree `~/Desktop/wuxia_idle-p12-spec` 保留 · 用户决策后再 fix+merge
@@ -32,10 +36,6 @@
 - **P2.2 final closeout**(本)~25min:GDD v1.9 → v1.10 + ROADMAP P2.2 final 段 + `docs/handoff/p2_x_inner_demon_final_closeout_2026-05-23.md` 80 行 + 本顶段
 - **挂账 1.0 P3+**(3 项):BreakthroughBlocker 集成 character_panel(1257 行 ~30-45min 推 P3+)+ inner_demon 战斗机制层调优(R5.1 实测数值层 buff 单维度调整不影响战斗结果)+ inner_demon 7 主题 enemy 立绘异步 MJ
 - **1.0 整体 ~70%**(P2.2 子阶段闭环 + Ch4/5/6 主线全闭环 + 心魔系统 7 关接管 wuSheng 突破链 + UI 入口可达)
-
----
-
-**2026-05-22 晚 §12.1 心魔系统 P2.2 Phase 1+2 历史段归档**:Phase 0 reality check + Phase 1 spec doc + Batch 2.1-2.4 全 7 commit `e666e4c → 86d55fc` 已被 P2.2 Batch 2.5 final 段(上)汇总。详 `docs/handoff/p2_x_inner_demon_phase1_closeout_2026-05-22.md`。
 
 ---
 
