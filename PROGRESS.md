@@ -5,14 +5,11 @@
 
 ## 当前阶段
 
-**2026-05-24 8h overnight v3 派单 ready · 5 worktree 并行**(main HEAD `7c1c195` · 5 worktree 同级 `~/Desktop/wuxia_idle-{ch45-yiliu,mem-sink,pvp-p0,sect-p0,p12-spec}`):
-- A `fix/ch4_5_yiliu_words` sonnet ~2h · Ch4-Ch5 yiLiu 4 风格词补漏
-- B `audit/memory_sink_gdd10` sonnet ~1h · memory sink ready-to-paste + GDD §10 教程审计
-- C `phase0/p3_3_pvp` opus high ~1.5h · P3.3 PVP Phase 0 + Q1-Q5 候选
-- D `phase0/p3_4_sect_event` opus high ~1.5h · P3.4 门派事件 Phase 0 + P1.2 依赖梳理
-- E `feat/p1_2_spec` opus xhigh ~2h · P1.2 江湖恩怨 + 声望 spec 草案(Q1-Q5 默认决议版)
-- 体例:1 子系统 = 1 worktree = 1 会话 · 0 主轴拍板实装 · 完成 → 草稿 PR · 起床串行审 + squash merge
-- 详 `docs/spec/overnight_v3_2026-05-24/_README.md` + 各 worktree spec 5 份
+**2026-05-24 8h overnight v3 派单 4/5 PR squash merged ✅**(main HEAD `a6812c2` · 5 worktree 真并行 wall clock ~8min · 5 reviewer agent 并行审 均分 8.9/10):
+- ✅ #4 C `phase0/p3_3_pvp` 10/10 · ✅ #5 D `phase0/p3_4_sect_event` 9.5/10 · ✅ #8 B `audit/memory_sink_gdd10` 9/10 · ✅ #7 A `fix/ch4_5_yiliu_words` 8→10/10(1 字 fix「老练得→地」)
+- ⏸ **#6 E `feat/p1_2_spec` 8/10 改后 merge**(4 项 minor fix:§3 数值阈值梯度 / §1 OUT 心魔引用 / §7 R5.6 grep→dart 断言 / §2 Reputation composite index)· worktree `~/Desktop/wuxia_idle-p12-spec` 保留 · 用户决策后再 fix+merge
+- **v3 验证**:claude --print 后台多进程隔离体例可行 · 5 reviewer agent 并行审保证质量 gate · analyze 0 issue / narrative loader 13 测全过
+- 详 `docs/spec/overnight_v3_2026-05-24/_README.md` + git log a6812c2(4 squash commits)
 
 ---
 
