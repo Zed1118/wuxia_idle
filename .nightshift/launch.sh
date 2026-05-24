@@ -1,25 +1,23 @@
 #!/bin/bash
-# Nightshift launcher · 启动后台 dispatcher,脱离当前 shell
-# Usage:
-#   bash .nightshift/launch.sh
-#   (或直接 `./launch.sh` 在 .nightshift 目录内)
+# Nightshift launcher · 通用模板 v2
+# 启动后台 dispatcher,脱离当前 shell
 
 set -e
 
-DISPATCHER="/Users/a10506/Desktop/挂机武侠/.nightshift/dispatcher.sh"
-LAUNCH_LOG="/Users/a10506/Desktop/挂机武侠/.nightshift/logs/launcher.log"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DISPATCHER="$SCRIPT_DIR/dispatcher.sh"
+LAUNCH_LOG="$SCRIPT_DIR/logs/launcher.log"
 
 mkdir -p "$(dirname "$LAUNCH_LOG")"
 
-# Check if already running
-if pgrep -f "nightshift/dispatcher.sh" > /dev/null; then
+if pgrep -f "$DISPATCHER" > /dev/null; then
   echo "WARN: dispatcher already running"
-  pgrep -fl "nightshift/dispatcher.sh"
-  echo "To kill: pkill -f nightshift/dispatcher.sh"
+  pgrep -fl "$DISPATCHER"
+  echo "To kill: pkill -f \"$DISPATCHER\""
   exit 1
 fi
 
-# Launch detached: nohup + caffeinate + redirect everything + & + disown
+# 脱离 shell: nohup + caffeinate + disown
 nohup caffeinate -dimsu bash "$DISPATCHER" \
   < /dev/null \
   > "$LAUNCH_LOG" 2>&1 \
@@ -27,7 +25,6 @@ nohup caffeinate -dimsu bash "$DISPATCHER" \
 DISPATCHER_PID=$!
 disown $DISPATCHER_PID 2>/dev/null || true
 
-# Wait a beat to confirm process actually spawned
 sleep 1
 if ! kill -0 $DISPATCHER_PID 2>/dev/null; then
   echo "FAIL: dispatcher PID $DISPATCHER_PID did not survive 1s"
@@ -39,15 +36,14 @@ echo "========================================="
 echo "Nightshift dispatcher launched"
 echo "  PID:    $DISPATCHER_PID"
 echo "  Log:    $LAUNCH_LOG"
-echo "  Status: /Users/a10506/Desktop/挂机武侠/.nightshift/status/"
-echo "  Task logs: /Users/a10506/Desktop/挂机武侠/.nightshift/logs/T0X.log"
+echo "  Status: $SCRIPT_DIR/status/"
+echo "  Tasks:  $SCRIPT_DIR/logs/T0X.log"
 echo "========================================="
 echo "Monitor (live):"
-echo "  tail -f /Users/a10506/Desktop/挂机武侠/.nightshift/logs/dispatcher.log"
+echo "  tail -f $SCRIPT_DIR/logs/dispatcher.log"
 echo "Cancel:"
 echo "  kill $DISPATCHER_PID"
-echo "  # or"
-echo "  pkill -f nightshift/dispatcher.sh"
-echo "========================================="
-echo "Estimated finish: ~2-3h actual (8h budget per user-sleep window)"
+echo "  # or: pkill -f \"$DISPATCHER\""
+echo "Morning report (auto-runs at finish, or manual):"
+echo "  bash $SCRIPT_DIR/morning.sh"
 echo "========================================="
