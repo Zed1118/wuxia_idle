@@ -12,6 +12,11 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
+import '../../inner_demon/application/inner_demon_service.dart';
+import '../../inner_demon/domain/inner_demon_def.dart';
+import '../../inner_demon/presentation/breakthrough_blocker.dart';
+import '../../inner_demon/presentation/inner_demon_screen.dart';
+import '../../mainline/application/mainline_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
@@ -217,6 +222,7 @@ class _Body extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _TopBar(character: character),
+          _BreakthroughBlockerSection(character: character),
           const SizedBox(height: 16),
           _AttributesSection(character: character),
           const SizedBox(height: 16),
@@ -274,6 +280,78 @@ class _TopBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// wuSheng 阶心魔关未通 + 满经验时,在 _TopBar 下方插入拦截提示。
+///
+/// 三态短路顺序:tier ≠ wuSheng / 经验未满 / 当前 layer == dengFeng(飞升不归此管)
+/// → shrink。读 [mainlineProgressProvider] 拿 `clearedStageIds`,经
+/// [InnerDemonService.isLayerLocked] 判定;blockingStageId 反查
+/// `innerDemonDef.requiredRealmLayer` 中 `(wuSheng, currentLayer)` 对应 key。
+class _BreakthroughBlockerSection extends ConsumerWidget {
+  const _BreakthroughBlockerSection({required this.character});
+
+  final Character character;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (character.realmTier != RealmTier.wuSheng) {
+      return const SizedBox.shrink();
+    }
+    if (character.experience < character.experienceToNextLayer) {
+      return const SizedBox.shrink();
+    }
+    final layers = RealmLayer.values;
+    final currentIdx = layers.indexOf(character.realmLayer);
+    // dengFeng 是顶层 layer,升入下一阶为飞升(P2.3 留接口,本 widget 不涉)。
+    if (currentIdx < 0 || currentIdx >= layers.length - 1) {
+      return const SizedBox.shrink();
+    }
+    final nextLayer = layers[currentIdx + 1];
+
+    final InnerDemonDef innerDemonDef =
+        GameRepository.instance.numbers.innerDemon;
+    final progressAsync = ref.watch(mainlineProgressProvider);
+    final clearedSet = progressAsync.maybeWhen(
+      data: (p) => p.clearedStageIds.toSet(),
+      orElse: () => const <String>{},
+    );
+
+    final locked = InnerDemonService.isLayerLocked(
+      nextTier: RealmTier.wuSheng,
+      nextLayer: nextLayer,
+      innerDemonDef: innerDemonDef,
+      clearedStageIds: clearedSet,
+    );
+    if (!locked) return const SizedBox.shrink();
+
+    String? blockingStageId;
+    for (final e in innerDemonDef.requiredRealmLayer.entries) {
+      if (e.value.tier == RealmTier.wuSheng &&
+          e.value.layer == character.realmLayer) {
+        blockingStageId = e.key;
+        break;
+      }
+    }
+    if (blockingStageId == null) return const SizedBox.shrink();
+
+    final stageName =
+        GameRepository.instance.stageDefs[blockingStageId]?.name ??
+            blockingStageId;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: InnerDemonBreakthroughBlocker(
+        nextTier: RealmTier.wuSheng,
+        nextLayer: nextLayer,
+        blockingStageId: blockingStageId,
+        blockingStageName: stageName,
+        onNavigate: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const InnerDemonScreen()),
+        ),
       ),
     );
   }
