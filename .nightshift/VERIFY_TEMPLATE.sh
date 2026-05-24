@@ -1,32 +1,32 @@
 #!/bin/bash
-# Nightshift VERIFY_TEMPLATE · 下次 nightshift 写 verify.sh 必须套此模板
+# Nightshift VERIFY_TEMPLATE · 跨项目通用 verify helper 库
 #
-# 修补 2026-05-20 wuxia_idle nightshift 暴露的 4 个 verify bug:
-#   1. count 写死期望(T05 events 45 vs 46 → 49 ≠ 50 误报)→ 用 BASELINE + DELTA 算式
-#   2. git show --name-only 中文 commit msg body 误抓(2026-05-19 教训)→ 用 git diff-tree
-#   3. build_runner 静默失败(T04/T06 analyze 727 误报)→ fail-fast + tee log
-#   4. flutter analyze --fatal-errors 非法 flag → 用 --fatal-warnings
+# 修补的历史 bug(memory 锚点):
+#   - verify_count_delta: feedback_nightshift_verify_count_baseline(写死期望误报)
+#   - verify_changed_files_only: feedback_nightshift_verify_changedoutside_bug(git show 中文 msg 误抓)
+#   - verify_build_runner_strict: feedback_nightshift_build_runner_silent_fail(静默 fail)
+#   - verify_analyze_clean: feedback_flutter_analyze_fatal_errors_invalid(--fatal-errors 非法)
+#   - verify_path_guard: nightshift-v2 新增(diff guard 越界检查,Scheme D 标 FAIL_SCOPE 不回滚)
 #
-# memory 锚点:
-#   - feedback_nightshift_verify_count_baseline
-#   - feedback_nightshift_build_runner_silent_fail
-#   - feedback_nightshift_verify_changedoutside_bug
-#   - feedback_flutter_analyze_fatal_errors_invalid
-#   - feedback_wuxia_pen_build_runner(*.g.dart gitignored)
-#
-# 用法:每个 T0X.verify.sh 顶部 source 本文件,然后调下面的 helper:
+# 用法:每个 T0X.verify.sh 顶部 source 本文件,再按需调 helper:
 #   #!/bin/bash
 #   source "$(dirname "$0")/../VERIFY_TEMPLATE.sh"
 #   verify_init "T01"
-#   verify_file_exists "data/synergies.yaml"
-#   verify_count_delta "data/synergies.yaml" "^  - id: synergy_" 3 "synergies"
-#   verify_blacklist_words "data/synergies.yaml"
-#   verify_build_runner_strict
-#   verify_analyze_clean
-#   verify_local_tests "test/balance/synergy_hot_loop_upgrade_test.dart"
+#   verify_path_guard "data/**|test/**"     # 越界检查(v2 新增)
+#   verify_file_exists "data/foo.yaml"
+#   verify_count_delta "data/foo.yaml" "^  - id: " 3 "items"
+#   verify_blacklist_words "data/foo.yaml"
+#   verify_build_runner_strict              # flutter 专属
+#   verify_analyze_clean                    # flutter 专属
+#   verify_local_tests "test/foo_test.dart" # flutter 专属
 #   verify_commit_message "nightshift T01"
-#   verify_changed_files_only "data/synergies\.yaml|test/balance/synergy_hot_loop_upgrade_test\.dart"
 #   verify_done
+#
+# 项目类型适配:
+#   - Flutter: 调全部 helper
+#   - Node: 跳 verify_build_runner_strict / verify_analyze_clean / verify_local_tests,
+#           自定义 npm/jest 命令(本 helper 暂不内置)
+#   - Generic: 只调 verify_path_guard / verify_file_exists / verify_commit_message / verify_changed_files_only
 
 set -uo pipefail
 
@@ -43,6 +43,57 @@ verify_fail() {
   exit 1
 }
 
+verify_warn() {
+  echo "VERIFY WARN [$TASK]: $1"
+  echo "WARN: $1" >> "$TASK_LOG"
+}
+
+# === Path guard(v2 新增,越界文件检查,Scheme D 标 FAIL_SCOPE) ===
+# 用法: verify_path_guard "<allow_regex>" [<deny_regex>]
+# allow_regex 形如 "data/.*\.yaml|test/.*\.dart"
+# deny_regex 缺省时只用全局禁区(env GLOBAL_FORBIDDEN_RE)
+# 行为: 越界文件输出到 stderr + 退 exit 30(FAIL_SCOPE),不回滚 worktree
+verify_path_guard() {
+  local allow="$1"
+  local deny="${2:-}"
+  local global_deny="${GLOBAL_FORBIDDEN_RE:-(^|/)(\\.env($|\\.)|.*\\.pem$|.*\\.key$|.*\\.p12$|key\\.properties$|keystore$|secrets?\\.(json|ya?ml|toml)$|\\.mcp\\.json$|\\.claude\\.json$)}"
+
+  local changed
+  changed=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null || echo "")
+
+  if [ -z "$changed" ]; then
+    echo "  path_guard: no changes in HEAD commit(可能 Claude 没改动 / 没 commit)" | tee -a "$TASK_LOG"
+    return 0
+  fi
+
+  local violations=""
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    # 全局禁区先查
+    if echo "$f" | grep -Eq "$global_deny"; then
+      violations="${violations}  [GLOBAL_DENY] $f"$'\n'
+      continue
+    fi
+    # task 禁区查
+    if [ -n "$deny" ] && echo "$f" | grep -Eq "$deny"; then
+      violations="${violations}  [TASK_DENY] $f"$'\n'
+      continue
+    fi
+    # 白名单查(只在 allow 非空时启用)
+    if [ -n "$allow" ] && ! echo "$f" | grep -Eq "^($allow)$"; then
+      violations="${violations}  [SCOPE_OUT] $f"$'\n'
+    fi
+  done <<< "$changed"
+
+  if [ -n "$violations" ]; then
+    echo "VERIFY FAIL [$TASK] path_guard 越界,本 task 标 FAIL_SCOPE(早晨人工 review,不自动回滚):"
+    echo "$violations"
+    echo "$violations" >> "$TASK_LOG"
+    exit 30
+  fi
+  echo "  path_guard: OK ($(echo "$changed" | wc -l | tr -d ' ') files in scope)" | tee -a "$TASK_LOG"
+}
+
 # === File / count helpers ===
 verify_file_exists() {
   test -f "$1" || verify_fail "$1 missing"
@@ -54,7 +105,6 @@ verify_file_exists() {
 verify_count_delta() {
   local file="$1"; local pat="$2"; local delta="$3"; local label="$4"
   local baseline
-  # 从 main HEAD 实测 baseline(若 main 没该文件,baseline=0)
   if git show "main:$file" >/dev/null 2>&1; then
     baseline=$(git show "main:$file" 2>/dev/null | grep -c "$pat" || echo 0)
   else
@@ -69,11 +119,10 @@ verify_count_delta() {
   fi
 }
 
-# 目录文件数 delta(events / narratives 等)
+# 目录文件数 delta
 verify_dir_file_count_delta() {
   local dir="$1"; local glob="$2"; local delta="$3"; local label="$4"
   local baseline_files actual
-  # baseline 来自 main 分支的目录(简化:从主 worktree 读)
   local main_wt
   main_wt=$(git worktree list | head -1 | awk '{print $1}')
   baseline_files=$(cd "$main_wt" && ls $dir/$glob 2>/dev/null | wc -l | tr -d ' ')
@@ -85,18 +134,81 @@ verify_dir_file_count_delta() {
   fi
 }
 
-# === Blacklist words(文案 yaml/md 通用) ===
+# === Blacklist words(文案 yaml/md 通用,默认套用 wuxia_idle 体例,可覆盖) ===
+# 用法: verify_blacklist_words <file> [<word1> <word2> ...]
+# 缺省词表见 BLACKLIST_WORDS env,可在 nightshift.conf 自定义
+# v2 修补(2026-05-24 wuxia_idle T03 教训): 跳过 `--no <word>` / `-- <word>` 负面声明体例
+#   memory feedback_nightshift_v2_first_run_lessons A3
 verify_blacklist_words() {
-  local file="$1"
-  local words=(legendary epic 史诗 神器 传说级 无敌 最强 究极 霸气 逆天 刀光剑影 血溅)
+  local file="$1"; shift || true
+  local words=("$@")
+  if [ "${#words[@]}" -eq 0 ]; then
+    if [ -n "${BLACKLIST_WORDS:-}" ]; then
+      IFS=' ' read -ra words <<< "$BLACKLIST_WORDS"
+    else
+      words=(legendary epic 史诗 神器 传说级 无敌 最强 究极 霸气 逆天 刀光剑影 血溅)
+    fi
+  fi
   for w in "${words[@]}"; do
-    if grep -q "$w" "$file"; then
-      verify_fail "$file 含黑名单词 '$w'"
+    # 抓 word 出现 + 不在 `--no <...word...>` / `-- <...word...>` 负面声明段
+    # 算法: grep -n 出每行,再过滤含 `--no ` / `--neg ` 前置 + word 的行(MJ prompt 防护体例)
+    local hits
+    hits=$(grep -n "$w" "$file" 2>/dev/null | grep -vE "^[0-9]+:.*--no [^|]*\b$w\b" | grep -vE "^[0-9]+:.*-- [^|]*\b$w\b" || true)
+    if [ -n "$hits" ]; then
+      # 还要检是否在「黑名单词」声明段(grep 出现 `黑名单|blacklist` 同行)
+      local real_hits
+      real_hits=$(echo "$hits" | grep -vE "黑名单|blacklist|禁用|禁词|negative prompt" || true)
+      if [ -n "$real_hits" ]; then
+        echo "$file 含黑名单词 '$w':"
+        echo "$real_hits" | head -3
+        verify_fail "$file 含黑名单词 '$w'(非 --no 防护段)"
+      fi
     fi
   done
 }
 
-# === Build runner FAIL-FAST(不静默) ===
+# === 章节标记容错 grep(v2 新增,A4/A5 修补) ===
+# 用法: verify_section_titles <file> <title1> <title2> ...
+# 不查符号(§/##/###),只查节标题文字,容忍多种 markdown 体例
+#   memory feedback_nightshift_v2_first_run_lessons A4
+verify_section_titles() {
+  local file="$1"; shift || true
+  if [ "$#" -eq 0 ]; then
+    verify_warn "verify_section_titles 调用无 title 参数"
+    return 0
+  fi
+  for title in "$@"; do
+    # grep 节标题文字,要求在 markdown heading 行(以 # 开头)
+    if ! grep -E "^#{1,4}.*$title" "$file" >/dev/null 2>&1; then
+      verify_fail "节标题 '$title' missing(查 ^#{1,4}.*$title)"
+    fi
+  done
+  echo "  section_titles: $* OK" | tee -a "$TASK_LOG"
+}
+
+# === Diff 内容验证(v2 新增,A2 修补) ===
+# 不写死文件路径,改查 git diff 命中 keyword
+# 用法: verify_diff_contains <keyword1> <keyword2> ...
+#   memory feedback_nightshift_v2_first_run_lessons A2
+verify_diff_contains() {
+  local diff_files
+  diff_files=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null)
+  if [ -z "$diff_files" ]; then
+    verify_fail "diff 为空(无 commit 文件)"
+  fi
+  for kw in "$@"; do
+    if ! echo "$diff_files" | grep -qE "$kw"; then
+      echo "  diff 文件清单:"
+      echo "$diff_files" | head -5 | sed 's/^/    /'
+      verify_fail "diff 未含 keyword '$kw'"
+    fi
+  done
+  echo "  diff_contains: $* OK ($(echo "$diff_files" | wc -l | tr -d ' ') files)" | tee -a "$TASK_LOG"
+}
+
+# === Flutter 专属 helper(Node/Generic 项目跳过) ===
+
+# Build runner FAIL-FAST(不静默)
 # memory feedback_nightshift_build_runner_silent_fail
 verify_build_runner_strict() {
   local br_log="/tmp/nightshift_build_runner_${TASK}.log"
@@ -109,14 +221,9 @@ verify_build_runner_strict() {
     tail -30 "$br_log"
     verify_fail "build_runner failed"
   fi
-  # 抽 1 个代表性 .g.dart 验证生成产物
-  if [ -f lib/core/application/battle_providers.dart ]; then
-    test -f lib/core/application/battle_providers.g.dart || \
-      verify_fail "battle_providers.g.dart missing after build_runner"
-  fi
 }
 
-# === Analyze(--fatal-warnings 不 --fatal-infos) ===
+# Analyze(--fatal-warnings 不 --fatal-infos)
 # memory feedback_flutter_analyze_fatal_errors_invalid
 verify_analyze_clean() {
   local a_log="/tmp/nightshift_analyze_${TASK}.log"
@@ -127,7 +234,7 @@ verify_analyze_clean() {
   fi
 }
 
-# === Local tests(只跑相关 test 文件,memory feedback_workflow_speed_levers Lever 1) ===
+# Local tests(只跑相关 test 文件,memory feedback_workflow_speed_levers Lever 1)
 verify_local_tests() {
   for f in "$@"; do
     if [ -f "$f" ]; then
@@ -144,8 +251,9 @@ verify_commit_message() {
   git log -1 --pretty=%s | grep -q "$needle" || verify_fail "commit message 不含 '$needle'"
 }
 
-# === Changed files only(改动越界检查) ===
+# === Changed files only(改动越界检查,老 API 保留兼容) ===
 # memory feedback_nightshift_verify_changedoutside_bug:用 git diff-tree 不 git show --name-only
+# 注: v2 推荐用 verify_path_guard,本函数保留向后兼容
 verify_changed_files_only() {
   local allow_pattern="$1"
   local changed

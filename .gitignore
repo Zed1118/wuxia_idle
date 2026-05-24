@@ -47,3 +47,5 @@ isar.dll
 # Nightshift dispatcher runtime (auto-created)
 .nightshift/logs/
 .nightshift/status/
+.nightshift/SUMMARY.md
+.nightshift.bak.*/

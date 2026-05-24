@@ -1,44 +1,53 @@
 #!/bin/bash
-# Nightshift dispatcher · 挂机武侠 · 2026-05-20 (Demo §8.4 gap-fill, opus)
+# Nightshift dispatcher · 通用模板 v2(2026-05-24)
 #
-# Sequentially runs 8 atomic Claude tasks, each in its own git worktree.
-# Each task: claude --print < prompt → run verify.sh → log status.
-# All tasks skippable: true, no blocking chain.
+# 从 wuxia_idle/.nightshift/dispatcher.sh 抽通用版本:
+#   - PROJECT_ROOT / WORKTREE_BASE / TASKS / 模型 / 预算 等抽到 nightshift.conf
+#   - 新增 prerun hook(项目类型特化,如 Flutter build_runner)
+#   - 新增 morning.sh 自动调用(dispatcher 收尾时跑)
+#   - 状态码细分: completed / skipped / fail_scope(verify exit=30) / fail_verify / fail_timeout
 #
-# 2026-05-20 变更:
-#   - model sonnet → opus(用户钉死全 task 用 opus 4.7,文学/数值/审计/spec 起草都要 opus 质量)
-#   - TASK_TIMEOUT_MIN 50 → 75(opus 慢 1.5-2x)
-#   - TASK_BUDGET_USD 5 → 8(opus 贵约 1.6x;8 task × $8 = $64 总预算上限)
-#   - 加 CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000(memory feedback_nightshift_max_output_token)
-#   - verify.sh 模板用 git diff-tree 不 git show --name-only(memory feedback_nightshift_verify_changedoutside_bug)
-#
-# Usage:
+# 用法:
 #   bash .nightshift/dispatcher.sh            # real run
 #   bash .nightshift/dispatcher.sh --dry-run  # show plan, don't run
 #
-# Recommended launch (defeats macOS sleep + background):
-#   caffeinate -dimsu nohup bash .nightshift/dispatcher.sh > /dev/null 2>&1 &
+# 推荐启动: bash .nightshift/launch.sh
 
 set -uo pipefail
 
-# === Config ===
-PROJECT_ROOT="/Users/a10506/Desktop/挂机武侠"
-NIGHTSHIFT="$PROJECT_ROOT/.nightshift"
-WORKTREE_BASE="/Users/a10506/Desktop"
-TASK_TIMEOUT_MIN=75
-TASK_BUDGET_USD=8
-INTER_TASK_BUFFER_SEC=30
-TASKS=(T01 T02 T03 T04 T05 T06 T07 T08)
-LAST_TASK="T08"  # bash 3.2 (macOS default) doesn't support ${TASKS[-1]}
-CLAUDE_MODEL="opus"
+# === Load config(必须先读) ===
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONF="$SCRIPT_DIR/nightshift.conf"
+if [ ! -f "$CONF" ]; then
+  echo "FATAL: $CONF not found. Run nightshift-init.sh first." >&2
+  exit 1
+fi
+# shellcheck disable=SC1090
+source "$CONF"
 
-# Export max output token cap to avoid 32K default truncation
-# (memory feedback_nightshift_max_output_token 2026-05-19 教训)
-export CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000
+# === 必需变量校验 ===
+: "${PROJECT_ROOT:?nightshift.conf 缺 PROJECT_ROOT}"
+: "${PROJECT_TYPE:?nightshift.conf 缺 PROJECT_TYPE(flutter|node|generic)}"
+: "${WORKTREE_BASE:?nightshift.conf 缺 WORKTREE_BASE}"
+: "${TASKS:?nightshift.conf 缺 TASKS}"
+: "${MAIN_BRANCH:=main}"
+: "${TASK_TIMEOUT_MIN:=75}"
+: "${TASK_BUDGET_USD:=8}"
+: "${INTER_TASK_BUFFER_SEC:=30}"
+: "${CLAUDE_MODEL:=opus}"
+: "${CLAUDE_PERMISSION_MODE:=bypassPermissions}"
+: "${WORKTREE_PREFIX:=$(basename "$PROJECT_ROOT")}"
 
-# === Setup ===
+NIGHTSHIFT="$SCRIPT_DIR"
 mkdir -p "$NIGHTSHIFT/logs" "$NIGHTSHIFT/status"
 DISPATCHER_LOG="$NIGHTSHIFT/logs/dispatcher.log"
+
+# bash 3.2(macOS default)不支持 ${TASKS[-1]},手算 last
+LAST_TASK_IDX=$(( ${#TASKS[@]} - 1 ))
+LAST_TASK="${TASKS[$LAST_TASK_IDX]}"
+
+# Output token cap(memory feedback_nightshift_max_output_token)
+export CLAUDE_CODE_MAX_OUTPUT_TOKENS="${CLAUDE_CODE_MAX_OUTPUT_TOKENS:-64000}"
 
 log() {
   local ts
@@ -46,16 +55,32 @@ log() {
   echo "[$ts] $*" | tee -a "$DISPATCHER_LOG"
 }
 
-# === Dry-run flag ===
 DRY_RUN=false
 if [ "${1:-}" = "--dry-run" ]; then
   DRY_RUN=true
 fi
 
+# === prerun hook(项目类型特化) ===
+run_prerun() {
+  local worktree="$1"
+  local prerun_script="$NIGHTSHIFT/prerun.sh"
+  if [ ! -f "$prerun_script" ]; then
+    log "  No prerun.sh (skipped)"
+    return 0
+  fi
+  log "  Running prerun.sh (type=$PROJECT_TYPE)"
+  (cd "$worktree" && bash "$prerun_script") >> "$DISPATCHER_LOG" 2>&1
+  local rc=$?
+  if [ "$rc" -ne 0 ]; then
+    log "  prerun.sh exit=$rc(warn,不阻塞 task)"
+  fi
+  return 0
+}
+
 # === Run one task ===
 run_task() {
   local task=$1
-  local worktree="$WORKTREE_BASE/wuxia-idle-$task"
+  local worktree="$WORKTREE_BASE/${WORKTREE_PREFIX}-$task"
   local prompt="$NIGHTSHIFT/prompts/$task.md"
   local verify="$NIGHTSHIFT/prompts/$task.verify.sh"
   local task_log="$NIGHTSHIFT/logs/$task.log"
@@ -66,46 +91,49 @@ run_task() {
   log "  prompt:   $prompt"
   log "  verify:   $verify"
 
-  # Init status file (overwrite per task)
   {
     echo "task=$task"
     echo "started=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     echo "status=running"
   } > "$status_file"
 
-  # Pre-checks
   if [ ! -f "$prompt" ]; then
     log "  FAIL: prompt missing → status=skipped"
-    echo "status=skipped" >> "$status_file"
-    echo "reason=prompt_missing" >> "$status_file"
+    {
+      echo "status=skipped"
+      echo "reason=prompt_missing"
+    } >> "$status_file"
     return 0
   fi
 
-  # Dry-run early exit (BEFORE worktree side-effects)
   if [ "$DRY_RUN" = "true" ]; then
     log "  DRY RUN: would auto-create worktree $worktree + claude --print < $prompt"
     echo "status=dry_run" >> "$status_file"
     return 0
   fi
 
-  # Auto-create worktree if missing (uses -B to overwrite any leftover branch)
+  # Auto-create worktree if missing
   if [ ! -d "$worktree" ]; then
-    log "  Auto-creating worktree $worktree from main (branch nightshift/$task)"
-    if ! (cd "$PROJECT_ROOT" && git worktree add -f "$worktree" -B "nightshift/$task" main) >> "$DISPATCHER_LOG" 2>&1; then
+    log "  Auto-creating worktree $worktree from $MAIN_BRANCH (branch nightshift/$task)"
+    if ! (cd "$PROJECT_ROOT" && git worktree add -f "$worktree" -B "nightshift/$task" "$MAIN_BRANCH") >> "$DISPATCHER_LOG" 2>&1; then
       log "  FAIL: worktree create → status=skipped"
-      echo "status=skipped" >> "$status_file"
-      echo "reason=worktree_create_failed" >> "$status_file"
+      {
+        echo "status=skipped"
+        echo "reason=worktree_create_failed"
+      } >> "$status_file"
       return 0
     fi
   fi
 
-  # Idempotency: if worktree already has commit "nightshift $task", skip claude
+  # prerun(项目类型特化,如 build_runner / npm ci)
+  run_prerun "$worktree"
+
+  # Idempotency: 若 worktree 已有 commit "nightshift $task",跳 claude 直跑 verify
   local claude_exit=0
   if (cd "$worktree" && git log -1 --pretty=%s 2>/dev/null | grep -q "nightshift $task"); then
     log "  IDEMPOTENT: worktree already has nightshift $task commit, skip claude (verify only)"
     echo "claude_exit=skipped_idempotent" >> "$status_file"
   else
-    # Run claude with timeout + budget (perl alarm = cross-platform timeout)
     log "  Running claude --print (model $CLAUDE_MODEL, timeout ${TASK_TIMEOUT_MIN}m, budget \$${TASK_BUDGET_USD})"
     (
       cd "$worktree" || exit 99
@@ -113,7 +141,7 @@ run_task() {
         claude \
           --print \
           --model "$CLAUDE_MODEL" \
-          --permission-mode bypassPermissions \
+          --permission-mode "$CLAUDE_PERMISSION_MODE" \
           --max-budget-usd "$TASK_BUDGET_USD" \
           --no-session-persistence \
           --add-dir "$worktree" \
@@ -125,7 +153,7 @@ run_task() {
     echo "claude_exit=$claude_exit" >> "$status_file"
   fi
 
-  # Run verify.sh (in worktree)
+  # Run verify
   local verify_exit=0
   if [ -f "$verify" ]; then
     log "  Running verify"
@@ -141,18 +169,44 @@ run_task() {
     echo "verify_exit=no_script" >> "$status_file"
   fi
 
-  # Final status (all tasks skippable: true — failure → skipped, not failed)
-  if [ "$claude_exit" -eq 0 ] && [ "$verify_exit" -eq 0 ]; then
-    echo "status=completed" >> "$status_file"
-    log "  === $task: COMPLETED ==="
+  # 状态码细分(v2):
+  #   verify_exit=30 → fail_scope(verify_path_guard 越界)
+  #   claude_exit=142 → fail_timeout(perl alarm SIGALRM)
+  #   claude=0 + verify=0 → completed
+  #   else → skipped
+  local final_status="skipped"
+  local reason=""
+  # 全用字符串比较,避免 claude_exit="skipped_idempotent" 混入整数比较时 bash 报错
+  if [ "$claude_exit" = "skipped_idempotent" ] && [ "$verify_exit" = "0" ]; then
+    final_status="completed"
+  elif [ "$claude_exit" = "0" ] && [ "$verify_exit" = "0" ]; then
+    final_status="completed"
+  elif [ "$verify_exit" = "30" ]; then
+    final_status="fail_scope"
+    reason="path_guard_violation"
+  elif [ "$claude_exit" = "142" ] || [ "$claude_exit" = "124" ]; then
+    final_status="fail_timeout"
+    reason="claude_exit_${claude_exit}"
+  elif [ "$verify_exit" != "0" ]; then
+    final_status="fail_verify"
+    reason="verify_exit_${verify_exit}"
   else
-    echo "status=skipped" >> "$status_file"
-    echo "reason=claude_exit_${claude_exit}_verify_exit_${verify_exit}" >> "$status_file"
-    log "  === $task: SKIPPED (claude=$claude_exit verify=$verify_exit) ==="
+    final_status="skipped"
+    reason="claude_exit_${claude_exit}_verify_exit_${verify_exit}"
   fi
+
+  echo "status=$final_status" >> "$status_file"
+  [ -n "$reason" ] && echo "reason=$reason" >> "$status_file"
   echo "finished=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$status_file"
 
-  # Inter-task buffer (bash 3.2 compat: no ${TASKS[-1]})
+  case "$final_status" in
+    completed)  log "  === $task: COMPLETED ===" ;;
+    fail_scope) log "  === $task: FAIL_SCOPE(越界,不回滚,早晨人工) ===" ;;
+    fail_timeout) log "  === $task: FAIL_TIMEOUT(${TASK_TIMEOUT_MIN}m hit) ===" ;;
+    fail_verify) log "  === $task: FAIL_VERIFY(claude=$claude_exit verify=$verify_exit) ===" ;;
+    *) log "  === $task: SKIPPED ($reason) ===" ;;
+  esac
+
   if [ "$task" != "$LAST_TASK" ]; then
     log "  Sleeping ${INTER_TASK_BUFFER_SEC}s before next task"
     sleep "$INTER_TASK_BUFFER_SEC"
@@ -162,8 +216,9 @@ run_task() {
 # === Main ===
 log "=========================================="
 log "Nightshift dispatcher start: $(date)"
-log "Project: $PROJECT_ROOT"
+log "Project: $PROJECT_ROOT (type=$PROJECT_TYPE)"
 log "Tasks: ${TASKS[*]}"
+log "Model: $CLAUDE_MODEL · timeout=${TASK_TIMEOUT_MIN}m · budget=\$${TASK_BUDGET_USD}/task"
 log "Mode: $([ "$DRY_RUN" = "true" ] && echo "DRY RUN" || echo "REAL")"
 log "=========================================="
 
@@ -182,3 +237,9 @@ for task in "${TASKS[@]}"; do
   fi
 done
 log "=========================================="
+
+# 自动调 morning.sh 生成 closeout 草稿(v2 新增,失败不影响主流程)
+if [ "$DRY_RUN" != "true" ] && [ -f "$NIGHTSHIFT/morning.sh" ]; then
+  log "Running morning.sh"
+  bash "$NIGHTSHIFT/morning.sh" >> "$DISPATCHER_LOG" 2>&1 || log "morning.sh exit non-zero(忽略)"
+fi
