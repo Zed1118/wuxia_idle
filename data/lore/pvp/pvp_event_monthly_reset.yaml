@@ -1,0 +1,8 @@
+id: pvp_event_monthly_reset
+trigger:
+  kind: monthly_reset              # 每月榜单重置(月初触发一次)
+title: 月榜重启
+opening: |
+  月初山下传来评榜重启的消息。一年十二评,这是新一轮的开始。
+  过去一月的战绩归档入册,旧名次清零,新榜重开。
+  你抬眼远望,知江湖中又是一番风起。
