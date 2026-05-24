@@ -46,6 +46,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
     expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPvp), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuSect), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLeaderboard), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase1), findsOneWidget);
@@ -56,7 +57,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuInventory), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTechniques), findsOneWidget);
 
-    // 顺序:主线 / 问鼎九霄 / 心魔境 / 轻功试炼 / 守城试炼 / 论剑对决 / 排行榜 /
+    // 顺序:主线 / 问鼎九霄 / 心魔境 / 轻功试炼 / 守城试炼 / 论剑对决 / 门派事务 / 排行榜 /
     //       闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 江湖见闻录 / 装备 / 心法
     final mainY = tester.getCenter(find.text(UiStrings.mainMenuMainline)).dy;
     final towY = tester.getCenter(find.text(UiStrings.mainMenuTower)).dy;
@@ -64,6 +65,7 @@ void main() {
     final lfY = tester.getCenter(find.text(UiStrings.mainMenuLightFoot)).dy;
     final mbY = tester.getCenter(find.text(UiStrings.mainMenuMassBattle)).dy;
     final pvpY = tester.getCenter(find.text(UiStrings.mainMenuPvp)).dy;
+    final sectY = tester.getCenter(find.text(UiStrings.mainMenuSect)).dy;
     final lbY = tester.getCenter(find.text(UiStrings.mainMenuLeaderboard)).dy;
     final secY = tester.getCenter(find.text(UiStrings.mainMenuSeclusion)).dy;
     final p1Y = tester.getCenter(find.text(UiStrings.mainMenuPhase1)).dy;
@@ -78,7 +80,8 @@ void main() {
     expect(idY < lfY, isTrue);
     expect(lfY < mbY, isTrue);
     expect(mbY < pvpY, isTrue);
-    expect(pvpY < lbY, isTrue);
+    expect(pvpY < sectY, isTrue);
+    expect(sectY < lbY, isTrue);
     expect(lbY < secY, isTrue);
     expect(secY < p1Y, isTrue);
     expect(p1Y < p2Y, isTrue);
