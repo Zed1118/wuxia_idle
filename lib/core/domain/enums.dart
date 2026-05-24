@@ -160,6 +160,7 @@ enum StageType {
   innerDemon,  // 心魔关(1.0 P2.2 §12.1,7 关拦截 wuSheng 7 层突破 / 镜像玩家 +10-20%)
   lightFoot,   // 轻功对决(1.0 P3.1 §12.3,5 关 yiLiu/jueDing 平行支线 / terrain modifier 地形机制)
   massBattle,  // 群战守城(1.0 P3.2 §12.3,5 关 yiLiu/jueDing 平行支线 / wave-based 守城 + 阵型 3 选 1)
+  pvp,         // 异步 PVP(1.0 P3.3 §12.3,本地阵容快照 + ELO 段位 / NoopPvpSync mock,真 Supabase 留 1.1+)
 }
 
 /// 战斗机制地形(1.0 P3.1 §12.3,GDD v1.11)。
