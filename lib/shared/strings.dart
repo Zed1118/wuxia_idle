@@ -459,6 +459,10 @@ class UiStrings {
       '距「$nextRank」尚需 $remaining 分';
   static const String pvpRankTopHint = '已至段位之巅';
 
+  // ─── 门派事务（1.0 P3.4 §12.1,Batch 2.3-2.5 入口)─────────────────────────
+  static const String mainMenuSect = '门派事务';
+  static const String mainMenuSectHint = '门派经营 · 比武大会 · 声望积累(一流境界 yiLiu 解锁)';
+
   // ── P1 #42 Phase 2 §10 P1.y · 新手引导 banner 文案(GDD §10.2 第 2 方式)──
   // 3 条对应 tutorialStep 6/7/8(收徒 / 奇遇 / 装备开锋),50-100 字短介绍。
   static const String tutorialHintStep6Title = '收徒资格已达成';

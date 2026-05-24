@@ -18,6 +18,7 @@ import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../pvp/presentation/pvp_screen.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
+import '../../sect/presentation/sect_screen.dart';
 import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
@@ -166,6 +167,12 @@ class MainMenu extends ConsumerWidget {
                   label: UiStrings.mainMenuPvp,
                   hint: UiStrings.mainMenuPvpHint,
                   onTap: () => _push(context, const PvpScreen()),
+                ),
+                const SizedBox(height: 16),
+                _MenuButton(
+                  label: UiStrings.mainMenuSect,
+                  hint: UiStrings.mainMenuSectHint,
+                  onTap: () => _push(context, const SectScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
