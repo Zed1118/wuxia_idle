@@ -5,15 +5,15 @@
 
 ## 当前阶段
 
-**2026-05-24 中午 nightshift v2 通用挂机工作流首跑 ✅**(Mac+Opus ~30min · main HEAD `676be95` · 4 commit `a38b84c → 676be95` push origin/main + feat/p1_2_spec `a443905` push 触发 PR #6 更新):5 task(T01 P1.2 spec 4 项 fix → PR #6 + T02 BreakthroughBlocker 集成 character_panel 1302 pass + T03 inner_demon 7 主题 MJ prompt 138 行 + T04 P3.4 spec 160 行 + T05 P3.3 spec 160 行)+ v2 verify P0 修补 5 项(A1 禁 cd / A2 verify_diff_contains / A3 blacklist 跳 --no / A4 verify_section_titles / A5 spec 体例容差)+ idempotent 重跑 4/4 verify pass 0 API cost。详 `docs/handoff/nightshift_v2_first_run_closeout_2026-05-24.md` + memory `feedback_nightshift_v2_first_run_lessons` + `feedback_opus_nightshift_speed_v2`(opus --print ×0.10-0.18,3h 窗 doc/spec 塞 15-20 task)。**v3 顶段 #6 E pending → push 完成销账**。
+**2026-05-24 下午 nightshift v2 P1 工具收尾 + .nightshift/ 落库 ✅**(Mac+Opus ~30min · main HEAD `004cc37` · 2 commit `e4c4ff2 → 004cc37` 全 push origin/main):① **.nightshift/ A 三步法落库**(27 文件 commit · .gitignore 加 SUMMARY.md/bak.* · 删 v1 残留 README/TASKS/T06-T08)② **T01.md A1 红线显式声明**(「特殊性」段 ⚠️ + 「不要做」段 🚨 + B3 工具落地后改 conf 的指引)③ **B3 per-task BRANCH/WORKTREE override**(dispatcher `run_task()` 头部查 `TASKS_<task>_BRANCH/WORKTREE` env · override_branch 走 fetch + 不带 -B / override_worktree 复用现有路径 · dry-run 双维度实测通过)④ **C1 morning §6「失败但有产出 — 人工 review 候选」**(遍历 fail_verify/fail_scope/fail_timeout 且 worktree 超 base 有 commit 的 task · 避免 cherry-pick 段漏掉真有用 commit · fake T02 fail_verify 触发测过)⑤ **~/scripts/nightshift-tpl/ 模板源同步**(dispatcher.tpl.sh + morning.sh + nightshift.conf.tpl 三文件,跨项目通用)。**v2 工具层 P1 全销账**,下波可直接生产挂机跑或继续 P2(B2 keep-alive / C2 cost 累计 / C3 PROGRESS hook)。
 
 ---
 
-**2026-05-24 8h overnight v3 派单 4/5 PR squash merged ✅**(main HEAD `a6812c2` · 5 worktree 真并行 wall clock ~8min · 5 reviewer agent 并行审 均分 8.9/10):
-- ✅ #4 C `phase0/p3_3_pvp` 10/10 · ✅ #5 D `phase0/p3_4_sect_event` 9.5/10 · ✅ #8 B `audit/memory_sink_gdd10` 9/10 · ✅ #7 A `fix/ch4_5_yiliu_words` 8→10/10(1 字 fix「老练得→地」)
-- ⏸ **#6 E `feat/p1_2_spec` 8/10 改后 merge**(4 项 minor fix:§3 数值阈值梯度 / §1 OUT 心魔引用 / §7 R5.6 grep→dart 断言 / §2 Reputation composite index)· worktree `~/Desktop/wuxia_idle-p12-spec` 保留 · 用户决策后再 fix+merge
-- **v3 验证**:claude --print 后台多进程隔离体例可行 · 5 reviewer agent 并行审保证质量 gate · analyze 0 issue / narrative loader 13 测全过
-- 详 `docs/spec/overnight_v3_2026-05-24/_README.md` + git log a6812c2(4 squash commits)
+**2026-05-24 中午 nightshift v2 首跑 ✅**(main `676be95` · 5 task spec/实装/MJ 32min · 0/5→4/4 verify P0 修补 5 项 idempotent 重跑通过 · T01 → PR #6 + T02-T05 推 main):详 `docs/handoff/nightshift_v2_first_run_closeout_2026-05-24.md` + memory `feedback_nightshift_v2_first_run_lessons` + `feedback_opus_nightshift_speed_v2`(opus --print ×0.10-0.18,3h 窗 doc/spec 塞 15-20 task)。
+
+---
+
+**2026-05-24 8h overnight v3 派单 4/5 PR squash merged ✅**(main `a6812c2` · 5 worktree 真并行 wall clock ~8min · 5 reviewer agent 均分 8.9/10):#4 C P3.3 PVP 10/10 / #5 D P3.4 sect_event 9.5/10 / #8 B memory_sink_gdd10 9/10 / #7 A ch4_5 1 字 fix 8→10/10;**#6 E `feat/p1_2_spec` 8/10 4 项 fix** 由 nightshift v2 首跑 T01 闭环。详 `docs/spec/overnight_v3_2026-05-24/_README.md`。
 
 ---
 
@@ -31,11 +31,7 @@
 
 ---
 
-**2026-05-23 §12.1 心魔系统 Batch 2.1-2.5 全收尾 ✅ · 1.0 P2.2 子阶段闭环**(Mac+Opus xhigh 累计 ~5.25h · spec 估 ~7-8h · 精度 0.66× · **10 commit `e666e4c → b15d34d` 全 push origin/main** · 准备进 1.0 P3):
-- **Batch 2.5.B + 2.5.C**(`b15d34d` ~45min):① UI reactive 三态(InnerDemonScreen `mainlineProgressProvider` + `clearedStageIds` + `unlockTriggers` reverse 链 → cleared/available/locked + main_menu _MenuButton 入口 Tower 后 Leaderboard 前)② **inner_demon_07 决议**:R5.1 数据印证 `_07 +20%` 同 `_06 +20%` 完全同分布(3/0/47),改 +40% 单副本 YAGNI 不动 6v3 架构 ③ **cap 维度纠正**:`mirror_caps.attack_power_max 2000 → 6000` 纠 §5.4 维度(单件 vs 3 件求和)④ 1220 pass / 0 analyze ✅
-- **P2.2 final closeout**(本)~25min:GDD v1.9 → v1.10 + ROADMAP P2.2 final 段 + `docs/handoff/p2_x_inner_demon_final_closeout_2026-05-23.md` 80 行 + 本顶段
-- **挂账 1.0 P3+**(3 项):BreakthroughBlocker 集成 character_panel(1257 行 ~30-45min 推 P3+)+ inner_demon 战斗机制层调优(R5.1 实测数值层 buff 单维度调整不影响战斗结果)+ inner_demon 7 主题 enemy 立绘异步 MJ
-- **1.0 整体 ~70%**(P2.2 子阶段闭环 + Ch4/5/6 主线全闭环 + 心魔系统 7 关接管 wuSheng 突破链 + UI 入口可达)
+**2026-05-23 §12.1 心魔系统 Batch 2.1-2.5 全收尾 ✅ · 1.0 P2.2 子阶段闭环**(Mac+Opus xhigh ~5.25h · 10 commit `e666e4c → b15d34d` push main):UI reactive 三态 + inner_demon_07 决议(+20% 同分布不动 6v3)+ cap 维度纠正(mirror_caps.attack_power_max 2000→6000 单件 vs 3 件求和)+ GDD v1.10 + 1220 pass。详 `docs/handoff/p2_x_inner_demon_final_closeout_2026-05-23.md`。**1.0 整体 ~70%**。
 
 ---
 
