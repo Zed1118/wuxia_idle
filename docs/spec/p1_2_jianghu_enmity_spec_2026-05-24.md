@@ -21,15 +21,17 @@
 
 - **核心 deliverable**:① `Reputation` Isar Collection(多门派 [-100,+100])② `NpcRelation` Isar Collection(稀疏 source/target/type/level)③ `ReputationService`(累积 + 阶映射 + invalidate)④ `NpcRelationService`(CRUD + enmity 阈值查询)⑤ `ReputationPanelScreen`(7 阶进度 + 关系列表)⑥ Hud 角标(当前声望阶)⑦ 战斗集成:enmity ≥ 阈值 → `attackPowerMultiplier ±0.15-0.25`(沿 P3.1.B `light_foot_strategy.dart:120` 体例)⑧ encounter NPC 反应分支(沿 `encounter_service.dart` fortune 软概率体例)⑨ R5 红线 4-5 族(7 阶 cap / enmity 阈值 / 战斗 buff / 沿 §5.2 不破)
 - **配套**:numbers.yaml 加 `jianghu` 段(7 阶阈值 + enmity 战斗 modifier + 阶递进事件量)· stages.yaml 5-8 关 boss 加 `npcId` 字段 · 6-10 encounter 加 `affects_reputation` 字段
-- **范围 OUT**:Q3 C 心法触发 / Q3 D narrative 选项分支 / Q4 D enmity ≥80 援军 stage / Q5 C 双轴行侠+行恶 / §12.4 P3.4 sect 维度(独立 Collection 不共用)/ 心魔系统挂账(P2.2 已闭)/ Ch4-6 narrative 集成(P1.x 已闭)
+- **范围 OUT**:Q3 C 心法触发 / Q3 D narrative 选项分支 / Q4 D enmity ≥80 援军 stage / Q5 C 双轴行侠+行恶 / §12.4 P3.4 sect 维度(独立 Collection 不共用)/ 心魔系统(P3.2.C 销账)/ Ch4-6 narrative 集成(P1.x 已闭)
 
 ## 2. schema 改动
 
 ```dart
 // lib/features/jianghu/domain/reputation.dart(新 Isar Collection)
 @collection
+@Index(composite: [CompositeIndex('playerId'), CompositeIndex('factionId')], unique: true)  // 防同 (player, faction) 多行重复
 class Reputation {
   Id id = Isar.autoIncrement;
+  late int playerId;            // 多 save 隔离 · 沿 SaveData.playerCharacterId 体例(Demo 单 save 但 schema 预留)
   late String factionId;        // door_id e.g. "shaolin" / "wudang" / "luLin"(Demo 6-8 门派)
   @Index() late int value;      // [-100, +100] · clamp 入仓
   late DateTime updatedAt;
@@ -60,9 +62,11 @@ jianghu:
     - { tier: zongShi,  min:  41,  max:  70, label: "声振江湖" }
     - { tier: wuSheng,  min:  71,  max: 100, label: "天下闻名" }
   enmity_combat_modifier:          # Q4=B 战斗整合
-    threshold: -50                  # enmity ≥ |threshold| 触发
+    threshold: -50                  # enmity ≥ |threshold| 触发(第 1 档)
     player_attack_power_mult: 1.15  # vs 敌对 NPC +15% 攻击(玩家方)
     enemy_attack_power_mult: 1.15   # 敌方亦 +15% 攻击(双向恩怨 · sane default 对等不偏护)
+    severe_threshold: -80           # 第 2 档:深仇大恨 level ≤ -80 触发
+    severe_mult: 1.25               # severe 档 ±25%(对齐 clamp_max · 否则原 25% 永远触不到)
     clamp_max: 1.25                 # ≤25% 防越 §5.4 隐性红线
   triggers:                        # Q3=A+B
     stage_boss_kill_delta: 5        # 击杀有派别 boss · 该派 -5 / 敌对派 +3
@@ -119,7 +123,7 @@ jianghu:
 - **R5.3 战斗 §5.4 cap 不越**:fixture wuSheng·dengFeng + enmity active · damage_calculator 输出 ≤ 8000 普伤红线(1 测)
 - **R5.4 trigger e2e**:stage_boss_kill → reputation delta + rival delta(2 测)/ encounter delta(1 测)
 - **R5.5 §5.2 不破**:7 阶 label 全等 §5.2 7 境界词(`xueTu..wuSheng`)· 不开新阶(1 测)
-- **R5.6 P3.4 隔离**:`Reputation.factionId` 与 `SectReputationService`(若存)Collection 完全独立(1 测 grep 校验)
+- **R5.6 P3.4 隔离**:`Reputation` 与 `SectReputation`(若存)Collection 字段分离 · Dart schema-level 断言(1 测,沿例 `expect(Reputation.factionId.runtimeType, isNot(SectReputation.sectId.runtimeType))` 或 isar collection schema name 断言两 collection name 不等;**禁 grep 校验**,grep 跨文件文本匹配脆性 + 不反映 schema 真隔离)
 - **baseline ~1297 + delta ~10-12**(B4 落地后实测)
 
 ## 8. Batch 拆分(估时 ~7h xhigh)
