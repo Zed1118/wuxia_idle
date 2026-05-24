@@ -166,12 +166,19 @@ class EncounterDef {
   /// 不必显式配)。
   final Map<String, OutcomeDef> outcomeMapping;
 
+  /// P1.2 §6 声望影响(GDD §12.2)。
+  /// 非空时 `EncounterService.applyOutcome` resolve 后调
+  /// `ReputationService.applyDelta(factionId, rng∈[deltaMin,deltaMax])`。
+  /// null = 该 encounter 不影响声望(默认)。
+  final AffectsReputation? affectsReputation;
+
   const EncounterDef({
     required this.id,
     required this.type,
     required this.trigger,
     required this.baseProbability,
     required this.outcomeMapping,
+    this.affectsReputation,
   });
 
   factory EncounterDef.fromYaml(Map<String, dynamic> y) {
@@ -195,6 +202,10 @@ class EncounterDef {
       ),
       baseProbability: baseProb,
       outcomeMapping: Map.unmodifiable(mapping),
+      affectsReputation: (y['affectsReputation'] as Map?) == null
+          ? null
+          : AffectsReputation.fromYaml(
+              Map<String, dynamic>.from(y['affectsReputation'] as Map)),
     );
   }
 
@@ -202,4 +213,27 @@ class EncounterDef {
   OutcomeDef resolveOutcome(String outcomeId) =>
       outcomeMapping[outcomeId] ??
       const OutcomeDef(type: OutcomeType.none);
+}
+
+/// P1.2 §6 encounter 影响声望(GDD §12.2)。
+/// `factionId` 与 `factions.yaml` id 一一对应(加载层不校验存在性 · Service 兜底)。
+/// 单次 resolve rng ∈ [[deltaMin], [deltaMax]] inclusive · 负值表示降声望(行恶行为)。
+class AffectsReputation {
+  final String factionId;
+  final int deltaMin;
+  final int deltaMax;
+
+  const AffectsReputation({
+    required this.factionId,
+    required this.deltaMin,
+    required this.deltaMax,
+  });
+
+  factory AffectsReputation.fromYaml(Map<String, dynamic> y) {
+    return AffectsReputation(
+      factionId: y['factionId'] as String,
+      deltaMin: (y['deltaMin'] as num).toInt(),
+      deltaMax: (y['deltaMax'] as num).toInt(),
+    );
+  }
 }

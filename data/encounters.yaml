@@ -148,6 +148,10 @@ encounters:
         mountainForest: 90
       fortuneRequired: 2
     baseProbability: 0.4
+    affectsReputation:                            # P1.2 §6 占位
+      factionId: luLin
+      deltaMin: 3
+      deltaMax: 7
     outcomeMapping:
       help_traveller:
         type: attributeBonus
@@ -234,6 +238,10 @@ encounters:
         inn: 60
       fortuneRequired: 4
     baseProbability: 0.35
+    affectsReputation:                            # P1.2 §6 占位
+      factionId: wudang
+      deltaMin: 2
+      deltaMax: 5
     outcomeMapping:
       share_drink:
         type: attributeBonus
@@ -320,6 +328,10 @@ encounters:
         escortRoad: 60
       fortuneRequired: 4
     baseProbability: 0.4
+    affectsReputation:                            # P1.2 §6 占位
+      factionId: shaolin
+      deltaMin: 1
+      deltaMax: 4
     outcomeMapping:
       listen_tale:
         type: attributeBonus
@@ -400,6 +412,10 @@ encounters:
         snow: 45
       fortuneRequired: 3
     baseProbability: 0.4
+    affectsReputation:                            # P1.2 §6 占位(负 delta · 行为可让玩家选边)
+      factionId: jiaoMen
+      deltaMin: -6
+      deltaMax: -2
     outcomeMapping:
       learn_hunting:
         type: attributeBonus
@@ -526,6 +542,10 @@ encounters:
         dock: 30
       fortuneRequired: 3
     baseProbability: 0.4
+    affectsReputation:                            # P1.2 §6 占位
+      factionId: emei
+      deltaMin: 2
+      deltaMax: 6
     outcomeMapping:
       disarm_gesture:
         type: attributeBonus
