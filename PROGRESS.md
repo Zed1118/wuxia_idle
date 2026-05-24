@@ -5,6 +5,10 @@
 
 ## 当前阶段
 
+**2026-05-24 晚 nightshift v2 真生产跑 T11+T12 双 COMPLETED ✅ · 1.0 P3.3/P3.4 Phase 2/2.1 schema 全闭环**(Mac+Opus 1h 窗实测 ~15min wall · main HEAD `efc7604` · 3 commit `9733f2e+efc7604+merge resolve` 推 origin/main · 1302→1311 pass / 0 analyze):T11 P3.3 PVP Phase 2(`PvpRecord/PvpSnapshot` @Collection + `StageType.pvp` 第 6 枚 + numbers.yaml §13 pvp 段 elo K=32/ranks 七阶/sync noop/history 200)+ T12 P3.4 sect_event Batch 2.1(`Sect/SectEvent` @Collection + composite index `(sectId, triggeredAt)` + 2 enum + numbers.yaml §14 sect_event 段 tournament 0.30/cooldown 30d/reputation [0,100])+ R5 schema 红线 9 测全过(T11 5 + T12 4)+ cherry-pick numbers.yaml 末位撞段 1 处人工 resolve。**实测速度锚点 v3**:T11 ×0.08(spec 1.5h vs 实跑 7min)/ T12 ×0.12(spec 1h vs 7min),schema-only batch 比 memory `feedback_opus_nightshift_speed_v2` ×0.13-0.18 锚点更快 — 1h 窗 schema 类 task 可塞 6-8 个(原估 4-5 偏保守)。**下波**:Phase 3 logic(PvpStrategy + PvpService + NoopPvpSync)+ Batch 2.2 service(SectEventService + monthly tick + decay) — 各 ~2.5h xhigh / nightshift 估 ~20min。
+
+---
+
 **2026-05-24 下午 nightshift v2 P1 工具收尾 + .nightshift/ 落库 ✅**(Mac+Opus ~30min · main HEAD `004cc37` · 2 commit `e4c4ff2 → 004cc37` 全 push origin/main):① **.nightshift/ A 三步法落库**(27 文件 commit · .gitignore 加 SUMMARY.md/bak.* · 删 v1 残留 README/TASKS/T06-T08)② **T01.md A1 红线显式声明**(「特殊性」段 ⚠️ + 「不要做」段 🚨 + B3 工具落地后改 conf 的指引)③ **B3 per-task BRANCH/WORKTREE override**(dispatcher `run_task()` 头部查 `TASKS_<task>_BRANCH/WORKTREE` env · override_branch 走 fetch + 不带 -B / override_worktree 复用现有路径 · dry-run 双维度实测通过)④ **C1 morning §6「失败但有产出 — 人工 review 候选」**(遍历 fail_verify/fail_scope/fail_timeout 且 worktree 超 base 有 commit 的 task · 避免 cherry-pick 段漏掉真有用 commit · fake T02 fail_verify 触发测过)⑤ **~/scripts/nightshift-tpl/ 模板源同步**(dispatcher.tpl.sh + morning.sh + nightshift.conf.tpl 三文件,跨项目通用)。**v2 工具层 P1 全销账**,下波可直接生产挂机跑或继续 P2(B2 keep-alive / C2 cost 累计 / C3 PROGRESS hook)。
 
 ---
