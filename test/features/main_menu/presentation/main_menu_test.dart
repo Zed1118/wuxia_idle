@@ -94,7 +94,7 @@ void main() {
 
   testWidgets('15 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(InkWell), findsNWidgets(15));
+    expect(find.byType(InkWell), findsNWidgets(16));
   });
 
   testWidgets('tap Phase 1 战斗测试 → 进入 BattleTestMenu（找到 testMenuTitle / scenarioA）',
