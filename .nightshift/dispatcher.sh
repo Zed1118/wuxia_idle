@@ -80,14 +80,30 @@ run_prerun() {
 # === Run one task ===
 run_task() {
   local task=$1
-  local worktree="$WORKTREE_BASE/${WORKTREE_PREFIX}-$task"
+
+  # Per-task override(B3,v2 P1):nightshift.conf 可设 TASKS_<task>_BRANCH / TASKS_<task>_WORKTREE
+  # 用途:T01 类需切外部已有分支(如 feat/p1_2_spec)跑 task,避开 dispatcher 默认 nightshift/T0X 隔离
+  local branch_var="TASKS_${task}_BRANCH"
+  local worktree_var="TASKS_${task}_WORKTREE"
+  local override_branch="${!branch_var:-}"
+  local override_worktree="${!worktree_var:-}"
+
+  local branch="${override_branch:-nightshift/$task}"
+  local worktree
+  if [ -n "$override_worktree" ]; then
+    worktree="$override_worktree"
+  else
+    worktree="$WORKTREE_BASE/${WORKTREE_PREFIX}-$task"
+  fi
+
   local prompt="$NIGHTSHIFT/prompts/$task.md"
   local verify="$NIGHTSHIFT/prompts/$task.verify.sh"
   local task_log="$NIGHTSHIFT/logs/$task.log"
   local status_file="$NIGHTSHIFT/status/$task.status"
 
   log "=== START $task ==="
-  log "  worktree: $worktree"
+  log "  worktree: $worktree$([ -n "$override_worktree" ] && echo ' (override)')"
+  log "  branch:   $branch$([ -n "$override_branch" ] && echo ' (override)')"
   log "  prompt:   $prompt"
   log "  verify:   $verify"
 
@@ -113,15 +129,29 @@ run_task() {
   fi
 
   # Auto-create worktree if missing
+  # override_branch 走 fetch + 切现有分支(不带 -B,避免覆盖远端分支)
+  # 默认 nightshift/$task 走 -B(从 MAIN_BRANCH 起新建 / 复用)
   if [ ! -d "$worktree" ]; then
-    log "  Auto-creating worktree $worktree from $MAIN_BRANCH (branch nightshift/$task)"
-    if ! (cd "$PROJECT_ROOT" && git worktree add -f "$worktree" -B "nightshift/$task" "$MAIN_BRANCH") >> "$DISPATCHER_LOG" 2>&1; then
-      log "  FAIL: worktree create → status=skipped"
-      {
-        echo "status=skipped"
-        echo "reason=worktree_create_failed"
-      } >> "$status_file"
-      return 0
+    if [ -n "$override_branch" ]; then
+      log "  Auto-creating worktree $worktree on branch $branch (override,fetch + checkout existing)"
+      if ! (cd "$PROJECT_ROOT" && git fetch origin "$branch" && git worktree add -f "$worktree" "$branch") >> "$DISPATCHER_LOG" 2>&1; then
+        log "  FAIL: worktree create (override branch $branch) → status=skipped"
+        {
+          echo "status=skipped"
+          echo "reason=worktree_create_failed_override_branch"
+        } >> "$status_file"
+        return 0
+      fi
+    else
+      log "  Auto-creating worktree $worktree from $MAIN_BRANCH (branch $branch)"
+      if ! (cd "$PROJECT_ROOT" && git worktree add -f "$worktree" -B "$branch" "$MAIN_BRANCH") >> "$DISPATCHER_LOG" 2>&1; then
+        log "  FAIL: worktree create → status=skipped"
+        {
+          echo "status=skipped"
+          echo "reason=worktree_create_failed"
+        } >> "$status_file"
+        return 0
+      fi
     fi
   fi
 
