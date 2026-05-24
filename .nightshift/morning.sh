@@ -171,7 +171,67 @@ fi
 cat <<EOF
 \`\`\`
 
-## 6. 清理 worktree
+## 6. 失败但有产出 — 人工 review 候选(C1,v2 P1)
+
+> verify 严苛度 vs 产出质量是两件事:fail_verify 的 task 若已 commit,产出可能仍有价值,人工过一眼别漏掉。
+> 触发条件:status ∈ {fail_verify, fail_scope, fail_timeout} 且 worktree 有超 \$MAIN_BRANCH 的 commit。
+
+EOF
+
+HAS_REVIEW=false
+for task in "${TASKS[@]}"; do
+  sf="$SCRIPT_DIR/status/$task.status"
+  [ ! -f "$sf" ] && continue
+  s=$(grep '^status=' "$sf" | tail -1 | cut -d= -f2)
+  case "$s" in
+    fail_verify|fail_scope|fail_timeout) ;;
+    *) continue ;;
+  esac
+
+  # 重算 worktree 路径(可能被 TASKS_<task>_WORKTREE override)
+  worktree_var="TASKS_${task}_WORKTREE"
+  override_worktree="${!worktree_var:-}"
+  if [ -n "$override_worktree" ]; then
+    wt="$override_worktree"
+  else
+    wt="$WORKTREE_BASE/${WORKTREE_PREFIX:-$(basename "$PROJECT_ROOT")}-$task"
+  fi
+  [ ! -d "$wt" ] && continue
+  (cd "$wt" 2>/dev/null && git rev-parse --is-inside-work-tree >/dev/null 2>&1) || continue
+
+  # 算 base..HEAD commit 数(若 override branch 用该分支远端 head 作 base 估算更准,简化先用 MAIN_BRANCH)
+  branch_var="TASKS_${task}_BRANCH"
+  override_branch="${!branch_var:-}"
+  current_branch=$(cd "$wt" && git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  if [ -n "$override_branch" ]; then
+    base_ref="origin/$override_branch"
+  else
+    base_ref="$MAIN_BRANCH"
+  fi
+  commit_count=$(cd "$wt" && git rev-list --count "$base_ref..HEAD" 2>/dev/null || echo 0)
+  [ "$commit_count" = "0" ] && continue
+
+  HAS_REVIEW=true
+  reason=$(grep '^reason=' "$sf" | tail -1 | cut -d= -f2-)
+  echo "### $task ($s,$commit_count commit 超 $base_ref)"
+  echo ""
+  echo "- worktree: \`$wt\`"
+  echo "- branch:   \`$current_branch\`$([ -n "$override_branch" ] && echo ' (override)')"
+  echo "- fail 原因: \`$reason\`"
+  echo "- commit:"
+  echo '```'
+  (cd "$wt" && git log --oneline "$base_ref..HEAD" 2>/dev/null | head -10)
+  echo '```'
+  echo "- review 动作:cd worktree 跑 verify 手动查 / 决定 cherry-pick / amend / drop"
+  echo ""
+done
+if [ "$HAS_REVIEW" = "false" ]; then
+  echo "无候选(failed task 均无产出 commit)。"
+  echo ""
+fi
+
+cat <<EOF
+## 7. 清理 worktree
 
 \`\`\`bash
 for t in ${TASKS[*]}; do
@@ -179,6 +239,8 @@ for t in ${TASKS[*]}; do
   git branch -D "nightshift/\$t" 2>/dev/null
 done
 \`\`\`
+
+> 注:override branch(TASKS_T0X_BRANCH)对应 worktree 不在上述清理列表,需手动 \`git worktree remove\` + 决定是否保留分支。
 
 ---
 
