@@ -6,7 +6,6 @@
 ## 当前阶段
 
 > 📊 **2026-05-24 1.0 全谱 milestone 审查** ✅:1.0 整体 ~65% / 核心可玩 ~85% / 8 天压缩原 16 个月计划 65% · 详 `docs/handoff/stage_audit_1_0_overall_2026-05-24.md`
-
 **2026-05-24 晚 nightshift v2 真生产跑 T13+T14 1/2 真 COMPLETED + 1/2 verify 假阳性(产出 OK)✅ · 1.0 P3.3/P3.4 Phase 3/2.2 logic+service 全闭环**(Mac+Opus 1h 窗实跑 ~25min wall · main HEAD `8c001b3` · 2 commit `665a4d9+8c001b3` push origin/main · 1311→1340 pass / 0 analyze):T13 P3.3 Phase 3 logic(`PvpStrategy implements BattleStrategy` 组合委派 `DefaultGroundStrategy` + `PvpService.match` 整链 e2e + ELO `pvp_elo.dart` 纯函数 + `NoopPvpSync` 本地 mirror mock + 17 测 R1/R2/R3)+ T14 P3.4 Batch 2.2 service(pure-ish `SectEventService.checkAndTrigger/resolve` win/loss/expired 联动 reputation/sectLevel clamp + `SectReputationDecayService.computeDecay` 30 天 idle -5 + `MonthlyTickCoordinator` infra + `SectOutcome` enum + 12 测)+ NumbersConfig 走 `raw['pvp']/['sect_event']` map 避撞 cherry-pick conflict + 0 conflict 双 cherry-pick 干净。**T13 verify FAIL_VERIFY 假阳性**(`attackPowerMultiplier` grep 命中 doc comment 反向声明「0 引入」/ v2 A3 `--no` 同根 blind spot · 产出 100% 合规 · **C1 §6「失败但有产出」段成功 surface 候选** · 直接 cherry-pick 无 amend)。**v2 工具实战兑现**:C1 段真生产首触发,P1 工具 ROI 验证;速度 T13 ×0.13(spec 2.5h vs 12.5min)/ T14 ×0.09(spec 2h vs 5.5min)实装类速度锚点稳定。**下波**:① 修 verify 反向声明 blind spot + sink A6 教训 ② Phase 4 UI + Batch 2.4 UI/narrative ③ 升 PvpDef/SectEventDef 强类型 NumbersConfig 子段。
 
 ---
