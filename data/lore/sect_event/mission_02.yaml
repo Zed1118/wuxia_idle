@@ -1,0 +1,12 @@
+id: mission_02
+type: mission
+title: 寻人之托
+opening: |
+  山下一位老妇人扶杖上山,跪求本派寻她失踪三年的独子。
+  老妇人言,儿子最后一次现身在洛阳城外的乱葬岗。
+  你扶起老人,问她可愿付银。她摇头,只说本派若肯,情义自记。
+choices:
+  - { text: 接此情义之托, outcome: accept }
+  - { text: 婉言相劝(reputation -3), outcome: refuse }
+victory_text: 你于乱葬岗循迹数日,终在邻州一处义庄寻得线索,助老妇人寻回独子。声名渐播。
+defeat_text: 线索断于半途,你空手而归,向老妇人深深一揖。本派声名,未损亦未增。

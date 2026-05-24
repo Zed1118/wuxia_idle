@@ -1,0 +1,8 @@
+id: pvp_event_three_streak
+trigger:
+  kind: three_wins_streak          # 三连胜(连续 3 场胜利触发)
+title: 三战三捷
+opening: |
+  连胜三场,你拭去剑上薄霜。
+  三位对手皆江湖中略有名号的剑客,你以一招制胜,无伤而归。
+  那段沉肃的剑意,渐入了几分火候。

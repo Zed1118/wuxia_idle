@@ -1,0 +1,10 @@
+id: pvp_event_rank_up_erLiu
+trigger:
+  kind: rank_up_erLiu              # 段位升至「二流」
+title: 跻身二流
+opening: |
+  评榜更迭,你的名字向上挪了一格。
+  江湖中走动的几位老前辈,见你之时已肯抱拳致意。
+  你心知名号渐重,出剑之时更要沉着。
+text_on_rank_up: |
+  你的段位升至「{rank_name}」。寻常剑客,已不堪与你试招。

@@ -1,0 +1,8 @@
+id: pvp_event_five_streak
+trigger:
+  kind: five_wins_streak           # 五连胜(连续 5 场胜利触发)
+title: 五战不败
+opening: |
+  五场较量过后,擂台之上无人再敢轻言挑战。
+  你收剑入鞘,袖口尚带未散的剑意。
+  围观众人低声相议,你听见自己的名号,正在江湖间流转。

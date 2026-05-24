@@ -1,0 +1,12 @@
+id: crisis_01
+type: crisis
+title: 内门生变
+opening: |
+  夜半山门骤静,你于书房察觉异样。
+  数名内门弟子聚于后山,似有不臣之意。为首者乃你昔日颇器重的二代弟子。
+  你立于廊下,听他们低声议论本派门规与你近来的决策。
+choices:
+  - { text: 亲自现身对质, outcome: accept }
+  - { text: 暂且按下不发(reputation -5), outcome: refuse }
+victory_text: 你于众弟子面前讲清缘由,为首者跪地请罪。本派内息一肃,门规重新立稳。
+defeat_text: 你言辞过急,反激起更多怨气,数名弟子连夜下山。本派元气大伤,你独坐书房至天明。
