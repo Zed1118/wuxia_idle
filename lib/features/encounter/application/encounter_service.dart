@@ -73,6 +73,15 @@ class EquipNotFound extends EquipEncounterSkillResult {
   const EquipNotFound(this.reason);
 }
 
+/// P1.2 §3 reputation 应用 hook 签名(EncounterService 解耦,不强依赖 ReputationService)。
+/// caller 端绑(ReputationService.applyDelta + rng)注入;test 端可注 mock collect。
+typedef ReputationDeltaApplier = Future<void> Function({
+  required int playerId,
+  required String factionId,
+  required int deltaMin,
+  required int deltaMax,
+});
+
 /// 奇遇 / 武学领悟服务(C-W14-1)。
 ///
 /// 三个核心 API:
@@ -258,6 +267,9 @@ class EncounterService {
     int? founderCharacterId,
     String? encounterTitle,
     String? Function(String skillId)? skillNameLookup,
+    // P1.2 §3 EncounterIntegration:reputation hook(可选,fixture / Phase 5 接入)
+    ReputationDeltaApplier? reputationApplier,
+    int? reputationPlayerId,
   }) async {
     final outcome = encounter.resolveOutcome(outcomeId);
 
@@ -337,6 +349,21 @@ class EncounterService {
         await tutorialSvc.advanceForFirstAdventure();
       }
     });
+
+    // P1.2 §3 reputation hook · writeTxn 外调(ReputationService 有自己的 writeTxn,
+    // 嵌套 writeTxn 会失败)。任一参数 null → skip(fixture / 老路径不沾)。
+    final affects = encounter.affectsReputation;
+    if (affects != null &&
+        reputationApplier != null &&
+        reputationPlayerId != null) {
+      await reputationApplier(
+        playerId: reputationPlayerId,
+        factionId: affects.factionId,
+        deltaMin: affects.deltaMin,
+        deltaMax: affects.deltaMax,
+      );
+    }
+
     return result;
   }
 
