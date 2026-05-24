@@ -429,6 +429,36 @@ class UiStrings {
   static const String mainMenuMassBattle = '守城试炼';
   static const String mainMenuMassBattleHint = '5 关守城 · 以少胜多';
 
+  // ─── 论剑对决 PVP(1.0 P3.3 §12.3,Phase 4 入口)───────────────────────────
+  static const String mainMenuPvp = '论剑对决';
+  static const String mainMenuPvpHint =
+      '异步快照 PVP · 跨 ELO 段位匹配对手(主线 Ch5 cleared 解锁)';
+
+  static const String pvpTitle = '论剑对决';
+  static const String pvpLockedHint = '主线 Ch5 通关后开放';
+  static const String pvpMatchButton = '立即论剑';
+  static const String pvpMatchPlaceholder =
+      'PVP 真战斗流程留 Phase 5 wire(读玩家阵容 + Isar 持久化)';
+  static const String pvpHistoryTitle = '近期战例';
+  static const String pvpHistoryEmpty = '尚未踏入论剑场';
+  static const String pvpHistoryWin = '胜';
+  static const String pvpHistoryLoss = '负';
+  static const String pvpHistoryDraw = '和';
+  static String pvpHistoryEloDelta(int delta) =>
+      delta > 0 ? '+$delta' : '$delta';
+
+  static const String pvpRankXueTu = '学徒';
+  static const String pvpRankSanLiu = '三流';
+  static const String pvpRankErLiu = '二流';
+  static const String pvpRankYiLiu = '一流';
+  static const String pvpRankJueDing = '绝顶';
+  static const String pvpRankZongShi = '宗师';
+  static const String pvpRankWuSheng = '武圣';
+  static String pvpEloLabel(int elo) => '当前 ELO · $elo';
+  static String pvpRankNext(int remaining, String nextRank) =>
+      '距「$nextRank」尚需 $remaining 分';
+  static const String pvpRankTopHint = '已至段位之巅';
+
   // ── P1 #42 Phase 2 §10 P1.y · 新手引导 banner 文案(GDD §10.2 第 2 方式)──
   // 3 条对应 tutorialStep 6/7/8(收徒 / 奇遇 / 装备开锋),50-100 字短介绍。
   static const String tutorialHintStep6Title = '收徒资格已达成';
