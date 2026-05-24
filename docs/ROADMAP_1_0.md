@@ -1,9 +1,23 @@
 # 挂机武侠 · 1.0 版本路线图
 
+> **v1.3** · 修订日 2026-05-25 · 状态:**1.0 整体 ~78%**(本批 nightshift T17-T22 跑完后 · 完工率 4/6)
 > **v1.2** · 修订日 2026-05-17 晚续 · 状态:**P0 阶段 4 项 100% 收口**(P0.1 #38 / P0.2 strategy 重构 / P0.3 #41 决议 + 新销账段 spec 起步段闭环)
 > **v1.0** · 起草日 2026-05-17 · 状态:**已 launched(开发未启动,P0 待开工)**
 > 决策来源会话:Mac + Opus 4.7,W18 起步段全收口当晚
 > 路线图本身是规划文档,实际推进可能因实测调整 — 修订记录见末尾
+
+---
+
+> **v1.3 变更**(2026-05-25 本批 nightshift T17-T22 跑完):
+> - **完工率 4/6**:T18 narrative ✅ / T20 audit ✅ / T21 P4.1 spec ✅ / T22 总收尾 ✅ · **T17 partial**(P1.2 B1+B2 only · B3 UI/B4 R5/closeout 全缺) · **T19 FAIL**(0 commit · 技术债 3 项全未做)
+> - P1.2 §12.1+§12.2 江湖恩怨+声望 schema+service 落(`4e79722` Reputation/NpcRelation Isar + numbers.yaml jianghu + factions.yaml + stages/encounters extend / `bdfee91` ReputationService + NpcRelationService + EncounterIntegration) → P1.2 状态 「spec only 15%」 → 「**B1+B2 ~50% · B3 UI/B4 R5/closeout 留下波**」
+> - P3.3 PVP narrative 补 10 条(连胜/晋级/降段/月榜)+ R4 loader 测 ✅(`10711b1`)→ P3.3 narrative 状态「stub 1」→ 「完整 11」
+> - P3.4 sect_event narrative 补 8 条(tournament 3 + mission 3 + crisis 2)+ R4 loader 测 ✅(同上 commit)→ P3.4 narrative 状态「2 tournament」→ 「10 全 type 覆盖」
+> - **P3 技术债 3 项仍挂账**(T19 fail · 0 commit):numbers_config 强类型 PvpDef/SectEventDef / Sect/SectEvent/PvpRecord/PvpSnapshot Isar 真持久化 / systemClockProvider 全未做
+> - 跨系统数值红线 audit(`ab514e1`)P2.2/P3.1/P3.2/P1.2 attackPowerMultiplier 链 + R5 6-10 测 + worst-case 验)→ R2 风险清(详 audit doc §5)
+> - P4.1 §12.2 帮派门派 Phase 0 + spec 起草(`be6c224` Q1-Q8 默认决议 · ~15-20h xhigh 实装挂账)→ P4.1 状态「0% 无 spec」→ 「**spec ~8% · 待用户拍板 Q1-Q8 后实装**」
+> - 1.0 整体 ~75% → **~78%**(P0/P1.1/P1.3/P2 全 + P3.1/P3.2 全 + P3.3/P3.4 narrative 全 + P1.2 ~50% + P4.1 spec 8%)
+> - 详 `docs/handoff/stage_audit_1_0_overall_2026-05-25.md`(本批 milestone audit)+ `docs/handoff/6h_unattended_handoff_2026-05-25.md`(6h 挂机回报)
 
 ---
 
@@ -212,6 +226,7 @@
 - 玩家创建门派可招收弟子 / 占领山头
 - 与师徒系统 A1 升级链联动(P2 已实装飞升)
 - 跨多个 service:CharacterRecruitmentService / SectService / TerritoryService
+- **2026-05-25 状态**:Phase 0 + spec 起草 ✅(commit `be6c224` · nightshift T21 · Q1-Q8 默认决议草案 待用户拍板)→ 「无 spec 0%」 → 「**spec ~8% · 待用户拍板 Q1-Q8 后 nightshift B1-B4 实装 ~15-20h xhigh / 8-10h nightshift**」
 
 ### P4.2 §12.4 翻译(可选英文)
 - 英文翻译(主线 / UI / 系统提示)
