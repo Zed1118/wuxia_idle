@@ -1,3 +1,7 @@
+# [DEPRECATED] memory sink 候选清单(2026-05-24 凌晨 8h overnight) · 已被 ready_to_paste 取代 · 留存
+
+> **已被 `memory_sink_ready_to_paste_2026-05-24.md` 取代（2026-05-24 audit/memory_sink_gdd10 加工） · 本 doc 留存供历史追溯**
+
 # memory sink 候选清单(2026-05-24 凌晨 8h overnight) · 待用户审稿
 
 > **本 doc 是 memory sink 候选清单 · 用户审稿后由用户手动 Edit memory 文件 · 我不再越权 sink**
