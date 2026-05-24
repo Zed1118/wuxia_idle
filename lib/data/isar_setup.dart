@@ -13,6 +13,8 @@ import '../features/seclusion/domain/retreat_session.dart';
 import '../core/domain/save_data.dart';
 import '../core/domain/technique.dart';
 import '../features/tower/domain/tower_progress.dart';
+import '../features/jianghu/domain/reputation.dart';
+import '../features/jianghu/domain/npc_relation.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。
 ///
@@ -52,6 +54,8 @@ class IsarSetup {
     TowerProgressSchema,
     RetreatSessionSchema,
     EncounterProgressSchema,
+    ReputationSchema,
+    NpcRelationSchema,
   ];
 
   /// 当前 schema 对应的存档版本（写入新建 SaveData.saveVersion）。

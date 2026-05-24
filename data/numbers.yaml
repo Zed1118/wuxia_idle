@@ -1527,5 +1527,39 @@ sect_event:
   active_events_max: 3                 # 同 sect 同时 pending 上限
 
 # =============================================================================
+# 15. P1.2 江湖恩怨 + 声望 (GDD §12.1 + §12.2 · spec p1_2_jianghu_enmity_spec_2026-05-24)
+# =============================================================================
+# Q1-Q5 默认决议(spec §0):
+#   Q1=B 拆批 / Q2=B 稀疏 NpcRelation / Q3=A+B stage_boss+encounter
+#   Q4=A+B UI narrative + 战斗 ±15-25% / Q5=A 沿 §5.2 七阶节奏
+#
+# 不变量:
+#   - 7 阶 label 锁 §5.2 7 境界词(xueTu..wuSheng) · 不开新阶
+#   - enmity 战斗 mult clamp 1.25 防越 §5.4 红线
+#   - 双向对等(player_attack_power_mult == enemy_attack_power_mult)· 不偏护
+
+jianghu:
+  reputation_tiers:                # 7 阶沿 §5.2:学徒/三流/二流/一流/绝顶/宗师/武圣
+    - { tier: xueTu,    min: -100, max: -71, label: "声名狼藉" }
+    - { tier: sanLiu,   min: -70,  max: -41, label: "恶名" }
+    - { tier: erLiu,    min: -40,  max: -11, label: "默默无闻" }
+    - { tier: yiLiu,    min: -10,  max:  10, label: "薄有微名" }   # 中间区间
+    - { tier: jueDing,  min:  11,  max:  40, label: "侠名初显" }
+    - { tier: zongShi,  min:  41,  max:  70, label: "声振江湖" }
+    - { tier: wuSheng,  min:  71,  max: 100, label: "天下闻名" }
+  enmity_combat_modifier:          # Q4=B 战斗整合
+    threshold: -50                  # enmity ≥ |threshold| 触发(第 1 档)
+    player_attack_power_mult: 1.15
+    enemy_attack_power_mult: 1.15
+    severe_threshold: -80           # 第 2 档:深仇大恨
+    severe_mult: 1.25
+    clamp_max: 1.25                 # ≤25% 防越 §5.4 红线
+  triggers:                        # Q3=A+B
+    stage_boss_kill_delta: 5        # 击杀有派别 boss · 该派 -5
+    stage_boss_kill_rival_delta: 3  # 敌对派 +3
+    encounter_npc_delta_min: -8
+    encounter_npc_delta_max: 8
+
+# =============================================================================
 # 文件结束
 # =============================================================================

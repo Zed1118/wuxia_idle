@@ -585,6 +585,7 @@ stages:
           - skill_gangmeng_jichu_skill
         iconPath: assets/enemies/killer_b.png
     isBossStage: true
+    npcId: cijianzhuang_assassin                 # P1.2 §6 占位 · 1.1+ 接入真 NPC schema
     dropEquipmentDefIds:
       - weapon_haojiahuo_qing_feng_jian
       - accessory_xiangyang_yin_jie
@@ -898,6 +899,7 @@ stages:
           - skill_lingqiao_mingjia_ult
         iconPath: assets/enemies/shidi_b.png
     isBossStage: true
+    npcId: jiaoMen_shidi                         # P1.2 §6 占位
     dropEquipmentDefIds:
       - weapon_liqi_long_quan
       - accessory_haojiahuo_yu_pei_lao
@@ -1227,6 +1229,7 @@ stages:
           - skill_lingqiao_menpai_ult
         iconPath: assets/enemies/bazhu_youfu.png
     isBossStage: true
+    npcId: cijianzhuang_bazhu                    # P1.2 §6 占位
     dropEquipmentDefIds:
       - weapon_zhongqi_qing_xu_jian
       - accessory_zhongqi_qing_yu_huan
@@ -1556,6 +1559,7 @@ stages:
           - skill_lingqiao_jianghu_ult
         iconPath: assets/enemies/songshan_daozong.png
     isBossStage: true
+    npcId: jiaoMen_songshan_daozong              # P1.2 §6 占位
     dropEquipmentDefIds:
       - weapon_baowu_chang_hong_jian
       - accessory_baowu_yu_long_pei
@@ -1794,6 +1798,7 @@ stages:
           - skill_yinrou_shichuan_skill
         iconPath: assets/enemies/kunlun_dunke.png
     isBossStage: true
+    npcId: cijianzhuang_kunlun_dunke             # P1.2 §6 占位
     dropEquipmentDefIds:
       - accessory_shenwu_kun_lun_pei
       - weapon_baowu_xuan_tian_fu

@@ -1,0 +1,37 @@
+# =============================================================================
+# factions.yaml · 江湖门派配置(P1.2 §6 spec p1_2_jianghu_enmity_spec_2026-05-24)
+# =============================================================================
+#
+# Demo 6 门派(orthodox/neutral/evil 3 alignment 平衡):
+#   - alignment 用于 stage_boss_kill 触发时计算 rival faction +3 delta
+#     (orthodox kill evil boss → orthodox faction +3 · evil 反之亦然 · neutral 不沾)
+#   - npc_ids 留空数组:本 task ship schema 占位 · 1.1+ 接入真 NPC schema 后填
+#
+# 不变量:
+#   - faction id 与 Reputation.factionId 字段值严格匹配(加载层 ReputationService 兜底未匹配 → 'yiLiu')
+#   - alignment 字段仅 orthodox/neutral/evil 3 值(不开新值 · 沿 GDD §1 武林立场体例)
+factions:
+  - id: shaolin
+    name: "少林寺"
+    alignment: orthodox
+    npc_ids: []
+  - id: wudang
+    name: "武当派"
+    alignment: orthodox
+    npc_ids: []
+  - id: emei
+    name: "峨眉派"
+    alignment: orthodox
+    npc_ids: []
+  - id: luLin
+    name: "绿林"
+    alignment: neutral
+    npc_ids: []
+  - id: jiaoMen
+    name: "邪教"
+    alignment: evil
+    npc_ids: []
+  - id: cijianzhuang
+    name: "刺剑庄"
+    alignment: evil
+    npc_ids: []

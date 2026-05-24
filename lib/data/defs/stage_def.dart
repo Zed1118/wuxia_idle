@@ -69,6 +69,11 @@ class StageDef {
   /// 仅 `stageType: massBattle` 关卡配置;其他 stageType null。
   final List<int>? massBattleEnemyCounts;
 
+  /// P1.2 §6 boss NPC 关联(GDD §12.1 江湖恩怨)。
+  /// 仅 boss stage(`isBossStage: true`)配置 · null = 该 boss 无 NPC 身份(纯敌人)。
+  /// 1.0 ship 字符串占位 · 1.1+ 接入真 NPC schema 后映射 `NpcRelation.targetCharacterId`。
+  final String? npcId;
+
   const StageDef({
     required this.id,
     required this.name,
@@ -93,6 +98,7 @@ class StageDef {
     this.terrainBiome,
     this.massBattleWaveCount,
     this.massBattleEnemyCounts,
+    this.npcId,
   });
 
   factory StageDef.fromYaml(Map<String, dynamic> y) {
@@ -136,6 +142,7 @@ class StageDef {
       massBattleEnemyCounts: (y['massBattleEnemyCounts'] as List?)
           ?.map((e) => (e as num).toInt())
           .toList(growable: false),
+      npcId: y['npcId'] as String?,
     );
   }
 

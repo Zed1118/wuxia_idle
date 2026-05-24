@@ -145,6 +145,11 @@ class NumbersConfig {
   /// MassBattleStrategy fallback neutral modifier 不影响 BattleCharacter stat)。
   final MassBattleDef massBattle;
 
+  /// P1.2 江湖恩怨 + 声望(GDD §12.1 + §12.2 · spec p1_2_jianghu_enmity_spec_2026-05-24)。
+  /// numbers.yaml `jianghu` 段:7 阶 reputation_tiers + enmity_combat_modifier + triggers。
+  /// 空段兜底 [JianghuConfig.empty](fixture / 老存档迁移)。
+  final JianghuConfig jianghu;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -178,6 +183,7 @@ class NumbersConfig {
     required this.innerDemon,
     required this.lightFoot,
     required this.massBattle,
+    required this.jianghu,
     required this.raw,
   });
 
@@ -270,6 +276,9 @@ class NumbersConfig {
       ),
       massBattle: MassBattleDef.fromYaml(
         y['mass_battle'] as Map<String, dynamic>?,
+      ),
+      jianghu: JianghuConfig.fromYaml(
+        y['jianghu'] as Map<String, dynamic>?,
       ),
       raw: y,
     );
@@ -1426,5 +1435,150 @@ class FestivalConfig {
       if (when.month == d.month && when.day == d.day) return d.festival;
     }
     return null;
+  }
+}
+
+/// 江湖恩怨 + 声望配置(P1.2 GDD §12.1 + §12.2)。
+/// numbers.yaml `jianghu` 段;空段兜底 [JianghuConfig.empty]。
+class JianghuConfig {
+  final List<ReputationTierDef> reputationTiers;
+  final EnmityCombatModifier enmityCombatModifier;
+  final JianghuTriggers triggers;
+
+  const JianghuConfig({
+    required this.reputationTiers,
+    required this.enmityCombatModifier,
+    required this.triggers,
+  });
+
+  /// 空配置兜底(fixture / test yaml 不带 `jianghu` 段):
+  /// reputation_tiers 空 + enmity 阈值 0 + triggers 0,Service 端表现为 noop。
+  static const JianghuConfig empty = JianghuConfig(
+    reputationTiers: [],
+    enmityCombatModifier: EnmityCombatModifier.empty,
+    triggers: JianghuTriggers.empty,
+  );
+
+  factory JianghuConfig.fromYaml(Map<String, dynamic>? y) {
+    if (y == null || y.isEmpty) return empty;
+    final tiersRaw = (y['reputation_tiers'] as List?) ?? const [];
+    final tiers = <ReputationTierDef>[];
+    for (final raw in tiersRaw) {
+      tiers.add(ReputationTierDef.fromYaml(
+          Map<String, dynamic>.from(raw as Map)));
+    }
+    return JianghuConfig(
+      reputationTiers: List.unmodifiable(tiers),
+      enmityCombatModifier: EnmityCombatModifier.fromYaml(
+        (y['enmity_combat_modifier'] as Map?)?.cast<String, dynamic>() ??
+            const {},
+      ),
+      triggers: JianghuTriggers.fromYaml(
+        (y['triggers'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+    );
+  }
+}
+
+/// 单档声望阶定义(P1.2 §2 · 7 阶沿 §5.2)。
+class ReputationTierDef {
+  final String tier;
+  final int min;
+  final int max;
+  final String label;
+
+  const ReputationTierDef({
+    required this.tier,
+    required this.min,
+    required this.max,
+    required this.label,
+  });
+
+  factory ReputationTierDef.fromYaml(Map<String, dynamic> y) {
+    return ReputationTierDef(
+      tier: y['tier'] as String,
+      min: (y['min'] as num).toInt(),
+      max: (y['max'] as num).toInt(),
+      label: y['label'] as String,
+    );
+  }
+}
+
+/// enmity 战斗 modifier(P1.2 §2 Q4=B)。
+/// `clamp_max` 防越 §5.4 红线;Service 端 attackPowerMultFor 返值 ≤ 该值。
+class EnmityCombatModifier {
+  final int threshold;
+  final double playerAttackPowerMult;
+  final double enemyAttackPowerMult;
+  final int severeThreshold;
+  final double severeMult;
+  final double clampMax;
+
+  const EnmityCombatModifier({
+    required this.threshold,
+    required this.playerAttackPowerMult,
+    required this.enemyAttackPowerMult,
+    required this.severeThreshold,
+    required this.severeMult,
+    required this.clampMax,
+  });
+
+  static const EnmityCombatModifier empty = EnmityCombatModifier(
+    threshold: 0,
+    playerAttackPowerMult: 1.0,
+    enemyAttackPowerMult: 1.0,
+    severeThreshold: 0,
+    severeMult: 1.0,
+    clampMax: 1.0,
+  );
+
+  factory EnmityCombatModifier.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    return EnmityCombatModifier(
+      threshold: (y['threshold'] as num?)?.toInt() ?? 0,
+      playerAttackPowerMult:
+          (y['player_attack_power_mult'] as num?)?.toDouble() ?? 1.0,
+      enemyAttackPowerMult:
+          (y['enemy_attack_power_mult'] as num?)?.toDouble() ?? 1.0,
+      severeThreshold: (y['severe_threshold'] as num?)?.toInt() ?? 0,
+      severeMult: (y['severe_mult'] as num?)?.toDouble() ?? 1.0,
+      clampMax: (y['clamp_max'] as num?)?.toDouble() ?? 1.0,
+    );
+  }
+}
+
+/// 声望累积 trigger 数值(P1.2 §2 Q3=A+B)。
+class JianghuTriggers {
+  final int stageBossKillDelta;
+  final int stageBossKillRivalDelta;
+  final int encounterNpcDeltaMin;
+  final int encounterNpcDeltaMax;
+
+  const JianghuTriggers({
+    required this.stageBossKillDelta,
+    required this.stageBossKillRivalDelta,
+    required this.encounterNpcDeltaMin,
+    required this.encounterNpcDeltaMax,
+  });
+
+  static const JianghuTriggers empty = JianghuTriggers(
+    stageBossKillDelta: 0,
+    stageBossKillRivalDelta: 0,
+    encounterNpcDeltaMin: 0,
+    encounterNpcDeltaMax: 0,
+  );
+
+  factory JianghuTriggers.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    return JianghuTriggers(
+      stageBossKillDelta:
+          (y['stage_boss_kill_delta'] as num?)?.toInt() ?? 0,
+      stageBossKillRivalDelta:
+          (y['stage_boss_kill_rival_delta'] as num?)?.toInt() ?? 0,
+      encounterNpcDeltaMin:
+          (y['encounter_npc_delta_min'] as num?)?.toInt() ?? 0,
+      encounterNpcDeltaMax:
+          (y['encounter_npc_delta_max'] as num?)?.toInt() ?? 0,
+    );
   }
 }
