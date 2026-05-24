@@ -1498,5 +1498,34 @@ pvp:
     max_records: 200                    # PvpRecord 滚动覆盖上限
 
 # =============================================================================
+# 14. P3.4 门派事件 (GDD §12.1 · spec p3_4_sect_event_spec_2026-05-24)
+# =============================================================================
+# Q1-Q5 默认决议(占位):
+#   Q1 A 玩家自建门派 / Q2 A 比武大会(单 event Demo)/ Q3 A 独立 sect_reputation 轴
+#   Q4 B 否 sect_building 纯抽象 sect_level int / Q5 B 独立 schema founderId 弱挂
+#
+# 不变量:tournament 复用 DefaultGroundStrategy 不引入新数值轴(§5.4 0 碰)
+#         字段 sectReputation 独立于 P1.2 reputation,decay timer 独立 30 天 cycle
+
+sect_event:
+  tournament:
+    trigger_probability: 0.30          # 月触发概率
+    cooldown_days: 30
+    trigger_realm_min: yiLiu           # 沿 §5.3 三系锁死
+    expire_days: 7                     # 7 天不应战 → expired + reputation -5
+  reputation:
+    initial: 50
+    win_delta: 10
+    loss_delta: -5
+    decay_per_month_idle: 5            # 30 天无 event → -5/月
+    max: 100
+    min: 0
+  sect_level:
+    max: 7
+    initial: 1
+    promote_wins_threshold: 3          # 每累计 3 胜 → +1 sectLevel(clamp ≤7)
+  active_events_max: 3                 # 同 sect 同时 pending 上限
+
+# =============================================================================
 # 文件结束
 # =============================================================================
