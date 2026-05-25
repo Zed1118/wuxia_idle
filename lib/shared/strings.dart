@@ -57,6 +57,23 @@ class UiStrings {
   static const String mainMenuLineage = '师徒名单';
   static const String mainMenuLineageHint = '查看祖师与弟子的传承链路';
 
+  // ─── 江湖恩怨 + 声望(P1.2 §12.1+§12.2 GDD)──────────────────────────────
+  static const String mainMenuJianghu = '江湖恩怨';
+  static const String mainMenuJianghuHint = '声望 7 阶 + 多门派关系 + NPC 仇敌';
+  static const String reputationPanelTitle = '江湖声望';
+  static const String reputationPanelEmpty = '暂无声望记录';
+  static const String reputationPanelLoadError = '加载失败';
+  static const String reputationTierXueTu = '声名狼藉';
+  static const String reputationTierSanLiu = '恶名';
+  static const String reputationTierErLiu = '默默无闻';
+  static const String reputationTierYiLiu = '薄有微名';
+  static const String reputationTierJueDing = '侠名初显';
+  static const String reputationTierZongShi = '声振江湖';
+  static const String reputationTierWuSheng = '天下闻名';
+  static const String enmityWarning = '当前有敌对 NPC';
+  static const String panelFriendSection = '盟友';
+  static const String panelFoeSection = '敌对';
+
   // Phase 2 调试场景（T32 子提交 3d）
   static const String phase2MenuTitle = 'Phase 2 调试场景';
   static const String scenarioP1 = 'P1 · 强化曲线';
