@@ -15,6 +15,10 @@ import '../core/domain/technique.dart';
 import '../features/tower/domain/tower_progress.dart';
 import '../features/jianghu/domain/reputation.dart';
 import '../features/jianghu/domain/npc_relation.dart';
+import '../features/sect/domain/sect.dart';
+import '../features/sect/domain/sect_event.dart';
+import '../features/pvp/domain/pvp_record.dart';
+import '../features/pvp/domain/pvp_snapshot.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。
 ///
@@ -56,6 +60,10 @@ class IsarSetup {
     EncounterProgressSchema,
     ReputationSchema,
     NpcRelationSchema,
+    SectSchema,
+    SectEventSchema,
+    PvpRecordSchema,
+    PvpSnapshotSchema,
   ];
 
   /// 当前 schema 对应的存档版本（写入新建 SaveData.saveVersion）。
@@ -70,7 +78,9 @@ class IsarSetup {
   /// P1 #42 Phase 1 SaveData 加 tutorialStep(留 §10 P1.x 接口)→ 升 0.10.0。
   /// P1 #42 Phase 2 §10 P1.y SaveData 加 tutorialHintsRead(banner 已读状)→ 升 0.11.0。
   /// P1.1 A1 E.1 SaveData 加 recruitmentOffered/recruitedDiscipleIds(收徒)→ 升 0.12.0。
-  static const _currentSaveVersion = '0.12.0';
+  /// P1.2 T17 + P3 T19b 合并升:Reputation/NpcRelation(P1.2)+ Sect/SectEvent/PvpRecord/
+  /// PvpSnapshot(T19b)6 schema 一并接入 `_allSchemas` → 升 0.13.0。
+  static const _currentSaveVersion = '0.13.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
