@@ -25,23 +25,16 @@
 | R10 | `playerSectId == null` 边界:玩家主动 dismiss 自己 / sect 不存在 | 🟢 | spec §4 UiStrings 已加 `sectRecruitNoSect`「尚未建派,无缘相邀」· 接受 |
 | R11 | events.yaml `choices[].outcome_id` 漏 accept_recruit → encounter 卡死 | 🟢 | spec §6 「加载层强校验」已含 · sect_recruit_<biome>.yaml 加载抛 OK · 接受 |
 
-## 推荐 spec 必改(用户起床拍板时一并改)
+## 推荐 spec 必改 ✅ 已应用(2026-05-26 self-review 直接修)
 
-1. **§3 wire 路径** 加 `Sect.get(1)==null` lazy-init fallback(R3 修):
-   ```dart
-   final sect = await isar.sects.get(1);
-   if (sect == null) {
-     // lazy-init by currentSectProvider 沿用体例
-     await isar.writeTxn(() => isar.sects.put(_defaultSect(now)));
-   }
-   ```
-2. **§3 wire 路径** markTriggered 延后到 accept 成功 + sect.put 后(R2 修)· 拒绝 / cap 满不 markTriggered
-3. **§7 R5.8** 改标「delta · 依赖 P-C ship」或 spec 实装时移除(R8 修)· 等 P-C founder_buff 跨派系扩 ship 后另加
+1. ✅ **§3 wire 路径** 加 `Sect.get(1)==null` lazy-init fallback(R3 修 · 沿 sect_providers.dart:64-68 体例)
+2. ✅ **§3 wire 路径** markTriggered 延后到 accept 成功 + recruit success 后(R2 修)· 拒绝 / cap 满 / lazy-init 失败 不 markTriggered · 玩家可重遇
+3. ✅ **§7 R5.8** 标 「delta · 依赖 P-C `p4_1_founder_buff_cross_sect_spec_2026-05-26.md` ship 后另加」(R8 修)· 本 spec B3 R5.8 仅测 `isFounder==false` 字段 · per-character buff 验证延后
 
-## Q1-Q8 默认决议是否需要补 Q9 / Q10?
+## Q9 / Q10 ✅ 已补到 spec §0(2026-05-26 self-review 直接修)
 
-- **Q9 候选 pool 随机性**(R1):Demo 单一 OK / 1.2 List 升 · 建议加 Q9 明示「Q9 = Demo 单一 candidateRef · 不开新参数」让用户拍板 explicit OK
-- **Q10 markTriggered 时机**(R2):建议加 Q10 「Q10 = 玩家拒绝 / cap 满不 markTriggered · 可重遇」明示
+- ✅ **Q9 候选 pool 随机性**(R1):**A Demo 单一 `candidateRef`**(1.2 升 `candidateRefs: List<String>` rng pick) · spec §0 已加
+- ✅ **Q10 markTriggered 时机**(R2):**A accept 成功 + recruit success 后 markTriggered**(拒绝 / cap 满 / lazy-init 失败 不 markTriggered · 玩家可重遇)· spec §0 + §3 wire 已应用
 
 ## 接受决议(不改 spec 的)
 
@@ -49,4 +42,4 @@ R5/R6/R7/R9/R10/R11 6 项:`fixture-friendly` / `Demo PoC 3 条` / `events 文案
 
 ---
 
-**self-review 收口**:11 风险点 · 2 🔴 必改(R3 race condition + R8 R5.8 假阳性)· 3 🟡 用户拍板时一并 explicit OK(R1/R2/R6)· 6 🟢 接受。Q6A spec 修 3 处 + 加 Q9/Q10 后可启 B1 实装 · 当前 spec 不阻塞 1.1 起步路径。
+**self-review 收口**:11 风险点 · 2 🔴 必改(R3 race condition + R8 R5.8 假阳性)· 3 🟡 用户拍板时一并 explicit OK(R1/R2/R6)· 6 🟢 接受。**🔴 + 关键 🟡 3 必改 + Q9/Q10 补 已直接应用到 spec(2026-05-26)** · 用户起床看到的是 self-review 后稳版本 · Q1-Q10 默认决议 OK 即可启 B1 实装 ~5-7h xhigh · 当前 spec 不阻塞 1.1 起步路径。

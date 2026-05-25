@@ -22,7 +22,8 @@
 
 1. **CLAUDE.md v1.11 仅 release readiness 锚** · 不改 §12.2 主体规则表(沿 v1.7 历史「状态对齐 · 无规则层变化」体例 · 0 风险)
 2. **PROGRESS.md 老顶段归档**(2026-05-22/23/24 段聚合到末尾归档段)· 顶段保留本会话 + 2026-05-25 audit v2/P5.0/P4.1 三段(本周关键)
-3. **Q6A + founder_buff 2 spec 不 commit**(等用户拍 Q1-Q8 / Q1-Q5)· spec self-review 独立 commit 不绑定 Q6A spec 改动
+3. **Q6A + founder_buff 2 spec 不 commit**(等用户拍 Q1-Q10 / Q1-Q5)· spec self-review 独立 commit 不绑定 Q6A spec 改动
+4. **Q6A spec self-review 必改已应用到 working tree(2026-05-26 · 未 commit)**:R2 markTriggered 延后 / R3 Sect lazy-init fallback / R8 R5.8 标 delta + Q9(candidate 单一)/ Q10(markTriggered 时机)2 补 — 用户拍 Q1-Q10 OK 即可一次性 commit · 不需再过 review · 详 self-review doc「已应用 ✅」段
 4. **Pen 救场用 SSH 反向 tar pipe**(222M `.git` 走 SSH 避开 GitHub · 5min done)· 沿 memory `feedback_git_partial_clone_promisor_eof` 升级路径(已知 fix 失效 → 升级网络层绕开方案)
 
 ## 起床 first-read 清单(按优先级)
