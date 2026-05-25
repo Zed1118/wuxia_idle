@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../encounter/domain/encounter_def.dart';
 import '../../encounter/domain/encounter_event_loader.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
+import '../../jianghu/application/jianghu_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 
@@ -60,10 +62,16 @@ class _EncounterDebugPickerScreenState
       );
       if (outcomeId == null || !mounted) return;
 
+      // T24 · P1.2 §3 EncounterIntegration:reputation hook 接 caller。
+      // debug 路径与正常 hook 同体例,reputationService null → 不传 applier。
+      final reputationService = ref.read(reputationServiceProvider);
       final applied = await svc.applyOutcome(
         saveDataId: IsarSetup.currentSlotId,
         encounter: def,
         outcomeId: outcomeId,
+        reputationApplier:
+            reputationService?.deltaApplierFromRng(ref.read(rngProvider)),
+        reputationPlayerId: reputationService == null ? null : 1,
       );
       if (!mounted) return;
       showEncounterOutcomeBanner(context: context, applied: applied);
