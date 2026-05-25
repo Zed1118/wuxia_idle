@@ -22,9 +22,9 @@
 
 ## 1. 范围
 
-- **核心 deliverable**:① `Character.{sectId,isInSect,sectRank}` 3 字段(Q2+Q3+Q5)② `Sect.{territoryIds,memberCount}` 2 字段(Q2)③ `SectRank` enum 三阶(初入/内门/长老 · Q5)④ `SectMemberService`(招收/内升/退派 · Q6 D 全 trigger)⑤ `TerritoryService`(yaml 加载 + dynamic owner CRUD · Q4 A)⑥ `data/territories.yaml`(4-6 · static def + initialOwnerSectId)⑦ `SectManagementScreen` 三段式(Q8 A · main_menu 第 18 入口)⑧ `UiStrings` 12-15 段 ⑨ R5 红线 5-6 族
-- **配套**:encounter_service 加 `affects_sect_membership` 字段(Q6 A)· battle_result_service stage_boss 失败 → 招降(Q6 B)· sect_event_service resolve mission → 招收候选(Q7 B)· founder_buff_service 0 改
-- **范围 OUT**:Q4 真 stage_boss territory 占领 trigger 留 1.1 / Q5 sectRank 升迁规则细化留 1.1 / 多代 sect 传递语义留 1.1(本 task 加 founderId rewire hook · 但 member 跨代不验证)/ member 招收 narrative ~30 条留 1.1 / P1.2 跨派系 wire 留 P1.2 后
+- **核心 deliverable**:① `Character.{sectId,isInSect,sectRank}` 3 字段(Q2+Q3+Q5)② `Sect.{territoryIds,memberCount}` 2 字段(Q2)③ `SectRank` enum 三阶(初入/内门/长老 · Q5)④ `SectMemberService`(招收/内升/退派 · Q6 ABC trigger · **Q6 D 全 trigger 中 Q6 B stage_boss 招降退 1.1**)⑤ `TerritoryService`(yaml 加载 + dynamic owner CRUD · Q4 A)⑥ `data/territories.yaml`(4-6 · static def + initialOwnerSectId)⑦ `SectManagementScreen` 三段式(Q8 A · main_menu 第 18 入口)⑧ `UiStrings` 12-15 段 ⑨ R5 红线 5-6 族
+- **配套**:`ResolveSectEventNotifier.resolve` outcome=win + event.type=mission 分支 → 50% rng 从 `SaveData.recruitedDiscipleIds` 池(P1.1 收徒池)首个未入派弟子招入(Q7 B · 注入 notifier 端 · SectEventService 纯算 delta 不动 · Demo 无 mission trigger,作 1.1 预埋)· `AscendService.performAscend` 加 `sect.founderId` rewire hook(P5+ 真传位 · 单 sect 假设)
+- **范围 OUT**:**Q6 A encounter recruit 留 1.1**(扩 EncounterDef `affectsSectMembership` schema + candidate pool 生成路径 + UI 弹窗 · 超 B2 范围)/ **Q6 B stage_boss 失败招降留 1.1**(stages.yaml 无 recruitable / StageDef 无 isStageBoss / BattleResolutionService 无 hook)/ **founder_buff_service derived_stats 作用域扩留 1.1**(reality:P1.1 红线测族基于 isFounder 不基于 isInSect · Demo player+disciples 默认 isInSect=false · 加 `!c.isInSect` early return 会破 P1.1 现有红线 R5 · 真跨派系语义留 P1.2 后)/ Q4 真 stage_boss territory 占领 trigger 留 1.1 / Q5 sectRank 升迁规则细化留 1.1 / 多代 sect 传递语义留 1.1(本 task 加 founderId rewire hook · 但 member 跨代不验证)/ member 招收 narrative ~30 条留 1.1 / P1.2 跨派系 wire 留 P1.2 后
 
 ## 2. schema 改动
 
@@ -84,7 +84,7 @@ sect_management:
 
 ## 3. SectMemberService + TerritoryService 设计(~180 行 · `lib/features/sect/application/`)
 
-- **`SectMemberService`**(沿 `founder_buff_service.dart` provider 体例):
+- **`SectMemberService`**(沿 `sect_providers.dart` manual `Provider((ref) =>)` 体例 · 非 @riverpod codegen):
   - `recruit(targetCharacterId, sectId)` writeTxn:cap 校验(`sect.memberCount < by_sect_level[sectLevel-1]`) → target.{isInSect=true, sectId, sectRank=initiate} + sect.memberCount++ → 返 `RecruitResult.{success, fullCap, alreadyInSect}`
   - `promoteRank(characterId)`:totalWins ≥ threshold → initiate→inner→elder 单向不降阶
   - `dismiss(characterId)`:target 三字段清空 + sect.memberCount--
@@ -93,7 +93,7 @@ sect_management:
   - `loadDefs()` 启动加载 `data/territories.yaml` → `Map<String, TerritoryDef>` 静态 def
   - `ownerOf(territoryId) → int?` 查 sect.territoryIds 反向索引(Demo 单玩家 sect 简化 O(N) sweep)
   - `claim(sectId, territoryId)` writeTxn(sect.territoryIds.add + cap 校验)/ `release` / `availableForClaim()`
-- **Trigger Hook**:① `EncounterIntegration`(Q6 A · `affects_sect_membership=recruit_candidate` → 候选入 UI 弹窗) ② `BattleResultService`(Q6 B · stage_boss 失败 + `recruitable=true` 软概率招降) ③ `SectEventService.resolveMission`(Q7 B · win → 50% rng 招收候选)
+- **Trigger Hook**:① **Q6 A encounter recruit 退 1.1**(reality:扩 EncounterDef `affectsSectMembership` schema + candidate pool 生成路径 + UI 弹窗 · 超 B2 范围) ② **Q6 B stage_boss 招降退 1.1**(reality:stages.yaml 无 recruitable / StageDef 无 isStageBoss / BattleResolutionService.resolve 无 hook) ③ `ResolveSectEventNotifier.resolve`(Q7 B 实装 · `sect_providers.dart` 内 outcome=win + event.type=mission 分支 → 50% rng `mission_recruit_prob` → 从 `SaveData.recruitedDiscipleIds`(P1.1 收徒池)首个未入派弟子招入 · **不动** SectEventService 纯算 delta 体例 · Demo 无 mission trigger,作 1.1 预埋)
 
 ## 4. UI 接入(`lib/features/sect/presentation/sect_management_screen.dart`)
 
@@ -107,9 +107,9 @@ sect_management:
 
 ## 5. 联动(sect_event mission hook + 跨系统)
 
-- **Q7=B mission hook**:`SectEventService.resolveMission` outcome=win → 50% rng(`mission_recruit_prob`)触发候选 → `recruitmentOffered=true` + UI 弹窗确认 → `SectMemberService.recruit`
-- **P5+ 真传位 sect 接管**:`AscendService.performAscend(promotedDiscipleId)` 加 hook(B2 wire):若 sect.founderId==旧 founder.id 且 promotedDisciple!=null → sect.founderId rewire writeTxn。member 关系不动(旧 member 自然挂新 founder)。多代留 1.1
-- **founder_buff_service 0 改**:作用域扩 `isInSect=true && sectId==player.sectId` 全员 · 加 isInSect 判断在 derived_stats 入口。**范围 OUT**:P1.2 跨派系 wire 留 P1.2 落地后
+- **Q7=B mission hook**:`ResolveSectEventNotifier.resolve`(sect_providers.dart line ~111) outcome=win + event.type=SectEventType.mission → 50% rng(`mission_recruit_prob`)触发候选 → `recruitmentOffered=true` + UI 弹窗确认 → `SectMemberService.recruit`。**SectEventService 纯算 delta 不动**(返 tuple 体例保持)
+- **P5+ 真传位 sect 接管**:`AscendService.performAscend(promotedDiscipleId)`(line 174 已存在签名)加 hook(B2 wire):若 sect.founderId==旧 founder.id 且 promotedDisciple!=null → sect.founderId rewire(caller 持锁体例 · 沿用 caller 现有 writeTxn 不开新)。member 关系不动(旧 member 自然挂新 founder)。多代留 1.1
+- **founder_buff_service 0 改**(B2):reality `_founderBuffAppliesTo` helper 当前基于 isFounder 判定,P1.1 R5 红线测族不感知 isInSect · Demo player+disciples 默认 isInSect=false → 加 `!c.isInSect` early return 会破 P1.1 现有红线 · 作用域真扩留 1.1(配 Demo 初始化逻辑改 player+disciples 自动入派 · 配 P1.2 跨派系 playerSectId 真比较)
 
 ## 6. 数据流(yaml schema + 加载层)
 
@@ -133,7 +133,7 @@ sect_management:
 | Batch | 内容 | 估时 |
 |---|---|---|
 | B1 schema + yaml | Character 3 字段 + Sect 2 字段 + SectRank enum + `data/territories.yaml` + `numbers.yaml.sect_management` + `NumbersConfig.sectManagement` 解析 + Isar schema migration | ~3-4h |
-| B2 service + trigger | `SectMemberService`(recruit/promote/dismiss)+ `TerritoryService`(loadDefs/claim/release)+ provider 4 项 + Q6 ABC 三 trigger hook 接入(encounter / battle_result / sect_event mission resolve)+ P5+ AscendService sect.founderId rewire hook + founder_buff_service derived_stats 作用域查询 isInSect=true 扩判断 | ~4-5h |
+| B2 service + trigger | `SectMemberService`(recruit/promote/dismiss)+ `TerritoryService`(claim/release/availableForClaim)+ Provider/AsyncNotifier 7 项 + **Q7 B mission hook 单实装**(ResolveSectEventNotifier mission 分支 · 1.1 预埋 · **Q6 ABC 全退 1.1**)+ P5+ AscendService sect.founderId rewire hook(单 sect 假设)+ founder_buff_service 0 改(作用域真扩留 1.1) | ~4-5h |
 | B3 UI + main_menu | `SectManagementScreen` 三段式(顶/Tab member/Tab territory/底招收)+ main_menu 第 18 入口 + UiStrings 12-15 段 + 沿 lineage_panel 卡片体例 | ~4-5h |
 | B4 R5 + closeout | R5.1-5.7 测族 + closeout doc + GDD §12.2 升档(占位 → P4.1 实装 ✅)+ PROGRESS 顶段 + ROADMAP P4.1 段(0% → 100%)+ stage_audit 1.0 复跑 | ~3-4h |
 
@@ -141,7 +141,7 @@ sect_management:
 
 - **估时**:B1 3-4h + B2 4-5h + B3 4-5h + B4 3-4h = **~15-20h xhigh**(对齐 phase0 估)
 - **风险**:① Q4 真 stage_boss territory trigger 挂 1.1(Demo 静态 owner)② Q5 sectRank 升迁自动规则挂 1.1(Demo 手动) ③ 多代 sect 传递 R5.7 单代验 / 多代挂 1.1 ④ P1.2 跨派系 wire 留 P1.2 后 ⑤ member 招收 narrative ~30 条占位挂 1.1
-- **不变量沿用**:§5.4 红线不动 · §5.3 三系锁死(sectRank 三阶 ≠ 修炼七阶) · §5.5 在线=离线 · §5.1 反留存 · BattleStrategy/DamageCalculator/founder_buff_service 0 改 · §6 公式不动
+- **不变量沿用**:§5.4 红线不动 · §5.3 三系锁死(sectRank 三阶 ≠ 修炼七阶) · §5.5 在线=离线 · §5.1 反留存 · BattleStrategy/DamageCalculator 0 改 · founder_buff_service / derived_stats 0 改(作用域真扩留 1.1) · §6 公式不动
 - **doc 体量**:本 spec ≤150 行 · B4 closeout ≤80 行 · PROGRESS 净增长 ≤ 0(memory `feedback_phase05_diagnose_before_solve`:R5 挂账时 B4 不直上候选)
 
 ---
