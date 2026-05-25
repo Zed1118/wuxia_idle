@@ -1,0 +1,51 @@
+# 山头领地配置(P4.1 §12.2 帮派门派 · Q4=A 静态 yaml + dynamic owner)。
+#
+# 字段:
+#   id                    snake_case 唯一标识(沿 stages.yaml 体例)。
+#   name                  中文显示名(UI 展示)。
+#   description           风物简述(UI tooltip / 详情页)。
+#   baseDefenseLevel      防御阶位 · 沿 §5.3 七阶映射(1 学徒 / 2 三流 / 3 二流 /
+#                         4 一流 / 5 绝顶 / 6 宗师 / 7 武圣)。占领阻力锚点 ·
+#                         1.1 真 stage_boss 占领 trigger 时驱动战斗难度。
+#   initialOwnerSectId    初始 owner sectId · null = 中立无主 · int = 写死初始 owner
+#                         (Demo 测试 / 1.1 用)。
+#
+# 动态 ownership 由 `Sect.territoryIds` 引,`TerritoryService.claim/release`
+# writeTxn 维护;Demo 单玩家路径,反向索引 O(N) sweep 接受。
+# 真 stage_boss 占领 trigger 留 1.1(spec p4_1_sect_management_spec §9 R3)。
+
+- id: yan_zhi_shan
+  name: "雁支山"
+  description: "外江群岭最北端,三流山贼聚集,以截道行旅为生。山势平缓,易守难攻者少。"
+  baseDefenseLevel: 2
+  initialOwnerSectId: null
+
+- id: hei_feng_zhai
+  name: "黑风寨"
+  description: "南岭密林深处,曾为江南漕帮余孽盘踞。寨墙残破但林径错综,夜袭难辨方向。"
+  baseDefenseLevel: 2
+  initialOwnerSectId: null
+
+- id: cui_yun_gu
+  name: "翠云谷"
+  description: "中州二流水寨,谷口设三道竹栅。寨主善使流星锤,聚二流好手数十。"
+  baseDefenseLevel: 3
+  initialOwnerSectId: null
+
+- id: wu_long_dong
+  name: "乌龙洞"
+  description: "西陲山腹岩窟,洞内暗河纵横。原为一支私盐帮屯货之所,二流刀客驻守。"
+  baseDefenseLevel: 3
+  initialOwnerSectId: null
+
+- id: bai_he_ling
+  name: "白鹤岭"
+  description: "北疆雪线之上,孤峰拔地。岭上一座旧道观,栖一流剑客三人,自号「白鹤三客」。"
+  baseDefenseLevel: 4
+  initialOwnerSectId: null
+
+- id: tian_yuan_feng
+  name: "天元峰"
+  description: "中州群山之主,云海封顶。绝顶剑宗旧址,昔年宗师陨于此。寻常人迹罕至。"
+  baseDefenseLevel: 5
+  initialOwnerSectId: null

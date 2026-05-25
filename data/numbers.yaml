@@ -1560,6 +1560,26 @@ jianghu:
     encounter_npc_delta_min: -8
     encounter_npc_delta_max: 8
 
+# ---------------------------------------------------------------------------
+# 帮派门派(P4.1 §12.2 · spec p4_1_sect_management_spec_2026-05-25)
+# Q1=B 四 batch / Q2=C 双向 fk / Q3=A 复用 Character / Q4=A 静态 territory yaml /
+# Q5=A 三阶组织阶位 / Q6=D 全 trigger / Q7=B mission hook / Q8=A 独立 panel
+# ---------------------------------------------------------------------------
+
+sect_management:
+  member_cap:                      # Q2=C 双向 fk · Sect.memberCount cap 沿 sectLevel 1-7 阶递进
+    by_sect_level: [3, 5, 8, 12, 18, 25, 35]  # 不含 founder 本人
+  rank_promote_threshold:          # Q5=A 三阶单向升迁阈值(totalWins 贡献)
+    inner_min_contribution: 10      # initiate → inner
+    elder_min_contribution: 30      # inner → elder
+  recruit:                         # Q6=D 全 trigger 软概率
+    encounter_base_prob: 0.15       # Q6 A · encounter NPC 招收 baseProbability
+    stage_boss_fail_recover_prob: 0.30  # Q6 B · stage_boss 失败收降 softProbability
+    mission_recruit_prob: 0.50      # Q7 B · sect_event mission resolve 触发候选
+  territory:
+    demo_initial_count: 6           # Q4=A · `data/territories.yaml` 静态 def 数量
+    max_per_sect_by_level: [1, 2, 3, 5, 8, 12, 18]  # 沿 sectLevel 1-7 阶递进 cap
+
 # =============================================================================
 # 文件结束
 # =============================================================================

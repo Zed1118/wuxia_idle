@@ -160,6 +160,11 @@ class NumbersConfig {
   /// 空段兜底 [SectEventDef.empty](fixture / 老存档迁移)。
   final SectEventDef sectEvent;
 
+  /// 1.0 P4.1 帮派门派配置(spec p4_1_sect_management_spec_2026-05-25 §2)。
+  /// numbers.yaml `sect_management` 段:member_cap / rank_promote_threshold /
+  /// recruit / territory。空段兜底 [SectManagementConfig.empty]。
+  final SectManagementConfig sectManagement;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -196,6 +201,7 @@ class NumbersConfig {
     required this.jianghu,
     required this.pvp,
     required this.sectEvent,
+    required this.sectManagement,
     required this.raw,
   });
 
@@ -295,6 +301,9 @@ class NumbersConfig {
       pvp: PvpDef.fromYaml(y['pvp'] as Map<String, dynamic>?),
       sectEvent: SectEventDef.fromYaml(
         y['sect_event'] as Map<String, dynamic>?,
+      ),
+      sectManagement: SectManagementConfig.fromYaml(
+        y['sect_management'] as Map<String, dynamic>?,
       ),
       raw: y,
     );
@@ -1880,6 +1889,157 @@ class SectLevelDef {
       initial: (y['initial'] as num?)?.toInt() ?? 1,
       promoteWinsThreshold:
           (y['promote_wins_threshold'] as num?)?.toInt() ?? 3,
+    );
+  }
+}
+
+/// P4.1 §12.2 帮派门派强类型配置(spec p4_1_sect_management_spec_2026-05-25 §2)。
+///
+/// 4 子段聚合:[memberCap](Q2=C member 上限沿 sectLevel)+
+/// [rankPromoteThreshold](Q5=A 三阶单向阈值)+ [recruit](Q6=D 三维 trigger 概率)+
+/// [territory](Q4=A territory cap)。fixture / 老存档 yaml 无 `sect_management`
+/// 段时走 [empty] 兜底,数值与 yaml 默认值同(不破任何运行时行为)。
+class SectManagementConfig {
+  final SectMemberCapConfig memberCap;
+  final SectRankPromoteThresholdConfig rankPromoteThreshold;
+  final SectRecruitConfig recruit;
+  final SectTerritoryNumbersConfig territory;
+
+  const SectManagementConfig({
+    required this.memberCap,
+    required this.rankPromoteThreshold,
+    required this.recruit,
+    required this.territory,
+  });
+
+  static const SectManagementConfig empty = SectManagementConfig(
+    memberCap: SectMemberCapConfig.empty,
+    rankPromoteThreshold: SectRankPromoteThresholdConfig.empty,
+    recruit: SectRecruitConfig.empty,
+    territory: SectTerritoryNumbersConfig.empty,
+  );
+
+  factory SectManagementConfig.fromYaml(Map<String, dynamic>? y) {
+    if (y == null || y.isEmpty) return empty;
+    return SectManagementConfig(
+      memberCap: SectMemberCapConfig.fromYaml(
+        (y['member_cap'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      rankPromoteThreshold: SectRankPromoteThresholdConfig.fromYaml(
+        (y['rank_promote_threshold'] as Map?)?.cast<String, dynamic>() ??
+            const {},
+      ),
+      recruit: SectRecruitConfig.fromYaml(
+        (y['recruit'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      territory: SectTerritoryNumbersConfig.fromYaml(
+        (y['territory'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+    );
+  }
+}
+
+/// Sect.memberCount 上限沿 sectLevel 1-7 阶递进(不含 founder 本人)。
+class SectMemberCapConfig {
+  final List<int> bySectLevel;
+
+  const SectMemberCapConfig({required this.bySectLevel});
+
+  static const SectMemberCapConfig empty = SectMemberCapConfig(
+    bySectLevel: [3, 5, 8, 12, 18, 25, 35],
+  );
+
+  factory SectMemberCapConfig.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    final raw = y['by_sect_level'] as List?;
+    if (raw == null || raw.isEmpty) return empty;
+    return SectMemberCapConfig(
+      bySectLevel: raw.map((e) => (e as num).toInt()).toList(growable: false),
+    );
+  }
+}
+
+/// SectRank 三阶单向升迁阈值(totalWins 累积贡献 · 玩家手动指派)。
+class SectRankPromoteThresholdConfig {
+  final int innerMinContribution; // initiate → inner
+  final int elderMinContribution; // inner → elder
+
+  const SectRankPromoteThresholdConfig({
+    required this.innerMinContribution,
+    required this.elderMinContribution,
+  });
+
+  static const SectRankPromoteThresholdConfig empty =
+      SectRankPromoteThresholdConfig(
+    innerMinContribution: 10,
+    elderMinContribution: 30,
+  );
+
+  factory SectRankPromoteThresholdConfig.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    return SectRankPromoteThresholdConfig(
+      innerMinContribution:
+          (y['inner_min_contribution'] as num?)?.toInt() ?? 10,
+      elderMinContribution:
+          (y['elder_min_contribution'] as num?)?.toInt() ?? 30,
+    );
+  }
+}
+
+/// Q6=D 三维 trigger 招收 softProbability:encounter / stage_boss fail / sect_event mission。
+class SectRecruitConfig {
+  final double encounterBaseProb;       // Q6 A
+  final double stageBossFailRecoverProb; // Q6 B
+  final double missionRecruitProb;       // Q7 B
+
+  const SectRecruitConfig({
+    required this.encounterBaseProb,
+    required this.stageBossFailRecoverProb,
+    required this.missionRecruitProb,
+  });
+
+  static const SectRecruitConfig empty = SectRecruitConfig(
+    encounterBaseProb: 0.15,
+    stageBossFailRecoverProb: 0.30,
+    missionRecruitProb: 0.50,
+  );
+
+  factory SectRecruitConfig.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    return SectRecruitConfig(
+      encounterBaseProb:
+          (y['encounter_base_prob'] as num?)?.toDouble() ?? 0.15,
+      stageBossFailRecoverProb:
+          (y['stage_boss_fail_recover_prob'] as num?)?.toDouble() ?? 0.30,
+      missionRecruitProb:
+          (y['mission_recruit_prob'] as num?)?.toDouble() ?? 0.50,
+    );
+  }
+}
+
+/// Q4=A 静态 territory yaml + dynamic owner · `Sect.territoryIds.length` cap。
+class SectTerritoryNumbersConfig {
+  final int demoInitialCount;       // `data/territories.yaml` 静态 def 数量
+  final List<int> maxPerSectByLevel; // sectLevel 1-7 阶 cap
+
+  const SectTerritoryNumbersConfig({
+    required this.demoInitialCount,
+    required this.maxPerSectByLevel,
+  });
+
+  static const SectTerritoryNumbersConfig empty = SectTerritoryNumbersConfig(
+    demoInitialCount: 6,
+    maxPerSectByLevel: [1, 2, 3, 5, 8, 12, 18],
+  );
+
+  factory SectTerritoryNumbersConfig.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    final raw = y['max_per_sect_by_level'] as List?;
+    return SectTerritoryNumbersConfig(
+      demoInitialCount: (y['demo_initial_count'] as num?)?.toInt() ?? 6,
+      maxPerSectByLevel: raw == null || raw.isEmpty
+          ? const [1, 2, 3, 5, 8, 12, 18]
+          : raw.map((e) => (e as num).toInt()).toList(growable: false),
     );
   }
 }
