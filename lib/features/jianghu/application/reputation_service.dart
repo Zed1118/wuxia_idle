@@ -1,6 +1,8 @@
 import 'package:isar_community/isar.dart';
 
 import '../../../data/numbers_config.dart';
+import '../../../shared/utils/rng.dart';
+import '../../encounter/application/encounter_service.dart' show ReputationDeltaApplier;
 import '../domain/reputation.dart';
 
 /// 玩家对各门派的声望服务(P1.2 §3 GDD §12.2)。
@@ -67,5 +69,28 @@ class ReputationService {
         .factionIdEqualTo(factionId)
         .findFirst();
     return r?.value ?? 0;
+  }
+
+  /// 构造 [ReputationDeltaApplier] 闭包,供 [EncounterService.applyOutcome]
+  /// 端 `reputationApplier:` 注入(T24 P1.2 §3 EncounterIntegration 闭环)。
+  ///
+  /// 闭包内每次调用从 `[deltaMin, deltaMax]` inclusive 区间抽样,落到
+  /// [applyDelta](位置参数 · clamp [-100,+100])。deltaMin == deltaMax 时
+  /// 无随机分支(防 nextInt(0) 抛错)。
+  ///
+  /// 设计纪律:
+  /// - 用项目 [Rng] 抽象而非 `dart:math.Random`(test 可注入 [DefaultRng] 种子)
+  /// - 闭包构造统一在 service · caller 仅一行 wire · test 端易 fake
+  ReputationDeltaApplier deltaApplierFromRng(Rng rng) {
+    return ({
+      required int playerId,
+      required String factionId,
+      required int deltaMin,
+      required int deltaMax,
+    }) async {
+      final span = deltaMax - deltaMin;
+      final delta = deltaMin + (span > 0 ? rng.nextInt(span + 1) : 0);
+      await applyDelta(playerId, factionId, delta);
+    };
   }
 }

@@ -8,6 +8,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../../festival/application/festival_service_providers.dart';
+import '../../jianghu/application/jianghu_providers.dart';
 import '../application/encounter_service.dart';
 import '../domain/encounter_def.dart';
 import '../domain/encounter_event_loader.dart';
@@ -87,6 +88,10 @@ Future<void> runEncounterHookAfterVictory({
   );
   if (outcomeId == null) return;
 
+  // T24 · P1.2 §3 EncounterIntegration:reputation hook 接 caller。
+  // reputationService null(Isar / GameRepository 未 ready)→ 不传 applier,
+  // service 端 null guard 跳过 reputation 应用(向后兼容老路径)。
+  final reputationService = ref.read(reputationServiceProvider);
   final applied = await svc.applyOutcome(
     saveDataId: IsarSetup.currentSlotId,
     encounter: triggered,
@@ -96,6 +101,9 @@ Future<void> runEncounterHookAfterVictory({
     encounterTitle: content.title ?? triggered.id,
     skillNameLookup: (sid) =>
         GameRepository.instance.skillDefs[sid]?.name ?? sid,
+    reputationApplier:
+        reputationService?.deltaApplierFromRng(ref.read(rngProvider)),
+    reputationPlayerId: reputationService == null ? null : 1,
   );
   if (!context.mounted) return;
   showEncounterOutcomeBanner(context: context, applied: applied);
