@@ -7,6 +7,7 @@ import '../../../core/domain/save_data.dart';
 import '../../../data/isar_setup.dart';
 import '../../../data/numbers_config.dart';
 import '../../mainline/domain/mainline_progress.dart';
+import '../../sect/domain/sect.dart';
 import '../domain/ascension_models.dart';
 
 /// P2.3 飞升 + 遗物 transfer service(spec p2_3_ascension_spec_2026-05-24)。
@@ -276,6 +277,18 @@ class AscendService {
       final promoted = (await isar.characters.get(promotedDiscipleId))!;
       promoted.isFounder = true;
       await isar.characters.put(promoted);
+
+      // 8. P4.1 §12.2 B2 sect.founderId rewire(spec §5 P5+ 真传位 sect 接管):
+      // 若 sect.founderId==旧 founder.id 且 promotedDisciple!=null →
+      // rewire 到 promotedDiscipleId。member 关系不动(旧 member.sectId 仍
+      // 指原 sect · 自然挂新 founder)。多代场景留 1.1(本 hook 单代验证)。
+      // 单 sect 假设:Demo 阶段全局唯一 sect(p4_1 spec §1 范围)。
+      final sectsToRewire =
+          await isar.sects.filter().founderIdEqualTo(founderId).findAll();
+      for (final sect in sectsToRewire) {
+        sect.founderId = promotedDiscipleId;
+        await isar.sects.put(sect);
+      }
     }
 
     return AscensionResult(
