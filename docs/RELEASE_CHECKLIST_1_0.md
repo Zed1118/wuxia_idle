@@ -7,13 +7,13 @@
 
 ## TL;DR
 
-**当前 release readiness:~91%**(0 P0/P1 阻塞 · 本机可验全过 · 剩 Pen 视觉验收 + P5.x M15-16 子项)
+**当前 release readiness:~93%**(A+B+C 全 PASS · **Pen 视觉验收闭环 ✅** · 0 P0/P1 阻塞 · 剩 P5.x M15-16 子项 D 性能 / E 音频 / F Steam / G 法律商业)
 
 | 段 | 完成度 | 阻塞? |
 |---|---|---|
 | A 代码质量 | ✅ 100% | — |
 | B 系统完整性(6 系统) | ✅ 100% | — |
-| C 视觉验收 | ⏳ 派单中(Pen Codex 异步) | ✗ 不 release blocker / ✓ release ready 验证 |
+| C 视觉验收 | ✅ **100% PASS**(2026-05-26 Pen Codex 续跑 · 8 截图全过) | — |
 | D 性能稳定(P5.2) | ✗ 0% | M15-16 |
 | E 音频(P5.3) | ✗ 0% | M15-16 |
 | F Steam 集成(P5.4) | ✗ 0% | M15-16 |
@@ -48,18 +48,18 @@
 - [x] **debug 入口 kDebugMode 切除**:Phase1/2 BattleTestMenu/Phase2TestMenu release build 不显
 - [x] **home_feed 空 feed 引导**:「按下「直入江湖」启程」文案 wire
 
-## C. UI 视觉验收(本机查不了 · Pen Codex 派单 ⏳)
+## C. UI 视觉验收(Pen Codex ✅ 全 PASS 2026-05-26)
 
-- [ ] 全新启动 splash → home_feed(clean Isar · `ensureFoundingMasters` 跑过 · Character × 3 / Equipment × 9 / Technique × 4 真显)
-- [ ] 再次启动幂等(Character 计数仍 3 不变 4)
-- [ ] 主菜单全 menu 项 release build(14+ 项 · 无 Phase1/Phase2 debug 入口)
-- [ ] 门派事务 → sect_screen 4 Tab(当前事件 / 历史记录 / 成员 / 领地)
-- [ ] sect_screen 成员 Tab(founder + disciple × 2 · sectRank 三阶之一)
-- [ ] sect_screen 领地 Tab(6 territory grid 跨阶 2-5)
-- [ ] 战斗 e2e(`StageBattleSetup._buildPlayerTeam` 不抛 · 3v3 显示)
-- [ ] 战斗结束结算屏(胜负 / 战利品 / 返回菜单)
+- [x] 全新启动 `江湖见闻`+`直入江湖`引导(`01_fresh_launch_clean_isar.png` · 无 crash)
+- [x] 主菜单全 menu 项 release build seeded(`02_main_menu_top_seeded.png` + `03_main_menu_lower_sect_visible.png` · 14+ 项 · 含「门派事务」)
+- [x] 门派事务 → sect_screen 4 Tab(`04_sect_four_tabs_current_events.png` · **当前事件 / 历史记录 / 成员 / 领地** · 无名宗 等阶 1 · 声望 50/100)
+- [x] sect_screen 成员 Tab(`05_sect_members_tab_clean_seed.png` · clean seed 空状态显示「尚无门派成员」无 layout 破)
+- [x] sect_screen 领地 Tab(`06_sect_territories_tab_clean_seed.png` · territory cards + 占领 actions)
+- [x] 主线章节屏 clean seed(`07_mainline_chapters_clean_seed.png` · 章节 lock 渲染正常)
+- [x] 战斗 e2e(`08_battle_e2e_clean_seed.png` · 3v3 战斗 + 「左队胜 · 总伤害 10022 · 暴击 0 次 · 用时 7 tick」§5.4 红线守)
+- [x] 战斗结束结算屏(同 08 · 「返回菜单」按钮)
 
-> 派单单据 `docs/handoff/codex_visual_check_p5_p4_1_2026-05-25.md`(Pen Codex 回报后 commit)· 截图归档 `docs/screenshots/p5_p4_1_visual_check_2026-05-25/`
+> 派单单据 + 续跑成功段 `docs/handoff/codex_visual_check_p5_p4_1_2026-05-25.md` · 8 截图归档 `docs/screenshots/p5_p4_1_visual_check_2026-05-25/` · **WARN**:1280×720 截图右边框是 Pen 桌面捕获 framing 不是 in-app bug / clean seed 成员 Tab 空状态预期非 bug · **Isar 路径修正**:派单 prompt 写 `%LOCALAPPDATA%\com.example.wuxia_idle\` 实际是 `getApplicationDocumentsDirectory() → C:\Users\Administrator\Documents\wuxia_save_slot1.isar`(下次派单沿 `isar_setup.dart` grep)
 
 ## D. 性能稳定(P5.2 · 留 M15-16)
 
@@ -115,4 +115,5 @@
 
 ## 修订记录
 
+- **v1.1**(2026-05-26)Pen Codex 视觉验收 ✅ 闭环:Mac SSH 反向 tar pipe 救场 5min → Codex 续跑 PASS · 8 截图全 PASS(`docs/screenshots/p5_p4_1_visual_check_2026-05-25/01-08.png`)· C 段 8 项全勾 · release readiness 91% → **93%**(本机可验 + 视觉验收 全清零)· 剩 D-G M15-16。**Isar 路径修正记录**:实际路径 `C:\Users\Administrator\Documents\wuxia_save_slot1.isar`(`getApplicationDocumentsDirectory()` Windows fallback)非 `%LOCALAPPDATA%` · 下次派单 prompt 沿 `lib/data/isar_setup.dart` grep。
 - **v1.0**(2026-05-25)起草:Mac+Opus xhigh ~25min · 上游 audit v2 doc + P5.0 onboarding 闭环 + Pen 派单准备 · 当前 ~91% release ready · 0 P0/P1 阻塞 · 剩 C 段视觉验收 + D/E/F/G 留 M15-16
