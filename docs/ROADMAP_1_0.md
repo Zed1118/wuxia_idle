@@ -237,6 +237,15 @@
 
 ## P5 上线收尾(M15-M16)
 
+### P5.0 onboarding production seed(2026-05-25 ✅ P0-1 release 阻塞修)
+- audit `1_0_release_audit_2026-05-25.md` 揭示首次启动无 production seed 路径 — `StageBattleSetup._buildPlayerTeam` 抛 `StateError('先跑 P1 种子')`,玩家全新启动 → 任何战斗 crash
+- 修:`OnboardingService.ensureFoundingMasters()` 在 `SplashScreen._bootstrap` IsarSetup.init 之后调用,幂等(count(isFounder=true) > 0 跳过)
+- 沿 `Phase2SeedService.seedMasterDisciple` 主流:Character × 3 + Equipment × 9 + Technique × 4 + SaveData wire + 物料 50/0(§5.1 反留存不爆量)
+- 5 helpers(buildMasterCharacter / defaultMasterName / equipMasterStarting / learnMasterStarting / seedBasicMaterials)抽 `lib/features/onboarding/application/master_builder.dart` top-level functions,debug + production 共用
+- 顺带 P1-1 debug 入口 `kDebugMode` 切除 + P1-3 home_feed 空 feed 引导文案
+- R5 测族 8 测(R5.1 全新 db / R5.2 幂等 / R5.3 信源 Character / R5.4 装备心法 / R5.5 真战斗 e2e / R5.6 founder.id=1 / R5.7 sectName 不覆盖 / R5.8 物料 50/0)
+- 详 `docs/spec/p5_onboarding_seed_spec_2026-05-25.md` + closeout
+
 ### P5.1 C1 教程完整度审计
 - GDD §10 三种引导方式(剧情 / 气泡提示 / 百科)全审计
 - 新手 30 min 路径全跑通

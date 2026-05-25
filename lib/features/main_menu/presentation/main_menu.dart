@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -194,18 +195,22 @@ class MainMenu extends ConsumerWidget {
                   onPush: (screen) => _push(context, screen),
                   tutorialLocked: step < _seclusionUnlockStep,
                 ),
-                const SizedBox(height: 16),
-                _MenuButton(
-                  label: UiStrings.mainMenuPhase1,
-                  hint: UiStrings.mainMenuPhase1Hint,
-                  onTap: () => _push(context, const BattleTestMenu()),
-                ),
-                const SizedBox(height: 16),
-                _MenuButton(
-                  label: UiStrings.mainMenuPhase2,
-                  hint: UiStrings.mainMenuPhase2Hint,
-                  onTap: () => _push(context, const Phase2TestMenu()),
-                ),
+                // 2026-05-25 P1-1 release readiness:debug 入口仅 debug build 显示。
+                // kReleaseMode 自动剥除(包体积层 import 仍存,留 P5+ conditional import 清理)。
+                if (kDebugMode) ...[
+                  const SizedBox(height: 16),
+                  _MenuButton(
+                    label: UiStrings.mainMenuPhase1,
+                    hint: UiStrings.mainMenuPhase1Hint,
+                    onTap: () => _push(context, const BattleTestMenu()),
+                  ),
+                  const SizedBox(height: 16),
+                  _MenuButton(
+                    label: UiStrings.mainMenuPhase2,
+                    hint: UiStrings.mainMenuPhase2Hint,
+                    onTap: () => _push(context, const Phase2TestMenu()),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 _MenuButton(
                   label: UiStrings.mainMenuCharacterPanel,
