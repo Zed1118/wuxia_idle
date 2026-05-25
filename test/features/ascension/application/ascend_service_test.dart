@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/ascension/application/ascend_service.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/inheritance/application/founder_buff_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/sect/domain/sect.dart';
 
 /// P2.3 §7.1 飞升 + 遗物 transfer R5 红线测族(5 族 · spec p2_3_ascension_spec_2026-05-24)。
 ///
@@ -679,6 +680,80 @@ void main() {
           reason: 'gen1 promoted d2 已 isFounder=true · UI 下拉不应再列(防循环传位)');
       expect(ids.contains(3), true,
           reason: 'd3 仍是普通 disciple · 可作 gen2 promoted target');
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // R5.7 P4.1 §12.2 sect.founderId rewire hook(spec p4_1 §5)
+  // ───────────────────────────────────────────────────────────────────────
+
+  group('R5.7 真传位 sect 接管', () {
+    test('performAscend(promotedDiscipleId=2) 后 sect.founderId 自动 rewire', () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+      final svc = makeService();
+
+      // seed Sect with founderId = 1(原 founder)
+      late int sectId;
+      await isar.writeTxn(() async {
+        final sect = Sect()
+          ..name = '青锋门'
+          ..founderId = 1
+          ..sectLevel = 1
+          ..sectReputation = 50
+          ..totalWins = 0
+          ..memberCount = 0
+          ..territoryIds = []
+          ..createdAt = DateTime(2026, 5, 25);
+        sectId = await isar.sects.put(sect);
+      });
+
+      final founder = (await isar.characters.get(1))!;
+      final weapon = founder.equippedWeaponId!;
+      await isar.writeTxn(
+        () => svc.performAscend({weapon: 2}, promotedDiscipleId: 2),
+      );
+
+      final sectAfter = await isar.sects.get(sectId);
+      expect(sectAfter, isNotNull);
+      expect(sectAfter!.founderId, 2,
+          reason: 'sect.founderId rewire 到 promotedDiscipleId');
+
+      final founderAfter = (await isar.characters.get(1))!;
+      expect(founderAfter.isFounder, true,
+          reason: '旧 founder 保 isFounder=true「太祖」语义');
+      expect(founderAfter.isActive, false,
+          reason: '旧 founder 退 active');
+    });
+
+    test('performAscend(promotedDiscipleId=null)·sect.founderId 不动(P2.3 兼容)', () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+      final svc = makeService();
+
+      late int sectId;
+      await isar.writeTxn(() async {
+        final sect = Sect()
+          ..name = '青锋门'
+          ..founderId = 1
+          ..sectLevel = 1
+          ..sectReputation = 50
+          ..totalWins = 0
+          ..memberCount = 0
+          ..territoryIds = []
+          ..createdAt = DateTime(2026, 5, 25);
+        sectId = await isar.sects.put(sect);
+      });
+
+      final founder = (await isar.characters.get(1))!;
+      final weapon = founder.equippedWeaponId!;
+      await isar.writeTxn(
+        () => svc.performAscend({weapon: 2}), // promotedDiscipleId 默认 null
+      );
+
+      final sectAfter = await isar.sects.get(sectId);
+      expect(sectAfter!.founderId, 1,
+          reason: 'promotedDiscipleId=null 时 sect.founderId 不动(rewire hook 跳过)');
     });
   });
 }

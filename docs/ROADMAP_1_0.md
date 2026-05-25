@@ -225,8 +225,9 @@
 ### P4.1 §12.2 帮派门派
 - 玩家创建门派可招收弟子 / 占领山头
 - 与师徒系统 A1 升级链联动(P2 已实装飞升)
-- 跨多个 service:CharacterRecruitmentService / SectService / TerritoryService
-- **2026-05-25 状态**:Phase 0 + spec 起草 ✅(commit `be6c224` · nightshift T21 · Q1-Q8 默认决议草案 待用户拍板)→ 「无 spec 0%」 → 「**spec ~8% · 待用户拍板 Q1-Q8 后 nightshift B1-B4 实装 ~15-20h xhigh / 8-10h nightshift**」
+- 跨多个 service:`SectMemberService` / `TerritoryService` / `AscendService` rewire hook
+- **2026-05-25 全闭环 ✅**:4 batch 全 squash merge 推 origin/main(B1 `ac6b523` schema + B2 `dd3e207` service+trigger + B3 `a3850ac` UI + B4 R5+收尾 本批)· 1476 pass / 0 analyze · Mac+Opus xhigh 累计 ~2.75h vs spec 估 15-20h(0.16× · spec phase0 + Q1-Q8 直采 + 路径 A UI 不开新 panel 是加速主因)· R5 18 测(R5.1-5.5+5.7)· 详 GDD §12.2 v1.16 段 + handoff `docs/handoff/p4_1_b{1,2,3,4}_*_2026-05-25.md`
+- **挂账 1.1**:Q6 A encounter recruit / Q6 B stage_boss 招降 / founder_buff_service 作用域真扩 / 多代 sect 传递 / member 招收 narrative ~30 条 / P1.2 跨派系 wire
 
 ### P4.2 §12.4 翻译(可选英文)
 - 英文翻译(主线 / UI / 系统提示)
