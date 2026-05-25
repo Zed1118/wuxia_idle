@@ -22,7 +22,7 @@ void main() {
 
     for (final f in allYamls) {
       final basename = f.uri.pathSegments.last.replaceAll('.yaml', '');
-      test('R4.2 [$basename] schema 合法 + opening ≤ 6 行', () {
+      test('R4.2 [$basename] schema 合法 + opening ≤ 4 行', () {
         final doc = loadYaml(f.readAsStringSync()) as Map;
         expect(doc['id'], equals(basename), reason: 'id 应与文件名一致');
         expect(doc['trigger'], isNotNull, reason: 'trigger 段必填');
@@ -32,8 +32,8 @@ void main() {
         final opening = doc['opening'] as String;
         expect(opening.trim().isNotEmpty, isTrue, reason: 'opening 非空');
         final lineCount = opening.split('\n').where((l) => l.trim().isNotEmpty).length;
-        expect(lineCount, lessThanOrEqualTo(6),
-            reason: '$basename opening 行数 $lineCount > 6(简洁古风约束)');
+        expect(lineCount, lessThanOrEqualTo(4),
+            reason: '$basename opening 行数 $lineCount > 4(简洁古风约束)');
       });
     }
 

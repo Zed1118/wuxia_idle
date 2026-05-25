@@ -24,7 +24,7 @@
 
 | Task | 期望产出 | 实测 commit | 状态 |
 |---|---|---|---|
-| T17 P1.2 全 4 batch | B1+B2+B3+B4+closeout | 仅 B1(4e79722)+ B2(bdfee91)| 🟡 PARTIAL |
+| T17 P1.2 全 4 batch | B1+B2+B3+B4+closeout | 仅 B1(68c816d)+ B2(bdfee91)| 🟡 PARTIAL |
 | T18 narrative 双合一 | 18 条 + R4 测 | 10711b1(双合一) | ✅ |
 | T19 技术债 3 合一 | PvpDef/SectEventDef + 真持久化 + systemClock | (0 commit) | 🔴 FAIL |
 | T20 跨系统 audit | audit doc + R5 6-10 测 | ab514e1 | ✅ |

@@ -155,27 +155,35 @@ void main() {
           reason: 'GDD §5.4 大招暴击 不许进十万 worst-case 验');
     });
 
-    test('R5.8 P1.2 enmity clamp_max ≤ 1.25 (spec 上限契约)', () {
+    test('R5.8 P1.2 enmity clamp_max 真值从 NumbersConfig 加载(契约不放宽)', () {
       // P1.2 spec(p1_2_jianghu_enmity_spec_2026-05-24.md)规定
       // enmity threshold -50 → 1.15 / -80 → 1.25,attackPowerMultiplier 上限 1.25。
-      // T17 ship 时实装的 NpcRelationService.attackPowerMultFor 必须 clamp ≤ 1.25
-      // 审计当前:无代码实测,记录 spec 契约值供 T17 入参契约校验
-      const specClampMax = 1.25;
-      expect(specClampMax, lessThanOrEqualTo(1.25),
-          reason: 'P1.2 spec 契约:enmity APM 上限 1.25 不可放宽');
+      // NpcRelationService.attackPowerMultFor 必须 clamp ≤ numbers.yaml `clamp_max`。
+      // 从 NumbersConfig 加载真值断言,防恒等断言失语(memory feedback_red_line_test_semantics)。
+      final clampMax =
+          GameRepository.instance.numbers.jianghu.enmityCombatModifier.clampMax;
+      // §5.4 普伤 8000 红线 / APM ≤ 1.25 → 末端乘 ≤ 10000 留余量
+      expect(clampMax, lessThanOrEqualTo(1.25),
+          reason: 'P1.2 spec 契约:enmity APM 上限 ≤ 1.25 不可放宽(防 §5.4 越界)');
+      expect(clampMax, greaterThan(1.0),
+          reason: 'clamp_max 应 > 1.0(否则恩怨 buff 失效)');
     });
 
-    test('R5.9 LightFoot vs MassBattle 烘焙覆盖语义 audit', () {
+    test('R5.9 LightFoot 单 strategy APM 上限真值从 NumbersConfig 加载', () {
       // 关键发现:LightFootStrategy._bake(line 120)与 MassBattleStrategy._bake(line 182)
       // 都用 `attackPowerMultiplier: m.damageMultiplier` SET 不乘,
       // **若同 BattleCharacter 经 2 strategy 烘焙,后者覆盖前者**(实测过)
       // 但 stages.yaml: stage_light_foot_xx ∩ stage_mass_battle_xx = ∅
       // (StageType.lightFoot vs StageType.massBattle 命名隔离),
       // 实际产线无法触发同 BattleState 双烘焙路径。
-      // 本测族化为契约假设:不会同时烘焙 → 单 strategy APM 上限 1.15(rooftop)
-      const singleStrategyMaxApm = 1.15;
+      // 契约假设:不会同时烘焙 → 单 strategy APM ≤ 全 terrain damageMultiplier max。
+      // 从 NumbersConfig 加载真值(memory feedback_red_line_test_semantics)。
+      final terrainMults = GameRepository
+          .instance.numbers.lightFoot.terrainModifiers.values
+          .map((m) => m.damageMultiplier);
+      final singleStrategyMaxApm = terrainMults.reduce(max);
       expect(singleStrategyMaxApm, lessThanOrEqualTo(1.15),
-          reason: '单 strategy APM 上限契约');
+          reason: '单 strategy APM 上限契约(rooftop 1.15)不可放宽');
     });
 
     test('R5.10 §5.4 数值红线 cap mirror_caps 不破', () {

@@ -24,7 +24,7 @@ void main() {
 
     for (final f in allYamls) {
       final basename = f.uri.pathSegments.last.replaceAll('.yaml', '');
-      test('R4.2 [$basename] schema 合法 + opening ≤ 6 行 + choices 非空', () {
+      test('R4.2 [$basename] schema 合法 + opening ≤ 4 行 + choices 非空', () {
         final doc = loadYaml(f.readAsStringSync()) as Map;
         expect(doc['id'], equals(basename), reason: 'id 应与文件名一致');
         final type = doc['type'] as String;
@@ -35,8 +35,8 @@ void main() {
         final opening = doc['opening'] as String;
         expect(opening.trim().isNotEmpty, isTrue, reason: 'opening 非空');
         final lineCount = opening.split('\n').where((l) => l.trim().isNotEmpty).length;
-        expect(lineCount, lessThanOrEqualTo(6),
-            reason: '$basename opening 行数 $lineCount > 6(简洁古风约束)');
+        expect(lineCount, lessThanOrEqualTo(4),
+            reason: '$basename opening 行数 $lineCount > 4(简洁古风约束)');
         final choices = doc['choices'];
         expect(choices, isA<List>(), reason: 'choices 应为 list');
         expect((choices as List).isNotEmpty, isTrue, reason: 'choices 非空');
