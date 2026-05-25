@@ -1,10 +1,23 @@
 # 挂机武侠 · 1.0 版本路线图
 
+> **v1.4** · 修订日 2026-05-25 晚续 · 状态:**1.0 整体 ~91%**(P4.1 全闭环 + P5.0 onboarding production seed + audit v2 6 系统全过 + Pen 视觉验收派单 ⏳)
 > **v1.3** · 修订日 2026-05-25 · 状态:**1.0 整体 ~78%**(本批 nightshift T17-T22 跑完后 · 完工率 4/6)
 > **v1.2** · 修订日 2026-05-17 晚续 · 状态:**P0 阶段 4 项 100% 收口**(P0.1 #38 / P0.2 strategy 重构 / P0.3 #41 决议 + 新销账段 spec 起步段闭环)
 > **v1.0** · 起草日 2026-05-17 · 状态:**已 launched(开发未启动,P0 待开工)**
 > 决策来源会话:Mac + Opus 4.7,W18 起步段全收口当晚
 > 路线图本身是规划文档,实际推进可能因实测调整 — 修订记录见末尾
+> **配套长寿 doc**:`docs/RELEASE_CHECKLIST_1_0.md`(Steam 上线前二元勾选清单 · 与本路线图互补)
+
+---
+
+> **v1.4 变更**(2026-05-25 晚续 · P4.1 全闭环 + P5.0 + audit v2 + Q6A spec):
+> - **P4.1 §12.2 帮派门派 全闭环 ✅**(B1 schema + B2 service + B3 UI + B4 R5+收尾 · 4 batch squash merge 推 main · 1458 → 1476 测 / 0 analyze · ~2.75h vs spec 估 15-20h 精度 0.16×)→ P4.1 状态「spec 8%」→ 「**100% ✅**」
+> - **P5.0 onboarding production seed ✅**(`OnboardingService.ensureFoundingMasters` 幂等 · 全新启动 P0-1 release 阻塞清 · 1476 → 1484 测 / 0 analyze · ~1h vs spec 估 1.7-2.0h 精度 0.5-0.67× · PR #12 squash 推 main)→ P5.0 新增段(原 P5 阶段空白)
+> - **1.0 整体 audit v2 ✅**(6 跨系统复审:战斗核心 / encounter / 闭关 / 师徒共鸣飞升 / 社交 / cross-system 全健康 · 0 P0/P1 阻塞 · 137 测文件 / 1484 测 / 0 analyze)→ 揭 audit v1 误读修正(`testWidgets` 嵌套 group 实际全 wire)+ release ready 验证清零
+> - **Pen Codex 视觉验收派单**(派单 prompt ready · 异步 ~60-90min · 8 必收硬证据 splash/main_menu/sect_screen 4 Tab/战斗 e2e + 能给则给)→ release checklist C 段 ⏳
+> - **Q6A encounter recruit spec 起草**(P4.1 1.1 挂账起点 · `docs/spec/p4_1_q6a_encounter_recruit_spec_2026-05-25.md` 159 行 · 默认决议草案 Q1-Q8 · ~5-7h xhigh 估时)→ 1.1 启动准备
+> - **`RELEASE_CHECKLIST_1_0.md` 起草**(顶层长寿 doc · 9 段 ~60 项二元勾选 · A 代码 / B 系统 / C 视觉 / D 性能 / E 音频 / F Steam / G 法律商业 / H nice-to-have / I OUT)→ Steam 上线前最终勾选锚点
+> - 1.0 整体 ~78% → **~91%**(P4.1 +8% + P5.0/audit v2 +5%)· **0 P0/P1 阻塞**(本机可验全清零 · 剩 C 段视觉验收 + D-G 段 M15-16)
 
 ---
 
@@ -364,6 +377,8 @@ P2 文案大扩 ────→ P4.2 翻译(可选)
 
 ## 修订记录
 
+- **v1.4**(2026-05-25 晚续,P4.1 全闭环 + P5.0 + audit v2 + Q6A spec):Mac + Opus xhigh 累计 ~3.5h(P4.1 ~2.75h + P5.0 ~1h + audit v2 ~40min + Q6A spec ~30min + checklist ~25min)。① P4.1 §12.2 帮派门派 100% 闭环(4 batch squash merge);② P5.0 onboarding production seed(P0-1 release 阻塞清);③ 1.0 整体 audit v2 6 系统全健康;④ Pen Codex 视觉验收派单准备(8 必收硬证据);⑤ Q6A encounter recruit spec 起草(P4.1 1.1 挂账起点);⑥ `RELEASE_CHECKLIST_1_0.md` 起草(顶层长寿勾选清单)。1.0 整体 78% → **91%**。详 `docs/handoff/session_closeout_2026-05-25_p5_audit_v2_full.md` + `docs/handoff/1_0_release_audit_v2_2026-05-25.md` + `docs/RELEASE_CHECKLIST_1_0.md`。
+- **v1.3**(2026-05-25 本批 nightshift T17-T22 跑完):见顶部 v1.3 段。
 - **v1.2**(2026-05-17 晚续,P0 strategy 重构销账):Mac + Opus 4.7 xhigh ~2h(vs 6-12h 预估快 3-5×),Batch 1+2 同会话续跑。① P0.2 段从「待开工」改为销账(实测 + 产物清单 + 4 commit 链 + 校正记录:闭关地图实测 0 战斗);② P0 阶段 4 项 100% 收口(P0.1 / P0.2 / P0.3 决议 + 新销账)。详 closeout `docs/handoff/p0_battle_strategy_closeout_2026-05-17.md`。
 - **v1.1**(2026-05-17 晚续,#41 决议方案 C):Mac + Opus 4.7,「聚焦游戏本身」原则下决议方案 C 砍 P0.3 itch.io Demo 公开整段。① 删 P0.3 段(MSIX + itch.io + Sentry + Google 表单 5 项推 P5.4b);② R6 对策改 P5.4b closed beta + Google 表单 + Steam Demo 版;③ 关键决策记录加「itch.io 中间发布砍」条 + 时间线表 P0 交付物移除 itch.io Demo;④ 加 P5.4b 新段;⑤ 依赖图更新;⑥ PROGRESS #41 从挂账段删除归档。**P0 真正剩余 1 项:battle_engine 抽 strategy 层重构**(原 P0.2 升回 P0,opus xhigh 6-12h)。
 - **v1.0**(2026-05-17,起草):Mac + Opus 4.7 起草,W18 起步段全收口当晚。用户拍板:激进派 + 三者并行按依赖排 + AI 美术 + 一次性 1.0 上线 + 第二条主线放宽 5-6 月 + 砍婚姻后代 + 砍 MOD + Phase 5 第 7 批插 P0 + itch.io Demo 纳入 P0。
