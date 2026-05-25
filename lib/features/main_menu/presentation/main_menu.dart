@@ -12,6 +12,7 @@ import '../../debug/presentation/phase2_test_menu.dart';
 import '../../festival/application/festival_service_providers.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../inner_demon/presentation/inner_demon_screen.dart';
+import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../mass_battle/presentation/mass_battle_screen.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
@@ -167,6 +168,12 @@ class MainMenu extends ConsumerWidget {
                   label: UiStrings.mainMenuPvp,
                   hint: UiStrings.mainMenuPvpHint,
                   onTap: () => _push(context, const PvpScreen()),
+                ),
+                const SizedBox(height: 16),
+                _MenuButton(
+                  label: UiStrings.mainMenuJianghu,
+                  hint: UiStrings.mainMenuJianghuHint,
+                  onTap: () => _push(context, const ReputationPanelScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(

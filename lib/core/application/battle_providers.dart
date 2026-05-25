@@ -12,6 +12,7 @@ import '../domain/technique.dart';
 import '../../data/numbers_config.dart';
 import '../../features/battle/application/battle_resolution.dart';
 import '../../features/equipment/application/drop_service.dart';
+import '../../features/jianghu/application/npc_relation_service.dart';
 import '../../shared/utils/rng.dart';
 
 part 'battle_providers.g.dart';
@@ -153,3 +154,49 @@ class BattleNotifier extends _$BattleNotifier {
 @riverpod
 BattleResult? battleResult(Ref ref) =>
     ref.watch(battleProvider).result;
+
+/// P1.2 §5 江湖恩怨 attackPowerMultiplier 烘焙(spec §5 · battle setup 阶段一次性 SET)。
+///
+/// 沿 `light_foot_strategy.dart:120` / `mass_battle_strategy.dart:182` 体例:
+/// 直接 `copyWith(attackPowerMultiplier: mult)` SET 不乘 · 双方对等。
+///
+/// **不变量**:
+/// - 双向对等:enemy 端按 (player→enemy) 各自 mult SET;player 端取
+///   `max(across enemies)` 合并 SET(任一敌人有 enmity → 玩家享最高档)。
+/// - clamp ≤ `enmityCombatModifier.clampMax`(NpcRelationService.attackPowerMultFor 已保).
+/// - 0 strategy 改:damage_calculator 已支持 attackPowerMultiplier(P3.1.B)。
+/// - leftTeam.first.characterId < 0 / 空 → noop return(EnemyDef 占位场景兜底)。
+/// - Demo enemy id 是负 slotIndex placeholder(EnemyDef 无真 NPC id),NpcRelation
+///   查不到 → 返 1.0 noop · 真 NPC 接入 1.1+ 走 StageDef.npcId schema 扩。
+///
+/// 调用方负责 await 后再调 `BattleNotifier.startBattle(left, right)`(本函数
+/// 不写 Isar,只装配快照)。
+Future<(List<BattleCharacter>, List<BattleCharacter>)> bakeEnmityMultipliers({
+  required NpcRelationService npcService,
+  required List<BattleCharacter> leftTeam,
+  required List<BattleCharacter> rightTeam,
+}) async {
+  if (leftTeam.isEmpty || rightTeam.isEmpty) return (leftTeam, rightTeam);
+  final playerCharId = leftTeam.first.characterId;
+  if (playerCharId < 0) return (leftTeam, rightTeam);
+
+  var maxMult = 1.0;
+  final newRight = <BattleCharacter>[];
+  for (final enemy in rightTeam) {
+    final mult =
+        await npcService.attackPowerMultFor(playerCharId, enemy.characterId);
+    if (mult > 1.0) {
+      newRight.add(enemy.copyWith(attackPowerMultiplier: mult));
+      if (mult > maxMult) maxMult = mult;
+    } else {
+      newRight.add(enemy);
+    }
+  }
+
+  if (maxMult <= 1.0) return (leftTeam, newRight);
+  final newLeft = <BattleCharacter>[
+    leftTeam.first.copyWith(attackPowerMultiplier: maxMult),
+    ...leftTeam.skip(1),
+  ];
+  return (newLeft, newRight);
+}

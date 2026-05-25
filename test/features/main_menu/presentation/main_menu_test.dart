@@ -37,7 +37,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuTitle), findsOneWidget);
   });
 
-  testWidgets('15 个菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('17 个菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -46,6 +46,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
     expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPvp), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSect), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLeaderboard), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
@@ -57,14 +58,22 @@ void main() {
     expect(find.text(UiStrings.mainMenuInventory), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTechniques), findsOneWidget);
 
-    // 顺序:主线 / 问鼎九霄 / 心魔境 / 轻功试炼 / 守城试炼 / 论剑对决 / 门派事务 / 排行榜 /
-    //       闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 江湖见闻录 / 装备 / 心法
+    // 顺序:主线 / 问鼎九霄 / 心魔境 / 轻功试炼 / 守城试炼 / 论剑对决 /
+    //       江湖恩怨 / 门派事务 / 排行榜 / 闭关修炼 / Phase1 / Phase2 /
+    //       角色 / 师徒名单 / 江湖见闻录 / 装备 / 心法
+    // 800x600 默认 viewport 装不下 17 按钮 ListView,扩 viewport 防 off-screen
+    // (memory feedback_listview_widget_test_viewport)
+    await tester.binding.setSurfaceSize(const Size(800, 3000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pump();
+
     final mainY = tester.getCenter(find.text(UiStrings.mainMenuMainline)).dy;
     final towY = tester.getCenter(find.text(UiStrings.mainMenuTower)).dy;
     final idY = tester.getCenter(find.text(UiStrings.mainMenuInnerDemon)).dy;
     final lfY = tester.getCenter(find.text(UiStrings.mainMenuLightFoot)).dy;
     final mbY = tester.getCenter(find.text(UiStrings.mainMenuMassBattle)).dy;
     final pvpY = tester.getCenter(find.text(UiStrings.mainMenuPvp)).dy;
+    final jhY = tester.getCenter(find.text(UiStrings.mainMenuJianghu)).dy;
     final sectY = tester.getCenter(find.text(UiStrings.mainMenuSect)).dy;
     final lbY = tester.getCenter(find.text(UiStrings.mainMenuLeaderboard)).dy;
     final secY = tester.getCenter(find.text(UiStrings.mainMenuSeclusion)).dy;
@@ -80,7 +89,8 @@ void main() {
     expect(idY < lfY, isTrue);
     expect(lfY < mbY, isTrue);
     expect(mbY < pvpY, isTrue);
-    expect(pvpY < sectY, isTrue);
+    expect(pvpY < jhY, isTrue);
+    expect(jhY < sectY, isTrue);
     expect(sectY < lbY, isTrue);
     expect(lbY < secY, isTrue);
     expect(secY < p1Y, isTrue);
@@ -92,9 +102,9 @@ void main() {
     expect(invY < tcY, isTrue);
   });
 
-  testWidgets('15 个菜单按钮均为 InkWell（可点）', (tester) async {
+  testWidgets('17 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(InkWell), findsNWidgets(16));
+    expect(find.byType(InkWell), findsNWidgets(17));
   });
 
   testWidgets('tap Phase 1 战斗测试 → 进入 BattleTestMenu（找到 testMenuTitle / scenarioA）',
