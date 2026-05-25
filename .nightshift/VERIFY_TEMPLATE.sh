@@ -186,6 +186,26 @@ verify_section_titles() {
   echo "  section_titles: $* OK" | tee -a "$TASK_LOG"
 }
 
+# === Grep 安全 helper(A7 重犯防护) ===
+# memory feedback_nightshift_v2_first_run_lessons A7
+# 强制 ERE(-E)+ alternation 用 `|`(不带 backslash);若 pattern 含 `\|` 直接 fail
+# 用法: verify_grep_safe <file> <ere_pattern> [<label>]
+#   verify_grep_safe lib/foo.dart "class Foo|class Bar" "Foo 或 Bar 声明"
+verify_grep_safe() {
+  local file="$1"; local pattern="$2"; local label="${3:-grep_safe}"
+  # 拦 `\|`(ERE 中是 literal,90% bash regex blind spot)
+  if echo "$pattern" | grep -q '\\|'; then
+    verify_fail "$label pattern '$pattern' 含 '\\|' — ERE blind spot,改用 '|' 不带 backslash"
+  fi
+  if [ ! -f "$file" ]; then
+    verify_fail "$label file 不存在: $file"
+  fi
+  if ! grep -qE "$pattern" "$file" 2>/dev/null; then
+    verify_fail "$label pattern '$pattern' 未在 $file 命中"
+  fi
+  echo "  $label: '$pattern' OK in $file" | tee -a "$TASK_LOG"
+}
+
 # === Diff 内容验证(v2 新增,A2 修补) ===
 # 不写死文件路径,改查 git diff 命中 keyword
 # 用法: verify_diff_contains <keyword1> <keyword2> ...

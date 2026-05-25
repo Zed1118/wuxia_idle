@@ -42,6 +42,7 @@ FAIL_VERIFY=0
 FAIL_TIMEOUT=0
 SKIPPED=0
 NO_STATUS=0
+TOTAL_COST="0"
 
 for task in "${TASKS[@]}"; do
   sf="$SCRIPT_DIR/status/$task.status"
@@ -57,6 +58,11 @@ for task in "${TASKS[@]}"; do
     fail_timeout) FAIL_TIMEOUT=$((FAIL_TIMEOUT + 1)) ;;
     *) SKIPPED=$((SKIPPED + 1)) ;;
   esac
+  # C2 cost 累计(memory feedback-nightshift-v2-first-run-lessons C2)
+  cost=$(grep '^cost_usd=' "$sf" 2>/dev/null | tail -1 | cut -d= -f2)
+  if [ -n "$cost" ]; then
+    TOTAL_COST=$(awk -v t="$TOTAL_COST" -v c="$cost" 'BEGIN{printf "%.4f", t+c}')
+  fi
 done
 
 cat <<EOF
@@ -68,6 +74,7 @@ cat <<EOF
 | 超时 (fail_timeout) | $FAIL_TIMEOUT |
 | 跳过 (skipped) | $SKIPPED |
 | 无状态文件 | $NO_STATUS |
+| **总 cost** | **\$$TOTAL_COST** (jq 解析 claude --output-format json) |
 
 ## 2. 各 task 详情
 
@@ -97,6 +104,7 @@ EOF
 HAS_FAIL=false
 for task in "${TASKS[@]}"; do
   log_file="$SCRIPT_DIR/logs/$task.log"
+  json_file="$SCRIPT_DIR/logs/$task.json"
   sf="$SCRIPT_DIR/status/$task.status"
   [ ! -f "$sf" ] && continue
   s=$(grep '^status=' "$sf" | tail -1 | cut -d= -f2)
@@ -107,8 +115,11 @@ for task in "${TASKS[@]}"; do
       echo ""
       echo '```'
       if [ -f "$log_file" ]; then
-        # 抓 VERIFY FAIL / 越界 / TIMEOUT / Error 等行,带前后 2 行
+        # 抓 VERIFY FAIL / 越界 / TIMEOUT / Error 等行
         grep -E "VERIFY (FAIL|WARN)|越界|TIMEOUT|FAIL_|Error:|error:" "$log_file" | tail -30 || echo "  (无显式失败行)"
+      elif [ -f "$json_file" ] && command -v jq >/dev/null 2>&1; then
+        # JSON-only fallback(claude exit 异常 / log 为空)
+        jq -r '.result // empty' "$json_file" 2>/dev/null | grep -E "VERIFY (FAIL|WARN)|越界|TIMEOUT|FAIL_|Error:|error:" | tail -30 || echo "  (json .result 无显式失败行)"
       else
         echo "  (无 log 文件)"
       fi
