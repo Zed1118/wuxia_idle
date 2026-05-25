@@ -1,5 +1,6 @@
 import 'package:isar_community/isar.dart';
 
+import '../../features/sect/domain/sect_rank.dart';
 import 'attributes.dart';
 import 'enums.dart';
 
@@ -74,6 +75,22 @@ class Character {
 
   int attributeBonusFromAdventure = 0;
 
+  /// 是否入派(P4.1 §12.2 Q3=A 复用 Character + Q2=C 双向 fk)。
+  ///
+  /// `true` 时 [sectId] + [sectRank] 必非 null;`SectMemberService.recruit/dismiss`
+  /// writeTxn 时与 `Sect.memberCount` 同步维护(founder 也 `isInSect=true`,
+  /// 但 `Sect.memberCount` 不含 founder 本人)。
+  bool isInSect = false;
+
+  /// 双向 fk → `Sect.id`(P4.1 §12.2 Q2=C · [isInSect]=true 时必非 null)。
+  int? sectId;
+
+  /// 门派阶位三阶(P4.1 §12.2 Q5=A · [isInSect]=true 时必非 null)。
+  ///
+  /// 组织层阶位 ≠ 修炼境界(GDD §5.3 不破七阶锁,详 [SectRank] doc)。
+  @Enumerated(EnumType.name)
+  SectRank? sectRank;
+
   late DateTime createdAt;
 
   Character();
@@ -109,6 +126,9 @@ class Character {
     bool isAlive = true,
     int birthInGameYear = 0,
     int attributeBonusFromAdventure = 0,
+    bool isInSect = false,
+    int? sectId,
+    SectRank? sectRank,
   }) {
     return Character()
       ..name = name
@@ -139,6 +159,9 @@ class Character {
       ..isFounder = isFounder
       ..isAlive = isAlive
       ..birthInGameYear = birthInGameYear
-      ..attributeBonusFromAdventure = attributeBonusFromAdventure;
+      ..attributeBonusFromAdventure = attributeBonusFromAdventure
+      ..isInSect = isInSect
+      ..sectId = sectId
+      ..sectRank = sectRank;
   }
 }

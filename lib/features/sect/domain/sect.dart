@@ -40,4 +40,18 @@ class Sect {
 
   /// cooldown 锚 + decay 30 天起算点;null = 从未触发过 event(初创态)。
   DateTime? lastEventAt;
+
+  /// 引 `data/territories.yaml` id(P4.1 §12.2 Q4=A 静态 yaml + dynamic owner)。
+  ///
+  /// `TerritoryService.claim/release` 维护;cap 走 `numbers.yaml
+  /// sect_management.territory.max_per_sect_by_level[sectLevel-1]`。
+  List<String> territoryIds = [];
+
+  /// 成员计数 cache(P4.1 §12.2 Q2=C 双向 fk · `SectMemberService.recruit/dismiss`
+  /// writeTxn 时同步)。
+  ///
+  /// **不含 founder 本人**(founder 即玩家本身,通过 `Sect.founderId` 直接索引,
+  /// `Character.isInSect=true && sectId=this.id` 含 founder + 招收 member)。
+  /// **cap**:`numbers.yaml sect_management.member_cap.by_sect_level[sectLevel-1]`。
+  int memberCount = 0;
 }

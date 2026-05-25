@@ -5,29 +5,17 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-25 nightshift v2.1+v2.2 工具完善 + T17-T22 + retry T17b/T19b 全闭环 + 噪声清 · 1.0 ~75% → ~85%**
+> 📊 **2026-05-25 P4.1 B1 §12.2 帮派门派 schema 闭环 + v2.1+v2.2 工具完善 + T17-T22 全闭环 · 1.0 ~85% → ~86%**
+
+**2026-05-25 P4.1 §12.2 帮派门派 B1 schema ✅**(Mac+Opus xhigh ~1h · 5 modified + 3 new · `feat/p4_1_sect_management_b1_schema` branch · 1458 测全过 / 0 analyze):`SectRank` enum 三阶(initiate/inner/elder · Q5=A 组织阶位 ≠ 修炼七阶) + `Character` 加 `isInSect/sectId/sectRank` 3 字段(Q2=C 双向 fk + Q3=A 复用) + `Sect` 加 `territoryIds/memberCount` 2 字段 + `data/territories.yaml` 6 territory 跨 §5.3 阶 2-5(yan_zhi_shan ~ tian_yuan_feng · initialOwnerSectId 全 null) + `numbers.yaml sect_management` 段 4 子段 + `NumbersConfig.sectManagement` 强类型(SectManagementConfig + 4 子类带 const empty 兜底) + `TerritoryDef` 静态 def + `GameRepository.territoryDefs` graceful 加载(沿 encounters/synergies 体例)。speed 锚点 ×0.30(spec 估 3-4h · 实测 ~1h xhigh)。**B2 service+trigger / B3 UI / B4 R5+closeout 留下波**。详 `docs/handoff/p4_1_b1_schema_closeout_2026-05-25.md` + spec `docs/spec/p4_1_sect_management_spec_2026-05-25.md`。
+
+---
 
 **2026-05-25 v2.1 工具完善 + T17-T22 cherry-pick + T23/T24 6 关键问题闭环批 ✅**(main `74ba519 → b6d8191` · 1458 测全过 / 0 analyze · 批次质量 A 9.05/10):**v2.1 工具 5 项**(commit `74ba519` 104 行 + 模板源同步):a) BUDGET sanity(TIMEOUT/10 起跳)b) launch 饱满度预报 c) cost 追踪(`--output-format json` + jq)d) `verify_grep_safe` 拦 `\|` blind spot e) init 预检 · memory A7/A8/B1/B4/C2 销账。**6h 挂机批 cherry-pick** T17 B1+B2 + T18 narrative + T20 audit + T21 spec + T22 总收尾 + **T17b retry**(B3+B4+closeout)+ **T19b retry**(技术债 3 合一 21 files 1066+ 行)。**P1.2 江湖恩怨+声望 100% ✅** + **技术债 3 合一** numbers_config 强类型 + sect Isar 持久化 + systemClock ✅。**T23 (A 9.1)** 5 子修(R5.8/R5.9 改红线断言 + 听雨剑→精妙剑意 + loader ≤6→≤4 + enemyAttackPowerMult 注释 + spec 149≤150 + SHA 替)· **T24 (A 9.0)** EncounterIntegration 真 wire(ReputationService.deltaApplierFromRng helper + 2 caller wire + 6 测族 + Rng 抽象自适应)· 跑 22min wall · 总 cost $6.04 / $30 上限。**1.0 整体 ~75% → ~85%**(P1.2 100% + P3.3/P3.4 + P4.1 spec + 跨系统 audit + 技术债)。**已知挂账**(spec/verify 设计盲区,产出合理):T19b path_guard 漏 `test/data/**` / T23 path_guard 漏 `sect` / T24 verify regex 单行 `\s` 假设多行 Dart 格式不命中(memory A10 同根)。**v2.2 暖场清理**(会话续):A11 verify lint(`lint_verify_script` 在 dispatcher run_task 内 fail-fast 拦 `grep .dart` 源码语义 · A6/A7/A10 同根防扩散 · 白名单 test/analyze/run/format)+ 10 nightshift worktree/10 branch 噪声清 · 模板源同步 ~/scripts/nightshift-tpl/。详 `docs/handoff/{p1_2_jianghu_full,p3_tech_debt,session_closeout_2026-05-25_nightshift_6h_review}.md`。
 
 ---
 
-**2026-05-24 晚 nightshift v2 真生产跑 T11+T12 双 COMPLETED ✅ · 1.0 P3.3/P3.4 Phase 2/2.1 schema 全闭环**(main `efc7604` · 3 commit 推 origin/main · 1302→1311 pass / 0 analyze):T11 PVP Phase 2(`PvpRecord/PvpSnapshot` + `StageType.pvp` + numbers.yaml §13 pvp 段)+ T12 sect_event Batch 2.1(`Sect/SectEvent` + composite index + 2 enum + numbers.yaml §14 sect_event 段)+ R5 schema 红线 9 测 + cherry-pick numbers.yaml 末位 1 处 resolve。速度锚点:T11 ×0.08 / T12 ×0.12(schema-only 比通用实装 ×0.13-0.18 更快)。
-
----
-
-**2026-05-24 下午 nightshift v2 P1 工具收尾 + .nightshift/ 落库 ✅**(main `004cc37` · 2 commit push):.nightshift/ A 三步法落库(27 文件 + .gitignore SUMMARY/bak)+ T01.md A1 红线 + B3 per-task BRANCH/WORKTREE override + C1 morning §6「失败但有产出」候选段 + ~/scripts/nightshift-tpl/ 模板源同步。v2 工具层 P1 全销账。
-
----
-
-**2026-05-24 中午 nightshift v2 首跑 ✅**(main `676be95` · 5 task spec/实装/MJ 32min · 0/5→4/4 verify P0 修补 5 项 idempotent 重跑通过 · T01 → PR #6 + T02-T05 推 main):详 `docs/handoff/nightshift_v2_first_run_closeout_2026-05-24.md` + memory `feedback_nightshift_v2_first_run_lessons` + `feedback_opus_nightshift_speed_v2`(opus --print ×0.10-0.18,3h 窗 doc/spec 塞 15-20 task)。
-
----
-
-**2026-05-24 8h overnight v3 派单 4/5 PR squash merged ✅**(main `a6812c2` · 5 worktree 真并行 wall clock ~8min · 5 reviewer agent 均分 8.9/10):#4 C P3.3 PVP 10/10 / #5 D P3.4 sect_event 9.5/10 / #8 B memory_sink_gdd10 9/10 / #7 A ch4_5 1 字 fix 8→10/10;**#6 E `feat/p1_2_spec` 8/10 4 项 fix** 由 nightshift v2 首跑 T01 闭环。详 `docs/spec/overnight_v3_2026-05-24/_README.md`。
-
----
-
-**2026-05-24 凌晨 8h overnight v2 + P5+ UI polish 全收尾 ✅**(15 批 ABCDEFGHIJKLMNO + VulnFix P0 · ~2h15min · 24 commit `154211b → 874ce49` 推 main · 1302 pass / 0 analyze):P5+ UI polish 全闭环(防循环传位 R5.9 + 多代 chip + dialog 含弟子名)+ Codex 14 验收点 spec + MJ 10 张 prompt + stage_audit ~70% + P1.2 Phase 0 6 维 greenfield + ascension_lineage_chant + isLineageContinuation R5.10 + VC-P5+ fixture + GDD v1.16 ROADMAP P5+ 对齐 + VulnFix P0 修补。详 git log 2026-05-24 + 各 closeout(`p5_lineage_full_closeout` / `p5_ui_polish_closeout` / `stage_audit` / `p5_x_narrative_tier_audit` / `8h_autonomous_handoff_2026-05-24`)。**v2 教训** ⚠:单会话塞 15 批违反 `feedback_clear_session_timing` · memory sink 越权 Edit 触发 P0 修补 → v3 拆 worktree 修正。
+**2026-05-24 nightshift v2 + 8h overnight v2/v3 详条迁出**:5 段(晚 T11/T12 schema · 下午工具收尾 · 中午首跑 · 8h v3 4 PR · 凌晨 v2 + P5+ UI polish 15 批)— git log `efc7604 → b6d8191` 范围 + handoff `nightshift_v2_first_run_closeout_2026-05-24.md` / `8h_autonomous_handoff_2026-05-24.md` / overnight_v3_2026-05-24/ + ROADMAP_1_0 + memory `feedback_nightshift_v2_*` / `feedback_opus_nightshift_speed_v2` / `feedback_clear_session_timing`。
 
 ---
 

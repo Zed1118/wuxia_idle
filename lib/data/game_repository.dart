@@ -4,6 +4,7 @@ import '../features/codex/domain/codex_category.dart';
 import '../features/codex/domain/codex_entry.dart';
 import '../features/codex/domain/codex_index.dart';
 import '../features/encounter/domain/encounter_def.dart';
+import '../features/sect/domain/territory_def.dart';
 import 'codex_loader.dart';
 import 'defs/equipment_def.dart';
 import 'defs/master_def.dart';
@@ -88,6 +89,14 @@ class GameRepository {
   /// DeepSeek 派单前缺失时跳过该条(其余 7 条仍加载),不阻塞主流程。
   final Map<String, CodexEntry> codexEntries;
 
+  /// P4.1 §12.2 山头领地静态 def(`data/territories.yaml`,Q4=A)。
+  ///
+  /// **graceful**:test fixture 不带 yaml 时空 map。Demo 6 territory · 1.1+
+  /// 真 stage_boss 占领 trigger 落地时数量可扩(spec §9 R3)。
+  /// 动态 ownership 由 `Sect.territoryIds` + B2 `TerritoryService` 持有,
+  /// 本字段仅静态 def 索引。
+  final Map<String, TerritoryDef> territoryDefs;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -103,6 +112,7 @@ class GameRepository {
     required this.encounterSkillIds,
     required this.synergies,
     required this.codexEntries,
+    required this.territoryDefs,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -252,6 +262,20 @@ class GameRepository {
       for (final e in codexList) e.id: e,
     };
 
+    // P4.1 §12.2 territories.yaml(graceful;fixture 不带 yaml 时空 map)。
+    Map<String, TerritoryDef> territoryDefs = const {};
+    try {
+      final territoriesRaw = parseYamlList(await load('data/territories.yaml'));
+      final defs = territoriesRaw
+          .map((raw) => TerritoryDef.fromYaml(
+                Map<String, dynamic>.from(raw as Map),
+              ))
+          .toList(growable: false);
+      territoryDefs = {for (final d in defs) d.id: d};
+    } catch (e) {
+      // test fixture 不带 territories.yaml 时静默,生产路径由 B4 红线校验。
+    }
+
     final repo = GameRepository._(
       numbers: numbers,
       realms: realms,
@@ -267,6 +291,7 @@ class GameRepository {
       encounterSkillIds: encounterSkillIds,
       synergies: synergies,
       codexEntries: codexEntries,
+      territoryDefs: territoryDefs,
     );
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);
