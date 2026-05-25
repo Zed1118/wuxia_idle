@@ -1525,6 +1525,8 @@ class ReputationTierDef {
 class EnmityCombatModifier {
   final int threshold;
   final double playerAttackPowerMult;
+  /// TODO B3+ 接入:未来 PVP 镜像配置(对手 NPC 攻击倍率)预留;
+  /// 目前仅 schema 占位,实战代码 0 caller(R5 schema 校验已覆盖)。
   final double enemyAttackPowerMult;
   final int severeThreshold;
   final double severeMult;

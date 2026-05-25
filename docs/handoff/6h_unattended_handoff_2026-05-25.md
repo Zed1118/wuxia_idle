@@ -18,7 +18,7 @@
 
 | Task | Phase | 实测 commit | 状态 | 关键产出 |
 |---|---|---|---|---|
-| T17 | P1.2 全 4 batch | 4e79722 + bdfee91(B1+B2 only) | 🟡 PARTIAL | Reputation/NpcRelation Isar schema + ReputationService/NpcRelationService(B3 UI / B4 R5 / closeout 全缺) |
+| T17 | P1.2 全 4 batch | 68c816d + bdfee91(B1+B2 only) | 🟡 PARTIAL | Reputation/NpcRelation Isar schema + ReputationService/NpcRelationService(B3 UI / B4 R5 / closeout 全缺) |
 | T18 | narrative 双合一 | 10711b1 | ✅ | 10 PVP narrative + 8 sect tournament/mission/crisis + R4 loader 测 |
 | T19 | 技术债 3 清 | (无) | 🔴 FAIL | PvpDef/SectEventDef 强类型 / sect 真持久化 / systemClock 全未做 |
 | T20 | 跨系统 audit | ab514e1 | ✅ | cross_system_damage_audit_2026-05-25 + R5 6-10 测 |
