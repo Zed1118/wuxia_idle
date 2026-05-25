@@ -88,6 +88,28 @@ run_prerun() {
   return 0
 }
 
+# === A11 verify lint(memory A6/A7/A10 同根防扩散) ===
+# 拦截 verify.sh 内 grep 验源代码语义(Dart 多行/格式让 grep 假阳/假阴)
+# 命中 → fail-fast 不烧 cost · 改 verify_local_tests / verify_analyze_clean(让 analyzer 说话)
+# 白名单:test/analyze/run/format/dart 命令、注释行
+lint_verify_script() {
+  local verify="$1"
+  [ ! -f "$verify" ] && return 0
+  local hits
+  hits=$(grep -nE '\.dart(\b|$)' "$verify" 2>/dev/null \
+    | grep -vE '^[[:space:]]*[0-9]+:[[:space:]]*#' \
+    | grep -vE 'verify_local_tests|flutter[[:space:]]+test|dart[[:space:]]+(test|run|format|analyze)' \
+    || true)
+  if [ -n "$hits" ]; then
+    log "  LINT FAIL [A11]: verify.sh 内 grep/helper 操作 .dart 源文件"
+    log "    memory feedback-nightshift-v2-first-run-lessons A6/A7/A10 同根:Dart 源码语义不能 grep"
+    log "    改用 verify_local_tests(跑测) / verify_analyze_clean(让 analyzer 说话)"
+    echo "$hits" | sed 's/^/      /' | tee -a "$DISPATCHER_LOG"
+    return 1
+  fi
+  return 0
+}
+
 # === Run one task ===
 run_task() {
   local task=$1
@@ -129,6 +151,16 @@ run_task() {
     {
       echo "status=skipped"
       echo "reason=prompt_missing"
+    } >> "$status_file"
+    return 0
+  fi
+
+  # A11 verify lint(fail-fast 不烧 cost · memory A6/A7/A10 同根)
+  if ! lint_verify_script "$verify"; then
+    log "  FAIL: verify lint A11 → status=skipped"
+    {
+      echo "status=skipped"
+      echo "reason=verify_lint_grep_dart_source"
     } >> "$status_file"
     return 0
   fi
