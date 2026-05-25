@@ -5,12 +5,18 @@ import 'package:isar_community/isar.dart';
 
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/system_clock_provider.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/save_data.dart';
 import '../../../data/isar_provider.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../domain/sect.dart';
 import '../domain/sect_event.dart';
 import '../domain/sect_outcome.dart';
+import '../domain/territory_def.dart';
 import 'sect_event_service.dart';
+import 'sect_member_service.dart';
 import 'sect_reputation_decay.dart';
+import 'territory_service.dart';
 
 /// 门派系统 Riverpod wire(1.0 P3.4 §12.1 · T19b 技术债清账)。
 ///
@@ -123,7 +129,43 @@ class ResolveSectEventNotifier extends AsyncNotifier<void> {
     await isar.writeTxn(() async {
       await isar.sects.put(newSect);
       await isar.sectEvents.put(newEvent);
+
+      // P4.1 §12.2 Q7=B mission hook(预埋 · Demo 无 mission trigger
+      // 路径 · 1.1 加 SectEventType.mission 触发后自然激活)。
+      // 设计:outcome=win + event.type=mission → 50% rng
+      // `missionRecruitProb` → 从 SaveData.recruitedDiscipleIds(P1.1 收徒池)
+      // 选首个未入派弟子,招入 sect。candidate pool 局限于已收弟子,
+      // Q6 A encounter candidate pool / Q6 B stage_boss 招降留 1.1。
+      if (outcome == SectOutcome.win &&
+          newEvent.type == SectEventType.mission) {
+        await _maybeRecruitMissionCandidate(isar, newSect);
+      }
     });
+  }
+
+  Future<void> _maybeRecruitMissionCandidate(Isar isar, Sect sect) async {
+    final rng = ref.read(rngProvider);
+    final numbers = ref.read(numbersConfigProvider);
+    final memberSvc = ref.read(sectMemberServiceProvider);
+    if (memberSvc == null) return;
+    final prob = numbers.sectManagement.recruit.missionRecruitProb;
+    if (rng.nextDouble() >= prob) return;
+
+    final save = await isar.saveDatas.get(0);
+    if (save == null) return;
+    final candidates = save.recruitedDiscipleIds;
+    if (candidates.isEmpty) return;
+    for (final id in candidates) {
+      final c = await isar.characters.get(id);
+      if (c != null && !c.isInSect) {
+        await memberSvc.recruit(
+          targetCharacterId: id,
+          sectId: sect.id,
+          numbers: numbers,
+        );
+        break;
+      }
+    }
   }
 }
 
@@ -150,3 +192,171 @@ final seedSectEventProvider =
     AsyncNotifierProvider<SeedSectEventNotifier, void>(
   SeedSectEventNotifier.new,
 );
+
+// =============================================================================
+// P4.1 §12.2 帮派门派 B2 service + provider 接入(default 决议 Q1-Q8 草案)
+// =============================================================================
+
+/// 门派成员服务([SectMemberService] · Q2=C 双向 fk + Q5=A 三阶)。
+///
+/// **nullable propagation**(沿 `recruitmentServiceProvider` 体例):
+/// Isar 未 init(widget test fixture)→ null,caller 端 null-coalesce 跳过。
+final sectMemberServiceProvider = Provider<SectMemberService?>((ref) {
+  final isar = ref.watch(isarProvider);
+  if (isar == null) return null;
+  return SectMemberService(isar);
+});
+
+/// 山头领地服务([TerritoryService] · Q4=A 静态 yaml + dynamic owner)。
+final territoryServiceProvider = Provider<TerritoryService?>((ref) {
+  final isar = ref.watch(isarProvider);
+  if (isar == null) return null;
+  return TerritoryService(isar);
+});
+
+/// [sectId] 全成员 Stream(沿 `Character.sectId` index)。
+///
+/// Isar 未 init → 退空 Stream。Demo 单 sect 用 sect.id=1。
+final sectMembersProvider =
+    StreamProvider.family<List<Character>, int>((ref, sectId) async* {
+  final isar = ref.watch(isarProvider);
+  if (isar == null) {
+    yield const [];
+    return;
+  }
+  yield* isar.characters
+      .filter()
+      .sectIdEqualTo(sectId)
+      .watch(fireImmediately: true);
+});
+
+/// [sectId] memberCount 派生 Provider(由 [currentSectProvider] 取 cache)。
+///
+/// **设计**:`Sect.memberCount` 已是 cache,无需重数;Demo 单 sect 取 cache 即可。
+final sectMemberCountProvider = Provider.family<int, int>((ref, sectId) {
+  final sect = ref.watch(currentSectProvider).value;
+  if (sect == null || sect.id != sectId) return 0;
+  return sect.memberCount;
+});
+
+/// 中立可占领的 territory list(`TerritoryService.availableForClaim`)。
+final availableTerritoriesProvider =
+    FutureProvider<List<TerritoryDef>>((ref) async {
+  final svc = ref.watch(territoryServiceProvider);
+  if (svc == null) return TerritoryService.allDefs();
+  // sect 写入触发 invalidate(caller `ref.invalidate(availableTerritoriesProvider)`
+  // after claim/release writeTxn · 沿 resolveSectEventProvider 体例)。
+  return svc.availableForClaim();
+});
+
+/// 招收 + 升阶 + 退派 AsyncNotifier(B2 spec §3 · 沿 [ResolveSectEventNotifier] 体例)。
+///
+/// caller 端用法:`ref.read(sectMemberMutationProvider.notifier).recruit(...)`
+class SectMemberMutationNotifier extends AsyncNotifier<void> {
+  @override
+  FutureOr<void> build() => null;
+
+  Future<RecruitResult> recruit({
+    required int targetCharacterId,
+    required int sectId,
+  }) async {
+    final isar = ref.read(isarProvider);
+    final svc = ref.read(sectMemberServiceProvider);
+    final numbers = ref.read(numbersConfigProvider);
+    if (isar == null || svc == null) return RecruitResult.targetNotFound;
+    late RecruitResult result;
+    await isar.writeTxn(() async {
+      result = await svc.recruit(
+        targetCharacterId: targetCharacterId,
+        sectId: sectId,
+        numbers: numbers,
+      );
+    });
+    return result;
+  }
+
+  Future<PromoteResult> promoteRank({
+    required int characterId,
+    required int contribution,
+  }) async {
+    final isar = ref.read(isarProvider);
+    final svc = ref.read(sectMemberServiceProvider);
+    final numbers = ref.read(numbersConfigProvider);
+    if (isar == null || svc == null) return PromoteResult.characterNotFound;
+    late PromoteResult result;
+    await isar.writeTxn(() async {
+      result = await svc.promoteRank(
+        characterId: characterId,
+        contribution: contribution,
+        numbers: numbers,
+      );
+    });
+    return result;
+  }
+
+  Future<DismissResult> dismiss({required int characterId}) async {
+    final isar = ref.read(isarProvider);
+    final svc = ref.read(sectMemberServiceProvider);
+    if (isar == null || svc == null) return DismissResult.characterNotFound;
+    late DismissResult result;
+    await isar.writeTxn(() async {
+      result = await svc.dismiss(characterId: characterId);
+    });
+    return result;
+  }
+}
+
+final sectMemberMutationProvider =
+    AsyncNotifierProvider<SectMemberMutationNotifier, void>(
+  SectMemberMutationNotifier.new,
+);
+
+/// 占领 + 释放 AsyncNotifier(B2 spec §3)。
+///
+/// caller 端用法:`ref.read(territoryMutationProvider.notifier).claim(...)`
+class TerritoryMutationNotifier extends AsyncNotifier<void> {
+  @override
+  FutureOr<void> build() => null;
+
+  Future<ClaimResult> claim({
+    required int sectId,
+    required String territoryId,
+  }) async {
+    final isar = ref.read(isarProvider);
+    final svc = ref.read(territoryServiceProvider);
+    final numbers = ref.read(numbersConfigProvider);
+    if (isar == null || svc == null) return ClaimResult.territoryNotFound;
+    late ClaimResult result;
+    await isar.writeTxn(() async {
+      result = await svc.claim(
+        sectId: sectId,
+        territoryId: territoryId,
+        numbers: numbers,
+      );
+    });
+    return result;
+  }
+
+  Future<ReleaseResult> release({
+    required int sectId,
+    required String territoryId,
+  }) async {
+    final isar = ref.read(isarProvider);
+    final svc = ref.read(territoryServiceProvider);
+    if (isar == null || svc == null) return ReleaseResult.sectNotFound;
+    late ReleaseResult result;
+    await isar.writeTxn(() async {
+      result = await svc.release(
+        sectId: sectId,
+        territoryId: territoryId,
+      );
+    });
+    return result;
+  }
+}
+
+final territoryMutationProvider =
+    AsyncNotifierProvider<TerritoryMutationNotifier, void>(
+  TerritoryMutationNotifier.new,
+);
+
