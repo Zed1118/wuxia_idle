@@ -648,7 +648,7 @@ data/
 
 ### 12.2 角色与社交
 
-- **帮派 / 门派系统**：玩家创建的门派可招收弟子、占领山头。
+- **帮派 / 门派系统**:玩家创建的门派可招收弟子、占领山头。**v1.16 1.0 P4.1 §12.2 全闭环 ✅**(2026-05-25,4 batch B1+B2+B3+B4 全 push origin/main · 1476 pass / 0 analyze · Mac+Opus xhigh 累计 ~2.75h vs spec 估 15-20h · 0.16×):**Q1-Q8 默认决议草案直接采纳**(B 4 batch / C 双向 fk / A 复用 Character / A 静态 yaml + dynamic owner / A 三阶 / D 全开 trigger 但 Q6 ABC 退 1.1 / B mission hook · 1.1 预埋 / A 独立 panel → 路径 A 沿 sect_screen 扩 4 Tab)· `SectRank` enum 三阶组织层(初入/内门/长老)≠ 修炼七阶不破 §5.3 锁(R5.5 守)· `Character.{isInSect,sectId,sectRank}` 3 字段双向 fk + `Sect.{territoryIds,memberCount}` 2 字段 cache + `data/territories.yaml` 6 territory 跨 §5.3 阶 2-5 + `numbers.yaml sect_management` 段(member_cap/rank_promote_threshold/territory cap 7 阶递进) · `SectMemberService.{recruit,promoteRank,dismiss}` + `TerritoryService.{claim,release,availableForClaim,ownerOf}` caller 持锁 · `AscendService.performAscend` 加 `sect.founderId` rewire hook(P5+ 真传位单 sect 假设 · R5.7 守) · **路径 A UI**:`sect_screen.dart` TabBar length 2→4 路(当前事件 / 历史 / 成员 / 领地)+ UiStrings 28 段(sectTab*/sectRank*/sectMember*/sectTerritory*/反馈文案) · R5 5 族 18 测(R5.1 招收 e2e × 4 + R5.2 升阶三阶 × 4 + R5.3 双向 fk × 2 + R5.4 territory × 4 + R5.5 schema × 2 + R5.7 sect 接管 × 2) · **founder_buff_service / derived_stats 0 改 · §5.4 红线不动 · §6 公式不动 · Isar schema 不增表**。**挂账 1.1**:Q6 A encounter recruit / Q6 B stage_boss 招降 / founder_buff_service 作用域真扩 / 多代 sect 传递 / member 招收 narrative ~30 条 / P1.2 跨派系 wire。详 `docs/handoff/p4_1_b{1,2,3,4}_*_2026-05-25.md` + `docs/spec/p4_1_sect_management_spec_2026-05-25.md`。
 - **婚姻 / 后代系统**：可结婚生子，子女有遗传属性 + 特殊事件。
 - **声望系统**：行侠 / 行恶累积不同声望，影响 NPC 反应与剧情分支。
 
