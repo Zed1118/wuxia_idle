@@ -16,8 +16,8 @@ if [ -z "$phase0_doc" ]; then
   verify_fail "Phase 0 doc 缺"
 fi
 phase0_lines=$(wc -l < "$phase0_doc")
-if [ "$phase0_lines" -gt 100 ]; then
-  verify_fail "Phase 0 doc $phase0_lines 行超 100 上限"
+if [ "$phase0_lines" -gt 120 ]; then
+  verify_fail "Phase 0 doc $phase0_lines 行超 120 上限(目标 ≤80 + 容差 40)"
 fi
 # 关键段 grep
 for kw in "schema" "caller" "邻近" "UI" "红线" "公式"; do

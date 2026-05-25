@@ -56,7 +56,7 @@ done
 for f in data/lore/pvp/*.yaml data/lore/sect_event/*.yaml; do
   if [ -f "$f" ]; then
     stem=$(basename "$f" .yaml)
-    actual_id=$(grep -E "^id:\s*" "$f" | head -1 | sed -E 's/^id:\s*//; s/\s*$//')
+    actual_id=$(grep -E "^id:[[:space:]]*" "$f" | head -1 | sed -E 's/^id:[[:space:]]*//; s/[[:space:]]*$//')
     if [ "$actual_id" != "$stem" ]; then
       verify_fail "$f id='$actual_id' != 文件名 stem='$stem'"
     fi

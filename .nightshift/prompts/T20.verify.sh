@@ -35,7 +35,7 @@ if [ "$test_count" -lt 6 ]; then
 fi
 
 # === 5. 关键测覆盖 ===
-for kw in "lessThanOrEqualTo(8000)" "attackPowerMultiplier" "baseline\|普攻\|普伤"; do
+for kw in "lessThanOrEqualTo\(8000\)" "attackPowerMultiplier" "baseline|普攻|普伤"; do
   if ! grep -qE "$kw" test/audit/cross_system_damage_test.dart; then
     verify_fail "R5 测族缺关键约束/逻辑 '$kw'"
   fi
