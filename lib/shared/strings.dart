@@ -480,6 +480,41 @@ class UiStrings {
   static const String mainMenuSect = '门派事务';
   static const String mainMenuSectHint = '门派经营 · 比武大会 · 声望积累(一流境界 yiLiu 解锁)';
 
+  // ─── 帮派门派 P4.1 §12.2 B3 UI(成员 + 领地 Tab · 路径 A 扩 sect_screen)───
+  static const String sectTabEventsActive = '当前事件';
+  static const String sectTabEventsHistory = '历史记录';
+  static const String sectTabMembers = '成员';
+  static const String sectTabTerritories = '领地';
+  static const String sectRankInitiate = '初入';
+  static const String sectRankInner = '内门';
+  static const String sectRankElder = '长老';
+  static const String sectMemberFounderTag = '祖师';
+  static const String sectMemberPromote = '内升';
+  static const String sectMemberDismiss = '退派';
+  static const String sectTerritoryClaim = '占领';
+  static const String sectTerritoryRelease = '释放';
+  static const String sectTerritoryNeutral = '中立';
+  static const String sectTerritoryOwnedSelf = '本派持有';
+  static const String sectTerritoryOwnedOther = '他派持有';
+  static const String sectMemberCountLabel = '成员数';
+  static const String sectTerritoryCountLabel = '领地数';
+  static const String sectTerritoryDefenseLabel = '防御阶';
+  static const String sectMemberEmpty = '尚无门派成员';
+  static const String sectTerritoryEmpty = '尚无可占领领地';
+  static const String sectRecruitSuccess = '招收成功';
+  static const String sectRecruitFullCap = '成员已满';
+  static const String sectRecruitAlreadyInSect = '已在派中';
+  static const String sectPromoteSuccess = '阶位已升';
+  static const String sectPromoteBelowThreshold = '贡献不足无法升阶';
+  static const String sectPromoteAlreadyMax = '已是顶阶';
+  static const String sectDismissSuccess = '已退派';
+  static const String sectClaimSuccess = '已纳入麾下';
+  static const String sectClaimAlreadyOwned = '此地已有归属';
+  static const String sectClaimFullCap = '领地已满';
+  static const String sectReleaseSuccess = '已释放领地';
+  static String sectMemberCapDisplay(int count, int cap) => '$count / $cap';
+  static String sectPromoteRequire(int required) => '需贡献 $required';
+
   // ── P1 #42 Phase 2 §10 P1.y · 新手引导 banner 文案(GDD §10.2 第 2 方式)──
   // 3 条对应 tutorialStep 6/7/8(收徒 / 奇遇 / 装备开锋),50-100 字短介绍。
   static const String tutorialHintStep6Title = '收徒资格已达成';

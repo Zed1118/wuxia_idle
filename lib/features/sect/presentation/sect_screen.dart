@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/battle_providers.dart';
+import '../../../core/domain/character.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../battle/domain/enum_localizations.dart';
+import '../application/sect_member_service.dart';
 import '../application/sect_providers.dart';
+import '../application/territory_service.dart';
 import '../domain/sect.dart';
 import '../domain/sect_event.dart';
+import '../domain/sect_rank.dart';
+import '../domain/territory_def.dart';
 import 'widgets/sect_event_dialog.dart';
 
 /// 门派事务屏(1.0 P3.4 §12.1,Batch 2.3 nightshift T16 · spec §5)。
@@ -63,7 +71,7 @@ class SectScreen extends ConsumerWidget {
           );
         }
         return DefaultTabController(
-          length: 2,
+          length: 4,
           child: Scaffold(
             backgroundColor: WuxiaColors.background,
             appBar: AppBar(
@@ -71,7 +79,13 @@ class SectScreen extends ConsumerWidget {
               backgroundColor: WuxiaColors.sidebar,
               foregroundColor: WuxiaColors.textPrimary,
               bottom: const TabBar(
-                tabs: [Tab(text: '当前事件'), Tab(text: '历史记录')],
+                isScrollable: true,
+                tabs: [
+                  Tab(text: UiStrings.sectTabEventsActive),
+                  Tab(text: UiStrings.sectTabEventsHistory),
+                  Tab(text: UiStrings.sectTabMembers),
+                  Tab(text: UiStrings.sectTabTerritories),
+                ],
                 labelColor: WuxiaColors.textPrimary,
                 unselectedLabelColor: WuxiaColors.textMuted,
                 indicatorColor: WuxiaColors.hpHigh,
@@ -92,6 +106,8 @@ class SectScreen extends ConsumerWidget {
                         _HistoricalEventList(
                           events: (historyAsync.asData?.value ?? const <SectEvent>[]),
                         ),
+                        _MemberList(sect: sect),
+                        _TerritoryGrid(sect: sect),
                       ],
                     ),
                   ),
@@ -342,6 +358,426 @@ class _HistoricalEventList extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class _MemberList extends ConsumerWidget {
+  const _MemberList({required this.sect});
+  final Sect sect;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final membersAsync = ref.watch(sectMembersProvider(sect.id));
+    final numbers = ref.watch(numbersConfigProvider);
+    final cap = SectMemberService.memberCapFor(numbers, sect.sectLevel);
+    return membersAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(
+        child: Text('加载失败:$e',
+            style: const TextStyle(color: WuxiaColors.textMuted)),
+      ),
+      data: (members) {
+        if (members.isEmpty) {
+          return const Center(
+            child: Text(
+              UiStrings.sectMemberEmpty,
+              style: TextStyle(color: WuxiaColors.textMuted),
+            ),
+          );
+        }
+        final sorted = [...members]..sort((a, b) {
+          final rankA = a.sectRank?.index ?? -1;
+          final rankB = b.sectRank?.index ?? -1;
+          if (rankA != rankB) return rankB.compareTo(rankA);
+          return b.realmTier.index.compareTo(a.realmTier.index);
+        });
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  const Text(
+                    '${UiStrings.sectMemberCountLabel}:',
+                    style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    UiStrings.sectMemberCapDisplay(sect.memberCount, cap),
+                    style: const TextStyle(
+                      color: WuxiaColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: sorted.length,
+                itemBuilder: (ctx, i) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _MemberRow(member: sorted[i], sect: sect),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _MemberRow extends ConsumerWidget {
+  const _MemberRow({required this.member, required this.sect});
+  final Character member;
+  final Sect sect;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final numbers = ref.watch(numbersConfigProvider);
+    final isFounder = member.id == sect.founderId;
+    final rank = member.sectRank;
+    final threshold = numbers.sectManagement.rankPromoteThreshold;
+
+    int requiredForNext = 0;
+    bool canPromote = false;
+    if (rank == SectRank.initiate) {
+      requiredForNext = threshold.innerMinContribution;
+      canPromote = sect.totalWins >= requiredForNext;
+    } else if (rank == SectRank.inner) {
+      requiredForNext = threshold.elderMinContribution;
+      canPromote = sect.totalWins >= requiredForNext;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: WuxiaColors.sidebar,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: WuxiaColors.border),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      member.name,
+                      style: const TextStyle(
+                        color: WuxiaColors.textPrimary,
+                        fontSize: 15,
+                      ),
+                    ),
+                    if (isFounder)
+                      const _SmallChip(
+                        label: UiStrings.sectMemberFounderTag,
+                        color: WuxiaColors.hpHigh,
+                      ),
+                    if (rank != null)
+                      _SmallChip(
+                        label: _sectRankLabel(rank),
+                        color: WuxiaColors.textSecondary,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  EnumL10n.realmTier(member.realmTier),
+                  style: const TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+                if (rank != null && rank != SectRank.elder && !canPromote)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      UiStrings.sectPromoteRequire(requiredForNext),
+                      style: const TextStyle(
+                        color: WuxiaColors.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (rank != null && rank != SectRank.elder && canPromote)
+            TextButton(
+              onPressed: () => _promote(context, ref),
+              style: TextButton.styleFrom(
+                foregroundColor: WuxiaColors.hpHigh,
+                visualDensity: VisualDensity.compact,
+              ),
+              child: const Text(UiStrings.sectMemberPromote),
+            ),
+          if (!isFounder)
+            TextButton(
+              onPressed: () => _dismiss(context, ref),
+              style: TextButton.styleFrom(
+                foregroundColor: WuxiaColors.hpLow,
+                visualDensity: VisualDensity.compact,
+              ),
+              child: const Text(UiStrings.sectMemberDismiss),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _promote(BuildContext context, WidgetRef ref) async {
+    final result =
+        await ref.read(sectMemberMutationProvider.notifier).promoteRank(
+              characterId: member.id,
+              contribution: sect.totalWins,
+            );
+    if (!context.mounted) return;
+    final msg = switch (result) {
+      PromoteResult.success => UiStrings.sectPromoteSuccess,
+      PromoteResult.belowThreshold => UiStrings.sectPromoteBelowThreshold,
+      PromoteResult.alreadyMax => UiStrings.sectPromoteAlreadyMax,
+      _ => '操作失败',
+    };
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<void> _dismiss(BuildContext context, WidgetRef ref) async {
+    final result = await ref
+        .read(sectMemberMutationProvider.notifier)
+        .dismiss(characterId: member.id);
+    if (!context.mounted) return;
+    final msg = result == DismissResult.success
+        ? UiStrings.sectDismissSuccess
+        : '操作失败';
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+}
+
+class _TerritoryGrid extends ConsumerWidget {
+  const _TerritoryGrid({required this.sect});
+  final Sect sect;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final availableAsync = ref.watch(availableTerritoriesProvider);
+    final numbers = ref.watch(numbersConfigProvider);
+    final cap = TerritoryService.territoryCapFor(numbers, sect.sectLevel);
+    final ownedIds = sect.territoryIds;
+    final ownedDefs = ownedIds
+        .map((id) => TerritoryService.defOf(id))
+        .whereType<TerritoryDef>()
+        .toList();
+    final available = availableAsync.asData?.value ?? const <TerritoryDef>[];
+    final all = [...ownedDefs, ...available];
+
+    if (all.isEmpty) {
+      return const Center(
+        child: Text(
+          UiStrings.sectTerritoryEmpty,
+          style: TextStyle(color: WuxiaColors.textMuted),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              const Text(
+                '${UiStrings.sectTerritoryCountLabel}:',
+                style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                UiStrings.sectMemberCapDisplay(ownedDefs.length, cap),
+                style: const TextStyle(
+                  color: WuxiaColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: GridView.builder(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.6,
+            ),
+            itemCount: all.length,
+            itemBuilder: (ctx, i) {
+              final def = all[i];
+              final isOwned = ownedIds.contains(def.id);
+              return _TerritoryCell(def: def, isOwned: isOwned, sect: sect);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TerritoryCell extends ConsumerWidget {
+  const _TerritoryCell({
+    required this.def,
+    required this.isOwned,
+    required this.sect,
+  });
+
+  final TerritoryDef def;
+  final bool isOwned;
+  final Sect sect;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: WuxiaColors.sidebar,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isOwned ? WuxiaColors.hpHigh : WuxiaColors.border,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            def.name,
+            style: const TextStyle(
+              color: WuxiaColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              _SmallChip(
+                label:
+                    '${UiStrings.sectTerritoryDefenseLabel} ${def.baseDefenseLevel}',
+                color: WuxiaColors.textSecondary,
+              ),
+              _SmallChip(
+                label: isOwned
+                    ? UiStrings.sectTerritoryOwnedSelf
+                    : UiStrings.sectTerritoryNeutral,
+                color: isOwned ? WuxiaColors.hpHigh : WuxiaColors.textMuted,
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Expanded(
+            child: Text(
+              def.description,
+              style: const TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 11,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => isOwned ? _release(context, ref) : _claim(context, ref),
+              style: TextButton.styleFrom(
+                foregroundColor:
+                    isOwned ? WuxiaColors.hpLow : WuxiaColors.hpHigh,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                visualDensity: VisualDensity.compact,
+              ),
+              child: Text(
+                isOwned
+                    ? UiStrings.sectTerritoryRelease
+                    : UiStrings.sectTerritoryClaim,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _claim(BuildContext context, WidgetRef ref) async {
+    final result =
+        await ref.read(territoryMutationProvider.notifier).claim(
+              sectId: sect.id,
+              territoryId: def.id,
+            );
+    ref.invalidate(availableTerritoriesProvider);
+    if (!context.mounted) return;
+    final msg = switch (result) {
+      ClaimResult.success => UiStrings.sectClaimSuccess,
+      ClaimResult.alreadyOwned => UiStrings.sectClaimAlreadyOwned,
+      ClaimResult.fullCap => UiStrings.sectClaimFullCap,
+      _ => '操作失败',
+    };
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<void> _release(BuildContext context, WidgetRef ref) async {
+    final result =
+        await ref.read(territoryMutationProvider.notifier).release(
+              sectId: sect.id,
+              territoryId: def.id,
+            );
+    ref.invalidate(availableTerritoriesProvider);
+    if (!context.mounted) return;
+    final msg = result == ReleaseResult.success
+        ? UiStrings.sectReleaseSuccess
+        : '操作失败';
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+}
+
+class _SmallChip extends StatelessWidget {
+  const _SmallChip({required this.label, required this.color});
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: WuxiaColors.panel,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color, width: 0.8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: color, fontSize: 11),
+      ),
+    );
+  }
+}
+
+String _sectRankLabel(SectRank rank) {
+  switch (rank) {
+    case SectRank.initiate:
+      return UiStrings.sectRankInitiate;
+    case SectRank.inner:
+      return UiStrings.sectRankInner;
+    case SectRank.elder:
+      return UiStrings.sectRankElder;
   }
 }
 
