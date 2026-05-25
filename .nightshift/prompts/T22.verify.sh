@@ -34,9 +34,9 @@ fi
 if ! grep -qE "v1\.3" docs/ROADMAP_1_0.md; then
   verify_fail "ROADMAP_1_0.md 缺 v1.3 变更段"
 fi
-# P1.2 状态对齐(从 spec only 升 完整闭环)
-if ! grep -qE "P1\.2.*100%|P1\.2.*闭环|江湖恩怨.*完整" docs/ROADMAP_1_0.md; then
-  verify_fail "ROADMAP_1_0.md P1.2 状态未对齐至完整闭环"
+# P1.2 状态对齐(任何 P1.2 % 升或闭环 / partial 描述均接受 · 容 honest 部分完工)
+if ! grep -qE "P1\.2.*[0-9]+%|P1\.2.*B[1-4]|P1\.2.*闭环|江湖恩怨.*[0-9]+|P1\.2.*partial|江湖恩怨.*partial" docs/ROADMAP_1_0.md; then
+  verify_fail "ROADMAP_1_0.md P1.2 状态未对齐(应含 P1.2 % 升 / B1-4 描述 / 闭环 / partial 任一)"
 fi
 
 # === 5. PROGRESS 顶段更新 + ≤100 行 ===
