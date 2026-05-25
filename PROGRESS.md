@@ -5,7 +5,11 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-25 P5.0 onboarding production seed ✅ P0-1 release 阻塞修 + P4.1 §12.2 帮派门派 全闭环 ✅ · 1.0 ~90% → ~91%**
+> 📊 **2026-05-25 P5.0 onboarding ✅ + audit v1 P0-1 发现 + audit v2 6 系统全过 ✅ · 1.0 ~90% → ~91% release ready**
+
+**2026-05-25 1.0 整体 audit v2 ✅**(Mac+Opus xhigh ~40min · commit `e5fbb56` 直推 main · 0 改代码):audit v1 P0-1 修(PR #12 `3bf5e0c`)后复审 6 跨系统全健康 — ① 战斗核心 19 file / 红线 13+ / 三系锁 5+ / 流派克制 wire · ② encounter 94 测 / festival 8 全 wire / 软概率与 GDD §12.2 #6 v1.9 对齐 · ③ 闭关 62 测 / 时辰加成 wire · ④ 师徒/共鸣/飞升 49 测 / founderBuff 三维度 / P5+ 多代飞升 · ⑤ 社交(sect+jianghu+pvp) 22 文件 123 测 · ⑥ cross-system T20 数值红线 audit 已通过。**测族总量**:137 文件 / 1484 测全过 / 0 analyze。**audit v1 误读修正**:`testWidgets` 嵌套 group 实际全 wire(每文件 3-5 测)。**1.0 整体 ~91% release ready · 0 P0/P1 阻塞**(剩 Pen 视觉验收 + P5.x 音效/Steam)。详 `docs/handoff/1_0_release_audit_v2_2026-05-25.md` + 本会话 closeout `docs/handoff/session_closeout_2026-05-25_p5_audit_v2_full.md`。
+
+---
 
 **2026-05-25 P5.0 onboarding production seed ✅**(Mac+Opus xhigh ~1h · spec 估 1.5-2h · 精度 0.5-0.67× · 1 PR squash merge · 1476 → **1484 测全过** / 0 analyze):audit `1_0_release_audit_2026-05-25.md` 揭示 P0-1 release 阻塞 — 首次启动无 production seed 路径(`StageBattleSetup._buildPlayerTeam` 抛 `StateError('先跑 P1 种子')` 全新启动 crash)。修:① 抽 5 helpers(`buildMasterCharacter` / `defaultMasterName` / `equipMasterStarting` / `learnMasterStarting` / `seedBasicMaterials`)从 `Phase2SeedService` 到 `lib/features/onboarding/application/master_builder.dart` top-level functions(debug + production 共用)· ② `OnboardingService.ensureFoundingMasters()` 幂等 production seed(信源 Character.isFounder=true count > 0 跳过 · Character × 3 + Equipment × 9 + Technique × 4 + SaveData.activeCharacterIds=[1,2,3] + founderCharacterId=1 + 物料 magic 50 / jie 0 §5.1 反留存)· ③ `SplashScreen._bootstrap` IsarSetup.init 之后调用 · ④ 顺带 P1-1 `kDebugMode` 切除 BattleTestMenu/Phase2TestMenu debug 入口 + P1-3 home_feed 空 feed 加「按下「直入江湖」启程」引导文案 · ⑤ R5 测族 8 测(R5.1 全新 db / R5.2 幂等 / R5.3 信源 Character ≠ SaveData / R5.4 装备 9 心法 4 / R5.5 真战斗 e2e StageBattleSetup 不抛 / R5.6 founder.id=1 / R5.7 sectName 不覆盖 / R5.8 物料 50/0)· **0 改 GDD / numbers.yaml / masters.yaml / Isar schema 0.13.0 / §5.4 红线 / §6 公式 / phase2_seed_service 8+ caller**。详 spec `docs/spec/p5_onboarding_seed_spec_2026-05-25.md` + closeout `docs/handoff/p5_onboarding_closeout_2026-05-25.md`。**挂账 1.1+**:P1-2 fallback id=1 grep 后留;创角向导 UI;多槽存档(P5 TODO);sectName 自定义 UI。
 
