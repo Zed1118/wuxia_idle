@@ -38,6 +38,17 @@ source "$CONF"
 : "${CLAUDE_PERMISSION_MODE:=bypassPermissions}"
 : "${WORKTREE_PREFIX:=$(basename "$PROJECT_ROOT")}"
 
+# === A8 sanity: BUDGET 与 TIMEOUT 联动校验 ===
+# memory feedback-nightshift-v2-first-run-lessons A8
+# opus --print 实测 ~$0.1/min,TIMEOUT 升而 BUDGET 不升 → 大 spec 被 budget 截断
+SANITY_MIN_BUDGET=$(( TASK_TIMEOUT_MIN / 10 ))
+if [ "$TASK_BUDGET_USD" -lt "$SANITY_MIN_BUDGET" ]; then
+  echo "FATAL: TASK_BUDGET_USD=\$$TASK_BUDGET_USD 不满足 sanity TIMEOUT/10=\$$SANITY_MIN_BUDGET" >&2
+  echo "  TIMEOUT=${TASK_TIMEOUT_MIN}min × \$0.1/min ≈ \$$SANITY_MIN_BUDGET 起跳(opus --print 锚点)" >&2
+  echo "  改 nightshift.conf 升 TASK_BUDGET_USD 后重启" >&2
+  exit 2
+fi
+
 NIGHTSHIFT="$SCRIPT_DIR"
 mkdir -p "$NIGHTSHIFT/logs" "$NIGHTSHIFT/status"
 DISPATCHER_LOG="$NIGHTSHIFT/logs/dispatcher.log"
@@ -160,27 +171,45 @@ run_task() {
 
   # Idempotency: 若 worktree 已有 commit "nightshift $task",跳 claude 直跑 verify
   local claude_exit=0
+  local task_json="$NIGHTSHIFT/logs/$task.json"
   if (cd "$worktree" && git log -1 --pretty=%s 2>/dev/null | grep -q "nightshift $task"); then
     log "  IDEMPOTENT: worktree already has nightshift $task commit, skip claude (verify only)"
     echo "claude_exit=skipped_idempotent" >> "$status_file"
   else
     log "  Running claude --print (model $CLAUDE_MODEL, timeout ${TASK_TIMEOUT_MIN}m, budget \$${TASK_BUDGET_USD})"
+    # C2 cost 追踪(memory feedback-nightshift-v2-first-run-lessons C2):
+    # --output-format json 把 stdout 写成单 JSON · 拆 .result 到 task_log + .total_cost_usd 到 status
     (
       cd "$worktree" || exit 99
       perl -e 'alarm shift; exec @ARGV' "$((TASK_TIMEOUT_MIN * 60))" \
         claude \
           --print \
+          --output-format json \
           --model "$CLAUDE_MODEL" \
           --permission-mode "$CLAUDE_PERMISSION_MODE" \
           --max-budget-usd "$TASK_BUDGET_USD" \
           --no-session-persistence \
           --add-dir "$worktree" \
         < "$prompt" \
-        >> "$task_log" 2>&1
+        > "$task_json" 2>>"$task_log"
     )
     claude_exit=$?
     log "  claude exit=$claude_exit"
     echo "claude_exit=$claude_exit" >> "$status_file"
+
+    # 拆 JSON 到 task_log + status_file cost_usd
+    if [ -s "$task_json" ] && head -c 1 "$task_json" 2>/dev/null | grep -q '{' && command -v jq >/dev/null 2>&1; then
+      jq -r '.result // "(no .result field)"' "$task_json" >> "$task_log" 2>/dev/null || cat "$task_json" >> "$task_log"
+      local cost
+      cost=$(jq -r '.total_cost_usd // .cost_usd // empty' "$task_json" 2>/dev/null)
+      if [ -n "$cost" ]; then
+        echo "cost_usd=$cost" >> "$status_file"
+        log "  cost: \$$cost"
+      fi
+    else
+      # 非 JSON(超时 truncate / jq 缺) → 原样 append
+      [ -s "$task_json" ] && cat "$task_json" >> "$task_log"
+    fi
   fi
 
   # Run verify
