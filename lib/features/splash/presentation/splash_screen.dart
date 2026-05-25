@@ -6,6 +6,7 @@ import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../home_feed/presentation/home_feed_screen.dart';
+import '../../onboarding/application/onboarding_service.dart';
 
 /// 启动闪屏(M4 PoC #46 美术 Stage 2 W6 收官 `landscape_loading.png` 9.5/10 接入)。
 ///
@@ -39,6 +40,9 @@ class _SplashScreenState extends State<SplashScreen> {
     }
     if (!kIsWeb) {
       await IsarSetup.init();
+      // 2026-05-25 P0-1 release 阻塞修复:首次启动 production seed 3 师徒。
+      // 幂等 — 已有 founder 跳过。详 docs/spec/p5_onboarding_seed_spec_2026-05-25.md
+      await OnboardingService(isar: IsarSetup.instance).ensureFoundingMasters();
     }
     if (!mounted) return;
     Navigator.of(context).pushReplacement(

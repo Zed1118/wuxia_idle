@@ -585,7 +585,7 @@ class UiStrings {
   // ── P1 #42 Phase 3 · HomeFeedScreen 上线第一屏(GDD §9.2)──
 
   static const String homeFeedTitle = '江湖见闻';
-  static const String homeFeedEmptyHint = '江湖初醒，昨夜风平浪静。';
+  static const String homeFeedEmptyHint = '江湖初醒，昨夜风平浪静。\n按下「直入江湖」启程。';
   static const String homeFeedQuickClaimLabel = '直入江湖';
 
   /// GameEvent occurredAt 相对时间格式(GDD §9.2 "昨晚发生的事"调子)。
