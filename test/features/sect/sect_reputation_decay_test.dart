@@ -210,6 +210,14 @@ class NumbersConfigStub implements NumbersConfig {
   Map<String, dynamic> get raw => _raw;
 
   @override
+  SectEventDef get sectEvent => SectEventDef.fromYaml(
+      (_raw['sect_event'] as Map?)?.cast<String, dynamic>());
+
+  @override
+  PvpDef get pvp =>
+      PvpDef.fromYaml((_raw['pvp'] as Map?)?.cast<String, dynamic>());
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError(
       'NumbersConfigStub: only raw impl, invocation=${invocation.memberName}');
 }

@@ -14,8 +14,7 @@ import '../domain/sect_outcome.dart';
 /// - `resolve` 接 event + outcome + sect → 原地 mutation 后返 tuple
 /// - **真持久化(Isar writeTxn)在 caller 端**(Phase 4 wire 到 Riverpod 时落)
 ///
-/// NumbersConfig 走 `raw['sect_event']` dynamic map(Phase 4+ 升强类型 SectEventDef
-/// 时统一做 · 避撞 numbers_config.dart conflict)。
+/// NumbersConfig 已升 [SectEventDef] 强类型(T19b 技术债清账,原"Phase 4+ 升"挂账清)。
 class SectEventService {
   final NumbersConfig numbers;
 
@@ -35,15 +34,13 @@ class SectEventService {
     required String pickedNarrativeId,
     required Random rng,
   }) {
-    final cfg = (numbers.raw['sect_event'] as Map?) ?? const <String, dynamic>{};
-    final tournament = (cfg['tournament'] as Map?) ?? const <String, dynamic>{};
-    final cooldownDays = ((tournament['cooldown_days'] as num?) ?? 30).toInt();
-    final triggerProbability =
-        ((tournament['trigger_probability'] as num?) ?? 0.0).toDouble();
-    final triggerRealmMinName =
-        (tournament['trigger_realm_min'] as String?) ?? 'yiLiu';
-    final triggerRealmMin = RealmTier.values.byName(triggerRealmMinName);
-    final activeEventsMax = ((cfg['active_events_max'] as num?) ?? 3).toInt();
+    final cfg = numbers.sectEvent;
+    final tournament = cfg.tournament;
+    final cooldownDays = tournament.cooldownDays;
+    final triggerProbability = tournament.triggerProbability;
+    final triggerRealmMin =
+        RealmTier.values.byName(tournament.triggerRealmMin);
+    final activeEventsMax = cfg.activeEventsMax;
 
     // ① cooldown
     final lastAt = sect.lastEventAt;
@@ -85,16 +82,15 @@ class SectEventService {
     required SectOutcome outcome,
     required DateTime now,
   }) {
-    final cfg = (numbers.raw['sect_event'] as Map?) ?? const <String, dynamic>{};
-    final repCfg = (cfg['reputation'] as Map?) ?? const <String, dynamic>{};
-    final levelCfg = (cfg['sect_level'] as Map?) ?? const <String, dynamic>{};
-    final winDelta = ((repCfg['win_delta'] as num?) ?? 10).toInt();
-    final lossDelta = ((repCfg['loss_delta'] as num?) ?? -5).toInt();
-    final repMax = ((repCfg['max'] as num?) ?? 100).toInt();
-    final repMin = ((repCfg['min'] as num?) ?? 0).toInt();
-    final levelMax = ((levelCfg['max'] as num?) ?? 7).toInt();
-    final promoteThreshold =
-        ((levelCfg['promote_wins_threshold'] as num?) ?? 3).toInt();
+    final cfg = numbers.sectEvent;
+    final repCfg = cfg.reputation;
+    final levelCfg = cfg.sectLevel;
+    final winDelta = repCfg.winDelta;
+    final lossDelta = repCfg.lossDelta;
+    final repMax = repCfg.max;
+    final repMin = repCfg.min;
+    final levelMax = levelCfg.max;
+    final promoteThreshold = levelCfg.promoteWinsThreshold;
 
     int newRep = sect.sectReputation;
     int newWins = sect.totalWins;

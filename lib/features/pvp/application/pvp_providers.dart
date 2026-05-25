@@ -31,9 +31,7 @@ final pvpServiceProvider = Provider<PvpService>((ref) {
 /// override)。
 final currentPvpEloProvider = Provider<int>((ref) {
   final numbers = ref.watch(numbersConfigProvider);
-  final pvpCfg = PvpService.pvpCfgFor(numbers);
-  final eloCfg = pvpCfg['elo'] as Map;
-  return (eloCfg['initial'] as num).toInt();
+  return numbers.pvp.elo.initial;
 });
 
 /// 最近 PVP 战例列表(Phase 4 stub 返空 · Phase 5+ 读 Isar pvpRecords

@@ -221,28 +221,22 @@ void main() {
     });
   });
 
-  group('R3.8 numbers.yaml pvp 段真加载(Phase 2 schema 锚 + dynamic 取值路径)', () {
-    test('pvp.elo.k_factor=32 / initial=1200 / draw_factor=0.5', () {
-      final pvp = PvpService.pvpCfgFor(numbersCfg);
-      final elo = pvp['elo'] as Map;
-      expect((elo['k_factor'] as num).toInt(), 32);
-      expect((elo['initial'] as num).toInt(), 1200);
-      expect((elo['draw_factor'] as num).toDouble(), closeTo(0.5, 1e-9));
+  group('R3.8 numbers.yaml pvp 段真加载(T19b PvpDef 强类型路径)', () {
+    test('pvp.elo.kFactor=32 / initial=1200 / drawFactor=0.5', () {
+      expect(numbersCfg.pvp.elo.kFactor, 32);
+      expect(numbersCfg.pvp.elo.initial, 1200);
+      expect(numbersCfg.pvp.elo.drawFactor, closeTo(0.5, 1e-9));
     });
 
-    test('pvp.match_range.elo_window=100 / fallback_window=300', () {
-      final pvp = PvpService.pvpCfgFor(numbersCfg);
-      final mr = pvp['match_range'] as Map;
-      expect((mr['elo_window'] as num).toInt(), 100);
-      expect((mr['fallback_window'] as num).toInt(), 300);
+    test('pvp.matchRange.eloWindow=100 / fallbackWindow=300', () {
+      expect(numbersCfg.pvp.matchRange.eloWindow, 100);
+      expect(numbersCfg.pvp.matchRange.fallbackWindow, 300);
     });
 
-    test('pvp.sync.impl=noop / snapshot_ttl_hours=168', () {
-      final pvp = PvpService.pvpCfgFor(numbersCfg);
-      final sync = pvp['sync'] as Map;
-      expect(sync['impl'], 'noop',
+    test('pvp.sync.impl=noop / snapshotTtlHours=168', () {
+      expect(numbersCfg.pvp.sync.impl, 'noop',
           reason: 'Phase 3 NoopPvpSync · Phase 5 切 supabase');
-      expect((sync['snapshot_ttl_hours'] as num).toInt(), 168);
+      expect(numbersCfg.pvp.sync.snapshotTtlHours, 168);
     });
   });
 }

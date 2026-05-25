@@ -19,9 +19,7 @@ class SectReputationDecayService {
 
   /// 计算 decay 增量。返 0 = 不衰减,负数 = 应扣 reputation。
   int computeDecay({required Sect sect, required DateTime now}) {
-    final cfg = (numbers.raw['sect_event'] as Map?) ?? const <String, dynamic>{};
-    final repCfg = (cfg['reputation'] as Map?) ?? const <String, dynamic>{};
-    final decayAmount = ((repCfg['decay_per_month_idle'] as num?) ?? 5).toInt();
+    final decayAmount = numbers.sectEvent.reputation.decayPerMonthIdle;
 
     final lastAt = sect.lastEventAt;
     if (lastAt == null) return 0;

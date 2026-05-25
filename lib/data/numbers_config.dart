@@ -150,6 +150,16 @@ class NumbersConfig {
   /// 空段兜底 [JianghuConfig.empty](fixture / 老存档迁移)。
   final JianghuConfig jianghu;
 
+  /// 1.0 P3.3 PVP 配置(spec p3_3_pvp_spec_2026-05-24 §9 · T19b 升强类型)。
+  /// numbers.yaml `pvp` 段:elo / match_range / ranks / unlock / sync / history。
+  /// 空段兜底 [PvpDef.empty](fixture / 老存档迁移)。
+  final PvpDef pvp;
+
+  /// 1.0 P3.4 门派事件配置(spec p3_4_sect_event_spec_2026-05-24 · T19b 升强类型)。
+  /// numbers.yaml `sect_event` 段:tournament / reputation / sect_level / active_events_max。
+  /// 空段兜底 [SectEventDef.empty](fixture / 老存档迁移)。
+  final SectEventDef sectEvent;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -184,6 +194,8 @@ class NumbersConfig {
     required this.lightFoot,
     required this.massBattle,
     required this.jianghu,
+    required this.pvp,
+    required this.sectEvent,
     required this.raw,
   });
 
@@ -279,6 +291,10 @@ class NumbersConfig {
       ),
       jianghu: JianghuConfig.fromYaml(
         y['jianghu'] as Map<String, dynamic>?,
+      ),
+      pvp: PvpDef.fromYaml(y['pvp'] as Map<String, dynamic>?),
+      sectEvent: SectEventDef.fromYaml(
+        y['sect_event'] as Map<String, dynamic>?,
       ),
       raw: y,
     );
@@ -1582,3 +1598,287 @@ class JianghuTriggers {
     );
   }
 }
+
+// =============================================================================
+// 1.0 P3.3 PVP 强类型定义(T19b 技术债清账 · 沿 JianghuConfig 体例)
+// =============================================================================
+
+/// 1.0 P3.3 PVP 配置(spec p3_3_pvp_spec_2026-05-24 §9)。
+///
+/// 替原 `numbers.raw['pvp']` dynamic map(避撞 T13/T14 cherry-pick conflict
+/// 的折中,Phase 4+ T19b 升强类型清账)。空段兜底 [PvpDef.empty]。
+class PvpDef {
+  final EloConfig elo;
+  final PvpMatchRange matchRange;
+  final PvpSync sync;
+  final PvpHistory history;
+  final String? unlockRequiresStage;
+
+  const PvpDef({
+    required this.elo,
+    required this.matchRange,
+    required this.sync,
+    required this.history,
+    required this.unlockRequiresStage,
+  });
+
+  static const PvpDef empty = PvpDef(
+    elo: EloConfig.empty,
+    matchRange: PvpMatchRange.empty,
+    sync: PvpSync.empty,
+    history: PvpHistory.empty,
+    unlockRequiresStage: null,
+  );
+
+  factory PvpDef.fromYaml(Map<String, dynamic>? y) {
+    if (y == null || y.isEmpty) return empty;
+    return PvpDef(
+      elo: EloConfig.fromYaml(
+        (y['elo'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      matchRange: PvpMatchRange.fromYaml(
+        (y['match_range'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      sync: PvpSync.fromYaml(
+        (y['sync'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      history: PvpHistory.fromYaml(
+        (y['history'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      unlockRequiresStage:
+          (y['unlock'] as Map?)?['requires_stage'] as String?,
+    );
+  }
+}
+
+class EloConfig {
+  final int initial;
+  final int kFactor;
+  final double drawFactor;
+
+  const EloConfig({
+    required this.initial,
+    required this.kFactor,
+    required this.drawFactor,
+  });
+
+  static const EloConfig empty = EloConfig(
+    initial: 1200,
+    kFactor: 32,
+    drawFactor: 0.5,
+  );
+
+  factory EloConfig.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    return EloConfig(
+      initial: (y['initial'] as num?)?.toInt() ?? 1200,
+      kFactor: (y['k_factor'] as num?)?.toInt() ?? 32,
+      drawFactor: (y['draw_factor'] as num?)?.toDouble() ?? 0.5,
+    );
+  }
+}
+
+class PvpMatchRange {
+  final int eloWindow;
+  final int fallbackWindow;
+  final int minPoolSize;
+
+  const PvpMatchRange({
+    required this.eloWindow,
+    required this.fallbackWindow,
+    required this.minPoolSize,
+  });
+
+  static const PvpMatchRange empty = PvpMatchRange(
+    eloWindow: 100,
+    fallbackWindow: 300,
+    minPoolSize: 3,
+  );
+
+  factory PvpMatchRange.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    return PvpMatchRange(
+      eloWindow: (y['elo_window'] as num?)?.toInt() ?? 100,
+      fallbackWindow: (y['fallback_window'] as num?)?.toInt() ?? 300,
+      minPoolSize: (y['min_pool_size'] as num?)?.toInt() ?? 3,
+    );
+  }
+}
+
+class PvpSync {
+  final String impl;
+  final int snapshotTtlHours;
+
+  const PvpSync({required this.impl, required this.snapshotTtlHours});
+
+  static const PvpSync empty = PvpSync(impl: 'noop', snapshotTtlHours: 168);
+
+  factory PvpSync.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    return PvpSync(
+      impl: (y['impl'] as String?) ?? 'noop',
+      snapshotTtlHours: (y['snapshot_ttl_hours'] as num?)?.toInt() ?? 168,
+    );
+  }
+}
+
+class PvpHistory {
+  final int maxRecords;
+
+  const PvpHistory({required this.maxRecords});
+
+  static const PvpHistory empty = PvpHistory(maxRecords: 200);
+
+  factory PvpHistory.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    return PvpHistory(
+      maxRecords: (y['max_records'] as num?)?.toInt() ?? 200,
+    );
+  }
+}
+
+// =============================================================================
+// 1.0 P3.4 SectEvent 强类型定义(T19b 技术债清账 · 沿 JianghuConfig 体例)
+// =============================================================================
+
+/// 1.0 P3.4 门派事件配置(spec p3_4_sect_event_spec_2026-05-24)。
+///
+/// 替原 `numbers.raw['sect_event']` dynamic map(沿 P3.4 spec §9 简化路径,
+/// T19b 升强类型清账)。空段兜底 [SectEventDef.empty]。
+class SectEventDef {
+  final SectTournamentDef tournament;
+  final SectReputationDef reputation;
+  final SectLevelDef sectLevel;
+  final int activeEventsMax;
+
+  const SectEventDef({
+    required this.tournament,
+    required this.reputation,
+    required this.sectLevel,
+    required this.activeEventsMax,
+  });
+
+  static const SectEventDef empty = SectEventDef(
+    tournament: SectTournamentDef.empty,
+    reputation: SectReputationDef.empty,
+    sectLevel: SectLevelDef.empty,
+    activeEventsMax: 3,
+  );
+
+  factory SectEventDef.fromYaml(Map<String, dynamic>? y) {
+    if (y == null || y.isEmpty) return empty;
+    return SectEventDef(
+      tournament: SectTournamentDef.fromYaml(
+        (y['tournament'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      reputation: SectReputationDef.fromYaml(
+        (y['reputation'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      sectLevel: SectLevelDef.fromYaml(
+        (y['sect_level'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
+      activeEventsMax: (y['active_events_max'] as num?)?.toInt() ?? 3,
+    );
+  }
+}
+
+class SectTournamentDef {
+  final double triggerProbability;
+  final int cooldownDays;
+  final String triggerRealmMin;
+  final int expireDays;
+
+  const SectTournamentDef({
+    required this.triggerProbability,
+    required this.cooldownDays,
+    required this.triggerRealmMin,
+    required this.expireDays,
+  });
+
+  static const SectTournamentDef empty = SectTournamentDef(
+    triggerProbability: 0.0,
+    cooldownDays: 30,
+    triggerRealmMin: 'yiLiu',
+    expireDays: 7,
+  );
+
+  factory SectTournamentDef.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    return SectTournamentDef(
+      triggerProbability:
+          (y['trigger_probability'] as num?)?.toDouble() ?? 0.0,
+      cooldownDays: (y['cooldown_days'] as num?)?.toInt() ?? 30,
+      triggerRealmMin: (y['trigger_realm_min'] as String?) ?? 'yiLiu',
+      expireDays: (y['expire_days'] as num?)?.toInt() ?? 7,
+    );
+  }
+}
+
+class SectReputationDef {
+  final int initial;
+  final int winDelta;
+  final int lossDelta;
+  final int decayPerMonthIdle;
+  final int max;
+  final int min;
+
+  const SectReputationDef({
+    required this.initial,
+    required this.winDelta,
+    required this.lossDelta,
+    required this.decayPerMonthIdle,
+    required this.max,
+    required this.min,
+  });
+
+  static const SectReputationDef empty = SectReputationDef(
+    initial: 50,
+    winDelta: 10,
+    lossDelta: -5,
+    decayPerMonthIdle: 5,
+    max: 100,
+    min: 0,
+  );
+
+  factory SectReputationDef.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    return SectReputationDef(
+      initial: (y['initial'] as num?)?.toInt() ?? 50,
+      winDelta: (y['win_delta'] as num?)?.toInt() ?? 10,
+      lossDelta: (y['loss_delta'] as num?)?.toInt() ?? -5,
+      decayPerMonthIdle:
+          (y['decay_per_month_idle'] as num?)?.toInt() ?? 5,
+      max: (y['max'] as num?)?.toInt() ?? 100,
+      min: (y['min'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+class SectLevelDef {
+  final int max;
+  final int initial;
+  final int promoteWinsThreshold;
+
+  const SectLevelDef({
+    required this.max,
+    required this.initial,
+    required this.promoteWinsThreshold,
+  });
+
+  static const SectLevelDef empty = SectLevelDef(
+    max: 7,
+    initial: 1,
+    promoteWinsThreshold: 3,
+  );
+
+  factory SectLevelDef.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    return SectLevelDef(
+      max: (y['max'] as num?)?.toInt() ?? 7,
+      initial: (y['initial'] as num?)?.toInt() ?? 1,
+      promoteWinsThreshold:
+          (y['promote_wins_threshold'] as num?)?.toInt() ?? 3,
+    );
+  }
+}
+

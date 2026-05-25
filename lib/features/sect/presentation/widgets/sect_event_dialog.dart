@@ -7,6 +7,7 @@ import 'package:yaml/yaml.dart';
 
 import '../../../../shared/theme/colors.dart';
 import '../../application/sect_providers.dart';
+import '../../domain/sect.dart';
 import '../../domain/sect_event.dart';
 import '../../domain/sect_outcome.dart';
 
@@ -24,11 +25,13 @@ class SectEventDialog extends ConsumerStatefulWidget {
   const SectEventDialog({
     super.key,
     required this.event,
+    required this.sect,
     @visibleForTesting this.rng,
     @visibleForTesting this.narrativeLoader,
   });
 
   final SectEvent event;
+  final Sect sect;
   final Random? rng;
   final Future<String> Function(String path)? narrativeLoader;
 
@@ -71,7 +74,8 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
     final rng = widget.rng ?? Random();
     final win = rng.nextBool();
     final outcome = win ? SectOutcome.win : SectOutcome.loss;
-    ref.read(sectStateProvider.notifier).resolve(
+    ref.read(resolveSectEventProvider.notifier).resolve(
+          sect: widget.sect,
           event: widget.event,
           outcome: outcome,
         );
@@ -86,7 +90,8 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
   }
 
   void _handleRefuse() {
-    ref.read(sectStateProvider.notifier).resolve(
+    ref.read(resolveSectEventProvider.notifier).resolve(
+          sect: widget.sect,
           event: widget.event,
           outcome: SectOutcome.loss,
         );

@@ -14,47 +14,93 @@ import 'widgets/sect_event_dialog.dart';
 /// - 中部:active SectEvent list(`status == pending` · 红点 + 「应战」CTA → 弹 [SectEventDialog])
 /// - 底部:history tab(`status == resolved | expired` · 灰色显示 + reputationDelta)
 ///
-/// **Demo 数据源**:[sectStateProvider] StateNotifier 内存 state。真 Isar 持久化
-/// 见 [sectStateProvider] 类注释挂账。
+/// **数据源**:T19b 起切到 Isar 真持久化 — `currentSectProvider` StreamProvider
+/// 读 `isar.sects.watchObject(1)` + `activeSectEventsProvider` / `historicalSectEventsProvider`
+/// 各走 status filter watch。AsyncValue 三态(data / loading / error)。
 class SectScreen extends ConsumerWidget {
   const SectScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(sectStateProvider);
+    final sectAsync = ref.watch(currentSectProvider);
+    final activeAsync = ref.watch(activeSectEventsProvider);
+    final historyAsync = ref.watch(historicalSectEventsProvider);
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
+    return sectAsync.when(
+      loading: () => const Scaffold(
+        backgroundColor: WuxiaColors.background,
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => Scaffold(
         backgroundColor: WuxiaColors.background,
         appBar: AppBar(
           title: const Text('门派事务'),
           backgroundColor: WuxiaColors.sidebar,
           foregroundColor: WuxiaColors.textPrimary,
-          bottom: const TabBar(
-            tabs: [Tab(text: '当前事件'), Tab(text: '历史记录')],
-            labelColor: WuxiaColors.textPrimary,
-            unselectedLabelColor: WuxiaColors.textMuted,
-            indicatorColor: WuxiaColors.hpHigh,
-          ),
         ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              _SectHeader(sect: state.sect),
-              const Divider(color: WuxiaColors.border, height: 1),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    _ActiveEventList(events: state.activeEvents),
-                    _HistoricalEventList(events: state.historicalEvents),
-                  ],
-                ),
-              ),
-            ],
+        body: Center(
+          child: Text(
+            '加载失败:$e',
+            style: const TextStyle(color: WuxiaColors.textMuted),
           ),
         ),
       ),
+      data: (sect) {
+        if (sect == null) {
+          return Scaffold(
+            backgroundColor: WuxiaColors.background,
+            appBar: AppBar(
+              title: const Text('门派事务'),
+              backgroundColor: WuxiaColors.sidebar,
+              foregroundColor: WuxiaColors.textPrimary,
+            ),
+            body: const Center(
+              child: Text(
+                '门派尚未创建',
+                style: TextStyle(color: WuxiaColors.textMuted),
+              ),
+            ),
+          );
+        }
+        return DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            backgroundColor: WuxiaColors.background,
+            appBar: AppBar(
+              title: const Text('门派事务'),
+              backgroundColor: WuxiaColors.sidebar,
+              foregroundColor: WuxiaColors.textPrimary,
+              bottom: const TabBar(
+                tabs: [Tab(text: '当前事件'), Tab(text: '历史记录')],
+                labelColor: WuxiaColors.textPrimary,
+                unselectedLabelColor: WuxiaColors.textMuted,
+                indicatorColor: WuxiaColors.hpHigh,
+              ),
+            ),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  _SectHeader(sect: sect),
+                  const Divider(color: WuxiaColors.border, height: 1),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _ActiveEventList(
+                          events: (activeAsync.asData?.value ?? const <SectEvent>[]),
+                          sect: sect,
+                        ),
+                        _HistoricalEventList(
+                          events: (historyAsync.asData?.value ?? const <SectEvent>[]),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -140,8 +186,9 @@ class _SectHeader extends StatelessWidget {
 }
 
 class _ActiveEventList extends StatelessWidget {
-  const _ActiveEventList({required this.events});
+  const _ActiveEventList({required this.events, required this.sect});
   final List<SectEvent> events;
+  final Sect sect;
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +207,7 @@ class _ActiveEventList extends StatelessWidget {
         final e = events[i];
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
-          child: _ActiveEventRow(event: e),
+          child: _ActiveEventRow(event: e, sect: sect),
         );
       },
     );
@@ -168,8 +215,9 @@ class _ActiveEventList extends StatelessWidget {
 }
 
 class _ActiveEventRow extends StatelessWidget {
-  const _ActiveEventRow({required this.event});
+  const _ActiveEventRow({required this.event, required this.sect});
   final SectEvent event;
+  final Sect sect;
 
   @override
   Widget build(BuildContext context) {
@@ -179,7 +227,7 @@ class _ActiveEventRow extends StatelessWidget {
       child: InkWell(
         onTap: () => showDialog<void>(
           context: context,
-          builder: (_) => SectEventDialog(event: event),
+          builder: (_) => SectEventDialog(event: event, sect: sect),
         ),
         borderRadius: BorderRadius.circular(8),
         child: Container(
