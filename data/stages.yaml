@@ -1047,7 +1047,7 @@ stages:
         quantity: [7, 10]
         dropChance: 1.0
     baseExpReward: 12000
-    difficultyMultiplier: 3.1
+    difficultyMultiplier: 3.2
     biome: frontier
     weather: clear
 
@@ -1114,7 +1114,7 @@ stages:
         quantity: [8, 11]
         dropChance: 1.0
     baseExpReward: 14000
-    difficultyMultiplier: 3.2
+    difficultyMultiplier: 3.4
     biome: desert
     weather: mist
 
@@ -1180,7 +1180,7 @@ stages:
         quantity: [9, 12]
         dropChance: 1.0
     baseExpReward: 16000
-    difficultyMultiplier: 3.3
+    difficultyMultiplier: 3.6
     biome: drillGround
     weather: clear
 
@@ -1252,7 +1252,7 @@ stages:
         quantity: [10, 14]
         dropChance: 1.0
     baseExpReward: 20000
-    difficultyMultiplier: 3.5
+    difficultyMultiplier: 4.0
     biome: frontier
     weather: night
 
@@ -2142,7 +2142,7 @@ stages:
         quantity: [7, 10]
         dropChance: 1.0
     baseExpReward: 5500
-    difficultyMultiplier: 5.5
+    difficultyMultiplier: 5.4
     biome: cityWall
     terrainBiome: rooftop
 
@@ -2202,7 +2202,7 @@ stages:
         quantity: [8, 11]
         dropChance: 1.0
     baseExpReward: 6500
-    difficultyMultiplier: 6.0
+    difficultyMultiplier: 5.8
     biome: bambooForest
     terrainBiome: bamboo
 
