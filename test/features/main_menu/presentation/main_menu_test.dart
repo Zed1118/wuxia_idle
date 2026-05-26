@@ -37,7 +37,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuTitle), findsOneWidget);
   });
 
-  testWidgets('17 个菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('18 个菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -52,6 +52,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase1), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase2), findsOneWidget);
+    expect(find.text('强制招募 NPC'), findsOneWidget);
     expect(find.text(UiStrings.mainMenuCharacterPanel), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLineage), findsOneWidget);
     expect(find.text(UiStrings.mainMenuBaike), findsOneWidget);
@@ -102,9 +103,9 @@ void main() {
     expect(invY < tcY, isTrue);
   });
 
-  testWidgets('17 个菜单按钮均为 InkWell（可点）', (tester) async {
+  testWidgets('18 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(InkWell), findsNWidgets(17));
+    expect(find.byType(InkWell), findsNWidgets(18));
   });
 
   testWidgets('tap Phase 1 战斗测试 → 进入 BattleTestMenu（找到 testMenuTitle / scenarioA）',
