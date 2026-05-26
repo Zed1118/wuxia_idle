@@ -19,27 +19,11 @@
 
 ---
 
-**2026-05-26 P4.1 1.1 Q6A + founder_buff 双项 ship 归档**:Q6A encounter recruit ~1.5-2h 0.25-0.30× + founder_buff cross_sect ~30-40min 0.13-0.20× 同会话续 cache warm 新最低 · PR #13 `7d9b903`(Q6A · AffectsSectMembership + SectCandidateDef + 5 NPC + 3 encounters + 8 R5 测)+ PR #14 `884a989`(founder_buff · isBuffActiveFor per-character API + per-player wire + 5 R5 测)· 详 closeout `p4_1_q6a_b123_closeout_2026-05-26.md` + `p4_1_founder_buff_b123_closeout_2026-05-26.md`。
+**2026-05-26 Boss 招降叙事 3 篇 + hook 接入**(`d439065`):stage_01_05/02_05/03_05 各 7-8 段场景叙事 + `stage_boss_recruit_hook` 接 `NarrativeReaderScreen` 展示(rng 命中 → 叙事 → confirm dialog)。1505 测 / 0 analyze。
 
 ---
 
-**2026-05-26 凌晨自主挂机 5h batch ✅**(Mac+Opus xhigh 累计 ~3.5h · 0 改主代码):本会话起于 P5.0+audit v2 全闭环 → 派单 Pen Codex 视觉验收 → Codex 卡 partial-clone promisor 阻塞 → **Mac SSH 反向 tar pipe 救场 5min 完成** → 自主挂机 5h batch。**核心产物 6 doc**:① Q6A encounter recruit spec(Q1-Q10 默认决议)② P4.1 founder_buff 跨派系扩 spec(Q1-Q6 默认决议)③ Q6A self-review devil's advocate(11 风险点 · 2 🔴 必改)④ `RELEASE_CHECKLIST_1_0.md` 顶层长寿 ⑤ `ROADMAP_1_0.md` v1.4 升档(78%→91%)⑥ Pen 救场 closeout。**1.0 release ready ~91%**(0 P0/P1 阻塞 · Pen 视觉验收 8 截图 PASS · 93% 升档)。
-
----
-
-**2026-05-25 1.0 整体 audit v2 ✅**(Mac+Opus xhigh ~40min · commit `e5fbb56` 直推 main · 0 改代码):audit v1 P0-1 修(PR #12 `3bf5e0c`)后复审 6 跨系统全健康 — ① 战斗核心 19 file ② encounter 94 测 ③ 闭关 62 测 ④ 师徒/共鸣/飞升 49 测 ⑤ 社交 22 文件 123 测 ⑥ cross-system T20 通过。**1484 测全过 / 0 analyze · 0 P0/P1 阻塞**。详 `docs/handoff/1_0_release_audit_v2_2026-05-25.md` + `session_closeout_2026-05-25_p5_audit_v2_full.md`。
-
----
-
-**2026-05-25 P5.0 onboarding production seed ✅**(Mac+Opus xhigh ~1h · 1476→1484 测 / 0 analyze · PR #12 `3bf5e0c`):audit 揭 P0-1 阻塞 — 首次启动 `StageBattleSetup._buildPlayerTeam` 抛 crash。修:① 5 helpers `lib/features/onboarding/application/master_builder.dart` top-level + `OnboardingService.ensureFoundingMasters` 幂等(信源 isFounder=true count)+ SplashScreen wire + R5 测族 8 测 ② 顺带 P1-1 kDebugMode 切除 + P1-3 home_feed「按下「直入江湖」启程」引导 ③ Character × 3 + Equipment × 9 + Technique × 4 + SaveData wire + 物料 50/0 §5.1 反留存。**挂账 1.1+**:P1-2 fallback id=1 / 创角向导 UI / 多槽存档 / sectName 自定义。详 spec `docs/spec/p5_onboarding_seed_spec_2026-05-25.md` + closeout `p5_onboarding_closeout_2026-05-25.md`。
-
----
-
-**2026-05-25 P4.1 §12.2 帮派门派 全闭环 ✅**(Mac+Opus xhigh 累计 ~2.75h · 4 batch squash merge origin/main · 1458→1476 测 / 0 analyze · spec 估 15-20h 精度 0.16×):**B1 schema**(`ac6b523`):`SectRank` enum + `Character.{isInSect,sectId,sectRank}` + `Sect.{territoryIds,memberCount}` + `data/territories.yaml` 6 territory + `numbers.yaml sect_management`。**B2 service**(PR #9 `dd3e207`):`SectMemberService` + `TerritoryService` caller 持锁 + 7 provider + Q7 B mission hook + AscendService rewire。**B3 UI**(PR #10 `a3850ac`):sect_screen TabBar 2→4 + 5 widget + UiStrings 28 段。**B4 R5**:18 测 + GDD §12.2 v1.16 + ROADMAP P4.1 0%→100%。**挂账 1.1**:Q6 A encounter recruit(spec ✅)/ Q6 B stage_boss 招降 / founder_buff 作用域扩(spec ✅)/ 多代 sect 传递 / member narrative ~30 条 / P1.2 跨派系 wire。详 `docs/handoff/p4_1_b{1,2,3,4}_*_2026-05-25.md` + spec `p4_1_sect_management_spec_2026-05-25.md`。
-
----
-
-**2026-05-22/23/24 历史段归档**:见末尾「### 2026-05-22/23/24 详条归档」段(Ch6 飞升 P2 全闭环 / 心魔 Batch 2.1-2.5 / P3.1 轻功对决 / P3.1.B 子批 / P3.2 群战守城 / P5+ 多代飞升 + 真传位 / 8h overnight v2/v3 / nightshift v2 + T17-T22 + v2.1 工具完善 + T23/T24)。
+**2026-05-25/26 归档**:见末尾「### 2026-05-25/26 详条归档」段。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
@@ -94,3 +78,15 @@
 - **2026-05-23 心魔 Batch 2.1-2.5 + P3.1 轻功对决**(8h overnight worktree · 7+5 关 · 详 `p2_x_inner_demon_final_closeout_2026-05-23.md` + `p3_1_lightfoot_closeout_2026-05-23.md`)
 - **2026-05-24 P3.2 群战守城 + P3.1.B 子批 + P5+ 多代飞升 + 真传位 + 8h overnight v2/v3 + nightshift v2 首跑 + UI polish**(git log `efc7604 → b6d8191` 区间 · 详 handoff `p3_2_*` / `p3_1_b_*` / `p5_lineage_full_closeout_2026-05-24.md` / `nightshift_v2_first_run_closeout_2026-05-24.md` / `8h_autonomous_handoff_2026-05-24.md`)
 - **2026-05-25 v2.1 工具完善 + T17-T22 cherry-pick + T23/T24 6 关键问题闭环批**(main `74ba519 → b6d8191` · 1458 测 / 0 analyze · 批次质量 A 9.05/10 · P1.2 江湖恩怨+声望 100% + 技术债 3 合一 · 详 `session_closeout_2026-05-25_nightshift_6h_review.md` + `p1_2_jianghu_full.md` + `p3_tech_debt.md`)
+
+### 2026-05-25/26 详条归档
+
+- **2026-05-25 P4.1 §12.2 帮派门派全闭环**(~2.75h · 1458→1476 测 · B1 schema + B2 service + B3 UI + B4 R5 · 详 `p4_1_b{1,2,3,4}_*_2026-05-25.md`)
+- **2026-05-25 P5.0 onboarding production seed**(~1h · 1476→1484 测 · PR #12 · 详 `p5_onboarding_closeout_2026-05-25.md`)
+- **2026-05-25 1.0 整体 audit v2**(~40min · 6 跨系统全健康 · 0 P0/P1 · 详 `1_0_release_audit_v2_2026-05-25.md`)
+- **2026-05-26 凌晨自主挂机 5h batch**(6 doc · Q6A/founder_buff spec + self-review + RELEASE_CHECKLIST + ROADMAP v1.4 + Pen 救场)
+- **2026-05-26 P4.1 1.1 Q6A encounter recruit**(~1.5-2h · 1484→1492 测 · PR #13 · 详 `p4_1_q6a_b123_closeout_2026-05-26.md`)
+- **2026-05-26 P4.1 1.1 founder_buff cross_sect**(~30-40min · 1492→1497 测 · PR #14 · 详 `p4_1_founder_buff_b123_closeout_2026-05-26.md`)
+- **2026-05-26 P4.1 1.1 Q6B stage_boss recruit**(~1-1.5h · 1497→1505 测 · 详 `p4_1_q6b_b123_closeout_2026-05-26.md`)
+- **2026-05-26 P4.1 1.1 polish 候选 1+3**(~30-45min · character_panel sect NPC + 文案 8 段扩 · 详 `p4_1_1_polish_closeout_2026-05-26.md`)
+- **2026-05-26 audit v3 + P5.2 子项 1+2+5**(~40min · 6 维 sweep 0 阻塞 + Ch4/轻功 6 数值微调 · 详 `session_closeout_2026-05-26_sect_polish_audit_v3_p5_2.md`)
