@@ -86,14 +86,17 @@ void main() {
     return (sectId: sectId, founderId: founderId);
   }
 
-  group('R5.stages · production stages.yaml 3 Boss bossRecruit', () {
-    test('stage_01_05/02_05/03_05 bossRecruit 加载 + candidateRef 对应 + 默认 probability',
+  group('R5.stages · production stages.yaml 6 Boss bossRecruit', () {
+    test('Ch1-6 章末 Boss bossRecruit 加载 + candidateRef 对应 + 默认 probability',
         () {
       final repo = GameRepository.instance;
       final expectedMap = {
         'stage_01_05': 'bamboo_swordsman',
         'stage_02_05': 'desert_wanderer',
         'stage_03_05': 'mountain_hermit',
+        'stage_04_05': 'river_drifter',
+        'stage_05_05': 'blacksmith_son',
+        'stage_06_05': 'valley_hermit',
       };
       for (final entry in expectedMap.entries) {
         final stage = repo.stageDefs[entry.key];
@@ -263,11 +266,14 @@ void main() {
   });
 
   group('R5.failRecover · 战败收降叙事 + dedup 共用', () {
-    test('Ch1-3 boss_fail_recover 叙事文件存在且非 placeholder', () async {
+    test('Ch1-6 boss_fail_recover 叙事文件存在', () async {
       final ids = [
         'stage_01_05_boss_fail_recover',
         'stage_02_05_boss_fail_recover',
         'stage_03_05_boss_fail_recover',
+        'stage_04_05_boss_fail_recover',
+        'stage_05_05_boss_fail_recover',
+        'stage_06_05_boss_fail_recover',
       ];
       for (final id in ids) {
         final file = File('data/narratives/stages/$id.yaml');

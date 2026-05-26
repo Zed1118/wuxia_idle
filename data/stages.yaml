@@ -1235,6 +1235,8 @@ stages:
           - skill_lingqiao_menpai_ult
         iconPath: assets/enemies/bazhu_youfu.png
     isBossStage: true
+    bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
+      candidateRef: river_drifter                 # data/sect_candidates.yaml 已配(lingQiao)
     npcId: cijianzhuang_bazhu                    # P1.2 §6 占位
     dropEquipmentDefIds:
       - weapon_zhongqi_qing_xu_jian
@@ -1565,6 +1567,8 @@ stages:
           - skill_lingqiao_jianghu_ult
         iconPath: assets/enemies/songshan_daozong.png
     isBossStage: true
+    bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
+      candidateRef: blacksmith_son                # data/sect_candidates.yaml 已配(gangMeng)
     npcId: jiaoMen_songshan_daozong              # P1.2 §6 占位
     dropEquipmentDefIds:
       - weapon_baowu_chang_hong_jian
@@ -1875,6 +1879,8 @@ stages:
           - skill_lingqiao_shichuan_ult
         iconPath: assets/enemies/xiliang_disciple_ling.png
     isBossStage: true
+    bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
+      candidateRef: valley_hermit                 # data/sect_candidates.yaml 1.1 新增(yinRou)
     dropEquipmentDefIds:
       - weapon_shenwu_tian_wen_jian
       - armor_shenwu_xuan_huang_pao
