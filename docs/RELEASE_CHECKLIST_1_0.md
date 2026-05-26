@@ -7,13 +7,13 @@
 
 ## TL;DR
 
-**当前 release readiness:~93%**(A+B+C 全 PASS · **Pen 视觉验收闭环 ✅** · 0 P0/P1 阻塞 · 剩 P5.x M15-16 子项 D 性能 / E 音频 / F Steam / G 法律商业)
+**当前 release readiness:~93%**(A+B 全 PASS · C 基础 8 项 PASS + P4.1 1.1 sect recruit R2 验收中 · 0 P0/P1 阻塞 · 剩 P5.x M15-16 子项 D 性能 / E 音频 / F Steam / G 法律商业)
 
 | 段 | 完成度 | 阻塞? |
 |---|---|---|
 | A 代码质量 | ✅ 100% | — |
 | B 系统完整性(6 系统) | ✅ 100% | — |
-| C 视觉验收 | ✅ **100% PASS**(2026-05-26 Pen Codex 续跑 · 8 截图全过) | — |
+| C 视觉验收 | ⏳ 基础 8/8 PASS + **P4.1 1.1 sect recruit R2 验收中** | — |
 | D 性能稳定(P5.2) | ✗ 0% | M15-16 |
 | E 音频(P5.3) | ✗ 0% | M15-16 |
 | F Steam 集成(P5.4) | ✗ 0% | M15-16 |
@@ -22,14 +22,14 @@
 ## A. 代码质量(本机可验 · ✅ 全过)
 
 - [x] `flutter analyze` 0 issues
-- [x] 全测族过(**1484 测** / 137 测文件)
+- [x] 全测族过(**1505 测** / 139 测文件)
 - [x] 数值红线 §5.4 测族 13+ 守护(普伤 ≤8000 / 玩家血 ≤20000 / 内力 ≤15000 / 装备攻击 ≤2000)
 - [x] 三系锁 §5.3 测族 5+ 守护(境界 ↔ 装备阶 ↔ 心法阶)
 - [x] §5.5 在线=离线(挂机 = 实际时间)
 - [x] §5.1 反留存(无每日任务 / 登录奖励 / 战令 / 抽卡 / VIP / 体力)
 - [x] §6 公式集中在 `lib/core/combat/formulas.dart` + `damage_calculator.dart`
 - [x] 0 硬编码(中文文案走 `data/narratives/lore/events/` · 数值走 `data/*.yaml`)
-- [x] Isar schema 0.13.0 稳定
+- [x] Isar schema 0.14.0 稳定(Q6B saveVersion 升档)
 - [x] Riverpod 3.x 锁定(无 BLoC)
 - [x] 无第三方游戏引擎(无 Flame)
 
@@ -39,7 +39,7 @@
 - [x] **encounter**:94 测 / festival 8 全 wire · 软概率公式 `p = base × (1 + fortune/20)` 与 GDD §12.2 #6 v1.9 对齐
 - [x] **闭关**:62 测 · 时辰加成 `solarTermMultiplier` wire · 12 节气 hardcode · 离线累积 idle tick
 - [x] **师徒/共鸣/飞升**:49 测 · founderBuff 三维度(maxHp/crit/internal)· P5+ 多代飞升 + 真传位完整(v1.15)
-- [x] **社交(sect+jianghu+pvp)**:22 文件 / 123 测 · enmity clamp / sectRank 三阶 ≠ 七阶 / ELO 数值范围
+- [x] **社交(sect+jianghu+pvp)**:22 文件 / 123 测 · enmity clamp / sectRank 三阶 ≠ 七阶 / ELO 数值范围 · **P4.1 1.1 sect 全闭环 ✅**(Q6A encounter recruit + Q6B stage_boss recruit + founder_buff cross_sect + polish)
 - [x] **cross-system**:T20 跨系统数值红线 audit 通过 · `balance/ch4/5/6` + synergy hot loop + maxhp extremum + p3_1 light foot
 
 ### B 段附加(production seed 阻塞清)
@@ -47,8 +47,12 @@
 - [x] **P5.0 onboarding production seed ✅**(2026-05-25 修):`OnboardingService.ensureFoundingMasters()` 幂等(信源 `isFounder=true count`)· 全新启动 Character × 3 + Equipment × 9 + Technique × 4 + 物料 50/0
 - [x] **debug 入口 kDebugMode 切除**:Phase1/2 BattleTestMenu/Phase2TestMenu release build 不显
 - [x] **home_feed 空 feed 引导**:「按下「直入江湖」启程」文案 wire
+- [x] **Boss 招降叙事 6 篇 ✅**(2026-05-27):Ch1-3 折剑/卸刃/空手 + Ch4-6 预写 留镜/解佩/收剑 · `stage_boss_recruit_hook` 接 `NarrativeReaderScreen`
+- [x] **debug 强制招募入口 ✅**(2026-05-27):`SectRecruitDebugScreen` 主菜单加「强制招募 NPC」· 跳过战斗/奇遇直走 `runSectRecruitFlow`
 
-## C. UI 视觉验收(Pen Codex ✅ 全 PASS 2026-05-26)
+## C. UI 视觉验收
+
+### C.1 基础 8 项(Pen Codex ✅ 全 PASS 2026-05-26)
 
 - [x] 全新启动 `江湖见闻`+`直入江湖`引导(`01_fresh_launch_clean_isar.png` · 无 crash)
 - [x] 主菜单全 menu 项 release build seeded(`02_main_menu_top_seeded.png` + `03_main_menu_lower_sect_visible.png` · 14+ 项 · 含「门派事务」)
@@ -58,6 +62,15 @@
 - [x] 主线章节屏 clean seed(`07_mainline_chapters_clean_seed.png` · 章节 lock 渲染正常)
 - [x] 战斗 e2e(`08_battle_e2e_clean_seed.png` · 3v3 战斗 + 「左队胜 · 总伤害 10022 · 暴击 0 次 · 用时 7 tick」§5.4 红线守)
 - [x] 战斗结束结算屏(同 08 · 「返回菜单」按钮)
+
+### C.2 P4.1 1.1 sect recruit 验收(R2 进行中 2026-05-27)
+
+- [ ] 「强制招募 NPC」按钮可见 + 候选列表 5 NPC
+- [ ] 二次确认对话框弹出(标题「是否招入门派?」· 按钮「招入门派」/「婉拒」)
+- [ ] 招募成功 SnackBar 显示
+- [ ] character_panel「门派同道:」非空成员列表(排除玩家自己+祖师)
+
+> R1(2026-05-26)3 FAIL:debug picker 不走 recruit wire / 打不赢 Boss / 非空列表未验 · 已修 commit `6e771fd` 加 `SectRecruitDebugScreen` · R2 派单 `docs/handoff/codex_dispatch_r2_sect_recruit_2026-05-27.md`
 
 > 派单单据 + 续跑成功段 `docs/handoff/codex_visual_check_p5_p4_1_2026-05-25.md` · 8 截图归档 `docs/screenshots/p5_p4_1_visual_check_2026-05-25/` · **WARN**:1280×720 截图右边框是 Pen 桌面捕获 framing 不是 in-app bug / clean seed 成员 Tab 空状态预期非 bug · **Isar 路径修正**:派单 prompt 写 `%LOCALAPPDATA%\com.example.wuxia_idle\` 实际是 `getApplicationDocumentsDirectory() → C:\Users\Administrator\Documents\wuxia_save_slot1.isar`(下次派单沿 `isar_setup.dart` grep)
 
@@ -98,7 +111,8 @@
 ## H. nice-to-have(不阻塞 · 留 M15-16 评估)
 
 - [ ] 英文翻译(主线 / UI / 系统提示 · P4.2 可选 · M12 评估)
-- [ ] 1.1 挂账起步(Q6 A encounter recruit spec 已起草 · 见 `docs/spec/p4_1_q6a_encounter_recruit_spec_2026-05-25.md`)
+- [x] ~~1.1 挂账起步~~ → **P4.1 1.1 四项全闭环 ✅**(Q6A encounter recruit v1.12 + founder_buff cross_sect v1.13 + Q6B stage_boss recruit v1.14 + polish v1.15 · 1505 测)
+- [ ] 1.1 剩余挂账:stageBossFailRecoverProb 战败收降(P5+) / candidateRefs rng pick / stage_04_05+ 池扩
 - [ ] Pen 视觉验收发现的产品 bug 修(若 C 段验出)
 
 ## I. 1.0 已 OUT 项(留 2.0)
@@ -115,5 +129,6 @@
 
 ## 修订记录
 
+- **v1.2**(2026-05-27)P4.1 1.1 全闭环状态对齐:A 段测试数 1484→1505 / 139 测文件 / Isar 0.13→0.14 · B 段 sect 社交行加 P4.1 1.1 四项闭环注 · B 段附加加 Boss 招降叙事 6 篇 + debug 强制招募入口 · C 段拆 C.1 基础(8/8 PASS 维持) + C.2 P4.1 1.1 sect recruit(R2 验收中 4 项) · H 段 1.1 挂账标闭环 + 剩余挂账明细 · Pen 仓库从 T18 拉齐到 HEAD `4bdc08d` + git remote 切 SSH · **~93% 维持**(C.2 R2 回来勾完后 C 段 100%)。
 - **v1.1**(2026-05-26)Pen Codex 视觉验收 ✅ 闭环:Mac SSH 反向 tar pipe 救场 5min → Codex 续跑 PASS · 8 截图全 PASS(`docs/screenshots/p5_p4_1_visual_check_2026-05-25/01-08.png`)· C 段 8 项全勾 · release readiness 91% → **93%**(本机可验 + 视觉验收 全清零)· 剩 D-G M15-16。**Isar 路径修正记录**:实际路径 `C:\Users\Administrator\Documents\wuxia_save_slot1.isar`(`getApplicationDocumentsDirectory()` Windows fallback)非 `%LOCALAPPDATA%` · 下次派单 prompt 沿 `lib/data/isar_setup.dart` grep。
 - **v1.0**(2026-05-25)起草:Mac+Opus xhigh ~25min · 上游 audit v2 doc + P5.0 onboarding 闭环 + Pen 派单准备 · 当前 ~91% release ready · 0 P0/P1 阻塞 · 剩 C 段视觉验收 + D/E/F/G 留 M15-16
