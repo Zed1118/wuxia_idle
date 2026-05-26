@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
@@ -135,6 +136,99 @@ void main() {
         const NumbersConfigStub(buff: FounderAncestorBuff.disabled),
       );
       expect(active, false);
+    });
+  });
+
+  /// P4.1 1.1 cross_sect 扩 R5 测族(spec §4):
+  /// - R5.1 P1.1 维持:target.isInSect=false → true(整体 active + founder 存在)
+  /// - R5.2 跨派系 NPC 不享:target.isInSect=true, sectId != playerSectId → false
+  /// - R5.3 同 sect 成员享:target.isInSect=true, sectId == playerSectId → true
+  /// - R5.4 playerSectId=null fallback:target.isInSect=false → true(P1.1 路径维持)
+  /// - R5.5 整体 inactive(无 isFounder=true active)→ false(回归保护)
+  ///
+  /// 每测 setup 用 phase2 seed(founder + 2 disciples 入 active),target Character
+  /// 直接 inline 构造(isInSect / sectId 字段 mock · 不入 isar)。
+  group('R5 P4.1 1.1 cross_sect · isBuffActiveFor per-character', () {
+    setUp(() async {
+      await Phase2SeedService(isar: IsarSetup.instance)
+          .seedMasterDisciple();
+    });
+
+    test('R5.1 P1.1 维持:target.isInSect=false → true(active 含 founder)',
+        () async {
+      final svc = FounderBuffService(IsarSetup.instance);
+      final n = GameRepository.instance.numbers;
+      final target = Character()..isInSect = false; // disciple 未入 sect
+      final active = await svc.isBuffActiveFor(
+        target: target, numbers: n, playerSectId: 1,
+      );
+      expect(active, true, reason: 'P1.1 fallback:isInSect=false → 单 founder 享');
+    });
+
+    test('R5.2 跨派系 NPC 不享:isInSect=true, sectId=2 ≠ playerSectId=1 → false',
+        () async {
+      final svc = FounderBuffService(IsarSetup.instance);
+      final n = GameRepository.instance.numbers;
+      final npc = Character()
+        ..isInSect = true
+        ..sectId = 2; // 跨派系 NPC
+      final active = await svc.isBuffActiveFor(
+        target: npc, numbers: n, playerSectId: 1,
+      );
+      expect(active, false,
+          reason: 'NPC isInSect=true 但跨派系 → 不享 founder buff');
+    });
+
+    test('R5.3 同 sect 成员享:isInSect=true, sectId=1 == playerSectId=1 → true',
+        () async {
+      final svc = FounderBuffService(IsarSetup.instance);
+      final n = GameRepository.instance.numbers;
+      final member = Character()
+        ..isInSect = true
+        ..sectId = 1; // 同 sect 成员
+      final active = await svc.isBuffActiveFor(
+        target: member, numbers: n, playerSectId: 1,
+      );
+      expect(active, true, reason: '同 sect 成员 → 享 founder buff');
+    });
+
+    test('R5.4 playerSectId=null fallback isInSect=false → true(P1.1 路径)',
+        () async {
+      final svc = FounderBuffService(IsarSetup.instance);
+      final n = GameRepository.instance.numbers;
+      final target = Character()..isInSect = false;
+      final active = await svc.isBuffActiveFor(
+        target: target, numbers: n, playerSectId: null,
+      );
+      expect(active, true,
+          reason: 'Sect lazy-init race · isInSect=false → 单 founder 享 P1.1 维持');
+    });
+
+    test('R5.5 整体 inactive(无 isFounder=true active)→ 任何 target false',
+        () async {
+      // 改 SaveData.activeCharacterIds 不含 founder id=1
+      final isar = IsarSetup.instance;
+      await isar.writeTxn(() async {
+        final save = await isar.saveDatas.get(0);
+        if (save != null) {
+          save.activeCharacterIds = [2, 3]; // disciples only
+          await isar.saveDatas.put(save);
+        }
+      });
+      final svc = FounderBuffService(IsarSetup.instance);
+      final n = GameRepository.instance.numbers;
+      // 1) isInSect=false target
+      final t1 = Character()..isInSect = false;
+      expect(await svc.isBuffActiveFor(
+          target: t1, numbers: n, playerSectId: 1), false);
+      // 2) isInSect=true 同 sect target
+      final t2 = Character()..isInSect = true..sectId = 1;
+      expect(await svc.isBuffActiveFor(
+          target: t2, numbers: n, playerSectId: 1), false);
+      // 3) isInSect=true 跨派系 target
+      final t3 = Character()..isInSect = true..sectId = 2;
+      expect(await svc.isBuffActiveFor(
+          target: t3, numbers: n, playerSectId: 1), false);
     });
   });
 }
