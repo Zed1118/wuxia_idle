@@ -1986,20 +1986,24 @@ class SectRankPromoteThresholdConfig {
   }
 }
 
-/// Q6=D 三维 trigger 招收 softProbability:encounter / stage_boss fail / sect_event mission。
+/// 多维 trigger 招收 softProbability:encounter / stage_boss recruit(战胜招降)/
+/// stage_boss fail recover(战败收降 · P5+/1.1 留) / sect_event mission。
 class SectRecruitConfig {
-  final double encounterBaseProb;       // Q6 A
-  final double stageBossFailRecoverProb; // Q6 B
-  final double missionRecruitProb;       // Q7 B
+  final double encounterBaseProb;          // Q6 A
+  final double stageBossRecruitProb;       // P4.1 1.1 Q6 B · 战胜 Boss 后招降 NPC rng pick
+  final double stageBossFailRecoverProb;   // P4.1 v1.10 预留 · 0 caller · 战败收降留 P5+/1.1
+  final double missionRecruitProb;         // Q7 B
 
   const SectRecruitConfig({
     required this.encounterBaseProb,
+    required this.stageBossRecruitProb,
     required this.stageBossFailRecoverProb,
     required this.missionRecruitProb,
   });
 
   static const SectRecruitConfig empty = SectRecruitConfig(
     encounterBaseProb: 0.15,
+    stageBossRecruitProb: 0.40,
     stageBossFailRecoverProb: 0.30,
     missionRecruitProb: 0.50,
   );
@@ -2009,6 +2013,8 @@ class SectRecruitConfig {
     return SectRecruitConfig(
       encounterBaseProb:
           (y['encounter_base_prob'] as num?)?.toDouble() ?? 0.15,
+      stageBossRecruitProb:
+          (y['stage_boss_recruit_prob'] as num?)?.toDouble() ?? 0.40,
       stageBossFailRecoverProb:
           (y['stage_boss_fail_recover_prob'] as num?)?.toDouble() ?? 0.30,
       missionRecruitProb:

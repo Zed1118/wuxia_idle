@@ -80,7 +80,8 @@ class IsarSetup {
   /// P1.1 A1 E.1 SaveData 加 recruitmentOffered/recruitedDiscipleIds(收徒)→ 升 0.12.0。
   /// P1.2 T17 + P3 T19b 合并升:Reputation/NpcRelation(P1.2)+ Sect/SectEvent/PvpRecord/
   /// PvpSnapshot(T19b)6 schema 一并接入 `_allSchemas` → 升 0.13.0。
-  static const _currentSaveVersion = '0.13.0';
+  /// P4.1 1.1 Q6B SaveData 加 triggeredBossRecruitStageIds(Boss 招降防刷)→ 升 0.14.0。
+  static const _currentSaveVersion = '0.14.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
