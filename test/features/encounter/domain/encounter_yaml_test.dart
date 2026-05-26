@@ -19,13 +19,13 @@ void main() {
 
   group('encounters.yaml 加载', () {
     test(
-        '54 条 encounter 全部解析成功 '
-        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 4 + P1 #37 yu_zhong_qiao_men 挂回 1 + T02 nightshift 9)',
+        '57 条 encounter 全部解析成功 '
+        '(W14-1 3 + W14-2 12 + W15 6 + W15-r2 7 + W15 C-1 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 4 + P1 #37 yu_zhong_qiao_men 挂回 1 + T02 nightshift 9 + P4.1 1.1 Q6A sect_recruit 3)',
         () {
       final repo = GameRepository.instance;
-      expect(repo.encounterDefs.length, 54,
+      expect(repo.encounterDefs.length, 57,
           reason:
-              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 触发条件 4 + P1 #37 yu_zhong_qiao_men 挂回 1 + T02 nightshift 9(领悟 5 + 奇遇 4)');
+              'W14-1 3 + W14-2 12 + W15 #37 第 1 批 6 + 第 2 批 7 + C-1 收尾 2 + W16 节日 6 + W17 节日 2 + W17 polish-C 2 + W18-A2 触发条件 4 + P1 #37 yu_zhong_qiao_men 挂回 1 + T02 nightshift 9(领悟 5 + 奇遇 4) + P4.1 1.1 Q6A sect_recruit 3(bamboo/desert/mountain)');
       // W14-1 3 条必须仍在
       expect(
         repo.encounterDefs.keys,

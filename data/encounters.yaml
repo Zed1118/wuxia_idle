@@ -1213,3 +1213,66 @@ encounters:
         type: attributeBonus
         attributeKey: enlightenment
         attributeDelta: 1
+
+  # ===== P4.1 1.1 Q6A · 门派招收 encounter(3 条 PoC)=====
+  # spec: docs/spec/p4_1_q6a_encounter_recruit_spec_2026-05-25.md
+  # affectsSectMembership.candidateRef 引 data/sect_candidates.yaml id
+  # accept_recruit outcome (type:none) · sect 真效果走 affectsSectMembership hook
+  # decline_meet outcome (attributeBonus) · 玩家拒绝走此 outcome 不损失
+
+  # 30. sect_recruit_bamboo · 竹林听剑(灵巧 NPC 入派)
+  - id: sect_recruit_bamboo
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        bambooForest: 120
+      fortuneRequired: 6
+    baseProbability: 0.20
+    outcomeMapping:
+      accept_recruit:
+        type: none
+      decline_meet:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+    affectsSectMembership:
+      candidateRef: bamboo_swordsman
+      fallbackOutcomeId: decline_meet
+
+  # 31. sect_recruit_desert · 漠路相逢(刚猛 NPC 入派)
+  - id: sect_recruit_desert
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        desert: 180
+      fortuneRequired: 6
+    baseProbability: 0.20
+    outcomeMapping:
+      accept_recruit:
+        type: none
+      decline_meet:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+    affectsSectMembership:
+      candidateRef: desert_wanderer
+      fallbackOutcomeId: decline_meet
+
+  # 32. sect_recruit_mountain · 山隐遇贤(阴柔 NPC 入派)
+  - id: sect_recruit_mountain
+    type: fortuneEvent
+    trigger:
+      biomeMinutes:
+        mountainForest: 240
+      fortuneRequired: 7
+    baseProbability: 0.18
+    outcomeMapping:
+      accept_recruit:
+        type: none
+      decline_meet:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+    affectsSectMembership:
+      candidateRef: mountain_hermit
+      fallbackOutcomeId: decline_meet
