@@ -47,10 +47,14 @@ class _EncounterDebugPickerScreenState
 
       final svc = EncounterService(isar: isar);
       await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
-      await svc.markTriggered(
-        saveDataId: IsarSetup.currentSlotId,
-        encounterId: def.id,
-      );
+      // P4.1 1.1 Q6A:sect 类 encounter debug 路径不走全套招收 wire
+      // (仅测 dialog UI)· markTriggered 也跳过让 VC 可反复选同 encounter
+      if (def.affectsSectMembership == null) {
+        await svc.markTriggered(
+          saveDataId: IsarSetup.currentSlotId,
+          encounterId: def.id,
+        );
+      }
 
       final content = await EncounterEventLoader.load(def.id);
       if (!mounted) return;
