@@ -1,0 +1,127 @@
+# 门派招收候选 NPC 配置(P4.1 1.1 Q6A · GDD §12.2)
+# spec: docs/spec/p4_1_q6a_encounter_recruit_spec_2026-05-25.md
+#
+# 5 NPC PoC(Q1=A 预定义 yaml):
+#   3 NPC 用于 PoC encounter(bamboo/desert/mountain)
+#   2 NPC 池余量(river_drifter/blacksmith_son · 1.2 扩 encounter 复用)
+#
+# 招收成功后:`encounter_hook` 据本 def 创建 Character + `SectMemberService.recruit`
+# 入派(`Character.isInSect=true / sectId=playerSectId / sectRank=initiate`,
+# memberCount++)。**不入** `SaveData.activeCharacterIds`(NPC 不出战 · 仅入派语义)。
+#
+# 三系锁死(CLAUDE.md §5.3):NPC 境界 `sanLiu qiMeng/ruMen` →
+# 装备/心法 ≤ `xiangYang / changLianGong` 阶。
+
+sect_candidates:
+
+  # === 1. 竹影客 · lingQiao(用于 sect_recruit_bamboo encounter)===
+  - id: bamboo_swordsman
+    name: 竹影客
+    defaultRealm: sanLiu
+    defaultLayer: ruMen
+    school: lingQiao
+    attributeProfile:
+      constitution: 5
+      enlightenment: 7
+      agility: 7
+      fortune: 5
+    startingTechniqueIds:
+      - tech_lingqiao_changlian
+    startingEquipmentIds:
+      - weapon_xiangyang_chang_jian
+      - armor_xiangyang_pi_jia
+    lore: |
+      竹林里长大的剑客。听雨七年,
+      剑走轻灵。母亲早逝,从未拜过师父,
+      自悟一路。听说南面有人开派,前来一观。
+    portraitPath: assets/characters/sect_candidate_bamboo.png
+
+  # === 2. 漠行客 · gangMeng(用于 sect_recruit_desert encounter)===
+  - id: desert_wanderer
+    name: 漠行客
+    defaultRealm: sanLiu
+    defaultLayer: ruMen
+    school: gangMeng
+    attributeProfile:
+      constitution: 8
+      enlightenment: 4
+      agility: 5
+      fortune: 4
+    startingTechniqueIds:
+      - tech_gangmeng_changlian
+    startingEquipmentIds:
+      - weapon_xiangyang_gang_dao
+      - armor_xiangyang_pi_jia
+    lore: |
+      西出阳关,行商十年。一把钢刀劈过黄沙
+      狼影,劈过马贼,劈过自己背上的旧伤。
+      听说东南有派,他来看一看是否值得托付余生。
+    portraitPath: assets/characters/sect_candidate_desert.png
+
+  # === 3. 山隐子 · yinRou(用于 sect_recruit_mountain encounter)===
+  - id: mountain_hermit
+    name: 山隐子
+    defaultRealm: sanLiu
+    defaultLayer: shuLian
+    school: yinRou
+    attributeProfile:
+      constitution: 6
+      enlightenment: 8
+      agility: 4
+      fortune: 6
+    startingTechniqueIds:
+      - tech_yinrou_changlian
+    startingEquipmentIds:
+      - weapon_xiangyang_jiu_jie_bian
+      - armor_xiangyang_pi_jia
+    lore: |
+      山中独居三十年。曾是名门弟子,因事下山,
+      自此不归。九节鞭收于腰间,从不张扬。
+      若问出山缘由——他答:听说有人开派,
+      想看看这一代,谁配做祖师。
+    portraitPath: assets/characters/sect_candidate_mountain.png
+
+  # === 4. 江湖客 · lingQiao(池余量 · 1.2 扩 encounter 复用)===
+  - id: river_drifter
+    name: 江湖客
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    school: lingQiao
+    attributeProfile:
+      constitution: 5
+      enlightenment: 5
+      agility: 7
+      fortune: 6
+    startingTechniqueIds:
+      - tech_lingqiao_changlian
+    startingEquipmentIds:
+      - weapon_xiangyang_chang_jian
+      - armor_xiangyang_pi_jia
+    lore: |
+      漂泊半生,无门无派。剑法是杂学的,
+      心思是热的。听说南面新立一派,
+      赶过来,想问一句:还收人吗?
+    portraitPath: assets/characters/sect_candidate_river.png
+
+  # === 5. 铁匠之子 · gangMeng(池余量 · 1.2 扩 encounter 复用)===
+  - id: blacksmith_son
+    name: 铁匠之子
+    defaultRealm: sanLiu
+    defaultLayer: qiMeng
+    school: gangMeng
+    attributeProfile:
+      constitution: 7
+      enlightenment: 4
+      agility: 4
+      fortune: 5
+    startingTechniqueIds:
+      - tech_gangmeng_changlian
+    startingEquipmentIds:
+      - weapon_xiangyang_gang_dao
+      - armor_xiangyang_pi_jia
+    lore: |
+      家中世代锻刀。十六岁那年炉子炸了,
+      父亲走了,铺子也没了。他把自家最后一把
+      钢刀挂在腰间,出门走江湖。听说有人开派,
+      他来看看,能不能换口饭吃。
+    portraitPath: assets/characters/sect_candidate_blacksmith.png

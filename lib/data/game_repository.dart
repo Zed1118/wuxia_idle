@@ -10,6 +10,7 @@ import 'defs/equipment_def.dart';
 import 'defs/master_def.dart';
 import 'defs/recruit_candidate_def.dart';
 import 'defs/realm_def.dart';
+import 'defs/sect_candidate_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import 'defs/skill_def.dart';
 import 'defs/stage_def.dart';
@@ -65,6 +66,13 @@ class GameRepository {
   /// **graceful**:test fixture 不带 yaml 时空 list,RecruitmentService 端兜底。
   final Map<String, RecruitCandidateDef> recruitCandidates;
 
+  /// 门派招收候选 NPC 列表(P4.1 1.1 Q6A,GDD §12.2)。
+  /// 加载源:`data/sect_candidates.yaml`,Demo 5-8 PoC(spec §1)。
+  /// **graceful**:test fixture 不带 yaml / starting refs 不全时空 map(沿 P1.1
+  /// recruitCandidates fixture-friendly 体例),encounter_hook 端 affectsSectMembership
+  /// 路径在 map 空时 fallback 单 outcome。
+  final Map<String, SectCandidateDef> sectCandidates;
+
   /// 奇遇 / 武学领悟定义(Phase 4 W14-1 C-1)。
   /// Phase 1 vertical slice 3 条;W14-2 扩 15-20 条。
   /// events 文案走 [EncounterEventLoader] 按需 load(narrative_loader 体例)。
@@ -108,6 +116,7 @@ class GameRepository {
     required this.seclusionMaps,
     required this.masters,
     required this.recruitCandidates,
+    required this.sectCandidates,
     required this.encounterDefs,
     required this.encounterSkillIds,
     required this.synergies,
@@ -229,6 +238,40 @@ class GameRepository {
       // test fixture 不带 recruit_candidates.yaml 时静默
     }
 
+    // P4.1 1.1 Q6A:sect_candidates.yaml 允许测试 fixture 不带 + starting refs
+    // 不全 → 整个 map 空(fixture-friendly,沿 recruit_candidates 体例)。
+    // 生产路径红线校验在 _enforceSectCandidateRedLines 拦三系锁死违例。
+    Map<String, SectCandidateDef> sectCandidates = const {};
+    try {
+      final sectCandidatesRaw =
+          parseYamlMap(await load('data/sect_candidates.yaml'));
+      final loaded = _parseDefMap(
+        sectCandidatesRaw['sect_candidates'] as List,
+        SectCandidateDef.fromYaml,
+        idOf: (d) => d.id,
+      );
+      var allRefsValid = true;
+      for (final c in loaded.values) {
+        for (final tid in c.startingTechniqueIds) {
+          if (techniqueDefs[tid] == null) {
+            allRefsValid = false;
+            break;
+          }
+        }
+        if (!allRefsValid) break;
+        for (final eid in c.startingEquipmentIds) {
+          if (equipmentDefs[eid] == null) {
+            allRefsValid = false;
+            break;
+          }
+        }
+        if (!allRefsValid) break;
+      }
+      if (allRefsValid) sectCandidates = loaded;
+    } catch (e) {
+      // test fixture 不带 sect_candidates.yaml 时静默
+    }
+
     // Phase 4 W14-1:encounters.yaml 允许测试 fixture 不带(catch 失败 → 空 map)。
     Map<String, EncounterDef> encounterDefs = const {};
     try {
@@ -287,6 +330,7 @@ class GameRepository {
       seclusionMaps: numbers.retreat.maps,
       masters: masters,
       recruitCandidates: recruitCandidates,
+      sectCandidates: sectCandidates,
       encounterDefs: encounterDefs,
       encounterSkillIds: encounterSkillIds,
       synergies: synergies,
@@ -437,6 +481,9 @@ class GameRepository {
     // Phase 3 Week 4 T53：师徒 3 角色校验
     _enforceMasterRedLines();
     _enforceRecruitCandidateRedLines();
+
+    // P4.1 1.1 Q6A:sect_candidates.yaml 校验(空 map → 跳过)
+    _enforceSectCandidateRedLines();
 
     // Phase 4 W14-1 C-1:encounter fixture 校验(若加载到)
     _enforceEncounterRedLines();
@@ -679,6 +726,34 @@ class GameRepository {
         throw StateError(
           'encounter ${def.id} fortuneRequired=$fr 应 ∈ [1, 10]',
         );
+      }
+      // P4.1 1.1 Q6A:affectsSectMembership 引用 + accept_recruit 约定校
+      final asm = def.affectsSectMembership;
+      if (asm != null) {
+        // candidateRef 必须在 sectCandidates 中(允许 fixture 空 map 跳过)
+        if (sectCandidates.isNotEmpty &&
+            sectCandidates[asm.candidateRef] == null) {
+          throw StateError(
+            'encounter ${def.id} affectsSectMembership.candidateRef='
+            '${asm.candidateRef} 未在 sect_candidates.yaml 中',
+          );
+        }
+        // outcomeMapping 必须含 accept_recruit(spec §3 强约定)
+        if (!def.outcomeMapping.containsKey('accept_recruit')) {
+          throw StateError(
+            'encounter ${def.id} 含 affectsSectMembership 但 outcomeMapping '
+            '缺 accept_recruit(spec §3 强约定 · 玩家招收意愿凭此 id 触发)',
+          );
+        }
+        // fallbackOutcomeId 必须在 outcomeMapping 中(若指定)
+        final fallback = asm.fallbackOutcomeId;
+        if (fallback != null &&
+            !def.outcomeMapping.containsKey(fallback)) {
+          throw StateError(
+            'encounter ${def.id} affectsSectMembership.fallbackOutcomeId='
+            '$fallback 未在 outcomeMapping 中(spec §3 cap 满/拒绝 fallback)',
+          );
+        }
       }
     }
   }
@@ -1041,6 +1116,83 @@ class GameRepository {
         if (eq.tier.index > realmIdx) {
           throw StateError(
             '收徒候选 ${c.id} 装备 $equipId tier=${eq.tier.name} '
+            '超出 defaultRealm=${c.defaultRealm.name} 的三系锁死上限',
+          );
+        }
+      }
+    }
+  }
+
+  /// P4.1 1.1 Q6A · 门派招收候选 NPC schema 校验。
+  ///
+  /// 校验(沿 [_enforceRecruitCandidateRedLines] 体例,但 count 不锁 3 →
+  /// 5-8 弹性,Demo PoC 池余量沿用):
+  /// - 数量 ∈ [1, 20](防 yaml 误产生空段 / 数量越界)
+  /// - defaultRealm 不允许 wuSheng(NPC Demo 不为飞升锚点)
+  /// - attributeProfile 单项 [1,10] / total [16,24]
+  /// - startingTechniqueIds / startingEquipmentIds 引用合法 + 三系锁死
+  /// - id 唯一(_parseDefMap 已保证)
+  ///
+  /// 允许 test fixture 不带 yaml → sectCandidates 空 map → 整个校验跳过。
+  void _enforceSectCandidateRedLines() {
+    if (sectCandidates.isEmpty) return; // fixture 兜底
+    if (sectCandidates.length > 20) {
+      throw StateError(
+        '门派招收候选数量=${sectCandidates.length},应 ≤ 20(Demo PoC 5-8)',
+      );
+    }
+    for (final c in sectCandidates.values) {
+      if (c.defaultRealm == RealmTier.wuSheng) {
+        throw StateError(
+          '门派招收候选 ${c.id} defaultRealm=wuSheng,不允许飞升锚点',
+        );
+      }
+      // AttributeProfile 范围
+      final ap = c.attributeProfile;
+      for (final entry in <String, int>{
+        'constitution': ap.constitution,
+        'enlightenment': ap.enlightenment,
+        'agility': ap.agility,
+        'fortune': ap.fortune,
+      }.entries) {
+        if (entry.value < 1 || entry.value > 10) {
+          throw StateError(
+            '门派招收候选 ${c.id} attributeProfile.${entry.key}=${entry.value},'
+            '应 ∈ [1, 10]',
+          );
+        }
+      }
+      if (ap.total < 16 || ap.total > 24) {
+        throw StateError(
+          '门派招收候选 ${c.id} attributeProfile.total=${ap.total},应 ∈ [16, 24]',
+        );
+      }
+      // starting id 存在性 + 三系锁死(CLAUDE.md §5.3)
+      final realmIdx = c.defaultRealm.index;
+      for (final techId in c.startingTechniqueIds) {
+        final tech = techniqueDefs[techId];
+        if (tech == null) {
+          throw StateError(
+            '门派招收候选 ${c.id} startingTechniqueId=$techId 未在 techniques.yaml 中',
+          );
+        }
+        if (tech.tier.index > realmIdx) {
+          throw StateError(
+            '门派招收候选 ${c.id} 心法 $techId tier=${tech.tier.name} '
+            '超出 defaultRealm=${c.defaultRealm.name} 的三系锁死上限',
+          );
+        }
+      }
+      for (final equipId in c.startingEquipmentIds) {
+        final eq = equipmentDefs[equipId];
+        if (eq == null) {
+          throw StateError(
+            '门派招收候选 ${c.id} startingEquipmentId=$equipId 未在 equipment.yaml 中',
+          );
+        }
+        if (eq.tier.index > realmIdx) {
+          throw StateError(
+            '门派招收候选 ${c.id} 装备 $equipId tier=${eq.tier.name} '
             '超出 defaultRealm=${c.defaultRealm.name} 的三系锁死上限',
           );
         }
