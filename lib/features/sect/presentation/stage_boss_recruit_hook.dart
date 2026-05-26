@@ -5,8 +5,10 @@ import '../../../core/domain/save_data.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
+import '../../../data/narrative_loader.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/rng_provider.dart';
+import '../../narrative/presentation/narrative_reader_screen.dart';
 import 'sect_recruit_handler.dart';
 
 /// P4.1 1.1 Q6B · Boss 战胜后招降 hook(spec
@@ -49,6 +51,21 @@ Future<void> runStageBossRecruitHookAfterVictory({
     debugPrint(
         'stage_boss_recruit_hook: candidate not loaded: ${stage.bossRecruit!.candidateRef}');
     return;
+  }
+
+  // 展示招降叙事(data/narratives/stages/<stageId>_boss_recruit.yaml)
+  final narrativeId = '${stage.id}_boss_recruit';
+  final narrative = await NarrativeLoader.load(narrativeId);
+  if (!narrative.isPlaceholder) {
+    if (!context.mounted) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => NarrativeReaderScreen(
+          content: narrative,
+          fallbackTitle: '${stage.name} · 招降',
+        ),
+      ),
+    );
   }
 
   if (!context.mounted) return;
