@@ -5,9 +5,13 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-27 1.0 release ready ~93% · Boss 招降叙事 6 篇 + debug 强制招募入口 + Codex R2 验收中**
+> 📊 **2026-05-28 1.0 release ready ~93% · 1.1 挂账清理(战败收降 wire + 池扩 Ch4-6)+ Codex R2 待明日验收**
 
-**2026-05-27 Boss 招降叙事 + debug 强制招募入口**(5 commit `d439065 → 6e771fd` · 1505 测 / 0 analyze):① Ch1-3 Boss 招降叙事 3 篇(折剑/卸刃/空手)+ `stage_boss_recruit_hook` 接 `NarrativeReaderScreen`(rng 命中 → 叙事 → confirm dialog) ② Ch4-6 预写 3 篇(留镜/解佩/收剑 · 1.1 bossRecruit yaml 配时直接用) ③ Codex Round 1 验收 3 FAIL(debug picker 不走 recruit wire / 打不赢 Boss / 非空列表未验)→ 新增 `SectRecruitDebugScreen` 修路径 ④ Round 2 已派单。详 closeout `session_closeout_2026-05-27_boss_narrative_debug_recruit.md`。
+**2026-05-28 过夜自主 1.1 挂账清理**(3 commit · 1508 测 / 0 analyze):① stageBossFailRecoverProb 0.30 战败收降 hook wire(`runStageBossFailRecoverHookAfterDefeat` + defeat 路径 wire + Ch1-3 败后叙事 3 篇) ② stage_04_05+ 池扩(Ch4-6 三 Boss bossRecruit config + valley_hermit 新候选 yinRou 三系平衡 + Ch4-6 败后叙事 3 篇) ③ CLAUDE.md v1.16 + ROADMAP v1.6 + candidateRefs rng pick 降级留 1.2。详 handoff `overnight_1_1_cleanup_handoff_2026-05-28.md`。
+
+---
+
+**2026-05-27 Boss 招降叙事 + debug 强制招募入口 + RELEASE_CHECKLIST v1.2**(7 commit · 1505 测 / 0 analyze):① Ch1-3 Boss 招降叙事 3 篇 + hook 接 NarrativeReaderScreen ② Ch4-6 预写 3 篇 ③ `SectRecruitDebugScreen` debug 入口(R1 FAIL 修) ④ Pen 仓库 T18→HEAD 拉齐(git remote 切 SSH) ⑤ R2 派单 push ⑥ RELEASE_CHECKLIST v1.2(A/B/C/H 四段对齐)。详 closeout `session_closeout_2026-05-27_boss_narrative_debug_recruit.md`。
 
 ---
 
