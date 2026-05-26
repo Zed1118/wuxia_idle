@@ -768,6 +768,14 @@ class UiStrings {
   static String stageBossRecruitNoSect(String name) =>
       '尚未建派,$name 不知归处';
 
+  // 1.1 战败收降 SnackBar(stageBossFailRecoverProb 0.30 · 沿 stageBossRecruit 体例)
+  static String stageBossFailRecoverSuccess(String name) =>
+      '$name 感于你的血气,入门派任 [初入] 阶';
+  static String stageBossFailRecoverCapFull(String name) =>
+      '门派人数已满,$name 转身离去';
+  static String stageBossFailRecoverNoSect(String name) =>
+      '尚未建派,$name 不知归处';
+
   // P4.1 1.1 polish · character_panel 门派同道行(_SectMembershipRow · 沿 lineageDisciplesLabel 体例)
   static const String panelSectMembersLabel = '门派同道:';
   static const String panelSectMembersEmpty = '门派人少';

@@ -262,6 +262,43 @@ void main() {
     });
   });
 
+  group('R5.failRecover · 战败收降叙事 + dedup 共用', () {
+    test('Ch1-3 boss_fail_recover 叙事文件存在且非 placeholder', () async {
+      final ids = [
+        'stage_01_05_boss_fail_recover',
+        'stage_02_05_boss_fail_recover',
+        'stage_03_05_boss_fail_recover',
+      ];
+      for (final id in ids) {
+        final file = File('data/narratives/stages/$id.yaml');
+        expect(file.existsSync(), true, reason: '$id.yaml 应存在');
+      }
+    });
+
+    test('triggeredBossRecruitStageIds 由 victory/defeat 共用(先 mark → 另一方跳过)',
+        () async {
+      final isar = IsarSetup.instance;
+      await isar.writeTxn(() async {
+        final save = await isar.saveDatas.get(0);
+        expect(save, isNotNull);
+        save!.triggeredBossRecruitStageIds = ['stage_01_05'];
+        await isar.saveDatas.put(save);
+      });
+      final save = await isar.saveDatas.get(0);
+      expect(save!.triggeredBossRecruitStageIds, contains('stage_01_05'),
+          reason: 'victory mark 后 defeat 应 skip(共用 set)');
+    });
+
+    test('stageBossFailRecoverProb 在 (0, 1] 且 < stageBossRecruitProb', () {
+      final recruit = GameRepository.instance.numbers.sectManagement.recruit;
+      expect(recruit.stageBossFailRecoverProb, greaterThan(0));
+      expect(recruit.stageBossFailRecoverProb, lessThanOrEqualTo(1));
+      expect(recruit.stageBossFailRecoverProb,
+          lessThan(recruit.stageBossRecruitProb),
+          reason: '战败收降概率应 < 战胜招降概率');
+    });
+  });
+
   group('R5.compat · 1.0 ship Boss 全 bossRecruit=null 兼容', () {
     test('stage_01_04 / stage_02_04 / stage_03_04 等小 Boss 关 bossRecruit=null 不破 load',
         () {
