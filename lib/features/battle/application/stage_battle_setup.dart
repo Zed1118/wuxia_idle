@@ -13,7 +13,9 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../cultivation/application/synergy_service.dart';
+import '../../inheritance/application/founder_buff_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
+import '../../sect/domain/sect.dart';
 
 /// 关卡战斗准备（Phase 3 T37，对应 PROGRESS #22 销账）。
 ///
@@ -92,17 +94,28 @@ class StageBattleSetup {
       }
       players.add(fallback);
     }
-    // P1.1 A1 E.5:active 中有 isFounder=true + yaml enabled_when_alive=true → buff 激活。
-    // 一次性算,传给所有 player 的 fromCharacter,避免每人重复 grep。
-    final founderBuffActive =
-        GameRepository.instance.numbers.founderAncestorBuff.isActive &&
-            players.any((c) => c.isFounder);
+    // P4.1 1.1 founder_buff cross_sect(spec §3):per-character buff 算法
+    // 替换 P1.1 整队同一 bool · 沿 FounderBuffService.isBuffActiveFor API ·
+    // playerSectId 从 isar.sects.get(1) 直接拿(Demo 单 sect · sect null →
+    // fallback isInSect=false 路径 P1.1 R5 维持)。
+    final founderBuffSvc = FounderBuffService(isar);
+    final numbers = GameRepository.instance.numbers;
+    final sect = await isar.sects.get(1);
+    final playerSectId = sect?.id;
+    final founderBuffByChar = <int, bool>{};
+    for (final c in players) {
+      founderBuffByChar[c.id] = await founderBuffSvc.isBuffActiveFor(
+        target: c,
+        numbers: numbers,
+        playerSectId: playerSectId,
+      );
+    }
     final left = <BattleCharacter>[];
     for (var i = 0; i < players.length && i < 3; i++) {
       left.add(await _playerToBattle(
         character: players[i],
         slotIndex: i,
-        founderBuffActive: founderBuffActive,
+        founderBuffActive: founderBuffByChar[players[i].id] ?? false,
       ));
     }
     return left;
