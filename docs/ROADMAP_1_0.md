@@ -1,5 +1,6 @@
 # 挂机武侠 · 1.0 版本路线图
 
+> **v1.6** · 修订日 2026-05-28 · 状态:**1.0 整体 ~93%**(1.1 挂账 stageBossFailRecoverProb wire ✅ + stage_04_05+ 池扩 ✅ + Codex R2 验收等明日)
 > **v1.5** · 修订日 2026-05-26 · 状态:**1.0 整体 ~93%**(Pen 视觉验收 ✅ 8 截图全 PASS + P4.1 1.1 sect 子系统全 polish 4 PR 收尾 + audit v3 0 P0/P1 阻塞)
 > **v1.4** · 修订日 2026-05-25 晚续 · 状态:**1.0 整体 ~91%**(P4.1 全闭环 + P5.0 onboarding production seed + audit v2 6 系统全过 + Pen 视觉验收派单 ⏳)
 > **v1.3** · 修订日 2026-05-25 · 状态:**1.0 整体 ~78%**(本批 nightshift T17-T22 跑完后 · 完工率 4/6)
@@ -11,6 +12,14 @@
 
 ---
 
+> **v1.6 变更**(2026-05-28 · 1.1 挂账清理 Batch B+C 自主工作流):
+> - **stageBossFailRecoverProb 战败收降 wire ✅**(0.30 从 0 caller → 完整 hook+wire · defeat 路径末段触发 · 共用 triggeredBossRecruitStageIds 防刷 · Ch1-3 败后叙事 3 篇)
+> - **stage_04_05+ 池扩 ✅**(Ch4-6 三 Boss bossRecruit config · river_drifter/blacksmith_son/valley_hermit(新增 yinRou) · Ch4-6 败后叙事 3 篇 · sect_candidates 5→6 NPC)
+> - **Boss 招降+收降叙事全齐**(战胜 6 篇 + 战败 6 篇 = 12/12)
+> - **降级决策**:candidateRefs rng pick 代码注释标「1.2 升」→ 本批 spec-only 留 1.2
+> - **测族** 1505→1508(+3 failRecover R5)· 0 analyze · CLAUDE.md v1.16 对齐
+> - 1.0 整体 **~93% 维持** · 1.1 挂账剩 candidateRefs(1.2)
+>
 > **v1.5 变更**(2026-05-26 · Pen 视觉验收 ✅ + P4.1 1.1 sect 子系统全 polish 4 PR + audit v3):
 > - **Pen Codex 视觉验收 ✅**(2026-05-26 续跑 8 截图全 PASS · `docs/handoff/codex_visual_check_p5_p4_1_2026-05-25.md` 续跑成功段 + 截图归档 `docs/screenshots/p5_p4_1_visual_check_2026-05-25/` · WARN:1280×720 framing / clean seed 空状态预期非 bug · Isar 路径修正 `getApplicationDocumentsDirectory()`)→ release checklist C 段 ⏳ → **C 段 100% ✅**
 > - **P4.1 1.1 sect 子系统全 polish 4 PR ✅**(Mac+Opus xhigh 同会话续 cache warm 0.13-0.30× 精度):
