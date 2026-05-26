@@ -515,6 +515,17 @@ class UiStrings {
   static String sectMemberCapDisplay(int count, int cap) => '$count / $cap';
   static String sectPromoteRequire(int required) => '需贡献 $required';
 
+  // ─── P4.1 1.1 Q6A · encounter-triggered 门派招收 confirm dialog ───
+  static const String sectEncounterRecruitConfirmTitle = '是否招入门派?';
+  static const String sectEncounterRecruitAccept = '招入门派';
+  static const String sectEncounterRecruitDecline = '婉拒';
+  static String sectEncounterRecruitSuccess(String name) =>
+      '$name 已入门派,任 [初入] 阶';
+  static String sectEncounterRecruitCapFull(String name) =>
+      '门派人数已满,$name 婉言告别';
+  static String sectEncounterRecruitNoSect(String name) =>
+      '尚未建派,$name 无缘相邀';
+
   // ── P1 #42 Phase 2 §10 P1.y · 新手引导 banner 文案(GDD §10.2 第 2 方式)──
   // 3 条对应 tutorialStep 6/7/8(收徒 / 奇遇 / 装备开锋),50-100 字短介绍。
   static const String tutorialHintStep6Title = '收徒资格已达成';

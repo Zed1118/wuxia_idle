@@ -5,9 +5,13 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-26 1.0 release ready ~91% · 自主挂机 5h batch + Pen 救场 + Q6A/founder_buff 双 spec + checklist + ROADMAP v1.4**
+> 📊 **2026-05-26 1.0 release ready ~93% · Q6A B1-B3 全闭环 + founder_buff spec 待拍**
 
-**2026-05-26 凌晨自主挂机 5h batch ✅**(Mac+Opus xhigh 累计 ~3.5h · 0 改主代码 · Pen Codex 视觉验收异步监督):本会话起于 P5.0+audit v2 全闭环 → 派单 Pen Codex 视觉验收(22:35)→ Codex 卡 partial-clone promisor 阻塞(`assets/enemies/qingshan_main.png` blob hang 15min) → **Mac SSH 反向 tar pipe 救场 5min 完成**(222M `.git` 走 SSH 避开 GitHub 网络 · HEAD 锁 b375e40 ✅)→ 自主挂机 5h batch。**核心产物 6 doc**:① Q6A encounter recruit spec 159 行(`p4_1_q6a_encounter_recruit_spec_2026-05-25.md` · Q1-Q8 默认决议)② P4.1 founder_buff 跨派系扩 spec 123 行(`p4_1_founder_buff_cross_sect_spec_2026-05-26.md` · Q1-Q5 默认决议 · ~3-5h xhigh)③ Q6A self-review devil's advocate 52 行(`q6a_spec_self_review_2026-05-26.md` · 11 风险点 · 2 🔴 R3 race / R8 R5.8 假阳性必改) ④ `RELEASE_CHECKLIST_1_0.md` 顶层长寿 118 行(9 段 ~60 项二元勾选 A-I)⑤ `ROADMAP_1_0.md` v1.4 升档(78%→91% · 本会话全段对齐)⑥ Pen 救场 closeout(Codex 写 BLOCKED + Mac 救场后续待 Codex 续跑回报)。**0 commit · P-H 一次性 commit + push**。**1.0 release ready ~91%**(0 P0/P1 阻塞 · 剩 Pen 视觉验收 + P5.x M15-16)。
+**2026-05-26 P4.1 1.1 Q6A encounter recruit B1-B3 全闭环 ✅**(Mac+Opus xhigh 主对话 ~1.5-2h · 3 commit feat branch · 1484→1492 测全过 / 0 analyze):承接 overnight 5h 挂机会话 → 用户拍 Q6A spec Q1-Q10 默认 OK → 主仓 `98ec94c` spec push main → sibling worktree `~/Desktop/挂机武侠.q6a` feat branch → Phase 0 六维 grep verify spec 锚点 → **B1 schema+yaml**(`038393e` · AffectsSectMembership class + SectCandidateDef + `sect_candidates.yaml` 5 NPC + 3 sect_recruit encounters + 3 events 文案 + GameRepository.sectCandidates load + 双层红线 `_enforceSectCandidateRedLines` + `_enforceEncounterRedLines` 三重校 affectsSectMembership)→ **B2 wire+UI**(`f0ba6a0` · `encounter_hook` sect 分支 + `_handleSectRecruit` helper 150 行 + `sect_recruit_confirm_dialog` widget + 6 UiStrings + `encounter_debug_picker` markTriggered 分支)→ **B3 R5 测族**(`sect_recruit_test` 8 测 · production yaml 3 + e2e 1 + cap fallback 1 + schema 红线 broken loader 3)+ closeout 79 行。**实测精度 0.25-0.30×**(spec 估 5-7h xhigh vs 实测 ~1.5-2h · memory `feedback_opus_xhigh_interactive_duration` 历史锚)。**1.0 release ready ~93% 维持**(Q6A 是 P4.1 1.1 挂账第一项实装 ✅ · 下波 founder_buff cross_sect spec working tree 待用户拍 Q1-Q6 · 1.1 主线/副线解耦可并行)。详 closeout `p4_1_q6a_b123_closeout_2026-05-26.md` + spec `p4_1_q6a_encounter_recruit_spec_2026-05-25.md`。
+
+---
+
+**2026-05-26 凌晨自主挂机 5h batch ✅**(Mac+Opus xhigh 累计 ~3.5h · 0 改主代码):本会话起于 P5.0+audit v2 全闭环 → 派单 Pen Codex 视觉验收 → Codex 卡 partial-clone promisor 阻塞 → **Mac SSH 反向 tar pipe 救场 5min 完成** → 自主挂机 5h batch。**核心产物 6 doc**:① Q6A encounter recruit spec(Q1-Q10 默认决议)② P4.1 founder_buff 跨派系扩 spec(Q1-Q6 默认决议)③ Q6A self-review devil's advocate(11 风险点 · 2 🔴 必改)④ `RELEASE_CHECKLIST_1_0.md` 顶层长寿 ⑤ `ROADMAP_1_0.md` v1.4 升档(78%→91%)⑥ Pen 救场 closeout。**1.0 release ready ~91%**(0 P0/P1 阻塞 · Pen 视觉验收 8 截图 PASS · 93% 升档)。
 
 ---
 

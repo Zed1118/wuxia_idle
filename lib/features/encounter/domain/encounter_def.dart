@@ -172,6 +172,13 @@ class EncounterDef {
   /// null = 该 encounter 不影响声望(默认)。
   final AffectsReputation? affectsReputation;
 
+  /// P4.1 1.1 Q6A · encounter resolve 后触发 sect 招收 hook(GDD §12.2)。
+  /// 非空时 `encounter_hook` 端 outcomeId=='accept_recruit' 触发 NPC 创建 +
+  /// SectMemberService.recruit。cap 满 / 拒绝 / lazy-init 失败 →
+  /// `fallbackOutcomeId` 走原 outcomeMapping(NPC 不入 Isar · attribute/skill
+  /// 仍生效)。null = 该 encounter 不触发 sect 招收(默认)。
+  final AffectsSectMembership? affectsSectMembership;
+
   const EncounterDef({
     required this.id,
     required this.type,
@@ -179,6 +186,7 @@ class EncounterDef {
     required this.baseProbability,
     required this.outcomeMapping,
     this.affectsReputation,
+    this.affectsSectMembership,
   });
 
   factory EncounterDef.fromYaml(Map<String, dynamic> y) {
@@ -206,6 +214,11 @@ class EncounterDef {
           ? null
           : AffectsReputation.fromYaml(
               Map<String, dynamic>.from(y['affectsReputation'] as Map)),
+      affectsSectMembership: (y['affectsSectMembership'] as Map?) == null
+          ? null
+          : AffectsSectMembership.fromYaml(
+              Map<String, dynamic>.from(
+                  y['affectsSectMembership'] as Map)),
     );
   }
 
@@ -234,6 +247,34 @@ class AffectsReputation {
       factionId: y['factionId'] as String,
       deltaMin: (y['deltaMin'] as num).toInt(),
       deltaMax: (y['deltaMax'] as num).toInt(),
+    );
+  }
+}
+
+/// P4.1 1.1 Q6A · encounter 触发 sect 招收 hook(GDD §12.2 P4.1 1.1 挂账)。
+///
+/// `candidateRef` 引 `data/sect_candidates.yaml` id(加载层强校验存在性)。
+/// `accept_recruit` outcome id 强约定:encounter_hook 端凭此 id 判断玩家是否
+/// 选择「招收」(其他 outcome 走原 outcomeMapping)。
+///
+/// cap 满 / 玩家拒绝 / Sect lazy-init 失败 → 改走 [fallbackOutcomeId] 对应的
+/// outcome(必在 [EncounterDef.outcomeMapping] 中,加载层校)。null = NoneOutcome。
+///
+/// **Q9 默认**:Demo 单一 candidateRef(同一 encounter 总同一 NPC)。
+/// 1.2 升 `candidateRefs: List<String>` rng pick。
+class AffectsSectMembership {
+  final String candidateRef;
+  final String? fallbackOutcomeId;
+
+  const AffectsSectMembership({
+    required this.candidateRef,
+    this.fallbackOutcomeId,
+  });
+
+  factory AffectsSectMembership.fromYaml(Map<String, dynamic> y) {
+    return AffectsSectMembership(
+      candidateRef: y['candidateRef'] as String,
+      fallbackOutcomeId: y['fallbackOutcomeId'] as String?,
     );
   }
 }
