@@ -759,4 +759,12 @@ class UiStrings {
   // P5+ UI polish 续作(本批)· dialog 内强调传位 + snackbar 追加接任人名
   static const String ascensionConfirmDialogPromotedLine = '门派衣钵:{0}';
   static const String ascensionCompletePromotedSuffix = ' · {0} 接掌门派';
+
+  // P4.1 1.1 Q6B · Boss 战胜后招降 SnackBar(spec p4_1_q6b §4 · 沿 sectEncounterRecruit 体例)
+  static String stageBossRecruitSuccess(String name) =>
+      '$name 折服于你的剑下,入门派任 [初入] 阶';
+  static String stageBossRecruitCapFull(String name) =>
+      '门派人数已满,$name 婉言告别';
+  static String stageBossRecruitNoSect(String name) =>
+      '尚未建派,$name 不知归处';
 }

@@ -292,6 +292,8 @@ stages:
         skillIds: [skill_lingqiao_mingjia_basic, skill_lingqiao_mingjia_skill]
         iconPath: assets/enemies/dock_b.png
     isBossStage: true
+    bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
+      candidateRef: bamboo_swordsman              # data/sect_candidates.yaml 已配(lingQiao 三系)
     dropEquipmentDefIds:
       - armor_xunchang_bu_yi
       - accessory_xunchang_yu_pei
@@ -586,6 +588,8 @@ stages:
         iconPath: assets/enemies/killer_b.png
     isBossStage: true
     npcId: cijianzhuang_assassin                 # P1.2 §6 占位 · 1.1+ 接入真 NPC schema
+    bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
+      candidateRef: desert_wanderer               # data/sect_candidates.yaml 已配(gangMeng 三系)
     dropEquipmentDefIds:
       - weapon_haojiahuo_qing_feng_jian
       - accessory_xiangyang_yin_jie
@@ -900,6 +904,8 @@ stages:
         iconPath: assets/enemies/shidi_b.png
     isBossStage: true
     npcId: jiaoMen_shidi                         # P1.2 §6 占位
+    bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
+      candidateRef: mountain_hermit               # data/sect_candidates.yaml 已配(yinRou 三系)
     dropEquipmentDefIds:
       - weapon_liqi_long_quan
       - accessory_haojiahuo_yu_pei_lao

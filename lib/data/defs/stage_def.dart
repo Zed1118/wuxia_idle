@@ -74,6 +74,12 @@ class StageDef {
   /// 1.0 ship 字符串占位 · 1.1+ 接入真 NPC schema 后映射 `NpcRelation.targetCharacterId`。
   final String? npcId;
 
+  /// P4.1 1.1 Q6B · Boss 战胜后招降配置(spec p4_1_q6b_stage_boss_recruit_spec_2026-05-26)。
+  /// 仅 `isBossStage: true` 关卡可配 · null = 该 Boss 战胜后不触发招降(1.0 ship 默认全 null)。
+  /// 触发链:victory → rng pick(`numbers.yaml stage_boss_recruit_prob` 默认 0.40)→
+  /// markTriggered 1 次性守(防玩家刷)→ confirm dialog → 复用 `runSectRecruitFlow`。
+  final BossRecruitConfig? bossRecruit;
+
   const StageDef({
     required this.id,
     required this.name,
@@ -99,6 +105,7 @@ class StageDef {
     this.massBattleWaveCount,
     this.massBattleEnemyCounts,
     this.npcId,
+    this.bossRecruit,
   });
 
   factory StageDef.fromYaml(Map<String, dynamic> y) {
@@ -143,6 +150,11 @@ class StageDef {
           ?.map((e) => (e as num).toInt())
           .toList(growable: false),
       npcId: y['npcId'] as String?,
+      bossRecruit: y['bossRecruit'] == null
+          ? null
+          : BossRecruitConfig.fromYaml(
+              Map<String, dynamic>.from(y['bossRecruit'] as Map),
+            ),
     );
   }
 
@@ -150,6 +162,26 @@ class StageDef {
   String toString() =>
       'StageDef(id=$id, type=${stageType.name}, '
       'requiredRealm=${requiredRealm.name}, enemies=${enemyTeam.length})';
+}
+
+/// P4.1 1.1 Q6B · Boss 战胜后招降配置(spec §2 · 沿 `AffectsSectMembership` 体例)。
+///
+/// `candidateRef` 引 `data/sect_candidates.yaml id`(红线 `_enforceBossRecruitRedLines`
+/// 守必存)· `baseProbability` 省略走 numbers.yaml `stage_boss_recruit_prob` 默认 0.40。
+class BossRecruitConfig {
+  final String candidateRef;
+  final double baseProbability;
+
+  const BossRecruitConfig({
+    required this.candidateRef,
+    this.baseProbability = 0.40,
+  });
+
+  factory BossRecruitConfig.fromYaml(Map<String, dynamic> y) =>
+      BossRecruitConfig(
+        candidateRef: y['candidateRef'] as String,
+        baseProbability: (y['baseProbability'] as num?)?.toDouble() ?? 0.40,
+      );
 }
 
 /// 敌人配置，作为 [StageDef.enemyTeam] 的内嵌。Def 层不引入 Isar，

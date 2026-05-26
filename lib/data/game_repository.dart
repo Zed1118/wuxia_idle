@@ -485,6 +485,10 @@ class GameRepository {
     // P4.1 1.1 Q6A:sect_candidates.yaml 校验(空 map → 跳过)
     _enforceSectCandidateRedLines();
 
+    // P4.1 1.1 Q6B:Boss 招降 bossRecruit 校验(三重校:isBossStage 守 + candidateRef
+    // 在 sectCandidates + baseProbability ∈ [0,1])· sectCandidates 空时仅校第一/三条
+    _enforceBossRecruitRedLines();
+
     // Phase 4 W14-1 C-1:encounter fixture 校验(若加载到)
     _enforceEncounterRedLines();
 
@@ -1196,6 +1200,38 @@ class GameRepository {
             '超出 defaultRealm=${c.defaultRealm.name} 的三系锁死上限',
           );
         }
+      }
+    }
+  }
+
+  /// P4.1 1.1 Q6B · Boss 招降 bossRecruit 红线(spec §6 三重校):
+  /// - 仅 `isBossStage: true` 关卡可配 bossRecruit(非 Boss 关配置直接抛)
+  /// - `bossRecruit.candidateRef` 必须在 [sectCandidates] 中(沿 Q6A
+  ///   `_enforceEncounterRedLines` affectsSectMembership 体例 · 允许 fixture
+  ///   sectCandidates 空 map 跳过 ref 校,但仍校第 1/3 条)
+  /// - `bossRecruit.baseProbability` ∈ [0.0, 1.0]
+  void _enforceBossRecruitRedLines() {
+    for (final s in stageDefs.values) {
+      final br = s.bossRecruit;
+      if (br == null) continue;
+      if (!s.isBossStage) {
+        throw StateError(
+          'stage ${s.id} 配 bossRecruit 但 isBossStage=false,'
+          '仅 Boss 关卡可配招降(spec §6 红线 ①)',
+        );
+      }
+      if (br.baseProbability < 0.0 || br.baseProbability > 1.0) {
+        throw StateError(
+          'stage ${s.id} bossRecruit.baseProbability=${br.baseProbability},'
+          '应 ∈ [0.0, 1.0](spec §6 红线 ③)',
+        );
+      }
+      if (sectCandidates.isNotEmpty &&
+          sectCandidates[br.candidateRef] == null) {
+        throw StateError(
+          'stage ${s.id} bossRecruit.candidateRef=${br.candidateRef} '
+          '未在 sect_candidates.yaml 中(spec §6 红线 ②)',
+        );
       }
     }
   }
