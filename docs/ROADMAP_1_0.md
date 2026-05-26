@@ -1,5 +1,6 @@
 # 挂机武侠 · 1.0 版本路线图
 
+> **v1.5** · 修订日 2026-05-26 · 状态:**1.0 整体 ~93%**(Pen 视觉验收 ✅ 8 截图全 PASS + P4.1 1.1 sect 子系统全 polish 4 PR 收尾 + audit v3 0 P0/P1 阻塞)
 > **v1.4** · 修订日 2026-05-25 晚续 · 状态:**1.0 整体 ~91%**(P4.1 全闭环 + P5.0 onboarding production seed + audit v2 6 系统全过 + Pen 视觉验收派单 ⏳)
 > **v1.3** · 修订日 2026-05-25 · 状态:**1.0 整体 ~78%**(本批 nightshift T17-T22 跑完后 · 完工率 4/6)
 > **v1.2** · 修订日 2026-05-17 晚续 · 状态:**P0 阶段 4 项 100% 收口**(P0.1 #38 / P0.2 strategy 重构 / P0.3 #41 决议 + 新销账段 spec 起步段闭环)
@@ -7,6 +8,21 @@
 > 决策来源会话:Mac + Opus 4.7,W18 起步段全收口当晚
 > 路线图本身是规划文档,实际推进可能因实测调整 — 修订记录见末尾
 > **配套长寿 doc**:`docs/RELEASE_CHECKLIST_1_0.md`(Steam 上线前二元勾选清单 · 与本路线图互补)
+
+---
+
+> **v1.5 变更**(2026-05-26 · Pen 视觉验收 ✅ + P4.1 1.1 sect 子系统全 polish 4 PR + audit v3):
+> - **Pen Codex 视觉验收 ✅**(2026-05-26 续跑 8 截图全 PASS · `docs/handoff/codex_visual_check_p5_p4_1_2026-05-25.md` 续跑成功段 + 截图归档 `docs/screenshots/p5_p4_1_visual_check_2026-05-25/` · WARN:1280×720 framing / clean seed 空状态预期非 bug · Isar 路径修正 `getApplicationDocumentsDirectory()`)→ release checklist C 段 ⏳ → **C 段 100% ✅**
+> - **P4.1 1.1 sect 子系统全 polish 4 PR ✅**(Mac+Opus xhigh 同会话续 cache warm 0.13-0.30× 精度):
+>   - PR #13 `7d9b903` **Q6A encounter recruit**(AffectsSectMembership + SectCandidateDef 5 NPC + 3 fortuneEvent + _handleSectRecruit helper + 8 R5 测 · ~1.5-2h xhigh 精度 0.25-0.30×)
+>   - PR #14 `884a989` **founder_buff cross_sect**(per-character `isBuffActiveFor` API + stage_battle_setup wire + 5 R5 测 · ~30-40min 精度 0.13-0.20× 同会话续 cache warm 新最低)
+>   - PR #15 `215df8c` **Q6B stage_boss recruit**(BossRecruitConfig + saveVersion 0.14.0 + 抽 `runSectRecruitFlow` 共用 helper + 3 章末大 Boss + 8 R5 测 · ~1-1.5h 精度 0.20-0.30×)
+>   - PR #16 `bcd7c93` **polish 候选 1+3**(character_panel `_SectMembershipRow` + 8 段文案扩 events+lore · ~30-45min 精度 0.20-0.25×)
+> - **CLAUDE.md v1.11 → v1.15 升档 4 次**(状态对齐 · 0 规则层变化 · sect 子系统全 polish 收尾)
+> - **audit v3 6 维 sweep ✅**(7 子系统 + 11 红线 + 6 三系锁 + 1.1 sect 链路 + 文档 drift + dead code · 0 P0/P1 阻塞 · stageBossFailRecoverProb 0 caller 是设计预留确认)
+> - **测族**:1484 → 1505(本会话 +21 · Q6A 8 + founder_buff 5 + Q6B 8)· 0 analyze · Isar saveVersion 0.13.0 → 0.14.0
+> - 1.0 整体 ~91% → **~93%**(C 段 +2% · sect polish 0 增量 polish 内已计入)· **0 P0/P1 阻塞** · 剩 D 性能 / E 音频 / F Steam / G 法律商业(全 M15-16 + 多外部依赖)
+> - **1.1 挂账续**:stageBossFailRecoverProb 战败收降(P5+/1.1)/ candidateRefs rng pick / stage_04_05+ 池扩 / Boss 招降 narrative
 
 ---
 

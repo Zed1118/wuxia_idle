@@ -149,7 +149,8 @@ class ResolveSectEventNotifier extends AsyncNotifier<void> {
       // 设计:outcome=win + event.type=mission → 50% rng
       // `missionRecruitProb` → 从 SaveData.recruitedDiscipleIds(P1.1 收徒池)
       // 选首个未入派弟子,招入 sect。candidate pool 局限于已收弟子,
-      // Q6 A encounter candidate pool / Q6 B stage_boss 招降留 1.1。
+      // Q6 A encounter candidate pool 已实装(v1.12 · PR #13 sect_candidates pool 5 NPC) +
+      // Q6 B stage_boss 招降已实装(v1.14 · PR #15 BossRecruitConfig + 3 章末大 Boss)。
       if (outcome == SectOutcome.win &&
           newEvent.type == SectEventType.mission) {
         await _maybeRecruitMissionCandidate(isar, newSect);
