@@ -11,6 +11,78 @@ import '../../../shared/utils/rng_provider.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import 'sect_recruit_handler.dart';
 
+/// 1.1 · Boss 战败后收降 hook(stageBossFailRecoverProb 0.30)。
+///
+/// 触发链:`stage_entry_flow` defeat 路径末段（defeat narrative 之后、return 之前）。
+/// 守卫 / 防刷 / candidate 解 / recruit flow 与 victory hook 同源,仅概率不同:
+///   - victory: `bossRecruit.baseProbability`(per-stage · 默认 0.40)
+///   - defeat:  `numbers.sectManagement.recruit.stageBossFailRecoverProb`(全局 0.30)
+/// 共用 `triggeredBossRecruitStageIds` 防刷(victory/defeat 互斥 · 先触发的 mark)。
+Future<void> runStageBossFailRecoverHookAfterDefeat({
+  required BuildContext context,
+  required WidgetRef ref,
+  required StageDef stage,
+}) async {
+  if (!stage.isBossStage || stage.bossRecruit == null) return;
+
+  final isar = IsarSetup.instanceOrNull;
+  if (isar == null) return;
+
+  final save = await isar.saveDatas.get(IsarSetup.currentSlotId);
+  if (save == null) return;
+  if (save.triggeredBossRecruitStageIds.contains(stage.id)) return;
+
+  final probability = GameRepository
+      .instance.numbers.sectManagement.recruit.stageBossFailRecoverProb;
+  if (ref.read(rngProvider).nextDouble() >= probability) return;
+
+  final candidate =
+      GameRepository.instance.sectCandidates[stage.bossRecruit!.candidateRef];
+  if (candidate == null) {
+    debugPrint(
+        'stage_boss_fail_recover_hook: candidate not loaded: '
+        '${stage.bossRecruit!.candidateRef}');
+    return;
+  }
+
+  final narrativeId = '${stage.id}_boss_fail_recover';
+  final narrative = await NarrativeLoader.load(narrativeId);
+  if (!narrative.isPlaceholder) {
+    if (!context.mounted) return;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => NarrativeReaderScreen(
+          content: narrative,
+          fallbackTitle: '${stage.name} · 收降',
+        ),
+      ),
+    );
+  }
+
+  if (!context.mounted) return;
+  await runSectRecruitFlow(
+    context: context,
+    ref: ref,
+    isar: isar,
+    candidate: candidate,
+    onMarkTriggered: () async {
+      await isar.writeTxn(() async {
+        final s = await isar.saveDatas.get(IsarSetup.currentSlotId);
+        if (s == null) return;
+        s.triggeredBossRecruitStageIds = [
+          ...s.triggeredBossRecruitStageIds,
+          stage.id,
+        ];
+        await isar.saveDatas.put(s);
+      });
+    },
+    onFallback: null,
+    successSnackBar: UiStrings.stageBossFailRecoverSuccess(candidate.name),
+    capFullSnackBar: UiStrings.stageBossFailRecoverCapFull(candidate.name),
+    noSectSnackBar: UiStrings.stageBossFailRecoverNoSect(candidate.name),
+  );
+}
+
 /// P4.1 1.1 Q6B · Boss 战胜后招降 hook(spec
 /// `p4_1_q6b_stage_boss_recruit_spec_2026-05-26.md` §3.2)。
 ///

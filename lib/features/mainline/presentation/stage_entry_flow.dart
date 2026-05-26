@@ -119,6 +119,14 @@ Future<void> runStageFlow({
         ),
       );
     }
+    // 1.1 战败收降 hook(stageBossFailRecoverProb 0.30 · 沿 victory recruit 体例)
+    if (context.mounted) {
+      await runStageBossFailRecoverHookAfterDefeat(
+        context: context,
+        ref: ref,
+        stage: stage,
+      );
+    }
     return; // 战败不记录主线进度、不推 victory 剧情
   }
 
