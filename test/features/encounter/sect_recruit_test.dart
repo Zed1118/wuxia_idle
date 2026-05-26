@@ -85,16 +85,17 @@ void main() {
   }
 
   group('R5.production · 加载层验 production yaml', () {
-    test('sect_candidates.yaml 5 NPC 加载 + 字段完整', () {
+    test('sect_candidates.yaml 6 NPC 加载 + 字段完整', () {
       final candidates = GameRepository.instance.sectCandidates;
-      expect(candidates.length, 5,
-          reason: 'Demo 5 NPC PoC(3 用 encounter + 2 池余量)');
+      expect(candidates.length, 6,
+          reason: '5 PoC + 1 新增(valley_hermit · 1.1 池扩)');
       expect(candidates.keys, containsAll({
         'bamboo_swordsman',
         'desert_wanderer',
         'mountain_hermit',
         'river_drifter',
         'blacksmith_son',
+        'valley_hermit',
       }));
       // 抽样验 bamboo_swordsman 字段
       final bamboo = candidates['bamboo_swordsman']!;

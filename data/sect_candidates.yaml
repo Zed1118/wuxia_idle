@@ -114,7 +114,33 @@ sect_candidates:
       想问一句:像我这样的杂家,还收人吗?
     portraitPath: assets/characters/sect_candidate_river.png
 
-  # === 5. 铁匠之子 · gangMeng(池余量 · 1.2 扩 encounter 复用)===
+  # === 5. 幽谷客 · yinRou(Ch6 boss recruit 池 · 1.1 扩)===
+  - id: valley_hermit
+    name: 幽谷客
+    defaultRealm: sanLiu
+    defaultLayer: ruMen
+    school: yinRou
+    attributeProfile:
+      constitution: 5
+      enlightenment: 7
+      agility: 5
+      fortune: 6
+    startingTechniqueIds:
+      - tech_yinrou_changlian
+    startingEquipmentIds:
+      - weapon_xiangyang_jiu_jie_bian
+      - armor_xiangyang_pi_jia
+    lore: |
+      深谷里住了二十年,靠采药养活自己。
+      年轻时拜过一位不知名的老人为师,
+      学了一套缠绕鞭法和几味毒草的用途。
+      老人死后他埋了师父,又回谷中独居。
+      近来谷口被人封了路,他不得不出来——
+      听说江湖上有新派收人,他便来看一看,
+      能不能找个地方安置余生。
+    portraitPath: assets/characters/sect_candidate_valley.png
+
+  # === 6. 铁匠之子 · gangMeng(池余量 · 1.2 扩 encounter 复用)===
   - id: blacksmith_son
     name: 铁匠之子
     defaultRealm: sanLiu
