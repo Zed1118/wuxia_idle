@@ -281,7 +281,9 @@ class AscendService {
       // 8. P4.1 §12.2 B2 sect.founderId rewire(spec §5 P5+ 真传位 sect 接管):
       // 若 sect.founderId==旧 founder.id 且 promotedDisciple!=null →
       // rewire 到 promotedDiscipleId。member 关系不动(旧 member.sectId 仍
-      // 指原 sect · 自然挂新 founder)。多代场景留 1.1(本 hook 单代验证)。
+      // 指原 sect · 自然挂新 founder)。多代场景 v1.10/v1.15 已 ship(R5.6 多代
+      // e2e 2 + R5.7 auto_swap 2 + R5.8 stack enforce 1 覆盖,详 closeout
+      // p5_lineage_full_closeout_2026-05-24)。
       // 单 sect 假设:Demo 阶段全局唯一 sect(p4_1 spec §1 范围)。
       final sectsToRewire =
           await isar.sects.filter().founderIdEqualTo(founderId).findAll();
