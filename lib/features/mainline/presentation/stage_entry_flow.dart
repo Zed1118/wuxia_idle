@@ -24,6 +24,7 @@ import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
+import '../../sect/presentation/stage_boss_recruit_hook.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../event/application/game_event_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
@@ -178,6 +179,16 @@ Future<void> runStageFlow({
     ref: ref,
     defeatedSchools:
         stage.enemyTeam.map((e) => e.school).toList(growable: false),
+  );
+
+  // P4.1 1.1 Q6B · Boss 战胜后招降 hook(spec p4_1_q6b_stage_boss_recruit_spec
+  // _2026-05-26.md §3.2)· 在 encounter hook 之后顺序执行 · isBossStage +
+  // bossRecruit 非 null + rng 命中 + markTriggered 守通过才弹 confirm dialog。
+  if (!context.mounted) return;
+  await runStageBossRecruitHookAfterVictory(
+    context: context,
+    ref: ref,
+    stage: stage,
   );
 }
 

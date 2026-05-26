@@ -45,9 +45,9 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.13.0',
+      expect(save.saveVersion, '0.14.0',
           reason:
-              'T19b 升:Reputation/NpcRelation(P1.2)+ Sect/SectEvent/PvpRecord/PvpSnapshot(T19b)6 schema 加入 _allSchemas');
+              'P4.1 1.1 Q6B SaveData 加 triggeredBossRecruitStageIds(Boss 招降防刷)');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);

@@ -64,4 +64,11 @@ class SaveData {
   /// 与 lineageRole=disciple + isFounder=false 联合判定(active 弟子也在该字段,
   /// 但本字段只含通过收徒新增的)。1.0 后续扩 active 上限时,可作为升级依据。
   List<int> recruitedDiscipleIds = [];
+
+  /// 已触发 Boss 招降 dialog 的 stage id 列表(P4.1 1.1 Q6B · spec §0 Q8=A)。
+  ///
+  /// 防玩家刷:Boss 战胜后 `runStageBossRecruitHookAfterVictory` 前置守 — 已含
+  /// stage.id 直接 return,不再 rng pick / 不弹 dialog。一次招降成功后 markTriggered
+  /// 追加;玩家拒绝 / cap 满 / rng 不命中均不 markTriggered(可重战重遇)。
+  List<String> triggeredBossRecruitStageIds = [];
 }
