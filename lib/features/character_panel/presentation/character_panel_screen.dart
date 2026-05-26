@@ -12,6 +12,7 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
+import '../../sect/application/sect_providers.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../inner_demon/domain/inner_demon_def.dart';
 import '../../inner_demon/presentation/breakthrough_blocker.dart';
@@ -1053,6 +1054,8 @@ class _LineageSection extends ConsumerWidget {
           const _LineageBiographyRow(),
           const SizedBox(height: 6),
           _LineageHeritageRow(character: character),
+          const SizedBox(height: 6),
+          _SectMembershipRow(character: character),
         ],
       ),
     );
@@ -1087,6 +1090,57 @@ class _LineageMasterRow extends ConsumerWidget {
         label: UiStrings.lineageMasterLabel,
         value: m == null ? UiStrings.lineageNoMaster : m.name,
       ),
+    );
+  }
+}
+
+/// P4.1 1.1 polish · 门派同道行(character_panel sect NPC 集成 · Q6A/Q6B closeout
+/// deviation 续 · sect_screen listMembers 已 ship,本批 character_panel 集成)。
+///
+/// 数据源:`playerSectIdProvider`(int?)+ `sectMembersProvider(sectId)` future
+/// list。过滤:排 founder(玩家自己 / 前代祖师)+ 排当前 character active(避免显
+/// 自己)。空状态显「门派人少」(sect.id null 或 0 NPC 同样语义)。
+class _SectMembershipRow extends ConsumerWidget {
+  const _SectMembershipRow({required this.character});
+
+  final Character character;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final playerSectId = ref.watch(playerSectIdProvider);
+    if (playerSectId == null) {
+      return const _LineageRow(
+        label: UiStrings.panelSectMembersLabel,
+        value: UiStrings.panelSectMembersEmpty,
+      );
+    }
+    final membersAsync = ref.watch(sectMembersProvider(playerSectId));
+    return membersAsync.when(
+      loading: () => const _LineageRow(
+        label: UiStrings.panelSectMembersLabel,
+        value: UiStrings.dashPlaceholder,
+      ),
+      error: (e, _) => _LineageRow(
+        label: UiStrings.panelSectMembersLabel,
+        value: '$e',
+        valueColor: WuxiaColors.hpLow,
+      ),
+      data: (members) {
+        // 排 founder(玩家自己 / 前代祖师)+ 排当前 character active 自己
+        final others = members
+            .where((m) => !m.isFounder && m.id != character.id)
+            .toList();
+        if (others.isEmpty) {
+          return const _LineageRow(
+            label: UiStrings.panelSectMembersLabel,
+            value: UiStrings.panelSectMembersEmpty,
+          );
+        }
+        return _LineageRow(
+          label: UiStrings.panelSectMembersLabel,
+          value: others.map((m) => m.name).join(' / '),
+        );
+      },
     );
   }
 }

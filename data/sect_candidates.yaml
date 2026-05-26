@@ -31,9 +31,12 @@ sect_candidates:
       - weapon_xiangyang_chang_jian
       - armor_xiangyang_pi_jia
     lore: |
-      竹林里长大的剑客。听雨七年,
-      剑走轻灵。母亲早逝,从未拜过师父,
-      自悟一路。听说南面有人开派,前来一观。
+      竹林里长大的剑客。母亲早逝那年,
+      他七岁,从此对着雨声练剑——
+      因为竹叶上的雨,是母亲最爱听的曲子。
+      听雨七年,剑走轻灵,无门无派,
+      却自有一脉清气。听说南面有人开派,
+      他收拾了剑,出竹林,前来一观。
     portraitPath: assets/characters/sect_candidate_bamboo.png
 
   # === 2. 漠行客 · gangMeng(用于 sect_recruit_desert encounter)===
@@ -55,6 +58,9 @@ sect_candidates:
     lore: |
       西出阳关,行商十年。一把钢刀劈过黄沙
       狼影,劈过马贼,劈过自己背上的旧伤。
+      最难的一回在玉门关外,五人围上,
+      他用刀格开自己背上的伤口才活下来——
+      那一夜血流到天亮,他才明白人不能独行太久。
       听说东南有派,他来看一看是否值得托付余生。
     portraitPath: assets/characters/sect_candidate_desert.png
 
@@ -75,8 +81,10 @@ sect_candidates:
       - weapon_xiangyang_jiu_jie_bian
       - armor_xiangyang_pi_jia
     lore: |
-      山中独居三十年。曾是名门弟子,因事下山,
-      自此不归。九节鞭收于腰间,从不张扬。
+      山中独居三十年。年轻时是名门弟子,
+      因师弟出事,他担了责,自请放逐。
+      此后山林为家,九节鞭收于腰间,从不张扬。
+      听说旧门派也散了,他没回去过。
       若问出山缘由——他答:听说有人开派,
       想看看这一代,谁配做祖师。
     portraitPath: assets/characters/sect_candidate_mountain.png
@@ -98,9 +106,12 @@ sect_candidates:
       - weapon_xiangyang_chang_jian
       - armor_xiangyang_pi_jia
     lore: |
-      漂泊半生,无门无派。剑法是杂学的,
-      心思是热的。听说南面新立一派,
-      赶过来,想问一句:还收人吗?
+      漂泊半生,无门无派。剑法是杂学的——
+      从船家、镖师、酒馆老掌柜那里偷师而来,
+      路数虽不正,却也活下来了。
+      心思是热的,见人就笑,见酒就喝。
+      听说南面新立一派,他赶过来,
+      想问一句:像我这样的杂家,还收人吗?
     portraitPath: assets/characters/sect_candidate_river.png
 
   # === 5. 铁匠之子 · gangMeng(池余量 · 1.2 扩 encounter 复用)===
@@ -121,7 +132,10 @@ sect_candidates:
       - armor_xiangyang_pi_jia
     lore: |
       家中世代锻刀。十六岁那年炉子炸了,
-      父亲走了,铺子也没了。他把自家最后一把
-      钢刀挂在腰间,出门走江湖。听说有人开派,
-      他来看看,能不能换口饭吃。
+      父亲被炸塌的横梁压住,等他刨出来时
+      已经没气了。铺子烧了七天才熄。
+      他把自家最后一把钢刀挂在腰间——
+      那是父亲生前为他打的成年礼。
+      他出门走江湖,听说有人开派,
+      他来看看,能不能换口饭吃,也学一点本事。
     portraitPath: assets/characters/sect_candidate_blacksmith.png
