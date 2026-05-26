@@ -10,6 +10,7 @@ import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
 import '../../debug/presentation/battle_test_menu.dart';
 import '../../debug/presentation/phase2_test_menu.dart';
+import '../../debug/presentation/sect_recruit_debug_screen.dart';
 import '../../festival/application/festival_service_providers.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../inner_demon/presentation/inner_demon_screen.dart';
@@ -209,6 +210,13 @@ class MainMenu extends ConsumerWidget {
                     label: UiStrings.mainMenuPhase2,
                     hint: UiStrings.mainMenuPhase2Hint,
                     onTap: () => _push(context, const Phase2TestMenu()),
+                  ),
+                  const SizedBox(height: 16),
+                  _MenuButton(
+                    label: '强制招募 NPC',
+                    hint: '走完整 sect recruit flow · 跳过战斗/奇遇触发',
+                    onTap: () => _push(
+                        context, const SectRecruitDebugScreen()),
                   ),
                 ],
                 const SizedBox(height: 16),
