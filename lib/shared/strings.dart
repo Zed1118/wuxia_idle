@@ -767,4 +767,8 @@ class UiStrings {
       '门派人数已满,$name 婉言告别';
   static String stageBossRecruitNoSect(String name) =>
       '尚未建派,$name 不知归处';
+
+  // P4.1 1.1 polish · character_panel 门派同道行(_SectMembershipRow · 沿 lineageDisciplesLabel 体例)
+  static const String panelSectMembersLabel = '门派同道:';
+  static const String panelSectMembersEmpty = '门派人少';
 }
