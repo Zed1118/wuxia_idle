@@ -69,6 +69,20 @@ final currentSectProvider = StreamProvider<Sect?>((ref) async* {
   yield* isar.sects.watchObject(1, fireImmediately: true);
 });
 
+/// P4.1 1.1 founder_buff cross_sect spec §2:玩家 sect.id 派生 provider。
+///
+/// Demo 单 sect 假设(`Sect.id=1` 由 [currentSectProvider] lazy-init):
+///   - currentSect.value != null → 返 sect.id
+///   - currentSect.value == null → 返 null(Sect lazy-init race · caller 端
+///     fallback 单 founder isInSect=false 路径维持 P1.1 R5)
+///
+/// caller(`stage_battle_setup` battle 前 / UI 显示)`ref.watch(playerSectIdProvider)`
+/// 拿 int? 传给 `FounderBuffService.isBuffActiveFor` per-character API。
+final playerSectIdProvider = Provider<int?>((ref) {
+  final sect = ref.watch(currentSectProvider).value;
+  return sect?.id;
+});
+
 /// active(pending)sect events Stream。
 final activeSectEventsProvider =
     StreamProvider<List<SectEvent>>((ref) async* {
