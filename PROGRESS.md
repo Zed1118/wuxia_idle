@@ -5,9 +5,13 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-26 1.0 release ready ~93% · sect 子系统全 polish + audit v3 0 阻塞 + P5.2 audit 子项 1+2+5 本机收齐**
+> 📊 **2026-05-27 1.0 release ready ~93% · Boss 招降叙事 6 篇 + debug 强制招募入口 + Codex R2 验收中**
 
-**2026-05-26 audit v3 + P5.2 audit 子项 1+2+5 一波 ✅**(Mac+Opus xhigh 主对话 ~40min · 2 commit 直推 main · 1505 测全过 / 0 analyze):承接 polish 后续 → **audit v3 6 维 sweep**(7 子系统 + 11 红线 + 6 三系锁 + 1.1 sect 链路 e2e + 文档 drift + dead code 全 ✅ · 0 P0/P1 阻塞 · stageBossFailRecoverProb 0 caller 确认设计预留)→ **F1+F2 drift 修**(`580b80a` · ROADMAP v1.4→v1.5 升档 + sect_providers/ascend_service 2 处注释 stale 修)→ **P5.2 audit 子项 1+2+5 实装**(audit 2026-05-24 已存复用 · 6 数值微调 stages.yaml:Ch4 3.0/3.2/3.4/3.6/4.0 末关 +0.4 跨阶感 / 轻功 5.0/5.4/5.8/6.2/6.5 +0.4 均匀 + 子项 5 dead-end 由 audit「跨段衔接」表已覆盖)+ audit doc 末段加实装记录(子项 3+4 留 P5.4b closed beta M15-16)。**本机可推 1.0 polish 全收齐 ✅**(剩 D-G 段全 M15-16 外部依赖)。
+**2026-05-27 Boss 招降叙事 + debug 强制招募入口**(5 commit `d439065 → 6e771fd` · 1505 测 / 0 analyze):① Ch1-3 Boss 招降叙事 3 篇(折剑/卸刃/空手)+ `stage_boss_recruit_hook` 接 `NarrativeReaderScreen`(rng 命中 → 叙事 → confirm dialog) ② Ch4-6 预写 3 篇(留镜/解佩/收剑 · 1.1 bossRecruit yaml 配时直接用) ③ Codex Round 1 验收 3 FAIL(debug picker 不走 recruit wire / 打不赢 Boss / 非空列表未验)→ 新增 `SectRecruitDebugScreen` 修路径 ④ Round 2 已派单。详 closeout `session_closeout_2026-05-27_boss_narrative_debug_recruit.md`。
+
+---
+
+**2026-05-26 audit v3 + P5.2 + P4.1 1.1 全收齐归档**:sect 子系统全 polish + audit v3 0 阻塞 + P5.2 子项 1+2+5 本机收齐。详末尾归档段。
 
 ---
 
