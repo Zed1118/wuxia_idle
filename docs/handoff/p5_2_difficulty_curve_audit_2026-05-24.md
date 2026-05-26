@@ -52,3 +52,19 @@
 - 本 audit 是分布层 audit · 不含实玩数据 · 留 P5.4b closed beta 数据源喂 P5.2 拍板
 - Ch5 4.6 vs 心魔 6.2 单看跨度 +1.6 大,但实际 unlock 链需 Ch6 cleared(numbers.yaml inner_demon.unlock_triggers)正常路径 ~6.1 vs 6.2 平滑
 - memory `feedback_balance_buff_singledim_no_effect`:单维度数值调整不显著影响战斗结果 · P5.2 调难度需多维(HP+Atk+技能 cd)
+
+---
+
+## 实装记录(2026-05-26 续 · audit v3 后)
+
+**子项 1 Ch4 步长调匀 ✅**:3.0/3.1/3.2/3.3/3.5 → **3.0/3.2/3.4/3.6/4.0**(均匀 +0.2 + 末关 +0.4 跨阶感 · 沿 Ch6 末关 +0.4 体例 · 末关 yiLiu 玩家 vs jueDing 西凉霸主跨阶感强化)。
+
+**子项 2 轻功跨度调匀 ✅**:5.0/5.5/6.0/6.2/6.5 → **5.0/5.4/5.8/6.2/6.5**(yiLiu 3 关 +0.4 均匀 · jueDing 2 关 +0.4/+0.3 末关收尾 · 4 步长更平均)。
+
+**子项 5 dead-end self-check ✅**:本 audit「跨段衔接(玩家路径)」表 5 衔接点全过 — Ch1→Ch2 / Ch3→Ch4 / Ch6→心魔 / Ch6→轻功 / 心魔→群战 全 ✅(回炉倒退 + unlock 链 + 独立支线选玩 三类衔接 valid 无 dead-end)。
+
+**子项 3 + 4 留 P5.4b closed beta**:群战 +0.5 步长实玩验证 + Ch4-Ch6 跨阶 +0.3-0.4 实玩验证(P0 待外部数据)。
+
+verify:flutter analyze 0 / flutter test 1505 测全过(baseline 维持 · 数值微调 0 业务逻辑变化)。
+
+**P5.2 audit 子项 1+2+5 全本机收齐 ✅**;子项 3+4 留 closed beta(M15-16)。

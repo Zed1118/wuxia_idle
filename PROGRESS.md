@@ -5,7 +5,11 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-26 1.0 release ready ~93% · P4.1 1.1 sect 子系统全 polish 完成**(Q6A + founder_buff + Q6B + polish 四项闭环)
+> 📊 **2026-05-26 1.0 release ready ~93% · sect 子系统全 polish + audit v3 0 阻塞 + P5.2 audit 子项 1+2+5 本机收齐**
+
+**2026-05-26 audit v3 + P5.2 audit 子项 1+2+5 一波 ✅**(Mac+Opus xhigh 主对话 ~40min · 2 commit 直推 main · 1505 测全过 / 0 analyze):承接 polish 后续 → **audit v3 6 维 sweep**(7 子系统 + 11 红线 + 6 三系锁 + 1.1 sect 链路 e2e + 文档 drift + dead code 全 ✅ · 0 P0/P1 阻塞 · stageBossFailRecoverProb 0 caller 确认设计预留)→ **F1+F2 drift 修**(`580b80a` · ROADMAP v1.4→v1.5 升档 + sect_providers/ascend_service 2 处注释 stale 修)→ **P5.2 audit 子项 1+2+5 实装**(audit 2026-05-24 已存复用 · 6 数值微调 stages.yaml:Ch4 3.0/3.2/3.4/3.6/4.0 末关 +0.4 跨阶感 / 轻功 5.0/5.4/5.8/6.2/6.5 +0.4 均匀 + 子项 5 dead-end 由 audit「跨段衔接」表已覆盖)+ audit doc 末段加实装记录(子项 3+4 留 P5.4b closed beta M15-16)。**本机可推 1.0 polish 全收齐 ✅**(剩 D-G 段全 M15-16 外部依赖)。
+
+---
 
 **2026-05-26 P4.1 1.1 polish 候选 1+3 一波 ✅**(Mac+Opus xhigh 主对话 ~30-45min · 1 commit feat branch · 1505 测全过 / 0 analyze · 精度 0.20-0.25×):承接 Q6B 三项收齐后续 → **候选 3 `_SectMembershipRow` widget**(`character_panel_screen.dart:_LineageSection` 内 50 行 · 沿 `_LineageDisciplesRow` 体例 · `playerSectIdProvider` + `sectMembersProvider` filter `!m.isFounder && m.id != character.id` 排玩家自己/前代祖师/当前 character)+ UiStrings 2 段 `panelSectMembersLabel/Empty` + **候选 1 文案 8 段扩**(Q6A 3 events outcome body 4→7-8 行 · bamboo/desert/mountain 加 NPC 背景动机段 + 5 sect_candidates lore 3→6-7 行 · 母亲早逝 7 岁练剑/玉门关血流一夜/师弟出事自请放逐/杂学半生求归处/父亲炸塌成年礼 · 古风克制不滥情)。**Q1-Q5 default no-brainer 跳 spec doc · trust the build 跳 widget test**(filter 1 行 + 沿 _LineageRow 体例 · memory `feedback_isar_widget_test_deadlock`)。**P4.1 1.1 sect 子系统全 polish 收尾 ✅**(Q6A v1.12 + founder_buff v1.13 + Q6B v1.14 + polish v1.15)· 1.0 release ~93% 维持。详 closeout `p4_1_1_polish_closeout_2026-05-26.md`。
 
