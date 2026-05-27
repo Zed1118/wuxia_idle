@@ -273,8 +273,82 @@ void main() {
       expectRedLines(result, label: 'wushen × 灵刚汇流');
     });
 
-    // 注:原 hot-loop C3 (synergy_ling_yin_gui_yi) 在 2026-05-20 回退,
-    // 因 6 schoolPair 全覆盖 main/assist 方向后 sameTier 红线无法独立触发。
-    // 详 data/synergies.yaml 行 119-123 注释 + memory feedback_red_line_test_semantics。
+    // ── P2.1 Batch 4:+4 specificTechniques 传说彩蛋红线 case ──────────
+
+    test('hot-loop C3:synergy_ling_yin_hua_die (spd 0.20 + def 0.10 + IFgrowth 0.15) ≤ §5.4 红线',
+        () {
+      const m = SynergyMultipliers(
+        speedPct: 0.20, defensePct: 0.10, internalForceGrowthPct: 0.15,
+      );
+      expect(m.isWithinRedLine, isTrue,
+          reason: '9. 灵阴化蝶 各 multiplier ≤ 0.30');
+      final base = buildBase(
+        tier: RealmTier.wuSheng,
+        maxHp: 16550,
+        maxIf: 15000,
+        defRate: 0.35,
+        school: TechniqueSchool.lingQiao,
+      );
+      final result = StageBattleSetup.applySynergy(base, m);
+      expectRedLines(result, label: 'wushen × 灵阴化蝶');
+      expect(result.defenseRate, lessThanOrEqualTo(0.65),
+          reason: '0.35 + 0.10 = 0.45 ≤ §5.5 防御率红线 0.65');
+    });
+
+    test('hot-loop C4:synergy_long_hu_jiao_tai (atk 0.15 + spd 0.15 + hp 0.15) ≤ §5.4 红线',
+        () {
+      const m = SynergyMultipliers(
+        attackPct: 0.15, speedPct: 0.15, hpPct: 0.15,
+      );
+      expect(m.isWithinRedLine, isTrue,
+          reason: '10. 龙虎交泰 各 multiplier ≤ 0.30');
+      final base = buildBase(
+        tier: RealmTier.wuSheng,
+        maxHp: 16550,
+        maxIf: 15000,
+        defRate: 0.35,
+        school: TechniqueSchool.lingQiao,
+      );
+      final result = StageBattleSetup.applySynergy(base, m);
+      expectRedLines(result, label: 'wushen × 龙虎交泰');
+    });
+
+    test('hot-loop C5:synergy_you_ying_chuan_hua (atk 0.25 + IFmax 0.15) ≤ §5.4 红线',
+        () {
+      const m = SynergyMultipliers(
+        attackPct: 0.25, internalForceMaxPct: 0.15,
+      );
+      expect(m.isWithinRedLine, isTrue,
+          reason: '11. 幽影穿花 各 multiplier ≤ 0.30');
+      final base = buildBase(
+        tier: RealmTier.wuSheng,
+        maxHp: 16550,
+        maxIf: 15000,
+        defRate: 0.35,
+        school: TechniqueSchool.yinRou,
+      );
+      final result = StageBattleSetup.applySynergy(base, m);
+      expectRedLines(result, label: 'wushen × 幽影穿花');
+    });
+
+    test('hot-loop C6:synergy_jin_gang_bu_huai (def 0.20 + hp 0.20 + IFmax 0.10) ≤ §5.4 红线',
+        () {
+      const m = SynergyMultipliers(
+        defensePct: 0.20, hpPct: 0.20, internalForceMaxPct: 0.10,
+      );
+      expect(m.isWithinRedLine, isTrue,
+          reason: '12. 金刚不坏 各 multiplier ≤ 0.30');
+      final base = buildBase(
+        tier: RealmTier.wuSheng,
+        maxHp: 16550,
+        maxIf: 15000,
+        defRate: 0.35,
+        school: TechniqueSchool.gangMeng,
+      );
+      final result = StageBattleSetup.applySynergy(base, m);
+      expectRedLines(result, label: 'wushen × 金刚不坏');
+      expect(result.defenseRate, lessThanOrEqualTo(0.65),
+          reason: '0.35 + 0.20 = 0.55 ≤ §5.5 防御率红线 0.65');
+    });
   });
 }

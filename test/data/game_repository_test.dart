@@ -63,10 +63,9 @@ void main() {
           mainlineCount + innerDemonCount + lightFootCount + massBattleCount,
           reason: 'stageDefs 现含 mainline + innerDemon + lightFoot + massBattle 四类');
       expect(repo.numbers.version, isNotEmpty);
-      // 2026-05-21 候选 2:synergies.yaml 8 组合(原 7 + 新 1「太极初成」
-      // specificTechniques 类型,GDD §4.5 触上限 8)
-      expect(repo.synergies.length, 8,
-          reason: '心法相生 8 组合(GDD §4.5 上限,候选 2 加 specificTechniques 类型)');
+      // P2.1 Batch 4:synergies.yaml 8→12(+4 specificTechniques 传说彩蛋)
+      expect(repo.synergies.length, 12,
+          reason: '心法相生 12 组合(P2.1 Batch 4 扩充,5 schoolPair + 1 sameSchool + 1 sameTier + 5 specificTechniques)');
     });
 
     test('P1.1 A4：36 件 weapon specialSkillCandidates 2 候选 / 44 件 armor+accessory 留空', () async {
