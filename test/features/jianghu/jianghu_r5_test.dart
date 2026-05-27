@@ -312,4 +312,66 @@ void main() {
       expect(right, isEmpty);
     });
   });
+
+  // ── R5.8 Boss 击杀 → 声望 delta wire ──────────────────────────────────────
+
+  group('R5.8 Boss 击杀声望 wire(P1.2 stage_boss_kill_delta)', () {
+    test('主线 6 Boss 均有 factionId 且在 factions.yaml 存在', () {
+      final repo = GameRepository.instance;
+      final bossFactionStages = repo.stageDefs.values
+          .where((s) => s.isBossStage && s.factionId != null)
+          .toList();
+      expect(bossFactionStages.length, greaterThanOrEqualTo(6));
+      for (final s in bossFactionStages) {
+        expect(repo.factionAlignments.containsKey(s.factionId), isTrue,
+            reason: '${s.id} factionId=${s.factionId} 不在 factions.yaml');
+      }
+    });
+
+    test('rivalFactionIds orthodox → evil 列表', () {
+      final repo = GameRepository.instance;
+      final rivals = repo.rivalFactionIds('shaolin');
+      expect(rivals, containsAll(['jiaoMen', 'cijianzhuang']));
+      expect(rivals, isNot(contains('shaolin')));
+      expect(rivals, isNot(contains('wudang')));
+    });
+
+    test('rivalFactionIds evil → orthodox 列表', () {
+      final repo = GameRepository.instance;
+      final rivals = repo.rivalFactionIds('jiaoMen');
+      expect(rivals, containsAll(['shaolin', 'wudang', 'emei']));
+    });
+
+    test('rivalFactionIds neutral → 空(绿林不沾 rival)', () {
+      final repo = GameRepository.instance;
+      expect(repo.rivalFactionIds('luLin'), isEmpty);
+    });
+
+    test('applyDelta e2e · 击杀 orthodox Boss → boss 派 -5 + evil 派各 +3',
+        () async {
+      final repo = GameRepository.instance;
+      final svc = ReputationService(isar, repo.numbers);
+      final triggers = repo.numbers.jianghu.triggers;
+      const bossFaction = 'shaolin';
+
+      await svc.applyDelta(1, bossFaction, -triggers.stageBossKillDelta);
+      for (final rival in repo.rivalFactionIds(bossFaction)) {
+        await svc.applyDelta(1, rival, triggers.stageBossKillRivalDelta);
+      }
+
+      expect(await svc.valueFor(1, 'shaolin'), -5);
+      expect(await svc.valueFor(1, 'jiaoMen'), 3);
+      expect(await svc.valueFor(1, 'cijianzhuang'), 3);
+      expect(await svc.valueFor(1, 'wudang'), 0,
+          reason: '同阵营不受 rival delta');
+    });
+
+    test('factionAlignments 加载 6 门派完整', () {
+      final repo = GameRepository.instance;
+      expect(repo.factionAlignments.length, 6);
+      expect(repo.factionAlignments['shaolin'], 'orthodox');
+      expect(repo.factionAlignments['luLin'], 'neutral');
+      expect(repo.factionAlignments['jiaoMen'], 'evil');
+    });
+  });
 }

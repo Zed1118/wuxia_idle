@@ -105,6 +105,10 @@ class GameRepository {
   /// 本字段仅静态 def 索引。
   final Map<String, TerritoryDef> territoryDefs;
 
+  /// P1.2 factionId → alignment 映射(`data/factions.yaml`)。
+  /// stage boss kill 声望 wire 查 rival faction 用。fixture 不带 yaml 时空 map。
+  final Map<String, String> factionAlignments;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -122,6 +126,7 @@ class GameRepository {
     required this.synergies,
     required this.codexEntries,
     required this.territoryDefs,
+    required this.factionAlignments,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -319,6 +324,17 @@ class GameRepository {
       // test fixture 不带 territories.yaml 时静默,生产路径由 B4 红线校验。
     }
 
+    // P1.2 factions.yaml → factionId→alignment 映射(graceful;fixture 不带时空 map)。
+    Map<String, String> factionAlignments = const {};
+    try {
+      final factionsRaw = parseYamlMap(await load('data/factions.yaml'));
+      final list = (factionsRaw['factions'] as List?) ?? const [];
+      factionAlignments = {
+        for (final f in list)
+          (f as Map)['id'] as String: (f)['alignment'] as String,
+      };
+    } catch (_) {}
+
     final repo = GameRepository._(
       numbers: numbers,
       realms: realms,
@@ -336,11 +352,24 @@ class GameRepository {
       synergies: synergies,
       codexEntries: codexEntries,
       territoryDefs: territoryDefs,
+      factionAlignments: factionAlignments,
     );
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);
     _instance = repo;
     return repo;
+  }
+
+  /// 查 [factionId] 的对立阵营所有 faction id。
+  /// orthodox ↔ evil 互为 rival；neutral 无 rival。
+  List<String> rivalFactionIds(String factionId) {
+    final alignment = factionAlignments[factionId];
+    if (alignment == null || alignment == 'neutral') return const [];
+    final rival = alignment == 'orthodox' ? 'evil' : 'orthodox';
+    return [
+      for (final e in factionAlignments.entries)
+        if (e.value == rival) e.key,
+    ];
   }
 
   /// Phase 4 W15:装备 preset 典故 yaml 引用一致性校验。

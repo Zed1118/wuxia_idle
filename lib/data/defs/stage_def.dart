@@ -80,6 +80,10 @@ class StageDef {
   /// markTriggered 1 次性守(防玩家刷)→ confirm dialog → 复用 `runSectRecruitFlow`。
   final BossRecruitConfig? bossRecruit;
 
+  /// P1.2 Boss 所属门派(江湖恩怨 · Boss 战胜后触发声望 delta)。
+  /// 仅主线 Boss stage 配;null = 无派系归属(爬塔/轻功/群战/心魔 Boss 不沾声望)。
+  final String? factionId;
+
   const StageDef({
     required this.id,
     required this.name,
@@ -106,6 +110,7 @@ class StageDef {
     this.massBattleEnemyCounts,
     this.npcId,
     this.bossRecruit,
+    this.factionId,
   });
 
   factory StageDef.fromYaml(Map<String, dynamic> y) {
@@ -150,6 +155,7 @@ class StageDef {
           ?.map((e) => (e as num).toInt())
           .toList(growable: false),
       npcId: y['npcId'] as String?,
+      factionId: y['factionId'] as String?,
       bossRecruit: y['bossRecruit'] == null
           ? null
           : BossRecruitConfig.fromYaml(
