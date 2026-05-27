@@ -29,8 +29,8 @@ void main() {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
       expect(repo.realms.length, 49, reason: '49 级境界');
-      expect(repo.equipmentDefs.length, 35,
-          reason: '35 件装备（Phase 3 Week 7 T63 扩 7 阶 × 5 件）');
+      expect(repo.equipmentDefs.length, 80,
+          reason: '80 件装备（P2.1 Batch 1 扩 7 阶 × 11 + 3 跨阶特殊）');
       expect(repo.techniqueDefs.length, 21,
           reason: '21 本心法（Phase 3 Week 8 T64 扩 7 阶 × 3 流派）');
       // 2026-05-20 P1 #45 nightshift:skills.yaml 63 招 + encounter_skills.yaml
@@ -73,7 +73,7 @@ void main() {
           reason: '心法相生 8 组合(GDD §4.5 上限,候选 2 加 specificTechniques 类型)');
     });
 
-    test('P1.1 A4：21 件 weapon specialSkillCandidates 2 候选 / 14 件 armor+accessory 留空', () async {
+    test('P1.1 A4：36 件 weapon specialSkillCandidates 2 候选 / 44 件 armor+accessory 留空', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final weapons = repo.equipmentDefs.values
           .where((e) => e.slot == EquipmentSlot.weapon)
@@ -82,8 +82,8 @@ void main() {
           .where((e) => e.slot != EquipmentSlot.weapon)
           .toList();
 
-      expect(weapons.length, 21, reason: '7 阶 × 3 流派');
-      expect(nonWeapons.length, 14, reason: '7 阶 × (armor + accessory)');
+      expect(weapons.length, 36, reason: '7 阶 × 5 + 1 特殊');
+      expect(nonWeapons.length, 44, reason: '7 阶 × (armor 3 + accessory 3) + 2 特殊');
 
       for (final w in weapons) {
         expect(w.specialSkillCandidates, hasLength(2),
