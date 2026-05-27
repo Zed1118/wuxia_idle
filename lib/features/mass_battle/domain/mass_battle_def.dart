@@ -170,6 +170,10 @@ class MassBattleWaveIntermission {
   /// 与 preserveHp 取 max(短歇 hp 不低于当前残血)。
   final double aliveHpRecoveryPct;
 
+  /// 活角色内力恢复比例(0.0 = preserveInternalForce 走原值,1.0 = 满恢复)。
+  /// 与 preserveInternalForce 取 max(短歇内力不低于当前残值)。
+  final double aliveIfRecoveryPct;
+
   const MassBattleWaveIntermission({
     required this.resetActionPoint,
     required this.preserveHp,
@@ -177,6 +181,7 @@ class MassBattleWaveIntermission {
     required this.preserveCooldowns,
     this.reviveDeadPct = 0.0,
     this.aliveHpRecoveryPct = 0.0,
+    this.aliveIfRecoveryPct = 0.0,
   });
 
   /// 默认值(fixture / yaml 段缺失时兜底,与 numbers.yaml 显式配置一致)。
@@ -186,7 +191,8 @@ class MassBattleWaveIntermission {
         preserveInternalForce = true,
         preserveCooldowns = false,
         reviveDeadPct = 1.00,
-        aliveHpRecoveryPct = 1.00;
+        aliveHpRecoveryPct = 1.00,
+        aliveIfRecoveryPct = 0.50;
 
   factory MassBattleWaveIntermission.fromYaml(Map<String, dynamic> y) =>
       MassBattleWaveIntermission(
@@ -198,5 +204,7 @@ class MassBattleWaveIntermission {
         reviveDeadPct: (y['revive_dead_pct'] as num?)?.toDouble() ?? 0.0,
         aliveHpRecoveryPct:
             (y['alive_hp_recovery_pct'] as num?)?.toDouble() ?? 0.0,
+        aliveIfRecoveryPct:
+            (y['alive_if_recovery_pct'] as num?)?.toDouble() ?? 0.0,
       );
 }
