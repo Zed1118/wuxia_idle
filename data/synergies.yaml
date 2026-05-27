@@ -137,9 +137,69 @@ synergies:
       hpPct: 0.10
       internalForceMaxPct: 0.25
 
-  # ── 注:GDD §4.5 5-8 范围,本 yaml 现 8 满足上限。原 synergy 8「灵阴归一」
-  # (lingQiao+yinRou schoolPair)在 2026-05-20
-  # cherry-pick 后回退,因 6 schoolPair 全覆盖 main/assist 方向后 sameTier 红线
-  # 无法独立触发(E 角色 lingQiao+yinRou 会被 8 抢走)。GDD §4.5 5-8 范围,7 仍
-  # 满足。下次扩 §4.5 上限 8 需重设计 1 个非 schoolPair 类型组合(如 sameTier
-  # 高阶变体或新 SynergyRequirementType 枚举值),memory feedback_red_line_test_semantics 教训。
+  # ── 9. 灵阴化蝶:灵巧传说 + 阴柔传说,如蝶穿花,防守化无形 ──────────────
+  # P2.1 Batch 4 2026-05-28 · specificTechniques 类型(优先级最高,不与
+  # schoolPair 3「阴影迅捷」(yinRou→lingQiao) 冲突,因为本组是 lingQiao→yinRou
+  # 方向且限传说 tier 彩蛋)。
+  # 数值红线:speedPct 0.20 + defensePct 0.10 + IFgrowthPct 0.15 各 ≤ 0.30。
+  - id: synergy_ling_yin_hua_die
+    name: 灵阴化蝶
+    description: 灵巧身法与阴柔暗劲皆修至传说,出手如蝶穿花,守者不觉
+    requirement:
+      type: specificTechniques
+      mainTechniqueId: tech_lingqiao_chuanshuo
+      assistTechniqueId: tech_yinrou_chuanshuo
+    multipliers:
+      speedPct: 0.20
+      defensePct: 0.10
+      internalForceGrowthPct: 0.15
+
+  # ── 10. 龙虎交泰:灵巧传说 + 刚猛传说,龙虎同修,攻守兼备 ──────────────
+  # P2.1 Batch 4 · specificTechniques · 灵巧为龙刚猛为虎,三维均衡 buff。
+  # 数值红线:attackPct 0.15 + speedPct 0.15 + hpPct 0.15 各 ≤ 0.30。
+  - id: synergy_long_hu_jiao_tai
+    name: 龙虎交泰
+    description: 灵巧为龙,刚猛为虎,龙虎同修至传说,攻守兼备气吞山河
+    requirement:
+      type: specificTechniques
+      mainTechniqueId: tech_lingqiao_chuanshuo
+      assistTechniqueId: tech_gangmeng_chuanshuo
+    multipliers:
+      attackPct: 0.15
+      speedPct: 0.15
+      hpPct: 0.15
+
+  # ── 11. 幽影穿花:阴柔传说 + 灵巧传说,暗劲与灵动合流,攻之极致 ────────
+  # P2.1 Batch 4 · specificTechniques · 与 9「灵阴化蝶」(lingQiao→yinRou)
+  # 互为反向,本组主阴柔偏攻击性语义。
+  # 数值红线:attackPct 0.25 + internalForceMaxPct 0.15 各 ≤ 0.30。
+  - id: synergy_you_ying_chuan_hua
+    name: 幽影穿花
+    description: 阴柔暗劲配灵巧身法皆至传说,出招无影,伤敌于无形
+    requirement:
+      type: specificTechniques
+      mainTechniqueId: tech_yinrou_chuanshuo
+      assistTechniqueId: tech_lingqiao_chuanshuo
+    multipliers:
+      attackPct: 0.25
+      internalForceMaxPct: 0.15
+
+  # ── 12. 金刚不坏:刚猛防御传说 + 阴柔防御传说,两极防御合元 ──────────────
+  # P2.1 Batch 4 · specificTechniques · 需两本防御变体传说心法同修,极深彩蛋。
+  # 数值红线:defensePct 0.20 + hpPct 0.20 + internalForceMaxPct 0.10 各 ≤ 0.30。
+  # realm max defense 0.35 + synergy 0.20 = 0.55 ≤ §5.5 红线 0.65。
+  - id: synergy_jin_gang_bu_huai
+    name: 金刚不坏
+    description: 刚猛与阴柔两派防御传说合一,铜皮铁骨且筋脉坚韧,百招不破
+    requirement:
+      type: specificTechniques
+      mainTechniqueId: tech_gangmeng_chuanshuo_fang
+      assistTechniqueId: tech_yinrou_chuanshuo_fang
+    multipliers:
+      defensePct: 0.20
+      hpPct: 0.20
+      internalForceMaxPct: 0.10
+
+  # ── 注:P2.1 Batch 4 扩充 8→12,4 新组合全为 specificTechniques 类型(传说
+  # tier 彩蛋),不新增 schoolPair(6 方向已满)以保留 sameTier 独立触发空间
+  # (lingQiao main + yinRou assist 同 tier → sameTier 命中)。
