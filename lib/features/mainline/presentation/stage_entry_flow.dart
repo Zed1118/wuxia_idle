@@ -20,6 +20,10 @@ import '../../../core/application/inventory_providers.dart';
 import '../../battle/application/battle_resolution.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/strategy/light_foot_strategy.dart';
+import '../../battle/domain/strategy/mass_battle_strategy.dart';
+import '../../mass_battle/application/mass_battle_service.dart';
+import '../../mass_battle/domain/mass_battle_def.dart';
+import '../../../shared/strings.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
@@ -276,11 +280,22 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
       try {
         final (left, right) = await StageBattleSetup(isar: IsarSetup.instance).buildTeams(widget.stage);
         if (!mounted) return;
-        // 1.0 P3.1 §12.3 轻功对决:stageType=lightFoot 注入 LightFootStrategy
-        // (terrain modifier 烘焙到 BattleCharacter critRate/evasionRate/defenseRate
-        // 入口一次,然后委派 DefaultGroundStrategy 跑主循环);其他 stageType
-        // 走默认 DefaultGroundStrategy(BattleNotifier 73 行 fallback)。
-        if (widget.stage.stageType == StageType.lightFoot &&
+        if (widget.stage.stageType == StageType.massBattle) {
+          final enemyWaves =
+              StageBattleSetup.buildEnemyTeamsPerWave(widget.stage);
+          final config = GameRepository.instance.numbers.massBattle;
+          final formation = await _pickFormation(context, widget.stage, config);
+          if (!mounted) return;
+          ref.read(battleProvider.notifier).startBattle(
+                left,
+                right,
+                strategy: MassBattleStrategy(
+                  formation: formation,
+                  enemyTeamsPerWave: enemyWaves,
+                  config: config,
+                ),
+              );
+        } else if (widget.stage.stageType == StageType.lightFoot &&
             widget.stage.terrainBiome != null) {
           ref.read(battleProvider.notifier).startBattle(
                 left,
@@ -822,4 +837,57 @@ Future<void> _applyBossKillReputation({
   }
 
   ref.invalidate(reputationsForCurrentPlayerProvider);
+}
+
+Future<Formation> _pickFormation(
+  BuildContext context,
+  StageDef stage,
+  MassBattleDef config,
+) async {
+  final defaultFormation = MassBattleService.formationFor(
+    stageId: stage.id,
+    config: config,
+  );
+  if (!context.mounted) return defaultFormation;
+  final picked = await showDialog<Formation>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => _FormationPickerDialog(defaultFormation: defaultFormation),
+  );
+  return picked ?? defaultFormation;
+}
+
+class _FormationPickerDialog extends StatelessWidget {
+  final Formation defaultFormation;
+  const _FormationPickerDialog({required this.defaultFormation});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text(UiStrings.massBattleFormationTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _tile(context, Formation.yanXing,
+              UiStrings.massBattleFormationYanXing,
+              UiStrings.massBattleFormationYanXingHint),
+          _tile(context, Formation.baGua,
+              UiStrings.massBattleFormationBaGua,
+              UiStrings.massBattleFormationBaGuaHint),
+          _tile(context, Formation.fengShi,
+              UiStrings.massBattleFormationFengShi,
+              UiStrings.massBattleFormationFengShiHint),
+        ],
+      ),
+    );
+  }
+
+  Widget _tile(BuildContext context, Formation f, String label, String hint) {
+    return ListTile(
+      title: Text(label),
+      subtitle: Text(hint, style: const TextStyle(fontSize: 12)),
+      selected: f == defaultFormation,
+      onTap: () => Navigator.of(context).pop(f),
+    );
+  }
 }

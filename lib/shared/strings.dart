@@ -445,6 +445,13 @@ class UiStrings {
   // ─── 群战守城（1.0 P3.2 §12.3,Batch 2.4 入口）────────────────────────────
   static const String mainMenuMassBattle = '守城试炼';
   static const String mainMenuMassBattleHint = '5 关守城 · 以少胜多';
+  static const String massBattleFormationTitle = '选择阵型';
+  static const String massBattleFormationYanXing = '雁行阵';
+  static const String massBattleFormationYanXingHint = '暴击 +10% · 防御 -5%';
+  static const String massBattleFormationBaGua = '八卦阵';
+  static const String massBattleFormationBaGuaHint = '防御 +10% · 闪避 +5%';
+  static const String massBattleFormationFengShi = '锋矢阵';
+  static const String massBattleFormationFengShiHint = '伤害 ×1.10 · 暴击 +5%';
 
   // ─── 论剑对决 PVP(1.0 P3.3 §12.3,Phase 4 入口)───────────────────────────
   static const String mainMenuPvp = '论剑对决';

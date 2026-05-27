@@ -75,6 +75,27 @@ class StageBattleSetup {
     return right;
   }
 
+  /// 群战守城 per-wave 敌队生成。模板 [stage.enemyTeam] (3 templates) 循环填充
+  /// 每波 [massBattleEnemyCounts[w]] 人，characterId 从 -10000 递减防撞。
+  static List<List<BattleCharacter>> buildEnemyTeamsPerWave(StageDef stage) {
+    final counts = stage.massBattleEnemyCounts;
+    if (counts == null || counts.isEmpty) return const [];
+    final templates = stage.enemyTeam;
+    if (templates.isEmpty) return const [];
+    var cursor = 0;
+    return [
+      for (final count in counts)
+        [
+          for (var j = 0; j < count; j++)
+            _enemyToBattle(
+              enemy: templates[j % templates.length],
+              slotIndex: j,
+              characterIdOverride: -10000 - (cursor++),
+            ),
+        ],
+    ];
+  }
+
   /// 从 Isar 拉玩家方（左队）：优先 activeCharacterIds，空则兜底 findFirst。
   Future<List<BattleCharacter>> _buildPlayerTeam() async {
     final save = await isar.saveDatas.get(0);
@@ -245,12 +266,13 @@ class StageBattleSetup {
   static BattleCharacter _enemyToBattle({
     required EnemyDef enemy,
     required int slotIndex,
+    int? characterIdOverride,
   }) {
     final skills = enemy.skillIds
         .map((id) => GameRepository.instance.getSkill(id))
         .toList(growable: false);
     return BattleCharacter(
-      characterId: -(slotIndex + 1),
+      characterId: characterIdOverride ?? -(slotIndex + 1),
       name: enemy.name,
       realmTier: enemy.realmTier,
       realmLayer: enemy.realmLayer,
