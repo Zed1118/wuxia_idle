@@ -215,14 +215,23 @@ class MassBattleStrategy implements BattleStrategy {
       final hpAfterRecovery = wi.aliveHpRecoveryPct > 0
           ? (c.maxHp * wi.aliveHpRecoveryPct).round().clamp(0, c.maxHp)
           : (wi.preserveHp ? c.currentHp : c.maxHp);
+      final ifAfterRecovery = wi.aliveIfRecoveryPct > 0
+          ? (c.maxInternalForce * wi.aliveIfRecoveryPct)
+              .round()
+              .clamp(0, c.maxInternalForce)
+          : (wi.preserveInternalForce
+              ? c.currentInternalForce
+              : c.maxInternalForce);
       return c.copyWith(
         actionPoint: wi.resetActionPoint ? 0 : c.actionPoint,
         currentHp: wi.preserveHp
             ? (c.currentHp > hpAfterRecovery ? c.currentHp : hpAfterRecovery)
             : hpAfterRecovery,
         currentInternalForce: wi.preserveInternalForce
-            ? c.currentInternalForce
-            : c.maxInternalForce,
+            ? (c.currentInternalForce > ifAfterRecovery
+                ? c.currentInternalForce
+                : ifAfterRecovery)
+            : ifAfterRecovery,
         skillCooldowns:
             wi.preserveCooldowns ? c.skillCooldowns : const <String, int>{},
       );
