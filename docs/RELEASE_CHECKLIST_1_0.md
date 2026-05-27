@@ -7,13 +7,13 @@
 
 ## TL;DR
 
-**当前 release readiness:~93%**(A+B 全 PASS · C 基础 8/8 PASS + P4.1 1.1 sect recruit R2 验收中 · 0 P0/P1 阻塞 · **1514 测 / 139 测文件 / 0 analyze** · 剩 D 性能 / E 音频 / F Steam / G 法律商业 M15-16)
+**当前 release readiness:~95%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **1514 测 / 139 测文件 / 0 analyze** · P2.1 Batch 1 装备 80 件落地 · 剩 D 性能 / E 音频 / F Steam / G 法律商业 M15-16)
 
 | 段 | 完成度 | 阻塞? |
 |---|---|---|
 | A 代码质量 | ✅ 100% | — |
 | B 系统完整性(6 系统) | ✅ 100% | — |
-| C 视觉验收 | ✅ C.1 8/8 + C.2 4/4 PASS · **R3 合并验收派单中**(6 子系统 16 点) | — |
+| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + **C.3 R3 必收 10/10 PASS** | — |
 | D 性能稳定(P5.2) | ✗ 0% | M15-16 |
 | E 音频(P5.3) | ✗ 0% | M15-16 |
 | F Steam 集成(P5.4) | ✗ 0% | M15-16 |
@@ -78,6 +78,16 @@
 
 > 派单单据 + 续跑成功段 `docs/handoff/codex_visual_check_p5_p4_1_2026-05-25.md` · 8 截图归档 `docs/screenshots/p5_p4_1_visual_check_2026-05-25/` · **WARN**:1280×720 截图右边框是 Pen 桌面捕获 framing 不是 in-app bug / clean seed 成员 Tab 空状态预期非 bug · **Isar 路径修正**:派单 prompt 写 `%LOCALAPPDATA%\com.example.wuxia_idle\` 实际是 `getApplicationDocumentsDirectory() → C:\Users\Administrator\Documents\wuxia_save_slot1.isar`(下次派单沿 `isar_setup.dart` grep)
 
+### C.3 R3 合并验收(✅ 必收 10/10 PASS 2026-05-28)
+
+- [x] **R1 P5+ 飞升全流程**(5/5):按钮 enable / 装备选择 / 弟子下拉 / 确认 dialog / snackbar
+- [x] **R2 心魔+轻功+群战+阵型**(5/5):3 Screen 入口 + 阵型选择 dialog(雁行/八卦/锋矢)+ 群战结算
+- [x] **R3 Ch4-6 章节列表**(1/1):Ch4/5/6 可见 · narrative opening 因章节锁定标 LOCKED_EXPECTED
+- [x] **R4 声望面板**(1/1)
+- 4.2 门派持久:NOT_APPLICABLE(clean seed 无招募数据 · R2 已验证持久化)
+
+> R3 派单 `docs/handoff/codex_dispatch_r3_consolidated_visual_check_2026-05-28.md` · 16 截图归档 `docs/handoff/r3_visual_check_screenshots/` · closeout `docs/handoff/pen_visual_verify_r3_consolidated_2026-05-28.md`
+
 ## D. 性能稳定(P5.2 · 留 M15-16)
 
 - [ ] 长时间运行 8h+ 无 crash(挂机典型场景)
@@ -134,6 +144,7 @@
 
 ## 修订记录
 
+- **v1.4**(2026-05-28)C 段 100% + P2.1 Batch 1:C.2 R2 全 PASS 勾完 + C.3 R3 合并验收必收 10/10 PASS(P5+ 飞升/心魔/轻功/群战+阵型/Ch4-6/声望)+ P2.1 Batch 1 装备 35→80 落地。release readiness 93% → **~95%**。
 - **v1.3**(2026-05-28)P3.2.B+P1.2+P3.x 三项实装 + 1.1 挂账清理状态对齐:A 段测试数 1505→1514 · B 段战斗核心行加 P3.2.B 群战调优 + P3.x UI wiring · cross-system 行加 P1.2 Boss 声望 wire · B 段附加加 4 项(招降收降叙事 12/12 + P3.2.B + P1.2 + P3.x)· H 段 1.1 战败收降+池扩标闭环 + 剩余挂账缩至 candidateRefs(1.2)· **~93% 维持**。
 - **v1.2**(2026-05-27)P4.1 1.1 全闭环状态对齐:A 段测试数 1484→1505 / 139 测文件 / Isar 0.13→0.14 · B 段 sect 社交行加 P4.1 1.1 四项闭环注 · B 段附加加 Boss 招降叙事 6 篇 + debug 强制招募入口 · C 段拆 C.1 基础(8/8 PASS 维持) + C.2 P4.1 1.1 sect recruit(R2 验收中 4 项) · H 段 1.1 挂账标闭环 + 剩余挂账明细 · Pen 仓库从 T18 拉齐到 HEAD `4bdc08d` + git remote 切 SSH · **~93% 维持**(C.2 R2 回来勾完后 C 段 100%)。
 - **v1.1**(2026-05-26)Pen Codex 视觉验收 ✅ 闭环:Mac SSH 反向 tar pipe 救场 5min → Codex 续跑 PASS · 8 截图全 PASS(`docs/screenshots/p5_p4_1_visual_check_2026-05-25/01-08.png`)· C 段 8 项全勾 · release readiness 91% → **93%**(本机可验 + 视觉验收 全清零)· 剩 D-G M15-16。**Isar 路径修正记录**:实际路径 `C:\Users\Administrator\Documents\wuxia_save_slot1.isar`(`getApplicationDocumentsDirectory()` Windows fallback)非 `%LOCALAPPDATA%` · 下次派单 prompt 沿 `lib/data/isar_setup.dart` grep。
