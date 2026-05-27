@@ -286,15 +286,15 @@ void main() {
         '其他未配关卡 dropTable 为空（向后兼容）', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final s2 = repo.getStage('stage_01_02');
-      expect(s2.dropTable.length, 1,
-          reason: '荒山野店：必掉磨剑石');
+      expect(s2.dropTable.length, 3,
+          reason: '荒山野店：2 装备 + 必掉磨剑石');
       final sFinal = repo.getStage('stage_03_05');
       expect(sFinal.dropTable.length, 3,
           reason: '章末大 Boss：龙泉剑 + 60% 玉佩 + 必掉心血结晶');
       // W13-v3:stage_01_01 加 onboarding dropTable(必掉护甲 + 1 磨剑石)
       final s1 = repo.getStage('stage_01_01');
-      expect(s1.dropTable.length, 2,
-          reason: '新手第一关 onboarding：100% 寻常布衣 + 100% 1 磨剑石');
+      expect(s1.dropTable.length, 3,
+          reason: '新手第一关：100% 布衣 + 30% 铜铃 + 100% 磨剑石');
     });
 
     test('W13-v3 #10 兜底：DropService.rollDrops(stage_01_01) 100% 掉护甲 + 磨剑石',
@@ -305,12 +305,13 @@ void main() {
       final stage = repo.getStage('stage_01_01');
       final svc = DropService(equipmentDefLookup: repo.getEquipment);
 
-      // 跑 5 次,因 dropChance=1.0 每次都应该 1 装备 + 1 物料,验证非概率 flake
+      // 跑 5 次,armor 100% 必掉 + accessory 30% 概率掉,验证必掉项非 flake
       for (var i = 0; i < 5; i++) {
         final result = svc.rollDrops(stage, DefaultRng(seed: i));
-        expect(result.equipments.length, 1,
+        expect(result.equipments.length, greaterThanOrEqualTo(1),
             reason: 'iter $i:armor_xunchang_bu_yi 100% 必掉');
-        expect(result.equipments.first.defId, 'armor_xunchang_bu_yi');
+        expect(result.equipments.map((e) => e.defId),
+            contains('armor_xunchang_bu_yi'));
         expect(result.items.length, 1,
             reason: 'iter $i:item_mojianshi 100% 必掉');
         expect(result.items.first.defId, 'item_mojianshi');
@@ -346,6 +347,34 @@ void main() {
           }
         }
       }
+    });
+
+    test('drop 覆盖率红线:除 special 外每件装备至少有 1 个主线关卡 dropTable 来源',
+        () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final specialTags = {'ascension_reward', 'inner_demon_reward', 'mass_battle_merit'};
+      final mainlines = repo.stageDefs.values
+          .where((s) => s.stageType == StageType.mainline)
+          .toList();
+
+      final droppedIds = <String>{};
+      for (final stage in mainlines) {
+        for (final entry in stage.dropTable) {
+          if (entry case EquipmentDrop(:final equipmentDefId)) {
+            droppedIds.add(equipmentDefId);
+          }
+        }
+      }
+
+      final missing = <String>[];
+      for (final e in repo.equipmentDefs.values) {
+        final isSpecial = e.dropSourceTags.any(specialTags.contains);
+        if (!isSpecial && !droppedIds.contains(e.id)) {
+          missing.add(e.id);
+        }
+      }
+      expect(missing, isEmpty,
+          reason: '以下装备无主线 drop 来源: $missing');
     });
 
     test('未配置的 id → 抛 StateError', () async {

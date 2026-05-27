@@ -74,6 +74,8 @@ stages:
     dropTable:
       - equipmentDefId: armor_xunchang_bu_yi
         dropChance: 1.0
+      - equipmentDefId: accessory_xunchang_tong_ling
+        dropChance: 0.30
       - inventoryItemDefId: item_mojianshi
         quantity: [1, 1]
         dropChance: 1.0
@@ -126,6 +128,10 @@ stages:
     dropEquipmentDefIds: [accessory_xunchang_yu_pei]
     dropItemDefIds: []
     dropTable:
+      - equipmentDefId: weapon_xunchang_zhe_dao
+        dropChance: 0.35
+      - equipmentDefId: armor_xunchang_duan_gua
+        dropChance: 0.25
       - inventoryItemDefId: item_mojianshi
         quantity: [1, 3]
         dropChance: 1.0
@@ -180,6 +186,10 @@ stages:
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
         dropChance: 0.40
+      - equipmentDefId: weapon_xunchang_ruan_bian
+        dropChance: 0.30
+      - equipmentDefId: accessory_xunchang_yao_nang
+        dropChance: 0.25
       - inventoryItemDefId: item_mojianshi
         quantity: [2, 4]
         dropChance: 1.0
@@ -237,6 +247,10 @@ stages:
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
         dropChance: 0.60
+      - equipmentDefId: weapon_xunchang_chai_dao
+        dropChance: 0.40
+      - equipmentDefId: armor_xunchang_mian_jia
+        dropChance: 0.30
       - inventoryItemDefId: item_mojianshi
         quantity: [3, 5]
         dropChance: 1.0
@@ -305,6 +319,10 @@ stages:
         dropChance: 1.0
       - equipmentDefId: armor_xunchang_bu_yi
         dropChance: 0.50
+      - equipmentDefId: weapon_xunchang_fei_shi
+        dropChance: 0.50
+      - equipmentDefId: accessory_xunchang_yu_pei
+        dropChance: 0.40
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [1, 2]
         dropChance: 1.0
@@ -361,6 +379,14 @@ stages:
       - weapon_xiangyang_gang_dao
       - armor_xiangyang_pi_jia
     dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_xiangyang_chang_jian
+        dropChance: 0.30
+      - equipmentDefId: accessory_xiangyang_tie_hu_wan
+        dropChance: 0.25
+      - inventoryItemDefId: item_mojianshi
+        quantity: [2, 4]
+        dropChance: 1.0
     baseExpReward: 350
     difficultyMultiplier: 1.5
     biome: escortRoad
@@ -412,6 +438,10 @@ stages:
     dropEquipmentDefIds: [accessory_xiangyang_yin_jie]
     dropItemDefIds: []
     dropTable:
+      - equipmentDefId: weapon_xiangyang_jiu_jie_bian
+        dropChance: 0.35
+      - equipmentDefId: armor_xiangyang_ye_xing_yi
+        dropChance: 0.25
       - inventoryItemDefId: item_mojianshi
         quantity: [3, 5]
         dropChance: 1.0
@@ -468,6 +498,10 @@ stages:
     dropTable:
       - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.50
+      - equipmentDefId: weapon_xiangyang_liu_ye_dao
+        dropChance: 0.30
+      - equipmentDefId: accessory_xiangyang_cui_yu_zhui
+        dropChance: 0.25
       - inventoryItemDefId: item_mojianshi
         quantity: [3, 6]
         dropChance: 1.0
@@ -530,6 +564,10 @@ stages:
         dropChance: 0.80
       - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.40
+      - equipmentDefId: weapon_xiangyang_xiu_jian
+        dropChance: 0.40
+      - equipmentDefId: armor_xiangyang_tie_pian_jia
+        dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [1, 3]
         dropChance: 1.0
@@ -661,6 +699,14 @@ stages:
     isBossStage: false
     dropEquipmentDefIds: [armor_haojiahuo_jin_pao]
     dropItemDefIds: []
+    dropTable:
+      - equipmentDefId: weapon_haojiahuo_xuan_hua_fu
+        dropChance: 0.30
+      - equipmentDefId: accessory_haojiahuo_ping_an_kou
+        dropChance: 0.25
+      - inventoryItemDefId: item_xinxuejiejing
+        quantity: [1, 2]
+        dropChance: 1.0
     baseExpReward: 1500
     difficultyMultiplier: 2.0
     biome: cityWall
@@ -720,6 +766,10 @@ stages:
     dropTable:
       - equipmentDefId: weapon_haojiahuo_qing_feng_jian
         dropChance: 0.50
+      - equipmentDefId: weapon_haojiahuo_chan_si_suo
+        dropChance: 0.35
+      - equipmentDefId: armor_haojiahuo_chou_shan
+        dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 4]
         dropChance: 1.0
@@ -780,6 +830,10 @@ stages:
     dropTable:
       - equipmentDefId: accessory_haojiahuo_yu_pei_lao
         dropChance: 0.40
+      - equipmentDefId: weapon_haojiahuo_yuan_yang_yue
+        dropChance: 0.35
+      - equipmentDefId: armor_haojiahuo_suo_zi_jia
+        dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 5]
         dropChance: 1.0
@@ -846,6 +900,10 @@ stages:
         dropChance: 0.80
       - equipmentDefId: accessory_haojiahuo_yu_pei_lao
         dropChance: 0.60
+      - equipmentDefId: weapon_haojiahuo_mei_hua_biao
+        dropChance: 0.40
+      - equipmentDefId: accessory_haojiahuo_she_dan_wan
+        dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 6]
         dropChance: 1.0
@@ -984,6 +1042,10 @@ stages:
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 0.80
+      - equipmentDefId: armor_liqi_xuan_tie_jia
+        dropChance: 0.30
+      - equipmentDefId: accessory_liqi_hu_xin_jing
+        dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [6, 9]
         dropChance: 1.0
@@ -1046,6 +1108,10 @@ stages:
     dropTable:
       - equipmentDefId: weapon_liqi_pan_long_dao
         dropChance: 0.70
+      - equipmentDefId: weapon_liqi_hu_tou_gou
+        dropChance: 0.35
+      - equipmentDefId: armor_liqi_qing_luo_shan
+        dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [7, 10]
         dropChance: 1.0
@@ -1113,6 +1179,10 @@ stages:
         dropChance: 0.70
       - equipmentDefId: accessory_haojiahuo_yu_pei_lao
         dropChance: 0.50
+      - equipmentDefId: weapon_liqi_li_hua_zhen
+        dropChance: 0.35
+      - equipmentDefId: accessory_liqi_jin_chuang_gao
+        dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [8, 11]
         dropChance: 1.0
@@ -1179,6 +1249,10 @@ stages:
         dropChance: 1.0
       - equipmentDefId: accessory_haojiahuo_yu_pei_lao
         dropChance: 0.60
+      - equipmentDefId: accessory_liqi_fei_yu_pei
+        dropChance: 0.40
+      - equipmentDefId: armor_liqi_tie_ye_jia
+        dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [9, 12]
         dropChance: 1.0
@@ -1321,6 +1395,10 @@ stages:
     dropTable:
       - equipmentDefId: weapon_zhongqi_po_zhen_chui
         dropChance: 0.70
+      - equipmentDefId: weapon_zhongqi_qing_xu_jian
+        dropChance: 0.30
+      - equipmentDefId: accessory_zhongqi_bi_xi_shou_chuan
+        dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [10, 13]
         dropChance: 1.0
@@ -1383,6 +1461,10 @@ stages:
     dropTable:
       - equipmentDefId: weapon_zhongqi_du_long_suo
         dropChance: 0.70
+      - equipmentDefId: weapon_zhongqi_ri_yue_lun
+        dropChance: 0.35
+      - equipmentDefId: armor_zhongqi_yu_lin_qing_jia
+        dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [11, 14]
         dropChance: 1.0
@@ -1446,6 +1528,10 @@ stages:
     dropTable:
       - equipmentDefId: armor_zhongqi_yin_lin_jia
         dropChance: 0.50
+      - equipmentDefId: weapon_zhongqi_zhui_hun_ding
+        dropChance: 0.35
+      - equipmentDefId: accessory_zhongqi_xuan_tie_zhi_huan
+        dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [12, 15]
         dropChance: 1.0
@@ -1512,6 +1598,10 @@ stages:
         dropChance: 1.0
       - equipmentDefId: armor_zhongqi_yin_lin_jia
         dropChance: 0.60
+      - equipmentDefId: accessory_zhongqi_qing_yu_huan
+        dropChance: 0.40
+      - equipmentDefId: armor_zhongqi_han_tie_zhong_jia
+        dropChance: 0.30
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [13, 16]
         dropChance: 1.0
@@ -1642,6 +1732,12 @@ stages:
     dropTable:
       - equipmentDefId: weapon_baowu_xuan_tian_fu
         dropChance: 1.0
+      - equipmentDefId: weapon_baowu_chang_hong_jian
+        dropChance: 0.30
+      - equipmentDefId: armor_baowu_can_si_ruan_jia
+        dropChance: 0.25
+      - equipmentDefId: accessory_baowu_long_gu_lian
+        dropChance: 0.20
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [12, 16]
         dropChance: 1.0
@@ -1691,6 +1787,12 @@ stages:
     dropTable:
       - equipmentDefId: weapon_baowu_xue_lian_bian
         dropChance: 1.0
+      - equipmentDefId: weapon_baowu_yin_yang_ci
+        dropChance: 0.35
+      - equipmentDefId: armor_baowu_wu_jin_zhan_jia
+        dropChance: 0.25
+      - equipmentDefId: accessory_baowu_zi_jin_hu_lu
+        dropChance: 0.20
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [13, 17]
         dropChance: 1.0
@@ -1756,6 +1858,12 @@ stages:
         dropChance: 1.0
       - equipmentDefId: accessory_baowu_yu_long_pei
         dropChance: 0.50
+      - equipmentDefId: weapon_baowu_bing_po_zhen
+        dropChance: 0.35
+      - equipmentDefId: weapon_shenwu_hun_yuan_chui
+        dropChance: 0.15
+      - equipmentDefId: armor_shenwu_bing_can_yi
+        dropChance: 0.10
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [14, 18]
         dropChance: 1.0
@@ -1823,6 +1931,14 @@ stages:
         dropChance: 1.0
       - equipmentDefId: weapon_baowu_xuan_tian_fu
         dropChance: 0.50
+      - equipmentDefId: weapon_shenwu_po_jun_dao
+        dropChance: 0.20
+      - equipmentDefId: weapon_shenwu_huan_meng_bian
+        dropChance: 0.15
+      - equipmentDefId: armor_shenwu_tian_can_bao_jia
+        dropChance: 0.10
+      - equipmentDefId: accessory_shenwu_she_li_zhu
+        dropChance: 0.15
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [16, 20]
         dropChance: 1.0
@@ -1899,6 +2015,10 @@ stages:
         dropChance: 0.50
       - equipmentDefId: accessory_baowu_yu_long_pei
         dropChance: 0.40
+      - equipmentDefId: weapon_shenwu_kong_que_ling
+        dropChance: 0.30
+      - equipmentDefId: accessory_shenwu_tian_yuan_zhi
+        dropChance: 0.25
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [18, 24]
         dropChance: 1.0
