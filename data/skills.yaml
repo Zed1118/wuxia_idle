@@ -12,7 +12,7 @@
 # 梯度规则:basic powerMultiplier=500 (GDD §5.3 强制) / skill=80% cap / ult=cap
 # internalForceCost / cooldownTurns 按 tier 递增,ult 全部 cd=5 + manualTrigger=true
 # requiresManualTrigger:仅 ultimate 为 true（GDD §5.3 大招由玩家手动放）。
-# description 占位 TODO_NARRATIVE。
+# description 已全部填写(P2.1 Batch 4 TODO_NARRATIVE 清理)。
 # =============================================================================
 
 skills:
@@ -24,7 +24,7 @@ skills:
   # ─── 刚猛 · 入门功 ───
   - id: skill_gangmeng_jichu_basic
     name: 直拳
-    description: TODO_NARRATIVE
+    description: 一拳朴实无华,力从腰出
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -35,7 +35,7 @@ skills:
 
   - id: skill_gangmeng_jichu_skill
     name: 重击
-    description: TODO_NARRATIVE
+    description: 沉腰坐马,出拳如铁锤落下
     type: powerSkill
     powerMultiplier: 1200
     internalForceCost: 100
@@ -46,7 +46,7 @@ skills:
 
   - id: skill_gangmeng_jichu_ult
     name: 怒涛拳
-    description: TODO_NARRATIVE
+    description: 蓄势三息,一拳如怒涛拍岸
     type: ultimate
     powerMultiplier: 1500
     internalForceCost: 300
@@ -58,7 +58,7 @@ skills:
   # ─── 灵巧 · 入门功 ───
   - id: skill_lingqiao_jichu_basic
     name: 快剑
-    description: TODO_NARRATIVE
+    description: 剑从鞘出,不过一瞬
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -69,7 +69,7 @@ skills:
 
   - id: skill_lingqiao_jichu_skill
     name: 连环刺
-    description: TODO_NARRATIVE
+    description: 身形微转,剑尖连点三处要穴
     type: powerSkill
     powerMultiplier: 1100
     internalForceCost: 90
@@ -80,7 +80,7 @@ skills:
 
   - id: skill_lingqiao_jichu_ult
     name: 流光剑
-    description: TODO_NARRATIVE
+    description: 剑光掠过如流星,快到不可捉摸
     type: ultimate
     powerMultiplier: 1500
     internalForceCost: 280
@@ -92,7 +92,7 @@ skills:
   # ─── 阴柔 · 入门功 ───
   - id: skill_yinrou_jichu_basic
     name: 飘叶手
-    description: TODO_NARRATIVE
+    description: 掌出如落叶飘坠,轻柔而至
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -103,7 +103,7 @@ skills:
 
   - id: skill_yinrou_jichu_skill
     name: 暗影掌
-    description: TODO_NARRATIVE
+    description: 掌风无声,中者方觉暗劲已入体
     type: powerSkill
     powerMultiplier: 1000
     internalForceCost: 80
@@ -114,7 +114,7 @@ skills:
 
   - id: skill_yinrou_jichu_ult
     name: 摧心指
-    description: TODO_NARRATIVE
+    description: 一指点出,暗劲直透心脉
     type: ultimate
     powerMultiplier: 1500
     internalForceCost: 320
@@ -130,7 +130,7 @@ skills:
   # ─── 刚猛 · 常练功 ───
   - id: skill_gangmeng_changlian_basic
     name: 横扫拳
-    description: TODO_NARRATIVE
+    description: 横臂挥出,拳风扫荡四方
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -141,7 +141,7 @@ skills:
 
   - id: skill_gangmeng_changlian_skill
     name: 破甲掌
-    description: TODO_NARRATIVE
+    description: 内力外放,一掌可裂甲胄
     type: powerSkill
     powerMultiplier: 1600
     internalForceCost: 130
@@ -152,7 +152,7 @@ skills:
 
   - id: skill_gangmeng_changlian_ult
     name: 山岳震
-    description: TODO_NARRATIVE
+    description: 全身之力贯于双拳,一击如山崩
     type: ultimate
     powerMultiplier: 2000
     internalForceCost: 380
@@ -164,7 +164,7 @@ skills:
   # ─── 灵巧 · 常练功 ───
   - id: skill_lingqiao_changlian_basic
     name: 穿云剑
-    description: TODO_NARRATIVE
+    description: 剑势轻灵,如白鹤穿云
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -175,7 +175,7 @@ skills:
 
   - id: skill_lingqiao_changlian_skill
     name: 旋身刺
-    description: TODO_NARRATIVE
+    description: 借旋身之力,一剑贯入敌阵
     type: powerSkill
     powerMultiplier: 1600
     internalForceCost: 130
@@ -186,7 +186,7 @@ skills:
 
   - id: skill_lingqiao_changlian_ult
     name: 万剑诀
-    description: TODO_NARRATIVE
+    description: 剑气横生,化作漫天剑影
     type: ultimate
     powerMultiplier: 2000
     internalForceCost: 380
@@ -198,7 +198,7 @@ skills:
   # ─── 阴柔 · 常练功 ───
   - id: skill_yinrou_changlian_basic
     name: 拂袖手
-    description: TODO_NARRATIVE
+    description: 衣袖一拂,暗劲随之而出
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -209,7 +209,7 @@ skills:
 
   - id: skill_yinrou_changlian_skill
     name: 隐影爪
-    description: TODO_NARRATIVE
+    description: 五指如钩,出手不见,收手见血
     type: powerSkill
     powerMultiplier: 1600
     internalForceCost: 130
@@ -220,7 +220,7 @@ skills:
 
   - id: skill_yinrou_changlian_ult
     name: 销魂指
-    description: TODO_NARRATIVE
+    description: 指力透骨,中者神魂俱散
     type: ultimate
     powerMultiplier: 2000
     internalForceCost: 380
@@ -236,7 +236,7 @@ skills:
   # ─── 刚猛 · 名家功 ───
   - id: skill_gangmeng_mingjia_basic
     name: 沉拳
-    description: TODO_NARRATIVE
+    description: 拳如千斤坠,步步沉稳
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -247,7 +247,7 @@ skills:
 
   - id: skill_gangmeng_mingjia_skill
     name: 裂石掌
-    description: TODO_NARRATIVE
+    description: 掌出风至,碎石裂壁不在话下
     type: powerSkill
     powerMultiplier: 1800
     internalForceCost: 180
@@ -258,7 +258,7 @@ skills:
 
   - id: skill_gangmeng_mingjia_ult
     name: 崩山击
-    description: TODO_NARRATIVE
+    description: 气沉丹田,一击有开山之威
     type: ultimate
     powerMultiplier: 2500
     internalForceCost: 500
@@ -270,7 +270,7 @@ skills:
   # ─── 灵巧 · 名家功 ───
   - id: skill_lingqiao_mingjia_basic
     name: 疾风剑
-    description: TODO_NARRATIVE
+    description: 出剑如风,令对手难以捕捉
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -281,7 +281,7 @@ skills:
 
   - id: skill_lingqiao_mingjia_skill
     name: 燕回式
-    description: TODO_NARRATIVE
+    description: 身形翩然,剑如飞燕回旋
     type: powerSkill
     powerMultiplier: 1700
     internalForceCost: 160
@@ -292,7 +292,7 @@ skills:
 
   - id: skill_lingqiao_mingjia_ult
     name: 御风斩
-    description: TODO_NARRATIVE
+    description: 御风而行,剑落处风声呼啸
     type: ultimate
     powerMultiplier: 2500
     internalForceCost: 480
@@ -304,7 +304,7 @@ skills:
   # ─── 阴柔 · 名家功 ───
   - id: skill_yinrou_mingjia_basic
     name: 玉女拈花
-    description: TODO_NARRATIVE
+    description: 纤指拈来,不着痕迹
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -315,7 +315,7 @@ skills:
 
   - id: skill_yinrou_mingjia_skill
     name: 寒星掌
-    description: TODO_NARRATIVE
+    description: 掌风阴冷,如寒夜星光刺骨
     type: powerSkill
     powerMultiplier: 1600
     internalForceCost: 150
@@ -326,7 +326,7 @@ skills:
 
   - id: skill_yinrou_mingjia_ult
     name: 落英缤纷
-    description: TODO_NARRATIVE
+    description: 掌气四散如花瓣飘零,伤人于无形
     type: ultimate
     powerMultiplier: 2500
     internalForceCost: 520
@@ -342,7 +342,7 @@ skills:
   # ─── 刚猛 · 门派绝学 ───
   - id: skill_gangmeng_menpai_basic
     name: 落雷掌
-    description: TODO_NARRATIVE
+    description: 掌劲下压如雷落地,震人心魄
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -353,7 +353,7 @@ skills:
 
   - id: skill_gangmeng_menpai_skill
     name: 千斤坠
-    description: TODO_NARRATIVE
+    description: 双拳齐出,力沉千斤,对手难以动弹
     type: powerSkill
     powerMultiplier: 2400
     internalForceCost: 220
@@ -364,7 +364,7 @@ skills:
 
   - id: skill_gangmeng_menpai_ult
     name: 怒龙翻
-    description: TODO_NARRATIVE
+    description: 一拳挟风雷之势,如怒龙翻江
     type: ultimate
     powerMultiplier: 3000
     internalForceCost: 620
@@ -376,7 +376,7 @@ skills:
   # ─── 灵巧 · 门派绝学 ───
   - id: skill_lingqiao_menpai_basic
     name: 燕回身
-    description: TODO_NARRATIVE
+    description: 身法如燕,转瞬已至身后
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -387,7 +387,7 @@ skills:
 
   - id: skill_lingqiao_menpai_skill
     name: 追风刺
-    description: TODO_NARRATIVE
+    description: 步法极快,剑尖追风而至
     type: powerSkill
     powerMultiplier: 2400
     internalForceCost: 220
@@ -398,7 +398,7 @@ skills:
 
   - id: skill_lingqiao_menpai_ult
     name: 流星剑
-    description: TODO_NARRATIVE
+    description: 剑光划过夜空,一闪即逝,伤已及身
     type: ultimate
     powerMultiplier: 3000
     internalForceCost: 620
@@ -410,7 +410,7 @@ skills:
   # ─── 阴柔 · 门派绝学 ───
   - id: skill_yinrou_menpai_basic
     name: 鬼影爪
-    description: TODO_NARRATIVE
+    description: 出手如鬼魅,不见形迹
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -421,7 +421,7 @@ skills:
 
   - id: skill_yinrou_menpai_skill
     name: 蚀骨指
-    description: TODO_NARRATIVE
+    description: 指力带阴寒之气,入体蚀骨
     type: powerSkill
     powerMultiplier: 2400
     internalForceCost: 220
@@ -432,7 +432,7 @@ skills:
 
   - id: skill_yinrou_menpai_ult
     name: 摄魂引
-    description: TODO_NARRATIVE
+    description: 暗劲入脑,夺人心神
     type: ultimate
     powerMultiplier: 3000
     internalForceCost: 620
@@ -448,7 +448,7 @@ skills:
   # ─── 刚猛 · 江湖秘传 ───
   - id: skill_gangmeng_jianghu_basic
     name: 裂山掌
-    description: TODO_NARRATIVE
+    description: 掌力雄浑,一掌劈出有裂山之势
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -459,7 +459,7 @@ skills:
 
   - id: skill_gangmeng_jianghu_skill
     name: 撼地拳
-    description: TODO_NARRATIVE
+    description: 拳落处地裂三尺,余震不止
     type: powerSkill
     powerMultiplier: 3200
     internalForceCost: 280
@@ -470,7 +470,7 @@ skills:
 
   - id: skill_gangmeng_jianghu_ult
     name: 霸王击
-    description: TODO_NARRATIVE
+    description: 一拳贯穿虚空,有霸王举鼎之威
     type: ultimate
     powerMultiplier: 4000
     internalForceCost: 800
@@ -482,7 +482,7 @@ skills:
   # ─── 灵巧 · 江湖秘传 ───
   - id: skill_lingqiao_jianghu_basic
     name: 凌波剑
-    description: TODO_NARRATIVE
+    description: 步履凌波,剑意随水而生
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -493,7 +493,7 @@ skills:
 
   - id: skill_lingqiao_jianghu_skill
     name: 翻云式
-    description: TODO_NARRATIVE
+    description: 剑势翻覆如云,令守者不知从何处来
     type: powerSkill
     powerMultiplier: 3200
     internalForceCost: 280
@@ -504,7 +504,7 @@ skills:
 
   - id: skill_lingqiao_jianghu_ult
     name: 御剑诀
-    description: TODO_NARRATIVE
+    description: 意念驭剑,剑如活物般追敌
     type: ultimate
     powerMultiplier: 4000
     internalForceCost: 800
@@ -516,7 +516,7 @@ skills:
   # ─── 阴柔 · 江湖秘传 ───
   - id: skill_yinrou_jianghu_basic
     name: 魅影手
-    description: TODO_NARRATIVE
+    description: 掌出如魅影幢幢,虚实莫辨
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -527,7 +527,7 @@ skills:
 
   - id: skill_yinrou_jianghu_skill
     name: 噬心爪
-    description: TODO_NARRATIVE
+    description: 五指扣入,暗劲直噬心脉
     type: powerSkill
     powerMultiplier: 3200
     internalForceCost: 280
@@ -538,7 +538,7 @@ skills:
 
   - id: skill_yinrou_jianghu_ult
     name: 摧魂咒
-    description: TODO_NARRATIVE
+    description: 以内力化声为刃,闻者魂飞魄散
     type: ultimate
     powerMultiplier: 4000
     internalForceCost: 800
@@ -554,7 +554,7 @@ skills:
   # ─── 刚猛 · 失传神功 ───
   - id: skill_gangmeng_shichuan_basic
     name: 玄武拳
-    description: TODO_NARRATIVE
+    description: 拳势浑厚如玄武镇海,无可撼动
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -565,7 +565,7 @@ skills:
 
   - id: skill_gangmeng_shichuan_skill
     name: 镇岳掌
-    description: TODO_NARRATIVE
+    description: 一掌之力可镇五岳,气吞山河
     type: powerSkill
     powerMultiplier: 4400
     internalForceCost: 380
@@ -576,7 +576,7 @@ skills:
 
   - id: skill_gangmeng_shichuan_ult
     name: 天崩裂
-    description: TODO_NARRATIVE
+    description: 蓄全身真气一击,天地为之色变
     type: ultimate
     powerMultiplier: 5500
     internalForceCost: 1100
@@ -588,7 +588,7 @@ skills:
   # ─── 灵巧 · 失传神功 ───
   - id: skill_lingqiao_shichuan_basic
     name: 太虚剑
-    description: TODO_NARRATIVE
+    description: 剑出太虚,无形无相
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -599,7 +599,7 @@ skills:
 
   - id: skill_lingqiao_shichuan_skill
     name: 紫电步
-    description: TODO_NARRATIVE
+    description: 身法如紫电掠空,一步已至三丈外
     type: powerSkill
     powerMultiplier: 4400
     internalForceCost: 380
@@ -610,7 +610,7 @@ skills:
 
   - id: skill_lingqiao_shichuan_ult
     name: 长虹经天
-    description: TODO_NARRATIVE
+    description: 一剑横空如长虹贯日,势不可挡
     type: ultimate
     powerMultiplier: 5500
     internalForceCost: 1100
@@ -622,7 +622,7 @@ skills:
   # ─── 阴柔 · 失传神功 ───
   - id: skill_yinrou_shichuan_basic
     name: 蛛丝手
-    description: TODO_NARRATIVE
+    description: 指间劲力如蛛丝,看似轻柔实难挣脱
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -633,7 +633,7 @@ skills:
 
   - id: skill_yinrou_shichuan_skill
     name: 蚀魂爪
-    description: TODO_NARRATIVE
+    description: 阴寒之力透骨蚀魂,中者如坠冰窟
     type: powerSkill
     powerMultiplier: 4400
     internalForceCost: 380
@@ -644,7 +644,7 @@ skills:
 
   - id: skill_yinrou_shichuan_ult
     name: 阴煞印
-    description: TODO_NARRATIVE
+    description: 双掌叠印,阴煞之气笼罩方圆数丈
     type: ultimate
     powerMultiplier: 5500
     internalForceCost: 1100
@@ -660,7 +660,7 @@ skills:
   # ─── 刚猛 · 传说神功 ───
   - id: skill_gangmeng_chuanshuo_basic
     name: 玄黄拳
-    description: TODO_NARRATIVE
+    description: 天玄地黄,一拳有开天辟地之意
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -671,7 +671,7 @@ skills:
 
   - id: skill_gangmeng_chuanshuo_skill
     name: 乾坤掌
-    description: TODO_NARRATIVE
+    description: 掌中藏乾坤,一推一拉间翻天覆地
     type: powerSkill
     powerMultiplier: 6400
     internalForceCost: 550
@@ -682,7 +682,7 @@ skills:
 
   - id: skill_gangmeng_chuanshuo_ult
     name: 九霄龙吟
-    description: TODO_NARRATIVE
+    description: 拳势冲霄,如九天神龙咆哮而下
     type: ultimate
     powerMultiplier: 8000
     internalForceCost: 1600
@@ -694,7 +694,7 @@ skills:
   # ─── 灵巧 · 传说神功 ───
   - id: skill_lingqiao_chuanshuo_basic
     name: 太初剑
-    description: TODO_NARRATIVE
+    description: 剑意返璞归真,一剑便是天地初开
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -705,7 +705,7 @@ skills:
 
   - id: skill_lingqiao_chuanshuo_skill
     name: 紫霞凌虚
-    description: TODO_NARRATIVE
+    description: 紫霞缭绕,身形凌虚而立,剑意无穷
     type: powerSkill
     powerMultiplier: 6400
     internalForceCost: 550
@@ -716,7 +716,7 @@ skills:
 
   - id: skill_lingqiao_chuanshuo_ult
     name: 万象归元
-    description: TODO_NARRATIVE
+    description: 万千剑影归于一剑,此剑即是万象
     type: ultimate
     powerMultiplier: 8000
     internalForceCost: 1600
@@ -728,7 +728,7 @@ skills:
   # ─── 阴柔 · 传说神功 ───
   - id: skill_yinrou_chuanshuo_basic
     name: 幽冥指
-    description: TODO_NARRATIVE
+    description: 指力通幽,如探幽冥之门
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -739,7 +739,7 @@ skills:
 
   - id: skill_yinrou_chuanshuo_skill
     name: 九幽手
-    description: TODO_NARRATIVE
+    description: 掌出九幽,阴寒之气冻彻骨髓
     type: powerSkill
     powerMultiplier: 6400
     internalForceCost: 550
@@ -750,7 +750,7 @@ skills:
 
   - id: skill_yinrou_chuanshuo_ult
     name: 无相劫
-    description: TODO_NARRATIVE
+    description: 无形无相,天地万物皆入劫数
     type: ultimate
     powerMultiplier: 8000
     internalForceCost: 1600
@@ -771,7 +771,7 @@ skills:
   # = 42,187 < 100,000 大招暴击上限 ✅。
   - id: skill_joint_skill
     name: 人剑合一
-    description: TODO_NARRATIVE
+    description: 心剑通灵,人即是剑,剑即是人
     type: jointSkill
     powerMultiplier: 4500
     internalForceCost: 250
@@ -795,7 +795,7 @@ skills:
   # ─── 一流 · 刚猛 · 轻功 ───
   - id: skill_lightfoot_yiliu_gangmeng_basic
     name: 踏波
-    description: TODO_NARRATIVE
+    description: 足下生力,踏水如平地
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -806,7 +806,7 @@ skills:
 
   - id: skill_lightfoot_yiliu_gangmeng_skill
     name: 飞檐撞
-    description: TODO_NARRATIVE
+    description: 借飞檐之势,身如巨石撞来
     type: powerSkill
     powerMultiplier: 2400
     internalForceCost: 220
@@ -817,7 +817,7 @@ skills:
 
   - id: skill_lightfoot_yiliu_gangmeng_ult
     name: 巨石压顶
-    description: TODO_NARRATIVE
+    description: 凌空跃起,势如巨石从天而降
     type: ultimate
     powerMultiplier: 3000
     internalForceCost: 620
@@ -829,7 +829,7 @@ skills:
   # ─── 一流 · 灵巧 · 轻功 ───
   - id: skill_lightfoot_yiliu_lingqiao_basic
     name: 追风
-    description: TODO_NARRATIVE
+    description: 身轻如燕,步履追风
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -840,7 +840,7 @@ skills:
 
   - id: skill_lightfoot_yiliu_lingqiao_skill
     name: 凌虚步
-    description: TODO_NARRATIVE
+    description: 脚踏虚空,行走如履平地
     type: powerSkill
     powerMultiplier: 2400
     internalForceCost: 220
@@ -851,7 +851,7 @@ skills:
 
   - id: skill_lightfoot_yiliu_lingqiao_ult
     name: 飞燕惊鸿
-    description: TODO_NARRATIVE
+    description: 身形飘忽如飞燕,一闪即逝如惊鸿
     type: ultimate
     powerMultiplier: 3000
     internalForceCost: 620
@@ -863,7 +863,7 @@ skills:
   # ─── 一流 · 阴柔 · 轻功 ───
   - id: skill_lightfoot_yiliu_yinrou_basic
     name: 听风
-    description: TODO_NARRATIVE
+    description: 闭目听风,以声辨位,伺机而动
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -874,7 +874,7 @@ skills:
 
   - id: skill_lightfoot_yiliu_yinrou_skill
     name: 暗影涉
-    description: TODO_NARRATIVE
+    description: 身形隐入暗影,无声接近对手
     type: powerSkill
     powerMultiplier: 2400
     internalForceCost: 220
@@ -885,7 +885,7 @@ skills:
 
   - id: skill_lightfoot_yiliu_yinrou_ult
     name: 幽冥归
-    description: TODO_NARRATIVE
+    description: 身形消散如入幽冥,再现时已在身后
     type: ultimate
     powerMultiplier: 3000
     internalForceCost: 620
@@ -897,7 +897,7 @@ skills:
   # ─── 绝顶 · 刚猛 · 轻功 ───
   - id: skill_lightfoot_jueding_gangmeng_basic
     name: 裂石步
-    description: TODO_NARRATIVE
+    description: 一步踏出地裂石碎,脚下生根
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -908,7 +908,7 @@ skills:
 
   - id: skill_lightfoot_jueding_gangmeng_skill
     name: 撼山扑
-    description: TODO_NARRATIVE
+    description: 全身之力化为一扑,有撼山之势
     type: powerSkill
     powerMultiplier: 3200
     internalForceCost: 280
@@ -919,7 +919,7 @@ skills:
 
   - id: skill_lightfoot_jueding_gangmeng_ult
     name: 万钧落
-    description: TODO_NARRATIVE
+    description: 凌空急坠如万钧之重,所到之处尽碎
     type: ultimate
     powerMultiplier: 4000
     internalForceCost: 800
@@ -931,7 +931,7 @@ skills:
   # ─── 绝顶 · 灵巧 · 轻功 ───
   - id: skill_lightfoot_jueding_lingqiao_basic
     name: 长虹贯日
-    description: TODO_NARRATIVE
+    description: 身形如虹,一步横跨数丈
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -942,7 +942,7 @@ skills:
 
   - id: skill_lightfoot_jueding_lingqiao_skill
     name: 蜻蜓点水
-    description: TODO_NARRATIVE
+    description: 轻点水面借力,身形飘摇不定
     type: powerSkill
     powerMultiplier: 3200
     internalForceCost: 280
@@ -953,7 +953,7 @@ skills:
 
   - id: skill_lightfoot_jueding_lingqiao_ult
     name: 九霄云外
-    description: TODO_NARRATIVE
+    description: 纵身九霄之上,俯冲而下势不可挡
     type: ultimate
     powerMultiplier: 4000
     internalForceCost: 800
@@ -965,7 +965,7 @@ skills:
   # ─── 绝顶 · 阴柔 · 轻功 ───
   - id: skill_lightfoot_jueding_yinrou_basic
     name: 横云断
-    description: TODO_NARRATIVE
+    description: 掌风横扫如断云,无声无息
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -976,7 +976,7 @@ skills:
 
   - id: skill_lightfoot_jueding_yinrou_skill
     name: 鬼影迷踪
-    description: TODO_NARRATIVE
+    description: 身形化作数道残影,真身难辨
     type: powerSkill
     powerMultiplier: 3200
     internalForceCost: 280
@@ -987,7 +987,7 @@ skills:
 
   - id: skill_lightfoot_jueding_yinrou_ult
     name: 万籁俱寂
-    description: TODO_NARRATIVE
+    description: 周身阴气扩散,方圆之内万籁俱寂
     type: ultimate
     powerMultiplier: 4000
     internalForceCost: 800
@@ -1004,7 +1004,7 @@ skills:
   # --- 入门功防御变体招式 ---
   - id: skill_gangmeng_jichu_fang_basic
     name: 挡拳
-    description: TODO_NARRATIVE
+    description: 双臂交叉,硬接来招
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1015,7 +1015,7 @@ skills:
 
   - id: skill_gangmeng_jichu_fang_skill
     name: 震臂
-    description: TODO_NARRATIVE
+    description: 以臂力震开对手兵刃
     type: powerSkill
     powerMultiplier: 1200
     internalForceCost: 100
@@ -1026,7 +1026,7 @@ skills:
 
   - id: skill_gangmeng_jichu_fang_ult
     name: 铁山靠
-    description: TODO_NARRATIVE
+    description: 以背撞击,坚如铁山
     type: ultimate
     powerMultiplier: 1500
     internalForceCost: 300
@@ -1037,7 +1037,7 @@ skills:
 
   - id: skill_lingqiao_jichu_fang_basic
     name: 侧闪
-    description: TODO_NARRATIVE
+    description: 侧身闪避,身形灵动
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1048,7 +1048,7 @@ skills:
 
   - id: skill_lingqiao_jichu_fang_skill
     name: 反击
-    description: TODO_NARRATIVE
+    description: 借闪避之势,反手一剑
     type: powerSkill
     powerMultiplier: 1200
     internalForceCost: 100
@@ -1059,7 +1059,7 @@ skills:
 
   - id: skill_lingqiao_jichu_fang_ult
     name: 滑步一击
-    description: TODO_NARRATIVE
+    description: 脚步滑动避开攻势,顺势还击
     type: ultimate
     powerMultiplier: 1500
     internalForceCost: 300
@@ -1070,7 +1070,7 @@ skills:
 
   - id: skill_yinrou_jichu_fang_basic
     name: 养息
-    description: TODO_NARRATIVE
+    description: 吐纳调息,缓缓恢复内力
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1081,7 +1081,7 @@ skills:
 
   - id: skill_yinrou_jichu_fang_skill
     name: 回气掌
-    description: TODO_NARRATIVE
+    description: 以柔劲化解来力,化为己用
     type: powerSkill
     powerMultiplier: 1200
     internalForceCost: 100
@@ -1092,7 +1092,7 @@ skills:
 
   - id: skill_yinrou_jichu_fang_ult
     name: 固元术
-    description: TODO_NARRATIVE
+    description: 真气护体,固本培元
     type: ultimate
     powerMultiplier: 1500
     internalForceCost: 300
@@ -1105,7 +1105,7 @@ skills:
   # --- 常练功防御变体招式 ---
   - id: skill_gangmeng_changlian_fang_basic
     name: 硬扛
-    description: TODO_NARRATIVE
+    description: 以肉身硬接,岿然不动
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1116,7 +1116,7 @@ skills:
 
   - id: skill_gangmeng_changlian_fang_skill
     name: 撼地锤
-    description: TODO_NARRATIVE
+    description: 双拳击地,震波反弹来敌
     type: powerSkill
     powerMultiplier: 1600
     internalForceCost: 150
@@ -1127,7 +1127,7 @@ skills:
 
   - id: skill_gangmeng_changlian_fang_ult
     name: 金刚怒目
-    description: TODO_NARRATIVE
+    description: 怒目圆睁,真气外放,近者辟易
     type: ultimate
     powerMultiplier: 2000
     internalForceCost: 400
@@ -1138,7 +1138,7 @@ skills:
 
   - id: skill_lingqiao_changlian_fang_basic
     name: 游身
-    description: TODO_NARRATIVE
+    description: 身形游走不定,令敌无从下手
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1149,7 +1149,7 @@ skills:
 
   - id: skill_lingqiao_changlian_fang_skill
     name: 绕行斩
-    description: TODO_NARRATIVE
+    description: 绕至敌侧,一剑斩下
     type: powerSkill
     powerMultiplier: 1600
     internalForceCost: 150
@@ -1160,7 +1160,7 @@ skills:
 
   - id: skill_lingqiao_changlian_fang_ult
     name: 水中月
-    description: TODO_NARRATIVE
+    description: 身形虚幻如水中月,打不着摸不到
     type: ultimate
     powerMultiplier: 2000
     internalForceCost: 400
@@ -1171,7 +1171,7 @@ skills:
 
   - id: skill_yinrou_changlian_fang_basic
     name: 龟息
-    description: TODO_NARRATIVE
+    description: 内息绵长如龟,守多攻少
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1182,7 +1182,7 @@ skills:
 
   - id: skill_yinrou_changlian_fang_skill
     name: 绵柔掌
-    description: TODO_NARRATIVE
+    description: 以柔克刚,将来力引偏化解
     type: powerSkill
     powerMultiplier: 1600
     internalForceCost: 150
@@ -1193,7 +1193,7 @@ skills:
 
   - id: skill_yinrou_changlian_fang_ult
     name: 息长绵延
-    description: TODO_NARRATIVE
+    description: 内息悠长不绝,久战不衰
     type: ultimate
     powerMultiplier: 2000
     internalForceCost: 400
@@ -1206,7 +1206,7 @@ skills:
   # --- 名家功防御变体招式 ---
   - id: skill_gangmeng_mingjia_fang_basic
     name: 磐踏
-    description: TODO_NARRATIVE
+    description: 步法沉稳如磐石,根基不摇
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1217,7 +1217,7 @@ skills:
 
   - id: skill_gangmeng_mingjia_fang_skill
     name: 碎地掌
-    description: TODO_NARRATIVE
+    description: 掌力贯入地面,碎石飞溅阻敌
     type: powerSkill
     powerMultiplier: 2000
     internalForceCost: 200
@@ -1228,7 +1228,7 @@ skills:
 
   - id: skill_gangmeng_mingjia_fang_ult
     name: 不动如山
-    description: TODO_NARRATIVE
+    description: 全身真气凝为壁障,巍然不动
     type: ultimate
     powerMultiplier: 2500
     internalForceCost: 500
@@ -1239,7 +1239,7 @@ skills:
 
   - id: skill_lingqiao_mingjia_fang_basic
     name: 凌波
-    description: TODO_NARRATIVE
+    description: 步法轻盈,踏波而行
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1250,7 +1250,7 @@ skills:
 
   - id: skill_lingqiao_mingjia_fang_skill
     name: 微步刺
-    description: TODO_NARRATIVE
+    description: 以极小步幅闪转,伺机反刺
     type: powerSkill
     powerMultiplier: 2000
     internalForceCost: 200
@@ -1261,7 +1261,7 @@ skills:
 
   - id: skill_lingqiao_mingjia_fang_ult
     name: 踏水无痕
-    description: TODO_NARRATIVE
+    description: 身法已臻化境,来去不留痕迹
     type: ultimate
     powerMultiplier: 2500
     internalForceCost: 500
@@ -1272,7 +1272,7 @@ skills:
 
   - id: skill_yinrou_mingjia_fang_basic
     name: 玄阴掌
-    description: TODO_NARRATIVE
+    description: 阴寒掌力护于周身
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1283,7 +1283,7 @@ skills:
 
   - id: skill_yinrou_mingjia_fang_skill
     name: 寒气劲
-    description: TODO_NARRATIVE
+    description: 寒气外放,冻缓敌手
     type: powerSkill
     powerMultiplier: 2000
     internalForceCost: 200
@@ -1294,7 +1294,7 @@ skills:
 
   - id: skill_yinrou_mingjia_fang_ult
     name: 阴阳护体
-    description: TODO_NARRATIVE
+    description: 阴阳二气交织成盾,攻守兼备
     type: ultimate
     powerMultiplier: 2500
     internalForceCost: 500
@@ -1307,7 +1307,7 @@ skills:
   # --- 门派绝学防御变体招式 ---
   - id: skill_gangmeng_menpai_fang_basic
     name: 铁掌
-    description: TODO_NARRATIVE
+    description: 掌心硬如铁,格挡刀剑不伤
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1318,7 +1318,7 @@ skills:
 
   - id: skill_gangmeng_menpai_fang_skill
     name: 金钟罩
-    description: TODO_NARRATIVE
+    description: 真气罩体如金钟,刀枪不入
     type: powerSkill
     powerMultiplier: 2400
     internalForceCost: 300
@@ -1329,7 +1329,7 @@ skills:
 
   - id: skill_gangmeng_menpai_fang_ult
     name: 铁布护身
-    description: TODO_NARRATIVE
+    description: 全身肌肉如铁布,百兵难伤
     type: ultimate
     powerMultiplier: 3000
     internalForceCost: 700
@@ -1340,7 +1340,7 @@ skills:
 
   - id: skill_lingqiao_menpai_fang_basic
     name: 幻影
-    description: TODO_NARRATIVE
+    description: 身形一闪,留下残影迷惑对手
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1351,7 +1351,7 @@ skills:
 
   - id: skill_lingqiao_menpai_fang_skill
     name: 残影剑
-    description: TODO_NARRATIVE
+    description: 剑出如幻,残影连绵,敌分不清虚实
     type: powerSkill
     powerMultiplier: 2400
     internalForceCost: 300
@@ -1362,7 +1362,7 @@ skills:
 
   - id: skill_lingqiao_menpai_fang_ult
     name: 幻灭一闪
-    description: TODO_NARRATIVE
+    description: 身形幻灭,一闪之间已至敌后
     type: ultimate
     powerMultiplier: 3000
     internalForceCost: 700
@@ -1373,7 +1373,7 @@ skills:
 
   - id: skill_yinrou_menpai_fang_basic
     name: 化骨
-    description: TODO_NARRATIVE
+    description: 以柔劲化解硬攻,消敌于无形
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1384,7 +1384,7 @@ skills:
 
   - id: skill_yinrou_menpai_fang_skill
     name: 绵针
-    description: TODO_NARRATIVE
+    description: 外柔内刚,柔中藏针
     type: powerSkill
     powerMultiplier: 2400
     internalForceCost: 300
@@ -1395,7 +1395,7 @@ skills:
 
   - id: skill_yinrou_menpai_fang_ult
     name: 化骨裹身
-    description: TODO_NARRATIVE
+    description: 阴柔之气裹护全身,来力皆被化解
     type: ultimate
     powerMultiplier: 3000
     internalForceCost: 700
@@ -1408,7 +1408,7 @@ skills:
   # --- 江湖秘传防御变体招式 ---
   - id: skill_gangmeng_jianghu_fang_basic
     name: 明王拳
-    description: TODO_NARRATIVE
+    description: 一拳如明王怒喝,守中带攻
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1419,7 +1419,7 @@ skills:
 
   - id: skill_gangmeng_jianghu_fang_skill
     name: 降魔掌
-    description: TODO_NARRATIVE
+    description: 真气外放如佛光,镇压来敌
     type: powerSkill
     powerMultiplier: 3200
     internalForceCost: 400
@@ -1430,7 +1430,7 @@ skills:
 
   - id: skill_gangmeng_jianghu_fang_ult
     name: 不动真身
-    description: TODO_NARRATIVE
+    description: 真气凝聚成不动真身,万法不侵
     type: ultimate
     powerMultiplier: 4000
     internalForceCost: 1000
@@ -1441,7 +1441,7 @@ skills:
 
   - id: skill_lingqiao_jianghu_fang_basic
     name: 鬼步
-    description: TODO_NARRATIVE
+    description: 步法鬼魅,令敌捉摸不透
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1452,7 +1452,7 @@ skills:
 
   - id: skill_lingqiao_jianghu_fang_skill
     name: 无声刺
-    description: TODO_NARRATIVE
+    description: 无声无息一剑刺出,防不胜防
     type: powerSkill
     powerMultiplier: 3200
     internalForceCost: 400
@@ -1463,7 +1463,7 @@ skills:
 
   - id: skill_lingqiao_jianghu_fang_ult
     name: 暗影袭杀
-    description: TODO_NARRATIVE
+    description: 隐入暗影,杀招从意想不到处袭来
     type: ultimate
     powerMultiplier: 4000
     internalForceCost: 1000
@@ -1474,7 +1474,7 @@ skills:
 
   - id: skill_yinrou_jianghu_fang_basic
     name: 太阴
-    description: TODO_NARRATIVE
+    description: 以太阴之气护体,阴寒逼人
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1485,7 +1485,7 @@ skills:
 
   - id: skill_yinrou_jianghu_fang_skill
     name: 真气疗
-    description: TODO_NARRATIVE
+    description: 以真气修复伤势,战中回复
     type: powerSkill
     powerMultiplier: 3200
     internalForceCost: 400
@@ -1496,7 +1496,7 @@ skills:
 
   - id: skill_yinrou_jianghu_fang_ult
     name: 太阴归元
-    description: TODO_NARRATIVE
+    description: 太阴真气归元,伤势尽复
     type: ultimate
     powerMultiplier: 4000
     internalForceCost: 1000
@@ -1509,7 +1509,7 @@ skills:
   # --- 失传神功防御变体招式 ---
   - id: skill_gangmeng_shichuan_fang_basic
     name: 混元掌
-    description: TODO_NARRATIVE
+    description: 混元真气流转,攻守一体
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1520,7 +1520,7 @@ skills:
 
   - id: skill_gangmeng_shichuan_fang_skill
     name: 铁骨崩
-    description: TODO_NARRATIVE
+    description: 以铁骨之躯硬撼来敌,撞之即崩
     type: powerSkill
     powerMultiplier: 4400
     internalForceCost: 600
@@ -1531,7 +1531,7 @@ skills:
 
   - id: skill_gangmeng_shichuan_fang_ult
     name: 钢筋铁骨
-    description: TODO_NARRATIVE
+    description: 全身淬炼如钢铁,百刀难伤
     type: ultimate
     powerMultiplier: 5500
     internalForceCost: 1500
@@ -1542,7 +1542,7 @@ skills:
 
   - id: skill_lingqiao_shichuan_fang_basic
     name: 天遁
-    description: TODO_NARRATIVE
+    description: 身法通天遁地,来去无踪
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1553,7 +1553,7 @@ skills:
 
   - id: skill_lingqiao_shichuan_fang_skill
     name: 穿花
-    description: TODO_NARRATIVE
+    description: 身形穿花拂柳,从容不迫
     type: powerSkill
     powerMultiplier: 4400
     internalForceCost: 600
@@ -1564,7 +1564,7 @@ skills:
 
   - id: skill_lingqiao_shichuan_fang_ult
     name: 天遁无踪
-    description: TODO_NARRATIVE
+    description: 身形彻底消失,再现时已至要害
     type: ultimate
     powerMultiplier: 5500
     internalForceCost: 1500
@@ -1575,7 +1575,7 @@ skills:
 
   - id: skill_yinrou_shichuan_fang_basic
     name: 寒蝉
-    description: TODO_NARRATIVE
+    description: 阴寒之气凝而不散,静待时机
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1586,7 +1586,7 @@ skills:
 
   - id: skill_yinrou_shichuan_fang_skill
     name: 冰息
-    description: TODO_NARRATIVE
+    description: 吐息成冰,冻缓来敌气血
     type: powerSkill
     powerMultiplier: 4400
     internalForceCost: 600
@@ -1597,7 +1597,7 @@ skills:
 
   - id: skill_yinrou_shichuan_fang_ult
     name: 寒潭映月
-    description: TODO_NARRATIVE
+    description: 心如寒潭映月,任何攻势皆如投石入水
     type: ultimate
     powerMultiplier: 5500
     internalForceCost: 1500
@@ -1610,7 +1610,7 @@ skills:
   # --- 传说神功防御变体招式 ---
   - id: skill_gangmeng_chuanshuo_fang_basic
     name: 霸王拳
-    description: TODO_NARRATIVE
+    description: 拳出有霸王之气,守者当先
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1621,7 +1621,7 @@ skills:
 
   - id: skill_gangmeng_chuanshuo_fang_skill
     name: 卸甲掌
-    description: TODO_NARRATIVE
+    description: 一掌卸去敌方防御,使其门户大开
     type: powerSkill
     powerMultiplier: 6400
     internalForceCost: 800
@@ -1632,7 +1632,7 @@ skills:
 
   - id: skill_gangmeng_chuanshuo_fang_ult
     name: 金身不坏
-    description: TODO_NARRATIVE
+    description: 真气铸就金身,万劫不坏
     type: ultimate
     powerMultiplier: 8000
     internalForceCost: 2000
@@ -1643,7 +1643,7 @@ skills:
 
   - id: skill_lingqiao_chuanshuo_fang_basic
     name: 无影
-    description: TODO_NARRATIVE
+    description: 身形已入无影之境,肉眼不可见
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1654,7 +1654,7 @@ skills:
 
   - id: skill_lingqiao_chuanshuo_fang_skill
     name: 无形剑
-    description: TODO_NARRATIVE
+    description: 剑意无形,不见剑光,只见伤口
     type: powerSkill
     powerMultiplier: 6400
     internalForceCost: 800
@@ -1665,7 +1665,7 @@ skills:
 
   - id: skill_lingqiao_chuanshuo_fang_ult
     name: 无影无踪
-    description: TODO_NARRATIVE
+    description: 彻底融入虚空,来无影去无踪
     type: ultimate
     powerMultiplier: 8000
     internalForceCost: 2000
@@ -1676,7 +1676,7 @@ skills:
 
   - id: skill_yinrou_chuanshuo_fang_basic
     name: 归元
-    description: TODO_NARRATIVE
+    description: 真气归元,周而复始
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1687,7 +1687,7 @@ skills:
 
   - id: skill_yinrou_chuanshuo_fang_skill
     name: 续命
-    description: TODO_NARRATIVE
+    description: 以至阴之气续接生机
     type: powerSkill
     powerMultiplier: 6400
     internalForceCost: 800
@@ -1698,7 +1698,7 @@ skills:
 
   - id: skill_yinrou_chuanshuo_fang_ult
     name: 归元不灭
-    description: TODO_NARRATIVE
+    description: 归元再生,伤势自愈,近乎不灭
     type: ultimate
     powerMultiplier: 8000
     internalForceCost: 2000
@@ -1711,7 +1711,7 @@ skills:
   # --- 内力变体招式 ---
   - id: skill_gangmeng_jichu_nei_basic
     name: 蓄力
-    description: TODO_NARRATIVE
+    description: 沉气蓄力,为下一击积攒内劲
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1722,7 +1722,7 @@ skills:
 
   - id: skill_gangmeng_jichu_nei_skill
     name: 内劲冲
-    description: TODO_NARRATIVE
+    description: 内力凝于拳面,一冲而出
     type: powerSkill
     powerMultiplier: 1200
     internalForceCost: 100
@@ -1733,7 +1733,7 @@ skills:
 
   - id: skill_gangmeng_jichu_nei_ult
     name: 气贯长虹
-    description: TODO_NARRATIVE
+    description: 真气如虹贯通经脉,一拳带出全部内力
     type: ultimate
     powerMultiplier: 1500
     internalForceCost: 300
@@ -1744,7 +1744,7 @@ skills:
 
   - id: skill_lingqiao_changlian_nei_basic
     name: 引气
-    description: TODO_NARRATIVE
+    description: 引导天地灵气入体
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1755,7 +1755,7 @@ skills:
 
   - id: skill_lingqiao_changlian_nei_skill
     name: 气旋斩
-    description: TODO_NARRATIVE
+    description: 内力化为气旋,裹挟剑气斩出
     type: powerSkill
     powerMultiplier: 1600
     internalForceCost: 150
@@ -1766,7 +1766,7 @@ skills:
 
   - id: skill_lingqiao_changlian_nei_ult
     name: 引气归元
-    description: TODO_NARRATIVE
+    description: 引天地之气归于丹田,内力暴涨
     type: ultimate
     powerMultiplier: 2000
     internalForceCost: 400
@@ -1777,7 +1777,7 @@ skills:
 
   - id: skill_yinrou_mingjia_nei_basic
     name: 聚元
-    description: TODO_NARRATIVE
+    description: 缓缓聚拢体内元气
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1788,7 +1788,7 @@ skills:
 
   - id: skill_yinrou_mingjia_nei_skill
     name: 元气弹
-    description: TODO_NARRATIVE
+    description: 将聚拢的元气化为一击射出
     type: powerSkill
     powerMultiplier: 2000
     internalForceCost: 200
@@ -1799,7 +1799,7 @@ skills:
 
   - id: skill_yinrou_mingjia_nei_ult
     name: 聚元一击
-    description: TODO_NARRATIVE
+    description: 全部元气凝于指尖,一击倾泻
     type: ultimate
     powerMultiplier: 2500
     internalForceCost: 500
@@ -1810,7 +1810,7 @@ skills:
 
   - id: skill_gangmeng_menpai_nei_basic
     name: 炼神
-    description: TODO_NARRATIVE
+    description: 以意念淬炼内力,凝神聚气
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1821,7 +1821,7 @@ skills:
 
   - id: skill_gangmeng_menpai_nei_skill
     name: 意念攻
-    description: TODO_NARRATIVE
+    description: 以精神力冲击对手心智
     type: powerSkill
     powerMultiplier: 2400
     internalForceCost: 300
@@ -1832,7 +1832,7 @@ skills:
 
   - id: skill_gangmeng_menpai_nei_ult
     name: 神念无双
-    description: TODO_NARRATIVE
+    description: 精神力凝为实质,一念之间摧毁敌意
     type: ultimate
     powerMultiplier: 3000
     internalForceCost: 700
@@ -1843,7 +1843,7 @@ skills:
 
   - id: skill_lingqiao_jianghu_nei_basic
     name: 天罡拳
-    description: TODO_NARRATIVE
+    description: 拳法融入天罡之气,刚中带柔
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1854,7 +1854,7 @@ skills:
 
   - id: skill_lingqiao_jianghu_nei_skill
     name: 罡气掌
-    description: TODO_NARRATIVE
+    description: 罡气凝于掌心,一推而出
     type: powerSkill
     powerMultiplier: 3200
     internalForceCost: 400
@@ -1865,7 +1865,7 @@ skills:
 
   - id: skill_lingqiao_jianghu_nei_ult
     name: 天罡破阵
-    description: TODO_NARRATIVE
+    description: 天罡之气四散,破敌阵型
     type: ultimate
     powerMultiplier: 4000
     internalForceCost: 1000
@@ -1876,7 +1876,7 @@ skills:
 
   - id: skill_yinrou_shichuan_nei_basic
     name: 玄元指
-    description: TODO_NARRATIVE
+    description: 以玄元之气凝于指尖
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1887,7 +1887,7 @@ skills:
 
   - id: skill_yinrou_shichuan_nei_skill
     name: 真经一式
-    description: TODO_NARRATIVE
+    description: 失传真经中记载的一式,威力莫测
     type: powerSkill
     powerMultiplier: 4400
     internalForceCost: 600
@@ -1898,7 +1898,7 @@ skills:
 
   - id: skill_yinrou_shichuan_nei_ult
     name: 玄元归一
-    description: TODO_NARRATIVE
+    description: 玄元之力归于一体,万物莫挡
     type: ultimate
     powerMultiplier: 5500
     internalForceCost: 1500
@@ -1909,7 +1909,7 @@ skills:
 
   - id: skill_gangmeng_chuanshuo_nei_basic
     name: 混沌拳
-    description: TODO_NARRATIVE
+    description: 一拳蕴含混沌之力,无序而有威
     type: normalAttack
     powerMultiplier: 500
     internalForceCost: 0
@@ -1920,7 +1920,7 @@ skills:
 
   - id: skill_gangmeng_chuanshuo_nei_skill
     name: 开天掌
-    description: TODO_NARRATIVE
+    description: 一掌劈出,有开天辟地之意
     type: powerSkill
     powerMultiplier: 6400
     internalForceCost: 800
@@ -1931,7 +1931,7 @@ skills:
 
   - id: skill_gangmeng_chuanshuo_nei_ult
     name: 混沌初开
-    description: TODO_NARRATIVE
+    description: 混沌之力倾泻而出,如天地初开般的毁灭
     type: ultimate
     powerMultiplier: 8000
     internalForceCost: 2000

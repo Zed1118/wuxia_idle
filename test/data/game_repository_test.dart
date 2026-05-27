@@ -479,12 +479,12 @@ techniques:
             '''
   - id: skill_gangmeng_jichu_ult
     name: 怒涛拳
-    description: TODO_NARRATIVE
+    description: 蓄势三息,一拳如怒涛拍岸
     type: ultimate''',
             '''
   - id: skill_gangmeng_jichu_ult
     name: 怒涛拳
-    description: TODO_NARRATIVE
+    description: 蓄势三息,一拳如怒涛拍岸
     type: normalAttack''',
           );
         }
