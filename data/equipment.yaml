@@ -1,7 +1,9 @@
 # =============================================================================
-# equipment.yaml · 装备 fixture（Phase 3 Week 7 T63 扩 35 件）
+# equipment.yaml · 装备 fixture（P2.1 Batch 1 扩 80 件）
 # =============================================================================
-# 共 35 件：7 阶 × 5 件（weapon 3 三流派各 1 + armor 1 + accessory 1）。
+# 共 80 件：7 阶 × 11 件（weapon 5 + armor 3 + accessory 3）+ 3 跨阶特殊。
+# P2.1 Batch 1(2026-05-28)扩 +45(双持/暗器/轻甲/重甲/玉佩/药囊 + 3 特殊)。
+# 原 35 件：7 阶 × 5 件（weapon 3 三流派各 1 + armor 1 + accessory 1）。
 # 数值范围严格对齐 numbers.yaml `equipment.tiers` 段（每件 def 取 tier 全范围,
 # EquipmentFactory.fromDef 实例化时再 roll 个体差异）。
 #
@@ -592,3 +594,729 @@ equipment:
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/accessory_shenwu_kun_lun_pei.png
     detailPath: assets/equipment/accessory_shenwu_kun_lun_pei_detail.png
+
+  # =============================================================================
+  # P2.1 Batch 1 扩充 · 7 阶 × 6 新件 = 42 + 3 跨阶特殊 = 45
+  # 双持武器 + 暗器 + 轻甲 + 重甲 + 玉佩类 + 药囊类
+  # =============================================================================
+
+  # --- 寻常货扩充 ---
+  - id: weapon_xunchang_chai_dao
+    name: 柴刀
+    tier: xunChang
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 100
+    baseAttackMax: 150
+    baseHealthMin: 0
+    baseHealthMax: 0
+    baseSpeedMin: 0
+    baseSpeedMax: 10
+    presetLoreIds: [weapon_xunchang_chai_dao]
+    dropSourceTags: ["mainline_ch1"]
+    iconPath: assets/equipment/weapon_xunchang_chai_dao.png
+    detailPath: assets/equipment/weapon_xunchang_chai_dao_detail.png
+    specialSkillCandidates: [skill_gangmeng_jichu_skill, skill_gangmeng_jichu_ult]
+
+  - id: weapon_xunchang_fei_shi
+    name: 飞石
+    tier: xunChang
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 100
+    baseAttackMax: 150
+    baseHealthMin: 0
+    baseHealthMax: 0
+    baseSpeedMin: 0
+    baseSpeedMax: 10
+    presetLoreIds: [weapon_xunchang_fei_shi]
+    dropSourceTags: ["mainline_ch1"]
+    iconPath: assets/equipment/weapon_xunchang_fei_shi.png
+    detailPath: assets/equipment/weapon_xunchang_fei_shi_detail.png
+    specialSkillCandidates: [skill_yinrou_jichu_skill, skill_yinrou_jichu_ult]
+
+  - id: armor_xunchang_duan_gua
+    name: 短褂
+    tier: xunChang
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 100
+    baseHealthMax: 150
+    baseSpeedMin: 2
+    baseSpeedMax: 5
+    presetLoreIds: [armor_xunchang_duan_gua]
+    dropSourceTags: ["mainline_ch1"]
+    iconPath: assets/equipment/armor_xunchang_duan_gua.png
+    detailPath: assets/equipment/armor_xunchang_duan_gua_detail.png
+
+  - id: armor_xunchang_mian_jia
+    name: 棉甲
+    tier: xunChang
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 150
+    baseHealthMax: 200
+    baseSpeedMin: 0
+    baseSpeedMax: 2
+    presetLoreIds: [armor_xunchang_mian_jia]
+    dropSourceTags: ["mainline_ch1"]
+    iconPath: assets/equipment/armor_xunchang_mian_jia.png
+    detailPath: assets/equipment/armor_xunchang_mian_jia_detail.png
+
+  - id: accessory_xunchang_tong_ling
+    name: 铜铃
+    tier: xunChang
+    slot: accessory
+    baseAttackMin: 20
+    baseAttackMax: 30
+    baseHealthMin: 75
+    baseHealthMax: 100
+    baseSpeedMin: 0
+    baseSpeedMax: 8
+    presetLoreIds: [accessory_xunchang_tong_ling]
+    dropSourceTags: ["mainline_ch1"]
+    iconPath: assets/equipment/accessory_xunchang_tong_ling.png
+    detailPath: assets/equipment/accessory_xunchang_tong_ling_detail.png
+
+  - id: accessory_xunchang_yao_nang
+    name: 药囊
+    tier: xunChang
+    slot: accessory
+    baseAttackMin: 30
+    baseAttackMax: 40
+    baseHealthMin: 50
+    baseHealthMax: 75
+    baseSpeedMin: 0
+    baseSpeedMax: 8
+    presetLoreIds: [accessory_xunchang_yao_nang]
+    dropSourceTags: ["mainline_ch1"]
+    iconPath: assets/equipment/accessory_xunchang_yao_nang.png
+    detailPath: assets/equipment/accessory_xunchang_yao_nang_detail.png
+
+
+  # --- 像样货扩充 ---
+  - id: weapon_xiangyang_liu_ye_dao
+    name: 柳叶刀
+    tier: xiangYang
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 180
+    baseAttackMax: 280
+    baseHealthMin: 0
+    baseHealthMax: 50
+    baseSpeedMin: 5
+    baseSpeedMax: 20
+    presetLoreIds: [weapon_xiangyang_liu_ye_dao]
+    dropSourceTags: ["mainline_ch2"]
+    iconPath: assets/equipment/weapon_xiangyang_liu_ye_dao.png
+    detailPath: assets/equipment/weapon_xiangyang_liu_ye_dao_detail.png
+    specialSkillCandidates: [skill_lingqiao_changlian_skill, skill_lingqiao_changlian_ult]
+
+  - id: weapon_xiangyang_xiu_jian
+    name: 袖箭
+    tier: xiangYang
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 180
+    baseAttackMax: 280
+    baseHealthMin: 0
+    baseHealthMax: 50
+    baseSpeedMin: 5
+    baseSpeedMax: 20
+    presetLoreIds: [weapon_xiangyang_xiu_jian]
+    dropSourceTags: ["mainline_ch2"]
+    iconPath: assets/equipment/weapon_xiangyang_xiu_jian.png
+    detailPath: assets/equipment/weapon_xiangyang_xiu_jian_detail.png
+    specialSkillCandidates: [skill_gangmeng_changlian_skill, skill_gangmeng_changlian_ult]
+
+  - id: armor_xiangyang_ye_xing_yi
+    name: 夜行衣
+    tier: xiangYang
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 250
+    baseHealthMax: 350
+    baseSpeedMin: 5
+    baseSpeedMax: 10
+    presetLoreIds: [armor_xiangyang_ye_xing_yi]
+    dropSourceTags: ["mainline_ch2"]
+    iconPath: assets/equipment/armor_xiangyang_ye_xing_yi.png
+    detailPath: assets/equipment/armor_xiangyang_ye_xing_yi_detail.png
+
+  - id: armor_xiangyang_tie_pian_jia
+    name: 铁片甲
+    tier: xiangYang
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 350
+    baseHealthMax: 450
+    baseSpeedMin: 0
+    baseSpeedMax: 5
+    presetLoreIds: [armor_xiangyang_tie_pian_jia]
+    dropSourceTags: ["mainline_ch2"]
+    iconPath: assets/equipment/armor_xiangyang_tie_pian_jia.png
+    detailPath: assets/equipment/armor_xiangyang_tie_pian_jia_detail.png
+
+  - id: accessory_xiangyang_cui_yu_zhui
+    name: 翠玉坠
+    tier: xiangYang
+    slot: accessory
+    baseAttackMin: 50
+    baseAttackMax: 70
+    baseHealthMin: 150
+    baseHealthMax: 200
+    baseSpeedMin: 5
+    baseSpeedMax: 15
+    presetLoreIds: [accessory_xiangyang_cui_yu_zhui]
+    dropSourceTags: ["mainline_ch2"]
+    iconPath: assets/equipment/accessory_xiangyang_cui_yu_zhui.png
+    detailPath: assets/equipment/accessory_xiangyang_cui_yu_zhui_detail.png
+
+  - id: accessory_xiangyang_tie_hu_wan
+    name: 铁护腕
+    tier: xiangYang
+    slot: accessory
+    baseAttackMin: 70
+    baseAttackMax: 90
+    baseHealthMin: 100
+    baseHealthMax: 150
+    baseSpeedMin: 5
+    baseSpeedMax: 15
+    presetLoreIds: [accessory_xiangyang_tie_hu_wan]
+    dropSourceTags: ["mainline_ch2"]
+    iconPath: assets/equipment/accessory_xiangyang_tie_hu_wan.png
+    detailPath: assets/equipment/accessory_xiangyang_tie_hu_wan_detail.png
+
+
+  # --- 好家伙扩充 ---
+  - id: weapon_haojiahuo_yuan_yang_yue
+    name: 鸳鸯钺
+    tier: haoJiaHuo
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 320
+    baseAttackMax: 450
+    baseHealthMin: 0
+    baseHealthMax: 100
+    baseSpeedMin: 10
+    baseSpeedMax: 30
+    presetLoreIds: [weapon_haojiahuo_yuan_yang_yue]
+    dropSourceTags: ["mainline_ch3", "tower_15"]
+    iconPath: assets/equipment/weapon_haojiahuo_yuan_yang_yue.png
+    detailPath: assets/equipment/weapon_haojiahuo_yuan_yang_yue_detail.png
+    specialSkillCandidates: [skill_yinrou_mingjia_skill, skill_yinrou_mingjia_ult]
+
+  - id: weapon_haojiahuo_mei_hua_biao
+    name: 梅花镖
+    tier: haoJiaHuo
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 320
+    baseAttackMax: 450
+    baseHealthMin: 0
+    baseHealthMax: 100
+    baseSpeedMin: 10
+    baseSpeedMax: 30
+    presetLoreIds: [weapon_haojiahuo_mei_hua_biao]
+    dropSourceTags: ["mainline_ch3", "tower_15"]
+    iconPath: assets/equipment/weapon_haojiahuo_mei_hua_biao.png
+    detailPath: assets/equipment/weapon_haojiahuo_mei_hua_biao_detail.png
+    specialSkillCandidates: [skill_lingqiao_mingjia_skill, skill_lingqiao_mingjia_ult]
+
+  - id: armor_haojiahuo_chou_shan
+    name: 绸衫
+    tier: haoJiaHuo
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 450
+    baseHealthMax: 600
+    baseSpeedMin: 10
+    baseSpeedMax: 15
+    presetLoreIds: [armor_haojiahuo_chou_shan]
+    dropSourceTags: ["mainline_ch3", "tower_15"]
+    iconPath: assets/equipment/armor_haojiahuo_chou_shan.png
+    detailPath: assets/equipment/armor_haojiahuo_chou_shan_detail.png
+
+  - id: armor_haojiahuo_suo_zi_jia
+    name: 锁子甲
+    tier: haoJiaHuo
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 600
+    baseHealthMax: 750
+    baseSpeedMin: 5
+    baseSpeedMax: 10
+    presetLoreIds: [armor_haojiahuo_suo_zi_jia]
+    dropSourceTags: ["mainline_ch3", "tower_15"]
+    iconPath: assets/equipment/armor_haojiahuo_suo_zi_jia.png
+    detailPath: assets/equipment/armor_haojiahuo_suo_zi_jia_detail.png
+
+  - id: accessory_haojiahuo_ping_an_kou
+    name: 平安扣
+    tier: haoJiaHuo
+    slot: accessory
+    baseAttackMin: 100
+    baseAttackMax: 130
+    baseHealthMin: 275
+    baseHealthMax: 350
+    baseSpeedMin: 10
+    baseSpeedMax: 25
+    presetLoreIds: [accessory_haojiahuo_ping_an_kou]
+    dropSourceTags: ["mainline_ch3", "tower_15"]
+    iconPath: assets/equipment/accessory_haojiahuo_ping_an_kou.png
+    detailPath: assets/equipment/accessory_haojiahuo_ping_an_kou_detail.png
+
+  - id: accessory_haojiahuo_she_dan_wan
+    name: 蛇胆丸
+    tier: haoJiaHuo
+    slot: accessory
+    baseAttackMin: 130
+    baseAttackMax: 160
+    baseHealthMin: 200
+    baseHealthMax: 275
+    baseSpeedMin: 10
+    baseSpeedMax: 25
+    presetLoreIds: [accessory_haojiahuo_she_dan_wan]
+    dropSourceTags: ["mainline_ch3", "tower_15"]
+    iconPath: assets/equipment/accessory_haojiahuo_she_dan_wan.png
+    detailPath: assets/equipment/accessory_haojiahuo_she_dan_wan_detail.png
+
+
+  # --- 利器扩充 ---
+  - id: weapon_liqi_hu_tou_gou
+    name: 虎头钩
+    tier: liQi
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 480
+    baseAttackMax: 650
+    baseHealthMin: 0
+    baseHealthMax: 150
+    baseSpeedMin: 20
+    baseSpeedMax: 45
+    presetLoreIds: [weapon_liqi_hu_tou_gou]
+    dropSourceTags: ["tower_25", "yiLiu_quest"]
+    iconPath: assets/equipment/weapon_liqi_hu_tou_gou.png
+    detailPath: assets/equipment/weapon_liqi_hu_tou_gou_detail.png
+    specialSkillCandidates: [skill_gangmeng_menpai_skill, skill_gangmeng_menpai_ult]
+
+  - id: weapon_liqi_li_hua_zhen
+    name: 梨花针
+    tier: liQi
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 480
+    baseAttackMax: 650
+    baseHealthMin: 0
+    baseHealthMax: 150
+    baseSpeedMin: 20
+    baseSpeedMax: 45
+    presetLoreIds: [weapon_liqi_li_hua_zhen]
+    dropSourceTags: ["tower_25", "yiLiu_quest"]
+    iconPath: assets/equipment/weapon_liqi_li_hua_zhen.png
+    detailPath: assets/equipment/weapon_liqi_li_hua_zhen_detail.png
+    specialSkillCandidates: [skill_yinrou_menpai_skill, skill_yinrou_menpai_ult]
+
+  - id: armor_liqi_qing_luo_shan
+    name: 轻罗衫
+    tier: liQi
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 700
+    baseHealthMax: 900
+    baseSpeedMin: 17
+    baseSpeedMax: 25
+    presetLoreIds: [armor_liqi_qing_luo_shan]
+    dropSourceTags: ["tower_25", "yiLiu_quest"]
+    iconPath: assets/equipment/armor_liqi_qing_luo_shan.png
+    detailPath: assets/equipment/armor_liqi_qing_luo_shan_detail.png
+
+  - id: armor_liqi_tie_ye_jia
+    name: 铁叶甲
+    tier: liQi
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 900
+    baseHealthMax: 1100
+    baseSpeedMin: 10
+    baseSpeedMax: 17
+    presetLoreIds: [armor_liqi_tie_ye_jia]
+    dropSourceTags: ["tower_25", "yiLiu_quest"]
+    iconPath: assets/equipment/armor_liqi_tie_ye_jia.png
+    detailPath: assets/equipment/armor_liqi_tie_ye_jia_detail.png
+
+  - id: accessory_liqi_hu_xin_jing
+    name: 护心镜
+    tier: liQi
+    slot: accessory
+    baseAttackMin: 180
+    baseAttackMax: 230
+    baseHealthMin: 450
+    baseHealthMax: 550
+    baseSpeedMin: 20
+    baseSpeedMax: 35
+    presetLoreIds: [accessory_liqi_hu_xin_jing]
+    dropSourceTags: ["tower_25", "yiLiu_quest"]
+    iconPath: assets/equipment/accessory_liqi_hu_xin_jing.png
+    detailPath: assets/equipment/accessory_liqi_hu_xin_jing_detail.png
+
+  - id: accessory_liqi_jin_chuang_gao
+    name: 金创膏
+    tier: liQi
+    slot: accessory
+    baseAttackMin: 230
+    baseAttackMax: 280
+    baseHealthMin: 350
+    baseHealthMax: 450
+    baseSpeedMin: 20
+    baseSpeedMax: 35
+    presetLoreIds: [accessory_liqi_jin_chuang_gao]
+    dropSourceTags: ["tower_25", "yiLiu_quest"]
+    iconPath: assets/equipment/accessory_liqi_jin_chuang_gao.png
+    detailPath: assets/equipment/accessory_liqi_jin_chuang_gao_detail.png
+
+
+  # --- 重器扩充 ---
+  - id: weapon_zhongqi_ri_yue_lun
+    name: 日月轮
+    tier: zhongQi
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 700
+    baseAttackMax: 950
+    baseHealthMin: 50
+    baseHealthMax: 250
+    baseSpeedMin: 30
+    baseSpeedMax: 60
+    presetLoreIds: [weapon_zhongqi_ri_yue_lun]
+    dropSourceTags: ["tower_25", "jueDing_unlock"]
+    iconPath: assets/equipment/weapon_zhongqi_ri_yue_lun.png
+    detailPath: assets/equipment/weapon_zhongqi_ri_yue_lun_detail.png
+    specialSkillCandidates: [skill_lingqiao_jianghu_skill, skill_lingqiao_jianghu_ult]
+
+  - id: weapon_zhongqi_zhui_hun_ding
+    name: 追魂钉
+    tier: zhongQi
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 700
+    baseAttackMax: 950
+    baseHealthMin: 50
+    baseHealthMax: 250
+    baseSpeedMin: 30
+    baseSpeedMax: 60
+    presetLoreIds: [weapon_zhongqi_zhui_hun_ding]
+    dropSourceTags: ["tower_25", "jueDing_unlock"]
+    iconPath: assets/equipment/weapon_zhongqi_zhui_hun_ding.png
+    detailPath: assets/equipment/weapon_zhongqi_zhui_hun_ding_detail.png
+    specialSkillCandidates: [skill_gangmeng_jianghu_skill, skill_gangmeng_jianghu_ult]
+
+  - id: armor_zhongqi_yu_lin_qing_jia
+    name: 鱼鳞轻甲
+    tier: zhongQi
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 1100
+    baseHealthMax: 1350
+    baseSpeedMin: 25
+    baseSpeedMax: 35
+    presetLoreIds: [armor_zhongqi_yu_lin_qing_jia]
+    dropSourceTags: ["tower_25", "jueDing_unlock"]
+    iconPath: assets/equipment/armor_zhongqi_yu_lin_qing_jia.png
+    detailPath: assets/equipment/armor_zhongqi_yu_lin_qing_jia_detail.png
+
+  - id: armor_zhongqi_han_tie_zhong_jia
+    name: 寒铁重甲
+    tier: zhongQi
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 1350
+    baseHealthMax: 1600
+    baseSpeedMin: 15
+    baseSpeedMax: 25
+    presetLoreIds: [armor_zhongqi_han_tie_zhong_jia]
+    dropSourceTags: ["tower_25", "jueDing_unlock"]
+    iconPath: assets/equipment/armor_zhongqi_han_tie_zhong_jia.png
+    detailPath: assets/equipment/armor_zhongqi_han_tie_zhong_jia_detail.png
+
+  - id: accessory_zhongqi_bi_xi_shou_chuan
+    name: 碧玺手串
+    tier: zhongQi
+    slot: accessory
+    baseAttackMin: 280
+    baseAttackMax: 350
+    baseHealthMin: 700
+    baseHealthMax: 850
+    baseSpeedMin: 30
+    baseSpeedMax: 50
+    presetLoreIds: [accessory_zhongqi_bi_xi_shou_chuan]
+    dropSourceTags: ["tower_25", "jueDing_unlock"]
+    iconPath: assets/equipment/accessory_zhongqi_bi_xi_shou_chuan.png
+    detailPath: assets/equipment/accessory_zhongqi_bi_xi_shou_chuan_detail.png
+
+  - id: accessory_zhongqi_xuan_tie_zhi_huan
+    name: 玄铁指环
+    tier: zhongQi
+    slot: accessory
+    baseAttackMin: 350
+    baseAttackMax: 420
+    baseHealthMin: 550
+    baseHealthMax: 700
+    baseSpeedMin: 30
+    baseSpeedMax: 50
+    presetLoreIds: [accessory_zhongqi_xuan_tie_zhi_huan]
+    dropSourceTags: ["tower_25", "jueDing_unlock"]
+    iconPath: assets/equipment/accessory_zhongqi_xuan_tie_zhi_huan.png
+    detailPath: assets/equipment/accessory_zhongqi_xuan_tie_zhi_huan_detail.png
+
+
+  # --- 宝物扩充 ---
+  - id: weapon_baowu_yin_yang_ci
+    name: 阴阳刺
+    tier: baoWu
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 1000
+    baseAttackMax: 1400
+    baseHealthMin: 100
+    baseHealthMax: 400
+    baseSpeedMin: 45
+    baseSpeedMax: 75
+    presetLoreIds: [weapon_baowu_yin_yang_ci]
+    dropSourceTags: ["tower_30", "zongShi_unlock"]
+    iconPath: assets/equipment/weapon_baowu_yin_yang_ci.png
+    detailPath: assets/equipment/weapon_baowu_yin_yang_ci_detail.png
+    specialSkillCandidates: [skill_yinrou_shichuan_skill, skill_yinrou_shichuan_ult]
+
+  - id: weapon_baowu_bing_po_zhen
+    name: 冰魄针
+    tier: baoWu
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 1000
+    baseAttackMax: 1400
+    baseHealthMin: 100
+    baseHealthMax: 400
+    baseSpeedMin: 45
+    baseSpeedMax: 75
+    presetLoreIds: [weapon_baowu_bing_po_zhen]
+    dropSourceTags: ["tower_30", "zongShi_unlock"]
+    iconPath: assets/equipment/weapon_baowu_bing_po_zhen.png
+    detailPath: assets/equipment/weapon_baowu_bing_po_zhen_detail.png
+    specialSkillCandidates: [skill_lingqiao_shichuan_skill, skill_lingqiao_shichuan_ult]
+
+  - id: armor_baowu_can_si_ruan_jia
+    name: 蚕丝软甲
+    tier: baoWu
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 1400
+    baseHealthMax: 1700
+    baseSpeedMin: 37
+    baseSpeedMax: 50
+    presetLoreIds: [armor_baowu_can_si_ruan_jia]
+    dropSourceTags: ["tower_30", "zongShi_unlock"]
+    iconPath: assets/equipment/armor_baowu_can_si_ruan_jia.png
+    detailPath: assets/equipment/armor_baowu_can_si_ruan_jia_detail.png
+
+  - id: armor_baowu_wu_jin_zhan_jia
+    name: 乌金战甲
+    tier: baoWu
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 1700
+    baseHealthMax: 2000
+    baseSpeedMin: 25
+    baseSpeedMax: 37
+    presetLoreIds: [armor_baowu_wu_jin_zhan_jia]
+    dropSourceTags: ["tower_30", "zongShi_unlock"]
+    iconPath: assets/equipment/armor_baowu_wu_jin_zhan_jia.png
+    detailPath: assets/equipment/armor_baowu_wu_jin_zhan_jia_detail.png
+
+  - id: accessory_baowu_long_gu_lian
+    name: 龙骨链
+    tier: baoWu
+    slot: accessory
+    baseAttackMin: 420
+    baseAttackMax: 510
+    baseHealthMin: 925
+    baseHealthMax: 1100
+    baseSpeedMin: 45
+    baseSpeedMax: 70
+    presetLoreIds: [accessory_baowu_long_gu_lian]
+    dropSourceTags: ["tower_30", "zongShi_unlock"]
+    iconPath: assets/equipment/accessory_baowu_long_gu_lian.png
+    detailPath: assets/equipment/accessory_baowu_long_gu_lian_detail.png
+
+  - id: accessory_baowu_zi_jin_hu_lu
+    name: 紫金葫芦
+    tier: baoWu
+    slot: accessory
+    baseAttackMin: 510
+    baseAttackMax: 600
+    baseHealthMin: 750
+    baseHealthMax: 925
+    baseSpeedMin: 45
+    baseSpeedMax: 70
+    presetLoreIds: [accessory_baowu_zi_jin_hu_lu]
+    dropSourceTags: ["tower_30", "zongShi_unlock"]
+    iconPath: assets/equipment/accessory_baowu_zi_jin_hu_lu.png
+    detailPath: assets/equipment/accessory_baowu_zi_jin_hu_lu_detail.png
+
+
+  # --- 神物扩充 ---
+  - id: weapon_shenwu_hun_yuan_chui
+    name: 混元锤
+    tier: shenWu
+    slot: weapon
+    schoolBias: gangMeng
+    baseAttackMin: 1500
+    baseAttackMax: 2000
+    baseHealthMin: 150
+    baseHealthMax: 350
+    baseSpeedMin: 65
+    baseSpeedMax: 100
+    presetLoreIds: [weapon_shenwu_hun_yuan_chui]
+    dropSourceTags: ["wuSheng_unlock"]
+    iconPath: assets/equipment/weapon_shenwu_hun_yuan_chui.png
+    detailPath: assets/equipment/weapon_shenwu_hun_yuan_chui_detail.png
+    specialSkillCandidates: [skill_gangmeng_chuanshuo_skill, skill_gangmeng_chuanshuo_ult]
+
+  - id: weapon_shenwu_kong_que_ling
+    name: 孔雀翎
+    tier: shenWu
+    slot: weapon
+    schoolBias: yinRou
+    baseAttackMin: 1500
+    baseAttackMax: 2000
+    baseHealthMin: 150
+    baseHealthMax: 350
+    baseSpeedMin: 65
+    baseSpeedMax: 100
+    presetLoreIds: [weapon_shenwu_kong_que_ling]
+    dropSourceTags: ["wuSheng_unlock"]
+    iconPath: assets/equipment/weapon_shenwu_kong_que_ling.png
+    detailPath: assets/equipment/weapon_shenwu_kong_que_ling_detail.png
+    specialSkillCandidates: [skill_yinrou_chuanshuo_skill, skill_yinrou_chuanshuo_ult]
+
+  - id: armor_shenwu_bing_can_yi
+    name: 冰蚕衣
+    tier: shenWu
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 1750
+    baseHealthMax: 2025
+    baseSpeedMin: 55
+    baseSpeedMax: 70
+    presetLoreIds: [armor_shenwu_bing_can_yi]
+    dropSourceTags: ["wuSheng_unlock"]
+    iconPath: assets/equipment/armor_shenwu_bing_can_yi.png
+    detailPath: assets/equipment/armor_shenwu_bing_can_yi_detail.png
+
+  - id: armor_shenwu_tian_can_bao_jia
+    name: 天蚕宝甲
+    tier: shenWu
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 2025
+    baseHealthMax: 2300
+    baseSpeedMin: 40
+    baseSpeedMax: 55
+    presetLoreIds: [armor_shenwu_tian_can_bao_jia]
+    dropSourceTags: ["wuSheng_unlock"]
+    iconPath: assets/equipment/armor_shenwu_tian_can_bao_jia.png
+    detailPath: assets/equipment/armor_shenwu_tian_can_bao_jia_detail.png
+
+  - id: accessory_shenwu_she_li_zhu
+    name: 舍利珠
+    tier: shenWu
+    slot: accessory
+    baseAttackMin: 600
+    baseAttackMax: 725
+    baseHealthMin: 1200
+    baseHealthMax: 1400
+    baseSpeedMin: 65
+    baseSpeedMax: 95
+    presetLoreIds: [accessory_shenwu_she_li_zhu]
+    dropSourceTags: ["wuSheng_unlock"]
+    iconPath: assets/equipment/accessory_shenwu_she_li_zhu.png
+    detailPath: assets/equipment/accessory_shenwu_she_li_zhu_detail.png
+
+  - id: accessory_shenwu_tian_yuan_zhi
+    name: 天元指
+    tier: shenWu
+    slot: accessory
+    baseAttackMin: 725
+    baseAttackMax: 850
+    baseHealthMin: 1000
+    baseHealthMax: 1200
+    baseSpeedMin: 65
+    baseSpeedMax: 95
+    presetLoreIds: [accessory_shenwu_tian_yuan_zhi]
+    dropSourceTags: ["wuSheng_unlock"]
+    iconPath: assets/equipment/accessory_shenwu_tian_yuan_zhi.png
+    detailPath: assets/equipment/accessory_shenwu_tian_yuan_zhi_detail.png
+
+  # --- 跨阶特殊装备(3 件) ---
+
+  - id: weapon_special_wu_ming_jian
+    name: 无名剑
+    tier: baoWu
+    slot: weapon
+    schoolBias: lingQiao
+    baseAttackMin: 1000
+    baseAttackMax: 1400
+    baseHealthMin: 100
+    baseHealthMax: 400
+    baseSpeedMin: 45
+    baseSpeedMax: 75
+    presetLoreIds: [weapon_special_wu_ming_jian]
+    dropSourceTags: ["ascension_reward"]
+    iconPath: assets/equipment/weapon_special_wu_ming_jian.png
+    detailPath: assets/equipment/weapon_special_wu_ming_jian_detail.png
+    specialSkillCandidates: [skill_lingqiao_shichuan_skill, skill_lingqiao_shichuan_ult]
+
+  - id: accessory_special_xin_mo_zhu
+    name: 心魔珠
+    tier: zhongQi
+    slot: accessory
+    baseAttackMin: 280
+    baseAttackMax: 420
+    baseHealthMin: 550
+    baseHealthMax: 850
+    baseSpeedMin: 30
+    baseSpeedMax: 50
+    presetLoreIds: [accessory_special_xin_mo_zhu]
+    dropSourceTags: ["inner_demon_reward"]
+    iconPath: assets/equipment/accessory_special_xin_mo_zhu.png
+    detailPath: assets/equipment/accessory_special_xin_mo_zhu_detail.png
+
+  - id: armor_special_bai_zhan_jia
+    name: 百战甲
+    tier: liQi
+    slot: armor
+    baseAttackMin: 0
+    baseAttackMax: 0
+    baseHealthMin: 700
+    baseHealthMax: 1100
+    baseSpeedMin: 10
+    baseSpeedMax: 25
+    presetLoreIds: [armor_special_bai_zhan_jia]
+    dropSourceTags: ["mass_battle_merit"]
+    iconPath: assets/equipment/armor_special_bai_zhan_jia.png
+    detailPath: assets/equipment/armor_special_bai_zhan_jia_detail.png
+

@@ -1,0 +1,20 @@
+id: armor_baowu_can_si_ruan_jia
+name: 蚕丝软甲
+default_lore:
+  - text: |
+      天蚕丝编织的软甲，刀劈不断火烧不着，世间罕有。
+
+continued_lore_obtained:
+  - text: |
+      于「{source}」得此物。
+  - text: |
+      在{source}偶然所得，握在手中有些陌生。
+  - text: |
+      自{source}取得，尚未习惯它的重量。
+continued_lore_boss_defeated:
+  - text: |
+      击败强敌后，此物似乎也沾了几分锐气。
+  - text: |
+      胜了一场硬仗，低头看它，上面多了一道新痕。
+  - text: |
+      敌人倒下时，它在手里微微一震。
