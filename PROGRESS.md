@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-28 1.0 release ready ~95% · P2.1 内容扩充 4 批全收 · 1518 测 / 0 analyze**
+> 📊 **2026-05-28 1.0 release ready ~95% · 装备 drop 全覆盖 · 1519 测 / 0 analyze**
+
+**2026-05-28 装备 drop 全覆盖**(1 commit `3884dfe` · 1518→1519 测 / 0 analyze):56 条 dropTable 条目注入 26 个主线关卡,77 件主线装备全部有至少 1 个 dropTable 来源。Ch1-3 +25 条 T1-T3 / Ch4-5 +16 条 T4-T5 / Ch6 +15 条 T6+T7。stage_02_01+03_01 补 dropTable 节。+1 覆盖率红线测试(sealed class pattern match)。
 
 **2026-05-28 P2.1 Batch 4 相生扩充 8→12**(1 commit `c8c2f22` · 1514→1518 测 / 0 analyze):+4 specificTechniques 传说彩蛋(灵阴化蝶/龙虎交泰/幽影穿花/金刚不坏)+ 4 hot-loop 红线压测(C3-C6)。代码层零改动,纯 data+test。**P2.1 内容扩充 4 批全收 ✅**(装备 80 / 心法 49 / 技能 166 / lore 80 / 相生 12)。
 
