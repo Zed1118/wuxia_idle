@@ -1,7 +1,7 @@
 # =============================================================================
-# skills.yaml · 招式 fixture（Phase 3 Week 8 T64 扩 63 招）
+# skills.yaml · 招式 fixture（P2.1 Batch 2 扩 147 心法招 + 19 独立招）
 # =============================================================================
-# 共 63 招：21 本心法 × 3 招（normalAttack / powerSkill / ultimate）。
+# 共 166 招：49 本心法 × 3 招 = 147 + 18 轻功 + 1 joint_skill = 166。
 #
 # 倍率约束（numbers.yaml `techniques.tiers.max_skill_multiplier`，软约定,
 # 当前仅 fixture 端遵守,代码暂无 enforce;Phase 5 cleanup 时加强校验）：
@@ -996,3 +996,946 @@ skills:
     parentTechniqueDefId: null
     visualEffect: lightfoot_silent_void
 
+
+  # =============================================================================
+  # P2.1 Batch 2 扩充 · 28 本 × 3 招 = 84 招
+  # =============================================================================
+
+  # --- 入门功防御变体招式 ---
+  - id: skill_gangmeng_jichu_fang_basic
+    name: 挡拳
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_jichu_fang
+    visualEffect: iron_guard
+
+  - id: skill_gangmeng_jichu_fang_skill
+    name: 震臂
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1200
+    internalForceCost: 100
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_jichu_fang
+    visualEffect: arm_shock
+
+  - id: skill_gangmeng_jichu_fang_ult
+    name: 铁山靠
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 1500
+    internalForceCost: 300
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_jichu_fang
+    visualEffect: iron_mountain
+
+  - id: skill_lingqiao_jichu_fang_basic
+    name: 侧闪
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_jichu_fang
+    visualEffect: side_dodge
+
+  - id: skill_lingqiao_jichu_fang_skill
+    name: 反击
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1200
+    internalForceCost: 100
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_jichu_fang
+    visualEffect: counter
+
+  - id: skill_lingqiao_jichu_fang_ult
+    name: 滑步一击
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 1500
+    internalForceCost: 300
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_jichu_fang
+    visualEffect: slide_strike
+
+  - id: skill_yinrou_jichu_fang_basic
+    name: 养息
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_jichu_fang
+    visualEffect: rest_qi
+
+  - id: skill_yinrou_jichu_fang_skill
+    name: 回气掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1200
+    internalForceCost: 100
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_jichu_fang
+    visualEffect: qi_return
+
+  - id: skill_yinrou_jichu_fang_ult
+    name: 固元术
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 1500
+    internalForceCost: 300
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_jichu_fang
+    visualEffect: yuan_guard
+
+
+  # --- 常练功防御变体招式 ---
+  - id: skill_gangmeng_changlian_fang_basic
+    name: 硬扛
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_changlian_fang
+    visualEffect: hard_block
+
+  - id: skill_gangmeng_changlian_fang_skill
+    name: 撼地锤
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1600
+    internalForceCost: 150
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_changlian_fang
+    visualEffect: earth_shake
+
+  - id: skill_gangmeng_changlian_fang_ult
+    name: 金刚怒目
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2000
+    internalForceCost: 400
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_changlian_fang
+    visualEffect: diamond_fury
+
+  - id: skill_lingqiao_changlian_fang_basic
+    name: 游身
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_changlian_fang
+    visualEffect: swim_body
+
+  - id: skill_lingqiao_changlian_fang_skill
+    name: 绕行斩
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1600
+    internalForceCost: 150
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_changlian_fang
+    visualEffect: circle_slash
+
+  - id: skill_lingqiao_changlian_fang_ult
+    name: 水中月
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2000
+    internalForceCost: 400
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_changlian_fang
+    visualEffect: moon_water
+
+  - id: skill_yinrou_changlian_fang_basic
+    name: 龟息
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_changlian_fang
+    visualEffect: turtle_breath
+
+  - id: skill_yinrou_changlian_fang_skill
+    name: 绵柔掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1600
+    internalForceCost: 150
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_changlian_fang
+    visualEffect: soft_palm
+
+  - id: skill_yinrou_changlian_fang_ult
+    name: 息长绵延
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2000
+    internalForceCost: 400
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_changlian_fang
+    visualEffect: long_breath
+
+
+  # --- 名家功防御变体招式 ---
+  - id: skill_gangmeng_mingjia_fang_basic
+    name: 磐踏
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_mingjia_fang
+    visualEffect: stone_stomp
+
+  - id: skill_gangmeng_mingjia_fang_skill
+    name: 碎地掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2000
+    internalForceCost: 200
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_mingjia_fang
+    visualEffect: ground_break
+
+  - id: skill_gangmeng_mingjia_fang_ult
+    name: 不动如山
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2500
+    internalForceCost: 500
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_mingjia_fang
+    visualEffect: immovable
+
+  - id: skill_lingqiao_mingjia_fang_basic
+    name: 凌波
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_mingjia_fang
+    visualEffect: wave_step
+
+  - id: skill_lingqiao_mingjia_fang_skill
+    name: 微步刺
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2000
+    internalForceCost: 200
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_mingjia_fang
+    visualEffect: micro_thrust
+
+  - id: skill_lingqiao_mingjia_fang_ult
+    name: 踏水无痕
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2500
+    internalForceCost: 500
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_mingjia_fang
+    visualEffect: waterwalker
+
+  - id: skill_yinrou_mingjia_fang_basic
+    name: 玄阴掌
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_mingjia_fang
+    visualEffect: dark_yin
+
+  - id: skill_yinrou_mingjia_fang_skill
+    name: 寒气劲
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2000
+    internalForceCost: 200
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_mingjia_fang
+    visualEffect: cold_force
+
+  - id: skill_yinrou_mingjia_fang_ult
+    name: 阴阳护体
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2500
+    internalForceCost: 500
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_mingjia_fang
+    visualEffect: yinyang_guard
+
+
+  # --- 门派绝学防御变体招式 ---
+  - id: skill_gangmeng_menpai_fang_basic
+    name: 铁掌
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_menpai_fang
+    visualEffect: iron_palm
+
+  - id: skill_gangmeng_menpai_fang_skill
+    name: 金钟罩
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2400
+    internalForceCost: 300
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_menpai_fang
+    visualEffect: golden_bell
+
+  - id: skill_gangmeng_menpai_fang_ult
+    name: 铁布护身
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 3000
+    internalForceCost: 700
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_menpai_fang
+    visualEffect: iron_shirt
+
+  - id: skill_lingqiao_menpai_fang_basic
+    name: 幻影
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_menpai_fang
+    visualEffect: phantom
+
+  - id: skill_lingqiao_menpai_fang_skill
+    name: 残影剑
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2400
+    internalForceCost: 300
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_menpai_fang
+    visualEffect: afterimage
+
+  - id: skill_lingqiao_menpai_fang_ult
+    name: 幻灭一闪
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 3000
+    internalForceCost: 700
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_menpai_fang
+    visualEffect: phantom_flash
+
+  - id: skill_yinrou_menpai_fang_basic
+    name: 化骨
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_menpai_fang
+    visualEffect: bone_melt
+
+  - id: skill_yinrou_menpai_fang_skill
+    name: 绵针
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2400
+    internalForceCost: 300
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_menpai_fang
+    visualEffect: cotton_needle
+
+  - id: skill_yinrou_menpai_fang_ult
+    name: 化骨裹身
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 3000
+    internalForceCost: 700
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_menpai_fang
+    visualEffect: bone_wrap
+
+
+  # --- 江湖秘传防御变体招式 ---
+  - id: skill_gangmeng_jianghu_fang_basic
+    name: 明王拳
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_jianghu_fang
+    visualEffect: king_fist
+
+  - id: skill_gangmeng_jianghu_fang_skill
+    name: 降魔掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3200
+    internalForceCost: 400
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_jianghu_fang
+    visualEffect: demon_palm
+
+  - id: skill_gangmeng_jianghu_fang_ult
+    name: 不动真身
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 4000
+    internalForceCost: 1000
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_jianghu_fang
+    visualEffect: true_body
+
+  - id: skill_lingqiao_jianghu_fang_basic
+    name: 鬼步
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_jianghu_fang
+    visualEffect: ghost_step
+
+  - id: skill_lingqiao_jianghu_fang_skill
+    name: 无声刺
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3200
+    internalForceCost: 400
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_jianghu_fang
+    visualEffect: silent_thrust
+
+  - id: skill_lingqiao_jianghu_fang_ult
+    name: 暗影袭杀
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 4000
+    internalForceCost: 1000
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_jianghu_fang
+    visualEffect: shadow_kill
+
+  - id: skill_yinrou_jianghu_fang_basic
+    name: 太阴
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_jianghu_fang
+    visualEffect: supreme_yin
+
+  - id: skill_yinrou_jianghu_fang_skill
+    name: 真气疗
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3200
+    internalForceCost: 400
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_jianghu_fang
+    visualEffect: qi_heal
+
+  - id: skill_yinrou_jianghu_fang_ult
+    name: 太阴归元
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 4000
+    internalForceCost: 1000
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_jianghu_fang
+    visualEffect: yin_return
+
+
+  # --- 失传神功防御变体招式 ---
+  - id: skill_gangmeng_shichuan_fang_basic
+    name: 混元掌
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_shichuan_fang
+    visualEffect: chaos_palm
+
+  - id: skill_gangmeng_shichuan_fang_skill
+    name: 铁骨崩
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 4400
+    internalForceCost: 600
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_shichuan_fang
+    visualEffect: bone_break
+
+  - id: skill_gangmeng_shichuan_fang_ult
+    name: 钢筋铁骨
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 5500
+    internalForceCost: 1500
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_shichuan_fang
+    visualEffect: steel_bone
+
+  - id: skill_lingqiao_shichuan_fang_basic
+    name: 天遁
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_shichuan_fang
+    visualEffect: sky_escape
+
+  - id: skill_lingqiao_shichuan_fang_skill
+    name: 穿花
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 4400
+    internalForceCost: 600
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_shichuan_fang
+    visualEffect: flower_pierce
+
+  - id: skill_lingqiao_shichuan_fang_ult
+    name: 天遁无踪
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 5500
+    internalForceCost: 1500
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_shichuan_fang
+    visualEffect: traceless
+
+  - id: skill_yinrou_shichuan_fang_basic
+    name: 寒蝉
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_shichuan_fang
+    visualEffect: cold_cicada
+
+  - id: skill_yinrou_shichuan_fang_skill
+    name: 冰息
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 4400
+    internalForceCost: 600
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_shichuan_fang
+    visualEffect: ice_breath
+
+  - id: skill_yinrou_shichuan_fang_ult
+    name: 寒潭映月
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 5500
+    internalForceCost: 1500
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_shichuan_fang
+    visualEffect: cold_moon
+
+
+  # --- 传说神功防御变体招式 ---
+  - id: skill_gangmeng_chuanshuo_fang_basic
+    name: 霸王拳
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_chuanshuo_fang
+    visualEffect: tyrant_fist
+
+  - id: skill_gangmeng_chuanshuo_fang_skill
+    name: 卸甲掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 6400
+    internalForceCost: 800
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_chuanshuo_fang
+    visualEffect: disarm_palm
+
+  - id: skill_gangmeng_chuanshuo_fang_ult
+    name: 金身不坏
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 8000
+    internalForceCost: 2000
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_chuanshuo_fang
+    visualEffect: golden_body
+
+  - id: skill_lingqiao_chuanshuo_fang_basic
+    name: 无影
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_chuanshuo_fang
+    visualEffect: shadowless
+
+  - id: skill_lingqiao_chuanshuo_fang_skill
+    name: 无形剑
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 6400
+    internalForceCost: 800
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_chuanshuo_fang
+    visualEffect: formless
+
+  - id: skill_lingqiao_chuanshuo_fang_ult
+    name: 无影无踪
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 8000
+    internalForceCost: 2000
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_chuanshuo_fang
+    visualEffect: vanish
+
+  - id: skill_yinrou_chuanshuo_fang_basic
+    name: 归元
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_chuanshuo_fang
+    visualEffect: return_origin
+
+  - id: skill_yinrou_chuanshuo_fang_skill
+    name: 续命
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 6400
+    internalForceCost: 800
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_chuanshuo_fang
+    visualEffect: life_extend
+
+  - id: skill_yinrou_chuanshuo_fang_ult
+    name: 归元不灭
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 8000
+    internalForceCost: 2000
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_chuanshuo_fang
+    visualEffect: immortal
+
+
+  # --- 内力变体招式 ---
+  - id: skill_gangmeng_jichu_nei_basic
+    name: 蓄力
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_jichu_nei
+    visualEffect: charge
+
+  - id: skill_gangmeng_jichu_nei_skill
+    name: 内劲冲
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1200
+    internalForceCost: 100
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_jichu_nei
+    visualEffect: inner_burst
+
+  - id: skill_gangmeng_jichu_nei_ult
+    name: 气贯长虹
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 1500
+    internalForceCost: 300
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_jichu_nei
+    visualEffect: qi_rainbow
+
+  - id: skill_lingqiao_changlian_nei_basic
+    name: 引气
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_changlian_nei
+    visualEffect: guide_qi
+
+  - id: skill_lingqiao_changlian_nei_skill
+    name: 气旋斩
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 1600
+    internalForceCost: 150
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_changlian_nei
+    visualEffect: qi_vortex
+
+  - id: skill_lingqiao_changlian_nei_ult
+    name: 引气归元
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2000
+    internalForceCost: 400
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_changlian_nei
+    visualEffect: qi_home
+
+  - id: skill_yinrou_mingjia_nei_basic
+    name: 聚元
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_mingjia_nei
+    visualEffect: gather
+
+  - id: skill_yinrou_mingjia_nei_skill
+    name: 元气弹
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2000
+    internalForceCost: 200
+    cooldownTurns: 2
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_mingjia_nei
+    visualEffect: yuan_shot
+
+  - id: skill_yinrou_mingjia_nei_ult
+    name: 聚元一击
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 2500
+    internalForceCost: 500
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_mingjia_nei
+    visualEffect: yuan_strike
+
+  - id: skill_gangmeng_menpai_nei_basic
+    name: 炼神
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_menpai_nei
+    visualEffect: refine_spirit
+
+  - id: skill_gangmeng_menpai_nei_skill
+    name: 意念攻
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 2400
+    internalForceCost: 300
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_menpai_nei
+    visualEffect: mind_attack
+
+  - id: skill_gangmeng_menpai_nei_ult
+    name: 神念无双
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 3000
+    internalForceCost: 700
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_menpai_nei
+    visualEffect: mind_peerless
+
+  - id: skill_lingqiao_jianghu_nei_basic
+    name: 天罡拳
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_jianghu_nei
+    visualEffect: tiangang
+
+  - id: skill_lingqiao_jianghu_nei_skill
+    name: 罡气掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 3200
+    internalForceCost: 400
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_lingqiao_jianghu_nei
+    visualEffect: gang_palm
+
+  - id: skill_lingqiao_jianghu_nei_ult
+    name: 天罡破阵
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 4000
+    internalForceCost: 1000
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_lingqiao_jianghu_nei
+    visualEffect: gang_break
+
+  - id: skill_yinrou_shichuan_nei_basic
+    name: 玄元指
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_shichuan_nei
+    visualEffect: xuanyuan
+
+  - id: skill_yinrou_shichuan_nei_skill
+    name: 真经一式
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 4400
+    internalForceCost: 600
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_yinrou_shichuan_nei
+    visualEffect: scripture
+
+  - id: skill_yinrou_shichuan_nei_ult
+    name: 玄元归一
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 5500
+    internalForceCost: 1500
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_yinrou_shichuan_nei
+    visualEffect: yuan_one
+
+  - id: skill_gangmeng_chuanshuo_nei_basic
+    name: 混沌拳
+    description: TODO_NARRATIVE
+    type: normalAttack
+    powerMultiplier: 500
+    internalForceCost: 0
+    cooldownTurns: 0
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_chuanshuo_nei
+    visualEffect: chaos_fist
+
+  - id: skill_gangmeng_chuanshuo_nei_skill
+    name: 开天掌
+    description: TODO_NARRATIVE
+    type: powerSkill
+    powerMultiplier: 6400
+    internalForceCost: 800
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: tech_gangmeng_chuanshuo_nei
+    visualEffect: heaven_palm
+
+  - id: skill_gangmeng_chuanshuo_nei_ult
+    name: 混沌初开
+    description: TODO_NARRATIVE
+    type: ultimate
+    powerMultiplier: 8000
+    internalForceCost: 2000
+    cooldownTurns: 5
+    requiresManualTrigger: true
+    parentTechniqueDefId: tech_gangmeng_chuanshuo_nei
+    visualEffect: chaos_origin
