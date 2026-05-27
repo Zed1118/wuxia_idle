@@ -5,41 +5,21 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-28 1.0 release ready ~95% · 装备 drop 全覆盖 · 1519 测 / 0 analyze**
+> 📊 **2026-05-28 1.0 release ready ~95% · CHECKLIST v1.5 + ROADMAP v1.8 · R4 视觉验收派单 · 1519 测 / 0 analyze**
 
-**2026-05-28 装备 drop 全覆盖**(1 commit `3884dfe` · 1518→1519 测 / 0 analyze):56 条 dropTable 条目注入 26 个主线关卡,77 件主线装备全部有至少 1 个 dropTable 来源。Ch1-3 +25 条 T1-T3 / Ch4-5 +16 条 T4-T5 / Ch6 +15 条 T6+T7。stage_02_01+03_01 补 dropTable 节。+1 覆盖率红线测试(sealed class pattern match)。
+**2026-05-28 RELEASE_CHECKLIST v1.5 + ROADMAP v1.8 + R4 派单**(2 commit `e5bb9ba` + `51aaafb`):A 段测试数 1514→1519 · B 段附加 P2.1 全收+drop 全覆盖 · ROADMAP 93%→95% · Pen 同步 `e5bb9ba` + build OK · R4 派单 12 验收点(数据加载/掉落显示/典故+招式)· 典故盘点:80 文件 170 段 default_lore > GDD §8.4 目标 80 段 ✅ 已达标。
 
-**2026-05-28 P2.1 Batch 4 相生扩充 8→12**(1 commit `c8c2f22` · 1514→1518 测 / 0 analyze):+4 specificTechniques 传说彩蛋(灵阴化蝶/龙虎交泰/幽影穿花/金刚不坏)+ 4 hot-loop 红线压测(C3-C6)。代码层零改动,纯 data+test。**P2.1 内容扩充 4 批全收 ✅**(装备 80 / 心法 49 / 技能 166 / lore 80 / 相生 12)。
+**2026-05-28 装备 drop 全覆盖 + P2.1 4 批全收**(2 commit · 1514→1519 测 / 0 analyze):56 条 dropTable 注入 26 关 · 77 件主线装备全覆盖 · +1 红线测试。P2.1 4 批全收(装备 80 / 心法 49 / 技能 166 / lore 80 / 相生 12)。
 
-**2026-05-28 挂机 Batch A+B**(RELEASE_CHECKLIST v1.3 + ROADMAP v1.7 状态对齐 + P2.1 内容扩充 Phase 0 reality check):A 段 05-28 三项实装同步(测 1514 / B 段 4 新项 / H 段 1.1 战败收降+池扩标闭环)。B 段盘点装备 35 / 心法 21 / 技能 82,草案 6 拍板候选(装备 slot 变体 vs 堆叠 / 心法 3 流派加深 vs 加新流派 / 相生数量 / 批次拆分)。详 Phase 0 `docs/phase0/p2_1_content_expansion_phase0_2026-05-28.md`。
-
-**2026-05-28 P3.2.B+P1.2+P3.x 三项实装**(3 commit `8b7f9fc → d4757ac` · 1508→1514 测 / 0 analyze):① P3.2.B 群战数值调优(`aliveIfRecoveryPct=0.50` 修 stage 03/04/05 全 draw → 37W/45W/30W) ② P1.2 Boss 击杀声望 wire(`StageDef.factionId` + factions.yaml 加载 + `_applyBossKillReputation` victory wire · R5.8 6 测) ③ P3.x 群战 UI wiring(`MassBattleStrategy` 接入 stage_entry_flow + `buildEnemyTeamsPerWave` + 阵型选择 dialog + UiStrings 7 段)。详 closeout `session_closeout_2026-05-28_p3_p1_triple.md`。
-
-**2026-05-28 过夜自主 1.1 挂账清理**(3 commit · 1508 测 / 0 analyze):详 handoff `overnight_1_1_cleanup_handoff_2026-05-28.md`。
+**2026-05-28 P3.2.B+P1.2+P3.x 三项 + 过夜 1.1 清理**(6 commit · 1508→1514 测):群战调优+Boss 声望 wire+群战 UI wiring+战败收降 wire+池扩。详各 closeout。
 
 ---
 
-**2026-05-27 Boss 招降叙事 + debug 强制招募入口 + RELEASE_CHECKLIST v1.2**(7 commit · 1505 测 / 0 analyze):① Ch1-3 Boss 招降叙事 3 篇 + hook 接 NarrativeReaderScreen ② Ch4-6 预写 3 篇 ③ `SectRecruitDebugScreen` debug 入口(R1 FAIL 修) ④ Pen 仓库 T18→HEAD 拉齐(git remote 切 SSH) ⑤ R2 派单 push ⑥ RELEASE_CHECKLIST v1.2(A/B/C/H 四段对齐)。详 closeout `session_closeout_2026-05-27_boss_narrative_debug_recruit.md`。
+**2026-05-27 Boss 招降叙事+debug 招募+R2 派单**(7 commit · 1505 测):详 `session_closeout_2026-05-27_boss_narrative_debug_recruit.md`。
 
 ---
 
-**2026-05-26 audit v3 + P5.2 + P4.1 1.1 全收齐归档**:sect 子系统全 polish + audit v3 0 阻塞 + P5.2 子项 1+2+5 本机收齐。详末尾归档段。
-
----
-
-**2026-05-26 P4.1 1.1 polish 候选 1+3 一波 ✅**(Mac+Opus xhigh 主对话 ~30-45min · 1 commit feat branch · 1505 测全过 / 0 analyze · 精度 0.20-0.25×):承接 Q6B 三项收齐后续 → **候选 3 `_SectMembershipRow` widget**(`character_panel_screen.dart:_LineageSection` 内 50 行 · 沿 `_LineageDisciplesRow` 体例 · `playerSectIdProvider` + `sectMembersProvider` filter `!m.isFounder && m.id != character.id` 排玩家自己/前代祖师/当前 character)+ UiStrings 2 段 `panelSectMembersLabel/Empty` + **候选 1 文案 8 段扩**(Q6A 3 events outcome body 4→7-8 行 · bamboo/desert/mountain 加 NPC 背景动机段 + 5 sect_candidates lore 3→6-7 行 · 母亲早逝 7 岁练剑/玉门关血流一夜/师弟出事自请放逐/杂学半生求归处/父亲炸塌成年礼 · 古风克制不滥情)。**Q1-Q5 default no-brainer 跳 spec doc · trust the build 跳 widget test**(filter 1 行 + 沿 _LineageRow 体例 · memory `feedback_isar_widget_test_deadlock`)。**P4.1 1.1 sect 子系统全 polish 收尾 ✅**(Q6A v1.12 + founder_buff v1.13 + Q6B v1.14 + polish v1.15)· 1.0 release ~93% 维持。详 closeout `p4_1_1_polish_closeout_2026-05-26.md`。
-
----
-
-**2026-05-26 P4.1 1.1 Q6B stage_boss recruit B1-B3 全闭环 ✅**(Mac+Opus xhigh 主对话 ~1-1.5h · 3 commit feat branch · 1497→1505 测全过 / 0 analyze · 精度 0.20-0.30×):承接 P4.1 1.1 双项 ship 后 → 用户拍 Q6B spec Q1-Q8 默认 OK → 主仓 `a1a6996` spec(129 行)push main → sibling worktree `~/Desktop/挂机武侠.q6b` feat branch → **Phase 0 六维 grep verify**(spec deviation 方案 Z:Phase 0 漏看既存 `stageBossFailRecoverProb` 0.30 P4.1 v1.10 战败收降 0 caller 留 P5+/1.1 + 加新 `stageBossRecruitProb` 0.40 走本批战胜招降双语义共存)→ **B1 schema+yaml**(`eeac8cd` · `BossRecruitConfig` class + `StageDef.bossRecruit` + `SaveData.triggeredBossRecruitStageIds` + saveVersion 0.13→0.14 + 3 章末大 Boss stage_01_05/02_05/03_05 加 bossRecruit 跨三系 bamboo/desert/mountain + numbers.yaml stage_boss_recruit_prob + `_enforceBossRecruitRedLines` 三重校)→ **B2 抽 helper+wire**(`44352f4` · 抽 `_handleSectRecruit` from encounter_hook:174 → `sect_recruit_handler.dart` 共用 `runSectRecruitFlow` API(onMarkTriggered + onFallback 可空 callback 解耦语义)+ encounter_hook 改 wrapper 不破 Q6A 语义 + 新 `stage_boss_recruit_hook.dart` 6 步算法 + stage_entry_flow:182 wire + UiStrings 3 段 + closure promotion 修)→ **B3 R5 测族 + closeout**(8 测 · stages production yaml + numbers + persistence + serviceTie + 3 schema 红线 brokenLoader transform + 1 compat)+ closeout 42 行 ≤80。**P4.1 1.1 三项收齐 ✅**(主线 Q6A v1.12 + 副线 founder_buff v1.13 + 第三项 Q6B v1.14)· 1.0 release ~93% 维持。详 closeout `p4_1_q6b_b123_closeout_2026-05-26.md` + spec `p4_1_q6b_stage_boss_recruit_spec_2026-05-26.md`。
-
----
-
-**2026-05-26 Boss 招降叙事 3 篇 + hook 接入**(`d439065`):stage_01_05/02_05/03_05 各 7-8 段场景叙事 + `stage_boss_recruit_hook` 接 `NarrativeReaderScreen` 展示(rng 命中 → 叙事 → confirm dialog)。1505 测 / 0 analyze。
-
----
-
-**2026-05-25/26 归档**:见末尾「### 2026-05-25/26 详条归档」段。
+**2026-05-25/26/28 归档**:见末尾归档段。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
@@ -49,7 +29,7 @@
 
 - ~~37 / 38 / 40 / 41 / 42 / 43 / 44 / 45 全销账~~(2026-05-17/18/19/20):详各 closeout
 
-> 已销账条目(#1-#45)详见末尾归档。**P1 阶段全销账 ✅** + **Demo §8.4 14/14 全达标 ✅** + **1.0 ~91% release ready ✅**(本机可验全清零)。
+> 已销账条目(#1-#45)详见末尾归档。**P1 阶段全销账 ✅** + **Demo §8.4 14/14 全达标 ✅** + **1.0 ~95% release ready ✅**(A+B+C 全 PASS · 剩 D-G 留 M15-16)。
 
 ## 关键约束(每次开局必读)
 
@@ -95,10 +75,9 @@
 - **2026-05-24 P3.2 群战守城 + P3.1.B 子批 + P5+ 多代飞升 + 真传位 + 8h overnight v2/v3 + nightshift v2 首跑 + UI polish**(git log `efc7604 → b6d8191` 区间 · 详 handoff `p3_2_*` / `p3_1_b_*` / `p5_lineage_full_closeout_2026-05-24.md` / `nightshift_v2_first_run_closeout_2026-05-24.md` / `8h_autonomous_handoff_2026-05-24.md`)
 - **2026-05-25 v2.1 工具完善 + T17-T22 cherry-pick + T23/T24 6 关键问题闭环批**(main `74ba519 → b6d8191` · 1458 测 / 0 analyze · 批次质量 A 9.05/10 · P1.2 江湖恩怨+声望 100% + 技术债 3 合一 · 详 `session_closeout_2026-05-25_nightshift_6h_review.md` + `p1_2_jianghu_full.md` + `p3_tech_debt.md`)
 
-### 2026-05-25/26/28 详条归档
+### 2026-05-25/26/27/28 详条归档
 
 - **2026-05-25 P4.1+P5.0+audit v2**(1458→1484 测 · 详各 closeout)
-- **2026-05-26 P4.1 1.1 四项+audit v3+P5.2**(1484→1505 测 · 详各 closeout)
+- **2026-05-26 P4.1 1.1 四项+audit v3+P5.2+Boss 招降叙事**(1484→1505 测 · 详各 closeout)
 - **2026-05-27 Boss 招降叙事+debug 招募+R2 派单**(1505 测 · 详 `session_closeout_2026-05-27_boss_narrative_debug_recruit.md`)
-- **2026-05-28 过夜 1.1 挂账清理**(1505→1508 测 · 详 `overnight_1_1_cleanup_handoff_2026-05-28.md`)
-- **2026-05-28 P3.2.B+P1.2+P3.x 三项**(1508→1514 测 · 详 `session_closeout_2026-05-28_p3_p1_triple.md`)
+- **2026-05-28 过夜清理+P3 三项+P2.1 4 批+drop 全覆盖+CHECKLIST v1.5+R4 派单**(1505→1519 测 · 详 `overnight_1_1_cleanup_handoff_2026-05-28.md` / `session_closeout_2026-05-28_p3_p1_triple.md` / `codex_dispatch_r4_p2_1_content_drop_2026-05-28.md`)
