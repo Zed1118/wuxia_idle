@@ -5,9 +5,11 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-28 1.0 release ready ~93% · 1.1 挂账清理(战败收降 wire + 池扩 Ch4-6)+ Codex R2 待明日验收**
+> 📊 **2026-05-28 1.0 release ready ~93% · P3.2.B+P1.2+P3.x 三项实装 · 1514 测 / 0 analyze**
 
-**2026-05-28 过夜自主 1.1 挂账清理**(3 commit · 1508 测 / 0 analyze):① stageBossFailRecoverProb 0.30 战败收降 hook wire(`runStageBossFailRecoverHookAfterDefeat` + defeat 路径 wire + Ch1-3 败后叙事 3 篇) ② stage_04_05+ 池扩(Ch4-6 三 Boss bossRecruit config + valley_hermit 新候选 yinRou 三系平衡 + Ch4-6 败后叙事 3 篇) ③ CLAUDE.md v1.16 + ROADMAP v1.6 + candidateRefs rng pick 降级留 1.2。详 handoff `overnight_1_1_cleanup_handoff_2026-05-28.md`。
+**2026-05-28 P3.2.B+P1.2+P3.x 三项实装**(3 commit `8b7f9fc → d4757ac` · 1508→1514 测 / 0 analyze):① P3.2.B 群战数值调优(`aliveIfRecoveryPct=0.50` 修 stage 03/04/05 全 draw → 37W/45W/30W) ② P1.2 Boss 击杀声望 wire(`StageDef.factionId` + factions.yaml 加载 + `_applyBossKillReputation` victory wire · R5.8 6 测) ③ P3.x 群战 UI wiring(`MassBattleStrategy` 接入 stage_entry_flow + `buildEnemyTeamsPerWave` + 阵型选择 dialog + UiStrings 7 段)。详 closeout `session_closeout_2026-05-28_p3_p1_triple.md`。
+
+**2026-05-28 过夜自主 1.1 挂账清理**(3 commit · 1508 测 / 0 analyze):详 handoff `overnight_1_1_cleanup_handoff_2026-05-28.md`。
 
 ---
 
@@ -87,14 +89,10 @@
 - **2026-05-24 P3.2 群战守城 + P3.1.B 子批 + P5+ 多代飞升 + 真传位 + 8h overnight v2/v3 + nightshift v2 首跑 + UI polish**(git log `efc7604 → b6d8191` 区间 · 详 handoff `p3_2_*` / `p3_1_b_*` / `p5_lineage_full_closeout_2026-05-24.md` / `nightshift_v2_first_run_closeout_2026-05-24.md` / `8h_autonomous_handoff_2026-05-24.md`)
 - **2026-05-25 v2.1 工具完善 + T17-T22 cherry-pick + T23/T24 6 关键问题闭环批**(main `74ba519 → b6d8191` · 1458 测 / 0 analyze · 批次质量 A 9.05/10 · P1.2 江湖恩怨+声望 100% + 技术债 3 合一 · 详 `session_closeout_2026-05-25_nightshift_6h_review.md` + `p1_2_jianghu_full.md` + `p3_tech_debt.md`)
 
-### 2026-05-25/26 详条归档
+### 2026-05-25/26/28 详条归档
 
-- **2026-05-25 P4.1 §12.2 帮派门派全闭环**(~2.75h · 1458→1476 测 · B1 schema + B2 service + B3 UI + B4 R5 · 详 `p4_1_b{1,2,3,4}_*_2026-05-25.md`)
-- **2026-05-25 P5.0 onboarding production seed**(~1h · 1476→1484 测 · PR #12 · 详 `p5_onboarding_closeout_2026-05-25.md`)
-- **2026-05-25 1.0 整体 audit v2**(~40min · 6 跨系统全健康 · 0 P0/P1 · 详 `1_0_release_audit_v2_2026-05-25.md`)
-- **2026-05-26 凌晨自主挂机 5h batch**(6 doc · Q6A/founder_buff spec + self-review + RELEASE_CHECKLIST + ROADMAP v1.4 + Pen 救场)
-- **2026-05-26 P4.1 1.1 Q6A encounter recruit**(~1.5-2h · 1484→1492 测 · PR #13 · 详 `p4_1_q6a_b123_closeout_2026-05-26.md`)
-- **2026-05-26 P4.1 1.1 founder_buff cross_sect**(~30-40min · 1492→1497 测 · PR #14 · 详 `p4_1_founder_buff_b123_closeout_2026-05-26.md`)
-- **2026-05-26 P4.1 1.1 Q6B stage_boss recruit**(~1-1.5h · 1497→1505 测 · 详 `p4_1_q6b_b123_closeout_2026-05-26.md`)
-- **2026-05-26 P4.1 1.1 polish 候选 1+3**(~30-45min · character_panel sect NPC + 文案 8 段扩 · 详 `p4_1_1_polish_closeout_2026-05-26.md`)
-- **2026-05-26 audit v3 + P5.2 子项 1+2+5**(~40min · 6 维 sweep 0 阻塞 + Ch4/轻功 6 数值微调 · 详 `session_closeout_2026-05-26_sect_polish_audit_v3_p5_2.md`)
+- **2026-05-25 P4.1+P5.0+audit v2**(1458→1484 测 · 详各 closeout)
+- **2026-05-26 P4.1 1.1 四项+audit v3+P5.2**(1484→1505 测 · 详各 closeout)
+- **2026-05-27 Boss 招降叙事+debug 招募+R2 派单**(1505 测 · 详 `session_closeout_2026-05-27_boss_narrative_debug_recruit.md`)
+- **2026-05-28 过夜 1.1 挂账清理**(1505→1508 测 · 详 `overnight_1_1_cleanup_handoff_2026-05-28.md`)
+- **2026-05-28 P3.2.B+P1.2+P3.x 三项**(1508→1514 测 · 详 `session_closeout_2026-05-28_p3_p1_triple.md`)
