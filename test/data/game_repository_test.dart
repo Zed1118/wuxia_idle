@@ -31,16 +31,12 @@ void main() {
       expect(repo.realms.length, 49, reason: '49 级境界');
       expect(repo.equipmentDefs.length, 80,
           reason: '80 件装备（P2.1 Batch 1 扩 7 阶 × 11 + 3 跨阶特殊）');
-      expect(repo.techniqueDefs.length, 21,
-          reason: '21 本心法（Phase 3 Week 8 T64 扩 7 阶 × 3 流派）');
-      // 2026-05-20 P1 #45 nightshift:skills.yaml 63 招 + encounter_skills.yaml
-      // 40 招(W14-3-A 35 + T02 +5)合并 = 103。
-      // 2026-05-21 P1.1 候选 3-b:skills.yaml +1(skill_joint_skill,共鸣度满级解锁)
-      // → skills 64 + encounter 40 = 104。
-      // 2026-05-24 P3.1.B:skills.yaml +18 招轻功专属(2 阶 × 3 school × 3 type)
-      // → skills 82 + encounter 40 = 122。
-      expect(repo.skillDefs.length, 122,
-          reason: '82 心法/共鸣招/轻功招(skills.yaml,含 joint_skill + 18 lightfoot) + 40 奇遇招');
+      expect(repo.techniqueDefs.length, 49,
+          reason: '49 本心法（P2.1 Batch 2 扩 21 原 + 21 防御 + 7 内力）');
+      // P2.1 Batch 2: 49 心法 × 3 = 147 + 18 lightfoot + 1 joint = 166 skills.yaml
+      // + 40 encounter_skills.yaml = 206 total
+      expect(repo.skillDefs.length, 206,
+          reason: '166 skills.yaml(147 心法 + 18 轻功 + 1 joint) + 40 奇遇招');
       expect(repo.encounterSkillIds.length, 40,
           reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
       final mainlineCount = repo.stageDefs.values

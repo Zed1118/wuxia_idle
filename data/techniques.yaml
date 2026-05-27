@@ -1,7 +1,7 @@
 # =============================================================================
-# techniques.yaml · 心法 fixture（Phase 3 Week 8 T64 扩 21 本）
+# techniques.yaml · 心法 fixture（P2.1 Batch 2 扩 49 本）
 # =============================================================================
-# 共 21 本：7 阶 × 3 流派（gangMeng / lingQiao / yinRou）。每本含 3 招
+# 共 49 本：原 21（7 阶 × 3 流派）+ 21 防御变体 + 7 内力变体。每本含 3 招
 # （normalAttack / powerSkill / ultimate），招式定义见 skills.yaml。
 #
 # internalForceGrowthBonus / speedBonus 严格对齐 numbers.yaml `techniques.tiers`
@@ -297,5 +297,388 @@ techniques:
       - skill_yinrou_chuanshuo_skill
       - skill_yinrou_chuanshuo_ult
     internalForceGrowthBonus: 2.00
+    speedBonus: 60
+    acquireSourceTags: ["wuxue_lingwu_top"]
+
+  # =============================================================================
+  # P2.1 Batch 2 扩充 · 21 防御变体 + 7 内力变体 = 28 本
+  # =============================================================================
+
+  # --- 入门功防御变体 ---
+  - id: tech_gangmeng_jichu_fang
+    name: 铁壁功
+    tier: ruMenGong
+    school: gangMeng
+    description: 硬气功入门,挨打不倒是第一课。
+    skillIds:
+      - skill_gangmeng_jichu_fang_basic
+      - skill_gangmeng_jichu_fang_skill
+      - skill_gangmeng_jichu_fang_ult
+    internalForceGrowthBonus: 1.05
+    speedBonus: 0
+    acquireSourceTags: ["starter"]
+
+  - id: tech_lingqiao_jichu_fang
+    name: 闪避术
+    tier: ruMenGong
+    school: lingQiao
+    description: 躲比打重要,先学不挨打,再学怎么打。
+    skillIds:
+      - skill_lingqiao_jichu_fang_basic
+      - skill_lingqiao_jichu_fang_skill
+      - skill_lingqiao_jichu_fang_ult
+    internalForceGrowthBonus: 1.05
+    speedBonus: 0
+    acquireSourceTags: ["starter"]
+
+  - id: tech_yinrou_jichu_fang
+    name: 养气术
+    tier: ruMenGong
+    school: yinRou
+    description: 吐纳调息,受了伤先养好气再说。
+    skillIds:
+      - skill_yinrou_jichu_fang_basic
+      - skill_yinrou_jichu_fang_skill
+      - skill_yinrou_jichu_fang_ult
+    internalForceGrowthBonus: 1.05
+    speedBonus: 0
+    acquireSourceTags: ["starter"]
+
+
+  # --- 常练功防御变体 ---
+  - id: tech_gangmeng_changlian_fang
+    name: 金刚体
+    tier: changLianGong
+    school: gangMeng
+    description: 练到皮糙肉厚,拳头砸在身上像砸在铁板。
+    skillIds:
+      - skill_gangmeng_changlian_fang_basic
+      - skill_gangmeng_changlian_fang_skill
+      - skill_gangmeng_changlian_fang_ult
+    internalForceGrowthBonus: 1.1
+    speedBonus: 5
+    acquireSourceTags: ["mainline_ch1"]
+
+  - id: tech_lingqiao_changlian_fang
+    name: 游身步
+    tier: changLianGong
+    school: lingQiao
+    description: 身如游鱼,拳来侧身,剑到绕行,不与硬碰。
+    skillIds:
+      - skill_lingqiao_changlian_fang_basic
+      - skill_lingqiao_changlian_fang_skill
+      - skill_lingqiao_changlian_fang_ult
+    internalForceGrowthBonus: 1.1
+    speedBonus: 5
+    acquireSourceTags: ["mainline_ch1"]
+
+  - id: tech_yinrou_changlian_fang
+    name: 龟息功
+    tier: changLianGong
+    school: yinRou
+    description: 呼吸若有若无,气息绵长,耗得过任何人。
+    skillIds:
+      - skill_yinrou_changlian_fang_basic
+      - skill_yinrou_changlian_fang_skill
+      - skill_yinrou_changlian_fang_ult
+    internalForceGrowthBonus: 1.1
+    speedBonus: 5
+    acquireSourceTags: ["mainline_ch1"]
+
+
+  # --- 名家功防御变体 ---
+  - id: tech_gangmeng_mingjia_fang
+    name: 磐石劲
+    tier: mingJiaGong
+    school: gangMeng
+    description: 马步沉如磐石,任你推拉不动分毫。
+    skillIds:
+      - skill_gangmeng_mingjia_fang_basic
+      - skill_gangmeng_mingjia_fang_skill
+      - skill_gangmeng_mingjia_fang_ult
+    internalForceGrowthBonus: 1.15
+    speedBonus: 10
+    acquireSourceTags: ["mainline_ch3"]
+
+  - id: tech_lingqiao_mingjia_fang
+    name: 凌波微步
+    tier: mingJiaGong
+    school: lingQiao
+    description: 踏水无痕,身形飘忽,让人摸不着影子。
+    skillIds:
+      - skill_lingqiao_mingjia_fang_basic
+      - skill_lingqiao_mingjia_fang_skill
+      - skill_lingqiao_mingjia_fang_ult
+    internalForceGrowthBonus: 1.15
+    speedBonus: 10
+    acquireSourceTags: ["mainline_ch3"]
+
+  - id: tech_yinrou_mingjia_fang
+    name: 玄阴护体
+    tier: mingJiaGong
+    school: yinRou
+    description: 阴柔内力护住全身经脉,外伤难侵。
+    skillIds:
+      - skill_yinrou_mingjia_fang_basic
+      - skill_yinrou_mingjia_fang_skill
+      - skill_yinrou_mingjia_fang_ult
+    internalForceGrowthBonus: 1.15
+    speedBonus: 10
+    acquireSourceTags: ["mainline_ch3"]
+
+
+  # --- 门派绝学防御变体 ---
+  - id: tech_gangmeng_menpai_fang
+    name: 铁布衫
+    tier: menPaiJueXue
+    school: gangMeng
+    description: 相传练到第七层,刀剑加身只留白印。
+    skillIds:
+      - skill_gangmeng_menpai_fang_basic
+      - skill_gangmeng_menpai_fang_skill
+      - skill_gangmeng_menpai_fang_ult
+    internalForceGrowthBonus: 1.25
+    speedBonus: 15
+    acquireSourceTags: ["mainline_ch3", "tower_15"]
+
+  - id: tech_lingqiao_menpai_fang
+    name: 幻影身法
+    tier: menPaiJueXue
+    school: lingQiao
+    description: 身法快到极致,对手看到的永远是上一刻的残影。
+    skillIds:
+      - skill_lingqiao_menpai_fang_basic
+      - skill_lingqiao_menpai_fang_skill
+      - skill_lingqiao_menpai_fang_ult
+    internalForceGrowthBonus: 1.25
+    speedBonus: 15
+    acquireSourceTags: ["mainline_ch3", "tower_15"]
+
+  - id: tech_yinrou_menpai_fang
+    name: 化骨绵掌
+    tier: menPaiJueXue
+    school: yinRou
+    description: 掌力绵柔,看着不疼,伤在筋骨深处。
+    skillIds:
+      - skill_yinrou_menpai_fang_basic
+      - skill_yinrou_menpai_fang_skill
+      - skill_yinrou_menpai_fang_ult
+    internalForceGrowthBonus: 1.25
+    speedBonus: 15
+    acquireSourceTags: ["mainline_ch3", "tower_15"]
+
+
+  # --- 江湖秘传防御变体 ---
+  - id: tech_gangmeng_jianghu_fang
+    name: 不动明王功
+    tier: jiangHuMiChuan
+    school: gangMeng
+    description: 真气护体,金钟罩铁布衫,百兵不伤。
+    skillIds:
+      - skill_gangmeng_jianghu_fang_basic
+      - skill_gangmeng_jianghu_fang_skill
+      - skill_gangmeng_jianghu_fang_ult
+    internalForceGrowthBonus: 1.4
+    speedBonus: 25
+    acquireSourceTags: ["tower_25"]
+
+  - id: tech_lingqiao_jianghu_fang
+    name: 鬼魅步
+    tier: jiangHuMiChuan
+    school: lingQiao
+    description: 暗夜行走无声无息,连影子都跟不上。
+    skillIds:
+      - skill_lingqiao_jianghu_fang_basic
+      - skill_lingqiao_jianghu_fang_skill
+      - skill_lingqiao_jianghu_fang_ult
+    internalForceGrowthBonus: 1.4
+    speedBonus: 25
+    acquireSourceTags: ["tower_25"]
+
+  - id: tech_yinrou_jianghu_fang
+    name: 太阴真气
+    tier: jiangHuMiChuan
+    school: yinRou
+    description: 纯阴真气凝于丹田,受伤时自行疗愈。
+    skillIds:
+      - skill_yinrou_jianghu_fang_basic
+      - skill_yinrou_jianghu_fang_skill
+      - skill_yinrou_jianghu_fang_ult
+    internalForceGrowthBonus: 1.4
+    speedBonus: 25
+    acquireSourceTags: ["tower_25"]
+
+
+  # --- 失传神功防御变体 ---
+  - id: tech_gangmeng_shichuan_fang
+    name: 混元铁体
+    tier: shiChuanShenGong
+    school: gangMeng
+    description: 百锻成钢,浑身上下无一处不是兵器。
+    skillIds:
+      - skill_gangmeng_shichuan_fang_basic
+      - skill_gangmeng_shichuan_fang_skill
+      - skill_gangmeng_shichuan_fang_ult
+    internalForceGrowthBonus: 1.6
+    speedBonus: 40
+    acquireSourceTags: ["wuxue_lingwu"]
+
+  - id: tech_lingqiao_shichuan_fang
+    name: 天遁身法
+    tier: shiChuanShenGong
+    school: lingQiao
+    description: 古卷说练成此步,能从刀光剑影中走出来,衣角不沾。
+    skillIds:
+      - skill_lingqiao_shichuan_fang_basic
+      - skill_lingqiao_shichuan_fang_skill
+      - skill_lingqiao_shichuan_fang_ult
+    internalForceGrowthBonus: 1.6
+    speedBonus: 40
+    acquireSourceTags: ["wuxue_lingwu"]
+
+  - id: tech_yinrou_shichuan_fang
+    name: 寒蝉吐息
+    tier: shiChuanShenGong
+    school: yinRou
+    description: 寒气护体,近身者如入冰窟,自然退避。
+    skillIds:
+      - skill_yinrou_shichuan_fang_basic
+      - skill_yinrou_shichuan_fang_skill
+      - skill_yinrou_shichuan_fang_ult
+    internalForceGrowthBonus: 1.6
+    speedBonus: 40
+    acquireSourceTags: ["wuxue_lingwu"]
+
+
+  # --- 传说神功防御变体 ---
+  - id: tech_gangmeng_chuanshuo_fang
+    name: 霸王卸甲
+    tier: chuanShuoShenGong
+    school: gangMeng
+    description: 传说中不穿甲胄便刀枪不入的神功,习者骨如精铁。
+    skillIds:
+      - skill_gangmeng_chuanshuo_fang_basic
+      - skill_gangmeng_chuanshuo_fang_skill
+      - skill_gangmeng_chuanshuo_fang_ult
+    internalForceGrowthBonus: 2.0
+    speedBonus: 60
+    acquireSourceTags: ["wuxue_lingwu_top"]
+
+  - id: tech_lingqiao_chuanshuo_fang
+    name: 无影步
+    tier: chuanShuoShenGong
+    school: lingQiao
+    description: 极致身法,人动而影不动,快过所有人的眼。
+    skillIds:
+      - skill_lingqiao_chuanshuo_fang_basic
+      - skill_lingqiao_chuanshuo_fang_skill
+      - skill_lingqiao_chuanshuo_fang_ult
+    internalForceGrowthBonus: 2.0
+    speedBonus: 60
+    acquireSourceTags: ["wuxue_lingwu_top"]
+
+  - id: tech_yinrou_chuanshuo_fang
+    name: 归元心法
+    tier: chuanShuoShenGong
+    school: yinRou
+    description: 传说中能以内力续命的心法,练成者百毒不侵。
+    skillIds:
+      - skill_yinrou_chuanshuo_fang_basic
+      - skill_yinrou_chuanshuo_fang_skill
+      - skill_yinrou_chuanshuo_fang_ult
+    internalForceGrowthBonus: 2.0
+    speedBonus: 60
+    acquireSourceTags: ["wuxue_lingwu_top"]
+
+
+  # --- 内力变体(稀有) ---
+  - id: tech_gangmeng_jichu_nei
+    name: 铸基功
+    tier: ruMenGong
+    school: gangMeng
+    description: 练内力的笨办法,一口气一口气地攒,急不得。
+    skillIds:
+      - skill_gangmeng_jichu_nei_basic
+      - skill_gangmeng_jichu_nei_skill
+      - skill_gangmeng_jichu_nei_ult
+    internalForceGrowthBonus: 1.05
+    speedBonus: 0
+    acquireSourceTags: ["starter"]
+
+  - id: tech_lingqiao_changlian_nei
+    name: 引气术
+    tier: changLianGong
+    school: lingQiao
+    description: 导引内息走遍经脉,比蛮练快一倍。
+    skillIds:
+      - skill_lingqiao_changlian_nei_basic
+      - skill_lingqiao_changlian_nei_skill
+      - skill_lingqiao_changlian_nei_ult
+    internalForceGrowthBonus: 1.1
+    speedBonus: 5
+    acquireSourceTags: ["mainline_ch1"]
+
+  - id: tech_yinrou_mingjia_nei
+    name: 聚元功
+    tier: mingJiaGong
+    school: yinRou
+    description: 内力凝聚成团,发力时一股脑灌进拳头。
+    skillIds:
+      - skill_yinrou_mingjia_nei_basic
+      - skill_yinrou_mingjia_nei_skill
+      - skill_yinrou_mingjia_nei_ult
+    internalForceGrowthBonus: 1.15
+    speedBonus: 10
+    acquireSourceTags: ["mainline_ch3"]
+
+  - id: tech_gangmeng_menpai_nei
+    name: 炼神诀
+    tier: menPaiJueXue
+    school: gangMeng
+    description: 以意驭气,心到气到,不经丹田直贯四肢。
+    skillIds:
+      - skill_gangmeng_menpai_nei_basic
+      - skill_gangmeng_menpai_nei_skill
+      - skill_gangmeng_menpai_nei_ult
+    internalForceGrowthBonus: 1.25
+    speedBonus: 15
+    acquireSourceTags: ["mainline_ch3", "tower_15"]
+
+  - id: tech_lingqiao_jianghu_nei
+    name: 天罡内功
+    tier: jiangHuMiChuan
+    school: lingQiao
+    description: 上乘内功心法,一呼一吸间天地元气自行归附。
+    skillIds:
+      - skill_lingqiao_jianghu_nei_basic
+      - skill_lingqiao_jianghu_nei_skill
+      - skill_lingqiao_jianghu_nei_ult
+    internalForceGrowthBonus: 1.4
+    speedBonus: 25
+    acquireSourceTags: ["tower_25"]
+
+  - id: tech_yinrou_shichuan_nei
+    name: 玄元真经
+    tier: shiChuanShenGong
+    school: yinRou
+    description: 古经真传,内力如江河入海,取之不尽。
+    skillIds:
+      - skill_yinrou_shichuan_nei_basic
+      - skill_yinrou_shichuan_nei_skill
+      - skill_yinrou_shichuan_nei_ult
+    internalForceGrowthBonus: 1.6
+    speedBonus: 40
+    acquireSourceTags: ["wuxue_lingwu"]
+
+  - id: tech_gangmeng_chuanshuo_nei
+    name: 混沌功
+    tier: chuanShuoShenGong
+    school: gangMeng
+    description: 传说中开天辟地的心法,练成者内力无穷无尽。
+    skillIds:
+      - skill_gangmeng_chuanshuo_nei_basic
+      - skill_gangmeng_chuanshuo_nei_skill
+      - skill_gangmeng_chuanshuo_nei_ult
+    internalForceGrowthBonus: 2.0
     speedBonus: 60
     acquireSourceTags: ["wuxue_lingwu_top"]
