@@ -1,5 +1,6 @@
 # 挂机武侠 · 1.0 版本路线图
 
+> **v1.7** · 修订日 2026-05-28 · 状态:**1.0 整体 ~93%**(P3.2.B 群战调优 ✅ + P1.2 Boss 声望 wire ✅ + P3.x 群战 UI wiring ✅ + 1514 测 / 0 analyze)
 > **v1.6** · 修订日 2026-05-28 · 状态:**1.0 整体 ~93%**(1.1 挂账 stageBossFailRecoverProb wire ✅ + stage_04_05+ 池扩 ✅ + Codex R2 验收等明日)
 > **v1.5** · 修订日 2026-05-26 · 状态:**1.0 整体 ~93%**(Pen 视觉验收 ✅ 8 截图全 PASS + P4.1 1.1 sect 子系统全 polish 4 PR 收尾 + audit v3 0 P0/P1 阻塞)
 > **v1.4** · 修订日 2026-05-25 晚续 · 状态:**1.0 整体 ~91%**(P4.1 全闭环 + P5.0 onboarding production seed + audit v2 6 系统全过 + Pen 视觉验收派单 ⏳)
@@ -12,6 +13,14 @@
 
 ---
 
+> **v1.7 变更**(2026-05-28 · P3.2.B+P1.2+P3.x 三项实装):
+> - **P3.2.B 群战数值调优 ✅**:`aliveIfRecoveryPct=0.50` 修 stage 03/04/05 全 draw → 37W/45W/30W(wave 间 IF 恢复)
+> - **P1.2 Boss 击杀声望 wire ✅**:`StageDef.factionId` 6 主线 Boss + `_applyBossKillReputation`(boss 派 -5 / rival 派各 +3)+ R5.8 6 测
+> - **P3.x 群战 UI wiring ✅**:`MassBattleStrategy` 接入 `stage_entry_flow`(massBattle 分支 + `_pickFormation` dialog + `buildEnemyTeamsPerWave`)+ UiStrings 7 段
+> - **Phase 0 副产**:P3 技术债 3 项 + P1.2 B3+B4 已完成确认(ROADMAP T19 FAIL 记录过时清理)
+> - **测族** 1508→1514(+6)· 0 analyze
+> - 1.0 整体 **~93% 维持** · 下波:内容扩充(装备 35→80 / 心法 21→50)
+>
 > **v1.6 变更**(2026-05-28 · 1.1 挂账清理 Batch B+C 自主工作流):
 > - **stageBossFailRecoverProb 战败收降 wire ✅**(0.30 从 0 caller → 完整 hook+wire · defeat 路径末段触发 · 共用 triggeredBossRecruitStageIds 防刷 · Ch1-3 败后叙事 3 篇)
 > - **stage_04_05+ 池扩 ✅**(Ch4-6 三 Boss bossRecruit config · river_drifter/blacksmith_son/valley_hermit(新增 yinRou) · Ch4-6 败后叙事 3 篇 · sect_candidates 5→6 NPC)
@@ -402,6 +411,9 @@ P2 文案大扩 ────→ P4.2 翻译(可选)
 
 ## 修订记录
 
+- **v1.7**(2026-05-28,P3.2.B+P1.2+P3.x 三项实装):① P3.2.B 群战 aliveIfRecoveryPct 调优;② P1.2 Boss 击杀声望 wire(factionId + rival delta);③ P3.x 群战 UI wiring(MassBattleStrategy 接入 stage_entry_flow + 阵型 dialog);④ Phase 0 副产 P3 技术债+P1.2 B3+B4 已完成确认。1508→1514 测。~93% 维持。详 `docs/handoff/session_closeout_2026-05-28_p3_p1_triple.md`。
+- **v1.6**(2026-05-28,1.1 挂账清理):见顶部 v1.6 段。
+- **v1.5**(2026-05-26,Pen 视觉验收+P4.1 1.1+audit v3):见顶部 v1.5 段。
 - **v1.4**(2026-05-25 晚续,P4.1 全闭环 + P5.0 + audit v2 + Q6A spec):Mac + Opus xhigh 累计 ~3.5h(P4.1 ~2.75h + P5.0 ~1h + audit v2 ~40min + Q6A spec ~30min + checklist ~25min)。① P4.1 §12.2 帮派门派 100% 闭环(4 batch squash merge);② P5.0 onboarding production seed(P0-1 release 阻塞清);③ 1.0 整体 audit v2 6 系统全健康;④ Pen Codex 视觉验收派单准备(8 必收硬证据);⑤ Q6A encounter recruit spec 起草(P4.1 1.1 挂账起点);⑥ `RELEASE_CHECKLIST_1_0.md` 起草(顶层长寿勾选清单)。1.0 整体 78% → **91%**。详 `docs/handoff/session_closeout_2026-05-25_p5_audit_v2_full.md` + `docs/handoff/1_0_release_audit_v2_2026-05-25.md` + `docs/RELEASE_CHECKLIST_1_0.md`。
 - **v1.3**(2026-05-25 本批 nightshift T17-T22 跑完):见顶部 v1.3 段。
 - **v1.2**(2026-05-17 晚续,P0 strategy 重构销账):Mac + Opus 4.7 xhigh ~2h(vs 6-12h 预估快 3-5×),Batch 1+2 同会话续跑。① P0.2 段从「待开工」改为销账(实测 + 产物清单 + 4 commit 链 + 校正记录:闭关地图实测 0 战斗);② P0 阶段 4 项 100% 收口(P0.1 / P0.2 / P0.3 决议 + 新销账)。详 closeout `docs/handoff/p0_battle_strategy_closeout_2026-05-17.md`。

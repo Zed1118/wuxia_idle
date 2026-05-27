@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-28 1.0 release ready ~93% · P3.2.B+P1.2+P3.x 三项实装 · 1514 测 / 0 analyze**
+> 📊 **2026-05-28 1.0 release ready ~93% · 状态对齐 + P2.1 内容扩充 Phase 0 · 1514 测 / 0 analyze**
+
+**2026-05-28 挂机 Batch A+B**(RELEASE_CHECKLIST v1.3 + ROADMAP v1.7 状态对齐 + P2.1 内容扩充 Phase 0 reality check):A 段 05-28 三项实装同步(测 1514 / B 段 4 新项 / H 段 1.1 战败收降+池扩标闭环)。B 段盘点装备 35 / 心法 21 / 技能 82,草案 6 拍板候选(装备 slot 变体 vs 堆叠 / 心法 3 流派加深 vs 加新流派 / 相生数量 / 批次拆分)。详 Phase 0 `docs/phase0/p2_1_content_expansion_phase0_2026-05-28.md`。
 
 **2026-05-28 P3.2.B+P1.2+P3.x 三项实装**(3 commit `8b7f9fc → d4757ac` · 1508→1514 测 / 0 analyze):① P3.2.B 群战数值调优(`aliveIfRecoveryPct=0.50` 修 stage 03/04/05 全 draw → 37W/45W/30W) ② P1.2 Boss 击杀声望 wire(`StageDef.factionId` + factions.yaml 加载 + `_applyBossKillReputation` victory wire · R5.8 6 测) ③ P3.x 群战 UI wiring(`MassBattleStrategy` 接入 stage_entry_flow + `buildEnemyTeamsPerWave` + 阵型选择 dialog + UiStrings 7 段)。详 closeout `session_closeout_2026-05-28_p3_p1_triple.md`。
 
