@@ -292,6 +292,7 @@ stages:
         skillIds: [skill_lingqiao_mingjia_basic, skill_lingqiao_mingjia_skill]
         iconPath: assets/enemies/dock_b.png
     isBossStage: true
+    factionId: shaolin                              # Ch1 竹林 Boss · 少林地盘(orthodox)
     bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
       candidateRef: bamboo_swordsman              # data/sect_candidates.yaml 已配(lingQiao 三系)
     dropEquipmentDefIds:
@@ -587,6 +588,7 @@ stages:
           - skill_gangmeng_jichu_skill
         iconPath: assets/enemies/killer_b.png
     isBossStage: true
+    factionId: jiaoMen                             # Ch2 大漠 Boss · 邪教地盘(evil)
     npcId: cijianzhuang_assassin                 # P1.2 §6 占位 · 1.1+ 接入真 NPC schema
     bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
       candidateRef: desert_wanderer               # data/sect_candidates.yaml 已配(gangMeng 三系)
@@ -903,6 +905,7 @@ stages:
           - skill_lingqiao_mingjia_ult
         iconPath: assets/enemies/shidi_b.png
     isBossStage: true
+    factionId: wudang                              # Ch3 山林 Boss · 武当地盘(orthodox)
     npcId: jiaoMen_shidi                         # P1.2 §6 占位
     bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
       candidateRef: mountain_hermit               # data/sect_candidates.yaml 已配(yinRou 三系)
@@ -1235,6 +1238,7 @@ stages:
           - skill_lingqiao_menpai_ult
         iconPath: assets/enemies/bazhu_youfu.png
     isBossStage: true
+    factionId: cijianzhuang                        # Ch4 西出阳关 Boss · 刺剑庄(evil)
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
       candidateRef: river_drifter                 # data/sect_candidates.yaml 已配(lingQiao)
     npcId: cijianzhuang_bazhu                    # P1.2 §6 占位
@@ -1567,6 +1571,7 @@ stages:
           - skill_lingqiao_jianghu_ult
         iconPath: assets/enemies/songshan_daozong.png
     isBossStage: true
+    factionId: emei                                # Ch5 中原 Boss · 峨眉地盘(orthodox)
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
       candidateRef: blacksmith_son                # data/sect_candidates.yaml 已配(gangMeng)
     npcId: jiaoMen_songshan_daozong              # P1.2 §6 占位
@@ -1879,6 +1884,7 @@ stages:
           - skill_lingqiao_shichuan_ult
         iconPath: assets/enemies/xiliang_disciple_ling.png
     isBossStage: true
+    factionId: luLin                               # Ch6 昆仑 Boss · 绿林(neutral)
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
       candidateRef: valley_hermit                 # data/sect_candidates.yaml 1.1 新增(yinRou)
     dropEquipmentDefIds:

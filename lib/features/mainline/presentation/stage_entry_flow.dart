@@ -24,6 +24,7 @@ import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
+import '../../jianghu/application/jianghu_providers.dart';
 import '../../sect/presentation/stage_boss_recruit_hook.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../event/application/game_event_service.dart';
@@ -198,6 +199,9 @@ Future<void> runStageFlow({
     ref: ref,
     stage: stage,
   );
+
+  // P1.2 Boss 击杀 → 声望 delta(boss 所属派系 -delta · 对立阵营 +rivalDelta)。
+  await _applyBossKillReputation(ref: ref, stage: stage);
 }
 
 /// W13-v3 fix: 战斗结算(victory / Boss defeat)后必须 invalidate 角色相关
@@ -795,4 +799,27 @@ class _DefeatLossBanner extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _applyBossKillReputation({
+  required WidgetRef ref,
+  required StageDef stage,
+}) async {
+  if (!stage.isBossStage || stage.factionId == null) return;
+  final svc = ref.read(reputationServiceProvider);
+  if (svc == null) return;
+  final repo = GameRepository.instance;
+  final triggers = repo.numbers.jianghu.triggers;
+  final factionId = stage.factionId!;
+
+  // Boss 所属派系 -delta
+  await svc.applyDelta(1, factionId, -triggers.stageBossKillDelta);
+
+  // 对立阵营 +rivalDelta
+  final rivals = repo.rivalFactionIds(factionId);
+  for (final rival in rivals) {
+    await svc.applyDelta(1, rival, triggers.stageBossKillRivalDelta);
+  }
+
+  ref.invalidate(reputationsForCurrentPlayerProvider);
 }
