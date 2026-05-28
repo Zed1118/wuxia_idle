@@ -44,10 +44,8 @@ class EncounterSkillSection extends ConsumerWidget {
               'load error: $e',
               style: const TextStyle(color: WuxiaColors.hpLow, fontSize: 12),
             ),
-            data: (progress) => _Content(
-              character: character,
-              progress: progress,
-            ),
+            data: (progress) =>
+                _Content(character: character, progress: progress),
           ),
         ],
       ),
@@ -84,9 +82,7 @@ class _Content extends ConsumerWidget {
                   foregroundColor: WuxiaColors.textPrimary,
                   side: const BorderSide(color: WuxiaColors.border),
                 ),
-                child: Text(
-                  hasUnlocks ? '选择招式' : '尚无可装备奇遇招式',
-                ),
+                child: Text(hasUnlocks ? '选择招式' : '尚无可装备奇遇招式'),
               ),
             ),
             if (equipped != null) ...[
@@ -113,15 +109,16 @@ class _Content extends ConsumerWidget {
   ) async {
     if (!GameRepository.isLoaded) return;
     final repo = GameRepository.instance;
-    final skills = unlockedIds
-        .map((id) => repo.skillDefs[id])
-        .whereType<SkillDef>()
-        .toList()
-      ..sort((a, b) {
-        final t = (a.tier ?? 0).compareTo(b.tier ?? 0);
-        if (t != 0) return t;
-        return a.id.compareTo(b.id);
-      });
+    final skills =
+        unlockedIds
+            .map((id) => repo.skillDefs[id])
+            .whereType<SkillDef>()
+            .toList()
+          ..sort((a, b) {
+            final t = (a.tier ?? 0).compareTo(b.tier ?? 0);
+            if (t != 0) return t;
+            return a.id.compareTo(b.id);
+          });
 
     final picked = await showModalBottomSheet<SkillDef>(
       context: context,
@@ -242,15 +239,22 @@ class _SlotDisplay extends StatelessWidget {
                     fontSize: 12,
                   ),
                 ),
+                if (skill.description.trim().isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    skill.description,
+                    style: const TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
           Text(
             EnumL10n.skillType(skill.type),
-            style: const TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
         ],
       ),
@@ -303,9 +307,9 @@ class _PickerSheet extends StatelessWidget {
                   final tier = s.tier ?? 0;
                   final canEquip =
                       EncounterService.canEquipEncounterSkillByTier(
-                    realmTier: currentRealmTier,
-                    skillTier: tier,
-                  );
+                        realmTier: currentRealmTier,
+                        skillTier: tier,
+                      );
                   final isEquipped = s.id == equippedId;
                   return ListTile(
                     enabled: canEquip,
@@ -323,6 +327,7 @@ class _PickerSheet extends StatelessWidget {
                     subtitle: Text(
                       'tier $tier · ${EnumL10n.skillType(s.type)} '
                       '· 倍率 ${s.powerMultiplier}'
+                      '${s.description.trim().isEmpty ? "" : "\n${s.description}"}'
                       '${isEquipped ? "  [当前]" : ""}',
                       style: const TextStyle(
                         color: WuxiaColors.textMuted,
@@ -361,7 +366,7 @@ class _Shell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 64,
+      constraints: const BoxConstraints(minHeight: 64),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: WuxiaColors.avatarFill,
