@@ -7,7 +7,7 @@
 
 > 📊 **2026-05-28 1.0 release ready ~96% · 装备 icon 美术 45 张入库 · 80 件全齐 · 1519 测 / 0 analyze**
 
-**2026-05-28 P2.1 装备美术 icon 45 张入库**(1 commit `d1cfd5a`):MJ v7 水墨厚涂 + AutoSail Chrome 扩展批量 + 4 张候选挑 1 张 · 7 阶全齐(T1 6+T2 6+T3 6+T4 7+T5 7+T6 7+T7 6=45)· 全 80 件主线装备 iconPath 引用 0 缺图 ✅ · 测族 1519 维持 / 0 analyze · detail 图 80 张 1280×720 留下波。
+**2026-05-28 P2.1 装备美术 icon 45 张入库**(1 commit `d1cfd5a`):MJ v7 水墨厚涂 + AutoSail Chrome 扩展批量 + 4 张候选挑 1 张 · 7 阶全齐(T1 6+T2 6+T3 6+T4 7+T5 7+T6 7+T7 6=45)· 全 80 件主线装备 iconPath 引用 0 缺图 ✅ · 测族 1519 维持 / 0 analyze · **detail 图状态修正**:yaml 80/80 已填 detailPath + UI `equipment_detail_screen.dart:108` 已 wire(errorBuilder 兜底)+ 文件 35/80 ✅(原 35 件)+ 45/80 待美术 M15-16。
 
 **2026-05-28 RELEASE_CHECKLIST v1.5 + ROADMAP v1.8 + R4 派单**(2 commit `e5bb9ba` + `51aaafb`):A 段测试数 1514→1519 · B 段附加 P2.1 全收+drop 全覆盖 · ROADMAP 93%→95% · Pen 同步 `e5bb9ba` + build OK · R4 派单 12 验收点(数据加载/掉落显示/典故+招式)· 典故盘点:80 文件 170 段 default_lore > GDD §8.4 目标 80 段 ✅ 已达标。
 
