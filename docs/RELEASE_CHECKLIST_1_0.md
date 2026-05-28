@@ -7,7 +7,7 @@
 
 ## TL;DR
 
-**当前 release readiness:~96%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **1519 测 / 139 测文件 / 0 analyze** · P2.1 4 批全收 + 77 件主线装备 drop 全覆盖 + **80 件装备 icon 美术全齐** · 剩 D 性能 / E 音频 / F Steam / G 法律商业 + 装备 detail 图 80 张 M15-16)
+**当前 release readiness:~96%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **1519 测 / 139 测文件 / 0 analyze** · P2.1 4 批全收 + 77 件主线装备 drop 全覆盖 + **80 件装备 icon 美术全齐** · detail wire 全闭环 yaml 80/80 + 文件 35/80 ✅ + 45/80 待美术 M15-16 · 剩 D 性能 / E 音频 / F Steam / G 法律商业)
 
 | 段 | 完成度 | 阻塞? |
 |---|---|---|
@@ -55,7 +55,7 @@
 - [x] **P3.x 群战 UI wiring ✅**(2026-05-28):`MassBattleStrategy` 接入 `stage_entry_flow` + `buildEnemyTeamsPerWave` + 阵型选择 dialog + UiStrings 7 段
 - [x] **P2.1 内容扩充 4 批全收 ✅**(2026-05-28):装备 35→80(+45 跨 T1-T7 全 slot)/ 心法 21→49(+28 三流派 7 阶覆盖)/ 技能 82→166(+84 招式描述全补齐)/ lore 0→80(装备典故)/ 相生 8→12(+4 传说彩蛋)
 - [x] **装备 drop 全覆盖 ✅**(2026-05-28):56 条 dropTable 条目注入 26 个主线关卡 · 77 件主线装备全部有至少 1 个 dropTable 来源 · +1 覆盖率红线测试(sealed class pattern match)
-- [x] **装备 icon 美术 45 张入库 ✅**(2026-05-28):MJ v7 水墨厚涂 + AutoSail Chrome 扩展批量 · 7 阶全齐(T1 6/T2 6/T3 6/T4 7/T5 7/T6 7/T7 6=45)· 全 80 件主线装备 iconPath 引用 0 缺图 · detail 图 80 张留 M15-16
+- [x] **装备 icon 美术 45 张入库 ✅**(2026-05-28):MJ v7 水墨厚涂 + AutoSail Chrome 扩展批量 · 7 阶全齐(T1 6/T2 6/T3 6/T4 7/T5 7/T6 7/T7 6=45)· 全 80 件主线装备 iconPath 引用 0 缺图 · **detail 状态修正**:yaml 80/80 已填 detailPath + UI `equipment_detail_screen.dart:108` 已 wire(errorBuilder 兜底)+ 文件 35/80 ✅(原 35 件)+ 45/80 待美术 M15-16
 
 ## C. UI 视觉验收
 
@@ -147,7 +147,8 @@
 
 ## 修订记录
 
-- **v1.6**(2026-05-28)装备 icon 美术 45 张入库:B 段附加加装备 icon 美术全齐(MJ v7 + AutoSail 批量 · 7 阶全齐 · 80 件 iconPath 0 缺图)· TL;DR 内容总量更新加 80 件装备 icon · release readiness 95%→**~96%**。detail 图 80 张留 M15-16。
+- **v1.6**(2026-05-28)装备 icon 美术 45 张入库:B 段附加加装备 icon 美术全齐(MJ v7 + AutoSail 批量 · 7 阶全齐 · 80 件 iconPath 0 缺图)· TL;DR 内容总量更新加 80 件装备 icon · release readiness 95%→**~96%**。
+- **v1.7**(2026-05-28)detail 状态修正:asset 路径审计发现 detail wire 链路全闭环(EquipmentDef.detailPath schema ✅ + equipment_detail_screen.dart:108 UI 已 wire + errorBuilder 兜底 + yaml 80/80 已填 detailPath)· 真状态文件 35/80 ✅(原 35 件)+ 45/80 待美术 M15-16(非「0/80 留 M15-16」)。无代码改动,仅 doc 状态对齐。
 - **v1.5**(2026-05-28)P2.1 全收 + drop 全覆盖:A 段测试数 1514→1519 · B 段附加加 P2.1 内容扩充 4 批全收(装备 80/心法 49/技能 166/lore 80/相生 12)+ 装备 drop 全覆盖(56 条 dropTable · 77 件主线装备 · +1 红线测试)· TL;DR 内容总量更新。**~95% 维持**。
 - **v1.4**(2026-05-28)C 段 100% + P2.1 Batch 1:C.2 R2 全 PASS 勾完 + C.3 R3 合并验收必收 10/10 PASS(P5+ 飞升/心魔/轻功/群战+阵型/Ch4-6/声望)+ P2.1 Batch 1 装备 35→80 落地。release readiness 93% → **~95%**。
 - **v1.3**(2026-05-28)P3.2.B+P1.2+P3.x 三项实装 + 1.1 挂账清理状态对齐:A 段测试数 1505→1514 · B 段战斗核心行加 P3.2.B 群战调优 + P3.x UI wiring · cross-system 行加 P1.2 Boss 声望 wire · B 段附加加 4 项(招降收降叙事 12/12 + P3.2.B + P1.2 + P3.x)· H 段 1.1 战败收降+池扩标闭环 + 剩余挂账缩至 candidateRefs(1.2)· **~93% 维持**。
