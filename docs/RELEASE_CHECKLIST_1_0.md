@@ -13,7 +13,7 @@
 |---|---|---|
 | A 代码质量 | ✅ 100% | — |
 | B 系统完整性(6 系统) | ✅ 100% | — |
-| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + **C.3 R3 必收 10/10 PASS** | — |
+| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 R3 必收 10/10 + **C.4 R4 12/12 PASS** | — |
 | D 性能稳定(P5.2) | ✗ 0% | M15-16 |
 | E 音频(P5.3) | ✗ 0% | M15-16 |
 | F Steam 集成(P5.4) | ✗ 0% | M15-16 |
@@ -91,6 +91,15 @@
 
 > R3 派单 `docs/handoff/codex_dispatch_r3_consolidated_visual_check_2026-05-28.md` · 16 截图归档 `docs/handoff/r3_visual_check_screenshots/` · closeout `docs/handoff/pen_visual_verify_r3_consolidated_2026-05-28.md`
 
+### C.4 R4 P2.1 内容扩充 + 装备 drop 验收(✅ 12/12 PASS 2026-05-28)
+
+- [x] **R4.1 基础启动 4 项**(4/4):启动无 crash / 装备 80 件加载 / 心法面板 / 相生 chip
+- [x] **R4.2 战斗+掉落 3 项**(3/3):战斗启动 stage_01_01 / 胜利掉落显示 / 装备入仓库
+- [x] **R4.3 内容验收 5 项**(5/5):百科典籍 Tab / 装备典故详情 / 招式描述 / 仓库滚动 / 相生切角色不 crash
+- [x] **顺手修 UI bug**:R4.3 招式描述验收暴露 `encounter_skill_section.dart` 漏渲染 `SkillDef.description` → commit `3150be8` 补 `if skill.description.trim().isNotEmpty` 守 + Text 渲染(Pen 端 flutter analyze 0 / widget+seed 测过 / build windows debug · Mac 端 character_panel 28/28 全过)
+
+> R4 派单 `docs/handoff/codex_dispatch_r4_p2_1_content_drop_2026-05-28.md`(12/12 全收)· 12 截图 `docs/handoff/r4_visual_check_screenshots/r4_01..r4_12.png` · closeout `docs/handoff/pen_visual_verify_r4_p2_1_content_drop_2026-05-28.md`
+
 ## D. 性能稳定(P5.2 · 留 M15-16)
 
 - [ ] 长时间运行 8h+ 无 crash(挂机典型场景)
@@ -147,8 +156,9 @@
 
 ## 修订记录
 
-- **v1.6**(2026-05-28)装备 icon 美术 45 张入库:B 段附加加装备 icon 美术全齐(MJ v7 + AutoSail 批量 · 7 阶全齐 · 80 件 iconPath 0 缺图)· TL;DR 内容总量更新加 80 件装备 icon · release readiness 95%→**~96%**。
+- **v1.8**(2026-05-28)C.4 R4 P2.1 内容验收 12/12 全收 + UI bug 顺手修:C 段加 C.4 R4 段(基础 4 + 战斗 3 + 内容 5 = 12/12 PASS)· R4.3 招式描述暴露 `encounter_skill_section.dart` 漏渲染 `SkillDef.description` → commit `3150be8` 补 `if skill.description.trim().isNotEmpty` 守 + Text 渲染 · TL;DR C 视觉验收行加 C.4 12/12 · 双端 verify(Pen flutter analyze 0/widget+seed/build · Mac character_panel 28/28)· release readiness ~96% 维持。
 - **v1.7**(2026-05-28)detail 状态修正:asset 路径审计发现 detail wire 链路全闭环(EquipmentDef.detailPath schema ✅ + equipment_detail_screen.dart:108 UI 已 wire + errorBuilder 兜底 + yaml 80/80 已填 detailPath)· 真状态文件 35/80 ✅(原 35 件)+ 45/80 待美术 M15-16(非「0/80 留 M15-16」)。无代码改动,仅 doc 状态对齐。
+- **v1.6**(2026-05-28)装备 icon 美术 45 张入库:B 段附加加装备 icon 美术全齐(MJ v7 + AutoSail 批量 · 7 阶全齐 · 80 件 iconPath 0 缺图)· TL;DR 内容总量更新加 80 件装备 icon · release readiness 95%→**~96%**。
 - **v1.5**(2026-05-28)P2.1 全收 + drop 全覆盖:A 段测试数 1514→1519 · B 段附加加 P2.1 内容扩充 4 批全收(装备 80/心法 49/技能 166/lore 80/相生 12)+ 装备 drop 全覆盖(56 条 dropTable · 77 件主线装备 · +1 红线测试)· TL;DR 内容总量更新。**~95% 维持**。
 - **v1.4**(2026-05-28)C 段 100% + P2.1 Batch 1:C.2 R2 全 PASS 勾完 + C.3 R3 合并验收必收 10/10 PASS(P5+ 飞升/心魔/轻功/群战+阵型/Ch4-6/声望)+ P2.1 Batch 1 装备 35→80 落地。release readiness 93% → **~95%**。
 - **v1.3**(2026-05-28)P3.2.B+P1.2+P3.x 三项实装 + 1.1 挂账清理状态对齐:A 段测试数 1505→1514 · B 段战斗核心行加 P3.2.B 群战调优 + P3.x UI wiring · cross-system 行加 P1.2 Boss 声望 wire · B 段附加加 4 项(招降收降叙事 12/12 + P3.2.B + P1.2 + P3.x)· H 段 1.1 战败收降+池扩标闭环 + 剩余挂账缩至 candidateRefs(1.2)· **~93% 维持**。
