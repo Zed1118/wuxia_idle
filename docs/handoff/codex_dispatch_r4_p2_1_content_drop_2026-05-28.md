@@ -9,6 +9,14 @@ HEAD：`e5bb9ba`（Mac = Pen 已同步 · debug exe 已 build）
 
 C.1-C.3 前三轮验收全 PASS。本轮验 P2.1 内容扩充后的数据量能否正常加载 + 装备掉落 UI 显示。
 
+## Pen 验收状态
+
+状态：12/12 全收（2026-05-28 17:10 CST）
+
+- 3.3 招式描述：PASS，截图 `docs/handoff/r4_visual_check_screenshots/r4_10_skill_description.png`
+- 3.5 相生 12 组合不 crash：PASS，截图 `docs/handoff/r4_visual_check_screenshots/r4_12_synergy_no_crash.png`
+- closeout：`docs/handoff/pen_visual_verify_r4_p2_1_content_drop_2026-05-28.md`
+
 ## 环境准备
 
 exe 已 build，直接启动：
