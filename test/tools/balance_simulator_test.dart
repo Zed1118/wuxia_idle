@@ -230,7 +230,7 @@ String _summarize(List<_SimResult> results, List<StageDef> stages) {
   final buf = StringBuffer();
   buf.writeln('# Balance Simulation Summary · 2026-05-29');
   buf.writeln('');
-  buf.writeln('5h 挂机 Batch A3 · ${_seedsPerStage} seed × ${byStage.length} mainline = '
+  buf.writeln('5h 挂机 Batch A3 · $_seedsPerStage seed × ${byStage.length} mainline = '
       '${results.length} runs · maxTicks=$_maxTicks');
   buf.writeln('');
   buf.writeln('## 通关率(玩家胜率 = leftWin / total)');
