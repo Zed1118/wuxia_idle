@@ -7,17 +7,20 @@
 
 ## TL;DR
 
-**当前 release readiness:~96%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **1519 测 / 139 测文件 / 0 analyze** · P2.1 4 批全收 + 77 件主线装备 drop 全覆盖 + **80 件装备 icon 美术全齐** · detail wire 全闭环 yaml 80/80 + 文件 35/80 ✅ + 45/80 待美术 M15-16 · 剩 D 性能 / E 音频 / F Steam / G 法律商业)
+**当前 release readiness:~96%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **1519 测 / 139 测文件 / 0 analyze**)
 
-| 段 | 完成度 | 阻塞? |
-|---|---|---|
-| A 代码质量 | ✅ 100% | — |
-| B 系统完整性(6 系统) | ✅ 100% | — |
-| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 R3 必收 10/10 + **C.4 R4 12/12 PASS** | — |
-| D 性能稳定(P5.2) | ✗ 0% | M15-16 |
-| E 音频(P5.3) | ✗ 0% | M15-16 |
-| F Steam 集成(P5.4) | ✗ 0% | M15-16 |
-| G 法律商业 | ✗ 0% | M15-16 |
+**2026-05-29 方向调整**:用户拍板「先把游戏打磨完成,再启 Steam 上架」→ **F + G 段搁置**(留 ship 前 1-2 月)+ **聚焦 D + H 新增 + E 部分**(E1 SoundManager + E5 BGM 1 套)。1.0 路径 ≠ 全 D/E/F/G 串行,而是「游戏打磨完成度」优先。
+
+| 段 | 完成度 | 阻塞? | 当前优先级 |
+|---|---|---|---|
+| A 代码质量 | ✅ 100% | — | 维持 |
+| B 系统完整性(6 系统) | ✅ 100% | — | 维持 |
+| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 R3 必收 10/10 + **C.4 R4 12/12 PASS** | — | 维持 |
+| **D 性能 + 数值再平衡(P5.2)** | ✗ 0% | M15-16 | **🎯 主聚焦** |
+| E 音频 部分(P5.3)| ✗ 0% | M15-16 | E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前 1-2 月 |
+| **H 内容打磨 + UX**(新增) | ✗ 0% | M15-16 | **🎯 主聚焦** · spec 起草中 |
+| ~~F Steam 集成(P5.4)~~ | ⏸️ 搁置 | ship 前 1-2 月 | F1 guide 已起草 `docs/handoff/m15_f1_*` 待启 |
+| ~~G 法律商业~~ | ⏸️ 搁置 | ship 前 1-2 月 | 与 F 同步启动 |
 
 ## A. 代码质量(本机可验 · ✅ 全过)
 
@@ -134,7 +137,18 @@
 - [ ] BGM/SFX 来源(原创 / 授权 / CC0)清单
 - [ ] 隐私政策 + EULA(Steam 模板适配)
 
-## H. nice-to-have(不阻塞 · 留 M15-16 评估)
+## H. 内容打磨 + UX(🎯 主聚焦 · spec 起草中 2026-05-29)
+
+> v1.9 重定义:H 从 nice-to-have 升为「完成游戏」核心段。spec `docs/spec/h_polish_ux_spec_2026-05-29.md`。
+
+- [ ] 上手 30min 体验 audit(新手引导节奏 / 第一次战斗 / 装备首次掉落仪式感)
+- [ ] 中期循环 2-3h audit(装备 / 心法 / 师徒 / 闭关 玩法深度)
+- [ ] 后期挑战 audit(Ch4-6 主线 + 心魔 + 群战 + 轻功 + 飞升 体验)
+- [ ] 卡点 / 秒杀点诊断(D4 balance_simulator 数据驱动)
+- [ ] UX 微调(空状态文案 / 错误处理 / loading 反馈 / 翻页流畅度)
+- [ ] 内容文案最终 polish(typo / 古风一致性 / 主线叙事流畅度)
+
+### H 历史 nice-to-have 残留
 
 - [ ] 英文翻译(主线 / UI / 系统提示 · P4.2 可选 · M12 评估)
 - [x] ~~1.1 挂账起步~~ → **P4.1 1.1 四项全闭环 ✅**(Q6A encounter recruit v1.12 + founder_buff cross_sect v1.13 + Q6B stage_boss recruit v1.14 + polish v1.15 · 1505 测)
@@ -156,6 +170,7 @@
 
 ## 修订记录
 
+- **v1.9**(2026-05-29)方向调整 + H 段升主聚焦:用户拍板「先把游戏打磨完成,再启 Steam」→ F + G 段标搁置(留 ship 前 1-2 月)+ H 段从 nice-to-have 升「内容打磨 + UX」主聚焦段(6 子项)+ E 段分拆(E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前 1-2 月)+ TL;DR 优先级标注。无代码改动,仅 doc 状态对齐。
 - **v1.8**(2026-05-28)C.4 R4 P2.1 内容验收 12/12 全收 + UI bug 顺手修:C 段加 C.4 R4 段(基础 4 + 战斗 3 + 内容 5 = 12/12 PASS)· R4.3 招式描述暴露 `encounter_skill_section.dart` 漏渲染 `SkillDef.description` → commit `3150be8` 补 `if skill.description.trim().isNotEmpty` 守 + Text 渲染 · TL;DR C 视觉验收行加 C.4 12/12 · 双端 verify(Pen flutter analyze 0/widget+seed/build · Mac character_panel 28/28)· release readiness ~96% 维持。
 - **v1.7**(2026-05-28)detail 状态修正:asset 路径审计发现 detail wire 链路全闭环(EquipmentDef.detailPath schema ✅ + equipment_detail_screen.dart:108 UI 已 wire + errorBuilder 兜底 + yaml 80/80 已填 detailPath)· 真状态文件 35/80 ✅(原 35 件)+ 45/80 待美术 M15-16(非「0/80 留 M15-16」)。无代码改动,仅 doc 状态对齐。
 - **v1.6**(2026-05-28)装备 icon 美术 45 张入库:B 段附加加装备 icon 美术全齐(MJ v7 + AutoSail 批量 · 7 阶全齐 · 80 件 iconPath 0 缺图)· TL;DR 内容总量更新加 80 件装备 icon · release readiness 95%→**~96%**。
