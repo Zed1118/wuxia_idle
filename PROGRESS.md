@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-28 1.0 release ready ~96% · 装备 icon 美术 45 张入库 · 80 件全齐 · 1519 测 / 0 analyze**
+> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · D 数值再平衡推进 · 1519 测 / 0 analyze**
+
+**2026-05-29 5h 挂机推进 · 方向调整**:用户拍板「先打磨游戏再启 Steam」→ F/G 搁置(留 ship 前 1-2 月)+ H 段从 nice-to-have 升「内容打磨 + UX」主聚焦 + Q1-Q4 默认决议 + 方案 A 单线推 D4。本批 Batch A0-A5 推进:CHECKLIST v1.9 + ROADMAP 对齐 + H 段 spec 起草 + `tools/balance_simulator.dart` PoC + 30 关全路径 1500 跑 + 难度曲线 csv + numbers tune 候选 diff(不上线,起床用户拍)+ R5 测族保护。
 
 **2026-05-28 P2.1 装备美术 icon 45 张入库**(1 commit `d1cfd5a`):MJ v7 水墨厚涂 + AutoSail Chrome 扩展批量 + 4 张候选挑 1 张 · 7 阶全齐(T1 6+T2 6+T3 6+T4 7+T5 7+T6 7+T7 6=45)· 全 80 件主线装备 iconPath 引用 0 缺图 ✅ · 测族 1519 维持 / 0 analyze · **detail 图状态修正**:yaml 80/80 已填 detailPath + UI `equipment_detail_screen.dart:108` 已 wire(errorBuilder 兜底)+ 文件 35/80 ✅(原 35 件)+ 45/80 待美术 M15-16。
 
