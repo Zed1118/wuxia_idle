@@ -272,38 +272,43 @@ stages:
     narrativeDefeatId: stage_01_05_defeat
     requiredRealm: xueTu
     enemyTeam:
-      - id: enemy_erLiu_umbrella
+      # 2026-05-29 D 段难度修:原敌人 realmTier=erLiu(+2 阶 vs 章节 xueTu),是全 6
+      # 章末 Boss 唯一双 +2(其余 Ch2/Ch3 at-tier、Ch4-6 lead≤+1),sim on-level
+      # ceiling 0%(满配玩家也打不过)= 数据不一致硬墙。对齐 Ch2/Ch3 at-tier 体例:
+      # 全员 xueTu / dengFeng(峰层显精英)/ jichu 技能组(boss 留 ult)/ 数值按
+      # Ch2 boss premium(同阶 mob ×1.1 HP / ×1.07 atk)缩放到 xueTu 档。
+      - id: enemy_xueTu_umbrella
         name: 撑伞高人
-        realmTier: erLiu
-        realmLayer: yuanShu
+        realmTier: xueTu
+        realmLayer: dengFeng
         school: yinRou
-        baseHp: 10000
-        baseAttack: 750
-        baseSpeed: 200
+        baseHp: 3800
+        baseAttack: 165
+        baseSpeed: 165
         skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-          - skill_yinrou_mingjia_ult
+          - skill_yinrou_jichu_basic
+          - skill_yinrou_jichu_skill
+          - skill_yinrou_jichu_ult
         iconPath: assets/enemies/umbrella.png
-      - id: enemy_erLiu_dock_a
+      - id: enemy_xueTu_dock_a
         name: 渡口刀客
-        realmTier: erLiu
-        realmLayer: huaJing
+        realmTier: xueTu
+        realmLayer: dengFeng
         school: gangMeng
-        baseHp: 9000
-        baseAttack: 700
-        baseSpeed: 175
-        skillIds: [skill_gangmeng_mingjia_basic, skill_gangmeng_mingjia_skill]
+        baseHp: 3500
+        baseAttack: 150
+        baseSpeed: 145
+        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
         iconPath: assets/enemies/dock_a.png
-      - id: enemy_erLiu_dock_b
+      - id: enemy_xueTu_dock_b
         name: 渡口剑客
-        realmTier: erLiu
-        realmLayer: huaJing
+        realmTier: xueTu
+        realmLayer: dengFeng
         school: lingQiao
-        baseHp: 9000
-        baseAttack: 720
-        baseSpeed: 185
-        skillIds: [skill_lingqiao_mingjia_basic, skill_lingqiao_mingjia_skill]
+        baseHp: 3500
+        baseAttack: 155
+        baseSpeed: 155
+        skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
         iconPath: assets/enemies/dock_b.png
     isBossStage: true
     factionId: shaolin                              # Ch1 竹林 Boss · 少林地盘(orthodox)

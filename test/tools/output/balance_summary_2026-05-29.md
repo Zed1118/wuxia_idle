@@ -10,7 +10,7 @@
 | stage_01_02 | xueTu | — | 1 | 100.0% | 100.0% |
 | stage_01_03 | xueTu | — | 1 | 100.0% | 100.0% |
 | stage_01_04 | xueTu | Boss | 1 | 100.0% | 100.0% |
-| stage_01_05 | xueTu | Boss | 1 | 0.0% | 0.0% |
+| stage_01_05 | xueTu | Boss | 1 | 6.0% | 100.0% |
 | stage_02_01 | sanLiu | — | 2 | 100.0% | 100.0% |
 | stage_02_02 | sanLiu | — | 2 | 98.0% | 100.0% |
 | stage_02_03 | sanLiu | — | 2 | 86.0% | 100.0% |
@@ -40,7 +40,6 @@
 ## 难度诊断(bracket 解读)
 
 - **过难**(连 ceiling 活跃玩家都 < 50%):满配玩家都难过 → 数值偏高,上调候选
-  - stage_01_05:floor 0% / ceiling 0%
   - stage_05_05:floor 0% / ceiling 30%
 
 - **过易**(连 floor 欠配置玩家都 > 90%):欠配置玩家都碾压 → 数值偏低,下调候选(尤其 Boss)
