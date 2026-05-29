@@ -7,7 +7,6 @@ import '../battle_ai.dart';
 import '../enum_localizations.dart';
 import '../battle_state.dart';
 import '../damage_calculator.dart';
-import '../derived_stats.dart';
 import 'battle_strategy.dart';
 
 /// 地面 3v3 半横版战斗 strategy(Demo 阶段唯一实装)。
@@ -335,11 +334,14 @@ class DefaultGroundStrategy implements BattleStrategy {
     }
   }
 
-  /// 战斗内伤害计算（不依赖 Isar 实体，全部读 BattleCharacter 快照字段）。
+  /// 战斗内伤害计算 adapter(BattleCharacter 路径)。
   ///
-  /// 公式与 [DamageCalculator.calculate] 完全一致（GDD §5.3-§5.5），只是字段
-  /// 口径不同：内力用 `currentInternalForce`（战斗中扣过）、装备攻击用
-  /// `totalEquipmentAttack` 缓存、修炼度从 `mainCultivationLayer` 查表。
+  /// P2-c 收敛(2026-05-29):公式数学已抽到 [DamageCalculator.calculateResolved]
+  /// 单一真相源 —— 本方法只做 BattleCharacter 快照字段解析 → 调它。字段口径:
+  /// 内力用 `currentInternalForce`(战斗中扣过)· 装备攻击用 `totalEquipmentAttack`
+  /// 缓存 · 修炼度从 `mainCultivationLayer` · 防御率用 `defenseRate` 缓存(含相生
+  /// defensePct 注入 · W18-A1.2)· attackPowerMultiplier 用烘焙值(轻功/群战/恩怨 ·
+  /// P3.1.B · 双方对等 · default 1.0)。
   AttackResult _calculateInBattle({
     required BattleCharacter attacker,
     required BattleCharacter defender,
@@ -348,115 +350,24 @@ class DefaultGroundStrategy implements BattleStrategy {
     required Random rng,
     bool forceCritical = false,
   }) {
-    final evasion = defender.evasionRate;
-    if (rng.nextDouble() < evasion) {
-      return AttackResult.dodged(
-        evasionRate: evasion,
-        breakdown: 'DODGED (evasion=${_fmt(evasion)})',
-      );
-    }
-
-    final df = n.combat.damageFormula;
-    final atkIF = attacker.currentInternalForce;
-    final eqAtk = attacker.totalEquipmentAttack;
-    final base = atkIF * df.internalForceFactor +
-        eqAtk * df.equipmentAttackFactor +
-        skill.powerMultiplier;
-
-    final cultMult = n.cultivationMultiplier[attacker.mainCultivationLayer];
-    if (cultMult == null) {
-      throw StateError(
-        'numbers.yaml techniques.cultivation.layers 缺 '
-        '${attacker.mainCultivationLayer.name} 的 bonus_multiplier',
-      );
-    }
-
-    final schoolMult =
-        n.schoolCounter.multiplierFor(attacker.school, defender.school);
-    final extraEffect =
-        n.schoolCounter.extraEffectFor(attacker.school, defender.school);
-
-    final isCritical = forceCritical || rng.nextDouble() < attacker.criticalRate;
-    final critMult = isCritical
-        ? (attacker.school == TechniqueSchool.lingQiao
-            ? n.combat.critical.lingqiaoDamageMultiplier
-            : n.combat.critical.baseDamageMultiplier)
-        : 1.0;
-
-    // W18-A1.2 改用 defender.defenseRate(BattleCharacter view layer 缓存),
-    // 既覆盖 numbers.yaml realm 派生 base 值,也叠加相生 defensePct 注入
-    // (StageBattleSetup.applySynergy 加法注入,clamp ≤ 0.95)。
-    final defRate = defender.defenseRate;
-    final defMult = 1.0 - defRate;
-
-    final atkLevel = RealmUtils.absoluteLevelOf(
-      attacker.realmTier,
-      attacker.realmLayer,
-    );
-    final defLevel = RealmUtils.absoluteLevelOf(
-      defender.realmTier,
-      defender.realmLayer,
-    );
-    final tierDiff = attacker.realmTier.index - defender.realmTier.index;
-    final mods = RealmUtils.realmDiffModifier(
-      attacker.realmTier,
-      defender.realmTier,
-    );
-    final realmAttackerMod = mods.$1;
-    final realmDefenderMod = mods.$2;
-    final double realmMult;
-    if (tierDiff > 0) {
-      realmMult = realmAttackerMod;
-    } else if (tierDiff < 0) {
-      realmMult = realmDefenderMod;
-    } else {
-      realmMult = 1.0;
-    }
-
-    // P3.1.B(2026-05-24):末端乘 attacker.attackPowerMultiplier(default=1.0)。
-    // 沿 cult/school/crit/def/realm 体例,独立维度乘项不进 base 求和。
-    // LightFootStrategy._bake 入口烘焙 terrain damage_multiplier 到本字段,
-    // 双方对等(双方 BattleCharacter 都设同值,非 lightfoot 战斗默认 1.0 无修饰)。
-    final atkPowerMult = attacker.attackPowerMultiplier;
-    final raw =
-        base * cultMult * schoolMult * critMult * defMult * realmMult * atkPowerMult;
-    final mainDamage = raw.toInt();
-
-    // 刚猛克阴柔附带震伤(§12.1 #7 v1.4):穿透防御不暴击,与主伤害同 tick 叠加。
-    var quakeDamage = 0;
-    if (attacker.school == TechniqueSchool.gangMeng &&
-        defender.school == TechniqueSchool.yinRou) {
-      quakeDamage = n.schoolCounter.gangMengQuake.damage;
-    }
-    final finalDamage = mainDamage + quakeDamage;
-
-    final effects = <String>[];
-    if (extraEffect != null) effects.add(extraEffect);
-
-    final breakdown = '($atkIF*${_fmt(df.internalForceFactor)}'
-        ' + $eqAtk + ${skill.powerMultiplier})'
-        ' * ${_fmt(cultMult)} * ${_fmt(schoolMult)} * ${_fmt(critMult)}'
-        ' * ${_fmt(defMult)} * ${_fmt(realmMult)}'
-        '${atkPowerMult != 1.0 ? ' * ${_fmt(atkPowerMult)}' : ''}'
-        ' = $mainDamage'
-        '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
-        ' [atkLv=$atkLevel,defLv=$defLevel]';
-
-    return AttackResult(
-      finalDamage: finalDamage,
-      mainDamage: mainDamage,
-      quakeDamage: quakeDamage,
-      isCritical: isCritical,
-      isDodged: false,
-      schoolCounterMultiplier: schoolMult,
-      realmDiffAttackerMod: realmAttackerMod,
-      realmDiffDefenderMod: realmDefenderMod,
-      cultivationMultiplier: cultMult,
-      criticalMultiplier: critMult,
-      defenseRate: defRate,
-      evasionRate: evasion,
-      appliedEffects: effects,
-      formulaBreakdown: breakdown,
+    return DamageCalculator.calculateResolved(
+      attackerInternalForce: attacker.currentInternalForce,
+      attackerEquipmentAttack: attacker.totalEquipmentAttack,
+      attackerCultivationLayer: attacker.mainCultivationLayer,
+      attackerSchool: attacker.school,
+      defenderSchool: defender.school,
+      attackerRealmTier: attacker.realmTier,
+      attackerRealmLayer: attacker.realmLayer,
+      defenderRealmTier: defender.realmTier,
+      defenderRealmLayer: defender.realmLayer,
+      defenderDefenseRate: defender.defenseRate,
+      defenderEvasionRate: defender.evasionRate,
+      attackerCriticalRate: attacker.criticalRate,
+      attackPowerMultiplier: attacker.attackPowerMultiplier,
+      skill: skill,
+      n: n,
+      rng: rng,
+      forceCritical: forceCritical,
     );
   }
 
@@ -474,10 +385,5 @@ class DefaultGroundStrategy implements BattleStrategy {
     return '${actor.name} 对 ${targetAfter.name} 使用 ${skill.name}'
         '$crit，造成 ${r.finalDamage} 伤害'
         '${targetAfter.isAlive ? "" : "（击杀）"}';
-  }
-
-  String _fmt(double v) {
-    if (v == v.truncateToDouble()) return v.toStringAsFixed(1);
-    return v.toString();
   }
 }
