@@ -160,7 +160,11 @@ class _NarrativeReaderScreenState extends State<NarrativeReaderScreen>
                       backgroundColor: WuxiaColors.resultHighlight,
                       foregroundColor: WuxiaColors.background,
                     ),
-                    child: Text(isLast ? '完成' : '继续'),
+                    child: Text(
+                      isLast
+                          ? UiStrings.narrativeReaderFinish
+                          : UiStrings.narrativeReaderContinue,
+                    ),
                   ),
                 ],
               ),

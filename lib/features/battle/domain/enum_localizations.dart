@@ -186,6 +186,15 @@ class EnumL10n {
     };
   }
 
+  /// 守城试炼阵型（mass_battle）。
+  static String formation(Formation f) {
+    return switch (f) {
+      Formation.yanXing => '雁行',
+      Formation.baGua => '八卦',
+      Formation.fengShi => '锋矢',
+    };
+  }
+
   /// 农历节日（W16 framework + W17 扩 chuXi/qingMingJie）。Demo 阶段 8 个传统节日。
   static String festival(Festival f) {
     return switch (f) {

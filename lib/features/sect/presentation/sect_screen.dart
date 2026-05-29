@@ -64,7 +64,7 @@ class SectScreen extends ConsumerWidget {
             ),
             body: const Center(
               child: Text(
-                '门派尚未创建',
+                UiStrings.sectNotCreated,
                 style: TextStyle(color: WuxiaColors.textMuted),
               ),
             ),
