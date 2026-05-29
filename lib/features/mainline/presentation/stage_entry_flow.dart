@@ -19,6 +19,7 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../battle/application/battle_resolution.dart';
 import '../../battle/application/stage_battle_setup.dart';
+import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../battle/domain/strategy/light_foot_strategy.dart';
 import '../../battle/domain/strategy/mass_battle_strategy.dart';
 import '../../mass_battle/application/mass_battle_service.dart';
@@ -727,26 +728,13 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
       internalForceBefore: p.internalForceBefore,
       internalForceAfter: p.internalForceAfter,
       techniqueName: techName,
-      oldLayerLabel: p.didRollback ? _layerLabel(p.oldLayer) : null,
-      newLayerLabel: p.didRollback ? _layerLabel(p.newLayer) : null,
+      oldLayerLabel: p.didRollback ? EnumL10n.cultivationLayer(p.oldLayer) : null,
+      newLayerLabel: p.didRollback ? EnumL10n.cultivationLayer(p.newLayer) : null,
       layersRolledBack: p.layersRolledBack,
     ));
   }
   return entries;
 }
-
-String _layerLabel(dynamic layer) => switch (layer.name as String) {
-      'chuKui' => '初窥',
-      'xiaoCheng' => '小成',
-      'zhongCheng' => '中成',
-      'daCheng' => '大成',
-      'yuanMan' => '圆满',
-      'dianFeng' => '巅峰',
-      'tongShen' => '通神',
-      'wuXia' => '无瑕',
-      'jiJing' => '极境',
-      _ => layer.toString(),
-    };
 
 /// 战败损失摘要 banner（Phase 4 W10）。
 ///

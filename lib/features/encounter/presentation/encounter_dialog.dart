@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../data/game_repository.dart';
 import '../../../shared/theme/colors.dart';
+import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../application/encounter_service.dart';
 import '../domain/encounter_def.dart';
 import '../domain/encounter_event_loader.dart';
@@ -324,7 +325,7 @@ void showEncounterOutcomeBanner({
   final message = switch (applied) {
     UnlockSkillApplied(:final skillId) => '领悟新招:${_resolveSkillName(skillId)}',
     AttributeBonusApplied(:final key, :final delta) =>
-      '${_attrLabel(key)} +$delta',
+      '${EnumL10n.attributeKey(key)} +$delta',
     AttributeCapReached(:final cap) => '已达生涯造化极限(总加 $cap)',
     NoneOutcome() => '心中默念,继续前行',
   };
@@ -341,10 +342,3 @@ String _resolveSkillName(String skillId) {
   if (!GameRepository.isLoaded) return skillId;
   return GameRepository.instance.skillDefs[skillId]?.name ?? skillId;
 }
-
-String _attrLabel(AttributeKey k) => switch (k) {
-      AttributeKey.constitution => '根骨',
-      AttributeKey.enlightenment => '悟性',
-      AttributeKey.agility => '身法',
-      AttributeKey.fortune => '机缘',
-    };
