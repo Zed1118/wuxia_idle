@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/narrative_loader.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 
 /// 主线剧情阅读屏（Phase 3 T36）。
@@ -117,7 +118,7 @@ class _NarrativeReaderScreenState extends State<NarrativeReaderScreen>
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: const Text(
-                    '⚠ 剧情占位（DeepSeek 待补）',
+                    UiStrings.narrativePlaceholderHint,
                     style: TextStyle(
                       color: WuxiaColors.hpMid,
                       fontSize: 12,

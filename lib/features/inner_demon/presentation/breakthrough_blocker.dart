@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/domain/enums.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 
 /// 心魔关突破拦截提示 widget(1.0 P2.2 §12.1,Batch 2.3 占位 UI)。
@@ -9,11 +10,10 @@ import '../../../shared/theme/colors.dart';
 /// character_panel / cultivation 面板可显示本 widget,告知玩家当前境界升不
 /// 上去是因为哪一关心魔未通。
 ///
-/// **Batch 2.3 范围限定**:本 widget 暂未集成到 character_panel — 集成需要
-/// Riverpod provider 拉 MainlineProgress.clearedStageIds + InnerDemonDef +
-/// 计算 advancement 是否被拦,再 reactive 显示,这部分留 Batch 2.5 之后。
-/// 当前作为纯渲染 widget,可在 Batch 2.4 doc / 后续 batch 中被 character_panel
-/// 直接消费。
+/// **集成状态**:本 widget 已集成于 character_panel(见
+/// `character_panel_screen.dart` `_BreakthroughBlockerSection`),由 Riverpod
+/// provider 拉 MainlineProgress.clearedStageIds + InnerDemonDef + 计算
+/// advancement 是否被拦后 reactive 显示。本 widget 保持纯渲染职责。
 class InnerDemonBreakthroughBlocker extends StatelessWidget {
   const InnerDemonBreakthroughBlocker({
     super.key,
@@ -79,7 +79,7 @@ class InnerDemonBreakthroughBlocker extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: onNavigate,
-                  child: const Text('前往心魔境'),
+                  child: const Text(UiStrings.breakthroughGoToInnerDemon),
                 ),
               ),
             ],

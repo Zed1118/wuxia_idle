@@ -262,7 +262,7 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('飞升失败:$e')),
+        SnackBar(content: Text(UiStrings.ascensionFailed(e))),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
