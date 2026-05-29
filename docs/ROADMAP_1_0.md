@@ -1,5 +1,6 @@
 # 挂机武侠 · 1.0 版本路线图
 
+> **v1.10** · 修订日 2026-05-29 晚 · 状态:**1.0 整体 ~97%**(D/H 首批落地 · H 中期/后期/卡点 3 审计 + 接线 polish 5 项 + 外部 review 5 项硬化 + 根因A 挂机循环重平衡 + idle_economy 验证 + 红线值统一 numbers.yaml · **1552 测 / 1 skip / 0 analyze**)
 > **v1.9** · 修订日 2026-05-29 · 状态:**1.0 整体 ~96%**(路径调整 · F/G 搁置 + H 升主聚焦 + D 数值再平衡推进 + 1519 测 / 0 analyze)
 > **v1.8** · 修订日 2026-05-28 · 状态:**1.0 整体 ~95%**(P2.1 4 批全收 + 装备 drop 全覆盖 77 件 + 1519 测 / 0 analyze)
 > **v1.7** · 修订日 2026-05-28 · 状态:**1.0 整体 ~93%**(P3.2.B 群战调优 ✅ + P1.2 Boss 声望 wire ✅ + P3.x 群战 UI wiring ✅ + 1514 测 / 0 analyze)
@@ -15,6 +16,17 @@
 
 ---
 
+> **v1.10 变更**(2026-05-29 晚 · D/H 首批落地 · v1.9 起草后当日续 10 批):
+> - **H 中期玩法深度 audit ✅**(`h2_midgame_audit`):两大根因 A 挂机循环与中期成长脱节 + B backend 做完前端没接线 → **H2 接线 polish 5 项**(C1 章节翻篇过场 / C2 升阶大境界仪式 / E2 effective 实战值可见 / S3 死字段清理 / R2 verified)+ **根因A 挂机循环重平衡 B1+B2+B3**(B1 闭关挂机折算 battleCount 喂共鸣度 + 默契阈值 500→300 / B2 闭关 EXP ×2.5 / B3 `InsightExchangeService` 凝练领悟点→修炼度 sink)
+> - **H 后期挑战 audit ✅**(`h3_lategame_audit`):Ch4-6 主线/心魔/群战/轻功/飞升 整体远比中期健康(35 narrative 0 dangling)· 唯一 🔴 **A2 多代飞升循环断裂**(`performAscend` 真传位漏写 `founderCharacterId` → gen2 祖师不在阵容永久 blocked)已红绿修复
+> - **H 卡点诊断 ✅**:`idle_economy` 量化验证 72h 挂机 vs 主动战斗三维成长 drift 雷达 · Phase 0 事实修正(伤害公式 P2-c 后已真路径,balance_simulator 残留缺口仅 `_synthPlayer` 硬编码 build)· **finding** B2 低 tier EXP 偏慷慨待 numbers 取舍
+> - **外部 review 5 项硬化**:P1-a 飞升 auto_swap 三系锁死修(§5.3)/ P2-c 战斗公式双路径收敛(`DamageCalculator.calculateResolved` 单一真相源,删 ~100 行重复数学)/ P2-a 奇遇招式池空静默失效修 / P2-b 敌人属性 hardcode 抽 `enemy_defaults` / P3 三文档血量公式系数 drift 同步
+> - **红线值统一 numbers.yaml**:15000/20000 散落字面量收口到 `combat.red_lines` + `RedLinesConfig` 强类型 · wire 4 处 · 纯抽取零行为变化
+> - **测族** 1519→**1552**(+33 · 1 skip)· 0 analyze · 同 HEAD `fdaa2b2` 实跑核验
+> - 1.0 整体 ~96% → **~97%**(D 段 0%→~20% 数值再平衡首批 · H 段 0%→~50% 3 审计 + 接线 polish · 外部 review 修闭 2 个真 bug:P1-a 三系锁死违规 + A2 多代飞升断裂)· **CHECKLIST v1.10** 同步
+>
+> ---
+>
 > **v1.9 变更**(2026-05-29 · 1.0 路径方向调整 + 5h 挂机 D4 推进):
 > - **用户拍板「先打磨游戏再启 Steam」** → F Steam 段 + G 法律段 **搁置 ship 前 1-2 月**(F1 注册 guide `docs/handoff/m15_f1_*` 已 ready 待启)→ 聚焦 **D 性能 + 数值再平衡** + **H 内容打磨 / UX**(从 nice-to-have 升主聚焦)+ E 部分(E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前)
 > - **5h 挂机方案 A 单线推 D4**:Batch A0-A5 · `tools/balance_simulator.dart` PoC + 30 关全路径 1500 跑 + 难度曲线 csv + numbers tune 候选 diff(不上线 · 起床用户拍)+ R5 测族保护 + handoff
@@ -316,6 +328,7 @@
 ### P5.2 C2 难度曲线打磨
 - 30-35 关全玩家路径数值再平衡
 - itch.io Demo 反馈(P0.3 收集)纳入数据源
+- **2026-05-29 数值再平衡首批 ✅**:根因A 挂机循环重平衡(B1+B2+B3)+ 红线值统一 numbers.yaml(单源)+ idle_economy 72h 经济曲线验证(drift 雷达 · `test/tools/idle_economy_test.dart`)· **finding** B2 低 tier EXP 偏慷慨(学徒山林 72h 跳 16 层)待 numbers 取舍 · 30-35 关终调 + closed beta 外部数据源留 M15-16
 
 ### P5.3 C4 音乐音效配音
 - BGM(主线 / 战斗 / 闭关)
@@ -427,6 +440,9 @@ P2 文案大扩 ────→ P4.2 翻译(可选)
 
 ## 修订记录
 
+- **v1.10**(2026-05-29 晚,D/H 首批落地):见顶部 v1.10 段。~96% → **~97%**(D 0%→~20% 数值再平衡首批 + H 0%→~50% 3 审计 + 接线 polish · 外部 review 修闭 P1-a 三系锁死 + A2 多代飞升 2 真 bug)。1519→1552 测。
+- **v1.9**(2026-05-29,路径方向调整 + 5h 挂机 D4):见顶部 v1.9 段。
+- **v1.8**(2026-05-28,P2.1 全收 + 装备 drop 全覆盖):见顶部 v1.8 段。
 - **v1.7**(2026-05-28,P3.2.B+P1.2+P3.x 三项实装):① P3.2.B 群战 aliveIfRecoveryPct 调优;② P1.2 Boss 击杀声望 wire(factionId + rival delta);③ P3.x 群战 UI wiring(MassBattleStrategy 接入 stage_entry_flow + 阵型 dialog);④ Phase 0 副产 P3 技术债+P1.2 B3+B4 已完成确认。1508→1514 测。~93% 维持。详 `docs/handoff/session_closeout_2026-05-28_p3_p1_triple.md`。
 - **v1.6**(2026-05-28,1.1 挂账清理):见顶部 v1.6 段。
 - **v1.5**(2026-05-26,Pen 视觉验收+P4.1 1.1+audit v3):见顶部 v1.5 段。

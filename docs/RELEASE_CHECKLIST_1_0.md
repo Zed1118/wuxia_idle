@@ -7,25 +7,25 @@
 
 ## TL;DR
 
-**当前 release readiness:~96%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **1519 测 / 139 测文件 / 0 analyze**)
+**当前 release readiness:~97%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **1552 测 / 144 测文件 / 0 analyze**)
 
-**2026-05-29 方向调整**:用户拍板「先把游戏打磨完成,再启 Steam 上架」→ **F + G 段搁置**(留 ship 前 1-2 月)+ **聚焦 D + H 新增 + E 部分**(E1 SoundManager + E5 BGM 1 套)。1.0 路径 ≠ 全 D/E/F/G 串行,而是「游戏打磨完成度」优先。
+**2026-05-29 方向调整 + D/H 首批落地**:用户拍板「先把游戏打磨完成,再启 Steam 上架」→ **F + G 段搁置**(留 ship 前 1-2 月)+ **聚焦 D + H 新增 + E 部分**(E1 SoundManager + E5 BGM 1 套)。1.0 路径 ≠ 全 D/E/F/G 串行,而是「游戏打磨完成度」优先。**当日 H/D 首批已落**:H 中期/后期/卡点三审计全完 + H 接线 polish 5 项 + 外部 review 5 项硬化(P1-a 三系锁死 auto_swap / P2-c 公式单源 / P2-a/b 健壮性 / P3 文档 drift)+ 根因A 挂机循环重平衡(B1+B2+B3)+ idle_economy 经济曲线验证 + 红线值统一 numbers.yaml(单一真相源)。
 
 | 段 | 完成度 | 阻塞? | 当前优先级 |
 |---|---|---|---|
 | A 代码质量 | ✅ 100% | — | 维持 |
 | B 系统完整性(6 系统) | ✅ 100% | — | 维持 |
-| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 R3 必收 10/10 + **C.4 R4 12/12 PASS** | — | 维持 |
-| **D 性能 + 数值再平衡(P5.2)** | ✗ 0% | M15-16 | **🎯 主聚焦** |
+| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 R3 必收 10/10 + **C.4 R4 12/12 PASS** | — | 维持(根因A 三链路 + 凝练入口待 Pen 续验) |
+| **D 性能 + 数值再平衡(P5.2)** | 🔄 ~20%(数值再平衡首批 ✅:根因A + 红线统一 + idle_economy 验证 · 性能/closed beta 留 M15-16) | M15-16 | **🎯 主聚焦** |
 | E 音频 部分(P5.3)| ✗ 0% | M15-16 | E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前 1-2 月 |
-| **H 内容打磨 + UX**(新增) | ✗ 0% | M15-16 | **🎯 主聚焦** · spec 起草中 |
+| **H 内容打磨 + UX**(新增) | 🔄 ~50%(中期/后期/卡点 3 审计 + 接线 polish 5 项 ✅ · UX 微调 / 文案终 polish / 上手 audit 续) | M15-16 | **🎯 主聚焦** |
 | ~~F Steam 集成(P5.4)~~ | ⏸️ 搁置 | ship 前 1-2 月 | F1 guide 已起草 `docs/handoff/m15_f1_*` 待启 |
 | ~~G 法律商业~~ | ⏸️ 搁置 | ship 前 1-2 月 | 与 F 同步启动 |
 
 ## A. 代码质量(本机可验 · ✅ 全过)
 
 - [x] `flutter analyze` 0 issues
-- [x] 全测族过(**1519 测** / 139 测文件)
+- [x] 全测族过(**1552 测** / 1 skip / 144 测文件)
 - [x] 数值红线 §5.4 测族 13+ 守护(普伤 ≤8000 / 玩家血 ≤20000 / 内力 ≤15000 / 装备攻击 ≤2000)
 - [x] 三系锁 §5.3 测族 5+ 守护(境界 ↔ 装备阶 ↔ 心法阶)
 - [x] §5.5 在线=离线(挂机 = 实际时间)
@@ -59,6 +59,17 @@
 - [x] **P2.1 内容扩充 4 批全收 ✅**(2026-05-28):装备 35→80(+45 跨 T1-T7 全 slot)/ 心法 21→49(+28 三流派 7 阶覆盖)/ 技能 82→166(+84 招式描述全补齐)/ lore 0→80(装备典故)/ 相生 8→12(+4 传说彩蛋)
 - [x] **装备 drop 全覆盖 ✅**(2026-05-28):56 条 dropTable 条目注入 26 个主线关卡 · 77 件主线装备全部有至少 1 个 dropTable 来源 · +1 覆盖率红线测试(sealed class pattern match)
 - [x] **装备 icon 美术 45 张入库 ✅**(2026-05-28):MJ v7 水墨厚涂 + AutoSail Chrome 扩展批量 · 7 阶全齐(T1 6/T2 6/T3 6/T4 7/T5 7/T6 7/T7 6=45)· 全 80 件主线装备 iconPath 引用 0 缺图 · **detail 状态修正**:yaml 80/80 已填 detailPath + UI `equipment_detail_screen.dart:108` 已 wire(errorBuilder 兜底)+ 文件 35/80 ✅(原 35 件)+ 45/80 待美术 M15-16
+
+### B 段附加(2026-05-29 外部 review 硬化 + 根因A 重平衡)
+
+- [x] **P1-a 飞升 auto_swap 三系锁死修复 ✅**(`559455f` TDD):`performAscend` 副作用 4 auto_swap 直写 `equipped{Slot}Id` 无 canEquip → 武圣神物可装到低境界徒弟破 §5.3 · 加 `Equipment.isEquippableAtRealm` 域规则 + 上身前守卫 + R5.11 红线测 2
+- [x] **P2-c 战斗公式双路径收敛 ✅**(`f719172`):`DamageCalculator.calculateResolved` 抽为唯一真相源,`DefaultGroundStrategy._calculateInBattle` 删 ~100 行重复数学 · production 与测试参考实现归一,改一处不再 drift(§6 公式集中强化)
+- [x] **P2-a/P2-b 健壮性 ✅**(`62b0b7e` + `2686815`):P2-a 奇遇招式池空静默失效修(去 `isNotEmpty` 闸门 + 空池有引用 fail-fast + 红线测)/ P2-b 敌人属性 hardcode 抽 `numbers.yaml combat.enemy_defaults` + `EnemyDefaults` config
+- [x] **P3 文档 drift 同步 ✅**(`1afc888`):GDD §5.6 / CLAUDE §6 / AGENTS §6 血量公式系数同步到代码真值(装备攻击 1.0 / 内力 0.5 / 根骨 400)
+- [x] **A2 多代飞升循环断裂修 ✅**(`20d7273` H3 audit 唯一 🔴):`performAscend` 真传位漏写 `save.founderCharacterId=promotedDiscipleId` → gen2「祖师不在出战阵容」永久 blocked · 1 行 production 修 + 删测试 setup 暴露真闸门 + R5.6 防回退断言
+- [x] **根因A 挂机循环重平衡 B1+B2+B3 ✅**(`a359dc2` spec + `d7ee3f9`):B1 闭关挂机折算 battleCount 喂共鸣度(`seclusion_battle_count_per_hour=5`)+ 默契阈值 500→300 / B2 闭关 EXP ×2.5 / B3 抽 `InsightExchangeService` 凝练领悟点→修炼度 + technique_panel「凝练领悟」入口(insightPoints 死钱包变 sink)· §5.4 红线不涉战斗数值不破
+- [x] **idle_economy 经济曲线验证 ✅**(`745e5a3` test+doc only):`test/tools/idle_economy_test.dart` 量化 72h 挂机 vs 主动战斗三维成长速度 drift 雷达 · **finding**:B2 低 tier EXP 偏慷慨(学徒山林 72h 跳 16 层)留 numbers 取舍待拍 · 输出 `test/tools/output/idle_economy_2026-05-29.md`
+- [x] **红线值统一 numbers.yaml ✅**(`7a1d1e7` [schema]):15000/20000 散落字面量收口到 `combat.red_lines` + `RedLinesConfig` 强类型 · wire derived_stats / stage_battle_setup.applySynergy / game_repository._enforceRedLines 4 处 · 纯抽取零行为变化 + 4 测
 
 ## C. UI 视觉验收
 
@@ -103,13 +114,16 @@
 
 > R4 派单 `docs/handoff/codex_dispatch_r4_p2_1_content_drop_2026-05-28.md`(12/12 全收)· 12 截图 `docs/handoff/r4_visual_check_screenshots/r4_01..r4_12.png` · closeout `docs/handoff/pen_visual_verify_r4_p2_1_content_drop_2026-05-28.md`
 
-## D. 性能稳定(P5.2 · 留 M15-16)
+## D. 性能稳定 + 数值再平衡(P5.2)
 
+> 2026-05-29 数值再平衡首批落地(根因A + 红线统一 + idle_economy 验证)· 性能项 + closed beta 外部数据源留 M15-16。
+
+- [x] **数值再平衡首批 ✅**(根因A 挂机循环重平衡 B1+B2+B3 · 红线值统一 numbers.yaml 单源 · idle_economy 72h 经济曲线验证带 drift 雷达)
+- [ ] 30-35 关全玩家路径数值再平衡终调(待 B2 低 tier EXP finding 拍 numbers + closed beta 数据)
 - [ ] 长时间运行 8h+ 无 crash(挂机典型场景)
 - [ ] 内存增长稳定(无 leak 锚点)
 - [ ] FPS 主菜单 / 战斗 / 闭关 平均 ≥ 60(Steam 用户机器最低配)
 - [ ] Isar IO 无 ANR(大背包 / 多 character 场景)
-- [ ] 30-35 关全玩家路径数值再平衡(P5.2 难度曲线)
 - [ ] P5.4b closed beta ~10 人外部反馈(Google 表单结构化:难度评分 / 数值 bug / 流程卡点 / 通关时长)
 
 ## E. 音频(P5.3 · 留 M15-16)
@@ -141,11 +155,11 @@
 
 > v1.9 重定义:H 从 nice-to-have 升为「完成游戏」核心段。spec `docs/spec/h_polish_ux_spec_2026-05-29.md`。
 
-- [ ] 上手 30min 体验 audit(新手引导节奏 / 第一次战斗 / 装备首次掉落仪式感)
-- [ ] 中期循环 2-3h audit(装备 / 心法 / 师徒 / 闭关 玩法深度)
-- [ ] 后期挑战 audit(Ch4-6 主线 + 心魔 + 群战 + 轻功 + 飞升 体验)
-- [ ] 卡点 / 秒杀点诊断(D4 balance_simulator 数据驱动)
-- [ ] UX 微调(空状态文案 / 错误处理 / loading 反馈 / 翻页流畅度)
+- [ ] 上手 30min 体验 audit(新手引导节奏 / 第一次战斗 / 装备首次掉落仪式感)— H1-Q1 小套餐(主菜单产品名 + 标题 style)✅ · 完整 audit 续
+- [x] **中期循环 2-3h audit ✅**(2026-05-29 H2 audit `h2_midgame_audit` · 两大根因:A 挂机循环脱节 + B backend 未接线 → 接线 polish 5 项 + 根因A 挂机循环重平衡全落)
+- [x] **后期挑战 audit ✅**(2026-05-29 H3 audit `h3_lategame_audit` · Ch4-6 主线/心魔/群战/轻功/飞升 整体远比中期健康 · 唯一 🔴 A2 多代飞升断裂已修)
+- [x] **卡点 / 秒杀点诊断 ✅**(idle_economy 量化验证 · balance_simulator 伤害公式已真路径 P2-c 后 · B2 低 tier EXP finding 暴露待 numbers 取舍)
+- [ ] UX 微调(空状态文案 / 错误处理 / loading 反馈 / 翻页流畅度)— H2 接线 polish 已含部分(章节翻篇过场 / 升阶大境界仪式 / effective 实战值可见 / 死字段清理)· 续
 - [ ] 内容文案最终 polish(typo / 古风一致性 / 主线叙事流畅度)
 
 ### H 历史 nice-to-have 残留
@@ -170,6 +184,7 @@
 
 ## 修订记录
 
+- **v1.10**(2026-05-29 晚)D/H 首批落地状态对齐:CHECKLIST v1.9 起草后当日又落 10 批(H1-Q1 小套餐 + H2 中期 audit + H2 接线 polish 5 项 + H3 后期 audit + A2 🔴 修 + 外部 review P1-a/P2-a/b/c/P3 5 项 + 根因A 挂机循环重平衡 B1+B2+B3 + idle_economy 验证 + 红线值统一 numbers.yaml)。**对齐**:TL;DR 测数 1519→**1552**(1 skip)/ 测文件 139→**144** / readiness ~96%→**~97%** + 当日批次摘要;段表 D **0%→🔄~20%**(数值再平衡首批)/ H **0%→🔄~50%**(3 审计 + 接线 polish 5 项);A 段测数同步;B 段加附加段(外部 review 硬化 8 条);D 段重命名「性能稳定 + 数值再平衡」+ 数值再平衡首批勾;H 段中期/后期/卡点 3 审计勾 + 上手/UX/文案 续。**复核 verify**:`flutter analyze` 0 + `flutter test` 1552 pass / 1 skip(同 HEAD `fdaa2b2` 实跑核验,非照抄)。无代码改动,仅 doc 状态对齐。
 - **v1.9**(2026-05-29)方向调整 + H 段升主聚焦:用户拍板「先把游戏打磨完成,再启 Steam」→ F + G 段标搁置(留 ship 前 1-2 月)+ H 段从 nice-to-have 升「内容打磨 + UX」主聚焦段(6 子项)+ E 段分拆(E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前 1-2 月)+ TL;DR 优先级标注。无代码改动,仅 doc 状态对齐。
 - **v1.8**(2026-05-28)C.4 R4 P2.1 内容验收 12/12 全收 + UI bug 顺手修:C 段加 C.4 R4 段(基础 4 + 战斗 3 + 内容 5 = 12/12 PASS)· R4.3 招式描述暴露 `encounter_skill_section.dart` 漏渲染 `SkillDef.description` → commit `3150be8` 补 `if skill.description.trim().isNotEmpty` 守 + Text 渲染 · TL;DR C 视觉验收行加 C.4 12/12 · 双端 verify(Pen flutter analyze 0/widget+seed/build · Mac character_panel 28/28)· release readiness ~96% 维持。
 - **v1.7**(2026-05-28)detail 状态修正:asset 路径审计发现 detail wire 链路全闭环(EquipmentDef.detailPath schema ✅ + equipment_detail_screen.dart:108 UI 已 wire + errorBuilder 兜底 + yaml 80/80 已填 detailPath)· 真状态文件 35/80 ✅(原 35 件)+ 45/80 待美术 M15-16(非「0/80 留 M15-16」)。无代码改动,仅 doc 状态对齐。
