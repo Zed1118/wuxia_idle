@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · 外部 review 修复批推进(P1-b/P1-a 收口) · 1537 测 / 0 analyze**
+> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · 外部 review 修复批推进(P1-b/P1-a/P2-c 收口) · 1539 测 / 0 analyze**
+
+**2026-05-29 外部 review P2-c 战斗公式双路径收敛**(commit `f719172` · 重构保形 · 1537→1539 测 / 0 analyze):`DamageCalculator.calculate` 与 `DefaultGroundStrategy._calculateInBattle` 各复制一份相同公式数学,改一处另一处 drift,违 §6。诊断:**production 只跑 _calculateInBattle,DamageCalculator 实为测试专用参考实现** → balance 验证打错公式。抽 `DamageCalculator.calculateResolved(primitives)` 为唯一真相源,双路径变薄 adapter;3 处口径差异(IF 满/当前 · defenseRate 境界base/缓存含相生 · attackPowerMult 1.0/烘焙)收为显式参数。_calculateInBattle 删 ~100 行重复数学。行为零变化(100+ 公式钉死测全绿)+ P2-c 聚焦测 2。外部 review 修复批剩:P2-a/b 健壮性 / P3 文档 drift / 根因A 挂机循环重平衡(前置 P1-b✅+P2-c✅ 已清,可动)。
 
 **2026-05-29 外部 review P1-a 飞升 auto_swap 三系锁死修复**(commit `559455f` · TDD · 1535→1537 测 / 0 analyze):`performAscend` 副作用 4 auto_swap 直写 `disciple.equipped{Slot}Id` 无 canEquip → 武圣神物可自动装到低境界徒弟,破 §5.3(师承遗物不例外)。加 `Equipment.isEquippableAtRealm(RealmTier)` 域规则(`tier.index ≤ realm.index`)+ auto_swap 上身前守卫(不够阶只转 owner 入背包不上身)+ R5.11 红线测 2 测 + R5.6/R5.7/R5.10 收装徒弟 boost 够阶(原断言建立在违规行为上)。外部 review 修复批剩:P2-c 公式统一(根因A 前置)/ P2-a/b 健壮性 / P3 文档 drift / 根因A 挂机循环重平衡。
 
