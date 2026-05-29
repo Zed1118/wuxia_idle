@@ -2,11 +2,14 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
+import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/inheritance/application/founder_buff_service.dart';
 
@@ -71,22 +74,35 @@ void main() {
       expect(buff.maxHpPct, 0);
     });
 
-    test('数值红线 §5.4:internal_force_max +5% × lineage +20% × base 15000 = 18900 (>15000)',
+    test('数值红线 §5.4:internalForceMaxWithLineage 乘法叠加 18900 → clamp 15000',
         () {
-      // 仅断言上下游叠加是「乘法」语义不破语义,真正 clamp 在 CharacterDerivedStats
-      // (battle_state.dart 端 currentInternalForce 不会因 maxInternalForce 抬高而
-      // 自动充值,玩家持有的 internalForce 还是 base);maxInternalForce 抬高 +5% × +20%
-      // 仅作为上限,实际运行时不破红线。
+      // P1-b 修复(review 补):battle_state 直接调 derived_stats 塞进战斗,不经
+      // stage_battle_setup 的 modifier clamp。base 15000 × lineage(4 件)+20% ×
+      // founder +5% = 18900,必须在源头 clamp 到 §5.4 内力红线 15000,否则进战斗破线。
       final n = GameRepository.instance.numbers;
-      // 师承 4 件 × 5% = 20% + founder 5% = 1.20 × 1.05 = 1.26
-      final hypotheticalCap =
-          (15000 * (1.0 + 4 * n.lineageInternalForceMaxBonus) *
-                  (1.0 + n.founderAncestorBuff.internalForceMaxPct))
-              .toInt();
-      expect(hypotheticalCap, 18900,
-          reason: '4 件 lineage + founder buff 叠加上限,玩家实际 IF ≤ 红线');
-      // GDD §5.4 红线检查由 numbers.yaml + 公式层实施(本批不动);
-      // 上限抬高不直接破红线(玩家手动累积 IF 时仍受 sandbox 公式约束)
+      final c = Character()..internalForceMax = 15000;
+      final equipped =
+          List.generate(4, (_) => Equipment()..isLineageHeritage = true);
+      final result = CharacterDerivedStats.internalForceMaxWithLineage(
+          c, equipped, n,
+          founderBuffActive: true);
+      expect(result, 15000,
+          reason: '乘法叠加 18900 必须 clamp 到 §5.4 内力红线 15000(不能进战斗破线)');
+    });
+
+    test('数值红线 §5.4:maxHp founder buff +5% 推过 20000 → clamp 20000', () {
+      // P1-b 同源(review 未点但同病):maxHp 也不 clamp,founder buff +5% /
+      // 心法相生 hpPct 乘法可破 20000 血量红线 → 源头 clamp 守红线。
+      final n = GameRepository.instance.numbers;
+      final c = Character()
+        ..internalForce = 0
+        ..attributes = Attributes();
+      // baseHealth 堆高使裸血量远超 20000,founder buff ×1.05 再推 → 必 clamp
+      final equipped = [Equipment()..baseHealth = 30000];
+      final result =
+          CharacterDerivedStats.maxHp(c, equipped, n, founderBuffActive: true);
+      expect(result, 20000,
+          reason: 'founder buff 抬高后必须 clamp 到 §5.4 血量红线 20000');
     });
   });
 
