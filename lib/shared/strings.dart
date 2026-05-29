@@ -62,6 +62,7 @@ class UiStrings {
   // H1 批2:装备穿戴 picker(玩家手动装备入口)。
   static const String equipPickerTitle = '选择装备';
   static const String equipPickerEmpty = '背包暂无该部位可用装备';
+  static const String equipPickerClose = '关闭';
   static const String equipUnequip = '卸下当前装备';
   static const String equipLockedByRealm = '境界不足,无法装备(三系锁死)';
 
