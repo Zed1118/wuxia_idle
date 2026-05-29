@@ -6,6 +6,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../application/light_foot_service.dart';
@@ -114,7 +115,7 @@ class _LightFootRow extends StatelessWidget {
         locked ? WuxiaColors.textMuted : WuxiaColors.textPrimary;
     final borderColor =
         cleared ? WuxiaColors.hpHigh : WuxiaColors.border;
-    final terrainLabel = _terrainLabel(def.terrainBiome);
+    final terrainLabel = EnumL10n.terrainBiome(def.terrainBiome);
     return Opacity(
       opacity: locked ? 0.45 : 1.0,
       child: Material(
@@ -161,18 +162,6 @@ class _LightFootRow extends StatelessWidget {
     );
   }
 
-  String _terrainLabel(TerrainBiome? biome) {
-    switch (biome) {
-      case TerrainBiome.water:
-        return '水面';
-      case TerrainBiome.rooftop:
-        return '屋脊';
-      case TerrainBiome.bamboo:
-        return '竹林';
-      case null:
-        return '平地';
-    }
-  }
 }
 
 class _StatusIcon extends StatelessWidget {
