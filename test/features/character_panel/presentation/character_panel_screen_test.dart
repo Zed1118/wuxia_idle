@@ -610,4 +610,50 @@ void main() {
     expect(find.textContaining(UiStrings.equipPickerTitle), findsOneWidget);
     expect(find.text(UiStrings.equipPickerEmpty), findsOneWidget);
   });
+
+  // H1 批3:picker 里被队内其他角色穿戴的装备显「他人装备中」标注(去静默卸下)。
+  testWidgets('picker:被其他角色装备的项显「他人装备中」标注', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final founder = mkCharacter(); // id=1 · xueTu · 3 槽全空
+    // 真 defId(picker 解析中文名不抛)· owner=999 队内他人 · 同武器槽。
+    final wornByOther = mkEquipment(
+      id: 50,
+      slot: EquipmentSlot.weapon,
+      defId: 'weapon_xunchang_tie_jian',
+    )..ownerCharacterId = 999;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          activeCharacterIdsProvider.overrideWith((ref) async => [founder.id]),
+          characterByIdProvider(founder.id)
+              .overrideWith((ref) async => founder),
+          allEquipmentsProvider.overrideWith((ref) async => [wornByOther]),
+        ],
+        child: MaterialApp(home: CharacterPanelScreen(characterId: founder.id)),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    // 点第一个空槽(武器)弹 picker。
+    await tester.tap(
+      find
+          .ancestor(
+            of: find.text(UiStrings.slotEmpty).first,
+            matching: find.byType(InkWell),
+          )
+          .first,
+    );
+    await tester.pump();
+    await tester.pump();
+
+    // 铁剑(真名,非 defId)+ 「他人装备中」标注同显。
+    expect(find.text('铁剑'), findsOneWidget);
+    expect(find.textContaining(UiStrings.equipWornByOther), findsOneWidget);
+  });
 }
