@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · 外部 review 修复批推进(P1-b/P1-a/P2-c 收口) · 1539 测 / 0 analyze**
+> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · 外部 review 修复批推进(P1-b/P1-a/P2-c/P2-a/P2-b/P3 收口) · 1540 测 / 0 analyze**
+
+**2026-05-29 外部 review P2-a/P2-b + P3 文档 drift 三项收口**(3 commit `62b0b7e` P2-a + `2686815` P2-b + `1afc888` P3 · 1539→1540 测 / 0 analyze):**P2-a** 奇遇招式池空静默失效 — `encounter_skills.yaml` 生产损坏/缺失被 catch 吞掉时招式池空,`_enforceEncounterSkillRedLines` unlock 一致性校验被 `encounterSkillIds.isNotEmpty` 闸门跳过 → 奇遇 unlockSkill 招式静默失效(注释还谎称"生产仍校验")。去闸门 + 空池有引用即 fail-fast + 红线测。**P2-b** 敌人属性 hardcode(`stage_battle_setup:282` maxIF:1000/crit·evade:0.05)抽到 `numbers.yaml combat.enemy_defaults` + 新 `EnemyDefaults` config,纯抽取零行为变化(按境界缩放留根因A 批)。**P3** 三文档(GDD §5.6 / CLAUDE §6 / AGENTS §6)血量公式 ×0.7/×500、AGENTS 更旧 ×8/×5 同步到代码真值(装备攻击 1.0 / 内力 0.5 / 根骨 400 · P0.1 #38 方案 D)。**踩坑**:fresh worktree `libisar.dylib` 截断(1010466 vs 完整 2187120 bytes · `download:true` 下到一半)致 37 setUpAll dlopen 失败,从主仓拷完整副本修复。外部 review 修复批剩:**根因A 挂机循环重平衡**(前置全清,需先讨论数值方向 + 升 xhigh) + balance_simulator 改打真公式 + 红线值统一到 numbers.yaml。
 
 **2026-05-29 外部 review P2-c 战斗公式双路径收敛**(commit `f719172` · 重构保形 · 1537→1539 测 / 0 analyze):`DamageCalculator.calculate` 与 `DefaultGroundStrategy._calculateInBattle` 各复制一份相同公式数学,改一处另一处 drift,违 §6。诊断:**production 只跑 _calculateInBattle,DamageCalculator 实为测试专用参考实现** → balance 验证打错公式。抽 `DamageCalculator.calculateResolved(primitives)` 为唯一真相源,双路径变薄 adapter;3 处口径差异(IF 满/当前 · defenseRate 境界base/缓存含相生 · attackPowerMult 1.0/烘焙)收为显式参数。_calculateInBattle 删 ~100 行重复数学。行为零变化(100+ 公式钉死测全绿)+ P2-c 聚焦测 2。外部 review 修复批剩:P2-a/b 健壮性 / P3 文档 drift / 根因A 挂机循环重平衡(前置 P1-b✅+P2-c✅ 已清,可动)。
 
