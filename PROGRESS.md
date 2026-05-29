@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · 外部 review 修复批推进(P1-b/P1-a/P2-c/P2-a/P2-b/P3 收口) · 1540 测 / 0 analyze**
+> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · 外部 review 修复批收口 + 根因A 挂机循环重平衡实装 · 1547 测 / 0 analyze**
+
+**2026-05-29 根因A 挂机循环重平衡实装 B1+B2+B3**(2 commit `a359dc2` spec + `d7ee3f9` 实装 · 1540→1547 测 / 0 analyze · xhigh · 用户拍 3 数值方向):挂机离线收益对中期成长贡献微乎其微(品类硬伤,H2 audit 根因A)。**B1 共鸣度双管**:闭关挂机折算 battleCount 喂出战装备(`resonance.seclusion_battle_count_per_hour=5` · 72h+360)+ 默契阈值 500→300 → 人剑合一离线/中期可及(`seclusion_service.completeRetreat` wire + `entities/character_panel` 阈值测同步 + GDD §6.4 同步)。**B2 闭关 EXP ×2.5**:5 地图 experience_per_hour ×2.5,72h ≈ 3-4 个 Ch3 Boss(原 1.4)(seclusion EXP 级联升层断言 1000 EXP→6 层重算)。**B3 insightPoints 死钱包变 sink**:抽 `CultivationService.applyProgressDelta`(不计 skillUsage)+ 新 `InsightExchangeService` 凝练领悟点→主修修炼度(ratio 1.0)+ `technique_panel`「凝练领悟」入口 + provider。闭关挂机→insightPoints→玩家凝练→修炼度链路(不开学心法 UI,维持 §7.2 scoped)。+7 测(B1 2/B3 5)。红线不破(§5.4 不涉战斗数值)。剩:balance_simulator 改打真公式 + 红线值统一到 numbers.yaml。
 
 **2026-05-29 外部 review P2-a/P2-b + P3 文档 drift 三项收口**(3 commit `62b0b7e` P2-a + `2686815` P2-b + `1afc888` P3 · 1539→1540 测 / 0 analyze):**P2-a** 奇遇招式池空静默失效 — `encounter_skills.yaml` 生产损坏/缺失被 catch 吞掉时招式池空,`_enforceEncounterSkillRedLines` unlock 一致性校验被 `encounterSkillIds.isNotEmpty` 闸门跳过 → 奇遇 unlockSkill 招式静默失效(注释还谎称"生产仍校验")。去闸门 + 空池有引用即 fail-fast + 红线测。**P2-b** 敌人属性 hardcode(`stage_battle_setup:282` maxIF:1000/crit·evade:0.05)抽到 `numbers.yaml combat.enemy_defaults` + 新 `EnemyDefaults` config,纯抽取零行为变化(按境界缩放留根因A 批)。**P3** 三文档(GDD §5.6 / CLAUDE §6 / AGENTS §6)血量公式 ×0.7/×500、AGENTS 更旧 ×8/×5 同步到代码真值(装备攻击 1.0 / 内力 0.5 / 根骨 400 · P0.1 #38 方案 D)。**踩坑**:fresh worktree `libisar.dylib` 截断(1010466 vs 完整 2187120 bytes · `download:true` 下到一半)致 37 setUpAll dlopen 失败,从主仓拷完整副本修复。外部 review 修复批剩:**根因A 挂机循环重平衡**(前置全清,需先讨论数值方向 + 升 xhigh) + balance_simulator 改打真公式 + 红线值统一到 numbers.yaml。
 
