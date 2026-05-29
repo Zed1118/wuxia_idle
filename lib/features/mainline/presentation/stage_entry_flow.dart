@@ -323,7 +323,7 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: SelectableText('战斗准备失败：$_setupError'),
+            child: SelectableText(UiStrings.battleSetupFailed(_setupError!)),
           ),
         ),
       );

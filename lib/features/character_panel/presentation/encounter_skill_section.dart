@@ -10,6 +10,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/application/character_providers.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../encounter/application/encounter_service_providers.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 
 /// 奇遇招式装备段(C-W14-3-A)。
@@ -93,7 +94,7 @@ class _Content extends ConsumerWidget {
                   foregroundColor: WuxiaColors.textSecondary,
                   side: const BorderSide(color: WuxiaColors.border),
                 ),
-                child: const Text('卸下'),
+                child: const Text(UiStrings.encounterSkillUnequipButton),
               ),
             ],
           ],
@@ -153,7 +154,9 @@ class _Content extends ConsumerWidget {
       if (!context.mounted) return;
       messenger.showSnackBar(SnackBar(content: Text(_resultText(result))));
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('装备失败: $e')));
+      messenger.showSnackBar(
+        SnackBar(content: Text(UiStrings.encounterSkillEquipFailed(e))),
+      );
     }
   }
 
@@ -165,9 +168,15 @@ class _Content extends ConsumerWidget {
       await svc.unequipEncounterSkill(characterId: character.id);
       ref.invalidate(characterByIdProvider(character.id));
       if (!context.mounted) return;
-      messenger.showSnackBar(const SnackBar(content: Text('已卸下奇遇招式')));
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(UiStrings.encounterSkillUnequipSuccess),
+        ),
+      );
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('卸下失败: $e')));
+      messenger.showSnackBar(
+        SnackBar(content: Text(UiStrings.encounterSkillUnequipFailed(e))),
+      );
     }
   }
 
