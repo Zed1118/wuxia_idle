@@ -187,8 +187,9 @@ class GameRepository {
       // 显式 collision 抛出的 StateError 透传,fail fast
       rethrow;
     } catch (e) {
-      // test fixture 不带 encounter_skills.yaml 时静默,生产路径仍由
-      // _enforceEncounterSkillRedLines 校验 unlock 引用一致性。
+      // test fixture 不带 encounter_skills.yaml 时静默(空池)。P2-a 后:若 encounters
+      // 仍引用 unlockSkill skillId,_enforceEncounterSkillRedLines 会在空池上 fail-fast
+      // (不再被 isNotEmpty 闸门跳过),故生产损坏/缺失不会静默失效。
     }
     final stageDefs = _parseDefMap(
       stagesRaw['stages'] as List,
@@ -669,7 +670,8 @@ class GameRepository {
   ///   encounter skill 池**(强校验,缺失抛 StateError,绑死 yaml 联结)
   ///
   /// 测试 fixture 不带 encounter_skills.yaml 时 encounterSkillIds 为空集,
-  /// 跳过 cap 校验,但 unlock 引用一致性仍校验(encounters.yaml 在场时)。
+  /// 跳过 per-skill cap 校验;但 unlock 引用一致性始终校验(encounters.yaml 在场时),
+  /// P2-a 后空池 + 有 unlockSkill 引用 → fail-fast,不再静默跳过。
   void _enforceEncounterSkillRedLines() {
     const tierCaps = [1500, 2000, 2500, 3000, 4000, 5500, 8000];
     for (final id in encounterSkillIds) {
@@ -703,7 +705,13 @@ class GameRepository {
     // unlock 引用一致性:encounters.yaml 的所有 unlockSkill outcome
     // 必须能在 encounter skill 池里找到 def(且必须是 encounter skill,
     // 不许借用普通心法招式)。
-    if (encounterDefs.isNotEmpty && encounterSkillIds.isNotEmpty) {
+    //
+    // P2-a(外部 review):此处不再以 `encounterSkillIds.isNotEmpty` 为前置闸门。
+    // 否则 encounter_skills.yaml 在生产被 catch 静默吞掉(损坏/缺失)时招式池为空,
+    // 一致性校验整段被跳过 → 奇遇招式静默失效。改为:只要 encounters 有 unlockSkill
+    // 引用,招式池空也会在此 fail-fast(skillId 不在空池 → 抛 StateError)。无
+    // unlockSkill outcome 的 fixture 自然不触发,保持兼容。
+    if (encounterDefs.isNotEmpty) {
       for (final def in encounterDefs.values) {
         for (final outcome in def.outcomeMapping.values) {
           if (outcome.skillId == null) continue;
