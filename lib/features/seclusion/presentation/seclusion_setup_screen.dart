@@ -129,19 +129,28 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
                     ),
                     const SizedBox(height: 8),
                     _OutputRow(
-                      label: '磨剑石',
+                      label: UiStrings.seclusionOutputMojianshi,
                       value: (def.mojianshiPerHour * scale).toStringAsFixed(1),
                     ),
                     _OutputRow(
-                      label: '经验',
+                      label: UiStrings.seclusionOutputExperience,
                       value: (def.experiencePerHour * scale).toStringAsFixed(1),
                     ),
                     if (def.equipmentDropRate > 1.0)
-                      const _OutputRow(label: '兵器掉率', value: '+50%'),
+                      const _OutputRow(
+                        label: UiStrings.seclusionOutputEquipDrop,
+                        value: '+50%',
+                      ),
                     if (def.techniqueLearnRate > 1.0)
-                      const _OutputRow(label: '心法领悟', value: '+50%'),
+                      const _OutputRow(
+                        label: UiStrings.seclusionOutputTechniqueLearn,
+                        value: '+50%',
+                      ),
                     if (def.internalForceGrowth > 1.0)
-                      const _OutputRow(label: '内力增长', value: '+50%'),
+                      const _OutputRow(
+                        label: UiStrings.seclusionOutputInternalForce,
+                        value: '+50%',
+                      ),
                   ],
                 ),
               ),

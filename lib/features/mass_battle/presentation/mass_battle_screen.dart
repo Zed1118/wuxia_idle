@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
@@ -128,7 +129,7 @@ class _MassBattleRow extends StatelessWidget {
     final enemyCounts = def.massBattleEnemyCounts ?? const <int>[];
     final enemyTotal =
         enemyCounts.fold<int>(0, (sum, n) => sum + n);
-    final formationLabel = _formationLabel(formation);
+    final formationLabel = EnumL10n.formation(formation);
     return Opacity(
       opacity: locked ? 0.45 : 1.0,
       child: Material(
@@ -176,16 +177,6 @@ class _MassBattleRow extends StatelessWidget {
     );
   }
 
-  String _formationLabel(Formation f) {
-    switch (f) {
-      case Formation.yanXing:
-        return '雁行';
-      case Formation.baGua:
-        return '八卦';
-      case Formation.fengShi:
-        return '锋矢';
-    }
-  }
 }
 
 class _StatusIcon extends StatelessWidget {
