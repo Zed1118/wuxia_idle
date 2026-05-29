@@ -874,7 +874,7 @@ retreat:
       map_name: "山林"
       required_realm: xueTu                  # 学徒即可进入
       base_outputs:
-        experience_per_hour: 250             # 根因A ×2.5(原 100)
+        experience_per_hour: 100             # B2 finding 修正(2026-05-29):低 tier 回 ×1.0(原值)·避免挂机优先早期碾压(满挂 72h 二流 16 层→三流 12 层·对 Ch1 学徒差 1 阶不碾压)·根因A ×2.5 保留在 erLiu+ 中期
         mojianshi_per_hour: 1.0
         equipment_drop_rate: 1.0             # 基础掉率（无加成）
         technique_learn_rate: 1.0
@@ -888,7 +888,7 @@ retreat:
       map_name: "古剑冢"
       required_realm: sanLiu                 # 三流境界解锁
       base_outputs:
-        experience_per_hour: 200             # 根因A ×2.5(原 80)
+        experience_per_hour: 80              # B2 finding 修正(2026-05-29):三流图回 ×1.0(原值)·低 tier 不享根因A ×2.5(中期保留在 erLiu+)
         mojianshi_per_hour: 0.8
         equipment_drop_rate: 1.5             # 兵器掉率 +50%（GDD §8.3）
         technique_learn_rate: 1.0
@@ -902,7 +902,7 @@ retreat:
       map_name: "藏经阁"
       required_realm: sanLiu
       base_outputs:
-        experience_per_hour: 225             # 根因A ×2.5(原 90)
+        experience_per_hour: 90              # B2 finding 修正(2026-05-29):三流图回 ×1.0(原值)·低 tier 不享根因A ×2.5(中期保留在 erLiu+)
         mojianshi_per_hour: 0.5
         equipment_drop_rate: 1.0
         technique_learn_rate: 1.5            # 心法领悟 +50%

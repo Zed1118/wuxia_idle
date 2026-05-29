@@ -19,7 +19,7 @@
 > **v1.10 变更**(2026-05-29 晚 · D/H 首批落地 · v1.9 起草后当日续 10 批):
 > - **H 中期玩法深度 audit ✅**(`h2_midgame_audit`):两大根因 A 挂机循环与中期成长脱节 + B backend 做完前端没接线 → **H2 接线 polish 5 项**(C1 章节翻篇过场 / C2 升阶大境界仪式 / E2 effective 实战值可见 / S3 死字段清理 / R2 verified)+ **根因A 挂机循环重平衡 B1+B2+B3**(B1 闭关挂机折算 battleCount 喂共鸣度 + 默契阈值 500→300 / B2 闭关 EXP ×2.5 / B3 `InsightExchangeService` 凝练领悟点→修炼度 sink)
 > - **H 后期挑战 audit ✅**(`h3_lategame_audit`):Ch4-6 主线/心魔/群战/轻功/飞升 整体远比中期健康(35 narrative 0 dangling)· 唯一 🔴 **A2 多代飞升循环断裂**(`performAscend` 真传位漏写 `founderCharacterId` → gen2 祖师不在阵容永久 blocked)已红绿修复
-> - **H 卡点诊断 ✅**:`idle_economy` 量化验证 72h 挂机 vs 主动战斗三维成长 drift 雷达 · Phase 0 事实修正(伤害公式 P2-c 后已真路径,balance_simulator 残留缺口仅 `_synthPlayer` 硬编码 build)· **finding** B2 低 tier EXP 偏慷慨待 numbers 取舍
+> - **H 卡点诊断 ✅**:`idle_economy` 量化验证 72h 挂机 vs 主动战斗三维成长 drift 雷达 · Phase 0 事实修正(伤害公式 P2-c 后已真路径,balance_simulator 残留缺口仅 `_synthPlayer` 硬编码 build)· **finding** B2 低 tier EXP 偏慷慨 → 用户拍 B 方向已修(低 tier 山林/古剑冢/藏经阁回 ×1.0,满挂 16→12 层不碾压 Ch1;erLiu+ 保 ×2.5)
 > - **外部 review 5 项硬化**:P1-a 飞升 auto_swap 三系锁死修(§5.3)/ P2-c 战斗公式双路径收敛(`DamageCalculator.calculateResolved` 单一真相源,删 ~100 行重复数学)/ P2-a 奇遇招式池空静默失效修 / P2-b 敌人属性 hardcode 抽 `enemy_defaults` / P3 三文档血量公式系数 drift 同步
 > - **红线值统一 numbers.yaml**:15000/20000 散落字面量收口到 `combat.red_lines` + `RedLinesConfig` 强类型 · wire 4 处 · 纯抽取零行为变化
 > - **测族** 1519→**1552**(+33 · 1 skip)· 0 analyze · 同 HEAD `fdaa2b2` 实跑核验
@@ -328,7 +328,7 @@
 ### P5.2 C2 难度曲线打磨
 - 30-35 关全玩家路径数值再平衡
 - itch.io Demo 反馈(P0.3 收集)纳入数据源
-- **2026-05-29 数值再平衡首批 ✅**:根因A 挂机循环重平衡(B1+B2+B3)+ 红线值统一 numbers.yaml(单源)+ idle_economy 72h 经济曲线验证(drift 雷达 · `test/tools/idle_economy_test.dart`)· **finding** B2 低 tier EXP 偏慷慨(学徒山林 72h 跳 16 层)待 numbers 取舍 · 30-35 关终调 + closed beta 外部数据源留 M15-16
+- **2026-05-29 数值再平衡首批 ✅**:根因A 挂机循环重平衡(B1+B2+B3)+ 红线值统一 numbers.yaml(单源)+ idle_economy 72h 经济曲线验证(drift 雷达 · `test/tools/idle_economy_test.dart`)· **B2 低 tier finding 已修**(用户拍 B:山林/古剑冢/藏经阁回 ×1.0,满挂 16→12 层落点三流不碾压 Ch1;erLiu+ 保 ×2.5)· 30-35 关终调 + closed beta 外部数据源留 M15-16
 
 ### P5.3 C4 音乐音效配音
 - BGM(主线 / 战斗 / 闭关)
