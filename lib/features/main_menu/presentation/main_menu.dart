@@ -30,6 +30,7 @@ import '../../tutorial/domain/tutorial_hint_def.dart';
 import '../../tutorial/presentation/tutorial_banner_card.dart';
 import '../../tower/presentation/leaderboard_screen.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
+import '../../mainline/application/mainline_providers.dart';
 
 /// 调试主菜单（phase2_tasks.md T32 §492-509 子提交 3b + T56 闭关入口 FutureBuilder 化 + W17 候选 E 师徒名单入口）。
 ///
@@ -57,6 +58,13 @@ class MainMenu extends ConsumerWidget {
   static const int _techniquesUnlockStep = 3;
   static const int _seclusionUnlockStep = 5;
 
+  // H1 批1 §5.7:未解锁系统菜单按钮门控 — 镜像各屏内部 clearedStageIds prereq
+  // (单一真相源)。心魔/轻功/群战 = Ch6 末关解锁 · PVP = Ch5 末关 ·
+  // 江湖/门派/排行榜无屏内 prereq,统一用 Ch1 末关(社交/竞技系统此后才有意义)。
+  static const String _lateGameUnlockStage = 'stage_06_05'; // 心魔/轻功/群战
+  static const String _pvpUnlockStage = 'stage_05_05';
+  static const String _socialUnlockStage = 'stage_01_05'; // 江湖/门派/排行榜
+
   /// P1.y · 取 [TutorialHintDef.all] 中第 1 个 `step <= currentStep` 且
   /// `step ∉ hintsRead` 的 hint。无未读 hint → null(spec R3 风险处置:
   /// 避免 step 已到 8 但 6/7/8 都未读时同时显 3 banner)。
@@ -74,6 +82,11 @@ class MainMenu extends ConsumerWidget {
     // P1 #42 Phase 2 §10 P1.x:tutorialStep 门槛 wire(loading 时按 0 兜底)。
     final stepAsync = ref.watch(currentTutorialStepProvider);
     final step = stepAsync.maybeWhen(data: (s) => s, orElse: () => 0);
+
+    // H1 批1 §5.7:未解锁系统按钮门控(镜像各屏 clearedStageIds prereq · loading 空集兜底)。
+    final clearedAsync = ref.watch(mainlineProgressProvider);
+    final cleared = clearedAsync.maybeWhen(
+        data: (p) => p.clearedStageIds.toSet(), orElse: () => <String>{});
     // P1 #42 Phase 2 §10 P1.y:取第 1 个未读 hint(R3 风险处置,避免同时显多 banner)。
     final hintsReadAsync = ref.watch(currentTutorialHintsReadProvider);
     final hintsRead =
@@ -151,43 +164,64 @@ class MainMenu extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _MenuButton(
                   label: UiStrings.mainMenuInnerDemon,
-                  hint: UiStrings.mainMenuInnerDemonHint,
+                  hint: !cleared.contains(_lateGameUnlockStage)
+                      ? UiStrings.mainMenuLateGameLockedHint
+                      : UiStrings.mainMenuInnerDemonHint,
+                  disabled: !cleared.contains(_lateGameUnlockStage),
                   onTap: () => _push(context, const InnerDemonScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
                   label: UiStrings.mainMenuLightFoot,
-                  hint: UiStrings.mainMenuLightFootHint,
+                  hint: !cleared.contains(_lateGameUnlockStage)
+                      ? UiStrings.mainMenuLateGameLockedHint
+                      : UiStrings.mainMenuLightFootHint,
+                  disabled: !cleared.contains(_lateGameUnlockStage),
                   onTap: () => _push(context, const LightFootScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
                   label: UiStrings.mainMenuMassBattle,
-                  hint: UiStrings.mainMenuMassBattleHint,
+                  hint: !cleared.contains(_lateGameUnlockStage)
+                      ? UiStrings.mainMenuLateGameLockedHint
+                      : UiStrings.mainMenuMassBattleHint,
+                  disabled: !cleared.contains(_lateGameUnlockStage),
                   onTap: () => _push(context, const MassBattleScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
                   label: UiStrings.mainMenuPvp,
-                  hint: UiStrings.mainMenuPvpHint,
+                  hint: !cleared.contains(_pvpUnlockStage)
+                      ? UiStrings.pvpLockedHint
+                      : UiStrings.mainMenuPvpHint,
+                  disabled: !cleared.contains(_pvpUnlockStage),
                   onTap: () => _push(context, const PvpScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
                   label: UiStrings.mainMenuJianghu,
-                  hint: UiStrings.mainMenuJianghuHint,
+                  hint: !cleared.contains(_socialUnlockStage)
+                      ? UiStrings.mainMenuSocialLockedHint
+                      : UiStrings.mainMenuJianghuHint,
+                  disabled: !cleared.contains(_socialUnlockStage),
                   onTap: () => _push(context, const ReputationPanelScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
                   label: UiStrings.mainMenuSect,
-                  hint: UiStrings.mainMenuSectHint,
+                  hint: !cleared.contains(_socialUnlockStage)
+                      ? UiStrings.mainMenuSocialLockedHint
+                      : UiStrings.mainMenuSectHint,
+                  disabled: !cleared.contains(_socialUnlockStage),
                   onTap: () => _push(context, const SectScreen()),
                 ),
                 const SizedBox(height: 16),
                 _MenuButton(
                   label: UiStrings.mainMenuLeaderboard,
-                  hint: UiStrings.mainMenuLeaderboardHint,
+                  hint: !cleared.contains(_socialUnlockStage)
+                      ? UiStrings.mainMenuSocialLockedHint
+                      : UiStrings.mainMenuLeaderboardHint,
+                  disabled: !cleared.contains(_socialUnlockStage),
                   onTap: () => _push(context, const LeaderboardScreen()),
                 ),
                 const SizedBox(height: 16),

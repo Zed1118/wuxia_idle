@@ -10,6 +10,8 @@ import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/festival/application/festival_service_providers.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
+import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
 import 'package:wuxia_idle/features/tutorial/presentation/tutorial_banner_card.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -569,6 +571,62 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(find.byType(TutorialBannerCard), findsNothing);
+    });
+  });
+
+  // H1 批1 §5.7:未解锁系统按钮门控(镜像各屏 clearedStageIds prereq)。
+  group('§5.7 未解锁系统门控', () {
+    double opacityOf(WidgetTester tester, String label) => tester
+        .widget<Opacity>(
+          find
+              .ancestor(
+                of: find.text(label),
+                matching: find.byType(Opacity),
+              )
+              .first,
+        )
+        .opacity;
+
+    Widget appWithCleared(List<String> cleared) => ProviderScope(
+          overrides: [
+            mainlineProgressProvider.overrideWith(
+              (ref) async => MainlineProgress()..clearedStageIds = cleared,
+            ),
+          ],
+          child: const MaterialApp(home: MainMenu()),
+        );
+
+    testWidgets('全新存档(clearedStageIds 空)→ 心魔/PVP/门派 全 disabled',
+        (tester) async {
+      await tester.pumpWidget(appWithCleared([]));
+      await tester.pump();
+      await tester.pump();
+      // 后期系统(Ch6 prereq)、PVP(Ch5)、社交(Ch1)在空进度全灰显。
+      expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
+      expect(opacityOf(tester, UiStrings.mainMenuPvp), 0.4);
+      expect(opacityOf(tester, UiStrings.mainMenuSect), 0.4);
+    });
+
+    testWidgets('通关 Ch1 末关(stage_01_05)→ 社交系统解锁、后期仍锁',
+        (tester) async {
+      await tester.pumpWidget(appWithCleared(['stage_01_05']));
+      await tester.pump();
+      await tester.pump();
+      // 社交(江湖/门派/排行榜)Ch1 prereq 满足 → enabled。
+      expect(opacityOf(tester, UiStrings.mainMenuSect), 1.0);
+      expect(opacityOf(tester, UiStrings.mainMenuJianghu), 1.0);
+      // 心魔仍需 Ch6 末关 → 仍 disabled。
+      expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
+    });
+
+    testWidgets('通关 Ch6 末关(stage_06_05)→ 后期系统解锁',
+        (tester) async {
+      await tester.pumpWidget(appWithCleared(['stage_06_05']));
+      await tester.pump();
+      await tester.pump();
+      expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 1.0);
+      expect(opacityOf(tester, UiStrings.mainMenuLightFoot), 1.0);
+      expect(opacityOf(tester, UiStrings.mainMenuMassBattle), 1.0);
     });
   });
 }

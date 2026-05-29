@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import 'master_builder.dart';
 
@@ -97,7 +98,7 @@ class OnboardingService {
           secondDisciple.id,
         ];
         save.founderCharacterId = founder.id;
-        save.sectName ??= '我的门派';
+        save.sectName ??= UiStrings.defaultSectName;
         await isar.saveDatas.put(save);
       }
 
