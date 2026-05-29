@@ -35,81 +35,126 @@ class DamageCalculator {
   /// 7. 境界差修正：高打低乘 attackerMod；低打高乘 defenderMod；同境界 1.0。
   /// 8. 取整 → finalDamage。
   static AttackResult calculate(AttackContext ctx, NumbersConfig n) {
-    final rng = ctx.rng ?? Random();
-
-    // === 1. 闪避 ===
-    final evasion = CharacterDerivedStats.evasionRate(ctx.defender, n);
-    if (rng.nextDouble() < evasion) {
-      return AttackResult.dodged(
-        evasionRate: evasion,
-        breakdown: 'DODGED (evasion=${_fmt(evasion)})',
-      );
-    }
-
-    // === 2. 基础伤害 ===
-    final df = n.combat.damageFormula;
+    // Character 路径 adapter:解析实体字段 → 调单一真相源 [calculateResolved]。
+    // 内力用满值 internalForce · 装备攻击 = Σ effectiveEquipmentAttack ·
+    // 防御率走 numbers.yaml 境界 base · attackPowerMultiplier=1.0(无烘焙)。
     final eqAtkSum = ctx.attackerEquipped.fold<int>(
       0,
       (sum, e) => sum + CharacterDerivedStats.effectiveEquipmentAttack(e, n),
     );
-    final base = ctx.attacker.internalForce * df.internalForceFactor +
-        eqAtkSum * df.equipmentAttackFactor +
-        ctx.skill.powerMultiplier;
-
-    // === 3. 修炼度倍率 ===
-    final cultMult = n.cultivationMultiplier[ctx.attackerMainTech.cultivationLayer];
-    if (cultMult == null) {
-      throw StateError(
-        'numbers.yaml techniques.cultivation.layers 缺 '
-        '${ctx.attackerMainTech.cultivationLayer.name} 的 bonus_multiplier',
-      );
-    }
-
-    // === 4. 流派克制 ===
-    final schoolMult = n.schoolCounter.multiplierFor(
-      ctx.attackerMainTech.school,
-      ctx.defenderMainTech.school,
-    );
-    final extraEffect = n.schoolCounter.extraEffectFor(
-      ctx.attackerMainTech.school,
-      ctx.defenderMainTech.school,
-    );
-
-    // === 5. 暴击 ===
-    final critRate = CharacterDerivedStats.criticalRate(ctx.attacker, n);
-    final isCritical = ctx.forceCritical || rng.nextDouble() < critRate;
-    final critMult = isCritical
-        ? (ctx.attacker.school == TechniqueSchool.lingQiao
-            ? n.combat.critical.lingqiaoDamageMultiplier
-            : n.combat.critical.baseDamageMultiplier)
-        : 1.0;
-
-    // === 6. 防御率 ===
     final defRate = n.defenseRateByTier[ctx.defender.realmTier];
     if (defRate == null) {
       throw StateError(
         'numbers.yaml defenseRateByTier 缺 ${ctx.defender.realmTier.name}',
       );
     }
-    final defMult = 1.0 - defRate;
+    return calculateResolved(
+      attackerInternalForce: ctx.attacker.internalForce,
+      attackerEquipmentAttack: eqAtkSum,
+      attackerCultivationLayer: ctx.attackerMainTech.cultivationLayer,
+      attackerSchool: ctx.attackerMainTech.school,
+      defenderSchool: ctx.defenderMainTech.school,
+      attackerRealmTier: ctx.attacker.realmTier,
+      attackerRealmLayer: ctx.attacker.realmLayer,
+      defenderRealmTier: ctx.defender.realmTier,
+      defenderRealmLayer: ctx.defender.realmLayer,
+      defenderDefenseRate: defRate,
+      defenderEvasionRate: CharacterDerivedStats.evasionRate(ctx.defender, n),
+      attackerCriticalRate:
+          CharacterDerivedStats.criticalRate(ctx.attacker, n),
+      attackPowerMultiplier: 1.0,
+      skill: ctx.skill,
+      n: n,
+      rng: ctx.rng ?? Random(),
+      forceCritical: ctx.forceCritical,
+    );
+  }
+
+  /// **战斗伤害单一真相源**(§6 公式集中 · P2-c 双路径收敛 2026-05-29)。
+  ///
+  /// 全部入参已解析为 primitive,不依赖 Character / BattleCharacter / Equipment /
+  /// Technique 实体 —— [calculate](Character 路径)与 [DefaultGroundStrategy]
+  /// 的 `_calculateInBattle`(BattleCharacter 路径)都只做"字段解析 → 调本函数",
+  /// 公式数学(闪避→base→修炼→克制→暴击→防御→境界差→震伤)**仅此一份**,
+  /// 改一处即两路径同步,不再隐式 drift(原两份复制违 §6)。
+  ///
+  /// **两路径口径差异 = 显式参数**(由各自 adapter 决定,非公式内分叉):
+  /// - 内力:[calculate] 传满 `internalForce` · 战斗传 `currentInternalForce`(战中扣)
+  /// - 防御率:[calculate] 传 numbers.yaml 境界 base · 战斗传 `defenseRate` 缓存
+  ///   (叠加相生 defensePct 注入)
+  /// - [attackPowerMultiplier]:[calculate] 传 1.0 · 战斗传烘焙值(轻功 terrain /
+  ///   群战 formation / 江湖恩怨,P3.1.B 起;default 1.0 无修饰)
+  ///
+  /// **rng 消费顺序**:先闪避 roll 后暴击 roll(与原两实现一致,保 seed 复现)。
+  static AttackResult calculateResolved({
+    required int attackerInternalForce,
+    required int attackerEquipmentAttack,
+    required CultivationLayer attackerCultivationLayer,
+    required TechniqueSchool attackerSchool,
+    required TechniqueSchool defenderSchool,
+    required RealmTier attackerRealmTier,
+    required RealmLayer attackerRealmLayer,
+    required RealmTier defenderRealmTier,
+    required RealmLayer defenderRealmLayer,
+    required double defenderDefenseRate,
+    required double defenderEvasionRate,
+    required double attackerCriticalRate,
+    required double attackPowerMultiplier,
+    required SkillDef skill,
+    required NumbersConfig n,
+    required Random rng,
+    bool forceCritical = false,
+  }) {
+    // === 1. 闪避 ===
+    if (rng.nextDouble() < defenderEvasionRate) {
+      return AttackResult.dodged(
+        evasionRate: defenderEvasionRate,
+        breakdown: 'DODGED (evasion=${_fmt(defenderEvasionRate)})',
+      );
+    }
+
+    // === 2. 基础伤害 ===
+    final df = n.combat.damageFormula;
+    final base = attackerInternalForce * df.internalForceFactor +
+        attackerEquipmentAttack * df.equipmentAttackFactor +
+        skill.powerMultiplier;
+
+    // === 3. 修炼度倍率 ===
+    final cultMult = n.cultivationMultiplier[attackerCultivationLayer];
+    if (cultMult == null) {
+      throw StateError(
+        'numbers.yaml techniques.cultivation.layers 缺 '
+        '${attackerCultivationLayer.name} 的 bonus_multiplier',
+      );
+    }
+
+    // === 4. 流派克制 ===
+    final schoolMult =
+        n.schoolCounter.multiplierFor(attackerSchool, defenderSchool);
+    final extraEffect =
+        n.schoolCounter.extraEffectFor(attackerSchool, defenderSchool);
+
+    // === 5. 暴击 ===
+    final isCritical = forceCritical || rng.nextDouble() < attackerCriticalRate;
+    final critMult = isCritical
+        ? (attackerSchool == TechniqueSchool.lingQiao
+            ? n.combat.critical.lingqiaoDamageMultiplier
+            : n.combat.critical.baseDamageMultiplier)
+        : 1.0;
+
+    // === 6. 防御率 ===
+    final defMult = 1.0 - defenderDefenseRate;
 
     // === 7. 境界差修正 ===
     // RealmUtils.realmDiffModifier 返回 yaml 段原值 (attacker, defender)；
     // GDD §5.5：高打低用 attacker 放大；低打高用 defender 衰减；同境界 1.0。
-    final atkLevel = RealmUtils.absoluteLevelOf(
-      ctx.attacker.realmTier,
-      ctx.attacker.realmLayer,
-    );
-    final defLevel = RealmUtils.absoluteLevelOf(
-      ctx.defender.realmTier,
-      ctx.defender.realmLayer,
-    );
-    final tierDiff =
-        ctx.attacker.realmTier.index - ctx.defender.realmTier.index;
-    final mods = RealmUtils.realmDiffModifier(
-      ctx.attacker.realmTier,
-      ctx.defender.realmTier,
-    );
+    final atkLevel =
+        RealmUtils.absoluteLevelOf(attackerRealmTier, attackerRealmLayer);
+    final defLevel =
+        RealmUtils.absoluteLevelOf(defenderRealmTier, defenderRealmLayer);
+    final tierDiff = attackerRealmTier.index - defenderRealmTier.index;
+    final mods =
+        RealmUtils.realmDiffModifier(attackerRealmTier, defenderRealmTier);
     final realmAttackerMod = mods.$1;
     final realmDefenderMod = mods.$2;
     final double realmMult;
@@ -122,18 +167,23 @@ class DamageCalculator {
     }
 
     // === 8. 合并 ===
-    final raw =
-        base * cultMult * schoolMult * critMult * defMult * realmMult;
+    // 末端乘 attackPowerMultiplier(default 1.0):沿 cult/school/crit/def/realm
+    // 体例,独立维度乘项不进 base 求和(P3.1.B 轻功/群战/恩怨烘焙)。
+    final raw = base *
+        cultMult *
+        schoolMult *
+        critMult *
+        defMult *
+        realmMult *
+        attackPowerMultiplier;
     final mainDamage = raw.toInt();
 
     // === 9. 刚猛克阴柔附带震伤(§12.1 #7 v1.4 决议)===
     // 主攻击命中且 attacker=gangMeng / defender=yinRou 时,追加固定 quake_dmg。
     // 穿透守方防御率 + 不被暴击乘(独立加值,不进 raw 乘式)。
     var quakeDamage = 0;
-    final atkSchool = ctx.attackerMainTech.school;
-    final defSchool = ctx.defenderMainTech.school;
-    if (atkSchool == TechniqueSchool.gangMeng &&
-        defSchool == TechniqueSchool.yinRou) {
+    if (attackerSchool == TechniqueSchool.gangMeng &&
+        defenderSchool == TechniqueSchool.yinRou) {
       quakeDamage = n.schoolCounter.gangMengQuake.damage;
     }
     final finalDamage = mainDamage + quakeDamage;
@@ -141,15 +191,15 @@ class DamageCalculator {
     final effects = <String>[];
     if (extraEffect != null) effects.add(extraEffect);
 
-    final breakdown =
-        '(${ctx.attacker.internalForce}*${_fmt(df.internalForceFactor)}'
-        ' + $eqAtkSum'
-        ' + ${ctx.skill.powerMultiplier})'
+    final breakdown = '($attackerInternalForce*${_fmt(df.internalForceFactor)}'
+        ' + $attackerEquipmentAttack'
+        ' + ${skill.powerMultiplier})'
         ' * ${_fmt(cultMult)}'
         ' * ${_fmt(schoolMult)}'
         ' * ${_fmt(critMult)}'
         ' * ${_fmt(defMult)}'
         ' * ${_fmt(realmMult)}'
+        '${attackPowerMultiplier != 1.0 ? ' * ${_fmt(attackPowerMultiplier)}' : ''}'
         ' = $mainDamage'
         '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
         ' [atkLv=$atkLevel,defLv=$defLevel]';
@@ -165,8 +215,8 @@ class DamageCalculator {
       realmDiffDefenderMod: realmDefenderMod,
       cultivationMultiplier: cultMult,
       criticalMultiplier: critMult,
-      defenseRate: defRate,
-      evasionRate: evasion,
+      defenseRate: defenderDefenseRate,
+      evasionRate: defenderEvasionRate,
       appliedEffects: effects,
       formulaBreakdown: breakdown,
     );

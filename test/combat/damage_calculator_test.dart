@@ -570,6 +570,76 @@ void main() {
       expect(r.finalDamage, 650);
     });
   });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // P2-c 双路径收敛:calculateResolved 单一真相源(2026-05-29)
+  // ───────────────────────────────────────────────────────────────────────
+  //
+  // 战斗公式从两份复制(DamageCalculator.calculate / DefaultGroundStrategy.
+  // _calculateInBattle)收敛到唯一 calculateResolved,两 caller 变薄 adapter。
+  // 上方 100+ 测经 calculate 钉死 Character 路径;战斗测试钉死 in-battle 路径。
+  // 本组直接钉死 calculateResolved 核心 + calculate 从不走的 attackPowerMultiplier
+  // 维度(轻功/群战/恩怨烘焙 · 仅 in-battle adapter 传 !=1.0)。
+  group('P2-c calculateResolved 单一真相源', () {
+    test('直接调核心 · primitives → 精确伤害 + breakdown(atkPowerMult=1.0)', () {
+      final n = GameRepository.instance.numbers;
+      // (1000*0.4 + 100 + 500) * 1.0(cult) * 1.0(school) * 1.0(crit)
+      //   * 0.95(def) * 1.0(realm) * 1.0(atkPower) = 950
+      final r = DamageCalculator.calculateResolved(
+        attackerInternalForce: 1000,
+        attackerEquipmentAttack: 100,
+        attackerCultivationLayer: CultivationLayer.chuKui,
+        attackerSchool: TechniqueSchool.gangMeng,
+        defenderSchool: TechniqueSchool.gangMeng, // 同流派 → 1.0
+        attackerRealmTier: RealmTier.sanLiu,
+        attackerRealmLayer: RealmLayer.qiMeng,
+        defenderRealmTier: RealmTier.sanLiu, // 同境界 → realm 1.0
+        defenderRealmLayer: RealmLayer.qiMeng,
+        defenderDefenseRate: 0.05,
+        defenderEvasionRate: 0.0, // 不闪避
+        attackerCriticalRate: 0.0, // 不暴击
+        attackPowerMultiplier: 1.0,
+        skill: _mkSkill(power: 500, type: SkillType.normalAttack),
+        n: n,
+        rng: Random(0),
+      );
+      expect(r.finalDamage, 950);
+      expect(r.formulaBreakdown, contains('(1000*0.4 + 100 + 500)'));
+      expect(r.formulaBreakdown, contains('= 950'));
+      // atkPowerMult=1.0 → 不显额外乘项 → 5 段 " * "
+      expect(' * '.allMatches(r.formulaBreakdown).length, 5);
+    });
+
+    test('attackPowerMultiplier=1.5(in-battle 烘焙)→ 末端乘 1.5 + breakdown 显项', () {
+      final n = GameRepository.instance.numbers;
+      AttackResult call(double atkPowerMult) =>
+          DamageCalculator.calculateResolved(
+            attackerInternalForce: 1000,
+            attackerEquipmentAttack: 100,
+            attackerCultivationLayer: CultivationLayer.chuKui,
+            attackerSchool: TechniqueSchool.gangMeng,
+            defenderSchool: TechniqueSchool.gangMeng,
+            attackerRealmTier: RealmTier.sanLiu,
+            attackerRealmLayer: RealmLayer.qiMeng,
+            defenderRealmTier: RealmTier.sanLiu,
+            defenderRealmLayer: RealmLayer.qiMeng,
+            defenderDefenseRate: 0.05,
+            defenderEvasionRate: 0.0,
+            attackerCriticalRate: 0.0,
+            attackPowerMultiplier: atkPowerMult,
+            skill: _mkSkill(power: 500, type: SkillType.normalAttack),
+            n: n,
+            rng: Random(0),
+          );
+      final base = call(1.0); // 950
+      final boosted = call(1.5); // 950 * 1.5 = 1425
+      expect(base.finalDamage, 950);
+      expect(boosted.finalDamage, 1425);
+      // breakdown 显 atkPowerMult 项 → 6 段 " * "
+      expect(boosted.formulaBreakdown, contains('* 1.5'));
+      expect(' * '.allMatches(boosted.formulaBreakdown).length, 6);
+    });
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
