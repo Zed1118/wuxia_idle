@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · 外部 review 修复批收口 + 根因A 挂机循环重平衡实装 · 1547 测 / 0 analyze**
+> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · 外部 review 修复批收口 + 根因A 挂机循环重平衡实装 + idle_economy 经济曲线验证 · 1548 测 / 0 analyze**
+
+**2026-05-29 根因A 挂机经济曲线验证 idle_economy**(test + doc only · 0 production 改 · 1547→1548 测):新建 `test/tools/idle_economy_test.dart` 量化 72h 挂机 vs 主动战斗在根因A 三维成长速度,断言「可观但不冲淡主动战斗」平衡带(drift 雷达)。**Phase 0 事实修正**:上次「balance_simulator 未接真公式」已过时 — win-rate sim 走 `BattleEngine.runToEnd→DefaultGroundStrategy._calculateInBattle`,P2-c 后即调 `DamageCalculator.calculateResolved` 单一真相源,**伤害公式数学早已是真路径**;残留缺口仅 `_synthPlayer` 硬编码 build(用户拍板本批不动)。**验证结果**:B1 ✅ 72h=360≥默契300、到阈值60h(离线可达人剑合一不秒解锁);B2 设计锚 ✅ 二流 xuanYaPuBu 折 3.5 个 Ch3 Boss(命中目标 3-4);B3 ✅ 五图凝练 0.36-2.0 早期层(有意义 sink);**finding**:B2 低 tier 偏慷慨 — 学徒山林挂满 72h 跳 16 层(早期阈值 50-400 极小 ×2.5),理论可跳过 Ch1-2 大半,留 numbers 取舍待拍(非 bug,test 带宽未拦)。输出 `test/tools/output/idle_economy_2026-05-29.md`。剩:红线值统一到 numbers.yaml + (可选)`_synthPlayer` 升真 build。
 
 **2026-05-29 根因A 挂机循环重平衡实装 B1+B2+B3**(2 commit `a359dc2` spec + `d7ee3f9` 实装 · 1540→1547 测 / 0 analyze · xhigh · 用户拍 3 数值方向):挂机离线收益对中期成长贡献微乎其微(品类硬伤,H2 audit 根因A)。**B1 共鸣度双管**:闭关挂机折算 battleCount 喂出战装备(`resonance.seclusion_battle_count_per_hour=5` · 72h+360)+ 默契阈值 500→300 → 人剑合一离线/中期可及(`seclusion_service.completeRetreat` wire + `entities/character_panel` 阈值测同步 + GDD §6.4 同步)。**B2 闭关 EXP ×2.5**:5 地图 experience_per_hour ×2.5,72h ≈ 3-4 个 Ch3 Boss(原 1.4)(seclusion EXP 级联升层断言 1000 EXP→6 层重算)。**B3 insightPoints 死钱包变 sink**:抽 `CultivationService.applyProgressDelta`(不计 skillUsage)+ 新 `InsightExchangeService` 凝练领悟点→主修修炼度(ratio 1.0)+ `technique_panel`「凝练领悟」入口 + provider。闭关挂机→insightPoints→玩家凝练→修炼度链路(不开学心法 UI,维持 §7.2 scoped)。+7 测(B1 2/B3 5)。红线不破(§5.4 不涉战斗数值)。剩:balance_simulator 改打真公式 + 红线值统一到 numbers.yaml。
 
