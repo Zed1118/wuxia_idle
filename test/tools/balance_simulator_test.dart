@@ -8,7 +8,11 @@
 // 与生产战斗体例镜像:
 //   - GameRepository.loadAllDefs(loader: File) 接 production stages.yaml
 //   - StageBattleSetup.buildEnemyTeam(stage.enemyTeam) 静态构造敌方
-//   - 玩家合成 BattleCharacter:按 stage.requiredRealm 自动 scale build
+//   - 玩家走真 build(2026-05-29 升级 · 用户拍「活跃玩家」模型):造 tier-cap 真
+//     Equipment(从 equipmentDefs · midpoint base · 中等强化 ½ 上限 · 共鸣度默契
+//     battleCount=400)+ tier-cap 主修 Technique(techniqueDefs)+ Attributes(总
+//     ~22)→ BattleCharacter.fromCharacter(生产同一 derived_stats 路径 · founder
+//     buff 享 · 默契解锁人剑合一)。替换旧 _synthPlayer 线性硬编码 scale。
 //   - BattleEngine.runToEnd(initial, rng, maxTicks=200) 推到终态
 //
 // 跑法:flutter test test/tools/balance_simulator_test.dart
@@ -24,13 +28,19 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
-import 'package:wuxia_idle/data/defs/skill_def.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
+import 'package:wuxia_idle/data/defs/equipment_def.dart';
+import 'package:wuxia_idle/data/defs/technique_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/battle/domain/derived_stats.dart' show RealmUtils;
 
 const int _seedsPerStage = 50;
 const int _maxTicks = 200;
@@ -104,9 +114,9 @@ _SimResult _simulateStage(StageDef stage, int seed, GameRepository repo) {
   final tierIndex = RealmTier.values.indexOf(stage.requiredRealm);
   final playerTier = RealmTier.values[(tierIndex + 1).clamp(0, RealmTier.values.length - 1)];
   final players = [
-    _synthPlayer(playerTier, slot: 0, name: '玩家'),
-    _synthPlayer(playerTier, slot: 1, name: '徒弟一'),
-    _synthPlayer(playerTier, slot: 2, name: '徒弟二'),
+    _buildRealPlayer(repo, playerTier, slot: 0, name: '玩家', isFounder: true),
+    _buildRealPlayer(repo, playerTier, slot: 1, name: '徒弟一', isFounder: false),
+    _buildRealPlayer(repo, playerTier, slot: 2, name: '徒弟二', isFounder: false),
   ];
   final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
   final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
@@ -137,75 +147,109 @@ _SimResult _simulateStage(StageDef stage, int seed, GameRepository repo) {
   );
 }
 
-/// 按境界合成玩家 BattleCharacter。数值参 GDD §5.2-5.6 + numbers.yaml 各阶 cap。
-/// 校准 v2(2026-05-29):提升基础数值匹配真玩家进 stage 时的实际 build
-/// (装备 + 心法成长 + 闭关产出累积),3v3 体例。
-BattleCharacter _synthPlayer(RealmTier tier, {required int slot, required String name}) {
-  final tierIndex = RealmTier.values.indexOf(tier);
-  // 玩家进 stage 时通常 HP 拉满 + 装备已强化几次 + 心法 daCheng+ → 数值偏高
-  final maxHp = 5000 + tierIndex * 3500; // 5000 / 8500 / 12000 / 15500 / 19000(接近 §5.4 20000 cap)
-  final maxIf = 2000 + tierIndex * 2200; // 2000 / 4200 / 6400 / 8600 / 10800 / 13000 / 15000
-  final speed = 130 + tierIndex * 30;
-  final eqAtk = 200 + tierIndex * 320; // 200/520/840/1160/1480/1800(接近 §5.4 2000 cap)
-  final defenseRate = 0.05 + tierIndex * 0.05; // 5% → 35%(GDD §5.5)
-  final cultLayer = CultivationLayer.values[(tierIndex * 1.3).round().clamp(0, 8)];
+/// 活跃玩家代表 build(2026-05-29 升真 · 用户拍 B 模型):走生产
+/// [BattleCharacter.fromCharacter] derived_stats 路径,而非旧 _synthPlayer
+/// 线性硬编码 scale。模型「会玩、会配装的活跃玩家」:tier-cap 真装备
+/// (midpoint base + 中等强化 ½ 上限 + 共鸣度默契)+ tier-cap 主修心法 daCheng
+/// + 属性总 ~22 + founder buff(玩家在门派、祖师在世 → 全员享)。
+/// slot 0 = 祖师(isFounder),1-2 = 弟子。
+BattleCharacter _buildRealPlayer(
+  GameRepository repo,
+  RealmTier tier, {
+  required int slot,
+  required String name,
+  required bool isFounder,
+}) {
+  const layer = RealmLayer.huaJing; // 代表性中高层(沿旧 _synthPlayer 体例)
+  const school = TechniqueSchool.gangMeng; // 固定刚猛(流派分布留局限)
+  const moqiBattleCount = 400; // 默契段 [300,2000) → 共鸣 ×1.20 + 解锁人剑合一
+  final numbers = repo.numbers;
+  final realmDef = repo.getRealm(tier, layer);
+  final enhanceLevel =
+      (realmDef.absoluteLevel * 0.5).round(); // 中等强化 = ½ 上限(GDD §6.2 cap=absLevel)
 
-  return BattleCharacter(
-    characterId: 999 + slot,
+  // tier-cap 真装备(weapon/armor/accessory · 从 production equipmentDefs 选)。
+  final eqTierCap = RealmUtils.equipmentTierCapOf(tier);
+  final equipped = <Equipment>[];
+  for (final wantSlot in [
+    EquipmentSlot.weapon,
+    EquipmentSlot.armor,
+    EquipmentSlot.accessory,
+  ]) {
+    final defs = repo.equipmentDefs.values;
+    final EquipmentDef def = defs.firstWhere(
+      (d) => d.tier == eqTierCap && d.slot == wantSlot,
+      orElse: () => defs.firstWhere(
+        (d) => d.slot == wantSlot,
+        orElse: () =>
+            throw StateError('balance_sim: 无 ${wantSlot.name} 装备 def'),
+      ),
+    );
+    equipped.add(Equipment.create(
+      defId: def.id,
+      tier: def.tier,
+      slot: def.slot,
+      obtainedAt: DateTime(2026, 5, 29),
+      obtainedFrom: 'balance_sim',
+      school: school,
+      baseAttack: (def.baseAttackMin + def.baseAttackMax) ~/ 2,
+      baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
+      baseSpeed: (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
+      enhanceLevel: enhanceLevel,
+      battleCount: moqiBattleCount,
+    ));
+  }
+
+  // tier-cap 主修心法(从 production techniqueDefs 选 · defId 须真 →
+  // fromCharacter getTechnique(defId).skillIds 取真招式)。
+  final techTierCap = RealmUtils.techniqueTierCapOf(tier);
+  final defsT = repo.techniqueDefs.values;
+  final TechniqueDef techDef = defsT.firstWhere(
+    (d) => d.tier == techTierCap,
+    orElse: () =>
+        throw StateError('balance_sim: 无 ${techTierCap.name} 心法 def'),
+  );
+  final mainTech = Technique.create(
+    defId: techDef.id,
+    ownerCharacterId: 999 + slot,
+    tier: techDef.tier,
+    school: school,
+    role: TechniqueRole.main,
+    learnedAt: DateTime(2026, 5, 29),
+    cultivationLayer: CultivationLayer.daCheng, // 活跃玩家主修 大成
+  );
+
+  final attributes = Attributes()
+    ..constitution = 6 // 偏血量
+    ..agility = 6 // 偏速度/暴击/闪避
+    ..enlightenment = 5
+    ..fortune = 5; // 总 22(活跃玩家偏上 · §4.1 总和 16-24)
+
+  final character = Character.create(
     name: name,
     realmTier: tier,
-    realmLayer: RealmLayer.huaJing,
-    school: TechniqueSchool.gangMeng,
-    maxHp: maxHp,
-    currentHp: maxHp,
-    maxInternalForce: maxIf,
-    currentInternalForce: maxIf,
-    speed: speed,
-    criticalRate: 0.15, // 玩家有共鸣度 + 武器开锋加成假设
-    evasionRate: 0.05,
-    defenseRate: defenseRate,
-    totalEquipmentAttack: eqAtk,
-    mainCultivationLayer: cultLayer,
-    availableSkills: <SkillDef>[
-      _normalAttack(),
-      _powerSkill(tier),
-    ],
-    skillCooldowns: const {},
-    activeBuffs: const [],
-    actionPoint: 0,
-    isAlive: true,
+    realmLayer: layer,
+    attributes: attributes,
+    rarity: RarityTier.values.first,
+    lineageRole: isFounder ? LineageRole.founder : LineageRole.disciple,
+    createdAt: DateTime(2026, 5, 29),
+    internalForce: realmDef.internalForceMax, // 进战满内力
+    internalForceMax: realmDef.internalForceMax,
+    school: school,
+    isFounder: isFounder,
+    isActive: true,
+  )..id = 999 + slot;
+
+  // founderBuffActive=true:活跃玩家在门派、祖师在世 → 全员享(§12.2 #11
+  // apply_to_disciples_only=false)。生产经 FounderBuffService 算,sim 直给 true。
+  return BattleCharacter.fromCharacter(
+    character: character,
+    equipped: equipped,
+    mainTechnique: mainTech,
+    numbers: numbers,
     teamSide: 0,
     slotIndex: slot,
-  );
-}
-
-SkillDef _normalAttack() => const SkillDef(
-      id: 'sim_normal',
-      name: '普攻',
-      description: '',
-      type: SkillType.normalAttack,
-      powerMultiplier: 500,
-      internalForceCost: 0,
-      cooldownTurns: 0,
-      requiresManualTrigger: false,
-      parentTechniqueDefId: null,
-      visualEffect: '',
-    );
-
-SkillDef _powerSkill(RealmTier tier) {
-  final tierIndex = RealmTier.values.indexOf(tier);
-  final mult = 1000 + tierIndex * 500; // 1000/1500/2000/2500/3000/3500/4000
-  return SkillDef(
-    id: 'sim_power',
-    name: '大招',
-    description: '',
-    type: SkillType.powerSkill,
-    powerMultiplier: mult,
-    internalForceCost: 100,
-    cooldownTurns: 3,
-    requiresManualTrigger: false,
-    parentTechniqueDefId: null,
-    visualEffect: '',
+    founderBuffActive: true,
   );
 }
 
@@ -280,11 +324,17 @@ String _summarize(List<_SimResult> results, List<StageDef> stages) {
   buf.writeln('');
   buf.writeln('## 数据局限');
   buf.writeln('');
-  buf.writeln('- 玩家合成模型简化:1 角色 vs 1-3 敌(不 3v3)· 数值按 RealmTier 线性 scale');
-  buf.writeln('- 不接 Isar(无装备 / 心法搭配 / 师徒 / 共鸣度 / founder buff)');
+  buf.writeln('- **玩家走真 build**(2026-05-29 升级):`BattleCharacter.fromCharacter` '
+      'derived_stats 生产路径 · 活跃玩家模型(tier-cap 真装备 midpoint base + '
+      '中等强化 ½ 上限 + 共鸣默契 ×1.20 解锁人剑合一 + 主修 daCheng + founder buff)');
+  buf.writeln('- **单一代表 build**:只跑「活跃玩家」一档,不验欠配置 floor / '
+      '满配 ceiling 区间(留 C 方案双 build 对照扩展)');
+  buf.writeln('- **不含辅修 synergy**(心法相生):只主修单本,SynergyService 未注入');
   buf.writeln('- 流派固定刚猛 gangMeng · 不验阴柔/灵巧分布');
+  buf.writeln('- **playerTier = requiredRealm + 1**(既有校准偏移「玩家超阶挑战」):'
+      '真 build 下可能与超阶叠加偏易 → 校准复核候选(本批只换 build 真实性不动偏移)');
   buf.writeln('- maxTicks=200 兜底(timeout = 不分胜负)');
   buf.writeln('');
-  buf.writeln('**用途**:卡点 / 秒杀点 **方向性**诊断,精确 tune 需接真玩家路径(Isar 体例)。');
+  buf.writeln('**用途**:卡点 / 秒杀点 **方向性**诊断 · 真 build 后数值更贴近活跃玩家实战。');
   return buf.toString();
 }
