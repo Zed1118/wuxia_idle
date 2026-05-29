@@ -2,23 +2,23 @@
 //
 // M15-16 D4 数值再平衡 PoC · balance_simulator
 //
-// 5h 挂机 Batch A2-A3:跑 30 关 mainline × N seed = ~1500 模拟,统计通关率
-// + 难度曲线 + 卡点/秒杀点诊断。输出 csv 到 test/tools/output/balance_simulation_*.csv。
+// 跑 30 关 mainline × N seed × 2 build profile = 模拟,统计 floor/ceiling 通关率
+// bracket + 难度诊断。输出 csv 到 test/tools/output/balance_simulation_*.csv。
 //
 // 与生产战斗体例镜像:
 //   - GameRepository.loadAllDefs(loader: File) 接 production stages.yaml
 //   - StageBattleSetup.buildEnemyTeam(stage.enemyTeam) 静态构造敌方
-//   - 玩家走真 build(2026-05-29 升级 · 用户拍「活跃玩家」模型):造 tier-cap 真
-//     Equipment(从 equipmentDefs · midpoint base · 中等强化 ½ 上限 · 共鸣度默契
-//     battleCount=400)+ tier-cap 主修 Technique(techniqueDefs)+ Attributes(总
-//     ~22)→ BattleCharacter.fromCharacter(生产同一 derived_stats 路径 · founder
-//     buff 享 · 默契解锁人剑合一)。替换旧 _synthPlayer 线性硬编码 scale。
+//   - 玩家走真 build(2026-05-29 升级):造 tier-cap 真 Equipment(从 equipmentDefs
+//     · midpoint base)+ tier-cap 主修 Technique(techniqueDefs)→
+//     BattleCharacter.fromCharacter(生产同一 derived_stats 路径)。替换旧
+//     _synthPlayer 线性硬编码 scale。**C 方案 floor+ceiling bracket**:每关跑两档
+//     剖面(_BuildProfile · floor 欠配置 / ceiling 活跃玩家),隔离配装/投入轴。
 //   - BattleEngine.runToEnd(initial, rng, maxTicks=200) 推到终态
 //
 // 跑法:flutter test test/tools/balance_simulator_test.dart
 //
 // 输出 csv schema:
-//   stage_id, requiredRealm, isBossStage, chapterIndex, seed,
+//   stage_id, requiredRealm, isBossStage, chapterIndex, profile, seed,
 //   result, ticks, playerHpEnd, enemyHpRemain
 //
 // **不破现有 1519 测族**(纯加新 test,无修改 lib/)。
@@ -67,9 +67,10 @@ void main() {
     final results = <_SimResult>[];
     for (final stage in mainlines) {
       if (stage.enemyTeam.isEmpty) continue; // 剧情关跳过
-      for (var seed = 0; seed < _seedsPerStage; seed++) {
-        final result = _simulateStage(stage, seed, repo);
-        results.add(result);
+      for (final profile in _BuildProfile.values) {
+        for (var seed = 0; seed < _seedsPerStage; seed++) {
+          results.add(_simulateStage(stage, seed, repo, profile));
+        }
       }
     }
 
@@ -91,6 +92,7 @@ class _SimResult {
   final bool isBossStage;
   final int? chapterIndex;
   final int seed;
+  final _BuildProfile profile;
   final String result; // leftWin / rightWin / draw / timeout
   final int ticks;
   final int playerHpEnd;
@@ -102,6 +104,7 @@ class _SimResult {
     required this.isBossStage,
     required this.chapterIndex,
     required this.seed,
+    required this.profile,
     required this.result,
     required this.ticks,
     required this.playerHpEnd,
@@ -109,14 +112,18 @@ class _SimResult {
   });
 }
 
-_SimResult _simulateStage(StageDef stage, int seed, GameRepository repo) {
+_SimResult _simulateStage(
+    StageDef stage, int seed, GameRepository repo, _BuildProfile profile) {
   // 校准 v2:3v3 体例 + 玩家境界 = stage.requiredRealm + 1(玩家通常超阶挑战)
   final tierIndex = RealmTier.values.indexOf(stage.requiredRealm);
   final playerTier = RealmTier.values[(tierIndex + 1).clamp(0, RealmTier.values.length - 1)];
   final players = [
-    _buildRealPlayer(repo, playerTier, slot: 0, name: '玩家', isFounder: true),
-    _buildRealPlayer(repo, playerTier, slot: 1, name: '徒弟一', isFounder: false),
-    _buildRealPlayer(repo, playerTier, slot: 2, name: '徒弟二', isFounder: false),
+    _buildRealPlayer(repo, playerTier,
+        slot: 0, name: '玩家', isFounder: true, profile: profile),
+    _buildRealPlayer(repo, playerTier,
+        slot: 1, name: '徒弟一', isFounder: false, profile: profile),
+    _buildRealPlayer(repo, playerTier,
+        slot: 2, name: '徒弟二', isFounder: false, profile: profile),
   ];
   final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
   final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
@@ -140,6 +147,7 @@ _SimResult _simulateStage(StageDef stage, int seed, GameRepository repo) {
     isBossStage: stage.isBossStage,
     chapterIndex: stage.chapterIndex,
     seed: seed,
+    profile: profile,
     result: resultStr,
     ticks: terminal.tick,
     playerHpEnd: playerHpEnd,
@@ -147,11 +155,21 @@ _SimResult _simulateStage(StageDef stage, int seed, GameRepository repo) {
   );
 }
 
-/// 活跃玩家代表 build(2026-05-29 升真 · 用户拍 B 模型):走生产
+/// sim 玩家 build 剖面(C 方案 floor+ceiling bracket · 2026-05-29):隔离
+/// 「配装/投入」轴,给每关一个 winRate 区间而非单点。
+enum _BuildProfile {
+  floor, // 欠配置/中位:0 强化 + 生疏共鸣 + 无 founder buff + 主修 zhongCheng + 属性 20
+  ceiling, // 活跃玩家:½ 强化 + 默契共鸣 + founder buff + 主修 daCheng + 属性 22
+}
+
+/// 玩家代表 build(2026-05-29 升真 · C 方案 floor+ceiling):走生产
 /// [BattleCharacter.fromCharacter] derived_stats 路径,而非旧 _synthPlayer
-/// 线性硬编码 scale。模型「会玩、会配装的活跃玩家」:tier-cap 真装备
-/// (midpoint base + 中等强化 ½ 上限 + 共鸣度默契)+ tier-cap 主修心法 daCheng
-/// + 属性总 ~22 + founder buff(玩家在门派、祖师在世 → 全员享)。
+/// 线性硬编码 scale。两档剖面隔离「配装/投入」轴(tier 偏移 +1 两档一致,
+/// 只变 build profile):
+///   - ceiling 活跃玩家:tier-cap 装备 ½ 强化 + 共鸣默契 ×1.20 + founder buff
+///     + 主修 daCheng + 属性 22。「会玩、会配装」上限。
+///   - floor 欠配置/中位:同 tier-cap 装备但 0 强化 + 生疏共鸣 ×1.0 + 无 founder
+///     buff + 主修 zhongCheng + 属性 20。「刚达标、没怎么投入」下限。
 /// slot 0 = 祖师(isFounder),1-2 = 弟子。
 BattleCharacter _buildRealPlayer(
   GameRepository repo,
@@ -159,14 +177,17 @@ BattleCharacter _buildRealPlayer(
   required int slot,
   required String name,
   required bool isFounder,
+  required _BuildProfile profile,
 }) {
   const layer = RealmLayer.huaJing; // 代表性中高层(沿旧 _synthPlayer 体例)
   const school = TechniqueSchool.gangMeng; // 固定刚猛(流派分布留局限)
-  const moqiBattleCount = 400; // 默契段 [300,2000) → 共鸣 ×1.20 + 解锁人剑合一
+  final ceiling = profile == _BuildProfile.ceiling;
   final numbers = repo.numbers;
   final realmDef = repo.getRealm(tier, layer);
-  final enhanceLevel =
-      (realmDef.absoluteLevel * 0.5).round(); // 中等强化 = ½ 上限(GDD §6.2 cap=absLevel)
+  // ceiling 中等强化 ½ 上限(GDD §6.2 cap=absLevel)/ floor 0 强化
+  final enhanceLevel = ceiling ? (realmDef.absoluteLevel * 0.5).round() : 0;
+  // ceiling 默契段 [300,2000) ×1.20 解锁人剑合一 / floor 生疏 ×1.0
+  final battleCount = ceiling ? 400 : 0;
 
   // tier-cap 真装备(weapon/armor/accessory · 从 production equipmentDefs 选)。
   final eqTierCap = RealmUtils.equipmentTierCapOf(tier);
@@ -196,7 +217,7 @@ BattleCharacter _buildRealPlayer(
       baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
       baseSpeed: (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
       enhanceLevel: enhanceLevel,
-      battleCount: moqiBattleCount,
+      battleCount: battleCount,
     ));
   }
 
@@ -216,14 +237,17 @@ BattleCharacter _buildRealPlayer(
     school: school,
     role: TechniqueRole.main,
     learnedAt: DateTime(2026, 5, 29),
-    cultivationLayer: CultivationLayer.daCheng, // 活跃玩家主修 大成
+    // ceiling 主修 大成 / floor 中成(§4.3 修炼度 9 层)
+    cultivationLayer:
+        ceiling ? CultivationLayer.daCheng : CultivationLayer.zhongCheng,
   );
 
+  // ceiling 属性 22(投入偏上)/ floor 20(均值 · §4.1 μ=5.5 总和 16-24)
   final attributes = Attributes()
-    ..constitution = 6 // 偏血量
-    ..agility = 6 // 偏速度/暴击/闪避
+    ..constitution = ceiling ? 6 : 5
+    ..agility = ceiling ? 6 : 5
     ..enlightenment = 5
-    ..fortune = 5; // 总 22(活跃玩家偏上 · §4.1 总和 16-24)
+    ..fortune = 5;
 
   final character = Character.create(
     name: name,
@@ -240,8 +264,8 @@ BattleCharacter _buildRealPlayer(
     isActive: true,
   )..id = 999 + slot;
 
-  // founderBuffActive=true:活跃玩家在门派、祖师在世 → 全员享(§12.2 #11
-  // apply_to_disciples_only=false)。生产经 FounderBuffService 算,sim 直给 true。
+  // ceiling=玩家在门派、祖师在世 → 全员享 founder buff(§12.2 #11
+  // apply_to_disciples_only=false);floor=未享(没怎么投入门派)。
   return BattleCharacter.fromCharacter(
     character: character,
     equipped: equipped,
@@ -249,18 +273,18 @@ BattleCharacter _buildRealPlayer(
     numbers: numbers,
     teamSide: 0,
     slotIndex: slot,
-    founderBuffActive: true,
+    founderBuffActive: ceiling,
   );
 }
 
 void _writeCsv(String path, List<_SimResult> results) {
   final buf = StringBuffer();
-  buf.writeln('stage_id,requiredRealm,isBossStage,chapterIndex,seed,'
+  buf.writeln('stage_id,requiredRealm,isBossStage,chapterIndex,profile,seed,'
       'result,ticks,playerHpEnd,enemyHpRemain');
   for (final r in results) {
     buf.writeln('${r.stageId},${r.requiredRealm},${r.isBossStage},'
-        '${r.chapterIndex ?? ""},${r.seed},${r.result},${r.ticks},'
-        '${r.playerHpEnd},${r.enemyHpRemain}');
+        '${r.chapterIndex ?? ""},${r.profile.name},${r.seed},${r.result},'
+        '${r.ticks},${r.playerHpEnd},${r.enemyHpRemain}');
   }
   File(path).writeAsStringSync(buf.toString());
 }
@@ -274,67 +298,75 @@ String _summarize(List<_SimResult> results, List<StageDef> stages) {
   final buf = StringBuffer();
   buf.writeln('# Balance Simulation Summary · 2026-05-29');
   buf.writeln('');
-  buf.writeln('5h 挂机 Batch A3 · $_seedsPerStage seed × ${byStage.length} mainline = '
-      '${results.length} runs · maxTicks=$_maxTicks');
+  buf.writeln('$_seedsPerStage seed × ${byStage.length} mainline × 2 profile'
+      '(floor/ceiling) = ${results.length} runs · maxTicks=$_maxTicks');
   buf.writeln('');
-  buf.writeln('## 通关率(玩家胜率 = leftWin / total)');
-  buf.writeln('');
-  buf.writeln('| stage_id | requiredRealm | isBoss | chap | leftWin | rightWin | draw | timeout | winRate | avgTicks |');
-  buf.writeln('|---|---|---|---|---|---|---|---|---|---|');
+  // 每关分 floor / ceiling 两档算 winRate(C 方案 bracket)。
+  double winRateOf(List<_SimResult> list, _BuildProfile p) {
+    final sub = list.where((r) => r.profile == p).toList();
+    if (sub.isEmpty) return double.nan;
+    return sub.where((r) => r.result == 'leftWin').length / sub.length;
+  }
 
-  final cardinals = <String, double>{};
+  buf.writeln('## 通关率 bracket(floor 欠配置 — ceiling 活跃玩家)');
+  buf.writeln('');
+  buf.writeln('| stage_id | requiredRealm | isBoss | chap | floor winRate | ceiling winRate |');
+  buf.writeln('|---|---|---|---|---|---|');
+
+  final floorWin = <String, double>{};
+  final ceilWin = <String, double>{};
   for (final stage in stages) {
     if (stage.enemyTeam.isEmpty) continue;
     final list = byStage[stage.id] ?? [];
     if (list.isEmpty) continue;
-    final left = list.where((r) => r.result == 'leftWin').length;
-    final right = list.where((r) => r.result == 'rightWin').length;
-    final draw = list.where((r) => r.result == 'draw').length;
-    final timeout = list.where((r) => r.result == 'timeout').length;
-    final winRate = left / list.length;
-    final avgTicks = list.fold<int>(0, (s, r) => s + r.ticks) / list.length;
-    cardinals[stage.id] = winRate;
+    final fw = winRateOf(list, _BuildProfile.floor);
+    final cw = winRateOf(list, _BuildProfile.ceiling);
+    floorWin[stage.id] = fw;
+    ceilWin[stage.id] = cw;
     buf.writeln('| ${stage.id} | ${stage.requiredRealm.name} | '
         '${stage.isBossStage ? "Boss" : "—"} | ${stage.chapterIndex ?? "—"} | '
-        '$left | $right | $draw | $timeout | '
-        '${(winRate * 100).toStringAsFixed(1)}% | ${avgTicks.toStringAsFixed(1)} |');
+        '${(fw * 100).toStringAsFixed(1)}% | ${(cw * 100).toStringAsFixed(1)}% |');
   }
 
   buf.writeln('');
-  buf.writeln('## 卡点 / 秒杀点诊断');
+  buf.writeln('## 难度诊断(bracket 解读)');
   buf.writeln('');
-  buf.writeln('- **卡点**(winRate < 30%):玩家难过 → 数值上调候选');
-  for (final entry in cardinals.entries) {
-    if (entry.value < 0.30) {
-      buf.writeln('  - ${entry.key}:${(entry.value * 100).toStringAsFixed(1)}%');
+  buf.writeln('- **过难**(连 ceiling 活跃玩家都 < 50%):满配玩家都难过 → 数值偏高,上调候选');
+  for (final id in ceilWin.keys) {
+    if (ceilWin[id]! < 0.50) {
+      buf.writeln('  - $id:floor ${(floorWin[id]! * 100).toStringAsFixed(0)}% / '
+          'ceiling ${(ceilWin[id]! * 100).toStringAsFixed(0)}%');
     }
   }
   buf.writeln('');
-  buf.writeln('- **秒杀点**(winRate > 95%):玩家无脑过 → 数值下调候选(若是 Boss)');
-  for (final entry in cardinals.entries) {
-    if (entry.value > 0.95) {
-      buf.writeln('  - ${entry.key}:${(entry.value * 100).toStringAsFixed(1)}%');
+  buf.writeln('- **过易**(连 floor 欠配置玩家都 > 90%):欠配置玩家都碾压 → 数值偏低,下调候选(尤其 Boss)');
+  for (final id in floorWin.keys) {
+    if (floorWin[id]! > 0.90) {
+      buf.writeln('  - $id:floor ${(floorWin[id]! * 100).toStringAsFixed(0)}% / '
+          'ceiling ${(ceilWin[id]! * 100).toStringAsFixed(0)}%');
     }
   }
   buf.writeln('');
-  buf.writeln('## 期望区间');
+  buf.writeln('- **健康**:floor 偏低-中 + ceiling 中高-高 = 配装/投入有意义(欠配置有挑战、满配顺畅)。');
   buf.writeln('');
-  buf.writeln('- 普通关 winRate ∈ [60%, 90%](玩家上手有挑战不卡死)');
-  buf.writeln('- Boss 关 winRate ∈ [40%, 70%](章末压力 + 留余裕)');
+  buf.writeln('## 期望区间(参考)');
+  buf.writeln('');
+  buf.writeln('- 普通关:floor ∈ [40%, 75%] · ceiling ∈ [75%, 95%]');
+  buf.writeln('- Boss 关:floor ∈ [20%, 55%] · ceiling ∈ [55%, 85%]');
   buf.writeln('');
   buf.writeln('## 数据局限');
   buf.writeln('');
-  buf.writeln('- **玩家走真 build**(2026-05-29 升级):`BattleCharacter.fromCharacter` '
-      'derived_stats 生产路径 · 活跃玩家模型(tier-cap 真装备 midpoint base + '
-      '中等强化 ½ 上限 + 共鸣默契 ×1.20 解锁人剑合一 + 主修 daCheng + founder buff)');
-  buf.writeln('- **单一代表 build**:只跑「活跃玩家」一档,不验欠配置 floor / '
-      '满配 ceiling 区间(留 C 方案双 build 对照扩展)');
+  buf.writeln('- **玩家走真 build**(`BattleCharacter.fromCharacter` derived_stats '
+      '生产路径)· **C 方案 floor+ceiling bracket**:floor 欠配置(0 强化/生疏共鸣/'
+      '无 founder buff/zhongCheng/属性 20)— ceiling 活跃玩家(½ 强化/默契 ×1.20/'
+      'founder buff/daCheng/属性 22),隔离配装/投入轴');
   buf.writeln('- **不含辅修 synergy**(心法相生):只主修单本,SynergyService 未注入');
   buf.writeln('- 流派固定刚猛 gangMeng · 不验阴柔/灵巧分布');
   buf.writeln('- **playerTier = requiredRealm + 1**(既有校准偏移「玩家超阶挑战」):'
-      '真 build 下可能与超阶叠加偏易 → 校准复核候选(本批只换 build 真实性不动偏移)');
+      '两档一致,只隔离 build profile · 真 build 下超阶偏移待校准复核');
   buf.writeln('- maxTicks=200 兜底(timeout = 不分胜负)');
   buf.writeln('');
-  buf.writeln('**用途**:卡点 / 秒杀点 **方向性**诊断 · 真 build 后数值更贴近活跃玩家实战。');
+  buf.writeln('**用途**:难度 bracket **方向性**诊断 · floor/ceiling 区间判断配装是否有意义、'
+      '何处过易(连 floor 都碾压)/过难(连 ceiling 都难过)。');
   return buf.toString();
 }
