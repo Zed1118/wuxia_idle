@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · H2 小套餐实装 · D 数值再平衡推进 · 1534 测 / 0 analyze**
+> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · 外部 review 修复批推进(P1-b/P1-a 收口) · 1537 测 / 0 analyze**
+
+**2026-05-29 外部 review P1-a 飞升 auto_swap 三系锁死修复**(commit `559455f` · TDD · 1535→1537 测 / 0 analyze):`performAscend` 副作用 4 auto_swap 直写 `disciple.equipped{Slot}Id` 无 canEquip → 武圣神物可自动装到低境界徒弟,破 §5.3(师承遗物不例外)。加 `Equipment.isEquippableAtRealm(RealmTier)` 域规则(`tier.index ≤ realm.index`)+ auto_swap 上身前守卫(不够阶只转 owner 入背包不上身)+ R5.11 红线测 2 测 + R5.6/R5.7/R5.10 收装徒弟 boost 够阶(原断言建立在违规行为上)。外部 review 修复批剩:P2-c 公式统一(根因A 前置)/ P2-a/b 健壮性 / P3 文档 drift / 根因A 挂机循环重平衡。
 
 **2026-05-29 H3 后期挑战 audit + A2 🔴 修复**(2 commit `0cd5c81` audit + `20d7273` fix · 1534 测维持 / 0 analyze):4 并行子 agent Phase 0 grep(Ch4-6 主线/心魔/群战+轻功/飞升)→ `docs/handoff/h3_lategame_audit_2026-05-29.md`(~105 行)。**后期整体远比中期健康**(大量 🟢:难度曲线+红线+叙事接线全成熟,Ch4-6 35 narrative 0 dangling)。**唯一 🔴 = A2 多代飞升循环断裂**:`performAscend` 真传位漏写 `save.founderCharacterId=promotedDiscipleId` → gen2「祖师不在出战阵容」永久 blocked、被 R5.6/8/10 测试手动 setup 掩盖 · 主控 grep 复核铁证 + 红绿修复(1 行 production + 删测试 setup 暴露真实闸门 + R5.6 防回退断言)。其余 🟡 polish(后期入口境界门控 §5.7 / 轻功+群战解锁撞同关 stage_06_05 / Ch6→飞升路标)并入后续 polish 批。**下一步:根因A 挂机循环重平衡(需先讨论数值方向)**。
 
