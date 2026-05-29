@@ -9,6 +9,8 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../dispel/application/dispel_service.dart';
 import '../../dispel/application/dispel_service_providers.dart';
+import '../../cultivation/application/insight_exchange_service.dart';
+import '../../cultivation/application/insight_exchange_service_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import 'dispel_dialog.dart';
@@ -257,6 +259,19 @@ class _TechniqueTile extends ConsumerWidget {
                   ),
                   child: const Text(UiStrings.setAsMainButton),
                 ),
+              // 根因A:主修可凝练领悟点(闭关挂机攒的 insightPoints)兑换修炼度。
+              if (isMain)
+                TextButton(
+                  onPressed: () => _onRefineInsight(context, ref),
+                  style: TextButton.styleFrom(
+                    foregroundColor: schoolColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                  ),
+                  child: const Text(UiStrings.refineInsightButton),
+                ),
             ],
           ),
         ],
@@ -310,6 +325,60 @@ class _TechniqueTile extends ConsumerWidget {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text(UiStrings.dispelSuccess)),
+    );
+  }
+
+  /// 根因A:凝练领悟点 → 主修修炼度。0 点时提示「闭关挂机可得」,>0 时弹
+  /// 二确 dialog「全部凝练」→ [InsightExchangeService.refine] → invalidate + SnackBar。
+  Future<void> _onRefineInsight(BuildContext context, WidgetRef ref) async {
+    final points = character.insightPoints;
+    if (points <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.refineInsightNoPoints)),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text(UiStrings.refineInsightTitle),
+        content: Text(UiStrings.refineInsightBody(points)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(UiStrings.refineInsightConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    final svc = ref.read(insightExchangeServiceProvider);
+    if (svc == null) return; // 测试旁路:未 init Isar
+    final result =
+        await svc.refine(characterId: character.id, insightSpend: points);
+    if (result.status != InsightRefineStatus.success) return;
+
+    ref.invalidate(characterByIdProvider(character.id));
+    ref.invalidate(characterAllTechniquesProvider(character.id));
+    ref.invalidate(techniqueByIdProvider(technique.id));
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          UiStrings.refineInsightSuccess(
+            result.progressGained,
+            leveledUp: result.didLevelUp,
+          ),
+        ),
+      ),
     );
   }
 }

@@ -342,6 +342,25 @@ class SeclusionService {
         if (outputs.techniqueLearnPoints > 0) {
           ch.insightPoints += outputs.techniqueLearnPoints;
         }
+        // 根因A(2026-05-29):闭关挂机折算 battleCount 喂出战装备共鸣度
+        // (人剑合一离线可推进)。rate × actualHours,加到 3 件出战装备。
+        final bcGain = (GameRepository
+                    .instance.numbers.resonanceSeclusionBattleCountPerHour *
+                outputs.actualHours)
+            .floor();
+        if (bcGain > 0) {
+          for (final eqId in [
+            ch.equippedWeaponId,
+            ch.equippedArmorId,
+            ch.equippedAccessoryId,
+          ]) {
+            if (eqId == null) continue;
+            final eq = await isar.equipments.get(eqId);
+            if (eq == null) continue;
+            eq.battleCount += bcGain;
+            await isar.equipments.put(eq);
+          }
+        }
         if (outputs.experiencePoints > 0) {
           // P2.2 §12.1 心魔关 unlock 拦截 hook(Batch 2.2.B):wuSheng 各 layer
           // 升前查 inner_demon stage cleared 集,未通则 EXP 留账不消费(玩家

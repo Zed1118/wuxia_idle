@@ -212,10 +212,12 @@ void main() {
 
   // ── 用例 3：共鸣阶段中文 ──────────────────────────────────────────────
 
-  testWidgets('battleCount 跨阶 30 / 300 / 1000 → 生疏 / 趁手 / 默契', (tester) async {
+  // 根因A(2026-05-29):默契边界 500→300,趁手 [100,300)。原 300 现属默契,
+  // 改用 200 取趁手段(生疏 30 / 趁手 200 / 默契 1000)。
+  testWidgets('battleCount 跨阶 30 / 200 / 1000 → 生疏 / 趁手 / 默契', (tester) async {
     final character = mkCharacter(weaponId: 10, armorId: 11, accessoryId: 12);
     final w = mkEquipment(id: 10, slot: EquipmentSlot.weapon, battleCount: 30);
-    final a = mkEquipment(id: 11, slot: EquipmentSlot.armor, battleCount: 300);
+    final a = mkEquipment(id: 11, slot: EquipmentSlot.armor, battleCount: 200);
     final c = mkEquipment(
       id: 12,
       slot: EquipmentSlot.accessory,

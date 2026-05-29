@@ -276,6 +276,20 @@ class UiStrings {
   static const String dispelConfirm = '确认散功';
   static const String dispelSuccess = '散功完成';
 
+  // 凝练领悟（根因A 2026-05-29：insightPoints 兑换主修修炼度 sink）
+  static const String refineInsightButton = '凝练领悟';
+  static const String refineInsightTitle = '凝练领悟';
+
+  /// 凝练 dialog 正文:`将 X 点领悟点凝入主修修炼度。`
+  static String refineInsightBody(int insightPoints) =>
+      '将 $insightPoints 点领悟点凝入主修修炼度。';
+  static const String refineInsightConfirm = '全部凝练';
+
+  /// 凝练成功 SnackBar:`凝练 +X 修炼度`(升层时追加)。
+  static String refineInsightSuccess(int progress, {bool leveledUp = false}) =>
+      leveledUp ? '凝练 +$progress 修炼度 · 突破一层！' : '凝练 +$progress 修炼度';
+  static const String refineInsightNoPoints = '没有可凝练的领悟点（闭关挂机可得）';
+
   /// 散功代价 · 内力：`内力 X → Y`。
   static String dispelCostInternalForce(int before, int after) =>
       '内力 $before → $after';
