@@ -29,3 +29,8 @@
 3. 决策上述 B 类
 
 > 安全自主任务池已见底(round-1/round-2 双轮消化完)。后续多需用户方向或设计拍板。
+
+## 验证补记(overnight 后段)
+- **对抗式 review 5 批 diff**(独立 agent 逐字节核对 28 文件):**0 红线违规 / 0 功能 bug / 0 schema 越界 / 0 字面错迁**;enum 映射、文案 outcome 对齐、picker 改动边界全核实无误。质量可靠。
+- review 唯一动手项已修:`gu_dao_chi_jian.yaml:7` 两处半角逗号→全角(`b6f69ae`,Unicode 码点精确替换)。
+- 🔄 **主线白屏代码侧诊断进行中**:Mac 无法复现(无 Windows build),从代码侧找 ChapterListScreen 白屏失败模式 + 根因假设,结果将更新本 doc / 见下次会话。
