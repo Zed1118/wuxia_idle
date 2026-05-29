@@ -59,6 +59,11 @@ class UiStrings {
   static const String mainMenuSocialLockedHint = '主线第一章通关后开放';
   // H1 批1 §5.6:全新存档默认门派名(原 onboarding 硬编码迁出)。
   static const String defaultSectName = '我的门派';
+  // H1 批2:装备穿戴 picker(玩家手动装备入口)。
+  static const String equipPickerTitle = '选择装备';
+  static const String equipPickerEmpty = '背包暂无该部位可用装备';
+  static const String equipUnequip = '卸下当前装备';
+  static const String equipLockedByRealm = '境界不足,无法装备(三系锁死)';
   static const String mainMenuLineage = '师徒名单';
   static const String mainMenuLineageHint = '查看祖师与弟子的传承链路';
 

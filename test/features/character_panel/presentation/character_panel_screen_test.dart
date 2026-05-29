@@ -10,7 +10,9 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
+import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/character_panel_screen.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 /// T28 角色面板 widget 测试（phase2_tasks.md §407）。
 ///
@@ -567,5 +569,45 @@ void main() {
     // gen1 prev.length=1 不触发 > 1 阈值 · 不应显示任何 N 代传承 chip
     expect(find.textContaining('代传承'), findsNothing,
         reason: 'gen1 边界 · 阈值 > 1 严守');
+  });
+
+  // H1 批2:装备槽可点 → picker 打开(玩家手动穿戴入口接线守护)。
+  testWidgets('点击空装备槽 → 弹出装备 picker(allEquipments 空 → 空态文案)',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final founder = mkCharacter(); // 3 槽全空
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          activeCharacterIdsProvider.overrideWith((ref) async => [founder.id]),
+          characterByIdProvider(founder.id).overrideWith((ref) async => founder),
+          // 空背包 → picker data 分支走空态(不触 GameRepository.getEquipment)。
+          allEquipmentsProvider.overrideWith((ref) async => <Equipment>[]),
+        ],
+        child: MaterialApp(home: CharacterPanelScreen(characterId: founder.id)),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    // 点第一个空槽(InkWell 包裹 _EquipmentSlotTile 的「未装备」占位)。
+    await tester.tap(
+      find
+          .ancestor(
+            of: find.text(UiStrings.slotEmpty).first,
+            matching: find.byType(InkWell),
+          )
+          .first,
+    );
+    await tester.pump();
+    await tester.pump();
+
+    // picker bottom sheet 打开:标题 + 空态文案。
+    expect(find.textContaining(UiStrings.equipPickerTitle), findsOneWidget);
+    expect(find.text(UiStrings.equipPickerEmpty), findsOneWidget);
   });
 }
