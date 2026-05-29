@@ -603,6 +603,9 @@ class UiStrings {
   static String seclusionMojianshi(int n) => '磨剑石 × $n';
   static String seclusionInternalForce(int n) => '内力 +$n';
   static String seclusionInsightPoints(int n) => '心法领悟点 +$n';
+  // 根因A B3 sink 引导(2026-05-29):结算屏 insightPoints>0 时提示去「心法面板」
+  // 凝练为修炼度,让死钱包→修炼度路径更显(§5.7 气泡提示,非教程弹窗)。
+  static const String seclusionInsightHint = '领悟点可在「心法面板」凝练为修炼度';
   static String seclusionExperience(int n) => '经验 +$n';
   static String seclusionAdvancement(String realmAfter, int layers) =>
       layers == 1 ? '突破至 $realmAfter' : '连破 $layers 层 → $realmAfter';
