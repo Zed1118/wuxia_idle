@@ -90,6 +90,14 @@ combat:
     agility_per_point_rate: 0.003    # 每点身法 +0.3% 闪避率
     max_rate: 0.30                   # 闪避率硬上限 30%
 
+  # --- 敌人合成默认值（P2-a/b 外部 review：从 stage_battle_setup hardcode 抽出，§5.6 不硬编码）---
+  # 敌人不持装备/心法，EnemyDef → BattleCharacter 时用统一默认。
+  # 当前为纯抽取（值与原 hardcode 一致，零行为变化）；按境界缩放的平衡调整留根因A 重平衡批。
+  enemy_defaults:
+    internal_force: 1000             # maxInternalForce / currentInternalForce（中等大招池）
+    critical_rate: 0.05              # 基础暴击率
+    evasion_rate: 0.05               # 基础闪避率
+
 # =============================================================================
 # 2. 49 级境界系统
 # =============================================================================

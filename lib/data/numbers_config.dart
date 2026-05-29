@@ -990,6 +990,7 @@ class CombatNumbers {
   final SpeedFormula speedFormula;
   final CriticalConfig critical;
   final EvasionConfig evasion;
+  final EnemyDefaults enemyDefaults;
 
   const CombatNumbers({
     required this.damageFormula,
@@ -997,6 +998,7 @@ class CombatNumbers {
     required this.speedFormula,
     required this.critical,
     required this.evasion,
+    required this.enemyDefaults,
   });
 
   factory CombatNumbers.fromYaml(Map<String, dynamic> y) {
@@ -1016,6 +1018,33 @@ class CombatNumbers {
       evasion: EvasionConfig.fromYaml(
         y['evasion'] as Map<String, dynamic>,
       ),
+      enemyDefaults: EnemyDefaults.fromYaml(
+        y['enemy_defaults'] as Map<String, dynamic>,
+      ),
+    );
+  }
+}
+
+/// 敌人合成默认值（numbers.yaml `combat.enemy_defaults`，P2-a/b 外部 review）。
+///
+/// 敌人不持装备/心法，[EnemyDef] → BattleCharacter 时这些字段用统一默认；
+/// 从 `stage_battle_setup.dart` 的 hardcode 抽出以遵守 §5.6 不硬编码。
+class EnemyDefaults {
+  final int internalForce;
+  final double criticalRate;
+  final double evasionRate;
+
+  const EnemyDefaults({
+    required this.internalForce,
+    required this.criticalRate,
+    required this.evasionRate,
+  });
+
+  factory EnemyDefaults.fromYaml(Map<String, dynamic> y) {
+    return EnemyDefaults(
+      internalForce: (y['internal_force'] as num).toInt(),
+      criticalRate: (y['critical_rate'] as num).toDouble(),
+      evasionRate: (y['evasion_rate'] as num).toDouble(),
     );
   }
 }

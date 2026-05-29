@@ -258,9 +258,9 @@ class StageBattleSetup {
   /// EnemyDef → BattleCharacter。
   ///
   /// 敌人不持装备/心法，全靠 yaml `baseHp / baseAttack / baseSpeed`：
-  /// - `maxInternalForce / currentInternalForce` 默认 1000（中等大招池）
+  /// - `maxInternalForce / currentInternalForce` / `criticalRate / evasionRate`
+  ///   取 `numbers.yaml combat.enemy_defaults`（P2-a/b：从 hardcode 抽出，§5.6）
   /// - `mainCultivationLayer` 默认 [CultivationLayer.daCheng]（中等加成）
-  /// - `criticalRate / evasionRate` 默认 0.05（基础值）
   /// - `totalEquipmentAttack` = `baseAttack`（直接当装备攻击灌入伤害公式）
   /// - `characterId` 用 `-(slotIndex+1)` 避免与玩家 Isar id 冲突
   static BattleCharacter _enemyToBattle({
@@ -271,6 +271,7 @@ class StageBattleSetup {
     final skills = enemy.skillIds
         .map((id) => GameRepository.instance.getSkill(id))
         .toList(growable: false);
+    final enemyDefaults = GameRepository.instance.numbers.combat.enemyDefaults;
     return BattleCharacter(
       characterId: characterIdOverride ?? -(slotIndex + 1),
       name: enemy.name,
@@ -279,11 +280,11 @@ class StageBattleSetup {
       school: enemy.school,
       maxHp: enemy.baseHp,
       currentHp: enemy.baseHp,
-      maxInternalForce: 1000,
-      currentInternalForce: 1000,
+      maxInternalForce: enemyDefaults.internalForce,
+      currentInternalForce: enemyDefaults.internalForce,
       speed: enemy.baseSpeed,
-      criticalRate: 0.05,
-      evasionRate: 0.05,
+      criticalRate: enemyDefaults.criticalRate,
+      evasionRate: enemyDefaults.evasionRate,
       defenseRate: RealmUtils.defenseRateOf(enemy.realmTier),
       totalEquipmentAttack: enemy.baseAttack,
       mainCultivationLayer: CultivationLayer.daCheng,
