@@ -26,7 +26,7 @@ class TowerFloorCard extends StatelessWidget {
   final TowerFloorEntry entry;
 
   /// 发起挑战回调（available 直接调用；cleared 用户确认重打后调用）。
-  /// 屏幕层负责 T43 前的 SnackBar 占位，T43 落地后改 push。
+  /// 屏幕层据此 push 进入 TowerEntryFlow。
   final VoidCallback onChallenge;
 
   @override

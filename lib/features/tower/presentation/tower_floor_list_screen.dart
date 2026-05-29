@@ -16,7 +16,7 @@ import 'tower_floor_card.dart';
 ///
 /// 顶部进度卡显示已通层数 / 总尝试 / 失败次数。
 /// 主体 30 行 [TowerFloorCard]，首次进入自动滚到 available 层（一次性）。
-/// 点 available 弹 SnackBar 占位（T43 落地后改 push TowerEntryFlow）。
+/// 点 available push 进入 TowerEntryFlow。
 @Dependencies([towerProgress])
 class TowerFloorListScreen extends ConsumerStatefulWidget {
   const TowerFloorListScreen({super.key});
