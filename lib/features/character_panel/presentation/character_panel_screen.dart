@@ -595,6 +595,7 @@ class _EquipmentSection extends ConsumerWidget {
       onTap: () => showModalBottomSheet<void>(
         context: context,
         backgroundColor: WuxiaColors.panel,
+        isDismissible: true,
         builder: (_) => _EquipPickerSheet(
           character: character,
           slot: slot,
@@ -664,14 +665,28 @@ class _EquipPickerSheet extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              '${UiStrings.equipPickerTitle} · ${EnumL10n.equipmentSlot(slot)}',
-              style: const TextStyle(
-                color: WuxiaColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
+            padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${UiStrings.equipPickerTitle} · ${EnumL10n.equipmentSlot(slot)}',
+                    style: const TextStyle(
+                      color: WuxiaColors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                // H1 批3:始终可见的显式关闭入口(空态也有出口,
+                // 修「空 picker 无法关闭卡死」· Pen 验收确诊)。
+                IconButton(
+                  icon: const Icon(Icons.close,
+                      color: WuxiaColors.textSecondary),
+                  tooltip: UiStrings.equipPickerClose,
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
             ),
           ),
           if (currentId != null)
