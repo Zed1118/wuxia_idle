@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/character_providers.dart';
+import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/isar_setup.dart';
 import '../application/phase2_seed_service.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../character_panel/application/lineage_info_provider.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
+import '../../encounter/application/encounter_service_providers.dart';
 import '../../festival/application/festival_service_providers.dart';
+import '../../inheritance/application/founder_buff_providers.dart';
 import '../../inventory/presentation/inventory_screen.dart';
+import '../../mainline/application/mainline_providers.dart';
+import '../../recruitment/application/recruitment_providers.dart';
 import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
+import '../../tower/application/tower_providers.dart';
 import 'encounter_debug_picker.dart';
 
 /// Phase 2 调试场景菜单（phase2_tasks.md T32 §492-509 子提交 3b/3d）。
@@ -23,17 +31,44 @@ import 'encounter_debug_picker.dart';
 ///
 /// **错误兜底**：种子失败弹 SnackBar 显示原因。共用 `_seedAndPush` 帮手把
 /// `await seed → if-mounted push` 串起来，避免在 callback 里散写。
-class Phase2TestMenu extends StatefulWidget {
+class Phase2TestMenu extends ConsumerStatefulWidget {
   const Phase2TestMenu({super.key});
 
   @override
-  State<Phase2TestMenu> createState() => _Phase2TestMenuState();
+  ConsumerState<Phase2TestMenu> createState() => _Phase2TestMenuState();
 }
 
-class _Phase2TestMenuState extends State<Phase2TestMenu> {
+class _Phase2TestMenuState extends ConsumerState<Phase2TestMenu> {
   static const int _defaultCharacterId = 1;
 
   bool _busy = false;
+
+  /// 各 seed 直改 Isar 行（Character / Equipment / Technique / InventoryItem /
+  /// MainlineProgress / TowerProgress / EncounterProgress / SaveData）绕过
+  /// Riverpod，UI 的 FutureProvider 缓存仍持旧 `AsyncData`。seed 完成后逐个
+  /// invalidate 覆盖 seed 改动面的 provider，让目标屏读到真实数据（debug-only
+  /// 路径，宁全勿漏：多刷一次零害）。StreamProvider（如 sectMembersProvider /
+  /// currentSectProvider）watch Isar 自动刷新，不在此列。
+  void _invalidateSeedAffectedProviders() {
+    // 进度类（FutureProvider，不 watch Isar）
+    ref.invalidate(mainlineProgressProvider);
+    ref.invalidate(towerProgressProvider);
+    ref.invalidate(currentEncounterProgressProvider);
+    // 角色 / 装备 / 心法（family 整体 invalidate）
+    ref.invalidate(activeCharacterIdsProvider);
+    ref.invalidate(characterByIdProvider);
+    ref.invalidate(equipmentByIdProvider);
+    ref.invalidate(techniqueByIdProvider);
+    ref.invalidate(characterAllTechniquesProvider);
+    // 仓库 / 物料
+    ref.invalidate(allEquipmentsProvider);
+    ref.invalidate(allInventoryItemsProvider);
+    ref.invalidate(inventoryQuantityByTypeProvider);
+    // 传承 / 招募 / 祖师 buff 派生
+    ref.invalidate(lineageInfoProvider);
+    ref.invalidate(recruitedDiscipleIdsProvider);
+    ref.invalidate(founderBuffActiveProvider);
+  }
 
   Future<void> _seedAndPush(
     Future<void> Function() seed,
@@ -44,6 +79,7 @@ class _Phase2TestMenuState extends State<Phase2TestMenu> {
     try {
       await seed();
       if (!mounted) return;
+      _invalidateSeedAffectedProviders();
       await Navigator.of(context)
           .push(MaterialPageRoute<void>(builder: (_) => targetBuilder()));
     } catch (e) {
