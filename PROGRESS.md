@@ -7,6 +7,8 @@
 
 > 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · D 数值再平衡推进 · H1-Q1 小套餐 P0 ship blocker 清 · 1520 测 / 0 analyze**
 
+**2026-05-29 H2 中期玩法深度 audit 完成**(doc only · 0 代码改):4 并行子 agent Phase 0 grep(装备/心法/师徒+共鸣/闭关+章节+升阶)→ `docs/handoff/h2_midgame_audit_2026-05-29.md`(~135 行)· 6 条 load-bearing 断言 grep 实测核验。**两大根因**:A 挂机循环与中期成长脱节(idle 0 喂共鸣度/修炼度 · 闭关鸡肋 · insightPoints/learnPoints 死钱包)+ B backend 做完前端没接线(章节翻篇 dead content · 学心法 UI 0 caller · 升阶大境界 UI 不区分 · 换装 effective 不展示 · cultivation_progress_pct 死字段)。3 套餐候选(小=接线 polish 0 数值改 / 中=挂机循环重平衡 / 大=深度加深 1.1 级)+ H2-Q1~Q4 决策点等用户拍。**推荐 小套餐**(已产 backend 接线 ROI 最高)。
+
 **2026-05-29 H1-Q1 小套餐实装**(1 commit `a497044`):G1 `mainMenuTitle '挂机武侠 · 调试主菜单' → '挂机武侠'`(P0 ship blocker 清 · production-facing 产品名)+ G5 标题 style 24→28/w600/letterSpacing 4(沿 splash 体例次一档)· main_menu 测 30 全过含标题渲染 · 0 analyze · 顺手清 8 个往期遗留工作树(全已并入 main + clean)。**P0 ship blocker 清零**。
 
 **2026-05-29 5h 挂机推进 · 方向调整**:用户拍板「先打磨游戏再启 Steam」→ F/G 搁置(留 ship 前 1-2 月)+ H 段从 nice-to-have 升「内容打磨 + UX」主聚焦 + Q1-Q4 默认决议 + 方案 A 单线推 D4。本批 Batch A0-A5 推进:CHECKLIST v1.9 + ROADMAP 对齐 + H 段 spec 起草 + `tools/balance_simulator.dart` PoC + 30 关全路径 1500 跑 + 难度曲线 csv + numbers tune 候选 diff(不上线,起床用户拍)+ R5 测族保护。
