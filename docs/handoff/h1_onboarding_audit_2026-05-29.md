@@ -1,76 +1,47 @@
-# H1 上手 30min 体验 audit
+# H1 上手 30min 体验 audit(2026-05-29 · 综合版 v2)
 
-> 起草:2026-05-29 · H 段 Batch 1 · spec `docs/spec/h_polish_ux_spec_2026-05-29.md`
-> Phase 0 grep 6 维(splash/home_feed/main_menu/tutorial/stage_01_01/victory)+ 数据驱动诊断
-> **不实装** · 卡点候选清单 H1.3 待用户拍后再 apply
+> **v2 supersede Batch-1 草稿**:4 并行子 agent Phase 0 grep(首屏链路 / 第一次战斗 / 解锁+引导合规 / 首次掉落+成长反馈)+ Pen Codex 真机视觉验收交叉印证。审计三部曲收尾(H2 中期 ✅ + H3 后期 ✅ + 本 H1 上手)。
+> v1 草稿头号 G1(`mainMenuTitle='调试主菜单'`)已在 H1-Q1 `a497044` 修(→'挂机武侠'),本 v2 不再列。
+> 关键发现已 Phase 0 复核证实(装备穿戴入口缺失 = grep 实证非漏看)。**不实装** · 修复批待用户拍。
 
-## 1. 启动链路(已 wire 的)
+## TL;DR
 
-```
-splash_screen.dart
-  ↓ GameRepository.loadAllDefs + IsarSetup.init + OnboardingService.ensureFoundingMasters
-home_feed_screen.dart(首次启动空 feed → _EmptyHint 占位)
-  ↓ QuickClaim 按钮 markAllFeedRead → pushReplacement
-main_menu.dart
-  ↓ _MenuButton[主线] → ChapterListScreen
-  ↓ stage_01_01 entry → narrativeOpeningId → BattleScreen → VictoryDialog
-```
+**上手骨架健康,但 2 条核心循环级 🔴 拖累第一印象**:① 主菜单 step 0 暴露 7 个未解锁系统按钮(违 §5.7);② 掉落装备无玩家穿戴入口(核心循环断裂)。第一次战斗体验本身 🟢 优秀。§10.2 引导方式(零教程弹窗 + banner 气泡 + 百科分档)教科书级合规。**Codex 真机**:无乱码/英文漏翻/布局溢出/卡死,视觉层干净 → 🔴 都是 UX/逻辑缺口非渲染 bug。
 
-## 2. 已实装的上手仪式感
+## 🔴 硬伤(建议优先修)
 
-- ✅ Splash 水墨 landscape_loading.png + 应用标题 + Spinner
-- ✅ HomeFeed 空 feed 时显占位文案(`UiStrings.homeFeedEmptyHint`)
-- ✅ MainMenu 顶部 _TodayFestivalChip(节气 / 节日感)
-- ✅ stage_01_01 narrativeOpeningId(2 段古风文案:山门已看不见 / 师父的话很重 / 山风推你)
-- ✅ stage_01_01 dropTable(100% 寻常护甲 + 30% 通灵配饰 + 100% 磨剑石 · "首战必出 1 件装备"配置)
-- ✅ VictoryDialog 显 drops + advancements + resonanceUpgrades
+1. **主菜单 step 0 暴露未解锁系统按钮(违 §5.7)** — 心魔/轻功/群战/PVP/江湖/门派/排行榜 7 个 Phase-5/§12 系统在全新存档(step 0)全亮可点,无 tutorialStep 门槛;锁只在各屏内部(点进去才撞 locked 态),违 §5.7「未解锁系统菜单按钮直接灰掉/隐藏」。PVP 尤甚(点进是 Phase-5 空壳 + snackbar)。新手面对 13+ 亮按钮长列表劝退风险最高。**修法**:沿心法(step<3)/闭关(step<5)既有 `disabled` 体例加门槛。锚 `main_menu.dart:152-192`。A+C 双维度独立确认。
+2. **掉落装备无玩家穿戴入口(核心循环断裂)** — 掉落装备 `ownerCharacterId=null` 入背包(`drop_service.dart:26`),但 `equippedWeaponId=` 赋值只在 recruitment/ascension/seed/debug,**无任何玩家 UI**:character_panel 装备槽只读占位、equipment_detail ActionBar 只有强化+开锋无「装备」、无 equip service 方法。Phase 0 grep 实证。掉装备是上手核心爽点却穿不上 = 装备系统半残。锚 `equipment_detail_screen.dart:137` / `character_panel_screen.dart:597`。
+3. **首次掉落零仪式感(违 §10)** — StageVictoryDialog 掉落纯文字清单(`· text`),神物与磨剑石视觉完全一样,无 tier 色/图标/稀有度/动画(GDD §10「装备首次掉落仪式感」是上手重点)。锚 `stage_victory_dialog.dart:60-87` / `drop_service.dart:25-40`。(v1 G6 标 🟢 可选 · v2 据 §10 升 🔴)
+4. **`'我的门派'` 硬编码中文(违 §5.6 · 玩家可见)** — `onboarding_service.dart:100` 全新玩家门派名硬编码,应迁 UiStrings/yaml。
 
-## 3. 发现的卡点 / Gap
+## 🟡 可优化 polish
 
-### 🔴 P0 严重(ship blocker · 必修)
+- **凝练领悟无领悟点 = SnackBar 非常驻空态**(D + Codex 双确认):transient SnackBar 易错过,常驻空态引导更好。锚 `technique_panel_screen.dart` + `strings.dart:291`。
+- **卷首过场底部按钮浅紫**(Codex 真机):偏离 §9 水墨基调(青/墨/宣纸黄/绛红)。
+- **闭关结果装备显示 raw defId 非中文名**(真 bug · 玩家可见):`retreat_result_screen.dart:108` 漏走 `getEquipment().name`(victory dialog 已正确)。
+- **step 1-5 全程无 banner 引导**(v1 G2):banner 仅 step 6/7/8(收徒/奇遇/开锋),Ch1 通关前(上手 30min 主区间)无任何上下文气泡。是否补 step 1-5 banner 待定。
+- **home_feed 空 feed 无明显 CTA**(v1 G3):占位文案 + 「直入江湖」按钮,但无显著引导玩家点击下一步。
+- **叙事 opening → 战斗 衔接是否直觉**(v1 G4):NarrativeReader onPop 默认进战斗,无显式「开始战斗」prompt(Codex 本轮未专测此流,留 Pen 续验)。
+- **「直入江湖」落点是主菜单非战斗**(A):命名与落点轻微预期落差。
+- **首战无「战斗自动进行」气泡**(B):新手首面自动战斗+大招按钮信息密度偏高。
+- **结算 summary 用「tick」开发术语**(B):已有「回合」(`strings.dart:19`)却不统一。
+- **首关 victory 文案与战斗零呼应**(B):灰兔系绑腿纯过场,缺战斗-叙事衔接。
+- **强化首次无引导**(D):50 磨剑石给了但无气泡引导去试。
 
-| ID | 位置 | 问题 |
-|---|---|---|
-| **G1** | `lib/shared/strings.dart:39` | `mainMenuTitle = '挂机武侠 · 调试主菜单'` · production 玩家看到"调试主菜单"会非专业感 / 困惑 |
+## 🟢 健康(维持)
 
-### 🟡 P1 中等(影响体验)
+- **第一次战斗体验优秀**(B):首关学徒敌 vs 玩家一/二/三流(2-4 阶碾压几乎不可输)· 100% 掉落正反馈 · 双层结算 · 战败零惩罚免费重试 · 开场/胜利叙事古风质感高无 typo。
+- **§10.2 引导方式合规**(C):全仓零教程弹窗 · banner 非阻塞气泡 · 百科 3 tab 机制按 step 分档 + lore 永久可查。
+- **tutorialStep 模型正确**(C):0 起绑真实玩法事件递增(通关/突破/奇遇/+10 强化)· 心法(step3)/闭关(step5)灰显教科书级。
+- **升阶仪式接线正确**(D):AdvancementSummary 小层 vs 大境界(military_tech badge)视觉分层 · 前 30min 大概率只见小层(内容节奏非 bug)。
+- **闭关产出 + 凝练闭环完整**(D):retreat_result 5 维带图标 + insightHint 气泡 + 心法面板凝练双向打通。
+- **全新启动链路顺**(A):splash 水墨 + 并行 init 防黑屏 → home_feed 空态引导 → 主菜单,onboarding seed 兜底不空队 crash。
 
-| ID | 位置 | 问题 |
-|---|---|---|
-| **G2** | `tutorial_service.dart:36-42 + tutorial_hint_def.dart:34-56` | step 1-5(Ch1 5 关通关推进)**0 banner 提示** · 玩家上手 30min 全程无引导,直到 step 6 才出现"收徒资格已达成"banner。Demo 玩家可能 30min 内卡 step 5,根本看不到任何引导提示 |
-| **G3** | `home_feed_screen.dart:88-103` | 首次启动空 feed → 占位文案 + QuickClaim 按钮,但 **无明显 CTA 引导玩家点 QuickClaim**(玩家可能停留在 feed 不知道往下走) |
-| **G4** | `stage_01_01_opening.yaml` | 2 段古风叙事后无"轻按屏幕开始战斗"等显式 prompt;依赖 NarrativeReader 默认 onPop 进战斗,但**玩家可能不直觉**(需 Pen 实机测) |
-| **G5** | `main_menu.dart:113-117` | 主标题字号 24 · 加粗 · 沿 P0 G1 修一并 polish 字号 / 字距 |
+## 建议修复批次(等用户拍)
 
-### 🟢 P2 优化(polish · 可选)
+- **批 1 修 🔴 接线(无数值 · 低风险)**:#1 主菜单门控(沿既有 disabled 体例)+ #4 `'我的门派'` 迁 UiStrings(~5min)。**ROI 最高 · 直接解第一印象劝退**。
+- **批 2 装备穿戴入口(#2 · 功能实装)**:character_panel 装备槽可点 → 选背包装备上身 或 equipment_detail 加「装备」按钮 · 走 canEquip §5.3 三系锁校验。中等工程。**核心循环必补**。
+- **批 3 仪式感 + 🟡 polish 一波**:#3 drop dialog 加 tier 色/图标 + 闭关 defId→中文名 + 过场按钮调色 + 凝练空态常驻化 + tick→回合术语统一 + step 1-5 banner。
 
-| ID | 位置 | 问题 |
-|---|---|---|
-| **G6** | VictoryDialog 全链路 | 首次装备掉落是否有"哇我第一件装备"的额外特效 / 动画?(沿 GDD §10.2 仪式感设计)|
-| **G7** | step 6/7/8 真实触发时机 | 上手 30min 玩家估计能到 step 4-5(Ch1 末)· step 6 收徒(一流境界)+ step 7 奇遇 + step 8 开锋全在 1-3h 后才触发 → 30min audit 几乎覆盖不到 |
-| **G8** | tutorial banner step 1-5 缺位 | 与 G2 同源 · 是否补 step 1-5 也加 banner?(GDD §10.2 第 2 方式上下文气泡)|
-
-## 4. 期望体验 vs 实际 gap
-
-| 时间点 | 期望 | 实际 | gap |
-|---|---|---|---|
-| 0-1min | 启动 splash + 进 home feed | ✅ | — |
-| 1-3min | feed 引导 / 点 QuickClaim | ⚠️ 空 feed 占位 + 无 CTA | G3 |
-| 3-5min | MainMenu 看到入口 | ✅ 主线按钮显著 · ❌ 标题写"调试主菜单" | **G1** |
-| 5-10min | stage_01_01 进 opening + 战斗 | ✅ 但 narrativeReader 后是否直觉进战斗?| G4 |
-| 10-15min | 首胜 + VictoryDialog drops | ✅ 100% 掉护甲 + 磨剑石 | — |
-| 15-25min | stage_01_02 / 01_03 推进 + step 3 心法面板解锁 | ✅ tutorialStep wire 全 | — |
-| 25-30min | stage_01_04 章末 Boss 前哨 | ✅ | — |
-
-**结论**:30min audit 找到 **1 P0 + 4 P1 + 3 P2** 共 8 个 gap,其中 G1 是 ship blocker 必修,G2-G4 影响首次玩家感受 polish 建议修,G5-G8 锦上添花。
-
-## 5. 不动的事
-
-- ❌ 不动 numbers.yaml(D4 数值再平衡 + 候选 3 已闭环)
-- ❌ 不动 stages.yaml / enemies.yaml(首关 3v3 已平衡)
-- ❌ 不动 stage_01_01 dropTable(已配置首战仪式感)
-- ❌ 不动 tutorial_service.dart hook(step 推进已 wire 全)
-
----
-
-**下一步**:H1.3 卡点候选清单(`docs/handoff/h1_polish_candidates_2026-05-29.md`)展开 P0+P1+P2 修复方案 → 用户拍后再 apply。
+> Pen Codex 视觉验收交叉印证产物:`docs/handoff/pen_visual_root_cause_a/`(7 截图 + NOTES · Pen 本地)。
