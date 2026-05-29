@@ -868,4 +868,41 @@ class UiStrings {
 
   // A5 剧情占位提示(去退役 DeepSeek 术语)。
   static const String narrativePlaceholderHint = '⚠ 剧情占位（待补）';
+
+  // ── overnight Batch5:清理 round-2 剩余 presentation 硬编码中文(§5.6)──────
+  // encounter_skill_section 剩余字面(复用既有 encounterSkill* 组)。
+  static const String encounterSkillSectionTitle = '奇遇招式';
+  static const String encounterSkillPickButton = '选择招式';
+  static const String encounterSkillNoneAvailable = '尚无可装备奇遇招式';
+  static const String encounterSkillSlotEmpty = '未装备奇遇招式';
+  static const String encounterSkillPickerTitle = '选择奇遇招式';
+  static const String encounterSkillEquipped = '已装备';
+  // :188「该招式尚未 unlock」中英混排统一为中文。
+  static const String encounterSkillNotUnlocked = '该招式尚未领悟';
+  static String encounterSkillTierLocked(int requiredTier, String current) =>
+      '境界不足:需 tier $requiredTier,当前 $current';
+  static String encounterSkillEquipFailedReason(String reason) =>
+      '装备失败: $reason';
+  static String encounterSkillDefMissing(String id) => '招式定义缺失: $id';
+
+  // sect_screen 空状态。
+  static const String sectNotCreated = '门派尚未创建';
+
+  // equipment_detail 属性标签 + 典故段。
+  static const String equipStatAttack = '攻击';
+  static const String equipStatHealth = '血量';
+  static const String equipStatSpeed = '速度';
+  static const String loreEmptyPlaceholder = '典故待补';
+  static const String loreSectionDivider = '◇ 典故 ◇';
+
+  // narrative_reader 翻页按钮。
+  static const String narrativeReaderFinish = '完成';
+  static const String narrativeReaderContinue = '继续';
+
+  // seclusion_setup 产出维度标签。
+  static const String seclusionOutputMojianshi = '磨剑石';
+  static const String seclusionOutputExperience = '经验';
+  static const String seclusionOutputEquipDrop = '兵器掉率';
+  static const String seclusionOutputTechniqueLearn = '心法领悟';
+  static const String seclusionOutputInternalForce = '内力增长';
 }

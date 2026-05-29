@@ -391,9 +391,9 @@ class _StatRow extends StatelessWidget {
       spacing: 16,
       runSpacing: 6,
       children: [
-        _stat('攻击', attack, effectiveAttack),
-        _stat('血量', health, effectiveHealth),
-        _stat('速度', speed, effectiveSpeed),
+        _stat(UiStrings.equipStatAttack, attack, effectiveAttack),
+        _stat(UiStrings.equipStatHealth, health, effectiveHealth),
+        _stat(UiStrings.equipStatSpeed, speed, effectiveSpeed),
         Text(
           UiStrings.enhanceLevel(enhanceLevel),
           style: TextStyle(
@@ -461,7 +461,7 @@ class _LoreSection extends StatelessWidget {
         if (!hasPreset && continued.isEmpty) {
           return const Center(
             child: Text(
-              '典故待补',
+              UiStrings.loreEmptyPlaceholder,
               style: TextStyle(color: WuxiaColors.textMuted, fontSize: 13),
             ),
           );
@@ -471,7 +471,7 @@ class _LoreSection extends StatelessWidget {
           children: [
             const Center(
               child: Text(
-                '◇ 典故 ◇',
+                UiStrings.loreSectionDivider,
                 style: TextStyle(
                   color: WuxiaColors.textMuted,
                   fontSize: 13,

@@ -34,7 +34,7 @@ class EncounterSkillSection extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SectionTitle('奇遇招式'),
+          const _SectionTitle(UiStrings.encounterSkillSectionTitle),
           const SizedBox(height: 8),
           progressAsync.when(
             loading: () => const SizedBox(
@@ -83,7 +83,11 @@ class _Content extends ConsumerWidget {
                   foregroundColor: WuxiaColors.textPrimary,
                   side: const BorderSide(color: WuxiaColors.border),
                 ),
-                child: Text(hasUnlocks ? '选择招式' : '尚无可装备奇遇招式'),
+                child: Text(
+                  hasUnlocks
+                      ? UiStrings.encounterSkillPickButton
+                      : UiStrings.encounterSkillNoneAvailable,
+                ),
               ),
             ),
             if (equipped != null) ...[
@@ -183,14 +187,16 @@ class _Content extends ConsumerWidget {
   String _resultText(EquipEncounterSkillResult result) {
     switch (result) {
       case EquipSucceeded():
-        return '已装备';
+        return UiStrings.encounterSkillEquipped;
       case EquipNotUnlocked():
-        return '该招式尚未 unlock';
+        return UiStrings.encounterSkillNotUnlocked;
       case EquipTierLocked(:final requiredTier, :final currentTier):
-        return '境界不足:需 tier $requiredTier,当前 '
-            '${EnumL10n.realmTier(currentTier)}';
+        return UiStrings.encounterSkillTierLocked(
+          requiredTier,
+          EnumL10n.realmTier(currentTier),
+        );
       case EquipNotFound(:final reason):
-        return '装备失败: $reason';
+        return UiStrings.encounterSkillEquipFailedReason(reason);
     }
   }
 }
@@ -208,7 +214,7 @@ class _SlotDisplay extends StatelessWidget {
         borderColor: WuxiaColors.buttonDisabled,
         child: Center(
           child: Text(
-            '未装备奇遇招式',
+            UiStrings.encounterSkillSlotEmpty,
             style: TextStyle(color: WuxiaColors.textMuted, fontSize: 13),
           ),
         ),
@@ -219,7 +225,7 @@ class _SlotDisplay extends StatelessWidget {
       return _Shell(
         borderColor: WuxiaColors.hpLow,
         child: Text(
-          '招式定义缺失: $id',
+          UiStrings.encounterSkillDefMissing(id),
           style: const TextStyle(color: WuxiaColors.hpLow, fontSize: 12),
         ),
       );
@@ -296,7 +302,7 @@ class _PickerSheet extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
-                '选择奇遇招式',
+                UiStrings.encounterSkillPickerTitle,
                 style: TextStyle(
                   color: WuxiaColors.textPrimary,
                   fontSize: 16,
