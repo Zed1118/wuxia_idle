@@ -1,89 +1,90 @@
 # Balance Simulation Summary · 2026-05-29
 
-5h 挂机 Batch A3 · 50 seed × 30 mainline = 1500 runs · maxTicks=200
+50 seed × 30 mainline × 2 profile(floor/ceiling) = 3000 runs · maxTicks=200
 
-## 通关率(玩家胜率 = leftWin / total)
+## 通关率 bracket(floor 欠配置 — ceiling 活跃玩家)
 
-| stage_id | requiredRealm | isBoss | chap | leftWin | rightWin | draw | timeout | winRate | avgTicks |
-|---|---|---|---|---|---|---|---|---|---|
-| stage_01_01 | xueTu | — | 1 | 50 | 0 | 0 | 0 | 100.0% | 7.1 |
-| stage_01_02 | xueTu | — | 1 | 50 | 0 | 0 | 0 | 100.0% | 7.1 |
-| stage_01_03 | xueTu | — | 1 | 50 | 0 | 0 | 0 | 100.0% | 7.1 |
-| stage_01_04 | xueTu | Boss | 1 | 50 | 0 | 0 | 0 | 100.0% | 7.1 |
-| stage_01_05 | xueTu | Boss | 1 | 33 | 17 | 0 | 0 | 66.0% | 19.3 |
-| stage_02_01 | sanLiu | — | 2 | 50 | 0 | 0 | 0 | 100.0% | 5.9 |
-| stage_02_02 | sanLiu | — | 2 | 50 | 0 | 0 | 0 | 100.0% | 5.9 |
-| stage_02_03 | sanLiu | — | 2 | 50 | 0 | 0 | 0 | 100.0% | 5.9 |
-| stage_02_04 | sanLiu | Boss | 2 | 50 | 0 | 0 | 0 | 100.0% | 5.9 |
-| stage_02_05 | sanLiu | Boss | 2 | 50 | 0 | 0 | 0 | 100.0% | 5.9 |
-| stage_03_01 | erLiu | — | 3 | 50 | 0 | 0 | 0 | 100.0% | 4.7 |
-| stage_03_02 | erLiu | — | 3 | 50 | 0 | 0 | 0 | 100.0% | 4.7 |
-| stage_03_03 | erLiu | — | 3 | 50 | 0 | 0 | 0 | 100.0% | 4.7 |
-| stage_03_04 | erLiu | Boss | 3 | 50 | 0 | 0 | 0 | 100.0% | 4.7 |
-| stage_03_05 | erLiu | Boss | 3 | 50 | 0 | 0 | 0 | 100.0% | 4.7 |
-| stage_04_01 | yiLiu | — | 4 | 50 | 0 | 0 | 0 | 100.0% | 3.4 |
-| stage_04_02 | yiLiu | — | 4 | 50 | 0 | 0 | 0 | 100.0% | 3.4 |
-| stage_04_03 | yiLiu | — | 4 | 50 | 0 | 0 | 0 | 100.0% | 3.4 |
-| stage_04_04 | yiLiu | Boss | 4 | 50 | 0 | 0 | 0 | 100.0% | 3.4 |
-| stage_04_05 | yiLiu | Boss | 4 | 50 | 0 | 0 | 0 | 100.0% | 5.5 |
-| stage_05_01 | jueDing | — | 5 | 50 | 0 | 0 | 0 | 100.0% | 2.4 |
-| stage_05_02 | jueDing | — | 5 | 50 | 0 | 0 | 0 | 100.0% | 3.9 |
-| stage_05_03 | jueDing | — | 5 | 50 | 0 | 0 | 0 | 100.0% | 3.9 |
-| stage_05_04 | jueDing | Boss | 5 | 50 | 0 | 0 | 0 | 100.0% | 4.1 |
-| stage_05_05 | jueDing | Boss | 5 | 50 | 0 | 0 | 0 | 100.0% | 6.2 |
-| stage_06_01 | zongShi | — | 6 | 50 | 0 | 0 | 0 | 100.0% | 2.2 |
-| stage_06_02 | zongShi | — | 6 | 50 | 0 | 0 | 0 | 100.0% | 2.9 |
-| stage_06_03 | zongShi | — | 6 | 50 | 0 | 0 | 0 | 100.0% | 3.1 |
-| stage_06_04 | zongShi | Boss | 6 | 50 | 0 | 0 | 0 | 100.0% | 3.3 |
-| stage_06_05 | zongShi | Boss | 6 | 50 | 0 | 0 | 0 | 100.0% | 4.5 |
+| stage_id | requiredRealm | isBoss | chap | floor winRate | ceiling winRate |
+|---|---|---|---|---|---|
+| stage_01_01 | xueTu | — | 1 | 100.0% | 100.0% |
+| stage_01_02 | xueTu | — | 1 | 100.0% | 100.0% |
+| stage_01_03 | xueTu | — | 1 | 100.0% | 100.0% |
+| stage_01_04 | xueTu | Boss | 1 | 100.0% | 100.0% |
+| stage_01_05 | xueTu | Boss | 1 | 0.0% | 66.0% |
+| stage_02_01 | sanLiu | — | 2 | 100.0% | 100.0% |
+| stage_02_02 | sanLiu | — | 2 | 100.0% | 100.0% |
+| stage_02_03 | sanLiu | — | 2 | 100.0% | 100.0% |
+| stage_02_04 | sanLiu | Boss | 2 | 100.0% | 100.0% |
+| stage_02_05 | sanLiu | Boss | 2 | 100.0% | 100.0% |
+| stage_03_01 | erLiu | — | 3 | 100.0% | 100.0% |
+| stage_03_02 | erLiu | — | 3 | 100.0% | 100.0% |
+| stage_03_03 | erLiu | — | 3 | 100.0% | 100.0% |
+| stage_03_04 | erLiu | Boss | 3 | 100.0% | 100.0% |
+| stage_03_05 | erLiu | Boss | 3 | 100.0% | 100.0% |
+| stage_04_01 | yiLiu | — | 4 | 100.0% | 100.0% |
+| stage_04_02 | yiLiu | — | 4 | 100.0% | 100.0% |
+| stage_04_03 | yiLiu | — | 4 | 100.0% | 100.0% |
+| stage_04_04 | yiLiu | Boss | 4 | 100.0% | 100.0% |
+| stage_04_05 | yiLiu | Boss | 4 | 100.0% | 100.0% |
+| stage_05_01 | jueDing | — | 5 | 100.0% | 100.0% |
+| stage_05_02 | jueDing | — | 5 | 100.0% | 100.0% |
+| stage_05_03 | jueDing | — | 5 | 100.0% | 100.0% |
+| stage_05_04 | jueDing | Boss | 5 | 100.0% | 100.0% |
+| stage_05_05 | jueDing | Boss | 5 | 94.0% | 100.0% |
+| stage_06_01 | zongShi | — | 6 | 100.0% | 100.0% |
+| stage_06_02 | zongShi | — | 6 | 100.0% | 100.0% |
+| stage_06_03 | zongShi | — | 6 | 100.0% | 100.0% |
+| stage_06_04 | zongShi | Boss | 6 | 100.0% | 100.0% |
+| stage_06_05 | zongShi | Boss | 6 | 100.0% | 100.0% |
 
-## 卡点 / 秒杀点诊断
+## 难度诊断(bracket 解读)
 
-- **卡点**(winRate < 30%):玩家难过 → 数值上调候选
+- **过难**(连 ceiling 活跃玩家都 < 50%):满配玩家都难过 → 数值偏高,上调候选
 
-- **秒杀点**(winRate > 95%):玩家无脑过 → 数值下调候选(若是 Boss)
-  - stage_01_01:100.0%
-  - stage_01_02:100.0%
-  - stage_01_03:100.0%
-  - stage_01_04:100.0%
-  - stage_02_01:100.0%
-  - stage_02_02:100.0%
-  - stage_02_03:100.0%
-  - stage_02_04:100.0%
-  - stage_02_05:100.0%
-  - stage_03_01:100.0%
-  - stage_03_02:100.0%
-  - stage_03_03:100.0%
-  - stage_03_04:100.0%
-  - stage_03_05:100.0%
-  - stage_04_01:100.0%
-  - stage_04_02:100.0%
-  - stage_04_03:100.0%
-  - stage_04_04:100.0%
-  - stage_04_05:100.0%
-  - stage_05_01:100.0%
-  - stage_05_02:100.0%
-  - stage_05_03:100.0%
-  - stage_05_04:100.0%
-  - stage_05_05:100.0%
-  - stage_06_01:100.0%
-  - stage_06_02:100.0%
-  - stage_06_03:100.0%
-  - stage_06_04:100.0%
-  - stage_06_05:100.0%
+- **过易**(连 floor 欠配置玩家都 > 90%):欠配置玩家都碾压 → 数值偏低,下调候选(尤其 Boss)
+  - stage_01_01:floor 100% / ceiling 100%
+  - stage_01_02:floor 100% / ceiling 100%
+  - stage_01_03:floor 100% / ceiling 100%
+  - stage_01_04:floor 100% / ceiling 100%
+  - stage_02_01:floor 100% / ceiling 100%
+  - stage_02_02:floor 100% / ceiling 100%
+  - stage_02_03:floor 100% / ceiling 100%
+  - stage_02_04:floor 100% / ceiling 100%
+  - stage_02_05:floor 100% / ceiling 100%
+  - stage_03_01:floor 100% / ceiling 100%
+  - stage_03_02:floor 100% / ceiling 100%
+  - stage_03_03:floor 100% / ceiling 100%
+  - stage_03_04:floor 100% / ceiling 100%
+  - stage_03_05:floor 100% / ceiling 100%
+  - stage_04_01:floor 100% / ceiling 100%
+  - stage_04_02:floor 100% / ceiling 100%
+  - stage_04_03:floor 100% / ceiling 100%
+  - stage_04_04:floor 100% / ceiling 100%
+  - stage_04_05:floor 100% / ceiling 100%
+  - stage_05_01:floor 100% / ceiling 100%
+  - stage_05_02:floor 100% / ceiling 100%
+  - stage_05_03:floor 100% / ceiling 100%
+  - stage_05_04:floor 100% / ceiling 100%
+  - stage_05_05:floor 94% / ceiling 100%
+  - stage_06_01:floor 100% / ceiling 100%
+  - stage_06_02:floor 100% / ceiling 100%
+  - stage_06_03:floor 100% / ceiling 100%
+  - stage_06_04:floor 100% / ceiling 100%
+  - stage_06_05:floor 100% / ceiling 100%
 
-## 期望区间
+- **健康**:floor 偏低-中 + ceiling 中高-高 = 配装/投入有意义(欠配置有挑战、满配顺畅)。
 
-- 普通关 winRate ∈ [60%, 90%](玩家上手有挑战不卡死)
-- Boss 关 winRate ∈ [40%, 70%](章末压力 + 留余裕)
+## 期望区间(参考)
+
+- 普通关:floor ∈ [40%, 75%] · ceiling ∈ [75%, 95%]
+- Boss 关:floor ∈ [20%, 55%] · ceiling ∈ [55%, 85%]
 
 ## 数据局限
 
-- **玩家走真 build**(2026-05-29 升级):`BattleCharacter.fromCharacter` derived_stats 生产路径 · 活跃玩家模型(tier-cap 真装备 midpoint base + 中等强化 ½ 上限 + 共鸣默契 ×1.20 解锁人剑合一 + 主修 daCheng + founder buff)
-- **单一代表 build**:只跑「活跃玩家」一档,不验欠配置 floor / 满配 ceiling 区间(留 C 方案双 build 对照扩展)
+- **玩家走真 build**(`BattleCharacter.fromCharacter` derived_stats 生产路径)· **C 方案 floor+ceiling bracket**:floor 欠配置(0 强化/生疏共鸣/无 founder buff/zhongCheng/属性 20)— ceiling 活跃玩家(½ 强化/默契 ×1.20/founder buff/daCheng/属性 22),隔离配装/投入轴
 - **不含辅修 synergy**(心法相生):只主修单本,SynergyService 未注入
 - 流派固定刚猛 gangMeng · 不验阴柔/灵巧分布
-- **playerTier = requiredRealm + 1**(既有校准偏移「玩家超阶挑战」):真 build 下可能与超阶叠加偏易 → 校准复核候选(本批只换 build 真实性不动偏移)
+- **playerTier = requiredRealm + 1**(既有校准偏移「玩家超阶挑战」):两档一致,只隔离 build profile · 真 build 下超阶偏移待校准复核
 - maxTicks=200 兜底(timeout = 不分胜负)
 
-**用途**:卡点 / 秒杀点 **方向性**诊断 · 真 build 后数值更贴近活跃玩家实战。
+**用途**:难度 bracket **方向性**诊断 · floor/ceiling 区间判断配装是否有意义、何处过易(连 floor 都碾压)/过难(连 ceiling 都难过)。
