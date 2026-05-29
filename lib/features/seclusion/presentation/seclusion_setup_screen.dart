@@ -84,7 +84,7 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('开始闭关失败：$e')),
+        SnackBar(content: Text(UiStrings.seclusionStartFailed(e))),
       );
       setState(() => _isStarting = false);
     }

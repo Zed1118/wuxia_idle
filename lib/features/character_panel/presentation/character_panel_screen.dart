@@ -59,7 +59,7 @@ class _CharacterPanelScreenState extends ConsumerState<CharacterPanelScreen> {
       backgroundColor: WuxiaColors.background,
       appBar: AppBar(
         backgroundColor: WuxiaColors.background,
-        title: const Text('角色面板'),
+        title: const Text(UiStrings.characterPanelScreenTitle),
         leading: Navigator.of(context).canPop()
             ? BackButton(onPressed: () => Navigator.of(context).pop())
             : null,

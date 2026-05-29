@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
@@ -37,7 +38,7 @@ class LightFootScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       appBar: AppBar(
-        title: const Text('轻功试炼'),
+        title: const Text(UiStrings.lightFootScreenTitle),
         backgroundColor: WuxiaColors.sidebar,
         foregroundColor: WuxiaColors.textPrimary,
       ),

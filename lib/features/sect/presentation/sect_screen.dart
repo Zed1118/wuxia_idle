@@ -42,13 +42,13 @@ class SectScreen extends ConsumerWidget {
       error: (e, _) => Scaffold(
         backgroundColor: WuxiaColors.background,
         appBar: AppBar(
-          title: const Text('门派事务'),
+          title: const Text(UiStrings.sectScreenTitle),
           backgroundColor: WuxiaColors.sidebar,
           foregroundColor: WuxiaColors.textPrimary,
         ),
         body: Center(
           child: Text(
-            '加载失败:$e',
+            UiStrings.sectLoadFailed(e),
             style: const TextStyle(color: WuxiaColors.textMuted),
           ),
         ),
@@ -58,7 +58,7 @@ class SectScreen extends ConsumerWidget {
           return Scaffold(
             backgroundColor: WuxiaColors.background,
             appBar: AppBar(
-              title: const Text('门派事务'),
+              title: const Text(UiStrings.sectScreenTitle),
               backgroundColor: WuxiaColors.sidebar,
               foregroundColor: WuxiaColors.textPrimary,
             ),
@@ -75,7 +75,7 @@ class SectScreen extends ConsumerWidget {
           child: Scaffold(
             backgroundColor: WuxiaColors.background,
             appBar: AppBar(
-              title: const Text('门派事务'),
+              title: const Text(UiStrings.sectScreenTitle),
               backgroundColor: WuxiaColors.sidebar,
               foregroundColor: WuxiaColors.textPrimary,
               bottom: const TabBar(
@@ -373,7 +373,7 @@ class _MemberList extends ConsumerWidget {
     return membersAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
-        child: Text('加载失败:$e',
+        child: Text(UiStrings.sectLoadFailed(e),
             style: const TextStyle(color: WuxiaColors.textMuted)),
       ),
       data: (members) {

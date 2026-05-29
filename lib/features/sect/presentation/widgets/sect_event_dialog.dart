@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yaml/yaml.dart';
 
+import '../../../../shared/strings.dart';
 import '../../../../shared/theme/colors.dart';
 import '../../application/sect_providers.dart';
 import '../../domain/sect.dart';
@@ -164,7 +165,7 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
                           backgroundColor: WuxiaColors.hpHigh,
                           foregroundColor: WuxiaColors.textPrimary,
                         ),
-                        child: const Text('应战赴会'),
+                        child: const Text(UiStrings.sectEventEnterBattle),
                       ),
                     ],
                   ),
