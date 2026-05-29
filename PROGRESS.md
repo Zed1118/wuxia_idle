@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · D 数值再平衡推进 · 1519 测 / 0 analyze**
+> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · D 数值再平衡推进 · H1-Q1 小套餐 P0 ship blocker 清 · 1520 测 / 0 analyze**
+
+**2026-05-29 H1-Q1 小套餐实装**(1 commit `a497044`):G1 `mainMenuTitle '挂机武侠 · 调试主菜单' → '挂机武侠'`(P0 ship blocker 清 · production-facing 产品名)+ G5 标题 style 24→28/w600/letterSpacing 4(沿 splash 体例次一档)· main_menu 测 30 全过含标题渲染 · 0 analyze · 顺手清 8 个往期遗留工作树(全已并入 main + clean)。**P0 ship blocker 清零**。
 
 **2026-05-29 5h 挂机推进 · 方向调整**:用户拍板「先打磨游戏再启 Steam」→ F/G 搁置(留 ship 前 1-2 月)+ H 段从 nice-to-have 升「内容打磨 + UX」主聚焦 + Q1-Q4 默认决议 + 方案 A 单线推 D4。本批 Batch A0-A5 推进:CHECKLIST v1.9 + ROADMAP 对齐 + H 段 spec 起草 + `tools/balance_simulator.dart` PoC + 30 关全路径 1500 跑 + 难度曲线 csv + numbers tune 候选 diff(不上线,起床用户拍)+ R5 测族保护。
 
