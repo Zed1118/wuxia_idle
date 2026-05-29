@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · 外部 review 修复批收口 + 根因A 挂机循环重平衡实装 + idle_economy 经济曲线验证 · 1548 测 / 0 analyze**
+> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · 外部 review 修复批收口 + 根因A 挂机循环重平衡实装 + idle_economy 验证 + 红线值统一 numbers.yaml · 1552 测 / 0 analyze**
+
+**2026-05-29 红线值 15000/20000 统一到 numbers.yaml**(commit `7a1d1e7` [schema] · 1548→1552 测 / 0 analyze):消除 derived_stats / stage_battle_setup / game_repository 散落的 §5.4 红线字面量,单一真相源走 `combat.red_lines`(player_hp_max 20000 / internal_force_max 15000)+ 新 `RedLinesConfig` 强类型(fixture 缺段回落 §5.4 默认,沿 InnerDemonMirrorCaps 体例)。wire 4 处:derived_stats.maxHp/internalForceMaxWithLineage、stage_battle_setup.applySynergy(加可选 `{NumbersConfig? numbers}` 默认回落 `GameRepository.instance.numbers`·synergy_hot_loop 纯测 setUpAll 加 loadAllDefs Isar-free,12 调用点不动)、game_repository._enforceRedLines。inner_demon.mirror_caps 已独立 config-driven 不并入。+4 测(parse/fallback/production drift guard/49 realm 校验)· 纯抽取零行为变化。**剩:(可选)`_synthPlayer` 升真 build · B2 低 tier 偏慷慨 finding 待拍**。
 
 **2026-05-29 根因A 挂机经济曲线验证 idle_economy**(test + doc only · 0 production 改 · 1547→1548 测):新建 `test/tools/idle_economy_test.dart` 量化 72h 挂机 vs 主动战斗在根因A 三维成长速度,断言「可观但不冲淡主动战斗」平衡带(drift 雷达)。**Phase 0 事实修正**:上次「balance_simulator 未接真公式」已过时 — win-rate sim 走 `BattleEngine.runToEnd→DefaultGroundStrategy._calculateInBattle`,P2-c 后即调 `DamageCalculator.calculateResolved` 单一真相源,**伤害公式数学早已是真路径**;残留缺口仅 `_synthPlayer` 硬编码 build(用户拍板本批不动)。**验证结果**:B1 ✅ 72h=360≥默契300、到阈值60h(离线可达人剑合一不秒解锁);B2 设计锚 ✅ 二流 xuanYaPuBu 折 3.5 个 Ch3 Boss(命中目标 3-4);B3 ✅ 五图凝练 0.36-2.0 早期层(有意义 sink);**finding**:B2 低 tier 偏慷慨 — 学徒山林挂满 72h 跳 16 层(早期阈值 50-400 极小 ×2.5),理论可跳过 Ch1-2 大半,留 numbers 取舍待拍(非 bug,test 带宽未拦)。输出 `test/tools/output/idle_economy_2026-05-29.md`。剩:红线值统一到 numbers.yaml + (可选)`_synthPlayer` 升真 build。
 
@@ -27,11 +29,7 @@
 
 **2026-05-29 5h 挂机推进 · 方向调整**:用户拍板「先打磨游戏再启 Steam」→ F/G 搁置(留 ship 前 1-2 月)+ H 段从 nice-to-have 升「内容打磨 + UX」主聚焦 + Q1-Q4 默认决议 + 方案 A 单线推 D4。本批 Batch A0-A5 推进:CHECKLIST v1.9 + ROADMAP 对齐 + H 段 spec 起草 + `tools/balance_simulator.dart` PoC + 30 关全路径 1500 跑 + 难度曲线 csv + numbers tune 候选 diff(不上线,起床用户拍)+ R5 测族保护。
 
-**2026-05-28 RELEASE_CHECKLIST v1.5 + ROADMAP v1.8 + R4 派单**(2 commit `e5bb9ba` + `51aaafb`):A 段测试数 1514→1519 · B 段附加 P2.1 全收+drop 全覆盖 · ROADMAP 93%→95% · Pen 同步 `e5bb9ba` + build OK · R4 派单 12 验收点(数据加载/掉落显示/典故+招式)· 典故盘点:80 文件 170 段 default_lore > GDD §8.4 目标 80 段 ✅ 已达标。
-
-**2026-05-28 装备 drop 全覆盖 + P2.1 4 批全收**(2 commit · 1514→1519 测 / 0 analyze):56 条 dropTable 注入 26 关 · 77 件主线装备全覆盖 · +1 红线测试。P2.1 4 批全收(装备 80 / 心法 49 / 技能 166 / lore 80 / 相生 12)。
-
-**2026-05-28 P3.2.B+P1.2+P3.x 三项 + 过夜 1.1 清理**(6 commit · 1508→1514 测):群战调优+Boss 声望 wire+群战 UI wiring+战败收降 wire+池扩。详各 closeout。
+> 2026-05-28 三条(CHECKLIST v1.5+ROADMAP v1.8+R4 派单 / 装备 drop 全覆盖+P2.1 4 批 / P3.2.B+P1.2+P3.x+过夜清理 · 1508→1519 测)已归档,详末尾「2026-05-25/26/27/28 详条归档」段。
 
 ---
 
