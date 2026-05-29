@@ -38,36 +38,94 @@ class AdvancementSummary extends StatelessWidget {
           for (final e in advanced)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.auto_awesome,
-                    color: WuxiaColors.gangMeng,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      UiStrings.advancementForCharacter(
-                        e.chName,
-                        EnumL10n.realm(
-                          e.result.tierAfter,
-                          e.result.layerAfter,
-                        ),
-                        e.result.layersGained,
-                      ),
-                      style: const TextStyle(
-                        color: WuxiaColors.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              child: e.result.crossedTier
+                  ? _TierUpRow(entry: e)
+                  : _LayerUpRow(entry: e),
             ),
         ],
       ),
+    );
+  }
+}
+
+/// 同境界内小层升级行(普通 auto_awesome 图标)。
+class _LayerUpRow extends StatelessWidget {
+  const _LayerUpRow({required this.entry});
+
+  final AdvancementEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(Icons.auto_awesome, color: WuxiaColors.gangMeng, size: 20),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            UiStrings.advancementForCharacter(
+              entry.chName,
+              EnumL10n.realm(entry.result.tierAfter, entry.result.layerAfter),
+              entry.result.layersGained,
+            ),
+            style: const TextStyle(
+              color: WuxiaColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// H2 C2:大境界突破行 — 跨境界 tier 的里程碑,醒目区别于小层升级
+/// (military_tech 勋章图标 + 高亮色 +「大境界突破」badge)。
+class _TierUpRow extends StatelessWidget {
+  const _TierUpRow({required this.entry});
+
+  final AdvancementEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(
+          Icons.military_tech,
+          color: WuxiaColors.resultHighlight,
+          size: 24,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                UiStrings.advancementTierUpBadge,
+                style: TextStyle(
+                  color: WuxiaColors.resultHighlight,
+                  fontSize: 11,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                UiStrings.advancementForCharacter(
+                  entry.chName,
+                  EnumL10n.realm(
+                      entry.result.tierAfter, entry.result.layerAfter),
+                  entry.result.layersGained,
+                ),
+                style: const TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

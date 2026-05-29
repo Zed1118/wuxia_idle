@@ -190,25 +190,43 @@ class _AdvancementBanner extends StatelessWidget {
           color: WuxiaColors.gangMeng.withValues(alpha: 0.6),
         ),
       ),
+      // H2 C2:大境界突破(跨 tier)走醒目勋章 + badge,区别小层升级。
       child: Row(
         children: [
-          const Icon(
-            Icons.auto_awesome,
-            color: WuxiaColors.gangMeng,
-            size: 22,
+          Icon(
+            advancement.crossedTier ? Icons.military_tech : Icons.auto_awesome,
+            color: advancement.crossedTier
+                ? WuxiaColors.resultHighlight
+                : WuxiaColors.gangMeng,
+            size: advancement.crossedTier ? 24 : 22,
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              UiStrings.seclusionAdvancement(
-                EnumL10n.realm(tierAfter, layerAfter),
-                layers,
-              ),
-              style: const TextStyle(
-                color: WuxiaColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (advancement.crossedTier)
+                  const Text(
+                    UiStrings.advancementTierUpBadge,
+                    style: TextStyle(
+                      color: WuxiaColors.resultHighlight,
+                      fontSize: 11,
+                      letterSpacing: 2,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                Text(
+                  UiStrings.seclusionAdvancement(
+                    EnumL10n.realm(tierAfter, layerAfter),
+                    layers,
+                  ),
+                  style: const TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

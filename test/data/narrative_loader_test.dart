@@ -185,4 +185,63 @@ paragraphs:
       expect(c.mandatory, isFalse);
     });
   });
+
+  // H2 小套餐 C1:章节翻篇过场 — prologue/epilogue 此前是 dead content
+  // (lib/ 0 引用,运行时不 load)。loadChapter 把它接进 chapters/ 子目录。
+  group('NarrativeLoader.loadChapter', () {
+    test('正常解析:id + title + prologue + epilogue 全字段', () async {
+      Future<String> mockLoader(String path) async {
+        expect(path, 'data/narratives/chapters/chapter_01.yaml');
+        return '''
+id: chapter_01
+title: 学武出山
+prologue: |
+  庆元三年，江南。
+  少年姓李，单名一个寒字。
+epilogue: |
+  路还很长。
+''';
+      }
+      final c =
+          await NarrativeLoader.loadChapter('chapter_01', loader: mockLoader);
+      expect(c.id, 'chapter_01');
+      expect(c.title, '学武出山');
+      expect(c.prologue, contains('庆元三年'));
+      expect(c.epilogue, contains('路还很长'));
+      expect(c.isPlaceholder, isFalse);
+    });
+
+    test('只有 prologue 无 epilogue → epilogue=null(向后兼容)', () async {
+      Future<String> mockLoader(String path) async => '''
+id: chapter_x
+title: 半章
+prologue: |
+  只有卷首。
+''';
+      final c =
+          await NarrativeLoader.loadChapter('chapter_x', loader: mockLoader);
+      expect(c.prologue, contains('只有卷首'));
+      expect(c.epilogue, isNull);
+      expect(c.isPlaceholder, isFalse);
+    });
+
+    test('文件不存在 → placeholder(不抛异常)', () async {
+      Future<String> mockLoader(String path) async {
+        throw Exception('not found: $path');
+      }
+      final c =
+          await NarrativeLoader.loadChapter('chapter_99', loader: mockLoader);
+      expect(c.isPlaceholder, isTrue);
+      expect(c.id, 'chapter_99');
+      expect(c.prologue, isNull);
+      expect(c.epilogue, isNull);
+    });
+
+    test('yaml 损坏 → placeholder(不抛异常)', () async {
+      Future<String> mockLoader(String path) async => '{ invalid :::';
+      final c =
+          await NarrativeLoader.loadChapter('broken', loader: mockLoader);
+      expect(c.isPlaceholder, isTrue);
+    });
+  });
 }

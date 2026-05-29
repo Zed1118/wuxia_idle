@@ -308,10 +308,9 @@ class _FounderBuffSection extends StatelessWidget {
             label: UiStrings.lineagePanelFounderBuffCritRate,
             value: _absLabel(buff.critRateBonus),
           ),
-          _BuffRow(
-            label: UiStrings.lineagePanelFounderBuffCultivation,
-            value: _pctLabel(buff.cultivationProgressPct),
-          ),
+          // H2 audit S3:cultivationProgressPct 未接修炼度公式(全 lib/ 0 消费),
+          // 移除误导性「+3% 修炼度」行,避免向玩家展示不生效的 buff。
+          // Phase 5+ 接公式后恢复(UiString lineagePanelFounderBuffCultivation 保留待用)。
         ],
       ),
     );

@@ -58,6 +58,51 @@ class NarrativeContent {
   }
 }
 
+/// 章节卷首/卷尾叙事（H2 小套餐 C1，对应 `data/narratives/chapters/<id>.yaml`）。
+///
+/// 此前 prologue/epilogue 是 dead content（lib/ 0 引用，运行时不 load）。
+/// [NarrativeLoader.loadChapter] 把它接进来，供 ChapterTransitionScreen 翻篇阅读。
+///
+/// **schema**：
+/// ```yaml
+/// id: chapter_01            # 必须等于文件名（不含 .yaml）
+/// title: 学武出山            # 可空
+/// prologue: |               # 卷首语，可空
+///   庆元三年，江南。
+/// epilogue: |               # 卷尾语，可空（章节进行中时尚未解锁）
+///   路还很长。
+/// ```
+class ChapterNarrative {
+  final String id;
+  final String? title;
+  final String? prologue;
+  final String? epilogue;
+
+  /// 缺文件 / 解析失败时的兜底标记。UI 可显示弱提示。
+  final bool isPlaceholder;
+
+  const ChapterNarrative({
+    required this.id,
+    this.title,
+    this.prologue,
+    this.epilogue,
+    required this.isPlaceholder,
+  });
+
+  factory ChapterNarrative.placeholder(String id) =>
+      ChapterNarrative(id: id, isPlaceholder: true);
+
+  factory ChapterNarrative.fromYaml(Map<String, dynamic> y) {
+    return ChapterNarrative(
+      id: y['id'] as String,
+      title: y['title'] as String?,
+      prologue: (y['prologue'] as String?)?.trimRight(),
+      epilogue: (y['epilogue'] as String?)?.trimRight(),
+      isPlaceholder: false,
+    );
+  }
+}
+
 /// 主线剧情加载器（Phase 3 T36；P1 #1 2026-05-12 加 stages/ 子目录扫描）。
 ///
 /// **缺文件 / 解析失败兜底**：返回 [NarrativeContent.placeholder]，单段
@@ -95,5 +140,21 @@ class NarrativeLoader {
       }
     }
     return NarrativeContent.placeholder(narrativeId);
+  }
+
+  /// 加载章节卷首/卷尾（H2 C1）。读 `data/narratives/chapters/<id>.yaml`；
+  /// 缺文件 / 解析失败 → [ChapterNarrative.placeholder]（不抛异常，同 [load] 契约）。
+  static Future<ChapterNarrative> loadChapter(
+    String chapterId, {
+    Future<String> Function(String)? loader,
+  }) async {
+    final fn = loader ?? rootBundle.loadString;
+    try {
+      final raw = await fn('data/narratives/chapters/$chapterId.yaml');
+      final y = parseYamlMap(raw);
+      return ChapterNarrative.fromYaml(y);
+    } catch (_) {
+      return ChapterNarrative.placeholder(chapterId);
+    }
   }
 }
