@@ -119,10 +119,11 @@ class CharacterDerivedStats {
         _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
       hp *= (1.0 + n.founderAncestorBuff.maxHpPct);
     }
-    // §5.4 血量红线 clamp(与 stage_battle_setup:233 / inner_demon_def 同值 20000):
-    // founder buff(玩家自享 +5%)/ 心法相生 hpPct(+0.20)乘法可把血量推过 20000,
-    // battle_state 直接调本方法塞进战斗,源头 clamp 守红线(P1-b 同源 · review 补)。
-    return hp.clamp(0, 20000).toInt();
+    // §5.4 血量红线 clamp(单一真相源 numbers.yaml combat.red_lines,与
+    // stage_battle_setup / inner_demon_def 同源):founder buff(玩家自享 +5%)/
+    // 心法相生 hpPct(+0.20)乘法可把血量推过红线,battle_state 直接调本方法塞进
+    // 战斗,源头 clamp 守红线(P1-b 同源 · review 补 · 2026-05-29 消 hardcode)。
+    return hp.clamp(0, n.combat.redLines.playerHpMax).toInt();
   }
 
   /// 判定祖师爷 buff 是否作用于角色 [c](P1.1 A1 E.5)。
@@ -250,10 +251,13 @@ class CharacterDerivedStats {
         _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
       mult *= (1.0 + n.founderAncestorBuff.internalForceMaxPct);
     }
-    // §5.4 内力红线 clamp(与 stage_battle_setup:238 / game_repository:461 同值 15000):
-    // battle_state 直接调本方法塞进战斗,不经 stage_battle_setup 的 modifier clamp;
-    // founder buff(玩家自享 +5%)+ 师承遗物(+5%/件)乘法可把上限推过 15000(实测
-    // 4 件 +founder = 18900),源头 clamp 守红线(P1-b · review 补)。
-    return (c.internalForceMax * mult).clamp(0, 15000).toInt();
+    // §5.4 内力红线 clamp(单一真相源 numbers.yaml combat.red_lines,与
+    // stage_battle_setup / game_repository 同源):battle_state 直接调本方法塞进
+    // 战斗,不经 stage_battle_setup 的 modifier clamp;founder buff(玩家自享 +5%)+
+    // 师承遗物(+5%/件)乘法可把上限推过红线(实测 4 件 +founder = 18900),源头
+    // clamp 守红线(P1-b · review 补 · 2026-05-29 消 hardcode)。
+    return (c.internalForceMax * mult)
+        .clamp(0, n.combat.redLines.internalForceMax)
+        .toInt();
   }
 }

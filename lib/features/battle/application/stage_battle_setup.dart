@@ -7,6 +7,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/synergy_def.dart';
 import '../../tower/domain/tower_floor_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/numbers_config.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
@@ -224,18 +225,26 @@ class StageBattleSetup {
   /// **@visibleForTesting**:测试矩阵 7 tier × 5 synergy 极端 base 派生压测
   /// 需要直接调用本静态方法绕过 Isar,沿 [TowerEntryFlow.runTowerFlow] /
   /// [StageEntryFlow.runStageFlow] battleRunnerForTest 体例。
+  ///
+  /// [numbers] 注入红线 cap(单一真相源 numbers.yaml combat.red_lines);省略时
+  /// 回落 `GameRepository.instance.numbers`(生产路径,与本类既有 instance 用法一致)。
+  /// 测试需先 loadAllDefs(Isar-free),或显式传 fixture numbers。
   @visibleForTesting
   static BattleCharacter applySynergy(
     BattleCharacter base,
-    SynergyMultipliers m,
-  ) {
+    SynergyMultipliers m, {
+    NumbersConfig? numbers,
+  }) {
+    final redLines = (numbers ?? GameRepository.instance.numbers).combat.redLines;
     var newMaxHp = (base.maxHp * (1 + m.hpPct)).round();
-    if (newMaxHp > 20000) newMaxHp = 20000; // §5.4 玩家血量红线(W18-A1.2 升级版加)
+    // §5.4 玩家血量红线(W18-A1.2 升级版加 · 2026-05-29 消 hardcode 走 config)
+    if (newMaxHp > redLines.playerHpMax) newMaxHp = redLines.playerHpMax;
     final newSpeed = (base.speed * (1 + m.speedPct)).round();
     final newAttack =
         (base.totalEquipmentAttack * (1 + m.attackPct)).round();
     var newMaxIf = (base.maxInternalForce * (1 + m.internalForceMaxPct)).round();
-    if (newMaxIf > 15000) newMaxIf = 15000; // §5.4 内力红线
+    // §5.4 内力红线(2026-05-29 消 hardcode 走 config)
+    if (newMaxIf > redLines.internalForceMax) newMaxIf = redLines.internalForceMax;
     // W18-A1.2 加法叠加,clamp ≤ 0.95 防止减伤 100% 极端值
     final newDefenseRate = (base.defenseRate + m.defensePct).clamp(0.0, 0.95);
     // currentHp 起点跟 maxHp 一致(战斗起点满血,fromCharacter 保证)

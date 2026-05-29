@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/synergy_def.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
@@ -23,6 +26,15 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 /// numbers.yaml 重平衡保证 base maxHp ≤ 16667 让 hpPct 0.20 仍 ≤ 20000)。
 void main() {
   group('W18-A1.2 hot-loop 升级版:applySynergy 红线 cap 压测', () {
+    // applySynergy 红线 cap 走单一真相源 numbers.combat.red_lines(2026-05-29
+    // 消 hardcode);本测仍 deterministic·绕 Isar,只读 config defs 不 seed Isar。
+    setUpAll(() async {
+      if (!GameRepository.isLoaded) {
+        await GameRepository.loadAllDefs(
+          loader: (path) => File(path).readAsString(),
+        );
+      }
+    });
     // 5 synergy multipliers(对应 data/synergies.yaml 5 组合,本测试不读 yaml
     // 文件以保 deterministic,与 yaml 数值同步靠 synergies_yaml_test 红线校验)
     const synergyMultipliers = <String, SynergyMultipliers>{
