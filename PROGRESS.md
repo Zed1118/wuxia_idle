@@ -7,6 +7,8 @@
 
 > 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · H2 小套餐实装 · D 数值再平衡推进 · 1534 测 / 0 analyze**
 
+**2026-05-29 H3 后期挑战 audit + A2 🔴 修复**(2 commit `0cd5c81` audit + `20d7273` fix · 1534 测维持 / 0 analyze):4 并行子 agent Phase 0 grep(Ch4-6 主线/心魔/群战+轻功/飞升)→ `docs/handoff/h3_lategame_audit_2026-05-29.md`(~105 行)。**后期整体远比中期健康**(大量 🟢:难度曲线+红线+叙事接线全成熟,Ch4-6 35 narrative 0 dangling)。**唯一 🔴 = A2 多代飞升循环断裂**:`performAscend` 真传位漏写 `save.founderCharacterId=promotedDiscipleId` → gen2「祖师不在出战阵容」永久 blocked、被 R5.6/8/10 测试手动 setup 掩盖 · 主控 grep 复核铁证 + 红绿修复(1 行 production + 删测试 setup 暴露真实闸门 + R5.6 防回退断言)。其余 🟡 polish(后期入口境界门控 §5.7 / 轻功+群战解锁撞同关 stage_06_05 / Ch6→飞升路标)并入后续 polish 批。**下一步:根因A 挂机循环重平衡(需先讨论数值方向)**。
+
 **2026-05-29 H2 小套餐(接线 polish)实装**(TDD · 0 数值改 0 schema 改 · 1520→1534 测):**C1 章节翻篇过场**(loadChapter + ChapterTransitionScreen + chapter_list「卷」入口 · prologue/epilogue 此前 dead content 变可达)+ **C2 升阶大境界仪式**(AdvancementResult.crossedTier → AdvancementSummary/retreat banner 大境界走 military_tech+badge,区别小层升级)+ **E2 effective 实战值可见**(detail _StatRow 显强化×共鸣×开锋乘法值 + 「基 N」副标)+ **S3 死字段清理**(cultivation_progress_pct 移除误导 UI 行 + numbers.yaml 注释加重)+ **R2 verified 已实装**(victory dialog ResonanceUpgradeBanner 早在 P1.1 候选 3-a,不加冗余 toast)。defer:C1 Boss 自动仪式 / E2 换装 delta / 根因A 挂机循环重平衡(中套餐)。详 closeout `m15_h2_small_polish_closeout_2026-05-29.md`。
 
 **2026-05-29 H2 中期玩法深度 audit 完成**(doc only · 0 代码改):4 并行子 agent Phase 0 grep(装备/心法/师徒+共鸣/闭关+章节+升阶)→ `docs/handoff/h2_midgame_audit_2026-05-29.md`(~135 行)· 6 条 load-bearing 断言 grep 实测核验。**两大根因**:A 挂机循环与中期成长脱节(idle 0 喂共鸣度/修炼度 · 闭关鸡肋 · insightPoints/learnPoints 死钱包)+ B backend 做完前端没接线(章节翻篇 dead content · 学心法 UI 0 caller · 升阶大境界 UI 不区分 · 换装 effective 不展示 · cultivation_progress_pct 死字段)。3 套餐候选(小=接线 polish 0 数值改 / 中=挂机循环重平衡 / 大=深度加深 1.1 级)+ H2-Q1~Q4 决策点等用户拍。**推荐 小套餐**(已产 backend 接线 ROI 最高)。
@@ -14,8 +16,6 @@
 **2026-05-29 H1-Q1 小套餐实装**(1 commit `a497044`):G1 `mainMenuTitle '挂机武侠 · 调试主菜单' → '挂机武侠'`(P0 ship blocker 清 · production-facing 产品名)+ G5 标题 style 24→28/w600/letterSpacing 4(沿 splash 体例次一档)· main_menu 测 30 全过含标题渲染 · 0 analyze · 顺手清 8 个往期遗留工作树(全已并入 main + clean)。**P0 ship blocker 清零**。
 
 **2026-05-29 5h 挂机推进 · 方向调整**:用户拍板「先打磨游戏再启 Steam」→ F/G 搁置(留 ship 前 1-2 月)+ H 段从 nice-to-have 升「内容打磨 + UX」主聚焦 + Q1-Q4 默认决议 + 方案 A 单线推 D4。本批 Batch A0-A5 推进:CHECKLIST v1.9 + ROADMAP 对齐 + H 段 spec 起草 + `tools/balance_simulator.dart` PoC + 30 关全路径 1500 跑 + 难度曲线 csv + numbers tune 候选 diff(不上线,起床用户拍)+ R5 测族保护。
-
-**2026-05-28 P2.1 装备美术 icon 45 张入库**(1 commit `d1cfd5a`):MJ v7 水墨厚涂 + AutoSail Chrome 扩展批量 + 4 张候选挑 1 张 · 7 阶全齐(T1 6+T2 6+T3 6+T4 7+T5 7+T6 7+T7 6=45)· 全 80 件主线装备 iconPath 引用 0 缺图 ✅ · 测族 1519 维持 / 0 analyze · **detail 图状态修正**:yaml 80/80 已填 detailPath + UI `equipment_detail_screen.dart:108` 已 wire(errorBuilder 兜底)+ 文件 35/80 ✅(原 35 件)+ 45/80 待美术 M15-16。
 
 **2026-05-28 RELEASE_CHECKLIST v1.5 + ROADMAP v1.8 + R4 派单**(2 commit `e5bb9ba` + `51aaafb`):A 段测试数 1514→1519 · B 段附加 P2.1 全收+drop 全覆盖 · ROADMAP 93%→95% · Pen 同步 `e5bb9ba` + build OK · R4 派单 12 验收点(数据加载/掉落显示/典故+招式)· 典故盘点:80 文件 170 段 default_lore > GDD §8.4 目标 80 段 ✅ 已达标。
 
