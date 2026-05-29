@@ -458,11 +458,14 @@ class GameRepository {
     if (realms.length != 49) {
       throw StateError('RealmDef 行数应为 49，实际 ${realms.length}');
     }
+    // §5.4 内力红线上界走单一真相源 numbers.combat.red_lines(2026-05-29 消
+    // hardcode);下界 500 是 realm def sanity floor,非 §5.4 红线,保留字面量。
+    final ifMax = numbers.combat.redLines.internalForceMax;
     for (final r in realms) {
-      if (r.internalForceMax < 500 || r.internalForceMax > 15000) {
+      if (r.internalForceMax < 500 || r.internalForceMax > ifMax) {
         throw StateError(
           '红线越界：${r.tier.name}/${r.layer.name} '
-          'internalForceMax=${r.internalForceMax}，应 ∈ [500, 15000]',
+          'internalForceMax=${r.internalForceMax}，应 ∈ [500, $ifMax]',
         );
       }
     }

@@ -1009,6 +1009,7 @@ class CombatNumbers {
   final CriticalConfig critical;
   final EvasionConfig evasion;
   final EnemyDefaults enemyDefaults;
+  final RedLinesConfig redLines;
 
   const CombatNumbers({
     required this.damageFormula,
@@ -1017,6 +1018,7 @@ class CombatNumbers {
     required this.critical,
     required this.evasion,
     required this.enemyDefaults,
+    required this.redLines,
   });
 
   factory CombatNumbers.fromYaml(Map<String, dynamic> y) {
@@ -1039,6 +1041,34 @@ class CombatNumbers {
       enemyDefaults: EnemyDefaults.fromYaml(
         y['enemy_defaults'] as Map<String, dynamic>,
       ),
+      redLines: RedLinesConfig.fromYaml(
+        y['red_lines'] as Map<String, dynamic>? ?? const {},
+      ),
+    );
+  }
+}
+
+/// 数值红线 cap 强类型（numbers.yaml `combat.red_lines`，GDD §5.4 硬上限）。
+///
+/// 单一真相源:替代 derived_stats / stage_battle_setup / game_repository 各自
+/// 散落的 15000/20000 字面量。玩家 build（founder buff / 师承遗物 / 心法相生
+/// 乘法叠加）可能把派生值推过红线,各 clamp 点统一读这里。
+///
+/// fixture（test 简化 numbers yaml）不带 `red_lines` 段时回落 §5.4 默认值,
+/// 沿 [InnerDemonMirrorCaps.fromYaml] 防御 fallback 体例。
+class RedLinesConfig {
+  final int playerHpMax;
+  final int internalForceMax;
+
+  const RedLinesConfig({
+    required this.playerHpMax,
+    required this.internalForceMax,
+  });
+
+  factory RedLinesConfig.fromYaml(Map<String, dynamic> y) {
+    return RedLinesConfig(
+      playerHpMax: (y['player_hp_max'] as num?)?.toInt() ?? 20000,
+      internalForceMax: (y['internal_force_max'] as num?)?.toInt() ?? 15000,
     );
   }
 }
