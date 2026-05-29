@@ -1,12 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
+import 'package:wuxia_idle/features/equipment/application/equipment_factory.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/retreat_result_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
 
 SeclusionMapDef _mkMapDef() => const SeclusionMapDef(
       mapType: RetreatMapType.shanLin,
@@ -49,6 +54,30 @@ Future<void> _pump(WidgetTester tester, RetreatResult result) async {
 }
 
 void main() {
+  setUpAll(() async {
+    if (!GameRepository.isLoaded) {
+      await GameRepository.loadAllDefs(
+        loader: (path) => File(path).readAsString(),
+      );
+    }
+  });
+
+  // H1 批3:闭关结果装备显中文名而非 raw defId(真 bug 回归守护)。
+  group('RetreatResultScreen 装备掉落显中文名', () {
+    testWidgets('装备掉落 → 显中文名,不显 raw defId', (tester) async {
+      final tieJian = EquipmentFactory.fromDef(
+        GameRepository.instance.getEquipment('weapon_xunchang_tie_jian'),
+        rng: DefaultRng(seed: 1),
+        obtainedAt: DateTime(2026, 5, 30),
+        obtainedFrom: '闭关',
+      );
+      await _pump(tester, _mkResult(drops: [tieJian]));
+
+      expect(find.text('铁剑'), findsOneWidget);
+      expect(find.textContaining('weapon_xunchang'), findsNothing);
+    });
+  });
+
   group('RetreatResultScreen W15 #30 5 维度展示', () {
     testWidgets('5 维度全有 → 5 行 + 实际时长', (tester) async {
       await _pump(

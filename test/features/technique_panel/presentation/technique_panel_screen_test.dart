@@ -36,6 +36,7 @@ void main() {
     int? mainTechniqueId,
     List<int>? assistTechniqueIds,
     int internalForce = 1000,
+    int insightPoints = 0,
   }) {
     return Character.create(
       name: '测试者',
@@ -50,6 +51,7 @@ void main() {
       school: TechniqueSchool.gangMeng,
       mainTechniqueId: mainTechniqueId,
       assistTechniqueIds: assistTechniqueIds,
+      insightPoints: insightPoints,
     )..id = 1;
   }
 
@@ -239,5 +241,40 @@ void main() {
     expect(main.role, TechniqueRole.main);
     expect(main.cultivationProgress, 800);
     expect(assist.role, TechniqueRole.assist);
+  });
+
+  // ── 用例 5：凝练领悟入口常驻态（H1 批3）─────────────────────────────────
+
+  testWidgets('insightPoints>0 → 主修凝练入口显点数且可点', (tester) async {
+    final character = mkCharacter(mainTechniqueId: 100, insightPoints: 5);
+    final main = mkTechnique(id: 100, ownerId: 1, role: TechniqueRole.main);
+
+    await pumpPanel(tester, character: character, techniques: {100: main});
+
+    final label = UiStrings.refineInsightButtonWithPoints(5); // '凝练领悟 · 5 点'
+    expect(find.text(label), findsOneWidget);
+    expect(find.text(UiStrings.refineInsightButtonEmpty), findsNothing);
+    // 可点：onPressed 非 null。
+    final btn = tester.widget<TextButton>(
+      find.ancestor(of: find.text(label), matching: find.byType(TextButton)),
+    );
+    expect(btn.onPressed, isNotNull);
+  });
+
+  testWidgets('insightPoints=0 → 主修凝练入口灰显常驻且不可点', (tester) async {
+    final character = mkCharacter(mainTechniqueId: 100, insightPoints: 0);
+    final main = mkTechnique(id: 100, ownerId: 1, role: TechniqueRole.main);
+
+    await pumpPanel(tester, character: character, techniques: {100: main});
+
+    expect(find.text(UiStrings.refineInsightButtonEmpty), findsOneWidget);
+    // 不可点：onPressed == null（§5.7 状态常驻而非靠点击后 SnackBar 才知）。
+    final btn = tester.widget<TextButton>(
+      find.ancestor(
+        of: find.text(UiStrings.refineInsightButtonEmpty),
+        matching: find.byType(TextButton),
+      ),
+    );
+    expect(btn.onPressed, isNull);
   });
 }

@@ -5,6 +5,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/tier_colors.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/drop_service.dart';
@@ -57,14 +58,6 @@ class StageVictoryContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dropLines = <String>[
-      for (final eq in drops.equipments)
-        GameRepository.isLoaded
-            ? GameRepository.instance.getEquipment(eq.defId).name
-            : eq.defId,
-      for (final item in drops.items)
-        '${EnumL10n.itemType(ItemType.fromDefId(item.defId))} ×${item.quantity}',
-    ];
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,12 +72,19 @@ class StageVictoryContent extends StatelessWidget {
               style: TextStyle(color: WuxiaColors.textMuted),
             ),
           )
-        else
-          for (final line in dropLines)
+        else ...[
+          // H1 批3:装备掉落按品阶上色 + 勋章图标,神物/寻常货一眼可辨(§10
+          // 仪式感),消除「磨剑石与神物视觉同」的零反馈。道具仍走朴素列。
+          for (final eq in drops.equipments) _EquipmentDropRow(defId: eq.defId),
+          for (final item in drops.items)
             Padding(
               padding: const EdgeInsets.only(left: 8),
-              child: Text('· $line'),
+              child: Text(
+                '· ${EnumL10n.itemType(ItemType.fromDefId(item.defId))} '
+                '×${item.quantity}',
+              ),
             ),
+        ],
         if (advancements.any((e) => e.result.didAdvance)) ...[
           const SizedBox(height: 12),
           AdvancementSummary(entries: advancements),
@@ -94,6 +94,50 @@ class StageVictoryContent extends StatelessWidget {
           ResonanceUpgradeBanner(notices: resonanceUpgrades),
         ],
       ],
+    );
+  }
+}
+
+/// 单件装备掉落行(H1 批3 仪式感):品阶色勋章图标 + 名 + 品阶标签。
+///
+/// 品阶色取 [tierColorForEquipment](寻常货暗灰 → 神物高亮金),让稀有掉落
+/// 一眼跳出(§10 仪式感)。GameRepository 未加载时降级纯 defId(沿原兜底)。
+/// 公开省略 —— 仅本 dialog 内部用。
+class _EquipmentDropRow extends StatelessWidget {
+  const _EquipmentDropRow({required this.defId});
+
+  final String defId;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!GameRepository.isLoaded) {
+      return Padding(
+        padding: const EdgeInsets.only(left: 8),
+        child: Text('· $defId'),
+      );
+    }
+    final def = GameRepository.instance.getEquipment(defId);
+    final color = tierColorForEquipment(def.tier);
+    return Padding(
+      padding: const EdgeInsets.only(left: 8, top: 2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.workspace_premium, size: 15, color: color),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              def.name,
+              style: TextStyle(color: color, fontWeight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            EnumL10n.equipmentTier(def.tier),
+            style: TextStyle(color: color, fontSize: 11),
+          ),
+        ],
+      ),
     );
   }
 }

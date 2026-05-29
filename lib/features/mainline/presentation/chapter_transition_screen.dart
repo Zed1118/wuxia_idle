@@ -83,6 +83,12 @@ class ChapterTransitionScreen extends StatelessWidget {
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton(
+                      // H1 批3:默认 M3 primary 偏蓝紫,违 §9 水墨基调 → 改刚猛红,
+                      // 与闭关结果「返回」按钮(retreat_result)统一。
+                      style: FilledButton.styleFrom(
+                        backgroundColor: WuxiaColors.gangMeng,
+                        foregroundColor: WuxiaColors.textPrimary,
+                      ),
                       onPressed: () => Navigator.of(context).pushReplacement(
                         MaterialPageRoute<void>(
                           builder: (_) =>
