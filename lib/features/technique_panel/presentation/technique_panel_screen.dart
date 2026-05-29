@@ -358,7 +358,7 @@ class _TechniqueTile extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
+            child: const Text(UiStrings.commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),

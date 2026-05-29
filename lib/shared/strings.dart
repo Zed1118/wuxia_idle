@@ -842,4 +842,29 @@ class UiStrings {
   // P4.1 1.1 polish · character_panel 门派同道行(_SectMembershipRow · 沿 lineageDisciplesLabel 体例)
   static const String panelSectMembersLabel = '门派同道:';
   static const String panelSectMembersEmpty = '门派人少';
+
+  // ── overnight Batch1:presentation 硬编码中文迁出(§5.6)──────────────────
+  // A1 各子系统屏 AppBar 标题/按钮(原 inline const Text 字面迁出)。
+  static const String innerDemonScreenTitle = '心魔';
+  static const String lightFootScreenTitle = '轻功试炼';
+  static const String massBattleScreenTitle = '守城试炼';
+  static const String sectScreenTitle = '门派事务';
+  static const String characterPanelScreenTitle = '角色面板';
+  static const String breakthroughGoToInnerDemon = '前往心魔境';
+  static const String sectEventEnterBattle = '应战赴会';
+  static const String encounterSkillUnequipButton = '卸下';
+  static const String commonCancel = '取消';
+
+  // A2 SnackBar / 错误提示($e 变量用带参方法保留)。
+  static const String encounterSkillUnequipSuccess = '已卸下奇遇招式';
+  static String encounterSkillEquipFailed(Object e) => '装备失败: $e';
+  static String encounterSkillUnequipFailed(Object e) => '卸下失败: $e';
+  static String retreatCollectFailed(Object e) => '收功失败：$e';
+  static String seclusionStartFailed(Object e) => '开始闭关失败：$e';
+  static String ascensionFailed(Object e) => '飞升失败:$e';
+  static String battleSetupFailed(Object e) => '战斗准备失败：$e';
+  static String sectLoadFailed(Object e) => '加载失败:$e';
+
+  // A5 剧情占位提示(去退役 DeepSeek 术语)。
+  static const String narrativePlaceholderHint = '⚠ 剧情占位（待补）';
 }

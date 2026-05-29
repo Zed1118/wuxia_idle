@@ -118,7 +118,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('收功失败：$e')),
+        SnackBar(content: Text(UiStrings.retreatCollectFailed(e))),
       );
       setState(() => _isCollecting = false);
     }
