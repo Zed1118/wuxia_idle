@@ -123,7 +123,7 @@ void main() {
         description: '',
       );
       final str = BattleLog.formatAction(action, s);
-      expect(str, contains('[第 12 tick]'));
+      expect(str, contains('[第 12 回合]'));
       expect(str, contains('左0'));
       expect(str, contains('右0'));
       expect(str, contains('直拳'));
@@ -277,7 +277,7 @@ void main() {
       );
       final str = BattleLog.formatSummary(s);
       expect(str, contains('左队胜'));
-      expect(str, contains('87 tick'));
+      expect(str, contains('87 回合'));
       expect(str, contains('8420'));
       expect(str, contains('左0'));
       expect(str, contains('被击杀'));
@@ -290,7 +290,7 @@ void main() {
       final s = BattleState.initial(leftTeam: [left], rightTeam: [right]);
       final str = BattleLog.formatSummary(s);
       expect(str, contains('未结束'));
-      expect(str, contains('0 tick'));
+      expect(str, contains('0 回合'));
       expect(str, isNot(contains('最高单次伤害')));
       expect(str, isNot(contains('被击杀')));
     });

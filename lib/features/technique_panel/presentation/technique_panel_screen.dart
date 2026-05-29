@@ -260,17 +260,28 @@ class _TechniqueTile extends ConsumerWidget {
                   child: const Text(UiStrings.setAsMainButton),
                 ),
               // 根因A:主修可凝练领悟点(闭关挂机攒的 insightPoints)兑换修炼度。
+              // H1 批3:入口常驻显点数,0 点时灰显不可点(原靠点击后 SnackBar
+              // 才知,§5.7 让玩家先感知状态)。
               if (isMain)
                 TextButton(
-                  onPressed: () => _onRefineInsight(context, ref),
+                  onPressed: character.insightPoints > 0
+                      ? () => _onRefineInsight(context, ref)
+                      : null,
                   style: TextButton.styleFrom(
                     foregroundColor: schoolColor,
+                    disabledForegroundColor: WuxiaColors.textMuted,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 4,
                     ),
                   ),
-                  child: const Text(UiStrings.refineInsightButton),
+                  child: Text(
+                    character.insightPoints > 0
+                        ? UiStrings.refineInsightButtonWithPoints(
+                            character.insightPoints,
+                          )
+                        : UiStrings.refineInsightButtonEmpty,
+                  ),
                 ),
             ],
           ),

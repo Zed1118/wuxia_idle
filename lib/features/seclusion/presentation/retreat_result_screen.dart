@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../data/game_repository.dart';
 import '../../../features/battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -105,7 +106,11 @@ class RetreatResultScreen extends StatelessWidget {
                 for (final eq in equipDrops)
                   _RewardRow(
                     icon: Icons.sports_martial_arts,
-                    label: eq.defId,
+                    // H1 批3:显中文名而非 raw defId(真 bug)。沿 character_panel
+                    // / stage_victory_dialog 体例,GameRepository 未加载兜底 defId。
+                    label: GameRepository.isLoaded
+                        ? GameRepository.instance.getEquipment(eq.defId).name
+                        : eq.defId,
                   ),
               ],
 

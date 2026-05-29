@@ -31,9 +31,9 @@ class UiStrings {
   static const String close = '关闭';
   static const String backToMenu = '返回菜单';
 
-  /// 战斗结算 dialog 内容：`总伤害 X  暴击 Y 次  用时 Z tick`。
+  /// 战斗结算 dialog 内容：`总伤害 X  暴击 Y 次  用时 Z 回合`。
   static String battleSummary(int totalDamage, int critCount, int totalTicks) =>
-      '总伤害 $totalDamage    暴击 $critCount 次    用时 $totalTicks tick';
+      '总伤害 $totalDamage    暴击 $critCount 次    用时 $totalTicks 回合';
 
   // 主菜单（T32 子提交 3b；G1 剥「调试」字样,production-facing 产品名）
   static const String mainMenuTitle = '挂机武侠';
@@ -288,6 +288,12 @@ class UiStrings {
 
   // 凝练领悟（根因A 2026-05-29：insightPoints 兑换主修修炼度 sink）
   static const String refineInsightButton = '凝练领悟';
+
+  /// 主修凝练入口常驻态(H1 批3):有领悟点时显点数,引导玩家点击;0 点时
+  /// 入口走 [refineInsightButtonEmpty] 灰显常驻态,不再靠点击后 SnackBar 才知。
+  static String refineInsightButtonWithPoints(int points) =>
+      '凝练领悟 · $points 点';
+  static const String refineInsightButtonEmpty = '凝练领悟 · 暂无领悟点';
   static const String refineInsightTitle = '凝练领悟';
 
   /// 凝练 dialog 正文:`将 X 点领悟点凝入主修修炼度。`

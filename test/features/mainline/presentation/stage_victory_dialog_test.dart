@@ -1,12 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/cultivation/presentation/advancement_summary.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
+import 'package:wuxia_idle/features/equipment/application/equipment_factory.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_victory_dialog.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
 
 StageDef _stage() => const StageDef(
       id: 'stage_test_01',
@@ -27,6 +32,20 @@ DropResult _emptyDrops() =>
 DropResult _itemDrops() => const DropResult(
       equipments: [],
       items: [ItemDropResult(defId: 'item_mojianshi', quantity: 2)],
+    );
+
+/// H1 批3:真装备掉落(需 GameRepository 已加载,defId→名+品阶)。
+DropResult _equipDrops(List<String> defIds) => DropResult(
+      equipments: [
+        for (final id in defIds)
+          EquipmentFactory.fromDef(
+            GameRepository.instance.getEquipment(id),
+            rng: DefaultRng(seed: 1),
+            obtainedAt: DateTime(2026, 5, 30),
+            obtainedFrom: '掉落',
+          ),
+      ],
+      items: const [],
     );
 
 AdvancementResult _advanced() => const AdvancementResult(
@@ -69,6 +88,14 @@ Future<void> _pumpContent(
 }
 
 void main() {
+  setUpAll(() async {
+    if (!GameRepository.isLoaded) {
+      await GameRepository.loadAllDefs(
+        loader: (path) => File(path).readAsString(),
+      );
+    }
+  });
+
   group('StageVictoryContent', () {
     testWidgets('empty drops + 无升层 → 显「本战无固定掉落」 + 不显 banner',
         (tester) async {
@@ -168,6 +195,28 @@ void main() {
       expect(find.text(UiStrings.stageVictoryNoDrop), findsOneWidget);
       expect(find.text(UiStrings.stageVictoryResonanceLabel), findsNothing);
       expect(find.byIcon(Icons.auto_awesome), findsNothing);
+    });
+
+    // H1 批3:装备掉落仪式感 —— 显中文名 + 品阶标签 + 勋章图标,非 raw defId。
+    testWidgets('装备掉落 → 显中文名+品阶标签+勋章图标,不显 raw defId',
+        (tester) async {
+      await _pumpContent(
+        tester,
+        _equipDrops([
+          'weapon_shenwu_tian_wen_jian', // 神物 · 天问剑
+          'weapon_xunchang_tie_jian', // 寻常货 · 铁剑
+        ]),
+        const [],
+      );
+      // 中文名渲染(此前若显 raw defId 即真 bug 类)。
+      expect(find.text('天问剑'), findsOneWidget);
+      expect(find.text('铁剑'), findsOneWidget);
+      expect(find.textContaining('weapon_shenwu'), findsNothing);
+      // 品阶标签(神物高亮 / 寻常货暗灰,色差由 tierColorForEquipment 给)。
+      expect(find.text('神物'), findsOneWidget);
+      expect(find.text('寻常货'), findsOneWidget);
+      // 每件装备一枚品阶勋章图标。
+      expect(find.byIcon(Icons.workspace_premium), findsNWidgets(2));
     });
   });
 

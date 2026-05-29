@@ -19,14 +19,14 @@ class BattleLog {
   /// 行动写入时尸体仍在阵列）。
   ///
   /// 例：
-  /// - `[第 23 tick] 祖师对 鬼影刀客 使用「青龙拳」，暴击造成 2340 伤害（刚猛克阴柔 ×1.25 / 附带震伤）`
-  /// - `[第 5 tick] 学徒对 武僧 使用「直拳」，被闪避（闪避率 12%）`
-  /// - `[第 47 tick] 祖师对 山贼头子 使用「破阵斩」，造成 980 伤害（击杀）`
+  /// - `[第 23 回合] 祖师对 鬼影刀客 使用「青龙拳」，暴击造成 2340 伤害（刚猛克阴柔 ×1.25 / 附带震伤）`
+  /// - `[第 5 回合] 学徒对 武僧 使用「直拳」，被闪避（闪避率 12%）`
+  /// - `[第 47 回合] 祖师对 山贼头子 使用「破阵斩」，造成 980 伤害（击杀）`
   static String formatAction(BattleAction action, BattleState state) {
     final actorName = _findName(state, action.actorId) ?? '未知';
     final skillName = action.skill?.name ?? '未知招式';
     final r = action.attackResult;
-    final tickStr = '[第 ${action.tick} tick]';
+    final tickStr = '[第 ${action.tick} 回合]';
 
     if (r == null || action.targetId == null) {
       // 非攻击行动（Phase 1 暂无 buff/被动行动；保留兜底）
@@ -75,12 +75,12 @@ class BattleLog {
 
   /// 战斗结束总结（phase1_tasks.md T13 §740）。
   ///
-  /// 输出多行：胜负 + 总 tick + 最高单次伤害 + 被击杀角色。无攻击发生（极端
-  /// 情况，例如双方一开战就 result）时降级到只报胜负 + tick。
+  /// 输出多行：胜负 + 总回合 + 最高单次伤害 + 被击杀角色。无攻击发生（极端
+  /// 情况，例如双方一开战就 result）时降级到只报胜负 + 回合。
   ///
   /// 例：
   /// ```
-  /// 战斗结束（左队胜）。共 87 tick。
+  /// 战斗结束（左队胜）。共 87 回合。
   /// 最高单次伤害：祖师 8420（对 鬼影刀客）。
   /// 被击杀：鬼影刀客 / 山贼头子 / 武僧。
   /// ```
@@ -89,7 +89,7 @@ class BattleLog {
     final resultStr =
         result == null ? '未结束' : EnumL10n.battleResult(result);
     final lines = <String>[
-      '战斗结束（$resultStr）。共 ${s.tick} tick。',
+      '战斗结束（$resultStr）。共 ${s.tick} 回合。',
     ];
 
     // 最高单次伤害
