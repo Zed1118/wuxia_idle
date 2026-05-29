@@ -1275,4 +1275,28 @@ recruit_candidates:
       );
     });
   });
+
+  group('P2-a 奇遇招式池兜底(外部 review)', () {
+    // encounter_skills.yaml 在生产被 catch 静默吞掉(损坏/缺失)→ 招式池为空,
+    // 而 encounters.yaml 仍引用 unlockSkill skillId → 旧逻辑因
+    // `encounterSkillIds.isNotEmpty` 闸门跳过一致性校验,奇遇招式静默失效。
+    // 修复后:招式池空但奇遇有 unlockSkill 引用 → fail-fast 抛 StateError。
+    test('encounter_skills 池空但 encounters 引用 skillId → 抛 StateError', () async {
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('encounter_skills.yaml')) {
+          return 'encounter_skills: []\n'; // 模拟损坏/缺失被吞 → 空池
+        }
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('encounter skill 池'),
+        )),
+      );
+    });
+  });
 }
