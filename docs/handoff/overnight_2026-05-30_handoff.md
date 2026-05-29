@@ -34,3 +34,15 @@
 - **对抗式 review 5 批 diff**(独立 agent 逐字节核对 28 文件):**0 红线违规 / 0 功能 bug / 0 schema 越界 / 0 字面错迁**;enum 映射、文案 outcome 对齐、picker 改动边界全核实无误。质量可靠。
 - review 唯一动手项已修:`gu_dao_chi_jian.yaml:7` 两处半角逗号→全角(`b6f69ae`,Unicode 码点精确替换)。
 - 🔄 **主线白屏代码侧诊断进行中**:Mac 无法复现(无 Windows build),从代码侧找 ChapterListScreen 白屏失败模式 + 根因假设,结果将更新本 doc / 见下次会话。
+
+## 主线白屏 — 代码诊断结论 + 加固(overnight 收官)
+- **确证非渲染 bug 也非 H1 回归**:ChapterListScreen 深色底(`0xFF14181D`)+ loading/error/data 三分支都画可见内容,debug 异常应红屏非白屏 → 白屏=该路由首帧根本没 paint(导航/帧调度层),在 ChapterListScreen **之外**。该屏最后改于 pre-session `7790b74`,H1 三批未碰,全量测过。
+- **最可能诱因(假设,待 Pen 复现)**:`phase2_test_menu._seedAndPush` 直改 Isar 后**从不 invalidate provider** → 反复 seed+重启+直入江湖后,导航瞬间 `mainlineProgressProvider` 缓存与真实数据脱节/未 resolve(叠加 Windows 慢 Isar)。Mac 无 Windows runtime 无法复现。
+- **已加固(Batch6 `77b9b10`,零风险 debug-only)**:`_seedAndPush` seed 后补 14 个 provider invalidate(mainlineProgress/tower/encounter/character/equipment/inventory/lineage 等),让 UI 反映真实数据。**这直接改善 Codex seed→导航 验收流**(下轮 Pen 验收更稳)。
+- **未做(明示先复现再做,避免治标)**:主线按钮 loading 门控 / splash 预热 provider。
+
+## 明早 Pen 复现步骤(验白屏 + 顺带补验批3)
+1. **clean 基线**:删 isar → 启动 → 直入江湖 → 点主线。复现=真 runtime bug(与 seed 无关,另查);不复现=seed 脏诱因(Batch6 已加固,大概率消失)。
+2. **带 seed**:跑 VC18-A1 → 返主菜单 → 主线;对比「seed 后不重启直接进」vs「重启后进」(区分 provider 缓存脏 vs Isar 行脏)。
+3. 若复现:ChapterListScreen build 首行 + 主线 onTap 加 debugPrint 看导航瞬间 provider 状态(loading/data/error),是区分根因的唯一硬证据。
+4. **顺带补验批3**(本轮被白屏阻塞):过场按钮水墨色 / 掉落仪式感品阶色 / 回合术语 / 凝练入口常驻态(心法面板需 seed 到够不被门控锁的进度)+ 验本夜 picker 关闭按钮。
