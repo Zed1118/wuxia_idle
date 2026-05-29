@@ -136,4 +136,8 @@ class AdvancementResult {
   });
 
   bool get didAdvance => layersGained > 0;
+
+  /// H2 C2:大境界突破 — 升层且跨越了境界 tier(三流→二流等)。
+  /// UI 据此走全屏庆祝路径,区别于同境界内的小层升级。
+  bool get crossedTier => didAdvance && tierAfter != tierBefore;
 }

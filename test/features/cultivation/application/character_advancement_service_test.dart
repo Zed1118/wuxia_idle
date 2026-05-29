@@ -390,4 +390,51 @@ void main() {
       expect(ch.realmLayer, RealmLayer.qiMeng);
     });
   });
+
+  // H2 小套餐 C2:大境界突破(crossedTier)概念 — UI 据此走全屏庆祝,
+  // 区别于普通小层升级(此前 7 次大突破与 42 次小升级共用同一小 banner)。
+  group('crossedTier · 大境界突破判定', () {
+    test('跨 tier(xueTu.dengFeng → sanLiu.qiMeng)→ crossedTier=true', () {
+      final ch = _mkChar(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.dengFeng,
+        experienceToNextLayer: 400,
+        internalForceMax: 1100,
+      );
+      final r = CharacterAdvancementService.applyExperience(
+        ch,
+        500,
+        realmLookup: _lookup,
+      );
+      expect(r.crossedTier, isTrue);
+      expect(r.didAdvance, isTrue);
+    });
+
+    test('同 tier 内升层(qiMeng → ruMen)→ crossedTier=false', () {
+      final ch = _mkChar(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.qiMeng,
+        experienceToNextLayer: 50,
+      );
+      final r = CharacterAdvancementService.applyExperience(
+        ch,
+        50,
+        realmLookup: _lookup,
+      );
+      expect(r.layersGained, greaterThan(0));
+      expect(r.tierAfter, RealmTier.xueTu);
+      expect(r.crossedTier, isFalse, reason: '同境界内小层升级不算大突破');
+    });
+
+    test('未升层(delta=0)→ crossedTier=false', () {
+      final ch = _mkChar(tier: RealmTier.xueTu, layer: RealmLayer.qiMeng);
+      final r = CharacterAdvancementService.applyExperience(
+        ch,
+        0,
+        realmLookup: _lookup,
+      );
+      expect(r.didAdvance, isFalse);
+      expect(r.crossedTier, isFalse);
+    });
+  });
 }

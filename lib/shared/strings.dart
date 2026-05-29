@@ -339,6 +339,22 @@ class UiStrings {
     };
   }
 
+  // ── H2 小套餐 C1:章节翻篇过场 ──
+
+  /// 章节卡「卷」入口 tooltip。
+  static const String chapterScrollTooltip = '卷首/卷尾';
+  static const String chapterProloguelabel = '卷首';
+  static const String chapterEpiloguelabel = '卷尾';
+
+  /// 卷尾未解锁(章节进行中)的弱提示。
+  static const String chapterEpilogueLocked = '通关此章后，卷尾自现。';
+
+  /// 卷首/卷尾文案缺失兜底。
+  static const String chapterScrollPlaceholder = '此章卷语待补。';
+
+  /// 过场底部「入此章」按钮。
+  static const String chapterScrollEnter = '翻过此页 · 入关';
+
   // ── Phase 3 爬塔（T42）──
 
   static const String mainMenuTower = '问鼎九霄';
@@ -427,6 +443,9 @@ class UiStrings {
       layers == 1
           ? '$chName · 突破至 $realmAfter'
           : '$chName · 连破 $layers 层 → $realmAfter';
+
+  /// H2 C2:大境界突破 badge(跨境界 tier 的里程碑,区别于小层升级)。
+  static const String advancementTierUpBadge = '大境界突破';
 
   // ─── 闭关修炼（Phase 3 T49）─────────────────────────────────────────────
 

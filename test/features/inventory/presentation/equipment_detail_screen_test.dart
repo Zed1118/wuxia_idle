@@ -385,4 +385,44 @@ void main() {
       expect(find.textContaining('距'), findsNothing);
     });
   });
+
+  // H2 小套餐 E2:effective 实战值可见(换装判优基础)。
+  // 此前 _StatRow 只显裸 base,强化/共鸣/开锋乘法后的真实战力 UI 不展示。
+  group('E2 · effective 数值可见', () {
+    Future<void> pump(
+        WidgetTester tester, Equipment eq, EquipmentDef def) async {
+      await tester.binding.setSurfaceSize(const Size(1280, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: EquipmentDetailScreen(
+              equipment: eq,
+              def: def,
+              loreLoader: fakeLoader(segments: const ['x']),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('强化+12 共鸣装备 → 显实战值 + 「基 N」副标', (tester) async {
+      final def =
+          GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+      final eq = mkEq(def: def, enhanceLevel: 12, battleCount: 1240);
+      await pump(tester, eq, def);
+      expect(find.textContaining('基 ${eq.baseAttack}'), findsOneWidget,
+          reason: 'effective≠base 时显原始 base 副标,玩家看得到实战值来源');
+    });
+
+    testWidgets('裸装备(+0/0 战)effective==base → 无冗余副标', (tester) async {
+      final def =
+          GameRepository.instance.getEquipment('weapon_xunchang_tie_jian');
+      final eq = mkEq(def: def);
+      await pump(tester, eq, def);
+      expect(find.textContaining('基 '), findsNothing,
+          reason: 'effective==base 时不显冗余副标');
+    });
+  });
 }

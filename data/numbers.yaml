@@ -1108,7 +1108,10 @@ inheritance:
       internal_force_max_pct: 0.05           # 内力上限 +5%
       max_hp_pct: 0.05                       # 最大血量 +5%
       crit_rate_bonus: 0.02                  # 暴击率 +2% (绝对值)
-      cultivation_progress_pct: 0.03         # 修炼度获取速度 +3% (Phase 5+ 接公式)
+      # ⚠️ 未接公式(H2 audit S3 核账):全 lib/ 无修炼度公式消费此字段,仅 numbers_config
+      # 解析。Phase 5+ 接 cultivation 公式后再启用 + 恢复 UI 显示(lineage_panel 已移除
+      # 误导性 +3% 行,避免向玩家展示不生效的 buff)。
+      cultivation_progress_pct: 0.03         # 修炼度获取 +3%(未生效 · Phase 5+ 接公式)
       apply_to_disciples_only: false         # active 中 founder + disciples 全享
 
 # =============================================================================

@@ -5,6 +5,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
+import 'chapter_transition_screen.dart';
 import 'stage_list_screen.dart';
 
 /// 主线章节列表（Phase 3 T35,2026-05-22 P2 Ch6 扩 6 章）。
@@ -87,6 +88,19 @@ class ChapterListScreen extends ConsumerWidget {
                                     StageListScreen(chapterIndex: ch),
                               ),
                             ),
+                    // H2 C1:解锁章节加「卷」入口 → 翻篇过场(卷首/卷尾)。
+                    // 卷尾仅 cleared 解锁。锁定章节不给入口。
+                    onViewScroll: status == _ChapterStatus.locked
+                        ? null
+                        : () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => ChapterTransitionScreen(
+                                  chapterIndex: ch,
+                                  showEpilogue:
+                                      status == _ChapterStatus.cleared,
+                                ),
+                              ),
+                            ),
                   ),
                 );
               },
@@ -105,11 +119,15 @@ class _ChapterCard extends StatelessWidget {
     required this.chapterIndex,
     required this.status,
     required this.onTap,
+    this.onViewScroll,
   });
 
   final int chapterIndex;
   final _ChapterStatus status;
   final VoidCallback? onTap;
+
+  /// H2 C1:章节卷首/卷尾翻篇入口(锁定章节为 null)。
+  final VoidCallback? onViewScroll;
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +183,16 @@ class _ChapterCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              if (onViewScroll != null) ...[
+                IconButton(
+                  icon: const Icon(Icons.auto_stories),
+                  color: WuxiaColors.textSecondary,
+                  iconSize: 20,
+                  tooltip: UiStrings.chapterScrollTooltip,
+                  onPressed: onViewScroll,
+                ),
+              ],
+              const SizedBox(width: 4),
               _StatusChip(status: status),
             ],
           ),

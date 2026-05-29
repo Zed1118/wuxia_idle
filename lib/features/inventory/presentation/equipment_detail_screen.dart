@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../battle/domain/derived_stats.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/equipment_def.dart';
@@ -202,6 +203,14 @@ class _InfoCard extends ConsumerWidget {
             attack: equipment.baseAttack,
             health: equipment.baseHealth,
             speed: equipment.baseSpeed,
+            // H2 E2:实战值 = base × 强化 × 共鸣 × 开锋(derived_stats 乘法链)。
+            // 此前 UI 只显裸 base,玩家无从知真实战力 / 无法判优同阶掉落。
+            effectiveAttack:
+                CharacterDerivedStats.effectiveEquipmentAttack(equipment, n),
+            effectiveHealth:
+                CharacterDerivedStats.effectiveEquipmentHp(equipment, n),
+            effectiveSpeed:
+                CharacterDerivedStats.effectiveEquipmentSpeed(equipment, n),
             enhanceLevel: equipment.enhanceLevel,
             color: color,
           ),
@@ -357,6 +366,9 @@ class _StatRow extends StatelessWidget {
     required this.attack,
     required this.health,
     required this.speed,
+    required this.effectiveAttack,
+    required this.effectiveHealth,
+    required this.effectiveSpeed,
     required this.enhanceLevel,
     required this.color,
   });
@@ -364,6 +376,12 @@ class _StatRow extends StatelessWidget {
   final int attack;
   final int health;
   final int speed;
+
+  /// H2 E2:强化/共鸣/开锋乘法后的实战值。与 base 相等时不显「基 N」副标。
+  final int effectiveAttack;
+  final int effectiveHealth;
+  final int effectiveSpeed;
+
   final int enhanceLevel;
   final Color color;
 
@@ -373,9 +391,9 @@ class _StatRow extends StatelessWidget {
       spacing: 16,
       runSpacing: 6,
       children: [
-        _stat('攻击', attack),
-        _stat('血量', health),
-        _stat('速度', speed),
+        _stat('攻击', attack, effectiveAttack),
+        _stat('血量', health, effectiveHealth),
+        _stat('速度', speed, effectiveSpeed),
         Text(
           UiStrings.enhanceLevel(enhanceLevel),
           style: TextStyle(
@@ -388,7 +406,8 @@ class _StatRow extends StatelessWidget {
     );
   }
 
-  Widget _stat(String label, int value) {
+  Widget _stat(String label, int base, int effective) {
+    final boosted = effective != base;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -398,13 +417,24 @@ class _StatRow extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          '$value',
-          style: const TextStyle(
-            color: WuxiaColors.textPrimary,
+          '$effective',
+          style: TextStyle(
+            // 实战值高于 base 时高亮,直观传达"已被强化/共鸣加成"。
+            color: boosted ? color : WuxiaColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
+        if (boosted) ...[
+          const SizedBox(width: 3),
+          Text(
+            '(基 $base)',
+            style: const TextStyle(
+              color: WuxiaColors.textMuted,
+              fontSize: 11,
+            ),
+          ),
+        ],
       ],
     );
   }

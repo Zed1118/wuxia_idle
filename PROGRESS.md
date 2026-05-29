@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · D 数值再平衡推进 · H1-Q1 小套餐 P0 ship blocker 清 · 1520 测 / 0 analyze**
+> 📊 **2026-05-29 1.0 路径方向调整 · F+G 搁置 · H 主聚焦 · H2 小套餐实装 · D 数值再平衡推进 · 1534 测 / 0 analyze**
+
+**2026-05-29 H2 小套餐(接线 polish)实装**(TDD · 0 数值改 0 schema 改 · 1520→1534 测):**C1 章节翻篇过场**(loadChapter + ChapterTransitionScreen + chapter_list「卷」入口 · prologue/epilogue 此前 dead content 变可达)+ **C2 升阶大境界仪式**(AdvancementResult.crossedTier → AdvancementSummary/retreat banner 大境界走 military_tech+badge,区别小层升级)+ **E2 effective 实战值可见**(detail _StatRow 显强化×共鸣×开锋乘法值 + 「基 N」副标)+ **S3 死字段清理**(cultivation_progress_pct 移除误导 UI 行 + numbers.yaml 注释加重)+ **R2 verified 已实装**(victory dialog ResonanceUpgradeBanner 早在 P1.1 候选 3-a,不加冗余 toast)。defer:C1 Boss 自动仪式 / E2 换装 delta / 根因A 挂机循环重平衡(中套餐)。详 closeout `m15_h2_small_polish_closeout_2026-05-29.md`。
 
 **2026-05-29 H2 中期玩法深度 audit 完成**(doc only · 0 代码改):4 并行子 agent Phase 0 grep(装备/心法/师徒+共鸣/闭关+章节+升阶)→ `docs/handoff/h2_midgame_audit_2026-05-29.md`(~135 行)· 6 条 load-bearing 断言 grep 实测核验。**两大根因**:A 挂机循环与中期成长脱节(idle 0 喂共鸣度/修炼度 · 闭关鸡肋 · insightPoints/learnPoints 死钱包)+ B backend 做完前端没接线(章节翻篇 dead content · 学心法 UI 0 caller · 升阶大境界 UI 不区分 · 换装 effective 不展示 · cultivation_progress_pct 死字段)。3 套餐候选(小=接线 polish 0 数值改 / 中=挂机循环重平衡 / 大=深度加深 1.1 级)+ H2-Q1~Q4 决策点等用户拍。**推荐 小套餐**(已产 backend 接线 ROI 最高)。
 
