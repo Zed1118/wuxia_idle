@@ -195,4 +195,24 @@ void main() {
       expect(find.textContaining('连破'), findsNothing);
     });
   });
+
+  group('RetreatResultScreen 根因A B3 sink 引导气泡', () {
+    testWidgets('insightPoints > 0 → 显「去心法面板凝练」提示', (tester) async {
+      await _pump(tester, _mkResult(techniqueLearn: 5));
+
+      expect(find.text(UiStrings.seclusionInsightHint), findsOneWidget);
+    });
+
+    testWidgets('insightPoints == 0 → 不显凝练提示', (tester) async {
+      await _pump(tester, _mkResult(internalForce: 24));
+
+      expect(find.text(UiStrings.seclusionInsightHint), findsNothing);
+    });
+
+    testWidgets('空收获(全 0)→ 不显凝练提示', (tester) async {
+      await _pump(tester, _mkResult());
+
+      expect(find.text(UiStrings.seclusionInsightHint), findsNothing);
+    });
+  });
 }

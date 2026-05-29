@@ -109,6 +109,13 @@ class RetreatResultScreen extends StatelessWidget {
                   ),
               ],
 
+              // 根因A B3 sink 引导:本次攒到领悟点时,提示去「心法面板」凝练为
+              // 修炼度(§5.7 气泡提示,不强制跳转/不弹教程)。
+              if (insightPoints > 0) ...[
+                const SizedBox(height: 12),
+                const _InsightHint(),
+              ],
+
               // 升层 banner(本批 W15 #30 P3 加,advancement 非 null 且
               // didAdvance 才显)
               if (advancement != null && advancement.didAdvance) ...[
@@ -167,6 +174,37 @@ class _RewardRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 根因A B3 sink 引导气泡:领悟点 → 「心法面板」凝练为修炼度路径提示。
+/// 低调样式(tip 图标 + 次要文字),不抢升层 banner 风头(§5.7 非教程弹窗)。
+class _InsightHint extends StatelessWidget {
+  const _InsightHint();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          Icons.tips_and_updates_outlined,
+          color: WuxiaColors.textSecondary,
+          size: 16,
+        ),
+        SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            UiStrings.seclusionInsightHint,
+            style: TextStyle(
+              color: WuxiaColors.textSecondary,
+              fontSize: 13,
+              height: 1.3,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
