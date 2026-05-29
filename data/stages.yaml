@@ -1631,8 +1631,8 @@ stages:
         realmTier: zongShi
         realmLayer: qiMeng
         school: yinRou
-        baseHp: 41600
-        baseAttack: 2145
+        baseHp: 36600
+        baseAttack: 1995
         baseSpeed: 250
         skillIds:
           - skill_yinrou_shichuan_basic
@@ -1644,8 +1644,8 @@ stages:
         realmTier: jueDing
         realmLayer: dengFeng
         school: gangMeng
-        baseHp: 35100
-        baseAttack: 1925
+        baseHp: 30900
+        baseAttack: 1790
         baseSpeed: 235
         skillIds:
           - skill_gangmeng_jianghu_basic
@@ -1657,8 +1657,8 @@ stages:
         realmTier: jueDing
         realmLayer: dengFeng
         school: lingQiao
-        baseHp: 33800
-        baseAttack: 1870
+        baseHp: 29750
+        baseAttack: 1740
         baseSpeed: 245
         skillIds:
           - skill_lingqiao_jianghu_basic
