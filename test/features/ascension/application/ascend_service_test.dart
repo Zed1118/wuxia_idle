@@ -91,6 +91,25 @@ void main() {
   AscendService makeService() =>
       AscendService(IsarSetup.instance, GameRepository.instance.numbers);
 
+  // ── helper:把徒弟 boost 到够阶(默认 wuSheng·dengFeng)──
+  //
+  // §5.3 三系锁死(P1-a):auto_swap 上身前校验 eq.tier ≤ disciple.realmTier。
+  // 验证「auto_swap 会上身」的测试(R5.6/R5.7/R5.10)须先把收装徒弟 boost 到够阶,
+  // 否则祖师 liQi/haoJiaHuo 神物落到 erLiu/sanLiu 徒弟时正确地只入背包不上身。
+  Future<void> boostDiscipleRealm(
+    int id, {
+    RealmTier tier = RealmTier.wuSheng,
+    RealmLayer layer = RealmLayer.dengFeng,
+  }) async {
+    final isar = IsarSetup.instance;
+    await isar.writeTxn(() async {
+      final c = (await isar.characters.get(id))!;
+      c.realmTier = tier;
+      c.realmLayer = layer;
+      await isar.characters.put(c);
+    });
+  }
+
   // ───────────────────────────────────────────────────────────────────────
   // R5.1 飞升红线 e2e
   // ───────────────────────────────────────────────────────────────────────
@@ -346,6 +365,9 @@ void main() {
   group('R5.6 多代飞升 e2e', () {
     test('gen1 → gen2 完整链 · 装备 prev 累加 + 各代 buff 接管', () async {
       await boostToAscensionReady();
+      // §5.3(P1-a):d2/d3 boost 够阶,使祖师 liQi 神物 auto_swap 可正常上身
+      await boostDiscipleRealm(2);
+      await boostDiscipleRealm(3);
       final isar = IsarSetup.instance;
       final svc = makeService();
       final buffSvc = FounderBuffService(isar);
@@ -418,6 +440,8 @@ void main() {
 
     test('promotedDiscipleId=null 兼容 P2.3 一代飞升 · 无 promoted 接管', () async {
       await boostToAscensionReady();
+      // §5.3(P1-a):d2 boost 够阶,验 auto_swap 与 promoted 解耦(仍上身)
+      await boostDiscipleRealm(2);
       final isar = IsarSetup.instance;
       final svc = makeService();
       final buffSvc = FounderBuffService(isar);
@@ -452,6 +476,8 @@ void main() {
     test('disciple 已戴 weapon Y + armor Z → 传 weapon X + armor X2 → '
         'swap 新遗物 · 旧装 owner 不变', () async {
       await boostToAscensionReady();
+      // §5.3(P1-a):d2 boost 够阶,验 auto_swap 覆盖旧装(否则 liQi 神物入背包)
+      await boostDiscipleRealm(2);
       final isar = IsarSetup.instance;
 
       // setup: disciple 2 已戴 weapon Y + armor Z(原装 owner=2)
@@ -620,6 +646,9 @@ void main() {
     test('gen1 飞升后 founder=2 持 heritage weapon → true · 走 ascension_lineage_chant',
         () async {
       await boostToAscensionReady();
+      // §5.3(P1-a):d2 boost 够阶,使 heritage weapon 真上身(否则入背包 →
+      // isLineageContinuation 查不到 founder=2 装备槽的 prev 链 → 误返 false)
+      await boostDiscipleRealm(2);
       final isar = IsarSetup.instance;
       final svc = makeService();
 
@@ -750,6 +779,71 @@ void main() {
       final sectAfter = await isar.sects.get(sectId);
       expect(sectAfter!.founderId, 1,
           reason: 'promotedDiscipleId=null 时 sect.founderId 不动(rewire hook 跳过)');
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // R5.11 §5.3 三系锁死:auto_swap 不破锁死(P1-a 外部 review 修复)
+  // ───────────────────────────────────────────────────────────────────────
+  //
+  // 外部 code-review P1-a:performAscend auto_swap 直写 disciple.equipped{Slot}Id
+  // 无 canEquip 校验 → 武圣神物可自动装到低境界徒弟,破 §5.3 三系锁死
+  // (师承遗物同样受锁死,无网开一面 · CLAUDE.md §5.3 例外说明)。
+  // 正确语义:owner 仍转(入背包)· 但徒弟境界未达 eq.tier 对应阶时不上身,留背包。
+  group('R5.11 §5.3 三系锁死:auto_swap 不破锁死', () {
+    test('erLiu 大弟子收 liQi 武器 → owner 转(入背包)但槽位不上身', () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+      final svc = makeService();
+
+      // 祖师 weapon = weapon_liqi_long_quan(liQi · idx3)· 大弟子 id=2 = erLiu
+      // (idx2)< liQi(idx3)→ §5.3 不可装备。
+      final founder = (await isar.characters.get(1))!;
+      final weapon = founder.equippedWeaponId!;
+      final weaponEq = (await isar.equipments.get(weapon))!;
+      expect(weaponEq.tier, EquipmentTier.liQi,
+          reason: 'fixture sanity:祖师武器为 liQi');
+      final d2Before = (await isar.characters.get(2))!;
+      expect(d2Before.realmTier, RealmTier.erLiu,
+          reason: 'fixture sanity:大弟子 erLiu < liQi');
+      final slotBefore = d2Before.equippedWeaponId; // 大弟子原 haoJiaHuo 武器
+
+      await isar.writeTxn(() => svc.performAscend({weapon: 2}));
+
+      // owner 仍转给大弟子(入背包语义 · 上一步 batch transfer)
+      final eqAfter = (await isar.equipments.get(weapon))!;
+      expect(eqAfter.ownerCharacterId, 2,
+          reason: '§5.3:owner 仍转(可持有/观摩,入背包)');
+      expect(eqAfter.isLineageHeritage, true);
+
+      // 但大弟子未达 liQi 阶 → 武器槽不上身,保持原装(留背包等够阶)
+      final d2After = (await isar.characters.get(2))!;
+      expect(d2After.equippedWeaponId, isNot(weapon),
+          reason: '§5.3:erLiu 未达 liQi 阶 → 神物不上身(留背包)');
+      expect(d2After.equippedWeaponId, slotBefore,
+          reason: '武器槽保持原 haoJiaHuo 装备不变');
+    });
+
+    test('够阶徒弟(boost wuSheng)收 liQi 武器 → auto_swap 正常上身', () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+      final svc = makeService();
+
+      // 大弟子 boost 到 wuSheng·dengFeng → 可装备任意阶(含 liQi 神物)
+      await isar.writeTxn(() async {
+        final d2 = (await isar.characters.get(2))!;
+        d2.realmTier = RealmTier.wuSheng;
+        d2.realmLayer = RealmLayer.dengFeng;
+        await isar.characters.put(d2);
+      });
+
+      final founder = (await isar.characters.get(1))!;
+      final weapon = founder.equippedWeaponId!;
+      await isar.writeTxn(() => svc.performAscend({weapon: 2}));
+
+      final d2After = (await isar.characters.get(2))!;
+      expect(d2After.equippedWeaponId, weapon,
+          reason: '§5.3:wuSheng 够阶 → auto_swap 正常上身');
     });
   });
 }

@@ -166,7 +166,10 @@ class AscendService {
   ///   3. founder 端槽位脱钩(equippedWeaponId/ArmorId/AccessoryId 若指本 eq 清空)
   ///   4. **disciple 端槽位自动接新遗物**(Q3 conflict_slot_resolution=auto_swap):
   ///      `disciple.equipped{Slot}Id` 指向新 eq.id · 旧装 ownerCharacterId 不变
-  ///      (disciple 仍持入背包语义 · spec `p5_lineage_full_spec` §Q3)
+  ///      (disciple 仍持入背包语义 · spec `p5_lineage_full_spec` §Q3)。
+  ///      **§5.3 三系锁死守卫(P1-a review 修复)**:仅当 `eq.isEquippableAtRealm
+  ///      (disciple.realmTier)` 才上身;徒弟境界未达 eq.tier 对应阶时只转 owner
+  ///      (入背包)不上身,等够阶再装(师承遗物不例外 · CLAUDE.md §5.3)。
   ///   5. founder.isActive=false(出阵 · isAlive 不动 · GDD §7.1 飞升渡劫后仍存在)
   ///   6. SaveData.activeCharacterIds remove founderId
   ///   7. **promotedDisciple.isFounder=true**(Q1+Q2 · 真传位 · 不动 lineageRole ·
@@ -244,19 +247,25 @@ class AscendService {
 
       // 副作用 4 · Q3 conflict_slot_resolution=auto_swap:disciple 端槽位自动接
       // 新遗物 · 旧装 ownerCharacterId 不变(disciple 仍持入背包语义 · §Q3)
+      //
+      // §5.3 三系锁死守卫(P1-a 外部 review 修复):师承遗物不破锁死 —— 上一步
+      // 已转 owner(入背包),但 disciple 境界未达 eq.tier 对应阶时**不上身**,
+      // 留背包等够阶再装。无此守卫则武圣神物会自动装到低境界徒弟,破 §5.3。
       final disciple = (await isar.characters.get(selections[eq.id]!))!;
-      switch (eq.slot) {
-        case EquipmentSlot.weapon:
-          disciple.equippedWeaponId = eq.id;
-          break;
-        case EquipmentSlot.armor:
-          disciple.equippedArmorId = eq.id;
-          break;
-        case EquipmentSlot.accessory:
-          disciple.equippedAccessoryId = eq.id;
-          break;
+      if (eq.isEquippableAtRealm(disciple.realmTier)) {
+        switch (eq.slot) {
+          case EquipmentSlot.weapon:
+            disciple.equippedWeaponId = eq.id;
+            break;
+          case EquipmentSlot.armor:
+            disciple.equippedArmorId = eq.id;
+            break;
+          case EquipmentSlot.accessory:
+            disciple.equippedAccessoryId = eq.id;
+            break;
+        }
+        await isar.characters.put(disciple);
       }
-      await isar.characters.put(disciple);
     }
 
     // 5. founder 出阵
