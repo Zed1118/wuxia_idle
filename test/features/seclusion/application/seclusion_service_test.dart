@@ -299,9 +299,9 @@ void main() {
       // 子时不参与 mojianshi 公式 → 4 而非 floor(4×1.2)=4(此处 floor 巧合相同，
       // 用 experiencePoints 反例更明确)
       expect(out.mojianshi, 4);
-      // experience 山林 perHour=250(根因A ×2.5),无节气 → floor(250×4×1.0)=1000
-      // 子时同样不参与 experience 公式 → 1000 而非 floor(1000×1.2)
-      expect(out.experiencePoints, 1000);
+      // experience 山林 perHour=100(B2 finding 修正回 ×1.0),无节气 → floor(100×4×1.0)=400
+      // 子时同样不参与 experience 公式 → 400 而非 floor(400×1.2)
+      expect(out.experiencePoints, 400);
       // internalForce 山林 base=5,internalForceGrowth=1.0,xueTu scale=1.0,
       // 子时×1.2 → floor(5×1.0×4×1.0×1.0×1.2)=floor(24.0)=24
       expect(out.internalForcePoints, 24);
@@ -377,7 +377,7 @@ void main() {
       // mojianshi / experience / techniqueLearn 公式中不含 synergyGrowthPct
       // 项,数值与基线一致(回归断言)
       expect(out.mojianshi, 4, reason: 'mojianshi 不受相生 growth 影响');
-      expect(out.experiencePoints, 1000,
+      expect(out.experiencePoints, 400,
           reason: 'experience 不受相生 growth 影响');
     });
 
@@ -395,8 +395,8 @@ void main() {
       );
       // mojianshi floor(1.0×4×1.0×1.30)=5
       expect(out.mojianshi, 5);
-      // experience floor(250×4×1.0×1.30)=1300（根因A ×2.5）
-      expect(out.experiencePoints, 1300);
+      // experience floor(100×4×1.0×1.30)=520（B2 finding 修正回 ×1.0）
+      expect(out.experiencePoints, 520);
       // internalForce floor(5×1.0×4×1.0×1.30×1.0)=26
       expect(out.internalForcePoints, 26);
     });
@@ -483,7 +483,7 @@ void main() {
           reason: '正午 + 刚猛 → internalForcePoints ×1.2');
       // 其他维度不受 zhengWu 加成
       expect(out.mojianshi, 4, reason: '正午 mojianshi 不加成');
-      expect(out.experiencePoints, 1000, reason: '正午 experience 不加成');
+      expect(out.experiencePoints, 400, reason: '正午 experience 不加成');
     });
 
     test('§12.1 #7 正午但非刚猛 → internalForcePoints 不加成', () {
@@ -801,21 +801,21 @@ void main() {
         now: start.add(const Duration(hours: 4)),
       );
 
-      expect(result.experiencePoints, 1000); // 根因A ×2.5(原 400)
+      expect(result.experiencePoints, 400); // B2 finding 修正回 ×1.0(原 400)
       expect(result.advancement, isNotNull);
       expect(result.advancement!.didAdvance, isTrue);
-      // 1000 EXP - 100(qiMeng 初始 toNext) - 80(ruMen) - 120(shuLian) - 170(jingTong)
-      //   - 230(yuanShu) - 300(huaJing) = 0 剩 < dengFeng 400 → 升 6 层至登峰
-      expect(result.advancement!.layersGained, 6);
+      // 400 EXP - 100(qiMeng 初始 toNext) - 80(ruMen) - 120(shuLian) = 100 剩
+      //   < jingTong 170 → 升 3 层至精通,余 100 EXP
+      expect(result.advancement!.layersGained, 3);
       expect(result.advancement!.tierAfter, RealmTier.xueTu);
-      expect(result.advancement!.layerAfter, RealmLayer.dengFeng);
+      expect(result.advancement!.layerAfter, RealmLayer.jingTong);
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(ch?.realmLayer, RealmLayer.dengFeng);
-      expect(ch?.experience, 0);
-      // dengFeng yaml experience_to_next=400 / internalForceMax=1100
-      expect(ch?.experienceToNextLayer, 400);
-      expect(ch?.internalForceMax, 1100);
+      expect(ch?.realmLayer, RealmLayer.jingTong);
+      expect(ch?.experience, 100);
+      // jingTong yaml experience_to_next=170 / internalForceMax=800
+      expect(ch?.experienceToNextLayer, 170);
+      expect(ch?.internalForceMax, 800);
     });
 
     test('收功 EXP 累加但不足以升层 → advancement.didAdvance=false', () async {
@@ -846,13 +846,13 @@ void main() {
         now: start.add(const Duration(hours: 4)),
       );
 
-      expect(result.experiencePoints, 1000); // 根因A ×2.5(原 400)
+      expect(result.experiencePoints, 400); // B2 finding 修正回 ×1.0(原 400)
       expect(result.advancement, isNotNull);
       expect(result.advancement!.didAdvance, isFalse);
       expect(result.advancement!.layersGained, 0);
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(ch?.experience, 1000, reason: 'EXP 累加但不升层（根因A ×2.5）');
+      expect(ch?.experience, 400, reason: 'EXP 累加但不升层（B2 finding 修正回 ×1.0）');
       expect(ch?.realmLayer, RealmLayer.qiMeng);
       expect(ch?.internalForceMax, 500);
     });

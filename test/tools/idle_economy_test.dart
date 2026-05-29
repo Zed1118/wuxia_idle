@@ -74,9 +74,11 @@ void main() {
       final tier = map.requiredRealm;
       final scale = retreat.realmScaleFor(tier);
 
-      // B2: idle EXP + tier-fair layersGained(真 applyExperience)
+      // B2: idle EXP + tier-fair layersGained(真 applyExperience)+ 落点境界
       final idleExp = (map.experiencePerHour * hours * scale).floor();
-      final layersGained = _layersFromIdleExp(repo, tier, idleExp);
+      final probe = _layersFromIdleExp(repo, tier, idleExp);
+      final layersGained = probe.layers;
+      final finalTier = probe.finalTier;
       final bossEq = idleExp / ch3Boss;
 
       // B3: insightPoints → 凝练修炼度 progress
@@ -92,6 +94,7 @@ void main() {
         scale: scale,
         idleExp: idleExp,
         layersGained: layersGained,
+        finalTier: finalTier,
         bossEq: bossEq,
         insight: insight,
         cultProgress: cultProgress,
@@ -137,6 +140,18 @@ void main() {
               'EXP 失控冲淡主动战斗');
     }
 
+    // B2 finding 修正回归守(2026-05-29):学徒可进的图(requiredRealm==xueTu,
+    // 即新手开局就能挂的山林)满挂 72h,落点境界不得进入二流(erLiu)。否则回头
+    // 打 Ch1 学徒敌差 2 阶 → 守方 0.3/攻方 2.5 碾压,毁早期难度爬升仪式感。
+    // 低 tier 挂机 EXP 回 ×1.0 后落点 ≤ 三流(差 1 阶,轻微不碾压)。
+    // 语义守(非瞬时层数):未来谁把低 tier exp 调回 ×2.5 推到二流即红灯。
+    final lowTier = rows.where((r) => r.tier == RealmTier.xueTu.name);
+    for (final r in lowTier) {
+      expect(r.finalTier.index, lessThan(RealmTier.erLiu.index),
+          reason: 'B2 finding: 学徒图 ${r.mapType} 满挂落点 ${r.finalTier.name} '
+              '不得进二流(对 Ch1 学徒敌差 2 阶碾压)· 低 tier 挂机 EXP 应保 ×1.0');
+    }
+
     // B3:每张图 72h 凝练修炼度折早期层 ∈ [0.3, 3.0]
     //    (死钱包变有意义 sink,但不破修炼度曲线 — 修炼度主路仍是实战招式使用)。
     for (final r in rows) {
@@ -148,9 +163,10 @@ void main() {
 }
 
 /// 喂真 [CharacterAdvancementService.applyExperience]:构造 (tier, 启蒙) 内存
-/// 角色,从 0 EXP 喂 [idleExp],数升了几层(走真升层 while-loop)。
+/// 角色,从 0 EXP 喂 [idleExp],数升了几层(走真升层 while-loop)+ 落点境界。
 /// 无 isLayerLocked(非 wuSheng 路径不触发心魔关拦截)。
-int _layersFromIdleExp(GameRepository repo, RealmTier tier, int idleExp) {
+({int layers, RealmTier finalTier}) _layersFromIdleExp(
+    GameRepository repo, RealmTier tier, int idleExp) {
   final firstLayer = RealmLayer.values.first; // qiMeng 启蒙
   final def = repo.getRealm(tier, firstLayer);
   final ch = Character.create(
@@ -170,7 +186,7 @@ int _layersFromIdleExp(GameRepository repo, RealmTier tier, int idleExp) {
     idleExp,
     realmLookup: repo.getRealm,
   );
-  return r.layersGained;
+  return (layers: r.layersGained, finalTier: ch.realmTier);
 }
 
 class _Row {
@@ -180,6 +196,7 @@ class _Row {
   final double scale;
   final int idleExp;
   final int layersGained;
+  final RealmTier finalTier;
   final double bossEq;
   final int insight;
   final int cultProgress;
@@ -192,6 +209,7 @@ class _Row {
     required this.scale,
     required this.idleExp,
     required this.layersGained,
+    required this.finalTier,
     required this.bossEq,
     required this.insight,
     required this.cultProgress,

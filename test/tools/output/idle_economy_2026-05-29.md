@@ -16,9 +16,9 @@ Ch3 大Boss(stage_03_05)baseExpReward = **6000** · 早期修炼层(初窥→小
 
 | 图 | requiredRealm | scale | B2 idleEXP | 折Ch3Boss | tier-fair升层 | B3 insight | 凝练修炼度 | 折早期层 |
 |---|---|---|---|---|---|---|---|---|
-| 山林(shanLin) | xueTu | 1.00 | 18000 | 3.0 | 16 | 36 | 36 | 0.36 |
-| 古剑冢(guJianZhong) | sanLiu | 1.30 | 18720 | 3.1 | 9 | 46 | 46 | 0.46 |
-| 藏经阁(cangJingGe) | sanLiu | 1.30 | 21060 | 3.5 | 10 | 70 | 70 | 0.70 |
+| 山林(shanLin) | xueTu | 1.00 | 7200 | 1.2 | 12 | 36 | 36 | 0.36 |
+| 古剑冢(guJianZhong) | sanLiu | 1.30 | 7488 | 1.2 | 6 | 46 | 46 | 0.46 |
+| 藏经阁(cangJingGe) | sanLiu | 1.30 | 8424 | 1.4 | 6 | 70 | 70 | 0.70 |
 | 悬崖瀑布(xuanYaPuBu) | erLiu | 1.69 | 21294 | 3.5 | 4 | 60 | 60 | 0.60 |
 | 断崖绝壁(duanYaJueBi) | zongShi | 3.71 | 133665 | 22.3 | 1 | 200 | 200 | 2.00 |
 

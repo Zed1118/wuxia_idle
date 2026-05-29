@@ -68,7 +68,8 @@
 - [x] **P3 文档 drift 同步 ✅**(`1afc888`):GDD §5.6 / CLAUDE §6 / AGENTS §6 血量公式系数同步到代码真值(装备攻击 1.0 / 内力 0.5 / 根骨 400)
 - [x] **A2 多代飞升循环断裂修 ✅**(`20d7273` H3 audit 唯一 🔴):`performAscend` 真传位漏写 `save.founderCharacterId=promotedDiscipleId` → gen2「祖师不在出战阵容」永久 blocked · 1 行 production 修 + 删测试 setup 暴露真闸门 + R5.6 防回退断言
 - [x] **根因A 挂机循环重平衡 B1+B2+B3 ✅**(`a359dc2` spec + `d7ee3f9`):B1 闭关挂机折算 battleCount 喂共鸣度(`seclusion_battle_count_per_hour=5`)+ 默契阈值 500→300 / B2 闭关 EXP ×2.5 / B3 抽 `InsightExchangeService` 凝练领悟点→修炼度 + technique_panel「凝练领悟」入口(insightPoints 死钱包变 sink)· §5.4 红线不涉战斗数值不破
-- [x] **idle_economy 经济曲线验证 ✅**(`745e5a3` test+doc only):`test/tools/idle_economy_test.dart` 量化 72h 挂机 vs 主动战斗三维成长速度 drift 雷达 · **finding**:B2 低 tier EXP 偏慷慨(学徒山林 72h 跳 16 层)留 numbers 取舍待拍 · 输出 `test/tools/output/idle_economy_2026-05-29.md`
+- [x] **idle_economy 经济曲线验证 ✅**(`745e5a3` test+doc only):`test/tools/idle_economy_test.dart` 量化 72h 挂机 vs 主动战斗三维成长速度 drift 雷达 · 输出 `test/tools/output/idle_economy_2026-05-29.md`
+- [x] **B2 低 tier 挂机 EXP 偏慷慨修 ✅**(2026-05-29 晚 · 用户拍 B 方向):finding 纠正(主线按 clearedStageIds 解锁非境界 → 非跳内容,而是挂机优先早期战斗碾压)· 山林/古剑冢/藏经阁(学徒/三流图)experience_per_hour 回 ×1.0(原值 100/80/90)· 满挂 72h 山林 16→**12 层**(落点三流,对 Ch1 学徒差 1 阶不碾压)· erLiu+ 保 ×2.5(根因A 中期喂成长保留)· idle_economy 加 B2-c 语义回归守(学徒图满挂落点 < 二流)+ seclusion_service_test 6 测同步新值
 - [x] **红线值统一 numbers.yaml ✅**(`7a1d1e7` [schema]):15000/20000 散落字面量收口到 `combat.red_lines` + `RedLinesConfig` 强类型 · wire derived_stats / stage_battle_setup.applySynergy / game_repository._enforceRedLines 4 处 · 纯抽取零行为变化 + 4 测
 
 ## C. UI 视觉验收
@@ -118,8 +119,8 @@
 
 > 2026-05-29 数值再平衡首批落地(根因A + 红线统一 + idle_economy 验证)· 性能项 + closed beta 外部数据源留 M15-16。
 
-- [x] **数值再平衡首批 ✅**(根因A 挂机循环重平衡 B1+B2+B3 · 红线值统一 numbers.yaml 单源 · idle_economy 72h 经济曲线验证带 drift 雷达)
-- [ ] 30-35 关全玩家路径数值再平衡终调(待 B2 低 tier EXP finding 拍 numbers + closed beta 数据)
+- [x] **数值再平衡首批 ✅**(根因A 挂机循环重平衡 B1+B2+B3 · 红线值统一 numbers.yaml 单源 · idle_economy 72h 经济曲线验证带 drift 雷达 · **B2 低 tier 挂机 EXP 回 ×1.0**(用户拍 B · 山林满挂 16→12 层不碾压 Ch1))
+- [ ] 30-35 关全玩家路径数值再平衡终调(待 closed beta 数据 · B2 低 tier finding 已修 ✅)
 - [ ] 长时间运行 8h+ 无 crash(挂机典型场景)
 - [ ] 内存增长稳定(无 leak 锚点)
 - [ ] FPS 主菜单 / 战斗 / 闭关 平均 ≥ 60(Steam 用户机器最低配)
@@ -158,7 +159,7 @@
 - [ ] 上手 30min 体验 audit(新手引导节奏 / 第一次战斗 / 装备首次掉落仪式感)— H1-Q1 小套餐(主菜单产品名 + 标题 style)✅ · 完整 audit 续
 - [x] **中期循环 2-3h audit ✅**(2026-05-29 H2 audit `h2_midgame_audit` · 两大根因:A 挂机循环脱节 + B backend 未接线 → 接线 polish 5 项 + 根因A 挂机循环重平衡全落)
 - [x] **后期挑战 audit ✅**(2026-05-29 H3 audit `h3_lategame_audit` · Ch4-6 主线/心魔/群战/轻功/飞升 整体远比中期健康 · 唯一 🔴 A2 多代飞升断裂已修)
-- [x] **卡点 / 秒杀点诊断 ✅**(idle_economy 量化验证 · balance_simulator 伤害公式已真路径 P2-c 后 · B2 低 tier EXP finding 暴露待 numbers 取舍)
+- [x] **卡点 / 秒杀点诊断 ✅**(idle_economy 量化验证 · balance_simulator 伤害公式已真路径 P2-c 后 · B2 低 tier EXP finding 已拍 B 方向修 ✅ 低 tier 回 ×1.0)
 - [ ] UX 微调(空状态文案 / 错误处理 / loading 反馈 / 翻页流畅度)— H2 接线 polish 已含部分(章节翻篇过场 / 升阶大境界仪式 / effective 实战值可见 / 死字段清理)· 续
 - [ ] 内容文案最终 polish(typo / 古风一致性 / 主线叙事流畅度)
 
@@ -184,6 +185,7 @@
 
 ## 修订记录
 
+- **v1.11**(2026-05-29 晚)B2 低 tier 挂机 EXP finding 修(用户拍 B 方向):finding 纠正——主线按 `clearedStageIds`(打通前关)解锁,境界不 gate,挂机练级 ≠ 跳过 Ch1-2 内容,真实影响是挂机优先的玩家早期战斗碾压(学徒挂二流回头打 Ch1 差 2 阶)。修:山林/古剑冢/藏经阁(学徒/三流图)`experience_per_hour` 回 ×1.0(原值 100/80/90,撤销根因A ×2.5),山林满挂 72h 16→**12 层**(落点三流,对 Ch1 差 1 阶不碾压);erLiu+(悬崖瀑布/断崖绝壁)保 ×2.5(根因A 中期喂成长初衷保留)。`idle_economy_test` 加 B2-c 语义回归守(学徒图满挂落点境界 < 二流)+ `seclusion_service_test` 6 测同步新值(山林 4h EXP 1000→400 · 升层 6→3 层至 jingTong)。**verify**:`flutter analyze` 0 + `flutter test` 1552 pass / 1 skip。readiness ~97% 维持(D 段内 polish)。
 - **v1.10**(2026-05-29 晚)D/H 首批落地状态对齐:CHECKLIST v1.9 起草后当日又落 10 批(H1-Q1 小套餐 + H2 中期 audit + H2 接线 polish 5 项 + H3 后期 audit + A2 🔴 修 + 外部 review P1-a/P2-a/b/c/P3 5 项 + 根因A 挂机循环重平衡 B1+B2+B3 + idle_economy 验证 + 红线值统一 numbers.yaml)。**对齐**:TL;DR 测数 1519→**1552**(1 skip)/ 测文件 139→**144** / readiness ~96%→**~97%** + 当日批次摘要;段表 D **0%→🔄~20%**(数值再平衡首批)/ H **0%→🔄~50%**(3 审计 + 接线 polish 5 项);A 段测数同步;B 段加附加段(外部 review 硬化 8 条);D 段重命名「性能稳定 + 数值再平衡」+ 数值再平衡首批勾;H 段中期/后期/卡点 3 审计勾 + 上手/UX/文案 续。**复核 verify**:`flutter analyze` 0 + `flutter test` 1552 pass / 1 skip(同 HEAD `fdaa2b2` 实跑核验,非照抄)。无代码改动,仅 doc 状态对齐。
 - **v1.9**(2026-05-29)方向调整 + H 段升主聚焦:用户拍板「先把游戏打磨完成,再启 Steam」→ F + G 段标搁置(留 ship 前 1-2 月)+ H 段从 nice-to-have 升「内容打磨 + UX」主聚焦段(6 子项)+ E 段分拆(E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前 1-2 月)+ TL;DR 优先级标注。无代码改动,仅 doc 状态对齐。
 - **v1.8**(2026-05-28)C.4 R4 P2.1 内容验收 12/12 全收 + UI bug 顺手修:C 段加 C.4 R4 段(基础 4 + 战斗 3 + 内容 5 = 12/12 PASS)· R4.3 招式描述暴露 `encounter_skill_section.dart` 漏渲染 `SkillDef.description` → commit `3150be8` 补 `if skill.description.trim().isNotEmpty` 守 + Text 渲染 · TL;DR C 视觉验收行加 C.4 12/12 · 双端 verify(Pen flutter analyze 0/widget+seed/build · Mac character_panel 28/28)· release readiness ~96% 维持。
