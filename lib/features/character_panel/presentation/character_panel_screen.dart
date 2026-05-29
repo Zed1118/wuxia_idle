@@ -721,6 +721,11 @@ class _EquipPickerSheet extends ConsumerWidget {
                     final isCurrent = eq.id == currentId;
                     final name =
                         GameRepository.instance.getEquipment(eq.defId).name;
+                    // H1 批3:该件正被队内其他角色穿戴 → 标注(选它会移装,原角色
+                    // 卸下)。不禁用(队内调配合理),只去掉「静默卸下」的意外感。
+                    final ownerId = eq.ownerCharacterId;
+                    final wornByOther =
+                        ownerId != null && ownerId != character.id && !isCurrent;
                     return ListTile(
                       enabled: canEquip && !isCurrent,
                       title: Text(
@@ -733,13 +738,24 @@ class _EquipPickerSheet extends ConsumerWidget {
                               isCurrent ? FontWeight.w700 : FontWeight.w500,
                         ),
                       ),
-                      subtitle: Text(
-                        '${EnumL10n.equipmentTier(eq.tier)} · '
-                        '${UiStrings.enhanceLevel(eq.enhanceLevel)}'
-                        '${isCurrent ? "  [当前]" : ""}',
-                        style: const TextStyle(
-                          color: WuxiaColors.textMuted,
-                          fontSize: 12,
+                      subtitle: Text.rich(
+                        TextSpan(
+                          style: const TextStyle(
+                            color: WuxiaColors.textMuted,
+                            fontSize: 12,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: '${EnumL10n.equipmentTier(eq.tier)} · '
+                                  '${UiStrings.enhanceLevel(eq.enhanceLevel)}'
+                                  '${isCurrent ? "  [当前]" : ""}',
+                            ),
+                            if (wornByOther)
+                              const TextSpan(
+                                text: '  · ${UiStrings.equipWornByOther}',
+                                style: TextStyle(color: WuxiaColors.gangMeng),
+                              ),
+                          ],
                         ),
                       ),
                       trailing: canEquip

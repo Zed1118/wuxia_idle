@@ -64,6 +64,10 @@ class UiStrings {
   static const String equipPickerEmpty = '背包暂无该部位可用装备';
   static const String equipUnequip = '卸下当前装备';
   static const String equipLockedByRealm = '境界不足,无法装备(三系锁死)';
+
+  /// H1 批3 picker 标注:该装备正被队内其他角色穿戴,选它会移装(原角色卸下)。
+  /// 自由池移装是合理调配,故只标注提醒不禁用(去掉「静默卸下弟子」的意外感)。
+  static const String equipWornByOther = '他人装备中';
   static const String mainMenuLineage = '师徒名单';
   static const String mainMenuLineageHint = '查看祖师与弟子的传承链路';
 
