@@ -114,9 +114,13 @@ class _SimResult {
 
 _SimResult _simulateStage(
     StageDef stage, int seed, GameRepository repo, _BuildProfile profile) {
-  // 校准 v2:3v3 体例 + 玩家境界 = stage.requiredRealm + 1(玩家通常超阶挑战)
+  // 玩家境界 = stage.requiredRealm(on-level 诚实基线 · 2026-05-29 去 +1 confound):
+  // 原 +1「玩家超阶」是旧假 _synthPlayer 时代的补偿 hack;真 build 下 +1 与同阶
+  // 敌人叠加 → 玩家凭空 1 阶优势(差1阶 attacker×1.4/defender×0.7)把后段全冲成
+  // trivial,掩盖真难度。on-level = 玩家恰在 required 阶 = 诚实「最低规格」读数。
+  // 过度练级(挂机/grind 到 +1)只会更易,不影响「能否在达标阶通关」的下限判断。
   final tierIndex = RealmTier.values.indexOf(stage.requiredRealm);
-  final playerTier = RealmTier.values[(tierIndex + 1).clamp(0, RealmTier.values.length - 1)];
+  final playerTier = RealmTier.values[tierIndex.clamp(0, RealmTier.values.length - 1)];
   final players = [
     _buildRealPlayer(repo, playerTier,
         slot: 0, name: '玩家', isFounder: true, profile: profile),
@@ -164,7 +168,7 @@ enum _BuildProfile {
 
 /// 玩家代表 build(2026-05-29 升真 · C 方案 floor+ceiling):走生产
 /// [BattleCharacter.fromCharacter] derived_stats 路径,而非旧 _synthPlayer
-/// 线性硬编码 scale。两档剖面隔离「配装/投入」轴(tier 偏移 +1 两档一致,
+/// 线性硬编码 scale。两档剖面隔离「配装/投入」轴(playerTier=on-level 两档一致,
 /// 只变 build profile):
 ///   - ceiling 活跃玩家:tier-cap 装备 ½ 强化 + 共鸣默契 ×1.20 + founder buff
 ///     + 主修 daCheng + 属性 22。「会玩、会配装」上限。
@@ -362,8 +366,9 @@ String _summarize(List<_SimResult> results, List<StageDef> stages) {
       'founder buff/daCheng/属性 22),隔离配装/投入轴');
   buf.writeln('- **不含辅修 synergy**(心法相生):只主修单本,SynergyService 未注入');
   buf.writeln('- 流派固定刚猛 gangMeng · 不验阴柔/灵巧分布');
-  buf.writeln('- **playerTier = requiredRealm + 1**(既有校准偏移「玩家超阶挑战」):'
-      '两档一致,只隔离 build profile · 真 build 下超阶偏移待校准复核');
+  buf.writeln('- **playerTier = requiredRealm**(on-level 诚实基线 · 2026-05-29 去 +1 '
+      'confound):玩家恰在 required 阶 · 过度练级(挂机/grind)只会更易,这是「能否在'
+      '达标阶通关」的下限读数');
   buf.writeln('- maxTicks=200 兜底(timeout = 不分胜负)');
   buf.writeln('');
   buf.writeln('**用途**:难度 bracket **方向性**诊断 · floor/ceiling 区间判断配装是否有意义、'
