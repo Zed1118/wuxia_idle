@@ -1,4 +1,5 @@
 import '../../../core/domain/enums.dart';
+import '../../encounter/domain/encounter_def.dart' show AttributeKey;
 import 'battle_state.dart' show BattleResult;
 
 /// enum 与战斗 effect 字符串的中文化（phase1_tasks.md T13 §750）。
@@ -162,6 +163,26 @@ class EnumL10n {
       ItemType.jingYanDan => '经验丹',
       ItemType.techniqueScroll => '心法秘籍',
       ItemType.miscMaterial => '杂项材料',
+    };
+  }
+
+  /// 角色 4 项属性（GDD §4.1）。
+  static String attributeKey(AttributeKey k) {
+    return switch (k) {
+      AttributeKey.constitution => '根骨',
+      AttributeKey.enlightenment => '悟性',
+      AttributeKey.agility => '身法',
+      AttributeKey.fortune => '机缘',
+    };
+  }
+
+  /// 轻功地形（GDD §轻功）。null 表示平地（无特殊地形修正）。
+  static String terrainBiome(TerrainBiome? biome) {
+    return switch (biome) {
+      TerrainBiome.water => '水面',
+      TerrainBiome.rooftop => '屋脊',
+      TerrainBiome.bamboo => '竹林',
+      null => '平地',
     };
   }
 
