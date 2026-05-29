@@ -278,6 +278,16 @@ class AscendService {
       promoted.isFounder = true;
       await isar.characters.put(promoted);
 
+      // 7a. SaveData.founderCharacterId 切到接任者(H3 A2 修复 · 多代循环命门):
+      // 第 6 步已把旧 founderId 移出 activeCharacterIds,但 founderCharacterId
+      // 若不同步切到 promotedDiscipleId,gen2 的 computeEligibility 会拿旧
+      // (已退 active)founder → inActiveCharacters=false 永久 blocked,
+      // 「传位→新代→再飞升」循环在 SaveData 层断裂(performAscend 实为一次性终局)。
+      // 此前 R5.6/R5.8/R5.10 测试用手动 setup `save.founderCharacterId=N` 掩盖了
+      // production 缺失,删 setup 后真实闸门路径暴露(见 ascend_service_test)。
+      save.founderCharacterId = promotedDiscipleId;
+      await isar.saveDatas.put(save);
+
       // 8. P4.1 §12.2 B2 sect.founderId rewire(spec §5 P5+ 真传位 sect 接管):
       // 若 sect.founderId==旧 founder.id 且 promotedDisciple!=null →
       // rewire 到 promotedDiscipleId。member 关系不动(旧 member.sectId 仍

@@ -377,15 +377,18 @@ void main() {
       // gen1 buff 接管:active 中 d2.isFounder=true → 激活
       expect(await buffSvc.computeBuffActive(n), true);
 
-      // gen2 setup: founder=2 升 wuSheng·dengFeng + founderCharacterId=2
+      // H3 A2 防回退:gen1 飞升后 founderCharacterId 自动切到接任者(无需手动 setup)·
+      // 多代循环命门 — 删掉 production 那行会让本断言 + 下方 gen2 链直接 fail。
+      expect((await isar.saveDatas.get(0))!.founderCharacterId, 2,
+          reason: 'H3 A2: performAscend 切 founderCharacterId → promotedDiscipleId');
+
+      // gen2 setup: founder=2 升 wuSheng·dengFeng(founderCharacterId 由 gen1
+      // performAscend 自动切到 2 · H3 A2 修复后不再手动 setup)
       await isar.writeTxn(() async {
         final d2 = (await isar.characters.get(2))!;
         d2.realmTier = RealmTier.wuSheng;
         d2.realmLayer = RealmLayer.dengFeng;
         await isar.characters.put(d2);
-        final save = (await isar.saveDatas.get(0))!;
-        save.founderCharacterId = 2;
-        await isar.saveDatas.put(save);
       });
 
       // gen2: founder=2 → promoted=3 传同一 weapon(已装在 d2 · auto_swap 接 d3)
@@ -566,15 +569,13 @@ void main() {
         () => svc.performAscend({weapon: 2}, promotedDiscipleId: 2),
       );
 
-      // gen2 setup: founder=2 升 wuSheng·dengFeng
+      // gen2 setup: founder=2 升 wuSheng·dengFeng(founderCharacterId 由 gen1
+      // performAscend 自动切到 2 · H3 A2 修复后不再手动 setup)
       await isar.writeTxn(() async {
         final d2 = (await isar.characters.get(2))!;
         d2.realmTier = RealmTier.wuSheng;
         d2.realmLayer = RealmLayer.dengFeng;
         await isar.characters.put(d2);
-        final save = (await isar.saveDatas.get(0))!;
-        save.founderCharacterId = 2;
-        await isar.saveDatas.put(save);
       });
 
       // gen2: founder=2 → promoted=3 传同一 weapon(prev=[1,2])
@@ -629,14 +630,9 @@ void main() {
         () => svc.performAscend({weapon: 2}, promotedDiscipleId: 2),
       );
 
-      // gen2 setup: founderCharacterId 切到 2
-      await isar.writeTxn(() async {
-        final save = (await isar.saveDatas.get(0))!;
-        save.founderCharacterId = 2;
-        await isar.saveDatas.put(save);
-      });
-
-      // 此时 founder=2 持 heritage weapon(prev=[1])→ isLineageContinuation=true
+      // gen1 performAscend 已自动把 founderCharacterId 切到 2(H3 A2 修复 ·
+      // 删手动 setup 暴露真实路径),此时 founder=2 持 heritage weapon(prev=[1])
+      // → isLineageContinuation=true
       final result = await svc.isLineageContinuation();
       expect(result, true,
           reason: 'gen2+ 多代续传 · UI 路径 ascension_lineage_chant');
