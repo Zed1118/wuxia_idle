@@ -120,7 +120,8 @@
 > 2026-05-29 数值再平衡首批落地(根因A + 红线统一 + idle_economy 验证)· 性能项 + closed beta 外部数据源留 M15-16。
 
 - [x] **数值再平衡首批 ✅**(根因A 挂机循环重平衡 B1+B2+B3 · 红线值统一 numbers.yaml 单源 · idle_economy 72h 经济曲线验证带 drift 雷达 · **B2 低 tier 挂机 EXP 回 ×1.0**(用户拍 B · 山林满挂 16→12 层不碾压 Ch1))
-- [ ] 30-35 关全玩家路径数值再平衡终调(待 closed beta 数据 · B2 低 tier finding 已修 ✅)
+- [x] **D 段主线难度曲线收尾 ✅**(2026-05-29 · balance_simulator 真 build + floor/ceiling bracket + on-level 基线诊断):**过难关清零** —— `stage_01_05` Ch1 Boss +2 阶硬墙修(erLiu→xueTu at-tier 体例 · ceiling 0%→100% · `781c85b`)+ `stage_05_05` Ch5 Boss 跨阶过苛缓(HP×0.88/atk×0.93 · ceiling 30%→76% · 守住 R5 跨阶威慑红线 · `24cea80`)· 过易 11 关诊断为章首杂兵教学关 by design 不动 · 全 6 章末 Boss ceiling 76-100% / floor 0-10% 健康
+- [ ] 30-35 关全玩家路径数值再平衡终调(主线难度曲线已收尾 ✅ · 全路径终调待 closed beta 数据)
 - [ ] 长时间运行 8h+ 无 crash(挂机典型场景)
 - [ ] 内存增长稳定(无 leak 锚点)
 - [ ] FPS 主菜单 / 战斗 / 闭关 平均 ≥ 60(Steam 用户机器最低配)
