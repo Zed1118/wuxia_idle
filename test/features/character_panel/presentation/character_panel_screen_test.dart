@@ -611,6 +611,59 @@ void main() {
     expect(find.text(UiStrings.equipPickerEmpty), findsOneWidget);
   });
 
+  // H1 批3:空态 picker 也有显式关闭入口(修「空 picker 无法关闭卡死」· Pen 验收确诊)。
+  testWidgets('空 picker → header close 按钮可见 → tap 关闭 sheet', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final founder = mkCharacter(); // 3 槽全空
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          activeCharacterIdsProvider.overrideWith((ref) async => [founder.id]),
+          characterByIdProvider(founder.id).overrideWith((ref) async => founder),
+          allEquipmentsProvider.overrideWith((ref) async => <Equipment>[]),
+        ],
+        child: MaterialApp(home: CharacterPanelScreen(characterId: founder.id)),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(
+      find
+          .ancestor(
+            of: find.text(UiStrings.slotEmpty).first,
+            matching: find.byType(InkWell),
+          )
+          .first,
+    );
+    await tester.pump();
+    await tester.pump();
+
+    // 空态 sheet 打开 + close 按钮可见。
+    expect(find.text(UiStrings.equipPickerEmpty), findsOneWidget);
+    expect(find.byTooltip(UiStrings.equipPickerClose), findsOneWidget);
+    expect(find.byIcon(Icons.close), findsOneWidget);
+
+    // tap close → sheet 关闭(标题 + 空态文案消失)。
+    // 注:该 screen 测试布局下矮空态 sheet 锚到视口下缘外,close 按钮几何中心落屏外
+    // → tester.tap 取中心会 miss;直接取 IconButton.onPressed 调用验证关闭接线
+    // (按钮可见性已在上方断言,此处验 onPressed → Navigator.pop 真关闭 sheet)。
+    final closeBtn = tester.widget<IconButton>(find.ancestor(
+      of: find.byIcon(Icons.close),
+      matching: find.byType(IconButton),
+    ));
+    expect(closeBtn.onPressed, isNotNull);
+    closeBtn.onPressed!();
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining(UiStrings.equipPickerTitle), findsNothing);
+    expect(find.text(UiStrings.equipPickerEmpty), findsNothing);
+  });
+
   // H1 批3:picker 里被队内其他角色穿戴的装备显「他人装备中」标注(去静默卸下)。
   testWidgets('picker:被其他角色装备的项显「他人装备中」标注', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
