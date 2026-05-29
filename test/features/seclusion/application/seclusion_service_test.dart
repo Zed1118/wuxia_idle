@@ -7,6 +7,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
@@ -298,9 +299,9 @@ void main() {
       // 子时不参与 mojianshi 公式 → 4 而非 floor(4×1.2)=4(此处 floor 巧合相同，
       // 用 experiencePoints 反例更明确)
       expect(out.mojianshi, 4);
-      // experience 山林 perHour=100,无节气 → floor(100×4×1.0)=400
-      // 子时同样不参与 experience 公式 → 400 而非 floor(400×1.2)=480
-      expect(out.experiencePoints, 400);
+      // experience 山林 perHour=250(根因A ×2.5),无节气 → floor(250×4×1.0)=1000
+      // 子时同样不参与 experience 公式 → 1000 而非 floor(1000×1.2)
+      expect(out.experiencePoints, 1000);
       // internalForce 山林 base=5,internalForceGrowth=1.0,xueTu scale=1.0,
       // 子时×1.2 → floor(5×1.0×4×1.0×1.0×1.2)=floor(24.0)=24
       expect(out.internalForcePoints, 24);
@@ -376,7 +377,7 @@ void main() {
       // mojianshi / experience / techniqueLearn 公式中不含 synergyGrowthPct
       // 项,数值与基线一致(回归断言)
       expect(out.mojianshi, 4, reason: 'mojianshi 不受相生 growth 影响');
-      expect(out.experiencePoints, 400,
+      expect(out.experiencePoints, 1000,
           reason: 'experience 不受相生 growth 影响');
     });
 
@@ -394,8 +395,8 @@ void main() {
       );
       // mojianshi floor(1.0×4×1.0×1.30)=5
       expect(out.mojianshi, 5);
-      // experience floor(100×4×1.0×1.30)=520
-      expect(out.experiencePoints, 520);
+      // experience floor(250×4×1.0×1.30)=1300（根因A ×2.5）
+      expect(out.experiencePoints, 1300);
       // internalForce floor(5×1.0×4×1.0×1.30×1.0)=26
       expect(out.internalForcePoints, 26);
     });
@@ -482,7 +483,7 @@ void main() {
           reason: '正午 + 刚猛 → internalForcePoints ×1.2');
       // 其他维度不受 zhengWu 加成
       expect(out.mojianshi, 4, reason: '正午 mojianshi 不加成');
-      expect(out.experiencePoints, 400, reason: '正午 experience 不加成');
+      expect(out.experiencePoints, 1000, reason: '正午 experience 不加成');
     });
 
     test('§12.1 #7 正午但非刚猛 → internalForcePoints 不加成', () {
@@ -800,20 +801,21 @@ void main() {
         now: start.add(const Duration(hours: 4)),
       );
 
-      expect(result.experiencePoints, 400);
+      expect(result.experiencePoints, 1000); // 根因A ×2.5(原 400)
       expect(result.advancement, isNotNull);
       expect(result.advancement!.didAdvance, isTrue);
-      // 400 EXP - 100(qiMeng) - 80(ruMen) - 120(shuLian) = 100 剩 < jingTong 170
-      expect(result.advancement!.layersGained, 3);
+      // 1000 EXP - 100(qiMeng 初始 toNext) - 80(ruMen) - 120(shuLian) - 170(jingTong)
+      //   - 230(yuanShu) - 300(huaJing) = 0 剩 < dengFeng 400 → 升 6 层至登峰
+      expect(result.advancement!.layersGained, 6);
       expect(result.advancement!.tierAfter, RealmTier.xueTu);
-      expect(result.advancement!.layerAfter, RealmLayer.jingTong);
+      expect(result.advancement!.layerAfter, RealmLayer.dengFeng);
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(ch?.realmLayer, RealmLayer.jingTong);
-      expect(ch?.experience, 100);
-      // jingTong yaml experience_to_next=170 / internalForceMax=800
-      expect(ch?.experienceToNextLayer, 170);
-      expect(ch?.internalForceMax, 800);
+      expect(ch?.realmLayer, RealmLayer.dengFeng);
+      expect(ch?.experience, 0);
+      // dengFeng yaml experience_to_next=400 / internalForceMax=1100
+      expect(ch?.experienceToNextLayer, 400);
+      expect(ch?.internalForceMax, 1100);
     });
 
     test('收功 EXP 累加但不足以升层 → advancement.didAdvance=false', () async {
@@ -844,13 +846,13 @@ void main() {
         now: start.add(const Duration(hours: 4)),
       );
 
-      expect(result.experiencePoints, 400);
+      expect(result.experiencePoints, 1000); // 根因A ×2.5(原 400)
       expect(result.advancement, isNotNull);
       expect(result.advancement!.didAdvance, isFalse);
       expect(result.advancement!.layersGained, 0);
 
       final ch = await IsarSetup.instance.characters.get(kCharId);
-      expect(ch?.experience, 400, reason: 'EXP 累加但不升层');
+      expect(ch?.experience, 1000, reason: 'EXP 累加但不升层（根因A ×2.5）');
       expect(ch?.realmLayer, RealmLayer.qiMeng);
       expect(ch?.internalForceMax, 500);
     });
@@ -1092,6 +1094,86 @@ void main() {
       );
       final active1 = await SeclusionService(isar: IsarSetup.instance).getActiveSession(1);
       expect(active1, isNull, reason: 'saveDataId=1 应无 active session');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // B1 根因A:闭关挂机喂出战装备 battleCount(人剑合一离线推进)
+  // ─────────────────────────────────────────────────────────────────────────
+  group('B1 闭关喂共鸣度 battleCount(根因A)', () {
+    Future<int> seedEquippedWeapon() async {
+      final eq = Equipment.create(
+        defId: 'weapon_test',
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.weapon,
+        obtainedAt: DateTime(2026, 1, 1),
+        obtainedFrom: 'test',
+        battleCount: 0,
+      );
+      await IsarSetup.instance.writeTxn(
+        () => IsarSetup.instance.equipments.put(eq),
+      );
+      final ch = await IsarSetup.instance.characters.get(kCharId);
+      ch!.equippedWeaponId = eq.id;
+      await IsarSetup.instance.writeTxn(
+        () => IsarSetup.instance.characters.put(ch),
+      );
+      return eq.id;
+    }
+
+    test('闭关 10h → 出战武器 battleCount += floor(10 × 5)=50', () async {
+      final eqId = await seedEquippedWeapon();
+      final rate = GameRepository
+          .instance.numbers.resonanceSeclusionBattleCountPerHour;
+      expect(rate, 5, reason: 'numbers.yaml seclusion_battle_count_per_hour');
+
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session = await SeclusionService(isar: IsarSetup.instance)
+          .startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 10,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      await SeclusionService(isar: IsarSetup.instance).completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start.add(const Duration(hours: 10)),
+      );
+
+      final eq = await IsarSetup.instance.equipments.get(eqId);
+      expect(eq?.battleCount, 50, reason: 'floor(10h × 5/h)');
+    });
+
+    test('未装备时不报错(equippedWeaponId=null skip)', () async {
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session = await SeclusionService(isar: IsarSetup.instance)
+          .startRetreat(
+        mapType: RetreatMapType.shanLin,
+        durationHours: 4,
+        saveDataId: kSaveDataId,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start,
+      );
+      // 不抛即通过
+      final out = await SeclusionService(isar: IsarSetup.instance)
+          .completeRetreat(
+        session: session,
+        characterId: kCharId,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start.add(const Duration(hours: 4)),
+      );
+      expect(out.actualHours, 4);
     });
   });
 }

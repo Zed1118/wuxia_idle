@@ -535,12 +535,12 @@ equipment:
         unlocks_joint_skill: false
         has_sword_song_effect: false
       - stage: chenShou              # 趁手
-        battle_count_range: [100, 500]
+        battle_count_range: [100, 300]   # 根因A:默契边界 500→300,中期可及
         bonus_multiplier: 1.10       # 装备数值 +10%
         unlocks_joint_skill: false
         has_sword_song_effect: false
       - stage: moQi                  # 默契
-        battle_count_range: [500, 2000]
+        battle_count_range: [300, 2000]  # 根因A:下界 500→300(配闭关喂 battleCount,人剑合一中期够得着)
         bonus_multiplier: 1.20       # +20%
         unlocks_joint_skill: true    # 解锁人剑合一招式
         has_sword_song_effect: false
@@ -549,6 +549,11 @@ equipment:
         bonus_multiplier: 1.30       # +30%
         unlocks_joint_skill: true
         has_sword_song_effect: true  # 暴击附带剑鸣特效
+
+    # 根因A(2026-05-29):闭关挂机也喂 battleCount(折算),让离线推进人剑合一。
+    # 叙事=日夜与兵刃相处。明显低于实战(~30-50/h)以保「实战为主」。
+    # 72h × 5 = +360 > 默契 300 → 纯挂机也可达;8h ≈ +40 可观推进。
+    seclusion_battle_count_per_hour: 5
 
     # 师承传承时的清零规则（GDD §6.4）
     inheritance_retention: 0.7       # 传给徒弟保留 70%（鼓励"一柄剑用一辈子"）
@@ -683,6 +688,12 @@ techniques:
         progress_required: 4000
       - from_layer: wuXia
         progress_required: 6500       # 极境最难达，是"老玩家追求"
+
+    # 根因A(2026-05-29):insightPoints 凝练兑换主修修炼度 progress 的比率。
+    # 闭关挂机→insightPoints→玩家凝练→修炼度,死钱包变 idle→中期成长链路
+    # (不开学心法 UI,维持 GDD §7.2 Phase 5+ scoped)。1:1 → 72h 闭关 ~70-91
+    # insightPoints ≈ 早期 0.7-0.9 层(初窥→小成 100)。
+    insight_to_cultivation_ratio: 1.0
 
   # --- 散功代价（GDD §4.3，强制规则）---
   # 换主修时的双重惩罚（不可调，是设计底线条款）
@@ -845,6 +856,8 @@ retreat:
   # 产出率字段：所有 _per_hour 字段是"每小时基础产出"，最终产出还会乘以
   # 时辰加成、节气加成、心法加成等
 
+  # 根因A(2026-05-29):闭关 EXP ×2.5,72h ≈ 3-4 个 Ch3 Boss(6000/Boss)。
+  # 原值 100/80/90/70/200 → 250/200/225/175/500。离线成可观但弱于主动战斗的收益。
   maps:
 
     # === 山林：平均产出，新手地图 ===
@@ -852,7 +865,7 @@ retreat:
       map_name: "山林"
       required_realm: xueTu                  # 学徒即可进入
       base_outputs:
-        experience_per_hour: 100
+        experience_per_hour: 250             # 根因A ×2.5(原 100)
         mojianshi_per_hour: 1.0
         equipment_drop_rate: 1.0             # 基础掉率（无加成）
         technique_learn_rate: 1.0
@@ -866,7 +879,7 @@ retreat:
       map_name: "古剑冢"
       required_realm: sanLiu                 # 三流境界解锁
       base_outputs:
-        experience_per_hour: 80
+        experience_per_hour: 200             # 根因A ×2.5(原 80)
         mojianshi_per_hour: 0.8
         equipment_drop_rate: 1.5             # 兵器掉率 +50%（GDD §8.3）
         technique_learn_rate: 1.0
@@ -880,7 +893,7 @@ retreat:
       map_name: "藏经阁"
       required_realm: sanLiu
       base_outputs:
-        experience_per_hour: 90
+        experience_per_hour: 225             # 根因A ×2.5(原 90)
         mojianshi_per_hour: 0.5
         equipment_drop_rate: 1.0
         technique_learn_rate: 1.5            # 心法领悟 +50%
@@ -894,7 +907,7 @@ retreat:
       map_name: "悬崖瀑布"
       required_realm: erLiu                  # 二流境界解锁
       base_outputs:
-        experience_per_hour: 70
+        experience_per_hour: 175             # 根因A ×2.5(原 70)
         mojianshi_per_hour: 0.5
         equipment_drop_rate: 1.0
         technique_learn_rate: 1.0
@@ -908,7 +921,7 @@ retreat:
       map_name: "断崖绝壁"
       required_realm: zongShi                # 仅宗师以上可去（GDD §8.3）
       base_outputs:
-        experience_per_hour: 200
+        experience_per_hour: 500             # 根因A ×2.5(原 200)
         mojianshi_per_hour: 2.0
         equipment_drop_rate: 1.5             # 全维度都加 50%
         technique_learn_rate: 1.5

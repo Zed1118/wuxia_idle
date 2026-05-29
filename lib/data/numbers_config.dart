@@ -46,6 +46,11 @@ class NumbersConfig {
   /// **仅 8 个 entry**（jiJing 是 9 层中最高层，没有下一层；查询时需先判 layer != jiJing）。
   final Map<CultivationLayer, int> cultivationProgressToNext;
 
+  /// insightPoints 凝练兑换主修修炼度 progress 的比率（numbers.yaml
+  /// `techniques.cultivation.insight_to_cultivation_ratio`，根因A 2026-05-29）。
+  /// `progressDelta = floor(insightSpend × ratio)`。
+  final double insightToCultivationRatio;
+
   /// 3×3 流派克制矩阵（numbers.yaml `techniques.schools`，GDD §4.4 / §5.4，T10 用）。
   final SchoolCounterMatrix schoolCounter;
 
@@ -56,6 +61,11 @@ class NumbersConfig {
   /// 师承遗物的共鸣度保留比例（numbers.yaml `equipment.resonance.inheritance_retention`，
   /// GDD §6.4 = 0.7）。
   final double resonanceInheritanceRetention;
+
+  /// 闭关挂机每小时折算的 battleCount（numbers.yaml
+  /// `equipment.resonance.seclusion_battle_count_per_hour`，根因A 2026-05-29）。
+  /// 让离线挂机也推进共鸣度（人剑合一），明显低于实战速率以保「实战为主」。
+  final int resonanceSeclusionBattleCountPerHour;
 
   /// 师承遗物的内力上限加成（numbers.yaml `equipment.lineage_heritage.internal_force_max_bonus`，
   /// GDD §6.1 = 0.05）。
@@ -180,9 +190,11 @@ class NumbersConfig {
     required this.techniqueSpeedBonus,
     required this.cultivationMultiplier,
     required this.cultivationProgressToNext,
+    required this.insightToCultivationRatio,
     required this.schoolCounter,
     required this.resonanceStages,
     required this.resonanceInheritanceRetention,
+    required this.resonanceSeclusionBattleCountPerHour,
     required this.lineageInternalForceMaxBonus,
     required this.founderAncestorBuff,
     required this.heritageItems,
@@ -237,6 +249,9 @@ class NumbersConfig {
       cultivationProgressToNext: _parseCultivationProgressToNext(
         techniques['cultivation'] as Map<String, dynamic>,
       ),
+      insightToCultivationRatio: ((techniques['cultivation']
+              as Map<String, dynamic>)['insight_to_cultivation_ratio'] as num)
+          .toDouble(),
       schoolCounter: SchoolCounterMatrix.fromYaml(
         techniques['schools'] as Map<String, dynamic>,
       ),
@@ -246,6 +261,9 @@ class NumbersConfig {
       resonanceInheritanceRetention: ((equipment['resonance']
               as Map<String, dynamic>)['inheritance_retention'] as num)
           .toDouble(),
+      resonanceSeclusionBattleCountPerHour: ((equipment['resonance']
+              as Map<String, dynamic>)['seclusion_battle_count_per_hour'] as num)
+          .toInt(),
       lineageInternalForceMaxBonus: ((equipment['lineage_heritage']
               as Map<String, dynamic>)['internal_force_max_bonus'] as num)
           .toDouble(),

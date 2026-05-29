@@ -53,7 +53,24 @@ class CultivationService {
     int delta = 1,
   }) {
     tech.skillUsageCount.increment(skillId, delta);
+    return applyProgressDelta(
+      tech: tech,
+      delta: delta,
+      progressToNextMap: progressToNextMap,
+    );
+  }
 
+  /// 直接给 [Technique.cultivationProgress] 累加 [delta] 并按 [progressToNextMap]
+  /// 处理升层，**不**触碰 [Technique.skillUsageCount]。
+  ///
+  /// 根因A(2026-05-29):insightPoints 凝练 sink 走此路径（玩家闭关攒的领悟点
+  /// 兑换主修修炼度，非实战招式使用，故不计 skillUsageCount）。
+  /// [recordSkillUsage] 自增 usageCount 后委派本方法,公用升层逻辑单一真相源。
+  static CultivationProgressResult applyProgressDelta({
+    required Technique tech,
+    required int delta,
+    required Map<CultivationLayer, int> progressToNextMap,
+  }) {
     final oldLayer = tech.cultivationLayer;
     tech.cultivationProgress += delta;
 

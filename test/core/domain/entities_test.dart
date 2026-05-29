@@ -111,12 +111,14 @@ void main() {
 
   group('EquipmentResonance', () {
     test('battleCount 应映射到正确的 ResonanceStage 与加成', () {
+      // 根因A(2026-05-29):默契边界 500→300(numbers.yaml resonance.stages)。
+      // chenShou [100,300) / moQi [300,2000) / xinJianTongLing [2000,∞)。
       final cases = <int, (ResonanceStage, double)>{
         0: (ResonanceStage.shengShu, 1.0),
         99: (ResonanceStage.shengShu, 1.0),
         100: (ResonanceStage.chenShou, 1.10),
-        499: (ResonanceStage.chenShou, 1.10),
-        500: (ResonanceStage.moQi, 1.20),
+        299: (ResonanceStage.chenShou, 1.10),
+        300: (ResonanceStage.moQi, 1.20),
         1999: (ResonanceStage.moQi, 1.20),
         2000: (ResonanceStage.xinJianTongLing, 1.30),
         99999: (ResonanceStage.xinJianTongLing, 1.30),
