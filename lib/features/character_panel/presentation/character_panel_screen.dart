@@ -10,6 +10,9 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
+import '../../../core/application/inventory_providers.dart';
+import '../../../data/isar_provider.dart';
+import '../../equipment/application/equipment_service.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
 import '../../sect/application/sect_providers.dart';
@@ -549,13 +552,13 @@ class _DerivedStatsSection extends ConsumerWidget {
   }
 }
 
-class _EquipmentSection extends StatelessWidget {
+class _EquipmentSection extends ConsumerWidget {
   const _EquipmentSection({required this.character});
 
   final Character character;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return _PanelCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -565,26 +568,193 @@ class _EquipmentSection extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _EquipmentSlotTile(
-                  slot: EquipmentSlot.weapon,
-                  equipmentId: character.equippedWeaponId,
-                ),
+                child: _tappableSlot(context, ref, EquipmentSlot.weapon,
+                    character.equippedWeaponId),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _EquipmentSlotTile(
-                  slot: EquipmentSlot.armor,
-                  equipmentId: character.equippedArmorId,
-                ),
+                child: _tappableSlot(context, ref, EquipmentSlot.armor,
+                    character.equippedArmorId),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _EquipmentSlotTile(
-                  slot: EquipmentSlot.accessory,
-                  equipmentId: character.equippedAccessoryId,
-                ),
+                child: _tappableSlot(context, ref, EquipmentSlot.accessory,
+                    character.equippedAccessoryId),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // H1 批2:槽位可点 → 装备 picker(玩家手动穿戴入口 · 修核心循环断裂)。
+  Widget _tappableSlot(
+      BuildContext context, WidgetRef ref, EquipmentSlot slot, int? equipmentId) {
+    return InkWell(
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: WuxiaColors.panel,
+        builder: (_) => _EquipPickerSheet(
+          character: character,
+          slot: slot,
+          currentId: equipmentId,
+        ),
+      ),
+      child: _EquipmentSlotTile(slot: slot, equipmentId: equipmentId),
+    );
+  }
+}
+
+/// H1 批2 装备 picker(玩家手动穿戴入口)。镜像 `encounter_skill_section` picker
+/// 体例:同 slot 装备列表,§5.3 境界不达灰显 + 锁图标,[当前] 标注 + 卸下。
+class _EquipPickerSheet extends ConsumerWidget {
+  const _EquipPickerSheet({
+    required this.character,
+    required this.slot,
+    required this.currentId,
+  });
+
+  final Character character;
+  final EquipmentSlot slot;
+  final int? currentId;
+
+  void _invalidate(WidgetRef ref, {int? touched}) {
+    ref.invalidate(characterByIdProvider(character.id));
+    ref.invalidate(allEquipmentsProvider);
+    if (touched != null) ref.invalidate(equipmentByIdProvider(touched));
+    if (currentId != null) ref.invalidate(equipmentByIdProvider(currentId!));
+  }
+
+  Future<void> _equip(BuildContext context, WidgetRef ref, Equipment eq) async {
+    final isar = ref.read(isarProvider);
+    if (isar == null) return;
+    final outcome = await EquipmentService(isar: isar)
+        .equip(characterId: character.id, equipmentId: eq.id);
+    if (!context.mounted) return;
+    if (outcome == EquipOutcome.lockedByRealm) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.equipLockedByRealm)),
+      );
+      return;
+    }
+    _invalidate(ref, touched: eq.id);
+    Navigator.pop(context);
+  }
+
+  Future<void> _unequip(BuildContext context, WidgetRef ref) async {
+    final isar = ref.read(isarProvider);
+    if (isar == null) return;
+    await EquipmentService(isar: isar)
+        .unequip(characterId: character.id, slot: slot);
+    if (!context.mounted) return;
+    _invalidate(ref);
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(allEquipmentsProvider);
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              '${UiStrings.equipPickerTitle} · ${EnumL10n.equipmentSlot(slot)}',
+              style: const TextStyle(
+                color: WuxiaColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          if (currentId != null)
+            ListTile(
+              leading: const Icon(Icons.remove_circle_outline,
+                  color: WuxiaColors.textSecondary, size: 20),
+              title: const Text(
+                UiStrings.equipUnequip,
+                style: TextStyle(color: WuxiaColors.textSecondary),
+              ),
+              onTap: () => _unequip(context, ref),
+            ),
+          const Divider(height: 1, color: WuxiaColors.border),
+          Flexible(
+            child: async.when(
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+              error: (e, _) => Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text('$e',
+                    style: const TextStyle(color: WuxiaColors.hpLow)),
+              ),
+              data: (list) {
+                final items = list.where((e) => e.slot == slot).toList();
+                if (items.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      UiStrings.equipPickerEmpty,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: WuxiaColors.textMuted),
+                    ),
+                  );
+                }
+                return ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: items.length,
+                  separatorBuilder: (_, _) =>
+                      const Divider(height: 1, color: WuxiaColors.border),
+                  itemBuilder: (ctx, i) {
+                    final eq = items[i];
+                    final canEquip = eq.isEquippableAtRealm(character.realmTier);
+                    final isCurrent = eq.id == currentId;
+                    final name =
+                        GameRepository.instance.getEquipment(eq.defId).name;
+                    return ListTile(
+                      enabled: canEquip && !isCurrent,
+                      title: Text(
+                        name,
+                        style: TextStyle(
+                          color: canEquip
+                              ? WuxiaColors.textPrimary
+                              : WuxiaColors.textMuted,
+                          fontWeight:
+                              isCurrent ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${EnumL10n.equipmentTier(eq.tier)} · '
+                        '${UiStrings.enhanceLevel(eq.enhanceLevel)}'
+                        '${isCurrent ? "  [当前]" : ""}',
+                        style: const TextStyle(
+                          color: WuxiaColors.textMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                      trailing: canEquip
+                          ? Icon(isCurrent ? Icons.check : Icons.add,
+                              color: WuxiaColors.textSecondary, size: 18)
+                          : const Icon(Icons.lock_outline,
+                              color: WuxiaColors.textMuted, size: 16),
+                      onTap: (canEquip && !isCurrent)
+                          ? () => _equip(context, ref, eq)
+                          : null,
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
