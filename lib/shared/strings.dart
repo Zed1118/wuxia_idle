@@ -35,8 +35,8 @@ class UiStrings {
   static String battleSummary(int totalDamage, int critCount, int totalTicks) =>
       '总伤害 $totalDamage    暴击 $critCount 次    用时 $totalTicks tick';
 
-  // 主菜单（T32 子提交 3b）
-  static const String mainMenuTitle = '挂机武侠 · 调试主菜单';
+  // 主菜单（T32 子提交 3b；G1 剥「调试」字样,production-facing 产品名）
+  static const String mainMenuTitle = '挂机武侠';
 
   /// 主菜单「今日节日」chip（W16 GDD §12.4）。
   /// [festivalName] 走 [EnumL10n.festival]，例：「今日：春节」。

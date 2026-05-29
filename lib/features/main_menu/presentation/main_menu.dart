@@ -113,8 +113,9 @@ class MainMenu extends ConsumerWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: WuxiaColors.textPrimary,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 4,
                   ),
                 ),
                 const _TodayFestivalChip(),
