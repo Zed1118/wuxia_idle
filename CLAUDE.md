@@ -177,11 +177,11 @@ project_root/
         × (1 - 目标防御率)
         × 境界差距修正
 
-最大血量 = 1,000 + 内力 × 0.7 + 根骨 × 500 + 装备血量
+最大血量 = 1,000 + 内力 × 0.5 + 根骨 × 400 + 装备血量
 出手速度 = 100 + 身法 × 8 + 装备速度 + 心法速度加成
 ```
 
-> 注（v1.6 对齐）：装备攻击系数 GDD §5.3 早期 ×8 / 最大血量内力系数 GDD §5.6 早期 ×5 均为 Phase 1 平衡前的口误值，代码以 `numbers.yaml combat.damage_formula.equipment_attack_factor` (1.0) 与 `combat.max_hp_formula.internal_force_factor` (0.7) 为准，已在 numbers.yaml 注释中标注历史变更。出手速度 ×8 与 yaml 一致无变动。
+> 注（v1.6 起 · P0.1 #38 方案 D 再对齐）：装备攻击系数 GDD §5.3 早期 ×8 / 最大血量内力系数 GDD §5.6 早期 ×5 均为 Phase 1 平衡前的口误值。代码以 `numbers.yaml` 为准：`combat.damage_formula.equipment_attack_factor` (1.0) / `combat.max_hp_formula.internal_force_factor` (**0.5**，P0.1 #38 方案 D 从 0.7 再调) / `constitution_factor` (**400**，从 500 再调)。均已在 numbers.yaml 注释中标注历史变更。出手速度 ×8 与 yaml 一致无变动。
 
 **境界差距修正**（攻方/守方）：同 1.0/1.0｜差 1 阶 1.4/0.7｜差 2 阶 2.5/0.3｜差 3+ 阶 —/**0.05（近免疫）**。
 
