@@ -15,7 +15,7 @@
 |---|---|---|---|
 | A 代码质量 | ✅ 100% | — | 维持(1581 测) |
 | B 系统完整性(6 系统) | ✅ 100% | — | 维持 |
-| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 10/10 + C.4 12/12 + **C.5 H1 批3 5/5 + 白屏证伪 ✅** | — | 维持(神物金 drop + 凝练 50 点态 + §9 新色待 Pen 续验) |
+| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 10/10 + C.4 12/12 + **C.5 H1 批3 5/5 + 白屏证伪 ✅** | — | 维持(神物金 drop ✅ 2026-05-30 Pen · 凝练 50 点态 + §9 新色待 Pen 续验) |
 | **D 性能 + 数值再平衡(P5.2)** | 🔄 ~20%(数值再平衡首批 ✅:根因A + 红线统一 + idle_economy 验证 · 性能/closed beta 留 M15-16) | M15-16 | **🎯 主聚焦** |
 | E 音频 部分(P5.3)| ✗ 0% | M15-16 | E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前 1-2 月 |
 | **H 内容打磨 + UX**(新增) | 🔄 ~65%(中期/后期/卡点 3 审计 + 接线 polish 5 项 + **H1 上手 audit 全闭环 ✅** · UX 微调 / 文案终 polish 续) | M15-16 | **🎯 主聚焦** |
@@ -118,13 +118,13 @@
 ### C.5 H1 上手修复批 视觉验收 + 主线白屏证伪(✅ 5/5 PASS 2026-05-30)
 
 - [x] **过场绛红**(`chapter_transition` FilledButton WuxiaColors.gangMeng · 非 M3 蓝紫)
-- [x] **掉落品阶仪式感**(勋章图标 + 品阶标签 + 寻常货灰 · 道具朴素列 · 神物金色 RNG 未刷到,逻辑+单测已覆盖)
+- [x] **掉落品阶仪式感**(勋章图标 + 品阶标签 + 寻常货灰 · 道具朴素列 · **神物金色掉落弹窗 2026-05-30 Pen+Codex 验证 PASS** — seedVisualCheckShenwuDrop 满配队稳胜 06_04 必掉昆仑佩,金标签 + 与宝物紫色阶清晰)
 - [x] **回合术语**(battle_log/battleSummary 玩家可见「tick」→「回合」)
 - [x] **凝练 0 点灰显常驻态**(technique_panel 主修凝练按钮「·暂无领悟点」灰显 · P3 seed)
 - [x] **picker 关闭按钮 + 他人装备中标注**(character_panel 装备 picker)
 - [x] **主线白屏 🔴 证伪消除**:clean 存档 + dirty seed 3 轮均不复现 · flutter run 日志 0 exception/RenderFlex/assertion/Navigator → 判**非真 runtime bug**,已被 overnight B6 provider invalidate 加固消除
 
-> 待 Pen 续验 3 分支(逻辑+单测已覆盖,非阻塞):神物金色掉落(RNG)/ 凝练「· 50 点」有点态(`seedRefineInsight` debug seed 已加)/ §9 按钮新色(金/绛红)真机。下趟 Pen+Codex ~10min 可一并收。
+> 待 Pen 续验 2 分支(逻辑+单测已覆盖,非阻塞):凝练「· 50 点」有点态(`seedRefineInsight` debug seed 已加)/ §9 按钮新色(金/绛红)真机。**神物金色掉落 2026-05-30 已收口 PASS**(seedVisualCheckShenwuDrop 满配队)。下趟 Pen ~5min 可收剩 2。
 > 派单 closeout `docs/handoff/codex_batch3_visual_2026-05-30.md`(18 截图)+ `docs/handoff/codex_whitescreen_repro_2026-05-30.md`(12 截图/日志)· 我多模态亲验 5 关键截图 + chapterlist 正常 paint
 
 ## D. 性能稳定 + 数值再平衡(P5.2)
