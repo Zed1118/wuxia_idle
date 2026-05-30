@@ -7,6 +7,6 @@ opening: |
   本派弟子在台下静观，目光皆落在你的剑上。
 choices:
   - { text: 持剑应战, outcome: accept }
-  - { text: 退避三步(reputation -3), outcome: refuse }
+  - { text: 退避三步, outcome: refuse }
 victory_text: 你以一敌四，剑势沉稳如山，众擂主皆退一步拱手。本派威名远播。
 defeat_text: 寡不敌众，败退山门。本派威名暂挫，你闭关苦练以图再起。

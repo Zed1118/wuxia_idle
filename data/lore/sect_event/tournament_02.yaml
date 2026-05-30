@@ -6,6 +6,6 @@ opening: |
   本派门下虽未尽展锋芒，你思忖再三，带二三弟子前往一较高下，既为切磋，也为试看本派根基。
 choices:
   - { text: 出门一战, outcome: accept }
-  - { text: 暂避锋芒(reputation -5), outcome: refuse }
+  - { text: 暂避锋芒, outcome: refuse }
 victory_text: 数场较量，本派招式沉着老练，赢得诸派点头称许。归山途中弟子士气大振。
 defeat_text: 临场失了几招，败得不算难看，但终是输了一场。回山再磨剑半年，以图来日。

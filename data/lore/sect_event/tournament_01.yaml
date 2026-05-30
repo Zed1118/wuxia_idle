@@ -6,6 +6,6 @@ opening: |
   你接掌门派以来，声名渐起，今受邀赴会，与诸派高手切磋武艺，以扬本派声威。
 choices:
   - { text: 应战赴会, outcome: accept }
-  - { text: 闭门谢客(reputation -5), outcome: refuse }
+  - { text: 闭门谢客, outcome: refuse }
 victory_text: 群雄退避，你立于擂台中央。本派声威远播，弟子归心。
 defeat_text: 败下阵来，心知技艺尚需精进。归山闭关三月，再图江湖。
