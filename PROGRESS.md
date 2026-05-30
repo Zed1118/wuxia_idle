@@ -5,9 +5,11 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-30 H 主聚焦(打磨期)· release readiness ~98%· #2 sect_event choices reputation 标注清理(10 文件)· `f378e63` · 1581 测/0 analyze**
+> 📊 **2026-05-30 H 主聚焦(打磨期)· release readiness ~98%· #4③ wf_audit 数值迁 yaml(B2/B5 接线+B6 对齐+B7 注释)· `1283487` · 1581 测/0 analyze**
 
-**2026-05-30 续(#2 sect_event choices 字段清理)**(`f378e63` · 13 loader test 全过):删 10 个 `data/lore/sect_event/` 文件 `choices[].text` 末尾泄漏的 `(reputation -N)` 开发标注。核实 choices 未被 service 消费(只读 narrativeId)+ dialog 按钮硬编码「闭门谢客」不渲染 choices → 玩家不可见;**保留 choices 结构**(R4.2 红线要求非空 list,用户拍范围=只清标注不删字段)。session 记录 #4② 挂账销账。
+**2026-05-30 续(#4③ wf_audit 数值迁 yaml)**(`1283487` · 1581 测/0 analyze):Phase 0 复验发现 audit(b882907 base)半数已修——B1 hardcode/B3/B4 均 2026-05-29 P2-a/b/c 修、B9 已 H2 audit S3 注释。实做 4 项:**B2** `NumbersConfig.adventureAttributeLifetimeCap` 接 `EncounterService.attributeGainCap`(消 yaml `lifetime_cap_per_character` 零消费,3 gameplay 构造点 provider/seclusion/hook 注入)· **B5** numbers.yaml 新增 `encounter.fortune_sensitivity`,硬编码 20.0 外置· **B6** `mass_battle_def residualHpThresholdPct` 默认/fallback 0.05→0.30 对齐生产(生产 stage 走 yaml 0.30 不变,仅 fixture 默认调,+1 测同步)· **B7** bonus_per_event 段标注未消费(设计参考)。**跳** B8/A1 纯 cosmetic(无行为)+ B1 扁平值设计部分留 P5.2。
+
+**2026-05-30 续(#2 sect_event choices 字段清理)**(`f378e63` · 13 loader test 全过):删 10 `data/lore/sect_event/` 文件 `choices[].text` 泄漏的 `(reputation -N)` 开发标注(choices 未被 service 消费、dialog 硬编码不渲染 → 玩家不可见;保留结构守 R4.2 红线)。
 
 **2026-05-30 续(文案 polish 三层 · H 段收口)**(`c97c682` · 102 yaml / 59 loader test 全过 / 0 analyze):H 段「文案最终 polish」完成。① **标点规范化** 98 文件 1233 处中文后半角标点→全角(逗号 1146/冒号 71/分号 9/问号 7 · 脚本精确跳过 yaml 注释行/flow mapping 结构逗号/`{source}` 占位符 0 误伤)。② **引号体例** 7 lore 文件半角 `'`→直角「」(天问剑/玄天斧 2 处对话内含强调嵌套作外『内』· 全库 0 残留)。③ **主线深修·元信息穿帮**(玩家可见 P0):chapter_06 + stage_06_02/04/05 正文 4 文件 7 处「Ch4/Ch5/三章」开发标记→叙事化指代(阳关那一夜/嵩山一决/一路行来)。**记账不修**:10 sect_event `choices.text` `(reputation -5)` 经代码核实——声望走独立 reputationDelta 字段、choices 字段未被 service 消费、dialog 按钮硬编码 → 玩家永不可见,属未消费 yaml 清理(架构层非 polish)留 #4。验证:102 yaml 0 损坏 + 59 loader test 全过(含霸气/逆天/史诗黑名单词)。
 
