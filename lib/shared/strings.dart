@@ -38,6 +38,15 @@ class UiStrings {
   // 主菜单（T32 子提交 3b；G1 剥「调试」字样,production-facing 产品名）
   static const String mainMenuTitle = '挂机武侠';
 
+  /// 主菜单副标题（Phase A 出版美术 · 题字感）。
+  static const String mainMenuSubtitle = '一剑霜寒 · 江湖路远';
+
+  /// 主菜单入口分组标签（Phase A 出版美术 · 主/次分组）。
+  static const String mainMenuGroupCore = '修行';
+  static const String mainMenuGroupBattle = '演武';
+  static const String mainMenuGroupJianghu = '江湖';
+  static const String mainMenuGroupDebug = '调试';
+
   /// 主菜单「今日节日」chip（W16 GDD §12.4）。
   /// [festivalName] 走 [EnumL10n.festival]，例：「今日：春节」。
   static String mainMenuTodayFestival(String festivalName) =>
