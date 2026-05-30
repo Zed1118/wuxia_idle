@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-30 H 主聚焦(打磨期)· release readiness ~98%· P5.2 敌人内力按境界对称化(scale 0.20 调校)· `055696b` · 1592 测/0 analyze**
+> 📊 **2026-05-30 H 主聚焦(打磨期)· release readiness ~98%· V3 神物金掉落验收 3/3 PASS 收口· `59f8e58` · 1596 测/0 analyze**
+
+**2026-05-30 续(V3 神物金掉落验收收口)**(`59f8e58` · 1592→1596 测/0 analyze):承接 §9 待验「神物金色掉落」分支。新增 `seedVisualCheckShenwuDrop` debug seed + 菜单按钮:标 Ch1-5 全通+06_01/02/03 cleared(按 chapterIndex 与 chapterCompleted 自洽)解锁第六章留 stage_06_04 可挑,出阵 3 角色拉满配 wuSheng·dengFeng(满内力 + 神物装备天问剑/玄黄袍/舍利珠 + 传说神功满修 jiJing ×3.0)稳胜 06_04 必掉昆仑佩(dropChance 1.0)。**踩坑**:首版只 boost 祖师 1 人境界标签(内力/血量/攻击/心法字段不联动),Codex 实机打输 BLOCKED → 全员满配 + 写战斗诊断红线测(4 rng seed 全 leftWin 实测防回退)。**Codex Pen 验收 3/3 PASS**:昆仑佩神物金标签 ✅ + 弹窗仪式感 ✅ + 与宝物玄天斧紫色阶区分 ✅(截图 `docs/handoff/v3_shenwu_drop_2026-05-30/` @ Pen)。memory 新增 `feedback_debug_battle_seed_real_power`。
 
 **2026-05-30 续(P5.2 敌人内力按境界对称化)**(`055696b` · 1581→1592 测/0 analyze · xhigh · TDD + brainstorming/writing-plans/executing-plans 全流程):承接 #4⑤ ceiling 真杠杆。敌人内力从扁平 1000 改**按境界查表对称化** — `enemy_defaults.internal_force` 删,新增 `internal_force_scale`;`_enemyToBattle` 查 `getRealm(tier,layer).internalForceMax × scale`(满开局,clamp≤15000 红线),不动 EnemyDef schema(已有 realmTier+layer,118 全覆盖)。抽纯函数 `resolveEnemyInternalForce` 便于单测。**症结**:内力战斗中不恢复(单调递减),改前武圣 Boss 也只 1000 内力 < 传说大招 cost 1600 永久放不出。**scale 调校**(Ch5/Ch6 跨阶红线压测驱动 + sim 复跑):scale=1.0 时 Boss 满内力 13000 狂放 8 次 8000 倍率大招,**满配玩家也被碾压**(Ch6 玩家 3/47 击穿红线上边界)。悬崖二元:scale≤0.245 Boss 放 1 次大招(玩家 35/15 过红线)/ ≥0.27 放 2 次(玩家 5/45 击穿)。**用户拍 0.20**:Boss 内力 2600 放 1 次招牌传说大招(P5.2 目标达成),满配玩家 70% 胜,两红线测过。sim:Ch5-6 难度整体小幅上升,**stage_05_05 on-level ceiling 76→20%**(章末跨阶墙意图,上会话刚缓和过,知情挂账)。+11 测(4 helper/4 scale 校验/3 集成 scale 无关)。spec/plan 见 `docs/superpowers/{specs,plans}/2026-05-30-p5_2-*`。
 
