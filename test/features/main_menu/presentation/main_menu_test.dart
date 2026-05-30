@@ -61,34 +61,33 @@ void main() {
     expect(find.text(UiStrings.mainMenuInventory), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTechniques), findsOneWidget);
 
-    // 顺序(Phase A 分组重排):修行(主线/角色/装备/心法/闭关)→
-    //   演武(爬塔/心魔/轻功/群战/PVP)→ 江湖(师徒/门派/江湖/排行/百科)。
+    // 顺序(Phase A 双列分组):修行/演武/江湖 三组,每组组内 2 列。
+    // 行序:组首项 < 组次行项;同行两项 y 近似相等。
     // 扩 viewport 防 off-screen(memory feedback_listview_widget_test_viewport)。
-    await tester.binding.setSurfaceSize(const Size(800, 3000));
+    await tester.binding.setSurfaceSize(const Size(900, 3000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pump();
 
     double y(String label) => tester.getCenter(find.text(label)).dy;
 
-    // 修行组内
-    expect(y(UiStrings.mainMenuMainline) < y(UiStrings.mainMenuCharacterPanel), isTrue);
-    expect(y(UiStrings.mainMenuCharacterPanel) < y(UiStrings.mainMenuInventory), isTrue);
-    expect(y(UiStrings.mainMenuInventory) < y(UiStrings.mainMenuTechniques), isTrue);
-    expect(y(UiStrings.mainMenuTechniques) < y(UiStrings.mainMenuSeclusion), isTrue);
-    // 修行 → 演武
-    expect(y(UiStrings.mainMenuSeclusion) < y(UiStrings.mainMenuTower), isTrue);
-    // 演武组内
-    expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuInnerDemon), isTrue);
-    expect(y(UiStrings.mainMenuInnerDemon) < y(UiStrings.mainMenuLightFoot), isTrue);
-    expect(y(UiStrings.mainMenuLightFoot) < y(UiStrings.mainMenuMassBattle), isTrue);
-    expect(y(UiStrings.mainMenuMassBattle) < y(UiStrings.mainMenuPvp), isTrue);
-    // 演武 → 江湖
-    expect(y(UiStrings.mainMenuPvp) < y(UiStrings.mainMenuLineage), isTrue);
-    // 江湖组内
-    expect(y(UiStrings.mainMenuLineage) < y(UiStrings.mainMenuSect), isTrue);
-    expect(y(UiStrings.mainMenuSect) < y(UiStrings.mainMenuJianghu), isTrue);
-    expect(y(UiStrings.mainMenuJianghu) < y(UiStrings.mainMenuLeaderboard), isTrue);
-    expect(y(UiStrings.mainMenuLeaderboard) < y(UiStrings.mainMenuBaike), isTrue);
+    // 组序(各组首项):修行 < 演武 < 江湖
+    expect(y(UiStrings.mainMenuMainline) < y(UiStrings.mainMenuTower), isTrue);
+    expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuLineage), isTrue);
+    // 修行组行序(主线行 < 装备行 < 闭关行)
+    expect(y(UiStrings.mainMenuMainline) < y(UiStrings.mainMenuInventory), isTrue);
+    expect(y(UiStrings.mainMenuInventory) < y(UiStrings.mainMenuSeclusion), isTrue);
+    // 同行配对:主线 / 角色 同行,y 近似相等
+    expect(
+        (y(UiStrings.mainMenuMainline) - y(UiStrings.mainMenuCharacterPanel))
+                .abs() <
+            2.0,
+        isTrue);
+    // 演武组行序(爬塔行 < 轻功行 < 论剑行)
+    expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuLightFoot), isTrue);
+    expect(y(UiStrings.mainMenuLightFoot) < y(UiStrings.mainMenuPvp), isTrue);
+    // 江湖组行序(师徒行 < 江湖行 < 百科行)
+    expect(y(UiStrings.mainMenuLineage) < y(UiStrings.mainMenuJianghu), isTrue);
+    expect(y(UiStrings.mainMenuJianghu) < y(UiStrings.mainMenuBaike), isTrue);
   });
 
   testWidgets('18 个菜单按钮均为 InkWell（可点）', (tester) async {

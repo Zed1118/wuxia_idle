@@ -31,6 +31,11 @@ class WuxiaColors {
   static const Color resultHighlight = Color(0xFFE8C547);
   static const Color buttonDisabled = Color(0xFF3A3A3A);
 
+  // 木牌入口(Phase A 出版美术):牌面上浅下深渐变 + 暖褐木边,替冷色卡片感。
+  static const Color inkPanelTop = Color(0xFF232B33);
+  static const Color inkPanelBottom = Color(0xFF161B21);
+  static const Color inkPanelEdge = Color(0xFF4A4038);
+
   // 伤害飘字色（T15）
   static const Color popupNormal = Color(0xFFFFFFFF);    // 普通伤害：白
   static const Color popupCritical = Color(0xFFFFD700);  // 暴击：金
