@@ -336,6 +336,9 @@
 - 新手 30 min 路径全跑通
 
 ### P5.2 C2 难度曲线打磨
+
+> **B1 敌人内力体系对称化(2026-05-30 诊断·推迟至此)**:敌人内力扁平封顶 1000(`numbers.yaml combat.enemy_defaults.internal_force`),高阶 Boss 招牌 ult(`chuanshuo_ult` 1600/`shichuan_ult` 1100)永久放不出(`battle_ai.dart:105` 内力<cost 门控)。flat 抬 2000 可修但与 stage_05_05(刚缓和)耦合 → on-level ceiling 76→20% 过难,polish 期不宜临门重开 Boss 平衡。**方案 A**:敌人内力按自身境界派生(复用 `realms.tiers[*].internal_force_max`,与玩家对称,天然≤15000 §5.4)+ per-stage Boss 难度重调,closed-beta 数据支撑下一次性做。详 session 2026-05-30 诊断。
+
 - 30-35 关全玩家路径数值再平衡
 - itch.io Demo 反馈(P0.3 收集)纳入数据源
 - **2026-05-29 数值再平衡首批 ✅**:根因A 挂机循环重平衡(B1+B2+B3)+ 红线值统一 numbers.yaml(单源)+ idle_economy 72h 经济曲线验证(drift 雷达 · `test/tools/idle_economy_test.dart`)· **B2 低 tier finding 已修**(用户拍 B:山林/古剑冢/藏经阁回 ×1.0,满挂 16→12 层落点三流不碾压 Ch1;erLiu+ 保 ×2.5)· 30-35 关终调 + closed beta 外部数据源留 M15-16
