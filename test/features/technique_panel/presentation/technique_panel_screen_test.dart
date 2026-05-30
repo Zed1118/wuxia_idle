@@ -89,13 +89,13 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          characterByIdProvider(character.id).overrideWith(
-            (ref) async => character,
-          ),
+          characterByIdProvider(
+            character.id,
+          ).overrideWith((ref) async => character),
           for (final entry in techniques.entries)
-            techniqueByIdProvider(entry.key).overrideWith(
-              (ref) async => entry.value,
-            ),
+            techniqueByIdProvider(
+              entry.key,
+            ).overrideWith((ref) async => entry.value),
         ],
         child: MaterialApp(
           home: TechniquePanelScreen(characterId: character.id),
@@ -148,17 +148,22 @@ void main() {
 
   // ── 用例 2：主修-辅修按钮可见性 ───────────────────────────────────────
 
-  testWidgets('「设为主修」按钮仅在辅修 tile 出现，主修 tile 不出现',
-      (tester) async {
+  testWidgets('「设为主修」按钮仅在辅修 tile 出现，主修 tile 不出现', (tester) async {
     final character = mkCharacter(
       mainTechniqueId: 100,
       assistTechniqueIds: [101, 102],
     );
     final main = mkTechnique(id: 100, ownerId: 1, role: TechniqueRole.main);
-    final assist1 =
-        mkTechnique(id: 101, ownerId: 1, role: TechniqueRole.assist);
-    final assist2 =
-        mkTechnique(id: 102, ownerId: 1, role: TechniqueRole.assist);
+    final assist1 = mkTechnique(
+      id: 101,
+      ownerId: 1,
+      role: TechniqueRole.assist,
+    );
+    final assist2 = mkTechnique(
+      id: 102,
+      ownerId: 1,
+      role: TechniqueRole.assist,
+    );
 
     await pumpPanel(
       tester,
@@ -171,8 +176,7 @@ void main() {
 
   // ── 用例 3：散功 dialog 双重代价文案 ──────────────────────────────────
 
-  testWidgets('点击辅修「设为主修」→ dialog 显示内力/修炼度/层回退三行',
-      (tester) async {
+  testWidgets('点击辅修「设为主修」→ dialog 显示内力/修炼度/层回退三行', (tester) async {
     final character = mkCharacter(
       mainTechniqueId: 100,
       assistTechniqueIds: [101],
@@ -184,8 +188,7 @@ void main() {
       role: TechniqueRole.main,
       cultivationProgress: 800,
     );
-    final assist =
-        mkTechnique(id: 101, ownerId: 1, role: TechniqueRole.assist);
+    final assist = mkTechnique(id: 101, ownerId: 1, role: TechniqueRole.assist);
 
     await pumpPanel(
       tester,
@@ -206,8 +209,9 @@ void main() {
 
   // ── 用例 4：二次确认取消不触发 dispel ────────────────────────────────
 
-  testWidgets('dispel dialog 取消 → character 和两条 technique 状态全部不变',
-      (tester) async {
+  testWidgets('dispel dialog 取消 → character 和两条 technique 状态全部不变', (
+    tester,
+  ) async {
     final character = mkCharacter(
       mainTechniqueId: 100,
       assistTechniqueIds: [101],
@@ -219,8 +223,7 @@ void main() {
       role: TechniqueRole.main,
       cultivationProgress: 800,
     );
-    final assist =
-        mkTechnique(id: 101, ownerId: 1, role: TechniqueRole.assist);
+    final assist = mkTechnique(id: 101, ownerId: 1, role: TechniqueRole.assist);
 
     await pumpPanel(
       tester,
@@ -276,5 +279,28 @@ void main() {
       ),
     );
     expect(btn.onPressed, isNull);
+  });
+
+  // ── 用例 6/7：B4 主修 hero 区（出版美术）──────────────────────────────
+
+  testWidgets('主修存在 → hero 区显「主修心法」label + 段位阶梯 n/9 层', (tester) async {
+    final character = mkCharacter(mainTechniqueId: 100);
+    final main = mkTechnique(
+      id: 100,
+      ownerId: 1,
+      role: TechniqueRole.main,
+      cultivationLayer: CultivationLayer.daCheng,
+    );
+    await pumpPanel(tester, character: character, techniques: {100: main});
+    expect(find.text(UiStrings.techniquePanelMainHeroLabel), findsOneWidget);
+    // daCheng = index 3 → 第 4 / 9 层。
+    expect(find.text(UiStrings.layerProgressLabel(4, 9)), findsOneWidget);
+  });
+
+  testWidgets('仅辅修无主修 → 不显 hero', (tester) async {
+    final character = mkCharacter(assistTechniqueIds: [101]);
+    final assist = mkTechnique(id: 101, ownerId: 1, role: TechniqueRole.assist);
+    await pumpPanel(tester, character: character, techniques: {101: assist});
+    expect(find.text(UiStrings.techniquePanelMainHeroLabel), findsNothing);
   });
 }

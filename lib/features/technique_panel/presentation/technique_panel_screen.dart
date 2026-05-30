@@ -119,11 +119,23 @@ class _Body extends StatelessWidget {
     final sortedTiers = byTier.keys.toList()
       ..sort((a, b) => b.index.compareTo(a.index));
 
+    Technique? mainTech;
+    for (final t in techniques) {
+      if (t.role == TechniqueRole.main) {
+        mainTech = t;
+        break;
+      }
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (mainTech != null) ...[
+            _MainTechniqueHero(mainTech: mainTech),
+            const SizedBox(height: 16),
+          ],
           for (final tier in sortedTiers) ...[
             // M4 Stage 3 美术(2026-05-21):tier section 起手 7 阶卷轴 cover banner。
             // 约定路径 assets/techniques/tier_<name>.png,无图走 errorBuilder shrink
@@ -181,7 +193,7 @@ class _TechniqueTile extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: WuxiaColors.avatarFill,
+        color: WuxiaColors.avatarFill.withValues(alpha: 0.82),
         border: Border.all(color: borderColor, width: isMain ? 2 : 1.5),
         borderRadius: BorderRadius.circular(4),
       ),
@@ -211,17 +223,18 @@ class _TechniqueTile extends ConsumerWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                EnumL10n.cultivationLayer(technique.cultivationLayer),
-                style: const TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              _SealBadge(layer: technique.cultivationLayer),
             ],
           ),
-          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Image.asset(
+              'assets/ui/ink_divider.png',
+              height: 6,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const SizedBox(height: 8),
+            ),
+          ),
           LinearProgressIndicator(
             value: progress,
             minHeight: 6,
@@ -398,6 +411,210 @@ class _TechniqueTile extends ConsumerWidget {
             leveledUp: result.didLevelUp,
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// B4 主修 hero 区（出版美术 · 样图 03）：meditation 打坐图 + 内丹克制金光点
+/// （§0.6 关键节点适度彩光，不做大光效）+ 主修段位阶梯（[_LayerLadder]）。
+class _MainTechniqueHero extends StatelessWidget {
+  const _MainTechniqueHero({required this.mainTech});
+
+  final Technique mainTech;
+
+  @override
+  Widget build(BuildContext context) {
+    final schoolColor = WuxiaColors.schoolColor(mainTech.school);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [WuxiaColors.inkPanelTop, WuxiaColors.inkPanelBottom],
+        ),
+        border: Border.all(color: schoolColor, width: 1.5),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 64,
+            height: 64,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Image.asset(
+                  'assets/ui/meditation_icon.png',
+                  width: 64,
+                  height: 64,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) => Icon(
+                    Icons.self_improvement,
+                    size: 52,
+                    color: schoolColor,
+                  ),
+                ),
+                // 内丹：克制金光点（§0.6 关键节点适度彩光）。
+                Positioned(
+                  bottom: 6,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: WuxiaColors.resultHighlight,
+                      boxShadow: [
+                        BoxShadow(
+                          color: WuxiaColors.resultHighlight.withValues(
+                            alpha: 0.6,
+                          ),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  UiStrings.techniquePanelMainHeroLabel,
+                  style: TextStyle(
+                    color: schoolColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  EnumL10n.cultivationLayer(mainTech.cultivationLayer),
+                  style: const TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _LayerLadder(
+                  current: mainTech.cultivationLayer,
+                  schoolColor: schoolColor,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// B5 段位进度阶梯（出版美术 · 样图 03）：9 层 [CultivationLayer] 横向分段，
+/// 已过=流派色 / 当前=金 / 未到=灰，下方金徽章显当前层名 + n/9 进度。
+class _LayerLadder extends StatelessWidget {
+  const _LayerLadder({required this.current, required this.schoolColor});
+
+  final CultivationLayer current;
+  final Color schoolColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final layers = CultivationLayer.values;
+    final curIdx = current.index;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            for (var i = 0; i < layers.length; i++) ...[
+              if (i > 0) const SizedBox(width: 3),
+              Expanded(
+                child: Container(
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: i < curIdx
+                        ? schoolColor
+                        : i == curIdx
+                        ? WuxiaColors.resultHighlight
+                        : WuxiaColors.barTrack,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: WuxiaColors.resultHighlight.withValues(alpha: 0.15),
+                border: Border.all(color: WuxiaColors.resultHighlight),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                EnumL10n.cultivationLayer(current),
+                style: const TextStyle(
+                  color: WuxiaColors.resultHighlight,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              UiStrings.layerProgressLabel(curIdx + 1, layers.length),
+              style: const TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// B3 秘籍质感（出版美术）：seal_red 绛红印章叠 [CultivationLayer] 层名，
+/// 替代原裸文字。印章图缺失（widget test）走 shrink，退化为纯层名文字。
+class _SealBadge extends StatelessWidget {
+  const _SealBadge({required this.layer});
+
+  final CultivationLayer layer;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 42,
+      height: 42,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Image.asset(
+            'assets/ui/seal_red.png',
+            width: 42,
+            height: 42,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => const SizedBox.shrink(),
+          ),
+          Text(
+            EnumL10n.cultivationLayer(layer),
+            style: const TextStyle(
+              color: WuxiaColors.textPrimary,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
