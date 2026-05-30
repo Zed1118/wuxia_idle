@@ -863,4 +863,24 @@ void main() {
     expect(cleared1, 2,
         reason: '只 inner_demon_07 + stage_06_05 2 关 cleared');
   });
+
+  // ── H1 批3 凝练态 fixture · seedRefineInsight ────────────────────────────────
+
+  test('seedRefineInsight → 主修非空 + insightPoints>0 + tutorialStep>=3',
+      () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedRefineInsight();
+    final isar = IsarSetup.instance;
+
+    final ch = await isar.characters.get(1);
+    expect(ch, isNotNull);
+    expect(ch!.mainTechniqueId, isNotNull,
+        reason: '凝练按钮可见前提:主修心法已习得');
+    expect(ch.insightPoints, greaterThan(0),
+        reason: '凝练「有点」态:insightPoints > 0 → 按钮可点');
+
+    final save = await isar.saveDatas.get(0);
+    expect(save, isNotNull);
+    expect(save!.tutorialStep, greaterThanOrEqualTo(3),
+        reason: '心法面板主菜单按钮门控 tutorialStep >= 3');
+  });
 }

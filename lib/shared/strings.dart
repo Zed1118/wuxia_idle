@@ -124,6 +124,9 @@ class UiStrings {
   static const String scenarioVcP5Plus = 'VC-P5+ · 飞升流视觉验收预设(Codex 派单)';
   static const String hintVcP5Plus =
       '祖师 wuSheng·dengFeng + stage_inner_demon_07 + stage_06_05 cleared · 「步入飞升」按钮 enable · 直跳 AscensionScreen 拿 dialog/snackbar/多代 chip 截图';
+  static const String scenarioRefineInsight = '凝练态验证';
+  static const String hintRefineInsight =
+      '主修心法 + 领悟点 50 + tutorialStep 3，进心法面板看主修卡「凝练领悟 · N 点」有点态';
   static const String encounterDebugPickerTitle = 'VC-EVENT · 触发奇遇';
 
   // W16 节日 chip DEBUG 覆盖入口（Phase2TestMenu）

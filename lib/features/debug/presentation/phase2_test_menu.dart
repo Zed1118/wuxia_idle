@@ -148,6 +148,18 @@ class _Phase2TestMenuState extends ConsumerState<Phase2TestMenu> {
                 ),
                 const SizedBox(height: 16),
                 _ScenarioButton(
+                  label: UiStrings.scenarioRefineInsight,
+                  hint: UiStrings.hintRefineInsight,
+                  onTap: () => _seedAndPush(
+                    () => Phase2SeedService(isar: IsarSetup.instance)
+                        .seedRefineInsight(),
+                    () => const TechniquePanelScreen(
+                      characterId: _defaultCharacterId,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _ScenarioButton(
                   label: UiStrings.scenarioP4,
                   hint: UiStrings.hintP4,
                   onTap: () => _seedAndPush(

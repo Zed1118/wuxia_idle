@@ -32,9 +32,9 @@ void main() {
     expect(find.text(UiStrings.phase2MenuTitle), findsOneWidget);
   });
 
-  testWidgets('14 场景按钮 label + hint 全部可见且顺序正确', (tester) async {
-    // VC-P5+ 加入后扩大 viewport 容纳 14 按钮(原 13 → 14 · H 批 8h overnight)。
-    await tester.binding.setSurfaceSize(const Size(1280, 2000));
+  testWidgets('15 场景按钮 label + hint 全部可见且顺序正确', (tester) async {
+    // 凝练态验证按钮加入后扩大 viewport 容纳 15 按钮(原 14 → 15)。
+    await tester.binding.setSurfaceSize(const Size(1280, 2100));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(app());
 
@@ -42,6 +42,7 @@ void main() {
     expect(find.text(UiStrings.scenarioP1), findsOneWidget);
     expect(find.text(UiStrings.scenarioP2), findsOneWidget);
     expect(find.text(UiStrings.scenarioP3), findsOneWidget);
+    expect(find.text(UiStrings.scenarioRefineInsight), findsOneWidget);
     expect(find.text(UiStrings.scenarioP4), findsOneWidget);
     expect(find.text(UiStrings.scenarioP5), findsOneWidget);
     expect(find.text(UiStrings.scenarioVc), findsOneWidget);
@@ -54,10 +55,11 @@ void main() {
     expect(find.text(UiStrings.scenarioVcP5Plus), findsOneWidget);
     expect(find.text(UiStrings.debugFestivalOverrideLabel), findsOneWidget);
 
-    // hint(14 段全部不重复,作为独立断言;debugFestivalOverride 默认 None hint)
+    // hint(15 段全部不重复,作为独立断言;debugFestivalOverride 默认 None hint)
     expect(find.text(UiStrings.hintP1), findsOneWidget);
     expect(find.text(UiStrings.hintP2), findsOneWidget);
     expect(find.text(UiStrings.hintP3), findsOneWidget);
+    expect(find.text(UiStrings.hintRefineInsight), findsOneWidget);
     expect(find.text(UiStrings.hintP4), findsOneWidget);
     expect(find.text(UiStrings.hintP5), findsOneWidget);
     expect(find.text(UiStrings.hintVc), findsOneWidget);
@@ -84,12 +86,12 @@ void main() {
         reason: 'VC-P5+ 在 DEBUG-Festival 前');
   });
 
-  testWidgets('14 个场景按钮均为 InkWell(可点)', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(1280, 2000));
+  testWidgets('15 个场景按钮均为 InkWell(可点)', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 2100));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(app());
-    // 14 个 _ScenarioButton 各 1 个 InkWell(VC-P5+ 加入后 13 → 14)。
-    expect(find.byType(InkWell), findsNWidgets(14));
+    // 15 个 _ScenarioButton 各 1 个 InkWell(凝练态验证加入后 14 → 15)。
+    expect(find.byType(InkWell), findsNWidgets(15));
   });
 
   testWidgets('tap P1 → IsarSetup 未 init → SnackBar 显示「种子失败」',
