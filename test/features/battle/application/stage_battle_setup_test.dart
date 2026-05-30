@@ -8,6 +8,7 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
+import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
 /// T37 StageBattleSetup 真 Isar 落地测试。
 ///
@@ -310,20 +311,31 @@ void main() {
   });
 
   group('P5.2 敌人内力对称化集成', () {
-    test('学徒敌人 stage_01_01 内力 = 500 (满开局)', () {
+    // 断言关系(查表×scale)而非瞬时数字,scale 调校后不破
+    // (memory feedback_red_line_test_semantics)。
+    int expectedEnemyIf(BattleCharacter e) {
+      final repo = GameRepository.instance;
+      return StageBattleSetup.resolveEnemyInternalForce(
+        repo.getRealm(e.realmTier, e.realmLayer).internalForceMax,
+        repo.numbers.combat.enemyDefaults.internalForceScale,
+        repo.numbers.combat.redLines.internalForceMax,
+      );
+    }
+
+    test('学徒敌人 stage_01_01 内力 = 查表×scale 且满开局(current=max)', () {
       final stage = GameRepository.instance.getStage('stage_01_01');
-      final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
-      expect(enemies.first.maxInternalForce, 500);
-      expect(enemies.first.currentInternalForce, 500);
+      final e = StageBattleSetup.buildEnemyTeam(stage.enemyTeam).first;
+      expect(e.maxInternalForce, expectedEnemyIf(e));
+      expect(e.currentInternalForce, e.maxInternalForce);
     });
-    test('武圣 Boss 西凉霸主内力 = 13000', () {
+    test('武圣 Boss 西凉霸主内力 = 查表×scale 且满开局', () {
       final stage = GameRepository.instance.getStage('stage_06_05');
       final boss = StageBattleSetup.buildEnemyTeam(stage.enemyTeam)
           .firstWhere((e) => e.name == '西凉霸主');
-      expect(boss.maxInternalForce, 13000);
-      expect(boss.currentInternalForce, 13000);
+      expect(boss.maxInternalForce, expectedEnemyIf(boss));
+      expect(boss.currentInternalForce, boss.maxInternalForce);
     });
-    test('武圣 Boss 内力足够放阴柔传说大招 (cost 1600)', () {
+    test('P5.2 核心:武圣 Boss 内力 ≥ 阴柔传说大招 cost → 招牌大招能放', () {
       final stage = GameRepository.instance.getStage('stage_06_05');
       final boss = StageBattleSetup.buildEnemyTeam(stage.enemyTeam)
           .firstWhere((e) => e.name == '西凉霸主');
@@ -331,7 +343,9 @@ void main() {
           GameRepository.instance.getSkill('skill_yinrou_chuanshuo_ult');
       expect(ult.internalForceCost, 1600);
       expect(boss.currentInternalForce,
-          greaterThanOrEqualTo(ult.internalForceCost));
+          greaterThanOrEqualTo(ult.internalForceCost),
+          reason: 'P5.2 目标:对称化后武圣 Boss 内力须够放其招牌传说大招'
+              '(改前扁平 1000 < 1600 永久放不出);scale 调校须保此不变式');
     });
   });
 }
