@@ -35,6 +35,9 @@ Future<void> showStageVictoryDialog({
       ),
       actions: [
         TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: WuxiaColors.resultHighlight,
+          ),
           onPressed: () => Navigator.of(ctx).pop(),
           child: const Text(UiStrings.stageVictoryConfirm),
         ),

@@ -64,6 +64,9 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
             child: const Text(UiStrings.forgingConfirmCancel),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              foregroundColor: WuxiaColors.resultHighlight,
+            ),
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text(UiStrings.forgingConfirmOk),
           ),

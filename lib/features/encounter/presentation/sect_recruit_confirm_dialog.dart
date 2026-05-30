@@ -32,6 +32,9 @@ Future<bool> showSectRecruitConfirmDialog(
           child: const Text(UiStrings.sectEncounterRecruitDecline),
         ),
         TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: WuxiaColors.resultHighlight,
+          ),
           onPressed: () => Navigator.of(context).pop(true),
           child: const Text(UiStrings.sectEncounterRecruitAccept),
         ),

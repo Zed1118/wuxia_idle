@@ -151,6 +151,9 @@ class TowerFloorCard extends StatelessWidget {
               child: const Text(UiStrings.towerReplayCancel),
             ),
             TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: WuxiaColors.resultHighlight,
+              ),
               onPressed: () => Navigator.of(ctx).pop(true),
               child: const Text(UiStrings.towerReplayConfirm),
             ),
