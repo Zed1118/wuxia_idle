@@ -17,14 +17,14 @@ class WuxiaPaperPanel extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = EdgeInsets.zero,
-    this.paperOpacity = 0.12,
+    this.paperOpacity = 0.24,
     this.showBorder = true,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
 
-  /// 宣纸纹理不透明度（默认 0.12，同 equipment_detail 体例的克制浓淡）。
+  /// 宣纸纹理不透明度（默认 0.24，让暖宣纸在深色底上铺出出版感，不留深色空底）。
   final double paperOpacity;
 
   /// 是否画墨边外框（[WuxiaColors.inkPanelEdge]）。
@@ -35,8 +35,7 @@ class WuxiaPaperPanel extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: WuxiaColors.background,
-        border:
-            showBorder ? Border.all(color: WuxiaColors.inkPanelEdge) : null,
+        border: showBorder ? Border.all(color: WuxiaColors.inkPanelEdge) : null,
       ),
       child: Stack(
         children: [

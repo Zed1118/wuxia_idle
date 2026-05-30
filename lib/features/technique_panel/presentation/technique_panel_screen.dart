@@ -594,15 +594,15 @@ class _SealBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 42,
-      height: 42,
+      width: 48,
+      height: 48,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Image.asset(
             'assets/ui/seal_red.png',
-            width: 42,
-            height: 42,
+            width: 48,
+            height: 48,
             fit: BoxFit.contain,
             errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
@@ -610,7 +610,7 @@ class _SealBadge extends StatelessWidget {
             EnumL10n.cultivationLayer(layer),
             style: const TextStyle(
               color: WuxiaColors.textPrimary,
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
             ),
           ),
