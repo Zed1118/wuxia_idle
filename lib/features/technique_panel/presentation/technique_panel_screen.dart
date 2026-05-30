@@ -140,12 +140,21 @@ class _Body extends StatelessWidget {
             // M4 Stage 3 美术(2026-05-21):tier section 起手 7 阶卷轴 cover banner。
             // 约定路径 assets/techniques/tier_<name>.png,无图走 errorBuilder shrink
             // (widget test 不加载 pubspec assets,memory feedback_image_asset_error_builder)。
-            Image.asset(
-              'assets/techniques/tier_${tier.name}.png',
-              width: double.infinity,
-              height: 60,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            // 卷轴 cover 完整居中呈现(含织锦/金框装帧 = 7 阶梯度所在),
+            // 不用 height 60 + BoxFit.cover(会裁掉上下边框令梯度消失)。
+            // 图 1952×608(≈3.21:1);maxWidth 480 → 高约 150。无图走 errorBuilder shrink。
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: AspectRatio(
+                  aspectRatio: 1952 / 608,
+                  child: Image.asset(
+                    'assets/techniques/tier_${tier.name}.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  ),
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
