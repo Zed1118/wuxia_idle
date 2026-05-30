@@ -53,9 +53,11 @@ class UiStrings {
       '今日：$festivalName';
 
   static const String mainMenuPhase1 = 'Phase 1 战斗测试';
-  static const String mainMenuPhase1Hint = '4 个 3v3 战斗场景（基础对决 / 流派克制 / 装备影响 / 境界差距）';
+  static const String mainMenuPhase1Hint =
+      '4 个 3v3 战斗场景（基础对决 / 流派克制 / 装备影响 / 境界差距）';
   static const String mainMenuPhase2 = 'Phase 2 调试场景';
-  static const String mainMenuPhase2Hint = '4 个数据种子场景（强化曲线 / 共鸣触发 / 散功代价 / 全栈对比）';
+  static const String mainMenuPhase2Hint =
+      '4 个数据种子场景（强化曲线 / 共鸣触发 / 散功代价 / 全栈对比）';
   static const String mainMenuCharacterPanel = '角色面板';
   static const String mainMenuCharacterPanelHint = '查看角色属性 / 装备 / 心法';
   static const String mainMenuInventory = '装备仓库';
@@ -106,7 +108,8 @@ class UiStrings {
   static const String scenarioP4 = 'P4 · 全栈对比';
   static const String hintP1 = '+0 利器 + 1000 磨剑石 / 100 结晶，连续强化看成功率分布';
   static const String hintP2 = 'battleCount=99 装备，下场战斗 →100 触发"趁手"+10%';
-  static const String hintP3 = '主修 yuanMan/1500 + IF 10000，散功后 daCheng/750 + IF 5000';
+  static const String hintP3 =
+      '主修 yuanMan/1500 + IF 10000，散功后 daCheng/750 + IF 5000';
   static const String hintP4 = '+0 强化到 +19 + 开锋 + 默契满，对比裸装伤害';
   static const String scenarioP5 = 'P5 · 师徒种子';
   static const String hintP5 = '祖师一流 + 大弟子二流 + 二弟子三流，3 师徒入阵可直接进战斗';
@@ -124,7 +127,8 @@ class UiStrings {
   static const String scenarioVc15Resonance = 'VC15-res · 共鸣/强化/开锋光谱';
   static const String hintVc15Resonance =
       '6 件武器覆盖共鸣 4 阶段 + 强化 +0/+5/+10/+15/+19 + 开锋 0/1/2/3 槽 + 师承遗物 1 件';
-  static const String scenarioVc15Fresh = 'VC15-fresh · 3 active 学徒启蒙(升层 banner 验收)';
+  static const String scenarioVc15Fresh =
+      'VC15-fresh · 3 active 学徒启蒙(升层 banner 验收)';
   static const String hintVc15Fresh =
       '3 active 全员 xueTu·qiMeng + experience=0 + 主线塔进度清零,通 stage_01_01 触发升层多行 banner';
   static const String scenarioVc18A1 = 'VC18-A1 · 心法相生 5 组合视觉验收预设';
@@ -161,7 +165,8 @@ class UiStrings {
   static const String scenarioD = 'D · 境界差距碾压';
   static const String hintA = '观察点：基础伤害落在 2000-8000，节奏纯比速度';
   static const String hintB = '观察点：左队全面克制右队（×1.25 攻 / ×0.75 受），差距约 1.67 倍';
-  static const String hintC = '观察点：纯武器攻击对比（IF=0），+12强化+默契 = ×1.92 基础攻，伤害约为裸装 1.9 倍';
+  static const String hintC =
+      '观察点：纯武器攻击对比（IF=0），+12强化+默契 = ×1.92 基础攻，伤害约为裸装 1.9 倍';
   static const String hintD = '观察点：低境界（三流）打高境界（绝顶）守方修正 ×0.05，几乎打不动';
 
   // 角色面板（T28）
@@ -219,7 +224,12 @@ class UiStrings {
   static String internalForceValue(int current, int max) => '$current / $max';
 
   /// 修炼度进度文案：`X / Y`。
-  static String cultivationProgress(int current, int next) => '$current / $next';
+  static String cultivationProgress(int current, int next) =>
+      '$current / $next';
+
+  /// B5 段位阶梯进度（当前层 / 总层数）。
+  static String layerProgressLabel(int current, int total) =>
+      '$current / $total 层';
 
   /// 百分比小数 → `X%`（向下取整以避免视觉超额，与战斗调试一致）。
   static String percent(double rate) => '${(rate * 100).toInt()}%';
@@ -261,8 +271,7 @@ class UiStrings {
       '+$oldLevel → +$newLevel';
 
   /// 磨剑石余量 / 需求：`磨剑石 X / Y`。
-  static String mojianshiUsage(int current, int cost) =>
-      '磨剑石 $current / $cost';
+  static String mojianshiUsage(int current, int cost) => '磨剑石 $current / $cost';
 
   /// 心血结晶余量：`心血结晶 X`。
   static String crystalAvailable(int qty) => '心血结晶 $qty';
@@ -283,8 +292,7 @@ class UiStrings {
   static const String forgingForged = '已开锋';
   static const String forgingNoSpecialSkill = '该装备无专属技能';
   static const String forgingConfirmTitle = '确认开锋';
-  static const String forgingConfirmBody =
-      '开锋一旦下手不能更改。确认在此槽位开锋？';
+  static const String forgingConfirmBody = '开锋一旦下手不能更改。确认在此槽位开锋？';
   static const String forgingConfirmOk = '确认';
   static const String forgingConfirmCancel = '取消';
 
@@ -292,7 +300,8 @@ class UiStrings {
   static String forgingSlotTitle(int slotIndex) => '槽 $slotIndex';
 
   /// 未解锁文案：`强化到 +N 解锁`。
-  static String forgingUnlockHint(int unlockAtLevel) => '强化到 +$unlockAtLevel 解锁';
+  static String forgingUnlockHint(int unlockAtLevel) =>
+      '强化到 +$unlockAtLevel 解锁';
 
   /// 已开锋词条：`攻击 +15%`。
   static String forgingBonusLabel(String typeLabel, int bonus) =>
@@ -301,6 +310,7 @@ class UiStrings {
   // 心法面板 / 散功 dialog（T31）
   static const String techniquePanelTitle = '心法面板';
   static const String techniquePanelEmpty = '尚未学习任何心法';
+  static const String techniquePanelMainHeroLabel = '主修心法';
   static const String setAsMainButton = '设为主修';
   static const String dispelDialogTitle = '散功换主修';
   static const String dispelLayerWarning = '修炼度层可能回退';
@@ -312,8 +322,7 @@ class UiStrings {
 
   /// 主修凝练入口常驻态(H1 批3):有领悟点时显点数,引导玩家点击;0 点时
   /// 入口走 [refineInsightButtonEmpty] 灰显常驻态,不再靠点击后 SnackBar 才知。
-  static String refineInsightButtonWithPoints(int points) =>
-      '凝练领悟 · $points 点';
+  static String refineInsightButtonWithPoints(int points) => '凝练领悟 · $points 点';
   static const String refineInsightButtonEmpty = '凝练领悟 · 暂无领悟点';
   static const String refineInsightTitle = '凝练领悟';
 
@@ -474,10 +483,8 @@ class UiStrings {
   // P1.1 候选 3-d：equipment_detail 共鸣度晋升信息透明 section
   static String equipmentDetailResonanceBonus(int pct) =>
       pct == 0 ? '当前无属性加成' : '当前属性加成 +$pct%';
-  static const String equipmentDetailResonanceJointSkill =
-      '✦ 已解锁「人剑合一」招式';
-  static const String equipmentDetailResonanceSwordSong =
-      '✦ 暴击附带「剑鸣」浮字';
+  static const String equipmentDetailResonanceJointSkill = '✦ 已解锁「人剑合一」招式';
+  static const String equipmentDetailResonanceSwordSong = '✦ 暴击附带「剑鸣」浮字';
   static String equipmentDetailResonanceNextHint(int remaining, String next) =>
       '距「$next」尚需 $remaining 战';
 
@@ -490,10 +497,9 @@ class UiStrings {
     String chName,
     String realmAfter,
     int layers,
-  ) =>
-      layers == 1
-          ? '$chName · 突破至 $realmAfter'
-          : '$chName · 连破 $layers 层 → $realmAfter';
+  ) => layers == 1
+      ? '$chName · 突破至 $realmAfter'
+      : '$chName · 连破 $layers 层 → $realmAfter';
 
   /// H2 C2:大境界突破 badge(跨境界 tier 的里程碑,区别于小层升级)。
   static const String advancementTierUpBadge = '大境界突破';
@@ -598,10 +604,8 @@ class UiStrings {
   static const String sectEncounterRecruitDecline = '婉拒';
   static String sectEncounterRecruitSuccess(String name) =>
       '$name 已入门派,任 [初入] 阶';
-  static String sectEncounterRecruitCapFull(String name) =>
-      '门派人数已满,$name 婉言告别';
-  static String sectEncounterRecruitNoSect(String name) =>
-      '尚未建派,$name 无缘相邀';
+  static String sectEncounterRecruitCapFull(String name) => '门派人数已满,$name 婉言告别';
+  static String sectEncounterRecruitNoSect(String name) => '尚未建派,$name 无缘相邀';
 
   // ── P1 #42 Phase 2 §10 P1.y · 新手引导 banner 文案(GDD §10.2 第 2 方式)──
   // §5.7 合规:仅在「新系统解锁」那一步提示一次,跳过纯进度祝贺(step 1/2/4)。
@@ -706,8 +710,7 @@ class UiStrings {
       return '今日 $hh:$mm';
     }
     final daysAgo = now
-        .difference(
-            DateTime(occurredAt.year, occurredAt.month, occurredAt.day))
+        .difference(DateTime(occurredAt.year, occurredAt.month, occurredAt.day))
         .inDays;
     if (daysAgo == 1) {
       final hh = occurredAt.hour.toString().padLeft(2, '0');
@@ -725,8 +728,10 @@ class UiStrings {
   // #1 retreatCompleted
   static const String gameEventRetreatTitle = '闭关收功';
   static String gameEventRetreatSummary(
-          String charName, int actualHours, String mapName) =>
-      '$charName 于「$mapName」闭关 $actualHours 时，今晨收功。';
+    String charName,
+    int actualHours,
+    String mapName,
+  ) => '$charName 于「$mapName」闭关 $actualHours 时，今晨收功。';
 
   // #2 adventureTriggered
   static String gameEventAdventureSummary(String encounterTitle) =>
@@ -750,8 +755,7 @@ class UiStrings {
       '$charName 修为精进，已至 $realm。';
 
   // #7 resonanceUpgraded
-  static String gameEventResonanceTitle(String equipName) =>
-      '$equipName 共鸣晋阶';
+  static String gameEventResonanceTitle(String equipName) => '$equipName 共鸣晋阶';
   static String gameEventResonanceSummary(String equipName, int newStage) =>
       '$equipName 历经血战，共鸣度晋至第 $newStage 阶。';
 
@@ -850,18 +854,14 @@ class UiStrings {
   // P4.1 1.1 Q6B · Boss 战胜后招降 SnackBar(spec p4_1_q6b §4 · 沿 sectEncounterRecruit 体例)
   static String stageBossRecruitSuccess(String name) =>
       '$name 折服于你的剑下,入门派任 [初入] 阶';
-  static String stageBossRecruitCapFull(String name) =>
-      '门派人数已满,$name 婉言告别';
-  static String stageBossRecruitNoSect(String name) =>
-      '尚未建派,$name 不知归处';
+  static String stageBossRecruitCapFull(String name) => '门派人数已满,$name 婉言告别';
+  static String stageBossRecruitNoSect(String name) => '尚未建派,$name 不知归处';
 
   // 1.1 战败收降 SnackBar(stageBossFailRecoverProb 0.30 · 沿 stageBossRecruit 体例)
   static String stageBossFailRecoverSuccess(String name) =>
       '$name 感于你的血气,入门派任 [初入] 阶';
-  static String stageBossFailRecoverCapFull(String name) =>
-      '门派人数已满,$name 转身离去';
-  static String stageBossFailRecoverNoSect(String name) =>
-      '尚未建派,$name 不知归处';
+  static String stageBossFailRecoverCapFull(String name) => '门派人数已满,$name 转身离去';
+  static String stageBossFailRecoverNoSect(String name) => '尚未建派,$name 不知归处';
 
   // P4.1 1.1 polish · character_panel 门派同道行(_SectMembershipRow · 沿 lineageDisciplesLabel 体例)
   static const String panelSectMembersLabel = '门派同道:';
@@ -921,6 +921,7 @@ class UiStrings {
   // narrative_reader 翻页按钮。
   static const String narrativeReaderFinish = '完成';
   static const String narrativeReaderContinue = '继续';
+
   /// G4 · 首段轻点提示(§5.7 气泡引导,仅首段显一次,点明轻点画面/按钮即可往下读)。
   static const String narrativeReaderTapHint = '轻点画面，继续往下读';
 
