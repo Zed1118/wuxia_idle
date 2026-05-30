@@ -49,3 +49,6 @@ isar.dll
 .nightshift/status/
 .nightshift/SUMMARY.md
 .nightshift.bak.*/
+
+# 美术素材(MJ 生成大图 / 素材目录 · 本地保留不进 git · 2 个 tracked 参考图不受影响)
+docs/art/
