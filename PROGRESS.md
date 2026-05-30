@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-30 H 主聚焦(打磨期)· release readiness ~98%(CHECKLIST v1.12)· Codex 视觉验收 §9 8/9+V2b 修 · #4 A组死代码清理 · B1 敌人内力诊断→推迟 P5.2 · origin 26541cc · 1581 测/0 analyze**
+> 📊 **2026-05-30 H 主聚焦(打磨期)· release readiness ~98%· 文案 polish 三层收口(标点 98 文件/引号 7/主线穿帮 4)· `c97c682` · 1581 测/0 analyze · 102 yaml 0 损坏**
+
+**2026-05-30 续(文案 polish 三层 · H 段收口)**(`c97c682` · 102 yaml / 59 loader test 全过 / 0 analyze):H 段「文案最终 polish」完成。① **标点规范化** 98 文件 1233 处中文后半角标点→全角(逗号 1146/冒号 71/分号 9/问号 7 · 脚本精确跳过 yaml 注释行/flow mapping 结构逗号/`{source}` 占位符 0 误伤)。② **引号体例** 7 lore 文件半角 `'`→直角「」(天问剑/玄天斧 2 处对话内含强调嵌套作外『内』· 全库 0 残留)。③ **主线深修·元信息穿帮**(玩家可见 P0):chapter_06 + stage_06_02/04/05 正文 4 文件 7 处「Ch4/Ch5/三章」开发标记→叙事化指代(阳关那一夜/嵩山一决/一路行来)。**记账不修**:10 sect_event `choices.text` `(reputation -5)` 经代码核实——声望走独立 reputationDelta 字段、choices 字段未被 service 消费、dialog 按钮硬编码 → 玩家永不可见,属未消费 yaml 清理(架构层非 polish)留 #4。验证:102 yaml 0 损坏 + 59 loader test 全过(含霸气/逆天/史诗黑名单词)。
 
 **2026-05-30 续(doc 重估+Codex triage+A组+V2b+B1 推迟)**(origin `26541cc` · 1581 测/0 analyze · 2 commit push):① **CHECKLIST v1.12+ROADMAP v1.11** release readiness ~97→**98%**(白屏证伪摘风险悬顶+H1 上手 audit 全闭环·`4a21a54`)。② **Codex 视觉验收 triage**(代码核实):§9 实 8/9 正确——**V2b 强化按钮非金=真 bug 已修**(`26541cc`·`enhance_dialog:299` ElevatedButton 补 `resultHighlight`)/ V1 凝练入口绛红=`schoolColor` 流派色 by-design 不改(同「设为主修」体例)/ V2d 胜利「返回菜单」=Codex 截错按钮(主线 `stage_victory_dialog:39` 确金,Codex 截到 `battle_screen:280` 战斗结算中性按钮)/ V3 神物金 BLOCKED(VC-P5+ seed 只 mark stage_06_05 cleared,章节列表 Ch6 仍锁→派单路径错·逻辑+单测已覆盖非阻塞)。③ **#4 A 组死代码清理**(`15966de`·删 `sectMemberCountProvider`(冗余)+`seedSectEventProvider`+notifier·battle_demo 经核=活 test fixture 保留·memory `feedback_git_grep_pathspec_glob_trap` glob 漏顶层)。④ **B1 敌人内力封顶 1000→路A 推迟 P5.2**:坐实 Ch6 终 Boss `chuanshuo_ult`(1600)/`shichuan_ult`(1100) 永久放不出(`battle_ai:105` 内力<cost),抬 2000 修但与刚缓和的 stage_05_05 耦合(on-level ceiling 76→20% 过难)→「敌人内力按境界对称化(方案A)+per-stage 重调」整体推 P5.2·worktree 弃·numbers 仍 1000。
 
