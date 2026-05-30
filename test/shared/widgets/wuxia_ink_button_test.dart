@@ -40,4 +40,22 @@ void main() {
     final opacity = tester.widget<Opacity>(find.byType(Opacity));
     expect(opacity.opacity, 0.4);
   });
+
+  testWidgets('locked=true 显锁印图标 · false 不显', (tester) async {
+    await tester.pumpWidget(host(const WuxiaInkButton(
+      label: '门派',
+      hint: 'x',
+      onTap: null,
+      disabled: true,
+      locked: true,
+    )));
+    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+
+    await tester.pumpWidget(host(const WuxiaInkButton(
+      label: '主线',
+      hint: 'x',
+      onTap: null,
+    )));
+    expect(find.byIcon(Icons.lock_outline), findsNothing);
+  });
 }

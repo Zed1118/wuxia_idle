@@ -61,48 +61,34 @@ void main() {
     expect(find.text(UiStrings.mainMenuInventory), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTechniques), findsOneWidget);
 
-    // 顺序:主线 / 问鼎九霄 / 心魔境 / 轻功试炼 / 守城试炼 / 论剑对决 /
-    //       江湖恩怨 / 门派事务 / 排行榜 / 闭关修炼 / Phase1 / Phase2 /
-    //       角色 / 师徒名单 / 江湖见闻录 / 装备 / 心法
-    // 800x600 默认 viewport 装不下 17 按钮 ListView,扩 viewport 防 off-screen
-    // (memory feedback_listview_widget_test_viewport)
+    // 顺序(Phase A 分组重排):修行(主线/角色/装备/心法/闭关)→
+    //   演武(爬塔/心魔/轻功/群战/PVP)→ 江湖(师徒/门派/江湖/排行/百科)。
+    // 扩 viewport 防 off-screen(memory feedback_listview_widget_test_viewport)。
     await tester.binding.setSurfaceSize(const Size(800, 3000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pump();
 
-    final mainY = tester.getCenter(find.text(UiStrings.mainMenuMainline)).dy;
-    final towY = tester.getCenter(find.text(UiStrings.mainMenuTower)).dy;
-    final idY = tester.getCenter(find.text(UiStrings.mainMenuInnerDemon)).dy;
-    final lfY = tester.getCenter(find.text(UiStrings.mainMenuLightFoot)).dy;
-    final mbY = tester.getCenter(find.text(UiStrings.mainMenuMassBattle)).dy;
-    final pvpY = tester.getCenter(find.text(UiStrings.mainMenuPvp)).dy;
-    final jhY = tester.getCenter(find.text(UiStrings.mainMenuJianghu)).dy;
-    final sectY = tester.getCenter(find.text(UiStrings.mainMenuSect)).dy;
-    final lbY = tester.getCenter(find.text(UiStrings.mainMenuLeaderboard)).dy;
-    final secY = tester.getCenter(find.text(UiStrings.mainMenuSeclusion)).dy;
-    final p1Y = tester.getCenter(find.text(UiStrings.mainMenuPhase1)).dy;
-    final p2Y = tester.getCenter(find.text(UiStrings.mainMenuPhase2)).dy;
-    final chY = tester.getCenter(find.text(UiStrings.mainMenuCharacterPanel)).dy;
-    final linY = tester.getCenter(find.text(UiStrings.mainMenuLineage)).dy;
-    final bkY = tester.getCenter(find.text(UiStrings.mainMenuBaike)).dy;
-    final invY = tester.getCenter(find.text(UiStrings.mainMenuInventory)).dy;
-    final tcY = tester.getCenter(find.text(UiStrings.mainMenuTechniques)).dy;
-    expect(mainY < towY, isTrue);
-    expect(towY < idY, isTrue);
-    expect(idY < lfY, isTrue);
-    expect(lfY < mbY, isTrue);
-    expect(mbY < pvpY, isTrue);
-    expect(pvpY < jhY, isTrue);
-    expect(jhY < sectY, isTrue);
-    expect(sectY < lbY, isTrue);
-    expect(lbY < secY, isTrue);
-    expect(secY < p1Y, isTrue);
-    expect(p1Y < p2Y, isTrue);
-    expect(p2Y < chY, isTrue);
-    expect(chY < linY, isTrue);
-    expect(linY < bkY, isTrue);
-    expect(bkY < invY, isTrue);
-    expect(invY < tcY, isTrue);
+    double y(String label) => tester.getCenter(find.text(label)).dy;
+
+    // 修行组内
+    expect(y(UiStrings.mainMenuMainline) < y(UiStrings.mainMenuCharacterPanel), isTrue);
+    expect(y(UiStrings.mainMenuCharacterPanel) < y(UiStrings.mainMenuInventory), isTrue);
+    expect(y(UiStrings.mainMenuInventory) < y(UiStrings.mainMenuTechniques), isTrue);
+    expect(y(UiStrings.mainMenuTechniques) < y(UiStrings.mainMenuSeclusion), isTrue);
+    // 修行 → 演武
+    expect(y(UiStrings.mainMenuSeclusion) < y(UiStrings.mainMenuTower), isTrue);
+    // 演武组内
+    expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuInnerDemon), isTrue);
+    expect(y(UiStrings.mainMenuInnerDemon) < y(UiStrings.mainMenuLightFoot), isTrue);
+    expect(y(UiStrings.mainMenuLightFoot) < y(UiStrings.mainMenuMassBattle), isTrue);
+    expect(y(UiStrings.mainMenuMassBattle) < y(UiStrings.mainMenuPvp), isTrue);
+    // 演武 → 江湖
+    expect(y(UiStrings.mainMenuPvp) < y(UiStrings.mainMenuLineage), isTrue);
+    // 江湖组内
+    expect(y(UiStrings.mainMenuLineage) < y(UiStrings.mainMenuSect), isTrue);
+    expect(y(UiStrings.mainMenuSect) < y(UiStrings.mainMenuJianghu), isTrue);
+    expect(y(UiStrings.mainMenuJianghu) < y(UiStrings.mainMenuLeaderboard), isTrue);
+    expect(y(UiStrings.mainMenuLeaderboard) < y(UiStrings.mainMenuBaike), isTrue);
   });
 
   testWidgets('18 个菜单按钮均为 InkWell（可点）', (tester) async {
@@ -168,6 +154,10 @@ void main() {
     // 验证 initial push(MainMenu 自身)已记录
     expect(observer.pushedRoutes.length, 1);
 
+    // Phase A 重排后爬塔下移到「演武」组,默认 viewport 装不下 → 扩高再 tap。
+    await tester.binding.setSurfaceSize(const Size(800, 3000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pump();
     await tester.tap(find.text(UiStrings.mainMenuTower));
     await tester.pump(); // 单帧,不 settle:子屏 TowerFloorListScreen 内部
                         // towerProgressProvider AsyncValue.loading 不阻塞断言
