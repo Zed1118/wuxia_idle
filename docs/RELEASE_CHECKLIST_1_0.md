@@ -15,7 +15,7 @@
 |---|---|---|---|
 | A 代码质量 | ✅ 100% | — | 维持(1581 测) |
 | B 系统完整性(6 系统) | ✅ 100% | — | 维持 |
-| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 10/10 + C.4 12/12 + **C.5 H1 批3 5/5 + 白屏证伪 ✅** | — | 维持(神物金 drop ✅ 2026-05-30 Pen · 凝练 50 点态 + §9 新色待 Pen 续验) |
+| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 10/10 + C.4 12/12 + **C.5 H1 批3 5/5 + 白屏证伪 ✅** | — | 全收口(神物金 drop + 凝练 50 点态 + §9 新色 ✅ 2026-05-30 Pen+Codex+Mac 3/3 PASS) |
 | **D 性能 + 数值再平衡(P5.2)** | 🔄 ~20%(数值再平衡首批 ✅:根因A + 红线统一 + idle_economy 验证 · 性能/closed beta 留 M15-16) | M15-16 | **🎯 主聚焦** |
 | E 音频 部分(P5.3)| ✗ 0% | M15-16 | E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前 1-2 月 |
 | **H 内容打磨 + UX**(新增) | 🔄 ~65%(中期/后期/卡点 3 审计 + 接线 polish 5 项 + **H1 上手 audit 全闭环 ✅** · UX 微调 / 文案终 polish 续) | M15-16 | **🎯 主聚焦** |
@@ -124,7 +124,7 @@
 - [x] **picker 关闭按钮 + 他人装备中标注**(character_panel 装备 picker)
 - [x] **主线白屏 🔴 证伪消除**:clean 存档 + dirty seed 3 轮均不复现 · flutter run 日志 0 exception/RenderFlex/assertion/Navigator → 判**非真 runtime bug**,已被 overnight B6 provider invalidate 加固消除
 
-> 待 Pen 续验 2 分支(逻辑+单测已覆盖,非阻塞):凝练「· 50 点」有点态(`seedRefineInsight` debug seed 已加)/ §9 按钮新色(金/绛红)真机。**神物金色掉落 2026-05-30 已收口 PASS**(seedVisualCheckShenwuDrop 满配队)。下趟 Pen ~5min 可收剩 2。
+> **§9 视觉验收全收口 ✅**(2026-05-30 Pen+Codex+Mac 多模态亲验 3/3 PASS):凝练「· 50 点」有点态(seedRefineInsight · 绛红流派色可点) + 凝练确认 dialog「全部凝练」金按钮 + 散功确认 dialog「确认散功」绛红按钮(与正向收益金区分明确)。神物金色掉落同日 PASS。截图 docs/handoff/v3_checklist_s9_2026-05-30/(8 文件)。
 > 派单 closeout `docs/handoff/codex_batch3_visual_2026-05-30.md`(18 截图)+ `docs/handoff/codex_whitescreen_repro_2026-05-30.md`(12 截图/日志)· 我多模态亲验 5 关键截图 + chapterlist 正常 paint
 
 ## D. 性能稳定 + 数值再平衡(P5.2)

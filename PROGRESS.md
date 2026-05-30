@@ -5,7 +5,7 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-30 H 主聚焦(打磨期)· release readiness ~98%· V3 神物金掉落验收 3/3 PASS 收口· `59f8e58` · 1596 测/0 analyze**
+> 📊 **2026-05-30 H 主聚焦(打磨期)· release readiness ~98%· V3 神物金 + §9 视觉验收均 3/3 PASS 收口 · C 段视觉全闭合· `59f8e58` · 1596 测/0 analyze**
 
 **2026-05-30 续(V3 神物金掉落验收收口)**(`59f8e58` · 1592→1596 测/0 analyze):承接 §9 待验「神物金色掉落」分支。新增 `seedVisualCheckShenwuDrop` debug seed + 菜单按钮:标 Ch1-5 全通+06_01/02/03 cleared(按 chapterIndex 与 chapterCompleted 自洽)解锁第六章留 stage_06_04 可挑,出阵 3 角色拉满配 wuSheng·dengFeng(满内力 + 神物装备天问剑/玄黄袍/舍利珠 + 传说神功满修 jiJing ×3.0)稳胜 06_04 必掉昆仑佩(dropChance 1.0)。**踩坑**:首版只 boost 祖师 1 人境界标签(内力/血量/攻击/心法字段不联动),Codex 实机打输 BLOCKED → 全员满配 + 写战斗诊断红线测(4 rng seed 全 leftWin 实测防回退)。**Codex Pen 验收 3/3 PASS**:昆仑佩神物金标签 ✅ + 弹窗仪式感 ✅ + 与宝物玄天斧紫色阶区分 ✅(截图 `docs/handoff/v3_shenwu_drop_2026-05-30/` @ Pen)。memory 新增 `feedback_debug_battle_seed_real_power`。
 
