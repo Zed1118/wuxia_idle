@@ -14,6 +14,7 @@ import '../../cultivation/application/insight_exchange_service.dart';
 import '../../cultivation/application/insight_exchange_service_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_paper_panel.dart';
 import 'dispel_dialog.dart';
 
 /// 心法面板（phase2_tasks.md T31 §468-490 + T32 #22b writeTxn 补漏）。
@@ -57,35 +58,37 @@ class TechniquePanelScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SafeArea(
-        child: chAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(
-            child: SelectableText(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow),
-            ),
-          ),
-          data: (c) {
-            if (c == null) {
-              return const Center(
-                child: Text(
-                  '角色不存在',
-                  style: TextStyle(color: WuxiaColors.textMuted),
-                ),
-              );
-            }
-            return techsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: SelectableText(
-                  'load error: $e',
-                  style: const TextStyle(color: WuxiaColors.hpLow),
-                ),
+      body: WuxiaPaperPanel(
+        child: SafeArea(
+          child: chAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(
+              child: SelectableText(
+                'load error: $e',
+                style: const TextStyle(color: WuxiaColors.hpLow),
               ),
-              data: (techs) => _Body(character: c, techniques: techs),
-            );
-          },
+            ),
+            data: (c) {
+              if (c == null) {
+                return const Center(
+                  child: Text(
+                    '角色不存在',
+                    style: TextStyle(color: WuxiaColors.textMuted),
+                  ),
+                );
+              }
+              return techsAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(
+                  child: SelectableText(
+                    'load error: $e',
+                    style: const TextStyle(color: WuxiaColors.hpLow),
+                  ),
+                ),
+                data: (techs) => _Body(character: c, techniques: techs),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -166,13 +169,14 @@ class _TechniqueTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isMain = technique.role == TechniqueRole.main;
     final schoolColor = WuxiaColors.schoolColor(technique.school);
-    final borderColor =
-        isMain ? schoolColor : schoolColor.withValues(alpha: 0.6);
+    final borderColor = isMain
+        ? schoolColor
+        : schoolColor.withValues(alpha: 0.6);
     final progress = technique.cultivationProgressToNext == 0
         ? 0.0
         : (technique.cultivationProgress / technique.cultivationProgressToNext)
-            .clamp(0.0, 1.0)
-            .toDouble();
+              .clamp(0.0, 1.0)
+              .toDouble();
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -296,17 +300,14 @@ class _TechniqueTile extends ConsumerWidget {
   Future<void> _onSetAsMain(BuildContext context, WidgetRef ref) async {
     final mainId = character.mainTechniqueId;
     if (mainId == null) return;
-    final mainTech =
-        await ref.read(techniqueByIdProvider(mainId).future);
+    final mainTech = await ref.read(techniqueByIdProvider(mainId).future);
     if (mainTech == null) return;
     if (!context.mounted) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => DispelConfirmDialog(
-        character: character,
-        mainTech: mainTech,
-      ),
+      builder: (_) =>
+          DispelConfirmDialog(character: character, mainTech: mainTech),
     );
     if (confirmed != true) return;
     if (!context.mounted) return;
@@ -337,9 +338,9 @@ class _TechniqueTile extends ConsumerWidget {
     ref.invalidate(techniqueByIdProvider(technique.id));
 
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text(UiStrings.dispelSuccess)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text(UiStrings.dispelSuccess)));
   }
 
   /// 根因A:凝练领悟点 → 主修修炼度。0 点时提示「闭关挂机可得」,>0 时弹
@@ -378,8 +379,10 @@ class _TechniqueTile extends ConsumerWidget {
 
     final svc = ref.read(insightExchangeServiceProvider);
     if (svc == null) return; // 测试旁路:未 init Isar
-    final result =
-        await svc.refine(characterId: character.id, insightSpend: points);
+    final result = await svc.refine(
+      characterId: character.id,
+      insightSpend: points,
+    );
     if (result.status != InsightRefineStatus.success) return;
 
     ref.invalidate(characterByIdProvider(character.id));
