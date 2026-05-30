@@ -5,7 +5,9 @@
 
 ## 当前阶段
 
-> 📊 **2026-05-30 H 主聚焦(打磨期)· release readiness ~98%· 文案 polish 三层收口(标点 98 文件/引号 7/主线穿帮 4)· `c97c682` · 1581 测/0 analyze · 102 yaml 0 损坏**
+> 📊 **2026-05-30 H 主聚焦(打磨期)· release readiness ~98%· #2 sect_event choices reputation 标注清理(10 文件)· `f378e63` · 1581 测/0 analyze**
+
+**2026-05-30 续(#2 sect_event choices 字段清理)**(`f378e63` · 13 loader test 全过):删 10 个 `data/lore/sect_event/` 文件 `choices[].text` 末尾泄漏的 `(reputation -N)` 开发标注。核实 choices 未被 service 消费(只读 narrativeId)+ dialog 按钮硬编码「闭门谢客」不渲染 choices → 玩家不可见;**保留 choices 结构**(R4.2 红线要求非空 list,用户拍范围=只清标注不删字段)。session 记录 #4② 挂账销账。
 
 **2026-05-30 续(文案 polish 三层 · H 段收口)**(`c97c682` · 102 yaml / 59 loader test 全过 / 0 analyze):H 段「文案最终 polish」完成。① **标点规范化** 98 文件 1233 处中文后半角标点→全角(逗号 1146/冒号 71/分号 9/问号 7 · 脚本精确跳过 yaml 注释行/flow mapping 结构逗号/`{source}` 占位符 0 误伤)。② **引号体例** 7 lore 文件半角 `'`→直角「」(天问剑/玄天斧 2 处对话内含强调嵌套作外『内』· 全库 0 残留)。③ **主线深修·元信息穿帮**(玩家可见 P0):chapter_06 + stage_06_02/04/05 正文 4 文件 7 处「Ch4/Ch5/三章」开发标记→叙事化指代(阳关那一夜/嵩山一决/一路行来)。**记账不修**:10 sect_event `choices.text` `(reputation -5)` 经代码核实——声望走独立 reputationDelta 字段、choices 字段未被 service 消费、dialog 按钮硬编码 → 玩家永不可见,属未消费 yaml 清理(架构层非 polish)留 #4。验证:102 yaml 0 损坏 + 59 loader test 全过(含霸气/逆天/史诗黑名单词)。
 
