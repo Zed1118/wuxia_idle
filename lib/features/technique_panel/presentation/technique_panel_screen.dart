@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -236,16 +237,18 @@ class _TechniqueTile extends ConsumerWidget {
                   fontSize: 11,
                 ),
               ),
-              const SizedBox(width: 12),
-              // W12 fix: 视觉验收 debug 字段——skillUsage 累计总数
-              // progress 只反映主修升层节奏，看不到「这场战斗到底累了几次 skill」
-              Text(
-                'skillUsage: ${technique.skillUsageCount.fold<int>(0, (s, e) => s + e.count)}',
-                style: const TextStyle(
-                  color: WuxiaColors.textMuted,
-                  fontSize: 11,
+              // W12 视觉验收 debug 字段(skillUsage 累计)——仅 debug build 显,
+              // release 不向玩家暴露(§12.8 release 无 debug · Phase A 出版美术 hygiene)。
+              if (kDebugMode) ...[
+                const SizedBox(width: 12),
+                Text(
+                  'skillUsage: ${technique.skillUsageCount.fold<int>(0, (s, e) => s + e.count)}',
+                  style: const TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 11,
+                  ),
                 ),
-              ),
+              ],
               const Spacer(),
               if (!isMain && character.mainTechniqueId != null)
                 TextButton(
