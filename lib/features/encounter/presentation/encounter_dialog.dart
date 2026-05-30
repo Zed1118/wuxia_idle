@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/game_repository.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../application/encounter_service.dart';
@@ -79,7 +80,9 @@ class _EncounterDialogState extends State<_EncounterDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _TitleBar(title: widget.content.title ?? '机缘'),
+                _TitleBar(
+                    title: widget.content.title ??
+                        UiStrings.encounterDialogTitleFallback),
                 const SizedBox(height: 20),
                 AnimatedSwitcher(
                   duration: _switchDuration,
@@ -176,7 +179,7 @@ class _TitleBar extends StatelessWidget {
             color: WuxiaColors.resultHighlight, size: 18),
         const SizedBox(width: 8),
         const Text(
-          '机缘',
+          UiStrings.encounterDialogTitleLabel,
           style: TextStyle(
             color: WuxiaColors.textMuted,
             fontSize: 13,
@@ -217,14 +220,14 @@ class _OpeningText extends StatelessWidget {
   }
 }
 
-
 class _OutcomeBody extends StatelessWidget {
   const _OutcomeBody({required this.text});
   final String text;
 
   @override
   Widget build(BuildContext context) {
-    final shown = text.isNotEmpty ? text : '此情此景,已铭于心。';
+    final shown =
+        text.isNotEmpty ? text : UiStrings.encounterDialogOutcomeBodyFallback;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -302,7 +305,7 @@ class _ConfirmButton extends StatelessWidget {
               const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
         child: const Text(
-          '行路 →',
+          UiStrings.encounterDialogConfirmButton,
           style: TextStyle(fontSize: 15, letterSpacing: 2),
         ),
       ),
@@ -323,11 +326,14 @@ void showEncounterOutcomeBanner({
   required OutcomeApplied applied,
 }) {
   final message = switch (applied) {
-    UnlockSkillApplied(:final skillId) => '领悟新招:${_resolveSkillName(skillId)}',
+    UnlockSkillApplied(:final skillId) =>
+      UiStrings.encounterOutcomeSkillUnlocked(_resolveSkillName(skillId)),
     AttributeBonusApplied(:final key, :final delta) =>
-      '${EnumL10n.attributeKey(key)} +$delta',
-    AttributeCapReached(:final cap) => '已达生涯造化极限(总加 $cap)',
-    NoneOutcome() => '心中默念,继续前行',
+      UiStrings.encounterOutcomeAttributeBonus(
+          EnumL10n.attributeKey(key), delta),
+    AttributeCapReached(:final cap) =>
+      UiStrings.encounterOutcomeCapReached(cap),
+    NoneOutcome() => UiStrings.encounterOutcomeNone,
   };
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(

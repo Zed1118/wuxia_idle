@@ -161,7 +161,6 @@ class _LightFootRow extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _StatusIcon extends StatelessWidget {
