@@ -176,7 +176,6 @@ class _MassBattleRow extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _StatusIcon extends StatelessWidget {

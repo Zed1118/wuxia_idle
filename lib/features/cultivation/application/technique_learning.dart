@@ -44,7 +44,9 @@ enum LearnOutcome {
 ///   3. 辅修槽满 3（物理约束）
 ///   4. 领悟点不足（经济约束）
 ///
-/// Demo 阶段领悟点由测试场景手动塞 1000 给玩家（GDD §7.2 武学领悟系统未实装）。
+/// 领悟点（insightPoints）由闭关挂机产出（SeclusionService.techniqueLearnPoints
+/// 累加进 Character.insightPoints），凝练面板（InsightExchangeService）消费；招式
+/// 领悟另走 encounter 链路（EncounterService.equipEncounterSkill）。GDD §7.2。
 class TechniqueLearningService {
   TechniqueLearningService._();
 

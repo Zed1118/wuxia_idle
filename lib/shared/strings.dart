@@ -905,4 +905,17 @@ class UiStrings {
   static const String seclusionOutputEquipDrop = '兵器掉率';
   static const String seclusionOutputTechniqueLearn = '心法领悟';
   static const String seclusionOutputInternalForce = '内力增长';
+
+  // ── overnight Batch7:encounter_dialog §5.6 残留迁移 ──────────────────────
+  static const String encounterDialogTitleFallback = '机缘';
+  static const String encounterDialogTitleLabel = '机缘';
+  static const String encounterDialogOutcomeBodyFallback = '此情此景,已铭于心。';
+  static const String encounterDialogConfirmButton = '行路 →';
+  // outcome banner($ 变量用带参方法,enum 映射由 caller 解析后传入)。
+  static String encounterOutcomeSkillUnlocked(String skillName) =>
+      '领悟新招:$skillName';
+  static String encounterOutcomeAttributeBonus(String attrName, int delta) =>
+      '$attrName +$delta';
+  static String encounterOutcomeCapReached(int cap) => '已达生涯造化极限(总加 $cap)';
+  static const String encounterOutcomeNone = '心中默念,继续前行';
 }
