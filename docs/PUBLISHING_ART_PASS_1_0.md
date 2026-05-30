@@ -970,7 +970,7 @@
 - 所有 `Image.asset` 带 errorBuilder（守 widget test + release 不破布局）。
 - 加 Tab / 子屏时检查 Scaffold AppBar（漏了会卡死）。
 - 抽 `Wuxia*` 组件时，现有 inline 行为（颜色 / 降级 / 语义）不能变，加 widget / golden 测锚住。
-- 最终"出版级美感"判断仍走人眼（用户）+ Pen / Codex 视觉验收链路——CLI 只能验布局不破、资源接上，验不了美感。
+- 最终"出版级美感"判断仍走人眼（用户）+ **Mac 本地 Codex 视觉验收**（2026-05-31 起本地化：Mac 直接 `flutter run` 启动游戏 + 本地 Codex 截图，不再 Pen Windows SSH+scp 回传）——CLI 只能验布局不破、资源接上，验不了美感。
 
 ---
 
