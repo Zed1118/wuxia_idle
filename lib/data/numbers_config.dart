@@ -175,6 +175,16 @@ class NumbersConfig {
   /// recruit / territory。空段兜底 [SectManagementConfig.empty]。
   final SectManagementConfig sectManagement;
 
+  /// 奇遇生涯属性加成上限(numbers.yaml
+  /// `character.adventure_attribute_bonus.lifetime_cap_per_character`,GDD §4.1)。
+  /// #4③ B2:接入 [EncounterService.attributeGainCap],消除该 yaml key 零消费。
+  final int adventureAttributeLifetimeCap;
+
+  /// 奇遇 fortune 软概率灵敏度(numbers.yaml `encounter.fortune_sensitivity`,C-W14-1 Q3)。
+  /// p = baseProbability * (1 + fortune / sensitivity)。
+  /// #4③ B5:从 [EncounterService] 硬编码 20.0 外置。
+  final double encounterFortuneSensitivity;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -214,6 +224,8 @@ class NumbersConfig {
     required this.pvp,
     required this.sectEvent,
     required this.sectManagement,
+    required this.adventureAttributeLifetimeCap,
+    required this.encounterFortuneSensitivity,
     required this.raw,
   });
 
@@ -323,6 +335,15 @@ class NumbersConfig {
       sectManagement: SectManagementConfig.fromYaml(
         y['sect_management'] as Map<String, dynamic>?,
       ),
+      adventureAttributeLifetimeCap: (((y['character']
+                  as Map<String, dynamic>?)?['adventure_attribute_bonus']
+              as Map<String, dynamic>?)?['lifetime_cap_per_character'] as num?)
+              ?.toInt() ??
+          5,
+      encounterFortuneSensitivity: ((y['encounter']
+                  as Map<String, dynamic>?)?['fortune_sensitivity'] as num?)
+              ?.toDouble() ??
+          20.0,
       raw: y,
     );
   }

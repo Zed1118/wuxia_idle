@@ -102,10 +102,16 @@ class EncounterService {
   const EncounterService({
     required this.isar,
     this.attributeGainCap = 5,
+    this.fortuneSensitivity = 20.0,
   });
 
   final Isar isar;
   final int attributeGainCap;
+
+  /// fortune 软概率灵敏度(numbers.yaml `encounter.fortune_sensitivity`,默认 20.0)。
+  /// p = baseProbability * (1 + fortune / fortuneSensitivity)。
+  /// #4③ B5:gameplay provider 从 NumbersConfig 注入,消除硬编码 20.0。
+  final double fortuneSensitivity;
 
   /// 获取或创建进度行。
   Future<EncounterProgress> getOrCreate({required int saveDataId}) async {
@@ -222,7 +228,8 @@ class EncounterService {
       if (triggered.contains(def.id)) continue;
       if (!_checkTrigger(def, progress, attributes, festivalToday)) continue;
 
-      final p = def.baseProbability * (1 + attributes.fortune / 20.0);
+      final p =
+          def.baseProbability * (1 + attributes.fortune / fortuneSensitivity);
       if (rng.nextDouble() < p) {
         return def;
       }

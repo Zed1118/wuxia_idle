@@ -839,11 +839,23 @@ character:
   # --- 奇遇属性加成（GDD §4.1）---
   # 后天弥补先天，但有硬上限
   adventure_attribute_bonus:
-    lifetime_cap_per_character: 5     # 每个角色生涯总加成上限 +5
+    lifetime_cap_per_character: 5     # 每个角色生涯总加成上限 +5(#4③ B2 已接 EncounterService.attributeGainCap)
+    # ⚠️ bonus_per_event_min/max/distribution/weights 未运行时消费(#4③ B7 核账):
+    # applyOutcome 用各 data/encounters.yaml outcome 写死的 attributeDelta,以下为设计参考。
     bonus_per_event_min: 1            # 单次奇遇最少加 1 点
     bonus_per_event_max: 3            # 单次奇遇最多加 3 点
     distribution: "weighted"          # 大部分加 1，少数加 2-3
     weights: [0.65, 0.25, 0.10]      # 1 点/2 点/3 点的概率
+
+# =============================================================================
+# 6b. 奇遇系统
+# =============================================================================
+# GDD §7.2 武学领悟 · fortune 软概率灵敏度
+
+encounter:
+  # fortune 软概率灵敏度:p = baseProbability * (1 + fortune / fortune_sensitivity)
+  # (C-W14-1 决策点 Q3 · #4③ B5 从 encounter_service.dart 硬编码 20.0 外置)
+  fortune_sensitivity: 20
 
 # =============================================================================
 # 7. 闭关系统

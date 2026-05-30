@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
 import '../../encounter/application/encounter_service.dart';
 import 'seclusion_service.dart';
@@ -17,6 +18,12 @@ SeclusionService? seclusionService(Ref ref) {
   if (isarInstance == null) return null;
   return SeclusionService(
     isar: isarInstance,
-    encounterService: EncounterService(isar: isarInstance),
+    encounterService: EncounterService(
+      isar: isarInstance,
+      attributeGainCap:
+          GameRepository.instance.numbers.adventureAttributeLifetimeCap,
+      fortuneSensitivity:
+          GameRepository.instance.numbers.encounterFortuneSensitivity,
+    ),
   );
 }

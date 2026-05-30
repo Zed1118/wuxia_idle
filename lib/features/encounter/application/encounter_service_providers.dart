@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../data/isar_provider.dart';
 import '../domain/encounter_progress.dart';
@@ -12,7 +13,13 @@ part 'encounter_service_providers.g.dart';
 @riverpod
 EncounterService? encounterService(Ref ref) {
   final isarInstance = ref.watch(isarProvider);
-  return isarInstance == null ? null : EncounterService(isar: isarInstance);
+  if (isarInstance == null) return null;
+  final n = GameRepository.instance.numbers;
+  return EncounterService(
+    isar: isarInstance,
+    attributeGainCap: n.adventureAttributeLifetimeCap,
+    fortuneSensitivity: n.encounterFortuneSensitivity,
+  );
 }
 
 /// 当前存档 [EncounterProgress] 行(C-W14-3-A,I 抽离)。
