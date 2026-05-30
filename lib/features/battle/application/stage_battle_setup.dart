@@ -279,8 +279,9 @@ class StageBattleSetup {
   /// EnemyDef → BattleCharacter。
   ///
   /// 敌人不持装备/心法，全靠 yaml `baseHp / baseAttack / baseSpeed`：
-  /// - `maxInternalForce / currentInternalForce` / `criticalRate / evasionRate`
-  ///   取 `numbers.yaml combat.enemy_defaults`（P2-a/b：从 hardcode 抽出，§5.6）
+  /// - `maxInternalForce / currentInternalForce` 按境界查表 RealmDef.internalForceMax
+  ///   × `enemy_defaults.internal_force_scale`（P5.2 对称化，满开局，clamp≤红线）；
+  ///   `criticalRate / evasionRate` 取 `numbers.yaml combat.enemy_defaults`
   /// - `mainCultivationLayer` 默认 [CultivationLayer.daCheng]（中等加成）
   /// - `totalEquipmentAttack` = `baseAttack`（直接当装备攻击灌入伤害公式）
   /// - `characterId` 用 `-(slotIndex+1)` 避免与玩家 Isar id 冲突
@@ -293,6 +294,15 @@ class StageBattleSetup {
         .map((id) => GameRepository.instance.getSkill(id))
         .toList(growable: false);
     final enemyDefaults = GameRepository.instance.numbers.combat.enemyDefaults;
+    final realm = GameRepository.instance.getRealm(
+      enemy.realmTier,
+      enemy.realmLayer,
+    );
+    final enemyIf = resolveEnemyInternalForce(
+      realm.internalForceMax,
+      enemyDefaults.internalForceScale,
+      GameRepository.instance.numbers.combat.redLines.internalForceMax,
+    );
     return BattleCharacter(
       characterId: characterIdOverride ?? -(slotIndex + 1),
       name: enemy.name,
@@ -301,8 +311,8 @@ class StageBattleSetup {
       school: enemy.school,
       maxHp: enemy.baseHp,
       currentHp: enemy.baseHp,
-      maxInternalForce: enemyDefaults.internalForce,
-      currentInternalForce: enemyDefaults.internalForce,
+      maxInternalForce: enemyIf,
+      currentInternalForce: enemyIf,
       speed: enemy.baseSpeed,
       criticalRate: enemyDefaults.criticalRate,
       evasionRate: enemyDefaults.evasionRate,
