@@ -124,6 +124,10 @@ class UiStrings {
   static const String scenarioVcP5Plus = 'VC-P5+ · 飞升流视觉验收预设(Codex 派单)';
   static const String hintVcP5Plus =
       '祖师 wuSheng·dengFeng + stage_inner_demon_07 + stage_06_05 cleared · 「步入飞升」按钮 enable · 直跳 AscensionScreen 拿 dialog/snackbar/多代 chip 截图';
+  static const String scenarioVcShenwuDrop =
+      'VC · 神物掉落 06_04（Ch1-6 全清·满配·Codex 派单）';
+  static const String hintVcShenwuDrop =
+      '祖师 wuSheng·dengFeng 满配 + Ch1–Ch5 全通 + stage_06_01/02/03 cleared，独留 stage_06_04 可挑 · 直跳章节列表 → 第六章 → 打 06_04 必掉神物「昆仑佩」(dropChance 1.0) → 截金色品阶掉落弹窗';
   static const String scenarioRefineInsight = '凝练态验证';
   static const String hintRefineInsight =
       '主修心法 + 领悟点 50 + tutorialStep 3，进心法面板看主修卡「凝练领悟 · N 点」有点态';

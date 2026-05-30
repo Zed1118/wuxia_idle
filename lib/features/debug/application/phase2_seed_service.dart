@@ -837,6 +837,49 @@ class Phase2SeedService {
     }
   }
 
+  /// VC · 神物「昆仑佩」金色掉落弹窗视觉验收 fixture（2026-05-30 · V3 神物金补验）
+  ///
+  /// 在 [seedMasterDisciple] 基础上：
+  /// - founder boost 到 `wuSheng·dengFeng`（满配，稳胜 stage_06_04 zongShi 阶小 Boss）
+  /// - 标 Ch1–Ch5 全 stage + stage_06_01/02/03 cleared
+  ///   → 第六章解锁（Ch5 全通）+ stage_06_04 available（prevStageId 链：06_03 cleared）
+  ///   → 留 06_04 / 06_05 未通，Codex 打 06_04 必掉 accessory_shenwu_kun_lun_pei（dropChance 1.0）
+  ///
+  /// 用途：验证神物金色品阶掉落弹窗（V3 神物金唯一未观察分支，此前 seed 进不去
+  /// 06_04 而 BLOCKED）。chapterCompleted 同按 chapterIndex 枚举，标的集合与解锁判定自洽。
+  Future<void> seedVisualCheckShenwuDrop() async {
+    // 1. 底层 seed：祖师 + 2 弟子 + 装备 + 心法 + active
+    await seedMasterDisciple();
+
+    // 2. boost founder 到 wuSheng·dengFeng（满配稳胜 06_04）
+    await isar.writeTxn(() async {
+      final founder = await isar.characters.get(1);
+      if (founder != null) {
+        founder.realmTier = RealmTier.wuSheng;
+        founder.realmLayer = RealmLayer.dengFeng;
+        await isar.characters.put(founder);
+      }
+    });
+
+    // 3. 标 Ch1–Ch5 全通 + stage_06_01/02/03 cleared，独留 06_04 可挑
+    const ch6Cleared = {'stage_06_01', 'stage_06_02', 'stage_06_03'};
+    final toClear = GameRepository.instance.stageDefs.values
+        .where((s) {
+          final ci = s.chapterIndex;
+          return (ci != null && ci >= 1 && ci <= 5) ||
+              ch6Cleared.contains(s.id);
+        })
+        .map((s) => s.id)
+        .toList();
+
+    final svc = MainlineProgressService(isar: isar);
+    await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    final cleared = DateTime.now();
+    for (final stageId in toClear) {
+      await svc.recordVictory(stageId: stageId, now: cleared);
+    }
+  }
+
   // ── private helpers ────────────────────────────────────────────────────────
 
   /// 清空业务 collection（保留 SaveData）。装备 / 心法 / 角色 / 物品 / 事件全清。

@@ -15,6 +15,7 @@ import '../../festival/application/festival_service_providers.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../mainline/application/mainline_providers.dart';
+import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../recruitment/application/recruitment_providers.dart';
 import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
@@ -265,6 +266,16 @@ class _Phase2TestMenuState extends ConsumerState<Phase2TestMenu> {
                     () => Phase2SeedService(isar: IsarSetup.instance)
                         .seedVisualCheckP5Plus(),
                     () => const LineagePanelScreen(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _ScenarioButton(
+                  label: UiStrings.scenarioVcShenwuDrop,
+                  hint: UiStrings.hintVcShenwuDrop,
+                  onTap: () => _seedAndPush(
+                    () => Phase2SeedService(isar: IsarSetup.instance)
+                        .seedVisualCheckShenwuDrop(),
+                    () => const ChapterListScreen(),
                   ),
                 ),
                 const SizedBox(height: 16),
