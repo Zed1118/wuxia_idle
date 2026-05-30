@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/isar_setup.dart';
+import '../domain/tutorial_hint_def.dart';
 
 /// 新手引导进度服务(P1 #42 Phase 2 §10 P1.x + P1.y)。
 ///
@@ -118,13 +119,13 @@ class TutorialService {
   /// banner 已读状追加 hook(P1.y)。
   ///
   /// 玩家点击 `TutorialBannerCard` 后调用,把 [step] 追加进
-  /// [SaveData.tutorialHintsRead]。值域校验 `step ∈ {6, 7, 8}` —— 越界静默 no-op
-  /// (调用方该是表驱动 [TutorialHintDef],越界视为编码错误兜底)。
+  /// [SaveData.tutorialHintsRead]。值域校验:仅持久化有对应 [TutorialHintDef] 的
+  /// step(表驱动单一真相源 · 无 def 的 step 视为编码错误静默 no-op)。
   /// 重复追加同 step 也 no-op(单调追加,不删)。
   ///
   /// **caller 持锁**:caller 必须在 `isar.writeTxn` 内 await 本方法。
   Future<void> markHintRead(int step) async {
-    if (step < 6 || step > 8) return;
+    if (TutorialHintDef.byStep(step) == null) return;
     final save = await isar.saveDatas
         .filter()
         .slotIdEqualTo(IsarSetup.currentSlotId)

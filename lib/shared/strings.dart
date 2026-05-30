@@ -595,7 +595,14 @@ class UiStrings {
       '尚未建派,$name 无缘相邀';
 
   // ── P1 #42 Phase 2 §10 P1.y · 新手引导 banner 文案(GDD §10.2 第 2 方式)──
-  // 3 条对应 tutorialStep 6/7/8(收徒 / 奇遇 / 装备开锋),50-100 字短介绍。
+  // §5.7 合规:仅在「新系统解锁」那一步提示一次,跳过纯进度祝贺(step 1/2/4)。
+  // step 3 心法面板 / step 5 Ch1 通关(闭关 + 江湖/门派/排行榜)/ step 6/7/8 收徒·奇遇·开锋。
+  static const String tutorialHintStep3Title = '心法已可修习';
+  static const String tutorialHintStep3Body =
+      '初通拳脚,可习心法了。主修一门立为根本,辅修旁系以求相生 —— 招式威能、内力深浅,皆由心法而定。心法面板已为你开启,择一门细细参详。';
+  static const String tutorialHintStep5Title = '山门之外天地宽';
+  static const String tutorialHintStep5Body =
+      '学武出山一章已了。可寻一处清幽闭关潜修,内息日进;亦可就此踏入江湖 —— 结识同道、开宗立派、登台较技。前路已开,凭你去闯。';
   static const String tutorialHintStep6Title = '收徒资格已达成';
   static const String tutorialHintStep6Body =
       '内功已至一流境界,可以收徒了。开派祖师才能将一身所学传承下去 —— 待你择一可造之材为徒,武林便多一位你的弟子。';

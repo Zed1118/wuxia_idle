@@ -523,51 +523,70 @@ void main() {
       expect(find.byType(TutorialBannerCard), findsNothing);
     });
 
-    testWidgets('step=5 → 不显 banner(< 6 不入 hint 表)', (tester) async {
-      await tester.pumpWidget(appWith(step: 5, hintsRead: []));
+    testWidgets('step=2 → 不显 banner(§5.7 step 1/2/4 无系统解锁锚点)',
+        (tester) async {
+      await tester.pumpWidget(appWith(step: 2, hintsRead: []));
       await tester.pump();
       await tester.pump();
       expect(find.byType(TutorialBannerCard), findsNothing);
     });
 
-    testWidgets('step=6 + hintsRead=[] → 显 step 6 banner', (tester) async {
-      await tester.pumpWidget(appWith(step: 6, hintsRead: []));
+    testWidgets('step=3 + hintsRead=[] → 显 step 3 banner(心法解锁锚点)',
+        (tester) async {
+      await tester.pumpWidget(appWith(step: 3, hintsRead: []));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(TutorialBannerCard), findsOneWidget);
+      expect(find.text(UiStrings.tutorialHintStep3Title), findsOneWidget);
+    });
+
+    testWidgets('step=3 + hintsRead=[3] → 不显 banner(已读)', (tester) async {
+      await tester.pumpWidget(appWith(step: 3, hintsRead: [3]));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(TutorialBannerCard), findsNothing);
+    });
+
+    testWidgets('step=5 + hintsRead=[3] → 显 step 5 banner(Ch1 通关锚点)',
+        (tester) async {
+      await tester.pumpWidget(appWith(step: 5, hintsRead: [3]));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(TutorialBannerCard), findsOneWidget);
+      expect(find.text(UiStrings.tutorialHintStep5Title), findsOneWidget);
+    });
+
+    testWidgets('step=8 + hintsRead=[] → 显 step 3 banner(取最低未读 step)',
+        (tester) async {
+      await tester.pumpWidget(appWith(step: 8, hintsRead: []));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(TutorialBannerCard), findsOneWidget);
+      expect(find.text(UiStrings.tutorialHintStep3Title), findsOneWidget,
+          reason: 'R3 风险处置:同时多 unread 取最低 step');
+      expect(find.text(UiStrings.tutorialHintStep6Title), findsNothing);
+    });
+
+    testWidgets('step=6 + hintsRead=[3,5] → 显 step 6 banner', (tester) async {
+      await tester.pumpWidget(appWith(step: 6, hintsRead: [3, 5]));
       await tester.pump();
       await tester.pump();
       expect(find.byType(TutorialBannerCard), findsOneWidget);
       expect(find.text(UiStrings.tutorialHintStep6Title), findsOneWidget);
     });
 
-    testWidgets('step=6 + hintsRead=[6] → 不显 banner(已读)', (tester) async {
-      await tester.pumpWidget(appWith(step: 6, hintsRead: [6]));
-      await tester.pump();
-      await tester.pump();
-      expect(find.byType(TutorialBannerCard), findsNothing);
-    });
-
-    testWidgets('step=8 + hintsRead=[] → 显 step 6 banner(取第 1 unread)',
+    testWidgets('step=8 + hintsRead=[3,5,6,7] → 显 step 8 banner',
         (tester) async {
-      await tester.pumpWidget(appWith(step: 8, hintsRead: []));
-      await tester.pump();
-      await tester.pump();
-      expect(find.byType(TutorialBannerCard), findsOneWidget);
-      expect(find.text(UiStrings.tutorialHintStep6Title), findsOneWidget,
-          reason: 'R3 风险处置:同时多 unread 取最早 step');
-      expect(find.text(UiStrings.tutorialHintStep7Title), findsNothing);
-      expect(find.text(UiStrings.tutorialHintStep8Title), findsNothing);
-    });
-
-    testWidgets('step=8 + hintsRead=[6,7] → 显 step 8 banner', (tester) async {
-      await tester.pumpWidget(appWith(step: 8, hintsRead: [6, 7]));
+      await tester.pumpWidget(appWith(step: 8, hintsRead: [3, 5, 6, 7]));
       await tester.pump();
       await tester.pump();
       expect(find.byType(TutorialBannerCard), findsOneWidget);
       expect(find.text(UiStrings.tutorialHintStep8Title), findsOneWidget);
     });
 
-    testWidgets('step=8 + hintsRead=[6,7,8] → 不显 banner(全已读)',
+    testWidgets('step=8 + hintsRead=[3,5,6,7,8] → 不显 banner(全已读)',
         (tester) async {
-      await tester.pumpWidget(appWith(step: 8, hintsRead: [6, 7, 8]));
+      await tester.pumpWidget(appWith(step: 8, hintsRead: [3, 5, 6, 7, 8]));
       await tester.pump();
       await tester.pump();
       expect(find.byType(TutorialBannerCard), findsNothing);
