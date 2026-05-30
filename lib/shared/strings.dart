@@ -912,6 +912,8 @@ class UiStrings {
   // narrative_reader 翻页按钮。
   static const String narrativeReaderFinish = '完成';
   static const String narrativeReaderContinue = '继续';
+  /// G4 · 首段轻点提示(§5.7 气泡引导,仅首段显一次,点明轻点画面/按钮即可往下读)。
+  static const String narrativeReaderTapHint = '轻点画面，继续往下读';
 
   // seclusion_setup 产出维度标签。
   static const String seclusionOutputMojianshi = '磨剑石';

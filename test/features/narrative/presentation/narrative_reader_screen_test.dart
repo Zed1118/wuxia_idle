@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/narrative_loader.dart';
 import 'package:wuxia_idle/features/narrative/presentation/narrative_reader_screen.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 /// T36 NarrativeReaderScreen widget 测试。
 void main() {
@@ -225,5 +226,46 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(finished, isTrue);
+  });
+
+  testWidgets('轻点正文区 → 推进到下一段(VN 式 tap-to-advance)', (tester) async {
+    const c = NarrativeContent(
+      id: 'x',
+      title: '测试章',
+      paragraphs: ['第一段', '第二段'],
+      isPlaceholder: false,
+    );
+    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
+      content: c,
+      fallbackTitle: 'fb',
+    )));
+    expect(find.text('第一段'), findsOneWidget);
+
+    await tester.tap(find.text('第一段'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('第二段'), findsOneWidget);
+    expect(find.text('2 / 2'), findsOneWidget);
+  });
+
+  testWidgets('首段显轻点提示,推进后隐藏(§5.7 提示一次)', (tester) async {
+    const c = NarrativeContent(
+      id: 'x',
+      title: '测试章',
+      paragraphs: ['第一段', '第二段'],
+      isPlaceholder: false,
+    );
+    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
+      content: c,
+      fallbackTitle: 'fb',
+    )));
+    expect(find.text(UiStrings.narrativeReaderTapHint), findsOneWidget);
+
+    await tester.tap(find.text('继续'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text(UiStrings.narrativeReaderTapHint), findsNothing);
   });
 }

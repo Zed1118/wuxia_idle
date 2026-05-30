@@ -127,22 +127,39 @@ class _NarrativeReaderScreenState extends State<NarrativeReaderScreen>
                 ),
               if (widget.topBanner != null) widget.topBanner!,
               Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    child: FadeTransition(
-                      opacity: _fade,
-                      child: Text(
-                        current,
-                        style: const TextStyle(
-                          color: WuxiaColors.textPrimary,
-                          fontSize: 16,
-                          height: 1.7,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _next,
+                  child: Center(
+                    child: SingleChildScrollView(
+                      child: FadeTransition(
+                        opacity: _fade,
+                        child: Text(
+                          current,
+                          style: const TextStyle(
+                            color: WuxiaColors.textPrimary,
+                            fontSize: 16,
+                            height: 1.7,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
+              // G4 · 首段轻点提示(§5.7 仅首段显一次,引导玩家轻点画面/按钮推进)。
+              if (_currentIndex == 0) ...[
+                const SizedBox(height: 8),
+                const Center(
+                  child: Text(
+                    UiStrings.narrativeReaderTapHint,
+                    style: TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
