@@ -296,6 +296,9 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
                   ),
                 const SizedBox(width: 8),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: WuxiaColors.resultHighlight,
+                  ),
                   onPressed: canEnhance
                       ? () {
                           _onEnhance(mojianshiQty);
