@@ -840,7 +840,8 @@ class Phase2SeedService {
   /// VC · 神物「昆仑佩」金色掉落弹窗视觉验收 fixture（2026-05-30 · V3 神物金补验）
   ///
   /// 在 [seedMasterDisciple] 基础上：
-  /// - founder boost 到 `wuSheng·dengFeng`（满配，稳胜 stage_06_04 zongShi 阶小 Boss）
+  /// - 出阵 3 角色全 boost 成满配 wuSheng·dengFeng（满内力 + 高属性 + 神物装备 +
+  ///   传说神功满修炼度 ×3.0），靠境界优势 + 满配碾压 stage_06_04 的 zongShi 3 敌人
   /// - 标 Ch1–Ch5 全 stage + stage_06_01/02/03 cleared
   ///   → 第六章解锁（Ch5 全通）+ stage_06_04 available（prevStageId 链：06_03 cleared）
   ///   → 留 06_04 / 06_05 未通，Codex 打 06_04 必掉 accessory_shenwu_kun_lun_pei（dropChance 1.0）
@@ -851,13 +852,64 @@ class Phase2SeedService {
     // 1. 底层 seed：祖师 + 2 弟子 + 装备 + 心法 + active
     await seedMasterDisciple();
 
-    // 2. boost founder 到 wuSheng·dengFeng（满配稳胜 06_04）
+    // 2. 把出阵 3 角色 boost 成满配 wuSheng——仅改境界标签远不够，内力/血量/
+    //    攻击/心法倍率都得拉满才打得赢 P5.2 对称化后能放招的 zongShi 3 敌人。
+    final repo = GameRepository.instance;
+    final maxIf =
+        repo.getRealm(RealmTier.wuSheng, RealmLayer.dengFeng).internalForceMax;
+    final rng = DefaultRng();
+    final now = DateTime.now();
+    // 神物满配 loadout（昆仑佩留作 06_04 掉落物不预装，饰品改用舍利珠避免混淆）。
+    const shenwuLoadout = [
+      'weapon_shenwu_tian_wen_jian',
+      'armor_shenwu_xuan_huang_pao',
+      'accessory_shenwu_she_li_zhu',
+    ];
+    // 每人一套主修传说神功（三系铺开）。
+    const chuanshuoMain = [
+      'tech_gangmeng_chuanshuo',
+      'tech_lingqiao_chuanshuo',
+      'tech_yinrou_chuanshuo',
+    ];
     await isar.writeTxn(() async {
-      final founder = await isar.characters.get(1);
-      if (founder != null) {
-        founder.realmTier = RealmTier.wuSheng;
-        founder.realmLayer = RealmLayer.dengFeng;
-        await isar.characters.put(founder);
+      final save = await isar.saveDatas.get(0);
+      final activeIds = save?.activeCharacterIds ?? const <int>[];
+      for (var i = 0; i < activeIds.length; i++) {
+        final c = await isar.characters.get(activeIds[i]);
+        if (c == null) continue;
+        c.realmTier = RealmTier.wuSheng;
+        c.realmLayer = RealmLayer.dengFeng;
+        c.internalForce = maxIf;
+        c.internalForceMax = maxIf;
+        c.attributes
+          ..constitution = 9
+          ..agility = 7
+          ..enlightenment = 5
+          ..fortune = 3;
+        // 神物装备覆盖原槽（equipMasterStarting 同 slot 后写胜出）。
+        await equipMasterStarting(
+          isar,
+          character: c,
+          defIds: shenwuLoadout,
+          rng: rng,
+          now: now,
+        );
+        // 主修传说神功 + 修炼度拉满（jiJing → 心法加成 ×3.0）。
+        final techDef =
+            repo.getTechnique(chuanshuoMain[i % chuanshuoMain.length]);
+        final tech = Technique.create(
+          defId: techDef.id,
+          ownerCharacterId: c.id,
+          tier: techDef.tier,
+          school: techDef.school,
+          role: TechniqueRole.main,
+          learnedAt: now,
+          cultivationLayer: CultivationLayer.jiJing,
+        );
+        await isar.techniques.put(tech);
+        c.mainTechniqueId = tech.id;
+        c.school = techDef.school;
+        await isar.characters.put(c);
       }
     });
 
