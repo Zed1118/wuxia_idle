@@ -189,25 +189,6 @@ final resolveSectEventProvider =
   ResolveSectEventNotifier.new,
 );
 
-/// seed pending event(monthly tick callback / debug / 测试用)。
-///
-/// 触发逻辑:[SectEventService.checkAndTrigger] 返非 null event → 本端 writeTxn 落库。
-class SeedSectEventNotifier extends AsyncNotifier<void> {
-  @override
-  FutureOr<void> build() => null;
-
-  Future<void> seed(SectEvent event) async {
-    final isar = ref.read(isarProvider);
-    if (isar == null) return;
-    await isar.writeTxn(() => isar.sectEvents.put(event));
-  }
-}
-
-final seedSectEventProvider =
-    AsyncNotifierProvider<SeedSectEventNotifier, void>(
-  SeedSectEventNotifier.new,
-);
-
 // =============================================================================
 // P4.1 §12.2 帮派门派 B2 service + provider 接入(default 决议 Q1-Q8 草案)
 // =============================================================================
@@ -243,15 +224,6 @@ final sectMembersProvider =
       .filter()
       .sectIdEqualTo(sectId)
       .watch(fireImmediately: true);
-});
-
-/// [sectId] memberCount 派生 Provider(由 [currentSectProvider] 取 cache)。
-///
-/// **设计**:`Sect.memberCount` 已是 cache,无需重数;Demo 单 sect 取 cache 即可。
-final sectMemberCountProvider = Provider.family<int, int>((ref, sectId) {
-  final sect = ref.watch(currentSectProvider).value;
-  if (sect == null || sect.id != sectId) return 0;
-  return sect.memberCount;
 });
 
 /// 中立可占领的 territory list(`TerritoryService.availableForClaim`)。
