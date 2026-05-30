@@ -184,6 +184,9 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
             child: const Text(UiStrings.ascensionConfirmDialogCancel),
           ),
           TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: WuxiaColors.resultHighlight,
+            ),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text(UiStrings.ascensionConfirmDialogOk),
           ),

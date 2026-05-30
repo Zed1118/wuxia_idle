@@ -361,6 +361,9 @@ class _TechniqueTile extends ConsumerWidget {
             child: const Text(UiStrings.commonCancel),
           ),
           TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: WuxiaColors.resultHighlight,
+            ),
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text(UiStrings.refineInsightConfirm),
           ),

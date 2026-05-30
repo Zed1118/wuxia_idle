@@ -35,6 +35,7 @@ import '../../mainline/presentation/stage_victory_dialog.dart'
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/theme/colors.dart';
 import '../../../shared/utils/rng.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
@@ -532,6 +533,9 @@ Future<void> _showVictoryDialog({
           : const Text(UiStrings.towerReplayNoReward),
       actions: [
         TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: WuxiaColors.resultHighlight,
+          ),
           onPressed: () => Navigator.of(ctx).pop(),
           child: const Text(UiStrings.towerVictoryConfirm),
         ),

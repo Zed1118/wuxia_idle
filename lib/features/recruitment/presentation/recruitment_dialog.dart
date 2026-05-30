@@ -128,6 +128,9 @@ class _RecruitmentDialogState extends ConsumerState<RecruitmentDialog> {
             child: const Text(UiStrings.recruitmentConfirmNo),
           ),
           TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: WuxiaColors.resultHighlight,
+            ),
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text(UiStrings.recruitmentConfirmYes),
           ),
