@@ -308,6 +308,32 @@ void main() {
       expect(() => EnemyDefaults.fromYaml(y(2.5)), throwsArgumentError);
     });
   });
+
+  group('P5.2 敌人内力对称化集成', () {
+    test('学徒敌人 stage_01_01 内力 = 500 (满开局)', () {
+      final stage = GameRepository.instance.getStage('stage_01_01');
+      final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
+      expect(enemies.first.maxInternalForce, 500);
+      expect(enemies.first.currentInternalForce, 500);
+    });
+    test('武圣 Boss 西凉霸主内力 = 13000', () {
+      final stage = GameRepository.instance.getStage('stage_06_05');
+      final boss = StageBattleSetup.buildEnemyTeam(stage.enemyTeam)
+          .firstWhere((e) => e.name == '西凉霸主');
+      expect(boss.maxInternalForce, 13000);
+      expect(boss.currentInternalForce, 13000);
+    });
+    test('武圣 Boss 内力足够放阴柔传说大招 (cost 1600)', () {
+      final stage = GameRepository.instance.getStage('stage_06_05');
+      final boss = StageBattleSetup.buildEnemyTeam(stage.enemyTeam)
+          .firstWhere((e) => e.name == '西凉霸主');
+      final ult =
+          GameRepository.instance.getSkill('skill_yinrou_chuanshuo_ult');
+      expect(ult.internalForceCost, 1600);
+      expect(boss.currentInternalForce,
+          greaterThanOrEqualTo(ult.internalForceCost));
+    });
+  });
 }
 
 /// hot-loop 红线压测断言 helper:6 字段 + 派生不变式上界。
