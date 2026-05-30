@@ -260,6 +260,33 @@ void main() {
           reason: '${ch.name} defenseRate ${ch.defenseRate} 必在 clamp [0.0, 0.95]');
     }
   });
+
+  group('P5.2 resolveEnemyInternalForce 纯函数', () {
+    test('scale 1.0 直通 RealmDef 值', () {
+      expect(
+        StageBattleSetup.resolveEnemyInternalForce(13000, 1.0, 15000),
+        13000,
+      );
+    });
+    test('scale 0.5 折半', () {
+      expect(
+        StageBattleSetup.resolveEnemyInternalForce(13000, 0.5, 15000),
+        6500,
+      );
+    });
+    test('scale 2.0 越红线 → clamp 15000', () {
+      expect(
+        StageBattleSetup.resolveEnemyInternalForce(15000, 2.0, 15000),
+        15000,
+      );
+    });
+    test('低境界学徒 500 × 1.0 = 500', () {
+      expect(
+        StageBattleSetup.resolveEnemyInternalForce(500, 1.0, 15000),
+        500,
+      );
+    });
+  });
 }
 
 /// hot-loop 红线压测断言 helper:6 字段 + 派生不变式上界。

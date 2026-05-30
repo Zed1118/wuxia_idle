@@ -264,6 +264,18 @@ class StageBattleSetup {
     );
   }
 
+  /// P5.2 敌人内力对称化：按境界 internalForceMax × 全局 scale，clamp ≤ 红线。
+  /// 抽纯函数便于单测 scale/clamp，不依赖 GameRepository 单例。
+  @visibleForTesting
+  static int resolveEnemyInternalForce(
+    int realmInternalForceMax,
+    double scale,
+    int redLineCap,
+  ) {
+    final scaled = (realmInternalForceMax * scale).round();
+    return scaled.clamp(0, redLineCap);
+  }
+
   /// EnemyDef → BattleCharacter。
   ///
   /// 敌人不持装备/心法，全靠 yaml `baseHp / baseAttack / baseSpeed`：
