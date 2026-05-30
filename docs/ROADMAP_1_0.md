@@ -1,5 +1,6 @@
 # 挂机武侠 · 1.0 版本路线图
 
+> **v1.11** · 修订日 2026-05-30 · 状态:**1.0 整体 ~98%**(白屏 🔴 证伪消除 + H1 上手 audit 全闭环 + §9 水墨 polish · **1581 测 / 1 skip / 0 analyze**)
 > **v1.10** · 修订日 2026-05-29 晚 · 状态:**1.0 整体 ~97%**(D/H 首批落地 · H 中期/后期/卡点 3 审计 + 接线 polish 5 项 + 外部 review 5 项硬化 + 根因A 挂机循环重平衡 + idle_economy 验证 + 红线值统一 numbers.yaml · **1552 测 / 1 skip / 0 analyze**)
 > **v1.9** · 修订日 2026-05-29 · 状态:**1.0 整体 ~96%**(路径调整 · F/G 搁置 + H 升主聚焦 + D 数值再平衡推进 + 1519 测 / 0 analyze)
 > **v1.8** · 修订日 2026-05-28 · 状态:**1.0 整体 ~95%**(P2.1 4 批全收 + 装备 drop 全覆盖 77 件 + 1519 测 / 0 analyze)
@@ -16,6 +17,15 @@
 
 ---
 
+> **v1.11 变更**(2026-05-30 · 白屏证伪 + H1 上手 audit 全闭环 + §9 水墨 polish):
+> - **主线白屏 🔴 证伪消除**:Codex Pen clean 存档 + dirty seed 3 轮均不复现 · flutter run 日志 0 exception/RenderFlex/assertion/Navigator · ChapterListScreen 三批未碰 → 判**非真 runtime bug**(根因脏 seed 状态已被 overnight B6 provider invalidate 加固消除)· 0 P0/P1 阻塞从乐观判断变证伪确认
+> - **H 段头号 [ ] 上手 30min 体验 audit 全闭环 ✅**:H1 批1 主菜单未解锁系统门控(§5.7)+ 批2 装备穿戴入口(**修真核心循环断裂**——掉落装备此前无穿戴 UI)+ 批3 掉落仪式感 + picker 移装标注 · Pen Codex 视觉验收 **5/5 PASS**(过场绛红/掉落品阶/回合术语/凝练灰显/picker)→ H 段 ~50%→**~65%**
+> - **§9 dialog 按钮水墨分层调色**:8 个收益确认→金(resultHighlight)+ dispel 散功破坏性确认→绛红(gangMeng)· Phase 0 拦下 2 误判(「设为主修」蓝紫=阴柔流派色 by design / recruitment decline 语义)
+> - **测族** 1552→**1581**(+29 · overnight 安全清理 5 批 17 处硬编码→UiStrings + Batch6 14 provider invalidate + H1 修复批)· 0 analyze
+> - 1.0 整体 ~97%→**~98%**(白屏摘风险悬顶不增 % · H 上手 audit 闭环 +1%)· **CHECKLIST v1.12** 同步 · **重估关键判断**:Mac 端 ship 前必做近见底,剩 ~2% 全卡外部/M15-16(D 性能 8h/FPS/Isar ANR + closed beta ~10 人 + E 音频),Mac 当下仅剩 H 文案终 polish / UX 微调 + 决策第三层 #4 清理
+>
+> ---
+>
 > **v1.10 变更**(2026-05-29 晚 · D/H 首批落地 · v1.9 起草后当日续 10 批):
 > - **H 中期玩法深度 audit ✅**(`h2_midgame_audit`):两大根因 A 挂机循环与中期成长脱节 + B backend 做完前端没接线 → **H2 接线 polish 5 项**(C1 章节翻篇过场 / C2 升阶大境界仪式 / E2 effective 实战值可见 / S3 死字段清理 / R2 verified)+ **根因A 挂机循环重平衡 B1+B2+B3**(B1 闭关挂机折算 battleCount 喂共鸣度 + 默契阈值 500→300 / B2 闭关 EXP ×2.5 / B3 `InsightExchangeService` 凝练领悟点→修炼度 sink)
 > - **H 后期挑战 audit ✅**(`h3_lategame_audit`):Ch4-6 主线/心魔/群战/轻功/飞升 整体远比中期健康(35 narrative 0 dangling)· 唯一 🔴 **A2 多代飞升循环断裂**(`performAscend` 真传位漏写 `founderCharacterId` → gen2 祖师不在阵容永久 blocked)已红绿修复

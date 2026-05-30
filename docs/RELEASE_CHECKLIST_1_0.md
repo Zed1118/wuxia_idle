@@ -7,25 +7,25 @@
 
 ## TL;DR
 
-**当前 release readiness:~97%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **1552 测 / 144 测文件 / 0 analyze**)
+**当前 release readiness:~98%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **主线白屏 🔴 证伪消除** · **1581 测 / 1 skip / 0 analyze**)
 
 **2026-05-29 方向调整 + D/H 首批落地**:用户拍板「先把游戏打磨完成,再启 Steam 上架」→ **F + G 段搁置**(留 ship 前 1-2 月)+ **聚焦 D + H 新增 + E 部分**(E1 SoundManager + E5 BGM 1 套)。1.0 路径 ≠ 全 D/E/F/G 串行,而是「游戏打磨完成度」优先。**当日 H/D 首批已落**:H 中期/后期/卡点三审计全完 + H 接线 polish 5 项 + 外部 review 5 项硬化(P1-a 三系锁死 auto_swap / P2-c 公式单源 / P2-a/b 健壮性 / P3 文档 drift)+ 根因A 挂机循环重平衡(B1+B2+B3)+ idle_economy 经济曲线验证 + 红线值统一 numbers.yaml(单一真相源)。
 
 | 段 | 完成度 | 阻塞? | 当前优先级 |
 |---|---|---|---|
-| A 代码质量 | ✅ 100% | — | 维持 |
+| A 代码质量 | ✅ 100% | — | 维持(1581 测) |
 | B 系统完整性(6 系统) | ✅ 100% | — | 维持 |
-| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 R3 必收 10/10 + **C.4 R4 12/12 PASS** | — | 维持(根因A 三链路 + 凝练入口待 Pen 续验) |
+| C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 10/10 + C.4 12/12 + **C.5 H1 批3 5/5 + 白屏证伪 ✅** | — | 维持(神物金 drop + 凝练 50 点态 + §9 新色待 Pen 续验) |
 | **D 性能 + 数值再平衡(P5.2)** | 🔄 ~20%(数值再平衡首批 ✅:根因A + 红线统一 + idle_economy 验证 · 性能/closed beta 留 M15-16) | M15-16 | **🎯 主聚焦** |
 | E 音频 部分(P5.3)| ✗ 0% | M15-16 | E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前 1-2 月 |
-| **H 内容打磨 + UX**(新增) | 🔄 ~50%(中期/后期/卡点 3 审计 + 接线 polish 5 项 ✅ · UX 微调 / 文案终 polish / 上手 audit 续) | M15-16 | **🎯 主聚焦** |
+| **H 内容打磨 + UX**(新增) | 🔄 ~65%(中期/后期/卡点 3 审计 + 接线 polish 5 项 + **H1 上手 audit 全闭环 ✅** · UX 微调 / 文案终 polish 续) | M15-16 | **🎯 主聚焦** |
 | ~~F Steam 集成(P5.4)~~ | ⏸️ 搁置 | ship 前 1-2 月 | F1 guide 已起草 `docs/handoff/m15_f1_*` 待启 |
 | ~~G 法律商业~~ | ⏸️ 搁置 | ship 前 1-2 月 | 与 F 同步启动 |
 
 ## A. 代码质量(本机可验 · ✅ 全过)
 
 - [x] `flutter analyze` 0 issues
-- [x] 全测族过(**1552 测** / 1 skip / 144 测文件)
+- [x] 全测族过(**1581 测** / 1 skip / 144 测文件)
 - [x] 数值红线 §5.4 测族 13+ 守护(普伤 ≤8000 / 玩家血 ≤20000 / 内力 ≤15000 / 装备攻击 ≤2000)
 - [x] 三系锁 §5.3 测族 5+ 守护(境界 ↔ 装备阶 ↔ 心法阶)
 - [x] §5.5 在线=离线(挂机 = 实际时间)
@@ -115,6 +115,18 @@
 
 > R4 派单 `docs/handoff/codex_dispatch_r4_p2_1_content_drop_2026-05-28.md`(12/12 全收)· 12 截图 `docs/handoff/r4_visual_check_screenshots/r4_01..r4_12.png` · closeout `docs/handoff/pen_visual_verify_r4_p2_1_content_drop_2026-05-28.md`
 
+### C.5 H1 上手修复批 视觉验收 + 主线白屏证伪(✅ 5/5 PASS 2026-05-30)
+
+- [x] **过场绛红**(`chapter_transition` FilledButton WuxiaColors.gangMeng · 非 M3 蓝紫)
+- [x] **掉落品阶仪式感**(勋章图标 + 品阶标签 + 寻常货灰 · 道具朴素列 · 神物金色 RNG 未刷到,逻辑+单测已覆盖)
+- [x] **回合术语**(battle_log/battleSummary 玩家可见「tick」→「回合」)
+- [x] **凝练 0 点灰显常驻态**(technique_panel 主修凝练按钮「·暂无领悟点」灰显 · P3 seed)
+- [x] **picker 关闭按钮 + 他人装备中标注**(character_panel 装备 picker)
+- [x] **主线白屏 🔴 证伪消除**:clean 存档 + dirty seed 3 轮均不复现 · flutter run 日志 0 exception/RenderFlex/assertion/Navigator → 判**非真 runtime bug**,已被 overnight B6 provider invalidate 加固消除
+
+> 待 Pen 续验 3 分支(逻辑+单测已覆盖,非阻塞):神物金色掉落(RNG)/ 凝练「· 50 点」有点态(`seedRefineInsight` debug seed 已加)/ §9 按钮新色(金/绛红)真机。下趟 Pen+Codex ~10min 可一并收。
+> 派单 closeout `docs/handoff/codex_batch3_visual_2026-05-30.md`(18 截图)+ `docs/handoff/codex_whitescreen_repro_2026-05-30.md`(12 截图/日志)· 我多模态亲验 5 关键截图 + chapterlist 正常 paint
+
 ## D. 性能稳定 + 数值再平衡(P5.2)
 
 > 2026-05-29 数值再平衡首批落地(根因A + 红线统一 + idle_economy 验证)· 性能项 + closed beta 外部数据源留 M15-16。
@@ -157,11 +169,11 @@
 
 > v1.9 重定义:H 从 nice-to-have 升为「完成游戏」核心段。spec `docs/spec/h_polish_ux_spec_2026-05-29.md`。
 
-- [ ] 上手 30min 体验 audit(新手引导节奏 / 第一次战斗 / 装备首次掉落仪式感)— H1-Q1 小套餐(主菜单产品名 + 标题 style)✅ · 完整 audit 续
+- [x] **上手 30min 体验 audit 全闭环 ✅**(2026-05-30 · H1 批1 主菜单未解锁门控 §5.7 + 批2 装备穿戴入口修核心循环断裂 + 批3 掉落仪式感 + picker 移装标注 · Pen Codex 视觉验收 5/5 PASS)
 - [x] **中期循环 2-3h audit ✅**(2026-05-29 H2 audit `h2_midgame_audit` · 两大根因:A 挂机循环脱节 + B backend 未接线 → 接线 polish 5 项 + 根因A 挂机循环重平衡全落)
 - [x] **后期挑战 audit ✅**(2026-05-29 H3 audit `h3_lategame_audit` · Ch4-6 主线/心魔/群战/轻功/飞升 整体远比中期健康 · 唯一 🔴 A2 多代飞升断裂已修)
 - [x] **卡点 / 秒杀点诊断 ✅**(idle_economy 量化验证 · balance_simulator 伤害公式已真路径 P2-c 后 · B2 低 tier EXP finding 已拍 B 方向修 ✅ 低 tier 回 ×1.0)
-- [ ] UX 微调(空状态文案 / 错误处理 / loading 反馈 / 翻页流畅度)— H2 接线 polish 已含部分(章节翻篇过场 / 升阶大境界仪式 / effective 实战值可见 / 死字段清理)· 续
+- [ ] UX 微调(空状态文案 / 错误处理 / loading 反馈 / 翻页流畅度)— H2 接线 polish 已含部分(章节翻篇过场 / 升阶大境界仪式 / effective 实战值可见 / 死字段清理)· **§9 dialog 按钮水墨分层调色 ✅**(8 金 + dispel 绛红 · 2026-05-30)· 续
 - [ ] 内容文案最终 polish(typo / 古风一致性 / 主线叙事流畅度)
 
 ### H 历史 nice-to-have 残留
@@ -186,6 +198,7 @@
 
 ## 修订记录
 
+- **v1.12**(2026-05-30)白屏证伪 + H1 上手 audit 全闭环 + §9 水墨 polish 重估:本会话 2026-05-30 三项进展纳入(均原未入 CHECKLIST)——① 主线白屏 🔴 证伪消除(clean+dirty seed 不复现 + 日志零 exception + B6 加固 → 非真 runtime bug,0 P0/P1 阻塞从乐观判断变证伪确认,**不增完成度 % 但摘风险悬顶**);② **H 段头号 [ ] 上手 30min 体验 audit 全闭环 ✅**(H1 批1 门控 §5.7 + 批2 装备穿戴入口修核心循环断裂 + 批3 掉落仪式感 + picker 移装标注 · Pen Codex 5/5 PASS)→ H 段 ~50%→**~65%**;③ §9 dialog 按钮水墨分层调色(8 金 + dispel 绛红)。**对齐**:TL;DR readiness ~97%→**~98%** + 测数 1552→**1581**(+29 · overnight 安全清理 5 批 + H1 修复批);段表 A 测数 / C 加 C.5(H1 批3 5/5 + 白屏证伪)/ H ~50%→~65%;A 段测数;C 段加 C.5 段(5/5 PASS + 3 分支待 Pen 续验);H 段上手 audit 勾 + UX 微调行加 §9 水墨。**重估关键判断**:Mac 端「ship 前必做」近见底,剩 ~2% 全卡外部/M15-16(D 性能验证 8h/FPS/Isar ANR + closed beta ~10 人 + E 音频);Mac 当下可立即推进仅剩 H 段尾巴(文案终 polish / UX 微调)+ 决策第三层 #4 清理。**verify**:HEAD `8115a13` 0 代码改动(纯 doc 状态对齐),1581 测同 HEAD 上会话 worktree subagent 实跑核验。
 - **v1.11**(2026-05-29 晚)B2 低 tier 挂机 EXP finding 修(用户拍 B 方向):finding 纠正——主线按 `clearedStageIds`(打通前关)解锁,境界不 gate,挂机练级 ≠ 跳过 Ch1-2 内容,真实影响是挂机优先的玩家早期战斗碾压(学徒挂二流回头打 Ch1 差 2 阶)。修:山林/古剑冢/藏经阁(学徒/三流图)`experience_per_hour` 回 ×1.0(原值 100/80/90,撤销根因A ×2.5),山林满挂 72h 16→**12 层**(落点三流,对 Ch1 差 1 阶不碾压);erLiu+(悬崖瀑布/断崖绝壁)保 ×2.5(根因A 中期喂成长初衷保留)。`idle_economy_test` 加 B2-c 语义回归守(学徒图满挂落点境界 < 二流)+ `seclusion_service_test` 6 测同步新值(山林 4h EXP 1000→400 · 升层 6→3 层至 jingTong)。**verify**:`flutter analyze` 0 + `flutter test` 1552 pass / 1 skip。readiness ~97% 维持(D 段内 polish)。
 - **v1.10**(2026-05-29 晚)D/H 首批落地状态对齐:CHECKLIST v1.9 起草后当日又落 10 批(H1-Q1 小套餐 + H2 中期 audit + H2 接线 polish 5 项 + H3 后期 audit + A2 🔴 修 + 外部 review P1-a/P2-a/b/c/P3 5 项 + 根因A 挂机循环重平衡 B1+B2+B3 + idle_economy 验证 + 红线值统一 numbers.yaml)。**对齐**:TL;DR 测数 1519→**1552**(1 skip)/ 测文件 139→**144** / readiness ~96%→**~97%** + 当日批次摘要;段表 D **0%→🔄~20%**(数值再平衡首批)/ H **0%→🔄~50%**(3 审计 + 接线 polish 5 项);A 段测数同步;B 段加附加段(外部 review 硬化 8 条);D 段重命名「性能稳定 + 数值再平衡」+ 数值再平衡首批勾;H 段中期/后期/卡点 3 审计勾 + 上手/UX/文案 续。**复核 verify**:`flutter analyze` 0 + `flutter test` 1552 pass / 1 skip(同 HEAD `fdaa2b2` 实跑核验,非照抄)。无代码改动,仅 doc 状态对齐。
 - **v1.9**(2026-05-29)方向调整 + H 段升主聚焦:用户拍板「先把游戏打磨完成,再启 Steam」→ F + G 段标搁置(留 ship 前 1-2 月)+ H 段从 nice-to-have 升「内容打磨 + UX」主聚焦段(6 子项)+ E 段分拆(E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前 1-2 月)+ TL;DR 优先级标注。无代码改动,仅 doc 状态对齐。
