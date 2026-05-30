@@ -7,6 +7,6 @@ opening: |
   那为首者拱手而笑，袖口却已暗藏寒光。
 choices:
   - { text: 出门迎战, outcome: accept }
-  - { text: 派遣弟子应付(reputation -6), outcome: refuse }
+  - { text: 派遣弟子应付, outcome: refuse }
 victory_text: 你以剑势压制邪派来人，众弟子振奋。本派山门安稳，弟子归心。
 defeat_text: 邪派众人破门而入，本派损弟子三人。你立誓闭关三月，养精蓄锐再战。

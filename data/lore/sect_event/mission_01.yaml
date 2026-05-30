@@ -7,6 +7,6 @@ opening: |
   你召集二三弟子，商量是否接此差。
 choices:
   - { text: 接镖出行, outcome: accept }
-  - { text: 婉拒此差(reputation -2), outcome: refuse }
+  - { text: 婉拒此差, outcome: refuse }
 victory_text: 你于途中击退三波强人，药材完好交付。镖局重谢，本派得银三百。
 defeat_text: 强人势众，药材半数被劫，你伤退山门。镖局未付酬劳，本派威名稍损。

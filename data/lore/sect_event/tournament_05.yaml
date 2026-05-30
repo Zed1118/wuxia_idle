@@ -7,6 +7,6 @@ opening: |
   你思忖再三，亲自带队赴会，本派多年沉潜，正可一试。
 choices:
   - { text: 率队赴会, outcome: accept }
-  - { text: 推辞此约(reputation -8), outcome: refuse }
+  - { text: 推辞此约, outcome: refuse }
 victory_text: 衡山一战，本派弟子沉着应对，层层晋阶。山门之下，众派肃然致意。
 defeat_text: 临场失了几招，本派败于八强之列。归山途中，你与弟子皆沉默无言。
