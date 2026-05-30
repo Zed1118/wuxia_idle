@@ -36,9 +36,20 @@ class WuxiaInkButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           decoration: BoxDecoration(
-            color: WuxiaColors.panel,
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [WuxiaColors.inkPanelTop, WuxiaColors.inkPanelBottom],
+            ),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: WuxiaColors.border),
+            border: Border.all(color: WuxiaColors.inkPanelEdge),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x55000000),
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [

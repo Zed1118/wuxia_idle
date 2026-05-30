@@ -33,11 +33,33 @@ import '../../tower/presentation/leaderboard_screen.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
 import '../../mainline/application/mainline_providers.dart';
 
-/// 主菜单（Phase A 出版美术重排 · 2026-05-31）。
+/// 入口列表布局成 2 列(Phase A 出版美术 · 解菜单纵向过长)。
+/// 奇数末项左对齐 + 右侧空格;同行用 IntrinsicHeight+stretch 等高。
+List<Widget> _twoColumn(List<Widget> items) {
+  final rows = <Widget>[];
+  for (var i = 0; i < items.length; i += 2) {
+    final right = i + 1 < items.length ? items[i + 1] : null;
+    rows.add(
+      IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(child: items[i]),
+            const SizedBox(width: 12),
+            Expanded(child: right ?? const SizedBox.shrink()),
+          ],
+        ),
+      ),
+    );
+    if (i + 2 < items.length) rows.add(const SizedBox(height: 12));
+  }
+  return rows;
+}
+
+/// 主菜单(Phase A 出版美术重排 · 2026-05-31 · 双列迭代)。
 ///
-/// 在 [BattleTestMenu] 基础上演进为门面:全屏水墨背景 + 渐变 scrim + 题字标题 +
-/// 入口主/次分组（修行 / 演武 / 江湖 + debug）+ [WuxiaInkButton] 木牌入口 +
-/// §5.7 锁态锁印。导航目标与门控逻辑不变（镜像各屏 clearedStageIds prereq）。
+/// 全屏水墨背景 + 渐变 scrim + 题字标题 + 入口主/次分组(修行 / 演武 / 江湖 +
+/// debug)+ [WuxiaInkButton] 木牌入口 2 列 + §5.7 锁印。导航/门控逻辑不变。
 class MainMenu extends ConsumerWidget {
   const MainMenu({super.key});
 
@@ -51,15 +73,11 @@ class MainMenu extends ConsumerWidget {
   static const int _techniquesUnlockStep = 3;
   static const int _seclusionUnlockStep = 5;
 
-  // H1 批1 §5.7:未解锁系统菜单按钮门控 — 镜像各屏内部 clearedStageIds prereq
-  // (单一真相源)。心魔/轻功/群战 = Ch6 末关解锁 · PVP = Ch5 末关 ·
-  // 江湖/门派/排行榜无屏内 prereq,统一用 Ch1 末关(社交/竞技系统此后才有意义)。
+  // H1 批1 §5.7:未解锁系统门控 — 镜像各屏 clearedStageIds prereq(单一真相源)。
   static const String _lateGameUnlockStage = 'stage_06_05'; // 心魔/轻功/群战
   static const String _pvpUnlockStage = 'stage_05_05';
   static const String _socialUnlockStage = 'stage_01_05'; // 江湖/门派/排行榜
 
-  /// P1.y · 取 [TutorialHintDef.all] 中第 1 个 `step <= currentStep` 且
-  /// `step ∉ hintsRead` 的 hint。无未读 hint → null(spec R3 风险处置)。
   static TutorialHintDef? _firstUnreadHint(int currentStep, List<int> hintsRead) {
     for (final def in TutorialHintDef.all) {
       if (def.step <= currentStep && !hintsRead.contains(def.step)) {
@@ -100,7 +118,6 @@ class MainMenu extends ConsumerWidget {
               errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
           ),
-          // 渐变 scrim:上浅下深,保文字可读 + 雾气感(常量 ARGB 避 withOpacity 弃用)。
           const Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -115,14 +132,13 @@ class MainMenu extends ConsumerWidget {
           SafeArea(
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 520),
+                constraints: const BoxConstraints(maxWidth: 760),
                 child: SingleChildScrollView(
                   padding:
                       const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // A3 题字标题 + 副题(铜金点缀 · 书法字体留授权后替)。
                       const Text(
                         UiStrings.mainMenuTitle,
                         textAlign: TextAlign.center,
@@ -138,8 +154,9 @@ class MainMenu extends ConsumerWidget {
                         UiStrings.mainMenuSubtitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: WuxiaColors.lingQiao,
-                          fontSize: 13,
+                          color: WuxiaColors.resultHighlight,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                           letterSpacing: 4,
                         ),
                       ),
@@ -161,166 +178,167 @@ class MainMenu extends ConsumerWidget {
 
                       // ── 修行(核心循环)──
                       const _SectionLabel(UiStrings.mainMenuGroupCore),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuMainline,
-                        hint: UiStrings.mainMenuMainlineHint,
-                        onTap: () => _push(context, const ChapterListScreen()),
-                      ),
-                      const SizedBox(height: 12),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuCharacterPanel,
-                        hint: UiStrings.mainMenuCharacterPanelHint,
-                        onTap: () => _push(
-                          context,
-                          const CharacterPanelScreen(
-                              characterId: _defaultCharacterId),
+                      ..._twoColumn([
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuMainline,
+                          hint: UiStrings.mainMenuMainlineHint,
+                          onTap: () =>
+                              _push(context, const ChapterListScreen()),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuInventory,
-                        hint: UiStrings.mainMenuInventoryHint,
-                        onTap: () => _push(context, const InventoryScreen()),
-                      ),
-                      const SizedBox(height: 12),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuTechniques,
-                        hint: techLocked
-                            ? UiStrings.mainMenuTechniquesLockedHint
-                            : UiStrings.mainMenuTechniquesHint,
-                        disabled: techLocked,
-                        locked: techLocked,
-                        onTap: () => _push(
-                          context,
-                          const TechniquePanelScreen(
-                              characterId: _defaultCharacterId),
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuCharacterPanel,
+                          hint: UiStrings.mainMenuCharacterPanelHint,
+                          onTap: () => _push(
+                            context,
+                            const CharacterPanelScreen(
+                                characterId: _defaultCharacterId),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      _SeclusionMenuButton(
-                        defaultCharacterId: _defaultCharacterId,
-                        defaultRealmTier: _defaultRealmTier,
-                        onPush: (screen) => _push(context, screen),
-                        tutorialLocked: step < _seclusionUnlockStep,
-                      ),
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuInventory,
+                          hint: UiStrings.mainMenuInventoryHint,
+                          onTap: () =>
+                              _push(context, const InventoryScreen()),
+                        ),
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuTechniques,
+                          hint: techLocked
+                              ? UiStrings.mainMenuTechniquesLockedHint
+                              : UiStrings.mainMenuTechniquesHint,
+                          disabled: techLocked,
+                          locked: techLocked,
+                          onTap: () => _push(
+                            context,
+                            const TechniquePanelScreen(
+                                characterId: _defaultCharacterId),
+                          ),
+                        ),
+                        _SeclusionMenuButton(
+                          defaultCharacterId: _defaultCharacterId,
+                          defaultRealmTier: _defaultRealmTier,
+                          onPush: (screen) => _push(context, screen),
+                          tutorialLocked: step < _seclusionUnlockStep,
+                        ),
+                      ]),
 
                       // ── 演武(战斗历练)──
                       const _SectionLabel(UiStrings.mainMenuGroupBattle),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuTower,
-                        hint: UiStrings.mainMenuTowerHint,
-                        onTap: () =>
-                            _push(context, const TowerFloorListScreen()),
-                      ),
-                      const SizedBox(height: 12),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuInnerDemon,
-                        hint: lateLocked
-                            ? UiStrings.mainMenuLateGameLockedHint
-                            : UiStrings.mainMenuInnerDemonHint,
-                        disabled: lateLocked,
-                        locked: lateLocked,
-                        onTap: () => _push(context, const InnerDemonScreen()),
-                      ),
-                      const SizedBox(height: 12),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuLightFoot,
-                        hint: lateLocked
-                            ? UiStrings.mainMenuLateGameLockedHint
-                            : UiStrings.mainMenuLightFootHint,
-                        disabled: lateLocked,
-                        locked: lateLocked,
-                        onTap: () => _push(context, const LightFootScreen()),
-                      ),
-                      const SizedBox(height: 12),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuMassBattle,
-                        hint: lateLocked
-                            ? UiStrings.mainMenuLateGameLockedHint
-                            : UiStrings.mainMenuMassBattleHint,
-                        disabled: lateLocked,
-                        locked: lateLocked,
-                        onTap: () => _push(context, const MassBattleScreen()),
-                      ),
-                      const SizedBox(height: 12),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuPvp,
-                        hint: pvpLocked
-                            ? UiStrings.pvpLockedHint
-                            : UiStrings.mainMenuPvpHint,
-                        disabled: pvpLocked,
-                        locked: pvpLocked,
-                        onTap: () => _push(context, const PvpScreen()),
-                      ),
+                      ..._twoColumn([
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuTower,
+                          hint: UiStrings.mainMenuTowerHint,
+                          onTap: () =>
+                              _push(context, const TowerFloorListScreen()),
+                        ),
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuInnerDemon,
+                          hint: lateLocked
+                              ? UiStrings.mainMenuLateGameLockedHint
+                              : UiStrings.mainMenuInnerDemonHint,
+                          disabled: lateLocked,
+                          locked: lateLocked,
+                          onTap: () =>
+                              _push(context, const InnerDemonScreen()),
+                        ),
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuLightFoot,
+                          hint: lateLocked
+                              ? UiStrings.mainMenuLateGameLockedHint
+                              : UiStrings.mainMenuLightFootHint,
+                          disabled: lateLocked,
+                          locked: lateLocked,
+                          onTap: () =>
+                              _push(context, const LightFootScreen()),
+                        ),
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuMassBattle,
+                          hint: lateLocked
+                              ? UiStrings.mainMenuLateGameLockedHint
+                              : UiStrings.mainMenuMassBattleHint,
+                          disabled: lateLocked,
+                          locked: lateLocked,
+                          onTap: () =>
+                              _push(context, const MassBattleScreen()),
+                        ),
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuPvp,
+                          hint: pvpLocked
+                              ? UiStrings.pvpLockedHint
+                              : UiStrings.mainMenuPvpHint,
+                          disabled: pvpLocked,
+                          locked: pvpLocked,
+                          onTap: () => _push(context, const PvpScreen()),
+                        ),
+                      ]),
 
                       // ── 江湖(社交 / 见闻)──
                       const _SectionLabel(UiStrings.mainMenuGroupJianghu),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuLineage,
-                        hint: UiStrings.mainMenuLineageHint,
-                        onTap: () =>
-                            _push(context, const LineagePanelScreen()),
-                      ),
-                      const SizedBox(height: 12),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuSect,
-                        hint: socialLocked
-                            ? UiStrings.mainMenuSocialLockedHint
-                            : UiStrings.mainMenuSectHint,
-                        disabled: socialLocked,
-                        locked: socialLocked,
-                        onTap: () => _push(context, const SectScreen()),
-                      ),
-                      const SizedBox(height: 12),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuJianghu,
-                        hint: socialLocked
-                            ? UiStrings.mainMenuSocialLockedHint
-                            : UiStrings.mainMenuJianghuHint,
-                        disabled: socialLocked,
-                        locked: socialLocked,
-                        onTap: () =>
-                            _push(context, const ReputationPanelScreen()),
-                      ),
-                      const SizedBox(height: 12),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuLeaderboard,
-                        hint: socialLocked
-                            ? UiStrings.mainMenuSocialLockedHint
-                            : UiStrings.mainMenuLeaderboardHint,
-                        disabled: socialLocked,
-                        locked: socialLocked,
-                        onTap: () =>
-                            _push(context, const LeaderboardScreen()),
-                      ),
-                      const SizedBox(height: 12),
-                      WuxiaInkButton(
-                        label: UiStrings.mainMenuBaike,
-                        hint: UiStrings.mainMenuBaikeHint,
-                        onTap: () => _push(context, const BaikeScreen()),
-                      ),
+                      ..._twoColumn([
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuLineage,
+                          hint: UiStrings.mainMenuLineageHint,
+                          onTap: () =>
+                              _push(context, const LineagePanelScreen()),
+                        ),
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuSect,
+                          hint: socialLocked
+                              ? UiStrings.mainMenuSocialLockedHint
+                              : UiStrings.mainMenuSectHint,
+                          disabled: socialLocked,
+                          locked: socialLocked,
+                          onTap: () => _push(context, const SectScreen()),
+                        ),
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuJianghu,
+                          hint: socialLocked
+                              ? UiStrings.mainMenuSocialLockedHint
+                              : UiStrings.mainMenuJianghuHint,
+                          disabled: socialLocked,
+                          locked: socialLocked,
+                          onTap: () =>
+                              _push(context, const ReputationPanelScreen()),
+                        ),
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuLeaderboard,
+                          hint: socialLocked
+                              ? UiStrings.mainMenuSocialLockedHint
+                              : UiStrings.mainMenuLeaderboardHint,
+                          disabled: socialLocked,
+                          locked: socialLocked,
+                          onTap: () =>
+                              _push(context, const LeaderboardScreen()),
+                        ),
+                        WuxiaInkButton(
+                          label: UiStrings.mainMenuBaike,
+                          hint: UiStrings.mainMenuBaikeHint,
+                          onTap: () => _push(context, const BaikeScreen()),
+                        ),
+                      ]),
 
                       // ── 调试(仅 debug build)──
                       if (kDebugMode) ...[
                         const _SectionLabel(UiStrings.mainMenuGroupDebug),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuPhase1,
-                          hint: UiStrings.mainMenuPhase1Hint,
-                          onTap: () => _push(context, const BattleTestMenu()),
-                        ),
-                        const SizedBox(height: 12),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuPhase2,
-                          hint: UiStrings.mainMenuPhase2Hint,
-                          onTap: () => _push(context, const Phase2TestMenu()),
-                        ),
-                        const SizedBox(height: 12),
-                        WuxiaInkButton(
-                          label: '强制招募 NPC',
-                          hint: '走完整 sect recruit flow · 跳过战斗/奇遇触发',
-                          onTap: () =>
-                              _push(context, const SectRecruitDebugScreen()),
-                        ),
+                        ..._twoColumn([
+                          WuxiaInkButton(
+                            label: UiStrings.mainMenuPhase1,
+                            hint: UiStrings.mainMenuPhase1Hint,
+                            onTap: () =>
+                                _push(context, const BattleTestMenu()),
+                          ),
+                          WuxiaInkButton(
+                            label: UiStrings.mainMenuPhase2,
+                            hint: UiStrings.mainMenuPhase2Hint,
+                            onTap: () =>
+                                _push(context, const Phase2TestMenu()),
+                          ),
+                          WuxiaInkButton(
+                            label: '强制招募 NPC',
+                            hint: '走完整 sect recruit flow · 跳过战斗/奇遇触发',
+                            onTap: () =>
+                                _push(context, const SectRecruitDebugScreen()),
+                          ),
+                        ]),
                       ],
                     ],
                   ),
@@ -377,8 +395,6 @@ class _SeclusionMenuButton extends ConsumerWidget {
   final int defaultCharacterId;
   final RealmTier defaultRealmTier;
   final void Function(Widget screen) onPush;
-
-  /// tutorialStep < 5 时灰显 + 引导文案,与 loading 并联灰显(任一真即禁用)。
   final bool tutorialLocked;
 
   @override
