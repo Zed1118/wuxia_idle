@@ -535,10 +535,10 @@ void main() {
         expect(massBattleDef.residualHpThresholdPct, lessThanOrEqualTo(1.0),
             reason: 'residualHpThresholdPct ∈ [0.0, 1.0]');
 
-        // empty config 默认值 0.05(fixture 兼容性)
+        // empty config 默认值 0.30(#4③ B6:对齐生产 numbers.yaml 设计值)
         final emptyDef = MassBattleDef.empty();
-        expect(emptyDef.residualHpThresholdPct, 0.05,
-            reason: 'MassBattleDef.empty() 默认 residualHpThresholdPct=0.05');
+        expect(emptyDef.residualHpThresholdPct, 0.30,
+            reason: 'MassBattleDef.empty() 默认 residualHpThresholdPct=0.30');
 
         // R5.1 同体例:50 seed stage_01 命中残血容差至少 1 次
         // (容差触发 = leftWins 含来自 draw 改判的 case;33→46 实测改善源头)

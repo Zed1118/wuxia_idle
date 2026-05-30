@@ -38,7 +38,12 @@ Future<void> runEncounterHookAfterVictory({
   final encounters = GameRepository.instance.allEncounters;
   if (encounters.isEmpty) return;
 
-  final svc = EncounterService(isar: isar);
+  final n = GameRepository.instance.numbers;
+  final svc = EncounterService(
+    isar: isar,
+    attributeGainCap: n.adventureAttributeLifetimeCap,
+    fortuneSensitivity: n.encounterFortuneSensitivity,
+  );
   // W13 教训:race 防御,ensure getOrCreate
   await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
   try {
