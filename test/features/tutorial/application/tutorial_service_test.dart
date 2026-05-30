@@ -236,16 +236,34 @@ void main() {
       expect(await svc.getHintsRead(), [6]);
     });
 
-    test('markHintRead 越界(5/9/0)→ no-op', () async {
+    test('markHintRead 无 def step(2/9/0)→ no-op', () async {
       await seedSave();
       final isar = IsarSetup.instance;
       final svc = TutorialService(isar);
 
-      await isar.writeTxn(() => svc.markHintRead(5));
+      await isar.writeTxn(() => svc.markHintRead(2));
       await isar.writeTxn(() => svc.markHintRead(9));
       await isar.writeTxn(() => svc.markHintRead(0));
 
       expect(await svc.getHintsRead(), isEmpty);
+    });
+
+    test('markHintRead(3) → [3](§5.7 心法解锁锚点)', () async {
+      await seedSave();
+      final svc = TutorialService(IsarSetup.instance);
+
+      await IsarSetup.instance.writeTxn(() => svc.markHintRead(3));
+
+      expect(await svc.getHintsRead(), [3]);
+    });
+
+    test('markHintRead(5) → [5](§5.7 Ch1 通关解锁锚点)', () async {
+      await seedSave();
+      final svc = TutorialService(IsarSetup.instance);
+
+      await IsarSetup.instance.writeTxn(() => svc.markHintRead(5));
+
+      expect(await svc.getHintsRead(), [5]);
     });
 
     test('getHintsRead 未 seed SaveData → []', () async {

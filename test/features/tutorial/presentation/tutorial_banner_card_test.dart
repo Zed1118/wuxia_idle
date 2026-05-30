@@ -119,14 +119,13 @@ void main() {
     });
 
     test('byStep(99) → null fallback', () {
-      expect(TutorialHintDef.byStep(99), isNull,
-          reason: '超出 6-8 范围返回 null');
+      expect(TutorialHintDef.byStep(99), isNull, reason: '无对应 def 返回 null');
     });
   });
 
   group('边界', () {
-    test('byStep(5) → null(step 6 下界 -1)', () {
-      expect(TutorialHintDef.byStep(5), isNull);
+    test('byStep(4) → null(无 def 的 step)', () {
+      expect(TutorialHintDef.byStep(4), isNull);
     });
 
     test('byStep(9) → null(step 8 上界 +1)', () {
