@@ -7,6 +7,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
 
 /// T37 StageBattleSetup 真 Isar 落地测试。
 ///
@@ -285,6 +286,26 @@ void main() {
         StageBattleSetup.resolveEnemyInternalForce(500, 1.0, 15000),
         500,
       );
+    });
+  });
+
+  group('P5.2 EnemyDefaults.fromYaml scale 校验', () {
+    Map<String, dynamic> y(num scale) => {
+          'internal_force_scale': scale,
+          'critical_rate': 0.05,
+          'evasion_rate': 0.05,
+        };
+    test('scale 1.0 正常解析', () {
+      expect(EnemyDefaults.fromYaml(y(1.0)).internalForceScale, 1.0);
+    });
+    test('scale 0 → throw', () {
+      expect(() => EnemyDefaults.fromYaml(y(0)), throwsArgumentError);
+    });
+    test('scale 负 → throw', () {
+      expect(() => EnemyDefaults.fromYaml(y(-0.5)), throwsArgumentError);
+    });
+    test('scale > 2 → throw', () {
+      expect(() => EnemyDefaults.fromYaml(y(2.5)), throwsArgumentError);
     });
   });
 }

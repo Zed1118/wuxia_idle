@@ -1099,19 +1099,28 @@ class RedLinesConfig {
 /// 敌人不持装备/心法，[EnemyDef] → BattleCharacter 时这些字段用统一默认；
 /// 从 `stage_battle_setup.dart` 的 hardcode 抽出以遵守 §5.6 不硬编码。
 class EnemyDefaults {
-  final int internalForce;
+  /// 敌人内力相对同境界 RealmDef.internalForceMax 的全局缩放系数（P5.2 对称化平衡旋钮）。
+  final double internalForceScale;
   final double criticalRate;
   final double evasionRate;
 
   const EnemyDefaults({
-    required this.internalForce,
+    required this.internalForceScale,
     required this.criticalRate,
     required this.evasionRate,
   });
 
   factory EnemyDefaults.fromYaml(Map<String, dynamic> y) {
+    final scale = (y['internal_force_scale'] as num).toDouble();
+    if (scale <= 0 || scale > 2) {
+      throw ArgumentError.value(
+        scale,
+        'internal_force_scale',
+        '敌人内力 scale 必须 ∈ (0, 2]',
+      );
+    }
     return EnemyDefaults(
-      internalForce: (y['internal_force'] as num).toInt(),
+      internalForceScale: scale,
       criticalRate: (y['critical_rate'] as num).toDouble(),
       evasionRate: (y['evasion_rate'] as num).toDouble(),
     );
