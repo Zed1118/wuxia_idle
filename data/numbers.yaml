@@ -94,7 +94,7 @@ combat:
   # 敌人不持装备/心法，EnemyDef → BattleCharacter 时用统一默认。
   # P5.2 起按境界查表对称化（internal_force_scale × RealmDef.internal_force_max，满开局，clamp≤15000）。
   enemy_defaults:
-    internal_force_scale: 1.0        # 敌人内力 = 同境界 RealmDef.internal_force_max × 此系数（P5.2 平衡旋钮，∈(0,2]，clamp≤15000）
+    internal_force_scale: 0.20       # 敌人内力 = 同境界 RealmDef.internal_force_max × 此系数（P5.2 平衡旋钮，∈(0,2]，clamp≤15000）。0.20 经 Ch5/Ch6 跨阶红线压测调校：wuSheng Boss 内力 2600 → 招牌传说大招放 1 次（>0.245 放 2 次会击穿满配玩家红线）
     critical_rate: 0.05              # 基础暴击率
     evasion_rate: 0.05               # 基础闪避率
 
