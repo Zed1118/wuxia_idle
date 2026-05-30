@@ -145,6 +145,69 @@ class Phase2SeedService {
     });
   }
 
+  /// H1 批3 凝练态验证路径缺口：凑齐主修心法 + `insightPoints>0` +
+  /// `tutorialStep>=3`，让 [TechniquePanelScreen] 主修卡片的「凝练领悟」按钮
+  /// 进入「有点」可点态（`character.insightPoints > 0` → 显「凝练领悟 · N 点」），
+  /// 供 Pen 视觉验收。
+  ///
+  /// 照搬 [seedP3] 体例（主修 gangMeng/名家功 yuanMan/1500 + 辅修 yinRou/daCheng +
+  /// IF 10000），差异：
+  ///   - 角色 `insightPoints = 50`（>0 → 按钮可点）
+  ///   - writeTxn 内 `SaveData.tutorialStep = 3`（main_menu 心法面板按钮门控
+  ///     `_techniquesUnlockStep = 3`，否则主菜单进不去面板）
+  Future<void> seedRefineInsight() async {
+    final isar = this.isar;
+    final numbers = GameRepository.instance.numbers;
+
+    await isar.writeTxn(() async {
+      await _clearAll();
+
+      final main = _buildTechnique(
+        defId: 'tech_gangmeng_mingjia',
+        tier: TechniqueTier.mingJiaGong,
+        school: TechniqueSchool.gangMeng,
+        role: TechniqueRole.main,
+        cultivationLayer: CultivationLayer.yuanMan,
+        cultivationProgress: 1500,
+        cultivationProgressToNext:
+            numbers.cultivationProgressToNext[CultivationLayer.yuanMan]!,
+      );
+      final assist = _buildTechnique(
+        defId: 'tech_yinrou_mingjia',
+        tier: TechniqueTier.mingJiaGong,
+        school: TechniqueSchool.yinRou,
+        role: TechniqueRole.assist,
+        cultivationLayer: CultivationLayer.daCheng,
+        cultivationProgress: 0,
+        cultivationProgressToNext:
+            numbers.cultivationProgressToNext[CultivationLayer.daCheng]!,
+      );
+      await isar.techniques.putAll([main, assist]);
+
+      final ch = _buildCharacter(
+        internalForce: 10000,
+        internalForceMax: 10000,
+        school: TechniqueSchool.gangMeng,
+      );
+      ch.mainTechniqueId = main.id;
+      ch.assistTechniqueIds = [assist.id];
+      ch.insightPoints = 50;
+      await isar.characters.put(ch);
+
+      main.ownerCharacterId = ch.id;
+      assist.ownerCharacterId = ch.id;
+      await isar.techniques.putAll([main, assist]);
+
+      // 心法面板主菜单按钮门控 tutorialStep >= 3（main_menu.dart
+      // _techniquesUnlockStep = 3），写回 SaveData 让面板可达。
+      final save = await isar.saveDatas.get(0) ?? (SaveData()..id = 0);
+      save.tutorialStep = 3;
+      await isar.saveDatas.put(save);
+
+      await seedBasicMaterials(isar, mojianshi: 2000, jieJing: 200);
+    });
+  }
+
   /// 场景 P4：全栈对比（+0 利器待玩家强化到 +19 + battleCount=2000 默契满）。
   ///
   /// 玩家在 InventoryScreen 操作：选 +0 装备强化到 +19 + 开锋 1/2/3，对比同
