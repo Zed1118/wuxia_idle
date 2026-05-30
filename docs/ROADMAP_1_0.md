@@ -1,5 +1,6 @@
 # 挂机武侠 · 1.0 版本路线图
 
+> **v1.12** · 修订日 2026-05-31 · 状态:**1.0 整体 ~98%**(B1 敌人内力对称化已实装回填 + stage_05_05 跨阶墙 sim 复核销账 + G2 上手 banner + G4 剧情轻点 Pen 5/5 · **1602 测 / 1 skip / 0 analyze**)
 > **v1.11** · 修订日 2026-05-30 · 状态:**1.0 整体 ~98%**(白屏 🔴 证伪消除 + H1 上手 audit 全闭环 + §9 水墨 polish · **1581 测 / 1 skip / 0 analyze**)
 > **v1.10** · 修订日 2026-05-29 晚 · 状态:**1.0 整体 ~97%**(D/H 首批落地 · H 中期/后期/卡点 3 审计 + 接线 polish 5 项 + 外部 review 5 项硬化 + 根因A 挂机循环重平衡 + idle_economy 验证 + 红线值统一 numbers.yaml · **1552 测 / 1 skip / 0 analyze**)
 > **v1.9** · 修订日 2026-05-29 · 状态:**1.0 整体 ~96%**(路径调整 · F/G 搁置 + H 升主聚焦 + D 数值再平衡推进 + 1519 测 / 0 analyze)
@@ -337,7 +338,7 @@
 
 ### P5.2 C2 难度曲线打磨
 
-> **B1 敌人内力体系对称化(2026-05-30 诊断·推迟至此)**:敌人内力扁平封顶 1000(`numbers.yaml combat.enemy_defaults.internal_force`),高阶 Boss 招牌 ult(`chuanshuo_ult` 1600/`shichuan_ult` 1100)永久放不出(`battle_ai.dart:105` 内力<cost 门控)。flat 抬 2000 可修但与 stage_05_05(刚缓和)耦合 → on-level ceiling 76→20% 过难,polish 期不宜临门重开 Boss 平衡。**方案 A**:敌人内力按自身境界派生(复用 `realms.tiers[*].internal_force_max`,与玩家对称,天然≤15000 §5.4)+ per-stage Boss 难度重调,closed-beta 数据支撑下一次性做。详 session 2026-05-30 诊断。
+> **B1 敌人内力体系对称化(2026-05-30 实装 ✅ `055696b`)**:敌人内力从扁平封顶 1000 改**按自身境界派生**(`numbers.yaml combat.enemy_defaults.internal_force` 删,新增 `internal_force_scale`;`getRealm(tier,layer).internalForceMax × scale`,与玩家对称,clamp≤15000 §5.4),解高阶 Boss 招牌 ult 永久放不出。**scale=0.20 用户拍板**:Boss 内力 2600 放 1 次招牌传说大招,满配玩家 70% 胜。副作用 stage_05_05 on-level ceiling 76→20%,**2026-05-31 balance_simulator 复核 data-confirmed 销账**(全 30 关唯一 ceiling<50%,但败局 62% 在 30% 残血内惜败、仅 10% 真碾压 → 刀锋高方差跨阶墙非 bug)。per-stage Boss 全路径终调仍待 closed-beta 数据。
 
 - 30-35 关全玩家路径数值再平衡
 - itch.io Demo 反馈(P0.3 收集)纳入数据源
