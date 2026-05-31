@@ -4,6 +4,7 @@ import '../../../core/domain/enums.dart';
 import '../../../data/defs/sect_candidate_def.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/portrait_frame.dart';
 
 /// P4.1 1.1 Q6A · encounter-triggered 门派招收 confirm dialog。
 ///
@@ -74,6 +75,14 @@ class _CandidateInfo extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (candidate.portraitPath != null) ...[
+            PortraitFrame(
+              portraitPath: candidate.portraitPath,
+              size: 96,
+              borderColor: schoolColor,
+            ),
+            const SizedBox(height: 12),
+          ],
           Row(
             children: [
               Text(
