@@ -5,6 +5,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
+import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../sect/presentation/sect_screen.dart';
@@ -84,6 +85,11 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
           // + 写 activeCharacterIds → 档案头立绘 + 3 Tab 切弟子立绘可验。
           await Phase2SeedService(isar: isar).seedMasterDisciple();
           target = const CharacterPanelScreen(characterId: 1);
+
+        case VisualRoute.chapterList:
+          // 章节封面条验收:任意 seed 即可(封面随 index 渲染,不依赖进度)。
+          await OnboardingService(isar: isar).ensureFoundingMasters();
+          target = const ChapterListScreen();
       }
 
       // 3. 挂载目标屏

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../domain/chapter_assets.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import 'chapter_transition_screen.dart';
@@ -147,7 +148,6 @@ class _ChapterCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: locked
                 ? WuxiaColors.avatarFill
@@ -158,7 +158,28 @@ class _ChapterCard extends StatelessWidget {
               width: inProgress ? 2 : 1,
             ),
           ),
-          child: Row(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 章节封面条(出版美术):固定高 96 + BoxFit.cover 裁宽幅封面;
+                // 无图 errorBuilder 弱占位 avatarFill 不破布局,MJ 图落位即显。
+                SizedBox(
+                  height: 96,
+                  child: Opacity(
+                    opacity: locked ? 0.35 : 1.0,
+                    child: Image.asset(
+                      chapterCoverPath(chapterIndex),
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) =>
+                          Container(color: WuxiaColors.avatarFill),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
             children: [
               Expanded(
                 child: Column(
@@ -195,6 +216,10 @@ class _ChapterCard extends StatelessWidget {
               const SizedBox(width: 4),
               _StatusChip(status: status),
             ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

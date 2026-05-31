@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../data/narrative_loader.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../domain/chapter_assets.dart';
 import 'stage_list_screen.dart';
 
 /// 章节翻篇过场（H2 小套餐 C1）。
@@ -62,6 +63,16 @@ class ChapterTransitionScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // 章首全宽水墨插图(出版美术 §5.3):无图 errorBuilder
+                        // shrink 折叠不留空,MJ 章节封面落位即显。
+                        Image.asset(
+                          chapterCoverPath(chapterIndex),
+                          height: 160,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                        const SizedBox(height: 24),
                         _ScrollSection(
                           label: UiStrings.chapterProloguelabel,
                           body: c.isPlaceholder ? null : c.prologue,

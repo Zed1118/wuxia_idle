@@ -11,6 +11,7 @@ void main() {
           VisualRoute.techniquePanelHero);
       expect(parseVisualRoute('character_panel'),
           VisualRoute.characterPanelProfile);
+      expect(parseVisualRoute('chapter_list'), VisualRoute.chapterList);
     });
 
     test('未知 id → null', () {
