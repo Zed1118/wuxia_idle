@@ -14,8 +14,13 @@ route id 见 `lib/features/debug/application/visual_route.dart` 的 `VisualRoute
 
 ## 依赖
 
-macOS `screencapture` / `osascript`;Flutter macOS desktop 已 enable。
-窗口 id 取失败时回退交互式全屏(需手动框选)。
+- macOS `screencapture`(需 Screen Recording 权限,首次会弹授权)
+- `python3` + PyObjC `Quartz`(系统自带 python3 通常已含)—— `window_id.py` 用
+  CGWindowList 按 app 进程名取窗口 id,**无需 Accessibility 权限,无头/后台会话可用**
+- Flutter macOS desktop 已 enable
+
+取窗 id 失败时回退**非交互全屏**(`screencapture -x`,零权限不卡,图含桌面杂物,
+读图看 app 窗口区域即可)。每个 route 启动前会先清残留 app 窗口,防截到旧窗。
 
 ## 产物
 
