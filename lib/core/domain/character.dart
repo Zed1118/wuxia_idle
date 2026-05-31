@@ -91,6 +91,11 @@ class Character {
   @Enumerated(EnumType.name)
   SectRank? sectRank;
 
+  /// sect 成员立绘路径(sect NPC ← SectCandidateDef.portraitPath /
+  /// 祖师弟子 ← MasterDef.portraitPath)。成员行统一读此字段渲染。
+  /// 默认 null → 无立绘位(不破布局)。
+  String? portraitPath;
+
   late DateTime createdAt;
 
   Character();
@@ -129,6 +134,7 @@ class Character {
     bool isInSect = false,
     int? sectId,
     SectRank? sectRank,
+    String? portraitPath,
   }) {
     return Character()
       ..name = name
@@ -162,6 +168,7 @@ class Character {
       ..attributeBonusFromAdventure = attributeBonusFromAdventure
       ..isInSect = isInSect
       ..sectId = sectId
-      ..sectRank = sectRank;
+      ..sectRank = sectRank
+      ..portraitPath = portraitPath;
   }
 }
