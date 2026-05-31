@@ -8,6 +8,7 @@ import '../../../data/isar_provider.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../../shared/widgets/portrait_frame.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../application/recruitment_providers.dart';
@@ -265,21 +266,10 @@ class _CandidateCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  border: Border.all(color: schoolColor, width: 1),
-                  color: WuxiaColors.avatarFill,
-                ),
-                child: candidate.portraitPath == null
-                    ? const SizedBox.shrink()
-                    : Image.asset(
-                        candidate.portraitPath!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) =>
-                            Container(color: WuxiaColors.avatarFill),
-                      ),
+              PortraitFrame(
+                portraitPath: candidate.portraitPath,
+                size: 96,
+                borderColor: schoolColor,
               ),
               const SizedBox(width: 12),
               Expanded(
