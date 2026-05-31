@@ -13,6 +13,7 @@ import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/character_panel_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
 
 /// T28 角色面板 widget 测试（phase2_tasks.md §407）。
 ///
@@ -166,6 +167,23 @@ void main() {
     await tester.pump();
     await tester.pump();
   }
+
+  // ── 用例 0：档案头 ─────────────────────────────────────────────────────
+
+  testWidgets('档案头:立绘 + 姓名 + 境界 + 流派名 + 4 属性聚成一卡',
+      (tester) async {
+    // mkCharacter 默认 school=gangMeng / attrs 全 5 / 无心法 → 「刚猛」仅出现在档案头
+    final character = mkCharacter();
+    await pumpPanel(tester, character: character);
+
+    expect(find.byType(PortraitFrame), findsOneWidget);
+    expect(find.text('测试者'), findsOneWidget); // 姓名
+    expect(find.text('刚猛'), findsOneWidget); // EnumL10n.school(gangMeng)
+    expect(find.text('根骨'), findsOneWidget);
+    expect(find.text('悟性'), findsOneWidget);
+    expect(find.text('身法'), findsOneWidget);
+    expect(find.text('机缘'), findsOneWidget);
+  });
 
   // ── 用例 1：3 装备槽全显示 ─────────────────────────────────────────────
 
