@@ -6,6 +6,7 @@ import '../../../data/defs/sect_candidate_def.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/portrait_frame.dart';
 import '../../sect/presentation/sect_recruit_handler.dart';
 
 class SectRecruitDebugScreen extends ConsumerStatefulWidget {
@@ -95,9 +96,13 @@ class _SectRecruitDebugScreenState
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.person_add,
-                                      color: WuxiaColors.resultHighlight,
-                                      size: 18),
+                                  PortraitFrame(
+                                    portraitPath: c.portraitPath,
+                                    size: 40,
+                                    borderColor: c.school == null
+                                        ? WuxiaColors.border
+                                        : WuxiaColors.schoolColor(c.school!),
+                                  ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
