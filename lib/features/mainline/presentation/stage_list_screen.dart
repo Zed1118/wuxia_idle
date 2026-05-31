@@ -7,6 +7,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
+import '../domain/chapter_assets.dart';
 import 'stage_entry_flow.dart';
 
 /// 章节内关卡列表（Phase 3 T35）。
@@ -50,10 +51,23 @@ class StageListScreen extends ConsumerWidget {
                 ),
               );
             }
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: entries.length,
-              itemBuilder: (ctx, i) {
+            return Column(
+              children: [
+                // 关卡列表顶部章节封面(出版美术 §5.3「关卡场景感」):
+                // 复用 chapterCoverPath,无图 errorBuilder shrink 折叠。
+                Image.asset(
+                  chapterCoverPath(chapterIndex),
+                  height: 120,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    itemCount: entries.length,
+                    itemBuilder: (ctx, i) {
                 final entry = entries[i];
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 10),
@@ -70,6 +84,9 @@ class StageListScreen extends ConsumerWidget {
                   ),
                 );
               },
+                  ),
+                ),
+              ],
             );
           },
         ),
