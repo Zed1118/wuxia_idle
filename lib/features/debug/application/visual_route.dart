@@ -8,7 +8,9 @@ enum VisualRoute {
   sectScreenNpc(
       'sect_screen_npc', 'sect_screen·成员立绘验收(祖师 + 6 sect_candidate 完整显)'),
   characterPanelProfile('character_panel',
-      '角色页·档案头验收(祖师立绘 + 姓名/境界/流派/4 属性档案卡 + Tab 切弟子立绘)');
+      '角色页·档案头验收(祖师立绘 + 姓名/境界/流派/4 属性档案卡 + Tab 切弟子立绘)'),
+  chapterList('chapter_list',
+      '章节列表·封面接线验收(章节卡顶部封面条 + 锁章调暗 · 图未到位 errorBuilder 兜底)');
 
   const VisualRoute(this.id, this.label);
 

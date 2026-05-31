@@ -32,7 +32,9 @@ void main() {
   }
 
   Future<void> pumpScreen(WidgetTester tester, MainlineProgress p) async {
-    await tester.binding.setSurfaceSize(const Size(1024, 720));
+    // 章节卡加封面条后变高,扩 viewport 让 6 卡全 build(memory
+    // feedback_listview_widget_test_viewport)。
+    await tester.binding.setSurfaceSize(const Size(1024, 2000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
