@@ -603,15 +603,15 @@ class _SealBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 48,
-      height: 48,
+      width: 44,
+      height: 44,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Image.asset(
             'assets/ui/seal_red.png',
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             fit: BoxFit.contain,
             errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
