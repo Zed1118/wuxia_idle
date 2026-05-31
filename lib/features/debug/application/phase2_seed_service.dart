@@ -1102,6 +1102,11 @@ class Phase2SeedService {
     final repo = GameRepository.instance;
     final now = DateTime(2026, 5, 31);
 
+    // 0. 先清角色(独立 txn · 不与 ensureFoundingMasters 内部 txn 嵌套):
+    //    否则真机已存 legacy 祖师(0.14 存档·portraitPath=null)会让
+    //    ensureFoundingMasters 短路,祖师立绘永空(沿其余 visual seed _clearAll 体例)。
+    await isar.writeTxn(() => _clearAll());
+
     // 1. 祖师 + 2 弟子(ensureFoundingMasters · founder id=1,带 portraitPath)
     await OnboardingService(isar: isar).ensureFoundingMasters();
 
