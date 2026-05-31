@@ -15,31 +15,31 @@ class _ScenarioData {
   _ScenarioData._();
 
   static SkillDef _normal(String id, String name) => SkillDef(
-        id: id,
-        name: name,
-        description: '',
-        type: SkillType.normalAttack,
-        powerMultiplier: 500,
-        internalForceCost: 0,
-        cooldownTurns: 0,
-        requiresManualTrigger: false,
-        parentTechniqueDefId: null,
-        visualEffect: '',
-      );
+    id: id,
+    name: name,
+    description: '',
+    type: SkillType.normalAttack,
+    powerMultiplier: 500,
+    internalForceCost: 0,
+    cooldownTurns: 0,
+    requiresManualTrigger: false,
+    parentTechniqueDefId: null,
+    visualEffect: '',
+  );
 
   /// PM=0 的纯武器斩击，专用于场景 C 隔离装备影响（排除 IF / 招式倍率干扰）。
   static SkillDef _weaponStrike(String id) => SkillDef(
-        id: id,
-        name: '武器斩',
-        description: '',
-        type: SkillType.normalAttack,
-        powerMultiplier: 0,
-        internalForceCost: 0,
-        cooldownTurns: 0,
-        requiresManualTrigger: false,
-        parentTechniqueDefId: null,
-        visualEffect: '',
-      );
+    id: id,
+    name: '武器斩',
+    description: '',
+    type: SkillType.normalAttack,
+    powerMultiplier: 0,
+    internalForceCost: 0,
+    cooldownTurns: 0,
+    requiresManualTrigger: false,
+    parentTechniqueDefId: null,
+    visualEffect: '',
+  );
 
   static SkillDef _power(
     String id,
@@ -47,32 +47,31 @@ class _ScenarioData {
     int pm = 1200,
     int cost = 1000,
     int cd = 3,
-  }) =>
-      SkillDef(
-        id: id,
-        name: name,
-        description: '',
-        type: SkillType.powerSkill,
-        powerMultiplier: pm,
-        internalForceCost: cost,
-        cooldownTurns: cd,
-        requiresManualTrigger: false,
-        parentTechniqueDefId: null,
-        visualEffect: '',
-      );
+  }) => SkillDef(
+    id: id,
+    name: name,
+    description: '',
+    type: SkillType.powerSkill,
+    powerMultiplier: pm,
+    internalForceCost: cost,
+    cooldownTurns: cd,
+    requiresManualTrigger: false,
+    parentTechniqueDefId: null,
+    visualEffect: '',
+  );
 
   static SkillDef _ultimate(String id, String name, int cost) => SkillDef(
-        id: id,
-        name: name,
-        description: '',
-        type: SkillType.ultimate,
-        powerMultiplier: 5000,
-        internalForceCost: cost,
-        cooldownTurns: 5,
-        requiresManualTrigger: true,
-        parentTechniqueDefId: null,
-        visualEffect: '',
-      );
+    id: id,
+    name: name,
+    description: '',
+    type: SkillType.ultimate,
+    powerMultiplier: 5000,
+    internalForceCost: cost,
+    cooldownTurns: 5,
+    requiresManualTrigger: true,
+    parentTechniqueDefId: null,
+    visualEffect: '',
+  );
 
   static BattleCharacter _char({
     required int id,
@@ -89,31 +88,30 @@ class _ScenarioData {
     required List<SkillDef> skills,
     required int teamSide,
     required int slotIndex,
-  }) =>
-      BattleCharacter(
-        characterId: id,
-        name: name,
-        realmTier: tier,
-        realmLayer: layer,
-        school: school,
-        maxHp: maxHp,
-        currentHp: maxHp,
-        maxInternalForce: maxIf,
-        currentInternalForce: maxIf,
-        speed: speed,
-        criticalRate: critRate,
-        evasionRate: 0.05,
-        defenseRate: 0.10,
-        totalEquipmentAttack: eqAtk,
-        mainCultivationLayer: cultivation,
-        availableSkills: skills,
-        skillCooldowns: const {},
-        activeBuffs: const [],
-        actionPoint: 0,
-        isAlive: true,
-        teamSide: teamSide,
-        slotIndex: slotIndex,
-      );
+  }) => BattleCharacter(
+    characterId: id,
+    name: name,
+    realmTier: tier,
+    realmLayer: layer,
+    school: school,
+    maxHp: maxHp,
+    currentHp: maxHp,
+    maxInternalForce: maxIf,
+    currentInternalForce: maxIf,
+    speed: speed,
+    criticalRate: critRate,
+    evasionRate: 0.05,
+    defenseRate: 0.10,
+    totalEquipmentAttack: eqAtk,
+    mainCultivationLayer: cultivation,
+    availableSkills: skills,
+    skillCooldowns: const {},
+    activeBuffs: const [],
+    actionPoint: 0,
+    isAlive: true,
+    teamSide: teamSide,
+    slotIndex: slotIndex,
+  );
 
   // ── 场景 A：二流·圆熟 3v3 同流派同装备，纯比速度 ────────────────────────────
   //
@@ -144,7 +142,11 @@ class _ScenarioData {
 
     return (
       [c(1, '铁拳王', 210, 0, 0), c(2, '岩虎', 250, 0, 1), c(3, '烈山', 230, 0, 2)],
-      [c(11, '碎石拳', 240, 1, 0), c(12, '踏地熊', 220, 1, 1), c(13, '横扫', 260, 1, 2)],
+      [
+        c(11, '碎石拳', 240, 1, 0),
+        c(12, '踏地熊', 220, 1, 1),
+        c(13, '横扫', 260, 1, 2),
+      ],
     );
   }
 
@@ -161,26 +163,25 @@ class _ScenarioData {
       TechniqueSchool school,
       int side,
       int slot,
-    ) =>
-        _char(
-          id: id,
-          name: name,
-          tier: RealmTier.yiLiu,
-          layer: RealmLayer.qiMeng,
-          school: school,
-          maxHp: 12000,
-          maxIf: 4000,
-          speed: 200,
-          critRate: 0.05,
-          eqAtk: 550,
-          cultivation: CultivationLayer.xiaoCheng,
-          skills: [
-            _normal('b_normal_$id', '普攻'),
-            _power('b_power_$id', '重击', pm: 1200, cost: 1000, cd: 3),
-          ],
-          teamSide: side,
-          slotIndex: slot,
-        );
+    ) => _char(
+      id: id,
+      name: name,
+      tier: RealmTier.yiLiu,
+      layer: RealmLayer.qiMeng,
+      school: school,
+      maxHp: 12000,
+      maxIf: 4000,
+      speed: 200,
+      critRate: 0.05,
+      eqAtk: 550,
+      cultivation: CultivationLayer.xiaoCheng,
+      skills: [
+        _normal('b_normal_$id', '普攻'),
+        _power('b_power_$id', '重击', pm: 1200, cost: 1000, cd: 3),
+      ],
+      teamSide: side,
+      slotIndex: slot,
+    );
 
     return (
       [
@@ -266,41 +267,41 @@ class _ScenarioData {
   // （修正挂账 #5：phase1_tasks T17 笔误"差 2"，实际为差 3）
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioD() {
     BattleCharacter lo(int id, String name, int side, int slot) => _char(
-          id: id,
-          name: name,
-          tier: RealmTier.sanLiu,
-          layer: RealmLayer.dengFeng,
-          school: TechniqueSchool.gangMeng,
-          maxHp: 6000,
-          maxIf: 3000,
-          speed: 180,
-          critRate: 0.05,
-          eqAtk: 300,
-          cultivation: CultivationLayer.daCheng,
-          skills: [_normal('d_normal_l_$id', '拙力一击')],
-          teamSide: side,
-          slotIndex: slot,
-        );
+      id: id,
+      name: name,
+      tier: RealmTier.sanLiu,
+      layer: RealmLayer.dengFeng,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 6000,
+      maxIf: 3000,
+      speed: 180,
+      critRate: 0.05,
+      eqAtk: 300,
+      cultivation: CultivationLayer.daCheng,
+      skills: [_normal('d_normal_l_$id', '拙力一击')],
+      teamSide: side,
+      slotIndex: slot,
+    );
 
     BattleCharacter hi(int id, String name, int side, int slot) => _char(
-          id: id,
-          name: name,
-          tier: RealmTier.jueDing,
-          layer: RealmLayer.qiMeng,
-          school: TechniqueSchool.gangMeng,
-          maxHp: 15000,
-          maxIf: 10000, // 高内力保证普攻一击必杀三流（7020 > 6000）
-          speed: 230,
-          critRate: 0.05,
-          eqAtk: 700,
-          cultivation: CultivationLayer.daCheng,
-          skills: [
-            _normal('d_normal_h_$id', '俯视苍生'),
-            _power('d_power_h_$id', '降世神拳', pm: 1500, cost: 1200, cd: 3),
-          ],
-          teamSide: side,
-          slotIndex: slot,
-        );
+      id: id,
+      name: name,
+      tier: RealmTier.jueDing,
+      layer: RealmLayer.qiMeng,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 15000,
+      maxIf: 10000, // 高内力保证普攻一击必杀三流（7020 > 6000）
+      speed: 230,
+      critRate: 0.05,
+      eqAtk: 700,
+      cultivation: CultivationLayer.daCheng,
+      skills: [
+        _normal('d_normal_h_$id', '俯视苍生'),
+        _power('d_power_h_$id', '降世神拳', pm: 1500, cost: 1200, cd: 3),
+      ],
+      teamSide: side,
+      slotIndex: slot,
+    );
 
     return (
       [lo(61, '三流甲', 0, 0), lo(62, '三流乙', 0, 1), lo(63, '三流丙', 0, 2)],
@@ -341,9 +342,9 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
 
   @override
   Widget build(BuildContext context) => BattleScreen(
-        hint: widget.hint,
-        onBattleEnd: () => Navigator.of(context).pop(),
-      );
+    hint: widget.hint,
+    onBattleEnd: () => Navigator.of(context).pop(),
+  );
 }
 
 // ─── 调试主菜单 ────────────────────────────────────────────────────────────────
@@ -357,15 +358,21 @@ class BattleTestMenu extends StatelessWidget {
     (List<BattleCharacter>, List<BattleCharacter>) Function() factory,
     String hint,
   ) {
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => ScenarioLauncher(teamsFactory: factory, hint: hint),
-    ));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ScenarioLauncher(teamsFactory: factory, hint: hint),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: WuxiaColors.background,
+      appBar: AppBar(
+        backgroundColor: WuxiaColors.sidebar,
+        foregroundColor: WuxiaColors.textPrimary,
+      ),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
