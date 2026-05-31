@@ -45,9 +45,8 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.14.0',
-          reason:
-              'P4.1 1.1 Q6B SaveData 加 triggeredBossRecruitStageIds(Boss 招降防刷)');
+      expect(save.saveVersion, '0.15.0',
+          reason: 'sect 立绘 wiring Character 加 portraitPath → 升 0.15.0');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);

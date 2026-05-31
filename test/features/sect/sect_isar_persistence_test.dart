@@ -42,10 +42,10 @@ void main() {
       expect(IsarSetup.instance.sectEvents, isNotNull);
     });
 
-    test('R4.2 saveVersion 已升 0.14.0(P4.1 1.1 Q6B Boss 招降字段)', () async {
+    test('R4.2 saveVersion 已升 0.15.0(sect 立绘 portraitPath 字段)', () async {
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = await IsarSetup.instance.saveDatas.get(0);
-      expect(save!.saveVersion, '0.14.0');
+      expect(save!.saveVersion, '0.15.0');
     });
 
     test('R4.3 Sect 写入 → close → reopen 读出字段一致', () async {
