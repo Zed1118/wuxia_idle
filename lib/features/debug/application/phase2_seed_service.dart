@@ -17,6 +17,9 @@ import '../../equipment/application/equipment_factory.dart';
 import '../../mainline/application/mainline_progress_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../onboarding/application/master_builder.dart';
+import '../../onboarding/application/onboarding_service.dart';
+import '../../sect/domain/sect.dart';
+import '../../sect/domain/sect_rank.dart';
 import '../../tower/domain/tower_progress.dart';
 
 /// Phase 2 调试场景种子工厂（phase2_tasks.md T32 §492-509 子提交 3）。
@@ -1086,6 +1089,78 @@ class Phase2SeedService {
       await isar.saveDatas.put(save);
 
       await seedBasicMaterials(isar, mojianshi: 2000, jieJing: 200);
+    });
+  }
+
+  /// L3 sect 立绘验收 seed:祖师(含弟子)+ 招满 6 sect_candidate 入派。
+  ///
+  /// 直接构造 NPC(sectId=1 + isInSect=true + portraitPath)绕开
+  /// SectMemberService cap(sectLevel 1 cap=3 < 6),seed 确定性优先。
+  /// 祖师 sectId=1 使其在成员列表呈现(member 列表按 sectIdEqualTo 过滤)。
+  Future<void> seedSectWithFullNpc() async {
+    final isar = this.isar;
+    final repo = GameRepository.instance;
+    final now = DateTime(2026, 5, 31);
+
+    // 1. 祖师 + 2 弟子(ensureFoundingMasters · founder id=1,带 portraitPath)
+    await OnboardingService(isar: isar).ensureFoundingMasters();
+
+    await isar.writeTxn(() async {
+      // 2. Sect lazy-init(沿 runSectRecruitFlow 体例 · sectLevel 3 让 cap 充裕)
+      final sect = await isar.sects.get(1) ??
+          (Sect()
+            ..id = 1
+            ..name = '无名宗'
+            ..founderId = 1
+            ..sectReputation = 50
+            ..totalWins = 0
+            ..createdAt = now
+            ..lastEventAt = null);
+      sect.sectLevel = 3;
+
+      // 3. 祖师入派(sectId=1 使其进成员列表)
+      final founder = await isar.characters.get(1);
+      if (founder != null) {
+        founder
+          ..isInSect = true
+          ..sectId = 1
+          ..sectRank = SectRank.elder;
+        await isar.characters.put(founder);
+      }
+
+      // 4. 6 sect_candidate 直接构造入派(带 portraitPath)
+      final candidates = repo.sectCandidates.values.toList();
+      var count = 0;
+      for (final c in candidates) {
+        final realmDef = repo.getRealm(c.defaultRealm, c.defaultLayer);
+        final npc = Character.create(
+          name: c.name,
+          realmTier: c.defaultRealm,
+          realmLayer: c.defaultLayer,
+          attributes: Attributes()
+            ..constitution = c.attributeProfile.constitution
+            ..enlightenment = c.attributeProfile.enlightenment
+            ..agility = c.attributeProfile.agility
+            ..fortune = c.attributeProfile.fortune,
+          rarity: RarityTier.biaoZhun,
+          lineageRole: LineageRole.disciple,
+          isFounder: false,
+          isActive: false,
+          createdAt: now,
+          school: c.school,
+          internalForce: realmDef.internalForceMax,
+          internalForceMax: realmDef.internalForceMax,
+          experienceToNextLayer: realmDef.experienceToNext,
+          isInSect: true,
+          sectId: 1,
+          sectRank: SectRank.initiate,
+          portraitPath: c.portraitPath,
+        );
+        await isar.characters.put(npc);
+        count++;
+      }
+      sect.memberCount = count;
+      await isar.sects.put(sect);
     });
   }
 

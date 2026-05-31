@@ -6,6 +6,7 @@ import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
+import '../../sect/presentation/sect_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../application/phase2_seed_service.dart';
 import '../application/visual_route.dart';
@@ -72,6 +73,10 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
         case VisualRoute.techniquePanelHero:
           await Phase2SeedService(isar: isar).seedRefineInsight();
           target = const TechniquePanelScreen(characterId: 1);
+
+        case VisualRoute.sectScreenNpc:
+          await Phase2SeedService(isar: isar).seedSectWithFullNpc();
+          target = const SectScreen();
       }
 
       // 3. 挂载目标屏
