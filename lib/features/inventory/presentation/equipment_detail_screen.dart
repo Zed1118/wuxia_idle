@@ -80,12 +80,19 @@ class _EquipmentDetailScreenState
   @override
   Widget build(BuildContext context) {
     final color = tierColorForEquipment(widget.def.tier);
+    final highTreasure = isHighTreasureTier(widget.def.tier);
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       appBar: AppBar(
         title: Text(
           widget.def.name,
-          style: TextStyle(color: color, fontWeight: FontWeight.w600),
+          // 神物 / 宝物题字更重(出版美术 §5.4):字号 + letterSpacing 拉开。
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.w600,
+            fontSize: highTreasure ? 22 : null,
+            letterSpacing: highTreasure ? 2 : null,
+          ),
         ),
         backgroundColor: WuxiaColors.sidebar,
         foregroundColor: WuxiaColors.textPrimary,
@@ -112,9 +119,13 @@ class _EquipmentDetailScreenState
                     height: 180,
                     decoration: BoxDecoration(
                       color: WuxiaColors.panel,
-                      border: Border(
-                        bottom: BorderSide(color: color, width: 2),
-                      ),
+                      // 神物 / 宝物:全周更粗边框(出版美术 §5.4「更强边框」);
+                      // 其他阶保留朴素底边。
+                      border: highTreasure
+                          ? Border.all(color: color, width: 3)
+                          : Border(
+                              bottom: BorderSide(color: color, width: 2),
+                            ),
                     ),
                     child: Image.asset(
                       widget.def.detailPath!,

@@ -48,4 +48,23 @@ void main() {
       );
     });
   });
+
+  group('isHighTreasureTier', () {
+    test('宝物 / 神物 → true', () {
+      expect(isHighTreasureTier(EquipmentTier.baoWu), isTrue);
+      expect(isHighTreasureTier(EquipmentTier.shenWu), isTrue);
+    });
+
+    test('寻常货~重器 5 阶 → false', () {
+      for (final t in const [
+        EquipmentTier.xunChang,
+        EquipmentTier.xiangYang,
+        EquipmentTier.haoJiaHuo,
+        EquipmentTier.liQi,
+        EquipmentTier.zhongQi,
+      ]) {
+        expect(isHighTreasureTier(t), isFalse, reason: t.name);
+      }
+    });
+  });
 }

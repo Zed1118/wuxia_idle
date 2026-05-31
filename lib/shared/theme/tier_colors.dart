@@ -15,3 +15,8 @@ Color tierColorForEquipment(EquipmentTier tier) {
     EquipmentTier.shenWu => WuxiaColors.resultHighlight,
   };
 }
+
+/// 高阶珍品(宝物 / 神物)。详情页给更强边框 + 题字(出版美术 §5.4
+/// 「神物、宝物拥有更强边框和题字」),区别寻常货的朴素 tier 色底边。
+bool isHighTreasureTier(EquipmentTier tier) =>
+    tier == EquipmentTier.baoWu || tier == EquipmentTier.shenWu;
