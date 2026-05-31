@@ -1015,6 +1015,80 @@ class Phase2SeedService {
     );
   }
 
+
+  /// Task 2 — 出版美术验收基建：武圣满境界 × 7 阶心法全覆盖。
+  ///
+  /// 造 1 个 wuSheng·dengFeng 角色（id=1） + 刚猛流 7 阶各 1 本心法，
+  /// 让 TechniquePanelScreen 一次显出 7 张卷轴 cover。
+  ///
+  /// 用法：在 VisualRoute.masterAllTiers 路由挂载后调用，
+  /// Task 3 的 VisualSeedService 会调用此方法。
+  Future<void> seedVisualMasterAllTiers() async {
+    const tierDefIds = {
+      TechniqueTier.ruMenGong: 'tech_gangmeng_jichu',
+      TechniqueTier.changLianGong: 'tech_gangmeng_changlian',
+      TechniqueTier.mingJiaGong: 'tech_gangmeng_mingjia',
+      TechniqueTier.menPaiJueXue: 'tech_gangmeng_menpai',
+      TechniqueTier.jiangHuMiChuan: 'tech_gangmeng_jianghu',
+      TechniqueTier.shiChuanShenGong: 'tech_gangmeng_shichuan',
+      TechniqueTier.chuanShuoShenGong: 'tech_gangmeng_chuanshuo',
+    };
+
+    final isar = this.isar;
+    final numbers = GameRepository.instance.numbers;
+
+    await isar.writeTxn(() async {
+      await _clearAll();
+
+      // 造 7 本心法（全部 role=main 避开辅修数量约束）
+      final techniques = <Technique>[];
+      for (final tier in TechniqueTier.values) {
+        final defId = tierDefIds[tier];
+        if (defId == null) {
+          throw StateError('seedVisualMasterAllTiers: 缺少 tier ${tier.name} 的 defId 映射');
+        }
+        final t = _buildTechnique(
+          defId: defId,
+          tier: tier,
+          school: TechniqueSchool.gangMeng,
+          role: TechniqueRole.main,
+          cultivationLayer: CultivationLayer.yuanMan,
+          cultivationProgress: 0,
+          cultivationProgressToNext:
+              numbers.cultivationProgressToNext[CultivationLayer.yuanMan]!,
+        );
+        techniques.add(t);
+      }
+      await isar.techniques.putAll(techniques);
+
+      // 造武圣角色
+      final ch = _buildCharacter(
+        internalForce: 15000,
+        internalForceMax: 15000,
+        school: TechniqueSchool.gangMeng,
+      );
+      ch.realmTier = RealmTier.wuSheng;
+      ch.realmLayer = RealmLayer.dengFeng;
+      ch.mainTechniqueId = techniques.first.id;
+      ch.assistTechniqueIds = techniques.skip(1).map((t) => t.id).toList();
+      await isar.characters.put(ch);
+
+      // 回填 ownerCharacterId
+      for (final t in techniques) {
+        t.ownerCharacterId = ch.id;
+      }
+      await isar.techniques.putAll(techniques);
+
+      // tutorialStep >= 3 解锁心法面板门控
+      final save = await isar.saveDatas.get(0) ?? (SaveData()..id = 0);
+      save.tutorialStep = 3;
+      save.activeCharacterIds = [ch.id];
+      await isar.saveDatas.put(save);
+
+      await seedBasicMaterials(isar, mojianshi: 2000, jieJing: 200);
+    });
+  }
+
 }
 
 class _ResonanceSpec {
