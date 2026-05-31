@@ -9,6 +9,8 @@ void main() {
           VisualRoute.techniquePanelTierAll);
       expect(parseVisualRoute('technique_panel_hero'),
           VisualRoute.techniquePanelHero);
+      expect(parseVisualRoute('character_panel'),
+          VisualRoute.characterPanelProfile);
     });
 
     test('未知 id → null', () {
