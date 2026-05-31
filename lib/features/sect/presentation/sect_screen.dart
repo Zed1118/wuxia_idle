@@ -5,6 +5,7 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/domain/character.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/portrait_frame.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/sect_member_service.dart';
 import '../application/sect_providers.dart';
@@ -460,6 +461,14 @@ class _MemberRow extends ConsumerWidget {
       ),
       child: Row(
         children: [
+          PortraitFrame(
+            portraitPath: member.portraitPath,
+            size: 48,
+            borderColor: member.school == null
+                ? WuxiaColors.border
+                : WuxiaColors.schoolColor(member.school!),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
