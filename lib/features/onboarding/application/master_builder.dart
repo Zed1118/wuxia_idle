@@ -47,6 +47,7 @@ Character buildMasterCharacter(MasterDef def, {required DateTime now}) {
     internalForce: realmDef.internalForceMax,
     internalForceMax: realmDef.internalForceMax,
     experienceToNextLayer: realmDef.experienceToNext,
+    portraitPath: def.portraitPath,
     isActive: true,
   );
 }

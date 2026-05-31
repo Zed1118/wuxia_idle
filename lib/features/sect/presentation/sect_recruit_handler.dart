@@ -112,6 +112,7 @@ Future<SectRecruitOutcome> runSectRecruitFlow({
       internalForce: realmDef.internalForceMax,
       internalForceMax: realmDef.internalForceMax,
       experienceToNextLayer: realmDef.experienceToNext,
+      portraitPath: candidate.portraitPath,
     );
     await isar.characters.put(newChar);
     newCharId = newChar.id;
