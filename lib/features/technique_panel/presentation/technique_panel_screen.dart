@@ -232,7 +232,10 @@ class _TechniqueTile extends ConsumerWidget {
                 ),
               ),
               const Spacer(),
-              _SealBadge(layer: technique.cultivationLayer),
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: _SealBadge(layer: technique.cultivationLayer),
+              ),
             ],
           ),
           Padding(

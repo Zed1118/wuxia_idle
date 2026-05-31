@@ -38,6 +38,7 @@ class WuxiaPaperPanel extends StatelessWidget {
         border: showBorder ? Border.all(color: WuxiaColors.inkPanelEdge) : null,
       ),
       child: Stack(
+        fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Opacity(
