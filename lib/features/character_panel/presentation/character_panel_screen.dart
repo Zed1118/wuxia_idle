@@ -24,6 +24,7 @@ import '../../mainline/application/mainline_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../../shared/widgets/portrait_frame.dart';
 import 'encounter_skill_section.dart';
 
 /// 角色面板（phase2_tasks.md T28 + Phase 3 Week 4 T56）。
@@ -225,10 +226,8 @@ class _Body extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _TopBar(character: character),
+          _ProfileHeaderCard(character: character),
           _BreakthroughBlockerSection(character: character),
-          const SizedBox(height: 16),
-          _AttributesSection(character: character),
           const SizedBox(height: 16),
           _DerivedStatsSection(character: character),
           const SizedBox(height: 16),
@@ -245,8 +244,10 @@ class _Body extends StatelessWidget {
   }
 }
 
-class _TopBar extends StatelessWidget {
-  const _TopBar({required this.character});
+/// 角色档案头:立绘 + 姓名 + 境界·层 + 流派名 + 4 基础属性,聚成一张武侠档案卡。
+/// 立绘走 [PortraitFrame](portraitPath 为 null 时优雅退占位)。
+class _ProfileHeaderCard extends StatelessWidget {
+  const _ProfileHeaderCard({required this.character});
 
   final Character character;
 
@@ -255,11 +256,17 @@ class _TopBar extends StatelessWidget {
     final schoolColor = character.school == null
         ? WuxiaColors.textMuted
         : WuxiaColors.schoolColor(character.school!);
+    final a = character.attributes;
     return _PanelCard(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(width: 4, height: 36, color: schoolColor),
-          const SizedBox(width: 12),
+          PortraitFrame(
+            portraitPath: character.portraitPath,
+            size: 110,
+            borderColor: schoolColor,
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,17 +275,64 @@ class _TopBar extends StatelessWidget {
                   character.name,
                   style: const TextStyle(
                     color: WuxiaColors.textPrimary,
-                    fontSize: 20,
+                    fontSize: 22,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  EnumL10n.realm(character.realmTier, character.realmLayer),
-                  style: const TextStyle(
-                    color: WuxiaColors.textSecondary,
-                    fontSize: 14,
-                  ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Text(
+                      EnumL10n.realm(
+                        character.realmTier,
+                        character.realmLayer,
+                      ),
+                      style: const TextStyle(
+                        color: WuxiaColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    if (character.school != null) ...[
+                      const SizedBox(width: 10),
+                      Container(width: 3, height: 12, color: schoolColor),
+                      const SizedBox(width: 6),
+                      Text(
+                        EnumL10n.school(character.school!),
+                        style: TextStyle(color: schoolColor, fontSize: 14),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 10),
+                const Divider(height: 1, color: WuxiaColors.border),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _LabeledValue(
+                        label: UiStrings.attrConstitution,
+                        value: '${a.constitution}',
+                      ),
+                    ),
+                    Expanded(
+                      child: _LabeledValue(
+                        label: UiStrings.attrEnlightenment,
+                        value: '${a.enlightenment}',
+                      ),
+                    ),
+                    Expanded(
+                      child: _LabeledValue(
+                        label: UiStrings.attrAgility,
+                        value: '${a.agility}',
+                      ),
+                    ),
+                    Expanded(
+                      child: _LabeledValue(
+                        label: UiStrings.attrFortune,
+                        value: '${a.fortune}',
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -356,54 +410,6 @@ class _BreakthroughBlockerSection extends ConsumerWidget {
         onNavigate: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const InnerDemonScreen()),
         ),
-      ),
-    );
-  }
-}
-
-class _AttributesSection extends StatelessWidget {
-  const _AttributesSection({required this.character});
-
-  final Character character;
-
-  @override
-  Widget build(BuildContext context) {
-    final a = character.attributes;
-    return _PanelCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _SectionTitle(UiStrings.panelAttributes),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _LabeledValue(
-                  label: UiStrings.attrConstitution,
-                  value: '${a.constitution}',
-                ),
-              ),
-              Expanded(
-                child: _LabeledValue(
-                  label: UiStrings.attrEnlightenment,
-                  value: '${a.enlightenment}',
-                ),
-              ),
-              Expanded(
-                child: _LabeledValue(
-                  label: UiStrings.attrAgility,
-                  value: '${a.agility}',
-                ),
-              ),
-              Expanded(
-                child: _LabeledValue(
-                  label: UiStrings.attrFortune,
-                  value: '${a.fortune}',
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
