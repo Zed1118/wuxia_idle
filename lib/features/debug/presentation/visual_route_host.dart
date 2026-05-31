@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
+import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../sect/presentation/sect_screen.dart';
@@ -77,6 +78,12 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
         case VisualRoute.sectScreenNpc:
           await Phase2SeedService(isar: isar).seedSectWithFullNpc();
           target = const SectScreen();
+
+        case VisualRoute.characterPanelProfile:
+          // seedMasterDisciple 已 _clearAll + 建祖师(id=1)+大/二弟子(带 portraitPath)
+          // + 写 activeCharacterIds → 档案头立绘 + 3 Tab 切弟子立绘可验。
+          await Phase2SeedService(isar: isar).seedMasterDisciple();
+          target = const CharacterPanelScreen(characterId: 1);
       }
 
       // 3. 挂载目标屏

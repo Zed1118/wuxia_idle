@@ -6,7 +6,9 @@ enum VisualRoute {
       'technique_panel_tier_all', '心法面板·武圣满学 7 阶 cover 同屏(梯度验收)'),
   techniquePanelHero('technique_panel_hero', '心法面板·主修 hero 打坐内丹态'),
   sectScreenNpc(
-      'sect_screen_npc', 'sect_screen·成员立绘验收(祖师 + 6 sect_candidate 完整显)');
+      'sect_screen_npc', 'sect_screen·成员立绘验收(祖师 + 6 sect_candidate 完整显)'),
+  characterPanelProfile('character_panel',
+      '角色页·档案头验收(祖师立绘 + 姓名/境界/流派/4 属性档案卡 + Tab 切弟子立绘)');
 
   const VisualRoute(this.id, this.label);
 
