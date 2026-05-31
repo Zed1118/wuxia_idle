@@ -35,17 +35,19 @@ class WuxiaColors {
   static const Color inkPanelTop = Color(0xFF232B33);
   static const Color inkPanelBottom = Color(0xFF161B21);
   static const Color inkPanelEdge = Color(0xFF4A4038);
+  // 宣纸面板暖兜底(WuxiaPaperPanel):内容不满屏时空白区呈暖宣纸调,非冷黑。
+  static const Color paperUnderlay = Color(0xFF241C13);
 
   // 伤害飘字色（T15）
-  static const Color popupNormal = Color(0xFFFFFFFF);    // 普通伤害：白
-  static const Color popupCritical = Color(0xFFFFD700);  // 暴击：金
-  static const Color popupDodge = Color(0xFF9E9E9E);     // 闪避：灰
+  static const Color popupNormal = Color(0xFFFFFFFF); // 普通伤害：白
+  static const Color popupCritical = Color(0xFFFFD700); // 暴击：金
+  static const Color popupDodge = Color(0xFF9E9E9E); // 闪避：灰
 
   static Color schoolColor(TechniqueSchool s) => switch (s) {
-        TechniqueSchool.gangMeng => gangMeng,
-        TechniqueSchool.lingQiao => lingQiao,
-        TechniqueSchool.yinRou => yinRou,
-      };
+    TechniqueSchool.gangMeng => gangMeng,
+    TechniqueSchool.lingQiao => lingQiao,
+    TechniqueSchool.yinRou => yinRou,
+  };
 
   static Color hpColor(double ratio) {
     if (ratio > 0.5) return hpHigh;

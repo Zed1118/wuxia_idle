@@ -7,7 +7,7 @@ import '../theme/colors.dart';
 /// 在 [child] 之下铺一层 `paper_bg.png` 宣纸纹理（[paperOpacity] 控浓淡），
 /// 撑满父容器；可选墨边外框（[showBorder]，[WuxiaColors.inkPanelEdge]）。
 /// 宣纸图缺失 / widget test 不加载 pubspec assets 时走 errorBuilder shrink，
-/// 退化为纯底色 [WuxiaColors.background]，不破布局
+/// 退化为暖宣纸兜底 [WuxiaColors.paperUnderlay]，不露冷黑空底
 /// （memory feedback_image_asset_error_builder）。
 ///
 /// 用法：包面板 body；内容通常自带 padding，故本组件 [padding] 默认 zero。
@@ -34,7 +34,7 @@ class WuxiaPaperPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: WuxiaColors.background,
+        color: WuxiaColors.paperUnderlay,
         border: showBorder ? Border.all(color: WuxiaColors.inkPanelEdge) : null,
       ),
       child: Stack(
