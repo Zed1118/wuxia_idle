@@ -35,6 +35,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 1
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 80
     requiredRealm: xueTu
     enemyTeam:
@@ -54,6 +55,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 2
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 160
     requiredRealm: xueTu
     enemyTeam:
@@ -73,6 +75,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 3
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 240
     requiredRealm: xueTu
     enemyTeam:
@@ -94,6 +97,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 4
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 320
     requiredRealm: xueTu
     enemyTeam:
@@ -116,6 +120,7 @@ floors:
 
   # === Floor 5 · 小 Boss · 学徒 dengFeng ===
   - floorIndex: 5
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 800
     requiredRealm: xueTu
     bossKind: minor
@@ -147,6 +152,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 6
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 480
     requiredRealm: sanLiu
     enemyTeam:
@@ -166,6 +172,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 7
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 560
     requiredRealm: sanLiu
     enemyTeam:
@@ -185,6 +192,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 8
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 640
     requiredRealm: sanLiu
     enemyTeam:
@@ -206,6 +214,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 9
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 720
     requiredRealm: sanLiu
     enemyTeam:
@@ -228,6 +237,7 @@ floors:
 
   # === Floor 10 · 大 Boss · 三流 dengFeng ===
   - floorIndex: 10
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 2400
     requiredRealm: sanLiu
     bossKind: major
@@ -261,6 +271,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 11
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 880
     requiredRealm: erLiu
     enemyTeam:
@@ -290,6 +301,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 12
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 960
     requiredRealm: erLiu
     enemyTeam:
@@ -319,6 +331,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 13
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 1040
     requiredRealm: erLiu
     enemyTeam:
@@ -350,6 +363,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 14
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 1120
     requiredRealm: erLiu
     enemyTeam:
@@ -382,6 +396,7 @@ floors:
 
   # === Floor 15 · 小 Boss · 二流 dengFeng ===
   - floorIndex: 15
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 2400
     requiredRealm: erLiu
     bossKind: minor
@@ -415,6 +430,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 16
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 1280
     requiredRealm: yiLiu
     enemyTeam:
@@ -444,6 +460,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 17
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 1360
     requiredRealm: yiLiu
     enemyTeam:
@@ -473,6 +490,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 18
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 1440
     requiredRealm: yiLiu
     enemyTeam:
@@ -507,6 +525,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 19
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 1520
     requiredRealm: yiLiu
     enemyTeam:
@@ -545,6 +564,7 @@ floors:
 
   # === Floor 20 · 大 Boss · 一流 dengFeng ===
   - floorIndex: 20
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 4800
     requiredRealm: yiLiu
     bossKind: major
@@ -579,6 +599,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 21
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 1680
     requiredRealm: jueDing
     enemyTeam:
@@ -620,6 +641,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 22
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 1760
     requiredRealm: jueDing
     enemyTeam:
@@ -661,6 +683,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 23
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 1840
     requiredRealm: jueDing
     enemyTeam:
@@ -706,6 +729,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 24
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 1920
     requiredRealm: jueDing
     enemyTeam:
@@ -756,6 +780,7 @@ floors:
 
   # === Floor 25 · 小 Boss · 绝顶 dengFeng ===
   - floorIndex: 25
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 4000
     requiredRealm: jueDing
     bossKind: minor
@@ -792,6 +817,7 @@ floors:
   # ─────────────────────────────────────────────────────────────────────────
 
   - floorIndex: 26
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 2080
     requiredRealm: zongShi
     enemyTeam:
@@ -836,6 +862,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 27
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 2160
     requiredRealm: zongShi
     enemyTeam:
@@ -880,6 +907,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 28
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 2240
     requiredRealm: zongShi
     enemyTeam:
@@ -929,6 +957,7 @@ floors:
         dropChance: 1.0
 
   - floorIndex: 29
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 2320
     requiredRealm: zongShi
     enemyTeam:
@@ -981,6 +1010,7 @@ floors:
 
   # === Floor 30 · 大 Boss · 宗师 dengFeng · 终关 ===
   - floorIndex: 30
+    sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 7200
     requiredRealm: zongShi
     bossKind: major
