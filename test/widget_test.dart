@@ -6,10 +6,13 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 import 'package:wuxia_idle/features/battle/presentation/damage_popup.dart';
+import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
 import 'package:wuxia_idle/features/battle/presentation/victory_overlay.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -366,5 +369,56 @@ void main() {
         .toList();
     expect(buttonsAfterAction[0].enabled, true,
         reason: 'actor 行动后大招按钮恢复可用');
+  });
+
+  // ── B2 大招题字 overlay ───────────────────────────────────────────────────
+
+  testWidgets('B2 大招 action → 题字 overlay 显示招式名', (tester) async {
+    const ultSkill = SkillDef(
+      id: 't_ult',
+      name: '山岳崩',
+      description: '',
+      type: SkillType.ultimate,
+      powerMultiplier: 5000,
+      internalForceCost: 1000,
+      cooldownTurns: 5,
+      requiresManualTrigger: true,
+      parentTechniqueDefId: null,
+      visualEffect: '',
+    );
+    final notifier = await pumpBattle(tester);
+    expect(find.byType(UltimateCaptionContent), findsNothing);
+
+    notifier.appendActions(const [
+      BattleAction(
+        tick: 1,
+        actorId: 1,
+        targetId: 11,
+        skill: ultSkill,
+        attackResult: _normalResult,
+        description: '萧夜寒大招',
+      ),
+    ]);
+    await tester.pump(); // ref.listen → show()
+    await tester.pump(); // build
+    expect(find.text('山岳崩'), findsOneWidget);
+
+    await tester.pumpAndSettle(const Duration(seconds: 3)); // 收尾动画
+  });
+
+  testWidgets('B2 普攻 action → 不弹题字', (tester) async {
+    final notifier = await pumpBattle(tester);
+    notifier.appendActions(const [
+      BattleAction(
+        tick: 1,
+        actorId: 1,
+        targetId: 11,
+        attackResult: _normalResult,
+        description: '普攻',
+      ),
+    ]);
+    await tester.pump();
+    await tester.pump();
+    expect(find.byType(UltimateCaptionContent), findsNothing);
   });
 }
