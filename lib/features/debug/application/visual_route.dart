@@ -10,7 +10,9 @@ enum VisualRoute {
   characterPanelProfile('character_panel',
       '角色页·档案头验收(祖师立绘 + 姓名/境界/流派/4 属性档案卡 + Tab 切弟子立绘)'),
   chapterList('chapter_list',
-      '章节列表·封面接线验收(章节卡顶部封面条 + 锁章调暗 · 图未到位 errorBuilder 兜底)');
+      '章节列表·封面接线验收(章节卡顶部封面条 + 锁章调暗 · 图未到位 errorBuilder 兜底)'),
+  battleScene('battle_scene',
+      '战斗屏·背景 scrim + 胜负仪式验收(seed 3v3 带背景,自动播放到胜负 overlay)');
 
   const VisualRoute(this.id, this.label);
 
