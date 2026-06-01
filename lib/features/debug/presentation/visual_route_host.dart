@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
-import '../../battle/presentation/battle_demo.dart';
+import 'battle_test_menu.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
@@ -93,9 +93,11 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
           target = const ChapterListScreen();
 
         case VisualRoute.battleScene:
-          // BattleDemo.mockTeams() 自带 3v3,无需 Isar seed。BattleScreen 自动
-          // 播放到结束 → VictoryOverlay。背景用 citywall 验 scrim + 背景对位。
-          target = const BattleDemoLauncher(
+          // 真实可自动播放的克制场景(scenarioB:左队稳胜)→ 自动推进到 leftWin →
+          // VictoryOverlay 金「胜」仪式。背景用 citywall 验 scrim + 背景对位。
+          target = const ScenarioLauncher(
+            teamsFactory: BattleScenarioData.scenarioB,
+            hint: '出版美术验收·战斗屏背景 scrim + 胜负仪式',
             sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
           );
       }

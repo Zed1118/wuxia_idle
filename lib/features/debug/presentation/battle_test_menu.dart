@@ -11,8 +11,8 @@ import '../../../shared/theme/colors.dart';
 
 // ─── 场景数据工厂（内存构造，不写 Isar）───────────────────────────────────────
 
-class _ScenarioData {
-  _ScenarioData._();
+class BattleScenarioData {
+  BattleScenarioData._();
 
   static SkillDef _normal(String id, String name) => SkillDef(
     id: id,
@@ -319,9 +319,13 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   final (List<BattleCharacter>, List<BattleCharacter>) Function() teamsFactory;
   final String hint;
 
+  /// 出版美术验收:传给 BattleScreen 渲染场景背景 + scrim。null = 无背景。
+  final String? sceneBackgroundPath;
+
   const ScenarioLauncher({
     required this.teamsFactory,
     required this.hint,
+    this.sceneBackgroundPath,
     super.key,
   });
 
@@ -343,6 +347,7 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
   @override
   Widget build(BuildContext context) => BattleScreen(
     hint: widget.hint,
+    sceneBackgroundPath: widget.sceneBackgroundPath,
     onBattleEnd: () => Navigator.of(context).pop(),
   );
 }
@@ -396,7 +401,7 @@ class BattleTestMenu extends StatelessWidget {
                   hint: UiStrings.hintA,
                   onTap: () => _launch(
                     context,
-                    _ScenarioData.scenarioA,
+                    BattleScenarioData.scenarioA,
                     '[${UiStrings.scenarioA}] ${UiStrings.hintA}',
                   ),
                 ),
@@ -406,7 +411,7 @@ class BattleTestMenu extends StatelessWidget {
                   hint: UiStrings.hintB,
                   onTap: () => _launch(
                     context,
-                    _ScenarioData.scenarioB,
+                    BattleScenarioData.scenarioB,
                     '[${UiStrings.scenarioB}] ${UiStrings.hintB}',
                   ),
                 ),
@@ -416,7 +421,7 @@ class BattleTestMenu extends StatelessWidget {
                   hint: UiStrings.hintC,
                   onTap: () => _launch(
                     context,
-                    _ScenarioData.scenarioC,
+                    BattleScenarioData.scenarioC,
                     '[${UiStrings.scenarioC}] ${UiStrings.hintC}',
                   ),
                 ),
@@ -426,7 +431,7 @@ class BattleTestMenu extends StatelessWidget {
                   hint: UiStrings.hintD,
                   onTap: () => _launch(
                     context,
-                    _ScenarioData.scenarioD,
+                    BattleScenarioData.scenarioD,
                     '[${UiStrings.scenarioD}] ${UiStrings.hintD}',
                   ),
                 ),
