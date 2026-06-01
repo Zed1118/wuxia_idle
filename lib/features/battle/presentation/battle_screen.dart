@@ -15,6 +15,7 @@ import '../../../shared/effects/screen_shake.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import 'attack_animation.dart';
+import 'battle_scene_background.dart';
 import 'character_avatar.dart';
 import 'damage_popup.dart';
 
@@ -348,20 +349,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       );
     }
 
-    final hasScene = widget.sceneBackgroundPath != null &&
-        widget.sceneBackgroundPath!.isNotEmpty;
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       body: Stack(
         children: [
-          if (hasScene)
-            Positioned.fill(
-              child: Image.asset(
-                widget.sceneBackgroundPath!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
-              ),
-            ),
+          Positioned.fill(
+            child: BattleSceneBackground(path: widget.sceneBackgroundPath),
+          ),
           SafeArea(
             child: AnimatedBuilder(
               animation: _shakeCtrl,
