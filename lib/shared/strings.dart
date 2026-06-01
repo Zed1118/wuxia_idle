@@ -31,6 +31,14 @@ class UiStrings {
   static const String close = '关闭';
   static const String backToMenu = '返回菜单';
 
+  // ─── 胜负仪式 overlay(出版美术 B1)──────────────────────────────────────
+  static const String victoryTitle = '胜';
+  static const String defeatTitle = '败';
+  static const String victorySubtitle = '旗开得胜';
+  static const String defeatSubtitle = '败北';
+  static const String battleContinue = '继续';
+  static const String sealGlyph = '武'; // 印章符内字
+
   /// 战斗结算 dialog 内容：`总伤害 X  暴击 Y 次  用时 Z 回合`。
   static String battleSummary(int totalDamage, int critCount, int totalTicks) =>
       '总伤害 $totalDamage    暴击 $critCount 次    用时 $totalTicks 回合';
