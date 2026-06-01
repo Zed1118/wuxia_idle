@@ -12,6 +12,7 @@ void main() {
       expect(parseVisualRoute('character_panel'),
           VisualRoute.characterPanelProfile);
       expect(parseVisualRoute('chapter_list'), VisualRoute.chapterList);
+      expect(parseVisualRoute('battle_scene'), VisualRoute.battleScene);
     });
 
     test('未知 id → null', () {

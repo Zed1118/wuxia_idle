@@ -172,7 +172,10 @@ class BattleDemo {
 /// state（Riverpod 报错）。launcher 自身不渲染战斗 UI，转交给 BattleScreen
 /// 通过 `ref.watch` 读取状态。
 class BattleDemoLauncher extends ConsumerStatefulWidget {
-  const BattleDemoLauncher({super.key});
+  const BattleDemoLauncher({super.key, this.sceneBackgroundPath});
+
+  /// 出版美术验收:传给 BattleScreen 渲染场景背景 + scrim。null = 无背景(原行为)。
+  final String? sceneBackgroundPath;
 
   @override
   ConsumerState<BattleDemoLauncher> createState() =>
@@ -191,5 +194,6 @@ class _BattleDemoLauncherState extends ConsumerState<BattleDemoLauncher> {
   }
 
   @override
-  Widget build(BuildContext context) => const BattleScreen();
+  Widget build(BuildContext context) =>
+      BattleScreen(sceneBackgroundPath: widget.sceneBackgroundPath);
 }
