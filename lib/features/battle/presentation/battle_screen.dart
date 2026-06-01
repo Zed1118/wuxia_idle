@@ -18,6 +18,7 @@ import 'attack_animation.dart';
 import 'battle_scene_background.dart';
 import 'character_avatar.dart';
 import 'damage_popup.dart';
+import 'ultimate_caption_overlay.dart';
 import 'victory_overlay.dart';
 
 /// 单个飘字条目（id + 数据）。
@@ -96,6 +97,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // 战斗结算 dialog 已显示标志，避免 result 字段连续触发多次弹窗
   bool _resultDialogShown = false;
 
+  // B2 大招题字 overlay 的 key(命令式 show)
+  final GlobalKey<UltimateCaptionOverlayState> _ultimateCaptionKey =
+      GlobalKey<UltimateCaptionOverlayState>();
+
   // ─── 生命周期 ────────────────────────────────────────────────────────────
 
   @override
@@ -156,6 +161,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       if (target != null) {
         _spawnPopup(target, action.attackResult!, actor);
       }
+    }
+    if (isUltimateCaptionSkill(action.skill)) {
+      _ultimateCaptionKey.currentState
+          ?.show(action.skill!.name, isEnemy: actor?.teamSide == 1);
     }
   }
 
@@ -383,6 +392,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 ],
               ),
             ),
+          ),
+          Positioned.fill(
+            child: UltimateCaptionOverlay(key: _ultimateCaptionKey),
           ),
         ],
       ),
