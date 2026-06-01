@@ -12,6 +12,7 @@ import '../../onboarding/application/onboarding_service.dart';
 import '../../sect/presentation/sect_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../application/phase2_seed_service.dart';
+import '../../battle/presentation/ultimate_caption_overlay.dart';
 import '../application/visual_route.dart';
 
 /// 出版美术验收入口 App。
@@ -100,6 +101,16 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
             hint: '出版美术验收·战斗屏背景 scrim + 胜负仪式',
             sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
           );
+
+        case VisualRoute.battleUltimateCaption:
+          target = const _UltimateCaptionPreview();
+
+        case VisualRoute.battleBossFrame:
+          target = const ScenarioLauncher(
+            teamsFactory: BattleScenarioData.scenarioBoss,
+            hint: '出版美术验收·Boss 头像金色加粗边框(右队首位)',
+            sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+          );
       }
 
       // 3. 挂载目标屏
@@ -130,5 +141,24 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
         const Scaffold(
           body: Center(child: CircularProgressIndicator()),
         );
+  }
+}
+
+/// B2 题字静态验收:玩家暖金(上) + 敌方绛红(下)两态同屏,便于截图。
+class _UltimateCaptionPreview extends StatelessWidget {
+  const _UltimateCaptionPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Color(0xFF14181D),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(child: UltimateCaptionContent(name: '天问归一', isEnemy: false)),
+          Expanded(child: UltimateCaptionContent(name: '血煞噬魂', isEnemy: true)),
+        ],
+      ),
+    );
   }
 }

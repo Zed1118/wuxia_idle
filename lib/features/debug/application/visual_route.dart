@@ -12,7 +12,11 @@ enum VisualRoute {
   chapterList('chapter_list',
       '章节列表·封面接线验收(章节卡顶部封面条 + 锁章调暗 · 图未到位 errorBuilder 兜底)'),
   battleScene('battle_scene',
-      '战斗屏·背景 scrim + 胜负仪式验收(seed 3v3 带背景,自动播放到胜负 overlay)');
+      '战斗屏·背景 scrim + 胜负仪式验收(seed 3v3 带背景,自动播放到胜负 overlay)'),
+  battleUltimateCaption('battle_ultimate_caption',
+      '战斗屏·大招题字静态验收(玩家暖金 + 敌方绛红 两态)'),
+  battleBossFrame('battle_boss_frame',
+      '战斗屏·Boss 头像金色加粗边框验收(scenarioBoss 右队首位 Boss)');
 
   const VisualRoute(this.id, this.label);
 
