@@ -18,6 +18,7 @@ import 'attack_animation.dart';
 import 'battle_scene_background.dart';
 import 'character_avatar.dart';
 import 'damage_popup.dart';
+import 'victory_overlay.dart';
 
 /// 单个飘字条目（id + 数据）。
 class _PopupEntry {
@@ -246,45 +247,28 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         .where((a) => a.attackResult?.isCritical ?? false)
         .length;
 
-    showDialog<void>(
+    showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: WuxiaColors.panel,
-        title: Text(
-          EnumL10n.battleResult(result),
-          style: const TextStyle(
-            color: WuxiaColors.resultHighlight,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          UiStrings.battleSummary(totalDamage, critCount, s.tick),
-          style: const TextStyle(color: WuxiaColors.textPrimary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              widget.onBattleEnd?.call();
-              // Phase 3 T37：按结果分发胜/败回调（与 onBattleEnd 并存，向后兼容）
-              if (result == BattleResult.leftWin) {
-                widget.onVictory?.call();
-              } else {
-                widget.onDefeat?.call();
-              }
-            },
-            child: Text(
-              widget.onBattleEnd != null ||
-                      widget.onVictory != null ||
-                      widget.onDefeat != null
-                  ? UiStrings.backToMenu
-                  : UiStrings.close,
-              style: const TextStyle(color: WuxiaColors.textSecondary),
-            ),
-          ),
-        ],
+      barrierColor: Colors.transparent, // overlay 自带暗幕
+      transitionDuration: const Duration(milliseconds: 280),
+      pageBuilder: (ctx, _, _) => VictoryOverlay(
+        result: result,
+        totalDamage: totalDamage,
+        critCount: critCount,
+        totalTicks: s.tick,
+        onContinue: () {
+          Navigator.of(ctx).pop();
+          widget.onBattleEnd?.call();
+          if (result == BattleResult.leftWin) {
+            widget.onVictory?.call();
+          } else {
+            widget.onDefeat?.call();
+          }
+        },
       ),
+      transitionBuilder: (ctx, anim, _, child) =>
+          FadeTransition(opacity: anim, child: child),
     );
   }
 
