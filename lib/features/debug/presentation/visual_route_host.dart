@@ -14,6 +14,9 @@ import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../application/phase2_seed_service.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
 import '../application/visual_route.dart';
+import '../../narrative/presentation/narrative_reader_screen.dart';
+import '../../../data/narrative_loader.dart';
+import '../../mainline/domain/chapter_assets.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -110,6 +113,23 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
             teamsFactory: BattleScenarioData.scenarioBoss,
             hint: '出版美术验收·Boss 头像金色加粗边框(右队首位)',
             sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+          );
+
+        case VisualRoute.narrativeScene:
+          target = NarrativeReaderScreen(
+            content: const NarrativeContent(
+              id: 'visual_narrative',
+              title: '风雨渡口',
+              paragraphs: [
+                '雨脚如麻,渡口的灯笼在风里摇得不成样子。你立在栈桥尽头,'
+                    '看那撑伞的人一步一停,伞沿压得极低,看不清脸。\n\n'
+                    '江水拍着木桩,一下,又一下。你握紧了腰间的剑——'
+                    '这一程的恩怨,该在今夜了结了。',
+              ],
+              isPlaceholder: false,
+            ),
+            fallbackTitle: '风雨渡口',
+            backgroundImagePath: stageNarrativePath('stage_01_05'),
           );
       }
 

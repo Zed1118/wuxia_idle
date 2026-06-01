@@ -16,7 +16,9 @@ enum VisualRoute {
   battleUltimateCaption('battle_ultimate_caption',
       '战斗屏·大招题字静态验收(玩家暖金 + 敌方绛红 两态)'),
   battleBossFrame('battle_boss_frame',
-      '战斗屏·Boss 头像金色加粗边框验收(scenarioBoss 右队首位 Boss)');
+      '战斗屏·Boss 头像金色加粗边框验收(scenarioBoss 右队首位 Boss)'),
+  narrativeScene('narrative_scene',
+      '剧情阅读屏·专属背景图 + scrim + 正文浮层验收(stage_01_05 风雨渡口)');
 
   const VisualRoute(this.id, this.label);
 
