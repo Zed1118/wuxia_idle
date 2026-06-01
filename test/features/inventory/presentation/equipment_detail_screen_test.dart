@@ -425,4 +425,65 @@ void main() {
           reason: 'effective==base 时不显冗余副标');
     });
   });
+
+  // P2 补盲:isHighTreasureTier 纯函数已测,但「detail 屏据它切换边框/题字」
+  // 这一 wiring 此前无覆盖(memory feedback_strategy_immutable_vs_ui_tick
+  // 「配置测了消费没测」)。此组直接断言渲染分支。
+  group('神物/宝物差异化 wiring(§5.4 出版美术)', () {
+    Future<void> pumpDetail(WidgetTester tester, EquipmentDef def) async {
+      await tester.binding.setSurfaceSize(const Size(1280, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: EquipmentDetailScreen(
+              equipment: mkEq(def: def),
+              def: def,
+              loreLoader: fakeLoader(segments: const ['x']),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // 详情大图(detailPath)所在 Container 的 border(高阶 Border.all / 普通仅底边)。
+    Border coverBorder(WidgetTester tester, EquipmentDef def) {
+      final img = find.byWidgetPredicate((w) =>
+          w is Image &&
+          w.image is AssetImage &&
+          (w.image as AssetImage).assetName == def.detailPath);
+      final container = tester.widget<Container>(
+          find.ancestor(of: img, matching: find.byType(Container)).first);
+      return (container.decoration as BoxDecoration).border! as Border;
+    }
+
+    Text appBarTitle(WidgetTester tester, EquipmentDef def) =>
+        tester.widget<Text>(find.descendant(
+            of: find.byType(AppBar), matching: find.text(def.name)));
+
+    testWidgets('神物 → 全周粗边框(width3) + 题字 fontSize22', (tester) async {
+      final def = GameRepository.instance
+          .getEquipment('weapon_shenwu_tian_wen_jian');
+      await pumpDetail(tester, def);
+
+      expect(appBarTitle(tester, def).style?.fontSize, 22,
+          reason: '高阶题字加大');
+      final b = coverBorder(tester, def);
+      expect(b.top.width, 3, reason: '神物全周粗边框 Border.all(width3)');
+      expect(b.left.width, 3);
+    });
+
+    testWidgets('寻常货 → 仅底边(width2) + 题字默认字号', (tester) async {
+      final def = GameRepository.instance
+          .getEquipment('weapon_xunchang_tie_jian');
+      await pumpDetail(tester, def);
+
+      expect(appBarTitle(tester, def).style?.fontSize, isNull,
+          reason: '普通装备题字默认字号');
+      final b = coverBorder(tester, def);
+      expect(b.top, BorderSide.none, reason: '普通装备无顶边');
+      expect(b.bottom.width, 2, reason: '普通装备仅底边 width2');
+    });
+  });
 }

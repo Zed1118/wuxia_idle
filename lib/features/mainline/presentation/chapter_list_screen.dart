@@ -65,7 +65,8 @@ class ChapterListScreen extends ConsumerWidget {
                   progress: progress,
                   chapterIndex: ch,
                 );
-                final prevCompleted = ch == 1 ||
+                final prevCompleted =
+                    ch == 1 ||
                     MainlineProgressService.chapterCompleted(
                       progress: progress,
                       chapterIndex: ch - 1,
@@ -74,8 +75,8 @@ class ChapterListScreen extends ConsumerWidget {
                 final status = completed
                     ? _ChapterStatus.cleared
                     : (unlocked
-                        ? _ChapterStatus.inProgress
-                        : _ChapterStatus.locked);
+                          ? _ChapterStatus.inProgress
+                          : _ChapterStatus.locked);
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _ChapterCard(
@@ -84,24 +85,22 @@ class ChapterListScreen extends ConsumerWidget {
                     onTap: status == _ChapterStatus.locked
                         ? null
                         : () => Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) =>
-                                    StageListScreen(chapterIndex: ch),
-                              ),
+                            MaterialPageRoute<void>(
+                              builder: (_) => StageListScreen(chapterIndex: ch),
                             ),
+                          ),
                     // H2 C1:解锁章节加「卷」入口 → 翻篇过场(卷首/卷尾)。
                     // 卷尾仅 cleared 解锁。锁定章节不给入口。
                     onViewScroll: status == _ChapterStatus.locked
                         ? null
                         : () => Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => ChapterTransitionScreen(
-                                  chapterIndex: ch,
-                                  showEpilogue:
-                                      status == _ChapterStatus.cleared,
-                                ),
+                            MaterialPageRoute<void>(
+                              builder: (_) => ChapterTransitionScreen(
+                                chapterIndex: ch,
+                                showEpilogue: status == _ChapterStatus.cleared,
                               ),
                             ),
+                          ),
                   ),
                 );
               },
@@ -138,10 +137,10 @@ class _ChapterCard extends StatelessWidget {
     final borderColor = inProgress
         ? WuxiaColors.resultHighlight
         : (cleared ? WuxiaColors.hpHigh : WuxiaColors.border);
-    final titleColor =
-        locked ? WuxiaColors.textMuted : WuxiaColors.textPrimary;
-    final hintColor =
-        locked ? WuxiaColors.buttonDisabled : WuxiaColors.textSecondary;
+    final titleColor = locked ? WuxiaColors.textMuted : WuxiaColors.textPrimary;
+    final hintColor = locked
+        ? WuxiaColors.buttonDisabled
+        : WuxiaColors.textSecondary;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -149,14 +148,9 @@ class _ChapterCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: Container(
           decoration: BoxDecoration(
-            color: locked
-                ? WuxiaColors.avatarFill
-                : WuxiaColors.panel,
+            color: locked ? WuxiaColors.avatarFill : WuxiaColors.panel,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: borderColor,
-              width: inProgress ? 2 : 1,
-            ),
+            border: Border.all(color: borderColor, width: inProgress ? 2 : 1),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
@@ -168,7 +162,9 @@ class _ChapterCard extends StatelessWidget {
                 SizedBox(
                   height: 96,
                   child: Opacity(
-                    opacity: locked ? 0.35 : 1.0,
+                    // 锁章调暗保留「锁」信号(卡片另有锁图标+灰标题),但 0.35
+                    // 过暗把封面美术埋成黑泥(Codex Ch5 验收反馈) → 0.5 让封面可辨。
+                    opacity: locked ? 0.5 : 1.0,
                     child: Image.asset(
                       chapterCoverPath(chapterIndex),
                       fit: BoxFit.cover,
@@ -180,42 +176,39 @@ class _ChapterCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      UiStrings.chapterTitle(chapterIndex),
-                      style: TextStyle(
-                        color: titleColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              UiStrings.chapterTitle(chapterIndex),
+                              style: TextStyle(
+                                color: titleColor,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              UiStrings.chapterHint(chapterIndex),
+                              style: TextStyle(color: hintColor, fontSize: 12),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      UiStrings.chapterHint(chapterIndex),
-                      style: TextStyle(
-                        color: hintColor,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (onViewScroll != null) ...[
-                IconButton(
-                  icon: const Icon(Icons.auto_stories),
-                  color: WuxiaColors.textSecondary,
-                  iconSize: 20,
-                  tooltip: UiStrings.chapterScrollTooltip,
-                  onPressed: onViewScroll,
-                ),
-              ],
-              const SizedBox(width: 4),
-              _StatusChip(status: status),
-            ],
+                      if (onViewScroll != null) ...[
+                        IconButton(
+                          icon: const Icon(Icons.auto_stories),
+                          color: WuxiaColors.textSecondary,
+                          iconSize: 20,
+                          tooltip: UiStrings.chapterScrollTooltip,
+                          onPressed: onViewScroll,
+                        ),
+                      ],
+                      const SizedBox(width: 4),
+                      _StatusChip(status: status),
+                    ],
                   ),
                 ),
               ],
@@ -236,30 +229,30 @@ class _StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (status) {
       _ChapterStatus.cleared => const Icon(
-          Icons.check_circle,
-          color: WuxiaColors.hpHigh,
-          size: 22,
-        ),
+        Icons.check_circle,
+        color: WuxiaColors.hpHigh,
+        size: 22,
+      ),
       _ChapterStatus.inProgress => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: WuxiaColors.resultHighlight.withValues(alpha: 0.18),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Text(
-            UiStrings.chapterStatusInProgress,
-            style: TextStyle(
-              color: WuxiaColors.resultHighlight,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: WuxiaColors.resultHighlight.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Text(
+          UiStrings.chapterStatusInProgress,
+          style: TextStyle(
+            color: WuxiaColors.resultHighlight,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
           ),
         ),
+      ),
       _ChapterStatus.locked => const Icon(
-          Icons.lock,
-          color: WuxiaColors.textMuted,
-          size: 20,
-        ),
+        Icons.lock,
+        color: WuxiaColors.textMuted,
+        size: 20,
+      ),
     };
   }
 }
