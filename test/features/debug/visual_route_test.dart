@@ -35,5 +35,10 @@ void main() {
       expect(parseVisualRoute('battle_boss_frame'),
           VisualRoute.battleBossFrame);
     });
+
+    test('剧情背景路由 parse', () {
+      expect(parseVisualRoute('narrative_scene'),
+          VisualRoute.narrativeScene);
+    });
   });
 }
