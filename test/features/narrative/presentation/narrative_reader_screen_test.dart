@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/narrative_loader.dart';
 import 'package:wuxia_idle/features/narrative/presentation/narrative_reader_screen.dart';
+import 'package:wuxia_idle/features/narrative/presentation/narrative_scene_background.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 /// T36 NarrativeReaderScreen widget 测试。
@@ -267,5 +268,30 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text(UiStrings.narrativeReaderTapHint), findsNothing);
+  });
+
+  testWidgets('传 backgroundImagePath → 渲染 NarrativeSceneBackground 背景层',
+      (tester) async {
+    const c = NarrativeContent(
+      id: 'x', title: '风雨渡口',
+      paragraphs: ['雨夜渡口，撑伞人独立。'], isPlaceholder: false,
+    );
+    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
+      content: c, fallbackTitle: 'fb',
+      backgroundImagePath: 'assets/scenes/narrative_stage_01_05.png',
+    )));
+    expect(find.byType(NarrativeSceneBackground), findsOneWidget);
+    expect(find.text('雨夜渡口，撑伞人独立。'), findsOneWidget,
+        reason: '正文仍在背景之上正常渲染');
+  });
+
+  testWidgets('不传 backgroundImagePath → 无背景层(回归纯色底)', (tester) async {
+    const c = NarrativeContent(
+      id: 'x', title: 't', paragraphs: ['段'], isPlaceholder: false,
+    );
+    await tester.pumpWidget(wrap(const NarrativeReaderScreen(
+      content: c, fallbackTitle: 'fb',
+    )));
+    expect(find.byType(NarrativeSceneBackground), findsNothing);
   });
 }
