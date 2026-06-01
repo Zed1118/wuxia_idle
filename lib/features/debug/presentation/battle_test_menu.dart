@@ -88,6 +88,7 @@ class BattleScenarioData {
     required List<SkillDef> skills,
     required int teamSide,
     required int slotIndex,
+    bool isBoss = false,
   }) => BattleCharacter(
     characterId: id,
     name: name,
@@ -111,6 +112,7 @@ class BattleScenarioData {
     isAlive: true,
     teamSide: teamSide,
     slotIndex: slotIndex,
+    isBoss: isBoss,
   );
 
   // ── 场景 A：二流·圆熟 3v3 同流派同装备，纯比速度 ────────────────────────────
@@ -191,6 +193,35 @@ class BattleScenarioData {
       ],
       [
         c(31, '阴柔甲', TechniqueSchool.yinRou, 1, 0),
+        c(32, '刚猛乙', TechniqueSchool.gangMeng, 1, 1),
+        c(33, '灵巧丙', TechniqueSchool.lingQiao, 1, 2),
+      ],
+    );
+  }
+
+  /// B2 Boss 边框验收:同 scenarioB 但右队首位标 Boss。
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioBoss() {
+    BattleCharacter c(int id, String name, TechniqueSchool school, int side,
+            int slot, {bool isBoss = false}) =>
+        _char(
+          id: id, name: name,
+          tier: RealmTier.yiLiu, layer: RealmLayer.qiMeng,
+          school: school, maxHp: 12000, maxIf: 4000, speed: 200,
+          critRate: 0.05, eqAtk: 550, cultivation: CultivationLayer.xiaoCheng,
+          skills: [
+            _normal('boss_normal_$id', '普攻'),
+            _power('boss_power_$id', '重击', pm: 1200, cost: 1000, cd: 3),
+          ],
+          teamSide: side, slotIndex: slot, isBoss: isBoss,
+        );
+    return (
+      [
+        c(21, '刚猛甲', TechniqueSchool.gangMeng, 0, 0),
+        c(22, '灵巧乙', TechniqueSchool.lingQiao, 0, 1),
+        c(23, '阴柔丙', TechniqueSchool.yinRou, 0, 2),
+      ],
+      [
+        c(31, '魔教教主', TechniqueSchool.yinRou, 1, 0, isBoss: true),
         c(32, '刚猛乙', TechniqueSchool.gangMeng, 1, 1),
         c(33, '灵巧丙', TechniqueSchool.lingQiao, 1, 2),
       ],

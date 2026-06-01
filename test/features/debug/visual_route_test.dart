@@ -28,5 +28,12 @@ void main() {
         expect(parseVisualRoute(r.id), r);
       }
     });
+
+    test('B2 新路由 parse', () {
+      expect(parseVisualRoute('battle_ultimate_caption'),
+          VisualRoute.battleUltimateCaption);
+      expect(parseVisualRoute('battle_boss_frame'),
+          VisualRoute.battleBossFrame);
+    });
   });
 }
