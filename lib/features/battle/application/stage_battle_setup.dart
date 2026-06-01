@@ -327,6 +327,15 @@ class StageBattleSetup {
       teamSide: 1,
       slotIndex: slotIndex,
       iconPath: enemy.iconPath,
+      isBoss: enemy.isBoss,
     );
   }
+
+  /// @visibleForTesting:暴露 [_enemyToBattle] 供单测(private static 不可直测)。
+  @visibleForTesting
+  static BattleCharacter debugEnemyToBattle({
+    required EnemyDef enemy,
+    required int slotIndex,
+  }) =>
+      _enemyToBattle(enemy: enemy, slotIndex: slotIndex);
 }
