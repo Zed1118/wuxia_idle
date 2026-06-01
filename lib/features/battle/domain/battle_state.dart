@@ -118,6 +118,10 @@ class BattleCharacter {
   /// 战斗路径自动得 1.0(fromCharacter / _enemyToBattle 不 expose)。
   final double attackPowerMultiplier;
 
+  /// 出版美术 B2:此角色是否为 Boss(EnemyDef.isBoss 透传)。true 时
+  /// CharacterAvatar 走金色加粗描边。玩家方恒 false。
+  final bool isBoss;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -145,6 +149,7 @@ class BattleCharacter {
     this.swordSongResonanceActive = false,
     this.iconPath,
     this.attackPowerMultiplier = 1.0,
+    this.isBoss = false,
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -309,6 +314,7 @@ class BattleCharacter {
     bool? swordSongResonanceActive,
     String? iconPath,
     double? attackPowerMultiplier,
+    bool? isBoss,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -343,6 +349,7 @@ class BattleCharacter {
       iconPath: iconPath ?? this.iconPath,
       attackPowerMultiplier:
           attackPowerMultiplier ?? this.attackPowerMultiplier,
+      isBoss: isBoss ?? this.isBoss,
     );
   }
 
