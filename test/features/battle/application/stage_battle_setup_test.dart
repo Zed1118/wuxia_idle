@@ -9,6 +9,8 @@ import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/data/defs/stage_def.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 
 /// T37 StageBattleSetup 真 Isar 落地测试。
 ///
@@ -347,6 +349,34 @@ void main() {
           reason: 'P5.2 目标:对称化后武圣 Boss 内力须够放其招牌传说大招'
               '(改前扁平 1000 < 1600 永久放不出);scale 调校须保此不变式');
     });
+  });
+
+  // ── B2: _enemyToBattle 透传 isBoss ────────────────────────────────────────
+  test('_enemyToBattle 透传 EnemyDef.isBoss → BattleCharacter.isBoss', () {
+    const bossEnemy = EnemyDef(
+      id: 'boss1',
+      name: '黑风寨主',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      school: TechniqueSchool.gangMeng,
+      baseHp: 5000,
+      baseAttack: 400,
+      baseSpeed: 200,
+      skillIds: [],
+      iconPath: 'assets/enemies/x.png',
+      isBoss: true,
+    );
+    final bc = StageBattleSetup.debugEnemyToBattle(enemy: bossEnemy, slotIndex: 0);
+    expect(bc.isBoss, true);
+
+    const mob = EnemyDef(
+      id: 'mob1', name: '喽啰',
+      realmTier: RealmTier.yiLiu, realmLayer: RealmLayer.qiMeng,
+      school: TechniqueSchool.gangMeng,
+      baseHp: 100, baseAttack: 50, baseSpeed: 100,
+      skillIds: [], iconPath: 'assets/enemies/y.png',
+    );
+    expect(StageBattleSetup.debugEnemyToBattle(enemy: mob, slotIndex: 1).isBoss, false);
   });
 }
 
