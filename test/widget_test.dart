@@ -10,6 +10,8 @@ import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 import 'package:wuxia_idle/features/battle/presentation/damage_popup.dart';
+import 'package:wuxia_idle/features/battle/presentation/victory_overlay.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 /// 短时序动画配置，加速 widget test 运行。
 const _testAnim = AnimationNumbers(
@@ -301,16 +303,16 @@ void main() {
 
   // ── T16 新增 ────────────────────────────────────────────────────────────
 
-  testWidgets('T16 战斗结束 → 弹出结算 dialog', (WidgetTester tester) async {
+  testWidgets('T16 战斗结束 → 弹出胜负仪式 overlay', (WidgetTester tester) async {
     final notifier = await pumpBattle(tester);
-    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(VictoryOverlay), findsNothing);
 
     notifier.setResult(BattleResult.leftWin);
-    await tester.pump(); // ref.listen → addPostFrameCallback
-    await tester.pump(); // postFrame → showDialog
+    await tester.pumpAndSettle(); // 等待 showGeneralDialog 280ms 过渡动画完成
 
-    expect(find.byType(AlertDialog), findsOneWidget);
-    expect(find.text('关闭'), findsOneWidget);
+    expect(find.byType(VictoryOverlay), findsOneWidget);
+    expect(find.text(UiStrings.victoryTitle), findsOneWidget); // '胜'
+    expect(find.text(UiStrings.battleContinue), findsOneWidget); // '继续'
   });
 
   testWidgets('T16 大招按钮 - 内力不够 / 内力够 enabled 状态正确',
