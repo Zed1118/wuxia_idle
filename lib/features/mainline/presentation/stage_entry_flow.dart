@@ -41,6 +41,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/utils/rng.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
+import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
 import 'stage_victory_dialog.dart';
 
@@ -80,6 +81,7 @@ Future<void> runStageFlow({
         builder: (_) => NarrativeReaderScreen(
           content: opening,
           fallbackTitle: stage.name,
+          backgroundImagePath: stageNarrativePath(stage.id),
         ),
       ),
     );
@@ -121,6 +123,7 @@ Future<void> runStageFlow({
             content: defeat,
             fallbackTitle: '${stage.name} · 战败',
             topBanner: lossBanner,
+            backgroundImagePath: stageNarrativePath(stage.id),
           ),
         ),
       );
@@ -179,6 +182,7 @@ Future<void> runStageFlow({
         builder: (_) => NarrativeReaderScreen(
           content: victory,
           fallbackTitle: '${stage.name} · 胜利',
+          backgroundImagePath: stageNarrativePath(stage.id),
         ),
       ),
     );
