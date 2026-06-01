@@ -204,6 +204,10 @@ class EnemyDef {
   final List<String> skillIds;
   final String iconPath;
 
+  /// 出版美术 B2:此敌人是否为 Boss。true → 战斗屏头像金色加粗边框。
+  /// 缺省 false 向后兼容。仅 isBossStage 关卡的语义 Boss 敌人标 true。
+  final bool isBoss;
+
   const EnemyDef({
     required this.id,
     required this.name,
@@ -215,6 +219,7 @@ class EnemyDef {
     required this.baseSpeed,
     required this.skillIds,
     required this.iconPath,
+    this.isBoss = false,
   });
 
   factory EnemyDef.fromYaml(Map<String, dynamic> y) {
@@ -231,6 +236,7 @@ class EnemyDef {
         (y['skillIds'] as List? ?? const []).map((e) => e as String),
       ),
       iconPath: y['iconPath'] as String,
+      isBoss: y['isBoss'] as bool? ?? false,
     );
   }
 

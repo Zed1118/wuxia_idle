@@ -401,6 +401,29 @@ void main() {
 
   });
 
+  group('EnemyDef.isBoss(B2)', () {
+    Map<String, dynamic> base() => {
+          'id': 'e1',
+          'name': '黑风寨主',
+          'realmTier': 'yiLiu',
+          'realmLayer': 'qiMeng',
+          'school': 'gangMeng',
+          'baseHp': 5000,
+          'baseAttack': 400,
+          'baseSpeed': 200,
+          'skillIds': ['s1'],
+          'iconPath': 'assets/enemies/x.png',
+        };
+
+    test('缺省 isBoss=false(向后兼容)', () {
+      expect(EnemyDef.fromYaml(base()).isBoss, false);
+    });
+
+    test('isBoss: true 解析', () {
+      expect(EnemyDef.fromYaml({...base(), 'isBoss': true}).isBoss, true);
+    });
+  });
+
   group('RealmDef.fromYaml', () {
     test('xueTu/qiMeng = absoluteLevel 1，三系锁死字段一致', () {
       final def = RealmDef.fromYaml({
