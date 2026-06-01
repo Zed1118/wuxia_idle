@@ -30,6 +30,8 @@ class CharacterAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = WuxiaColors.schoolColor(character.school);
+    final borderColor = character.isBoss ? WuxiaColors.bossFrame : color;
+    final borderWidth = character.isBoss ? 6.0 : 4.0;
     final firstGlyph = character.name.characters.isEmpty
         ? '?'
         : character.name.characters.first;
@@ -42,7 +44,7 @@ class CharacterAvatar extends StatelessWidget {
             height: avatarSize,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: color, width: 4),
+              border: Border.all(color: borderColor, width: borderWidth),
               color: WuxiaColors.avatarFill,
             ),
             child: ClipOval(
@@ -53,7 +55,8 @@ class CharacterAvatar extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => _FirstGlyphAvatar(
                   avatarSize: avatarSize,
-                  color: color,
+                  color: borderColor,
+                  borderWidth: borderWidth,
                   firstGlyph: firstGlyph,
                 ),
               ),
@@ -61,7 +64,8 @@ class CharacterAvatar extends StatelessWidget {
           )
         : _FirstGlyphAvatar(
             avatarSize: avatarSize,
-            color: color,
+            color: borderColor,
+            borderWidth: borderWidth,
             firstGlyph: firstGlyph,
           );
 
@@ -119,11 +123,13 @@ class CharacterAvatar extends StatelessWidget {
 class _FirstGlyphAvatar extends StatelessWidget {
   final double avatarSize;
   final Color color;
+  final double borderWidth;
   final String firstGlyph;
 
   const _FirstGlyphAvatar({
     required this.avatarSize,
     required this.color,
+    this.borderWidth = 4,
     required this.firstGlyph,
   });
 
@@ -134,7 +140,7 @@ class _FirstGlyphAvatar extends StatelessWidget {
       height: avatarSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: color, width: 4),
+        border: Border.all(color: color, width: borderWidth),
         color: WuxiaColors.avatarFill,
       ),
       alignment: Alignment.center,

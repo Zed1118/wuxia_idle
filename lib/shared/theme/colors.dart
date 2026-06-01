@@ -30,6 +30,9 @@ class WuxiaColors {
   static const Color textMuted = Color(0xFF8A93A0);
   static const Color resultHighlight = Color(0xFFE8C547);
 
+  /// 出版美术 B2:Boss 头像专属金色描边(深金,区别于 resultHighlight 浅金 + 流派色)。
+  static const Color bossFrame = Color(0xFFD4A017);
+
   /// 战斗背景图上的压暗遮罩(出版美术 B1):保证偏亮背景不抢前景。
   static const Color battleSceneScrim = Color(0x66000000); // black 40%
 
