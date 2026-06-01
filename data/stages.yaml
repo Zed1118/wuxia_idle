@@ -224,6 +224,7 @@ stages:
           - skill_lingqiao_jichu_basic
           - skill_lingqiao_jichu_skill
         iconPath: assets/enemies/qingshan.png
+        isBoss: true
       - id: enemy_xueTu_gateguard_a
         name: 城兵甲
         realmTier: xueTu
@@ -294,6 +295,7 @@ stages:
           - skill_yinrou_jichu_skill
           - skill_yinrou_jichu_ult
         iconPath: assets/enemies/umbrella.png
+        isBoss: true
       - id: enemy_xueTu_dock_a
         name: 渡口刀客
         realmTier: xueTu
@@ -547,6 +549,7 @@ stages:
           - skill_gangmeng_jichu_skill
           - skill_gangmeng_jichu_ult
         iconPath: assets/enemies/guntou.png
+        isBoss: true
       - id: enemy_sanLiu_langren_a
         name: 校场浪人
         realmTier: sanLiu
@@ -614,6 +617,7 @@ stages:
           - skill_lingqiao_jichu_skill
           - skill_lingqiao_jichu_ult
         iconPath: assets/enemies/qingshan_main.png
+        isBoss: true
       - id: enemy_sanLiu_killer_a
         name: 巷口杀手
         realmTier: sanLiu
@@ -884,6 +888,7 @@ stages:
           - skill_gangmeng_mingjia_skill
           - skill_gangmeng_mingjia_ult
         iconPath: assets/enemies/balian.png
+        isBoss: true
       - id: enemy_erLiu_tongmen_a
         name: 雁门同伙甲
         realmTier: erLiu
@@ -955,6 +960,7 @@ stages:
           - skill_yinrou_mingjia_skill
           - skill_yinrou_mingjia_ult
         iconPath: assets/enemies/huiyi.png
+        isBoss: true
       - id: enemy_erLiu_shidi_a
         name: 灰衣师弟
         realmTier: erLiu
@@ -1238,6 +1244,7 @@ stages:
           - skill_gangmeng_menpai_skill
           - skill_gangmeng_menpai_ult
         iconPath: assets/enemies/xiliangboss.png
+        isBoss: true
       - id: enemy_yiLiu_xiliang_a
         name: 武林名宿之徒
         realmTier: yiLiu
@@ -1309,6 +1316,7 @@ stages:
           - skill_yinrou_jianghu_skill
           - skill_yinrou_jianghu_ult
         iconPath: assets/enemies/xiliangbazhu.png
+        isBoss: true
       - id: enemy_yiLiu_bazhu_zuofu
         name: 西凉左护法
         realmTier: yiLiu
@@ -1592,6 +1600,7 @@ stages:
           - skill_gangmeng_jianghu_skill
           - skill_gangmeng_jianghu_ult
         iconPath: assets/enemies/zhongzhou_lunjian_xianfeng.png
+        isBoss: true
       - id: enemy_jueDing_zhongzhou_fushou
         name: 中州论剑副手
         realmTier: jueDing
@@ -1663,6 +1672,7 @@ stages:
           - skill_yinrou_shichuan_skill
           - skill_yinrou_shichuan_ult
         iconPath: assets/enemies/xiliang_sandizi.png
+        isBoss: true
       - id: enemy_jueDing_zhongzhou_lunjian
         name: 中州论剑顶
         realmTier: jueDing
@@ -1929,6 +1939,7 @@ stages:
           - skill_lingqiao_shichuan_skill
           - skill_lingqiao_shichuan_ult
         iconPath: assets/enemies/kunlun_waimen_shouguan.png
+        isBoss: true
       - id: enemy_zongShi_kunlun_xiyuan_jianke
         name: 昆仑西渐剑客
         realmTier: zongShi
@@ -2007,6 +2018,7 @@ stages:
           - skill_yinrou_chuanshuo_skill
           - skill_yinrou_chuanshuo_ult
         iconPath: assets/enemies/xiliang_bazhu.png
+        isBoss: true
       - id: enemy_zongShi_xiliang_disciple_gang
         name: 西凉三弟子·刚猛
         realmTier: zongShi
@@ -2463,6 +2475,7 @@ stages:
           - skill_lightfoot_jueding_gangmeng_skill
           - skill_lightfoot_jueding_gangmeng_ult
         iconPath: assets/enemies/lightfoot_changfeng_a.png
+        isBoss: true
       - id: enemy_jueDing_lightfoot_changfeng_b
         name: 长风剑客
         realmTier: jueDing
@@ -2774,6 +2787,7 @@ stages:
           - skill_lightfoot_jueding_gangmeng_skill
           - skill_lightfoot_jueding_gangmeng_ult
         iconPath: assets/enemies/massbattle_canbu_a.png
+        isBoss: true
       - id: enemy_jueDing_massbattle_canbu_b
         name: 西凉狂骑
         realmTier: jueDing
