@@ -66,7 +66,14 @@ class UltimateCaptionOverlayState extends State<UltimateCaptionOverlay>
   bool _isEnemy = false;
 
   // 250ms 淡入 + 1200ms 停留 + 350ms 淡出 = 1800ms 总时长
-  static const _total = Duration(milliseconds: 1800);
+  static const _fadeInMs = 250;
+  static const _holdMs = 1200;
+  static const _fadeOutMs = 350;
+  static const _totalMs = _fadeInMs + _holdMs + _fadeOutMs;
+  static const _total = Duration(milliseconds: _totalMs);
+  // 归一化时间断点,由上面 ms 派生(防注释/代码漂移)。
+  static const _fadeInEnd = _fadeInMs / _totalMs;
+  static const _fadeOutStart = (_fadeInMs + _holdMs) / _totalMs;
 
   @override
   void initState() {
@@ -94,11 +101,12 @@ class UltimateCaptionOverlayState extends State<UltimateCaptionOverlay>
     _ctrl.forward(from: 0.0);
   }
 
-  // 0→0.14 淡入(opacity 0→1) / 0.14→0.80 停留(1) / 0.80→1 淡出(1→0)
+  // 淡入(0→_fadeInEnd:opacity 0→1) / 停留(_fadeInEnd→_fadeOutStart:1) /
+  // 淡出(_fadeOutStart→1:1→0)。断点全由 ms 派生。
   double get _opacity {
     final t = _ctrl.value;
-    if (t < 0.14) return t / 0.14;
-    if (t > 0.80) return (1.0 - t) / 0.20;
+    if (t < _fadeInEnd) return t / _fadeInEnd;
+    if (t > _fadeOutStart) return (1.0 - t) / (1.0 - _fadeOutStart);
     return 1.0;
   }
 
