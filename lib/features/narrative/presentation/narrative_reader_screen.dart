@@ -91,7 +91,7 @@ class _NarrativeReaderScreenState extends State<NarrativeReaderScreen>
     final bg = widget.backgroundImagePath;
     final hasBg = bg != null && bg.isNotEmpty;
     return Scaffold(
-      backgroundColor: hasBg ? Colors.transparent : WuxiaColors.background,
+      backgroundColor: WuxiaColors.background,
       appBar: AppBar(
         title: Text(title),
         backgroundColor: WuxiaColors.sidebar,
