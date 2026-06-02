@@ -62,4 +62,21 @@ void main() {
     expect(b.top.color, WuxiaColors.bossFrame);
     expect(b.top.width, 6.0);
   });
+
+  testWidgets('默认 avatarSize=150（P0-2 放大）', (tester) async {
+    await pump(tester, _char(isBoss: false));
+    final av = tester.widget<CharacterAvatar>(find.byType(CharacterAvatar));
+    expect(av.avatarSize, 150);
+  });
+
+  testWidgets('死亡单位叠 grayscale ColorFiltered（P0-2）', (tester) async {
+    final dead = _char(isBoss: false).copyWith(isAlive: false);
+    await pump(tester, dead);
+    expect(find.byType(ColorFiltered), findsWidgets);
+  });
+
+  testWidgets('存活单位不灰（无 grayscale ColorFiltered）', (tester) async {
+    await pump(tester, _char(isBoss: false)); // isAlive 默认 true
+    expect(find.byType(ColorFiltered), findsNothing);
+  });
 }
