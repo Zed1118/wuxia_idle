@@ -139,7 +139,7 @@ stages:
     baseExpReward: 120
     difficultyMultiplier: 1.2
     biome: inn
-    sceneBackgroundPath: assets/scenes/battle_citywall.png
+    sceneBackgroundPath: assets/scenes/battle_inn.png
     weather: clear
 
   # === stage_01_03 · 黑风岭（山贼伏击）===
@@ -402,7 +402,7 @@ stages:
     baseExpReward: 350
     difficultyMultiplier: 1.5
     biome: escortRoad
-    sceneBackgroundPath: assets/scenes/battle_mountainpath.png
+    sceneBackgroundPath: assets/scenes/battle_escortroad.png
     weather: clear
 
   # === stage_02_02 · 茶馆论剑（中段比武）===
@@ -461,7 +461,7 @@ stages:
     baseExpReward: 550
     difficultyMultiplier: 1.7
     biome: teaHouse
-    sceneBackgroundPath: assets/scenes/battle_citywall.png
+    sceneBackgroundPath: assets/scenes/battle_teahouse.png
     weather: clear
 
   # === stage_02_03 · 春水堂（铸剑铺试剑）===
@@ -522,7 +522,7 @@ stages:
     baseExpReward: 800
     difficultyMultiplier: 1.9
     biome: smithy
-    sceneBackgroundPath: assets/scenes/battle_drillground.png
+    sceneBackgroundPath: assets/scenes/battle_smithy.png
     weather: clear
 
   # === stage_02_04 · 城外校场（小 Boss · 棍法光头汉）===
@@ -663,7 +663,7 @@ stages:
     baseExpReward: 1800
     difficultyMultiplier: 2.3
     biome: alley
-    sceneBackgroundPath: assets/scenes/battle_citywall.png
+    sceneBackgroundPath: assets/scenes/battle_alley.png
     weather: night
 
   # ─────────────────────────────────────────────────────────────────────
@@ -861,7 +861,7 @@ stages:
     baseExpReward: 2800
     difficultyMultiplier: 2.4
     biome: temple
-    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    sceneBackgroundPath: assets/scenes/battle_temple.png
     weather: night
 
   # === stage_03_04 · 雁门旧事（小 Boss · 疤脸汉子）===
@@ -1217,7 +1217,7 @@ stages:
     baseExpReward: 14000
     difficultyMultiplier: 3.4
     biome: desert
-    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    sceneBackgroundPath: assets/scenes/battle_desert.png
     weather: mist
 
   # === stage_04_04 · 西凉论剑(小 Boss · 西凉武林名宿)===
@@ -1505,7 +1505,7 @@ stages:
     baseExpReward: 25000
     difficultyMultiplier: 3.9
     biome: temple
-    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    sceneBackgroundPath: assets/scenes/battle_temple.png
     weather: mist
 
   # === stage_05_03 · 黄河义渡(黄河渡口夺刀风波)===
@@ -1989,7 +1989,7 @@ stages:
     baseExpReward: 67000
     difficultyMultiplier: 5.7
     biome: desert
-    sceneBackgroundPath: assets/scenes/battle_frontier.png
+    sceneBackgroundPath: assets/scenes/battle_desert.png
     weather: clear
 
   # === stage_06_05 · 昆仑山顶(章末大 Boss · B 复合三人组 · 跨阶 wuSheng·qiMeng)===
@@ -2392,7 +2392,7 @@ stages:
     baseExpReward: 6500
     difficultyMultiplier: 5.8
     biome: bambooForest
-    sceneBackgroundPath: assets/scenes/battle_mountainforest.png
+    sceneBackgroundPath: assets/scenes/battle_bambooforest.png
     terrainBiome: bamboo
 
   # === stage_light_foot_04 · 险崖飞渡(高阶 water · 山涧瀑布)===
@@ -2450,7 +2450,7 @@ stages:
     baseExpReward: 7500
     difficultyMultiplier: 6.2
     biome: cliffWaterfall
-    sceneBackgroundPath: assets/scenes/battle_mountainpath.png
+    sceneBackgroundPath: assets/scenes/battle_cliffwaterfall.png
     terrainBiome: water
 
   # === stage_light_foot_05 · 长风万里(高阶 rooftop · 关楼大风)===

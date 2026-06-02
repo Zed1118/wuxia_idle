@@ -12,15 +12,15 @@ const _map = {
   EncounterBiome.dock: 'battle_dock',
   EncounterBiome.mountainPath: 'battle_mountainpath',
   EncounterBiome.innerRealm: 'battle_innerrealm',
-  EncounterBiome.desert: 'battle_frontier',
-  EncounterBiome.temple: 'battle_mountainforest',
-  EncounterBiome.teaHouse: 'battle_citywall',
-  EncounterBiome.inn: 'battle_citywall',
-  EncounterBiome.alley: 'battle_citywall',
-  EncounterBiome.smithy: 'battle_drillground',
-  EncounterBiome.escortRoad: 'battle_mountainpath',
-  EncounterBiome.cliffWaterfall: 'battle_mountainpath',
-  EncounterBiome.bambooForest: 'battle_mountainforest',
+  EncounterBiome.desert: 'battle_desert',
+  EncounterBiome.temple: 'battle_temple',
+  EncounterBiome.teaHouse: 'battle_teahouse',
+  EncounterBiome.inn: 'battle_inn',
+  EncounterBiome.alley: 'battle_alley',
+  EncounterBiome.smithy: 'battle_smithy',
+  EncounterBiome.escortRoad: 'battle_escortroad',
+  EncounterBiome.cliffWaterfall: 'battle_cliffwaterfall',
+  EncounterBiome.bambooForest: 'battle_bambooforest',
 };
 
 void main() {
@@ -48,16 +48,9 @@ void main() {
     }
   });
 
-  test('所有 stage 背景路径 ∈ 7 张 battle_*.png', () {
-    const valid = {
-      'battle_mountainforest',
-      'battle_citywall',
-      'battle_frontier',
-      'battle_drillground',
-      'battle_dock',
-      'battle_mountainpath',
-      'battle_innerrealm',
-    };
+  test('所有 stage 背景路径 ∈ biome 映射图集(单一真相源 _map)', () {
+    // 白名单 = _map.values + tower 用 innerrealm, 不写死数字, 避免长尾扩图后 drift
+    final valid = {..._map.values, 'battle_innerrealm'};
     for (final s in repo.stageDefs.values) {
       final name =
           s.sceneBackgroundPath!.split('/').last.replaceAll('.png', '');

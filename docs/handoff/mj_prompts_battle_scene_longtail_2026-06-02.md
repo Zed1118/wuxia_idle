@@ -54,3 +54,23 @@ A vast windswept desert of rolling dunes, a half-buried ruined beacon tower offs
 A dense misty bamboo grove, tall slender bamboo stalks clustering along the sides, an open mossy clearing across the center, light drifting rain, Chinese ink wash painting, thick wet impasto ink brushwork, desaturated cyan-grey ink and rice-paper cream palette, misty atmospheric, cinematic wide establishing shot, open uncluttered flat foreground across the lower center for character staging, no people, no text, no signature --ar 16:9 --style raw --v 7
 
 A towering sheer cliff with a thundering waterfall plunging into churning mist, the falls offset to one side, a narrow rocky ledge crossing the foreground center, precarious and grand, Chinese ink wash painting, thick wet impasto ink brushwork, desaturated cyan-grey ink and rice-paper cream palette, misty atmospheric, cinematic wide establishing shot, open uncluttered flat foreground across the lower center for character staging, no people, no text, no signature --ar 16:9 --style raw --v 7
+
+---
+
+## 选片记录(2026-06-02 · 我多模态从各 4 变体挑选)
+
+| biome | 选 | 压缩后 | 理由 |
+|---|---|---|---|
+| inn | v1 | 716KB | 建筑偏左上+下方大片留空 |
+| escortRoad | v4 | 584KB | 远景镖队+雾山前景留白,贴 frontier 体例 |
+| teaHouse | v3 | 576KB | 石板广场居中+江南识别度高(排除带钤印的 v1) |
+| smithy | v4 | 524KB | 炉铺偏右+中左留空+烟雾克制 |
+| alley | v4 | 856KB | 较亮冷灰,叠 scrim 40% 不至过暗(v1/v3 偏暗) |
+| temple | v2 | 468KB | 殿堂偏右+远山雾,佛道通用 |
+| desert | v2 | 264KB | 烽燧台地标+大漠前景,识别度最高 |
+| bambooForest | v3 | 760KB | 蓝灰最克制(余偏绿/青饱和) |
+| cliffWaterfall | v3 | 528KB | 飞瀑偏左+冷灰开阔前景 |
+
+压缩:pngquant --quality=80-94 + oxipng -o2(源 1456×816 与现有 7 图一致,无需 resize)。纹理重的(alley/bamboo/inn)偏大属正常,未二次有损避 banding。
+接线:11 stage sceneBackgroundPath 已改专属(见上表)。测试 battle_scene_wiring_test `_map` 同步更新 + 白名单改 `_map.values` 派生(单一真相源)。1667 测/0 analyze 全绿。
+**待 Codex 验 `battle_scene` 路由**:9 图叠 scrim 后观感 + banding + alley/bamboo 暗场/饱和复核。
