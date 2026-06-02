@@ -7,7 +7,7 @@
 - **P0-2 战斗单位可见化 全 9 task 闭环 merge ✅**:玩家 iconPath 接 portraitPath / 单位放大(150→**110**,见下偏离)+ 死亡 grayscale / AnimationNumbers 加 projectile+hitFlash 时长 / 弹道笔触 CustomPainter / 受击闪 widget / 删日志侧栏→折叠抽屉+战场占满宽 / 弹道+受击 wire(actionLog 边沿·**不写 BattleState** 红线) / 胜负遮罩 vignette 不压暗。+13 测,全量 **1692 测 / 0 analyze**。派单 `codex_visual_battle_p0_2_2026-06-03.md`。
 - **P0-3 角色面板 ① 装备外观可视化 merge ✅**:装备槽从纯文字加 iconPath 图标 + tier 色 `_EquipGlyph` 占位 + 144px `_EquipmentSlotShell`(不动共享 _SlotShell)+ errorBuilder 兜底。+2 测。spec `specs/2026-06-03-p0-3-*` + 派单 `codex_visual_character_panel_p0_3_2026-06-03.md`。
 - **P0-4b 仓库格子化 spec ✅**(待实装):列表→网格 + 部位分组 + 可装备状态(境界锁)+ 复用 EquipGlyph。`specs/2026-06-03-p0-4b-*`。
-- **敌人图 MJ prompt 批2/3/4 ✅**:批2 erLiu 14 / 批3 yiLiu 14 / 批4 jueDing 14 = 42 张待出图(梯度词 humble→seasoned→accomplished→transcendent · 开头唯一身份词避 autojourney 撞车 · 暴力词中性化)。批5(zongShi+余 jueDing)研究中。归位后 enemy 缺图 91→预计 49。
+- **敌人图 MJ prompt 批2-6 全写完 ✅ backlog 清零**:erLiu 14 / yiLiu 14 / jueDing 14 / jueDing余+zongShi 14 / zongShi+wuSheng 13 = **69 张待出图**(梯度词 humble→seasoned→accomplished→transcendent→martial-saint · 开头唯一身份词避 autojourney 撞车 · 暴力词中性化)。覆盖 known_missing 全部未认领项,归位后 asset_audit 为准。
 
 ## 自主决策(拍板理由)
 
@@ -25,7 +25,7 @@
 
 1. **Codex@Pen 视觉验收 P0-2 + P0-3**(派单 doc 已就绪,Pen `git pull` 后跑 VISUAL_ROUTE=battle_scene / character_panel)。
 2. **批准 P0-3b(②③)+ P0-4b spec → 升 xhigh 实装**(用户在场判视觉)。
-3. **敌人图批2-5 出图/选片/压缩/归位**(MJ Discord)→ 刷 allowlist。
+3. **敌人图批2-6(69 张)出图/选片/压缩/归位**(MJ Discord)→ 刷 allowlist。
 4. 可选硬化 P0-2 controller 生命周期(见 review backlog)。
 
 **纪律**:每批全量 test + analyze 绿才 merge;0 红线违反(战斗 wiring 不写 state / 数值文案不硬编码 / 缺图 errorBuilder 兜底)。
