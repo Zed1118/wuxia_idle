@@ -15,7 +15,7 @@ import '../../../shared/widgets/asset_fallback.dart';
 /// **widget test 不加载 pubspec assets**(memory feedback_image_asset_error_builder),
 /// 所有 Image.asset 必须挂 errorBuilder 守 1172 test 不破。
 ///
-/// `character.isAlive == false` 时整体 opacity 0.3（§794 死亡变灰验收）。
+/// `character.isAlive == false` 时整体 opacity 0.45 + grayscale ColorFilter（§794 死亡变灰验收 · P0-2 放大后灰化更明显）。
 class CharacterAvatar extends StatelessWidget {
   final BattleCharacter character;
   final double avatarSize;
@@ -24,7 +24,7 @@ class CharacterAvatar extends StatelessWidget {
   const CharacterAvatar({
     super.key,
     required this.character,
-    this.avatarSize = 80,
+    this.avatarSize = 150,
     this.barWidth = 160,
   });
 
@@ -113,9 +113,19 @@ class CharacterAvatar extends StatelessWidget {
       ],
     );
 
-    return Opacity(
-      opacity: character.isAlive ? 1.0 : 0.3,
+    final dimmed = Opacity(
+      opacity: character.isAlive ? 1.0 : 0.45,
       child: content,
+    );
+    if (character.isAlive) return dimmed;
+    return ColorFiltered(
+      colorFilter: const ColorFilter.matrix(<double>[
+        0.2126, 0.7152, 0.0722, 0, 0,
+        0.2126, 0.7152, 0.0722, 0, 0,
+        0.2126, 0.7152, 0.0722, 0, 0,
+        0, 0, 0, 1, 0,
+      ]),
+      child: dimmed,
     );
   }
 }
