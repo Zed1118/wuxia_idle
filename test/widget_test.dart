@@ -159,7 +159,7 @@ void main() {
     expect(find.text('毒娘子'), findsOneWidget);
   });
 
-  testWidgets('死亡角色 opacity = 0.3', (WidgetTester tester) async {
+  testWidgets('死亡角色 opacity = 0.45（P0-2 放大后灰化）', (WidgetTester tester) async {
     await pumpBattle(tester);
 
     final avatars = tester.widgetList<CharacterAvatar>(
@@ -176,7 +176,7 @@ void main() {
           find.descendant(of: deadAvatarFinder, matching: find.byType(Opacity)),
         )
         .first;
-    expect(opacity.opacity, 0.3);
+    expect(opacity.opacity, 0.45);
   });
 
   // ── T15 dispose ─────────────────────────────────────────────────────────

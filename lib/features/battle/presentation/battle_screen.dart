@@ -565,7 +565,7 @@ class _BattleField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
