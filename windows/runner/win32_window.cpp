@@ -197,6 +197,20 @@ Win32Window::MessageHandler(HWND hwnd,
 
       return 0;
     }
+    case WM_GETMINMAXINFO: {
+      // Clamp the minimum window size to the design baseline 1280x720
+      // (logical pixels, scaled to the current monitor DPI, matching the
+      // initial size set in main.cpp). Prevents shrinking the window below the
+      // baseline, which would trigger Flutter RenderFlex overflow / UI
+      // occlusion (Presentation Pass gate 12.9: "1280x720 not occluded").
+      auto* info = reinterpret_cast<MINMAXINFO*>(lparam);
+      HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+      UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
+      double scale_factor = dpi / 96.0;
+      info->ptMinTrackSize.x = Scale(1280, scale_factor);
+      info->ptMinTrackSize.y = Scale(720, scale_factor);
+      return 0;
+    }
     case WM_SIZE: {
       RECT rect = GetClientArea();
       if (child_content_ != nullptr) {
