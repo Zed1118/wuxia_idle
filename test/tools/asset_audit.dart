@@ -80,3 +80,48 @@ List<AssetRef> collectAssetRefs() {
 
   return refs;
 }
+
+/// 缺图路径（去重排序）。
+List<String> missingPaths(List<AssetRef> refs) {
+  final s = refs.map((r) => r.path).where((p) => !assetExists(p)).toSet().toList()
+    ..sort();
+  return s;
+}
+
+/// 人看的分类别 md 报告（附引用源）。
+String buildReport(List<AssetRef> refs) {
+  final buf = StringBuffer();
+  buf.writeln('# 资产缺图审计报告');
+  buf.writeln();
+  buf.writeln('> 工具生成，勿手改。跑法:`flutter test test/tools/asset_audit_test.dart`');
+  buf.writeln();
+  buf.writeln('## 汇总');
+  buf.writeln();
+  buf.writeln('| 类别 | 引用(去重) | 存在 | 缺失 |');
+  buf.writeln('|---|---|---|---|');
+  for (final cat in AssetCategory.values) {
+    final paths =
+        refs.where((r) => r.category == cat).map((r) => r.path).toSet();
+    final miss = paths.where((p) => !assetExists(p)).length;
+    buf.writeln('| ${cat.name} | ${paths.length} | ${paths.length - miss} | $miss |');
+  }
+  final all = refs.map((r) => r.path).toSet();
+  final allMiss = all.where((p) => !assetExists(p)).length;
+  buf.writeln('| **合计** | ${all.length} | ${all.length - allMiss} | $allMiss |');
+  buf.writeln();
+  buf.writeln('## 缺图清单');
+  for (final cat in AssetCategory.values) {
+    final byPath = <String, List<String>>{};
+    for (final r in refs.where((r) => r.category == cat && !assetExists(r.path))) {
+      byPath.putIfAbsent(r.path, () => []).add(r.sourceId);
+    }
+    if (byPath.isEmpty) continue;
+    buf.writeln();
+    buf.writeln('### ${cat.name} (${byPath.length})');
+    buf.writeln();
+    for (final p in byPath.keys.toList()..sort()) {
+      buf.writeln('- `$p` ← ${byPath[p]!.join(', ')}');
+    }
+  }
+  return buf.toString();
+}
