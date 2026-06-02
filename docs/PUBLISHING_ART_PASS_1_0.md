@@ -1049,7 +1049,7 @@
 ### 20.4 执行 tracker（checkbox · 按本文件既有 Phase B/C/D/E + 新增 P0 工程地基）
 
 **P0 工程地基（纯代码 · 不卡美术 · opus high · 先做）**
-- [ ] 缺图 QA manifest 门禁：扫所有 iconPath/detailPath 引用 vs `assets/` 存在性，QA 面板集中报缺（替静默 errorBuilder）= 107+44 美术线进度看板，并产出权威缺图清单
+- [x] 缺图 QA manifest 门禁 ✅（2026-06-02 · `feat/p0-asset-gate`）：`test/tools/asset_audit.dart` 扫 6 类引用 vs 存在性 + allowlist 双 guard（防新增坏引用 / 补齐清账）+ kDebugMode「缺图」角标替静默 errorBuilder。**权威缺图清单 = 152 缺（enemy 107 / equipment 45）**，见 `test/tools/output/asset_audit.md` + `test/fixtures/known_missing_assets.txt`（= MJ 工作队列）
 - [ ] PortraitFrame null → 水墨题字占位替空框（修注释错误声称 + 守 legacy 角色）
 - [ ] 装备详情 `height:180 cover` → contain + 留白构图，细长兵器完整展示（§5.4）
 
