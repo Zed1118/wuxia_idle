@@ -1050,8 +1050,8 @@
 
 **P0 工程地基（纯代码 · 不卡美术 · opus high · 先做）**
 - [x] 缺图 QA manifest 门禁 ✅（2026-06-02 · `feat/p0-asset-gate`）：`test/tools/asset_audit.dart` 扫 6 类引用 vs 存在性 + allowlist 双 guard（防新增坏引用 / 补齐清账）+ kDebugMode「缺图」角标替静默 errorBuilder。**权威缺图清单 = 152 缺（enemy 107 / equipment 45）**，见 `test/tools/output/asset_audit.md` + `test/fixtures/known_missing_assets.txt`（= MJ 工作队列）
-- [ ] PortraitFrame null → 水墨题字占位替空框（修注释错误声称 + 守 legacy 角色）
-- [ ] 装备详情 `height:180 cover` → contain + 留白构图，细长兵器完整展示（§5.4）
+- [x] PortraitFrame null → 水墨题字占位替空框 ✅（2026-06-02 `baa6070`）：加可选 `placeholderText`，null 立绘居中首字水墨占位（沿 battle CharacterAvatar 体例）替空框 + 修注释错误声称，4 真实角色调用方传 name
+- [x] 装备详情 `height:180 cover` → contain ✅（2026-06-02 `baa6070`）：大图 BoxFit.cover→contain + padding 8 留白，细长兵器完整展示不裁切（§5.4）
 
 **Phase B 战斗专项（头号 · xhigh · 先 brainstorm 设计方向再 spec→plan→TDD）**
 - [ ] 设计方向定调（brainstorming）：战斗单位用**立绘半身像 / 增强大头像 / 战斗动作位** 三选一 + 布局 + 血条/日志降级方式
