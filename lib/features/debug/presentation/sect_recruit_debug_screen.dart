@@ -102,6 +102,7 @@ class _SectRecruitDebugScreenState
                                     borderColor: c.school == null
                                         ? WuxiaColors.border
                                         : WuxiaColors.schoolColor(c.school!),
+                                    placeholderText: c.name,
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(

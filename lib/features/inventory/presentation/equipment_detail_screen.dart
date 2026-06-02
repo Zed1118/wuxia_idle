@@ -118,6 +118,9 @@ class _EquipmentDetailScreenState
                   Container(
                     width: double.infinity,
                     height: 180,
+                    // 留白构图:大图四周内缩,细长兵器(BoxFit.contain)居中完整展示
+                    // 不裁切(P0 #3 · §5.4),letterbox 余白即水墨留白。
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: WuxiaColors.panel,
                       // 神物 / 宝物:全周更粗边框(出版美术 §5.4「更强边框」);
@@ -130,7 +133,7 @@ class _EquipmentDetailScreenState
                     ),
                     child: Image.asset(
                       widget.def.detailPath!,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                       errorBuilder: wuxiaAssetErrorBuilder(
                           () => Container(color: WuxiaColors.panel)),
                     ),

@@ -265,6 +265,7 @@ class _ProfileHeaderCard extends StatelessWidget {
             portraitPath: character.portraitPath,
             size: 110,
             borderColor: schoolColor,
+            placeholderText: character.name,
           ),
           const SizedBox(width: 16),
           Expanded(
