@@ -25,4 +25,12 @@ void main() {
     expect(refs.any((r) => r.category == AssetCategory.enemy), isTrue);
     expect(refs.any((r) => r.category == AssetCategory.equipment), isTrue);
   });
+
+  test('生成 asset_audit.md + asset_audit_missing.txt', () {
+    final refs = collectAssetRefs();
+    Directory(_outputDir).createSync(recursive: true);
+    File('$_outputDir/asset_audit.md').writeAsStringSync(buildReport(refs));
+    File('$_outputDir/asset_audit_missing.txt')
+        .writeAsStringSync('${missingPaths(refs).join('\n')}\n');
+  });
 }
