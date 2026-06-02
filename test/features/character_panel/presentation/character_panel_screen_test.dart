@@ -727,4 +727,32 @@ void main() {
     expect(find.text('铁剑'), findsOneWidget);
     expect(find.textContaining(UiStrings.equipWornByOther), findsOneWidget);
   });
+
+
+  // ── P0-3 装备外观可视化 ────────────────────────────────────────────────
+  testWidgets('装备槽显示装备图标(iconPath · P0-3)', (tester) async {
+    final entry = GameRepository.instance.equipmentDefs.entries
+        .firstWhere((e) => e.value.slot == EquipmentSlot.weapon);
+    final w = mkEquipment(
+        id: 10, slot: EquipmentSlot.weapon, defId: entry.key);
+    await pumpPanel(tester,
+        character: mkCharacter(weaponId: 10), equipments: {10: w});
+    await tester.pumpAndSettle();
+    final imgs = tester.widgetList<Image>(find.byType(Image));
+    expect(
+      imgs.any((i) =>
+          i.image is AssetImage &&
+          (i.image as AssetImage).assetName == entry.value.iconPath),
+      isTrue,
+    );
+  });
+
+  testWidgets('装备槽未知 def 走占位不崩(P0-3)', (tester) async {
+    final w = mkEquipment(id: 10, slot: EquipmentSlot.weapon, enhanceLevel: 5);
+    await pumpPanel(tester,
+        character: mkCharacter(weaponId: 10), equipments: {10: w});
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.enhanceLevel(5)), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
