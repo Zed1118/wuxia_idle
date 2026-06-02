@@ -8,6 +8,7 @@ import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import 'chapter_transition_screen.dart';
 import 'stage_list_screen.dart';
+import '../../../shared/widgets/asset_fallback.dart';
 
 /// 主线章节列表（Phase 3 T35,2026-05-22 P2 Ch6 扩 6 章）。
 ///
@@ -168,8 +169,8 @@ class _ChapterCard extends StatelessWidget {
                     child: Image.asset(
                       chapterCoverPath(chapterIndex),
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) =>
-                          Container(color: WuxiaColors.avatarFill),
+                      errorBuilder: wuxiaAssetErrorBuilder(
+                          () => Container(color: WuxiaColors.avatarFill)),
                     ),
                   ),
                 ),

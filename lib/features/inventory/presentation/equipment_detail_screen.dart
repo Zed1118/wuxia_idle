@@ -14,6 +14,7 @@ import '../../equipment/presentation/enhance_dialog.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../../shared/widgets/asset_fallback.dart';
 
 /// 装备详情屏(Phase 4 W15 LoreLoader 接入下一步)。
 ///
@@ -130,8 +131,8 @@ class _EquipmentDetailScreenState
                     child: Image.asset(
                       widget.def.detailPath!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) =>
-                          Container(color: WuxiaColors.panel),
+                      errorBuilder: wuxiaAssetErrorBuilder(
+                          () => Container(color: WuxiaColors.panel)),
                     ),
                   ),
                 _InfoCard(equipment: widget.equipment, def: widget.def),
