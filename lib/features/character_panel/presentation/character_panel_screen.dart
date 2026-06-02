@@ -25,6 +25,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
+import '../../../shared/widgets/asset_fallback.dart';
 import 'encounter_skill_section.dart';
 
 /// 角色面板（phase2_tasks.md T28 + Phase 3 Week 4 T56）。
@@ -812,7 +813,7 @@ class _EquipmentSlotTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final slotLabel = EnumL10n.equipmentSlot(slot);
     if (equipmentId == null) {
-      return _SlotShell(
+      return _EquipmentSlotShell(
         borderColor: WuxiaColors.buttonDisabled,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -840,11 +841,11 @@ class _EquipmentSlotTile extends ConsumerWidget {
     final async = ref.watch(equipmentByIdProvider(equipmentId!));
     final n = ref.watch(numbersConfigProvider);
     return async.when(
-      loading: () => const _SlotShell(
+      loading: () => const _EquipmentSlotShell(
         borderColor: WuxiaColors.border,
         child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       ),
-      error: (e, _) => _SlotShell(
+      error: (e, _) => _EquipmentSlotShell(
         borderColor: WuxiaColors.hpLow,
         child: Text(
           '$e',
@@ -853,7 +854,7 @@ class _EquipmentSlotTile extends ConsumerWidget {
       ),
       data: (eq) {
         if (eq == null) {
-          return _SlotShell(
+          return _EquipmentSlotShell(
             borderColor: WuxiaColors.buttonDisabled,
             child: Center(
               child: Text(
@@ -865,11 +866,28 @@ class _EquipmentSlotTile extends ConsumerWidget {
         }
         final tierColor = tierColorForEquipment(eq.tier);
         final resonance = eq.resonanceStage(n);
-        return _SlotShell(
+        final iconPath =
+            GameRepository.instance.equipmentDefs[eq.defId]?.iconPath;
+        return _EquipmentSlotShell(
           borderColor: tierColor,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              SizedBox(
+                height: 44,
+                width: double.infinity,
+                child: iconPath == null
+                    ? _EquipGlyph(tierColor: tierColor, slot: eq.slot)
+                    : Image.asset(
+                        iconPath,
+                        fit: BoxFit.contain,
+                        errorBuilder: wuxiaAssetErrorBuilder(
+                          () => _EquipGlyph(
+                              tierColor: tierColor, slot: eq.slot),
+                        ),
+                      ),
+              ),
+              const SizedBox(height: 4),
               Row(
                 children: [
                   Text(
@@ -1596,6 +1614,54 @@ class _SlotShell extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: child,
+    );
+  }
+}
+
+/// 装备槽外壳(P0-3):比 [_SlotShell] 高(128),容纳装备图标 + 文字行。
+/// 不动 88px [_SlotShell](辅修槽复用),3 装备槽用本壳对齐。
+class _EquipmentSlotShell extends StatelessWidget {
+  const _EquipmentSlotShell({required this.borderColor, required this.child});
+
+  final Color borderColor;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 144,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: WuxiaColors.avatarFill,
+        border: Border.all(color: borderColor, width: 1.5),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// 装备图标缺失/未配 def 时的占位(P0-3):tier 色框 + 槽位首字,沿 PortraitFrame 占位体例。
+class _EquipGlyph extends StatelessWidget {
+  const _EquipGlyph({required this.tierColor, required this.slot});
+
+  final Color tierColor;
+  final EquipmentSlot slot;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = EnumL10n.equipmentSlot(slot);
+    final glyph = label.characters.isEmpty ? '器' : label.characters.first;
+    return Center(
+      child: Text(
+        glyph,
+        style: TextStyle(
+          color: tierColor,
+          fontSize: 26,
+          fontWeight: FontWeight.bold,
+          height: 1,
+        ),
+      ),
     );
   }
 }
