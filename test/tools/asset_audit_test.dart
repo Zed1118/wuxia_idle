@@ -41,4 +41,10 @@ void main() {
     expect(offenders, isEmpty,
         reason: '以下引用指向缺图且不在 allowlist(新增坏引用?):\n${offenders.join('\n')}');
   });
+
+  test('guard 2: allowlist 无已补齐残留(补齐即清账)', () {
+    final fixed = loadAllowlist().where(assetExists).toList()..sort();
+    expect(fixed, isEmpty,
+        reason: '以下已存在于磁盘,请从 allowlist 删除:\n${fixed.join('\n')}');
+  });
 }
