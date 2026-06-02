@@ -89,3 +89,33 @@ chinese ink painting style portrait, dark-clad alley figure with brooding imposi
 
 出图选片后压缩(pngquant/oxipng,沿 narrative_scene 体例 ~250-450KB)→ cp 到上表 iconPath。
 全 16 张归位后:重跑 asset_audit → cp asset_audit_missing.txt known_missing_assets.txt 刷 allowlist(剩 91 enemy + 45 equipment)。
+
+## 第一批 autojourney 跑后筛选(2026-06-02 21:55)
+
+16 张提交 → 9 组出图 + 7 组未成功(`~/Downloads/autojourney/批量美术素材`)。
+未成功 7:dock_b / jianghu_b / kibitzer_a / shaonian / swordtester_b(整组缺失)
+       + langren_b / killer_b(前缀撞车,与 _a 开头同被去重,各只出 1 组)。
+junk:`result_候选_审计完成` = autojourney 把对话「result:」行当 prompt 跑了,可删。
+
+重出 prompts(langren_b / killer_b 已改差异化开头避撞车):
+
+dock_b
+chinese ink painting style portrait, lean river-dock wanderer with alert bearing, misty water and wooden pier behind, slate gray palette, sharp alert eyes, agile poise, plain coarse garb, humble unrefined, front-facing chest-up composition, monochrome restrained ink wash on aged paper, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword, oil painting, vibrant colors, fantasy, anime, photograph --v 7
+
+jianghu_b
+chinese ink painting style portrait, quiet jianghu wanderer with reserved air, on a dusty central-plains escort road with sparse roadside trees, deep purple shadow palette, narrowed cold eyes, calm composure, plain coarse garb, humble unrefined, front-facing chest-up composition, monochrome restrained ink wash on aged paper, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword, oil painting, vibrant colors, fantasy, anime, photograph --v 7
+
+kibitzer_a
+chinese ink painting style portrait, tea-house onlooker with martial bearing, inside an old tea house with wooden rafters, slate gray palette, lean build, sharp alert eyes, plain coarse garb, humble unrefined, front-facing chest-up composition, monochrome restrained ink wash on aged paper, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword, oil painting, vibrant colors, fantasy, anime, photograph --v 7
+
+shaonian
+chinese ink painting style portrait, young martial-hall apprentice with eager bearing, in a blacksmith forge yard with smoke haze, slate gray palette, lean youthful build, bright alert eyes, plain coarse tunic, humble unrefined, front-facing chest-up composition, monochrome restrained ink wash on aged paper, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword, oil painting, vibrant colors, fantasy, anime, photograph --v 7
+
+swordtester_b
+chinese ink painting style portrait, itinerant lone cultivator with detached air, in a blacksmith forge yard with smoke haze, deep purple shadow palette, narrowed quiet eyes, calm composure, plain coarse traveling garb, humble unrefined, front-facing chest-up composition, monochrome restrained ink wash on aged paper, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword, oil painting, vibrant colors, fantasy, anime, photograph --v 7
+
+langren_b (差异化开头)
+chinese ink painting style portrait, cold-eyed brooding drill-ground drifter, at a martial training field with a wooden fence, deep purple shadow palette, narrowed cold eyes, calm imposing composure, coarse worn clothing, humble unrefined, front-facing chest-up composition, monochrome restrained ink wash on aged paper, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword, oil painting, vibrant colors, fantasy, anime, photograph --v 7
+
+killer_b (差异化开头)
+chinese ink painting style portrait, broad-shouldered brooding figure in dark clothing, in a narrow shadowed town alley at dusk, dark brown earthy palette, stoic grim face, sturdy build, coarse worn dark clothing, humble unrefined, front-facing chest-up composition, monochrome restrained ink wash on aged paper, --ar 1:1 --stylize 150 --no weapon, blade, sabre, dagger, sword, oil painting, vibrant colors, fantasy, anime, photograph --v 7
