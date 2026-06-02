@@ -74,3 +74,15 @@ A towering sheer cliff with a thundering waterfall plunging into churning mist, 
 压缩:pngquant --quality=80-94 + oxipng -o2(源 1456×816 与现有 7 图一致,无需 resize)。纹理重的(alley/bamboo/inn)偏大属正常,未二次有损避 banding。
 接线:11 stage sceneBackgroundPath 已改专属(见上表)。测试 battle_scene_wiring_test `_map` 同步更新 + 白名单改 `_map.values` 派生(单一真相源)。1667 测/0 analyze 全绿。
 **待 Codex 验 `battle_scene` 路由**:9 图叠 scrim 后观感 + banding + alley/bamboo 暗场/饱和复核。
+
+## Codex 验收用法(VISUAL_SCENE 抽样路由 · 2026-06-02 加)
+
+`battle_scene` 路由支持 `--dart-define=VISUAL_SCENE=<biome>` 抽样任意 biome 图(取 `assets/scenes/battle_<biome>.png`,缺图走 errorBuilder 兜底),未传默认 citywall。scenarioB 左队稳胜自动推进到金「胜」仪式,验背景 scrim 40% 叠加 + 题材对位 + banding。
+
+9 长尾逐张验:
+```
+for s in inn escortroad teahouse smithy alley temple desert bambooforest cliffwaterfall; do
+  flutter run -d macos --dart-define=VISUAL_ROUTE=battle_scene --dart-define=VISUAL_SCENE=$s
+done
+```
+重点:alley 暗场叠 scrim 是否过暗 / bamboo 是否偏绿 / 纹理重的 banding。
