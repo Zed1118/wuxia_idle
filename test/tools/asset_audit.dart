@@ -125,3 +125,16 @@ String buildReport(List<AssetRef> refs) {
   }
   return buf.toString();
 }
+
+const String allowlistPath = 'test/fixtures/known_missing_assets.txt';
+
+/// 读 allowlist(跳空行 + # 注释)。
+Set<String> loadAllowlist([String path = allowlistPath]) {
+  final f = File(path);
+  if (!f.existsSync()) return <String>{};
+  return f
+      .readAsLinesSync()
+      .map((l) => l.trim())
+      .where((l) => l.isNotEmpty && !l.startsWith('#'))
+      .toSet();
+}
