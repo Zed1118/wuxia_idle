@@ -283,7 +283,7 @@ class BattleCharacter {
       teamSide: teamSide,
       slotIndex: slotIndex,
       swordSongResonanceActive: swordSongActive,
-      iconPath: null,
+      iconPath: character.portraitPath,
     );
   }
 

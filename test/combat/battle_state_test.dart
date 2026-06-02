@@ -43,6 +43,56 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────
 
   group('BattleCharacter.fromCharacter 派生属性', () {
+    test('玩家方 iconPath 接线到 character.portraitPath（P0-2）', () {
+      final c = _mkChar(
+        tier: RealmTier.erLiu,
+        layer: RealmLayer.yuanShu,
+        internalForce: 3000,
+        school: TechniqueSchool.gangMeng,
+        constitution: 8,
+        agility: 6,
+      )..portraitPath = 'assets/characters/founder.png';
+      final tech = _mkTech(
+        defId: 'tech_gangmeng_mingjia',
+        tier: TechniqueTier.mingJiaGong,
+        school: TechniqueSchool.gangMeng,
+      );
+      final bc = BattleCharacter.fromCharacter(
+        character: c,
+        equipped: const [],
+        mainTechnique: tech,
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      expect(bc.iconPath, 'assets/characters/founder.png');
+    });
+
+    test('玩家无立绘 → iconPath null（兜底首字）', () {
+      final c = _mkChar(
+        tier: RealmTier.erLiu,
+        layer: RealmLayer.yuanShu,
+        internalForce: 3000,
+        school: TechniqueSchool.gangMeng,
+        constitution: 8,
+        agility: 6,
+      ); // portraitPath 默认 null
+      final tech = _mkTech(
+        defId: 'tech_gangmeng_mingjia',
+        tier: TechniqueTier.mingJiaGong,
+        school: TechniqueSchool.gangMeng,
+      );
+      final bc = BattleCharacter.fromCharacter(
+        character: c,
+        equipped: const [],
+        mainTechnique: tech,
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      expect(bc.iconPath, isNull);
+    });
+
     test('与 CharacterDerivedStats 直接调用结果一致（maxHp/speed/critRate/evRate）',
         () {
       final c = _mkChar(
