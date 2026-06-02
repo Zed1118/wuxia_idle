@@ -94,6 +94,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // **本地 state，不污染 BattleState**（spec §16.2 注：UI 状态属于 UI 层）。
   final Set<int> _disabledUltimateChars = {};
 
+  // 日志折叠抽屉开关（P0-2 Task6）：本地 UI state，不污染 BattleState。
+  bool _logOpen = false;
+
   // 战斗结算 dialog 已显示标志，避免 result 字段连续触发多次弹窗
   bool _resultDialogShown = false;
 
@@ -364,22 +367,18 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
               child: Column(
                 children: [
                   if (widget.hint != null) _HintBanner(hint: widget.hint!),
-                  _Header(state: state),
+                  _Header(
+                    state: state,
+                    onToggleLog: () =>
+                        setState(() => _logOpen = !_logOpen),
+                  ),
                   Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _LogSidebar(state: state),
-                        Expanded(
-                          child: _BattleField(
-                            state: state,
-                            attackControllers: _attackControllers,
-                            popups: _popups,
-                            animConfig: widget.animConfig,
-                            onPopupComplete: _removePopup,
-                          ),
-                        ),
-                      ],
+                    child: _BattleField(
+                      state: state,
+                      attackControllers: _attackControllers,
+                      popups: _popups,
+                      animConfig: widget.animConfig,
+                      onPopupComplete: _removePopup,
                     ),
                   ),
                   _BottomBar(
@@ -396,6 +395,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
           Positioned.fill(
             child: UltimateCaptionOverlay(key: _ultimateCaptionKey),
           ),
+          if (_logOpen)
+            _LogDrawer(
+              state: state,
+              onClose: () => setState(() => _logOpen = false),
+            ),
         ],
       ),
     );
@@ -426,7 +430,8 @@ class _HintBanner extends StatelessWidget {
 
 class _Header extends StatelessWidget {
   final BattleState state;
-  const _Header({required this.state});
+  final VoidCallback onToggleLog;
+  const _Header({required this.state, required this.onToggleLog});
 
   @override
   Widget build(BuildContext context) {
@@ -469,77 +474,116 @@ class _Header extends StatelessWidget {
               fontSize: 14,
             ),
           ),
+          const SizedBox(width: 8),
+          IconButton(
+            key: const ValueKey('battle_log_toggle'),
+            icon: const Icon(
+              Icons.list_alt,
+              color: WuxiaColors.textSecondary,
+              size: 20,
+            ),
+            tooltip: UiStrings.battleLog,
+            onPressed: onToggleLog,
+          ),
         ],
       ),
     );
   }
 }
 
-// ─── 日志侧栏 ──────────────────────────────────────────────────────────────
+// ─── 日志折叠抽屉（P0-2 Task6）─────────────────────────────────────────────
 
-class _LogSidebar extends StatelessWidget {
+/// 战斗日志抽屉：默认收起，点顶栏按钮命令式叠在最外层 Stack 右侧。
+/// 实时反馈靠单位飘字/弹道/受击，日志只做事后查阅，不抢第一视觉。
+class _LogDrawer extends StatelessWidget {
   final BattleState state;
-  const _LogSidebar({required this.state});
+  final VoidCallback onClose;
+  const _LogDrawer({required this.state, required this.onClose});
 
   @override
   Widget build(BuildContext context) {
-    final hasLog = state.actionLog.isNotEmpty;
-
-    return Container(
-      width: 220,
-      decoration: const BoxDecoration(
-        color: WuxiaColors.sidebar,
-        border: Border(right: BorderSide(color: WuxiaColors.border)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: const BoxDecoration(
-              color: WuxiaColors.panel,
-              border: Border(bottom: BorderSide(color: WuxiaColors.border)),
-            ),
-            child: const Text(
-              UiStrings.battleLog,
-              style: TextStyle(
-                color: WuxiaColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+    return Positioned.fill(
+      key: const ValueKey('battle_log_drawer'),
+      child: GestureDetector(
+        onTap: onClose,
+        child: ColoredBox(
+          color: const Color(0x99000000),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: GestureDetector(
+              onTap: () {}, // 抽屉内点击不关闭
+              child: Container(
+                width: 280,
+                color: WuxiaColors.sidebar.withValues(alpha: 0.96),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                      decoration: const BoxDecoration(
+                        color: WuxiaColors.panel,
+                        border: Border(
+                            bottom: BorderSide(color: WuxiaColors.border)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text(
+                            UiStrings.battleLog,
+                            style: TextStyle(
+                              color: WuxiaColors.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.close,
+                                color: WuxiaColors.textSecondary, size: 18),
+                            tooltip: UiStrings.close,
+                            onPressed: onClose,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: state.actionLog.isEmpty
+                          ? const Center(
+                              child: Text(
+                                UiStrings.emptyLog,
+                                style: TextStyle(
+                                  color: WuxiaColors.textMuted,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            )
+                          : ListView.separated(
+                              padding: const EdgeInsets.all(8),
+                              reverse: true,
+                              itemCount: state.actionLog.length,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(height: 4),
+                              itemBuilder: (_, idx) {
+                                final i =
+                                    state.actionLog.length - 1 - idx;
+                                final action = state.actionLog[i];
+                                return Text(
+                                  BattleLog.formatAction(action, state),
+                                  style: const TextStyle(
+                                    color: WuxiaColors.textSecondary,
+                                    fontSize: 12,
+                                    height: 1.4,
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          Expanded(
-            child: hasLog
-                ? ListView.separated(
-                    padding: const EdgeInsets.all(8),
-                    reverse: true,
-                    itemCount: state.actionLog.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 4),
-                    itemBuilder: (_, idx) {
-                      final i = state.actionLog.length - 1 - idx;
-                      final action = state.actionLog[i];
-                      return Text(
-                        BattleLog.formatAction(action, state),
-                        style: const TextStyle(
-                          color: WuxiaColors.textSecondary,
-                          fontSize: 12,
-                          height: 1.4,
-                        ),
-                      );
-                    },
-                  )
-                : const Center(
-                    child: Text(
-                      UiStrings.emptyLog,
-                      style: TextStyle(
-                        color: WuxiaColors.textMuted,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-          ),
-        ],
+        ),
       ),
     );
   }
