@@ -32,7 +32,14 @@ class VictoryOverlay extends StatelessWidget {
     final subtitle = _isVictory ? UiStrings.victorySubtitle : UiStrings.defeatSubtitle;
 
     return Container(
-      color: const Color(0xB3000000), // 暗幕 black 70%
+      // P0-2：径向 vignette 暗角，中心淡 → 四周暗，战场单位仍可读（不整屏压暗）。
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          radius: 0.9,
+          colors: [Color(0x33000000), Color(0xCC000000)],
+          stops: [0.45, 1.0],
+        ),
+      ),
       alignment: Alignment.center,
       child: Column(
         mainAxisSize: MainAxisSize.min,

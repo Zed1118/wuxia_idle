@@ -45,4 +45,18 @@ void main() {
     )));
     expect(find.text(UiStrings.defeatTitle), findsOneWidget);
   });
+
+  testWidgets('遮罩用径向渐变 vignette 而非整屏纯黑（P0-2 Task8）', (tester) async {
+    await tester.pumpWidget(_wrap(VictoryOverlay(
+      result: BattleResult.leftWin,
+      totalDamage: 1, critCount: 0, totalTicks: 1,
+      onContinue: () {},
+    )));
+    final deco = tester
+        .widgetList<Container>(find.byType(Container))
+        .map((c) => c.decoration)
+        .whereType<BoxDecoration>()
+        .firstWhere((d) => d.gradient is RadialGradient);
+    expect(deco.gradient, isA<RadialGradient>());
+  });
 }
