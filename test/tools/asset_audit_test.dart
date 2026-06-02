@@ -33,4 +33,12 @@ void main() {
     File('$_outputDir/asset_audit_missing.txt')
         .writeAsStringSync('${missingPaths(refs).join('\n')}\n');
   });
+
+  test('guard 1: 无 allowlist 外的缺图(防新增坏引用)', () {
+    final missing = missingPaths(collectAssetRefs()).toSet();
+    final allow = loadAllowlist();
+    final offenders = missing.difference(allow).toList()..sort();
+    expect(offenders, isEmpty,
+        reason: '以下引用指向缺图且不在 allowlist(新增坏引用?):\n${offenders.join('\n')}');
+  });
 }
