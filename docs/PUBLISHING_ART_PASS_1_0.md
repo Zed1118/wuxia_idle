@@ -1080,3 +1080,17 @@
 - **两线解耦**：代码先把「槽 + 接线」做好（带 errorBuilder 兜底），美术到位即填，互不阻塞（§19.3 既定）。
 - **升档**：Phase B/C 实装阶段升 **xhigh**（开工时确认）；P0 地基 + MJ prompt 在 opus high。
 - **测试纪律**：每视觉 PR 跑 `flutter test` + `flutter analyze`，沿 §18。
+
+### 20.6 执行计划 lock(2026-06-02 · 外部 UI 指导文件 reconcile + 用户拍板 B)
+
+外部「UI 差距指导文件」(存 `docs/handoff/wuxia_idle_ui_gap_guidance_2026-06-02.md` · 鬼谷八荒 Steam 1468810 作 UI 表达对标,只借表达不搬玩法/素材/修仙化)与本 §20 高度重合,reconcile 后锁定:
+
+**已完成(2026-06-02 · 不重复)**:① P0-1 资产门禁 ✅(`asset_audit` 双 guard) ② P0-4a 装备详情 cover→contain ✅(`baa6070`) ③ PortraitFrame 空框→首字水墨占位 ✅(`baa6070` · 覆盖指导 P0-3 缺立绘兜底) ④ 敌人图第一批 16/107 归位 ✅(`7c4b0be` · 缺图 152→136)。
+
+**P0(1.0 阻塞 · xhigh · 顺序 = 用户认可)**:P0-2 战斗单位可见化(battle_state iconPath 接线 + character_avatar 80→140-220px + battle_screen 布局重排/日志弱化/胜负遮罩不压暗) → P0-3 角色面板身份区重排 → P0-4b 仓库格子化(部位分组 + 阶位边框)。
+
+**P1(1.0 期望)**:P1-3 心法三系可视化(+skillUsage 处理) · P1-2 成长仪式页扩展 · P1-4 其余菜单入口配图 · **主线路线图(世界层唯一进 P1 · 用户拍板 B)**。
+
+**P2(世界层 · 做完 P1 接着推 · 用户拍板 B)**:爬塔塔身图 + 闭关山水图(主线路线图已提 P1)。触发:P0+P1 完 + 美术腾手 + beta 反馈确需。
+
+**美术线(Phase D 瓶颈)**:敌人图 91 余(阶梯续批) + 装备 detail 45 + P0-2 急需 battle 立绘/角色大立绘 + 成长仪式器物图 + P2 塔身/山水。
