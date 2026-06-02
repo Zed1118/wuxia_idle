@@ -24,7 +24,7 @@ class CharacterAvatar extends StatelessWidget {
   const CharacterAvatar({
     super.key,
     required this.character,
-    this.avatarSize = 150,
+    this.avatarSize = 110,
     this.barWidth = 160,
   });
 

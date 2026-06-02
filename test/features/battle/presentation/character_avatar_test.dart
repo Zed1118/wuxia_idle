@@ -63,10 +63,10 @@ void main() {
     expect(b.top.width, 6.0);
   });
 
-  testWidgets('默认 avatarSize=150（P0-2 放大）', (tester) async {
+  testWidgets('默认 avatarSize=110（P0-2 放大·适配 720p）', (tester) async {
     await pump(tester, _char(isBoss: false));
     final av = tester.widget<CharacterAvatar>(find.byType(CharacterAvatar));
-    expect(av.avatarSize, 150);
+    expect(av.avatarSize, 110);
   });
 
   testWidgets('死亡单位叠 grayscale ColorFiltered（P0-2）', (tester) async {
