@@ -97,13 +97,19 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
           target = const ChapterListScreen();
 
         case VisualRoute.battleScene:
-          // 真实可自动播放的克制场景(scenarioB:左队稳胜)→ 自动推进到 leftWin →
-          // VictoryOverlay 金「胜」仪式。背景用 citywall 验 scrim + 背景对位。
-          target = const ScenarioLauncher(
-            teamsFactory: BattleScenarioData.scenarioB,
-            hint: '出版美术验收·战斗屏背景 scrim + 胜负仪式',
-            sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
-          );
+          {
+            // `--dart-define=VISUAL_SCENE=inn` 抽样任意 biome 战斗背景
+            // (取 assets/scenes/battle_<name>.png · 缺图走 errorBuilder 兜底)。
+            // 未传默认 citywall。scenarioB 左队稳胜自动推进到 leftWin → 金「胜」仪式,
+            // 验背景 scrim 叠加 + 题材对位 + banding。
+            const envScene = String.fromEnvironment('VISUAL_SCENE');
+            final sceneName = envScene.isEmpty ? 'citywall' : envScene;
+            target = ScenarioLauncher(
+              teamsFactory: BattleScenarioData.scenarioB,
+              hint: '出版美术验收·战斗屏背景 scrim + 胜负仪式 ($sceneName)',
+              sceneBackgroundPath: 'assets/scenes/battle_$sceneName.png',
+            );
+          }
 
         case VisualRoute.battleUltimateCaption:
           target = const _UltimateCaptionPreview();
