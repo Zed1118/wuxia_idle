@@ -986,7 +986,7 @@
 
 ### 19.2 不卡美术、现在就能做的工程项
 
-1. **窗口最小尺寸 ✅**(2026-06-02 `3db46b2`)：`win32_window.cpp` MessageHandler 加 `WM_GETMINMAXINFO` 设 `ptMinTrackSize`=1280×720(DPI 缩放)防缩窗布局崩（§12.9）· 待 Windows 实机验证。
+1. **窗口最小尺寸 ✅**(2026-06-02 `3db46b2`)：`win32_window.cpp` MessageHandler 加 `WM_GETMINMAXINFO` 设 `ptMinTrackSize`=1280×720(DPI 缩放)防缩窗布局崩（§12.9）· **Pen 实机验收 3/3 PASS**(2026-06-02 · 拖窗锁 1280×720 / 锁定点无 overflow / 默认窗口正常 · blob 校验 native runner 逐字节 == 72366d6 发布版)。
 2. **抽 `Wuxia*` 组件骨架**：把现有 inline 样式收敛成可复用 widget（行为不变 + 测锚），为 Phase C 批量替换铺路。
 3. **资产路径字段**：给 stages.yaml / 章节 / techniques 加 background/cover 字段 + loader + errorBuilder 兜底（先空着，出图到位即填）。
 
