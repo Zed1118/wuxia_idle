@@ -116,21 +116,18 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
           );
 
         case VisualRoute.narrativeScene:
-          target = NarrativeReaderScreen(
-            content: const NarrativeContent(
-              id: 'visual_narrative',
-              title: '风雨渡口',
-              paragraphs: [
-                '雨脚如麻,渡口的灯笼在风里摇得不成样子。你立在栈桥尽头,'
-                    '看那撑伞的人一步一停,伞沿压得极低,看不清脸。\n\n'
-                    '江水拍着木桩,一下,又一下。你握紧了腰间的剑——'
-                    '这一程的恩怨,该在今夜了结了。',
-              ],
-              isPlaceholder: false,
-            ),
-            fallbackTitle: '风雨渡口',
-            backgroundImagePath: stageNarrativePath('stage_01_05'),
-          );
+          {
+            // `--dart-define=VISUAL_STAGE=stage_04_03` 抽样任意主线关卡;
+            // 未传默认 stage_01_05(风雨渡口)。加载真实开场正文压在对应背景图上。
+            const envStage = String.fromEnvironment('VISUAL_STAGE');
+            final stageId = envStage.isEmpty ? 'stage_01_05' : envStage;
+            final opening = await NarrativeLoader.load('${stageId}_opening');
+            target = NarrativeReaderScreen(
+              content: opening,
+              fallbackTitle: stageId,
+              backgroundImagePath: stageNarrativePath(stageId),
+            );
+          }
       }
 
       // 3. 挂载目标屏
