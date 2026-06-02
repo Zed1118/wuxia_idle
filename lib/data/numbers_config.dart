@@ -1291,6 +1291,8 @@ class AnimationNumbers {
   final double shakeOffsetPx;
   final int shakeDurationMs;
   final double criticalFontScale;
+  final int projectileMs;
+  final int hitFlashMs;
 
   const AnimationNumbers({
     required this.attackRushMs,
@@ -1304,6 +1306,8 @@ class AnimationNumbers {
     required this.shakeOffsetPx,
     required this.shakeDurationMs,
     required this.criticalFontScale,
+    required this.projectileMs,
+    required this.hitFlashMs,
   });
 
   /// 默认值与 numbers.yaml 保持一致，用于测试或无法加载 yaml 的场景。
@@ -1319,6 +1323,8 @@ class AnimationNumbers {
     shakeOffsetPx: 3.0,
     shakeDurationMs: 100,
     criticalFontScale: 1.5,
+    projectileMs: 260,
+    hitFlashMs: 150,
   );
 
   int get attackTotalMs => attackRushMs + attackHoldMs + attackRetreatMs;
@@ -1336,6 +1342,8 @@ class AnimationNumbers {
       shakeOffsetPx: (y['shake_offset_px'] as num).toDouble(),
       shakeDurationMs: (y['shake_duration_ms'] as num).toInt(),
       criticalFontScale: (y['critical_font_scale'] as num).toDouble(),
+      projectileMs: (y['projectile_ms'] as num?)?.toInt() ?? 260,
+      hitFlashMs: (y['hit_flash_ms'] as num?)?.toInt() ?? 150,
     );
   }
 }

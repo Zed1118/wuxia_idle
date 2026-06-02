@@ -29,6 +29,8 @@ const _testAnim = AnimationNumbers(
   shakeOffsetPx: 1.0,
   shakeDurationMs: 50,
   criticalFontScale: 1.5,
+  projectileMs: 30,
+  hitFlashMs: 30,
 );
 
 const _normalResult = AttackResult(
