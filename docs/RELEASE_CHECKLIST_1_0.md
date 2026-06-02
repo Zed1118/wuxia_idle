@@ -135,10 +135,10 @@
 - [x] **数值再平衡首批 ✅**(根因A 挂机循环重平衡 B1+B2+B3 · 红线值统一 numbers.yaml 单源 · idle_economy 72h 经济曲线验证带 drift 雷达 · **B2 低 tier 挂机 EXP 回 ×1.0**(用户拍 B · 山林满挂 16→12 层不碾压 Ch1))
 - [x] **D 段主线难度曲线收尾 ✅**(2026-05-29 · balance_simulator 真 build + floor/ceiling bracket + on-level 基线诊断):**过难关清零** —— `stage_01_05` Ch1 Boss +2 阶硬墙修(erLiu→xueTu at-tier 体例 · ceiling 0%→100% · `781c85b`)+ `stage_05_05` Ch5 Boss 跨阶过苛缓(HP×0.88/atk×0.93 · ceiling 30%→76% · 守住 R5 跨阶威慑红线 · `24cea80`)· 过易 11 关诊断为章首杂兵教学关 by design 不动 · 全 6 章末 Boss ceiling 76-100% / floor 0-10% 健康
 - [ ] 30-35 关全玩家路径数值再平衡终调(主线难度曲线已收尾 ✅ · 全路径终调待 closed beta 数据)
-- [ ] 长时间运行 8h+ 无 crash(挂机典型场景)
-- [ ] 内存增长稳定(无 leak 锚点)
+- [ ] 长时间运行 8h+ 无 crash(挂机典型场景)— 逻辑层已验 ✅(无后台 tick·挂机=时间差一次性结算 + 资源全 dispose + 极端时长 capHours/clamp 双防线 · stress_test 2026-06-02);真机长跑留实测
+- [ ] 内存增长稳定(无 leak 锚点)— 逻辑层已验 ✅(GameEvent 显示路径 index+limit 有界 + 资源 dispose · stress_test 2026-06-02);真机 DevTools 曲线留实测
 - [ ] FPS 主菜单 / 战斗 / 闭关 平均 ≥ 60(Steam 用户机器最低配)
-- [ ] Isar IO 无 ANR(大背包 / 多 character 场景)
+- [x] Isar IO 无 ANR ✅(零同步 IO 亲验 `getSync/putSync` 全空 · stress 计时 10000 写 53ms / feed 815µs · 全异步无主线程阻塞 · 2026-06-02)
 - [ ] P5.4b closed beta ~10 人外部反馈(Google 表单结构化:难度评分 / 数值 bug / 流程卡点 / 通关时长)
 
 ## E. 音频(P5.3 · 留 M15-16)
