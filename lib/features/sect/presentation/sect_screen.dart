@@ -467,6 +467,7 @@ class _MemberRow extends ConsumerWidget {
             borderColor: member.school == null
                 ? WuxiaColors.border
                 : WuxiaColors.schoolColor(member.school!),
+            placeholderText: member.name,
           ),
           const SizedBox(width: 12),
           Expanded(

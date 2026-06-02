@@ -485,5 +485,19 @@ void main() {
       expect(b.top, BorderSide.none, reason: '普通装备无顶边');
       expect(b.bottom.width, 2, reason: '普通装备仅底边 width2');
     });
+
+    // P0 #3(§5.4):详情大图从 BoxFit.cover → contain,细长兵器完整展示不裁切。
+    testWidgets('详情大图用 BoxFit.contain(不裁切细长兵器)', (tester) async {
+      final def = GameRepository.instance
+          .getEquipment('weapon_shenwu_tian_wen_jian');
+      await pumpDetail(tester, def);
+
+      final img = tester.widget<Image>(find.byWidgetPredicate((w) =>
+          w is Image &&
+          w.image is AssetImage &&
+          (w.image as AssetImage).assetName == def.detailPath));
+      expect(img.fit, BoxFit.contain,
+          reason: '细长兵器需完整展示,不能 cover 裁切');
+    });
   });
 }

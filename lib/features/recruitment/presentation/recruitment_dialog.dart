@@ -270,6 +270,7 @@ class _CandidateCard extends StatelessWidget {
                 portraitPath: candidate.portraitPath,
                 size: 96,
                 borderColor: schoolColor,
+                placeholderText: candidate.name,
               ),
               const SizedBox(width: 12),
               Expanded(
