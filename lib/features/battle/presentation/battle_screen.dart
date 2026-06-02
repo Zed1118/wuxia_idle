@@ -18,6 +18,8 @@ import 'attack_animation.dart';
 import 'battle_scene_background.dart';
 import 'character_avatar.dart';
 import 'damage_popup.dart';
+import 'hit_flash.dart';
+import 'projectile_trail.dart';
 import 'ultimate_caption_overlay.dart';
 import 'victory_overlay.dart';
 
@@ -26,6 +28,26 @@ class _PopupEntry {
   final int id;
   final DamagePopupData data;
   const _PopupEntry({required this.id, required this.data});
+}
+
+/// 单条弹道（攻击者→目标的笔触线，命令式 spawn，纯表现层）。
+/// 坐标用战场比例（0..1），由 [_ProjectileLayer] 在 LayoutBuilder 内解析为像素。
+class _TrailEntry {
+  final int id;
+  final AnimationController ctrl;
+  final Offset startFrac;
+  final Offset endFrac;
+  final Color color;
+  final double strokeWidth;
+  bool disposed = false;
+  _TrailEntry({
+    required this.id,
+    required this.ctrl,
+    required this.startFrac,
+    required this.endFrac,
+    required this.color,
+    required this.strokeWidth,
+  });
 }
 
 /// 3v3 战斗主屏（phase1_tasks T14 静态布局 + T15 动画/飘字 + T16 Riverpod 串接）。
@@ -82,6 +104,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // 屏震 controller（暴击时触发）
   late final AnimationController _shakeCtrl;
 
+  // 6 个受击闪 controller（slotKey 索引；静止 value=1.0 → 不显，命中 forward(from:0) 淡出）。
+  late final List<AnimationController> _hitFlashControllers;
+  // 受击闪颜色（slotKey→暴击绛红/普攻白），spawn 时写入，纯 UI state。
+  final Map<int, Color> _hitFlashColors = {};
+
+  // 活跃弹道（命令式 spawn，完成后移除）。本地 state，不污染 BattleState。
+  final List<_TrailEntry> _activeTrails = [];
+  int _nextTrailId = 0;
+
   // 飘字状态：slotKey → 活跃飘字列表
   final Map<int, List<_PopupEntry>> _popups = {};
   int _nextPopupId = 0;
@@ -120,6 +151,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       vsync: this,
       duration: Duration(milliseconds: widget.animConfig.shakeDurationMs),
     );
+    _hitFlashControllers = List.generate(
+      6,
+      (_) => AnimationController(
+        vsync: this,
+        value: 1.0, // 静止满值 → HitFlash alpha=0 不显
+        duration: Duration(milliseconds: widget.animConfig.hitFlashMs),
+      ),
+    );
     // Timer 不在 initState 启动，等 ref.listen 看到 startBattle 完成后再启动。
   }
 
@@ -128,6 +167,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     _playTimer?.cancel();
     for (final c in _attackControllers) {
       c.dispose();
+    }
+    for (final c in _hitFlashControllers) {
+      c.dispose();
+    }
+    for (final e in _activeTrails) {
+      if (!e.disposed) e.ctrl.dispose();
     }
     _shakeCtrl.dispose();
     super.dispose();
@@ -163,12 +208,59 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       final target = _findCharacter(action.targetId!, s);
       if (target != null) {
         _spawnPopup(target, action.attackResult!, actor);
+        if (actor != null) _spawnTrail(actor, target, action);
+        if (!action.attackResult!.isDodged) {
+          _triggerHitFlash(target, action.attackResult!.isCritical);
+        }
       }
     }
     if (isUltimateCaptionSkill(action.skill)) {
       _ultimateCaptionKey.currentState
           ?.show(action.skill!.name, isEnemy: actor?.teamSide == 1);
     }
+  }
+
+  /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
+  void _triggerHitFlash(BattleCharacter target, bool isCritical) {
+    final key = _slotKey(target.teamSide, target.slotIndex);
+    setState(() {
+      _hitFlashColors[key] = isCritical ? WuxiaColors.gangMeng : Colors.white;
+    });
+    _hitFlashControllers[key].forward(from: 0.0);
+  }
+
+  /// 弹道：攻击者 slot → 目标 slot 的笔触线（流派色；大招更粗）。命令式 spawn。
+  void _spawnTrail(
+    BattleCharacter actor,
+    BattleCharacter target,
+    BattleAction action,
+  ) {
+    final ctrl = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: widget.animConfig.projectileMs),
+    );
+    final entry = _TrailEntry(
+      id: _nextTrailId++,
+      ctrl: ctrl,
+      startFrac: _slotFrac(actor.teamSide, actor.slotIndex),
+      endFrac: _slotFrac(target.teamSide, target.slotIndex),
+      color: WuxiaColors.schoolColor(actor.school),
+      strokeWidth: isUltimateCaptionSkill(action.skill) ? 5.0 : 3.0,
+    );
+    ctrl.addStatusListener((status) {
+      if (status == AnimationStatus.completed && !entry.disposed) {
+        entry.disposed = true;
+        if (mounted) {
+          setState(() => _activeTrails.remove(entry));
+        } else {
+          _activeTrails.remove(entry);
+        }
+        // 推迟到当帧末释放，等 AnimatedBuilder 解除监听后再 dispose。
+        WidgetsBinding.instance.addPostFrameCallback((_) => ctrl.dispose());
+      }
+    });
+    setState(() => _activeTrails.add(entry));
+    ctrl.forward(from: 0.0);
   }
 
   void _spawnPopup(
@@ -288,6 +380,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   static int _slotKey(int teamSide, int slotIndex) => teamSide * 3 + slotIndex;
 
+  /// 战场比例坐标（0..1）：左队 x=0.12 / 右队 x=0.88；三行 y=1/6,3/6,5/6。
+  /// 弹道层在 LayoutBuilder 内解析为像素，避免依赖 RenderBox（widget test 稳定）。
+  static Offset _slotFrac(int teamSide, int slotIndex) {
+    final x = teamSide == 0 ? 0.12 : 0.88;
+    final y = (slotIndex + 0.5) / 3.0;
+    return Offset(x, y);
+  }
+
   BattleCharacter? _findCharacter(int characterId, BattleState s) {
     for (final c in s.leftTeam) {
       if (c.characterId == characterId) return c;
@@ -373,12 +473,23 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                         setState(() => _logOpen = !_logOpen),
                   ),
                   Expanded(
-                    child: _BattleField(
-                      state: state,
-                      attackControllers: _attackControllers,
-                      popups: _popups,
-                      animConfig: widget.animConfig,
-                      onPopupComplete: _removePopup,
+                    child: Stack(
+                      children: [
+                        _BattleField(
+                          state: state,
+                          attackControllers: _attackControllers,
+                          popups: _popups,
+                          animConfig: widget.animConfig,
+                          onPopupComplete: _removePopup,
+                          hitFlashControllers: _hitFlashControllers,
+                          hitFlashColors: _hitFlashColors,
+                        ),
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: _ProjectileLayer(trails: _activeTrails),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   _BottomBar(
@@ -597,6 +708,8 @@ class _BattleField extends StatelessWidget {
   final Map<int, List<_PopupEntry>> popups;
   final AnimationNumbers animConfig;
   final void Function(int slotKey, int popupId) onPopupComplete;
+  final List<AnimationController> hitFlashControllers;
+  final Map<int, Color> hitFlashColors;
 
   const _BattleField({
     required this.state,
@@ -604,6 +717,8 @@ class _BattleField extends StatelessWidget {
     required this.popups,
     required this.animConfig,
     required this.onPopupComplete,
+    required this.hitFlashControllers,
+    required this.hitFlashColors,
   });
 
   @override
@@ -622,6 +737,8 @@ class _BattleField extends StatelessWidget {
               popups: popups,
               animConfig: animConfig,
               onPopupComplete: onPopupComplete,
+              hitFlashControllers: hitFlashControllers,
+              hitFlashColors: hitFlashColors,
             ),
           ),
           const SizedBox(width: 24),
@@ -634,6 +751,8 @@ class _BattleField extends StatelessWidget {
               popups: popups,
               animConfig: animConfig,
               onPopupComplete: onPopupComplete,
+              hitFlashControllers: hitFlashControllers,
+              hitFlashColors: hitFlashColors,
             ),
           ),
         ],
@@ -650,6 +769,8 @@ class _TeamColumn extends StatelessWidget {
   final Map<int, List<_PopupEntry>> popups;
   final AnimationNumbers animConfig;
   final void Function(int slotKey, int popupId) onPopupComplete;
+  final List<AnimationController> hitFlashControllers;
+  final Map<int, Color> hitFlashColors;
 
   const _TeamColumn({
     required this.team,
@@ -659,6 +780,8 @@ class _TeamColumn extends StatelessWidget {
     required this.popups,
     required this.animConfig,
     required this.onPopupComplete,
+    required this.hitFlashControllers,
+    required this.hitFlashColors,
   });
 
   @override
@@ -678,6 +801,8 @@ class _TeamColumn extends StatelessWidget {
               animConfig: animConfig,
               slotKey: teamSide * 3 + i,
               onPopupComplete: onPopupComplete,
+              hitFlashController: hitFlashControllers[teamSide * 3 + i],
+              flashColor: hitFlashColors[teamSide * 3 + i] ?? Colors.white,
             )
           else
             const SizedBox(width: 160, height: 80),
@@ -695,6 +820,8 @@ class _CharacterSlot extends StatelessWidget {
   final AnimationNumbers animConfig;
   final int slotKey;
   final void Function(int slotKey, int popupId) onPopupComplete;
+  final AnimationController hitFlashController;
+  final Color flashColor;
 
   const _CharacterSlot({
     required this.character,
@@ -704,6 +831,8 @@ class _CharacterSlot extends StatelessWidget {
     required this.animConfig,
     required this.slotKey,
     required this.onPopupComplete,
+    required this.hitFlashController,
+    required this.flashColor,
   });
 
   @override
@@ -715,7 +844,11 @@ class _CharacterSlot extends StatelessWidget {
           animation: attackController,
           isLeftTeam: isLeftTeam,
           config: animConfig,
-          child: CharacterAvatar(character: character),
+          child: HitFlash(
+            animation: hitFlashController,
+            color: flashColor,
+            child: CharacterAvatar(character: character),
+          ),
         ),
         for (var i = 0; i < slotPopups.length; i++)
           _buildPopupPositioned(
@@ -886,6 +1019,39 @@ class _FastForwardButton extends StatelessWidget {
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
+    );
+  }
+}
+
+// ─── 弹道层（P0-2 Task7）────────────────────────────────────────────────────
+
+/// 把活跃弹道的战场比例坐标解析为像素并渲染（叠在 _BattleField 上方）。
+/// 纯表现层：只读 [_TrailEntry] 几何，由 AnimationController 驱动。
+class _ProjectileLayer extends StatelessWidget {
+  final List<_TrailEntry> trails;
+  const _ProjectileLayer({required this.trails});
+
+  @override
+  Widget build(BuildContext context) {
+    if (trails.isEmpty) return const SizedBox.shrink();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
+        return Stack(
+          children: [
+            for (final t in trails)
+              ProjectileTrail(
+                key: ValueKey(t.id),
+                animation: t.ctrl,
+                color: t.color,
+                strokeWidth: t.strokeWidth,
+                start: Offset(t.startFrac.dx * w, t.startFrac.dy * h),
+                end: Offset(t.endFrac.dx * w, t.endFrac.dy * h),
+              ),
+          ],
+        );
+      },
     );
   }
 }
