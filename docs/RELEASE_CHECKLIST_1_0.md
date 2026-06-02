@@ -7,13 +7,13 @@
 
 ## TL;DR
 
-**当前 release readiness:~98%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **主线白屏 🔴 证伪消除** · **1602 测 / 1 skip / 0 analyze** · stage_05_05 跨阶墙 sim 复核销账 2026-05-31)
+**当前 release readiness:~99%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **出版美术 pass 整体全闭环**〔战斗屏 A+B1+B2 + 剧情屏 + 战斗场景 16 biome + §12 上线门 11/12,唯音频缺〕· **1667 测 / 1 skip / 0 analyze** · stage_05_05 跨阶墙 sim 复核销账 2026-05-31)
 
 **2026-05-29 方向调整 + D/H 首批落地**:用户拍板「先把游戏打磨完成,再启 Steam 上架」→ **F + G 段搁置**(留 ship 前 1-2 月)+ **聚焦 D + H 新增 + E 部分**(E1 SoundManager + E5 BGM 1 套)。1.0 路径 ≠ 全 D/E/F/G 串行,而是「游戏打磨完成度」优先。**当日 H/D 首批已落**:H 中期/后期/卡点三审计全完 + H 接线 polish 5 项 + 外部 review 5 项硬化(P1-a 三系锁死 auto_swap / P2-c 公式单源 / P2-a/b 健壮性 / P3 文档 drift)+ 根因A 挂机循环重平衡(B1+B2+B3)+ idle_economy 经济曲线验证 + 红线值统一 numbers.yaml(单一真相源)。
 
 | 段 | 完成度 | 阻塞? | 当前优先级 |
 |---|---|---|---|
-| A 代码质量 | ✅ 100% | — | 维持(1581 测) |
+| A 代码质量 | ✅ 100% | — | 维持(1667 测) |
 | B 系统完整性(6 系统) | ✅ 100% | — | 维持 |
 | C 视觉验收 | ✅ 100% C.1 8/8 + C.2 4/4 + C.3 10/10 + C.4 12/12 + **C.5 H1 批3 5/5 + 白屏证伪 ✅** | — | 全收口(神物金 drop + 凝练 50 点态 + §9 新色 ✅ 2026-05-30 Pen+Codex+Mac 3/3 PASS) |
 | **D 性能 + 数值再平衡(P5.2)** | 🔄 ~20%(数值再平衡首批 ✅:根因A + 红线统一 + idle_economy 验证 · 性能/closed beta 留 M15-16) | M15-16 | **🎯 主聚焦** |
@@ -21,6 +21,7 @@
 | **H 内容打磨 + UX**(新增) | 🔄 ~65%(中期/后期/卡点 3 审计 + 接线 polish 5 项 + **H1 上手 audit 全闭环 ✅** · UX 微调 / 文案终 polish 续) | M15-16 | **🎯 主聚焦** |
 | ~~F Steam 集成(P5.4)~~ | ⏸️ 搁置 | ship 前 1-2 月 | F1 guide 已起草 `docs/handoff/m15_f1_*` 待启 |
 | ~~G 法律商业~~ | ⏸️ 搁置 | ship 前 1-2 月 | 与 F 同步启动 |
+| **H′ 出版美术(Presentation Pass)** | ✅ ~95%(战斗屏 A+B1+B2 + 剧情屏 + 战斗场景 16 biome 全闭环 · §12 上线门 11/12) | — | 唯音频(§12 #10)留 E 段 |
 
 ## A. 代码质量(本机可验 · ✅ 全过)
 
@@ -188,12 +189,12 @@
 
 > 详细规划见 `docs/PUBLISHING_ART_PASS_1_0.md`(从系统测试版画面 → 出版级游戏画面)。本段是上线门指针,12 条发布级验收标准以该文档 §12 为准,不在此重复。
 
-- [ ] **Phase A 视觉垂直切片**(主菜单 + 战斗屏 + 章节/角色装备/心法 5 屏放一起像同一个游戏)
-- [ ] **Phase B 战斗专项**(背景/头像/Boss 强化/普攻+大招回放反馈/伤害浮字/胜负仪式 · 录 30s 不像数值模拟器)
-- [ ] **Phase C 系统页统一**(宣纸/墨框/印章/按钮/阶位视觉一致)
-- [ ] **Phase D 素材补齐**(Boss 立绘/战斗背景/章节封面/心法卷轴/装备 detail · 优先截图影响项)
-- [ ] **Phase E 音频 + 最终截图包**(= 本 checklist E 段 · 合并口径不重复记 · 1920×1080 / 1280×720 双分辨率)
-- [ ] **发布级验收 12 项**(§12:主菜单可作 Steam 商店图 / 旁人不看说明能判断武侠游戏 / release 无 debug-Phase-seed / 等)
+- [x] **Phase A 视觉垂直切片 ✅**(主菜单水墨山门 + 战斗屏 + 章节/角色档案化/心法面板 5 屏 Codex 多门 PASS · 同一游戏观感)
+- [x] **Phase B 战斗专项 ✅**(战斗背景按 biome 接线 + scrim + Boss 头像金边 + 大招题字 overlay + 胜负仪式全屏 overlay · B1 `d8ef483` + B2)
+- [x] **Phase C 系统页统一 ✅**(出版美术各屏宣纸/墨框/题字体例统一 · Border 异构经审计否决过度抽象)
+- [~] **Phase D 素材补齐**(战斗背景 16 biome ✅ + 章节封面 6 章 ✅ + 剧情背景 30 图 ✅ + sect/recruit 立绘 ✅ · Boss 立绘/装备 detail 45/80 长尾留 M15-16)
+- [ ] **Phase E 音频 + 最终截图包**(= 本 checklist E 段 · 合并口径不重复记 · 音频留 M15-16)
+- [x] **发布级验收 12 项 → 11/12 达成 ✅**(§12:1-9+11-12 Codex 多轮 PASS · release 无 debug 走 kDebugMode 编译切除 · 唯 #10 音频最小闭环留 E 段)
 
 ## I. 1.0 已 OUT 项(留 2.0)
 
@@ -209,6 +210,7 @@
 
 ## 修订记录
 
+- **v1.13**(2026-06-02)出版美术 pass 全闭环状态对齐(B1 audit 驱动 · 0 代码改动纯 doc):**头号修 doc drift** —— 出版美术整个 Phase(2026-05-31→06-02 · 战斗屏 A+B1+B2 + 剧情屏 narrative_scene + 战斗场景 16 biome 全闭环 · Codex 多门 PASS)此前 H′ 段全 [ ] 标 0% → 按真实勾(Phase A/B/C ✅ + D 部分 + 发布级验收 11/12)。**对齐**:TL;DR readiness ~98%→**~99%** + 测数 1602→**1667**(出版美术批 +65);段表 A 行 1581→1667 + 加 H′ 出版美术行(~95%);§12 上线门 12 项核对 **11/12 达成**(唯 #10 音频留 E 段 · release 无 debug 实测 `main_menu.dart:320` kDebugMode 编译切除)。**真缺口盘点**:Mac 端 ship 前硬工程仅剩窗口 `SetMinimumSize`(`main.cpp:29` 无 min 约束 · §12.9),其余 ~1% 全卡外部/M15-16(D 性能 8h/FPS/Isar ANR + closed beta ~10 人 + E 音频 + F Steam + G 法律)。**verify**:HEAD `982f603` flutter analyze 0 / 1667 测实测绿(本 audit 实跑),0 代码改动。
 - **v1.12**(2026-05-30)白屏证伪 + H1 上手 audit 全闭环 + §9 水墨 polish 重估:本会话 2026-05-30 三项进展纳入(均原未入 CHECKLIST)——① 主线白屏 🔴 证伪消除(clean+dirty seed 不复现 + 日志零 exception + B6 加固 → 非真 runtime bug,0 P0/P1 阻塞从乐观判断变证伪确认,**不增完成度 % 但摘风险悬顶**);② **H 段头号 [ ] 上手 30min 体验 audit 全闭环 ✅**(H1 批1 门控 §5.7 + 批2 装备穿戴入口修核心循环断裂 + 批3 掉落仪式感 + picker 移装标注 · Pen Codex 5/5 PASS)→ H 段 ~50%→**~65%**;③ §9 dialog 按钮水墨分层调色(8 金 + dispel 绛红)。**对齐**:TL;DR readiness ~97%→**~98%** + 测数 1552→**1581**(+29 · overnight 安全清理 5 批 + H1 修复批);段表 A 测数 / C 加 C.5(H1 批3 5/5 + 白屏证伪)/ H ~50%→~65%;A 段测数;C 段加 C.5 段(5/5 PASS + 3 分支待 Pen 续验);H 段上手 audit 勾 + UX 微调行加 §9 水墨。**重估关键判断**:Mac 端「ship 前必做」近见底,剩 ~2% 全卡外部/M15-16(D 性能验证 8h/FPS/Isar ANR + closed beta ~10 人 + E 音频);Mac 当下可立即推进仅剩 H 段尾巴(文案终 polish / UX 微调)+ 决策第三层 #4 清理。**verify**:HEAD `8115a13` 0 代码改动(纯 doc 状态对齐),1581 测同 HEAD 上会话 worktree subagent 实跑核验。
 - **v1.11**(2026-05-29 晚)B2 低 tier 挂机 EXP finding 修(用户拍 B 方向):finding 纠正——主线按 `clearedStageIds`(打通前关)解锁,境界不 gate,挂机练级 ≠ 跳过 Ch1-2 内容,真实影响是挂机优先的玩家早期战斗碾压(学徒挂二流回头打 Ch1 差 2 阶)。修:山林/古剑冢/藏经阁(学徒/三流图)`experience_per_hour` 回 ×1.0(原值 100/80/90,撤销根因A ×2.5),山林满挂 72h 16→**12 层**(落点三流,对 Ch1 差 1 阶不碾压);erLiu+(悬崖瀑布/断崖绝壁)保 ×2.5(根因A 中期喂成长初衷保留)。`idle_economy_test` 加 B2-c 语义回归守(学徒图满挂落点境界 < 二流)+ `seclusion_service_test` 6 测同步新值(山林 4h EXP 1000→400 · 升层 6→3 层至 jingTong)。**verify**:`flutter analyze` 0 + `flutter test` 1552 pass / 1 skip。readiness ~97% 维持(D 段内 polish)。
 - **v1.10**(2026-05-29 晚)D/H 首批落地状态对齐:CHECKLIST v1.9 起草后当日又落 10 批(H1-Q1 小套餐 + H2 中期 audit + H2 接线 polish 5 项 + H3 后期 audit + A2 🔴 修 + 外部 review P1-a/P2-a/b/c/P3 5 项 + 根因A 挂机循环重平衡 B1+B2+B3 + idle_economy 验证 + 红线值统一 numbers.yaml)。**对齐**:TL;DR 测数 1519→**1552**(1 skip)/ 测文件 139→**144** / readiness ~96%→**~97%** + 当日批次摘要;段表 D **0%→🔄~20%**(数值再平衡首批)/ H **0%→🔄~50%**(3 审计 + 接线 polish 5 项);A 段测数同步;B 段加附加段(外部 review 硬化 8 条);D 段重命名「性能稳定 + 数值再平衡」+ 数值再平衡首批勾;H 段中期/后期/卡点 3 审计勾 + 上手/UX/文案 续。**复核 verify**:`flutter analyze` 0 + `flutter test` 1552 pass / 1 skip(同 HEAD `fdaa2b2` 实跑核验,非照抄)。无代码改动,仅 doc 状态对齐。
