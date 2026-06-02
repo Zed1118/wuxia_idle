@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/colors.dart';
+import 'asset_fallback.dart';
 
 /// 统一立绘框(sect 成员行 / 招募 dialog / debug 列表共用 · DRY)。
 ///
@@ -32,8 +33,8 @@ class PortraitFrame extends StatelessWidget {
           : Image.asset(
               portraitPath!,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) =>
-                  Container(color: WuxiaColors.avatarFill),
+              errorBuilder: wuxiaAssetErrorBuilder(
+                  () => Container(color: WuxiaColors.avatarFill)),
             ),
     );
   }
