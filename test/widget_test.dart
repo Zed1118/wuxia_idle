@@ -181,7 +181,7 @@ void main() {
 
   // ── T15 dispose ─────────────────────────────────────────────────────────
 
-  testWidgets('BattleScreen 7 个 AnimationController 正确 dispose，无 ticker 泄漏',
+  testWidgets('BattleScreen AnimationController 正确 dispose，无 ticker 泄漏（P0-2 后含受击闪/弹道）',
       (WidgetTester tester) async {
     await pumpBattle(tester);
     // 替换为空 widget 触发 _BattleScreenState.dispose()
