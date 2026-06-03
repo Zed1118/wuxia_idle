@@ -6,63 +6,15 @@
 
 | 类别 | 引用(去重) | 存在 | 缺失 |
 |---|---|---|---|
-| equipment | 160 | 115 | 45 |
+| equipment | 160 | 160 | 0 |
 | enemy | 129 | 92 | 37 |
 | portrait | 12 | 12 | 0 |
 | scene | 16 | 16 | 0 |
 | chapterCover | 6 | 6 | 0 |
 | narrative | 30 | 30 | 0 |
-| **合计** | 353 | 271 | 82 |
+| **合计** | 353 | 316 | 37 |
 
 ## 缺图清单
-
-### equipment (45)
-
-- `assets/equipment/accessory_baowu_long_gu_lian_detail.png` ← accessory_baowu_long_gu_lian (detail)
-- `assets/equipment/accessory_baowu_zi_jin_hu_lu_detail.png` ← accessory_baowu_zi_jin_hu_lu (detail)
-- `assets/equipment/accessory_haojiahuo_ping_an_kou_detail.png` ← accessory_haojiahuo_ping_an_kou (detail)
-- `assets/equipment/accessory_haojiahuo_she_dan_wan_detail.png` ← accessory_haojiahuo_she_dan_wan (detail)
-- `assets/equipment/accessory_liqi_hu_xin_jing_detail.png` ← accessory_liqi_hu_xin_jing (detail)
-- `assets/equipment/accessory_liqi_jin_chuang_gao_detail.png` ← accessory_liqi_jin_chuang_gao (detail)
-- `assets/equipment/accessory_shenwu_she_li_zhu_detail.png` ← accessory_shenwu_she_li_zhu (detail)
-- `assets/equipment/accessory_shenwu_tian_yuan_zhi_detail.png` ← accessory_shenwu_tian_yuan_zhi (detail)
-- `assets/equipment/accessory_special_xin_mo_zhu_detail.png` ← accessory_special_xin_mo_zhu (detail)
-- `assets/equipment/accessory_xiangyang_cui_yu_zhui_detail.png` ← accessory_xiangyang_cui_yu_zhui (detail)
-- `assets/equipment/accessory_xiangyang_tie_hu_wan_detail.png` ← accessory_xiangyang_tie_hu_wan (detail)
-- `assets/equipment/accessory_xunchang_tong_ling_detail.png` ← accessory_xunchang_tong_ling (detail)
-- `assets/equipment/accessory_xunchang_yao_nang_detail.png` ← accessory_xunchang_yao_nang (detail)
-- `assets/equipment/accessory_zhongqi_bi_xi_shou_chuan_detail.png` ← accessory_zhongqi_bi_xi_shou_chuan (detail)
-- `assets/equipment/accessory_zhongqi_xuan_tie_zhi_huan_detail.png` ← accessory_zhongqi_xuan_tie_zhi_huan (detail)
-- `assets/equipment/armor_baowu_can_si_ruan_jia_detail.png` ← armor_baowu_can_si_ruan_jia (detail)
-- `assets/equipment/armor_baowu_wu_jin_zhan_jia_detail.png` ← armor_baowu_wu_jin_zhan_jia (detail)
-- `assets/equipment/armor_haojiahuo_chou_shan_detail.png` ← armor_haojiahuo_chou_shan (detail)
-- `assets/equipment/armor_haojiahuo_suo_zi_jia_detail.png` ← armor_haojiahuo_suo_zi_jia (detail)
-- `assets/equipment/armor_liqi_qing_luo_shan_detail.png` ← armor_liqi_qing_luo_shan (detail)
-- `assets/equipment/armor_liqi_tie_ye_jia_detail.png` ← armor_liqi_tie_ye_jia (detail)
-- `assets/equipment/armor_shenwu_bing_can_yi_detail.png` ← armor_shenwu_bing_can_yi (detail)
-- `assets/equipment/armor_shenwu_tian_can_bao_jia_detail.png` ← armor_shenwu_tian_can_bao_jia (detail)
-- `assets/equipment/armor_special_bai_zhan_jia_detail.png` ← armor_special_bai_zhan_jia (detail)
-- `assets/equipment/armor_xiangyang_tie_pian_jia_detail.png` ← armor_xiangyang_tie_pian_jia (detail)
-- `assets/equipment/armor_xiangyang_ye_xing_yi_detail.png` ← armor_xiangyang_ye_xing_yi (detail)
-- `assets/equipment/armor_xunchang_duan_gua_detail.png` ← armor_xunchang_duan_gua (detail)
-- `assets/equipment/armor_xunchang_mian_jia_detail.png` ← armor_xunchang_mian_jia (detail)
-- `assets/equipment/armor_zhongqi_han_tie_zhong_jia_detail.png` ← armor_zhongqi_han_tie_zhong_jia (detail)
-- `assets/equipment/armor_zhongqi_yu_lin_qing_jia_detail.png` ← armor_zhongqi_yu_lin_qing_jia (detail)
-- `assets/equipment/weapon_baowu_bing_po_zhen_detail.png` ← weapon_baowu_bing_po_zhen (detail)
-- `assets/equipment/weapon_baowu_yin_yang_ci_detail.png` ← weapon_baowu_yin_yang_ci (detail)
-- `assets/equipment/weapon_haojiahuo_mei_hua_biao_detail.png` ← weapon_haojiahuo_mei_hua_biao (detail)
-- `assets/equipment/weapon_haojiahuo_yuan_yang_yue_detail.png` ← weapon_haojiahuo_yuan_yang_yue (detail)
-- `assets/equipment/weapon_liqi_hu_tou_gou_detail.png` ← weapon_liqi_hu_tou_gou (detail)
-- `assets/equipment/weapon_liqi_li_hua_zhen_detail.png` ← weapon_liqi_li_hua_zhen (detail)
-- `assets/equipment/weapon_shenwu_hun_yuan_chui_detail.png` ← weapon_shenwu_hun_yuan_chui (detail)
-- `assets/equipment/weapon_shenwu_kong_que_ling_detail.png` ← weapon_shenwu_kong_que_ling (detail)
-- `assets/equipment/weapon_special_wu_ming_jian_detail.png` ← weapon_special_wu_ming_jian (detail)
-- `assets/equipment/weapon_xiangyang_liu_ye_dao_detail.png` ← weapon_xiangyang_liu_ye_dao (detail)
-- `assets/equipment/weapon_xiangyang_xiu_jian_detail.png` ← weapon_xiangyang_xiu_jian (detail)
-- `assets/equipment/weapon_xunchang_chai_dao_detail.png` ← weapon_xunchang_chai_dao (detail)
-- `assets/equipment/weapon_xunchang_fei_shi_detail.png` ← weapon_xunchang_fei_shi (detail)
-- `assets/equipment/weapon_zhongqi_ri_yue_lun_detail.png` ← weapon_zhongqi_ri_yue_lun (detail)
-- `assets/equipment/weapon_zhongqi_zhui_hun_ding_detail.png` ← weapon_zhongqi_zhui_hun_ding (detail)
 
 ### enemy (37)
 
