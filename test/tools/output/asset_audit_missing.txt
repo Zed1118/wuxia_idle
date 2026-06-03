@@ -1,2 +1,1 @@
-assets/enemies/lightfoot_pubu_a.png
-assets/enemies/massbattle_guanqi_a.png
+
