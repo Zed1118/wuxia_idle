@@ -2,7 +2,4 @@ assets/enemies/guard_b.png
 assets/enemies/lightfoot_pubu_a.png
 assets/enemies/massbattle_cunfei_a.png
 assets/enemies/massbattle_guanqi_a.png
-assets/enemies/xiliang_b.png
-assets/enemies/xiliang_bazhu.png
 assets/enemies/xiliangboss.png
-assets/enemies/you_hufa.png
