@@ -7,12 +7,12 @@
 | 类别 | 引用(去重) | 存在 | 缺失 |
 |---|---|---|---|
 | equipment | 160 | 115 | 45 |
-| enemy | 129 | 38 | 91 |
+| enemy | 129 | 65 | 64 |
 | portrait | 12 | 12 | 0 |
 | scene | 16 | 16 | 0 |
 | chapterCover | 6 | 6 | 0 |
 | narrative | 30 | 30 | 0 |
-| **合计** | 353 | 217 | 136 |
+| **合计** | 353 | 244 | 109 |
 
 ## 缺图清单
 
@@ -64,42 +64,26 @@
 - `assets/equipment/weapon_zhongqi_ri_yue_lun_detail.png` ← weapon_zhongqi_ri_yue_lun (detail)
 - `assets/equipment/weapon_zhongqi_zhui_hun_ding_detail.png` ← weapon_zhongqi_zhui_hun_ding (detail)
 
-### enemy (91)
+### enemy (64)
 
-- `assets/enemies/anye.png` ← stage_03_01, tower_floor_13, tower_floor_18, tower_floor_21, tower_floor_26, tower_floor_28
 - `assets/enemies/bazhu_youfu.png` ← stage_04_05
 - `assets/enemies/bazhu_zuofu.png` ← stage_04_05
 - `assets/enemies/caobang_duozhu.png` ← stage_05_03
-- `assets/enemies/changan_daoke.png` ← stage_05_01
-- `assets/enemies/daojia_jianke.png` ← stage_05_02
 - `assets/enemies/fu_zhaizhu.png` ← tower_floor_22, tower_floor_24, tower_floor_29
-- `assets/enemies/guard_a.png` ← stage_04_02
 - `assets/enemies/guard_b.png` ← stage_04_02
-- `assets/enemies/guard_c.png` ← stage_04_02
-- `assets/enemies/guntou_zhu.png` ← stage_03_02
 - `assets/enemies/huanghe_jichuang.png` ← stage_06_03
 - `assets/enemies/huanghe_shuibing.png` ← stage_06_03
 - `assets/enemies/huanghe_shuikou.png` ← stage_05_03
 - `assets/enemies/huanghe_yuantou_yufu.png` ← stage_06_03
-- `assets/enemies/jianghu_qianbei.png` ← stage_03_01, tower_floor_14, tower_floor_17, tower_floor_19, tower_floor_23, tower_floor_29
 - `assets/enemies/kunlun_dunke.png` ← stage_06_04
 - `assets/enemies/kunlun_waimen_shouguan.png` ← stage_06_04
 - `assets/enemies/kunlun_xiyuan_jianke.png` ← stage_06_04
 - `assets/enemies/lightfoot_changfeng_a.png` ← stage_light_foot_05
-- `assets/enemies/lightfoot_changfeng_b.png` ← stage_light_foot_05
-- `assets/enemies/lightfoot_changfeng_c.png` ← stage_light_foot_05
 - `assets/enemies/lightfoot_pubu_a.png` ← stage_light_foot_04
-- `assets/enemies/lightfoot_pubu_b.png` ← stage_light_foot_04
 - `assets/enemies/lightfoot_pubu_c.png` ← stage_light_foot_04
-- `assets/enemies/lightfoot_shuikou_a.png` ← stage_light_foot_01
-- `assets/enemies/lightfoot_shuikou_b.png` ← stage_light_foot_01
-- `assets/enemies/lightfoot_shuikou_c.png` ← stage_light_foot_01
 - `assets/enemies/lightfoot_yexun_a.png` ← stage_light_foot_02
-- `assets/enemies/lightfoot_yexun_b.png` ← stage_light_foot_02
 - `assets/enemies/lightfoot_yexun_c.png` ← stage_light_foot_02
 - `assets/enemies/lightfoot_zhuke_a.png` ← stage_light_foot_03
-- `assets/enemies/lightfoot_zhuke_b.png` ← stage_light_foot_03
-- `assets/enemies/lightfoot_zhuke_c.png` ← stage_light_foot_03
 - `assets/enemies/liukou_a.png` ← stage_04_01
 - `assets/enemies/liukou_b.png` ← stage_04_01
 - `assets/enemies/liukou_c.png` ← stage_04_01
@@ -119,10 +103,6 @@
 - `assets/enemies/massbattle_zhenkou_a.png` ← stage_mass_battle_02
 - `assets/enemies/massbattle_zhenkou_b.png` ← stage_mass_battle_02
 - `assets/enemies/massbattle_zhenkou_c.png` ← stage_mass_battle_02
-- `assets/enemies/mingmen_a.png` ← stage_03_01, tower_floor_11
-- `assets/enemies/seng_a.png` ← stage_03_03
-- `assets/enemies/seng_b.png` ← stage_03_03
-- `assets/enemies/seng_huiyi.png` ← stage_03_03
 - `assets/enemies/shafei_a.png` ← stage_04_03
 - `assets/enemies/shafei_b.png` ← stage_04_03
 - `assets/enemies/shafei_c.png` ← stage_04_03
@@ -133,12 +113,8 @@
 - `assets/enemies/songshan_daozong_dizi.png` ← stage_05_02
 - `assets/enemies/songshan_shouguan.png` ← stage_06_02
 - `assets/enemies/songshan_xunshanren.png` ← stage_06_02
-- `assets/enemies/taixia_a.png` ← stage_03_02
-- `assets/enemies/taixia_b.png` ← stage_03_02
 - `assets/enemies/tongguan_shoujiang.png` ← stage_05_01
 - `assets/enemies/tongmen_a.png` ← stage_03_04
-- `assets/enemies/tongmen_b.png` ← stage_03_04
-- `assets/enemies/weishui_chuangong.png` ← stage_05_01
 - `assets/enemies/wulin_bazhu.png` ← tower_floor_19, tower_floor_22, tower_floor_24, tower_floor_26, tower_floor_27, tower_floor_29
 - `assets/enemies/xiliang_a.png` ← stage_04_04
 - `assets/enemies/xiliang_b.png` ← stage_04_04
@@ -146,14 +122,11 @@
 - `assets/enemies/xiliang_disciple_gang.png` ← stage_06_05
 - `assets/enemies/xiliang_disciple_ling.png` ← stage_06_05
 - `assets/enemies/xiliang_sandizi.png` ← stage_05_05
-- `assets/enemies/xiliangbazhu.png` ← stage_04_05
 - `assets/enemies/xiliangboss.png` ← stage_04_04
 - `assets/enemies/yidu_jianke.png` ← stage_05_03
 - `assets/enemies/you_hufa.png` ← tower_floor_16, tower_floor_22, tower_floor_24, tower_floor_28
-- `assets/enemies/zhongzhou_fushou.png` ← stage_05_04
 - `assets/enemies/zhongzhou_lunjian.png` ← stage_05_05
 - `assets/enemies/zhongzhou_lunjian_xianfeng.png` ← stage_05_04
 - `assets/enemies/zhongzhou_wuxue.png` ← stage_05_02
 - `assets/enemies/zhongzhou_yiyong.png` ← stage_06_01
-- `assets/enemies/zhongzhou_zhuzhen.png` ← stage_05_04
 - `assets/enemies/zuo_hufa.png` ← tower_floor_16, tower_floor_18, tower_floor_21, tower_floor_23, tower_floor_26, tower_floor_28
