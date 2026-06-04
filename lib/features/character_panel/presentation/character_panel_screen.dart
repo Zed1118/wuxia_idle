@@ -25,6 +25,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
 import '../../../shared/widgets/portrait_frame.dart';
+import '../../../shared/widgets/wuxia_paper_panel.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 import 'encounter_skill_section.dart';
 
@@ -1089,65 +1090,86 @@ class _MainTechniqueTile extends ConsumerWidget {
           );
         }
         final schoolColor = WuxiaColors.schoolColor(t.school);
+        final techName =
+            GameRepository.instance.techniqueDefs[t.defId]?.name ??
+                UiStrings.techniqueRoleMain;
         final progress = t.cultivationProgressToNext == 0
             ? 0.0
             : (t.cultivationProgress / t.cultivationProgressToNext)
                   .clamp(0.0, 1.0)
                   .toDouble();
-        return _TechniqueShell(
-          borderColor: schoolColor,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    UiStrings.techniqueRoleMain,
-                    style: TextStyle(
-                      color: schoolColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+        return IntrinsicHeight(
+          child: WuxiaPaperPanel(
+          padding: const EdgeInsets.all(14),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 120),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      UiStrings.techniqueRoleMain,
+                      style: TextStyle(
+                        color: schoolColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    EnumL10n.techniqueTier(t.tier),
-                    style: const TextStyle(
-                      color: WuxiaColors.textSecondary,
-                      fontSize: 12,
+                    const Spacer(),
+                    Text(
+                      EnumL10n.techniqueTier(t.tier),
+                      style: const TextStyle(
+                        color: WuxiaColors.textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    EnumL10n.cultivationLayer(t.cultivationLayer),
-                    style: const TextStyle(
-                      color: WuxiaColors.textPrimary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              LinearProgressIndicator(
-                value: progress,
-                minHeight: 6,
-                backgroundColor: WuxiaColors.barTrack,
-                valueColor: AlwaysStoppedAnimation<Color>(schoolColor),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                UiStrings.cultivationProgress(
-                  t.cultivationProgress,
-                  t.cultivationProgressToNext,
+                  ],
                 ),
-                style: const TextStyle(
-                  color: WuxiaColors.textMuted,
-                  fontSize: 11,
+                const SizedBox(height: 6),
+                Text(
+                  techName,
+                  style: TextStyle(
+                    color: schoolColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Text(
+                      EnumL10n.cultivationLayer(t.cultivationLayer),
+                      style: const TextStyle(
+                        color: WuxiaColors.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      UiStrings.cultivationProgress(
+                        t.cultivationProgress,
+                        t.cultivationProgressToNext,
+                      ),
+                      style: const TextStyle(
+                        color: WuxiaColors.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 6,
+                  backgroundColor: WuxiaColors.barTrack,
+                  valueColor: AlwaysStoppedAnimation<Color>(schoolColor),
+                ),
+              ],
+            ),
           ),
+        ),
         );
       },
     );

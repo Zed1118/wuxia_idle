@@ -16,6 +16,7 @@ import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_providers.dart';
 import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_progress.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_paper_panel.dart';
 
 /// T28 角色面板 widget 测试（phase2_tasks.md §407）。
 ///
@@ -271,6 +272,8 @@ void main() {
       id: 20,
       ownerId: 1,
       role: TechniqueRole.main,
+      // 真 defId → 主修名为真实技能名,不与「主修」role 标签撞(hero 化后)。
+      defId: GameRepository.instance.techniqueDefs.keys.first,
       cultivationProgress: 50,
       cultivationProgressToNext: 100,
     );
@@ -795,5 +798,27 @@ void main() {
     expect(find.text(UiStrings.innerDemonPanelTitle), findsOneWidget);
     expect(find.text(UiStrings.innerDemonPanelProgress(2, 7)), findsOneWidget);
     expect(find.text(UiStrings.innerDemonBreakthroughCta), findsOneWidget);
+  });
+
+  testWidgets('② 主修 hero:显主修名(真 def name)+ 宣纸底 + 进度条', (tester) async {
+    final realDefId = GameRepository.instance.techniqueDefs.keys.first;
+    final realName = GameRepository.instance.techniqueDefs[realDefId]!.name;
+    final tech = mkTechnique(
+      id: 50,
+      ownerId: 1,
+      role: TechniqueRole.main,
+      defId: realDefId,
+      cultivationProgress: 40,
+      cultivationProgressToNext: 100,
+    );
+    await pumpPanel(
+      tester,
+      character: mkCharacter(mainTechniqueId: 50),
+      techniques: {50: tech},
+    );
+    expect(find.text(realName), findsOneWidget);
+    expect(find.byType(WuxiaPaperPanel), findsWidgets);
+    expect(find.byType(LinearProgressIndicator), findsWidgets);
+    expect(tester.takeException(), isNull);
   });
 }
