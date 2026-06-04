@@ -1,47 +1,46 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../domain/inner_demon_panel.dart';
 
-/// 心魔关突破拦截提示 widget(1.0 P2.2 §12.1,Batch 2.3 占位 UI)。
+/// 心魔成长瓶颈面板(P0-3 ③,泛化自旧 InnerDemonBreakthroughBlocker)。
 ///
-/// 玩家 wuSheng 各 layer 升前被 [InnerDemonService.isLayerLocked] 拦截时,
-/// character_panel / cultivation 面板可显示本 widget,告知玩家当前境界升不
-/// 上去是因为哪一关心魔未通。
-///
-/// **集成状态**:本 widget 已集成于 character_panel(见
-/// `character_panel_screen.dart` `_BreakthroughBlockerSection`),由 Riverpod
-/// provider 拉 MainlineProgress.clearedStageIds + InnerDemonDef + 计算
-/// advancement 是否被拦后 reactive 显示。本 widget 保持纯渲染职责。
-class InnerDemonBreakthroughBlocker extends StatelessWidget {
-  const InnerDemonBreakthroughBlocker({
+/// 纯渲染职责:按 [state] 显示 cleared / blocked / inProgress 三态。
+/// 武圣常驻(由 caller `_BreakthroughBlockerSection` 决定显隐),
+/// X/total 进度条数据单一真相源 = MainlineProgress.clearedStageIds。
+/// stage 名由 caller 用 stageDefs 解后传入。「突破」CTA = onNavigate(导航至
+/// InnerDemonScreen,不引新突破机制,进阶仍自动)。
+class InnerDemonProgressPanel extends StatelessWidget {
+  const InnerDemonProgressPanel({
     super.key,
-    required this.nextTier,
-    required this.nextLayer,
-    required this.blockingStageId,
-    required this.blockingStageName,
+    required this.state,
+    required this.clearedCount,
+    required this.totalCount,
+    this.blockingStageName,
+    this.nextStageName,
     this.onNavigate,
   });
 
-  /// 玩家想升入的下一 tier(几乎总是 [RealmTier.wuSheng])。
-  final RealmTier nextTier;
+  final InnerDemonPanelState state;
+  final int clearedCount;
+  final int totalCount;
 
-  /// 玩家想升入的下一 layer。
-  final RealmLayer nextLayer;
+  /// blocked 态拦截关名。
+  final String? blockingStageName;
 
-  /// 拦截关 stage_id(如 `stage_inner_demon_01`)。
-  final String blockingStageId;
+  /// inProgress 态下一关名。
+  final String? nextStageName;
 
-  /// 拦截关展示名(如「心魔·贪」)。
-  final String blockingStageName;
-
-  /// 点击「前往挑战」回调(可选;集成时由 caller 推 [InnerDemonScreen] 或
-  /// 直接 [runStageFlow])。
+  /// 「突破」/「前往心魔境」CTA 回调(cleared 态不显 CTA)。
   final VoidCallback? onNavigate;
 
   @override
   Widget build(BuildContext context) {
+    final progress =
+        totalCount == 0 ? 0.0 : (clearedCount / totalCount).clamp(0.0, 1.0);
+    final isBlocked = state == InnerDemonPanelState.blocked;
+
     return Material(
       color: WuxiaColors.sidebar,
       borderRadius: BorderRadius.circular(8),
@@ -50,42 +49,97 @@ class InnerDemonBreakthroughBlocker extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(Icons.lock_outline,
-                    size: 16, color: WuxiaColors.textMuted),
-                SizedBox(width: 6),
-                Text(
-                  '突破被拦',
+                Icon(
+                  isBlocked ? Icons.lock_outline : Icons.self_improvement,
+                  size: 16,
+                  color: isBlocked
+                      ? WuxiaColors.resultHighlight
+                      : WuxiaColors.textMuted,
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  UiStrings.innerDemonPanelTitle,
                   style: TextStyle(
                     color: WuxiaColors.textPrimary,
                     fontSize: 14,
                   ),
                 ),
+                const Spacer(),
+                Text(
+                  UiStrings.innerDemonPanelProgress(clearedCount, totalCount),
+                  style: const TextStyle(
+                    color: WuxiaColors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              '想升 ${nextTier.name}·${nextLayer.name},'
-              '心魔关「$blockingStageName」未通,经验留账。',
-              style: const TextStyle(
-                color: WuxiaColors.textMuted,
-                fontSize: 12,
+            LinearProgressIndicator(
+              value: progress.toDouble(),
+              minHeight: 6,
+              backgroundColor: WuxiaColors.barTrack,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                isBlocked
+                    ? WuxiaColors.resultHighlight
+                    : WuxiaColors.textSecondary,
               ),
             ),
-            if (onNavigate != null) ...[
-              const SizedBox(height: 10),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: onNavigate,
-                  child: const Text(UiStrings.breakthroughGoToInnerDemon),
-                ),
-              ),
-            ],
+            const SizedBox(height: 8),
+            ..._body(),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _body() {
+    switch (state) {
+      case InnerDemonPanelState.cleared:
+        return const [
+          Text(
+            UiStrings.innerDemonClearedLabel,
+            style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+          ),
+        ];
+      case InnerDemonPanelState.blocked:
+        return [
+          Text(
+            UiStrings.innerDemonBlockedBody(blockingStageName ?? ''),
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+          ),
+          if (onNavigate != null) ...[
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton(
+                onPressed: onNavigate,
+                child: const Text(UiStrings.innerDemonBreakthroughCta),
+              ),
+            ),
+          ],
+        ];
+      case InnerDemonPanelState.inProgress:
+        return [
+          if (nextStageName != null)
+            Text(
+              UiStrings.innerDemonNextLabel(nextStageName!),
+              style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+            ),
+          if (onNavigate != null) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: onNavigate,
+                child: const Text(UiStrings.breakthroughGoToInnerDemon),
+              ),
+            ),
+          ],
+        ];
+    }
   }
 }

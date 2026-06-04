@@ -883,6 +883,17 @@ class UiStrings {
   static const String sectScreenTitle = '门派事务';
   static const String characterPanelScreenTitle = '角色面板';
   static const String breakthroughGoToInnerDemon = '前往心魔境';
+
+  // ─── 心魔成长瓶颈面板(P0-3 ③)──────────────────────────────────────────
+  static const String innerDemonPanelTitle = '心魔试炼';
+  static String innerDemonPanelProgress(int cleared, int total) =>
+      '$cleared / $total';
+  static const String innerDemonBlockedTitle = '突破被拦';
+  static String innerDemonBlockedBody(String stageName) =>
+      '心魔关「$stageName」未通,经验留账';
+  static String innerDemonNextLabel(String stageName) => '下一关:$stageName';
+  static const String innerDemonClearedLabel = '心魔已尽,更无可破';
+  static const String innerDemonBreakthroughCta = '突破';
   static const String sectEventEnterBattle = '应战赴会';
   static const String encounterSkillUnequipButton = '卸下';
   static const String commonCancel = '取消';
