@@ -238,7 +238,7 @@ class BattleScenarioData {
             icon: 'assets/enemies/bandit_b.png'),
       ],
       [
-        c(31, '魔教教主', TechniqueSchool.yinRou, 1, 0,
+        c(31, '西凉霸主', TechniqueSchool.yinRou, 1, 0,
             isBoss: true, icon: 'assets/enemies/xiliangboss.png'),
         c(32, '刚猛乙', TechniqueSchool.gangMeng, 1, 1,
             icon: 'assets/enemies/you_hufa.png'),
