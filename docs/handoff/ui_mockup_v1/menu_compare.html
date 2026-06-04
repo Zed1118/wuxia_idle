@@ -1,0 +1,49 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>主菜单木牌 · 三版对比</title>
+<style>
+:root{--woodB:#4f3c22}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1a1814;color:#e9dcc0;font-family:"Songti SC","STSong",serif;padding:26px}
+h1{text-align:center;font-size:22px;letter-spacing:5px;margin-bottom:6px}
+.sub{text-align:center;color:#9a8e76;font-size:12px;margin-bottom:22px}
+.lab{color:#d8c79f;border-left:4px solid #8a2b21;padding-left:10px;margin:26px 0 6px;font-size:17px;letter-spacing:2px}
+.note{color:#8a8068;font-size:12px;margin:0 0 10px 14px}
+.win{width:720px;max-width:100%;border:1px solid #000;border-radius:8px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.5)}
+.menu{position:relative;height:430px;background:url('/assets/ui/mountain_bg.png') center/cover}
+.menu::after{content:'';position:absolute;left:0;right:0;bottom:0;height:64%;background:linear-gradient(180deg,rgba(28,24,16,0),rgba(28,24,16,.30) 55%,rgba(28,24,16,.42));pointer-events:none}
+.mt{text-align:center;padding-top:28px;font-size:32px;letter-spacing:13px;color:#1d1813;text-shadow:0 1px 4px rgba(255,255,255,.5);font-weight:700;position:relative;z-index:2}
+.mtsub{text-align:center;color:#33271b;font-size:12px;letter-spacing:4px;margin-top:4px;position:relative;z-index:2;text-shadow:0 1px 2px rgba(255,255,255,.4)}
+.plaques{position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:26px 34px 34px}
+.mp{width:128px;height:60px;border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.mp b{font-size:16px;letter-spacing:3px}.mp small{font-size:10px}
+/* A 暗木牌(当前) */
+.A .mp{border:1px solid rgba(40,26,12,.85);background:linear-gradient(160deg,rgba(92,72,44,.80),rgba(58,44,25,.86));color:#efe1c2;box-shadow:0 3px 12px rgba(0,0,0,.30),inset 0 1px 0 rgba(232,214,168,.22);backdrop-filter:blur(1.5px)}
+.A .mp small{color:#c2ab80}
+.A .mp.lock{filter:grayscale(.6) brightness(.62);opacity:.72}
+/* B 更淡·冷灰 */
+.B .mp{border:1px solid rgba(30,32,28,.55);background:linear-gradient(160deg,rgba(74,78,73,.50),rgba(46,50,46,.58));color:#ede7d6;box-shadow:0 2px 10px rgba(0,0,0,.22);backdrop-filter:blur(2.5px)}
+.B .mp small{color:#c7c4b4}
+.B .mp.lock{filter:grayscale(.7) brightness(.7);opacity:.62}
+/* C 宣纸笺 */
+.C .mp{border:1px solid rgba(60,48,30,.5);background:rgba(233,222,194,.84) url('/assets/ui/paper_bg.png');background-size:cover;background-blend-mode:overlay;color:#2c2218;box-shadow:0 3px 10px rgba(0,0,0,.28)}
+.C .mp small{color:#6b5a3c}
+.C .mp.lock{filter:grayscale(.6) brightness(.9);opacity:.7}
+</style></head><body>
+<h1>主菜单木牌 · 三版对比</h1>
+<div class="sub">同一真实山门背景 + 渐隐带，仅木牌风格不同</div>
+
+<div class="lab">A · 暗木牌（当前版）</div>
+<div class="note">暮色旧木牌，半透 + 浅墨字，暖调；存在感强、有"江湖案牍"感</div>
+<div class="win"><div class="menu A"><div class="mt">挂 机 武 侠</div><div class="mtsub">写实武侠 · 闭关挂机</div>
+<div class="plaques"><div class="mp"><b>主线</b><small>西出阳关</small></div><div class="mp"><b>闭关</b><small>子时·节气</small></div><div class="mp"><b>角色</b><small>3 人</small></div><div class="mp"><b>装备</b><small>仓库</small></div><div class="mp"><b>心法</b><small>主修·辅修</small></div><div class="mp"><b>江湖</b><small>奇遇</small></div><div class="mp lock"><b>门派</b><small>未解锁</small></div><div class="mp lock"><b>排行</b><small>未解锁</small></div></div></div></div>
+
+<div class="lab">B · 更淡·冷灰</div>
+<div class="note">再透一档、偏冷灰墨调，最隐入画；含蓄但识别度/点击感弱一些</div>
+<div class="win"><div class="menu B"><div class="mt">挂 机 武 侠</div><div class="mtsub">写实武侠 · 闭关挂机</div>
+<div class="plaques"><div class="mp"><b>主线</b><small>西出阳关</small></div><div class="mp"><b>闭关</b><small>子时·节气</small></div><div class="mp"><b>角色</b><small>3 人</small></div><div class="mp"><b>装备</b><small>仓库</small></div><div class="mp"><b>心法</b><small>主修·辅修</small></div><div class="mp"><b>江湖</b><small>奇遇</small></div><div class="mp lock"><b>门派</b><small>未解锁</small></div><div class="mp lock"><b>排行</b><small>未解锁</small></div></div></div></div>
+
+<div class="lab">C · 宣纸笺（亮路线）</div>
+<div class="note">半透宣纸色 + 墨字，像贴在画上的纸笺；明快、字清楚，但少了点"武"的厚重</div>
+<div class="win"><div class="menu C"><div class="mt">挂 机 武 侠</div><div class="mtsub">写实武侠 · 闭关挂机</div>
+<div class="plaques"><div class="mp"><b>主线</b><small>西出阳关</small></div><div class="mp"><b>闭关</b><small>子时·节气</small></div><div class="mp"><b>角色</b><small>3 人</small></div><div class="mp"><b>装备</b><small>仓库</small></div><div class="mp"><b>心法</b><small>主修·辅修</small></div><div class="mp"><b>江湖</b><small>奇遇</small></div><div class="mp lock"><b>门派</b><small>未解锁</small></div><div class="mp lock"><b>排行</b><small>未解锁</small></div></div></div></div>
+</body></html>

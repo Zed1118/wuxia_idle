@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UI 包装改造方案 v1 · 真实 demo</title>
+<style>
+:root{
+  --ink:#241f1a; --ink2:#3a332b; --paper:#e9dcc0; --paper2:#ddcaa3;
+  --qing:#566b63; --jiang:#8a2b21; --gold:#b08a47; --mut:#7d7160;
+  --woodA:#6e5532; --woodB:#4f3c22;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1a1814;color:var(--ink);font-family:"Songti SC","STSong",serif;line-height:1.5;padding:28px}
+h1{color:#e9dcc0;text-align:center;font-size:26px;letter-spacing:6px;margin-bottom:4px}
+.sub{color:#9a8e76;text-align:center;margin-bottom:26px;font-size:13px}
+h2{color:#d8c79f;border-left:4px solid var(--jiang);padding-left:10px;margin:34px 0 14px;font-size:19px;letter-spacing:2px}
+.note{color:#8a8068;font-size:12px;margin:-6px 0 14px;padding-left:14px}
+.row{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+/* ---- 母题样板 ---- */
+.tokens{display:flex;gap:14px;flex-wrap:wrap}
+.tok{width:108px;text-align:center;font-size:11px;color:#cbbf a6}
+.tok .swatch{height:54px;border-radius:3px;border:1px solid #000;margin-bottom:5px}
+.tok span{color:#b3a established88}
+/* ---- 通用窗口框 ---- */
+.win{width:720px;max-width:100%;border:1px solid #000;border-radius:8px;overflow:hidden;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);background:#0e0d0b}
+.winbar{background:#2a2722;color:#bbb;font-size:11px;padding:5px 10px;display:flex;gap:6px;align-items:center}
+.dot{width:10px;height:10px;border-radius:50%}.dr{background:#e0584f}.dy{background:#e3b341}.dg{background:#4caf50}
+/* ---- 旧 Material 风(before) ---- */
+.mat{background:#121212;color:#eee;padding:0;font-family:Roboto,system-ui,sans-serif}
+.mat .appbar{background:#1e1e1e;padding:14px;font-size:15px;display:flex;gap:14px;align-items:center;color:#fff}
+.mat .tabs{display:flex;border-bottom:1px solid #333}
+.mat .tab{flex:1;text-align:center;padding:12px;color:#aaa;font-size:13px}
+.mat .tab.on{color:#fff;border-bottom:2px solid #d9a441}
+.mat .blk{background:#1b1b1b;margin:10px;border-radius:6px;padding:12px}
+.mat .attrrow{display:flex;justify-content:space-between;color:#ccc;font-size:13px;padding:6px 4px}
+.mat .bar{height:8px;background:#333;border-radius:4px;overflow:hidden;margin:8px 0}
+.mat .bar i{display:block;height:100%;width:28%;background:#d9a441}
+.mat .slot{width:84px;height:84px;background:#fff;border:2px solid #caa44a;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.mat .slot img{width:100%;height:100%;object-fit:cover}
+.mat .btn{background:transparent;border:1px solid #d9a441;color:#d9a441;padding:9px 18px;border-radius:4px;font-size:13px}
+/* ---- 新 wuxia kit(after) ---- */
+.wx{background:#e9dcc0 url('/assets/ui/paper_bg.png');background-size:cover;color:var(--ink);font-family:"Songti SC","STSong",serif}
+.wx .titlebar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:2px solid var(--ink);
+  background:linear-gradient(#efe3c7,#e0cea6)}
+.wx .seal{width:30px;height:30px;background:url('/assets/ui/seal_red.png') center/contain no-repeat;flex:0 0 auto}
+.wx .back{font-size:18px;color:var(--jiang);cursor:pointer}
+.wx .title{font-size:19px;letter-spacing:6px;color:var(--ink);font-weight:700}
+.wx .ptabs{display:flex;gap:10px;padding:12px 16px 4px}
+.plaque{padding:8px 18px;border:1.5px solid var(--woodB);border-radius:4px;font-size:13px;
+  background:linear-gradient(#cdb585,#b89a63);color:#3a2c14;box-shadow:inset 0 1px 0 #e8d6a8}
+.plaque.on{background:linear-gradient(#8a2b21,#6f201a);color:#f3e2c0;border-color:#491510;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.wx .panel{margin:12px 16px;border:1.5px solid var(--ink);border-radius:6px;padding:14px;
+  background:rgba(238,228,204,.55)}
+.wx .shead{font-size:14px;color:var(--ink);font-weight:700;letter-spacing:2px;margin-bottom:6px;
+  padding-bottom:5px;background:url('/assets/ui/ink_divider.png') bottom/100% 6px no-repeat}
+.wx .mbar{height:12px;border:1px solid var(--ink);border-radius:6px;overflow:hidden;background:#d8c8a4;margin:4px 0}
+.wx .mbar i{display:block;height:100%;width:28%;background:linear-gradient(90deg,#566b63,#3f524b)}
+/* 印记式属性 */
+.stamps{display:flex;gap:14px;flex-wrap:wrap}
+.stamp{width:78px;text-align:center}
+.stamp .seal2{width:62px;height:62px;margin:0 auto 4px;border:2px solid var(--jiang);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--jiang);
+  background:rgba(138,43,33,.06)}
+.stamp small{font-size:11px;color:var(--mut)}
+/* 立绘装裱 */
+.portrait{width:150px;flex:0 0 auto}
+.portrait .frame{border:3px solid var(--woodB);padding:5px;background:#cdb585;border-radius:4px}
+.portrait img{width:100%;display:block;border:1px solid #5a4a2e}
+.portrait .name{text-align:center;font-size:18px;letter-spacing:4px;margin-top:6px;font-weight:700}
+.portrait .realm{text-align:center;font-size:12px;color:var(--jiang)}
+/* 物品格 */
+.grid{display:flex;gap:12px;flex-wrap:wrap}
+.islot{width:96px;text-align:center;font-size:12px}
+.islot .cell{position:relative;width:96px;height:96px;border:2px solid var(--ink);border-radius:5px;
+  background:rgba(238,228,204,.7);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.islot.gold .cell{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset,0 0 8px rgba(176,138,71,.4)}
+.islot .cell img{width:100%;height:100%;object-fit:contain;padding:4px}
+.islot .enh{position:absolute;top:2px;right:2px;width:24px;height:24px;
+  background:url('/assets/ui/seal_red.png') center/contain no-repeat;color:#fff;font-size:10px;
+  display:flex;align-items:center;justify-content:center;font-weight:700}
+.islot .lock{position:absolute;inset:0;background:rgba(40,34,24,.62);color:#e9dcc0;
+  display:flex;align-items:center;justify-content:center;font-size:13px;letter-spacing:2px}
+.islot .nm{margin-top:5px;color:var(--ink)}
+.islot .nm.g{color:#7a5b1f}
+/* 木牌按钮 */
+.wbtn{display:inline-block;padding:10px 22px;border:1.5px solid var(--woodB);border-radius:4px;font-size:14px;
+  background:linear-gradient(#cdb585,#b89a63);color:#3a2c14;letter-spacing:2px;cursor:pointer}
+.wbtn.primary{background:linear-gradient(#8a2b21,#6f201a);color:#f3e2c0;border-color:#491510}
+/* 主菜单 */
+.menu{position:relative;height:440px;background:url('/assets/ui/mountain_bg.png') center/cover;color:#eee}
+.menu::after{content:'';position:absolute;left:0;right:0;bottom:0;height:64%;background:linear-gradient(180deg,rgba(28,24,16,0),rgba(28,24,16,.30) 55%,rgba(28,24,16,.42));pointer-events:none}
+.menu .mt{text-align:center;padding-top:30px;font-size:34px;letter-spacing:14px;color:#1d1813;
+  text-shadow:0 1px 4px rgba(255,255,255,.5);font-weight:700;position:relative;z-index:2}
+.menu .mtsub{text-align:center;color:#33271b;font-size:12px;letter-spacing:4px;margin-top:4px;position:relative;z-index:2;text-shadow:0 1px 2px rgba(255,255,255,.4)}
+.plaques{position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:28px 34px 36px}
+.mplaque{width:128px;height:62px;border:1px solid rgba(60,48,30,.5);border-radius:5px;
+  background:rgba(233,222,194,.84) url('/assets/ui/paper_bg.png');background-size:cover;background-blend-mode:overlay;color:#2c2218;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.28)}
+.mplaque b{font-size:16px;letter-spacing:3px}.mplaque small{font-size:10px;color:#6b5a3c}
+.mplaque.lock{filter:grayscale(.6) brightness(.9);opacity:.7}
+/* 战斗胜利 */
+.battle{position:relative;height:380px;background:url('/assets/scenes/battle_citywall.png') center/cover}
+.battle .scrim{position:absolute;inset:0;background:rgba(20,16,10,.32)}
+.battle .win2{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.battle .sheng{font-size:96px;color:var(--gold);font-weight:700;text-shadow:0 0 18px rgba(0,0,0,.6);position:relative}
+.battle .bigseal{position:absolute;top:-6px;right:-52px;width:54px;height:54px;background:url('/assets/ui/seal_red.png') center/contain no-repeat}
+.battle .report{background:rgba(233,220,192,.9);border:1.5px solid var(--ink);border-radius:6px;padding:10px 22px;font-size:13px;color:var(--ink);text-align:center}
+.cap{font-size:11px;color:#8a8068;margin:6px 0 0 2px}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:3px;margin-left:8px}
+.tag.bad{background:#3a1a17;color:#e09a92}.tag.good{background:#22301c;color:#9cc084}
+.detail-hero{display:flex;gap:18px}
+.detail-hero .big{width:240px;height:240px;border:3px solid var(--gold);border-radius:6px;background:rgba(238,228,204,.7);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 0 10px rgba(176,138,71,.4)}
+.detail-hero .big img{width:100%;height:100%;object-fit:contain;padding:8px}
+.detail-hero .meta{flex:1}
+.kv{display:flex;justify-content:space-between;border-bottom:1px dashed #b3a488;padding:5px 0;font-size:13px}
+.lore{margin-top:10px;font-size:12px;color:#4a4030;background:url('/assets/ui/scroll_horizontal.png') center/100% 100%;padding:18px 16px}
+</style></head>
+<body>
+<h1>挂机武侠 · UI 包装改造方案 v1</h1>
+<div class="sub">真实资产 demo（重度·游戏化重做档）· 宣纸 / 墨边 / 木牌 / 朱印 / 卷轴母题</div>
+
+<h2>母题样板（真实资产 + token 色）</h2>
+<div class="tokens">
+  <div class="tok"><div class="swatch" style="background:#241f1a"></div>墨黑 #241f1a</div>
+  <div class="tok"><div class="swatch" style="background:url('/assets/ui/paper_bg.png');background-size:cover"></div>宣纸底(真图)</div>
+  <div class="tok"><div class="swatch" style="background:#566b63"></div>青灰 #566b63</div>
+  <div class="tok"><div class="swatch" style="background:#8a2b21"></div>绛红 #8a2b21</div>
+  <div class="tok"><div class="swatch" style="background:#b08a47"></div>金线(限高阶)</div>
+  <div class="tok"><div class="swatch" style="background:url('/assets/ui/seal_red.png') center/contain no-repeat #e9dcc0"></div>朱印(真图)</div>
+  <div class="tok"><div class="swatch" style="background:url('/assets/ui/scroll_horizontal.png') center/cover"></div>卷轴(真图)</div>
+</div>
+
+<h2>① 角色面板 · BEFORE / AFTER 对照</h2>
+<div class="note">左=当前 Material 暗面板（评估说"像后台工具"）· 右=wuxia kit 重做（立绘装裱 + 印记属性 + 内息条 + 物品格）</div>
+<div class="row">
+  <div class="win"><div class="winbar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>&nbsp;当前 (Material)</div>
+    <div class="mat">
+      <div class="appbar">&lt;&nbsp;&nbsp;角色面板</div>
+      <div class="tabs"><div class="tab on">祖师</div><div class="tab">大弟子</div><div class="tab">二弟子</div></div>
+      <div class="blk" style="display:flex;gap:10px;align-items:center"><img src="/assets/characters/founder.png" style="width:54px;height:54px;object-fit:cover;border-radius:4px"><div><b>祖师</b><br><small style="color:#d9a441">武圣·熟练</small></div></div>
+      <div class="blk"><div class="attrrow"><span>悟性 5</span><span>根骨 7</span><span>身法 5</span><span>机敏 5</span></div></div>
+      <div class="blk"><small>心魔试练 2/7</small><div class="bar"><i></i></div></div>
+      <div class="blk"><div class="attrrow"><span>生命 6161</span><span>内力 3800</span><span>速度 211</span></div></div>
+      <div class="blk" style="display:flex;gap:8px"><div class="slot"><img src="/assets/equipment/weapon_haojiahuo_qing_feng_jian_detail.png"></div><div class="slot"><img src="/assets/equipment/armor_xunchang_mian_jia_detail.png"></div><div class="slot"><img src="/assets/equipment/accessory_xunchang_tong_ling_detail.png"></div></div>
+      <div class="blk"><button class="btn">突破</button></div>
+    </div></div>
+
+  <div class="win"><div class="winbar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>&nbsp;改造后 (wuxia kit)</div>
+    <div class="wx">
+      <div class="titlebar"><span class="back">↩</span><span class="title">角色档案</span><span class="seal" style="margin-left:auto"></span></div>
+      <div class="ptabs"><span class="plaque on">祖师</span><span class="plaque">大弟子</span><span class="plaque">二弟子</span></div>
+      <div class="panel" style="display:flex;gap:16px">
+        <div class="portrait"><div class="frame"><img src="/assets/characters/founder.png"></div><div class="name">祖师</div><div class="realm">武圣 · 熟练</div></div>
+        <div style="flex:1">
+          <div class="shead">资质印记</div>
+          <div class="stamps">
+            <div class="stamp"><div class="seal2">悟</div><small>悟性 5</small></div>
+            <div class="stamp"><div class="seal2">骨</div><small>根骨 7</small></div>
+            <div class="stamp"><div class="seal2">身</div><small>身法 5</small></div>
+            <div class="stamp"><div class="seal2">敏</div><small>机敏 5</small></div>
+          </div>
+          <div class="shead" style="margin-top:12px">心魔试练 2/7</div>
+          <div class="mbar"><i></i></div>
+          <div style="font-size:12px;color:#6a5f4c;margin-top:2px">心魔关「心魔·痴」未破，经验留账 ·　<span class="wbtn primary" style="padding:5px 14px;font-size:12px">突 破</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="shead">随身装备</div>
+        <div class="grid">
+          <div class="islot"><div class="cell"><img src="/assets/equipment/weapon_haojiahuo_qing_feng_jian_detail.png"><span class="enh">+7</span></div><div class="nm">青锋剑</div></div>
+          <div class="islot"><div class="cell"><img src="/assets/equipment/armor_xunchang_mian_jia_detail.png"></div><div class="nm">棉甲</div></div>
+          <div class="islot"><div class="cell"><img src="/assets/equipment/accessory_xunchang_tong_ling_detail.png"></div><div class="nm">铜铃</div></div>
+        </div>
+      </div>
+    </div></div>
+</div>
+
+<h2>② 装备仓库（AFTER · 趁热用上重出的水墨图）</h2>
+<div class="note">物品格=宣纸格底 + tier 墨框→金框阶梯 + detail 图 contain + 强化朱印 + 未达境界封条；替换白底缩略图素材浏览器</div>
+<div class="win"><div class="winbar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>&nbsp;装备仓库</div>
+  <div class="wx">
+    <div class="titlebar"><span class="back">↩</span><span class="title">装备仓库</span><span class="seal" style="margin-left:auto"></span></div>
+    <div class="ptabs"><span class="plaque on">装备</span><span class="plaque">物料</span></div>
+    <div class="panel">
+      <div class="shead">武器</div>
+      <div class="grid">
+        <div class="islot gold"><div class="cell"><img src="/assets/equipment/weapon_haojiahuo_qing_feng_jian_detail.png"><span class="enh">+7</span></div><div class="nm g">青锋剑</div></div>
+        <div class="islot"><div class="cell"><img src="/assets/equipment/weapon_xiangyang_liu_ye_dao_detail.png"></div><div class="nm">柳叶刀</div></div>
+        <div class="islot"><div class="cell"><img src="/assets/equipment/weapon_xunchang_tie_jian_detail.png"></div><div class="nm">铁剑</div></div>
+      </div>
+      <div class="shead" style="margin-top:14px">护甲</div>
+      <div class="grid">
+        <div class="islot"><div class="cell"><img src="/assets/equipment/armor_haojiahuo_suo_zi_jia_detail.png"></div><div class="nm">锁子甲</div></div>
+        <div class="islot"><div class="cell"><img src="/assets/equipment/armor_xiangyang_tie_pian_jia_detail.png"></div><div class="nm">铁片甲</div></div>
+        <div class="islot"><div class="cell"><img src="/assets/equipment/armor_xunchang_duan_gua_detail.png"><div class="lock">未达境界</div></div><div class="nm">短褂</div></div>
+      </div>
+      <div class="shead" style="margin-top:14px">饰品</div>
+      <div class="grid">
+        <div class="islot"><div class="cell"><img src="/assets/equipment/accessory_haojiahuo_ping_an_kou_detail.png"></div><div class="nm">平安扣</div></div>
+        <div class="islot"><div class="cell"><img src="/assets/equipment/accessory_haojiahuo_she_dan_wan_detail.png"></div><div class="nm">蛇胆丸</div></div>
+        <div class="islot"><div class="cell"><img src="/assets/equipment/accessory_xunchang_tong_ling_detail.png"></div><div class="nm">铜铃</div></div>
+      </div>
+    </div>
+  </div></div>
+
+<h2>③ 装备详情（AFTER · detail 大图成主视觉，数值/典故环绕）</h2>
+<div class="note">替换"顶部白盒缩略图"：水墨大图金框装帧居中为主视觉，右侧数值，下方典故卷轴</div>
+<div class="win"><div class="winbar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>&nbsp;装备详情</div>
+  <div class="wx">
+    <div class="titlebar"><span class="back">↩</span><span class="title">青 锋 剑</span><span class="seal" style="margin-left:auto"></span></div>
+    <div class="panel">
+      <div class="detail-hero">
+        <div class="big"><img src="/assets/equipment/weapon_haojiahuo_qing_feng_jian_detail.png"></div>
+        <div class="meta">
+          <div class="kv"><span>品阶</span><b style="color:#7a5b1f">好家伙 · 强化 +7</b></div>
+          <div class="kv"><span>攻击</span><b>+420</b></div>
+          <div class="kv"><span>出手速度</span><b>+35</b></div>
+          <div class="kv"><span>境界要求</span><b>二流</b></div>
+          <div style="margin-top:14px"><span class="wbtn primary">强 化</span> <span class="wbtn">卸 下</span></div>
+        </div>
+      </div>
+      <div class="lore">青锋出鞘，寒光照雪。市井铁匠三年方成一柄，刃薄而韧，江湖人谓之"可托命"。</div>
+    </div>
+  </div></div>
+
+<h2>④ 主菜单（AFTER · 入口木牌替 SaaS 卡片）</h2>
+<div class="note">背景已是水墨山门，把"仪表盘卡片"改成悬挂木牌；未解锁=灰化木牌（§5.7 门控）</div>
+<div class="win"><div class="winbar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>&nbsp;主菜单</div>
+  <div class="menu">
+    <div class="mt">挂 机 武 侠</div><div class="mtsub">写实武侠 · 闭关挂机</div>
+    <div class="plaques">
+      <div class="mplaque"><b>主线</b><small>西出阳关</small></div>
+      <div class="mplaque"><b>闭关</b><small>子时·节气</small></div>
+      <div class="mplaque"><b>角色</b><small>3 人</small></div>
+      <div class="mplaque"><b>装备</b><small>仓库</small></div>
+      <div class="mplaque"><b>心法</b><small>主修·辅修</small></div>
+      <div class="mplaque"><b>江湖</b><small>奇遇</small></div>
+      <div class="mplaque lock"><b>门派</b><small>未解锁</small></div>
+      <div class="mplaque lock"><b>排行</b><small>未解锁</small></div>
+    </div>
+  </div></div>
+
+<h2>⑤ 战斗胜利（AFTER · 凯旋演出，水墨不走金光粒子）</h2>
+<div class="note">金「胜」+ 朱印 + 战报卷条 + 木牌继续；仪式走水墨+题字+vignette（红线：不做网游金光）</div>
+<div class="win"><div class="winbar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span>&nbsp;战斗结算</div>
+  <div class="battle"><div class="scrim"></div>
+    <div class="win2">
+      <div class="sheng">胜<span class="bigseal"></span></div>
+      <div class="report">斩 山贼头目 · 历 6 回合 · 掉落「青锋剑」</div>
+      <span class="wbtn primary">继 续</span>
+    </div>
+  </div></div>
+
+<div class="cap" style="margin-top:30px">— demo 用真实项目资产（宣纸/朱印/卷轴/山门/立绘/重出装备图）· 仅 mockup 展示方向，非最终像素 —</div>
+</body></html>
