@@ -14,6 +14,8 @@ import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/character_panel_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
+import 'package:wuxia_idle/features/inner_demon/application/inner_demon_providers.dart';
+import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_progress.dart';
 
 /// T28 角色面板 widget 测试（phase2_tasks.md §407）。
 ///
@@ -128,6 +130,7 @@ void main() {
     List<int>? activeIds,
     Map<int, Equipment> equipments = const {},
     Map<int, Technique> techniques = const {},
+    InnerDemonProgress? innerDemonProgress,
   }) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -153,6 +156,10 @@ void main() {
           for (final entry in techniques.entries)
             techniqueByIdProvider(entry.key).overrideWith(
               (ref) async => entry.value,
+            ),
+          if (innerDemonProgress != null)
+            innerDemonProgressProvider.overrideWith(
+              (ref) async => innerDemonProgress,
             ),
         ],
         child: MaterialApp(
@@ -754,5 +761,39 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.enhanceLevel(5)), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('③ 非武圣 → 心魔面板不显', (tester) async {
+    await pumpPanel(
+      tester,
+      character: mkCharacter(realmTier: RealmTier.xueTu),
+      innerDemonProgress: const InnerDemonProgress(
+        clearedCount: 0,
+        totalCount: 7,
+        clearedStageIds: {},
+        nextUnclearedStageId: 'stage_inner_demon_01',
+      ),
+    );
+    expect(find.text(UiStrings.innerDemonPanelTitle), findsNothing);
+  });
+
+  testWidgets('③ 武圣 exp满被拦 → 显心魔面板 + X/7 + 突破 CTA', (tester) async {
+    final wuSheng = mkCharacter(realmTier: RealmTier.wuSheng)
+      ..realmLayer = RealmLayer.shuLian
+      ..experience = 999999
+      ..experienceToNextLayer = 100;
+    await pumpPanel(
+      tester,
+      character: wuSheng,
+      innerDemonProgress: const InnerDemonProgress(
+        clearedCount: 2,
+        totalCount: 7,
+        clearedStageIds: {'stage_inner_demon_01', 'stage_inner_demon_02'},
+        nextUnclearedStageId: 'stage_inner_demon_03',
+      ),
+    );
+    expect(find.text(UiStrings.innerDemonPanelTitle), findsOneWidget);
+    expect(find.text(UiStrings.innerDemonPanelProgress(2, 7)), findsOneWidget);
+    expect(find.text(UiStrings.innerDemonBreakthroughCta), findsOneWidget);
   });
 }
