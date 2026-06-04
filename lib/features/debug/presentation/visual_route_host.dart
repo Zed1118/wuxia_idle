@@ -17,6 +17,9 @@ import '../application/visual_route.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../data/narrative_loader.dart';
 import '../../mainline/domain/chapter_assets.dart';
+import '../../battle/presentation/character_avatar.dart';
+import '../../battle/application/stage_battle_setup.dart';
+import '../../battle/domain/battle_state.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -121,6 +124,12 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
             sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
           );
 
+        case VisualRoute.enemyGallery:
+          target = const _EnemyGallery();
+
+        case VisualRoute.equipmentDetailGallery:
+          target = const _EquipmentDetailGallery();
+
         case VisualRoute.narrativeScene:
           {
             // `--dart-define=VISUAL_STAGE=stage_04_03` 抽样任意主线关卡;
@@ -181,6 +190,102 @@ class _UltimateCaptionPreview extends StatelessWidget {
           Expanded(child: UltimateCaptionContent(name: '天问归一', isEnemy: false)),
           Expanded(child: UltimateCaptionContent(name: '血煞噬魂', isEnemy: true)),
         ],
+      ),
+    );
+  }
+}
+
+/// 敌人立绘 gallery:枚举全 stageDefs 敌人(按 iconPath 去重),走生产
+/// [StageBattleSetup.buildEnemyTeam] 真转换 → [CharacterAvatar] 圆形头像滚动,
+/// 验全敌人图加载 + 圆形裁切 + 流派/Boss 边框(补 battle_scene 只 6 个的盲区)。
+class _EnemyGallery extends StatelessWidget {
+  const _EnemyGallery();
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = GameRepository.instance;
+    final seen = <String>{};
+    final chars = <BattleCharacter>[];
+    for (final stage in repo.stageDefs.values) {
+      for (final e in stage.enemyTeam) {
+        if (e.iconPath.isEmpty || !seen.add(e.iconPath)) continue;
+        chars.add(StageBattleSetup.buildEnemyTeam([e]).first);
+      }
+    }
+    chars.sort((a, b) => (a.iconPath ?? '').compareTo(b.iconPath ?? ''));
+    return Scaffold(
+      backgroundColor: const Color(0xFF14181D),
+      appBar: AppBar(title: Text('敌人立绘 gallery (${chars.length})')),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 5,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 0.62,
+        ),
+        itemCount: chars.length,
+        itemBuilder: (_, i) => FittedBox(
+          fit: BoxFit.scaleDown,
+          child: CharacterAvatar(character: chars[i]),
+        ),
+      ),
+    );
+  }
+}
+
+/// 装备 detail gallery:枚举全 equipmentDefs 有 detailPath 的(按阶排序),
+/// 同款 [Image.asset] contain 滚动,验全 detail 大图(含神物)加载 + 风格统一
+/// (补 InventoryScreen 需持有装备才进得去详情的盲区)。
+class _EquipmentDetailGallery extends StatelessWidget {
+  const _EquipmentDetailGallery();
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = GameRepository.instance;
+    final defs = repo.equipmentDefs.values
+        .where((d) => d.detailPath != null && d.detailPath!.isNotEmpty)
+        .toList()
+      ..sort((a, b) {
+        final t = a.tier.index.compareTo(b.tier.index);
+        return t != 0 ? t : a.id.compareTo(b.id);
+      });
+    return Scaffold(
+      backgroundColor: const Color(0xFF14181D),
+      appBar: AppBar(title: Text('装备 detail gallery (${defs.length})')),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 0.8,
+        ),
+        itemCount: defs.length,
+        itemBuilder: (_, i) {
+          final d = defs[i];
+          return Column(
+            children: [
+              Expanded(
+                child: Image.asset(
+                  d.detailPath!,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) => const ColoredBox(
+                    color: Color(0xFF22272E),
+                    child: Center(child: Icon(Icons.broken_image, size: 32)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${d.id}\n${d.tier.name}',
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                style: const TextStyle(fontSize: 10, color: Colors.white70),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -17,6 +17,10 @@ enum VisualRoute {
       '战斗屏·大招题字静态验收(玩家暖金 + 敌方绛红 两态)'),
   battleBossFrame('battle_boss_frame',
       '战斗屏·Boss 头像金色加粗边框验收(scenarioBoss 右队首位 Boss)'),
+  enemyGallery('enemy_gallery',
+      '敌人立绘 gallery·全敌人圆形头像滚动验收(buildEnemyTeam 真转换 + CharacterAvatar)'),
+  equipmentDetailGallery('equipment_detail_gallery',
+      '装备 detail gallery·全 detailPath 大图滚动验收(按阶排序,含神物 contain 显示)'),
   narrativeScene('narrative_scene',
       '剧情阅读屏·专属背景图 + scrim + 正文浮层验收(stage_01_05 风雨渡口)');
 
