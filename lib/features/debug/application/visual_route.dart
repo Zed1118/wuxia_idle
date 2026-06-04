@@ -23,6 +23,8 @@ enum VisualRoute {
       '装备 detail gallery·全 detailPath 大图滚动验收(按阶排序,含神物 contain 显示)'),
   narrativeScene('narrative_scene',
       '剧情阅读屏·专属背景图 + scrim + 正文浮层验收(stage_01_05 风雨渡口)'),
+  inventory('inventory',
+      '仓库·装备格子化(部位分组武器/护甲/饰品 + tier 边框 + 强化徽章 + 师承标 + 境界锁灰化)'),
   hub('hub',
       '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 

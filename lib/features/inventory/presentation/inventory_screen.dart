@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../battle/domain/enum_localizations.dart';
-import '../../../data/defs/equipment_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
-import '../../../data/numbers_config.dart';
-import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../../core/application/character_providers.dart';
+import '../../../shared/widgets/equipment_glyph.dart';
 import 'equipment_detail_screen.dart';
 
 /// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账 +
@@ -82,7 +81,7 @@ class _EquipmentTab extends ConsumerWidget {
                 style: TextStyle(color: WuxiaColors.textMuted),
               ),
             )
-          : _List(equipments: list),
+          : _EquipmentGrid(equipments: list),
     );
   }
 }
@@ -117,109 +116,171 @@ class _MaterialTab extends ConsumerWidget {
   }
 }
 
-class _List extends ConsumerWidget {
-  const _List({required this.equipments});
+class _EquipmentGrid extends ConsumerWidget {
+  const _EquipmentGrid({required this.equipments});
 
   final List<Equipment> equipments;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final n = ref.watch(numbersConfigProvider);
-    final groups = <EquipmentTier, List<Equipment>>{};
+    // 玩家主角境界 → 可装备状态判定基准(取 active 队首;无则不锁)。
+    final ids = ref.watch(activeCharacterIdsProvider).value ?? const [];
+    final playerRealm = ids.isEmpty
+        ? null
+        : ref.watch(characterByIdProvider(ids.first)).value?.realmTier;
+
+    final bySlot = <EquipmentSlot, List<Equipment>>{};
     for (final eq in equipments) {
-      groups.putIfAbsent(eq.tier, () => []).add(eq);
+      bySlot.putIfAbsent(eq.slot, () => []).add(eq);
     }
-    final tiers = groups.keys.toList()
-      ..sort((a, b) => b.index.compareTo(a.index));
+    for (final list in bySlot.values) {
+      list.sort((a, b) => b.tier.index.compareTo(a.tier.index));
+    }
+    const order = [
+      EquipmentSlot.weapon,
+      EquipmentSlot.armor,
+      EquipmentSlot.accessory,
+    ];
+    final sections =
+        order.where((s) => bySlot[s]?.isNotEmpty ?? false).toList();
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      itemCount: tiers.length,
+      itemCount: sections.length,
       itemBuilder: (ctx, i) {
-        final tier = tiers[i];
-        final items = groups[tier]!;
-        return _TierGroup(tier: tier, items: items, numbers: n);
+        final slot = sections[i];
+        return _SlotGroupSection(
+          slot: slot,
+          items: bySlot[slot]!,
+          playerRealm: playerRealm,
+        );
       },
     );
   }
 }
 
-class _TierGroup extends StatelessWidget {
-  const _TierGroup({
-    required this.tier,
+/// 按部位分段(武器/护甲/饰品):段标题 + 装备格子 Wrap。
+class _SlotGroupSection extends StatelessWidget {
+  const _SlotGroupSection({
+    required this.slot,
     required this.items,
-    required this.numbers,
+    required this.playerRealm,
   });
 
-  final EquipmentTier tier;
+  final EquipmentSlot slot;
   final List<Equipment> items;
-  final NumbersConfig numbers;
+  final RealmTier? playerRealm;
 
   @override
   Widget build(BuildContext context) {
-    final color = tierColorForEquipment(tier);
-    return Card(
-      color: WuxiaColors.panel,
-      shape: RoundedRectangleBorder(
-        side: const BorderSide(color: WuxiaColors.border),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: ExpansionTile(
-        initiallyExpanded: true,
-        iconColor: color,
-        collapsedIconColor: color,
-        title: Row(
-          children: [
-            Container(width: 3, height: 18, color: color),
-            const SizedBox(width: 8),
-            Text(
-              EnumL10n.equipmentTier(tier),
-              style: TextStyle(color: color, fontWeight: FontWeight.w600),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            child: Row(
+              children: [
+                Container(
+                    width: 3, height: 18, color: WuxiaColors.textPrimary),
+                const SizedBox(width: 8),
+                Text(
+                  EnumL10n.equipmentSlot(slot),
+                  style: const TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text('(${items.length})',
+                    style: const TextStyle(
+                        color: WuxiaColors.textMuted, fontSize: 12)),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              '(${items.length})',
-              style: const TextStyle(
-                color: WuxiaColors.textMuted,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-        children: items
-            .map((eq) => _Row(equipment: eq, numbers: numbers))
-            .toList(),
+          ),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (final eq in items)
+                _EquipmentGridTile(equipment: eq, playerRealm: playerRealm),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-class _Row extends ConsumerWidget {
-  const _Row({required this.equipment, required this.numbers});
+/// 单个装备格子:tier 色边框方块 + 图标 contain(缺图 EquipGlyph)+ 名 +
+/// 强化徽章(右上)+ 师承标记(左上)+ 境界锁(灰化 + 锁图标)。点击进详情/强化。
+class _EquipmentGridTile extends ConsumerWidget {
+  const _EquipmentGridTile({required this.equipment, required this.playerRealm});
 
   final Equipment equipment;
-  final NumbersConfig numbers;
+  final RealmTier? playerRealm;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final eq = equipment;
     final color = tierColorForEquipment(eq.tier);
-    final resonance = eq.resonanceStage(numbers);
-    EquipmentDef? def;
-    try {
-      def = GameRepository.instance.getEquipment(eq.defId);
-    } catch (_) {
-      // fixture / unknown defId → ForgingPanel 用 null 兜底，row 不渲染装备名
-      def = null;
+    final def = GameRepository.instance.equipmentDefs[eq.defId];
+    final locked =
+        playerRealm != null && !eq.isEquippableAtRealm(playerRealm!);
+
+    final Widget icon = (def == null || def.iconPath.isEmpty)
+        ? EquipGlyph(tierColor: color, slot: eq.slot)
+        : Image.asset(
+            def.iconPath,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => EquipGlyph(tierColor: color, slot: eq.slot),
+          );
+
+    Widget body = Container(
+      width: 104,
+      decoration: BoxDecoration(
+        color: WuxiaColors.avatarFill,
+        border: Border.all(color: color, width: 1.5),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      padding: const EdgeInsets.all(6),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 64, width: double.infinity, child: icon),
+          if (def != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              def.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  color: WuxiaColors.textPrimary, fontSize: 12),
+            ),
+          ],
+        ],
+      ),
+    );
+    if (locked) {
+      body = ColorFiltered(
+        colorFilter: const ColorFilter.matrix(<double>[
+          0.2126, 0.7152, 0.0722, 0, 0, //
+          0.2126, 0.7152, 0.0722, 0, 0, //
+          0.2126, 0.7152, 0.0722, 0, 0, //
+          0, 0, 0, 1, 0, //
+        ]),
+        child: body,
+      );
     }
+
     return InkWell(
       onTap: () async {
-        // def 非空走详情屏(W15 LoreLoader 接入后);def == null(fixture /
-        // 未知 defId)兜底直弹 EnhanceDialog,保持向后兼容。
         if (def != null) {
           await Navigator.of(context).push<void>(
             MaterialPageRoute(
-              builder: (_) =>
-                  EquipmentDetailScreen(equipment: eq, def: def!),
+              builder: (_) => EquipmentDetailScreen(equipment: eq, def: def),
             ),
           );
         } else {
@@ -231,74 +292,45 @@ class _Row extends ConsumerWidget {
         ref.invalidate(allEquipmentsProvider);
         ref.invalidate(allInventoryItemsProvider);
       },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: WuxiaColors.avatarFill,
-          border: Border(left: BorderSide(color: color, width: 3)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                border: Border.all(color: color, width: 1),
-                color: WuxiaColors.avatarFill,
-              ),
-              child: def == null
-                  ? null
-                  : Image.asset(
-                      def.iconPath,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                    ),
-            ),
-            const SizedBox(width: 12),
-            SizedBox(
-              width: 52,
-              child: Text(
-                EnumL10n.equipmentSlot(eq.slot),
-                style: const TextStyle(
-                  color: WuxiaColors.textSecondary,
-                  fontSize: 13,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          body,
+          if (eq.enhanceLevel > 0)
+            Positioned(
+              top: 2,
+              right: 2,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: WuxiaColors.background.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(3),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              UiStrings.enhanceLevel(eq.enhanceLevel),
-              style: TextStyle(
-                color: color,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            if (def != null) ...[
-              const SizedBox(width: 12),
-              Flexible(
                 child: Text(
-                  def.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: WuxiaColors.textPrimary,
-                    fontSize: 14,
-                  ),
+                  UiStrings.enhanceLevel(eq.enhanceLevel),
+                  style: TextStyle(
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700),
                 ),
               ),
-            ],
-            const Spacer(),
-            Text(
-              EnumL10n.resonanceStage(resonance),
-              style: const TextStyle(
-                color: WuxiaColors.textMuted,
-                fontSize: 12,
+            ),
+          if (eq.isLineageHeritage)
+            const Positioned(
+              top: 2,
+              left: 2,
+              child: Icon(Icons.auto_awesome,
+                  size: 14, color: WuxiaColors.bossFrame),
+            ),
+          if (locked)
+            const Positioned.fill(
+              child: Center(
+                child: Icon(Icons.lock_outline,
+                    size: 28, color: Colors.white70),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
