@@ -792,20 +792,31 @@ class _TeamColumn extends StatelessWidget {
       crossAxisAlignment: alignment,
       children: [
         for (var i = 0; i < 3; i++)
-          if (i < team.length)
-            _CharacterSlot(
-              character: team[i],
-              isLeftTeam: isLeftTeam,
-              attackController: attackControllers[teamSide * 3 + i],
-              slotPopups: popups[teamSide * 3 + i] ?? const [],
-              animConfig: animConfig,
-              slotKey: teamSide * 3 + i,
-              onPopupComplete: onPopupComplete,
-              hitFlashController: hitFlashControllers[teamSide * 3 + i],
-              flashColor: hitFlashColors[teamSide * 3 + i] ?? Colors.white,
-            )
-          else
-            const SizedBox(width: 160, height: 80),
+          // P0-2 fix(2026-06-04 Codex 验收报 RenderFlex overflow 47px @1280×720):
+          // 每槽包 Expanded+FittedBox(scaleDown)——大窗保持原尺寸,最小窗自动等比
+          // 微缩不再溢出;alignment 锁外缘,头像维持 0.12/0.88 与 projectile 比例坐标对齐。
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment:
+                  isLeftTeam ? Alignment.centerLeft : Alignment.centerRight,
+              child: i < team.length
+                  ? _CharacterSlot(
+                      character: team[i],
+                      isLeftTeam: isLeftTeam,
+                      attackController: attackControllers[teamSide * 3 + i],
+                      slotPopups: popups[teamSide * 3 + i] ?? const [],
+                      animConfig: animConfig,
+                      slotKey: teamSide * 3 + i,
+                      onPopupComplete: onPopupComplete,
+                      hitFlashController:
+                          hitFlashControllers[teamSide * 3 + i],
+                      flashColor:
+                          hitFlashColors[teamSide * 3 + i] ?? Colors.white,
+                    )
+                  : const SizedBox(width: 160, height: 80),
+            ),
+          ),
       ],
     );
   }
