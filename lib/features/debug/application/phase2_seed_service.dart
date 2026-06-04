@@ -333,6 +333,39 @@ class Phase2SeedService {
   ///
   /// stage_01_05 平衡 drift(W7-W8 后 P5 实力可边缘胜)挂账 #33,
   /// **派单时若仍胜出**改用「stage_01_05 不点大招」让玩家方负伤更多。
+  /// 角色面板心魔成长瓶颈验收 seed(P0-3 ③)。
+  ///
+  /// 在 [seedMasterDisciple] 基础上把祖师(id=1)bump 到 wuSheng·shuLian + exp满,
+  /// 并写 MainlineProgress.clearedStageIds = {06_05, 心魔_01, 心魔_02}
+  /// → 心魔 2/7 + 当前 layer(shuLian)被 stage_inner_demon_03 拦截。
+  /// 不动被广泛依赖的 seedMasterDisciple 本体。
+  Future<void> seedCharacterPanelGrowth() async {
+    await seedMasterDisciple();
+    final realm =
+        GameRepository.instance.getRealm(RealmTier.wuSheng, RealmLayer.shuLian);
+    await isar.writeTxn(() async {
+      final founder = await isar.characters.get(1);
+      if (founder != null) {
+        founder.realmTier = RealmTier.wuSheng;
+        founder.realmLayer = RealmLayer.shuLian;
+        founder.experienceToNextLayer = realm.experienceToNext;
+        founder.experience = realm.experienceToNext; // exp 满 → 触发被拦态
+        founder.internalForceMax = realm.internalForceMax;
+        await isar.characters.put(founder);
+      }
+    });
+    final svc = MainlineProgressService(isar: isar);
+    await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    final now = DateTime.now();
+    for (final stageId in const [
+      'stage_06_05',
+      'stage_inner_demon_01',
+      'stage_inner_demon_02',
+    ]) {
+      await svc.recordVictory(stageId: stageId, now: now);
+    }
+  }
+
   Future<void> seedVisualCheckW7W11() async {
     // 1. 跑师徒种子（装备 / 心法 / activeCharacterIds 全套）
     await seedMasterDisciple();
