@@ -118,4 +118,27 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpAndSettle(); // 收尾弹道动画
   });
+
+  testWidgets('3v3 战场在压矮高度不 RenderFlex overflow（P0-2 fix·2026-06-04）',
+      (tester) async {
+    // Codex 验收报 1280×720 下 _TeamColumn overflow 47px;此处用更矮的 560 高
+    // 强制旧布局必溢出,验 Expanded+FittedBox(scaleDown) 修复后无异常。
+    await tester.binding.setSurfaceSize(const Size(1100, 560));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final (left, right) = BattleDemo.mockTeams();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          battleProvider.overrideWith(
+            () => _TestBattleNotifier(
+              BattleState.initial(leftTeam: left, rightTeam: right),
+            ),
+          ),
+        ],
+        child: const MaterialApp(home: BattleScreen(animConfig: _testAnim)),
+      ),
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -89,6 +89,7 @@ class BattleScenarioData {
     required int teamSide,
     required int slotIndex,
     bool isBoss = false,
+    String? iconPath,
   }) => BattleCharacter(
     characterId: id,
     name: name,
@@ -113,6 +114,7 @@ class BattleScenarioData {
     teamSide: teamSide,
     slotIndex: slotIndex,
     isBoss: isBoss,
+    iconPath: iconPath,
   );
 
   // ── 场景 A：二流·圆熟 3v3 同流派同装备，纯比速度 ────────────────────────────
@@ -165,6 +167,7 @@ class BattleScenarioData {
       TechniqueSchool school,
       int side,
       int slot,
+      String icon,
     ) => _char(
       id: id,
       name: name,
@@ -183,18 +186,27 @@ class BattleScenarioData {
       ],
       teamSide: side,
       slotIndex: slot,
+      iconPath: icon,
     );
 
+    // 真敌人立绘验收:左右队各注入真实 assets/enemies/*.png(2026-06-04
+    // Codex 验收发现 battle_scene 路由用测试角色无 iconPath 全落首字 fallback)。
     return (
       [
-        c(21, '刚猛甲', TechniqueSchool.gangMeng, 0, 0),
-        c(22, '灵巧乙', TechniqueSchool.lingQiao, 0, 1),
-        c(23, '阴柔丙', TechniqueSchool.yinRou, 0, 2),
+        c(21, '刚猛甲', TechniqueSchool.gangMeng, 0, 0,
+            'assets/enemies/thug_a.png'),
+        c(22, '灵巧乙', TechniqueSchool.lingQiao, 0, 1,
+            'assets/enemies/ruffian_a.png'),
+        c(23, '阴柔丙', TechniqueSchool.yinRou, 0, 2,
+            'assets/enemies/bandit_b.png'),
       ],
       [
-        c(31, '阴柔甲', TechniqueSchool.yinRou, 1, 0),
-        c(32, '刚猛乙', TechniqueSchool.gangMeng, 1, 1),
-        c(33, '灵巧丙', TechniqueSchool.lingQiao, 1, 2),
+        c(31, '阴柔甲', TechniqueSchool.yinRou, 1, 0,
+            'assets/enemies/you_hufa.png'),
+        c(32, '刚猛乙', TechniqueSchool.gangMeng, 1, 1,
+            'assets/enemies/shidi_b.png'),
+        c(33, '灵巧丙', TechniqueSchool.lingQiao, 1, 2,
+            'assets/enemies/xiliangboss.png'),
       ],
     );
   }
@@ -202,7 +214,8 @@ class BattleScenarioData {
   /// B2 Boss 边框验收:同 scenarioB 但右队首位标 Boss。
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioBoss() {
     BattleCharacter c(int id, String name, TechniqueSchool school, int side,
-            int slot, {bool isBoss = false}) =>
+            int slot,
+            {bool isBoss = false, String? icon}) =>
         _char(
           id: id, name: name,
           tier: RealmTier.yiLiu, layer: RealmLayer.qiMeng,
@@ -212,18 +225,25 @@ class BattleScenarioData {
             _normal('boss_normal_$id', '普攻'),
             _power('boss_power_$id', '重击', pm: 1200, cost: 1000, cd: 3),
           ],
-          teamSide: side, slotIndex: slot, isBoss: isBoss,
+          teamSide: side, slotIndex: slot, isBoss: isBoss, iconPath: icon,
         );
+    // Boss 位注入真实 boss 立绘(xiliangboss)验金边;其余真敌人图。
     return (
       [
-        c(21, '刚猛甲', TechniqueSchool.gangMeng, 0, 0),
-        c(22, '灵巧乙', TechniqueSchool.lingQiao, 0, 1),
-        c(23, '阴柔丙', TechniqueSchool.yinRou, 0, 2),
+        c(21, '刚猛甲', TechniqueSchool.gangMeng, 0, 0,
+            icon: 'assets/enemies/thug_a.png'),
+        c(22, '灵巧乙', TechniqueSchool.lingQiao, 0, 1,
+            icon: 'assets/enemies/ruffian_a.png'),
+        c(23, '阴柔丙', TechniqueSchool.yinRou, 0, 2,
+            icon: 'assets/enemies/bandit_b.png'),
       ],
       [
-        c(31, '魔教教主', TechniqueSchool.yinRou, 1, 0, isBoss: true),
-        c(32, '刚猛乙', TechniqueSchool.gangMeng, 1, 1),
-        c(33, '灵巧丙', TechniqueSchool.lingQiao, 1, 2),
+        c(31, '魔教教主', TechniqueSchool.yinRou, 1, 0,
+            isBoss: true, icon: 'assets/enemies/xiliangboss.png'),
+        c(32, '刚猛乙', TechniqueSchool.gangMeng, 1, 1,
+            icon: 'assets/enemies/you_hufa.png'),
+        c(33, '灵巧丙', TechniqueSchool.lingQiao, 1, 2,
+            icon: 'assets/enemies/shidi_b.png'),
       ],
     );
   }
