@@ -26,6 +26,12 @@ build/
 # macOS
 # =====================================================================
 .DS_Store
+# CocoaPods / Xcode 构建产物(macos 仅本地视觉验收用,目标平台是 Windows)
+macos/Podfile.lock
+macos/Flutter/ephemeral/
+**/Pods/
+# 注:project.pbxproj / contents.xcworkspacedata 是已跟踪的 Xcode 工程定义,
+# 不能 gitignore;其 Pods 集成本地噪音用 `git update-index --skip-worktree` 屏蔽
 
 # =====================================================================
 # Windows
