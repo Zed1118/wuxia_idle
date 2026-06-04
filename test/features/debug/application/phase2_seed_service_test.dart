@@ -10,6 +10,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/mainline/application/mainline_progress_service.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
@@ -882,5 +883,20 @@ void main() {
     expect(save, isNotNull);
     expect(save!.tutorialStep, greaterThanOrEqualTo(3),
         reason: '心法面板主菜单按钮门控 tutorialStep >= 3');
+  });
+
+  test('seedCharacterPanelGrowth → 祖师武圣 + 心魔进度 2/7(被拦)', () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedCharacterPanelGrowth();
+    final founder = await IsarSetup.instance.characters.get(1);
+    expect(founder, isNotNull);
+    expect(founder!.realmTier, RealmTier.wuSheng);
+    expect(founder.experience >= founder.experienceToNextLayer, isTrue,
+        reason: 'exp 满才触发被拦态');
+    final progress = await MainlineProgressService(isar: IsarSetup.instance)
+        .getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    final demonCleared = progress.clearedStageIds
+        .where((s) => s.startsWith('stage_inner_demon_'))
+        .length;
+    expect(demonCleared, 2, reason: '心魔 2/7');
   });
 }
