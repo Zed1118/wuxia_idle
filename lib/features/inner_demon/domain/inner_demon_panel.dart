@@ -40,7 +40,9 @@ InnerDemonPanelData? resolveInnerDemonPanel({
   if (character.realmTier != RealmTier.wuSheng) return null;
 
   final total = progress.totalCount;
-  if (total > 0 && progress.clearedCount >= total) {
+  // 无心魔配置(Demo / InnerDemonDef.empty)→ 无瓶颈可显,不出面板。
+  if (total == 0) return null;
+  if (progress.clearedCount >= total) {
     return InnerDemonPanelData(
       state: InnerDemonPanelState.cleared,
       clearedCount: progress.clearedCount,
