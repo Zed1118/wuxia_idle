@@ -24,6 +24,7 @@ import '../../mainline/application/mainline_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../../shared/widgets/equipment_glyph.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 import 'encounter_skill_section.dart';
@@ -877,12 +878,12 @@ class _EquipmentSlotTile extends ConsumerWidget {
                 height: 44,
                 width: double.infinity,
                 child: iconPath == null
-                    ? _EquipGlyph(tierColor: tierColor, slot: eq.slot)
+                    ? EquipGlyph(tierColor: tierColor, slot: eq.slot)
                     : Image.asset(
                         iconPath,
                         fit: BoxFit.contain,
                         errorBuilder: wuxiaAssetErrorBuilder(
-                          () => _EquipGlyph(
+                          () => EquipGlyph(
                               tierColor: tierColor, slot: eq.slot),
                         ),
                       ),
@@ -1641,30 +1642,6 @@ class _EquipmentSlotShell extends StatelessWidget {
   }
 }
 
-/// 装备图标缺失/未配 def 时的占位(P0-3):tier 色框 + 槽位首字,沿 PortraitFrame 占位体例。
-class _EquipGlyph extends StatelessWidget {
-  const _EquipGlyph({required this.tierColor, required this.slot});
-
-  final Color tierColor;
-  final EquipmentSlot slot;
-
-  @override
-  Widget build(BuildContext context) {
-    final label = EnumL10n.equipmentSlot(slot);
-    final glyph = label.characters.isEmpty ? '器' : label.characters.first;
-    return Center(
-      child: Text(
-        glyph,
-        style: TextStyle(
-          color: tierColor,
-          fontSize: 26,
-          fontWeight: FontWeight.bold,
-          height: 1,
-        ),
-      ),
-    );
-  }
-}
 
 class _TechniqueShell extends StatelessWidget {
   const _TechniqueShell({required this.borderColor, required this.child});
