@@ -16,16 +16,16 @@ import '../../equipment/application/equipment_service.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
 import '../../sect/application/sect_providers.dart';
-import '../../inner_demon/application/inner_demon_service.dart';
-import '../../inner_demon/domain/inner_demon_def.dart';
+import '../../inner_demon/application/inner_demon_providers.dart';
+import '../../inner_demon/domain/inner_demon_panel.dart';
 import '../../inner_demon/presentation/breakthrough_blocker.dart';
 import '../../inner_demon/presentation/inner_demon_screen.dart';
-import '../../mainline/application/mainline_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
 import '../../../shared/widgets/portrait_frame.dart';
+import '../../../shared/widgets/wuxia_paper_panel.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 import 'encounter_skill_section.dart';
 
@@ -348,10 +348,10 @@ class _ProfileHeaderCard extends StatelessWidget {
 
 /// wuSheng 阶心魔关未通 + 满经验时,在 _TopBar 下方插入拦截提示。
 ///
-/// 三态短路顺序:tier ≠ wuSheng / 经验未满 / 当前 layer == dengFeng(飞升不归此管)
-/// → shrink。读 [mainlineProgressProvider] 拿 `clearedStageIds`,经
-/// [InnerDemonService.isLayerLocked] 判定;blockingStageId 反查
-/// `innerDemonDef.requiredRealmLayer` 中 `(wuSheng, currentLayer)` 对应 key。
+/// P0-3 ③:武圣常驻心魔成长瓶颈面板。非武圣 → shrink;否则 watch
+/// [innerDemonProgressProvider] + [resolveInnerDemonPanel] 决定 cleared /
+/// blocked / inProgress 三态,渲染 [InnerDemonProgressPanel]。进阶仍自动,
+/// 「突破」CTA 仅导航至 [InnerDemonScreen]。
 class _BreakthroughBlockerSection extends ConsumerWidget {
   const _BreakthroughBlockerSection({required this.character});
 
@@ -362,57 +362,37 @@ class _BreakthroughBlockerSection extends ConsumerWidget {
     if (character.realmTier != RealmTier.wuSheng) {
       return const SizedBox.shrink();
     }
-    if (character.experience < character.experienceToNextLayer) {
-      return const SizedBox.shrink();
-    }
-    final layers = RealmLayer.values;
-    final currentIdx = layers.indexOf(character.realmLayer);
-    // dengFeng 是顶层 layer,升入下一阶为飞升(P2.3 留接口,本 widget 不涉)。
-    if (currentIdx < 0 || currentIdx >= layers.length - 1) {
-      return const SizedBox.shrink();
-    }
-    final nextLayer = layers[currentIdx + 1];
+    final progressAsync = ref.watch(innerDemonProgressProvider);
+    final progress = progressAsync.asData?.value;
+    if (progress == null) return const SizedBox.shrink(); // loading/err 不闪
 
-    final InnerDemonDef innerDemonDef =
-        GameRepository.instance.numbers.innerDemon;
-    final progressAsync = ref.watch(mainlineProgressProvider);
-    final clearedSet = progressAsync.maybeWhen(
-      data: (p) => p.clearedStageIds.toSet(),
-      orElse: () => const <String>{},
-    );
-
-    final locked = InnerDemonService.isLayerLocked(
-      nextTier: RealmTier.wuSheng,
-      nextLayer: nextLayer,
+    final innerDemonDef = GameRepository.instance.numbers.innerDemon;
+    final data = resolveInnerDemonPanel(
+      character: character,
+      progress: progress,
       innerDemonDef: innerDemonDef,
-      clearedStageIds: clearedSet,
     );
-    if (!locked) return const SizedBox.shrink();
+    if (data == null) return const SizedBox.shrink();
 
-    String? blockingStageId;
-    for (final e in innerDemonDef.requiredRealmLayer.entries) {
-      if (e.value.tier == RealmTier.wuSheng &&
-          e.value.layer == character.realmLayer) {
-        blockingStageId = e.key;
-        break;
-      }
-    }
-    if (blockingStageId == null) return const SizedBox.shrink();
-
-    final stageName =
-        GameRepository.instance.stageDefs[blockingStageId]?.name ??
-            blockingStageId;
+    String? nameFor(String? id) => id == null
+        ? null
+        : (GameRepository.instance.stageDefs[id]?.name ?? id);
 
     return Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: InnerDemonBreakthroughBlocker(
-        nextTier: RealmTier.wuSheng,
-        nextLayer: nextLayer,
-        blockingStageId: blockingStageId,
-        blockingStageName: stageName,
-        onNavigate: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const InnerDemonScreen()),
-        ),
+      child: InnerDemonProgressPanel(
+        state: data.state,
+        clearedCount: data.clearedCount,
+        totalCount: data.totalCount,
+        blockingStageName: nameFor(data.blockingStageId),
+        nextStageName: nameFor(data.nextStageId),
+        onNavigate: data.state == InnerDemonPanelState.cleared
+            ? null
+            : () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const InnerDemonScreen(),
+                  ),
+                ),
       ),
     );
   }
@@ -1110,65 +1090,86 @@ class _MainTechniqueTile extends ConsumerWidget {
           );
         }
         final schoolColor = WuxiaColors.schoolColor(t.school);
+        final techName =
+            GameRepository.instance.techniqueDefs[t.defId]?.name ??
+                UiStrings.techniqueRoleMain;
         final progress = t.cultivationProgressToNext == 0
             ? 0.0
             : (t.cultivationProgress / t.cultivationProgressToNext)
                   .clamp(0.0, 1.0)
                   .toDouble();
-        return _TechniqueShell(
-          borderColor: schoolColor,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    UiStrings.techniqueRoleMain,
-                    style: TextStyle(
-                      color: schoolColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+        return IntrinsicHeight(
+          child: WuxiaPaperPanel(
+          padding: const EdgeInsets.all(14),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 120),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      UiStrings.techniqueRoleMain,
+                      style: TextStyle(
+                        color: schoolColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    EnumL10n.techniqueTier(t.tier),
-                    style: const TextStyle(
-                      color: WuxiaColors.textSecondary,
-                      fontSize: 12,
+                    const Spacer(),
+                    Text(
+                      EnumL10n.techniqueTier(t.tier),
+                      style: const TextStyle(
+                        color: WuxiaColors.textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    EnumL10n.cultivationLayer(t.cultivationLayer),
-                    style: const TextStyle(
-                      color: WuxiaColors.textPrimary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              LinearProgressIndicator(
-                value: progress,
-                minHeight: 6,
-                backgroundColor: WuxiaColors.barTrack,
-                valueColor: AlwaysStoppedAnimation<Color>(schoolColor),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                UiStrings.cultivationProgress(
-                  t.cultivationProgress,
-                  t.cultivationProgressToNext,
+                  ],
                 ),
-                style: const TextStyle(
-                  color: WuxiaColors.textMuted,
-                  fontSize: 11,
+                const SizedBox(height: 6),
+                Text(
+                  techName,
+                  style: TextStyle(
+                    color: schoolColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Text(
+                      EnumL10n.cultivationLayer(t.cultivationLayer),
+                      style: const TextStyle(
+                        color: WuxiaColors.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      UiStrings.cultivationProgress(
+                        t.cultivationProgress,
+                        t.cultivationProgressToNext,
+                      ),
+                      style: const TextStyle(
+                        color: WuxiaColors.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 6,
+                  backgroundColor: WuxiaColors.barTrack,
+                  valueColor: AlwaysStoppedAnimation<Color>(schoolColor),
+                ),
+              ],
+            ),
           ),
+        ),
         );
       },
     );

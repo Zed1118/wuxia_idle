@@ -14,6 +14,9 @@ import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/character_panel_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
+import 'package:wuxia_idle/features/inner_demon/application/inner_demon_providers.dart';
+import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_progress.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_paper_panel.dart';
 
 /// T28 角色面板 widget 测试（phase2_tasks.md §407）。
 ///
@@ -128,6 +131,7 @@ void main() {
     List<int>? activeIds,
     Map<int, Equipment> equipments = const {},
     Map<int, Technique> techniques = const {},
+    InnerDemonProgress? innerDemonProgress,
   }) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -153,6 +157,10 @@ void main() {
           for (final entry in techniques.entries)
             techniqueByIdProvider(entry.key).overrideWith(
               (ref) async => entry.value,
+            ),
+          if (innerDemonProgress != null)
+            innerDemonProgressProvider.overrideWith(
+              (ref) async => innerDemonProgress,
             ),
         ],
         child: MaterialApp(
@@ -264,6 +272,8 @@ void main() {
       id: 20,
       ownerId: 1,
       role: TechniqueRole.main,
+      // 真 defId → 主修名为真实技能名,不与「主修」role 标签撞(hero 化后)。
+      defId: GameRepository.instance.techniqueDefs.keys.first,
       cultivationProgress: 50,
       cultivationProgressToNext: 100,
     );
@@ -753,6 +763,62 @@ void main() {
         character: mkCharacter(weaponId: 10), equipments: {10: w});
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.enhanceLevel(5)), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('③ 非武圣 → 心魔面板不显', (tester) async {
+    await pumpPanel(
+      tester,
+      character: mkCharacter(realmTier: RealmTier.xueTu),
+      innerDemonProgress: const InnerDemonProgress(
+        clearedCount: 0,
+        totalCount: 7,
+        clearedStageIds: {},
+        nextUnclearedStageId: 'stage_inner_demon_01',
+      ),
+    );
+    expect(find.text(UiStrings.innerDemonPanelTitle), findsNothing);
+  });
+
+  testWidgets('③ 武圣 exp满被拦 → 显心魔面板 + X/7 + 突破 CTA', (tester) async {
+    final wuSheng = mkCharacter(realmTier: RealmTier.wuSheng)
+      ..realmLayer = RealmLayer.shuLian
+      ..experience = 999999
+      ..experienceToNextLayer = 100;
+    await pumpPanel(
+      tester,
+      character: wuSheng,
+      innerDemonProgress: const InnerDemonProgress(
+        clearedCount: 2,
+        totalCount: 7,
+        clearedStageIds: {'stage_inner_demon_01', 'stage_inner_demon_02'},
+        nextUnclearedStageId: 'stage_inner_demon_03',
+      ),
+    );
+    expect(find.text(UiStrings.innerDemonPanelTitle), findsOneWidget);
+    expect(find.text(UiStrings.innerDemonPanelProgress(2, 7)), findsOneWidget);
+    expect(find.text(UiStrings.innerDemonBreakthroughCta), findsOneWidget);
+  });
+
+  testWidgets('② 主修 hero:显主修名(真 def name)+ 宣纸底 + 进度条', (tester) async {
+    final realDefId = GameRepository.instance.techniqueDefs.keys.first;
+    final realName = GameRepository.instance.techniqueDefs[realDefId]!.name;
+    final tech = mkTechnique(
+      id: 50,
+      ownerId: 1,
+      role: TechniqueRole.main,
+      defId: realDefId,
+      cultivationProgress: 40,
+      cultivationProgressToNext: 100,
+    );
+    await pumpPanel(
+      tester,
+      character: mkCharacter(mainTechniqueId: 50),
+      techniques: {50: tech},
+    );
+    expect(find.text(realName), findsOneWidget);
+    expect(find.byType(WuxiaPaperPanel), findsWidgets);
+    expect(find.byType(LinearProgressIndicator), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 }
