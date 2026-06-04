@@ -112,4 +112,22 @@ void main() {
     expect(r.state, InnerDemonPanelState.inProgress);
     expect(r.nextStageId, 'stage_inner_demon_02');
   });
+
+  test('武圣但空心魔配置(total 0)→ null(不显空面板)', () {
+    final empty = InnerDemonProgress.from(
+      innerDemonDef: InnerDemonDef.empty(),
+      clearedStageIds: const {},
+    );
+    final r = resolveInnerDemonPanel(
+      character: ch(
+        tier: RealmTier.wuSheng,
+        layer: RealmLayer.shuLian,
+        experience: 100,
+        experienceToNextLayer: 100,
+      ),
+      progress: empty,
+      innerDemonDef: InnerDemonDef.empty(),
+    );
+    expect(r, isNull);
+  });
 }
