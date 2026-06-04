@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/game_repository.dart';
 import 'battle_test_menu.dart';
 import '../../../data/isar_setup.dart';
+import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
@@ -69,81 +70,8 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
       await IsarSetup.init();
       final isar = IsarSetup.instance;
 
-      // 2. 按 route seed + 选目标屏
-      Widget target;
-      switch (widget.route) {
-        case VisualRoute.mainMenu:
-          await OnboardingService(isar: isar).ensureFoundingMasters();
-          target = const MainMenu();
-
-        case VisualRoute.techniquePanelTierAll:
-          await Phase2SeedService(isar: isar).seedVisualMasterAllTiers();
-          target = const TechniquePanelScreen(characterId: 1);
-
-        case VisualRoute.techniquePanelHero:
-          await Phase2SeedService(isar: isar).seedRefineInsight();
-          target = const TechniquePanelScreen(characterId: 1);
-
-        case VisualRoute.sectScreenNpc:
-          await Phase2SeedService(isar: isar).seedSectWithFullNpc();
-          target = const SectScreen();
-
-        case VisualRoute.characterPanelProfile:
-          // seedMasterDisciple 已 _clearAll + 建祖师(id=1)+大/二弟子(带 portraitPath)
-          // + 写 activeCharacterIds → 档案头立绘 + 3 Tab 切弟子立绘可验。
-          await Phase2SeedService(isar: isar).seedMasterDisciple();
-          target = const CharacterPanelScreen(characterId: 1);
-
-        case VisualRoute.chapterList:
-          // 章节封面条验收:任意 seed 即可(封面随 index 渲染,不依赖进度)。
-          await OnboardingService(isar: isar).ensureFoundingMasters();
-          target = const ChapterListScreen();
-
-        case VisualRoute.battleScene:
-          {
-            // `--dart-define=VISUAL_SCENE=inn` 抽样任意 biome 战斗背景
-            // (取 assets/scenes/battle_<name>.png · 缺图走 errorBuilder 兜底)。
-            // 未传默认 citywall。scenarioB 左队稳胜自动推进到 leftWin → 金「胜」仪式,
-            // 验背景 scrim 叠加 + 题材对位 + banding。
-            const envScene = String.fromEnvironment('VISUAL_SCENE');
-            final sceneName = envScene.isEmpty ? 'citywall' : envScene;
-            target = ScenarioLauncher(
-              teamsFactory: BattleScenarioData.scenarioB,
-              hint: '出版美术验收·战斗屏背景 scrim + 胜负仪式 ($sceneName)',
-              sceneBackgroundPath: 'assets/scenes/battle_$sceneName.png',
-            );
-          }
-
-        case VisualRoute.battleUltimateCaption:
-          target = const _UltimateCaptionPreview();
-
-        case VisualRoute.battleBossFrame:
-          target = const ScenarioLauncher(
-            teamsFactory: BattleScenarioData.scenarioBoss,
-            hint: '出版美术验收·Boss 头像金色加粗边框(右队首位)',
-            sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
-          );
-
-        case VisualRoute.enemyGallery:
-          target = const _EnemyGallery();
-
-        case VisualRoute.equipmentDetailGallery:
-          target = const _EquipmentDetailGallery();
-
-        case VisualRoute.narrativeScene:
-          {
-            // `--dart-define=VISUAL_STAGE=stage_04_03` 抽样任意主线关卡;
-            // 未传默认 stage_01_05(风雨渡口)。加载真实开场正文压在对应背景图上。
-            const envStage = String.fromEnvironment('VISUAL_STAGE');
-            final stageId = envStage.isEmpty ? 'stage_01_05' : envStage;
-            final opening = await NarrativeLoader.load('${stageId}_opening');
-            target = NarrativeReaderScreen(
-              content: opening,
-              fallbackTitle: stageId,
-              backgroundImagePath: stageNarrativePath(stageId),
-            );
-          }
-      }
+      // 2. 按 route 构造目标屏(逻辑抽到顶层 buildVisualTarget,供 hub 运行时复用)
+      final target = await buildVisualTarget(widget.route, isar);
 
       // 3. 挂载目标屏
       if (!mounted) return;
@@ -173,6 +101,112 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
         const Scaffold(
           body: Center(child: CircularProgressIndicator()),
         );
+  }
+}
+
+/// 单一职责:route → (seed + 目标屏)。供 [VisualRouteHost] 单路由直达与
+/// [_AcceptanceHub] 运行时点选复用——后者 build 一次即可点遍全部路由,
+/// 免 dart-define VISUAL_ROUTE 每路由重 flutter run(Codex 验收加速)。
+Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
+  switch (route) {
+    case VisualRoute.mainMenu:
+      await OnboardingService(isar: isar).ensureFoundingMasters();
+      return const MainMenu();
+    case VisualRoute.techniquePanelTierAll:
+      await Phase2SeedService(isar: isar).seedVisualMasterAllTiers();
+      return const TechniquePanelScreen(characterId: 1);
+    case VisualRoute.techniquePanelHero:
+      await Phase2SeedService(isar: isar).seedRefineInsight();
+      return const TechniquePanelScreen(characterId: 1);
+    case VisualRoute.sectScreenNpc:
+      await Phase2SeedService(isar: isar).seedSectWithFullNpc();
+      return const SectScreen();
+    case VisualRoute.characterPanelProfile:
+      await Phase2SeedService(isar: isar).seedMasterDisciple();
+      return const CharacterPanelScreen(characterId: 1);
+    case VisualRoute.chapterList:
+      await OnboardingService(isar: isar).ensureFoundingMasters();
+      return const ChapterListScreen();
+    case VisualRoute.battleScene:
+      // hub 点选时无 VISUAL_SCENE → 默认 citywall;需指定 biome 仍可用单路由 dart-define。
+      const envScene = String.fromEnvironment('VISUAL_SCENE');
+      final sceneName = envScene.isEmpty ? 'citywall' : envScene;
+      return ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioB,
+        hint: '出版美术验收·战斗屏背景 scrim + 胜负仪式 ($sceneName)',
+        sceneBackgroundPath: 'assets/scenes/battle_$sceneName.png',
+      );
+    case VisualRoute.battleUltimateCaption:
+      return const _UltimateCaptionPreview();
+    case VisualRoute.battleBossFrame:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioBoss,
+        hint: '出版美术验收·Boss 头像金色加粗边框(右队首位)',
+        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+      );
+    case VisualRoute.enemyGallery:
+      return const _EnemyGallery();
+    case VisualRoute.equipmentDetailGallery:
+      return const _EquipmentDetailGallery();
+    case VisualRoute.narrativeScene:
+      const envStage = String.fromEnvironment('VISUAL_STAGE');
+      final stageId = envStage.isEmpty ? 'stage_01_05' : envStage;
+      final opening = await NarrativeLoader.load('${stageId}_opening');
+      return NarrativeReaderScreen(
+        content: opening,
+        fallbackTitle: stageId,
+        backgroundImagePath: stageNarrativePath(stageId),
+      );
+    case VisualRoute.hub:
+      return _AcceptanceHub(isar: isar);
+  }
+}
+
+/// 验收总入口:build 一次,运行时点按钮 push 各路由目标屏,返回再点下一个。
+/// 解决 dart-define VISUAL_ROUTE 编译期切换需每路由重 flutter run 的慢问题。
+class _AcceptanceHub extends StatelessWidget {
+  const _AcceptanceHub({required this.isar});
+
+  final Isar isar;
+
+  @override
+  Widget build(BuildContext context) {
+    final routes =
+        VisualRoute.values.where((r) => r != VisualRoute.hub).toList();
+    return Scaffold(
+      backgroundColor: const Color(0xFF14181D),
+      appBar: AppBar(
+        title: Text('验收总入口 · ${routes.length} 路由(build 一次点选)'),
+      ),
+      body: ListView.separated(
+        padding: const EdgeInsets.all(12),
+        itemCount: routes.length,
+        separatorBuilder: (_, _) => const Divider(height: 1),
+        itemBuilder: (context, i) {
+          final r = routes[i];
+          return ListTile(
+            title: Text(r.id,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(r.label, style: const TextStyle(fontSize: 11)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              try {
+                final target = await buildVisualTarget(r, isar);
+                navigator.push(
+                  MaterialPageRoute<void>(builder: (_) => target),
+                );
+              } catch (e) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text('路由 ${r.id} 失败: $e')),
+                );
+              }
+            },
+          );
+        },
+      ),
+    );
   }
 }
 
