@@ -1169,6 +1169,35 @@ class Phase2SeedService {
     });
   }
 
+  /// P0-4b 仓库格子化视觉验收 seed:在共鸣谱(6 武器·阶 1-7 + 强化谱 + 师承)
+  /// 基础上补护甲/饰品各 2 件(阶 5-7),凑齐武器/护甲/饰品三段 → 验部位分组
+  /// 网格 + tier 边框 + 强化徽章 + 师承标 + 境界锁(activeCharacter 境界基准)。
+  Future<void> seedInventoryShowcase() async {
+    await seedVisualCheckW15Resonance();
+    final repo = GameRepository.instance;
+    final rng = DefaultRng();
+    final now = DateTime.now();
+    const extraDefIds = <String>[
+      'armor_zhongqi_yin_lin_jia',
+      'armor_baowu_jin_si_jia',
+      'accessory_liqi_fei_yu_pei',
+      'accessory_shenwu_kun_lun_pei',
+    ];
+    await isar.writeTxn(() async {
+      for (final id in extraDefIds) {
+        final def = repo.getEquipment(id);
+        final eq = EquipmentFactory.fromDef(
+          def,
+          rng: rng,
+          obtainedAt: now,
+          obtainedFrom: 'inventory_showcase',
+          ownerCharacterId: 1,
+        );
+        await isar.equipments.put(eq);
+      }
+    });
+  }
+
 }
 
 class _ResonanceSpec {

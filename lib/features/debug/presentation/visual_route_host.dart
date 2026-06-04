@@ -12,6 +12,7 @@ import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../sect/presentation/sect_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
+import '../../inventory/presentation/inventory_screen.dart';
 import '../application/phase2_seed_service.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
 import '../application/visual_route.dart';
@@ -157,6 +158,9 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         fallbackTitle: stageId,
         backgroundImagePath: stageNarrativePath(stageId),
       );
+    case VisualRoute.inventory:
+      await Phase2SeedService(isar: isar).seedInventoryShowcase();
+      return const InventoryScreen();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
