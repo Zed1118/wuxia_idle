@@ -5,7 +5,7 @@ import '../../../data/defs/technique_def.dart';
 
 /// W18-A1 · 心法相生检测服务(GDD §4.5)。
 ///
-/// 对单角色 (mainTech, assistTech[0]) 组合应用 [SynergyDef.matches],按
+/// 对单角色 (mainTech, 任一 assistTech) 组合应用 [SynergyDef.matches],按
 /// 优先级 [SynergyRequirementType.specificTechniques] >
 /// [SynergyRequirementType.schoolPair] > [SynergyRequirementType.sameSchool] >
 /// [SynergyRequirementType.sameTier] 找到首个命中即返回(单角色至多 1 个相生
@@ -16,7 +16,7 @@ import '../../../data/defs/technique_def.dart';
 /// - [StageBattleSetup.buildTeams](战斗 init 时注入 multiplier)
 /// - CharacterPanelScreen(UI 显示已激活相生 chip)
 class SynergyService {
-  /// 检测角色当前 (mainTech, assistTech[0]) 命中的相生。
+  /// 检测角色当前 (mainTech, 任一 assistTech) 命中的相生。
   ///
   /// 返回 null 的情况:
   /// - [Character.mainTechniqueId] 为 null
@@ -34,31 +34,40 @@ class SynergyService {
     final mainId = character.mainTechniqueId;
     if (mainId == null) return null;
     if (character.assistTechniqueIds.isEmpty) return null;
-    final assistId = character.assistTechniqueIds.first;
 
     final mainTech = _findById(ownedTechniques, mainId);
-    final assistTech = _findById(ownedTechniques, assistId);
-    if (mainTech == null || assistTech == null) return null;
+    if (mainTech == null) return null;
 
     final mainDef = techDefLookup(mainTech.defId);
-    final assistDef = techDefLookup(assistTech.defId);
-    if (mainDef == null || assistDef == null) return null;
+    if (mainDef == null) return null;
+
+    final assistCandidates = <_AssistCandidate>[];
+    for (final assistId in character.assistTechniqueIds) {
+      final assistTech = _findById(ownedTechniques, assistId);
+      if (assistTech == null) continue;
+      final assistDef = techDefLookup(assistTech.defId);
+      if (assistDef == null) continue;
+      assistCandidates.add(_AssistCandidate(assistTech, assistDef));
+    }
+    if (assistCandidates.isEmpty) return null;
 
     // 严格优先级:specificTechniques > schoolPair > sameSchool > sameTier。
     // enum 声明顺序 = 优先级顺序,遍历 values 自动按优先级。每个 type 内部
-    // 按 yaml 声明顺序,首个命中即返。
+    // 按 yaml 声明顺序,首个命中即返；同一 synergy 下按辅修槽顺序检测。
     for (final type in SynergyRequirementType.values) {
       for (final s in synergies) {
         if (s.requirementType != type) continue;
-        if (s.matches(
-          mainSchool: mainDef.school,
-          assistSchool: assistDef.school,
-          mainTier: mainDef.tier,
-          assistTier: assistDef.tier,
-          mainTechniqueId: mainTech.defId,
-          assistTechniqueId: assistTech.defId,
-        )) {
-          return s;
+        for (final assist in assistCandidates) {
+          if (s.matches(
+            mainSchool: mainDef.school,
+            assistSchool: assist.def.school,
+            mainTier: mainDef.tier,
+            assistTier: assist.def.tier,
+            mainTechniqueId: mainTech.defId,
+            assistTechniqueId: assist.tech.defId,
+          )) {
+            return s;
+          }
         }
       }
     }
@@ -71,4 +80,11 @@ class SynergyService {
     }
     return null;
   }
+}
+
+class _AssistCandidate {
+  const _AssistCandidate(this.tech, this.def);
+
+  final Technique tech;
+  final TechniqueDef def;
 }

@@ -71,10 +71,7 @@ typedef RetreatResult = ({
 ///   - 装备抽检：per session 单次，概率 = equipmentDropRate × baseEquipDropProbability
 ///   - 正午阳刚 +20% 未消费 — 依赖 §12 #7 流派 extra_effect 决议，留挂账
 class SeclusionService {
-  const SeclusionService({
-    required this.isar,
-    this.encounterService,
-  });
+  const SeclusionService({required this.isar, this.encounterService});
 
   final Isar isar;
 
@@ -202,9 +199,10 @@ class SeclusionService {
     // 时,internalForcePoints 维度乘 zhengWuYangSchoolMultiplier(1.20)。
     // 非刚猛角色 / 非正午 → 系数 1.0 无加成。
     final zhengWuBonus =
-        (_isZhengWu(session.startedAt) && charSchool == config.zhengWuAppliesToSchool)
-            ? config.zhengWuYangSchoolMultiplier
-            : 1.0;
+        (_isZhengWu(session.startedAt) &&
+            charSchool == config.zhengWuAppliesToSchool)
+        ? config.zhengWuYangSchoolMultiplier
+        : 1.0;
 
     final mojianshi = (def.mojianshiPerHour * actualHours * scale * solarBonus)
         .floor()
@@ -215,27 +213,29 @@ class SeclusionService {
             .floor()
             .clamp(0, 999999);
 
-    final techniqueLearnPoints = (config.baseTechniqueLearnPerHour *
-            def.techniqueLearnRate *
-            actualHours *
-            scale *
-            solarBonus)
-        .floor()
-        .clamp(0, 999999);
+    final techniqueLearnPoints =
+        (config.baseTechniqueLearnPerHour *
+                def.techniqueLearnRate *
+                actualHours *
+                scale *
+                solarBonus)
+            .floor()
+            .clamp(0, 999999);
 
     // W18-A1.2 心法相生 internalForceGrowthPct 乘进 internalForcePoints
     // (闭关产出维度,与战斗 init internalForceMaxPct 分管;数值红线 ≤ 0.30 + 1.0
     // 基底 → 最大 1.30 倍 clamp 后仍 ≤ 999999)。
-    final internalForcePoints = (config.baseInternalForcePerHour *
-            def.internalForceGrowth *
-            actualHours *
-            scale *
-            solarBonus *
-            ziShiBonus *
-            zhengWuBonus *
-            (1.0 + synergyInternalForceGrowthPct))
-        .floor()
-        .clamp(0, 999999);
+    final internalForcePoints =
+        (config.baseInternalForcePerHour *
+                def.internalForceGrowth *
+                actualHours *
+                scale *
+                solarBonus *
+                ziShiBonus *
+                zhengWuBonus *
+                (1.0 + synergyInternalForceGrowthPct))
+            .floor()
+            .clamp(0, 999999);
 
     // 装备抽检：每 session 单次，概率 = equipmentDropRate × base
     final effectiveRng = rng ?? DefaultRng();
@@ -276,12 +276,11 @@ class SeclusionService {
     // seclusion 完工低频,2 次 read 开销可忽略。
     final preCharForBonus = await isar.characters.get(characterId);
 
-    // W18-A1.2:闭关收功时查 character 的心法相生(主修 + 第 1 辅修),
+    // W18-A1.2:闭关收功时查 character 的心法相生(主修 + 全部辅修),
     // 命中 internalForceGrowthPct 注入 computeOutputs 内力维度。读 tech 在
     // writeTxn 外(seclusion 完工低频,2-3 次 isar.get 开销可忽略),拿不到
     // character / tech → growthPct 默认 0.0(无相生),整链 fallthrough。
-    final synergyGrowthPct =
-        await _detectSynergyGrowthPct(preCharForBonus);
+    final synergyGrowthPct = await _detectSynergyGrowthPct(preCharForBonus);
 
     final outputs = computeOutputs(
       session: session,
@@ -315,9 +314,11 @@ class SeclusionService {
       // 2. 更新 session
       final rewards = <RewardEntry>[];
       if (outputs.mojianshi > 0) {
-        rewards.add(RewardEntry()
-          ..rewardKey = 'item_mojianshi'
-          ..quantity = outputs.mojianshi);
+        rewards.add(
+          RewardEntry()
+            ..rewardKey = 'item_mojianshi'
+            ..quantity = outputs.mojianshi,
+        );
       }
       session
         ..completedAt = now
@@ -336,18 +337,22 @@ class SeclusionService {
       if (ch != null) {
         if (outputs.internalForcePoints > 0) {
           final next = ch.internalForce + outputs.internalForcePoints;
-          ch.internalForce =
-              next > ch.internalForceMax ? ch.internalForceMax : next;
+          ch.internalForce = next > ch.internalForceMax
+              ? ch.internalForceMax
+              : next;
         }
         if (outputs.techniqueLearnPoints > 0) {
           ch.insightPoints += outputs.techniqueLearnPoints;
         }
         // 根因A(2026-05-29):闭关挂机折算 battleCount 喂出战装备共鸣度
         // (人剑合一离线可推进)。rate × actualHours,加到 3 件出战装备。
-        final bcGain = (GameRepository
-                    .instance.numbers.resonanceSeclusionBattleCountPerHour *
-                outputs.actualHours)
-            .floor();
+        final bcGain =
+            (GameRepository
+                        .instance
+                        .numbers
+                        .resonanceSeclusionBattleCountPerHour *
+                    outputs.actualHours)
+                .floor();
         if (bcGain > 0) {
           for (final eqId in [
             ch.equippedWeaponId,
@@ -370,8 +375,7 @@ class SeclusionService {
               .filter()
               .saveDataIdEqualTo(session.saveDataId)
               .findFirst();
-          final clearedSet =
-              progress?.clearedStageIds.toSet() ?? <String>{};
+          final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
           final innerDemonDef = GameRepository.instance.numbers.innerDemon;
           advancement = CharacterAdvancementService.applyExperience(
             ch,
@@ -407,7 +411,9 @@ class SeclusionService {
           // (GDD §7.1 收徒门槛是开派祖师的事,disciple 升层不算)。
           if (ch.lineageRole == LineageRole.founder) {
             final tutorialSvc = TutorialService(isar);
-            await tutorialSvc.advanceForRealmBreakthrough(advancement!.tierAfter);
+            await tutorialSvc.advanceForRealmBreakthrough(
+              advancement!.tierAfter,
+            );
           }
         }
       }
@@ -436,7 +442,7 @@ class SeclusionService {
 
   /// W18-A1.2 心法相生 internalForceGrowthPct 检测(闭关收功用)。
   ///
-  /// 沿 [StageBattleSetup._playerToBattle] 体例,读 character 主修 + 第 1 辅修
+  /// 沿 [StageBattleSetup._playerToBattle] 体例,读 character 主修 + 全部辅修
   /// tech → [SynergyService.detectActive] → 提取
   /// `synergy.multipliers.internalForceGrowthPct`(0.0 - 0.30,红线 ≤ 0.30)。
   /// 任一条件缺失返 0.0(无相生):character / mainTechniqueId / mainTech /
@@ -448,14 +454,15 @@ class SeclusionService {
     if (character.assistTechniqueIds.isEmpty) return 0.0;
     final mainTech = await isar.techniques.get(mainId);
     if (mainTech == null) return 0.0;
-    final assistTech =
-        await isar.techniques.get(character.assistTechniqueIds.first);
-    if (assistTech == null) return 0.0;
+    final ownedTechniques = <Technique>[mainTech];
+    for (final assistId in character.assistTechniqueIds) {
+      final assistTech = await isar.techniques.get(assistId);
+      if (assistTech != null) ownedTechniques.add(assistTech);
+    }
     final synergy = SynergyService.detectActive(
       character: character,
-      ownedTechniques: [mainTech, assistTech],
-      techDefLookup: (defId) =>
-          GameRepository.instance.techniqueDefs[defId],
+      ownedTechniques: ownedTechniques,
+      techDefLookup: (defId) => GameRepository.instance.techniqueDefs[defId],
       synergies: GameRepository.instance.synergies,
     );
     return synergy?.multipliers.internalForceGrowthPct ?? 0.0;
@@ -517,12 +524,10 @@ class SeclusionService {
   static SeclusionMapDef _getDef(
     RetreatMapType mapType,
     List<SeclusionMapDef> maps,
-  ) =>
-      maps.firstWhere(
-        (m) => m.mapType == mapType,
-        orElse: () =>
-            throw StateError('SeclusionMapDef 未找到: ${mapType.name}'),
-      );
+  ) => maps.firstWhere(
+    (m) => m.mapType == mapType,
+    orElse: () => throw StateError('SeclusionMapDef 未找到: ${mapType.name}'),
+  );
 
   /// 是否为子时（23:00-01:00 含）。
   /// W15 #30 修正：原 `_timeDayBonus` 把子时×1.2 当全产出加成是 bug，

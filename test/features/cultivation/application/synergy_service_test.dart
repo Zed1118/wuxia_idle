@@ -65,18 +65,17 @@ void main() {
     required String id,
     required TechniqueTier tier,
     required TechniqueSchool school,
-  }) =>
-      TechniqueDef(
-        id: id,
-        name: id,
-        tier: tier,
-        school: school,
-        description: '',
-        skillIds: const [],
-        internalForceGrowthBonus: 1.0,
-        speedBonus: 0,
-        acquireSourceTags: const [],
-      );
+  }) => TechniqueDef(
+    id: id,
+    name: id,
+    tier: tier,
+    school: school,
+    description: '',
+    skillIds: const [],
+    internalForceGrowthBonus: 1.0,
+    speedBonus: 0,
+    acquireSourceTags: const [],
+  );
 
   Technique mkTech({
     required int id,
@@ -97,21 +96,17 @@ void main() {
     return t;
   }
 
-  Character mkChar({
-    int? mainTechId,
-    List<int>? assistIds,
-  }) =>
-      Character.create(
-        name: '测试',
-        realmTier: RealmTier.xueTu,
-        realmLayer: RealmLayer.qiMeng,
-        attributes: Attributes(),
-        rarity: RarityTier.biaoZhun,
-        lineageRole: LineageRole.disciple,
-        createdAt: DateTime(2026),
-        mainTechniqueId: mainTechId,
-        assistTechniqueIds: assistIds,
-      );
+  Character mkChar({int? mainTechId, List<int>? assistIds}) => Character.create(
+    name: '测试',
+    realmTier: RealmTier.xueTu,
+    realmLayer: RealmLayer.qiMeng,
+    attributes: Attributes(),
+    rarity: RarityTier.biaoZhun,
+    lineageRole: LineageRole.disciple,
+    createdAt: DateTime(2026),
+    mainTechniqueId: mainTechId,
+    assistTechniqueIds: assistIds,
+  );
 
   TechniqueDef? Function(String) lookupOf(Map<String, TechniqueDef> defs) =>
       (defId) => defs[defId];
@@ -122,28 +117,32 @@ void main() {
     test('阴阳调和:gangMeng 主 + yinRou 辅', () {
       final defs = {
         'tech_a': mkTechDef(
-            id: 'tech_a',
-            tier: TechniqueTier.ruMenGong,
-            school: TechniqueSchool.gangMeng),
+          id: 'tech_a',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+        ),
         'tech_b': mkTechDef(
-            id: 'tech_b',
-            tier: TechniqueTier.changLianGong,
-            school: TechniqueSchool.yinRou),
+          id: 'tech_b',
+          tier: TechniqueTier.changLianGong,
+          school: TechniqueSchool.yinRou,
+        ),
       };
       final result = SynergyService.detectActive(
         character: mkChar(mainTechId: 1, assistIds: [2]),
         ownedTechniques: [
           mkTech(
-              id: 1,
-              defId: 'tech_a',
-              tier: TechniqueTier.ruMenGong,
-              school: TechniqueSchool.gangMeng),
+            id: 1,
+            defId: 'tech_a',
+            tier: TechniqueTier.ruMenGong,
+            school: TechniqueSchool.gangMeng,
+          ),
           mkTech(
-              id: 2,
-              defId: 'tech_b',
-              tier: TechniqueTier.changLianGong,
-              school: TechniqueSchool.yinRou,
-              role: TechniqueRole.assist),
+            id: 2,
+            defId: 'tech_b',
+            tier: TechniqueTier.changLianGong,
+            school: TechniqueSchool.yinRou,
+            role: TechniqueRole.assist,
+          ),
         ],
         techDefLookup: lookupOf(defs),
         synergies: synergies,
@@ -154,27 +153,31 @@ void main() {
     test('刚柔并济:gangMeng 主 + lingQiao 辅', () {
       final defs = {
         'a': mkTechDef(
-            id: 'a',
-            tier: TechniqueTier.ruMenGong,
-            school: TechniqueSchool.gangMeng),
+          id: 'a',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+        ),
         'b': mkTechDef(
-            id: 'b',
-            tier: TechniqueTier.changLianGong,
-            school: TechniqueSchool.lingQiao),
+          id: 'b',
+          tier: TechniqueTier.changLianGong,
+          school: TechniqueSchool.lingQiao,
+        ),
       };
       final result = SynergyService.detectActive(
         character: mkChar(mainTechId: 1, assistIds: [2]),
         ownedTechniques: [
           mkTech(
-              id: 1,
-              defId: 'a',
-              tier: TechniqueTier.ruMenGong,
-              school: TechniqueSchool.gangMeng),
+            id: 1,
+            defId: 'a',
+            tier: TechniqueTier.ruMenGong,
+            school: TechniqueSchool.gangMeng,
+          ),
           mkTech(
-              id: 2,
-              defId: 'b',
-              tier: TechniqueTier.changLianGong,
-              school: TechniqueSchool.lingQiao),
+            id: 2,
+            defId: 'b',
+            tier: TechniqueTier.changLianGong,
+            school: TechniqueSchool.lingQiao,
+          ),
         ],
         techDefLookup: lookupOf(defs),
         synergies: synergies,
@@ -185,27 +188,31 @@ void main() {
     test('阴影迅捷:yinRou 主 + lingQiao 辅', () {
       final defs = {
         'a': mkTechDef(
-            id: 'a',
-            tier: TechniqueTier.ruMenGong,
-            school: TechniqueSchool.yinRou),
+          id: 'a',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.yinRou,
+        ),
         'b': mkTechDef(
-            id: 'b',
-            tier: TechniqueTier.ruMenGong,
-            school: TechniqueSchool.lingQiao),
+          id: 'b',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.lingQiao,
+        ),
       };
       final result = SynergyService.detectActive(
         character: mkChar(mainTechId: 1, assistIds: [2]),
         ownedTechniques: [
           mkTech(
-              id: 1,
-              defId: 'a',
-              tier: TechniqueTier.ruMenGong,
-              school: TechniqueSchool.yinRou),
+            id: 1,
+            defId: 'a',
+            tier: TechniqueTier.ruMenGong,
+            school: TechniqueSchool.yinRou,
+          ),
           mkTech(
-              id: 2,
-              defId: 'b',
-              tier: TechniqueTier.ruMenGong,
-              school: TechniqueSchool.lingQiao),
+            id: 2,
+            defId: 'b',
+            tier: TechniqueTier.ruMenGong,
+            school: TechniqueSchool.lingQiao,
+          ),
         ],
         techDefLookup: lookupOf(defs),
         synergies: synergies,
@@ -216,27 +223,31 @@ void main() {
     test('同流派精进:主辅同 yinRou + tier 不同 → 命中(优先 sameSchool)', () {
       final defs = {
         'a': mkTechDef(
-            id: 'a',
-            tier: TechniqueTier.ruMenGong,
-            school: TechniqueSchool.yinRou),
+          id: 'a',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.yinRou,
+        ),
         'b': mkTechDef(
-            id: 'b',
-            tier: TechniqueTier.changLianGong,
-            school: TechniqueSchool.yinRou),
+          id: 'b',
+          tier: TechniqueTier.changLianGong,
+          school: TechniqueSchool.yinRou,
+        ),
       };
       final result = SynergyService.detectActive(
         character: mkChar(mainTechId: 1, assistIds: [2]),
         ownedTechniques: [
           mkTech(
-              id: 1,
-              defId: 'a',
-              tier: TechniqueTier.ruMenGong,
-              school: TechniqueSchool.yinRou),
+            id: 1,
+            defId: 'a',
+            tier: TechniqueTier.ruMenGong,
+            school: TechniqueSchool.yinRou,
+          ),
           mkTech(
-              id: 2,
-              defId: 'b',
-              tier: TechniqueTier.changLianGong,
-              school: TechniqueSchool.yinRou),
+            id: 2,
+            defId: 'b',
+            tier: TechniqueTier.changLianGong,
+            school: TechniqueSchool.yinRou,
+          ),
         ],
         techDefLookup: lookupOf(defs),
         synergies: synergies,
@@ -249,67 +260,178 @@ void main() {
       // (刚柔并济)与 sameTier(同辈互补)。schoolPair 优先级更高 → 命中刚柔并济
       final defs = {
         'a': mkTechDef(
-            id: 'a',
-            tier: TechniqueTier.ruMenGong,
-            school: TechniqueSchool.gangMeng),
+          id: 'a',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+        ),
         'b': mkTechDef(
-            id: 'b',
-            tier: TechniqueTier.ruMenGong,
-            school: TechniqueSchool.lingQiao),
+          id: 'b',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.lingQiao,
+        ),
       };
       final result = SynergyService.detectActive(
         character: mkChar(mainTechId: 1, assistIds: [2]),
         ownedTechniques: [
           mkTech(
-              id: 1,
-              defId: 'a',
-              tier: TechniqueTier.ruMenGong,
-              school: TechniqueSchool.gangMeng),
+            id: 1,
+            defId: 'a',
+            tier: TechniqueTier.ruMenGong,
+            school: TechniqueSchool.gangMeng,
+          ),
           mkTech(
-              id: 2,
-              defId: 'b',
-              tier: TechniqueTier.ruMenGong,
-              school: TechniqueSchool.lingQiao),
+            id: 2,
+            defId: 'b',
+            tier: TechniqueTier.ruMenGong,
+            school: TechniqueSchool.lingQiao,
+          ),
         ],
         techDefLookup: lookupOf(defs),
         synergies: synergies,
       );
-      expect(result?.id, equals('synergy_gang_rou_bing_ji'),
-          reason: 'schoolPair 优先级高于 sameTier');
+      expect(
+        result?.id,
+        equals('synergy_gang_rou_bing_ji'),
+        reason: 'schoolPair 优先级高于 sameTier',
+      );
     });
 
-    test('同辈互补:lingQiao 主 + gangMeng 辅(没 schoolPair lingQiao→gangMeng) tier 同 → sameTier 命中',
-        () {
-      // schoolPair 中无 (lingQiao, gangMeng) 配置,且 sameSchool 需同流派(不符);
-      // 但 tier 相同 → sameTier 命中
-      final defs = {
-        'a': mkTechDef(
+    test(
+      '同辈互补:lingQiao 主 + gangMeng 辅(没 schoolPair lingQiao→gangMeng) tier 同 → sameTier 命中',
+      () {
+        // schoolPair 中无 (lingQiao, gangMeng) 配置,且 sameSchool 需同流派(不符);
+        // 但 tier 相同 → sameTier 命中
+        final defs = {
+          'a': mkTechDef(
             id: 'a',
             tier: TechniqueTier.menPaiJueXue,
-            school: TechniqueSchool.lingQiao),
-        'b': mkTechDef(
+            school: TechniqueSchool.lingQiao,
+          ),
+          'b': mkTechDef(
             id: 'b',
             tier: TechniqueTier.menPaiJueXue,
-            school: TechniqueSchool.gangMeng),
-      };
-      final result = SynergyService.detectActive(
-        character: mkChar(mainTechId: 1, assistIds: [2]),
-        ownedTechniques: [
-          mkTech(
+            school: TechniqueSchool.gangMeng,
+          ),
+        };
+        final result = SynergyService.detectActive(
+          character: mkChar(mainTechId: 1, assistIds: [2]),
+          ownedTechniques: [
+            mkTech(
               id: 1,
               defId: 'a',
               tier: TechniqueTier.menPaiJueXue,
-              school: TechniqueSchool.lingQiao),
-          mkTech(
+              school: TechniqueSchool.lingQiao,
+            ),
+            mkTech(
               id: 2,
               defId: 'b',
               tier: TechniqueTier.menPaiJueXue,
-              school: TechniqueSchool.gangMeng),
+              school: TechniqueSchool.gangMeng,
+            ),
+          ],
+          techDefLookup: lookupOf(defs),
+          synergies: synergies,
+        );
+        expect(result?.id, equals('synergy_tong_bei_hu_bu'));
+      },
+    );
+  });
+
+  group('多辅修槽候选', () {
+    test('第 1 辅修不命中，第 2 辅修命中 → 返回第 2 槽相生', () {
+      final defs = {
+        'main': mkTechDef(
+          id: 'main',
+          tier: TechniqueTier.menPaiJueXue,
+          school: TechniqueSchool.lingQiao,
+        ),
+        'miss': mkTechDef(
+          id: 'miss',
+          tier: TechniqueTier.changLianGong,
+          school: TechniqueSchool.yinRou,
+        ),
+        'hit': mkTechDef(
+          id: 'hit',
+          tier: TechniqueTier.menPaiJueXue,
+          school: TechniqueSchool.gangMeng,
+        ),
+      };
+      final result = SynergyService.detectActive(
+        character: mkChar(mainTechId: 1, assistIds: [2, 3]),
+        ownedTechniques: [
+          mkTech(
+            id: 1,
+            defId: 'main',
+            tier: TechniqueTier.menPaiJueXue,
+            school: TechniqueSchool.lingQiao,
+          ),
+          mkTech(
+            id: 2,
+            defId: 'miss',
+            tier: TechniqueTier.changLianGong,
+            school: TechniqueSchool.yinRou,
+          ),
+          mkTech(
+            id: 3,
+            defId: 'hit',
+            tier: TechniqueTier.menPaiJueXue,
+            school: TechniqueSchool.gangMeng,
+          ),
         ],
         techDefLookup: lookupOf(defs),
         synergies: synergies,
       );
       expect(result?.id, equals('synergy_tong_bei_hu_bu'));
+    });
+
+    test('第 1 辅修低优先级命中，第 2 辅修高优先级命中 → 返回高优先级', () {
+      final defs = {
+        'main': mkTechDef(
+          id: 'main',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+        ),
+        'same_school': mkTechDef(
+          id: 'same_school',
+          tier: TechniqueTier.changLianGong,
+          school: TechniqueSchool.gangMeng,
+        ),
+        'school_pair': mkTechDef(
+          id: 'school_pair',
+          tier: TechniqueTier.changLianGong,
+          school: TechniqueSchool.yinRou,
+        ),
+      };
+      final result = SynergyService.detectActive(
+        character: mkChar(mainTechId: 1, assistIds: [2, 3]),
+        ownedTechniques: [
+          mkTech(
+            id: 1,
+            defId: 'main',
+            tier: TechniqueTier.ruMenGong,
+            school: TechniqueSchool.gangMeng,
+          ),
+          mkTech(
+            id: 2,
+            defId: 'same_school',
+            tier: TechniqueTier.changLianGong,
+            school: TechniqueSchool.gangMeng,
+          ),
+          mkTech(
+            id: 3,
+            defId: 'school_pair',
+            tier: TechniqueTier.changLianGong,
+            school: TechniqueSchool.yinRou,
+          ),
+        ],
+        techDefLookup: lookupOf(defs),
+        synergies: synergies,
+      );
+      expect(
+        result?.id,
+        equals('synergy_yin_yang_he_xie'),
+        reason: 'schoolPair 优先级应高于第 1 辅修命中的 sameSchool',
+      );
     });
   });
 
@@ -344,10 +466,11 @@ void main() {
           character: mkChar(mainTechId: 999, assistIds: [2]),
           ownedTechniques: [
             mkTech(
-                id: 2,
-                defId: 'b',
-                tier: TechniqueTier.ruMenGong,
-                school: TechniqueSchool.gangMeng),
+              id: 2,
+              defId: 'b',
+              tier: TechniqueTier.ruMenGong,
+              school: TechniqueSchool.gangMeng,
+            ),
           ],
           techDefLookup: (_) => null,
           synergies: synergies,
@@ -362,15 +485,17 @@ void main() {
           character: mkChar(mainTechId: 1, assistIds: [2]),
           ownedTechniques: [
             mkTech(
-                id: 1,
-                defId: 'a',
-                tier: TechniqueTier.ruMenGong,
-                school: TechniqueSchool.gangMeng),
+              id: 1,
+              defId: 'a',
+              tier: TechniqueTier.ruMenGong,
+              school: TechniqueSchool.gangMeng,
+            ),
             mkTech(
-                id: 2,
-                defId: 'b',
-                tier: TechniqueTier.ruMenGong,
-                school: TechniqueSchool.yinRou),
+              id: 2,
+              defId: 'b',
+              tier: TechniqueTier.ruMenGong,
+              school: TechniqueSchool.yinRou,
+            ),
           ],
           techDefLookup: (_) => null,
           synergies: synergies,
@@ -398,27 +523,31 @@ void main() {
       // (lingQiao→yinRou),sameSchool 不符,tier 不同 → null
       final defs = {
         'a': mkTechDef(
-            id: 'a',
-            tier: TechniqueTier.ruMenGong,
-            school: TechniqueSchool.lingQiao),
+          id: 'a',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.lingQiao,
+        ),
         'b': mkTechDef(
-            id: 'b',
-            tier: TechniqueTier.changLianGong,
-            school: TechniqueSchool.yinRou),
+          id: 'b',
+          tier: TechniqueTier.changLianGong,
+          school: TechniqueSchool.yinRou,
+        ),
       };
       final result = SynergyService.detectActive(
         character: mkChar(mainTechId: 1, assistIds: [2]),
         ownedTechniques: [
           mkTech(
-              id: 1,
-              defId: 'a',
-              tier: TechniqueTier.ruMenGong,
-              school: TechniqueSchool.lingQiao),
+            id: 1,
+            defId: 'a',
+            tier: TechniqueTier.ruMenGong,
+            school: TechniqueSchool.lingQiao,
+          ),
           mkTech(
-              id: 2,
-              defId: 'b',
-              tier: TechniqueTier.changLianGong,
-              school: TechniqueSchool.yinRou),
+            id: 2,
+            defId: 'b',
+            tier: TechniqueTier.changLianGong,
+            school: TechniqueSchool.yinRou,
+          ),
         ],
         techDefLookup: lookupOf(defs),
         synergies: synergies,

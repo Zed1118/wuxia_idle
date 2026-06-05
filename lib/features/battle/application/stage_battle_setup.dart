@@ -110,9 +110,7 @@ class StageBattleSetup {
       // 兜底：Phase 2 P1 种子是 id=1 单人，没设 activeCharacterIds
       final fallback = await isar.characters.where().findFirst();
       if (fallback == null) {
-        throw StateError(
-          'StageBattleSetup: Isar 没有任何 Character（先跑 P1 种子）',
-        );
+        throw StateError('StageBattleSetup: Isar 没有任何 Character（先跑 P1 种子）');
       }
       players.add(fallback);
     }
@@ -134,11 +132,13 @@ class StageBattleSetup {
     }
     final left = <BattleCharacter>[];
     for (var i = 0; i < players.length && i < 3; i++) {
-      left.add(await _playerToBattle(
-        character: players[i],
-        slotIndex: i,
-        founderBuffActive: founderBuffByChar[players[i].id] ?? false,
-      ));
+      left.add(
+        await _playerToBattle(
+          character: players[i],
+          slotIndex: i,
+          founderBuffActive: founderBuffByChar[players[i].id] ?? false,
+        ),
+      );
     }
     return left;
   }
@@ -160,9 +160,7 @@ class StageBattleSetup {
     }
 
     if (character.mainTechniqueId == null) {
-      throw StateError(
-        'StageBattleSetup: 角色 ${character.name} 未修主修，无法进入战斗',
-      );
+      throw StateError('StageBattleSetup: 角色 ${character.name} 未修主修，无法进入战斗');
     }
     final mainTech = await isar.techniques.get(character.mainTechniqueId!);
     if (mainTech == null) {
@@ -172,13 +170,12 @@ class StageBattleSetup {
       );
     }
 
-    // W18-A1:加载第 1 辅修(若有)供 SynergyService 检测心法相生。
+    // W18-A1:加载全部辅修(若有)供 SynergyService 检测心法相生。
     // assistTechniqueIds 为空 / Isar 找不到 → ownedTechniques 只含 main,
     // detectActive 因 assist 缺失返 null,正常 fallthrough。
     final ownedTechs = <Technique>[mainTech];
-    if (character.assistTechniqueIds.isNotEmpty) {
-      final assistTech =
-          await isar.techniques.get(character.assistTechniqueIds.first);
+    for (final assistId in character.assistTechniqueIds) {
+      final assistTech = await isar.techniques.get(assistId);
       if (assistTech != null) ownedTechs.add(assistTech);
     }
 
@@ -199,8 +196,7 @@ class StageBattleSetup {
     final synergy = SynergyService.detectActive(
       character: character,
       ownedTechniques: ownedTechs,
-      techDefLookup: (defId) =>
-          GameRepository.instance.techniqueDefs[defId],
+      techDefLookup: (defId) => GameRepository.instance.techniqueDefs[defId],
       synergies: GameRepository.instance.synergies,
     );
     return synergy == null ? base : applySynergy(base, synergy.multipliers);
@@ -235,16 +231,19 @@ class StageBattleSetup {
     SynergyMultipliers m, {
     NumbersConfig? numbers,
   }) {
-    final redLines = (numbers ?? GameRepository.instance.numbers).combat.redLines;
+    final redLines =
+        (numbers ?? GameRepository.instance.numbers).combat.redLines;
     var newMaxHp = (base.maxHp * (1 + m.hpPct)).round();
     // §5.4 玩家血量红线(W18-A1.2 升级版加 · 2026-05-29 消 hardcode 走 config)
     if (newMaxHp > redLines.playerHpMax) newMaxHp = redLines.playerHpMax;
     final newSpeed = (base.speed * (1 + m.speedPct)).round();
-    final newAttack =
-        (base.totalEquipmentAttack * (1 + m.attackPct)).round();
-    var newMaxIf = (base.maxInternalForce * (1 + m.internalForceMaxPct)).round();
+    final newAttack = (base.totalEquipmentAttack * (1 + m.attackPct)).round();
+    var newMaxIf = (base.maxInternalForce * (1 + m.internalForceMaxPct))
+        .round();
     // §5.4 内力红线(2026-05-29 消 hardcode 走 config)
-    if (newMaxIf > redLines.internalForceMax) newMaxIf = redLines.internalForceMax;
+    if (newMaxIf > redLines.internalForceMax) {
+      newMaxIf = redLines.internalForceMax;
+    }
     // W18-A1.2 加法叠加,clamp ≤ 0.95 防止减伤 100% 极端值
     final newDefenseRate = (base.defenseRate + m.defensePct).clamp(0.0, 0.95);
     // currentHp 起点跟 maxHp 一致(战斗起点满血,fromCharacter 保证)
@@ -336,6 +335,5 @@ class StageBattleSetup {
   static BattleCharacter debugEnemyToBattle({
     required EnemyDef enemy,
     required int slotIndex,
-  }) =>
-      _enemyToBattle(enemy: enemy, slotIndex: slotIndex);
+  }) => _enemyToBattle(enemy: enemy, slotIndex: slotIndex);
 }
