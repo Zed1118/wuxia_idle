@@ -13,6 +13,7 @@ import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/features/inventory/presentation/inventory_screen.dart';
 import 'package:wuxia_idle/shared/widgets/equipment_glyph.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/section_header.dart';
 
 /// InventoryScreen widget 测试。
 ///
@@ -124,6 +125,8 @@ void main() {
     expect(find.text('武器'), findsOneWidget);
     expect(find.text('护甲'), findsOneWidget);
     expect(find.text('饰品'), findsOneWidget);
+    // 分组头容器语言换 UI kit SectionHeader（callsite 试点）
+    expect(find.byType(SectionHeader), findsNWidgets(3));
     // 强化徽章（>0 显示）
     expect(find.text('+12'), findsOneWidget);
     expect(find.text('+5'), findsOneWidget);
