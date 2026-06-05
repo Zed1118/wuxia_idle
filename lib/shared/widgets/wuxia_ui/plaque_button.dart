@@ -25,7 +25,7 @@ class PlaqueButton extends StatelessWidget {
         ? const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF8A2B21), Color(0xFF6F201A)],
+            colors: [WuxiaUi.jiang, Color(0xFF6F201A)],
           )
         : const LinearGradient(
             begin: Alignment.topCenter,
