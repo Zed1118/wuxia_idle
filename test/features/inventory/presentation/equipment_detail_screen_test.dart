@@ -10,6 +10,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/features/inventory/presentation/equipment_detail_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 /// EquipmentDetailScreen widget 测试(W15 LoreLoader 接入下一步)。
 ///
@@ -54,18 +55,20 @@ void main() {
     String name = '测试装备',
   }) {
     return (loreId) async => LoreContent(
-          id: loreId,
-          name: name,
-          defaultLore: segments.map((t) => LoreSegment(text: t)).toList(),
-          isPlaceholder: false,
-        );
+      id: loreId,
+      name: name,
+      defaultLore: segments.map((t) => LoreSegment(text: t)).toList(),
+      isPlaceholder: false,
+    );
   }
 
   testWidgets('基础信息卡:tier / slot / 攻血速 / +N / 共鸣度全显', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final def = GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+    final def = GameRepository.instance.getEquipment(
+      'weapon_shenwu_tian_wen_jian',
+    );
     final eq = mkEq(def: def, enhanceLevel: 12, battleCount: 1240);
 
     await tester.pumpWidget(
@@ -89,20 +92,21 @@ void main() {
     expect(find.text('攻击'), findsOneWidget);
     expect(find.text('血量'), findsOneWidget);
     expect(find.text('速度'), findsOneWidget);
+    expect(find.byType(WuxiaTitleBar), findsOneWidget);
+    expect(find.byType(PaperPanel), findsWidgets);
+    expect(find.byType(PlaqueButton), findsNWidgets(2));
   });
 
   testWidgets('lore 3 段全渲染 + 段间分隔', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final def = GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+    final def = GameRepository.instance.getEquipment(
+      'weapon_shenwu_tian_wen_jian',
+    );
     final eq = mkEq(def: def);
 
-    const segments = [
-      '段一文本',
-      '段二文本',
-      '段三文本',
-    ];
+    const segments = ['段一文本', '段二文本', '段三文本'];
 
     await tester.pumpWidget(
       ProviderScope(
@@ -121,15 +125,20 @@ void main() {
     expect(find.text('段一文本'), findsOneWidget);
     expect(find.text('段二文本'), findsOneWidget);
     expect(find.text('段三文本'), findsOneWidget);
-    expect(find.text('· · ·'), findsNWidgets(2),
-        reason: '3 段之间应有 2 个 · · · 分隔符');
+    expect(
+      find.text('· · ·'),
+      findsNWidgets(2),
+      reason: '3 段之间应有 2 个 · · · 分隔符',
+    );
   });
 
   testWidgets('loader 返回 placeholder → "典故待补"', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final def = GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+    final def = GameRepository.instance.getEquipment(
+      'weapon_shenwu_tian_wen_jian',
+    );
     final eq = mkEq(def: def);
 
     await tester.pumpWidget(
@@ -196,17 +205,22 @@ void main() {
   //   ③ def 自带 → chip 必显(EquipmentFactory.fromDef propagate 回归保护)
   // 红线写「约束语义」不写瞬时事实(memory feedback_red_line_test_semantics)。
 
-  testWidgets(
-      'lineage chip · 实例标 / def 不标 → chip 必显(奇遇 override 路径)',
-      (tester) async {
+  testWidgets('lineage chip · 实例标 / def 不标 → chip 必显(奇遇 override 路径)', (
+    tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(1280, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     // weapon_xunchang_tie_jian def 不标 isLineageHeritage(GameRepository 加载
     // 时 yaml 默认 false),实例强制标 true
-    final def = GameRepository.instance.getEquipment('weapon_xunchang_tie_jian');
-    expect(def.isLineageHeritage, isFalse,
-        reason: 'precondition: def 不标 isLineageHeritage');
+    final def = GameRepository.instance.getEquipment(
+      'weapon_xunchang_tie_jian',
+    );
+    expect(
+      def.isLineageHeritage,
+      isFalse,
+      reason: 'precondition: def 不标 isLineageHeritage',
+    );
     final eq = mkEq(def: def, isLineageHeritage: true);
 
     await tester.pumpWidget(
@@ -222,15 +236,20 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text(UiStrings.lineageHeritageLabel), findsOneWidget,
-        reason: '实例 isLineageHeritage=true 必显「遗物」chip,不依赖 def');
+    expect(
+      find.text(UiStrings.lineageHeritageLabel),
+      findsOneWidget,
+      reason: '实例 isLineageHeritage=true 必显「遗物」chip,不依赖 def',
+    );
   });
 
   testWidgets('lineage chip · 实例不标 / def 不标 → chip 必隐', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final def = GameRepository.instance.getEquipment('weapon_xunchang_tie_jian');
+    final def = GameRepository.instance.getEquipment(
+      'weapon_xunchang_tie_jian',
+    );
     expect(def.isLineageHeritage, isFalse);
     final eq = mkEq(def: def);
     expect(eq.isLineageHeritage, isFalse);
@@ -252,40 +271,46 @@ void main() {
   });
 
   testWidgets(
-      'lineage chip · def 自带 → EquipmentFactory propagate → 实例标 → chip 必显',
-      (tester) async {
-    await tester.binding.setSurfaceSize(const Size(1280, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
+    'lineage chip · def 自带 → EquipmentFactory propagate → 实例标 → chip 必显',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(1280, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    // weapon_liqi_long_quan def 自带 isLineageHeritage=true(equipment.yaml)
-    final def = GameRepository.instance.getEquipment('weapon_liqi_long_quan');
-    expect(def.isLineageHeritage, isTrue,
-        reason: 'precondition: def 自带 isLineageHeritage');
-    // 生产路径走 EquipmentFactory.fromDef:isLineageHeritage 从 def propagate
-    // 到实例;test fixture mkEq 模拟 propagation 后的状态。
-    final eq = mkEq(def: def, isLineageHeritage: true);
+      // weapon_liqi_long_quan def 自带 isLineageHeritage=true(equipment.yaml)
+      final def = GameRepository.instance.getEquipment('weapon_liqi_long_quan');
+      expect(
+        def.isLineageHeritage,
+        isTrue,
+        reason: 'precondition: def 自带 isLineageHeritage',
+      );
+      // 生产路径走 EquipmentFactory.fromDef:isLineageHeritage 从 def propagate
+      // 到实例;test fixture mkEq 模拟 propagation 后的状态。
+      final eq = mkEq(def: def, isLineageHeritage: true);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          home: EquipmentDetailScreen(
-            equipment: eq,
-            def: def,
-            loreLoader: fakeLoader(segments: const ['x']),
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: EquipmentDetailScreen(
+              equipment: eq,
+              def: def,
+              loreLoader: fakeLoader(segments: const ['x']),
+            ),
           ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text(UiStrings.lineageHeritageLabel), findsOneWidget);
-  });
+      expect(find.text(UiStrings.lineageHeritageLabel), findsOneWidget);
+    },
+  );
 
   testWidgets('强化按钮 tap → EnhanceDialog 弹起', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final def = GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+    final def = GameRepository.instance.getEquipment(
+      'weapon_shenwu_tian_wen_jian',
+    );
     final eq = mkEq(def: def);
 
     await tester.pumpWidget(
@@ -301,8 +326,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // 详情屏底部「强化」按钮(避免和 Tab 的「强化」混淆,详情屏 _Btn 才是 tap 目标)
-    final enhanceBtn = find.widgetWithText(InkWell, '强化');
+    // 详情屏底部「强化」按钮(PlaqueButton)。按钮在详情滚动页底部，先滚到可见。
+    final enhanceBtn = find.text('强化');
+    await tester.scrollUntilVisible(
+      enhanceBtn,
+      300,
+      scrollable: find.byType(Scrollable),
+    );
     expect(enhanceBtn, findsOneWidget);
     await tester.tap(enhanceBtn);
     await tester.pump();
@@ -317,7 +347,11 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────
 
   group('P1.1 候选 3-d · 共鸣度晋升信息透明', () {
-    Future<void> pumpScreen(WidgetTester tester, Equipment eq, EquipmentDef def) async {
+    Future<void> pumpScreen(
+      WidgetTester tester,
+      Equipment eq,
+      EquipmentDef def,
+    ) async {
       await tester.binding.setSurfaceSize(const Size(1280, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(
@@ -334,63 +368,97 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('shengShu(battleCount=0)→ 无加成 + 显距趁手 hint + 无解锁招',
-        (tester) async {
-      final def = GameRepository.instance.getEquipment('weapon_xunchang_tie_jian');
+    testWidgets('shengShu(battleCount=0)→ 无加成 + 显距趁手 hint + 无解锁招', (
+      tester,
+    ) async {
+      final def = GameRepository.instance.getEquipment(
+        'weapon_xunchang_tie_jian',
+      );
       final eq = mkEq(def: def, battleCount: 0);
       await pumpScreen(tester, eq, def);
 
-      expect(find.text(UiStrings.equipmentDetailResonanceBonus(0)),
-          findsOneWidget);
-      expect(find.text(UiStrings.equipmentDetailResonanceJointSkill),
-          findsNothing);
-      expect(find.text(UiStrings.equipmentDetailResonanceSwordSong),
-          findsNothing);
+      expect(
+        find.text(UiStrings.equipmentDetailResonanceBonus(0)),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.equipmentDetailResonanceJointSkill),
+        findsNothing,
+      );
+      expect(
+        find.text(UiStrings.equipmentDetailResonanceSwordSong),
+        findsNothing,
+      );
       // 距趁手尚需 100 战(chenShou.minBattleCount=100)
-      expect(find.text(UiStrings.equipmentDetailResonanceNextHint(100, '趁手')),
-          findsOneWidget);
+      expect(
+        find.text(UiStrings.equipmentDetailResonanceNextHint(100, '趁手')),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('moQi(battleCount=500)→ +20% + 解锁人剑合一 + 距心剑通灵 1500',
-        (tester) async {
-      final def = GameRepository.instance.getEquipment('weapon_xunchang_tie_jian');
+    testWidgets('moQi(battleCount=500)→ +20% + 解锁人剑合一 + 距心剑通灵 1500', (
+      tester,
+    ) async {
+      final def = GameRepository.instance.getEquipment(
+        'weapon_xunchang_tie_jian',
+      );
       final eq = mkEq(def: def, battleCount: 500);
       await pumpScreen(tester, eq, def);
 
-      expect(find.text(UiStrings.equipmentDetailResonanceBonus(20)),
-          findsOneWidget);
-      expect(find.text(UiStrings.equipmentDetailResonanceJointSkill),
-          findsOneWidget);
-      expect(find.text(UiStrings.equipmentDetailResonanceSwordSong),
-          findsNothing,
-          reason: 'moQi 阶 hasSwordSongEffect=false');
       expect(
-          find.text(UiStrings.equipmentDetailResonanceNextHint(1500, '心剑通灵')),
-          findsOneWidget);
+        find.text(UiStrings.equipmentDetailResonanceBonus(20)),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.equipmentDetailResonanceJointSkill),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.equipmentDetailResonanceSwordSong),
+        findsNothing,
+        reason: 'moQi 阶 hasSwordSongEffect=false',
+      );
+      expect(
+        find.text(UiStrings.equipmentDetailResonanceNextHint(1500, '心剑通灵')),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('xinJianTongLing(battleCount=2000)→ +30% + 两招全解锁 + 无 next hint',
-        (tester) async {
-      final def = GameRepository.instance.getEquipment('weapon_xunchang_tie_jian');
-      final eq = mkEq(def: def, battleCount: 2000);
-      await pumpScreen(tester, eq, def);
+    testWidgets(
+      'xinJianTongLing(battleCount=2000)→ +30% + 两招全解锁 + 无 next hint',
+      (tester) async {
+        final def = GameRepository.instance.getEquipment(
+          'weapon_xunchang_tie_jian',
+        );
+        final eq = mkEq(def: def, battleCount: 2000);
+        await pumpScreen(tester, eq, def);
 
-      expect(find.text(UiStrings.equipmentDetailResonanceBonus(30)),
-          findsOneWidget);
-      expect(find.text(UiStrings.equipmentDetailResonanceJointSkill),
-          findsOneWidget);
-      expect(find.text(UiStrings.equipmentDetailResonanceSwordSong),
-          findsOneWidget);
-      // 最高阶无下一阶 hint
-      expect(find.textContaining('距'), findsNothing);
-    });
+        expect(
+          find.text(UiStrings.equipmentDetailResonanceBonus(30)),
+          findsOneWidget,
+        );
+        expect(
+          find.text(UiStrings.equipmentDetailResonanceJointSkill),
+          findsOneWidget,
+        );
+        expect(
+          find.text(UiStrings.equipmentDetailResonanceSwordSong),
+          findsOneWidget,
+        );
+        // 最高阶无下一阶 hint
+        expect(find.textContaining('距'), findsNothing);
+      },
+    );
   });
 
   // H2 小套餐 E2:effective 实战值可见(换装判优基础)。
   // 此前 _StatRow 只显裸 base,强化/共鸣/开锋乘法后的真实战力 UI 不展示。
   group('E2 · effective 数值可见', () {
     Future<void> pump(
-        WidgetTester tester, Equipment eq, EquipmentDef def) async {
+      WidgetTester tester,
+      Equipment eq,
+      EquipmentDef def,
+    ) async {
       await tester.binding.setSurfaceSize(const Size(1280, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(
@@ -408,21 +476,29 @@ void main() {
     }
 
     testWidgets('强化+12 共鸣装备 → 显实战值 + 「基 N」副标', (tester) async {
-      final def =
-          GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian');
+      final def = GameRepository.instance.getEquipment(
+        'weapon_shenwu_tian_wen_jian',
+      );
       final eq = mkEq(def: def, enhanceLevel: 12, battleCount: 1240);
       await pump(tester, eq, def);
-      expect(find.textContaining('基 ${eq.baseAttack}'), findsOneWidget,
-          reason: 'effective≠base 时显原始 base 副标,玩家看得到实战值来源');
+      expect(
+        find.textContaining('基 ${eq.baseAttack}'),
+        findsOneWidget,
+        reason: 'effective≠base 时显原始 base 副标,玩家看得到实战值来源',
+      );
     });
 
     testWidgets('裸装备(+0/0 战)effective==base → 无冗余副标', (tester) async {
-      final def =
-          GameRepository.instance.getEquipment('weapon_xunchang_tie_jian');
+      final def = GameRepository.instance.getEquipment(
+        'weapon_xunchang_tie_jian',
+      );
       final eq = mkEq(def: def);
       await pump(tester, eq, def);
-      expect(find.textContaining('基 '), findsNothing,
-          reason: 'effective==base 时不显冗余副标');
+      expect(
+        find.textContaining('基 '),
+        findsNothing,
+        reason: 'effective==base 时不显冗余副标',
+      );
     });
   });
 
@@ -449,38 +525,49 @@ void main() {
 
     // 详情大图(detailPath)所在 Container 的 border(高阶 Border.all / 普通仅底边)。
     Border coverBorder(WidgetTester tester, EquipmentDef def) {
-      final img = find.byWidgetPredicate((w) =>
-          w is Image &&
-          w.image is AssetImage &&
-          (w.image as AssetImage).assetName == def.detailPath);
+      final img = find.byWidgetPredicate(
+        (w) =>
+            w is Image &&
+            w.image is AssetImage &&
+            (w.image as AssetImage).assetName == def.detailPath,
+      );
       final container = tester.widget<Container>(
-          find.ancestor(of: img, matching: find.byType(Container)).first);
+        find.ancestor(of: img, matching: find.byType(Container)).first,
+      );
       return (container.decoration as BoxDecoration).border! as Border;
     }
 
-    Text appBarTitle(WidgetTester tester, EquipmentDef def) =>
-        tester.widget<Text>(find.descendant(
-            of: find.byType(AppBar), matching: find.text(def.name)));
+    Text titleBarText(WidgetTester tester, EquipmentDef def) =>
+        tester.widget<Text>(
+          find.descendant(
+            of: find.byType(WuxiaTitleBar),
+            matching: find.text(def.name),
+          ),
+        );
 
     testWidgets('神物 → 全周粗边框(width3) + 题字 fontSize22', (tester) async {
-      final def = GameRepository.instance
-          .getEquipment('weapon_shenwu_tian_wen_jian');
+      final def = GameRepository.instance.getEquipment(
+        'weapon_shenwu_tian_wen_jian',
+      );
       await pumpDetail(tester, def);
 
-      expect(appBarTitle(tester, def).style?.fontSize, 22,
-          reason: '高阶题字加大');
+      expect(titleBarText(tester, def).style?.fontSize, 22, reason: '高阶题字加大');
       final b = coverBorder(tester, def);
       expect(b.top.width, 3, reason: '神物全周粗边框 Border.all(width3)');
       expect(b.left.width, 3);
     });
 
     testWidgets('寻常货 → 仅底边(width2) + 题字默认字号', (tester) async {
-      final def = GameRepository.instance
-          .getEquipment('weapon_xunchang_tie_jian');
+      final def = GameRepository.instance.getEquipment(
+        'weapon_xunchang_tie_jian',
+      );
       await pumpDetail(tester, def);
 
-      expect(appBarTitle(tester, def).style?.fontSize, isNull,
-          reason: '普通装备题字默认字号');
+      expect(
+        titleBarText(tester, def).style?.fontSize,
+        19,
+        reason: '普通装备题字默认字号',
+      );
       final b = coverBorder(tester, def);
       expect(b.top, BorderSide.none, reason: '普通装备无顶边');
       expect(b.bottom.width, 2, reason: '普通装备仅底边 width2');
@@ -488,16 +575,20 @@ void main() {
 
     // P0 #3(§5.4):详情大图从 BoxFit.cover → contain,细长兵器完整展示不裁切。
     testWidgets('详情大图用 BoxFit.contain(不裁切细长兵器)', (tester) async {
-      final def = GameRepository.instance
-          .getEquipment('weapon_shenwu_tian_wen_jian');
+      final def = GameRepository.instance.getEquipment(
+        'weapon_shenwu_tian_wen_jian',
+      );
       await pumpDetail(tester, def);
 
-      final img = tester.widget<Image>(find.byWidgetPredicate((w) =>
-          w is Image &&
-          w.image is AssetImage &&
-          (w.image as AssetImage).assetName == def.detailPath));
-      expect(img.fit, BoxFit.contain,
-          reason: '细长兵器需完整展示,不能 cover 裁切');
+      final img = tester.widget<Image>(
+        find.byWidgetPredicate(
+          (w) =>
+              w is Image &&
+              w.image is AssetImage &&
+              (w.image as AssetImage).assetName == def.detailPath,
+        ),
+      );
+      expect(img.fit, BoxFit.contain, reason: '细长兵器需完整展示,不能 cover 裁切');
     });
   });
 }
