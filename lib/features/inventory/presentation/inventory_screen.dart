@@ -13,6 +13,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
+import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import 'equipment_detail_screen.dart';
 
@@ -49,12 +50,7 @@ class InventoryScreen extends ConsumerWidget {
           ),
         ),
         body: const SafeArea(
-          child: TabBarView(
-            children: [
-              _EquipmentTab(),
-              _MaterialTab(),
-            ],
-          ),
+          child: TabBarView(children: [_EquipmentTab(), _MaterialTab()]),
         ),
       ),
     );
@@ -142,19 +138,28 @@ class _EquipmentGrid extends ConsumerWidget {
       EquipmentSlot.armor,
       EquipmentSlot.accessory,
     ];
-    final sections =
-        order.where((s) => bySlot[s]?.isNotEmpty ?? false).toList();
-    return ListView.builder(
+    final sections = order
+        .where((s) => bySlot[s]?.isNotEmpty ?? false)
+        .toList();
+    return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      itemCount: sections.length,
-      itemBuilder: (ctx, i) {
-        final slot = sections[i];
-        return _SlotGroupSection(
-          slot: slot,
-          items: bySlot[slot]!,
-          playerRealm: playerRealm,
-        );
-      },
+      children: [
+        IntrinsicHeight(
+          child: PaperPanel(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final slot in sections)
+                  _SlotGroupSection(
+                    slot: slot,
+                    items: bySlot[slot]!,
+                    playerRealm: playerRealm,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -196,7 +201,10 @@ class _SlotGroupSection extends StatelessWidget {
 /// 单个装备格子:tier 色边框方块 + 图标 contain(缺图 EquipGlyph)+ 名 +
 /// 强化徽章(右上)+ 师承标记(左上)+ 境界锁(灰化 + 锁图标)。点击进详情/强化。
 class _EquipmentGridTile extends ConsumerWidget {
-  const _EquipmentGridTile({required this.equipment, required this.playerRealm});
+  const _EquipmentGridTile({
+    required this.equipment,
+    required this.playerRealm,
+  });
 
   final Equipment equipment;
   final RealmTier? playerRealm;
@@ -206,15 +214,15 @@ class _EquipmentGridTile extends ConsumerWidget {
     final eq = equipment;
     final color = tierColorForEquipment(eq.tier);
     final def = GameRepository.instance.equipmentDefs[eq.defId];
-    final locked =
-        playerRealm != null && !eq.isEquippableAtRealm(playerRealm!);
+    final locked = playerRealm != null && !eq.isEquippableAtRealm(playerRealm!);
 
     final Widget icon = (def == null || def.iconPath.isEmpty)
         ? EquipGlyph(tierColor: color, slot: eq.slot)
         : Image.asset(
             def.iconPath,
             fit: BoxFit.contain,
-            errorBuilder: (_, _, _) => EquipGlyph(tierColor: color, slot: eq.slot),
+            errorBuilder: (_, _, _) =>
+                EquipGlyph(tierColor: color, slot: eq.slot),
           );
 
     Widget body = Container(
@@ -237,7 +245,9 @@ class _EquipmentGridTile extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  color: WuxiaColors.textPrimary, fontSize: 12),
+                color: WuxiaColors.textPrimary,
+                fontSize: 12,
+              ),
             ),
           ],
         ],
@@ -281,8 +291,7 @@ class _EquipmentGridTile extends ConsumerWidget {
               top: 2,
               right: 2,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                 decoration: BoxDecoration(
                   color: WuxiaColors.background.withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(3),
@@ -290,9 +299,10 @@ class _EquipmentGridTile extends ConsumerWidget {
                 child: Text(
                   UiStrings.enhanceLevel(eq.enhanceLevel),
                   style: TextStyle(
-                      color: color,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700),
+                    color: color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -300,14 +310,20 @@ class _EquipmentGridTile extends ConsumerWidget {
             const Positioned(
               top: 2,
               left: 2,
-              child: Icon(Icons.auto_awesome,
-                  size: 14, color: WuxiaColors.bossFrame),
+              child: Icon(
+                Icons.auto_awesome,
+                size: 14,
+                color: WuxiaColors.bossFrame,
+              ),
             ),
           if (locked)
             const Positioned.fill(
               child: Center(
-                child: Icon(Icons.lock_outline,
-                    size: 28, color: Colors.white70),
+                child: Icon(
+                  Icons.lock_outline,
+                  size: 28,
+                  color: Colors.white70,
+                ),
               ),
             ),
         ],
@@ -387,8 +403,9 @@ class _MaterialGroup extends StatelessWidget {
             ),
           ],
         ),
-        children:
-            items.map((it) => _MaterialRow(item: it, name: name)).toList(),
+        children: items
+            .map((it) => _MaterialRow(item: it, name: name))
+            .toList(),
       ),
     );
   }
