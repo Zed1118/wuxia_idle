@@ -15,6 +15,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/asset_fallback.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 /// 装备详情屏(Phase 4 W15 LoreLoader 接入下一步)。
 ///
@@ -48,8 +49,7 @@ class EquipmentDetailScreen extends ConsumerStatefulWidget {
       _EquipmentDetailScreenState();
 }
 
-class _EquipmentDetailScreenState
-    extends ConsumerState<EquipmentDetailScreen> {
+class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
   late final Future<LoreContent?> _loreFuture;
 
   @override
@@ -84,20 +84,14 @@ class _EquipmentDetailScreenState
     final highTreasure = isHighTreasureTier(widget.def.tier);
     return Scaffold(
       backgroundColor: WuxiaColors.background,
-      appBar: AppBar(
-        title: Text(
-          widget.def.name,
-          // 神物 / 宝物题字更重(出版美术 §5.4):字号 + letterSpacing 拉开。
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.w600,
-            fontSize: highTreasure ? 22 : null,
-            letterSpacing: highTreasure ? 2 : null,
-          ),
+      appBar: WuxiaTitleBar(
+        title: widget.def.name,
+        onBack: () => Navigator.of(context).maybePop(),
+        titleStyle: TextStyle(
+          color: highTreasure ? color : WuxiaUi.ink,
+          fontSize: highTreasure ? 22 : null,
+          letterSpacing: highTreasure ? 2 : null,
         ),
-        backgroundColor: WuxiaColors.sidebar,
-        foregroundColor: WuxiaColors.textPrimary,
-        iconTheme: const IconThemeData(color: WuxiaColors.textPrimary),
       ),
       body: Stack(
         children: [
@@ -112,52 +106,109 @@ class _EquipmentDetailScreenState
             ),
           ),
           SafeArea(
-            child: Column(
-              children: [
-                if (widget.def.detailPath != null)
-                  Container(
-                    width: double.infinity,
-                    height: 180,
-                    // 留白构图:大图四周内缩,细长兵器(BoxFit.contain)居中完整展示
-                    // 不裁切(P0 #3 · §5.4),letterbox 余白即水墨留白。
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: WuxiaColors.panel,
-                      // 神物 / 宝物:全周更粗边框(出版美术 §5.4「更强边框」);
-                      // 其他阶保留朴素底边。
-                      border: highTreasure
-                          ? Border.all(color: color, width: 3)
-                          : Border(
-                              bottom: BorderSide(color: color, width: 2),
-                            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final wide = constraints.maxWidth >= 900;
+                final hero = _DetailHero(def: widget.def);
+                final info = _InfoCard(
+                  equipment: widget.equipment,
+                  def: widget.def,
+                );
+                return ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    if (wide)
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(flex: 5, child: hero),
+                            const SizedBox(width: 16),
+                            Expanded(flex: 4, child: info),
+                          ],
+                        ),
+                      )
+                    else ...[
+                      hero,
+                      const SizedBox(height: 14),
+                      info,
+                    ],
+                    const SizedBox(height: 16),
+                    _LoreSection(
+                      future: _loreFuture,
+                      equipment: widget.equipment,
                     ),
-                    child: Image.asset(
-                      widget.def.detailPath!,
-                      fit: BoxFit.contain,
-                      errorBuilder: wuxiaAssetErrorBuilder(
-                          () => Container(color: WuxiaColors.panel)),
+                    const SizedBox(height: 16),
+                    _ActionBar(
+                      onEnhance: () => _openEnhance(0),
+                      onForge: () => _openEnhance(1),
                     ),
-                  ),
-                _InfoCard(equipment: widget.equipment, def: widget.def),
-                const SizedBox(width: double.infinity, child: Divider(
-                  color: WuxiaColors.border,
-                  height: 1,
-                )),
-                Expanded(
-                  child: _LoreSection(
-                    future: _loreFuture,
-                    equipment: widget.equipment,
-                  ),
-                ),
-                _ActionBar(
-                  tierColor: color,
-                  onEnhance: () => _openEnhance(0),
-                  onForge: () => _openEnhance(1),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _DetailHero extends StatelessWidget {
+  const _DetailHero({required this.def});
+
+  final EquipmentDef def;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = tierColorForEquipment(def.tier);
+    final highTreasure = isHighTreasureTier(def.tier);
+    return Container(
+      constraints: const BoxConstraints(minHeight: 260),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: WuxiaUi.panelFill,
+        borderRadius: BorderRadius.circular(WuxiaUi.radius),
+        border: highTreasure
+            ? Border.all(color: color, width: 3)
+            : Border(bottom: BorderSide(color: color, width: 2)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(WuxiaUi.radius),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Opacity(
+              opacity: 0.18,
+              child: Image.asset(
+                WuxiaUi.paperBg,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              ),
+            ),
+            if (def.detailPath != null)
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Image.asset(
+                  def.detailPath!,
+                  fit: BoxFit.contain,
+                  errorBuilder: wuxiaAssetErrorBuilder(
+                    () => const DecoratedBox(
+                      decoration: BoxDecoration(color: WuxiaUi.panelFill),
+                    ),
+                  ),
+                ),
+              )
+            else
+              const Center(
+                child: Icon(
+                  Icons.image_not_supported_outlined,
+                  color: WuxiaUi.muted,
+                  size: 40,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -174,92 +225,90 @@ class _InfoCard extends ConsumerWidget {
     final n = ref.watch(numbersConfigProvider);
     final color = tierColorForEquipment(def.tier);
     final resonance = equipment.resonanceStage(n);
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border(left: BorderSide(color: color, width: 3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _Chip(text: EnumL10n.equipmentTier(def.tier), color: color),
-              const SizedBox(width: 8),
-              _Chip(
-                text: EnumL10n.equipmentSlot(def.slot),
-                color: WuxiaColors.textSecondary,
-              ),
-              if (def.schoolBias != null) ...[
+      child: PaperPanel(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _Chip(text: EnumL10n.equipmentTier(def.tier), color: color),
                 const SizedBox(width: 8),
                 _Chip(
-                  text: EnumL10n.school(def.schoolBias!),
+                  text: EnumL10n.equipmentSlot(def.slot),
                   color: WuxiaColors.textSecondary,
                 ),
+                if (def.schoolBias != null) ...[
+                  const SizedBox(width: 8),
+                  _Chip(
+                    text: EnumL10n.school(def.schoolBias!),
+                    color: WuxiaColors.textSecondary,
+                  ),
+                ],
+                // W15 后波 fix:读 equipment 实例字段而非 def 字段。
+                // 实例 isLineageHeritage 覆盖 3 条路径:① def 自带(初始化时
+                // EquipmentFactory.fromDef 将 def→实例 propagate)② 奇遇赠送
+                // 临时遗物 override(EquipmentFactory 参数通道,T55 注释)
+                // ③ 师承传承时 inheritFrom() 标记。读 def 漏掉 ②③。
+                if (equipment.isLineageHeritage) ...[
+                  const SizedBox(width: 8),
+                  const _Chip(
+                    text: UiStrings.lineageHeritageLabel,
+                    color: WuxiaColors.hpLow,
+                  ),
+                ],
               ],
-              // W15 后波 fix:读 equipment 实例字段而非 def 字段。
-              // 实例 isLineageHeritage 覆盖 3 条路径:① def 自带(初始化时
-              // EquipmentFactory.fromDef 将 def→实例 propagate)② 奇遇赠送
-              // 临时遗物 override(EquipmentFactory 参数通道,T55 注释)
-              // ③ 师承传承时 inheritFrom() 标记。读 def 漏掉 ②③。
-              if (equipment.isLineageHeritage) ...[
+            ),
+            const SizedBox(height: 10),
+            _StatRow(
+              attack: equipment.baseAttack,
+              health: equipment.baseHealth,
+              speed: equipment.baseSpeed,
+              // H2 E2:实战值 = base × 强化 × 共鸣 × 开锋(derived_stats 乘法链)。
+              // 此前 UI 只显裸 base,玩家无从知真实战力 / 无法判优同阶掉落。
+              effectiveAttack: CharacterDerivedStats.effectiveEquipmentAttack(
+                equipment,
+                n,
+              ),
+              effectiveHealth: CharacterDerivedStats.effectiveEquipmentHp(
+                equipment,
+                n,
+              ),
+              effectiveSpeed: CharacterDerivedStats.effectiveEquipmentSpeed(
+                equipment,
+                n,
+              ),
+              enhanceLevel: equipment.enhanceLevel,
+              color: color,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(
+                  EnumL10n.resonanceStage(resonance),
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
+                ),
                 const SizedBox(width: 8),
-                const _Chip(
-                  text: UiStrings.lineageHeritageLabel,
-                  color: WuxiaColors.hpLow,
+                Text(
+                  '战斗 ${equipment.battleCount} 次',
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
                 ),
               ],
-            ],
-          ),
-          const SizedBox(height: 10),
-          _StatRow(
-            attack: equipment.baseAttack,
-            health: equipment.baseHealth,
-            speed: equipment.baseSpeed,
-            // H2 E2:实战值 = base × 强化 × 共鸣 × 开锋(derived_stats 乘法链)。
-            // 此前 UI 只显裸 base,玩家无从知真实战力 / 无法判优同阶掉落。
-            effectiveAttack:
-                CharacterDerivedStats.effectiveEquipmentAttack(equipment, n),
-            effectiveHealth:
-                CharacterDerivedStats.effectiveEquipmentHp(equipment, n),
-            effectiveSpeed:
-                CharacterDerivedStats.effectiveEquipmentSpeed(equipment, n),
-            enhanceLevel: equipment.enhanceLevel,
-            color: color,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Text(
-                EnumL10n.resonanceStage(resonance),
-                style: const TextStyle(
-                  color: WuxiaColors.textMuted,
-                  fontSize: 12,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '战斗 ${equipment.battleCount} 次',
-                style: const TextStyle(
-                  color: WuxiaColors.textMuted,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-          // P1.1 候选 3-d:共鸣度晋升信息透明 section。
-          // 体例对齐 _Chip 风格,无 VFX,纯文字 hint 显:
-          // ① bonus_multiplier 「攻击 +X%」② unlocks_joint_skill → 已解锁人剑合一
-          // ③ has_sword_song_effect → 暴击附带剑鸣 ④ 距下一阶 N 战 hint
-          _ResonanceDetailsSection(
-            stage: resonance,
-            config: _findStageCfg(n.resonanceStages, resonance),
-            nextStageCfg: _findNextStageCfg(n.resonanceStages, resonance),
-            battleCount: equipment.battleCount,
-          ),
-        ],
+            ),
+            // P1.1 候选 3-d:共鸣度晋升信息透明 section。
+            // 体例对齐 _Chip 风格,无 VFX,纯文字 hint 显:
+            // ① bonus_multiplier 「攻击 +X%」② unlocks_joint_skill → 已解锁人剑合一
+            // ③ has_sword_song_effect → 暴击附带剑鸣 ④ 距下一阶 N 战 hint
+            _ResonanceDetailsSection(
+              stage: resonance,
+              config: _findStageCfg(n.resonanceStages, resonance),
+              nextStageCfg: _findNextStageCfg(n.resonanceStages, resonance),
+              battleCount: equipment.battleCount,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -315,8 +364,10 @@ class _ResonanceDetailsSection extends StatelessWidget {
     final bonusPct = ((config.bonusMultiplier - 1.0) * 100).round();
     final lines = <String>[
       UiStrings.equipmentDetailResonanceBonus(bonusPct),
-      if (config.unlocksJointSkill) UiStrings.equipmentDetailResonanceJointSkill,
-      if (config.hasSwordSongEffect) UiStrings.equipmentDetailResonanceSwordSong,
+      if (config.unlocksJointSkill)
+        UiStrings.equipmentDetailResonanceJointSkill,
+      if (config.hasSwordSongEffect)
+        UiStrings.equipmentDetailResonanceSwordSong,
     ];
     final nextHint = _nextStageHint();
     if (nextHint != null) lines.add(nextHint);
@@ -331,10 +382,7 @@ class _ResonanceDetailsSection extends StatelessWidget {
               padding: const EdgeInsets.only(top: 2),
               child: Text(
                 line,
-                style: const TextStyle(
-                  color: WuxiaColors.textSecondary,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: WuxiaUi.ink2, fontSize: 12),
               ),
             ),
         ],
@@ -368,10 +416,7 @@ class _Chip extends StatelessWidget {
         border: Border.all(color: color),
         borderRadius: BorderRadius.circular(2),
       ),
-      child: Text(
-        text,
-        style: TextStyle(color: color, fontSize: 12),
-      ),
+      child: Text(text, style: TextStyle(color: color, fontSize: 12)),
     );
   }
 }
@@ -444,10 +489,7 @@ class _StatRow extends StatelessWidget {
           const SizedBox(width: 3),
           Text(
             '(基 $base)',
-            style: const TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 11),
           ),
         ],
       ],
@@ -474,59 +516,55 @@ class _LoreSection extends StatelessWidget {
         final content = snap.data;
         final hasPreset = content != null && !content.isPlaceholder;
         if (!hasPreset && continued.isEmpty) {
-          return const Center(
-            child: Text(
-              UiStrings.loreEmptyPlaceholder,
-              style: TextStyle(color: WuxiaColors.textMuted, fontSize: 13),
+          return const PaperPanel(
+            child: Center(
+              child: Text(
+                UiStrings.loreEmptyPlaceholder,
+                style: TextStyle(color: WuxiaUi.muted, fontSize: 13),
+              ),
             ),
           );
         }
-        return ListView(
+        return PaperPanel(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          children: [
-            const Center(
-              child: Text(
-                UiStrings.loreSectionDivider,
-                style: TextStyle(
-                  color: WuxiaColors.textMuted,
-                  fontSize: 13,
-                  letterSpacing: 4,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (hasPreset)
-              for (int i = 0; i < content.defaultLore.length; i++) ...[
-                if (i > 0) const _SegmentDivider(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SectionHeader(UiStrings.loreSectionDivider),
+              const SizedBox(height: 10),
+              if (hasPreset)
+                for (int i = 0; i < content.defaultLore.length; i++) ...[
+                  if (i > 0) const _SegmentDivider(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      content.defaultLore[i].text,
+                      style: const TextStyle(
+                        color: WuxiaUi.ink,
+                        fontSize: 14,
+                        height: 1.8,
+                      ),
+                    ),
+                  ),
+                ],
+              for (final lore in continued) ...[
+                const _SegmentDivider(),
+                const _ContinuedLoreChip(),
+                const SizedBox(height: 8),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Text(
-                    content.defaultLore[i].text,
+                    lore.text,
                     style: const TextStyle(
-                      color: WuxiaColors.textPrimary,
+                      color: WuxiaUi.ink,
                       fontSize: 14,
                       height: 1.8,
                     ),
                   ),
                 ),
               ],
-            for (final lore in continued) ...[
-              const _SegmentDivider(),
-              const _ContinuedLoreChip(),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text(
-                  lore.text,
-                  style: const TextStyle(
-                    color: WuxiaColors.textPrimary,
-                    fontSize: 14,
-                    height: 1.8,
-                  ),
-                ),
-              ),
             ],
-          ],
+          ),
         );
       },
     );
@@ -546,10 +584,7 @@ class _ContinuedLoreChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: WuxiaColors.internalForce.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: WuxiaColors.internalForce,
-            width: 0.5,
-          ),
+          border: Border.all(color: WuxiaColors.internalForce, width: 0.5),
         ),
         child: const Text(
           UiStrings.continuedLoreChipLabel,
@@ -598,13 +633,8 @@ class _SegmentDivider extends StatelessWidget {
 }
 
 class _ActionBar extends StatelessWidget {
-  const _ActionBar({
-    required this.tierColor,
-    required this.onEnhance,
-    required this.onForge,
-  });
+  const _ActionBar({required this.onEnhance, required this.onForge});
 
-  final Color tierColor;
   final VoidCallback onEnhance;
   final VoidCallback onForge;
 
@@ -612,62 +642,22 @@ class _ActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        color: WuxiaColors.sidebar,
-        border: Border(top: BorderSide(color: WuxiaColors.border)),
-      ),
       child: SafeArea(
         top: false,
         child: Row(
           children: [
             Expanded(
-              child: _Btn(
+              child: PlaqueButton(
                 label: UiStrings.tabEnhance,
-                color: tierColor,
+                primary: true,
                 onTap: onEnhance,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _Btn(
-                label: UiStrings.tabForging,
-                color: tierColor,
-                onTap: onForge,
-              ),
+              child: PlaqueButton(label: UiStrings.tabForging, onTap: onForge),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Btn extends StatelessWidget {
-  const _Btn({required this.label, required this.color, required this.onTap});
-
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          border: Border.all(color: color),
-          borderRadius: BorderRadius.circular(2),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
         ),
       ),
     );

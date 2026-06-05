@@ -12,11 +12,13 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.onBack,
     this.showSeal = true,
+    this.titleStyle,
   });
 
   final String title;
   final VoidCallback? onBack;
   final bool showSeal;
+  final TextStyle? titleStyle;
 
   @override
   Size get preferredSize => const Size.fromHeight(52);
@@ -58,7 +60,7 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
                 fontSize: 19,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 6,
-              ),
+              ).merge(titleStyle),
             ),
           ),
           if (showSeal)
