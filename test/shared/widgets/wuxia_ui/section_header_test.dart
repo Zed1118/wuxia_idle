@@ -14,4 +14,17 @@ void main() {
     await tester.pumpWidget(host(const SectionHeader('武器')));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('分隔线保留枯笔裁切而非纵向压扁', (tester) async {
+    await tester.pumpWidget(host(const SectionHeader('武器')));
+    final image = tester.widget<Image>(find.byType(Image));
+    expect(image.fit, BoxFit.cover);
+    expect(image.alignment, Alignment.center);
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is SizedBox && widget.height == 8,
+      ),
+      findsOneWidget,
+    );
+  });
 }

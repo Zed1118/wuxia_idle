@@ -29,10 +29,11 @@ class SectionHeader extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           SizedBox(
-            height: 6,
+            height: 8,
             child: Image.asset(
               WuxiaUi.inkDivider,
-              fit: BoxFit.fill,
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
               errorBuilder: (_, _, _) => const DecoratedBox(
                 decoration: BoxDecoration(
                   border: Border(
