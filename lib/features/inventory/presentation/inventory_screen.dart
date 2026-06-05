@@ -13,6 +13,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
+import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import 'equipment_detail_screen.dart';
 
 /// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账 +
@@ -177,28 +178,7 @@ class _SlotGroupSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            child: Row(
-              children: [
-                Container(
-                    width: 3, height: 18, color: WuxiaColors.textPrimary),
-                const SizedBox(width: 8),
-                Text(
-                  EnumL10n.equipmentSlot(slot),
-                  style: const TextStyle(
-                    color: WuxiaColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text('(${items.length})',
-                    style: const TextStyle(
-                        color: WuxiaColors.textMuted, fontSize: 12)),
-              ],
-            ),
-          ),
+          SectionHeader(EnumL10n.equipmentSlot(slot)),
           Wrap(
             spacing: 10,
             runSpacing: 10,
