@@ -136,28 +136,27 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
-    final ids = activeIds ??
-        <int>[character.id, ...extraCharacters.keys];
+    final ids = activeIds ?? <int>[character.id, ...extraCharacters.keys];
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           activeCharacterIdsProvider.overrideWith((ref) async => ids),
-          characterByIdProvider(character.id).overrideWith(
-            (ref) async => character,
-          ),
+          characterByIdProvider(
+            character.id,
+          ).overrideWith((ref) async => character),
           for (final entry in extraCharacters.entries)
-            characterByIdProvider(entry.key).overrideWith(
-              (ref) async => entry.value,
-            ),
+            characterByIdProvider(
+              entry.key,
+            ).overrideWith((ref) async => entry.value),
           for (final entry in equipments.entries)
-            equipmentByIdProvider(entry.key).overrideWith(
-              (ref) async => entry.value,
-            ),
+            equipmentByIdProvider(
+              entry.key,
+            ).overrideWith((ref) async => entry.value),
           for (final entry in techniques.entries)
-            techniqueByIdProvider(entry.key).overrideWith(
-              (ref) async => entry.value,
-            ),
+            techniqueByIdProvider(
+              entry.key,
+            ).overrideWith((ref) async => entry.value),
           if (innerDemonProgress != null)
             innerDemonProgressProvider.overrideWith(
               (ref) async => innerDemonProgress,
@@ -178,8 +177,7 @@ void main() {
 
   // ── 用例 0：档案头 ─────────────────────────────────────────────────────
 
-  testWidgets('档案头:立绘 + 姓名 + 境界 + 流派名 + 4 属性聚成一卡',
-      (tester) async {
+  testWidgets('档案头:立绘 + 姓名 + 境界 + 流派名 + 4 属性聚成一卡', (tester) async {
     // mkCharacter 默认 school=gangMeng / attrs 全 5 / 无心法 → 「刚猛」仅出现在档案头
     final character = mkCharacter();
     await pumpPanel(tester, character: character);
@@ -265,37 +263,36 @@ void main() {
 
   // ── 用例 4：修炼度进度条 ──────────────────────────────────────────────
 
-  testWidgets('主修 progress=50 / toNext=100 → LinearProgressIndicator.value=0.5',
-      (tester) async {
-    final character = mkCharacter(mainTechniqueId: 20);
-    final main = mkTechnique(
-      id: 20,
-      ownerId: 1,
-      role: TechniqueRole.main,
-      // 真 defId → 主修名为真实技能名,不与「主修」role 标签撞(hero 化后)。
-      defId: GameRepository.instance.techniqueDefs.keys.first,
-      cultivationProgress: 50,
-      cultivationProgressToNext: 100,
-    );
+  testWidgets(
+    '主修 progress=50 / toNext=100 → LinearProgressIndicator.value=0.5',
+    (tester) async {
+      final character = mkCharacter(mainTechniqueId: 20);
+      final main = mkTechnique(
+        id: 20,
+        ownerId: 1,
+        role: TechniqueRole.main,
+        // 真 defId → 主修名为真实技能名,不与「主修」role 标签撞(hero 化后)。
+        defId: GameRepository.instance.techniqueDefs.keys.first,
+        cultivationProgress: 50,
+        cultivationProgressToNext: 100,
+      );
 
-    await pumpPanel(
-      tester,
-      character: character,
-      techniques: {20: main},
-    );
+      await pumpPanel(tester, character: character, techniques: {20: main});
 
-    final indicator = tester.widget<LinearProgressIndicator>(
-      find.byType(LinearProgressIndicator),
-    );
-    expect(indicator.value, closeTo(0.5, 1e-9));
-    expect(find.text('50 / 100'), findsOneWidget);
-    expect(find.text('主修'), findsOneWidget);
-  });
+      final indicator = tester.widget<LinearProgressIndicator>(
+        find.byType(LinearProgressIndicator),
+      );
+      expect(indicator.value, closeTo(0.5, 1e-9));
+      expect(find.text('50 / 100'), findsOneWidget);
+      expect(find.text('主修'), findsOneWidget);
+    },
+  );
 
   // ── T56 用例 5：3 角色 Tab 切换 ────────────────────────────────────────
 
-  testWidgets('activeCharacterIds=[1,2,3] → 3 Tab label 渲染 + 默认显示首位姓名',
-      (tester) async {
+  testWidgets('activeCharacterIds=[1,2,3] → 3 Tab label 渲染 + 默认显示首位姓名', (
+    tester,
+  ) async {
     final founder = mkCharacter(
       id: 1,
       name: '祖师爷',
@@ -330,8 +327,7 @@ void main() {
     expect(find.text('大弟子A'), findsNothing);
   });
 
-  testWidgets('tap 大弟子 Tab → 切到 character 2，祖师内容消失',
-      (tester) async {
+  testWidgets('tap 大弟子 Tab → 切到 character 2，祖师内容消失', (tester) async {
     final founder = mkCharacter(
       id: 1,
       name: '祖师爷',
@@ -373,8 +369,7 @@ void main() {
 
   // ── T56 用例 6：师承段渲染 ─────────────────────────────────────────────
 
-  testWidgets('师承段：师父行 + 徒弟列表 join + 传记占位 + 遗物名',
-      (tester) async {
+  testWidgets('师承段：师父行 + 徒弟列表 join + 传记占位 + 遗物名', (tester) async {
     final founder = mkCharacter(
       id: 1,
       name: '祖师爷',
@@ -434,8 +429,7 @@ void main() {
 
   // ── T56 用例 7：祖师内力上限 lineage +10% buff 落 UI ──────────────────
 
-  testWidgets('祖师装 2 件 lineage heritage → 内力上限显示 base × 1.10',
-      (tester) async {
+  testWidgets('祖师装 2 件 lineage heritage → 内力上限显示 base × 1.10', (tester) async {
     // base 10000 → × (1 + 2×0.05) = 11000
     final founder = mkCharacter(
       id: 1,
@@ -468,8 +462,7 @@ void main() {
 
   // ── W18-A1 用例 8:心法相生 chip ────────────────────────────────────────
 
-  testWidgets('主修 gangMeng + 辅修 yinRou → 阴阳调和 chip 显示',
-      (tester) async {
+  testWidgets('主修 gangMeng + 辅修 yinRou → 阴阳调和 chip 显示', (tester) async {
     final character = mkCharacter(
       mainTechniqueId: 30,
       assistTechniqueIds: [31],
@@ -497,10 +490,16 @@ void main() {
       techniques: {30: main, 31: assist},
     );
 
-    expect(find.text('相生'), findsOneWidget,
-        reason: 'UiStrings.synergyActiveLabel chip 显示');
-    expect(find.textContaining('阴阳调和'), findsOneWidget,
-        reason: 'synergy_yin_yang_he_xie name');
+    expect(
+      find.text('相生'),
+      findsOneWidget,
+      reason: 'UiStrings.synergyActiveLabel chip 显示',
+    );
+    expect(
+      find.textContaining('阴阳调和'),
+      findsOneWidget,
+      reason: 'synergy_yin_yang_he_xie name',
+    );
   });
 
   testWidgets('未修主修 / 无辅修 → 不显相生 chip', (tester) async {
@@ -510,8 +509,9 @@ void main() {
     expect(find.text('相生'), findsNothing);
   });
 
-  testWidgets('主辅同流派 gangMeng+gangMeng → 同流派精进 chip(sameSchool 命中)',
-      (tester) async {
+  testWidgets('主辅同流派 gangMeng+gangMeng → 同流派精进 chip(sameSchool 命中)', (
+    tester,
+  ) async {
     final character = mkCharacter(
       mainTechniqueId: 40,
       assistTechniqueIds: [41],
@@ -543,10 +543,55 @@ void main() {
     expect(find.textContaining('同流派精进'), findsOneWidget);
   });
 
+  testWidgets('相生 chip 会检测第 2/3 辅修槽', (tester) async {
+    final character = mkCharacter(
+      mainTechniqueId: 50,
+      assistTechniqueIds: [51, 52],
+    );
+    final main = mkTechnique(
+      id: 50,
+      ownerId: 1,
+      role: TechniqueRole.main,
+      defId: 'tech_lingqiao_menpai',
+      tier: TechniqueTier.menPaiJueXue,
+      school: TechniqueSchool.lingQiao,
+    );
+    final miss = mkTechnique(
+      id: 51,
+      ownerId: 1,
+      role: TechniqueRole.assist,
+      defId: 'tech_yinrou_changlian',
+      tier: TechniqueTier.changLianGong,
+      school: TechniqueSchool.yinRou,
+    );
+    final hit = mkTechnique(
+      id: 52,
+      ownerId: 1,
+      role: TechniqueRole.assist,
+      defId: 'tech_yinrou_menpai',
+      tier: TechniqueTier.menPaiJueXue,
+      school: TechniqueSchool.yinRou,
+    );
+
+    await pumpPanel(
+      tester,
+      character: character,
+      techniques: {50: main, 51: miss, 52: hit},
+    );
+
+    expect(find.text('相生'), findsOneWidget);
+    expect(
+      find.textContaining('同辈互补'),
+      findsOneWidget,
+      reason: '第 1 辅修不命中时，第 2 辅修同 tier 应触发相生 chip',
+    );
+  });
+
   // ── 用例 13:P5+ 多代 chip · prev.length > 1 显「N 代传承」副行(F.2 续) ──
 
-  testWidgets('character_panel 装 heritage prev=[1,2] → 显「3 代传承」副行',
-      (tester) async {
+  testWidgets('character_panel 装 heritage prev=[1,2] → 显「3 代传承」副行', (
+    tester,
+  ) async {
     final founder = mkCharacter(
       id: 1,
       name: '祖师爷',
@@ -560,21 +605,21 @@ void main() {
       previousOwnerCharacterIds: [1, 2],
     );
 
-    await pumpPanel(
-      tester,
-      character: founder,
-      equipments: {100: weapon},
-    );
+    await pumpPanel(tester, character: founder, equipments: {100: weapon});
 
     // gen2 prev.length=2 → chip 副行显「3 代传承」(N = prevLen + 1)
-    expect(find.text('3 代传承'), findsOneWidget,
-        reason: 'P5+ 多代 chip · gen2 主断言');
+    expect(
+      find.text('3 代传承'),
+      findsOneWidget,
+      reason: 'P5+ 多代 chip · gen2 主断言',
+    );
   });
 
   // ── 用例 14:gen1 边界 · prev.length=1 不显 chip ─────────────────────────
 
-  testWidgets('character_panel 装 heritage prev=[1] → 不显多代 chip(gen1 边界)',
-      (tester) async {
+  testWidgets('character_panel 装 heritage prev=[1] → 不显多代 chip(gen1 边界)', (
+    tester,
+  ) async {
     final founder = mkCharacter(
       id: 1,
       name: '祖师爷',
@@ -588,20 +633,18 @@ void main() {
       previousOwnerCharacterIds: [1],
     );
 
-    await pumpPanel(
-      tester,
-      character: founder,
-      equipments: {100: weapon},
-    );
+    await pumpPanel(tester, character: founder, equipments: {100: weapon});
 
     // gen1 prev.length=1 不触发 > 1 阈值 · 不应显示任何 N 代传承 chip
-    expect(find.textContaining('代传承'), findsNothing,
-        reason: 'gen1 边界 · 阈值 > 1 严守');
+    expect(
+      find.textContaining('代传承'),
+      findsNothing,
+      reason: 'gen1 边界 · 阈值 > 1 严守',
+    );
   });
 
   // H1 批2:装备槽可点 → picker 打开(玩家手动穿戴入口接线守护)。
-  testWidgets('点击空装备槽 → 弹出装备 picker(allEquipments 空 → 空态文案)',
-      (tester) async {
+  testWidgets('点击空装备槽 → 弹出装备 picker(allEquipments 空 → 空态文案)', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -610,7 +653,9 @@ void main() {
       ProviderScope(
         overrides: [
           activeCharacterIdsProvider.overrideWith((ref) async => [founder.id]),
-          characterByIdProvider(founder.id).overrideWith((ref) async => founder),
+          characterByIdProvider(
+            founder.id,
+          ).overrideWith((ref) async => founder),
           // 空背包 → picker data 分支走空态(不触 GameRepository.getEquipment)。
           allEquipmentsProvider.overrideWith((ref) async => <Equipment>[]),
         ],
@@ -649,7 +694,9 @@ void main() {
       ProviderScope(
         overrides: [
           activeCharacterIdsProvider.overrideWith((ref) async => [founder.id]),
-          characterByIdProvider(founder.id).overrideWith((ref) async => founder),
+          characterByIdProvider(
+            founder.id,
+          ).overrideWith((ref) async => founder),
           allEquipmentsProvider.overrideWith((ref) async => <Equipment>[]),
         ],
         child: MaterialApp(home: CharacterPanelScreen(characterId: founder.id)),
@@ -680,10 +727,12 @@ void main() {
     // 注:该 screen 测试布局下矮空态 sheet 锚到视口下缘外,close 按钮几何中心落屏外
     // → tester.tap 取中心会 miss;直接取 IconButton.onPressed 调用验证关闭接线
     // (按钮可见性已在上方断言,此处验 onPressed → Navigator.pop 真关闭 sheet)。
-    final closeBtn = tester.widget<IconButton>(find.ancestor(
-      of: find.byIcon(Icons.close),
-      matching: find.byType(IconButton),
-    ));
+    final closeBtn = tester.widget<IconButton>(
+      find.ancestor(
+        of: find.byIcon(Icons.close),
+        matching: find.byType(IconButton),
+      ),
+    );
     expect(closeBtn.onPressed, isNotNull);
     closeBtn.onPressed!();
     await tester.pumpAndSettle();
@@ -709,8 +758,9 @@ void main() {
       ProviderScope(
         overrides: [
           activeCharacterIdsProvider.overrideWith((ref) async => [founder.id]),
-          characterByIdProvider(founder.id)
-              .overrideWith((ref) async => founder),
+          characterByIdProvider(
+            founder.id,
+          ).overrideWith((ref) async => founder),
           allEquipmentsProvider.overrideWith((ref) async => [wornByOther]),
         ],
         child: MaterialApp(home: CharacterPanelScreen(characterId: founder.id)),
@@ -738,29 +788,36 @@ void main() {
     expect(find.textContaining(UiStrings.equipWornByOther), findsOneWidget);
   });
 
-
   // ── P0-3 装备外观可视化 ────────────────────────────────────────────────
   testWidgets('装备槽显示装备图标(iconPath · P0-3)', (tester) async {
-    final entry = GameRepository.instance.equipmentDefs.entries
-        .firstWhere((e) => e.value.slot == EquipmentSlot.weapon);
-    final w = mkEquipment(
-        id: 10, slot: EquipmentSlot.weapon, defId: entry.key);
-    await pumpPanel(tester,
-        character: mkCharacter(weaponId: 10), equipments: {10: w});
+    final entry = GameRepository.instance.equipmentDefs.entries.firstWhere(
+      (e) => e.value.slot == EquipmentSlot.weapon,
+    );
+    final w = mkEquipment(id: 10, slot: EquipmentSlot.weapon, defId: entry.key);
+    await pumpPanel(
+      tester,
+      character: mkCharacter(weaponId: 10),
+      equipments: {10: w},
+    );
     await tester.pumpAndSettle();
     final imgs = tester.widgetList<Image>(find.byType(Image));
     expect(
-      imgs.any((i) =>
-          i.image is AssetImage &&
-          (i.image as AssetImage).assetName == entry.value.iconPath),
+      imgs.any(
+        (i) =>
+            i.image is AssetImage &&
+            (i.image as AssetImage).assetName == entry.value.iconPath,
+      ),
       isTrue,
     );
   });
 
   testWidgets('装备槽未知 def 走占位不崩(P0-3)', (tester) async {
     final w = mkEquipment(id: 10, slot: EquipmentSlot.weapon, enhanceLevel: 5);
-    await pumpPanel(tester,
-        character: mkCharacter(weaponId: 10), equipments: {10: w});
+    await pumpPanel(
+      tester,
+      character: mkCharacter(weaponId: 10),
+      equipments: {10: w},
+    );
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.enhanceLevel(5)), findsOneWidget);
     expect(tester.takeException(), isNull);

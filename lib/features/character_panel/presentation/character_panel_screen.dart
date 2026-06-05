@@ -107,11 +107,7 @@ class _PanelWithTabs extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _LineageTabBar(
-          ids: ids,
-          selectedId: effectiveId,
-          onSelect: onSelect,
-        ),
+        _LineageTabBar(ids: ids, selectedId: effectiveId, onSelect: onSelect),
         Expanded(
           child: async.when(
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -153,13 +149,15 @@ class _LineageTabBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: const BoxDecoration(
         color: WuxiaColors.panel,
-        border: Border(
-          bottom: BorderSide(color: WuxiaColors.border),
-        ),
+        border: Border(bottom: BorderSide(color: WuxiaColors.border)),
       ),
       child: Row(
         children: [
-          for (var i = 0; i < ids.length && i < UiStrings.lineageTabLabels.length; i++)
+          for (
+            var i = 0;
+            i < ids.length && i < UiStrings.lineageTabLabels.length;
+            i++
+          )
             Expanded(
               child: Padding(
                 padding: EdgeInsets.only(right: i == ids.length - 1 ? 0 : 8),
@@ -286,10 +284,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      EnumL10n.realm(
-                        character.realmTier,
-                        character.realmLayer,
-                      ),
+                      EnumL10n.realm(character.realmTier, character.realmLayer),
                       style: const TextStyle(
                         color: WuxiaColors.textSecondary,
                         fontSize: 14,
@@ -374,9 +369,8 @@ class _BreakthroughBlockerSection extends ConsumerWidget {
     );
     if (data == null) return const SizedBox.shrink();
 
-    String? nameFor(String? id) => id == null
-        ? null
-        : (GameRepository.instance.stageDefs[id]?.name ?? id);
+    String? nameFor(String? id) =>
+        id == null ? null : (GameRepository.instance.stageDefs[id]?.name ?? id);
 
     return Padding(
       padding: const EdgeInsets.only(top: 12),
@@ -389,10 +383,8 @@ class _BreakthroughBlockerSection extends ConsumerWidget {
         onNavigate: data.state == InnerDemonPanelState.cleared
             ? null
             : () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const InnerDemonScreen(),
-                  ),
-                ),
+                MaterialPageRoute(builder: (_) => const InnerDemonScreen()),
+              ),
       ),
     );
   }
@@ -557,18 +549,30 @@ class _EquipmentSection extends ConsumerWidget {
           Row(
             children: [
               Expanded(
-                child: _tappableSlot(context, ref, EquipmentSlot.weapon,
-                    character.equippedWeaponId),
+                child: _tappableSlot(
+                  context,
+                  ref,
+                  EquipmentSlot.weapon,
+                  character.equippedWeaponId,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _tappableSlot(context, ref, EquipmentSlot.armor,
-                    character.equippedArmorId),
+                child: _tappableSlot(
+                  context,
+                  ref,
+                  EquipmentSlot.armor,
+                  character.equippedArmorId,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _tappableSlot(context, ref, EquipmentSlot.accessory,
-                    character.equippedAccessoryId),
+                child: _tappableSlot(
+                  context,
+                  ref,
+                  EquipmentSlot.accessory,
+                  character.equippedAccessoryId,
+                ),
               ),
             ],
           ),
@@ -579,7 +583,11 @@ class _EquipmentSection extends ConsumerWidget {
 
   // H1 批2:槽位可点 → 装备 picker(玩家手动穿戴入口 · 修核心循环断裂)。
   Widget _tappableSlot(
-      BuildContext context, WidgetRef ref, EquipmentSlot slot, int? equipmentId) {
+    BuildContext context,
+    WidgetRef ref,
+    EquipmentSlot slot,
+    int? equipmentId,
+  ) {
     return InkWell(
       onTap: () => showModalBottomSheet<void>(
         context: context,
@@ -619,8 +627,9 @@ class _EquipPickerSheet extends ConsumerWidget {
   Future<void> _equip(BuildContext context, WidgetRef ref, Equipment eq) async {
     final isar = ref.read(isarProvider);
     if (isar == null) return;
-    final outcome = await EquipmentService(isar: isar)
-        .equip(characterId: character.id, equipmentId: eq.id);
+    final outcome = await EquipmentService(
+      isar: isar,
+    ).equip(characterId: character.id, equipmentId: eq.id);
     if (!context.mounted) return;
     if (outcome == EquipOutcome.lockedByRealm) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -635,8 +644,9 @@ class _EquipPickerSheet extends ConsumerWidget {
   Future<void> _unequip(BuildContext context, WidgetRef ref) async {
     final isar = ref.read(isarProvider);
     if (isar == null) return;
-    await EquipmentService(isar: isar)
-        .unequip(characterId: character.id, slot: slot);
+    await EquipmentService(
+      isar: isar,
+    ).unequip(characterId: character.id, slot: slot);
     if (!context.mounted) return;
     _invalidate(ref);
     Navigator.pop(context);
@@ -670,8 +680,10 @@ class _EquipPickerSheet extends ConsumerWidget {
                 // H1 批3:始终可见的显式关闭入口(空态也有出口,
                 // 修「空 picker 无法关闭卡死」· Pen 验收确诊)。
                 IconButton(
-                  icon: const Icon(Icons.close,
-                      color: WuxiaColors.textSecondary),
+                  icon: const Icon(
+                    Icons.close,
+                    color: WuxiaColors.textSecondary,
+                  ),
                   tooltip: UiStrings.equipPickerClose,
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -680,8 +692,11 @@ class _EquipPickerSheet extends ConsumerWidget {
           ),
           if (currentId != null)
             ListTile(
-              leading: const Icon(Icons.remove_circle_outline,
-                  color: WuxiaColors.textSecondary, size: 20),
+              leading: const Icon(
+                Icons.remove_circle_outline,
+                color: WuxiaColors.textSecondary,
+                size: 20,
+              ),
               title: const Text(
                 UiStrings.equipUnequip,
                 style: TextStyle(color: WuxiaColors.textSecondary),
@@ -699,8 +714,10 @@ class _EquipPickerSheet extends ConsumerWidget {
               ),
               error: (e, _) => Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text('$e',
-                    style: const TextStyle(color: WuxiaColors.hpLow)),
+                child: Text(
+                  '$e',
+                  style: const TextStyle(color: WuxiaColors.hpLow),
+                ),
               ),
               data: (list) {
                 final items = list.where((e) => e.slot == slot).toList();
@@ -721,15 +738,20 @@ class _EquipPickerSheet extends ConsumerWidget {
                       const Divider(height: 1, color: WuxiaColors.border),
                   itemBuilder: (ctx, i) {
                     final eq = items[i];
-                    final canEquip = eq.isEquippableAtRealm(character.realmTier);
+                    final canEquip = eq.isEquippableAtRealm(
+                      character.realmTier,
+                    );
                     final isCurrent = eq.id == currentId;
-                    final name =
-                        GameRepository.instance.getEquipment(eq.defId).name;
+                    final name = GameRepository.instance
+                        .getEquipment(eq.defId)
+                        .name;
                     // H1 批3:该件正被队内其他角色穿戴 → 标注(选它会移装,原角色
                     // 卸下)。不禁用(队内调配合理),只去掉「静默卸下」的意外感。
                     final ownerId = eq.ownerCharacterId;
                     final wornByOther =
-                        ownerId != null && ownerId != character.id && !isCurrent;
+                        ownerId != null &&
+                        ownerId != character.id &&
+                        !isCurrent;
                     return ListTile(
                       enabled: canEquip && !isCurrent,
                       title: Text(
@@ -738,8 +760,9 @@ class _EquipPickerSheet extends ConsumerWidget {
                           color: canEquip
                               ? WuxiaColors.textPrimary
                               : WuxiaColors.textMuted,
-                          fontWeight:
-                              isCurrent ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: isCurrent
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                         ),
                       ),
                       subtitle: Text.rich(
@@ -750,7 +773,8 @@ class _EquipPickerSheet extends ConsumerWidget {
                           ),
                           children: [
                             TextSpan(
-                              text: '${EnumL10n.equipmentTier(eq.tier)} · '
+                              text:
+                                  '${EnumL10n.equipmentTier(eq.tier)} · '
                                   '${UiStrings.enhanceLevel(eq.enhanceLevel)}'
                                   '${isCurrent ? "  [当前]" : ""}',
                             ),
@@ -763,10 +787,16 @@ class _EquipPickerSheet extends ConsumerWidget {
                         ),
                       ),
                       trailing: canEquip
-                          ? Icon(isCurrent ? Icons.check : Icons.add,
-                              color: WuxiaColors.textSecondary, size: 18)
-                          : const Icon(Icons.lock_outline,
-                              color: WuxiaColors.textMuted, size: 16),
+                          ? Icon(
+                              isCurrent ? Icons.check : Icons.add,
+                              color: WuxiaColors.textSecondary,
+                              size: 18,
+                            )
+                          : const Icon(
+                              Icons.lock_outline,
+                              color: WuxiaColors.textMuted,
+                              size: 16,
+                            ),
                       onTap: (canEquip && !isCurrent)
                           ? () => _equip(context, ref, eq)
                           : null,
@@ -863,8 +893,7 @@ class _EquipmentSlotTile extends ConsumerWidget {
                         iconPath,
                         fit: BoxFit.contain,
                         errorBuilder: wuxiaAssetErrorBuilder(
-                          () => EquipGlyph(
-                              tierColor: tierColor, slot: eq.slot),
+                          () => EquipGlyph(tierColor: tierColor, slot: eq.slot),
                         ),
                       ),
               ),
@@ -962,7 +991,7 @@ class _TechniqueSection extends StatelessWidget {
 
 /// W18-A1 心法相生 chip(GDD §4.5)。
 ///
-/// watch 主修 + 第 1 辅修两个 [techniqueByIdProvider],都 ready 后调
+/// watch 主修 + 全部辅修 [techniqueByIdProvider],都 ready 后调
 /// [SynergyService.detectActive] 同步判定;命中即显 name + multiplier 摘要
 /// chip,否则隐藏(0/1 个,与服务层语义一致)。
 class _SynergyChip extends ConsumerWidget {
@@ -976,24 +1005,28 @@ class _SynergyChip extends ConsumerWidget {
     if (mainId == null || character.assistTechniqueIds.isEmpty) {
       return const SizedBox.shrink();
     }
-    final assistId = character.assistTechniqueIds.first;
     final mainAsync = ref.watch(techniqueByIdProvider(mainId));
-    final assistAsync = ref.watch(techniqueByIdProvider(assistId));
+    final assistAsyncs = [
+      for (final assistId in character.assistTechniqueIds)
+        ref.watch(techniqueByIdProvider(assistId)),
+    ];
 
-    if (!mainAsync.hasValue || !assistAsync.hasValue) {
+    if (!mainAsync.hasValue ||
+        assistAsyncs.any((assistAsync) => !assistAsync.hasValue)) {
       return const SizedBox.shrink();
     }
     final mainTech = mainAsync.value;
-    final assistTech = assistAsync.value;
-    if (mainTech == null || assistTech == null) {
-      return const SizedBox.shrink();
-    }
+    if (mainTech == null) return const SizedBox.shrink();
+    final ownedTechniques = [
+      mainTech,
+      for (final assistAsync in assistAsyncs)
+        if (assistAsync.value != null) assistAsync.value!,
+    ];
 
     final synergy = SynergyService.detectActive(
       character: character,
-      ownedTechniques: [mainTech, assistTech],
-      techDefLookup: (defId) =>
-          GameRepository.instance.techniqueDefs[defId],
+      ownedTechniques: ownedTechniques,
+      techDefLookup: (defId) => GameRepository.instance.techniqueDefs[defId],
       synergies: GameRepository.instance.synergies,
     );
     if (synergy == null) return const SizedBox.shrink();
@@ -1092,7 +1125,7 @@ class _MainTechniqueTile extends ConsumerWidget {
         final schoolColor = WuxiaColors.schoolColor(t.school);
         final techName =
             GameRepository.instance.techniqueDefs[t.defId]?.name ??
-                UiStrings.techniqueRoleMain;
+            UiStrings.techniqueRoleMain;
         final progress = t.cultivationProgressToNext == 0
             ? 0.0
             : (t.cultivationProgress / t.cultivationProgressToNext)
@@ -1100,76 +1133,76 @@ class _MainTechniqueTile extends ConsumerWidget {
                   .toDouble();
         return IntrinsicHeight(
           child: WuxiaPaperPanel(
-          padding: const EdgeInsets.all(14),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 120),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      UiStrings.techniqueRoleMain,
-                      style: TextStyle(
-                        color: schoolColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+            padding: const EdgeInsets.all(14),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 120),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        UiStrings.techniqueRoleMain,
+                        style: TextStyle(
+                          color: schoolColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      EnumL10n.techniqueTier(t.tier),
-                      style: const TextStyle(
-                        color: WuxiaColors.textSecondary,
-                        fontSize: 12,
+                      const Spacer(),
+                      Text(
+                        EnumL10n.techniqueTier(t.tier),
+                        style: const TextStyle(
+                          color: WuxiaColors.textSecondary,
+                          fontSize: 12,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  techName,
-                  style: TextStyle(
-                    color: schoolColor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
+                    ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Text(
-                      EnumL10n.cultivationLayer(t.cultivationLayer),
-                      style: const TextStyle(
-                        color: WuxiaColors.textPrimary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  const SizedBox(height: 6),
+                  Text(
+                    techName,
+                    style: TextStyle(
+                      color: schoolColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
                     ),
-                    const Spacer(),
-                    Text(
-                      UiStrings.cultivationProgress(
-                        t.cultivationProgress,
-                        t.cultivationProgressToNext,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        EnumL10n.cultivationLayer(t.cultivationLayer),
+                        style: const TextStyle(
+                          color: WuxiaColors.textPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      style: const TextStyle(
-                        color: WuxiaColors.textMuted,
-                        fontSize: 11,
+                      const Spacer(),
+                      Text(
+                        UiStrings.cultivationProgress(
+                          t.cultivationProgress,
+                          t.cultivationProgressToNext,
+                        ),
+                        style: const TextStyle(
+                          color: WuxiaColors.textMuted,
+                          fontSize: 11,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 6,
-                  backgroundColor: WuxiaColors.barTrack,
-                  valueColor: AlwaysStoppedAnimation<Color>(schoolColor),
-                ),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: WuxiaColors.barTrack,
+                    valueColor: AlwaysStoppedAnimation<Color>(schoolColor),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
         );
       },
     );
@@ -1438,7 +1471,9 @@ class _LineageHeritageRow extends ConsumerWidget {
         value: UiStrings.lineageNoHeritage,
       );
     }
-    final asyncs = ids.map((id) => ref.watch(equipmentByIdProvider(id))).toList();
+    final asyncs = ids
+        .map((id) => ref.watch(equipmentByIdProvider(id)))
+        .toList();
     if (asyncs.any((a) => a.isLoading)) {
       return const _LineageRow(
         label: UiStrings.lineageHeritageLabel,
@@ -1473,8 +1508,10 @@ class _LineageHeritageRow extends ConsumerWidget {
         const SizedBox(height: 2),
         _LineageRow(
           label: '',
-          value: UiStrings.ascensionMultiGenChip
-              .replaceFirst('{0}', '${maxPrevLen + 1}'),
+          value: UiStrings.ascensionMultiGenChip.replaceFirst(
+            '{0}',
+            '${maxPrevLen + 1}',
+          ),
           valueColor: WuxiaColors.textMuted,
         ),
       ],
@@ -1507,10 +1544,7 @@ class _LineageRow extends StatelessWidget {
           width: 56,
           child: Text(
             label,
-            style: const TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
         ),
         const SizedBox(width: 8),
@@ -1642,7 +1676,6 @@ class _EquipmentSlotShell extends StatelessWidget {
     );
   }
 }
-
 
 class _TechniqueShell extends StatelessWidget {
   const _TechniqueShell({required this.borderColor, required this.child});
