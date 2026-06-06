@@ -7,11 +7,14 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/festival/application/festival_service_providers.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
 import 'package:wuxia_idle/features/tutorial/presentation/tutorial_banner_card.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -30,9 +33,11 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// （与 T28/T31 同决策，沿用挂账 #23）；按钮可点性通过 InkWell 计数 + label
 /// 渲染断言覆盖。
 void main() {
-  Widget app() => const ProviderScope(
-        child: MaterialApp(home: MainMenu()),
-      );
+  setUpAll(() async {
+    await GameRepository.loadAllDefs();
+  });
+
+  Widget app() => const ProviderScope(child: MaterialApp(home: MainMenu()));
 
   testWidgets('标题渲染：mainMenuTitle 可见', (tester) async {
     await tester.pumpWidget(app());
@@ -74,14 +79,21 @@ void main() {
     expect(y(UiStrings.mainMenuMainline) < y(UiStrings.mainMenuTower), isTrue);
     expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuLineage), isTrue);
     // 修行组行序(主线行 < 装备行 < 闭关行)
-    expect(y(UiStrings.mainMenuMainline) < y(UiStrings.mainMenuInventory), isTrue);
-    expect(y(UiStrings.mainMenuInventory) < y(UiStrings.mainMenuSeclusion), isTrue);
+    expect(
+      y(UiStrings.mainMenuMainline) < y(UiStrings.mainMenuInventory),
+      isTrue,
+    );
+    expect(
+      y(UiStrings.mainMenuInventory) < y(UiStrings.mainMenuSeclusion),
+      isTrue,
+    );
     // 同行配对:主线 / 角色 同行,y 近似相等
     expect(
-        (y(UiStrings.mainMenuMainline) - y(UiStrings.mainMenuCharacterPanel))
-                .abs() <
-            2.0,
-        isTrue);
+      (y(UiStrings.mainMenuMainline) - y(UiStrings.mainMenuCharacterPanel))
+              .abs() <
+          2.0,
+      isTrue,
+    );
     // 演武组行序(爬塔行 < 轻功行 < 论剑行)
     expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuLightFoot), isTrue);
     expect(y(UiStrings.mainMenuLightFoot) < y(UiStrings.mainMenuPvp), isTrue);
@@ -95,22 +107,76 @@ void main() {
     expect(find.byType(InkWell), findsNWidgets(18));
   });
 
-  testWidgets('tap Phase 1 战斗测试 → 进入 BattleTestMenu（找到 testMenuTitle / scenarioA）',
-      (tester) async {
-    await tester.pumpWidget(app());
-    // P2.2 Batch 2.5.B 加心魔境按钮后 Phase 1 下移,800x600 viewport 临界
-    // 需 ensureVisible scroll 进可见区再 tap(沿 Phase 2 测同体例)
-    await tester.ensureVisible(find.text(UiStrings.mainMenuPhase1));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(UiStrings.mainMenuPhase1));
-    await tester.pumpAndSettle();
+  testWidgets('入口状态 chip：主线下一关 / 爬塔 Boss / 闭关可择地图', (tester) async {
+    final now = DateTime(2026, 6, 7);
+    final founder = Character.create(
+      name: '祖师',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      attributes: Attributes()
+        ..constitution = 5
+        ..enlightenment = 5
+        ..agility = 5
+        ..fortune = 5,
+      rarity: RarityTier.tianCai,
+      lineageRole: LineageRole.founder,
+      createdAt: now,
+    )..id = 1;
 
-    expect(find.text(UiStrings.testMenuTitle), findsOneWidget);
-    expect(find.text(UiStrings.scenarioA), findsOneWidget);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mainlineProgressProvider.overrideWith(
+            (ref) async => MainlineProgress()
+              ..saveDataId = 1
+              ..currentChapterIndex = 1
+              ..clearedStageIds = ['stage_01_01']
+              ..clearedAt = [now],
+          ),
+          towerProgressProvider.overrideWith(
+            (ref) async => TowerProgress()
+              ..saveDataId = 1
+              ..highestClearedFloor = 9
+              ..createdAt = now,
+          ),
+          currentTutorialStepProvider.overrideWith((ref) async => 5),
+          activeCharacterIdsProvider.overrideWith((ref) async => [1]),
+          characterByIdProvider(1).overrideWith((ref) async => founder),
+        ],
+        child: const MaterialApp(home: MainMenu()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      find.text(UiStrings.mainMenuMainlineStatus(1, '荒山野店')),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.mainMenuTowerBossStatus(9, 10)), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuSeclusionReadyStatus), findsOneWidget);
   });
 
-  testWidgets('tap Phase 2 调试场景 → 进入 Phase2TestMenu（找到 scenarioP1 等 4 场景）',
-      (tester) async {
+  testWidgets(
+    'tap Phase 1 战斗测试 → 进入 BattleTestMenu（找到 testMenuTitle / scenarioA）',
+    (tester) async {
+      await tester.pumpWidget(app());
+      // P2.2 Batch 2.5.B 加心魔境按钮后 Phase 1 下移,800x600 viewport 临界
+      // 需 ensureVisible scroll 进可见区再 tap(沿 Phase 2 测同体例)
+      await tester.ensureVisible(find.text(UiStrings.mainMenuPhase1));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(UiStrings.mainMenuPhase1));
+      await tester.pumpAndSettle();
+
+      expect(find.text(UiStrings.testMenuTitle), findsOneWidget);
+      expect(find.text(UiStrings.scenarioA), findsOneWidget);
+    },
+  );
+
+  testWidgets('tap Phase 2 调试场景 → 进入 Phase2TestMenu（找到 scenarioP1 等 4 场景）', (
+    tester,
+  ) async {
     await tester.pumpWidget(app());
     // P0.2 #40 加排行榜按钮后 Phase 2 下移到第 6 位,默认 800x600 viewport 临界
     // 需 ensureVisible scroll 进可见区再 tap(SingleChildScrollView 体例)
@@ -139,8 +205,9 @@ void main() {
   // 验证 push 增量(initial 1 次 + tap 后 1 次 = 2 次)。子屏内部 build 即使抛错
   // 或仍在 loading 也不阻塞 test(单帧 pump 不进死循环)。
 
-  testWidgets('tap 问鼎九霄 → Navigator.push 触发(不 settle 子屏,#31 销账)',
-      (tester) async {
+  testWidgets('tap 问鼎九霄 → Navigator.push 触发(不 settle 子屏,#31 销账)', (
+    tester,
+  ) async {
     final observer = _RecordingNavigatorObserver();
     await tester.pumpWidget(
       ProviderScope(
@@ -159,7 +226,7 @@ void main() {
     await tester.pump();
     await tester.tap(find.text(UiStrings.mainMenuTower));
     await tester.pump(); // 单帧,不 settle:子屏 TowerFloorListScreen 内部
-                        // towerProgressProvider AsyncValue.loading 不阻塞断言
+    // towerProgressProvider AsyncValue.loading 不阻塞断言
 
     // tap 后应有 1 次新 push(TowerFloorListScreen)
     expect(observer.pushedRoutes.length, 2);
@@ -169,8 +236,9 @@ void main() {
 
   // ── T56 销账 #26：闭关入口 FutureBuilder 化 ────────────────────────────
 
-  testWidgets('闭关按钮：activeCharacterIds 加载完成 → Opacity=1.0 enabled',
-      (tester) async {
+  testWidgets('闭关按钮：activeCharacterIds 加载完成 → Opacity=1.0 enabled', (
+    tester,
+  ) async {
     final now = DateTime(2026, 5, 13);
     final founder = Character.create(
       name: '祖师',
@@ -216,8 +284,9 @@ void main() {
     expect(opacity.opacity, 1.0);
   });
 
-  testWidgets('闭关按钮：activeCharacterIds 仍 loading → Opacity=0.4 disabled',
-      (tester) async {
+  testWidgets('闭关按钮：activeCharacterIds 仍 loading → Opacity=0.4 disabled', (
+    tester,
+  ) async {
     final never = Completer<List<int>>();
     final neverCh = Completer<Character?>();
 
@@ -246,20 +315,16 @@ void main() {
 
   // ── W16 GDD §12.4 节日活动 · 今日节日 chip ──────────────────────────
 
-  testWidgets('节日 chip：todayFestival=null（非节日）→ 不显示「今日：」前缀',
-      (tester) async {
+  testWidgets('节日 chip：todayFestival=null（非节日）→ 不显示「今日：」前缀', (tester) async {
     // 默认 ProviderScope 无 override → festivalServiceProvider 返 null（test
     // 不加载 GameRepository）→ todayFestivalProvider 返 null → chip 不渲染。
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: MainMenu()),
-      ),
+      const ProviderScope(child: MaterialApp(home: MainMenu())),
     );
     expect(find.textContaining('今日：'), findsNothing);
   });
 
-  testWidgets('节日 chip：todayFestival=chunJie → 显示「今日：春节」',
-      (tester) async {
+  testWidgets('节日 chip：todayFestival=chunJie → 显示「今日：春节」', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -276,8 +341,7 @@ void main() {
     );
   });
 
-  testWidgets('节日 chip：todayFestival=zhongQiu → 显示「今日：中秋」',
-      (tester) async {
+  testWidgets('节日 chip：todayFestival=zhongQiu → 显示「今日：中秋」', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -301,49 +365,52 @@ void main() {
 
   Future<ProviderContainer> pumpAndContainer(WidgetTester tester) async {
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: MainMenu()),
-      ),
+      const ProviderScope(child: MaterialApp(home: MainMenu())),
     );
-    return ProviderScope.containerOf(
-      tester.element(find.byType(MainMenu)),
-    );
+    return ProviderScope.containerOf(tester.element(find.byType(MainMenu)));
   }
 
-  testWidgets('debug override · apply yuanXiao → chip 显示「今日：元宵」',
-      (tester) async {
+  testWidgets('debug override · apply yuanXiao → chip 显示「今日：元宵」', (
+    tester,
+  ) async {
     final container = await pumpAndContainer(tester);
-    container.read(debugFestivalOverrideProvider.notifier).apply(Festival.yuanXiao);
+    container
+        .read(debugFestivalOverrideProvider.notifier)
+        .apply(Festival.yuanXiao);
     await tester.pump();
     expect(find.text('今日：元宵'), findsOneWidget);
   });
 
-  testWidgets('debug override · apply duanWu → chip 显示「今日：端午」',
-      (tester) async {
+  testWidgets('debug override · apply duanWu → chip 显示「今日：端午」', (tester) async {
     final container = await pumpAndContainer(tester);
-    container.read(debugFestivalOverrideProvider.notifier).apply(Festival.duanWu);
+    container
+        .read(debugFestivalOverrideProvider.notifier)
+        .apply(Festival.duanWu);
     await tester.pump();
     expect(find.text('今日：端午'), findsOneWidget);
   });
 
-  testWidgets('debug override · apply qiXi → chip 显示「今日：七夕」',
-      (tester) async {
+  testWidgets('debug override · apply qiXi → chip 显示「今日：七夕」', (tester) async {
     final container = await pumpAndContainer(tester);
     container.read(debugFestivalOverrideProvider.notifier).apply(Festival.qiXi);
     await tester.pump();
     expect(find.text('今日：七夕'), findsOneWidget);
   });
 
-  testWidgets('debug override · apply chongYang → chip 显示「今日：重阳」',
-      (tester) async {
+  testWidgets('debug override · apply chongYang → chip 显示「今日：重阳」', (
+    tester,
+  ) async {
     final container = await pumpAndContainer(tester);
-    container.read(debugFestivalOverrideProvider.notifier).apply(Festival.chongYang);
+    container
+        .read(debugFestivalOverrideProvider.notifier)
+        .apply(Festival.chongYang);
     await tester.pump();
     expect(find.text('今日：重阳'), findsOneWidget);
   });
 
-  testWidgets('debug override · apply chunJie 后 clear → chip 不显示',
-      (tester) async {
+  testWidgets('debug override · apply chunJie 后 clear → chip 不显示', (
+    tester,
+  ) async {
     final container = await pumpAndContainer(tester);
     final notifier = container.read(debugFestivalOverrideProvider.notifier);
     notifier.apply(Festival.chunJie);
@@ -354,8 +421,9 @@ void main() {
     expect(find.textContaining('今日：'), findsNothing);
   });
 
-  testWidgets('debug override · apply chunJie 后 apply yuanXiao → 覆盖切到「今日：元宵」',
-      (tester) async {
+  testWidgets('debug override · apply chunJie 后 apply yuanXiao → 覆盖切到「今日：元宵」', (
+    tester,
+  ) async {
     final container = await pumpAndContainer(tester);
     final notifier = container.read(debugFestivalOverrideProvider.notifier);
     notifier.apply(Festival.chunJie);
@@ -371,18 +439,18 @@ void main() {
 
   group('§10 P1.x · tutorialStep 灰显门槛', () {
     Character founder(DateTime now) => Character.create(
-          name: '祖师',
-          realmTier: RealmTier.yiLiu,
-          realmLayer: RealmLayer.qiMeng,
-          attributes: Attributes()
-            ..constitution = 5
-            ..enlightenment = 5
-            ..agility = 5
-            ..fortune = 5,
-          rarity: RarityTier.tianCai,
-          lineageRole: LineageRole.founder,
-          createdAt: now,
-        )..id = 1;
+      name: '祖师',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      attributes: Attributes()
+        ..constitution = 5
+        ..enlightenment = 5
+        ..agility = 5
+        ..fortune = 5,
+      rarity: RarityTier.tianCai,
+      lineageRole: LineageRole.founder,
+      createdAt: now,
+    )..id = 1;
 
     Widget appWithStep(int step) {
       final ch = founder(DateTime(2026, 5, 18));
@@ -446,9 +514,9 @@ void main() {
       expect(find.text(UiStrings.mainMenuSeclusionHint), findsOneWidget);
     });
 
-    testWidgets(
-        '闭关 step=5 + character 仍 loading → 仍 disabled(loading 优先级保留)',
-        (tester) async {
+    testWidgets('闭关 step=5 + character 仍 loading → 仍 disabled(loading 优先级保留)', (
+      tester,
+    ) async {
       final neverIds = Completer<List<int>>();
       final neverCh = Completer<Character?>();
 
@@ -481,23 +549,27 @@ void main() {
 
   group('§10 P1.y · banner 顶部渲染', () {
     Character founder(DateTime now) => Character.create(
-          name: '祖师',
-          realmTier: RealmTier.yiLiu,
-          realmLayer: RealmLayer.qiMeng,
-          attributes: Attributes()..constitution = 5..enlightenment = 5
-            ..agility = 5..fortune = 5,
-          rarity: RarityTier.tianCai,
-          lineageRole: LineageRole.founder,
-          createdAt: now,
-        )..id = 1;
+      name: '祖师',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      attributes: Attributes()
+        ..constitution = 5
+        ..enlightenment = 5
+        ..agility = 5
+        ..fortune = 5,
+      rarity: RarityTier.tianCai,
+      lineageRole: LineageRole.founder,
+      createdAt: now,
+    )..id = 1;
 
     Widget appWith({required int step, required List<int> hintsRead}) {
       final ch = founder(DateTime(2026, 5, 18));
       return ProviderScope(
         overrides: [
           currentTutorialStepProvider.overrideWith((ref) async => step),
-          currentTutorialHintsReadProvider
-              .overrideWith((ref) async => hintsRead),
+          currentTutorialHintsReadProvider.overrideWith(
+            (ref) async => hintsRead,
+          ),
           activeCharacterIdsProvider.overrideWith((ref) async => [1]),
           characterByIdProvider(1).overrideWith((ref) async => ch),
         ],
@@ -512,16 +584,16 @@ void main() {
       expect(find.byType(TutorialBannerCard), findsNothing);
     });
 
-    testWidgets('step=2 → 不显 banner(§5.7 step 1/2/4 无系统解锁锚点)',
-        (tester) async {
+    testWidgets('step=2 → 不显 banner(§5.7 step 1/2/4 无系统解锁锚点)', (tester) async {
       await tester.pumpWidget(appWith(step: 2, hintsRead: []));
       await tester.pump();
       await tester.pump();
       expect(find.byType(TutorialBannerCard), findsNothing);
     });
 
-    testWidgets('step=3 + hintsRead=[] → 显 step 3 banner(心法解锁锚点)',
-        (tester) async {
+    testWidgets('step=3 + hintsRead=[] → 显 step 3 banner(心法解锁锚点)', (
+      tester,
+    ) async {
       await tester.pumpWidget(appWith(step: 3, hintsRead: []));
       await tester.pump();
       await tester.pump();
@@ -536,8 +608,9 @@ void main() {
       expect(find.byType(TutorialBannerCard), findsNothing);
     });
 
-    testWidgets('step=5 + hintsRead=[3] → 显 step 5 banner(Ch1 通关锚点)',
-        (tester) async {
+    testWidgets('step=5 + hintsRead=[3] → 显 step 5 banner(Ch1 通关锚点)', (
+      tester,
+    ) async {
       await tester.pumpWidget(appWith(step: 5, hintsRead: [3]));
       await tester.pump();
       await tester.pump();
@@ -545,14 +618,18 @@ void main() {
       expect(find.text(UiStrings.tutorialHintStep5Title), findsOneWidget);
     });
 
-    testWidgets('step=8 + hintsRead=[] → 显 step 3 banner(取最低未读 step)',
-        (tester) async {
+    testWidgets('step=8 + hintsRead=[] → 显 step 3 banner(取最低未读 step)', (
+      tester,
+    ) async {
       await tester.pumpWidget(appWith(step: 8, hintsRead: []));
       await tester.pump();
       await tester.pump();
       expect(find.byType(TutorialBannerCard), findsOneWidget);
-      expect(find.text(UiStrings.tutorialHintStep3Title), findsOneWidget,
-          reason: 'R3 风险处置:同时多 unread 取最低 step');
+      expect(
+        find.text(UiStrings.tutorialHintStep3Title),
+        findsOneWidget,
+        reason: 'R3 风险处置:同时多 unread 取最低 step',
+      );
       expect(find.text(UiStrings.tutorialHintStep6Title), findsNothing);
     });
 
@@ -564,8 +641,9 @@ void main() {
       expect(find.text(UiStrings.tutorialHintStep6Title), findsOneWidget);
     });
 
-    testWidgets('step=8 + hintsRead=[3,5,6,7] → 显 step 8 banner',
-        (tester) async {
+    testWidgets('step=8 + hintsRead=[3,5,6,7] → 显 step 8 banner', (
+      tester,
+    ) async {
       await tester.pumpWidget(appWith(step: 8, hintsRead: [3, 5, 6, 7]));
       await tester.pump();
       await tester.pump();
@@ -573,8 +651,9 @@ void main() {
       expect(find.text(UiStrings.tutorialHintStep8Title), findsOneWidget);
     });
 
-    testWidgets('step=8 + hintsRead=[3,5,6,7,8] → 不显 banner(全已读)',
-        (tester) async {
+    testWidgets('step=8 + hintsRead=[3,5,6,7,8] → 不显 banner(全已读)', (
+      tester,
+    ) async {
       await tester.pumpWidget(appWith(step: 8, hintsRead: [3, 5, 6, 7, 8]));
       await tester.pump();
       await tester.pump();
@@ -587,25 +666,23 @@ void main() {
     double opacityOf(WidgetTester tester, String label) => tester
         .widget<Opacity>(
           find
-              .ancestor(
-                of: find.text(label),
-                matching: find.byType(Opacity),
-              )
+              .ancestor(of: find.text(label), matching: find.byType(Opacity))
               .first,
         )
         .opacity;
 
     Widget appWithCleared(List<String> cleared) => ProviderScope(
-          overrides: [
-            mainlineProgressProvider.overrideWith(
-              (ref) async => MainlineProgress()..clearedStageIds = cleared,
-            ),
-          ],
-          child: const MaterialApp(home: MainMenu()),
-        );
+      overrides: [
+        mainlineProgressProvider.overrideWith(
+          (ref) async => MainlineProgress()..clearedStageIds = cleared,
+        ),
+      ],
+      child: const MaterialApp(home: MainMenu()),
+    );
 
-    testWidgets('全新存档(clearedStageIds 空)→ 心魔/PVP/门派 全 disabled',
-        (tester) async {
+    testWidgets('全新存档(clearedStageIds 空)→ 心魔/PVP/门派 全 disabled', (
+      tester,
+    ) async {
       await tester.pumpWidget(appWithCleared([]));
       await tester.pump();
       await tester.pump();
@@ -615,8 +692,7 @@ void main() {
       expect(opacityOf(tester, UiStrings.mainMenuSect), 0.4);
     });
 
-    testWidgets('通关 Ch1 末关(stage_01_05)→ 社交系统解锁、后期仍锁',
-        (tester) async {
+    testWidgets('通关 Ch1 末关(stage_01_05)→ 社交系统解锁、后期仍锁', (tester) async {
       await tester.pumpWidget(appWithCleared(['stage_01_05']));
       await tester.pump();
       await tester.pump();
@@ -627,8 +703,7 @@ void main() {
       expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
     });
 
-    testWidgets('通关 Ch6 末关(stage_06_05)→ 后期系统解锁',
-        (tester) async {
+    testWidgets('通关 Ch6 末关(stage_06_05)→ 后期系统解锁', (tester) async {
       await tester.pumpWidget(appWithCleared(['stage_06_05']));
       await tester.pump();
       await tester.pump();
