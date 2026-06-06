@@ -362,6 +362,7 @@ class UiStrings {
   static const String mainMenuMainlineHint = '6 章 30 关,按章节顺序解锁';
 
   static const String chapterListTitle = '主线 · 章节';
+  static const String mainlineRouteMapTitle = '江湖路引';
   static const String chapter1Title = '第一章 · 学武出山';
   static const String chapter2Title = '第二章 · 武林初识';
   static const String chapter3Title = '第三章 · 名扬江湖';
@@ -384,6 +385,8 @@ class UiStrings {
   static const String stageListCleared = '✓ 已通关';
   static const String stageListPrevHint = '通关前一关解锁';
   static const String stageListEmpty = '该章暂无关卡';
+
+  static String chapterRouteNodeLabel(int chapterIndex) => '第$chapterIndex章';
 
   /// 章节标题路由：按 chapterIndex 返回对应中文标题。
   static String chapterTitle(int chapterIndex) {
@@ -452,6 +455,7 @@ class UiStrings {
   static String leaderboardWinRatePct(int pct) => '$pct%';
 
   static const String towerTitle = '问鼎九霄';
+  static const String towerSpineTitle = '九霄塔势';
 
   static const String towerBossMinor = '小 Boss';
   static const String towerBossMajor = '大 Boss';
