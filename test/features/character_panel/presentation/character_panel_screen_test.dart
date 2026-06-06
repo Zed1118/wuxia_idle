@@ -18,7 +18,9 @@ import 'package:wuxia_idle/features/inner_demon/application/inner_demon_provider
 import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_progress.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_paper_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_panel.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_tab.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/section_header.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 
 /// T28 角色面板 widget 测试（phase2_tasks.md §407）。
@@ -188,6 +190,8 @@ void main() {
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
     expect(find.byType(PlaqueTab), findsOneWidget);
     expect(find.byType(PaperPanel), findsWidgets);
+    expect(find.byType(SectionHeader), findsOneWidget);
+    expect(find.byType(PlaqueButton), findsOneWidget);
     expect(find.byType(PortraitFrame), findsOneWidget);
     expect(find.text('测试者'), findsOneWidget); // 姓名
     expect(find.text('刚猛'), findsOneWidget); // EnumL10n.school(gangMeng)
