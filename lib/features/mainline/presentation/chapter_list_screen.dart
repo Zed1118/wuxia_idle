@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../domain/chapter_assets.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
+import '../domain/mainline_progress.dart';
 import 'chapter_transition_screen.dart';
 import 'stage_list_screen.dart';
 import '../../../shared/widgets/asset_fallback.dart';
@@ -57,63 +59,177 @@ class ChapterListScreen extends ConsumerWidget {
             ),
           ),
           data: (progress) {
-            return ListView.builder(
+            return ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: _chapters.length,
-              itemBuilder: (ctx, i) {
-                final ch = _chapters[i];
-                final completed = MainlineProgressService.chapterCompleted(
-                  progress: progress,
-                  chapterIndex: ch,
-                );
-                final prevCompleted =
-                    ch == 1 ||
-                    MainlineProgressService.chapterCompleted(
-                      progress: progress,
-                      chapterIndex: ch - 1,
-                    );
-                final unlocked = prevCompleted;
-                final status = completed
-                    ? _ChapterStatus.cleared
-                    : (unlocked
-                          ? _ChapterStatus.inProgress
-                          : _ChapterStatus.locked);
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _ChapterCard(
+              children: [
+                _ChapterRouteMap(
+                  statuses: {
+                    for (final ch in _chapters)
+                      ch: _statusFor(progress: progress, chapterIndex: ch),
+                  },
+                ),
+                const SizedBox(height: 12),
+                for (final ch in _chapters)
+                  _ChapterCardShell(
                     chapterIndex: ch,
-                    status: status,
-                    onTap: status == _ChapterStatus.locked
-                        ? null
-                        : () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => StageListScreen(chapterIndex: ch),
-                            ),
-                          ),
-                    // H2 C1:解锁章节加「卷」入口 → 翻篇过场(卷首/卷尾)。
-                    // 卷尾仅 cleared 解锁。锁定章节不给入口。
-                    onViewScroll: status == _ChapterStatus.locked
-                        ? null
-                        : () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => ChapterTransitionScreen(
-                                chapterIndex: ch,
-                                showEpilogue: status == _ChapterStatus.cleared,
-                              ),
-                            ),
-                          ),
+                    status: _statusFor(progress: progress, chapterIndex: ch),
                   ),
-                );
-              },
+              ],
             );
           },
         ),
       ),
     );
   }
+
+  static _ChapterStatus _statusFor({
+    required MainlineProgress progress,
+    required int chapterIndex,
+  }) {
+    final completed = MainlineProgressService.chapterCompleted(
+      progress: progress,
+      chapterIndex: chapterIndex,
+    );
+    final prevCompleted =
+        chapterIndex == 1 ||
+        MainlineProgressService.chapterCompleted(
+          progress: progress,
+          chapterIndex: chapterIndex - 1,
+        );
+    return completed
+        ? _ChapterStatus.cleared
+        : (prevCompleted ? _ChapterStatus.inProgress : _ChapterStatus.locked);
+  }
 }
 
 enum _ChapterStatus { locked, inProgress, cleared }
+
+class _ChapterCardShell extends StatelessWidget {
+  const _ChapterCardShell({required this.chapterIndex, required this.status});
+
+  final int chapterIndex;
+  final _ChapterStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: _ChapterCard(
+        chapterIndex: chapterIndex,
+        status: status,
+        onTap: status == _ChapterStatus.locked
+            ? null
+            : () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => StageListScreen(chapterIndex: chapterIndex),
+                ),
+              ),
+        // H2 C1:解锁章节加「卷」入口 → 翻篇过场(卷首/卷尾)。
+        // 卷尾仅 cleared 解锁。锁定章节不给入口。
+        onViewScroll: status == _ChapterStatus.locked
+            ? null
+            : () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => ChapterTransitionScreen(
+                    chapterIndex: chapterIndex,
+                    showEpilogue: status == _ChapterStatus.cleared,
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+}
+
+class _ChapterRouteMap extends StatelessWidget {
+  const _ChapterRouteMap({required this.statuses});
+
+  final Map<int, _ChapterStatus> statuses;
+
+  @override
+  Widget build(BuildContext context) {
+    return PaperPanel(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SectionHeader(UiStrings.mainlineRouteMapTitle),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              for (final entry in statuses.entries) ...[
+                Expanded(
+                  child: _RouteNode(
+                    chapterIndex: entry.key,
+                    status: entry.value,
+                  ),
+                ),
+                if (entry.key != statuses.keys.last)
+                  Container(
+                    width: 22,
+                    height: 2,
+                    color: WuxiaUi.ink.withValues(alpha: 0.28),
+                  ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RouteNode extends StatelessWidget {
+  const _RouteNode({required this.chapterIndex, required this.status});
+
+  final int chapterIndex;
+  final _ChapterStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (status) {
+      _ChapterStatus.cleared => WuxiaColors.hpHigh,
+      _ChapterStatus.inProgress => WuxiaColors.resultHighlight,
+      _ChapterStatus.locked => WuxiaUi.muted,
+    };
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: color, width: 1.5),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            '$chapterIndex',
+            style: TextStyle(
+              color: color,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          UiStrings.chapterRouteNodeLabel(chapterIndex),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: status == _ChapterStatus.locked
+                ? WuxiaUi.muted
+                : WuxiaUi.ink,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class _ChapterCard extends StatelessWidget {
   const _ChapterCard({
@@ -170,7 +286,8 @@ class _ChapterCard extends StatelessWidget {
                       chapterCoverPath(chapterIndex),
                       fit: BoxFit.cover,
                       errorBuilder: wuxiaAssetErrorBuilder(
-                          () => Container(color: WuxiaColors.avatarFill)),
+                        () => Container(color: WuxiaColors.avatarFill),
+                      ),
                     ),
                   ),
                 ),

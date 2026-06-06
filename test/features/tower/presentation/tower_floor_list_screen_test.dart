@@ -72,11 +72,14 @@ void main() {
     expect(find.text(UiStrings.towerProgressCleared(0)), findsOneWidget);
     expect(find.text(UiStrings.towerProgressAttempts(0)), findsOneWidget);
     expect(find.text(UiStrings.towerProgressDefeats(0)), findsOneWidget);
+    expect(find.text(UiStrings.towerSpineTitle), findsOneWidget);
     expect(find.text(UiStrings.towerFloorLabel(1)), findsOneWidget);
     expect(find.text(UiStrings.towerFloorChallenge), findsOneWidget);
   });
 
-  testWidgets('三态分布：已通 3 层 → cleared / available / locked 同时可见', (tester) async {
+  testWidgets('三态分布：已通 3 层 → cleared / available / locked 同时可见', (
+    tester,
+  ) async {
     final progress = mkProgress(highest: 3, attempts: 3);
     // 4000px 视口：30 行全部可见，auto-scroll 被 clamp 到 0
     await pumpScreen(

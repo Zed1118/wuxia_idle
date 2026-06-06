@@ -13,6 +13,7 @@ import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../sect/presentation/sect_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
+import '../../tower/presentation/tower_floor_list_screen.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../application/phase2_seed_service.dart';
@@ -127,6 +128,9 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.chapterList:
       await OnboardingService(isar: isar).ensureFoundingMasters();
       return const ChapterListScreen();
+    case VisualRoute.towerFloorList:
+      await OnboardingService(isar: isar).ensureFoundingMasters();
+      return const TowerFloorListScreen();
     case VisualRoute.battleScene:
       // hub 点选时无 VISUAL_SCENE → 默认 citywall;需指定 biome 仍可用单路由 dart-define。
       const envScene = String.fromEnvironment('VISUAL_SCENE');

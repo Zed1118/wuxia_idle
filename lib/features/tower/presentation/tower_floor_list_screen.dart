@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
 import '../domain/tower_floor_def.dart';
@@ -95,6 +96,10 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
               return Column(
                 children: [
                   _ProgressCard(progress: progress),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                    child: _TowerSpineOverview(entries: entries),
+                  ),
                   Expanded(
                     child: ListView.builder(
                       controller: _scrollController,
@@ -117,6 +122,108 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
   }
 }
 
+class _TowerSpineOverview extends StatelessWidget {
+  const _TowerSpineOverview({required this.entries});
+
+  final List<TowerFloorEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    return PaperPanel(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SectionHeader(UiStrings.towerSpineTitle),
+          const SizedBox(height: 12),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final entry in entries) ...[
+                  _TowerSpineNode(entry: entry),
+                  if (entry.def.floorIndex != entries.last.def.floorIndex)
+                    Container(
+                      width: 12,
+                      height: 2,
+                      color: WuxiaUi.ink.withValues(alpha: 0.18),
+                    ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TowerSpineNode extends StatelessWidget {
+  const _TowerSpineNode({required this.entry});
+
+  final TowerFloorEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (entry.status) {
+      TowerFloorStatus.cleared => WuxiaColors.hpHigh,
+      TowerFloorStatus.available => WuxiaColors.resultHighlight,
+      TowerFloorStatus.locked => WuxiaUi.muted,
+    };
+    final isBoss = entry.def.isBoss;
+    final isMajorBoss = entry.def.bossKind == TowerBossKind.major;
+    return SizedBox(
+      width: isBoss ? 36 : 24,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: isBoss ? 32 : 22,
+            height: isBoss ? 32 : 22,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: isBoss ? 0.22 : 0.14),
+              borderRadius: BorderRadius.circular(isBoss ? 5 : 11),
+              border: Border.all(color: color, width: isBoss ? 1.6 : 1.1),
+              boxShadow: entry.status == TowerFloorStatus.available
+                  ? [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.28),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Text(
+              '${entry.def.floorIndex}',
+              style: TextStyle(
+                color: color,
+                fontSize: isBoss ? 11 : 9,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          SizedBox(
+            height: 10,
+            child: isBoss
+                ? Text(
+                    isMajorBoss ? '大' : '小',
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ProgressCard extends StatelessWidget {
   const _ProgressCard({required this.progress});
 
@@ -129,17 +236,13 @@ class _ProgressCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
         color: WuxiaColors.panel,
-        border: Border(
-          bottom: BorderSide(color: WuxiaColors.border),
-        ),
+        border: Border(bottom: BorderSide(color: WuxiaColors.border)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _StatItem(
-            label: UiStrings.towerProgressCleared(
-              progress.highestClearedFloor,
-            ),
+            label: UiStrings.towerProgressCleared(progress.highestClearedFloor),
           ),
           _StatItem(
             label: UiStrings.towerProgressAttempts(progress.totalAttempts),
@@ -162,10 +265,7 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
-        color: WuxiaColors.textSecondary,
-        fontSize: 13,
-      ),
+      style: const TextStyle(color: WuxiaColors.textSecondary, fontSize: 13),
     );
   }
 }
