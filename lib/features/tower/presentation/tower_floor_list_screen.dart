@@ -31,8 +31,8 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
   final _scrollController = ScrollController();
   bool _hasScrolled = false;
 
-  // 每行约 80px（padding 10 × 2 + content 60）
-  static const double _kCardHeight = 80.0;
+  // 石阶行约 94px；用于首次进入时滚到可挑战层附近。
+  static const double _kCardHeight = 94.0;
 
   @override
   void dispose() {
@@ -107,6 +107,9 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
                       itemBuilder: (ctx, i) => TowerFloorCard(
                         key: ValueKey(entries[i].def.floorIndex),
                         entry: entries[i],
+                        stepSide: i.isEven
+                            ? TowerFloorStepSide.left
+                            : TowerFloorStepSide.right,
                         onChallenge: () =>
                             _onChallenge(context, entries[i].def),
                       ),
