@@ -12,8 +12,9 @@ import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/features/inventory/presentation/inventory_screen.dart';
-import 'package:wuxia_idle/shared/widgets/equipment_glyph.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/item_slot.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_panel.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_tab.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/section_header.dart';
 
 /// InventoryScreen widget 测试。
@@ -150,9 +151,10 @@ void main() {
     expect(find.byType(SectionHeader), findsNWidgets(3));
     expect(
       find.byType(PaperPanel),
-      findsOneWidget,
-      reason: 'SectionHeader 的墨色标题和 ink_divider 需落在宣纸 panel 上',
+      findsNWidgets(3),
+      reason: '装备仓库应按武器/护甲/饰品分成三个宣纸小柜，避免整页空纸面',
     );
+    expect(find.byType(ItemSlot), findsNWidgets(3));
     // 强化徽章（>0 显示）
     expect(find.text('+12'), findsOneWidget);
     expect(find.text('+5'), findsOneWidget);
@@ -184,8 +186,7 @@ void main() {
       equipments: [eq],
       player: mkCharacter(realmTier: RealmTier.xueTu),
     );
-    expect(find.byIcon(Icons.lock_outline), findsWidgets, reason: '境界不达应显锁图标');
-    expect(find.byType(ColorFiltered), findsWidgets, reason: '不可装备应灰化');
+    expect(find.text('未达境界'), findsWidgets, reason: '境界不达应显封条');
   });
 
   testWidgets('境界达标装备 → 无锁', (tester) async {
@@ -200,11 +201,7 @@ void main() {
       equipments: [eq],
       player: mkCharacter(realmTier: RealmTier.wuSheng),
     );
-    expect(
-      find.byIcon(Icons.lock_outline),
-      findsNothing,
-      reason: '武圣可装备寻常货 → 无锁',
-    );
+    expect(find.text('未达境界'), findsNothing, reason: '武圣可装备寻常货 → 无封条');
   });
 
   testWidgets('缺图/未知 defId → 走 EquipGlyph 占位不崩', (tester) async {
@@ -216,9 +213,9 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     expect(
-      find.byType(EquipGlyph),
+      find.byType(ItemSlot),
       findsWidgets,
-      reason: '未知 defId 应降级 EquipGlyph',
+      reason: '未知 defId 应降级 ItemSlot 占位',
     );
   });
 
@@ -234,7 +231,7 @@ void main() {
     expect(find.byIcon(Icons.auto_awesome), findsWidgets, reason: '师承遗物应显标记');
   });
 
-  testWidgets('TabBar 2 tab + 默认装备 Tab 显部位段', (tester) async {
+  testWidgets('木牌 2 tab + 默认装备 Tab 显部位段', (tester) async {
     await pumpInv(
       tester,
       equipments: [
@@ -251,6 +248,7 @@ void main() {
     );
     expect(find.text('装备'), findsOneWidget);
     expect(find.text('物料'), findsOneWidget);
+    expect(find.byType(PlaqueTab), findsNWidgets(2));
     // 默认装备 Tab：武器段标题可见;物料行在另一 Tab 不可见
     expect(find.text('武器'), findsOneWidget);
     expect(find.textContaining('磨剑石 ×'), findsNothing);
