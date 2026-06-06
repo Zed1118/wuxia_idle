@@ -649,10 +649,18 @@ class UiStrings {
 
   static const String seclusionSetupTitle = '选择时长';
   static const String seclusionSetupStartButton = '开始闭关';
+  static String seclusionHourlyPreview(double scale) =>
+      '每小时预估产出（境界加成 ×${scale.toStringAsFixed(2)}）';
+  static String seclusionEstimatedMojianshi(int amount) => '预估磨剑石 ×$amount';
+  static const String seclusionStarting = '请稍候…';
 
   static const String activeRetreatTitle = '闭关中';
   static const String activeRetreatCollect = '收功';
   static const String activeRetreatEarlyCollect = '提前收功';
+  static const String activeRetreatDone = '已完成';
+  static String activeRetreatTimeRange(String start, String end, int hours) =>
+      '$start → $end（$hours h）';
+  static String activeRetreatProgressPct(int pct) => '$pct%';
   static const String activeRetreatConfirmTitle = '确认提前收功';
   static const String activeRetreatConfirmBody = '现在收功将按实际时间结算，是否确认？';
   static const String activeRetreatConfirm = '确认';

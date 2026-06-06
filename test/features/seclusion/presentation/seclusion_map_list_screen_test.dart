@@ -32,6 +32,8 @@ void main() {
     WidgetTester tester, {
     RealmTier charRealmTier = RealmTier.xueTu,
   }) async {
+    await tester.binding.setSurfaceSize(const Size(1024, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -94,8 +96,7 @@ void main() {
     // AppBar 标题为地图名
     expect(find.text(def.mapName), findsWidgets);
     // 时长选择按钮（3 档：1h / 4h / 12h）
-    final durations =
-        GameRepository.instance.numbers.retreat.durationHours;
+    final durations = GameRepository.instance.numbers.retreat.durationHours;
     for (final h in durations) {
       expect(
         find.text(UiStrings.seclusionDurationLabel(h)),

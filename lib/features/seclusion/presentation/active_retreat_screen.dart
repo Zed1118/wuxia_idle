@@ -6,6 +6,7 @@ import '../../../core/domain/enums.dart';
 import '../application/seclusion_service_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'retreat_result_screen.dart';
@@ -47,7 +48,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
   double get _progress {
     final elapsed =
         DateTime.now().difference(widget.session.startedAt).inSeconds /
-            (widget.session.durationHours * 3600.0);
+        (widget.session.durationHours * 3600.0);
     return elapsed.clamp(0.0, 1.0);
   }
 
@@ -55,35 +56,35 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
     final dialogResult = _isDone
         ? true
         : await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: WuxiaColors.panel,
-            title: const Text(
-              UiStrings.activeRetreatConfirmTitle,
-              style: TextStyle(color: WuxiaColors.textPrimary),
-            ),
-            content: const Text(
-              UiStrings.activeRetreatConfirmBody,
-              style: TextStyle(color: WuxiaColors.textSecondary),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text(
-                  UiStrings.activeRetreatCancel,
-                  style: TextStyle(color: WuxiaColors.textSecondary),
-                ),
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: WuxiaColors.panel,
+              title: const Text(
+                UiStrings.activeRetreatConfirmTitle,
+                style: TextStyle(color: WuxiaColors.textPrimary),
               ),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text(
-                  UiStrings.activeRetreatConfirm,
-                  style: TextStyle(color: WuxiaColors.gangMeng),
-                ),
+              content: const Text(
+                UiStrings.activeRetreatConfirmBody,
+                style: TextStyle(color: WuxiaColors.textSecondary),
               ),
-            ],
-          ),
-        );
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text(
+                    UiStrings.activeRetreatCancel,
+                    style: TextStyle(color: WuxiaColors.textSecondary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text(
+                    UiStrings.activeRetreatConfirm,
+                    style: TextStyle(color: WuxiaColors.gangMeng),
+                  ),
+                ),
+              ],
+            ),
+          );
 
     if (dialogResult != true || !mounted) return;
     setState(() => _isCollecting = true);
@@ -109,10 +110,8 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
       // 关闭时 pop(true) 经 pushReplacement 链回到 list 的 push<bool>(setup)。
       await Navigator.of(context).pushReplacement<bool, bool>(
         MaterialPageRoute(
-          builder: (_) => RetreatResultScreen(
-            mapDef: widget.mapDef,
-            result: result,
-          ),
+          builder: (_) =>
+              RetreatResultScreen(mapDef: widget.mapDef, result: result),
         ),
       );
     } catch (e) {
@@ -144,81 +143,91 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 地图名
-              Text(
-                def.mapName,
-                style: const TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _MapBackdrop(path: def.imagePath),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.42),
               ),
-              const SizedBox(height: 8),
-
-              // 时间范围
-              Text(
-                '$startStr → $endStr（${session.durationHours}h）',
-                style: const TextStyle(
-                  color: WuxiaColors.textSecondary,
-                  fontSize: 13,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // 进度条
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 8,
-                  backgroundColor: WuxiaColors.barTrack,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    done ? WuxiaColors.resultHighlight : WuxiaColors.internalForce,
+            ),
+            Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: PaperPanel(
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                    paperOpacity: 0.28,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SectionHeader(def.mapName),
+                        const SizedBox(height: 12),
+                        Text(
+                          UiStrings.activeRetreatTimeRange(
+                            startStr,
+                            endStr,
+                            session.durationHours,
+                          ),
+                          style: const TextStyle(
+                            color: WuxiaUi.ink2,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            minHeight: 10,
+                            backgroundColor: WuxiaUi.muted.withValues(
+                              alpha: 0.22,
+                            ),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              done ? WuxiaUi.gold : WuxiaUi.qing,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            done
+                                ? UiStrings.activeRetreatDone
+                                : UiStrings.activeRetreatProgressPct(
+                                    (progress * 100).round(),
+                                  ),
+                            style: TextStyle(
+                              color: done ? WuxiaUi.gold : WuxiaUi.ink2,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        Align(
+                          alignment: Alignment.center,
+                          child: PlaqueButton(
+                            label: _isCollecting
+                                ? UiStrings.seclusionStarting
+                                : done
+                                ? UiStrings.activeRetreatCollect
+                                : UiStrings.activeRetreatEarlyCollect,
+                            primary: true,
+                            disabled: _isCollecting,
+                            onTap: _onCollect,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                done ? '已完成' : '${(progress * 100).toStringAsFixed(0)}%',
-                style: TextStyle(
-                  color:
-                      done ? WuxiaColors.resultHighlight : WuxiaColors.textSecondary,
-                  fontSize: 12,
-                ),
-              ),
-
-              const Spacer(),
-
-              // 收功按钮
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isCollecting ? null : _onCollect,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        done ? WuxiaColors.resultHighlight : WuxiaColors.gangMeng,
-                    foregroundColor: WuxiaColors.background,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    disabledBackgroundColor: WuxiaColors.buttonDisabled,
-                  ),
-                  child: Text(
-                    _isCollecting
-                        ? '请稍候…'
-                        : done
-                            ? UiStrings.activeRetreatCollect
-                            : UiStrings.activeRetreatEarlyCollect,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -226,4 +235,22 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
 
   static String _formatTime(DateTime t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+}
+
+class _MapBackdrop extends StatelessWidget {
+  const _MapBackdrop({required this.path});
+
+  final String? path;
+
+  @override
+  Widget build(BuildContext context) {
+    if (path == null) return _fallback();
+    return Image.asset(
+      path!,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => _fallback(),
+    );
+  }
+
+  Widget _fallback() => Container(color: WuxiaColors.background);
 }

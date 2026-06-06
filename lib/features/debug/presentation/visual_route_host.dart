@@ -3,17 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
 import 'battle_test_menu.dart';
+import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/isar_setup.dart';
 import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/utils/rng.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
+import '../../cultivation/application/character_advancement_service.dart';
+import '../../equipment/application/equipment_factory.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../sect/presentation/sect_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
+import '../../seclusion/domain/retreat_session.dart';
+import '../../seclusion/presentation/active_retreat_screen.dart';
+import '../../seclusion/presentation/retreat_result_screen.dart';
+import '../../seclusion/presentation/seclusion_map_list_screen.dart';
+import '../../seclusion/presentation/seclusion_setup_screen.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../application/phase2_seed_service.dart';
@@ -131,6 +140,68 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.towerFloorList:
       await OnboardingService(isar: isar).ensureFoundingMasters();
       return const TowerFloorListScreen();
+    case VisualRoute.seclusionMapList:
+      await OnboardingService(isar: isar).ensureFoundingMasters();
+      return const SeclusionMapListScreen(
+        charRealmTier: RealmTier.zongShi,
+        characterId: 1,
+      );
+    case VisualRoute.seclusionSetup:
+      final def = GameRepository.instance.getSeclusionMap(
+        RetreatMapType.xuanYaPuBu,
+      );
+      return SeclusionSetupScreen(
+        mapDef: def,
+        charRealmTier: RealmTier.zongShi,
+        characterId: 1,
+      );
+    case VisualRoute.seclusionActive:
+      final def = GameRepository.instance.getSeclusionMap(
+        RetreatMapType.cangJingGe,
+      );
+      final session = RetreatSession()
+        ..id = 1
+        ..saveDataId = IsarSetup.currentSlotId
+        ..mapType = def.mapType
+        ..durationHours = 4
+        ..startedAt = DateTime.now().subtract(const Duration(minutes: 96))
+        ..completedAt = null
+        ..status = RetreatStatus.active
+        ..actualRewards = [];
+      return ActiveRetreatScreen(
+        session: session,
+        mapDef: def,
+        characterId: 1,
+        charRealmTier: RealmTier.zongShi,
+      );
+    case VisualRoute.seclusionResult:
+      final def = GameRepository.instance.getSeclusionMap(
+        RetreatMapType.guJianZhong,
+      );
+      final tieJian = EquipmentFactory.fromDef(
+        GameRepository.instance.getEquipment('weapon_xunchang_tie_jian'),
+        rng: DefaultRng(seed: 606),
+        obtainedAt: DateTime(2026, 6, 6),
+        obtainedFrom: '闭关',
+      );
+      final result = (
+        actualHours: 4.0,
+        mojianshi: 18,
+        equipmentDrops: <Equipment>[tieJian],
+        experiencePoints: 520,
+        techniqueLearnPoints: 6,
+        internalForcePoints: 42,
+        advancement: const AdvancementResult(
+          layersGained: 1,
+          tierBefore: RealmTier.sanLiu,
+          layerBefore: RealmLayer.dengFeng,
+          tierAfter: RealmTier.erLiu,
+          layerAfter: RealmLayer.qiMeng,
+          internalForceMaxBefore: 1800,
+          internalForceMaxAfter: 2400,
+        ),
+      );
+      return RetreatResultScreen(mapDef: def, result: result);
     case VisualRoute.battleScene:
       // hub 点选时无 VISUAL_SCENE → 默认 citywall;需指定 biome 仍可用单路由 dart-define。
       const envScene = String.fromEnvironment('VISUAL_SCENE');
