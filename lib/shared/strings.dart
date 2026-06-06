@@ -397,10 +397,15 @@ class UiStrings {
   static const String stageListCleared = '✓ 已通关';
   static const String stageListPrevHint = '通关前一关解锁';
   static const String stageListEmpty = '该章暂无关卡';
+  static const String stageListJourneyTitle = '章内行程';
+  static const String stageListBoss = 'Boss';
+  static String stageListJourneyNodeLabel(int stageIndex) => '第$stageIndex关';
 
   static String chapterRouteNodeLabel(int chapterIndex) => '第$chapterIndex章';
 
   static String mainlineRouteStageNode(int stageIndex) => '$stageIndex';
+
+  static String stageListEnemyCount(int count) => '$count 名敌人';
 
   /// 章节标题路由：按 chapterIndex 返回对应中文标题。
   static String chapterTitle(int chapterIndex) {

@@ -13,6 +13,8 @@ import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../equipment/application/equipment_factory.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
+import '../../mainline/domain/mainline_progress.dart';
+import '../../mainline/presentation/stage_list_screen.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../sect/presentation/sect_screen.dart';
@@ -137,6 +139,10 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.chapterList:
       await OnboardingService(isar: isar).ensureFoundingMasters();
       return const ChapterListScreen();
+    case VisualRoute.stageList:
+      await isar.writeTxn(() => isar.mainlineProgress.clear());
+      await Phase2SeedService(isar: isar).seedVisualCheckW7W11();
+      return const StageListScreen(chapterIndex: 1);
     case VisualRoute.towerFloorList:
       await OnboardingService(isar: isar).ensureFoundingMasters();
       return const TowerFloorListScreen();
