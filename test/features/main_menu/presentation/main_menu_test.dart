@@ -5,8 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
+import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/festival/application/festival_service_providers.dart';
@@ -107,8 +110,16 @@ void main() {
     expect(find.byType(InkWell), findsNWidgets(18));
   });
 
-  testWidgets('入口状态 chip：主线下一关 / 爬塔 Boss / 闭关可择地图', (tester) async {
+  testWidgets('入口状态 chip：主线 / 爬塔 / 装备 / 心法 / 闭关', (tester) async {
     final now = DateTime(2026, 6, 7);
+    final mainTechnique = Technique.create(
+      defId: 'tech_gangmeng_jichu',
+      ownerCharacterId: 1,
+      tier: TechniqueTier.ruMenGong,
+      school: TechniqueSchool.gangMeng,
+      role: TechniqueRole.main,
+      learnedAt: now,
+    )..id = 7;
     final founder = Character.create(
       name: '祖师',
       realmTier: RealmTier.yiLiu,
@@ -121,7 +132,25 @@ void main() {
       rarity: RarityTier.tianCai,
       lineageRole: LineageRole.founder,
       createdAt: now,
+      insightPoints: 12,
+      mainTechniqueId: mainTechnique.id,
     )..id = 1;
+    final equipments = [
+      Equipment.create(
+        defId: 'weapon_xunchang_tie_jian',
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.weapon,
+        obtainedAt: now,
+        obtainedFrom: 'test',
+      ),
+      Equipment.create(
+        defId: 'weapon_baowu_zhen_yue_jian',
+        tier: EquipmentTier.baoWu,
+        slot: EquipmentSlot.weapon,
+        obtainedAt: now,
+        obtainedFrom: 'test',
+      ),
+    ];
 
     await tester.pumpWidget(
       ProviderScope(
@@ -139,9 +168,13 @@ void main() {
               ..highestClearedFloor = 9
               ..createdAt = now,
           ),
+          allEquipmentsProvider.overrideWith((ref) async => equipments),
           currentTutorialStepProvider.overrideWith((ref) async => 5),
           activeCharacterIdsProvider.overrideWith((ref) async => [1]),
           characterByIdProvider(1).overrideWith((ref) async => founder),
+          techniqueByIdProvider(
+            mainTechnique.id,
+          ).overrideWith((ref) async => mainTechnique),
         ],
         child: const MaterialApp(home: MainMenu()),
       ),
@@ -155,6 +188,14 @@ void main() {
       findsOneWidget,
     );
     expect(find.text(UiStrings.mainMenuTowerBossStatus(9, 10)), findsOneWidget);
+    expect(
+      find.text(UiStrings.mainMenuInventoryStatus(2, '宝物')),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.mainMenuTechniquesInsightStatus(12)),
+      findsOneWidget,
+    );
     expect(find.text(UiStrings.mainMenuSeclusionReadyStatus), findsOneWidget);
   });
 

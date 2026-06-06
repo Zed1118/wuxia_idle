@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/application/character_providers.dart';
+import '../../../core/application/inventory_providers.dart';
+import '../../../core/domain/character.dart';
+import '../../../core/domain/equipment.dart';
+import '../../../core/domain/technique.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../baike/presentation/baike_screen.dart';
@@ -127,6 +131,9 @@ class MainMenu extends ConsumerWidget {
     final towerStatus = ref
         .watch(towerProgressProvider)
         .maybeWhen(data: _towerMenuStatus, orElse: () => null);
+    final inventoryStatus = ref
+        .watch(allEquipmentsProvider)
+        .maybeWhen(data: _inventoryMenuStatus, orElse: () => null);
 
     final hintsReadAsync = ref.watch(currentTutorialHintsReadProvider);
     final hintsRead = hintsReadAsync.maybeWhen(
@@ -158,19 +165,13 @@ class MainMenu extends ConsumerWidget {
       WuxiaInkButton(
         label: UiStrings.mainMenuInventory,
         hint: UiStrings.mainMenuInventoryHint,
+        status: inventoryStatus,
         onTap: () => _push(context, const InventoryScreen()),
       ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuTechniques,
-        hint: techLocked
-            ? UiStrings.mainMenuTechniquesLockedHint
-            : UiStrings.mainMenuTechniquesHint,
-        disabled: techLocked,
-        locked: techLocked,
-        onTap: () => _push(
-          context,
-          const TechniquePanelScreen(characterId: _defaultCharacterId),
-        ),
+      _TechniqueMenuButton(
+        characterId: _defaultCharacterId,
+        tutorialLocked: techLocked,
+        onPush: (screen) => _push(context, screen),
       ),
       _SeclusionMenuButton(
         defaultCharacterId: _defaultCharacterId,
@@ -400,6 +401,19 @@ class MainMenu extends ConsumerWidget {
     if (nextIsBoss) return UiStrings.mainMenuTowerBossStatus(highest, next);
     return UiStrings.mainMenuTowerStatus(highest, next);
   }
+
+  static String _inventoryMenuStatus(List<Equipment> equipments) {
+    if (equipments.isEmpty) {
+      return UiStrings.mainMenuInventoryStatus(0, '');
+    }
+    final top = equipments.reduce(
+      (a, b) => a.tier.index >= b.tier.index ? a : b,
+    );
+    return UiStrings.mainMenuInventoryStatus(
+      equipments.length,
+      EnumL10n.equipmentTier(top.tier),
+    );
+  }
 }
 
 /// 入口分组标签(Phase A · 主/次分组):小字 + 分隔线。
@@ -543,6 +557,57 @@ class _MenuSection extends StatelessWidget {
         ...compact ? _twoColumn(items) : _oneColumn(items),
       ],
     );
+  }
+}
+
+class _TechniqueMenuButton extends ConsumerWidget {
+  const _TechniqueMenuButton({
+    required this.characterId,
+    required this.tutorialLocked,
+    required this.onPush,
+  });
+
+  final int characterId;
+  final bool tutorialLocked;
+  final void Function(Widget screen) onPush;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chAsync = ref.watch(characterByIdProvider(characterId));
+    final character = chAsync.maybeWhen(data: (c) => c, orElse: () => null);
+    final techs = ref.watch(characterAllTechniquesProvider(characterId));
+    final status = tutorialLocked
+        ? UiStrings.mainMenuTechniquesLockedStatus
+        : _techniqueStatus(character, techs.value);
+
+    return WuxiaInkButton(
+      label: UiStrings.mainMenuTechniques,
+      hint: tutorialLocked
+          ? UiStrings.mainMenuTechniquesLockedHint
+          : UiStrings.mainMenuTechniquesHint,
+      status: status,
+      disabled: tutorialLocked,
+      locked: tutorialLocked,
+      onTap: tutorialLocked
+          ? null
+          : () => onPush(TechniquePanelScreen(characterId: characterId)),
+    );
+  }
+
+  static String? _techniqueStatus(
+    Character? character,
+    List<Technique>? techniques,
+  ) {
+    if (character == null) return null;
+    if (character.insightPoints > 0) {
+      return UiStrings.mainMenuTechniquesInsightStatus(character.insightPoints);
+    }
+    if (character.mainTechniqueId == null) {
+      return UiStrings.mainMenuTechniquesNoMainStatus;
+    }
+    final count = techniques?.length;
+    if (count == null || count <= 0) return null;
+    return UiStrings.mainMenuTechniquesKnownStatus(count);
   }
 }
 
