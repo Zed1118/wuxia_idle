@@ -12,6 +12,7 @@
 | 浅底文字 | 档案头、段标题、标签值改用 `WuxiaUi.ink/muted` | 修正白字落在宣纸底上的低对比问题 |
 | 测试 | 增加 `WuxiaTitleBar/PlaqueTab/PaperPanel` 断言 | 防止外框组件被无意回退 |
 | 奇遇招式 | `EncounterSkillSection` 改为 `PaperPanel` + `SectionHeader` + `PlaqueButton` | 底部子区块不再脱离宣纸卡片体系 |
+| 装备/辅修槽 | `_EquipmentSlotShell` / `_SlotShell` 改为宣纸纹理浅底，文字改墨色系 | 中部三装备槽和辅修槽从黑色条块转为器物签 |
 
 ## 验证
 
@@ -24,8 +25,9 @@
 
 - `docs/handoff/codex_character_panel_ui_polish_2026-06-06/01_character_panel.png`
 - `docs/handoff/codex_character_panel_ui_polish_2026-06-06/02_character_panel_encounter_skill.png`
+- `docs/handoff/codex_character_panel_ui_polish_2026-06-06/03_character_panel_slots.png`
 
 ## 备注
 
-- 本轮统一角色面板外层框架、浅底文字色值，并收拢奇遇招式段外框；装备槽、心法槽的深色信息块仍保留原交互结构。
+- 本轮统一角色面板外层框架、浅底文字色值，收拢奇遇招式段外框，并将装备槽/辅修槽浅底化；主修心法大卷面仍保留原结构，后续可单独打磨。
 - 当前工作仍在独立分支 `codex/t11-inventory-section-header`，未合并 `main`。
