@@ -142,6 +142,7 @@ void main() {
 
     expect(find.text('入门功'), findsOneWidget);
     expect(find.text('常练功'), findsOneWidget);
+    expect(find.text(UiStrings.techniqueSchoolMatrixTitle), findsOneWidget);
     expect(find.text('主修'), findsOneWidget);
     expect(find.text('辅修'), findsNWidgets(2));
   });
@@ -196,6 +197,8 @@ void main() {
       techniques: {100: main, 101: assist},
     );
 
+    await tester.ensureVisible(find.text(UiStrings.setAsMainButton));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(UiStrings.setAsMainButton));
     await tester.pump();
     await tester.pump();
@@ -231,6 +234,8 @@ void main() {
       techniques: {100: main, 101: assist},
     );
 
+    await tester.ensureVisible(find.text(UiStrings.setAsMainButton));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(UiStrings.setAsMainButton));
     await tester.pump();
     await tester.pump();

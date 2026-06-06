@@ -323,6 +323,13 @@ class UiStrings {
   static const String techniquePanelTitle = '心法面板';
   static const String techniquePanelEmpty = '尚未学习任何心法';
   static const String techniquePanelMainHeroLabel = '主修心法';
+  static const String techniqueSchoolMatrixTitle = '三系相克';
+  static const String techniqueSchoolMatrixHint = '刚猛克阴柔，阴柔克灵巧，灵巧克刚猛';
+  static const String techniqueSchoolMatrixCurrentPrefix = '当前';
+  static const String techniqueSchoolMatrixUnset = '未定';
+  static const String techniqueSchoolEffectGangMeng = '震伤';
+  static const String techniqueSchoolEffectLingQiao = '暴击';
+  static const String techniqueSchoolEffectYinRou = '内伤';
   static const String setAsMainButton = '设为主修';
   static const String dispelDialogTitle = '散功换主修';
   static const String dispelLayerWarning = '修炼度层可能回退';
