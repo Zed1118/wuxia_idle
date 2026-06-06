@@ -180,6 +180,18 @@ void main() {
     await tester.pump();
   }
 
+  Future<void> tapFirstEmptyEquipmentSlot(WidgetTester tester) async {
+    final slotInkWell = find
+        .ancestor(
+          of: find.text(UiStrings.slotEmpty).first,
+          matching: find.byType(InkWell),
+        )
+        .first;
+    await tester.ensureVisible(slotInkWell);
+    await tester.pump();
+    await tester.tap(slotInkWell);
+  }
+
   // ── 用例 0：档案头 ─────────────────────────────────────────────────────
 
   testWidgets('档案头:立绘 + 姓名 + 境界 + 流派名 + 4 属性聚成一卡', (tester) async {
@@ -678,14 +690,7 @@ void main() {
     await tester.pump();
 
     // 点第一个空槽(InkWell 包裹 _EquipmentSlotTile 的「未装备」占位)。
-    await tester.tap(
-      find
-          .ancestor(
-            of: find.text(UiStrings.slotEmpty).first,
-            matching: find.byType(InkWell),
-          )
-          .first,
-    );
+    await tapFirstEmptyEquipmentSlot(tester);
     await tester.pump();
     await tester.pump();
 
@@ -717,14 +722,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    await tester.tap(
-      find
-          .ancestor(
-            of: find.text(UiStrings.slotEmpty).first,
-            matching: find.byType(InkWell),
-          )
-          .first,
-    );
+    await tapFirstEmptyEquipmentSlot(tester);
     await tester.pump();
     await tester.pump();
 
@@ -782,14 +780,7 @@ void main() {
     await tester.pump();
 
     // 点第一个空槽(武器)弹 picker。
-    await tester.tap(
-      find
-          .ancestor(
-            of: find.text(UiStrings.slotEmpty).first,
-            matching: find.byType(InkWell),
-          )
-          .first,
-    );
+    await tapFirstEmptyEquipmentSlot(tester);
     await tester.pump();
     await tester.pump();
 
