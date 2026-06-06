@@ -14,6 +14,8 @@
 | 奇遇招式 | `EncounterSkillSection` 改为 `PaperPanel` + `SectionHeader` + `PlaqueButton` | 底部子区块不再脱离宣纸卡片体系 |
 | 装备/辅修槽 | `_EquipmentSlotShell` / `_SlotShell` 改为宣纸纹理浅底，文字改墨色系 | 中部三装备槽和辅修槽从黑色条块转为器物签 |
 | 可读性强化 | 派生数值改为大号数值签；装备图框放大到 112px；基础属性字号上调；分区标题统一 `SectionHeader` | 解决装备图过小、派生属性文字轻、颜色不明显的问题 |
+| 档案头画像 | 头像改为画像签，叠宣纸覆层、墨色内框、门派色窄条与身份压条；姓名、境界、门派、四属性重排为档案牌 | 角色头像不再像独立贴图，顶部档案区更贴近水墨包装 |
+| 测试交互 | picker 相关测试先滚动到装备槽再点击 | 适配档案头变高后的可滚动首屏布局 |
 
 ## 验证
 
@@ -28,8 +30,9 @@
 - `docs/handoff/codex_character_panel_ui_polish_2026-06-06/02_character_panel_encounter_skill.png`
 - `docs/handoff/codex_character_panel_ui_polish_2026-06-06/03_character_panel_slots.png`
 - `docs/handoff/codex_character_panel_ui_polish_2026-06-06/04_character_panel_readability.png`
+- `docs/handoff/codex_character_panel_ui_polish_2026-06-06/05_character_panel_profile_header.png`
 
 ## 备注
 
-- 本轮统一角色面板外层框架、浅底文字色值，收拢奇遇招式段外框，并将装备槽/辅修槽浅底化；最新补强了装备图尺寸、派生数值层级和分区段头。主修心法大卷面仍保留原结构，后续可单独打磨。
+- 本轮统一角色面板外层框架、浅底文字色值，收拢奇遇招式段外框，并将装备槽/辅修槽浅底化；最新补强了装备图尺寸、派生数值层级、分区段头和档案头画像签。主修心法大卷面仍保留原结构，后续可单独打磨。
 - 当前工作仍在独立分支 `codex/t11-inventory-section-header`，未合并 `main`。

@@ -216,78 +216,324 @@ class _ProfileHeaderCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PortraitFrame(
-            portraitPath: character.portraitPath,
-            size: 110,
+          _ProfilePortraitPlaque(
+            character: character,
             borderColor: schoolColor,
-            placeholderText: character.name,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 18),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  character.name,
-                  style: const TextStyle(
-                    color: WuxiaUi.ink,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      EnumL10n.realm(character.realmTier, character.realmLayer),
-                      style: const TextStyle(
-                        color: WuxiaUi.muted,
-                        fontSize: 14,
+                    Expanded(
+                      child: Text(
+                        character.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: WuxiaUi.ink,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
-                    if (character.school != null) ...[
-                      const SizedBox(width: 10),
-                      Container(width: 3, height: 12, color: schoolColor),
-                      const SizedBox(width: 6),
-                      Text(
-                        EnumL10n.school(character.school!),
-                        style: TextStyle(color: schoolColor, fontSize: 14),
+                    if (character.school != null)
+                      _SchoolBadge(
+                        label: EnumL10n.school(character.school!),
+                        color: schoolColor,
                       ),
-                    ],
                   ],
                 ),
-                const SizedBox(height: 10),
-                const Divider(height: 1, color: WuxiaUi.ink),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _LabeledValue(
-                        label: UiStrings.attrConstitution,
-                        value: '${a.constitution}',
-                      ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0x2EF3E6C7),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: WuxiaUi.ink.withValues(alpha: 0.28),
                     ),
-                    Expanded(
-                      child: _LabeledValue(
-                        label: UiStrings.attrEnlightenment,
-                        value: '${a.enlightenment}',
+                  ),
+                  child: Row(
+                    children: [
+                      const Text(
+                        UiStrings.profileRealmLabel,
+                        style: TextStyle(
+                          color: WuxiaUi.muted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: _LabeledValue(
-                        label: UiStrings.attrAgility,
-                        value: '${a.agility}',
+                      const SizedBox(width: 8),
+                      Text(
+                        EnumL10n.realm(
+                          character.realmTier,
+                          character.realmLayer,
+                        ),
+                        style: const TextStyle(
+                          color: WuxiaUi.ink,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _AttributeStrip(
+                  attributes: [
+                    _AttributeView(UiStrings.attrConstitution, a.constitution),
+                    _AttributeView(
+                      UiStrings.attrEnlightenment,
+                      a.enlightenment,
                     ),
-                    Expanded(
-                      child: _LabeledValue(
-                        label: UiStrings.attrFortune,
-                        value: '${a.fortune}',
-                      ),
-                    ),
+                    _AttributeView(UiStrings.attrAgility, a.agility),
+                    _AttributeView(UiStrings.attrFortune, a.fortune),
                   ],
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfilePortraitPlaque extends StatelessWidget {
+  const _ProfilePortraitPlaque({
+    required this.character,
+    required this.borderColor,
+  });
+
+  final Character character;
+  final Color borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 128,
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: const Color(0x33F3E6C7),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.42)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 112,
+                height: 112,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE7D8B8),
+                  border: Border.all(
+                    color: WuxiaUi.ink.withValues(alpha: 0.58),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: borderColor.withValues(alpha: 0.16),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                left: 4,
+                top: 8,
+                bottom: 8,
+                child: Container(
+                  width: 4,
+                  decoration: BoxDecoration(
+                    color: borderColor.withValues(alpha: 0.62),
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                ),
+              ),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: SizedBox(
+                  width: 102,
+                  height: 102,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Opacity(
+                        opacity: 0.9,
+                        child: PortraitFrame(
+                          portraitPath: character.portraitPath,
+                          size: 102,
+                          borderColor: Colors.transparent,
+                          placeholderText: character.name,
+                        ),
+                      ),
+                      ColoredBox(color: WuxiaUi.paper.withValues(alpha: 0.12)),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              WuxiaUi.ink.withValues(alpha: 0.18),
+                              Colors.transparent,
+                              WuxiaUi.ink.withValues(alpha: 0.22),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 3,
+                bottom: 2,
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Image.asset(
+                    WuxiaUi.sealRed,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 10,
+                right: 10,
+                bottom: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  decoration: BoxDecoration(
+                    color: WuxiaUi.ink.withValues(alpha: 0.68),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: Text(
+                    _lineageRoleLabel(character.lineageRole),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: WuxiaUi.paper,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _lineageRoleLabel(LineageRole role) {
+    return switch (role) {
+      LineageRole.founder => UiStrings.lineageRoleFounder,
+      LineageRole.disciple => UiStrings.lineageRoleDisciple,
+      LineageRole.grandDisciple => UiStrings.lineageRoleGrandDisciple,
+    };
+  }
+}
+
+class _SchoolBadge extends StatelessWidget {
+  const _SchoolBadge({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(left: 12, top: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.72)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _AttributeView {
+  const _AttributeView(this.label, this.value);
+
+  final String label;
+  final int value;
+}
+
+class _AttributeStrip extends StatelessWidget {
+  const _AttributeStrip({required this.attributes});
+
+  final List<_AttributeView> attributes;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        for (var i = 0; i < attributes.length; i++) ...[
+          Expanded(child: _AttributeChip(attribute: attributes[i])),
+          if (i != attributes.length - 1) const SizedBox(width: 8),
+        ],
+      ],
+    );
+  }
+}
+
+class _AttributeChip extends StatelessWidget {
+  const _AttributeChip({required this.attribute});
+
+  final _AttributeView attribute;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 52),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0x26F3E6C7),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.24)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            attribute.label,
+            style: const TextStyle(
+              color: WuxiaUi.muted,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            '${attribute.value}',
+            style: const TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -1617,39 +1863,6 @@ class _DerivedStatCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _LabeledValue extends StatelessWidget {
-  const _LabeledValue({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: WuxiaUi.muted,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            color: WuxiaUi.ink,
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ],
     );
   }
 }

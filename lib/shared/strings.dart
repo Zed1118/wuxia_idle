@@ -182,6 +182,10 @@ class UiStrings {
   static const String panelDerived = '派生数值';
   static const String panelEquipment = '装备';
   static const String panelTechnique = '心法';
+  static const String profileRealmLabel = '境界';
+  static const String lineageRoleFounder = '开派祖师';
+  static const String lineageRoleDisciple = '门下弟子';
+  static const String lineageRoleGrandDisciple = '再传弟子';
 
   // 师承段（T56）
   static const String panelLineage = '师承';
