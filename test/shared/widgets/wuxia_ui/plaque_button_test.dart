@@ -3,8 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 
 void main() {
-  Widget host(Widget child) =>
-      MaterialApp(home: Scaffold(body: Center(child: child)));
+  Widget host(Widget child) => MaterialApp(
+    home: Scaffold(body: Center(child: child)),
+  );
 
   testWidgets('渲染 label', (tester) async {
     await tester.pumpWidget(host(const PlaqueButton(label: '强化', onTap: null)));
@@ -20,12 +21,23 @@ void main() {
 
   testWidgets('disabled 拦截点击且半透明', (tester) async {
     var n = 0;
-    await tester.pumpWidget(host(
-      PlaqueButton(label: '卸下', onTap: () => n++, disabled: true),
-    ));
+    await tester.pumpWidget(
+      host(PlaqueButton(label: '卸下', onTap: () => n++, disabled: true)),
+    );
     await tester.tap(find.byType(PlaqueButton), warnIfMissed: false);
     expect(n, 0);
     final op = tester.widget<Opacity>(find.byType(Opacity));
     expect(op.opacity, 0.4);
+  });
+
+  testWidgets('无外层 Material 时也不红屏(overlay/dialog 安全)', (tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(child: PlaqueButton(label: '继续', onTap: null)),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.text('继续'), findsOneWidget);
   });
 }
