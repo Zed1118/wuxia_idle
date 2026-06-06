@@ -26,6 +26,7 @@ import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 import 'encounter_skill_section.dart';
 
@@ -60,11 +61,10 @@ class _CharacterPanelScreenState extends ConsumerState<CharacterPanelScreen> {
     final idsAsync = ref.watch(activeCharacterIdsProvider);
     return Scaffold(
       backgroundColor: WuxiaColors.background,
-      appBar: AppBar(
-        backgroundColor: WuxiaColors.background,
-        title: const Text(UiStrings.characterPanelScreenTitle),
-        leading: Navigator.of(context).canPop()
-            ? BackButton(onPressed: () => Navigator.of(context).pop())
+      appBar: WuxiaTitleBar(
+        title: UiStrings.characterPanelScreenTitle,
+        onBack: Navigator.of(context).canPop()
+            ? () => Navigator.of(context).pop()
             : null,
       ),
       body: SafeArea(
@@ -146,69 +146,24 @@ class _LineageTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: const BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border(bottom: BorderSide(color: WuxiaColors.border)),
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           for (
             var i = 0;
             i < ids.length && i < UiStrings.lineageTabLabels.length;
             i++
           )
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: i == ids.length - 1 ? 0 : 8),
-                child: _LineageTab(
-                  label: UiStrings.lineageTabLabels[i],
-                  selected: ids[i] == selectedId,
-                  onTap: () => onSelect(ids[i]),
-                ),
+            Padding(
+              padding: EdgeInsets.only(right: i == ids.length - 1 ? 0 : 10),
+              child: PlaqueTab(
+                label: UiStrings.lineageTabLabels[i],
+                selected: ids[i] == selectedId,
+                onTap: () => onSelect(ids[i]),
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-class _LineageTab extends StatelessWidget {
-  const _LineageTab({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = selected ? WuxiaColors.textPrimary : WuxiaColors.textMuted;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? WuxiaColors.avatarFill : Colors.transparent,
-          border: Border.all(
-            color: selected ? WuxiaColors.textPrimary : WuxiaColors.border,
-          ),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 14,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-          ),
-        ),
       ),
     );
   }
@@ -254,7 +209,7 @@ class _ProfileHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final schoolColor = character.school == null
-        ? WuxiaColors.textMuted
+        ? WuxiaUi.muted
         : WuxiaColors.schoolColor(character.school!);
     final a = character.attributes;
     return _PanelCard(
@@ -275,7 +230,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                 Text(
                   character.name,
                   style: const TextStyle(
-                    color: WuxiaColors.textPrimary,
+                    color: WuxiaUi.ink,
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
                   ),
@@ -286,7 +241,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                     Text(
                       EnumL10n.realm(character.realmTier, character.realmLayer),
                       style: const TextStyle(
-                        color: WuxiaColors.textSecondary,
+                        color: WuxiaUi.muted,
                         fontSize: 14,
                       ),
                     ),
@@ -302,7 +257,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Divider(height: 1, color: WuxiaColors.border),
+                const Divider(height: 1, color: WuxiaUi.ink),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -1574,15 +1529,7 @@ class _PanelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border.all(color: WuxiaColors.border),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: child,
-    );
+    return PaperPanel(padding: const EdgeInsets.all(14), child: child);
   }
 }
 
@@ -1596,7 +1543,7 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       text,
       style: const TextStyle(
-        color: WuxiaColors.textSecondary,
+        color: WuxiaUi.ink,
         fontSize: 13,
         fontWeight: FontWeight.w600,
       ),
@@ -1615,15 +1562,12 @@ class _LabeledValue extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 11),
-        ),
+        Text(label, style: const TextStyle(color: WuxiaUi.muted, fontSize: 11)),
         const SizedBox(height: 2),
         Text(
           value,
           style: const TextStyle(
-            color: WuxiaColors.textPrimary,
+            color: WuxiaUi.ink,
             fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
