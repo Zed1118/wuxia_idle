@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../battle/domain/enum_localizations.dart';
+import '../../../data/defs/equipment_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
@@ -12,9 +13,11 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../core/application/character_providers.dart';
-import '../../../shared/widgets/equipment_glyph.dart';
+import '../../../shared/widgets/wuxia_ui/item_slot.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_tab.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import 'equipment_detail_screen.dart';
 
 /// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账 +
@@ -26,31 +29,52 @@ import 'equipment_detail_screen.dart';
 /// `findAll` 整表展示（[allInventoryItemsProvider]），按 [ItemType] enum
 /// 顺序分组（磨剑石 / 心血结晶 / 经验丹 / 心法秘籍 / 杂项材料），目前
 /// Demo 仅磨剑石 + 心血结晶有生产路径。
-class InventoryScreen extends ConsumerWidget {
+class InventoryScreen extends ConsumerStatefulWidget {
   const InventoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: WuxiaColors.background,
-        appBar: AppBar(
-          title: const Text(UiStrings.inventoryTitle),
-          backgroundColor: WuxiaColors.sidebar,
-          foregroundColor: WuxiaColors.textPrimary,
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: UiStrings.inventoryTabEquipment),
-              Tab(text: UiStrings.inventoryTabMaterial),
-            ],
-            labelColor: WuxiaColors.textPrimary,
-            unselectedLabelColor: WuxiaColors.textMuted,
-            indicatorColor: WuxiaColors.textPrimary,
-          ),
-        ),
-        body: const SafeArea(
-          child: TabBarView(children: [_EquipmentTab(), _MaterialTab()]),
+  ConsumerState<InventoryScreen> createState() => _InventoryScreenState();
+}
+
+class _InventoryScreenState extends ConsumerState<InventoryScreen> {
+  var _selectedTab = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      appBar: WuxiaTitleBar(
+        title: UiStrings.inventoryTitle,
+        onBack: () => Navigator.of(context).maybePop(),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  PlaqueTab(
+                    label: UiStrings.inventoryTabEquipment,
+                    selected: _selectedTab == 0,
+                    onTap: () => setState(() => _selectedTab = 0),
+                  ),
+                  const SizedBox(width: 12),
+                  PlaqueTab(
+                    label: UiStrings.inventoryTabMaterial,
+                    selected: _selectedTab == 1,
+                    onTap: () => setState(() => _selectedTab = 1),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: _selectedTab == 0
+                  ? const _EquipmentTab()
+                  : const _MaterialTab(),
+            ),
+          ],
         ),
       ),
     );
@@ -142,22 +166,42 @@ class _EquipmentGrid extends ConsumerWidget {
         .where((s) => bySlot[s]?.isNotEmpty ?? false)
         .toList();
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
       children: [
-        IntrinsicHeight(
-          child: PaperPanel(
-            child: Column(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 1180 ? 3 : 1;
+            if (columns == 1) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final slot in sections) ...[
+                    _SlotGroupSection(
+                      slot: slot,
+                      items: bySlot[slot]!,
+                      playerRealm: playerRealm,
+                    ),
+                    if (slot != sections.last) const SizedBox(height: 14),
+                  ],
+                ],
+              );
+            }
+            return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (final slot in sections)
-                  _SlotGroupSection(
-                    slot: slot,
-                    items: bySlot[slot]!,
-                    playerRealm: playerRealm,
+                for (final slot in sections) ...[
+                  Expanded(
+                    child: _SlotGroupSection(
+                      slot: slot,
+                      items: bySlot[slot]!,
+                      playerRealm: playerRealm,
+                    ),
                   ),
+                  if (slot != sections.last) const SizedBox(width: 14),
+                ],
               ],
-            ),
-          ),
+            );
+          },
         ),
       ],
     );
@@ -178,15 +222,15 @@ class _SlotGroupSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+    return PaperPanel(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SectionHeader(EnumL10n.equipmentSlot(slot)),
           Wrap(
-            spacing: 10,
-            runSpacing: 10,
+            spacing: 12,
+            runSpacing: 12,
             children: [
               for (final eq in items)
                 _EquipmentGridTile(equipment: eq, playerRealm: playerRealm),
@@ -216,119 +260,56 @@ class _EquipmentGridTile extends ConsumerWidget {
     final def = GameRepository.instance.equipmentDefs[eq.defId];
     final locked = playerRealm != null && !eq.isEquippableAtRealm(playerRealm!);
 
-    final Widget icon = (def == null || def.iconPath.isEmpty)
-        ? EquipGlyph(tierColor: color, slot: eq.slot)
-        : Image.asset(
-            def.iconPath,
-            fit: BoxFit.contain,
-            errorBuilder: (_, _, _) =>
-                EquipGlyph(tierColor: color, slot: eq.slot),
-          );
-
-    Widget body = Container(
-      width: 104,
-      decoration: BoxDecoration(
-        color: WuxiaColors.avatarFill,
-        border: Border.all(color: color, width: 1.5),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      padding: const EdgeInsets.all(6),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: 64, width: double.infinity, child: icon),
-          if (def != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              def.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: WuxiaColors.textPrimary,
-                fontSize: 12,
-              ),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        ItemSlot(
+          imagePath: def?.iconPath,
+          name: def?.name ?? eq.defId,
+          tierColor: color,
+          equipmentSlot: eq.slot,
+          enhanceLevel: eq.enhanceLevel,
+          locked: locked,
+          highTier:
+              eq.tier == EquipmentTier.baoWu || eq.tier == EquipmentTier.shenWu,
+          onTap: () async {
+            await _openEquipment(context, ref, def, eq);
+          },
+        ),
+        if (eq.isLineageHeritage)
+          const Positioned(
+            top: 2,
+            left: 2,
+            child: Icon(
+              Icons.auto_awesome,
+              size: 14,
+              color: WuxiaColors.bossFrame,
             ),
-          ],
-        ],
-      ),
+          ),
+      ],
     );
-    if (locked) {
-      body = ColorFiltered(
-        colorFilter: const ColorFilter.matrix(<double>[
-          0.2126, 0.7152, 0.0722, 0, 0, //
-          0.2126, 0.7152, 0.0722, 0, 0, //
-          0.2126, 0.7152, 0.0722, 0, 0, //
-          0, 0, 0, 1, 0, //
-        ]),
-        child: body,
+  }
+
+  Future<void> _openEquipment(
+    BuildContext context,
+    WidgetRef ref,
+    EquipmentDef? def,
+    Equipment eq,
+  ) async {
+    if (def != null) {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => EquipmentDetailScreen(equipment: eq, def: def),
+        ),
+      );
+    } else {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => EnhanceDialog(equipment: eq, def: def),
       );
     }
-
-    return InkWell(
-      onTap: () async {
-        if (def != null) {
-          await Navigator.of(context).push<void>(
-            MaterialPageRoute(
-              builder: (_) => EquipmentDetailScreen(equipment: eq, def: def),
-            ),
-          );
-        } else {
-          await showDialog<void>(
-            context: context,
-            builder: (_) => EnhanceDialog(equipment: eq, def: def),
-          );
-        }
-        ref.invalidate(allEquipmentsProvider);
-        ref.invalidate(allInventoryItemsProvider);
-      },
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          body,
-          if (eq.enhanceLevel > 0)
-            Positioned(
-              top: 2,
-              right: 2,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                decoration: BoxDecoration(
-                  color: WuxiaColors.background.withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: Text(
-                  UiStrings.enhanceLevel(eq.enhanceLevel),
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          if (eq.isLineageHeritage)
-            const Positioned(
-              top: 2,
-              left: 2,
-              child: Icon(
-                Icons.auto_awesome,
-                size: 14,
-                color: WuxiaColors.bossFrame,
-              ),
-            ),
-          if (locked)
-            const Positioned.fill(
-              child: Center(
-                child: Icon(
-                  Icons.lock_outline,
-                  size: 28,
-                  color: Colors.white70,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
+    ref.invalidate(allEquipmentsProvider);
+    ref.invalidate(allInventoryItemsProvider);
   }
 }
 
