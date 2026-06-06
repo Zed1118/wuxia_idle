@@ -14,59 +14,58 @@ import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 StageDef _stage() => const StageDef(
-      id: 'stage_test_01',
-      name: '测试关卡',
-      stageType: StageType.mainline,
-      requiredRealm: RealmTier.xueTu,
-      enemyTeam: [],
-      isBossStage: false,
-      dropEquipmentDefIds: [],
-      dropItemDefIds: [],
-      baseExpReward: 100,
-      difficultyMultiplier: 1.0,
-    );
+  id: 'stage_test_01',
+  name: '测试关卡',
+  stageType: StageType.mainline,
+  requiredRealm: RealmTier.xueTu,
+  enemyTeam: [],
+  isBossStage: false,
+  dropEquipmentDefIds: [],
+  dropItemDefIds: [],
+  baseExpReward: 100,
+  difficultyMultiplier: 1.0,
+);
 
-DropResult _emptyDrops() =>
-    const DropResult(equipments: [], items: []);
+DropResult _emptyDrops() => const DropResult(equipments: [], items: []);
 
 DropResult _itemDrops() => const DropResult(
-      equipments: [],
-      items: [ItemDropResult(defId: 'item_mojianshi', quantity: 2)],
-    );
+  equipments: [],
+  items: [ItemDropResult(defId: 'item_mojianshi', quantity: 2)],
+);
 
 /// H1 批3:真装备掉落(需 GameRepository 已加载,defId→名+品阶)。
 DropResult _equipDrops(List<String> defIds) => DropResult(
-      equipments: [
-        for (final id in defIds)
-          EquipmentFactory.fromDef(
-            GameRepository.instance.getEquipment(id),
-            rng: DefaultRng(seed: 1),
-            obtainedAt: DateTime(2026, 5, 30),
-            obtainedFrom: '掉落',
-          ),
-      ],
-      items: const [],
-    );
+  equipments: [
+    for (final id in defIds)
+      EquipmentFactory.fromDef(
+        GameRepository.instance.getEquipment(id),
+        rng: DefaultRng(seed: 1),
+        obtainedAt: DateTime(2026, 5, 30),
+        obtainedFrom: '掉落',
+      ),
+  ],
+  items: const [],
+);
 
 AdvancementResult _advanced() => const AdvancementResult(
-      layersGained: 1,
-      tierBefore: RealmTier.xueTu,
-      layerBefore: RealmLayer.qiMeng,
-      tierAfter: RealmTier.xueTu,
-      layerAfter: RealmLayer.ruMen,
-      internalForceMaxBefore: 500,
-      internalForceMaxAfter: 600,
-    );
+  layersGained: 1,
+  tierBefore: RealmTier.xueTu,
+  layerBefore: RealmLayer.qiMeng,
+  tierAfter: RealmTier.xueTu,
+  layerAfter: RealmLayer.ruMen,
+  internalForceMaxBefore: 500,
+  internalForceMaxAfter: 600,
+);
 
 AdvancementResult _flat() => const AdvancementResult(
-      layersGained: 0,
-      tierBefore: RealmTier.xueTu,
-      layerBefore: RealmLayer.qiMeng,
-      tierAfter: RealmTier.xueTu,
-      layerAfter: RealmLayer.qiMeng,
-      internalForceMaxBefore: 500,
-      internalForceMaxAfter: 500,
-    );
+  layersGained: 0,
+  tierBefore: RealmTier.xueTu,
+  layerBefore: RealmLayer.qiMeng,
+  tierAfter: RealmTier.xueTu,
+  layerAfter: RealmLayer.qiMeng,
+  internalForceMaxBefore: 500,
+  internalForceMaxAfter: 500,
+);
 
 Future<void> _pumpContent(
   WidgetTester tester,
@@ -97,12 +96,28 @@ void main() {
   });
 
   group('StageVictoryContent', () {
-    testWidgets('empty drops + 无升层 → 显「本战无固定掉落」 + 不显 banner',
-        (tester) async {
+    testWidgets('empty drops + 无升层 → 显「本战无固定掉落」 + 不显 banner', (tester) async {
       await _pumpContent(tester, _emptyDrops(), const []);
       expect(find.text(UiStrings.stageVictoryDropLabel), findsOneWidget);
       expect(find.text(UiStrings.stageVictoryNoDrop), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome), findsNothing);
+    });
+
+    testWidgets('firstClearTitle 非空 → 顶部显示首胜封签', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StageVictoryContent(
+              firstClearTitle: UiStrings.stageVictoryBossFirstClear('风雨渡口'),
+              drops: _emptyDrops(),
+              advancements: const [],
+            ),
+          ),
+        ),
+      );
+      expect(find.text(UiStrings.firstClearCeremonySubtitle), findsOneWidget);
+      expect(find.text('首胜 · 风雨渡口'), findsOneWidget);
+      expect(find.byIcon(Icons.military_tech), findsOneWidget);
     });
 
     testWidgets('item drop + 无升层 → 显 drop 条目', (tester) async {
@@ -113,8 +128,7 @@ void main() {
       expect(find.byIcon(Icons.auto_awesome), findsNothing);
     });
 
-    testWidgets('empty drops + 1 角色升层 → noDrop + banner 1 行',
-        (tester) async {
+    testWidgets('empty drops + 1 角色升层 → noDrop + banner 1 行', (tester) async {
       await _pumpContent(tester, _emptyDrops(), [
         AdvancementEntry(chName: '甲', result: _advanced()),
       ]);
@@ -145,8 +159,9 @@ void main() {
     });
 
     // P1.1 候选 3-a:共鸣度晋阶 banner
-    testWidgets('empty drops + 1 共鸣晋阶 → 显「共鸣晋阶」label + 1 行 notice',
-        (tester) async {
+    testWidgets('empty drops + 1 共鸣晋阶 → 显「共鸣晋阶」label + 1 行 notice', (
+      tester,
+    ) async {
       await _pumpContent(
         tester,
         _emptyDrops(),
@@ -198,8 +213,7 @@ void main() {
     });
 
     // H1 批3:装备掉落仪式感 —— 显中文名 + 品阶标签 + 勋章图标,非 raw defId。
-    testWidgets('装备掉落 → 显中文名+品阶标签+勋章图标,不显 raw defId',
-        (tester) async {
+    testWidgets('装备掉落 → 显中文名+品阶标签+勋章图标,不显 raw defId', (tester) async {
       await _pumpContent(
         tester,
         _equipDrops([

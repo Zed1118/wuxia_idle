@@ -22,6 +22,8 @@ Future<void> showStageVictoryDialog({
   required DropResult drops,
   required List<AdvancementEntry> advancements,
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
+  String? firstClearTitle,
+  String? firstClearSubtitle,
 }) async {
   await showDialog<void>(
     context: context,
@@ -32,6 +34,8 @@ Future<void> showStageVictoryDialog({
         drops: drops,
         advancements: advancements,
         resonanceUpgrades: resonanceUpgrades,
+        firstClearTitle: firstClearTitle,
+        firstClearSubtitle: firstClearSubtitle,
       ),
       actions: [
         TextButton(
@@ -53,11 +57,15 @@ class StageVictoryContent extends StatelessWidget {
     required this.drops,
     required this.advancements,
     this.resonanceUpgrades = const [],
+    this.firstClearTitle,
+    this.firstClearSubtitle,
   });
 
   final DropResult drops;
   final List<AdvancementEntry> advancements;
   final List<ResonanceUpgradeNotice> resonanceUpgrades;
+  final String? firstClearTitle;
+  final String? firstClearSubtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +73,14 @@ class StageVictoryContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (firstClearTitle != null) ...[
+          FirstClearBanner(
+            title: firstClearTitle!,
+            subtitle:
+                firstClearSubtitle ?? UiStrings.firstClearCeremonySubtitle,
+          ),
+          const SizedBox(height: 12),
+        ],
         const Text(UiStrings.stageVictoryDropLabel),
         const SizedBox(height: 4),
         if (drops.isEmpty)
@@ -97,6 +113,67 @@ class StageVictoryContent extends StatelessWidget {
           ResonanceUpgradeBanner(notices: resonanceUpgrades),
         ],
       ],
+    );
+  }
+}
+
+class FirstClearBanner extends StatelessWidget {
+  const FirstClearBanner({
+    super.key,
+    required this.title,
+    this.subtitle = UiStrings.firstClearCeremonySubtitle,
+  });
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: WuxiaColors.resultHighlight.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: WuxiaColors.resultHighlight.withValues(alpha: 0.58),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.military_tech,
+            color: WuxiaColors.resultHighlight,
+            size: 22,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: WuxiaColors.textSecondary,
+                    fontSize: 11,
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

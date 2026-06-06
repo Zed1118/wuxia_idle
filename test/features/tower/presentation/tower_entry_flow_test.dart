@@ -44,15 +44,13 @@ void main() {
     required TowerFloorDef floor,
     required Future<bool> Function() battleRunner,
     required Future<TowerClearResult> Function(int floorIndex, int elapsedMs)
-        clearRecorder,
+    clearRecorder,
     required Future<void> Function() defeatRecorder,
     TowerProgress? progress,
   }) {
     final prog = progress ?? mkProgress();
     return ProviderScope(
-      overrides: [
-        towerProgressProvider.overrideWith((ref) async => prog),
-      ],
+      overrides: [towerProgressProvider.overrideWith((ref) async => prog)],
       child: MaterialApp(
         home: _HarnessPage(
           floor: floor,
@@ -69,15 +67,17 @@ void main() {
   testWidgets('普通层胜利 → clearRecorder 以正确 floorIndex 被调用', (tester) async {
     int? recordedFloor;
 
-    await tester.pumpWidget(harness(
-      floor: normalFloor,
-      battleRunner: () async => true,
-      clearRecorder: (floorIndex, elapsedMs) async {
-        recordedFloor = floorIndex;
-        return (isFirstClear: true, highestAfter: floorIndex);
-      },
-      defeatRecorder: () async {},
-    ));
+    await tester.pumpWidget(
+      harness(
+        floor: normalFloor,
+        battleRunner: () async => true,
+        clearRecorder: (floorIndex, elapsedMs) async {
+          recordedFloor = floorIndex;
+          return (isFirstClear: true, highestAfter: floorIndex);
+        },
+        defeatRecorder: () async {},
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
@@ -85,6 +85,10 @@ void main() {
 
     // 胜利 dialog 出现 → 确认
     expect(find.text(UiStrings.towerVictoryConfirm), findsOneWidget);
+    expect(
+      find.text(UiStrings.towerFirstClearCeremony(normalFloor.floorIndex)),
+      findsOneWidget,
+    );
     await tester.tap(find.text(UiStrings.towerVictoryConfirm));
     await tester.pumpAndSettle();
 
@@ -96,17 +100,19 @@ void main() {
     bool defeatCalled = false;
     bool clearCalled = false;
 
-    await tester.pumpWidget(harness(
-      floor: normalFloor,
-      battleRunner: () async => false,
-      clearRecorder: (floorIndex, elapsedMs) async {
-        clearCalled = true;
-        return (isFirstClear: false, highestAfter: 0);
-      },
-      defeatRecorder: () async {
-        defeatCalled = true;
-      },
-    ));
+    await tester.pumpWidget(
+      harness(
+        floor: normalFloor,
+        battleRunner: () async => false,
+        clearRecorder: (floorIndex, elapsedMs) async {
+          clearCalled = true;
+          return (isFirstClear: false, highestAfter: 0);
+        },
+        defeatRecorder: () async {
+          defeatCalled = true;
+        },
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
@@ -118,13 +124,15 @@ void main() {
   });
 
   testWidgets('首通（isFirstClear: true）→ 流程正常完成不报错', (tester) async {
-    await tester.pumpWidget(harness(
-      floor: normalFloor,
-      battleRunner: () async => true,
-      clearRecorder: (floorIndex, elapsedMs) async =>
-          (isFirstClear: true, highestAfter: floorIndex),
-      defeatRecorder: () async {},
-    ));
+    await tester.pumpWidget(
+      harness(
+        floor: normalFloor,
+        battleRunner: () async => true,
+        clearRecorder: (floorIndex, elapsedMs) async =>
+            (isFirstClear: true, highestAfter: floorIndex),
+        defeatRecorder: () async {},
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
@@ -139,20 +147,26 @@ void main() {
   });
 
   testWidgets('重打（isFirstClear: false）→ 流程同样正常完成', (tester) async {
-    await tester.pumpWidget(harness(
-      floor: normalFloor,
-      battleRunner: () async => true,
-      clearRecorder: (floorIndex, elapsedMs) async =>
-          (isFirstClear: false, highestAfter: normalFloor.floorIndex),
-      defeatRecorder: () async {},
-      progress: mkProgress(highest: normalFloor.floorIndex),
-    ));
+    await tester.pumpWidget(
+      harness(
+        floor: normalFloor,
+        battleRunner: () async => true,
+        clearRecorder: (floorIndex, elapsedMs) async =>
+            (isFirstClear: false, highestAfter: normalFloor.floorIndex),
+        defeatRecorder: () async {},
+        progress: mkProgress(highest: normalFloor.floorIndex),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
     await tester.pumpAndSettle();
 
     // 胜利 dialog（重打）→ 确认
+    expect(
+      find.text(UiStrings.towerFirstClearCeremony(normalFloor.floorIndex)),
+      findsNothing,
+    );
     await tester.tap(find.text(UiStrings.towerVictoryConfirm));
     await tester.pumpAndSettle();
 
@@ -160,25 +174,34 @@ void main() {
     expect(find.textContaining('error'), findsNothing);
   });
 
-  testWidgets('Boss 层（无 narrative）胜利 → clearRecorder 以 Boss floorIndex 被调用',
-      (tester) async {
+  testWidgets('Boss 层（无 narrative）胜利 → clearRecorder 以 Boss floorIndex 被调用', (
+    tester,
+  ) async {
     int? recordedFloor;
 
-    await tester.pumpWidget(harness(
-      floor: bossFloor,
-      battleRunner: () async => true,
-      clearRecorder: (floorIndex, elapsedMs) async {
-        recordedFloor = floorIndex;
-        return (isFirstClear: true, highestAfter: floorIndex);
-      },
-      defeatRecorder: () async {},
-    ));
+    await tester.pumpWidget(
+      harness(
+        floor: bossFloor,
+        battleRunner: () async => true,
+        clearRecorder: (floorIndex, elapsedMs) async {
+          recordedFloor = floorIndex;
+          return (isFirstClear: true, highestAfter: floorIndex);
+        },
+        defeatRecorder: () async {},
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('start'));
     await tester.pumpAndSettle();
 
     // 胜利 dialog（Boss 层首通）→ 确认
+    expect(
+      find.text(
+        UiStrings.towerFirstClearCeremony(bossFloor.floorIndex, isBoss: true),
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.text(UiStrings.towerVictoryConfirm));
     await tester.pumpAndSettle();
 
@@ -201,7 +224,7 @@ class _HarnessPage extends ConsumerStatefulWidget {
   final TowerFloorDef floor;
   final Future<bool> Function() battleRunner;
   final Future<TowerClearResult> Function(int floorIndex, int elapsedMs)
-      clearRecorder;
+  clearRecorder;
   final Future<void> Function() defeatRecorder;
 
   @override

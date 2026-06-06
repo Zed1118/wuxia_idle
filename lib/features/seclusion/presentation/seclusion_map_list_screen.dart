@@ -151,32 +151,41 @@ class _SeclusionMapListScreenState
                     child: _ActiveBanner(session: active, mapDef: activeDef!),
                   ),
                 Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      for (var i = 0; i < maps.length; i++) ...[
-                        Builder(
-                          builder: (context) {
-                            final def = maps[i];
-                            final isActive =
-                                active != null && active.mapType == def.mapType;
-                            final canEnter = SeclusionService.canEnterMap(
-                              mapType: def.mapType,
-                              charRealmTier: widget.charRealmTier,
-                              maps: maps,
-                            );
-                            return _MapCard(
-                              def: def,
-                              isActive: isActive,
-                              canEnter: canEnter,
-                              activeSession: isActive ? active : null,
-                              onTap: () => _onMapTap(context, def),
-                            );
-                          },
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final columns = constraints.maxWidth >= 940 ? 2 : 1;
+                      final cardHeight = columns == 2 ? 244.0 : 236.0;
+                      final cardWidth =
+                          (constraints.maxWidth - 32 - (columns - 1) * 14) /
+                          columns;
+                      return GridView.builder(
+                        padding: const EdgeInsets.all(16),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: columns,
+                          mainAxisSpacing: 14,
+                          crossAxisSpacing: 14,
+                          childAspectRatio: cardWidth / cardHeight,
                         ),
-                        if (i != maps.length - 1) const SizedBox(height: 14),
-                      ],
-                    ],
+                        itemCount: maps.length,
+                        itemBuilder: (context, i) {
+                          final def = maps[i];
+                          final isActive =
+                              active != null && active.mapType == def.mapType;
+                          final canEnter = SeclusionService.canEnterMap(
+                            mapType: def.mapType,
+                            charRealmTier: widget.charRealmTier,
+                            maps: maps,
+                          );
+                          return _MapCard(
+                            def: def,
+                            isActive: isActive,
+                            canEnter: canEnter,
+                            activeSession: isActive ? active : null,
+                            onTap: () => _onMapTap(context, def),
+                          );
+                        },
+                      );
+                    },
                   ),
                 ),
               ],
@@ -206,6 +215,7 @@ class _ActiveBanner extends StatelessWidget {
 
     return PaperPanel(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      paperOpacity: 0.28,
       child: Row(
         children: [
           ClipRRect(
@@ -225,7 +235,7 @@ class _ActiveBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${mapDef.mapName} · ${UiStrings.seclusionMapActive}',
+                    '${UiStrings.seclusionMapAtlasTitle} · ${mapDef.mapName}',
                     style: const TextStyle(
                       color: WuxiaUi.ink,
                       fontSize: 14,
@@ -235,8 +245,8 @@ class _ActiveBanner extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     remaining > 0
-                        ? '剩余 ${remaining ~/ 60}h${remaining % 60}min'
-                        : '已完成，可收功',
+                        ? '${UiStrings.seclusionMapActive} · 剩余 ${remaining ~/ 60}h${remaining % 60}min'
+                        : '${UiStrings.activeRetreatDone} · 可收功',
                     style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
                   ),
                 ],
@@ -278,118 +288,127 @@ class _MapCard extends StatelessWidget {
         ? WuxiaUi.muted
         : WuxiaColors.hpHigh;
 
+    final footerText = locked
+        ? UiStrings.seclusionRequiredRealm(
+            EnumL10n.realmTier(def.requiredRealm),
+          )
+        : isActive
+        ? _activeHint()
+        : _outputSummary();
+    final statusLabel = isActive
+        ? UiStrings.seclusionMapActive
+        : locked
+        ? UiStrings.seclusionMapLocked
+        : UiStrings.seclusionMapReady;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             color: WuxiaColors.panel,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: statusColor, width: isActive ? 1.8 : 1),
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: statusColor.withValues(alpha: 0.22),
-                      blurRadius: 18,
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : null,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.22),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+              if (isActive)
+                BoxShadow(
+                  color: statusColor.withValues(alpha: 0.24),
+                  blurRadius: 22,
+                  spreadRadius: 1,
+                ),
+            ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(7),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                SizedBox(
-                  height: 154,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      _MapImage(
-                        path: def.imagePath,
-                        width: double.infinity,
-                        height: 154,
-                        locked: locked,
-                      ),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withValues(alpha: 0.08),
-                              Colors.black.withValues(alpha: 0.62),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 16,
-                        right: 16,
-                        bottom: 14,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                def.mapName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: locked
-                                      ? WuxiaColors.textSecondary
-                                      : WuxiaColors.textPrimary,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                            _MapStatusPill(
-                              label: isActive
-                                  ? UiStrings.seclusionMapActive
-                                  : locked
-                                  ? UiStrings.seclusionMapLocked
-                                  : UiStrings.seclusionMapAvailable,
-                              color: statusColor,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                _MapImage(
+                  path: def.imagePath,
+                  width: double.infinity,
+                  height: double.infinity,
+                  locked: locked,
+                ),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.04),
+                        Colors.black.withValues(alpha: locked ? 0.72 : 0.56),
+                      ],
+                    ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(16, 13, 16, 14),
-                  color: locked
-                      ? WuxiaColors.avatarFill.withValues(alpha: 0.72)
-                      : WuxiaColors.panel,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          locked
-                              ? UiStrings.seclusionRequiredRealm(
-                                  EnumL10n.realmTier(def.requiredRealm),
-                                )
-                              : _outputSummary(),
-                          style: TextStyle(
-                            color: locked
-                                ? WuxiaColors.textMuted
-                                : WuxiaColors.textSecondary,
-                            fontSize: 13,
+                Positioned(
+                  left: 14,
+                  top: 12,
+                  child: _MapStatusPill(label: statusLabel, color: statusColor),
+                ),
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 58,
+                  child: Text(
+                    def.mapName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: locked
+                          ? WuxiaColors.textSecondary
+                          : WuxiaColors.textPrimary,
+                      fontSize: 23,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 14, 13),
+                    color: WuxiaColors.sidebar.withValues(alpha: 0.86),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            footerText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: locked
+                                  ? WuxiaColors.textMuted
+                                  : WuxiaColors.textSecondary,
+                              fontSize: 13,
+                              fontWeight: isActive
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ),
                           ),
                         ),
-                      ),
-                      Icon(
-                        isActive ? Icons.arrow_forward_ios : Icons.login,
-                        color: locked
-                            ? WuxiaColors.textMuted
-                            : WuxiaColors.textSecondary,
-                        size: 17,
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Icon(
+                          isActive
+                              ? Icons.arrow_forward_ios
+                              : locked
+                              ? Icons.lock
+                              : Icons.login,
+                          color: locked
+                              ? WuxiaColors.textMuted
+                              : WuxiaColors.textSecondary,
+                          size: 17,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -407,6 +426,16 @@ class _MapCard extends StatelessWidget {
     if (def.internalForceGrowth > 1.0) parts.add('内力增长 +50%');
     if (parts.isEmpty) parts.add('综合产出');
     return parts.join('｜');
+  }
+
+  String _activeHint() {
+    final session = activeSession;
+    if (session == null) return UiStrings.seclusionMapActiveHint;
+    final elapsed = DateTime.now().difference(session.startedAt).inMinutes;
+    final planned = session.durationHours * 60;
+    final remaining = (planned - elapsed).clamp(0, planned);
+    if (remaining <= 0) return '已完成，可收功';
+    return '剩余 ${remaining ~/ 60}h${remaining % 60}min，可查看';
   }
 }
 
@@ -428,8 +457,8 @@ class _MapImage extends StatelessWidget {
     if (path == null) {
       return _fallback();
     }
-    return Image.asset(
-      path!,
+    return Image(
+      image: ExactAssetImage(path!, bundle: DefaultAssetBundle.of(context)),
       width: width,
       height: height,
       fit: BoxFit.cover,

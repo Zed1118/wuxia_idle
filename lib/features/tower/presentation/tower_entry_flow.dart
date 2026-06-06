@@ -31,7 +31,7 @@ import '../../event/application/game_event_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart'
-    show ResonanceUpgradeNotice, ResonanceUpgradeBanner;
+    show FirstClearBanner, ResonanceUpgradeNotice, ResonanceUpgradeBanner;
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../../../shared/strings.dart';
@@ -61,7 +61,7 @@ Future<void> runTowerFlow({
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
   Future<TowerClearResult> Function(int floorIndex, int elapsedMs)?
-      clearRecorderForTest,
+  clearRecorderForTest,
   @visibleForTesting Future<void> Function()? defeatRecorderForTest,
 }) async {
   // ── opening（仅 Boss 层）──
@@ -100,13 +100,15 @@ Future<void> runTowerFlow({
     } else {
       // W12 fix: provider 副作用 getOrCreate 与 record* 存在 race（W6 重构遗留），
       // 主动 ensure 避免 recordDefeat 抛 StateError 后被 catchError 静默吞掉
-      unawaited(() async {
-        final svc = TowerProgressService(isar: IsarSetup.instance);
-        await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
-        await svc.recordDefeat(now: DateTime.now());
-      }().catchError((e, st) {
-        debugPrint('runTowerFlow recordDefeat failed: $e\n$st');
-      }));
+      unawaited(
+        () async {
+          final svc = TowerProgressService(isar: IsarSetup.instance);
+          await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+          await svc.recordDefeat(now: DateTime.now());
+        }().catchError((e, st) {
+          debugPrint('runTowerFlow recordDefeat failed: $e\n$st');
+        }),
+      );
     }
     return;
   }
@@ -174,16 +176,23 @@ Future<void> runTowerFlow({
     try {
       final sync = ref.read(leaderboardSyncProvider);
       final svc = TowerProgressService(isar: IsarSetup.instance);
-      final progress =
-          await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
-      unawaited(sync.reportClear(
-        highestFloor: progress.highestClearedFloor,
-        bestClearTimeMs: progress.bestClearTime,
-        totalAttempts: progress.totalAttempts,
-        clearedAt: progress.lastClearedAt ?? DateTime.now(),
-      ).catchError((e, st) {
-        debugPrint('runTowerFlow leaderboardSync reportClear failed: $e\n$st');
-      }));
+      final progress = await svc.getOrCreate(
+        saveDataId: IsarSetup.currentSlotId,
+      );
+      unawaited(
+        sync
+            .reportClear(
+              highestFloor: progress.highestClearedFloor,
+              bestClearTimeMs: progress.bestClearTime,
+              totalAttempts: progress.totalAttempts,
+              clearedAt: progress.lastClearedAt ?? DateTime.now(),
+            )
+            .catchError((e, st) {
+              debugPrint(
+                'runTowerFlow leaderboardSync reportClear failed: $e\n$st',
+              );
+            }),
+      );
     } catch (e, st) {
       debugPrint('runTowerFlow leaderboardSync setup failed: $e\n$st');
     }
@@ -212,8 +221,7 @@ Future<void> runTowerFlow({
       MaterialPageRoute(
         builder: (_) => NarrativeReaderScreen(
           content: victory,
-          fallbackTitle:
-              '${UiStrings.towerFloorLabel(floor.floorIndex)} · 胜利',
+          fallbackTitle: '${UiStrings.towerFloorLabel(floor.floorIndex)} · 胜利',
         ),
       ),
     );
@@ -225,8 +233,9 @@ Future<void> runTowerFlow({
   await runEncounterHookAfterVictory(
     context: context,
     ref: ref,
-    defeatedSchools:
-        floor.enemyTeam.map((e) => e.school).toList(growable: false),
+    defeatedSchools: floor.enemyTeam
+        .map((e) => e.school)
+        .toList(growable: false),
   );
 }
 
@@ -271,10 +280,12 @@ Future<bool> _runTowerBattle({
 /// 时显多角色升层 banner。
 /// P1.1 候选 3-a:record 加 `resonanceUpgrades` 供 dialog 显共鸣度晋阶 sub-row。
 Future<
-    ({
-      List<AdvancementEntry> advancements,
-      List<ResonanceUpgradeNotice> resonanceUpgrades,
-    })> _applyTowerVictoryResolution({
+  ({
+    List<AdvancementEntry> advancements,
+    List<ResonanceUpgradeNotice> resonanceUpgrades,
+  })
+>
+_applyTowerVictoryResolution({
   required WidgetRef ref,
   required TowerFloorDef floor,
   required bool isFirstClear,
@@ -356,8 +367,7 @@ Future<
         .filter()
         .saveDataIdEqualTo(IsarSetup.currentSlotId)
         .findFirst();
-    final clearedSet =
-        progress?.clearedStageIds.toSet() ?? <String>{};
+    final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
     final innerDemonDef = GameRepository.instance.numbers.innerDemon;
     for (final c in characters) {
       final r = CharacterAdvancementService.applyExperience(
@@ -391,8 +401,9 @@ Future<
     // #6 realmBreakthrough 每角色判 didAdvance;#7 resonanceUpgraded 战斗中跨档;
     // #8 bossDefeated 仅 floor.isBoss && isFirstClear 防刷(沿 drops 体例)。
     final events = GameEventService(isar);
-    final allEquips =
-        equipsByCh.values.expand((list) => list).toList(growable: false);
+    final allEquips = equipsByCh.values
+        .expand((list) => list)
+        .toList(growable: false);
     for (final eqId in battleResult.resonanceUpgradedEquipmentIds) {
       Equipment? eq;
       for (final e in allEquips) {
@@ -411,10 +422,9 @@ Future<
         newStage: stage.index + 1,
       );
       // P1.1 候选 3-a:cache notice 供 victory dialog 显共鸣度晋阶 sub-row。
-      resonanceUpgrades.add(ResonanceUpgradeNotice(
-        equipmentName: def.name,
-        newStage: stage,
-      ));
+      resonanceUpgrades.add(
+        ResonanceUpgradeNotice(equipmentName: def.name, newStage: stage),
+      );
     }
     final tutorialSvc = TutorialService(isar);
     for (final entry in advancements) {
@@ -423,10 +433,7 @@ Future<
         (c) => c.name == entry.chName,
         orElse: () => characters.first,
       );
-      await events.recordRealmBreakthrough(
-        character: ch,
-        result: entry.result,
-      );
+      await events.recordRealmBreakthrough(character: ch, result: entry.result);
       // P1 #42 Phase 2 §10 P1.y:主角达一流 → 推 step 6(收徒门槛)。
       if (founderId != null && ch.id == founderId) {
         await tutorialSvc.advanceForRealmBreakthrough(entry.result.tierAfter);
@@ -447,10 +454,7 @@ Future<
     }
   });
 
-  return (
-    advancements: advancements,
-    resonanceUpgrades: resonanceUpgrades,
-  );
+  return (advancements: advancements, resonanceUpgrades: resonanceUpgrades);
 }
 
 /// Isar 持久化爬塔掉落（W6 nullable propagation：isarProvider 为 null 时短路，测试安全）。
@@ -526,6 +530,7 @@ Future<void> _showVictoryDialog({
       title: Text(UiStrings.towerFloorLabel(floor.floorIndex)),
       content: isFirstClear
           ? _FirstClearContent(
+              floor: floor,
               drops: drops,
               advancements: advancements,
               resonanceUpgrades: resonanceUpgrades,
@@ -569,8 +574,9 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       try {
-        final (left, right) =
-            await StageBattleSetup(isar: IsarSetup.instance).buildTeamsForTower(widget.floor);
+        final (left, right) = await StageBattleSetup(
+          isar: IsarSetup.instance,
+        ).buildTeamsForTower(widget.floor);
         if (!mounted) return;
         ref.read(battleProvider.notifier).startBattle(left, right);
       } catch (e) {
@@ -615,11 +621,13 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
 /// W15 #30 P3 后续 A:drop 列后追多角色升层 banner([AdvancementSummary])。
 class _FirstClearContent extends StatelessWidget {
   const _FirstClearContent({
+    required this.floor,
     required this.drops,
     required this.advancements,
     this.resonanceUpgrades = const [],
   });
 
+  final TowerFloorDef floor;
   final DropResult drops;
   final List<AdvancementEntry> advancements;
   final List<ResonanceUpgradeNotice> resonanceUpgrades;
@@ -628,9 +636,6 @@ class _FirstClearContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasAdvanced = advancements.any((e) => e.result.didAdvance);
     final hasResonance = resonanceUpgrades.isNotEmpty;
-    if (drops.isEmpty && !hasAdvanced && !hasResonance) {
-      return const Text(UiStrings.towerFirstClearNoReward);
-    }
     final lines = <String>[
       for (final eq in drops.equipments)
         GameRepository.isLoaded
@@ -643,6 +648,13 @@ class _FirstClearContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        FirstClearBanner(
+          title: UiStrings.towerFirstClearCeremony(
+            floor.floorIndex,
+            isBoss: floor.isBoss,
+          ),
+        ),
+        const SizedBox(height: 12),
         if (drops.isEmpty)
           const Text(UiStrings.towerFirstClearNoReward)
         else ...[

@@ -516,6 +516,10 @@ class UiStrings {
   static const String towerReplayNoReward = '已重打通关，重打不发奖';
   static const String towerFirstClearLabel = '首通奖励：';
   static const String towerFirstClearNoReward = '首通！本层无固定奖励。';
+  static String towerFirstClearCeremony(
+    int floorIndex, {
+    bool isBoss = false,
+  }) => isBoss ? '破阵 · 第 $floorIndex 层 Boss' : '首通 · 第 $floorIndex 层';
 
   // ─── 主线 victory dialog（W15 #30 P3 后续 A 任务）────────────────────────
 
@@ -523,6 +527,9 @@ class UiStrings {
   static const String stageVictoryConfirm = '继续';
   static const String stageVictoryDropLabel = '掉落：';
   static const String stageVictoryNoDrop = '本战无固定掉落';
+  static const String firstClearCeremonySubtitle = '朱印封记';
+  static String stageVictoryBossFirstClear(String stageName) =>
+      '首胜 · $stageName';
 
   // P1.1 候选 3-a：共鸣度晋阶 banner（victory dialog 内）
   static const String stageVictoryResonanceLabel = '共鸣晋阶：';
@@ -684,18 +691,30 @@ class UiStrings {
   static const String seclusionMapLocked = '境界不足，尚未解锁';
   static const String seclusionMapAvailable = '进入';
   static const String seclusionMapActive = '进行中';
+  static const String seclusionMapReady = '可闭关';
+  static const String seclusionMapAtlasTitle = '山水地点图册';
+  static const String seclusionMapActiveHint = '已有闭关正在此地进行';
 
   static const String seclusionSetupTitle = '选择时长';
   static const String seclusionSetupStartButton = '开始闭关';
   static String seclusionHourlyPreview(double scale) =>
       '每小时预估产出（境界加成 ×${scale.toStringAsFixed(2)}）';
   static String seclusionEstimatedMojianshi(int amount) => '预估磨剑石 ×$amount';
+  static String seclusionStayCardTitle(int hours) => hours == 1
+      ? '驻留片刻'
+      : hours == 4
+      ? '半日闭关'
+      : '长夜闭关';
   static const String seclusionStarting = '请稍候…';
 
   static const String activeRetreatTitle = '闭关中';
   static const String activeRetreatCollect = '收功';
   static const String activeRetreatEarlyCollect = '提前收功';
   static const String activeRetreatDone = '已完成';
+  static const String activeRetreatProgressTitle = '行功进度';
+  static const String activeRetreatStateSeal = '入定闭关';
+  static const String activeRetreatDoneHint = '气息已满，可收功离山';
+  static const String activeRetreatEarlyHint = '行功未满，提前收功将按实际时长结算';
   static String activeRetreatTimeRange(String start, String end, int hours) =>
       '$start → $end（$hours h）';
   static String activeRetreatProgressPct(int pct) => '$pct%';
@@ -705,6 +724,7 @@ class UiStrings {
   static const String activeRetreatCancel = '取消';
 
   static const String seclusionResultTitle = '闭关收获';
+  static const String seclusionResultReportTitle = '收功战报';
   static const String seclusionResultEmpty = '此次收获甚微';
   static const String seclusionResultBack = '返回';
 
