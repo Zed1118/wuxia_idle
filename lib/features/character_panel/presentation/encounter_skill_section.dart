@@ -12,6 +12,7 @@ import '../../encounter/application/encounter_service.dart';
 import '../../encounter/application/encounter_service_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 /// 奇遇招式装备段(C-W14-3-A)。
 ///
@@ -34,8 +35,7 @@ class EncounterSkillSection extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SectionTitle(UiStrings.encounterSkillSectionTitle),
-          const SizedBox(height: 8),
+          const SectionHeader(UiStrings.encounterSkillSectionTitle),
           progressAsync.when(
             loading: () => const SizedBox(
               height: 60,
@@ -71,36 +71,25 @@ class _Content extends ConsumerWidget {
       children: [
         _SlotDisplay(equippedSkillId: equipped),
         const SizedBox(height: 10),
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: hasUnlocks
-                    ? () => _openPicker(context, ref, unlocked)
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: WuxiaColors.avatarFill,
-                  foregroundColor: WuxiaColors.textPrimary,
-                  side: const BorderSide(color: WuxiaColors.border),
-                ),
-                child: Text(
-                  hasUnlocks
-                      ? UiStrings.encounterSkillPickButton
-                      : UiStrings.encounterSkillNoneAvailable,
-                ),
-              ),
+            PlaqueButton(
+              label: hasUnlocks
+                  ? UiStrings.encounterSkillPickButton
+                  : UiStrings.encounterSkillNoneAvailable,
+              primary: hasUnlocks,
+              disabled: !hasUnlocks,
+              onTap: hasUnlocks
+                  ? () => _openPicker(context, ref, unlocked)
+                  : null,
             ),
-            if (equipped != null) ...[
-              const SizedBox(width: 8),
-              OutlinedButton(
-                onPressed: () => _unequip(context, ref),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: WuxiaColors.textSecondary,
-                  side: const BorderSide(color: WuxiaColors.border),
-                ),
-                child: const Text(UiStrings.encounterSkillUnequipButton),
+            if (equipped != null)
+              PlaqueButton(
+                label: UiStrings.encounterSkillUnequipButton,
+                onTap: () => _unequip(context, ref),
               ),
-            ],
           ],
         ),
       ],
@@ -173,9 +162,7 @@ class _Content extends ConsumerWidget {
       ref.invalidate(characterByIdProvider(character.id));
       if (!context.mounted) return;
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text(UiStrings.encounterSkillUnequipSuccess),
-        ),
+        const SnackBar(content: Text(UiStrings.encounterSkillUnequipSuccess)),
       );
     } catch (e) {
       messenger.showSnackBar(
@@ -400,32 +387,6 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border.all(color: WuxiaColors.border),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: child,
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: WuxiaColors.textSecondary,
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-      ),
-    );
+    return PaperPanel(padding: const EdgeInsets.all(14), child: child);
   }
 }
