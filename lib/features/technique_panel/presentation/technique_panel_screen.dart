@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -136,6 +138,8 @@ class _Body extends StatelessWidget {
             _MainTechniqueHero(mainTech: mainTech),
             const SizedBox(height: 16),
           ],
+          _SchoolRelationPanel(mainSchool: mainTech?.school),
+          const SizedBox(height: 16),
           for (final tier in sortedTiers) ...[
             // M4 Stage 3 美术(2026-05-21):tier section 起手 7 阶卷轴 cover banner。
             // 约定路径 assets/techniques/tier_<name>.png,无图走 errorBuilder shrink
@@ -177,6 +181,254 @@ class _Body extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _SchoolRelationPanel extends StatelessWidget {
+  const _SchoolRelationPanel({required this.mainSchool});
+
+  final TechniqueSchool? mainSchool;
+
+  @override
+  Widget build(BuildContext context) {
+    final current = mainSchool == null
+        ? UiStrings.techniqueSchoolMatrixUnset
+        : EnumL10n.school(mainSchool!);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [WuxiaColors.inkPanelTop, WuxiaColors.inkPanelBottom],
+        ),
+        border: Border.all(color: WuxiaColors.border),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Text(
+                UiStrings.techniqueSchoolMatrixTitle,
+                style: TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${UiStrings.techniqueSchoolMatrixCurrentPrefix} · $current',
+                style: const TextStyle(
+                  color: WuxiaColors.resultHighlight,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            UiStrings.techniqueSchoolMatrixHint,
+            style: TextStyle(
+              color: WuxiaColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 158,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const nodeWidth = 104.0;
+                const nodeHeight = 58.0;
+                final width = constraints.maxWidth;
+                final gang = Offset((width - nodeWidth) / 2, 0);
+                final ling = const Offset(8, 92);
+                final yin = Offset(width - nodeWidth - 8, 92);
+                return Stack(
+                  children: [
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _SchoolRelationPainter(
+                          gangCenter:
+                              gang +
+                              const Offset(nodeWidth / 2, nodeHeight / 2),
+                          lingCenter:
+                              ling +
+                              const Offset(nodeWidth / 2, nodeHeight / 2),
+                          yinCenter:
+                              yin + const Offset(nodeWidth / 2, nodeHeight / 2),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: gang.dx,
+                      top: gang.dy,
+                      child: _SchoolNode(
+                        school: TechniqueSchool.gangMeng,
+                        effect: UiStrings.techniqueSchoolEffectGangMeng,
+                        active: mainSchool == TechniqueSchool.gangMeng,
+                      ),
+                    ),
+                    Positioned(
+                      left: ling.dx,
+                      top: ling.dy,
+                      child: _SchoolNode(
+                        school: TechniqueSchool.lingQiao,
+                        effect: UiStrings.techniqueSchoolEffectLingQiao,
+                        active: mainSchool == TechniqueSchool.lingQiao,
+                      ),
+                    ),
+                    Positioned(
+                      left: yin.dx,
+                      top: yin.dy,
+                      child: _SchoolNode(
+                        school: TechniqueSchool.yinRou,
+                        effect: UiStrings.techniqueSchoolEffectYinRou,
+                        active: mainSchool == TechniqueSchool.yinRou,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SchoolNode extends StatelessWidget {
+  const _SchoolNode({
+    required this.school,
+    required this.effect,
+    required this.active,
+  });
+
+  final TechniqueSchool school;
+  final String effect;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = WuxiaColors.schoolColor(school);
+    return Container(
+      width: 104,
+      height: 58,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: active ? 0.24 : 0.12),
+        border: Border.all(
+          color: active
+              ? WuxiaColors.resultHighlight
+              : color.withValues(alpha: 0.84),
+          width: active ? 1.6 : 1,
+        ),
+        borderRadius: BorderRadius.circular(6),
+        boxShadow: active
+            ? [
+                BoxShadow(
+                  color: WuxiaColors.resultHighlight.withValues(alpha: 0.24),
+                  blurRadius: 8,
+                ),
+              ]
+            : const [],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            EnumL10n.school(school),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: active ? WuxiaColors.resultHighlight : color,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            effect,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: WuxiaColors.textSecondary,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SchoolRelationPainter extends CustomPainter {
+  const _SchoolRelationPainter({
+    required this.gangCenter,
+    required this.lingCenter,
+    required this.yinCenter,
+  });
+
+  final Offset gangCenter;
+  final Offset lingCenter;
+  final Offset yinCenter;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = WuxiaColors.textMuted.withValues(alpha: 0.42)
+      ..strokeWidth = 1.6
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    _drawArrow(canvas, paint, gangCenter, yinCenter);
+    _drawArrow(canvas, paint, yinCenter, lingCenter);
+    _drawArrow(canvas, paint, lingCenter, gangCenter);
+  }
+
+  void _drawArrow(Canvas canvas, Paint paint, Offset from, Offset to) {
+    final direction = to - from;
+    final length = direction.distance;
+    if (length == 0) return;
+    final unit = direction / length;
+    final start = from + unit * 54;
+    final end = to - unit * 54;
+    canvas.drawLine(start, end, paint);
+
+    final angle = math.atan2(unit.dy, unit.dx);
+    const arrowSize = 7.0;
+    final left =
+        end -
+        Offset(
+          math.cos(angle - math.pi / 6) * arrowSize,
+          math.sin(angle - math.pi / 6) * arrowSize,
+        );
+    final right =
+        end -
+        Offset(
+          math.cos(angle + math.pi / 6) * arrowSize,
+          math.sin(angle + math.pi / 6) * arrowSize,
+        );
+    final path = Path()
+      ..moveTo(end.dx, end.dy)
+      ..lineTo(left.dx, left.dy)
+      ..moveTo(end.dx, end.dy)
+      ..lineTo(right.dx, right.dy);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SchoolRelationPainter oldDelegate) {
+    return gangCenter != oldDelegate.gangCenter ||
+        lingCenter != oldDelegate.lingCenter ||
+        yinCenter != oldDelegate.yinCenter;
   }
 }
 
