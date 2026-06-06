@@ -51,23 +51,21 @@ class RetreatResultScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _ResultHero(mapDef: mapDef, actualHours: actualHours),
-              const SizedBox(height: 16),
-              PaperPanel(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 860),
+              child: PaperPanel(
+                padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
+                paperOpacity: 0.32,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SectionHeader(UiStrings.seclusionResultTitle),
-                    const SizedBox(height: 8),
+                    _ResultHero(mapDef: mapDef, actualHours: actualHours),
+                    const SizedBox(height: 12),
+                    const SectionHeader(UiStrings.seclusionResultReportTitle),
+                    const SizedBox(height: 10),
                     if (!hasReward)
-                      const Text(
-                        UiStrings.seclusionResultEmpty,
-                        style: TextStyle(color: WuxiaUi.ink2, fontSize: 14),
-                      )
+                      const _EmptyReward()
                     else ...[
                       if (mojianshi > 0)
                         _RewardRow(
@@ -106,28 +104,28 @@ class RetreatResultScreen extends StatelessWidget {
                         ),
                     ],
                     if (insightPoints > 0) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       const _InsightHint(),
                     ],
                     if (advancement != null && advancement.didAdvance) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 10),
                       _AdvancementBanner(advancement: advancement),
                     ],
+                    const SizedBox(height: 14),
+                    Align(
+                      alignment: Alignment.center,
+                      child: PlaqueButton(
+                        label: UiStrings.seclusionResultBack,
+                        primary: true,
+                        // 经 pushReplacement 链回 list；list 收 true 触发 refresh。
+                        // 不用 popUntil(isFirst) — 会把 list 也弹掉退到主菜单。
+                        onTap: () => Navigator.of(context).pop(true),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 22),
-              Align(
-                alignment: Alignment.center,
-                child: PlaqueButton(
-                  label: UiStrings.seclusionResultBack,
-                  primary: true,
-                  // 经 pushReplacement 链回 list；list 收 true 触发 refresh。
-                  // 不用 popUntil(isFirst) — 会把 list 也弹掉退到主菜单。
-                  onTap: () => Navigator.of(context).pop(true),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -146,7 +144,7 @@ class _ResultHero extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: SizedBox(
-        height: 220,
+        height: 168,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -170,6 +168,8 @@ class _ResultHero extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const _ReportSeal(),
+                  const SizedBox(height: 8),
                   Text(
                     mapDef.mapName,
                     maxLines: 1,
@@ -206,8 +206,8 @@ class _MapImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (path == null) return _fallback();
-    return Image.asset(
-      path!,
+    return Image(
+      image: ExactAssetImage(path!, bundle: DefaultAssetBundle.of(context)),
       fit: BoxFit.cover,
       errorBuilder: (_, _, _) => _fallback(),
     );
@@ -224,21 +224,77 @@ class _RewardRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.32),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: WuxiaUi.muted.withValues(alpha: 0.28)),
+      ),
       child: Row(
         children: [
           Icon(icon, color: WuxiaUi.gold, size: 18),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: WuxiaUi.ink,
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ReportSeal extends StatelessWidget {
+  const _ReportSeal();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.jiang.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: WuxiaUi.gold.withValues(alpha: 0.72)),
+      ),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        child: Text(
+          UiStrings.seclusionResultTitle,
+          style: TextStyle(
+            color: WuxiaColors.textPrimary,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyReward extends StatelessWidget {
+  const _EmptyReward();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: WuxiaUi.muted.withValues(alpha: 0.28)),
+      ),
+      child: const Text(
+        UiStrings.seclusionResultEmpty,
+        style: TextStyle(color: WuxiaUi.ink2, fontSize: 14),
       ),
     );
   }
@@ -278,7 +334,7 @@ class _AdvancementBanner extends StatelessWidget {
     final layerAfter = advancement.layerAfter;
     final layers = advancement.layersGained;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
       decoration: BoxDecoration(
         color: WuxiaUi.jiang.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(8),

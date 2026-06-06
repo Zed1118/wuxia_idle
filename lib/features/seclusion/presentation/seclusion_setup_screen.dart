@@ -120,18 +120,32 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SectionHeader(UiStrings.seclusionSetupTitle),
-                    const SizedBox(height: 8),
-                    ..._durations.map(
-                      (h) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _DurationButton(
-                          hours: h,
-                          selected: _selectedHours == h,
-                          scale: scale,
-                          mojianshiPerHour: def.mojianshiPerHour,
-                          onTap: () => setState(() => _selectedHours = h),
-                        ),
-                      ),
+                    const SizedBox(height: 12),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final columns = constraints.maxWidth >= 620 ? 3 : 1;
+                        final cardWidth =
+                            (constraints.maxWidth - (columns - 1) * 10) /
+                            columns;
+                        return Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: [
+                            for (final h in _durations)
+                              SizedBox(
+                                width: cardWidth,
+                                child: _DurationButton(
+                                  hours: h,
+                                  selected: _selectedHours == h,
+                                  scale: scale,
+                                  mojianshiPerHour: def.mojianshiPerHour,
+                                  onTap: () =>
+                                      setState(() => _selectedHours = h),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -166,7 +180,7 @@ class _MapHero extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: SizedBox(
-        height: 240,
+        height: 210,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -187,15 +201,22 @@ class _MapHero extends StatelessWidget {
               left: 18,
               right: 18,
               bottom: 18,
-              child: Text(
-                def.mapName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _HeroSeal(text: UiStrings.seclusionMapAtlasTitle),
+                  const SizedBox(height: 8),
+                  Text(
+                    def.mapName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: WuxiaColors.textPrimary,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -213,8 +234,8 @@ class _MapImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (path == null) return _fallback();
-    return Image.asset(
-      path!,
+    return Image(
+      image: ExactAssetImage(path!, bundle: DefaultAssetBundle.of(context)),
       fit: BoxFit.cover,
       errorBuilder: (_, _, _) => _fallback(),
     );
@@ -240,7 +261,7 @@ class _OutputPreview extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SectionHeader(UiStrings.seclusionHourlyPreview(scale)),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         _OutputRow(
           label: UiStrings.seclusionOutputMojianshi,
           value: (def.mojianshiPerHour * scale).toStringAsFixed(1),
@@ -322,11 +343,12 @@ class _DurationButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        constraints: const BoxConstraints(minHeight: 96),
+        padding: const EdgeInsets.fromLTRB(14, 13, 14, 12),
         decoration: BoxDecoration(
           color: selected
-              ? WuxiaUi.gold.withValues(alpha: 0.2)
-              : WuxiaUi.paper.withValues(alpha: 0.34),
+              ? WuxiaUi.gold.withValues(alpha: 0.22)
+              : WuxiaUi.paper.withValues(alpha: 0.38),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: selected
@@ -335,26 +357,77 @@ class _DurationButton extends StatelessWidget {
             width: selected ? 1.5 : 1,
           ),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(
-                UiStrings.seclusionDurationLabel(hours),
-                style: TextStyle(
-                  color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
-                  fontSize: 15,
-                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            ),
             Text(
-              UiStrings.seclusionEstimatedMojianshi(expectedMoji),
+              UiStrings.seclusionStayCardTitle(hours),
               style: TextStyle(
                 color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
-                fontSize: 12,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
               ),
             ),
+            const SizedBox(height: 8),
+            Text(
+              UiStrings.seclusionDurationLabel(hours),
+              style: TextStyle(
+                color: selected ? WuxiaUi.ink : WuxiaUi.muted,
+                fontSize: 13,
+                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  selected ? Icons.radio_button_checked : Icons.circle_outlined,
+                  size: 16,
+                  color: selected ? WuxiaUi.gold : WuxiaUi.muted,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    UiStrings.seclusionEstimatedMojianshi(expectedMoji),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroSeal extends StatelessWidget {
+  const _HeroSeal({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.ink.withValues(alpha: 0.66),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: WuxiaUi.gold.withValues(alpha: 0.78)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: WuxiaColors.textPrimary,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );

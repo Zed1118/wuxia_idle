@@ -158,31 +158,60 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 720),
                   child: PaperPanel(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-                    paperOpacity: 0.28,
+                    padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
+                    paperOpacity: 0.42,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SectionHeader(def.mapName),
-                        const SizedBox(height: 12),
-                        Text(
-                          UiStrings.activeRetreatTimeRange(
-                            startStr,
-                            endStr,
-                            session.durationHours,
-                          ),
-                          style: const TextStyle(
-                            color: WuxiaUi.ink2,
-                            fontSize: 13,
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const _StateSeal(),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    def.mapName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: WuxiaUi.ink,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            _ProgressStamp(
+                              label: done
+                                  ? UiStrings.activeRetreatDone
+                                  : UiStrings.activeRetreatProgressPct(
+                                      (progress * 100).round(),
+                                    ),
+                              done: done,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        _TimeRangePanel(
+                          start: startStr,
+                          end: endStr,
+                          hours: session.durationHours,
                         ),
                         const SizedBox(height: 22),
+                        const SectionHeader(
+                          UiStrings.activeRetreatProgressTitle,
+                        ),
+                        const SizedBox(height: 10),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
                             value: progress,
-                            minHeight: 10,
+                            minHeight: 12,
                             backgroundColor: WuxiaUi.muted.withValues(
                               alpha: 0.22,
                             ),
@@ -192,19 +221,15 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            done
-                                ? UiStrings.activeRetreatDone
-                                : UiStrings.activeRetreatProgressPct(
-                                    (progress * 100).round(),
-                                  ),
-                            style: TextStyle(
-                              color: done ? WuxiaUi.gold : WuxiaUi.ink2,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
+                        Text(
+                          done
+                              ? UiStrings.activeRetreatDoneHint
+                              : UiStrings.activeRetreatEarlyHint,
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            color: done ? WuxiaUi.gold : WuxiaUi.ink2,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(height: 28),
@@ -237,6 +262,104 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 }
 
+class _StateSeal extends StatelessWidget {
+  const _StateSeal();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.jiang.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: WuxiaUi.jiang.withValues(alpha: 0.52)),
+      ),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        child: Text(
+          UiStrings.activeRetreatStateSeal,
+          style: TextStyle(
+            color: WuxiaUi.jiang,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProgressStamp extends StatelessWidget {
+  const _ProgressStamp({required this.label, required this.done});
+
+  final String label;
+  final bool done;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = done ? WuxiaUi.gold : WuxiaUi.qing;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.62)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TimeRangePanel extends StatelessWidget {
+  const _TimeRangePanel({
+    required this.start,
+    required this.end,
+    required this.hours,
+  });
+
+  final String start;
+  final String end;
+  final int hours;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.36),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: WuxiaUi.muted.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.schedule, color: WuxiaUi.ink2, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              UiStrings.activeRetreatTimeRange(start, end, hours),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: WuxiaUi.ink2,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _MapBackdrop extends StatelessWidget {
   const _MapBackdrop({required this.path});
 
@@ -245,8 +368,8 @@ class _MapBackdrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (path == null) return _fallback();
-    return Image.asset(
-      path!,
+    return Image(
+      image: ExactAssetImage(path!, bundle: DefaultAssetBundle.of(context)),
       fit: BoxFit.cover,
       errorBuilder: (_, _, _) => _fallback(),
     );

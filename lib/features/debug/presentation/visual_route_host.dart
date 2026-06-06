@@ -8,12 +8,16 @@ import '../../../core/domain/equipment.dart';
 import '../../../data/isar_setup.dart';
 import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/theme/colors.dart';
 import '../../../shared/utils/rng.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/equipment_factory.dart';
+import '../../equipment/application/drop_service.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/domain/mainline_progress.dart';
+import '../../mainline/presentation/stage_victory_dialog.dart';
 import '../../mainline/presentation/stage_list_screen.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
@@ -148,8 +152,23 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const TowerFloorListScreen();
     case VisualRoute.seclusionMapList:
       await OnboardingService(isar: isar).ensureFoundingMasters();
+      final def = GameRepository.instance.getSeclusionMap(
+        RetreatMapType.cangJingGe,
+      );
+      final session = RetreatSession()
+        ..saveDataId = IsarSetup.currentSlotId
+        ..mapType = def.mapType
+        ..durationHours = 4
+        ..startedAt = DateTime.now().subtract(const Duration(minutes: 82))
+        ..completedAt = null
+        ..status = RetreatStatus.active
+        ..actualRewards = [];
+      await isar.writeTxn(() async {
+        await isar.retreatSessions.clear();
+        await isar.retreatSessions.put(session);
+      });
       return const SeclusionMapListScreen(
-        charRealmTier: RealmTier.zongShi,
+        charRealmTier: RealmTier.erLiu,
         characterId: 1,
       );
     case VisualRoute.seclusionSetup:
@@ -225,6 +244,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         hint: '出版美术验收·Boss 头像金色加粗边框(右队首位)',
         sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
       );
+    case VisualRoute.battleVictoryFirstClear:
+      return const _VictoryFirstClearPreview();
     case VisualRoute.enemyGallery:
       return const _EnemyGallery();
     case VisualRoute.equipmentDetailScreen:
@@ -305,6 +326,66 @@ class _AcceptanceHub extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class _VictoryFirstClearPreview extends StatelessWidget {
+  const _VictoryFirstClearPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    final eq = EquipmentFactory.fromDef(
+      GameRepository.instance.getEquipment('weapon_shenwu_tian_wen_jian'),
+      rng: DefaultRng(seed: 607),
+      obtainedAt: DateTime(2026, 6, 7),
+      obtainedFrom: 'Boss 首胜',
+    );
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: AlertDialog(
+            title: const Text('风雨渡口 · 战斗胜利'),
+            content: StageVictoryContent(
+              firstClearTitle: UiStrings.stageVictoryBossFirstClear('风雨渡口'),
+              drops: DropResult(
+                equipments: [eq],
+                items: const [
+                  ItemDropResult(defId: 'item_mojianshi', quantity: 8),
+                ],
+              ),
+              advancements: const [
+                AdvancementEntry(
+                  chName: '阴柔丙',
+                  result: AdvancementResult(
+                    layersGained: 1,
+                    tierBefore: RealmTier.xueTu,
+                    layerBefore: RealmLayer.qiMeng,
+                    tierAfter: RealmTier.xueTu,
+                    layerAfter: RealmLayer.ruMen,
+                    internalForceMaxBefore: 500,
+                    internalForceMaxAfter: 650,
+                  ),
+                ),
+              ],
+              resonanceUpgrades: const [
+                ResonanceUpgradeNotice(
+                  equipmentName: '天问剑',
+                  newStage: ResonanceStage.moQi,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {},
+                child: const Text(UiStrings.stageVictoryConfirm),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
