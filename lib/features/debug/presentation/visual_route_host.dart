@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
 import 'battle_test_menu.dart';
+import '../../../core/domain/equipment.dart';
 import '../../../data/isar_setup.dart';
 import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
@@ -13,6 +14,7 @@ import '../../onboarding/application/onboarding_service.dart';
 import '../../sect/presentation/sect_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../inventory/presentation/inventory_screen.dart';
+import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../application/phase2_seed_service.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
 import '../application/visual_route.dart';
@@ -92,16 +94,10 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
   @override
   Widget build(BuildContext context) {
     if (_error != null) {
-      return Scaffold(
-        body: Center(
-          child: Text('VISUAL_ROUTE_ERROR: $_error'),
-        ),
-      );
+      return Scaffold(body: Center(child: Text('VISUAL_ROUTE_ERROR: $_error')));
     }
     return _target ??
-        const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        );
+        const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
 
@@ -150,6 +146,23 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       );
     case VisualRoute.enemyGallery:
       return const _EnemyGallery();
+    case VisualRoute.equipmentDetailScreen:
+      final def = GameRepository.instance.getEquipment(
+        'weapon_shenwu_tian_wen_jian',
+      );
+      final eq = Equipment.create(
+        defId: def.id,
+        tier: def.tier,
+        slot: def.slot,
+        obtainedAt: DateTime(2026, 6, 6),
+        obtainedFrom: 'visual_route',
+        baseAttack: def.baseAttackMin,
+        baseHealth: def.baseHealthMin,
+        baseSpeed: def.baseSpeedMin,
+        enhanceLevel: 12,
+        battleCount: 1240,
+      )..id = 1;
+      return EquipmentDetailScreen(equipment: eq, def: def);
     case VisualRoute.equipmentDetailGallery:
       return const _EquipmentDetailGallery();
     case VisualRoute.narrativeScene:
@@ -178,13 +191,12 @@ class _AcceptanceHub extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final routes =
-        VisualRoute.values.where((r) => r != VisualRoute.hub).toList();
+    final routes = VisualRoute.values
+        .where((r) => r != VisualRoute.hub)
+        .toList();
     return Scaffold(
       backgroundColor: const Color(0xFF14181D),
-      appBar: AppBar(
-        title: Text('验收总入口 · ${routes.length} 路由(build 一次点选)'),
-      ),
+      appBar: AppBar(title: Text('验收总入口 · ${routes.length} 路由(build 一次点选)')),
       body: ListView.separated(
         padding: const EdgeInsets.all(12),
         itemCount: routes.length,
@@ -192,8 +204,10 @@ class _AcceptanceHub extends StatelessWidget {
         itemBuilder: (context, i) {
           final r = routes[i];
           return ListTile(
-            title: Text(r.id,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              r.id,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             subtitle: Text(r.label, style: const TextStyle(fontSize: 11)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () async {
@@ -201,9 +215,7 @@ class _AcceptanceHub extends StatelessWidget {
               final messenger = ScaffoldMessenger.of(context);
               try {
                 final target = await buildVisualTarget(r, isar);
-                navigator.push(
-                  MaterialPageRoute<void>(builder: (_) => target),
-                );
+                navigator.push(MaterialPageRoute<void>(builder: (_) => target));
               } catch (e) {
                 messenger.showSnackBar(
                   SnackBar(content: Text('路由 ${r.id} 失败: $e')),
@@ -284,13 +296,14 @@ class _EquipmentDetailGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final repo = GameRepository.instance;
-    final defs = repo.equipmentDefs.values
-        .where((d) => d.detailPath != null && d.detailPath!.isNotEmpty)
-        .toList()
-      ..sort((a, b) {
-        final t = a.tier.index.compareTo(b.tier.index);
-        return t != 0 ? t : a.id.compareTo(b.id);
-      });
+    final defs =
+        repo.equipmentDefs.values
+            .where((d) => d.detailPath != null && d.detailPath!.isNotEmpty)
+            .toList()
+          ..sort((a, b) {
+            final t = a.tier.index.compareTo(b.tier.index);
+            return t != 0 ? t : a.id.compareTo(b.id);
+          });
     return Scaffold(
       backgroundColor: const Color(0xFF14181D),
       appBar: AppBar(title: Text('装备 detail gallery (${defs.length})')),

@@ -27,4 +27,26 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('宽屏下分隔线限制最大宽度并压低透明度', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      host(const SizedBox(width: 1000, child: SectionHeader('武器'))),
+    );
+
+    final opacity = tester.widget<Opacity>(
+      find.ancestor(of: find.byType(Image), matching: find.byType(Opacity)),
+    );
+    expect(opacity.opacity, 0.68);
+
+    final constrained = tester.widget<ConstrainedBox>(
+      find.ancestor(
+        of: find.byType(Image),
+        matching: find.byType(ConstrainedBox),
+      ),
+    );
+    expect(constrained.constraints.maxWidth, 560);
+  });
 }
