@@ -367,6 +367,9 @@ class UiStrings {
 
   static const String mainMenuMainline = '主线';
   static const String mainMenuMainlineHint = '6 章 30 关,按章节顺序解锁';
+  static String mainMenuMainlineStatus(int chapterIndex, String stageName) =>
+      '第$chapterIndex章 · $stageName';
+  static const String mainMenuMainlineCompleteStatus = '主线已通';
 
   static const String chapterListTitle = '主线 · 章节';
   static const String mainlineRouteMapTitle = '江湖路引';
@@ -453,6 +456,11 @@ class UiStrings {
 
   static const String mainMenuTower = '问鼎九霄';
   static const String mainMenuTowerHint = '30 层，无限重试，永久记录';
+  static String mainMenuTowerStatus(int highest, int next) =>
+      highest <= 0 ? '未登塔 · 1层' : '已至$highest层 · 下$next层';
+  static String mainMenuTowerBossStatus(int highest, int next) =>
+      highest <= 0 ? '未登塔 · 1层' : '已至$highest层 · 下$next层Boss';
+  static const String mainMenuTowerCompleteStatus = '三十层已通';
 
   // ── P0.2 #40 排行榜(本地榜,D 方案 Demo 不接 Supabase backend)──
 
@@ -544,6 +552,11 @@ class UiStrings {
   static const String mainMenuSeclusion = '闭关修炼';
   static const String mainMenuSeclusionHint = '5 张地图，离线挂机，最长 72 小时';
   static const String mainMenuSeclusionLockedHint = '通关第一章后开放';
+  static const String mainMenuSeclusionReadyStatus = '可择地图';
+  static const String mainMenuSeclusionLockedStatus = '未开放';
+  static String mainMenuSeclusionActiveStatus(String mapName) =>
+      '闭关中 · $mapName';
+  static String mainMenuSeclusionDoneStatus(String mapName) => '可收功 · $mapName';
 
   // ─── 心魔境（1.0 P2.2 §12.1,Batch 2.5.B 入口）─────────────────────────────
   static const String mainMenuInnerDemon = '心魔境';

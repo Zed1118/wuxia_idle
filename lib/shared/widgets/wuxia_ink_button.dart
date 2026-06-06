@@ -15,12 +15,14 @@ class WuxiaInkButton extends StatelessWidget {
     required this.label,
     required this.hint,
     required this.onTap,
+    this.status,
     this.disabled = false,
     this.locked = false,
   });
 
   final String label;
   final String hint;
+  final String? status;
   final VoidCallback? onTap;
   final bool disabled;
 
@@ -98,13 +100,25 @@ class WuxiaInkButton extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                              label,
-                              style: const TextStyle(
-                                color: WuxiaUi.ink,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                              ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    label,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: WuxiaUi.ink,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                if (status != null) ...[
+                                  const SizedBox(width: 8),
+                                  _InkButtonStatusChip(status!),
+                                ],
+                              ],
                             ),
                             const SizedBox(height: 5),
                             Text(
@@ -147,6 +161,37 @@ class WuxiaInkButton extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InkButtonStatusChip extends StatelessWidget {
+  const _InkButtonStatusChip(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 116),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: WuxiaUi.ink.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.28)),
+        ),
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: WuxiaUi.ink.withValues(alpha: 0.82),
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ),

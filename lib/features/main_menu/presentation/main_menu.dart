@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/application/character_providers.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
 import '../../baike/presentation/baike_screen.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
@@ -17,8 +19,12 @@ import '../../inner_demon/presentation/inner_demon_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../mass_battle/presentation/mass_battle_screen.dart';
+import '../../mainline/application/mainline_progress_service.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
+import '../../mainline/domain/mainline_progress.dart';
 import '../../pvp/presentation/pvp_screen.dart';
+import '../../seclusion/application/seclusion_service_providers.dart';
+import '../../seclusion/domain/retreat_session.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../sect/presentation/sect_screen.dart';
@@ -30,6 +36,9 @@ import '../../tutorial/application/tutorial_providers.dart';
 import '../../tutorial/domain/tutorial_hint_def.dart';
 import '../../tutorial/presentation/tutorial_banner_card.dart';
 import '../../tower/presentation/leaderboard_screen.dart';
+import '../../tower/application/tower_progress_service.dart';
+import '../../tower/application/tower_providers.dart';
+import '../../tower/domain/tower_progress.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
 import '../../mainline/application/mainline_providers.dart';
 
@@ -105,10 +114,19 @@ class MainMenu extends ConsumerWidget {
     final step = stepAsync.maybeWhen(data: (s) => s, orElse: () => 0);
 
     final clearedAsync = ref.watch(mainlineProgressProvider);
+    final mainlineProgress = clearedAsync.maybeWhen(
+      data: (p) => p,
+      orElse: () => null,
+    );
     final cleared = clearedAsync.maybeWhen(
       data: (p) => p.clearedStageIds.toSet(),
       orElse: () => <String>{},
     );
+    final mainlineStatus = _mainlineMenuStatus(mainlineProgress);
+
+    final towerStatus = ref
+        .watch(towerProgressProvider)
+        .maybeWhen(data: _towerMenuStatus, orElse: () => null);
 
     final hintsReadAsync = ref.watch(currentTutorialHintsReadProvider);
     final hintsRead = hintsReadAsync.maybeWhen(
@@ -126,6 +144,7 @@ class MainMenu extends ConsumerWidget {
       WuxiaInkButton(
         label: UiStrings.mainMenuMainline,
         hint: UiStrings.mainMenuMainlineHint,
+        status: mainlineStatus,
         onTap: () => _push(context, const ChapterListScreen()),
       ),
       WuxiaInkButton(
@@ -165,6 +184,7 @@ class MainMenu extends ConsumerWidget {
       WuxiaInkButton(
         label: UiStrings.mainMenuTower,
         hint: UiStrings.mainMenuTowerHint,
+        status: towerStatus,
         onTap: () => _push(context, const TowerFloorListScreen()),
       ),
       WuxiaInkButton(
@@ -351,6 +371,35 @@ class MainMenu extends ConsumerWidget {
       ),
     );
   }
+
+  static String? _mainlineMenuStatus(MainlineProgress? progress) {
+    if (progress == null || !GameRepository.isLoaded) return null;
+    for (var chapterIndex = 1; chapterIndex <= 6; chapterIndex++) {
+      final stages = MainlineProgressService.availableStages(
+        progress: progress,
+        chapterIndex: chapterIndex,
+      );
+      for (final entry in stages) {
+        if (entry.status == StageStatus.available) {
+          return UiStrings.mainMenuMainlineStatus(chapterIndex, entry.def.name);
+        }
+      }
+    }
+    return UiStrings.mainMenuMainlineCompleteStatus;
+  }
+
+  static String _towerMenuStatus(TowerProgress progress) {
+    final highest = progress.highestClearedFloor;
+    if (highest >= 30) return UiStrings.mainMenuTowerCompleteStatus;
+    final next = TowerProgressService.availableFloor(progress);
+    final nextIsBoss =
+        GameRepository.isLoaded &&
+        GameRepository.instance.towerFloors.any(
+          (f) => f.floorIndex == next && f.isBoss,
+        );
+    if (nextIsBoss) return UiStrings.mainMenuTowerBossStatus(highest, next);
+    return UiStrings.mainMenuTowerStatus(highest, next);
+  }
 }
 
 /// 入口分组标签(Phase A · 主/次分组):小字 + 分隔线。
@@ -527,12 +576,49 @@ class _SeclusionMenuButton extends ConsumerWidget {
     final realmTier = character?.realmTier ?? defaultRealmTier;
     final characterId = character?.id ?? defaultCharacterId;
     final disabled = loading || tutorialLocked;
+    final baseStatus = tutorialLocked
+        ? UiStrings.mainMenuSeclusionLockedStatus
+        : UiStrings.mainMenuSeclusionReadyStatus;
+    final svc = ref.watch(seclusionServiceProvider);
 
+    if (svc != null && !tutorialLocked && !loading) {
+      return FutureBuilder<RetreatSession?>(
+        future: svc.getActiveSession(IsarSetup.currentSlotId),
+        builder: (context, snapshot) {
+          final session = snapshot.data;
+          final status = session == null
+              ? baseStatus
+              : _activeRetreatStatus(session);
+          return _button(
+            status: status,
+            disabled: disabled,
+            realmTier: realmTier,
+            characterId: characterId,
+          );
+        },
+      );
+    }
+
+    return _button(
+      status: baseStatus,
+      disabled: disabled,
+      realmTier: realmTier,
+      characterId: characterId,
+    );
+  }
+
+  Widget _button({
+    required String status,
+    required bool disabled,
+    required RealmTier realmTier,
+    required int characterId,
+  }) {
     return WuxiaInkButton(
       label: UiStrings.mainMenuSeclusion,
       hint: tutorialLocked
           ? UiStrings.mainMenuSeclusionLockedHint
           : UiStrings.mainMenuSeclusionHint,
+      status: status,
       disabled: disabled,
       locked: tutorialLocked,
       onTap: disabled
@@ -544,6 +630,16 @@ class _SeclusionMenuButton extends ConsumerWidget {
               ),
             ),
     );
+  }
+
+  static String _activeRetreatStatus(RetreatSession session) {
+    final mapDef = GameRepository.instance.getSeclusionMap(session.mapType);
+    final elapsed = DateTime.now().difference(session.startedAt).inSeconds;
+    final planned = session.durationHours * 3600;
+    if (elapsed >= planned) {
+      return UiStrings.mainMenuSeclusionDoneStatus(mapDef.mapName);
+    }
+    return UiStrings.mainMenuSeclusionActiveStatus(mapDef.mapName);
   }
 }
 
