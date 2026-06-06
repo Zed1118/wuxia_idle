@@ -3,59 +3,64 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 void main() {
-  Widget host(Widget child) =>
-      MaterialApp(home: Scaffold(body: Center(child: child)));
+  Widget host(Widget child) => MaterialApp(
+    home: Scaffold(body: Center(child: child)),
+  );
 
   testWidgets('渲染 label 与 hint 两行', (tester) async {
-    await tester.pumpWidget(host(const WuxiaInkButton(
-      label: '主线',
-      hint: '继续江湖路',
-      onTap: null,
-    )));
+    await tester.pumpWidget(
+      host(const WuxiaInkButton(label: '主线', hint: '继续江湖路', onTap: null)),
+    );
     expect(find.text('主线'), findsOneWidget);
     expect(find.text('继续江湖路'), findsOneWidget);
   });
 
   testWidgets('点击触发 onTap', (tester) async {
     var tapped = 0;
-    await tester.pumpWidget(host(WuxiaInkButton(
-      label: '心法',
-      hint: 'x',
-      onTap: () => tapped++,
-    )));
+    await tester.pumpWidget(
+      host(WuxiaInkButton(label: '心法', hint: 'x', onTap: () => tapped++)),
+    );
     await tester.tap(find.byType(WuxiaInkButton));
     expect(tapped, 1);
   });
 
   testWidgets('disabled 拦截点击且半透明 0.4', (tester) async {
     var tapped = 0;
-    await tester.pumpWidget(host(WuxiaInkButton(
-      label: '门派',
-      hint: 'x',
-      onTap: () => tapped++,
-      disabled: true,
-    )));
+    await tester.pumpWidget(
+      host(
+        WuxiaInkButton(
+          label: '门派',
+          hint: 'x',
+          onTap: () => tapped++,
+          disabled: true,
+        ),
+      ),
+    );
     await tester.tap(find.byType(WuxiaInkButton), warnIfMissed: false);
     expect(tapped, 0);
-    final opacity = tester.widget<Opacity>(find.byType(Opacity));
+    final opacity = tester.widget<Opacity>(
+      find.byWidgetPredicate((w) => w is Opacity && w.opacity == 0.4),
+    );
     expect(opacity.opacity, 0.4);
   });
 
   testWidgets('locked=true 显锁印图标 · false 不显', (tester) async {
-    await tester.pumpWidget(host(const WuxiaInkButton(
-      label: '门派',
-      hint: 'x',
-      onTap: null,
-      disabled: true,
-      locked: true,
-    )));
+    await tester.pumpWidget(
+      host(
+        const WuxiaInkButton(
+          label: '门派',
+          hint: 'x',
+          onTap: null,
+          disabled: true,
+          locked: true,
+        ),
+      ),
+    );
     expect(find.byIcon(Icons.lock_outline), findsOneWidget);
 
-    await tester.pumpWidget(host(const WuxiaInkButton(
-      label: '主线',
-      hint: 'x',
-      onTap: null,
-    )));
+    await tester.pumpWidget(
+      host(const WuxiaInkButton(label: '主线', hint: 'x', onTap: null)),
+    );
     expect(find.byIcon(Icons.lock_outline), findsNothing);
   });
 }

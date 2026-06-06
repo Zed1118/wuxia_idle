@@ -56,6 +56,15 @@ List<Widget> _twoColumn(List<Widget> items) {
   return rows;
 }
 
+List<Widget> _oneColumn(List<Widget> items) {
+  final rows = <Widget>[];
+  for (var i = 0; i < items.length; i++) {
+    rows.add(items[i]);
+    if (i + 1 < items.length) rows.add(const SizedBox(height: 10));
+  }
+  return rows;
+}
+
 /// 主菜单(Phase A 出版美术重排 · 2026-05-31 · 双列迭代)。
 ///
 /// 全屏水墨背景 + 渐变 scrim + 题字标题 + 入口主/次分组(修行 / 演武 / 江湖 +
@@ -78,7 +87,10 @@ class MainMenu extends ConsumerWidget {
   static const String _pvpUnlockStage = 'stage_05_05';
   static const String _socialUnlockStage = 'stage_01_05'; // 江湖/门派/排行榜
 
-  static TutorialHintDef? _firstUnreadHint(int currentStep, List<int> hintsRead) {
+  static TutorialHintDef? _firstUnreadHint(
+    int currentStep,
+    List<int> hintsRead,
+  ) {
     for (final def in TutorialHintDef.all) {
       if (def.step <= currentStep && !hintsRead.contains(def.step)) {
         return def;
@@ -94,17 +106,162 @@ class MainMenu extends ConsumerWidget {
 
     final clearedAsync = ref.watch(mainlineProgressProvider);
     final cleared = clearedAsync.maybeWhen(
-        data: (p) => p.clearedStageIds.toSet(), orElse: () => <String>{});
+      data: (p) => p.clearedStageIds.toSet(),
+      orElse: () => <String>{},
+    );
 
     final hintsReadAsync = ref.watch(currentTutorialHintsReadProvider);
-    final hintsRead =
-        hintsReadAsync.maybeWhen(data: (l) => l, orElse: () => const <int>[]);
+    final hintsRead = hintsReadAsync.maybeWhen(
+      data: (l) => l,
+      orElse: () => const <int>[],
+    );
     final activeHint = _firstUnreadHint(step, hintsRead);
 
     final techLocked = step < _techniquesUnlockStep;
     final lateLocked = !cleared.contains(_lateGameUnlockStage);
     final pvpLocked = !cleared.contains(_pvpUnlockStage);
     final socialLocked = !cleared.contains(_socialUnlockStage);
+
+    final coreItems = <Widget>[
+      WuxiaInkButton(
+        label: UiStrings.mainMenuMainline,
+        hint: UiStrings.mainMenuMainlineHint,
+        onTap: () => _push(context, const ChapterListScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuCharacterPanel,
+        hint: UiStrings.mainMenuCharacterPanelHint,
+        onTap: () => _push(
+          context,
+          const CharacterPanelScreen(characterId: _defaultCharacterId),
+        ),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuInventory,
+        hint: UiStrings.mainMenuInventoryHint,
+        onTap: () => _push(context, const InventoryScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuTechniques,
+        hint: techLocked
+            ? UiStrings.mainMenuTechniquesLockedHint
+            : UiStrings.mainMenuTechniquesHint,
+        disabled: techLocked,
+        locked: techLocked,
+        onTap: () => _push(
+          context,
+          const TechniquePanelScreen(characterId: _defaultCharacterId),
+        ),
+      ),
+      _SeclusionMenuButton(
+        defaultCharacterId: _defaultCharacterId,
+        defaultRealmTier: _defaultRealmTier,
+        onPush: (screen) => _push(context, screen),
+        tutorialLocked: step < _seclusionUnlockStep,
+      ),
+    ];
+
+    final battleItems = <Widget>[
+      WuxiaInkButton(
+        label: UiStrings.mainMenuTower,
+        hint: UiStrings.mainMenuTowerHint,
+        onTap: () => _push(context, const TowerFloorListScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuInnerDemon,
+        hint: lateLocked
+            ? UiStrings.mainMenuLateGameLockedHint
+            : UiStrings.mainMenuInnerDemonHint,
+        disabled: lateLocked,
+        locked: lateLocked,
+        onTap: () => _push(context, const InnerDemonScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuLightFoot,
+        hint: lateLocked
+            ? UiStrings.mainMenuLateGameLockedHint
+            : UiStrings.mainMenuLightFootHint,
+        disabled: lateLocked,
+        locked: lateLocked,
+        onTap: () => _push(context, const LightFootScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuMassBattle,
+        hint: lateLocked
+            ? UiStrings.mainMenuLateGameLockedHint
+            : UiStrings.mainMenuMassBattleHint,
+        disabled: lateLocked,
+        locked: lateLocked,
+        onTap: () => _push(context, const MassBattleScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuPvp,
+        hint: pvpLocked ? UiStrings.pvpLockedHint : UiStrings.mainMenuPvpHint,
+        disabled: pvpLocked,
+        locked: pvpLocked,
+        onTap: () => _push(context, const PvpScreen()),
+      ),
+    ];
+
+    final jianghuItems = <Widget>[
+      WuxiaInkButton(
+        label: UiStrings.mainMenuLineage,
+        hint: UiStrings.mainMenuLineageHint,
+        onTap: () => _push(context, const LineagePanelScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuSect,
+        hint: socialLocked
+            ? UiStrings.mainMenuSocialLockedHint
+            : UiStrings.mainMenuSectHint,
+        disabled: socialLocked,
+        locked: socialLocked,
+        onTap: () => _push(context, const SectScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuJianghu,
+        hint: socialLocked
+            ? UiStrings.mainMenuSocialLockedHint
+            : UiStrings.mainMenuJianghuHint,
+        disabled: socialLocked,
+        locked: socialLocked,
+        onTap: () => _push(context, const ReputationPanelScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuLeaderboard,
+        hint: socialLocked
+            ? UiStrings.mainMenuSocialLockedHint
+            : UiStrings.mainMenuLeaderboardHint,
+        disabled: socialLocked,
+        locked: socialLocked,
+        onTap: () => _push(context, const LeaderboardScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuBaike,
+        hint: UiStrings.mainMenuBaikeHint,
+        onTap: () => _push(context, const BaikeScreen()),
+      ),
+    ];
+
+    final debugItems = kDebugMode
+        ? <Widget>[
+            WuxiaInkButton(
+              label: UiStrings.mainMenuPhase1,
+              hint: UiStrings.mainMenuPhase1Hint,
+              onTap: () => _push(context, const BattleTestMenu()),
+            ),
+            WuxiaInkButton(
+              label: UiStrings.mainMenuPhase2,
+              hint: UiStrings.mainMenuPhase2Hint,
+              onTap: () => _push(context, const Phase2TestMenu()),
+            ),
+            WuxiaInkButton(
+              label: '强制招募 NPC',
+              hint: '走完整 sect recruit flow · 跳过战斗/奇遇触发',
+              onTap: () => _push(context, const SectRecruitDebugScreen()),
+            ),
+          ]
+        : const <Widget>[];
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -132,10 +289,12 @@ class MainMenu extends ConsumerWidget {
           SafeArea(
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 760),
+                constraints: const BoxConstraints(maxWidth: 1120),
                 child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 32,
+                    horizontal: 16,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -167,179 +326,21 @@ class MainMenu extends ConsumerWidget {
                           onTapOverride: activeHint.step == 6
                               ? () async {
                                   if (!context.mounted) return;
-                                  await Navigator.of(context)
-                                      .push<void>(MaterialPageRoute(
-                                    builder: (_) => const RecruitmentDialog(),
-                                  ));
+                                  await Navigator.of(context).push<void>(
+                                    MaterialPageRoute(
+                                      builder: (_) => const RecruitmentDialog(),
+                                    ),
+                                  );
                                 }
                               : null,
                         ),
                       const SizedBox(height: 24),
-
-                      // ── 修行(核心循环)──
-                      const _SectionLabel(UiStrings.mainMenuGroupCore),
-                      ..._twoColumn([
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuMainline,
-                          hint: UiStrings.mainMenuMainlineHint,
-                          onTap: () =>
-                              _push(context, const ChapterListScreen()),
-                        ),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuCharacterPanel,
-                          hint: UiStrings.mainMenuCharacterPanelHint,
-                          onTap: () => _push(
-                            context,
-                            const CharacterPanelScreen(
-                                characterId: _defaultCharacterId),
-                          ),
-                        ),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuInventory,
-                          hint: UiStrings.mainMenuInventoryHint,
-                          onTap: () =>
-                              _push(context, const InventoryScreen()),
-                        ),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuTechniques,
-                          hint: techLocked
-                              ? UiStrings.mainMenuTechniquesLockedHint
-                              : UiStrings.mainMenuTechniquesHint,
-                          disabled: techLocked,
-                          locked: techLocked,
-                          onTap: () => _push(
-                            context,
-                            const TechniquePanelScreen(
-                                characterId: _defaultCharacterId),
-                          ),
-                        ),
-                        _SeclusionMenuButton(
-                          defaultCharacterId: _defaultCharacterId,
-                          defaultRealmTier: _defaultRealmTier,
-                          onPush: (screen) => _push(context, screen),
-                          tutorialLocked: step < _seclusionUnlockStep,
-                        ),
-                      ]),
-
-                      // ── 演武(战斗历练)──
-                      const _SectionLabel(UiStrings.mainMenuGroupBattle),
-                      ..._twoColumn([
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuTower,
-                          hint: UiStrings.mainMenuTowerHint,
-                          onTap: () =>
-                              _push(context, const TowerFloorListScreen()),
-                        ),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuInnerDemon,
-                          hint: lateLocked
-                              ? UiStrings.mainMenuLateGameLockedHint
-                              : UiStrings.mainMenuInnerDemonHint,
-                          disabled: lateLocked,
-                          locked: lateLocked,
-                          onTap: () =>
-                              _push(context, const InnerDemonScreen()),
-                        ),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuLightFoot,
-                          hint: lateLocked
-                              ? UiStrings.mainMenuLateGameLockedHint
-                              : UiStrings.mainMenuLightFootHint,
-                          disabled: lateLocked,
-                          locked: lateLocked,
-                          onTap: () =>
-                              _push(context, const LightFootScreen()),
-                        ),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuMassBattle,
-                          hint: lateLocked
-                              ? UiStrings.mainMenuLateGameLockedHint
-                              : UiStrings.mainMenuMassBattleHint,
-                          disabled: lateLocked,
-                          locked: lateLocked,
-                          onTap: () =>
-                              _push(context, const MassBattleScreen()),
-                        ),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuPvp,
-                          hint: pvpLocked
-                              ? UiStrings.pvpLockedHint
-                              : UiStrings.mainMenuPvpHint,
-                          disabled: pvpLocked,
-                          locked: pvpLocked,
-                          onTap: () => _push(context, const PvpScreen()),
-                        ),
-                      ]),
-
-                      // ── 江湖(社交 / 见闻)──
-                      const _SectionLabel(UiStrings.mainMenuGroupJianghu),
-                      ..._twoColumn([
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuLineage,
-                          hint: UiStrings.mainMenuLineageHint,
-                          onTap: () =>
-                              _push(context, const LineagePanelScreen()),
-                        ),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuSect,
-                          hint: socialLocked
-                              ? UiStrings.mainMenuSocialLockedHint
-                              : UiStrings.mainMenuSectHint,
-                          disabled: socialLocked,
-                          locked: socialLocked,
-                          onTap: () => _push(context, const SectScreen()),
-                        ),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuJianghu,
-                          hint: socialLocked
-                              ? UiStrings.mainMenuSocialLockedHint
-                              : UiStrings.mainMenuJianghuHint,
-                          disabled: socialLocked,
-                          locked: socialLocked,
-                          onTap: () =>
-                              _push(context, const ReputationPanelScreen()),
-                        ),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuLeaderboard,
-                          hint: socialLocked
-                              ? UiStrings.mainMenuSocialLockedHint
-                              : UiStrings.mainMenuLeaderboardHint,
-                          disabled: socialLocked,
-                          locked: socialLocked,
-                          onTap: () =>
-                              _push(context, const LeaderboardScreen()),
-                        ),
-                        WuxiaInkButton(
-                          label: UiStrings.mainMenuBaike,
-                          hint: UiStrings.mainMenuBaikeHint,
-                          onTap: () => _push(context, const BaikeScreen()),
-                        ),
-                      ]),
-
-                      // ── 调试(仅 debug build)──
-                      if (kDebugMode) ...[
-                        const _SectionLabel(UiStrings.mainMenuGroupDebug),
-                        ..._twoColumn([
-                          WuxiaInkButton(
-                            label: UiStrings.mainMenuPhase1,
-                            hint: UiStrings.mainMenuPhase1Hint,
-                            onTap: () =>
-                                _push(context, const BattleTestMenu()),
-                          ),
-                          WuxiaInkButton(
-                            label: UiStrings.mainMenuPhase2,
-                            hint: UiStrings.mainMenuPhase2Hint,
-                            onTap: () =>
-                                _push(context, const Phase2TestMenu()),
-                          ),
-                          WuxiaInkButton(
-                            label: '强制招募 NPC',
-                            hint: '走完整 sect recruit flow · 跳过战斗/奇遇触发',
-                            onTap: () =>
-                                _push(context, const SectRecruitDebugScreen()),
-                          ),
-                        ]),
-                      ],
+                      _MenuSectionsLayout(
+                        coreItems: coreItems,
+                        battleItems: battleItems,
+                        jianghuItems: jianghuItems,
+                        debugItems: debugItems,
+                      ),
                     ],
                   ),
                 ),
@@ -379,6 +380,119 @@ class _SectionLabel extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _MenuSectionsLayout extends StatelessWidget {
+  const _MenuSectionsLayout({
+    required this.coreItems,
+    required this.battleItems,
+    required this.jianghuItems,
+    required this.debugItems,
+  });
+
+  final List<Widget> coreItems;
+  final List<Widget> battleItems;
+  final List<Widget> jianghuItems;
+  final List<Widget> debugItems;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= 980;
+        if (!wide) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _MenuSection(
+                title: UiStrings.mainMenuGroupCore,
+                items: coreItems,
+                compact: true,
+              ),
+              _MenuSection(
+                title: UiStrings.mainMenuGroupBattle,
+                items: battleItems,
+                compact: true,
+              ),
+              _MenuSection(
+                title: UiStrings.mainMenuGroupJianghu,
+                items: jianghuItems,
+                compact: true,
+              ),
+              if (debugItems.isNotEmpty)
+                _MenuSection(
+                  title: UiStrings.mainMenuGroupDebug,
+                  items: debugItems,
+                  compact: true,
+                ),
+            ],
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _MenuSection(
+                    title: UiStrings.mainMenuGroupCore,
+                    items: coreItems,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: _MenuSection(
+                    title: UiStrings.mainMenuGroupBattle,
+                    items: battleItems,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: _MenuSection(
+                    title: UiStrings.mainMenuGroupJianghu,
+                    items: jianghuItems,
+                  ),
+                ),
+              ],
+            ),
+            if (debugItems.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _MenuSection(
+                title: UiStrings.mainMenuGroupDebug,
+                items: debugItems,
+                compact: true,
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _MenuSection extends StatelessWidget {
+  const _MenuSection({
+    required this.title,
+    required this.items,
+    this.compact = false,
+  });
+
+  final String title;
+  final List<Widget> items;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionLabel(title),
+        ...compact ? _twoColumn(items) : _oneColumn(items),
+      ],
     );
   }
 }
@@ -424,11 +538,11 @@ class _SeclusionMenuButton extends ConsumerWidget {
       onTap: disabled
           ? null
           : () => onPush(
-                SeclusionMapListScreen(
-                  charRealmTier: realmTier,
-                  characterId: characterId,
-                ),
+              SeclusionMapListScreen(
+                charRealmTier: realmTier,
+                characterId: characterId,
               ),
+            ),
     );
   }
 }
