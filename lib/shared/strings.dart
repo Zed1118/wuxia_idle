@@ -70,9 +70,15 @@ class UiStrings {
   static const String mainMenuCharacterPanelHint = '查看角色属性 / 装备 / 心法';
   static const String mainMenuInventory = '装备仓库';
   static const String mainMenuInventoryHint = '查看 / 强化 / 开锋装备';
+  static String mainMenuInventoryStatus(int count, String topTier) =>
+      count <= 0 ? '暂无装备' : '$count件 · $topTier';
   static const String mainMenuTechniques = '心法面板';
   static const String mainMenuTechniquesHint = '查看主修 / 辅修 / 散功换主修';
   static const String mainMenuTechniquesLockedHint = '通过第三关后开放';
+  static const String mainMenuTechniquesLockedStatus = '未开放';
+  static const String mainMenuTechniquesNoMainStatus = '未主修';
+  static String mainMenuTechniquesKnownStatus(int count) => '已修$count门';
+  static String mainMenuTechniquesInsightStatus(int points) => '可凝练$points点';
   // H1 批1 §5.7:未解锁系统门控引导文案。
   static const String mainMenuLateGameLockedHint = '主线第六章通关后开放';
   static const String mainMenuSocialLockedHint = '主线第一章通关后开放';
