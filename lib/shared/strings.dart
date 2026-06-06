@@ -363,6 +363,11 @@ class UiStrings {
 
   static const String chapterListTitle = '主线 · 章节';
   static const String mainlineRouteMapTitle = '江湖路引';
+  static const String mainlineRouteMapSubtitle = '六章江湖路 · 每章五关，朱印为 Boss';
+  static const String mainlineRouteCurrent = '当前';
+  static const String mainlineRouteCleared = '已通';
+  static const String mainlineRouteLocked = '未至';
+  static const String mainlineRouteBoss = 'Boss';
   static const String chapter1Title = '第一章 · 学武出山';
   static const String chapter2Title = '第二章 · 武林初识';
   static const String chapter3Title = '第三章 · 名扬江湖';
@@ -387,6 +392,8 @@ class UiStrings {
   static const String stageListEmpty = '该章暂无关卡';
 
   static String chapterRouteNodeLabel(int chapterIndex) => '第$chapterIndex章';
+
+  static String mainlineRouteStageNode(int stageIndex) => '$stageIndex';
 
   /// 章节标题路由：按 chapterIndex 返回对应中文标题。
   static String chapterTitle(int chapterIndex) {
