@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
@@ -59,20 +60,28 @@ class ChapterListScreen extends ConsumerWidget {
             ),
           ),
           data: (progress) {
+            final chapterStatuses = {
+              for (final ch in _chapters)
+                ch: _statusFor(progress: progress, chapterIndex: ch),
+            };
             return ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               children: [
                 _ChapterRouteMap(
-                  statuses: {
+                  statuses: chapterStatuses,
+                  stagesByChapter: {
                     for (final ch in _chapters)
-                      ch: _statusFor(progress: progress, chapterIndex: ch),
+                      ch: MainlineProgressService.availableStages(
+                        progress: progress,
+                        chapterIndex: ch,
+                      ),
                   },
                 ),
                 const SizedBox(height: 12),
                 for (final ch in _chapters)
                   _ChapterCardShell(
                     chapterIndex: ch,
-                    status: _statusFor(progress: progress, chapterIndex: ch),
+                    status: chapterStatuses[ch]!,
                   ),
               ],
             );
@@ -142,9 +151,13 @@ class _ChapterCardShell extends StatelessWidget {
 }
 
 class _ChapterRouteMap extends StatelessWidget {
-  const _ChapterRouteMap({required this.statuses});
+  const _ChapterRouteMap({
+    required this.statuses,
+    required this.stagesByChapter,
+  });
 
   final Map<int, _ChapterStatus> statuses;
+  final Map<int, List<StageEntry>> stagesByChapter;
 
   @override
   Widget build(BuildContext context) {
@@ -154,24 +167,51 @@ class _ChapterRouteMap extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SectionHeader(UiStrings.mainlineRouteMapTitle),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              for (final entry in statuses.entries) ...[
-                Expanded(
-                  child: _RouteNode(
-                    chapterIndex: entry.key,
-                    status: entry.value,
-                  ),
-                ),
-                if (entry.key != statuses.keys.last)
-                  Container(
-                    width: 22,
-                    height: 2,
-                    color: WuxiaUi.ink.withValues(alpha: 0.28),
-                  ),
-              ],
-            ],
+          const SizedBox(height: 6),
+          const Text(
+            UiStrings.mainlineRouteMapSubtitle,
+            style: TextStyle(
+              color: WuxiaUi.ink2,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 14),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 1040;
+              final entries = statuses.entries.toList(growable: false);
+              final route = Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  for (var i = 0; i < entries.length; i++) ...[
+                    if (compact)
+                      SizedBox(
+                        width: 196,
+                        child: _RouteChapterPanel(
+                          chapterIndex: entries[i].key,
+                          status: entries[i].value,
+                          stages: stagesByChapter[entries[i].key] ?? const [],
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: _RouteChapterPanel(
+                          chapterIndex: entries[i].key,
+                          status: entries[i].value,
+                          stages: stagesByChapter[entries[i].key] ?? const [],
+                        ),
+                      ),
+                    if (i != entries.length - 1) const _RouteConnector(),
+                  ],
+                ],
+              );
+              if (!compact) return route;
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: route,
+              );
+            },
           ),
         ],
       ),
@@ -179,54 +219,274 @@ class _ChapterRouteMap extends StatelessWidget {
   }
 }
 
-class _RouteNode extends StatelessWidget {
-  const _RouteNode({required this.chapterIndex, required this.status});
-
-  final int chapterIndex;
-  final _ChapterStatus status;
+class _RouteConnector extends StatelessWidget {
+  const _RouteConnector();
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (status) {
+    return SizedBox(
+      width: 18,
+      child: Center(
+        child: Container(
+          height: 2,
+          decoration: BoxDecoration(
+            color: WuxiaUi.ink.withValues(alpha: 0.28),
+            borderRadius: BorderRadius.circular(1),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RouteChapterPanel extends StatelessWidget {
+  const _RouteChapterPanel({
+    required this.chapterIndex,
+    required this.status,
+    required this.stages,
+  });
+
+  final int chapterIndex;
+  final _ChapterStatus status;
+  final List<StageEntry> stages;
+
+  @override
+  Widget build(BuildContext context) {
+    final locked = status == _ChapterStatus.locked;
+    final active = status == _ChapterStatus.inProgress;
+    final borderColor = switch (status) {
       _ChapterStatus.cleared => WuxiaColors.hpHigh,
       _ChapterStatus.inProgress => WuxiaColors.resultHighlight,
       _ChapterStatus.locked => WuxiaUi.muted,
     };
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.18),
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: color, width: 1.5),
+
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 160),
+      opacity: locked ? 0.58 : 1,
+      child: Container(
+        height: 162,
+        decoration: BoxDecoration(
+          color: WuxiaUi.paper.withValues(alpha: locked ? 0.42 : 0.72),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: borderColor.withValues(alpha: active ? 0.95 : 0.58),
+            width: active ? 1.5 : 1,
           ),
-          alignment: Alignment.center,
-          child: Text(
-            '$chapterIndex',
-            style: TextStyle(
-              color: color,
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: active ? 0.24 : 0.14),
+              blurRadius: active ? 10 : 5,
+              offset: const Offset(0, 3),
             ),
-          ),
+          ],
         ),
-        const SizedBox(height: 6),
-        Text(
-          UiStrings.chapterRouteNodeLabel(chapterIndex),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: status == _ChapterStatus.locked
-                ? WuxiaUi.muted
-                : WuxiaUi.ink,
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-          ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: 82,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    chapterCoverPath(chapterIndex),
+                    fit: BoxFit.cover,
+                    errorBuilder: wuxiaAssetErrorBuilder(
+                      () => Container(color: WuxiaColors.avatarFill),
+                    ),
+                  ),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.10),
+                          Colors.black.withValues(alpha: 0.62),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 10,
+                    right: 10,
+                    bottom: 8,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          UiStrings.chapterRouteNodeLabel(chapterIndex),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          UiStrings.chapterTitle(chapterIndex),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: _RouteStatusStamp(status: status),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        for (var i = 0; i < stages.length; i++) ...[
+                          Expanded(
+                            child: _RouteStageNode(
+                              stageIndex: i + 1,
+                              entry: stages[i],
+                              chapterLocked: locked,
+                            ),
+                          ),
+                          if (i != stages.length - 1)
+                            Container(
+                              width: 8,
+                              height: 1.5,
+                              color: WuxiaUi.ink.withValues(alpha: 0.22),
+                            ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        UiStrings.chapterHint(chapterIndex),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: locked ? WuxiaUi.muted : WuxiaUi.ink2,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+}
+
+class _RouteStatusStamp extends StatelessWidget {
+  const _RouteStatusStamp({required this.status});
+
+  final _ChapterStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color) = switch (status) {
+      _ChapterStatus.cleared => (
+        UiStrings.mainlineRouteCleared,
+        WuxiaColors.hpHigh,
+      ),
+      _ChapterStatus.inProgress => (
+        UiStrings.mainlineRouteCurrent,
+        WuxiaColors.resultHighlight,
+      ),
+      _ChapterStatus.locked => (UiStrings.mainlineRouteLocked, WuxiaUi.muted),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.42),
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(color: color.withValues(alpha: 0.8)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _RouteStageNode extends StatelessWidget {
+  const _RouteStageNode({
+    required this.stageIndex,
+    required this.entry,
+    required this.chapterLocked,
+  });
+
+  final int stageIndex;
+  final StageEntry entry;
+  final bool chapterLocked;
+
+  @override
+  Widget build(BuildContext context) {
+    final status = chapterLocked ? StageStatus.locked : entry.status;
+    final boss = entry.def.isBossStage;
+    final color = switch (status) {
+      StageStatus.cleared => WuxiaColors.hpHigh,
+      StageStatus.available => WuxiaColors.resultHighlight,
+      StageStatus.locked => WuxiaUi.muted,
+    };
+    final fill = color.withValues(
+      alpha: status == StageStatus.locked ? 0.10 : 0.20,
+    );
+    final borderWidth = status == StageStatus.available ? 1.6 : 1.0;
+
+    final marker = Container(
+      width: boss ? 26 : 23,
+      height: boss ? 26 : 23,
+      decoration: BoxDecoration(
+        color: fill,
+        borderRadius: BorderRadius.circular(boss ? 3 : 12),
+        border: Border.all(color: color, width: borderWidth),
+      ),
+      alignment: Alignment.center,
+      child: boss
+          ? Icon(Icons.military_tech, size: 14, color: color)
+          : Text(
+              UiStrings.mainlineRouteStageNode(stageIndex),
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+    );
+
+    return Tooltip(
+      message:
+          '${entry.def.name}${boss ? ' · ${UiStrings.mainlineRouteBoss}' : ''}',
+      child: Center(
+        child: boss ? Transform.rotate(angle: 0.785, child: marker) : marker,
+      ),
     );
   }
 }

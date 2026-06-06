@@ -50,12 +50,15 @@ void main() {
     await pumpScreen(tester, mkProgress());
 
     expect(find.text(UiStrings.mainlineRouteMapTitle), findsOneWidget);
-    expect(find.text(UiStrings.chapter1Title), findsOneWidget);
-    expect(find.text(UiStrings.chapter2Title), findsOneWidget);
-    expect(find.text(UiStrings.chapter3Title), findsOneWidget);
-    expect(find.text(UiStrings.chapter4Title), findsOneWidget);
-    expect(find.text(UiStrings.chapter5Title), findsOneWidget);
-    expect(find.text(UiStrings.chapter6Title), findsOneWidget);
+    expect(find.text(UiStrings.mainlineRouteMapSubtitle), findsOneWidget);
+    expect(find.text(UiStrings.chapter1Title), findsNWidgets(2));
+    expect(find.text(UiStrings.chapter2Title), findsNWidgets(2));
+    expect(find.text(UiStrings.chapter3Title), findsNWidgets(2));
+    expect(find.text(UiStrings.chapter4Title), findsNWidgets(2));
+    expect(find.text(UiStrings.chapter5Title), findsNWidgets(2));
+    expect(find.text(UiStrings.chapter6Title), findsNWidgets(2));
+    expect(find.text(UiStrings.mainlineRouteCurrent), findsOneWidget);
+    expect(find.text(UiStrings.mainlineRouteLocked), findsNWidgets(5));
 
     expect(
       find.text(UiStrings.chapterStatusInProgress),
