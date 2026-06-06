@@ -4,7 +4,10 @@ import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../application/tower_progress_service.dart';
+
+enum TowerFloorStepSide { left, right }
 
 /// 爬塔层卡片（Phase 3 T42）。
 ///
@@ -20,6 +23,7 @@ class TowerFloorCard extends StatelessWidget {
     super.key,
     required this.entry,
     required this.onChallenge,
+    this.stepSide = TowerFloorStepSide.left,
   });
 
   /// 层定义 + 解锁状态。
@@ -28,6 +32,9 @@ class TowerFloorCard extends StatelessWidget {
   /// 发起挑战回调（available 直接调用；cleared 用户确认重打后调用）。
   /// 屏幕层据此 push 进入 TowerEntryFlow。
   final VoidCallback onChallenge;
+
+  /// 宽屏塔身布局中的石阶方向；窄屏会自动退回单列。
+  final TowerFloorStepSide stepSide;
 
   @override
   Widget build(BuildContext context) {
@@ -38,102 +45,43 @@ class TowerFloorCard extends StatelessWidget {
     final isCleared = status == TowerFloorStatus.cleared;
     final isAvailable = status == TowerFloorStatus.available;
 
-    // Boss 层 outline 颜色优先；普通层按状态取色
-    final Color borderColor;
-    final double borderWidth;
-    if (def.isBoss) {
-      borderColor = def.bossKind == TowerBossKind.minor
-          ? WuxiaColors.popupCritical // 金
-          : WuxiaColors.yinRou; // 紫
-      borderWidth = 2.0;
-    } else if (isCleared) {
-      borderColor = WuxiaColors.hpHigh;
-      borderWidth = 1.0;
-    } else if (isAvailable) {
-      borderColor = WuxiaColors.resultHighlight;
-      borderWidth = 1.0;
-    } else {
-      borderColor = WuxiaColors.border;
-      borderWidth = 1.0;
-    }
-
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: isLocked ? null : () => _handleTap(context),
-          borderRadius: BorderRadius.circular(6),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: isLocked ? WuxiaColors.avatarFill : WuxiaColors.panel,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: borderColor, width: borderWidth),
-            ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final useTimeline = constraints.maxWidth >= 760;
+          final plaque = _FloorPlaque(
+            entry: entry,
+            isLocked: isLocked,
+            isCleared: isCleared,
+            isAvailable: isAvailable,
+            onTap: isLocked ? null : () => _handleTap(context),
+          );
+          if (!useTimeline) {
+            return plaque;
+          }
+
+          final isLeft = stepSide == TowerFloorStepSide.left;
+          return SizedBox(
+            height: def.isBoss ? 92 : 82,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            UiStrings.towerFloorLabel(def.floorIndex),
-                            style: TextStyle(
-                              color: isLocked
-                                  ? WuxiaColors.textMuted
-                                  : WuxiaColors.textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          _SmallChip(
-                            label: UiStrings.towerRequiredRealm(
-                              EnumL10n.realmTier(def.requiredRealm),
-                            ),
-                            color: isLocked
-                                ? WuxiaColors.textMuted
-                                : WuxiaColors.textSecondary,
-                          ),
-                          if (def.isBoss) ...[
-                            const SizedBox(width: 6),
-                            _SmallChip(
-                              label: def.bossKind == TowerBossKind.minor
-                                  ? UiStrings.towerBossMinor
-                                  : UiStrings.towerBossMajor,
-                              color: def.bossKind == TowerBossKind.minor
-                                  ? WuxiaColors.popupCritical
-                                  : WuxiaColors.yinRou,
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isLocked
-                            ? UiStrings.towerFloorLocked
-                            : UiStrings.towerFloorEnemies(def.enemyTeam.length),
-                        style: const TextStyle(
-                          color: WuxiaColors.textMuted,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
+                  child: isLeft
+                      ? Align(alignment: Alignment.centerRight, child: plaque)
+                      : const SizedBox.shrink(),
                 ),
-                const SizedBox(width: 8),
-                _StatusBadge(
-                  status: status,
-                  isBoss: def.isBoss,
-                  isAvailable: isAvailable,
+                _TowerStepMarker(entry: entry),
+                Expanded(
+                  child: isLeft
+                      ? const SizedBox.shrink()
+                      : Align(alignment: Alignment.centerLeft, child: plaque),
                 ),
               ],
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -169,67 +117,342 @@ class TowerFloorCard extends StatelessWidget {
   }
 }
 
+class _FloorPlaque extends StatelessWidget {
+  const _FloorPlaque({
+    required this.entry,
+    required this.isLocked,
+    required this.isCleared,
+    required this.isAvailable,
+    required this.onTap,
+  });
+
+  final TowerFloorEntry entry;
+  final bool isLocked;
+  final bool isCleared;
+  final bool isAvailable;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final def = entry.def;
+    final accent = _accentFor(entry);
+    final borderWidth = def.isBoss || isAvailable ? 1.8 : 1.0;
+    final titleColor = isLocked
+        ? WuxiaColors.textMuted
+        : WuxiaColors.textPrimary;
+    final fillTop = isLocked
+        ? const Color(0xFF1A1C1F)
+        : def.isBoss
+        ? WuxiaColors.panel
+        : const Color(0xFF20262B);
+    final fillBottom = isLocked
+        ? const Color(0xFF151618)
+        : const Color(0xFF171B20);
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 720),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(7),
+          child: Container(
+            constraints: BoxConstraints(minHeight: def.isBoss ? 86 : 76),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(7),
+              border: Border.all(color: accent, width: borderWidth),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  fillTop.withValues(alpha: isLocked ? 0.74 : 1),
+                  fillBottom.withValues(alpha: isLocked ? 0.82 : 1),
+                ],
+              ),
+              boxShadow: isAvailable
+                  ? [
+                      BoxShadow(
+                        color: accent.withValues(alpha: 0.22),
+                        blurRadius: 18,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            accent.withValues(alpha: def.isBoss ? 0.16 : 0.08),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: def.isBoss ? 7 : 4,
+                      color: accent.withValues(alpha: isLocked ? 0.34 : 0.82),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 12, 14, 12),
+                    child: Row(
+                      children: [
+                        _FloorSeal(entry: entry, accent: accent),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      UiStrings.towerFloorLabel(def.floorIndex),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: titleColor,
+                                        fontSize: def.isBoss ? 16 : 14,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _SmallChip(
+                                    label: UiStrings.towerRequiredRealm(
+                                      EnumL10n.realmTier(def.requiredRealm),
+                                    ),
+                                    color: isLocked
+                                        ? WuxiaColors.textMuted
+                                        : WuxiaColors.textSecondary,
+                                  ),
+                                  if (def.isBoss) ...[
+                                    const SizedBox(width: 6),
+                                    _SmallChip(
+                                      label: def.bossKind == TowerBossKind.minor
+                                          ? UiStrings.towerBossMinor
+                                          : UiStrings.towerBossMajor,
+                                      color: accent,
+                                      filled: true,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                isLocked
+                                    ? UiStrings.towerFloorLocked
+                                    : UiStrings.towerFloorEnemies(
+                                        def.enemyTeam.length,
+                                      ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: isLocked
+                                      ? WuxiaColors.textMuted
+                                      : WuxiaColors.textSecondary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        _StatusBadge(status: entry.status),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _accentFor(TowerFloorEntry entry) {
+    if (entry.def.bossKind == TowerBossKind.major) return WuxiaColors.yinRou;
+    if (entry.def.bossKind == TowerBossKind.minor) return WuxiaUi.gold;
+    return switch (entry.status) {
+      TowerFloorStatus.cleared => WuxiaColors.hpHigh,
+      TowerFloorStatus.available => WuxiaColors.resultHighlight,
+      TowerFloorStatus.locked => WuxiaColors.border,
+    };
+  }
+}
+
+class _TowerStepMarker extends StatelessWidget {
+  const _TowerStepMarker({required this.entry});
+
+  final TowerFloorEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = _markerAccent(entry);
+    final isBoss = entry.def.isBoss;
+    return SizedBox(
+      width: 66,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            top: 0,
+            bottom: 0,
+            child: Container(
+              width: isBoss ? 4 : 2,
+              decoration: BoxDecoration(
+                color: WuxiaUi.paper2.withValues(alpha: 0.32),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Container(
+            width: isBoss ? 42 : 32,
+            height: isBoss ? 42 : 32,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: WuxiaColors.background,
+              borderRadius: BorderRadius.circular(isBoss ? 8 : 16),
+              border: Border.all(color: accent, width: isBoss ? 2 : 1.5),
+              boxShadow: entry.status == TowerFloorStatus.available
+                  ? [
+                      BoxShadow(
+                        color: accent.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Text(
+              '${entry.def.floorIndex}',
+              style: TextStyle(
+                color: accent,
+                fontSize: isBoss ? 13 : 11,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _markerAccent(TowerFloorEntry entry) {
+    if (entry.def.bossKind == TowerBossKind.major) return WuxiaColors.yinRou;
+    if (entry.def.bossKind == TowerBossKind.minor) return WuxiaUi.gold;
+    return switch (entry.status) {
+      TowerFloorStatus.cleared => WuxiaColors.hpHigh,
+      TowerFloorStatus.available => WuxiaColors.resultHighlight,
+      TowerFloorStatus.locked => WuxiaUi.muted,
+    };
+  }
+}
+
+class _FloorSeal extends StatelessWidget {
+  const _FloorSeal({required this.entry, required this.accent});
+
+  final TowerFloorEntry entry;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final isLocked = entry.status == TowerFloorStatus.locked;
+    return Container(
+      width: 38,
+      height: 38,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: isLocked ? 0.08 : 0.16),
+        borderRadius: BorderRadius.circular(entry.def.isBoss ? 5 : 19),
+        border: Border.all(color: accent.withValues(alpha: isLocked ? 0.5 : 1)),
+      ),
+      child: Text(
+        entry.def.bossKind == TowerBossKind.major
+            ? '魁'
+            : entry.def.bossKind == TowerBossKind.minor
+            ? '关'
+            : '${entry.def.floorIndex}',
+        style: TextStyle(
+          color: accent.withValues(alpha: isLocked ? 0.68 : 1),
+          fontSize: entry.def.isBoss ? 15 : 13,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
 class _SmallChip extends StatelessWidget {
-  const _SmallChip({required this.label, required this.color});
+  const _SmallChip({
+    required this.label,
+    required this.color,
+    this.filled = false,
+  });
 
   final String label;
   final Color color;
+  final bool filled;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
+        color: filled ? color.withValues(alpha: 0.16) : null,
         border: Border.all(color: color.withValues(alpha: 0.5)),
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(
-        label,
-        style: TextStyle(color: color, fontSize: 11),
-      ),
+      child: Text(label, style: TextStyle(color: color, fontSize: 11)),
     );
   }
 }
 
 class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({
-    required this.status,
-    required this.isBoss,
-    required this.isAvailable,
-  });
+  const _StatusBadge({required this.status});
 
   final TowerFloorStatus status;
-  final bool isBoss;
-  final bool isAvailable;
 
   @override
   Widget build(BuildContext context) {
     return switch (status) {
       TowerFloorStatus.cleared => const Icon(
-          Icons.check_circle,
-          color: WuxiaColors.hpHigh,
-          size: 20,
-        ),
+        Icons.check_circle,
+        color: WuxiaColors.hpHigh,
+        size: 20,
+      ),
       TowerFloorStatus.available => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
-            color: WuxiaColors.resultHighlight.withValues(alpha: 0.18),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Text(
-            UiStrings.towerFloorChallenge,
-            style: TextStyle(
-              color: WuxiaColors.resultHighlight,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: WuxiaColors.resultHighlight.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Text(
+          UiStrings.towerFloorChallenge,
+          style: TextStyle(
+            color: WuxiaColors.resultHighlight,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
           ),
         ),
+      ),
       TowerFloorStatus.locked => const Icon(
-          Icons.lock,
-          color: WuxiaColors.textMuted,
-          size: 18,
-        ),
+        Icons.lock,
+        color: WuxiaColors.textMuted,
+        size: 18,
+      ),
     };
   }
 }
