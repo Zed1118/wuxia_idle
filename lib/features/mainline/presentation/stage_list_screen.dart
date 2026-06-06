@@ -51,41 +51,27 @@ class StageListScreen extends ConsumerWidget {
                 ),
               );
             }
-            return Column(
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               children: [
-                // 关卡列表顶部章节封面(出版美术 §5.3「关卡场景感」):
-                // 复用 chapterCoverPath,无图 errorBuilder shrink 折叠。
-                Image.asset(
-                  chapterCoverPath(chapterIndex),
-                  height: 120,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    itemCount: entries.length,
-                    itemBuilder: (ctx, i) {
-                final entry = entries[i];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _StageRow(
-                    def: entry.def,
-                    status: entry.status,
-                    onTap: entry.status == StageStatus.locked
-                        ? null
-                        : () => runStageFlow(
+                _StageJourneyMap(chapterIndex: chapterIndex, entries: entries),
+                const SizedBox(height: 12),
+                for (var i = 0; i < entries.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _StageRow(
+                      stageIndex: i + 1,
+                      def: entries[i].def,
+                      status: entries[i].status,
+                      onTap: entries[i].status == StageStatus.locked
+                          ? null
+                          : () => runStageFlow(
                               context: context,
                               ref: ref,
-                              stage: entry.def,
+                              stage: entries[i].def,
                             ),
+                    ),
                   ),
-                );
-              },
-                  ),
-                ),
               ],
             );
           },
@@ -95,13 +81,189 @@ class StageListScreen extends ConsumerWidget {
   }
 }
 
+class _StageJourneyMap extends StatelessWidget {
+  const _StageJourneyMap({required this.chapterIndex, required this.entries});
+
+  final int chapterIndex;
+  final List<StageEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 214,
+      decoration: BoxDecoration(
+        color: WuxiaColors.panel,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: WuxiaColors.border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            chapterCoverPath(chapterIndex),
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => Container(color: WuxiaColors.avatarFill),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.18),
+                  Colors.black.withValues(alpha: 0.72),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            UiStrings.stageListJourneyTitle,
+                            style: TextStyle(
+                              color: WuxiaColors.resultHighlight,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            UiStrings.chapterTitle(chapterIndex),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: WuxiaColors.textPrimary,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Flexible(
+                      child: Text(
+                        UiStrings.chapterHint(chapterIndex),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          color: WuxiaColors.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Row(
+                  children: [
+                    for (var i = 0; i < entries.length; i++) ...[
+                      Expanded(
+                        child: _StageJourneyNode(
+                          stageIndex: i + 1,
+                          entry: entries[i],
+                        ),
+                      ),
+                      if (i != entries.length - 1)
+                        Container(
+                          width: 28,
+                          height: 2,
+                          color: WuxiaColors.textMuted.withValues(alpha: 0.45),
+                        ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StageJourneyNode extends StatelessWidget {
+  const _StageJourneyNode({required this.stageIndex, required this.entry});
+
+  final int stageIndex;
+  final StageEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final status = entry.status;
+    final boss = entry.def.isBossStage;
+    final color = switch (status) {
+      StageStatus.cleared => WuxiaColors.hpHigh,
+      StageStatus.available => WuxiaColors.resultHighlight,
+      StageStatus.locked => WuxiaColors.textMuted,
+    };
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: boss ? 46 : 38,
+          height: boss ? 46 : 38,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.34),
+            borderRadius: BorderRadius.circular(boss ? 6 : 19),
+            border: Border.all(
+              color: color,
+              width: status == StageStatus.available ? 2 : 1.4,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: boss
+              ? Icon(Icons.military_tech, color: color, size: 22)
+              : Text(
+                  UiStrings.mainlineRouteStageNode(stageIndex),
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          boss
+              ? UiStrings.stageListBoss
+              : UiStrings.stageListJourneyNodeLabel(stageIndex),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: status == StageStatus.locked
+                ? WuxiaColors.textMuted
+                : WuxiaColors.textPrimary,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _StageRow extends StatelessWidget {
   const _StageRow({
+    required this.stageIndex,
     required this.def,
     required this.status,
     required this.onTap,
   });
 
+  final int stageIndex;
   final StageDef def;
   final StageStatus status;
   final VoidCallback? onTap;
@@ -110,6 +272,8 @@ class _StageRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final locked = status == StageStatus.locked;
     final cleared = status == StageStatus.cleared;
+    final available = status == StageStatus.available;
+    final boss = def.isBossStage;
     final borderColor = cleared
         ? WuxiaColors.hpHigh
         : (locked ? WuxiaColors.border : WuxiaColors.resultHighlight);
@@ -121,24 +285,57 @@ class _StageRow extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: locked ? WuxiaColors.avatarFill : WuxiaColors.panel,
-            border: Border(left: BorderSide(color: borderColor, width: 3)),
+            color: locked
+                ? WuxiaColors.avatarFill
+                : WuxiaColors.panel.withValues(alpha: boss ? 0.96 : 0.88),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: boss
+                  ? WuxiaColors.resultHighlight.withValues(alpha: 0.55)
+                  : WuxiaColors.border.withValues(alpha: 0.6),
+            ),
           ),
           child: Row(
             children: [
+              _StageMarker(
+                stageIndex: stageIndex,
+                boss: boss,
+                color: borderColor,
+                active: available,
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      def.name,
-                      style: TextStyle(
-                        color: locked
-                            ? WuxiaColors.textMuted
-                            : WuxiaColors.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            def.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: locked
+                                  ? WuxiaColors.textMuted
+                                  : WuxiaColors.textPrimary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        if (boss) ...[
+                          const SizedBox(width: 8),
+                          const Text(
+                            UiStrings.stageListBoss,
+                            style: TextStyle(
+                              color: WuxiaColors.resultHighlight,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -162,8 +359,45 @@ class _StageRow extends StatelessWidget {
 
   String _subtitleFor(StageDef def, StageStatus status) {
     if (status == StageStatus.locked) return UiStrings.stageListPrevHint;
-    final enemyCount = def.enemyTeam.length;
-    return '$enemyCount 名敌人';
+    return UiStrings.stageListEnemyCount(def.enemyTeam.length);
+  }
+}
+
+class _StageMarker extends StatelessWidget {
+  const _StageMarker({
+    required this.stageIndex,
+    required this.boss,
+    required this.color,
+    required this.active,
+  });
+
+  final int stageIndex;
+  final bool boss;
+  final Color color;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: active ? 0.18 : 0.10),
+        borderRadius: BorderRadius.circular(boss ? 6 : 19),
+        border: Border.all(color: color, width: active ? 2 : 1.3),
+      ),
+      alignment: Alignment.center,
+      child: boss
+          ? Icon(Icons.military_tech, color: color, size: 20)
+          : Text(
+              UiStrings.mainlineRouteStageNode(stageIndex),
+              style: TextStyle(
+                color: color,
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+    );
   }
 }
 
@@ -176,33 +410,33 @@ class _StageStatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (status) {
       StageStatus.cleared => const Text(
-          UiStrings.stageListCleared,
+        UiStrings.stageListCleared,
+        style: TextStyle(
+          color: WuxiaColors.hpHigh,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      StageStatus.available => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: WuxiaColors.resultHighlight.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Text(
+          UiStrings.stageListAvailable,
           style: TextStyle(
-            color: WuxiaColors.hpHigh,
-            fontSize: 13,
+            color: WuxiaColors.resultHighlight,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
         ),
-      StageStatus.available => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: WuxiaColors.resultHighlight.withValues(alpha: 0.18),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Text(
-            UiStrings.stageListAvailable,
-            style: TextStyle(
-              color: WuxiaColors.resultHighlight,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
+      ),
       StageStatus.locked => const Icon(
-          Icons.lock,
-          color: WuxiaColors.textMuted,
-          size: 18,
-        ),
+        Icons.lock,
+        color: WuxiaColors.textMuted,
+        size: 18,
+      ),
     };
   }
 }
