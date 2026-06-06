@@ -36,23 +36,29 @@ class PlaqueButton extends StatelessWidget {
     final borderColor = primary ? const Color(0xFF491510) : WuxiaUi.woodDark;
     return Opacity(
       opacity: disabled ? 0.4 : 1.0,
-      child: InkWell(
-        onTap: disabled ? null : onTap,
-        borderRadius: BorderRadius.circular(4),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: gradient,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: borderColor, width: WuxiaUi.borderWidth),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: fg,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: disabled ? null : onTap,
+          borderRadius: BorderRadius.circular(4),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+            decoration: BoxDecoration(
+              gradient: gradient,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: borderColor,
+                width: WuxiaUi.borderWidth,
+              ),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: fg,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
             ),
           ),
         ),

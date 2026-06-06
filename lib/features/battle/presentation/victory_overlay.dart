@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../domain/battle_state.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 /// 胜负仪式全屏 overlay(出版美术 B1)。
 /// 暗幕 + 印章符 + 金「胜」/绛红「败」大题字 + 副标题 + 统计 + 继续按钮。
@@ -27,9 +28,13 @@ class VictoryOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = _isVictory ? WuxiaColors.resultHighlight : WuxiaColors.gangMeng;
+    final accent = _isVictory
+        ? WuxiaColors.resultHighlight
+        : WuxiaColors.gangMeng;
     final title = _isVictory ? UiStrings.victoryTitle : UiStrings.defeatTitle;
-    final subtitle = _isVictory ? UiStrings.victorySubtitle : UiStrings.defeatSubtitle;
+    final subtitle = _isVictory
+        ? UiStrings.victorySubtitle
+        : UiStrings.defeatSubtitle;
 
     return Container(
       // P0-2：径向 vignette 暗角，中心淡 → 四周暗，战场单位仍可读（不整屏压暗）。
@@ -41,51 +46,106 @@ class VictoryOverlay extends StatelessWidget {
         ),
       ),
       alignment: Alignment.center,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 印章符
-          Transform.rotate(
-            angle: -0.08,
-            child: Container(
-              width: 44, height: 44,
-              decoration: BoxDecoration(
-                color: WuxiaColors.gangMeng,
-                borderRadius: BorderRadius.circular(6),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 460),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 印章符
+            Transform.rotate(
+              angle: -0.08,
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Image.asset(
+                      WuxiaUi.sealRed,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: WuxiaColors.gangMeng,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      UiStrings.sealGlyph,
+                      style: TextStyle(
+                        color: WuxiaColors.textPrimary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              alignment: Alignment.center,
-              child: const Text(UiStrings.sealGlyph,
-                style: TextStyle(color: WuxiaColors.textPrimary,
-                  fontSize: 22, fontWeight: FontWeight.bold)),
             ),
-          ),
-          const SizedBox(height: 20),
-          // 大题字
-          Text(title, style: TextStyle(
-            color: accent, fontSize: 96, fontWeight: FontWeight.bold,
-            shadows: const [Shadow(blurRadius: 12, color: Color(0xCC000000), offset: Offset(2, 3))],
-          )),
-          const SizedBox(height: 8),
-          Text(subtitle, style: TextStyle(color: accent, fontSize: 22, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 16),
-          Container(width: 180, height: 1, color: WuxiaColors.border),
-          const SizedBox(height: 16),
-          Text(UiStrings.battleSummary(totalDamage, critCount, totalTicks),
-            style: const TextStyle(color: WuxiaColors.textSecondary, fontSize: 14)),
-          const SizedBox(height: 28),
-          // 继续按钮(金框)
-          OutlinedButton(
-            onPressed: onContinue,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: accent,
-              side: BorderSide(color: accent, width: 1.5),
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            const SizedBox(height: 16),
+            // 大题字
+            Text(
+              title,
+              style: TextStyle(
+                color: accent,
+                fontSize: 96,
+                fontWeight: FontWeight.bold,
+                shadows: const [
+                  Shadow(
+                    blurRadius: 12,
+                    color: Color(0xCC000000),
+                    offset: Offset(2, 3),
+                  ),
+                ],
+              ),
             ),
-            child: const Text(UiStrings.battleContinue,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          ),
-        ],
+            const SizedBox(height: 6),
+            PaperPanel(
+              padding: const EdgeInsets.fromLTRB(22, 16, 22, 18),
+              paperOpacity: 0.22,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: accent,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Image.asset(
+                    WuxiaUi.inkDivider,
+                    height: 12,
+                    fit: BoxFit.fill,
+                    errorBuilder: (_, _, _) => Container(
+                      width: 180,
+                      height: 1,
+                      color: WuxiaUi.ink.withValues(alpha: 0.42),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    UiStrings.battleSummary(totalDamage, critCount, totalTicks),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: WuxiaUi.ink,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  PlaqueButton(
+                    label: UiStrings.battleContinue,
+                    primary: true,
+                    onTap: onContinue,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
