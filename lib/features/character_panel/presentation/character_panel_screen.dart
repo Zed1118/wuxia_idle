@@ -780,22 +780,19 @@ class _EquipmentSlotTile extends ConsumerWidget {
     final slotLabel = EnumL10n.equipmentSlot(slot);
     if (equipmentId == null) {
       return _EquipmentSlotShell(
-        borderColor: WuxiaColors.buttonDisabled,
+        borderColor: WuxiaUi.woodDark,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               slotLabel,
-              style: const TextStyle(
-                color: WuxiaColors.textMuted,
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
             ),
             const SizedBox(height: 4),
             const Text(
               UiStrings.slotEmpty,
               style: TextStyle(
-                color: WuxiaColors.textMuted,
+                color: WuxiaUi.ink,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -821,11 +818,11 @@ class _EquipmentSlotTile extends ConsumerWidget {
       data: (eq) {
         if (eq == null) {
           return _EquipmentSlotShell(
-            borderColor: WuxiaColors.buttonDisabled,
+            borderColor: WuxiaUi.woodDark,
             child: Center(
               child: Text(
                 slotLabel,
-                style: const TextStyle(color: WuxiaColors.textMuted),
+                style: const TextStyle(color: WuxiaUi.muted),
               ),
             ),
           );
@@ -857,10 +854,7 @@ class _EquipmentSlotTile extends ConsumerWidget {
                 children: [
                   Text(
                     EnumL10n.equipmentSlot(eq.slot),
-                    style: const TextStyle(
-                      color: WuxiaColors.textSecondary,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
                   ),
                   const Spacer(),
                   Text(
@@ -876,7 +870,11 @@ class _EquipmentSlotTile extends ConsumerWidget {
               const SizedBox(height: 6),
               Text(
                 EnumL10n.equipmentTier(eq.tier),
-                style: TextStyle(color: tierColor, fontSize: 13),
+                style: TextStyle(
+                  color: tierColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 4),
               // W12 fix: 视觉验收 debug 字段——battleCount 数字直显
@@ -886,18 +884,12 @@ class _EquipmentSlotTile extends ConsumerWidget {
                 children: [
                   Text(
                     EnumL10n.resonanceStage(resonance),
-                    style: const TextStyle(
-                      color: WuxiaColors.textSecondary,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: WuxiaUi.ink, fontSize: 12),
                   ),
                   const Spacer(),
                   Text(
                     '#${eq.battleCount}',
-                    style: const TextStyle(
-                      color: WuxiaColors.textMuted,
-                      fontSize: 11,
-                    ),
+                    style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
                   ),
                 ],
               ),
@@ -1173,18 +1165,18 @@ class _AssistTechniqueTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (techniqueId == null) {
       return const _SlotShell(
-        borderColor: WuxiaColors.buttonDisabled,
+        borderColor: WuxiaUi.woodDark,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               UiStrings.techniqueRoleAssist,
-              style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+              style: TextStyle(color: WuxiaUi.muted, fontSize: 12),
             ),
             SizedBox(height: 4),
             Text(
               UiStrings.techniqueEmpty,
-              style: TextStyle(color: WuxiaColors.textMuted, fontSize: 13),
+              style: TextStyle(color: WuxiaUi.ink, fontSize: 13),
             ),
           ],
         ),
@@ -1203,11 +1195,11 @@ class _AssistTechniqueTile extends ConsumerWidget {
       data: (t) {
         if (t == null) {
           return const _SlotShell(
-            borderColor: WuxiaColors.buttonDisabled,
+            borderColor: WuxiaUi.woodDark,
             child: Center(
               child: Text(
                 UiStrings.techniqueEmpty,
-                style: TextStyle(color: WuxiaColors.textMuted),
+                style: TextStyle(color: WuxiaUi.muted),
               ),
             ),
           );
@@ -1220,10 +1212,7 @@ class _AssistTechniqueTile extends ConsumerWidget {
             children: [
               const Text(
                 UiStrings.techniqueRoleAssist,
-                style: TextStyle(
-                  color: WuxiaColors.textSecondary,
-                  fontSize: 11,
-                ),
+                style: TextStyle(color: WuxiaUi.muted, fontSize: 11),
               ),
               const SizedBox(height: 4),
               Text(
@@ -1233,10 +1222,7 @@ class _AssistTechniqueTile extends ConsumerWidget {
               const SizedBox(height: 2),
               Text(
                 EnumL10n.cultivationLayer(t.cultivationLayer),
-                style: const TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: WuxiaUi.ink, fontSize: 12),
               ),
             ],
           ),
@@ -1585,15 +1571,33 @@ class _SlotShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 88,
-      padding: const EdgeInsets.all(8),
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: WuxiaColors.avatarFill,
+        color: WuxiaUi.panelFill,
+        borderRadius: BorderRadius.circular(WuxiaUi.radius),
         border: Border.all(color: borderColor, width: 1.5),
-        borderRadius: BorderRadius.circular(4),
       ),
-      child: child,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(WuxiaUi.radius),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.12,
+                child: Image.asset(
+                  WuxiaUi.paperBg,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 88,
+              child: Padding(padding: const EdgeInsets.all(8), child: child),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1608,15 +1612,40 @@ class _EquipmentSlotShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 144,
-      padding: const EdgeInsets.all(8),
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: WuxiaColors.avatarFill,
+        color: WuxiaUi.panelFill,
+        borderRadius: BorderRadius.circular(WuxiaUi.radius),
         border: Border.all(color: borderColor, width: 1.5),
-        borderRadius: BorderRadius.circular(4),
+        boxShadow: [
+          BoxShadow(
+            color: borderColor.withValues(alpha: 0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: child,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(WuxiaUi.radius),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.16,
+                child: Image.asset(
+                  WuxiaUi.paperBg,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 144,
+              child: Padding(padding: const EdgeInsets.all(8), child: child),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
