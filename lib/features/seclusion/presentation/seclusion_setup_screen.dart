@@ -7,6 +7,7 @@ import '../../../core/domain/enums.dart';
 import '../application/seclusion_service_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'active_retreat_screen.dart';
@@ -41,10 +42,8 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
   List<int> get _durations =>
       GameRepository.instance.numbers.retreat.durationHours;
 
-  double get _realmScale =>
-      GameRepository.instance.numbers.retreat.realmScaleFor(
-        widget.charRealmTier,
-      );
+  double get _realmScale => GameRepository.instance.numbers.retreat
+      .realmScaleFor(widget.charRealmTier);
 
   Future<void> _startRetreat() async {
     if (_isStarting) return;
@@ -104,105 +103,168 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 地图产出预览
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: WuxiaColors.panel,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: WuxiaColors.border),
-                ),
+              _MapHero(def: def),
+              const SizedBox(height: 16),
+              PaperPanel(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                child: _OutputPreview(def: def, scale: scale),
+              ),
+              const SizedBox(height: 18),
+              PaperPanel(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      '每小时预估产出（境界加成 ×${scale.toStringAsFixed(2)}）',
-                      style: const TextStyle(
-                        color: WuxiaColors.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
+                    const SectionHeader(UiStrings.seclusionSetupTitle),
                     const SizedBox(height: 8),
-                    _OutputRow(
-                      label: UiStrings.seclusionOutputMojianshi,
-                      value: (def.mojianshiPerHour * scale).toStringAsFixed(1),
+                    ..._durations.map(
+                      (h) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _DurationButton(
+                          hours: h,
+                          selected: _selectedHours == h,
+                          scale: scale,
+                          mojianshiPerHour: def.mojianshiPerHour,
+                          onTap: () => setState(() => _selectedHours = h),
+                        ),
+                      ),
                     ),
-                    _OutputRow(
-                      label: UiStrings.seclusionOutputExperience,
-                      value: (def.experiencePerHour * scale).toStringAsFixed(1),
-                    ),
-                    if (def.equipmentDropRate > 1.0)
-                      const _OutputRow(
-                        label: UiStrings.seclusionOutputEquipDrop,
-                        value: '+50%',
-                      ),
-                    if (def.techniqueLearnRate > 1.0)
-                      const _OutputRow(
-                        label: UiStrings.seclusionOutputTechniqueLearn,
-                        value: '+50%',
-                      ),
-                    if (def.internalForceGrowth > 1.0)
-                      const _OutputRow(
-                        label: UiStrings.seclusionOutputInternalForce,
-                        value: '+50%',
-                      ),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 24),
-
-              // 时长选择
-              const Text(
-                UiStrings.seclusionSetupTitle,
-                style: TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ..._durations.map(
-                (h) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _DurationButton(
-                    hours: h,
-                    selected: _selectedHours == h,
-                    scale: scale,
-                    mojianshiPerHour: def.mojianshiPerHour,
-                    onTap: () => setState(() => _selectedHours = h),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // 开始按钮
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isStarting ? null : _startRetreat,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: WuxiaColors.gangMeng,
-                    foregroundColor: WuxiaColors.textPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    disabledBackgroundColor: WuxiaColors.buttonDisabled,
-                  ),
-                  child: Text(
-                    _isStarting ? '请稍候…' : UiStrings.seclusionSetupStartButton,
-                    style: const TextStyle(fontSize: 16),
-                  ),
+              const SizedBox(height: 22),
+              Align(
+                alignment: Alignment.center,
+                child: PlaqueButton(
+                  label: _isStarting
+                      ? UiStrings.seclusionStarting
+                      : UiStrings.seclusionSetupStartButton,
+                  primary: true,
+                  disabled: _isStarting,
+                  onTap: _startRetreat,
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _MapHero extends StatelessWidget {
+  const _MapHero({required this.def});
+
+  final SeclusionMapDef def;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        height: 240,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _MapImage(path: def.imagePath),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.08),
+                    Colors.black.withValues(alpha: 0.68),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 18,
+              right: 18,
+              bottom: 18,
+              child: Text(
+                def.mapName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MapImage extends StatelessWidget {
+  const _MapImage({required this.path});
+
+  final String? path;
+
+  @override
+  Widget build(BuildContext context) {
+    if (path == null) return _fallback();
+    return Image.asset(
+      path!,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => _fallback(),
+    );
+  }
+
+  Widget _fallback() {
+    return Container(
+      color: WuxiaColors.background,
+      child: const Icon(Icons.landscape, color: WuxiaColors.textMuted),
+    );
+  }
+}
+
+class _OutputPreview extends StatelessWidget {
+  const _OutputPreview({required this.def, required this.scale});
+
+  final SeclusionMapDef def;
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionHeader(UiStrings.seclusionHourlyPreview(scale)),
+        const SizedBox(height: 8),
+        _OutputRow(
+          label: UiStrings.seclusionOutputMojianshi,
+          value: (def.mojianshiPerHour * scale).toStringAsFixed(1),
+        ),
+        _OutputRow(
+          label: UiStrings.seclusionOutputExperience,
+          value: (def.experiencePerHour * scale).toStringAsFixed(1),
+        ),
+        if (def.equipmentDropRate > 1.0)
+          const _OutputRow(
+            label: UiStrings.seclusionOutputEquipDrop,
+            value: '+50%',
+          ),
+        if (def.techniqueLearnRate > 1.0)
+          const _OutputRow(
+            label: UiStrings.seclusionOutputTechniqueLearn,
+            value: '+50%',
+          ),
+        if (def.internalForceGrowth > 1.0)
+          const _OutputRow(
+            label: UiStrings.seclusionOutputInternalForce,
+            value: '+50%',
+          ),
+      ],
     );
   }
 }
@@ -220,10 +282,18 @@ class _OutputRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: const TextStyle(color: WuxiaColors.textSecondary, fontSize: 13)),
-          Text(value,
-              style: const TextStyle(color: WuxiaColors.textPrimary, fontSize: 13)),
+          Text(
+            label,
+            style: const TextStyle(color: WuxiaUi.ink2, fontSize: 13),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
@@ -250,16 +320,18 @@ class _DurationButton extends StatelessWidget {
     final expectedMoji = (mojianshiPerHour * hours * scale).floor();
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(6),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: selected
-              ? WuxiaColors.gangMeng.withValues(alpha: 0.15)
-              : WuxiaColors.panel,
-          borderRadius: BorderRadius.circular(8),
+              ? WuxiaUi.gold.withValues(alpha: 0.2)
+              : WuxiaUi.paper.withValues(alpha: 0.34),
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: selected ? WuxiaColors.gangMeng : WuxiaColors.border,
+            color: selected
+                ? WuxiaUi.gold
+                : WuxiaUi.muted.withValues(alpha: 0.45),
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -269,19 +341,16 @@ class _DurationButton extends StatelessWidget {
               child: Text(
                 UiStrings.seclusionDurationLabel(hours),
                 style: TextStyle(
-                  color: selected
-                      ? WuxiaColors.textPrimary
-                      : WuxiaColors.textSecondary,
+                  color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
                   fontSize: 15,
-                  fontWeight:
-                      selected ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
             ),
             Text(
-              '预估磨剑石 ×$expectedMoji',
-              style: const TextStyle(
-                color: WuxiaColors.textSecondary,
+              UiStrings.seclusionEstimatedMojianshi(expectedMoji),
+              style: TextStyle(
+                color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
                 fontSize: 12,
               ),
             ),

@@ -98,7 +98,8 @@ void main() {
       ..saveDataId = 1
       ..mapType = mapType
       ..durationHours = durationHours
-      ..startedAt = startedAt ?? DateTime.now().subtract(const Duration(hours: 2))
+      ..startedAt =
+          startedAt ?? DateTime.now().subtract(const Duration(hours: 2))
       ..completedAt = null
       ..status = RetreatStatus.active
       ..actualRewards = [];
@@ -111,9 +112,7 @@ void main() {
   }) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          seclusionServiceProvider.overrideWithValue(fake),
-        ],
+        overrides: [seclusionServiceProvider.overrideWithValue(fake)],
         child: MaterialApp(
           home: SeclusionMapListScreen(
             charRealmTier: charRealmTier,
@@ -143,8 +142,9 @@ void main() {
 
   // ─── e2e #2 ────────────────────────────────────────────────────────────────
 
-  testWidgets('e2e: setup 点击「开始闭关」 → pushReplacement ActiveScreen',
-      (tester) async {
+  testWidgets('e2e: setup 点击「开始闭关」 → pushReplacement ActiveScreen', (
+    tester,
+  ) async {
     final session = mkSession();
     final fake = _FakeSeclusionService()..startFactory = () => session;
     await pumpList(tester, fake: fake);
@@ -155,6 +155,8 @@ void main() {
     expect(find.byType(SeclusionSetupScreen), findsOneWidget);
 
     // 点击「开始闭关」
+    await tester.ensureVisible(find.text(UiStrings.seclusionSetupStartButton));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(UiStrings.seclusionSetupStartButton));
     await tester.pumpAndSettle();
 
@@ -166,8 +168,9 @@ void main() {
 
   // ─── e2e #3 ────────────────────────────────────────────────────────────────
 
-  testWidgets('e2e: active(已 done)点收功 → pushReplacement ResultScreen',
-      (tester) async {
+  testWidgets('e2e: active(已 done)点收功 → pushReplacement ResultScreen', (
+    tester,
+  ) async {
     // session 已超时(2h elapsed > 1h plan → done=true)
     final session = mkSession();
     final result = (
@@ -184,9 +187,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          seclusionServiceProvider.overrideWithValue(fake),
-        ],
+        overrides: [seclusionServiceProvider.overrideWithValue(fake)],
         child: MaterialApp(
           home: ActiveRetreatScreen(
             session: session,
@@ -213,8 +214,9 @@ void main() {
 
   // ─── e2e #4 ────────────────────────────────────────────────────────────────
 
-  testWidgets('e2e: active(未 done)点提前收功 → confirm dialog → 确认后导航',
-      (tester) async {
+  testWidgets('e2e: active(未 done)点提前收功 → confirm dialog → 确认后导航', (
+    tester,
+  ) async {
     // session 未超时(0.5h elapsed < 1h plan)
     final session = mkSession(
       startedAt: DateTime.now().subtract(const Duration(minutes: 30)),
@@ -234,9 +236,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          seclusionServiceProvider.overrideWithValue(fake),
-        ],
+        overrides: [seclusionServiceProvider.overrideWithValue(fake)],
         child: MaterialApp(
           home: ActiveRetreatScreen(
             session: session,
@@ -275,5 +275,4 @@ void main() {
     expect(fake.completeCallCount, 1);
     expect(find.byType(RetreatResultScreen), findsOneWidget);
   });
-
 }

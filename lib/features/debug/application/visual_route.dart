@@ -27,6 +27,10 @@ enum VisualRoute {
     'tower_floor_list',
     '爬塔列表·塔势概览验收(30 层横向节点 + Boss 小/大标记 + 原列表保留)',
   ),
+  seclusionMapList('seclusion_map_list', '闭关地图·5 地点图册验收(地图大图 + 解锁/产出/进行中状态)'),
+  seclusionSetup('seclusion_setup', '闭关准备·地点 hero + 产出预览 + 时长驻留牌验收'),
+  seclusionActive('seclusion_active', '闭关中·地图背景 + 宣纸进度面板 + 收功按钮验收'),
+  seclusionResult('seclusion_result', '闭关收功·地图战报 + 5 维收益 + 提示/突破区验收'),
   battleScene(
     'battle_scene',
     '战斗屏·背景 scrim + 胜负仪式验收(seed 3v3 带背景,自动播放到胜负 overlay)',
