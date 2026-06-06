@@ -190,7 +190,7 @@ void main() {
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
     expect(find.byType(PlaqueTab), findsOneWidget);
     expect(find.byType(PaperPanel), findsWidgets);
-    expect(find.byType(SectionHeader), findsOneWidget);
+    expect(find.byType(SectionHeader), findsWidgets);
     expect(find.byType(PlaqueButton), findsOneWidget);
     expect(find.byType(PortraitFrame), findsOneWidget);
     expect(find.text('测试者'), findsOneWidget); // 姓名

@@ -446,41 +446,48 @@ class _DerivedStatsSection extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-              child: _LabeledValue(label: UiStrings.statHp, value: '$hp'),
+              child: _DerivedStatCard(label: UiStrings.statHp, value: '$hp'),
             ),
+            const SizedBox(width: 10),
             Expanded(
-              child: _LabeledValue(
+              child: _DerivedStatCard(
                 label: UiStrings.statInternalForce,
                 value: UiStrings.internalForceValue(
                   character.internalForce,
                   ifMax,
                 ),
+                valueFontSize: 19,
               ),
             ),
+            const SizedBox(width: 10),
             Expanded(
-              child: _LabeledValue(
+              child: _DerivedStatCard(
                 label: UiStrings.statSpeed,
                 value: speedText,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Row(
           children: [
             Expanded(
-              child: _LabeledValue(
+              child: _DerivedStatCard(
                 label: UiStrings.statCriticalRate,
                 value: critText,
+                accentColor: WuxiaUi.jiang,
               ),
             ),
+            const SizedBox(width: 10),
             Expanded(
-              child: _LabeledValue(
+              child: _DerivedStatCard(
                 label: UiStrings.statEvasionRate,
                 value: evadeText,
+                accentColor: WuxiaUi.woodDark,
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: 10),
+            const Expanded(child: SizedBox.shrink()),
           ],
         ),
       ],
@@ -834,22 +841,8 @@ class _EquipmentSlotTile extends ConsumerWidget {
         return _EquipmentSlotShell(
           borderColor: tierColor,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(
-                height: 44,
-                width: double.infinity,
-                child: iconPath == null
-                    ? EquipGlyph(tierColor: tierColor, slot: eq.slot)
-                    : Image.asset(
-                        iconPath,
-                        fit: BoxFit.contain,
-                        errorBuilder: wuxiaAssetErrorBuilder(
-                          () => EquipGlyph(tierColor: tierColor, slot: eq.slot),
-                        ),
-                      ),
-              ),
-              const SizedBox(height: 4),
               Row(
                 children: [
                   Text(
@@ -868,25 +861,55 @@ class _EquipmentSlotTile extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 6),
-              Text(
-                EnumL10n.equipmentTier(eq.tier),
-                style: TextStyle(
-                  color: tierColor,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Center(
+                  child: Container(
+                    width: 112,
+                    height: 112,
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFE3C7),
+                      border: Border.all(
+                        color: tierColor.withValues(alpha: 0.7),
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: iconPath == null
+                        ? EquipGlyph(tierColor: tierColor, slot: eq.slot)
+                        : Transform.scale(
+                            scale: 1.2,
+                            child: Image.asset(
+                              iconPath,
+                              fit: BoxFit.contain,
+                              errorBuilder: wuxiaAssetErrorBuilder(
+                                () => EquipGlyph(
+                                  tierColor: tierColor,
+                                  slot: eq.slot,
+                                ),
+                              ),
+                            ),
+                          ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 4),
-              // W12 fix: 视觉验收 debug 字段——battleCount 数字直显
-              // 之前只显「生疏/趁手/...」共鸣段 chip，Codex 无法验证 victory 后 ++；
-              // 与 resonance 同行节省高度（_SlotShell 固定 88px 不溢出）
+              const SizedBox(height: 6),
               Row(
                 children: [
+                  Text(
+                    EnumL10n.equipmentTier(eq.tier),
+                    style: TextStyle(
+                      color: tierColor,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  // W12 fix: 视觉验收 debug 字段——battleCount 数字直显。
                   Text(
                     EnumL10n.resonanceStage(resonance),
                     style: const TextStyle(color: WuxiaUi.ink, fontSize: 12),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 6),
                   Text(
                     '#${eq.battleCount}',
                     style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
@@ -1526,12 +1549,73 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: WuxiaUi.ink,
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
+    return SectionHeader(text, dividerMaxWidth: 520, dividerOpacity: 0.62);
+  }
+}
+
+class _DerivedStatCard extends StatelessWidget {
+  const _DerivedStatCard({
+    required this.label,
+    required this.value,
+    this.valueFontSize = 22,
+    this.accentColor = WuxiaUi.ink,
+  });
+
+  final String label;
+  final String value;
+  final double valueFontSize;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 72),
+      decoration: BoxDecoration(
+        color: const Color(0x33F3E6C7),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.28)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 3,
+            child: ColoredBox(color: accentColor),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(13, 10, 10, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: WuxiaUi.muted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: WuxiaUi.ink,
+                    fontSize: valueFontSize,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1548,14 +1632,21 @@ class _LabeledValue extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: WuxiaUi.muted, fontSize: 11)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: WuxiaUi.muted,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 2),
         Text(
           value,
           style: const TextStyle(
             color: WuxiaUi.ink,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ],
@@ -1640,7 +1731,7 @@ class _EquipmentSlotShell extends StatelessWidget {
               ),
             ),
             SizedBox(
-              height: 144,
+              height: 198,
               child: Padding(padding: const EdgeInsets.all(8), child: child),
             ),
           ],
