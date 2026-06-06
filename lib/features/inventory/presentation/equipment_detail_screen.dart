@@ -109,7 +109,10 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final wide = constraints.maxWidth >= 900;
-                final hero = _DetailHero(def: widget.def);
+                final hero = _DetailHero(
+                  def: widget.def,
+                  height: wide ? 520 : 360,
+                );
                 final info = _InfoCard(
                   equipment: widget.equipment,
                   def: widget.def,
@@ -118,15 +121,13 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                   padding: const EdgeInsets.all(20),
                   children: [
                     if (wide)
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(flex: 5, child: hero),
-                            const SizedBox(width: 16),
-                            Expanded(flex: 4, child: info),
-                          ],
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(flex: 5, child: hero),
+                          const SizedBox(width: 16),
+                          Expanded(flex: 4, child: info),
+                        ],
                       )
                     else ...[
                       hero,
@@ -155,59 +156,62 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
 }
 
 class _DetailHero extends StatelessWidget {
-  const _DetailHero({required this.def});
+  const _DetailHero({required this.def, required this.height});
 
   final EquipmentDef def;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     final color = tierColorForEquipment(def.tier);
     final highTreasure = isHighTreasureTier(def.tier);
-    return Container(
-      constraints: const BoxConstraints(minHeight: 260),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: WuxiaUi.panelFill,
-        borderRadius: BorderRadius.circular(WuxiaUi.radius),
-        border: highTreasure
-            ? Border.all(color: color, width: 3)
-            : Border(bottom: BorderSide(color: color, width: 2)),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(WuxiaUi.radius),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Opacity(
-              opacity: 0.18,
-              child: Image.asset(
-                WuxiaUi.paperBg,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
-              ),
-            ),
-            if (def.detailPath != null)
-              Padding(
-                padding: const EdgeInsets.all(12),
+    return SizedBox(
+      height: height,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: WuxiaUi.panelFill,
+          borderRadius: BorderRadius.circular(WuxiaUi.radius),
+          border: highTreasure
+              ? Border.all(color: color, width: 3)
+              : Border(bottom: BorderSide(color: color, width: 2)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(WuxiaUi.radius),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Opacity(
+                opacity: 0.18,
                 child: Image.asset(
-                  def.detailPath!,
-                  fit: BoxFit.contain,
-                  errorBuilder: wuxiaAssetErrorBuilder(
-                    () => const DecoratedBox(
-                      decoration: BoxDecoration(color: WuxiaUi.panelFill),
+                  WuxiaUi.paperBg,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+              ),
+              if (def.detailPath != null)
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Image.asset(
+                    def.detailPath!,
+                    fit: BoxFit.contain,
+                    errorBuilder: wuxiaAssetErrorBuilder(
+                      () => const DecoratedBox(
+                        decoration: BoxDecoration(color: WuxiaUi.panelFill),
+                      ),
                     ),
                   ),
+                )
+              else
+                const Center(
+                  child: Icon(
+                    Icons.image_not_supported_outlined,
+                    color: WuxiaUi.muted,
+                    size: 40,
+                  ),
                 ),
-              )
-            else
-              const Center(
-                child: Icon(
-                  Icons.image_not_supported_outlined,
-                  color: WuxiaUi.muted,
-                  size: 40,
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -471,16 +475,13 @@ class _StatRow extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          label,
-          style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
-        ),
+        Text(label, style: const TextStyle(color: WuxiaUi.muted, fontSize: 12)),
         const SizedBox(width: 4),
         Text(
           '$effective',
           style: TextStyle(
             // 实战值高于 base 时高亮,直观传达"已被强化/共鸣加成"。
-            color: boosted ? color : WuxiaColors.textPrimary,
+            color: boosted ? color : WuxiaUi.ink,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -489,7 +490,7 @@ class _StatRow extends StatelessWidget {
           const SizedBox(width: 3),
           Text(
             '(基 $base)',
-            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 11),
+            style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
           ),
         ],
       ],

@@ -5,14 +5,24 @@ void main() {
   group('parseVisualRoute', () {
     test('已知 id → 对应枚举', () {
       expect(parseVisualRoute('main_menu'), VisualRoute.mainMenu);
-      expect(parseVisualRoute('technique_panel_tier_all'),
-          VisualRoute.techniquePanelTierAll);
-      expect(parseVisualRoute('technique_panel_hero'),
-          VisualRoute.techniquePanelHero);
-      expect(parseVisualRoute('character_panel'),
-          VisualRoute.characterPanelProfile);
+      expect(
+        parseVisualRoute('technique_panel_tier_all'),
+        VisualRoute.techniquePanelTierAll,
+      );
+      expect(
+        parseVisualRoute('technique_panel_hero'),
+        VisualRoute.techniquePanelHero,
+      );
+      expect(
+        parseVisualRoute('character_panel'),
+        VisualRoute.characterPanelProfile,
+      );
       expect(parseVisualRoute('chapter_list'), VisualRoute.chapterList);
       expect(parseVisualRoute('battle_scene'), VisualRoute.battleScene);
+      expect(
+        parseVisualRoute('equipment_detail_screen'),
+        VisualRoute.equipmentDetailScreen,
+      );
     });
 
     test('未知 id → null', () {
@@ -30,15 +40,18 @@ void main() {
     });
 
     test('B2 新路由 parse', () {
-      expect(parseVisualRoute('battle_ultimate_caption'),
-          VisualRoute.battleUltimateCaption);
-      expect(parseVisualRoute('battle_boss_frame'),
-          VisualRoute.battleBossFrame);
+      expect(
+        parseVisualRoute('battle_ultimate_caption'),
+        VisualRoute.battleUltimateCaption,
+      );
+      expect(
+        parseVisualRoute('battle_boss_frame'),
+        VisualRoute.battleBossFrame,
+      );
     });
 
     test('剧情背景路由 parse', () {
-      expect(parseVisualRoute('narrative_scene'),
-          VisualRoute.narrativeScene);
+      expect(parseVisualRoute('narrative_scene'), VisualRoute.narrativeScene);
     });
   });
 }
