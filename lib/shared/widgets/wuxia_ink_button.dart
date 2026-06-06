@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/colors.dart';
+import 'wuxia_ui/wuxia_ui.dart';
 
 /// 水墨入口按钮（Phase A 出版美术 · 从 `main_menu` 的 `_MenuButton` 抽出共用）。
 ///
@@ -32,60 +33,120 @@ class WuxiaInkButton extends StatelessWidget {
       opacity: disabled ? 0.4 : 1.0,
       child: InkWell(
         onTap: disabled ? null : onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          constraints: const BoxConstraints(minHeight: 76),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [WuxiaColors.inkPanelTop, WuxiaColors.inkPanelBottom],
+              colors: [Color(0xE6D9C396), Color(0xE0B9915D), Color(0xE0695130)],
             ),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: WuxiaColors.inkPanelEdge),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.72)),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x55000000),
-                blurRadius: 4,
-                offset: Offset(0, 2),
+                color: Color(0x66000000),
+                blurRadius: 7,
+                offset: Offset(0, 4),
               ),
             ],
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        color: WuxiaColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: 0.16,
+                    child: Image.asset(
+                      WuxiaUi.paperBg,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      hint,
-                      style: const TextStyle(
-                        color: WuxiaColors.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (locked)
-                const Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: Icon(
-                    Icons.lock_outline,
-                    size: 16,
-                    color: WuxiaColors.textMuted,
                   ),
                 ),
-            ],
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 7,
+                    color: WuxiaUi.ink.withValues(alpha: 0.42),
+                  ),
+                ),
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: WuxiaUi.paper.withValues(alpha: 0.34),
+                        ),
+                        bottom: BorderSide(
+                          color: WuxiaUi.ink.withValues(alpha: 0.24),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(22, 14, 16, 14),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              label,
+                              style: const TextStyle(
+                                color: WuxiaUi.ink,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              hint,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: WuxiaUi.ink.withValues(alpha: 0.72),
+                                fontSize: 12,
+                                height: 1.2,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (locked)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8),
+                          child: Icon(
+                            Icons.lock_outline,
+                            size: 16,
+                            color: WuxiaColors.textMuted,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  right: 8,
+                  top: 7,
+                  child: SizedBox(
+                    width: 15,
+                    height: 15,
+                    child: Image.asset(
+                      WuxiaUi.sealRed,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
