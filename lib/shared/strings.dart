@@ -32,8 +32,8 @@ class UiStrings {
   static const String backToMenu = '返回菜单';
 
   // ─── 胜负仪式 overlay(出版美术 B1)──────────────────────────────────────
-  static const String victoryTitle = '胜';
-  static const String defeatTitle = '败';
+  static const String victoryTitle = '勝';
+  static const String defeatTitle = '敗';
   static const String victorySubtitle = '旗开得胜';
   static const String defeatSubtitle = '败北';
   static const String battleContinue = '继续';

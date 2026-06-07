@@ -94,6 +94,9 @@ class WuxiaUi {
       'assets/ui/mj/overlay_lantern_glow_blend.png';
   static const String overlayLowHealth =
       'assets/ui/mj/overlay_low_health_blend.png';
+  static const String bossFrame = 'assets/ui/mj/ui_boss_frame_blend.png';
+  static const String bossFrameLarge =
+      'assets/ui/mj/ui_big_boss_frame_blend.png';
   static const String battleBossEntranceBg =
       'assets/scenes/mj/battle_boss_entrance_bg_01.png';
 }

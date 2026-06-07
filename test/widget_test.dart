@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/battle/presentation/damage_popup.dart';
 import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
 import 'package:wuxia_idle/features/battle/presentation/victory_overlay.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 /// 短时序动画配置，加速 widget test 运行。
 const _testAnim = AnimationNumbers(
@@ -103,9 +104,7 @@ class _TestBattleNotifier extends BattleNotifier {
   }
 
   void appendActions(List<BattleAction> actions) {
-    state = state.copyWith(
-      actionLog: [...state.actionLog, ...actions],
-    );
+    state = state.copyWith(actionLog: [...state.actionLog, ...actions]);
   }
 
   void setResult(BattleResult result) {
@@ -126,8 +125,8 @@ void main() {
   }) async {
     await setSurface(tester);
     final (left, right) = BattleDemo.mockTeams();
-    final init = initialState ??
-        BattleState.initial(leftTeam: left, rightTeam: right);
+    final init =
+        initialState ?? BattleState.initial(leftTeam: left, rightTeam: right);
 
     late _TestBattleNotifier notifier;
     await tester.pumpWidget(
@@ -138,18 +137,24 @@ void main() {
             return notifier;
           }),
         ],
-        child: const MaterialApp(
-          home: BattleScreen(animConfig: _testAnim),
-        ),
+        child: const MaterialApp(home: BattleScreen(animConfig: _testAnim)),
       ),
     );
     return notifier;
   }
 
+  Finder assetImage(String path) => find.byWidgetPredicate(
+    (w) =>
+        w is Image &&
+        w.image is AssetImage &&
+        (w.image as AssetImage).assetName == path,
+  );
+
   // ── T14 静态布局 ────────────────────────────────────────────────────────
 
-  testWidgets('BattleScreen 渲染 3v3 + 顶栏 + 6 个 CharacterAvatar',
-      (WidgetTester tester) async {
+  testWidgets('BattleScreen 渲染 3v3 + 顶栏 + 6 个 CharacterAvatar', (
+    WidgetTester tester,
+  ) async {
     await pumpBattle(tester);
 
     expect(find.text('战斗 3 v 2'), findsOneWidget);
@@ -179,14 +184,41 @@ void main() {
     expect(opacity.opacity, 0.45);
   });
 
+  testWidgets('Boss 头像叠加 MJ 圆环外框', (WidgetTester tester) async {
+    await setSurface(tester);
+    final (left, right) = BattleDemo.mockTeams();
+    final boss = right.first.copyWith(isBoss: true);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          battleProvider.overrideWith(
+            () => _TestBattleNotifier(
+              BattleState.initial(
+                leftTeam: left,
+                rightTeam: [boss, ...right.skip(1)],
+              ),
+            ),
+          ),
+        ],
+        child: const MaterialApp(home: BattleScreen(animConfig: _testAnim)),
+      ),
+    );
+    await tester.pump();
+
+    expect(assetImage(WuxiaUi.bossFrameLarge), findsOneWidget);
+  });
+
   // ── T15 dispose ─────────────────────────────────────────────────────────
 
-  testWidgets('BattleScreen AnimationController 正确 dispose，无 ticker 泄漏（P0-2 后含受击闪/弹道）',
-      (WidgetTester tester) async {
-    await pumpBattle(tester);
-    // 替换为空 widget 触发 _BattleScreenState.dispose()
-    await tester.pumpWidget(const MaterialApp(home: SizedBox()));
-  });
+  testWidgets(
+    'BattleScreen AnimationController 正确 dispose，无 ticker 泄漏（P0-2 后含受击闪/弹道）',
+    (WidgetTester tester) async {
+      await pumpBattle(tester);
+      // 替换为空 widget 触发 _BattleScreenState.dispose()
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+    },
+  );
 
   // ── DamagePopup 独立测试（不依赖 Riverpod） ────────────────────────────
 
@@ -272,8 +304,7 @@ void main() {
     expect(find.text('1500'), findsOneWidget);
   });
 
-  testWidgets('actionLog 增长 - 暴击飘字出现显示伤害数字',
-      (WidgetTester tester) async {
+  testWidgets('actionLog 增长 - 暴击飘字出现显示伤害数字', (WidgetTester tester) async {
     final notifier = await pumpBattle(tester);
     notifier.appendActions(const [
       BattleAction(
@@ -289,8 +320,7 @@ void main() {
     expect(find.text('3600'), findsOneWidget);
   });
 
-  testWidgets('actionLog 增长 - 闪避飘字显示「闪」字',
-      (WidgetTester tester) async {
+  testWidgets('actionLog 增长 - 闪避飘字显示「闪」字', (WidgetTester tester) async {
     final notifier = await pumpBattle(tester);
     notifier.appendActions(const [
       BattleAction(
@@ -316,12 +346,13 @@ void main() {
     await tester.pumpAndSettle(); // 等待 showGeneralDialog 280ms 过渡动画完成
 
     expect(find.byType(VictoryOverlay), findsOneWidget);
-    expect(find.text(UiStrings.victoryTitle), findsOneWidget); // '胜'
+    expect(find.text(UiStrings.victoryTitle), findsOneWidget); // '勝'
     expect(find.text(UiStrings.battleContinue), findsOneWidget); // '继续'
   });
 
-  testWidgets('T16 大招按钮 - 内力不够 / 内力够 enabled 状态正确',
-      (WidgetTester tester) async {
+  testWidgets('T16 大招按钮 - 内力不够 / 内力够 enabled 状态正确', (
+    WidgetTester tester,
+  ) async {
     // BattleDemo mock 数据：
     //   left[0] 萧夜寒  currentIf=5400 cost=800 → ready
     //   left[1] 柳青衫  currentIf=1800 cost=800 → ready
@@ -337,8 +368,7 @@ void main() {
     expect(buttons[2].enabled, false, reason: 'left[2] 苏锦书 内力不够');
   });
 
-  testWidgets('T16 大招按下后置灰，actor 行动后解除',
-      (WidgetTester tester) async {
+  testWidgets('T16 大招按下后置灰，actor 行动后解除', (WidgetTester tester) async {
     final notifier = await pumpBattle(tester);
 
     // 按下 left[0] 萧夜寒大招
@@ -349,8 +379,7 @@ void main() {
     final buttonsAfterTap = tester
         .widgetList<ElevatedButton>(find.byType(ElevatedButton))
         .toList();
-    expect(buttonsAfterTap[0].enabled, false,
-        reason: '按下后立刻置灰，避免连按');
+    expect(buttonsAfterTap[0].enabled, false, reason: '按下后立刻置灰，避免连按');
 
     // 模拟 actor (id=1=萧夜寒) 行动（actionLog 新增）
     notifier.appendActions(const [
@@ -369,8 +398,7 @@ void main() {
     final buttonsAfterAction = tester
         .widgetList<ElevatedButton>(find.byType(ElevatedButton))
         .toList();
-    expect(buttonsAfterAction[0].enabled, true,
-        reason: 'actor 行动后大招按钮恢复可用');
+    expect(buttonsAfterAction[0].enabled, true, reason: 'actor 行动后大招按钮恢复可用');
   });
 
   // ── B2 大招题字 overlay ───────────────────────────────────────────────────
