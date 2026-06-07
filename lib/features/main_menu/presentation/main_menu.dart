@@ -151,12 +151,14 @@ class MainMenu extends ConsumerWidget {
       WuxiaInkButton(
         label: UiStrings.mainMenuMainline,
         hint: UiStrings.mainMenuMainlineHint,
+        icon: Icons.map_outlined,
         status: mainlineStatus,
         onTap: () => _push(context, const ChapterListScreen()),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuCharacterPanel,
         hint: UiStrings.mainMenuCharacterPanelHint,
+        icon: Icons.person_outline,
         onTap: () => _push(
           context,
           const CharacterPanelScreen(characterId: _defaultCharacterId),
@@ -165,6 +167,7 @@ class MainMenu extends ConsumerWidget {
       WuxiaInkButton(
         label: UiStrings.mainMenuInventory,
         hint: UiStrings.mainMenuInventoryHint,
+        icon: Icons.inventory_2_outlined,
         status: inventoryStatus,
         onTap: () => _push(context, const InventoryScreen()),
       ),
@@ -185,6 +188,7 @@ class MainMenu extends ConsumerWidget {
       WuxiaInkButton(
         label: UiStrings.mainMenuTower,
         hint: UiStrings.mainMenuTowerHint,
+        icon: Icons.filter_hdr_outlined,
         status: towerStatus,
         onTap: () => _push(context, const TowerFloorListScreen()),
       ),
@@ -193,6 +197,7 @@ class MainMenu extends ConsumerWidget {
         hint: lateLocked
             ? UiStrings.mainMenuLateGameLockedHint
             : UiStrings.mainMenuInnerDemonHint,
+        icon: Icons.psychology_alt_outlined,
         disabled: lateLocked,
         locked: lateLocked,
         onTap: () => _push(context, const InnerDemonScreen()),
@@ -202,6 +207,7 @@ class MainMenu extends ConsumerWidget {
         hint: lateLocked
             ? UiStrings.mainMenuLateGameLockedHint
             : UiStrings.mainMenuLightFootHint,
+        icon: Icons.directions_run,
         disabled: lateLocked,
         locked: lateLocked,
         onTap: () => _push(context, const LightFootScreen()),
@@ -211,6 +217,7 @@ class MainMenu extends ConsumerWidget {
         hint: lateLocked
             ? UiStrings.mainMenuLateGameLockedHint
             : UiStrings.mainMenuMassBattleHint,
+        icon: Icons.groups_2_outlined,
         disabled: lateLocked,
         locked: lateLocked,
         onTap: () => _push(context, const MassBattleScreen()),
@@ -218,6 +225,7 @@ class MainMenu extends ConsumerWidget {
       WuxiaInkButton(
         label: UiStrings.mainMenuPvp,
         hint: pvpLocked ? UiStrings.pvpLockedHint : UiStrings.mainMenuPvpHint,
+        icon: Icons.gavel_outlined,
         disabled: pvpLocked,
         locked: pvpLocked,
         onTap: () => _push(context, const PvpScreen()),
@@ -228,6 +236,7 @@ class MainMenu extends ConsumerWidget {
       WuxiaInkButton(
         label: UiStrings.mainMenuLineage,
         hint: UiStrings.mainMenuLineageHint,
+        icon: Icons.account_tree_outlined,
         onTap: () => _push(context, const LineagePanelScreen()),
       ),
       WuxiaInkButton(
@@ -235,6 +244,7 @@ class MainMenu extends ConsumerWidget {
         hint: socialLocked
             ? UiStrings.mainMenuSocialLockedHint
             : UiStrings.mainMenuSectHint,
+        icon: Icons.home_work_outlined,
         disabled: socialLocked,
         locked: socialLocked,
         onTap: () => _push(context, const SectScreen()),
@@ -244,6 +254,7 @@ class MainMenu extends ConsumerWidget {
         hint: socialLocked
             ? UiStrings.mainMenuSocialLockedHint
             : UiStrings.mainMenuJianghuHint,
+        icon: Icons.handshake_outlined,
         disabled: socialLocked,
         locked: socialLocked,
         onTap: () => _push(context, const ReputationPanelScreen()),
@@ -253,6 +264,7 @@ class MainMenu extends ConsumerWidget {
         hint: socialLocked
             ? UiStrings.mainMenuSocialLockedHint
             : UiStrings.mainMenuLeaderboardHint,
+        icon: Icons.emoji_events_outlined,
         disabled: socialLocked,
         locked: socialLocked,
         onTap: () => _push(context, const LeaderboardScreen()),
@@ -260,6 +272,7 @@ class MainMenu extends ConsumerWidget {
       WuxiaInkButton(
         label: UiStrings.mainMenuBaike,
         hint: UiStrings.mainMenuBaikeHint,
+        icon: Icons.menu_book_outlined,
         onTap: () => _push(context, const BaikeScreen()),
       ),
     ];
@@ -269,16 +282,19 @@ class MainMenu extends ConsumerWidget {
             WuxiaInkButton(
               label: UiStrings.mainMenuPhase1,
               hint: UiStrings.mainMenuPhase1Hint,
+              icon: Icons.bug_report_outlined,
               onTap: () => _push(context, const BattleTestMenu()),
             ),
             WuxiaInkButton(
               label: UiStrings.mainMenuPhase2,
               hint: UiStrings.mainMenuPhase2Hint,
+              icon: Icons.construction_outlined,
               onTap: () => _push(context, const Phase2TestMenu()),
             ),
             WuxiaInkButton(
               label: '强制招募 NPC',
               hint: '走完整 sect recruit flow · 跳过战斗/奇遇触发',
+              icon: Icons.person_add_alt_1_outlined,
               onTap: () => _push(context, const SectRecruitDebugScreen()),
             ),
           ]
@@ -585,6 +601,7 @@ class _TechniqueMenuButton extends ConsumerWidget {
       hint: tutorialLocked
           ? UiStrings.mainMenuTechniquesLockedHint
           : UiStrings.mainMenuTechniquesHint,
+      icon: Icons.auto_stories_outlined,
       status: status,
       disabled: tutorialLocked,
       locked: tutorialLocked,
@@ -683,6 +700,7 @@ class _SeclusionMenuButton extends ConsumerWidget {
       hint: tutorialLocked
           ? UiStrings.mainMenuSeclusionLockedHint
           : UiStrings.mainMenuSeclusionHint,
+      icon: Icons.landscape_outlined,
       status: status,
       disabled: disabled,
       locked: tutorialLocked,

@@ -13,6 +13,21 @@ void main() {
     );
     expect(find.text('主线'), findsOneWidget);
     expect(find.text('继续江湖路'), findsOneWidget);
+    expect(find.byIcon(Icons.map_outlined), findsNothing);
+  });
+
+  testWidgets('icon 可选渲染为入口图标牌', (tester) async {
+    await tester.pumpWidget(
+      host(
+        const WuxiaInkButton(
+          label: '主线',
+          hint: '继续江湖路',
+          icon: Icons.map_outlined,
+          onTap: null,
+        ),
+      ),
+    );
+    expect(find.byIcon(Icons.map_outlined), findsOneWidget);
   });
 
   testWidgets('点击触发 onTap', (tester) async {
