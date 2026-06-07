@@ -14,6 +14,10 @@ void main() {
         VisualRoute.techniquePanelHero,
       );
       expect(
+        parseVisualRoute('technique_refine_insight_dialog'),
+        VisualRoute.techniqueRefineInsightDialog,
+      );
+      expect(
         parseVisualRoute('character_panel'),
         VisualRoute.characterPanelProfile,
       );

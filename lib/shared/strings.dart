@@ -355,6 +355,10 @@ class UiStrings {
   /// 凝练 dialog 正文:`将 X 点领悟点凝入主修修炼度。`
   static String refineInsightBody(int insightPoints) =>
       '将 $insightPoints 点领悟点凝入主修修炼度。';
+  static String refineInsightSpendLine(int insightPoints) =>
+      '消耗领悟点 $insightPoints';
+  static const String refineInsightTargetLine = '注入主修修炼度';
+  static const String refineInsightCeremonyHint = '闭关所得灵光，将化为心法火候。';
   static const String refineInsightConfirm = '全部凝练';
 
   /// 凝练成功 SnackBar:`凝练 +X 修炼度`(升层时追加)。
