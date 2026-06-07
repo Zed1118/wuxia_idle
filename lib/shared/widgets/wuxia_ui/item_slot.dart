@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../theme/wuxia_tokens.dart';
-import '../asset_fallback.dart';
+import '../equipment_art_image.dart';
 import '../equipment_glyph.dart';
 import 'seal_badge.dart';
 
@@ -58,12 +58,7 @@ class ItemSlot extends StatelessWidget {
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(color: frameColor, width: 2),
                 boxShadow: highTier
-                    ? const [
-                        BoxShadow(
-                          color: Color(0x66B08A47),
-                          blurRadius: 8,
-                        ),
-                      ]
+                    ? const [BoxShadow(color: Color(0x66B08A47), blurRadius: 8)]
                     : null,
               ),
               clipBehavior: Clip.antiAlias,
@@ -74,10 +69,9 @@ class ItemSlot extends StatelessWidget {
                     padding: const EdgeInsets.all(4),
                     child: imagePath == null
                         ? glyph
-                        : Image.asset(
-                            imagePath!,
-                            fit: BoxFit.contain,
-                            errorBuilder: wuxiaAssetErrorBuilder(() => glyph),
+                        : EquipmentArtImage(
+                            imagePath: imagePath!,
+                            fallback: glyph,
                           ),
                   ),
                   if (enhanceLevel > 0)

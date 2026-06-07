@@ -29,6 +29,9 @@ class WuxiaUi {
   static const double radius = 6.0;
   static const double borderWidth = 1.5;
 
+  // —— 字 ——
+  static const double textScale = 1.12;
+
   // —— 资产 ——
   static const String paperBg = 'assets/ui/paper_bg.png';
   static const String sealRed = 'assets/ui/seal_red.png';

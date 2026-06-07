@@ -15,17 +15,18 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('分隔线保留枯笔裁切而非纵向压扁', (tester) async {
+  testWidgets('分隔线使用绘制墨线而非位图裁切', (tester) async {
     await tester.pumpWidget(host(const SectionHeader('武器')));
-    final image = tester.widget<Image>(find.byType(Image));
-    expect(image.fit, BoxFit.cover);
-    expect(image.alignment, Alignment.center);
-    expect(
-      find.byWidgetPredicate(
-        (widget) => widget is SizedBox && widget.height == 8,
-      ),
-      findsOneWidget,
+    final dividerBox = find.byWidgetPredicate(
+      (widget) => widget is SizedBox && widget.height == 8,
     );
+    final dividerPaint = find.descendant(
+      of: dividerBox,
+      matching: find.byType(CustomPaint),
+    );
+    expect(find.byType(Image), findsNothing);
+    expect(dividerPaint, findsOneWidget);
+    expect(dividerBox, findsOneWidget);
   });
 
   testWidgets('宽屏下分隔线限制最大宽度并压低透明度', (tester) async {
@@ -36,16 +37,19 @@ void main() {
       host(const SizedBox(width: 1000, child: SectionHeader('武器'))),
     );
 
+    final dividerPaint = find.descendant(
+      of: find.byWidgetPredicate(
+        (widget) => widget is SizedBox && widget.height == 8,
+      ),
+      matching: find.byType(CustomPaint),
+    );
     final opacity = tester.widget<Opacity>(
-      find.ancestor(of: find.byType(Image), matching: find.byType(Opacity)),
+      find.ancestor(of: dividerPaint, matching: find.byType(Opacity)),
     );
     expect(opacity.opacity, 0.68);
 
     final constrained = tester.widget<ConstrainedBox>(
-      find.ancestor(
-        of: find.byType(Image),
-        matching: find.byType(ConstrainedBox),
-      ),
+      find.ancestor(of: dividerPaint, matching: find.byType(ConstrainedBox)),
     );
     expect(constrained.constraints.maxWidth, 560);
   });

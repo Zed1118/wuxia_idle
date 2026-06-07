@@ -14,7 +14,7 @@ import '../../equipment/presentation/enhance_dialog.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
-import '../../../shared/widgets/asset_fallback.dart';
+import '../../../shared/widgets/equipment_art_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 /// 装备详情屏(Phase 4 W15 LoreLoader 接入下一步)。
@@ -192,13 +192,10 @@ class _DetailHero extends StatelessWidget {
               if (def.detailPath != null)
                 Padding(
                   padding: const EdgeInsets.all(12),
-                  child: Image.asset(
-                    def.detailPath!,
-                    fit: BoxFit.contain,
-                    errorBuilder: wuxiaAssetErrorBuilder(
-                      () => const DecoratedBox(
-                        decoration: BoxDecoration(color: WuxiaUi.panelFill),
-                      ),
+                  child: EquipmentArtImage(
+                    imagePath: def.detailPath!,
+                    fallback: const DecoratedBox(
+                      decoration: BoxDecoration(color: WuxiaUi.panelFill),
                     ),
                   ),
                 )
