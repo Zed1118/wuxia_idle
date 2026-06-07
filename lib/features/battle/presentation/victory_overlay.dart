@@ -100,9 +100,14 @@ class VictoryOverlay extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            PaperPanel(
+            CeremonyImagePanel(
+              assetPath: _isVictory
+                  ? WuxiaUi.ceremonyVictoryTag
+                  : WuxiaUi.ceremonyFailureInk,
               padding: const EdgeInsets.fromLTRB(22, 16, 22, 18),
-              paperOpacity: 0.22,
+              borderColor: accent.withValues(alpha: 0.48),
+              imageOpacity: 0.3,
+              paperVeilOpacity: 0.78,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

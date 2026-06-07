@@ -364,20 +364,12 @@ class EncounterOutcomeToast extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return CeremonyImagePanel(
+      assetPath: WuxiaUi.ceremonyInsightBamboo,
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      decoration: BoxDecoration(
-        color: WuxiaUi.paper.withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.62)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
+      borderColor: color.withValues(alpha: 0.62),
+      imageOpacity: 0.28,
+      paperVeilOpacity: 0.78,
       child: Row(
         children: [
           Container(

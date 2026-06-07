@@ -148,7 +148,12 @@ class _ResultHero extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            _MapImage(path: mapDef.imagePath),
+            Image.asset(
+              WuxiaUi.ceremonyRetreatResult,
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+              errorBuilder: (_, _, _) => _MapImage(path: mapDef.imagePath),
+            ),
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

@@ -11,6 +11,7 @@ import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_factory.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_victory_dialog.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 StageDef _stage() => const StageDef(
@@ -45,6 +46,13 @@ DropResult _equipDrops(List<String> defIds) => DropResult(
       ),
   ],
   items: const [],
+);
+
+Finder _assetImage(String path) => find.byWidgetPredicate(
+  (w) =>
+      w is Image &&
+      w.image is AssetImage &&
+      (w.image as AssetImage).assetName == path,
 );
 
 AdvancementResult _advanced() => const AdvancementResult(
@@ -118,6 +126,7 @@ void main() {
       expect(find.text(UiStrings.firstClearCeremonySubtitle), findsOneWidget);
       expect(find.text('首胜 · 风雨渡口'), findsOneWidget);
       expect(find.byIcon(Icons.military_tech), findsOneWidget);
+      expect(_assetImage(WuxiaUi.ceremonyBossFirstVictory), findsOneWidget);
     });
 
     testWidgets('item drop + 无升层 → 显 drop 条目', (tester) async {
@@ -134,6 +143,7 @@ void main() {
       ]);
       expect(find.text(UiStrings.stageVictoryNoDrop), findsOneWidget);
       expect(find.text(UiStrings.advancementCeremonyTitle), findsOneWidget);
+      expect(_assetImage(WuxiaUi.ceremonyRealmBreakthrough), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
       expect(find.textContaining('甲 · 突破至'), findsOneWidget);
     });
@@ -146,6 +156,7 @@ void main() {
       expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
       expect(find.textContaining('item_mojianshi'), findsNothing);
       expect(find.text(UiStrings.advancementCeremonyTitle), findsOneWidget);
+      expect(_assetImage(WuxiaUi.ceremonyRealmBreakthrough), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
       expect(find.textContaining('甲 · 突破至'), findsOneWidget);
       expect(find.textContaining('乙'), findsNothing);
@@ -182,6 +193,7 @@ void main() {
       expect(find.text(UiStrings.stageVictoryResonanceLabel), findsOneWidget);
       expect(find.textContaining('「青锋剑」共鸣度晋至 默契'), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
+      expect(_assetImage(WuxiaUi.ceremonyEquipmentResonance), findsOneWidget);
     });
 
     testWidgets('多件共鸣晋阶 → 显多行 + 升层 + drop 三段共存', (tester) async {
@@ -202,12 +214,14 @@ void main() {
       );
       expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
       expect(find.text(UiStrings.advancementCeremonyTitle), findsOneWidget);
+      expect(_assetImage(WuxiaUi.ceremonyRealmBreakthrough), findsOneWidget);
       expect(find.textContaining('甲 · 突破至'), findsOneWidget);
       expect(
         find.text(UiStrings.stageVictoryResonanceCeremonyTitle),
         findsOneWidget,
       );
       expect(find.text(UiStrings.stageVictoryResonanceLabel), findsOneWidget);
+      expect(_assetImage(WuxiaUi.ceremonyEquipmentResonance), findsOneWidget);
       expect(find.textContaining('青锋剑'), findsOneWidget);
       expect(find.textContaining('玄铁刀'), findsOneWidget);
       expect(find.textContaining('默契'), findsOneWidget);

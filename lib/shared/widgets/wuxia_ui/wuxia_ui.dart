@@ -9,3 +9,4 @@ export 'plaque_button.dart';
 export 'wuxia_title_bar.dart';
 export 'plaque_tab.dart';
 export 'paper_dialog.dart';
+export 'ceremony_image_panel.dart';

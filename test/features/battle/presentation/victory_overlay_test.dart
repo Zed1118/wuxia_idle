@@ -4,10 +4,18 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/victory_overlay.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
-import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_panel.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/ceremony_image_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+
+Finder _assetImage(String path) => find.byWidgetPredicate(
+  (w) =>
+      w is Image &&
+      w.image is AssetImage &&
+      (w.image as AssetImage).assetName == path,
+);
 
 void main() {
   testWidgets('leftWin 显金「胜」+ 统计 + 继续', (tester) async {
@@ -30,7 +38,8 @@ void main() {
     expect(title.style?.color, WuxiaColors.resultHighlight);
     // 统计含总伤
     expect(find.textContaining('12000'), findsOneWidget);
-    expect(find.byType(PaperPanel), findsOneWidget);
+    expect(find.byType(CeremonyImagePanel), findsOneWidget);
+    expect(_assetImage(WuxiaUi.ceremonyVictoryTag), findsOneWidget);
     expect(find.byType(PlaqueButton), findsOneWidget);
     await tester.tap(find.text(UiStrings.battleContinue));
     expect(tapped, isTrue);
@@ -51,6 +60,7 @@ void main() {
     expect(find.text(UiStrings.defeatTitle), findsOneWidget);
     final title = tester.widget<Text>(find.text(UiStrings.defeatTitle));
     expect(title.style?.color, WuxiaColors.gangMeng);
+    expect(_assetImage(WuxiaUi.ceremonyFailureInk), findsOneWidget);
   });
 
   testWidgets('draw 也走败样式', (tester) async {

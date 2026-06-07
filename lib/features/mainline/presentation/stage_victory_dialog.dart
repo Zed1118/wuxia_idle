@@ -130,15 +130,12 @@ class FirstClearBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return CeremonyImagePanel(
+      assetPath: WuxiaUi.ceremonyBossFirstVictory,
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      decoration: BoxDecoration(
-        color: WuxiaColors.resultHighlight.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: WuxiaColors.resultHighlight.withValues(alpha: 0.58),
-        ),
-      ),
+      borderColor: WuxiaColors.resultHighlight.withValues(alpha: 0.58),
+      imageOpacity: 0.35,
+      paperVeilOpacity: 0.7,
       child: Row(
         children: [
           const Icon(
@@ -252,22 +249,13 @@ class ResonanceUpgradeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return CeremonyImagePanel(
+      assetPath: WuxiaUi.ceremonyEquipmentResonance,
       padding: const EdgeInsets.fromLTRB(14, 11, 14, 12),
-      decoration: BoxDecoration(
-        color: WuxiaUi.paper.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: WuxiaColors.popupCritical.withValues(alpha: 0.52),
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x33000000),
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
+      borderRadius: 8,
+      borderColor: WuxiaColors.popupCritical.withValues(alpha: 0.52),
+      imageOpacity: 0.34,
+      paperVeilOpacity: 0.78,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

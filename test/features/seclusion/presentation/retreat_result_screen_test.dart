@@ -11,20 +11,21 @@ import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart
 import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/retreat_result_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 SeclusionMapDef _mkMapDef() => const SeclusionMapDef(
-      mapType: RetreatMapType.shanLin,
-      mapName: '山林',
-      requiredRealm: RealmTier.xueTu,
-      mojianshiPerHour: 1.0,
-      experiencePerHour: 100,
-      equipmentDropRate: 1.0,
-      techniqueLearnRate: 1.0,
-      internalForceGrowth: 1.0,
-      biome: null,
-      weather: null,
-    );
+  mapType: RetreatMapType.shanLin,
+  mapName: '山林',
+  requiredRealm: RealmTier.xueTu,
+  mojianshiPerHour: 1.0,
+  experiencePerHour: 100,
+  equipmentDropRate: 1.0,
+  techniqueLearnRate: 1.0,
+  internalForceGrowth: 1.0,
+  biome: null,
+  weather: null,
+);
 
 RetreatResult _mkResult({
   double actualHours = 4.0,
@@ -34,16 +35,15 @@ RetreatResult _mkResult({
   int techniqueLearn = 0,
   int internalForce = 0,
   AdvancementResult? advancement,
-}) =>
-    (
-      actualHours: actualHours,
-      mojianshi: mojianshi,
-      equipmentDrops: drops,
-      experiencePoints: experience,
-      techniqueLearnPoints: techniqueLearn,
-      internalForcePoints: internalForce,
-      advancement: advancement,
-    );
+}) => (
+  actualHours: actualHours,
+  mojianshi: mojianshi,
+  equipmentDrops: drops,
+  experiencePoints: experience,
+  techniqueLearnPoints: techniqueLearn,
+  internalForcePoints: internalForce,
+  advancement: advancement,
+);
 
 Future<void> _pump(WidgetTester tester, RetreatResult result) async {
   await tester.pumpWidget(
@@ -52,6 +52,13 @@ Future<void> _pump(WidgetTester tester, RetreatResult result) async {
     ),
   );
 }
+
+Finder _assetImage(String path) => find.byWidgetPredicate(
+  (w) =>
+      w is Image &&
+      w.image is AssetImage &&
+      (w.image as AssetImage).assetName == path,
+);
 
 void main() {
   setUpAll(() async {
@@ -92,6 +99,7 @@ void main() {
       );
 
       expect(find.text('山林'), findsOneWidget);
+      expect(_assetImage(WuxiaUi.ceremonyRetreatResult), findsOneWidget);
       expect(find.text(UiStrings.seclusionActualHours(4.0)), findsOneWidget);
       expect(find.text(UiStrings.seclusionMojianshi(12)), findsOneWidget);
       expect(find.text(UiStrings.seclusionExperience(400)), findsOneWidget);
@@ -137,8 +145,9 @@ void main() {
       expect(find.textContaining('经验'), findsNothing);
     });
 
-    testWidgets('mojianshi + internalForce + insight 混合 → 3 行,不显空文案',
-        (tester) async {
+    testWidgets('mojianshi + internalForce + insight 混合 → 3 行,不显空文案', (
+      tester,
+    ) async {
       await _pump(
         tester,
         _mkResult(mojianshi: 8, internalForce: 50, techniqueLearn: 2),
@@ -156,16 +165,15 @@ void main() {
       required int layers,
       required RealmTier tierAfter,
       required RealmLayer layerAfter,
-    }) =>
-        AdvancementResult(
-          layersGained: layers,
-          tierBefore: RealmTier.xueTu,
-          layerBefore: RealmLayer.qiMeng,
-          tierAfter: tierAfter,
-          layerAfter: layerAfter,
-          internalForceMaxBefore: 500,
-          internalForceMaxAfter: 800,
-        );
+    }) => AdvancementResult(
+      layersGained: layers,
+      tierBefore: RealmTier.xueTu,
+      layerBefore: RealmLayer.qiMeng,
+      tierAfter: tierAfter,
+      layerAfter: layerAfter,
+      internalForceMaxBefore: 500,
+      internalForceMaxAfter: 800,
+    );
 
     testWidgets('升 1 层 → 显「突破至 学徒精通」', (tester) async {
       await _pump(
@@ -206,8 +214,9 @@ void main() {
       expect(find.textContaining('连破'), findsNothing);
     });
 
-    testWidgets('advancement layersGained=0 → didAdvance=false → 无 banner',
-        (tester) async {
+    testWidgets('advancement layersGained=0 → didAdvance=false → 无 banner', (
+      tester,
+    ) async {
       await _pump(
         tester,
         _mkResult(

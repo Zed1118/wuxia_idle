@@ -7,6 +7,7 @@ import 'package:wuxia_idle/features/encounter/application/encounter_service.dart
 import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 import 'package:wuxia_idle/features/encounter/presentation/encounter_dialog.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 /// showEncounterOutcomeBanner widget 测试(W15 C-2 收尾)。
 ///
@@ -30,6 +31,13 @@ void main() {
     );
   }
 
+  Finder assetImage(String path) => find.byWidgetPredicate(
+    (w) =>
+        w is Image &&
+        w.image is AssetImage &&
+        (w.image as AssetImage).assetName == path,
+  );
+
   testWidgets('UnlockSkillApplied 显 SkillDef.name 中文招名', (tester) async {
     await tester.pumpWidget(
       wrap(
@@ -47,6 +55,7 @@ void main() {
 
     expect(find.text(UiStrings.encounterOutcomeSkillTitle), findsOneWidget);
     expect(find.text('领悟新招:听雨剑'), findsOneWidget);
+    expect(assetImage(WuxiaUi.ceremonyInsightBamboo), findsOneWidget);
     expect(find.textContaining('skill_encounter_ting_yu_jian'), findsNothing);
   });
 

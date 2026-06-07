@@ -23,22 +23,13 @@ class AdvancementSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final advanced = entries.where((e) => e.result.didAdvance).toList();
     if (advanced.isEmpty) return const SizedBox.shrink();
-    return Container(
+    return CeremonyImagePanel(
+      assetPath: WuxiaUi.ceremonyRealmBreakthrough,
       padding: const EdgeInsets.fromLTRB(14, 11, 14, 12),
-      decoration: BoxDecoration(
-        color: WuxiaUi.paper.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: WuxiaColors.resultHighlight.withValues(alpha: 0.58),
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x33000000),
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
+      borderRadius: 8,
+      borderColor: WuxiaColors.resultHighlight.withValues(alpha: 0.58),
+      imageOpacity: 0.32,
+      paperVeilOpacity: 0.8,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
