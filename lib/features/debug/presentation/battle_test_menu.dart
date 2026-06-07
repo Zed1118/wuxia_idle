@@ -368,7 +368,7 @@ class BattleScenarioData {
 /// 结束后通过 [BattleScreen.onBattleEnd] 回 pop 到 [BattleTestMenu]。
 class ScenarioLauncher extends ConsumerStatefulWidget {
   final (List<BattleCharacter>, List<BattleCharacter>) Function() teamsFactory;
-  final String hint;
+  final String? hint;
 
   /// 出版美术验收:传给 BattleScreen 渲染场景背景 + scrim。null = 无背景。
   final String? sceneBackgroundPath;

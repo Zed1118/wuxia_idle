@@ -239,7 +239,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       final sceneName = envScene.isEmpty ? 'citywall' : envScene;
       return ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioB,
-        hint: '出版美术验收·战斗屏背景 scrim + 胜负仪式 ($sceneName)',
+        hint: null,
         sceneBackgroundPath: 'assets/scenes/battle_$sceneName.png',
       );
     case VisualRoute.battleUltimateCaption:
@@ -247,7 +247,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.battleBossFrame:
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioBoss,
-        hint: '出版美术验收·Boss 头像金色加粗边框(右队首位)',
+        hint: null,
         sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
       );
     case VisualRoute.battleVictoryFirstClear:
