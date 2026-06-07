@@ -17,11 +17,13 @@ class PortraitFrame extends StatelessWidget {
     required this.size,
     required this.borderColor,
     this.placeholderText,
+    this.fit = BoxFit.cover,
   });
 
   final String? portraitPath;
   final double size;
   final Color borderColor;
+  final BoxFit fit;
 
   /// null 立绘时的首字水墨占位文本(通常传角色名)。为 null 则不占位。
   final String? placeholderText;
@@ -38,11 +40,15 @@ class PortraitFrame extends StatelessWidget {
       alignment: Alignment.center,
       child: portraitPath == null
           ? _placeholder()
-          : Image.asset(
-              portraitPath!,
-              fit: BoxFit.cover,
+          : Image(
+              image: ExactAssetImage(
+                portraitPath!,
+                bundle: DefaultAssetBundle.of(context),
+              ),
+              fit: fit,
               errorBuilder: wuxiaAssetErrorBuilder(
-                  () => Container(color: WuxiaColors.avatarFill)),
+                () => Container(color: WuxiaColors.avatarFill),
+              ),
             ),
     );
   }

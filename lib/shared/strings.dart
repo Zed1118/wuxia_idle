@@ -189,6 +189,7 @@ class UiStrings {
   static const String panelEquipment = '装备';
   static const String panelTechnique = '心法';
   static const String profileRealmLabel = '境界';
+  static const String profilePortraitPlaque = '人物签';
   static const String lineageRoleFounder = '开派祖师';
   static const String lineageRoleDisciple = '门下弟子';
   static const String lineageRoleGrandDisciple = '再传弟子';
