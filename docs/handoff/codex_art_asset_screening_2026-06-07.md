@@ -4,6 +4,7 @@
 
 - 原始目录：`/Users/a10506/Downloads/autojourney`
 - 筛选工作区：`/Users/a10506/Downloads/autojourney_screening`
+- 留用素材目录：`/Users/a10506/Downloads/autojourney/筛选留用_2026-06-07`
 - 本轮优先处理根目录新图：339 张 PNG。
 - 全目录递归共有 1304 张 PNG，约 2.3GB；旧批次位于 `批量美术素材/已采用`、`未采用`、`_archived`，本轮未混入一筛。
 
@@ -13,6 +14,7 @@
 - 全量 manifest：`/Users/a10506/Downloads/autojourney_screening/all_png_manifest.csv`
 - contact sheets：`/Users/a10506/Downloads/autojourney_screening/contact_sheets/`
 - 一筛精选目录：`/Users/a10506/Downloads/autojourney_screening/selected/`
+- 一筛留用副本：`/Users/a10506/Downloads/autojourney/筛选留用_2026-06-07/`
 - 一筛精选 manifest：`/Users/a10506/Downloads/autojourney_screening/selected_manifest.csv`
 - 一筛精选总览：`/Users/a10506/Downloads/autojourney_screening/selected_contact_sheet.jpg`
 - 一筛报告：`/Users/a10506/Downloads/autojourney_screening/selection_report.md`
@@ -36,6 +38,14 @@
 - 战斗特效多为白底或纸底图，接入时建议先做 blend/mask 或离线抠图，不要直接按透明 PNG 叠上去。
 - 仪式图中有伪文字的图只适合作底纸、纹理或遮罩；关键中文必须仍由 Flutter 字体渲染。
 - Boss 头像框需要透明通道或 mask 处理后再接入。
+
+## 后续接入顺序
+
+1. 先接 `menu_bg` 到主菜单/封面，验证 1280x720 与扩展屏宽屏显示。
+2. 再接 `system_thumbnail` 到主入口功能卡，优先替换角色、装备、心法、闭关、爬塔入口。
+3. 接 `ceremony` 到胜利、首通、领悟、心法升层等弹层/结果页，注意遮掉伪文字。
+4. 最后处理 `battle_fx`，先做透明/混合预处理，再接入战斗动画层。
+5. `ui_parts` 的 Boss 头像框作为独立小任务处理，需要 mask 或透明通道。
 
 ## 入选清单
 
