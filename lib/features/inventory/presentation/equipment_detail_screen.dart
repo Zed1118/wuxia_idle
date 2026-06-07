@@ -293,7 +293,7 @@ class _InfoCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '战斗 ${equipment.battleCount} 次',
+                  UiStrings.equipmentBattleCount(equipment.battleCount),
                   style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
                 ),
               ],

@@ -421,10 +421,14 @@ class _MapCard extends StatelessWidget {
 
   String _outputSummary() {
     final parts = <String>[];
-    if (def.equipmentDropRate > 1.0) parts.add('兵器掉率 +50%');
-    if (def.techniqueLearnRate > 1.0) parts.add('心法领悟 +50%');
-    if (def.internalForceGrowth > 1.0) parts.add('内力增长 +50%');
-    if (parts.isEmpty) parts.add('综合产出');
+    if (def.equipmentDropRate > 1.0) parts.add(UiStrings.seclusionBonusEquipDrop);
+    if (def.techniqueLearnRate > 1.0) {
+      parts.add(UiStrings.seclusionBonusTechniqueLearn);
+    }
+    if (def.internalForceGrowth > 1.0) {
+      parts.add(UiStrings.seclusionBonusInternalForce);
+    }
+    if (parts.isEmpty) parts.add(UiStrings.seclusionBonusBalanced);
     return parts.join('｜');
   }
 
@@ -434,8 +438,8 @@ class _MapCard extends StatelessWidget {
     final elapsed = DateTime.now().difference(session.startedAt).inMinutes;
     final planned = session.durationHours * 60;
     final remaining = (planned - elapsed).clamp(0, planned);
-    if (remaining <= 0) return '已完成，可收功';
-    return '剩余 ${remaining ~/ 60}h${remaining % 60}min，可查看';
+    if (remaining <= 0) return UiStrings.seclusionMapActiveDoneHint;
+    return UiStrings.seclusionMapActiveRemainingHint(remaining);
   }
 }
 

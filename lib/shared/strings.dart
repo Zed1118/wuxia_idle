@@ -270,6 +270,8 @@ class UiStrings {
   // 仓库 / 强化对话框（T29）
   static const String inventoryTitle = '装备仓库';
   static const String inventoryEmpty = '仓库空空如也';
+  /// 装备详情共鸣行:`战斗 N 次`。
+  static String equipmentBattleCount(int count) => '战斗 $count 次';
 
   // 仓库 Tab（W15 #30 P3 后续 A · 物料 Tab）
   static const String inventoryTabEquipment = '装备';
@@ -702,6 +704,14 @@ class UiStrings {
   static const String seclusionMapReady = '可闭关';
   static const String seclusionMapAtlasTitle = '山水地点图册';
   static const String seclusionMapActiveHint = '已有闭关正在此地进行';
+  // 地图卡产出加成摘要 / 进行中提示(_mapBonusSummary + _activeHint)。
+  static const String seclusionBonusEquipDrop = '兵器掉率 +50%';
+  static const String seclusionBonusTechniqueLearn = '心法领悟 +50%';
+  static const String seclusionBonusInternalForce = '内力增长 +50%';
+  static const String seclusionBonusBalanced = '综合产出';
+  static const String seclusionMapActiveDoneHint = '已完成，可收功';
+  static String seclusionMapActiveRemainingHint(int remainingMinutes) =>
+      '剩余 ${remainingMinutes ~/ 60}h${remainingMinutes % 60}min，可查看';
 
   static const String seclusionSetupTitle = '选择时长';
   static const String seclusionSetupStartButton = '开始闭关';
