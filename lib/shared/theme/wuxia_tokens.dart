@@ -36,8 +36,14 @@ class WuxiaUi {
   static const String scrollHorizontal = 'assets/ui/scroll_horizontal.png';
   static const String scrollVertical = 'assets/ui/scroll_vertical.png';
   static const String mountainBg = 'assets/ui/mountain_bg.png';
-  static const String mainMenuBg = 'assets/ui/mj/menu_splash_pier_01.png';
+  static const String mainMenuBg =
+      'assets/ui/mj/menu_mountain_gate_clean_01.png';
+  static const String mainMenuPierBg = 'assets/ui/mj/menu_splash_pier_01.png';
+  static const String mainMenuPierAltBg =
+      'assets/ui/mj/menu_splash_pier_02.png';
   static const String mainMenuMountainBg =
+      'assets/ui/mj/menu_mountain_gate_01.png';
+  static const String mainMenuMountainWideBg =
       'assets/ui/mj/menu_mountain_gate_wide_01.png';
   static const String entryMainline =
       'assets/ui/mj/entry_mainline_story_01.png';
