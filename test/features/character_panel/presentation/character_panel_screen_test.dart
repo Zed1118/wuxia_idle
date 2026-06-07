@@ -205,6 +205,7 @@ void main() {
     expect(find.byType(SectionHeader), findsWidgets);
     expect(find.byType(PlaqueButton), findsOneWidget);
     expect(find.byType(PortraitFrame), findsOneWidget);
+    expect(find.text(UiStrings.profilePortraitPlaque), findsOneWidget);
     expect(find.text('测试者'), findsOneWidget); // 姓名
     expect(find.text('刚猛'), findsOneWidget); // EnumL10n.school(gangMeng)
     expect(find.text('根骨'), findsOneWidget);

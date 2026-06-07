@@ -318,16 +318,52 @@ class _ProfilePortraitPlaque extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 128,
-      padding: const EdgeInsets.all(6),
+      width: 136,
+      padding: const EdgeInsets.fromLTRB(7, 7, 7, 8),
       decoration: BoxDecoration(
-        color: const Color(0x33F3E6C7),
+        color: WuxiaUi.paper.withValues(alpha: 0.22),
         borderRadius: BorderRadius.circular(5),
-        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.42)),
+        border: Border.all(color: borderColor.withValues(alpha: 0.52)),
+        boxShadow: [
+          BoxShadow(
+            color: WuxiaUi.ink.withValues(alpha: 0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 1,
+                  color: WuxiaUi.ink.withValues(alpha: 0.22),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6),
+                child: Text(
+                  UiStrings.profilePortraitPlaque,
+                  style: TextStyle(
+                    color: WuxiaUi.muted,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  height: 1,
+                  color: WuxiaUi.ink.withValues(alpha: 0.22),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
           Stack(
             alignment: Alignment.center,
             children: [
@@ -376,6 +412,7 @@ class _ProfilePortraitPlaque extends StatelessWidget {
                           size: 102,
                           borderColor: Colors.transparent,
                           placeholderText: character.name,
+                          fit: BoxFit.contain,
                         ),
                       ),
                       ColoredBox(color: WuxiaUi.paper.withValues(alpha: 0.12)),
