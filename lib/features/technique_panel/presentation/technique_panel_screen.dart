@@ -688,6 +688,17 @@ class RefineInsightDialogBody extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        const SizedBox(
+          height: 86,
+          child: CeremonyImagePanel(
+            assetPath: WuxiaUi.ceremonyTechniqueScroll,
+            padding: EdgeInsets.zero,
+            imageOpacity: 0.54,
+            paperVeilOpacity: 0.34,
+            child: SizedBox.shrink(),
+          ),
+        ),
+        const SizedBox(height: 10),
         Text(
           UiStrings.refineInsightBody(points),
           style: const TextStyle(

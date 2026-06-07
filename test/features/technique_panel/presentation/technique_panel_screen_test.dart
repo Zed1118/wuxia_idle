@@ -10,6 +10,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/features/technique_panel/presentation/technique_panel_screen.dart';
 
 /// T31 心法面板 widget 测试（phase2_tasks.md §483）。
@@ -107,6 +108,13 @@ void main() {
     await tester.pump();
     await tester.pump();
   }
+
+  Finder assetImage(String path) => find.byWidgetPredicate(
+    (w) =>
+        w is Image &&
+        w.image is AssetImage &&
+        (w.image as AssetImage).assetName == path,
+  );
 
   // ── 用例 1：分组渲染 ──────────────────────────────────────────────────
 
@@ -304,6 +312,7 @@ void main() {
     expect(find.text(UiStrings.refineInsightSpendLine(5)), findsOneWidget);
     expect(find.text(UiStrings.refineInsightTargetLine), findsOneWidget);
     expect(find.text(UiStrings.refineInsightCeremonyHint), findsOneWidget);
+    expect(assetImage(WuxiaUi.ceremonyTechniqueScroll), findsOneWidget);
     expect(find.text(UiStrings.commonCancel), findsOneWidget);
     expect(find.text(UiStrings.refineInsightConfirm), findsOneWidget);
   });

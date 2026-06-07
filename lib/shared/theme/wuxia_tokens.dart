@@ -53,4 +53,21 @@ class WuxiaUi {
       'assets/ui/mj/entry_lightfoot_trial_01.png';
   static const String entryJianghu = 'assets/ui/mj/entry_city_defense_01.png';
   static const String entryCodex = 'assets/ui/mj/entry_jianghu_codex_01.png';
+  static const String ceremonyRealmBreakthrough =
+      'assets/ui/mj/ceremony_realm_breakthrough_01.png';
+  static const String ceremonyBossFirstVictory =
+      'assets/ui/mj/ceremony_boss_first_victory_01.png';
+  static const String ceremonyVictoryTag =
+      'assets/ui/mj/ceremony_victory_tag_01.png';
+  static const String ceremonyRedSeal = 'assets/ui/mj/ceremony_red_seal_01.png';
+  static const String ceremonyEquipmentResonance =
+      'assets/ui/mj/ceremony_equipment_resonance_01.png';
+  static const String ceremonyTechniqueScroll =
+      'assets/ui/mj/ceremony_technique_scroll_01.png';
+  static const String ceremonyRetreatResult =
+      'assets/ui/mj/ceremony_offline_retreat_result_01.png';
+  static const String ceremonyInsightBamboo =
+      'assets/ui/mj/ceremony_insight_bamboo_01.png';
+  static const String ceremonyFailureInk =
+      'assets/ui/mj/ceremony_failure_ink_01.png';
 }
