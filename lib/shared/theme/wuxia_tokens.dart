@@ -59,7 +59,8 @@ class WuxiaUi {
       'assets/ui/mj/ceremony_boss_first_victory_01.png';
   static const String ceremonyVictoryTag =
       'assets/ui/mj/ceremony_victory_tag_01.png';
-  static const String ceremonyRedSeal = 'assets/ui/mj/ceremony_red_seal_01.png';
+  static const String ceremonyRedSeal =
+      'assets/ui/mj/ceremony_red_seal_blend.png';
   static const String ceremonyEquipmentResonance =
       'assets/ui/mj/ceremony_equipment_resonance_01.png';
   static const String ceremonyTechniqueScroll =

@@ -127,6 +127,7 @@ void main() {
       expect(find.text('首胜 · 风雨渡口'), findsOneWidget);
       expect(find.byIcon(Icons.military_tech), findsOneWidget);
       expect(_assetImage(WuxiaUi.ceremonyBossFirstVictory), findsOneWidget);
+      expect(_assetImage(WuxiaUi.ceremonyRedSeal), findsOneWidget);
     });
 
     testWidgets('item drop + 无升层 → 显 drop 条目', (tester) async {
