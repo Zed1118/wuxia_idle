@@ -11,6 +11,10 @@ enum VisualRoute {
     'technique_refine_insight_dialog',
     '心法凝练·领悟点凝入主修小帖验收',
   ),
+  encounterOutcomeSkillBanner(
+    'encounter_outcome_skill_banner',
+    '奇遇 outcome·灵光一现领悟新招小帖验收',
+  ),
   sectScreenNpc(
     'sect_screen_npc',
     'sect_screen·成员立绘验收(祖师 + 6 sect_candidate 完整显)',
