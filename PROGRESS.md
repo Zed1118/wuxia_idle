@@ -5,6 +5,8 @@
 
 ## 当前阶段
 
+> ✅ **2026-06-06..07(Codex 两天 UI 包装+MJ 素材接入 43 commit 合并 main · `a195547`)**:Codex 桌面备份端两天连续推进三条线:① UI 连续包装(装备/仓库/角色面板/主菜单/主线/爬塔/闭关/心法/胜利成长反馈,全走 WuxiaUi kit + `textScale 1.12` 全局放大)② MJ 素材接入(37 组筛完留 39 张,接主菜单山门/仪式页/战斗特效/Boss 框/红印 · `assets/ui/mj` 56 张 + pubspec 注册 + 运行时盘点)③ 用户现场反馈修正(角色页装备白底/标题伪底/字号偏小)。**Claude 接手分支级 review**:analyze 0 / 全量 **1763 测** / 红线数值未动 / 无逻辑回归(唯一行为变更=心法相生检测改遍历全部辅修槽,对齐 GDD §4.5 正确性修复,有「多辅修槽候选」测守)+ 深扫挖出 7 处硬编码中文抽 `UiStrings`(闭关/装备界面)→ ff 合并 + push origin/main(43+1 commit)。**Codex 视觉复查总判 FAIL**:G5.1 红线=心法 7 阶 cover `tier_*.png` 含 MJ 伪书法(**main 既有非本批引入**,挂账重出)· G2.2/G3.1 WARN。交接 `docs/handoff/codex_to_claude_full_handoff_2026-06-07.md`。
+
 > ✅ **2026-06-05(UI kit v1 序 0 地基落地 · subagent-driven · xhigh · `feat/ui-kit-v1`)**:承 UI 包装方案 v1 → writing-plans 拆**单 plan 全 kit** → TDD 实装。**9 组件 kit**(`lib/shared/widgets/wuxia_ui/`:PaperPanel/SectionHeader/SealBadge/ItemSlot/MeridianBar/PlaqueButton/WuxiaTitleBar〔PreferredSizeWidget 替 AppBar〕/PlaqueTab/PaperDialog〔+`show` 入口〕)+ **母题 token** `WuxiaUi`(`shared/theme/wuxia_tokens.dart` 色/边/面/形/资产,浅色宣纸笺,锚 demo `:root`,区别战斗深色 `WuxiaColors`,与现有 `WuxiaPaperPanel` 并存)+ barrel。每组件 widget 测(errorBuilder/IntrinsicHeight/钳值守 · 复用 `EquipGlyph`+`wuxiaAssetErrorBuilder`)。**T11 callsite 试点**:仓库分组头(`inventory_screen._SlotGroupSection`)竖条+label+计数 → `SectionHeader`(数量 (N) 与 demo §2 段头一致去掉,整页 rollout 可回收)。**两段式只读 review**(spec 合规 ✅ + 代码质量 ✅)+ 最终 review ✅ ready to merge,修 2 Nit(绛红旁路 `0xFF8A2B21`→`WuxiaUi.jiang` token + 补 ItemSlot highTier 分支测)。全量 **1713→1744 测 / 1 skip / 0 analyze**(+31)· 13 commit。**T11 视觉自验留 Codex/用户**(CLI 不截 native app)。**下一步=序 1 装备仓库+详情逐页改造**(趁热吃重出水墨图红利,kit 落地)。plan `docs/superpowers/plans/2026-06-05-ui-kit-v1.md`。
 
 > 🎨 **2026-06-04 续(8 张装备图重出 + 工作树清理 + UI 包装改造方案 v1)**:① **8 张产品照/借线感装备 detail 重出归位**(铜铃/蛇胆丸/平安扣/棉甲/短褂/锁子甲/铁片甲/柳叶刀 · 白底产品照/藏品照 → MJ v7 水墨统一风格,**配方=主环境 sref `ae8355ca` + `--sw 50`**〔先前漏写,这批坐实是装备 detail 核心配方〕+ 题字朱印 + 7阶梯度词 + 柳叶刀锁 dao 无 jian 漂移 · pngquant+oxipng 244-361KB · 读图选片归位 `229e7ea` · 派单 `mj_equipment_reshoot_productphoto8_2026-06-04.txt`)。② **工作树清理**(drop stash + macos 构建产物/`.claude/` 入 .gitignore + skip-worktree 屏蔽 pbxproj 噪音 · `5f83d31` 已 push)。③ **UI 包装改造方案 v1 · brainstorming 收口**(承外部 UI 评估「系统页停在 Flutter 功能面板视觉语言」· 力度=**重度游戏化重做** · 9 组件 UI kit〔TitleBar/PlaqueTab/PaperPanel/SectionHeader/ItemSlot/MeridianBar/SealBadge/PlaqueButton/PaperDialog〕+ 母题 token/红线〔宣纸/墨边/木牌/朱印/卷轴 · 不走网游金光〕+ 5 核心屏〔主菜单/角色/仓库/详情/战斗胜利〕· **真实资产 demo** `docs/handoff/ui_mockup_v1/`〔python http.server 预览,主菜单三版对比后**定 C 宣纸笺**〕· spec `docs/superpowers/specs/2026-06-04-ui-packaging-pass-v1-design.md` · `9ea8f4f`)· **下一步 = writing-plans 拆实现计划,kit 先行**(0 代码尚未动)。
@@ -37,6 +39,7 @@
 
 - ~~37 / 38 / 40 / 41 / 42 / 43 / 44 / 45 全销账~~(2026-05-17/18/19/20):详各 closeout
 - ~~stage_05_05 on-level ceiling 20%~~ 跨阶墙 **2026-05-31 sim 复核销账**(non-bug · data-confirmed · `test/tools/output/balance_summary_2026-05-31.md`)
+- **心法 7 阶 cover `assets/techniques/tier_*.png` 含 MJ 伪书法**(G5.1 红线 · main 既有 2026-05-21 · Codex 验收暴露)→ 决议**重出 7 张无文字横幅卷轴**(空题签 · MJ prompt 已产 · 待出图落位+rebuild+复验);另 `equipment_detail_screen.dart:489 '(基 $base)'` 同类 nit(main 既有,本批未改)
 
 > 已销账条目(#1-#45)详见末尾归档。**P1 阶段全销账 ✅** + **Demo §8.4 14/14 全达标 ✅** + **1.0 ~95% release ready ✅**(A+B+C 全 PASS · 剩 D-G 留 M15-16)。
 
