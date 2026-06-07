@@ -110,6 +110,19 @@ void main() {
     expect(find.byType(InkWell), findsNWidgets(18));
   });
 
+  testWidgets('入口按钮显示语义图标牌', (tester) async {
+    await tester.pumpWidget(app());
+
+    expect(find.byIcon(Icons.map_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.person_outline), findsOneWidget);
+    expect(find.byIcon(Icons.inventory_2_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.auto_stories_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.landscape_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.filter_hdr_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.account_tree_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.menu_book_outlined), findsOneWidget);
+  });
+
   testWidgets('入口状态 chip：主线 / 爬塔 / 装备 / 心法 / 闭关', (tester) async {
     final now = DateTime(2026, 6, 7);
     final mainTechnique = Technique.create(

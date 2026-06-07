@@ -15,6 +15,7 @@ class WuxiaInkButton extends StatelessWidget {
     required this.label,
     required this.hint,
     required this.onTap,
+    this.icon,
     this.status,
     this.disabled = false,
     this.locked = false,
@@ -22,6 +23,7 @@ class WuxiaInkButton extends StatelessWidget {
 
   final String label;
   final String hint;
+  final IconData? icon;
   final String? status;
   final VoidCallback? onTap;
   final bool disabled;
@@ -92,9 +94,18 @@ class WuxiaInkButton extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 14, 16, 14),
+                  padding: EdgeInsets.fromLTRB(
+                    icon == null ? 22 : 16,
+                    14,
+                    16,
+                    14,
+                  ),
                   child: Row(
                     children: [
+                      if (icon != null) ...[
+                        _InkButtonIcon(icon!),
+                        const SizedBox(width: 12),
+                      ],
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,6 +175,34 @@ class WuxiaInkButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _InkButtonIcon extends StatelessWidget {
+  const _InkButtonIcon(this.icon);
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 38,
+      height: 38,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: WuxiaUi.ink.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.34)),
+        boxShadow: [
+          BoxShadow(
+            color: WuxiaUi.paper.withValues(alpha: 0.22),
+            blurRadius: 8,
+            offset: const Offset(0, -1),
+          ),
+        ],
+      ),
+      child: Icon(icon, size: 21, color: WuxiaUi.ink.withValues(alpha: 0.82)),
     );
   }
 }
