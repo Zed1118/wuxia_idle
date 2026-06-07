@@ -34,6 +34,7 @@ import '../../inventory/presentation/inventory_screen.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../application/phase2_seed_service.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
+import '../../battle/presentation/battle_scene_background.dart';
 import '../application/visual_route.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../data/narrative_loader.dart';
@@ -350,50 +351,252 @@ class _VictoryFirstClearPreview extends StatelessWidget {
     );
     return Scaffold(
       backgroundColor: WuxiaColors.background,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: AlertDialog(
-            title: const Text('风雨渡口 · 战斗胜利'),
-            content: StageVictoryContent(
-              firstClearTitle: UiStrings.stageVictoryBossFirstClear('风雨渡口'),
-              drops: DropResult(
-                equipments: [eq],
-                items: const [
-                  ItemDropResult(defId: 'item_mojianshi', quantity: 8),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const BattleSceneBackground(
+            path: 'assets/scenes/battle_citywall.png',
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                radius: 0.72,
+                colors: [
+                  WuxiaColors.background.withValues(alpha: 0.10),
+                  WuxiaColors.background.withValues(alpha: 0.64),
                 ],
               ),
-              advancements: const [
-                AdvancementEntry(
-                  chName: '阴柔丙',
-                  result: AdvancementResult(
-                    layersGained: 1,
-                    tierBefore: RealmTier.xueTu,
-                    layerBefore: RealmLayer.qiMeng,
-                    tierAfter: RealmTier.xueTu,
-                    layerAfter: RealmLayer.ruMen,
-                    internalForceMaxBefore: 500,
-                    internalForceMaxAfter: 650,
-                  ),
-                ),
-              ],
-              resonanceUpgrades: const [
-                ResonanceUpgradeNotice(
-                  equipmentName: '天问剑',
-                  newStage: ResonanceStage.moQi,
-                ),
-              ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () {},
-                child: const Text(UiStrings.stageVictoryConfirm),
-              ),
-            ],
           ),
-        ),
+          Center(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 620),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const _VictorySealMark(),
+                    const SizedBox(height: 12),
+                    AlertDialog(
+                      title: const Text('風雨渡口 · 戰鬥勝利'),
+                      content: StageVictoryContent(
+                        firstClearTitle: UiStrings.stageVictoryBossFirstClear(
+                          '风雨渡口',
+                        ),
+                        drops: DropResult(
+                          equipments: [eq],
+                          items: const [
+                            ItemDropResult(
+                              defId: 'item_mojianshi',
+                              quantity: 8,
+                            ),
+                          ],
+                        ),
+                        advancements: const [
+                          AdvancementEntry(
+                            chName: '阴柔丙',
+                            result: AdvancementResult(
+                              layersGained: 1,
+                              tierBefore: RealmTier.xueTu,
+                              layerBefore: RealmLayer.qiMeng,
+                              tierAfter: RealmTier.xueTu,
+                              layerAfter: RealmLayer.ruMen,
+                              internalForceMaxBefore: 500,
+                              internalForceMaxAfter: 650,
+                            ),
+                          ),
+                        ],
+                        resonanceUpgrades: const [
+                          ResonanceUpgradeNotice(
+                            equipmentName: '天问剑',
+                            newStage: ResonanceStage.moQi,
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {},
+                          child: const Text(UiStrings.stageVictoryConfirm),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+}
+
+class _VictorySealMark extends StatefulWidget {
+  const _VictorySealMark();
+
+  @override
+  State<_VictorySealMark> createState() => _VictorySealMarkState();
+}
+
+class _VictorySealMarkState extends State<_VictorySealMark>
+    with TickerProviderStateMixin {
+  late final AnimationController _intro;
+  late final AnimationController _breath;
+
+  @override
+  void initState() {
+    super.initState();
+    _intro = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 720),
+    )..forward();
+    _breath = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _intro.dispose();
+    _breath.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final introCurve = CurvedAnimation(
+      parent: _intro,
+      curve: Curves.easeOutCubic,
+    );
+    final breathCurve = CurvedAnimation(
+      parent: _breath,
+      curve: Curves.easeInOut,
+    );
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([introCurve, breathCurve]),
+      builder: (context, child) {
+        final intro = introCurve.value;
+        final breath = breathCurve.value;
+        return Opacity(
+          opacity: intro.clamp(0.0, 1.0),
+          child: Transform.translate(
+            offset: Offset(0, (1 - intro) * -18),
+            child: Transform.scale(
+              scale: 0.86 + intro * 0.14,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: WuxiaUi.paper.withValues(alpha: 0.88),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(
+                        color: WuxiaColors.popupCritical.withValues(
+                          alpha: 0.64,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: WuxiaColors.resultHighlight.withValues(
+                            alpha: 0.18 + breath * 0.08,
+                          ),
+                          blurRadius: 8 + breath * 5,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      '武',
+                      style: TextStyle(
+                        color: WuxiaColors.popupCritical,
+                        fontSize: 25,
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'Songti SC',
+                        fontFamilyFallback: ['KaiTi', 'SimSun', 'serif'],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CustomPaint(
+                        size: const Size(132, 112),
+                        painter: _VictoryBrushAuraPainter(
+                          alpha: 0.18 + breath * 0.08,
+                        ),
+                      ),
+                      Transform.scale(
+                        scale: 1 + breath * 0.025,
+                        child: const Text(
+                          '勝',
+                          style: TextStyle(
+                            color: WuxiaColors.resultHighlight,
+                            fontSize: 96,
+                            height: 0.92,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'Songti SC',
+                            fontFamilyFallback: ['KaiTi', 'SimSun', 'serif'],
+                            shadows: [
+                              Shadow(
+                                color: Color(0xAA000000),
+                                blurRadius: 16,
+                                offset: Offset(0, 5),
+                              ),
+                              Shadow(color: Color(0x88B99A3B), blurRadius: 14),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _VictoryBrushAuraPainter extends CustomPainter {
+  const _VictoryBrushAuraPainter({required this.alpha});
+
+  final double alpha;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final paint = Paint()
+      ..color = WuxiaColors.resultHighlight.withValues(alpha: alpha)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2
+      ..strokeCap = StrokeCap.round;
+    final rect = Rect.fromCenter(
+      center: center,
+      width: size.width * 0.74,
+      height: size.height * 0.72,
+    );
+    canvas.drawArc(rect, -0.42, 1.76, false, paint);
+    canvas.drawArc(
+      rect.inflate(8),
+      2.48,
+      1.34,
+      false,
+      paint..strokeWidth = 1.4,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _VictoryBrushAuraPainter oldDelegate) {
+    return oldDelegate.alpha != alpha;
   }
 }
 
