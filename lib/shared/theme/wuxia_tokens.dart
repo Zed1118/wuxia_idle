@@ -70,4 +70,30 @@ class WuxiaUi {
       'assets/ui/mj/ceremony_insight_bamboo_01.png';
   static const String ceremonyFailureInk =
       'assets/ui/mj/ceremony_failure_ink_01.png';
+  static const String fxGangmengStrike =
+      'assets/ui/mj/fx_gangmeng_strike_blend.png';
+  static const String fxGangmengUltimate =
+      'assets/ui/mj/fx_gangmeng_ultimate_blend.png';
+  static const String fxLingqiaoSlash =
+      'assets/ui/mj/fx_lingqiao_slash_blend.png';
+  static const String fxLingqiaoUltimate =
+      'assets/ui/mj/fx_lingqiao_ultimate_blend.png';
+  static const String fxYinrouPalm = 'assets/ui/mj/fx_yinrou_palm_blend.png';
+  static const String fxYinrouUltimate =
+      'assets/ui/mj/fx_yinrou_ultimate_blend.png';
+  static const String fxCriticalHit = 'assets/ui/mj/fx_critical_hit_blend.png';
+  static const String fxArmorBreak = 'assets/ui/mj/fx_armor_break_blend.png';
+  static const String fxDodgeShadow = 'assets/ui/mj/fx_dodge_shadow_blend.png';
+  static const String fxInternalInjury =
+      'assets/ui/mj/fx_internal_injury_blend.png';
+  static const String overlayMistLayer =
+      'assets/ui/mj/overlay_mist_layer_blend.png';
+  static const String overlayInkCloud =
+      'assets/ui/mj/overlay_ink_cloud_blend.png';
+  static const String overlayLanternGlow =
+      'assets/ui/mj/overlay_lantern_glow_blend.png';
+  static const String overlayLowHealth =
+      'assets/ui/mj/overlay_low_health_blend.png';
+  static const String battleBossEntranceBg =
+      'assets/scenes/mj/battle_boss_entrance_bg_01.png';
 }

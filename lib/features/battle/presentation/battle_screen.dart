@@ -14,7 +14,10 @@ import '../../../core/application/battle_providers.dart';
 import '../../../shared/effects/screen_shake.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import 'attack_animation.dart';
+import 'battle_atmosphere_overlay.dart';
+import 'battle_effect_sprite.dart';
 import 'battle_scene_background.dart';
 import 'character_avatar.dart';
 import 'damage_popup.dart';
@@ -47,6 +50,30 @@ class _TrailEntry {
     required this.endFrac,
     required this.color,
     required this.strokeWidth,
+  });
+}
+
+/// 单条 MJ 战斗特效贴片。纯表现层，坐标用战场比例，动画完成后移除。
+class _EffectEntry {
+  final int id;
+  final AnimationController ctrl;
+  final Offset centerFrac;
+  final String assetPath;
+  final double size;
+  final double opacity;
+  final double rotation;
+  final bool mirrored;
+  bool disposed = false;
+
+  _EffectEntry({
+    required this.id,
+    required this.ctrl,
+    required this.centerFrac,
+    required this.assetPath,
+    required this.size,
+    required this.opacity,
+    required this.rotation,
+    required this.mirrored,
   });
 }
 
@@ -113,6 +140,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   final List<_TrailEntry> _activeTrails = [];
   int _nextTrailId = 0;
 
+  // 活跃 MJ 特效贴片（命中/暴击/闪避/流派招式）。
+  final List<_EffectEntry> _activeEffects = [];
+  int _nextEffectId = 0;
+
   // 飘字状态：slotKey → 活跃飘字列表
   final Map<int, List<_PopupEntry>> _popups = {};
   int _nextPopupId = 0;
@@ -174,6 +205,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     for (final e in _activeTrails) {
       if (!e.disposed) e.ctrl.dispose();
     }
+    for (final e in _activeEffects) {
+      if (!e.disposed) e.ctrl.dispose();
+    }
     _shakeCtrl.dispose();
     super.dispose();
   }
@@ -209,14 +243,17 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       if (target != null) {
         _spawnPopup(target, action.attackResult!, actor);
         if (actor != null) _spawnTrail(actor, target, action);
+        _spawnBattleEffects(actor, target, action);
         if (!action.attackResult!.isDodged) {
           _triggerHitFlash(target, action.attackResult!.isCritical);
         }
       }
     }
     if (isUltimateCaptionSkill(action.skill)) {
-      _ultimateCaptionKey.currentState
-          ?.show(action.skill!.name, isEnemy: actor?.teamSide == 1);
+      _ultimateCaptionKey.currentState?.show(
+        action.skill!.name,
+        isEnemy: actor?.teamSide == 1,
+      );
     }
   }
 
@@ -260,6 +297,112 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       }
     });
     setState(() => _activeTrails.add(entry));
+    ctrl.forward(from: 0.0);
+  }
+
+  void _spawnBattleEffects(
+    BattleCharacter? actor,
+    BattleCharacter target,
+    BattleAction action,
+  ) {
+    final result = action.attackResult;
+    if (result == null) return;
+    final targetFrac = _slotFrac(target.teamSide, target.slotIndex);
+
+    if (result.isDodged) {
+      _spawnEffect(
+        assetPath: WuxiaUi.fxDodgeShadow,
+        centerFrac: targetFrac,
+        size: 230,
+        opacity: 0.64,
+        mirrored: target.teamSide == 1,
+      );
+      return;
+    }
+
+    if (actor != null) {
+      final isUltimate = isUltimateCaptionSkill(action.skill);
+      _spawnEffect(
+        assetPath: _schoolFx(actor.school, isUltimate: isUltimate),
+        centerFrac: targetFrac,
+        size: isUltimate ? 360 : 250,
+        opacity: isUltimate ? 0.76 : 0.64,
+        rotation: actor.teamSide == 0 ? -0.08 : 0.08,
+        mirrored: actor.teamSide == 1,
+      );
+    }
+
+    if (result.isCritical) {
+      _spawnEffect(
+        assetPath: WuxiaUi.fxCriticalHit,
+        centerFrac: targetFrac,
+        size: 220,
+        opacity: 0.7,
+      );
+    }
+    if (result.defenseRate >= 0.22) {
+      _spawnEffect(
+        assetPath: WuxiaUi.fxArmorBreak,
+        centerFrac: targetFrac,
+        size: 210,
+        opacity: 0.58,
+      );
+    }
+    if (result.appliedEffects.contains('internal_injury')) {
+      _spawnEffect(
+        assetPath: WuxiaUi.fxInternalInjury,
+        centerFrac: targetFrac,
+        size: 230,
+        opacity: 0.62,
+      );
+    }
+  }
+
+  static String _schoolFx(TechniqueSchool school, {required bool isUltimate}) {
+    return switch (school) {
+      TechniqueSchool.gangMeng =>
+        isUltimate ? WuxiaUi.fxGangmengUltimate : WuxiaUi.fxGangmengStrike,
+      TechniqueSchool.lingQiao =>
+        isUltimate ? WuxiaUi.fxLingqiaoUltimate : WuxiaUi.fxLingqiaoSlash,
+      TechniqueSchool.yinRou =>
+        isUltimate ? WuxiaUi.fxYinrouUltimate : WuxiaUi.fxYinrouPalm,
+    };
+  }
+
+  void _spawnEffect({
+    required String assetPath,
+    required Offset centerFrac,
+    required double size,
+    required double opacity,
+    double rotation = 0,
+    bool mirrored = false,
+  }) {
+    final ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 520),
+    );
+    final entry = _EffectEntry(
+      id: _nextEffectId++,
+      ctrl: ctrl,
+      centerFrac: centerFrac,
+      assetPath: assetPath,
+      size: size,
+      opacity: opacity,
+      rotation: rotation,
+      mirrored: mirrored,
+    );
+    ctrl.addStatusListener((status) {
+      if (status == AnimationStatus.completed && !entry.disposed) {
+        entry.disposed = true;
+        if (mounted) {
+          setState(() => _activeEffects.remove(entry));
+        } else {
+          _activeEffects.remove(entry);
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) => ctrl.dispose());
+      }
+    });
+    setState(() => _activeEffects.add(entry));
     ctrl.forward(from: 0.0);
   }
 
@@ -319,9 +462,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     if (!_isUltimateReady(c, ultimate)) return;
     if (_disabledUltimateChars.contains(c.characterId)) return;
 
-    ref
-        .read(battleProvider.notifier)
-        .requestUltimate(c.characterId, ultimate!);
+    ref.read(battleProvider.notifier).requestUltimate(c.characterId, ultimate!);
     setState(() => _disabledUltimateChars.add(c.characterId));
   }
 
@@ -445,12 +586,23 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       );
     }
 
+    final showLowHealthOverlay = state.rightTeam.any(
+      (c) => c.isAlive && c.maxHp > 0 && c.currentHp / c.maxHp <= 0.3,
+    );
+    final showBossInkCloud = state.rightTeam.any((c) => c.isBoss);
+
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       body: Stack(
         children: [
           Positioned.fill(
             child: BattleSceneBackground(path: widget.sceneBackgroundPath),
+          ),
+          Positioned.fill(
+            child: BattleAtmosphereOverlay(
+              showLowHealth: showLowHealthOverlay,
+              showInkCloud: showBossInkCloud,
+            ),
           ),
           SafeArea(
             child: AnimatedBuilder(
@@ -469,8 +621,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                   if (widget.hint != null) _HintBanner(hint: widget.hint!),
                   _Header(
                     state: state,
-                    onToggleLog: () =>
-                        setState(() => _logOpen = !_logOpen),
+                    onToggleLog: () => setState(() => _logOpen = !_logOpen),
                   ),
                   Expanded(
                     child: Stack(
@@ -487,6 +638,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                         Positioned.fill(
                           child: IgnorePointer(
                             child: _ProjectileLayer(trails: _activeTrails),
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: _EffectLayer(effects: _activeEffects),
                           ),
                         ),
                       ],
@@ -631,11 +787,14 @@ class _LogDrawer extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       decoration: const BoxDecoration(
                         color: WuxiaColors.panel,
                         border: Border(
-                            bottom: BorderSide(color: WuxiaColors.border)),
+                          bottom: BorderSide(color: WuxiaColors.border),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -649,8 +808,11 @@ class _LogDrawer extends StatelessWidget {
                           ),
                           const Spacer(),
                           IconButton(
-                            icon: const Icon(Icons.close,
-                                color: WuxiaColors.textSecondary, size: 18),
+                            icon: const Icon(
+                              Icons.close,
+                              color: WuxiaColors.textSecondary,
+                              size: 18,
+                            ),
                             tooltip: UiStrings.close,
                             onPressed: onClose,
                           ),
@@ -675,8 +837,7 @@ class _LogDrawer extends StatelessWidget {
                               separatorBuilder: (_, _) =>
                                   const SizedBox(height: 4),
                               itemBuilder: (_, idx) {
-                                final i =
-                                    state.actionLog.length - 1 - idx;
+                                final i = state.actionLog.length - 1 - idx;
                                 final action = state.actionLog[i];
                                 return Text(
                                   BattleLog.formatAction(action, state),
@@ -798,8 +959,9 @@ class _TeamColumn extends StatelessWidget {
           Expanded(
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              alignment:
-                  isLeftTeam ? Alignment.centerLeft : Alignment.centerRight,
+              alignment: isLeftTeam
+                  ? Alignment.centerLeft
+                  : Alignment.centerRight,
               child: i < team.length
                   ? _CharacterSlot(
                       character: team[i],
@@ -809,8 +971,7 @@ class _TeamColumn extends StatelessWidget {
                       animConfig: animConfig,
                       slotKey: teamSide * 3 + i,
                       onPopupComplete: onPopupComplete,
-                      hitFlashController:
-                          hitFlashControllers[teamSide * 3 + i],
+                      hitFlashController: hitFlashControllers[teamSide * 3 + i],
                       flashColor:
                           hitFlashColors[teamSide * 3 + i] ?? Colors.white,
                     )
@@ -1059,6 +1220,43 @@ class _ProjectileLayer extends StatelessWidget {
                 strokeWidth: t.strokeWidth,
                 start: Offset(t.startFrac.dx * w, t.startFrac.dy * h),
                 end: Offset(t.endFrac.dx * w, t.endFrac.dy * h),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _EffectLayer extends StatelessWidget {
+  final List<_EffectEntry> effects;
+  const _EffectLayer({required this.effects});
+
+  @override
+  Widget build(BuildContext context) {
+    if (effects.isEmpty) return const SizedBox.shrink();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            for (final e in effects)
+              Positioned(
+                left: e.centerFrac.dx * w - e.size / 2,
+                top: e.centerFrac.dy * h - e.size / 2,
+                width: e.size,
+                height: e.size,
+                child: BattleEffectSprite(
+                  key: ValueKey(e.id),
+                  assetPath: e.assetPath,
+                  animation: e.ctrl,
+                  size: e.size,
+                  opacity: e.opacity,
+                  rotation: e.rotation,
+                  mirrored: e.mirrored,
+                ),
               ),
           ],
         );
