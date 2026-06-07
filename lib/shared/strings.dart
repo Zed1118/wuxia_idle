@@ -534,6 +534,7 @@ class UiStrings {
 
   // P1.1 候选 3-a：共鸣度晋阶 banner（victory dialog 内）
   static const String stageVictoryResonanceLabel = '共鸣晋阶：';
+  static const String stageVictoryResonanceCeremonyTitle = '兵器应手';
   static String stageVictoryResonanceUpgrade(String name, String stage) =>
       '「$name」共鸣度晋至 $stage';
 
@@ -549,6 +550,8 @@ class UiStrings {
   static const String swordSongHint = '✦剑鸣';
 
   // ─── 升层 banner 多角色版（mainline / tower 共用）─────────────────────
+
+  static const String advancementCeremonyTitle = '境界精进';
 
   static String advancementForCharacter(
     String chName,

@@ -6,6 +6,7 @@ import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/drop_service.dart';
@@ -251,42 +252,115 @@ class ResonanceUpgradeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 11, 14, 12),
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: WuxiaColors.popupCritical.withValues(alpha: 0.52),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _ResonanceCeremonyTitle(),
+          const SizedBox(height: 8),
+          for (final n in notices)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: WuxiaColors.popupCritical.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: WuxiaColors.popupCritical.withValues(
+                          alpha: 0.48,
+                        ),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.auto_awesome,
+                      size: 18,
+                      color: WuxiaColors.popupCritical,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      UiStrings.stageVictoryResonanceUpgrade(
+                        n.equipmentName,
+                        EnumL10n.resonanceStage(n.newStage),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: WuxiaUi.ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ResonanceCeremonyTitle extends StatelessWidget {
+  const _ResonanceCeremonyTitle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
       children: [
+        const Icon(
+          Icons.sports_martial_arts,
+          color: WuxiaColors.popupCritical,
+          size: 16,
+        ),
+        const SizedBox(width: 8),
+        const Text(
+          UiStrings.stageVictoryResonanceCeremonyTitle,
+          style: TextStyle(
+            color: WuxiaUi.ink,
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Container(
+            height: 1,
+            color: WuxiaUi.ink.withValues(alpha: 0.28),
+          ),
+        ),
+        const SizedBox(width: 10),
         const Text(
           UiStrings.stageVictoryResonanceLabel,
           style: TextStyle(
-            color: WuxiaColors.textSecondary,
-            fontWeight: FontWeight.w600,
+            color: WuxiaColors.popupCritical,
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
           ),
         ),
-        const SizedBox(height: 4),
-        for (final n in notices)
-          Padding(
-            padding: const EdgeInsets.only(left: 8, top: 2),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.auto_awesome,
-                  size: 14,
-                  color: WuxiaColors.popupCritical,
-                ),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    UiStrings.stageVictoryResonanceUpgrade(
-                      n.equipmentName,
-                      EnumL10n.resonanceStage(n.newStage),
-                    ),
-                    style: const TextStyle(color: WuxiaColors.textPrimary),
-                  ),
-                ),
-              ],
-            ),
-          ),
       ],
     );
   }
