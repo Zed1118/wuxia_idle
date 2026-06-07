@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../application/encounter_service.dart';
 import '../domain/encounter_def.dart';
@@ -81,17 +82,17 @@ class _EncounterDialogState extends State<_EncounterDialog> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _TitleBar(
-                    title: widget.content.title ??
-                        UiStrings.encounterDialogTitleFallback),
+                  title:
+                      widget.content.title ??
+                      UiStrings.encounterDialogTitleFallback,
+                ),
                 const SizedBox(height: 20),
                 AnimatedSwitcher(
                   duration: _switchDuration,
                   switchInCurve: Curves.easeIn,
                   switchOutCurve: Curves.easeOut,
-                  transitionBuilder: (child, animation) => FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  ),
+                  transitionBuilder: (child, animation) =>
+                      FadeTransition(opacity: animation, child: child),
                   child: selected == null
                       ? _OpeningStage(
                           key: const ValueKey('opening'),
@@ -175,8 +176,11 @@ class _TitleBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.auto_awesome,
-            color: WuxiaColors.resultHighlight, size: 18),
+        const Icon(
+          Icons.auto_awesome,
+          color: WuxiaColors.resultHighlight,
+          size: 18,
+        ),
         const SizedBox(width: 8),
         const Text(
           UiStrings.encounterDialogTitleLabel,
@@ -226,8 +230,9 @@ class _OutcomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shown =
-        text.isNotEmpty ? text : UiStrings.encounterDialogOutcomeBodyFallback;
+    final shown = text.isNotEmpty
+        ? text
+        : UiStrings.encounterDialogOutcomeBodyFallback;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -268,8 +273,11 @@ class _ChoiceButton extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.chevron_right,
-                  color: WuxiaColors.textMuted, size: 18),
+              const Icon(
+                Icons.chevron_right,
+                color: WuxiaColors.textMuted,
+                size: 18,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -301,8 +309,7 @@ class _ConfirmButton extends StatelessWidget {
         onPressed: onTap,
         style: TextButton.styleFrom(
           foregroundColor: WuxiaColors.resultHighlight,
-          padding:
-              const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
         child: const Text(
           UiStrings.encounterDialogConfirmButton,
@@ -325,23 +332,149 @@ void showEncounterOutcomeBanner({
   required BuildContext context,
   required OutcomeApplied applied,
 }) {
-  final message = switch (applied) {
-    UnlockSkillApplied(:final skillId) =>
-      UiStrings.encounterOutcomeSkillUnlocked(_resolveSkillName(skillId)),
-    AttributeBonusApplied(:final key, :final delta) =>
-      UiStrings.encounterOutcomeAttributeBonus(
-          EnumL10n.attributeKey(key), delta),
-    AttributeCapReached(:final cap) =>
-      UiStrings.encounterOutcomeCapReached(cap),
-    NoneOutcome() => UiStrings.encounterOutcomeNone,
-  };
+  final outcome = _EncounterOutcomePresentation.from(applied);
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(message),
-      backgroundColor: WuxiaColors.panel,
+      content: EncounterOutcomeToast(
+        title: outcome.title,
+        message: outcome.message,
+        icon: outcome.icon,
+        color: outcome.color,
+      ),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       duration: const Duration(seconds: 3),
     ),
   );
+}
+
+class EncounterOutcomeToast extends StatelessWidget {
+  const EncounterOutcomeToast({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.icon,
+    required this.color,
+  });
+
+  final String title;
+  final String message;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.62)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: color.withValues(alpha: 0.56)),
+            ),
+            child: Icon(icon, color: color, size: 19),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: WuxiaUi.ink,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  message,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: WuxiaUi.ink,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EncounterOutcomePresentation {
+  const _EncounterOutcomePresentation({
+    required this.title,
+    required this.message,
+    required this.icon,
+    required this.color,
+  });
+
+  final String title;
+  final String message;
+  final IconData icon;
+  final Color color;
+
+  factory _EncounterOutcomePresentation.from(OutcomeApplied applied) {
+    return switch (applied) {
+      UnlockSkillApplied(:final skillId) => _EncounterOutcomePresentation(
+        title: UiStrings.encounterOutcomeSkillTitle,
+        message: UiStrings.encounterOutcomeSkillUnlocked(
+          _resolveSkillName(skillId),
+        ),
+        icon: Icons.auto_awesome,
+        color: WuxiaColors.resultHighlight,
+      ),
+      AttributeBonusApplied(:final key, :final delta) =>
+        _EncounterOutcomePresentation(
+          title: UiStrings.encounterOutcomeAttributeTitle,
+          message: UiStrings.encounterOutcomeAttributeBonus(
+            EnumL10n.attributeKey(key),
+            delta,
+          ),
+          icon: Icons.spa_outlined,
+          color: WuxiaColors.gangMeng,
+        ),
+      AttributeCapReached(:final cap) => _EncounterOutcomePresentation(
+        title: UiStrings.encounterOutcomeCapTitle,
+        message: UiStrings.encounterOutcomeCapReached(cap),
+        icon: Icons.block,
+        color: WuxiaColors.textMuted,
+      ),
+      NoneOutcome() => const _EncounterOutcomePresentation(
+        title: UiStrings.encounterOutcomeNoneTitle,
+        message: UiStrings.encounterOutcomeNone,
+        icon: Icons.local_florist_outlined,
+        color: WuxiaColors.textMuted,
+      ),
+    };
+  }
 }
 
 String _resolveSkillName(String skillId) {

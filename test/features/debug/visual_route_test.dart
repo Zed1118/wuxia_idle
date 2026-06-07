@@ -18,6 +18,10 @@ void main() {
         VisualRoute.techniqueRefineInsightDialog,
       );
       expect(
+        parseVisualRoute('encounter_outcome_skill_banner'),
+        VisualRoute.encounterOutcomeSkillBanner,
+      );
+      expect(
         parseVisualRoute('character_panel'),
         VisualRoute.characterPanelProfile,
       );

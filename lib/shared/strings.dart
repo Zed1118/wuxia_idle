@@ -1039,6 +1039,10 @@ class UiStrings {
   static const String encounterDialogOutcomeBodyFallback = '此情此景,已铭于心。';
   static const String encounterDialogConfirmButton = '行路 →';
   // outcome banner($ 变量用带参方法,enum 映射由 caller 解析后传入)。
+  static const String encounterOutcomeSkillTitle = '灵光一现';
+  static const String encounterOutcomeAttributeTitle = '机缘入身';
+  static const String encounterOutcomeCapTitle = '造化已满';
+  static const String encounterOutcomeNoneTitle = '机缘已记';
   static String encounterOutcomeSkillUnlocked(String skillName) =>
       '领悟新招:$skillName';
   static String encounterOutcomeAttributeBonus(String attrName, int delta) =>

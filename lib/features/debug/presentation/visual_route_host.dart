@@ -41,6 +41,7 @@ import '../../mainline/domain/chapter_assets.dart';
 import '../../battle/presentation/character_avatar.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/battle_state.dart';
+import '../../encounter/presentation/encounter_dialog.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -134,6 +135,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const TechniquePanelScreen(characterId: 1);
     case VisualRoute.techniqueRefineInsightDialog:
       return const _RefineInsightDialogPreview();
+    case VisualRoute.encounterOutcomeSkillBanner:
+      return const _EncounterOutcomeBannerPreview();
     case VisualRoute.sectScreenNpc:
       await Phase2SeedService(isar: isar).seedSectWithFullNpc();
       return const SectScreen();
@@ -413,6 +416,28 @@ class _RefineInsightDialogPreview extends StatelessWidget {
               onTap: null,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EncounterOutcomeBannerPreview extends StatelessWidget {
+  const _EncounterOutcomeBannerPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: const EncounterOutcomeToast(
+            title: UiStrings.encounterOutcomeSkillTitle,
+            message: '领悟新招:听雨剑',
+            icon: Icons.auto_awesome,
+            color: WuxiaColors.resultHighlight,
+          ),
         ),
       ),
     );
