@@ -6,6 +6,7 @@ import 'features/debug/application/visual_route.dart';
 import 'features/debug/presentation/visual_route_host.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'shared/strings.dart';
+import 'shared/theme/wuxia_tokens.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +35,18 @@ class WuxiaApp extends StatelessWidget {
       title: UiStrings.appTitle,
       theme: ThemeData.dark(useMaterial3: true),
       debugShowCheckedModeBanner: false,
+      builder: _wuxiaTextScaleBuilder,
       home: const SplashScreen(),
     );
   }
+}
+
+Widget _wuxiaTextScaleBuilder(BuildContext context, Widget? child) {
+  final mediaQuery = MediaQuery.of(context);
+  return MediaQuery(
+    data: mediaQuery.copyWith(
+      textScaler: const TextScaler.linear(WuxiaUi.textScale),
+    ),
+    child: child ?? const SizedBox.shrink(),
+  );
 }

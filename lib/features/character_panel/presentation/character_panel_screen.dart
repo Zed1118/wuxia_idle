@@ -27,7 +27,7 @@ import '../../../shared/widgets/equipment_glyph.dart';
 import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
-import '../../../shared/widgets/asset_fallback.dart';
+import '../../../shared/widgets/equipment_art_image.dart';
 import 'encounter_skill_section.dart';
 
 /// 角色面板（phase2_tasks.md T28 + Phase 3 Week 4 T56）。
@@ -531,7 +531,7 @@ class _AttributeStrip extends StatelessWidget {
       children: [
         for (var i = 0; i < attributes.length; i++) ...[
           Expanded(child: _AttributeChip(attribute: attributes[i])),
-          if (i != attributes.length - 1) const SizedBox(width: 8),
+          if (i != attributes.length - 1) const SizedBox(width: 10),
         ],
       ],
     );
@@ -546,31 +546,36 @@ class _AttributeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 52),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      constraints: const BoxConstraints(minHeight: 68),
+      padding: const EdgeInsets.fromLTRB(12, 9, 12, 8),
       decoration: BoxDecoration(
-        color: const Color(0x26F3E6C7),
+        color: const Color(0x3AF3E6C7),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.24)),
+        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.32)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             attribute.label,
-            style: const TextStyle(
-              color: WuxiaUi.muted,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            '${attribute.value}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: WuxiaUi.ink,
-              fontSize: 18,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Text(
+              '${attribute.value}',
+              style: const TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 27,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
         ],
@@ -739,7 +744,7 @@ class _DerivedStatsSection extends ConsumerWidget {
                   character.internalForce,
                   ifMax,
                 ),
-                valueFontSize: 19,
+                valueFontSize: 22,
               ),
             ),
             const SizedBox(width: 10),
@@ -1161,14 +1166,11 @@ class _EquipmentSlotTile extends ConsumerWidget {
                         ? EquipGlyph(tierColor: tierColor, slot: eq.slot)
                         : Transform.scale(
                             scale: 1.2,
-                            child: Image.asset(
-                              iconPath,
-                              fit: BoxFit.contain,
-                              errorBuilder: wuxiaAssetErrorBuilder(
-                                () => EquipGlyph(
-                                  tierColor: tierColor,
-                                  slot: eq.slot,
-                                ),
+                            child: EquipmentArtImage(
+                              imagePath: iconPath,
+                              fallback: EquipGlyph(
+                                tierColor: tierColor,
+                                slot: eq.slot,
                               ),
                             ),
                           ),
@@ -1840,7 +1842,7 @@ class _DerivedStatCard extends StatelessWidget {
   const _DerivedStatCard({
     required this.label,
     required this.value,
-    this.valueFontSize = 22,
+    this.valueFontSize = 25,
     this.accentColor = WuxiaUi.ink,
   });
 
@@ -1852,11 +1854,11 @@ class _DerivedStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 72),
+      constraints: const BoxConstraints(minHeight: 84),
       decoration: BoxDecoration(
-        color: const Color(0x33F3E6C7),
+        color: const Color(0x3AF3E6C7),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.28)),
+        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.34)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Stack(
@@ -1865,11 +1867,11 @@ class _DerivedStatCard extends StatelessWidget {
             left: 0,
             top: 0,
             bottom: 0,
-            width: 3,
+            width: 4,
             child: ColoredBox(color: accentColor),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(13, 10, 10, 10),
+            padding: const EdgeInsets.fromLTRB(16, 11, 12, 11),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1879,12 +1881,12 @@ class _DerivedStatCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: WuxiaUi.muted,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                    color: WuxiaUi.ink,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
                   value,
                   maxLines: 1,

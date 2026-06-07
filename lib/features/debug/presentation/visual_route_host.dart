@@ -58,10 +58,21 @@ class VisualRouteApp extends StatelessWidget {
         title: UiStrings.appTitle,
         debugShowCheckedModeBanner: false,
         theme: ThemeData.dark(useMaterial3: true),
+        builder: _wuxiaTextScaleBuilder,
         home: VisualRouteHost(route: route),
       ),
     );
   }
+}
+
+Widget _wuxiaTextScaleBuilder(BuildContext context, Widget? child) {
+  final mediaQuery = MediaQuery.of(context);
+  return MediaQuery(
+    data: mediaQuery.copyWith(
+      textScaler: const TextScaler.linear(WuxiaUi.textScale),
+    ),
+    child: child ?? const SizedBox.shrink(),
+  );
 }
 
 /// 按 [VisualRoute] 做 seed + 导航到目标验收屏。

@@ -6,31 +6,35 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/item_slot.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/seal_badge.dart';
 
 void main() {
-  Widget host(Widget child) =>
-      MaterialApp(home: Scaffold(body: Center(child: child)));
+  Widget host(Widget child) => MaterialApp(
+    home: Scaffold(body: Center(child: child)),
+  );
 
   ItemSlot slot({
     String? imagePath = 'assets/equipment/x_detail.png',
     int enhanceLevel = 0,
     bool locked = false,
     bool highTier = false,
-  }) =>
-      ItemSlot(
-        imagePath: imagePath,
-        name: '青锋剑',
-        tierColor: const Color(0xFF566B63),
-        equipmentSlot: EquipmentSlot.weapon,
-        enhanceLevel: enhanceLevel,
-        locked: locked,
-        highTier: highTier,
-      );
+  }) => ItemSlot(
+    imagePath: imagePath,
+    name: '青锋剑',
+    tierColor: const Color(0xFF566B63),
+    equipmentSlot: EquipmentSlot.weapon,
+    enhanceLevel: enhanceLevel,
+    locked: locked,
+    highTier: highTier,
+  );
 
-  BoxDecoration cellDeco(WidgetTester tester) => tester
-      .widget<Container>(find.descendant(
-        of: find.byType(ItemSlot),
-        matching: find.byType(Container),
-      ))
-      .decoration as BoxDecoration;
+  BoxDecoration cellDeco(WidgetTester tester) =>
+      tester
+              .widget<Container>(
+                find.descendant(
+                  of: find.byType(ItemSlot),
+                  matching: find.byType(Container),
+                ),
+              )
+              .decoration
+          as BoxDecoration;
 
   testWidgets('渲染名称 + 缺图走 EquipGlyph 不抛异常', (tester) async {
     await tester.pumpWidget(host(slot()));
@@ -58,6 +62,13 @@ void main() {
     await tester.pumpWidget(host(slot(imagePath: null)));
     expect(tester.takeException(), isNull);
     expect(find.text('青锋剑'), findsOneWidget);
+  });
+
+  testWidgets('有装备图时用纸色 multiply 融合白底', (tester) async {
+    await tester.pumpWidget(host(slot()));
+    final image = tester.widget<Image>(find.byType(Image));
+    expect(image.colorBlendMode, BlendMode.multiply);
+    expect(image.color, isNotNull);
   });
 
   testWidgets('highTier=true 金框 + 光晕；false 墨框无光晕', (tester) async {
