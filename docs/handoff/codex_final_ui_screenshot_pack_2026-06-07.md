@@ -13,6 +13,8 @@
 - 生成 10 张 1920x1080 核心 UI 截图和 1 张 contact sheet。
 - 修复 `battle_boss_frame` / `battle_scene` visual route 顶部会显示“出版美术验收...”绿色 debug hint 的问题。
 - `ScenarioLauncher.hint` 改为可空；调试菜单仍可传 hint，截图路由传 `null`。
+- 将 `battle_victory_first_clear` preview 从黑底小弹窗改成战场背景 + 大“胜” + 结算帖构图，重拍双分辨率胜利截图。
+- 2026-06-07 追改:胜利 preview 大字改为繁体“勝”，标题局部繁体化；加入入场缩放/淡入和轻微呼吸光动画。系统字体优先 `Songti SC`，并回退 `KaiTi` / `SimSun` / `serif`。
 
 ## 截图清单
 
@@ -52,9 +54,9 @@
 | 1920x1080 尺寸 | 通过 | 10 张单图全部为 1920x1080；需放到 LG 2560x1440 屏坐标 `{2000,100}` 截取。 |
 | 红屏 / crash / loading 态 | 通过 | 闭关图首拍为 loading，已延长等待重拍。 |
 | debug 字段 | 通过 | 战斗图首拍有绿色验收 hint，已修复并重拍。 |
-| overflow | 通过 | contact sheet 与单图检查未见黄黑 overflow。 |
+| overflow | 通过 | 繁体“勝”追改首拍出现 1280x720 底部 overflow 29px，已用 `FittedBox.scaleDown` 修复并重拍。 |
 | 核心覆盖 | 通过 | 已覆盖 10 个核心 UI 面。 |
-| 商品图适配 | 待二轮 | 胜利 preview 构图偏小，后续建议做全屏胜利候选图。 |
+| 商品图适配 | 待二轮 | 胜利 preview 已补战场背景构图；最终 Steam 图仍建议人工再选 5 张主图。 |
 
 ## 验证
 
