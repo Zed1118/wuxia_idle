@@ -21,6 +21,7 @@ import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
 import 'package:wuxia_idle/features/tutorial/presentation/tutorial_banner_card.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
 /// T32 子提交 3b：[MainMenu] widget 测试（T42 加「问鼎九霄」T49 加「闭关修炼」+ W17 候选 E 加「师徒名单」+ P0.2 #40 加「排行榜」后扩 10 个）。
 ///
@@ -42,9 +43,21 @@ void main() {
 
   Widget app() => const ProviderScope(child: MaterialApp(home: MainMenu()));
 
+  Finder assetImage(String path) => find.byWidgetPredicate(
+    (w) =>
+        w is Image &&
+        w.image is AssetImage &&
+        (w.image as AssetImage).assetName == path,
+  );
+
   testWidgets('标题渲染：mainMenuTitle 可见', (tester) async {
     await tester.pumpWidget(app());
     expect(find.text(UiStrings.mainMenuTitle), findsOneWidget);
+  });
+
+  testWidgets('主菜单渲染 MJ 门面背景', (tester) async {
+    await tester.pumpWidget(app());
+    expect(assetImage(WuxiaUi.mainMenuBg), findsOneWidget);
   });
 
   testWidgets('18 个菜单按钮 label 全部可见且顺序正确', (tester) async {
