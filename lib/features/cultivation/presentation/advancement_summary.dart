@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/character_advancement_service.dart';
 
@@ -23,21 +24,33 @@ class AdvancementSummary extends StatelessWidget {
     final advanced = entries.where((e) => e.result.didAdvance).toList();
     if (advanced.isEmpty) return const SizedBox.shrink();
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(14, 11, 14, 12),
       decoration: BoxDecoration(
-        color: WuxiaColors.gangMeng.withValues(alpha: 0.18),
+        color: WuxiaUi.paper.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: WuxiaColors.gangMeng.withValues(alpha: 0.6),
+          color: WuxiaColors.resultHighlight.withValues(alpha: 0.58),
         ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const _CeremonyTitle(
+            icon: Icons.terrain_outlined,
+            title: UiStrings.advancementCeremonyTitle,
+          ),
+          const SizedBox(height: 8),
           for (final e in advanced)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
+              padding: const EdgeInsets.symmetric(vertical: 3),
               child: e.result.crossedTier
                   ? _TierUpRow(entry: e)
                   : _LayerUpRow(entry: e),
@@ -58,7 +71,7 @@ class _LayerUpRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.auto_awesome, color: WuxiaColors.gangMeng, size: 20),
+        const _RowGlyph(icon: Icons.auto_awesome, color: WuxiaColors.gangMeng),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
@@ -68,9 +81,9 @@ class _LayerUpRow extends StatelessWidget {
               entry.result.layersGained,
             ),
             style: const TextStyle(
-              color: WuxiaColors.textPrimary,
+              color: WuxiaUi.ink,
               fontSize: 15,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
@@ -90,10 +103,9 @@ class _TierUpRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(
-          Icons.military_tech,
+        const _RowGlyph(
+          icon: Icons.military_tech,
           color: WuxiaColors.resultHighlight,
-          size: 24,
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -105,21 +117,23 @@ class _TierUpRow extends StatelessWidget {
                 style: TextStyle(
                   color: WuxiaColors.resultHighlight,
                   fontSize: 11,
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.5,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               Text(
                 UiStrings.advancementForCharacter(
                   entry.chName,
                   EnumL10n.realm(
-                      entry.result.tierAfter, entry.result.layerAfter),
+                    entry.result.tierAfter,
+                    entry.result.layerAfter,
+                  ),
                   entry.result.layersGained,
                 ),
                 style: const TextStyle(
-                  color: WuxiaColors.textPrimary,
+                  color: WuxiaUi.ink,
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ],
@@ -136,4 +150,59 @@ class AdvancementEntry {
   final AdvancementResult result;
 
   const AdvancementEntry({required this.chName, required this.result});
+}
+
+class _CeremonyTitle extends StatelessWidget {
+  const _CeremonyTitle({required this.icon, required this.title});
+
+  final IconData icon;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: WuxiaColors.resultHighlight, size: 16),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            color: WuxiaUi.ink,
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Container(
+            height: 1,
+            color: WuxiaUi.ink.withValues(alpha: 0.28),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RowGlyph extends StatelessWidget {
+  const _RowGlyph({required this.icon, required this.color});
+
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 28,
+      height: 28,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.55)),
+      ),
+      child: Icon(icon, color: color, size: 18),
+    );
+  }
 }

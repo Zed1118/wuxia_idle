@@ -133,6 +133,7 @@ void main() {
         AdvancementEntry(chName: '甲', result: _advanced()),
       ]);
       expect(find.text(UiStrings.stageVictoryNoDrop), findsOneWidget);
+      expect(find.text(UiStrings.advancementCeremonyTitle), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
       expect(find.textContaining('甲 · 突破至'), findsOneWidget);
     });
@@ -144,6 +145,7 @@ void main() {
       ]);
       expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
       expect(find.textContaining('item_mojianshi'), findsNothing);
+      expect(find.text(UiStrings.advancementCeremonyTitle), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
       expect(find.textContaining('甲 · 突破至'), findsOneWidget);
       expect(find.textContaining('乙'), findsNothing);
@@ -173,6 +175,10 @@ void main() {
           ),
         ],
       );
+      expect(
+        find.text(UiStrings.stageVictoryResonanceCeremonyTitle),
+        findsOneWidget,
+      );
       expect(find.text(UiStrings.stageVictoryResonanceLabel), findsOneWidget);
       expect(find.textContaining('「青锋剑」共鸣度晋至 默契'), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
@@ -195,7 +201,12 @@ void main() {
         ],
       );
       expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
+      expect(find.text(UiStrings.advancementCeremonyTitle), findsOneWidget);
       expect(find.textContaining('甲 · 突破至'), findsOneWidget);
+      expect(
+        find.text(UiStrings.stageVictoryResonanceCeremonyTitle),
+        findsOneWidget,
+      );
       expect(find.text(UiStrings.stageVictoryResonanceLabel), findsOneWidget);
       expect(find.textContaining('青锋剑'), findsOneWidget);
       expect(find.textContaining('玄铁刀'), findsOneWidget);
