@@ -6,7 +6,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 /// 胜负仪式全屏 overlay(出版美术 B1)。
-/// 暗幕 + 印章符 + 金「胜」/绛红「败」大题字 + 副标题 + 统计 + 继续按钮。
+/// 暗幕 + 印章符 + 金「勝」/绛红「敗」大题字 + 副标题 + 统计 + 继续按钮。
 /// 纯展示 widget;弹出由 battle_screen 的 showGeneralDialog 负责。
 class VictoryOverlay extends StatelessWidget {
   final BattleResult result;

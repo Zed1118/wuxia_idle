@@ -18,7 +18,7 @@ Finder _assetImage(String path) => find.byWidgetPredicate(
 );
 
 void main() {
-  testWidgets('leftWin 显金「胜」+ 统计 + 继续', (tester) async {
+  testWidgets('leftWin 显金「勝」+ 统计 + 继续', (tester) async {
     var tapped = false;
     await tester.pumpWidget(
       _wrap(
@@ -45,7 +45,7 @@ void main() {
     expect(tapped, isTrue);
   });
 
-  testWidgets('rightWin 显绛红「败」', (tester) async {
+  testWidgets('rightWin 显绛红「敗」', (tester) async {
     await tester.pumpWidget(
       _wrap(
         VictoryOverlay(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../domain/battle_state.dart';
 import '../domain/enum_localizations.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import 'hp_bar.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 
@@ -39,7 +40,7 @@ class CharacterAvatar extends StatelessWidget {
     final hasIcon =
         character.iconPath != null && character.iconPath!.isNotEmpty;
 
-    final Widget avatar = hasIcon
+    final Widget avatarCore = hasIcon
         ? Container(
             width: avatarSize,
             height: avatarSize,
@@ -54,12 +55,14 @@ class CharacterAvatar extends StatelessWidget {
                 width: avatarSize,
                 height: avatarSize,
                 fit: BoxFit.cover,
-                errorBuilder: wuxiaAssetErrorBuilder(() => _FirstGlyphAvatar(
-                  avatarSize: avatarSize,
-                  color: borderColor,
-                  borderWidth: borderWidth,
-                  firstGlyph: firstGlyph,
-                )),
+                errorBuilder: wuxiaAssetErrorBuilder(
+                  () => _FirstGlyphAvatar(
+                    avatarSize: avatarSize,
+                    color: borderColor,
+                    borderWidth: borderWidth,
+                    firstGlyph: firstGlyph,
+                  ),
+                ),
               ),
             ),
           )
@@ -69,6 +72,9 @@ class CharacterAvatar extends StatelessWidget {
             borderWidth: borderWidth,
             firstGlyph: firstGlyph,
           );
+    final avatar = character.isBoss
+        ? _BossAvatarFrame(avatarSize: avatarSize, child: avatarCore)
+        : avatarCore;
 
     final content = Column(
       mainAxisSize: MainAxisSize.min,
@@ -120,12 +126,62 @@ class CharacterAvatar extends StatelessWidget {
     if (character.isAlive) return dimmed;
     return ColorFiltered(
       colorFilter: const ColorFilter.matrix(<double>[
-        0.2126, 0.7152, 0.0722, 0, 0,
-        0.2126, 0.7152, 0.0722, 0, 0,
-        0.2126, 0.7152, 0.0722, 0, 0,
-        0, 0, 0, 1, 0,
+        0.2126,
+        0.7152,
+        0.0722,
+        0,
+        0,
+        0.2126,
+        0.7152,
+        0.0722,
+        0,
+        0,
+        0.2126,
+        0.7152,
+        0.0722,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
       ]),
       child: dimmed,
+    );
+  }
+}
+
+class _BossAvatarFrame extends StatelessWidget {
+  const _BossAvatarFrame({required this.avatarSize, required this.child});
+
+  final double avatarSize;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final frameSize = avatarSize * 1.42;
+    return SizedBox(
+      width: avatarSize,
+      height: avatarSize,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          child,
+          Positioned(
+            width: frameSize,
+            height: frameSize,
+            child: IgnorePointer(
+              child: Image.asset(
+                WuxiaUi.bossFrameLarge,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
