@@ -40,6 +40,7 @@ void main() {
     expect(find.textContaining('12000'), findsOneWidget);
     expect(find.byType(CeremonyImagePanel), findsOneWidget);
     expect(_assetImage(WuxiaUi.ceremonyVictoryTag), findsOneWidget);
+    expect(_assetImage(WuxiaUi.ceremonyRedSeal), findsOneWidget);
     expect(find.byType(PlaqueButton), findsOneWidget);
     await tester.tap(find.text(UiStrings.battleContinue));
     expect(tapped, isTrue);

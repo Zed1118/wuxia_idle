@@ -61,7 +61,7 @@ class VictoryOverlay extends StatelessWidget {
                   alignment: Alignment.center,
                   children: [
                     Image.asset(
-                      WuxiaUi.sealRed,
+                      WuxiaUi.ceremonyRedSeal,
                       fit: BoxFit.contain,
                       errorBuilder: (_, _, _) => DecoratedBox(
                         decoration: BoxDecoration(

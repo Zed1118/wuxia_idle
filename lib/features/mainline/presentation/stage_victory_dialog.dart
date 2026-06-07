@@ -170,6 +170,17 @@ class FirstClearBanner extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(width: 10),
+          Transform.rotate(
+            angle: 0.07,
+            child: Image.asset(
+              WuxiaUi.ceremonyRedSeal,
+              width: 42,
+              height: 42,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
         ],
       ),
     );
