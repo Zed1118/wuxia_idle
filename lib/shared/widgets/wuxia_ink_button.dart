@@ -16,6 +16,7 @@ class WuxiaInkButton extends StatelessWidget {
     required this.hint,
     required this.onTap,
     this.icon,
+    this.thumbnailPath,
     this.status,
     this.disabled = false,
     this.locked = false,
@@ -24,6 +25,7 @@ class WuxiaInkButton extends StatelessWidget {
   final String label;
   final String hint;
   final IconData? icon;
+  final String? thumbnailPath;
   final String? status;
   final VoidCallback? onTap;
   final bool disabled;
@@ -75,8 +77,11 @@ class WuxiaInkButton extends StatelessWidget {
                   top: 0,
                   bottom: 0,
                   child: Container(
-                    width: 7,
+                    width: thumbnailPath == null ? 7 : 96,
                     color: WuxiaUi.ink.withValues(alpha: 0.42),
+                    child: thumbnailPath == null
+                        ? null
+                        : _InkButtonThumbnail(thumbnailPath!, icon: icon),
                   ),
                 ),
                 Positioned.fill(
@@ -95,14 +100,14 @@ class WuxiaInkButton extends StatelessWidget {
                 ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(
-                    icon == null ? 22 : 16,
+                    thumbnailPath != null ? 108 : (icon == null ? 22 : 16),
                     14,
                     16,
                     14,
                   ),
                   child: Row(
                     children: [
-                      if (icon != null) ...[
+                      if (thumbnailPath == null && icon != null) ...[
                         _InkButtonIcon(icon!),
                         const SizedBox(width: 12),
                       ],
@@ -203,6 +208,66 @@ class _InkButtonIcon extends StatelessWidget {
         ],
       ),
       child: Icon(icon, size: 21, color: WuxiaUi.ink.withValues(alpha: 0.82)),
+    );
+  }
+}
+
+class _InkButtonThumbnail extends StatelessWidget {
+  const _InkButtonThumbnail(this.path, {this.icon});
+
+  final String path;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(
+          path,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                WuxiaUi.ink.withValues(alpha: 0.08),
+                WuxiaUi.ink.withValues(alpha: 0.34),
+              ],
+            ),
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Container(
+            width: 1,
+            color: WuxiaUi.paper.withValues(alpha: 0.32),
+          ),
+        ),
+        if (icon != null)
+          Center(
+            child: Container(
+              width: 34,
+              height: 34,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: WuxiaUi.ink.withValues(alpha: 0.52),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: WuxiaUi.paper.withValues(alpha: 0.38),
+                ),
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: WuxiaUi.paper.withValues(alpha: 0.92),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

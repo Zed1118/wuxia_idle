@@ -35,6 +35,7 @@ import '../../sect/presentation/sect_screen.dart';
 import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ink_button.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../../tutorial/domain/tutorial_hint_def.dart';
@@ -152,6 +153,7 @@ class MainMenu extends ConsumerWidget {
         label: UiStrings.mainMenuMainline,
         hint: UiStrings.mainMenuMainlineHint,
         icon: Icons.map_outlined,
+        thumbnailPath: WuxiaUi.entryMainline,
         status: mainlineStatus,
         onTap: () => _push(context, const ChapterListScreen()),
       ),
@@ -159,6 +161,7 @@ class MainMenu extends ConsumerWidget {
         label: UiStrings.mainMenuCharacterPanel,
         hint: UiStrings.mainMenuCharacterPanelHint,
         icon: Icons.person_outline,
+        thumbnailPath: WuxiaUi.entryCharacter,
         onTap: () => _push(
           context,
           const CharacterPanelScreen(characterId: _defaultCharacterId),
@@ -168,6 +171,7 @@ class MainMenu extends ConsumerWidget {
         label: UiStrings.mainMenuInventory,
         hint: UiStrings.mainMenuInventoryHint,
         icon: Icons.inventory_2_outlined,
+        thumbnailPath: WuxiaUi.entryInventory,
         status: inventoryStatus,
         onTap: () => _push(context, const InventoryScreen()),
       ),
@@ -189,6 +193,7 @@ class MainMenu extends ConsumerWidget {
         label: UiStrings.mainMenuTower,
         hint: UiStrings.mainMenuTowerHint,
         icon: Icons.filter_hdr_outlined,
+        thumbnailPath: WuxiaUi.entryTower,
         status: towerStatus,
         onTap: () => _push(context, const TowerFloorListScreen()),
       ),
@@ -198,6 +203,7 @@ class MainMenu extends ConsumerWidget {
             ? UiStrings.mainMenuLateGameLockedHint
             : UiStrings.mainMenuInnerDemonHint,
         icon: Icons.psychology_alt_outlined,
+        thumbnailPath: WuxiaUi.entryTechnique,
         disabled: lateLocked,
         locked: lateLocked,
         onTap: () => _push(context, const InnerDemonScreen()),
@@ -208,6 +214,7 @@ class MainMenu extends ConsumerWidget {
             ? UiStrings.mainMenuLateGameLockedHint
             : UiStrings.mainMenuLightFootHint,
         icon: Icons.directions_run,
+        thumbnailPath: WuxiaUi.entryLightFoot,
         disabled: lateLocked,
         locked: lateLocked,
         onTap: () => _push(context, const LightFootScreen()),
@@ -218,6 +225,7 @@ class MainMenu extends ConsumerWidget {
             ? UiStrings.mainMenuLateGameLockedHint
             : UiStrings.mainMenuMassBattleHint,
         icon: Icons.groups_2_outlined,
+        thumbnailPath: WuxiaUi.entryJianghu,
         disabled: lateLocked,
         locked: lateLocked,
         onTap: () => _push(context, const MassBattleScreen()),
@@ -226,6 +234,7 @@ class MainMenu extends ConsumerWidget {
         label: UiStrings.mainMenuPvp,
         hint: pvpLocked ? UiStrings.pvpLockedHint : UiStrings.mainMenuPvpHint,
         icon: Icons.gavel_outlined,
+        thumbnailPath: WuxiaUi.entryJianghu,
         disabled: pvpLocked,
         locked: pvpLocked,
         onTap: () => _push(context, const PvpScreen()),
@@ -237,6 +246,7 @@ class MainMenu extends ConsumerWidget {
         label: UiStrings.mainMenuLineage,
         hint: UiStrings.mainMenuLineageHint,
         icon: Icons.account_tree_outlined,
+        thumbnailPath: WuxiaUi.entryCharacter,
         onTap: () => _push(context, const LineagePanelScreen()),
       ),
       WuxiaInkButton(
@@ -245,6 +255,7 @@ class MainMenu extends ConsumerWidget {
             ? UiStrings.mainMenuSocialLockedHint
             : UiStrings.mainMenuSectHint,
         icon: Icons.home_work_outlined,
+        thumbnailPath: WuxiaUi.entryJianghu,
         disabled: socialLocked,
         locked: socialLocked,
         onTap: () => _push(context, const SectScreen()),
@@ -255,6 +266,7 @@ class MainMenu extends ConsumerWidget {
             ? UiStrings.mainMenuSocialLockedHint
             : UiStrings.mainMenuJianghuHint,
         icon: Icons.handshake_outlined,
+        thumbnailPath: WuxiaUi.entryJianghu,
         disabled: socialLocked,
         locked: socialLocked,
         onTap: () => _push(context, const ReputationPanelScreen()),
@@ -265,6 +277,7 @@ class MainMenu extends ConsumerWidget {
             ? UiStrings.mainMenuSocialLockedHint
             : UiStrings.mainMenuLeaderboardHint,
         icon: Icons.emoji_events_outlined,
+        thumbnailPath: WuxiaUi.entryTower,
         disabled: socialLocked,
         locked: socialLocked,
         onTap: () => _push(context, const LeaderboardScreen()),
@@ -273,6 +286,7 @@ class MainMenu extends ConsumerWidget {
         label: UiStrings.mainMenuBaike,
         hint: UiStrings.mainMenuBaikeHint,
         icon: Icons.menu_book_outlined,
+        thumbnailPath: WuxiaUi.entryCodex,
         onTap: () => _push(context, const BaikeScreen()),
       ),
     ];
@@ -307,7 +321,7 @@ class MainMenu extends ConsumerWidget {
           // A2 全屏水墨门面背景(占位 mountain_bg · 精修 bg 后补)。
           Positioned.fill(
             child: Image.asset(
-              'assets/ui/mountain_bg.png',
+              WuxiaUi.mainMenuBg,
               fit: BoxFit.cover,
               errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
@@ -602,6 +616,7 @@ class _TechniqueMenuButton extends ConsumerWidget {
           ? UiStrings.mainMenuTechniquesLockedHint
           : UiStrings.mainMenuTechniquesHint,
       icon: Icons.auto_stories_outlined,
+      thumbnailPath: WuxiaUi.entryTechnique,
       status: status,
       disabled: tutorialLocked,
       locked: tutorialLocked,
@@ -701,6 +716,7 @@ class _SeclusionMenuButton extends ConsumerWidget {
           ? UiStrings.mainMenuSeclusionLockedHint
           : UiStrings.mainMenuSeclusionHint,
       icon: Icons.landscape_outlined,
+      thumbnailPath: WuxiaUi.entrySeclusion,
       status: status,
       disabled: disabled,
       locked: tutorialLocked,

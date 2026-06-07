@@ -36,4 +36,21 @@ class WuxiaUi {
   static const String scrollHorizontal = 'assets/ui/scroll_horizontal.png';
   static const String scrollVertical = 'assets/ui/scroll_vertical.png';
   static const String mountainBg = 'assets/ui/mountain_bg.png';
+  static const String mainMenuBg = 'assets/ui/mj/menu_splash_pier_01.png';
+  static const String mainMenuMountainBg =
+      'assets/ui/mj/menu_mountain_gate_wide_01.png';
+  static const String entryMainline =
+      'assets/ui/mj/entry_mainline_story_01.png';
+  static const String entryCharacter =
+      'assets/ui/mj/entry_character_profile_01.png';
+  static const String entryInventory = 'assets/ui/mj/entry_equipment_01.png';
+  static const String entryTechnique =
+      'assets/ui/mj/entry_technique_panel_01.png';
+  static const String entrySeclusion =
+      'assets/ui/mj/entry_seclusion_retreat_01.png';
+  static const String entryTower = 'assets/ui/mj/entry_tower_challenge_01.png';
+  static const String entryLightFoot =
+      'assets/ui/mj/entry_lightfoot_trial_01.png';
+  static const String entryJianghu = 'assets/ui/mj/entry_city_defense_01.png';
+  static const String entryCodex = 'assets/ui/mj/entry_jianghu_codex_01.png';
 }
