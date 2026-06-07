@@ -249,7 +249,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioBoss,
         hint: null,
-        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
       );
     case VisualRoute.battleVictoryFirstClear:
       return const _VictoryFirstClearPreview();
