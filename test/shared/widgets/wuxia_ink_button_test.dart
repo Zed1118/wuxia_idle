@@ -30,6 +30,31 @@ void main() {
     expect(find.byIcon(Icons.map_outlined), findsOneWidget);
   });
 
+  testWidgets('thumbnailPath 渲染入口缩略图且保留图标', (tester) async {
+    const path = 'assets/ui/mj/entry_mainline_story_01.png';
+    await tester.pumpWidget(
+      host(
+        const WuxiaInkButton(
+          label: '主线',
+          hint: '继续江湖路',
+          icon: Icons.map_outlined,
+          thumbnailPath: path,
+          onTap: null,
+        ),
+      ),
+    );
+    expect(find.byIcon(Icons.map_outlined), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (w) =>
+            w is Image &&
+            w.image is AssetImage &&
+            (w.image as AssetImage).assetName == path,
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('点击触发 onTap', (tester) async {
     var tapped = 0;
     await tester.pumpWidget(
