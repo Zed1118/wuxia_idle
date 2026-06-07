@@ -7,6 +7,10 @@ enum VisualRoute {
     '心法面板·武圣满学 7 阶 cover 同屏(梯度验收)',
   ),
   techniquePanelHero('technique_panel_hero', '心法面板·主修 hero 打坐内丹态'),
+  techniqueRefineInsightDialog(
+    'technique_refine_insight_dialog',
+    '心法凝练·领悟点凝入主修小帖验收',
+  ),
   sectScreenNpc(
     'sect_screen_npc',
     'sect_screen·成员立绘验收(祖师 + 6 sect_candidate 完整显)',

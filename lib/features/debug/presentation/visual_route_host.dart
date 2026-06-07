@@ -9,6 +9,7 @@ import '../../../data/isar_setup.dart';
 import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/utils/rng.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
@@ -131,6 +132,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.techniquePanelHero:
       await Phase2SeedService(isar: isar).seedRefineInsight();
       return const TechniquePanelScreen(characterId: 1);
+    case VisualRoute.techniqueRefineInsightDialog:
+      return const _RefineInsightDialogPreview();
     case VisualRoute.sectScreenNpc:
       await Phase2SeedService(isar: isar).seedSectWithFullNpc();
       return const SectScreen();
@@ -385,6 +388,31 @@ class _VictoryFirstClearPreview extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RefineInsightDialogPreview extends StatelessWidget {
+  const _RefineInsightDialogPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Center(
+        child: PaperDialog(
+          title: UiStrings.refineInsightTitle,
+          body: RefineInsightDialogBody(points: 50),
+          actions: [
+            PlaqueButton(label: UiStrings.commonCancel, onTap: null),
+            PlaqueButton(
+              label: UiStrings.refineInsightConfirm,
+              primary: true,
+              onTap: null,
+            ),
+          ],
         ),
       ),
     );

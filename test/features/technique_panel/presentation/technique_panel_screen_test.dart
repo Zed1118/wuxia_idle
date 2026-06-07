@@ -286,6 +286,28 @@ void main() {
     expect(btn.onPressed, isNull);
   });
 
+  testWidgets('点击凝练领悟 → 显示凝练小帖与确认按钮', (tester) async {
+    final character = mkCharacter(mainTechniqueId: 100, insightPoints: 5);
+    final main = mkTechnique(id: 100, ownerId: 1, role: TechniqueRole.main);
+
+    await pumpPanel(tester, character: character, techniques: {100: main});
+
+    final label = UiStrings.refineInsightButtonWithPoints(5);
+    await tester.ensureVisible(find.text(label));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(label));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(UiStrings.refineInsightTitle), findsOneWidget);
+    expect(find.text(UiStrings.refineInsightBody(5)), findsOneWidget);
+    expect(find.text(UiStrings.refineInsightSpendLine(5)), findsOneWidget);
+    expect(find.text(UiStrings.refineInsightTargetLine), findsOneWidget);
+    expect(find.text(UiStrings.refineInsightCeremonyHint), findsOneWidget);
+    expect(find.text(UiStrings.commonCancel), findsOneWidget);
+    expect(find.text(UiStrings.refineInsightConfirm), findsOneWidget);
+  });
+
   // ── 用例 6/7：B4 主修 hero 区（出版美术）──────────────────────────────
 
   testWidgets('主修存在 → hero 区显「主修心法」label + 段位阶梯 n/9 层', (tester) async {

@@ -17,6 +17,7 @@ import '../../cultivation/application/insight_exchange_service_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import 'dispel_dialog.dart';
 
 /// 心法面板（phase2_tasks.md T31 §468-490 + T32 #22b writeTxn 补漏）。
@@ -631,25 +632,21 @@ class _TechniqueTile extends ConsumerWidget {
       return;
     }
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text(UiStrings.refineInsightTitle),
-        content: Text(UiStrings.refineInsightBody(points)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text(UiStrings.commonCancel),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: WuxiaColors.resultHighlight,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(UiStrings.refineInsightConfirm),
-          ),
-        ],
-      ),
+    final confirmed = await PaperDialog.show<bool>(
+      context,
+      title: UiStrings.refineInsightTitle,
+      body: RefineInsightDialogBody(points: points),
+      actions: [
+        PlaqueButton(
+          label: UiStrings.commonCancel,
+          onTap: () => Navigator.of(context).pop(false),
+        ),
+        PlaqueButton(
+          label: UiStrings.refineInsightConfirm,
+          primary: true,
+          onTap: () => Navigator.of(context).pop(true),
+        ),
+      ],
     );
     if (confirmed != true) return;
     if (!context.mounted) return;
@@ -675,6 +672,80 @@ class _TechniqueTile extends ConsumerWidget {
             leveledUp: result.didLevelUp,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class RefineInsightDialogBody extends StatelessWidget {
+  const RefineInsightDialogBody({super.key, required this.points});
+
+  final int points;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          UiStrings.refineInsightBody(points),
+          style: const TextStyle(
+            color: WuxiaUi.ink,
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 10),
+        _RefineInsightLine(
+          icon: Icons.tips_and_updates_outlined,
+          text: UiStrings.refineInsightSpendLine(points),
+        ),
+        const SizedBox(height: 6),
+        const _RefineInsightLine(
+          icon: Icons.auto_stories_outlined,
+          text: UiStrings.refineInsightTargetLine,
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          UiStrings.refineInsightCeremonyHint,
+          style: TextStyle(color: WuxiaUi.ink2, fontSize: 12, height: 1.35),
+        ),
+      ],
+    );
+  }
+}
+
+class _RefineInsightLine extends StatelessWidget {
+  const _RefineInsightLine({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: WuxiaUi.ink.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: WuxiaColors.resultHighlight, size: 17),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
