@@ -5,6 +5,8 @@
 
 ## 当前阶段
 
+> ✅ **2026-06-08 续(§5.6 硬编码中文审计 6 处抽 UiStrings + 装备 G2.2 抠白底 Phase 0 收口待晚上视觉)**:① **§5.6 审计**(subagent 全扫 227 dart):A 类 6 真违例全抽 `UiStrings`(equipment 基础值后缀 `(基 N)` / sect lazy-init `'无名宗'` ×2 生产 / 门派事件 dialog 3 fallback+拒绝按钮)· B 类 112+ assert/log + C 类 28+ debug 按规不抽 · analyze 0 / 全量 **1763 测过** · `3b256a9`(销 main 既有 `(基 $base)` nit)。② **装备 G2.2 Phase 0+试点完成**(零仓库写):160 图=80 icon+80 detail,背景三类(白 23 / 暖底 116 / **整幅水墨场景 21**)· 用户拍板=scene 当装裱画整幅渲染(**alpha 通道自动路由**,widget 仅删 multiply)+ 可抠 139 收紧抠投影去朱印 · v3 抠图器(投影感知+软斜坡 alpha+补环心洞+红印去除)出 139 透明成品+3 montage 持久化 `docs/handoff/equipment_cutout_g22_2026-06-08/` · **剩 ~20 氛围/泼墨底尾巴需人眼/Codex 定 cut-or-frame + widget 改+替 assets → 晚上视觉验收**。
+
 > ✅ **2026-06-08(心法 7 阶 cover 重出透明卷轴 · 解 G5.1 伪书法红线 · `c991984`)**:旧 cover 含 MJ 伪书法(main 既有 2026-05-21)→ 用户重下 56 张无字卷轴候选,自写 flood-fill 边缘连通抠白底透明(Pillow+numpy 无 rembg · 只抠和边缘连通的背景保住卷身亮高光)+ 收 1px 边吃抗锯齿浅边 + 轻羽化。**踩坑**:首版自检合成在浅纸底(以为面板宣纸)藏住白边/投影,游戏深木底才暴露白光晕 → 改合成**真木底**自检 → 收边管线根除(memory `feedback_visual_check_real_target_bg`)。7 阶选定 1952×608+alpha · pngquant+oxipng 3.8MB 替换 `tier_*.png`。Codex 分隔符误用卷轴图同修(`8d25709`)。闸门 analyze 0 / **1763 测全过** → ff 合并 main。**下一步=装备图 G2.2 抠白底**(同 drop-shadow 问题更复杂,升 xhigh)。
 
 > ✅ **2026-06-06..07(Codex 两天 UI 包装+MJ 素材接入 43 commit 合并 main · `a195547`)**:Codex 桌面备份端两天连续推进三条线:① UI 连续包装(装备/仓库/角色面板/主菜单/主线/爬塔/闭关/心法/胜利成长反馈,全走 WuxiaUi kit + `textScale 1.12` 全局放大)② MJ 素材接入(37 组筛完留 39 张,接主菜单山门/仪式页/战斗特效/Boss 框/红印 · `assets/ui/mj` 56 张 + pubspec 注册 + 运行时盘点)③ 用户现场反馈修正(角色页装备白底/标题伪底/字号偏小)。**Claude 接手分支级 review**:analyze 0 / 全量 **1763 测** / 红线数值未动 / 无逻辑回归(唯一行为变更=心法相生检测改遍历全部辅修槽,对齐 GDD §4.5 正确性修复,有「多辅修槽候选」测守)+ 深扫挖出 7 处硬编码中文抽 `UiStrings`(闭关/装备界面)→ ff 合并 + push origin/main(43+1 commit)。**Codex 视觉复查总判 FAIL**:G5.1 红线=心法 7 阶 cover `tier_*.png` 含 MJ 伪书法(**main 既有非本批引入**,挂账重出)· G2.2/G3.1 WARN。交接 `docs/handoff/codex_to_claude_full_handoff_2026-06-07.md`。
@@ -41,7 +43,7 @@
 
 - ~~37 / 38 / 40 / 41 / 42 / 43 / 44 / 45 全销账~~(2026-05-17/18/19/20):详各 closeout
 - ~~stage_05_05 on-level ceiling 20%~~ 跨阶墙 **2026-05-31 sim 复核销账**(non-bug · data-confirmed · `test/tools/output/balance_summary_2026-05-31.md`)
-- `equipment_detail_screen.dart:489 '(基 $base)'` 硬编码 nit(main 既有,本批未改)
+- ~~`equipment_detail_screen.dart:489 '(基 $base)'` 硬编码 nit~~ 已抽 `UiStrings.equipmentStatBaseValue`(2026-06-08 §5.6 · `3b256a9`)
 
 > 已销账条目(#1-#45)详见末尾归档。**P1 阶段全销账 ✅** + **Demo §8.4 14/14 全达标 ✅** + **1.0 ~95% release ready ✅**(A+B+C 全 PASS · 剩 D-G 留 M15-16)。
 
