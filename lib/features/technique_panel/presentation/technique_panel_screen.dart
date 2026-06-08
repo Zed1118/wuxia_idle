@@ -493,11 +493,12 @@ class _TechniqueTile extends ConsumerWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Image.asset(
-              'assets/ui/ink_divider.png',
-              height: 6,
-              fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => const SizedBox(height: 8),
+            child: Container(
+              height: 1,
+              decoration: BoxDecoration(
+                color: WuxiaColors.textMuted.withValues(alpha: 0.22),
+                borderRadius: BorderRadius.circular(1),
+              ),
             ),
           ),
           LinearProgressIndicator(
