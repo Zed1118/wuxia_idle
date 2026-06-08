@@ -64,11 +64,12 @@ void main() {
     expect(find.text('青锋剑'), findsOneWidget);
   });
 
-  testWidgets('有装备图时用纸色 multiply 融合白底', (tester) async {
+  testWidgets('装备图直接渲染:已抠透明,无 multiply 染底(G2.2)', (tester) async {
     await tester.pumpWidget(host(slot()));
     final image = tester.widget<Image>(find.byType(Image));
-    expect(image.colorBlendMode, BlendMode.multiply);
-    expect(image.color, isNotNull);
+    // G2.2:白底已抠透明,去除旧 multiply 染底 hack(防"浅底块"色差回归)。
+    expect(image.colorBlendMode, isNull);
+    expect(image.color, isNull);
   });
 
   testWidgets('highTier=true 金框 + 光晕；false 墨框无光晕', (tester) async {
