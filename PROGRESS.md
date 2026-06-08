@@ -5,6 +5,8 @@
 
 ## 当前阶段
 
+> ✅ **2026-06-08(心法 7 阶 cover 重出透明卷轴 · 解 G5.1 伪书法红线 · `c991984`)**:旧 cover 含 MJ 伪书法(main 既有 2026-05-21)→ 用户重下 56 张无字卷轴候选,自写 flood-fill 边缘连通抠白底透明(Pillow+numpy 无 rembg · 只抠和边缘连通的背景保住卷身亮高光)+ 收 1px 边吃抗锯齿浅边 + 轻羽化。**踩坑**:首版自检合成在浅纸底(以为面板宣纸)藏住白边/投影,游戏深木底才暴露白光晕 → 改合成**真木底**自检 → 收边管线根除(memory `feedback_visual_check_real_target_bg`)。7 阶选定 1952×608+alpha · pngquant+oxipng 3.8MB 替换 `tier_*.png`。Codex 分隔符误用卷轴图同修(`8d25709`)。闸门 analyze 0 / **1763 测全过** → ff 合并 main。**下一步=装备图 G2.2 抠白底**(同 drop-shadow 问题更复杂,升 xhigh)。
+
 > ✅ **2026-06-06..07(Codex 两天 UI 包装+MJ 素材接入 43 commit 合并 main · `a195547`)**:Codex 桌面备份端两天连续推进三条线:① UI 连续包装(装备/仓库/角色面板/主菜单/主线/爬塔/闭关/心法/胜利成长反馈,全走 WuxiaUi kit + `textScale 1.12` 全局放大)② MJ 素材接入(37 组筛完留 39 张,接主菜单山门/仪式页/战斗特效/Boss 框/红印 · `assets/ui/mj` 56 张 + pubspec 注册 + 运行时盘点)③ 用户现场反馈修正(角色页装备白底/标题伪底/字号偏小)。**Claude 接手分支级 review**:analyze 0 / 全量 **1763 测** / 红线数值未动 / 无逻辑回归(唯一行为变更=心法相生检测改遍历全部辅修槽,对齐 GDD §4.5 正确性修复,有「多辅修槽候选」测守)+ 深扫挖出 7 处硬编码中文抽 `UiStrings`(闭关/装备界面)→ ff 合并 + push origin/main(43+1 commit)。**Codex 视觉复查总判 FAIL**:G5.1 红线=心法 7 阶 cover `tier_*.png` 含 MJ 伪书法(**main 既有非本批引入**,挂账重出)· G2.2/G3.1 WARN。交接 `docs/handoff/codex_to_claude_full_handoff_2026-06-07.md`。
 
 > ✅ **2026-06-05(UI kit v1 序 0 地基落地 · subagent-driven · xhigh · `feat/ui-kit-v1`)**:承 UI 包装方案 v1 → writing-plans 拆**单 plan 全 kit** → TDD 实装。**9 组件 kit**(`lib/shared/widgets/wuxia_ui/`:PaperPanel/SectionHeader/SealBadge/ItemSlot/MeridianBar/PlaqueButton/WuxiaTitleBar〔PreferredSizeWidget 替 AppBar〕/PlaqueTab/PaperDialog〔+`show` 入口〕)+ **母题 token** `WuxiaUi`(`shared/theme/wuxia_tokens.dart` 色/边/面/形/资产,浅色宣纸笺,锚 demo `:root`,区别战斗深色 `WuxiaColors`,与现有 `WuxiaPaperPanel` 并存)+ barrel。每组件 widget 测(errorBuilder/IntrinsicHeight/钳值守 · 复用 `EquipGlyph`+`wuxiaAssetErrorBuilder`)。**T11 callsite 试点**:仓库分组头(`inventory_screen._SlotGroupSection`)竖条+label+计数 → `SectionHeader`(数量 (N) 与 demo §2 段头一致去掉,整页 rollout 可回收)。**两段式只读 review**(spec 合规 ✅ + 代码质量 ✅)+ 最终 review ✅ ready to merge,修 2 Nit(绛红旁路 `0xFF8A2B21`→`WuxiaUi.jiang` token + 补 ItemSlot highTier 分支测)。全量 **1713→1744 测 / 1 skip / 0 analyze**(+31)· 13 commit。**T11 视觉自验留 Codex/用户**(CLI 不截 native app)。**下一步=序 1 装备仓库+详情逐页改造**(趁热吃重出水墨图红利,kit 落地)。plan `docs/superpowers/plans/2026-06-05-ui-kit-v1.md`。
@@ -39,7 +41,7 @@
 
 - ~~37 / 38 / 40 / 41 / 42 / 43 / 44 / 45 全销账~~(2026-05-17/18/19/20):详各 closeout
 - ~~stage_05_05 on-level ceiling 20%~~ 跨阶墙 **2026-05-31 sim 复核销账**(non-bug · data-confirmed · `test/tools/output/balance_summary_2026-05-31.md`)
-- **心法 7 阶 cover `assets/techniques/tier_*.png` 含 MJ 伪书法**(G5.1 红线 · main 既有 2026-05-21 · Codex 验收暴露)→ 决议**重出 7 张无文字横幅卷轴**(空题签 · MJ prompt 已产 · 待出图落位+rebuild+复验);另 `equipment_detail_screen.dart:489 '(基 $base)'` 同类 nit(main 既有,本批未改)
+- `equipment_detail_screen.dart:489 '(基 $base)'` 硬编码 nit(main 既有,本批未改)
 
 > 已销账条目(#1-#45)详见末尾归档。**P1 阶段全销账 ✅** + **Demo §8.4 14/14 全达标 ✅** + **1.0 ~95% release ready ✅**(A+B+C 全 PASS · 剩 D-G 留 M15-16)。
 
@@ -59,6 +61,7 @@
 ## 归档
 
 ### 已解决挂账(逆时序)
+- **心法 7 阶 cover 伪书法 G5.1 红线**(2026-06-08):重出透明无字卷轴替换(`c991984`)· flood-fill 抠白底+收边 · 真木底自检无白晕
 
 - **Phase 1-2 + W1-W13 全销账**(2026-05-10..14):#1/5/12-16/19-29/32 + #18 伪挂账
 
