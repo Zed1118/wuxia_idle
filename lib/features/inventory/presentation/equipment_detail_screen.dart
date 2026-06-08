@@ -486,7 +486,7 @@ class _StatRow extends StatelessWidget {
         if (boosted) ...[
           const SizedBox(width: 3),
           Text(
-            '(基 $base)',
+            UiStrings.equipmentStatBaseValue(base),
             style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
           ),
         ],

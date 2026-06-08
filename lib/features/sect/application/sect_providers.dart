@@ -17,6 +17,7 @@ import 'sect_event_service.dart';
 import 'sect_member_service.dart';
 import 'sect_reputation_decay.dart';
 import 'territory_service.dart';
+import '../../../shared/strings.dart';
 
 /// 门派系统 Riverpod wire(1.0 P3.4 §12.1 · T19b 技术债清账)。
 ///
@@ -44,7 +45,7 @@ final sectReputationDecayServiceProvider =
 /// 默认无名宗 Sect 实例(P3.4 spec 初态)。
 Sect _defaultSect(DateTime now) => Sect()
   ..id = 1
-  ..name = '无名宗'
+  ..name = UiStrings.sectLazyInitName
   ..founderId = 1
   ..sectLevel = 1
   ..sectReputation = 50

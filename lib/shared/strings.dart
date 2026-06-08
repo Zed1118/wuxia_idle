@@ -551,6 +551,8 @@ class UiStrings {
   static const String equipmentDetailResonanceSwordSong = '✦ 暴击附带「剑鸣」浮字';
   static String equipmentDetailResonanceNextHint(int remaining, String next) =>
       '距「$next」尚需 $remaining 战';
+  // §5.6 审计抽出(2026-06-08):装备详情属性基础值后缀
+  static String equipmentStatBaseValue(int base) => '(基 $base)';
 
   // P1.1 候选 3-c：sword_song 暴击剑鸣浮字（damage_popup 附加）
   static const String swordSongHint = '✦剑鸣';
@@ -987,6 +989,12 @@ class UiStrings {
   static const String innerDemonClearedLabel = '心魔已尽,更无可破';
   static const String innerDemonBreakthroughCta = '突破';
   static const String sectEventEnterBattle = '应战赴会';
+  // §5.6 审计抽出(2026-06-08):门派事件 dialog fallback / lazy-init / 拒绝按钮
+  static const String sectLazyInitName = '无名宗';
+  static const String sectEventNarrativeFallbackOpening = '事件触发,详情待载入。';
+  static const String sectEventNarrativeFallbackVictory = '此役大胜,本派声威远播。';
+  static const String sectEventNarrativeFallbackDefeat = '此役失利,归山再练。';
+  static const String sectEventRefuseButton = '闭门谢客';
   static const String encounterSkillUnequipButton = '卸下';
   static const String commonCancel = '取消';
 
