@@ -10,6 +10,7 @@ import '../../../data/game_repository.dart';
 import '../../encounter/presentation/sect_recruit_confirm_dialog.dart';
 import '../application/sect_member_service.dart';
 import '../domain/sect.dart';
+import '../../../shared/strings.dart';
 
 /// P4.1 1.1 Q6A/Q6B 共用 · sect NPC 招降 flow handler 抽自 `encounter_hook._handleSectRecruit:174`(spec
 /// `p4_1_q6b_stage_boss_recruit_spec_2026-05-26.md` §3.1)。
@@ -60,7 +61,7 @@ Future<SectRecruitOutcome> runSectRecruitFlow({
   if (sect == null) {
     final freshSect = Sect()
       ..id = 1
-      ..name = '无名宗'
+      ..name = UiStrings.sectLazyInitName
       ..founderId = 1
       ..sectLevel = 1
       ..sectReputation = 50

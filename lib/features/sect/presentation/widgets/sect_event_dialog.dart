@@ -57,16 +57,16 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
       final yaml = loadYaml(str) as Map;
       return _NarrativeData(
         title: (yaml['title'] as String?) ?? widget.event.narrativeId,
-        opening: (yaml['opening'] as String?) ?? '事件触发,详情待载入。',
-        victoryText: (yaml['victory_text'] as String?) ?? '此役大胜,本派声威远播。',
-        defeatText: (yaml['defeat_text'] as String?) ?? '此役失利,归山再练。',
+        opening: (yaml['opening'] as String?) ?? UiStrings.sectEventNarrativeFallbackOpening,
+        victoryText: (yaml['victory_text'] as String?) ?? UiStrings.sectEventNarrativeFallbackVictory,
+        defeatText: (yaml['defeat_text'] as String?) ?? UiStrings.sectEventNarrativeFallbackDefeat,
       );
     } catch (_) {
       return _NarrativeData(
         title: widget.event.narrativeId,
-        opening: '事件触发,详情待载入。',
-        victoryText: '此役大胜,本派声威远播。',
-        defeatText: '此役失利,归山再练。',
+        opening: UiStrings.sectEventNarrativeFallbackOpening,
+        victoryText: UiStrings.sectEventNarrativeFallbackVictory,
+        defeatText: UiStrings.sectEventNarrativeFallbackDefeat,
       );
     }
   }
@@ -154,7 +154,7 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
                       TextButton(
                         onPressed: _handleRefuse,
                         child: const Text(
-                          '闭门谢客',
+                          UiStrings.sectEventRefuseButton,
                           style: TextStyle(color: WuxiaColors.textMuted),
                         ),
                       ),
