@@ -29,6 +29,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
@@ -84,6 +85,42 @@ void main() {
 
     expect(results.length, greaterThan(0));
   });
+
+  // 可玩性 P1a:熟练度 +30% 对真解 Boss 关 winRate 实测影响(同 seed A/B 隔离熟练度)。
+  // 相对 cap(<=1.30)已数学保证;此处看高熟练度是否破甜区。单调断言 airtight
+  // (+30% 伤害只增不减);floor 档(欠配置)见真实提升,ceiling 常已 100%(不超 100% 过强)。
+  test('P1a 熟练度 winRate 影响:max 熟练(uses=800) vs fresh(uses=0)', () async {
+    const stages = ['stage_01_05', 'stage_02_05', 'stage_03_05'];
+    const seeds = 40;
+    final lines = <String>[];
+    for (final profile in _BuildProfile.values) {
+      for (final sid in stages) {
+        final stage = repo.stageDefs[sid];
+        if (stage == null) continue;
+        int winAt(int uses) {
+          var w = 0;
+          for (var seed = 0; seed < seeds; seed++) {
+            final r = _simulateStage(stage, seed, repo, profile,
+                proficiencyUses: uses);
+            if (r.result == 'leftWin') w++;
+          }
+          return w;
+        }
+        final fresh = winAt(0);
+        final maxed = winAt(800);
+        lines.add('[${profile.name}] $sid: '
+            'fresh=${(fresh / seeds * 100).round()}% '
+            '-> maxProf=${(maxed / seeds * 100).round()}% '
+            '(delta ${((maxed - fresh) / seeds * 100).round()}pt)');
+        expect(maxed, greaterThanOrEqualTo(fresh),
+            reason: '$sid[${profile.name}] 熟练度不应降低 winRate');
+      }
+    }
+    print('=== P1a 熟练度 winRate 影响(floor/ceiling · $seeds seeds/档) ===');
+    for (final l in lines) {
+      print(l);
+    }
+  });
 }
 
 class _SimResult {
@@ -113,7 +150,8 @@ class _SimResult {
 }
 
 _SimResult _simulateStage(
-    StageDef stage, int seed, GameRepository repo, _BuildProfile profile) {
+    StageDef stage, int seed, GameRepository repo, _BuildProfile profile,
+    {int proficiencyUses = 0}) {
   // 玩家境界 = stage.requiredRealm(on-level 诚实基线 · 2026-05-29 去 +1 confound):
   // 原 +1「玩家超阶」是旧假 _synthPlayer 时代的补偿 hack;真 build 下 +1 与同阶
   // 敌人叠加 → 玩家凭空 1 阶优势(差1阶 attacker×1.4/defender×0.7)把后段全冲成
@@ -123,11 +161,14 @@ _SimResult _simulateStage(
   final playerTier = RealmTier.values[tierIndex.clamp(0, RealmTier.values.length - 1)];
   final players = [
     _buildRealPlayer(repo, playerTier,
-        slot: 0, name: '玩家', isFounder: true, profile: profile),
+        slot: 0, name: '玩家', isFounder: true, profile: profile,
+        proficiencyUses: proficiencyUses),
     _buildRealPlayer(repo, playerTier,
-        slot: 1, name: '徒弟一', isFounder: false, profile: profile),
+        slot: 1, name: '徒弟一', isFounder: false, profile: profile,
+        proficiencyUses: proficiencyUses),
     _buildRealPlayer(repo, playerTier,
-        slot: 2, name: '徒弟二', isFounder: false, profile: profile),
+        slot: 2, name: '徒弟二', isFounder: false, profile: profile,
+        proficiencyUses: proficiencyUses),
   ];
   final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
   final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
@@ -182,6 +223,7 @@ BattleCharacter _buildRealPlayer(
   required String name,
   required bool isFounder,
   required _BuildProfile profile,
+  int proficiencyUses = 0,
 }) {
   const layer = RealmLayer.huaJing; // 代表性中高层(沿旧 _synthPlayer 体例)
   const school = TechniqueSchool.gangMeng; // 固定刚猛(流派分布留局限)
@@ -245,6 +287,13 @@ BattleCharacter _buildRealPlayer(
     cultivationLayer:
         ceiling ? CultivationLayer.daCheng : CultivationLayer.zhongCheng,
   );
+  // 可玩性 P1a:seed 主修各招 skillUsageCount → fromCharacter 快照 skillUses
+  // → 战中按熟练阶应用伤害倍率。默认 0(fresh · 不扰既有 sweep)。
+  if (proficiencyUses > 0) {
+    for (final sid in techDef.skillIds) {
+      mainTech.skillUsageCount.increment(sid, proficiencyUses);
+    }
+  }
 
   // ceiling 属性 22(投入偏上)/ floor 20(均值 · §4.1 μ=5.5 总和 16-24)
   final attributes = Attributes()
