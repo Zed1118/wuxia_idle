@@ -327,6 +327,7 @@ class StageBattleSetup {
       slotIndex: slotIndex,
       iconPath: enemy.iconPath,
       isBoss: enemy.isBoss,
+      chargeSkillId: enemy.chargeSkillId, // P0 破招:招牌蓄力技透传(玩家方不设,保持 null)
     );
   }
 

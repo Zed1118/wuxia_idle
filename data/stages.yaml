@@ -618,6 +618,7 @@ stages:
           - skill_lingqiao_jichu_ult
         iconPath: assets/enemies/qingshan_main.png
         isBoss: true
+        chargeSkillId: skill_lingqiao_jichu_skill   # P0 破招 · 招牌蓄力技(powerSkill,AI 自动放)
       - id: enemy_sanLiu_killer_a
         name: 巷口杀手
         realmTier: sanLiu

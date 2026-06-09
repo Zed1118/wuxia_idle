@@ -208,6 +208,11 @@ class EnemyDef {
   /// 缺省 false 向后兼容。仅 isBossStage 关卡的语义 Boss 敌人标 true。
   final bool isBoss;
 
+  /// P0 破招:此敌人的招牌蓄力技 skillId。null = 不蓄力(普通敌人)。
+  /// 配了则必须在 [skillIds] 内(`_enforceBossChargeRedLines` 校)。
+  /// 战斗中被 BattleAI 选中此 skill 时进入蓄力,可被玩家破招打断踉跄。
+  final String? chargeSkillId;
+
   const EnemyDef({
     required this.id,
     required this.name,
@@ -220,6 +225,7 @@ class EnemyDef {
     required this.skillIds,
     required this.iconPath,
     this.isBoss = false,
+    this.chargeSkillId,
   });
 
   factory EnemyDef.fromYaml(Map<String, dynamic> y) {
@@ -237,6 +243,7 @@ class EnemyDef {
       ),
       iconPath: y['iconPath'] as String,
       isBoss: y['isBoss'] as bool? ?? false,
+      chargeSkillId: y['chargeSkillId'] as String?,
     );
   }
 
