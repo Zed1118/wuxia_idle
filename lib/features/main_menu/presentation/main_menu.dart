@@ -32,6 +32,7 @@ import '../../seclusion/domain/retreat_session.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../sect/presentation/sect_screen.dart';
+import '../../settings/presentation/settings_panel.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
@@ -290,6 +291,12 @@ class MainMenu extends ConsumerWidget {
         icon: Icons.menu_book_outlined,
         thumbnailPath: WuxiaUi.entryCodex,
         onTap: () => _push(context, const BaikeScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuSettings,
+        hint: UiStrings.mainMenuSettingsHint,
+        icon: Icons.settings_outlined,
+        onTap: () => SettingsPanel.show(context),
       ),
     ];
 

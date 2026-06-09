@@ -60,7 +60,7 @@ void main() {
     expect(assetImage(WuxiaUi.mainMenuBg), findsOneWidget);
   });
 
-  testWidgets('18 个菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('19 个菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -81,6 +81,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuBaike), findsOneWidget);
     expect(find.text(UiStrings.mainMenuInventory), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTechniques), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuSettings), findsOneWidget);
 
     // 顺序(Phase A 双列分组):修行/演武/江湖 三组,每组组内 2 列。
     // 行序:组首项 < 组次行项;同行两项 y 近似相等。
@@ -118,9 +119,9 @@ void main() {
     expect(y(UiStrings.mainMenuJianghu) < y(UiStrings.mainMenuBaike), isTrue);
   });
 
-  testWidgets('18 个菜单按钮均为 InkWell（可点）', (tester) async {
+  testWidgets('19 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(InkWell), findsNWidgets(18));
+    expect(find.byType(InkWell), findsNWidgets(19));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
