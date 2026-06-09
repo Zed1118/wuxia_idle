@@ -32,6 +32,8 @@ import '../../seclusion/domain/retreat_session.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../sect/presentation/sect_screen.dart';
+import '../../../shared/audio/audio_assets.dart';
+import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
@@ -314,7 +316,9 @@ class MainMenu extends ConsumerWidget {
           ]
         : const <Widget>[];
 
-    return Scaffold(
+    return BgmScope(
+      track: BgmTrack.mainMenu,
+      child: Scaffold(
       backgroundColor: WuxiaColors.background,
       body: Stack(
         children: [
@@ -399,6 +403,7 @@ class MainMenu extends ConsumerWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

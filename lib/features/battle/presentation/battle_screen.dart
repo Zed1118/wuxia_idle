@@ -13,6 +13,7 @@ import '../../../data/numbers_config.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../shared/audio/sound_manager.dart';
 import '../../../shared/audio/audio_assets.dart';
+import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/effects/screen_shake.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -587,10 +588,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
     // team 空时（startBattle 还未调用）渲染 placeholder
     if (state.leftTeam.isEmpty && state.rightTeam.isEmpty) {
-      return const Scaffold(
-        backgroundColor: WuxiaColors.background,
-        body: Center(
-          child: CircularProgressIndicator(color: WuxiaColors.textMuted),
+      return const BgmScope(
+        track: BgmTrack.battle,
+        child: Scaffold(
+          backgroundColor: WuxiaColors.background,
+          body: Center(
+            child: CircularProgressIndicator(color: WuxiaColors.textMuted),
+          ),
         ),
       );
     }
@@ -600,7 +604,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     );
     final showBossInkCloud = state.rightTeam.any((c) => c.isBoss);
 
-    return Scaffold(
+    return BgmScope(
+      track: BgmTrack.battle,
+      child: Scaffold(
       backgroundColor: WuxiaColors.background,
       body: Stack(
         children: [
@@ -677,6 +683,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
               onClose: () => setState(() => _logOpen = false),
             ),
         ],
+      ),
       ),
     );
   }
