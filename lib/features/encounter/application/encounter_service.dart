@@ -414,9 +414,8 @@ class EncounterService {
           result = EquipNotUnlocked(skillDef.id);
           return;
         }
-        // RealmTier 7 值:xueTu(0)/sanLiu(1)/erLiu(2)/yiLiu(3)/jueDing(4)/
-        // zongShi(5)/wuSheng(6)。tier 1-7 ↔ index 0-6。
-        if (character.realmTier.index < tier - 1) {
+        // §5.3 三系锁死:沿 SkillDef.canEquipAtRealm(tier-1 ↔ realmTier.index)。
+        if (!skillDef.canEquipAtRealm(character.realmTier)) {
           result = EquipTierLocked(
             requiredTier: tier,
             currentTier: character.realmTier,
