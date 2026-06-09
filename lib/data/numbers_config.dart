@@ -1031,6 +1031,7 @@ class CombatNumbers {
   final EvasionConfig evasion;
   final EnemyDefaults enemyDefaults;
   final RedLinesConfig redLines;
+  final BossChargeConfig bossCharge;
 
   const CombatNumbers({
     required this.damageFormula,
@@ -1040,6 +1041,7 @@ class CombatNumbers {
     required this.evasion,
     required this.enemyDefaults,
     required this.redLines,
+    required this.bossCharge,
   });
 
   factory CombatNumbers.fromYaml(Map<String, dynamic> y) {
@@ -1065,8 +1067,32 @@ class CombatNumbers {
       redLines: RedLinesConfig.fromYaml(
         y['red_lines'] as Map<String, dynamic>? ?? const {},
       ),
+      bossCharge: BossChargeConfig.fromYaml(
+        y['boss_charge'] as Map? ?? const {},
+      ),
     );
   }
+}
+
+/// P0 破招:Boss 招牌技蓄力/被破招踉跄配置(numbers.yaml `combat.boss_charge`)。
+///
+/// fixture（test 简化 numbers yaml）不带 `boss_charge` 段时回落默认值,
+/// 沿 [RedLinesConfig.fromYaml] 防御 fallback 体例。
+class BossChargeConfig {
+  final int defaultChargeTicks;
+  final int defaultStaggerTicks;
+  final double staggerDefenseDown;
+  const BossChargeConfig({
+    required this.defaultChargeTicks,
+    required this.defaultStaggerTicks,
+    required this.staggerDefenseDown,
+  });
+  factory BossChargeConfig.fromYaml(Map y) => BossChargeConfig(
+        defaultChargeTicks: (y['default_charge_ticks'] as num?)?.toInt() ?? 3,
+        defaultStaggerTicks: (y['default_stagger_ticks'] as num?)?.toInt() ?? 2,
+        staggerDefenseDown:
+            (y['stagger_defense_down'] as num?)?.toDouble() ?? 0.3,
+      );
 }
 
 /// 数值红线 cap 强类型（numbers.yaml `combat.red_lines`，GDD §5.4 硬上限）。
