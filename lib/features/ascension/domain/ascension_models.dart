@@ -55,8 +55,8 @@ class AscensionEligibility {
     final reasons = <String>[];
     if (!inActiveCharacters) reasons.add('祖师不在出战阵容');
     if (!realmAtPeak) reasons.add('祖师未达武圣·登峰');
-    if (!innerDemon07Cleared) reasons.add('心魔末关未通(stage_inner_demon_07)');
-    if (!mainline0605Cleared) reasons.add('飞升主线未通(stage_06_05)');
+    if (!innerDemon07Cleared) reasons.add('心魔末关「心魔·真」未通');
+    if (!mainline0605Cleared) reasons.add('飞升主线「昆仑山顶」未通');
     if (!hasDiscipleTarget) reasons.add('无可继承遗物的弟子');
     return reasons;
   }
