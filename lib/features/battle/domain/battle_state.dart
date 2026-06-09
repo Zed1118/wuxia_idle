@@ -4,6 +4,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
+import '../../../core/domain/skill_usage_entry.dart';
 import '../../../data/numbers_config.dart';
 import 'damage_calculator.dart';
 import 'derived_stats.dart';
@@ -92,6 +93,10 @@ class BattleCharacter {
 
   final List<SkillDef> availableSkills;
   final Map<String, int> skillCooldowns;
+
+  /// 可玩性 P1a:进场快照的 per-skill 累积放招次数(来源 owner Technique.skillUsageCount)。
+  /// 用于战中派生招式熟练度倍率。敌人路径不填(默认空 → 全 0 → 1.0 倍率)。
+  final Map<String, int> skillUses;
   final List<String> activeBuffs;
 
   final int actionPoint;
@@ -155,6 +160,7 @@ class BattleCharacter {
     required this.mainCultivationLayer,
     required this.availableSkills,
     required this.skillCooldowns,
+    this.skillUses = const {},
     required this.activeBuffs,
     required this.actionPoint,
     required this.isAlive,
@@ -307,6 +313,9 @@ class BattleCharacter {
       mainCultivationLayer: mainTechnique.cultivationLayer,
       availableSkills: List.unmodifiable(skills),
       skillCooldowns: const {},
+      skillUses: {
+        for (final sk in skills) sk.id: mainTechnique.skillUsageCount.countOf(sk.id),
+      },
       activeBuffs: const [],
       actionPoint: 0,
       isAlive: true,
@@ -335,6 +344,7 @@ class BattleCharacter {
     CultivationLayer? mainCultivationLayer,
     List<SkillDef>? availableSkills,
     Map<String, int>? skillCooldowns,
+    Map<String, int>? skillUses,
     List<String>? activeBuffs,
     int? actionPoint,
     bool? isAlive,
@@ -370,6 +380,7 @@ class BattleCharacter {
           mainCultivationLayer ?? this.mainCultivationLayer,
       availableSkills: availableSkills ?? this.availableSkills,
       skillCooldowns: skillCooldowns ?? this.skillCooldowns,
+      skillUses: skillUses ?? this.skillUses,
       activeBuffs: activeBuffs ?? this.activeBuffs,
       actionPoint: actionPoint ?? this.actionPoint,
       isAlive: isAlive ?? this.isAlive,
