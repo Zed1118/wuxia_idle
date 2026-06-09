@@ -84,6 +84,12 @@ class EnumL10n {
   static String internalInjuryFatal(String actorName) =>
       '$actorName 内伤崩裂,经脉俱断';
 
+  /// P0 破招:Boss 起手蓄力招牌技日志。
+  static String chargeStart(String name, String skill) => '$name 凝气蓄势:$skill';
+
+  /// P0 破招:Boss 蓄力中(未满)跳过本次行动日志。
+  static String charging(String name) => '$name 蓄力中……';
+
   /// 心法修炼度 9 层（GDD §4.3，与境界 7 层 [realmLayer] 严格不同名）。
   static String cultivationLayer(CultivationLayer l) {
     return switch (l) {

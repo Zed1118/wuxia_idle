@@ -229,7 +229,74 @@ class DefaultGroundStrategy implements BattleStrategy {
       }
     }
 
-    final (skill, targetId) = BattleAI.decide(preActor, preState, n);
+    // === P0 蓄力 pre-step(踉跄见 Task 8)===
+    // (b) 蓄力中:递减;未满写"蓄力中"跳过本次;满则本次放 chargingSkill。
+    SkillDef? forcedSkill;
+    if (preActor.chargingSkill != null) {
+      final remaining = preActor.chargeTicksRemaining - 1;
+      if (remaining > 0) {
+        final after = preActor.copyWith(
+          chargeTicksRemaining: remaining,
+          actionPoint: preActor.actionPoint - 1000,
+        );
+        final lt = preState.leftTeam.toList();
+        final rt = preState.rightTeam.toList();
+        _replaceById(after.teamSide == 0 ? lt : rt, after);
+        return preState.copyWith(
+          leftTeam: List.unmodifiable(lt),
+          rightTeam: List.unmodifiable(rt),
+          actionLog: [
+            ...preState.actionLog,
+            BattleAction(
+              tick: preState.tick,
+              actorId: after.characterId,
+              description: EnumL10n.charging(after.name),
+            ),
+          ],
+        );
+      } else {
+        forcedSkill = preActor.chargingSkill;
+        preActor = preActor.copyWith(
+          chargingSkill: null,
+          chargeTicksRemaining: 0,
+        );
+      }
+    }
+
+    final SkillDef skill;
+    final int targetId;
+    if (forcedSkill != null) {
+      skill = forcedSkill;
+      targetId = BattleAI.decide(preActor, preState, n).$2; // 复用目标选择
+    } else {
+      final decided = BattleAI.decide(preActor, preState, n);
+      // (c) 起手蓄力:选中自己的 chargeSkillId 且未蓄力 → 开始蓄力,本 tick 不出伤。
+      if (preActor.chargeSkillId != null &&
+          decided.$1.id == preActor.chargeSkillId) {
+        final after = preActor.copyWith(
+          chargingSkill: decided.$1,
+          chargeTicksRemaining: n.combat.bossCharge.defaultChargeTicks,
+          actionPoint: preActor.actionPoint - 1000,
+        );
+        final lt = preState.leftTeam.toList();
+        final rt = preState.rightTeam.toList();
+        _replaceById(after.teamSide == 0 ? lt : rt, after);
+        return preState.copyWith(
+          leftTeam: List.unmodifiable(lt),
+          rightTeam: List.unmodifiable(rt),
+          actionLog: [
+            ...preState.actionLog,
+            BattleAction(
+              tick: preState.tick,
+              actorId: after.characterId,
+              description: EnumL10n.chargeStart(after.name, decided.$1.name),
+            ),
+          ],
+        );
+      }
+      skill = decided.$1;
+      targetId = decided.$2;
+    }
     final target = _findById(
       preState,
       targetId,
