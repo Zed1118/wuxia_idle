@@ -122,6 +122,15 @@ class BattleCharacter {
   /// CharacterAvatar 走金色加粗描边。玩家方恒 false。
   final bool isBoss;
 
+  /// P0 破招:此单位的招牌技 id(仅 Boss 配置;null=不蓄力)。
+  final String? chargeSkillId;
+  /// P0 破招:运行时——当前正在蓄力的招(null=未蓄力)。
+  final SkillDef? chargingSkill;
+  /// P0 破招:蓄力剩余 tick(0=未蓄力)。
+  final int chargeTicksRemaining;
+  /// P0 破招:踉跄剩余 tick(0=未踉跄)。
+  final int staggerTicksRemaining;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -150,6 +159,10 @@ class BattleCharacter {
     this.iconPath,
     this.attackPowerMultiplier = 1.0,
     this.isBoss = false,
+    this.chargeSkillId,
+    this.chargingSkill,
+    this.chargeTicksRemaining = 0,
+    this.staggerTicksRemaining = 0,
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -315,6 +328,10 @@ class BattleCharacter {
     String? iconPath,
     double? attackPowerMultiplier,
     bool? isBoss,
+    Object? chargeSkillId = _unset,
+    Object? chargingSkill = _unset,
+    int? chargeTicksRemaining,
+    int? staggerTicksRemaining,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -350,6 +367,12 @@ class BattleCharacter {
       attackPowerMultiplier:
           attackPowerMultiplier ?? this.attackPowerMultiplier,
       isBoss: isBoss ?? this.isBoss,
+      chargeSkillId: identical(chargeSkillId, _unset)
+          ? this.chargeSkillId : chargeSkillId as String?,
+      chargingSkill: identical(chargingSkill, _unset)
+          ? this.chargingSkill : chargingSkill as SkillDef?,
+      chargeTicksRemaining: chargeTicksRemaining ?? this.chargeTicksRemaining,
+      staggerTicksRemaining: staggerTicksRemaining ?? this.staggerTicksRemaining,
     );
   }
 
