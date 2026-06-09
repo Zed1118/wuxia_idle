@@ -4,12 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/debug/application/visual_route.dart';
 import 'features/debug/presentation/visual_route_host.dart';
+import 'features/settings/application/audio_settings_service.dart';
 import 'features/splash/presentation/splash_screen.dart';
+import 'shared/audio/audio_players_backend.dart';
+import 'shared/audio/sound_manager.dart';
 import 'shared/strings.dart';
 import 'shared/theme/wuxia_tokens.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  SoundManager.instance = SoundManager(AudioPlayersBackend());
+  await SoundManager.instance.applySettings(await AudioSettingsService().load());
 
   // 视觉验收直达:--dart-define=VISUAL_ROUTE=<id>。debug + profile 均生效
   // (profile 下 kDebugMode=false → 隐藏 debug chrome,出干净 Steam 截图);
