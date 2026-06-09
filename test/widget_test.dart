@@ -359,13 +359,21 @@ void main() {
     //   left[2] 苏锦书  currentIf=600  cost=800 → NOT ready（内力不够）
     await pumpBattle(tester);
 
-    final buttons = tester
-        .widgetList<ElevatedButton>(find.byType(ElevatedButton))
+    // P0 起底栏每名角色多了「破招」关键技按钮（含 '破招' 文案），与「大招」按钮
+    // 同为 ElevatedButton。本测只验大招按钮 enabled 状态 → 按 '大招' 文案锚定，
+    // 排除破招按钮（含 '破招' 文案）。
+    final ultimateButtons = tester
+        .widgetList<ElevatedButton>(
+          find.ancestor(
+            of: find.text('大招'),
+            matching: find.byType(ElevatedButton),
+          ),
+        )
         .toList();
-    expect(buttons.length, 3, reason: '底栏 3 个大招按钮');
-    expect(buttons[0].enabled, true, reason: 'left[0] 萧夜寒 内力够');
-    expect(buttons[1].enabled, true, reason: 'left[1] 柳青衫 内力够');
-    expect(buttons[2].enabled, false, reason: 'left[2] 苏锦书 内力不够');
+    expect(ultimateButtons.length, 3, reason: '底栏 3 个大招按钮');
+    expect(ultimateButtons[0].enabled, true, reason: 'left[0] 萧夜寒 内力够');
+    expect(ultimateButtons[1].enabled, true, reason: 'left[1] 柳青衫 内力够');
+    expect(ultimateButtons[2].enabled, false, reason: 'left[2] 苏锦书 内力不够');
   });
 
   testWidgets('T16 大招按下后置灰，actor 行动后解除', (WidgetTester tester) async {
