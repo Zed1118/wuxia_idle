@@ -521,6 +521,7 @@ class GameRepository {
     // P4.1 1.1 Q6B:Boss 招降 bossRecruit 校验(三重校:isBossStage 守 + candidateRef
     // 在 sectCandidates + baseProbability ∈ [0,1])· sectCandidates 空时仅校第一/三条
     _enforceBossRecruitRedLines();
+    _enforceSkillDropRedLines();
 
     // P0 破招:Boss 招牌蓄力技校验(chargeSkillId 必在敌人 skillIds 内 +
     // boss_charge tick 数值范围)
@@ -1283,6 +1284,27 @@ class GameRepository {
   /// P0 破招红线(沿 [_enforceBossRecruitRedLines] 体例):
   /// - 任何配了 chargeSkillId 的敌人:该 id 必须在其 skillIds 内,否则 throw。
   /// - numbers.bossCharge:defaultChargeTicks ∈ [1,8] / defaultStaggerTicks ∈ [0,5]。
+  /// 技能书掉落红线(可玩性 P1a · spec §二)。仅 Boss 关可配 dropSkill,且 id 必须在 skillDefs。
+  void _enforceSkillDropRedLines() {
+    for (final s in stageDefs.values) {
+      final manual = s.dropSkillManualId;
+      final frag = s.dropSkillFragmentId;
+      if (manual == null && frag == null) continue;
+      if (!s.isBossStage) {
+        throw StateError(
+          'stage ${s.id} 配 dropSkill 但 isBossStage=false,仅 Boss 关可配(P1a §二红线)',
+        );
+      }
+      for (final id in [manual, frag]) {
+        if (id != null && skillDefs[id] == null) {
+          throw StateError(
+            'stage ${s.id} dropSkill id=$id 未在 skills.yaml(P1a §二红线)',
+          );
+        }
+      }
+    }
+  }
+
   void _enforceBossChargeRedLines() {
     for (final s in stageDefs.values) {
       for (final e in s.enemyTeam) {
