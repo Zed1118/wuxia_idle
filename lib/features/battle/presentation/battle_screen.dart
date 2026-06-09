@@ -11,6 +11,8 @@ import '../../../data/defs/skill_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/application/battle_providers.dart';
+import '../../../shared/audio/sound_manager.dart';
+import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/effects/screen_shake.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -254,6 +256,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         action.skill!.name,
         isEnemy: actor?.teamSide == 1,
       );
+    }
+    final sfx = sfxForAction(
+      action: action,
+      isUltimate: isUltimateCaptionSkill(action.skill),
+    );
+    if (sfx != null) {
+      SoundManager.instance.playSfx(sfx);
     }
   }
 
