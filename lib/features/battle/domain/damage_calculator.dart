@@ -6,6 +6,8 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/numbers_config.dart';
+import '../../../core/domain/skill_usage_entry.dart';
+import '../../cultivation/domain/skill_proficiency.dart';
 import 'derived_stats.dart';
 
 /// 伤害计算器（phase1_tasks.md T10）。
@@ -48,6 +50,13 @@ class DamageCalculator {
         'numbers.yaml defenseRateByTier 缺 ${ctx.defender.realmTier.name}',
       );
     }
+    // 可玩性 P1a:从攻方主修心法 skillUsageCount 派生该招熟练度综合倍率。
+    final uses = ctx.attackerMainTech.skillUsageCount.countOf(ctx.skill.id);
+    final perSkillPct = ctx.skill.proficiency?.damagePctAt(
+            SkillProficiency.stageFor(uses, n.skillProficiency).id) ??
+        0.0;
+    final profMult =
+        SkillProficiency.combinedMult(uses, perSkillPct, n.skillProficiency);
     return calculateResolved(
       attackerInternalForce: ctx.attacker.internalForce,
       attackerEquipmentAttack: eqAtkSum,
@@ -67,6 +76,7 @@ class DamageCalculator {
       n: n,
       rng: ctx.rng ?? Random(),
       forceCritical: ctx.forceCritical,
+      proficiencyDamageMult: profMult,
     );
   }
 

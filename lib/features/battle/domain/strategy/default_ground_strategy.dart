@@ -7,6 +7,7 @@ import '../battle_ai.dart';
 import '../enum_localizations.dart';
 import '../battle_state.dart';
 import '../damage_calculator.dart';
+import '../../../cultivation/domain/skill_proficiency.dart';
 import 'battle_strategy.dart';
 
 /// 地面 3v3 半横版战斗 strategy(Demo 阶段唯一实装)。
@@ -466,6 +467,13 @@ class DefaultGroundStrategy implements BattleStrategy {
       effDefRate =
           defender.defenseRate * (1 - n.combat.bossCharge.staggerDefenseDown);
     }
+    // 可玩性 P1a:从攻方进场快照 skillUses 派生该招熟练度综合倍率(敌人空 → 1.0)。
+    final uses = attacker.skillUses[skill.id] ?? 0;
+    final perSkillPct = skill.proficiency?.damagePctAt(
+            SkillProficiency.stageFor(uses, n.skillProficiency).id) ??
+        0.0;
+    final profMult =
+        SkillProficiency.combinedMult(uses, perSkillPct, n.skillProficiency);
     return DamageCalculator.calculateResolved(
       attackerInternalForce: attacker.currentInternalForce,
       attackerEquipmentAttack: attacker.totalEquipmentAttack,
@@ -484,6 +492,7 @@ class DefaultGroundStrategy implements BattleStrategy {
       n: n,
       rng: rng,
       forceCritical: forceCritical,
+      proficiencyDamageMult: profMult,
     );
   }
 
