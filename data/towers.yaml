@@ -237,6 +237,7 @@ floors:
 
   # === Floor 10 · 大 Boss · 三流 dengFeng ===
   - floorIndex: 10
+    dropSkillFragmentId: skill_lingqiao_mingjia_ult  # 可玩性 P1a 残页(集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 2400
     requiredRealm: sanLiu
@@ -564,6 +565,7 @@ floors:
 
   # === Floor 20 · 大 Boss · 一流 dengFeng ===
   - floorIndex: 20
+    dropSkillFragmentId: skill_lingqiao_menpai_ult  # 可玩性 P1a 残页(集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 4800
     requiredRealm: yiLiu

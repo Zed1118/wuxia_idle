@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,6 +27,8 @@ import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
+import '../../cultivation/domain/skill_unlock_service.dart';
+import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../event/application/game_event_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
@@ -132,6 +135,21 @@ Future<void> runTowerFlow({
     // 加 log 便于诊断（W12 之前是 catch (_) 静默吞，Codex 视觉验收无法追踪根因）
     debugPrint('runTowerFlow recordClear unexpected failure: $e\n$st');
     clearResult = (isFirstClear: false, highestAfter: 0);
+  }
+
+  // 可玩性 P1a：爬塔 Boss 残页掉落(spec §二)。每次 Boss 胜利 rng 掉(非首通限定,
+  // 重复刷集残页 grind)。纯数据写;test stub(clearRecorderForTest)路径跳过
+  // (与 recordClear 一致,不依赖未初始化 IsarSetup)。
+  if (clearRecorderForTest == null &&
+      floor.dropSkillFragmentId != null &&
+      GameRepository.isLoaded) {
+    await runTowerSkillDropHookAfterVictory(
+      floor: floor,
+      svc: SkillUnlockService(IsarSetup.instance),
+      towerFragmentDropProb:
+          GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
+      rng: Random(),
+    );
   }
 
   // Phase 4 W11 #32 销账：爬塔 victory 战斗结算（装备 battleCount / 心法 skillUsage /
