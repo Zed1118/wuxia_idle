@@ -10,6 +10,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'retreat_result_screen.dart';
+import 'seclusion_map_visuals.dart';
 
 /// 闭关进行中屏幕（Phase 3 T49）。
 ///
@@ -167,6 +168,10 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 14),
+                              child: SeclusionMapTraitIcon(def: def, size: 50),
+                            ),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,6 +188,8 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                                       fontWeight: FontWeight.w900,
                                     ),
                                   ),
+                                  const SizedBox(height: 9),
+                                  SeclusionMapTraitStrip(def: def),
                                 ],
                               ),
                             ),
@@ -216,7 +223,9 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                               alpha: 0.22,
                             ),
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              done ? WuxiaUi.gold : WuxiaUi.qing,
+                              done
+                                  ? WuxiaUi.gold
+                                  : SeclusionMapVisuals.primaryColor(def),
                             ),
                           ),
                         ),

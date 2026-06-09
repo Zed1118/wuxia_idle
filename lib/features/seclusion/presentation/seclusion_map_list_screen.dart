@@ -13,6 +13,7 @@ import '../application/seclusion_service_providers.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'active_retreat_screen.dart';
+import 'seclusion_map_visuals.dart';
 import 'seclusion_setup_screen.dart';
 
 /// 闭关地图列表屏幕（Phase 3 T49）。
@@ -287,6 +288,7 @@ class _MapCard extends StatelessWidget {
         : locked
         ? WuxiaUi.muted
         : WuxiaColors.hpHigh;
+    final traitColor = SeclusionMapVisuals.primaryColor(def);
 
     final footerText = locked
         ? UiStrings.seclusionRequiredRealm(
@@ -308,7 +310,7 @@ class _MapCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: WuxiaColors.panel,
+            color: WuxiaUi.ink,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: statusColor, width: isActive ? 1.8 : 1),
             boxShadow: [
@@ -348,6 +350,21 @@ class _MapCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: WuxiaUi.paper.withValues(alpha: 0.3),
+                        width: 5,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 14,
+                  top: 12,
+                  child: SeclusionMapTraitIcon(def: def, locked: locked),
+                ),
                 Positioned(
                   left: 14,
                   top: 12,
@@ -356,18 +373,35 @@ class _MapCard extends StatelessWidget {
                 Positioned(
                   left: 16,
                   right: 16,
-                  bottom: 58,
-                  child: Text(
-                    def.mapName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: locked
-                          ? WuxiaColors.textSecondary
-                          : WuxiaColors.textPrimary,
-                      fontSize: 23,
-                      fontWeight: FontWeight.w900,
-                    ),
+                  bottom: 62,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        def.mapName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: locked
+                              ? WuxiaColors.textSecondary
+                              : WuxiaColors.textPrimary,
+                          fontSize: 23,
+                          fontWeight: FontWeight.w900,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.45),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 7),
+                      SeclusionMapTraitStrip(
+                        def: def,
+                        locked: locked,
+                        compact: true,
+                      ),
+                    ],
                   ),
                 ),
                 Positioned(
@@ -376,7 +410,16 @@ class _MapCard extends StatelessWidget {
                   bottom: 0,
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(16, 12, 14, 13),
-                    color: WuxiaColors.sidebar.withValues(alpha: 0.86),
+                    decoration: BoxDecoration(
+                      color: WuxiaColors.sidebar.withValues(alpha: 0.88),
+                      border: Border(
+                        top: BorderSide(
+                          color: traitColor.withValues(
+                            alpha: locked ? 0.18 : 0.34,
+                          ),
+                        ),
+                      ),
+                    ),
                     child: Row(
                       children: [
                         Expanded(
@@ -421,7 +464,9 @@ class _MapCard extends StatelessWidget {
 
   String _outputSummary() {
     final parts = <String>[];
-    if (def.equipmentDropRate > 1.0) parts.add(UiStrings.seclusionBonusEquipDrop);
+    if (def.equipmentDropRate > 1.0) {
+      parts.add(UiStrings.seclusionBonusEquipDrop);
+    }
     if (def.techniqueLearnRate > 1.0) {
       parts.add(UiStrings.seclusionBonusTechniqueLearn);
     }

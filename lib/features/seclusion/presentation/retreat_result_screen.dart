@@ -8,6 +8,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../application/seclusion_service.dart';
 import '../domain/seclusion_map_def.dart';
+import 'seclusion_map_visuals.dart';
 
 /// 闭关收功结果屏幕（Phase 3 T49/T50 / W15 #30 P3 扩 EXP + 升层 banner）。
 ///
@@ -167,6 +168,11 @@ class _ResultHero extends StatelessWidget {
               ),
             ),
             Positioned(
+              right: 18,
+              top: 16,
+              child: SeclusionMapTraitIcon(def: mapDef, size: 46),
+            ),
+            Positioned(
               left: 18,
               right: 18,
               bottom: 18,
@@ -185,6 +191,8 @@ class _ResultHero extends StatelessWidget {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  SeclusionMapTraitStrip(def: mapDef),
                   const SizedBox(height: 5),
                   Text(
                     UiStrings.seclusionActualHours(actualHours),
