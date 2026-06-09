@@ -16,7 +16,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 SWIFT_WINID="$REPO_ROOT/tools/visual_capture/window_id.swift"
 
-ALL_ROUTES=(main_menu technique_panel_tier_all technique_panel_hero)
+ALL_ROUTES=(main_menu technique_panel_tier_all technique_panel_hero battle_charge_break)
 DEFAULT_RES=(1280x720 1920x1080)
 READY_TIMEOUT=180   # 秒(首跑含编译)
 SETTLE=2            # 截图前等图片加载

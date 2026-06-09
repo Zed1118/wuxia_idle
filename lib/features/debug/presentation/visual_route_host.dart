@@ -262,6 +262,13 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         hint: null,
         sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
       );
+    case VisualRoute.battleChargeBreak:
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioChargeBreak,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
+        autoStart: false,
+      );
     case VisualRoute.battleVictoryFirstClear:
       return const _VictoryFirstClearPreview();
     case VisualRoute.enemyGallery:

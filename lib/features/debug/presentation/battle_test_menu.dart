@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../battle/domain/battle_state.dart';
 import '../../../data/defs/skill_def.dart';
+import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../battle/presentation/battle_screen.dart';
@@ -248,6 +249,96 @@ class BattleScenarioData {
     );
   }
 
+  /// 破招 UI 静态验收:青衫剑客正蓄「青锋绝」(chargeTicksRemaining=2),
+  /// 玩家主控带「破势」且就绪(内力满 + 不在 CD)。配合 BattleScreen(autoStart:false)
+  /// 画面冻结在此 seed 态 —— Boss 头像显蓄力条 + flash 图标,底栏破招按钮金色高亮。
+  ///
+  /// 数值照 stages.yaml stage_02_05 青衫剑客调校值(HP9500/攻1150/灵巧/sanLiu·yuanShu)。
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioChargeBreak() {
+    final repo = GameRepository.instance;
+    final qingfeng = repo.getSkill('skill_qingshan_qingfeng'); // 青锋绝(蓄力大招)
+    final poShi = repo.getSkill('skill_po_shi'); // 破势(玩家破招技)
+
+    // ── 左队(玩家):主控带破势 + 基础招,内力满、破势不在 CD → 破招按钮 ready+高亮。
+    BattleCharacter player(int id, String name, int slot, List<SkillDef> skills) =>
+        _char(
+          id: id,
+          name: name,
+          tier: RealmTier.sanLiu,
+          layer: RealmLayer.yuanShu,
+          school: TechniqueSchool.gangMeng,
+          maxHp: 8000,
+          maxIf: 500, // > 破势 cost 120 → ready
+          speed: 180,
+          critRate: 0.05,
+          eqAtk: 400,
+          cultivation: CultivationLayer.daCheng,
+          skills: skills,
+          teamSide: 0,
+          slotIndex: slot,
+        );
+
+    final left = [
+      player(1, '主控', 0, [
+        _normal('cb_normal_1', '基础招'),
+        poShi, // 破势:canInterrupt → 破招按钮取此技
+      ]),
+      player(2, '弟子甲', 1, [_normal('cb_normal_2', '基础招')]),
+      player(3, '弟子乙', 2, [_normal('cb_normal_3', '基础招')]),
+    ];
+
+    // ── 右队(敌):首位青衫剑客 seed 成「正蓄青锋绝」态;另 2 小怪普通。
+    final qingshan = _char(
+      id: 11,
+      name: '青衫剑客',
+      tier: RealmTier.sanLiu,
+      layer: RealmLayer.yuanShu,
+      school: TechniqueSchool.lingQiao,
+      maxHp: 9500,
+      maxIf: 4000,
+      speed: 175,
+      critRate: 0.05,
+      eqAtk: 1150,
+      cultivation: CultivationLayer.daCheng,
+      skills: [_normal('cb_qs_normal', '青锋斩'), qingfeng],
+      teamSide: 1,
+      slotIndex: 0,
+      isBoss: true,
+      iconPath: 'assets/enemies/qingshan_main.png',
+    ).copyWith(
+      // 关键:seed 成已蓄力 → BattleScreen 显蓄力条 + 底栏破招高亮。
+      chargeSkillId: 'skill_qingshan_qingfeng',
+      chargingSkill: qingfeng,
+      chargeTicksRemaining: 2,
+    );
+
+    BattleCharacter mob(int id, String name, int slot, String icon) => _char(
+      id: id,
+      name: name,
+      tier: RealmTier.sanLiu,
+      layer: RealmLayer.yuanShu,
+      school: TechniqueSchool.yinRou,
+      maxHp: 7500,
+      maxIf: 2000,
+      speed: 160,
+      critRate: 0.05,
+      eqAtk: 1000,
+      cultivation: CultivationLayer.daCheng,
+      skills: [_normal('cb_mob_$id', '杀招')],
+      teamSide: 1,
+      slotIndex: slot,
+      iconPath: icon,
+    );
+
+    final right = [
+      qingshan,
+      mob(12, '巷口杀手', 1, 'assets/enemies/killer_a.png'),
+      mob(13, '巷尾杀手', 2, 'assets/enemies/killer_b.png'),
+    ];
+
+    return (left, right);
+  }
+
   // ── 场景 C：二流·圆熟 1v1，装备对比 ─────────────────────────────────────────
   //
   // 左：基础攻400 × 强化1.60 × 默契1.20 = 768
@@ -373,10 +464,15 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   /// 出版美术验收:传给 BattleScreen 渲染场景背景 + scrim。null = 无背景。
   final String? sceneBackgroundPath;
 
+  /// 透传给 BattleScreen.autoStart(默认 true 现有用法不变);
+  /// false 时画面冻结在 startBattle seed 态,用于静态截蓄力/破招帧。
+  final bool autoStart;
+
   const ScenarioLauncher({
     required this.teamsFactory,
     required this.hint,
     this.sceneBackgroundPath,
+    this.autoStart = true,
     super.key,
   });
 
@@ -399,6 +495,7 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
   Widget build(BuildContext context) => BattleScreen(
     hint: widget.hint,
     sceneBackgroundPath: widget.sceneBackgroundPath,
+    autoStart: widget.autoStart,
     onBattleEnd: () => Navigator.of(context).pop(),
   );
 }

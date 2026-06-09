@@ -112,6 +112,11 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// null 或 errorBuilder 触发时降级到 [WuxiaColors.background] 兜底。
   final String? sceneBackgroundPath;
 
+  /// 是否自动启动战斗 tick(opt-in,默认 true 现有调用零影响)。
+  /// false 时永不启 Timer,画面冻结在 startBattle 后的 seed 态 ——
+  /// 用于静态视觉验收(如 battle_charge_break 截蓄力帧,免被 tick 推进掉)。
+  final bool autoStart;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
@@ -120,6 +125,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.onVictory,
     this.onDefeat,
     this.sceneBackgroundPath,
+    this.autoStart = true,
   });
 
   @override
@@ -592,7 +598,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     ref.listen<BattleState>(battleProvider, (prev, next) {
       // 1. 启动 Timer：team 从空 → 非空且未结束
       final wasEmpty = prev == null || prev.leftTeam.isEmpty;
-      if (wasEmpty && next.leftTeam.isNotEmpty && !next.isFinished) {
+      if (widget.autoStart &&
+          wasEmpty &&
+          next.leftTeam.isNotEmpty &&
+          !next.isFinished) {
         _startTimer();
       }
 
