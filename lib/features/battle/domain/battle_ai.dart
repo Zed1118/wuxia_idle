@@ -31,7 +31,15 @@ class BattleAI {
       );
     }
     final skill = _pickSkill(actor, state);
-    final targetId = _pickTargetId(actor, state);
+    final enemyTeam = actor.teamSide == 0 ? state.rightTeam : state.leftTeam;
+    final charging =
+        enemyTeam.where((e) => e.isAlive && e.chargingSkill != null);
+    final int targetId;
+    if (skill.canInterrupt && charging.isNotEmpty) {
+      targetId = charging.first.characterId; // P0:破招技锁定蓄力敌人
+    } else {
+      targetId = _pickTargetId(actor, state);
+    }
     return (skill, targetId);
   }
 
@@ -41,6 +49,18 @@ class BattleAI {
     final pending = state.pendingUltimates[actor.characterId];
     if (pending != null && _canUse(actor, pending)) {
       return pending;
+    }
+
+    // P0:对面有敌人蓄力 + 自己有可用 saveForInterrupt 破招技 → 用它(托管保守破招)
+    final enemyTeam = actor.teamSide == 0 ? state.rightTeam : state.leftTeam;
+    final enemyCharging =
+        enemyTeam.any((e) => e.isAlive && e.chargingSkill != null);
+    if (enemyCharging) {
+      for (final s in actor.availableSkills) {
+        if (s.aiUsePolicy != AiUsePolicy.saveForInterrupt) continue;
+        if (!_canUse(actor, s)) continue;
+        return s;
+      }
     }
 
     // 1.5) P1.1 候选 3-b:共鸣度满级解锁的「人剑合一」(jointSkill)
@@ -56,6 +76,7 @@ class BattleAI {
     SkillDef? bestPower;
     for (final s in actor.availableSkills) {
       if (s.type != SkillType.powerSkill) continue;
+      if (s.aiUsePolicy == AiUsePolicy.saveForInterrupt) continue; // P0:平时不放破招技
       if (!_canUse(actor, s)) continue;
       if (bestPower == null || s.powerMultiplier > bestPower.powerMultiplier) {
         bestPower = s;
