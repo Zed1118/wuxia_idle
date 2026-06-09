@@ -18,6 +18,9 @@ class NumbersConfig {
   /// 招式熟练度阶段配置(可玩性 P1a · spec §三/§2.5)。
   /// `combat.skill_proficiency`,全局阶段倍率(末阶 1.30 作综合 cap)。
   final SkillProficiencyConfig skillProficiency;
+
+  /// 招式解锁配置(可玩性 P1a · spec §二)。顶层 `skill_unlock` 段。
+  final SkillUnlockConfig skillUnlock;
   final LevelDiffModifier levelDiffModifier;
 
   /// 49 级境界对应大阶的防御率（RealmDef schema §5.8 未含此字段，
@@ -197,6 +200,7 @@ class NumbersConfig {
     required this.version,
     required this.combat,
     required this.skillProficiency,
+    required this.skillUnlock,
     required this.levelDiffModifier,
     required this.defenseRateByTier,
     required this.enhancementBonusPerLevel,
@@ -246,6 +250,9 @@ class NumbersConfig {
       combat: CombatNumbers.fromYaml(combat),
       skillProficiency: SkillProficiencyConfig.fromYaml(
         combat['skill_proficiency'] as Map<String, dynamic>?,
+      ),
+      skillUnlock: SkillUnlockConfig.fromYaml(
+        (y['skill_unlock'] as Map?)?.cast<String, dynamic>(),
       ),
       levelDiffModifier: LevelDiffModifier.fromYaml(
         realms['level_diff_modifier'] as Map<String, dynamic>,
@@ -2241,5 +2248,26 @@ class SkillProficiencyConfig {
       }
     }
     return SkillProficiencyConfig(stages: stages);
+  }
+}
+
+
+/// 招式解锁配置(可玩性 P1a · spec §二)。顶层 `skill_unlock` 段。
+class SkillUnlockConfig {
+  final int fragmentThreshold;
+  final double towerFragmentDropProb;
+  const SkillUnlockConfig(
+      {required this.fragmentThreshold, required this.towerFragmentDropProb});
+
+  static const empty =
+      SkillUnlockConfig(fragmentThreshold: 5, towerFragmentDropProb: 0.20);
+
+  factory SkillUnlockConfig.fromYaml(Map<String, dynamic>? y) {
+    if (y == null || y.isEmpty) return empty;
+    return SkillUnlockConfig(
+      fragmentThreshold: (y['fragment_threshold'] as num?)?.toInt() ?? 5,
+      towerFragmentDropProb:
+          (y['tower_fragment_drop_prob'] as num?)?.toDouble() ?? 0.20,
+    );
   }
 }
