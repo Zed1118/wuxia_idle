@@ -104,6 +104,7 @@ class DamageCalculator {
     required NumbersConfig n,
     required Random rng,
     bool forceCritical = false,
+    double proficiencyDamageMult = 1.0,
   }) {
     // === 1. 闪避 ===
     if (rng.nextDouble() < defenderEvasionRate) {
@@ -175,7 +176,8 @@ class DamageCalculator {
         critMult *
         defMult *
         realmMult *
-        attackPowerMultiplier;
+        attackPowerMultiplier *
+        proficiencyDamageMult; // 可玩性 P1a:熟练度综合倍率(已含 130% cap)
     final mainDamage = raw.toInt();
 
     // === 9. 刚猛克阴柔附带震伤(§12.1 #7 v1.4 决议)===
@@ -200,6 +202,7 @@ class DamageCalculator {
         ' * ${_fmt(defMult)}'
         ' * ${_fmt(realmMult)}'
         '${attackPowerMultiplier != 1.0 ? ' * ${_fmt(attackPowerMultiplier)}' : ''}'
+        '${proficiencyDamageMult != 1.0 ? ' * ${_fmt(proficiencyDamageMult)}' : ''}'
         ' = $mainDamage'
         '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
         ' [atkLv=$atkLevel,defLv=$defLevel]';
