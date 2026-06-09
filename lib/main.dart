@@ -11,9 +11,10 @@ import 'shared/theme/wuxia_tokens.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // debug-only 视觉验收直达:--dart-define=VISUAL_ROUTE=<id>。
-  // release / 无参数 → 短路,走下方正常启动,零影响。
-  if (kDebugMode) {
+  // 视觉验收直达:--dart-define=VISUAL_ROUTE=<id>。debug + profile 均生效
+  // (profile 下 kDebugMode=false → 隐藏 debug chrome,出干净 Steam 截图);
+  // release / 无参数 → 短路(kReleaseMode),走下方正常启动,零影响。
+  if (!kReleaseMode) {
     final route = visualRouteFromEnv();
     if (route != null) {
       runApp(VisualRouteApp(route: route));
