@@ -116,35 +116,6 @@ void main() {
   BattleCharacter playerOf(BattleState s) =>
       s.leftTeam.firstWhere((c) => c.characterId == 1);
 
-  /// 推进 tick 直到 Boss 行动过(actionPoint 被消费,或 charging 状态变化)。
-  /// 返回 Boss 完成第 [count] 次行动后的 state。
-  BattleState advanceUntilBossActs(BattleState s, int count) {
-    final rng = Random(42);
-    var acts = 0;
-    var prevTickActed = false;
-    // 用蓄力计数变化 / chargingSkill 出现来判断 Boss 行动。
-    var lastChargeTicks = bossOf(s).chargeTicksRemaining;
-    var lastCharging = bossOf(s).chargingSkill != null;
-    while (acts < count && !s.isFinished) {
-      final before = bossOf(s);
-      final beforeAp = before.actionPoint;
-      s = strategy.tick(s, numbers, rng: rng);
-      final after = bossOf(s);
-      // Boss 行动判定:actionPoint 减少 1000(蓄力/触发都消费 ap)或状态变化。
-      final acted = after.actionPoint < beforeAp ||
-          after.chargingSkill != lastCharging ||
-          after.chargeTicksRemaining != lastChargeTicks;
-      if (acted) {
-        acts++;
-        lastChargeTicks = after.chargeTicksRemaining;
-        lastCharging = after.chargingSkill != null;
-      }
-      prevTickActed = acted;
-    }
-    expect(prevTickActed || s.isFinished, isTrue);
-    return s;
-  }
-
   test('起手蓄力:Boss 第一次行动进入 charging,玩家不掉血', () {
     var s = makeState();
     final rng = Random(42);

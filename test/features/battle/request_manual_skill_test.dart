@@ -10,7 +10,7 @@ import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strate
 ///   测 B: normalAttack 型 → 抛 ArgumentError。
 void main() {
   // ── 最小化 BattleState:两队各 1 角色,只测 requestUltimate 写入语义 ──
-  BattleState _makeState() {
+  BattleState makeState() {
     const char = BattleCharacter(
       characterId: 1,
       name: '玩家',
@@ -66,7 +66,7 @@ void main() {
 
   group('requestUltimate P0 放宽:接受 powerSkill/ultimate/jointSkill', () {
     test('测 A:powerSkill 型不抛 + pendingUltimates 写入该 skill', () {
-      final state = _makeState();
+      final state = makeState();
 
       const powerSkill = SkillDef(
         id: 'skill_p0_powerskill_stub',
@@ -95,7 +95,7 @@ void main() {
     });
 
     test('测 B:normalAttack 型 → 抛 ArgumentError', () {
-      final state = _makeState();
+      final state = makeState();
 
       const normalAttack = SkillDef(
         id: 'skill_p0_normal_stub',
