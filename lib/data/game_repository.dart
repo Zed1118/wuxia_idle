@@ -971,6 +971,20 @@ class GameRepository {
           );
         }
       }
+      // 可玩性 P1a：残页只能配在 Boss 层 + id 须在 skills.yaml。
+      final frag = f.dropSkillFragmentId;
+      if (frag != null) {
+        if (f.bossKind == null) {
+          throw StateError(
+            '爬塔 floor=${f.floorIndex} 配 dropSkillFragmentId 但非 Boss 层(P1a §二红线)',
+          );
+        }
+        if (skillDefs[frag] == null) {
+          throw StateError(
+            '爬塔 floor=${f.floorIndex} dropSkillFragmentId=$frag 未在 skills.yaml(P1a §二红线)',
+          );
+        }
+      }
     }
   }
 

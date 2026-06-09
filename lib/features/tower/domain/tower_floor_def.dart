@@ -58,6 +58,10 @@ class TowerFloorDef {
   /// 仅爬塔 BOSS 层(5/10/15/20/25/30)在 yaml 配置;null 时 battle_screen 走 backgroundColor 兜底。
   final String? sceneBackgroundPath;
 
+  /// 可玩性 P1a:爬塔 Boss 残页(spec §二)。仅 bossKind != null 层可配 · null=不掉。
+  /// 每次 Boss 胜利 rng 掉 1 残页(非首通限定,重复刷集残页 grind)。
+  final String? dropSkillFragmentId;
+
   const TowerFloorDef({
     required this.floorIndex,
     required this.requiredRealm,
@@ -68,6 +72,7 @@ class TowerFloorDef {
     this.dropTable = const [],
     this.baseExpReward = 0,
     this.sceneBackgroundPath,
+    this.dropSkillFragmentId,
   });
 
   /// 是否为 Boss 层（任意 minor / major）。
@@ -90,6 +95,7 @@ class TowerFloorDef {
           .toList(growable: false),
       baseExpReward: (y['baseExpReward'] as num?)?.toInt() ?? 0,
       sceneBackgroundPath: y['sceneBackgroundPath'] as String?,
+      dropSkillFragmentId: y['dropSkillFragmentId'] as String?,
     );
   }
 
