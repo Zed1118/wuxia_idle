@@ -104,6 +104,9 @@ class SkillProficiencyEffects {
 
   double damagePctAt(String stageId) => _damagePct[stageId] ?? 0.0;
   int cooldownDeltaAt(String stageId) => _cooldownDelta[stageId] ?? 0;
+  /// interrupt_power_pct:可玩性 P1a 暂为 schema-only(未消费)。
+  /// 当前 P0 破招为二元(清蓄力+固定 stagger),无对应「破招力」标量目标;
+  /// 是否缩放破招伤害 vs 加深减防是设计决策,留 playability_phase2_backlog。
   double interruptPowerPctAt(String stageId) => _interruptPowerPct[stageId] ?? 0.0;
   int interruptWindowBonusAt(String stageId) => _interruptWindowBonus[stageId] ?? 0;
 
