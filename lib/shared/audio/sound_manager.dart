@@ -42,22 +42,6 @@ class SoundManager {
     await _guard(() => _backend.playSfx(sfxAssetPath(id), _sfxEffective));
   }
 
-  void setMasterVolume(double v) {
-    _settings = _settings.copyWith(masterVolume: v);
-    _backend.setBgmVolume(_bgmEffective);
-  }
-  void setBgmVolume(double v) {
-    _settings = _settings.copyWith(bgmVolume: v);
-    _backend.setBgmVolume(_bgmEffective);
-  }
-  void setSfxVolume(double v) {
-    _settings = _settings.copyWith(sfxVolume: v);
-  }
-  void setMuted(bool m) {
-    _settings = _settings.copyWith(muted: m);
-    _backend.setBgmVolume(_bgmEffective);
-  }
-
   Future<void> _guard(Future<void> Function() action) async {
     try {
       await action();

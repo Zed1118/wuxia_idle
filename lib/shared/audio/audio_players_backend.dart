@@ -13,7 +13,6 @@ class AudioPlayersBackend implements AudioBackend {
   @override
   Future<void> playBgm(String assetPath, double volume) async {
     await _bgm.stop();
-    await _bgm.setVolume(volume);
     await _bgm.play(AssetSource(assetPath), volume: volume);
   }
 
