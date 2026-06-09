@@ -58,6 +58,13 @@ class SkillDef {
   /// 奇遇招式 = parentTechniqueDefId 为空 & tier 非空。
   bool get isEncounterSkill => parentTechniqueDefId == null && tier != null;
 
+  /// §5.3 三系锁死:有自身 tier(1-7,奇遇招)的招式需 `realmTier.index >= tier-1`
+  /// 才可装配(沿 EncounterService.equipEncounterSkill 既有约定 · tier 1↔xueTu idx0)。
+  /// tier null(心法招)→ 恒 true,其 §5.3 由所属心法 tier(canPractice)守,非招级。
+  /// **解锁≠可装配**:已解锁但境界不达仍 false(师承遗物不例外同理)。
+  bool canEquipAtRealm(RealmTier realmTier) =>
+      tier == null || realmTier.index >= tier! - 1;
+
   factory SkillDef.fromYaml(Map<String, dynamic> y) {
     return SkillDef(
       id: y['id'] as String,
