@@ -229,7 +229,31 @@ class DefaultGroundStrategy implements BattleStrategy {
       }
     }
 
-    // === P0 蓄力 pre-step(踉跄见 Task 8)===
+    // === P0 踉跄 pre-step(Task 8 · 必须在蓄力判定之前)===
+    // (a) 踉跄中:跳过本次行动,递减 stagger(踉跄的单位本就不该继续蓄力推进)。
+    if (preActor.staggerTicksRemaining > 0) {
+      final after = preActor.copyWith(
+        staggerTicksRemaining: preActor.staggerTicksRemaining - 1,
+        actionPoint: preActor.actionPoint - 1000,
+      );
+      final lt = preState.leftTeam.toList();
+      final rt = preState.rightTeam.toList();
+      _replaceById(after.teamSide == 0 ? lt : rt, after);
+      return preState.copyWith(
+        leftTeam: List.unmodifiable(lt),
+        rightTeam: List.unmodifiable(rt),
+        actionLog: [
+          ...preState.actionLog,
+          BattleAction(
+            tick: preState.tick,
+            actorId: after.characterId,
+            description: EnumL10n.staggered(after.name),
+          ),
+        ],
+      );
+    }
+
+    // === P0 蓄力 pre-step(Task 7)===
     // (b) 蓄力中:递减;未满写"蓄力中"跳过本次;满则本次放 chargingSkill。
     SkillDef? forcedSkill;
     if (preActor.chargingSkill != null) {
@@ -332,10 +356,27 @@ class DefaultGroundStrategy implements BattleStrategy {
         damagePerTick: n.schoolCounter.yinRouInternalInjury.damagePerTick,
       );
     }
+    // P0 破招:canInterrupt 技命中正在蓄力的目标 → 打断 + 踉跄 + 招牌技上 CD。
+    final targetCd = Map<String, int>.from(target.skillCooldowns);
+    var brokeCharging = false;
+    if (skill.canInterrupt &&
+        !result.isDodged &&
+        target.chargingSkill != null) {
+      brokeCharging = true;
+      final cs = target.chargingSkill!;
+      targetCd[cs.id] = cs.cooldownTurns > 0 ? cs.cooldownTurns : 1;
+    }
     final targetAfter = target.copyWith(
       currentHp: newTargetHp,
       isAlive: newTargetHp > 0,
       internalInjury: newInjury,
+      skillCooldowns: Map.unmodifiable(targetCd),
+      chargingSkill: brokeCharging ? null : target.chargingSkill,
+      chargeTicksRemaining:
+          brokeCharging ? 0 : target.chargeTicksRemaining,
+      staggerTicksRemaining: brokeCharging
+          ? n.combat.bossCharge.defaultStaggerTicks
+          : target.staggerTicksRemaining,
     );
 
     // 攻方扣内力 + 写 CD + actionPoint -= 1000（保留余数）
@@ -363,7 +404,9 @@ class DefaultGroundStrategy implements BattleStrategy {
       targetId: target.characterId,
       skill: skill,
       attackResult: result,
-      description: _formatAction(actorAfter, targetAfter, skill, result),
+      description: brokeCharging
+          ? EnumL10n.interrupted(actorAfter.name, targetAfter.name)
+          : _formatAction(actorAfter, targetAfter, skill, result),
     );
 
     // 消费 pendingUltimates[actor.characterId]（无论本次是否真用上大招）
@@ -417,6 +460,12 @@ class DefaultGroundStrategy implements BattleStrategy {
     required Random rng,
     bool forceCritical = false,
   }) {
+    // P0 踉跄减防:踉跄期间防御率乘 (1 - staggerDefenseDown) → 增伤。
+    var effDefRate = defender.defenseRate;
+    if (defender.staggerTicksRemaining > 0) {
+      effDefRate =
+          defender.defenseRate * (1 - n.combat.bossCharge.staggerDefenseDown);
+    }
     return DamageCalculator.calculateResolved(
       attackerInternalForce: attacker.currentInternalForce,
       attackerEquipmentAttack: attacker.totalEquipmentAttack,
@@ -427,7 +476,7 @@ class DefaultGroundStrategy implements BattleStrategy {
       attackerRealmLayer: attacker.realmLayer,
       defenderRealmTier: defender.realmTier,
       defenderRealmLayer: defender.realmLayer,
-      defenderDefenseRate: defender.defenseRate,
+      defenderDefenseRate: effDefRate,
       defenderEvasionRate: defender.evasionRate,
       attackerCriticalRate: attacker.criticalRate,
       attackPowerMultiplier: attacker.attackPowerMultiplier,

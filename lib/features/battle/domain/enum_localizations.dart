@@ -90,6 +90,13 @@ class EnumL10n {
   /// P0 破招:Boss 蓄力中(未满)跳过本次行动日志。
   static String charging(String name) => '$name 蓄力中……';
 
+  /// P0 破招:破招成功(打断蓄力)日志。
+  static String interrupted(String breaker, String boss) =>
+      '$breaker 一击破招,$boss 招式溃散!';
+
+  /// P0 破招:踉跄跳过本次行动日志。
+  static String staggered(String name) => '$name 踉跄难稳。';
+
   /// 心法修炼度 9 层（GDD §4.3，与境界 7 层 [realmLayer] 严格不同名）。
   static String cultivationLayer(CultivationLayer l) {
     return switch (l) {

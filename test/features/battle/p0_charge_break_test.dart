@@ -215,4 +215,263 @@ void main() {
         reason: '招牌技放出后 charging 清空');
     expect(bossOf(s).chargeTicksRemaining, 0);
   });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // Task 8:破招 + 踉跄
+  // ───────────────────────────────────────────────────────────────────────
+
+  // 玩家破招技(canInterrupt powerSkill,命中 charging 的 Boss → 打断)。
+  const playerBreaker = SkillDef(
+    id: 'skill_p0_player_breaker',
+    name: '破招式',
+    description: 'P0 Task8 玩家破招技',
+    type: SkillType.powerSkill,
+    powerMultiplier: 1000,
+    internalForceCost: 100,
+    cooldownTurns: 3,
+    requiresManualTrigger: false,
+    visualEffect: 'stub',
+    canInterrupt: true,
+  );
+
+  /// 测 C 用:左=玩家(高速先手,持破招技),右=Boss(已处于 charging)。
+  BattleState makeStateBreakC() {
+    const player = BattleCharacter(
+      characterId: 1,
+      name: '玩家',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 12000,
+      currentHp: 12000,
+      maxInternalForce: 10000,
+      currentInternalForce: 10000,
+      speed: 400,
+      criticalRate: 0.0,
+      evasionRate: 0.0,
+      defenseRate: 0.0,
+      totalEquipmentAttack: 1500,
+      mainCultivationLayer: CultivationLayer.daCheng,
+      availableSkills: <SkillDef>[playerBreaker, playerNormal],
+      skillCooldowns: {},
+      activeBuffs: [],
+      actionPoint: 0,
+      isAlive: true,
+      teamSide: 0,
+      slotIndex: 0,
+    );
+    // Boss 已处于 charging:chargingSkill != null,chargeTicksRemaining=2。
+    const boss = BattleCharacter(
+      characterId: -1,
+      name: '青衫剑客',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 50000,
+      currentHp: 50000,
+      maxInternalForce: 10000,
+      currentInternalForce: 10000,
+      speed: 100,
+      criticalRate: 0.0,
+      evasionRate: 0.0,
+      defenseRate: 0.0,
+      totalEquipmentAttack: 1500,
+      mainCultivationLayer: CultivationLayer.daCheng,
+      availableSkills: <SkillDef>[bossSignature, playerNormal],
+      skillCooldowns: {},
+      activeBuffs: [],
+      actionPoint: 0,
+      isAlive: true,
+      teamSide: 1,
+      slotIndex: 0,
+      isBoss: true,
+      chargeSkillId: 'skill_p0_boss_signature',
+      chargingSkill: bossSignature,
+      chargeTicksRemaining: 2,
+    );
+    return BattleState.initial(leftTeam: [player], rightTeam: [boss]);
+  }
+
+  test('测 C 破招:玩家 canInterrupt 技命中 charging Boss → 打断 + 踉跄 + 招牌技上CD',
+      () {
+    var s = makeStateBreakC();
+    final rng = Random(7);
+    // 玩家手动请求破招技,推进直到玩家完成一次行动(命中 Boss)。
+    s = strategy.requestUltimate(s, 1, playerBreaker);
+    final bossHpBefore = bossOf(s).currentHp;
+    var guard = 0;
+    while (guard < 50 && !s.isFinished) {
+      s = strategy.tick(s, numbers, rng: rng);
+      if (bossOf(s).currentHp < bossHpBefore) break; // 玩家命中过 Boss
+      guard++;
+    }
+    final boss = bossOf(s);
+    expect(boss.chargingSkill, isNull, reason: '破招后 Boss chargingSkill 清空');
+    expect(boss.staggerTicksRemaining,
+        numbers.combat.bossCharge.defaultStaggerTicks,
+        reason: '破招后 Boss 进入踉跄 == defaultStaggerTicks');
+    expect(boss.skillCooldowns.containsKey('skill_p0_boss_signature'), isTrue,
+        reason: '招牌技被打断 → 进 CD');
+  });
+
+  /// 测 D/E 用:直接构造单 actor tick,Boss(踉跄)在场。
+  /// 左=Boss(踉跄,先手),右=玩家(被动靶子,不出手以便只观察 Boss)。
+  BattleState makeStateStaggerD() {
+    // Boss 踉跄,speed 高先手。
+    const boss = BattleCharacter(
+      characterId: -1,
+      name: '青衫剑客',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 50000,
+      currentHp: 50000,
+      maxInternalForce: 10000,
+      currentInternalForce: 10000,
+      speed: 400,
+      criticalRate: 0.0,
+      evasionRate: 0.0,
+      defenseRate: 0.0,
+      totalEquipmentAttack: 1500,
+      mainCultivationLayer: CultivationLayer.daCheng,
+      availableSkills: <SkillDef>[playerNormal],
+      skillCooldowns: {},
+      activeBuffs: [],
+      actionPoint: 0,
+      isAlive: true,
+      teamSide: 0,
+      slotIndex: 0,
+      isBoss: true,
+      staggerTicksRemaining: 2,
+    );
+    const player = BattleCharacter(
+      characterId: 1,
+      name: '玩家',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 12000,
+      currentHp: 12000,
+      maxInternalForce: 10000,
+      currentInternalForce: 0,
+      speed: 1, // 极慢,Boss 先动若干次后才轮到玩家
+      criticalRate: 0.0,
+      evasionRate: 0.0,
+      defenseRate: 0.0,
+      totalEquipmentAttack: 0,
+      mainCultivationLayer: CultivationLayer.chuKui,
+      availableSkills: <SkillDef>[playerNormal],
+      skillCooldowns: {},
+      activeBuffs: [],
+      actionPoint: 0,
+      isAlive: true,
+      teamSide: 1,
+      slotIndex: 0,
+    );
+    return BattleState.initial(leftTeam: [boss], rightTeam: [player]);
+  }
+
+  test('测 D 踉跄跳过:Boss 踉跄时行动 → 跳过(玩家不掉血)+ stagger 递减 2→1', () {
+    var s = makeStateStaggerD();
+    final rng = Random(7);
+    final playerHpBefore = s.rightTeam.first.currentHp;
+    // Boss speed=400,需累积 actionPoint 到 1000(3 tick)才行动一次 → 踉跄跳过。
+    // 推进直到 Boss 第一次行动(staggerTicksRemaining 2→1)。
+    var guard = 0;
+    while (guard < 20 &&
+        s.leftTeam.firstWhere((c) => c.characterId == -1).staggerTicksRemaining ==
+            2) {
+      s = strategy.tick(s, numbers, rng: rng);
+      guard++;
+    }
+    final boss = s.leftTeam.firstWhere((c) => c.characterId == -1);
+    final player = s.rightTeam.firstWhere((c) => c.characterId == 1);
+    expect(player.currentHp, playerHpBefore,
+        reason: '踉跄跳过本次行动,玩家不掉血(player speed=1,本窗口内也未轮到)');
+    expect(boss.staggerTicksRemaining, 1,
+        reason: '踉跄 tick 递减 2→1');
+  });
+
+  /// 测 E:Boss 作为防守方被普攻命中,对比踉跄(减防)vs 非踉跄 finalDamage。
+  /// 左=玩家(攻),右=Boss(守)。一次 tick 内只让玩家行动(Boss 极慢)。
+  BattleState makeStateDefendE({required int bossStagger}) {
+    const player = BattleCharacter(
+      characterId: 1,
+      name: '玩家',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 12000,
+      currentHp: 12000,
+      maxInternalForce: 10000,
+      currentInternalForce: 8000,
+      speed: 400,
+      criticalRate: 0.0,
+      evasionRate: 0.0,
+      defenseRate: 0.0,
+      totalEquipmentAttack: 1500,
+      mainCultivationLayer: CultivationLayer.daCheng,
+      availableSkills: <SkillDef>[playerNormal],
+      skillCooldowns: {},
+      activeBuffs: [],
+      actionPoint: 0,
+      isAlive: true,
+      teamSide: 0,
+      slotIndex: 0,
+    );
+    final boss = BattleCharacter(
+      characterId: -1,
+      name: '青衫剑客',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 50000,
+      currentHp: 50000,
+      maxInternalForce: 10000,
+      currentInternalForce: 10000,
+      speed: 1, // 极慢,本 tick 不行动
+      criticalRate: 0.0,
+      evasionRate: 0.0,
+      defenseRate: 0.30, // 有防御率,踉跄减防才有可观察差
+      totalEquipmentAttack: 1500,
+      mainCultivationLayer: CultivationLayer.daCheng,
+      availableSkills: const <SkillDef>[playerNormal],
+      skillCooldowns: const {},
+      activeBuffs: const [],
+      actionPoint: 0,
+      isAlive: true,
+      teamSide: 1,
+      slotIndex: 0,
+      isBoss: true,
+      staggerTicksRemaining: bossStagger,
+    );
+    return BattleState.initial(leftTeam: [player], rightTeam: [boss]);
+  }
+
+  /// 推进 tick 直到 Boss 第一次被打掉血,返回那次掉血量。
+  int firstDamageToBoss(BattleState s) {
+    final rng = Random(1);
+    var prev = s.rightTeam.firstWhere((c) => c.characterId == -1).currentHp;
+    var guard = 0;
+    while (guard < 50 && !s.isFinished) {
+      s = strategy.tick(s, numbers, rng: rng);
+      final hp = s.rightTeam.firstWhere((c) => c.characterId == -1).currentHp;
+      if (hp < prev) return prev - hp;
+      prev = hp;
+      guard++;
+    }
+    return 0;
+  }
+
+  test('测 E 踉跄减防增伤:Boss 踉跄时被普攻命中,finalDamage 高于非踉跄', () {
+    // 非踉跄(stagger=0)基线。
+    final dmgNoStagger = firstDamageToBoss(makeStateDefendE(bossStagger: 0));
+    // 踉跄(stagger>0)。
+    final dmgStagger = firstDamageToBoss(makeStateDefendE(bossStagger: 2));
+
+    expect(dmgNoStagger, greaterThan(0), reason: '基线伤害应 > 0');
+    expect(dmgStagger, greaterThan(dmgNoStagger),
+        reason: '踉跄减防 → finalDamage 应高于非踉跄 '
+            '(非踉跄=$dmgNoStagger 踉跄=$dmgStagger)');
+  });
 }
