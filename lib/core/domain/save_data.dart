@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import 'skill_unlock_entry.dart';
 
 part 'save_data.g.dart';
 
@@ -71,4 +72,9 @@ class SaveData {
   /// stage.id 直接 return,不再 rng pick / 不弹 dialog。一次招降成功后 markTriggered
   /// 追加;玩家拒绝 / cap 满 / rng 不命中均不 markTriggered(可重战重遇)。
   List<String> triggeredBossRecruitStageIds = [];
+
+  /// 技能解锁进度(可玩性 P1a · spec §一)。账号级,Boss 真解/残页来源。
+  /// 真解首通直接 markUnlocked;爬塔残页 addFragment 累加,达阈值自动 markUnlocked。
+  /// 不含奇遇技能(走 equippedEncounterSkillId,两套并存)。
+  List<SkillUnlockEntry> skillUnlockProgress = [];
 }
