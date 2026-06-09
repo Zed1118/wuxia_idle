@@ -60,3 +60,9 @@ isar.dll
 
 # 美术素材(MJ 生成大图 / 素材目录 · 本地保留不进 git · 2 个 tracked 参考图不受影响)
 docs/art/
+
+# docs/handoff 视觉验收截图不入库(throwaway · 验收结论已记 PROGRESS/closeout · 2026-06-09)
+docs/handoff/**/*.png
+docs/handoff/**/*.jpg
+docs/handoff/**/*.jpeg
+docs/handoff/**/*.pid
