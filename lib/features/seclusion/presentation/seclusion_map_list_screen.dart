@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../battle/domain/enum_localizations.dart';
+import '../../../shared/audio/audio_assets.dart';
+import '../../../shared/audio/bgm_scope.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/enums.dart';
@@ -117,7 +119,9 @@ class _SeclusionMapListScreenState
   Widget build(BuildContext context) {
     final maps = GameRepository.instance.seclusionMaps;
 
-    return Scaffold(
+    return BgmScope(
+      track: BgmTrack.seclusion,
+      child: Scaffold(
       backgroundColor: WuxiaColors.background,
       appBar: AppBar(
         title: const Text(UiStrings.seclusionTitle),
@@ -193,6 +197,7 @@ class _SeclusionMapListScreenState
             );
           },
         ),
+      ),
       ),
     );
   }
