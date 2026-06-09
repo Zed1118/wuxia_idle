@@ -1,3 +1,5 @@
+> **⚠️ SUPERSEDED(2026-06-09)**：本 spec 已被 `docs/audio_asset_generation_guide.md` 取代。音频系统已实装(`lib/shared/audio/`),素材生成/入库以该指南为准。
+
 # M15-16 E 段:音频 spec
 
 > 起草:2026-05-29 · 目标 M15-16 · 对应 RELEASE_CHECKLIST §E · ROADMAP P5.3
