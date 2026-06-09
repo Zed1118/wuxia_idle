@@ -269,6 +269,7 @@ stages:
   # 被 erLiu 攻击 ×2.5（高伤一击）—— 明确暗示「未升阶不可挑战」（GDD §3 三阶节奏）
   - id: stage_01_05
     name: 风雨渡口
+    dropSkillManualId: skill_yinrou_mingjia_ult  # 可玩性 P1a 真解(Ch1 章末 Boss 首通解锁演示)
     stageType: mainline
     chapterIndex: 1
     prevStageId: stage_01_04
@@ -596,6 +597,7 @@ stages:
   # === stage_02_05 · 巷中夜雨（章末大 Boss · 不留剑鞘青衫人）===
   - id: stage_02_05
     name: 巷中夜雨
+    dropSkillManualId: skill_qingshan_qingfeng  # 可玩性 P1a 真解(青锋绝 · spec §四复用演示)
     stageType: mainline
     chapterIndex: 2
     prevStageId: stage_02_04
@@ -941,6 +943,7 @@ stages:
   # === stage_03_05 · 一剑封名（章末大 Boss · 灰衣人）===
   - id: stage_03_05
     name: 一剑封名
+    dropSkillManualId: skill_gangmeng_mingjia_ult  # 可玩性 P1a 真解(Ch3 章末 Boss 首通解锁演示)
     stageType: mainline
     chapterIndex: 3
     prevStageId: stage_03_04

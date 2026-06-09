@@ -38,9 +38,10 @@ void main() {
   test('② Boss 关配不存在的 dropSkillManualId → 抛 StateError(id 未在 skills.yaml)',
       () async {
     // stage_01_05 是 Boss(candidateRef: bamboo_swordsman unique 锚),旁注入幽灵 skill id
+    // stage_01_05 现配 dropSkillManualId: skill_yinrou_mingjia_ult(D1);替为幽灵 id。
     String inject(String s) => s.replaceFirst(
-          '    bossRecruit:',
-          '    dropSkillManualId: ghost_skill_not_loaded\n    bossRecruit:',
+          'dropSkillManualId: skill_yinrou_mingjia_ult',
+          'dropSkillManualId: ghost_skill_not_loaded',
         );
     expect(
       GameRepository.loadAllDefs(loader: makeStagesLoader(inject)),
