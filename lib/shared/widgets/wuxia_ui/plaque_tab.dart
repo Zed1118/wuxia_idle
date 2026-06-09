@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../audio/sound_manager.dart';
+import '../../audio/audio_assets.dart';
 import '../../theme/wuxia_tokens.dart';
 
 /// 木牌页签（UI kit · demo `.plaque` / `.plaque.on`）：替 Material Tab。
@@ -33,7 +35,12 @@ class PlaqueTab extends StatelessWidget {
     final fg = selected ? const Color(0xFFF3E2C0) : const Color(0xFF3A2C14);
     final borderColor = selected ? const Color(0xFF491510) : WuxiaUi.woodDark;
     return InkWell(
-      onTap: onTap,
+      onTap: onTap == null
+          ? null
+          : () {
+              SoundManager.instance.playSfx(SfxId.uiTabSwitch);
+              onTap!();
+            },
       borderRadius: BorderRadius.circular(4),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),

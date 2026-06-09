@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../audio/sound_manager.dart';
+import '../../audio/audio_assets.dart';
 import '../../theme/wuxia_tokens.dart';
 
 /// 木牌按钮（UI kit · demo `.wbtn`）：替黄描边 Material 按钮。
@@ -39,7 +41,12 @@ class PlaqueButton extends StatelessWidget {
       child: Material(
         type: MaterialType.transparency,
         child: InkWell(
-          onTap: disabled ? null : onTap,
+          onTap: disabled
+              ? null
+              : () {
+                  SoundManager.instance.playSfx(SfxId.uiTap);
+                  onTap?.call();
+                },
           borderRadius: BorderRadius.circular(4),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),

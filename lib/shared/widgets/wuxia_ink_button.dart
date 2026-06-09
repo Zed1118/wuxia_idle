@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../audio/sound_manager.dart';
+import '../audio/audio_assets.dart';
 import '../theme/colors.dart';
 import 'wuxia_ui/wuxia_ui.dart';
 
@@ -38,7 +40,12 @@ class WuxiaInkButton extends StatelessWidget {
     return Opacity(
       opacity: disabled ? 0.4 : 1.0,
       child: InkWell(
-        onTap: disabled ? null : onTap,
+        onTap: disabled
+            ? null
+            : () {
+                SoundManager.instance.playSfx(SfxId.uiTap);
+                onTap?.call();
+              },
         borderRadius: BorderRadius.circular(6),
         child: Container(
           constraints: const BoxConstraints(minHeight: 76),

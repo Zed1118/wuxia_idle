@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../audio/sound_manager.dart';
+import '../../audio/audio_assets.dart';
 import '../../theme/wuxia_tokens.dart';
 import 'paper_panel.dart';
 
@@ -30,6 +32,7 @@ class PaperDialog extends StatelessWidget {
     bool showSeal = true,
     bool barrierDismissible = true,
   }) {
+    SoundManager.instance.playSfx(SfxId.uiPaperOpen);
     return showDialog<T>(
       context: context,
       barrierDismissible: barrierDismissible,
