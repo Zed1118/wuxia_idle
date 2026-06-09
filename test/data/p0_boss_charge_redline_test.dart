@@ -7,7 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 ///
 /// 覆盖维度:
 /// - **正常**:production stages.yaml stage_02_05 青衫剑客 chargeSkillId ==
-///   `skill_lingqiao_jichu_skill` 且在其 skillIds 内 → 不抛。
+///   `skill_qingshan_qingfeng`(P0.5 招牌大招)且在其 skillIds 内 → 不抛。
 /// - **非法 chargeSkillId**:transform 把 Boss chargeSkillId 改成不在 skillIds 的 id
 ///   → `_enforceBossChargeRedLines` 抛 StateError。
 /// - **chargeTicks 越界**:transform numbers.yaml boss_charge default_charge_ticks
@@ -45,8 +45,8 @@ void main() {
       expect(stage, isNotNull, reason: 'stage_02_05 应在 stages.yaml 中');
       final boss = stage!.enemyTeam
           .firstWhere((e) => e.id == 'enemy_sanLiu_qingshan_main');
-      expect(boss.chargeSkillId, 'skill_lingqiao_jichu_skill',
-          reason: 'spec §9.1 决策:招牌蓄力技用 powerSkill 不用 _ult');
+      expect(boss.chargeSkillId, 'skill_qingshan_qingfeng',
+          reason: 'P0.5:青衫剑客招牌大招「青锋绝」(powerSkill,非 _ult)做蓄力技');
       expect(boss.skillIds, contains(boss.chargeSkillId),
           reason: 'chargeSkillId 必在敌人 skillIds 内');
     });
@@ -55,7 +55,7 @@ void main() {
   group('非法 chargeSkillId · broken loader transform(stages.yaml)', () {
     test('青衫剑客 chargeSkillId 改成不在 skillIds 的 id → 抛 StateError', () async {
       String inject(String s) => s.replaceFirst(
-            'chargeSkillId: skill_lingqiao_jichu_skill',
+            'chargeSkillId: skill_qingshan_qingfeng',
             'chargeSkillId: skill_ghost_not_in_skill_ids',
           );
       expect(

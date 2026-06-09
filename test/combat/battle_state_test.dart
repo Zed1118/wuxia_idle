@@ -259,15 +259,19 @@ void main() {
         teamSide: 0,
         slotIndex: 0,
       );
-      expect(bc.availableSkills.length, 3);
+      // 主修 3 招 + P0.5 破招技「破势」广发玩家方(teamSide==0)= 4 招。
+      expect(bc.availableSkills.length, 4);
       expect(
         bc.availableSkills.map((s) => s.id).toList(),
         containsAll([
           'skill_gangmeng_jichu_basic',
           'skill_gangmeng_jichu_skill',
           'skill_gangmeng_jichu_ult',
+          'skill_po_shi',
         ]),
       );
+      // 破势排在主修 3 招之后(P0.5 注入点)。
+      expect(bc.availableSkills.last.id, 'skill_po_shi');
       // 确认 SkillDef 实例就是 GameRepository.getSkill 返回的
       expect(
         bc.availableSkills.first,
@@ -298,16 +302,17 @@ void main() {
         teamSide: 0,
         slotIndex: 0,
       );
-      expect(bc.availableSkills.length, 4,
-          reason: '主修 3 招 + 奇遇 slot 1 招');
-      expect(
-        bc.availableSkills.last.id,
-        'skill_encounter_ting_yu_jian',
-        reason: '奇遇 skill 排在主修 3 招之后',
-      );
+      // 主修 3 招 + 奇遇 slot 1 招 + P0.5 破势(玩家方广发)= 5 招。
+      expect(bc.availableSkills.length, 5,
+          reason: '主修 3 招 + 奇遇 slot 1 招 + 破势');
+      // 奇遇 skill 排在主修 3 招之后、破势之前(破势末位注入)。
+      final encSkill = bc.availableSkills
+          .firstWhere((s) => s.id == 'skill_encounter_ting_yu_jian');
+      expect(bc.availableSkills.last.id, 'skill_po_shi',
+          reason: '破势在 fromCharacter 末位注入玩家方');
       // tier 标记验证奇遇 skill 加载到位
-      expect(bc.availableSkills.last.tier, 3);
-      expect(bc.availableSkills.last.isEncounterSkill, isTrue);
+      expect(encSkill.tier, 3);
+      expect(encSkill.isEncounterSkill, isTrue);
     });
   });
 

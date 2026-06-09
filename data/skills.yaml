@@ -1939,3 +1939,36 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_chuanshuo_nei
     visualEffect: chaos_origin
+
+  # ───────────────────────────────────────────
+  # P0.5 破招专属招(2026-06-09)
+  # ───────────────────────────────────────────
+  # 不绑 21 心法生态(parentTechniqueDefId: null,沿 joint_skill / lightfoot 体例);
+  # 无 tier(isEncounterSkill=false,不入 encounter skill 池,不受奇遇红线 tier cap 校验)。
+  # 破势:玩家方主控破招技,aiUsePolicy=saveForInterrupt → AI 平时不放,
+  #   仅敌人蓄力时自动用来打断(命中蓄力中目标 canInterrupt 触发踉跄)。
+  # 青锋绝:青衫剑客(stage_02_05 Boss)招牌大招,作为 chargeSkillId 蓄力技,
+  #   mult 高于该 Boss 其他 powerSkill → BattleAI 自动选它蓄力,玩家用破势拦截。
+  - id: skill_po_shi
+    name: 破势
+    description: 看准敌招将发,抢身一击截其锋,势断则招散。
+    type: powerSkill
+    powerMultiplier: 900
+    internalForceCost: 120
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: po_shi_strike
+    canInterrupt: true
+    aiUsePolicy: saveForInterrupt
+
+  - id: skill_qingshan_qingfeng
+    name: 青锋绝
+    description: 青衫剑客毕生绝学,剑起如惊雷,一式定生死。
+    type: powerSkill
+    powerMultiplier: 2500
+    internalForceCost: 200
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: qingfeng_jue

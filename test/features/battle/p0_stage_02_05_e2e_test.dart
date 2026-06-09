@@ -57,8 +57,8 @@ void main() {
     // 青衫剑客招牌技改蓄力(stages.yaml chargeSkillId 接线)。
     final boss = StageBattleSetup.buildEnemyTeam(stage.enemyTeam)
         .firstWhere((e) => e.name == '青衫剑客');
-    expect(boss.chargeSkillId, 'skill_lingqiao_jichu_skill',
-        reason: 'Boss 招牌 powerSkill 已接蓄力(P0 stage 接线)');
+    expect(boss.chargeSkillId, 'skill_qingshan_qingfeng',
+        reason: 'Boss 招牌大招「青锋绝」已接蓄力(P0.5 stage 接线)');
 
     // 玩家 on-level(sanLiu)真 build × ceiling 剖面(活跃玩家配装)→ 托管能解。
     // 多 seed 跑,统计通关数:目的是证明托管能解,不是 100% 必胜。

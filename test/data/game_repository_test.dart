@@ -33,10 +33,10 @@ void main() {
           reason: '80 件装备（P2.1 Batch 1 扩 7 阶 × 11 + 3 跨阶特殊）');
       expect(repo.techniqueDefs.length, 49,
           reason: '49 本心法（P2.1 Batch 2 扩 21 原 + 21 防御 + 7 内力）');
-      // P2.1 Batch 2: 49 心法 × 3 = 147 + 18 lightfoot + 1 joint = 166 skills.yaml
-      // + 40 encounter_skills.yaml = 206 total
-      expect(repo.skillDefs.length, 206,
-          reason: '166 skills.yaml(147 心法 + 18 轻功 + 1 joint) + 40 奇遇招');
+      // P2.1 Batch 2: 49 心法 × 3 = 147 + 18 lightfoot + 1 joint = 166
+      // + P0.5: 破势 + 青锋绝 = 168 skills.yaml + 40 encounter_skills.yaml = 208 total
+      expect(repo.skillDefs.length, 208,
+          reason: '168 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5) + 40 奇遇招');
       expect(repo.encounterSkillIds.length, 40,
           reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
       final mainlineCount = repo.stageDefs.values
