@@ -112,6 +112,12 @@ enum TechniqueRole {
   assist,  // 辅修（每个角色最多 3 本）
 }
 
+/// 招式的自动战斗使用策略(P0 破招)。
+/// - normal: AI 正常选用(按倍率)
+/// - saveForInterrupt: AI 平时不放,仅敌人蓄力时用于破招
+/// - manualOnly: P0 留位,仅玩家手动放(暂不实装独立行为)
+enum AiUsePolicy { normal, saveForInterrupt, manualOnly }
+
 /// 招式类型（GDD §5.3）。
 enum SkillType {
   normalAttack,  // 普通攻击  倍率 500

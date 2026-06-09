@@ -27,6 +27,12 @@ class SkillDef {
   /// 仅标志性招式在 yaml 配置;其余 null 走 UI fallback。
   final String? imagePath;
 
+  /// P0 破招:此技命中正在蓄力的目标可打断其招牌技。
+  final bool canInterrupt;
+
+  /// P0 破招:AI 自动战斗对此技的使用策略。
+  final AiUsePolicy aiUsePolicy;
+
   const SkillDef({
     required this.id,
     required this.name,
@@ -41,6 +47,8 @@ class SkillDef {
     this.tier,
     this.narrativeInsightId,
     this.imagePath,
+    this.canInterrupt = false,
+    this.aiUsePolicy = AiUsePolicy.normal,
   });
 
   /// 奇遇招式 = parentTechniqueDefId 为空 & tier 非空。
@@ -61,6 +69,10 @@ class SkillDef {
       tier: (y['tier'] as num?)?.toInt(),
       narrativeInsightId: y['narrativeInsightId'] as String?,
       imagePath: y['imagePath'] as String?,
+      canInterrupt: y['canInterrupt'] as bool? ?? false,
+      aiUsePolicy: y['aiUsePolicy'] != null
+          ? AiUsePolicy.values.byName(y['aiUsePolicy'] as String)
+          : AiUsePolicy.normal,
     );
   }
 
