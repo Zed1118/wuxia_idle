@@ -609,23 +609,24 @@ stages:
         realmTier: sanLiu
         realmLayer: yuanShu
         school: lingQiao
-        baseHp: 7000
-        baseAttack: 470
+        baseHp: 9500
+        baseAttack: 1150
         baseSpeed: 175
         skillIds:
           - skill_lingqiao_jichu_basic
           - skill_lingqiao_jichu_skill
           - skill_lingqiao_jichu_ult
+          - skill_qingshan_qingfeng                 # P0.5 招牌大招(mult > 其他 powerSkill → AI 蓄力时自动选)
         iconPath: assets/enemies/qingshan_main.png
         isBoss: true
-        chargeSkillId: skill_lingqiao_jichu_skill   # P0 破招 · 招牌蓄力技(powerSkill,AI 自动放)
+        chargeSkillId: skill_qingshan_qingfeng      # P0.5 破招 · 招牌蓄力技「青锋绝」(玩家用破势拦截)
       - id: enemy_sanLiu_killer_a
         name: 巷口杀手
         realmTier: sanLiu
         realmLayer: yuanShu
         school: yinRou
-        baseHp: 6500
-        baseAttack: 450
+        baseHp: 7500
+        baseAttack: 1000
         baseSpeed: 160
         skillIds:
           - skill_yinrou_jichu_basic
@@ -637,8 +638,8 @@ stages:
         realmTier: sanLiu
         realmLayer: yuanShu
         school: gangMeng
-        baseHp: 6800
-        baseAttack: 460
+        baseHp: 7800
+        baseAttack: 1010
         baseSpeed: 155
         skillIds:
           - skill_gangmeng_jichu_basic

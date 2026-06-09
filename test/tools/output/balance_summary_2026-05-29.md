@@ -15,7 +15,7 @@
 | stage_02_02 | sanLiu | — | 2 | 100.0% | 100.0% |
 | stage_02_03 | sanLiu | — | 2 | 100.0% | 100.0% |
 | stage_02_04 | sanLiu | Boss | 2 | 92.0% | 100.0% |
-| stage_02_05 | sanLiu | Boss | 2 | 100.0% | 100.0% |
+| stage_02_05 | sanLiu | Boss | 2 | 72.0% | 100.0% |
 | stage_03_01 | erLiu | — | 3 | 98.0% | 100.0% |
 | stage_03_02 | erLiu | — | 3 | 86.0% | 100.0% |
 | stage_03_03 | erLiu | — | 3 | 24.0% | 100.0% |
@@ -51,7 +51,6 @@
   - stage_02_02:floor 100% / ceiling 100%
   - stage_02_03:floor 100% / ceiling 100%
   - stage_02_04:floor 92% / ceiling 100%
-  - stage_02_05:floor 100% / ceiling 100%
   - stage_03_01:floor 98% / ceiling 100%
   - stage_04_01:floor 100% / ceiling 100%
   - stage_04_02:floor 96% / ceiling 100%

@@ -17,6 +17,12 @@ const _shengShuFallback = ResonanceStageConfig(
   bonusMultiplier: 1.0,
 );
 
+/// P0.5 破招技「破势」defId(skills.yaml)。玩家方专属。
+const _poShiSkillId = 'skill_po_shi';
+
+/// 玩家方 teamSide(fromCharacter 唯一在 _playerToBattle 以 0 调用)。
+const _playerTeamSide = 0;
+
 /// 战斗最终结局（phase1_tasks.md T11 §635）。
 enum BattleResult { leftWin, rightWin, draw }
 
@@ -269,6 +275,17 @@ class BattleCharacter {
       final repo = GameRepository.instance;
       if (repo.skillDefs.containsKey('skill_joint_skill')) {
         skills.add(repo.getSkill('skill_joint_skill'));
+      }
+    }
+    // P0.5 简化:破招技「破势」广发玩家方(teamSide==0,fromCharacter 唯一
+    // 在 _playerToBattle 走此路径,敌人走 _enemyToBattle 不享)。
+    // aiUsePolicy=saveForInterrupt 保证 AI 平时不放(非蓄力战 0 DPS 副作用),
+    // 仅敌人蓄力时自动用来破招,故广发无平衡副作用。
+    // P1 再按 build gate(如要求特定流派/共鸣度)。
+    if (teamSide == _playerTeamSide) {
+      final repo = GameRepository.instance;
+      if (repo.skillDefs.containsKey(_poShiSkillId)) {
+        skills.add(repo.getSkill(_poShiSkillId));
       }
     }
 
