@@ -281,7 +281,7 @@ class BattleCharacter {
       maxHp: maxHp,
       currentHp: maxHp,
       maxInternalForce: maxIf,
-      currentInternalForce: character.internalForce,
+      currentInternalForce: maxIf,   // P0:战斗内力进场满(每场预算 · 与敌方对称)
       speed: speed,
       criticalRate: critRate,
       evasionRate: evRate,

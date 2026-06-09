@@ -126,8 +126,11 @@ void main() {
       expect(bc.evasionRate, CharacterDerivedStats.evasionRate(c, n));
     });
 
-    test('currentHp 初始 = maxHp，currentInternalForce 初始 = character.internalForce',
+    test('currentHp 初始 = maxHp，currentInternalForce 初始 = maxInternalForce（P0 进场满）',
         () {
+      // P0:战斗内力进场满(maxIf · 每场预算 · 与敌方对称)。
+      // internalForce(600)与 internalForceMax(默认 500)不同 → 进场 current
+      // 取 maxIf(500),不再取 character.internalForce。
       final c = _mkChar(
         tier: RealmTier.xueTu,
         layer: RealmLayer.ruMen,
@@ -148,8 +151,9 @@ void main() {
         slotIndex: 0,
       );
       expect(bc.currentHp, bc.maxHp);
-      expect(bc.currentInternalForce, 600);
       expect(bc.maxInternalForce, c.internalForceMax);
+      // P0:进场满,current == max(== c.internalForceMax 500),不再 == 600。
+      expect(bc.currentInternalForce, bc.maxInternalForce);
     });
 
     test('师承遗物 2 件 → maxInternalForce 含 +10% lineage buff（T55 战斗路径补齐）',
