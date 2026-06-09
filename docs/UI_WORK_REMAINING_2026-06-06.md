@@ -3,7 +3,32 @@
 > 日期：2026-06-06  
 > 目的：作为后续 UI / 出版美术 / 视觉验收工作的入口文件。  
 > 范围：只梳理 UI 相关规划、当前进展、未完成任务与建议优先级；不包含音频、Steam、法律商业等非 UI 发布工作。  
-> 当前状态提醒：最新 UI 改造主要在 `codex/t11-inventory-section-header` 分支，尚未合并 `main`；工作区另有未提交的爬塔 UI 改动。
+> ⚠️ **2026-06-06 原文多处已 drift。以下方「## 0. 2026-06-09 状态核实」为准**（旧条目保留作历史记录）。原「当前状态提醒」（codex/t11 分支未合 / 爬塔未提交）均已过时——分支已合 main、爬塔已提交、未跟踪文件已收口。
+
+## 0. 2026-06-09 状态核实（权威 · 覆盖下方旧条目）
+
+> 派 Codex 做 T5/T6/T7 时连续发现「doc 说没做、实际已做」。逐项核实代码现状如下。**结论：T1-T8 UI 空间化 backlog 实质完成，真剩 T9 截图包 + 边际 polish；1.0 UI 层 ready，剩余缺口在外部（音频/Steam/法律/性能）。**
+
+| 任务 | 06-06 doc | 06-09 代码核实 | 证据 |
+|---|---|---|---|
+| T1 收口 UI 分支 | P0 未完成 | ✅ 已合并删除 | codex/t11 分支已 merge，本地/远端均无 |
+| T2 爬塔 UI 收口 | P0 进行中 | ✅ 已合 main | `d695688 优化爬塔石阶` / `a12bae1 增加主线塔身进度概览` |
+| T3 主线路线图 | P1 部分完成 | ✅ 基本完成 | `chapter_list_screen._ChapterRouteMap`/`_RouteChapterPanel`/`_RouteStageNode` + `stage_list_screen._StageJourneyMap`/`_StageMarker`（章节区+关卡节点+Boss+状态全在） |
+| T4 爬塔塔身图 | P1 部分完成 | ✅ 基本完成 | `tower_floor_list._TowerSpineOverview`/`_TowerSpineNode` + `tower_floor_card.TowerFloorStepSide`(左右石阶 timeline)/`_TowerStepMarker`/`_FloorSeal` |
+| T5 闭关地图化 | P1 未完成 | ✅ 已合 main | `a1f339a`（Codex 视觉闭环 + Claude 闸 · `seclusion_map_visuals.dart` + 4 屏地点视觉锚点） |
+| T6 成长仪式模板 | P1 部分完成 | ✅ 已完成 | `CeremonyImagePanel` 已铺 6 事件：境界突破/心法升层(`AdvancementSummary`)、共鸣(`ResonanceUpgradeBanner`)、Boss 首胜(`FirstClearBanner`)、奇遇领悟(`EncounterOutcomeToast`)、离线结算(RetreatResult) |
+| T7 三系关系盘 | P1 部分完成 | ⚠️ ① 已实装 / ② 受设计约束 | ① 克制三角盘=`technique_panel._SchoolRelationPanel`(三角+环形克制箭头+效果+主修高亮) 已实装；② 相生=`character_panel._SynergyChip`(命中即显)，**GDD §4.5 彩蛋「不剧透」→ 不画待发现插槽图** |
+| T8 入口状态提示 | P2 部分完成 | ✅ 基本完成 | `main_menu.dart` 各入口带 `status:`（主线章节/爬塔最高层/闭关 session/未解锁门控） |
+| T9 最终截图包 | P1 未完成 | ⏳ **真未做** | Steam/宣传 8 屏双分辨率截图整理（验收任务，非新 UI） |
+
+### 真剩 UI 工作（按价值排序）
+1. **T9 截图包**（唯一实打实未做）：8 屏 × 双分辨率 Steam 候选。**前置阻塞**：`tools/visual_capture/visual_capture.sh` 本机取窗口 id 失败 → 全屏兜底（含桌面杂物，非干净窗口图，T5 已遇）。要先解决干净窗口截图（授终端「辅助功能」权限 / 改用 macOS 窗口截图 API）。
+2. **可选边际 polish**（价值低，pre-1.0 非必需）：① 克制三角节点用 拳/剑/掌 水墨符号替纯文字；② 「已悟相生」收藏区（仅显已发现组合，GDD-aligned 不剧透）；各世界层屏 spacing/构图微调。
+
+### 已 drift 教训
+此 doc（2026-06-06）写于「当前分支未合 + 大量未提交/未跟踪」的快照态，之后多批 Codex+Claude 推进未回写本 doc → 严重 drift。**后续 UI 任务派单前先 grep 代码现状，别信本 doc 旧条目。**
+
+---
 
 ## 1. 主要依据文档
 
