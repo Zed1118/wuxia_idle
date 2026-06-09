@@ -24,6 +24,8 @@ dependencies:
   intl: ^0.19.0
 
   cupertino_icons: ^1.0.8
+  audioplayers: ^6.0.0
+  shared_preferences: ^2.2.0
 
 dev_dependencies:
   flutter_test:
@@ -69,3 +71,7 @@ flutter:
     - assets/scenes/
     - assets/scenes/mj/
     - assets/techniques/
+
+    # E 音频系统
+    - assets/audio/bgm/
+    - assets/audio/sfx/
