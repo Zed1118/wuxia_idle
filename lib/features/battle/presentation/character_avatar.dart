@@ -22,11 +22,16 @@ class CharacterAvatar extends StatelessWidget {
   final double avatarSize;
   final double barWidth;
 
+  /// Boss/敌人蓄力满值（`numbers.combat.bossCharge.defaultChargeTicks`）。
+  /// 用于把 [BattleCharacter.chargeTicksRemaining] 换算成蓄力进度条比例。
+  final int chargeMaxTicks;
+
   const CharacterAvatar({
     super.key,
     required this.character,
     this.avatarSize = 110,
     this.barWidth = 160,
+    this.chargeMaxTicks = 3,
   });
 
   @override
@@ -116,6 +121,15 @@ class CharacterAvatar extends StatelessWidget {
             isInternalForce: true,
           ),
         ),
+        // P0 破招：敌人/Boss 蓄力中显蓄力进度条 + 「可破招」图标（纯读 state）。
+        if (character.chargingSkill != null) ...[
+          const SizedBox(height: 4),
+          _ChargeBar(
+            ticksRemaining: character.chargeTicksRemaining,
+            maxTicks: chargeMaxTicks,
+            width: barWidth,
+          ),
+        ],
       ],
     );
 
@@ -177,6 +191,65 @@ class _BossAvatarFrame extends StatelessWidget {
                 WuxiaUi.bossFrameLarge,
                 fit: BoxFit.contain,
                 errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 蓄力进度条 + 「可破招」图标（P0 破招）。
+/// 进度 = 1 - ticksRemaining / maxTicks（蓄力将满 → 条接近满）；
+/// 末尾 [Icons.flash_on] 醒目色提示玩家此刻可破招。纯展示，不写 state。
+class _ChargeBar extends StatelessWidget {
+  final int ticksRemaining;
+  final int maxTicks;
+  final double width;
+
+  const _ChargeBar({
+    required this.ticksRemaining,
+    required this.maxTicks,
+    required this.width,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = maxTicks <= 0
+        ? 0.0
+        : (1 - ticksRemaining / maxTicks).clamp(0.0, 1.0).toDouble();
+    const accent = WuxiaColors.resultHighlight;
+    final borderRadius = BorderRadius.circular(2);
+
+    return SizedBox(
+      width: width,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.flash_on, size: 13, color: accent),
+          const SizedBox(width: 3),
+          Expanded(
+            child: SizedBox(
+              height: 7,
+              child: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: WuxiaColors.barTrack,
+                      borderRadius: borderRadius,
+                    ),
+                  ),
+                  FractionallySizedBox(
+                    widthFactor: progress,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: accent,
+                        borderRadius: borderRadius,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
