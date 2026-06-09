@@ -660,7 +660,12 @@ BattleCharacter _mkBC({
     createdAt: DateTime(2026, 1, 1),
     internalForce: internalForce,
     school: school,
-  )..id = charId;
+  )
+    ..id = charId
+    // P0:战斗内力进场满(maxIf)。fixture 以 internalForce 表达「该角色进场
+    // 内力预算」,故同步 internalForceMax,使进场满后 currentInternalForce
+    // == internalForce(保留各测原意:内力够/不够放招的阈值判断)。
+    ..internalForceMax = internalForce;
   final eq = Equipment.create(
     defId: 'test',
     tier: EquipmentTier.xunChang,
