@@ -104,7 +104,7 @@ class DefaultGroundStrategy implements BattleStrategy {
     return s;
   }
 
-  /// 玩家手动请求大招（phase1_tasks T12 §698 / §717）。
+  /// 玩家手动请求关键技（P0 泛化:破招技/大招/人剑合一）。
   ///
   /// **不打断当前 tick 的行动顺序**——只是把"下次该角色行动用什么招"标记下来。
   /// 如果该角色当时内力或 CD 不满足，[BattleAI] 会跳过这次大招，由 [_resolveAction]
@@ -113,17 +113,17 @@ class DefaultGroundStrategy implements BattleStrategy {
   BattleState requestUltimate(
     BattleState state,
     int characterId,
-    SkillDef ultimate,
+    SkillDef skill,
   ) {
-    if (ultimate.type != SkillType.ultimate) {
+    // P0:泛化为"玩家手动请求关键技"——接受 powerSkill/ultimate/jointSkill,
+    // 拒绝 normalAttack(普攻不需手动)。
+    if (skill.type == SkillType.normalAttack) {
       throw ArgumentError.value(
-        ultimate,
-        'ultimate',
-        'requestUltimate 只接受 type=ultimate 的招式',
+        skill, 'skill', '手动请求不接受 normalAttack',
       );
     }
     final newPending = Map<int, SkillDef>.from(state.pendingUltimates);
-    newPending[characterId] = ultimate;
+    newPending[characterId] = skill;
     return state.copyWith(pendingUltimates: Map.unmodifiable(newPending));
   }
 
