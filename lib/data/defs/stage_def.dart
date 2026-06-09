@@ -84,6 +84,11 @@ class StageDef {
   /// 仅主线 Boss stage 配;null = 无派系归属(爬塔/轻功/群战/心魔 Boss 不沾声望)。
   final String? factionId;
 
+  /// Boss 掉技能书(可玩性 P1a · spec §二)。仅 isBossStage=true 可配。
+  /// dropSkillManualId:主线 Boss 首通必给真解;dropSkillFragmentId:爬塔 Boss 概率掉残页。
+  final String? dropSkillManualId;
+  final String? dropSkillFragmentId;
+
   const StageDef({
     required this.id,
     required this.name,
@@ -111,6 +116,8 @@ class StageDef {
     this.npcId,
     this.bossRecruit,
     this.factionId,
+    this.dropSkillManualId,
+    this.dropSkillFragmentId,
   });
 
   factory StageDef.fromYaml(Map<String, dynamic> y) {
@@ -156,6 +163,8 @@ class StageDef {
           .toList(growable: false),
       npcId: y['npcId'] as String?,
       factionId: y['factionId'] as String?,
+      dropSkillManualId: y['dropSkillManualId'] as String?,
+      dropSkillFragmentId: y['dropSkillFragmentId'] as String?,
       bossRecruit: y['bossRecruit'] == null
           ? null
           : BossRecruitConfig.fromYaml(
