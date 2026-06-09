@@ -119,6 +119,19 @@ class VictoryOverlay extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
+                  // P0 破招：败北时附破招提示，引导玩家看准蓄力时机。
+                  if (!_isVictory) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      UiStrings.battleDefeatHintInterrupt,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: WuxiaUi.ink.withValues(alpha: 0.82),
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 10),
                   Image.asset(
                     WuxiaUi.inkDivider,

@@ -22,6 +22,10 @@ class UiStrings {
   static const String ultimate = '大招';
   static const String fastForward = '快进';
 
+  // P0 破招
+  static const String battleInterruptSkill = '破招';
+  static const String battleDefeatHintInterrupt = '蓄力大招难挡——保留内力,看准蓄力时机破招。';
+
   // 伤害飘字（T15）
   static const String dodge = '闪';
   static const String counterUp = '⬆';

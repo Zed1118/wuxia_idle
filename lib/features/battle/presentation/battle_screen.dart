@@ -489,6 +489,31 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     return c.currentInternalForce >= ultimate.internalForceCost && cd <= 0;
   }
 
+  // ─── 关键技（破招） ────────────────────────────────────────────────────────
+
+  void _onKeySkillPressed(int slotIndex) {
+    final s = ref.read(battleProvider);
+    if (slotIndex >= s.leftTeam.length) return;
+    final c = s.leftTeam[slotIndex];
+    final keySkill = _findKeySkillOf(c);
+    if (!_isKeySkillReady(c, keySkill)) return;
+
+    ref.read(battleProvider.notifier).requestUltimate(c.characterId, keySkill!);
+  }
+
+  static SkillDef? _findKeySkillOf(BattleCharacter c) {
+    for (final skill in c.availableSkills) {
+      if (skill.canInterrupt) return skill;
+    }
+    return null;
+  }
+
+  static bool _isKeySkillReady(BattleCharacter c, SkillDef? keySkill) {
+    if (!c.isAlive || keySkill == null) return false;
+    final cd = c.skillCooldowns[keySkill.id] ?? 0;
+    return c.currentInternalForce >= keySkill.internalForceCost && cd <= 0;
+  }
+
   // ─── 结算 dialog ─────────────────────────────────────────────────────────
 
   void _showResultDialog(BattleResult result, BattleState s) {
@@ -554,6 +579,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(battleProvider);
+    // 蓄力满值：默认走 numbers.combat.bossCharge.defaultChargeTicks；
+    // 若 GameRepository 未初始化（widget test 路径）则回落到 schema 默认 3。
+    int chargeMaxTicks;
+    try {
+      chargeMaxTicks =
+          ref.read(numbersConfigProvider).combat.bossCharge.defaultChargeTicks;
+    } catch (_) {
+      chargeMaxTicks = 3;
+    }
 
     ref.listen<BattleState>(battleProvider, (prev, next) {
       // 1. 启动 Timer：team 从空 → 非空且未结束
@@ -646,6 +680,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                           attackControllers: _attackControllers,
                           popups: _popups,
                           animConfig: widget.animConfig,
+                          chargeMaxTicks: chargeMaxTicks,
                           onPopupComplete: _removePopup,
                           hitFlashControllers: _hitFlashControllers,
                           hitFlashColors: _hitFlashColors,
@@ -667,6 +702,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                     state: state,
                     disabledUltimateChars: _disabledUltimateChars,
                     onUltimate: _onUltimatePressed,
+                    onKeySkill: _onKeySkillPressed,
                     onFastForward: _toggleFastForward,
                     isFastForward: _isFastForward,
                   ),
@@ -884,6 +920,7 @@ class _BattleField extends StatelessWidget {
   final List<AnimationController> attackControllers;
   final Map<int, List<_PopupEntry>> popups;
   final AnimationNumbers animConfig;
+  final int chargeMaxTicks;
   final void Function(int slotKey, int popupId) onPopupComplete;
   final List<AnimationController> hitFlashControllers;
   final Map<int, Color> hitFlashColors;
@@ -893,6 +930,7 @@ class _BattleField extends StatelessWidget {
     required this.attackControllers,
     required this.popups,
     required this.animConfig,
+    required this.chargeMaxTicks,
     required this.onPopupComplete,
     required this.hitFlashControllers,
     required this.hitFlashColors,
@@ -913,6 +951,7 @@ class _BattleField extends StatelessWidget {
               attackControllers: attackControllers,
               popups: popups,
               animConfig: animConfig,
+              chargeMaxTicks: chargeMaxTicks,
               onPopupComplete: onPopupComplete,
               hitFlashControllers: hitFlashControllers,
               hitFlashColors: hitFlashColors,
@@ -927,6 +966,7 @@ class _BattleField extends StatelessWidget {
               attackControllers: attackControllers,
               popups: popups,
               animConfig: animConfig,
+              chargeMaxTicks: chargeMaxTicks,
               onPopupComplete: onPopupComplete,
               hitFlashControllers: hitFlashControllers,
               hitFlashColors: hitFlashColors,
@@ -945,6 +985,7 @@ class _TeamColumn extends StatelessWidget {
   final List<AnimationController> attackControllers;
   final Map<int, List<_PopupEntry>> popups;
   final AnimationNumbers animConfig;
+  final int chargeMaxTicks;
   final void Function(int slotKey, int popupId) onPopupComplete;
   final List<AnimationController> hitFlashControllers;
   final Map<int, Color> hitFlashColors;
@@ -956,6 +997,7 @@ class _TeamColumn extends StatelessWidget {
     required this.attackControllers,
     required this.popups,
     required this.animConfig,
+    required this.chargeMaxTicks,
     required this.onPopupComplete,
     required this.hitFlashControllers,
     required this.hitFlashColors,
@@ -985,6 +1027,7 @@ class _TeamColumn extends StatelessWidget {
                       attackController: attackControllers[teamSide * 3 + i],
                       slotPopups: popups[teamSide * 3 + i] ?? const [],
                       animConfig: animConfig,
+                      chargeMaxTicks: chargeMaxTicks,
                       slotKey: teamSide * 3 + i,
                       onPopupComplete: onPopupComplete,
                       hitFlashController: hitFlashControllers[teamSide * 3 + i],
@@ -1006,6 +1049,7 @@ class _CharacterSlot extends StatelessWidget {
   final AnimationController attackController;
   final List<_PopupEntry> slotPopups;
   final AnimationNumbers animConfig;
+  final int chargeMaxTicks;
   final int slotKey;
   final void Function(int slotKey, int popupId) onPopupComplete;
   final AnimationController hitFlashController;
@@ -1017,6 +1061,7 @@ class _CharacterSlot extends StatelessWidget {
     required this.attackController,
     required this.slotPopups,
     required this.animConfig,
+    required this.chargeMaxTicks,
     required this.slotKey,
     required this.onPopupComplete,
     required this.hitFlashController,
@@ -1035,7 +1080,10 @@ class _CharacterSlot extends StatelessWidget {
           child: HitFlash(
             animation: hitFlashController,
             color: flashColor,
-            child: CharacterAvatar(character: character),
+            child: CharacterAvatar(
+              character: character,
+              chargeMaxTicks: chargeMaxTicks,
+            ),
           ),
         ),
         for (var i = 0; i < slotPopups.length; i++)
@@ -1079,6 +1127,7 @@ class _BottomBar extends StatelessWidget {
   final BattleState state;
   final Set<int> disabledUltimateChars;
   final void Function(int slotIndex) onUltimate;
+  final void Function(int slotIndex) onKeySkill;
   final VoidCallback onFastForward;
   final bool isFastForward;
 
@@ -1086,12 +1135,17 @@ class _BottomBar extends StatelessWidget {
     required this.state,
     required this.disabledUltimateChars,
     required this.onUltimate,
+    required this.onKeySkill,
     required this.onFastForward,
     required this.isFastForward,
   });
 
   @override
   Widget build(BuildContext context) {
+    // 纯读 state：任一存活敌人(rightTeam)正在蓄力 → 全队破招按钮高亮提示。
+    final enemyCharging = state.rightTeam.any(
+      (e) => e.isAlive && e.chargingSkill != null,
+    );
     return Container(
       height: 72,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -1110,11 +1164,83 @@ class _BottomBar extends StatelessWidget {
                   disabledUltimateChars.contains(state.leftTeam[i].characterId),
               onPressed: () => onUltimate(i),
             ),
+            const SizedBox(width: 4),
+            _KeySkillButton(
+              character: i < state.leftTeam.length ? state.leftTeam[i] : null,
+              highlight: enemyCharging,
+              onPressed: () => onKeySkill(i),
+            ),
             if (i < 2) const SizedBox(width: 8),
           ],
           const Spacer(),
           _FastForwardButton(onPressed: onFastForward, isActive: isFastForward),
         ],
+      ),
+    );
+  }
+}
+
+/// 关键技（破招）按钮。沿 [_UltimateButton] 体例：取角色 availableSkills 里
+/// 首个 canInterrupt 技，ready 判定 = isAlive + 内力够 + CD0。
+/// `highlight=true`（任一敌人蓄力中）时换醒目色 + 边框，提示玩家破招时机。
+class _KeySkillButton extends StatelessWidget {
+  final BattleCharacter? character;
+  final bool highlight;
+  final VoidCallback onPressed;
+
+  const _KeySkillButton({
+    required this.character,
+    required this.highlight,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = character;
+    final keySkill = c == null ? null : _BattleScreenState._findKeySkillOf(c);
+    final hasKeySkill = keySkill != null;
+    final ready =
+        c != null && _BattleScreenState._isKeySkillReady(c, keySkill);
+
+    final Color bgColor;
+    if (!hasKeySkill || c == null) {
+      bgColor = WuxiaColors.buttonDisabled;
+    } else if (highlight) {
+      bgColor = WuxiaColors.resultHighlight; // 敌人蓄力中：醒目金
+    } else {
+      bgColor = WuxiaColors.schoolColor(c.school);
+    }
+
+    return SizedBox(
+      width: 72,
+      height: 52,
+      child: ElevatedButton(
+        onPressed: ready ? onPressed : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: bgColor,
+          disabledBackgroundColor: WuxiaColors.buttonDisabled,
+          foregroundColor: WuxiaColors.textPrimary,
+          disabledForegroundColor: WuxiaColors.textMuted,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          side: highlight && ready
+              ? const BorderSide(color: WuxiaColors.textPrimary, width: 2)
+              : BorderSide.none,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (highlight)
+              const Icon(Icons.flash_on, size: 16)
+            else
+              const SizedBox(height: 16),
+            const Text(
+              UiStrings.battleInterruptSkill,
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
       ),
     );
   }
