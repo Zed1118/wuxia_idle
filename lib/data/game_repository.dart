@@ -522,6 +522,10 @@ class GameRepository {
     // 在 sectCandidates + baseProbability ∈ [0,1])· sectCandidates 空时仅校第一/三条
     _enforceBossRecruitRedLines();
 
+    // P0 破招:Boss 招牌蓄力技校验(chargeSkillId 必在敌人 skillIds 内 +
+    // boss_charge tick 数值范围)
+    _enforceBossChargeRedLines();
+
     // Phase 4 W14-1 C-1:encounter fixture 校验(若加载到)
     _enforceEncounterRedLines();
 
@@ -1273,6 +1277,37 @@ class GameRepository {
           '未在 sect_candidates.yaml 中(spec §6 红线 ②)',
         );
       }
+    }
+  }
+
+  /// P0 破招红线(沿 [_enforceBossRecruitRedLines] 体例):
+  /// - 任何配了 chargeSkillId 的敌人:该 id 必须在其 skillIds 内,否则 throw。
+  /// - numbers.bossCharge:defaultChargeTicks ∈ [1,8] / defaultStaggerTicks ∈ [0,5]。
+  void _enforceBossChargeRedLines() {
+    for (final s in stageDefs.values) {
+      for (final e in s.enemyTeam) {
+        final cs = e.chargeSkillId;
+        if (cs == null) continue;
+        if (!e.skillIds.contains(cs)) {
+          throw StateError(
+            'stage ${s.id} 敌人 ${e.id} chargeSkillId=$cs '
+            '不在其 skillIds ${e.skillIds} 内(P0 破招红线 ①)',
+          );
+        }
+      }
+    }
+    final bc = numbers.combat.bossCharge;
+    if (bc.defaultChargeTicks < 1 || bc.defaultChargeTicks > 8) {
+      throw StateError(
+        'boss_charge.defaultChargeTicks=${bc.defaultChargeTicks},'
+        '应 ∈ [1, 8](P0 破招红线 ②)',
+      );
+    }
+    if (bc.defaultStaggerTicks < 0 || bc.defaultStaggerTicks > 5) {
+      throw StateError(
+        'boss_charge.defaultStaggerTicks=${bc.defaultStaggerTicks},'
+        '应 ∈ [0, 5](P0 破招红线 ②)',
+      );
     }
   }
 
