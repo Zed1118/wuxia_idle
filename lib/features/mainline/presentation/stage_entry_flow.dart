@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +28,8 @@ import '../../mass_battle/domain/mass_battle_def.dart';
 import '../../../shared/strings.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/domain/skill_unlock_service.dart';
+import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../jianghu/application/jianghu_providers.dart';
@@ -147,11 +150,14 @@ Future<void> runStageFlow({
 
   // W12 fix: provider 副作用 getOrCreate 与 recordVictory 存在 race（W6 重构遗留），
   // 主动 ensure 避免 MainlineProgress 未初始化时抛 StateError
+  // 可玩性 P1a:技能书首通判定需"写 clearedStageIds 之前"的快照。
+  final clearedBeforeVictory = <String>{};
   if (victoryRecorderForTest != null) {
     await victoryRecorderForTest(stage.id);
   } else {
     final svc = MainlineProgressService(isar: IsarSetup.instance);
-    await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    final progress = await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    clearedBeforeVictory.addAll(progress.clearedStageIds);
     await svc.recordVictory(
       stageId: stage.id,
       now: DateTime.now(),
@@ -159,6 +165,18 @@ Future<void> runStageFlow({
     );
     ref.invalidate(mainlineProgressProvider);
     ref.invalidate(currentTutorialStepProvider);
+
+    // 可玩性 P1a:Boss 胜利掉技能书(真解首通/残页概率)· spec §二。
+    // 纯数据写(无 UI);随生产进度记录路径执行(test stub 路径 victoryRecorderForTest
+    // 跳过,与 recordVictory 一致 —— 不依赖未初始化的 IsarSetup)。
+    await runStageSkillDropHookAfterVictory(
+      stage: stage,
+      svc: SkillUnlockService(IsarSetup.instance),
+      clearedStageIds: clearedBeforeVictory,
+      towerFragmentDropProb:
+          GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
+      rng: Random(),
+    );
   }
 
   // W15 #30 P3 后续 A:victory dialog 显 drop + 升层 banner;outcome=null 时
