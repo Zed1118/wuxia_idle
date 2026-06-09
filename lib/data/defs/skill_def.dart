@@ -33,6 +33,9 @@ class SkillDef {
   /// P0 破招:AI 自动战斗对此技的使用策略。
   final AiUsePolicy aiUsePolicy;
 
+  /// 招式 per-skill 熟练度效果(可玩性 P1a · 只配真解/招牌/破招技)。null=不配。
+  final SkillProficiencyEffects? proficiency;
+
   const SkillDef({
     required this.id,
     required this.name,
@@ -49,6 +52,7 @@ class SkillDef {
     this.imagePath,
     this.canInterrupt = false,
     this.aiUsePolicy = AiUsePolicy.normal,
+    this.proficiency,
   });
 
   /// 奇遇招式 = parentTechniqueDefId 为空 & tier 非空。
@@ -73,10 +77,49 @@ class SkillDef {
       aiUsePolicy: y['aiUsePolicy'] != null
           ? AiUsePolicy.values.byName(y['aiUsePolicy'] as String)
           : AiUsePolicy.normal,
+      proficiency: y['proficiency'] != null
+          ? SkillProficiencyEffects.fromYaml(
+              Map<String, dynamic>.from(y['proficiency'] as Map))
+          : null,
     );
   }
 
   @override
   String toString() =>
       'SkillDef(id=$id, name=$name, type=${type.name}, power=$powerMultiplier)';
+}
+
+
+/// 招式 per-skill 熟练度效果(可玩性 P1a · 只配真解/招牌/破招技)。
+/// key=熟练阶段 id(shunShou/shuLian/jingTong/huaJing),value=该阶段起生效的增量。
+/// damage_pct 与全局阶段倍率综合后仍受 §2.5 130% cap(见 SkillProficiency.combinedMult)。
+class SkillProficiencyEffects {
+  final Map<String, double> _damagePct;
+  final Map<String, int> _cooldownDelta;
+  final Map<String, double> _interruptPowerPct;
+  final Map<String, int> _interruptWindowBonus;
+
+  const SkillProficiencyEffects(this._damagePct, this._cooldownDelta,
+      this._interruptPowerPct, this._interruptWindowBonus);
+
+  double damagePctAt(String stageId) => _damagePct[stageId] ?? 0.0;
+  int cooldownDeltaAt(String stageId) => _cooldownDelta[stageId] ?? 0;
+  double interruptPowerPctAt(String stageId) => _interruptPowerPct[stageId] ?? 0.0;
+  int interruptWindowBonusAt(String stageId) => _interruptWindowBonus[stageId] ?? 0;
+
+  factory SkillProficiencyEffects.fromYaml(Map<String, dynamic> y) {
+    final effects = (y['effects'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final dmg = <String, double>{};
+    final cd = <String, int>{};
+    final ip = <String, double>{};
+    final iw = <String, int>{};
+    effects.forEach((stage, v) {
+      final m = Map<String, dynamic>.from(v as Map);
+      if (m['damage_pct'] != null) dmg[stage] = (m['damage_pct'] as num).toDouble();
+      if (m['cooldown_delta'] != null) cd[stage] = (m['cooldown_delta'] as num).toInt();
+      if (m['interrupt_power_pct'] != null) ip[stage] = (m['interrupt_power_pct'] as num).toDouble();
+      if (m['interrupt_window_bonus_ticks'] != null) iw[stage] = (m['interrupt_window_bonus_ticks'] as num).toInt();
+    });
+    return SkillProficiencyEffects(dmg, cd, ip, iw);
+  }
 }
