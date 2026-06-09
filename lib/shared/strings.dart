@@ -769,6 +769,16 @@ class UiStrings {
   static const String mainMenuBaike = '江湖见闻录';
   static const String mainMenuBaikeHint = '记事与典故,永久可查';
 
+  // 设置面板
+  static const String mainMenuSettings = '设置';
+  static const String mainMenuSettingsHint = '音量 · 静音';
+  static const String settingsTitle = '设置';
+  static const String settingsMasterVolume = '总音量';
+  static const String settingsBgmVolume = '背景音乐';
+  static const String settingsSfxVolume = '音效';
+  static const String settingsMuted = '静音';
+  static const String settingsClose = '关闭';
+
   static const String baikeScreenTitle = '江湖见闻录';
   static const String baikeTabFeed = '见闻';
   static const String baikeTabLore = '典故';
