@@ -627,6 +627,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
           });
         }
       }
+
+      // 4. 破招机制 SFX：状态边沿触发（表现层纯读 state，不入 domain）。
+      for (final sfx in chargeTransitionSfx(prev, next)) {
+        SoundManager.instance.playSfx(sfx);
+      }
     });
 
     // team 空时（startBattle 还未调用）渲染 placeholder
