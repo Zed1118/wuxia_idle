@@ -45,3 +45,11 @@
 - [ ] #5 珍稀材料名称与用途 → P4 材料经济。
 - [ ] #6 英雄镜头美术方案(纯 UI 定格 / 立绘切入 / 场景 zoom)→ P3。
 - [ ] #7 藏经阁/兵器谱/战绩册/门派谱解锁时机 → P4。
+
+## 六 · P1a 实装期新增 deferred(Phase 0 发现 · 2026-06-10)
+
+- [ ] **残页内容挂载 + tower flow wire**:残页机制(SkillUnlockEntry.fragmentCount / addFragment 阈值解锁 / StageDef.dropSkillFragmentId / 红线 / hook fragment 分支)已**完整 + 单测覆盖**(stage_skill_drop_hook_test fragment 用例)。但爬塔楼层在 `data/towers.yaml`(独立 def 类型,非 StageDef),无法用 stages.yaml 的 dropSkillFragmentId 字段挂载;且 `tower_entry_flow.dart` 未 wire skill drop hook。**真解(主线)已全 wire+测,残页只差内容挂载**:需 towers.yaml schema 扩 dropSkillFragmentId + tower flow 调 runStageSkillDropHookAfterVictory(P0-READ tower 首通/重打判定)。
+- [ ] **解锁态消费(注入战斗可用池)**:`SkillUnlockService.isUnlocked` 目前只存进度,无人消费把已解锁招注入 `BattleCharacter.availableSkills`。spec §六 明确这是 P1b/装配 UI 的活(P1a 只做 source plumbing),非缺口。P1b 接。
+- [ ] **interrupt_power_pct 实装**:per-skill 「破招力」字段已解析(schema)但未消费。当前 P0 破招是二元(清蓄力+固定 stagger),无对应标量目标;是否缩放破招伤害 vs 加深减防是设计决策,需先定再落。
+- [ ] **166 招 source tag**:plan D1 提的技能级来源标(沿 techniques.yaml acquireSourceTags 体例)本批降级——P1a 无消费方(装配 gate 走境界非 source),不阻塞验收路径。二期统一来源模型时补。
+- [ ] **高熟练度全量平衡扫描**:balance_simulator 用 fresh char(skillUsageCount 空 → profMult 1.0),证 fresh 玩家零回归,但未扫高熟练度(满阶 +30%)下的全关 winRate。二期给 simulator 加 proficiency seed 维度,验高熟练度甜区不破。
