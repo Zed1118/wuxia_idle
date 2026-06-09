@@ -25,7 +25,7 @@
 # =============================================================================
 
 meta:
-  version: "0.1.0"             # 与 SaveData.saveVersion 对应；major.minor.patch
+  version: "0.2.0"             # 与 SaveData.saveVersion 对应；major.minor.patch
   description: "Demo 阶段数值配置 · 覆盖学徒到武圣全程"
   last_updated: "2026-05-10"
   notes: "所有数值基于 GDD v1.1 §5.2 数值红线设计；公式系数见 combat 段"
@@ -37,6 +37,18 @@ meta:
 # 整体平衡调整。
 
 combat:
+
+  # --- 招式熟练度阶段(可玩性 P1a · spec §三/§2.5) ---
+  # 来源=战斗放招次数(含挂机自动战斗,计数源 Technique.skillUsageCount)。
+  # damage_mult 全局阶段倍率(统一底,所有招含普攻);末阶 1.30 同时作综合加成 cap
+  # (per-skill damage_pct 综合后仍 ≤ 1.30,见 SkillProficiency.combinedMult)。
+  skill_proficiency:
+    stages:
+      - { id: chuShi,   min_uses: 0,   damage_mult: 1.00 }
+      - { id: shunShou, min_uses: 30,  damage_mult: 1.05 }
+      - { id: shuLian,  min_uses: 100, damage_mult: 1.12 }
+      - { id: jingTong, min_uses: 300, damage_mult: 1.20 }
+      - { id: huaJing,  min_uses: 800, damage_mult: 1.30 }
 
   # --- 基础伤害公式 ---
   # GDD §5.3：基础伤害 = (内力 × 0.4) + (装备攻击 × 8) + 招式倍率

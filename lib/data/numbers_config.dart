@@ -14,6 +14,10 @@ import '../core/domain/enums.dart';
 class NumbersConfig {
   final String version;
   final CombatNumbers combat;
+
+  /// 招式熟练度阶段配置(可玩性 P1a · spec §三/§2.5)。
+  /// `combat.skill_proficiency`,全局阶段倍率(末阶 1.30 作综合 cap)。
+  final SkillProficiencyConfig skillProficiency;
   final LevelDiffModifier levelDiffModifier;
 
   /// 49 级境界对应大阶的防御率（RealmDef schema §5.8 未含此字段，
@@ -192,6 +196,7 @@ class NumbersConfig {
   const NumbersConfig({
     required this.version,
     required this.combat,
+    required this.skillProficiency,
     required this.levelDiffModifier,
     required this.defenseRateByTier,
     required this.enhancementBonusPerLevel,
@@ -239,6 +244,9 @@ class NumbersConfig {
     return NumbersConfig(
       version: meta['version'] as String,
       combat: CombatNumbers.fromYaml(combat),
+      skillProficiency: SkillProficiencyConfig.fromYaml(
+        combat['skill_proficiency'] as Map<String, dynamic>?,
+      ),
       levelDiffModifier: LevelDiffModifier.fromYaml(
         realms['level_diff_modifier'] as Map<String, dynamic>,
       ),
@@ -2191,3 +2199,47 @@ class SectTerritoryNumbersConfig {
   }
 }
 
+
+/// 招式熟练度单个阶段(可玩性 P1a · spec §三)。
+class SkillProficiencyStageConfig {
+  final String id;
+  final int minUses;
+  final double damageMult;
+  const SkillProficiencyStageConfig(
+      {required this.id, required this.minUses, required this.damageMult});
+
+  factory SkillProficiencyStageConfig.fromYaml(Map<String, dynamic> y) =>
+      SkillProficiencyStageConfig(
+        id: y['id'] as String,
+        minUses: (y['min_uses'] as num).toInt(),
+        damageMult: (y['damage_mult'] as num).toDouble(),
+      );
+}
+
+/// 招式熟练度阶段配置(可玩性 P1a · spec §三/§2.5)。
+/// `combat.skill_proficiency.stages`;末阶 damageMult 作综合加成 cap。
+class SkillProficiencyConfig {
+  final List<SkillProficiencyStageConfig> stages;
+  const SkillProficiencyConfig({required this.stages});
+
+  double get maxDamageMult =>
+      stages.map((s) => s.damageMult).reduce((a, b) => a > b ? a : b);
+
+  factory SkillProficiencyConfig.fromYaml(Map<String, dynamic>? y) {
+    final raw = (y?['stages'] as List?) ?? const [];
+    final stages = raw
+        .map((e) => SkillProficiencyStageConfig.fromYaml(
+            Map<String, dynamic>.from(e as Map)))
+        .toList(growable: false);
+    // 单调红线:min_uses 严格递增 + damage_mult 不可递减
+    for (var i = 1; i < stages.length; i++) {
+      if (stages[i].minUses <= stages[i - 1].minUses) {
+        throw StateError('skill_proficiency.stages min_uses 必须严格递增');
+      }
+      if (stages[i].damageMult < stages[i - 1].damageMult) {
+        throw StateError('skill_proficiency.stages damage_mult 不可递减');
+      }
+    }
+    return SkillProficiencyConfig(stages: stages);
+  }
+}
