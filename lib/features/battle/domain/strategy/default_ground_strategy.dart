@@ -376,14 +376,19 @@ class DefaultGroundStrategy implements BattleStrategy {
       chargeTicksRemaining:
           brokeCharging ? 0 : target.chargeTicksRemaining,
       staggerTicksRemaining: brokeCharging
-          ? n.combat.bossCharge.defaultStaggerTicks
+          ? n.combat.bossCharge.defaultStaggerTicks +
+              SkillProficiency.interruptWindowBonus(skill,
+                  preActor.skillUses[skill.id] ?? 0, n.skillProficiency)
           : target.staggerTicksRemaining,
     );
 
     // 攻方扣内力 + 写 CD + actionPoint -= 1000（保留余数）
     final newCd = Map<String, int>.from(preActor.skillCooldowns);
-    if (skill.cooldownTurns > 0) {
-      newCd[skill.id] = skill.cooldownTurns;
+    // 可玩性 P1a:per-skill 熟练度 cooldown_delta 缩短有效 CD(下限 0)。
+    final effCd = SkillProficiency.effectiveCooldown(
+        skill, preActor.skillUses[skill.id] ?? 0, n.skillProficiency);
+    if (effCd > 0) {
+      newCd[skill.id] = effCd;
     }
     final actorAfter = preActor.copyWith(
       currentInternalForce:
