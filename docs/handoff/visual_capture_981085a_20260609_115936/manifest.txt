@@ -1,0 +1,5 @@
+# visual_capture manifest  sha=981085a  ts=20260609_115936
+seclusion_map_list -> seclusion_map_list.png -> READY(全屏兜底)
+seclusion_setup -> seclusion_setup.png -> READY(全屏兜底)
+seclusion_active -> seclusion_active.png -> READY(全屏兜底)
+seclusion_result -> seclusion_result.png -> READY(全屏兜底)

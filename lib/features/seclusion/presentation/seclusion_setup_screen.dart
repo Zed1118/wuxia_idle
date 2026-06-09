@@ -11,6 +11,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'active_retreat_screen.dart';
+import 'seclusion_map_visuals.dart';
 
 /// 闭关时长选择屏（Phase 3 T49）。
 ///
@@ -198,6 +199,11 @@ class _MapHero extends StatelessWidget {
               ),
             ),
             Positioned(
+              right: 18,
+              top: 16,
+              child: SeclusionMapTraitIcon(def: def, size: 48),
+            ),
+            Positioned(
               left: 18,
               right: 18,
               bottom: 18,
@@ -216,6 +222,8 @@ class _MapHero extends StatelessWidget {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
+                  const SizedBox(height: 9),
+                  SeclusionMapTraitStrip(def: def),
                 ],
               ),
             ),
@@ -263,25 +271,35 @@ class _OutputPreview extends StatelessWidget {
         SectionHeader(UiStrings.seclusionHourlyPreview(scale)),
         const SizedBox(height: 10),
         _OutputRow(
+          icon: Icons.construction,
+          color: WuxiaUi.woodLight,
           label: UiStrings.seclusionOutputMojianshi,
           value: (def.mojianshiPerHour * scale).toStringAsFixed(1),
         ),
         _OutputRow(
+          icon: Icons.trending_up,
+          color: WuxiaUi.qing,
           label: UiStrings.seclusionOutputExperience,
           value: (def.experiencePerHour * scale).toStringAsFixed(1),
         ),
         if (def.equipmentDropRate > 1.0)
           const _OutputRow(
+            icon: Icons.sports_martial_arts,
+            color: WuxiaUi.woodLight,
             label: UiStrings.seclusionOutputEquipDrop,
             value: '+50%',
           ),
         if (def.techniqueLearnRate > 1.0)
           const _OutputRow(
+            icon: Icons.auto_stories,
+            color: WuxiaUi.qing,
             label: UiStrings.seclusionOutputTechniqueLearn,
             value: '+50%',
           ),
         if (def.internalForceGrowth > 1.0)
           const _OutputRow(
+            icon: Icons.bolt,
+            color: WuxiaColors.internalForce,
             label: UiStrings.seclusionOutputInternalForce,
             value: '+50%',
           ),
@@ -291,10 +309,17 @@ class _OutputPreview extends StatelessWidget {
 }
 
 class _OutputRow extends StatelessWidget {
+  final IconData icon;
+  final Color color;
   final String label;
   final String value;
 
-  const _OutputRow({required this.label, required this.value});
+  const _OutputRow({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -303,10 +328,23 @@ class _OutputRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(color: WuxiaUi.ink2, fontSize: 13),
+          Expanded(
+            child: Row(
+              children: [
+                Icon(icon, color: color, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: WuxiaUi.ink2, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 12),
           Text(
             value,
             style: const TextStyle(
