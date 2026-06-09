@@ -266,6 +266,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_mingjia
     visualEffect: mountain_break
+    proficiency:        # 可玩性 P1a · 真解 ult per-skill 效果
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { damage_pct: 0.12 }
 
   # ─── 灵巧 · 名家功 ───
   - id: skill_lingqiao_mingjia_basic
@@ -334,6 +338,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_mingjia
     visualEffect: falling_petals
+    proficiency:        # 可玩性 P1a · 真解 ult per-skill 效果
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { damage_pct: 0.12 }
 
   # ───────────────────────────────────────────
   # 第 4 阶 门派绝学 · menPaiJueXue (cap=3000)
@@ -1959,6 +1967,11 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: po_shi_strike
+    proficiency:        # 可玩性 P1a · 破招技 per-skill 效果(只配已消费字段)
+      effects:
+        shunShou: { cooldown_delta: -1 }
+        jingTong: { interrupt_window_bonus_ticks: 1 }
+        huaJing: { interrupt_window_bonus_ticks: 2, damage_pct: 0.10 }
     canInterrupt: true
     aiUsePolicy: saveForInterrupt
 
@@ -1972,3 +1985,8 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: qingfeng_jue
+    proficiency:        # 可玩性 P1a · 招牌真解 per-skill 效果
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        jingTong: { damage_pct: 0.10 }
+        huaJing: { damage_pct: 0.15 }
