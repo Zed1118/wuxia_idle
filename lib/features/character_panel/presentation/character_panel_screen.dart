@@ -1180,6 +1180,19 @@ class _EquipmentSlotTile extends ConsumerWidget {
               const SizedBox(height: 6),
               Row(
                 children: [
+                  if ((GameRepository.instance.equipmentDefs[eq.defId]?.name ??
+                          '')
+                      .isNotEmpty) ...[
+                    Text(
+                      GameRepository.instance.equipmentDefs[eq.defId]!.name,
+                      style: const TextStyle(
+                        color: WuxiaColors.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
                   Text(
                     EnumL10n.equipmentTier(eq.tier),
                     style: TextStyle(
@@ -1802,8 +1815,8 @@ class _LineageRow extends StatelessWidget {
             value,
             style: TextStyle(
               color: valueColor,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),

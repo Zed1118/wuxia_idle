@@ -153,22 +153,28 @@ class _Body extends StatelessWidget {
                 constraints: const BoxConstraints(maxWidth: 480),
                 child: AspectRatio(
                   aspectRatio: 1952 / 608,
-                  child: Image.asset(
-                    'assets/techniques/tier_${tier.name}.png',
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/techniques/tier_${tier.name}.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                      ),
+                      // 卷轴故意无字(避伪书法红线),阶名以墨色叠在卷轴中央。
+                      Center(
+                        child: Text(
+                          EnumL10n.techniqueTier(tier),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: WuxiaUi.ink,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                EnumL10n.techniqueTier(tier),
-                style: const TextStyle(
-                  color: WuxiaColors.textSecondary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

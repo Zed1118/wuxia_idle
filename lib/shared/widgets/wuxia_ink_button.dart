@@ -169,19 +169,6 @@ class WuxiaInkButton extends StatelessWidget {
                     ],
                   ),
                 ),
-                Positioned(
-                  right: 8,
-                  top: 7,
-                  child: SizedBox(
-                    width: 15,
-                    height: 15,
-                    child: Image.asset(
-                      WuxiaUi.sealRed,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
