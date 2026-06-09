@@ -24,11 +24,13 @@ APP_PROCESS_NAME="wuxia_idle"   # = pubspec name + CGWindow owner name
 APP_BIN_MATCH="Debug/Products/Debug/wuxia_idle.app"
 
 DRY_RUN=0
+BUILD_MODE=debug   # --profile 出干净 Steam 截图(kDebugMode=false 隐藏 debug chrome)
 ROUTES=()
 RES=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run) DRY_RUN=1; shift ;;
+    --profile) BUILD_MODE=profile; shift ;;
     --res) RES+=("$2"); shift 2 ;;
     *) ROUTES+=("$1"); shift ;;
   esac
@@ -44,6 +46,7 @@ MANIFEST="$OUT_DIR/manifest.txt"
 echo "[visual_capture] repo=$REPO_ROOT sha=$SHA"
 echo "[visual_capture] routes: ${ROUTES[*]}"
 echo "[visual_capture] res:    ${RES[*]}"
+echo "[visual_capture] mode:   $BUILD_MODE"
 echo "[visual_capture] out: $OUT_DIR"
 
 if [[ $DRY_RUN -eq 1 ]]; then echo "[visual_capture] --dry-run,退出。"; exit 0; fi
@@ -69,8 +72,9 @@ capture_one() {
 
   echo "[visual_capture] === $route @ ${w}x${h} ==="
   _kill_stale_app
+  local mode_flag=""; [[ "$BUILD_MODE" == "profile" ]] && mode_flag="--profile"
   VISUAL_WINDOW_W="$w" VISUAL_WINDOW_H="$h" \
-    flutter run -d macos --dart-define=VISUAL_ROUTE="$route" >"$log" 2>&1 &
+    flutter run -d macos $mode_flag --dart-define=VISUAL_ROUTE="$route" >"$log" 2>&1 &
   local run_pid=$!
 
   local waited=0 ready=0
