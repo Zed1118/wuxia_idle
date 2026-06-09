@@ -52,6 +52,10 @@ enum VisualRoute {
     'battle_boss_frame',
     '战斗屏·Boss 头像金色加粗边框验收(scenarioBoss 右队首位 Boss)',
   ),
+  battleChargeBreak(
+    'battle_charge_break',
+    '战斗屏·青衫剑客蓄力青锋绝 + 玩家破招按钮高亮(静态验收破招 UI)',
+  ),
   battleVictoryFirstClear(
     'battle_victory_first_clear',
     '胜利弹窗·Boss 首胜封签 + 掉落/升层/共鸣三段验收',
