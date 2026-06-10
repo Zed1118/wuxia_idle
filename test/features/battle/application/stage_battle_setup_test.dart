@@ -485,6 +485,59 @@ void main() {
       false,
     );
   });
+
+  // ── P1b Task5: applyAutoFill wire ─────────────────────────────────────────
+  // 断言：5 装配槽全空的角色，经 buildTeams(→ _buildPlayerTeam → applyAutoFill)
+  // 后，其 mainSkillId1 已被填入（非 null），证明走了装配而非 fallback。
+  test(
+    'Task5 wire: 5 槽全空角色进战斗前 autoFill 填主修招 → mainSkillId1 非 null',
+    () async {
+      // P3 种子：角色有主修心法 tech_gangmeng_jichu，5 装配槽初始全 null。
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      final isar = IsarSetup.instance;
+
+      // 确认进战斗前 5 槽全空
+      final before = await isar.characters.get(1);
+      expect(before?.mainSkillId1, isNull,
+          reason: 'P3 种子不预填装配槽，进战斗前应全空');
+
+      final stage = GameRepository.instance.getStage('stage_01_01');
+      await StageBattleSetup(isar: isar).buildTeams(stage);
+
+      // buildTeams 调用后 autoFill 已落库
+      final after = await isar.characters.get(1);
+      expect(after?.mainSkillId1, isNotNull,
+          reason: 'autoFill wire 应填入主修招到 mainSkillId1');
+    },
+  );
+
+  test(
+    'Task5 wire: autoFill 后 availableSkills 含主修招（走装配非 fallback）',
+    () async {
+      // P3 种子：角色有主修心法 tech_gangmeng_jichu，5 装配槽全 null。
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      final isar = IsarSetup.instance;
+
+      // 进战斗前确认槽全空
+      final before = await isar.characters.get(1);
+      expect(before?.mainSkillId1, isNull);
+
+      final stage = GameRepository.instance.getStage('stage_01_01');
+      final (left, _) = await StageBattleSetup(isar: isar).buildTeams(stage);
+
+      final player = left.first;
+      final skillIds = player.availableSkills.map((s) => s.id).toSet();
+
+      // autoFill 后走装配路径，availableSkills 是装配槽子集。
+      // P3 种子主修心法 tech_gangmeng_mingjia 有 3 招：basic/skill/ult。
+      // autoFill 按 powerMultiplier 分配到主修槽和大招槽，至少一招被装配。
+      expect(
+        skillIds.any((id) => id.startsWith('skill_gangmeng_mingjia_')),
+        isTrue,
+        reason: 'autoFill 后 availableSkills 应含主修心法招(tech_gangmeng_mingjia)',
+      );
+    },
+  );
 }
 
 /// hot-loop 红线压测断言 helper:6 字段 + 派生不变式上界。

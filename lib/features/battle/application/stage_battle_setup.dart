@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 
 import '../domain/battle_state.dart';
 import '../domain/derived_stats.dart' show RealmUtils;
+import '../../../data/defs/skill_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/synergy_def.dart';
 import '../../tower/domain/tower_floor_def.dart';
@@ -13,10 +14,15 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
+import '../../cultivation/application/skill_loadout_service.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../inheritance/application/founder_buff_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../sect/domain/sect.dart';
+
+/// P1b Task5:进战斗前 applyAutoFill 所用的 joint_skill id 常量。
+/// 与 skills.yaml 定义一致，单一真相源。
+const _jointSkillId = 'skill_joint_skill';
 
 /// 关卡战斗准备（Phase 3 T37，对应 PROGRESS #22 销账）。
 ///
@@ -130,11 +136,33 @@ class StageBattleSetup {
         playerSectId: playerSectId,
       );
     }
+    // P1b Task5:进战斗前对每个出战玩家角色调 applyAutoFill，补满空装配槽。
+    // 旧存档/未配置角色（5 槽全空）→ autoFill 填主修招，保证走装配路径而非 fallback。
+    final loadoutSvc = SkillLoadoutService(isar);
+    final repo = GameRepository.instance;
+    for (final c in players) {
+      // 主修心法 skillIds → List<SkillDef>
+      final mainSkills = await _resolveMainSkillDefs(c, repo);
+      // 辅修心法(可多本)的所有 skillIds → List<SkillDef>
+      final assistSkills = await _resolveAssistSkillDefs(c, repo);
+      // joint 解锁判定：任一武器 resonanceStage 达 unlocksJointSkill 阶即解锁。
+      final joint = await _resolveJointSkill(c, numbers, repo);
+      await loadoutSvc.applyAutoFill(
+        characterId: c.id,
+        mainTechniqueSkills: mainSkills,
+        assistTechniqueSkills: assistSkills,
+        jointSkill: joint,
+        ultimatePowerThreshold: numbers.loadoutUltimatePowerThreshold,
+      );
+    }
+
     final left = <BattleCharacter>[];
     for (var i = 0; i < players.length && i < 3; i++) {
+      // autoFill 已落库，重新从 Isar 读取（装配槽已更新的版本）。
+      final updated = await isar.characters.get(players[i].id) ?? players[i];
       left.add(
         await _playerToBattle(
-          character: players[i],
+          character: updated,
           slotIndex: i,
           founderBuffActive: founderBuffByChar[players[i].id] ?? false,
         ),
@@ -337,4 +365,71 @@ class StageBattleSetup {
     required EnemyDef enemy,
     required int slotIndex,
   }) => _enemyToBattle(enemy: enemy, slotIndex: slotIndex);
+
+  // ────────────────────────────────────────────────────────────────────────
+  // P1b Task5 autoFill 辅助(私有实例方法，可访问 isar)
+  // ────────────────────────────────────────────────────────────────────────
+
+  /// 主修心法 skillIds → `List<SkillDef>`。
+  /// mainTechniqueId 为 null(无主修)→ 返空列表(主修缺失后续会在 _playerToBattle throw)。
+  Future<List<SkillDef>> _resolveMainSkillDefs(
+    Character c,
+    GameRepository repo,
+  ) async {
+    final tid = c.mainTechniqueId;
+    if (tid == null) return const [];
+    final tech = await isar.techniques.get(tid);
+    if (tech == null) return const [];
+    final techDef = repo.techniqueDefs[tech.defId];
+    if (techDef == null) return const [];
+    return techDef.skillIds
+        .where(repo.skillDefs.containsKey)
+        .map(repo.getSkill)
+        .toList();
+  }
+
+  /// 辅修心法(可多本)的所有 skillIds → `List<SkillDef>`(扁平化合并)。
+  Future<List<SkillDef>> _resolveAssistSkillDefs(
+    Character c,
+    GameRepository repo,
+  ) async {
+    final result = <SkillDef>[];
+    for (final tid in c.assistTechniqueIds) {
+      final tech = await isar.techniques.get(tid);
+      if (tech == null) continue;
+      final techDef = repo.techniqueDefs[tech.defId];
+      if (techDef == null) continue;
+      for (final id in techDef.skillIds) {
+        if (repo.skillDefs.containsKey(id)) result.add(repo.getSkill(id));
+      }
+    }
+    return result;
+  }
+
+  /// joint 解锁判定：任一武器 resonanceStage 达 unlocksJointSkill=true 阶 → 返回
+  /// skill_joint_skill SkillDef；否则返 null（共鸣槽不自动填，玩家手动装配）。
+  Future<SkillDef?> _resolveJointSkill(
+    Character c,
+    NumbersConfig numbers,
+    GameRepository repo,
+  ) async {
+    final wid = c.equippedWeaponId;
+    if (wid == null) return null;
+    final weapon = await isar.equipments.get(wid);
+    if (weapon == null) return null;
+    final stage = weapon.resonanceStage(numbers);
+    final stageConfig = numbers.resonanceStages
+        .firstWhere((s) => s.stage == stage, orElse: () => _shengShuFallbackSetup);
+    if (!stageConfig.unlocksJointSkill) return null;
+    if (!repo.skillDefs.containsKey(_jointSkillId)) return null;
+    return repo.getSkill(_jointSkillId);
+  }
 }
+
+/// joint 判定用的 shengShu fallback（防御性，正常配置 4 段全覆盖不触发）。
+const _shengShuFallbackSetup = ResonanceStageConfig(
+  stage: ResonanceStage.shengShu,
+  minBattleCount: 0,
+  maxBattleCount: 0,
+  bonusMultiplier: 1.0,
+);
