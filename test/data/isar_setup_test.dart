@@ -45,8 +45,8 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.16.0',
-          reason: 'P1a skillUnlockProgress @embedded 字段 → 升 0.16.0');
+      expect(save.saveVersion, '0.17.0',
+          reason: 'P1b 藏经阁 Character 加 5 装配槽字段 → 升 0.17.0');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);
