@@ -38,6 +38,10 @@ class BattleAction {
   final AttackResult? attackResult;
   final String description;
 
+  /// B3 破招:本动作是否打断了目标蓄力(canInterrupt 技命中蓄力中目标)。
+  /// 表现层据此弹「破！」题字 overlay(纯读元数据,不参与战斗结算)。
+  final bool interrupted;
+
   const BattleAction({
     required this.tick,
     required this.actorId,
@@ -45,6 +49,7 @@ class BattleAction {
     this.skill,
     this.attackResult,
     required this.description,
+    this.interrupted = false,
   });
 
   @override

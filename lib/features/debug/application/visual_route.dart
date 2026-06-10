@@ -80,6 +80,14 @@ enum VisualRoute {
     'inventory',
     '仓库·装备格子化(部位分组武器/护甲/饰品 + tier 边框 + 强化徽章 + 师承标 + 境界锁灰化)',
   ),
+  battleInterruptCaption(
+    'battle_interrupt_caption',
+    '战斗屏·破招「破！」题字静态验收(破招方暖金 + 敌方绛红 两态)',
+  ),
+  battleDefeat(
+    'battle_defeat',
+    '战斗屏·败北页验收(敗 题字 + 败北 + 破招提示 + 战报,战场背景上结算)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);

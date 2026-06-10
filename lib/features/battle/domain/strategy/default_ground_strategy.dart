@@ -413,6 +413,7 @@ class DefaultGroundStrategy implements BattleStrategy {
       description: brokeCharging
           ? EnumL10n.interrupted(actorAfter.name, targetAfter.name)
           : _formatAction(actorAfter, targetAfter, skill, result),
+      interrupted: brokeCharging,
     );
 
     // 消费 pendingUltimates[actor.characterId]（无论本次是否真用上大招）
