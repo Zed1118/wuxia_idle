@@ -255,38 +255,49 @@ class BattleCharacter {
 
     final techDef =
         GameRepository.instance.getTechnique(mainTechnique.defId);
-    // 主修 3 招(GDD §4.2 主修绑定);C-W14-3-A:角色装备的奇遇 skill 作为
-    // 第 4 招(可选)。getSkill 共享 skillDefs Map(skills.yaml + encounter_skills.yaml
-    // 加载合并),encounter skill 与心法招式 runtime 同型(SkillDef)。
-    final skills = <SkillDef>[
-      ...techDef.skillIds.map((id) => GameRepository.instance.getSkill(id)),
+    // P1b 藏经阁:availableSkills = 6 装配槽非空技能(主修×2 / 辅修 / 共鸣 / 大招 /
+    // 奇遇)。getSkill 共享 skillDefs Map(skills.yaml + encounter_skills.yaml
+    // 加载合并),encounter skill 与心法招式 runtime 同型(SkillDef)。joint 现在走
+    // resonanceSkillId 槽,不再走 hasJointSkillUnlocked 特殊注入。
+    final repo = GameRepository.instance;
+    final loadoutIds = <String?>[
+      character.mainSkillId1,
+      character.mainSkillId2,
+      character.assistSkillId,
+      character.resonanceSkillId,
+      character.ultimateSkillId,
+      character.equippedEncounterSkillId,
     ];
-    final encSkillId = character.equippedEncounterSkillId;
-    if (encSkillId != null) {
-      skills.add(GameRepository.instance.getSkill(encSkillId));
+    var skills = <SkillDef>[
+      for (final id in loadoutIds)
+        if (id != null && repo.skillDefs.containsKey(id)) repo.getSkill(id),
+    ];
+    // 兼容兜底:5 个心法槽全空(从未 autoFill,旧存档/旧测试 fixture)→ fallback
+    // 回「主修心法全招 + 奇遇」,保持旧行为不破。autoFill(Task5 进战斗前调)补满
+    // 槽后,正常玩法自然走装配。
+    final allLoadoutSlotsEmpty = character.mainSkillId1 == null &&
+        character.mainSkillId2 == null &&
+        character.assistSkillId == null &&
+        character.resonanceSkillId == null &&
+        character.ultimateSkillId == null;
+    if (allLoadoutSlotsEmpty) {
+      skills = <SkillDef>[
+        ...techDef.skillIds.map((id) => repo.getSkill(id)),
+        if (character.equippedEncounterSkillId != null &&
+            repo.skillDefs.containsKey(character.equippedEncounterSkillId!))
+          repo.getSkill(character.equippedEncounterSkillId!),
+      ];
     }
-    // P1.1 候选 3-b:玩家方/师徒 NPC 任一武器 resonanceStage 达到 unlocksJointSkill
-    // 阶(numbers.yaml `resonance.stages` 默契/心剑通灵)→ 注入 joint_skill 作为
-    // 第 4/5 招。GDD §6.4 共鸣度满级解锁「人剑合一」。fromCharacter 唯一 caller
-    // 是 _playerToBattle,敌人走 _enemyToBattle 不享。test fixture 缺
-    // skill_joint_skill 时 silent skip(containsKey 守护)。
-    // P1.1 候选 3-c:同段查 weapon stage cfg.hasSwordSongEffect →
-    // swordSongResonanceActive,xinJianTongLing 阶玩家暴击附带剑鸣浮字。
-    var hasJointSkillUnlocked = false;
+    // P1.1 候选 3-c:玩家方/师徒 NPC 任一武器 resonanceStage 达到 hasSwordSongEffect
+    // 阶(numbers.yaml `resonance.stages` 心剑通灵)→ swordSongResonanceActive,
+    // xinJianTongLing 阶玩家暴击附带剑鸣浮字(buff,不是技能)。
     var swordSongActive = false;
     for (final e in equipped) {
       if (e.slot != EquipmentSlot.weapon) continue;
       final stage = e.resonanceStage(numbers);
       final cfg = numbers.resonanceStages
           .firstWhere((c) => c.stage == stage, orElse: () => _shengShuFallback);
-      if (cfg.unlocksJointSkill) hasJointSkillUnlocked = true;
       if (cfg.hasSwordSongEffect) swordSongActive = true;
-    }
-    if (hasJointSkillUnlocked) {
-      final repo = GameRepository.instance;
-      if (repo.skillDefs.containsKey('skill_joint_skill')) {
-        skills.add(repo.getSkill('skill_joint_skill'));
-      }
     }
     // P0.5 简化:破招技「破势」广发玩家方(teamSide==0,fromCharacter 唯一
     // 在 _playerToBattle 走此路径,敌人走 _enemyToBattle 不享)。
@@ -294,7 +305,6 @@ class BattleCharacter {
     // 仅敌人蓄力时自动用来破招,故广发无平衡副作用。
     // P1 再按 build gate(如要求特定流派/共鸣度)。
     if (teamSide == _playerTeamSide) {
-      final repo = GameRepository.instance;
       if (repo.skillDefs.containsKey(_poShiSkillId)) {
         skills.add(repo.getSkill(_poShiSkillId));
       }

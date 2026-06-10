@@ -644,7 +644,9 @@ BattleCharacter _mkBC({
   int internalForce = 3000,
   int agility = 5,
   int constitution = 5,
-  int weaponBattleCount = 0, // P1.1 候选 3-b:控共鸣度 stage 注入 joint_skill
+  // P1b 藏经阁:joint 现在走 resonanceSkillId 槽(不再由 weapon 共鸣度 stage 自动
+  // 注入)。weaponBattleCount>0 表示「该角色装配了 joint」,据此填 resonanceSkillId。
+  int weaponBattleCount = 0,
 }) {
   final c = Character.create(
     name: '${teamSide == 0 ? "左" : "右"}$slotIndex',
@@ -665,7 +667,14 @@ BattleCharacter _mkBC({
     // P0:战斗内力进场满(maxIf)。fixture 以 internalForce 表达「该角色进场
     // 内力预算」,故同步 internalForceMax,使进场满后 currentInternalForce
     // == internalForce(保留各测原意:内力够/不够放招的阈值判断)。
-    ..internalForceMax = internalForce;
+    ..internalForceMax = internalForce
+    // P1b:装配主修 3 招(对应 techDefId skillIds)以保 powerSkill 在战斗池;
+    // weaponBattleCount>0 → 装 joint 到共鸣槽,复现旧「共鸣解锁 joint」语义。
+    ..mainSkillId1 = 'skill_gangmeng_mingjia_basic'
+    ..assistSkillId = 'skill_gangmeng_mingjia_skill'
+    ..ultimateSkillId = 'skill_gangmeng_mingjia_ult'
+    ..resonanceSkillId =
+        weaponBattleCount > 0 ? 'skill_joint_skill' : null;
   final eq = Equipment.create(
     defId: 'test',
     tier: EquipmentTier.xunChang,

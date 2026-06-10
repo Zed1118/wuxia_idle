@@ -593,78 +593,31 @@ void main() {
   });
 
   // ────────────────────────────────────────────────────────────────────────
-  // P1.1 候选 3-b:joint_skill 注入(共鸣度满级解锁「人剑合一」)
+  // P1b 藏经阁:joint_skill 经 resonanceSkillId 装配槽进战斗池(不再由 weapon
+  // 共鸣度 stage 自动注入)。GDD §6.4 人剑合一仍走「人剑合一」招,只是改由玩家
+  // 装配共鸣槽,而非按 battleCount 阶自动解锁。
   // ────────────────────────────────────────────────────────────────────────
 
-  group('P1.1 候选 3-b · joint_skill 注入', () {
+  group('P1b · joint_skill 经共鸣槽装配', () {
     Character mkPlayer() => _mkChar(
           tier: RealmTier.erLiu,
           layer: RealmLayer.yuanShu,
           internalForce: 3000,
           school: TechniqueSchool.gangMeng,
-        );
+        )
+          // 装满主修 3 招(否则会落 fallback「主修全招」分支)。
+          ..mainSkillId1 = 'skill_gangmeng_mingjia_basic'
+          ..assistSkillId = 'skill_gangmeng_mingjia_skill'
+          ..ultimateSkillId = 'skill_gangmeng_mingjia_ult';
     Technique mkTech() => _mkTech(
           defId: 'tech_gangmeng_mingjia',
           tier: TechniqueTier.mingJiaGong,
           school: TechniqueSchool.gangMeng,
         );
-    Equipment mkWeapon({required int battleCount}) {
-      final e = _mkEquip(baseAttack: 580);
-      e.battleCount = battleCount;
-      return e;
-    }
 
-    test('武器 battleCount=0 (shengShu) → availableSkills 不含 joint_skill', () {
+    test('共鸣槽空 → availableSkills 不含 joint_skill', () {
       final bc = BattleCharacter.fromCharacter(
-        character: mkPlayer(),
-        equipped: [mkWeapon(battleCount: 0)],
-        mainTechnique: mkTech(),
-        numbers: GameRepository.instance.numbers,
-        teamSide: 0,
-        slotIndex: 0,
-      );
-      expect(
-        bc.availableSkills.any((s) => s.id == 'skill_joint_skill'),
-        isFalse,
-        reason: 'shengShu 阶 unlocksJointSkill=false',
-      );
-    });
-
-    test('武器 battleCount=500 (moQi) → 含 joint_skill', () {
-      final bc = BattleCharacter.fromCharacter(
-        character: mkPlayer(),
-        equipped: [mkWeapon(battleCount: 500)],
-        mainTechnique: mkTech(),
-        numbers: GameRepository.instance.numbers,
-        teamSide: 0,
-        slotIndex: 0,
-      );
-      final js = bc.availableSkills.where((s) => s.id == 'skill_joint_skill');
-      expect(js.length, 1, reason: 'moQi 阶 unlocksJointSkill=true');
-      expect(js.first.type, SkillType.jointSkill);
-      expect(js.first.powerMultiplier, 4500,
-          reason: 'numbers.yaml reference_multipliers.joint_skill.base = 4500');
-    });
-
-    test('武器 battleCount=2000 (xinJianTongLing) → 含 joint_skill', () {
-      final bc = BattleCharacter.fromCharacter(
-        character: mkPlayer(),
-        equipped: [mkWeapon(battleCount: 2000)],
-        mainTechnique: mkTech(),
-        numbers: GameRepository.instance.numbers,
-        teamSide: 0,
-        slotIndex: 0,
-      );
-      expect(
-        bc.availableSkills.any((s) => s.id == 'skill_joint_skill'),
-        isTrue,
-        reason: 'xinJianTongLing 阶 unlocksJointSkill=true',
-      );
-    });
-
-    test('无武器装备 → 不含 joint_skill', () {
-      final bc = BattleCharacter.fromCharacter(
-        character: mkPlayer(),
+        character: mkPlayer(), // resonanceSkillId 默认 null
         equipped: const [],
         mainTechnique: mkTech(),
         numbers: GameRepository.instance.numbers,
@@ -674,23 +627,24 @@ void main() {
       expect(
         bc.availableSkills.any((s) => s.id == 'skill_joint_skill'),
         isFalse,
+        reason: '共鸣槽未装 joint',
       );
     });
 
-    test('多件武器共鸣解锁也只注入一次(去重)', () {
-      // 注:fromCharacter equipped 列表正常 ≤ 3(weapon/armor/accessory),
-      // 但若 future 多武器槽,验注入去重逻辑。当前 single weapon 已满足。
+    test('共鸣槽装 joint → 含 joint_skill', () {
       final bc = BattleCharacter.fromCharacter(
-        character: mkPlayer(),
-        equipped: [mkWeapon(battleCount: 2000)],
+        character: mkPlayer()..resonanceSkillId = 'skill_joint_skill',
+        equipped: const [],
         mainTechnique: mkTech(),
         numbers: GameRepository.instance.numbers,
         teamSide: 0,
         slotIndex: 0,
       );
-      final jsCount =
-          bc.availableSkills.where((s) => s.id == 'skill_joint_skill').length;
-      expect(jsCount, 1);
+      final js = bc.availableSkills.where((s) => s.id == 'skill_joint_skill');
+      expect(js.length, 1, reason: '共鸣槽装配 joint');
+      expect(js.first.type, SkillType.jointSkill);
+      expect(js.first.powerMultiplier, 4500,
+          reason: 'numbers.yaml reference_multipliers.joint_skill.base = 4500');
     });
   });
 
