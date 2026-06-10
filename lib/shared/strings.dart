@@ -1100,6 +1100,7 @@ class UiStrings {
   static const String cangjingSlotEmpty = '空';
   static String cangjingProficiencyNeed(int n) => '再用 $n 次→下一阶';
   static String cangjingFragmentProgress(int has, int total) => '$has / $total 页';
+  static const String cangjingFragmentEmpty = '暂无残页';
   static const String cangjingTierLocked = '境界不足';
   static const String cangjingPickerTitle = '选择招式';
   static const String cangjingProficiencyMaxStage = '已达化境';
