@@ -11,6 +11,7 @@ import '../../../core/domain/technique.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../baike/presentation/baike_screen.dart';
+import '../../cangjingge/presentation/cangjingge_screen.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
@@ -147,6 +148,7 @@ class MainMenu extends ConsumerWidget {
     final activeHint = _firstUnreadHint(step, hintsRead);
 
     final techLocked = step < _techniquesUnlockStep;
+    final skillLibLocked = step < _techniquesUnlockStep; // §5.7：修了心法才有技能可装
     final lateLocked = !cleared.contains(_lateGameUnlockStage);
     final pvpLocked = !cleared.contains(_pvpUnlockStage);
     final socialLocked = !cleared.contains(_socialUnlockStage);
@@ -182,6 +184,22 @@ class MainMenu extends ConsumerWidget {
         characterId: _defaultCharacterId,
         tutorialLocked: techLocked,
         onPush: (screen) => _push(context, screen),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuSkillLibrary,
+        hint: skillLibLocked
+            ? UiStrings.mainMenuSkillLibraryLockedHint
+            : UiStrings.mainMenuSkillLibraryHint,
+        icon: Icons.menu_book_outlined,
+        thumbnailPath: WuxiaUi.entryTechnique,
+        disabled: skillLibLocked,
+        locked: skillLibLocked,
+        onTap: skillLibLocked
+            ? null
+            : () => _push(
+                context,
+                const CangJingGeScreen(characterId: _defaultCharacterId),
+              ),
       ),
       _SeclusionMenuButton(
         defaultCharacterId: _defaultCharacterId,
