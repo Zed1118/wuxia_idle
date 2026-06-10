@@ -1083,4 +1083,22 @@ class UiStrings {
       '$attrName +$delta';
   static String encounterOutcomeCapReached(int cap) => '已达生涯造化极限(总加 $cap)';
   static const String encounterOutcomeNone = '心中默念,继续前行';
+
+  // ─── 藏经阁（P1b 技能装配）──────────────────
+  static const String mainMenuSkillLibrary = '藏经阁';
+  static const String mainMenuSkillLibraryHint = '查看武学 / 装配出战招式 / 熟练度 / 残页';
+  static const String mainMenuSkillLibraryLockedHint = '修习武学后开启';
+  static const String cangjingLoadoutTitle = '出战配置';
+  static const String cangjingLoadoutHint = '自动配好 · 点槽位可换';
+  static const String cangjingLibraryTitle = '武学';
+  static const String cangjingFragmentTitle = '残页';
+  static String cangjingSlotMain(int n) => '主修$n';
+  static const String cangjingSlotAssist = '辅修';
+  static const String cangjingSlotResonance = '共鸣';
+  static const String cangjingSlotUltimate = '大招';
+  static const String cangjingSlotEncounter = '奇遇';
+  static const String cangjingSlotEmpty = '空';
+  static String cangjingProficiencyNeed(int n) => '再用 $n 次→下一阶';
+  static String cangjingFragmentProgress(int has, int total) => '$has / $total 页';
+  static const String cangjingTierLocked = '境界不足';
 }
