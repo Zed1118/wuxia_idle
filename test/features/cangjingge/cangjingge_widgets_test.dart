@@ -14,16 +14,16 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/meridian_bar.dart';
 /// [FragmentProgressRow] 方块进度与 UiStrings 文案。
 void main() {
   // 最小 5 阶配置（对应 numbers.yaml skill_proficiency.stages）
-  final _cfg = SkillProficiencyConfig(stages: [
-    const SkillProficiencyStageConfig(id: 'chuShi', minUses: 0, damageMult: 1.00),
-    const SkillProficiencyStageConfig(id: 'shunShou', minUses: 30, damageMult: 1.05),
-    const SkillProficiencyStageConfig(id: 'shuLian', minUses: 100, damageMult: 1.12),
-    const SkillProficiencyStageConfig(id: 'jingTong', minUses: 300, damageMult: 1.20),
-    const SkillProficiencyStageConfig(id: 'huaJing', minUses: 800, damageMult: 1.30),
+  final cfg = const SkillProficiencyConfig(stages: [
+    SkillProficiencyStageConfig(id: 'chuShi', minUses: 0, damageMult: 1.00),
+    SkillProficiencyStageConfig(id: 'shunShou', minUses: 30, damageMult: 1.05),
+    SkillProficiencyStageConfig(id: 'shuLian', minUses: 100, damageMult: 1.12),
+    SkillProficiencyStageConfig(id: 'jingTong', minUses: 300, damageMult: 1.20),
+    SkillProficiencyStageConfig(id: 'huaJing', minUses: 800, damageMult: 1.30),
   ]);
 
   // 最简 SkillDef（name 字段是关键，其余用默认值）
-  final _skill = const SkillDef(
+  final skill = const SkillDef(
     id: 'skill_test_liezhizhang',
     name: '裂掌',
     description: '一掌裂石',
@@ -35,7 +35,7 @@ void main() {
     visualEffect: 'none',
   );
 
-  Widget _wrap(Widget child) => MaterialApp(
+  Widget wrap(Widget child) => MaterialApp(
         home: Scaffold(
           body: SizedBox(width: 400, child: child),
         ),
@@ -48,11 +48,11 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       // 50 uses → shunShou 阶（30 ~ 99），下一阶 shuLian minUses=100
-      await tester.pumpWidget(_wrap(
+      await tester.pumpWidget(wrap(
         SkillProficiencyRow(
-          skill: _skill,
+          skill: skill,
           uses: 50,
-          cfg: _cfg,
+          cfg: cfg,
           equipped: true,
         ),
       ));
@@ -77,11 +77,11 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(_wrap(
+      await tester.pumpWidget(wrap(
         SkillProficiencyRow(
-          skill: _skill,
+          skill: skill,
           uses: 900,
-          cfg: _cfg,
+          cfg: cfg,
           equipped: false,
         ),
       ));
@@ -99,11 +99,11 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(_wrap(
+      await tester.pumpWidget(wrap(
         SkillProficiencyRow(
-          skill: _skill,
+          skill: skill,
           uses: 0,
-          cfg: _cfg,
+          cfg: cfg,
           equipped: false,
         ),
       ));
@@ -119,7 +119,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(_wrap(
+      await tester.pumpWidget(wrap(
         const FragmentProgressRow(name: '裂石掌谱', has: 3, total: 5),
       ));
 
@@ -141,7 +141,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(_wrap(
+      await tester.pumpWidget(wrap(
         const FragmentProgressRow(name: '玄铁剑谱', has: 0, total: 5),
       ));
 
@@ -159,7 +159,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(_wrap(
+      await tester.pumpWidget(wrap(
         const FragmentProgressRow(name: '圣火令', has: 5, total: 5),
       ));
 
