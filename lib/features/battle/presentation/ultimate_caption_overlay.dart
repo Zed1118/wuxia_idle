@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
+
+const String _kInkBlobAsset = 'assets/ui/mj/caption_ink_blob.png';
 
 /// 出版美术 B2:出招是否该弹大招题字(ultimate 或人剑合一)。纯函数便于单测。
 bool isUltimateCaptionSkill(SkillDef? skill) =>
@@ -25,29 +28,49 @@ class UltimateCaptionContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = isEnemy ? WuxiaColors.gangMeng : WuxiaColors.resultHighlight;
     return Align(
-      alignment: const Alignment(0, -0.45), // 中部偏上
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
-        decoration: BoxDecoration(
-          color: const Color(0x99000000), // 淡墨团衬底
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: accent, width: 1.5),
-        ),
-        child: Text(
-          name,
-          style: TextStyle(
-            color: accent,
-            fontSize: 56,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 6,
-            shadows: const [
-              Shadow(blurRadius: 14, color: Color(0xCC000000), offset: Offset(2, 3)),
-            ],
-          ),
+      alignment: const Alignment(0, -0.45),
+      child: SizedBox(
+        width: 340,
+        height: 190,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              child: ColorFiltered(
+                colorFilter: ColorFilter.mode(accent, BlendMode.srcIn),
+                child: Image.asset(
+                  _kInkBlobAsset,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: const Color(0x99000000),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: accent, width: 1.5),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Text(name, style: _captionStyle(stroke: true)),
+            Text(name, style: _captionStyle(stroke: false)),
+          ],
         ),
       ),
     );
   }
+
+  TextStyle _captionStyle({required bool stroke}) => TextStyle(
+        fontSize: 56,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 6,
+        color: stroke ? null : WuxiaUi.paper,
+        foreground: stroke
+            ? (Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 5
+              ..color = const Color(0xCC0A0A0A))
+            : null,
+      );
 }
 
 /// 非阻塞大招题字 overlay:Stack 顶层,[show] 触发淡入→停留→淡出,自管生命周期。
