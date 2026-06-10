@@ -52,4 +52,4 @@
 - [ ] **解锁态消费(注入战斗可用池)**:`SkillUnlockService.isUnlocked` 目前只存进度,无人消费把已解锁招注入 `BattleCharacter.availableSkills`。spec §六 明确这是 P1b/装配 UI 的活(P1a 只做 source plumbing),非缺口。P1b 接。
 - [ ] **interrupt_power_pct 实装**:per-skill 「破招力」字段已解析(schema)但未消费。当前 P0 破招是二元(清蓄力+固定 stagger),无对应标量目标;是否缩放破招伤害 vs 加深减防是设计决策,需先定再落。
 - [ ] **166 招 source tag**:plan D1 提的技能级来源标(沿 techniques.yaml acquireSourceTags 体例)本批降级——P1a 无消费方(装配 gate 走境界非 source),不阻塞验收路径。二期统一来源模型时补。
-- [ ] **高熟练度全量平衡扫描**:balance_simulator 用 fresh char(skillUsageCount 空 → profMult 1.0),证 fresh 玩家零回归,但未扫高熟练度(满阶 +30%)下的全关 winRate。二期给 simulator 加 proficiency seed 维度,验高熟练度甜区不破。
+- [~] **高熟练度全量平衡扫描**(2026-06-10 焦点版已做 · `ce2ebdba`):balance_simulator 已加 `proficiencyUses` 维度,焦点扫了 3 真解 Boss 关 floor+ceiling(floor +8~57pt / ceiling 不破 100%,未破甜区)。**剩**:全 30 关高熟练度 sweep(扩到 _summarize 全表)留二期。
