@@ -23,12 +23,12 @@ import 'package:wuxia_idle/features/tutorial/presentation/tutorial_banner_card.d
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 
-/// T32 子提交 3b：[MainMenu] widget 测试（T42 加「问鼎九霄」T49 加「闭关修炼」+ W17 候选 E 加「师徒名单」+ P0.2 #40 加「排行榜」后扩 10 个）。
+/// T32 子提交 3b：[MainMenu] widget 测试（T42 加「问鼎九霄」T49 加「闭关修炼」+ W17 候选 E 加「师徒名单」+ P0.2 #40 加「排行榜」+ P1b Task10 加「藏经阁」后扩 10 个）。
 ///
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
-///   - 10 个菜单按钮 label + 顺序匹配（主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法）
-///   - 共 10 个 InkWell（按钮全部可点）
+///   - 菜单按钮 label 匹配（主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法 / 藏经阁）
+///   - 共 20 个 InkWell（按钮全部可点）
 ///   - Tap "Phase 1 战斗测试" → push BattleTestMenu
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
@@ -60,7 +60,7 @@ void main() {
     expect(assetImage(WuxiaUi.mainMenuBg), findsOneWidget);
   });
 
-  testWidgets('19 个菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('20 个菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -82,6 +82,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuInventory), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTechniques), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSettings), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuSkillLibrary), findsOneWidget);
 
     // 顺序(Phase A 双列分组):修行/演武/江湖 三组,每组组内 2 列。
     // 行序:组首项 < 组次行项;同行两项 y 近似相等。
@@ -119,9 +120,9 @@ void main() {
     expect(y(UiStrings.mainMenuJianghu) < y(UiStrings.mainMenuBaike), isTrue);
   });
 
-  testWidgets('19 个菜单按钮均为 InkWell（可点）', (tester) async {
+  testWidgets('20 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(InkWell), findsNWidgets(19));
+    expect(find.byType(InkWell), findsNWidgets(20));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
@@ -134,7 +135,8 @@ void main() {
     expect(find.byIcon(Icons.landscape_outlined), findsOneWidget);
     expect(find.byIcon(Icons.filter_hdr_outlined), findsOneWidget);
     expect(find.byIcon(Icons.account_tree_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.menu_book_outlined), findsOneWidget);
+    // 百科 + 藏经阁共 2 个 menu_book_outlined 图标
+    expect(find.byIcon(Icons.menu_book_outlined), findsNWidgets(2));
   });
 
   testWidgets('入口状态 chip：主线 / 爬塔 / 装备 / 心法 / 闭关', (tester) async {
@@ -778,6 +780,79 @@ void main() {
       expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 1.0);
       expect(opacityOf(tester, UiStrings.mainMenuLightFoot), 1.0);
       expect(opacityOf(tester, UiStrings.mainMenuMassBattle), 1.0);
+    });
+  });
+
+  // ── P1b Task10 §5.7 藏经阁门控 ──────────────────────────────────────────
+  //
+  // §5.7：修了心法才能装备技能 → 复用 _techniquesUnlockStep(=3) 门控：
+  //   step < 3 → skillLibLocked=true → disabled/locked → Opacity=0.4 + LockedHint
+  //   step ≥ 3 → skillLibLocked=false → enabled → Opacity=1.0 + 普通 Hint
+
+  group('§5.7 藏经阁入口门控', () {
+    Widget appWithStep(int step) => ProviderScope(
+      overrides: [
+        currentTutorialStepProvider.overrideWith((ref) async => step),
+      ],
+      child: const MaterialApp(home: MainMenu()),
+    );
+
+    double opacityOf(WidgetTester tester, String label) => tester
+        .widget<Opacity>(
+          find
+              .ancestor(of: find.text(label), matching: find.byType(Opacity))
+              .first,
+        )
+        .opacity;
+
+    testWidgets('step=0 → 藏经阁 disabled(Opacity=0.4) + LockedHint', (
+      tester,
+    ) async {
+      await tester.pumpWidget(appWithStep(0));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuSkillLibrary), findsOneWidget);
+      expect(
+        opacityOf(tester, UiStrings.mainMenuSkillLibrary),
+        0.4,
+      );
+      expect(
+        find.text(UiStrings.mainMenuSkillLibraryLockedHint),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.mainMenuSkillLibraryHint), findsNothing);
+    });
+
+    testWidgets('step=2 → 藏经阁仍灰显(未到门槛)', (tester) async {
+      await tester.pumpWidget(appWithStep(2));
+      await tester.pump();
+      await tester.pump();
+
+      expect(opacityOf(tester, UiStrings.mainMenuSkillLibrary), 0.4);
+      expect(
+        find.text(UiStrings.mainMenuSkillLibraryLockedHint),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('step=3 → 藏经阁解锁(Opacity=1.0) + 普通 Hint', (tester) async {
+      await tester.pumpWidget(appWithStep(3));
+      await tester.pump();
+      await tester.pump();
+
+      expect(opacityOf(tester, UiStrings.mainMenuSkillLibrary), 1.0);
+      expect(find.text(UiStrings.mainMenuSkillLibraryHint), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuSkillLibraryLockedHint), findsNothing);
+    });
+
+    testWidgets('step=5 → 藏经阁仍解锁(向上兼容)', (tester) async {
+      await tester.pumpWidget(appWithStep(5));
+      await tester.pump();
+      await tester.pump();
+
+      expect(opacityOf(tester, UiStrings.mainMenuSkillLibrary), 1.0);
+      expect(find.text(UiStrings.mainMenuSkillLibraryHint), findsOneWidget);
     });
   });
 }
