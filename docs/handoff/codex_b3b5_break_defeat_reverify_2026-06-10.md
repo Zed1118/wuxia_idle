@@ -34,3 +34,20 @@ tools/visual_capture/visual_capture.sh battle_interrupt_caption battle_defeat
 - 「破！」题字复用 `UltimateCaptionContent`（与大招题字同体例），故色彩/描边规格应与
   `battle_ultimate_caption` 一致，可横向对照。
 - 败北页即生产战斗败北时弹的 `VictoryOverlay` 战败态，所见即所得。
+
+## 结果
+
+FAIL。
+
+- B3 `battle_interrupt_caption`：1280x720 与 1920x1080 均未通过。上下两态同屏、上方暖金「破！」与下方绛红「破！」存在且清晰，但衬底表现为规则圆角矩形边框容器，不是判据要求的墨团衬底；文字未见明确描边效果。
+- B5 `battle_defeat`：无法完成视觉验收。仓库内未找到 `battle_defeat_1280x720.png` 与 `battle_defeat_1920x1080.png`，因此无法判断败北页题字、破招提示、战报、继续按钮及 720p/1080p 溢出情况。
+
+已查看截图：
+
+- `docs/handoff/visual_capture_38964c01_20260610_111903/battle_interrupt_caption_1280x720.png`
+- `docs/handoff/visual_capture_38964c01_20260610_111903/battle_interrupt_caption_1920x1080.png`
+
+缺失截图：
+
+- `docs/handoff/visual_capture_38964c01_20260610_111903/battle_defeat_1280x720.png`
+- `docs/handoff/visual_capture_38964c01_20260610_111903/battle_defeat_1920x1080.png`
