@@ -43,9 +43,7 @@
 
 ## 已知偏差 / 挂账事项
 
-- ~~37 / 38 / 40 / 41 / 42 / 43 / 44 / 45 全销账~~(2026-05-17/18/19/20):详各 closeout
-- ~~stage_05_05 on-level ceiling 20%~~ 跨阶墙 **2026-05-31 sim 复核销账**(non-bug · data-confirmed · `test/tools/output/balance_summary_2026-05-31.md`)
-- ~~`equipment_detail_screen.dart:489 '(基 $base)'` 硬编码 nit~~ 已抽 `UiStrings.equipmentStatBaseValue`(2026-06-08 §5.6 · `3b256a9`)
+- ~~#37-#45 / stage_05_05 跨阶墙 / equipment_detail '(基 $base)' nit~~ 全销账(2026-05-17..06-08):详各 closeout + 末尾归档
 
 > 已销账条目(#1-#45)详见末尾归档。**P1 阶段全销账 ✅** + **Demo §8.4 14/14 全达标 ✅** + **1.0 ~95% release ready ✅**(A+B+C 全 PASS · 剩 D-G 留 M15-16)。
 
