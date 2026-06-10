@@ -5,6 +5,8 @@
 
 ## 当前阶段
 
+> ✅ **2026-06-10 续(音频接入 v1 · §12 上线门 E 段素材落位)**:3 BGM + 8 SFX 真素材入库 `assets/audio/{bgm,sfx}/`(**零 Dart 改动**,文件名按 enum 约定,SoundManager 缺素材 no-op 兜底保留)。**BGM**:mainMenu/seclusion=V2 裁切版 candidate_01(128s/148s · 初筛推荐),battle=V1 candidate_01(122s · V2 battle 全 <18s 不合格 · 裁头 0.6s 静音防 loop 空白)。**SFX**:uiTap/uiTabSwitch=V2 tap 两 take 分用(tap +6dB)· battleHit=hit_01 / battleStagger=hit_02(-3dB 次级提示)· battleCrit=crit_02 · battleInterrupt=interrupt_01(+7dB)· **转用**:battleUlt=realmAdvance_v2_01 裁 2.4s+淡出 / battleChargeStart=defeat_v2_02(负向预警)。**留空**:uiPaperOpen(V2 prompt 未产出,no-op)。听感验收待真玩(CLI 不可听);jingle 扩槽(victory/defeat/rareDrop/realmAdvance)+扩展 BGM 8 轨=backlog(`playability_phase2_backlog.md` §七 新增)。
+
 > ✅ **2026-06-10 续(可玩性 P1b 藏经阁+技能装配全闭环 · subagent-driven 11 task · worktree-p1b-cangjingge)**:把 P1a「已解锁但玩家看不见/用不上」接到可见可操作。**schema** Character +5 装配槽(主2辅1共1大1 · 奇遇复用第6槽 `equippedEncounterSkillId`)+ saveVersion 0.16→0.17。**纯域** `SkillLoadout.autoFill`(只填空槽 / 主修2按 power 降序 / 大招≥阈值[yaml] / 共鸣=joint / 境界 gate 用 canEquipAtRealm)。**service** `SkillLoadoutService`(equipSkill sealed gate 结果 + applyAutoFill 落库)。**注入** `BattleState.fromCharacter` availableSkills 改读 6 槽(**5 心法槽全空→fallback 主修全招**,护旧存档/现有测试)+ 删 joint 特殊注入(改走共鸣槽)。**wire** 进战斗前 + 进藏经阁 autoFill(抽 `SkillLoadoutResolver` 共享,非复制)。**UI** `CangJingGeScreen`(6 槽出战配置 + 武学库按主/辅修分组 `SkillProficiencyRow` + 残页 `FragmentProgressRow` + 进入 autoFill)+ 换招 picker(沿 encounter 体例 gate 灰显)+ 熟练度阶段名走 UiStrings 映射 + 主菜单入口 §5.7 门控。**闸门** analyze 0 / 全量 1857→**1883 测**(+26)/1 skip / TDD 先红后绿 / 两阶段 review(控制方读 diff + 全仓 analyze)。**留 backlog**:破招 build gate(§9.1) / 24 招内容 / source tag / 奇遇槽 gate 对齐。spec+plan `docs/superpowers/{specs,plans}/2026-06-10-cangjingge-skill-loadout*`。
 
 > ✅ **2026-06-10 续(B3 题字水墨墨团升级 · 接 Codex B3 复验 FAIL)**:Codex B3 FAIL(题字衬底=规则圆角矩形框非墨团)查为判据/实现错配 —— B3 与已 PASS 大招题字共用 `UltimateCaptionContent`,FAIL 暴露真问题(水墨感不足),用户拍板**升级**。MJ 泼墨圆团 _1_3 抠图(**纯 numpy 连通域**从墨团重心 flood 去纸纹矩形雾 + 亮度→alpha 浓淡 + 羽化 → `assets/ui/mj/caption_ink_blob.png`)→ `UltimateCaptionContent` 改 Stack:`ColorFilter.srcIn` 染 accent 色晕墨团(暖金破招/绛红敌 · 浓淡靠 alpha)+ `errorBuilder` 兜底回旧矩形 + 浅宣纸字 `WuxiaUi.paper` 深墨描边两层 Text。**大招+破招题字一并升级**(共用 widget,overlay 动画不动)。闸门 analyze 0 / caption 测族 4→**5**(+errorBuilder 缺图守 · find.text→findsNWidgets(2))/ `visual_capture battle_interrupt_caption` 两档 Flutter 终验 PASS(墨团飞白有机、无矩形雾、浅字描边醒目)。spec `docs/superpowers/specs/2026-06-10-ultimate-caption-ink-upgrade-design.md`。**B5 battle_defeat 验收图补齐 PASS**(2026-06-10 续 · bg `visual_capture` 这次稳出两档 1280×720+1920×1080 · 我读图:敗题字水墨绛红晕染 + 败北面板宣纸笺/破招提示/战报「18640·暴击7·42回合」/继续 CTA · 低分辨率不溢出 · 验收环闭合)。
@@ -33,11 +35,7 @@
 
 ---
 
-**2026-05-27 Boss 招降叙事+debug 招募+R2 派单**(7 commit · 1505 测):详 `session_closeout_2026-05-27_boss_narrative_debug_recruit.md`。
-
----
-
-**2026-05-25/26/28 归档**:见末尾归档段。
+**2026-05-25/26/27/28 归档**:见末尾归档段。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
