@@ -1101,4 +1101,21 @@ class UiStrings {
   static String cangjingProficiencyNeed(int n) => '再用 $n 次→下一阶';
   static String cangjingFragmentProgress(int has, int total) => '$has / $total 页';
   static const String cangjingTierLocked = '境界不足';
+  static const String cangjingProficiencyMaxStage = '已达化境';
+  static const String cangjingEquippedTag = '装';
+
+  /// 招式熟练度阶段中文名（id → 显示名）。
+  ///
+  /// id 来自 `numbers.yaml` `combat.skill_proficiency.stages[].id`：
+  /// `chuShi` / `shunShou` / `shuLian` / `jingTong` / `huaJing`。
+  static String cangjingProficiencyStageName(String stageId) {
+    return switch (stageId) {
+      'chuShi' => '初识',
+      'shunShou' => '顺手',
+      'shuLian' => '熟练',
+      'jingTong' => '精通',
+      'huaJing' => '化境',
+      _ => stageId,
+    };
+  }
 }
