@@ -439,7 +439,7 @@ void main() {
     ]);
     await tester.pump(); // ref.listen → show()
     await tester.pump(); // build
-    expect(find.text('山岳崩'), findsOneWidget);
+    expect(find.text('山岳崩'), findsNWidgets(2)); // 题字描边+填充两层
 
     await tester.pumpAndSettle(const Duration(seconds: 3)); // 收尾动画
   });
