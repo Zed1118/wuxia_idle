@@ -192,6 +192,10 @@ class NumbersConfig {
   /// #4③ B5:从 [EncounterService] 硬编码 20.0 外置。
   final double encounterFortuneSensitivity;
 
+  /// 技能装配大招槽阈值(numbers.yaml `skill_loadout.ultimate_power_threshold`,GDD §6)。
+  /// 主修心法招 powerMultiplier ≥ 此值时自动填入大招槽，由 [SkillLoadout.autoFill] 消费。
+  final int loadoutUltimatePowerThreshold;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -235,6 +239,7 @@ class NumbersConfig {
     required this.sectManagement,
     required this.adventureAttributeLifetimeCap,
     required this.encounterFortuneSensitivity,
+    required this.loadoutUltimatePowerThreshold,
     required this.raw,
   });
 
@@ -359,6 +364,10 @@ class NumbersConfig {
                   as Map<String, dynamic>?)?['fortune_sensitivity'] as num?)
               ?.toDouble() ??
           20.0,
+      loadoutUltimatePowerThreshold: ((y['skill_loadout']
+                  as Map<String, dynamic>?)?['ultimate_power_threshold'] as num?)
+              ?.toInt() ??
+          5000,
       raw: y,
     );
   }
