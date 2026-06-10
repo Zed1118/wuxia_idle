@@ -56,7 +56,7 @@
 
 ## 七 · 音频二期(v1 接入后的滚动项 · 2026-06-10 起)
 
-- [ ] **jingle 扩槽**:victory/defeat/rareDrop/realmAdvance 需扩 `SfxId` + 胜负 overlay/掉落 dialog/突破处 hook(素材候选已在桌面 V2 包 `06_技术处理_可播放裁切版/`,defeat_v2_02 已被 battleChargeStart 转用,defeat 槽用 v2_01)。
+- [~] **jingle 扩槽**:~~victory/rareDrop~~(2026-06-10 迭代1 已接:`SfxId.victory` 接「勝」overlay / `reward` 接主线+塔胜利 dialog 装备掉落,V1 3s 剪辑版)。**剩** defeat/realmAdvance 需扩 `SfxId` + 败北页/境界突破处 hook(defeat_v2_02 已被 battleChargeStart 转用,defeat 槽用 v2_01 或 V1 剪辑版)。
 - [ ] **uiPaperOpen 素材**:V2 方案有 prompt 但 Suno 未产出,当前留空 no-op。重生成后直接落 `assets/audio/sfx/uiPaperOpen.mp3` 即接通,零代码。
 - [ ] **转用素材听感复核**:battleUlt(realmAdvance_v2_01 裁 2.4s)/ battleChargeStart(defeat_v2_02 负向预警)是转用,真玩听感不合再重打专属 prompt。
 - [ ] **扩展 BGM 8 轨**:mainline/tower/boss/innerDemon/lightFoot/massBattle/lineage/baike,V1 候选已躺 `assets/audio/_suno_candidates/`,需扩 `BgmTrack` + 各 screen hook。

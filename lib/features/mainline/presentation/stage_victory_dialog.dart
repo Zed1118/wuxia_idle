@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../shared/audio/audio_assets.dart';
+import '../../../shared/audio/sound_manager.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
@@ -26,6 +28,10 @@ Future<void> showStageVictoryDialog({
   String? firstClearTitle,
   String? firstClearSubtitle,
 }) async {
+  // 爆装备 jingle(§10 仪式感):仅装备掉落触发,道具/空掉落不响。
+  if (drops.equipments.isNotEmpty) {
+    SoundManager.instance.playSfx(SfxId.reward);
+  }
   await showDialog<void>(
     context: context,
     barrierDismissible: false,

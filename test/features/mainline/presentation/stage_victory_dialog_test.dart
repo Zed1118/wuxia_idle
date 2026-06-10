@@ -10,6 +10,9 @@ import 'package:wuxia_idle/features/cultivation/presentation/advancement_summary
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_factory.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_victory_dialog.dart';
+import 'package:wuxia_idle/shared/audio/audio_assets.dart';
+import 'package:wuxia_idle/shared/audio/audio_backend.dart';
+import 'package:wuxia_idle/shared/audio/sound_manager.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
@@ -47,6 +50,22 @@ DropResult _equipDrops(List<String> defIds) => DropResult(
   ],
   items: const [],
 );
+
+/// 录音 fake 后端(沿 sound_manager_test FakeAudioBackend 体例,只记 sfx)。
+class _RecordingBackend implements AudioBackend {
+  final List<String> sfxPlays = [];
+  @override
+  Future<void> playBgm(String assetPath, double volume) async {}
+  @override
+  Future<void> stopBgm() async {}
+  @override
+  void setBgmVolume(double volume) {}
+  @override
+  Future<void> playSfx(String assetPath, double volume) async =>
+      sfxPlays.add(assetPath);
+  @override
+  Future<void> dispose() async {}
+}
 
 Finder _assetImage(String path) => find.byWidgetPredicate(
   (w) =>
@@ -287,6 +306,56 @@ void main() {
       await tester.tap(find.text(UiStrings.stageVictoryConfirm));
       await tester.pumpAndSettle();
       expect(find.text(UiStrings.stageVictoryConfirm), findsNothing);
+    });
+  });
+
+  group('showStageVictoryDialog 掉落 jingle', () {
+    late _RecordingBackend rec;
+
+    setUp(() {
+      rec = _RecordingBackend();
+      SoundManager.instance = SoundManager(rec);
+    });
+
+    tearDown(() {
+      SoundManager.instance = SoundManager(const SilentAudioBackend());
+    });
+
+    Future<void> open(WidgetTester tester, DropResult drops) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => ElevatedButton(
+                onPressed: () => showStageVictoryDialog(
+                  context: ctx,
+                  stage: _stage(),
+                  drops: drops,
+                  advancements: const [],
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('含装备掉落 → 播 reward jingle', (tester) async {
+      await open(tester, _equipDrops(['weapon_xunchang_tie_jian']));
+      expect(rec.sfxPlays, contains(sfxAssetPath(SfxId.reward)));
+    });
+
+    testWidgets('纯道具掉落 → 不播 reward', (tester) async {
+      await open(tester, _itemDrops());
+      expect(rec.sfxPlays, isNot(contains(sfxAssetPath(SfxId.reward))));
+    });
+
+    testWidgets('空掉落 → 不播 reward', (tester) async {
+      await open(tester, _emptyDrops());
+      expect(rec.sfxPlays, isNot(contains(sfxAssetPath(SfxId.reward))));
     });
   });
 }
