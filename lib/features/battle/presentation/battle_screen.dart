@@ -533,6 +533,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     if (_resultDialogShown || !mounted) return;
     _resultDialogShown = true;
 
+    if (result == BattleResult.leftWin) {
+      SoundManager.instance.playSfx(SfxId.victory);
+    }
+
     final totalDamage = s.actionLog
         .map((a) => a.attackResult?.finalDamage ?? 0)
         .fold<int>(0, (sum, d) => sum + d);

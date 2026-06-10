@@ -3,7 +3,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 /// BGM 轨道槽位。文件名用 enum.name（camelCase），manifest 同步登记。
 enum BgmTrack { mainMenu, battle, seclusion }
 
-/// SFX 槽位。battleDeath / reward 暂留位不接线（YAGNI）。
+/// SFX 槽位。battleDeath 暂留位不接线（YAGNI）。
 enum SfxId {
   uiTap,
   uiTabSwitch,
@@ -12,10 +12,11 @@ enum SfxId {
   battleCrit,
   battleUlt,
   battleDeath,
-  reward,
+  reward, // 装备掉落 jingle(主线胜利 dialog 含装备掉落时)
   battleChargeStart, // Boss 起手蓄力(预警)
   battleInterrupt, // 破招成功("破!")
   battleStagger, // 踉跄/破绽(每次踉跄跳过)
+  victory, // 战斗胜利 jingle(「勝」结算 overlay 出现时)
 }
 
 String bgmAssetPath(BgmTrack track) => 'audio/bgm/${track.name}.mp3';

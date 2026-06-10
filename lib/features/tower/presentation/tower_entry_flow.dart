@@ -20,6 +20,8 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../data/isar_provider.dart';
+import '../../../shared/audio/audio_assets.dart';
+import '../../../shared/audio/sound_manager.dart';
 import '../../battle/application/battle_resolution.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../../features/equipment/application/drop_service.dart';
@@ -541,6 +543,10 @@ Future<void> _showVictoryDialog({
   required List<AdvancementEntry> advancements,
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
 }) async {
+  // 爆装备 jingle(沿主线 victory dialog 体例):首通含装备掉落才响。
+  if (isFirstClear && drops.equipments.isNotEmpty) {
+    SoundManager.instance.playSfx(SfxId.reward);
+  }
   await showDialog<void>(
     context: context,
     barrierDismissible: false,
