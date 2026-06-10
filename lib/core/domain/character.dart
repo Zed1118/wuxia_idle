@@ -49,6 +49,15 @@ class Character {
 
   List<String> learnedSkillIds = [];
 
+  /// 技能装配槽（P1b 藏经阁 · 沿 equippedEncounterSkillId 体例，每角色独立）。
+  /// 主修×2 / 辅修×1 / 共鸣×1 / 大招×1；奇遇槽复用 equippedEncounterSkillId。
+  /// null=空槽（autoFill 会补）。装配 gate 见 SkillLoadoutService。
+  String? mainSkillId1;
+  String? mainSkillId2;
+  String? assistSkillId;
+  String? resonanceSkillId;
+  String? ultimateSkillId;
+
   /// 装备的奇遇专属招式 id(C-W14-3-A,单 slot)。
   ///
   /// **每角色独立**(平行 equippedWeaponId 等),奇遇 unlock 池是账号级
@@ -122,6 +131,11 @@ class Character {
     int? equippedAccessoryId,
     List<String>? learnedSkillIds,
     String? equippedEncounterSkillId,
+    String? mainSkillId1,
+    String? mainSkillId2,
+    String? assistSkillId,
+    String? resonanceSkillId,
+    String? ultimateSkillId,
     bool isActive = false,
     bool isInRetreat = false,
     int? currentRetreatSessionId,
@@ -157,6 +171,11 @@ class Character {
       ..equippedAccessoryId = equippedAccessoryId
       ..learnedSkillIds = learnedSkillIds ?? []
       ..equippedEncounterSkillId = equippedEncounterSkillId
+      ..mainSkillId1 = mainSkillId1
+      ..mainSkillId2 = mainSkillId2
+      ..assistSkillId = assistSkillId
+      ..resonanceSkillId = resonanceSkillId
+      ..ultimateSkillId = ultimateSkillId
       ..isActive = isActive
       ..isInRetreat = isInRetreat
       ..currentRetreatSessionId = currentRetreatSessionId
