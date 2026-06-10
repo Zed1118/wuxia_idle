@@ -53,3 +53,10 @@
 - [ ] **interrupt_power_pct 实装**:per-skill 「破招力」字段已解析(schema)但未消费。当前 P0 破招是二元(清蓄力+固定 stagger),无对应标量目标;是否缩放破招伤害 vs 加深减防是设计决策,需先定再落。
 - [ ] **166 招 source tag**:plan D1 提的技能级来源标(沿 techniques.yaml acquireSourceTags 体例)本批降级——P1a 无消费方(装配 gate 走境界非 source),不阻塞验收路径。二期统一来源模型时补。
 - [~] **高熟练度全量平衡扫描**(2026-06-10 焦点版已做 · `ce2ebdba`):balance_simulator 已加 `proficiencyUses` 维度,焦点扫了 3 真解 Boss 关 floor+ceiling(floor +8~57pt / ceiling 不破 100%,未破甜区)。**剩**:全 30 关高熟练度 sweep(扩到 _summarize 全表)留二期。
+
+## 七 · 音频二期(v1 接入后的滚动项 · 2026-06-10 起)
+
+- [ ] **jingle 扩槽**:victory/defeat/rareDrop/realmAdvance 需扩 `SfxId` + 胜负 overlay/掉落 dialog/突破处 hook(素材候选已在桌面 V2 包 `06_技术处理_可播放裁切版/`,defeat_v2_02 已被 battleChargeStart 转用,defeat 槽用 v2_01)。
+- [ ] **uiPaperOpen 素材**:V2 方案有 prompt 但 Suno 未产出,当前留空 no-op。重生成后直接落 `assets/audio/sfx/uiPaperOpen.mp3` 即接通,零代码。
+- [ ] **转用素材听感复核**:battleUlt(realmAdvance_v2_01 裁 2.4s)/ battleChargeStart(defeat_v2_02 负向预警)是转用,真玩听感不合再重打专属 prompt。
+- [ ] **扩展 BGM 8 轨**:mainline/tower/boss/innerDemon/lightFoot/massBattle/lineage/baike,V1 候选已躺 `assets/audio/_suno_candidates/`,需扩 `BgmTrack` + 各 screen hook。
