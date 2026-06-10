@@ -58,6 +58,14 @@ void main() {
       );
     });
 
+    test('B3/B5 新路由 parse(破招题字 + 败北页)', () {
+      expect(
+        parseVisualRoute('battle_interrupt_caption'),
+        VisualRoute.battleInterruptCaption,
+      );
+      expect(parseVisualRoute('battle_defeat'), VisualRoute.battleDefeat);
+    });
+
     test('剧情背景路由 parse', () {
       expect(parseVisualRoute('narrative_scene'), VisualRoute.narrativeScene);
     });

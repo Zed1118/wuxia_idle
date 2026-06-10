@@ -283,6 +283,15 @@ void main() {
         reason: '破招后 Boss 进入踉跄 == defaultStaggerTicks');
     expect(boss.skillCooldowns.containsKey('skill_p0_boss_signature'), isTrue,
         reason: '招牌技被打断 → 进 CD');
+    // B3:破招动作须标记 interrupted=true,供表现层弹「破！」题字 overlay。
+    expect(s.actionLog.where((a) => a.interrupted).length,
+        greaterThanOrEqualTo(1),
+        reason: '破招成功应至少产生一条 interrupted=true 的 BattleAction');
+  });
+
+  test('B3 BattleAction.interrupted 默认 false(非破招动作不弹「破！」)', () {
+    const a = BattleAction(tick: 0, actorId: 1, description: '普通一击');
+    expect(a.interrupted, isFalse);
   });
 
   /// 测 D/E 用:直接构造单 actor tick,Boss(踉跄)在场。

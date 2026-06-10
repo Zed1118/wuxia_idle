@@ -35,6 +35,7 @@ import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../application/phase2_seed_service.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
 import '../../battle/presentation/battle_scene_background.dart';
+import '../../battle/presentation/victory_overlay.dart';
 import '../application/visual_route.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../data/narrative_loader.dart';
@@ -304,6 +305,10 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.inventory:
       await Phase2SeedService(isar: isar).seedInventoryShowcase();
       return const InventoryScreen();
+    case VisualRoute.battleInterruptCaption:
+      return const _InterruptCaptionPreview();
+    case VisualRoute.battleDefeat:
+      return const _DefeatCeremonyPreview();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
@@ -678,6 +683,65 @@ class _UltimateCaptionPreview extends StatelessWidget {
         children: [
           Expanded(child: UltimateCaptionContent(name: '天问归一', isEnemy: false)),
           Expanded(child: UltimateCaptionContent(name: '血煞噬魂', isEnemy: true)),
+        ],
+      ),
+    );
+  }
+}
+
+/// B3 破招题字静态验收:破招方暖金「破！」+ 敌方绛红「破！」两态同屏。
+/// 照 [_UltimateCaptionPreview] 体例,复用 [UltimateCaptionContent]。
+class _InterruptCaptionPreview extends StatelessWidget {
+  const _InterruptCaptionPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Color(0xFF14181D),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: UltimateCaptionContent(
+              name: UiStrings.interruptCaption,
+              isEnemy: false,
+            ),
+          ),
+          Expanded(
+            child: UltimateCaptionContent(
+              name: UiStrings.interruptCaption,
+              isEnemy: true,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// B5 败北页静态验收:战场背景 + 径向暗角 + [VictoryOverlay] 战败态
+/// (敗 大题字 + 败北 + 破招提示 + 战报)。照 [_VictoryFirstClearPreview] 体例,
+/// onContinue no-op(纯静态截图)。
+class _DefeatCeremonyPreview extends StatelessWidget {
+  const _DefeatCeremonyPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const BattleSceneBackground(
+            path: 'assets/scenes/battle_citywall.png',
+          ),
+          VictoryOverlay(
+            result: BattleResult.rightWin,
+            totalDamage: 18640,
+            critCount: 7,
+            totalTicks: 42,
+            onContinue: () {},
+          ),
         ],
       ),
     );

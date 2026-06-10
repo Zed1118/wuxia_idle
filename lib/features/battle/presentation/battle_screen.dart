@@ -264,6 +264,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         isEnemy: actor?.teamSide == 1,
       );
     }
+    // B3 破招:打断蓄力 → 弹「破！」题字(破招方暖金/敌方绛红,纯读 state)。
+    if (action.interrupted) {
+      _ultimateCaptionKey.currentState?.show(
+        UiStrings.interruptCaption,
+        isEnemy: actor?.teamSide == 1,
+      );
+    }
     final sfx = sfxForAction(
       action: action,
       isUltimate: isUltimateCaptionSkill(action.skill),
