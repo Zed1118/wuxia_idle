@@ -4,7 +4,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_loadout.dart';
 
-enum SkillSlot { main1, main2, assist, resonance, ultimate }
+enum SkillSlot { main1, main2, assist, resonance, ultimate, key }
 
 sealed class EquipSlotResult {
   const EquipSlotResult();
@@ -20,6 +20,11 @@ class SlotEquipTierLocked extends EquipSlotResult {
 
 class SlotEquipNotFound extends EquipSlotResult {
   const SlotEquipNotFound();
+}
+
+/// 波A:破招槽 style gate 失败(非 canInterrupt 招,或 style 与角色流派不符)。
+class SlotEquipStyleLocked extends EquipSlotResult {
+  const SlotEquipStyleLocked();
 }
 
 /// 技能装配持久化（P1b）。装配 gate = SkillDef.canEquipAtRealm（§5.3 三系锁死）。
@@ -44,6 +49,12 @@ class SkillLoadoutService {
       }
       if (!def.canEquipAtRealm(c.realmTier)) {
         result = const SlotEquipTierLocked();
+        return;
+      }
+      // 波A 破招槽 gate:只能装 canInterrupt && style == 角色流派 的破招技。
+      if (slot == SkillSlot.key &&
+          (!def.canInterrupt || def.style == null || def.style != c.school)) {
+        result = const SlotEquipStyleLocked();
         return;
       }
       _writeSlot(c, slot, skillId);
@@ -71,6 +82,7 @@ class SkillLoadoutService {
     required List<SkillDef> assistTechniqueSkills,
     required SkillDef? jointSkill,
     required int ultimatePowerThreshold,
+    List<SkillDef> interruptSkills = const [],
   }) async {
     await _isar.writeTxn(() async {
       final c = await _isar.characters.get(characterId);
@@ -82,12 +94,15 @@ class SkillLoadoutService {
         realmTier: c.realmTier,
         existing: SkillLoadout.fromCharacter(c),
         ultimatePowerThreshold: ultimatePowerThreshold,
+        interruptSkills: interruptSkills,
+        school: c.school,
       );
       c.mainSkillId1 = filled.mainSkillId1;
       c.mainSkillId2 = filled.mainSkillId2;
       c.assistSkillId = filled.assistSkillId;
       c.resonanceSkillId = filled.resonanceSkillId;
       c.ultimateSkillId = filled.ultimateSkillId;
+      c.keySkillId = filled.keySkillId;
       await _isar.characters.put(c);
     });
   }
@@ -104,6 +119,8 @@ class SkillLoadoutService {
         c.resonanceSkillId = id;
       case SkillSlot.ultimate:
         c.ultimateSkillId = id;
+      case SkillSlot.key:
+        c.keySkillId = id;
     }
   }
 }

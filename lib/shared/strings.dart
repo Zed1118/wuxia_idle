@@ -1097,7 +1097,9 @@ class UiStrings {
   static const String cangjingSlotResonance = '共鸣';
   static const String cangjingSlotUltimate = '大招';
   static const String cangjingSlotEncounter = '奇遇';
+  static const String cangjingSlotKey = '破招';
   static const String cangjingSlotEmpty = '空';
+  static const String cangjingStyleLocked = '流派不合,装配不得';
   static String cangjingProficiencyNeed(int n) => '再用 $n 次→下一阶';
   static String cangjingFragmentProgress(int has, int total) => '$has / $total 页';
   static const String cangjingFragmentEmpty = '暂无残页';

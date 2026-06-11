@@ -142,6 +142,7 @@ class _CangJingGeScreenState extends ConsumerState<CangJingGeScreen> {
       assistTechniqueSkills: sources.assistTechniqueSkills,
       jointSkill: sources.jointSkill,
       ultimatePowerThreshold: numbers.loadoutUltimatePowerThreshold,
+      interruptSkills: sources.interruptSkills,
     );
     if (!mounted) return;
     _refresh(character.id);
@@ -241,8 +242,8 @@ class _CangJingGeBody extends ConsumerWidget {
 // 1. 出战配置栏
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// 装配槽类型（5 心法槽 + 1 奇遇槽）。
-enum _SlotKind { main1, main2, assist, resonance, ultimate, encounter }
+/// 装配槽类型（5 心法槽 + 1 破招槽 + 1 奇遇槽）。
+enum _SlotKind { main1, main2, assist, resonance, ultimate, key, encounter }
 
 class _LoadoutSection extends ConsumerWidget {
   const _LoadoutSection({required this.character, required this.onChanged});
@@ -266,19 +267,21 @@ class _LoadoutSection extends ConsumerWidget {
               style: TextStyle(color: WuxiaUi.muted, fontSize: 12),
             ),
           ),
-          // 6 槽两行各 3 列。
-          for (var row = 0; row < 2; row++) ...[
-            if (row > 0) const SizedBox(height: 8),
+          // 7 槽按行排,每行 3 列,尾行不足补空位(波A 加破招槽 6→7)。
+          for (var start = 0; start < kinds.length; start += 3) ...[
+            if (start > 0) const SizedBox(height: 8),
             Row(
               children: [
                 for (var col = 0; col < 3; col++) ...[
                   if (col > 0) const SizedBox(width: 8),
                   Expanded(
-                    child: _SlotTile(
-                      character: character,
-                      kind: kinds[row * 3 + col],
-                      onChanged: onChanged,
-                    ),
+                    child: start + col < kinds.length
+                        ? _SlotTile(
+                            character: character,
+                            kind: kinds[start + col],
+                            onChanged: onChanged,
+                          )
+                        : const SizedBox.shrink(),
                   ),
                 ],
               ],
@@ -307,6 +310,7 @@ class _SlotTile extends ConsumerWidget {
     _SlotKind.assist => UiStrings.cangjingSlotAssist,
     _SlotKind.resonance => UiStrings.cangjingSlotResonance,
     _SlotKind.ultimate => UiStrings.cangjingSlotUltimate,
+    _SlotKind.key => UiStrings.cangjingSlotKey,
     _SlotKind.encounter => UiStrings.cangjingSlotEncounter,
   };
 
@@ -316,6 +320,7 @@ class _SlotTile extends ConsumerWidget {
     _SlotKind.assist => character.assistSkillId,
     _SlotKind.resonance => character.resonanceSkillId,
     _SlotKind.ultimate => character.ultimateSkillId,
+    _SlotKind.key => character.keySkillId,
     _SlotKind.encounter => character.equippedEncounterSkillId,
   };
 
@@ -402,6 +407,12 @@ class _SlotTile extends ConsumerWidget {
       );
       return;
     }
+    if (result is SlotEquipStyleLocked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.cangjingStyleLocked)),
+      );
+      return;
+    }
     onChanged(character.id);
   }
 
@@ -428,6 +439,10 @@ class _SlotTile extends ConsumerWidget {
       _SlotKind.resonance => [
         if (sources.jointSkill != null) sources.jointSkill!,
       ],
+      // 波A 破招槽:只列本流派破招技(style == school,gate 语义与 service 一致)。
+      _SlotKind.key => sources.interruptSkills
+          .where((s) => s.style != null && s.style == character.school)
+          .toList(),
       _SlotKind.encounter => const [],
     };
   }
@@ -479,6 +494,7 @@ class _SlotTile extends ConsumerWidget {
     _SlotKind.assist => SkillSlot.assist,
     _SlotKind.resonance => SkillSlot.resonance,
     _SlotKind.ultimate => SkillSlot.ultimate,
+    _SlotKind.key => SkillSlot.key,
     _SlotKind.encounter =>
       throw StateError('encounter 槽不走 SkillLoadoutService'),
   };
