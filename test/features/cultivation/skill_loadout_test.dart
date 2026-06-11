@@ -78,5 +78,68 @@ void main() {
       );
       expect(r.resonanceSkillId, isNull);
     });
+
+    group('破招槽(波A build gate)', () {
+      final interrupts = [
+        _interrupt('po_shi', TechniqueSchool.gangMeng),
+        _interrupt('jie_ying', TechniqueSchool.lingQiao),
+      ];
+
+      test('school 匹配 → 自动填本流派破招技', () {
+        final r = SkillLoadout.autoFill(
+          mainTechniqueSkills: const [],
+          assistTechniqueSkills: const [],
+          jointSkill: null,
+          realmTier: RealmTier.xueTu,
+          existing: const SkillLoadout(),
+          ultimatePowerThreshold: 5000,
+          interruptSkills: interrupts,
+          school: TechniqueSchool.lingQiao,
+        );
+        expect(r.keySkillId, 'jie_ying');
+      });
+
+      test('school null → 不填破招槽', () {
+        final r = SkillLoadout.autoFill(
+          mainTechniqueSkills: const [],
+          assistTechniqueSkills: const [],
+          jointSkill: null,
+          realmTier: RealmTier.xueTu,
+          existing: const SkillLoadout(),
+          ultimatePowerThreshold: 5000,
+          interruptSkills: interrupts,
+        );
+        expect(r.keySkillId, isNull);
+      });
+
+      test('非空破招槽不被覆盖', () {
+        final r = SkillLoadout.autoFill(
+          mainTechniqueSkills: const [],
+          assistTechniqueSkills: const [],
+          jointSkill: null,
+          realmTier: RealmTier.xueTu,
+          existing: const SkillLoadout(keySkillId: 'keep_key'),
+          ultimatePowerThreshold: 5000,
+          interruptSkills: interrupts,
+          school: TechniqueSchool.gangMeng,
+        );
+        expect(r.keySkillId, 'keep_key');
+      });
+    });
   });
 }
+
+SkillDef _interrupt(String id, TechniqueSchool style) => SkillDef(
+      id: id,
+      name: id,
+      description: '',
+      type: SkillType.powerSkill,
+      powerMultiplier: 800,
+      internalForceCost: 100,
+      cooldownTurns: 3,
+      requiresManualTrigger: false,
+      visualEffect: '',
+      canInterrupt: true,
+      aiUsePolicy: AiUsePolicy.saveForInterrupt,
+      style: style,
+    );

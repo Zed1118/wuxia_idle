@@ -2,14 +2,16 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 
-/// 技能装配 6 槽值对象（奇遇槽独立在 Character.equippedEncounterSkillId，不在此）。
+/// 技能装配 7 槽值对象（奇遇槽独立在 Character.equippedEncounterSkillId，不在此）。
 /// autoFill 只填空槽，永不覆盖非空槽（非空=玩家保留）。
+/// 波A:keySkillId 破招槽,只装 canInterrupt && style == school 的破招技。
 class SkillLoadout {
   final String? mainSkillId1;
   final String? mainSkillId2;
   final String? assistSkillId;
   final String? resonanceSkillId;
   final String? ultimateSkillId;
+  final String? keySkillId;
 
   const SkillLoadout({
     this.mainSkillId1,
@@ -17,6 +19,7 @@ class SkillLoadout {
     this.assistSkillId,
     this.resonanceSkillId,
     this.ultimateSkillId,
+    this.keySkillId,
   });
 
   factory SkillLoadout.fromCharacter(Character c) => SkillLoadout(
@@ -25,13 +28,18 @@ class SkillLoadout {
         assistSkillId: c.assistSkillId,
         resonanceSkillId: c.resonanceSkillId,
         ultimateSkillId: c.ultimateSkillId,
+        keySkillId: c.keySkillId,
       );
 
-  /// 非空槽 id（去 null），= 该角色战斗可用心法/共鸣/大招招（不含奇遇/破招）。
-  List<String> get equippedIds =>
-      [mainSkillId1, mainSkillId2, assistSkillId, resonanceSkillId, ultimateSkillId]
-          .whereType<String>()
-          .toList();
+  /// 非空槽 id（去 null），= 该角色战斗可用心法/共鸣/大招/破招招（不含奇遇）。
+  List<String> get equippedIds => [
+        mainSkillId1,
+        mainSkillId2,
+        assistSkillId,
+        resonanceSkillId,
+        ultimateSkillId,
+        keySkillId,
+      ].whereType<String>().toList();
 
   /// 自动填充空槽。只填空槽，永不覆盖非空槽（非空=玩家保留）。
   ///
@@ -41,6 +49,8 @@ class SkillLoadout {
   ///   且通过境界 gate 的第一个招式。
   /// - 辅修槽：从 [assistTechniqueSkills] 中取通过境界 gate 的第一个招式。
   /// - 共鸣槽：[jointSkill] 非 null 且通过境界 gate 时填入。
+  /// - 破招槽（波A）：从 [interruptSkills] 中取 style == [school] 且过境界 gate
+  ///   的第一个（school null → 不填，无流派无破招技）。
   static SkillLoadout autoFill({
     required List<SkillDef> mainTechniqueSkills,
     required List<SkillDef> assistTechniqueSkills,
@@ -48,6 +58,8 @@ class SkillLoadout {
     required RealmTier realmTier,
     required SkillLoadout existing,
     required int ultimatePowerThreshold,
+    List<SkillDef> interruptSkills = const [],
+    TechniqueSchool? school,
   }) {
     bool gate(SkillDef s) => s.canEquipAtRealm(realmTier);
 
@@ -76,12 +88,24 @@ class SkillLoadout {
     final resonance = existing.resonanceSkillId ??
         ((jointSkill != null && gate(jointSkill)) ? jointSkill.id : null);
 
+    // 破招槽（波A build gate:canInterrupt && style == school）
+    String? key = existing.keySkillId;
+    if (key == null && school != null) {
+      for (final s in interruptSkills) {
+        if (s.canInterrupt && s.style == school && gate(s)) {
+          key = s.id;
+          break;
+        }
+      }
+    }
+
     return SkillLoadout(
       mainSkillId1: m1,
       mainSkillId2: m2,
       assistSkillId: assist,
       resonanceSkillId: resonance,
       ultimateSkillId: ultimate,
+      keySkillId: key,
     );
   }
 }

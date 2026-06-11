@@ -146,6 +146,7 @@ class StageBattleSetup {
         assistTechniqueSkills: sources.assistTechniqueSkills,
         jointSkill: sources.jointSkill,
         ultimatePowerThreshold: numbers.loadoutUltimatePowerThreshold,
+        interruptSkills: sources.interruptSkills,
       );
     }
 

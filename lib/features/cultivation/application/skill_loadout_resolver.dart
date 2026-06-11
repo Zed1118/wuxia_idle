@@ -33,8 +33,14 @@ class SkillLoadoutResolver {
       mainTechniqueSkills: await resolveMainSkillDefs(c, repo),
       assistTechniqueSkills: await resolveAssistSkillDefs(c, repo),
       jointSkill: await resolveJointSkill(c, n, repo),
+      interruptSkills: resolveInterruptSkills(repo),
     );
   }
+
+  /// 波A 破招槽候选:全部 canInterrupt=true 招(流派过滤在 autoFill / picker
+  /// 按 character.school 做,此处不过滤,便于 picker 未来显示灰显他流派招)。
+  List<SkillDef> resolveInterruptSkills(GameRepository repo) =>
+      repo.skillDefs.values.where((s) => s.canInterrupt).toList();
 
   /// 主修心法 skillIds → `List<SkillDef>`。
   /// mainTechniqueId 为 null（无主修）→ 返空列表。
@@ -100,11 +106,15 @@ class ResolvedLoadoutSources {
     required this.mainTechniqueSkills,
     required this.assistTechniqueSkills,
     required this.jointSkill,
+    this.interruptSkills = const [],
   });
 
   final List<SkillDef> mainTechniqueSkills;
   final List<SkillDef> assistTechniqueSkills;
   final SkillDef? jointSkill;
+
+  /// 波A:全部破招技(canInterrupt=true,未按流派过滤)。
+  final List<SkillDef> interruptSkills;
 }
 
 /// joint 判定用的 shengShu fallback（防御性，正常配置 4 段全覆盖不触发）。
