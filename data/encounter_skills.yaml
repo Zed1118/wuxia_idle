@@ -45,6 +45,7 @@ encounter_skills:
     cooldownTurns: 1
     requiresManualTrigger: false
     visualEffect: footwork_basic
+    source: encounter
     tier: 1
 
   - id: skill_encounter_pu_xi_tu
@@ -56,6 +57,7 @@ encounter_skills:
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: breathing_basic
+    source: encounter
     tier: 1
 
   - id: skill_encounter_jian_bu
@@ -67,6 +69,7 @@ encounter_skills:
     cooldownTurns: 1
     requiresManualTrigger: false
     visualEffect: lightfoot_step
+    source: encounter
     tier: 1
     narrativeInsightId: wu_hen_zhi_ji   # 渐步↔无痕之迹:步法融入前人之迹
 
@@ -79,6 +82,7 @@ encounter_skills:
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: focus_strike
+    source: encounter
     tier: 1
 
   - id: skill_encounter_tun_tu
@@ -90,6 +94,7 @@ encounter_skills:
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: breathing_advanced
+    source: encounter
     tier: 1
 
   # ───────────────────────────────────────────
@@ -105,6 +110,7 @@ encounter_skills:
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: sword_sprout
+    source: encounter
     tier: 2
     narrativeInsightId: can_juan_can_zhao   # 剑意萌芽↔残卷残招:从残缺中悟招
 
@@ -117,6 +123,7 @@ encounter_skills:
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: fist_seeking
+    source: encounter
     tier: 2
 
   - id: skill_encounter_an_qi
@@ -128,6 +135,7 @@ encounter_skills:
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: hidden_weapon
+    source: encounter
     tier: 2
 
   - id: skill_encounter_pai_yun_zhang
@@ -139,6 +147,7 @@ encounter_skills:
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: palm_cloud
+    source: encounter
     tier: 2
     narrativeInsightId: can_bei_zhang_feng   # 排云掌↔残碑掌风:掌力隔空投射
 
@@ -151,6 +160,7 @@ encounter_skills:
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: dodge_flow
+    source: encounter
     tier: 2
     narrativeInsightId: yan_hui_xu_ying   # 活渡↔燕回虚影:闪避虚影身法
 
@@ -167,6 +177,7 @@ encounter_skills:
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: sword_rain_listen
+    source: encounter
     tier: 3
     narrativeInsightId: ting_yu_jian   # W14-4 audit 唯一已匹配 insight(显式映射,#36)
 
@@ -179,6 +190,7 @@ encounter_skills:
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: drill_combo
+    source: encounter
     tier: 3
     narrativeInsightId: po_feng_yi_ji   # 校场连击↔破风一击:校场擂台练就的实战拳
 
@@ -191,6 +203,7 @@ encounter_skills:
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: wuxia_intent
+    source: encounter
     tier: 3
 
   - id: skill_encounter_huo_quan
@@ -202,6 +215,7 @@ encounter_skills:
     cooldownTurns: 2
     requiresManualTrigger: false
     visualEffect: fist_flame
+    source: encounter
     tier: 3
     narrativeInsightId: can_yang_ru_xue   # 火拳↔残阳如血:火/残阳红色意象
 
@@ -214,6 +228,7 @@ encounter_skills:
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: sword_mystic
+    source: encounter
     tier: 3
     narrativeInsightId: xiao_xiang_ye_yu   # 玄剑↔潇湘夜雨:连绵不绝如夜雨敲窗
 
@@ -227,6 +242,7 @@ encounter_skills:
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: rain_listen_blade
+    source: encounter
     tier: 3
 
   # ───────────────────────────────────────────
@@ -242,6 +258,7 @@ encounter_skills:
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: ancient_sword
+    source: encounter
     tier: 4
 
   - id: skill_encounter_qing_feng_jian
@@ -253,6 +270,7 @@ encounter_skills:
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: sword_breeze
+    source: encounter
     tier: 4
     narrativeInsightId: qiu_shui_tian_ya   # 清风剑↔秋水天涯:剑客孤旅/微妙剑势
 
@@ -265,6 +283,7 @@ encounter_skills:
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: fire_fury
+    source: encounter
     tier: 4
 
   - id: skill_encounter_xuan_yin
@@ -276,6 +295,7 @@ encounter_skills:
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: finger_dark
+    source: encounter
     tier: 4
     narrativeInsightId: han_feng_che_gu   # 玄阴指↔寒风彻骨:阴寒气息彻骨
 
@@ -288,6 +308,7 @@ encounter_skills:
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: lightfoot_immortal
+    source: encounter
     tier: 4
     narrativeInsightId: yi_qi_jue_chen   # 飞仙步↔一气绝尘:极速身法屏息冲刺
 
@@ -301,6 +322,7 @@ encounter_skills:
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: lonely_isle_blade
+    source: encounter
     tier: 4
 
   - id: skill_encounter_mo_jian_xiang_xin
@@ -312,6 +334,7 @@ encounter_skills:
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: self_blade_meditation
+    source: encounter
     tier: 4
 
   # ───────────────────────────────────────────
@@ -327,6 +350,7 @@ encounter_skills:
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: water_flow
+    source: encounter
     tier: 5
     narrativeInsightId: liu_shui_wu_qing   # 流水气功↔流水无情:连绵不断流水之势
 
@@ -339,6 +363,7 @@ encounter_skills:
     cooldownTurns: 3
     requiresManualTrigger: false
     visualEffect: night_strike
+    source: encounter
     tier: 5
     narrativeInsightId: ye_luo_wu_sheng   # 夜行袭↔叶落无声:潜行无声暗袭
 
@@ -351,6 +376,7 @@ encounter_skills:
     cooldownTurns: 5
     requiresManualTrigger: true
     visualEffect: thunder_bolt
+    source: encounter
     tier: 5
 
   - id: skill_encounter_jin_gang
@@ -362,6 +388,7 @@ encounter_skills:
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: vajra_body
+    source: encounter
     tier: 5
     narrativeInsightId: tie_suo_heng_jiang   # 金刚不坏↔铁索横江:不可逾越的防御屏障
 
@@ -374,6 +401,7 @@ encounter_skills:
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: sword_mountains_rivers
+    source: encounter
     tier: 5
     narrativeInsightId: shan_quan_ji_jian   # 山河剑↔山泉激涧:山水剑意激流之势
 
@@ -387,6 +415,7 @@ encounter_skills:
     cooldownTurns: 5
     requiresManualTrigger: false
     visualEffect: snow_night_star
+    source: encounter
     tier: 5
 
   - id: skill_encounter_chuan_long_xiao_ge
@@ -398,6 +427,7 @@ encounter_skills:
     cooldownTurns: 6
     requiresManualTrigger: true
     visualEffect: dragon_roar_ultimate
+    source: encounter
     tier: 5
 
   # ───────────────────────────────────────────
@@ -413,6 +443,7 @@ encounter_skills:
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: ice_freeze_slash
+    source: encounter
     tier: 6
     narrativeInsightId: shuang_dong_qian_li   # 冰封斩↔霜冻千里:极寒冻结地面
 
@@ -425,6 +456,7 @@ encounter_skills:
     cooldownTurns: 5
     requiresManualTrigger: true
     visualEffect: ice_mystic
+    source: encounter
     tier: 6
     narrativeInsightId: shuang_jiang_man_tian   # 玄冰诀↔霜降漫天:寒气弥漫周身三步
 
@@ -437,6 +469,7 @@ encounter_skills:
     cooldownTurns: 5
     requiresManualTrigger: true
     visualEffect: flame_heaven
+    source: encounter
     tier: 6
 
   - id: skill_encounter_qian_kun
@@ -448,6 +481,7 @@ encounter_skills:
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: palm_qiankun
+    source: encounter
     tier: 6
 
   - id: skill_encounter_chen_xin
@@ -459,6 +493,7 @@ encounter_skills:
     cooldownTurns: 4
     requiresManualTrigger: false
     visualEffect: heart_calm
+    source: encounter
     tier: 6
     narrativeInsightId: ku_chan_bu_dong   # 沉心诀↔枯禅不动:禅定心不动剑不动
 
@@ -475,6 +510,7 @@ encounter_skills:
     cooldownTurns: 6
     requiresManualTrigger: true
     visualEffect: dragon_roar
+    source: encounter
     tier: 7
     narrativeInsightId: long_yin_shen_jian   # 龙吟九霄↔龙吟深涧:名字+剑鸣龙吟双重命中
 
@@ -487,6 +523,7 @@ encounter_skills:
     cooldownTurns: 6
     requiresManualTrigger: true
     visualEffect: phoenix_rise
+    source: encounter
     tier: 7
 
   - id: skill_encounter_yi_jian
@@ -498,6 +535,7 @@ encounter_skills:
     cooldownTurns: 6
     requiresManualTrigger: true
     visualEffect: sword_seal_fame
+    source: encounter
     tier: 7
     narrativeInsightId: yi_dian_qian_jun   # 一剑封名↔一点千钧:凝练一击定乾坤
 
@@ -510,6 +548,7 @@ encounter_skills:
     cooldownTurns: 5
     requiresManualTrigger: false
     visualEffect: nameless_strike
+    source: encounter
     tier: 7
     narrativeInsightId: gu_dao_xi_feng   # 无名诀↔古道西风:走千里路自然迈出的没有名字的招
 
@@ -522,5 +561,6 @@ encounter_skills:
     cooldownTurns: 6
     requiresManualTrigger: true
     visualEffect: heaven_path
+    source: encounter
     tier: 7
     narrativeInsightId: jing_di_wang_yue   # 天道一线↔井底望月:以狭缝窥天道的逆转视角

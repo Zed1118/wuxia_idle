@@ -1,5 +1,25 @@
 import '../../core/domain/enums.dart';
 
+/// 招式获取来源(波A A4 统一来源模型)。
+/// 红线:production 全招必有(loader fail-fast);消费方 = 红线自洽 +
+/// P4 藏经阁来源显示(P4 接 UI 前仅 schema + 红线)。
+enum SkillSource {
+  technique, // 心法自带(随心法修习获得)
+  encounter, // 奇遇解锁(encounter_skills.yaml 全池)
+  mainlineDrop, // 主线 Boss 首通真解(stages.yaml dropSkillManualId)
+  towerFragment, // 爬塔残页集齐(towers.yaml dropSkillFragmentId)
+  special, // 系统特殊(破招技/joint 共鸣/轻功对决)
+}
+
+SkillSource _parseSkillSource(String raw) => switch (raw) {
+      'technique' => SkillSource.technique,
+      'encounter' => SkillSource.encounter,
+      'mainline_drop' => SkillSource.mainlineDrop,
+      'tower_fragment' => SkillSource.towerFragment,
+      'special' => SkillSource.special,
+      _ => throw StateError('未知 skill source: $raw(波A A4 红线)'),
+    };
+
 /// 招式配置（data_schema.md §5.3，纯 Dart，不入 Isar）。
 ///
 /// `parentTechniqueDefId` 为空时，表示该招式由"武学领悟"独立产出（GDD §7.2）。
@@ -38,6 +58,9 @@ class SkillDef {
   /// `style == character.school` 过滤);普通心法招留空(流派由所属心法承载)。
   final TechniqueSchool? style;
 
+  /// 波A A4:获取来源。yaml 必填(红线 not-null);直接构造的测试 fixture 可空。
+  final SkillSource? source;
+
   /// 招式 per-skill 熟练度效果(可玩性 P1a · 只配真解/招牌/破招技)。null=不配。
   final SkillProficiencyEffects? proficiency;
 
@@ -58,6 +81,7 @@ class SkillDef {
     this.canInterrupt = false,
     this.aiUsePolicy = AiUsePolicy.normal,
     this.style,
+    this.source,
     this.proficiency,
   });
 
@@ -93,6 +117,8 @@ class SkillDef {
       style: y['style'] != null
           ? TechniqueSchool.values.byName(y['style'] as String)
           : null,
+      source:
+          y['source'] != null ? _parseSkillSource(y['source'] as String) : null,
       proficiency: y['proficiency'] != null
           ? SkillProficiencyEffects.fromYaml(
               Map<String, dynamic>.from(y['proficiency'] as Map))

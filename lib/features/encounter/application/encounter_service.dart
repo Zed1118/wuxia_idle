@@ -5,6 +5,8 @@ import '../../../data/defs/skill_def.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/attributes.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/save_data.dart';
+import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/utils/rng.dart';
 import '../../event/application/game_event_service.dart';
@@ -295,10 +297,13 @@ class EncounterService {
       switch (outcome.type) {
         case OutcomeType.unlockSkill:
           final sid = outcome.skillId!;
-          if (!progress.unlockedSkillIds.contains(sid)) {
-            progress.unlockedSkillIds =
-                List.of(progress.unlockedSkillIds)..add(sid);
-            await isar.encounterProgress.put(progress);
+          // 波A A4 来源统一:解锁写 SaveData.skillUnlockProgress(单一真相源);
+          // EncounterProgress.unlockedSkillIds 退役只读(旧档迁移见 IsarSetup)。
+          final save = await isar.saveDatas.get(0);
+          if (save != null && !save.skillUnlockProgress.isUnlocked(sid)) {
+            save.skillUnlockProgress = List.of(save.skillUnlockProgress)
+              ..markUnlocked(sid);
+            await isar.saveDatas.put(save);
           }
           result = UnlockSkillApplied(sid);
 
@@ -402,15 +407,10 @@ class EncounterService {
           result = EquipNotFound('character #$characterId 不存在');
           return;
         }
-        final progress = await isar.encounterProgress
-            .filter()
-            .saveDataIdEqualTo(saveDataId)
-            .findFirst();
-        if (progress == null) {
-          result = EquipNotFound('EncounterProgress slot=$saveDataId 未初始化');
-          return;
-        }
-        if (!progress.unlockedSkillIds.contains(skillDef.id)) {
+        // 波A A4 来源统一:解锁校验改读 SaveData.skillUnlockProgress。
+        final save = await isar.saveDatas.get(0);
+        if (save == null ||
+            !save.skillUnlockProgress.isUnlocked(skillDef.id)) {
           result = EquipNotUnlocked(skillDef.id);
           return;
         }

@@ -10,6 +10,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/game_event.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
+import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../core/domain/technique.dart';
 import '../../../shared/utils/rng.dart';
 import '../../encounter/application/encounter_service.dart';
@@ -426,6 +427,16 @@ class Phase2SeedService {
     await isar.writeTxn(() async {
       progress.unlockedSkillIds = unlocked;
       await isar.encounterProgress.put(progress);
+
+      // 波A A4 来源统一:解锁同时写新池(单一真相源,equip 校验/picker 读此)。
+      final save = await isar.saveDatas.get(0);
+      if (save != null) {
+        save.skillUnlockProgress = List.of(save.skillUnlockProgress);
+        for (final sid in unlocked) {
+          save.skillUnlockProgress.markUnlocked(sid);
+        }
+        await isar.saveDatas.put(save);
+      }
 
       if (equippedSkillId != null) {
         // 大弟子 id=2(seedMasterDisciple: founder=1 / 大弟子 autoInc=2 / 二弟子=3)

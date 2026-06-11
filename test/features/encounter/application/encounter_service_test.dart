@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/core/domain/skill_unlock_entry.dart';
 import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_def.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
@@ -374,11 +375,22 @@ void main() {
         encounter: def,
         outcomeId: 'insight_success',
       );
+      // 波A A4 来源统一:解锁写 SaveData.skillUnlockProgress(单一真相源),
+      // 旧池 EncounterProgress.unlockedSkillIds 退役只读不再写。
+      final save = await IsarSetup.instance.saveDatas.get(0);
+      expect(save!.skillUnlockProgress.isUnlocked('skill_encounter_ting_yu_jian'),
+          isTrue);
+      expect(
+          save.skillUnlockProgress
+              .where((e) => e.skillId == 'skill_encounter_ting_yu_jian')
+              .length,
+          1,
+          reason: '重复 apply 去重,不增条目');
       final p = await IsarSetup.instance.encounterProgress
           .filter()
           .saveDataIdEqualTo(1)
           .findFirst();
-      expect(p!.unlockedSkillIds, ['skill_encounter_ting_yu_jian']);
+      expect(p!.unlockedSkillIds, isEmpty, reason: '旧池退役,不再写入');
     });
 
     test('attributeBonus → 写对应字段 + lifetime cap enforce', () async {
@@ -764,10 +776,12 @@ void main() {
       final svc = EncounterService(isar: IsarSetup.instance);
       // erLiu (index 2) >= tier 3 - 1 = 2 ✅
       final cid = await seedCharacter(tier: RealmTier.erLiu);
-      final progress = await svc.getOrCreate(saveDataId: 1);
+      // 波A A4:解锁态 seed 写新池 SaveData.skillUnlockProgress。
       await IsarSetup.instance.writeTxn(() async {
-        progress.unlockedSkillIds = ['skill_encounter_ting_yu_jian'];
-        await IsarSetup.instance.encounterProgress.put(progress);
+        final save = await IsarSetup.instance.saveDatas.get(0);
+        save!.skillUnlockProgress = List.of(save.skillUnlockProgress)
+          ..markUnlocked('skill_encounter_ting_yu_jian');
+        await IsarSetup.instance.saveDatas.put(save);
       });
 
       final skill = tier3Skill();
@@ -803,10 +817,12 @@ void main() {
       final svc = EncounterService(isar: IsarSetup.instance);
       // xueTu (index 0) < tier 3 - 1 = 2 ❌
       final cid = await seedCharacter(tier: RealmTier.xueTu);
-      final progress = await svc.getOrCreate(saveDataId: 1);
+      // 波A A4:解锁态 seed 写新池 SaveData.skillUnlockProgress。
       await IsarSetup.instance.writeTxn(() async {
-        progress.unlockedSkillIds = ['skill_encounter_ting_yu_jian'];
-        await IsarSetup.instance.encounterProgress.put(progress);
+        final save = await IsarSetup.instance.saveDatas.get(0);
+        save!.skillUnlockProgress = List.of(save.skillUnlockProgress)
+          ..markUnlocked('skill_encounter_ting_yu_jian');
+        await IsarSetup.instance.saveDatas.put(save);
       });
 
       final skill = tier3Skill();

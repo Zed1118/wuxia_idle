@@ -5,7 +5,6 @@ import '../../battle/domain/enum_localizations.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/character.dart';
-import '../../encounter/domain/encounter_progress.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/application/character_providers.dart';
 import '../../encounter/application/encounter_service.dart';
@@ -18,7 +17,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 ///
 /// 与 [_EquipmentSection] / [_TechniqueSection] 体例并列,展示当前角色装备的
 /// 奇遇 skill slot,点击 "选择招式" 打开 bottom sheet 列出已 unlock 招式
-/// (来自 [EncounterProgress.unlockedSkillIds]),按 tier 排序;玩家 tap 即装备
+/// (来自 SaveData.skillUnlockProgress 单一真相源 · 波A A4),按 tier 排序;玩家 tap 即装备
 /// (走 [EncounterService.equipEncounterSkill] 校验境界锁死)。
 ///
 /// 未 unlock 任何奇遇 skill 时显示占位文案,按钮 disabled。
@@ -29,14 +28,16 @@ class EncounterSkillSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(currentEncounterProgressProvider);
+    // 波A A4 来源统一:读 SaveData.skillUnlockProgress 单一真相源
+    // (只取奇遇招,真解/残页解锁的心法招不入此面板)。
+    final unlockedAsync = ref.watch(unlockedSkillIdSetProvider);
 
     return _SectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SectionHeader(UiStrings.encounterSkillSectionTitle),
-          progressAsync.when(
+          unlockedAsync.when(
             loading: () => const SizedBox(
               height: 60,
               child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
@@ -45,8 +46,15 @@ class EncounterSkillSection extends ConsumerWidget {
               'load error: $e',
               style: const TextStyle(color: WuxiaColors.hpLow, fontSize: 12),
             ),
-            data: (progress) =>
-                _Content(character: character, progress: progress),
+            data: (unlockedSet) => _Content(
+              character: character,
+              unlocked: [
+                if (GameRepository.isLoaded)
+                  for (final id in unlockedSet)
+                    if (GameRepository.instance.encounterSkillIds.contains(id))
+                      id,
+              ],
+            ),
           ),
         ],
       ),
@@ -55,15 +63,14 @@ class EncounterSkillSection extends ConsumerWidget {
 }
 
 class _Content extends ConsumerWidget {
-  const _Content({required this.character, required this.progress});
+  const _Content({required this.character, required this.unlocked});
 
   final Character character;
-  final EncounterProgress? progress;
+  final List<String> unlocked;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final equipped = character.equippedEncounterSkillId;
-    final unlocked = progress?.unlockedSkillIds ?? const <String>[];
     final hasUnlocks = unlocked.isNotEmpty;
 
     return Column(
@@ -143,7 +150,7 @@ class _Content extends ConsumerWidget {
         saveDataId: 1,
       );
       ref.invalidate(characterByIdProvider(character.id));
-      ref.invalidate(currentEncounterProgressProvider);
+      ref.invalidate(unlockedSkillIdSetProvider);
       if (!context.mounted) return;
       messenger.showSnackBar(SnackBar(content: Text(_resultText(result))));
     } catch (e) {
