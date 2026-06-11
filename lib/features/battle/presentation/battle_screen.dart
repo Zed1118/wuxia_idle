@@ -543,6 +543,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     if (_resultDialogShown || !mounted) return;
     _resultDialogShown = true;
 
+    // 战斗结束先停 battle BGM，让胜负 jingle 独奏:避免 battle BGM(loop) 与
+    // victory/defeat jingle 叠加成一团。pop 战斗页后 BgmScope 自动恢复上层轨。
+    SoundManager.instance.stopBgm();
+
     // 与 [VictoryOverlay] 题字一致:leftWin 显「勝」,其余(rightWin/draw)显「敗」。
     if (result == BattleResult.leftWin) {
       SoundManager.instance.playSfx(SfxId.victory);
