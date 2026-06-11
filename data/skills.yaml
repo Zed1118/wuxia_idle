@@ -54,6 +54,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_jichu
     visualEffect: rage_wave_punch
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   # ─── 灵巧 · 入门功 ───
   - id: skill_lingqiao_jichu_basic
@@ -88,6 +92,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_jichu
     visualEffect: glow_sword
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   # ─── 阴柔 · 入门功 ───
   - id: skill_yinrou_jichu_basic
@@ -122,6 +130,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_jichu
     visualEffect: heart_shatter
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
   # ───────────────────────────────────────────
   # 第 2 阶 常练功 · changLianGong (cap=2000)
@@ -160,6 +172,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_changlian
     visualEffect: mountain_tremor
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   # ─── 灵巧 · 常练功 ───
   - id: skill_lingqiao_changlian_basic
@@ -194,6 +210,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_changlian
     visualEffect: ten_thousand_swords
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   # ─── 阴柔 · 常练功 ───
   - id: skill_yinrou_changlian_basic
@@ -228,6 +248,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_changlian
     visualEffect: soul_breaking_finger
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
   # ───────────────────────────────────────────
   # 第 3 阶 名家功 · mingJiaGong (cap=2500)
@@ -266,10 +290,11 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_mingjia
     visualEffect: mountain_break
-    proficiency:        # 可玩性 P1a · 真解 ult per-skill 效果
+    proficiency:        # 波A A3 真解手工(高于模板半档;化境伤害%是死配置→改 CD,cap 1.30 见 combinedMult)
       effects:
-        shuLian: { damage_pct: 0.05 }
-        huaJing: { damage_pct: 0.12 }
+        shuLian: { damage_pct: 0.10 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
 
   # ─── 灵巧 · 名家功 ───
   - id: skill_lingqiao_mingjia_basic
@@ -304,6 +329,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_mingjia
     visualEffect: wind_slash
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   # ─── 阴柔 · 名家功 ───
   - id: skill_yinrou_mingjia_basic
@@ -338,10 +367,11 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_mingjia
     visualEffect: falling_petals
-    proficiency:        # 可玩性 P1a · 真解 ult per-skill 效果
+    proficiency:        # 波A A3 真解手工(高于模板半档;化境伤害%是死配置→改 CD,cap 1.30 见 combinedMult)
       effects:
-        shuLian: { damage_pct: 0.05 }
-        huaJing: { damage_pct: 0.12 }
+        shuLian: { damage_pct: 0.10 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
 
   # ───────────────────────────────────────────
   # 第 4 阶 门派绝学 · menPaiJueXue (cap=3000)
@@ -380,6 +410,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_menpai
     visualEffect: angry_dragon_overturn
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   # ─── 灵巧 · 门派绝学 ───
   - id: skill_lingqiao_menpai_basic
@@ -414,6 +448,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_menpai
     visualEffect: meteor_sword
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   # ─── 阴柔 · 门派绝学 ───
   - id: skill_yinrou_menpai_basic
@@ -448,6 +486,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_menpai
     visualEffect: soul_capture
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
   # ───────────────────────────────────────────
   # 第 5 阶 江湖秘传 · jiangHuMiChuan (cap=4000)
@@ -486,6 +528,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_jianghu
     visualEffect: overlord_strike
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   # ─── 灵巧 · 江湖秘传 ───
   - id: skill_lingqiao_jianghu_basic
@@ -520,6 +566,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_jianghu
     visualEffect: flying_sword_art
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   # ─── 阴柔 · 江湖秘传 ───
   - id: skill_yinrou_jianghu_basic
@@ -554,6 +604,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_jianghu
     visualEffect: soul_destroying_curse
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
   # ───────────────────────────────────────────
   # 第 6 阶 失传神功 · shiChuanShenGong (cap=5500)
@@ -592,6 +646,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_shichuan
     visualEffect: heaven_breaking
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   # ─── 灵巧 · 失传神功 ───
   - id: skill_lingqiao_shichuan_basic
@@ -626,6 +684,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_shichuan
     visualEffect: rainbow_across_sky
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   # ─── 阴柔 · 失传神功 ───
   - id: skill_yinrou_shichuan_basic
@@ -660,6 +722,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_shichuan
     visualEffect: shadow_seal
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
   # ───────────────────────────────────────────
   # 第 7 阶 传说神功 · chuanShuoShenGong (cap=8000)
@@ -698,6 +764,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_chuanshuo
     visualEffect: dragon_roar_ninth_heaven
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   # ─── 灵巧 · 传说神功 ───
   - id: skill_lingqiao_chuanshuo_basic
@@ -732,6 +802,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_chuanshuo
     visualEffect: myriad_return_origin
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   # ─── 阴柔 · 传说神功 ───
   - id: skill_yinrou_chuanshuo_basic
@@ -766,6 +840,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_chuanshuo
     visualEffect: formless_calamity
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
   # ───────────────────────────────────────────
   # 共鸣度满级解锁招 · joint_skill(P1.1 候选 3-b)
@@ -833,6 +911,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_boulder_crush
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   # ─── 一流 · 灵巧 · 轻功 ───
   - id: skill_lightfoot_yiliu_lingqiao_basic
@@ -867,6 +949,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_swallow_strike
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   # ─── 一流 · 阴柔 · 轻功 ───
   - id: skill_lightfoot_yiliu_yinrou_basic
@@ -901,6 +987,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_netherworld
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
   # ─── 绝顶 · 刚猛 · 轻功 ───
   - id: skill_lightfoot_jueding_gangmeng_basic
@@ -935,6 +1025,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_ten_thousand_jin
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   # ─── 绝顶 · 灵巧 · 轻功 ───
   - id: skill_lightfoot_jueding_lingqiao_basic
@@ -969,6 +1063,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_beyond_clouds
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   # ─── 绝顶 · 阴柔 · 轻功 ───
   - id: skill_lightfoot_jueding_yinrou_basic
@@ -1003,6 +1101,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_silent_void
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
 
   # =============================================================================
@@ -1042,6 +1144,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_jichu_fang
     visualEffect: iron_mountain
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   - id: skill_lingqiao_jichu_fang_basic
     name: 侧闪
@@ -1075,6 +1181,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_jichu_fang
     visualEffect: slide_strike
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   - id: skill_yinrou_jichu_fang_basic
     name: 养息
@@ -1108,6 +1218,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_jichu_fang
     visualEffect: yuan_guard
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
 
   # --- 常练功防御变体招式 ---
@@ -1143,6 +1257,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_changlian_fang
     visualEffect: diamond_fury
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   - id: skill_lingqiao_changlian_fang_basic
     name: 游身
@@ -1176,6 +1294,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_changlian_fang
     visualEffect: moon_water
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   - id: skill_yinrou_changlian_fang_basic
     name: 龟息
@@ -1209,6 +1331,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_changlian_fang
     visualEffect: long_breath
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
 
   # --- 名家功防御变体招式 ---
@@ -1244,6 +1370,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_mingjia_fang
     visualEffect: immovable
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   - id: skill_lingqiao_mingjia_fang_basic
     name: 凌波
@@ -1277,6 +1407,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_mingjia_fang
     visualEffect: waterwalker
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   - id: skill_yinrou_mingjia_fang_basic
     name: 玄阴掌
@@ -1310,6 +1444,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_mingjia_fang
     visualEffect: yinyang_guard
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
 
   # --- 门派绝学防御变体招式 ---
@@ -1345,6 +1483,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_menpai_fang
     visualEffect: iron_shirt
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   - id: skill_lingqiao_menpai_fang_basic
     name: 幻影
@@ -1378,6 +1520,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_menpai_fang
     visualEffect: phantom_flash
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   - id: skill_yinrou_menpai_fang_basic
     name: 化骨
@@ -1411,6 +1557,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_menpai_fang
     visualEffect: bone_wrap
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
 
   # --- 江湖秘传防御变体招式 ---
@@ -1446,6 +1596,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_jianghu_fang
     visualEffect: true_body
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   - id: skill_lingqiao_jianghu_fang_basic
     name: 鬼步
@@ -1479,6 +1633,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_jianghu_fang
     visualEffect: shadow_kill
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   - id: skill_yinrou_jianghu_fang_basic
     name: 太阴
@@ -1512,6 +1670,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_jianghu_fang
     visualEffect: yin_return
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
 
   # --- 失传神功防御变体招式 ---
@@ -1547,6 +1709,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_shichuan_fang
     visualEffect: steel_bone
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   - id: skill_lingqiao_shichuan_fang_basic
     name: 天遁
@@ -1580,6 +1746,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_shichuan_fang
     visualEffect: traceless
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   - id: skill_yinrou_shichuan_fang_basic
     name: 寒蝉
@@ -1613,6 +1783,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_shichuan_fang
     visualEffect: cold_moon
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
 
   # --- 传说神功防御变体招式 ---
@@ -1648,6 +1822,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_chuanshuo_fang
     visualEffect: golden_body
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   - id: skill_lingqiao_chuanshuo_fang_basic
     name: 无影
@@ -1681,6 +1859,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_chuanshuo_fang
     visualEffect: vanish
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   - id: skill_yinrou_chuanshuo_fang_basic
     name: 归元
@@ -1714,6 +1896,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_chuanshuo_fang
     visualEffect: immortal
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
 
   # --- 内力变体招式 ---
@@ -1749,6 +1935,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_jichu_nei
     visualEffect: qi_rainbow
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   - id: skill_lingqiao_changlian_nei_basic
     name: 引气
@@ -1782,6 +1972,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_changlian_nei
     visualEffect: qi_home
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   - id: skill_yinrou_mingjia_nei_basic
     name: 聚元
@@ -1815,6 +2009,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_mingjia_nei
     visualEffect: yuan_strike
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
   - id: skill_gangmeng_menpai_nei_basic
     name: 炼神
@@ -1848,6 +2046,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_menpai_nei
     visualEffect: mind_peerless
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   - id: skill_lingqiao_jianghu_nei_basic
     name: 天罡拳
@@ -1881,6 +2083,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_jianghu_nei
     visualEffect: gang_break
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
 
   - id: skill_yinrou_shichuan_nei_basic
     name: 玄元指
@@ -1914,6 +2120,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_shichuan_nei
     visualEffect: yuan_one
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
 
   - id: skill_gangmeng_chuanshuo_nei_basic
     name: 混沌拳
@@ -1947,6 +2157,10 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_chuanshuo_nei
     visualEffect: chaos_origin
+    proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
 
   # ───────────────────────────────────────────
   # P0.5 破招专属招(2026-06-09)
@@ -2027,8 +2241,8 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: qingfeng_jue
-    proficiency:        # 可玩性 P1a · 招牌真解 per-skill 效果
+    proficiency:        # 波A A3 招牌真解手工(同真解档;化境伤害%死配置→CD)
       effects:
-        shuLian: { damage_pct: 0.05 }
-        jingTong: { damage_pct: 0.10 }
-        huaJing: { damage_pct: 0.15 }
+        shuLian: { damage_pct: 0.10 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
