@@ -121,6 +121,98 @@ void main() {
       print(l);
     }
   });
+
+  // 波B:30 关高熟练度全表 sweep(backlog §六「扩到 _summarize 全表」销账)。
+  // 维度:30 mainline × {floor,ceiling} × uses {0,800} × 25 seed(同 seed A/B
+  // 隔离熟练度)。输出对照表 + 过易诊断到 output;断言写约束语义:
+  //   - per stage/profile:maxed ≥ fresh − 10pt(CD delta 改变战斗流,容噪)
+  //   - 全表 mean delta ≥ 0(熟练度整体只增不减)
+  test('波B 熟练度全表 sweep:30 mainline × floor/ceiling × uses{0,800}',
+      () async {
+    const seeds = 25;
+    final mainlines = repo.stageDefs.values
+        .where((s) =>
+            s.stageType == StageType.mainline && s.enemyTeam.isNotEmpty)
+        .toList()
+      ..sort((a, b) => a.id.compareTo(b.id));
+
+    final buf = StringBuffer()
+      ..writeln('# 波B 熟练度全表 Sweep · 2026-06-11')
+      ..writeln()
+      ..writeln('$seeds seed × ${mainlines.length} mainline × 2 profile × '
+          'uses{0=fresh,800=化境} · 同 seed A/B')
+      ..writeln()
+      ..writeln('| stage | realm | Boss | floor fresh→max(Δpt) | '
+          'ceiling fresh→max(Δpt) |')
+      ..writeln('|---|---|---|---|---|');
+
+    String pct(double v) => '${(v * 100).round()}%';
+    var deltaSum = 0.0;
+    var cells = 0;
+    final violations = <String>[];
+    final tooEasy = <String>[];
+    for (final stage in mainlines) {
+      final rowCells = <String>[];
+      final maxedByProfile = <_BuildProfile, double>{};
+      for (final profile in _BuildProfile.values) {
+        int winAt(int uses) {
+          var w = 0;
+          for (var seed = 0; seed < seeds; seed++) {
+            final r = _simulateStage(stage, seed, repo, profile,
+                proficiencyUses: uses);
+            if (r.result == 'leftWin') w++;
+          }
+          return w;
+        }
+
+        final fresh = winAt(0) / seeds;
+        final maxed = winAt(800) / seeds;
+        maxedByProfile[profile] = maxed;
+        deltaSum += maxed - fresh;
+        cells++;
+        if (maxed < fresh - 0.10) {
+          violations.add('${stage.id}[${profile.name}]: '
+              '${pct(fresh)} → ${pct(maxed)}');
+        }
+        rowCells.add('${pct(fresh)}→${pct(maxed)}'
+            '(${((maxed - fresh) * 100).round()})');
+      }
+      if (maxedByProfile[_BuildProfile.floor]! > 0.90) {
+        tooEasy.add('${stage.id}(floor maxed '
+            '${pct(maxedByProfile[_BuildProfile.floor]!)})');
+      }
+      buf.writeln('| ${stage.id} | ${stage.requiredRealm.name} | '
+          '${stage.isBossStage ? "Boss" : "—"} | ${rowCells[0]} | '
+          '${rowCells[1]} |');
+    }
+
+    buf
+      ..writeln()
+      ..writeln('## 诊断')
+      ..writeln()
+      ..writeln('- **高熟练度过易候选**(floor 满熟练 > 90%,熟练度把下限'
+          '冲穿):${tooEasy.isEmpty ? "无" : tooEasy.join(" / ")}')
+      ..writeln('- mean delta = '
+          '${(deltaSum / cells * 100).toStringAsFixed(1)}pt(全表均值)')
+      ..writeln()
+      ..writeln('## 局限')
+      ..writeln()
+      ..writeln('- 沿主表 sweep 局限(on-level / 固定刚猛 / 无辅修 synergy);'
+          '熟练度种到主修全招(含波B Boss 蓄力变化后的难度面)。')
+      ..writeln('- drop 招(真解/残页)未入 sim build(装配为玩家主动行为),'
+          '本表只量化熟练度轴。');
+
+    final outPath = '$_outputDir/proficiency_sweep_2026-06-11.md';
+    File(outPath).writeAsStringSync(buf.toString());
+    print('proficiency sweep done · summary=$outPath');
+    print('mean delta = ${(deltaSum / cells * 100).toStringAsFixed(1)}pt'
+        ' · 过易候选 ${tooEasy.length}');
+
+    expect(violations, isEmpty,
+        reason: '高熟练度不应明显降低 winRate(容噪 10pt):$violations');
+    expect(deltaSum / cells, greaterThanOrEqualTo(0),
+        reason: '全表 mean delta 应 ≥ 0(熟练度整体只增不减)');
+  }, timeout: const Timeout(Duration(minutes: 15)));
 }
 
 class _SimResult {

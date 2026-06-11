@@ -35,9 +35,11 @@ void main() {
           reason: '49 本心法（P2.1 Batch 2 扩 21 原 + 21 防御 + 7 内力）');
       // P2.1 Batch 2: 49 心法 × 3 = 147 + 18 lightfoot + 1 joint = 166
       // + P0.5: 破势 + 青锋绝 = 168;波A: + 截影 + 拂脉(三流派破招技)= 170
-      // + 40 encounter_skills.yaml = 210 total
-      expect(repo.skillDefs.length, 210,
-          reason: '170 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招) + 40 奇遇招');
+      // + 波B 24 招内容批: 真解 5 + 塔残页 6 + 章末重打残页 3 = 184
+      // + 40 encounter_skills.yaml = 224 total
+      expect(repo.skillDefs.length, 224,
+          reason: '184 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+              ' + 14 波B 真解残页) + 40 奇遇招');
       expect(repo.encounterSkillIds.length, 40,
           reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
       final mainlineCount = repo.stageDefs.values
