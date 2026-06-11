@@ -28,8 +28,11 @@ Future<void> showStageVictoryDialog({
   String? firstClearTitle,
   String? firstClearSubtitle,
 }) async {
-  // 爆装备 jingle(§10 仪式感):仅装备掉落触发,道具/空掉落不响。
-  if (drops.equipments.isNotEmpty) {
+  // 结算 jingle(§10 仪式感):跨 tier 大境界突破优先(更稀有),其次装备掉落,
+  // 二者同现只响一个不叠播;小层升级/道具/空掉落不响。
+  if (advancements.any((e) => e.result.crossedTier)) {
+    SoundManager.instance.playSfx(SfxId.realmAdvance);
+  } else if (drops.equipments.isNotEmpty) {
     SoundManager.instance.playSfx(SfxId.reward);
   }
   await showDialog<void>(
