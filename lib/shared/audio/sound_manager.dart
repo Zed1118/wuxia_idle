@@ -42,6 +42,12 @@ class SoundManager {
     await _guard(() => _backend.playSfx(sfxAssetPath(id), _sfxEffective));
   }
 
+  /// 直接按 asset 路径播 SFX（平A 按单位变体等「一槽多文件」场景用）。
+  Future<void> playSfxPath(String assetPath) async {
+    if (_settings.muted) return;
+    await _guard(() => _backend.playSfx(assetPath, _sfxEffective));
+  }
+
   Future<void> _guard(Future<void> Function() action) async {
     try {
       await action();

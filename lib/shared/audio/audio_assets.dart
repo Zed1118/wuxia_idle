@@ -24,6 +24,15 @@ enum SfxId {
 String bgmAssetPath(BgmTrack track) => 'audio/bgm/${track.name}.mp3';
 String sfxAssetPath(SfxId id) => 'audio/sfx/${id.name}.mp3';
 
+/// 平A 命中音按出手单位固定变体：我方(teamSide 0)兵刃轻击系 / 敌方(1)重击系各 3。
+/// 文件名即接线：battleHit_<teamSide>_<slotIndex>.mp3。越界 clamp 到既有 6 文件；
+/// 拿不到出手者时调用方走 sfxAssetPath(SfxId.battleHit) 兜底(battleHit.mp3 与 0_1 同源)。
+String battleHitAssetPath({required int teamSide, required int slotIndex}) {
+  final side = teamSide.clamp(0, 1);
+  final slot = slotIndex.clamp(0, 2);
+  return 'audio/sfx/battleHit_${side}_$slot.mp3';
+}
+
 /// 战斗动作 → SFX 纯映射。表现层用，不读/写 BattleState。
 /// 优先级：大招 > 暴击 > 普通命中；闪避/无结果不出声。死亡 SFX v1 不做。
 SfxId? sfxForAction({required BattleAction action, required bool isUltimate}) {
