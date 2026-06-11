@@ -67,4 +67,24 @@ void main() {
       }
     });
   });
+
+  group('treasureGlowColor & treasureSeedColor', () {
+    test('爆品梯度色三档互异', () {
+      final z = treasureSeedColor(EquipmentTier.zhongQi);
+      final b = treasureSeedColor(EquipmentTier.baoWu);
+      final s = treasureSeedColor(EquipmentTier.shenWu);
+      expect({z, b, s}.length, 3);
+    });
+
+    test('glow 与 seed 各 tier 非空', () {
+      for (final t in const [
+        EquipmentTier.zhongQi,
+        EquipmentTier.baoWu,
+        EquipmentTier.shenWu,
+      ]) {
+        expect(treasureGlowColor(t), isNotNull);
+        expect(treasureSeedColor(t), isNotNull);
+      }
+    });
+  });
 }
