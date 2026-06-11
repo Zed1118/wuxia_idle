@@ -1967,14 +1967,55 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: po_shi_strike
-    proficiency:        # 可玩性 P1a · 破招技 per-skill 效果(只配已消费字段)
+    proficiency:        # 减防深度型:interrupt_power_pct 高配(波A 方向 b)
       effects:
         shunShou: { cooldown_delta: -1 }
-        jingTong: { interrupt_window_bonus_ticks: 1 }
-        huaJing: { interrupt_window_bonus_ticks: 2, damage_pct: 0.10 }
+        jingTong: { interrupt_window_bonus_ticks: 1, interrupt_power_pct: 0.15 }
+        huaJing: { interrupt_window_bonus_ticks: 2, damage_pct: 0.10, interrupt_power_pct: 0.30 }
     canInterrupt: true
     aiUsePolicy: saveForInterrupt
     style: gangMeng    # 波A build gate:破招技必须有流派归属(红线)
+
+  # 波A build gate:三流派破招技各一(破势=刚猛既有)。装配 gate 按
+  # style == character.school;autoFill 空破招槽自动填本流派招。
+  # 三招机制差异:刚猛=减防深度型 / 灵巧=踉跄窗口型 / 阴柔=均衡回转型。
+  - id: skill_jie_ying
+    name: 截影
+    description: 身随影动,后发先至。敌势未满处一点寒光,断其将出之招。
+    type: powerSkill
+    powerMultiplier: 750
+    internalForceCost: 100
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: jie_ying_flash
+    proficiency:        # 窗口型:踉跄窗口加长为主,减防低配
+      effects:
+        shunShou: { interrupt_window_bonus_ticks: 1 }
+        jingTong: { interrupt_window_bonus_ticks: 2, interrupt_power_pct: 0.10 }
+        huaJing: { interrupt_window_bonus_ticks: 3, interrupt_power_pct: 0.10 }
+    canInterrupt: true
+    aiUsePolicy: saveForInterrupt
+    style: lingQiao
+
+  - id: skill_fu_mai
+    name: 拂脉
+    description: 看似拂袖,实点经脉。气走偏锋一线,敌招散于将发未发之际。
+    type: powerSkill
+    powerMultiplier: 800
+    internalForceCost: 110
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: fu_mai_touch
+    proficiency:        # 均衡型:中档减防 + CD 回转
+      effects:
+        shunShou: { cooldown_delta: -1 }
+        jingTong: { interrupt_power_pct: 0.20 }
+        huaJing: { interrupt_power_pct: 0.20, interrupt_window_bonus_ticks: 1 }
+    canInterrupt: true
+    aiUsePolicy: saveForInterrupt
+    style: yinRou
 
   - id: skill_qingshan_qingfeng
     name: 青锋绝

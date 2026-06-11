@@ -18,8 +18,19 @@ const _shengShuFallback = ResonanceStageConfig(
   bonusMultiplier: 1.0,
 );
 
-/// P0.5 破招技「破势」defId(skills.yaml)。玩家方专属。
-const _poShiSkillId = 'skill_po_shi';
+/// 波A build gate:按流派匹配破招技(canInterrupt && style == school),
+/// 旧档 5 槽全空 fallback 路径用,与 P0.5「广发破势」行为等价升级。
+/// school null(无主修流派)→ null,不带破招技。
+Iterable<SkillDef>? _matchingInterruptSkill(
+  GameRepository repo,
+  TechniqueSchool? school,
+) {
+  if (school == null) return null;
+  for (final s in repo.skillDefs.values) {
+    if (s.canInterrupt && s.style == school) return [s];
+  }
+  return null;
+}
 
 /// 玩家方 teamSide(fromCharacter 唯一在 _playerToBattle 以 0 调用)。
 const _playerTeamSide = 0;
@@ -267,6 +278,7 @@ class BattleCharacter {
       character.resonanceSkillId,
       character.ultimateSkillId,
       character.equippedEncounterSkillId,
+      character.keySkillId,
     ];
     var skills = <SkillDef>[
       for (final id in loadoutIds)
@@ -286,6 +298,10 @@ class BattleCharacter {
         if (character.equippedEncounterSkillId != null &&
             repo.skillDefs.containsKey(character.equippedEncounterSkillId!))
           repo.getSkill(character.equippedEncounterSkillId!),
+        // 波A build gate 兜底等价:旧档未 autoFill 时,玩家方自动带本流派
+        // 破招技(与旧「广发破势」行为等价升级,流派不匹配则无,见 §1.4)。
+        if (teamSide == _playerTeamSide && character.keySkillId == null)
+          ...?_matchingInterruptSkill(repo, school),
       ];
     }
     // P1.1 候选 3-c:玩家方/师徒 NPC 任一武器 resonanceStage 达到 hasSwordSongEffect
@@ -299,16 +315,9 @@ class BattleCharacter {
           .firstWhere((c) => c.stage == stage, orElse: () => _shengShuFallback);
       if (cfg.hasSwordSongEffect) swordSongActive = true;
     }
-    // P0.5 简化:破招技「破势」广发玩家方(teamSide==0,fromCharacter 唯一
-    // 在 _playerToBattle 走此路径,敌人走 _enemyToBattle 不享)。
-    // aiUsePolicy=saveForInterrupt 保证 AI 平时不放(非蓄力战 0 DPS 副作用),
-    // 仅敌人蓄力时自动用来破招,故广发无平衡副作用。
-    // P1 再按 build gate(如要求特定流派/共鸣度)。
-    if (teamSide == _playerTeamSide) {
-      if (repo.skillDefs.containsKey(_poShiSkillId)) {
-        skills.add(repo.getSkill(_poShiSkillId));
-      }
-    }
+    // 波A build gate:P0.5「破势广发」已拆——破招技走 keySkillId 第 7 装配槽
+    // (上方 loadoutIds 已含),装配 gate 见 SkillLoadoutService(canInterrupt &&
+    // style == school)。旧档 5 槽全空走上方 fallback 自动带本流派破招技。
 
     return BattleCharacter(
       characterId: character.id,
