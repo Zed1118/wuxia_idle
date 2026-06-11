@@ -45,8 +45,8 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.17.0',
-          reason: 'P1b 藏经阁 Character 加 5 装配槽字段 → 升 0.17.0');
+      expect(save.saveVersion, '0.18.0',
+          reason: '波A Character 加 keySkillId 破招槽 + 奇遇池迁移 → 升 0.18.0');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);
