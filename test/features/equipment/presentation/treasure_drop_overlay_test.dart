@@ -8,7 +8,7 @@ void main() {
   testWidgets('TreasureDropOverlay 动画跑完自动结束回调', (t) async {
     var done = false;
     await t.pumpWidget(MaterialApp(home: Scaffold(body: TreasureDropOverlay(
-      highlight: TreasureHighlight(defId: 'd', name: '倚天神剑',
+      highlight: const TreasureHighlight(defId: 'd', name: '倚天神剑',
           tier: EquipmentTier.shenWu, slot: EquipmentSlot.weapon, iconPath: 'm.png'),
       onDone: () => done = true,
     ))));
