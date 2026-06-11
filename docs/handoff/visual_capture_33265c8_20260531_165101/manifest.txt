@@ -1,4 +1,0 @@
-# visual_capture manifest  sha=33265c8  ts=20260531_165101
-main_menu -> main_menu.png -> READY(全屏兜底)
-technique_panel_tier_all -> technique_panel_tier_all.png -> READY(全屏兜底)
-technique_panel_hero -> technique_panel_hero.png -> READY(全屏兜底)

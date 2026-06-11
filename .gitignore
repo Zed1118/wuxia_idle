@@ -69,3 +69,6 @@ docs/handoff/**/*.pid
 
 # brainstorm visual companion 工作目录(不入库)
 .superpowers/
+
+# Suno 音频候选素材(本地保留不进 git · BGM 扩展二期还要用 · 2026-06-11)
+assets/audio/_suno_candidates/
