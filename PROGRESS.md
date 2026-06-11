@@ -5,6 +5,8 @@
 
 ## 当前阶段
 
+> ✅ **2026-06-11(#3 jingle 扩槽 + #4 工程清理 · `d33a1eec`+`3fb2ebc9`)**:① **defeat/realmAdvance jingle 扩槽**:SfxId +2 槽,素材 V1 推荐 3s 剪辑版(-16 LUFS 与 victory 同产线)。defeat 接「敗」结算 overlay(非 leftWin 一律敗);realmAdvance 接**跨 tier 大境界突破**三处(主线/塔胜利 dialog + 闭关收功),同 dialog 优先级 realmAdvance > reward 只响一个不叠播,小层升级不响保稀有感。dialog jingle 守卫测 +3,全量 1888→**1891 测**/1 skip/analyze 0(worktree 实测,首跑 -44 为 fresh worktree 瞬态,重跑归零)。jingle 四槽全收口,听感待用户终验(release 包需重编才有新音)。② **工程清理**:12 stale agent-* worktree(lock 进程已死)+ 20 已合并分支清场;suno 文档 8 份 + codex 派单 doc 入库;visual_capture 验收图 13 目录 ~217MB 按 throwaway 政策清退(含 5-31 批遗留 tracked 图);_suno_candidates 75MB 入 .gitignore 本地留(BGM 扩展用)。
+
 > ✅ **2026-06-10 续(音频接入 v1 · §12 上线门 E 段素材落位)**:3 BGM + 8 SFX 真素材入库 `assets/audio/{bgm,sfx}/`(**零 Dart 改动**,文件名按 enum 约定,SoundManager 缺素材 no-op 兜底保留)。**BGM**:mainMenu/seclusion=V2 裁切版 candidate_01(128s/148s · 初筛推荐),battle=V1 candidate_01(122s · V2 battle 全 <18s 不合格 · 裁头 0.6s 静音防 loop 空白)。**SFX**:uiTap/uiTabSwitch=V2 tap 两 take 分用(tap +6dB)· battleHit=hit_01 / battleStagger=hit_02(-3dB 次级提示)· battleCrit=crit_02 · battleInterrupt=interrupt_01(+7dB)· **转用**:battleUlt=realmAdvance_v2_01 裁 2.4s+淡出 / battleChargeStart=defeat_v2_02(负向预警)。**留空**:uiPaperOpen(V2 prompt 未产出,no-op)。**迭代1(真玩反馈)**:battle BGM **-6dB**(原盖过战斗音效)+ 新增 `SfxId.victory` 接「勝」结算 overlay(leftWin)+ 既有占位 `reward` 接**主线+塔胜利 dialog 装备掉落**(纯道具/空掉落不响)——victory/reward 用 V1 jingle 3s 剪辑版(loudnorm -16 LUFS,音乐性强补「惊喜震撼感」)。dialog sfx 守卫测 +3。**迭代2**:`BgmScope` 加 scope 栈(dispose 恢复上一层轨道,修「战斗退主菜单 BGM 不切回」)+ bgm_scope 测 +2。**顺带抓到** main checkout `.g.dart` 过期(P1b worktree 跑的 build_runner 没带回,Character 装配槽不入 Isar schema → 装配不落库),已重生成(memory `feedback_wuxia_pen_build_runner` 的 main checkout 变体)。**全量 1883→1888 测**(+5)/1 skip main checkout 实测全绿(.g.dart 重生成后基线坐实)。剩余 jingle(defeat/realmAdvance)+扩展 BGM 8 轨=backlog(`playability_phase2_backlog.md` §七)。
 
 > ✅ **2026-06-10 续(可玩性 P1b 藏经阁+技能装配全闭环 · subagent-driven 11 task · worktree-p1b-cangjingge)**:把 P1a「已解锁但玩家看不见/用不上」接到可见可操作。**schema** Character +5 装配槽(主2辅1共1大1 · 奇遇复用第6槽 `equippedEncounterSkillId`)+ saveVersion 0.16→0.17。**纯域** `SkillLoadout.autoFill`(只填空槽 / 主修2按 power 降序 / 大招≥阈值[yaml] / 共鸣=joint / 境界 gate 用 canEquipAtRealm)。**service** `SkillLoadoutService`(equipSkill sealed gate 结果 + applyAutoFill 落库)。**注入** `BattleState.fromCharacter` availableSkills 改读 6 槽(**5 心法槽全空→fallback 主修全招**,护旧存档/现有测试)+ 删 joint 特殊注入(改走共鸣槽)。**wire** 进战斗前 + 进藏经阁 autoFill(抽 `SkillLoadoutResolver` 共享,非复制)。**UI** `CangJingGeScreen`(6 槽出战配置 + 武学库按主/辅修分组 `SkillProficiencyRow` + 残页 `FragmentProgressRow` + 进入 autoFill)+ 换招 picker(沿 encounter 体例 gate 灰显)+ 熟练度阶段名走 UiStrings 映射 + 主菜单入口 §5.7 门控。**闸门** analyze 0 / 全量 1857→**1883 测**(+26)/1 skip / TDD 先红后绿 / 两阶段 review(控制方读 diff + 全仓 analyze)。**留 backlog**:破招 build gate(§9.1) / 24 招内容 / source tag / 奇遇槽 gate 对齐。spec+plan `docs/superpowers/{specs,plans}/2026-06-10-cangjingge-skill-loadout*`。
@@ -34,8 +36,6 @@
 > 2026-05-28 三条(CHECKLIST v1.5+ROADMAP v1.8+R4 派单 / 装备 drop 全覆盖+P2.1 4 批 / P3.2.B+P1.2+P3.x+过夜清理 · 1508→1519 测)已归档,详末尾「2026-05-25/26/27/28 详条归档」段。
 
 ---
-
-**2026-05-25/26/27/28 归档**:见末尾归档段。
 
 ## 已完成(近 W6 起,早期归档见末尾)
 
