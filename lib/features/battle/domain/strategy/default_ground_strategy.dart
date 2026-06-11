@@ -233,8 +233,13 @@ class DefaultGroundStrategy implements BattleStrategy {
     // === P0 踉跄 pre-step(Task 8 · 必须在蓄力判定之前)===
     // (a) 踉跄中:跳过本次行动,递减 stagger(踉跄的单位本就不该继续蓄力推进)。
     if (preActor.staggerTicksRemaining > 0) {
+      final remainingStagger = preActor.staggerTicksRemaining - 1;
       final after = preActor.copyWith(
-        staggerTicksRemaining: preActor.staggerTicksRemaining - 1,
+        staggerTicksRemaining: remainingStagger,
+        // 踉跄结束清掉减防 override(波A interrupt_power_pct)。
+        staggerDefenseDownOverride: remainingStagger > 0
+            ? preActor.staggerDefenseDownOverride
+            : null,
         actionPoint: preActor.actionPoint - 1000,
       );
       final lt = preState.leftTeam.toList();
@@ -367,6 +372,15 @@ class DefaultGroundStrategy implements BattleStrategy {
       final cs = target.chargingSkill!;
       targetCd[cs.id] = cs.cooldownTurns > 0 ? cs.cooldownTurns : 1;
     }
+    // 波A interrupt_power_pct(方向 b):有效减防 = base × (1 + 当阶 power_pct),
+    // clamp 到 interruptPowerCap 红线(防御率减伤不破)。
+    final staggerDefDown = brokeCharging
+        ? (n.combat.bossCharge.staggerDefenseDown *
+                (1 +
+                    SkillProficiency.interruptPowerPct(skill,
+                        preActor.skillUses[skill.id] ?? 0, n.skillProficiency)))
+            .clamp(0.0, n.combat.bossCharge.interruptPowerCap)
+        : null;
     final targetAfter = target.copyWith(
       currentHp: newTargetHp,
       isAlive: newTargetHp > 0,
@@ -380,6 +394,9 @@ class DefaultGroundStrategy implements BattleStrategy {
               SkillProficiency.interruptWindowBonus(skill,
                   preActor.skillUses[skill.id] ?? 0, n.skillProficiency)
           : target.staggerTicksRemaining,
+      staggerDefenseDownOverride: brokeCharging
+          ? staggerDefDown
+          : target.staggerDefenseDownOverride,
     );
 
     // 攻方扣内力 + 写 CD + actionPoint -= 1000（保留余数）
@@ -468,10 +485,12 @@ class DefaultGroundStrategy implements BattleStrategy {
     bool forceCritical = false,
   }) {
     // P0 踉跄减防:踉跄期间防御率乘 (1 - staggerDefenseDown) → 增伤。
+    // 波A:override 非 null 时用破招结算时写入的加深值(base × (1+power_pct))。
     var effDefRate = defender.defenseRate;
     if (defender.staggerTicksRemaining > 0) {
-      effDefRate =
-          defender.defenseRate * (1 - n.combat.bossCharge.staggerDefenseDown);
+      final down = defender.staggerDefenseDownOverride ??
+          n.combat.bossCharge.staggerDefenseDown;
+      effDefRate = defender.defenseRate * (1 - down);
     }
     // 可玩性 P1a:从攻方进场快照 skillUses 派生该招熟练度综合倍率(敌人空 → 1.0)。
     final uses = attacker.skillUses[skill.id] ?? 0;

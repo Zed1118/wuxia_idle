@@ -124,6 +124,7 @@ combat:
     default_charge_ticks: 3       # 招牌技蓄力 tick 数
     default_stagger_ticks: 2      # 被破招后跳过行动 tick 数
     stagger_defense_down: 0.3     # 踉跄期间防御率乘 (1 - 此值)
+    interrupt_power_cap: 0.5      # 波A:减防 × (1+interrupt_power_pct) 有效值上限(红线)
 
 # =============================================================================
 # 2. 49 级境界系统

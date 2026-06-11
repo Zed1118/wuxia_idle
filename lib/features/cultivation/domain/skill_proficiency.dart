@@ -42,4 +42,10 @@ class SkillProficiency {
   static int interruptWindowBonus(
       SkillDef skill, int uses, SkillProficiencyConfig cfg) =>
       skill.proficiency?.interruptWindowBonusAt(stageFor(uses, cfg).id) ?? 0;
+
+  /// 波A interrupt_power_pct(方向 b):该破招技当阶的减防加深比例(0 = 无加成)。
+  /// 消费方算有效减防 = base × (1 + 此值),并 clamp 到 interruptPowerCap。
+  static double interruptPowerPct(
+      SkillDef skill, int uses, SkillProficiencyConfig cfg) =>
+      skill.proficiency?.interruptPowerPctAt(stageFor(uses, cfg).id) ?? 0.0;
 }

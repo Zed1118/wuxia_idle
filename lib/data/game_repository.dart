@@ -1325,12 +1325,35 @@ class GameRepository {
   /// 波A build gate 红线:canInterrupt=true 的破招技必须有 style 流派归属
   /// (装配 gate 按 style == character.school 过滤,无 style 的破招技永不可装配,
   /// 属配置错误 fail-fast)。
+  /// 波A interrupt_power_pct 红线:任何阶的有效减防
+  /// staggerDefenseDown × (1 + pct) 不得超过 interruptPowerCap(cap ∈ (0, 0.5])。
   void _enforceInterruptSkillRedLines() {
+    final bc = numbers.combat.bossCharge;
+    if (bc.interruptPowerCap <= 0 || bc.interruptPowerCap > 0.5) {
+      throw StateError(
+        'boss_charge.interruptPowerCap=${bc.interruptPowerCap},'
+        '应 ∈ (0, 0.5](波A 减防红线)',
+      );
+    }
     for (final s in skillDefs.values) {
-      if (s.canInterrupt && s.style == null) {
+      if (!s.canInterrupt) continue;
+      if (s.style == null) {
         throw StateError(
           'skill ${s.id} canInterrupt=true 但缺 style 流派归属(波A build gate 红线)',
         );
+      }
+      final prof = s.proficiency;
+      if (prof == null) continue;
+      for (final stage in numbers.skillProficiency.stages) {
+        final eff =
+            bc.staggerDefenseDown * (1 + prof.interruptPowerPctAt(stage.id));
+        if (eff > bc.interruptPowerCap) {
+          throw StateError(
+            'skill ${s.id} 阶 ${stage.id} 有效减防 '
+            '${eff.toStringAsFixed(3)} > cap ${bc.interruptPowerCap}'
+            '(波A interrupt_power_pct 红线)',
+          );
+        }
       }
     }
   }

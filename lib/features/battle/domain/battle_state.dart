@@ -158,6 +158,11 @@ class BattleCharacter {
   /// P0 破招:踉跄剩余 tick(0=未踉跄)。
   final int staggerTicksRemaining;
 
+  /// 波A interrupt_power_pct(方向 b):本次踉跄的有效减防比例
+  /// (= base × (1 + 放招者该破招技当阶 power_pct),破招结算时写入,
+  /// 踉跄结束清 null)。null=用 numbers 基础值(兼容直接构造的测试 fixture)。
+  final double? staggerDefenseDownOverride;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -191,6 +196,7 @@ class BattleCharacter {
     this.chargingSkill,
     this.chargeTicksRemaining = 0,
     this.staggerTicksRemaining = 0,
+    this.staggerDefenseDownOverride,
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -383,6 +389,7 @@ class BattleCharacter {
     Object? chargingSkill = _unset,
     int? chargeTicksRemaining,
     int? staggerTicksRemaining,
+    Object? staggerDefenseDownOverride = _unset,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -425,6 +432,9 @@ class BattleCharacter {
           ? this.chargingSkill : chargingSkill as SkillDef?,
       chargeTicksRemaining: chargeTicksRemaining ?? this.chargeTicksRemaining,
       staggerTicksRemaining: staggerTicksRemaining ?? this.staggerTicksRemaining,
+      staggerDefenseDownOverride: identical(staggerDefenseDownOverride, _unset)
+          ? this.staggerDefenseDownOverride
+          : staggerDefenseDownOverride as double?,
     );
   }
 

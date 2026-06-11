@@ -294,6 +294,162 @@ void main() {
     expect(a.interrupted, isFalse);
   });
 
+  // ── 波A interrupt_power_pct(方向 b:踉跄减防加深)───────────────────────────
+  group('波A interrupt_power_pct 减防加深', () {
+    /// 带 power_pct 的破招技(jingTong 阶 0.4)。
+    const breakerWithPower = SkillDef(
+      id: 'skill_p0_breaker_power',
+      name: '破招式·深',
+      description: '波A power_pct 测试用',
+      type: SkillType.powerSkill,
+      powerMultiplier: 1000,
+      internalForceCost: 100,
+      cooldownTurns: 3,
+      requiresManualTrigger: false,
+      visualEffect: 'stub',
+      canInterrupt: true,
+      proficiency: SkillProficiencyEffects({}, {}, {'jingTong': 0.4}, {}),
+    );
+
+    BattleState makePowerState({
+      required int breakerUses,
+      SkillDef breaker = breakerWithPower,
+      int playerInternalForce = 10000,
+      int playerEqAtk = 1500,
+    }) {
+      final player = BattleCharacter(
+        characterId: 1,
+        name: '玩家',
+        realmTier: RealmTier.yiLiu,
+        realmLayer: RealmLayer.qiMeng,
+        school: TechniqueSchool.gangMeng,
+        maxHp: 12000,
+        currentHp: 12000,
+        maxInternalForce: 10000,
+        currentInternalForce: playerInternalForce,
+        speed: 400,
+        criticalRate: 0.0,
+        evasionRate: 0.0,
+        defenseRate: 0.0,
+        totalEquipmentAttack: playerEqAtk,
+        mainCultivationLayer: CultivationLayer.daCheng,
+        availableSkills: <SkillDef>[breaker, playerNormal],
+        skillCooldowns: const {},
+        skillUses: {breaker.id: breakerUses},
+        activeBuffs: const [],
+        actionPoint: 0,
+        isAlive: true,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+      const boss = BattleCharacter(
+        characterId: -1,
+        name: 'Boss',
+        realmTier: RealmTier.yiLiu,
+        realmLayer: RealmLayer.qiMeng,
+        school: TechniqueSchool.gangMeng,
+        maxHp: 50000,
+        currentHp: 50000,
+        maxInternalForce: 10000,
+        currentInternalForce: 10000,
+        // 速度足够高,保证踉跄 2 次行动在 Boss 被打死前完成(测「踉跄结束清 override」)。
+        speed: 100,
+        criticalRate: 0.0,
+        evasionRate: 0.0,
+        defenseRate: 0.3,
+        totalEquipmentAttack: 500,
+        mainCultivationLayer: CultivationLayer.daCheng,
+        availableSkills: <SkillDef>[],
+        skillCooldowns: {},
+        activeBuffs: [],
+        actionPoint: 0,
+        isAlive: true,
+        teamSide: 1,
+        slotIndex: 0,
+        isBoss: true,
+        chargingSkill: bossSignature,
+        chargeTicksRemaining: 2,
+      );
+      return BattleState.initial(leftTeam: [player], rightTeam: const [boss]);
+    }
+
+    BattleCharacter runUntilInterrupt(BattleState s0, SkillDef breaker) {
+      var s = strategy.requestUltimate(s0, 1, breaker);
+      final rng = Random(7);
+      var guard = 0;
+      while (guard < 50 && bossOf(s).chargingSkill != null) {
+        s = strategy.tick(s, numbers, rng: rng);
+        guard++;
+      }
+      return bossOf(s);
+    }
+
+    test('jingTong 阶 0.4 → override = base × 1.4', () {
+      final boss = runUntilInterrupt(
+          makePowerState(breakerUses: 300), breakerWithPower);
+      final expected = numbers.combat.bossCharge.staggerDefenseDown * 1.4;
+      expect(boss.staggerDefenseDownOverride, isNotNull,
+          reason: '破招结算应写入减防 override');
+      expect(boss.staggerDefenseDownOverride!, closeTo(expected, 1e-9));
+    });
+
+    test('chuShi 阶(0 uses)无 pct → override = base 值', () {
+      final boss = runUntilInterrupt(
+          makePowerState(breakerUses: 0), breakerWithPower);
+      expect(
+        boss.staggerDefenseDownOverride!,
+        closeTo(numbers.combat.bossCharge.staggerDefenseDown, 1e-9),
+      );
+    });
+
+    test('超 cap 的 pct 被 clamp 到 interruptPowerCap(红线语义)', () {
+      const extremeBreaker = SkillDef(
+        id: 'skill_p0_breaker_extreme',
+        name: '破招式·极',
+        description: '波A cap clamp 测试用',
+        type: SkillType.powerSkill,
+        powerMultiplier: 1000,
+        internalForceCost: 100,
+        cooldownTurns: 3,
+        requiresManualTrigger: false,
+        visualEffect: 'stub',
+        canInterrupt: true,
+        proficiency: SkillProficiencyEffects({}, {}, {'jingTong': 5.0}, {}),
+      );
+      final boss = runUntilInterrupt(
+          makePowerState(breakerUses: 300, breaker: extremeBreaker),
+          extremeBreaker);
+      expect(
+        boss.staggerDefenseDownOverride!,
+        closeTo(numbers.combat.bossCharge.interruptPowerCap, 1e-9),
+      );
+    });
+
+    test('踉跄结束 → override 清 null', () {
+      // 低伤玩家(内力仅够一次破招 + 0 装攻):Boss 不会在踉跄结束前被打死。
+      var s = strategy.requestUltimate(
+          makePowerState(
+              breakerUses: 300, playerInternalForce: 200, playerEqAtk: 0),
+          1,
+          breakerWithPower);
+      final rng = Random(7);
+      var guard = 0;
+      var sawStagger = false;
+      while (guard < 200 && !s.isFinished) {
+        s = strategy.tick(s, numbers, rng: rng);
+        final boss = bossOf(s);
+        if (boss.staggerTicksRemaining > 0) sawStagger = true;
+        if (sawStagger && boss.staggerTicksRemaining == 0) {
+          expect(boss.staggerDefenseDownOverride, isNull,
+              reason: '踉跄结束应清掉减防 override');
+          return;
+        }
+        guard++;
+      }
+      fail('未走到踉跄结束状态(guard=$guard, sawStagger=$sawStagger)');
+    });
+  });
+
   /// 测 D/E 用:直接构造单 actor tick,Boss(踉跄)在场。
   /// 左=Boss(踉跄,先手),右=玩家(被动靶子,不出手以便只观察 Boss)。
   BattleState makeStateStaggerD() {
