@@ -1,2 +1,0 @@
-# visual_capture manifest  sha=b194e08  ts=20260531_164139
-technique_panel_tier_all -> technique_panel_tier_all.png -> READY(全屏兜底)
