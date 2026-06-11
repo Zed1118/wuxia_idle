@@ -413,6 +413,12 @@ class _SlotTile extends ConsumerWidget {
       );
       return;
     }
+    if (result is SlotEquipNotUnlocked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.cangjingNotUnlocked)),
+      );
+      return;
+    }
     onChanged(character.id);
   }
 
@@ -432,9 +438,14 @@ class _SlotTile extends ConsumerWidget {
       numbers: numbers,
     );
     return switch (kind) {
+      // 波B:主修/大招槽候选 += 已解锁本流派真解/残页(resolver 已按
+      // isUnlocked + style==school 过滤;境界 gate picker 灰显)。
       _SlotKind.main1 ||
       _SlotKind.main2 ||
-      _SlotKind.ultimate => sources.mainTechniqueSkills,
+      _SlotKind.ultimate => [
+        ...sources.mainTechniqueSkills,
+        ...sources.dropSkills,
+      ],
       _SlotKind.assist => sources.assistTechniqueSkills,
       _SlotKind.resonance => [
         if (sources.jointSkill != null) sources.jointSkill!,
@@ -520,12 +531,14 @@ class _LibrarySection extends ConsumerWidget {
       characterAllTechniquesProvider(character.id),
     );
     final numbers = ref.watch(numbersConfigProvider);
+    final unlockedAsync = ref.watch(unlockedSkillIdSetProvider);
     final equippedIds = <String>{
       ?character.mainSkillId1,
       ?character.mainSkillId2,
       ?character.assistSkillId,
       ?character.resonanceSkillId,
       ?character.ultimateSkillId,
+      ?character.keySkillId,
       ?character.equippedEncounterSkillId,
     };
 
@@ -544,7 +557,12 @@ class _LibrarySection extends ConsumerWidget {
               'load error: $e',
               style: const TextStyle(color: WuxiaColors.hpLow, fontSize: 12),
             ),
-            data: (techs) => _buildGroups(techs, numbers, equippedIds),
+            data: (techs) => _buildGroups(
+              techs,
+              numbers,
+              equippedIds,
+              unlockedAsync.value ?? const <String>{},
+            ),
           ),
         ],
       ),
@@ -555,6 +573,7 @@ class _LibrarySection extends ConsumerWidget {
     List<Technique> techs,
     NumbersConfig numbers,
     Set<String> equippedIds,
+    Set<String> unlockedIds,
   ) {
     if (!GameRepository.isLoaded) return const SizedBox.shrink();
     final repo = GameRepository.instance;
@@ -605,6 +624,61 @@ class _LibrarySection extends ConsumerWidget {
           ),
         ),
       );
+    }
+
+    // 波B 秘传组:已解锁 + 本流派的真解/残页招(与装配池同一过滤语义)。
+    // uses 计入主修 skillUsageCount(battle_resolution standalone 落账)。
+    final school = character.school;
+    if (school != null) {
+      final mainTech = sorted
+          .where((t) => t.role == TechniqueRole.main)
+          .toList();
+      final secretRows = <Widget>[];
+      final drops = repo.skillDefs.values
+          .where((s) =>
+              (s.source == SkillSource.mainlineDrop ||
+                  s.source == SkillSource.fragment) &&
+              s.style == school &&
+              unlockedIds.contains(s.id))
+          .toList()
+        ..sort((a, b) {
+          final t = (a.tier ?? 0).compareTo(b.tier ?? 0);
+          return t != 0 ? t : a.id.compareTo(b.id);
+        });
+      for (final skill in drops) {
+        secretRows.add(
+          SkillProficiencyRow(
+            skill: skill,
+            uses: mainTech.isEmpty
+                ? 0
+                : mainTech.first.skillUsageCount.countOf(skill.id),
+            cfg: numbers.skillProficiency,
+            equipped: equippedIds.contains(skill.id),
+          ),
+        );
+      }
+      if (secretRows.isNotEmpty) {
+        groups.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  UiStrings.cangjingSecretGroupTitle,
+                  style: TextStyle(
+                    color: WuxiaUi.qing,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                ...secretRows,
+              ],
+            ),
+          ),
+        );
+      }
     }
 
     if (groups.isEmpty) {

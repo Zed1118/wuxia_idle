@@ -254,7 +254,18 @@ class BattleResolutionService {
         mainTechId: mainTechId,
         techniqueDefLookup: techniqueDefLookup,
       );
-      if (owner == null) continue; // skill 不属于该角色任何心法，忽略
+      // 波B:standalone 招(破招技/奇遇招/真解残页,不属任何心法 def)计入主修
+      // 账本(skillUsageCount 仅 increment,不推进修炼度——修炼度语义仍只归
+      // 本心法招式)。BattleCharacter.fromCharacter 的 skillUses 快照读的就是
+      // 主修 skillUsageCount,此处不落账则 standalone 招熟练度永远初识(波A 残留)。
+      if (owner == null) {
+        if (mainTech == null) continue;
+        mainTech.skillUsageCount.increment(skillId, count);
+        skillUsageIncrements
+            .putIfAbsent(mainTech.id, () => <String, int>{})
+            .update(skillId, (v) => v + count, ifAbsent: () => count);
+        continue;
+      }
 
       if (mainTech != null && owner.id == mainTech.id) {
         // 主修：调 CultivationService，一次性 skillUsage++ + progress++ + 升层

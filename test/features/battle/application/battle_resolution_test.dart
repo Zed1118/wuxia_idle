@@ -627,10 +627,11 @@ void main() {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 11. skillId 不属于该角色任何心法 → 忽略
+  // 11. skillId 不属于该角色任何心法 → 落账主修(波B 语义变更:standalone
+  //     招熟练度需累积;修炼度仍不推进)。旧语义「忽略」详波B group。
   // ──────────────────────────────────────────────────────────────────────────
 
-  test('skill 不属于该角色任何心法 → 忽略，不抛错也不计入', () {
+  test('skill 不属于该角色任何心法 → 落账主修 skillUsageCount,修炼度不动', () {
     final ch = buildCharacter(id: 1, mainTechId: 200);
     final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
     final strangeSkill = buildSkill('skill_unknown');
@@ -658,8 +659,10 @@ void main() {
       dropService: dropSvc(),
     );
 
-    expect(mainTech.cultivationProgress, 0);
-    expect(mainTech.skillUsageCount, isEmpty);
+    expect(mainTech.cultivationProgress, 0,
+        reason: 'standalone 招不推进修炼度');
+    expect(mainTech.skillUsageCount.countOf('skill_unknown'), 1,
+        reason: '波B:standalone 招落账主修(熟练度快照来源)');
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -999,6 +1002,77 @@ void main() {
 
       expect(result.defeatPenaltyByCharacter, isEmpty);
       expect(ch.internalForce, 6000);
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // 波B:standalone 招(破招技/奇遇招/真解残页,不属任何心法 def)使用计数落账
+  // ──────────────────────────────────────────────────────────────────────────
+
+  group('波B standalone 招落账', () {
+    test('无归属心法的招 → 计入主修 skillUsageCount,不推进修炼度', () {
+      final ch = buildCharacter(id: 1, mainTechId: 200);
+      final mainTech =
+          buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+      final standalone = buildSkill('skill_standalone_drop');
+
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 5,
+        result: BattleResult.leftWin,
+        actionLog: [
+          buildAction(actorId: 1, skill: standalone),
+          buildAction(actorId: 1, skill: standalone),
+          buildAction(actorId: 1, skill: standalone),
+        ],
+      );
+
+      final result = BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: {
+          1: [mainTech]
+        },
+        stageDef: buildStage(),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        // 主修 def 不含 standalone 招 → owner 找不到 → 走 fallback 落账主修。
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+      );
+
+      expect(mainTech.skillUsageCount.countOf('skill_standalone_drop'), 3,
+          reason: 'standalone 招应计入主修账本(熟练度快照来源,波A 残留修复)');
+      expect(mainTech.cultivationProgress, 0,
+          reason: 'standalone 招不应推进主修修炼度');
+      expect(result.skillUsageIncrements[200]?['skill_standalone_drop'], 3,
+          reason: '增量表应含 standalone 招(caller putAll 写回)');
+    });
+
+    test('无主修心法 → standalone 招忽略不抛', () {
+      final ch = buildCharacter(id: 1, mainTechId: null);
+      final standalone = buildSkill('skill_standalone_drop');
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 2,
+        result: BattleResult.leftWin,
+        actionLog: [buildAction(actorId: 1, skill: standalone)],
+      );
+      final result = BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: const {},
+        stageDef: buildStage(),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+      );
+      expect(result.skillUsageIncrements, isEmpty);
     });
   });
 }
