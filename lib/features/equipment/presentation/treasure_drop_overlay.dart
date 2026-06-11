@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../../data/game_repository.dart';
+import '../../../shared/audio/audio_assets.dart';
+import '../../../shared/audio/sound_manager.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../application/drop_service.dart';
 import '../domain/treasure_highlight.dart';
 
 const String _kInkBlobAsset = 'assets/ui/mj/caption_ink_blob.png';
@@ -110,4 +114,83 @@ class TreasureDropContent extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 爆品动画 overlay(showGeneralDialog 调起,自管 AnimationController)。
+/// 动画跑完或点击跳过 → onDone。总时长 1.3s。
+class TreasureDropOverlay extends StatefulWidget {
+  final TreasureHighlight highlight;
+  final VoidCallback onDone;
+  const TreasureDropOverlay({super.key, required this.highlight, required this.onDone});
+
+  @override
+  State<TreasureDropOverlay> createState() => _TreasureDropOverlayState();
+}
+
+class _TreasureDropOverlayState extends State<TreasureDropOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  bool _finished = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1300))
+      ..addStatusListener((s) {
+        if (s == AnimationStatus.completed) _finish();
+      })
+      ..forward();
+  }
+
+  void _finish() {
+    if (_finished) return;
+    _finished = true;
+    widget.onDone();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _finish, // 点击跳过
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        color: const Color(0xB3000000), // 半透明暗幕
+        child: AnimatedBuilder(
+          animation: _ctrl,
+          builder: (_, _) => TreasureDropContent(highlight: widget.highlight, t: _ctrl.value),
+        ),
+      ),
+    );
+  }
+}
+
+/// 公共触发:有 ≥门槛爆品且 [gate] 时,播动画(+reward 音)并 await 至结束。
+/// 主线传 gate=true;塔传 gate=isFirstClear(沿现有 reward gate)。
+Future<void> playTreasureDropIfAny(
+    BuildContext context, DropResult drops, {required bool gate}) async {
+  if (!gate || !GameRepository.isLoaded) return;
+  final minTier = GameRepository.instance.numbers.treasureDrop.minTier;
+  final candidates = drops.equipments.map((e) {
+    final def = GameRepository.instance.getEquipment(e.defId);
+    return TreasureHighlight(
+        defId: e.defId, name: def.name, tier: def.tier,
+        slot: def.slot, iconPath: def.iconPath);
+  }).toList();
+  final hl = pickTreasureHighlight(candidates, minTier);
+  if (hl == null || !context.mounted) return;
+  SoundManager.instance.playSfx(SfxId.reward);
+  await showGeneralDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.transparent,
+    transitionDuration: Duration.zero,
+    pageBuilder: (ctx, _, _) => TreasureDropOverlay(
+        highlight: hl, onDone: () => Navigator.of(ctx).pop()),
+  );
 }
