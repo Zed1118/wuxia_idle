@@ -252,6 +252,7 @@ void main() {
         'visualEffect': 'sword_rain_listen',
         'tier': 3,
         'narrativeInsightId': 'ting_yu_jian',
+        'source': 'encounter', // 波B:isEncounterSkill 判 source==encounter
       });
 
       expect(def.narrativeInsightId, 'ting_yu_jian');

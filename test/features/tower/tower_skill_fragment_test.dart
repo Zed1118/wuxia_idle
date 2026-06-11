@@ -55,9 +55,9 @@ void main() {
   });
 
   test('② Boss 层配不存在的 dropSkillFragmentId → 抛 StateError', () async {
-    // floor 10 现配 dropSkillFragmentId: skill_lingqiao_mingjia_ult(T3);替为幽灵 id。
+    // floor 10 现配 dropSkillFragmentId: skill_yan_zi_san_chao(波B);替为幽灵 id。
     String inject(String s) => s.replaceFirst(
-          'dropSkillFragmentId: skill_lingqiao_mingjia_ult',
+          'dropSkillFragmentId: skill_yan_zi_san_chao',
           'dropSkillFragmentId: ghost_frag_not_loaded',
         );
     expect(

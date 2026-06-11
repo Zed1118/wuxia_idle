@@ -13,14 +13,14 @@
 - [x] **技能装配限制 UI**(§2.6):~~P1b 2026-06-10 落地~~(6 槽装配栏 + picker gate);波A 2026-06-11 扩第 7 破招槽(`keySkillId`,canInterrupt && style==school gate)。
 - [x] **藏经阁 screen**:~~P1b 2026-06-10 落地~~(CangJingGeScreen 出战配置+武学库+残页区);波A 扩破招槽 tile。
 - [ ] **统一进度展示组件 wiring**(§三):`MeridianBar` 已就绪,但熟练度/共鸣度/修炼度/残页四系统统一接到"当前阶段+进度+当前效果+下一阶段效果+来源"的展示规范,需逐处 wire。P1b。
-- [ ] **24 招全内容**(§16 #1):P1a 只做框架 + 最小集(3 主线真解 + 1-2 套残页 + 少数 per-skill 效果)。24 招完整名字/流派/倍率/效果/占位 key 是独立内容批。
+- [x] **24 招全内容**(波B 2026-06-11):真解 6(章末 Boss 首通 · 同招=Boss 蓄力技双用 canon)+ 塔残页 6(Boss 层全配)+ 章末重打残页 3(Ch4-6 farm)+ 破招 3 = 玩家侧流派 6/6/6;Boss 技 6 = 真解双用。14 新招全内容(名/流派/倍率/效果/文案);装配池 wiring(resolver/picker/equip gate/武学库秘传组)+ standalone 招熟练度落账修复一并收口。spec `2026-06-11-wave-b-24-skills-content-design.md`。
 - [ ] **战报诊断规则**(§11.4):killed_by_charge / mob_overrun 等失败复盘提示 + jump_target。归 P3 战后体验,不在 P1a。
 - [x] **per-skill 熟练度效果铺广**(波A 2026-06-11):53 ultimate(含 6 轻功)流派模板(刚猛伤害加速/灵巧CD/阴柔混合)+ 真解/招牌手工高半档;化境 damage_pct 系死配置(combinedMult cap 1.30)改 CD。normalAttack/powerSkill 留全局曲线(4 key 词汇表下无差异化空间,设计立场非砍量)。
 
 ## 二 · P1a 默认拍板(用了默认值,二期可推翻)
 
 - [ ] **残页集齐数量**:P1a 取 §16 #4 默认 = 真解 1 本即解锁 / 爬塔残页 5 片一套(进 numbers.yaml)。实玩后可调。
-- [ ] **奇遇旧 unlock 池不并入新结构**:P1a 让奇遇技能池(`equippedEncounterSkillId` + EncounterProgress)与新 `skillUnlockProgress` 两套并存,避免大改。二期若要统一来源模型,在此合并。
+- [x] **奇遇旧 unlock 池不并入新结构**:~~两套并存~~ 波A A4 已统一迁入 skillUnlockProgress(0.18 迁移);波B 装配池 wiring 后 drop/奇遇消费全走新池。
 - [x] **§9.1 破招技按 build gate**(波A 2026-06-11):拆 fromCharacter 广发硬编码,三流派破招技各一(破势/截影/拂脉,SkillDef.style 红线)走第 7 装配槽;autoFill 自动填本流派 + 旧档 fallback 等价,P0 手感不倒退。
 
 ## 三 · P1b(P1 的表现层半,P1a 之后接着做)
@@ -52,7 +52,7 @@
 - [x] **解锁态消费**:P1b 装配槽注入 + 波A A4 收口(unlockedSkillIdSetProvider 单一真相源,奇遇 picker/character_panel 真消费 isUnlocked)。
 - [x] **interrupt_power_pct 实装**(波A 2026-06-11 · 用户拍 b 方向):踉跄减防 = base × (1+当阶 pct) clamp `interrupt_power_cap` 0.5 红线;三破招技差异化(深度/窗口/均衡型)。
 - [x] **source tag**(波A 2026-06-11):SkillDef.source 5 枚举,skills+encounter_skills **210 招**全量回填 + 5 条红线;奇遇旧池同步迁入 skillUnlockProgress(0.18 迁移)。消费方=红线+P4 藏经阁来源显示。
-- [~] **高熟练度全量平衡扫描**(2026-06-10 焦点版已做 · `ce2ebdba`):balance_simulator 已加 `proficiencyUses` 维度,焦点扫了 3 真解 Boss 关 floor+ceiling(floor +8~57pt / ceiling 不破 100%,未破甜区)。**剩**:全 30 关高熟练度 sweep(扩到 _summarize 全表)留二期。
+- [x] **高熟练度全量平衡扫描**(波B 2026-06-11 全表版):30 mainline × floor/ceiling × uses{0,800} × 25 seed 全表 sweep 入 balance_simulator(常驻测,容噪 10pt 单调断言 + mean delta ≥ 0)。首跑 mean +8.3pt 全过;蓄力 Boss 难度面变化一并入读数(01_05 floor 变易 / 05_05 ceiling fresh 0%→满熟练 76%,熟练度成跨阶杠杆)。难度微调候选待用户真玩拍板。
 
 ## 七 · 音频二期(v1 接入后的滚动项 · 2026-06-10 起)
 
