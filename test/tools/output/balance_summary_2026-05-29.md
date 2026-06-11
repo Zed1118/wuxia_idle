@@ -10,7 +10,7 @@
 | stage_01_02 | xueTu | — | 1 | 100.0% | 100.0% |
 | stage_01_03 | xueTu | — | 1 | 100.0% | 100.0% |
 | stage_01_04 | xueTu | Boss | 1 | 100.0% | 100.0% |
-| stage_01_05 | xueTu | Boss | 1 | 68.0% | 100.0% |
+| stage_01_05 | xueTu | Boss | 1 | 96.0% | 100.0% |
 | stage_02_01 | sanLiu | — | 2 | 100.0% | 100.0% |
 | stage_02_02 | sanLiu | — | 2 | 100.0% | 100.0% |
 | stage_02_03 | sanLiu | — | 2 | 100.0% | 100.0% |
@@ -20,7 +20,7 @@
 | stage_03_02 | erLiu | — | 3 | 86.0% | 98.0% |
 | stage_03_03 | erLiu | — | 3 | 24.0% | 100.0% |
 | stage_03_04 | erLiu | Boss | 3 | 12.0% | 98.0% |
-| stage_03_05 | erLiu | Boss | 3 | 0.0% | 96.0% |
+| stage_03_05 | erLiu | Boss | 3 | 72.0% | 96.0% |
 | stage_04_01 | yiLiu | — | 4 | 100.0% | 100.0% |
 | stage_04_02 | yiLiu | — | 4 | 96.0% | 100.0% |
 | stage_04_03 | yiLiu | — | 4 | 84.0% | 100.0% |
@@ -47,6 +47,7 @@
   - stage_01_02:floor 100% / ceiling 100%
   - stage_01_03:floor 100% / ceiling 100%
   - stage_01_04:floor 100% / ceiling 100%
+  - stage_01_05:floor 96% / ceiling 100%
   - stage_02_01:floor 100% / ceiling 100%
   - stage_02_02:floor 100% / ceiling 100%
   - stage_02_03:floor 100% / ceiling 100%
