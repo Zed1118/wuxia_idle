@@ -276,7 +276,17 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       isUltimate: isUltimateCaptionSkill(action.skill),
     );
     if (sfx != null) {
-      SoundManager.instance.playSfx(sfx);
+      // 平A 按出手单位放固定变体音色（我方轻击系/敌方重击系）；其余槽位单文件。
+      if (sfx == SfxId.battleHit && actor != null) {
+        SoundManager.instance.playSfxPath(
+          battleHitAssetPath(
+            teamSide: actor.teamSide,
+            slotIndex: actor.slotIndex,
+          ),
+        );
+      } else {
+        SoundManager.instance.playSfx(sfx);
+      }
     }
   }
 

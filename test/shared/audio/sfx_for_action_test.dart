@@ -57,4 +57,31 @@ void main() {
     final a = _action(attackResult: _hit(isCritical: false));
     expect(sfxForAction(action: a, isUltimate: false), SfxId.battleHit);
   });
+
+  group('battleHitAssetPath 平A 按单位变体映射', () {
+    test('敌我 6 槽位 → 6 个不同变体文件', () {
+      final paths = <String>{};
+      for (final side in [0, 1]) {
+        for (final slot in [0, 1, 2]) {
+          paths.add(battleHitAssetPath(teamSide: side, slotIndex: slot));
+        }
+      }
+      expect(paths, hasLength(6));
+      expect(
+        paths,
+        everyElement(matches(r'^audio/sfx/battleHit_[01]_[012]\.mp3$')),
+      );
+    });
+
+    test('越界 clamp 不产出缺失文件路径（群战多槽/异常 side 兜底）', () {
+      expect(
+        battleHitAssetPath(teamSide: 2, slotIndex: 7),
+        'audio/sfx/battleHit_1_2.mp3',
+      );
+      expect(
+        battleHitAssetPath(teamSide: -1, slotIndex: -1),
+        'audio/sfx/battleHit_0_0.mp3',
+      );
+    });
+  });
 }
