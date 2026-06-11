@@ -1106,16 +1106,24 @@ class BossChargeConfig {
   final int defaultChargeTicks;
   final int defaultStaggerTicks;
   final double staggerDefenseDown;
+
+  /// 波A:破招减防加深 cap——staggerDefenseDown × (1 + interrupt_power_pct)
+  /// 的有效值不得超过此上限(红线,防御率减伤不破)。
+  final double interruptPowerCap;
+
   const BossChargeConfig({
     required this.defaultChargeTicks,
     required this.defaultStaggerTicks,
     required this.staggerDefenseDown,
+    this.interruptPowerCap = 0.5,
   });
   factory BossChargeConfig.fromYaml(Map y) => BossChargeConfig(
         defaultChargeTicks: (y['default_charge_ticks'] as num?)?.toInt() ?? 3,
         defaultStaggerTicks: (y['default_stagger_ticks'] as num?)?.toInt() ?? 2,
         staggerDefenseDown:
             (y['stagger_defense_down'] as num?)?.toDouble() ?? 0.3,
+        interruptPowerCap:
+            (y['interrupt_power_cap'] as num?)?.toDouble() ?? 0.5,
       );
 }
 
