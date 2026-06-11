@@ -527,6 +527,9 @@ class GameRepository {
     // boss_charge tick 数值范围)
     _enforceBossChargeRedLines();
 
+    // 波A build gate:破招技(canInterrupt=true)必须有 style 流派归属
+    _enforceInterruptSkillRedLines();
+
     // Phase 4 W14-1 C-1:encounter fixture 校验(若加载到)
     _enforceEncounterRedLines();
 
@@ -1315,6 +1318,19 @@ class GameRepository {
             'stage ${s.id} dropSkill id=$id 未在 skills.yaml(P1a §二红线)',
           );
         }
+      }
+    }
+  }
+
+  /// 波A build gate 红线:canInterrupt=true 的破招技必须有 style 流派归属
+  /// (装配 gate 按 style == character.school 过滤,无 style 的破招技永不可装配,
+  /// 属配置错误 fail-fast)。
+  void _enforceInterruptSkillRedLines() {
+    for (final s in skillDefs.values) {
+      if (s.canInterrupt && s.style == null) {
+        throw StateError(
+          'skill ${s.id} canInterrupt=true 但缺 style 流派归属(波A build gate 红线)',
+        );
       }
     }
   }

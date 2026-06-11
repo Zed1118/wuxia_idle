@@ -106,4 +106,35 @@ void main() {
       );
     });
   });
+
+  group('波A build gate · 破招技必须有 style 流派归属', () {
+    test('production 全部 canInterrupt 招都有 style(集合自洽,非瞬时数字)', () {
+      final repo = GameRepository.instance;
+      final interruptSkills =
+          repo.skillDefs.values.where((s) => s.canInterrupt);
+      expect(interruptSkills, isNotEmpty,
+          reason: '至少应有破势等破招技存在');
+      for (final s in interruptSkills) {
+        expect(s.style, isNotNull,
+            reason: '破招技 ${s.id} 必须有 style 流派归属(波A红线)');
+      }
+    });
+
+    test('破势 style 被剥掉 → 抛 StateError', () async {
+      String inject(String s) => s.replaceFirst(
+            RegExp(r'style: gangMeng[^\n]*'),
+            '',
+          );
+      expect(
+        GameRepository.loadAllDefs(
+          loader: makeLoader('data/skills.yaml', inject),
+        ),
+        throwsA(isA<StateError>().having(
+          (e) => e.message,
+          'message',
+          contains('canInterrupt=true 但缺 style'),
+        )),
+      );
+    });
+  });
 }

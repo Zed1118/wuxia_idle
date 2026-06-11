@@ -58,6 +58,11 @@ class Character {
   String? resonanceSkillId;
   String? ultimateSkillId;
 
+  /// 破招槽(波A build gate · 第 7 槽)。只能装 `canInterrupt=true &&
+  /// style == school` 的破招技;autoFill 空槽时自动填本流派破招技
+  /// (保 P0 手感不倒退)。null=空槽。
+  String? keySkillId;
+
   /// 装备的奇遇专属招式 id(C-W14-3-A,单 slot)。
   ///
   /// **每角色独立**(平行 equippedWeaponId 等),奇遇 unlock 池是账号级

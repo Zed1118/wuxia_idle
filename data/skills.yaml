@@ -1974,6 +1974,7 @@ skills:
         huaJing: { interrupt_window_bonus_ticks: 2, damage_pct: 0.10 }
     canInterrupt: true
     aiUsePolicy: saveForInterrupt
+    style: gangMeng    # 波A build gate:破招技必须有流派归属(红线)
 
   - id: skill_qingshan_qingfeng
     name: 青锋绝
