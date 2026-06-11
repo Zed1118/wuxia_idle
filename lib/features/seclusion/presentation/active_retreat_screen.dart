@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/enums.dart';
 import '../application/seclusion_service_providers.dart';
+import '../../../shared/audio/audio_assets.dart';
+import '../../../shared/audio/sound_manager.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
@@ -107,6 +109,10 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
       );
 
       if (!mounted) return;
+      // 大境界突破 jingle(沿胜利 dialog 体例):闭关收功跨 tier 才响。
+      if (result.advancement?.crossedTier ?? false) {
+        SoundManager.instance.playSfx(SfxId.realmAdvance);
+      }
       // 同 setup：active 用 pushReplacement → result 接管路由槽位。result
       // 关闭时 pop(true) 经 pushReplacement 链回到 list 的 push<bool>(setup)。
       await Navigator.of(context).pushReplacement<bool, bool>(

@@ -84,6 +84,17 @@ AdvancementResult _advanced() => const AdvancementResult(
   internalForceMaxAfter: 600,
 );
 
+/// 跨 tier 大境界突破(学徒→三流),realmAdvance jingle 触发条件。
+AdvancementResult _crossedTier() => const AdvancementResult(
+  layersGained: 1,
+  tierBefore: RealmTier.xueTu,
+  layerBefore: RealmLayer.dengFeng,
+  tierAfter: RealmTier.sanLiu,
+  layerAfter: RealmLayer.qiMeng,
+  internalForceMaxBefore: 500,
+  internalForceMaxAfter: 700,
+);
+
 AdvancementResult _flat() => const AdvancementResult(
   layersGained: 0,
   tierBefore: RealmTier.xueTu,
@@ -321,7 +332,11 @@ void main() {
       SoundManager.instance = SoundManager(const SilentAudioBackend());
     });
 
-    Future<void> open(WidgetTester tester, DropResult drops) async {
+    Future<void> open(
+      WidgetTester tester,
+      DropResult drops, {
+      List<AdvancementEntry> advancements = const [],
+    }) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -331,7 +346,7 @@ void main() {
                   context: ctx,
                   stage: _stage(),
                   drops: drops,
-                  advancements: const [],
+                  advancements: advancements,
                 ),
                 child: const Text('open'),
               ),
@@ -355,6 +370,40 @@ void main() {
 
     testWidgets('空掉落 → 不播 reward', (tester) async {
       await open(tester, _emptyDrops());
+      expect(rec.sfxPlays, isNot(contains(sfxAssetPath(SfxId.reward))));
+    });
+
+    testWidgets('跨 tier 大境界突破 → 播 realmAdvance jingle', (tester) async {
+      await open(
+        tester,
+        _emptyDrops(),
+        advancements: [
+          AdvancementEntry(chName: '张三', result: _crossedTier()),
+        ],
+      );
+      expect(rec.sfxPlays, contains(sfxAssetPath(SfxId.realmAdvance)));
+    });
+
+    testWidgets('同 tier 小层升级 → 不播 realmAdvance', (tester) async {
+      await open(
+        tester,
+        _emptyDrops(),
+        advancements: [AdvancementEntry(chName: '张三', result: _advanced())],
+      );
+      expect(rec.sfxPlays, isNot(contains(sfxAssetPath(SfxId.realmAdvance))));
+    });
+
+    testWidgets('跨 tier + 装备掉落 → 只播 realmAdvance,reward 让位不叠响', (
+      tester,
+    ) async {
+      await open(
+        tester,
+        _equipDrops(['weapon_xunchang_tie_jian']),
+        advancements: [
+          AdvancementEntry(chName: '张三', result: _crossedTier()),
+        ],
+      );
+      expect(rec.sfxPlays, contains(sfxAssetPath(SfxId.realmAdvance)));
       expect(rec.sfxPlays, isNot(contains(sfxAssetPath(SfxId.reward))));
     });
   });

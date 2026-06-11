@@ -533,8 +533,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     if (_resultDialogShown || !mounted) return;
     _resultDialogShown = true;
 
+    // 与 [VictoryOverlay] 题字一致:leftWin 显「勝」,其余(rightWin/draw)显「敗」。
     if (result == BattleResult.leftWin) {
       SoundManager.instance.playSfx(SfxId.victory);
+    } else {
+      SoundManager.instance.playSfx(SfxId.defeat);
     }
 
     final totalDamage = s.actionLog

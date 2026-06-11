@@ -543,8 +543,11 @@ Future<void> _showVictoryDialog({
   required List<AdvancementEntry> advancements,
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
 }) async {
-  // 爆装备 jingle(沿主线 victory dialog 体例):首通含装备掉落才响。
-  if (isFirstClear && drops.equipments.isNotEmpty) {
+  // 结算 jingle(沿主线 victory dialog 体例):首通才响;跨 tier 大境界突破
+  // 优先于爆装备,二者同现只响一个不叠播。
+  if (isFirstClear && advancements.any((e) => e.result.crossedTier)) {
+    SoundManager.instance.playSfx(SfxId.realmAdvance);
+  } else if (isFirstClear && drops.equipments.isNotEmpty) {
     SoundManager.instance.playSfx(SfxId.reward);
   }
   await showDialog<void>(

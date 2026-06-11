@@ -17,6 +17,8 @@ enum SfxId {
   battleInterrupt, // 破招成功("破!")
   battleStagger, // 踉跄/破绽(每次踉跄跳过)
   victory, // 战斗胜利 jingle(「勝」结算 overlay 出现时)
+  defeat, // 败北 jingle(「敗」结算 overlay 出现时,非 leftWin 一律敗)
+  realmAdvance, // 大境界突破 jingle(跨 tier 才响保稀有感;同 dialog 优先于 reward)
 }
 
 String bgmAssetPath(BgmTrack track) => 'audio/bgm/${track.name}.mp3';
