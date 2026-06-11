@@ -1,6 +1,6 @@
 # 挂机武侠 · 开发进度
 
-> Mac 端 Claude Code + Opus 4.7 维护。会话开始主动读取，任务完成主动更新。
+> Mac 端 Claude Code 维护。会话开始主动读取，任务完成主动更新。
 > 总行数控制在 100 行内，超出归档到末尾。
 
 ## 当前阶段
@@ -58,7 +58,7 @@
 ## 远程仓库
 
 - GitHub:https://github.com/Zed1118/wuxia_idle · 主分支 main
-- 协作:Mac+Opus 单端代码+数值+文案;Codex 桌面 @ Pen 跑视觉验收
+- 协作:Mac 单端代码+数值+文案;视觉验收 Mac 本地 Codex(Pen Windows AI 工具 2026-06-11 全下线)
 
 ## 归档
 

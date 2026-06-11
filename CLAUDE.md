@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.18**
+> v1.18 变更摘要(2026-06-11 协作模式变更 + 状态 drift 清账 · 0 改数值规则层):① **Pen Windows AI 工具全下线**(用户拍板):Windows 不再参与任何 AI 工作流,视觉验收唯一 Mac 本地 Codex,§8 「Windows 端保留用途」段改写;② **§7 开发阶段 Demo→1.0 收尾(M15-16)对齐**:「Demo 阶段不要做」清单退役(江湖恩怨/心魔/帮派/声望/轻功/群战/第二主线均已实装),反主流红线改引 GDD §2.1,§9 对应行同步;③ §2 Riverpod 表对齐实际(3.x 已迁,修与 §9 自相矛盾)+ 引擎行注「开发/验收 macOS · 发布目标 Windows」;④ §8.1 示例 DeepSeek 残留 2 处清掉;⑤ §3 assets 注补音频;⑥ 测数锚 1888(2026-06-11 main checkout 实测,audio v1+jingle+BgmScope 栈已落)。
 > **版本:v1.17**
 > v1.17 变更摘要(2026-06-02 出版美术 pass 全闭环 + 数值/内容多批状态对齐 · 本批 0 改规则层主体):跨度较大(v1.16 后 ~5 天多批 · 1505→**1667 测**/1 skip/0 analyze · release ready ~93%→**~99%**),关键节点:① **出版美术 pass(1.0 Presentation Pass)整体全闭环** —— 战斗屏(主菜单水墨山门 + B1 背景按 biome 接线+scrim+胜负仪式 overlay + B2 大招题字+Boss 金边)+ 剧情屏(narrative_scene 背景基建 + 30 图)+ 战斗场景背景 16 biome 全覆盖 + 角色页档案化 + 章节封面 6 章 · Codex 多门视觉验收 PASS · §12 上线门 **11/12 达成**(唯音频留 E 段);② **数值再平衡**:B1 敌人内力按境界对称化(`055696b` scale=0.20 解高阶 Boss 招牌 ult 永久放不出)+ 根因A 挂机循环重平衡 + 红线值统一 numbers.yaml 单源 + stage_01_05/05_05 难度墙调校;③ **外部 review 5 项硬化**(P1-a 飞升 auto_swap 三系锁死 §5.3 / P2-c 战斗公式单源 §6 / P2-a/b 健壮性 / P3 文档 drift);④ **H 段上手/中期/后期/卡点 4 审计全闭环** + §9 dialog 水墨调色 + G2 上手 banner + G4 剧情轻点。**真缺口**:Mac 端 ship 前硬工程窗口 `SetMinimumSize` 已实装并 **Pen 实机验收 3/3 PASS**(`3db46b2` · 2026-06-02 闭环),其余 ~1% 全卡外部/M15-16(D 性能 8h/FPS/Isar ANR + closed beta ~10 人 + E 音频 + F Steam + G 法律)。详 PROGRESS.md 顶段 + `docs/RELEASE_CHECKLIST_1_0.md` v1.13 + `docs/ROADMAP_1_0.md` v1.13。**状态对齐,无规则层变化**(§1-§12 规则主体 + §5.4 红线 + §12.2 表全保持 v1.10 决议)。
 > **版本:v1.16**
@@ -34,7 +36,7 @@
 
 ## 1. 项目一句话
 
-Windows 单平台、买断制、写实武侠挂机游戏。Flutter Desktop，3v3 自动战斗 + 离线挂机，首个里程碑：3 个月内出可玩 Demo。
+买断制、写实武侠挂机游戏，**发布目标 Windows**（开发与验收在 macOS）。Flutter Desktop，3v3 自动战斗 + 离线挂机。Demo 里程碑已达成（§8.4 14/14），当前处于 **1.0 收尾（M15-16）**。
 
 ### GDD 快速索引
 
@@ -66,8 +68,8 @@ Windows 单平台、买断制、写实武侠挂机游戏。Flutter Desktop，3v3
 
 | 层 | 选型 | 备注 |
 |---|---|---|
-| 引擎 | Flutter Desktop (Windows) | 只 Windows，不出 Mac / Linux |
-| 状态管理 | **Riverpod**（Phase 1 锁 2.x，与 phase1_tasks 一致；Phase 5 收尾再迁 3.x） | 不引入 BLoC 等其他方案 |
+| 引擎 | Flutter Desktop | 发布目标 Windows；开发/验收在 macOS（`-d macos`，Isar 无 web target） |
+| 状态管理 | **Riverpod 3.x**（已迁，`flutter_riverpod ^3.0.0`） | 不引入 BLoC 等其他方案 |
 | 本地存储 | Isar | 角色、装备、进度、共鸣度计数等 |
 | 云端 | Supabase + Edge Function | **仅**排行榜，不做账号同步 |
 | 战斗表现 | 纯 Flutter Widget + AnimationController | 不引入 Flame 等游戏引擎 |
@@ -100,7 +102,7 @@ project_root/
 │   ├── narratives/            # 主线/章节剧情               [你 · v1.8 起接管]
 │   ├── lore/                  # 装备典故                    [你 · v1.8 起接管]
 │   └── events/                # 奇遇事件文本                [你 · v1.8 起接管]
-├── assets/                    # 图片、字体（AI 出图）
+├── assets/                    # 图片、字体、音频（AI 产出；audio/{bgm,sfx} 按 enum.name 命名）
 └── test/                      # 单元测试 + golden 测试
 ```
 
@@ -201,9 +203,9 @@ project_root/
 
 ## 7. 当前开发阶段
 
-**阶段：Demo（首个 3 个月里程碑）**
+**阶段：1.0 收尾（M15-16）**——Demo 里程碑已完成（下表 §8.4 14/14 全达标，留作内容量历史锚）。当前剩余项主要卡外部依赖：D 性能实机验证（8h/FPS/ANR）/ closed beta ~10 人 / E 音频听感终验 / F Steam / G 法律商业，详 `docs/RELEASE_CHECKLIST_1_0.md`。
 
-Demo 必交付内容量：
+Demo 必交付内容量（已全部达标）：
 
 | 项目 | 数量 |
 |---|---|
@@ -222,8 +224,7 @@ Demo 必交付内容量：
 | 心法相生组合 | ≥ 5 |
 | 师徒角色 | 祖师 + 大弟子 + 二弟子（共 3） |
 
-**Demo 阶段不要做**（GDD §12 已留接口，碰都不碰）：
-江湖恩怨 / 心魔 / 门派事件 / 婚姻后代 / 帮派 / 声望 / 轻功对决 / 群战 / PVP / 第二条主线 / **节日活动系统级**(W16/W17 节日 encounter 内容层已落 ✅,但 §12.4 系统级活动框架留 1.0) / MOD / 跨周目元数据。
+**扩展系统现状**（v1.18 更新，原「Demo 阶段不要做」清单退役）：江湖恩怨/声望（P1.2）、心魔（Batch 2.x）、帮派门派（P4.1）、轻功对决（P3.1）、群战守城（P3.2）、第二条主线 Ch4-6、多代飞升/真传位（P5+）均已在 1.0 周期实装。**仍然不做**：GDD §2.1 反主流清单（见 §5.1，永久红线）+ PVP / MOD / 跨周目元数据 / 节日活动系统级框架（GDD §12.4，1.0 后评估）——动这几项前必须先与人类讨论。
 
 ## 8. 工作流
 
@@ -233,11 +234,11 @@ Demo 必交付内容量：
 
 **汇合**:GitHub 主分支(`Zed1118/wuxia_idle`)。**单端写入,无跨端冲突**(v1.8 起 DeepSeek 端退役)。
 
-**Windows 端保留用途**:① 视觉验收(Codex 桌面 @ Pen Windows 跑 `flutter run -d windows` 截图验收);② Mac Opus 用量上限时 Codex 桌面备份顶 Mac 端代码任务。**不再用 Windows 端做文案产出**。
+**Windows 端 AI 工具已全下线**(2026-06-11 用户拍板):Pen Windows 不再参与任何 AI 工作流(视觉验收/代码备份/文案全停)。视觉验收唯一在 **Mac 本地 Codex**;Windows 仅作为发布目标平台,ship 前实机验证(D 段)时人工操作。
 
 ### 8.1 数值与文案的联结约定
 
-`data/encounters.yaml`（你写）与 `data/events/<id>.yaml`（DeepSeek 写）通过 `id` 字段联结。**`id` 必须严格相等且唯一**，加载时若任一端缺失对应 id 直接抛错而非静默跳过。
+`data/encounters.yaml`（数值与触发条件）与 `data/events/<id>.yaml`（文案）通过 `id` 字段联结（v1.8 起两端均你写）。**`id` 必须严格相等且唯一**，加载时若任一端缺失对应 id 直接抛错而非静默跳过。
 
 **示例**：
 
@@ -256,7 +257,7 @@ Demo 必交付内容量：
 ```
 
 ```yaml
-# data/events/bamboo_listen_rain.yaml （DeepSeek 写：纯文案）
+# data/events/bamboo_listen_rain.yaml （你写：纯文案）
 id: bamboo_listen_rain           # 必须与 encounters.yaml 完全一致
 title: 听雨悟剑
 opening: |
@@ -277,7 +278,7 @@ choices:
 ❌ Dart 代码里写中文字符串文案（`"你战胜了山贼头子"`）
 ❌ 引入其他状态管理库（已锁定 Riverpod 3.x）
 ❌ 引入第三方游戏引擎（Flame、Forge2D 等）
-❌ 在 Demo 阶段动 §12 任何扩展系统
+❌ 未经讨论实装仍未启动的扩展（PVP / MOD / 跨周目元数据 / 节日系统级框架，见 §7）
 ❌ 给玩家做"每日任务""登录奖励""快进券""体力"等留存机制
 ❌ 让任何系统的数值突破 §5.4 的红线
 ❌ 让 yaml 配置在没有 schema 校验的情况下被静默接受
