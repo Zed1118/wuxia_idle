@@ -25,4 +25,17 @@ void main() {
     expect(s.canInterrupt, true);
     expect(s.aiUsePolicy, AiUsePolicy.saveForInterrupt);
   });
+
+  test('style 缺省 null / 显式解析为 TechniqueSchool(波A build gate)', () {
+    final base = {
+      'id': 's', 'name': 'n', 'description': 'd', 'type': 'powerSkill',
+      'powerMultiplier': 1000, 'internalForceCost': 100, 'cooldownTurns': 3,
+      'requiresManualTrigger': false, 'visualEffect': 'x',
+    };
+    expect(SkillDef.fromYaml(base).style, isNull);
+    expect(
+      SkillDef.fromYaml({...base, 'style': 'lingQiao'}).style,
+      TechniqueSchool.lingQiao,
+    );
+  });
 }

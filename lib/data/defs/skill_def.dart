@@ -33,6 +33,11 @@ class SkillDef {
   /// P0 破招:AI 自动战斗对此技的使用策略。
   final AiUsePolicy aiUsePolicy;
 
+  /// 波A build gate:招式流派归属(刚猛/灵巧/阴柔)。
+  /// 红线:canInterrupt=true 的破招技**必须**有 style(装配 gate 按
+  /// `style == character.school` 过滤);普通心法招留空(流派由所属心法承载)。
+  final TechniqueSchool? style;
+
   /// 招式 per-skill 熟练度效果(可玩性 P1a · 只配真解/招牌/破招技)。null=不配。
   final SkillProficiencyEffects? proficiency;
 
@@ -52,6 +57,7 @@ class SkillDef {
     this.imagePath,
     this.canInterrupt = false,
     this.aiUsePolicy = AiUsePolicy.normal,
+    this.style,
     this.proficiency,
   });
 
@@ -84,6 +90,9 @@ class SkillDef {
       aiUsePolicy: y['aiUsePolicy'] != null
           ? AiUsePolicy.values.byName(y['aiUsePolicy'] as String)
           : AiUsePolicy.normal,
+      style: y['style'] != null
+          ? TechniqueSchool.values.byName(y['style'] as String)
+          : null,
       proficiency: y['proficiency'] != null
           ? SkillProficiencyEffects.fromYaml(
               Map<String, dynamic>.from(y['proficiency'] as Map))
