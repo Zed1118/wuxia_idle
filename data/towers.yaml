@@ -120,6 +120,7 @@ floors:
 
   # === Floor 5 · 小 Boss · 学徒 dengFeng ===
   - floorIndex: 5
+    dropSkillFragmentId: skill_kai_bei_shou  # 波B 残页(刚猛「开碑手」· 每胜概率掉,集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 800
     requiredRealm: xueTu
@@ -237,7 +238,7 @@ floors:
 
   # === Floor 10 · 大 Boss · 三流 dengFeng ===
   - floorIndex: 10
-    dropSkillFragmentId: skill_lingqiao_mingjia_ult  # 可玩性 P1a 残页(集齐 5 片解锁)
+    dropSkillFragmentId: skill_yan_zi_san_chao  # 波B 残页 re-point(灵巧「燕子三抄」· 集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 2400
     requiredRealm: sanLiu
@@ -397,6 +398,7 @@ floors:
 
   # === Floor 15 · 小 Boss · 二流 dengFeng ===
   - floorIndex: 15
+    dropSkillFragmentId: skill_zhu_ying_yao_hong  # 波B 残页(阴柔「烛影摇红」· 每胜概率掉,集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 2400
     requiredRealm: erLiu
@@ -565,7 +567,7 @@ floors:
 
   # === Floor 20 · 大 Boss · 一流 dengFeng ===
   - floorIndex: 20
-    dropSkillFragmentId: skill_lingqiao_menpai_ult  # 可玩性 P1a 残页(集齐 5 片解锁)
+    dropSkillFragmentId: skill_jin_gang_fu_mo  # 波B 残页 re-point(刚猛「金刚伏魔」· 集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 4800
     requiredRealm: yiLiu
@@ -782,6 +784,7 @@ floors:
 
   # === Floor 25 · 小 Boss · 绝顶 dengFeng ===
   - floorIndex: 25
+    dropSkillFragmentId: skill_jing_hong_zhao_ying  # 波B 残页(灵巧「惊鸿照影」· 每胜概率掉,集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 4000
     requiredRealm: jueDing
@@ -1012,6 +1015,7 @@ floors:
 
   # === Floor 30 · 大 Boss · 宗师 dengFeng · 终关 ===
   - floorIndex: 30
+    dropSkillFragmentId: skill_yue_luo_wu_sheng  # 波B 残页(阴柔「月落无声」· 每胜概率掉,集齐 5 片解锁)
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     baseExpReward: 7200
     requiredRealm: zongShi

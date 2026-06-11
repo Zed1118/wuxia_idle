@@ -1361,12 +1361,15 @@ class GameRepository {
     }
   }
 
-  /// 波A A4 来源模型红线:
+  /// 波A A4 来源模型红线(波B 扩 ⑤-⑦):
   /// ① 全招 source 非空(yaml 漏配 fail-fast);
   /// ② encounter_skills 池全 = encounter;
   /// ③ canInterrupt 破招技 = special;
   /// ④ stages dropSkillManualId 指向的招 = mainlineDrop;
-  /// ⑤ towers dropSkillFragmentId 指向的招 = towerFragment。
+  /// ⑤ 任何 dropSkillFragmentId(塔层/章末重打)指向的招 = fragment(波B 泛化);
+  /// ⑥ drop 招(mainlineDrop|fragment)必有 style + tier(缺 style 永不可装配,
+  ///    缺 tier canEquipAtRealm 恒 true 破 §5.3,均属配置错误);
+  /// ⑦ drop 招挂载完备:每招恰 1 个挂载点,无孤儿无重复(内容批账实一致)。
   void _enforceSkillSourceRedLines() {
     for (final s in skillDefs.values) {
       if (s.source == null) {
@@ -1383,23 +1386,74 @@ class GameRepository {
           'skill ${s.id} canInterrupt 但 source=${s.source!.name}(波A A4 红线 ③)',
         );
       }
+      if ((s.source == SkillSource.mainlineDrop ||
+              s.source == SkillSource.fragment) &&
+          (s.style == null || s.tier == null)) {
+        throw StateError(
+          'skill ${s.id} source=${s.source!.name} 缺 style/tier(波B 红线 ⑥)',
+        );
+      }
     }
+    final manualMounts = <String>[];
+    final fragmentMounts = <String>[];
     for (final st in stageDefs.values) {
       final m = st.dropSkillManualId;
-      if (m != null && skillDefs[m]?.source != SkillSource.mainlineDrop) {
-        throw StateError(
-          'stage ${st.id} dropSkillManualId=$m source 应为 mainline_drop(波A A4 红线 ④)',
-        );
+      if (m != null) {
+        if (skillDefs[m]?.source != SkillSource.mainlineDrop) {
+          throw StateError(
+            'stage ${st.id} dropSkillManualId=$m source 应为 mainline_drop(波A A4 红线 ④)',
+          );
+        }
+        manualMounts.add(m);
+      }
+      final sf = st.dropSkillFragmentId;
+      if (sf != null) {
+        if (skillDefs[sf]?.source != SkillSource.fragment) {
+          throw StateError(
+            'stage ${st.id} dropSkillFragmentId=$sf source 应为 fragment(波B 红线 ⑤)',
+          );
+        }
+        fragmentMounts.add(sf);
       }
     }
     for (final f in towerFloors) {
       final fr = f.dropSkillFragmentId;
-      if (fr != null && skillDefs[fr]?.source != SkillSource.towerFragment) {
-        throw StateError(
-          'tower floor ${f.floorIndex} dropSkillFragmentId=$fr '
-          'source 应为 tower_fragment(波A A4 红线 ⑤)',
-        );
+      if (fr != null) {
+        if (skillDefs[fr]?.source != SkillSource.fragment) {
+          throw StateError(
+            'tower floor ${f.floorIndex} dropSkillFragmentId=$fr '
+            'source 应为 fragment(波B 红线 ⑤)',
+          );
+        }
+        fragmentMounts.add(fr);
       }
+    }
+    // ⑦ 挂载完备性(test fixture 无 stage/tower defs 时跳过:挂载列表空 +
+    // production 加载两者必在,fixture 只载 skills 不应误杀)。
+    if (stageDefs.isNotEmpty || towerFloors.isNotEmpty) {
+      final manualSkills = skillDefs.values
+          .where((s) => s.source == SkillSource.mainlineDrop)
+          .map((s) => s.id)
+          .toSet();
+      final fragmentSkills = skillDefs.values
+          .where((s) => s.source == SkillSource.fragment)
+          .map((s) => s.id)
+          .toSet();
+      void check(String kind, List<String> mounts, Set<String> skills) {
+        if (mounts.length != mounts.toSet().length) {
+          throw StateError('$kind 招存在重复挂载(波B 红线 ⑦):$mounts');
+        }
+        final orphan = skills.difference(mounts.toSet());
+        final dangling = mounts.toSet().difference(skills);
+        if (orphan.isNotEmpty || dangling.isNotEmpty) {
+          throw StateError(
+            '$kind 招挂载不完备(波B 红线 ⑦):孤儿=$orphan 错挂=$dangling',
+          );
+        }
+      }
+
+      check('mainlineDrop', manualMounts, manualSkills);
+      check('fragment', fragmentMounts, fragmentSkills);
     }
   }
 

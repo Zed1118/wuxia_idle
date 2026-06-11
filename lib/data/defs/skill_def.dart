@@ -7,7 +7,7 @@ enum SkillSource {
   technique, // 心法自带(随心法修习获得)
   encounter, // 奇遇解锁(encounter_skills.yaml 全池)
   mainlineDrop, // 主线 Boss 首通真解(stages.yaml dropSkillManualId)
-  towerFragment, // 爬塔残页集齐(towers.yaml dropSkillFragmentId)
+  fragment, // 残页集齐解锁(波B 泛化:塔 Boss 层 towers.yaml + 章末重打 stages.yaml dropSkillFragmentId)
   special, // 系统特殊(破招技/joint 共鸣/轻功对决)
 }
 
@@ -15,7 +15,7 @@ SkillSource _parseSkillSource(String raw) => switch (raw) {
       'technique' => SkillSource.technique,
       'encounter' => SkillSource.encounter,
       'mainline_drop' => SkillSource.mainlineDrop,
-      'tower_fragment' => SkillSource.towerFragment,
+      'fragment' => SkillSource.fragment,
       'special' => SkillSource.special,
       _ => throw StateError('未知 skill source: $raw(波A A4 红线)'),
     };
@@ -23,8 +23,8 @@ SkillSource _parseSkillSource(String raw) => switch (raw) {
 /// 招式配置（data_schema.md §5.3，纯 Dart，不入 Isar）。
 ///
 /// `parentTechniqueDefId` 为空时，表示该招式由"武学领悟"独立产出（GDD §7.2）。
-/// `tier` 仅 encounter skill 填 1-7(沿用 GDD §5.2 七阶节奏 + §5.3 三系锁死),
-/// 普通心法招式 tier 留空。
+/// `tier` 奇遇招与 drop 招(真解/残页)填 1-7(沿用 GDD §5.2 七阶节奏 +
+/// §5.3 三系锁死,波B 红线 ⑥ drop 招必填),普通心法招式 tier 留空。
 /// `narrativeInsightId` 是 encounter skill 显式指向 insight 文案文件名
 /// (`data/narratives/techniques/insights/<id>.yaml`) 的可选关联,
 /// 用于把数值招式池(skill_encounter_*)与文案池(move_insight_*/中文诗意命名)
@@ -55,7 +55,8 @@ class SkillDef {
 
   /// 波A build gate:招式流派归属(刚猛/灵巧/阴柔)。
   /// 红线:canInterrupt=true 的破招技**必须**有 style(装配 gate 按
-  /// `style == character.school` 过滤);普通心法招留空(流派由所属心法承载)。
+  /// `style == character.school` 过滤);波B 红线 ⑥:drop 招(真解/残页)
+  /// 同样必填(装配池注入与 equip gate 按流派);普通心法招留空(流派由所属心法承载)。
   final TechniqueSchool? style;
 
   /// 波A A4:获取来源。yaml 必填(红线 not-null);直接构造的测试 fixture 可空。
@@ -85,8 +86,9 @@ class SkillDef {
     this.proficiency,
   });
 
-  /// 奇遇招式 = parentTechniqueDefId 为空 & tier 非空。
-  bool get isEncounterSkill => parentTechniqueDefId == null && tier != null;
+  /// 奇遇招式 = source == encounter(波B 改单一真相源:drop 招补 tier 后
+  /// 旧判定 parent==null && tier!=null 会误判真解/残页为奇遇招)。
+  bool get isEncounterSkill => source == SkillSource.encounter;
 
   /// §5.3 三系锁死:有自身 tier(1-7,奇遇招)的招式需 `realmTier.index >= tier-1`
   /// 才可装配(沿 EncounterService.equipEncounterSkill 既有约定 · tier 1↔xueTu idx0)。

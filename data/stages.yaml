@@ -269,7 +269,7 @@ stages:
   # 被 erLiu 攻击 ×2.5（高伤一击）—— 明确暗示「未升阶不可挑战」（GDD §3 三阶节奏）
   - id: stage_01_05
     name: 风雨渡口
-    dropSkillManualId: skill_yinrou_mingjia_ult  # 可玩性 P1a 真解(Ch1 章末 Boss 首通解锁演示)
+    dropSkillManualId: skill_xie_yu_chuan_lian  # 波B 真解(撑伞高人「斜雨穿帘」· 同招为其蓄力技)
     stageType: mainline
     chapterIndex: 1
     prevStageId: stage_01_04
@@ -295,8 +295,10 @@ stages:
           - skill_yinrou_jichu_basic
           - skill_yinrou_jichu_skill
           - skill_yinrou_jichu_ult
+          - skill_xie_yu_chuan_lian                 # 波B 真解双用:Boss 招牌蓄力技「斜雨穿帘」
         iconPath: assets/enemies/umbrella.png
         isBoss: true
+        chargeSkillId: skill_xie_yu_chuan_lian      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
       - id: enemy_xueTu_dock_a
         name: 渡口刀客
         realmTier: xueTu
@@ -597,7 +599,7 @@ stages:
   # === stage_02_05 · 巷中夜雨（章末大 Boss · 不留剑鞘青衫人）===
   - id: stage_02_05
     name: 巷中夜雨
-    dropSkillManualId: skill_qingshan_qingfeng  # 可玩性 P1a 真解(青锋绝 · spec §四复用演示)
+    dropSkillManualId: skill_qingshan_qingfeng  # 真解(青锋绝 · P1a 起 · 波B canon:破他的招学他的招)
     stageType: mainline
     chapterIndex: 2
     prevStageId: stage_02_04
@@ -943,7 +945,7 @@ stages:
   # === stage_03_05 · 一剑封名（章末大 Boss · 灰衣人）===
   - id: stage_03_05
     name: 一剑封名
-    dropSkillManualId: skill_gangmeng_mingjia_ult  # 可玩性 P1a 真解(Ch3 章末 Boss 首通解锁演示)
+    dropSkillManualId: skill_qian_jun_zhui_yue  # 波B 真解(灰衣人「千钧坠岳」· 同招为其蓄力技)
     stageType: mainline
     chapterIndex: 3
     prevStageId: stage_03_04
@@ -964,8 +966,10 @@ stages:
           - skill_yinrou_mingjia_basic
           - skill_yinrou_mingjia_skill
           - skill_yinrou_mingjia_ult
+          - skill_qian_jun_zhui_yue                 # 波B 真解双用:Boss 招牌蓄力技「千钧坠岳」
         iconPath: assets/enemies/huiyi.png
         isBoss: true
+        chargeSkillId: skill_qian_jun_zhui_yue      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
       - id: enemy_erLiu_shidi_a
         name: 灰衣师弟
         realmTier: erLiu
@@ -1300,6 +1304,8 @@ stages:
   # === stage_04_05 · 阳关一决(章末大 Boss · 西凉霸主跨阶 jueDing)===
   - id: stage_04_05
     name: 阳关一决
+    dropSkillManualId: skill_feng_juan_liu_sha  # 波B 真解(西凉霸主「风卷流沙」· 同招为其蓄力技)
+    dropSkillFragmentId: skill_guan_shan_ba_ji  # 波B 章末重打残页(每胜概率掉,高阶 farm)
     stageType: mainline
     chapterIndex: 4
     prevStageId: stage_04_04
@@ -1320,8 +1326,10 @@ stages:
           - skill_yinrou_jianghu_basic
           - skill_yinrou_jianghu_skill
           - skill_yinrou_jianghu_ult
+          - skill_feng_juan_liu_sha                 # 波B 真解双用:Boss 招牌蓄力技「风卷流沙」
         iconPath: assets/enemies/xiliangbazhu.png
         isBoss: true
+        chargeSkillId: skill_feng_juan_liu_sha      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
       - id: enemy_yiLiu_bazhu_zuofu
         name: 西凉左护法
         realmTier: yiLiu
@@ -1656,6 +1664,8 @@ stages:
   # === stage_05_05 · 嵩山一决(章末大 Boss · C 复合三人组 · 跨阶 zongShi·qiMeng)===
   - id: stage_05_05
     name: 嵩山一决
+    dropSkillManualId: skill_shi_dang_shi_jue  # 波B 真解(三弟子「十荡十决」· 同招为其蓄力技)
+    dropSkillFragmentId: skill_ma_ta_fei_yan  # 波B 章末重打残页(每胜概率掉,高阶 farm)
     stageType: mainline
     chapterIndex: 5
     prevStageId: stage_05_04
@@ -1676,8 +1686,10 @@ stages:
           - skill_yinrou_shichuan_basic
           - skill_yinrou_shichuan_skill
           - skill_yinrou_shichuan_ult
+          - skill_shi_dang_shi_jue                 # 波B 真解双用:Boss 招牌蓄力技「十荡十决」
         iconPath: assets/enemies/xiliang_sandizi.png
         isBoss: true
+        chargeSkillId: skill_shi_dang_shi_jue      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
       - id: enemy_jueDing_zhongzhou_lunjian
         name: 中州论剑顶
         realmTier: jueDing
@@ -2002,6 +2014,8 @@ stages:
   # Ch4 小铜镜 + Ch5 玉佩三章 hook 全闭环 / 师父第三句遗言完整联通 / 无物之境收束
   - id: stage_06_05
     name: 昆仑山顶
+    dropSkillManualId: skill_yang_guan_wu_gu_ren  # 波B 真解(西凉霸主「阳关无故人」· 同招为其蓄力技)
+    dropSkillFragmentId: skill_ye_yu_shi_nian_deng  # 波B 章末重打残页(每胜概率掉,高阶 farm)
     stageType: mainline
     chapterIndex: 6
     prevStageId: stage_06_04
@@ -2022,8 +2036,10 @@ stages:
           - skill_yinrou_chuanshuo_basic
           - skill_yinrou_chuanshuo_skill
           - skill_yinrou_chuanshuo_ult
+          - skill_yang_guan_wu_gu_ren                 # 波B 真解双用:Boss 招牌蓄力技「阳关无故人」
         iconPath: assets/enemies/xiliang_bazhu.png
         isBoss: true
+        chargeSkillId: skill_yang_guan_wu_gu_ren      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
       - id: enemy_zongShi_xiliang_disciple_gang
         name: 西凉三弟子·刚猛
         realmTier: zongShi

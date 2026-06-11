@@ -310,8 +310,8 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_mingjia
     visualEffect: mountain_break
-    source: mainline_drop
-    proficiency:        # 波A A3 真解手工(高于模板半档;化境伤害%是死配置→改 CD,cap 1.30 见 combinedMult)
+    source: technique   # 波B restore:真解挂载移交新 standalone 招(skill_qian_jun_zhui_yue),本招回归心法
+    proficiency:        # 波A A3 手工档保留(高于模板半档;化境伤害%是死配置→改 CD,cap 1.30 见 combinedMult)
       effects:
         shuLian: { damage_pct: 0.10 }
         jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
@@ -352,7 +352,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_mingjia
     visualEffect: wind_slash
-    source: tower_fragment
+    source: technique   # 波B restore:残页挂载移交新 standalone 招(skill_yan_zi_san_chao),本招回归心法
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -393,8 +393,8 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_mingjia
     visualEffect: falling_petals
-    source: mainline_drop
-    proficiency:        # 波A A3 真解手工(高于模板半档;化境伤害%是死配置→改 CD,cap 1.30 见 combinedMult)
+    source: technique   # 波B restore:真解挂载移交新 standalone 招(skill_xie_yu_chuan_lian),本招回归心法
+    proficiency:        # 波A A3 手工档保留(高于模板半档;化境伤害%是死配置→改 CD,cap 1.30 见 combinedMult)
       effects:
         shuLian: { damage_pct: 0.10 }
         jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
@@ -480,7 +480,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_menpai
     visualEffect: meteor_sword
-    source: tower_fragment
+    source: technique   # 波B restore:残页挂载移交新 standalone 招(skill_jin_gang_fu_mo),本招回归心法
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -2332,7 +2332,8 @@ skills:
   # P0.5 破招专属招(2026-06-09)
   # ───────────────────────────────────────────
   # 不绑 21 心法生态(parentTechniqueDefId: null,沿 joint_skill / lightfoot 体例);
-  # 无 tier(isEncounterSkill=false,不入 encounter skill 池,不受奇遇红线 tier cap 校验)。
+  # 无 tier(波B 起 isEncounterSkill 判 source==encounter,破招技 source=special
+  # 天然不入奇遇池;tier 留空 = 装配不受境界 gate,破招槽全程可用)。
   # 破势:玩家方主控破招技,aiUsePolicy=saveForInterrupt → AI 平时不放,
   #   仅敌人蓄力时自动用来打断(命中蓄力中目标 canInterrupt 触发踉跄)。
   # 青锋绝:青衫剑客(stage_02_05 Boss)招牌大招,作为 chargeSkillId 蓄力技,
@@ -2411,8 +2412,286 @@ skills:
     parentTechniqueDefId: null
     visualEffect: qingfeng_jue
     source: mainline_drop
+    style: lingQiao     # 波B 红线 ⑥:drop 招必有 style(装配 gate 按流派)
+    tier: 2             # 波B 红线 ⑥:drop 招必有 tier(§5.3 三系锁死,2=sanLiu)
     proficiency:        # 波A A3 招牌真解手工(同真解档;化境伤害%死配置→CD)
       effects:
         shuLian: { damage_pct: 0.10 }
         jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
+
+  # ───────────────────────────────────────────
+  # 波B 24 招内容批(2026-06-11)· 真解/残页 秘传招
+  # ───────────────────────────────────────────
+  # 体例(spec 2026-06-11-wave-b-24-skills-content-design):
+  # - 真解(mainline_drop):章末 Boss 首通必给,同招 = 该 Boss chargeSkillId 蓄力技
+  #   (沿青锋绝 canon「破他的招、学他的招」)。cost 按 Boss 内力预算
+  #   (RealmDef IF max × enemy internal_force_scale 0.20)校准放招次数 1-2 次。
+  # - 残页(fragment):塔 Boss 层(5/10/15/20/25/30)+ Ch4-6 章末重打概率掉,
+  #   集齐 5 片解锁(numbers skill_unlock)。
+  # - 全 powerSkill(mult < ultimate_power_threshold 5000 → 主修槽池),
+  #   style/tier 必填(红线 ⑥),解锁后按 style == school 入装配池(波B wiring)。
+  # - proficiency:真解手工高半档(沿青锋绝锚),残页走波A 流派模板。
+
+  # ─── 真解 ×5(Ch1/3/4/5/6,Ch2 = 青锋绝已有)───
+
+  - id: skill_xie_yu_chuan_lian
+    name: 斜雨穿帘
+    description: 撑伞高人渡口绝学。掌随伞沿斜出,如细雨穿帘,看似无力,落处皆是要穴。
+    type: powerSkill
+    powerMultiplier: 1800
+    internalForceCost: 160   # Ch1 Boss(xueTu dengFeng IF 1100×0.2=220)→ 放 1 次
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: slanted_rain
+    source: mainline_drop
+    style: yinRou
+    tier: 1
+    proficiency:        # 真解手工高半档(阴柔向:伤害温和 + CD)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
+
+  - id: skill_qian_jun_zhui_yue
+    name: 千钧坠岳
+    description: 灰衣人夺自北派的重手功夫。拳未至,势先压人,一坠如山倾。
+    type: powerSkill
+    powerMultiplier: 2800
+    internalForceCost: 300   # Ch3 Boss(erLiu yuanShu IF≈3200×0.2=640)→ 放 2 次
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: mount_crush
+    source: mainline_drop
+    style: gangMeng
+    tier: 3
+    proficiency:        # 真解手工高半档(刚猛向,沿青锋绝锚)
+      effects:
+        shuLian: { damage_pct: 0.10 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
+
+  - id: skill_feng_juan_liu_sha
+    name: 风卷流沙
+    description: 大漠风起,沙走石飞。身法散作流沙,聚时剑已封喉。
+    type: powerSkill
+    powerMultiplier: 3200
+    internalForceCost: 600   # Ch4 Boss(jueDing qiMeng IF 6000×0.2=1200)→ 放 2 次
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: desert_sand
+    source: mainline_drop
+    style: lingQiao
+    tier: 4
+    proficiency:        # 真解手工高半档(灵巧向:CD 倾斜)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        jingTong: { damage_pct: 0.05, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
+
+  - id: skill_shi_dang_shi_jue
+    name: 十荡十决
+    description: 西凉军中马战杀法,一往无前。十荡十决,有进无退。
+    type: powerSkill
+    powerMultiplier: 3600
+    internalForceCost: 900   # Ch5 Boss(zongShi qiMeng IF 9500×0.2=1900)→ 放 2 次
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: cavalry_charge
+    source: mainline_drop
+    style: gangMeng
+    tier: 5
+    proficiency:        # 真解手工高半档(刚猛向,沿青锋绝锚)
+      effects:
+        shuLian: { damage_pct: 0.10 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
+
+  - id: skill_yang_guan_wu_gu_ren
+    name: 阳关无故人
+    description: 西凉霸主压箱底的绝学。一掌出,关山寂寂,故人不复。
+    type: powerSkill
+    powerMultiplier: 4000
+    internalForceCost: 1400  # Ch6 Boss(wuSheng qiMeng IF 13000×0.2=2600)→ 放 1 次(沿压测锚)
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: yangguan_palm
+    source: mainline_drop
+    style: yinRou
+    tier: 6
+    proficiency:        # 真解手工高半档(阴柔向:伤害温和 + CD)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08, cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -1 }
+
+  # ─── 塔残页 ×6(Boss 层 5/10/15/20/25/30 每胜概率掉)───
+
+  - id: skill_kai_bei_shou
+    name: 开碑手
+    description: 江湖把式入门的硬功,五指并刀,掌落碑裂。
+    type: powerSkill
+    powerMultiplier: 1600
+    internalForceCost: 140
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: stone_break
+    source: fragment
+    style: gangMeng
+    tier: 1
+    proficiency:        # 波A 流派模板(刚猛)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
+
+  - id: skill_yan_zi_san_chao
+    name: 燕子三抄
+    description: 身如飞燕,三抄三起。剑光起落之间,人已在丈外。
+    type: powerSkill
+    powerMultiplier: 2300
+    internalForceCost: 190
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: swallow_skim
+    source: fragment
+    style: lingQiao
+    tier: 2
+    proficiency:        # 波A 流派模板(灵巧)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
+
+  - id: skill_zhu_ying_yao_hong
+    name: 烛影摇红
+    description: 烛影晃动处,袖底藏锋。灯花未落,招已过三。
+    type: powerSkill
+    powerMultiplier: 2600
+    internalForceCost: 240
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: candle_shadow
+    source: fragment
+    style: yinRou
+    tier: 3
+    proficiency:        # 波A 流派模板(阴柔)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
+
+  - id: skill_jin_gang_fu_mo
+    name: 金刚伏魔
+    description: 出自禅门的伏魔杵法,杵杵生风,直取中宫,邪魔辟易。
+    type: powerSkill
+    powerMultiplier: 3000
+    internalForceCost: 300
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: vajra_pestle
+    source: fragment
+    style: gangMeng
+    tier: 4
+    proficiency:        # 波A 流派模板(刚猛)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
+
+  - id: skill_jing_hong_zhao_ying
+    name: 惊鸿照影
+    description: 翩若惊鸿,矫若游龙。影过处剑光一闪,水波不兴。
+    type: powerSkill
+    powerMultiplier: 3400
+    internalForceCost: 340
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: gliding_shadow
+    source: fragment
+    style: lingQiao
+    tier: 5
+    proficiency:        # 波A 流派模板(灵巧)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
+
+  - id: skill_yue_luo_wu_sheng
+    name: 月落无声
+    description: 月沉西山,夜色无声。掌力化于无形,中者不觉,觉时已晚。
+    type: powerSkill
+    powerMultiplier: 3800
+    internalForceCost: 400
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: silent_moon
+    source: fragment
+    style: yinRou
+    tier: 6
+    proficiency:        # 波A 流派模板(阴柔)
+      effects:
+        shuLian: { damage_pct: 0.05 }
+        huaJing: { cooldown_delta: -1 }
+
+  # ─── 章末重打残页 ×3(Ch4/5/6 章末 Boss 重打概率掉 · 高阶 farm 目标)───
+
+  - id: skill_guan_shan_ba_ji
+    name: 关山拔戟
+    description: 阳关古道的戍卒戟法,拔戟横扫,关山为开。
+    type: powerSkill
+    powerMultiplier: 3100
+    internalForceCost: 310
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: pass_halberd
+    source: fragment
+    style: gangMeng
+    tier: 4
+    proficiency:        # 波A 流派模板(刚猛)
+      effects:
+        shuLian: { damage_pct: 0.08 }
+        jingTong: { damage_pct: 0.08 }
+
+  - id: skill_ma_ta_fei_yan
+    name: 马踏飞燕
+    description: 马蹄踏燕,疾中之疾。借力三分,人随势走,势尽人至。
+    type: powerSkill
+    powerMultiplier: 3500
+    internalForceCost: 350
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: horse_swallow
+    source: fragment
+    style: lingQiao
+    tier: 5
+    proficiency:        # 波A 流派模板(灵巧)
+      effects:
+        jingTong: { cooldown_delta: -1 }
+        huaJing: { cooldown_delta: -2 }
+
+  - id: skill_ye_yu_shi_nian_deng
+    name: 夜雨十年灯
+    description: 江湖夜雨,十年一灯。此掌绵密如雨,十年功力尽在一灯如豆处。
+    type: powerSkill
+    powerMultiplier: 3900
+    internalForceCost: 420
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: night_rain_lamp
+    source: fragment
+    style: yinRou
+    tier: 6
+    proficiency:        # 波A 流派模板(阴柔)
+      effects:
+        shuLian: { damage_pct: 0.05 }
         huaJing: { cooldown_delta: -1 }
