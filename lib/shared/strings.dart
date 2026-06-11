@@ -1104,6 +1104,8 @@ class UiStrings {
   static String cangjingFragmentProgress(int has, int total) => '$has / $total 页';
   static const String cangjingFragmentEmpty = '暂无残页';
   static const String cangjingTierLocked = '境界不足';
+  static const String cangjingNotUnlocked = '未得真传,装配不得';
+  static const String cangjingSecretGroupTitle = '秘传 · 真解残页';
   static const String cangjingPickerTitle = '选择招式';
   static const String cangjingProficiencyMaxStage = '已达化境';
   static const String cangjingEquippedTag = '装';

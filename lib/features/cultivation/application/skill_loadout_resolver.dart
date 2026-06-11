@@ -3,6 +3,8 @@ import 'package:isar_community/isar.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
+import '../../../core/domain/save_data.dart';
+import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
@@ -34,7 +36,36 @@ class SkillLoadoutResolver {
       assistTechniqueSkills: await resolveAssistSkillDefs(c, repo),
       jointSkill: await resolveJointSkill(c, n, repo),
       interruptSkills: resolveInterruptSkills(repo),
+      dropSkills: await resolveUnlockedDropSkills(c, repo),
     );
+  }
+
+  /// 波B:已解锁的真解/残页招(source ∈ {mainlineDrop, fragment} &&
+  /// SaveData.skillUnlockProgress.isUnlocked && style == 角色流派)。
+  /// 流派 gate 与破招槽先例一致(build 流派一致性);境界 gate 在
+  /// picker/service 按 canEquipAtRealm 做,此处不过滤。
+  /// SaveData 单例缺失(极早期/test fixture)→ 返空,不抛。
+  Future<List<SkillDef>> resolveUnlockedDropSkills(
+    Character c,
+    GameRepository repo,
+  ) async {
+    final school = c.school;
+    if (school == null) return const [];
+    final SaveData? save = await isar.saveDatas.get(0);
+    if (save == null) return const [];
+    final unlocked = save.skillUnlockProgress;
+    final result = repo.skillDefs.values
+        .where((s) =>
+            (s.source == SkillSource.mainlineDrop ||
+                s.source == SkillSource.fragment) &&
+            s.style == school &&
+            unlocked.isUnlocked(s.id))
+        .toList()
+      ..sort((a, b) {
+        final t = (a.tier ?? 0).compareTo(b.tier ?? 0);
+        return t != 0 ? t : a.id.compareTo(b.id);
+      });
+    return result;
   }
 
   /// 波A 破招槽候选:全部 canInterrupt=true 招(流派过滤在 autoFill / picker
@@ -107,6 +138,7 @@ class ResolvedLoadoutSources {
     required this.assistTechniqueSkills,
     required this.jointSkill,
     this.interruptSkills = const [],
+    this.dropSkills = const [],
   });
 
   final List<SkillDef> mainTechniqueSkills;
@@ -115,6 +147,10 @@ class ResolvedLoadoutSources {
 
   /// 波A:全部破招技(canInterrupt=true,未按流派过滤)。
   final List<SkillDef> interruptSkills;
+
+  /// 波B:已解锁 + 本流派的真解/残页招(主修/大招槽 picker 候选注入;
+  /// autoFill 不消费——掉落招玩家主动换装,不自动顶,§5.7)。
+  final List<SkillDef> dropSkills;
 }
 
 /// joint 判定用的 shengShu fallback（防御性，正常配置 4 段全覆盖不触发）。

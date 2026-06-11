@@ -1,5 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/core/domain/skill_unlock_entry.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_loadout.dart';
@@ -22,9 +24,15 @@ class SlotEquipNotFound extends EquipSlotResult {
   const SlotEquipNotFound();
 }
 
-/// 波A:破招槽 style gate 失败(非 canInterrupt 招,或 style 与角色流派不符)。
+/// 波A:破招槽 style gate 失败(非 canInterrupt 招,或 style 与角色流派不符);
+/// 波B 复用:drop 招(真解/残页)流派不符或装错槽位(仅主修/大招槽可装)。
 class SlotEquipStyleLocked extends EquipSlotResult {
   const SlotEquipStyleLocked();
+}
+
+/// 波B:drop 招(真解/残页)未解锁(SaveData.skillUnlockProgress 无解锁记录)。
+class SlotEquipNotUnlocked extends EquipSlotResult {
+  const SlotEquipNotUnlocked();
 }
 
 /// 技能装配持久化（P1b）。装配 gate = SkillDef.canEquipAtRealm（§5.3 三系锁死）。
@@ -56,6 +64,20 @@ class SkillLoadoutService {
           (!def.canInterrupt || def.style == null || def.style != c.school)) {
         result = const SlotEquipStyleLocked();
         return;
+      }
+      // 波B drop 招 gate:真解/残页只能装主修/大招槽 + 流派一致 + 已解锁。
+      if (def.source == SkillSource.mainlineDrop ||
+          def.source == SkillSource.fragment) {
+        const allowed = {SkillSlot.main1, SkillSlot.main2, SkillSlot.ultimate};
+        if (!allowed.contains(slot) || def.style != c.school) {
+          result = const SlotEquipStyleLocked();
+          return;
+        }
+        final SaveData? save = await _isar.saveDatas.get(0);
+        if (save == null || !save.skillUnlockProgress.isUnlocked(def.id)) {
+          result = const SlotEquipNotUnlocked();
+          return;
+        }
       }
       _writeSlot(c, slot, skillId);
       await _isar.characters.put(c);
