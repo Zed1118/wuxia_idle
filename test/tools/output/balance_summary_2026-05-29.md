@@ -17,30 +17,30 @@
 | stage_02_04 | sanLiu | Boss | 2 | 92.0% | 100.0% |
 | stage_02_05 | sanLiu | Boss | 2 | 72.0% | 100.0% |
 | stage_03_01 | erLiu | — | 3 | 98.0% | 100.0% |
-| stage_03_02 | erLiu | — | 3 | 86.0% | 100.0% |
+| stage_03_02 | erLiu | — | 3 | 86.0% | 98.0% |
 | stage_03_03 | erLiu | — | 3 | 24.0% | 100.0% |
-| stage_03_04 | erLiu | Boss | 3 | 12.0% | 100.0% |
-| stage_03_05 | erLiu | Boss | 3 | 0.0% | 100.0% |
+| stage_03_04 | erLiu | Boss | 3 | 12.0% | 98.0% |
+| stage_03_05 | erLiu | Boss | 3 | 0.0% | 96.0% |
 | stage_04_01 | yiLiu | — | 4 | 100.0% | 100.0% |
 | stage_04_02 | yiLiu | — | 4 | 96.0% | 100.0% |
 | stage_04_03 | yiLiu | — | 4 | 84.0% | 100.0% |
 | stage_04_04 | yiLiu | Boss | 4 | 72.0% | 100.0% |
-| stage_04_05 | yiLiu | Boss | 4 | 0.0% | 96.0% |
+| stage_04_05 | yiLiu | Boss | 4 | 0.0% | 76.0% |
 | stage_05_01 | jueDing | — | 5 | 98.0% | 100.0% |
 | stage_05_02 | jueDing | — | 5 | 74.0% | 100.0% |
 | stage_05_03 | jueDing | — | 5 | 6.0% | 100.0% |
-| stage_05_04 | jueDing | Boss | 5 | 0.0% | 100.0% |
-| stage_05_05 | jueDing | Boss | 5 | 0.0% | 20.0% |
+| stage_05_04 | jueDing | Boss | 5 | 0.0% | 98.0% |
+| stage_05_05 | jueDing | Boss | 5 | 0.0% | 0.0% |
 | stage_06_01 | zongShi | — | 6 | 100.0% | 100.0% |
 | stage_06_02 | zongShi | — | 6 | 94.0% | 100.0% |
 | stage_06_03 | zongShi | — | 6 | 0.0% | 100.0% |
 | stage_06_04 | zongShi | Boss | 6 | 0.0% | 100.0% |
-| stage_06_05 | zongShi | Boss | 6 | 0.0% | 96.0% |
+| stage_06_05 | zongShi | Boss | 6 | 0.0% | 90.0% |
 
 ## 难度诊断(bracket 解读)
 
 - **过难**(连 ceiling 活跃玩家都 < 50%):满配玩家都难过 → 数值偏高,上调候选
-  - stage_05_05:floor 0% / ceiling 20%
+  - stage_05_05:floor 0% / ceiling 0%
 
 - **过易**(连 floor 欠配置玩家都 > 90%):欠配置玩家都碾压 → 数值偏低,下调候选(尤其 Boss)
   - stage_01_01:floor 100% / ceiling 100%
