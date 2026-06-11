@@ -11,6 +11,7 @@ import '../core/domain/inventory_item.dart';
 import '../features/mainline/domain/mainline_progress.dart';
 import '../features/seclusion/domain/retreat_session.dart';
 import '../core/domain/save_data.dart';
+import '../core/domain/skill_unlock_entry.dart';
 import '../core/domain/technique.dart';
 import '../features/tower/domain/tower_progress.dart';
 import '../features/jianghu/domain/reputation.dart';
@@ -107,10 +108,16 @@ class IsarSetup {
   }
 
   /// 启动时确保 SaveData 单例存在；不存在则建一行默认值。
+  /// 旧档(saveVersion != 当前)→ 跑迁移后升版(幂等,见 [_migrateSaveData])。
   static Future<SaveData> _ensureSaveData() async {
     final isar = instance;
     final existing = await isar.saveDatas.get(0);
-    if (existing != null) return existing;
+    if (existing != null) {
+      if (existing.saveVersion != _currentSaveVersion) {
+        await _migrateSaveData(isar, existing);
+      }
+      return existing;
+    }
 
     final now = DateTime.now();
     final fresh = SaveData()
@@ -122,6 +129,23 @@ class IsarSetup {
       ..lastOnlineAt = now;
     await isar.writeTxn(() => isar.saveDatas.put(fresh));
     return fresh;
+  }
+
+  /// 波A A4 0.18.0 迁移:旧池 `EncounterProgress.unlockedSkillIds`(全部行)
+  /// 并入新池 `SaveData.skillUnlockProgress`(markUnlocked 幂等,可重复跑)。
+  /// 迁移后旧字段退役只读(写路径已切 encounter_service / seed)。
+  static Future<void> _migrateSaveData(Isar isar, SaveData save) async {
+    final progresses = await isar.encounterProgress.where().findAll();
+    await isar.writeTxn(() async {
+      save.skillUnlockProgress = List.of(save.skillUnlockProgress);
+      for (final p in progresses) {
+        for (final sid in p.unlockedSkillIds) {
+          save.skillUnlockProgress.markUnlocked(sid);
+        }
+      }
+      save.saveVersion = _currentSaveVersion;
+      await isar.saveDatas.put(save);
+    });
   }
 
   static Future<void> close() async {

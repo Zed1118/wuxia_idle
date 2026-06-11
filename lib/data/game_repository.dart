@@ -530,6 +530,9 @@ class GameRepository {
     // 波A build gate:破招技(canInterrupt=true)必须有 style 流派归属
     _enforceInterruptSkillRedLines();
 
+    // 波A A4:全招必有合法 source 来源 tag + 池/字段一致性
+    _enforceSkillSourceRedLines();
+
     // Phase 4 W14-1 C-1:encounter fixture 校验(若加载到)
     _enforceEncounterRedLines();
 
@@ -1354,6 +1357,48 @@ class GameRepository {
             '(波A interrupt_power_pct 红线)',
           );
         }
+      }
+    }
+  }
+
+  /// 波A A4 来源模型红线:
+  /// ① 全招 source 非空(yaml 漏配 fail-fast);
+  /// ② encounter_skills 池全 = encounter;
+  /// ③ canInterrupt 破招技 = special;
+  /// ④ stages dropSkillManualId 指向的招 = mainlineDrop;
+  /// ⑤ towers dropSkillFragmentId 指向的招 = towerFragment。
+  void _enforceSkillSourceRedLines() {
+    for (final s in skillDefs.values) {
+      if (s.source == null) {
+        throw StateError('skill ${s.id} 缺 source 来源 tag(波A A4 红线 ①)');
+      }
+      if (encounterSkillIds.contains(s.id) &&
+          s.source != SkillSource.encounter) {
+        throw StateError(
+          'skill ${s.id} 在奇遇池但 source=${s.source!.name}(波A A4 红线 ②)',
+        );
+      }
+      if (s.canInterrupt && s.source != SkillSource.special) {
+        throw StateError(
+          'skill ${s.id} canInterrupt 但 source=${s.source!.name}(波A A4 红线 ③)',
+        );
+      }
+    }
+    for (final st in stageDefs.values) {
+      final m = st.dropSkillManualId;
+      if (m != null && skillDefs[m]?.source != SkillSource.mainlineDrop) {
+        throw StateError(
+          'stage ${st.id} dropSkillManualId=$m source 应为 mainline_drop(波A A4 红线 ④)',
+        );
+      }
+    }
+    for (final f in towerFloors) {
+      final fr = f.dropSkillFragmentId;
+      if (fr != null && skillDefs[fr]?.source != SkillSource.towerFragment) {
+        throw StateError(
+          'tower floor ${f.floorIndex} dropSkillFragmentId=$fr '
+          'source 应为 tower_fragment(波A A4 红线 ⑤)',
+        );
       }
     }
   }

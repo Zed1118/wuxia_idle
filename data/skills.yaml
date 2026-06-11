@@ -32,6 +32,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_jichu
     visualEffect: punch_basic
+    source: technique
 
   - id: skill_gangmeng_jichu_skill
     name: 重击
@@ -43,6 +44,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_jichu
     visualEffect: heavy_punch
+    source: technique
 
   - id: skill_gangmeng_jichu_ult
     name: 怒涛拳
@@ -54,6 +56,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_jichu
     visualEffect: rage_wave_punch
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -70,6 +73,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_jichu
     visualEffect: swift_sword
+    source: technique
 
   - id: skill_lingqiao_jichu_skill
     name: 连环刺
@@ -81,6 +85,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_jichu
     visualEffect: chain_thrust
+    source: technique
 
   - id: skill_lingqiao_jichu_ult
     name: 流光剑
@@ -92,6 +97,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_jichu
     visualEffect: glow_sword
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -108,6 +114,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_jichu
     visualEffect: leaf_palm
+    source: technique
 
   - id: skill_yinrou_jichu_skill
     name: 暗影掌
@@ -119,6 +126,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_jichu
     visualEffect: shadow_palm
+    source: technique
 
   - id: skill_yinrou_jichu_ult
     name: 摧心指
@@ -130,6 +138,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_jichu
     visualEffect: heart_shatter
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -150,6 +159,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_changlian
     visualEffect: sweep_punch
+    source: technique
 
   - id: skill_gangmeng_changlian_skill
     name: 破甲掌
@@ -161,6 +171,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_changlian
     visualEffect: armor_break_palm
+    source: technique
 
   - id: skill_gangmeng_changlian_ult
     name: 山岳震
@@ -172,6 +183,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_changlian
     visualEffect: mountain_tremor
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -188,6 +200,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_changlian
     visualEffect: cloud_pierce_sword
+    source: technique
 
   - id: skill_lingqiao_changlian_skill
     name: 旋身刺
@@ -199,6 +212,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_changlian
     visualEffect: twirl_thrust
+    source: technique
 
   - id: skill_lingqiao_changlian_ult
     name: 万剑诀
@@ -210,6 +224,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_changlian
     visualEffect: ten_thousand_swords
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -226,6 +241,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_changlian
     visualEffect: sleeve_wave
+    source: technique
 
   - id: skill_yinrou_changlian_skill
     name: 隐影爪
@@ -237,6 +253,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_changlian
     visualEffect: hidden_claw
+    source: technique
 
   - id: skill_yinrou_changlian_ult
     name: 销魂指
@@ -248,6 +265,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_changlian
     visualEffect: soul_breaking_finger
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -268,6 +286,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_mingjia
     visualEffect: deep_punch
+    source: technique
 
   - id: skill_gangmeng_mingjia_skill
     name: 裂石掌
@@ -279,6 +298,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_mingjia
     visualEffect: rock_split_palm
+    source: technique
 
   - id: skill_gangmeng_mingjia_ult
     name: 崩山击
@@ -290,6 +310,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_mingjia
     visualEffect: mountain_break
+    source: mainline_drop
     proficiency:        # 波A A3 真解手工(高于模板半档;化境伤害%是死配置→改 CD,cap 1.30 见 combinedMult)
       effects:
         shuLian: { damage_pct: 0.10 }
@@ -307,6 +328,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_mingjia
     visualEffect: gale_sword
+    source: technique
 
   - id: skill_lingqiao_mingjia_skill
     name: 燕回式
@@ -318,6 +340,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_mingjia
     visualEffect: swallow_return
+    source: technique
 
   - id: skill_lingqiao_mingjia_ult
     name: 御风斩
@@ -329,6 +352,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_mingjia
     visualEffect: wind_slash
+    source: tower_fragment
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -345,6 +369,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_mingjia
     visualEffect: jade_flower
+    source: technique
 
   - id: skill_yinrou_mingjia_skill
     name: 寒星掌
@@ -356,6 +381,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_mingjia
     visualEffect: cold_star_palm
+    source: technique
 
   - id: skill_yinrou_mingjia_ult
     name: 落英缤纷
@@ -367,6 +393,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_mingjia
     visualEffect: falling_petals
+    source: mainline_drop
     proficiency:        # 波A A3 真解手工(高于模板半档;化境伤害%是死配置→改 CD,cap 1.30 见 combinedMult)
       effects:
         shuLian: { damage_pct: 0.10 }
@@ -388,6 +415,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_menpai
     visualEffect: thunder_palm
+    source: technique
 
   - id: skill_gangmeng_menpai_skill
     name: 千斤坠
@@ -399,6 +427,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_menpai
     visualEffect: thousand_pound_fall
+    source: technique
 
   - id: skill_gangmeng_menpai_ult
     name: 怒龙翻
@@ -410,6 +439,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_menpai
     visualEffect: angry_dragon_overturn
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -426,6 +456,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_menpai
     visualEffect: swallow_turn
+    source: technique
 
   - id: skill_lingqiao_menpai_skill
     name: 追风刺
@@ -437,6 +468,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_menpai
     visualEffect: wind_chasing_thrust
+    source: technique
 
   - id: skill_lingqiao_menpai_ult
     name: 流星剑
@@ -448,6 +480,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_menpai
     visualEffect: meteor_sword
+    source: tower_fragment
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -464,6 +497,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_menpai
     visualEffect: ghost_claw
+    source: technique
 
   - id: skill_yinrou_menpai_skill
     name: 蚀骨指
@@ -475,6 +509,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_menpai
     visualEffect: bone_corroding_finger
+    source: technique
 
   - id: skill_yinrou_menpai_ult
     name: 摄魂引
@@ -486,6 +521,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_menpai
     visualEffect: soul_capture
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -506,6 +542,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_jianghu
     visualEffect: mountain_split_palm
+    source: technique
 
   - id: skill_gangmeng_jianghu_skill
     name: 撼地拳
@@ -517,6 +554,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_jianghu
     visualEffect: earth_shaking_punch
+    source: technique
 
   - id: skill_gangmeng_jianghu_ult
     name: 霸王击
@@ -528,6 +566,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_jianghu
     visualEffect: overlord_strike
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -544,6 +583,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_jianghu
     visualEffect: wave_walking_sword
+    source: technique
 
   - id: skill_lingqiao_jianghu_skill
     name: 翻云式
@@ -555,6 +595,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_jianghu
     visualEffect: cloud_overturn
+    source: technique
 
   - id: skill_lingqiao_jianghu_ult
     name: 御剑诀
@@ -566,6 +607,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_jianghu
     visualEffect: flying_sword_art
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -582,6 +624,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_jianghu
     visualEffect: charm_shadow_hand
+    source: technique
 
   - id: skill_yinrou_jianghu_skill
     name: 噬心爪
@@ -593,6 +636,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_jianghu
     visualEffect: heart_devouring_claw
+    source: technique
 
   - id: skill_yinrou_jianghu_ult
     name: 摧魂咒
@@ -604,6 +648,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_jianghu
     visualEffect: soul_destroying_curse
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -624,6 +669,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_shichuan
     visualEffect: black_tortoise_punch
+    source: technique
 
   - id: skill_gangmeng_shichuan_skill
     name: 镇岳掌
@@ -635,6 +681,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_shichuan
     visualEffect: mountain_suppression
+    source: technique
 
   - id: skill_gangmeng_shichuan_ult
     name: 天崩裂
@@ -646,6 +693,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_shichuan
     visualEffect: heaven_breaking
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -662,6 +710,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_shichuan
     visualEffect: void_sword
+    source: technique
 
   - id: skill_lingqiao_shichuan_skill
     name: 紫电步
@@ -673,6 +722,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_shichuan
     visualEffect: purple_lightning_step
+    source: technique
 
   - id: skill_lingqiao_shichuan_ult
     name: 长虹经天
@@ -684,6 +734,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_shichuan
     visualEffect: rainbow_across_sky
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -700,6 +751,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_shichuan
     visualEffect: spider_silk_hand
+    source: technique
 
   - id: skill_yinrou_shichuan_skill
     name: 蚀魂爪
@@ -711,6 +763,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_shichuan
     visualEffect: soul_eroding_claw
+    source: technique
 
   - id: skill_yinrou_shichuan_ult
     name: 阴煞印
@@ -722,6 +775,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_shichuan
     visualEffect: shadow_seal
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -742,6 +796,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_chuanshuo
     visualEffect: primordial_punch
+    source: technique
 
   - id: skill_gangmeng_chuanshuo_skill
     name: 乾坤掌
@@ -753,6 +808,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_chuanshuo
     visualEffect: cosmos_palm
+    source: technique
 
   - id: skill_gangmeng_chuanshuo_ult
     name: 九霄龙吟
@@ -764,6 +820,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_chuanshuo
     visualEffect: dragon_roar_ninth_heaven
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -780,6 +837,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_chuanshuo
     visualEffect: primal_sword
+    source: technique
 
   - id: skill_lingqiao_chuanshuo_skill
     name: 紫霞凌虚
@@ -791,6 +849,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_chuanshuo
     visualEffect: purple_cloud_ascend
+    source: technique
 
   - id: skill_lingqiao_chuanshuo_ult
     name: 万象归元
@@ -802,6 +861,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_chuanshuo
     visualEffect: myriad_return_origin
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -818,6 +878,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_chuanshuo
     visualEffect: nether_finger
+    source: technique
 
   - id: skill_yinrou_chuanshuo_skill
     name: 九幽手
@@ -829,6 +890,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_chuanshuo
     visualEffect: ninefold_underworld_hand
+    source: technique
 
   - id: skill_yinrou_chuanshuo_ult
     name: 无相劫
@@ -840,6 +902,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_chuanshuo
     visualEffect: formless_calamity
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -865,6 +928,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: joint_skill_resonance
+    source: special
 
   # ───────────────────────────────────────────
   # 轻功对决专属招(P3.1.B · 2026-05-24)18 招
@@ -889,6 +953,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_tread_wave
+    source: special
 
   - id: skill_lightfoot_yiliu_gangmeng_skill
     name: 飞檐撞
@@ -900,6 +965,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_eaves_smash
+    source: special
 
   - id: skill_lightfoot_yiliu_gangmeng_ult
     name: 巨石压顶
@@ -911,6 +977,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_boulder_crush
+    source: special
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -927,6 +994,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_chase_wind
+    source: special
 
   - id: skill_lightfoot_yiliu_lingqiao_skill
     name: 凌虚步
@@ -938,6 +1006,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_void_step
+    source: special
 
   - id: skill_lightfoot_yiliu_lingqiao_ult
     name: 飞燕惊鸿
@@ -949,6 +1018,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_swallow_strike
+    source: special
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -965,6 +1035,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_listen_wind
+    source: special
 
   - id: skill_lightfoot_yiliu_yinrou_skill
     name: 暗影涉
@@ -976,6 +1047,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_shadow_wade
+    source: special
 
   - id: skill_lightfoot_yiliu_yinrou_ult
     name: 幽冥归
@@ -987,6 +1059,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_netherworld
+    source: special
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -1003,6 +1076,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_rock_split
+    source: special
 
   - id: skill_lightfoot_jueding_gangmeng_skill
     name: 撼山扑
@@ -1014,6 +1088,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_mountain_pounce
+    source: special
 
   - id: skill_lightfoot_jueding_gangmeng_ult
     name: 万钧落
@@ -1025,6 +1100,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_ten_thousand_jin
+    source: special
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -1041,6 +1117,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_rainbow_pierce
+    source: special
 
   - id: skill_lightfoot_jueding_lingqiao_skill
     name: 蜻蜓点水
@@ -1052,6 +1129,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_dragonfly_skim
+    source: special
 
   - id: skill_lightfoot_jueding_lingqiao_ult
     name: 九霄云外
@@ -1063,6 +1141,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_beyond_clouds
+    source: special
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -1079,6 +1158,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_cloud_sever
+    source: special
 
   - id: skill_lightfoot_jueding_yinrou_skill
     name: 鬼影迷踪
@@ -1090,6 +1170,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: lightfoot_ghost_track
+    source: special
 
   - id: skill_lightfoot_jueding_yinrou_ult
     name: 万籁俱寂
@@ -1101,6 +1182,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: lightfoot_silent_void
+    source: special
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -1122,6 +1204,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_jichu_fang
     visualEffect: iron_guard
+    source: technique
 
   - id: skill_gangmeng_jichu_fang_skill
     name: 震臂
@@ -1133,6 +1216,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_jichu_fang
     visualEffect: arm_shock
+    source: technique
 
   - id: skill_gangmeng_jichu_fang_ult
     name: 铁山靠
@@ -1144,6 +1228,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_jichu_fang
     visualEffect: iron_mountain
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -1159,6 +1244,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_jichu_fang
     visualEffect: side_dodge
+    source: technique
 
   - id: skill_lingqiao_jichu_fang_skill
     name: 反击
@@ -1170,6 +1256,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_jichu_fang
     visualEffect: counter
+    source: technique
 
   - id: skill_lingqiao_jichu_fang_ult
     name: 滑步一击
@@ -1181,6 +1268,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_jichu_fang
     visualEffect: slide_strike
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -1196,6 +1284,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_jichu_fang
     visualEffect: rest_qi
+    source: technique
 
   - id: skill_yinrou_jichu_fang_skill
     name: 回气掌
@@ -1207,6 +1296,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_jichu_fang
     visualEffect: qi_return
+    source: technique
 
   - id: skill_yinrou_jichu_fang_ult
     name: 固元术
@@ -1218,6 +1308,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_jichu_fang
     visualEffect: yuan_guard
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -1235,6 +1326,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_changlian_fang
     visualEffect: hard_block
+    source: technique
 
   - id: skill_gangmeng_changlian_fang_skill
     name: 撼地锤
@@ -1246,6 +1338,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_changlian_fang
     visualEffect: earth_shake
+    source: technique
 
   - id: skill_gangmeng_changlian_fang_ult
     name: 金刚怒目
@@ -1257,6 +1350,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_changlian_fang
     visualEffect: diamond_fury
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -1272,6 +1366,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_changlian_fang
     visualEffect: swim_body
+    source: technique
 
   - id: skill_lingqiao_changlian_fang_skill
     name: 绕行斩
@@ -1283,6 +1378,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_changlian_fang
     visualEffect: circle_slash
+    source: technique
 
   - id: skill_lingqiao_changlian_fang_ult
     name: 水中月
@@ -1294,6 +1390,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_changlian_fang
     visualEffect: moon_water
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -1309,6 +1406,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_changlian_fang
     visualEffect: turtle_breath
+    source: technique
 
   - id: skill_yinrou_changlian_fang_skill
     name: 绵柔掌
@@ -1320,6 +1418,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_changlian_fang
     visualEffect: soft_palm
+    source: technique
 
   - id: skill_yinrou_changlian_fang_ult
     name: 息长绵延
@@ -1331,6 +1430,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_changlian_fang
     visualEffect: long_breath
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -1348,6 +1448,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_mingjia_fang
     visualEffect: stone_stomp
+    source: technique
 
   - id: skill_gangmeng_mingjia_fang_skill
     name: 碎地掌
@@ -1359,6 +1460,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_mingjia_fang
     visualEffect: ground_break
+    source: technique
 
   - id: skill_gangmeng_mingjia_fang_ult
     name: 不动如山
@@ -1370,6 +1472,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_mingjia_fang
     visualEffect: immovable
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -1385,6 +1488,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_mingjia_fang
     visualEffect: wave_step
+    source: technique
 
   - id: skill_lingqiao_mingjia_fang_skill
     name: 微步刺
@@ -1396,6 +1500,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_mingjia_fang
     visualEffect: micro_thrust
+    source: technique
 
   - id: skill_lingqiao_mingjia_fang_ult
     name: 踏水无痕
@@ -1407,6 +1512,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_mingjia_fang
     visualEffect: waterwalker
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -1422,6 +1528,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_mingjia_fang
     visualEffect: dark_yin
+    source: technique
 
   - id: skill_yinrou_mingjia_fang_skill
     name: 寒气劲
@@ -1433,6 +1540,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_mingjia_fang
     visualEffect: cold_force
+    source: technique
 
   - id: skill_yinrou_mingjia_fang_ult
     name: 阴阳护体
@@ -1444,6 +1552,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_mingjia_fang
     visualEffect: yinyang_guard
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -1461,6 +1570,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_menpai_fang
     visualEffect: iron_palm
+    source: technique
 
   - id: skill_gangmeng_menpai_fang_skill
     name: 金钟罩
@@ -1472,6 +1582,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_menpai_fang
     visualEffect: golden_bell
+    source: technique
 
   - id: skill_gangmeng_menpai_fang_ult
     name: 铁布护身
@@ -1483,6 +1594,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_menpai_fang
     visualEffect: iron_shirt
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -1498,6 +1610,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_menpai_fang
     visualEffect: phantom
+    source: technique
 
   - id: skill_lingqiao_menpai_fang_skill
     name: 残影剑
@@ -1509,6 +1622,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_menpai_fang
     visualEffect: afterimage
+    source: technique
 
   - id: skill_lingqiao_menpai_fang_ult
     name: 幻灭一闪
@@ -1520,6 +1634,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_menpai_fang
     visualEffect: phantom_flash
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -1535,6 +1650,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_menpai_fang
     visualEffect: bone_melt
+    source: technique
 
   - id: skill_yinrou_menpai_fang_skill
     name: 绵针
@@ -1546,6 +1662,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_menpai_fang
     visualEffect: cotton_needle
+    source: technique
 
   - id: skill_yinrou_menpai_fang_ult
     name: 化骨裹身
@@ -1557,6 +1674,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_menpai_fang
     visualEffect: bone_wrap
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -1574,6 +1692,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_jianghu_fang
     visualEffect: king_fist
+    source: technique
 
   - id: skill_gangmeng_jianghu_fang_skill
     name: 降魔掌
@@ -1585,6 +1704,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_jianghu_fang
     visualEffect: demon_palm
+    source: technique
 
   - id: skill_gangmeng_jianghu_fang_ult
     name: 不动真身
@@ -1596,6 +1716,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_jianghu_fang
     visualEffect: true_body
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -1611,6 +1732,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_jianghu_fang
     visualEffect: ghost_step
+    source: technique
 
   - id: skill_lingqiao_jianghu_fang_skill
     name: 无声刺
@@ -1622,6 +1744,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_jianghu_fang
     visualEffect: silent_thrust
+    source: technique
 
   - id: skill_lingqiao_jianghu_fang_ult
     name: 暗影袭杀
@@ -1633,6 +1756,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_jianghu_fang
     visualEffect: shadow_kill
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -1648,6 +1772,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_jianghu_fang
     visualEffect: supreme_yin
+    source: technique
 
   - id: skill_yinrou_jianghu_fang_skill
     name: 真气疗
@@ -1659,6 +1784,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_jianghu_fang
     visualEffect: qi_heal
+    source: technique
 
   - id: skill_yinrou_jianghu_fang_ult
     name: 太阴归元
@@ -1670,6 +1796,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_jianghu_fang
     visualEffect: yin_return
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -1687,6 +1814,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_shichuan_fang
     visualEffect: chaos_palm
+    source: technique
 
   - id: skill_gangmeng_shichuan_fang_skill
     name: 铁骨崩
@@ -1698,6 +1826,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_shichuan_fang
     visualEffect: bone_break
+    source: technique
 
   - id: skill_gangmeng_shichuan_fang_ult
     name: 钢筋铁骨
@@ -1709,6 +1838,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_shichuan_fang
     visualEffect: steel_bone
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -1724,6 +1854,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_shichuan_fang
     visualEffect: sky_escape
+    source: technique
 
   - id: skill_lingqiao_shichuan_fang_skill
     name: 穿花
@@ -1735,6 +1866,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_shichuan_fang
     visualEffect: flower_pierce
+    source: technique
 
   - id: skill_lingqiao_shichuan_fang_ult
     name: 天遁无踪
@@ -1746,6 +1878,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_shichuan_fang
     visualEffect: traceless
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -1761,6 +1894,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_shichuan_fang
     visualEffect: cold_cicada
+    source: technique
 
   - id: skill_yinrou_shichuan_fang_skill
     name: 冰息
@@ -1772,6 +1906,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_shichuan_fang
     visualEffect: ice_breath
+    source: technique
 
   - id: skill_yinrou_shichuan_fang_ult
     name: 寒潭映月
@@ -1783,6 +1918,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_shichuan_fang
     visualEffect: cold_moon
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -1800,6 +1936,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_chuanshuo_fang
     visualEffect: tyrant_fist
+    source: technique
 
   - id: skill_gangmeng_chuanshuo_fang_skill
     name: 卸甲掌
@@ -1811,6 +1948,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_chuanshuo_fang
     visualEffect: disarm_palm
+    source: technique
 
   - id: skill_gangmeng_chuanshuo_fang_ult
     name: 金身不坏
@@ -1822,6 +1960,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_chuanshuo_fang
     visualEffect: golden_body
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -1837,6 +1976,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_chuanshuo_fang
     visualEffect: shadowless
+    source: technique
 
   - id: skill_lingqiao_chuanshuo_fang_skill
     name: 无形剑
@@ -1848,6 +1988,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_chuanshuo_fang
     visualEffect: formless
+    source: technique
 
   - id: skill_lingqiao_chuanshuo_fang_ult
     name: 无影无踪
@@ -1859,6 +2000,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_chuanshuo_fang
     visualEffect: vanish
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -1874,6 +2016,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_chuanshuo_fang
     visualEffect: return_origin
+    source: technique
 
   - id: skill_yinrou_chuanshuo_fang_skill
     name: 续命
@@ -1885,6 +2028,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_chuanshuo_fang
     visualEffect: life_extend
+    source: technique
 
   - id: skill_yinrou_chuanshuo_fang_ult
     name: 归元不灭
@@ -1896,6 +2040,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_chuanshuo_fang
     visualEffect: immortal
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -1913,6 +2058,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_jichu_nei
     visualEffect: charge
+    source: technique
 
   - id: skill_gangmeng_jichu_nei_skill
     name: 内劲冲
@@ -1924,6 +2070,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_jichu_nei
     visualEffect: inner_burst
+    source: technique
 
   - id: skill_gangmeng_jichu_nei_ult
     name: 气贯长虹
@@ -1935,6 +2082,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_jichu_nei
     visualEffect: qi_rainbow
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -1950,6 +2098,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_changlian_nei
     visualEffect: guide_qi
+    source: technique
 
   - id: skill_lingqiao_changlian_nei_skill
     name: 气旋斩
@@ -1961,6 +2110,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_changlian_nei
     visualEffect: qi_vortex
+    source: technique
 
   - id: skill_lingqiao_changlian_nei_ult
     name: 引气归元
@@ -1972,6 +2122,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_changlian_nei
     visualEffect: qi_home
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -1987,6 +2138,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_mingjia_nei
     visualEffect: gather
+    source: technique
 
   - id: skill_yinrou_mingjia_nei_skill
     name: 元气弹
@@ -1998,6 +2150,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_mingjia_nei
     visualEffect: yuan_shot
+    source: technique
 
   - id: skill_yinrou_mingjia_nei_ult
     name: 聚元一击
@@ -2009,6 +2162,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_mingjia_nei
     visualEffect: yuan_strike
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -2024,6 +2178,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_menpai_nei
     visualEffect: refine_spirit
+    source: technique
 
   - id: skill_gangmeng_menpai_nei_skill
     name: 意念攻
@@ -2035,6 +2190,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_menpai_nei
     visualEffect: mind_attack
+    source: technique
 
   - id: skill_gangmeng_menpai_nei_ult
     name: 神念无双
@@ -2046,6 +2202,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_menpai_nei
     visualEffect: mind_peerless
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -2061,6 +2218,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_jianghu_nei
     visualEffect: tiangang
+    source: technique
 
   - id: skill_lingqiao_jianghu_nei_skill
     name: 罡气掌
@@ -2072,6 +2230,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_lingqiao_jianghu_nei
     visualEffect: gang_palm
+    source: technique
 
   - id: skill_lingqiao_jianghu_nei_ult
     name: 天罡破阵
@@ -2083,6 +2242,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_lingqiao_jianghu_nei
     visualEffect: gang_break
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         jingTong: { cooldown_delta: -1 }
@@ -2098,6 +2258,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_shichuan_nei
     visualEffect: xuanyuan
+    source: technique
 
   - id: skill_yinrou_shichuan_nei_skill
     name: 真经一式
@@ -2109,6 +2270,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_yinrou_shichuan_nei
     visualEffect: scripture
+    source: technique
 
   - id: skill_yinrou_shichuan_nei_ult
     name: 玄元归一
@@ -2120,6 +2282,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_yinrou_shichuan_nei
     visualEffect: yuan_one
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.05 }
@@ -2135,6 +2298,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_chuanshuo_nei
     visualEffect: chaos_fist
+    source: technique
 
   - id: skill_gangmeng_chuanshuo_nei_skill
     name: 开天掌
@@ -2146,6 +2310,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: tech_gangmeng_chuanshuo_nei
     visualEffect: heaven_palm
+    source: technique
 
   - id: skill_gangmeng_chuanshuo_nei_ult
     name: 混沌初开
@@ -2157,6 +2322,7 @@ skills:
     requiresManualTrigger: true
     parentTechniqueDefId: tech_gangmeng_chuanshuo_nei
     visualEffect: chaos_origin
+    source: technique
     proficiency:        # 波A A3 流派模板(刚猛伤害加速/灵巧CD/阴柔混合)
       effects:
         shuLian: { damage_pct: 0.08 }
@@ -2181,6 +2347,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: po_shi_strike
+    source: special
     proficiency:        # 减防深度型:interrupt_power_pct 高配(波A 方向 b)
       effects:
         shunShou: { cooldown_delta: -1 }
@@ -2203,6 +2370,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: jie_ying_flash
+    source: special
     proficiency:        # 窗口型:踉跄窗口加长为主,减防低配
       effects:
         shunShou: { interrupt_window_bonus_ticks: 1 }
@@ -2222,6 +2390,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: fu_mai_touch
+    source: special
     proficiency:        # 均衡型:中档减防 + CD 回转
       effects:
         shunShou: { cooldown_delta: -1 }
@@ -2241,6 +2410,7 @@ skills:
     requiresManualTrigger: false
     parentTechniqueDefId: null
     visualEffect: qingfeng_jue
+    source: mainline_drop
     proficiency:        # 波A A3 招牌真解手工(同真解档;化境伤害%死配置→CD)
       effects:
         shuLian: { damage_pct: 0.10 }

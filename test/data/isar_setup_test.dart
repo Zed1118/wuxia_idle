@@ -9,6 +9,8 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/core/domain/skill_unlock_entry.dart';
+import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 
@@ -36,6 +38,45 @@ void main() {
       if (await tempDir.exists()) {
         await tempDir.delete(recursive: true);
       }
+    });
+
+    test('波A A4 迁移:0.17 旧档奇遇 unlock 池并入 skillUnlockProgress(幂等)', () async {
+      // 构造 0.17 旧档:SaveData 旧版本号 + EncounterProgress 带旧池解锁。
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      await IsarSetup.instance.writeTxn(() async {
+        final save = (await IsarSetup.instance.saveDatas.get(0))!;
+        save.saveVersion = '0.17.0';
+        await IsarSetup.instance.saveDatas.put(save);
+        final p = EncounterProgress()
+          ..saveDataId = 1
+          ..triggeredEncounterIds = []
+          ..schoolKillCounts = []
+          ..unlockedSkillIds = ['skill_encounter_ting_yu_jian']
+          ..createdAt = DateTime(2026, 1, 1);
+        await IsarSetup.instance.encounterProgress.put(p);
+      });
+      await IsarSetup.close();
+
+      // 重新 init → _ensureSaveData 检测版本差异跑迁移。
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      final save = (await IsarSetup.instance.saveDatas.get(0))!;
+      expect(save.saveVersion, '0.18.0', reason: '迁移后升版');
+      expect(
+        save.skillUnlockProgress.isUnlocked('skill_encounter_ting_yu_jian'),
+        isTrue,
+        reason: '旧池解锁并入新池',
+      );
+
+      // 幂等:再 close/init 一轮不重复、不抛。
+      await IsarSetup.close();
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      final again = (await IsarSetup.instance.saveDatas.get(0))!;
+      expect(
+        again.skillUnlockProgress
+            .where((e) => e.skillId == 'skill_encounter_ting_yu_jian')
+            .length,
+        1,
+      );
     });
 
     test('首次 init 应自动建 SaveData(id=0) 并填默认值', () async {

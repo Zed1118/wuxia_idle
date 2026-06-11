@@ -151,7 +151,7 @@ class _CangJingGeScreenState extends ConsumerState<CangJingGeScreen> {
   void _refresh(int characterId) {
     ref.invalidate(characterByIdProvider(characterId));
     ref.invalidate(characterAllTechniquesProvider(characterId));
-    ref.invalidate(currentEncounterProgressProvider);
+    ref.invalidate(unlockedSkillIdSetProvider);
   }
 }
 
@@ -447,11 +447,13 @@ class _SlotTile extends ConsumerWidget {
     };
   }
 
-  /// 奇遇槽走 [EncounterService.equipEncounterSkill]，候选 = 已解锁奇遇招。
+  /// 奇遇槽走 [EncounterService.equipEncounterSkill]，候选 = 已解锁奇遇招
+  /// (波A A4:读 SaveData.skillUnlockProgress 单一真相源,只取奇遇招)。
   Future<void> _pickEncounter(BuildContext context, WidgetRef ref) async {
     final repo = GameRepository.instance;
-    final progress = await ref.read(currentEncounterProgressProvider.future);
-    final unlocked = progress?.unlockedSkillIds ?? const <String>[];
+    final unlockedSet = await ref.read(unlockedSkillIdSetProvider.future);
+    final unlocked =
+        unlockedSet.where(repo.encounterSkillIds.contains).toList();
     final candidates =
         unlocked
             .map((id) => repo.skillDefs[id])
