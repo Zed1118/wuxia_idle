@@ -28,12 +28,10 @@ Future<void> showStageVictoryDialog({
   String? firstClearTitle,
   String? firstClearSubtitle,
 }) async {
-  // 结算 jingle(§10 仪式感):跨 tier 大境界突破优先(更稀有),其次装备掉落,
-  // 二者同现只响一个不叠播;小层升级/道具/空掉落不响。
+  // 结算 jingle:跨 tier 大境界突破响 realmAdvance(爆装备音已移到 playTreasureDropIfAny
+  // 动画层 + 门槛化,2026-06-11)。
   if (advancements.any((e) => e.result.crossedTier)) {
     SoundManager.instance.playSfx(SfxId.realmAdvance);
-  } else if (drops.equipments.isNotEmpty) {
-    SoundManager.instance.playSfx(SfxId.reward);
   }
   await showDialog<void>(
     context: context,
