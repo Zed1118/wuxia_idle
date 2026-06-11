@@ -42,10 +42,10 @@ void main() {
       expect(IsarSetup.instance.sectEvents, isNotNull);
     });
 
-    test('R4.2 saveVersion 已升 0.17.0(P1b 技能装配槽字段)', () async {
+    test('R4.2 saveVersion 已升 0.18.0(波A keySkillId 破招槽 + 奇遇池迁移)', () async {
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = await IsarSetup.instance.saveDatas.get(0);
-      expect(save!.saveVersion, '0.17.0');
+      expect(save!.saveVersion, '0.18.0');
     });
 
     test('R4.3 Sect 写入 → close → reopen 读出字段一致', () async {

@@ -10,25 +10,25 @@
 
 ## 一 · P1a 内已推迟(P1a spec §5「P1a 不做」)
 
-- [ ] **技能装配限制 UI**(§2.6):每名角色主修 2 招 / 辅修 1 / 共鸣 1 / 大招 1 的装配栏。涉及战斗 UI 技能栏(presentation),与 P0 战斗 UI 同区,排 P1b/P2。
-- [ ] **藏经阁 screen**(§三 / §8 / P1 验收):新 screen,聚合全角色技能树 + 熟练度阶段 + 真解/残页进度展示 + 装配入口。P1b 最大头(~8-10h)。
+- [x] **技能装配限制 UI**(§2.6):~~P1b 2026-06-10 落地~~(6 槽装配栏 + picker gate);波A 2026-06-11 扩第 7 破招槽(`keySkillId`,canInterrupt && style==school gate)。
+- [x] **藏经阁 screen**:~~P1b 2026-06-10 落地~~(CangJingGeScreen 出战配置+武学库+残页区);波A 扩破招槽 tile。
 - [ ] **统一进度展示组件 wiring**(§三):`MeridianBar` 已就绪,但熟练度/共鸣度/修炼度/残页四系统统一接到"当前阶段+进度+当前效果+下一阶段效果+来源"的展示规范,需逐处 wire。P1b。
 - [ ] **24 招全内容**(§16 #1):P1a 只做框架 + 最小集(3 主线真解 + 1-2 套残页 + 少数 per-skill 效果)。24 招完整名字/流派/倍率/效果/占位 key 是独立内容批。
 - [ ] **战报诊断规则**(§11.4):killed_by_charge / mob_overrun 等失败复盘提示 + jump_target。归 P3 战后体验,不在 P1a。
-- [ ] **per-skill 熟练度效果铺广**:P1a 只给真解/招牌/破招技配 per-skill 效果,其余 166 招吃全局阶段倍率统一底。二期可给更多关键招精修个性效果。
+- [x] **per-skill 熟练度效果铺广**(波A 2026-06-11):53 ultimate(含 6 轻功)流派模板(刚猛伤害加速/灵巧CD/阴柔混合)+ 真解/招牌手工高半档;化境 damage_pct 系死配置(combinedMult cap 1.30)改 CD。normalAttack/powerSkill 留全局曲线(4 key 词汇表下无差异化空间,设计立场非砍量)。
 
 ## 二 · P1a 默认拍板(用了默认值,二期可推翻)
 
 - [ ] **残页集齐数量**:P1a 取 §16 #4 默认 = 真解 1 本即解锁 / 爬塔残页 5 片一套(进 numbers.yaml)。实玩后可调。
 - [ ] **奇遇旧 unlock 池不并入新结构**:P1a 让奇遇技能池(`equippedEncounterSkillId` + EncounterProgress)与新 `skillUnlockProgress` 两套并存,避免大改。二期若要统一来源模型,在此合并。
-- [ ] **§9.1 破招技按 build gate**(P0 遗留):P0 破招技(破势)是广发主控的简化,二期改为按心法/build 赋予(谁配了对应心法/装备才有破招技)。依赖装配限制 UI。
+- [x] **§9.1 破招技按 build gate**(波A 2026-06-11):拆 fromCharacter 广发硬编码,三流派破招技各一(破势/截影/拂脉,SkillDef.style 红线)走第 7 装配槽;autoFill 自动填本流派 + 旧档 fallback 等价,P0 手感不倒退。
 
 ## 三 · P1b(P1 的表现层半,P1a 之后接着做)
 
-- [ ] 藏经阁 screen(见一)。
+- [x] 藏经阁 screen(见一,P1b 落地)。
 - [ ] 统一进度展示组件 wiring(见一)。
-- [ ] 技能装配限制 UI(见一)。
-- [ ] P1 验收项收口:UI 可见当前/下一阶段效果 · 低境界无法装配高阶技能(装配 gate 后端在 P1a,UI 在 P1b)。
+- [x] 技能装配限制 UI(见一,P1b 落地 + 波A 破招槽)。
+- [x] P1 验收项收口(P1b 落地:藏经阁阶段效果可见 + picker 境界 gate 灰显;波A 加流派 gate)。
 
 ## 四 · master spec 后续阶段(P2/P3/P4,仅指针,细案见 master spec)
 
@@ -49,9 +49,9 @@
 ## 六 · P1a 实装期新增 deferred(Phase 0 发现 · 2026-06-10)
 
 - [x] **残页内容挂载 + tower flow wire**（2026-06-10 完成 · `f4b1c7b2`）：残页机制(SkillUnlockEntry.fragmentCount / addFragment 阈值解锁 / StageDef.dropSkillFragmentId / 红线 / hook fragment 分支)已**完整 + 单测覆盖**(stage_skill_drop_hook_test fragment 用例)。但爬塔楼层在 `data/towers.yaml`(独立 def 类型,非 StageDef),无法用 stages.yaml 的 dropSkillFragmentId 字段挂载;且 `tower_entry_flow.dart` 未 wire skill drop hook。**真解(主线)已全 wire+测,残页只差内容挂载**:需 towers.yaml schema 扩 dropSkillFragmentId + tower flow 调 runStageSkillDropHookAfterVictory(P0-READ tower 首通/重打判定)。 **已落**:`TowerFloorDef.dropSkillFragmentId` + 红线(仅Boss/id存在)+ hook 泛化(`_applySkillDrop` 核心 + Stage/Tower 两 wrapper)+ tower_entry_flow wire(floor 10/20 残页 · 每次Boss胜利 rng 掉,非首通限定)。
-- [ ] **解锁态消费(注入战斗可用池)**:`SkillUnlockService.isUnlocked` 目前只存进度,无人消费把已解锁招注入 `BattleCharacter.availableSkills`。spec §六 明确这是 P1b/装配 UI 的活(P1a 只做 source plumbing),非缺口。P1b 接。
-- [ ] **interrupt_power_pct 实装**:per-skill 「破招力」字段已解析(schema)但未消费。当前 P0 破招是二元(清蓄力+固定 stagger),无对应标量目标;是否缩放破招伤害 vs 加深减防是设计决策,需先定再落。
-- [ ] **166 招 source tag**:plan D1 提的技能级来源标(沿 techniques.yaml acquireSourceTags 体例)本批降级——P1a 无消费方(装配 gate 走境界非 source),不阻塞验收路径。二期统一来源模型时补。
+- [x] **解锁态消费**:P1b 装配槽注入 + 波A A4 收口(unlockedSkillIdSetProvider 单一真相源,奇遇 picker/character_panel 真消费 isUnlocked)。
+- [x] **interrupt_power_pct 实装**(波A 2026-06-11 · 用户拍 b 方向):踉跄减防 = base × (1+当阶 pct) clamp `interrupt_power_cap` 0.5 红线;三破招技差异化(深度/窗口/均衡型)。
+- [x] **source tag**(波A 2026-06-11):SkillDef.source 5 枚举,skills+encounter_skills **210 招**全量回填 + 5 条红线;奇遇旧池同步迁入 skillUnlockProgress(0.18 迁移)。消费方=红线+P4 藏经阁来源显示。
 - [~] **高熟练度全量平衡扫描**(2026-06-10 焦点版已做 · `ce2ebdba`):balance_simulator 已加 `proficiencyUses` 维度,焦点扫了 3 真解 Boss 关 floor+ceiling(floor +8~57pt / ceiling 不破 100%,未破甜区)。**剩**:全 30 关高熟练度 sweep(扩到 _summarize 全表)留二期。
 
 ## 七 · 音频二期(v1 接入后的滚动项 · 2026-06-10 起)
