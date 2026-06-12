@@ -30,6 +30,9 @@ class WuxiaColors {
   static const Color textMuted = Color(0xFF8A93A0);
   static const Color resultHighlight = Color(0xFFE8C547);
 
+  /// 警示色（T2 蓄力危险条 / 敌方威胁提示）：绛红，与 hpLow 同调表"危险"。
+  static const Color danger = Color(0xFFB22222);
+
   /// 出版美术 B2:Boss 头像专属金色描边(深金,区别于 resultHighlight 浅金 + 流派色)。
   static const Color bossFrame = Color(0xFFD4A017);
 
