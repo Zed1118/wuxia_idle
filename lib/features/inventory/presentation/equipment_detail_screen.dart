@@ -111,7 +111,8 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                 final wide = constraints.maxWidth >= 900;
                 final hero = _DetailHero(
                   def: widget.def,
-                  height: wide ? 520 : 360,
+                  // 窄屏(<900)矮窗下大图压缩高度,给信息卡养成入口留首屏空间(T8)。
+                  height: wide ? 520 : 300,
                 );
                 final info = _InfoCard(
                   equipment: widget.equipment,
@@ -273,6 +274,27 @@ class _InfoCard extends ConsumerWidget {
                 ],
               ],
             ),
+            // T8:养成入口前移到信息卡首屏顶部(紧贴品阶行),保证窄屏/矮窗首屏即见
+            // (Codex 验收在 ~800×632 下原入口在大图+属性下方被裁出 → 上移到品阶行下)。
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: PlaqueButton(
+                    label: '${UiStrings.tabEnhance} +${equipment.enhanceLevel}',
+                    primary: true,
+                    onTap: onEnhance,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: PlaqueButton(
+                    label: UiStrings.tabForging,
+                    onTap: onForge,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 10),
             _StatRow(
               attack: equipment.baseAttack,
@@ -318,26 +340,6 @@ class _InfoCard extends ConsumerWidget {
               config: _findStageCfg(n.resonanceStages, resonance),
               nextStageCfg: _findNextStageCfg(n.resonanceStages, resonance),
               battleCount: equipment.battleCount,
-            ),
-            // T8:养成入口前移到信息卡首屏(强化带等级状态,与底部 ActionBar 兜底并存)。
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: PlaqueButton(
-                    label: '${UiStrings.tabEnhance} +${equipment.enhanceLevel}',
-                    primary: true,
-                    onTap: onEnhance,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: PlaqueButton(
-                    label: UiStrings.tabForging,
-                    onTap: onForge,
-                  ),
-                ),
-              ],
             ),
           ],
         ),

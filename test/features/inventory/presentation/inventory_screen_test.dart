@@ -186,7 +186,9 @@ void main() {
       equipments: [eq],
       player: mkCharacter(realmTier: RealmTier.xueTu),
     );
-    expect(find.text('未达境界'), findsWidgets, reason: '境界不达应显封条');
+    // T11 修复:封条文案改具体境界原因(神物 → 需武圣境界),非泛化「未达境界」。
+    expect(find.text('需武圣境界'), findsWidgets, reason: '境界不达应显具体境界封条');
+    expect(find.text('未达境界'), findsNothing, reason: '不再用泛化文案');
   });
 
   testWidgets('境界达标装备 → 无锁', (tester) async {
@@ -201,7 +203,7 @@ void main() {
       equipments: [eq],
       player: mkCharacter(realmTier: RealmTier.wuSheng),
     );
-    expect(find.text('未达境界'), findsNothing, reason: '武圣可装备寻常货 → 无封条');
+    expect(find.textContaining('需'), findsNothing, reason: '武圣可装备寻常货 → 无境界封条');
   });
 
   testWidgets('缺图/未知 defId → 走 EquipGlyph 占位不崩', (tester) async {
