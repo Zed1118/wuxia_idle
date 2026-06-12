@@ -231,6 +231,28 @@ void main() {
     expect(find.byIcon(Icons.auto_awesome), findsWidgets, reason: '师承遗物应显标记');
   });
 
+  testWidgets('T11 筛选「已穿戴」→ 只显已穿戴装备', (tester) async {
+    final worn =
+        mkEq(id: 10, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon)
+          ..ownerCharacterId = 1;
+    final free = mkEq(
+      id: 11,
+      tier: EquipmentTier.liQi,
+      slot: EquipmentSlot.armor,
+    );
+    await pumpInv(tester, equipments: [worn, free]);
+
+    // 默认「全部」→ 两件都显
+    expect(find.text('test_10'), findsOneWidget);
+    expect(find.text('test_11'), findsOneWidget);
+
+    // 点「已穿戴」筛选 → 只剩 worn
+    await tester.tap(find.text('已穿戴'));
+    await tester.pumpAndSettle();
+    expect(find.text('test_10'), findsOneWidget);
+    expect(find.text('test_11'), findsNothing);
+  });
+
   testWidgets('木牌 2 tab + 默认装备 Tab 显部位段', (tester) async {
     await pumpInv(
       tester,
@@ -282,6 +304,8 @@ void main() {
     expect(find.text('item_mojianshi'), findsNothing);
     expect(find.text('心血结晶'), findsNothing);
     expect(find.text('暂无物料'), findsNothing);
+    // T12:物料行带用途说明
+    expect(find.textContaining('用于强化装备'), findsOneWidget);
   });
 
   testWidgets('物料 Tab 2 行 / 2 种 → 按 enum 顺序分组（磨剑石在前）', (tester) async {

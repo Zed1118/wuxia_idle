@@ -102,9 +102,7 @@ class _Body extends StatelessWidget {
           ),
           if (info.inactiveDisciples.isNotEmpty) ...[
             const SizedBox(height: 16),
-            _InactiveDisciplesSection(
-              disciples: info.inactiveDisciples,
-            ),
+            _InactiveDisciplesSection(disciples: info.inactiveDisciples),
           ],
           const SizedBox(height: 16),
           _HeritageSection(equipments: info.heritageEquipments),
@@ -175,10 +173,10 @@ class _AscensionSection extends ConsumerWidget {
                   child: ElevatedButton(
                     onPressed: e.canAscend
                         ? () => Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => const AscensionScreen(),
-                              ),
-                            )
+                            MaterialPageRoute<void>(
+                              builder: (_) => const AscensionScreen(),
+                            ),
+                          )
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: WuxiaColors.resultHighlight,
@@ -221,10 +219,7 @@ class _FounderSection extends StatelessWidget {
           if (founder == null)
             const _EmptyText(UiStrings.lineagePanelNoFounder)
           else
-            _CharacterChip(
-              character: founder!,
-              portraitPath: portraitPath,
-            ),
+            _CharacterChip(character: founder!, portraitPath: portraitPath),
         ],
       ),
     );
@@ -255,8 +250,9 @@ class _DisciplesSection extends StatelessWidget {
               if (i > 0) const SizedBox(height: 8),
               _CharacterChip(
                 character: disciples[i],
-                portraitPath:
-                    i < portraitPaths.length ? portraitPaths[i] : null,
+                portraitPath: i < portraitPaths.length
+                    ? portraitPaths[i]
+                    : null,
               ),
             ],
         ],
@@ -290,10 +286,7 @@ class _FounderBuffSection extends StatelessWidget {
           const SizedBox(height: 8),
           const Text(
             UiStrings.lineagePanelFounderBuffSubtitle,
-            style: TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 8),
           _BuffRow(
@@ -369,9 +362,7 @@ class _InactiveDisciplesSection extends StatelessWidget {
           else
             for (var i = 0; i < disciples.length; i++) ...[
               if (i > 0) const SizedBox(height: 8),
-              _CharacterChip(
-                character: disciples[i],
-              ),
+              _CharacterChip(character: disciples[i]),
             ],
         ],
       ),
@@ -504,10 +495,7 @@ class _HeritageRow extends StatelessWidget {
         Container(
           width: 6,
           height: 6,
-          decoration: BoxDecoration(
-            color: tierColor,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: tierColor, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -605,10 +593,7 @@ class _EmptyText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
-        color: WuxiaColors.textMuted,
-        fontSize: 13,
-      ),
+      style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 13),
     );
   }
 }

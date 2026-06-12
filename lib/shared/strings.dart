@@ -95,6 +95,9 @@ class UiStrings {
   static const String equipPickerEmpty = '背包暂无该部位可用装备';
   static const String equipPickerClose = '关闭';
   static const String equipUnequip = '卸下当前装备';
+  // T10 已穿装备快捷操作面板。
+  static const String equipQuickReplace = '更换装备';
+  static const String equipQuickViewLore = '查看典故';
   static const String equipLockedByRealm = '境界不足,无法装备(三系锁死)';
 
   /// H1 批3 picker 标注:该装备正被队内其他角色穿戴,选它会移装(原角色卸下)。
@@ -287,6 +290,21 @@ class UiStrings {
 
   /// 物料行文案：`磨剑石 × 1234`。
   static String materialQuantity(String name, int qty) => '$name × $qty';
+
+  /// T12:物料用途说明(itemType.name → 用途)。空 = 不显。
+  static String materialUsage(String itemTypeName) => switch (itemTypeName) {
+    'moJianShi' => '用于强化装备',
+    'xinXueJieJing' => '强化保底 / 开锋消耗',
+    'jingYanDan' => '提升修为',
+    'techniqueScroll' => '研习心法',
+    _ => '',
+  };
+  // T11 仓库筛选标签。
+  static const String inventoryFilterAll = '全部';
+  static const String inventoryFilterEquippable = '可装备';
+  static const String inventoryFilterEquipped = '已穿戴';
+  static const String inventoryFilterForgeable = '可开锋';
+  static const String inventoryFilterRealmLocked = '境界未达';
   static const String enhanceDialogTitle = '强化';
   static const String enhanceButton = '强化';
   static const String guaranteeButton = '保底成功';

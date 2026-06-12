@@ -13,6 +13,8 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../data/isar_provider.dart';
 import '../../equipment/application/equipment_service.dart';
+import '../../equipment/presentation/enhance_dialog.dart';
+import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
 import '../../sect/application/sect_providers.dart';
@@ -843,15 +845,133 @@ class _EquipmentSection extends ConsumerWidget {
         context: context,
         backgroundColor: WuxiaColors.panel,
         isDismissible: true,
-        builder: (_) => _EquipPickerSheet(
-          character: character,
-          slot: slot,
-          currentId: equipmentId,
-        ),
+        // T10:空槽直接换装;已穿装备先出快捷操作面板(更换/强化/开锋/典故/卸下)。
+        builder: (_) => equipmentId == null
+            ? _EquipPickerSheet(
+                character: character,
+                slot: slot,
+                currentId: equipmentId,
+              )
+            : _EquipQuickActionSheet(
+                character: character,
+                slot: slot,
+                equipmentId: equipmentId,
+              ),
       ),
       child: _EquipmentSlotTile(slot: slot, equipmentId: equipmentId),
     );
   }
+}
+
+/// T10 已穿装备快捷操作面板:更换 / 强化 / 开锋 / 查看典故 / 卸下。
+/// 「发现问题的位置=解决问题的位置」——角色面板看到装备弱即可就地处理,
+/// 全部复用现有 service/dialog(_EquipPickerSheet / EnhanceDialog /
+/// EquipmentDetailScreen / EquipmentService.unequip),不绕过校验。
+class _EquipQuickActionSheet extends ConsumerWidget {
+  const _EquipQuickActionSheet({
+    required this.character,
+    required this.slot,
+    required this.equipmentId,
+  });
+
+  final Character character;
+  final EquipmentSlot slot;
+  final int equipmentId;
+
+  void _invalidate(WidgetRef ref) {
+    ref.invalidate(characterByIdProvider(character.id));
+    ref.invalidate(allEquipmentsProvider);
+    ref.invalidate(equipmentByIdProvider(equipmentId));
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final eq = ref.watch(equipmentByIdProvider(equipmentId)).value;
+    final def = eq == null
+        ? null
+        : GameRepository.instance.equipmentDefs[eq.defId];
+    if (eq == null || def == null) {
+      return const SizedBox(
+        height: 96,
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      );
+    }
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              def.name,
+              style: const TextStyle(
+                color: WuxiaColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const Divider(height: 1, color: WuxiaColors.border),
+          _tile(Icons.swap_horiz, UiStrings.equipQuickReplace, () {
+            Navigator.pop(context);
+            showModalBottomSheet<void>(
+              context: context,
+              backgroundColor: WuxiaColors.panel,
+              isDismissible: true,
+              builder: (_) => _EquipPickerSheet(
+                character: character,
+                slot: slot,
+                currentId: equipmentId,
+              ),
+            );
+          }),
+          _tile(Icons.arrow_upward, UiStrings.tabEnhance, () async {
+            Navigator.pop(context);
+            await showDialog<void>(
+              context: context,
+              builder: (_) =>
+                  EnhanceDialog(equipment: eq, def: def, initialTab: 0),
+            );
+            _invalidate(ref);
+          }),
+          _tile(Icons.auto_fix_high, UiStrings.tabForging, () async {
+            Navigator.pop(context);
+            await showDialog<void>(
+              context: context,
+              builder: (_) =>
+                  EnhanceDialog(equipment: eq, def: def, initialTab: 1),
+            );
+            _invalidate(ref);
+          }),
+          _tile(Icons.menu_book, UiStrings.equipQuickViewLore, () {
+            Navigator.pop(context);
+            Navigator.of(context).push<void>(
+              MaterialPageRoute(
+                builder: (_) => EquipmentDetailScreen(equipment: eq, def: def),
+              ),
+            );
+          }),
+          _tile(Icons.remove_circle_outline, UiStrings.equipUnequip, () async {
+            final isar = ref.read(isarProvider);
+            if (isar == null) return;
+            await EquipmentService(
+              isar: isar,
+            ).unequip(characterId: character.id, slot: slot);
+            if (!context.mounted) return;
+            _invalidate(ref);
+            Navigator.pop(context);
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _tile(IconData icon, String label, VoidCallback onTap) => ListTile(
+    leading: Icon(icon, color: WuxiaColors.textSecondary, size: 20),
+    title: Text(label, style: const TextStyle(color: WuxiaColors.textPrimary)),
+    onTap: onTap,
+  );
 }
 
 /// H1 批2 装备 picker(玩家手动穿戴入口)。镜像 `encounter_skill_section` picker

@@ -94,7 +94,10 @@ void main() {
     expect(find.text('速度'), findsOneWidget);
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
     expect(find.byType(PaperPanel), findsWidgets);
-    expect(find.byType(PlaqueButton), findsNWidgets(2));
+    // T8:info 区前移强化/开锋入口(2)+ 底部 ActionBar 兜底(2)= 4
+    expect(find.byType(PlaqueButton), findsNWidgets(4));
+    // 首屏 info 区可见带强化等级的入口（不必滚到底部）
+    expect(find.text('强化 +12'), findsOneWidget);
   });
 
   testWidgets('lore 3 段全渲染 + 段间分隔', (tester) async {

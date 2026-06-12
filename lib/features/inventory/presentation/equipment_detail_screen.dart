@@ -116,6 +116,8 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                 final info = _InfoCard(
                   equipment: widget.equipment,
                   def: widget.def,
+                  onEnhance: () => _openEnhance(0),
+                  onForge: () => _openEnhance(1),
                 );
                 return ListView(
                   padding: const EdgeInsets.all(20),
@@ -216,10 +218,19 @@ class _DetailHero extends StatelessWidget {
 }
 
 class _InfoCard extends ConsumerWidget {
-  const _InfoCard({required this.equipment, required this.def});
+  const _InfoCard({
+    required this.equipment,
+    required this.def,
+    required this.onEnhance,
+    required this.onForge,
+  });
 
   final Equipment equipment;
   final EquipmentDef def;
+
+  /// T8:信息卡首屏强化/开锋入口(复用 detail 屏 _openEnhance(0/1))。
+  final VoidCallback onEnhance;
+  final VoidCallback onForge;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -307,6 +318,26 @@ class _InfoCard extends ConsumerWidget {
               config: _findStageCfg(n.resonanceStages, resonance),
               nextStageCfg: _findNextStageCfg(n.resonanceStages, resonance),
               battleCount: equipment.battleCount,
+            ),
+            // T8:养成入口前移到信息卡首屏(强化带等级状态,与底部 ActionBar 兜底并存)。
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: PlaqueButton(
+                    label: '${UiStrings.tabEnhance} +${equipment.enhanceLevel}',
+                    primary: true,
+                    onTap: onEnhance,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: PlaqueButton(
+                    label: UiStrings.tabForging,
+                    onTap: onForge,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -602,19 +633,16 @@ class _SegmentDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // T9:纯 Flutter 绘制(细线 + 中央点线),去 ink_divider.png 依赖
+    // (330K 图缩到 height:8 渲染不确定;纯绘制稳定无破图风险)。
+    final lineColor = WuxiaColors.border.withValues(alpha: 0.5);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 40),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
         children: [
-          Image.asset(
-            'assets/ui/ink_divider.png',
-            height: 8,
-            fit: BoxFit.contain,
-            errorBuilder: (_, _, _) => const SizedBox.shrink(),
-          ),
-          const SizedBox(height: 2),
-          const Center(
+          Expanded(child: Container(height: 1, color: lineColor)),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10),
             child: Text(
               '· · ·',
               style: TextStyle(
@@ -624,6 +652,7 @@ class _SegmentDivider extends StatelessWidget {
               ),
             ),
           ),
+          Expanded(child: Container(height: 1, color: lineColor)),
         ],
       ),
     );
