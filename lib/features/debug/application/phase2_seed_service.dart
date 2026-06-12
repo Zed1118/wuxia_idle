@@ -323,6 +323,35 @@ class Phase2SeedService {
     });
   }
 
+  /// 角色页视觉验收专用 seed。
+  ///
+  /// 保留 [seedMasterDisciple] 的档案头 / 师徒 / 装备基础，再把祖师主修调整为
+  /// 圆满 1500，用于 D「修炼度五要素 Row」截图验收。
+  Future<void> seedMasterDiscipleWithMatureMainTechnique() async {
+    await seedMasterDisciple();
+
+    final isar = this.isar;
+    final numbers = GameRepository.instance.numbers;
+    await isar.writeTxn(() async {
+      final founder = await isar.characters.get(1);
+      final mainTechniqueId = founder?.mainTechniqueId;
+      if (mainTechniqueId == null) {
+        throw StateError('seedMasterDiscipleWithMatureMainTechnique: 祖师缺主修心法');
+      }
+      final main = await isar.techniques.get(mainTechniqueId);
+      if (main == null) {
+        throw StateError(
+          'seedMasterDiscipleWithMatureMainTechnique: 主修心法 $mainTechniqueId 不存在',
+        );
+      }
+      main.cultivationLayer = CultivationLayer.yuanMan;
+      main.cultivationProgress = 1500;
+      main.cultivationProgressToNext =
+          numbers.cultivationProgressToNext[CultivationLayer.yuanMan]!;
+      await isar.techniques.put(main);
+    });
+  }
+
   /// W7-W11 视觉验收专用 seed（W12 fix:Codex 视觉验收前置预设）。
   ///
   /// 在 [seedMasterDisciple] 基础上额外 mark Ch1 01-04 通关:
