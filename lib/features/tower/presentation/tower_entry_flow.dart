@@ -235,6 +235,11 @@ Future<void> runTowerFlow({
     );
   }
 
+  // 胜利仪式 + 结算在战斗界面之上播完,退回塔层列表。
+  if (context.mounted && Navigator.of(context).canPop()) {
+    Navigator.of(context).pop();
+  }
+
   // victory narrative（仅 Boss 层）
   if (floor.isBoss && floor.narrativeVictoryId != null) {
     if (!context.mounted) return;
@@ -269,7 +274,8 @@ Future<bool> _runTowerBattle({
   required TowerFloorDef floor,
 }) async {
   final completer = Completer<bool>();
-  await Navigator.of(context).push<void>(
+  // 不 await push:胜利时 BattleScreen 留栈,由 runTowerFlow 播完仪式/结算后再 pop。
+  Navigator.of(context).push<void>(
     MaterialPageRoute(
       builder: (_) => _TowerBattleHost(
         floor: floor,
@@ -281,8 +287,9 @@ Future<bool> _runTowerBattle({
         },
       ),
     ),
-  );
-  if (!completer.isCompleted) completer.complete(false);
+  ).then((_) {
+    if (!completer.isCompleted) completer.complete(false);
+  });
   return completer.future;
 }
 
@@ -658,7 +665,7 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
       deferVictoryToCaller: true,
       onVictory: () {
         widget.onVictory();
-        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+        // 不 pop:胜利仪式由 runTowerFlow 在战斗界面之上播完后再 pop。
       },
       onDefeat: () {
         widget.onDefeat();

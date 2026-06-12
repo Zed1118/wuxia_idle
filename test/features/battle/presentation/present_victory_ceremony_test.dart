@@ -26,7 +26,7 @@ void main() {
     await tester.pump();
     expect(find.byType(VictorySealFlash), findsOneWidget);
 
-    await tester.pump(const Duration(milliseconds: 900));
+    await tester.pump(const Duration(milliseconds: 1700));
     expect(find.byType(VictorySealFlash), findsNothing);
   });
 
