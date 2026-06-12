@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../equipment/application/drop_service.dart';
+import '../../equipment/presentation/treasure_drop_overlay.dart';
 
 /// 简版「勝」淡入淡出(时序重排 spec 2026-06-12)。
 ///
@@ -140,4 +142,20 @@ Future<void> showVictorySealFlash(BuildContext context) async {
     pageBuilder: (ctx, a, b) =>
         VictorySealFlash(onDone: () => Navigator.of(ctx).pop()),
   );
+}
+
+/// 战斗胜利仪式分档(时序重排 spec 2026-06-12):
+/// 有 ≥重器爆品 → 爆品镜头(印章盖落即胜利宣告,含 reward 音);
+/// 否则(普通掉落 / 无掉落 / 塔重打) → 简版勝淡入淡出。
+/// mainline / tower 两 flow 共用。[treasureGate]=false(塔重打)→ 必走简版勝。
+Future<void> presentVictoryCeremony(
+  BuildContext context,
+  DropResult drops, {
+  required bool treasureGate,
+}) async {
+  final playedTreasure =
+      await playTreasureDropIfAny(context, drops, gate: treasureGate);
+  if (playedTreasure) return;
+  if (!context.mounted) return;
+  await showVictorySealFlash(context);
 }

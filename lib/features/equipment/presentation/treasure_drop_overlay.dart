@@ -271,11 +271,12 @@ class _TreasureDropOverlayState extends State<TreasureDropOverlay>
 }
 
 /// 公共触发:有 ≥门槛爆品且 [gate] 时,播动画(+reward 音)并 await 至结束。
+/// 返回 true=播了爆品镜头;false=无爆品(gate false / 未加载 / 无重器)。
 /// 主线传 gate=true;塔传 gate=isFirstClear(沿现有 reward gate)。
-Future<void> playTreasureDropIfAny(
+Future<bool> playTreasureDropIfAny(
     BuildContext context, DropResult drops,
     {required bool gate}) async {
-  if (!gate || !GameRepository.isLoaded) return;
+  if (!gate || !GameRepository.isLoaded) return false;
   final minTier = GameRepository.instance.numbers.treasureDrop.minTier;
   final candidates = drops.equipments.map((e) {
     final def = GameRepository.instance.getEquipment(e.defId);
@@ -291,7 +292,7 @@ Future<void> playTreasureDropIfAny(
         tagline: def.tagline);
   }).toList();
   final hl = pickTreasureHighlight(candidates, minTier);
-  if (hl == null || !context.mounted) return;
+  if (hl == null || !context.mounted) return false;
   SoundManager.instance.playSfx(SfxId.reward);
   await showGeneralDialog<void>(
     context: context,
@@ -301,4 +302,5 @@ Future<void> playTreasureDropIfAny(
     pageBuilder: (ctx, _, _) => TreasureDropOverlay(
         highlight: hl, onDone: () => Navigator.of(ctx).pop()),
   );
+  return true;
 }
