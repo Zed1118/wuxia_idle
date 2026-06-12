@@ -129,4 +129,32 @@ void main() {
       expect(find.byType(VictoryOverlay), findsOneWidget);
     },
   );
+
+  // ─── 回归测试 3: deferVictoryToCaller=true + rightWin → VictoryOverlay 仍显示 ─
+  // defer 只 gate leftWin 分支,败北(rightWin)不受影响,仍走普通 overlay 路径。
+
+  testWidgets(
+    'deferVictoryToCaller=true + rightWin: VictoryOverlay 仍弹出(defer 不 gate 败北)',
+    (tester) async {
+      var victoryCalled = 0;
+
+      final notifier = await _pump(
+        tester,
+        deferVictoryToCaller: true,
+        onVictory: () => victoryCalled++,
+      );
+
+      // 推进到 rightWin(败北)已结束状态
+      final finished = notifier.state.copyWith(result: BattleResult.rightWin);
+      notifier.push(finished);
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // 败北走普通 overlay,不受 deferVictoryToCaller gate
+      expect(find.byType(VictoryOverlay), findsOneWidget);
+      // onVictory 不应被调用(那是胜利专属回调)
+      expect(victoryCalled, 0);
+    },
+  );
 }

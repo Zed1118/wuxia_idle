@@ -231,7 +231,7 @@ Future<void> runTowerFlow({
       drops: drops,
       advancements: advancements,
       resonanceUpgrades: resonanceUpgrades,
-      stats: BattleStatsSummary.from(ref.read(battleProvider)),
+      stats: victoryRes.stats,
     );
   }
 
@@ -306,6 +306,7 @@ Future<
   ({
     List<AdvancementEntry> advancements,
     List<ResonanceUpgradeNotice> resonanceUpgrades,
+    BattleStatsSummary stats,
   })
 >
 _applyTowerVictoryResolution({
@@ -316,11 +317,13 @@ _applyTowerVictoryResolution({
   const empty = (
     advancements: <AdvancementEntry>[],
     resonanceUpgrades: <ResonanceUpgradeNotice>[],
+    stats: BattleStatsSummary(totalDamage: 0, critCount: 0, totalTicks: 0),
   );
   final isar = ref.read(isarProvider);
   if (isar == null) return empty;
   final finalState = ref.read(battleProvider);
   if (!finalState.isFinished) return empty;
+  final stats = BattleStatsSummary.from(finalState);
 
   final save = await isar.saveDatas.get(0);
   final ids = save?.activeCharacterIds ?? const <int>[];
@@ -477,7 +480,7 @@ _applyTowerVictoryResolution({
     }
   });
 
-  return (advancements: advancements, resonanceUpgrades: resonanceUpgrades);
+  return (advancements: advancements, resonanceUpgrades: resonanceUpgrades, stats: stats);
 }
 
 /// Isar 持久化爬塔掉落（W6 nullable propagation：isarProvider 为 null 时短路，测试安全）。
