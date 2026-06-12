@@ -35,7 +35,8 @@ import '../../encounter/presentation/encounter_hook.dart';
 import '../../event/application/game_event_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
-import '../../equipment/presentation/treasure_drop_overlay.dart';
+import '../../battle/domain/battle_stats.dart';
+import '../../battle/presentation/victory_ceremony.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart'
     show FirstClearBanner, ResonanceUpgradeNotice, ResonanceUpgradeBanner;
 import '../../narrative/presentation/narrative_reader_screen.dart';
@@ -230,6 +231,7 @@ Future<void> runTowerFlow({
       drops: drops,
       advancements: advancements,
       resonanceUpgrades: resonanceUpgrades,
+      stats: BattleStatsSummary.from(ref.read(battleProvider)),
     );
   }
 
@@ -543,10 +545,11 @@ Future<void> _showVictoryDialog({
   required DropResult drops,
   required List<AdvancementEntry> advancements,
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
+  BattleStatsSummary? stats,
 }) async {
-  // 爆品动画先播(含 reward 音);realmAdvance 在动画之后、随 dialog 出现时响,
-  // 与主线一致(先动画后 jingle),避免 fanfare 早响 1.3s。爆装备音已移到动画层门槛化。
-  await playTreasureDropIfAny(context, drops, gate: isFirstClear);
+  // 胜利仪式分档:首通有重器→爆品镜头;否则(普通/重打)→简版勝。
+  // realmAdvance 在仪式之后、随 dialog 出现时响,避免 fanfare 早响 1.3s。
+  await presentVictoryCeremony(context, drops, treasureGate: isFirstClear);
   if (!context.mounted) return;
   // 结算 jingle:跨 tier 大境界突破响 realmAdvance(首通限定)。
   if (isFirstClear && advancements.any((e) => e.result.crossedTier)) {
@@ -557,14 +560,29 @@ Future<void> _showVictoryDialog({
     barrierDismissible: false,
     builder: (ctx) => AlertDialog(
       title: Text(UiStrings.towerFloorLabel(floor.floorIndex)),
-      content: isFirstClear
-          ? _FirstClearContent(
-              floor: floor,
-              drops: drops,
-              advancements: advancements,
-              resonanceUpgrades: resonanceUpgrades,
-            )
-          : const Text(UiStrings.towerReplayNoReward),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          isFirstClear
+              ? _FirstClearContent(
+                  floor: floor,
+                  drops: drops,
+                  advancements: advancements,
+                  resonanceUpgrades: resonanceUpgrades,
+                )
+              : const Text(UiStrings.towerReplayNoReward),
+          if (stats != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              UiStrings.battleSummary(
+                  stats.totalDamage, stats.critCount, stats.totalTicks),
+              style: const TextStyle(
+                  color: WuxiaColors.textSecondary, fontSize: 13),
+            ),
+          ],
+        ],
+      ),
       actions: [
         TextButton(
           style: TextButton.styleFrom(
@@ -634,6 +652,7 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
       hint: UiStrings.towerFloorLabel(widget.floor.floorIndex),
       sceneBackgroundPath: widget.floor.sceneBackgroundPath,
       bgmTrack: BgmTrack.tower,
+      deferVictoryToCaller: true,
       onVictory: () {
         widget.onVictory();
         if (Navigator.of(context).canPop()) Navigator.of(context).pop();
