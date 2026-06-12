@@ -117,6 +117,36 @@ void main() {
     expect(find.byType(SkillProficiencyRow), findsWidgets);
   });
 
+  testWidgets('藏经阁出战槽显示用途说明（main1 常用输出 / ultimate 高内力爆发）', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(900, 2400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final character = mkCharacter(id: 1, mainSkillId1: equippedSkillId);
+    final mainTech = mkMainTechnique();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          activeCharacterIdsProvider.overrideWith((ref) async => [1]),
+          characterByIdProvider(1).overrideWith((ref) async => character),
+          characterAllTechniquesProvider(
+            1,
+          ).overrideWith((ref) async => [mainTech]),
+        ],
+        child: const MaterialApp(home: CangJingGeScreen(characterId: 1)),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    // 每个槽位带一行用途说明（玩家不查文档也懂槽位作用）
+    expect(find.textContaining('常用输出'), findsOneWidget); // main1
+    expect(find.textContaining('高内力爆发'), findsOneWidget); // ultimate
+  });
+
   // ── autoFill 落库 test（真 Isar，跑屏幕进入时同一路径）────────────────────
 
   group('进入 autoFill 落库（resolver + service 同源路径）', () {

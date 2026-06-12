@@ -16,11 +16,16 @@ class FragmentProgressRow extends StatelessWidget {
   /// 解锁所需总残页数。
   final int total;
 
+  /// 残页来源提示（如「爬塔·第5层」「主线·第4章重打」）。
+  /// null → 显示 [UiStrings.cangjingFragmentSourceUnknown]（来源未明）。
+  final String? source;
+
   const FragmentProgressRow({
     super.key,
     required this.name,
     required this.has,
     required this.total,
+    this.source,
   });
 
   @override
@@ -38,15 +43,23 @@ class FragmentProgressRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          // 秘籍名
+          // 秘籍名 + 来源
           Expanded(
-            child: Text(
-              name,
-              style: const TextStyle(
-                color: WuxiaUi.ink,
-                fontSize: 13,
-              ),
-              overflow: TextOverflow.ellipsis,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  source ?? UiStrings.cangjingFragmentSourceUnknown,
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 10),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 8),

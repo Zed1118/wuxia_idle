@@ -24,12 +24,16 @@ class SkillProficiencyRow extends StatelessWidget {
   /// 是否已装配到出战槽位。
   final bool equipped;
 
+  /// 点击整行的回调（T6 武学库直接装配入口）。null = 不可点（纯展示）。
+  final VoidCallback? onTap;
+
   const SkillProficiencyRow({
     super.key,
     required this.skill,
     required this.uses,
     required this.cfg,
     required this.equipped,
+    this.onTap,
   });
 
   @override
@@ -57,81 +61,80 @@ class SkillProficiencyRow extends StatelessWidget {
     final bonusPct = ((damageMult - 1.0) * 100).round();
     final stageName = UiStrings.cangjingProficiencyStageName(stage.id);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 第一行：招名 + 阶段名 + 装配标记
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  skill.name,
-                  style: const TextStyle(
-                    color: WuxiaUi.ink,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 第一行：招名 + 阶段名 + 装配标记
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    skill.name,
+                    style: const TextStyle(
+                      color: WuxiaUi.ink,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Text(
-                stageName,
-                style: const TextStyle(color: WuxiaUi.qing, fontSize: 12),
-              ),
-              if (equipped) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: WuxiaUi.qing,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  child: const Text(
-                    UiStrings.cangjingEquippedTag,
-                    style: TextStyle(
-                      color: WuxiaUi.paper,
-                      fontSize: 11,
+                Text(
+                  stageName,
+                  style: const TextStyle(color: WuxiaUi.qing, fontSize: 12),
+                ),
+                if (equipped) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: WuxiaUi.qing,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: const Text(
+                      UiStrings.cangjingEquippedTag,
+                      style: TextStyle(color: WuxiaUi.paper, fontSize: 11),
                     ),
                   ),
-                ),
+                ],
               ],
-            ],
-          ),
-          const SizedBox(height: 4),
-          // 第二行：进度条
-          MeridianBar(ratio: ratio),
-          const SizedBox(height: 3),
-          // 第三行：加成% + 还需次数（最高阶则只显示加成）
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '+$bonusPct%',
-                style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
-              ),
-              if (needText != null)
+            ),
+            const SizedBox(height: 4),
+            // 第二行：进度条
+            MeridianBar(ratio: ratio),
+            const SizedBox(height: 3),
+            // 第三行：加成% + 还需次数（最高阶则只显示加成）
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Text(
-                  needText,
-                  style: TextStyle(
-                    color: WuxiaUi.ink.withValues(alpha: 0.5),
-                    fontSize: 11,
-                  ),
-                )
-              else
-                const Text(
-                  UiStrings.cangjingProficiencyMaxStage,
-                  style: TextStyle(
-                    color: WuxiaUi.gold,
-                    fontSize: 11,
-                  ),
+                  '+$bonusPct%',
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
                 ),
-            ],
-          ),
-        ],
+                if (needText != null)
+                  Text(
+                    needText,
+                    style: TextStyle(
+                      color: WuxiaUi.ink.withValues(alpha: 0.5),
+                      fontSize: 11,
+                    ),
+                  )
+                else
+                  const Text(
+                    UiStrings.cangjingProficiencyMaxStage,
+                    style: TextStyle(color: WuxiaUi.gold, fontSize: 11),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
