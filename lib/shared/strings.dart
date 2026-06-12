@@ -317,6 +317,8 @@ class UiStrings {
   static const String inventoryFilterEquipped = '已穿戴';
   static const String inventoryFilterForgeable = '可开锋';
   static const String inventoryFilterRealmLocked = '境界未达';
+  /// T11:仓库格子境界锁封条显具体原因(需 X 境界),替泛化「未达境界」。
+  static String inventoryRealmLockBanner(String realmName) => '需$realmName境界';
   static const String enhanceDialogTitle = '强化';
   static const String enhanceButton = '强化';
   static const String guaranteeButton = '保底成功';

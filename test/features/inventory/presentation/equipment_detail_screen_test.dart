@@ -100,6 +100,41 @@ void main() {
     expect(find.text('强化 +12'), findsOneWidget);
   });
 
+  testWidgets('T8 修复:窄屏小高度下强化/开锋入口仍在首屏内(不被裁出)', (tester) async {
+    // Codex 验收在 ~800×632 默认窗口下 FAIL:大图 + 属性把信息卡养成入口挤出首屏。
+    // 窄布局(<900 宽)+ 矮窗高,断言信息卡「强化 +N」入口在 viewport 内(免滚动可见)。
+    const h = 640.0;
+    await tester.binding.setSurfaceSize(const Size(820, h));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final def = GameRepository.instance.getEquipment(
+      'weapon_shenwu_tian_wen_jian',
+    );
+    final eq = mkEq(def: def, enhanceLevel: 12, battleCount: 1240);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: EquipmentDetailScreen(
+            equipment: eq,
+            def: def,
+            loreLoader: fakeLoader(segments: const ['一段']),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final enhanceEntry = find.text('强化 +12');
+    expect(enhanceEntry, findsOneWidget);
+    // 信息卡养成入口底边应落在首屏可见区内(不必滚动)。
+    expect(
+      tester.getRect(enhanceEntry).bottom,
+      lessThanOrEqualTo(h),
+      reason: '强化/开锋入口必须在首屏可见,不被大图挤出 viewport',
+    );
+  });
+
   testWidgets('lore 3 段全渲染 + 段间分隔', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));

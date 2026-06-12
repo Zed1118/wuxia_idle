@@ -376,6 +376,9 @@ class _EquipmentGridTile extends ConsumerWidget {
     final color = tierColorForEquipment(eq.tier);
     final def = GameRepository.instance.equipmentDefs[eq.defId];
     final locked = playerRealm != null && !eq.isEquippableAtRealm(playerRealm!);
+    // T11:封条显具体境界原因(§5.3 装备阶↔境界 1:1,需同序境界),非泛化「未达境界」。
+    final requiredRealmName =
+        EnumL10n.realmTier(RealmTier.values[eq.tier.index]);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -387,6 +390,7 @@ class _EquipmentGridTile extends ConsumerWidget {
           equipmentSlot: eq.slot,
           enhanceLevel: eq.enhanceLevel,
           locked: locked,
+          lockText: UiStrings.inventoryRealmLockBanner(requiredRealmName),
           highTier:
               eq.tier == EquipmentTier.baoWu || eq.tier == EquipmentTier.shenWu,
           onTap: () async {

@@ -268,7 +268,7 @@ class BattleScenarioData {
           layer: RealmLayer.yuanShu,
           school: TechniqueSchool.gangMeng,
           maxHp: 8000,
-          maxIf: 500, // > 破势 cost 120 → ready
+          maxIf: 600, // ≥ 主控全技能 cost(破势120/强力150/共鸣200/大招250)→ 全 ready
           speed: 180,
           critRate: 0.05,
           eqAtk: 400,
@@ -281,7 +281,22 @@ class BattleScenarioData {
     final left = [
       player(1, '主控', 0, [
         _normal('cb_normal_1', '基础招'),
+        // T1 指令台验收:主控带满 强力/破招/共鸣/大招 四组,让验收能看到分组指令台
+        // 全貌 + 不溢出(破势仍 canInterrupt → 敌蓄力时自动焦点落主控,破招高亮)。
+        _power('cb_power_1', '崩山式', pm: 1600, cost: 150, cd: 2), // 强力
         poShi, // 破势:canInterrupt → 破招按钮取此技
+        const SkillDef(
+          id: 'cb_joint_1',
+          name: '人剑合一',
+          description: '',
+          type: SkillType.jointSkill,
+          powerMultiplier: 4500,
+          internalForceCost: 200,
+          cooldownTurns: 4,
+          requiresManualTrigger: false,
+          visualEffect: '',
+        ), // 共鸣
+        _ultimate('cb_ult_1', '裂空斩', 250), // 大招
       ]),
       player(2, '弟子甲', 1, [_normal('cb_normal_2', '基础招')]),
       player(3, '弟子乙', 2, [_normal('cb_normal_3', '基础招')]),
