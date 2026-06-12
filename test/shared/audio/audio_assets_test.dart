@@ -34,6 +34,14 @@ void main() {
     }
   });
 
+  test('已接线 SfxId 素材文件齐全（battleDeath 为 YAGNI 留位排除；缺文件运行期静默 no-op，靠本测兜底）', () {
+    for (final s in SfxId.values) {
+      if (s == SfxId.battleDeath) continue; // YAGNI 留位不接线，无专属素材
+      final p = 'assets/${sfxAssetPath(s)}';
+      expect(File(p).existsSync(), isTrue, reason: '缺 SFX 素材文件: $p');
+    }
+  });
+
   group('bgmTrackForStage 路由', () {
     test('类型轨：massBattle/innerDemon/lightFoot/tower 用同名轨（含 Boss 层）', () {
       expect(
