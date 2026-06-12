@@ -187,14 +187,13 @@ Future<void> runStageFlow({
   if (outcome != null && context.mounted) {
     await presentVictoryCeremony(context, outcome.drops, treasureGate: true);
     if (!context.mounted) return;
-    final stats = BattleStatsSummary.from(ref.read(battleProvider));
     await showStageVictoryDialog(
       context: context,
       stage: stage,
       drops: outcome.drops,
       advancements: outcome.advancements,
       resonanceUpgrades: outcome.resonanceUpgrades,
-      stats: stats,
+      stats: outcome.stats,
     );
   }
 
@@ -426,6 +425,7 @@ Future<
       DropResult drops,
       List<AdvancementEntry> advancements,
       List<ResonanceUpgradeNotice> resonanceUpgrades,
+      BattleStatsSummary stats,
     })?> _applyVictoryResolution({
   required WidgetRef ref,
   required StageDef stage,
@@ -434,6 +434,7 @@ Future<
   if (isar == null) return null;
   final finalState = ref.read(battleProvider);
   if (!finalState.isFinished) return null;
+  final stats = BattleStatsSummary.from(finalState);
 
   final save = await isar.saveDatas.get(0);
   final ids = save?.activeCharacterIds ?? const <int>[];
@@ -647,6 +648,7 @@ Future<
     drops: result.dropResult,
     advancements: advancements,
     resonanceUpgrades: resonanceUpgrades,
+    stats: stats,
   );
 }
 
