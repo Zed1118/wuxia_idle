@@ -1337,6 +1337,7 @@ class DailyChallenge {
 | presetLoreIds | List\<String\> | ❌ | 预设典故 id |
 | dropSourceTags | List\<String\> | ❌ | 掉落来源标签 |
 | iconPath | String | ❌ | 图标资源路径 |
+| tagline | String? | ✅ | 爆品展示典故金句（2026-06-12 内容化波；tier≥重器即爆品门槛必填，加载层红线守非空） |
 
 ```dart
 class EquipmentDef {

@@ -885,6 +885,16 @@ class GameRepository {
           '${e.baseAttackMin}/${e.baseAttackMax}',
         );
       }
+      // 2026-06-12 爆品展示内容化：tier≥重器(treasureDrop.minTier)走印章展示，
+      // 必有 tagline 典故金句。红线守非空，防漏导致爆品展示缺典故句。
+      if (e.tier.index >= numbers.treasureDrop.minTier.index &&
+          (e.tagline == null || e.tagline!.trim().isEmpty)) {
+        throw StateError(
+          '装备 ${e.id} tier=${e.tier.name} ≥ 爆品门槛'
+          '(${numbers.treasureDrop.minTier.name}) 但 tagline 缺失，'
+          '爆品展示需典故金句',
+        );
+      }
     }
     if (equipmentDefs.isEmpty) return;
     for (final tier in EquipmentTier.values) {

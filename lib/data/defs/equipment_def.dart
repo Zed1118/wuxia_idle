@@ -23,6 +23,11 @@ class EquipmentDef {
   /// yaml 缺省 null,Phase 3 UI 接入阶段 35 件全填。
   final String? detailPath;
 
+  /// 爆品展示典故金句(2026-06-12 爆品展示内容化波新增)。
+  /// tier≥重器(爆品门槛 treasureDrop.minTier)必填,从该装备 lore 提炼一句凝练题记;
+  /// 低 tier 不走印章展示,yaml 缺省 null。红线测守 tier≥重器者非空。
+  final String? tagline;
+
   /// 开锋第 3 槽（+19 解锁）可选的专属技能 def id 列表（T21 新增）。
   /// yaml 缺省时为空，UI 表现为"该装备暂无专属技能"。
   final List<String> specialSkillCandidates;
@@ -53,6 +58,7 @@ class EquipmentDef {
     required this.dropSourceTags,
     required this.iconPath,
     this.detailPath,
+    this.tagline,
     this.specialSkillCandidates = const [],
     this.isLineageHeritage = false,
   });
@@ -80,6 +86,7 @@ class EquipmentDef {
       ),
       iconPath: y['iconPath'] as String,
       detailPath: y['detailPath'] as String?,
+      tagline: y['tagline'] as String?,
       specialSkillCandidates: List<String>.from(
         (y['specialSkillCandidates'] as List? ?? const [])
             .map((e) => e as String),
