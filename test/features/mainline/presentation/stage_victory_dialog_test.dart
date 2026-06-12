@@ -358,9 +358,11 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('含装备掉落 → 播 reward jingle', (tester) async {
+    // reward sfx 已移到 playTreasureDropIfAny 动画层(门槛化,2026-06-11):
+    // showStageVictoryDialog 本身不再播 reward,任何装备掉落在 dialog 层均静默。
+    testWidgets('含装备掉落 → dialog 层不播 reward(已移到动画层)', (tester) async {
       await open(tester, _equipDrops(['weapon_xunchang_tie_jian']));
-      expect(rec.sfxPlays, contains(sfxAssetPath(SfxId.reward)));
+      expect(rec.sfxPlays, isNot(contains(sfxAssetPath(SfxId.reward))));
     });
 
     testWidgets('纯道具掉落 → 不播 reward', (tester) async {

@@ -46,6 +46,7 @@ import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
+import '../../equipment/presentation/treasure_drop_overlay.dart';
 import 'stage_victory_dialog.dart';
 
 /// Phase 3 T37 关卡进入流程串联。
@@ -182,6 +183,8 @@ Future<void> runStageFlow({
   // W15 #30 P3 后续 A:victory dialog 显 drop + 升层 banner;outcome=null 时
   // (Isar 未 ready / characters 空)兜底跳过 dialog 不阻塞剧情流。
   if (outcome != null && context.mounted) {
+    await playTreasureDropIfAny(context, outcome.drops, gate: true);
+    if (!context.mounted) return;
     await showStageVictoryDialog(
       context: context,
       stage: stage,
