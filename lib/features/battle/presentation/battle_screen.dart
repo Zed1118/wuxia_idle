@@ -117,6 +117,11 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 用于静态视觉验收(如 battle_charge_break 截蓄力帧,免被 tick 推进掉)。
   final bool autoStart;
 
+  /// 战斗 BGM 轨。调用方按 StageType（+ Boss 关）经 [bgmTrackForStage] 注入，
+  /// 区分主线/塔/Boss/心魔/轻功/群战氛围。默认 [BgmTrack.battle] 通用兜底
+  /// （demo/debug 零影响）。
+  final BgmTrack bgmTrack;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
@@ -126,6 +131,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.onDefeat,
     this.sceneBackgroundPath,
     this.autoStart = true,
+    this.bgmTrack = BgmTrack.battle,
   });
 
   @override
@@ -662,9 +668,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
     // team 空时（startBattle 还未调用）渲染 placeholder
     if (state.leftTeam.isEmpty && state.rightTeam.isEmpty) {
-      return const BgmScope(
-        track: BgmTrack.battle,
-        child: Scaffold(
+      return BgmScope(
+        track: widget.bgmTrack,
+        child: const Scaffold(
           backgroundColor: WuxiaColors.background,
           body: Center(
             child: CircularProgressIndicator(color: WuxiaColors.textMuted),
@@ -679,7 +685,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     final showBossInkCloud = state.rightTeam.any((c) => c.isBoss);
 
     return BgmScope(
-      track: BgmTrack.battle,
+      track: widget.bgmTrack,
       child: Scaffold(
       backgroundColor: WuxiaColors.background,
       body: Stack(
