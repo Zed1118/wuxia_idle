@@ -8,12 +8,25 @@ class TreasureHighlight {
   final EquipmentSlot slot;
   final String iconPath;
 
+  /// 掉落实例 roll 出的具体属性(展示用,非 def min/max)。
+  final int attack;
+  final int health;
+  final int speed;
+
+  /// 爆品典故金句(来自 EquipmentDef.tagline)。爆品恒有(加载层红线守),
+  /// 但保留可空便于 widget test / 兜底不渲染典故区。
+  final String? tagline;
+
   const TreasureHighlight({
     required this.defId,
     required this.name,
     required this.tier,
     required this.slot,
     required this.iconPath,
+    this.attack = 0,
+    this.health = 0,
+    this.speed = 0,
+    this.tagline,
   });
 }
 

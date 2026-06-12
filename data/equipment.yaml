@@ -352,6 +352,7 @@ equipment:
   # === 第 5 阶 重器 · 绝顶境界开放（Demo 高阶，主线未覆盖） ===
   - id: weapon_zhongqi_po_zhen_chui
     name: 破阵锤
+    tagline: "八十二斤，压住一辈子火气。"
     tier: zhongQi
     slot: weapon
     schoolBias: gangMeng
@@ -369,6 +370,7 @@ equipment:
 
   - id: weapon_zhongqi_qing_xu_jian
     name: 青虚剑
+    tagline: "轻到极致，才是重。"
     tier: zhongQi
     slot: weapon
     schoolBias: lingQiao
@@ -386,6 +388,7 @@ equipment:
 
   - id: weapon_zhongqi_du_long_suo
     name: 毒龙索
+    tagline: "只麻不杀，疼者跑，停者听。"
     tier: zhongQi
     slot: weapon
     schoolBias: yinRou
@@ -403,6 +406,7 @@ equipment:
 
   - id: armor_zhongqi_yin_lin_jia
     name: 银鳞甲
+    tagline: "银不能打，却能护人。"
     tier: zhongQi
     slot: armor
     baseAttackMin: 0
@@ -418,6 +422,7 @@ equipment:
 
   - id: accessory_zhongqi_qing_yu_huan
     name: 青玉环
+    tagline: "内圈刻一篇经，用一辈子去摸。"
     tier: zhongQi
     slot: accessory
     baseAttackMin: 280
@@ -434,6 +439,7 @@ equipment:
   # === 第 6 阶 宝物 · 宗师境界开放（Demo 高阶占位） ===
   - id: weapon_baowu_xuan_tian_fu
     name: 玄天斧
+    tagline: "天高地厚，斧到山开。"
     tier: baoWu
     slot: weapon
     schoolBias: gangMeng
@@ -451,6 +457,7 @@ equipment:
 
   - id: weapon_baowu_chang_hong_jian
     name: 长虹剑
+    tagline: "我叫它虹，它就应。"
     tier: baoWu
     slot: weapon
     schoolBias: lingQiao
@@ -468,6 +475,7 @@ equipment:
 
   - id: weapon_baowu_xue_lian_bian
     name: 血莲鞭
+    tagline: "血藤有记忆，不认第四种手。"
     tier: baoWu
     slot: weapon
     schoolBias: yinRou
@@ -485,6 +493,7 @@ equipment:
 
   - id: armor_baowu_jin_si_jia
     name: 金丝甲
+    tagline: "叠起来，塞得进一只袖子。"
     tier: baoWu
     slot: armor
     baseAttackMin: 0
@@ -500,6 +509,7 @@ equipment:
 
   - id: accessory_baowu_yu_long_pei
     name: 玉龙佩
+    tagline: "龙随人走，人随命走。"
     tier: baoWu
     slot: accessory
     baseAttackMin: 420
@@ -516,6 +526,7 @@ equipment:
   # === 第 7 阶 神物 · 武圣境界开放（Demo 顶阶占位） ===
   - id: weapon_shenwu_po_jun_dao
     name: 破军刀
+    tagline: "陨铁嵌锋一线白，它不劈，只是「过」。"
     tier: shenWu
     slot: weapon
     schoolBias: gangMeng
@@ -533,6 +544,7 @@ equipment:
 
   - id: weapon_shenwu_tian_wen_jian
     name: 天问剑
+    tagline: "剑身刻十七问，皆问天而天未答。"
     tier: shenWu
     slot: weapon
     schoolBias: lingQiao
@@ -550,6 +562,7 @@ equipment:
 
   - id: weapon_shenwu_huan_meng_bian
     name: 幻梦鞭
+    tagline: "四十九香熏鞭身，闻者难辨醒梦。"
     tier: shenWu
     slot: weapon
     schoolBias: yinRou
@@ -567,6 +580,7 @@ equipment:
 
   - id: armor_shenwu_xuan_huang_pao
     name: 玄黄袍
+    tagline: "玄为天色，黄为地色，集于一身。"
     tier: shenWu
     slot: armor
     baseAttackMin: 0
@@ -582,6 +596,7 @@ equipment:
 
   - id: accessory_shenwu_kun_lun_pei
     name: 昆仑佩
+    tagline: "墨玉里封着昆仑——人走到哪，山跟到哪。"
     tier: shenWu
     slot: accessory
     baseAttackMin: 600
@@ -987,6 +1002,7 @@ equipment:
   # --- 重器扩充 ---
   - id: weapon_zhongqi_ri_yue_lun
     name: 日月轮
+    tagline: "剩下七指，比别人十指还灵。"
     tier: zhongQi
     slot: weapon
     schoolBias: lingQiao
@@ -1004,6 +1020,7 @@ equipment:
 
   - id: weapon_zhongqi_zhui_hun_ding
     name: 追魂钉
+    tagline: "火候到了，连石头都穿。"
     tier: zhongQi
     slot: weapon
     schoolBias: gangMeng
@@ -1021,6 +1038,7 @@ equipment:
 
   - id: armor_zhongqi_yu_lin_qing_jia
     name: 鱼鳞轻甲
+    tagline: "薄到极致，反而韧。"
     tier: zhongQi
     slot: armor
     baseAttackMin: 0
@@ -1036,6 +1054,7 @@ equipment:
 
   - id: armor_zhongqi_han_tie_zhong_jia
     name: 寒铁重甲
+    tagline: "被刀砍时，只觉得庆幸。"
     tier: zhongQi
     slot: armor
     baseAttackMin: 0
@@ -1051,6 +1070,7 @@ equipment:
 
   - id: accessory_zhongqi_bi_xi_shou_chuan
     name: 碧玺手串
+    tagline: "心静则暖，心躁则凉。"
     tier: zhongQi
     slot: accessory
     baseAttackMin: 280
@@ -1066,6 +1086,7 @@ equipment:
 
   - id: accessory_zhongqi_xuan_tie_zhi_huan
     name: 玄铁指环
+    tagline: "重一分，砸到人身上变十分。"
     tier: zhongQi
     slot: accessory
     baseAttackMin: 350
@@ -1083,6 +1104,7 @@ equipment:
   # --- 宝物扩充 ---
   - id: weapon_baowu_yin_yang_ci
     name: 阴阳刺
+    tagline: "阴阳相冲，神仙也救不回。"
     tier: baoWu
     slot: weapon
     schoolBias: yinRou
@@ -1100,6 +1122,7 @@ equipment:
 
   - id: weapon_baowu_bing_po_zhen
     name: 冰魄针
+    tagline: "够冷的针，扎进去是冰。"
     tier: baoWu
     slot: weapon
     schoolBias: lingQiao
@@ -1117,6 +1140,7 @@ equipment:
 
   - id: armor_baowu_can_si_ruan_jia
     name: 蚕丝软甲
+    tagline: "感觉不到它在，挨刀才知它在。"
     tier: baoWu
     slot: armor
     baseAttackMin: 0
@@ -1132,6 +1156,7 @@ equipment:
 
   - id: armor_baowu_wu_jin_zhan_jia
     name: 乌金战甲
+    tagline: "一百零八道刀痕，一战一道。"
     tier: baoWu
     slot: armor
     baseAttackMin: 0
@@ -1147,6 +1172,7 @@ equipment:
 
   - id: accessory_baowu_long_gu_lian
     name: 龙骨链
+    tagline: "戴之运功，丹田自暖。"
     tier: baoWu
     slot: accessory
     baseAttackMin: 420
@@ -1162,6 +1188,7 @@ equipment:
 
   - id: accessory_baowu_zi_jin_hu_lu
     name: 紫金葫芦
+    tagline: "人可以老，药不能老。"
     tier: baoWu
     slot: accessory
     baseAttackMin: 510
@@ -1179,6 +1206,7 @@ equipment:
   # --- 神物扩充 ---
   - id: weapon_shenwu_hun_yuan_chui
     name: 混元锤
+    tagline: "不讲招式只讲力，巧妙在力前皆纸。"
     tier: shenWu
     slot: weapon
     schoolBias: gangMeng
@@ -1196,6 +1224,7 @@ equipment:
 
   - id: weapon_shenwu_kong_que_ling
     name: 孔雀翎
+    tagline: "出手如天女散花，三丈内无死角。"
     tier: shenWu
     slot: weapon
     schoolBias: yinRou
@@ -1213,6 +1242,7 @@ equipment:
 
   - id: armor_shenwu_bing_can_yi
     name: 冰蚕衣
+    tagline: "百毒不侵非能挡毒，是毒进不去。"
     tier: shenWu
     slot: armor
     baseAttackMin: 0
@@ -1228,6 +1258,7 @@ equipment:
 
   - id: armor_shenwu_tian_can_bao_jia
     name: 天蚕宝甲
+    tagline: "金线绞天蚕，三现于世，只认其主。"
     tier: shenWu
     slot: armor
     baseAttackMin: 0
@@ -1243,6 +1274,7 @@ equipment:
 
   - id: accessory_shenwu_she_li_zhu
     name: 舍利珠
+    tagline: "一生修行所凝，亮者功德，暗者执念。"
     tier: shenWu
     slot: accessory
     baseAttackMin: 600
@@ -1258,6 +1290,7 @@ equipment:
 
   - id: accessory_shenwu_tian_yuan_zhi
     name: 天元指
+    tagline: "戴之内力自周天，如多一颗心替你跳。"
     tier: shenWu
     slot: accessory
     baseAttackMin: 725
@@ -1275,6 +1308,7 @@ equipment:
 
   - id: weapon_special_wu_ming_jian
     name: 无名剑
+    tagline: "等待本身，就是它的名字。"
     tier: baoWu
     slot: weapon
     schoolBias: lingQiao
@@ -1292,6 +1326,7 @@ equipment:
 
   - id: accessory_special_xin_mo_zhu
     name: 心魔珠
+    tagline: "最难的敌人，从不在外面。"
     tier: zhongQi
     slot: accessory
     baseAttackMin: 280

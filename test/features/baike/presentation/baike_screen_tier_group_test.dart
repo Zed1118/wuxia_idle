@@ -110,6 +110,7 @@ String _buildEquipmentYaml() {
     baseSpeedMin: 0
     baseSpeedMax: 0
     presetLoreIds: []
+    tagline: 测试占位典故
     dropSourceTags: []
     iconPath: assets/placeholder.png
     isLineageHeritage: $isHeritage
@@ -127,6 +128,7 @@ String _buildEquipmentYaml() {
     baseSpeedMin: 0
     baseSpeedMax: 0
     presetLoreIds: []
+    tagline: 测试占位典故
     dropSourceTags: []
     iconPath: assets/placeholder.png
     isLineageHeritage: false
@@ -143,6 +145,7 @@ String _buildEquipmentYaml() {
     baseSpeedMin: 0
     baseSpeedMax: 10
     presetLoreIds: []
+    tagline: 测试占位典故
     dropSourceTags: []
     iconPath: assets/placeholder.png
     isLineageHeritage: false
@@ -162,6 +165,7 @@ String _buildEquipmentYaml() {
     baseSpeedMin: 0
     baseSpeedMax: 0
     presetLoreIds: []
+    tagline: 测试占位典故
     dropSourceTags: []
     iconPath: assets/placeholder.png
     isLineageHeritage: false
