@@ -21,6 +21,10 @@ class NumbersConfig {
 
   /// 招式解锁配置(可玩性 P1a · spec §二)。顶层 `skill_unlock` 段。
   final SkillUnlockConfig skillUnlock;
+
+  /// 爆品展示动画门槛(2026-06-11)。顶层 `treasure_drop` 段。
+  final TreasureDropConfig treasureDrop;
+
   final LevelDiffModifier levelDiffModifier;
 
   /// 49 级境界对应大阶的防御率（RealmDef schema §5.8 未含此字段，
@@ -205,6 +209,7 @@ class NumbersConfig {
     required this.combat,
     required this.skillProficiency,
     required this.skillUnlock,
+    required this.treasureDrop,
     required this.levelDiffModifier,
     required this.defenseRateByTier,
     required this.enhancementBonusPerLevel,
@@ -258,6 +263,9 @@ class NumbersConfig {
       ),
       skillUnlock: SkillUnlockConfig.fromYaml(
         (y['skill_unlock'] as Map?)?.cast<String, dynamic>(),
+      ),
+      treasureDrop: TreasureDropConfig.fromYaml(
+        (y['treasure_drop'] as Map?)?.cast<String, dynamic>(),
       ),
       levelDiffModifier: LevelDiffModifier.fromYaml(
         realms['level_diff_modifier'] as Map<String, dynamic>,
@@ -2268,6 +2276,22 @@ class SkillProficiencyConfig {
   }
 }
 
+
+/// 爆品展示动画门槛(2026-06-11)。顶层 `treasure_drop` 段。
+class TreasureDropConfig {
+  final EquipmentTier minTier;
+  const TreasureDropConfig({required this.minTier});
+
+  // 默认须与 numbers.yaml treasure_drop.min_tier 保持一致(双源,改一处记得改另一处)。
+  static const empty = TreasureDropConfig(minTier: EquipmentTier.zhongQi);
+
+  factory TreasureDropConfig.fromYaml(Map<String, dynamic>? y) {
+    if (y == null || y.isEmpty) return empty;
+    final name = y['min_tier'] as String?;
+    if (name == null) return empty;
+    return TreasureDropConfig(minTier: EquipmentTier.values.byName(name));
+  }
+}
 
 /// 招式解锁配置(可玩性 P1a · spec §二)。顶层 `skill_unlock` 段。
 class SkillUnlockConfig {

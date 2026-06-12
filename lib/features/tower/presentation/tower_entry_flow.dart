@@ -35,6 +35,7 @@ import '../../encounter/presentation/encounter_hook.dart';
 import '../../event/application/game_event_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
+import '../../equipment/presentation/treasure_drop_overlay.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart'
     show FirstClearBanner, ResonanceUpgradeNotice, ResonanceUpgradeBanner;
 import '../../narrative/presentation/narrative_reader_screen.dart';
@@ -543,12 +544,13 @@ Future<void> _showVictoryDialog({
   required List<AdvancementEntry> advancements,
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
 }) async {
-  // 结算 jingle(沿主线 victory dialog 体例):首通才响;跨 tier 大境界突破
-  // 优先于爆装备,二者同现只响一个不叠播。
+  // 爆品动画先播(含 reward 音);realmAdvance 在动画之后、随 dialog 出现时响,
+  // 与主线一致(先动画后 jingle),避免 fanfare 早响 1.3s。爆装备音已移到动画层门槛化。
+  await playTreasureDropIfAny(context, drops, gate: isFirstClear);
+  if (!context.mounted) return;
+  // 结算 jingle:跨 tier 大境界突破响 realmAdvance(首通限定)。
   if (isFirstClear && advancements.any((e) => e.result.crossedTier)) {
     SoundManager.instance.playSfx(SfxId.realmAdvance);
-  } else if (isFirstClear && drops.equipments.isNotEmpty) {
-    SoundManager.instance.playSfx(SfxId.reward);
   }
   await showDialog<void>(
     context: context,
