@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/battle_log.dart';
 import '../domain/battle_state.dart';
+import '../domain/battle_stats.dart';
 import '../domain/damage_calculator.dart';
 import '../domain/enum_localizations.dart';
 import '../../../data/defs/skill_def.dart';
@@ -117,6 +118,11 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 用于静态视觉验收(如 battle_charge_break 截蓄力帧,免被 tick 推进掉)。
   final bool autoStart;
 
+  /// 时序重排(spec 2026-06-12):flow 路径传 true → 胜利时不弹 VictoryOverlay,
+  /// 直接回调让 caller(stage/tower flow)接管,按掉落分档播爆品/简版勝。
+  /// 败北不受影响;demo/pvp/debug 等无 flow 路径保持默认 false(仍弹 overlay)。
+  final bool deferVictoryToCaller;
+
   /// 战斗 BGM 轨。调用方按 StageType（+ Boss 关）经 [bgmTrackForStage] 注入，
   /// 区分主线/塔/Boss/心魔/轻功/群战氛围。默认 [BgmTrack.battle] 通用兜底
   /// （demo/debug 零影响）。
@@ -131,6 +137,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.onDefeat,
     this.sceneBackgroundPath,
     this.autoStart = true,
+    this.deferVictoryToCaller = false,
     this.bgmTrack = BgmTrack.battle,
   });
 
@@ -564,12 +571,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       SoundManager.instance.playSfx(SfxId.defeat);
     }
 
-    final totalDamage = s.actionLog
-        .map((a) => a.attackResult?.finalDamage ?? 0)
-        .fold<int>(0, (sum, d) => sum + d);
-    final critCount = s.actionLog
-        .where((a) => a.attackResult?.isCritical ?? false)
-        .length;
+    // 时序重排:胜利且 caller 接管表现 → 不弹 VictoryOverlay,直接回调让 flow
+    // roll 后按掉落分档播爆品/简版勝(spec 2026-06-12)。败北不走此分支。
+    if (result == BattleResult.leftWin && widget.deferVictoryToCaller) {
+      widget.onBattleEnd?.call();
+      widget.onVictory?.call();
+      return;
+    }
+
+    final stats = BattleStatsSummary.from(s);
 
     showGeneralDialog<void>(
       context: context,
@@ -578,9 +588,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       transitionDuration: const Duration(milliseconds: 280),
       pageBuilder: (ctx, _, _) => VictoryOverlay(
         result: result,
-        totalDamage: totalDamage,
-        critCount: critCount,
-        totalTicks: s.tick,
+        totalDamage: stats.totalDamage,
+        critCount: stats.critCount,
+        totalTicks: stats.totalTicks,
         onContinue: () {
           Navigator.of(ctx).pop();
           widget.onBattleEnd?.call();
