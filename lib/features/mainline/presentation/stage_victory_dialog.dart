@@ -9,6 +9,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../battle/domain/battle_stats.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/drop_service.dart';
@@ -27,6 +28,7 @@ Future<void> showStageVictoryDialog({
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
   String? firstClearTitle,
   String? firstClearSubtitle,
+  BattleStatsSummary? stats,
 }) async {
   // 结算 jingle:跨 tier 大境界突破响 realmAdvance(爆装备音已移到 playTreasureDropIfAny
   // 动画层 + 门槛化,2026-06-11)。
@@ -44,6 +46,7 @@ Future<void> showStageVictoryDialog({
         resonanceUpgrades: resonanceUpgrades,
         firstClearTitle: firstClearTitle,
         firstClearSubtitle: firstClearSubtitle,
+        stats: stats,
       ),
       actions: [
         TextButton(
@@ -67,6 +70,7 @@ class StageVictoryContent extends StatelessWidget {
     this.resonanceUpgrades = const [],
     this.firstClearTitle,
     this.firstClearSubtitle,
+    this.stats,
   });
 
   final DropResult drops;
@@ -74,6 +78,7 @@ class StageVictoryContent extends StatelessWidget {
   final List<ResonanceUpgradeNotice> resonanceUpgrades;
   final String? firstClearTitle;
   final String? firstClearSubtitle;
+  final BattleStatsSummary? stats;
 
   @override
   Widget build(BuildContext context) {
@@ -119,6 +124,15 @@ class StageVictoryContent extends StatelessWidget {
         if (resonanceUpgrades.isNotEmpty) ...[
           const SizedBox(height: 12),
           ResonanceUpgradeBanner(notices: resonanceUpgrades),
+        ],
+        if (stats != null) ...[
+          const SizedBox(height: 12),
+          Text(
+            UiStrings.battleSummary(
+                stats!.totalDamage, stats!.critCount, stats!.totalTicks),
+            style: const TextStyle(
+                color: WuxiaColors.textSecondary, fontSize: 13),
+          ),
         ],
       ],
     );

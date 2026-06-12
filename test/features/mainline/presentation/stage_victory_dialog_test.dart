@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/battle/domain/battle_stats.dart';
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/cultivation/presentation/advancement_summary.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
@@ -287,6 +288,33 @@ void main() {
       expect(find.text('寻常货'), findsOneWidget);
       // 每件装备一枚品阶勋章图标。
       expect(find.byIcon(Icons.workspace_premium), findsNWidgets(2));
+    });
+
+    // Task 5:战斗统计段
+    testWidgets('StageVictoryContent 显示战斗统计段', (tester) async {
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+          body: StageVictoryContent(
+            drops: DropResult(equipments: [], items: []),
+            advancements: [],
+            stats: BattleStatsSummary(
+                totalDamage: 1234, critCount: 3, totalTicks: 9),
+          ),
+        ),
+      ));
+      expect(find.text(UiStrings.battleSummary(1234, 3, 9)), findsOneWidget);
+    });
+
+    testWidgets('stats=null 时不显统计段(向后兼容)', (tester) async {
+      await tester.pumpWidget(const MaterialApp(
+        home: Scaffold(
+          body: StageVictoryContent(
+            drops: DropResult(equipments: [], items: []),
+            advancements: [],
+          ),
+        ),
+      ));
+      expect(find.text(UiStrings.stageVictoryDropLabel), findsOneWidget);
     });
   });
 
