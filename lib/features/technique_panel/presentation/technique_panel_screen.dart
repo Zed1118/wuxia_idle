@@ -8,6 +8,7 @@ import '../../battle/domain/enum_localizations.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/technique.dart';
+import '../../../data/game_repository.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../dispel/application/dispel_service.dart';
@@ -880,6 +881,13 @@ class _LayerLadder extends StatelessWidget {
   Widget build(BuildContext context) {
     final layers = CultivationLayer.values;
     final curIdx = current.index;
+    // D：修炼度五要素「当前/下一阶效果」= 当前层 / 下一层伤害倍率。
+    final mult = GameRepository.instance.numbers.cultivationMultiplier;
+    final curMult = mult[current] ?? 1.0;
+    final isMaxLayer = curIdx >= layers.length - 1;
+    final nextMultText = isMaxLayer
+        ? UiStrings.cultivationMaxLayer
+        : UiStrings.cultivationNextDamageMult(mult[layers[curIdx + 1]] ?? curMult);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -931,6 +939,15 @@ class _LayerLadder extends StatelessWidget {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 4),
+        // D：层名徽章下一行伤害倍率（当前效果 · 下一阶效果）。
+        Text(
+          '${UiStrings.cultivationDamageMult(curMult)} · $nextMultText',
+          style: const TextStyle(
+            color: WuxiaColors.textSecondary,
+            fontSize: 11,
+          ),
         ),
       ],
     );

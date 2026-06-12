@@ -11,6 +11,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/character_panel_screen.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/stage_progress_row.dart';
 
 /// CharacterPanelScreen 边界用例（nightshift T03）。
 ///
@@ -221,11 +222,11 @@ void main() {
 
     await pumpPanel(tester, character: character, techniques: {20: main});
 
-    final indicator = tester.widget<LinearProgressIndicator>(
-      find.byType(LinearProgressIndicator),
+    final row = tester.widget<StageProgressRow>(
+      find.byType(StageProgressRow),
     );
-    // cultivationProgressToNext==0 → 防除零分支 → value=0.0，非 NaN/异常
-    expect(indicator.value, closeTo(0.0, 1e-9));
+    // cultivationProgressToNext==0 → 防除零分支 → ratio=0.0，非 NaN/异常
+    expect(row.ratio, closeTo(0.0, 1e-9));
   });
 
   // ── 用例 D：装备 isLineageHeritage=false 全过滤 → 遗物行空态 ─────────────
@@ -303,10 +304,10 @@ void main() {
 
     await pumpPanel(tester, character: character, techniques: {20: main});
 
-    final indicator = tester.widget<LinearProgressIndicator>(
-      find.byType(LinearProgressIndicator),
+    final row = tester.widget<StageProgressRow>(
+      find.byType(StageProgressRow),
     );
     // 300/300 = 1.0，clamp(0.0, 1.0) 仍为 1.0（满修炼度边界自洽）
-    expect(indicator.value, closeTo(1.0, 1e-9));
+    expect(row.ratio, closeTo(1.0, 1e-9));
   });
 }

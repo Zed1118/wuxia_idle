@@ -51,7 +51,12 @@ class FragmentProgressRow extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
+                  // D：标题字号/字重对齐 StageProgressRow（同列视觉一致）。
+                  style: const TextStyle(
+                    color: WuxiaUi.ink,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(

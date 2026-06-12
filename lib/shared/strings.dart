@@ -267,6 +267,17 @@ class UiStrings {
   static String cultivationProgress(int current, int next) =>
       '$current / $next';
 
+  /// 修炼度当前层伤害倍率文案（D · 五要素「当前效果」）：`伤害 ×1.75`。
+  static String cultivationDamageMult(double mult) =>
+      '伤害 ×${mult.toStringAsFixed(2)}';
+
+  /// 修炼度下一层伤害倍率文案（D · 五要素「下一阶效果」）：`下一阶 ×2.00`。
+  static String cultivationNextDamageMult(double mult) =>
+      '下一阶 ×${mult.toStringAsFixed(2)}';
+
+  /// 修炼度已至最高层（极境）标记（D · 五要素「下一阶效果」退化）。
+  static const String cultivationMaxLayer = '已至极境';
+
   /// B5 段位阶梯进度（当前层 / 总层数）。
   static String layerProgressLabel(int current, int total) =>
       '$current / $total 层';
@@ -588,8 +599,11 @@ class UiStrings {
       pct == 0 ? '当前无属性加成' : '当前属性加成 +$pct%';
   static const String equipmentDetailResonanceJointSkill = '✦ 已解锁「人剑合一」招式';
   static const String equipmentDetailResonanceSwordSong = '✦ 暴击附带「剑鸣」浮字';
-  static String equipmentDetailResonanceNextHint(int remaining, String next) =>
-      '距「$next」尚需 $remaining 战';
+  // D · 共鸣度五要素：下一阶加成 / 阶内战斗进度
+  // （原 equipmentDetailResonanceNextHint「距 N 战」由下一阶加成 + 战斗进度取代）
+  static String equipmentResonanceNextBonus(int pct) => '下一阶 +$pct%';
+  static String equipmentResonanceBattleProgress(int count, int nextMin) =>
+      '战斗 $count/$nextMin';
   // §5.6 审计抽出(2026-06-08):装备详情属性基础值后缀
   static String equipmentStatBaseValue(int base) => '(基 $base)';
 

@@ -88,7 +88,8 @@ void main() {
     expect(find.text('神物'), findsOneWidget);
     expect(find.text('武器'), findsOneWidget);
     expect(find.text('+12'), findsOneWidget);
-    expect(find.text('战斗 1240 次'), findsOneWidget);
+    // D：共鸣度战斗进度 hero 化（moQi 500-2000 阶内 → N/下一阶阈值）。
+    expect(find.text('战斗 1240/2000'), findsOneWidget);
     expect(find.text('攻击'), findsOneWidget);
     expect(find.text('血量'), findsOneWidget);
     expect(find.text('速度'), findsOneWidget);
@@ -427,9 +428,13 @@ void main() {
         find.text(UiStrings.equipmentDetailResonanceSwordSong),
         findsNothing,
       );
-      // 距趁手尚需 100 战(chenShou.minBattleCount=100)
+      // D：五要素「下一阶效果」= 趁手 +10%；战斗进度 0/100。
       expect(
-        find.text(UiStrings.equipmentDetailResonanceNextHint(100, '趁手')),
+        find.text(UiStrings.equipmentResonanceNextBonus(10)),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.equipmentResonanceBattleProgress(0, 100)),
         findsOneWidget,
       );
     });
@@ -456,8 +461,13 @@ void main() {
         findsNothing,
         reason: 'moQi 阶 hasSwordSongEffect=false',
       );
+      // D：五要素「下一阶效果」= 心剑通灵 +30%；战斗进度 500/2000。
       expect(
-        find.text(UiStrings.equipmentDetailResonanceNextHint(1500, '心剑通灵')),
+        find.text(UiStrings.equipmentResonanceNextBonus(30)),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.equipmentResonanceBattleProgress(500, 2000)),
         findsOneWidget,
       );
     });

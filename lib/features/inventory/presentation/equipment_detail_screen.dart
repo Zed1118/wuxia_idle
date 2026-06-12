@@ -318,23 +318,8 @@ class _InfoCard extends ConsumerWidget {
               color: color,
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(
-                  EnumL10n.resonanceStage(resonance),
-                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  UiStrings.equipmentBattleCount(equipment.battleCount),
-                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
-                ),
-              ],
-            ),
-            // P1.1 候选 3-d:共鸣度晋升信息透明 section。
-            // 体例对齐 _Chip 风格,无 VFX,纯文字 hint 显:
-            // ① bonus_multiplier 「攻击 +X%」② unlocks_joint_skill → 已解锁人剑合一
-            // ③ has_sword_song_effect → 暴击附带剑鸣 ④ 距下一阶 N 战 hint
+            // D：共鸣度五要素 Row（StageProgressRow：阶段名 + 进度条 +
+            // 当前加成 + 下一阶加成 + 战斗进度）+ 解锁招标记行。
             _ResonanceDetailsSection(
               stage: resonance,
               config: _findStageCfg(n.resonanceStages, resonance),
@@ -396,42 +381,61 @@ class _ResonanceDetailsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bonusPct = ((config.bonusMultiplier - 1.0) * 100).round();
-    final lines = <String>[
-      UiStrings.equipmentDetailResonanceBonus(bonusPct),
-      if (config.unlocksJointSkill)
-        UiStrings.equipmentDetailResonanceJointSkill,
-      if (config.hasSwordSongEffect)
-        UiStrings.equipmentDetailResonanceSwordSong,
-    ];
-    final nextHint = _nextStageHint();
-    if (nextHint != null) lines.add(nextHint);
+    final next = nextStageCfg;
+
+    // 五要素：阶内战斗进度比值 + 下一阶加成 + 战斗进度文案（最高阶退化）。
+    final double ratio;
+    final String? nextEffect;
+    final String progressText;
+    if (next != null) {
+      final span = next.minBattleCount - config.minBattleCount;
+      ratio = span <= 0
+          ? 1.0
+          : ((battleCount - config.minBattleCount) / span).clamp(0.0, 1.0);
+      final nextPct = ((next.bonusMultiplier - 1.0) * 100).round();
+      nextEffect = UiStrings.equipmentResonanceNextBonus(nextPct);
+      progressText = UiStrings.equipmentResonanceBattleProgress(
+        battleCount,
+        next.minBattleCount,
+      );
+    } else {
+      ratio = 1.0;
+      nextEffect = null;
+      progressText = UiStrings.equipmentBattleCount(battleCount);
+    }
 
     return Padding(
       padding: const EdgeInsets.only(top: 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final line in lines)
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
+          // 卡内子段：title 省略不重复装备名，阶段名领头。
+          StageProgressRow(
+            stageName: EnumL10n.resonanceStage(stage),
+            ratio: ratio,
+            currentEffect: UiStrings.equipmentDetailResonanceBonus(bonusPct),
+            nextEffect: nextEffect,
+            progressText: progressText,
+          ),
+          // 解锁招标记（人剑合一 / 剑鸣），保留信息性 callout。
+          if (config.unlocksJointSkill)
+            const Padding(
+              padding: EdgeInsets.only(top: 2),
               child: Text(
-                line,
-                style: const TextStyle(color: WuxiaUi.ink2, fontSize: 12),
+                UiStrings.equipmentDetailResonanceJointSkill,
+                style: TextStyle(color: WuxiaUi.ink2, fontSize: 12),
+              ),
+            ),
+          if (config.hasSwordSongEffect)
+            const Padding(
+              padding: EdgeInsets.only(top: 2),
+              child: Text(
+                UiStrings.equipmentDetailResonanceSwordSong,
+                style: TextStyle(color: WuxiaUi.ink2, fontSize: 12),
               ),
             ),
         ],
       ),
-    );
-  }
-
-  String? _nextStageHint() {
-    final next = nextStageCfg;
-    if (next == null) return null;
-    final remaining = next.minBattleCount - battleCount;
-    if (remaining <= 0) return null;
-    return UiStrings.equipmentDetailResonanceNextHint(
-      remaining,
-      EnumL10n.resonanceStage(next.stage),
     );
   }
 }

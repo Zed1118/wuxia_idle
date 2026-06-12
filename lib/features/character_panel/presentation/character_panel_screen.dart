@@ -1519,6 +1519,18 @@ class _MainTechniqueTile extends ConsumerWidget {
             : (t.cultivationProgress / t.cultivationProgressToNext)
                   .clamp(0.0, 1.0)
                   .toDouble();
+        // D：修炼度五要素「当前/下一阶效果」= 当前层 / 下一层伤害倍率。
+        final n = ref.watch(numbersConfigProvider);
+        final layer = t.cultivationLayer;
+        final curMult = n.cultivationMultiplier[layer] ?? 1.0;
+        final layers = CultivationLayer.values;
+        final layerIdx = layers.indexOf(layer);
+        final isMaxLayer = layerIdx >= layers.length - 1;
+        final nextMultText = isMaxLayer
+            ? UiStrings.cultivationMaxLayer
+            : UiStrings.cultivationNextDamageMult(
+                n.cultivationMultiplier[layers[layerIdx + 1]] ?? curMult,
+              );
         return IntrinsicHeight(
           child: WuxiaPaperPanel(
             padding: const EdgeInsets.all(14),
@@ -1557,35 +1569,16 @@ class _MainTechniqueTile extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        EnumL10n.cultivationLayer(t.cultivationLayer),
-                        style: const TextStyle(
-                          color: WuxiaColors.textPrimary,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        UiStrings.cultivationProgress(
-                          t.cultivationProgress,
-                          t.cultivationProgressToNext,
-                        ),
-                        style: const TextStyle(
-                          color: WuxiaColors.textMuted,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 6,
-                    backgroundColor: WuxiaColors.barTrack,
-                    valueColor: AlwaysStoppedAnimation<Color>(schoolColor),
+                  // D：修炼度五要素 Row（卡内子段，title 省略不重复心法名）。
+                  StageProgressRow(
+                    stageName: EnumL10n.cultivationLayer(t.cultivationLayer),
+                    ratio: progress,
+                    currentEffect: UiStrings.cultivationDamageMult(curMult),
+                    nextEffect: nextMultText,
+                    progressText: UiStrings.cultivationProgress(
+                      t.cultivationProgress,
+                      t.cultivationProgressToNext,
+                    ),
                   ),
                 ],
               ),
