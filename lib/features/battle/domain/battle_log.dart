@@ -1,3 +1,4 @@
+import '../../../core/domain/enums.dart';
 import 'battle_state.dart';
 import 'enum_localizations.dart';
 
@@ -127,6 +128,57 @@ class BattleLog {
   /// 把整场战斗的 actionLog 拼成多行字符串（UI 侧边栏直接用）。
   static String formatAllActions(BattleState s) =>
       s.actionLog.map((a) => formatAction(a, s)).join('\n');
+
+  // ───────────────────────────────────────────────────────────────────────
+  // T3 底部战报条：从 actionLog 里挑"关键"事件做紧凑展示。
+  // ───────────────────────────────────────────────────────────────────────
+
+  /// 是否为"关键战报"：大招命中 / 破招技命中 / 暴击 / 击杀。
+  /// 蓄势由顶部危险条([_DangerBar])呈现、战败由结算 overlay 呈现，不在此列。
+  static bool isKeyAction(BattleAction a, BattleState state) {
+    final r = a.attackResult;
+    if (r == null || r.isDodged) return false;
+    if (r.isCritical) return true;
+    final skill = a.skill;
+    if (skill != null &&
+        (skill.type == SkillType.ultimate ||
+            skill.type == SkillType.jointSkill ||
+            skill.canInterrupt)) {
+      return true;
+    }
+    if (a.targetId != null) {
+      final target = _findChar(state, a.targetId!);
+      if (target != null && !target.isAlive) return true; // 击杀
+    }
+    return false;
+  }
+
+  /// 最近 [limit] 条关键战报，**最新在前**（index 0 = 最近）。
+  static List<BattleAction> recentKeyActions(BattleState state, {int limit = 3}) {
+    final out = <BattleAction>[];
+    for (var i = state.actionLog.length - 1; i >= 0 && out.length < limit; i--) {
+      if (isKeyAction(state.actionLog[i], state)) out.add(state.actionLog[i]);
+    }
+    return out;
+  }
+
+  /// 紧凑单行（无"[第 N 回合]"前缀，给底部战报条用）。
+  /// 例：`祖师 「青锋绝」2340 伤（暴击·击杀）`。
+  static String formatActionCompact(BattleAction a, BattleState state) {
+    final actorName = _findName(state, a.actorId) ?? '未知';
+    final skillName = a.skill?.name ?? '普攻';
+    final r = a.attackResult;
+    if (r == null) return '$actorName $skillName';
+    if (r.isDodged) return '$actorName 「$skillName」被闪避';
+    final tags = <String>[];
+    if (r.isCritical) tags.add('暴击');
+    if (a.targetId != null) {
+      final target = _findChar(state, a.targetId!);
+      if (target != null && !target.isAlive) tags.add('击杀');
+    }
+    final tagStr = tags.isEmpty ? '' : '（${tags.join('·')}）';
+    return '$actorName 「$skillName」${r.finalDamage} 伤$tagStr';
+  }
 
   // ───────────────────────────────────────────────────────────────────────
   static String? _findName(BattleState s, int characterId) =>

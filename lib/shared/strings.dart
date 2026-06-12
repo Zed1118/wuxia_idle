@@ -24,6 +24,18 @@ class UiStrings {
 
   // P0 破招
   static const String battleInterruptSkill = '破招';
+  // T2 蓄力危险条：敌人正在蓄力大招的顶部警示（招名 + 剩余回合）。
+  static String battleDangerCharging(String enemyName, String skillName, int ticks) =>
+      '$enemyName 正在蓄势：$skillName（还有 $ticks 回合发动）';
+  static const String battleDangerPrefix = '⚠ ';
+
+  // T1 战斗指令台：技能分组标签 + 状态印 + 内力/冷却短标。
+  static const String skillGroupPower = '强力';
+  static const String skillGroupJoint = '共鸣';
+  // 破招用 [battleInterruptSkill]='破招'、大招用 [ultimate]='大招'。
+  static const String skillPendingStamp = '待发';
+  static String skillCostShort(int cost) => '耗$cost';
+  static String skillCooldownShort(int turns) => '冷却$turns';
   // B3 破招成功「破！」题字 overlay 文案(破招方暖金/敌方绛红)。
   static const String interruptCaption = '破！';
   static const String battleDefeatHintInterrupt = '蓄力大招难挡——保留内力,看准蓄力时机破招。';

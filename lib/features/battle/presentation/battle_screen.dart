@@ -161,9 +161,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   Timer? _playTimer;
   bool _isFastForward = false;
 
-  // 大招按钮按下后置灰：char.id ∈ set 时按钮 disabled，下次该角色行动后解除。
-  // **本地 state，不污染 BattleState**（spec §16.2 注：UI 状态属于 UI 层）。
-  final Set<int> _disabledUltimateChars = {};
+  // T1 指令台：当前"重点角色"槽位（玩家手动选定的基线）。敌人蓄力时由
+  // [_effectiveFocus] 临时覆盖到可破招者，但不改写这个手动基线。
+  // 技能"待发"态直接读 [BattleState.pendingUltimates]（domain 单一真相源），
+  // 不再维护本地置灰 set——引擎消费后自动清，按钮印随之消失。
+  int _focusSlotIndex = 0;
 
   // 日志折叠抽屉开关（P0-2 Task6）：本地 UI state，不污染 BattleState。
   bool _logOpen = false;
@@ -485,43 +487,51 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     });
   }
 
-  // ─── 大招 ────────────────────────────────────────────────────────────────
+  // ─── 指令台（T1） ──────────────────────────────────────────────────────────
 
-  void _onUltimatePressed(int slotIndex) {
+  /// 玩家点重点角色的任一可用技能 → 走与大招相同的 [requestUltimate] 路径
+  /// （[BattleAI._pickSkill] 对任意 pending 技能一视同仁地优先消费，不引入新战斗
+  /// 数学）。仅当该技能 ready（存活 + 内力够 + CD 0）才下发。
+  void _onSkillCommand(int characterId, SkillDef skill) {
     final s = ref.read(battleProvider);
-    if (slotIndex >= s.leftTeam.length) return;
-    final c = s.leftTeam[slotIndex];
-    final ultimate = _findUltimateOf(c);
-    if (!_isUltimateReady(c, ultimate)) return;
-    if (_disabledUltimateChars.contains(c.characterId)) return;
-
-    ref.read(battleProvider.notifier).requestUltimate(c.characterId, ultimate!);
-    setState(() => _disabledUltimateChars.add(c.characterId));
-  }
-
-  static SkillDef? _findUltimateOf(BattleCharacter c) {
-    for (final skill in c.availableSkills) {
-      if (skill.type == SkillType.ultimate) return skill;
+    BattleCharacter? c;
+    for (final ch in s.leftTeam) {
+      if (ch.characterId == characterId) {
+        c = ch;
+        break;
+      }
     }
-    return null;
+    if (c == null || !_isSkillReady(c, skill)) return;
+    ref.read(battleProvider.notifier).requestUltimate(characterId, skill);
   }
 
-  static bool _isUltimateReady(BattleCharacter c, SkillDef? ultimate) {
-    if (!c.isAlive || ultimate == null) return false;
-    final cd = c.skillCooldowns[ultimate.id] ?? 0;
-    return c.currentInternalForce >= ultimate.internalForceCost && cd <= 0;
+  void _onSelectFocus(int slotIndex) {
+    setState(() => _focusSlotIndex = slotIndex);
   }
 
-  // ─── 关键技（破招） ────────────────────────────────────────────────────────
+  /// 重点角色生效槽位：敌人蓄力时自动落到首个"有 ready 破招技"的我方角色，
+  /// 否则用玩家手动选的 [_focusSlotIndex]（越界 / 死亡时回退到 0）。
+  int _effectiveFocus(BattleState s) {
+    if (s.leftTeam.isEmpty) return 0;
+    final enemyCharging =
+        s.rightTeam.any((e) => e.isAlive && e.chargingSkill != null);
+    if (enemyCharging) {
+      for (var i = 0; i < s.leftTeam.length; i++) {
+        final c = s.leftTeam[i];
+        final k = _findKeySkillOf(c);
+        if (k != null && _isSkillReady(c, k)) return i;
+      }
+    }
+    if (_focusSlotIndex >= 0 && _focusSlotIndex < s.leftTeam.length) {
+      return _focusSlotIndex;
+    }
+    return 0;
+  }
 
-  void _onKeySkillPressed(int slotIndex) {
-    final s = ref.read(battleProvider);
-    if (slotIndex >= s.leftTeam.length) return;
-    final c = s.leftTeam[slotIndex];
-    final keySkill = _findKeySkillOf(c);
-    if (!_isKeySkillReady(c, keySkill)) return;
-
-    ref.read(battleProvider.notifier).requestUltimate(c.characterId, keySkill!);
+  static bool _isSkillReady(BattleCharacter c, SkillDef skill) {
+    if (!c.isAlive) return false;
+    final cd = c.skillCooldowns[skill.id] ?? 0;
+    return c.currentInternalForce >= skill.internalForceCost && cd <= 0;
   }
 
   static SkillDef? _findKeySkillOf(BattleCharacter c) {
@@ -529,12 +539,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       if (skill.canInterrupt) return skill;
     }
     return null;
-  }
-
-  static bool _isKeySkillReady(BattleCharacter c, SkillDef? keySkill) {
-    if (!c.isAlive || keySkill == null) return false;
-    final cd = c.skillCooldowns[keySkill.id] ?? 0;
-    return c.currentInternalForce >= keySkill.internalForceCost && cd <= 0;
   }
 
   // ─── 结算 dialog ─────────────────────────────────────────────────────────
@@ -641,18 +645,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         });
       }
 
-      // 3. actionLog 新增：触发动画 + 解除大招按钮置灰
+      // 3. actionLog 新增：触发动画（待发态自动随 pendingUltimates 消费而清，
+      //    无需本地解除置灰）。
       if (prev != null && next.actionLog.length > prev.actionLog.length) {
         final newActions = next.actionLog.sublist(prev.actionLog.length);
         for (final a in newActions) {
           _playAction(a, next);
-        }
-        if (_disabledUltimateChars.isNotEmpty) {
-          setState(() {
-            for (final a in newActions) {
-              _disabledUltimateChars.remove(a.actorId);
-            }
-          });
         }
       }
 
@@ -714,6 +712,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                     state: state,
                     onToggleLog: () => setState(() => _logOpen = !_logOpen),
                   ),
+                  _DangerBar(state: state),
                   Expanded(
                     child: Stack(
                       children: [
@@ -740,11 +739,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       ],
                     ),
                   ),
+                  _BattleReportStrip(
+                    state: state,
+                    onTap: () => setState(() => _logOpen = true),
+                  ),
                   _BottomBar(
                     state: state,
-                    disabledUltimateChars: _disabledUltimateChars,
-                    onUltimate: _onUltimatePressed,
-                    onKeySkill: _onKeySkillPressed,
+                    focusSlotIndex: _effectiveFocus(state),
+                    onSelectFocus: _onSelectFocus,
+                    onSkill: _onSkillCommand,
                     onFastForward: _toggleFastForward,
                     isFastForward: _isFastForward,
                   ),
@@ -782,6 +785,130 @@ class _HintBanner extends StatelessWidget {
       child: Text(
         hint,
         style: const TextStyle(color: Color(0xFF8BC28B), fontSize: 13),
+      ),
+    );
+  }
+}
+
+// ─── 蓄力危险条（T2）──────────────────────────────────────────────────────
+
+/// 敌人蓄力大招时的顶部警示条。纯读 [BattleState.rightTeam]：取最临近发动
+/// （[chargeTicksRemaining] 最小）的存活蓄力敌人，显示招名 + 剩余回合，提示玩家
+/// 看准时机破招。无敌人蓄力时返回 [SizedBox.shrink]（不占高度、不渲染 key）。
+class _DangerBar extends StatelessWidget {
+  final BattleState state;
+  const _DangerBar({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    BattleCharacter? imminent;
+    for (final e in state.rightTeam) {
+      if (!e.isAlive || e.chargingSkill == null) continue;
+      if (imminent == null ||
+          e.chargeTicksRemaining < imminent.chargeTicksRemaining) {
+        imminent = e;
+      }
+    }
+    if (imminent == null) return const SizedBox.shrink();
+
+    return Container(
+      key: const ValueKey('battle_danger_bar'),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: WuxiaColors.danger.withValues(alpha: 0.18),
+        border: const Border(
+          bottom: BorderSide(color: WuxiaColors.danger),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.warning_amber_rounded,
+              color: WuxiaColors.danger, size: 16),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              UiStrings.battleDangerCharging(
+                imminent.name,
+                imminent.chargingSkill!.name,
+                imminent.chargeTicksRemaining,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: WuxiaColors.danger,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── 最近战报条（T3）──────────────────────────────────────────────────────
+
+/// 底部常驻的最近关键战报（大招/破招/暴击/击杀），最多 3 条，最新在上。
+/// 纯读 [BattleLog.recentKeyActions]；无关键战报时返回 [SizedBox.shrink]。
+/// 点击整条 → [onTap]（打开完整 [_LogDrawer]）。实时反馈仍靠飘字/弹道，
+/// 本条只做"刚刚发生了什么大事"的常驻速览。
+class _BattleReportStrip extends StatelessWidget {
+  final BattleState state;
+  final VoidCallback onTap;
+  const _BattleReportStrip({required this.state, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final keys = BattleLog.recentKeyActions(state);
+    if (keys.isEmpty) return const SizedBox.shrink();
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: const ValueKey('battle_report_strip'),
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: const BoxDecoration(
+            color: WuxiaColors.sidebar,
+            border: Border(top: BorderSide(color: WuxiaColors.border)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.bolt, size: 14, color: WuxiaColors.textMuted),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < keys.length; i++)
+                      Text(
+                        BattleLog.formatActionCompact(keys[i], state),
+                        key: ValueKey('battle_report_line_$i'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: i == 0
+                              ? WuxiaColors.textSecondary
+                              : WuxiaColors.textMuted,
+                          fontSize: 11,
+                          height: 1.35,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right,
+                  size: 16, color: WuxiaColors.textMuted),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1165,32 +1292,60 @@ class _CharacterSlot extends StatelessWidget {
 
 // ─── 底栏 ──────────────────────────────────────────────────────────────────
 
+/// T1 战斗指令台：左侧重点角色选择器 + 该角色全部可用技能的分组指令按钮 + 快进。
+///
+/// 旧版每角色只暴露大招/破招两按钮；新版聚焦单个"重点角色"，把它的
+/// [BattleCharacter.availableSkills]（除普攻）全摊开成 强力/破招/共鸣/大招 分组按钮，
+/// 每按钮带内力消耗 / 冷却 / 待发 状态。点头像切重点角色；敌人蓄力时由
+/// [_BattleScreenState._effectiveFocus] 自动切到可破招者。点击仍走 [requestUltimate]。
 class _BottomBar extends StatelessWidget {
   final BattleState state;
-  final Set<int> disabledUltimateChars;
-  final void Function(int slotIndex) onUltimate;
-  final void Function(int slotIndex) onKeySkill;
+  final int focusSlotIndex;
+  final void Function(int slotIndex) onSelectFocus;
+  final void Function(int characterId, SkillDef skill) onSkill;
   final VoidCallback onFastForward;
   final bool isFastForward;
 
   const _BottomBar({
     required this.state,
-    required this.disabledUltimateChars,
-    required this.onUltimate,
-    required this.onKeySkill,
+    required this.focusSlotIndex,
+    required this.onSelectFocus,
+    required this.onSkill,
     required this.onFastForward,
     required this.isFastForward,
   });
 
+  /// 排序/分组秩：强力 0 → 破招 1 → 共鸣 2 → 大招 3（普攻 4，已被过滤）。
+  static int _groupRank(SkillDef s) {
+    if (s.canInterrupt) return 1;
+    return switch (s.type) {
+      SkillType.powerSkill => 0,
+      SkillType.jointSkill => 2,
+      SkillType.ultimate => 3,
+      SkillType.normalAttack => 4,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 纯读 state：任一存活敌人(rightTeam)正在蓄力 → 全队破招按钮高亮提示。
     final enemyCharging = state.rightTeam.any(
       (e) => e.isAlive && e.chargingSkill != null,
     );
+    final hasFocus =
+        focusSlotIndex >= 0 && focusSlotIndex < state.leftTeam.length;
+    final focus = hasFocus ? state.leftTeam[focusSlotIndex] : null;
+    final pending =
+        focus == null ? null : state.pendingUltimates[focus.characterId];
+
+    final skills = <SkillDef>[
+      if (focus != null)
+        for (final s in focus.availableSkills)
+          if (s.type != SkillType.normalAttack) s,
+    ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
+
     return Container(
-      height: 72,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      height: 92,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: const BoxDecoration(
         color: WuxiaColors.panel,
         border: Border(top: BorderSide(color: WuxiaColors.border)),
@@ -1198,23 +1353,38 @@ class _BottomBar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          for (var i = 0; i < 3; i++) ...[
-            _UltimateButton(
-              character: i < state.leftTeam.length ? state.leftTeam[i] : null,
-              disabledByPress:
-                  i < state.leftTeam.length &&
-                  disabledUltimateChars.contains(state.leftTeam[i].characterId),
-              onPressed: () => onUltimate(i),
-            ),
-            const SizedBox(width: 4),
-            _KeySkillButton(
-              character: i < state.leftTeam.length ? state.leftTeam[i] : null,
-              highlight: enemyCharging,
-              onPressed: () => onKeySkill(i),
-            ),
-            if (i < 2) const SizedBox(width: 8),
-          ],
-          const Spacer(),
+          _FocusSelector(
+            team: state.leftTeam,
+            focusSlotIndex: focusSlotIndex,
+            onSelectFocus: onSelectFocus,
+          ),
+          const SizedBox(width: 10),
+          Container(width: 1, height: 60, color: WuxiaColors.border),
+          const SizedBox(width: 10),
+          Expanded(
+            child: focus == null
+                ? const SizedBox.shrink()
+                : SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (final s in skills) ...[
+                          _SkillCommandButton(
+                            character: focus,
+                            skill: s,
+                            isPending: pending?.id == s.id,
+                            queuedAnother:
+                                pending != null && pending.id != s.id,
+                            highlight: enemyCharging && s.canInterrupt,
+                            onPressed: () => onSkill(focus.characterId, s),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                      ],
+                    ),
+                  ),
+          ),
+          const SizedBox(width: 8),
           _FastForwardButton(onPressed: onFastForward, isActive: isFastForward),
         ],
       ),
@@ -1222,125 +1392,221 @@ class _BottomBar extends StatelessWidget {
   }
 }
 
-/// 关键技（破招）按钮。沿 [_UltimateButton] 体例：取角色 availableSkills 里
-/// 首个 canInterrupt 技，ready 判定 = isAlive + 内力够 + CD0。
-/// `highlight=true`（任一敌人蓄力中）时换醒目色 + 边框，提示玩家破招时机。
-class _KeySkillButton extends StatelessWidget {
-  final BattleCharacter? character;
-  final bool highlight;
-  final VoidCallback onPressed;
+/// 重点角色选择器：我方 3 槽小头像 chip，点选切重点角色。
+class _FocusSelector extends StatelessWidget {
+  final List<BattleCharacter> team;
+  final int focusSlotIndex;
+  final void Function(int slotIndex) onSelectFocus;
 
-  const _KeySkillButton({
-    required this.character,
-    required this.highlight,
-    required this.onPressed,
+  const _FocusSelector({
+    required this.team,
+    required this.focusSlotIndex,
+    required this.onSelectFocus,
   });
 
   @override
   Widget build(BuildContext context) {
-    final c = character;
-    final keySkill = c == null ? null : _BattleScreenState._findKeySkillOf(c);
-    final hasKeySkill = keySkill != null;
-    final ready =
-        c != null && _BattleScreenState._isKeySkillReady(c, keySkill);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < team.length; i++) ...[
+          _FocusChip(
+            key: ValueKey('focus_chip_$i'),
+            character: team[i],
+            selected: i == focusSlotIndex,
+            onTap: () => onSelectFocus(i),
+          ),
+          if (i < team.length - 1) const SizedBox(width: 4),
+        ],
+      ],
+    );
+  }
+}
 
-    final Color bgColor;
-    if (!hasKeySkill || c == null) {
-      bgColor = WuxiaColors.buttonDisabled;
-    } else if (highlight) {
-      bgColor = WuxiaColors.resultHighlight; // 敌人蓄力中：醒目金
-    } else {
-      bgColor = WuxiaColors.schoolColor(c.school);
-    }
+class _FocusChip extends StatelessWidget {
+  final BattleCharacter character;
+  final bool selected;
+  final VoidCallback onTap;
 
-    return SizedBox(
-      width: 72,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: ready ? onPressed : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: bgColor,
-          disabledBackgroundColor: WuxiaColors.buttonDisabled,
-          foregroundColor: WuxiaColors.textPrimary,
-          disabledForegroundColor: WuxiaColors.textMuted,
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          side: highlight && ready
-              ? const BorderSide(color: WuxiaColors.textPrimary, width: 2)
-              : BorderSide.none,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+  const _FocusChip({
+    super.key,
+    required this.character,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = WuxiaColors.schoolColor(character.school);
+    final dim = !character.isAlive;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        width: 46,
+        height: 60,
+        decoration: BoxDecoration(
+          color: selected
+              ? color.withValues(alpha: 0.28)
+              : WuxiaColors.sidebar,
+          border: Border.all(
+            color: selected ? color : WuxiaColors.border,
+            width: selected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(6),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (highlight)
-              const Icon(Icons.flash_on, size: 16)
-            else
-              const SizedBox(height: 16),
-            const Text(
-              UiStrings.battleInterruptSkill,
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-            ),
-          ],
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: dim ? WuxiaColors.textMuted : color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Text(
+                  character.name,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 9,
+                    height: 1.1,
+                    color: dim
+                        ? WuxiaColors.textMuted
+                        : (selected
+                            ? WuxiaColors.textPrimary
+                            : WuxiaColors.textSecondary),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _UltimateButton extends StatelessWidget {
-  final BattleCharacter? character;
-  final bool disabledByPress;
+/// 单个技能指令按钮：分组标签 + 招名 + 状态行（待发 / 冷却 N / 耗 N）。
+/// `isPending` 盖"待发"印且禁用；`queuedAnother`（同角色已排别的技能）也禁用；
+/// `highlight`（敌人蓄力 + 本技能可破招）换醒目金 + 白边。
+class _SkillCommandButton extends StatelessWidget {
+  final BattleCharacter character;
+  final SkillDef skill;
+  final bool isPending;
+  final bool queuedAnother;
+  final bool highlight;
   final VoidCallback onPressed;
 
-  const _UltimateButton({
+  const _SkillCommandButton({
     required this.character,
-    required this.disabledByPress,
+    required this.skill,
+    required this.isPending,
+    required this.queuedAnother,
+    required this.highlight,
     required this.onPressed,
   });
 
+  static String _groupLabel(SkillDef s) {
+    if (s.canInterrupt) return UiStrings.battleInterruptSkill; // 破招
+    return switch (s.type) {
+      SkillType.powerSkill => UiStrings.skillGroupPower, // 强力
+      SkillType.jointSkill => UiStrings.skillGroupJoint, // 共鸣
+      SkillType.ultimate => UiStrings.ultimate, // 大招
+      SkillType.normalAttack => '',
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
-    final c = character;
-    final ultimate = c == null ? null : _BattleScreenState._findUltimateOf(c);
-    final ready =
-        c != null &&
-        _BattleScreenState._isUltimateReady(c, ultimate) &&
-        !disabledByPress;
+    final cd = character.skillCooldowns[skill.id] ?? 0;
+    final ready = _BattleScreenState._isSkillReady(character, skill);
+    final enabled = ready && !isPending && !queuedAnother;
 
-    final activeColor = c == null
-        ? WuxiaColors.buttonDisabled
-        : WuxiaColors.schoolColor(c.school);
+    final Color bgColor;
+    if (!ready) {
+      bgColor = WuxiaColors.buttonDisabled;
+    } else if (highlight) {
+      bgColor = WuxiaColors.resultHighlight; // 敌人蓄力中：醒目金
+    } else {
+      bgColor = WuxiaColors.schoolColor(character.school);
+    }
+
+    final String statusText;
+    if (isPending) {
+      statusText = UiStrings.skillPendingStamp; // 待发
+    } else if (cd > 0) {
+      statusText = UiStrings.skillCooldownShort(cd); // 冷却 N
+    } else {
+      statusText = UiStrings.skillCostShort(skill.internalForceCost); // 耗 N
+    }
 
     return SizedBox(
-      width: 96,
-      height: 52,
+      width: 92,
+      height: 76,
       child: ElevatedButton(
-        onPressed: ready ? onPressed : null,
+        key: ValueKey('skill_cmd_${character.characterId}_${skill.id}'),
+        onPressed: enabled ? onPressed : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: activeColor,
-          disabledBackgroundColor: WuxiaColors.buttonDisabled,
+          backgroundColor: bgColor,
+          disabledBackgroundColor: isPending
+              ? WuxiaColors.sidebar
+              : WuxiaColors.buttonDisabled,
           foregroundColor: WuxiaColors.textPrimary,
           disabledForegroundColor: WuxiaColors.textMuted,
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          side: highlight && enabled
+              ? const BorderSide(color: WuxiaColors.textPrimary, width: 2)
+              : BorderSide.none,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              UiStrings.ultimate,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-            if (c != null)
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               Text(
-                c.name,
+                _groupLabel(skill),
+                style: const TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  height: 1.1,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                skill.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 10, height: 1.2),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  height: 1.15,
+                ),
               ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                statusText,
+                style: TextStyle(
+                  fontSize: 10,
+                  height: 1.1,
+                  fontWeight: isPending ? FontWeight.bold : FontWeight.normal,
+                  color: isPending
+                      ? WuxiaColors.resultHighlight
+                      : (enabled
+                          ? WuxiaColors.textPrimary
+                          : WuxiaColors.textMuted),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

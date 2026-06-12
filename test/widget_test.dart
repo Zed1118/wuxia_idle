@@ -110,6 +110,11 @@ class _TestBattleNotifier extends BattleNotifier {
   void setResult(BattleResult result) {
     state = state.copyWith(result: result);
   }
+
+  /// 模拟引擎消费完玩家排队技能后清空 pending（指令台"待发"印随之消失）。
+  void clearPending() {
+    state = state.copyWith(pendingUltimates: const {});
+  }
 }
 
 void main() {
@@ -350,63 +355,52 @@ void main() {
     expect(find.text(UiStrings.battleContinue), findsOneWidget); // '继续'
   });
 
-  testWidgets('T16 大招按钮 - 内力不够 / 内力够 enabled 状态正确', (
+  testWidgets('T1 指令台大招按钮 enabled 状态随内力 / 重点角色变化', (
     WidgetTester tester,
   ) async {
-    // BattleDemo mock 数据：
-    //   left[0] 萧夜寒  currentIf=5400 cost=800 → ready
-    //   left[1] 柳青衫  currentIf=1800 cost=800 → ready
-    //   left[2] 苏锦书  currentIf=600  cost=800 → NOT ready（内力不够）
+    // BattleDemo mock 数据（每角色 1 个示例大招 cost=800，key=skill_cmd_<id>_demo_ult_<id>）：
+    //   left[0] 萧夜寒 id=1 currentIf=5400 → ready
+    //   left[2] 苏锦书 id=3 currentIf=600  → NOT ready（内力不够）
     await pumpBattle(tester);
 
-    // P0 起底栏每名角色多了「破招」关键技按钮（含 '破招' 文案），与「大招」按钮
-    // 同为 ElevatedButton。本测只验大招按钮 enabled 状态 → 按 '大招' 文案锚定，
-    // 排除破招按钮（含 '破招' 文案）。
-    final ultimateButtons = tester
-        .widgetList<ElevatedButton>(
-          find.ancestor(
-            of: find.text('大招'),
-            matching: find.byType(ElevatedButton),
-          ),
-        )
-        .toList();
-    expect(ultimateButtons.length, 3, reason: '底栏 3 个大招按钮');
-    expect(ultimateButtons[0].enabled, true, reason: 'left[0] 萧夜寒 内力够');
-    expect(ultimateButtons[1].enabled, true, reason: 'left[1] 柳青衫 内力够');
-    expect(ultimateButtons[2].enabled, false, reason: 'left[2] 苏锦书 内力不够');
+    // 默认重点角色 = left[0]，其大招按钮 enabled。
+    final focus0Ult = tester.widget<ElevatedButton>(
+      find.byKey(const ValueKey('skill_cmd_1_demo_ult_1')),
+    );
+    expect(focus0Ult.enabled, true, reason: 'left[0] 萧夜寒 内力够');
+
+    // 切重点角色到 left[2]（苏锦书 内力不够）→ 其大招按钮 disabled。
+    await tester.tap(find.byKey(const ValueKey('focus_chip_2')));
+    await tester.pump();
+    final focus2Ult = tester.widget<ElevatedButton>(
+      find.byKey(const ValueKey('skill_cmd_3_demo_ult_3')),
+    );
+    expect(focus2Ult.enabled, false, reason: 'left[2] 苏锦书 内力不够');
   });
 
-  testWidgets('T16 大招按下后置灰，actor 行动后解除', (WidgetTester tester) async {
+  testWidgets('T1 技能按下盖「待发」印 + 禁用，引擎消费后恢复', (WidgetTester tester) async {
     final notifier = await pumpBattle(tester);
 
-    // 按下 left[0] 萧夜寒大招
-    await tester.tap(find.byType(ElevatedButton).first);
+    const ultKey = ValueKey('skill_cmd_1_demo_ult_1');
+    expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+
+    // 按下 left[0] 萧夜寒大招 → pending 写入。
+    await tester.tap(find.byKey(ultKey));
     await tester.pump();
 
-    // 按钮置灰
-    final buttonsAfterTap = tester
-        .widgetList<ElevatedButton>(find.byType(ElevatedButton))
-        .toList();
-    expect(buttonsAfterTap[0].enabled, false, reason: '按下后立刻置灰，避免连按');
+    expect(notifier.state.pendingUltimates[1]?.id, 'demo_ult_1');
+    expect(tester.widget<ElevatedButton>(find.byKey(ultKey)).enabled, false,
+        reason: '排队后禁用，避免连按');
+    expect(find.text(UiStrings.skillPendingStamp), findsOneWidget,
+        reason: '盖「待发」印');
 
-    // 模拟 actor (id=1=萧夜寒) 行动（actionLog 新增）
-    notifier.appendActions(const [
-      BattleAction(
-        tick: 1,
-        actorId: 1,
-        targetId: 11,
-        attackResult: _normalResult,
-        description: '萧夜寒行动',
-      ),
-    ]);
-    await tester.pump();
+    // 模拟引擎消费完该 pending（actor 行动后引擎清 pendingUltimates）。
+    notifier.clearPending();
     await tester.pump();
 
-    // 按钮解除置灰
-    final buttonsAfterAction = tester
-        .widgetList<ElevatedButton>(find.byType(ElevatedButton))
-        .toList();
-    expect(buttonsAfterAction[0].enabled, true, reason: 'actor 行动后大招按钮恢复可用');
+    expect(tester.widget<ElevatedButton>(find.byKey(ultKey)).enabled, true,
+        reason: '消费后恢复可用');
+    expect(find.text(UiStrings.skillPendingStamp), findsNothing);
   });
 
   // ── B2 大招题字 overlay ───────────────────────────────────────────────────
