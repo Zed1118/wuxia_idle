@@ -5,6 +5,8 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/game_event.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../shared/audio/audio_assets.dart';
+import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../battle/domain/enum_localizations.dart';
@@ -22,33 +24,36 @@ class BaikeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        backgroundColor: WuxiaColors.background,
-        appBar: AppBar(
+    return BgmScope(
+      track: BgmTrack.baike,
+      child: DefaultTabController(
+        length: 3,
+        child: Scaffold(
           backgroundColor: WuxiaColors.background,
-          title: const Text(
-            UiStrings.baikeScreenTitle,
-            style: TextStyle(color: WuxiaColors.resultHighlight),
+          appBar: AppBar(
+            backgroundColor: WuxiaColors.background,
+            title: const Text(
+              UiStrings.baikeScreenTitle,
+              style: TextStyle(color: WuxiaColors.resultHighlight),
+            ),
+            bottom: const TabBar(
+              indicatorColor: WuxiaColors.resultHighlight,
+              labelColor: WuxiaColors.resultHighlight,
+              unselectedLabelColor: WuxiaColors.textMuted,
+              tabs: [
+                Tab(text: UiStrings.baikeTabFeed),
+                Tab(text: UiStrings.baikeTabLore),
+                Tab(text: UiStrings.baikeTabCodex),
+              ],
+            ),
           ),
-          bottom: const TabBar(
-            indicatorColor: WuxiaColors.resultHighlight,
-            labelColor: WuxiaColors.resultHighlight,
-            unselectedLabelColor: WuxiaColors.textMuted,
-            tabs: [
-              Tab(text: UiStrings.baikeTabFeed),
-              Tab(text: UiStrings.baikeTabLore),
-              Tab(text: UiStrings.baikeTabCodex),
+          body: const TabBarView(
+            children: [
+              _FeedTab(),
+              _LoreTab(),
+              CodexTab(),
             ],
           ),
-        ),
-        body: const TabBarView(
-          children: [
-            _FeedTab(),
-            _LoreTab(),
-            CodexTab(),
-          ],
         ),
       ),
     );

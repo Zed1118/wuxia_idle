@@ -633,6 +633,7 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
     return BattleScreen(
       hint: UiStrings.towerFloorLabel(widget.floor.floorIndex),
       sceneBackgroundPath: widget.floor.sceneBackgroundPath,
+      bgmTrack: BgmTrack.tower,
       onVictory: () {
         widget.onVictory();
         if (Navigator.of(context).canPop()) Navigator.of(context).pop();

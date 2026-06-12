@@ -1,7 +1,47 @@
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
 /// BGM 轨道槽位。文件名用 enum.name（camelCase），manifest 同步登记。
-enum BgmTrack { mainMenu, battle, seclusion }
+///
+/// 战斗轨按 [StageType]（+ mainline 的 Boss 关）细分 6 类，营造氛围差异；
+/// 非战斗场景 [lineage]（传承）/[baike]（百科）各一轨。[battle] 留通用兜底
+/// （demo/debug/pvp）。缺素材时 SoundManager._guard 静默 no-op。
+enum BgmTrack {
+  mainMenu,
+  seclusion,
+  battle, // 通用兜底（demo/debug/pvp）
+  mainline, // 主线普通关
+  tower, // 爬塔
+  boss, // 章末/主线 Boss 关（压迫感）
+  innerDemon, // 心魔关
+  lightFoot, // 轻功对决
+  massBattle, // 群战守城
+  lineage, // 传承面板（非战斗）
+  baike, // 百科（非战斗）
+}
+
+/// [StageType]（+ mainline Boss 关）→ 战斗 BGM 轨。声明式路由，无中央表。
+///
+/// - massBattle/innerDemon/lightFoot/tower：各用同名类型轨（类型氛围优先，
+///   即便该类型内是 Boss 层也保持类型轨）。
+/// - mainline：Boss 关切 [BgmTrack.boss] 制造压迫感，普通关用 [BgmTrack.mainline]。
+/// - pvp：暂走通用 [BgmTrack.battle]（mock 阶段，无专属素材）。
+BgmTrack bgmTrackForStage(StageType type, {required bool isBoss}) {
+  switch (type) {
+    case StageType.massBattle:
+      return BgmTrack.massBattle;
+    case StageType.innerDemon:
+      return BgmTrack.innerDemon;
+    case StageType.lightFoot:
+      return BgmTrack.lightFoot;
+    case StageType.tower:
+      return BgmTrack.tower;
+    case StageType.mainline:
+      return isBoss ? BgmTrack.boss : BgmTrack.mainline;
+    case StageType.pvp:
+      return BgmTrack.battle;
+  }
+}
 
 /// SFX 槽位。battleDeath 暂留位不接线（YAGNI）。
 enum SfxId {

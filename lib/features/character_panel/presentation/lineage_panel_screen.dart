@@ -6,6 +6,8 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
+import '../../../shared/audio/audio_assets.dart';
+import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
@@ -25,25 +27,28 @@ class LineagePanelScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(lineageInfoProvider);
-    return Scaffold(
-      backgroundColor: WuxiaColors.background,
-      appBar: AppBar(
+    return BgmScope(
+      track: BgmTrack.lineage,
+      child: Scaffold(
         backgroundColor: WuxiaColors.background,
-        title: const Text(UiStrings.lineagePanelTitle),
-        leading: Navigator.of(context).canPop()
-            ? BackButton(onPressed: () => Navigator.of(context).pop())
-            : null,
-      ),
-      body: SafeArea(
-        child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(
-            child: SelectableText(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow),
+        appBar: AppBar(
+          backgroundColor: WuxiaColors.background,
+          title: const Text(UiStrings.lineagePanelTitle),
+          leading: Navigator.of(context).canPop()
+              ? BackButton(onPressed: () => Navigator.of(context).pop())
+              : null,
+        ),
+        body: SafeArea(
+          child: async.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(
+              child: SelectableText(
+                'load error: $e',
+                style: const TextStyle(color: WuxiaColors.hpLow),
+              ),
             ),
+            data: (info) => _Body(info: info),
           ),
-          data: (info) => _Body(info: info),
         ),
       ),
     );
