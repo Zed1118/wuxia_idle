@@ -21,6 +21,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_tab.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/section_header.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/stage_progress_row.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 
 /// T28 角色面板 widget 测试（phase2_tasks.md §407）。
@@ -318,7 +319,7 @@ void main() {
   // ── 用例 4：修炼度进度条 ──────────────────────────────────────────────
 
   testWidgets(
-    '主修 progress=50 / toNext=100 → LinearProgressIndicator.value=0.5',
+    '主修 progress=50 / toNext=100 → StageProgressRow.ratio=0.5',
     (tester) async {
       final character = mkCharacter(mainTechniqueId: 20);
       final main = mkTechnique(
@@ -333,12 +334,15 @@ void main() {
 
       await pumpPanel(tester, character: character, techniques: {20: main});
 
-      final indicator = tester.widget<LinearProgressIndicator>(
-        find.byType(LinearProgressIndicator),
+      // D：修炼度进度条 hero 化为 StageProgressRow（内含 MeridianBar）。
+      final row = tester.widget<StageProgressRow>(
+        find.byType(StageProgressRow),
       );
-      expect(indicator.value, closeTo(0.5, 1e-9));
+      expect(row.ratio, closeTo(0.5, 1e-9));
       expect(find.text('50 / 100'), findsOneWidget);
       expect(find.text('主修'), findsOneWidget);
+      // D：五要素「当前效果」= 伤害倍率文案出现（真痛点补齐）。
+      expect(find.textContaining('伤害 ×'), findsWidgets);
     },
   );
 
@@ -908,7 +912,7 @@ void main() {
     );
     expect(find.text(realName), findsOneWidget);
     expect(find.byType(WuxiaPaperPanel), findsWidgets);
-    expect(find.byType(LinearProgressIndicator), findsWidgets);
+    expect(find.byType(StageProgressRow), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 }

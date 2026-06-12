@@ -3,14 +3,16 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_proficiency.dart';
 import 'package:wuxia_idle/shared/strings.dart';
-import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
-import 'package:wuxia_idle/shared/widgets/wuxia_ui/meridian_bar.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/stage_progress_row.dart';
 
 /// 招式熟练度展示行（藏经阁主屏 · P1b Task7）。
 ///
 /// 显示一条招式的当前熟练阶段名、进度条、伤害加成%、
 /// 距下一阶所需次数，以及是否已装配标记。
 /// 无状态组件，由上层传入所有数据。
+///
+/// D（2026-06-12）重构：布局委托给共享基元 [StageProgressRow]，
+/// 与修炼度 / 共鸣度统一「五要素」展示语言；本类只保留熟练度计算映射。
 class SkillProficiencyRow extends StatelessWidget {
   /// 招式定义（提供 `name`）。
   final SkillDef skill;
@@ -61,81 +63,17 @@ class SkillProficiencyRow extends StatelessWidget {
     final bonusPct = ((damageMult - 1.0) * 100).round();
     final stageName = UiStrings.cangjingProficiencyStageName(stage.id);
 
-    return InkWell(
+    return StageProgressRow(
+      title: skill.name,
+      stageName: stageName,
+      ratio: ratio,
+      currentEffect: '+$bonusPct%',
+      // 最高阶：金字「已达化境」标记；否则：柔灰「还需 N 次」。
+      nextEffect: isMax ? UiStrings.cangjingProficiencyMaxStage : null,
+      progressText: needText,
+      tag: equipped ? UiStrings.cangjingEquippedTag : null,
+      tagHighlighted: true,
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 第一行：招名 + 阶段名 + 装配标记
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    skill.name,
-                    style: const TextStyle(
-                      color: WuxiaUi.ink,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  stageName,
-                  style: const TextStyle(color: WuxiaUi.qing, fontSize: 12),
-                ),
-                if (equipped) ...[
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 5,
-                      vertical: 1,
-                    ),
-                    decoration: BoxDecoration(
-                      color: WuxiaUi.qing,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                    child: const Text(
-                      UiStrings.cangjingEquippedTag,
-                      style: TextStyle(color: WuxiaUi.paper, fontSize: 11),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 4),
-            // 第二行：进度条
-            MeridianBar(ratio: ratio),
-            const SizedBox(height: 3),
-            // 第三行：加成% + 还需次数（最高阶则只显示加成）
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '+$bonusPct%',
-                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
-                ),
-                if (needText != null)
-                  Text(
-                    needText,
-                    style: TextStyle(
-                      color: WuxiaUi.ink.withValues(alpha: 0.5),
-                      fontSize: 11,
-                    ),
-                  )
-                else
-                  const Text(
-                    UiStrings.cangjingProficiencyMaxStage,
-                    style: TextStyle(color: WuxiaUi.gold, fontSize: 11),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
