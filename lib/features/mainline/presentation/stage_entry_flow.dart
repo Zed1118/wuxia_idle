@@ -197,6 +197,11 @@ Future<void> runStageFlow({
     );
   }
 
+  // 胜利仪式 + 结算在战斗界面之上播完,退回关卡列表(再走胜利剧情)。
+  if (context.mounted && Navigator.of(context).canPop()) {
+    Navigator.of(context).pop();
+  }
+
   if (stage.narrativeVictoryId != null) {
     if (!context.mounted) return;
     final victory = await NarrativeLoader.load(stage.narrativeVictoryId!);
@@ -262,7 +267,9 @@ Future<bool> _runBattle({
   required StageDef stage,
 }) async {
   final completer = Completer<bool>();
-  await Navigator.of(context).push<void>(
+  // 不 await push:胜利时 BattleScreen 留在栈上,由 runStageFlow 播完胜利仪式/
+  // 结算后再 pop(让爆品/简版勝盖在战斗场景上,而非退回列表后才弹)。失败时 host 自 pop。
+  Navigator.of(context).push<void>(
     MaterialPageRoute(
       builder: (_) => _StageBattleHost(
         stage: stage,
@@ -274,10 +281,10 @@ Future<bool> _runBattle({
         },
       ),
     ),
-  );
-  // BattleScreen 通过结算 dialog 关闭按钮自己 pop；此时回调已 complete。
-  // 极端兜底：如果用户系统返回键直接 pop，没触发回调，按"未胜"处理。
-  if (!completer.isCompleted) completer.complete(false);
+  ).then((_) {
+    // 兜底:BattleScreen 被 pop(系统返回/失败 host pop)而未触发回调 → 未胜。
+    if (!completer.isCompleted) completer.complete(false);
+  });
   return completer.future;
 }
 
@@ -367,10 +374,7 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
       deferVictoryToCaller: true,
       onVictory: () {
         widget.onVictory();
-        // 自己 pop，让 runStageFlow 的 push await 解开
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-        }
+        // 不 pop:胜利仪式由 runStageFlow 在战斗界面之上播完后再 pop。
       },
       onDefeat: () {
         widget.onDefeat();

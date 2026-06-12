@@ -28,7 +28,7 @@ class _VictorySealFlashState extends State<VictorySealFlash>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 800))
+        vsync: this, duration: const Duration(milliseconds: 1600))
       ..addStatusListener((s) {
         if (s == AnimationStatus.completed) _finish();
       })

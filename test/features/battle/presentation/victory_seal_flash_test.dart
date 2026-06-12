@@ -12,7 +12,7 @@ void main() {
     expect(find.text(UiStrings.victoryTitle), findsOneWidget);
     expect(done, 0);
 
-    await tester.pump(const Duration(milliseconds: 900));
+    await tester.pump(const Duration(milliseconds: 1700));
     expect(done, 1);
   });
 
@@ -25,7 +25,7 @@ void main() {
     await tester.pump();
     expect(done, 1);
 
-    await tester.pump(const Duration(milliseconds: 900));
+    await tester.pump(const Duration(milliseconds: 1700));
     expect(done, 1);
   });
 }

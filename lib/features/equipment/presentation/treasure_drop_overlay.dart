@@ -7,6 +7,7 @@ import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/drop_service.dart';
+import '../../../core/domain/enums.dart';
 import '../domain/treasure_highlight.dart';
 
 const String _kInkBlobAsset = 'assets/ui/mj/caption_ink_blob.png';
@@ -246,6 +247,74 @@ class _TreasureDropOverlayState extends State<TreasureDropOverlay>
               Positioned.fill(
                   child: TreasureDropContent(
                       highlight: widget.highlight, t: t)),
+              // 神物专属金光(克制描金,纯 Widget 无引擎):浓边缘辉光 + 盖章金闪
+              // + 双环金色涟漪。重器/宝物不启用,拉开顶级稀有感。
+              if (widget.highlight.tier == EquipmentTier.shenWu) ...[
+                // ① 边缘暖金辉光(范围大、浓,盖章起渐显并驻留)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Opacity(
+                      opacity: (((t - 0.16) / 0.28).clamp(0.0, 1.0)) * 0.85,
+                      child: const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            radius: 1.1,
+                            colors: [
+                              Color(0x00F0CC72),
+                              Color(0x44F0CC72),
+                              Color(0xCCE8B84A),
+                            ],
+                            stops: [0.28, 0.62, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // ② 盖章瞬间全屏金闪(快速迸发再褪,给"金光迸发"冲击)
+                if (t > 0.24 && t < 0.46)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: Opacity(
+                        opacity:
+                            (1 - (t - 0.30).abs() / 0.16).clamp(0.0, 1.0) * 0.32,
+                        child: const ColoredBox(color: Color(0xFFF2D885)),
+                      ),
+                    ),
+                  ),
+                // ③ 印章盖落金色涟漪(双环错开扩散 + 加粗)
+                for (final delay in const [0.0, 0.13])
+                  Center(
+                    child: IgnorePointer(
+                      child: Builder(
+                        builder: (_) {
+                          final rp =
+                              ((t - 0.28 - delay) / 0.36).clamp(0.0, 1.0);
+                          if (rp <= 0.0 || rp >= 1.0) {
+                            return const SizedBox.shrink();
+                          }
+                          return Opacity(
+                            opacity: (1 - rp) * 0.85,
+                            child: Transform.scale(
+                              scale: 0.2 + rp * 2.8,
+                              child: Container(
+                                width: 150,
+                                height: 150,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFFF2D885),
+                                    width: 6,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+              ],
               // 「轻触继续」提示(动画末期淡入,引导停留后手动继续)
               Positioned(
                 bottom: 40,
