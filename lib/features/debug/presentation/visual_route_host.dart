@@ -154,7 +154,9 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await Phase2SeedService(isar: isar).seedSectWithFullNpc();
       return const SectScreen();
     case VisualRoute.characterPanelProfile:
-      await Phase2SeedService(isar: isar).seedMasterDisciple();
+      await Phase2SeedService(
+        isar: isar,
+      ).seedMasterDiscipleWithMatureMainTechnique();
       return const CharacterPanelScreen(characterId: 1);
     case VisualRoute.characterPanelGrowth:
       await Phase2SeedService(isar: isar).seedCharacterPanelGrowth();
