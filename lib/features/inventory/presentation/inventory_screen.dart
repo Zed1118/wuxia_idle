@@ -81,12 +81,27 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
   }
 }
 
-class _EquipmentTab extends ConsumerWidget {
+/// T11 仓库筛选维度(全部/可装备/已穿戴/可开锋/境界未达)。
+/// 全部维度数据确定、零假入口(不含语义模糊的「可强化」——强化无封顶上限)。
+enum _EquipFilter { all, equippable, equipped, forgeable, realmLocked }
+
+class _EquipmentTab extends ConsumerStatefulWidget {
   const _EquipmentTab();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_EquipmentTab> createState() => _EquipmentTabState();
+}
+
+class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
+  _EquipFilter _filter = _EquipFilter.all;
+
+  @override
+  Widget build(BuildContext context) {
     final async = ref.watch(allEquipmentsProvider);
+    final ids = ref.watch(activeCharacterIdsProvider).value ?? const [];
+    final playerRealm = ids.isEmpty
+        ? null
+        : ref.watch(characterByIdProvider(ids.first)).value?.realmTier;
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
@@ -95,14 +110,116 @@ class _EquipmentTab extends ConsumerWidget {
           style: const TextStyle(color: WuxiaColors.hpLow),
         ),
       ),
-      data: (list) => list.isEmpty
-          ? const Center(
-              child: Text(
-                UiStrings.inventoryEmpty,
-                style: TextStyle(color: WuxiaColors.textMuted),
-              ),
-            )
-          : _EquipmentGrid(equipments: list),
+      data: (list) {
+        final filtered = list.where((eq) => _matches(eq, playerRealm)).toList();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _FilterBar(
+              selected: _filter,
+              onSelect: (f) => setState(() => _filter = f),
+            ),
+            Expanded(
+              child: filtered.isEmpty
+                  ? const Center(
+                      child: Text(
+                        UiStrings.inventoryEmpty,
+                        style: TextStyle(color: WuxiaColors.textMuted),
+                      ),
+                    )
+                  : _EquipmentGrid(equipments: filtered),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  bool _matches(Equipment eq, RealmTier? realm) {
+    return switch (_filter) {
+      _EquipFilter.all => true,
+      _EquipFilter.equippable =>
+        eq.ownerCharacterId == null &&
+            (realm == null || eq.isEquippableAtRealm(realm)),
+      _EquipFilter.equipped => eq.ownerCharacterId != null,
+      _EquipFilter.forgeable => eq.forgingSlots.any((s) => !s.unlocked),
+      _EquipFilter.realmLocked =>
+        realm != null && !eq.isEquippableAtRealm(realm),
+    };
+  }
+}
+
+/// T11 筛选条:5 个可选 chip,水墨风。
+class _FilterBar extends StatelessWidget {
+  const _FilterBar({required this.selected, required this.onSelect});
+
+  final _EquipFilter selected;
+  final ValueChanged<_EquipFilter> onSelect;
+
+  static const Map<_EquipFilter, String> _labels = {
+    _EquipFilter.all: UiStrings.inventoryFilterAll,
+    _EquipFilter.equippable: UiStrings.inventoryFilterEquippable,
+    _EquipFilter.equipped: UiStrings.inventoryFilterEquipped,
+    _EquipFilter.forgeable: UiStrings.inventoryFilterForgeable,
+    _EquipFilter.realmLocked: UiStrings.inventoryFilterRealmLocked,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final f in _EquipFilter.values)
+            _FilterChip(
+              label: _labels[f]!,
+              selected: f == selected,
+              onTap: () => onSelect(f),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected
+              ? WuxiaColors.textPrimary.withValues(alpha: 0.15)
+              : WuxiaColors.panel,
+          border: Border.all(
+            color: selected ? WuxiaColors.textPrimary : WuxiaColors.border,
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? WuxiaColors.textPrimary : WuxiaColors.textMuted,
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -400,6 +517,7 @@ class _MaterialRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final usage = UiStrings.materialUsage(item.itemType.name);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -419,12 +537,31 @@ class _MaterialRow extends StatelessWidget {
             errorBuilder: (_, _, _) => const SizedBox(width: 16, height: 16),
           ),
           const SizedBox(width: 8),
-          Text(
-            UiStrings.materialQuantity(name, item.quantity),
-            style: const TextStyle(
-              color: WuxiaColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  UiStrings.materialQuantity(name, item.quantity),
+                  style: const TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (usage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      usage,
+                      style: const TextStyle(
+                        color: WuxiaColors.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],

@@ -90,8 +90,9 @@ Future<LineageInfo> lineageInfo(Ref ref) async {
   }
 
   final allEquipments = await ref.watch(allEquipmentsProvider.future);
-  final heritage =
-      allEquipments.where((e) => e.isLineageHeritage).toList(growable: false);
+  final heritage = allEquipments
+      .where((e) => e.isLineageHeritage)
+      .toList(growable: false);
   return LineageInfo(
     founder: founder,
     disciples: disciples,

@@ -248,6 +248,37 @@ void main() {
     expect(find.text('饰品'), findsOneWidget);
   });
 
+  // ── 用例 1b：T10 点已穿装备 → 快捷操作面板 ──────────────────────────────
+
+  testWidgets('T10 点已穿装备槽 → 快捷操作面板(更换/查看典故/卸下)', (tester) async {
+    final character = mkCharacter(weaponId: 10);
+    final weapon = mkEquipment(
+      id: 10,
+      slot: EquipmentSlot.weapon,
+      defId: 'weapon_xunchang_tie_jian',
+    );
+    await pumpPanel(
+      tester,
+      character: character,
+      equipments: {10: weapon},
+    );
+
+    // 点武器槽(已穿)→ 应弹快捷操作面板而非直接换装列表
+    final slot = find
+        .ancestor(of: find.text('武器'), matching: find.byType(InkWell))
+        .first;
+    await tester.ensureVisible(slot);
+    await tester.pump();
+    await tester.tap(slot);
+    for (var i = 0; i < 6; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    expect(find.text(UiStrings.equipQuickReplace), findsOneWidget);
+    expect(find.text(UiStrings.equipQuickViewLore), findsOneWidget);
+    expect(find.text(UiStrings.equipUnequip), findsOneWidget);
+  });
+
   // ── 用例 2：未装备占位 ─────────────────────────────────────────────────
 
   testWidgets('三个装备槽 id 全 null 时，渲染 3 个「未装备」占位', (tester) async {
