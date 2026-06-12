@@ -112,6 +112,27 @@ void main() {
       // 加成为 0%
       expect(find.textContaining('+0'), findsOneWidget);
     });
+
+    testWidgets('点击行触发 onTap（武学库直接装配入口）', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      var tapped = false;
+      await tester.pumpWidget(wrap(
+        SkillProficiencyRow(
+          skill: skill,
+          uses: 0,
+          cfg: cfg,
+          equipped: false,
+          onTap: () => tapped = true,
+        ),
+      ));
+
+      await tester.tap(find.byType(SkillProficiencyRow));
+      await tester.pumpAndSettle();
+
+      expect(tapped, isTrue);
+    });
   });
 
   group('FragmentProgressRow', () {
@@ -165,6 +186,33 @@ void main() {
 
       // 无空心方块
       expect(find.textContaining('▢'), findsNothing);
+    });
+
+    testWidgets('有 source → 显示来源', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(wrap(
+        const FragmentProgressRow(
+          name: '开碑手谱',
+          has: 2,
+          total: 5,
+          source: '爬塔·第5层',
+        ),
+      ));
+
+      expect(find.textContaining('爬塔·第5层'), findsOneWidget);
+    });
+
+    testWidgets('无 source → 显示来源未明', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(wrap(
+        const FragmentProgressRow(name: '谜谱', has: 1, total: 5),
+      ));
+
+      expect(find.textContaining('来源未明'), findsOneWidget);
     });
   });
 }

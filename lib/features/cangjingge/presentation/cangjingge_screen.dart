@@ -19,10 +19,12 @@ import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../cultivation/application/loadout_slot_candidates.dart';
 import '../../cultivation/application/skill_loadout_resolver.dart';
 import '../../cultivation/application/skill_loadout_service.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../encounter/application/encounter_service_providers.dart';
+import '../domain/fragment_source.dart';
 import 'fragment_progress_row.dart';
 import 'skill_proficiency_row.dart';
 import 'skill_slot_picker.dart';
@@ -229,7 +231,7 @@ class _CangJingGeBody extends ConsumerWidget {
         children: [
           _LoadoutSection(character: character, onChanged: onChanged),
           const SizedBox(height: 16),
-          _LibrarySection(character: character),
+          _LibrarySection(character: character, onChanged: onChanged),
           const SizedBox(height: 16),
           const _FragmentSection(),
         ],
@@ -314,6 +316,16 @@ class _SlotTile extends ConsumerWidget {
     _SlotKind.encounter => UiStrings.cangjingSlotEncounter,
   };
 
+  String get _hint => switch (kind) {
+    _SlotKind.main1 => UiStrings.cangjingSlotHintMain1,
+    _SlotKind.main2 => UiStrings.cangjingSlotHintMain2,
+    _SlotKind.assist => UiStrings.cangjingSlotHintAssist,
+    _SlotKind.resonance => UiStrings.cangjingSlotHintResonance,
+    _SlotKind.ultimate => UiStrings.cangjingSlotHintUltimate,
+    _SlotKind.key => UiStrings.cangjingSlotHintKey,
+    _SlotKind.encounter => UiStrings.cangjingSlotHintEncounter,
+  };
+
   String? get _equippedId => switch (kind) {
     _SlotKind.main1 => character.mainSkillId1,
     _SlotKind.main2 => character.mainSkillId2,
@@ -365,6 +377,13 @@ class _SlotTile extends ConsumerWidget {
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _hint,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: WuxiaUi.muted, fontSize: 9),
               ),
             ],
           ),
@@ -437,25 +456,8 @@ class _SlotTile extends ConsumerWidget {
       repository: repo,
       numbers: numbers,
     );
-    return switch (kind) {
-      // 波B:主修/大招槽候选 += 已解锁本流派真解/残页(resolver 已按
-      // isUnlocked + style==school 过滤;境界 gate picker 灰显)。
-      _SlotKind.main1 ||
-      _SlotKind.main2 ||
-      _SlotKind.ultimate => [
-        ...sources.mainTechniqueSkills,
-        ...sources.dropSkills,
-      ],
-      _SlotKind.assist => sources.assistTechniqueSkills,
-      _SlotKind.resonance => [
-        if (sources.jointSkill != null) sources.jointSkill!,
-      ],
-      // 波A 破招槽:只列本流派破招技(style == school,gate 语义与 service 一致)。
-      _SlotKind.key => sources.interruptSkills
-          .where((s) => s.style != null && s.style == character.school)
-          .toList(),
-      _SlotKind.encounter => const [],
-    };
+    // 单一真相源:槽→候选招走 candidatesForSlot(与武学库直接装配 T6 反查对称)。
+    return candidatesForSlot(_toSkillSlot(kind), sources, character.school);
   }
 
   /// 奇遇槽走 [EncounterService.equipEncounterSkill]，候选 = 已解锁奇遇招
@@ -463,13 +465,11 @@ class _SlotTile extends ConsumerWidget {
   Future<void> _pickEncounter(BuildContext context, WidgetRef ref) async {
     final repo = GameRepository.instance;
     final unlockedSet = await ref.read(unlockedSkillIdSetProvider.future);
-    final unlocked =
-        unlockedSet.where(repo.encounterSkillIds.contains).toList();
+    final unlocked = unlockedSet
+        .where(repo.encounterSkillIds.contains)
+        .toList();
     final candidates =
-        unlocked
-            .map((id) => repo.skillDefs[id])
-            .whereType<SkillDef>()
-            .toList()
+        unlocked.map((id) => repo.skillDefs[id]).whereType<SkillDef>().toList()
           ..sort((a, b) {
             final t = (a.tier ?? 0).compareTo(b.tier ?? 0);
             return t != 0 ? t : a.id.compareTo(b.id);
@@ -508,8 +508,9 @@ class _SlotTile extends ConsumerWidget {
     _SlotKind.resonance => SkillSlot.resonance,
     _SlotKind.ultimate => SkillSlot.ultimate,
     _SlotKind.key => SkillSlot.key,
-    _SlotKind.encounter =>
-      throw StateError('encounter 槽不走 SkillLoadoutService'),
+    _SlotKind.encounter => throw StateError(
+      'encounter 槽不走 SkillLoadoutService',
+    ),
   };
 }
 
@@ -521,15 +522,14 @@ class _SlotTile extends ConsumerWidget {
 ///
 /// uses 从对应 [Technique.skillUsageCount] 取；equipped = 该招 id 在某装配槽。
 class _LibrarySection extends ConsumerWidget {
-  const _LibrarySection({required this.character});
+  const _LibrarySection({required this.character, required this.onChanged});
 
   final Character character;
+  final ValueChanged<int> onChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final techsAsync = ref.watch(
-      characterAllTechniquesProvider(character.id),
-    );
+    final techsAsync = ref.watch(characterAllTechniquesProvider(character.id));
     final numbers = ref.watch(numbersConfigProvider);
     final unlockedAsync = ref.watch(unlockedSkillIdSetProvider);
     final equippedIds = <String>{
@@ -558,6 +558,8 @@ class _LibrarySection extends ConsumerWidget {
               style: const TextStyle(color: WuxiaColors.hpLow, fontSize: 12),
             ),
             data: (techs) => _buildGroups(
+              context,
+              ref,
               techs,
               numbers,
               equippedIds,
@@ -570,6 +572,8 @@ class _LibrarySection extends ConsumerWidget {
   }
 
   Widget _buildGroups(
+    BuildContext context,
+    WidgetRef ref,
     List<Technique> techs,
     NumbersConfig numbers,
     Set<String> equippedIds,
@@ -598,6 +602,7 @@ class _LibrarySection extends ConsumerWidget {
             uses: tech.skillUsageCount.countOf(skillId),
             cfg: numbers.skillProficiency,
             equipped: equippedIds.contains(skillId),
+            onTap: () => _equipFromLibrary(context, ref, skill),
           ),
         );
       }
@@ -634,17 +639,20 @@ class _LibrarySection extends ConsumerWidget {
           .where((t) => t.role == TechniqueRole.main)
           .toList();
       final secretRows = <Widget>[];
-      final drops = repo.skillDefs.values
-          .where((s) =>
-              (s.source == SkillSource.mainlineDrop ||
-                  s.source == SkillSource.fragment) &&
-              s.style == school &&
-              unlockedIds.contains(s.id))
-          .toList()
-        ..sort((a, b) {
-          final t = (a.tier ?? 0).compareTo(b.tier ?? 0);
-          return t != 0 ? t : a.id.compareTo(b.id);
-        });
+      final drops =
+          repo.skillDefs.values
+              .where(
+                (s) =>
+                    (s.source == SkillSource.mainlineDrop ||
+                        s.source == SkillSource.fragment) &&
+                    s.style == school &&
+                    unlockedIds.contains(s.id),
+              )
+              .toList()
+            ..sort((a, b) {
+              final t = (a.tier ?? 0).compareTo(b.tier ?? 0);
+              return t != 0 ? t : a.id.compareTo(b.id);
+            });
       for (final skill in drops) {
         secretRows.add(
           SkillProficiencyRow(
@@ -654,6 +662,7 @@ class _LibrarySection extends ConsumerWidget {
                 : mainTech.first.skillUsageCount.countOf(skill.id),
             cfg: numbers.skillProficiency,
             equipped: equippedIds.contains(skill.id),
+            onTap: () => _equipFromLibrary(context, ref, skill),
           ),
         );
       }
@@ -695,6 +704,110 @@ class _LibrarySection extends ConsumerWidget {
       children: groups,
     );
   }
+
+  /// T6 武学库直接装配:点招式行 → 算合法槽 → 选槽面板 → 走 service 落库 → 刷新。
+  /// 合法性(境界/流派/解锁)仍由 [SkillLoadoutService.equipSkill] sealed result 守。
+  Future<void> _equipFromLibrary(
+    BuildContext context,
+    WidgetRef ref,
+    SkillDef skill,
+  ) async {
+    final isar = ref.read(isarProvider);
+    if (isar == null || !GameRepository.isLoaded) return;
+    final repo = GameRepository.instance;
+    final numbers = ref.read(numbersConfigProvider);
+    final resolver = SkillLoadoutResolver(isar: isar);
+    final sources = await resolver.resolve(
+      character,
+      repository: repo,
+      numbers: numbers,
+    );
+    final legal = legalSlotsForSkill(skill.id, sources, character.school);
+    if (!context.mounted) return;
+    if (legal.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.cangjingNoLegalSlot)),
+      );
+      return;
+    }
+    final slot = await _pickSlot(context, legal);
+    if (slot == null) return;
+    if (!context.mounted) return;
+
+    final result = await SkillLoadoutService(
+      isar,
+    ).equipSkill(characterId: character.id, slot: slot, skillId: skill.id);
+    if (!context.mounted) return;
+    if (result is SlotEquipTierLocked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.cangjingTierLocked)),
+      );
+      return;
+    }
+    if (result is SlotEquipStyleLocked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.cangjingStyleLocked)),
+      );
+      return;
+    }
+    if (result is SlotEquipNotUnlocked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.cangjingNotUnlocked)),
+      );
+      return;
+    }
+    onChanged(character.id);
+  }
+
+  /// 选槽 bottom sheet:列出该招的合法槽,玩家点选返回(null = 取消)。
+  Future<SkillSlot?> _pickSlot(BuildContext context, List<SkillSlot> slots) {
+    return showModalBottomSheet<SkillSlot>(
+      context: context,
+      backgroundColor: WuxiaColors.panel,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                UiStrings.cangjingEquipToSlotTitle,
+                style: TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const Divider(height: 1, color: WuxiaColors.border),
+            for (final s in slots)
+              ListTile(
+                title: Text(
+                  _slotLabel(s),
+                  style: const TextStyle(color: WuxiaColors.textPrimary),
+                ),
+                trailing: const Icon(
+                  Icons.add,
+                  color: WuxiaColors.textSecondary,
+                  size: 18,
+                ),
+                onTap: () => Navigator.pop(ctx, s),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _slotLabel(SkillSlot slot) => switch (slot) {
+    SkillSlot.main1 => UiStrings.cangjingSlotMain(1),
+    SkillSlot.main2 => UiStrings.cangjingSlotMain(2),
+    SkillSlot.assist => UiStrings.cangjingSlotAssist,
+    SkillSlot.resonance => UiStrings.cangjingSlotResonance,
+    SkillSlot.ultimate => UiStrings.cangjingSlotUltimate,
+    SkillSlot.key => UiStrings.cangjingSlotKey,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -742,6 +855,7 @@ class _FragmentSection extends ConsumerWidget {
                       name: e.name,
                       has: e.has,
                       total: e.total,
+                      source: e.source,
                     ),
                 ],
               );
@@ -758,10 +872,12 @@ class _FragmentEntry {
     required this.name,
     required this.has,
     required this.total,
+    this.source,
   });
   final String name;
   final int has;
   final int total;
+  final String? source;
 }
 
 /// 残页进度条目（收集中 = 有残页未解锁）。fragmentThreshold 默认 5（与
@@ -779,8 +895,18 @@ final _fragmentEntriesProvider = FutureProvider<List<_FragmentEntry>>((
   for (final SkillUnlockEntry e in save.skillUnlockProgress) {
     if (e.unlocked || e.fragmentCount <= 0) continue;
     final name = repo.skillDefs[e.skillId]?.name ?? e.skillId;
+    final source = fragmentSourceLabel(
+      e.skillId,
+      floors: repo.towerFloors,
+      stages: repo.stageDefs.values,
+    );
     result.add(
-      _FragmentEntry(name: name, has: e.fragmentCount, total: threshold),
+      _FragmentEntry(
+        name: name,
+        has: e.fragmentCount,
+        total: threshold,
+        source: source,
+      ),
     );
   }
   return result;

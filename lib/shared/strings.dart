@@ -276,6 +276,7 @@ class UiStrings {
   // 仓库 / 强化对话框（T29）
   static const String inventoryTitle = '装备仓库';
   static const String inventoryEmpty = '仓库空空如也';
+
   /// 装备详情共鸣行:`战斗 N 次`。
   static String equipmentBattleCount(int count) => '战斗 $count 次';
 
@@ -1101,14 +1102,33 @@ class UiStrings {
   static const String cangjingSlotEmpty = '空';
   static const String cangjingStyleLocked = '流派不合,装配不得';
   static String cangjingProficiencyNeed(int n) => '再用 $n 次→下一阶';
-  static String cangjingFragmentProgress(int has, int total) => '$has / $total 页';
+  static String cangjingFragmentProgress(int has, int total) =>
+      '$has / $total 页';
   static const String cangjingFragmentEmpty = '暂无残页';
+  // 残页来源提示（从 stages/towers 的 dropSkillFragmentId 反查派生）。
+  static const String cangjingFragmentSourceUnknown = '来源未明';
+  static String cangjingFragmentSourceTower(int floor) => '爬塔·第$floor层';
+  static String cangjingFragmentSourceMainline(int chapter) =>
+      '主线·第$chapter章重打';
   static const String cangjingTierLocked = '境界不足';
   static const String cangjingNotUnlocked = '未得真传,装配不得';
   static const String cangjingSecretGroupTitle = '秘传 · 真解残页';
   static const String cangjingPickerTitle = '选择招式';
+  // 出战槽用途说明（玩家不查文档也懂每个槽的作用）。
+  static const String cangjingSlotHintMain1 = '常用输出';
+  static const String cangjingSlotHintMain2 = '补位输出';
+  static const String cangjingSlotHintAssist = '辅修招式';
+  static const String cangjingSlotHintResonance = '人剑合一';
+  static const String cangjingSlotHintUltimate = '高内力爆发';
+  static const String cangjingSlotHintKey = '打断蓄力';
+  static const String cangjingSlotHintEncounter = '江湖奇招';
   static const String cangjingProficiencyMaxStage = '已达化境';
   static const String cangjingEquippedTag = '装';
+  static String cangjingPickerDamage(int n) => '伤害 $n';
+  static const String cangjingPickerCanInterrupt = '可破招';
+  // T6 武学库直接装配:选槽面板。
+  static const String cangjingEquipToSlotTitle = '装到哪个槽';
+  static const String cangjingNoLegalSlot = '此招暂无合适槽位';
 
   /// 招式熟练度阶段中文名（id → 显示名）。
   ///

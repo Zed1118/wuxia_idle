@@ -80,8 +80,14 @@ class _SkillSlotPickerSheet extends StatelessWidget {
                   final skill = candidates[i];
                   final canEquip = skill.canEquipAtRealm(currentRealmTier);
                   final isEquipped = skill.id == equippedId;
-                  final tierLabel =
-                      skill.tier != null ? 'tier ${skill.tier}' : '';
+                  final tierLabel = skill.tier != null
+                      ? EnumL10n.techniqueTier(
+                          TechniqueTier.values[(skill.tier! - 1).clamp(
+                            0,
+                            TechniqueTier.values.length - 1,
+                          )],
+                        )
+                      : '';
                   final typeLabel = EnumL10n.skillType(skill.type);
 
                   return ListTile(
@@ -105,6 +111,7 @@ class _SkillSlotPickerSheet extends StatelessWidget {
                         description: skill.description,
                         isEquipped: isEquipped,
                         canEquip: canEquip,
+                        canInterrupt: skill.canInterrupt,
                       ),
                       style: const TextStyle(
                         color: WuxiaColors.textMuted,
@@ -140,18 +147,22 @@ class _SkillSlotPickerSheet extends StatelessWidget {
     required String description,
     required bool isEquipped,
     required bool canEquip,
+    required bool canInterrupt,
   }) {
     final parts = <String>[
       if (tierLabel.isNotEmpty) tierLabel,
       typeLabel,
-      '倍率 $power',
+      UiStrings.cangjingPickerDamage(power),
+      if (canInterrupt) UiStrings.cangjingPickerCanInterrupt,
     ];
     final base = parts.join(' · ');
-    final descPart =
-        description.trim().isNotEmpty ? '\n${description.trim()}' : '';
-    final equippedPart = isEquipped ? '  [${UiStrings.cangjingEquippedTag}]' : '';
-    final lockedPart =
-        !canEquip ? '  ${UiStrings.cangjingTierLocked}' : '';
+    final descPart = description.trim().isNotEmpty
+        ? '\n${description.trim()}'
+        : '';
+    final equippedPart = isEquipped
+        ? '  [${UiStrings.cangjingEquippedTag}]'
+        : '';
+    final lockedPart = !canEquip ? '  ${UiStrings.cangjingTierLocked}' : '';
     return '$base$descPart$equippedPart$lockedPart';
   }
 }

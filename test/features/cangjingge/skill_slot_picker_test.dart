@@ -40,6 +40,21 @@ void main() {
     tier: 7,
   );
 
+  // 可破招（canInterrupt=true，tier=1 xueTu 可装配）
+  const skillInterrupt = SkillDef(
+    id: 'skill_poshi',
+    name: '破势',
+    description: '破敌蓄力',
+    type: SkillType.powerSkill,
+    powerMultiplier: 200,
+    internalForceCost: 30,
+    cooldownTurns: 3,
+    requiresManualTrigger: false,
+    visualEffect: 'none',
+    tier: 1,
+    canInterrupt: true,
+  );
+
   // 用 xueTu（index=0）让 tier-7 招锁死（需 index >= 6）
   const lowRealm = RealmTier.xueTu;
 
@@ -188,6 +203,53 @@ void main() {
 
       expect(
         find.textContaining(UiStrings.cangjingEquippedTag),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('subtitle 不出现 tier/倍率 开发味文案', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        wrapWithTrigger((ctx) => openSkillSlotPicker(
+              ctx,
+              candidates: [skillUnlocked, skillLocked],
+              currentRealmTier: lowRealm,
+              equippedId: null,
+            )),
+      );
+
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('tier'), findsNothing);
+      expect(find.textContaining('倍率'), findsNothing);
+    });
+
+    testWidgets('subtitle 显示阶位中文 + 伤害 + 可破招标', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        wrapWithTrigger((ctx) => openSkillSlotPicker(
+              ctx,
+              candidates: [skillInterrupt],
+              currentRealmTier: lowRealm,
+              equippedId: null,
+            )),
+      );
+
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      // tier=1 → 心法阶「入门功」
+      expect(find.textContaining('入门功'), findsOneWidget);
+      // 倍率改为玩家化「伤害 N」
+      expect(find.textContaining('伤害'), findsOneWidget);
+      // canInterrupt 招带「可破招」标
+      expect(
+        find.textContaining(UiStrings.cangjingPickerCanInterrupt),
         findsOneWidget,
       );
     });
