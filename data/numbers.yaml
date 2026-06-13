@@ -1670,5 +1670,37 @@ treasure_drop:
   min_tier: zhongQi   # 寻常货/像样货/好家伙/利器/重器/宝物/神物 — 默认重器(5阶)及以上
 
 # =============================================================================
+# 周目进化 (P1 cycle_evolution · spec p1_cycle_evolution_spec)
+# 敌人随挂机周目数增长自动强化，词条参数全部数据驱动（§5.6 不硬编码）。
+# charge_skill_id 复用既有蓄力破招技（stages.yaml chargeSkillId 真实 id）。
+# =============================================================================
+cycle_evolution:
+  scale_per_cycle: 0.06        # 每周目敌人基础属性缩放增幅（+6%）
+  max_cycle_mainline: 3        # 主线最大周目数
+  max_cycle_tower: 2           # 爬塔最大周目数
+  defense_rate_cap: 0.6        # 敌人防御率上限（60%，防越 §5.4 红线）
+  traits:                      # 反制词条参数（unit-testable，纯数据）
+    yuti:                      # 御体：防御率加成（按周目分档）
+      defense_rate_bonus_c2: 0.08   # C2 加成
+      defense_rate_bonus_c3: 0.12   # C3 加成
+    fanzhen:                   # 反震：受击反伤 DoT
+      damage_per_tick: 200
+      ticks: 3
+    ningjia:                   # 凝甲：受到暴击伤害减免
+      crit_damage_taken_mult: 0.5
+    zhenqi:                    # 真气：战斗开场回复内力百分比
+      internal_force_pct: 0.20
+    shipo:                     # 识破：蓄力技复用既有招式（青锋绝 stages.yaml chargeSkillId）
+      charge_skill_id: skill_qingshan_qingfeng
+  assignment:                  # 各场景 / 周目的词条分配表（cycle key 为整数）
+    mainline:                  # 主线（非爬塔）
+      2: [yuti]
+      3: [yuti, fanzhen, shipo]
+    tower_normal:              # 爬塔普通关
+      2: [yuti, zhenqi]
+    tower_boss:                # 爬塔 Boss 关
+      2: [yuti, fanzhen, shipo, ningjia]
+
+# =============================================================================
 # 文件结束
 # =============================================================================
