@@ -88,6 +88,18 @@ enum VisualRoute {
     'battle_defeat',
     '战斗屏·败北页验收(敗 题字 + 败北 + 破招提示 + 战报,战场背景上结算)',
   ),
+  battleTreasureGlowPeak(
+    'battle_treasure_glow_peak',
+    '爆品·神物金光峰值帧验收(t≈0.32 金闪迸发 + 双环涟漪 + 辉光升起,验是否太抢)',
+  ),
+  battleTreasureGlowRest(
+    'battle_treasure_glow_rest',
+    '爆品·神物金光末态验收(t=1.0 辉光驻留,验是否 wash out 盖住内容)',
+  ),
+  battleTreasureZhongqi(
+    'battle_treasure_zhongqi',
+    '爆品·重器对比验收(青虚剑,tier-gate 神物专属金光不启用)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);

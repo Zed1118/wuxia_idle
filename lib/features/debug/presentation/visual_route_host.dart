@@ -16,6 +16,8 @@ import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/equipment_factory.dart';
 import '../../equipment/application/drop_service.dart';
+import '../../equipment/presentation/treasure_drop_overlay.dart';
+import '../../equipment/domain/treasure_highlight.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart';
@@ -311,6 +313,21 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const _InterruptCaptionPreview();
     case VisualRoute.battleDefeat:
       return const _DefeatCeremonyPreview();
+    case VisualRoute.battleTreasureGlowPeak:
+      return const _TreasureGlowPreview(
+        defId: 'weapon_shenwu_tian_wen_jian',
+        t: 0.32,
+      );
+    case VisualRoute.battleTreasureGlowRest:
+      return const _TreasureGlowPreview(
+        defId: 'weapon_shenwu_tian_wen_jian',
+        t: 1.0,
+      );
+    case VisualRoute.battleTreasureZhongqi:
+      return const _TreasureGlowPreview(
+        defId: 'weapon_zhongqi_qing_xu_jian',
+        t: 1.0,
+      );
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
@@ -358,6 +375,52 @@ class _AcceptanceHub extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+}
+
+/// 爆品金光视觉验收预览:固定动画时间轴 [t] 渲染「背景 + 暗幕 + 爆品内容 + 金光层」。
+/// 复现 TreasureDropOverlay 真实叠加顺序但冻结在指定 t,便于单帧截图验金光强度 / tier-gate。
+class _TreasureGlowPreview extends StatelessWidget {
+  const _TreasureGlowPreview({required this.defId, required this.t});
+
+  final String defId;
+  final double t;
+
+  @override
+  Widget build(BuildContext context) {
+    final def = GameRepository.instance.getEquipment(defId);
+    final eq = EquipmentFactory.fromDef(
+      def,
+      rng: DefaultRng(seed: 612),
+      obtainedAt: DateTime(2026, 6, 13),
+      obtainedFrom: 'visual_treasure_glow',
+    );
+    final hl = TreasureHighlight(
+      defId: def.id,
+      name: def.name,
+      tier: def.tier,
+      slot: def.slot,
+      iconPath: def.iconPath,
+      attack: eq.baseAttack,
+      health: eq.baseHealth,
+      speed: eq.baseSpeed,
+      tagline: def.tagline,
+    );
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const BattleSceneBackground(
+            path: 'assets/scenes/battle_citywall.png',
+          ),
+          // 复现 overlay 半透明暗幕底
+          const ColoredBox(color: Color(0xB3000000)),
+          Positioned.fill(child: TreasureDropContent(highlight: hl, t: t)),
+          Positioned.fill(child: TreasureGlowLayer(tier: hl.tier, t: t)),
+        ],
       ),
     );
   }
