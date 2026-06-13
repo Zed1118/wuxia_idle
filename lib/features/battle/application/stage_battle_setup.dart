@@ -70,17 +70,32 @@ class StageBattleSetup {
   /// 将 [EnemyDef] 列表装配为右队 [BattleCharacter] 列表（最多 3 人）。
   ///
   /// 主线 [buildTeams] 与爬塔 [buildTeamsForTower] 共用，避免重复。纯函数,保持 static。
-  static List<BattleCharacter> buildEnemyTeam(List<EnemyDef> enemies) {
+  /// [cycleIndex] 默认 1（cycle-1 行为与旧版完全一致，零回归）；
+  /// [isTower] 决定词条分配表选取（false=主线，true=爬塔）。
+  static List<BattleCharacter> buildEnemyTeam(
+    List<EnemyDef> enemies, {
+    int cycleIndex = 1,
+    bool isTower = false,
+  }) {
     final right = <BattleCharacter>[];
     for (var i = 0; i < enemies.length && i < 3; i++) {
-      right.add(_enemyToBattle(enemy: enemies[i], slotIndex: i));
+      right.add(_enemyToBattle(
+        enemy: enemies[i],
+        slotIndex: i,
+        cycleIndex: cycleIndex,
+        isTower: isTower,
+      ));
     }
     return right;
   }
 
   /// 群战守城 per-wave 敌队生成。模板 [stage.enemyTeam] (3 templates) 循环填充
   /// 每波 [massBattleEnemyCounts[w]] 人，characterId 从 -10000 递减防撞。
-  static List<List<BattleCharacter>> buildEnemyTeamsPerWave(StageDef stage) {
+  /// [cycleIndex] 默认 1（零回归）。
+  static List<List<BattleCharacter>> buildEnemyTeamsPerWave(
+    StageDef stage, {
+    int cycleIndex = 1,
+  }) {
     final counts = stage.massBattleEnemyCounts;
     if (counts == null || counts.isEmpty) return const [];
     final templates = stage.enemyTeam;
@@ -94,6 +109,8 @@ class StageBattleSetup {
               enemy: templates[j % templates.length],
               slotIndex: j,
               characterIdOverride: -10000 - (cursor++),
+              cycleIndex: cycleIndex,
+              isTower: false, // 群战守城属于主线场景，非爬塔
             ),
         ],
     ];
@@ -306,57 +323,120 @@ class StageBattleSetup {
   /// - `mainCultivationLayer` 默认 [CultivationLayer.daCheng]（中等加成）
   /// - `totalEquipmentAttack` = `baseAttack`（直接当装备攻击灌入伤害公式）
   /// - `characterId` 用 `-(slotIndex+1)` 避免与玩家 Isar id 冲突
+  ///
+  /// **周目进化**（P1 cycle_evolution · B2）：
+  /// - [cycleIndex] ≥ 2 时按 `cycleEvolution.scalePerCycle` 缩放 hp/attack/IF；
+  /// - 词条注入：御体→defenseRate↑（clamp≤cap）；真气→IF×(1+pct)（clamp最后）；
+  ///   识破→chargeSkillId（仅敌无自带时）；凝甲/反震→仅透传 activeBuffs 标签（结算侧消费）。
+  /// - [cycleIndex]=1（默认）行为与旧版完全一致（零回归）。
   static BattleCharacter _enemyToBattle({
     required EnemyDef enemy,
     required int slotIndex,
     int? characterIdOverride,
+    int cycleIndex = 1,
+    bool isTower = false,
   }) {
+    final numbers = GameRepository.instance.numbers;
     final skills = enemy.skillIds
         .map((id) => GameRepository.instance.getSkill(id))
         .toList(growable: false);
-    final enemyDefaults = GameRepository.instance.numbers.combat.enemyDefaults;
+    final enemyDefaults = numbers.combat.enemyDefaults;
     final realm = GameRepository.instance.getRealm(
       enemy.realmTier,
       enemy.realmLayer,
     );
-    final enemyIf = resolveEnemyInternalForce(
-      realm.internalForceMax,
-      enemyDefaults.internalForceScale,
-      GameRepository.instance.numbers.combat.redLines.internalForceMax,
+    final redLineCap = numbers.combat.redLines.internalForceMax;
+
+    // ── 周目缩放系数（cycle 1 = 1.0，零变化）─────────────────────────────
+    final ce = numbers.cycleEvolution;
+    final scale = 1.0 + ce.scalePerCycle * (cycleIndex - 1);
+
+    // ── hp：baseHp × scale ────────────────────────────────────────────────
+    final scaledHp = (enemy.baseHp * scale).toInt();
+
+    // ── attack：baseAttack × scale ────────────────────────────────────────
+    final scaledAttack = (enemy.baseAttack * scale).toInt();
+
+    // ── 内力：境界 IF × internalForceScale × scale（真气词条在词条块处理）──
+    final baseIf = (realm.internalForceMax * enemyDefaults.internalForceScale * scale).round();
+
+    // ── 词条分配（cycle ≤ 1 时 traitsFor 返回空集）────────────────────────
+    final traits = ce.traitsFor(
+      cycle: cycleIndex,
+      isBoss: enemy.isBoss,
+      isTower: isTower,
     );
+
+    // ── 御体词条：defenseRate↑，按周目分档，clamp ≤ defenseRateCap ─────────
+    var defenseRate = RealmUtils.defenseRateOf(enemy.realmTier);
+    if (traits.contains('yuti')) {
+      final yutiBonus = cycleIndex >= 3
+          ? ce.traits.yuti.defenseRateBonusC3
+          : ce.traits.yuti.defenseRateBonusC2;
+      defenseRate = (defenseRate + yutiBonus).clamp(0.0, ce.defenseRateCap);
+    }
+
+    // ── 真气词条：内力 ×(1+pct)，clamp 最后执行（§5.4 红线）────────────────
+    var resolvedIf = baseIf;
+    if (traits.contains('zhenqi')) {
+      resolvedIf = (baseIf * (1 + ce.traits.zhenqi.internalForcePct)).round();
+    }
+    resolvedIf = resolvedIf.clamp(0, redLineCap);
+
+    // ── 识破词条：敌无自带 chargeSkillId 时注入 config 的蓄力技 id ──────────
+    final String? chargeSkillId;
+    if (traits.contains('shipo') && enemy.chargeSkillId == null) {
+      chargeSkillId = ce.traits.shipo.chargeSkillId;
+    } else {
+      chargeSkillId = enemy.chargeSkillId; // 保留自带（P0 破招:招牌蓄力技透传）
+    }
+
+    // ── 词条标签：凝甲/反震仅携带标签，结算侧（Tasks C1/C2）消费 ───────────
+    final activeBuffs = traits.isEmpty
+        ? const <String>[]
+        : (traits.map((t) => 'cycle_$t').toList()..sort());
+
     return BattleCharacter(
       characterId: characterIdOverride ?? -(slotIndex + 1),
       name: enemy.name,
       realmTier: enemy.realmTier,
       realmLayer: enemy.realmLayer,
       school: enemy.school,
-      maxHp: enemy.baseHp,
-      currentHp: enemy.baseHp,
-      maxInternalForce: enemyIf,
-      currentInternalForce: enemyIf,
+      maxHp: scaledHp,
+      currentHp: scaledHp,
+      maxInternalForce: resolvedIf,
+      currentInternalForce: resolvedIf,
       speed: enemy.baseSpeed,
       criticalRate: enemyDefaults.criticalRate,
       evasionRate: enemyDefaults.evasionRate,
-      defenseRate: RealmUtils.defenseRateOf(enemy.realmTier),
-      totalEquipmentAttack: enemy.baseAttack,
+      defenseRate: defenseRate,
+      totalEquipmentAttack: scaledAttack,
       mainCultivationLayer: CultivationLayer.daCheng,
       availableSkills: skills,
       skillCooldowns: const {},
-      activeBuffs: const [],
+      activeBuffs: activeBuffs,
       actionPoint: 0,
       isAlive: true,
       teamSide: 1,
       slotIndex: slotIndex,
       iconPath: enemy.iconPath,
       isBoss: enemy.isBoss,
-      chargeSkillId: enemy.chargeSkillId, // P0 破招:招牌蓄力技透传(玩家方不设,保持 null)
+      chargeSkillId: chargeSkillId,
     );
   }
 
   /// @visibleForTesting:暴露 [_enemyToBattle] 供单测(private static 不可直测)。
+  /// [cycleIndex] 默认 1（cycle-1 行为与旧版一致）；[isTower] 默认 false。
   @visibleForTesting
   static BattleCharacter debugEnemyToBattle({
     required EnemyDef enemy,
     required int slotIndex,
-  }) => _enemyToBattle(enemy: enemy, slotIndex: slotIndex);
+    int cycleIndex = 1,
+    bool isTower = false,
+  }) => _enemyToBattle(
+      enemy: enemy,
+      slotIndex: slotIndex,
+      cycleIndex: cycleIndex,
+      isTower: isTower,
+    );
 }
