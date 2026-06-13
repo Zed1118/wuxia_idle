@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 
 import '../domain/battle_state.dart';
 import '../domain/derived_stats.dart' show RealmUtils;
+import '../../../data/defs/skill_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/synergy_def.dart';
 import '../../tower/domain/tower_floor_def.dart';
@@ -389,9 +390,18 @@ class StageBattleSetup {
     resolvedIf = resolvedIf.clamp(0, redLineCap);
 
     // ── 识破词条：敌无自带 chargeSkillId 时注入 config 的蓄力技 id ──────────
+    // Fix: 同时把该技能追加到 availableSkills，否则 battle_ai._pickSkill 只迭代
+    // availableSkills，永远选不到 chargeSkillId，识破机制实质死机制。
     final String? chargeSkillId;
+    List<SkillDef> resolvedSkills = skills;
     if (traits.contains('shipo') && enemy.chargeSkillId == null) {
-      chargeSkillId = ce.traits.shipo.chargeSkillId;
+      final shipoSkillId = ce.traits.shipo.chargeSkillId;
+      chargeSkillId = shipoSkillId;
+      // 若蓄力技不在 skills 列表中，追加一份可增长副本（保持原顺序）。
+      if (!skills.any((s) => s.id == shipoSkillId)) {
+        final shipoSkill = GameRepository.instance.getSkill(shipoSkillId);
+        resolvedSkills = [...skills, shipoSkill];
+      }
     } else {
       chargeSkillId = enemy.chargeSkillId; // 保留自带（P0 破招:招牌蓄力技透传）
     }
@@ -417,7 +427,7 @@ class StageBattleSetup {
       defenseRate: defenseRate,
       totalEquipmentAttack: scaledAttack,
       mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: skills,
+      availableSkills: resolvedSkills,
       skillCooldowns: const {},
       activeBuffs: activeBuffs,
       actionPoint: 0,

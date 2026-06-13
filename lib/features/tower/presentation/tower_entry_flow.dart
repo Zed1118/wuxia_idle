@@ -712,6 +712,7 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
       sceneBackgroundPath: widget.floor.sceneBackgroundPath,
       bgmTrack: BgmTrack.tower,
       deferVictoryToCaller: true,
+      cycleHint: _currentCycleIndex >= 2 ? UiStrings.jianghuRememberHint : null,
       manualStep: _isManualMode,
       replaySeed: _mode == AutoPlayMode.autoReplay ? _record!.seed : null,
       replayOps: _mode == AutoPlayMode.autoReplay
