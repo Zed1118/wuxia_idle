@@ -391,6 +391,28 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         defId: 'weapon_zhongqi_qing_xu_jian',
         t: 1.0,
       );
+    case VisualRoute.stageListCycle:
+      // 周目选择验收:01_01..04 cycle1 已通关 → CycleSelectControl 显周目选择控件。
+      // seedVisualCheckW7W11 用 recordVictory(cycle:1) 写 'stage_xx#1' 至
+      // clearedStageCycleKeys,使已通关 tile 出现「第1周目(自动)/挑战第2周目(手动)」。
+      await isar.writeTxn(() => isar.mainlineProgress.clear());
+      await Phase2SeedService(isar: isar).seedVisualCheckW7W11();
+      return const StageListScreen(chapterIndex: 1);
+    case VisualRoute.towerCycle:
+      // 问鼎轮回验收:种 30 层 cycle1 全通关 → maxClearedCycle=1,显「挑战下一轮回」入口。
+      await OnboardingService(isar: isar).ensureFoundingMasters();
+      await isar.writeTxn(() => isar.towerProgress.clear());
+      final towerSvc = TowerProgressService(isar: isar);
+      await towerSvc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+      final towerNow = DateTime.now();
+      for (var floor = 1; floor <= 30; floor++) {
+        await towerSvc.recordClear(
+          floorIndex: floor,
+          now: towerNow,
+          elapsedMs: 60000,
+        );
+      }
+      return const TowerFloorListScreen();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
