@@ -414,6 +414,19 @@ class DefaultGroundStrategy implements BattleStrategy {
         damagePerTick: n.schoolCounter.yinRouInternalInjury.damagePerTick,
       );
     }
+    // C2 反震:玩家命中带 'cycle_fanzhen' buff 的敌人 → 将内伤 slot 反弹到攻击者。
+    // - 只在 attacker=player(teamSide==0)、defender 含 'cycle_fanzhen' 且非闪避时触发。
+    // - 同源刷新(覆盖)：与 yinRou 内伤语义一致，直接覆盖旧 slot 不叠层。
+    // - 参数全从 n.cycleEvolution.traits.fanzhen 读取，无硬编码数字。
+    InternalInjurySlot? actorFanzhenInjury = preActor.internalInjury;
+    if (!result.isDodged &&
+        preActor.teamSide == 0 &&
+        target.activeBuffs.contains('cycle_fanzhen')) {
+      actorFanzhenInjury = InternalInjurySlot(
+        remainingTurns: n.cycleEvolution.traits.fanzhen.ticks,
+        damagePerTick: n.cycleEvolution.traits.fanzhen.damagePerTick,
+      );
+    }
     // P0 破招:canInterrupt 技命中正在蓄力的目标 → 打断 + 踉跄 + 招牌技上 CD。
     final targetCd = Map<String, int>.from(target.skillCooldowns);
     var brokeCharging = false;
@@ -464,6 +477,10 @@ class DefaultGroundStrategy implements BattleStrategy {
           preActor.currentInternalForce - skill.internalForceCost,
       skillCooldowns: Map.unmodifiable(newCd),
       actionPoint: preActor.actionPoint - 1000,
+      // C2 反震:命中带 cycle_fanzhen 敌人时，将内伤 slot 写到攻击者自身。
+      // identical(_unset) sentinel 用法：直接传 actorFanzhenInjury（nullable）
+      // 即可（copyWith 的 internalInjury 参数声明为 Object? + _unset sentinel）。
+      internalInjury: actorFanzhenInjury,
     );
 
     // 写回队伍
