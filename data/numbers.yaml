@@ -1688,7 +1688,7 @@ cycle_evolution:
       ticks: 3
     ningjia:                   # 凝甲：受到暴击伤害减免
       crit_damage_taken_mult: 0.5
-    zhenqi:                    # 真气：战斗开场回复内力百分比
+    zhenqi:                    # 真气：内力上限 ×(1+pct)（→ 多放一次大招），非战斗开场回复
       internal_force_pct: 0.20
     shipo:                     # 识破：蓄力技复用既有招式（青锋绝 stages.yaml chargeSkillId）
       charge_skill_id: skill_qingshan_qingfeng

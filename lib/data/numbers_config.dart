@@ -2374,7 +2374,7 @@ class NingjiaTraitParams {
       );
 }
 
-/// 真气词条参数（战斗开场回复内力百分比）。
+/// 真气词条参数（内力上限 ×(1+pct)，→ 多放一次大招；非战斗开场回复）。
 class ZhenqiTraitParams {
   final double internalForcePct;
 
