@@ -385,7 +385,8 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
 
         if (widget.stage.stageType == StageType.massBattle) {
           final enemyWaves =
-              StageBattleSetup.buildEnemyTeamsPerWave(widget.stage);
+              StageBattleSetup.buildEnemyTeamsPerWave(widget.stage,
+                  cycleIndex: widget.targetCycle);
           final config = GameRepository.instance.numbers.massBattle;
           final formation = await _pickFormation(context, widget.stage, config);
           if (!mounted) return;
