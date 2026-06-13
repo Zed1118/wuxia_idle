@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../features/battle/domain/battle_replay.dart';
 import '../../features/battle/domain/battle_state.dart';
 import '../../features/battle/domain/strategy/battle_strategy.dart';
 import '../../features/battle/domain/strategy/default_ground_strategy.dart';
@@ -58,6 +61,19 @@ class BattleNotifier extends _$BattleNotifier {
   /// PvpStrategy 即可换形态,advance / requestUltimate 自动走对应实装。
   BattleStrategy _strategy = const DefaultGroundStrategy();
 
+  /// 本场战斗的单一 seeded rng(半手动战斗 P0 §3.1 确定性地基)。
+  ///
+  /// [startBattle] 用注入的 seed 重建;[advance] 全程复用同一实例,确保
+  /// 同 seed 逐 action 可复现(手动通关记 seed → 同 seed 重演复刻通关)。
+  Random _rng = Random();
+
+  /// 本场战斗的手动操作记录(半手动 P0 §2.2 步骤2)。按 [requestUltimate]
+  /// 调用顺序追加;[startBattle] 清空。步骤4 重放、步骤5 落盘消费。
+  final List<BattleReplayOp> _recordedOps = [];
+
+  /// 本场已记录的手动操作序列(只读视图)。
+  List<BattleReplayOp> get recordedOps => List.unmodifiable(_recordedOps);
+
   @override
   BattleState build() => BattleState.initial(
         leftTeam: const [],
@@ -68,12 +84,18 @@ class BattleNotifier extends _$BattleNotifier {
   ///
   /// [strategy] 可选注入当前战斗形态(默认 [DefaultGroundStrategy] 地面 3v3
   /// 半横版);P3 三战斗形态扩展时挂自己的 [BattleStrategy] 实装即可。
+  /// [seed] 注入本场战斗随机种子(半手动 P0 §3.1):重放时传记录的 seed
+  /// 确定性复刻;实战不传则用无种子 [Random] 起一场新战斗(其 seed 的记录
+  /// 由后续步骤2「操作序列记录」负责采集)。
   void startBattle(
     List<BattleCharacter> leftTeam,
     List<BattleCharacter> rightTeam, {
     BattleStrategy? strategy,
+    int? seed,
   }) {
     _strategy = strategy ?? const DefaultGroundStrategy();
+    _rng = Random(seed);
+    _recordedOps.clear();
     state = BattleState.initial(leftTeam: leftTeam, rightTeam: rightTeam);
   }
 
@@ -82,7 +104,14 @@ class BattleNotifier extends _$BattleNotifier {
   /// 标记 pending；该角色下次行动时 [BattleAI] 优先消费。若内力 / CD 不满足，
   /// 引擎会跳过并从 pendingUltimates 移除（一次机会，不留到下次）。
   void requestUltimate(int characterId, SkillDef ultimate) {
+    // 先委托(校验非 normalAttack 等),成功置 pending 后再记录,避免无效请求
+    // 留下脏 op。锚点 = 当前 state.tick(requestUltimate 不推进 tick)。
     state = _strategy.requestUltimate(state, characterId, ultimate);
+    _recordedOps.add(BattleReplayOp(
+      anchor: state.tick,
+      charId: characterId,
+      skillId: ultimate.id,
+    ));
   }
 
   /// UI Timer 驱动的状态前进（phase1_tasks T16.1 spec 字面写 `advanceTick`，
@@ -105,7 +134,7 @@ class BattleNotifier extends _$BattleNotifier {
     while (s.actionLog.length == originalLogLen &&
         !s.isFinished &&
         consumed < maxConsecutiveTicks) {
-      s = _strategy.tick(s, n);
+      s = _strategy.tick(s, n, rng: _rng);
       consumed++;
     }
     state = s;
