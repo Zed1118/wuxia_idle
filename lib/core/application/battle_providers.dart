@@ -103,14 +103,17 @@ class BattleNotifier extends _$BattleNotifier {
   ///
   /// 标记 pending；该角色下次行动时 [BattleAI] 优先消费。若内力 / CD 不满足，
   /// 引擎会跳过并从 pendingUltimates 移除（一次机会，不留到下次）。
-  void requestUltimate(int characterId, SkillDef ultimate) {
+  /// [targetId] 半手动 P0 步骤3a:玩家指定目标 charId;null = 走 AI 默认选目标。
+  void requestUltimate(int characterId, SkillDef ultimate, {int? targetId}) {
     // 先委托(校验非 normalAttack 等),成功置 pending 后再记录,避免无效请求
     // 留下脏 op。锚点 = 当前 state.tick(requestUltimate 不推进 tick)。
-    state = _strategy.requestUltimate(state, characterId, ultimate);
+    state = _strategy.requestUltimate(state, characterId, ultimate,
+        targetId: targetId);
     _recordedOps.add(BattleReplayOp(
       anchor: state.tick,
       charId: characterId,
       skillId: ultimate.id,
+      targetId: targetId,
     ));
   }
 

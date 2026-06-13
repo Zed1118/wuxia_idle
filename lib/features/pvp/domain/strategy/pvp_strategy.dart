@@ -57,7 +57,9 @@ class PvpStrategy implements BattleStrategy {
   BattleState requestUltimate(
     BattleState state,
     int characterId,
-    SkillDef ultimate,
-  ) =>
-      _delegate.requestUltimate(state, characterId, ultimate);
+    SkillDef ultimate, {
+    int? targetId,
+  }) =>
+      _delegate.requestUltimate(state, characterId, ultimate,
+          targetId: targetId);
 }

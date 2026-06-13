@@ -495,6 +495,12 @@ class BattleState {
   final List<BattleAction> actionLog;
   final Map<int, SkillDef> pendingUltimates;
 
+  /// 半手动战斗 P0 步骤3a:玩家对 [pendingUltimates] 中手动技指定的目标
+  /// (charId → 目标 charId)。[BattleAI.decide] 消费该指定目标(优先于
+  /// 默认「血最低」);与 [pendingUltimates] 同生命周期(行动后一并移除)。
+  /// 未指定的手动技不入此 map(走 AI 默认选目标)。
+  final Map<int, int> pendingTargets;
+
   BattleState({
     required this.leftTeam,
     required this.rightTeam,
@@ -502,6 +508,7 @@ class BattleState {
     required this.result,
     required this.actionLog,
     this.pendingUltimates = const {},
+    this.pendingTargets = const {},
   }) {
     assert(_assertUniqueIds(leftTeam, 'leftTeam'));
     assert(_assertUniqueIds(rightTeam, 'rightTeam'));
@@ -536,6 +543,7 @@ class BattleState {
       result: null,
       actionLog: const [],
       pendingUltimates: const {},
+      pendingTargets: const {},
     );
   }
 
@@ -548,6 +556,7 @@ class BattleState {
     Object? result = _unset,
     List<BattleAction>? actionLog,
     Map<int, SkillDef>? pendingUltimates,
+    Map<int, int>? pendingTargets,
   }) {
     return BattleState(
       leftTeam: leftTeam ?? this.leftTeam,
@@ -556,6 +565,7 @@ class BattleState {
       result: identical(result, _unset) ? this.result : result as BattleResult?,
       actionLog: actionLog ?? this.actionLog,
       pendingUltimates: pendingUltimates ?? this.pendingUltimates,
+      pendingTargets: pendingTargets ?? this.pendingTargets,
     );
   }
 

@@ -44,7 +44,9 @@ class BattleEngine {
   static BattleState requestUltimate(
     BattleState state,
     int characterId,
-    SkillDef ultimate,
-  ) =>
-      _default.requestUltimate(state, characterId, ultimate);
+    SkillDef ultimate, {
+    int? targetId,
+  }) =>
+      _default.requestUltimate(state, characterId, ultimate,
+          targetId: targetId);
 }
