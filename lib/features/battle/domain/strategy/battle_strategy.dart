@@ -47,9 +47,12 @@ abstract class BattleStrategy {
   ///
   /// 标记 pending;该角色下次行动时 BattleAI 优先消费。若内力 / CD 不满足,
   /// 引擎会跳过并从 pendingUltimates 移除(一次机会,不留到下次)。
+  ///
+  /// [targetId] 半手动 P0 步骤3a:玩家指定目标 charId;null = 走 AI 默认选目标。
   BattleState requestUltimate(
     BattleState state,
     int characterId,
-    SkillDef ultimate,
-  );
+    SkillDef ultimate, {
+    int? targetId,
+  });
 }

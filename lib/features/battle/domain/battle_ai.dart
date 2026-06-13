@@ -32,6 +32,19 @@ class BattleAI {
     }
     final skill = _pickSkill(actor, state);
     final enemyTeam = actor.teamSide == 0 ? state.rightTeam : state.leftTeam;
+
+    // 半手动 P0 步骤3a:玩家对本次手动技(pending)指定的目标优先于一切默认
+    // 选目标逻辑——前提是本次确实在用 pending 技、目标仍存活。当前引擎全技
+    // 单体,§八#4「群体技自动」为前瞻(AoE 引入后那些技在此忽略指定目标)。
+    final pending = state.pendingUltimates[actor.characterId];
+    final manualTargetId = state.pendingTargets[actor.characterId];
+    if (pending != null &&
+        identical(skill, pending) &&
+        manualTargetId != null &&
+        enemyTeam.any((e) => e.isAlive && e.characterId == manualTargetId)) {
+      return (skill, manualTargetId);
+    }
+
     final charging =
         enemyTeam.where((e) => e.isAlive && e.chargingSkill != null);
     final int targetId;

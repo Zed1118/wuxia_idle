@@ -305,8 +305,9 @@ class _StubStrategy implements BattleStrategy {
   BattleState requestUltimate(
     BattleState state,
     int characterId,
-    SkillDef ultimate,
-  ) =>
+    SkillDef ultimate, {
+    int? targetId,
+  }) =>
       state;
 }
 

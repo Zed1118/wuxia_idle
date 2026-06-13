@@ -114,8 +114,9 @@ class DefaultGroundStrategy implements BattleStrategy {
   BattleState requestUltimate(
     BattleState state,
     int characterId,
-    SkillDef skill,
-  ) {
+    SkillDef skill, {
+    int? targetId,
+  }) {
     // P0:泛化为"玩家手动请求关键技"——接受 powerSkill/ultimate/jointSkill,
     // 拒绝 normalAttack(普攻不需手动)。
     if (skill.type == SkillType.normalAttack) {
@@ -125,7 +126,18 @@ class DefaultGroundStrategy implements BattleStrategy {
     }
     final newPending = Map<int, SkillDef>.from(state.pendingUltimates);
     newPending[characterId] = skill;
-    return state.copyWith(pendingUltimates: Map.unmodifiable(newPending));
+    // 半手动 P0 步骤3a:指定目标入 pendingTargets;未指定则确保清掉旧条目
+    // (同一角色改请求无目标的技时,不残留上次目标)。
+    final newTargets = Map<int, int>.from(state.pendingTargets);
+    if (targetId != null) {
+      newTargets[characterId] = targetId;
+    } else {
+      newTargets.remove(characterId);
+    }
+    return state.copyWith(
+      pendingUltimates: Map.unmodifiable(newPending),
+      pendingTargets: Map.unmodifiable(newTargets),
+    );
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -440,12 +452,20 @@ class DefaultGroundStrategy implements BattleStrategy {
         ..remove(actorAfter.characterId);
       newPending = Map.unmodifiable(m);
     }
+    // 半手动 P0 步骤3a:指定目标与 pending 同生命周期,行动后一并移除。
+    Map<int, int> newTargets = preState.pendingTargets;
+    if (preState.pendingTargets.containsKey(actorAfter.characterId)) {
+      final m = Map<int, int>.from(preState.pendingTargets)
+        ..remove(actorAfter.characterId);
+      newTargets = Map.unmodifiable(m);
+    }
 
     final next = preState.copyWith(
       leftTeam: List.unmodifiable(left),
       rightTeam: List.unmodifiable(right),
       actionLog: [...preState.actionLog, action],
       pendingUltimates: newPending,
+      pendingTargets: newTargets,
     );
 
     // 胜负判定
