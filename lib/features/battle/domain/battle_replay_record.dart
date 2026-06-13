@@ -38,4 +38,10 @@ class BattleReplayRecord {
 
   /// 手动通关时间(覆盖时更新为最近一次)。
   late DateTime clearedAt;
+
+  /// 每关记忆(半手动 P0 步骤5,用户拍板#2 2026-06-13):该关上次玩家选的
+  /// 自动/手动。`null` = 随全局 `GameplaySettings.autoPlayDefault`;`true` =
+  /// 强制自动(replay);`false` = 强制手动(重打)。仅对已有记录的关有意义
+  /// (迁移豁免关无记录,随全局)。saveVersion 0.19.0 → 0.20.0。
+  bool? autoPlayOverride;
 }
