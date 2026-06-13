@@ -32,6 +32,21 @@ abstract class BattleStrategy {
     Random? rng,
   });
 
+  /// 半手动战斗 P0 步骤3b:推进「最小一步」——tick 边界(填 actor 队列 +
+  /// 推进 AP/CD,不结算)或结算队列中一个 actor。
+  ///
+  /// **默认实现退化为整 [tick]**(非地面形态/半手动 P0 范围外不细分 actor);
+  /// [DefaultGroundStrategy] override 为真·逐 actor 单步,`tick()` 在其内重构
+  /// 为「边界 stepOne + 循环 drain」,使 stepOne 成唯一 actor 结算真相源。
+  ///
+  /// [rng] 同 [tick]:仅在真正结算 actor 那一步消费;边界步不消费。
+  BattleState stepOne(
+    BattleState state,
+    NumbersConfig n, {
+    Random? rng,
+  }) =>
+      tick(state, n, rng: rng);
+
   /// 跑完整场战斗(对应原 `BattleEngine.runToEnd`)。
   ///
   /// [maxTicks] 兜底防死循环(境界差太大双方都基本免疫时触发上限 →

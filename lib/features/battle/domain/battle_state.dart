@@ -501,6 +501,17 @@ class BattleState {
   /// 未指定的手动技不入此 map(走 AI 默认选目标)。
   final Map<int, int> pendingTargets;
 
+  /// 半手动战斗 P0 步骤3b:本 tick 内待行动的 actor 队列(已按
+  /// `DefaultGroundStrategy._actorOrder` 排序)。**瞬态、不落盘**——重放靠同
+  /// seed + 同 stepOne 序列重建,不需序列化。
+  ///
+  /// 语义:tick 边界(队列空)时,`stepOne` 推进全员 AP/CD + 排序 + 填充本字段
+  /// (不结算 actor);随后每次 `stepOne` 弹出队首一个 actor 结算。队列为空 =
+  /// 处于 tick 边界(`tick()` 进/出此状态时队列恒空,故所有整 tick 路径不受影响)。
+  /// 每项 `(charId, teamSide)` 唯一定位一个 [BattleCharacter](characterId 可能
+  /// 跨队重号,故带 teamSide)。
+  final List<({int charId, int teamSide})> actorQueue;
+
   BattleState({
     required this.leftTeam,
     required this.rightTeam,
@@ -509,6 +520,7 @@ class BattleState {
     required this.actionLog,
     this.pendingUltimates = const {},
     this.pendingTargets = const {},
+    this.actorQueue = const [],
   }) {
     assert(_assertUniqueIds(leftTeam, 'leftTeam'));
     assert(_assertUniqueIds(rightTeam, 'rightTeam'));
@@ -557,6 +569,7 @@ class BattleState {
     List<BattleAction>? actionLog,
     Map<int, SkillDef>? pendingUltimates,
     Map<int, int>? pendingTargets,
+    List<({int charId, int teamSide})>? actorQueue,
   }) {
     return BattleState(
       leftTeam: leftTeam ?? this.leftTeam,
@@ -566,6 +579,7 @@ class BattleState {
       actionLog: actionLog ?? this.actionLog,
       pendingUltimates: pendingUltimates ?? this.pendingUltimates,
       pendingTargets: pendingTargets ?? this.pendingTargets,
+      actorQueue: actorQueue ?? this.actorQueue,
     );
   }
 

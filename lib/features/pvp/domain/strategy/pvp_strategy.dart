@@ -19,7 +19,7 @@ import '../../../battle/domain/strategy/default_ground_strategy.dart';
 /// **immutable**:opponentTeam ctor 注入,runToEnd 入口 hydrate 1 次 idempotent;
 /// 不持任何 mutable instance state(沿 DefaultGroundStrategy / LightFootStrategy
 /// 体例)。
-class PvpStrategy implements BattleStrategy {
+class PvpStrategy extends BattleStrategy {
   /// 对手阵容(NoopPvpSync 本地 mirror 生成 / Phase 5 SupabasePvpSync 从快照解码)。
   final List<BattleCharacter> opponentTeam;
 
