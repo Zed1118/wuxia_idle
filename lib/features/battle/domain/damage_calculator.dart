@@ -115,6 +115,9 @@ class DamageCalculator {
     required Random rng,
     bool forceCritical = false,
     double proficiencyDamageMult = 1.0,
+    /// 凝甲词条(C1):暴击增量衰减系数。default 1.0 = 无凝甲(零回归)。
+    /// 0.5 时 effectiveCritMult = 1 + (critMult-1)*0.5，仅影响暴击增量部分。
+    double defenderCritDamageTakenMult = 1.0,
   }) {
     // === 1. 闪避 ===
     if (rng.nextDouble() < defenderEvasionRate) {
@@ -152,6 +155,11 @@ class DamageCalculator {
             ? n.combat.critical.lingqiaoDamageMultiplier
             : n.combat.critical.baseDamageMultiplier)
         : 1.0;
+    // 凝甲词条(C1):守方携带 cycle_ningjia 时，暴击增量 × defenderCritDamageTakenMult。
+    // 仅压缩暴击「加成部分」(critMult-1)，非暴击(critMult=1.0)时增量=0，乘 mult 无效。
+    // default defenderCritDamageTakenMult=1.0 → effectiveCritMult=critMult（零回归）。
+    final effectiveCritMult =
+        isCritical ? (critMult - 1.0) * defenderCritDamageTakenMult + 1.0 : 1.0;
 
     // === 6. 防御率 ===
     final defMult = 1.0 - defenderDefenseRate;
@@ -180,10 +188,12 @@ class DamageCalculator {
     // === 8. 合并 ===
     // 末端乘 attackPowerMultiplier(default 1.0):沿 cult/school/crit/def/realm
     // 体例,独立维度乘项不进 base 求和(P3.1.B 轻功/群战/恩怨烘焙)。
+    // 凝甲:effectiveCritMult = 1+(critMult-1)*defenderCritDamageTakenMult
+    //       default mult=1.0 → effectiveCritMult=critMult(零回归)。
     final raw = base *
         cultMult *
         schoolMult *
-        critMult *
+        effectiveCritMult *
         defMult *
         realmMult *
         attackPowerMultiplier *
@@ -208,7 +218,8 @@ class DamageCalculator {
         ' + ${skill.powerMultiplier})'
         ' * ${_fmt(cultMult)}'
         ' * ${_fmt(schoolMult)}'
-        ' * ${_fmt(critMult)}'
+        ' * ${_fmt(effectiveCritMult)}'
+        '${effectiveCritMult != critMult ? '(凝甲,原${_fmt(critMult)})' : ''}'
         ' * ${_fmt(defMult)}'
         ' * ${_fmt(realmMult)}'
         '${attackPowerMultiplier != 1.0 ? ' * ${_fmt(attackPowerMultiplier)}' : ''}'

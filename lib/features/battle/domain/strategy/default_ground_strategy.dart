@@ -559,6 +559,10 @@ class DefaultGroundStrategy implements BattleStrategy {
         0.0;
     final profMult =
         SkillProficiency.combinedMult(uses, perSkillPct, n.skillProficiency);
+    // 凝甲词条(C1):周目≥2 敌人携带 'cycle_ningjia' buff 时暴击增量减半。
+    final critDamageTakenMult = defender.activeBuffs.contains('cycle_ningjia')
+        ? n.cycleEvolution.traits.ningjia.critDamageTakenMult
+        : 1.0;
     return DamageCalculator.calculateResolved(
       attackerInternalForce: attacker.currentInternalForce,
       attackerEquipmentAttack: attacker.totalEquipmentAttack,
@@ -578,6 +582,7 @@ class DefaultGroundStrategy implements BattleStrategy {
       rng: rng,
       forceCritical: forceCritical,
       proficiencyDamageMult: profMult,
+      defenderCritDamageTakenMult: critDamageTakenMult,
     );
   }
 
