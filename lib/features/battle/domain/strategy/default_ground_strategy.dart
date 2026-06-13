@@ -478,8 +478,8 @@ class DefaultGroundStrategy implements BattleStrategy {
       skillCooldowns: Map.unmodifiable(newCd),
       actionPoint: preActor.actionPoint - 1000,
       // C2 反震:命中带 cycle_fanzhen 敌人时，将内伤 slot 写到攻击者自身。
-      // identical(_unset) sentinel 用法：直接传 actorFanzhenInjury（nullable）
-      // 即可（copyWith 的 internalInjury 参数声明为 Object? + _unset sentinel）。
+      // actorFanzhenInjury 非 _unset sentinel，始终走显式更新分支;反震未触发时
+      // round-trip 回 preActor.internalInjury（值不变，语义等效,不丢已有内伤）。
       internalInjury: actorFanzhenInjury,
     );
 
