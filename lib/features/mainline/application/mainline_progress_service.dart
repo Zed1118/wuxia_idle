@@ -15,7 +15,9 @@ typedef StageEntry = ({StageDef def, StageStatus status});
 /// 职责：
 ///   - getOrCreate：幂等获取/创建当前存档的 [MainlineProgress] 单行
 ///   - availableStages：按章节返回该章所有 stage + 三态（locked/available/cleared）
-///   - recordVictory：首通 append 到 clearedStageIds + clearedAt（重复无操作）
+///   - recordVictory：首通 append 到 clearedStageIds + clearedAt（重复无操作）；
+///     [cycle] 参数控制周目编号，cycleKey `stageId#cycle` 写入
+///     [MainlineProgress.clearedStageCycleKeys]（幂等，各周目独立）
 ///   - chapterCompleted：该章所有 stage 是否都已通关
 ///
 /// 与 [BattleResolutionService] 解耦：Phase 3 由 UI（StageEntryFlow）在
@@ -123,16 +125,18 @@ class MainlineProgressService {
       // 周目 cycleKey append（幂等）
       final cycleKey = '$stageId#$cycle';
       final keys = List<String>.of(progress.clearedStageCycleKeys);
+      var mutated = false;
       if (!keys.contains(cycleKey)) {
         keys.add(cycleKey);
         progress.clearedStageCycleKeys = keys;
+        mutated = true;
       }
 
       // cycle==1 维护原 clearedStageIds 解锁链（向后兼容，语义不变）
       if (cycle == 1) {
         if (progress.clearedStageIds.contains(stageId)) {
-          // 幂等：cycle1 已通关，只需 put cycleKey 变化（若有）
-          await isar.mainlineProgress.put(progress);
+          // 幂等：cycle1 已通关，stageId 无新增；若 cycleKey 也已存在则无需 put
+          if (mutated) await isar.mainlineProgress.put(progress);
           return;
         }
         progress.clearedStageIds = [...progress.clearedStageIds, stageId];
@@ -141,7 +145,7 @@ class MainlineProgressService {
         await tutorialService?.advanceForStageCleared(stageId);
       } else {
         // cycle>1：只写 cycleKey，不改 clearedStageIds 解锁链
-        await isar.mainlineProgress.put(progress);
+        if (mutated) await isar.mainlineProgress.put(progress);
       }
     });
   }

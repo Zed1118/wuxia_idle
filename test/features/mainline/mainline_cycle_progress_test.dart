@@ -61,5 +61,17 @@ void main() {
       0,
       reason: '未通关 stage 返回 0',
     );
+
+    // currentChallengeCycle：highest=2，next=3
+    expect(
+      MainlineProgressService.currentChallengeCycle(p, 'stage_01_01',
+          maxCycle: 3),
+      3, // next=3 ≤ maxCycle 3
+    );
+    expect(
+      MainlineProgressService.currentChallengeCycle(p, 'stage_01_01',
+          maxCycle: 2),
+      2, // next=3 > maxCycle 2 → clamp 2
+    );
   });
 }
