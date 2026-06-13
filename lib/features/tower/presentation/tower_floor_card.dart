@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../battle/application/battle_replay_record_service.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
+import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -92,7 +94,32 @@ class TowerFloorCard extends StatelessWidget {
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text(UiStrings.towerReplayTitle),
-          content: const Text(UiStrings.towerReplayBody),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(UiStrings.towerReplayBody),
+              const SizedBox(height: 14),
+              // 半手动 P0 步骤5-G3:本层逐关自动/手动开关(塔身固定高,走 dialog)。
+              Row(
+                children: [
+                  const Text(
+                    UiStrings.stageAutoPlayPickLabel,
+                    style: TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  StageAutoPlayControl(
+                    battleKey: BattleReplayRecordService.towerBattleKey(
+                      entry.def.floorIndex,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
