@@ -83,3 +83,6 @@ test/tools/output/
 
 # Codex 视觉验收截图(throwaway · 结论已记 closeout/PROGRESS · 本地保留不入库 · 2026-06-13)
 docs/codex_*_screenshots/
+
+# 自验/视觉截图 throwaway 不入库
+docs/screenshots/
