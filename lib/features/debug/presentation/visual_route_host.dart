@@ -27,6 +27,8 @@ import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../sect/presentation/sect_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
+import '../../tower/application/tower_progress_service.dart';
+import '../../tower/domain/tower_progress.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
 import '../../seclusion/domain/retreat_session.dart';
 import '../../seclusion/presentation/active_retreat_screen.dart';
@@ -195,6 +197,33 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const StageListScreen(chapterIndex: 1);
     case VisualRoute.towerFloorList:
       await OnboardingService(isar: isar).ensureFoundingMasters();
+      return const TowerFloorListScreen();
+    case VisualRoute.towerFloorListAutoPlay:
+      // per-floor 开关验收(R1 第 7 项 FAIL 根因 = tower 验收 route 未种 record →
+      // dialog 内开关落禁用态不弹菜单)。本 route 种 1/2 层通关 + 重放记录,让
+      // 点已通关层弹的重打 dialog 内开关 enabled:1 层跟随(自动随设置)、2 层 pin 手动。
+      await OnboardingService(isar: isar).ensureFoundingMasters();
+      await isar.writeTxn(() => isar.towerProgress.clear());
+      final towerSvc = TowerProgressService(isar: isar);
+      await towerSvc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+      final towerNow = DateTime.now();
+      await towerSvc.recordClear(floorIndex: 1, now: towerNow, elapsedMs: 60000);
+      await towerSvc.recordClear(floorIndex: 2, now: towerNow, elapsedMs: 60000);
+      final towerReplaySvc = BattleReplayRecordService(isar: isar);
+      await towerReplaySvc.record(
+        battleKey: BattleReplayRecordService.towerBattleKey(1),
+        seed: 3,
+        ops: const [],
+      );
+      await towerReplaySvc.record(
+        battleKey: BattleReplayRecordService.towerBattleKey(2),
+        seed: 3,
+        ops: const [],
+      );
+      await towerReplaySvc.setAutoPlayOverride(
+        BattleReplayRecordService.towerBattleKey(2),
+        false,
+      );
       return const TowerFloorListScreen();
     case VisualRoute.seclusionMapList:
       await OnboardingService(isar: isar).ensureFoundingMasters();
