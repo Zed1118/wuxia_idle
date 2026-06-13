@@ -274,6 +274,17 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
         autoStart: false,
       );
+    case VisualRoute.battleManualStep:
+      // 半手动单步 UI 验收:复用 scenarioChargeBreak(主控带满 强力/破招/共鸣/大招
+      // + 多敌可选目标),manualStep 起单步 + 固定 seed 确定性。验收点:点「下一步」
+      // 推进 / 本回合行动顺序条 / 点单体技弹目标 picker。
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioChargeBreak,
+        hint: null,
+        sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
+        manualStep: true,
+        seed: 3,
+      );
     case VisualRoute.battleVictoryFirstClear:
       return const _VictoryFirstClearPreview();
     case VisualRoute.enemyGallery:

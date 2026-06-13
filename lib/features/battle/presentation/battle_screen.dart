@@ -128,6 +128,14 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// （demo/debug 零影响）。
   final BgmTrack bgmTrack;
 
+  /// 半手动战斗 P0 步骤3c · 单步模式(opt-in,默认 false 现有调用零影响)。
+  /// true 时:① 不启自动 Timer,改靠玩家点底部「下一步」逐步调
+  /// [BattleNotifier.step](A 强制停顿:一步一 actor);② tick 边界填队列后顶部
+  /// 显「本回合行动顺序」条让玩家看清出手序再布置指令;③ 点单体技立即弹目标
+  /// picker 选敌(B),选定走 requestUltimate(targetId)。C 临时入口:由
+  /// ScenarioLauncher / 调试路由注入,正式自动/手动开关留步骤5 接落盘判定。
+  final bool manualStep;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
@@ -139,6 +147,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.autoStart = true,
     this.deferVictoryToCaller = false,
     this.bgmTrack = BgmTrack.battle,
+    this.manualStep = false,
   });
 
   @override
@@ -505,7 +514,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   /// 玩家点重点角色的任一可用技能 → 走与大招相同的 [requestUltimate] 路径
   /// （[BattleAI._pickSkill] 对任意 pending 技能一视同仁地优先消费，不引入新战斗
   /// 数学）。仅当该技能 ready（存活 + 内力够 + CD 0）才下发。
-  void _onSkillCommand(int characterId, SkillDef skill) {
+  ///
+  /// 单步模式(manualStep)下立即弹目标 picker(用户拍板 B):选定存活敌人后才
+  /// requestUltimate(targetId);取消则不下发。自动模式不弹 picker,targetId=null
+  /// 走 AI 默认选目标(现有行为不变)。
+  Future<void> _onSkillCommand(int characterId, SkillDef skill) async {
     final s = ref.read(battleProvider);
     BattleCharacter? c;
     for (final ch in s.leftTeam) {
@@ -515,7 +528,31 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       }
     }
     if (c == null || !_isSkillReady(c, skill)) return;
-    ref.read(battleProvider.notifier).requestUltimate(characterId, skill);
+    if (!widget.manualStep) {
+      ref.read(battleProvider.notifier).requestUltimate(characterId, skill);
+      return;
+    }
+    final targetId = await _pickTarget(s);
+    if (targetId == null || !mounted) return;
+    ref
+        .read(battleProvider.notifier)
+        .requestUltimate(characterId, skill, targetId: targetId);
+  }
+
+  /// 单步模式单体技目标 picker：列出存活敌人(右队)供玩家点选，返回其 charId；
+  /// 取消 / 无存活敌人返回 null。
+  Future<int?> _pickTarget(BattleState s) {
+    final enemies = s.rightTeam.where((e) => e.isAlive).toList();
+    if (enemies.isEmpty) return Future.value(null);
+    return showDialog<int>(
+      context: context,
+      builder: (ctx) => _TargetPickerDialog(enemies: enemies),
+    );
+  }
+
+  /// 单步模式「下一步」：推进最小一步(tick 边界填队列 / 结算一个 actor)。
+  void _onNextStep() {
+    ref.read(battleProvider.notifier).step();
   }
 
   void _onSelectFocus(int slotIndex) {
@@ -648,9 +685,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     }
 
     ref.listen<BattleState>(battleProvider, (prev, next) {
-      // 1. 启动 Timer：team 从空 → 非空且未结束
+      // 1. 启动 Timer：team 从空 → 非空且未结束。
+      //    单步模式(manualStep)永不启 Timer——靠玩家点「下一步」逐步推进。
       final wasEmpty = prev == null || prev.leftTeam.isEmpty;
       if (widget.autoStart &&
+          !widget.manualStep &&
           wasEmpty &&
           next.leftTeam.isNotEmpty &&
           !next.isFinished) {
@@ -733,6 +772,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       onToggleLog: () => setState(() => _logOpen = !_logOpen),
                     ),
                     _DangerBar(state: state),
+                    if (widget.manualStep) _ActorOrderBar(state: state),
                     Expanded(
                       child: Stack(
                         children: [
@@ -770,6 +810,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       onSkill: _onSkillCommand,
                       onFastForward: _toggleFastForward,
                       isFastForward: _isFastForward,
+                      manualStep: widget.manualStep,
+                      onNextStep: _onNextStep,
                     ),
                   ],
                 ),
@@ -1330,6 +1372,10 @@ class _BottomBar extends StatelessWidget {
   final VoidCallback onFastForward;
   final bool isFastForward;
 
+  /// 半手动 P0 步骤3c：单步模式 → 右侧「快进」换成「下一步」(玩家驱动 step)。
+  final bool manualStep;
+  final VoidCallback onNextStep;
+
   const _BottomBar({
     required this.state,
     required this.focusSlotIndex,
@@ -1337,6 +1383,8 @@ class _BottomBar extends StatelessWidget {
     required this.onSkill,
     required this.onFastForward,
     required this.isFastForward,
+    required this.manualStep,
+    required this.onNextStep,
   });
 
   /// 排序/分组秩：强力 0 → 破招 1 → 共鸣 2 → 大招 3（普攻 4，已被过滤）。
@@ -1410,7 +1458,13 @@ class _BottomBar extends StatelessWidget {
                   ),
           ),
           const SizedBox(width: 8),
-          _FastForwardButton(onPressed: onFastForward, isActive: isFastForward),
+          if (manualStep)
+            _NextStepButton(onPressed: onNextStep)
+          else
+            _FastForwardButton(
+              onPressed: onFastForward,
+              isActive: isFastForward,
+            ),
         ],
       ),
     );
@@ -1670,6 +1724,218 @@ class _FastForwardButton extends StatelessWidget {
         child: const Text(
           UiStrings.fastForward,
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
+  }
+}
+
+/// 半手动 P0 步骤3c：单步「下一步」按钮。每点一次驱动 [BattleNotifier.step]
+/// 一步(A 强制停顿:tick 边界填队列 / 结算一个 actor)。实心醒目区别于快进。
+class _NextStepButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  const _NextStepButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      key: const ValueKey('battle_next_step_button'),
+      width: 96,
+      height: 52,
+      child: FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: WuxiaColors.resultHighlight,
+          foregroundColor: WuxiaColors.background,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        ),
+        child: const Text(
+          UiStrings.battleNextStep,
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
+}
+
+/// 半手动 P0 步骤3c：本回合行动顺序条(单步模式 + [BattleState.actorQueue]
+/// 非空时显)。tick 边界填队列后玩家先看清出手序再布置指令；队首=下一个
+/// 行动的 actor 高亮。纯读 state，队列空(tick 边界)返回 [SizedBox.shrink]。
+class _ActorOrderBar extends StatelessWidget {
+  final BattleState state;
+  const _ActorOrderBar({required this.state});
+
+  BattleCharacter? _find(int charId) {
+    for (final c in state.leftTeam) {
+      if (c.characterId == charId) return c;
+    }
+    for (final c in state.rightTeam) {
+      if (c.characterId == charId) return c;
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (state.actorQueue.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      key: const ValueKey('battle_actor_order_bar'),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: const BoxDecoration(
+        color: WuxiaColors.sidebar,
+        border: Border(bottom: BorderSide(color: WuxiaColors.border)),
+      ),
+      child: Row(
+        children: [
+          const Text(
+            '${UiStrings.battleActorOrder}：',
+            style: TextStyle(
+              color: WuxiaColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (var i = 0; i < state.actorQueue.length; i++) ...[
+                    if (i > 0)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4),
+                        child: Icon(
+                          Icons.chevron_right,
+                          size: 14,
+                          color: WuxiaColors.textMuted,
+                        ),
+                      ),
+                    _ActorOrderChip(
+                      name: _find(state.actorQueue[i].charId)?.name ?? '？',
+                      isPlayer: state.actorQueue[i].teamSide == 0,
+                      isNext: i == 0,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActorOrderChip extends StatelessWidget {
+  final String name;
+  final bool isPlayer;
+  final bool isNext;
+  const _ActorOrderChip({
+    required this.name,
+    required this.isPlayer,
+    required this.isNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isPlayer ? WuxiaColors.textPrimary : WuxiaColors.danger;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: isNext
+            ? WuxiaColors.resultHighlight.withValues(alpha: 0.22)
+            : Colors.transparent,
+        border: Border.all(
+          color: isNext ? WuxiaColors.resultHighlight : WuxiaColors.border,
+        ),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        name,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: isNext ? FontWeight.w700 : FontWeight.w400,
+        ),
+      ),
+    );
+  }
+}
+
+/// 半手动 P0 步骤3c：单体技目标 picker(用户拍板 B 立即弹)。列存活敌人，
+/// 点选返回其 charId(pop 给 [_pickTarget])；点外部 / 取消返回 null。
+class _TargetPickerDialog extends StatelessWidget {
+  final List<BattleCharacter> enemies;
+  const _TargetPickerDialog({required this.enemies});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      key: const ValueKey('battle_target_picker'),
+      backgroundColor: WuxiaColors.panel,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: const BorderSide(color: WuxiaColors.border),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                UiStrings.battleTargetPickerTitle,
+                style: TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            for (final e in enemies)
+              InkWell(
+                key: ValueKey('battle_target_option_${e.characterId}'),
+                onTap: () => Navigator.of(context).pop(e.characterId),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: WuxiaColors.schoolColor(e.school),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          e.name,
+                          style: const TextStyle(
+                            color: WuxiaColors.textPrimary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '${e.currentHp}/${e.maxHp}',
+                        style: const TextStyle(
+                          color: WuxiaColors.textMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 8),
+          ],
         ),
       ),
     );

@@ -29,6 +29,14 @@ class UiStrings {
       '$enemyName 正在蓄势：$skillName（还有 $ticks 回合发动）';
   static const String battleDangerPrefix = '⚠ ';
 
+  // 半手动战斗 P0 步骤3c · 单步战斗 UI(用户拍板 2026-06-13:A 强制停顿/B 立即弹/C 临时入口)。
+  /// 单步「下一步」按钮:每点一次 = 一次 [BattleNotifier.step](一步一 actor)。
+  static const String battleNextStep = '下一步';
+  /// 本回合行动顺序条标题(tick 边界填队列后,玩家布置指令前看清出手顺序)。
+  static const String battleActorOrder = '本回合行动顺序';
+  /// 单体技目标 picker 标题(点技能立即弹,选存活敌人)。
+  static const String battleTargetPickerTitle = '选择目标';
+
   // T1 战斗指令台：技能分组标签 + 状态印 + 内力/冷却短标。
   static const String skillGroupPower = '强力';
   static const String skillGroupJoint = '共鸣';
