@@ -279,7 +279,7 @@ BattleCharacter _makeChar({
 ///
 /// 用于 R3.5 三态(leftWin/rightWin/draw)控制 eloDelta 符号 + winnerId,
 /// 避免引入完整 GameRepository skill 库的 e2e 战斗 dep。
-class _StubStrategy implements BattleStrategy {
+class _StubStrategy extends BattleStrategy {
   final BattleResult result;
 
   const _StubStrategy({required this.result});

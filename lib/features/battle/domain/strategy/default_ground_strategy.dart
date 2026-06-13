@@ -37,6 +37,12 @@ class DefaultGroundStrategy implements BattleStrategy {
   /// 推进一个 tick。
   ///
   /// [rng] 用于伤害计算中的闪避 / 暴击 roll；测试传 `Random(seed)` 复现。
+  ///
+  /// **半手动 P0 步骤3b 重构**:tick 改为「边界 [stepOne] + 循环 drain 本 tick
+  /// 全部 actor」。入参约定为 tick 边界态(`actorQueue` 空,所有整 tick 调用方
+  /// 都满足);返回亦回到边界态(队列 drain 空)。语义与重构前逐字节等价
+  /// (rng 只在 [_resolveAction] 消费,拆分 actor 循环不改消费顺序),由
+  /// `battle_step_one_test` 红线锁死 + 全量战斗测兜底。
   @override
   BattleState tick(
     BattleState state,
@@ -44,41 +50,75 @@ class DefaultGroundStrategy implements BattleStrategy {
     Random? rng,
   }) {
     if (state.isFinished) return state;
-
-    // 1) 全员 CD -= 1（最低 0），再 actionPoint += speed。
-    final left = state.leftTeam.map(_advanceTick).toList();
-    final right = state.rightTeam.map(_advanceTick).toList();
-
-    // 2) 找出 actionPoint ≥ 1000 的活角色，按破平局规则排序。
-    final actors = <BattleCharacter>[];
-    for (final c in left) {
-      if (c.isAlive && c.actionPoint >= 1000) actors.add(c);
+    final r = rng ?? Random();
+    // 边界步:推进 AP/CD + 排序 + 填队列(tick++,不结算)。
+    var s = stepOne(state, n, rng: r);
+    // drain:逐 actor 结算直到本 tick 队列空或战斗结束。
+    while (s.actorQueue.isNotEmpty && !s.isFinished) {
+      s = stepOne(s, n, rng: r);
     }
-    for (final c in right) {
-      if (c.isAlive && c.actionPoint >= 1000) actors.add(c);
-    }
-    actors.sort(_actorOrder);
-
-    // 3) 依次行动。每次行动产生新 state，下一个行动者从新 state 取最新快照
-    //    （前面行动者可能改了死亡 / HP）。
-    var s = state.copyWith(
-      leftTeam: List.unmodifiable(left),
-      rightTeam: List.unmodifiable(right),
-      tick: state.tick + 1,
-    );
-    for (final initial in actors) {
-      // 从最新 state 取该 actor（可能已被前面动作打死）
-      final actor = _findById(s, initial.characterId, initial.teamSide);
-      if (actor == null || !actor.isAlive) continue;
-      // 对面如果已经全死 → 提前结束
-      final enemyAlive = (actor.teamSide == 0 ? s.rightTeam : s.leftTeam)
-          .any((c) => c.isAlive);
-      if (!enemyAlive) break;
-      s = _resolveAction(s, actor, n, rng ?? Random());
-      if (s.isFinished) return s;
-    }
-
     return s;
+  }
+
+  /// 半手动 P0 步骤3b:推进最小一步(spec §八#3「一步=一 actor」)。
+  ///
+  /// - **队列空(tick 边界)**:全员 CD -= 1 + actionPoint += speed → 找出
+  ///   actionPoint ≥ 1000 的活角色按 [_actorOrder] 排序 → 填入
+  ///   [BattleState.actorQueue] + tick++。**不结算任何 actor、不消费 rng**。
+  /// - **队列非空**:弹出队首一个 actor 结算。死亡 → 仅出队(不消费 rng);
+  ///   对面全灭 → 清空剩余队列提前结束本 tick(不消费 rng);否则
+  ///   [_resolveAction] 结算(**唯一消费 rng 处**)后出队。
+  ///
+  /// 拆分使「自动整 tick(tick)」「手动逐步(notifier.step)」「重放」三条路径
+  /// 共用同一 actor 结算逻辑与同一 rng 消费顺序,确定性地基(spec §七)。
+  @override
+  BattleState stepOne(
+    BattleState state,
+    NumbersConfig n, {
+    Random? rng,
+  }) {
+    if (state.isFinished) return state;
+
+    // === 队列空 = tick 边界:推进 AP/CD + 排序 + 填队列,不结算 actor ===
+    if (state.actorQueue.isEmpty) {
+      final left = state.leftTeam.map(_advanceTick).toList();
+      final right = state.rightTeam.map(_advanceTick).toList();
+      final actors = <BattleCharacter>[];
+      for (final c in left) {
+        if (c.isAlive && c.actionPoint >= 1000) actors.add(c);
+      }
+      for (final c in right) {
+        if (c.isAlive && c.actionPoint >= 1000) actors.add(c);
+      }
+      actors.sort(_actorOrder);
+      return state.copyWith(
+        leftTeam: List.unmodifiable(left),
+        rightTeam: List.unmodifiable(right),
+        tick: state.tick + 1,
+        actorQueue: List.unmodifiable(
+          actors.map((c) => (charId: c.characterId, teamSide: c.teamSide)),
+        ),
+      );
+    }
+
+    // === 队列非空:结算队首一个 actor ===
+    final head = state.actorQueue.first;
+    final rest = List<({int charId, int teamSide})>.unmodifiable(
+      state.actorQueue.skip(1),
+    );
+    // 从最新 state 取该 actor(可能已被前面动作打死)。
+    final actor = _findById(state, head.charId, head.teamSide);
+    if (actor == null || !actor.isAlive) {
+      return state.copyWith(actorQueue: rest);
+    }
+    // 对面如果已经全死 → 提前结束本 tick（清空剩余队列）。
+    final enemyAlive = (actor.teamSide == 0 ? state.rightTeam : state.leftTeam)
+        .any((c) => c.isAlive);
+    if (!enemyAlive) {
+      return state.copyWith(actorQueue: const []);
+    }
+    final s = _resolveAction(state, actor, n, rng ?? Random());
+    return s.copyWith(actorQueue: rest);
   }
 
   /// 跑完整场战斗。

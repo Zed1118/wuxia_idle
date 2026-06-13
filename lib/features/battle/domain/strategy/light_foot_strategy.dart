@@ -36,7 +36,7 @@ import 'default_ground_strategy.dart';
 /// 烘焙到双方 BattleCharacter.attackPowerMultiplier,damage_calculator base 公式
 /// 末乘读用。沿 crit/evasion/defense delta 体例,双方对等 → 双方 attacker 出招时
 /// 同步放大/缩小(rooftop ×1.15 / bamboo ×0.90 / water 1.0)。
-class LightFootStrategy implements BattleStrategy {
+class LightFootStrategy extends BattleStrategy {
   /// 当前关 terrain(从 stages.yaml `terrainBiome` 字段读 + ctor 注入)。
   final TerrainBiome terrainBiome;
 

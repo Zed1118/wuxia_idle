@@ -38,7 +38,7 @@ import 'default_ground_strategy.dart';
 ///   - yanXing(雁行):crit +0.10 / defense -0.05 — 攻势启
 ///   - baGua(八卦):defense +0.10 / evasion +0.05 — 守势固
 ///   - fengShi(锋矢):damage ×1.10 / crit +0.05 — 突击强
-class MassBattleStrategy implements BattleStrategy {
+class MassBattleStrategy extends BattleStrategy {
   /// 战前玩家选择的阵型(默认走 `config.stageFormations[stageId]` 或 yanXing)。
   final Formation formation;
 

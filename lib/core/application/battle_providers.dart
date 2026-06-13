@@ -143,6 +143,20 @@ class BattleNotifier extends _$BattleNotifier {
     state = s;
   }
 
+  /// 半手动战斗 P0 步骤3b:推进最小一步(spec §八#3「一步=一 actor」)。
+  ///
+  /// 单步 UI(步骤3c)的驱动入口:每次调用走 [BattleStrategy.stepOne] —— tick
+  /// 边界步(填本回合行动队列,无人出手)或结算队列中一个 actor。复用本场
+  /// 单一 seeded [_rng],与 [advance] 整 tick 路径 rng 消费顺序一致(同 seed
+  /// 两条路径复刻同一场战斗,`battle_step_one_test` 红线锁死)。
+  ///
+  /// 玩家手动指令仍走 [requestUltimate] 在 step 之间布置;锚点 = `state.tick`。
+  void step() {
+    if (state.isFinished) return;
+    state =
+        _strategy.stepOne(state, ref.read(numbersConfigProvider), rng: _rng);
+  }
+
   /// 战斗结算 hook（phase2_tasks T26 §340）。
   ///
   /// caller 在 result 翻转后调用（typically `ref.listen(battleResultProvider,
