@@ -80,3 +80,6 @@ test/tools/output/
 
 # CodeGraph 本地代码索引(machine-local · db/config 含本机路径 · 2026-06-13 init)
 .codegraph/
+
+# Codex 视觉验收截图(throwaway · 结论已记 closeout/PROGRESS · 本地保留不入库 · 2026-06-13)
+docs/codex_*_screenshots/
