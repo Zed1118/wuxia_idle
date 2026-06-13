@@ -845,6 +845,9 @@ class UiStrings {
   // 半手动战斗 P0 步骤5-G3:选关屏 per-stage 自动/手动开关。
   static const String stageAutoPlayAuto = '自动';
   static const String stageAutoPlayManual = '手动';
+  // 印章 glyph 单字(绛红方印 · 「自」=自动 /「手」=手动;暂用现有字体,真小篆待补字体)。
+  static const String stageAutoPlaySealAuto = '自';
+  static const String stageAutoPlaySealManual = '手';
   static const String stageAutoPlayFollowSuffix = '随设置';
   static const String stageAutoPlayMenuFollow = '跟随设置';
   static const String stageAutoPlayMenuAuto = '自动战斗';

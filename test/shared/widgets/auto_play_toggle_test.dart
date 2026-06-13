@@ -16,6 +16,8 @@ void main() {
     )));
     expect(find.text(UiStrings.stageAutoPlayAuto), findsOneWidget);
     expect(find.text(UiStrings.stageAutoPlayFollowSuffix), findsOneWidget);
+    // 印章 glyph:自动态显「自」字朱印
+    expect(find.text(UiStrings.stageAutoPlaySealAuto), findsOneWidget);
   });
 
   testWidgets('override=false → 显示「手动」且无「随设置」标记(已 pin 不跟随)',
@@ -28,6 +30,8 @@ void main() {
     )));
     expect(find.text(UiStrings.stageAutoPlayManual), findsOneWidget);
     expect(find.text(UiStrings.stageAutoPlayFollowSuffix), findsNothing);
+    // 印章 glyph:手动态显「手」字朱印
+    expect(find.text(UiStrings.stageAutoPlaySealManual), findsOneWidget);
   });
 
   testWidgets('点击 → 弹三选项菜单(跟随/自动/手动)', (tester) async {
