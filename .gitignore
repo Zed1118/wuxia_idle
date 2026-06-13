@@ -73,3 +73,7 @@ docs/handoff/**/*.pid
 # Suno 音频候选素材(本地保留不进 git · BGM 扩展二期还要用 · 2026-06-11)
 assets/audio/_suno_candidates/
 .superpowers/
+
+# 平衡/压测/审计工具的再生产物(每跑 test/tools/* 即重写 · 纯输出无基线读回 ·
+# 工具自 createSync 目录 · 治本停 tracked 防每跑测试 dirty · 2026-06-13)
+test/tools/output/
