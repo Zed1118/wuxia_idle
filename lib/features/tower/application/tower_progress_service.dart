@@ -146,6 +146,15 @@ class TowerProgressService {
         progress.bestClearTime = nonZero.isEmpty
             ? null
             : nonZero.reduce((a, b) => a < b ? a : b);
+
+        // P1 A2 问鼎轮回：30 层首通 → 标记当前周目已完成
+        // 单调递增（max 防回退），不降级
+        if (floorIndex == 30) {
+          final completed = progress.currentCycleIndex;
+          if (completed > progress.maxClearedCycle) {
+            progress.maxClearedCycle = completed;
+          }
+        }
       }
 
       // P0.2 #40 Phase 2:任何通关(首通/重打/跳层)都更新 lastClearedAt
@@ -176,6 +185,37 @@ class TowerProgressService {
       }
       progress.totalAttempts += 1;
       progress.totalDefeats += 1;
+      await isar.towerProgress.put(progress);
+    });
+  }
+
+  /// 推进到下一周目（问鼎轮回）。
+  ///
+  /// 守卫：仅当 `maxClearedCycle >= currentCycleIndex`（本周目 30 层已全通）
+  /// 时才执行，否则 no-op，防止未通整塔提前推进。
+  ///
+  /// 执行后：
+  ///   - `currentCycleIndex++`（进入下一周目）
+  ///   - `highestClearedFloor = 0`（新周目从第 1 层重新开始爬）
+  ///
+  /// 保持累计：
+  ///   - `totalAttempts` / `totalDefeats` 跨周目持续累加，不重置
+  ///   - `perFloorClearTimes` 保留（首通耗时按 GDD §5.1 反主流锁首通，新周目
+  ///     首通同层会按原逻辑写入，即 index 已有非 0 值时不覆盖；P1 A3+ 若需
+  ///     按周目区分耗时可再扩展字段，目前 YAGNI）
+  Future<void> advanceCycle({int saveDataId = 1}) async {
+    await isar.writeTxn(() async {
+      final progress = await isar.towerProgress
+          .filter()
+          .saveDataIdEqualTo(saveDataId)
+          .findFirst();
+      if (progress == null) return; // 未初始化 → no-op
+
+      // 守卫：当前周目 30 层未全通，不推进
+      if (progress.maxClearedCycle < progress.currentCycleIndex) return;
+
+      progress.currentCycleIndex += 1;
+      progress.highestClearedFloor = 0;
       await isar.towerProgress.put(progress);
     });
   }

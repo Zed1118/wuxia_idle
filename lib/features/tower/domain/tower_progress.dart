@@ -51,4 +51,13 @@ class TowerProgress {
   /// 最近一次通关时间（任何层 + 首通/重打都更新）。
   /// 与 highestClearedAt（只锁首通最高层）区分。
   DateTime? lastClearedAt;
+
+  /// 玩家当前在爬的周目（问鼎轮回，全塔规则）。默认 1，首次进入游戏从第 1 周目开始。
+  /// advanceCycle 成功后 ++；读取本字段决定本周目敌人演化强度（P1 A3+ 使用）。
+  int currentCycleIndex = 1;
+
+  /// 已完整通关（30 层全通）到的最高周目编号。
+  /// 0 = 从未 30 层全通；N = 第 1..N 周目均已 30 层通关。
+  /// 单调递增：recordClear 在 floor 30 首通时更新（`max(maxClearedCycle, currentCycleIndex)`）。
+  int maxClearedCycle = 0;
 }
