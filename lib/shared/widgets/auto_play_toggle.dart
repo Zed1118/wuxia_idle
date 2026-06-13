@@ -49,12 +49,13 @@ class AutoPlayToggle extends StatelessWidget {
     final display = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          _effectiveAuto ? Icons.smart_toy_outlined : Icons.touch_app_outlined,
-          size: 14,
-          color: enabled ? WuxiaColors.textPrimary : WuxiaColors.textMuted,
+        _SealGlyph(
+          char: _effectiveAuto
+              ? UiStrings.stageAutoPlaySealAuto
+              : UiStrings.stageAutoPlaySealManual,
+          enabled: enabled,
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 5),
         Text(
           label,
           style: TextStyle(
@@ -131,4 +132,40 @@ enum _AutoPlayChoice {
 
   /// 映射回 [AutoPlayToggle.overrideMode] 的三态。
   final bool? value;
+}
+
+/// 绛红方印小字 glyph(「自」=自动 /「手」=手动)。朱文风:红框 + 浅红底 + 红字。
+/// 暂用现有字体单字,真小篆字形待后续补篆体字体(见 UiStrings 注)。
+class _SealGlyph extends StatelessWidget {
+  const _SealGlyph({required this.char, required this.enabled});
+
+  final String char;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = enabled ? WuxiaColors.resultHighlight : WuxiaColors.textMuted;
+    return Container(
+      width: 16,
+      height: 16,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: c.withValues(alpha: enabled ? 0.14 : 0.0),
+        border: Border.all(
+          color: c.withValues(alpha: enabled ? 0.9 : 0.5),
+          width: 1.1,
+        ),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Text(
+        char,
+        style: TextStyle(
+          color: c,
+          fontSize: 10,
+          height: 1.0,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
 }
