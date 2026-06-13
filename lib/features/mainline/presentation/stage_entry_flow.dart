@@ -19,7 +19,14 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../battle/application/battle_resolution.dart';
+import '../../battle/application/battle_replay_providers.dart';
+import '../../battle/application/battle_replay_record_service.dart';
+import '../../battle/application/manual_clear_recorder.dart';
 import '../../battle/application/stage_battle_setup.dart';
+import '../../battle/domain/auto_play_mode.dart';
+import '../../battle/domain/battle_replay.dart';
+import '../../battle/domain/battle_replay_record.dart';
+import '../../settings/application/gameplay_settings_provider.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../battle/domain/strategy/light_foot_strategy.dart';
 import '../../battle/domain/strategy/mass_battle_strategy.dart';
@@ -308,14 +315,52 @@ class _StageBattleHost extends ConsumerStatefulWidget {
 class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
   String? _setupError;
 
+  /// 半手动 P0 步骤5:本场进入模式 + 命中的重放记录(autoReplay 用其 seed+ops)。
+  /// 默认 manualFirstClear,initState 决策后 setState 刷新。
+  AutoPlayMode _mode = AutoPlayMode.manualFirstClear;
+  BattleReplayRecord? _record;
+
+  String get _battleKey =>
+      BattleReplayRecordService.stageBattleKey(widget.stage.id);
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       try {
-        final (left, right) = await StageBattleSetup(isar: IsarSetup.instance).buildTeams(widget.stage);
+        // ── 半手动 P0 步骤5:入口决策(进战斗前算 effectiveMode)──
+        final svc = ref.read(battleReplayRecordServiceProvider);
+        final progress = await ref.read(mainlineProgressProvider.future);
         if (!mounted) return;
+        final cleared = progress.clearedStageIds.contains(widget.stage.id);
+        _record = await svc.find(_battleKey);
+        if (!mounted) return;
+        final global =
+            (await ref.read(gameplaySettingsProvider.future)).autoPlayDefault;
+        if (!mounted) return;
+        var mode = resolveAutoPlayMode(
+          isCleared: cleared,
+          hasRecord: _record != null,
+          override: _record?.autoPlayOverride,
+          globalDefault: global,
+        );
+        // 群战守城:formation 是玩家输入,未入 seed+ops → 不走确定性 replay,
+        // 自动一律 autoFallback(现有自动战斗)。手动首通仍录制(无害)。
+        if (widget.stage.stageType == StageType.massBattle &&
+            mode == AutoPlayMode.autoReplay) {
+          mode = AutoPlayMode.autoFallback;
+        }
+        setState(() => _mode = mode);
+
+        final (left, right) =
+            await StageBattleSetup(isar: IsarSetup.instance)
+                .buildTeams(widget.stage);
+        if (!mounted) return;
+
+        // autoReplay 用记录的 seed 确定性重演;其余生成新种子供录制采集。
+        final seed = mode == AutoPlayMode.autoReplay ? _record!.seed : null;
+
         if (widget.stage.stageType == StageType.massBattle) {
           final enemyWaves =
               StageBattleSetup.buildEnemyTeamsPerWave(widget.stage);
@@ -330,6 +375,7 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
                   enemyTeamsPerWave: enemyWaves,
                   config: config,
                 ),
+                seed: seed,
               );
         } else if (widget.stage.stageType == StageType.lightFoot &&
             widget.stage.terrainBiome != null) {
@@ -340,9 +386,10 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
                   terrainBiome: widget.stage.terrainBiome!,
                   config: GameRepository.instance.numbers.lightFoot,
                 ),
+                seed: seed,
               );
         } else {
-          ref.read(battleProvider.notifier).startBattle(left, right);
+          ref.read(battleProvider.notifier).startBattle(left, right, seed: seed);
         }
       } catch (e) {
         if (!mounted) return;
@@ -350,6 +397,10 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
       }
     });
   }
+
+  bool get _isManualMode =>
+      _mode == AutoPlayMode.manualFirstClear ||
+      _mode == AutoPlayMode.manualReplay;
 
   @override
   Widget build(BuildContext context) {
@@ -372,7 +423,20 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
         isBoss: widget.stage.isBossStage,
       ),
       deferVictoryToCaller: true,
-      onVictory: () {
+      manualStep: _isManualMode,
+      replaySeed: _mode == AutoPlayMode.autoReplay ? _record!.seed : null,
+      replayOps: _mode == AutoPlayMode.autoReplay
+          ? BattleReplayOp.decodeList(_record!.opsJson)
+          : null,
+      onVictory: () async {
+        // 手动场(首通/手动重打)胜利后录制 seed+ops(自动场绝不录制)。
+        await recordManualClearIfNeeded(
+          mode: _mode,
+          battleKey: _battleKey,
+          seed: ref.read(battleProvider.notifier).seed,
+          ops: ref.read(battleProvider.notifier).recordedOps,
+          service: ref.read(battleReplayRecordServiceProvider),
+        );
         widget.onVictory();
         // 不 pop:胜利仪式由 runStageFlow 在战斗界面之上播完后再 pop。
       },
