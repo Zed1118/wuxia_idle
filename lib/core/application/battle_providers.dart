@@ -157,6 +157,65 @@ class BattleNotifier extends _$BattleNotifier {
         _strategy.stepOne(state, ref.read(numbersConfigProvider), rng: _rng);
   }
 
+  /// 半手动战斗 P0 步骤4:重放执行(spec §五 P0#4)。
+  ///
+  /// 给定本场 [seed] + 录制的操作序列 [ops](`{anchor=tick, charId, skillId,
+  /// targetId}`),确定性复刻手动通关:同 seed 重建 rng(`startBattle`)+ 用
+  /// [step] 逐步推进(与步骤3c 手动录制同粒度,每个整数 tick 都落点)+ 在
+  /// `state.tick == op.anchor` 时回放 [requestUltimate](与录制时机一致)。
+  ///
+  /// **确定性地基**:rng 走 `startBattle(seed:)` 注入的单一 seeded 实例,
+  /// stepOne 拆 actor 不改 rng 消费顺序(`battle_step_one_test` /
+  /// `battle_seed_determinism_test` 锁死)→ 同 seed + 同 ops 两次重放逐 action
+  /// 与胜负全等(`battle_replay_execution_test` 红线)。
+  ///
+  /// 内部复用 [requestUltimate],会把回放的指令重新写进 [recordedOps](在相同
+  /// 锚点 → 重新派生序列与 [ops] 逐字段全等,幂等可溯)。技能由 op 的 skillId
+  /// 在该 actor 当前 `availableSkills` 中解析;解析不到则跳过该 op(防脏数据,
+  /// 不中断重放)。[maxSteps] 兜底防 near-immunity 死循环卡线程。
+  void replay(
+    List<BattleCharacter> leftTeam,
+    List<BattleCharacter> rightTeam, {
+    required int seed,
+    required List<BattleReplayOp> ops,
+    int maxSteps = 20000,
+  }) {
+    startBattle(leftTeam, rightTeam, seed: seed);
+    var opIdx = 0;
+    var guard = 0;
+    while (!state.isFinished && guard < maxSteps) {
+      final tick = state.tick;
+      while (opIdx < ops.length && ops[opIdx].anchor == tick) {
+        final op = ops[opIdx];
+        final skill = _resolveReplaySkill(op.charId, op.skillId);
+        if (skill != null) {
+          requestUltimate(op.charId, skill, targetId: op.targetId);
+        }
+        opIdx++;
+      }
+      step();
+      guard++;
+    }
+  }
+
+  /// 重放:按 charId + skillId 在该 actor 当前 `availableSkills` 中解析 SkillDef。
+  /// 找不到返回 null(由 [replay] 跳过该 op)。
+  SkillDef? _resolveReplaySkill(int charId, String skillId) {
+    for (final c in state.leftTeam) {
+      if (c.characterId != charId) continue;
+      for (final s in c.availableSkills) {
+        if (s.id == skillId) return s;
+      }
+    }
+    for (final c in state.rightTeam) {
+      if (c.characterId != charId) continue;
+      for (final s in c.availableSkills) {
+        if (s.id == skillId) return s;
+      }
+    }
+    return null;
+  }
+
   /// 战斗结算 hook（phase2_tasks T26 §340）。
   ///
   /// caller 在 result 翻转后调用（typically `ref.listen(battleResultProvider,
