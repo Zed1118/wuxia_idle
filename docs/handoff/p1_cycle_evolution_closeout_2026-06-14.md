@@ -11,9 +11,11 @@
 ## 闸门
 
 - `flutter analyze` 0 error / 0 warning
-- 全量 **2160 测** / 1 skip / 零回归
-- 12 任务两阶段 review（控制方只读 diff + 全仓 analyze）全通
+- 全量 **2163 测** / 1 skip / 零回归
+- 12 任务两阶段 review + **整条分支最终 opus review** 全通
 - saveVersion **0.21.0**
+
+> **最终 review 修复(052869c3)**:opus 整体 review 抓到 per-task review 全漏的 bug —— **识破词条原为死机制**(`_enemyToBattle` 注入 chargeSkillId 但未加进 `availableSkills`,BattleAI 选不到→永不蓄力)。已修(识破注入时真接入 availableSkills)+ 加战斗 e2e 测(`shipo_charge_live_test` T3 真证 `chargingSkill != null`)。另修爬塔 cycle≥2 漏传 cycleHint + 真气 yaml 注释 drift。5 词条现全部生效。
 
 ---
 
