@@ -200,6 +200,11 @@ class NumbersConfig {
   /// 主修心法招 powerMultiplier ≥ 此值时自动填入大招槽，由 [SkillLoadout.autoFill] 消费。
   final int loadoutUltimatePowerThreshold;
 
+  /// 周目进化配置(P1 cycle_evolution · numbers.yaml `cycle_evolution`)。
+  /// 敌人随挂机周目数自动强化；全部参数数据驱动（§5.6 不硬编码）。
+  /// fixture 不带 `cycle_evolution` 段时走 [CycleEvolutionConfig.empty]（traitsFor 永空集）。
+  final CycleEvolutionConfig cycleEvolution;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -245,6 +250,7 @@ class NumbersConfig {
     required this.adventureAttributeLifetimeCap,
     required this.encounterFortuneSensitivity,
     required this.loadoutUltimatePowerThreshold,
+    required this.cycleEvolution,
     required this.raw,
   });
 
@@ -376,6 +382,9 @@ class NumbersConfig {
                   as Map<String, dynamic>?)?['ultimate_power_threshold'] as num?)
               ?.toInt() ??
           5000,
+      cycleEvolution: CycleEvolutionConfig.fromYaml(
+        y['cycle_evolution'] as Map<String, dynamic>?,
+      ),
       raw: y,
     );
   }
@@ -2310,5 +2319,219 @@ class SkillUnlockConfig {
       towerFragmentDropProb:
           (y['tower_fragment_drop_prob'] as num?)?.toDouble() ?? 0.20,
     );
+  }
+}
+
+// =============================================================================
+// 周目进化配置 (P1 cycle_evolution · numbers.yaml `cycle_evolution`)
+// 全部数值数据驱动（§5.6 不硬编码）。
+// =============================================================================
+
+/// 御体词条参数（防御率按周目分档加成）。
+class YutiTraitParams {
+  final double defenseRateBonusC2;
+  final double defenseRateBonusC3;
+
+  const YutiTraitParams({
+    required this.defenseRateBonusC2,
+    required this.defenseRateBonusC3,
+  });
+
+  factory YutiTraitParams.fromYaml(Map<String, dynamic> y) => YutiTraitParams(
+        defenseRateBonusC2:
+            (y['defense_rate_bonus_c2'] as num).toDouble(),
+        defenseRateBonusC3:
+            (y['defense_rate_bonus_c3'] as num).toDouble(),
+      );
+}
+
+/// 反震词条参数（受击反伤 DoT）。
+class FanzhenTraitParams {
+  final int damagePerTick;
+  final int ticks;
+
+  const FanzhenTraitParams({
+    required this.damagePerTick,
+    required this.ticks,
+  });
+
+  factory FanzhenTraitParams.fromYaml(Map<String, dynamic> y) =>
+      FanzhenTraitParams(
+        damagePerTick: (y['damage_per_tick'] as num).toInt(),
+        ticks: (y['ticks'] as num).toInt(),
+      );
+}
+
+/// 凝甲词条参数（受暴击伤害减免倍率）。
+class NingjiaTraitParams {
+  final double critDamageTakenMult;
+
+  const NingjiaTraitParams({required this.critDamageTakenMult});
+
+  factory NingjiaTraitParams.fromYaml(Map<String, dynamic> y) =>
+      NingjiaTraitParams(
+        critDamageTakenMult: (y['crit_damage_taken_mult'] as num).toDouble(),
+      );
+}
+
+/// 真气词条参数（战斗开场回复内力百分比）。
+class ZhenqiTraitParams {
+  final double internalForcePct;
+
+  const ZhenqiTraitParams({required this.internalForcePct});
+
+  factory ZhenqiTraitParams.fromYaml(Map<String, dynamic> y) =>
+      ZhenqiTraitParams(
+        internalForcePct: (y['internal_force_pct'] as num).toDouble(),
+      );
+}
+
+/// 识破词条参数（复用既有蓄力破招技 id）。
+class ShipoTraitParams {
+  final String chargeSkillId;
+
+  const ShipoTraitParams({required this.chargeSkillId});
+
+  factory ShipoTraitParams.fromYaml(Map<String, dynamic> y) =>
+      ShipoTraitParams(
+        chargeSkillId: y['charge_skill_id'] as String,
+      );
+}
+
+/// 全部反制词条参数容器（numbers.yaml `cycle_evolution.traits`）。
+class CycleTraitsConfig {
+  final YutiTraitParams yuti;
+  final FanzhenTraitParams fanzhen;
+  final NingjiaTraitParams ningjia;
+  final ZhenqiTraitParams zhenqi;
+  final ShipoTraitParams shipo;
+
+  const CycleTraitsConfig({
+    required this.yuti,
+    required this.fanzhen,
+    required this.ningjia,
+    required this.zhenqi,
+    required this.shipo,
+  });
+
+  factory CycleTraitsConfig.fromYaml(Map<String, dynamic> y) =>
+      CycleTraitsConfig(
+        yuti: YutiTraitParams.fromYaml(
+            (y['yuti'] as Map).cast<String, dynamic>()),
+        fanzhen: FanzhenTraitParams.fromYaml(
+            (y['fanzhen'] as Map).cast<String, dynamic>()),
+        ningjia: NingjiaTraitParams.fromYaml(
+            (y['ningjia'] as Map).cast<String, dynamic>()),
+        zhenqi: ZhenqiTraitParams.fromYaml(
+            (y['zhenqi'] as Map).cast<String, dynamic>()),
+        shipo: ShipoTraitParams.fromYaml(
+            (y['shipo'] as Map).cast<String, dynamic>()),
+      );
+}
+
+/// 周目进化主配置（numbers.yaml `cycle_evolution`，P1 spec）。
+///
+/// 敌人随挂机周目数自动强化，全部参数数据驱动（§5.6 不硬编码）。
+/// [traitsFor] 纯函数（无 I/O），根据 (cycle, isBoss, isTower) 查 assignment 表
+/// 返回该场景激活的词条 id 集合；cycle ≤ 1 时返回空集。
+///
+/// 解析 assignment 时兼容 yaml int key 与 String key（yaml int key 解析后可能为
+/// int 或 String，两者均处理）。
+class CycleEvolutionConfig {
+  /// 每周目敌人基础属性缩放增幅（如 0.06 = +6%/周目）。
+  final double scalePerCycle;
+
+  /// 主线最大周目数。
+  final int maxCycleMainline;
+
+  /// 爬塔最大周目数。
+  final int maxCycleTower;
+
+  /// 敌人防御率上限（防越 §5.4 红线）。
+  final double defenseRateCap;
+
+  /// 反制词条参数容器。
+  final CycleTraitsConfig traits;
+
+  /// assignment 表：`{ tableKey → { cycle → [traitId] } }`。
+  /// tableKey ∈ {'mainline', 'tower_normal', 'tower_boss'}。
+  final Map<String, Map<int, Set<String>>> _assignment;
+
+  const CycleEvolutionConfig({
+    required this.scalePerCycle,
+    required this.maxCycleMainline,
+    required this.maxCycleTower,
+    required this.defenseRateCap,
+    required this.traits,
+    required Map<String, Map<int, Set<String>>> assignment,
+  }) : _assignment = assignment;
+
+  /// 空配置兜底（fixture / test yaml 不带 `cycle_evolution` 段时）。
+  /// 所有 traitsFor 返回空集，不破坏既有测试。
+  static const CycleEvolutionConfig empty = CycleEvolutionConfig(
+    scalePerCycle: 0.0,
+    maxCycleMainline: 1,
+    maxCycleTower: 1,
+    defenseRateCap: 0.6,
+    traits: CycleTraitsConfig(
+      yuti: YutiTraitParams(
+          defenseRateBonusC2: 0.0, defenseRateBonusC3: 0.0),
+      fanzhen: FanzhenTraitParams(damagePerTick: 0, ticks: 0),
+      ningjia: NingjiaTraitParams(critDamageTakenMult: 1.0),
+      zhenqi: ZhenqiTraitParams(internalForcePct: 0.0),
+      shipo: ShipoTraitParams(chargeSkillId: ''),
+    ),
+    assignment: {},
+  );
+
+  factory CycleEvolutionConfig.fromYaml(Map<String, dynamic>? y) {
+    if (y == null || y.isEmpty) return empty;
+    return CycleEvolutionConfig(
+      scalePerCycle: (y['scale_per_cycle'] as num).toDouble(),
+      maxCycleMainline: (y['max_cycle_mainline'] as num).toInt(),
+      maxCycleTower: (y['max_cycle_tower'] as num).toInt(),
+      defenseRateCap: (y['defense_rate_cap'] as num).toDouble(),
+      traits: CycleTraitsConfig.fromYaml(
+          (y['traits'] as Map).cast<String, dynamic>()),
+      assignment: _parseAssignment(
+          (y['assignment'] as Map?)?.cast<String, dynamic>() ?? const {}),
+    );
+  }
+
+  static Map<String, Map<int, Set<String>>> _parseAssignment(
+      Map<String, dynamic> raw) {
+    final result = <String, Map<int, Set<String>>>{};
+    for (final tableEntry in raw.entries) {
+      final tableKey = tableEntry.key; // e.g. 'mainline'
+      final tableMap = (tableEntry.value as Map).cast<Object, dynamic>();
+      final cycleMap = <int, Set<String>>{};
+      for (final cycleEntry in tableMap.entries) {
+        // yaml int keys may parse as int or String — handle both
+        final cycleKey = cycleEntry.key is int
+            ? cycleEntry.key as int
+            : int.parse(cycleEntry.key.toString());
+        final traitList = (cycleEntry.value as List)
+            .map((e) => e as String)
+            .toSet();
+        cycleMap[cycleKey] = traitList;
+      }
+      result[tableKey] = cycleMap;
+    }
+    return result;
+  }
+
+  /// 纯函数：返回给定 (cycle, isBoss, isTower) 场景激活的词条 id 集合。
+  ///
+  /// - cycle ≤ 1 → 空集（无强化）
+  /// - 查表顺序：isTower ? (isBoss ? 'tower_boss' : 'tower_normal') : 'mainline'
+  /// - 对应 cycle 无 entry → 空集
+  Set<String> traitsFor({
+    required int cycle,
+    required bool isBoss,
+    required bool isTower,
+  }) {
+    if (cycle <= 1) return const {};
+    final tableKey = isTower ? (isBoss ? 'tower_boss' : 'tower_normal') : 'mainline';
+    return _assignment[tableKey]?[cycle] ?? const {};
   }
 }
