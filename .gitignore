@@ -77,3 +77,6 @@ assets/audio/_suno_candidates/
 # 平衡/压测/审计工具的再生产物(每跑 test/tools/* 即重写 · 纯输出无基线读回 ·
 # 工具自 createSync 目录 · 治本停 tracked 防每跑测试 dirty · 2026-06-13)
 test/tools/output/
+
+# CodeGraph 本地代码索引(machine-local · db/config 含本机路径 · 2026-06-13 init)
+.codegraph/
