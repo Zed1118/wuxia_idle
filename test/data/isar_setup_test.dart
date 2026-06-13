@@ -61,7 +61,7 @@ void main() {
       // 重新 init → _ensureSaveData 检测版本差异跑迁移。
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.19.0', reason: '迁移后升版到当前(0.19.0)');
+      expect(save.saveVersion, '0.20.0', reason: '迁移后升版到当前(0.20.0)');
       expect(
         save.skillUnlockProgress.isUnlocked('skill_encounter_ting_yu_jian'),
         isTrue,
@@ -80,7 +80,7 @@ void main() {
       );
     });
 
-    test('步骤5 迁移:0.18 旧档升 0.19 + BattleReplayRecord 天然空(无解锁)',
+    test('步骤5 迁移:0.18 旧档升当前 + BattleReplayRecord 天然空(无解锁)',
         () async {
       // 构造 0.18 旧档(无 replay 记录,正确初始态)。
       await IsarSetup.init(directory: tempDir, inspector: false);
@@ -91,10 +91,10 @@ void main() {
       });
       await IsarSetup.close();
 
-      // 重开 → 升版 0.19.0,新 collection 旧档天然空(无任何关已"手动通关")。
+      // 重开 → 升版当前(0.20.0),新 collection 旧档天然空(无任何关已"手动通关")。
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.19.0', reason: '步骤5 升版');
+      expect(save.saveVersion, '0.20.0', reason: '步骤5 升版(迁移豁免:旧已通关无记录)');
       final replays =
           await IsarSetup.instance.battleReplayRecords.where().findAll();
       expect(replays, isEmpty,
@@ -108,8 +108,8 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.19.0',
-          reason: '半手动 P0 步骤5 加 BattleReplayRecord collection → 升 0.19.0');
+      expect(save.saveVersion, '0.20.0',
+          reason: '半手动 P0 步骤5 全闭环 BattleReplayRecord 加 autoPlayOverride → 升 0.20.0');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);

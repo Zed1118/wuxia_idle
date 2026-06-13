@@ -66,4 +66,19 @@ class BattleReplayRecordService {
       await isar.battleReplayRecords.put(rec);
     });
   }
+
+  /// 设该关每关记忆(半手动 P0 步骤5)。`null` = 随全局;`true/false` = 强制
+  /// 自动/手动。记录不存在则 no-op(未通关无从记忆)。
+  Future<void> setAutoPlayOverride(
+    String battleKey,
+    bool? value, {
+    int saveDataId = 1,
+  }) async {
+    await isar.writeTxn(() async {
+      final rec = await find(battleKey, saveDataId: saveDataId);
+      if (rec == null) return;
+      rec.autoPlayOverride = value;
+      await isar.battleReplayRecords.put(rec);
+    });
+  }
 }

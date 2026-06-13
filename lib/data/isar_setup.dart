@@ -89,7 +89,9 @@ class IsarSetup {
   // 波A:Character 加 keySkillId 破招槽 + 奇遇 unlock 池迁入 skillUnlockProgress → 0.18.0。
   // 半手动 P0 步骤5:加 BattleReplayRecord collection(seed+ops 重放落盘)→ 0.19.0。
   //   新 collection,旧档天然空(无已手动通关记录是正确初始态),无数据迁移动作。
-  static const _currentSaveVersion = '0.19.0';
+  // 半手动 P0 步骤5 全闭环:BattleReplayRecord 加 autoPlayOverride bool?(每关记忆)→ 0.20.0。
+  //   既有 collection 加 nullable 字段,旧记录读为 null(=随全局 autoPlayDefault),无迁移动作。
+  static const _currentSaveVersion = '0.20.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({

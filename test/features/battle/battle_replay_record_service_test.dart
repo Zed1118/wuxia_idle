@@ -91,6 +91,30 @@ void main() {
         reason: '同关不同周目独立解锁');
   });
 
+  test('autoPlayOverride 默认 null(随全局); setAutoPlayOverride 写读往返', () async {
+    final key = BattleReplayRecordService.stageBattleKey('stage_01_01');
+    await service.record(battleKey: key, seed: 1, ops: const []);
+    expect((await service.find(key))!.autoPlayOverride, isNull,
+        reason: '新记录默认随全局 autoPlayDefault');
+
+    await service.setAutoPlayOverride(key, false);
+    expect((await service.find(key))!.autoPlayOverride, isFalse,
+        reason: '每关记忆:玩家切手动');
+
+    await service.setAutoPlayOverride(key, true);
+    expect((await service.find(key))!.autoPlayOverride, isTrue);
+
+    await service.setAutoPlayOverride(key, null);
+    expect((await service.find(key))!.autoPlayOverride, isNull,
+        reason: '清 override 回随全局');
+  });
+
+  test('setAutoPlayOverride 记录不存在 → no-op(不抛)', () async {
+    final key = BattleReplayRecordService.stageBattleKey('stage_99_99');
+    await service.setAutoPlayOverride(key, false);
+    expect(await service.find(key), isNull);
+  });
+
   test('落盘 close → reopen 持久化读出', () async {
     final key = BattleReplayRecordService.stageBattleKey('stage_02_03');
     await service.record(battleKey: key, seed: 999, ops: ops, clearedAt: DateTime(2026, 6, 13));
