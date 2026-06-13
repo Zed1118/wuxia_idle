@@ -42,3 +42,54 @@ hub 点 **`tower_floor_list`**。爬塔 plaque 固定高,开关走**已通关层
 - 群战屏 toggle 选「自动」实际走 autoFallback 非确定性 replay(formation 未入 seed),属已知降级,本验收不涉及。
 
 结论回填本 doc「逐项结论」段(沿 R2 体例:每项 PASS/FAIL + 截图名)。
+
+## 逐项结论
+
+1. **PASS** — `stage_list_autoplay_01_initial_tiles.png` / `stage_list_autoplay_02_tiles_04_locked.png`  
+   01_01..04 已通关 tile 均在敌数副标题下显示开关行；01_05 未通关只显示「可挑战」，无开关行。
+
+2. **PASS** — `stage_list_autoplay_01_initial_tiles.png`  
+   01_01 显示自动图标 +「自动」+ 弱灰「随设置」+ 下拉箭头，跟随全局默认态清楚。
+
+3. **PASS** — `stage_list_autoplay_01_initial_tiles.png`  
+   01_02 显示手动图标 +「手动」+ 下拉箭头，未显示「随设置」。
+
+4. **PASS** — `stage_list_autoplay_02_tiles_04_locked.png` / `stage_list_autoplay_05_hover_tooltip_mousemove_retry.png`  
+   01_03/01_04 开关灰显且无下拉箭头；用真实 mouseMoved hover 后出现 tooltip「重打一次记录后可切换」。
+
+5. **PASS** — `stage_list_autoplay_06_menu_01_01.png`  
+   点击 01_01 开关弹出三选项菜单，含「跟随设置 / 自动战斗 / 手动战斗」，1280×720 下不溢出且可读。
+
+6. **PASS** — `stage_list_autoplay_07_01_01_manual_selected.png` / `stage_list_autoplay_08_01_01_follow_restored.png`  
+   选择「手动战斗」后 01_01 变为「手动」；再选「跟随设置」后恢复「自动」+「随设置」。
+
+7. **FAIL** — `tower_floor_list_03_replay_dialog.png` / `tower_floor_list_06_dialog_menu_final_retry.png`  
+   点击已通关 17 层可弹「已通关」重打 dialog，dialog 居中不溢出，且有「战斗方式」+「自动」行；但多次点击该行/图标/文字均未弹出「跟随设置 / 自动战斗 / 手动战斗」三选项菜单。
+
+## 额外视觉判断
+
+- smart_toy / touch_app 图标语义直观，但偏现代工具感；更武侠的替代表达可考虑「书册/令牌」表示自动规则，「手印/指令」表示手动接管，或直接用小篆化「自 / 手」印章图标。
+- 「随设置」弱标记处理合适：灰度足够低，不抢主状态「自动」，但在 720p 下仍可辨。
+- 720p 下开关行未挤压 tile 内容；01_04 Boss 长名 + Boss 标记 + 开关行同屏可读，未见溢出。
+
+---
+
+## R1 #7 FAIL 定责(Claude · 非代码 bug)
+
+第 7 项 FAIL 根因 = **验收 route 种子缺口,不是代码 bug**。证据:
+- `tower_floor_list` route 只种 founding masters,**未种任何 tower 重放记录** → 已通关层 dialog 内 toggle 命中 `hasRecord=false` 的**迁移豁免禁用态**(渲染为 Tooltip 包裹的灰显「自动」,**不是 PopupMenuButton**,故点击无反应)。
+- 复看 `tower_floor_list_03_replay_dialog.png`:「战斗方式 自动」**无下拉箭头、无「随设置」、灰显** = 正是禁用态(与主线 01_03/01_04 灰显态同源,你已 PASS 那两项)。
+- 新增单测「enabled toggle 嵌 AlertDialog 内 → 点击照常弹三选项菜单」**通过**,证 PopupMenuButton 在 dialog 上下文工作正常。
+
+**修复**:新增验收 route `tower_floor_list_autoplay`(种 1/2 层通关 + 重放记录)。提交 `c55d98cd`。
+
+## R2 复验(只重验第 7 项 · 用新 route)
+
+hub 里点 **`tower_floor_list_autoplay`**(说明含「per-floor 自动/手动开关」)。窗口 1280×720。
+
+**注意**:塔列表自动滚到当前层(第 3 层置顶),已通关的 **1/2 层在视图上方,需向上滚**才能点到。
+
+7'. 向上滚到 **第 1 层**(✓ 已通关)→ 点它 → 弹「已通关」重打 dialog,dialog 内「战斗方式」行应是 **enabled** 态:「自动」+ 灰字「随设置」+ **下拉箭头**。点该开关 → 弹「跟随设置 / 自动战斗 / 手动战斗」三选项菜单。
+8'. 向上滚到 **第 2 层**(✓ 已通关)→ 点它 → dialog 内开关为「手动」(pin 态,无「随设置」)+ 下拉箭头,点击同样弹三选项菜单。
+
+回填 PASS/FAIL + 截图名。其余 1-6 项已 PASS 不必重验。
