@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../application/audio_settings_provider.dart';
+import '../application/gameplay_settings_provider.dart';
+import '../domain/gameplay_settings.dart';
 
 /// 设置面板：3 滑条 + 静音开关，改动即存（provider 内持久化 + 应用引擎）。
 class SettingsPanel extends ConsumerWidget {
@@ -64,8 +66,36 @@ class SettingsPanel extends ConsumerWidget {
             value: s.muted,
             onChanged: notifier.setMuted,
           ),
+          const Divider(height: 1),
+          const _AutoPlayDefaultTile(),
         ],
       ),
+    );
+  }
+}
+
+/// 半手动战斗 P0 步骤5-G2:全局「自动战斗」默认开关。
+/// 已通关关卡是否默认走自动重演(每关可在选关屏覆盖)。
+class _AutoPlayDefaultTile extends ConsumerWidget {
+  const _AutoPlayDefaultTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(gameplaySettingsProvider);
+    final on = async.maybeWhen(
+      data: (d) => d.autoPlayDefault,
+      orElse: () => true,
+    );
+    return SwitchListTile(
+      title: const Text(UiStrings.settingsAutoPlayDefault),
+      subtitle: const Text(UiStrings.settingsAutoPlayDefaultHint),
+      value: on,
+      onChanged: (v) async {
+        await ref
+            .read(gameplaySettingsServiceProvider)
+            .save(GameplaySettings(autoPlayDefault: v));
+        ref.invalidate(gameplaySettingsProvider);
+      },
     );
   }
 }

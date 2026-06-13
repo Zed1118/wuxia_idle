@@ -839,6 +839,9 @@ class UiStrings {
   static const String settingsSfxVolume = '音效';
   static const String settingsMuted = '静音';
   static const String settingsClose = '关闭';
+  // 半手动战斗 P0 步骤5:全局自动战斗默认开关。
+  static const String settingsAutoPlayDefault = '自动战斗';
+  static const String settingsAutoPlayDefaultHint = '已通关关卡默认自动重演(可逐关切手动)';
 
   static const String baikeScreenTitle = '江湖见闻录';
   static const String baikeTabFeed = '见闻';
