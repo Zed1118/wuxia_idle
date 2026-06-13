@@ -23,6 +23,13 @@ import '../../../data/isar_provider.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
 import '../../battle/application/battle_resolution.dart';
+import '../../battle/application/battle_replay_providers.dart';
+import '../../battle/application/battle_replay_record_service.dart';
+import '../../battle/application/manual_clear_recorder.dart';
+import '../../battle/domain/auto_play_mode.dart';
+import '../../battle/domain/battle_replay.dart';
+import '../../battle/domain/battle_replay_record.dart';
+import '../../settings/application/gameplay_settings_provider.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../../features/equipment/application/drop_service.dart';
 import '../../battle/application/stage_battle_setup.dart';
@@ -625,23 +632,54 @@ class _TowerBattleHost extends ConsumerStatefulWidget {
 class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
   String? _setupError;
 
+  /// 半手动 P0 步骤5:本场进入模式 + 命中重放记录(对应主线 _StageBattleHost)。
+  AutoPlayMode _mode = AutoPlayMode.manualFirstClear;
+  BattleReplayRecord? _record;
+
+  String get _battleKey =>
+      BattleReplayRecordService.towerBattleKey(widget.floor.floorIndex);
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       try {
+        // ── 半手动 P0 步骤5:入口决策 ──
+        final svc = ref.read(battleReplayRecordServiceProvider);
+        final progress = await ref.read(towerProgressProvider.future);
+        if (!mounted) return;
+        final cleared =
+            progress.highestClearedFloor >= widget.floor.floorIndex;
+        _record = await svc.find(_battleKey);
+        if (!mounted) return;
+        final global =
+            (await ref.read(gameplaySettingsProvider.future)).autoPlayDefault;
+        if (!mounted) return;
+        final mode = resolveAutoPlayMode(
+          isCleared: cleared,
+          hasRecord: _record != null,
+          override: _record?.autoPlayOverride,
+          globalDefault: global,
+        );
+        setState(() => _mode = mode);
+
         final (left, right) = await StageBattleSetup(
           isar: IsarSetup.instance,
         ).buildTeamsForTower(widget.floor);
         if (!mounted) return;
-        ref.read(battleProvider.notifier).startBattle(left, right);
+        final seed = mode == AutoPlayMode.autoReplay ? _record!.seed : null;
+        ref.read(battleProvider.notifier).startBattle(left, right, seed: seed);
       } catch (e) {
         if (!mounted) return;
         setState(() => _setupError = e.toString());
       }
     });
   }
+
+  bool get _isManualMode =>
+      _mode == AutoPlayMode.manualFirstClear ||
+      _mode == AutoPlayMode.manualReplay;
 
   @override
   Widget build(BuildContext context) {
@@ -663,7 +701,19 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
       sceneBackgroundPath: widget.floor.sceneBackgroundPath,
       bgmTrack: BgmTrack.tower,
       deferVictoryToCaller: true,
-      onVictory: () {
+      manualStep: _isManualMode,
+      replaySeed: _mode == AutoPlayMode.autoReplay ? _record!.seed : null,
+      replayOps: _mode == AutoPlayMode.autoReplay
+          ? BattleReplayOp.decodeList(_record!.opsJson)
+          : null,
+      onVictory: () async {
+        await recordManualClearIfNeeded(
+          mode: _mode,
+          battleKey: _battleKey,
+          seed: ref.read(battleProvider.notifier).seed,
+          ops: ref.read(battleProvider.notifier).recordedOps,
+          service: ref.read(battleReplayRecordServiceProvider),
+        );
         widget.onVictory();
         // 不 pop:胜利仪式由 runTowerFlow 在战斗界面之上播完后再 pop。
       },
