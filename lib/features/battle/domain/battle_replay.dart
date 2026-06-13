@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 /// 半手动战斗 P0:重放操作记录(spec `2026-06-13-semi-manual-battle-seed-
 /// replay-cycle-design.md` §2.2 / §六)。
 ///
@@ -43,4 +45,32 @@ class BattleReplayOp {
   String toString() =>
       'BattleReplayOp(anchor=$anchor, char=$charId, skill=$skillId, '
       'target=$targetId)';
+
+  // ─── 序列化(步骤5 落盘 BattleReplayRecord.opsJson)──────────────────────
+
+  /// 单条 op → JSON map。targetId 为 null 时显式写 null(保真,decode 回 null)。
+  Map<String, dynamic> toJson() => {
+        'anchor': anchor,
+        'charId': charId,
+        'skillId': skillId,
+        'targetId': targetId,
+      };
+
+  /// JSON map → 单条 op。
+  factory BattleReplayOp.fromJson(Map<String, dynamic> json) => BattleReplayOp(
+        anchor: json['anchor'] as int,
+        charId: json['charId'] as int,
+        skillId: json['skillId'] as String,
+        targetId: json['targetId'] as int?,
+      );
+
+  /// 操作序列 → JSON 字符串(落盘 `opsJson`)。保序。
+  static String encodeList(List<BattleReplayOp> ops) =>
+      jsonEncode(ops.map((o) => o.toJson()).toList());
+
+  /// JSON 字符串 → 操作序列(读盘重放)。保序。
+  static List<BattleReplayOp> decodeList(String json) =>
+      (jsonDecode(json) as List)
+          .map((e) => BattleReplayOp.fromJson(e as Map<String, dynamic>))
+          .toList();
 }

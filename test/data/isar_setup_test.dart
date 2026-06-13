@@ -11,6 +11,7 @@ import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/skill_unlock_entry.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
+import 'package:wuxia_idle/features/battle/domain/battle_replay_record.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 
@@ -60,7 +61,7 @@ void main() {
       // 重新 init → _ensureSaveData 检测版本差异跑迁移。
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.18.0', reason: '迁移后升版');
+      expect(save.saveVersion, '0.19.0', reason: '迁移后升版到当前(0.19.0)');
       expect(
         save.skillUnlockProgress.isUnlocked('skill_encounter_ting_yu_jian'),
         isTrue,
@@ -79,6 +80,27 @@ void main() {
       );
     });
 
+    test('步骤5 迁移:0.18 旧档升 0.19 + BattleReplayRecord 天然空(无解锁)',
+        () async {
+      // 构造 0.18 旧档(无 replay 记录,正确初始态)。
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      await IsarSetup.instance.writeTxn(() async {
+        final save = (await IsarSetup.instance.saveDatas.get(0))!;
+        save.saveVersion = '0.18.0';
+        await IsarSetup.instance.saveDatas.put(save);
+      });
+      await IsarSetup.close();
+
+      // 重开 → 升版 0.19.0,新 collection 旧档天然空(无任何关已"手动通关")。
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      final save = (await IsarSetup.instance.saveDatas.get(0))!;
+      expect(save.saveVersion, '0.19.0', reason: '步骤5 升版');
+      final replays =
+          await IsarSetup.instance.battleReplayRecords.where().findAll();
+      expect(replays, isEmpty,
+          reason: '旧档无重放记录 = 无关已自动解锁,需重新手动通关');
+    });
+
     test('首次 init 应自动建 SaveData(id=0) 并填默认值', () async {
       await IsarSetup.init(directory: tempDir, inspector: false);
 
@@ -86,8 +108,8 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.18.0',
-          reason: '波A Character 加 keySkillId 破招槽 + 奇遇池迁移 → 升 0.18.0');
+      expect(save.saveVersion, '0.19.0',
+          reason: '半手动 P0 步骤5 加 BattleReplayRecord collection → 升 0.19.0');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);

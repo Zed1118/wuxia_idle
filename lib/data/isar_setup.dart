@@ -20,6 +20,7 @@ import '../features/sect/domain/sect.dart';
 import '../features/sect/domain/sect_event.dart';
 import '../features/pvp/domain/pvp_record.dart';
 import '../features/pvp/domain/pvp_snapshot.dart';
+import '../features/battle/domain/battle_replay_record.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。
 ///
@@ -65,6 +66,7 @@ class IsarSetup {
     SectEventSchema,
     PvpRecordSchema,
     PvpSnapshotSchema,
+    BattleReplayRecordSchema,
   ];
 
   /// 当前 schema 对应的存档版本（写入新建 SaveData.saveVersion）。
@@ -85,7 +87,9 @@ class IsarSetup {
   /// sect 立绘 wiring Character 加 portraitPath String?(sect 成员立绘)→ 升 0.15.0。
   // P1b 藏经阁:Character 加 5 装配槽字段(mainSkillId1/2/assist/resonance/ultimate)→ 0.17.0。
   // 波A:Character 加 keySkillId 破招槽 + 奇遇 unlock 池迁入 skillUnlockProgress → 0.18.0。
-  static const _currentSaveVersion = '0.18.0';
+  // 半手动 P0 步骤5:加 BattleReplayRecord collection(seed+ops 重放落盘)→ 0.19.0。
+  //   新 collection,旧档天然空(无已手动通关记录是正确初始态),无数据迁移动作。
+  static const _currentSaveVersion = '0.19.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
