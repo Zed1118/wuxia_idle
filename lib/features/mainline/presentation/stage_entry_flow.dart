@@ -75,10 +75,12 @@ import 'stage_victory_dialog.dart';
 /// [battleRunnerForTest] / [victoryRecorderForTest] / [bossDefeatPenaltyForTest]
 /// 仅供 widget test 注入,生产端勿传。设计对齐爬塔 `runTowerFlow` DI 三件套
 /// ([@visibleForTesting])。
+/// D1: [targetCycle] 默认 1（零回归）。Task E 加 UI 后从 caller 传入。
 Future<void> runStageFlow({
   required BuildContext context,
   required WidgetRef ref,
   required StageDef stage,
+  int targetCycle = 1,
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting Future<void> Function(String stageId)? victoryRecorderForTest,
   @visibleForTesting
@@ -106,7 +108,12 @@ Future<void> runStageFlow({
   if (battleRunnerForTest != null) {
     won = await battleRunnerForTest();
   } else {
-    won = await _runBattle(context: context, ref: ref, stage: stage);
+    won = await _runBattle(
+      context: context,
+      ref: ref,
+      stage: stage,
+      targetCycle: targetCycle,
+    );
   }
 
   // ── defeat ──
@@ -172,6 +179,7 @@ Future<void> runStageFlow({
       stageId: stage.id,
       now: DateTime.now(),
       tutorialService: ref.read(tutorialServiceProvider),
+      cycle: targetCycle,
     );
     ref.invalidate(mainlineProgressProvider);
     ref.invalidate(currentTutorialStepProvider);
@@ -268,10 +276,12 @@ void _invalidateCharacterFamilyAfterCombat(WidgetRef ref) {
 }
 
 /// 推 BattleScreen 并 wait 胜/败回调；返回 true=胜，false=败/平。
+/// D1: [targetCycle] 默认 1（零回归）。
 Future<bool> _runBattle({
   required BuildContext context,
   required WidgetRef ref,
   required StageDef stage,
+  int targetCycle = 1,
 }) async {
   final completer = Completer<bool>();
   // 不 await push:胜利时 BattleScreen 留在栈上,由 runStageFlow 播完胜利仪式/
@@ -280,6 +290,7 @@ Future<bool> _runBattle({
     MaterialPageRoute(
       builder: (_) => _StageBattleHost(
         stage: stage,
+        targetCycle: targetCycle,
         onVictory: () {
           if (!completer.isCompleted) completer.complete(true);
         },
@@ -297,16 +308,23 @@ Future<bool> _runBattle({
 
 /// BattleScreen 的 setup 容器：initState 装配队伍 + startBattle，
 /// 然后渲染 [BattleScreen]。沿用 [BattleDemoLauncher] 的 postFrameCallback 模式。
+///
+/// [targetCycle] 默认 1（零回归）；D1 接入后 battleKey / isCleared / recordVictory
+/// / buildTeams 全部按周目维度工作。Task E 再加 UI 让玩家选更高周目。
 class _StageBattleHost extends ConsumerStatefulWidget {
   const _StageBattleHost({
     required this.stage,
     required this.onVictory,
     required this.onDefeat,
+    this.targetCycle = 1,
   });
 
   final StageDef stage;
   final VoidCallback onVictory;
   final VoidCallback onDefeat;
+
+  /// 目标周目编号，默认 1（行为与旧版完全一致）。
+  final int targetCycle;
 
   @override
   ConsumerState<_StageBattleHost> createState() => _StageBattleHostState();
@@ -320,8 +338,9 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
   AutoPlayMode _mode = AutoPlayMode.manualFirstClear;
   BattleReplayRecord? _record;
 
+  /// D1: battleKey 按周目维度生成（默认 cycle=1 与旧 key 格式一致）。
   String get _battleKey =>
-      BattleReplayRecordService.stageBattleKey(widget.stage.id);
+      BattleReplayRecordService.stageBattleKey(widget.stage.id, cycle: widget.targetCycle);
 
   @override
   void initState() {
@@ -333,7 +352,10 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
         final svc = ref.read(battleReplayRecordServiceProvider);
         final progress = await ref.read(mainlineProgressProvider.future);
         if (!mounted) return;
-        final cleared = progress.clearedStageIds.contains(widget.stage.id);
+        // D1: per-cycle isCleared（cycle=1 时与旧 clearedStageIds 行为等价，
+        // 因 A3 migration 将 clearedStageIds 全部写入 clearedStageCycleKeys#1）。
+        final cleared = progress.clearedStageCycleKeys
+            .contains('${widget.stage.id}#${widget.targetCycle}');
         _record = await svc.find(_battleKey);
         if (!mounted) return;
         final global =
@@ -355,7 +377,7 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
 
         final (left, right) =
             await StageBattleSetup(isar: IsarSetup.instance)
-                .buildTeams(widget.stage);
+                .buildTeams(widget.stage, cycleIndex: widget.targetCycle);
         if (!mounted) return;
 
         // autoReplay 用记录的 seed 确定性重演;其余生成新种子供录制采集。
