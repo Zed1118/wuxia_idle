@@ -775,14 +775,18 @@ class _EnemyGallery extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 5,
-          mainAxisSpacing: 16,
+          mainAxisSpacing: 12,
           crossAxisSpacing: 16,
-          childAspectRatio: 0.62,
+          childAspectRatio: 1.0,
         ),
         itemCount: chars.length,
         itemBuilder: (_, i) => FittedBox(
           fit: BoxFit.scaleDown,
-          child: CharacterAvatar(character: chars[i]),
+          child: CharacterAvatar(
+            character: chars[i],
+            avatarSize: 88,
+            barWidth: 130,
+          ),
         ),
       ),
     );

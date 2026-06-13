@@ -94,6 +94,7 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
   Widget build(BuildContext context) {
     final def = widget.mapDef;
     final scale = _realmScale;
+    final compact = MediaQuery.sizeOf(context).height <= 760;
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -104,24 +105,34 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          padding: EdgeInsets.fromLTRB(20, compact ? 10 : 16, 20, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _MapHero(def: def),
-              const SizedBox(height: 16),
+              _MapHero(def: def, compact: compact),
+              SizedBox(height: compact ? 10 : 16),
               PaperPanel(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  compact ? 10 : 14,
+                  16,
+                  compact ? 10 : 14,
+                ),
                 child: _OutputPreview(def: def, scale: scale),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: compact ? 10 : 18),
               PaperPanel(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  compact ? 10 : 14,
+                  16,
+                  compact ? 8 : 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SectionHeader(UiStrings.seclusionSetupTitle),
-                    const SizedBox(height: 12),
+                    SizedBox(height: compact ? 8 : 12),
                     LayoutBuilder(
                       builder: (context, constraints) {
                         final columns = constraints.maxWidth >= 620 ? 3 : 1;
@@ -139,6 +150,7 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
                                   hours: h,
                                   selected: _selectedHours == h,
                                   scale: scale,
+                                  compact: compact,
                                   mojianshiPerHour: def.mojianshiPerHour,
                                   onTap: () =>
                                       setState(() => _selectedHours = h),
@@ -151,7 +163,7 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 22),
+              SizedBox(height: compact ? 10 : 22),
               Align(
                 alignment: Alignment.center,
                 child: PlaqueButton(
@@ -172,16 +184,17 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
 }
 
 class _MapHero extends StatelessWidget {
-  const _MapHero({required this.def});
+  const _MapHero({required this.def, required this.compact});
 
   final SeclusionMapDef def;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: SizedBox(
-        height: 210,
+        height: compact ? 158 : 210,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -200,29 +213,29 @@ class _MapHero extends StatelessWidget {
             ),
             Positioned(
               right: 18,
-              top: 16,
-              child: SeclusionMapTraitIcon(def: def, size: 48),
+              top: compact ? 12 : 16,
+              child: SeclusionMapTraitIcon(def: def, size: compact ? 40 : 48),
             ),
             Positioned(
               left: 18,
               right: 18,
-              bottom: 18,
+              bottom: compact ? 12 : 18,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const _HeroSeal(text: UiStrings.seclusionMapAtlasTitle),
-                  const SizedBox(height: 8),
+                  SizedBox(height: compact ? 6 : 8),
                   Text(
                     def.mapName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: WuxiaColors.textPrimary,
-                      fontSize: 28,
+                      fontSize: compact ? 24 : 28,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  const SizedBox(height: 9),
+                  SizedBox(height: compact ? 6 : 9),
                   SeclusionMapTraitStrip(def: def),
                 ],
               ),
@@ -269,7 +282,7 @@ class _OutputPreview extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SectionHeader(UiStrings.seclusionHourlyPreview(scale)),
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
         _OutputRow(
           icon: Icons.construction,
           color: WuxiaUi.woodLight,
@@ -324,7 +337,7 @@ class _OutputRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.only(top: 3),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -363,6 +376,7 @@ class _DurationButton extends StatelessWidget {
   final int hours;
   final bool selected;
   final double scale;
+  final bool compact;
   final double mojianshiPerHour;
   final VoidCallback onTap;
 
@@ -370,6 +384,7 @@ class _DurationButton extends StatelessWidget {
     required this.hours,
     required this.selected,
     required this.scale,
+    required this.compact,
     required this.mojianshiPerHour,
     required this.onTap,
   });
@@ -381,8 +396,13 @@ class _DurationButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
       child: Container(
-        constraints: const BoxConstraints(minHeight: 96),
-        padding: const EdgeInsets.fromLTRB(14, 13, 14, 12),
+        constraints: BoxConstraints(minHeight: compact ? 76 : 96),
+        padding: EdgeInsets.fromLTRB(
+          14,
+          compact ? 9 : 13,
+          14,
+          compact ? 9 : 12,
+        ),
         decoration: BoxDecoration(
           color: selected
               ? WuxiaUi.gold.withValues(alpha: 0.22)
@@ -402,11 +422,11 @@ class _DurationButton extends StatelessWidget {
               UiStrings.seclusionStayCardTitle(hours),
               style: TextStyle(
                 color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
-                fontSize: 16,
+                fontSize: compact ? 15 : 16,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: compact ? 4 : 8),
             Text(
               UiStrings.seclusionDurationLabel(hours),
               style: TextStyle(
@@ -415,7 +435,7 @@ class _DurationButton extends StatelessWidget {
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: compact ? 6 : 12),
             Row(
               children: [
                 Icon(

@@ -526,8 +526,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   /// 否则用玩家手动选的 [_focusSlotIndex]（越界 / 死亡时回退到 0）。
   int _effectiveFocus(BattleState s) {
     if (s.leftTeam.isEmpty) return 0;
-    final enemyCharging =
-        s.rightTeam.any((e) => e.isAlive && e.chargingSkill != null);
+    final enemyCharging = s.rightTeam.any(
+      (e) => e.isAlive && e.chargingSkill != null,
+    );
     if (enemyCharging) {
       for (var i = 0; i < s.leftTeam.length; i++) {
         final c = s.leftTeam[i];
@@ -637,8 +638,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // 若 GameRepository 未初始化（widget test 路径）则回落到 schema 默认 3。
     int chargeMaxTicks;
     try {
-      chargeMaxTicks =
-          ref.read(numbersConfigProvider).combat.bossCharge.defaultChargeTicks;
+      chargeMaxTicks = ref
+          .read(numbersConfigProvider)
+          .combat
+          .bossCharge
+          .defaultChargeTicks;
     } catch (_) {
       chargeMaxTicks = 3;
     }
@@ -697,90 +701,90 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     return BgmScope(
       track: widget.bgmTrack,
       child: Scaffold(
-      backgroundColor: WuxiaColors.background,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: BattleSceneBackground(path: widget.sceneBackgroundPath),
-          ),
-          Positioned.fill(
-            child: BattleAtmosphereOverlay(
-              showLowHealth: showLowHealthOverlay,
-              showInkCloud: showBossInkCloud,
+        backgroundColor: WuxiaColors.background,
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: BattleSceneBackground(path: widget.sceneBackgroundPath),
             ),
-          ),
-          SafeArea(
-            child: AnimatedBuilder(
-              animation: _shakeCtrl,
-              builder: (ctx, child) {
-                return Transform.translate(
-                  offset: screenShakeOffset(
-                    t: _shakeCtrl.value,
-                    amplitude: widget.animConfig.shakeOffsetPx,
-                  ),
-                  child: child,
-                );
-              },
-              child: Column(
-                children: [
-                  if (widget.hint != null) _HintBanner(hint: widget.hint!),
-                  _Header(
-                    state: state,
-                    onToggleLog: () => setState(() => _logOpen = !_logOpen),
-                  ),
-                  _DangerBar(state: state),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        _BattleField(
-                          state: state,
-                          attackControllers: _attackControllers,
-                          popups: _popups,
-                          animConfig: widget.animConfig,
-                          chargeMaxTicks: chargeMaxTicks,
-                          onPopupComplete: _removePopup,
-                          hitFlashControllers: _hitFlashControllers,
-                          hitFlashColors: _hitFlashColors,
-                        ),
-                        Positioned.fill(
-                          child: IgnorePointer(
-                            child: _ProjectileLayer(trails: _activeTrails),
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: IgnorePointer(
-                            child: _EffectLayer(effects: _activeEffects),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _BattleReportStrip(
-                    state: state,
-                    onTap: () => setState(() => _logOpen = true),
-                  ),
-                  _BottomBar(
-                    state: state,
-                    focusSlotIndex: _effectiveFocus(state),
-                    onSelectFocus: _onSelectFocus,
-                    onSkill: _onSkillCommand,
-                    onFastForward: _toggleFastForward,
-                    isFastForward: _isFastForward,
-                  ),
-                ],
+            Positioned.fill(
+              child: BattleAtmosphereOverlay(
+                showLowHealth: showLowHealthOverlay,
+                showInkCloud: showBossInkCloud,
               ),
             ),
-          ),
-          Positioned.fill(
-            child: UltimateCaptionOverlay(key: _ultimateCaptionKey),
-          ),
-          if (_logOpen)
-            _LogDrawer(
-              state: state,
-              onClose: () => setState(() => _logOpen = false),
+            SafeArea(
+              child: AnimatedBuilder(
+                animation: _shakeCtrl,
+                builder: (ctx, child) {
+                  return Transform.translate(
+                    offset: screenShakeOffset(
+                      t: _shakeCtrl.value,
+                      amplitude: widget.animConfig.shakeOffsetPx,
+                    ),
+                    child: child,
+                  );
+                },
+                child: Column(
+                  children: [
+                    if (widget.hint != null) _HintBanner(hint: widget.hint!),
+                    _Header(
+                      state: state,
+                      onToggleLog: () => setState(() => _logOpen = !_logOpen),
+                    ),
+                    _DangerBar(state: state),
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          _BattleField(
+                            state: state,
+                            attackControllers: _attackControllers,
+                            popups: _popups,
+                            animConfig: widget.animConfig,
+                            chargeMaxTicks: chargeMaxTicks,
+                            onPopupComplete: _removePopup,
+                            hitFlashControllers: _hitFlashControllers,
+                            hitFlashColors: _hitFlashColors,
+                          ),
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              child: _ProjectileLayer(trails: _activeTrails),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              child: _EffectLayer(effects: _activeEffects),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _BattleReportStrip(
+                      state: state,
+                      onTap: () => setState(() => _logOpen = true),
+                    ),
+                    _BottomBar(
+                      state: state,
+                      focusSlotIndex: _effectiveFocus(state),
+                      onSelectFocus: _onSelectFocus,
+                      onSkill: _onSkillCommand,
+                      onFastForward: _toggleFastForward,
+                      isFastForward: _isFastForward,
+                    ),
+                  ],
+                ),
+              ),
             ),
-        ],
-      ),
+            Positioned.fill(
+              child: UltimateCaptionOverlay(key: _ultimateCaptionKey),
+            ),
+            if (_logOpen)
+              _LogDrawer(
+                state: state,
+                onClose: () => setState(() => _logOpen = false),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -833,15 +837,16 @@ class _DangerBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: WuxiaColors.danger.withValues(alpha: 0.18),
-        border: const Border(
-          bottom: BorderSide(color: WuxiaColors.danger),
-        ),
+        border: const Border(bottom: BorderSide(color: WuxiaColors.danger)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.warning_amber_rounded,
-              color: WuxiaColors.danger, size: 16),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: WuxiaColors.danger,
+            size: 16,
+          ),
           const SizedBox(width: 6),
           Flexible(
             child: Text(
@@ -920,8 +925,11 @@ class _BattleReportStrip extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.chevron_right,
-                  size: 16, color: WuxiaColors.textMuted),
+              const Icon(
+                Icons.chevron_right,
+                size: 16,
+                color: WuxiaColors.textMuted,
+              ),
             ],
           ),
         ),
@@ -1350,8 +1358,9 @@ class _BottomBar extends StatelessWidget {
     final hasFocus =
         focusSlotIndex >= 0 && focusSlotIndex < state.leftTeam.length;
     final focus = hasFocus ? state.leftTeam[focusSlotIndex] : null;
-    final pending =
-        focus == null ? null : state.pendingUltimates[focus.characterId];
+    final pending = focus == null
+        ? null
+        : state.pendingUltimates[focus.characterId];
 
     final skills = <SkillDef>[
       if (focus != null)
@@ -1462,9 +1471,7 @@ class _FocusChip extends StatelessWidget {
         width: 46,
         height: 60,
         decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: 0.28)
-              : WuxiaColors.sidebar,
+          color: selected ? color.withValues(alpha: 0.28) : WuxiaColors.sidebar,
           border: Border.all(
             color: selected ? color : WuxiaColors.border,
             width: selected ? 2 : 1,
@@ -1497,8 +1504,8 @@ class _FocusChip extends StatelessWidget {
                     color: dim
                         ? WuxiaColors.textMuted
                         : (selected
-                            ? WuxiaColors.textPrimary
-                            : WuxiaColors.textSecondary),
+                              ? WuxiaColors.textPrimary
+                              : WuxiaColors.textSecondary),
                   ),
                 ),
               ),
@@ -1547,12 +1554,17 @@ class _SkillCommandButton extends StatelessWidget {
     final enabled = ready && !isPending && !queuedAnother;
 
     final Color bgColor;
+    final baseSchoolColor = WuxiaColors.schoolColor(character.school);
     if (!ready) {
       bgColor = WuxiaColors.buttonDisabled;
     } else if (highlight) {
-      bgColor = WuxiaColors.resultHighlight; // 敌人蓄力中：醒目金
+      bgColor = Color.lerp(
+        WuxiaColors.sidebar,
+        WuxiaColors.resultHighlight,
+        0.72,
+      )!; // 敌人蓄力中：醒目金, 但收敛到战斗面板色系。
     } else {
-      bgColor = WuxiaColors.schoolColor(character.school);
+      bgColor = Color.lerp(WuxiaColors.sidebar, baseSchoolColor, 0.78)!;
     }
 
     final String statusText;
@@ -1580,7 +1592,10 @@ class _SkillCommandButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           side: highlight && enabled
               ? const BorderSide(color: WuxiaColors.textPrimary, width: 2)
-              : BorderSide.none,
+              : BorderSide(
+                  color: baseSchoolColor.withValues(alpha: 0.46),
+                  width: 1,
+                ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
         child: FittedBox(
@@ -1617,8 +1632,8 @@ class _SkillCommandButton extends StatelessWidget {
                   color: isPending
                       ? WuxiaColors.resultHighlight
                       : (enabled
-                          ? WuxiaColors.textPrimary
-                          : WuxiaColors.textMuted),
+                            ? WuxiaColors.textPrimary
+                            : WuxiaColors.textMuted),
                 ),
               ),
             ],
