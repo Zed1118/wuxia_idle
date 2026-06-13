@@ -40,6 +40,10 @@ enum VisualRoute {
     'tower_floor_list',
     '爬塔列表·塔势概览验收(30 层横向节点 + Boss 小/大标记 + 原列表保留)',
   ),
+  towerFloorListAutoPlay(
+    'tower_floor_list_autoplay',
+    '爬塔·per-floor 自动/手动开关验收(1/2 层通关+录记录 → 点已通关层弹重打 dialog,内含 enabled 开关:1 层跟随=自动随设置 / 2 层 pin 手动 / 点开三选项菜单)',
+  ),
   seclusionMapList('seclusion_map_list', '闭关地图·5 地点图册验收(地图大图 + 解锁/产出/进行中状态)'),
   seclusionSetup('seclusion_setup', '闭关准备·地点 hero + 产出预览 + 时长驻留牌验收'),
   seclusionActive('seclusion_active', '闭关中·地图背景 + 宣纸进度面板 + 收功按钮验收'),

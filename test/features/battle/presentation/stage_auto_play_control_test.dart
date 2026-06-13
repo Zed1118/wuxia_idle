@@ -75,4 +75,47 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.stageAutoPlayMenuManual), findsNothing);
   });
+
+  // 爬塔路径:toggle 嵌在 AlertDialog 内(塔身固定高,走重打 dialog)。验
+  // PopupMenuButton 在 dialog 上下文里照常弹三选项菜单(Codex R1 第 7 项 FAIL
+  // 实为 tower 验收 route 未种 record → 落禁用态;此测锁 enabled 态 dialog 内可弹)。
+  testWidgets('enabled toggle 嵌 AlertDialog 内 → 点击照常弹三选项菜单',
+      (tester) async {
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        stageAutoPlayStateProvider(key).overrideWith(
+          (ref) async => (overrideMode: null, hasRecord: true),
+        ),
+        gameplaySettingsProvider.overrideWith(
+          (ref) async => const GameplaySettings(autoPlayDefault: true),
+        ),
+      ],
+      child: MaterialApp(
+        home: Scaffold(
+          body: Builder(
+            builder: (ctx) => Center(
+              child: ElevatedButton(
+                onPressed: () => showDialog<void>(
+                  context: ctx,
+                  builder: (_) => const AlertDialog(
+                    content: StageAutoPlayControl(battleKey: key),
+                  ),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AutoPlayToggle), findsOneWidget);
+
+    await tester.tap(find.byType(AutoPlayToggle));
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.stageAutoPlayMenuFollow), findsOneWidget);
+    expect(find.text(UiStrings.stageAutoPlayMenuAuto), findsOneWidget);
+    expect(find.text(UiStrings.stageAutoPlayMenuManual), findsOneWidget);
+  });
 }
