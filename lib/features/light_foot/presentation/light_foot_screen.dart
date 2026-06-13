@@ -8,6 +8,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../battle/application/battle_replay_record_service.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
+import '../../battle/presentation/cycle_select_control.dart';
 import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
@@ -87,6 +88,14 @@ class LightFootScreen extends ConsumerWidget {
                               ref: ref,
                               stage: s,
                             ),
+                    onSelectCycle: status == LightFootStageStatus.cleared
+                        ? (targetCycle) => runStageFlow(
+                              context: context,
+                              ref: ref,
+                              stage: s,
+                              targetCycle: targetCycle,
+                            )
+                        : null,
                   ),
                 );
               },
@@ -103,11 +112,14 @@ class _LightFootRow extends StatelessWidget {
     required this.def,
     required this.status,
     required this.onTap,
+    this.onSelectCycle,
   });
 
   final StageDef def;
   final LightFootStageStatus status;
   final VoidCallback? onTap;
+  /// P1 周目进化 E2：周目选择回调（已通关时注入）。
+  final ValueChanged<int>? onSelectCycle;
 
   @override
   Widget build(BuildContext context) {
@@ -161,6 +173,12 @@ class _LightFootRow extends StatelessWidget {
                             battleKey:
                                 BattleReplayRecordService.stageBattleKey(def.id),
                           ),
+                        ),
+                        // P1 周目进化 E2：周目选择控件。
+                        const SizedBox(height: 6),
+                        CycleSelectControl(
+                          stageId: def.id,
+                          onSelectCycle: onSelectCycle,
                         ),
                       ],
                     ],

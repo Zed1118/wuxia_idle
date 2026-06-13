@@ -148,6 +148,10 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 重放 seed(语义标注;实际 seed 由 host startBattle 注入)。
   final int? replaySeed;
 
+  /// P1 周目进化 E2：江湖记招提示（targetCycle ≥ 2 时由 caller 传入 jianghuRememberHint）。
+  /// 非空时在 hint 横幅下方额外渲染一条琥珀色提示条，战斗开始后自动常驻（不阻塞）。
+  final String? cycleHint;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
@@ -162,6 +166,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.manualStep = false,
     this.replayOps,
     this.replaySeed,
+    this.cycleHint,
   });
 
   /// 是否自动重放模式(有录制操作序列待注入)。
@@ -828,6 +833,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 child: Column(
                   children: [
                     if (widget.hint != null) _HintBanner(hint: widget.hint!),
+                    if (widget.cycleHint != null) _CycleHintBanner(hint: widget.cycleHint!),
                     _Header(
                       state: state,
                       onToggleLog: () => setState(() => _logOpen = !_logOpen),
@@ -908,6 +914,26 @@ class _HintBanner extends StatelessWidget {
       child: Text(
         hint,
         style: const TextStyle(color: Color(0xFF8BC28B), fontSize: 13),
+      ),
+    );
+  }
+}
+
+// ─── 江湖记招提示横幅（P1 周目进化 E2）───────────────────────────────────────
+
+class _CycleHintBanner extends StatelessWidget {
+  final String hint;
+  const _CycleHintBanner({required this.hint});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+      color: const Color(0xFF3A2E00),
+      child: Text(
+        hint,
+        style: const TextStyle(color: Color(0xFFD4A800), fontSize: 12),
       ),
     );
   }

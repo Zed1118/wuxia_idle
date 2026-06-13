@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 
 import '../../../core/domain/enums.dart';
+import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../../data/isar_setup.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
 import '../domain/tower_floor_def.dart';
@@ -62,6 +64,14 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
     runTowerFlow(context: context, ref: ref, floor: def);
   }
 
+  /// P1 周目进化 E2：推进到下一轮回（TowerProgressService.advanceCycle）。
+  Future<void> _onAdvanceCycle() async {
+    await TowerProgressService(isar: IsarSetup.instance).advanceCycle(
+      saveDataId: IsarSetup.currentSlotId,
+    );
+    ref.invalidate(towerProgressProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
     final progressAsync = ref.watch(towerProgressProvider);
@@ -93,9 +103,17 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
             ),
             data: (entries) {
               _maybeScrollToAvailable(entries);
+              final maxCycleTower =
+                  GameRepository.instance.numbers.cycleEvolution.maxCycleTower;
+              final canAdvance =
+                  progress.maxClearedCycle >= progress.currentCycleIndex &&
+                      progress.currentCycleIndex < maxCycleTower;
               return Column(
                 children: [
                   _ProgressCard(progress: progress),
+                  // P1 周目进化 E2：爬塔轮回推进卡（30 层全通 + 未达上限时显示）。
+                  if (canAdvance)
+                    _TowerAdvanceCycleCard(onAdvance: _onAdvanceCycle),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                     child: _TowerSpineOverview(entries: entries),
@@ -253,6 +271,10 @@ class _ProgressCard extends StatelessWidget {
           _StatItem(
             label: UiStrings.towerProgressDefeats(progress.totalDefeats),
           ),
+          // P1 周目进化 E2：当前轮回标签。
+          _StatItem(
+            label: UiStrings.towerCurrentCycleLabel(progress.currentCycleIndex),
+          ),
         ],
       ),
     );
@@ -269,6 +291,61 @@ class _StatItem extends StatelessWidget {
     return Text(
       label,
       style: const TextStyle(color: WuxiaColors.textSecondary, fontSize: 13),
+    );
+  }
+}
+
+// ─── P1 周目进化 E2：爬塔轮回推进卡 ──────────────────────────────────────────
+
+/// 30 层全通 + 未达 maxCycleTower 时显示的「挑战下一轮回」入口。
+///
+/// 点击后调用 [onAdvance]（委派 [TowerProgressService.advanceCycle]），
+/// 成功后 invalidate towerProgressProvider，页面自动刷新进入新周目（第 1 层）。
+class _TowerAdvanceCycleCard extends StatelessWidget {
+  const _TowerAdvanceCycleCard({required this.onAdvance});
+
+  final VoidCallback onAdvance;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: WuxiaColors.resultHighlight.withValues(alpha: 0.08),
+        border: const Border(
+          bottom: BorderSide(color: WuxiaColors.resultHighlight, width: 0.6),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.loop, color: WuxiaColors.resultHighlight, size: 16),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text(
+              UiStrings.towerCycleReadyHint,
+              style: TextStyle(
+                color: WuxiaColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: onAdvance,
+            style: TextButton.styleFrom(
+              foregroundColor: WuxiaColors.resultHighlight,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              UiStrings.towerAdvanceCycleButton,
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
