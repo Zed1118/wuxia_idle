@@ -99,10 +99,15 @@ class MainlineProgressService {
   /// P1 #42 Phase 2 §10 P1.x:可选注入 [tutorialService],在同 writeTxn 内
   /// 原子推进 [SaveData.tutorialStep](Ch1 stage_01_0X → step X)。
   /// 测试 / debug seed 路径默认 null,不触发引导递增。
+  ///
+  /// [cycle] 周目编号，默认 1（首次通关）。周目 cycleKey `stageId#cycle` 写入
+  /// [MainlineProgress.clearedStageCycleKeys]（幂等，含同一关多周目各自独立）。
+  /// cycle==1 时同时维护 [MainlineProgress.clearedStageIds] 解锁链（向后兼容）。
   Future<void> recordVictory({
     required String stageId,
     required DateTime now,
     TutorialService? tutorialService,
+    int cycle = 1,
   }) async {
     await isar.writeTxn(() async {
       final progress = await isar.mainlineProgress
@@ -114,14 +119,54 @@ class MainlineProgressService {
           'MainlineProgress 未初始化：getOrCreate 未在 recordVictory 前调用',
         );
       }
-      if (progress.clearedStageIds.contains(stageId)) {
-        return; // 幂等：重复通关不二次 append
+
+      // 周目 cycleKey append（幂等）
+      final cycleKey = '$stageId#$cycle';
+      final keys = List<String>.of(progress.clearedStageCycleKeys);
+      if (!keys.contains(cycleKey)) {
+        keys.add(cycleKey);
+        progress.clearedStageCycleKeys = keys;
       }
-      progress.clearedStageIds = [...progress.clearedStageIds, stageId];
-      progress.clearedAt = [...progress.clearedAt, now];
-      await isar.mainlineProgress.put(progress);
-      await tutorialService?.advanceForStageCleared(stageId);
+
+      // cycle==1 维护原 clearedStageIds 解锁链（向后兼容，语义不变）
+      if (cycle == 1) {
+        if (progress.clearedStageIds.contains(stageId)) {
+          // 幂等：cycle1 已通关，只需 put cycleKey 变化（若有）
+          await isar.mainlineProgress.put(progress);
+          return;
+        }
+        progress.clearedStageIds = [...progress.clearedStageIds, stageId];
+        progress.clearedAt = [...progress.clearedAt, now];
+        await isar.mainlineProgress.put(progress);
+        await tutorialService?.advanceForStageCleared(stageId);
+      } else {
+        // cycle>1：只写 cycleKey，不改 clearedStageIds 解锁链
+        await isar.mainlineProgress.put(progress);
+      }
     });
+  }
+
+  /// 返回该 stageId 已通关的最高周目编号；从未通关返回 0。
+  static int highestClearedCycle(MainlineProgress p, String stageId) {
+    var hi = 0;
+    for (final k in p.clearedStageCycleKeys) {
+      final parts = k.split('#');
+      if (parts.length == 2 && parts[0] == stageId) {
+        final c = int.tryParse(parts[1]) ?? 0;
+        if (c > hi) hi = c;
+      }
+    }
+    return hi;
+  }
+
+  /// 返回该 stageId 当前应挑战的周目编号（最高已通 +1，上限 [maxCycle]）。
+  static int currentChallengeCycle(
+    MainlineProgress p,
+    String stageId, {
+    required int maxCycle,
+  }) {
+    final next = highestClearedCycle(p, stageId) + 1;
+    return next > maxCycle ? maxCycle : next;
   }
 
   /// 该章所有 stage 都在 cleared 集 → true。空章（理论上不存在）→ false。

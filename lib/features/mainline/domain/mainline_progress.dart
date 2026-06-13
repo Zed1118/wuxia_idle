@@ -29,4 +29,8 @@ class MainlineProgress {
 
   /// 与 [clearedStageIds] 同序的首通时间。同长度约定由 service 维护。
   List<DateTime> clearedAt = [];
+
+  /// 每关每周目已手动通关键集合,每条 `"stageId#cycle"`(append-only 无序集合)。
+  /// cycle1 解锁链仍用 [clearedStageIds];本字段管周目维度(P1 周目进化)。
+  List<String> clearedStageCycleKeys = [];
 }
