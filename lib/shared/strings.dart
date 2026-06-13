@@ -875,6 +875,16 @@ class UiStrings {
   /// 已达最高周目提示。
   static const String cycleMaxReachedLabel = '已达最高周目';
 
+  // ─── 爬塔轮回（P1 周目进化 E2）───────────────────────────────────────────────
+  /// 爬塔当前轮回标签，如「当前：第1轮回」。
+  static String towerCurrentCycleLabel(int cycle) => '当前：第$cycle轮回';
+
+  /// 「挑战下一轮回」按钮文案。
+  static const String towerAdvanceCycleButton = '挑战下一轮回';
+
+  /// 爬塔周目推进提示（全 30 层已通，可进入下一轮回）。
+  static const String towerCycleReadyHint = '已通 30 层，可挑战下一轮回';
+
   static const String baikeScreenTitle = '江湖见闻录';
   static const String baikeTabFeed = '见闻';
   static const String baikeTabLore = '典故';

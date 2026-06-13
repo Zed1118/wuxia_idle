@@ -6,6 +6,7 @@ import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../battle/application/battle_replay_record_service.dart';
+import '../../battle/presentation/cycle_select_control.dart';
 import '../../battle/presentation/stage_auto_play_control.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
@@ -72,6 +73,14 @@ class StageListScreen extends ConsumerWidget {
                               ref: ref,
                               stage: entries[i].def,
                             ),
+                      onSelectCycle: entries[i].status == StageStatus.cleared
+                          ? (targetCycle) => runStageFlow(
+                              context: context,
+                              ref: ref,
+                              stage: entries[i].def,
+                              targetCycle: targetCycle,
+                            )
+                          : null,
                     ),
                   ),
               ],
@@ -263,12 +272,15 @@ class _StageRow extends StatelessWidget {
     required this.def,
     required this.status,
     required this.onTap,
+    this.onSelectCycle,
   });
 
   final int stageIndex;
   final StageDef def;
   final StageStatus status;
   final VoidCallback? onTap;
+  /// P1 周目进化 E2：周目选择回调（已通关时注入，委派到 CycleSelectControl）。
+  final ValueChanged<int>? onSelectCycle;
 
   @override
   Widget build(BuildContext context) {
@@ -357,6 +369,12 @@ class _StageRow extends StatelessWidget {
                             def.id,
                           ),
                         ),
+                      ),
+                      // P1 周目进化 E2：周目选择控件（读 mainlineProgressProvider）。
+                      const SizedBox(height: 6),
+                      CycleSelectControl(
+                        stageId: def.id,
+                        onSelectCycle: onSelectCycle,
                       ),
                     ],
                   ],
