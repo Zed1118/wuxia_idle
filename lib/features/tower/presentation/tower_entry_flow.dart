@@ -614,6 +614,10 @@ Future<void> _showVictoryDialog({
 }
 
 /// BattleScreen 的 setup 容器（爬塔版，对应主线 _StageBattleHost）。
+///
+/// D1: 从 [towerProgressProvider] 读取 [TowerProgress.currentCycleIndex] 并
+/// 用于 battleKey / isCleared / buildTeamsForTower。fresh save currentCycleIndex=1
+/// → 零回归（behavior byte-identical）。
 class _TowerBattleHost extends ConsumerStatefulWidget {
   const _TowerBattleHost({
     required this.floor,
@@ -636,8 +640,12 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
   AutoPlayMode _mode = AutoPlayMode.manualFirstClear;
   BattleReplayRecord? _record;
 
+  /// D1: 由 initState 从 TowerProgress.currentCycleIndex 读入，默认 1。
+  int _currentCycleIndex = 1;
+
+  /// D1: battleKey 按周目维度生成（默认 cycle=1 与旧 key 格式一致）。
   String get _battleKey =>
-      BattleReplayRecordService.towerBattleKey(widget.floor.floorIndex);
+      BattleReplayRecordService.towerBattleKey(widget.floor.floorIndex, cycle: _currentCycleIndex);
 
   @override
   void initState() {
@@ -649,6 +657,9 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
         final svc = ref.read(battleReplayRecordServiceProvider);
         final progress = await ref.read(towerProgressProvider.future);
         if (!mounted) return;
+        // D1: 读取当前周目（fresh save = 1，零回归）。
+        _currentCycleIndex = progress.currentCycleIndex;
+        // isCleared: 当前层已被此周目通关当且仅当 highest >= floorIndex（全塔整体推进）。
         final cleared =
             progress.highestClearedFloor >= widget.floor.floorIndex;
         _record = await svc.find(_battleKey);
@@ -666,7 +677,7 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
 
         final (left, right) = await StageBattleSetup(
           isar: IsarSetup.instance,
-        ).buildTeamsForTower(widget.floor);
+        ).buildTeamsForTower(widget.floor, cycleIndex: _currentCycleIndex);
         if (!mounted) return;
         final seed = mode == AutoPlayMode.autoReplay ? _record!.seed : null;
         ref.read(battleProvider.notifier).startBattle(left, right, seed: seed);

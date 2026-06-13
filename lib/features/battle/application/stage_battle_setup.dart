@@ -42,9 +42,12 @@ class StageBattleSetup {
   /// **心魔关分支**（1.0 P2.2 §12.1，Batch 2.2.B）：stageType == innerDemon
   /// 时右队走 [InnerDemonService.buildMirrorEnemyTeam] 镜像左队 +10-20% 强化
   /// （§5.4 cap），不走 yaml `enemyTeam`（心魔关 yaml `enemyTeam: []`）。
+  ///
+  /// [cycleIndex] 默认 1（cycle-1 行为与旧版完全一致，零回归）。
   Future<(List<BattleCharacter>, List<BattleCharacter>)> buildTeams(
-    StageDef stage,
-  ) async {
+    StageDef stage, {
+    int cycleIndex = 1,
+  }) async {
     final left = await _buildPlayerTeam();
     final right = stage.stageType == StageType.innerDemon
         ? InnerDemonService.buildMirrorEnemyTeam(
@@ -52,18 +55,20 @@ class StageBattleSetup {
             stageId: stage.id,
             innerDemonDef: GameRepository.instance.numbers.innerDemon,
           )
-        : buildEnemyTeam(stage.enemyTeam);
+        : buildEnemyTeam(stage.enemyTeam, cycleIndex: cycleIndex, isTower: false);
     return (left, right);
   }
 
   /// 拼装 (left, right) 战斗双方，准备调 `startBattle`（爬塔版）。
   ///
   /// 左队装配逻辑与 [buildTeams] 完全一致；右队用 [TowerFloorDef.enemyTeam]。
+  /// [cycleIndex] 默认 1（cycle-1 行为与旧版完全一致，零回归）。
   Future<(List<BattleCharacter>, List<BattleCharacter>)> buildTeamsForTower(
-    TowerFloorDef floor,
-  ) async {
+    TowerFloorDef floor, {
+    int cycleIndex = 1,
+  }) async {
     final left = await _buildPlayerTeam();
-    final right = buildEnemyTeam(floor.enemyTeam);
+    final right = buildEnemyTeam(floor.enemyTeam, cycleIndex: cycleIndex, isTower: true);
     return (left, right);
   }
 
