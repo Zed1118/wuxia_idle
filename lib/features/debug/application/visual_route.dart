@@ -112,6 +112,14 @@ enum VisualRoute {
     'battle_treasure_zhongqi',
     '爆品·重器对比验收(青虚剑,tier-gate 神物专属金光不启用)',
   ),
+  stageListCycle(
+    'stage_list_cycle',
+    '主线选关·周目选择验收(01_01..04 cycle1 已通关 → 显「第1周目(自动)/挑战第2周目(手动)」+ 江湖记招提示)',
+  ),
+  towerCycle(
+    'tower_cycle',
+    '爬塔·问鼎轮回验收(通关 30 层 cycle1 → 显当前轮回 + 挑战下一轮回入口)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
