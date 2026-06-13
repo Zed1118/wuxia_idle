@@ -91,7 +91,9 @@ class IsarSetup {
   //   新 collection,旧档天然空(无已手动通关记录是正确初始态),无数据迁移动作。
   // 半手动 P0 步骤5 全闭环:BattleReplayRecord 加 autoPlayOverride bool?(每关记忆)→ 0.20.0。
   //   既有 collection 加 nullable 字段,旧记录读为 null(=随全局 autoPlayDefault),无迁移动作。
-  static const _currentSaveVersion = '0.20.0';
+  // P1 周目进化 A3:MainlineProgress 加 clearedStageCycleKeys(旧档补 "#1" 键)
+  //   + TowerProgress 加 currentCycleIndex/maxClearedCycle(旧档按 highestClearedFloor 推导)→ 0.21.0。
+  static const _currentSaveVersion = '0.21.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -140,15 +142,47 @@ class IsarSetup {
   /// 波A A4 0.18.0 迁移:旧池 `EncounterProgress.unlockedSkillIds`(全部行)
   /// 并入新池 `SaveData.skillUnlockProgress`(markUnlocked 幂等,可重复跑)。
   /// 迁移后旧字段退役只读(写路径已切 encounter_service / seed)。
+  ///
+  /// P1 A3 0.21.0 迁移（追加段）:
+  ///   - MainlineProgress.clearedStageCycleKeys:将旧 clearedStageIds 里每个 id
+  ///     补入 "$id#1"(幂等:已存在则跳过)。
+  ///   - TowerProgress.currentCycleIndex = 1(显式落档);
+  ///     maxClearedCycle = highestClearedFloor >= 30 ? 1 : 0。
   static Future<void> _migrateSaveData(Isar isar, SaveData save) async {
+    // 段 1(0.18.0+):encounter 旧 unlock 池并入 skillUnlockProgress。
     final progresses = await isar.encounterProgress.where().findAll();
+
+    // 段 2(0.21.0):周目字段迁移。
+    final mainlineRows = await isar.mainlineProgress.where().findAll();
+    final towerRows = await isar.towerProgress.where().findAll();
+
     await isar.writeTxn(() async {
+      // --- 段 1 ---
       save.skillUnlockProgress = List.of(save.skillUnlockProgress);
       for (final p in progresses) {
         for (final sid in p.unlockedSkillIds) {
           save.skillUnlockProgress.markUnlocked(sid);
         }
       }
+
+      // --- 段 2 ---
+      for (final mp in mainlineRows) {
+        final keys = List<String>.of(mp.clearedStageCycleKeys);
+        for (final stageId in mp.clearedStageIds) {
+          final key = '$stageId#1';
+          if (!keys.contains(key)) {
+            keys.add(key);
+          }
+        }
+        mp.clearedStageCycleKeys = keys;
+        await isar.mainlineProgress.put(mp);
+      }
+      for (final tp in towerRows) {
+        tp.currentCycleIndex = 1;
+        tp.maxClearedCycle = tp.highestClearedFloor >= 30 ? 1 : 0;
+        await isar.towerProgress.put(tp);
+      }
+
       save.saveVersion = _currentSaveVersion;
       await isar.saveDatas.put(save);
     });

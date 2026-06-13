@@ -42,10 +42,10 @@ void main() {
       expect(IsarSetup.instance.sectEvents, isNotNull);
     });
 
-    test('R4.2 saveVersion 已升 0.20.0(半手动 P0 步骤5 全闭环 autoPlayOverride)', () async {
+    test('R4.2 saveVersion 已升 0.21.0(P1 A3 周目字段迁移)', () async {
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = await IsarSetup.instance.saveDatas.get(0);
-      expect(save!.saveVersion, '0.20.0');
+      expect(save!.saveVersion, '0.21.0');
     });
 
     test('R4.3 Sect 写入 → close → reopen 读出字段一致', () async {
