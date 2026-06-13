@@ -7,7 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 
-/// B2:_enemyToBattle cycleIndex scale + 词条注入测试。
+/// B2 + D1 fix:_enemyToBattle cycleIndex scale + 词条注入 + buildEnemyTeamsPerWave cycleIndex 传递测试。
 ///
 /// 复用 GameRepository.loadAllDefs 加载真实 numbers（含 cycle_evolution 段），
 /// 通过 @visibleForTesting debugEnemyToBattle 直接测 _enemyToBattle，
@@ -270,5 +270,56 @@ void main() {
         GameRepository.instance.numbers.combat.redLines.internalForceMax;
     expect(c2.maxInternalForce, lessThanOrEqualTo(redLine),
         reason: '真气 + scale 后 IF 不应突破 §5.4 红线=$redLine');
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // D1 fix 回归：buildEnemyTeamsPerWave 传入 cycleIndex 后 wave 敌人随周目 scale
+  // ══════════════════════════════════════════════════════════════════════════
+  group('buildEnemyTeamsPerWave cycleIndex scale（D1 fix 回归）', () {
+    // 最小 massBattle StageDef：2 波 × 各 2 敌
+    const massBattleStage = StageDef(
+      id: 'test_mass_battle_scale',
+      name: '测试群战关',
+      stageType: StageType.massBattle,
+      requiredRealm: RealmTier.xueTu,
+      enemyTeam: [normalEnemy],
+      isBossStage: false,
+      dropEquipmentDefIds: [],
+      dropItemDefIds: [],
+      baseExpReward: 0,
+      difficultyMultiplier: 1.0,
+      massBattleWaveCount: 2,
+      massBattleEnemyCounts: [2, 2],
+    );
+
+    test('cycleIndex:1 → cycleIndex:2 wave 敌人 hp/attack 各 ×1.06', () {
+      final waves1 =
+          StageBattleSetup.buildEnemyTeamsPerWave(massBattleStage,
+              cycleIndex: 1);
+      final waves2 =
+          StageBattleSetup.buildEnemyTeamsPerWave(massBattleStage,
+              cycleIndex: 2);
+
+      expect(waves1, hasLength(2), reason: '应有 2 波');
+      expect(waves2, hasLength(2));
+
+      final ce = GameRepository.instance.numbers.cycleEvolution;
+      final scale = 1 + ce.scalePerCycle * (2 - 1); // 1.06
+
+      for (var w = 0; w < 2; w++) {
+        for (var i = 0; i < waves1[w].length; i++) {
+          expect(
+            waves2[w][i].maxHp,
+            (waves1[w][i].maxHp * scale).toInt(),
+            reason: 'wave=$w enemy=$i hp 应 ×$scale',
+          );
+          expect(
+            waves2[w][i].totalEquipmentAttack,
+            (waves1[w][i].totalEquipmentAttack * scale).toInt(),
+            reason: 'wave=$w enemy=$i attack 应 ×$scale',
+          );
+        }
+      }
+    });
   });
 }
