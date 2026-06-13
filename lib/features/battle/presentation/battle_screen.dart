@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/battle_log.dart';
+import '../domain/battle_replay.dart';
 import '../domain/battle_state.dart';
 import '../domain/battle_stats.dart';
 import '../domain/damage_calculator.dart';
@@ -136,6 +137,17 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// ScenarioLauncher / 调试路由注入,正式自动/手动开关留步骤5 接落盘判定。
   final bool manualStep;
 
+  /// 半手动战斗 P0 步骤5-E · 自动重放(autoReplay)模式(opt-in,默认 null)。
+  /// 非空时:战斗自动驱动(autoStart),但每个 Timer tick 用
+  /// [BattleNotifier.step] 推进(每整数 tick 可观测,命中锚点)并在
+  /// `state.tick == op.anchor` 注入 [BattleNotifier.requestUltimate],与
+  /// [BattleNotifier.replay] 同语义确定性复刻手动通关。seed 由 host 经
+  /// `startBattle(seed:)` 注入([replaySeed] 仅作语义标注/未来校验)。
+  final List<BattleReplayOp>? replayOps;
+
+  /// 重放 seed(语义标注;实际 seed 由 host startBattle 注入)。
+  final int? replaySeed;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
@@ -148,7 +160,12 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.deferVictoryToCaller = false,
     this.bgmTrack = BgmTrack.battle,
     this.manualStep = false,
+    this.replayOps,
+    this.replaySeed,
   });
+
+  /// 是否自动重放模式(有录制操作序列待注入)。
+  bool get isReplay => replayOps != null;
 
   @override
   ConsumerState<BattleScreen> createState() => _BattleScreenState();
@@ -256,6 +273,49 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       if (!mounted) return;
       ref.read(battleProvider.notifier).advance();
     });
+  }
+
+  /// 半手动 P0 步骤5-E:autoReplay 模式 Timer 驱动。每个 interval 走一次
+  /// 「锚点注入 + step()」(同 `BattleNotifier.replay` 内循环,UI 节奏化)。
+  /// 用 step() 而非 advance() 确保每整数 tick 可观测,命中所有 op 锚点。
+  int _replayOpIdx = 0;
+  void _startReplayTimer() {
+    _playTimer?.cancel();
+    final interval = _isFastForward
+        ? widget.animConfig.fastForwardIntervalMs
+        : widget.animConfig.actionIntervalMs;
+    final ops = widget.replayOps!;
+    _playTimer = Timer.periodic(Duration(milliseconds: interval), (_) {
+      if (!mounted) return;
+      final s = ref.read(battleProvider);
+      if (s.isFinished) {
+        _playTimer?.cancel();
+        return;
+      }
+      final n = ref.read(battleProvider.notifier);
+      final tick = s.tick;
+      while (_replayOpIdx < ops.length && ops[_replayOpIdx].anchor == tick) {
+        final op = ops[_replayOpIdx];
+        final skill = _resolveReplaySkill(s, op.charId, op.skillId);
+        if (skill != null) {
+          n.requestUltimate(op.charId, skill, targetId: op.targetId);
+        }
+        _replayOpIdx++;
+      }
+      n.step();
+    });
+  }
+
+  /// 重放:按 charId + skillId 在该 actor 当前 availableSkills 解析 SkillDef
+  /// (沿 `battle_providers.dart` `_resolveReplaySkill` 体例)。找不到返 null 跳过。
+  SkillDef? _resolveReplaySkill(BattleState s, int charId, String skillId) {
+    for (final c in [...s.leftTeam, ...s.rightTeam]) {
+      if (c.characterId != charId) continue;
+      for (final sk in c.availableSkills) {
+        if (sk.id == skillId) return sk;
+      }
+    }
+    return null;
   }
 
   void _toggleFastForward() {
@@ -693,7 +753,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
           wasEmpty &&
           next.leftTeam.isNotEmpty &&
           !next.isFinished) {
-        _startTimer();
+        // autoReplay 走 step()+锚点注入 driver;否则普通 advance() 自动战斗。
+        widget.isReplay ? _startReplayTimer() : _startTimer();
       }
 
       // 2. 战斗结束：停 timer + 弹结算 dialog（postFrame 避免 build 期 setState）
