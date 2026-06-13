@@ -67,6 +67,16 @@ class BattleNotifier extends _$BattleNotifier {
   /// 同 seed 逐 action 可复现(手动通关记 seed → 同 seed 重演复刻通关)。
   Random _rng = Random();
 
+  /// 本场战斗的 seed(半手动 P0 步骤5-A)。[startBattle] 注入或自动生成。
+  ///
+  /// Dart `Random(seed)` 的种子不可从实例回溯,故这里独立存:手动首通通关后
+  /// 由落盘层 [BattleReplayRecordService.record] 经 [seed] getter 采集写入,
+  /// 自动战斗读出同 seed 确定性重演(`replay`)。
+  int _seed = 0;
+
+  /// 本场战斗 seed(可回溯,供手动通关落盘采集)。
+  int get seed => _seed;
+
   /// 本场战斗的手动操作记录(半手动 P0 §2.2 步骤2)。按 [requestUltimate]
   /// 调用顺序追加;[startBattle] 清空。步骤4 重放、步骤5 落盘消费。
   final List<BattleReplayOp> _recordedOps = [];
@@ -85,8 +95,8 @@ class BattleNotifier extends _$BattleNotifier {
   /// [strategy] 可选注入当前战斗形态(默认 [DefaultGroundStrategy] 地面 3v3
   /// 半横版);P3 三战斗形态扩展时挂自己的 [BattleStrategy] 实装即可。
   /// [seed] 注入本场战斗随机种子(半手动 P0 §3.1):重放时传记录的 seed
-  /// 确定性复刻;实战不传则用无种子 [Random] 起一场新战斗(其 seed 的记录
-  /// 由后续步骤2「操作序列记录」负责采集)。
+  /// 确定性复刻;实战不传则**生成**一个可回溯种子(步骤5-A),供手动通关后
+  /// 经 [seed] getter 采集落盘(`Random(null)` 的种子不可回溯,故必须先生成)。
   void startBattle(
     List<BattleCharacter> leftTeam,
     List<BattleCharacter> rightTeam, {
@@ -94,7 +104,8 @@ class BattleNotifier extends _$BattleNotifier {
     int? seed,
   }) {
     _strategy = strategy ?? const DefaultGroundStrategy();
-    _rng = Random(seed);
+    _seed = seed ?? Random().nextInt(1 << 32);
+    _rng = Random(_seed);
     _recordedOps.clear();
     state = BattleState.initial(leftTeam: leftTeam, rightTeam: rightTeam);
   }
