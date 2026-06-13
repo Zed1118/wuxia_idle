@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
+import '../../battle/application/battle_replay_record_service.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
@@ -165,6 +167,18 @@ class _MassBattleRow extends StatelessWidget {
                           fontSize: 12,
                         ),
                       ),
+                      // 半手动 P0 步骤5-G3:已通关可逐关切自动/手动。
+                      // 群战 autoReplay 降级 autoFallback,toggle 仍控自动/手动意图。
+                      if (cleared) ...[
+                        const SizedBox(height: 6),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: StageAutoPlayControl(
+                            battleKey:
+                                BattleReplayRecordService.stageBattleKey(def.id),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

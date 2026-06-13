@@ -18,6 +18,7 @@ import '../../equipment/application/equipment_factory.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/presentation/treasure_drop_overlay.dart';
 import '../../equipment/domain/treasure_highlight.dart';
+import '../../battle/application/battle_replay_record_service.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart';
@@ -169,6 +170,28 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.stageList:
       await isar.writeTxn(() => isar.mainlineProgress.clear());
       await Phase2SeedService(isar: isar).seedVisualCheckW7W11();
+      return const StageListScreen(chapterIndex: 1);
+    case VisualRoute.stageListAutoPlay:
+      // per-stage 自动/手动开关验收:01_01..04 已通关(seedVisualCheckW7W11),
+      // 额外给 01_01 录重放记录(enabled·跟随→自动随设置)、01_02 pin 手动,
+      // 让 Codex 看 enabled toggle + 三选项菜单(其余无记录关 = 灰显态)。
+      await isar.writeTxn(() => isar.mainlineProgress.clear());
+      await Phase2SeedService(isar: isar).seedVisualCheckW7W11();
+      final replaySvc = BattleReplayRecordService(isar: isar);
+      await replaySvc.record(
+        battleKey: BattleReplayRecordService.stageBattleKey('stage_01_01'),
+        seed: 3,
+        ops: const [],
+      );
+      await replaySvc.record(
+        battleKey: BattleReplayRecordService.stageBattleKey('stage_01_02'),
+        seed: 3,
+        ops: const [],
+      );
+      await replaySvc.setAutoPlayOverride(
+        BattleReplayRecordService.stageBattleKey('stage_01_02'),
+        false,
+      );
       return const StageListScreen(chapterIndex: 1);
     case VisualRoute.towerFloorList:
       await OnboardingService(isar: isar).ensureFoundingMasters();

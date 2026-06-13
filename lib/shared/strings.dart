@@ -842,6 +842,16 @@ class UiStrings {
   // 半手动战斗 P0 步骤5:全局自动战斗默认开关。
   static const String settingsAutoPlayDefault = '自动战斗';
   static const String settingsAutoPlayDefaultHint = '已通关关卡默认自动重演(可逐关切手动)';
+  // 半手动战斗 P0 步骤5-G3:选关屏 per-stage 自动/手动开关。
+  static const String stageAutoPlayAuto = '自动';
+  static const String stageAutoPlayManual = '手动';
+  static const String stageAutoPlayFollowSuffix = '随设置';
+  static const String stageAutoPlayMenuFollow = '跟随设置';
+  static const String stageAutoPlayMenuAuto = '自动战斗';
+  static const String stageAutoPlayMenuManual = '手动战斗';
+  static const String stageAutoPlayLockedHint = '重打一次记录后可切换';
+  // 爬塔重打 dialog 内的开关标签(塔身布局固定高,toggle 走 dialog)。
+  static const String stageAutoPlayPickLabel = '战斗方式';
 
   static const String baikeScreenTitle = '江湖见闻录';
   static const String baikeTabFeed = '见闻';

@@ -6,7 +6,9 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../battle/application/battle_replay_record_service.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
+import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../application/light_foot_service.dart';
@@ -150,6 +152,17 @@ class _LightFootRow extends StatelessWidget {
                           fontSize: 12,
                         ),
                       ),
+                      // 半手动 P0 步骤5-G3:已通关可逐关切自动/手动。
+                      if (cleared) ...[
+                        const SizedBox(height: 6),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: StageAutoPlayControl(
+                            battleKey:
+                                BattleReplayRecordService.stageBattleKey(def.id),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
