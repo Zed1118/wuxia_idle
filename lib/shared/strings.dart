@@ -856,6 +856,25 @@ class UiStrings {
   // 爬塔重打 dialog 内的开关标签(塔身布局固定高,toggle 走 dialog)。
   static const String stageAutoPlayPickLabel = '战斗方式';
 
+  // ─── 周目选择控件（P1 周目进化 E1）───────────────────────────────────────────
+  // 「江湖记招」：敌人已识得玩家路数，高周目进入手动模式的战前提示（E2 wire）。
+  static const String jianghuRememberHint = '此敌已识得你的路数，见招拆招。';
+
+  /// 第 N 周目标签，如「第1周目」。
+  static String cycleNthLabel(int n) => '第$n周目';
+
+  /// 已通关周目重演后缀（自动战斗）：「(自动)」。
+  static const String cycleReplayCurrentSuffix = '(自动)';
+
+  /// 挑战下一周目后缀（手动战斗）：「(手动)」。
+  static const String cycleChallengeNextSuffix = '(手动)';
+
+  /// 挑战第 N 周目完整标签，如「挑战第2周目」。
+  static String cycleChallengeNextLabel(int n) => '挑战第$n周目';
+
+  /// 已达最高周目提示。
+  static const String cycleMaxReachedLabel = '已达最高周目';
+
   static const String baikeScreenTitle = '江湖见闻录';
   static const String baikeTabFeed = '见闻';
   static const String baikeTabLore = '典故';
