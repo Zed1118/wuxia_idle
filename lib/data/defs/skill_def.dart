@@ -65,6 +65,11 @@ class SkillDef {
   /// 招式 per-skill 熟练度效果(可玩性 P1a · 只配真解/招牌/破招技)。null=不配。
   final SkillProficiencyEffects? proficiency;
 
+  /// 2026-06-14 拖招交互:目标类型。single=单体(拖拽到敌人头像指定目标);
+  /// aoe=群体(技能栏点一下直接触发,目标=全体/AI 选最佳)。yaml 未填默认 single;
+  /// 红线:ultimate/powerSkill 必填(game_repository `_enforceSkillTargetTypeRedLines`)。
+  final TargetType targetType;
+
   const SkillDef({
     required this.id,
     required this.name,
@@ -84,6 +89,7 @@ class SkillDef {
     this.style,
     this.source,
     this.proficiency,
+    this.targetType = TargetType.single,
   });
 
   /// 奇遇招式 = source == encounter(波B 改单一真相源:drop 招补 tier 后
@@ -125,6 +131,9 @@ class SkillDef {
           ? SkillProficiencyEffects.fromYaml(
               Map<String, dynamic>.from(y['proficiency'] as Map))
           : null,
+      targetType: y['targetType'] != null
+          ? TargetType.values.byName(y['targetType'] as String)
+          : TargetType.single,
     );
   }
 

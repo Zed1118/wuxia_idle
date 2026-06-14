@@ -126,6 +126,13 @@ enum SkillType {
   jointSkill,    // 人剑合一招式（共鸣度默契阶段解锁）
 }
 
+/// 招式目标类型(2026-06-14 拖招交互重做)。
+/// - single: 单体技，拖拽到敌人头像指定目标后触发。
+/// - aoe: 群体技，技能栏点一下直接触发(目标=全体/AI 选最佳)，无需拖拽。
+/// 红线:ultimate/powerSkill 的 targetType yaml 必填(loader fail-fast);
+/// normalAttack/jointSkill 留空 → fromYaml 默认 single。
+enum TargetType { single, aoe }
+
 /// 共鸣度阶段（GDD §6.4，派生值，不入库）。
 enum ResonanceStage {
   shengShu,         // 生疏  0~100      无加成
