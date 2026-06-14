@@ -5,6 +5,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../battle/application/selected_cycle_provider.dart';
 import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/presentation/cycle_select_control.dart';
 import '../../battle/presentation/stage_auto_play_control.dart';
@@ -54,11 +55,31 @@ class StageListScreen extends ConsumerWidget {
                 ),
               );
             }
+            // 周目按章(Phase 2):章 key + 该章已通最高周目决定进入周目。
+            final chapterKey = 'ch$chapterIndex';
+            final progress = ref.watch(mainlineProgressProvider).maybeWhen(
+                  data: (d) => d,
+                  orElse: () => null,
+                );
+            int cycleFor() {
+              if (progress == null) return 1;
+              return resolveTargetCycle(
+                ref.read(selectedChallengeCycleProvider(chapterKey)),
+                progress,
+                chapterKey,
+              );
+            }
+
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               children: [
                 _StageJourneyMap(chapterIndex: chapterIndex, entries: entries),
                 const SizedBox(height: 12),
+                // 章级周目选择控件(整章已通才显;上移自旧 per-stage 位置)。
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: CycleSelectControl(chapterKey: chapterKey),
+                ),
                 for (var i = 0; i < entries.length; i++)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
@@ -72,15 +93,8 @@ class StageListScreen extends ConsumerWidget {
                               context: context,
                               ref: ref,
                               stage: entries[i].def,
+                              targetCycle: cycleFor(),
                             ),
-                      onSelectCycle: entries[i].status == StageStatus.cleared
-                          ? (targetCycle) => runStageFlow(
-                              context: context,
-                              ref: ref,
-                              stage: entries[i].def,
-                              targetCycle: targetCycle,
-                            )
-                          : null,
                     ),
                   ),
               ],
@@ -272,15 +286,12 @@ class _StageRow extends StatelessWidget {
     required this.def,
     required this.status,
     required this.onTap,
-    this.onSelectCycle,
   });
 
   final int stageIndex;
   final StageDef def;
   final StageStatus status;
   final VoidCallback? onTap;
-  /// P1 周目进化 E2：周目选择回调（已通关时注入，委派到 CycleSelectControl）。
-  final ValueChanged<int>? onSelectCycle;
 
   @override
   Widget build(BuildContext context) {
@@ -360,6 +371,7 @@ class _StageRow extends StatelessWidget {
                       ),
                     ),
                     // 半手动 P0 步骤5-G3:已通关关卡可逐关切自动/手动。
+                    // (周目选择 Phase 2 上移到章层,不再 per-stage。)
                     if (cleared) ...[
                       const SizedBox(height: 6),
                       Align(
@@ -369,12 +381,6 @@ class _StageRow extends StatelessWidget {
                             def.id,
                           ),
                         ),
-                      ),
-                      // P1 周目进化 E2：周目选择控件（读 mainlineProgressProvider）。
-                      const SizedBox(height: 6),
-                      CycleSelectControl(
-                        stageId: def.id,
-                        onSelectCycle: onSelectCycle,
                       ),
                     ],
                   ],

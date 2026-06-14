@@ -356,11 +356,11 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         t: 1.0,
       );
     case VisualRoute.stageListCycle:
-      // 周目选择验收:01_01..04 cycle1 已通关 → CycleSelectControl 显周目选择控件。
-      // seedVisualCheckW7W11 用 recordVictory(cycle:1) 写 'stage_xx#1' 至
-      // clearedStageCycleKeys,使已通关 tile 出现「第1周目(自动)/挑战第2周目(手动)」。
+      // 周目按章验收(Phase 2):整章 Ch1(含章末 Boss 01_05)cycle1 全通 →
+      // clearedChapterCycleKeys 含 'ch1#1' → StageListScreen 章头(journey map
+      // 下方)显 CycleSelectControl「回放第1周目 / 挑战第2周目」,选中态高亮。
       await isar.writeTxn(() => isar.mainlineProgress.clear());
-      await Phase2SeedService(isar: isar).seedVisualCheckW7W11();
+      await Phase2SeedService(isar: isar).seedChapterCycleVisualCheck();
       return const StageListScreen(chapterIndex: 1);
     case VisualRoute.towerCycle:
       // 问鼎轮回验收:种 30 层 cycle1 全通关 → maxClearedCycle=1,显「挑战下一轮回」入口。

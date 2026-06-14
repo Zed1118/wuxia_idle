@@ -414,6 +414,25 @@ class Phase2SeedService {
     }
   }
 
+  /// 章级周目控件验收(战斗交互重做 Phase 2):整章 Ch1(01_01..01_05 含章末 Boss)
+  /// cycle1 全通 → clearedChapterCycleKeys 含 'ch1#1' → StageListScreen 章头显
+  /// CycleSelectControl(回放第1周目 / 挑战第2周目)。
+  Future<void> seedChapterCycleVisualCheck() async {
+    await seedMasterDisciple();
+    final svc = MainlineProgressService(isar: isar);
+    await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    final now = DateTime.now();
+    for (final stageId in const [
+      'stage_01_01',
+      'stage_01_02',
+      'stage_01_03',
+      'stage_01_04',
+      'stage_01_05',
+    ]) {
+      await svc.recordVictory(stageId: stageId, now: now);
+    }
+  }
+
   /// W14-3 视觉验收专用 seed(下批 Codex 完整 EncounterSkillSection 验收用)。
   ///
   /// 在 [seedVisualCheckW7W11] 基础上预 unlock 7 个 encounter skill(tier 1-7 各

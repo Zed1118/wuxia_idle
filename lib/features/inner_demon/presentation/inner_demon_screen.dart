@@ -6,6 +6,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../battle/application/selected_cycle_provider.dart';
 import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/presentation/cycle_select_control.dart';
 import '../../battle/presentation/stage_auto_play_control.dart';
@@ -62,40 +63,50 @@ class InnerDemonScreen extends ConsumerWidget {
               );
             }
             final cleared = progress.clearedStageIds.toSet();
-            return ListView.builder(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: stages.length,
-              itemBuilder: (ctx, i) {
-                final s = stages[i];
-                final status = _statusOf(
-                  stageId: s.id,
-                  clearedStageIds: cleared,
-                  innerDemonDef: innerDemonDef,
+            // 周目按章(Phase 2):整个心魔副本视为一章,chapterKey=stageType.name。
+            const chapterKey = 'innerDemon';
+            int cycleFor() => resolveTargetCycle(
+                  ref.read(selectedChallengeCycleProvider(chapterKey)),
+                  progress,
+                  chapterKey,
                 );
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _InnerDemonRow(
-                    def: s,
-                    status: status,
-                    onTap: status == _InnerDemonStageStatus.locked
-                        ? null
-                        : () => runStageFlow(
-                              context: context,
-                              ref: ref,
-                              stage: s,
-                            ),
-                    onSelectCycle: status == _InnerDemonStageStatus.cleared
-                        ? (targetCycle) => runStageFlow(
-                              context: context,
-                              ref: ref,
-                              stage: s,
-                              targetCycle: targetCycle,
-                            )
-                        : null,
+            return Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: CycleSelectControl(chapterKey: chapterKey),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    itemCount: stages.length,
+                    itemBuilder: (ctx, i) {
+                      final s = stages[i];
+                      final status = _statusOf(
+                        stageId: s.id,
+                        clearedStageIds: cleared,
+                        innerDemonDef: innerDemonDef,
+                      );
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _InnerDemonRow(
+                          def: s,
+                          status: status,
+                          onTap: status == _InnerDemonStageStatus.locked
+                              ? null
+                              : () => runStageFlow(
+                                    context: context,
+                                    ref: ref,
+                                    stage: s,
+                                    targetCycle: cycleFor(),
+                                  ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+              ],
             );
           },
         ),
@@ -135,14 +146,11 @@ class _InnerDemonRow extends StatelessWidget {
     required this.def,
     required this.status,
     required this.onTap,
-    this.onSelectCycle,
   });
 
   final StageDef def;
   final _InnerDemonStageStatus status;
   final VoidCallback? onTap;
-  /// P1 周目进化 E2：周目选择回调（已通关时注入）。
-  final ValueChanged<int>? onSelectCycle;
 
   @override
   Widget build(BuildContext context) {
@@ -186,6 +194,7 @@ class _InnerDemonRow extends StatelessWidget {
                         ),
                       ),
                       // 半手动 P0 步骤5-G3:已通关可逐关切自动/手动。
+                      // (周目选择 Phase 2 上移到章层,不再 per-stage。)
                       if (cleared) ...[
                         const SizedBox(height: 6),
                         Align(
@@ -194,12 +203,6 @@ class _InnerDemonRow extends StatelessWidget {
                             battleKey:
                                 stageBattleKey(def.id),
                           ),
-                        ),
-                        // P1 周目进化 E2：周目选择控件。
-                        const SizedBox(height: 6),
-                        CycleSelectControl(
-                          stageId: def.id,
-                          onSelectCycle: onSelectCycle,
                         ),
                       ],
                     ],
