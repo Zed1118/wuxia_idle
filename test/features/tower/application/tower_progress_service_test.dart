@@ -396,6 +396,66 @@ void main() {
     });
   });
 
+  group('advanceCycle', () {
+    test('当前周目 30 层未全通 → advanceCycle no-op（maxClearedCycle < currentCycleIndex）',
+        () async {
+      final svc = TowerProgressService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      // 默认 currentCycleIndex=1, maxClearedCycle=0 → 守卫触发 no-op
+      await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99);
+      final p = await svc.getOrCreate(saveDataId: 1);
+      expect(p.currentCycleIndex, 1,
+          reason: '未 30 层全通时 advanceCycle 应 no-op');
+    });
+
+    test('30 层全通后 advanceCycle → currentCycleIndex++ + highestClearedFloor=0',
+        () async {
+      final svc = TowerProgressService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      for (var i = 1; i <= 30; i++) {
+        await svc.recordClear(
+          floorIndex: i,
+          now: DateTime(2026, 5, 11),
+          elapsedMs: 1000,
+        );
+      }
+      await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99); // cap 不限，专注通关守卫
+      final p = await svc.getOrCreate(saveDataId: 1);
+      expect(p.currentCycleIndex, 2,
+          reason: '30 层全通后 advanceCycle 应 currentCycleIndex=2');
+      expect(p.highestClearedFloor, 0,
+          reason: '新周目 highestClearedFloor 重置为 0');
+    });
+
+    test('advanceCycle：currentCycleIndex >= maxCycleCap 时 no-op（config cap 防越线）',
+        () async {
+      final svc = TowerProgressService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      // 从 GameRepository 读取真实配置值（maxCycleTower=2，service 端 cap 守卫语义锁）
+      final maxCycleTower =
+          GameRepository.instance.numbers.cycleEvolution.maxCycleTower;
+      // 直接在 Isar 里把 progress 设到 maxCycleTower（=2）且 maxClearedCycle>=current
+      // 模拟玩家已在最高周目且已全通塔
+      await IsarSetup.instance.writeTxn(() async {
+        final progress = await IsarSetup.instance.towerProgress
+            .filter()
+            .saveDataIdEqualTo(1)
+            .findFirst();
+        if (progress == null) return;
+        progress.currentCycleIndex = maxCycleTower;
+        progress.maxClearedCycle = maxCycleTower; // 本周目已全通
+        await IsarSetup.instance.towerProgress.put(progress);
+      });
+
+      // advanceCycle 应 no-op（不能超 config cap）
+      await svc.advanceCycle(saveDataId: 1, maxCycleCap: maxCycleTower);
+      final p = await svc.getOrCreate(saveDataId: 1);
+      expect(p.currentCycleIndex, maxCycleTower,
+          reason: 'currentCycleIndex 已达 maxCycleCap=$maxCycleTower，'
+              'advanceCycle 应 no-op（service 端 config cap 守卫生效）');
+    });
+  });
+
   group('与 MainlineProgressService 独立', () {
     test('TowerProgress 状态不影响 MainlineProgress（独立 collection）', () async {
       // 仅初始化 TowerProgress；MainlineProgress collection 应保持空

@@ -56,7 +56,7 @@ void main() {
       expect(p.currentCycleIndex, 1,
           reason: 'advanceCycle 前 currentCycleIndex 不变');
 
-      await svc.advanceCycle(saveDataId: 1);
+      await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99); // 测试不限 cap，专注通关守卫
       p = await svc.getOrCreate(saveDataId: 1);
       expect(p.currentCycleIndex, 2, reason: '进入第 2 周目');
       expect(p.highestClearedFloor, 0, reason: '新周目从第 1 层重新爬');
@@ -85,7 +85,7 @@ void main() {
         await svc.recordClear(floorIndex: f, now: now, elapsedMs: 1000);
       }
 
-      await svc.advanceCycle(saveDataId: 1);
+      await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99); // 测试通关守卫，不限 cap
 
       final p = await svc.getOrCreate(saveDataId: 1);
       expect(p.currentCycleIndex, 1, reason: '未全通不应推进周目');
@@ -104,7 +104,7 @@ void main() {
       final beforeAdvance = await svc.getOrCreate(saveDataId: 1);
       final attemptsBeforeAdvance = beforeAdvance.totalAttempts;
 
-      await svc.advanceCycle(saveDataId: 1);
+      await svc.advanceCycle(saveDataId: 1, maxCycleCap: 99); // 测试累计统计，不限 cap
 
       final p = await svc.getOrCreate(saveDataId: 1);
       expect(p.totalAttempts, attemptsBeforeAdvance,
