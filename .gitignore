@@ -86,3 +86,6 @@ docs/codex_*_screenshots/
 
 # 自验/视觉截图 throwaway 不入库
 docs/screenshots/
+
+# throwaway UI 原型 demo(prototype skill 产物,不入库)
+docs/demos/
