@@ -33,6 +33,7 @@ import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
@@ -68,7 +69,7 @@ void main() {
     final results = <_SimResult>[];
     for (final stage in mainlines) {
       if (stage.enemyTeam.isEmpty) continue; // 剧情关跳过
-      for (final profile in _BuildProfile.values) {
+      for (final profile in const [_BuildProfile.floor, _BuildProfile.ceiling]) {
         for (var seed = 0; seed < _seedsPerStage; seed++) {
           results.add(_simulateStage(stage, seed, repo, profile));
         }
@@ -93,7 +94,7 @@ void main() {
     const stages = ['stage_01_05', 'stage_02_05', 'stage_03_05'];
     const seeds = 40;
     final lines = <String>[];
-    for (final profile in _BuildProfile.values) {
+    for (final profile in const [_BuildProfile.floor, _BuildProfile.ceiling]) {
       for (final sid in stages) {
         final stage = repo.stageDefs[sid];
         if (stage == null) continue;
@@ -154,7 +155,7 @@ void main() {
     for (final stage in mainlines) {
       final rowCells = <String>[];
       final maxedByProfile = <_BuildProfile, double>{};
-      for (final profile in _BuildProfile.values) {
+      for (final profile in const [_BuildProfile.floor, _BuildProfile.ceiling]) {
         int winAt(int uses) {
           var w = 0;
           for (var seed = 0; seed < seeds; seed++) {
@@ -213,6 +214,98 @@ void main() {
     expect(deltaSum / cells, greaterThanOrEqualTo(0),
         reason: '全表 mean delta 应 ≥ 0(熟练度整体只增不减)');
   }, timeout: const Timeout(Duration(minutes: 15)));
+
+  // ── 极值 build × 周目进化诊断(2026-06-14 红线分两层后 · 外部审查 P1 未处理项)──
+  // 满强化神物极值 build(武圣登峰)回刷 Ch6 宗师终局,跨周目 cycle{1,2,3} 敌人 scale
+  // (×1.06^(c-1) + 御体/真气/识破等反制词条)。量化:winRate / 速通 ticks / 玩家掉血% /
+  // 玩家单击实战峰值伤害(软红线:不进十万 · 绝对天花板不进百万)。
+  // 断言只钉死「绝对天花板不进百万」硬不变量;winRate/失衡度纯诊断输出,交人类拍。
+  test('极值 build × 周目进化诊断:武圣满强化神物 vs Ch6 宗师 × cycle{1,2,3}',
+      () async {
+    const ch6 = [
+      'stage_06_01',
+      'stage_06_02',
+      'stage_06_03',
+      'stage_06_04',
+      'stage_06_05',
+    ];
+    const seeds = 30;
+    const cycles = [1, 2, 3]; // max_cycle_mainline = 3
+
+    final buf = StringBuffer()
+      ..writeln('# 极值 build × 周目进化诊断 · 2026-06-14')
+      ..writeln()
+      ..writeln('满强化神物极值 build(武圣登峰 · +49 / 心剑通灵 ×1.30 / 开锋 15+20 / '
+          '极境 ×3.0 / 满熟练 uses800 / 属性24 / founder buff)回刷 Ch6 宗师终局 × '
+          '$seeds seed × cycle{1,2,3}。+1 阶差距修正(武圣攻宗师 ×1.4 / 守 ×0.7)。')
+      ..writeln()
+      ..writeln('| cycle | stage | Boss | winRate | 均 ticks | 均掉血% | 峰值单击 |')
+      ..writeln('|---|---|---|---|---|---|---|');
+
+    var globalPeak = 0;
+    var globalNormalPeak = 0;
+    final peakByCycle = <int, int>{};
+    for (final cycle in cycles) {
+      for (final sid in ch6) {
+        final stage = repo.stageDefs[sid];
+        if (stage == null || stage.enemyTeam.isEmpty) continue;
+        var win = 0;
+        var tickSum = 0;
+        var hpLossSum = 0.0;
+        var peak = 0;
+        for (var seed = 0; seed < seeds; seed++) {
+          final r = _simulateStage(stage, seed, repo, _BuildProfile.extreme,
+              proficiencyUses: 800,
+              cycleIndex: cycle,
+              playerTierOverride: RealmTier.wuSheng);
+          if (r.result == 'leftWin') win++;
+          tickSum += r.ticks;
+          hpLossSum += r.initialPlayerHp == 0
+              ? 0
+              : (r.initialPlayerHp - r.playerHpEnd) / r.initialPlayerHp;
+          if (r.peakPlayerDamage > peak) peak = r.peakPlayerDamage;
+          globalNormalPeak = max(globalNormalPeak, r.peakPlayerNormalDamage);
+        }
+        globalPeak = max(globalPeak, peak);
+        peakByCycle[cycle] = max(peakByCycle[cycle] ?? 0, peak);
+        buf.writeln('| $cycle | $sid | ${stage.isBossStage ? "Boss" : "—"} | '
+            '${(win / seeds * 100).round()}% | ${(tickSum / seeds).round()} | '
+            '${(hpLossSum / seeds * 100).toStringAsFixed(1)}% | $peak |');
+      }
+    }
+
+    String peakTag(int p) => p >= 1000000
+        ? '⚠️ 进百万·越绝对天花板'
+        : (p >= 100000 ? '⚠️ 进十万·越软红线' : '✅ 不进十万');
+    buf
+      ..writeln()
+      ..writeln('## 诊断')
+      ..writeln()
+      ..writeln('- 全局玩家单击实战峰值(任意技)= $globalPeak(${peakTag(globalPeak)})')
+      ..writeln('- 全局玩家**普攻**单击实战峰值 = $globalNormalPeak'
+          '(${peakTag(globalNormalPeak)})'
+          '${globalNormalPeak >= 100000 ? " ← 与 full_build calculator 探针(<十万)矛盾:实战含熟练度×1.30+APM 末端乘后普攻也越十万" : ""}')
+      ..writeln('- 各周目峰值(任意技):'
+          '${cycles.map((c) => "c$c=${peakByCycle[c] ?? 0}").join(" / ")}')
+      ..writeln()
+      ..writeln('## 局限')
+      ..writeln()
+      ..writeln('- AI 自动放 powerSkill burst + ultimate,峰值多来自大招而非普攻;'
+          '普攻软红线(不进十万)另由 full_build_damage_redline_test calculator 探针守。')
+      ..writeln('- 固定刚猛 vs Ch6 敌流派分布;playerTier override=武圣'
+          '(神物唯一可装阶 · 无 wuSheng mainline 内容,回刷宗师)。')
+      ..writeln('- 玩家满熟练 ×1.30 叠极境 ×3.0(双修炼度乘子),为真实终局上限。');
+
+    final outPath = '$_outputDir/extreme_cycle_diagnosis_2026-06-14.md';
+    File(outPath).writeAsStringSync(buf.toString());
+    print('extreme×cycle diagnosis done · summary=$outPath');
+    print('global peak(any)=$globalPeak · ${peakTag(globalPeak)} · '
+        'peak(normal)=$globalNormalPeak · ${peakTag(globalNormalPeak)}');
+
+    // 硬不变量:实战玩家单击峰值不进百万(GDD/CLAUDE §5.4 软红线绝对天花板)。
+    expect(globalPeak, lessThan(1000000),
+        reason: '极值 build 实战玩家单击峰值不得进百万级膨胀(§5.4 绝对天花板)');
+  }, timeout: const Timeout(Duration(minutes: 15)));
 }
 
 class _SimResult {
@@ -226,6 +319,10 @@ class _SimResult {
   final int ticks;
   final int playerHpEnd;
   final int enemyHpRemain;
+  final int peakPlayerDamage; // 玩家方单击实战峰值(APM 末端乘后)
+  final int peakPlayerNormalDamage; // 玩家方普攻单击实战峰值
+  final int initialPlayerHp; // 进战玩家总 maxHp(算掉血%)
+  final int cycleIndex; // 周目(1=基线)
 
   _SimResult({
     required this.stageId,
@@ -238,18 +335,28 @@ class _SimResult {
     required this.ticks,
     required this.playerHpEnd,
     required this.enemyHpRemain,
+    required this.peakPlayerDamage,
+    required this.peakPlayerNormalDamage,
+    required this.initialPlayerHp,
+    required this.cycleIndex,
   });
 }
 
 _SimResult _simulateStage(
     StageDef stage, int seed, GameRepository repo, _BuildProfile profile,
-    {int proficiencyUses = 0}) {
+    {int proficiencyUses = 0,
+    int cycleIndex = 1,
+    bool isTower = false,
+    RealmTier? playerTierOverride}) {
   // 玩家境界 = stage.requiredRealm(on-level 诚实基线 · 2026-05-29 去 +1 confound):
   // 原 +1「玩家超阶」是旧假 _synthPlayer 时代的补偿 hack;真 build 下 +1 与同阶
   // 敌人叠加 → 玩家凭空 1 阶优势(差1阶 attacker×1.4/defender×0.7)把后段全冲成
   // trivial,掩盖真难度。on-level = 玩家恰在 required 阶 = 诚实「最低规格」读数。
   // 过度练级(挂机/grind 到 +1)只会更易,不影响「能否在达标阶通关」的下限判断。
-  final tierIndex = RealmTier.values.indexOf(stage.requiredRealm);
+  // playerTierOverride:极值诊断强制武圣(神物 build 唯一可装阶 · 无 wuSheng mainline
+  // 内容 → 飞升玩家回刷宗师 Ch6,+1 阶差距修正放大碾压)。否则 on-level = required。
+  final tierIndex =
+      RealmTier.values.indexOf(playerTierOverride ?? stage.requiredRealm);
   final playerTier = RealmTier.values[tierIndex.clamp(0, RealmTier.values.length - 1)];
   final players = [
     _buildRealPlayer(repo, playerTier,
@@ -262,8 +369,11 @@ _SimResult _simulateStage(
         slot: 2, name: '徒弟二', isFounder: false, profile: profile,
         proficiencyUses: proficiencyUses),
   ];
-  final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
+  final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam,
+      cycleIndex: cycleIndex, isTower: isTower);
   final initial = BattleState.initial(leftTeam: players, rightTeam: enemies);
+  final initialPlayerHp =
+      initial.leftTeam.fold<int>(0, (sum, p) => sum + p.maxHp);
   final rng = Random(seed);
   final terminal = BattleEngine.runToEnd(initial, repo.numbers,
       maxTicks: _maxTicks, rng: rng);
@@ -274,6 +384,20 @@ _SimResult _simulateStage(
   final enemyHpRemain = terminal.rightTeam
       .where((e) => e.isAlive)
       .fold<int>(0, (sum, e) => sum + e.currentHp);
+  // 玩家方单击峰值伤害(actorId>0=玩家;敌人 id 为负)→ 验软红线不进十万/百万。
+  // finalDamage 是经 terrain/formation/enmity APM 末端乘叠加后的实战值。
+  var peakPlayerDamage = 0;
+  var peakPlayerNormalDamage = 0; // 仅普攻(验 full_build 测「普攻不进十万」在实战是否成立)
+  for (final a in terminal.actionLog) {
+    if (a.actorId > 0 && a.attackResult != null) {
+      final d = a.attackResult!.finalDamage;
+      if (d > peakPlayerDamage) peakPlayerDamage = d;
+      if (a.skill?.type == SkillType.normalAttack &&
+          d > peakPlayerNormalDamage) {
+        peakPlayerNormalDamage = d;
+      }
+    }
+  }
   final resultStr = terminal.result == null
       ? 'timeout'
       : terminal.result!.name;
@@ -289,6 +413,10 @@ _SimResult _simulateStage(
     ticks: terminal.tick,
     playerHpEnd: playerHpEnd,
     enemyHpRemain: enemyHpRemain,
+    peakPlayerDamage: peakPlayerDamage,
+    peakPlayerNormalDamage: peakPlayerNormalDamage,
+    initialPlayerHp: initialPlayerHp,
+    cycleIndex: cycleIndex,
   );
 }
 
@@ -297,6 +425,11 @@ _SimResult _simulateStage(
 enum _BuildProfile {
   floor, // 欠配置/中位:0 强化 + 生疏共鸣 + 无 founder buff + 主修 zhongCheng + 属性 20
   ceiling, // 活跃玩家:½ 强化 + 默契共鸣 + founder buff + 主修 daCheng + 属性 22
+  // 满强化神物极值 build(2026-06-14 红线分两层后新增 · 镜像 full_build_damage_redline_test):
+  // 武圣登峰 + 神物 baseMax + 满强化(+49) + 心剑通灵共鸣(×1.30) + 开锋双攻击槽(15+20)
+  // + 主修极境(×3.0) + 满熟练(uses 800 · ×1.30) + 属性满 24 + founder buff。
+  // 终局飞升玩家「会玩、满投入」上限,用于量化极值 build 在周目进化下的失衡度。
+  extreme,
 }
 
 /// 玩家代表 build(2026-05-29 升真 · C 方案 floor+ceiling):走生产
@@ -317,15 +450,19 @@ BattleCharacter _buildRealPlayer(
   required _BuildProfile profile,
   int proficiencyUses = 0,
 }) {
-  const layer = RealmLayer.huaJing; // 代表性中高层(沿旧 _synthPlayer 体例)
-  const school = TechniqueSchool.gangMeng; // 固定刚猛(流派分布留局限)
+  final extreme = profile == _BuildProfile.extreme;
   final ceiling = profile == _BuildProfile.ceiling;
+  // extreme 用登峰(顶层 realm 数值)/ 其余沿旧 _synthPlayer 体例中高层 huaJing
+  final layer = extreme ? RealmLayer.dengFeng : RealmLayer.huaJing;
+  const school = TechniqueSchool.gangMeng; // 固定刚猛(流派分布留局限)
   final numbers = repo.numbers;
   final realmDef = repo.getRealm(tier, layer);
-  // ceiling 中等强化 ½ 上限(GDD §6.2 cap=absLevel)/ floor 0 强化
-  final enhanceLevel = ceiling ? (realmDef.absoluteLevel * 0.5).round() : 0;
-  // ceiling 默契段 [300,2000) ×1.20 解锁人剑合一 / floor 生疏 ×1.0
-  final battleCount = ceiling ? 400 : 0;
+  // extreme 满强化(+49 = absLevel cap)/ ceiling ½ 上限(GDD §6.2)/ floor 0 强化
+  final enhanceLevel = extreme
+      ? realmDef.absoluteLevel
+      : (ceiling ? (realmDef.absoluteLevel * 0.5).round() : 0);
+  // extreme 心剑通灵段(×1.30 满共鸣)/ ceiling 默契段 ×1.20 / floor 生疏 ×1.0
+  final battleCount = extreme ? 1000000 : (ceiling ? 400 : 0);
 
   // tier-cap 真装备(weapon/armor/accessory · 从 production equipmentDefs 选)。
   final eqTierCap = RealmUtils.equipmentTierCapOf(tier);
@@ -351,11 +488,33 @@ BattleCharacter _buildRealPlayer(
       obtainedAt: DateTime(2026, 5, 29),
       obtainedFrom: 'balance_sim',
       school: school,
-      baseAttack: (def.baseAttackMin + def.baseAttackMax) ~/ 2,
-      baseHealth: (def.baseHealthMin + def.baseHealthMax) ~/ 2,
-      baseSpeed: (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
+      // extreme 取基础表值上限(真极值)/ 其余取 midpoint
+      baseAttack: extreme
+          ? def.baseAttackMax
+          : (def.baseAttackMin + def.baseAttackMax) ~/ 2,
+      baseHealth: extreme
+          ? def.baseHealthMax
+          : (def.baseHealthMin + def.baseHealthMax) ~/ 2,
+      baseSpeed: extreme
+          ? def.baseSpeedMax
+          : (def.baseSpeedMin + def.baseSpeedMax) ~/ 2,
       enhanceLevel: enhanceLevel,
       battleCount: battleCount,
+      // extreme 双攻击开锋槽(15+20),镜像 full_build_damage_redline_test 极值
+      forgingSlots: extreme
+          ? [
+              ForgingSlot()
+                ..slotIndex = 1
+                ..type = ForgingSlotType.attack
+                ..unlocked = true
+                ..bonusValue = 15,
+              ForgingSlot()
+                ..slotIndex = 2
+                ..type = ForgingSlotType.attack
+                ..unlocked = true
+                ..bonusValue = 20,
+            ]
+          : const [],
     ));
   }
 
@@ -375,9 +534,10 @@ BattleCharacter _buildRealPlayer(
     school: school,
     role: TechniqueRole.main,
     learnedAt: DateTime(2026, 5, 29),
-    // ceiling 主修 大成 / floor 中成(§4.3 修炼度 9 层)
-    cultivationLayer:
-        ceiling ? CultivationLayer.daCheng : CultivationLayer.zhongCheng,
+    // extreme 极境(×3.0 顶层修炼度)/ ceiling 大成 / floor 中成(§4.3 修炼度 9 层)
+    cultivationLayer: extreme
+        ? CultivationLayer.jiJing
+        : (ceiling ? CultivationLayer.daCheng : CultivationLayer.zhongCheng),
   );
   // 可玩性 P1a:seed 主修各招 skillUsageCount → fromCharacter 快照 skillUses
   // → 战中按熟练阶应用伤害倍率。默认 0(fresh · 不扰既有 sweep)。
@@ -387,12 +547,12 @@ BattleCharacter _buildRealPlayer(
     }
   }
 
-  // ceiling 属性 22(投入偏上)/ floor 20(均值 · §4.1 μ=5.5 总和 16-24)
+  // extreme 属性满 24(§4.1 总和上限:8/8/4/4 偏根骨身法)/ ceiling 22 / floor 20
   final attributes = Attributes()
-    ..constitution = ceiling ? 6 : 5
-    ..agility = ceiling ? 6 : 5
-    ..enlightenment = 5
-    ..fortune = 5;
+    ..constitution = extreme ? 8 : (ceiling ? 6 : 5)
+    ..agility = extreme ? 8 : (ceiling ? 6 : 5)
+    ..enlightenment = extreme ? 4 : 5
+    ..fortune = extreme ? 4 : 5;
 
   final character = Character.create(
     name: name,
@@ -418,7 +578,7 @@ BattleCharacter _buildRealPlayer(
     numbers: numbers,
     teamSide: 0,
     slotIndex: slot,
-    founderBuffActive: ceiling,
+    founderBuffActive: ceiling || extreme,
   );
 }
 
