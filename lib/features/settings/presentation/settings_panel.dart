@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/app_exit.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../application/audio_settings_provider.dart';
@@ -68,6 +69,12 @@ class SettingsPanel extends ConsumerWidget {
           ),
           const Divider(height: 1),
           const _AutoPlayDefaultTile(),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.power_settings_new),
+            title: const Text(UiStrings.settingsQuit),
+            onTap: () => AppExit.confirmAndQuit(context),
+          ),
         ],
       ),
     );
