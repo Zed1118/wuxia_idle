@@ -354,6 +354,86 @@ class BattleScenarioData {
     return (left, right);
   }
 
+  /// 拖招交互真玩/验收专用(battle_drag_live 路由)。
+  ///
+  /// 配合 ScenarioLauncher(allowPlayerIntervention:true, autoStart:true):战斗自动
+  /// 播放、拖招干预层已挂。**高血量 + 低攻击耐久敌人** → 战斗持续够长,玩家有充足
+  /// 时间长按拖技能(规避 Ch1 关卡「怪被平 A 秒、来不及拖」);主控带 single 强力技
+  /// (拖到敌头像指定目标)+ aoe 大招(点一下群体直发),正好演示两种交互。
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioDragLive() {
+    // 主控:内力满 → 强力技/大招全 ready;3 名我方高血,整队久撑。
+    BattleCharacter player(
+      int id,
+      String name,
+      int slot,
+      List<SkillDef> skills,
+    ) => _char(
+      id: id,
+      name: name,
+      tier: RealmTier.erLiu,
+      layer: RealmLayer.yuanShu,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 12000,
+      maxIf: 2000,
+      speed: 200,
+      critRate: 0.05,
+      eqAtk: 400,
+      cultivation: CultivationLayer.daCheng,
+      skills: skills,
+      teamSide: 0,
+      slotIndex: slot,
+    );
+
+    final left = [
+      player(1, '主控', 0, [
+        _normal('dl_normal_1', '基础招'),
+        _power('dl_power_1', '崩山式', pm: 1600, cost: 150, cd: 2), // single 强力技
+        // aoe 大招:点一下群体直发(targetType.aoe)。
+        const SkillDef(
+          id: 'dl_aoe_1',
+          name: '万钧裂空',
+          description: '',
+          type: SkillType.ultimate,
+          powerMultiplier: 5000,
+          internalForceCost: 250,
+          cooldownTurns: 5,
+          requiresManualTrigger: true,
+          visualEffect: '',
+          targetType: TargetType.aoe,
+        ),
+      ]),
+      player(2, '弟子甲', 1, [_normal('dl_normal_2', '基础招')]),
+      player(3, '弟子乙', 2, [_normal('dl_normal_3', '基础招')]),
+    ];
+
+    // 敌人:高血(久撑) + 低攻击/低速(不秒玩家)→ 战斗够长可从容拖招。
+    BattleCharacter tankMob(int id, String name, int slot, String icon) => _char(
+      id: id,
+      name: name,
+      tier: RealmTier.erLiu,
+      layer: RealmLayer.yuanShu,
+      school: TechniqueSchool.yinRou,
+      maxHp: 16000,
+      maxIf: 500,
+      speed: 120,
+      critRate: 0.05,
+      eqAtk: 200,
+      cultivation: CultivationLayer.daCheng,
+      skills: [_normal('dl_mob_$id', '缠斗')],
+      teamSide: 1,
+      slotIndex: slot,
+      iconPath: icon,
+    );
+
+    final right = [
+      tankMob(11, '铁布衫客', 0, 'assets/enemies/qingshan_main.png'),
+      tankMob(12, '巷口杀手', 1, 'assets/enemies/killer_a.png'),
+      tankMob(13, '巷尾杀手', 2, 'assets/enemies/killer_b.png'),
+    ];
+
+    return (left, right);
+  }
+
   // ── 场景 C：二流·圆熟 1v1，装备对比 ─────────────────────────────────────────
   //
   // 左：基础攻400 × 强化1.60 × 默契1.20 = 768
@@ -486,12 +566,18 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   /// 战斗随机种子(确定性验收):null = 不传(seed 自动生成)。
   final int? seed;
 
+  /// 透传给 BattleScreen.allowPlayerIntervention(默认 false 现有静态验收用法不变);
+  /// true 时挂拖招干预层(技能按钮长按拖 + 引导线 + drop 命中),供 battle_drag_live
+  /// 路由真玩/Codex 验拖招手势。
+  final bool allowPlayerIntervention;
+
   const ScenarioLauncher({
     required this.teamsFactory,
     required this.hint,
     this.sceneBackgroundPath,
     this.autoStart = true,
     this.seed,
+    this.allowPlayerIntervention = false,
     super.key,
   });
 
@@ -517,6 +603,7 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
     hint: widget.hint,
     sceneBackgroundPath: widget.sceneBackgroundPath,
     autoStart: widget.autoStart,
+    allowPlayerIntervention: widget.allowPlayerIntervention,
     onBattleEnd: () => Navigator.of(context).pop(),
   );
 }

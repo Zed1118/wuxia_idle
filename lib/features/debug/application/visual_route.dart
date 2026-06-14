@@ -116,6 +116,10 @@ enum VisualRoute {
     'tower_cycle',
     '爬塔·问鼎轮回验收(通关 30 层 cycle1 → 显当前轮回 + 挑战下一轮回入口)',
   ),
+  battleDragLive(
+    'battle_drag_live',
+    '拖招交互真玩/验收(真战斗·已开干预·高血耐久敌久撑 → 长按拖 single 强力技到敌头像 + 点 aoe 大招直发)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
