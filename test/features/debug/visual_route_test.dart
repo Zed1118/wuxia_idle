@@ -121,5 +121,20 @@ void main() {
           reason: '拖招验收路由必须开干预,否则技能按钮不挂拖手势(本次 FAIL 根因)');
       expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,拖招随时干预');
     });
+
+    test('battle_drag_preview → autoStart:false + debugDragPreview 预置 '
+        '(拖招表现层静态验收;手势鼠标合成不出,守预置态透传)', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleDragPreview,
+        IsarSetup.instance,
+      );
+      expect(target, isA<ScenarioLauncher>());
+      final launcher = target as ScenarioLauncher;
+      expect(launcher.autoStart, isFalse, reason: '冻结画面,蓄势光晕脉动常驻不被 tick 推掉');
+      final preview = launcher.debugDragPreview;
+      expect(preview, isNotNull, reason: '静态验收必须预置拖招态,否则截图无引导线/光晕');
+      expect(preview!.rushActorId, 1, reason: '主控蓄势脉动');
+      expect(preview.hoveredEnemyId, 11, reason: '敌 11 悬停浅金高亮');
+    });
   });
 }

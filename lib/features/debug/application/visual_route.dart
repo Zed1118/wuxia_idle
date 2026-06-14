@@ -120,6 +120,10 @@ enum VisualRoute {
     'battle_drag_live',
     '拖招交互真玩/验收(真战斗·已开干预·高血耐久敌久撑 → 长按拖 single 强力技到敌头像 + 点 aoe 大招直发)',
   ),
+  battleDragPreview(
+    'battle_drag_preview',
+    '拖招表现层静态验收(冻结画面预置态·Codex 截图:引导线外发光+末端白心 / 蓄势呼吸脉动光晕(截帧) / 悬停敌头像浅金高亮)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);

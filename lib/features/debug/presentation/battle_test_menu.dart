@@ -585,6 +585,9 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   /// 路由真玩/Codex 验拖招手势。
   final bool allowPlayerIntervention;
 
+  /// 透传给 BattleScreen.debugDragPreview(拖招表现层静态验收预置态)。
+  final BattleDragPreview? debugDragPreview;
+
   const ScenarioLauncher({
     required this.teamsFactory,
     required this.hint,
@@ -592,6 +595,7 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
     this.autoStart = true,
     this.seed,
     this.allowPlayerIntervention = false,
+    this.debugDragPreview,
     super.key,
   });
 
@@ -618,6 +622,7 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
     sceneBackgroundPath: widget.sceneBackgroundPath,
     autoStart: widget.autoStart,
     allowPlayerIntervention: widget.allowPlayerIntervention,
+    debugDragPreview: widget.debugDragPreview,
     onBattleEnd: () => Navigator.of(context).pop(),
   );
 }
