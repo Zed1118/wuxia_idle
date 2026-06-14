@@ -505,7 +505,7 @@ class GameRepository {
     //   - floorIndex 1-30 连续唯一
     //   - bossKind 严格在 5/10/15/20/25/30
     //   - 普通层 narrativeOpeningId / narrativeVictoryId 必须为 null
-    //   - Boss HP ≤ 50000（§5.4 红线）
+    //   - Boss HP ≤ bossHpMax（§5.4 红线，config-driven，2026-06-14 调至 60000）
     _enforceTowerRedLines();
 
     // Phase 3 T47：闭关地图 5 张校验
@@ -978,12 +978,13 @@ class GameRepository {
           '实际 ${f.enemyTeam.length}',
         );
       }
-      // §5.4 红线：Boss HP ≤ 50000
+      // §5.4 红线：Boss baseHp ≤ bossHpMax（config-driven，2026-06-14 调至 60000）
+      final bossHpMax = numbers.combat.redLines.bossHpMax;
       for (final e in f.enemyTeam) {
-        if (e.baseHp > 50000) {
+        if (e.baseHp > bossHpMax) {
           throw StateError(
             '红线越界：爬塔 floor=${f.floorIndex} enemy=${e.id} '
-            'baseHp=${e.baseHp} > 50000',
+            'baseHp=${e.baseHp} > $bossHpMax',
           );
         }
       }

@@ -260,7 +260,7 @@ void main() {
       );
     });
 
-    test('Boss HP > 50000（§5.4 红线）→ StateError', () async {
+    test('Boss HP > bossHpMax（§5.4 红线，60000）→ StateError', () async {
       final overrides = _buildBrokenTowersYaml((floors) {
         // floor=30 大 Boss baseHp 拉到越界值
         floors[29] = floors[29].replaceFirst(
@@ -271,7 +271,7 @@ void main() {
         throwsA(isA<StateError>().having(
           (e) => e.message,
           'message',
-          contains('50000'),
+          contains('60000'),
         )),
       );
     });

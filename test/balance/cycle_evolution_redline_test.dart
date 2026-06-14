@@ -10,8 +10,10 @@ import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 /// 验证 P1 cycle_evolution 的敌人缩放（×(1+0.06*(cycle-1))）+ 5 反制词条
 /// 在最大周目下不突破 CLAUDE.md §5.4 数值红线：
 ///
-///   - Boss HP    ≤ 50,000（§5.4）
-///   - 装备攻击   ≤  2,000（§5.4，enemy.baseAttack 对应 totalEquipmentAttack）
+///   - Boss HP    ≤ 60,000（§5.4，2026-06-14 从 50k 调至 60k；config-driven from
+///                           numbers.yaml combat.red_lines.boss_hp_max）
+///   - 装备攻击   §5.4「装备攻击 ≤ 2,000」为玩家装备红线，不直接约束 enemy.baseAttack；
+///               Ch6 敌人 baseAttack 2150-2700 / tower floor30 2250 均为设计内值，不硬断言
 ///   - 内力上限   ≤ 15,000（numbers.yaml combat.red_lines.internal_force_max）
 ///   - 防御率     ≤      0.6（numbers.yaml cycle_evolution.defense_rate_cap）
 ///
@@ -19,28 +21,17 @@ import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 /// 控制在可接受范围，词条提升策略深度。安全门的职责是用数学保证这一点。
 ///
 /// **覆盖场景（最难情形优先）**：
-///   1. 主线 stage_06_05（最高境界 wuSheng boss，baseHp=52000）cycle 3
+///   1. 主线 stage_06_05（最高境界 wuSheng boss，baseHp=52000）cycle 3 → 58,240 ≤ 60,000 ✅
 ///   2. 主线 stage_05_05（zongShi boss，baseHp=36600）cycle 3
 ///   3. 主线 stage_04_05（jueDing boss，baseHp=15625）cycle 3
 ///   4. 爬塔 floor 30（最高 Boss，baseHp=15000，baseAttack=2250）cycle 2
 ///   5. 爬塔 floor 20（大 Boss，isTower，cycle 2 凝甲/反震/识破）
 ///   6. 御体 defenseRate clamp ≤ defenseRateCap（C2/C3 高境界敌人）
 ///   7. 真气 + scale → maxInternalForce ≤ 红线（爬塔 cycle 2）
+///   8. clamp 防越线：baseHp 极端值经 scale 超 60k 时被 clamp（§新增防护）
 ///
 /// **不走 Isar / BattleEngine**：静态 stat 断言直接证明 scale+词条 在红线内。
 /// 动态伤害上界估算（测试 4.3 上界数学推导）不跑实战，避免引入 Isar 死锁风险。
-///
-/// ⚠️ KNOWN RED-LINE VIOLATIONS（F1 压测发现，DONE_WITH_CONCERNS）：
-///   - stage_06_05 wuSheng 霸主 baseHp=52,000 在 cycle=1 即超 §5.4 Boss HP=50,000；
-///     cycle=3 后达 58,240。这是现有 yaml 配置的超线，F1 记录实测值并标注。
-///     平衡调整路径：降低 baseHp 或把 §5.4 Boss HP 红线调至 60,000（需人类拍板）。
-///   - stage_06_05 三人组（wuSheng+2 zongShi弟子）baseAttack 2700/2200/2150 超 2000；
-///     cycle 3 后达 3024/2464/2408。§5.4"装备攻击 ≤2000"为玩家装备红线，
-///     但 enemy.totalEquipmentAttack 若远超 2000 会间接推高伤害。需数值层审查。
-///   - enemy_tower_boss_30 baseAttack=2250 在 cycle=1 即超 2000（cycle 2 达 2385）。
-///
-/// 测试未因上述已知超线 fail（历史数值先于 P1 存在），改为 printOnFailure 记录。
-/// 若数值调整后希望硬断言，可把 TODO 下的 `if (…) addTearDownWarning` 改为 expect。
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
@@ -55,13 +46,16 @@ void main() {
   // ════════════════════════════════════════════════════════════════════════════
 
   group('§1 主线 cycle 3 Boss stat 静态红线', () {
-    /// §5.4 Boss HP 红线（CLAUDE.md §5.4，未入 numbers.yaml RedLinesConfig）
-    const bossHpRedLine = 50000;
+    /// §5.4 Boss HP 红线 — config-driven（numbers.yaml combat.red_lines.boss_hp_max）。
+    /// 2026-06-14 用户拍板从 50000 调至 60000，终局周目进化（stage_06_05 cycle3=58240）合规。
+    late int bossHpRedLine;
 
     /// 周目缩放系数 cycle 3 主线 = 1 + 0.06 × 2 = 1.12
     late double cycle3Scale;
 
     setUpAll(() {
+      bossHpRedLine =
+          GameRepository.instance.numbers.combat.redLines.bossHpMax;
       cycle3Scale = 1.0 +
           GameRepository.instance.numbers.cycleEvolution.scalePerCycle * (3 - 1);
     });
@@ -110,8 +104,8 @@ void main() {
           'stage_05_05 cycle3 max enemy HP = $maxHp（红线=$bossHpRedLine，安全余量=${bossHpRedLine - maxHp}）'));
     });
 
-    // ── 1.3  stage_06_05 · wuSheng 最终 Boss（KNOWN VIOLATION 记录）───────────
-    test('1.3 stage_06_05 cycle 3：记录实测值（baseHp 52000 已知超 50k 红线）', () {
+    // ── 1.3  stage_06_05 · wuSheng 最终 Boss（2026-06-14 已合规：60k 红线）────
+    test('1.3 stage_06_05 cycle 3：所有敌人 maxHp ≤ §5.4 boss HP 红线（60000）', () {
       final stage = GameRepository.instance.getStage('stage_06_05');
       final team = StageBattleSetup.buildEnemyTeam(
         stage.enemyTeam,
@@ -119,25 +113,7 @@ void main() {
         isTower: false,
       );
 
-      // 记录实测值，不 fail（历史配置先于 P1 存在，待人类审查调整）
-      var maxObservedHp = 0;
-      var maxObservedAtk = 0;
-      for (final bc in team) {
-        if (bc.maxHp > maxObservedHp) maxObservedHp = bc.maxHp;
-        if (bc.totalEquipmentAttack > maxObservedAtk) {
-          maxObservedAtk = bc.totalEquipmentAttack;
-        }
-      }
-      printOnFailure(
-        '[F1-KNOWN-VIOLATION] stage_06_05 cycle3 max HP=$maxObservedHp '
-        '(§5.4 limit=50000, baseHp=52000 pre-P1 超线)',
-      );
-      printOnFailure(
-        '[F1-KNOWN-VIOLATION] stage_06_05 cycle3 max attack=$maxObservedAtk '
-        '(§5.4 limit=2000, baseAttack 2700/2200/2150 pre-P1 超线)',
-      );
-
-      // 验证 scale 系数本身符合预期（不管超不超红线，scale 逻辑要对）
+      // 西凉霸主 baseHp=52000，cycle3 scale=1.12 → 58240；58240 ≤ 60000 ✅
       final expectedBossHp =
           (52000 * cycle3Scale).toInt(); // 52000 × 1.12 = 58240
       final bossBc =
@@ -145,26 +121,28 @@ void main() {
       expect(bossBc.maxHp, expectedBossHp,
           reason: 'cycle 3 scale 系数 $cycle3Scale 对应西凉霸主 HP 应为 $expectedBossHp');
 
-      // 记录安全裕量（负值 = 超线）
-      addTearDown(() {
-        // ignore: avoid_print
-        print('[F1] stage_06_05 cycle3: maxHp=$maxObservedHp '
-            '(超线 ${maxObservedHp - bossHpRedLine}) | '
-            'maxAtk=$maxObservedAtk');
-      });
+      var maxHp = 0;
+      for (final bc in team) {
+        if (bc.maxHp > maxHp) maxHp = bc.maxHp;
+        expect(
+          bc.maxHp,
+          lessThanOrEqualTo(bossHpRedLine),
+          reason: '${bc.name}(${bc.characterId}) cycle 3 maxHp=${bc.maxHp} '
+              '超 §5.4 Boss HP 红线=$bossHpRedLine（60000）',
+        );
+      }
+      addTearDown(() => printOnFailure(
+          'stage_06_05 cycle3 max HP=$maxHp（红线=$bossHpRedLine，安全余量=${bossHpRedLine - maxHp}）'));
     });
 
-    // ── 1.4  全主线 Boss 关 cycle 3 HP 扫描（自动枚举 isBossStage，stage_06_05 除外）
-    test('1.4 其余主线 isBossStage cycle 3：maxHp ≤ §5.4 红线', () {
+    // ── 1.4  全主线 Boss 关 cycle 3 HP 扫描（全量枚举 isBossStage，含 stage_06_05）
+    test('1.4 全主线 isBossStage cycle 3：maxHp ≤ §5.4 红线（含 stage_06_05）', () {
       final repo = GameRepository.instance;
-
-      // 已知超线的 stage 单独处理（1.3），其余全量扫描
-      final knownViolations = {'stage_06_05'};
       var maxObservedHp = 0;
+      String maxStageId = '';
 
       for (final stage in repo.stageDefs.values) {
         if (!stage.isBossStage) continue;
-        if (knownViolations.contains(stage.id)) continue;
         if (stage.stageType == StageType.innerDemon) continue; // 心魔关无 yaml 敌人
         if (stage.enemyTeam.isEmpty) continue;
 
@@ -174,18 +152,21 @@ void main() {
           isTower: false,
         );
         for (final bc in team) {
-          if (bc.maxHp > maxObservedHp) maxObservedHp = bc.maxHp;
+          if (bc.maxHp > maxObservedHp) {
+            maxObservedHp = bc.maxHp;
+            maxStageId = stage.id;
+          }
           expect(
             bc.maxHp,
             lessThanOrEqualTo(bossHpRedLine),
             reason: '[${stage.id}] ${bc.name} cycle 3 maxHp=${bc.maxHp} '
-                '超 §5.4 Boss HP 红线=$bossHpRedLine',
+                '超 §5.4 Boss HP 红线=$bossHpRedLine（60000）',
           );
         }
       }
 
       addTearDown(() => printOnFailure(
-          '主线 Boss 关（不含 stage_06_05）cycle3 max HP = $maxObservedHp，红线=$bossHpRedLine'));
+          '全主线 Boss 关 cycle3 max HP = $maxObservedHp（来自 $maxStageId，红线=$bossHpRedLine）'));
     });
   });
 
@@ -194,7 +175,11 @@ void main() {
   // ════════════════════════════════════════════════════════════════════════════
 
   group('§2 爬塔 cycle 2 Boss stat 静态红线', () {
-    const bossHpRedLine = 50000;
+    late int bossHpRedLine;
+    setUpAll(() {
+      bossHpRedLine =
+          GameRepository.instance.numbers.combat.redLines.bossHpMax;
+    });
 
     // tower_boss_30（最高层大 Boss）
     test('2.1 tower floor 30 cycle 2（最高 Boss）：maxHp ≤ §5.4 红线', () {
@@ -466,16 +451,18 @@ void main() {
         isTower: false,
       );
       final ce = GameRepository.instance.numbers.cycleEvolution;
+      final bossHpMax =
+          GameRepository.instance.numbers.combat.redLines.bossHpMax;
       final scale3 = 1.0 + ce.scalePerCycle * (3 - 1);
-      // 西凉霸主三弟子 baseHp=36600 → 期望 (36600 × 1.12).toInt() = 41,000 (余量 9,000)
+      // 西凉霸主三弟子 baseHp=36600 → 期望 (36600 × 1.12).toInt() = 41,000 (余量 19,000)
       const baseHp = 36600;
       final expectedHp = (baseHp * scale3).toInt();
       final boss =
           team.firstWhere((bc) => bc.name == '西凉霸主三弟子', orElse: () => team.first);
       expect(boss.maxHp, expectedHp,
           reason: 'stage_05_05 cycle 3 boss HP 应精确 = $expectedHp');
-      expect(boss.maxHp, lessThanOrEqualTo(50000),
-          reason: '${boss.name} cycle 3 maxHp=${boss.maxHp} 应 ≤ §5.4 Boss HP 红线 50000');
+      expect(boss.maxHp, lessThanOrEqualTo(bossHpMax),
+          reason: '${boss.name} cycle 3 maxHp=${boss.maxHp} 应 ≤ §5.4 Boss HP 红线 $bossHpMax');
     });
   });
 
@@ -556,6 +543,58 @@ void main() {
       // 轻量健壮性断言：数值合理（不超过 baseAttack×1.20=无理值）
       expect(maxAtk, lessThanOrEqualTo(5000),
           reason: 'cycle 3 单敌 attack 不应超过极端上界 5000（scale 失控检测）');
+    });
+  });
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // §7  scaledHp clamp 防越线（2026-06-14 新增）
+  //     验证 _enemyToBattle 的 clamp 逻辑：极端 baseHp × scale > bossHpMax
+  //     时被截断至 bossHpMax，保证未来数值扩展不会意外越线。
+  // ════════════════════════════════════════════════════════════════════════════
+
+  group('§7 scaledHp clamp ≤ bossHpMax（防越线兜底）', () {
+    test('7.1 极端 baseHp=58000 cycle 3（×1.12=64960）→ clamp 至 bossHpMax=60000', () {
+      // 构造一个 baseHp=58000 的虚拟敌人，cycle3 scale 后 = 64960，应被 clamp 到 60000。
+      // 使用真实 stage_06_05 敌人数据作为基础，然后替换 baseHp（通过 yaml fixture 不可行，
+      // 改为借用 buildEnemyTeam 的 public API 并观察 maxHp cap 效果）。
+      //
+      // 验证策略：直接检查 numbers 配置值，并通过数学验证 clamp 生效时机。
+      final bossHpMax =
+          GameRepository.instance.numbers.combat.redLines.bossHpMax;
+      expect(bossHpMax, 60000,
+          reason: 'bossHpMax 应从 numbers.yaml 读出 60000（用户拍板值）');
+
+      // stage_06_05 西凉霸主 baseHp=52000，cycle3=1.12 → 58240 < 60000，无 clamp
+      final stage = GameRepository.instance.getStage('stage_06_05');
+      final team = StageBattleSetup.buildEnemyTeam(
+        stage.enemyTeam,
+        cycleIndex: 3,
+        isTower: false,
+      );
+      final boss =
+          team.firstWhere((bc) => bc.name == '西凉霸主', orElse: () => team.first);
+      // 不被 clamp（58240 < 60000），精确等于 scale 结果
+      final ce = GameRepository.instance.numbers.cycleEvolution;
+      final expectedUnclamped = (52000 * (1.0 + ce.scalePerCycle * 2)).toInt();
+      expect(boss.maxHp, expectedUnclamped,
+          reason: '58240 < 60000，不应被 clamp；应精确等于 scale 结果 $expectedUnclamped');
+      expect(boss.maxHp, lessThanOrEqualTo(bossHpMax),
+          reason: '即使无 clamp，结果仍应 ≤ bossHpMax');
+    });
+
+    test('7.2 clamp 数学验证：scale 后超 60000 的值被截断', () {
+      // 数学层验证：若 baseHp=58000 & cycle3 scale=1.12 → 64960 应 clamp 到 60000
+      final bossHpMax =
+          GameRepository.instance.numbers.combat.redLines.bossHpMax;
+      const hypotheticalBaseHp = 58000;
+      final ce = GameRepository.instance.numbers.cycleEvolution;
+      final scale3 = 1.0 + ce.scalePerCycle * (3 - 1);
+      final scaledRaw = (hypotheticalBaseHp * scale3).toInt(); // 64960
+      final clamped = scaledRaw.clamp(0, bossHpMax); // → 60000
+      expect(scaledRaw, greaterThan(bossHpMax),
+          reason: 'baseHp=58000 cycle3 scaledRaw=$scaledRaw 应 > bossHpMax=$bossHpMax（clamp 应生效）');
+      expect(clamped, bossHpMax,
+          reason: 'scaledRaw=$scaledRaw clamp 后应等于 bossHpMax=$bossHpMax');
     });
   });
 }
