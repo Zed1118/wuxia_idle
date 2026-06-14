@@ -1,10 +1,13 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
+import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 
 /// F1 周目进化 安全门：跨阶 + 周目压测守红线。
 ///
@@ -633,4 +636,116 @@ void main() {
           reason: '未超线时 maxHp 应精确等于 scale 结果 $expectedHp，不应被 clamp 截断');
     });
   });
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // §8  敌人普攻基础伤害 ≤ §5.4「普通伤害 8000」红线（周目 scale 后）
+  //
+  //     §6 已记录敌人 baseAttack 分布（peak ~3024）；本节回答 closeout open
+  //     question：周目 scale 后的敌人 attack 进入伤害公式，是否突破普通伤害红线？
+  //
+  //     §5.4「普通伤害 ≤ 8000」约束的是基础伤害量级（内力×系数 + 装备攻击×系数
+  //     + 招式倍率）。修炼度(cult 1.0~3.0)/流派克制(0.75~1.25)/暴击(×2.5)/境界差
+  //     是全局战斗设计的对局乘子维度，非 P1 周目进化引入——CLAUDE §5.4 把「大招暴击」
+  //     单列为「几万」即印证普攻乘子叠加可超 8000 属设计内，不由周目红线测背书。
+  //
+  //     因此本节用「中性对局」（所有乘子设 1.0）走真实 calculateResolved 路径，
+  //     隔离出敌人普攻的基础伤害维度，断言其在周目 scale 峰值下仍 ≤ 8000。
+  //     实测峰值=4688（stage_06_05 西凉霸主 cycle3，IF=2912/atk=3024），余量 3312。
+  // ════════════════════════════════════════════════════════════════════════════
+
+  group('§8 敌人中性普攻基础伤害 ≤ §5.4 普通伤害红线', () {
+    // §5.4「普通伤害 ≤ 8000」未进 numbers config，沿 damage_calculator_test 体例硬编码。
+    const normalDamageRedLine = 8000;
+
+    test('8.1 全主线 Boss 关 cycle 3：中性普攻基础伤害 ≤ 8000', () {
+      final repo = GameRepository.instance;
+      var maxDmg = 0;
+      String maxStage = '';
+      String maxEnemy = '';
+      for (final stage in repo.stageDefs.values) {
+        if (!stage.isBossStage) continue;
+        if (stage.stageType == StageType.innerDemon) continue;
+        if (stage.enemyTeam.isEmpty) continue;
+        final team = StageBattleSetup.buildEnemyTeam(
+          stage.enemyTeam,
+          cycleIndex: 3,
+          isTower: false,
+        );
+        for (final bc in team) {
+          final dmg = _neutralNormalAttackDamage(bc);
+          if (dmg > maxDmg) {
+            maxDmg = dmg;
+            maxStage = stage.id;
+            maxEnemy = bc.name;
+          }
+          expect(dmg, lessThanOrEqualTo(normalDamageRedLine),
+              reason: '[${stage.id}] ${bc.name} cycle 3 中性普攻基础伤害=$dmg '
+                  '超 §5.4 普通伤害红线=$normalDamageRedLine');
+        }
+      }
+      addTearDown(() => printOnFailure(
+          '全主线 Boss 关 cycle3 中性普攻峰值=$maxDmg（来自 [$maxStage] $maxEnemy，'
+          '红线=$normalDamageRedLine，余量=${normalDamageRedLine - maxDmg}）'));
+    });
+
+    test('8.2 全爬塔 Boss 层 cycle 2：中性普攻基础伤害 ≤ 8000', () {
+      final repo = GameRepository.instance;
+      var maxDmg = 0;
+      int maxFloor = 0;
+      String maxEnemy = '';
+      for (int i = 1; i <= 30; i++) {
+        final floor = repo.getTowerFloor(i);
+        if (!floor.isBoss) continue;
+        final team = StageBattleSetup.buildEnemyTeam(
+          floor.enemyTeam,
+          cycleIndex: 2,
+          isTower: true,
+        );
+        for (final bc in team) {
+          final dmg = _neutralNormalAttackDamage(bc);
+          if (dmg > maxDmg) {
+            maxDmg = dmg;
+            maxFloor = i;
+            maxEnemy = bc.name;
+          }
+          expect(dmg, lessThanOrEqualTo(normalDamageRedLine),
+              reason: 'tower floor $i cycle 2 ${bc.name} 中性普攻基础伤害=$dmg '
+                  '超 §5.4 普通伤害红线=$normalDamageRedLine');
+        }
+      }
+      addTearDown(() => printOnFailure(
+          '全爬塔 Boss 层 cycle2 中性普攻峰值=$maxDmg（来自 floor $maxFloor $maxEnemy，'
+          '红线=$normalDamageRedLine，余量=${normalDamageRedLine - maxDmg}）'));
+    });
+  });
+}
+
+/// 中性对局基础普攻伤害：剥离修炼度/克制/暴击/境界差乘子（全设 1.0），
+/// 仅保留「内力×系数 + 装备攻击×系数 + 普攻招式倍率」基础维度，对应 §5.4
+/// 「普通伤害 ≤ 8000」的基础量级语义。走真实 [DamageCalculator.calculateResolved]
+/// 路径（非手算重演），用敌人战斗态真实 maxInternalForce / totalEquipmentAttack /
+/// attackPowerMultiplier / 真实普攻招式。
+int _neutralNormalAttackDamage(BattleCharacter bc) {
+  final normalSkill = bc.availableSkills.firstWhere(
+    (s) => s.type == SkillType.normalAttack,
+    orElse: () => bc.availableSkills.first,
+  );
+  return DamageCalculator.calculateResolved(
+    attackerInternalForce: bc.maxInternalForce,
+    attackerEquipmentAttack: bc.totalEquipmentAttack,
+    attackerCultivationLayer: CultivationLayer.chuKui, // cultMult=1.0（中性）
+    attackerSchool: bc.school,
+    defenderSchool: bc.school, // schoolMult=1.0（同流派，不克）
+    attackerRealmTier: bc.realmTier,
+    attackerRealmLayer: bc.realmLayer,
+    defenderRealmTier: bc.realmTier, // realmMult=1.0（同境界）
+    defenderRealmLayer: bc.realmLayer,
+    defenderDefenseRate: 0.0,
+    defenderEvasionRate: 0.0,
+    attackerCriticalRate: 0.0, // 非暴击（普通伤害语义）
+    attackPowerMultiplier: bc.attackPowerMultiplier,
+    skill: normalSkill,
+    n: GameRepository.instance.numbers,
+    rng: Random(0),
+  ).finalDamage;
 }
