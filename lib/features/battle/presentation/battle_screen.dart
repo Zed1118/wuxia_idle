@@ -17,6 +17,7 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/effects/screen_shake.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'attack_animation.dart';
@@ -149,6 +150,10 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// Phase 3 T37：左队败 / 平局回调；null 走 [onBattleEnd] 兼容旧入口。
   final VoidCallback? onDefeat;
 
+  /// H3 投降:玩家主动认输撤退回调(经确认对话框)。null 则不显投降键
+  /// (demo/debug/pvp 等无 flow 路径)。host 接此回调跳过战败结算直接退出。
+  final VoidCallback? onSurrender;
+
   /// M4 Stage 3 美术(2026-05-21):战斗屏场景背景 png 路径。
   /// caller 从 StageDef.sceneBackgroundPath / TowerFloorDef.sceneBackgroundPath 注入。
   /// null 或 errorBuilder 触发时降级到 [WuxiaColors.background] 兜底。
@@ -191,6 +196,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.onBattleEnd,
     this.onVictory,
     this.onDefeat,
+    this.onSurrender,
     this.sceneBackgroundPath,
     this.autoStart = true,
     this.deferVictoryToCaller = false,
@@ -347,6 +353,33 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     } else if (!ref.read(battleProvider).isFinished) {
       _startTimer();
     }
+  }
+
+  // H3 投降:确认对话框 → onSurrender 回调(host 跳过战败结算直接退出)。
+  Future<void> _confirmSurrender() async {
+    final ok = await PaperDialog.show<bool>(
+      context,
+      title: UiStrings.surrenderConfirmTitle,
+      body: const Text(
+        UiStrings.surrenderConfirmMessage,
+        style: TextStyle(color: WuxiaColors.textSecondary, height: 1.5),
+      ),
+      actions: [
+        Builder(
+          builder: (ctx) => TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(UiStrings.surrenderCancelAction),
+          ),
+        ),
+        Builder(
+          builder: (ctx) => TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(UiStrings.surrenderConfirmAction),
+          ),
+        ),
+      ],
+    );
+    if (ok == true) widget.onSurrender?.call();
   }
 
   // ─── 动画 / 飘字 ─────────────────────────────────────────────────────────
@@ -937,6 +970,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       onToggleLog: () => setState(() => _logOpen = !_logOpen),
                       onPause: _togglePause,
                       isPaused: _isPaused,
+                      onSurrender:
+                          widget.onSurrender == null ? null : _confirmSurrender,
                     ),
                     _DangerBar(state: state),
                     Expanded(
@@ -1220,11 +1255,13 @@ class _Header extends StatelessWidget {
   final VoidCallback onToggleLog;
   final VoidCallback onPause;
   final bool isPaused;
+  final VoidCallback? onSurrender;
   const _Header({
     required this.state,
     required this.onToggleLog,
     required this.onPause,
     required this.isPaused,
+    this.onSurrender,
   });
 
   @override
@@ -1279,6 +1316,17 @@ class _Header extends StatelessWidget {
               ),
               tooltip: isPaused ? UiStrings.battleResume : UiStrings.battlePause,
               onPressed: onPause,
+            ),
+          if (state.result == null && onSurrender != null)
+            IconButton(
+              key: const ValueKey('battle_surrender'),
+              icon: const Icon(
+                Icons.flag_outlined,
+                color: WuxiaColors.textSecondary,
+                size: 20,
+              ),
+              tooltip: UiStrings.battleSurrender,
+              onPressed: onSurrender,
             ),
           IconButton(
             key: const ValueKey('battle_log_toggle'),

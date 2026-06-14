@@ -74,6 +74,7 @@ void main() {
   Widget harness({
     required StageDef stage,
     required Future<bool> Function() battleRunner,
+    Future<({bool won, bool surrendered})> Function()? battleOutcome,
     Future<void> Function(String stageId)? victoryRecorder,
     Future<List<DefeatLossEntry>> Function(StageDef stage)? bossDefeatPenalty,
     List<NavigatorObserver> navigatorObservers = const [],
@@ -84,6 +85,7 @@ void main() {
         home: _HarnessPage(
           stage: stage,
           battleRunner: battleRunner,
+          battleOutcome: battleOutcome,
           victoryRecorder: victoryRecorder ?? (_) async {},
           bossDefeatPenalty:
               bossDefeatPenalty ?? ((_) async => const <DefeatLossEntry>[]),
@@ -185,6 +187,33 @@ void main() {
     expect(find.text('done'), findsOneWidget);
   });
 
+  testWidgets('Boss 关投降 → victoryRecorder / bossDefeatPenalty 均不调(主动放弃无惩罚)',
+      (tester) async {
+    bool victoryCalled = false;
+    bool penaltyCalled = false;
+
+    await tester.pumpWidget(harness(
+      stage: bossStage(),
+      battleRunner: () async => false,
+      battleOutcome: () async => (won: false, surrendered: true),
+      victoryRecorder: (_) async {
+        victoryCalled = true;
+      },
+      bossDefeatPenalty: (_) async {
+        penaltyCalled = true;
+        return const [];
+      },
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('start'));
+    await tester.pumpAndSettle();
+
+    expect(victoryCalled, isFalse, reason: '投降不记胜利');
+    expect(penaltyCalled, isFalse, reason: '投降跳过 Boss 散功(主动放弃无惩罚)');
+    expect(find.text('done'), findsOneWidget);
+  });
+
   testWidgets(
       '胜利 + narrativeVictoryId → 触发 victory narrative push '
       '(NavigatorObserver 验,不 settle 子屏)', (tester) async {
@@ -230,12 +259,14 @@ class _HarnessPage extends ConsumerStatefulWidget {
   const _HarnessPage({
     required this.stage,
     required this.battleRunner,
+    required this.battleOutcome,
     required this.victoryRecorder,
     required this.bossDefeatPenalty,
   });
 
   final StageDef stage;
   final Future<bool> Function() battleRunner;
+  final Future<({bool won, bool surrendered})> Function()? battleOutcome;
   final Future<void> Function(String stageId) victoryRecorder;
   final Future<List<DefeatLossEntry>> Function(StageDef stage)
       bossDefeatPenalty;
@@ -262,6 +293,7 @@ class _HarnessPageState extends ConsumerState<_HarnessPage> {
                   ref: ref,
                   stage: widget.stage,
                   battleRunnerForTest: widget.battleRunner,
+                  battleOutcomeForTest: widget.battleOutcome,
                   victoryRecorderForTest: widget.victoryRecorder,
                   bossDefeatPenaltyForTest: widget.bossDefeatPenalty,
                 );

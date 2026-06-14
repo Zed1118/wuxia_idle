@@ -22,6 +22,13 @@ class UiStrings {
   static const String battlePause = '暂停';
   static const String battleResume = '继续';
   static const String battlePausedTitle = '已暂停';
+  // H3:投降(主动认输撤退 · 二次确认 · 无掉落 / Boss 不散功)。
+  static const String battleSurrender = '投降';
+  static const String surrenderConfirmTitle = '认输撤退';
+  static const String surrenderConfirmMessage =
+      '确定认输撤退?本场不计掉落,Boss 关也不折损修为,只是退回去重整旗鼓。';
+  static const String surrenderConfirmAction = '撤退';
+  static const String surrenderCancelAction = '再打打';
   static const String emptyLog = '（无动作）';
   static const String ultimate = '大招';
   static const String fastForward = '快进';
