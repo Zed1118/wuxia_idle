@@ -174,7 +174,12 @@ Future<_TestBattleNotifier> _pumpWith(
           return notifier;
         }),
       ],
-      child: const MaterialApp(home: BattleScreen(animConfig: _testAnim)),
+      child: const MaterialApp(
+        home: BattleScreen(
+          animConfig: _testAnim,
+          allowPlayerIntervention: true,
+        ),
+      ),
     ),
   );
   await tester.pump();

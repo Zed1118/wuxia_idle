@@ -142,7 +142,12 @@ void main() {
             return notifier;
           }),
         ],
-        child: const MaterialApp(home: BattleScreen(animConfig: _testAnim)),
+        child: const MaterialApp(
+          home: BattleScreen(
+            animConfig: _testAnim,
+            allowPlayerIntervention: true,
+          ),
+        ),
       ),
     );
     return notifier;
