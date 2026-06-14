@@ -357,8 +357,10 @@ class StageBattleSetup {
     final ce = numbers.cycleEvolution;
     final scale = 1.0 + ce.scalePerCycle * (cycleIndex - 1);
 
-    // ── hp：baseHp × scale ────────────────────────────────────────────────
-    final scaledHp = (enemy.baseHp * scale).toInt();
+    // ── hp：baseHp × scale，clamp ≤ Boss HP 红线（§5.4，防终局周目越线）────
+    final scaledHp = (enemy.baseHp * scale)
+        .toInt()
+        .clamp(0, numbers.combat.redLines.bossHpMax);
 
     // ── attack：baseAttack × scale ────────────────────────────────────────
     final scaledAttack = (enemy.baseAttack * scale).toInt();

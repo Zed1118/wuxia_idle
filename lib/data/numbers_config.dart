@@ -1155,16 +1155,19 @@ class BossChargeConfig {
 class RedLinesConfig {
   final int playerHpMax;
   final int internalForceMax;
+  final int bossHpMax;
 
   const RedLinesConfig({
     required this.playerHpMax,
     required this.internalForceMax,
+    required this.bossHpMax,
   });
 
   factory RedLinesConfig.fromYaml(Map<String, dynamic> y) {
     return RedLinesConfig(
       playerHpMax: (y['player_hp_max'] as num?)?.toInt() ?? 20000,
       internalForceMax: (y['internal_force_max'] as num?)?.toInt() ?? 15000,
+      bossHpMax: (y['boss_hp_max'] as num?)?.toInt() ?? 60000,
     );
   }
 }

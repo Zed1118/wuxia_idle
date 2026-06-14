@@ -118,6 +118,7 @@ combat:
   red_lines:
     player_hp_max: 20000             # 玩家血量红线（§5.4）
     internal_force_max: 15000        # 内力红线（§5.4）
+    boss_hp_max: 60000               # Boss 血量红线（§5.4，2026-06-14 终局周目膨胀调 50000→60000）
 
   # P0 破招:Boss 蓄力/踉跄
   boss_charge:

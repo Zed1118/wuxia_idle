@@ -16,7 +16,7 @@ import '../../../core/domain/enums.dart';
 ///   - Boss 层在该阶巅峰 HP/攻 ×1.5
 ///
 /// 数值红线（[GameRepository._enforceRedLines] 校验）：
-///   - 普伤 ≤ 8000、Boss HP ≤ 50000、玩家血 ≤ 20000、内力 ≤ 15000
+///   - 普伤 ≤ 8000、Boss HP ≤ 60000（§5.4，2026-06-14 调）、玩家血 ≤ 20000、内力 ≤ 15000
 ///   - floorIndex ∈ [1, 30] 唯一且连续
 ///   - bossKind 仅在 5/10/15/20/25/30 层非 null
 ///   - 普通层 narrativeOpeningId / narrativeVictoryId 必须为 null
