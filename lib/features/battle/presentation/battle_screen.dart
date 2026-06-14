@@ -806,6 +806,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             _rushToActorId = null;
           }
         }
+        // C5 兜底:拖招者在出手前被击杀 → 其 action 永不入 actionLog,清 rush
+        // 防卡死快进(纯表现层,advance 结算不受影响)。
+        if (_rushToActorId != null) {
+          final rushActor = _findCharacter(_rushToActorId!, next);
+          if (rushActor == null || !rushActor.isAlive) {
+            _rushToActorId = null;
+          }
+        }
         // 刚结束快进 → 恢复常速 Timer(战斗未结束且仍在自动播放)。
         if (wasRushing &&
             _rushToActorId == null &&

@@ -110,7 +110,7 @@ enum VisualRoute {
   ),
   stageListCycle(
     'stage_list_cycle',
-    '主线选关·周目选择验收(01_01..04 cycle1 已通关 → 显「第1周目(自动)/挑战第2周目(手动)」+ 江湖记招提示)',
+    '主线选关·章层周目控件 + 拖招真关卡入口(整章 Ch1 cycle1 全通 → 章头显周目控件;点 tile 进真战斗验纯自动流+拖招)',
   ),
   towerCycle(
     'tower_cycle',
