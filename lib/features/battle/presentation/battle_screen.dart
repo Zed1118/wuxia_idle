@@ -93,6 +93,19 @@ class _EffectEntry {
 ///
 /// [animConfig] 默认 [AnimationNumbers.defaults]（与 numbers.yaml 同值）；
 /// 测试可注入更短时序加速。
+/// 拖招命中测试(Phase 4 · C3):指针全局坐标落在哪个敌人头像矩形内 → 返回
+/// 该 enemyId(无命中返回 null)。敌列纵向排布不重叠,取首个命中即可。纯函数,
+/// 与 widget 解耦,便于单测。
+int? hitTestEnemyId(
+  Offset pointer,
+  List<({int enemyId, Rect rect})> targets,
+) {
+  for (final t in targets) {
+    if (t.rect.contains(pointer)) return t.enemyId;
+  }
+  return null;
+}
+
 class BattleScreen extends ConsumerStatefulWidget {
   final AnimationNumbers animConfig;
 
@@ -202,6 +215,19 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   final GlobalKey<UltimateCaptionOverlayState> _ultimateCaptionKey =
       GlobalKey<UltimateCaptionOverlayState>();
 
+  // ─── Phase 4 拖招交互 ────────────────────────────────────────────────────
+  // 敌方 3 槽头像的 GlobalKey(hitTest 命中判定用;右队按 slotIndex 索引)。
+  late final List<GlobalKey> _enemyAvatarKeys;
+  // 拖招态(纯 UI,不写 BattleState):拖起的技能与拖招者,引导线起点(技能按钮中心)
+  // 与当前指针(均全局坐标),以及当前悬停命中的敌人 charId(高亮用)。
+  SkillDef? _dragSkill;
+  int? _dragCharId;
+  Offset? _dragOrigin;
+  Offset? _dragPointer;
+  int? _hoveredEnemyId;
+  // C5 立即触发:拖/点技能后快进到该角色出手的目标 charId(出手即清,恢复常速)。
+  int? _rushToActorId;
+
   // ─── 生命周期 ────────────────────────────────────────────────────────────
 
   @override
@@ -226,6 +252,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         duration: Duration(milliseconds: widget.animConfig.hitFlashMs),
       ),
     );
+    _enemyAvatarKeys = List.generate(3, (_) => GlobalKey());
     // Timer 不在 initState 启动，等 ref.listen 看到 startBattle 完成后再启动。
   }
 
@@ -252,7 +279,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   void _startTimer() {
     _playTimer?.cancel();
-    final interval = _isFastForward
+    // 快进态:玩家手动开了快进,或拖招立即触发正在「快进到出手」(C5)。
+    final rushing = _isFastForward || _rushToActorId != null;
+    final interval = rushing
         ? widget.animConfig.fastForwardIntervalMs
         : widget.animConfig.actionIntervalMs;
     _playTimer = Timer.periodic(Duration(milliseconds: interval), (_) {
@@ -520,8 +549,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   /// 默认选目标。
   ///
   /// 战斗交互重做 Phase 3:战斗永远自动连续播放,点技能即 pending 下发。Phase 4
-  /// 拖招命中将经 [BattleNotifier.requestUltimate] 传 targetId 指定敌人。
-  void _onSkillCommand(int characterId, SkillDef skill) {
+  /// 拖招命中经此传 [targetId] 指定敌人(null = 走 AI 默认选目标)。
+  ///
+  /// 下发后进入「立即触发」(C5):置 [_rushToActorId]=该角色,把 Timer 切到快进
+  /// 间隔,连续 advance 到该角色出手(actionLog 出现其 action)即恢复常速。纯 UI
+  /// 时序加速,不改引擎/rng 消费顺序(确定性安全)。
+  void _onSkillCommand(int characterId, SkillDef skill, {int? targetId}) {
+    if (!widget.allowPlayerIntervention) return; // 门控:群战/纯自动不接受指令
     final s = ref.read(battleProvider);
     BattleCharacter? c;
     for (final ch in s.leftTeam) {
@@ -531,7 +565,85 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       }
     }
     if (c == null || !_isSkillReady(c, skill)) return;
-    ref.read(battleProvider.notifier).requestUltimate(characterId, skill);
+    ref
+        .read(battleProvider.notifier)
+        .requestUltimate(characterId, skill, targetId: targetId);
+    // C5 立即触发:快进到该角色出手。仅在 Timer 已在跑时切快进间隔。
+    _rushToActorId = characterId;
+    if (_playTimer != null) _startTimer();
+    setState(() {}); // 反映拖招者「蓄势」高亮 + 清拖招态
+  }
+
+  // ─── 拖招(Phase 4 · C1-C3) ────────────────────────────────────────────────
+
+  /// 命中测试:指针全局坐标落在哪个敌人头像矩形内 → 返回该 enemyId。
+  /// 敌列纵向不重叠,取首个命中即可。纯函数,单测直接验证。
+  void _onSkillDragStart(int characterId, SkillDef skill, Offset origin) {
+    if (!widget.allowPlayerIntervention) return;
+    setState(() {
+      _dragSkill = skill;
+      _dragCharId = characterId;
+      _dragOrigin = origin;
+      _dragPointer = origin;
+      _hoveredEnemyId = null;
+    });
+  }
+
+  void _onSkillDragUpdate(Offset pointer) {
+    if (_dragSkill == null) return;
+    setState(() {
+      _dragPointer = pointer;
+      // aoe 不需指定目标,不做悬停高亮;single 实时高亮命中敌头像。
+      _hoveredEnemyId = _dragSkill!.targetType == TargetType.single
+          ? hitTestEnemyId(pointer, _collectEnemyTargets())
+          : null;
+    });
+  }
+
+  void _onSkillDragEnd(Offset pointer) {
+    final skill = _dragSkill;
+    final charId = _dragCharId;
+    _clearDrag();
+    if (skill == null || charId == null) return;
+    if (skill.targetType == TargetType.aoe) {
+      // aoe:忽略落点,直接触发(目标走 AI/全体)。
+      _onSkillCommand(charId, skill);
+      return;
+    }
+    // single:必须命中某敌头像才下发,指定该 targetId;未命中则取消。
+    final hit = hitTestEnemyId(pointer, _collectEnemyTargets());
+    if (hit != null) _onSkillCommand(charId, skill, targetId: hit);
+  }
+
+  void _onSkillDragCancel() => _clearDrag();
+
+  void _clearDrag() {
+    setState(() {
+      _dragSkill = null;
+      _dragCharId = null;
+      _dragOrigin = null;
+      _dragPointer = null;
+      _hoveredEnemyId = null;
+    });
+  }
+
+  /// 收集存活敌人头像的全局矩形(供 hitTest)。死亡 / 未挂载的槽跳过。
+  List<({int enemyId, Rect rect})> _collectEnemyTargets() {
+    final s = ref.read(battleProvider);
+    final targets = <({int enemyId, Rect rect})>[];
+    for (var i = 0; i < s.rightTeam.length && i < _enemyAvatarKeys.length; i++) {
+      final enemy = s.rightTeam[i];
+      if (!enemy.isAlive) continue;
+      final ctx = _enemyAvatarKeys[i].currentContext;
+      final box = ctx?.findRenderObject();
+      if (box is! RenderBox || !box.hasSize) continue;
+      final topLeft = box.localToGlobal(Offset.zero);
+      targets.add((
+        enemyId: enemy.characterId,
+        rect: topLeft & box.size,
+      ));
+    }
+    return targets;
   }
 
   void _onSelectFocus(int slotIndex) {
@@ -686,8 +798,20 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       //    无需本地解除置灰）。
       if (prev != null && next.actionLog.length > prev.actionLog.length) {
         final newActions = next.actionLog.sublist(prev.actionLog.length);
+        final wasRushing = _rushToActorId != null;
         for (final a in newActions) {
           _playAction(a, next);
+          // C5:拖招者出手 → 快进结束。
+          if (_rushToActorId != null && a.actorId == _rushToActorId) {
+            _rushToActorId = null;
+          }
+        }
+        // 刚结束快进 → 恢复常速 Timer(战斗未结束且仍在自动播放)。
+        if (wasRushing &&
+            _rushToActorId == null &&
+            _playTimer != null &&
+            !next.isFinished) {
+          _startTimer();
         }
       }
 
@@ -763,6 +887,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             onPopupComplete: _removePopup,
                             hitFlashControllers: _hitFlashControllers,
                             hitFlashColors: _hitFlashColors,
+                            enemyAvatarKeys: _enemyAvatarKeys,
+                            hoveredEnemyId: _hoveredEnemyId,
+                            rushActorId: _rushToActorId,
                           ),
                           Positioned.fill(
                             child: IgnorePointer(
@@ -784,15 +911,38 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                     _BottomBar(
                       state: state,
                       focusSlotIndex: _effectiveFocus(state),
+                      allowPlayerIntervention: widget.allowPlayerIntervention,
                       onSelectFocus: _onSelectFocus,
                       onSkill: _onSkillCommand,
                       onFastForward: _toggleFastForward,
                       isFastForward: _isFastForward,
+                      onSkillDragStart: _onSkillDragStart,
+                      onSkillDragUpdate: _onSkillDragUpdate,
+                      onSkillDragEnd: _onSkillDragEnd,
+                      onSkillDragCancel: _onSkillDragCancel,
                     ),
                   ],
                 ),
               ),
             ),
+            // Phase 4 拖招引导线层(技能按钮锚点 → 指针,流派色笔触)。
+            if (_dragOrigin != null && _dragPointer != null && _dragSkill != null)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: _DragGuideLayer(
+                    start: _dragOrigin!,
+                    end: _dragPointer!,
+                    color: WuxiaColors.schoolColor(
+                      state.leftTeam
+                          .firstWhere(
+                            (c) => c.characterId == _dragCharId,
+                            orElse: () => state.leftTeam.first,
+                          )
+                          .school,
+                    ),
+                  ),
+                ),
+              ),
             Positioned.fill(
               child: UltimateCaptionOverlay(key: _ultimateCaptionKey),
             ),
@@ -1155,6 +1305,10 @@ class _BattleField extends StatelessWidget {
   final void Function(int slotKey, int popupId) onPopupComplete;
   final List<AnimationController> hitFlashControllers;
   final Map<int, Color> hitFlashColors;
+  // Phase 4 拖招:敌头像 hitTest key、当前悬停命中敌 id、快进中的拖招者 id。
+  final List<GlobalKey> enemyAvatarKeys;
+  final int? hoveredEnemyId;
+  final int? rushActorId;
 
   const _BattleField({
     required this.state,
@@ -1165,6 +1319,9 @@ class _BattleField extends StatelessWidget {
     required this.onPopupComplete,
     required this.hitFlashControllers,
     required this.hitFlashColors,
+    required this.enemyAvatarKeys,
+    required this.hoveredEnemyId,
+    required this.rushActorId,
   });
 
   @override
@@ -1186,6 +1343,9 @@ class _BattleField extends StatelessWidget {
               onPopupComplete: onPopupComplete,
               hitFlashControllers: hitFlashControllers,
               hitFlashColors: hitFlashColors,
+              avatarKeys: const [],
+              hoveredEnemyId: null,
+              rushActorId: rushActorId,
             ),
           ),
           const SizedBox(width: 24),
@@ -1201,6 +1361,9 @@ class _BattleField extends StatelessWidget {
               onPopupComplete: onPopupComplete,
               hitFlashControllers: hitFlashControllers,
               hitFlashColors: hitFlashColors,
+              avatarKeys: enemyAvatarKeys,
+              hoveredEnemyId: hoveredEnemyId,
+              rushActorId: null,
             ),
           ),
         ],
@@ -1220,6 +1383,11 @@ class _TeamColumn extends StatelessWidget {
   final void Function(int slotKey, int popupId) onPopupComplete;
   final List<AnimationController> hitFlashControllers;
   final Map<int, Color> hitFlashColors;
+  // Phase 4 拖招:本队各槽头像 hitTest key(空=不挂,如我方队)、悬停命中敌 id、
+  // 快进中的拖招者 id(本队命中则其头像「蓄势」高亮)。
+  final List<GlobalKey> avatarKeys;
+  final int? hoveredEnemyId;
+  final int? rushActorId;
 
   const _TeamColumn({
     required this.team,
@@ -1232,6 +1400,9 @@ class _TeamColumn extends StatelessWidget {
     required this.onPopupComplete,
     required this.hitFlashControllers,
     required this.hitFlashColors,
+    required this.avatarKeys,
+    required this.hoveredEnemyId,
+    required this.rushActorId,
   });
 
   @override
@@ -1264,6 +1435,11 @@ class _TeamColumn extends StatelessWidget {
                       hitFlashController: hitFlashControllers[teamSide * 3 + i],
                       flashColor:
                           hitFlashColors[teamSide * 3 + i] ?? Colors.white,
+                      avatarKey: i < avatarKeys.length ? avatarKeys[i] : null,
+                      hovered: hoveredEnemyId != null &&
+                          team[i].characterId == hoveredEnemyId,
+                      charging: rushActorId != null &&
+                          team[i].characterId == rushActorId,
                     )
                   : const SizedBox(width: 160, height: 80),
             ),
@@ -1285,6 +1461,11 @@ class _CharacterSlot extends StatelessWidget {
   final void Function(int slotKey, int popupId) onPopupComplete;
   final AnimationController hitFlashController;
   final Color flashColor;
+  // Phase 4 拖招:头像 hitTest key(敌方槽挂,我方 null);拖招悬停命中高亮;
+  // 拖招者「蓄势」高亮(等待出手)。
+  final GlobalKey? avatarKey;
+  final bool hovered;
+  final bool charging;
 
   const _CharacterSlot({
     required this.character,
@@ -1297,10 +1478,16 @@ class _CharacterSlot extends StatelessWidget {
     required this.onPopupComplete,
     required this.hitFlashController,
     required this.flashColor,
+    this.avatarKey,
+    this.hovered = false,
+    this.charging = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final glow = hovered
+        ? WuxiaColors.resultHighlight
+        : (charging ? WuxiaColors.schoolColor(character.school) : null);
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -1311,9 +1498,24 @@ class _CharacterSlot extends StatelessWidget {
           child: HitFlash(
             animation: hitFlashController,
             color: flashColor,
-            child: CharacterAvatar(
-              character: character,
-              chargeMaxTicks: chargeMaxTicks,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: glow == null
+                    ? const []
+                    : [
+                        BoxShadow(
+                          color: glow.withValues(alpha: 0.85),
+                          blurRadius: hovered ? 22 : 14,
+                          spreadRadius: hovered ? 4 : 2,
+                        ),
+                      ],
+              ),
+              child: CharacterAvatar(
+                key: avatarKey,
+                character: character,
+                chargeMaxTicks: chargeMaxTicks,
+              ),
             ),
           ),
         ),
@@ -1363,18 +1565,30 @@ class _CharacterSlot extends StatelessWidget {
 class _BottomBar extends StatelessWidget {
   final BattleState state;
   final int focusSlotIndex;
+  final bool allowPlayerIntervention;
   final void Function(int slotIndex) onSelectFocus;
-  final void Function(int characterId, SkillDef skill) onSkill;
+  final void Function(int characterId, SkillDef skill, {int? targetId}) onSkill;
   final VoidCallback onFastForward;
   final bool isFastForward;
+  // Phase 4 拖招回调(单体技长按拖)。
+  final void Function(int characterId, SkillDef skill, Offset origin)
+      onSkillDragStart;
+  final void Function(Offset pointer) onSkillDragUpdate;
+  final void Function(Offset pointer) onSkillDragEnd;
+  final VoidCallback onSkillDragCancel;
 
   const _BottomBar({
     required this.state,
     required this.focusSlotIndex,
+    required this.allowPlayerIntervention,
     required this.onSelectFocus,
     required this.onSkill,
     required this.onFastForward,
     required this.isFastForward,
+    required this.onSkillDragStart,
+    required this.onSkillDragUpdate,
+    required this.onSkillDragEnd,
+    required this.onSkillDragCancel,
   });
 
   /// 排序/分组秩：强力 0 → 破招 1 → 共鸣 2 → 大招 3（普攻 4，已被过滤）。
@@ -1439,7 +1653,13 @@ class _BottomBar extends StatelessWidget {
                             queuedAnother:
                                 pending != null && pending.id != s.id,
                             highlight: enemyCharging && s.canInterrupt,
+                            allowPlayerIntervention: allowPlayerIntervention,
                             onPressed: () => onSkill(focus.characterId, s),
+                            onDragStart: (origin) => onSkillDragStart(
+                                focus.characterId, s, origin),
+                            onDragUpdate: onSkillDragUpdate,
+                            onDragEnd: onSkillDragEnd,
+                            onDragCancel: onSkillDragCancel,
                           ),
                           const SizedBox(width: 6),
                         ],
@@ -1567,7 +1787,13 @@ class _SkillCommandButton extends StatelessWidget {
   final bool isPending;
   final bool queuedAnother;
   final bool highlight;
+  final bool allowPlayerIntervention;
   final VoidCallback onPressed;
+  // Phase 4 拖招:长按拖起(origin=按钮中心全局坐标)/ 拖动 / 松手 / 取消。
+  final void Function(Offset origin) onDragStart;
+  final void Function(Offset pointer) onDragUpdate;
+  final void Function(Offset pointer) onDragEnd;
+  final VoidCallback onDragCancel;
 
   const _SkillCommandButton({
     required this.character,
@@ -1575,7 +1801,12 @@ class _SkillCommandButton extends StatelessWidget {
     required this.isPending,
     required this.queuedAnother,
     required this.highlight,
+    required this.allowPlayerIntervention,
     required this.onPressed,
+    required this.onDragStart,
+    required this.onDragUpdate,
+    required this.onDragEnd,
+    required this.onDragCancel,
   });
 
   static String _groupLabel(SkillDef s) {
@@ -1592,7 +1823,8 @@ class _SkillCommandButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final cd = character.skillCooldowns[skill.id] ?? 0;
     final ready = _BattleScreenState._isSkillReady(character, skill);
-    final enabled = ready && !isPending && !queuedAnother;
+    final enabled =
+        ready && !isPending && !queuedAnother && allowPlayerIntervention;
 
     final Color bgColor;
     final baseSchoolColor = WuxiaColors.schoolColor(character.school);
@@ -1617,7 +1849,7 @@ class _SkillCommandButton extends StatelessWidget {
       statusText = UiStrings.skillCostShort(skill.internalForceCost); // 耗 N
     }
 
-    return SizedBox(
+    final button = SizedBox(
       width: 92,
       height: 76,
       child: ElevatedButton(
@@ -1681,6 +1913,25 @@ class _SkillCommandButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+
+    // 未到可下发态(门控关 / 内力不足 / CD / 已待发)不挂拖招手势。
+    if (!enabled) return button;
+
+    // 长按拖起 → 进入拖招态;松手在敌头像上=指定目标(单体)或直接触发(群体)。
+    // 用长按手势(非 onPan)规避与底栏横向滚动的手势竞争。
+    return GestureDetector(
+      onLongPressStart: (details) {
+        final box = context.findRenderObject();
+        final origin = (box is RenderBox && box.hasSize)
+            ? box.localToGlobal(box.size.center(Offset.zero))
+            : details.globalPosition;
+        onDragStart(origin);
+      },
+      onLongPressMoveUpdate: (d) => onDragUpdate(d.globalPosition),
+      onLongPressEnd: (d) => onDragEnd(d.globalPosition),
+      onLongPressCancel: onDragCancel,
+      child: button,
     );
   }
 }
@@ -1748,6 +1999,53 @@ class _ProjectileLayer extends StatelessWidget {
       },
     );
   }
+}
+
+/// Phase 4 拖招引导线层:从技能按钮锚点到当前指针的流派色笔触线(实时跟手)。
+/// 纯表现层,IgnorePointer 不拦手势(手势由按钮的 LongPress 识别器持有)。
+class _DragGuideLayer extends StatelessWidget {
+  final Offset start;
+  final Offset end;
+  final Color color;
+  const _DragGuideLayer({
+    required this.start,
+    required this.end,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _DragGuidePainter(start: start, end: end, color: color),
+    );
+  }
+}
+
+class _DragGuidePainter extends CustomPainter {
+  final Offset start;
+  final Offset end;
+  final Color color;
+  _DragGuidePainter({
+    required this.start,
+    required this.end,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 主线(流派色,半透明)+ 末端实心点(指引落点)。
+    final line = Paint()
+      ..color = color.withValues(alpha: 0.8)
+      ..strokeWidth = 4.0
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(start, end, line);
+    final dot = Paint()..color = color.withValues(alpha: 0.9);
+    canvas.drawCircle(end, 7.0, dot);
+  }
+
+  @override
+  bool shouldRepaint(_DragGuidePainter old) =>
+      old.start != start || old.end != end || old.color != color;
 }
 
 class _EffectLayer extends StatelessWidget {
