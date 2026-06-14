@@ -56,7 +56,7 @@
 ## 可选 future-proofing（非阻塞，记录不实装）
 
 - ~~`_enemyToBattle` 给 scaledHp 加 clamp~~：**已实装**（对抗审计 Fix 2）。scaledHp clamp 已在代码中并由 §7 两个生产路径测试覆盖（Fix 2 关闭）。
-- 敌人 attack 在 stage_06 cycle3 peak 3,024 / tower floor30 cycle2 2,385，超 §5.4「2,000」；§5.4 注明的是玩家装备红线非敌人约束，记录待数值层确认是否需加敌人 attack 帽。
+- ~~敌人 attack 在 stage_06 cycle3 peak 3,024 / tower floor30 cycle2 2,385，超 §5.4「2,000」~~：**已关闭（`d578e4ee`）**。§5.4「装备攻击 2,000」是玩家装备属性红线，不约束敌人 baseAttack；约束敌人**输出**的是「普通伤害 ≤8,000」。补 §8 redline 测（中性对局走真实 `calculateResolved`，剥离 cult/克制/暴击/境界乘子）证明周目 scale 后敌人普攻基础伤害峰值=**4,688**（stage_06_05 西凉霸主）< 8,000，余量 3,312。结论：无需加敌人 attack 帽。
 - `towerCycleReadyHint` 硬编「30 层」（可接受，塔层固定）；`advanceCycle` async fire-and-forget 无错误面（可接受）。
 
 ---
