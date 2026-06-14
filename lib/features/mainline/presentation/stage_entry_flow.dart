@@ -15,6 +15,7 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/narrative_loader.dart';
+import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
@@ -80,6 +81,7 @@ Future<void> runStageFlow({
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
   Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
+  @visibleForTesting Future<bool> Function()? stageRetryDeciderForTest,
   @visibleForTesting Future<void> Function(String stageId)? victoryRecorderForTest,
   @visibleForTesting
   Future<List<DefeatLossEntry>> Function(StageDef stage)?
@@ -100,35 +102,32 @@ Future<void> runStageFlow({
     );
   }
 
-  // ── battle ──
-  if (!context.mounted) return;
-  final ({bool won, bool surrendered}) battleExit;
-  if (battleOutcomeForTest != null) {
-    battleExit = await battleOutcomeForTest();
-  } else if (battleRunnerForTest != null) {
-    battleExit = (won: await battleRunnerForTest(), surrendered: false);
-  } else {
-    battleExit = await _runBattle(
-      context: context,
-      ref: ref,
-      stage: stage,
-      targetCycle: targetCycle,
-    );
-  }
+  // ── battle ──（M3:普通关战败可「立即重试」,opening 已在循环外播过一次,
+  // 重试只重打本场不重看剧情。Boss 关不重试 —— 已实时结算散功,回滚复杂）。
+  while (true) {
+    if (!context.mounted) return;
+    final ({bool won, bool surrendered}) battleExit;
+    if (battleOutcomeForTest != null) {
+      battleExit = await battleOutcomeForTest();
+    } else if (battleRunnerForTest != null) {
+      battleExit = (won: await battleRunnerForTest(), surrendered: false);
+    } else {
+      battleExit = await _runBattle(
+        context: context,
+        ref: ref,
+        stage: stage,
+        targetCycle: targetCycle,
+      );
+    }
 
-  // ── surrender ── H3:主动投降,host 已 pop 战斗屏,跳过所有战败结算(无散功/
-  // 剧情/收降/掉落)直接返回,不记进度。
-  if (battleExit.surrendered) {
-    return;
-  }
-  final won = battleExit.won;
+    // H3 投降:host 已 pop 战斗屏,跳过所有战败结算直接返回,不记进度。
+    if (battleExit.surrendered) return;
+    if (battleExit.won) break; // 胜利 → 跳出循环走 victory 流程
 
-  // ── defeat ──
-  if (!won) {
-    // Phase 4 W10: Boss 关战败结算（被动散功 + battleCount + skillUsage 落地）。
-    // 普通关战败仍直接返，不结算（试错免费）。
+    // ── defeat ──
     Widget? lossBanner;
     if (stage.isBossStage) {
+      // Phase 4 W10: Boss 关战败结算（被动散功 + battleCount + skillUsage 落地）。
       final summary = bossDefeatPenaltyForTest != null
           ? await bossDefeatPenaltyForTest(stage)
           : await _applyBossDefeatPenalty(ref: ref, stage: stage);
@@ -139,8 +138,17 @@ Future<void> runStageFlow({
         // (Codex v3 截图 15 暴露:banner 显 3800→1900,但面板仍 3800)
         _invalidateCharacterFamilyAfterCombat(ref);
       }
+    } else {
+      // M3:普通关战败立即重试(试错免费,无惩罚)。选「再战」→ 回循环头重打。
+      final retry = stageRetryDeciderForTest != null
+          ? await stageRetryDeciderForTest()
+          : (context.mounted
+                ? await _showStageRetryDialog(context, stage)
+                : false);
+      if (retry) continue;
     }
 
+    // 不重试(Boss 关 / 普通关放弃)→ 战败剧情 + 收降,返回。
     if (stage.narrativeDefeatId != null && context.mounted) {
       final defeat = await NarrativeLoader.load(stage.narrativeDefeatId!);
       if (!context.mounted) return;
@@ -323,6 +331,30 @@ Future<({bool won, bool surrendered})> _runBattle({
     }
   });
   return completer.future;
+}
+
+/// M3:普通关战败「立即重试」对话框。返回 true=再战(回 runStageFlow 循环头重打本场)。
+Future<bool> _showStageRetryDialog(BuildContext context, StageDef stage) async {
+  final retry = await PaperDialog.show<bool>(
+    context,
+    title: UiStrings.stageRetryTitle,
+    body: const Text(UiStrings.stageRetryPrompt),
+    actions: [
+      Builder(
+        builder: (ctx) => TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: const Text(UiStrings.stageRetryBackAction),
+        ),
+      ),
+      Builder(
+        builder: (ctx) => TextButton(
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: const Text(UiStrings.stageRetryAction),
+        ),
+      ),
+    ],
+  );
+  return retry ?? false;
 }
 
 /// BattleScreen 的 setup 容器：initState 装配队伍 + startBattle，

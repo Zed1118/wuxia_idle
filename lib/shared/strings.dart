@@ -29,6 +29,11 @@ class UiStrings {
       '确定认输撤退?本场不计掉落,Boss 关也不折损修为,只是退回去重整旗鼓。';
   static const String surrenderConfirmAction = '撤退';
   static const String surrenderCancelAction = '再打打';
+  // M3:普通关战败立即重试(Boss 关不给 · 试错免费无惩罚)。
+  static const String stageRetryTitle = '功亏一篑';
+  static const String stageRetryPrompt = '这一战未能取胜。要再试一次吗?';
+  static const String stageRetryAction = '再战';
+  static const String stageRetryBackAction = '返回';
   static const String emptyLog = '（无动作）';
   static const String ultimate = '大招';
   static const String fastForward = '快进';
