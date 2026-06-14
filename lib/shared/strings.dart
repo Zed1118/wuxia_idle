@@ -29,14 +29,6 @@ class UiStrings {
       '$enemyName 正在蓄势：$skillName（还有 $ticks 回合发动）';
   static const String battleDangerPrefix = '⚠ ';
 
-  // 半手动战斗 P0 步骤3c · 单步战斗 UI(用户拍板 2026-06-13:A 强制停顿/B 立即弹/C 临时入口)。
-  /// 单步「下一步」按钮:每点一次 = 一次 [BattleNotifier.step](一步一 actor)。
-  static const String battleNextStep = '下一步';
-  /// 本回合行动顺序条标题(tick 边界填队列后,玩家布置指令前看清出手顺序)。
-  static const String battleActorOrder = '本回合行动顺序';
-  /// 单体技目标 picker 标题(点技能立即弹,选存活敌人)。
-  static const String battleTargetPickerTitle = '选择目标';
-
   // T1 战斗指令台：技能分组标签 + 状态印 + 内力/冷却短标。
   static const String skillGroupPower = '强力';
   static const String skillGroupJoint = '共鸣';
@@ -839,20 +831,19 @@ class UiStrings {
   static const String settingsSfxVolume = '音效';
   static const String settingsMuted = '静音';
   static const String settingsClose = '关闭';
-  // 半手动战斗 P0 步骤5:全局自动战斗默认开关。
+  // 战斗交互重做 Phase 3:全局战斗模式默认开关(自动连续播放 / 允许拖招干预)。
   static const String settingsAutoPlayDefault = '自动战斗';
-  static const String settingsAutoPlayDefaultHint = '已通关关卡默认自动重演(可逐关切手动)';
-  // 半手动战斗 P0 步骤5-G3:选关屏 per-stage 自动/手动开关。
+  static const String settingsAutoPlayDefaultHint = '战斗自动连续播放(可逐关切「允许拖招」干预)';
+  // 战斗交互重做 Phase 3:选关屏 per-stage「挂机自动 / 允许拖招」开关。
   static const String stageAutoPlayAuto = '自动';
-  static const String stageAutoPlayManual = '手动';
-  // 印章 glyph 单字(绛红方印 · 「自」=自动 /「手」=手动;暂用现有字体,真小篆待补字体)。
+  static const String stageAutoPlayManual = '拖招';
+  // 印章 glyph 单字(绛红方印 ·「自」=纯挂机自动 /「拖」=允许拖招;暂用现有字体,真小篆待补字体)。
   static const String stageAutoPlaySealAuto = '自';
-  static const String stageAutoPlaySealManual = '手';
+  static const String stageAutoPlaySealManual = '拖';
   static const String stageAutoPlayFollowSuffix = '随设置';
   static const String stageAutoPlayMenuFollow = '跟随设置';
-  static const String stageAutoPlayMenuAuto = '自动战斗';
-  static const String stageAutoPlayMenuManual = '手动战斗';
-  static const String stageAutoPlayLockedHint = '重打一次记录后可切换';
+  static const String stageAutoPlayMenuAuto = '挂机自动';
+  static const String stageAutoPlayMenuManual = '允许拖招';
   // 爬塔重打 dialog 内的开关标签(塔身布局固定高,toggle 走 dialog)。
   static const String stageAutoPlayPickLabel = '战斗方式';
 

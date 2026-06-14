@@ -1,64 +1,37 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/auto_play_mode.dart';
 
-/// 半手动战斗 P0 步骤5-D:入口决策真相表。
+/// 战斗交互重做 Phase 3:入口决策二元真相表。
 ///
-/// autoWanted = override ?? globalDefault:
-/// - 未通关 → manualFirstClear(强制手动单步,胜利录 seed+ops)
-/// - 已通关 + 不想自动 → manualReplay(手动重打,胜利覆盖录制)
-/// - 已通关 + 想自动 + 有记录 → autoReplay(seed+ops 确定性重演)
-/// - 已通关 + 想自动 + 无记录(迁移豁免)→ autoFallback(现有自动战斗)
+/// `autoWanted = override ?? globalDefault`(true = 纯挂机自动 / false = 允许拖招):
+/// - override=null → 随全局
+/// - override 非空 → 覆盖全局
 void main() {
-  test('未通关 → manualFirstClear(无视全局/override)', () {
+  test('override=null → 随全局:全局自动 → auto', () {
     expect(
-      resolveAutoPlayMode(
-          isCleared: false, hasRecord: false, override: null, globalDefault: true),
-      AutoPlayMode.manualFirstClear,
-    );
-    expect(
-      resolveAutoPlayMode(
-          isCleared: false, hasRecord: false, override: true, globalDefault: false),
-      AutoPlayMode.manualFirstClear,
+      resolveAutoPlayMode(override: null, globalDefault: true),
+      AutoPlayMode.auto,
     );
   });
 
-  test('已通关 + 有记录 + 全局自动 + 无 override → autoReplay', () {
+  test('override=null → 随全局:全局关 → interactive', () {
     expect(
-      resolveAutoPlayMode(
-          isCleared: true, hasRecord: true, override: null, globalDefault: true),
-      AutoPlayMode.autoReplay,
+      resolveAutoPlayMode(override: null, globalDefault: false),
+      AutoPlayMode.interactive,
     );
   });
 
-  test('已通关 + 无记录(迁移豁免)+ 自动 → autoFallback', () {
+  test('override=true 覆盖全局关 → auto', () {
     expect(
-      resolveAutoPlayMode(
-          isCleared: true, hasRecord: false, override: null, globalDefault: true),
-      AutoPlayMode.autoFallback,
+      resolveAutoPlayMode(override: true, globalDefault: false),
+      AutoPlayMode.auto,
     );
   });
 
-  test('已通关 + override=false → manualReplay(玩家切手动)', () {
+  test('override=false 覆盖全局自动 → interactive', () {
     expect(
-      resolveAutoPlayMode(
-          isCleared: true, hasRecord: true, override: false, globalDefault: true),
-      AutoPlayMode.manualReplay,
-    );
-  });
-
-  test('已通关 + 全局关 + 无 override → manualReplay', () {
-    expect(
-      resolveAutoPlayMode(
-          isCleared: true, hasRecord: true, override: null, globalDefault: false),
-      AutoPlayMode.manualReplay,
-    );
-  });
-
-  test('已通关 + override=true 覆盖全局关 → autoReplay(有记录)', () {
-    expect(
-      resolveAutoPlayMode(
-          isCleared: true, hasRecord: true, override: true, globalDefault: false),
-      AutoPlayMode.autoReplay,
+      resolveAutoPlayMode(override: false, globalDefault: true),
+      AutoPlayMode.interactive,
     );
   });
 }

@@ -3,24 +3,23 @@ import 'package:flutter/material.dart';
 import '../strings.dart';
 import '../theme/colors.dart';
 
-/// 半手动战斗 P0 步骤5-G3:选关屏 per-stage 自动/手动开关。
+/// 战斗交互重做 Phase 3:选关屏 per-stage「挂机自动 / 允许拖招」开关。
 ///
-/// 三态映射 [BattleReplayRecord.autoPlayOverride]:
+/// 三态映射 per-stage override(SharedPreferences,见 `stage_auto_play_pref.dart`):
 /// - `null`  = 跟随全局设置(显示生效模式 +「随设置」弱标记)
-/// - `true`  = 本关强制自动重演
-/// - `false` = 本关强制手动
+/// - `true`  = 本关纯挂机自动
+/// - `false` = 本关允许拖招干预
 ///
 /// 生效模式 `effective = overrideMode ?? globalDefault`。点击弹三选项菜单回传
-/// `null/true/false` 给 [onChanged](调用方落 `setAutoPlayOverride` + invalidate)。
+/// `null/true/false` 给 [onChanged](调用方落 `setOverride` + invalidate)。
 ///
-/// **仅对已通关且有重放记录的关有意义**:迁移豁免关(已通关无 record,
-/// autoFallback)无从写 overrideMode,[hasRecord] 为 false 时灰显不可切。
+/// 旧「无重放记录灰显不可切」语义随录制回放链废弃 —— 本偏好是纯设置,任何
+/// 渲染处都可切(无 hasRecord 门控)。
 class AutoPlayToggle extends StatelessWidget {
   const AutoPlayToggle({
     super.key,
     required this.overrideMode,
     required this.globalDefault,
-    required this.hasRecord,
     required this.onChanged,
   });
 
@@ -30,10 +29,7 @@ class AutoPlayToggle extends StatelessWidget {
   /// 全局默认(`GameplaySettings.autoPlayDefault`)。
   final bool globalDefault;
 
-  /// 该关是否有重放记录(无 = 迁移豁免,不可切)。
-  final bool hasRecord;
-
-  /// 三态切换回调:`null`=跟随全局 / `true`=自动 / `false`=手动。
+  /// 三态切换回调:`null`=跟随全局 / `true`=纯挂机自动 / `false`=允许拖招。
   final ValueChanged<bool?> onChanged;
 
   bool get _effectiveAuto => overrideMode ?? globalDefault;
@@ -44,7 +40,6 @@ class AutoPlayToggle extends StatelessWidget {
         ? UiStrings.stageAutoPlayAuto
         : UiStrings.stageAutoPlayManual;
     final following = overrideMode == null;
-    final enabled = hasRecord;
 
     final display = Row(
       mainAxisSize: MainAxisSize.min,
@@ -53,18 +48,17 @@ class AutoPlayToggle extends StatelessWidget {
           char: _effectiveAuto
               ? UiStrings.stageAutoPlaySealAuto
               : UiStrings.stageAutoPlaySealManual,
-          enabled: enabled,
         ),
         const SizedBox(width: 5),
         Text(
           label,
-          style: TextStyle(
-            color: enabled ? WuxiaColors.textPrimary : WuxiaColors.textMuted,
+          style: const TextStyle(
+            color: WuxiaColors.textPrimary,
             fontSize: 12,
             fontWeight: FontWeight.w700,
           ),
         ),
-        if (following && enabled) ...[
+        if (following) ...[
           const SizedBox(width: 4),
           const Text(
             UiStrings.stageAutoPlayFollowSuffix,
@@ -74,14 +68,12 @@ class AutoPlayToggle extends StatelessWidget {
             ),
           ),
         ],
-        if (enabled) ...[
-          const SizedBox(width: 2),
-          const Icon(
-            Icons.arrow_drop_down,
-            size: 16,
-            color: WuxiaColors.textMuted,
-          ),
-        ],
+        const SizedBox(width: 2),
+        const Icon(
+          Icons.arrow_drop_down,
+          size: 16,
+          color: WuxiaColors.textMuted,
+        ),
       ],
     );
 
@@ -89,14 +81,6 @@ class AutoPlayToggle extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: display,
     );
-
-    // 迁移豁免关(无重放记录)无从写 override → 灰显不可切,tooltip 解释。
-    if (!enabled) {
-      return Tooltip(
-        message: UiStrings.stageAutoPlayLockedHint,
-        child: padded,
-      );
-    }
 
     return PopupMenuButton<_AutoPlayChoice>(
       tooltip: '',
@@ -134,32 +118,31 @@ enum _AutoPlayChoice {
   final bool? value;
 }
 
-/// 绛红方印小字 glyph(「自」=自动 /「手」=手动)。朱文风:红框 + 浅红底 + 红字。
+/// 绛红方印小字 glyph(「自」=纯挂机自动 /「拖」=允许拖招)。朱文风:红框 + 浅红底 + 红字。
 /// 暂用现有字体单字,真小篆字形待后续补篆体字体(见 UiStrings 注)。
 class _SealGlyph extends StatelessWidget {
-  const _SealGlyph({required this.char, required this.enabled});
+  const _SealGlyph({required this.char});
 
   final String char;
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
-    final c = enabled ? WuxiaColors.resultHighlight : WuxiaColors.textMuted;
+    const c = WuxiaColors.resultHighlight;
     return Container(
       width: 16,
       height: 16,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: c.withValues(alpha: enabled ? 0.14 : 0.0),
+        color: c.withValues(alpha: 0.14),
         border: Border.all(
-          color: c.withValues(alpha: enabled ? 0.9 : 0.5),
+          color: c.withValues(alpha: 0.9),
           width: 1.1,
         ),
         borderRadius: BorderRadius.circular(3),
       ),
       child: Text(
         char,
-        style: TextStyle(
+        style: const TextStyle(
           color: c,
           fontSize: 10,
           height: 1.0,

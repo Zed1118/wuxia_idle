@@ -77,12 +77,8 @@ void main() {
     });
   });
 
-  // 半手动 P0 步骤5 验收回归:补「route 枚举 → buildVisualTarget → ScenarioLauncher
-  // 透传 manualStep/seed」这段胶水的盲区。既有 battle_manual_step_ui_test 8 测直接
-  // new BattleScreen(manualStep:true),绕过了路由层;Codex 首轮验收 FAIL 的全部症状
-  // (快进按钮 / 技能直接待发 / picker 不弹 / 冻结 seed)恰好等于相邻 battle_charge_break
-  // 路由(manualStep 默认 false + autoStart:false)的表现,故锁两路由的关键 flag 区分。
-  group('buildVisualTarget · 半手动 manualStep 路由透传', () {
+  // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。
+  group('buildVisualTarget · 战斗静态验收路由透传', () {
     setUpAll(() async {
       await Isar.initializeIsarCore(download: true);
     });
@@ -103,27 +99,13 @@ void main() {
       }
     });
 
-    test('battle_manual_step → ScenarioLauncher 带 manualStep:true + seed:3', () async {
-      final target = await buildVisualTarget(
-        VisualRoute.battleManualStep,
-        IsarSetup.instance,
-      );
-      expect(target, isA<ScenarioLauncher>());
-      final launcher = target as ScenarioLauncher;
-      expect(launcher.manualStep, isTrue, reason: '半手动单步入口必须 manualStep:true');
-      expect(launcher.seed, 3, reason: 'manualStep 验收走固定 seed 确定性');
-    });
-
-    test('battle_charge_break → manualStep:false + autoStart:false(对照:不是单步)',
-        () async {
-      // 这是 Codex 首轮误验的相邻路由:静态冻结帧、非单步。锁住区分,防再次混淆。
+    test('battle_charge_break → autoStart:false(静态冻结蓄力/破招帧)', () async {
       final target = await buildVisualTarget(
         VisualRoute.battleChargeBreak,
         IsarSetup.instance,
       );
       expect(target, isA<ScenarioLauncher>());
       final launcher = target as ScenarioLauncher;
-      expect(launcher.manualStep, isFalse);
       expect(launcher.autoStart, isFalse);
     });
   });

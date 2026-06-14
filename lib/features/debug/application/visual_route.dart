@@ -64,10 +64,6 @@ enum VisualRoute {
     'battle_charge_break',
     '战斗屏·青衫剑客蓄力青锋绝 + 玩家破招按钮高亮(静态验收破招 UI)',
   ),
-  battleManualStep(
-    'battle_manual_step',
-    '战斗屏·半手动单步 UI(下一步按钮 + 本回合行动顺序条 + 点单体技弹目标 picker · seed 确定性)',
-  ),
   battleVictoryFirstClear(
     'battle_victory_first_clear',
     '胜利弹窗·Boss 首胜封签 + 掉落/升层/共鸣三段验收',

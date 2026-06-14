@@ -18,7 +18,7 @@ import '../../equipment/application/equipment_factory.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/presentation/treasure_drop_overlay.dart';
 import '../../equipment/domain/treasure_highlight.dart';
-import '../../battle/application/battle_replay_record_service.dart';
+import '../../battle/application/stage_auto_play_pref.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart';
@@ -174,34 +174,21 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await Phase2SeedService(isar: isar).seedVisualCheckW7W11();
       return const StageListScreen(chapterIndex: 1);
     case VisualRoute.stageListAutoPlay:
-      // per-stage 自动/手动开关验收:01_01..04 已通关(seedVisualCheckW7W11),
-      // 额外给 01_01 录重放记录(enabled·跟随→自动随设置)、01_02 pin 手动,
-      // 让 Codex 看 enabled toggle + 三选项菜单(其余无记录关 = 灰显态)。
+      // per-stage「挂机自动 / 允许拖招」开关验收:01_01..04 已通关
+      // (seedVisualCheckW7W11),01_01 跟随全局(自动随设置)、01_02 pin 允许拖招,
+      // 让 Codex 看 toggle 三选项菜单 + 跟随 vs pin 两态。
       await isar.writeTxn(() => isar.mainlineProgress.clear());
       await Phase2SeedService(isar: isar).seedVisualCheckW7W11();
-      final replaySvc = BattleReplayRecordService(isar: isar);
-      await replaySvc.record(
-        battleKey: BattleReplayRecordService.stageBattleKey('stage_01_01'),
-        seed: 3,
-        ops: const [],
-      );
-      await replaySvc.record(
-        battleKey: BattleReplayRecordService.stageBattleKey('stage_01_02'),
-        seed: 3,
-        ops: const [],
-      );
-      await replaySvc.setAutoPlayOverride(
-        BattleReplayRecordService.stageBattleKey('stage_01_02'),
-        false,
-      );
+      final prefSvc = StageAutoPlayPrefService();
+      await prefSvc.setOverride(stageBattleKey('stage_01_01'), null);
+      await prefSvc.setOverride(stageBattleKey('stage_01_02'), false);
       return const StageListScreen(chapterIndex: 1);
     case VisualRoute.towerFloorList:
       await OnboardingService(isar: isar).ensureFoundingMasters();
       return const TowerFloorListScreen();
     case VisualRoute.towerFloorListAutoPlay:
-      // per-floor 开关验收(R1 第 7 项 FAIL 根因 = tower 验收 route 未种 record →
-      // dialog 内开关落禁用态不弹菜单)。本 route 种 1/2 层通关 + 重放记录,让
-      // 点已通关层弹的重打 dialog 内开关 enabled:1 层跟随(自动随设置)、2 层 pin 手动。
+      // per-floor「挂机自动 / 允许拖招」开关验收:种 1/2 层通关,点已通关层弹的
+      // 重打 dialog 内开关:1 层跟随(自动随设置)、2 层 pin 允许拖招。
       await OnboardingService(isar: isar).ensureFoundingMasters();
       await isar.writeTxn(() => isar.towerProgress.clear());
       final towerSvc = TowerProgressService(isar: isar);
@@ -209,21 +196,9 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       final towerNow = DateTime.now();
       await towerSvc.recordClear(floorIndex: 1, now: towerNow, elapsedMs: 60000);
       await towerSvc.recordClear(floorIndex: 2, now: towerNow, elapsedMs: 60000);
-      final towerReplaySvc = BattleReplayRecordService(isar: isar);
-      await towerReplaySvc.record(
-        battleKey: BattleReplayRecordService.towerBattleKey(1),
-        seed: 3,
-        ops: const [],
-      );
-      await towerReplaySvc.record(
-        battleKey: BattleReplayRecordService.towerBattleKey(2),
-        seed: 3,
-        ops: const [],
-      );
-      await towerReplaySvc.setAutoPlayOverride(
-        BattleReplayRecordService.towerBattleKey(2),
-        false,
-      );
+      final towerPrefSvc = StageAutoPlayPrefService();
+      await towerPrefSvc.setOverride(towerBattleKey(1), null);
+      await towerPrefSvc.setOverride(towerBattleKey(2), false);
       return const TowerFloorListScreen();
     case VisualRoute.seclusionMapList:
       await OnboardingService(isar: isar).ensureFoundingMasters();
@@ -325,17 +300,6 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         hint: null,
         sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
         autoStart: false,
-      );
-    case VisualRoute.battleManualStep:
-      // 半手动单步 UI 验收:复用 scenarioChargeBreak(主控带满 强力/破招/共鸣/大招
-      // + 多敌可选目标),manualStep 起单步 + 固定 seed 确定性。验收点:点「下一步」
-      // 推进 / 本回合行动顺序条 / 点单体技弹目标 picker。
-      return const ScenarioLauncher(
-        teamsFactory: BattleScenarioData.scenarioChargeBreak,
-        hint: null,
-        sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
-        manualStep: true,
-        seed: 3,
       );
     case VisualRoute.battleVictoryFirstClear:
       return const _VictoryFirstClearPreview();

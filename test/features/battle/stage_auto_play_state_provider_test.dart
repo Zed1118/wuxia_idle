@@ -1,62 +1,56 @@
-import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
-import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/application/battle_replay_providers.dart';
-import 'package:wuxia_idle/features/battle/application/battle_replay_record_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wuxia_idle/features/battle/application/stage_auto_play_pref.dart';
 
-/// 半手动战斗 P0 步骤5-G3:选关屏 per-stage 开关读 `autoPlayOverride` 的
-/// family provider。验证三态映射 + hasRecord 派生。
+/// 战斗交互重做 Phase 3:选关屏 per-stage override 的 family provider
+/// (SharedPreferences-backed)。验证三态读 + setOverride + invalidate 刷新。
 void main() {
-  setUpAll(() async {
-    await Isar.initializeIsarCore(download: true);
-  });
-
-  late Directory tempDir;
-  late BattleReplayRecordService service;
   late ProviderContainer container;
+  late StageAutoPlayPrefService service;
 
-  setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('wuxia_autoplay_state_');
-    await IsarSetup.init(directory: tempDir, inspector: false);
-    service = BattleReplayRecordService(isar: IsarSetup.instance);
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    service = StageAutoPlayPrefService();
     container = ProviderContainer();
   });
 
-  tearDown(() async {
-    container.dispose();
-    if (Isar.getInstance('wuxia_save_slot1') != null) {
-      await IsarSetup.close();
-    }
-    if (await tempDir.exists()) {
-      await tempDir.delete(recursive: true);
-    }
-  });
+  tearDown(() => container.dispose());
 
   const key = 'stage#stage_01_01#1';
 
-  test('无记录(未通关/迁移豁免)→ hasRecord=false, overrideMode=null', () async {
-    final state = await container.read(stageAutoPlayStateProvider(key).future);
-    expect(state.hasRecord, isFalse);
-    expect(state.overrideMode, isNull);
+  test('无 override → null(随全局)', () async {
+    final v = await container.read(stageAutoPlayOverrideProvider(key).future);
+    expect(v, isNull);
   });
 
-  test('手动通关后无 override → hasRecord=true, overrideMode=null(跟随全局)', () async {
-    await service.record(battleKey: key, seed: 7, ops: const []);
-    final state = await container.read(stageAutoPlayStateProvider(key).future);
-    expect(state.hasRecord, isTrue);
-    expect(state.overrideMode, isNull);
+  test('setOverride(false) + invalidate → false(允许拖招)', () async {
+    await container.read(stageAutoPlayOverrideProvider(key).future);
+    await service.setOverride(key, false);
+    container.invalidate(stageAutoPlayOverrideProvider(key));
+    final v = await container.read(stageAutoPlayOverrideProvider(key).future);
+    expect(v, isFalse);
   });
 
-  test('setAutoPlayOverride(false) + invalidate → overrideMode=false', () async {
-    await service.record(battleKey: key, seed: 7, ops: const []);
-    await container.read(stageAutoPlayStateProvider(key).future);
-    await service.setAutoPlayOverride(key, false);
-    container.invalidate(stageAutoPlayStateProvider(key));
-    final state = await container.read(stageAutoPlayStateProvider(key).future);
-    expect(state.hasRecord, isTrue);
-    expect(state.overrideMode, isFalse);
+  test('setOverride(true) → true(纯挂机自动)', () async {
+    await service.setOverride(key, true);
+    container.invalidate(stageAutoPlayOverrideProvider(key));
+    final v = await container.read(stageAutoPlayOverrideProvider(key).future);
+    expect(v, isTrue);
+  });
+
+  test('setOverride(null) 清除 → 回到 null(随全局)', () async {
+    await service.setOverride(key, false);
+    await service.setOverride(key, null);
+    container.invalidate(stageAutoPlayOverrideProvider(key));
+    final v = await container.read(stageAutoPlayOverrideProvider(key).future);
+    expect(v, isNull);
+  });
+
+  test('不同 battleKey 互不影响', () async {
+    await service.setOverride(key, true);
+    final other =
+        await container.read(stageAutoPlayOverrideProvider('tower#5#1').future);
+    expect(other, isNull);
   });
 }

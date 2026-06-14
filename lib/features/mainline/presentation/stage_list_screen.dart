@@ -5,7 +5,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../battle/application/battle_replay_record_service.dart';
+import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/presentation/cycle_select_control.dart';
 import '../../battle/presentation/stage_auto_play_control.dart';
 import '../application/mainline_progress_service.dart';
@@ -365,7 +365,7 @@ class _StageRow extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: StageAutoPlayControl(
-                          battleKey: BattleReplayRecordService.stageBattleKey(
+                          battleKey: stageBattleKey(
                             def.id,
                           ),
                         ),

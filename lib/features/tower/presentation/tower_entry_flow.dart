@@ -23,12 +23,8 @@ import '../../../data/isar_provider.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
 import '../../battle/application/battle_resolution.dart';
-import '../../battle/application/battle_replay_providers.dart';
-import '../../battle/application/battle_replay_record_service.dart';
-import '../../battle/application/manual_clear_recorder.dart';
+import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/domain/auto_play_mode.dart';
-import '../../battle/domain/battle_replay.dart';
-import '../../battle/domain/battle_replay_record.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../../features/equipment/application/drop_service.dart';
@@ -636,16 +632,15 @@ class _TowerBattleHost extends ConsumerStatefulWidget {
 class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
   String? _setupError;
 
-  /// 半手动 P0 步骤5:本场进入模式 + 命中重放记录(对应主线 _StageBattleHost)。
-  AutoPlayMode _mode = AutoPlayMode.manualFirstClear;
-  BattleReplayRecord? _record;
+  /// 战斗交互重做 Phase 3:本场进入模式(auto / interactive,对应主线 host)。
+  AutoPlayMode _mode = AutoPlayMode.auto;
 
   /// D1: 由 initState 从 TowerProgress.currentCycleIndex 读入，默认 1。
   int _currentCycleIndex = 1;
 
   /// D1: battleKey 按周目维度生成（默认 cycle=1 与旧 key 格式一致）。
   String get _battleKey =>
-      BattleReplayRecordService.towerBattleKey(widget.floor.floorIndex, cycle: _currentCycleIndex);
+      towerBattleKey(widget.floor.floorIndex, cycle: _currentCycleIndex);
 
   @override
   void initState() {
@@ -653,44 +648,31 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       try {
-        // ── 半手动 P0 步骤5:入口决策 ──
-        final svc = ref.read(battleReplayRecordServiceProvider);
         final progress = await ref.read(towerProgressProvider.future);
         if (!mounted) return;
         // D1: 读取当前周目（fresh save = 1，零回归）。
         _currentCycleIndex = progress.currentCycleIndex;
-        // isCleared: 当前层已被此周目通关当且仅当 highest >= floorIndex（全塔整体推进）。
-        final cleared =
-            progress.highestClearedFloor >= widget.floor.floorIndex;
-        _record = await svc.find(_battleKey);
+        // ── 入口决策:per-stage override + 全局 → auto / interactive ──
+        final override =
+            await ref.read(stageAutoPlayPrefServiceProvider).override(_battleKey);
         if (!mounted) return;
         final global =
             (await ref.read(gameplaySettingsProvider.future)).autoPlayDefault;
         if (!mounted) return;
-        final mode = resolveAutoPlayMode(
-          isCleared: cleared,
-          hasRecord: _record != null,
-          override: _record?.autoPlayOverride,
-          globalDefault: global,
-        );
-        setState(() => _mode = mode);
+        setState(() => _mode =
+            resolveAutoPlayMode(override: override, globalDefault: global));
 
         final (left, right) = await StageBattleSetup(
           isar: IsarSetup.instance,
         ).buildTeamsForTower(widget.floor, cycleIndex: _currentCycleIndex);
         if (!mounted) return;
-        final seed = mode == AutoPlayMode.autoReplay ? _record!.seed : null;
-        ref.read(battleProvider.notifier).startBattle(left, right, seed: seed);
+        ref.read(battleProvider.notifier).startBattle(left, right);
       } catch (e) {
         if (!mounted) return;
         setState(() => _setupError = e.toString());
       }
     });
   }
-
-  bool get _isManualMode =>
-      _mode == AutoPlayMode.manualFirstClear ||
-      _mode == AutoPlayMode.manualReplay;
 
   @override
   Widget build(BuildContext context) {
@@ -713,19 +695,8 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
       bgmTrack: BgmTrack.tower,
       deferVictoryToCaller: true,
       cycleHint: _currentCycleIndex >= 2 ? UiStrings.jianghuRememberHint : null,
-      manualStep: _isManualMode,
-      replaySeed: _mode == AutoPlayMode.autoReplay ? _record!.seed : null,
-      replayOps: _mode == AutoPlayMode.autoReplay
-          ? BattleReplayOp.decodeList(_record!.opsJson)
-          : null,
-      onVictory: () async {
-        await recordManualClearIfNeeded(
-          mode: _mode,
-          battleKey: _battleKey,
-          seed: ref.read(battleProvider.notifier).seed,
-          ops: ref.read(battleProvider.notifier).recordedOps,
-          service: ref.read(battleReplayRecordServiceProvider),
-        );
+      allowPlayerIntervention: _mode == AutoPlayMode.interactive,
+      onVictory: () {
         widget.onVictory();
         // 不 pop:胜利仪式由 runTowerFlow 在战斗界面之上播完后再 pop。
       },
