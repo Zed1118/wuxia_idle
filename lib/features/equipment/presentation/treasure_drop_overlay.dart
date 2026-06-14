@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
@@ -262,7 +263,7 @@ class _TreasureDropOverlayState extends State<TreasureDropOverlay>
                 right: 0,
                 child: Opacity(
                   opacity: ((t - 0.5) / 0.3).clamp(0.0, 1.0),
-                  child: const Text('轻触继续',
+                  child: const Text(UiStrings.splashTapToContinue,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: Color(0x99FFFFFF),

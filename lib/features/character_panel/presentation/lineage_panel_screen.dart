@@ -276,11 +276,6 @@ class _FounderBuffSection extends StatelessWidget {
     return '+${(v * 100).toStringAsFixed(0)}%';
   }
 
-  String _absLabel(double v) {
-    if (v == 0) return '—';
-    return '+${(v * 100).toStringAsFixed(0)}%';
-  }
-
   @override
   Widget build(BuildContext context) {
     return _PanelCard(
@@ -304,7 +299,7 @@ class _FounderBuffSection extends StatelessWidget {
           ),
           _BuffRow(
             label: UiStrings.lineagePanelFounderBuffCritRate,
-            value: _absLabel(buff.critRateBonus),
+            value: _pctLabel(buff.critRateBonus),
           ),
           // H2 audit S3:cultivationProgressPct 未接修炼度公式(全 lib/ 0 消费),
           // 移除误导性「+3% 修炼度」行,避免向玩家展示不生效的 buff。
