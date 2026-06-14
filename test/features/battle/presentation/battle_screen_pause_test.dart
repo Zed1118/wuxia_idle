@@ -36,7 +36,10 @@ class _TestBattleNotifier extends BattleNotifier {
   void advance({int maxConsecutiveTicks = 100}) {}
 }
 
-Future<void> _pumpBattle(WidgetTester tester) async {
+Future<void> _pumpBattle(
+  WidgetTester tester, {
+  VoidCallback? onSurrender,
+}) async {
   await tester.binding.setSurfaceSize(const Size(1280, 720));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   final (left, right) = BattleDemo.mockTeams();
@@ -49,7 +52,9 @@ Future<void> _pumpBattle(WidgetTester tester) async {
           ),
         ),
       ],
-      child: const MaterialApp(home: BattleScreen(animConfig: _testAnim)),
+      child: MaterialApp(
+        home: BattleScreen(animConfig: _testAnim, onSurrender: onSurrender),
+      ),
     ),
   );
   await tester.pump();
@@ -84,5 +89,36 @@ void main() {
     await tester.tapAt(const Offset(100, 100)); // 遮罩左上角空白处
     await tester.pump();
     expect(find.text(UiStrings.battlePausedTitle), findsNothing);
+  });
+
+  testWidgets('onSurrender 为 null → 不显投降键', (tester) async {
+    await _pumpBattle(tester);
+    expect(find.byKey(const ValueKey('battle_surrender')), findsNothing);
+  });
+
+  testWidgets('投降键 → 确认框 → 撤退 → 触发 onSurrender', (tester) async {
+    var surrendered = 0;
+    await _pumpBattle(tester, onSurrender: () => surrendered++);
+
+    expect(find.byKey(const ValueKey('battle_surrender')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('battle_surrender')));
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.surrenderConfirmTitle), findsWidgets);
+    expect(surrendered, 0, reason: '确认前不触发');
+
+    await tester.tap(find.text(UiStrings.surrenderConfirmAction));
+    await tester.pumpAndSettle();
+    expect(surrendered, 1);
+  });
+
+  testWidgets('投降确认点「再打打」→ 不投降', (tester) async {
+    var surrendered = 0;
+    await _pumpBattle(tester, onSurrender: () => surrendered++);
+
+    await tester.tap(find.byKey(const ValueKey('battle_surrender')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.surrenderCancelAction));
+    await tester.pumpAndSettle();
+    expect(surrendered, 0);
   });
 }

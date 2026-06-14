@@ -70,6 +70,8 @@ Future<void> runTowerFlow({
   required TowerFloorDef floor,
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
+  Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
+  @visibleForTesting
   Future<TowerClearResult> Function(int floorIndex, int elapsedMs)?
   clearRecorderForTest,
   @visibleForTesting Future<void> Function()? defeatRecorderForTest,
@@ -93,14 +95,22 @@ Future<void> runTowerFlow({
   // P0.2 #40 Phase 2:计时本次战斗耗时(从 BattleScreen push 起到 onVictory/Defeat
   // 回调触发,含 push/pop 动画 ≈ 600ms 误差,可接受;不为 test 注入路径计时)
   final stopwatch = Stopwatch()..start();
-  final bool won;
-  if (battleRunnerForTest != null) {
-    won = await battleRunnerForTest();
+  final ({bool won, bool surrendered}) battleExit;
+  if (battleOutcomeForTest != null) {
+    battleExit = await battleOutcomeForTest();
+  } else if (battleRunnerForTest != null) {
+    battleExit = (won: await battleRunnerForTest(), surrendered: false);
   } else {
-    won = await _runTowerBattle(context: context, ref: ref, floor: floor);
+    battleExit = await _runTowerBattle(context: context, ref: ref, floor: floor);
   }
   stopwatch.stop();
   final elapsedMs = stopwatch.elapsedMilliseconds;
+
+  // ── surrender ── H3:投降,host 已 pop;跳过 recordDefeat 统计直接返回,不计战绩。
+  if (battleExit.surrendered) {
+    return;
+  }
+  final won = battleExit.won;
 
   // ── defeat ──
   if (!won) {
@@ -270,28 +280,40 @@ Future<void> runTowerFlow({
   );
 }
 
-/// 推 BattleScreen 并 wait 胜/败回调。
-Future<bool> _runTowerBattle({
+/// 推 BattleScreen 并 wait 胜/败/投降回调；返回 (won, surrendered)。
+/// H3: surrendered=true 时 caller 跳过 recordDefeat 统计直接返回。
+Future<({bool won, bool surrendered})> _runTowerBattle({
   required BuildContext context,
   required WidgetRef ref,
   required TowerFloorDef floor,
 }) async {
-  final completer = Completer<bool>();
+  final completer = Completer<({bool won, bool surrendered})>();
   // 不 await push:胜利时 BattleScreen 留栈,由 runTowerFlow 播完仪式/结算后再 pop。
   Navigator.of(context).push<void>(
     MaterialPageRoute(
       builder: (_) => _TowerBattleHost(
         floor: floor,
         onVictory: () {
-          if (!completer.isCompleted) completer.complete(true);
+          if (!completer.isCompleted) {
+            completer.complete((won: true, surrendered: false));
+          }
         },
         onDefeat: () {
-          if (!completer.isCompleted) completer.complete(false);
+          if (!completer.isCompleted) {
+            completer.complete((won: false, surrendered: false));
+          }
+        },
+        onSurrender: () {
+          if (!completer.isCompleted) {
+            completer.complete((won: false, surrendered: true));
+          }
         },
       ),
     ),
   ).then((_) {
-    if (!completer.isCompleted) completer.complete(false);
+    if (!completer.isCompleted) {
+      completer.complete((won: false, surrendered: false));
+    }
   });
   return completer.future;
 }
@@ -619,11 +641,13 @@ class _TowerBattleHost extends ConsumerStatefulWidget {
     required this.floor,
     required this.onVictory,
     required this.onDefeat,
+    required this.onSurrender,
   });
 
   final TowerFloorDef floor;
   final VoidCallback onVictory;
   final VoidCallback onDefeat;
+  final VoidCallback onSurrender;
 
   @override
   ConsumerState<_TowerBattleHost> createState() => _TowerBattleHostState();
@@ -702,6 +726,10 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
       },
       onDefeat: () {
         widget.onDefeat();
+        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+      },
+      onSurrender: () {
+        widget.onSurrender();
         if (Navigator.of(context).canPop()) Navigator.of(context).pop();
       },
     );

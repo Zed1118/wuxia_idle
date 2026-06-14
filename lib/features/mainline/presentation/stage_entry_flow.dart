@@ -78,6 +78,8 @@ Future<void> runStageFlow({
   required StageDef stage,
   int targetCycle = 1,
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
+  @visibleForTesting
+  Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
   @visibleForTesting Future<void> Function(String stageId)? victoryRecorderForTest,
   @visibleForTesting
   Future<List<DefeatLossEntry>> Function(StageDef stage)?
@@ -100,17 +102,26 @@ Future<void> runStageFlow({
 
   // ── battle ──
   if (!context.mounted) return;
-  final bool won;
-  if (battleRunnerForTest != null) {
-    won = await battleRunnerForTest();
+  final ({bool won, bool surrendered}) battleExit;
+  if (battleOutcomeForTest != null) {
+    battleExit = await battleOutcomeForTest();
+  } else if (battleRunnerForTest != null) {
+    battleExit = (won: await battleRunnerForTest(), surrendered: false);
   } else {
-    won = await _runBattle(
+    battleExit = await _runBattle(
       context: context,
       ref: ref,
       stage: stage,
       targetCycle: targetCycle,
     );
   }
+
+  // ── surrender ── H3:主动投降,host 已 pop 战斗屏,跳过所有战败结算(无散功/
+  // 剧情/收降/掉落)直接返回,不记进度。
+  if (battleExit.surrendered) {
+    return;
+  }
+  final won = battleExit.won;
 
   // ── defeat ──
   if (!won) {
@@ -271,33 +282,45 @@ void _invalidateCharacterFamilyAfterCombat(WidgetRef ref) {
   ref.invalidate(allEquipmentsProvider);
 }
 
-/// 推 BattleScreen 并 wait 胜/败回调；返回 true=胜，false=败/平。
-/// D1: [targetCycle] 默认 1（零回归）。
-Future<bool> _runBattle({
+/// 推 BattleScreen 并 wait 胜/败/投降回调；返回 (won, surrendered)。
+/// D1: [targetCycle] 默认 1（零回归）。H3: surrendered=true 时 won 恒 false,
+/// caller 据此跳过战败结算直接返回。
+Future<({bool won, bool surrendered})> _runBattle({
   required BuildContext context,
   required WidgetRef ref,
   required StageDef stage,
   int targetCycle = 1,
 }) async {
-  final completer = Completer<bool>();
+  final completer = Completer<({bool won, bool surrendered})>();
   // 不 await push:胜利时 BattleScreen 留在栈上,由 runStageFlow 播完胜利仪式/
-  // 结算后再 pop(让爆品/简版勝盖在战斗场景上,而非退回列表后才弹)。失败时 host 自 pop。
+  // 结算后再 pop(让爆品/简版勝盖在战斗场景上,而非退回列表后才弹)。失败/投降时 host 自 pop。
   Navigator.of(context).push<void>(
     MaterialPageRoute(
       builder: (_) => _StageBattleHost(
         stage: stage,
         targetCycle: targetCycle,
         onVictory: () {
-          if (!completer.isCompleted) completer.complete(true);
+          if (!completer.isCompleted) {
+            completer.complete((won: true, surrendered: false));
+          }
         },
         onDefeat: () {
-          if (!completer.isCompleted) completer.complete(false);
+          if (!completer.isCompleted) {
+            completer.complete((won: false, surrendered: false));
+          }
+        },
+        onSurrender: () {
+          if (!completer.isCompleted) {
+            completer.complete((won: false, surrendered: true));
+          }
         },
       ),
     ),
   ).then((_) {
-    // 兜底:BattleScreen 被 pop(系统返回/失败 host pop)而未触发回调 → 未胜。
-    if (!completer.isCompleted) completer.complete(false);
+    // 兜底:BattleScreen 被 pop(系统返回/失败 host pop)而未触发回调 → 未胜非投降。
+    if (!completer.isCompleted) {
+      completer.complete((won: false, surrendered: false));
+    }
   });
   return completer.future;
 }
@@ -312,12 +335,14 @@ class _StageBattleHost extends ConsumerStatefulWidget {
     required this.stage,
     required this.onVictory,
     required this.onDefeat,
+    required this.onSurrender,
     this.targetCycle = 1,
   });
 
   final StageDef stage;
   final VoidCallback onVictory;
   final VoidCallback onDefeat;
+  final VoidCallback onSurrender;
 
   /// 目标周目编号，默认 1（行为与旧版完全一致）。
   final int targetCycle;
@@ -429,6 +454,12 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
       },
       onDefeat: () {
         widget.onDefeat();
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      },
+      onSurrender: () {
+        widget.onSurrender();
         if (Navigator.of(context).canPop()) {
           Navigator.of(context).pop();
         }
