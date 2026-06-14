@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
@@ -12,6 +13,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'retreat_result_screen.dart';
+import 'seclusion_gate.dart';
 import 'seclusion_map_visuals.dart';
 
 /// 闭关进行中屏幕（Phase 3 T49）。
@@ -107,6 +109,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
         maps: GameRepository.instance.seclusionMaps,
         now: DateTime.now(),
       );
+      ref.invalidate(activeRetreatSessionProvider);
 
       if (!mounted) return;
       // 大境界突破 jingle(沿胜利 dialog 体例):闭关收功跨 tier 才响。
@@ -141,133 +144,158 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
     final progress = _progress;
     final done = _isDone;
 
-    return Scaffold(
-      backgroundColor: WuxiaColors.background,
-      appBar: AppBar(
-        title: const Text(UiStrings.activeRetreatTitle),
-        backgroundColor: WuxiaColors.sidebar,
-        foregroundColor: WuxiaColors.textPrimary,
-        automaticallyImplyLeading: false,
-      ),
-      body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _MapBackdrop(path: def.imagePath),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.42),
-              ),
+    return Shortcuts(
+      shortcuts: <ShortcutActivator, Intent>{
+        LogicalKeySet(LogicalKeyboardKey.escape): const _RetreatBackIntent(),
+        LogicalKeySet(LogicalKeyboardKey.enter): const _RetreatCollectIntent(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          _RetreatBackIntent: CallbackAction<_RetreatBackIntent>(
+            onInvoke: (_) {
+              Navigator.maybePop(context);
+              return null;
+            },
+          ),
+          _RetreatCollectIntent: CallbackAction<_RetreatCollectIntent>(
+            onInvoke: (_) {
+              if (!_isCollecting) _onCollect();
+              return null;
+            },
+          ),
+        },
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
+            backgroundColor: WuxiaColors.background,
+            appBar: AppBar(
+              title: const Text(UiStrings.activeRetreatTitle),
+              backgroundColor: WuxiaColors.sidebar,
+              foregroundColor: WuxiaColors.textPrimary,
+              automaticallyImplyLeading: true,
             ),
-            Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 720),
-                  child: PaperPanel(
-                    padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
-                    paperOpacity: 0.42,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 14),
-                              child: SeclusionMapTraitIcon(def: def, size: 50),
-                            ),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const _StateSeal(),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    def.mapName,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: WuxiaUi.ink,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 9),
-                                  SeclusionMapTraitStrip(def: def),
-                                ],
-                              ),
-                            ),
-                            _ProgressStamp(
-                              label: done
-                                  ? UiStrings.activeRetreatDone
-                                  : UiStrings.activeRetreatProgressPct(
-                                      (progress * 100).round(),
-                                    ),
-                              done: done,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-                        _TimeRangePanel(
-                          start: startStr,
-                          end: endStr,
-                          hours: session.durationHours,
-                        ),
-                        const SizedBox(height: 22),
-                        const SectionHeader(
-                          UiStrings.activeRetreatProgressTitle,
-                        ),
-                        const SizedBox(height: 10),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            minHeight: 12,
-                            backgroundColor: WuxiaUi.muted.withValues(
-                              alpha: 0.22,
-                            ),
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              done
-                                  ? WuxiaUi.gold
-                                  : SeclusionMapVisuals.primaryColor(def),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          done
-                              ? UiStrings.activeRetreatDoneHint
-                              : UiStrings.activeRetreatEarlyHint,
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            color: done ? WuxiaUi.gold : WuxiaUi.ink2,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        Align(
-                          alignment: Alignment.center,
-                          child: PlaqueButton(
-                            label: _isCollecting
-                                ? UiStrings.seclusionStarting
-                                : done
-                                ? UiStrings.activeRetreatCollect
-                                : UiStrings.activeRetreatEarlyCollect,
-                            primary: true,
-                            disabled: _isCollecting,
-                            onTap: _onCollect,
-                          ),
-                        ),
-                      ],
+            body: SafeArea(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _MapBackdrop(path: def.imagePath),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.42),
                     ),
                   ),
-                ),
+                  Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 720),
+                        child: PaperPanel(
+                          padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
+                          paperOpacity: 0.42,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 14),
+                                    child: SeclusionMapTraitIcon(def: def, size: 50),
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const _StateSeal(),
+                                        const SizedBox(height: 10),
+                                        Text(
+                                          def.mapName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: WuxiaUi.ink,
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 9),
+                                        SeclusionMapTraitStrip(def: def),
+                                      ],
+                                    ),
+                                  ),
+                                  _ProgressStamp(
+                                    label: done
+                                        ? UiStrings.activeRetreatDone
+                                        : UiStrings.activeRetreatProgressPct(
+                                            (progress * 100).round(),
+                                          ),
+                                    done: done,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 18),
+                              _TimeRangePanel(
+                                start: startStr,
+                                end: endStr,
+                                hours: session.durationHours,
+                              ),
+                              const SizedBox(height: 22),
+                              const SectionHeader(
+                                UiStrings.activeRetreatProgressTitle,
+                              ),
+                              const SizedBox(height: 10),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: progress,
+                                  minHeight: 12,
+                                  backgroundColor: WuxiaUi.muted.withValues(
+                                    alpha: 0.22,
+                                  ),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    done
+                                        ? WuxiaUi.gold
+                                        : SeclusionMapVisuals.primaryColor(def),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                done
+                                    ? UiStrings.activeRetreatDoneHint
+                                    : UiStrings.activeRetreatEarlyHint,
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  color: done ? WuxiaUi.gold : WuxiaUi.ink2,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+                              Align(
+                                alignment: Alignment.center,
+                                child: PlaqueButton(
+                                  label: _isCollecting
+                                      ? UiStrings.seclusionStarting
+                                      : done
+                                      ? UiStrings.activeRetreatCollect
+                                      : UiStrings.activeRetreatEarlyCollect,
+                                  primary: true,
+                                  disabled: _isCollecting,
+                                  onTap: _onCollect,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -391,4 +419,12 @@ class _MapBackdrop extends StatelessWidget {
   }
 
   Widget _fallback() => Container(color: WuxiaColors.background);
+}
+
+class _RetreatBackIntent extends Intent {
+  const _RetreatBackIntent();
+}
+
+class _RetreatCollectIntent extends Intent {
+  const _RetreatCollectIntent();
 }
