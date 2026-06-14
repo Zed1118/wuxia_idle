@@ -71,6 +71,14 @@ class SettingsPanel extends ConsumerWidget {
           const _AutoPlayDefaultTile(),
           const Divider(height: 1),
           ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: const Text(UiStrings.settingsAbout),
+            subtitle: Text(
+              UiStrings.settingsVersionValue(UiStrings.appVersion),
+            ),
+          ),
+          const Divider(height: 1),
+          ListTile(
             leading: const Icon(Icons.power_settings_new),
             title: const Text(UiStrings.settingsQuit),
             onTap: () => AppExit.confirmAndQuit(context),

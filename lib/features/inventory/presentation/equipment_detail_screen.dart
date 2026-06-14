@@ -9,6 +9,7 @@ import '../../../data/lore_loader.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/application/battle_providers.dart';
+import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../../shared/strings.dart';
@@ -238,6 +239,14 @@ class _InfoCard extends ConsumerWidget {
     final n = ref.watch(numbersConfigProvider);
     final color = tierColorForEquipment(def.tier);
     final resonance = equipment.resonanceStage(n);
+    // M1:境界不足时显「需X境界」锁提示(§5.3 三系锁死)。
+    final activeIds =
+        ref.watch(activeCharacterIdsProvider).value ?? const <int>[];
+    final playerRealm = activeIds.isEmpty
+        ? null
+        : ref.watch(characterByIdProvider(activeIds.first)).value?.realmTier;
+    final realmLocked =
+        playerRealm != null && !equipment.isEquippableAtRealm(playerRealm);
     return SizedBox(
       width: double.infinity,
       child: PaperPanel(
@@ -245,33 +254,35 @@ class _InfoCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 _Chip(text: EnumL10n.equipmentTier(def.tier), color: color),
-                const SizedBox(width: 8),
                 _Chip(
                   text: EnumL10n.equipmentSlot(def.slot),
                   color: WuxiaColors.textSecondary,
                 ),
-                if (def.schoolBias != null) ...[
-                  const SizedBox(width: 8),
+                if (def.schoolBias != null)
                   _Chip(
                     text: EnumL10n.school(def.schoolBias!),
                     color: WuxiaColors.textSecondary,
                   ),
-                ],
-                // W15 后波 fix:读 equipment 实例字段而非 def 字段。
-                // 实例 isLineageHeritage 覆盖 3 条路径:① def 自带(初始化时
-                // EquipmentFactory.fromDef 将 def→实例 propagate)② 奇遇赠送
-                // 临时遗物 override(EquipmentFactory 参数通道,T55 注释)
-                // ③ 师承传承时 inheritFrom() 标记。读 def 漏掉 ②③。
-                if (equipment.isLineageHeritage) ...[
-                  const SizedBox(width: 8),
+                // W15 后波 fix:读 equipment 实例字段而非 def 字段(覆盖 def 自带 /
+                // 奇遇临时遗物 override / 师承 inheritFrom 三路,读 def 漏后两路)。
+                if (equipment.isLineageHeritage)
                   const _Chip(
                     text: UiStrings.lineageHeritageLabel,
                     color: WuxiaColors.hpLow,
                   ),
-                ],
+                // M1:境界不足显「需X境界」(§5.3 装备 tier ↔ 同序境界锁死)。
+                if (realmLocked)
+                  _Chip(
+                    text: UiStrings.inventoryRealmLockBanner(
+                      EnumL10n.realmTier(RealmTier.values[def.tier.index]),
+                    ),
+                    color: WuxiaColors.hpLow,
+                  ),
               ],
             ),
             // T8:养成入口前移到信息卡首屏顶部(紧贴品阶行),保证窄屏/矮窗首屏即见

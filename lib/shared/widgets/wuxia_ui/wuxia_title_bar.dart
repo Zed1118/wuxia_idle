@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../strings.dart';
 import '../../theme/wuxia_tokens.dart';
 
 /// 宣纸顶栏（UI kit · demo `.titlebar`）：替 Material AppBar。
@@ -11,12 +12,20 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     required this.title,
     this.onBack,
+    this.onHome,
+    this.showHome = true,
     this.showSeal = true,
     this.titleStyle,
   });
 
   final String title;
   final VoidCallback? onBack;
+
+  /// 「回主菜单」动作。默认 `popUntil(isFirst)`(MainMenu 为栈底首路由);可覆盖。
+  final VoidCallback? onHome;
+
+  /// 是否显示「回主菜单」键。子屏默认开;主菜单本身不挂顶栏,无需关。
+  final bool showHome;
   final bool showSeal;
   final TextStyle? titleStyle;
 
@@ -63,6 +72,22 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
               ).merge(titleStyle),
             ),
           ),
+          if (showHome)
+            Tooltip(
+              message: UiStrings.titleBarHome,
+              child: InkWell(
+                onTap: onHome ??
+                    () => Navigator.of(context).popUntil((r) => r.isFirst),
+                child: const Padding(
+                  padding: EdgeInsets.only(left: 4, right: 8),
+                  child: Icon(
+                    Icons.home_outlined,
+                    color: WuxiaUi.jiang,
+                    size: 22,
+                  ),
+                ),
+              ),
+            ),
           if (showSeal)
             SizedBox(
               width: 30,

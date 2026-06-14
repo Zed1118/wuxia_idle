@@ -35,4 +35,26 @@ void main() {
     ));
     expect(find.byIcon(Icons.subdirectory_arrow_left), findsNothing);
   });
+
+  testWidgets('showHome 默认显示回主菜单钮,点击触发 onHome', (tester) async {
+    var home = 0;
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        appBar: WuxiaTitleBar(title: '装备仓库', onHome: () => home++),
+        body: const SizedBox(),
+      ),
+    ));
+    await tester.tap(find.byIcon(Icons.home_outlined));
+    expect(home, 1);
+  });
+
+  testWidgets('showHome=false 不显回主菜单钮', (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        appBar: WuxiaTitleBar(title: '主菜单', showHome: false),
+        body: SizedBox(),
+      ),
+    ));
+    expect(find.byIcon(Icons.home_outlined), findsNothing);
+  });
 }

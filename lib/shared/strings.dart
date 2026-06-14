@@ -841,6 +841,12 @@ class UiStrings {
   static const String quitConfirmMessage = '确定退出挂机武侠?进度已自动保存,关掉之后仍照常挂机,回来照常结算。';
   static const String quitConfirmAction = '退出';
   static const String quitCancelAction = '再想想';
+  // 顶栏「回主菜单」:一键从深层子屏返回主菜单(popUntil isFirst,MainMenu 为栈底首路由)。
+  static const String titleBarHome = '回主菜单';
+  // 设置「关于」:版本号(L2 · 与 pubspec.yaml version 手动同步)。
+  static const String settingsAbout = '关于';
+  static const String appVersion = '0.1.0';
+  static String settingsVersionValue(String v) => '挂机武侠 · v$v';
   // 战斗交互重做 Phase 3:全局战斗模式默认开关(自动连续播放 / 允许拖招干预)。
   static const String settingsAutoPlayDefault = '自动战斗';
   static const String settingsAutoPlayDefaultHint = '战斗自动连续播放(可逐关切「允许拖招」干预)';
