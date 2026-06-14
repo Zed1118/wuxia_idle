@@ -22,7 +22,6 @@ import '../features/sect/domain/sect.dart';
 import '../features/sect/domain/sect_event.dart';
 import '../features/pvp/domain/pvp_record.dart';
 import '../features/pvp/domain/pvp_snapshot.dart';
-import '../features/battle/domain/battle_replay_record.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。
 ///
@@ -68,7 +67,6 @@ class IsarSetup {
     SectEventSchema,
     PvpRecordSchema,
     PvpSnapshotSchema,
-    BattleReplayRecordSchema,
   ];
 
   /// 当前 schema 对应的存档版本（写入新建 SaveData.saveVersion）。
@@ -97,7 +95,12 @@ class IsarSetup {
   //   + TowerProgress 加 currentCycleIndex/maxClearedCycle(旧档按 highestClearedFloor 推导)→ 0.21.0。
   // 周目按章(2026-06-14):MainlineProgress 加 clearedChapterCycleKeys。旧
   //   clearedStageCycleKeys 中的章末 Boss 关(isBoss)→ "chapterKey#cycle" → 0.22.0。
-  static const _currentSaveVersion = '0.22.0';
+  // 战斗交互重做 Phase 3(2026-06-14):废录制回放,删 BattleReplayRecord collection
+  //   (从 _allSchemas 移除)。旧档该 collection 数据 orphaned 不再读;per-stage
+  //   autoPlayOverride 迁 SharedPreferences(设置≠存档,见 stage_auto_play_pref.dart),
+  //   旧 Isar override 不迁移(语义已从「自动/手动单步」变「挂机/拖招」,重置随全局)。
+  //   无数据迁移动作,仅版本标记 → 0.23.0。
+  static const _currentSaveVersion = '0.23.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({

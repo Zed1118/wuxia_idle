@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
-import '../../battle/application/battle_replay_record_service.dart';
+import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../battle/presentation/cycle_select_control.dart';
 import '../../battle/presentation/stage_auto_play_control.dart';
@@ -187,7 +187,7 @@ class _MassBattleRow extends StatelessWidget {
                           alignment: Alignment.centerLeft,
                           child: StageAutoPlayControl(
                             battleKey:
-                                BattleReplayRecordService.stageBattleKey(def.id),
+                                stageBattleKey(def.id),
                           ),
                         ),
                         // P1 周目进化 E2：周目选择控件。

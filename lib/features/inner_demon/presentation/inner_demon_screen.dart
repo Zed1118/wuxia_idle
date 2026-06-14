@@ -6,7 +6,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../battle/application/battle_replay_record_service.dart';
+import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/presentation/cycle_select_control.dart';
 import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../mainline/application/mainline_providers.dart';
@@ -192,7 +192,7 @@ class _InnerDemonRow extends StatelessWidget {
                           alignment: Alignment.centerLeft,
                           child: StageAutoPlayControl(
                             battleKey:
-                                BattleReplayRecordService.stageBattleKey(def.id),
+                                stageBattleKey(def.id),
                           ),
                         ),
                         // P1 周目进化 E2：周目选择控件。

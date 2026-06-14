@@ -65,11 +65,11 @@ void main() {
       });
       await IsarSetup.close();
 
-      // 重新 init → 触发 _migrateSaveData（版本 0.20.0 != 0.22.0）。
+      // 重新 init → 触发 _migrateSaveData（旧 0.20.0 一路迁到当前 0.23.0）。
       await IsarSetup.init(directory: tempDir, inspector: false);
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.22.0', reason: '迁移后升版到 0.22.0');
+      expect(save.saveVersion, '0.23.0', reason: '迁移后升版到当前 0.23.0');
 
       final mp =
           await IsarSetup.instance.mainlineProgress.where().findFirst();
@@ -134,7 +134,7 @@ void main() {
       );
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.22.0');
+      expect(save.saveVersion, '0.23.0');
     },
   );
 }

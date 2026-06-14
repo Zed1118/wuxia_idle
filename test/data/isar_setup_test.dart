@@ -11,7 +11,6 @@ import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/skill_unlock_entry.dart';
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
-import 'package:wuxia_idle/features/battle/domain/battle_replay_record.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 
@@ -61,7 +60,7 @@ void main() {
       // 重新 init → _ensureSaveData 检测版本差异跑迁移。
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.22.0', reason: '迁移后升版到当前(0.22.0)');
+      expect(save.saveVersion, '0.23.0', reason: '迁移后升版到当前(0.23.0)');
       expect(
         save.skillUnlockProgress.isUnlocked('skill_encounter_ting_yu_jian'),
         isTrue,
@@ -80,9 +79,10 @@ void main() {
       );
     });
 
-    test('步骤5 迁移:0.18 旧档升当前 + BattleReplayRecord 天然空(无解锁)',
+    test('Phase 3 迁移:0.18 旧档升当前(BattleReplayRecord collection 已删,无数据迁移)',
         () async {
-      // 构造 0.18 旧档(无 replay 记录,正确初始态)。
+      // 构造 0.18 旧档。Phase 3 废录制回放后 BattleReplayRecord collection 已从
+      // schema 移除,旧档该 collection 数据 orphaned 不再读;升版为纯标记动作。
       await IsarSetup.init(directory: tempDir, inspector: false);
       await IsarSetup.instance.writeTxn(() async {
         final save = (await IsarSetup.instance.saveDatas.get(0))!;
@@ -91,14 +91,11 @@ void main() {
       });
       await IsarSetup.close();
 
-      // 重开 → 升版当前(0.20.0),新 collection 旧档天然空(无任何关已"手动通关")。
+      // 重开 → 升版当前。
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.22.0', reason: '步骤5 升版 → 0.22.0(迁移豁免:旧已通关无记录)');
-      final replays =
-          await IsarSetup.instance.battleReplayRecords.where().findAll();
-      expect(replays, isEmpty,
-          reason: '旧档无重放记录 = 无关已自动解锁,需重新手动通关');
+      expect(save.saveVersion, '0.23.0',
+          reason: 'Phase 3 升版 → 0.23.0(删 BattleReplayRecord,无数据迁移)');
     });
 
     test('首次 init 应自动建 SaveData(id=0) 并填默认值', () async {
@@ -108,8 +105,8 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.22.0',
-          reason: 'P1 A3 周目字段迁移 → 升 0.22.0');
+      expect(save.saveVersion, '0.23.0',
+          reason: '新建存档写当前 saveVersion 0.23.0');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);

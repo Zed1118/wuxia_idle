@@ -483,13 +483,7 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   /// false 时画面冻结在 startBattle seed 态,用于静态截蓄力/破招帧。
   final bool autoStart;
 
-  /// 半手动 P0 步骤3c:透传给 BattleScreen.manualStep。true 时单步模式(玩家点
-  /// 「下一步」逐步推进 + 行动顺序条 + 单体技目标 picker),并以 [seed] 起确定性
-  /// 战斗(同 seed 可重放,步骤4)。
-  final bool manualStep;
-
-  /// 半手动 P0:战斗随机种子。manualStep 验收 / 重放走固定 seed 确定性复刻;
-  /// null = 不传(现有自动场景行为不变,seed 由后续步骤采集)。
+  /// 战斗随机种子(确定性验收):null = 不传(seed 自动生成)。
   final int? seed;
 
   const ScenarioLauncher({
@@ -497,7 +491,6 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
     required this.hint,
     this.sceneBackgroundPath,
     this.autoStart = true,
-    this.manualStep = false,
     this.seed,
     super.key,
   });
@@ -524,7 +517,6 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
     hint: widget.hint,
     sceneBackgroundPath: widget.sceneBackgroundPath,
     autoStart: widget.autoStart,
-    manualStep: widget.manualStep,
     onBattleEnd: () => Navigator.of(context).pop(),
   );
 }

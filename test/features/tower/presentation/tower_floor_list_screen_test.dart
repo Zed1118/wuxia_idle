@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
@@ -22,6 +23,12 @@ void main() {
         loader: (path) => File(path).readAsString(),
       );
     }
+  });
+
+  setUp(() {
+    // _TowerBattleHost / StageAutoPlayControl 入口决策读 SharedPreferences
+    // (per-stage override + 全局设置);无 mock 时 getInstance() 会 hang。
+    SharedPreferences.setMockInitialValues({});
   });
 
   TowerProgress mkProgress({

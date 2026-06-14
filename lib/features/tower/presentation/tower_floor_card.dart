@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../battle/application/battle_replay_record_service.dart';
+import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../../core/domain/enums.dart';
@@ -112,7 +112,7 @@ class TowerFloorCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   StageAutoPlayControl(
-                    battleKey: BattleReplayRecordService.towerBattleKey(
+                    battleKey: towerBattleKey(
                       entry.def.floorIndex,
                     ),
                   ),
