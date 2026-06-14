@@ -75,6 +75,7 @@ void main() {
     required StageDef stage,
     required Future<bool> Function() battleRunner,
     Future<({bool won, bool surrendered})> Function()? battleOutcome,
+    Future<bool> Function()? stageRetryDecider,
     Future<void> Function(String stageId)? victoryRecorder,
     Future<List<DefeatLossEntry>> Function(StageDef stage)? bossDefeatPenalty,
     List<NavigatorObserver> navigatorObservers = const [],
@@ -86,6 +87,8 @@ void main() {
           stage: stage,
           battleRunner: battleRunner,
           battleOutcome: battleOutcome,
+          // 默认不重试,避免普通关战败测试卡在真实重试对话框。
+          stageRetryDecider: stageRetryDecider ?? (() async => false),
           victoryRecorder: victoryRecorder ?? (_) async {},
           bossDefeatPenalty:
               bossDefeatPenalty ?? ((_) async => const <DefeatLossEntry>[]),
@@ -214,6 +217,35 @@ void main() {
     expect(find.text('done'), findsOneWidget);
   });
 
+  testWidgets('普通关战败 → 选「再战」重打 → 第二场胜利记录(M3)', (tester) async {
+    var battleCount = 0;
+    String? recordedStageId;
+
+    await tester.pumpWidget(harness(
+      stage: normalStage(),
+      battleRunner: () async => false, // 未用(battleOutcome 覆盖)
+      battleOutcome: () async {
+        battleCount++;
+        // 第一场败 → 重试 → 第二场胜。
+        return battleCount == 1
+            ? (won: false, surrendered: false)
+            : (won: true, surrendered: false);
+      },
+      stageRetryDecider: () async => true, // 选「再战」
+      victoryRecorder: (stageId) async {
+        recordedStageId = stageId;
+      },
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('start'));
+    await tester.pumpAndSettle();
+
+    expect(battleCount, 2, reason: '战败一场 + 重试一场');
+    expect(recordedStageId, equals('stage_test_normal'), reason: '第二场胜利记录进度');
+    expect(find.text('done'), findsOneWidget);
+  });
+
   testWidgets(
       '胜利 + narrativeVictoryId → 触发 victory narrative push '
       '(NavigatorObserver 验,不 settle 子屏)', (tester) async {
@@ -260,6 +292,7 @@ class _HarnessPage extends ConsumerStatefulWidget {
     required this.stage,
     required this.battleRunner,
     required this.battleOutcome,
+    required this.stageRetryDecider,
     required this.victoryRecorder,
     required this.bossDefeatPenalty,
   });
@@ -267,6 +300,7 @@ class _HarnessPage extends ConsumerStatefulWidget {
   final StageDef stage;
   final Future<bool> Function() battleRunner;
   final Future<({bool won, bool surrendered})> Function()? battleOutcome;
+  final Future<bool> Function() stageRetryDecider;
   final Future<void> Function(String stageId) victoryRecorder;
   final Future<List<DefeatLossEntry>> Function(StageDef stage)
       bossDefeatPenalty;
@@ -294,6 +328,7 @@ class _HarnessPageState extends ConsumerState<_HarnessPage> {
                   stage: widget.stage,
                   battleRunnerForTest: widget.battleRunner,
                   battleOutcomeForTest: widget.battleOutcome,
+                  stageRetryDeciderForTest: widget.stageRetryDecider,
                   victoryRecorderForTest: widget.victoryRecorder,
                   bossDefeatPenaltyForTest: widget.bossDefeatPenalty,
                 );
