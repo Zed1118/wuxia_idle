@@ -15,8 +15,11 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 ///
 /// 目标:盘点 P2.2 心魔 mirror_caps / P3.1 LightFoot terrain damage_multiplier /
 ///       P3.2 MassBattle formation damage_multiplier / P1.2 江湖恩怨 enmity
-///       attackPowerMultiplier 接入点叠加 worst-case 是否破 §5.4 红线
-///       (普攻 ≤ 8000 / 暴击 ≤ 100000 / 玩家血 ≤ 20000 / 内力 ≤ 15000)。
+///       attackPowerMultiplier 接入点叠加 worst-case 是否破 §5.4 红线。
+///       注:本 audit 走**扁平 equipmentAttack=2000** 路径(非派生 ~15000),故其界
+///       (普攻 ≤ 8000 / 暴击 ≤ 100000 / 玩家血 ≤ 20000 / 内力 ≤ 15000)是比 §5.4
+///       软红线(2026-06-14 放宽为「不进百万」)更紧的扁平路径 sanity 界;真实派生满
+///       build 峰值(普攻 ~13.5万 / 大招 ~21万)由 full_build / balance_simulator 测兜底。
 ///
 /// 实测路径:
 /// - DamageCalculator.calculate(damage_calculator.dart:126)**不含** APM
@@ -131,12 +134,13 @@ void main() {
           reason: 'P3.2×P1.2 乘语义 APM≈1.38 不破 §5.4');
     });
 
-    test('R5.7 worst-case 暴击 + 三 APM 链 ≤ 100000 (§5.4 不入十万)', () {
-      // 暴击是独立路径(§5.4 「大招暴击 几万,不许进十万」)
-      // worst-case:刚猛打阴柔 1.25 + 心法 jiJing 3.0 + 暴击 1.5
-      //           + 三 APM 累乘 1.15*1.10*1.25 ≈ 1.58
-      // 注意:实际 stages 隔离(light_foot vs mass_battle stage 不重),
-      // 但 audit 应压最坏理论值看是否破 §5.4 大招红线 100000
+    test('R5.7 扁平基 worst-case 暴击 + 三 APM 链 ≤ 100000 (扁平路径紧界·§5.4 软线已放宽不进百万)', () {
+      // 暴击独立路径。**本 audit 用扁平 equipmentAttack=2000**(非派生 ~15000):
+      // worst-case 刚猛打阴柔 1.25 + 心法 jiJing 3.0 + 暴击 1.5 + 三 APM 累乘
+      //           1.15*1.10*1.25 ≈ 1.58 → 结果 ~5 万 = 扁平路径紧界。
+      // 注意:实际 stages 隔离(light_foot vs mass_battle stage 不重)。本界远低于
+      // §5.4 软红线(2026-06-14 放宽后「不进百万」);真实派生满 build 大招峰值 ~21 万
+      // 由 full_build / balance_simulator 极值×周目诊断测兜底。
       final r = _calcBoundary(
         attackerTier: RealmTier.wuSheng,
         defenderTier: RealmTier.wuSheng,
@@ -152,7 +156,8 @@ void main() {
       // APM 三链乘 1.15 * 1.10 * 1.25 ≈ 1.581
       final stacked = _withApm(r.mainDamage, 1.15 * 1.10 * 1.25);
       expect(stacked, lessThanOrEqualTo(100000),
-          reason: 'GDD §5.4 大招暴击 不许进十万 worst-case 验');
+          reason: '扁平 equipmentAttack=2000 路径 worst-case 紧界(~5万);§5.4 软红线'
+              '已放宽「不进百万」,真实派生满 build 峰值见 full_build/balance_simulator');
     });
 
     test('R5.8 P1.2 enmity clamp_max 真值从 NumbersConfig 加载(契约不放宽)', () {
