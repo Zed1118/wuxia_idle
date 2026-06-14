@@ -19,7 +19,8 @@
 #   - floorIndex ∈ [1, 30] 唯一连续
 #   - bossKind 严格在 5/10/15/20/25/30；其他层 bossKind 必须 null
 #   - 普通层 narrativeOpeningId / narrativeVictoryId 必须 null
-#   - 数值守 §5.4：Boss HP ≤ 50000 / 普伤 ≤ 8000（由战斗结算守，敌 baseAttack 间接约束）
+#   - 数值守 §5.4（红线分两层 2026-06-14）：Boss HP ≤ 60000（boss_hp_max，终局周目膨胀 50000→60000）；
+#     普伤为软红线（典型 build 设计目标 ≤8000，满强化神物极值 build 实战可见值不进十万），由战斗结算守、敌 baseAttack 间接约束
 #
 # Phase 4 待补：
 #   - 21-30 层敌人 skillIds 暂用 mingjia 阶（已有最高）；补 menpaijuxue/jianghumiquan
