@@ -218,8 +218,9 @@ void main() {
   // ── 极值 build × 周目进化诊断(2026-06-14 红线分两层后 · 外部审查 P1 未处理项)──
   // 满强化神物极值 build(武圣登峰)回刷 Ch6 宗师终局,跨周目 cycle{1,2,3} 敌人 scale
   // (×1.06^(c-1) + 御体/真气/识破等反制词条)。量化:winRate / 速通 ticks / 玩家掉血% /
-  // 玩家单击实战峰值伤害(软红线:不进十万 · 绝对天花板不进百万)。
-  // 断言只钉死「绝对天花板不进百万」硬不变量;winRate/失衡度纯诊断输出,交人类拍。
+  // 玩家单击实战峰值伤害。软红线唯一硬线 = 不进百万(2026-06-14 诊断实测峰值 13-21 万后
+  // 用户拍板从「不进十万」放宽;进十万仍标注但非越线)。
+  // 断言只钉死「不进百万」硬不变量;winRate/失衡度/进十万标注纯诊断输出,交人类拍。
   test('极值 build × 周目进化诊断:武圣满强化神物 vs Ch6 宗师 × cycle{1,2,3}',
       () async {
     const ch6 = [
@@ -274,9 +275,10 @@ void main() {
       }
     }
 
+    // 软红线唯一硬线 = 不进百万(2026-06-14 放宽)。进十万仅信息标注,非越线。
     String peakTag(int p) => p >= 1000000
-        ? '⚠️ 进百万·越绝对天花板'
-        : (p >= 100000 ? '⚠️ 进十万·越软红线' : '✅ 不进十万');
+        ? '⚠️ 进百万·越软红线'
+        : (p >= 100000 ? '进十万(6 位可读·软线已放宽不进百万·非越线)' : '✅ 不进十万');
     buf
       ..writeln()
       ..writeln('## 诊断')
@@ -284,14 +286,14 @@ void main() {
       ..writeln('- 全局玩家单击实战峰值(任意技)= $globalPeak(${peakTag(globalPeak)})')
       ..writeln('- 全局玩家**普攻**单击实战峰值 = $globalNormalPeak'
           '(${peakTag(globalNormalPeak)})'
-          '${globalNormalPeak >= 100000 ? " ← 与 full_build calculator 探针(<十万)矛盾:实战含熟练度×1.30+APM 末端乘后普攻也越十万" : ""}')
+          '${globalNormalPeak >= 100000 ? " ← 实战普攻也进十万:full_build calculator 探针(~5.8万)是下界,漏熟练度×1.30+APM;§5.4 软线已放宽不进百万" : ""}')
       ..writeln('- 各周目峰值(任意技):'
           '${cycles.map((c) => "c$c=${peakByCycle[c] ?? 0}").join(" / ")}')
       ..writeln()
       ..writeln('## 局限')
       ..writeln()
       ..writeln('- AI 自动放 powerSkill burst + ultimate,峰值多来自大招而非普攻;'
-          '普攻软红线(不进十万)另由 full_build_damage_redline_test calculator 探针守。')
+          'full_build_damage_redline_test calculator 探针是普攻下界(~5.8万),本测兜真实派生峰值。')
       ..writeln('- 固定刚猛 vs Ch6 敌流派分布;playerTier override=武圣'
           '(神物唯一可装阶 · 无 wuSheng mainline 内容,回刷宗师)。')
       ..writeln('- 玩家满熟练 ×1.30 叠极境 ×3.0(双修炼度乘子),为真实终局上限。');
@@ -384,10 +386,10 @@ _SimResult _simulateStage(
   final enemyHpRemain = terminal.rightTeam
       .where((e) => e.isAlive)
       .fold<int>(0, (sum, e) => sum + e.currentHp);
-  // 玩家方单击峰值伤害(actorId>0=玩家;敌人 id 为负)→ 验软红线不进十万/百万。
+  // 玩家方单击峰值伤害(actorId>0=玩家;敌人 id 为负)→ 验软红线不进百万。
   // finalDamage 是经 terrain/formation/enmity APM 末端乘叠加后的实战值。
   var peakPlayerDamage = 0;
-  var peakPlayerNormalDamage = 0; // 仅普攻(验 full_build 测「普攻不进十万」在实战是否成立)
+  var peakPlayerNormalDamage = 0; // 仅普攻(看实战普攻峰值,对照 full_build calculator 探针下界)
   for (final a in terminal.actionLog) {
     if (a.actorId > 0 && a.attackResult != null) {
       final d = a.attackResult!.finalDamage;

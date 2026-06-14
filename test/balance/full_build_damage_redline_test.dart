@@ -115,15 +115,16 @@ void main() {
       expect(m.crit, greaterThan(m.nonCrit), reason: '暴击 > 非暴击');
     });
 
-    test('软红线:满 build 普攻(含暴击)不进十万 < 100000(保可读·与大招暴击同档)', () {
+    test('软红线:满 build 普攻(含暴击)不进百万 < 1000000(唯一硬线·保可读)', () {
       final m = measureMaxBuild();
-      // 本测点:非暴击 ~57902 / 暴击 ~86854,均「几万」不进十万,13% 余量。
-      // 若未来强化/共鸣/开锋乘子或修炼度上调把满 build 普攻顶进十万 → 本测 FAIL,
-      // 提示战力进入「不可读膨胀」区,需重新评估红线(GDD §5.4 软红线语义)。
-      // 注:此为 calculator 裸值;terrain/formation/enmity 的 APM 末端乘叠加另由
-      // test/audit/cross_system_damage_test.dart 审计。
-      expect(m.crit, lessThan(100000),
-          reason: 'GDD/CLAUDE §5.4 软红线:实战可见伤害不进十万(绝对天花板不进百万)');
+      // 本测点 calculator 裸值下界:非暴击 ~57902 / 暴击 ~86854(进十万但远不进百万)。
+      // 注:此为 calculator 探针,未含 per-skill 熟练度 ×1.30 + terrain/formation/enmity
+      // APM 末端乘 + 飞升 +1 阶差距;真实战斗峰值 ~13.5 万(普攻)/~21 万(大招),由
+      // test/tools/balance_simulator_test.dart 极值×周目诊断测实测兜底(硬断言不进百万)。
+      // 软红线唯一硬线 = 不进百万(2026-06-14 诊断实测峰值 13-21 万后用户拍板,从「不进
+      // 十万」放宽,6 位数仍玩家可读)。若未来乘子上调把峰值顶进百万 → 本测+诊断测 FAIL。
+      expect(m.crit, lessThan(1000000),
+          reason: 'GDD/CLAUDE §5.4 软红线唯一硬线:实战可见伤害不进百万级膨胀');
     });
   });
 }
