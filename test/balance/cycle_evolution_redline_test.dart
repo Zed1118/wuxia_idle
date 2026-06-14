@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 
@@ -547,54 +548,89 @@ void main() {
   });
 
   // ════════════════════════════════════════════════════════════════════════════
-  // §7  scaledHp clamp 防越线（2026-06-14 新增）
-  //     验证 _enemyToBattle 的 clamp 逻辑：极端 baseHp × scale > bossHpMax
-  //     时被截断至 bossHpMax，保证未来数值扩展不会意外越线。
+  // §7  scaledHp clamp 防越线（2026-06-14 新增 · 对抗审计修复）
+  //
+  //     通过生产路径 debugEnemyToBattle 驱动真实 _enemyToBattle 逻辑，
+  //     证明 clamp 分支真正截断而非数学重现。
+  //
+  //     baseHp=58000 × cycle3 scale(1.12) = 64960 > bossHpMax(60000)
+  //     → 生产代码：scaledHp = (58000 × 1.12).toInt().clamp(0, 60000) = 60000
   // ════════════════════════════════════════════════════════════════════════════
 
-  group('§7 scaledHp clamp ≤ bossHpMax（防越线兜底）', () {
-    test('7.1 极端 baseHp=58000 cycle 3（×1.12=64960）→ clamp 至 bossHpMax=60000', () {
-      // 构造一个 baseHp=58000 的虚拟敌人，cycle3 scale 后 = 64960，应被 clamp 到 60000。
-      // 使用真实 stage_06_05 敌人数据作为基础，然后替换 baseHp（通过 yaml fixture 不可行，
-      // 改为借用 buildEnemyTeam 的 public API 并观察 maxHp cap 效果）。
-      //
-      // 验证策略：直接检查 numbers 配置值，并通过数学验证 clamp 生效时机。
-      final bossHpMax =
-          GameRepository.instance.numbers.combat.redLines.bossHpMax;
-      expect(bossHpMax, 60000,
-          reason: 'bossHpMax 应从 numbers.yaml 读出 60000（用户拍板值）');
+  group('§7 scaledHp clamp ≤ bossHpMax（生产路径证明）', () {
+    test(
+        '7.1 baseHp=58000 cycle 3 → debugEnemyToBattle 返回 maxHp=bossHpMax（clamp 分支真截断）',
+        () {
+      final n = GameRepository.instance.numbers;
+      final bossHpMax = n.combat.redLines.bossHpMax;
 
-      // stage_06_05 西凉霸主 baseHp=52000，cycle3=1.12 → 58240 < 60000，无 clamp
-      final stage = GameRepository.instance.getStage('stage_06_05');
-      final team = StageBattleSetup.buildEnemyTeam(
-        stage.enemyTeam,
+      // 构造 baseHp=58000 虚拟敌人：cycle3 scale=1.12 → 64960 > 60000
+      // 生产路径 .clamp(0, bossHpMax) 必须将其截断至 60000。
+      final syntheticEnemy = const EnemyDef(
+        id: 'test_clamp',
+        name: '测试截断',
+        realmTier: RealmTier.wuSheng,
+        realmLayer: RealmLayer.dengFeng,
+        school: TechniqueSchool.gangMeng,
+        baseHp: 58000,
+        baseAttack: 1000,
+        baseSpeed: 100,
+        skillIds: [],
+        iconPath: '',
+        isBoss: true,
+      );
+
+      final bc = StageBattleSetup.debugEnemyToBattle(
+        enemy: syntheticEnemy,
+        slotIndex: 0,
         cycleIndex: 3,
         isTower: false,
       );
-      final boss =
-          team.firstWhere((bc) => bc.name == '西凉霸主', orElse: () => team.first);
-      // 不被 clamp（58240 < 60000），精确等于 scale 结果
-      final ce = GameRepository.instance.numbers.cycleEvolution;
-      final expectedUnclamped = (52000 * (1.0 + ce.scalePerCycle * 2)).toInt();
-      expect(boss.maxHp, expectedUnclamped,
-          reason: '58240 < 60000，不应被 clamp；应精确等于 scale 结果 $expectedUnclamped');
-      expect(boss.maxHp, lessThanOrEqualTo(bossHpMax),
-          reason: '即使无 clamp，结果仍应 ≤ bossHpMax');
+
+      // 64960 > 60000：生产 clamp 必须截断
+      final scaledRaw =
+          (58000 * (1.0 + n.cycleEvolution.scalePerCycle * (3 - 1))).toInt();
+      expect(scaledRaw, greaterThan(bossHpMax),
+          reason: 'scaledRaw=$scaledRaw 必须 > bossHpMax=$bossHpMax 才能验证 clamp 分支');
+      expect(bc.maxHp, bossHpMax,
+          reason: '生产路径 clamp 后 maxHp 必须精确等于 bossHpMax=$bossHpMax，'
+              '而非 scaledRaw=$scaledRaw');
+      expect(bc.currentHp, bossHpMax,
+          reason: 'currentHp 初始值应与 maxHp 一致（满血入场）');
     });
 
-    test('7.2 clamp 数学验证：scale 后超 60000 的值被截断', () {
-      // 数学层验证：若 baseHp=58000 & cycle3 scale=1.12 → 64960 应 clamp 到 60000
-      final bossHpMax =
-          GameRepository.instance.numbers.combat.redLines.bossHpMax;
-      const hypotheticalBaseHp = 58000;
-      final ce = GameRepository.instance.numbers.cycleEvolution;
-      final scale3 = 1.0 + ce.scalePerCycle * (3 - 1);
-      final scaledRaw = (hypotheticalBaseHp * scale3).toInt(); // 64960
-      final clamped = scaledRaw.clamp(0, bossHpMax); // → 60000
-      expect(scaledRaw, greaterThan(bossHpMax),
-          reason: 'baseHp=58000 cycle3 scaledRaw=$scaledRaw 应 > bossHpMax=$bossHpMax（clamp 应生效）');
-      expect(clamped, bossHpMax,
-          reason: 'scaledRaw=$scaledRaw clamp 后应等于 bossHpMax=$bossHpMax');
+    test('7.2 baseHp=52000 cycle 3（58240 < 60000）→ 无 clamp，精确等于 scale 结果', () {
+      // 反例：不超线时 clamp 不截断，结果应精确等于 scale 值（回归锁）
+      final n = GameRepository.instance.numbers;
+      final bossHpMax = n.combat.redLines.bossHpMax;
+      final ce = n.cycleEvolution;
+
+      final syntheticEnemy = const EnemyDef(
+        id: 'test_no_clamp',
+        name: '测试不截断',
+        realmTier: RealmTier.wuSheng,
+        realmLayer: RealmLayer.dengFeng,
+        school: TechniqueSchool.gangMeng,
+        baseHp: 52000,
+        baseAttack: 1000,
+        baseSpeed: 100,
+        skillIds: [],
+        iconPath: '',
+        isBoss: true,
+      );
+
+      final bc = StageBattleSetup.debugEnemyToBattle(
+        enemy: syntheticEnemy,
+        slotIndex: 0,
+        cycleIndex: 3,
+        isTower: false,
+      );
+
+      final expectedHp = (52000 * (1.0 + ce.scalePerCycle * (3 - 1))).toInt();
+      expect(expectedHp, lessThanOrEqualTo(bossHpMax),
+          reason: '$expectedHp ≤ $bossHpMax，此用例验证无截断路径（回归锁）');
+      expect(bc.maxHp, expectedHp,
+          reason: '未超线时 maxHp 应精确等于 scale 结果 $expectedHp，不应被 clamp 截断');
     });
   });
 }

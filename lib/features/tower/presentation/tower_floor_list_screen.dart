@@ -66,8 +66,11 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
 
   /// P1 周目进化 E2：推进到下一轮回（TowerProgressService.advanceCycle）。
   Future<void> _onAdvanceCycle() async {
+    final maxCycleTower =
+        GameRepository.instance.numbers.cycleEvolution.maxCycleTower;
     await TowerProgressService(isar: IsarSetup.instance).advanceCycle(
       saveDataId: IsarSetup.currentSlotId,
+      maxCycleCap: maxCycleTower,
     );
     ref.invalidate(towerProgressProvider);
   }

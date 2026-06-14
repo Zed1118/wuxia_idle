@@ -11,7 +11,7 @@
 ## 闸门
 
 - `flutter analyze` 0 error / 0 warning
-- 全量 **2163 测** / 1 skip / 零回归
+- 全量 **2169 测** / 1 skip / 零回归（+4 对抗审计补测：凝甲 in-battle e2e / §7 真 clamp 路径 ×2 / advanceCycle cap）
 - 12 任务两阶段 review + **整条分支最终 opus review** 全通
 - saveVersion **0.21.0**
 
@@ -31,7 +31,7 @@
 
 **E · UI**：`CycleSelectControl`(三态)接 4 选关屏 cleared tile；`BattleScreen.cycleHint`(cycle≥2 显江湖记招琥珀提示)；爬塔「当前：第N轮回」+挑战下一轮回入口；验收 route `stage_list_cycle/tower_cycle` + Codex 派单。
 
-**F1 · 红线压测**：`test/balance/cycle_evolution_redline_test.dart` 21 测；cycle scale 红线安全(合规 boss ×1.12 最高 44800/余量5200)；内力/御体 clamp 守线；词条不叠加确定性验证。
+**F1 · 红线压测**：`test/balance/cycle_evolution_redline_test.dart` 23 测（对抗审计补 §7 真生产路径 clamp 测 + 凝甲 in-battle e2e + advanceCycle maxCycleTower cap）；cycle scale 红线安全；§7 scaledHp clamp 分支已由 `debugEnemyToBattle(baseHp=58000, cycle3)→maxHp=60000` 真路径证明（非数学重演）；内力/御体 clamp 守线。
 
 ---
 
@@ -49,7 +49,7 @@
 
 ## 可选 future-proofing（非阻塞，记录不实装）
 
-- `_enemyToBattle` 给 scaledHp 加 clamp（类比 IF/御体 clamp）：防未来 baseHp 44,643-50,000 的 boss 被 cycle3 静默推过线。需先把 `boss_hp_max` 入 `numbers.yaml red_lines`。当前无此 boss，不阻塞。
+- ~~`_enemyToBattle` 给 scaledHp 加 clamp~~：**已实装**（对抗审计 Fix 2）。scaledHp clamp 已在代码中并由 §7 两个生产路径测试覆盖（Fix 2 关闭）。
 - 敌人 attack 在 stage_06 cycle3 peak 3,024 / tower floor30 cycle2 2,385，超 §5.4「2,000」；§5.4 注明的是玩家装备红线非敌人约束，记录待数值层确认是否需加敌人 attack 帽。
 - `towerCycleReadyHint` 硬编「30 层」（可接受，塔层固定）；`advanceCycle` async fire-and-forget 无错误面（可接受）。
 

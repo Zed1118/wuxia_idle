@@ -194,6 +194,10 @@ class TowerProgressService {
   /// 守卫：仅当 `maxClearedCycle >= currentCycleIndex`（本周目 30 层已全通）
   /// 时才执行，否则 no-op，防止未通整塔提前推进。
   ///
+  /// [maxCycleCap]：周目进化配置上限（来自 `numbers.yaml cycle_evolution.max_cycle_tower`）。
+  /// 生产路径由调用方从 `GameRepository.instance.numbers.cycleEvolution.maxCycleTower`
+  /// 传入；测试路径可直接传固定值，无需 GameRepository 已初始化（Isar-only 测试友好）。
+  ///
   /// 执行后：
   ///   - `currentCycleIndex++`（进入下一周目）
   ///   - `highestClearedFloor = 0`（新周目从第 1 层重新开始爬）
@@ -203,7 +207,10 @@ class TowerProgressService {
   ///   - `perFloorClearTimes` 保留（首通耗时按 GDD §5.1 反主流锁首通，新周目
   ///     首通同层会按原逻辑写入，即 index 已有非 0 值时不覆盖；P1 A3+ 若需
   ///     按周目区分耗时可再扩展字段，目前 YAGNI）
-  Future<void> advanceCycle({int saveDataId = 1}) async {
+  Future<void> advanceCycle({
+    int saveDataId = 1,
+    required int maxCycleCap,
+  }) async {
     await isar.writeTxn(() async {
       final progress = await isar.towerProgress
           .filter()
@@ -213,6 +220,9 @@ class TowerProgressService {
 
       // 守卫：当前周目 30 层未全通，不推进
       if (progress.maxClearedCycle < progress.currentCycleIndex) return;
+
+      // 守卫：已达配置上限，不推进（UI 已拦，service 端镜像 config cap）
+      if (progress.currentCycleIndex >= maxCycleCap) return;
 
       progress.currentCycleIndex += 1;
       progress.highestClearedFloor = 0;
