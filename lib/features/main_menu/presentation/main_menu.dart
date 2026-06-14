@@ -47,6 +47,7 @@ import '../../tutorial/application/tutorial_providers.dart';
 import '../../tutorial/domain/tutorial_hint_def.dart';
 import '../../tutorial/presentation/tutorial_banner_card.dart';
 import '../../tower/presentation/leaderboard_screen.dart';
+import 'main_menu_retreat_banner.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../tower/application/tower_providers.dart';
 import '../../tower/domain/tower_progress.dart';
@@ -432,6 +433,7 @@ class MainMenu extends ConsumerWidget {
                                 }
                               : null,
                         ),
+                      const MainMenuRetreatBanner(),
                       const SizedBox(height: 24),
                       _MenuSectionsLayout(
                         coreItems: coreItems,
