@@ -11,6 +11,8 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'active_retreat_screen.dart';
+import 'seclusion_enter_caption.dart';
+import 'seclusion_gate.dart';
 import 'seclusion_map_visuals.dart';
 
 /// 闭关时长选择屏（Phase 3 T49）。
@@ -66,6 +68,9 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
       );
 
       if (!mounted) return;
+      await showSeclusionEnterCaption(context);
+      if (!mounted) return;
+      ref.invalidate(activeRetreatSessionProvider);
       // setup 用 pushReplacement → active 接管路由槽位。后续 active →
       // pushReplacement(result) → result.pop(true) 经 pushReplacement 链
       // 把 true 传回 list 的 push<bool>(setup) future（Flutter Navigator
