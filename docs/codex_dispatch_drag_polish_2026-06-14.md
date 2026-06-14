@@ -4,15 +4,17 @@
 **分支**：worktree-battle-drag-polish（合 main 前验收）
 **目的**：验拖招表现层三项新样式（引导线外发光 / 蓄势呼吸脉动 / 悬停高亮）。手势靠长按拖、鼠标合成不出，故用免手势预置态 route 截图验样式。
 
-## 验收包（零编译）
+## 验收包（零编译 · 直达开屏）
 
 ```
 open "build/macos/Build/Products/Debug/wuxia_idle.app"
 ```
 
-窗口显示「验收总入口」hub → 点 **battle_drag_preview** 行进屏 → 截图 → 左上返回。
+此包编译时已 `--dart-define=VISUAL_ROUTE=battle_drag_preview`，**开屏直接进拖招表现层预置屏**（无需 hub 点选，规避点错相邻 route）。
 
-**窗口分辨率统一 1280×720**（拉到该尺寸再截）。画面已冻结（autoStart false），蓄势光晕是脉动动画，截到某一帧即可。
+**窗口分辨率统一 1280×720**（拉到该尺寸再截）。画面已冻结（autoStart false），蓄势光晕是脉动动画，多截几帧取一张光晕明显的即可。
+
+> 注：commit 再改需重编（`flutter build macos --debug --dart-define=VISUAL_ROUTE=battle_drag_preview`）。
 
 ## 验收清单（battle_drag_preview，1 屏 3 态）
 
@@ -35,6 +37,10 @@ open "build/macos/Build/Products/Debug/wuxia_idle.app"
 
 - 引导线**跟手实时**绘制、蓄势**呼吸动起来**的动态手感 → 用户走 `battle_drag_live` route 长按拖真玩
 - 快进间隔 8×（拖招到出手的等待手感）→ 真玩后定（本波未改）
+
+## Claude 自验基线（2026-06-14，供对照）
+
+Claude 用 `screencapture` 截直达屏读图自验，三态均 PASS：引导线绛红外发光斜线 + 末端亮点辉光指敌11 / 主控头像柔和绛红蓄势光晕（脉动帧）/ 敌11 暖金悬停强光晕（与绛红区分明显）/ 整体水墨克制不刺眼。请 Codex 独立复核确认。
 
 ## 截图存放
 
