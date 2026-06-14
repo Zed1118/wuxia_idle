@@ -1493,9 +1493,6 @@ class _CharacterSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final glow = hovered
-        ? WuxiaColors.resultHighlight
-        : (charging ? WuxiaColors.schoolColor(character.school) : null);
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -1506,19 +1503,10 @@ class _CharacterSlot extends StatelessWidget {
           child: HitFlash(
             animation: hitFlashController,
             color: flashColor,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: glow == null
-                    ? const []
-                    : [
-                        BoxShadow(
-                          color: glow.withValues(alpha: 0.85),
-                          blurRadius: hovered ? 22 : 14,
-                          spreadRadius: hovered ? 4 : 2,
-                        ),
-                      ],
-              ),
+            child: _GlowAura(
+              hovered: hovered,
+              charging: charging,
+              schoolColor: WuxiaColors.schoolColor(character.school),
               child: CharacterAvatar(
                 key: avatarKey,
                 character: character,
@@ -2009,6 +1997,105 @@ class _ProjectileLayer extends StatelessWidget {
   }
 }
 
+/// Phase 4 拖招表现层:角色头像光晕。
+/// - [hovered](拖招悬停命中敌头像):静态浅金强光,优先级最高。
+/// - [charging](拖招者蓄势待发):流派色呼吸脉动(AnimationController 往返),
+///   区分于快进态,让「蓄势」有生命感。
+/// - 均不满足:无光晕,直接返回 child(等价旧 boxShadow 为空)。
+class _GlowAura extends StatefulWidget {
+  final bool hovered;
+  final bool charging;
+  final Color schoolColor;
+  final Widget child;
+  const _GlowAura({
+    required this.hovered,
+    required this.charging,
+    required this.schoolColor,
+    required this.child,
+  });
+
+  @override
+  State<_GlowAura> createState() => _GlowAuraState();
+}
+
+class _GlowAuraState extends State<_GlowAura>
+    with SingleTickerProviderStateMixin {
+  // eager 初始化(非 late):懒初始化会在非蓄势 slot 的 dispose() 才首次构造,
+  // 此时树已 deactivate → createTicker 查 TickerMode 崩溃。
+  late final AnimationController _pulse;
+
+  // hovered 优先级最高(静态强光),只有「蓄势且未被悬停」才脉动。
+  bool get _pulsing => widget.charging && !widget.hovered;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 950),
+    );
+    if (_pulsing) _pulse.repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(_GlowAura old) {
+    super.didUpdateWidget(old);
+    if (_pulsing && !_pulse.isAnimating) {
+      _pulse.repeat(reverse: true);
+    } else if (!_pulsing && _pulse.isAnimating) {
+      _pulse
+        ..stop()
+        ..value = 0.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 浅金静态强光(hovered) 优先;否则蓄势流派色呼吸脉动;都无则裸 child。
+    if (widget.hovered) {
+      return _box(WuxiaColors.resultHighlight, 0.85, 22.0, 4.0, widget.child);
+    }
+    if (!widget.charging) return widget.child;
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (context, child) {
+        final t = Curves.easeInOut.transform(_pulse.value);
+        return _box(
+          widget.schoolColor,
+          0.45 + 0.4 * t, // alpha 0.45 → 0.85
+          13.0 + 9.0 * t, // blur 13 → 22
+          1.5 + 2.0 * t, // spread 1.5 → 3.5
+          child!,
+        );
+      },
+      child: widget.child,
+    );
+  }
+
+  Widget _box(Color color, double alpha, double blur, double spread,
+      Widget child) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: alpha),
+            blurRadius: blur,
+            spreadRadius: spread,
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
 /// Phase 4 拖招引导线层:从技能按钮锚点到当前指针的流派色笔触线(实时跟手)。
 /// 纯表现层,IgnorePointer 不拦手势(手势由按钮的 LongPress 识别器持有)。
 class _DragGuideLayer extends StatelessWidget {
@@ -2041,14 +2128,27 @@ class _DragGuidePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 主线(流派色,半透明)+ 末端实心点(指引落点)。
+    // 外发光层(柔和辉光,克制水墨)→ 主线(流派色)→ 末端落点(外环辉光 + 实心点 + 白心)。
+    final glow = Paint()
+      ..color = color.withValues(alpha: 0.3)
+      ..strokeWidth = 9.0
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0);
+    canvas.drawLine(start, end, glow);
     final line = Paint()
-      ..color = color.withValues(alpha: 0.8)
+      ..color = color.withValues(alpha: 0.85)
       ..strokeWidth = 4.0
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(start, end, line);
-    final dot = Paint()..color = color.withValues(alpha: 0.9);
+    // 末端落点:外环辉光提亮 + 实心点 + 白色高光心(强化指引落点可读性)。
+    final endGlow = Paint()
+      ..color = color.withValues(alpha: 0.28)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+    canvas.drawCircle(end, 11.0, endGlow);
+    final dot = Paint()..color = color.withValues(alpha: 0.95);
     canvas.drawCircle(end, 7.0, dot);
+    final core = Paint()..color = Colors.white.withValues(alpha: 0.7);
+    canvas.drawCircle(end, 2.5, core);
   }
 
   @override
