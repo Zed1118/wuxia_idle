@@ -22,13 +22,14 @@ import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart
 import 'package:wuxia_idle/features/tutorial/presentation/tutorial_banner_card.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 /// T32 子提交 3b：[MainMenu] widget 测试（T42 加「问鼎九霄」T49 加「闭关修炼」+ W17 候选 E 加「师徒名单」+ P0.2 #40 加「排行榜」+ P1b Task10 加「藏经阁」后扩 10 个）。
 ///
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
 ///   - 菜单按钮 label 匹配（主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法 / 藏经阁）
-///   - 共 20 个 InkWell（按钮全部可点）
+///   - 20 个菜单入口 WuxiaInkButton（按钮全部可点）+ 右上角退出键 = 21 InkWell
 ///   - Tap "Phase 1 战斗测试" → push BattleTestMenu
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
@@ -122,7 +123,9 @@ void main() {
 
   testWidgets('20 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(InkWell), findsNWidgets(20));
+    // 20 个菜单入口(WuxiaInkButton)+ 右上角退出键(IconButton)= 21 个 InkWell。
+    expect(find.byType(WuxiaInkButton), findsNWidgets(20));
+    expect(find.byType(InkWell), findsNWidgets(21));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {

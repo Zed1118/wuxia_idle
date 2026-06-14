@@ -63,6 +63,9 @@ class UiStrings {
 
   // 主菜单（T32 子提交 3b；G1 剥「调试」字样,production-facing 产品名）
   static const String mainMenuTitle = '挂机武侠';
+  // 开场闪屏:加载中提示 + 加载完成「轻触继续」(放慢一闪而过的开场 + 给跳过出口)。
+  static const String splashLoadingHint = '正在展卷……';
+  static const String splashTapToContinue = '轻触继续';
 
   /// 主菜单副标题（Phase A 出版美术 · 题字感）。
   static const String mainMenuSubtitle = '一剑霜寒 · 江湖路远';
@@ -831,6 +834,13 @@ class UiStrings {
   static const String settingsSfxVolume = '音效';
   static const String settingsMuted = '静音';
   static const String settingsClose = '关闭';
+  // 退出游戏(桌面标配 · 主菜单右上角 + 设置面板双入口 · 带二次确认)。
+  static const String settingsQuit = '退出游戏';
+  static const String mainMenuQuitTooltip = '退出游戏';
+  static const String quitConfirmTitle = '退出游戏';
+  static const String quitConfirmMessage = '确定退出挂机武侠?进度已自动保存,关掉之后仍照常挂机,回来照常结算。';
+  static const String quitConfirmAction = '退出';
+  static const String quitCancelAction = '再想想';
   // 战斗交互重做 Phase 3:全局战斗模式默认开关(自动连续播放 / 允许拖招干预)。
   static const String settingsAutoPlayDefault = '自动战斗';
   static const String settingsAutoPlayDefaultHint = '战斗自动连续播放(可逐关切「允许拖招」干预)';

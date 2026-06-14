@@ -34,6 +34,7 @@ import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../sect/presentation/sect_screen.dart';
 import '../../settings/presentation/settings_panel.dart';
+import '../../../shared/app_exit.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
@@ -423,6 +424,23 @@ class MainMenu extends ConsumerWidget {
                       ),
                     ],
                   ),
+                ),
+              ),
+            ),
+          ),
+          // 退出游戏:右上角常驻入口(桌面标配)。置于最上层确保可点。
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: IconButton(
+                  tooltip: UiStrings.mainMenuQuitTooltip,
+                  icon: const Icon(
+                    Icons.power_settings_new,
+                    color: WuxiaColors.textMuted,
+                  ),
+                  onPressed: () => AppExit.confirmAndQuit(context),
                 ),
               ),
             ),
