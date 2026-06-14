@@ -12,10 +12,10 @@ import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
-/// P1 周目进化 E2：主线关卡列表屏 CycleSelectControl 接线测试。
+/// 周目按章:主线关卡列表屏章级 CycleSelectControl 接线测试(Phase 2 上移)。
 ///
-/// 验证已通关关卡 tile 中渲染 CycleSelectControl（结构测试），以及
-/// 未通关/locked 关卡 tile 中不渲染 CycleSelectControl。
+/// 验证整章已通(clearedChapterCycleKeys 含 ch1#1)→ 章头渲染唯一一个
+/// CycleSelectControl;整章未通 → 内部 guard 不渲染周目文案。
 /// 不接 Isar — provider override 喂态。
 void main() {
   setUpAll(() async {
@@ -26,14 +26,21 @@ void main() {
     }
   });
 
-  /// Ch1 stage_01_01 已通（cycle 1），其余关卡未通。
+  /// Ch1 整章已通(章末 Boss cycle 1)→ 章级周目 key ch1#1。
   MainlineProgress mkProgressCleared() {
     return MainlineProgress()
       ..saveDataId = 1
       ..currentChapterIndex = 1
-      ..clearedStageIds = ['stage_01_01']
-      ..clearedAt = [DateTime(2026)]
-      ..clearedStageCycleKeys = ['stage_01_01#1'];
+      ..clearedStageIds = [
+        'stage_01_01',
+        'stage_01_02',
+        'stage_01_03',
+        'stage_01_04',
+        'stage_01_05',
+      ]
+      ..clearedAt = List.filled(5, DateTime(2026))
+      ..clearedStageCycleKeys = ['stage_01_05#1']
+      ..clearedChapterCycleKeys = ['ch1#1'];
   }
 
   /// 全新进度（无通关）。
@@ -43,7 +50,8 @@ void main() {
       ..currentChapterIndex = 1
       ..clearedStageIds = []
       ..clearedAt = []
-      ..clearedStageCycleKeys = [];
+      ..clearedStageCycleKeys = []
+      ..clearedChapterCycleKeys = [];
   }
 
   Future<void> pumpScreen(
@@ -71,18 +79,16 @@ void main() {
   }
 
   testWidgets(
-      'stage_01_01 已通关 → CycleSelectControl 渲染在 tile 中（结构测试）',
+      '整章已通(ch1#1) → 章头唯一 CycleSelectControl 显「挑战第2周目」',
       (tester) async {
     await pumpScreen(tester, progress: mkProgressCleared());
 
-    // CycleSelectControl 嵌在已通关 tile 内 — 验在 widget 树中存在。
-    // highestCleared=1(有 stage_01_01#1)+ maxCycle=3 → 应渲染「第1周目」 + 「挑战第2周目」。
+    // 周目控件上移到章层 → 全屏唯一一个(非 per-tile)。
     expect(
       find.byType(CycleSelectControl),
-      findsWidgets,
-      reason: '已通关关卡的 tile 中应含 CycleSelectControl',
+      findsOneWidget,
+      reason: '章级周目控件唯一,挂在章头(journey map 下方)',
     );
-    // 验证「挑战第2周目」文案渲染（来自 CycleSelectControl 内部）。
     expect(
       find.textContaining(UiStrings.cycleChallengeNextLabel(2)),
       findsOneWidget,
@@ -91,12 +97,11 @@ void main() {
   });
 
   testWidgets(
-      '全新进度（无通关）→ 无 cycle replay/challenge 文案渲染（CycleSelectControl 内部 guard）',
+      '整章未通 → 章级 CycleSelectControl 内部 guard 不渲染周目文案',
       (tester) async {
     await pumpScreen(tester, progress: mkProgressFresh());
 
-    // CycleSelectControl 在 tile 里（对 available 关卡 onSelectCycle=null）但
-    // highestCleared=0 → 内部 guard 返回 SizedBox，无周目文案。
+    // 控件挂在章头但 highestClearedCycleForChapter=0 → 返回 SizedBox。
     expect(find.text(UiStrings.cycleReplayCurrentSuffix), findsNothing);
     expect(find.textContaining('挑战第'), findsNothing);
   });

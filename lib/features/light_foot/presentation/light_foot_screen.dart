@@ -6,6 +6,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../battle/application/selected_cycle_provider.dart';
 import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../battle/presentation/cycle_select_control.dart';
@@ -65,40 +66,50 @@ class LightFootScreen extends ConsumerWidget {
               );
             }
             final cleared = progress.clearedStageIds.toSet();
-            return ListView.builder(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: stages.length,
-              itemBuilder: (ctx, i) {
-                final s = stages[i];
-                final status = LightFootService.statusOf(
-                  stageId: s.id,
-                  config: lightFootDef,
-                  clearedStageIds: cleared,
+            // 周目按章(Phase 2):整个轻功副本视为一章,chapterKey=stageType.name。
+            const chapterKey = 'lightFoot';
+            int cycleFor() => resolveTargetCycle(
+                  ref.read(selectedChallengeCycleProvider(chapterKey)),
+                  progress,
+                  chapterKey,
                 );
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _LightFootRow(
-                    def: s,
-                    status: status,
-                    onTap: status == LightFootStageStatus.locked
-                        ? null
-                        : () => runStageFlow(
-                              context: context,
-                              ref: ref,
-                              stage: s,
-                            ),
-                    onSelectCycle: status == LightFootStageStatus.cleared
-                        ? (targetCycle) => runStageFlow(
-                              context: context,
-                              ref: ref,
-                              stage: s,
-                              targetCycle: targetCycle,
-                            )
-                        : null,
+            return Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: CycleSelectControl(chapterKey: chapterKey),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    itemCount: stages.length,
+                    itemBuilder: (ctx, i) {
+                      final s = stages[i];
+                      final status = LightFootService.statusOf(
+                        stageId: s.id,
+                        config: lightFootDef,
+                        clearedStageIds: cleared,
+                      );
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _LightFootRow(
+                          def: s,
+                          status: status,
+                          onTap: status == LightFootStageStatus.locked
+                              ? null
+                              : () => runStageFlow(
+                                    context: context,
+                                    ref: ref,
+                                    stage: s,
+                                    targetCycle: cycleFor(),
+                                  ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+              ],
             );
           },
         ),
@@ -112,14 +123,11 @@ class _LightFootRow extends StatelessWidget {
     required this.def,
     required this.status,
     required this.onTap,
-    this.onSelectCycle,
   });
 
   final StageDef def;
   final LightFootStageStatus status;
   final VoidCallback? onTap;
-  /// P1 周目进化 E2：周目选择回调（已通关时注入）。
-  final ValueChanged<int>? onSelectCycle;
 
   @override
   Widget build(BuildContext context) {
@@ -174,12 +182,7 @@ class _LightFootRow extends StatelessWidget {
                                 stageBattleKey(def.id),
                           ),
                         ),
-                        // P1 周目进化 E2：周目选择控件。
-                        const SizedBox(height: 6),
-                        CycleSelectControl(
-                          stageId: def.id,
-                          onSelectCycle: onSelectCycle,
-                        ),
+                        // (周目选择 Phase 2 上移到章层,不再 per-stage。)
                       ],
                     ],
                   ),

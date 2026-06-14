@@ -3,62 +3,59 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
+import 'package:wuxia_idle/features/battle/application/selected_cycle_provider.dart';
 import 'package:wuxia_idle/features/battle/presentation/cycle_select_control.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
-/// E1 周目选择控件测试。
+/// 周目按章选择控件测试(战斗交互重做 Phase 2,从 per-stage 上移到章层)。
 ///
-/// provider override 喂态（避免 Isar writeTxn 在 testWidgets 内死锁，见 memory
-/// feedback_isar_widget_test_deadlock）。只验 glue 读路径：provider → 控件渲染 +
-/// onSelectCycle 回调。写路径（recordVictory cycleKey）由 service 层单测覆盖。
+/// provider override 喂态(避免 Isar writeTxn 在 testWidgets 内死锁,见 memory
+/// feedback_isar_widget_test_deadlock)。验 glue:章级 clearedChapterCycleKeys →
+/// 控件渲染 + 点击写 selectedChallengeCycleProvider(本控件只设状态,不进战斗)。
 void main() {
-  const stageId = 'stage_01_05';
+  const chapterKey = 'ch1';
 
-  /// 构造 MainlineProgress：给定 stageId 已通的周目编号列表。
+  /// 构造 MainlineProgress:给定该章已通的周目编号列表(写 chapterCycleKeys)。
   MainlineProgress progressWithCycles(List<int> clearedCycles) {
     final p = MainlineProgress()
       ..saveDataId = 1
-      ..clearedStageIds = clearedCycles.contains(1) ? [stageId] : []
-      ..clearedAt = clearedCycles.contains(1) ? [DateTime(2026)] : []
-      ..clearedStageCycleKeys =
-          clearedCycles.map((c) => '$stageId#$c').toList();
+      ..clearedChapterCycleKeys =
+          clearedCycles.map((c) => '$chapterKey#$c').toList();
     return p;
   }
 
-  Widget host({
+  ProviderContainer makeContainer({
     required MainlineProgress progress,
     required int maxCycle,
-    ValueChanged<int>? onSelectCycle,
   }) {
-    return ProviderScope(
+    return ProviderContainer(
       overrides: [
         mainlineProgressProvider.overrideWith((ref) async => progress),
         numbersConfigProvider.overrideWithValue(
           _NumbersStub(maxCycleMainline: maxCycle),
         ),
       ],
-      child: MaterialApp(
+    );
+  }
+
+  Widget host(ProviderContainer container) {
+    return UncontrolledProviderScope(
+      container: container,
+      child: const MaterialApp(
         home: Scaffold(
-          body: Center(
-            child: CycleSelectControl(
-              stageId: stageId,
-              onSelectCycle: onSelectCycle,
-            ),
-          ),
+          body: Center(child: CycleSelectControl(chapterKey: chapterKey)),
         ),
       ),
     );
   }
 
-  testWidgets('未通关（highestCleared=0）→ 渲染空占位，无周目 UI', (tester) async {
-    await tester.pumpWidget(host(
-      progress: progressWithCycles([]),
-      maxCycle: 3,
-    ));
+  testWidgets('整章未通（highestCleared=0）→ 渲染空占位，无周目 UI', (tester) async {
+    final c = makeContainer(progress: progressWithCycles([]), maxCycle: 3);
+    addTearDown(c.dispose);
+    await tester.pumpWidget(host(c));
     await tester.pumpAndSettle();
-    // 控件对未通关关卡不渲染任何周目内容
     expect(find.byType(CycleSelectControl), findsOneWidget);
     expect(find.text(UiStrings.cycleMaxReachedLabel), findsNothing);
     expect(find.text(UiStrings.cycleReplayCurrentSuffix), findsNothing);
@@ -66,56 +63,53 @@ void main() {
   });
 
   testWidgets('第1周目已通，maxCycle=3 → 显示第1周目标签 + 挑战第2周目选项', (tester) async {
-    await tester.pumpWidget(host(
-      progress: progressWithCycles([1]),
-      maxCycle: 3,
-    ));
+    final c = makeContainer(progress: progressWithCycles([1]), maxCycle: 3);
+    addTearDown(c.dispose);
+    await tester.pumpWidget(host(c));
     await tester.pumpAndSettle();
-    // 显示当前周目编号标签（含「第1周目」子串）
-    expect(
-      find.textContaining(UiStrings.cycleNthLabel(1)),
-      findsWidgets,
-    );
-    // 显示挑战下一周目
+    expect(find.textContaining(UiStrings.cycleNthLabel(1)), findsWidgets);
     expect(
       find.textContaining(UiStrings.cycleChallengeNextLabel(2)),
       findsOneWidget,
     );
-    // 显示自动重演后缀
     expect(find.text(UiStrings.cycleReplayCurrentSuffix), findsOneWidget);
   });
 
-  testWidgets('第1周目已通 → 点「挑战第2周目」触发 onSelectCycle(2)', (tester) async {
-    int? selected;
-    await tester.pumpWidget(host(
-      progress: progressWithCycles([1]),
-      maxCycle: 3,
-      onSelectCycle: (c) => selected = c,
-    ));
+  testWidgets('第1周目已通 → 默认选中「回放第1周目」(highest)', (tester) async {
+    final c = makeContainer(progress: progressWithCycles([1]), maxCycle: 3);
+    addTearDown(c.dispose);
+    await tester.pumpWidget(host(c));
+    await tester.pumpAndSettle();
+    // 默认选中态 = highest(=1),无显式选择 → provider 仍 null,resolve 时用 highest。
+    expect(c.read(selectedChallengeCycleProvider(chapterKey)), isNull);
+    // 选中态在「回放」按钮上显勾标。
+    expect(find.byIcon(Icons.check), findsOneWidget);
+  });
+
+  testWidgets('点「挑战第2周目」→ 写 selectedChallengeCycleProvider=2', (tester) async {
+    final c = makeContainer(progress: progressWithCycles([1]), maxCycle: 3);
+    addTearDown(c.dispose);
+    await tester.pumpWidget(host(c));
     await tester.pumpAndSettle();
     await tester.tap(find.textContaining(UiStrings.cycleChallengeNextLabel(2)));
     await tester.pumpAndSettle();
-    expect(selected, 2);
+    expect(c.read(selectedChallengeCycleProvider(chapterKey)), 2);
   });
 
-  testWidgets('第1周目已通 → 点重演后缀按钮触发 onSelectCycle(1)', (tester) async {
-    int? selected;
-    await tester.pumpWidget(host(
-      progress: progressWithCycles([1]),
-      maxCycle: 3,
-      onSelectCycle: (c) => selected = c,
-    ));
+  testWidgets('点「回放第1周目」→ 写 selectedChallengeCycleProvider=1', (tester) async {
+    final c = makeContainer(progress: progressWithCycles([1]), maxCycle: 3);
+    addTearDown(c.dispose);
+    await tester.pumpWidget(host(c));
     await tester.pumpAndSettle();
     await tester.tap(find.text(UiStrings.cycleReplayCurrentSuffix));
     await tester.pumpAndSettle();
-    expect(selected, 1);
+    expect(c.read(selectedChallengeCycleProvider(chapterKey)), 1);
   });
 
   testWidgets('第2周目已通，maxCycle=3 → 显示挑战第3周目', (tester) async {
-    await tester.pumpWidget(host(
-      progress: progressWithCycles([1, 2]),
-      maxCycle: 3,
-    ));
+    final c = makeContainer(progress: progressWithCycles([1, 2]), maxCycle: 3);
+    addTearDown(c.dispose);
+    await tester.pumpWidget(host(c));
     await tester.pumpAndSettle();
     expect(
       find.textContaining(UiStrings.cycleChallengeNextLabel(3)),
@@ -123,28 +117,14 @@ void main() {
     );
   });
 
-  testWidgets('已达最高周目（highestCleared=maxCycle=3）→ 显示已达最高, 无挑战选项', (tester) async {
-    await tester.pumpWidget(host(
-      progress: progressWithCycles([1, 2, 3]),
-      maxCycle: 3,
-    ));
+  testWidgets('已达最高周目（highest=maxCycle=3）→ 显示已达最高, 无挑战选项', (tester) async {
+    final c =
+        makeContainer(progress: progressWithCycles([1, 2, 3]), maxCycle: 3);
+    addTearDown(c.dispose);
+    await tester.pumpWidget(host(c));
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.cycleMaxReachedLabel), findsOneWidget);
-    // 无「挑战」文本
     expect(find.textContaining('挑战'), findsNothing);
-  });
-
-  testWidgets('已达最高周目 → 点重演触发 onSelectCycle(maxCycle)', (tester) async {
-    int? selected;
-    await tester.pumpWidget(host(
-      progress: progressWithCycles([1, 2, 3]),
-      maxCycle: 3,
-      onSelectCycle: (c) => selected = c,
-    ));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(UiStrings.cycleReplayCurrentSuffix));
-    await tester.pumpAndSettle();
-    expect(selected, 3);
   });
 }
 
