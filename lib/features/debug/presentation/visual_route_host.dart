@@ -38,6 +38,7 @@ import '../../seclusion/presentation/seclusion_setup_screen.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../application/phase2_seed_service.dart';
+import '../../battle/presentation/battle_screen.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
 import '../../battle/presentation/battle_scene_background.dart';
 import '../../battle/presentation/victory_overlay.dart';
@@ -308,6 +309,22 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         hint: '长按拖技能到敌人头像指定目标 · 点大招群体直发',
         sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
         allowPlayerIntervention: true,
+      );
+    case VisualRoute.battleDragPreview:
+      // 拖招表现层静态验收:冻结画面(autoStart false)预置引导线 + 蓄势光晕 + 悬停高亮,
+      // 给 Codex 截新样式(手势鼠标合成无法触发)。主控(id1 绛红刚猛)蓄势/起手,敌 11 悬停。
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioDragLive,
+        hint: '拖招表现层静态预置(引导线 / 蓄势脉动 / 悬停高亮)',
+        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        autoStart: false,
+        debugDragPreview: BattleDragPreview(
+          dragCharId: 1,
+          rushActorId: 1,
+          hoveredEnemyId: 11,
+          origin: Offset(360, 600),
+          pointer: Offset(980, 230),
+        ),
       );
     case VisualRoute.battleVictoryFirstClear:
       return const _VictoryFirstClearPreview();

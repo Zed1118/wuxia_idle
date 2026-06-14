@@ -106,6 +106,34 @@ int? hitTestEnemyId(
   return null;
 }
 
+/// 拖招表现层静态验收预置态(仅 [BattleScreen.debugDragPreview] / battle_drag_preview
+/// 路由用)。拖招引导线/蓄势光晕/悬停高亮都靠长按拖手势触发,Codex 鼠标合成无法重现,
+/// 故用这个免手势预置态截图验新样式。生产路径不构造。
+class BattleDragPreview {
+  /// 引导线起手角色 charId(取其流派色画线)。
+  final int dragCharId;
+
+  /// 蓄势脉动角色 charId(左队,流派色呼吸光晕)。
+  final int rushActorId;
+
+  /// 悬停命中高亮的敌人 charId(浅金静态强光);null 不高亮。
+  final int? hoveredEnemyId;
+
+  /// 引导线起点(全局坐标,技能按钮锚点)。
+  final Offset origin;
+
+  /// 引导线终点(全局坐标,当前指针/落点)。
+  final Offset pointer;
+
+  const BattleDragPreview({
+    required this.dragCharId,
+    required this.rushActorId,
+    required this.origin,
+    required this.pointer,
+    this.hoveredEnemyId,
+  });
+}
+
 class BattleScreen extends ConsumerStatefulWidget {
   final AnimationNumbers animConfig;
 
@@ -151,6 +179,11 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 引导线 —— `false` = 纯挂机不挂拖招层。
   final bool allowPlayerIntervention;
 
+  /// 仅调试/验收用:预置拖招表现层静态态(引导线 + 蓄势光晕 + 悬停高亮),供
+  /// Codex 截图验新样式 —— 拖招手势靠长按拖,鼠标合成无法触发(见 battle_drag_preview
+  /// 路由)。生产路径恒 null,不影响任何真实战斗。配 [autoStart] false 冻结画面。
+  final BattleDragPreview? debugDragPreview;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
@@ -164,6 +197,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.bgmTrack = BgmTrack.battle,
     this.cycleHint,
     this.allowPlayerIntervention = false,
+    this.debugDragPreview,
   });
 
   @override
@@ -253,6 +287,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       ),
     );
     _enemyAvatarKeys = List.generate(3, (_) => GlobalKey());
+    // 调试/验收:预置拖招蓄势者 + 悬停敌(引导线在 build 单独渲染)。autoStart false
+    // 冻结画面,蓄势光晕脉动常驻,悬停高亮不被手势清。
+    final preview = widget.debugDragPreview;
+    if (preview != null) {
+      _rushToActorId = preview.rushActorId;
+      _hoveredEnemyId = preview.hoveredEnemyId;
+    }
     // Timer 不在 initState 启动，等 ref.listen 看到 startBattle 完成后再启动。
   }
 
@@ -944,6 +985,26 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       state.leftTeam
                           .firstWhere(
                             (c) => c.characterId == _dragCharId,
+                            orElse: () => state.leftTeam.first,
+                          )
+                          .school,
+                    ),
+                  ),
+                ),
+              ),
+            // 调试/验收:预置引导线(拖招手势鼠标合成不出,给 Codex 截新样式)。
+            if (widget.debugDragPreview != null)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: _DragGuideLayer(
+                    start: widget.debugDragPreview!.origin,
+                    end: widget.debugDragPreview!.pointer,
+                    color: WuxiaColors.schoolColor(
+                      state.leftTeam
+                          .firstWhere(
+                            (c) =>
+                                c.characterId ==
+                                widget.debugDragPreview!.dragCharId,
                             orElse: () => state.leftTeam.first,
                           )
                           .school,
