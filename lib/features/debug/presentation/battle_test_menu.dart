@@ -357,11 +357,14 @@ class BattleScenarioData {
   /// 拖招交互真玩/验收专用(battle_drag_live 路由)。
   ///
   /// 配合 ScenarioLauncher(allowPlayerIntervention:true, autoStart:true):战斗自动
-  /// 播放、拖招干预层已挂。**高血量 + 低攻击耐久敌人** → 战斗持续够长,玩家有充足
-  /// 时间长按拖技能(规避 Ch1 关卡「怪被平 A 秒、来不及拖」);主控带 single 强力技
-  /// (拖到敌头像指定目标)+ aoe 大招(点一下群体直发),正好演示两种交互。
+  /// 播放、拖招干预层已挂。**给足时间拖**是核心:
+  ///   - 主控**只带普攻 + 两个大招(ultimate)**,不带 powerSkill —— AI `_pickSkill`
+  ///     会自动连放 ready 的 powerSkill 造成瞬间 burst;ultimate **只走 pending
+  ///     手动触发**(拖/点才放),所以自动战斗只剩弱普攻 chip,战斗拖得很长。
+  ///   - 敌人**超高血(40000) + 低攻低速** → 普攻 chip 啃半天不死、也不秒玩家。
+  /// 主控 single 大招(拖到敌头像指定目标)+ aoe 大招(点一下群体直发)演示两种交互。
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioDragLive() {
-    // 主控:内力满 → 强力技/大招全 ready;3 名我方高血,整队久撑。
+    // 主控:IF 够放几次大招;eqAtk 低 → 普攻只是弱 chip(不 burst)。
     BattleCharacter player(
       int id,
       String name,
@@ -374,10 +377,10 @@ class BattleScenarioData {
       layer: RealmLayer.yuanShu,
       school: TechniqueSchool.gangMeng,
       maxHp: 12000,
-      maxIf: 2000,
-      speed: 200,
+      maxIf: 1500,
+      speed: 180,
       critRate: 0.05,
-      eqAtk: 400,
+      eqAtk: 200,
       cultivation: CultivationLayer.daCheng,
       skills: skills,
       teamSide: 0,
@@ -387,7 +390,18 @@ class BattleScenarioData {
     final left = [
       player(1, '主控', 0, [
         _normal('dl_normal_1', '基础招'),
-        _power('dl_power_1', '崩山式', pm: 1600, cost: 150, cd: 2), // single 强力技
+        // single 大招:拖到敌头像指定目标(ultimate → 只手动触发,不自动 burst)。
+        const SkillDef(
+          id: 'dl_single_1',
+          name: '裂石指',
+          description: '',
+          type: SkillType.ultimate,
+          powerMultiplier: 3000,
+          internalForceCost: 250,
+          cooldownTurns: 3,
+          requiresManualTrigger: true,
+          visualEffect: '',
+        ),
         // aoe 大招:点一下群体直发(targetType.aoe)。
         const SkillDef(
           id: 'dl_aoe_1',
@@ -406,18 +420,18 @@ class BattleScenarioData {
       player(3, '弟子乙', 2, [_normal('dl_normal_3', '基础招')]),
     ];
 
-    // 敌人:高血(久撑) + 低攻击/低速(不秒玩家)→ 战斗够长可从容拖招。
+    // 敌人:超高血(久撑) + 低攻击/低速(不秒玩家)→ 战斗拖很长,从容拖招。
     BattleCharacter tankMob(int id, String name, int slot, String icon) => _char(
       id: id,
       name: name,
       tier: RealmTier.erLiu,
       layer: RealmLayer.yuanShu,
       school: TechniqueSchool.yinRou,
-      maxHp: 16000,
-      maxIf: 500,
-      speed: 120,
+      maxHp: 40000,
+      maxIf: 300,
+      speed: 110,
       critRate: 0.05,
-      eqAtk: 200,
+      eqAtk: 150,
       cultivation: CultivationLayer.daCheng,
       skills: [_normal('dl_mob_$id', '缠斗')],
       teamSide: 1,
