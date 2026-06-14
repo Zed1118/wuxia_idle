@@ -301,6 +301,14 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
         autoStart: false,
       );
+    case VisualRoute.battleDragLive:
+      // 拖招真玩/验收:真战斗 + 干预层挂上 + 高血耐久敌久撑(够时间拖)。
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioDragLive,
+        hint: '长按拖技能到敌人头像指定目标 · 点大招群体直发',
+        sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
+        allowPlayerIntervention: true,
+      );
     case VisualRoute.battleVictoryFirstClear:
       return const _VictoryFirstClearPreview();
     case VisualRoute.enemyGallery:

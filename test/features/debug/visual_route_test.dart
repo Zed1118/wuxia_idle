@@ -108,5 +108,18 @@ void main() {
       final launcher = target as ScenarioLauncher;
       expect(launcher.autoStart, isFalse);
     });
+
+    test('battle_drag_live → allowPlayerIntervention:true + autoStart:true '
+        '(拖招干预层必须挂,守 ScenarioLauncher 透传缺口)', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleDragLive,
+        IsarSetup.instance,
+      );
+      expect(target, isA<ScenarioLauncher>());
+      final launcher = target as ScenarioLauncher;
+      expect(launcher.allowPlayerIntervention, isTrue,
+          reason: '拖招验收路由必须开干预,否则技能按钮不挂拖手势(本次 FAIL 根因)');
+      expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,拖招随时干预');
+    });
   });
 }
