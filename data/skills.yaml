@@ -1,10 +1,13 @@
 # =============================================================================
 # skills.yaml · 招式 fixture（P2.1 Batch 2 扩 147 心法招 + 19 独立招）
 # =============================================================================
-# 共 166 招：49 本心法 × 3 招 = 147 + 18 轻功 + 1 joint_skill = 166。
+# 共 184 招（2026-06 实测）：基线 166（49 心法 × 3 = 147 + 18 轻功 + 1 joint_skill）
+# + 波A/波B 等后续批新增真解/残页/破招技 18 招 = 184。
 #
 # 倍率约束（numbers.yaml `techniques.tiers.max_skill_multiplier`，软约定,
-# 当前仅 fixture 端遵守,代码暂无 enforce;Phase 5 cleanup 时加强校验）：
+# 当前仅 fixture 端遵守,代码暂无倍率 enforce;Phase 5 cleanup 时加强校验。
+# 注:targetType 红线已有代码 enforce — GameRepository `_enforceSkillTargetTypeRedLines`
+# 校验普攻/合击必 single + production 至少一个 aoe）：
 #   ruMenGong cap=1500 / changLianGong cap=2000 / mingJiaGong cap=2500
 #   menPaiJueXue cap=3000 / jiangHuMiChuan cap=4000
 #   shiChuanShenGong cap=5500 / chuanShuoShenGong cap=8000
