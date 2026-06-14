@@ -6,7 +6,7 @@
 
 ## 合 main 状态
 
-**未合 main**。分支：`worktree-p1-cycle-evolution`。阻塞项见「待拍板」。
+**未合 main**。分支：`worktree-p1-cycle-evolution`。**stage_06_05 红线已拍板(选项 B,见下)** → 唯一剩余阻塞 = Codex 视觉验收;PASS 后 ff-only 合 main。
 
 ## 闸门
 
@@ -35,15 +35,21 @@
 
 ---
 
-## 待拍板（合 main 阻塞项）
+## 已拍板(原合 main 阻塞,已解除)
 
-### 🔴 stage_06_05 西凉霸主 baseHp 超红线
+### ✅ stage_06_05 红线 → 选项 B 已实装(`9576b048`)
+
+用户 2026-06-14 拍板**选项 B**:Boss HP 红线 50,000→**60,000**(接受终局周目膨胀)。已实装:numbers.yaml `boss_hp_max:60000`(config 化) + `_enemyToBattle` scaledHp clamp(防越线,真生产路径测覆盖) + GDD §5.2/§5.4 + CLAUDE.md §5.4 同步 + 压测改 config 驱动并 hard-assert stage_06_05(cycle3=58,240 < 60,000 ✅)。stage_06_05 baseHp=52,000 不动(选 B 非 A)。
+
+<details><summary>原待拍板记录(已解除)</summary>
 
 - **现状**：`stages.yaml` stage_06_05 baseHp=**52,000**（pre-existing，P1 未改）
 - **P1 放大**：cycle1=52,000 / cycle3=**58,240**——均超 §5.4 Boss 红线 50,000
 - **选项 A**：降 baseHp ≤ 44,642（cycle3=44,642×1.12=50,000 刚好卡线）
 - **选项 B**：调 GDD §5.4 / numbers.yaml 红线至 60,000（需同步 redline 测断言）
-- **需用户拍板**（数值/规则层），拍板后合 main。
+- **需用户拍板**（数值/规则层），拍板后合 main。 → **已拍板 B,见上。**
+
+</details>
 
 ---
 
