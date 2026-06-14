@@ -7,13 +7,13 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 
-/// A3 saveVersion 0.20.0 → 0.21.0 迁移测试。
+/// A3 saveVersion 0.20.0 → 0.22.0 迁移测试。
 ///
 /// 验证：
 /// 1. MainlineProgress.clearedStageCycleKeys 补入 "stageId#1" 条目（来自旧 clearedStageIds）。
 /// 2. TowerProgress.currentCycleIndex == 1（显式落档）。
 /// 3. TowerProgress.maxClearedCycle == 1（highestClearedFloor >= 30）或 0（< 30）。
-/// 4. SaveData.saveVersion 升为 '0.21.0'。
+/// 4. SaveData.saveVersion 升为 '0.22.0'。
 /// 5. 迁移幂等：再次 close/init 不重复 append。
 void main() {
   setUpAll(() async {
@@ -65,11 +65,11 @@ void main() {
       });
       await IsarSetup.close();
 
-      // 重新 init → 触发 _migrateSaveData（版本 0.20.0 != 0.21.0）。
+      // 重新 init → 触发 _migrateSaveData（版本 0.20.0 != 0.22.0）。
       await IsarSetup.init(directory: tempDir, inspector: false);
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.21.0', reason: '迁移后升版到 0.21.0');
+      expect(save.saveVersion, '0.22.0', reason: '迁移后升版到 0.22.0');
 
       final mp =
           await IsarSetup.instance.mainlineProgress.where().findFirst();
@@ -134,7 +134,7 @@ void main() {
       );
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.21.0');
+      expect(save.saveVersion, '0.22.0');
     },
   );
 }

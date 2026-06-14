@@ -32,5 +32,14 @@ class MainlineProgress {
 
   /// 每关每周目已手动通关键集合,每条 `"stageId#cycle"`(append-only 无序集合)。
   /// cycle1 解锁链仍用 [clearedStageIds];本字段管周目维度(P1 周目进化)。
+  /// 注:2026-06-14 周目改按章后,本字段保留向后兼容(Boss 招降等 per-stage
+  /// 逻辑仍读),但周目解锁/选择改由 [clearedChapterCycleKeys] 承载。
   List<String> clearedStageCycleKeys = [];
+
+  /// 每章每周目已通关键集合,每条 `"<chapterKey>#cycle"`(append-only 无序集合)。
+  /// chapterKey:主线 `"ch1".."ch6"`,副本 `stageType.name`(innerDemon/lightFoot/
+  /// massBattle)。仅在该章/副本**章末 Boss 关**(isBoss)某周目通关时写入 →
+  /// 「通关整章 Boss 才解锁下一周目」(2026-06-14 周目按章)。
+  /// saveVersion 0.21.0→0.22.0 迁移自旧 [clearedStageCycleKeys] 的 Boss 关条目。
+  List<String> clearedChapterCycleKeys = [];
 }

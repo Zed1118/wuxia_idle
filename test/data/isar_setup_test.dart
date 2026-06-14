@@ -61,7 +61,7 @@ void main() {
       // 重新 init → _ensureSaveData 检测版本差异跑迁移。
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.21.0', reason: '迁移后升版到当前(0.21.0)');
+      expect(save.saveVersion, '0.22.0', reason: '迁移后升版到当前(0.22.0)');
       expect(
         save.skillUnlockProgress.isUnlocked('skill_encounter_ting_yu_jian'),
         isTrue,
@@ -94,7 +94,7 @@ void main() {
       // 重开 → 升版当前(0.20.0),新 collection 旧档天然空(无任何关已"手动通关")。
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.21.0', reason: '步骤5 升版 → 0.21.0(迁移豁免:旧已通关无记录)');
+      expect(save.saveVersion, '0.22.0', reason: '步骤5 升版 → 0.22.0(迁移豁免:旧已通关无记录)');
       final replays =
           await IsarSetup.instance.battleReplayRecords.where().findAll();
       expect(replays, isEmpty,
@@ -108,8 +108,8 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.21.0',
-          reason: 'P1 A3 周目字段迁移 → 升 0.21.0');
+      expect(save.saveVersion, '0.22.0',
+          reason: 'P1 A3 周目字段迁移 → 升 0.22.0');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);

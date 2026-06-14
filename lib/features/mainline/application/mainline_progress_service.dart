@@ -122,7 +122,7 @@ class MainlineProgressService {
         );
       }
 
-      // 周目 cycleKey append（幂等）
+      // 周目 cycleKey append（幂等，per-stage 向后兼容:Boss 招降等仍读）
       final cycleKey = '$stageId#$cycle';
       final keys = List<String>.of(progress.clearedStageCycleKeys);
       var mutated = false;
@@ -130,6 +130,21 @@ class MainlineProgressService {
         keys.add(cycleKey);
         progress.clearedStageCycleKeys = keys;
         mutated = true;
+      }
+
+      // 章级周目 key:仅章末 Boss 关(isBoss)写入 → 通关整章 Boss 解锁下一周目
+      // (2026-06-14 周目按章)。GameRepository 未载(部分 test fixture)→ 跳过。
+      final def = GameRepository.isLoaded
+          ? GameRepository.instance.stageDefs[stageId]
+          : null;
+      if (def != null && def.isBossStage) {
+        final chKey = '${chapterKeyForStage(def)}#$cycle';
+        final cKeys = List<String>.of(progress.clearedChapterCycleKeys);
+        if (!cKeys.contains(chKey)) {
+          cKeys.add(chKey);
+          progress.clearedChapterCycleKeys = cKeys;
+          mutated = true;
+        }
       }
 
       // cycle==1 维护原 clearedStageIds 解锁链（向后兼容，语义不变）
@@ -170,6 +185,43 @@ class MainlineProgressService {
     required int maxCycle,
   }) {
     final next = highestClearedCycle(p, stageId) + 1;
+    return next > maxCycle ? maxCycle : next;
+  }
+
+  /// 周目按章的 chapterKey(2026-06-14):主线 `"ch{chapterIndex}"`,
+  /// 副本(心魔/轻功/群战)`stageType.name`(各自视为一个逻辑章)。
+  /// chapterIndex 为空的主线关理论不存在(红线守),兜底用 stageType.name。
+  static String chapterKeyForStage(StageDef def) {
+    if (def.stageType == StageType.mainline && def.chapterIndex != null) {
+      return 'ch${def.chapterIndex}';
+    }
+    return def.stageType.name;
+  }
+
+  /// 该章(chapterKey)已通关的最高周目;从未通返回 0。
+  /// 数据源 [MainlineProgress.clearedChapterCycleKeys](仅章末 Boss 关写入)。
+  static int highestClearedCycleForChapter(
+    MainlineProgress p,
+    String chapterKey,
+  ) {
+    var hi = 0;
+    for (final k in p.clearedChapterCycleKeys) {
+      final parts = k.split('#');
+      if (parts.length == 2 && parts[0] == chapterKey) {
+        final c = int.tryParse(parts[1]) ?? 0;
+        if (c > hi) hi = c;
+      }
+    }
+    return hi;
+  }
+
+  /// 该章当前应挑战的周目(最高已通 +1,上限 [maxCycle])。
+  static int currentChallengeCycleForChapter(
+    MainlineProgress p,
+    String chapterKey, {
+    required int maxCycle,
+  }) {
+    final next = highestClearedCycleForChapter(p, chapterKey) + 1;
     return next > maxCycle ? maxCycle : next;
   }
 

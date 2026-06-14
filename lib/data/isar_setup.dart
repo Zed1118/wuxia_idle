@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'game_repository.dart';
+import '../core/domain/enums.dart';
 import '../core/domain/character.dart';
 import '../features/encounter/domain/encounter_progress.dart';
 import '../core/domain/equipment.dart';
@@ -93,7 +95,9 @@ class IsarSetup {
   //   既有 collection 加 nullable 字段,旧记录读为 null(=随全局 autoPlayDefault),无迁移动作。
   // P1 周目进化 A3:MainlineProgress 加 clearedStageCycleKeys(旧档补 "#1" 键)
   //   + TowerProgress 加 currentCycleIndex/maxClearedCycle(旧档按 highestClearedFloor 推导)→ 0.21.0。
-  static const _currentSaveVersion = '0.21.0';
+  // 周目按章(2026-06-14):MainlineProgress 加 clearedChapterCycleKeys。旧
+  //   clearedStageCycleKeys 中的章末 Boss 关(isBoss)→ "chapterKey#cycle" → 0.22.0。
+  static const _currentSaveVersion = '0.22.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -175,6 +179,27 @@ class IsarSetup {
           }
         }
         mp.clearedStageCycleKeys = keys;
+        // 段 3(0.22.0 周目按章):旧 per-stage cycle key 中的章末 Boss 关(isBoss)
+        // → per-chapter cycle key "chapterKey#cycle"。chapterKey 逻辑须与
+        // MainlineProgressService.chapterKeyForStage 同步。GameRepository 未加载
+        // (理论不会:splash 先 loadAllDefs 再 init)→ 跳过,玩家重打 Boss 时重建。
+        if (GameRepository.isLoaded) {
+          final defs = GameRepository.instance.stageDefs;
+          final cKeys = List<String>.of(mp.clearedChapterCycleKeys);
+          for (final k in keys) {
+            final parts = k.split('#');
+            if (parts.length != 2) continue;
+            final def = defs[parts[0]];
+            if (def == null || !def.isBossStage) continue;
+            final chapterKey =
+                (def.stageType == StageType.mainline && def.chapterIndex != null)
+                    ? 'ch${def.chapterIndex}'
+                    : def.stageType.name;
+            final chKey = '$chapterKey#${parts[1]}';
+            if (!cKeys.contains(chKey)) cKeys.add(chKey);
+          }
+          mp.clearedChapterCycleKeys = cKeys;
+        }
         await isar.mainlineProgress.put(mp);
       }
       for (final tp in towerRows) {
