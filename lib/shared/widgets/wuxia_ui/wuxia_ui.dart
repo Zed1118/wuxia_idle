@@ -6,6 +6,7 @@ export 'seal_badge.dart';
 export 'item_slot.dart';
 export 'meridian_bar.dart';
 export 'stage_progress_row.dart';
+export 'glossary_tip.dart';
 export 'plaque_button.dart';
 export 'wuxia_title_bar.dart';
 export 'plaque_tab.dart';

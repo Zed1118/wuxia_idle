@@ -423,6 +423,7 @@ class _ResonanceDetailsSection extends StatelessWidget {
           // 卡内子段：title 省略不重复装备名，阶段名领头。
           StageProgressRow(
             stageName: EnumL10n.resonanceStage(stage),
+            glossaryDefinition: UiStrings.glossaryResonance,
             ratio: ratio,
             currentEffect: UiStrings.equipmentDetailResonanceBonus(bonusPct),
             nextEffect: nextEffect,
