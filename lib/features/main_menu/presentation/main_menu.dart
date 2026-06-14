@@ -30,6 +30,7 @@ import '../../mainline/domain/mainline_progress.dart';
 import '../../pvp/presentation/pvp_screen.dart';
 import '../../seclusion/application/seclusion_service_providers.dart';
 import '../../seclusion/domain/retreat_session.dart';
+import '../../seclusion/presentation/seclusion_gate.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../sect/presentation/sect_screen.dart';
@@ -161,7 +162,11 @@ class MainMenu extends ConsumerWidget {
         icon: Icons.map_outlined,
         thumbnailPath: WuxiaUi.entryMainline,
         status: mainlineStatus,
-        onTap: () => _push(context, const ChapterListScreen()),
+        onTap: () => guardBattleEntry(
+          context: context,
+          ref: ref,
+          onAllowed: () => _push(context, const ChapterListScreen()),
+        ),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuCharacterPanel,
@@ -217,7 +222,11 @@ class MainMenu extends ConsumerWidget {
         icon: Icons.filter_hdr_outlined,
         thumbnailPath: WuxiaUi.entryTower,
         status: towerStatus,
-        onTap: () => _push(context, const TowerFloorListScreen()),
+        onTap: () => guardBattleEntry(
+          context: context,
+          ref: ref,
+          onAllowed: () => _push(context, const TowerFloorListScreen()),
+        ),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuInnerDemon,
@@ -239,7 +248,11 @@ class MainMenu extends ConsumerWidget {
         thumbnailPath: WuxiaUi.entryLightFoot,
         disabled: lateLocked,
         locked: lateLocked,
-        onTap: () => _push(context, const LightFootScreen()),
+        onTap: () => guardBattleEntry(
+          context: context,
+          ref: ref,
+          onAllowed: () => _push(context, const LightFootScreen()),
+        ),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuMassBattle,
@@ -250,7 +263,11 @@ class MainMenu extends ConsumerWidget {
         thumbnailPath: WuxiaUi.entryJianghu,
         disabled: lateLocked,
         locked: lateLocked,
-        onTap: () => _push(context, const MassBattleScreen()),
+        onTap: () => guardBattleEntry(
+          context: context,
+          ref: ref,
+          onAllowed: () => _push(context, const MassBattleScreen()),
+        ),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuPvp,
