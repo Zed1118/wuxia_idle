@@ -1281,4 +1281,22 @@ class UiStrings {
       _ => stageId,
     };
   }
+
+  // ── 闭关非阻塞 + 出战锁(2026-06-14 L3)──────────────────────────────
+  /// 主菜单闭关横幅行:闭关中 · {地图名} · 剩 {时长}
+  static String mainMenuRetreatBannerLine(String mapName, String remaining) =>
+      '闭关中 · $mapName · 剩 $remaining';
+
+  /// 剩余时长格式:有小时显「N 时 M 分」,否则「M 分」
+  static String retreatRemainingText(int hours, int minutes) =>
+      hours > 0 ? '$hours 时 $minutes 分' : '$minutes 分';
+
+  /// 出战锁弹窗(闭关进行中点战斗入口)
+  static const String seclusionBattleLockTitle = '闭关修行中';
+  static const String seclusionBattleLockBody = '正自闭关参修,心神内守,此刻不宜出战。';
+  static const String seclusionBattleLockStay = '静心继续';
+  static const String seclusionBattleLockEndEarly = '提前出关';
+
+  /// 开始闭关题字过场
+  static const String seclusionEnterCaption = '闭关';
 }
