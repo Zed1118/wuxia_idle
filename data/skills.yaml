@@ -38,6 +38,7 @@ skills:
     name: 重击
     description: 沉腰坐马,出拳如铁锤落下
     type: powerSkill
+    targetType: single
     powerMultiplier: 1200
     internalForceCost: 100
     cooldownTurns: 2
@@ -50,6 +51,7 @@ skills:
     name: 怒涛拳
     description: 蓄势三息,一拳如怒涛拍岸
     type: ultimate
+    targetType: single
     powerMultiplier: 1500
     internalForceCost: 300
     cooldownTurns: 5
@@ -79,6 +81,7 @@ skills:
     name: 连环刺
     description: 身形微转,剑尖连点三处要穴
     type: powerSkill
+    targetType: single
     powerMultiplier: 1100
     internalForceCost: 90
     cooldownTurns: 2
@@ -91,6 +94,7 @@ skills:
     name: 流光剑
     description: 剑光掠过如流星,快到不可捉摸
     type: ultimate
+    targetType: single
     powerMultiplier: 1500
     internalForceCost: 280
     cooldownTurns: 5
@@ -120,6 +124,7 @@ skills:
     name: 暗影掌
     description: 掌风无声,中者方觉暗劲已入体
     type: powerSkill
+    targetType: single
     powerMultiplier: 1000
     internalForceCost: 80
     cooldownTurns: 2
@@ -132,6 +137,7 @@ skills:
     name: 摧心指
     description: 一指点出,暗劲直透心脉
     type: ultimate
+    targetType: single
     powerMultiplier: 1500
     internalForceCost: 320
     cooldownTurns: 5
@@ -165,6 +171,7 @@ skills:
     name: 破甲掌
     description: 内力外放,一掌可裂甲胄
     type: powerSkill
+    targetType: single
     powerMultiplier: 1600
     internalForceCost: 130
     cooldownTurns: 2
@@ -177,6 +184,7 @@ skills:
     name: 山岳震
     description: 全身之力贯于双拳,一击如山崩
     type: ultimate
+    targetType: single
     powerMultiplier: 2000
     internalForceCost: 380
     cooldownTurns: 5
@@ -206,6 +214,7 @@ skills:
     name: 旋身刺
     description: 借旋身之力,一剑贯入敌阵
     type: powerSkill
+    targetType: single
     powerMultiplier: 1600
     internalForceCost: 130
     cooldownTurns: 2
@@ -218,6 +227,7 @@ skills:
     name: 万剑诀
     description: 剑气横生,化作漫天剑影
     type: ultimate
+    targetType: aoe
     powerMultiplier: 2000
     internalForceCost: 380
     cooldownTurns: 5
@@ -247,6 +257,7 @@ skills:
     name: 隐影爪
     description: 五指如钩,出手不见,收手见血
     type: powerSkill
+    targetType: single
     powerMultiplier: 1600
     internalForceCost: 130
     cooldownTurns: 2
@@ -259,6 +270,7 @@ skills:
     name: 销魂指
     description: 指力透骨,中者神魂俱散
     type: ultimate
+    targetType: single
     powerMultiplier: 2000
     internalForceCost: 380
     cooldownTurns: 5
@@ -292,6 +304,7 @@ skills:
     name: 裂石掌
     description: 掌出风至,碎石裂壁不在话下
     type: powerSkill
+    targetType: single
     powerMultiplier: 1800
     internalForceCost: 180
     cooldownTurns: 3
@@ -304,6 +317,7 @@ skills:
     name: 崩山击
     description: 气沉丹田,一击有开山之威
     type: ultimate
+    targetType: single
     powerMultiplier: 2500
     internalForceCost: 500
     cooldownTurns: 5
@@ -334,6 +348,7 @@ skills:
     name: 燕回式
     description: 身形翩然,剑如飞燕回旋
     type: powerSkill
+    targetType: single
     powerMultiplier: 1700
     internalForceCost: 160
     cooldownTurns: 3
@@ -346,6 +361,7 @@ skills:
     name: 御风斩
     description: 御风而行,剑落处风声呼啸
     type: ultimate
+    targetType: single
     powerMultiplier: 2500
     internalForceCost: 480
     cooldownTurns: 5
@@ -375,6 +391,7 @@ skills:
     name: 寒星掌
     description: 掌风阴冷,如寒夜星光刺骨
     type: powerSkill
+    targetType: single
     powerMultiplier: 1600
     internalForceCost: 150
     cooldownTurns: 3
@@ -387,6 +404,7 @@ skills:
     name: 落英缤纷
     description: 掌气四散如花瓣飘零,伤人于无形
     type: ultimate
+    targetType: aoe
     powerMultiplier: 2500
     internalForceCost: 520
     cooldownTurns: 5
@@ -421,6 +439,7 @@ skills:
     name: 千斤坠
     description: 双拳齐出,力沉千斤,对手难以动弹
     type: powerSkill
+    targetType: single
     powerMultiplier: 2400
     internalForceCost: 220
     cooldownTurns: 3
@@ -433,6 +452,7 @@ skills:
     name: 怒龙翻
     description: 一拳挟风雷之势,如怒龙翻江
     type: ultimate
+    targetType: single
     powerMultiplier: 3000
     internalForceCost: 620
     cooldownTurns: 5
@@ -462,6 +482,7 @@ skills:
     name: 追风刺
     description: 步法极快,剑尖追风而至
     type: powerSkill
+    targetType: single
     powerMultiplier: 2400
     internalForceCost: 220
     cooldownTurns: 3
@@ -474,6 +495,7 @@ skills:
     name: 流星剑
     description: 剑光划过夜空,一闪即逝,伤已及身
     type: ultimate
+    targetType: single
     powerMultiplier: 3000
     internalForceCost: 620
     cooldownTurns: 5
@@ -503,6 +525,7 @@ skills:
     name: 蚀骨指
     description: 指力带阴寒之气,入体蚀骨
     type: powerSkill
+    targetType: single
     powerMultiplier: 2400
     internalForceCost: 220
     cooldownTurns: 3
@@ -515,6 +538,7 @@ skills:
     name: 摄魂引
     description: 暗劲入脑,夺人心神
     type: ultimate
+    targetType: single
     powerMultiplier: 3000
     internalForceCost: 620
     cooldownTurns: 5
@@ -548,6 +572,7 @@ skills:
     name: 撼地拳
     description: 拳落处地裂三尺,余震不止
     type: powerSkill
+    targetType: single
     powerMultiplier: 3200
     internalForceCost: 280
     cooldownTurns: 3
@@ -560,6 +585,7 @@ skills:
     name: 霸王击
     description: 一拳贯穿虚空,有霸王举鼎之威
     type: ultimate
+    targetType: single
     powerMultiplier: 4000
     internalForceCost: 800
     cooldownTurns: 5
@@ -589,6 +615,7 @@ skills:
     name: 翻云式
     description: 剑势翻覆如云,令守者不知从何处来
     type: powerSkill
+    targetType: single
     powerMultiplier: 3200
     internalForceCost: 280
     cooldownTurns: 3
@@ -601,6 +628,7 @@ skills:
     name: 御剑诀
     description: 意念驭剑,剑如活物般追敌
     type: ultimate
+    targetType: single
     powerMultiplier: 4000
     internalForceCost: 800
     cooldownTurns: 5
@@ -630,6 +658,7 @@ skills:
     name: 噬心爪
     description: 五指扣入,暗劲直噬心脉
     type: powerSkill
+    targetType: single
     powerMultiplier: 3200
     internalForceCost: 280
     cooldownTurns: 3
@@ -642,6 +671,7 @@ skills:
     name: 摧魂咒
     description: 以内力化声为刃,闻者魂飞魄散
     type: ultimate
+    targetType: single
     powerMultiplier: 4000
     internalForceCost: 800
     cooldownTurns: 5
@@ -675,6 +705,7 @@ skills:
     name: 镇岳掌
     description: 一掌之力可镇五岳,气吞山河
     type: powerSkill
+    targetType: single
     powerMultiplier: 4400
     internalForceCost: 380
     cooldownTurns: 3
@@ -687,6 +718,7 @@ skills:
     name: 天崩裂
     description: 蓄全身真气一击,天地为之色变
     type: ultimate
+    targetType: single
     powerMultiplier: 5500
     internalForceCost: 1100
     cooldownTurns: 5
@@ -716,6 +748,7 @@ skills:
     name: 紫电步
     description: 身法如紫电掠空,一步已至三丈外
     type: powerSkill
+    targetType: single
     powerMultiplier: 4400
     internalForceCost: 380
     cooldownTurns: 3
@@ -728,6 +761,7 @@ skills:
     name: 长虹经天
     description: 一剑横空如长虹贯日,势不可挡
     type: ultimate
+    targetType: single
     powerMultiplier: 5500
     internalForceCost: 1100
     cooldownTurns: 5
@@ -757,6 +791,7 @@ skills:
     name: 蚀魂爪
     description: 阴寒之力透骨蚀魂,中者如坠冰窟
     type: powerSkill
+    targetType: single
     powerMultiplier: 4400
     internalForceCost: 380
     cooldownTurns: 3
@@ -769,6 +804,7 @@ skills:
     name: 阴煞印
     description: 双掌叠印,阴煞之气笼罩方圆数丈
     type: ultimate
+    targetType: aoe
     powerMultiplier: 5500
     internalForceCost: 1100
     cooldownTurns: 5
@@ -802,6 +838,7 @@ skills:
     name: 乾坤掌
     description: 掌中藏乾坤,一推一拉间翻天覆地
     type: powerSkill
+    targetType: single
     powerMultiplier: 6400
     internalForceCost: 550
     cooldownTurns: 3
@@ -814,6 +851,7 @@ skills:
     name: 九霄龙吟
     description: 拳势冲霄,如九天神龙咆哮而下
     type: ultimate
+    targetType: single
     powerMultiplier: 8000
     internalForceCost: 1600
     cooldownTurns: 5
@@ -843,6 +881,7 @@ skills:
     name: 紫霞凌虚
     description: 紫霞缭绕,身形凌虚而立,剑意无穷
     type: powerSkill
+    targetType: single
     powerMultiplier: 6400
     internalForceCost: 550
     cooldownTurns: 3
@@ -855,6 +894,7 @@ skills:
     name: 万象归元
     description: 万千剑影归于一剑,此剑即是万象
     type: ultimate
+    targetType: single
     powerMultiplier: 8000
     internalForceCost: 1600
     cooldownTurns: 5
@@ -884,6 +924,7 @@ skills:
     name: 九幽手
     description: 掌出九幽,阴寒之气冻彻骨髓
     type: powerSkill
+    targetType: single
     powerMultiplier: 6400
     internalForceCost: 550
     cooldownTurns: 3
@@ -896,6 +937,7 @@ skills:
     name: 无相劫
     description: 无形无相,天地万物皆入劫数
     type: ultimate
+    targetType: aoe
     powerMultiplier: 8000
     internalForceCost: 1600
     cooldownTurns: 5
@@ -959,6 +1001,7 @@ skills:
     name: 飞檐撞
     description: 借飞檐之势,身如巨石撞来
     type: powerSkill
+    targetType: single
     powerMultiplier: 2400
     internalForceCost: 220
     cooldownTurns: 3
@@ -971,6 +1014,7 @@ skills:
     name: 巨石压顶
     description: 凌空跃起,势如巨石从天而降
     type: ultimate
+    targetType: single
     powerMultiplier: 3000
     internalForceCost: 620
     cooldownTurns: 5
@@ -1000,6 +1044,7 @@ skills:
     name: 凌虚步
     description: 脚踏虚空,行走如履平地
     type: powerSkill
+    targetType: single
     powerMultiplier: 2400
     internalForceCost: 220
     cooldownTurns: 3
@@ -1012,6 +1057,7 @@ skills:
     name: 飞燕惊鸿
     description: 身形飘忽如飞燕,一闪即逝如惊鸿
     type: ultimate
+    targetType: single
     powerMultiplier: 3000
     internalForceCost: 620
     cooldownTurns: 5
@@ -1041,6 +1087,7 @@ skills:
     name: 暗影涉
     description: 身形隐入暗影,无声接近对手
     type: powerSkill
+    targetType: single
     powerMultiplier: 2400
     internalForceCost: 220
     cooldownTurns: 3
@@ -1053,6 +1100,7 @@ skills:
     name: 幽冥归
     description: 身形消散如入幽冥,再现时已在身后
     type: ultimate
+    targetType: single
     powerMultiplier: 3000
     internalForceCost: 620
     cooldownTurns: 5
@@ -1082,6 +1130,7 @@ skills:
     name: 撼山扑
     description: 全身之力化为一扑,有撼山之势
     type: powerSkill
+    targetType: single
     powerMultiplier: 3200
     internalForceCost: 280
     cooldownTurns: 3
@@ -1094,6 +1143,7 @@ skills:
     name: 万钧落
     description: 凌空急坠如万钧之重,所到之处尽碎
     type: ultimate
+    targetType: single
     powerMultiplier: 4000
     internalForceCost: 800
     cooldownTurns: 5
@@ -1123,6 +1173,7 @@ skills:
     name: 蜻蜓点水
     description: 轻点水面借力,身形飘摇不定
     type: powerSkill
+    targetType: single
     powerMultiplier: 3200
     internalForceCost: 280
     cooldownTurns: 3
@@ -1135,6 +1186,7 @@ skills:
     name: 九霄云外
     description: 纵身九霄之上,俯冲而下势不可挡
     type: ultimate
+    targetType: single
     powerMultiplier: 4000
     internalForceCost: 800
     cooldownTurns: 5
@@ -1164,6 +1216,7 @@ skills:
     name: 鬼影迷踪
     description: 身形化作数道残影,真身难辨
     type: powerSkill
+    targetType: single
     powerMultiplier: 3200
     internalForceCost: 280
     cooldownTurns: 3
@@ -1176,6 +1229,7 @@ skills:
     name: 万籁俱寂
     description: 周身阴气扩散,方圆之内万籁俱寂
     type: ultimate
+    targetType: aoe
     powerMultiplier: 4000
     internalForceCost: 800
     cooldownTurns: 5
@@ -1210,6 +1264,7 @@ skills:
     name: 震臂
     description: 以臂力震开对手兵刃
     type: powerSkill
+    targetType: single
     powerMultiplier: 1200
     internalForceCost: 100
     cooldownTurns: 2
@@ -1222,6 +1277,7 @@ skills:
     name: 铁山靠
     description: 以背撞击,坚如铁山
     type: ultimate
+    targetType: single
     powerMultiplier: 1500
     internalForceCost: 300
     cooldownTurns: 5
@@ -1250,6 +1306,7 @@ skills:
     name: 反击
     description: 借闪避之势,反手一剑
     type: powerSkill
+    targetType: single
     powerMultiplier: 1200
     internalForceCost: 100
     cooldownTurns: 2
@@ -1262,6 +1319,7 @@ skills:
     name: 滑步一击
     description: 脚步滑动避开攻势,顺势还击
     type: ultimate
+    targetType: single
     powerMultiplier: 1500
     internalForceCost: 300
     cooldownTurns: 5
@@ -1290,6 +1348,7 @@ skills:
     name: 回气掌
     description: 以柔劲化解来力,化为己用
     type: powerSkill
+    targetType: single
     powerMultiplier: 1200
     internalForceCost: 100
     cooldownTurns: 2
@@ -1302,6 +1361,7 @@ skills:
     name: 固元术
     description: 真气护体,固本培元
     type: ultimate
+    targetType: single
     powerMultiplier: 1500
     internalForceCost: 300
     cooldownTurns: 5
@@ -1332,6 +1392,7 @@ skills:
     name: 撼地锤
     description: 双拳击地,震波反弹来敌
     type: powerSkill
+    targetType: single
     powerMultiplier: 1600
     internalForceCost: 150
     cooldownTurns: 2
@@ -1344,6 +1405,7 @@ skills:
     name: 金刚怒目
     description: 怒目圆睁,真气外放,近者辟易
     type: ultimate
+    targetType: aoe
     powerMultiplier: 2000
     internalForceCost: 400
     cooldownTurns: 5
@@ -1372,6 +1434,7 @@ skills:
     name: 绕行斩
     description: 绕至敌侧,一剑斩下
     type: powerSkill
+    targetType: single
     powerMultiplier: 1600
     internalForceCost: 150
     cooldownTurns: 2
@@ -1384,6 +1447,7 @@ skills:
     name: 水中月
     description: 身形虚幻如水中月,打不着摸不到
     type: ultimate
+    targetType: single
     powerMultiplier: 2000
     internalForceCost: 400
     cooldownTurns: 5
@@ -1412,6 +1476,7 @@ skills:
     name: 绵柔掌
     description: 以柔克刚,将来力引偏化解
     type: powerSkill
+    targetType: single
     powerMultiplier: 1600
     internalForceCost: 150
     cooldownTurns: 2
@@ -1424,6 +1489,7 @@ skills:
     name: 息长绵延
     description: 内息悠长不绝,久战不衰
     type: ultimate
+    targetType: single
     powerMultiplier: 2000
     internalForceCost: 400
     cooldownTurns: 5
@@ -1454,6 +1520,7 @@ skills:
     name: 碎地掌
     description: 掌力贯入地面,碎石飞溅阻敌
     type: powerSkill
+    targetType: single
     powerMultiplier: 2000
     internalForceCost: 200
     cooldownTurns: 2
@@ -1466,6 +1533,7 @@ skills:
     name: 不动如山
     description: 全身真气凝为壁障,巍然不动
     type: ultimate
+    targetType: single
     powerMultiplier: 2500
     internalForceCost: 500
     cooldownTurns: 5
@@ -1494,6 +1562,7 @@ skills:
     name: 微步刺
     description: 以极小步幅闪转,伺机反刺
     type: powerSkill
+    targetType: single
     powerMultiplier: 2000
     internalForceCost: 200
     cooldownTurns: 2
@@ -1506,6 +1575,7 @@ skills:
     name: 踏水无痕
     description: 身法已臻化境,来去不留痕迹
     type: ultimate
+    targetType: single
     powerMultiplier: 2500
     internalForceCost: 500
     cooldownTurns: 5
@@ -1534,6 +1604,7 @@ skills:
     name: 寒气劲
     description: 寒气外放,冻缓敌手
     type: powerSkill
+    targetType: single
     powerMultiplier: 2000
     internalForceCost: 200
     cooldownTurns: 2
@@ -1546,6 +1617,7 @@ skills:
     name: 阴阳护体
     description: 阴阳二气交织成盾,攻守兼备
     type: ultimate
+    targetType: single
     powerMultiplier: 2500
     internalForceCost: 500
     cooldownTurns: 5
@@ -1576,6 +1648,7 @@ skills:
     name: 金钟罩
     description: 真气罩体如金钟,刀枪不入
     type: powerSkill
+    targetType: single
     powerMultiplier: 2400
     internalForceCost: 300
     cooldownTurns: 3
@@ -1588,6 +1661,7 @@ skills:
     name: 铁布护身
     description: 全身肌肉如铁布,百兵难伤
     type: ultimate
+    targetType: single
     powerMultiplier: 3000
     internalForceCost: 700
     cooldownTurns: 5
@@ -1616,6 +1690,7 @@ skills:
     name: 残影剑
     description: 剑出如幻,残影连绵,敌分不清虚实
     type: powerSkill
+    targetType: single
     powerMultiplier: 2400
     internalForceCost: 300
     cooldownTurns: 3
@@ -1628,6 +1703,7 @@ skills:
     name: 幻灭一闪
     description: 身形幻灭,一闪之间已至敌后
     type: ultimate
+    targetType: single
     powerMultiplier: 3000
     internalForceCost: 700
     cooldownTurns: 5
@@ -1656,6 +1732,7 @@ skills:
     name: 绵针
     description: 外柔内刚,柔中藏针
     type: powerSkill
+    targetType: single
     powerMultiplier: 2400
     internalForceCost: 300
     cooldownTurns: 3
@@ -1668,6 +1745,7 @@ skills:
     name: 化骨裹身
     description: 阴柔之气裹护全身,来力皆被化解
     type: ultimate
+    targetType: single
     powerMultiplier: 3000
     internalForceCost: 700
     cooldownTurns: 5
@@ -1698,6 +1776,7 @@ skills:
     name: 降魔掌
     description: 真气外放如佛光,镇压来敌
     type: powerSkill
+    targetType: single
     powerMultiplier: 3200
     internalForceCost: 400
     cooldownTurns: 3
@@ -1710,6 +1789,7 @@ skills:
     name: 不动真身
     description: 真气凝聚成不动真身,万法不侵
     type: ultimate
+    targetType: single
     powerMultiplier: 4000
     internalForceCost: 1000
     cooldownTurns: 5
@@ -1738,6 +1818,7 @@ skills:
     name: 无声刺
     description: 无声无息一剑刺出,防不胜防
     type: powerSkill
+    targetType: single
     powerMultiplier: 3200
     internalForceCost: 400
     cooldownTurns: 3
@@ -1750,6 +1831,7 @@ skills:
     name: 暗影袭杀
     description: 隐入暗影,杀招从意想不到处袭来
     type: ultimate
+    targetType: single
     powerMultiplier: 4000
     internalForceCost: 1000
     cooldownTurns: 5
@@ -1778,6 +1860,7 @@ skills:
     name: 真气疗
     description: 以真气修复伤势,战中回复
     type: powerSkill
+    targetType: single
     powerMultiplier: 3200
     internalForceCost: 400
     cooldownTurns: 3
@@ -1790,6 +1873,7 @@ skills:
     name: 太阴归元
     description: 太阴真气归元,伤势尽复
     type: ultimate
+    targetType: single
     powerMultiplier: 4000
     internalForceCost: 1000
     cooldownTurns: 5
@@ -1820,6 +1904,7 @@ skills:
     name: 铁骨崩
     description: 以铁骨之躯硬撼来敌,撞之即崩
     type: powerSkill
+    targetType: single
     powerMultiplier: 4400
     internalForceCost: 600
     cooldownTurns: 3
@@ -1832,6 +1917,7 @@ skills:
     name: 钢筋铁骨
     description: 全身淬炼如钢铁,百刀难伤
     type: ultimate
+    targetType: single
     powerMultiplier: 5500
     internalForceCost: 1500
     cooldownTurns: 5
@@ -1860,6 +1946,7 @@ skills:
     name: 穿花
     description: 身形穿花拂柳,从容不迫
     type: powerSkill
+    targetType: single
     powerMultiplier: 4400
     internalForceCost: 600
     cooldownTurns: 3
@@ -1872,6 +1959,7 @@ skills:
     name: 天遁无踪
     description: 身形彻底消失,再现时已至要害
     type: ultimate
+    targetType: single
     powerMultiplier: 5500
     internalForceCost: 1500
     cooldownTurns: 5
@@ -1900,6 +1988,7 @@ skills:
     name: 冰息
     description: 吐息成冰,冻缓来敌气血
     type: powerSkill
+    targetType: single
     powerMultiplier: 4400
     internalForceCost: 600
     cooldownTurns: 3
@@ -1912,6 +2001,7 @@ skills:
     name: 寒潭映月
     description: 心如寒潭映月,任何攻势皆如投石入水
     type: ultimate
+    targetType: single
     powerMultiplier: 5500
     internalForceCost: 1500
     cooldownTurns: 5
@@ -1942,6 +2032,7 @@ skills:
     name: 卸甲掌
     description: 一掌卸去敌方防御,使其门户大开
     type: powerSkill
+    targetType: single
     powerMultiplier: 6400
     internalForceCost: 800
     cooldownTurns: 3
@@ -1954,6 +2045,7 @@ skills:
     name: 金身不坏
     description: 真气铸就金身,万劫不坏
     type: ultimate
+    targetType: single
     powerMultiplier: 8000
     internalForceCost: 2000
     cooldownTurns: 5
@@ -1982,6 +2074,7 @@ skills:
     name: 无形剑
     description: 剑意无形,不见剑光,只见伤口
     type: powerSkill
+    targetType: single
     powerMultiplier: 6400
     internalForceCost: 800
     cooldownTurns: 3
@@ -1994,6 +2087,7 @@ skills:
     name: 无影无踪
     description: 彻底融入虚空,来无影去无踪
     type: ultimate
+    targetType: single
     powerMultiplier: 8000
     internalForceCost: 2000
     cooldownTurns: 5
@@ -2022,6 +2116,7 @@ skills:
     name: 续命
     description: 以至阴之气续接生机
     type: powerSkill
+    targetType: single
     powerMultiplier: 6400
     internalForceCost: 800
     cooldownTurns: 3
@@ -2034,6 +2129,7 @@ skills:
     name: 归元不灭
     description: 归元再生,伤势自愈,近乎不灭
     type: ultimate
+    targetType: single
     powerMultiplier: 8000
     internalForceCost: 2000
     cooldownTurns: 5
@@ -2064,6 +2160,7 @@ skills:
     name: 内劲冲
     description: 内力凝于拳面,一冲而出
     type: powerSkill
+    targetType: single
     powerMultiplier: 1200
     internalForceCost: 100
     cooldownTurns: 2
@@ -2076,6 +2173,7 @@ skills:
     name: 气贯长虹
     description: 真气如虹贯通经脉,一拳带出全部内力
     type: ultimate
+    targetType: single
     powerMultiplier: 1500
     internalForceCost: 300
     cooldownTurns: 5
@@ -2104,6 +2202,7 @@ skills:
     name: 气旋斩
     description: 内力化为气旋,裹挟剑气斩出
     type: powerSkill
+    targetType: single
     powerMultiplier: 1600
     internalForceCost: 150
     cooldownTurns: 2
@@ -2116,6 +2215,7 @@ skills:
     name: 引气归元
     description: 引天地之气归于丹田,内力暴涨
     type: ultimate
+    targetType: single
     powerMultiplier: 2000
     internalForceCost: 400
     cooldownTurns: 5
@@ -2144,6 +2244,7 @@ skills:
     name: 元气弹
     description: 将聚拢的元气化为一击射出
     type: powerSkill
+    targetType: single
     powerMultiplier: 2000
     internalForceCost: 200
     cooldownTurns: 2
@@ -2156,6 +2257,7 @@ skills:
     name: 聚元一击
     description: 全部元气凝于指尖,一击倾泻
     type: ultimate
+    targetType: single
     powerMultiplier: 2500
     internalForceCost: 500
     cooldownTurns: 5
@@ -2184,6 +2286,7 @@ skills:
     name: 意念攻
     description: 以精神力冲击对手心智
     type: powerSkill
+    targetType: single
     powerMultiplier: 2400
     internalForceCost: 300
     cooldownTurns: 3
@@ -2196,6 +2299,7 @@ skills:
     name: 神念无双
     description: 精神力凝为实质,一念之间摧毁敌意
     type: ultimate
+    targetType: single
     powerMultiplier: 3000
     internalForceCost: 700
     cooldownTurns: 5
@@ -2224,6 +2328,7 @@ skills:
     name: 罡气掌
     description: 罡气凝于掌心,一推而出
     type: powerSkill
+    targetType: single
     powerMultiplier: 3200
     internalForceCost: 400
     cooldownTurns: 3
@@ -2236,6 +2341,7 @@ skills:
     name: 天罡破阵
     description: 天罡之气四散,破敌阵型
     type: ultimate
+    targetType: aoe
     powerMultiplier: 4000
     internalForceCost: 1000
     cooldownTurns: 5
@@ -2264,6 +2370,7 @@ skills:
     name: 真经一式
     description: 失传真经中记载的一式,威力莫测
     type: powerSkill
+    targetType: single
     powerMultiplier: 4400
     internalForceCost: 600
     cooldownTurns: 3
@@ -2276,6 +2383,7 @@ skills:
     name: 玄元归一
     description: 玄元之力归于一体,万物莫挡
     type: ultimate
+    targetType: single
     powerMultiplier: 5500
     internalForceCost: 1500
     cooldownTurns: 5
@@ -2304,6 +2412,7 @@ skills:
     name: 开天掌
     description: 一掌劈出,有开天辟地之意
     type: powerSkill
+    targetType: single
     powerMultiplier: 6400
     internalForceCost: 800
     cooldownTurns: 3
@@ -2316,6 +2425,7 @@ skills:
     name: 混沌初开
     description: 混沌之力倾泻而出,如天地初开般的毁灭
     type: ultimate
+    targetType: aoe
     powerMultiplier: 8000
     internalForceCost: 2000
     cooldownTurns: 5
@@ -2342,6 +2452,7 @@ skills:
     name: 破势
     description: 看准敌招将发,抢身一击截其锋,势断则招散。
     type: powerSkill
+    targetType: single
     powerMultiplier: 900
     internalForceCost: 120
     cooldownTurns: 3
@@ -2365,6 +2476,7 @@ skills:
     name: 截影
     description: 身随影动,后发先至。敌势未满处一点寒光,断其将出之招。
     type: powerSkill
+    targetType: single
     powerMultiplier: 750
     internalForceCost: 100
     cooldownTurns: 3
@@ -2385,6 +2497,7 @@ skills:
     name: 拂脉
     description: 看似拂袖,实点经脉。气走偏锋一线,敌招散于将发未发之际。
     type: powerSkill
+    targetType: single
     powerMultiplier: 800
     internalForceCost: 110
     cooldownTurns: 3
@@ -2405,6 +2518,7 @@ skills:
     name: 青锋绝
     description: 青衫剑客毕生绝学,剑起如惊雷,一式定生死。
     type: powerSkill
+    targetType: single
     powerMultiplier: 2500
     internalForceCost: 200
     cooldownTurns: 4
@@ -2439,6 +2553,7 @@ skills:
     name: 斜雨穿帘
     description: 撑伞高人渡口绝学。掌随伞沿斜出,如细雨穿帘,看似无力,落处皆是要穴。
     type: powerSkill
+    targetType: single
     powerMultiplier: 1800
     internalForceCost: 160   # Ch1 Boss(xueTu dengFeng IF 1100×0.2=220)→ 放 1 次
     cooldownTurns: 4
@@ -2458,6 +2573,7 @@ skills:
     name: 千钧坠岳
     description: 灰衣人夺自北派的重手功夫。拳未至,势先压人,一坠如山倾。
     type: powerSkill
+    targetType: single
     powerMultiplier: 2800
     internalForceCost: 300   # Ch3 Boss(erLiu yuanShu IF≈3200×0.2=640)→ 放 2 次
     cooldownTurns: 4
@@ -2477,6 +2593,7 @@ skills:
     name: 风卷流沙
     description: 大漠风起,沙走石飞。身法散作流沙,聚时剑已封喉。
     type: powerSkill
+    targetType: single
     powerMultiplier: 3200
     internalForceCost: 600   # Ch4 Boss(jueDing qiMeng IF 6000×0.2=1200)→ 放 2 次
     cooldownTurns: 4
@@ -2496,6 +2613,7 @@ skills:
     name: 十荡十决
     description: 西凉军中马战杀法,一往无前。十荡十决,有进无退。
     type: powerSkill
+    targetType: single
     powerMultiplier: 3600
     internalForceCost: 900   # Ch5 Boss(zongShi qiMeng IF 9500×0.2=1900)→ 放 2 次
     cooldownTurns: 5
@@ -2515,6 +2633,7 @@ skills:
     name: 阳关无故人
     description: 西凉霸主压箱底的绝学。一掌出,关山寂寂,故人不复。
     type: powerSkill
+    targetType: single
     powerMultiplier: 4000
     internalForceCost: 1400  # Ch6 Boss(wuSheng qiMeng IF 13000×0.2=2600)→ 放 1 次(沿压测锚)
     cooldownTurns: 5
@@ -2536,6 +2655,7 @@ skills:
     name: 开碑手
     description: 江湖把式入门的硬功,五指并刀,掌落碑裂。
     type: powerSkill
+    targetType: single
     powerMultiplier: 1600
     internalForceCost: 140
     cooldownTurns: 3
@@ -2554,6 +2674,7 @@ skills:
     name: 燕子三抄
     description: 身如飞燕,三抄三起。剑光起落之间,人已在丈外。
     type: powerSkill
+    targetType: single
     powerMultiplier: 2300
     internalForceCost: 190
     cooldownTurns: 3
@@ -2572,6 +2693,7 @@ skills:
     name: 烛影摇红
     description: 烛影晃动处,袖底藏锋。灯花未落,招已过三。
     type: powerSkill
+    targetType: single
     powerMultiplier: 2600
     internalForceCost: 240
     cooldownTurns: 4
@@ -2590,6 +2712,7 @@ skills:
     name: 金刚伏魔
     description: 出自禅门的伏魔杵法,杵杵生风,直取中宫,邪魔辟易。
     type: powerSkill
+    targetType: single
     powerMultiplier: 3000
     internalForceCost: 300
     cooldownTurns: 4
@@ -2608,6 +2731,7 @@ skills:
     name: 惊鸿照影
     description: 翩若惊鸿,矫若游龙。影过处剑光一闪,水波不兴。
     type: powerSkill
+    targetType: single
     powerMultiplier: 3400
     internalForceCost: 340
     cooldownTurns: 4
@@ -2626,6 +2750,7 @@ skills:
     name: 月落无声
     description: 月沉西山,夜色无声。掌力化于无形,中者不觉,觉时已晚。
     type: powerSkill
+    targetType: single
     powerMultiplier: 3800
     internalForceCost: 400
     cooldownTurns: 5
@@ -2646,6 +2771,7 @@ skills:
     name: 关山拔戟
     description: 阳关古道的戍卒戟法,拔戟横扫,关山为开。
     type: powerSkill
+    targetType: single
     powerMultiplier: 3100
     internalForceCost: 310
     cooldownTurns: 4
@@ -2664,6 +2790,7 @@ skills:
     name: 马踏飞燕
     description: 马蹄踏燕,疾中之疾。借力三分,人随势走,势尽人至。
     type: powerSkill
+    targetType: single
     powerMultiplier: 3500
     internalForceCost: 350
     cooldownTurns: 4
@@ -2682,6 +2809,7 @@ skills:
     name: 夜雨十年灯
     description: 江湖夜雨,十年一灯。此掌绵密如雨,十年功力尽在一灯如豆处。
     type: powerSkill
+    targetType: single
     powerMultiplier: 3900
     internalForceCost: 420
     cooldownTurns: 5

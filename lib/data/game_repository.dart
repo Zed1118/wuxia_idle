@@ -533,6 +533,9 @@ class GameRepository {
     // 波A A4:全招必有合法 source 来源 tag + 池/字段一致性
     _enforceSkillSourceRedLines();
 
+    // 2026-06-14 拖招:targetType 语义红线(普攻/合击不可群体 + 群体技集合非空)
+    _enforceSkillTargetTypeRedLines();
+
     // Phase 4 W14-1 C-1:encounter fixture 校验(若加载到)
     _enforceEncounterRedLines();
 
@@ -1465,6 +1468,28 @@ class GameRepository {
 
       check('mainlineDrop', manualMounts, manualSkills);
       check('fragment', fragmentMounts, fragmentSkills);
+    }
+  }
+
+  /// 2026-06-14 拖招交互:targetType 语义红线(写约束语义,不锚瞬时数字)。
+  /// ① normalAttack/jointSkill 必 single(普攻/合击不可群体);
+  /// ② aoe 群体技集合非空(production 至少有群体技,防回填整体丢失)。
+  /// 注:fromYaml 默认 single(默认安全),不校验"yaml 必填",只守真正语义约束。
+  void _enforceSkillTargetTypeRedLines() {
+    var aoeCount = 0;
+    for (final s in skillDefs.values) {
+      if ((s.type == SkillType.normalAttack ||
+              s.type == SkillType.jointSkill) &&
+          s.targetType != TargetType.single) {
+        throw StateError(
+          'skill ${s.id} type=${s.type.name} 不可为群体技 '
+          '(普攻/合击必 single · 拖招红线 ①)',
+        );
+      }
+      if (s.targetType == TargetType.aoe) aoeCount++;
+    }
+    if (aoeCount == 0) {
+      throw StateError('production 无任何 aoe 群体技(拖招红线 ②:回填整体丢失?)');
     }
   }
 
