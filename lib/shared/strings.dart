@@ -18,6 +18,10 @@ class UiStrings {
 
   static const String tickPrefix = '回合';
   static const String battleLog = '战斗日志';
+  // H3:战斗暂停(停 tick + 遮罩 + 继续)。
+  static const String battlePause = '暂停';
+  static const String battleResume = '继续';
+  static const String battlePausedTitle = '已暂停';
   static const String emptyLog = '（无动作）';
   static const String ultimate = '大招';
   static const String fastForward = '快进';

@@ -232,6 +232,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // 实时 tick 定时器（advance() 驱动）
   Timer? _playTimer;
   bool _isFastForward = false;
+  bool _isPaused = false;
 
   // T1 指令台：当前"重点角色"槽位（玩家手动选定的基线）。敌人蓄力时由
   // [_effectiveFocus] 临时覆盖到可破招者，但不改写这个手动基线。
@@ -320,6 +321,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   void _startTimer() {
     _playTimer?.cancel();
+    if (_isPaused) return; // H3 暂停态:任何重启请求都不启动 timer。
     // 快进态:玩家手动开了快进,或拖招立即触发正在「快进到出手」(C5)。
     final rushing = _isFastForward || _rushToActorId != null;
     final interval = rushing
@@ -334,6 +336,17 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   void _toggleFastForward() {
     setState(() => _isFastForward = !_isFastForward);
     if (_playTimer != null) _startTimer();
+  }
+
+  // H3 暂停:停 tick(_startTimer 内 _isPaused gate 兜住所有重启路径);
+  // 恢复时若战斗未结束则重启自动播放。
+  void _togglePause() {
+    setState(() => _isPaused = !_isPaused);
+    if (_isPaused) {
+      _playTimer?.cancel();
+    } else if (!ref.read(battleProvider).isFinished) {
+      _startTimer();
+    }
   }
 
   // ─── 动画 / 飘字 ─────────────────────────────────────────────────────────
@@ -922,6 +935,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                     _Header(
                       state: state,
                       onToggleLog: () => setState(() => _logOpen = !_logOpen),
+                      onPause: _togglePause,
+                      isPaused: _isPaused,
                     ),
                     _DangerBar(state: state),
                     Expanded(
@@ -1020,6 +1035,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 state: state,
                 onClose: () => setState(() => _logOpen = false),
               ),
+            // H3 暂停遮罩:战斗未结束且暂停时,轻触任意处或「继续」恢复。
+            if (_isPaused && state.result == null)
+              Positioned.fill(child: _PauseOverlay(onResume: _togglePause)),
           ],
         ),
       ),
@@ -1200,7 +1218,14 @@ class _BattleReportStrip extends StatelessWidget {
 class _Header extends StatelessWidget {
   final BattleState state;
   final VoidCallback onToggleLog;
-  const _Header({required this.state, required this.onToggleLog});
+  final VoidCallback onPause;
+  final bool isPaused;
+  const _Header({
+    required this.state,
+    required this.onToggleLog,
+    required this.onPause,
+    required this.isPaused,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1244,6 +1269,17 @@ class _Header extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
+          if (state.result == null)
+            IconButton(
+              key: const ValueKey('battle_pause_toggle'),
+              icon: Icon(
+                isPaused ? Icons.play_arrow : Icons.pause,
+                color: WuxiaColors.textSecondary,
+                size: 20,
+              ),
+              tooltip: isPaused ? UiStrings.battleResume : UiStrings.battlePause,
+              onPressed: onPause,
+            ),
           IconButton(
             key: const ValueKey('battle_log_toggle'),
             icon: const Icon(
@@ -1255,6 +1291,51 @@ class _Header extends StatelessWidget {
             onPressed: onToggleLog,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// H3 暂停遮罩:半透明罩 +「已暂停」+ 继续(轻触任意处或按钮恢复)。
+class _PauseOverlay extends StatelessWidget {
+  const _PauseOverlay({required this.onResume});
+
+  final VoidCallback onResume;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onResume,
+      child: ColoredBox(
+        color: Colors.black54,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.pause_circle_outline,
+                color: WuxiaColors.textPrimary,
+                size: 56,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                UiStrings.battlePausedTitle,
+                style: TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 4,
+                ),
+              ),
+              const SizedBox(height: 20),
+              FilledButton(
+                onPressed: onResume,
+                child: const Text(UiStrings.battleResume),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
