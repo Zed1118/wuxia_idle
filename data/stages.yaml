@@ -1,7 +1,8 @@
 # =============================================================================
-# stages.yaml · 主线 15 关（Phase 3 Week 5 扩容）
+# stages.yaml · 全关卡表（主线 + 副本 · 共 47 关，2026-06 实测）
 # =============================================================================
-# 共 15 关：3 章 × 5 关，stageType 全填 mainline。
+# 共 47 关：mainline 30（6 章 × 5，含第二主线 Ch4-6）+ innerDemon 8 +
+# lightFoot 5 + massBattle 5。stageType 按关分填（非全 mainline）。
 # 每关 3 敌人（StageDef.enemyTeam 上限 3）；三流派分布尽量覆盖 gangMeng /
 # lingQiao / yinRou。难度按章递增 xueTu → sanLiu → erLiu。
 #
