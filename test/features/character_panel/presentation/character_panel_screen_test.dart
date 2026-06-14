@@ -20,6 +20,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_paper_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_tab.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/glossary_tip.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/section_header.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/stage_progress_row.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
@@ -213,6 +214,35 @@ void main() {
     expect(find.text('悟性'), findsOneWidget);
     expect(find.text('身法'), findsOneWidget);
     expect(find.text('机缘'), findsOneWidget);
+  });
+
+  testWidgets('M4 术语气泡:4 属性 + 派生数值标签走 GlossaryLabel 并挂释义', (tester) async {
+    final character = mkCharacter();
+    await pumpPanel(tester, character: character);
+
+    // 4 项属性各一个 GlossaryLabel(带「?」可发现标记)。
+    for (final label in [
+      UiStrings.attrConstitution,
+      UiStrings.attrEnlightenment,
+      UiStrings.attrAgility,
+      UiStrings.attrFortune,
+    ]) {
+      expect(
+        find.widgetWithText(GlossaryLabel, label),
+        findsOneWidget,
+        reason: '属性 $label 应包进 GlossaryLabel',
+      );
+    }
+
+    // 属性卡至少 4 个 GlossaryLabel(派生卡同卡布局,数量随 ready 态浮动,
+    // 此处只锁属性硬下界),且释义 message 进入 Tooltip。
+    expect(find.byType(GlossaryLabel), findsAtLeastNWidgets(4));
+    final tipMessages = tester
+        .widgetList<Tooltip>(find.byType(Tooltip))
+        .map((t) => t.message)
+        .toList();
+    expect(tipMessages, contains(UiStrings.glossaryConstitution));
+    expect(tipMessages, contains(UiStrings.glossaryFortune));
   });
 
   // ── 用例 1：3 装备槽全显示 ─────────────────────────────────────────────

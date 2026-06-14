@@ -279,6 +279,21 @@ class UiStrings {
   static const String statCriticalRate = '暴击率';
   static const String statEvasionRate = '闪避率';
 
+  // M4 术语释义气泡（GlossaryTip）：四项属性 + 派生数值 + 养成进度术语。
+  // §5.7 框架下用悬停/长按气泡，非教程弹窗。文案水墨克制、不用网游词汇。
+  static const String glossaryConstitution = '根骨：体魄根基，决定血量上限。根骨越厚，越能久战不溃。';
+  static const String glossaryEnlightenment = '悟性：资质灵慧，影响修炼速度与武学领悟概率。悟性高者，一点即通。';
+  static const String glossaryAgility = '身法：轻灵敏捷，决定出手速度与闪避。身法高者，快人一步。';
+  static const String glossaryFortune = '机缘：缘法深浅，影响奇遇触发率与商店折扣。机缘厚者，常逢造化。';
+  static const String glossaryHp = '生命：可承受的伤害总量，归零即败。由内力、根骨与装备共同撑起。';
+  static const String glossaryInternalForce =
+      '内力：施展招式的根本，关乎招式威能与血量基底。战斗中随出招消耗，大招耗内力尤甚。';
+  static const String glossarySpeed = '出手速度：决定行动快慢，速度越高出手越频。由身法、装备与心法共同加成。';
+  static const String glossaryCriticalRate = '暴击率：触发暴击的概率，暴击额外加成伤害。身法越高，暴击越易触发。';
+  static const String glossaryEvasionRate = '闪避率：完全避开来袭的概率。身法越高，越易闪躲。';
+  static const String glossaryCultivation = '修炼度：心法的精熟程度，越高则招式伤害倍率越大。随实战与闭关渐积。';
+  static const String glossaryResonance = '共鸣度：人与兵刃的默契，血战中渐积。圆满者可悟人剑合一。';
+
   /// 内力当前/上限文案：`X / Y`。
   static String internalForceValue(int current, int max) => '$current / $max';
 

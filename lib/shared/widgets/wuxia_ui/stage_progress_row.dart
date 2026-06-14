@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/wuxia_tokens.dart';
+import 'glossary_tip.dart';
 import 'meridian_bar.dart';
 
 /// 养成进度「五要素」标准化展示行（D · 2026-06-12）。
@@ -48,6 +49,10 @@ class StageProgressRow extends StatelessWidget {
   /// 点击整行回调。null = 纯展示。
   final VoidCallback? onTap;
 
+  /// M4 术语释义：非空时首行领头文字包进 [GlossaryLabel]（带「?」标记 +
+  /// 悬停/长按气泡）。用于「修炼度 / 共鸣度」等养成进度术语释义。
+  final String? glossaryDefinition;
+
   const StageProgressRow({
     super.key,
     required this.ratio,
@@ -59,6 +64,7 @@ class StageProgressRow extends StatelessWidget {
     this.tag,
     this.tagHighlighted = false,
     this.onTap,
+    this.glossaryDefinition,
   });
 
   @override
@@ -78,15 +84,25 @@ class StageProgressRow extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    title ?? stageName ?? '',
-                    style: const TextStyle(
-                      color: WuxiaUi.ink,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: glossaryDefinition == null
+                      ? Text(
+                          title ?? stageName ?? '',
+                          style: const TextStyle(
+                            color: WuxiaUi.ink,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      : GlossaryLabel(
+                          label: title ?? stageName ?? '',
+                          definition: glossaryDefinition!,
+                          style: const TextStyle(
+                            color: WuxiaUi.ink,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
                 if (title != null && stageName != null)
                   Text(

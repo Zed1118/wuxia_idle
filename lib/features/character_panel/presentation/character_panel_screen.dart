@@ -290,13 +290,26 @@ class _ProfileHeaderCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 _AttributeStrip(
                   attributes: [
-                    _AttributeView(UiStrings.attrConstitution, a.constitution),
+                    _AttributeView(
+                      UiStrings.attrConstitution,
+                      a.constitution,
+                      UiStrings.glossaryConstitution,
+                    ),
                     _AttributeView(
                       UiStrings.attrEnlightenment,
                       a.enlightenment,
+                      UiStrings.glossaryEnlightenment,
                     ),
-                    _AttributeView(UiStrings.attrAgility, a.agility),
-                    _AttributeView(UiStrings.attrFortune, a.fortune),
+                    _AttributeView(
+                      UiStrings.attrAgility,
+                      a.agility,
+                      UiStrings.glossaryAgility,
+                    ),
+                    _AttributeView(
+                      UiStrings.attrFortune,
+                      a.fortune,
+                      UiStrings.glossaryFortune,
+                    ),
                   ],
                 ),
               ],
@@ -516,10 +529,13 @@ class _SchoolBadge extends StatelessWidget {
 }
 
 class _AttributeView {
-  const _AttributeView(this.label, this.value);
+  const _AttributeView(this.label, this.value, this.definition);
 
   final String label;
   final int value;
+
+  /// M4 术语释义（GlossaryLabel 气泡）。
+  final String definition;
 }
 
 class _AttributeStrip extends StatelessWidget {
@@ -559,10 +575,9 @@ class _AttributeChip extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            attribute.label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          GlossaryLabel(
+            label: attribute.label,
+            definition: attribute.definition,
             style: const TextStyle(
               color: WuxiaUi.ink,
               fontSize: 14,
@@ -736,7 +751,11 @@ class _DerivedStatsSection extends ConsumerWidget {
         Row(
           children: [
             Expanded(
-              child: _DerivedStatCard(label: UiStrings.statHp, value: '$hp'),
+              child: _DerivedStatCard(
+                label: UiStrings.statHp,
+                value: '$hp',
+                glossary: UiStrings.glossaryHp,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -746,6 +765,7 @@ class _DerivedStatsSection extends ConsumerWidget {
                   character.internalForce,
                   ifMax,
                 ),
+                glossary: UiStrings.glossaryInternalForce,
                 valueFontSize: 22,
               ),
             ),
@@ -754,6 +774,7 @@ class _DerivedStatsSection extends ConsumerWidget {
               child: _DerivedStatCard(
                 label: UiStrings.statSpeed,
                 value: speedText,
+                glossary: UiStrings.glossarySpeed,
               ),
             ),
           ],
@@ -765,6 +786,7 @@ class _DerivedStatsSection extends ConsumerWidget {
               child: _DerivedStatCard(
                 label: UiStrings.statCriticalRate,
                 value: critText,
+                glossary: UiStrings.glossaryCriticalRate,
                 accentColor: WuxiaUi.jiang,
               ),
             ),
@@ -773,6 +795,7 @@ class _DerivedStatsSection extends ConsumerWidget {
               child: _DerivedStatCard(
                 label: UiStrings.statEvasionRate,
                 value: evadeText,
+                glossary: UiStrings.glossaryEvasionRate,
                 accentColor: WuxiaUi.woodDark,
               ),
             ),
@@ -1572,6 +1595,7 @@ class _MainTechniqueTile extends ConsumerWidget {
                   // D：修炼度五要素 Row（卡内子段，title 省略不重复心法名）。
                   StageProgressRow(
                     stageName: EnumL10n.cultivationLayer(t.cultivationLayer),
+                    glossaryDefinition: UiStrings.glossaryCultivation,
                     ratio: progress,
                     currentEffect: UiStrings.cultivationDamageMult(curMult),
                     nextEffect: nextMultText,
@@ -1968,12 +1992,16 @@ class _DerivedStatCard extends StatelessWidget {
   const _DerivedStatCard({
     required this.label,
     required this.value,
+    this.glossary,
     this.valueFontSize = 25,
     this.accentColor = WuxiaUi.ink,
   });
 
   final String label;
   final String value;
+
+  /// M4 术语释义；非空时标签包进 [GlossaryLabel]（带「?」+ 气泡）。
+  final String? glossary;
   final double valueFontSize;
   final Color accentColor;
 
@@ -2002,16 +2030,26 @@ class _DerivedStatCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: WuxiaUi.ink,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                glossary == null
+                    ? Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: WuxiaUi.ink,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      )
+                    : GlossaryLabel(
+                        label: label,
+                        definition: glossary!,
+                        style: const TextStyle(
+                          color: WuxiaUi.ink,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                 const SizedBox(height: 5),
                 Text(
                   value,
