@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../features/inner_demon/domain/inner_demon_def.dart';
 import '../features/light_foot/domain/light_foot_def.dart';
 import '../features/mass_battle/domain/mass_battle_def.dart';
@@ -205,6 +207,9 @@ class NumbersConfig {
   /// fixture 不带 `cycle_evolution` 段时走 [CycleEvolutionConfig.empty]（traitsFor 永空集）。
   final CycleEvolutionConfig cycleEvolution;
 
+  /// M2 范围 B 通用被动离线挂机配置（numbers.yaml `passive_idle`，spec 2026-06-15）。
+  final PassiveIdleConfig passiveIdle;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -251,6 +256,7 @@ class NumbersConfig {
     required this.encounterFortuneSensitivity,
     required this.loadoutUltimatePowerThreshold,
     required this.cycleEvolution,
+    required this.passiveIdle,
     required this.raw,
   });
 
@@ -384,6 +390,9 @@ class NumbersConfig {
           5000,
       cycleEvolution: CycleEvolutionConfig.fromYaml(
         y['cycle_evolution'] as Map<String, dynamic>?,
+      ),
+      passiveIdle: PassiveIdleConfig.fromYaml(
+        y['passive_idle'] as Map<String, dynamic>,
       ),
       raw: y,
     );
@@ -2536,5 +2545,44 @@ class CycleEvolutionConfig {
     if (cycle <= 1) return const {};
     final tableKey = isTower ? (isBoss ? 'tower_boss' : 'tower_normal') : 'mainline';
     return _assignment[tableKey]?[cycle] ?? const {};
+  }
+}
+
+/// M2 范围 B 通用被动离线挂机配置（numbers.yaml `passive_idle`）。
+class PassiveIdleConfig {
+  final double baseMojianshiPerHour;
+  final double baseExpPerHour;
+  final double realmScalePerTier;
+  final int capHours;
+  final double minRecapHours;
+
+  const PassiveIdleConfig({
+    required this.baseMojianshiPerHour,
+    required this.baseExpPerHour,
+    required this.realmScalePerTier,
+    required this.capHours,
+    required this.minRecapHours,
+  });
+
+  /// 境界缩放：每升一大境界 ×realmScalePerTier。学徒(index 0)=1.0。
+  double realmScaleFor(RealmTier tier) =>
+      math.pow(realmScalePerTier, tier.index).toDouble();
+
+  factory PassiveIdleConfig.fromYaml(Map<String, dynamic> y) {
+    final base = (y['base_mojianshi_per_hour'] as num).toDouble();
+    final exp = (y['base_exp_per_hour'] as num).toDouble();
+    final scale = (y['realm_scale_per_tier'] as num).toDouble();
+    final cap = (y['cap_hours'] as num).toInt();
+    final minRecap = (y['min_recap_hours'] as num).toDouble();
+    if (base < 0 || exp < 0 || scale <= 0 || cap <= 0 || minRecap < 0) {
+      throw ArgumentError('passive_idle 数值非法: $y');
+    }
+    return PassiveIdleConfig(
+      baseMojianshiPerHour: base,
+      baseExpPerHour: exp,
+      realmScalePerTier: scale,
+      capHours: cap,
+      minRecapHours: minRecap,
+    );
   }
 }
