@@ -1054,6 +1054,15 @@ passive_idle:
   cap_hours: 72                   # 复用闭关封顶，超出不累积
   min_recap_hours: 1.0            # 离开 ≥1h 才弹告知卡(与范围 A 一致)
 
+battle_report:
+  # 失败复盘诊断规则阈值（spec 2026-06-15-battle-report-diagnosis）。
+  # 规则 id / priority 写死在 battle_diagnosis.dart（代码顺序即优先级），
+  # 此处只承载可调阈值。文案在 UiStrings（§5.6 文案不进 yaml）。
+  internal_wound_pct: 0.30          # 内伤占受伤总伤 ≥ 此比例 → killed_by_internal_wound
+  minion_damage_pct: 0.35           # 小怪伤害占比 ≥ 此比例 → mob_overrun（§11.4 原值）
+  frontline_death_phase_pct: 0.5    # 前排死亡 tick 占总回合 ≤ 此比例 → frontline_fragile
+  survivor_hp_pct: 0.5              # 敌方存活者平均 HP ≥ 此比例 → dps_too_low
+
 festivals:
   days_2026:
     - {festival: chuXi,       date: "2026-02-16"}  # 除夕   农历腊月最后一天
