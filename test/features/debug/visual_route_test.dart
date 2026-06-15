@@ -75,6 +75,13 @@ void main() {
     test('剧情背景路由 parse', () {
       expect(parseVisualRoute('narrative_scene'), VisualRoute.narrativeScene);
     });
+
+    test('M2 离线被动归来卡路由 parse', () {
+      expect(
+        parseVisualRoute('offline_recap_passive'),
+        VisualRoute.offlineRecapPassive,
+      );
+    });
   });
 
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。

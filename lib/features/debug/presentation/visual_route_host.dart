@@ -35,6 +35,7 @@ import '../../seclusion/presentation/active_retreat_screen.dart';
 import '../../seclusion/presentation/retreat_result_screen.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../seclusion/presentation/seclusion_setup_screen.dart';
+import '../../seclusion/presentation/offline_recap_card.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../application/phase2_seed_service.dart';
@@ -366,6 +367,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const _InterruptCaptionPreview();
     case VisualRoute.battleDefeat:
       return const _DefeatCeremonyPreview();
+    case VisualRoute.offlineRecapPassive:
+      return const _OfflineRecapPassivePreview();
     case VisualRoute.battleTreasureGlowPeak:
       return const _TreasureGlowPreview(
         defId: 'weapon_shenwu_tian_wen_jian',
@@ -854,6 +857,29 @@ class _InterruptCaptionPreview extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// M2 离线被动归来卡静态验收:无 active 闭关时的涓流入库告知卡
+/// ([OfflineRecapCard.passive])。纯静态(card 无副作用、文案走 UiStrings),
+/// 居中浮于水墨底,模拟弹窗态。onDismiss no-op(纯截图)。
+/// 数值取被动 25% 涓流 ~8h 量级示意,纯展示不参与结算。
+class _OfflineRecapPassivePreview extends StatelessWidget {
+  const _OfflineRecapPassivePreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Center(
+        child: OfflineRecapCard.passive(
+          mojianshi: 120,
+          experience: 860,
+          awayHours: 8.0,
+          onDismiss: () {},
+        ),
       ),
     );
   }
