@@ -7,7 +7,9 @@
 
 ## 当前阶段
 
-> ✅ **2026-06-15 续12(M2 范围 B 通用被动离线挂机 立项→实装 全闭环 · worktree `m2-passive-idle` 未合 · opus xhigh · subagent-driven)**:brainstorming 拍 9 决策(闭关增强版/25% 涓流/经验+磨剑石/自动入包仅告知/互斥不叠加)→ spec+plan→ 7 Task TDD(PassiveIdleConfig→compute 纯函数→SaveData 累计字段 saveVer **0.24.0**→settle 入库+gate 闭关被动互斥分流+旧档首启不回溯→lastOnlineAt 真写入点 AppLifecycleListener→归来卡被动变体→balance_simulator 红线复评)。**兑现 GDD §5.5「关游戏=挂机」**(原 lastOnlineAt 死字段),被动经验走 applyExperience 含心魔锁/升层不破境界锁(§5.3),无领取按钮守 §5.1,0 改伤害红线。Task4 完整 reviewer ✅ + final review **READY TO MERGE**(9 决策全兑现)。全量 2214→**2230 测**零回归 / analyze 0。**待真机验收**:关游戏重开被动卡 + lifecycle detached 写 lastOnlineAt 实效(bg 测不到 GUI)。spec+plan `2026-06-15-m2-offline-passive-idle-*`。
+> ✅ **2026-06-15 续13(P1b MeridianBar wiring · 合 main · opus high)**:四系统进度展示统一收口——`technique_panel` 修炼度 tile 从 Material `LinearProgressIndicator` 换 `StageProgressRow`(MeridianBar + 当前/下一阶伤害倍率五要素),与 character_panel/熟练度/共鸣度同款规范;**残页保留方块**(离散收集 X/N 片语义,用户拍板)。Explore 盘点四系统现状(校正其「character_panel 编译报错」误判)→ 实际单处 wire。+1 widget 测 / 全量 **2231 测**零回归 / analyze 0。**待视觉验收**:StageProgressRow 嵌入 technique tile 协调(与 M2/L3 挂账一起真机看)。
+
+> ✅ **2026-06-15 续12(M2 范围 B 通用被动离线挂机 立项→实装 全闭环 · 合 main `212b572c` · opus xhigh · subagent-driven)**:brainstorming 拍 9 决策(闭关增强版/25% 涓流/经验+磨剑石/自动入包仅告知/互斥不叠加)→ spec+plan→ 7 Task TDD(PassiveIdleConfig→compute 纯函数→SaveData 累计字段 saveVer **0.24.0**→settle 入库+gate 闭关被动互斥分流+旧档首启不回溯→lastOnlineAt 真写入点 AppLifecycleListener→归来卡被动变体→balance_simulator 红线复评)。**兑现 GDD §5.5「关游戏=挂机」**(原 lastOnlineAt 死字段),被动经验走 applyExperience 含心魔锁/升层不破境界锁(§5.3),无领取按钮守 §5.1,0 改伤害红线。Task4 完整 reviewer ✅ + final review **READY TO MERGE**(9 决策全兑现)。全量 2214→**2230 测**零回归 / analyze 0。**待真机验收**:关游戏重开被动卡 + lifecycle detached 写 lastOnlineAt 实效(bg 测不到 GUI)。spec+plan `2026-06-15-m2-offline-passive-idle-*`。
 
 > ✅ **2026-06-15 续11(L1 Codex 本机验收 + 两 fail 回修 · 合 main `a0f77a8b` · opus xhigh)**:Codex GUI 验收 L1(closeout `2026-06-15_l1_display_codex_acceptance.md`)— L1-1 全屏 / L1-4 重启恢复 / L1-5 M2 归来卡视觉 ✅;两 fail 回修:① L1-2 设置面板 720p 底部 overflow → ConstrainedBox(80% 屏)+SingleChildScrollView(回归测 +1)② L1-3 macOS F11 被系统「显示桌面」占 → 补 Alt+Enter(留 F11 给 Windows)。**二轮用户本机实测 Alt+Enter/720p 无 overflow/前去收功跳转全 pass,L1+M2 验收闭环、无遗留**。全量 2213→**2214 测**零回归。
 
@@ -93,7 +95,6 @@
 
 ### 2026-05-25/26/27/28 详条归档
 
-- **2026-05-25 P4.1+P5.0+audit v2**(1458→1484 测 · 详各 closeout)
 - **2026-05-26 P4.1 1.1 四项+audit v3+P5.2+Boss 招降叙事**(1484→1505 测 · 详各 closeout)
 - **2026-05-27 Boss 招降叙事+debug 招募+R2 派单**(1505 测 · 详 `session_closeout_2026-05-27_boss_narrative_debug_recruit.md`)
 - **2026-05-28 过夜清理+P3 三项+P2.1 4 批+drop 全覆盖+CHECKLIST v1.5+R4 派单**(1505→1519 测 · 详 `overnight_1_1_cleanup_handoff_2026-05-28.md` / `session_closeout_2026-05-28_p3_p1_triple.md` / `codex_dispatch_r4_p2_1_content_drop_2026-05-28.md`)
