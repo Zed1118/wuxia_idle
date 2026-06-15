@@ -39,55 +39,62 @@ class SettingsPanel extends ConsumerWidget {
         padding: EdgeInsets.all(24),
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (e, _) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text('$e'),
-      ),
-      data: (s) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _VolumeRow(
-            label: UiStrings.settingsMasterVolume,
-            value: s.masterVolume,
-            enabled: !s.muted,
-            onChanged: notifier.setMasterVolume,
+      error: (e, _) =>
+          Padding(padding: const EdgeInsets.all(24), child: Text('$e')),
+      data: (s) => ConstrainedBox(
+        // L1-2 回归:加显示设置段后内容变高,720p 窄高度下底部 overflow。
+        // 限高 80% 屏 + 可滚动,内容超高时滚动而非溢出。
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _VolumeRow(
+                label: UiStrings.settingsMasterVolume,
+                value: s.masterVolume,
+                enabled: !s.muted,
+                onChanged: notifier.setMasterVolume,
+              ),
+              _VolumeRow(
+                label: UiStrings.settingsBgmVolume,
+                value: s.bgmVolume,
+                enabled: !s.muted,
+                onChanged: notifier.setBgmVolume,
+              ),
+              _VolumeRow(
+                label: UiStrings.settingsSfxVolume,
+                value: s.sfxVolume,
+                enabled: !s.muted,
+                onChanged: notifier.setSfxVolume,
+              ),
+              SwitchListTile(
+                title: const Text(UiStrings.settingsMuted),
+                value: s.muted,
+                onChanged: notifier.setMuted,
+              ),
+              const Divider(height: 1),
+              const _AutoPlayDefaultTile(),
+              const Divider(height: 1),
+              const _DisplaySettingsSection(),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: const Text(UiStrings.settingsAbout),
+                subtitle: Text(
+                  UiStrings.settingsVersionValue(UiStrings.appVersion),
+                ),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.power_settings_new),
+                title: const Text(UiStrings.settingsQuit),
+                onTap: () => AppExit.confirmAndQuit(context),
+              ),
+            ],
           ),
-          _VolumeRow(
-            label: UiStrings.settingsBgmVolume,
-            value: s.bgmVolume,
-            enabled: !s.muted,
-            onChanged: notifier.setBgmVolume,
-          ),
-          _VolumeRow(
-            label: UiStrings.settingsSfxVolume,
-            value: s.sfxVolume,
-            enabled: !s.muted,
-            onChanged: notifier.setSfxVolume,
-          ),
-          SwitchListTile(
-            title: const Text(UiStrings.settingsMuted),
-            value: s.muted,
-            onChanged: notifier.setMuted,
-          ),
-          const Divider(height: 1),
-          const _AutoPlayDefaultTile(),
-          const Divider(height: 1),
-          const _DisplaySettingsSection(),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text(UiStrings.settingsAbout),
-            subtitle: Text(
-              UiStrings.settingsVersionValue(UiStrings.appVersion),
-            ),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.power_settings_new),
-            title: const Text(UiStrings.settingsQuit),
-            onTap: () => AppExit.confirmAndQuit(context),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -163,10 +170,7 @@ class _DisplaySettingsSection extends ConsumerWidget {
                   },
             items: [
               for (final p in WindowSizePreset.values)
-                DropdownMenuItem(
-                  value: p,
-                  child: Text(_resolutionLabel(p)),
-                ),
+                DropdownMenuItem(value: p, child: Text(_resolutionLabel(p))),
             ],
           ),
         ),
@@ -193,10 +197,7 @@ class _VolumeRow extends StatelessWidget {
       children: [
         SizedBox(width: 72, child: Text(label)),
         Expanded(
-          child: Slider(
-            value: value,
-            onChanged: enabled ? onChanged : null,
-          ),
+          child: Slider(value: value, onChanged: enabled ? onChanged : null),
         ),
       ],
     );

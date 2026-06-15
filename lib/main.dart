@@ -54,7 +54,11 @@ class WuxiaApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Shortcuts(
       shortcuts: const <ShortcutActivator, Intent>{
+        // F11(Windows/Linux 惯例);macOS 的 F11 被系统「显示桌面」吞掉
+        // (Codex 验收 L1-3),故补 Alt+Enter(macOS 不被系统占,游戏全屏惯例)。
         SingleActivator(LogicalKeyboardKey.f11): _ToggleFullscreenIntent(),
+        SingleActivator(LogicalKeyboardKey.enter, alt: true):
+            _ToggleFullscreenIntent(),
       },
       child: Actions(
         actions: <Type, Action<Intent>>{
