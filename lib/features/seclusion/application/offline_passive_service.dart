@@ -1,5 +1,15 @@
+import 'package:isar_community/isar.dart';
+
+import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/inventory_item.dart';
+import '../../../core/domain/save_data.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
 import '../../../data/numbers_config.dart';
+import '../../cultivation/application/character_advancement_service.dart';
+import '../../inner_demon/application/inner_demon_service.dart';
+import '../../mainline/domain/mainline_progress.dart';
 
 /// 被动离线挂机一次结算的产量（纯数据）。
 typedef PassiveYield = ({int mojianshi, int experience});
@@ -25,5 +35,77 @@ class OfflinePassiveService {
     final experience =
         (config.baseExpPerHour * capped * scale).floor().clamp(0, 999999);
     return (mojianshi: mojianshi, experience: experience);
+  }
+
+  /// 结算一次被动离线产出并写 Isar（同事务）：
+  ///   1. 磨剑石 → InventoryItem(item_mojianshi)
+  ///   2. 经验 → CharacterAdvancementService.applyExperience（含升层 + 心魔锁，
+  ///      与闭关收功一致）
+  ///   3. SaveData 累计 += + lastOnlineAt = now（重置基准，防重复结算）
+  /// 仅由 gate 在「无 active 闭关 + 离线>0」时调用（互斥见 spec）。返回本次产量。
+  static Future<PassiveYield> settle({
+    required int saveDataId,
+    required int characterId,
+    required double awayHours,
+    required DateTime now,
+  }) async {
+    final isar = IsarSetup.instance;
+    final ch = await isar.characters.get(characterId);
+    final realmTier = ch?.realmTier ?? RealmTier.xueTu;
+    final yield_ = compute(
+      awayHours: awayHours,
+      realmTier: realmTier,
+      config: GameRepository.instance.numbers.passiveIdle,
+    );
+
+    await isar.writeTxn(() async {
+      if (yield_.mojianshi > 0) {
+        final existing = await isar.inventoryItems.getByDefId('item_mojianshi');
+        if (existing != null) {
+          existing.quantity += yield_.mojianshi;
+          existing.lastObtainedAt = now;
+          await isar.inventoryItems.put(existing);
+        } else {
+          await isar.inventoryItems.put(InventoryItem()
+            ..defId = 'item_mojianshi'
+            ..itemType = ItemType.moJianShi
+            ..quantity = yield_.mojianshi
+            ..firstObtainedAt = now
+            ..lastObtainedAt = now);
+        }
+      }
+
+      final c = await isar.characters.get(characterId);
+      if (c != null && yield_.experience > 0) {
+        final progress = await isar.mainlineProgress
+            .filter()
+            .saveDataIdEqualTo(saveDataId)
+            .findFirst();
+        final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
+        final innerDemonDef = GameRepository.instance.numbers.innerDemon;
+        CharacterAdvancementService.applyExperience(
+          c,
+          yield_.experience,
+          realmLookup: GameRepository.instance.getRealm,
+          isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
+            nextTier: tier,
+            nextLayer: layer,
+            innerDemonDef: innerDemonDef,
+            clearedStageIds: clearedSet,
+          ),
+        );
+        await isar.characters.put(c);
+      }
+
+      final save = await isar.saveDatas.get(0);
+      if (save != null) {
+        save.totalPassiveMojianshi += yield_.mojianshi;
+        save.totalPassiveExperience += yield_.experience;
+        save.lastOnlineAt = now;
+        await isar.saveDatas.put(save);
+      }
+    });
+
+    return yield_;
   }
 }

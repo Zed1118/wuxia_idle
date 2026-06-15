@@ -45,6 +45,17 @@ class IsarSetup {
   /// 当前槽位 SaveData（id 固定 0）。init 后必非 null；未 init 时 instance 抛错。
   static Future<SaveData?> currentSaveData() => instance.saveDatas.get(0);
 
+  /// 把 lastOnlineAt 推到 [now]（默认 DateTime.now()），作为被动离线结算基准。
+  /// gate 在「旧档首启不回溯」分支占位调用。Task 5 提供完整版,本 Task 先落最小版。
+  static Future<void> touchOnlineNow({DateTime? now}) async {
+    final save = await currentSaveData();
+    if (save == null) return;
+    await instance.writeTxn(() async {
+      save.lastOnlineAt = now ?? DateTime.now();
+      await instance.saveDatas.put(save);
+    });
+  }
+
   static int currentSlotId = 1;
 
   /// 全部持久化 schema 清单（data_schema.md §7.1）。
