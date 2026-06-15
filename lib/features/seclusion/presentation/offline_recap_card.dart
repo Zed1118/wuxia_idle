@@ -23,8 +23,8 @@ class OfflineRecapCard extends StatelessWidget {
 
   /// M2 范围 B 被动离线告知卡（无 active 闭关时弹）。
   ///
-  /// 与范围 A 不同：产出已在 settle 入库,此卡仅告知,无「前去收功」按钮。
-  /// **Task 4 占位最小实现**(渲染产量文字 + 单关闭按钮)；Task 6 出精致水墨变体。
+  /// 与范围 A 不同：产出已在 settle 入库,此卡仅告知,无「前去收功」按钮
+  /// （守反留存红线 §5.1）。复用 PaperPanel + PlaqueButton 水墨体例。
   const OfflineRecapCard.passive({
     super.key,
     required int mojianshi,
