@@ -77,4 +77,8 @@ class SaveData {
   /// 真解首通直接 markUnlocked;爬塔残页 addFragment 累加,达阈值自动 markUnlocked。
   /// 不含奇遇技能(走 equippedEncounterSkillId,两套并存)。
   List<SkillUnlockEntry> skillUnlockProgress = [];
+
+  /// M2 范围 B 被动离线挂机累计总产出（仅汇总卡展示，YAGNI 不分维度）。
+  int totalPassiveMojianshi = 0;
+  int totalPassiveExperience = 0;
 }
