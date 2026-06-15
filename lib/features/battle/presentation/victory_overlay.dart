@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../domain/battle_state.dart';
+import '../domain/battle_diagnosis.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
@@ -15,6 +16,12 @@ class VictoryOverlay extends StatelessWidget {
   final int totalTicks;
   final VoidCallback onContinue;
 
+  /// 败北诊断（胜利为 null）。null 时退化为无诊断块（仅题字+统计）。
+  final BattleDiagnosis? diagnosis;
+
+  /// 诊断建议跳转回调（overlay 保持纯展示，导航交给 caller）。
+  final void Function(DiagnosisJumpTarget target)? onJump;
+
   const VictoryOverlay({
     super.key,
     required this.result,
@@ -22,9 +29,17 @@ class VictoryOverlay extends StatelessWidget {
     required this.critCount,
     required this.totalTicks,
     required this.onContinue,
+    this.diagnosis,
+    this.onJump,
   });
 
   bool get _isVictory => result == BattleResult.leftWin;
+
+  static String _jumpLabel(DiagnosisJumpTarget t) => switch (t) {
+        DiagnosisJumpTarget.skills => UiStrings.diagJumpSkills,
+        DiagnosisJumpTarget.equipment => UiStrings.diagJumpEquipment,
+        DiagnosisJumpTarget.cultivation => UiStrings.diagJumpCultivation,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -119,18 +134,57 @@ class VictoryOverlay extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  // P0 破招：败北时附破招提示，引导玩家看准蓄力时机。
-                  if (!_isVictory) ...[
-                    const SizedBox(height: 8),
+                  // 战报失败诊断三段式（spec 2026-06-15-battle-report-diagnosis）。
+                  if (!_isVictory && diagnosis != null) ...[
+                    const SizedBox(height: 10),
                     Text(
-                      UiStrings.battleDefeatHintInterrupt,
+                      diagnosis!.primaryCause,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: WuxiaUi.ink.withValues(alpha: 0.82),
-                        fontSize: 13,
-                        height: 1.4,
+                        color: accent,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    for (final line in diagnosis!.dataLines)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 1),
+                        child: Text(
+                          line,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: WuxiaUi.ink.withValues(alpha: 0.82),
+                            fontSize: 13,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 6),
+                    for (final s in diagnosis!.suggestions)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: s.jump == null
+                            ? Text(
+                                s.text,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: WuxiaUi.ink.withValues(alpha: 0.78),
+                                  fontSize: 13,
+                                  height: 1.4,
+                                ),
+                              )
+                            : OutlinedButton(
+                                onPressed: () => onJump?.call(s.jump!),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: accent,
+                                  side: BorderSide(
+                                    color: accent.withValues(alpha: 0.55),
+                                  ),
+                                ),
+                                child: Text(_jumpLabel(s.jump!)),
+                              ),
+                      ),
                   ],
                   const SizedBox(height: 10),
                   Image.asset(
