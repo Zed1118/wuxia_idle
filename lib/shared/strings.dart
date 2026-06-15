@@ -1330,4 +1330,16 @@ class UiStrings {
 
   /// 稍后再说按钮（关闭卡片）
   static const String offlineRecapDismiss = '稍后再说';
+
+  // ── M2 范围 B 被动离线告知卡(2026-06-15)──────────────────────────
+  /// 被动卡标题（非闭关期间亦有精进）
+  static const String passiveRecapTitle = '闭关之外，亦有精进';
+
+  /// 被动卡正文（含离开时长 / 磨剑石 / 修为三项产出）
+  static String passiveRecapBody(int hours, int moji, int exp) =>
+      '离去约 $hours 时辰。这些时日你未曾松懈，行功走架之间，'
+      '得磨剑石 $moji、修为 $exp，已收入囊中。';
+
+  /// 被动卡关闭按钮
+  static const String passiveRecapDismiss = '甚好';
 }

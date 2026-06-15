@@ -119,7 +119,9 @@ class OfflineRecapCard extends StatelessWidget {
     );
   }
 
-  /// 范围 B 被动告知卡渲染（Task 4 占位；Task 6 增强为水墨变体）。
+  /// 范围 B 被动告知卡渲染（Task 6 水墨精致变体）。
+  ///
+  /// 产出已在 settle 时自动入库，此卡纯告知，无「前去收功/领取」按钮。
   Widget _buildPassive() {
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 420),
@@ -130,37 +132,33 @@ class OfflineRecapCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              UiStrings.offlineRecapTitle,
+              UiStrings.passiveRecapTitle,
               style: TextStyle(
                 color: WuxiaUi.ink,
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 4,
+                letterSpacing: 3,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Text(
-              UiStrings.offlineRecapAwayLine(passiveAwayHours!.floor()),
-              style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              UiStrings.offlineRecapRewardLine(
+              UiStrings.passiveRecapBody(
+                passiveAwayHours!.floor(),
                 passiveMojianshi!,
                 passiveExperience!,
               ),
               style: const TextStyle(
                 color: WuxiaUi.ink,
                 fontSize: 13,
-                fontWeight: FontWeight.w600,
+                height: 1.7,
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 PlaqueButton(
-                  label: UiStrings.offlineRecapDismiss,
+                  label: UiStrings.passiveRecapDismiss,
                   onTap: onDismiss,
                   primary: true,
                 ),
