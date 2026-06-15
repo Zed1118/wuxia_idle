@@ -210,6 +210,9 @@ class NumbersConfig {
   /// M2 范围 B 通用被动离线挂机配置（numbers.yaml `passive_idle`，spec 2026-06-15）。
   final PassiveIdleConfig passiveIdle;
 
+  /// 战报失败诊断阈值（numbers.yaml `battle_report`，spec 2026-06-15）。
+  final BattleReportConfig battleReport;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -257,6 +260,7 @@ class NumbersConfig {
     required this.loadoutUltimatePowerThreshold,
     required this.cycleEvolution,
     required this.passiveIdle,
+    required this.battleReport,
     required this.raw,
   });
 
@@ -393,6 +397,9 @@ class NumbersConfig {
       ),
       passiveIdle: PassiveIdleConfig.fromYaml(
         y['passive_idle'] as Map<String, dynamic>,
+      ),
+      battleReport: BattleReportConfig.fromYaml(
+        y['battle_report'] as Map<String, dynamic>,
       ),
       raw: y,
     );
@@ -2583,6 +2590,40 @@ class PassiveIdleConfig {
       realmScalePerTier: scale,
       capHours: cap,
       minRecapHours: minRecap,
+    );
+  }
+}
+
+/// 战报失败诊断阈值（spec 2026-06-15-battle-report-diagnosis）。
+/// 规则 id/priority 写死在 battle_diagnosis.dart；此处只承载可调阈值。
+class BattleReportConfig {
+  final double internalWoundPct;
+  final double minionDamagePct;
+  final double frontlineDeathPhasePct;
+  final double survivorHpPct;
+
+  const BattleReportConfig({
+    required this.internalWoundPct,
+    required this.minionDamagePct,
+    required this.frontlineDeathPhasePct,
+    required this.survivorHpPct,
+  });
+
+  factory BattleReportConfig.fromYaml(Map<String, dynamic> y) {
+    double pct(String k) => (y[k] as num).toDouble();
+    final iw = pct('internal_wound_pct');
+    final md = pct('minion_damage_pct');
+    final fd = pct('frontline_death_phase_pct');
+    final sv = pct('survivor_hp_pct');
+    bool ok(double v) => v > 0 && v <= 1;
+    if (!ok(iw) || !ok(md) || !ok(fd) || !ok(sv)) {
+      throw ArgumentError('battle_report 阈值须在 (0,1]: $y');
+    }
+    return BattleReportConfig(
+      internalWoundPct: iw,
+      minionDamagePct: md,
+      frontlineDeathPhasePct: fd,
+      survivorHpPct: sv,
     );
   }
 }
