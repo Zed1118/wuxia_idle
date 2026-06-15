@@ -800,9 +800,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     }
 
     final stats = BattleStatsSummary.from(s);
-    final diagnosis = result == BattleResult.leftWin
-        ? null
-        : BattleDiagnosis.from(s, ref.read(numbersConfigProvider).battleReport);
+    final diagnosis = result == BattleResult.leftWin ? null : _safeDiagnose(s);
 
     showGeneralDialog<void>(
       context: context,
@@ -829,6 +827,17 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       transitionBuilder: (ctx, anim, _, child) =>
           FadeTransition(opacity: anim, child: child),
     );
+  }
+
+  /// 算败北诊断；numbersConfig 未就绪（如不加载 GameRepository 的轻量 widget
+  /// test）时退化为 null，overlay 仍正常弹出（仅无诊断块）。诊断是非关键 UI。
+  BattleDiagnosis? _safeDiagnose(BattleState s) {
+    try {
+      return BattleDiagnosis.from(
+          s, ref.read(numbersConfigProvider).battleReport);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// 诊断建议跳转：叠在胜负 overlay 之上 push 目标 screen，
