@@ -42,6 +42,9 @@ class IsarSetup {
   /// propagation）：未 init 时返回 null,不抛错。生产路径走 [instance]。
   static Isar? get instanceOrNull => _instance;
 
+  /// 当前槽位 SaveData（id 固定 0）。init 后必非 null；未 init 时 instance 抛错。
+  static Future<SaveData?> currentSaveData() => instance.saveDatas.get(0);
+
   static int currentSlotId = 1;
 
   /// 全部持久化 schema 清单（data_schema.md §7.1）。
@@ -100,7 +103,9 @@ class IsarSetup {
   //   autoPlayOverride 迁 SharedPreferences(设置≠存档,见 stage_auto_play_pref.dart),
   //   旧 Isar override 不迁移(语义已从「自动/手动单步」变「挂机/拖招」,重置随全局)。
   //   无数据迁移动作,仅版本标记 → 0.23.0。
-  static const _currentSaveVersion = '0.23.0';
+  //   M2 范围 B 被动离线挂机:SaveData 加 totalPassiveMojianshi/totalPassiveExperience
+  //   (旧档新 int 字段自动 0,无显式迁移动作,_migrateSaveData 尾部统一落版本号)→ 0.24.0。
+  static const _currentSaveVersion = '0.24.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
