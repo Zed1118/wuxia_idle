@@ -54,7 +54,6 @@ class UiStrings {
   static String skillCooldownShort(int turns) => '冷却$turns';
   // B3 破招成功「破！」题字 overlay 文案(破招方暖金/敌方绛红)。
   static const String interruptCaption = '破！';
-  static const String battleDefeatHintInterrupt = '蓄力大招难挡——保留内力,看准蓄力时机破招。';
 
   // 伤害飘字（T15）
   static const String dodge = '闪';
