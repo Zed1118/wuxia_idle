@@ -10,8 +10,8 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
-import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/features/technique_panel/presentation/technique_panel_screen.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 /// T31 心法面板 widget 测试（phase2_tasks.md §483）。
 ///
@@ -338,5 +338,37 @@ void main() {
     final assist = mkTechnique(id: 101, ownerId: 1, role: TechniqueRole.assist);
     await pumpPanel(tester, character: character, techniques: {101: assist});
     expect(find.text(UiStrings.techniquePanelMainHeroLabel), findsNothing);
+  });
+
+  // ── 用例 8：P1b 修炼度进度接入 StageProgressRow 规范 ────────────────────
+
+  testWidgets('P1b: 修炼度 tile 接入 StageProgressRow(MeridianBar)，移除 LinearProgressIndicator', (
+    tester,
+  ) async {
+    final character = mkCharacter(
+      mainTechniqueId: 100,
+      assistTechniqueIds: [101],
+    );
+    final main = mkTechnique(
+      id: 100,
+      ownerId: 1,
+      role: TechniqueRole.main,
+      cultivationLayer: CultivationLayer.chuKui,
+      cultivationProgress: 30,
+      cultivationProgressToNext: 100,
+    );
+    final assist = mkTechnique(id: 101, ownerId: 1, role: TechniqueRole.assist);
+
+    await pumpPanel(
+      tester,
+      character: character,
+      techniques: {100: main, 101: assist},
+    );
+
+    // 修炼度 tile 接入 5 要素规范组件（含水墨 MeridianBar 进度条）。
+    expect(find.byType(StageProgressRow), findsWidgets);
+    expect(find.byType(MeridianBar), findsWidgets);
+    // 不再用 Material 默认进度条（违水墨基调，§9）。
+    expect(find.byType(LinearProgressIndicator), findsNothing);
   });
 }
