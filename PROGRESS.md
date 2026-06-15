@@ -7,7 +7,7 @@
 
 ## 当前阶段
 
-> ✅ **2026-06-15 续11(L1 Codex 本机验收 + 两 fail 回修 · 合 main `a0f77a8b` · opus xhigh)**:Codex GUI 验收 L1(closeout `2026-06-15_l1_display_codex_acceptance.md`)— L1-1 全屏 / L1-4 重启恢复 / L1-5 M2 归来卡视觉 ✅;两 fail 回修:① L1-2 设置面板 720p 底部 overflow → ConstrainedBox(80% 屏)+SingleChildScrollView(回归测 +1)② L1-3 macOS F11 被系统「显示桌面」占 → 补 Alt+Enter(留 F11 给 Windows),实效待 Codex 二轮验。全量 2213→**2214 测**零回归。
+> ✅ **2026-06-15 续11(L1 Codex 本机验收 + 两 fail 回修 · 合 main `a0f77a8b` · opus xhigh)**:Codex GUI 验收 L1(closeout `2026-06-15_l1_display_codex_acceptance.md`)— L1-1 全屏 / L1-4 重启恢复 / L1-5 M2 归来卡视觉 ✅;两 fail 回修:① L1-2 设置面板 720p 底部 overflow → ConstrainedBox(80% 屏)+SingleChildScrollView(回归测 +1)② L1-3 macOS F11 被系统「显示桌面」占 → 补 Alt+Enter(留 F11 给 Windows)。**二轮用户本机实测 Alt+Enter/720p 无 overflow/前去收功跳转全 pass,L1+M2 验收闭环、无遗留**。全量 2213→**2214 测**零回归。
 
 > ✅ **2026-06-15 续10(L3+2 清理合并 + M2 归来卡 + L1 显示设置 · 全合 main · opus xhigh)**:① L3 闭关非阻塞(续9 worktree)+ 2 项安全清理经独立 gate review 全过,ff-merge 合 main(`45f0f5d4`)。② **M2 离线收益范围 A**(`7efb82c8`,13 测 TDD):重开 HomeFeed 首帧查 active 闭关,离开≥1h 弹「归来」水墨卡(已满/进行中 P%+预估磨剑石·经验+去收功),复用 computeOutputs 同口径,0 改 schema/红线(GDD §5.5 无关,仅可见化已发生闭关产出);范围 B 通用被动挂机触红线单独立项待拍板。③ **L1 显示设置**(`130b40ac`,10 测 TDD):引 window_manager 0.5.1,全屏+3 档分辨率(1280×720/1600×900/1920×1080)+F11,SharedPreferences 持久化(端机偏好不进 Isar),WindowController 抽象隔离 platform channel。闸门 analyze 0 / 全量 2190→**2213 测**(+M2 13+L1 10)/零回归。**待真机验收**(bg 无法跑 GUI):L1 窗口实效(全屏/resize/F11)。spec:m2-offline-recap-design.md / l1-display-settings-design.md。**UX 滚动表 H/M/L 全清**。
 
