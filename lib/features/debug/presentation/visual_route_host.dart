@@ -42,6 +42,7 @@ import '../../battle/presentation/battle_screen.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
 import '../../battle/presentation/battle_scene_background.dart';
 import '../../battle/presentation/victory_overlay.dart';
+import '../../battle/domain/battle_diagnosis.dart';
 import '../application/visual_route.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../data/narrative_loader.dart';
@@ -879,6 +880,15 @@ class _DefeatCeremonyPreview extends StatelessWidget {
             totalDamage: 18640,
             critCount: 7,
             totalTicks: 42,
+            diagnosis: const BattleDiagnosis(
+              ruleId: 'killed_by_charge',
+              primaryCause: '被 Boss 蓄力大招击溃',
+              dataLines: ['致命一击：摧心掌 720', '内力余量：180/500'],
+              suggestions: [
+                DiagnosisSuggestion('保留内力、装配破招技。', DiagnosisJumpTarget.skills),
+              ],
+            ),
+            onJump: (_) {},
             onContinue: () {},
           ),
         ],
