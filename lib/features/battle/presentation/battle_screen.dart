@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/battle_log.dart';
 import '../domain/battle_state.dart';
 import '../domain/battle_stats.dart';
+import '../domain/battle_diagnosis.dart';
 import '../domain/damage_calculator.dart';
 import '../domain/enum_localizations.dart';
 import '../../../data/defs/skill_def.dart';
@@ -30,6 +31,9 @@ import 'hit_flash.dart';
 import 'projectile_trail.dart';
 import 'ultimate_caption_overlay.dart';
 import 'victory_overlay.dart';
+import '../../cangjingge/presentation/cangjingge_screen.dart';
+import '../../inventory/presentation/inventory_screen.dart';
+import '../../technique_panel/presentation/technique_panel_screen.dart';
 
 /// 单个飘字条目（id + 数据）。
 class _PopupEntry {
@@ -796,6 +800,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     }
 
     final stats = BattleStatsSummary.from(s);
+    final diagnosis = result == BattleResult.leftWin
+        ? null
+        : BattleDiagnosis.from(s, ref.read(numbersConfigProvider).battleReport);
 
     showGeneralDialog<void>(
       context: context,
@@ -807,6 +814,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         totalDamage: stats.totalDamage,
         critCount: stats.critCount,
         totalTicks: stats.totalTicks,
+        diagnosis: diagnosis,
+        onJump: (target) => _handleDiagnosisJump(s, target),
         onContinue: () {
           Navigator.of(ctx).pop();
           widget.onBattleEnd?.call();
@@ -820,6 +829,23 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       transitionBuilder: (ctx, anim, _, child) =>
           FadeTransition(opacity: anim, child: child),
     );
+  }
+
+  /// 诊断建议跳转：叠在胜负 overlay 之上 push 目标 screen，
+  /// 返回后玩家仍可按「继续」。characterId 取玩家主控角色（slot 最小）。
+  void _handleDiagnosisJump(BattleState s, DiagnosisJumpTarget target) {
+    final playerId = s.leftTeam.isEmpty
+        ? 0
+        : s.leftTeam
+            .reduce((a, b) => a.slotIndex <= b.slotIndex ? a : b)
+            .characterId;
+    final Widget screen = switch (target) {
+      DiagnosisJumpTarget.skills => CangJingGeScreen(characterId: playerId),
+      DiagnosisJumpTarget.equipment => const InventoryScreen(),
+      DiagnosisJumpTarget.cultivation =>
+        TechniquePanelScreen(characterId: playerId),
+    };
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
   }
 
   // ─── 工具方法 ─────────────────────────────────────────────────────────────
