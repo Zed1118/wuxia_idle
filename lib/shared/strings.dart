@@ -77,6 +77,40 @@ class UiStrings {
   static String battleSummary(int totalDamage, int critCount, int totalTicks) =>
       '总伤害 $totalDamage    暴击 $critCount 次    用时 $totalTicks 回合';
 
+  // ── 战报失败诊断（spec 2026-06-15-battle-report-diagnosis）──
+  // 主因（1 条/规则）
+  static const String diagCauseCharge = '被 Boss 蓄力大招击溃';
+  static const String diagCauseInternalWound = '被内伤层层拖垮';
+  static const String diagCauseMob = '被群敌围殴拖死';
+  static const String diagCauseFrontline = '前排太脆，过早倒下';
+  static const String diagCauseDps = '输出不足，未能速决';
+  static const String diagCauseGeneric = '惜败，调整战术后再战';
+
+  // 关键数据（2 条/规则）
+  static String diagLethalHit(String skill, int dmg) => '致命一击：$skill $dmg';
+  static String diagInternalForceLeft(int cur, int max) => '内力余量：$cur/$max';
+  static String diagInternalWoundRatio(int pct) => '内伤占比：$pct%';
+  static String diagDamageTaken(int dmg) => '受到总伤：$dmg';
+  static String diagMinionRatio(int pct) => '小怪伤害占比：$pct%';
+  static String diagFrontlineDeath(String name, int tick) => '$name 在第 $tick 回合倒下';
+  static String diagFrontlineMaxHp(int hp) => '其最大血量：$hp';
+  static String diagTotalTicks(int tick) => '总回合：$tick';
+  static String diagSurvivorHp(int pct) => '敌方残血：平均 $pct%';
+  static String diagTotalDamage(int dmg) => '总伤害：$dmg';
+
+  // 建议（1 条/规则）
+  static const String diagSuggestCharge = '保留内力、装配破招技，看准蓄力时机破招。';
+  static const String diagSuggestInternalWound = '速杀或修抗性心法、备回复，化解内伤。';
+  static const String diagSuggestMob = '装配群体技，优先清场再攻坚。';
+  static const String diagSuggestFrontline = '强化护具、以虚弱/回复护住前排。';
+  static const String diagSuggestDps = '提升技能熟练度，使用破防技提速。';
+  static const String diagSuggestGeneric = '检视技能装配，调整后再战。';
+
+  // 跳转按钮 label
+  static const String diagJumpSkills = '查看技能装配';
+  static const String diagJumpEquipment = '查看装备';
+  static const String diagJumpCultivation = '查看心法';
+
   // 主菜单（T32 子提交 3b；G1 剥「调试」字样,production-facing 产品名）
   static const String mainMenuTitle = '挂机武侠';
   // 开场闪屏:加载中提示 + 加载完成「轻触继续」(放慢一闪而过的开场 + 给跳过出口)。
