@@ -5,7 +5,9 @@ import '../../../shared/app_exit.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../application/audio_settings_provider.dart';
+import '../application/display_settings_providers.dart';
 import '../application/gameplay_settings_provider.dart';
+import '../domain/display_settings.dart';
 import '../domain/gameplay_settings.dart';
 
 /// 设置面板：3 滑条 + 静音开关，改动即存（provider 内持久化 + 应用引擎）。
@@ -70,6 +72,8 @@ class SettingsPanel extends ConsumerWidget {
           const Divider(height: 1),
           const _AutoPlayDefaultTile(),
           const Divider(height: 1),
+          const _DisplaySettingsSection(),
+          const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text(UiStrings.settingsAbout),
@@ -111,6 +115,62 @@ class _AutoPlayDefaultTile extends ConsumerWidget {
             .save(GameplaySettings(autoPlayDefault: v));
         ref.invalidate(gameplaySettingsProvider);
       },
+    );
+  }
+}
+
+/// L1 显示设置段:全屏开关 + 窗口分辨率下拉（端机本地偏好,SharedPreferences）。
+/// 全屏时分辨率下拉禁用（全屏忽略尺寸）。改动即存即应用到窗口。
+class _DisplaySettingsSection extends ConsumerWidget {
+  const _DisplaySettingsSection();
+
+  static String _resolutionLabel(WindowSizePreset p) => switch (p) {
+    WindowSizePreset.hd720 => UiStrings.settingsResolutionHd720,
+    WindowSizePreset.hd900 => UiStrings.settingsResolutionHd900,
+    WindowSizePreset.hd1080 => UiStrings.settingsResolutionHd1080,
+  };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(displaySettingsProvider);
+    final s = async.maybeWhen(
+      data: (d) => d,
+      orElse: () => const DisplaySettings(),
+    );
+    final ctl = ref.read(displaySettingsControllerProvider);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SwitchListTile(
+          title: const Text(UiStrings.settingsFullscreen),
+          subtitle: const Text(UiStrings.settingsFullscreenHint),
+          value: s.fullscreen,
+          onChanged: (v) async {
+            await ctl.apply(s.copyWith(fullscreen: v));
+            ref.invalidate(displaySettingsProvider);
+          },
+        ),
+        ListTile(
+          title: const Text(UiStrings.settingsResolution),
+          trailing: DropdownButton<WindowSizePreset>(
+            value: s.sizePreset,
+            onChanged: s.fullscreen
+                ? null
+                : (p) async {
+                    if (p == null) return;
+                    await ctl.apply(s.copyWith(sizePreset: p));
+                    ref.invalidate(displaySettingsProvider);
+                  },
+            items: [
+              for (final p in WindowSizePreset.values)
+                DropdownMenuItem(
+                  value: p,
+                  child: Text(_resolutionLabel(p)),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

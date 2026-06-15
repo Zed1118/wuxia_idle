@@ -1,10 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'features/debug/application/visual_route.dart';
 import 'features/debug/presentation/visual_route_host.dart';
 import 'features/settings/application/audio_settings_service.dart';
+import 'features/settings/application/display_settings_providers.dart';
+import 'features/settings/application/display_settings_service.dart';
+import 'features/settings/application/window_controller.dart';
 import 'features/splash/presentation/splash_screen.dart';
 import 'shared/audio/audio_players_backend.dart';
 import 'shared/audio/sound_manager.dart';
@@ -28,24 +33,59 @@ Future<void> main() async {
     }
   }
 
+  // L1 显示设置:初始化 window_manager 并应用保存的窗口模式/分辨率。
+  // 放 visual-route 短路之后 → 验收模式（VISUAL_WINDOW_W/H 锁尺寸）不受干扰。
+  if (!kIsWeb) {
+    await windowManager.ensureInitialized();
+    await const WindowManagerController().apply(
+      await DisplaySettingsService().load(),
+    );
+  }
+
   // M4 PoC #46 美术 Stage 2 收官:启动初始化迁入 SplashScreen,
   // 期间显示 landscape_loading.png + 并行跑 GameRepository + IsarSetup。
   runApp(const ProviderScope(child: WuxiaApp()));
 }
 
-class WuxiaApp extends StatelessWidget {
+class WuxiaApp extends ConsumerWidget {
   const WuxiaApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: UiStrings.appTitle,
-      theme: ThemeData.dark(useMaterial3: true),
-      debugShowCheckedModeBanner: false,
-      builder: _wuxiaTextScaleBuilder,
-      home: const SplashScreen(),
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Shortcuts(
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.f11): _ToggleFullscreenIntent(),
+      },
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          _ToggleFullscreenIntent: CallbackAction<_ToggleFullscreenIntent>(
+            onInvoke: (_) {
+              _toggleFullscreen(ref);
+              return null;
+            },
+          ),
+        },
+        child: MaterialApp(
+          title: UiStrings.appTitle,
+          theme: ThemeData.dark(useMaterial3: true),
+          debugShowCheckedModeBanner: false,
+          builder: _wuxiaTextScaleBuilder,
+          home: const SplashScreen(),
+        ),
+      ),
     );
   }
+}
+
+/// F11 全屏切换:读当前设置 → toggle → 刷新 provider（端机偏好,SharedPreferences）。
+Future<void> _toggleFullscreen(WidgetRef ref) async {
+  final current = await ref.read(displaySettingsProvider.future);
+  await ref.read(displaySettingsControllerProvider).toggleFullscreen(current);
+  ref.invalidate(displaySettingsProvider);
+}
+
+class _ToggleFullscreenIntent extends Intent {
+  const _ToggleFullscreenIntent();
 }
 
 Widget _wuxiaTextScaleBuilder(BuildContext context, Widget? child) {

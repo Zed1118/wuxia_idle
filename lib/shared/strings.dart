@@ -881,6 +881,13 @@ class UiStrings {
   // 战斗交互重做 Phase 3:全局战斗模式默认开关(自动连续播放 / 允许拖招干预)。
   static const String settingsAutoPlayDefault = '自动战斗';
   static const String settingsAutoPlayDefaultHint = '战斗自动连续播放(可逐关切「允许拖招」干预)';
+  // L1 显示设置（2026-06-15）:全屏 + 窗口分辨率预设。
+  static const String settingsFullscreen = '全屏';
+  static const String settingsFullscreenHint = '按 F11 也可切换';
+  static const String settingsResolution = '窗口分辨率';
+  static const String settingsResolutionHd720 = '1280 × 720';
+  static const String settingsResolutionHd900 = '1600 × 900';
+  static const String settingsResolutionHd1080 = '1920 × 1080';
   // 战斗交互重做 Phase 3:选关屏 per-stage「挂机自动 / 允许拖招」开关。
   static const String stageAutoPlayAuto = '自动';
   static const String stageAutoPlayManual = '拖招';
