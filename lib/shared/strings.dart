@@ -883,7 +883,7 @@ class UiStrings {
   static const String settingsAutoPlayDefaultHint = '战斗自动连续播放(可逐关切「允许拖招」干预)';
   // L1 显示设置（2026-06-15）:全屏 + 窗口分辨率预设。
   static const String settingsFullscreen = '全屏';
-  static const String settingsFullscreenHint = '按 F11 也可切换';
+  static const String settingsFullscreenHint = '快捷键 F11 / Alt+Enter';
   static const String settingsResolution = '窗口分辨率';
   static const String settingsResolutionHd720 = '1280 × 720';
   static const String settingsResolutionHd900 = '1600 × 900';
