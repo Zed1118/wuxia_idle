@@ -6,6 +6,7 @@ import '../../../data/isar_provider.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../main_menu/presentation/main_menu.dart';
+import '../../seclusion/presentation/offline_recap_gate.dart';
 import '../application/home_feed_providers.dart';
 
 /// "昨晚发生的事"上线第一屏(GDD §9.2 / P1 #42 Phase 3)。
@@ -15,11 +16,27 @@ import '../application/home_feed_providers.dart';
 /// - 金色文字摘要 feed,按 occurredAt 倒序
 /// - 快速领取按钮 30s 上线流程,push replace 进 MainMenu
 /// - 空 feed 时显占位文案(首次启动 / 旧存档迁移)+ 直接快速领取
-class HomeFeedScreen extends ConsumerWidget {
+class HomeFeedScreen extends ConsumerStatefulWidget {
   const HomeFeedScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeFeedScreen> createState() => _HomeFeedScreenState();
+}
+
+class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // M2 离线收益:首帧后检查 active 闭关,若离开 ≥ 阈值弹一次「归来」卡。
+    // 无 active / 无 Isar 时 hook 静默 no-op（GDD §5.5 红线无关）。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      maybeShowOfflineRecap(context: context, ref: ref);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final feedAsync = ref.watch(gameEventsFeedProvider());
     return Scaffold(
       backgroundColor: WuxiaColors.background,

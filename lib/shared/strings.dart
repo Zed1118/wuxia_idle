@@ -1299,4 +1299,28 @@ class UiStrings {
 
   /// 开始闭关题字过场
   static const String seclusionEnterCaption = '闭关';
+
+  // ── M2 离线收益汇总「归来」卡(2026-06-15)──────────────────────────
+  /// recap 卡标题
+  static const String offlineRecapTitle = '归来';
+
+  /// 离开时长副标题
+  static String offlineRecapAwayLine(int hours) => '离去约 $hours 小时';
+
+  /// 闭关已挂满状态行
+  static String offlineRecapMapComplete(String mapName) => '「$mapName」闭关已圆满';
+
+  /// 闭关进行中状态行（带进度百分比）
+  static String offlineRecapMapProgress(String mapName, int pct) =>
+      '「$mapName」闭关进行中 · $pct%';
+
+  /// 预计可收产出行
+  static String offlineRecapRewardLine(int mojianshi, int experience) =>
+      '预计可收 $mojianshi 磨剑石 · $experience 经验';
+
+  /// 前去收功按钮
+  static const String offlineRecapGoCollect = '前去收功';
+
+  /// 稍后再说按钮（关闭卡片）
+  static const String offlineRecapDismiss = '稍后再说';
 }
