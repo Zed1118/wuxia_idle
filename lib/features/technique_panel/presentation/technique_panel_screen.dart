@@ -459,6 +459,20 @@ class _TechniqueTile extends ConsumerWidget {
               .clamp(0.0, 1.0)
               .toDouble();
 
+    // P1b: 修炼度五要素接入 StageProgressRow（统一进度规范，复用 character_panel
+    // 同款「当前层伤害倍率 / 下一层倍率」计算）。
+    final mult = GameRepository.instance.numbers.cultivationMultiplier;
+    final layer = technique.cultivationLayer;
+    final curMult = mult[layer] ?? 1.0;
+    final layers = CultivationLayer.values;
+    final layerIdx = layers.indexOf(layer);
+    final isMaxLayer = layerIdx >= layers.length - 1;
+    final nextMultText = isMaxLayer
+        ? UiStrings.cultivationMaxLayer
+        : UiStrings.cultivationNextDamageMult(
+            mult[layers[layerIdx + 1]] ?? curMult,
+          );
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -508,25 +522,23 @@ class _TechniqueTile extends ConsumerWidget {
               ),
             ),
           ),
-          LinearProgressIndicator(
-            value: progress,
-            minHeight: 6,
-            backgroundColor: WuxiaColors.barTrack,
-            valueColor: AlwaysStoppedAnimation<Color>(schoolColor),
+          // P1b: LinearProgressIndicator → StageProgressRow（MeridianBar +
+          // 当前/下一阶伤害倍率五要素；层名仍由上方 _SealBadge 印章强调，
+          // 故 stageName 文字与印章并存——印章是视觉徽章、文字带术语释义）。
+          StageProgressRow(
+            stageName: EnumL10n.cultivationLayer(technique.cultivationLayer),
+            glossaryDefinition: UiStrings.glossaryCultivation,
+            ratio: progress,
+            currentEffect: UiStrings.cultivationDamageMult(curMult),
+            nextEffect: nextMultText,
+            progressText: UiStrings.cultivationProgress(
+              technique.cultivationProgress,
+              technique.cultivationProgressToNext,
+            ),
           ),
           const SizedBox(height: 4),
           Row(
             children: [
-              Text(
-                UiStrings.cultivationProgress(
-                  technique.cultivationProgress,
-                  technique.cultivationProgressToNext,
-                ),
-                style: const TextStyle(
-                  color: WuxiaColors.textMuted,
-                  fontSize: 11,
-                ),
-              ),
               // W12 视觉验收 debug 字段(skillUsage 累计)——仅 debug build 显,
               // release 不向玩家暴露(§12.8 release 无 debug · Phase A 出版美术 hygiene)。
               if (kDebugMode) ...[
