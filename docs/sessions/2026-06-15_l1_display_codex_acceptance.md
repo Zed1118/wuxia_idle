@@ -51,3 +51,10 @@
 ## 总评
 
 L1 主入口达到可用标准：设置面板开关、三档实际 resize、全屏禁用下拉、重启恢复均可用；无阻塞问题。需回修两个非阻塞问题：`1280×720` 设置面板底部 overflow，以及 F11 被 macOS 系统行为吞掉/未触发 app 全屏切换。
+
+## 修复后续（2026-06-15 续11 · 合 main `a0f77a8b`）
+
+两 fail 已回修,全量 2214 测零回归:
+
+- **L1-2 overflow** ✅ 修复:设置面板 `data` 分支包 `ConstrainedBox(maxHeight 80% 屏) + SingleChildScrollView`,720p 窄高度可滚动不溢出;加回归测 `settings_panel_overflow_test.dart`。
+- **L1-3 F11** 🔧 改方案:macOS F11 被系统「显示桌面」占用无法捕获,补 `Alt+Enter`(不被系统占 + 游戏全屏惯例),保留 F11 给 Windows;hint 文案同步。**Alt+Enter + overflow 修复实效待 Codex 二轮验**。
