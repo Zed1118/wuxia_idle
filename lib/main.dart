@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'data/isar_setup.dart';
 import 'features/debug/application/visual_route.dart';
 import 'features/debug/presentation/visual_route_host.dart';
 import 'features/settings/application/audio_settings_service.dart';
@@ -47,11 +50,40 @@ Future<void> main() async {
   runApp(const ProviderScope(child: WuxiaApp()));
 }
 
-class WuxiaApp extends ConsumerWidget {
+class WuxiaApp extends ConsumerStatefulWidget {
   const WuxiaApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WuxiaApp> createState() => _WuxiaAppState();
+}
+
+class _WuxiaAppState extends ConsumerState<WuxiaApp> {
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    // M2 范围 B：离开瞬间(隐藏/失活/退出)记 lastOnlineAt，重开算离线时长。
+    _lifecycle = AppLifecycleListener(
+      onHide: _recordOnline,
+      onInactive: _recordOnline,
+      onDetach: _recordOnline,
+    );
+  }
+
+  void _recordOnline() {
+    // fire-and-forget；未 init 时 instance 抛错，catchError 兜底避免 lifecycle 崩溃。
+    unawaited(IsarSetup.touchOnlineNow().catchError((_) {}));
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Shortcuts(
       shortcuts: const <ShortcutActivator, Intent>{
         // F11(Windows/Linux 惯例);macOS 的 F11 被系统「显示桌面」吞掉
