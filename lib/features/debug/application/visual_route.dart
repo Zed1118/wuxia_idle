@@ -96,6 +96,10 @@ enum VisualRoute {
     'battle_defeat',
     '战斗屏·败北页验收(敗 题字 + 败北 + 破招提示 + 战报,战场背景上结算)',
   ),
+  defeatInnerDemonResidue(
+    'defeat_inner_demon_residue',
+    'M6 心魔关战败损失摘要·余毒未消段排版验收(战败剧情屏顶 banner:混合「含主修最长行」+「仅内力」两条余毒 entry,验内力段·修炼度回退段·余毒未消段拼接换行)',
+  ),
   battleTreasureGlowPeak(
     'battle_treasure_glow_peak',
     '爆品·神物金光峰值帧验收(t≈0.32 金闪迸发 + 双环涟漪 + 辉光升起,验是否太抢)',
