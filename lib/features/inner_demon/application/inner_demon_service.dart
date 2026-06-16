@@ -23,10 +23,11 @@ class InnerDemonPenaltyResult {
   });
 }
 
-/// 心魔系统 application 层（1.0 P2.2 §12.1，Batch 2.2.A vertical slice）。
+/// 心魔系统 application 层（1.0 P2.2 §12.1）。
 ///
-/// **Batch 2.2.A 范围**：仅 [isLayerLocked] 静态判定（unlock 拦截）。
-/// 镜像 enemy 构造 / victory 记录 / 失败惩罚等留 Batch 2.2.B。
+/// **已实装**：[isLayerLocked] 升层 unlock 拦截（Batch 2.2.A）、
+/// [buildMirrorEnemyTeam] 镜像敌队构造（Batch 2.2.B）、
+/// [applyFailurePenalty] 战败惩罚 + 余毒（M6，2026-06-16）。
 ///
 /// 设计要点（memory `feedback_avoid_over_engineer_abstraction`）：
 ///   - 全部静态方法（无 mutable state，无需 Riverpod provider 持有）
@@ -139,6 +140,12 @@ class InnerDemonService {
         (ch.internalForce * penalty.internalForceMultiplier).floor();
     ch.internalForce = scaled < floor ? floor : scaled;
 
+    // §5.4 惩罚单向下调：主修系数必 ≤ 1.0（内力侧已有地板兜底，progress 侧无
+    // 上限守卫，此 assert 防 numbers.yaml 误配 >1.0 反涨修炼度）。
+    assert(
+      penalty.mainCultivationMultiplier <= 1.0,
+      'mainCultivationMultiplier 必 ≤ 1.0（惩罚不得反涨修炼度）',
+    );
     mainTech.cultivationProgress =
         (mainTech.cultivationProgress * penalty.mainCultivationMultiplier)
             .floor();

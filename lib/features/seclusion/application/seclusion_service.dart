@@ -287,7 +287,10 @@ class SeclusionService {
     // character / tech → growthPct 默认 0.0(无相生),整链 fallthrough。
     final synergyGrowthPct = await _detectSynergyGrowthPct(preCharForBonus);
 
-    // M6 Task 7: 余毒乘数（§5.6: 从 config 读，不硬编码）
+    // M6 Task 7: 余毒乘数（§5.6: 从 config 读，不硬编码）。
+    // 口径=按本次闭关「开始时」的余毒开关态：开始有余毒则整次产出 ×0.80，
+    // 即便本次闭关时长超过剩余清除小时数（余毒在结束时才累减清除，见下方 ch 改区）。
+    // 简化为「开关态」而非逐小时折算，符合 spec D 段拍板，非 off-by-one bug。
     final residueMult =
         (preCharForBonus?.innerDemonResidueHoursRemaining ?? 0) > 0
         ? GameRepository
