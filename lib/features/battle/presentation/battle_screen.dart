@@ -32,6 +32,8 @@ import 'projectile_trail.dart';
 import 'ultimate_caption_overlay.dart';
 import 'victory_overlay.dart';
 import '../../cangjingge/presentation/cangjingge_screen.dart';
+import '../../help/domain/help_topic.dart';
+import '../../help/presentation/context_help_button.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 
@@ -1373,6 +1375,8 @@ class _Header extends StatelessWidget {
             tooltip: UiStrings.battleLog,
             onPressed: onToggleLog,
           ),
+          const SizedBox(width: 4),
+          const ContextHelpButton(topic: HelpTopic.combatAdvanced, size: 20),
         ],
       ),
     );

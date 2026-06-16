@@ -350,6 +350,11 @@ class UiStrings {
       '流派：刚猛克灵巧、灵巧克阴柔、阴柔克刚猛，循环相克。顺克加伤，逆克减伤。';
   static const String glossarySynergy =
       '相生：特定心法搭配可生额外威能，相辅相成。配伍得当，事半功倍。';
+  static const String glossaryCombatAdvanced =
+      '战斗机制：蓄势、破招、内伤、克制环环相扣。看准敌招蓄势时破招，可截下大招、反客为主。';
+  static const String glossarySeclusion =
+      '闭关：择地静修，将光阴沉淀为修为。地点、时辰、节气皆影响产出；关游戏亦照常累积（在线＝离线）。';
+  static const String labelCombatAdvanced = '战斗机制';
 
   // HelpCatalog 引用的术语 label（集中 sink，复用既有 attr/stat/tab 常量，仅补缺失）。
   static const String labelCultivation = '修炼度';

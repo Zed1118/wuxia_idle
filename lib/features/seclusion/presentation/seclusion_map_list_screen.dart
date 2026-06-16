@@ -10,6 +10,8 @@ import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../help/domain/help_topic.dart';
+import '../../help/presentation/context_help_button.dart';
 import '../application/seclusion_service.dart';
 import '../application/seclusion_service_providers.dart';
 import '../domain/retreat_session.dart';
@@ -128,8 +130,9 @@ class _SeclusionMapListScreenState
         backgroundColor: WuxiaColors.sidebar,
         foregroundColor: WuxiaColors.textPrimary,
         actions: [
+          const ContextHelpButton(topic: HelpTopic.seclusion),
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.only(left: 8, right: 16),
             child: Image.asset(
               'assets/ui/meditation_icon.png',
               width: 24,

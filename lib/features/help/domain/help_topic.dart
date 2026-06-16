@@ -29,6 +29,9 @@ enum HelpTopic {
   assistTechnique,
   school,
   synergy,
+  // 战斗 / 成长（阶段三）
+  combatAdvanced,
+  seclusion,
 }
 
 /// `topic → (label, 短释义, 可空 codex id)` 的薄绑定。
@@ -158,6 +161,17 @@ class HelpCatalog {
       label: UiStrings.synergyActiveLabel,
       shortText: UiStrings.glossarySynergy,
       codexEntryId: 'techniques_and_styles',
+    ),
+    // —— 战斗 / 成长 ——
+    HelpTopic.combatAdvanced: HelpBinding(
+      label: UiStrings.labelCombatAdvanced,
+      shortText: UiStrings.glossaryCombatAdvanced,
+      codexEntryId: 'combat_advanced',
+    ),
+    HelpTopic.seclusion: HelpBinding(
+      label: UiStrings.seclusionEnterCaption,
+      shortText: UiStrings.glossarySeclusion,
+      codexEntryId: 'retreat',
     ),
   };
 
