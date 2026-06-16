@@ -1134,10 +1134,10 @@ tower:
     small_boss_multiplier: 1.5               # 小 Boss 数值 ×1.5
     big_boss_multiplier: 2.0                 # 大 Boss 数值 ×2.0
 
-  # --- Boss 血量校验（GDD §5.2 红线 50000+）---
+  # --- Boss 血量校验（GDD §5.4 红线 60000+，2026-06-14 由 50000 上调；终局周目膨胀可破 60000 但不进 1M）---
   # 第 30 层大 Boss：base_hp 12000 × difficulty 4.20 × boss_mult 2.0 = 100,800 ✓
   # 第 10 层大 Boss：base_hp 5000 × difficulty 1.50 × 2.0 = 15,000（前期 Boss 较低）
-  # 第 20 层大 Boss：base_hp 8500 × difficulty 2.60 × 2.0 = 44,200（接近 50000）
+  # 第 20 层大 Boss：base_hp 8500 × difficulty 2.60 × 2.0 = 44,200（中段 Boss，低于 60000+ 红线）
   # 注：以上 base_hp 由 StageDef 中的具体敌人配置决定，此处仅校验
 
   # --- 排行榜配置 ---

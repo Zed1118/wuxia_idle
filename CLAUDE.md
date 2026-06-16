@@ -39,7 +39,7 @@
 | Demo 内容总量 | §8.4 |
 | 核心循环（5 阶段） | §9 |
 | 新手引导节奏 | §10 |
-| Demo 阶段不做的扩展 | §12 |
+| 扩展系统实装现状 / 仍不做清单 | §12 |
 
 ## 2. 技术栈
 
@@ -310,14 +310,14 @@ choices:
 
 | # | 条目 | 实质决议位置 |
 |---|---|---|
-| 1 | 境界 7 层 vs 修炼度 9 层名重叠 | 代码层严格不同名：境界用「启蒙/入门/熟练/精通/圆熟/化境/登峰」，修炼度用「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」，见 `lib/features/battle/domain/enum_localizations.dart`（`RealmLayer.qiMeng:42 / dengFeng:48` + `CultivationLayer.wuXia:96 / jiJing:97`） |
+| 1 | 境界 7 层 vs 修炼度 9 层名重叠 | 代码层严格不同名：境界用「启蒙/入门/熟练/精通/圆熟/化境/登峰」，修炼度用「初窥/小成/中成/大成/圆满/巅峰/通神/无瑕/极境」，见 `lib/features/battle/domain/enum_localizations.dart`（`RealmLayer.qiMeng / dengFeng` + `CultivationLayer.wuXia / jiJing`，符号引用不钉行号防 drift） |
 | 2 | 单项属性范围 | `numbers.yaml character.attributes`：单项 [1,10] / 总和 [16,24] / 正态 μ=5.5 σ=1.5 / `rerollable: false` |
 | 3 | 强化 +20-49 成功率与材料 | `numbers.yaml equipment.enhancement.success_curve`：`max(0.30, 0.50 - 0.02*(level-19))`，磨剑石 18/25 颗，心血结晶保底 8 颗 |
 | 4 | 暴击系数 + 防御率 | `numbers.yaml combat.critical`：base 5% + 身法 0.5%/点 + 上限 50%，倍率 1.5-2.5（灵巧固定 2.0）；防御率走 `realms.tiers.defense_rate` 按境界固定档（学徒 5%→武圣 35%） |
 | 5 | 闭关产出公式 | `numbers.yaml retreat`：5 地图 base_outputs 各产出 + `realm_scale_per_tier: 1.3` + `cap_hours: 72`（2026-05-11 决议） |
-| 6 | 武学领悟机缘累积规则 | W14-1 简化为「fortune 属性 1-10 静态值 + 软概率 `p = baseProbability * (1 + fortune/20)`」，不再单独累积"机缘值"，见 `encounters.yaml:13` + `lib/features/encounter/application/encounter_service.dart:216`（公式实装）+ `lib/features/encounter/domain/encounter_def.dart:162`（schema 注释） |
+| 6 | 武学领悟机缘累积规则 | W14-1 简化为「fortune 属性 1-10 静态值 + 软概率 `p = baseProbability * (1 + fortune/20)`」，不再单独累积"机缘值"，见 `encounters.yaml` + `lib/features/encounter/application/encounter_service.dart`（公式实装,搜 `baseProbability`）+ `lib/features/encounter/domain/encounter_def.dart`（schema 注释） |
 | 8 | 心法速度加成 | `numbers.yaml techniques.tiers[*].speed_bonus`：7 阶 0/5/10/15/25/40/60，直接进 GDD §5.6 公式，无独立上限 |
-| 9 | 人剑合一招式定义位置 | `numbers.yaml combat.resonance.unlocks_joint_skill: true`（默契阶段解锁）+ `skills.reference_multipliers.joint_skill.base: 4500`，**统一固定倍率，不绑流派/不绑装备类型**，由共鸣度系统统管。**v1.9 补**:P1.1 候选 3-b(2026-05-21,commit `15ff8aa`)已实装 battle 释放路径 — `skills.yaml:772 skill_joint_skill`(mult=4500 / cost=250 / cd=4)+ `ResonanceStageConfig.unlocksJointSkill/hasSwordSongEffect` 解析 + `battle_ai` 优先级 `pending>jointSkill>powerSkill>normalAttack`,红线 27,421 < 100,000 ✅ |
+| 9 | 人剑合一招式定义位置 | `numbers.yaml combat.resonance.unlocks_joint_skill: true`（默契阶段解锁）+ `skills.reference_multipliers.joint_skill.base: 4500`，**统一固定倍率，不绑流派/不绑装备类型**，由共鸣度系统统管。**v1.9 补**:P1.1 候选 3-b(2026-05-21,commit `15ff8aa`)已实装 battle 释放路径 — `skills.yaml` `skill_joint_skill`(mult=4500 / cost=250 / cd=4)+ `ResonanceStageConfig.unlocksJointSkill/hasSwordSongEffect` 解析 + `battle_ai` 优先级 `pending>jointSkill>powerSkill>normalAttack`,红线 27,421 < 100,000 ✅ |
 | 13 | 节气日完整清单 | v1.2 决议方案 A（2026-05-15）：12 个节气均匀覆盖四季，公历 hardcode 不引入农历库；删除原中秋（属农历节日非节气）。已落 `numbers.yaml retreat.solar_term_bonus.days_2026` |
 | 7 | 三流派 extra_effect 数值 + 正午阳刚定向 | v1.4 决议（2026-05-16）：① 刚猛震伤每招 +500 固定(穿透防御不暴击,主攻击命中才触发);② 阴柔内伤 N=3 守方 tick × 200/tick 固定(穿透防御 + 同源刷新覆盖,可致死);③ 正午阳刚 +20% 乘到 `internalForcePoints` 维度且仅 `character.school==gangMeng` 触发;④ 灵巧 crit_rate +0.20 已在 §6 公式实装 (v1.0 起)。已落 `numbers.yaml combat.schools.gang_meng_quake / yin_rou_internal_injury / retreat.time_of_day_bonus[zhengWu].target_attribute & applies_to_school` + 代码层 damage_calculator 震伤分支 / BattleState internalInjurySlot / battle_engine tick 衰减 / seclusion_service 正午阳刚 wire |
 | 10 | 师承遗物规则层(4 子项)| v1.5 决议(2026-05-16):① 传递时机:武圣飞升时自动传(GDD §7.1 原意);② 多徒弟归属:玩家进选件界面逐件分配;③ 累代叠加:只取当代不叠加(数值不爆炸 + UI 可显传承链路但 buff 不叠);④ 同部位冲突:自动卸下原装入背包 + 新遗物入槽。已落 `numbers.yaml inheritance.heritage_items` 加 4 规则字段。**v1.14 P2.3 已实装 ✅**(2026-05-24 Batch 3.1-3.3):①+② 真消费(LineagePanel→AscensionScreen→performAscend · player_pick DropdownButton 真分配);③+④ Demo 一代飞升不验证 YAGNI 留 P5+。**v1.15 P5+ 多代飞升 + 真传位完整实装 ✅**(2026-05-24,④+⑤ 合并 batch 4 commit `1e875d6 → 1b1bb86`):③ `stackAcrossGenerations=false` derived_stats §244 按 isLineageHeritage instance count 不按 prev len 累加(R5.8 防回退测) + ④ `conflictSlotResolution=auto_swap` 真消费 `AscendService.performAscend` 副作用 4(disciple 端 equipped{Slot}Id 接新遗物 · 旧装 owner 不变入背包语义) + **真传位**:`performAscend` 加 `promotedDiscipleId: int?` 可选参数 · `promotedDisciple.isFounder=true` · `founder.isFounder` 保 true 「太祖」语义 · `founder_buff_service` 0 代码改自然接管(active 中找 isFounder=true → buff 激活) + AscensionScreen 加 _PromotedDiscipleRow widget · R5 测族 14→18(R5.6 多代 e2e 2 + R5.7 auto_swap 2 + R5.8 stack enforce 1)。详 `docs/handoff/p5_lineage_full_closeout_2026-05-24.md`。 |
