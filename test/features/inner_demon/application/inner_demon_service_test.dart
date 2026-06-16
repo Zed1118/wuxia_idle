@@ -27,6 +27,7 @@ InnerDemonDef _fullDef() => const InnerDemonDef(
       ),
       failurePenalty: InnerDemonFailurePenalty(
         internalForceMultiplier: 0.85,
+        internalForceFloorPct: 0.50,
         mainCultivationMultiplier: 0.90,
         subCultivationMultiplier: 1.00,
         debuffId: 'inner_demon_residue',
