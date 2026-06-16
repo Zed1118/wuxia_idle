@@ -24,6 +24,8 @@ import '../../cultivation/application/skill_loadout_resolver.dart';
 import '../../cultivation/application/skill_loadout_service.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../encounter/application/encounter_service_providers.dart';
+import '../../help/domain/help_topic.dart';
+import '../../help/presentation/context_help_button.dart';
 import '../domain/fragment_source.dart';
 import 'fragment_progress_row.dart';
 import 'skill_proficiency_row.dart';
@@ -63,6 +65,7 @@ class _CangJingGeScreenState extends ConsumerState<CangJingGeScreen> {
         onBack: Navigator.of(context).canPop()
             ? () => Navigator.of(context).pop()
             : null,
+        trailing: const ContextHelpButton(topic: HelpTopic.mainTechnique),
       ),
       body: SafeArea(
         child: idsAsync.when(

@@ -12,6 +12,8 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
+import '../../help/domain/help_topic.dart';
+import '../../help/presentation/context_help_button.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
@@ -93,6 +95,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
           fontSize: highTreasure ? 22 : null,
           letterSpacing: highTreasure ? 2 : null,
         ),
+        trailing: const ContextHelpButton(topic: HelpTopic.equipmentTier),
       ),
       body: Stack(
         children: [
