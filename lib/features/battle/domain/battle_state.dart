@@ -145,6 +145,11 @@ class BattleCharacter {
   /// 战斗路径自动得 1.0(fromCharacter / _enemyToBattle 不 expose)。
   final double attackPowerMultiplier;
 
+  /// M6 心魔余毒:战斗输出乘数(默认 1.0=无)。余毒在身玩家角色 stage_battle_setup
+  /// 设为 residue_debuff.battle_output_multiplier(0.95)。独立末端乘,可乘性组合
+  /// (不与 attackPowerMultiplier 的 SET 语义冲突)。damage_calculator 末端乘 mainDamage。
+  final double outputMultiplier;
+
   /// 出版美术 B2:此角色是否为 Boss(EnemyDef.isBoss 透传)。true 时
   /// CharacterAvatar 走金色加粗描边。玩家方恒 false。
   final bool isBoss;
@@ -191,6 +196,7 @@ class BattleCharacter {
     this.swordSongResonanceActive = false,
     this.iconPath,
     this.attackPowerMultiplier = 1.0,
+    this.outputMultiplier = 1.0,
     this.isBoss = false,
     this.chargeSkillId,
     this.chargingSkill,
@@ -218,6 +224,7 @@ class BattleCharacter {
     required int teamSide,
     required int slotIndex,
     bool founderBuffActive = false,
+    double outputMultiplier = 1.0,
   }) {
     final school = character.school;
     if (school == null) {
@@ -353,6 +360,7 @@ class BattleCharacter {
       slotIndex: slotIndex,
       swordSongResonanceActive: swordSongActive,
       iconPath: character.portraitPath,
+      outputMultiplier: outputMultiplier,
     );
   }
 
@@ -384,6 +392,7 @@ class BattleCharacter {
     bool? swordSongResonanceActive,
     String? iconPath,
     double? attackPowerMultiplier,
+    double? outputMultiplier,
     bool? isBoss,
     Object? chargeSkillId = _unset,
     Object? chargingSkill = _unset,
@@ -425,6 +434,7 @@ class BattleCharacter {
       iconPath: iconPath ?? this.iconPath,
       attackPowerMultiplier:
           attackPowerMultiplier ?? this.attackPowerMultiplier,
+      outputMultiplier: outputMultiplier ?? this.outputMultiplier,
       isBoss: isBoss ?? this.isBoss,
       chargeSkillId: identical(chargeSkillId, _unset)
           ? this.chargeSkillId : chargeSkillId as String?,
