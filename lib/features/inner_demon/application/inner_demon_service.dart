@@ -1,4 +1,5 @@
 import '../../../core/domain/enums.dart';
+import '../../../shared/strings.dart';
 import '../../battle/domain/battle_state.dart';
 import '../domain/inner_demon_def.dart';
 
@@ -109,7 +110,7 @@ class InnerDemonService {
 
     return src.copyWith(
       characterId: -(slotIndex + 1),
-      name: '心魔·${src.name}',
+      name: UiStrings.innerDemonMirrorName(src.name),
       maxHp: maxHp,
       currentHp: maxHp,
       maxInternalForce: maxIf,
