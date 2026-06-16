@@ -180,6 +180,7 @@ class SeclusionService {
     required DateTime now,
     TechniqueSchool? charSchool,
     double synergyInternalForceGrowthPct = 0.0,
+    double residueInternalForceMultiplier = 1.0,
     Rng? rng,
   }) {
     final def = _getDef(session.mapType, maps);
@@ -225,6 +226,9 @@ class SeclusionService {
     // W18-A1.2 心法相生 internalForceGrowthPct 乘进 internalForcePoints
     // (闭关产出维度,与战斗 init internalForceMaxPct 分管;数值红线 ≤ 0.30 + 1.0
     // 基底 → 最大 1.30 倍 clamp 后仍 ≤ 999999)。
+    // M6 Task 7: residueInternalForceMultiplier = 0.80（余毒在身）或 1.0（无余毒）
+    //   从 GameRepository.numbers.innerDemon.residueDebuff.internalForceRecoveryMultiplier
+    //   读取，不硬编码（§5.6 红线）。
     final internalForcePoints =
         (config.baseInternalForcePerHour *
                 def.internalForceGrowth *
@@ -233,7 +237,8 @@ class SeclusionService {
                 solarBonus *
                 ziShiBonus *
                 zhengWuBonus *
-                (1.0 + synergyInternalForceGrowthPct))
+                (1.0 + synergyInternalForceGrowthPct) *
+                residueInternalForceMultiplier)
             .floor()
             .clamp(0, 999999);
 
@@ -282,6 +287,17 @@ class SeclusionService {
     // character / tech → growthPct 默认 0.0(无相生),整链 fallthrough。
     final synergyGrowthPct = await _detectSynergyGrowthPct(preCharForBonus);
 
+    // M6 Task 7: 余毒乘数（§5.6: 从 config 读，不硬编码）
+    final residueMult =
+        (preCharForBonus?.innerDemonResidueHoursRemaining ?? 0) > 0
+        ? GameRepository
+              .instance
+              .numbers
+              .innerDemon
+              .residueDebuff
+              .internalForceRecoveryMultiplier
+        : 1.0;
+
     final outputs = computeOutputs(
       session: session,
       charRealmTier: charRealmTier,
@@ -290,6 +306,7 @@ class SeclusionService {
       now: now,
       charSchool: preCharForBonus?.school,
       synergyInternalForceGrowthPct: synergyGrowthPct,
+      residueInternalForceMultiplier: residueMult,
       rng: rng,
     );
 
@@ -365,6 +382,12 @@ class SeclusionService {
             eq.battleCount += bcGain;
             await isar.equipments.put(eq);
           }
+        }
+        // M6 Task 7: 余毒累减（§5.5 按 actualHours 闭关时长，不依赖真实时间戳）
+        if (ch.innerDemonResidueHoursRemaining > 0) {
+          final left =
+              ch.innerDemonResidueHoursRemaining - outputs.actualHours;
+          ch.innerDemonResidueHoursRemaining = left < 0 ? 0 : left;
         }
         if (outputs.experiencePoints > 0) {
           // P2.2 §12.1 心魔关 unlock 拦截 hook(Batch 2.2.B):wuSheng 各 layer
