@@ -6,6 +6,8 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../help/domain/help_topic.dart';
+import '../../help/presentation/context_help_button.dart';
 import '../application/seclusion_service.dart';
 import '../domain/seclusion_map_def.dart';
 import 'seclusion_map_visuals.dart';
@@ -48,6 +50,7 @@ class RetreatResultScreen extends StatelessWidget {
         backgroundColor: WuxiaColors.sidebar,
         foregroundColor: WuxiaColors.textPrimary,
         automaticallyImplyLeading: false,
+        actions: const [ContextHelpButton(topic: HelpTopic.seclusion)],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

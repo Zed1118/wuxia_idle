@@ -10,6 +10,8 @@ import '../../../shared/audio/sound_manager.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../help/domain/help_topic.dart';
+import '../../help/presentation/context_help_button.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'retreat_result_screen.dart';
@@ -173,6 +175,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
               backgroundColor: WuxiaColors.sidebar,
               foregroundColor: WuxiaColors.textPrimary,
               automaticallyImplyLeading: true,
+              actions: const [ContextHelpButton(topic: HelpTopic.seclusion)],
             ),
             body: SafeArea(
               child: Stack(

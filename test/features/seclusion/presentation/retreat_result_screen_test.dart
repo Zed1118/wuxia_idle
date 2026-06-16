@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
@@ -47,8 +48,10 @@ RetreatResult _mkResult({
 
 Future<void> _pump(WidgetTester tester, RetreatResult result) async {
   await tester.pumpWidget(
-    MaterialApp(
-      home: RetreatResultScreen(mapDef: _mkMapDef(), result: result),
+    ProviderScope(
+      child: MaterialApp(
+        home: RetreatResultScreen(mapDef: _mkMapDef(), result: result),
+      ),
     ),
   );
 }

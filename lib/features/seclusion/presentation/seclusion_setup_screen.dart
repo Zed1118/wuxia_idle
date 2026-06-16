@@ -8,6 +8,8 @@ import '../application/seclusion_service_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../help/domain/help_topic.dart';
+import '../../help/presentation/context_help_button.dart';
 import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'active_retreat_screen.dart';
@@ -107,6 +109,7 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
         title: Text(def.mapName),
         backgroundColor: WuxiaColors.sidebar,
         foregroundColor: WuxiaColors.textPrimary,
+        actions: const [ContextHelpButton(topic: HelpTopic.seclusion)],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
