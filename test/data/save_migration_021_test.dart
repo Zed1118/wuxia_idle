@@ -137,4 +137,45 @@ void main() {
       expect(save.saveVersion, '0.24.0');
     },
   );
+
+  test(
+    'H1 回归：0.22.0 已推进周目存档迁移到 0.24.0，currentCycleIndex/maxClearedCycle 不被重置',
+    () async {
+      // 构造 0.22.0 存档（周目字段已引入），玩家已推进到周目 2。
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      await IsarSetup.instance.writeTxn(() async {
+        final save = (await IsarSetup.instance.saveDatas.get(0))!;
+        save.saveVersion = '0.22.0';
+        await IsarSetup.instance.saveDatas.put(save);
+
+        // advanceCycle 进周目 2 后 highestClearedFloor 重置为 0，已打到 5 层。
+        final tp = TowerProgress()
+          ..saveDataId = 1
+          ..highestClearedFloor = 5
+          ..createdAt = DateTime(2026, 1, 1)
+          ..currentCycleIndex = 2
+          ..maxClearedCycle = 1; // 周目 1 已通关
+        await IsarSetup.instance.towerProgress.put(tp);
+      });
+      await IsarSetup.close();
+
+      // 迁移到 0.24.0：tower 块版本门应跳过 0.21+ 存档，不碰已有周目数据。
+      await IsarSetup.init(directory: tempDir, inspector: false);
+      final tp = await IsarSetup.instance.towerProgress.where().findFirst();
+      expect(tp, isNotNull);
+      expect(
+        tp!.currentCycleIndex,
+        2,
+        reason: 'H1: 已推进的周目不得被迁移重置为 1（数据丢失）',
+      );
+      expect(
+        tp.maxClearedCycle,
+        1,
+        reason: 'H1: 周目 1 通关成就不得被迁移清掉',
+      );
+
+      final save = (await IsarSetup.instance.saveDatas.get(0))!;
+      expect(save.saveVersion, '0.24.0');
+    },
+  );
 }

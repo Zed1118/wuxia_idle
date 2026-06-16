@@ -174,6 +174,11 @@ class IsarSetup {
   ///   - TowerProgress.currentCycleIndex = 1(显式落档);
   ///     maxClearedCycle = highestClearedFloor >= 30 ? 1 : 0。
   static Future<void> _migrateSaveData(Isar isar, SaveData save) async {
+    // 迁入前的旧版本(save.saveVersion 在本函数末尾才升到当前)。tower 周目
+    // 字段初始化须按此版本判定:0.21.0 才引入,对 0.21+ 存档重跑会把已推进的
+    // currentCycleIndex/maxClearedCycle 重置成初值 → 数据丢失。
+    final fromVersion = save.saveVersion;
+
     // 段 1(0.18.0+):encounter 旧 unlock 池并入 skillUnlockProgress。
     final progresses = await isar.encounterProgress.where().findAll();
 
@@ -223,15 +228,33 @@ class IsarSetup {
         }
         await isar.mainlineProgress.put(mp);
       }
-      for (final tp in towerRows) {
-        tp.currentCycleIndex = 1;
-        tp.maxClearedCycle = tp.highestClearedFloor >= 30 ? 1 : 0;
-        await isar.towerProgress.put(tp);
+      // tower 周目字段 0.21.0 引入 → 仅对 0.21.0 之前的旧档做一次性初始化。
+      // 0.21+ 存档的周目字段已是真实进度,不得重置(H1 数据丢失修复)。
+      if (_compareVersion(fromVersion, '0.21.0') < 0) {
+        for (final tp in towerRows) {
+          tp.currentCycleIndex = 1;
+          tp.maxClearedCycle = tp.highestClearedFloor >= 30 ? 1 : 0;
+          await isar.towerProgress.put(tp);
+        }
       }
 
       save.saveVersion = _currentSaveVersion;
       await isar.saveDatas.put(save);
     });
+  }
+
+  /// 语义化版本比较(major.minor.patch)。a<b 返 -1,a==b 返 0,a>b 返 1。
+  /// 用于迁移分段的版本门(字符串比较对 '0.9'/'0.21' 会错序,故按数值比)。
+  static int _compareVersion(String a, String b) {
+    final pa = a.split('.');
+    final pb = b.split('.');
+    for (var i = 0; i < 3; i++) {
+      final na = i < pa.length ? int.tryParse(pa[i]) ?? 0 : 0;
+      final nb = i < pb.length ? int.tryParse(pb[i]) ?? 0 : 0;
+      final c = na.compareTo(nb);
+      if (c != 0) return c;
+    }
+    return 0;
   }
 
   static Future<void> close() async {
