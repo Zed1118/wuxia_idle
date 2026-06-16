@@ -7,6 +7,8 @@
 
 ## 当前阶段
 
+> ✅ **2026-06-16 续15(全功能真审计 + 按级修复批 · 合 main `b8330c14` · opus xhigh · 6 维只读扇出 + TDD)**:**纠上会话幻觉**——上会话(工具输出污染)幻觉了一份「45 项 · 14 High」审计并谎称落盘 push,实际全仓(git/reflog/stash/内容)查无→重跑真审计(6 维 subagent 实证、每条 file:line + confidence)。**真图景:1 High + 7 Medium + 1 Low + 2 doc drift**,5 个红线维度(三系锁死/反留存/公式层/数据正确性/UI 健壮性)基本全清,幻觉吹的 3 个 High 红线项(闭关内力 clamp/师承遗物 canEquip/心法 canPractice)实证全为误报。报告落盘 `docs/audit/full_audit_2026-06-16.md`。**修复**:① **H1** 爬塔周目迁移加版本门(`isar_setup` tower 块原无条件重置 → 0.21+ 已推进存档被打回周目 1 数据丢失;+1 H1 回归测)② **D1/D2** §6 公式/散功失效路径 drift(formulas.dart→features/battle/domain · dispel_cultivation→features/dispel)③ **M1/M2** 正名 EnumL10n + battle_log 为合法集中 sink(CLAUDE v1.20,删 stale「Phase 4 迁出」承诺)④ **M3-M5** 散写中文迁 UiStrings(门派/关卡进出/loadFailed×3 dedupe/百科/心魔镜像名,行为保持逐字节不变)⑤ **M6** 核查确认心魔失败惩罚(`InnerDemonFailurePenalty`)从未 wire,GDD §6「全收尾✅」不实 → 纠偏注(本轮不实装,留拍板)⑥ **M7** 换主清零标未消费 · **L1** 门派 Dialog 限高 80% 屏 + 长文滚动。全量 analyze **0** / 全量 **2247 测** +1 skip 零回归。**待拍板 backlog**:心魔失败惩罚实装(M6)。
+
 > ✅ **2026-06-15 续14(P3 战报失败诊断系统 立项→实装 全闭环 · 合 main `6a32901a` · opus · brainstorm→spec→plan→TDD)**:可玩性二期 backlog「战报诊断规则(§11.4)」打磨项。把败北单条硬编码提示升级为 §7.2 **三段式失败复盘**(1 主因 + 2 数据 + ≤2 跳转建议)。核心 = 纯函数 `BattleDiagnosis.from(BattleState, BattleReportConfig)` 镜像 `BattleStatsSummary`,**全 5 类规则**优先级有序首条命中即止:killed_by_charge(100)/internal_wound(90)/mob_overrun(80,§11.4 原条)/frontline_fragile(60)/dps_too_low(40)+generic 兜底。阈值进 numbers.yaml `battle_report` 段(4 字段 schema 校验);文案进 UiStrings(退役 `battleDefeatHintInterrupt`)守 §5.6;增强 `VictoryOverlay` 败北路径不新建 screen,跳转(skills/equipment/cultivation)叠 overlay 不打断「继续」(team 无 screen 拍板不做按钮)。防御式 `_safeDiagnose`(config 未就绪退化 null 不崩 overlay)。**0 改伤害公式/红线**。+14 测(config 2+diagnosis 9+overlay 3)/全量 **2245 测**+1 skip 零回归/analyze 0。**待视觉验收**:三段式诊断块排版(visual_route_host 已补败北诊断态预览)。spec+plan `2026-06-15-battle-report-diagnosis-*`。
 
 > ✅ **2026-06-15 续13(P1b MeridianBar wiring · 合 main · opus high)**:四系统进度展示统一收口——`technique_panel` 修炼度 tile 从 Material `LinearProgressIndicator` 换 `StageProgressRow`(MeridianBar + 当前/下一阶伤害倍率五要素),与 character_panel/熟练度/共鸣度同款规范;**残页保留方块**(离散收集 X/N 片语义,用户拍板)。Explore 盘点四系统现状(校正其「character_panel 编译报错」误判)→ 实际单处 wire。+1 widget 测 / 全量 **2231 测**零回归 / analyze 0。**待视觉验收**:StageProgressRow 嵌入 technique tile 协调(与 M2/L3 挂账一起真机看)。
@@ -92,9 +94,6 @@
 - **2026-05-23 心魔 Batch 2.1-2.5 + P3.1 轻功对决**(8h overnight worktree · 7+5 关 · 详 `p2_x_inner_demon_final_closeout_2026-05-23.md` + `p3_1_lightfoot_closeout_2026-05-23.md`)
 - **2026-05-24 P3.2 群战守城 + P3.1.B 子批 + P5+ 多代飞升 + 真传位 + 8h overnight v2/v3 + nightshift v2 首跑 + UI polish**(git log `efc7604 → b6d8191` 区间 · 详 handoff `p3_2_*` / `p3_1_b_*` / `p5_lineage_full_closeout_2026-05-24.md` / `nightshift_v2_first_run_closeout_2026-05-24.md` / `8h_autonomous_handoff_2026-05-24.md`)
 - **2026-05-25 v2.1 工具完善 + T17-T22 cherry-pick + T23/T24 6 关键问题闭环批**(main `74ba519 → b6d8191` · 1458 测 / 0 analyze · 批次质量 A 9.05/10 · P1.2 江湖恩怨+声望 100% + 技术债 3 合一 · 详 `session_closeout_2026-05-25_nightshift_6h_review.md` + `p1_2_jianghu_full.md` + `p3_tech_debt.md`)
-
-### 2026-05-25/26/27/28 详条归档
-
 - **2026-05-26 P4.1 1.1 四项+audit v3+P5.2+Boss 招降叙事**(1484→1505 测 · 详各 closeout)
 - **2026-05-27 Boss 招降叙事+debug 招募+R2 派单**(1505 测 · 详 `session_closeout_2026-05-27_boss_narrative_debug_recruit.md`)
 - **2026-05-28 过夜清理+P3 三项+P2.1 4 批+drop 全覆盖+CHECKLIST v1.5+R4 派单**(1505→1519 测 · 详 `overnight_1_1_cleanup_handoff_2026-05-28.md` / `session_closeout_2026-05-28_p3_p1_triple.md` / `codex_dispatch_r4_p2_1_content_drop_2026-05-28.md`)
