@@ -224,6 +224,12 @@ class StageBattleSetup {
       if (assistTech != null) ownedTechs.add(assistTech);
     }
 
+    // M6 Task6：余毒在身 debuff → 战斗输出 ×0.95（§5.6 从 config 读，不写死）。
+    final residueMult = character.innerDemonResidueHoursRemaining > 0
+        ? GameRepository.instance.numbers.innerDemon.residueDebuff
+            .battleOutputMultiplier
+        : 1.0;
+
     final base = BattleCharacter.fromCharacter(
       character: character,
       equipped: equipped,
@@ -232,6 +238,7 @@ class StageBattleSetup {
       teamSide: 0,
       slotIndex: slotIndex,
       founderBuffActive: founderBuffActive,
+      outputMultiplier: residueMult,
     );
 
     // W18-A1 心法相生 buff 注入(GDD §4.5)。命中即 copyWith 调整 maxHp/speed/
