@@ -5,8 +5,11 @@ import 'enum_localizations.dart';
 /// 战斗事件日志（phase1_tasks.md T13）。
 ///
 /// 把 [BattleState.actionLog] 里的 [BattleAction] 转为人类可读的中文日志串。
-/// **不修改 BattleState**，纯字符串生成。Phase 1 只用作调试 + UI 侧边栏；
-/// Phase 4 接入 [GameEvent] 持久化时这一层不需要改。
+/// **不修改 BattleState**，纯字符串生成。用作调试 + UI 侧边栏 + 底部战报条。
+///
+/// **CLAUDE.md §5.6 正名的合法集中式 sink(v1.20)**:战报格式化文本(大量
+/// 插值句子)集中维护在本文件,与 `EnumL10n` / `UiStrings` 同类,不算「散写硬
+/// 编码」。新增战报文本进本文件,不要在调用点内联。
 ///
 /// 与 [DamageCalculator] 解耦（phase1_tasks T13 §752）：本文件只读
 /// [AttackResult] 已计算好的字段，不重算公式。
