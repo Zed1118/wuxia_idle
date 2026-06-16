@@ -327,6 +327,40 @@ class UiStrings {
   static const String glossaryCultivation = '修炼度：心法的精熟程度，越高则招式伤害倍率越大。随实战与闭关渐积。';
   static const String glossaryResonance = '共鸣度：人与兵刃的默契，血战中渐积。圆满者可悟人剑合一。';
 
+  // 上下文帮助系统（2026-06-16）：装备 / 心法 / 境界侧术语释义。
+  // 说明经 GlossaryTopicLabel / ContextHelpButton（features/help）展示，
+  // 复杂机制 codexEntryId 跳「江湖见闻录」长说明。仍为悬停/长按气泡，非教程弹窗（§5.7）。
+  static const String glossaryRealm =
+      '境界：修为高低的总纲，学徒至武圣共七阶。境界锁定可用装备阶与心法阶，越阶不可强用。';
+  static const String glossaryEquipmentTier =
+      '品阶：兵器防具的层次，寻常货至神物共七阶。须境界相称方可佩用，得高阶神物亦不可越阶强用。';
+  static const String glossaryStrengthening =
+      '强化：耗磨剑石提升装备数值，越高越难成。失败不降级，必返心血结晶兜底。';
+  static const String glossaryForging =
+      '开锋：为兵器开锋镶嵌增益，凑成流派 build。境界未达不可开高阶锋。';
+  static const String glossaryHeartBloodCrystal =
+      '心血结晶：强化失败的保底所得，亦是高阶强化的硬通货。多败多攒，终成大器。';
+  static const String glossaryLineageHeritage =
+      '师承遗物：先辈传下的兵刃，自带传承之力。徒弟境界未及亦不可强用，须待修为相称。';
+  static const String glossaryMainTechnique =
+      '主修：当前主修心法，定招式与流派根基。换主修须散功，半数内力与修炼度折损，非同小可。';
+  static const String glossaryAssistTechnique =
+      '辅修：旁修的心法，添额外加成而不动根基。换辅修无散功之痛，可放手尝试。';
+  static const String glossarySchool =
+      '流派：刚猛克灵巧、灵巧克阴柔、阴柔克刚猛，循环相克。顺克加伤，逆克减伤。';
+  static const String glossarySynergy =
+      '相生：特定心法搭配可生额外威能，相辅相成。配伍得当，事半功倍。';
+
+  // HelpCatalog 引用的术语 label（集中 sink，复用既有 attr/stat/tab 常量，仅补缺失）。
+  static const String labelCultivation = '修炼度';
+  static const String labelResonance = '共鸣度';
+  static const String labelEquipmentTier = '品阶';
+  static const String labelHeartBloodCrystal = '心血结晶';
+  static const String labelSchool = '流派';
+
+  /// 页面级帮助 `?` 未解锁时的气泡（吃 CodexIndex step gating，不剧透机制）。
+  static const String contextHelpLocked = '阅历未至，待你历练更深，再来翻阅。';
+
   /// 内力当前/上限文案：`X / Y`。
   static String internalForceValue(int current, int max) => '$current / $max';
 
