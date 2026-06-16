@@ -55,7 +55,7 @@ class ChapterListScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
-              '加载失败：$e',
+              UiStrings.loadFailed(e),
               style: const TextStyle(color: WuxiaColors.hpLow),
             ),
           ),

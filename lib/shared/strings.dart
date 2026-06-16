@@ -1375,4 +1375,80 @@ class UiStrings {
 
   /// 被动卡关闭按钮
   static const String passiveRecapDismiss = '甚好';
+
+  // ── 门派 UI(audit M3 散写中文归集)────────────────────────────────────
+  /// 门派声望纯标签
+  static const String sectReputationLabel = '声望';
+
+  /// 门派等阶标签：`等阶 N`
+  static String sectLevelLabel(int level) => '等阶 $level';
+
+  /// 累计胜场标签：`累计胜场 N`
+  static String sectTotalWinsLabel(int wins) => '累计胜场 $wins';
+
+  /// 当前无进行中门派事件占位
+  static const String sectNoActiveEvent = '当前无门派事件';
+
+  /// 门派事件触发时间行：`触发 · <日期>`
+  static String sectEventTriggeredAt(String date) => '触发 · $date';
+
+  /// 门派历史记录为空占位
+  static const String sectNoHistory = '尚无历史记录';
+
+  /// 历史记录声望变化：`声望 <deltaStr>`（deltaStr 含正负号）
+  static String sectReputationDelta(String deltaStr) => '声望 $deltaStr';
+
+  /// 门派操作失败提示(promote/dismiss/claim/release 共用)
+  static const String sectOperationFailed = '操作失败';
+
+  /// 门派事件类型标签
+  static const String sectEventTypeTournament = '比武大会';
+  static const String sectEventTypeMission = '弟子任务';
+  static const String sectEventTypeCrisis = '门派危机';
+
+  /// 门派事件状态标签
+  static const String sectEventStatusPending = '待处理';
+  static const String sectEventStatusResolved = '已结算';
+  static const String sectEventStatusExpired = '已过期';
+
+  // ── 主线关卡剧情/战败代价(audit M3 散写中文归集)──────────────────────
+  /// 战败剧情 fallback 标题：`<关名> · 战败`
+  static String stageNarrativeDefeatTitle(String stageName) =>
+      '$stageName · 战败';
+
+  /// 胜利剧情 fallback 标题：`<关名> · 胜利`
+  static String stageNarrativeVictoryTitle(String stageName) =>
+      '$stageName · 胜利';
+
+  /// 战败散功代价卡标题
+  static const String defeatLossTitle = '战败 · 散功代价';
+
+  /// 战败内力回退段：`内力 <before>→<after>`
+  static String defeatInternalForceSegment(int before, int after) =>
+      '内力 $before→$after';
+
+  /// 战败武学层数回退段：`<技名> <旧层>→<新层> (-<N>层)`
+  static String defeatTechniqueLayerSegment(
+    String techniqueName,
+    String? oldLayerLabel,
+    String? newLayerLabel,
+    int layersRolledBack,
+  ) =>
+      '$techniqueName $oldLayerLabel→$newLayerLabel (-$layersRolledBack层)';
+
+  /// 战败武学修炼度回退段：`<技名> 修炼度回退`
+  static String defeatTechniqueProgressSegment(String techniqueName) =>
+      '$techniqueName 修炼度回退';
+
+  // ── 通用加载失败(audit M3 散写中文归集)──────────────────────────────
+  /// 异步加载失败提示：`加载失败：<e>`（全角冒号）
+  static String loadFailed(Object e) => '加载失败：$e';
+
+  // ── 百科 UI(audit M3 散写中文归集)──────────────────────────────────
+  /// 典故数量标签：`<N> 段典故`
+  static String baikeLoreCount(int count) => '$count 段典故';
+
+  // ── 心魔镜像(audit M3 散写中文归集)──────────────────────────────────
+  /// 心魔镜像角色名：`心魔·<源名>`
+  static String innerDemonMirrorName(String name) => '心魔·$name';
 }

@@ -156,7 +156,7 @@ Future<void> runStageFlow({
         MaterialPageRoute(
           builder: (_) => NarrativeReaderScreen(
             content: defeat,
-            fallbackTitle: '${stage.name} · 战败',
+            fallbackTitle: UiStrings.stageNarrativeDefeatTitle(stage.name),
             topBanner: lossBanner,
             backgroundImagePath: stageNarrativePath(stage.id),
           ),
@@ -240,7 +240,7 @@ Future<void> runStageFlow({
       MaterialPageRoute(
         builder: (_) => NarrativeReaderScreen(
           content: victory,
-          fallbackTitle: '${stage.name} · 胜利',
+          fallbackTitle: UiStrings.stageNarrativeVictoryTitle(stage.name),
           backgroundImagePath: stageNarrativePath(stage.id),
         ),
       ),
@@ -919,7 +919,7 @@ class _DefeatLossBanner extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(bottom: 6),
             child: Text(
-              '战败 · 散功代价',
+              UiStrings.defeatLossTitle,
               style: TextStyle(
                 color: WuxiaColors.hpLow,
                 fontSize: 13,
@@ -934,13 +934,19 @@ class _DefeatLossBanner extends StatelessWidget {
   }
 
   Widget _entryLine(DefeatLossEntry e) {
-    final ifSegment = '内力 ${e.internalForceBefore}→${e.internalForceAfter}';
+    final ifSegment = UiStrings.defeatInternalForceSegment(
+        e.internalForceBefore, e.internalForceAfter);
     String? techSegment;
     if (e.techniqueName != null && e.layersRolledBack > 0) {
-      techSegment =
-          '${e.techniqueName} ${e.oldLayerLabel}→${e.newLayerLabel} (-${e.layersRolledBack}层)';
+      techSegment = UiStrings.defeatTechniqueLayerSegment(
+        e.techniqueName!,
+        e.oldLayerLabel,
+        e.newLayerLabel,
+        e.layersRolledBack,
+      );
     } else if (e.techniqueName != null) {
-      techSegment = '${e.techniqueName} 修炼度回退';
+      techSegment =
+          UiStrings.defeatTechniqueProgressSegment(e.techniqueName!);
     }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),

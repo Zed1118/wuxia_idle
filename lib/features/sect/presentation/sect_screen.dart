@@ -153,7 +153,7 @@ class _SectHeader extends StatelessWidget {
                   border: Border.all(color: WuxiaColors.border),
                 ),
                 child: Text(
-                  '等阶 ${sect.sectLevel}',
+                  UiStrings.sectLevelLabel(sect.sectLevel),
                   style: const TextStyle(
                     color: WuxiaColors.textSecondary,
                     fontSize: 12,
@@ -166,7 +166,7 @@ class _SectHeader extends StatelessWidget {
           Row(
             children: [
               const Text(
-                '声望',
+                UiStrings.sectReputationLabel,
                 style:
                     TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
               ),
@@ -192,7 +192,7 @@ class _SectHeader extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '累计胜场 ${sect.totalWins}',
+            UiStrings.sectTotalWinsLabel(sect.totalWins),
             style:
                 const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
@@ -212,7 +212,7 @@ class _ActiveEventList extends StatelessWidget {
     if (events.isEmpty) {
       return const Center(
         child: Text(
-          '当前无门派事件',
+          UiStrings.sectNoActiveEvent,
           style: TextStyle(color: WuxiaColors.textMuted),
         ),
       );
@@ -271,7 +271,8 @@ class _ActiveEventRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '触发 · ${_formatDate(event.triggeredAt)}',
+                      UiStrings.sectEventTriggeredAt(
+                          _formatDate(event.triggeredAt)),
                       style: const TextStyle(
                         color: WuxiaColors.textMuted,
                         fontSize: 12,
@@ -302,7 +303,7 @@ class _HistoricalEventList extends StatelessWidget {
     if (events.isEmpty) {
       return const Center(
         child: Text(
-          '尚无历史记录',
+          UiStrings.sectNoHistory,
           style: TextStyle(color: WuxiaColors.textMuted),
         ),
       );
@@ -350,7 +351,7 @@ class _HistoricalEventList extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '声望 $deltaStr',
+                  UiStrings.sectReputationDelta(deltaStr),
                   style: TextStyle(color: color, fontSize: 13),
                 ),
               ],
@@ -554,7 +555,7 @@ class _MemberRow extends ConsumerWidget {
       PromoteResult.success => UiStrings.sectPromoteSuccess,
       PromoteResult.belowThreshold => UiStrings.sectPromoteBelowThreshold,
       PromoteResult.alreadyMax => UiStrings.sectPromoteAlreadyMax,
-      _ => '操作失败',
+      _ => UiStrings.sectOperationFailed,
     };
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
@@ -566,7 +567,7 @@ class _MemberRow extends ConsumerWidget {
     if (!context.mounted) return;
     final msg = result == DismissResult.success
         ? UiStrings.sectDismissSuccess
-        : '操作失败';
+        : UiStrings.sectOperationFailed;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 }
@@ -738,7 +739,7 @@ class _TerritoryCell extends ConsumerWidget {
       ClaimResult.success => UiStrings.sectClaimSuccess,
       ClaimResult.alreadyOwned => UiStrings.sectClaimAlreadyOwned,
       ClaimResult.fullCap => UiStrings.sectClaimFullCap,
-      _ => '操作失败',
+      _ => UiStrings.sectOperationFailed,
     };
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
@@ -753,7 +754,7 @@ class _TerritoryCell extends ConsumerWidget {
     if (!context.mounted) return;
     final msg = result == ReleaseResult.success
         ? UiStrings.sectReleaseSuccess
-        : '操作失败';
+        : UiStrings.sectOperationFailed;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 }
@@ -794,22 +795,22 @@ String _sectRankLabel(SectRank rank) {
 String _typeLabel(SectEventType type) {
   switch (type) {
     case SectEventType.tournament:
-      return '比武大会';
+      return UiStrings.sectEventTypeTournament;
     case SectEventType.mission:
-      return '弟子任务';
+      return UiStrings.sectEventTypeMission;
     case SectEventType.crisis:
-      return '门派危机';
+      return UiStrings.sectEventTypeCrisis;
   }
 }
 
 String _statusLabel(SectEventStatus status) {
   switch (status) {
     case SectEventStatus.pending:
-      return '待处理';
+      return UiStrings.sectEventStatusPending;
     case SectEventStatus.resolved:
-      return '已结算';
+      return UiStrings.sectEventStatusResolved;
     case SectEventStatus.expired:
-      return '已过期';
+      return UiStrings.sectEventStatusExpired;
   }
 }
 

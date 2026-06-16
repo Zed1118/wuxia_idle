@@ -193,7 +193,7 @@ class _LoreTab extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${def.presetLoreIds.length} 段典故',
+                      UiStrings.baikeLoreCount(def.presetLoreIds.length),
                       style: const TextStyle(
                         color: WuxiaColors.textMuted,
                         fontSize: 12,
