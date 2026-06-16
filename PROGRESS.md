@@ -7,6 +7,8 @@
 
 ## 当前阶段
 
+> ✅ **2026-06-16 续16(规则层全域摸排 + 修复 · 项目侧合 main `c384a0d3` · opus xhigh · 4 维只读扇出)**:基于本会话幻觉教训,对 memory / 全局 CLAUDE.md / 命令skill / 项目 CLAUDE+GDD **四域只读摸排**(真图景 **2 High + ~13 Medium + ~5 Low**,memory 130 条 0 死链、挂机武侠引用 0 失效)。最危险 = **check-redlines skill 硬编码废弃 v0.1 红线、与 GDD §5.4 直接矛盾**(同「stale 规则产出错误结论」病根)。**全局侧修复**(`~/.claude` 即时生效,未版本化):check-redlines 重写(删硬编码→运行时读 GDD §5.4 + 跑 16 红线测 + 修路径)· flutter-review 补 build_runner 前置 + 强制贴原始输出 · wuxia-content 修路径 + 自检硬核对 · handoff-light 补 sha 禁转抄 · 全局 CLAUDE 补防幻觉阈值7(行号/状态 drift)+ Flutter 预览主次(Isar 默认 macOS)· 删 4 个 Pen/Windows 失效孤儿 memory · life_time_app 瘦身 135→30 行 + 删 4 明文密钥 + 对齐搁置 · 修 codex_backup 死链 + MEMORY.md 索引误述。**项目侧修复**(本 commit 纯文档/注释 0 代码):GDD §6.6 DeepSeek 自相矛盾(v1.17 漏网)· CLAUDE §12.2 三处行号 drift 去钉改符号引用 · GDD 索引 §12 描述 · numbers.yaml Boss 血量注释 50000→60000。**配套**(本会话前期):/handoff 补 0d 交付物实证(禁编造已落盘/已push/sha)+ 全局 CLAUDE 补防幻觉统一守则段。
+
 > ✅ **2026-06-16 续15(全功能真审计 + 按级修复批 · 合 main `b8330c14` · opus xhigh · 6 维只读扇出 + TDD)**:**纠上会话幻觉**——上会话(工具输出污染)幻觉了一份「45 项 · 14 High」审计并谎称落盘 push,实际全仓(git/reflog/stash/内容)查无→重跑真审计(6 维 subagent 实证、每条 file:line + confidence)。**真图景:1 High + 7 Medium + 1 Low + 2 doc drift**,5 个红线维度(三系锁死/反留存/公式层/数据正确性/UI 健壮性)基本全清,幻觉吹的 3 个 High 红线项(闭关内力 clamp/师承遗物 canEquip/心法 canPractice)实证全为误报。报告落盘 `docs/audit/full_audit_2026-06-16.md`。**修复**:① **H1** 爬塔周目迁移加版本门(`isar_setup` tower 块原无条件重置 → 0.21+ 已推进存档被打回周目 1 数据丢失;+1 H1 回归测)② **D1/D2** §6 公式/散功失效路径 drift(formulas.dart→features/battle/domain · dispel_cultivation→features/dispel)③ **M1/M2** 正名 EnumL10n + battle_log 为合法集中 sink(CLAUDE v1.20,删 stale「Phase 4 迁出」承诺)④ **M3-M5** 散写中文迁 UiStrings(门派/关卡进出/loadFailed×3 dedupe/百科/心魔镜像名,行为保持逐字节不变)⑤ **M6** 核查确认心魔失败惩罚(`InnerDemonFailurePenalty`)从未 wire,GDD §6「全收尾✅」不实 → 纠偏注(本轮不实装,留拍板)⑥ **M7** 换主清零标未消费 · **L1** 门派 Dialog 限高 80% 屏 + 长文滚动。全量 analyze **0** / 全量 **2247 测** +1 skip 零回归。**待拍板 backlog**:心魔失败惩罚实装(M6)。
 
 > ✅ **2026-06-15 续14(P3 战报失败诊断系统 立项→实装 全闭环 · 合 main `6a32901a` · opus · brainstorm→spec→plan→TDD)**:可玩性二期 backlog「战报诊断规则(§11.4)」打磨项。把败北单条硬编码提示升级为 §7.2 **三段式失败复盘**(1 主因 + 2 数据 + ≤2 跳转建议)。核心 = 纯函数 `BattleDiagnosis.from(BattleState, BattleReportConfig)` 镜像 `BattleStatsSummary`,**全 5 类规则**优先级有序首条命中即止:killed_by_charge(100)/internal_wound(90)/mob_overrun(80,§11.4 原条)/frontline_fragile(60)/dps_too_low(40)+generic 兜底。阈值进 numbers.yaml `battle_report` 段(4 字段 schema 校验);文案进 UiStrings(退役 `battleDefeatHintInterrupt`)守 §5.6;增强 `VictoryOverlay` 败北路径不新建 screen,跳转(skills/equipment/cultivation)叠 overlay 不打断「继续」(team 无 screen 拍板不做按钮)。防御式 `_safeDiagnose`(config 未就绪退化 null 不崩 overlay)。**0 改伤害公式/红线**。+14 测(config 2+diagnosis 9+overlay 3)/全量 **2245 测**+1 skip 零回归/analyze 0。**待视觉验收**:三段式诊断块排版(visual_route_host 已补败北诊断态预览)。spec+plan `2026-06-15-battle-report-diagnosis-*`。
@@ -79,9 +81,7 @@
 
 13 段销账(P1 #42-45 / Nightshift 9 task / P0 4 段 / 外部审查 6 项 / 路线图 launched / Codex 视觉)。详 `p1_4{2,3,4}_*` / `nightshift_20260519_handoff.md` / `p0_38_maxhp_rebalance_closeout_2026-05-17.md` 11 closeout。
 
-### P1.1 候选 1-5 详条迁出 2026-05-21
-
-5 候选全收口(4 实装 + 1 doc):候选 1 收徒池 E.1 / 候选 2 祖师爷 sect_wide_buff / 候选 3 共鸣度 4 子任务 + joint_skill / 候选 4 开锋 build / 候选 5 CLAUDE.md §12 对齐 — `p1_1_*_closeout_2026-05-21.md` 5 closeout。
+- **P1.1 候选 1-5**(2026-05-21):5 候选全收口(4 实装 + 1 doc)— 收徒池 E.1 / 祖师爷 sect_wide_buff / 共鸣度 4 子任务 + joint_skill / 开锋 build / CLAUDE.md §12 对齐 · `p1_1_*_closeout_2026-05-21.md`。
 
 ### M4 #46 美术 + Ch4 Phase 2 详条迁出 2026-05-20/22
 
