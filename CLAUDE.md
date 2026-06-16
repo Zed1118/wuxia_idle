@@ -150,7 +150,7 @@ project_root/
 
 ### 5.6 不硬编码
 - **Dart 代码里不写中文文案**——叙事文案(剧情/旁白/事件)全部走 `data/narratives/` `data/lore/` `data/events/`;UI 文案(标签/提示/错误串)走集中归集层 `lib/shared/strings.dart`(`UiStrings`)。禁止的是在 presentation / domain 各处**散写**中文字面量。
-- **集中式枚举本地化层是合法 sink(v1.20 正名)**:`lib/features/battle/domain/enum_localizations.dart`(`EnumL10n`)把枚举→中文显示名集中映射(带 `switch` 穷尽检查,枚举增删时编译期报漏翻译),与 `UiStrings` 同类,**不算「散写硬编码」**。新增枚举显示名走它,不要在调用点内联中文。
+- **集中式格式化 / 本地化层是合法 sink(v1.20 正名)**:单一文件集中维护、非散落各处的中文,与 `UiStrings` 同类,**不算「散写硬编码」**——计有 `enum_localizations.dart`(`EnumL10n` 枚举→显示名,带 `switch` 穷尽检查)、`battle_log.dart`(战报格式化,大量插值句子集中一处)。新增此类文本进对应集中层,不要在调用点内联中文。
 - **Dart 代码里不写数值常量**——全部走 `data/*.yaml`。
 - 唯一例外：开发期占位字符串可临时用，但合并 main 前必须迁出。
 
