@@ -514,6 +514,10 @@ class DefeatLossEntry {
   final String? newLayerLabel;
   final int layersRolledBack;
 
+  /// 心魔惩罚余毒标记：true 表示角色遭受心魔失败余毒，UI 追加余毒提示段。
+  /// Boss 散功 entry 默认 false。
+  final bool residueApplied;
+
   const DefeatLossEntry({
     required this.characterName,
     required this.internalForceBefore,
@@ -522,7 +526,78 @@ class DefeatLossEntry {
     this.oldLayerLabel,
     this.newLayerLabel,
     this.layersRolledBack = 0,
+    this.residueApplied = false,
   });
+}
+
+/// 从 [BattleResolutionResult] 构造损失摘要 entry 列表（纯函数，不访问 Isar）。
+///
+/// 处理两类惩罚（互斥但共享同一函数以便测试）：
+///   1. Boss 散功（[BattleResolutionResult.defeatPenaltyByCharacter]）→
+///      显示内力回退 + 层数回退，residueApplied=false。
+///   2. 心魔惩罚（[BattleResolutionResult.innerDemonPenaltyByCharacter]）→
+///      显示内力回退 + 修炼度回退提示，不掉层，residueApplied=true。
+@visibleForTesting
+List<DefeatLossEntry> buildDefeatLossEntries({
+  required List<Character> characters,
+  required Map<int, List<Technique>> techsByCh,
+  required BattleResolutionResult result,
+}) {
+  final entries = <DefeatLossEntry>[];
+
+  // Boss 散功 entries
+  for (final ch in characters) {
+    final p = result.defeatPenaltyByCharacter[ch.id];
+    if (p == null) continue;
+    final techName = _resolveTechName(ch, techsByCh);
+    entries.add(DefeatLossEntry(
+      characterName: ch.name,
+      internalForceBefore: p.internalForceBefore,
+      internalForceAfter: p.internalForceAfter,
+      techniqueName: techName,
+      oldLayerLabel: p.didRollback ? EnumL10n.cultivationLayer(p.oldLayer) : null,
+      newLayerLabel: p.didRollback ? EnumL10n.cultivationLayer(p.newLayer) : null,
+      layersRolledBack: p.layersRolledBack,
+      residueApplied: false,
+    ));
+  }
+
+  // 心魔惩罚 entries（不掉层，余毒标记）
+  for (final ch in characters) {
+    final ip = result.innerDemonPenaltyByCharacter[ch.id];
+    if (ip == null) continue;
+    final techName = _resolveTechName(ch, techsByCh);
+    entries.add(DefeatLossEntry(
+      characterName: ch.name,
+      internalForceBefore: ip.internalForceBefore,
+      internalForceAfter: ip.internalForceAfter,
+      techniqueName: techName,
+      oldLayerLabel: null,
+      newLayerLabel: null,
+      layersRolledBack: 0,
+      residueApplied: true,
+    ));
+  }
+
+  return entries;
+}
+
+/// 从 [techsByCh] 中解析角色主修心法的 defId 对应名称。
+/// 找不到或 GameRepository 未载入时返回 null（安全兜底）。
+String? _resolveTechName(Character ch, Map<int, List<Technique>> techsByCh) {
+  final mainTechId = ch.mainTechniqueId;
+  if (mainTechId == null) return null;
+  final techs = techsByCh[ch.id];
+  if (techs == null || techs.isEmpty) return null;
+  final mainTech = techs.firstWhere(
+    (t) => t.id == mainTechId,
+    orElse: () => techs.first,
+  );
+  try {
+    return GameRepository.instance.getTechnique(mainTech.defId).name;
+  } catch (_) {
+    return null;
+  }
 }
 
 /// Phase 4 W11 #32 销账：主线 victory 路径战斗结算。
@@ -857,37 +932,12 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
     }
   });
 
-  // 构造损失摘要：只展示有 defeatPenalty 的角色
-  final entries = <DefeatLossEntry>[];
-  for (final ch in characters) {
-    final p = result.defeatPenaltyByCharacter[ch.id];
-    if (p == null) continue;
-    final mainTechId = ch.mainTechniqueId;
-    final mainTech = mainTechId == null
-        ? null
-        : techsByCh[ch.id]?.firstWhere(
-            (t) => t.id == mainTechId,
-            orElse: () => techsByCh[ch.id]!.first,
-          );
-    String? techName;
-    if (mainTech != null) {
-      try {
-        techName = GameRepository.instance.getTechnique(mainTech.defId).name;
-      } catch (_) {
-        techName = null;
-      }
-    }
-    entries.add(DefeatLossEntry(
-      characterName: ch.name,
-      internalForceBefore: p.internalForceBefore,
-      internalForceAfter: p.internalForceAfter,
-      techniqueName: techName,
-      oldLayerLabel: p.didRollback ? EnumL10n.cultivationLayer(p.oldLayer) : null,
-      newLayerLabel: p.didRollback ? EnumL10n.cultivationLayer(p.newLayer) : null,
-      layersRolledBack: p.layersRolledBack,
-    ));
-  }
-  return entries;
+  // 构造损失摘要（Boss 散功 + 心魔惩罚）
+  return buildDefeatLossEntries(
+    characters: characters,
+    techsByCh: techsByCh,
+    result: result,
+  );
 }
 
 /// 战败损失摘要 banner（Phase 4 W10）。
@@ -948,12 +998,20 @@ class _DefeatLossBanner extends StatelessWidget {
       techSegment =
           UiStrings.defeatTechniqueProgressSegment(e.techniqueName!);
     }
+    // 余毒标记段（心魔惩罚 residueApplied=true 时追加）
+    final String? residueSegment =
+        e.residueApplied ? UiStrings.innerDemonResidueNote : null;
+
+    // 拼接完整行文本
+    final parts = [
+      '${e.characterName}  $ifSegment',
+      ?techSegment,
+      ?residueSegment,
+    ];
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Text(
-        techSegment == null
-            ? '${e.characterName}  $ifSegment'
-            : '${e.characterName}  $ifSegment  ·  $techSegment',
+        parts.join('  ·  '),
         style: const TextStyle(
           color: WuxiaColors.textPrimary,
           fontSize: 12.5,

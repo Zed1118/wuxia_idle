@@ -1440,6 +1440,9 @@ class UiStrings {
   static String defeatTechniqueProgressSegment(String techniqueName) =>
       '$techniqueName 修炼度回退';
 
+  /// 心魔失败余毒标记段（追加在内力段之后）：`余毒未消`
+  static const String innerDemonResidueNote = '余毒未消';
+
   // ── 通用加载失败(audit M3 散写中文归集)──────────────────────────────
   /// 异步加载失败提示：`加载失败：<e>`（全角冒号）
   static String loadFailed(Object e) => '加载失败：$e';
