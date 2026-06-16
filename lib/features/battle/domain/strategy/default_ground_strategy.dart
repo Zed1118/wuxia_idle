@@ -600,6 +600,7 @@ class DefaultGroundStrategy implements BattleStrategy {
       forceCritical: forceCritical,
       proficiencyDamageMult: profMult,
       defenderCritDamageTakenMult: critDamageTakenMult,
+      outputMultiplier: attacker.outputMultiplier,
     );
   }
 

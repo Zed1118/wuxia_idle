@@ -77,6 +77,7 @@ class DamageCalculator {
       rng: ctx.rng ?? Random(),
       forceCritical: ctx.forceCritical,
       proficiencyDamageMult: profMult,
+      outputMultiplier: 1.0, // Character 路径无余毒 debuff,固定 1.0
     );
   }
 
@@ -118,6 +119,10 @@ class DamageCalculator {
     /// 凝甲词条(C1):暴击增量衰减系数。default 1.0 = 无凝甲(零回归)。
     /// 0.5 时 effectiveCritMult = 1 + (critMult-1)*0.5，仅影响暴击增量部分。
     double defenderCritDamageTakenMult = 1.0,
+    /// M6 心魔余毒:战斗输出乘数(default 1.0=无余毒,零回归)。
+    /// 末端乘 mainDamage，与 attackPowerMultiplier / proficiencyDamageMult 并列。
+    /// 值由调用方从 BattleCharacter.outputMultiplier 传入，本函数不硬编码 0.95。
+    double outputMultiplier = 1.0,
   }) {
     // === 1. 闪避 ===
     if (rng.nextDouble() < defenderEvasionRate) {
@@ -197,7 +202,8 @@ class DamageCalculator {
         defMult *
         realmMult *
         attackPowerMultiplier *
-        proficiencyDamageMult; // 可玩性 P1a:熟练度综合倍率(已含 130% cap)
+        proficiencyDamageMult * // 可玩性 P1a:熟练度综合倍率(已含 130% cap)
+        outputMultiplier; // M6 余毒:输出乘数(default 1.0=无余毒)
     final mainDamage = raw.toInt();
 
     // === 9. 刚猛克阴柔附带震伤(§12.1 #7 v1.4 决议)===
@@ -224,6 +230,7 @@ class DamageCalculator {
         ' * ${_fmt(realmMult)}'
         '${attackPowerMultiplier != 1.0 ? ' * ${_fmt(attackPowerMultiplier)}' : ''}'
         '${proficiencyDamageMult != 1.0 ? ' * ${_fmt(proficiencyDamageMult)}' : ''}'
+        '${outputMultiplier != 1.0 ? ' * ${_fmt(outputMultiplier)}(余毒)' : ''}'
         ' = $mainDamage'
         '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
         ' [atkLv=$atkLevel,defLv=$defLevel]';
