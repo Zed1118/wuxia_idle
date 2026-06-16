@@ -2070,8 +2070,14 @@ class _SkillCommandButton extends StatelessWidget {
       statusText = UiStrings.skillPendingStamp; // 待发
     } else if (cd > 0) {
       statusText = UiStrings.skillCooldownShort(cd); // 冷却 N
+    } else if (character.currentInternalForce < skill.internalForceCost) {
+      statusText = UiStrings.skillInsufficientForce; // 内力不足
     } else {
-      statusText = UiStrings.skillCostShort(skill.internalForceCost); // 耗 N
+      // 耗内 N · CD M
+      statusText = UiStrings.skillCostShort(
+        skill.internalForceCost,
+        skill.cooldownTurns,
+      );
     }
 
     final button = SizedBox(

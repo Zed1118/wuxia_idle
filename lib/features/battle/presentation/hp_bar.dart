@@ -13,6 +13,10 @@ class HpBar extends StatelessWidget {
   final bool isInternalForce;
   final bool showLabel;
 
+  /// 居中数值前的标签前缀（如内力条传「内 」→「内 100 / 100」）。
+  /// 走 [UiStrings]，不在调用点内联中文。
+  final String labelPrefix;
+
   const HpBar({
     super.key,
     required this.current,
@@ -20,6 +24,7 @@ class HpBar extends StatelessWidget {
     this.height = 12,
     this.isInternalForce = false,
     this.showLabel = true,
+    this.labelPrefix = '',
   });
 
   @override
@@ -52,7 +57,7 @@ class HpBar extends StatelessWidget {
           if (showLabel)
             Center(
               child: Text(
-                '$current / $max',
+                '$labelPrefix$current / $max',
                 style: TextStyle(
                   fontSize: height * 0.72,
                   color: WuxiaColors.textPrimary,
