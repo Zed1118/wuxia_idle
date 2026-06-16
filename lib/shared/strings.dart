@@ -50,8 +50,13 @@ class UiStrings {
   static const String skillGroupJoint = '共鸣';
   // 破招用 [battleInterruptSkill]='破招'、大招用 [ultimate]='大招'。
   static const String skillPendingStamp = '待发';
-  static String skillCostShort(int cost) => '耗$cost';
+  // 可用态：耗内 N · CD M（让玩家知道耗的是内力、看得到基础 CD）。
+  static String skillCostShort(int cost, int cooldown) => '耗内$cost · CD$cooldown';
   static String skillCooldownShort(int turns) => '冷却$turns';
+  // 内力不足态短标。
+  static const String skillInsufficientForce = '内力不足';
+  // 角色头像内力条标签前缀（HpBar labelPrefix），如「内 100 / 100」。
+  static const String internalForceShortLabel = '内 ';
   // B3 破招成功「破！」题字 overlay 文案(破招方暖金/敌方绛红)。
   static const String interruptCaption = '破！';
 

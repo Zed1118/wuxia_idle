@@ -8,6 +8,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 
 /// 批三战斗指令台（T1/T2/T3）widget 测试。
@@ -344,6 +345,55 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_p1')));
       await tester.pump();
       expect(find.text('待发'), findsOneWidget);
+    });
+
+    testWidgets('可用态技能按钮显示「耗内N · CDM」（批次 1.2）', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_power], // cost=200, cd=2
+        currentInternalForce: 1000, // 充足，进可用态
+        maxInternalForce: 1000,
+        skillCooldowns: const {},
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      // 耗内200 · CD2
+      expect(
+        find.text(UiStrings.skillCostShort(200, 2)),
+        findsOneWidget,
+      );
+      expect(find.textContaining('耗内200'), findsOneWidget);
+      expect(find.textContaining('CD2'), findsOneWidget);
+    });
+
+    testWidgets('内力不足态技能按钮显示「内力不足」（批次 1.2）', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_power], // cost=200
+        currentInternalForce: 10, // < 200，内力不足
+        maxInternalForce: 1000,
+        skillCooldowns: const {},
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillInsufficientForce), findsOneWidget);
+      expect(find.text('内力不足'), findsOneWidget);
+      // 内力不足态不显示可用态的耗内文案。
+      expect(find.textContaining('耗内'), findsNothing);
+    });
+
+    testWidgets('冷却态技能按钮显示「冷却N」（批次 1.2 保持现状）', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_power], // cd=2
+        currentInternalForce: 1000,
+        maxInternalForce: 1000,
+        skillCooldowns: const {'p1': 3}, // CD 中
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      expect(find.text(UiStrings.skillCooldownShort(3)), findsOneWidget);
+      expect(find.text('冷却3'), findsOneWidget);
     });
 
     testWidgets('点头像切换重点角色，露出另一角色的技能', (tester) async {

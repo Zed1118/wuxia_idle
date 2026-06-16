@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/battle_state.dart';
 import '../domain/enum_localizations.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'hp_bar.dart';
@@ -119,6 +120,7 @@ class CharacterAvatar extends StatelessWidget {
             max: character.maxInternalForce,
             height: 9,
             isInternalForce: true,
+            labelPrefix: UiStrings.internalForceShortLabel,
           ),
         ),
         // P0 破招：敌人/Boss 蓄力中显蓄力进度条 + 「可破招」图标（纯读 state）。
