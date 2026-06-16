@@ -4,10 +4,10 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.20**
+> v1.20 变更摘要(2026-06-16 全功能真审计修复批 · 0 改数值规则层):① **§5.6 正名集中式枚举本地化为合法 sink**——`EnumL10n`(enum→中文显示名,带 switch 穷尽检查)与 `UiStrings` 同类,不算「散写硬编码」;删 enum_localizations.dart 文件头 stale 的「Phase 4 会迁出」承诺,明确叙事文案走 data/、UI 文案走 UiStrings、枚举显示名走 EnumL10n;② **§6 公式/散功路径 drift 修正**:公式层 `lib/core/combat/formulas.dart`(不存在)→ 实际 `lib/features/battle/domain/`(damage_calculator + derived_stats);散功 `lib/features/cultivation/domain/dispel_cultivation.dart`(不存在)→ 实际 `lib/features/dispel/application/dispel_service.dart` + `lib/core/domain/technique.dart`;③ 本批另修 H1 爬塔周目迁移数据丢失 + M2-M5 散写中文迁 UiStrings(代码层,详 PROGRESS 续15 + `docs/audit/full_audit_2026-06-16.md`)。
 > **版本:v1.19**
 > v1.19 变更摘要(2026-06-11 阶段定调 + 文档体例 · 0 改数值规则层):① **项目定调「1.0 长线打磨期」**(用户拍板:长期打磨质量,不设上线时间压力)——§1/§7 措辞从「收尾冲刺」改长线打磨,§7 新增**打磨期工作原则**(不用 Demo/冲刺心态规划任务 · 能一次做全面就一次做全面 · backlog 只承载依赖未解除/待拍板项,不承载偷懒未做项);② **版本摘要搬家体例**:头部只留最近 2 版,v1.1-v1.17 迁 `docs/_archive/CLAUDE_CHANGELOG.md`(GDD 同步此体例 + 冻结 `GDD_v1.16_frozen_2026-06-11.md` 基线);③ 阶段锚单点 = PROGRESS.md 顶部常驻行。
-> **版本:v1.18**
-> v1.18 变更摘要(2026-06-11 协作模式变更 + 状态 drift 清账 · 0 改数值规则层):① **Pen Windows AI 工具全下线**(用户拍板):Windows 不再参与任何 AI 工作流,视觉验收唯一 Mac 本地 Codex,§8 「Windows 端保留用途」段改写;② **§7 开发阶段 Demo→1.0 收尾(M15-16)对齐**:「Demo 阶段不要做」清单退役(江湖恩怨/心魔/帮派/声望/轻功/群战/第二主线均已实装),反主流红线改引 GDD §2.1,§9 对应行同步;③ §2 Riverpod 表对齐实际(3.x 已迁,修与 §9 自相矛盾)+ 引擎行注「开发/验收 macOS · 发布目标 Windows」;④ §8.1 示例 DeepSeek 残留 2 处清掉;⑤ §3 assets 注补音频;⑥ 测数锚 1888(2026-06-11 main checkout 实测,audio v1+jingle+BgmScope 栈已落)。
 
 ---
 
@@ -149,7 +149,8 @@ project_root/
 挂机就是挂机。**不允许任何"在线 buff""挂机加速""快进券"**。关游戏 8 小时回来 = 一直挂着 8 小时。
 
 ### 5.6 不硬编码
-- **Dart 代码里不写中文文案**——全部走 `data/narratives/` `data/lore/` `data/events/`。
+- **Dart 代码里不写中文文案**——叙事文案(剧情/旁白/事件)全部走 `data/narratives/` `data/lore/` `data/events/`;UI 文案(标签/提示/错误串)走集中归集层 `lib/shared/strings.dart`(`UiStrings`)。禁止的是在 presentation / domain 各处**散写**中文字面量。
+- **集中式枚举本地化层是合法 sink(v1.20 正名)**:`lib/features/battle/domain/enum_localizations.dart`(`EnumL10n`)把枚举→中文显示名集中映射(带 `switch` 穷尽检查,枚举增删时编译期报漏翻译),与 `UiStrings` 同类,**不算「散写硬编码」**。新增枚举显示名走它,不要在调用点内联中文。
 - **Dart 代码里不写数值常量**——全部走 `data/*.yaml`。
 - 唯一例外：开发期占位字符串可临时用，但合并 main 前必须迁出。
 
@@ -186,7 +187,7 @@ project_root/
 ```
 扣除非清零，鼓励多元探索；50% 的代价让"换流派"成为重决策而非随手切。
 
-公式实现集中放 `lib/core/combat/formulas.dart`，**任何战斗结果计算都必须走这里**，禁止在 Widget 或 Notifier 里散写。散功流程封装在 `lib/features/cultivation/domain/dispel_cultivation.dart`。
+公式实现集中放 `lib/features/battle/domain/`(`damage_calculator.dart` 伤害 + `derived_stats.dart` 派生属性,系数全从 `numbers.yaml` 读),**任何战斗结果计算都必须走这里**,禁止在 Widget 或 Notifier 里散写。散功流程封装在 `lib/features/dispel/application/dispel_service.dart` + `lib/core/domain/technique.dart`(`TechniqueDispersion`)。
 
 ## 7. 当前开发阶段
 

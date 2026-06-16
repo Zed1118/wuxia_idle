@@ -2,10 +2,11 @@ import '../../../core/domain/enums.dart';
 import '../../encounter/domain/encounter_def.dart' show AttributeKey;
 import 'battle_state.dart' show BattleResult;
 
-/// enum 与战斗 effect 字符串的中文化（phase1_tasks.md T13 §750）。
+/// enum → 中文显示名的集中本地化层。
 ///
-/// **本文件是 Phase 1 中唯一允许出现"代码内中文"的位置**，且仅限调试日志使用。
-/// Phase 4 起 DeepSeek 文案系统接管，这里的硬编码会迁出。
+/// **这是 CLAUDE.md §5.6 正名的合法集中式 sink**(v1.20):枚举→显示名映射集中
+/// 在此,带 `switch` 穷尽检查(枚举增删时编译期报漏翻译),与 `UiStrings` 同类,
+/// 不算「散写硬编码」。新增枚举显示名走这里,不要在调用点内联中文。
 class EnumL10n {
   EnumL10n._();
 
