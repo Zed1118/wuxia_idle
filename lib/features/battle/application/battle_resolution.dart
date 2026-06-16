@@ -10,6 +10,7 @@ import '../../../data/numbers_config.dart';
 import '../../../shared/utils/rng.dart';
 import '../../cultivation/application/cultivation_service.dart';
 import '../../dispel/application/dispel_service.dart';
+import '../../inner_demon/application/inner_demon_service.dart';
 import '../../../features/equipment/application/drop_service.dart';
 
 /// 战斗结算服务的汇总返回（phase2_tasks T26 §324-356）。
@@ -42,6 +43,9 @@ class BattleResolutionResult {
   /// 见 [DispelService.applyDefeatPenalty]。
   final Map<int, DefeatPenaltyResult> defeatPenaltyByCharacter;
 
+  /// M6:心魔关战败时每个有主修参战角色的惩罚结果。胜利/非心魔关恒空 map。
+  final Map<int, InnerDemonPenaltyResult> innerDemonPenaltyByCharacter;
+
   /// P1 #42 Phase 2:本场战斗内 `resonanceStage` 跨档晋升的装备 id 列表。
   /// caller 用于 GameEvent #7 resonanceUpgraded 写入。仅 `resolve` 传入
   /// `numbersConfig` 时填充,否则恒空。
@@ -53,6 +57,7 @@ class BattleResolutionResult {
     required this.cultivationEvents,
     required this.dropResult,
     this.defeatPenaltyByCharacter = const {},
+    this.innerDemonPenaltyByCharacter = const {},
     this.resonanceUpgradedEquipmentIds = const [],
   });
 
@@ -187,12 +192,36 @@ class BattleResolutionService {
       }
     }
 
+    // M6:心魔关战败 → 对每个有主修参战角色应用心魔失败惩罚 + 余毒。
+    // 与 Boss 散功互斥(心魔关 isBossStage=false)。stageDef=null(tower) 不进。
+    final innerDemonPenalty = <int, InnerDemonPenaltyResult>{};
+    if (!isVictory &&
+        stageDef != null &&
+        stageDef.stageType == StageType.innerDemon &&
+        numbersConfig != null) {
+      final idDef = numbersConfig.innerDemon;
+      for (final ch in participatingCharacters) {
+        final mainTechId = ch.mainTechniqueId;
+        if (mainTechId == null) continue;
+        final techs = techniquesByCharacter[ch.id] ?? const <Technique>[];
+        final mainTech = _findById(techs, mainTechId);
+        if (mainTech == null) continue;
+        innerDemonPenalty[ch.id] = InnerDemonService.applyFailurePenalty(
+          ch: ch,
+          mainTech: mainTech,
+          penalty: idDef.failurePenalty,
+          residueHours: idDef.failurePenalty.debuffClearViaRetreatHours.toDouble(),
+        );
+      }
+    }
+
     return BattleResolutionResult(
       updatedEquipmentIds: updatedEquipmentIds,
       skillUsageIncrements: skillUsageIncrements,
       cultivationEvents: cultivationEvents,
       dropResult: dropResult,
       defeatPenaltyByCharacter: defeatPenalty,
+      innerDemonPenaltyByCharacter: innerDemonPenalty,
       resonanceUpgradedEquipmentIds: resonanceUpgradedEquipmentIds,
     );
   }
