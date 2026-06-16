@@ -2,6 +2,10 @@
 
 > 2026-06-11 自 CLAUDE.md 头部迁出(头部只留最近 2 版),逆时序。完整历史亦可 `git log CLAUDE.md`。
 
+> **版本:v1.18**
+
+> v1.18 变更摘要(2026-06-11 协作模式变更 + 状态 drift 清账 · 0 改数值规则层):① **Pen Windows AI 工具全下线**(用户拍板):Windows 不再参与任何 AI 工作流,视觉验收唯一 Mac 本地 Codex,§8 「Windows 端保留用途」段改写;② **§7 开发阶段 Demo→1.0 收尾(M15-16)对齐**:「Demo 阶段不要做」清单退役(江湖恩怨/心魔/帮派/声望/轻功/群战/第二主线均已实装),反主流红线改引 GDD §2.1,§9 对应行同步;③ §2 Riverpod 表对齐实际(3.x 已迁,修与 §9 自相矛盾)+ 引擎行注「开发/验收 macOS · 发布目标 Windows」;④ §8.1 示例 DeepSeek 残留 2 处清掉;⑤ §3 assets 注补音频;⑥ 测数锚 1888(2026-06-11 main checkout 实测,audio v1+jingle+BgmScope 栈已落)。
+
 > **版本:v1.17**
 
 > v1.17 变更摘要(2026-06-02 出版美术 pass 全闭环 + 数值/内容多批状态对齐 · 本批 0 改规则层主体):跨度较大(v1.16 后 ~5 天多批 · 1505→**1667 测**/1 skip/0 analyze · release ready ~93%→**~99%**),关键节点:① **出版美术 pass(1.0 Presentation Pass)整体全闭环** —— 战斗屏(主菜单水墨山门 + B1 背景按 biome 接线+scrim+胜负仪式 overlay + B2 大招题字+Boss 金边)+ 剧情屏(narrative_scene 背景基建 + 30 图)+ 战斗场景背景 16 biome 全覆盖 + 角色页档案化 + 章节封面 6 章 · Codex 多门视觉验收 PASS · §12 上线门 **11/12 达成**(唯音频留 E 段);② **数值再平衡**:B1 敌人内力按境界对称化(`055696b` scale=0.20 解高阶 Boss 招牌 ult 永久放不出)+ 根因A 挂机循环重平衡 + 红线值统一 numbers.yaml 单源 + stage_01_05/05_05 难度墙调校;③ **外部 review 5 项硬化**(P1-a 飞升 auto_swap 三系锁死 §5.3 / P2-c 战斗公式单源 §6 / P2-a/b 健壮性 / P3 文档 drift);④ **H 段上手/中期/后期/卡点 4 审计全闭环** + §9 dialog 水墨调色 + G2 上手 banner + G4 剧情轻点。**真缺口**:Mac 端 ship 前硬工程窗口 `SetMinimumSize` 已实装并 **Pen 实机验收 3/3 PASS**(`3db46b2` · 2026-06-02 闭环),其余 ~1% 全卡外部/M15-16(D 性能 8h/FPS/Isar ANR + closed beta ~10 人 + E 音频 + F Steam + G 法律)。详 PROGRESS.md 顶段 + `docs/RELEASE_CHECKLIST_1_0.md` v1.13 + `docs/ROADMAP_1_0.md` v1.13。**状态对齐,无规则层变化**(§1-§12 规则主体 + §5.4 红线 + §12.2 表全保持 v1.10 决议)。
