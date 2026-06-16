@@ -30,6 +30,8 @@ import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/widgets/equipment_art_image.dart';
+import '../../help/domain/help_topic.dart';
+import '../../help/presentation/context_help_button.dart';
 import 'encounter_skill_section.dart';
 
 /// 角色面板（phase2_tasks.md T28 + Phase 3 Week 4 T56）。
@@ -68,6 +70,7 @@ class _CharacterPanelScreenState extends ConsumerState<CharacterPanelScreen> {
         onBack: Navigator.of(context).canPop()
             ? () => Navigator.of(context).pop()
             : null,
+        trailing: const ContextHelpButton(topic: HelpTopic.realm),
       ),
       body: SafeArea(
         child: idsAsync.when(

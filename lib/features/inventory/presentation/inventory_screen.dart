@@ -18,6 +18,8 @@ import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_tab.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
+import '../../help/domain/help_topic.dart';
+import '../../help/presentation/context_help_button.dart';
 import 'equipment_detail_screen.dart';
 
 /// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账 +
@@ -46,6 +48,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
       appBar: WuxiaTitleBar(
         title: UiStrings.inventoryTitle,
         onBack: () => Navigator.of(context).maybePop(),
+        trailing: const ContextHelpButton(topic: HelpTopic.equipmentTier),
       ),
       body: SafeArea(
         child: Column(

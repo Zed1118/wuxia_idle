@@ -57,4 +57,27 @@ void main() {
     ));
     expect(find.byIcon(Icons.home_outlined), findsNothing);
   });
+
+  testWidgets('trailing 槽:传入 widget 渲染于标题栏（页面级帮助入口位）', (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        appBar: WuxiaTitleBar(
+          title: '装备仓库',
+          trailing: Icon(Icons.help_outline, key: Key('trailing-probe')),
+        ),
+        body: SizedBox(),
+      ),
+    ));
+    expect(find.byKey(const Key('trailing-probe')), findsOneWidget);
+  });
+
+  testWidgets('trailing 为 null 不额外渲染', (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        appBar: WuxiaTitleBar(title: '装备仓库'),
+        body: SizedBox(),
+      ),
+    ));
+    expect(find.byIcon(Icons.help_outline), findsNothing);
+  });
 }

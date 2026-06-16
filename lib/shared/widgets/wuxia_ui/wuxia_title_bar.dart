@@ -16,6 +16,7 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
     this.showHome = true,
     this.showSeal = true,
     this.titleStyle,
+    this.trailing,
   });
 
   final String title;
@@ -28,6 +29,10 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showHome;
   final bool showSeal;
   final TextStyle? titleStyle;
+
+  /// 标题右侧的附加动作槽(位于「回主菜单」键左侧),用于注入页面级帮助入口
+  /// (`ContextHelpButton`)等。保持本组件在 shared 层不依赖 features:由调用方注入。
+  final Widget? trailing;
 
   @override
   Size get preferredSize => const Size.fromHeight(52);
@@ -72,6 +77,11 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
               ).merge(titleStyle),
             ),
           ),
+          if (trailing != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: trailing,
+            ),
           if (showHome)
             Tooltip(
               message: UiStrings.titleBarHome,
