@@ -58,6 +58,7 @@ class InnerDemonDef {
           subCultivationMultiplier: 1.00,
           debuffId: 'inner_demon_residue',
           debuffClearViaRetreatHours: 8,
+          internalForceFloorPct: 0.50,
         ),
         residueDebuff: InnerDemonResidueDebuff(
           battleOutputMultiplier: 0.95,
@@ -166,12 +167,16 @@ class InnerDemonFailurePenalty {
   /// 闭关 N 小时清解 debuff。
   final int debuffClearViaRetreatHours;
 
+  /// 内力扣减地板（new 内力不低于 internalForceMax × 此值；防无限重试归零）。
+  final double internalForceFloorPct;
+
   const InnerDemonFailurePenalty({
     required this.internalForceMultiplier,
     required this.mainCultivationMultiplier,
     required this.subCultivationMultiplier,
     required this.debuffId,
     required this.debuffClearViaRetreatHours,
+    required this.internalForceFloorPct,
   });
 
   factory InnerDemonFailurePenalty.fromYaml(Map<String, dynamic> y) =>
@@ -185,6 +190,8 @@ class InnerDemonFailurePenalty {
         debuffId: y['debuff_id'] as String? ?? 'inner_demon_residue',
         debuffClearViaRetreatHours:
             (y['debuff_clear_via_retreat_hours'] as num?)?.toInt() ?? 8,
+        internalForceFloorPct:
+            (y['internal_force_floor_pct'] as num?)?.toDouble() ?? 0.50,
       );
 }
 

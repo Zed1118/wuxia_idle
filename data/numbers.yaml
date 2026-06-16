@@ -1404,6 +1404,7 @@ inner_demon:
 
   failure_penalty:                   # 散功 ×0.5 阉割版（GDD §6 散功公式半惩罚）
     internal_force_multiplier: 0.85
+    internal_force_floor_pct: 0.50   # 内力扣减地板=internalForceMax×0.50(M6 防无限重试归零)
     main_cultivation_multiplier: 0.90
     sub_cultivation_multiplier: 1.00
     debuff_id: inner_demon_residue
