@@ -582,6 +582,14 @@ List<DefeatLossEntry> buildDefeatLossEntries({
   return entries;
 }
 
+/// 以给定 [entries] 渲染战败损失摘要 banner（[_DefeatLossBanner] 的公开入口）。
+///
+/// 私有 widget 的薄暴露，供 VISUAL_ROUTE 截图验收与 widget 测复用，**不改任何
+/// 运行时行为**（真实流程仍直接 new [_DefeatLossBanner]）。不加 `@visibleForTesting`
+/// 以免 debug 路由（非 test 库）引用时触发 lint。
+Widget buildDefeatLossBanner(List<DefeatLossEntry> entries) =>
+    _DefeatLossBanner(entries: entries);
+
 /// 从 [techsByCh] 中解析角色主修心法的 defId 对应名称。
 /// 找不到或 GameRepository 未载入时返回 null（安全兜底）。
 String? _resolveTechName(Character ch, Map<int, List<Technique>> techsByCh) {
@@ -952,6 +960,11 @@ class _DefeatLossBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (entries.isEmpty) return const SizedBox.shrink();
+    // 上下文感知标题：心魔关余毒 entry 与 Boss 散功 entry 按关卡互斥，
+    // 全为余毒 → 心魔反噬标题；否则（Boss 散功）→ 散功代价标题。
+    final title = entries.every((e) => e.residueApplied)
+        ? UiStrings.defeatLossTitleInnerDemon
+        : UiStrings.defeatLossTitle;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       margin: const EdgeInsets.only(bottom: 16),
@@ -966,11 +979,11 @@ class _DefeatLossBanner extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(bottom: 6),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
             child: Text(
-              UiStrings.defeatLossTitle,
-              style: TextStyle(
+              title,
+              style: const TextStyle(
                 color: WuxiaColors.hpLow,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,

@@ -1420,8 +1420,11 @@ class UiStrings {
   static String stageNarrativeVictoryTitle(String stageName) =>
       '$stageName · 胜利';
 
-  /// 战败散功代价卡标题
+  /// 战败散功代价卡标题（Boss 关散功惩罚场景）
   static const String defeatLossTitle = '战败 · 散功代价';
+
+  /// 战败心魔反噬卡标题（M6 心魔关余毒场景，与散功 Boss 关互斥）
+  static const String defeatLossTitleInnerDemon = '战败 · 心魔反噬';
 
   /// 战败内力回退段：`内力 <before>→<after>`
   static String defeatInternalForceSegment(int before, int after) =>

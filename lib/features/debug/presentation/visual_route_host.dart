@@ -23,6 +23,7 @@ import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart';
 import '../../mainline/presentation/stage_list_screen.dart';
+import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../sect/presentation/sect_screen.dart';
@@ -367,6 +368,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const _InterruptCaptionPreview();
     case VisualRoute.battleDefeat:
       return const _DefeatCeremonyPreview();
+    case VisualRoute.defeatInnerDemonResidue:
+      return const _InnerDemonResidueDefeatPreview();
     case VisualRoute.offlineRecapPassive:
       return const _OfflineRecapPassivePreview();
     case VisualRoute.battleTreasureGlowPeak:
@@ -919,6 +922,47 @@ class _DefeatCeremonyPreview extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// M6 心魔关战败损失摘要·余毒未消段排版静态验收。
+/// 复用真实 [NarrativeReaderScreen] + topBanner 渲染路径(战败剧情屏顶 banner),
+/// 以两条样例余毒 entry 还原排版:第 1 条含主修(内力段·修炼度回退段·余毒未消段
+/// 三段拼接=最长行,验换行),第 2 条仅内力+余毒未消。样例为 debug fixture,
+/// 同 [_DefeatCeremonyPreview] 内联中文体例。
+class _InnerDemonResidueDefeatPreview extends StatelessWidget {
+  const _InnerDemonResidueDefeatPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return NarrativeReaderScreen(
+      content: const NarrativeContent(
+        id: 'visual_inner_demon_defeat',
+        title: '心魔反噬',
+        paragraphs: [
+          '你一时心神动摇,为心魔所乘。功体受损,一缕余毒缠身,需闭关静养方能涤净。',
+        ],
+        isPlaceholder: false,
+        mandatory: true,
+      ),
+      fallbackTitle: '心魔反噬',
+      topBanner: buildDefeatLossBanner(const [
+        DefeatLossEntry(
+          characterName: '萧远山',
+          internalForceBefore: 1480,
+          internalForceAfter: 1258,
+          techniqueName: '伏魔禅功',
+          residueApplied: true,
+        ),
+        DefeatLossEntry(
+          characterName: '阿朱',
+          internalForceBefore: 760,
+          internalForceAfter: 646,
+          residueApplied: true,
+        ),
+      ]),
+      backgroundImagePath: 'assets/scenes/battle_citywall.png',
     );
   }
 }
