@@ -23,6 +23,12 @@ class Character {
 
   int internalForce = 0;
   int internalForceMax = 500;
+
+  /// 心魔余毒剩余清除所需闭关时长(小时;0=无余毒)。M6 心魔关战败时设为
+  /// failure_penalty.debuff_clear_via_retreat_hours(=8);闭关收功累减 actualHours,
+  /// 归 0 即清。在身时:战斗输出 ×residue_debuff.battle_output_multiplier +
+  /// 闭关内力产出 ×internal_force_recovery_multiplier。
+  double innerDemonResidueHoursRemaining = 0;
   int experience = 0;
   int experienceToNextLayer = 100;
 
@@ -125,6 +131,7 @@ class Character {
     required DateTime createdAt,
     int internalForce = 0,
     int internalForceMax = 500,
+    double innerDemonResidueHoursRemaining = 0,
     int experience = 0,
     int experienceToNextLayer = 100,
     int insightPoints = 0,
@@ -165,6 +172,7 @@ class Character {
       ..createdAt = createdAt
       ..internalForce = internalForce
       ..internalForceMax = internalForceMax
+      ..innerDemonResidueHoursRemaining = innerDemonResidueHoursRemaining
       ..experience = experience
       ..experienceToNextLayer = experienceToNextLayer
       ..insightPoints = insightPoints
