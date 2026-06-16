@@ -1,7 +1,27 @@
+import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/technique.dart';
 import '../../../shared/strings.dart';
 import '../../battle/domain/battle_state.dart';
 import '../domain/inner_demon_def.dart';
+
+/// 心魔关战败惩罚结果（in-place 改 ch.internalForce + mainTech.cultivationProgress
+/// 已发生，此处汇总供 UI 展示 / 测试断言）。与 DispelService.DefeatPenaltyResult
+/// 区别：心魔惩罚 layer 不回退（spec「不跌破当前层起点」自动满足）。
+class InnerDemonPenaltyResult {
+  final int internalForceBefore;
+  final int internalForceAfter;
+  final int progressBefore;
+  final int progressAfter;
+  final double residueHoursApplied;
+  const InnerDemonPenaltyResult({
+    required this.internalForceBefore,
+    required this.internalForceAfter,
+    required this.progressBefore,
+    required this.progressAfter,
+    required this.residueHoursApplied,
+  });
+}
 
 /// 心魔系统 application 层（1.0 P2.2 §12.1，Batch 2.2.A vertical slice）。
 ///
@@ -91,6 +111,47 @@ class InnerDemonService {
       for (var i = 0; i < playerTeam.length && i < 3; i++)
         _mirror(playerTeam[i], buff: buff, caps: caps, slotIndex: i),
     ];
+  }
+
+  /// 心魔关战败惩罚（M6）。对单个**有主修**的参战角色调用一次。
+  ///
+  /// in-place 改：
+  ///   - ch.internalForce = max(floor(old × internalForceMultiplier),
+  ///                            floor(internalForceMax × internalForceFloorPct))
+  ///   - mainTech.cultivationProgress = floor(old × mainCultivationMultiplier)
+  ///     （cultivationLayer / cultivationProgressToNext 不动 → 不跌破当前层起点）
+  ///   - ch.innerDemonResidueHoursRemaining = residueHours（再败刷新，不叠加）
+  ///   - 辅修不动（subCultivationMultiplier=1.00，不触碰辅修字段）
+  ///
+  /// Isar 持久化由 caller 负责（沿 DispelService.applyDefeatPenalty 体例）。
+  static InnerDemonPenaltyResult applyFailurePenalty({
+    required Character ch,
+    required Technique mainTech,
+    required InnerDemonFailurePenalty penalty,
+    required double residueHours,
+  }) {
+    final ifBefore = ch.internalForce;
+    final progressBefore = mainTech.cultivationProgress;
+
+    final floor =
+        (ch.internalForceMax * penalty.internalForceFloorPct).floor();
+    final scaled =
+        (ch.internalForce * penalty.internalForceMultiplier).floor();
+    ch.internalForce = scaled < floor ? floor : scaled;
+
+    mainTech.cultivationProgress =
+        (mainTech.cultivationProgress * penalty.mainCultivationMultiplier)
+            .floor();
+
+    ch.innerDemonResidueHoursRemaining = residueHours;
+
+    return InnerDemonPenaltyResult(
+      internalForceBefore: ifBefore,
+      internalForceAfter: ch.internalForce,
+      progressBefore: progressBefore,
+      progressAfter: mainTech.cultivationProgress,
+      residueHoursApplied: residueHours,
+    );
   }
 
   static BattleCharacter _mirror(
