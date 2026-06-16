@@ -123,7 +123,11 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
           }
           final n = snap.data!;
           return ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
+            constraints: BoxConstraints(
+              maxWidth: 480,
+              // L1(审计):限高 80% 屏,长事件文案在 720p 不再 bottom overflow。
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+            ),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -139,12 +143,18 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    n.opening,
-                    style: const TextStyle(
-                      color: WuxiaColors.textSecondary,
-                      fontSize: 14,
-                      height: 1.6,
+                  // L1(审计):opening 为 yaml 自由文案,长文在 720p 会溢出 →
+                  // Flexible + 滚动,标题与按钮保持固定可见。
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Text(
+                        n.opening,
+                        style: const TextStyle(
+                          color: WuxiaColors.textSecondary,
+                          fontSize: 14,
+                          height: 1.6,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
