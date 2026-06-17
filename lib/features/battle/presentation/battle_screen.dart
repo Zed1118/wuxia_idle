@@ -19,6 +19,7 @@ import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/effects/screen_shake.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'attack_animation.dart';
@@ -195,6 +196,12 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 路由)。生产路径恒 null,不影响任何真实战斗。配 [autoStart] false 冻结画面。
   final BattleDragPreview? debugDragPreview;
 
+  /// 仅验收路由用(默认 false → 生产/现有调用零影响):起手即暂停,战斗冻结在
+  /// startBattle seed 初态(timer 因 _isPaused 不启,与 [autoStart] 兼容)。
+  /// **为 true 时**头栏额外渲染「单步」按钮(逐步推进战斗,供验收者拖招/看
+  /// 内力不足/debuff hover);生产挂机战斗恒 false,单步按钮严禁出现。
+  final bool startPaused;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
@@ -210,6 +217,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.cycleHint,
     this.allowPlayerIntervention = false,
     this.debugDragPreview,
+    this.startPaused = false,
   });
 
   @override
@@ -307,7 +315,20 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       _rushToActorId = preview.rushActorId;
       _hoveredEnemyId = preview.hoveredEnemyId;
     }
+    // 验收路由 startPaused:起手即暂停 → _startTimer 内 _isPaused gate 兜住
+    // 自动启动路径(autoStart=true 仍会 startBattle,但 timer 不启),战斗冻结
+    // 在 seed 初态等手动单步/继续。生产恒 false 不受影响。
+    if (widget.startPaused) {
+      _isPaused = true;
+    }
     // Timer 不在 initState 启动，等 ref.listen 看到 startBattle 完成后再启动。
+  }
+
+  // 验收路由 startPaused 专用:单步推进战斗 + setState 反映 UI。
+  // gating:仅 widget.startPaused 时渲染按钮调用(生产挂机不出现)。
+  void _stepOnce() {
+    ref.read(battleProvider.notifier).step();
+    setState(() {});
   }
 
   @override
@@ -667,6 +688,23 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     setState(() {}); // 反映拖招者「蓄势」高亮 + 清拖招态
   }
 
+  /// 批次 1.3:点击技能方块 → 弹简介浮层(直接读 [SkillDef] 活数据)。
+  /// 不下发命令(下发改走长按拖招);CD/内力不足态也可点开查看。
+  void _showSkillInfo(SkillDef skill) {
+    PaperDialog.show<void>(
+      context,
+      title: skill.name,
+      body: _SkillInfoBody(skill: skill),
+      actions: [
+        PlaqueButton(
+          label: UiStrings.skillInfoClose,
+          onTap: () => Navigator.of(context).pop(),
+          primary: true,
+        ),
+      ],
+    );
+  }
+
   // ─── 拖招(Phase 4 · C1-C3) ────────────────────────────────────────────────
 
   /// 命中测试:指针全局坐标落在哪个敌人头像矩形内 → 返回该 enemyId。
@@ -1009,6 +1047,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       isPaused: _isPaused,
                       onSurrender:
                           widget.onSurrender == null ? null : _confirmSurrender,
+                      // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
+                      onStepOnce: widget.startPaused ? _stepOnce : null,
                     ),
                     _DangerBar(state: state),
                     Expanded(
@@ -1049,7 +1089,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       focusSlotIndex: _effectiveFocus(state),
                       allowPlayerIntervention: widget.allowPlayerIntervention,
                       onSelectFocus: _onSelectFocus,
-                      onSkill: _onSkillCommand,
+                      onShowSkillInfo: _showSkillInfo,
                       onFastForward: _toggleFastForward,
                       isFastForward: _isFastForward,
                       onSkillDragStart: _onSkillDragStart,
@@ -1108,7 +1148,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 onClose: () => setState(() => _logOpen = false),
               ),
             // H3 暂停遮罩:战斗未结束且暂停时,轻触任意处或「继续」恢复。
-            if (_isPaused && state.result == null)
+            // 验收路由 startPaused 不挂全屏遮罩——否则会拦截顶栏「单步」点击
+            // 并误触发恢复;此模式靠顶栏暂停/继续 + 单步按钮操作。
+            if (_isPaused && state.result == null && !widget.startPaused)
               Positioned.fill(child: _PauseOverlay(onResume: _togglePause)),
           ],
         ),
@@ -1293,12 +1335,15 @@ class _Header extends StatelessWidget {
   final VoidCallback onPause;
   final bool isPaused;
   final VoidCallback? onSurrender;
+  /// 验收路由(startPaused)专用:暂停态逐步推进。null = 生产挂机不渲染单步按钮。
+  final VoidCallback? onStepOnce;
   const _Header({
     required this.state,
     required this.onToggleLog,
     required this.onPause,
     required this.isPaused,
     this.onSurrender,
+    this.onStepOnce,
   });
 
   @override
@@ -1353,6 +1398,18 @@ class _Header extends StatelessWidget {
               ),
               tooltip: isPaused ? UiStrings.battleResume : UiStrings.battlePause,
               onPressed: onPause,
+            ),
+          // 验收路由(startPaused)专用单步键:仅 onStepOnce 非空时渲染,生产挂机不出现。
+          if (state.result == null && onStepOnce != null)
+            IconButton(
+              key: const ValueKey('battle_step_once'),
+              icon: const Icon(
+                Icons.skip_next,
+                color: WuxiaColors.textSecondary,
+                size: 20,
+              ),
+              tooltip: UiStrings.battleStepOnce,
+              onPressed: onStepOnce,
             ),
           if (state.result == null && onSurrender != null)
             IconButton(
@@ -1792,7 +1849,9 @@ class _BottomBar extends StatelessWidget {
   final int focusSlotIndex;
   final bool allowPlayerIntervention;
   final void Function(int slotIndex) onSelectFocus;
-  final void Function(int characterId, SkillDef skill, {int? targetId}) onSkill;
+  // 批次 1.3：点击技能方块 = 弹简介浮层(直接读 SkillDef 活数据),不再裸单击下发。
+  // 下发改走拖招(onSkillDragStart/End)。
+  final void Function(SkillDef skill) onShowSkillInfo;
   final VoidCallback onFastForward;
   final bool isFastForward;
   // Phase 4 拖招回调(单体技长按拖)。
@@ -1807,7 +1866,7 @@ class _BottomBar extends StatelessWidget {
     required this.focusSlotIndex,
     required this.allowPlayerIntervention,
     required this.onSelectFocus,
-    required this.onSkill,
+    required this.onShowSkillInfo,
     required this.onFastForward,
     required this.isFastForward,
     required this.onSkillDragStart,
@@ -1879,7 +1938,7 @@ class _BottomBar extends StatelessWidget {
                                 pending != null && pending.id != s.id,
                             highlight: enemyCharging && s.canInterrupt,
                             allowPlayerIntervention: allowPlayerIntervention,
-                            onPressed: () => onSkill(focus.characterId, s),
+                            onPressed: () => onShowSkillInfo(s),
                             onDragStart: (origin) => onSkillDragStart(
                                 focus.characterId, s, origin),
                             onDragUpdate: onSkillDragUpdate,
@@ -2070,8 +2129,14 @@ class _SkillCommandButton extends StatelessWidget {
       statusText = UiStrings.skillPendingStamp; // 待发
     } else if (cd > 0) {
       statusText = UiStrings.skillCooldownShort(cd); // 冷却 N
+    } else if (character.currentInternalForce < skill.internalForceCost) {
+      statusText = UiStrings.skillInsufficientForce; // 内力不足
     } else {
-      statusText = UiStrings.skillCostShort(skill.internalForceCost); // 耗 N
+      // 耗内 N · CD M
+      statusText = UiStrings.skillCostShort(
+        skill.internalForceCost,
+        skill.cooldownTurns,
+      );
     }
 
     final button = SizedBox(
@@ -2079,14 +2144,16 @@ class _SkillCommandButton extends StatelessWidget {
       height: 76,
       child: ElevatedButton(
         key: ValueKey('skill_cmd_${character.characterId}_${skill.id}'),
-        onPressed: enabled ? onPressed : null,
+        // 批次 1.3:点击 = 弹简介浮层(始终可读,CD/内力不足/待发态亦可看)。
+        // 下发改走长按拖招(见下方 GestureDetector / `enabled` 仅门控拖招)。
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
+          // 批次 1.3:onPressed 恒非空(点击始终可弹简介),故禁用视觉不再靠
+          // disabled* 兜底——背景已由 bgColor(!ready→buttonDisabled)表达,
+          // 前景按 enabled 手动切 muted/primary 保留「不可下发」灰态观感。
           backgroundColor: bgColor,
-          disabledBackgroundColor: isPending
-              ? WuxiaColors.sidebar
-              : WuxiaColors.buttonDisabled,
-          foregroundColor: WuxiaColors.textPrimary,
-          disabledForegroundColor: WuxiaColors.textMuted,
+          foregroundColor:
+              enabled ? WuxiaColors.textPrimary : WuxiaColors.textMuted,
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           side: highlight && enabled
               ? const BorderSide(color: WuxiaColors.textPrimary, width: 2)
@@ -2140,7 +2207,8 @@ class _SkillCommandButton extends StatelessWidget {
       ),
     );
 
-    // 未到可下发态(门控关 / 内力不足 / CD / 已待发)不挂拖招手势。
+    // 未到可下发态(门控关 / 内力不足 / CD / 已待发)不挂拖招手势;
+    // 但点击弹简介浮层始终可用(button.onPressed 恒非空)。
     if (!enabled) return button;
 
     // 长按拖起 → 进入拖招态;松手在敌头像上=指定目标(单体)或直接触发(群体)。
@@ -2157,6 +2225,89 @@ class _SkillCommandButton extends StatelessWidget {
       onLongPressEnd: (d) => onDragEnd(d.globalPosition),
       onLongPressCancel: onDragCancel,
       child: button,
+    );
+  }
+}
+
+/// 批次 1.3:技能简介浮层正文(直接读 [SkillDef] 活数据)。
+/// 描述 + 字段表(类型/目标/倍率/耗内/冷却/特性)+ 拖招提示。
+/// 不走 HelpCatalog/CodexIndex,纯活数据 + [EnumL10n] 枚举显示名。
+class _SkillInfoBody extends StatelessWidget {
+  final SkillDef skill;
+  const _SkillInfoBody({required this.skill});
+
+  static String _traitText(SkillDef s) {
+    if (s.canInterrupt) return UiStrings.skillTraitInterrupt; // 破招(可打断蓄力)
+    return UiStrings.skillTraitNone; // 无
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <(String, String)>[
+      (UiStrings.skillInfoType, EnumL10n.skillType(skill.type)),
+      (UiStrings.skillInfoTarget, EnumL10n.targetType(skill.targetType)),
+      (UiStrings.skillInfoPower, '${skill.powerMultiplier}'),
+      (UiStrings.skillInfoCost, '${skill.internalForceCost}'),
+      (
+        UiStrings.skillInfoCooldown,
+        UiStrings.skillInfoCooldownTurns(skill.cooldownTurns),
+      ),
+      (UiStrings.skillInfoTrait, _traitText(skill)),
+    ];
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 描述活文本(SkillDef.description)。
+        Text(
+          skill.description,
+          style: const TextStyle(
+            color: WuxiaUi.ink,
+            fontSize: 13,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 14),
+        for (final (label, value) in rows)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 56,
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      color: WuxiaUi.muted,
+                      fontSize: 12,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    value,
+                    style: const TextStyle(
+                      color: WuxiaUi.ink,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        const SizedBox(height: 8),
+        const Text(
+          UiStrings.skillInfoDragHint,
+          style: TextStyle(
+            color: WuxiaUi.qing,
+            fontSize: 11,
+            letterSpacing: 1,
+          ),
+        ),
+      ],
     );
   }
 }

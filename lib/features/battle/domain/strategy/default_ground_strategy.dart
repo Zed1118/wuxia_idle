@@ -346,10 +346,11 @@ class DefaultGroundStrategy implements BattleStrategy {
     }
 
     final SkillDef skill;
-    final int targetId;
+    final List<int> targetIds;
     if (forcedSkill != null) {
       skill = forcedSkill;
-      targetId = BattleAI.decide(preActor, preState, n).$2; // 复用目标选择
+      // 复用 AI 选目标(single 单元素 / aoe 全体 slotIndex 升序),loop 全部。
+      targetIds = BattleAI.decide(preActor, preState, n).$2;
     } else {
       final decided = BattleAI.decide(preActor, preState, n);
       // (c) 起手蓄力:选中自己的 chargeSkillId 且未蓄力 → 开始蓄力,本 tick 不出伤。
@@ -377,27 +378,140 @@ class DefaultGroundStrategy implements BattleStrategy {
         );
       }
       skill = decided.$1;
-      targetId = decided.$2;
+      // single 单元素 / aoe 全体 slotIndex 升序,loop 全部。
+      targetIds = decided.$2;
     }
-    final target = _findById(
-      preState,
-      targetId,
-      preActor.teamSide == 0 ? 1 : 0,
-    );
-    if (target == null) {
-      throw StateError(
-        'BattleEngine._resolveAction: 找不到 targetId=$targetId',
+
+    // ── Task 3 aoe loop:按 targetIds 顺序(slotIndex 升序,single 单元素)逐个 ──
+    // 全部 target 基于 preState 行动前快照独立算(aoe 同时命中,前一个打死不改
+    // 后一个的输入);rng 按本顺序逐个消费(闪避+暴击),顺序固定 = 确定性保证。
+    final oppSide = preActor.teamSide == 0 ? 1 : 0;
+    final targetAfters = <BattleCharacter>[];
+    final actions = <BattleAction>[];
+    // fanzhen 累积:初值 = preActor 现有内伤;每 target 仅在「本 target 触发反震」
+    // 时覆盖。无任何触发 → 保 preActor.internalInjury;有触发 → 最后触发的生效
+    // (覆盖语义,与单体逐字节等价)。
+    InternalInjurySlot? actorFanzhen = preActor.internalInjury;
+    for (final tid in targetIds) {
+      final target = _findById(preState, tid, oppSide);
+      if (target == null) {
+        throw StateError(
+          'BattleEngine._resolveAction: 找不到 targetId=$tid',
+        );
+      }
+      // rng 消费点:每 target 逐个 roll 闪避+暴击(顺序锚 targetIds)。
+      final result = _calculateInBattle(
+        attacker: preActor,
+        defender: target,
+        skill: skill,
+        n: n,
+        rng: rng,
       );
+      // 单 target 侧组装(伤害/内伤/破招/stagger + 反震触发值 + BattleAction),
+      // 不碰 rng(result 已传入);各 target 都基于 preState/preActor 独立算。
+      final resolved =
+          _resolveOneTarget(preState, preActor, target, skill, result, n);
+      targetAfters.add(resolved.targetAfter);
+      actions.add(resolved.action);
+      if (resolved.fanzhenTriggered != null) {
+        actorFanzhen = resolved.fanzhenTriggered;
+      }
     }
 
-    final result = _calculateInBattle(
-      attacker: preActor,
-      defender: target,
-      skill: skill,
-      n: n,
-      rng: rng,
+    // 攻方 actorAfter 构造一次(loop 外):扣内力一次 + 写 skill CD 一次 +
+    // actionPoint -= 1000 一次(保留余数)。
+    final newCd = Map<String, int>.from(preActor.skillCooldowns);
+    // 可玩性 P1a:per-skill 熟练度 cooldown_delta 缩短有效 CD(下限 0)。
+    final effCd = SkillProficiency.effectiveCooldown(
+        skill, preActor.skillUses[skill.id] ?? 0, n.skillProficiency);
+    if (effCd > 0) {
+      newCd[skill.id] = effCd;
+    }
+    final actorAfter = preActor.copyWith(
+      currentInternalForce:
+          preActor.currentInternalForce - skill.internalForceCost,
+      skillCooldowns: Map.unmodifiable(newCd),
+      actionPoint: preActor.actionPoint - 1000,
+      // C2 反震:命中带 cycle_fanzhen 敌人时将内伤 slot 写到攻击者自身。aoe 下
+      // = 最后一个触发反震的 target 的 slot 生效;无触发则保 preActor.internalInjury
+      // (loop 初值 round-trip,值不变,与单体逐字节等价)。
+      internalInjury: actorFanzhen,
     );
 
+    // 写回队伍:actorAfter + 所有 targetAfters(逐个 _replaceById)。
+    final left = preState.leftTeam.toList();
+    final right = preState.rightTeam.toList();
+    _replaceById(actorAfter.teamSide == 0 ? left : right, actorAfter);
+    for (final ta in targetAfters) {
+      _replaceById(ta.teamSide == 0 ? left : right, ta);
+    }
+
+    // BattleAction 已由 _resolveOneTarget 组装(description 用 preActor.name,
+    // copyWith 不改 name/characterId,与原 actorAfter 口径逐字节等价)。
+
+    // 消费 pendingUltimates[actor.characterId]（无论本次是否真用上大招）
+    Map<int, SkillDef> newPending = preState.pendingUltimates;
+    if (preState.pendingUltimates.containsKey(actorAfter.characterId)) {
+      final m = Map<int, SkillDef>.from(preState.pendingUltimates)
+        ..remove(actorAfter.characterId);
+      newPending = Map.unmodifiable(m);
+    }
+    // 半手动 P0 步骤3a:指定目标与 pending 同生命周期,行动后一并移除。
+    Map<int, int> newTargets = preState.pendingTargets;
+    if (preState.pendingTargets.containsKey(actorAfter.characterId)) {
+      final m = Map<int, int>.from(preState.pendingTargets)
+        ..remove(actorAfter.characterId);
+      newTargets = Map.unmodifiable(m);
+    }
+
+    final next = preState.copyWith(
+      leftTeam: List.unmodifiable(left),
+      rightTeam: List.unmodifiable(right),
+      // aoe 每 target 一条 BattleAction(single 单元素,与原逐字节等价)。
+      actionLog: [...preState.actionLog, ...actions],
+      pendingUltimates: newPending,
+      pendingTargets: newTargets,
+    );
+
+    // 胜负判定(全部 target 扣完后判一次)
+    final leftAlive = next.leftTeam.any((c) => c.isAlive);
+    final rightAlive = next.rightTeam.any((c) => c.isAlive);
+    if (!leftAlive && !rightAlive) {
+      return next.copyWith(result: BattleResult.draw);
+    }
+    if (!leftAlive) return next.copyWith(result: BattleResult.rightWin);
+    if (!rightAlive) return next.copyWith(result: BattleResult.leftWin);
+    return next;
+  }
+
+  /// 单 target 侧结算组装(纯逻辑,**不碰 rng** — [result] 由调用方传入)。
+  ///
+  /// 从 [_resolveAction] 抽出,为 Task 3 的 aoe loop 铺路:每个 target 调一次本
+  /// helper 完成 伤害/内伤(yinRou)/反震(fanzhen)/破招/stagger 组装 + 生成
+  /// [BattleAction]。rng 调用顺序仍由 [_resolveAction] 的 loop 控制(本 helper 不
+  /// 消费 rng,行为与原内联逻辑逐字节等价)。
+  ///
+  /// 返回三元 record:
+  /// - [targetAfter]:目标侧 copyWith 后快照(伤害/内伤/破招/stagger)。
+  /// - [fanzhenTriggered]:**仅本 target 触发的** C2 反震新 slot;未触发 → null
+  ///   (不混入 [preActor].internalInjury 默认)。Task 3 aoe loop 据此累积:
+  ///   `actorFanzhen = preActor.internalInjury; 每 target if(r != null) 覆盖`,
+  ///   保证「最后一个触发的生效 + 无触发保原值」语义(与单体逐字节等价),不被
+  ///   后续未触发 target 重置回 preActor.internalInjury(否则丢前面的反震)。
+  /// - [action]:本次命中的 [BattleAction](description 用 [preActor].name,
+  ///   copyWith 不改 name/characterId,与原 actorAfter 口径一致)。
+  ({
+    BattleCharacter targetAfter,
+    InternalInjurySlot? fanzhenTriggered,
+    BattleAction action,
+  }) _resolveOneTarget(
+    BattleState preState,
+    BattleCharacter preActor,
+    BattleCharacter target,
+    SkillDef skill,
+    AttackResult result,
+    NumbersConfig n,
+  ) {
     // 应用伤害到目标
     final newTargetHp = (target.currentHp - result.finalDamage).clamp(
       0,
@@ -418,11 +532,14 @@ class DefaultGroundStrategy implements BattleStrategy {
     // - 只在 attacker=player(teamSide==0)、defender 含 'cycle_fanzhen' 且非闪避时触发。
     // - 同源刷新(覆盖)：与 yinRou 内伤语义一致，直接覆盖旧 slot 不叠层。
     // - 参数全从 n.cycleEvolution.traits.fanzhen 读取，无硬编码数字。
-    InternalInjurySlot? actorFanzhenInjury = preActor.internalInjury;
+    // - 仅返回「本 target 触发的新 slot」,未触发 → null(由 loop 据此累积覆盖,
+    //   不在此处填 preActor.internalInjury 默认,否则 aoe 后续未触发 target 会
+    //   把前面 target 触发的反震重置掉)。
+    InternalInjurySlot? fanzhenTriggered;
     if (!result.isDodged &&
         preActor.teamSide == 0 &&
         target.activeBuffs.contains('cycle_fanzhen')) {
-      actorFanzhenInjury = InternalInjurySlot(
+      fanzhenTriggered = InternalInjurySlot(
         remainingTurns: n.cycleEvolution.traits.fanzhen.ticks,
         damagePerTick: n.cycleEvolution.traits.fanzhen.damagePerTick,
       );
@@ -464,76 +581,24 @@ class DefaultGroundStrategy implements BattleStrategy {
           : target.staggerDefenseDownOverride,
     );
 
-    // 攻方扣内力 + 写 CD + actionPoint -= 1000（保留余数）
-    final newCd = Map<String, int>.from(preActor.skillCooldowns);
-    // 可玩性 P1a:per-skill 熟练度 cooldown_delta 缩短有效 CD(下限 0)。
-    final effCd = SkillProficiency.effectiveCooldown(
-        skill, preActor.skillUses[skill.id] ?? 0, n.skillProficiency);
-    if (effCd > 0) {
-      newCd[skill.id] = effCd;
-    }
-    final actorAfter = preActor.copyWith(
-      currentInternalForce:
-          preActor.currentInternalForce - skill.internalForceCost,
-      skillCooldowns: Map.unmodifiable(newCd),
-      actionPoint: preActor.actionPoint - 1000,
-      // C2 反震:命中带 cycle_fanzhen 敌人时，将内伤 slot 写到攻击者自身。
-      // actorFanzhenInjury 非 _unset sentinel，始终走显式更新分支;反震未触发时
-      // round-trip 回 preActor.internalInjury（值不变，语义等效,不丢已有内伤）。
-      internalInjury: actorFanzhenInjury,
-    );
-
-    // 写回队伍
-    final left = preState.leftTeam.toList();
-    final right = preState.rightTeam.toList();
-    _replaceById(actorAfter.teamSide == 0 ? left : right, actorAfter);
-    _replaceById(targetAfter.teamSide == 0 ? left : right, targetAfter);
-
-    // 写 BattleAction
+    // 写 BattleAction(description 用 preActor.name == actorAfter.name)
     final action = BattleAction(
       tick: preState.tick,
-      actorId: actorAfter.characterId,
+      actorId: preActor.characterId,
       targetId: target.characterId,
       skill: skill,
       attackResult: result,
       description: brokeCharging
-          ? EnumL10n.interrupted(actorAfter.name, targetAfter.name)
-          : _formatAction(actorAfter, targetAfter, skill, result),
+          ? EnumL10n.interrupted(preActor.name, targetAfter.name)
+          : _formatAction(preActor, targetAfter, skill, result),
       interrupted: brokeCharging,
     );
 
-    // 消费 pendingUltimates[actor.characterId]（无论本次是否真用上大招）
-    Map<int, SkillDef> newPending = preState.pendingUltimates;
-    if (preState.pendingUltimates.containsKey(actorAfter.characterId)) {
-      final m = Map<int, SkillDef>.from(preState.pendingUltimates)
-        ..remove(actorAfter.characterId);
-      newPending = Map.unmodifiable(m);
-    }
-    // 半手动 P0 步骤3a:指定目标与 pending 同生命周期,行动后一并移除。
-    Map<int, int> newTargets = preState.pendingTargets;
-    if (preState.pendingTargets.containsKey(actorAfter.characterId)) {
-      final m = Map<int, int>.from(preState.pendingTargets)
-        ..remove(actorAfter.characterId);
-      newTargets = Map.unmodifiable(m);
-    }
-
-    final next = preState.copyWith(
-      leftTeam: List.unmodifiable(left),
-      rightTeam: List.unmodifiable(right),
-      actionLog: [...preState.actionLog, action],
-      pendingUltimates: newPending,
-      pendingTargets: newTargets,
+    return (
+      targetAfter: targetAfter,
+      fanzhenTriggered: fanzhenTriggered,
+      action: action,
     );
-
-    // 胜负判定
-    final leftAlive = next.leftTeam.any((c) => c.isAlive);
-    final rightAlive = next.rightTeam.any((c) => c.isAlive);
-    if (!leftAlive && !rightAlive) {
-      return next.copyWith(result: BattleResult.draw);
-    }
-    if (!leftAlive) return next.copyWith(result: BattleResult.rightWin);
-    if (!rightAlive) return next.copyWith(result: BattleResult.leftWin);
-    return next;
   }
 
   void _replaceById(List<BattleCharacter> team, BattleCharacter c) {

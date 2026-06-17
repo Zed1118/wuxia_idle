@@ -22,6 +22,8 @@ class UiStrings {
   static const String battlePause = '暂停';
   static const String battleResume = '继续';
   static const String battlePausedTitle = '已暂停';
+  // 验收路由专用(startPaused):暂停态逐步推进战斗,仅 debug 渲染,生产挂机不出现。
+  static const String battleStepOnce = '单步';
   // H3:投降(主动认输撤退 · 二次确认 · 无掉落 / Boss 不散功)。
   static const String battleSurrender = '投降';
   static const String surrenderConfirmTitle = '认输撤退';
@@ -50,8 +52,31 @@ class UiStrings {
   static const String skillGroupJoint = '共鸣';
   // 破招用 [battleInterruptSkill]='破招'、大招用 [ultimate]='大招'。
   static const String skillPendingStamp = '待发';
-  static String skillCostShort(int cost) => '耗$cost';
+  // 可用态：耗内 N · CD M（让玩家知道耗的是内力、看得到基础 CD）。
+  static String skillCostShort(int cost, int cooldown) => '耗内$cost · CD$cooldown';
   static String skillCooldownShort(int turns) => '冷却$turns';
+  // 内力不足态短标。
+  static const String skillInsufficientForce = '内力不足';
+  // 批次 1.3 技能简介浮层：点击技能方块弹出，直接读 SkillDef 活数据。
+  // 字段标签（左列），值由活数据 / EnumL10n 填。
+  static const String skillInfoType = '类型';
+  static const String skillInfoTarget = '目标';
+  static const String skillInfoPower = '倍率';
+  static const String skillInfoCost = '耗内';
+  static const String skillInfoCooldown = '冷却';
+  static const String skillInfoTrait = '特性';
+  // 特性值：可打断 → 破招（命中蓄力中目标可打断其招牌技）。
+  static const String skillTraitInterrupt = '破招（可打断蓄力）';
+  // 无特殊特性时的占位（普通技无可打断等标签）。
+  static const String skillTraitNone = '无';
+  // 冷却值单位（回合）。
+  static String skillInfoCooldownTurns(int turns) => '$turns 回合';
+  // 浮层底部操作提示：长按拖到敌人头像下发。
+  static const String skillInfoDragHint = '长按方块拖到目标头像下发';
+  // 浮层关闭按钮。
+  static const String skillInfoClose = '知道了';
+  // 角色头像内力条标签前缀（HpBar labelPrefix），如「内 100 / 100」。
+  static const String internalForceShortLabel = '内 ';
   // B3 破招成功「破！」题字 overlay 文案(破招方暖金/敌方绛红)。
   static const String interruptCaption = '破！';
 
@@ -355,6 +380,21 @@ class UiStrings {
   static const String glossarySeclusion =
       '闭关：择地静修，将光阴沉淀为修为。地点、时辰、节气皆影响产出；关游戏亦照常累积（在线＝离线）。';
   static const String labelCombatAdvanced = '战斗机制';
+
+  // ── 批次 1.4:头像旁战斗状态标签(buff/debuff)label + hover 释义 ──
+  // 纯展示层,读 BattleCharacter 现有状态字段渲染;无独立 HelpTopic,挂薄 GlossaryTip。
+  /// 内伤 debuff(InternalInjurySlot):守方出手时持续掉血,可致死。
+  static const String statusInternalInjuryLabel = '内伤';
+  static const String statusInternalInjuryGloss =
+      '内伤:经脉受创,每次自己出手都要再受一记暗伤,层数耗尽方止,拖久了能要命。';
+  /// 踉跄 debuff(staggerTicksRemaining):被破招后阵脚大乱,数回合内任人宰割。
+  static const String statusStaggerLabel = '踉跄';
+  static const String statusStaggerGloss =
+      '踉跄:招式被破,阵脚大乱。数息之内防御骤降、难以还手,正是趁势猛攻之机。';
+  /// 剑鸣 buff(swordSongResonanceActive):心剑通灵,暴击附剑鸣威能。
+  static const String statusSwordSongLabel = '剑鸣';
+  static const String statusSwordSongGloss =
+      '剑鸣:人剑通灵之境,暴击之时剑发清吟,威势暗涨。共鸣愈深,剑意愈盛。';
 
   // HelpCatalog 引用的术语 label（集中 sink，复用既有 attr/stat/tab 常量，仅补缺失）。
   static const String labelCultivation = '修炼度';

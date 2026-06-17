@@ -309,9 +309,10 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // 拖招真玩/验收:真战斗 + 干预层挂上 + 高血耐久敌久撑(够时间拖)。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioDragLive,
-        hint: '长按拖技能到敌人头像指定目标 · 点大招群体直发',
+        hint: '长按拖技能下发:单体拖到敌头像指定 · 群体技拖动松手即对全体触发 · 已暂停,点单步推进或继续自动',
         sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
         allowPlayerIntervention: true,
+        startPaused: true,
       );
     case VisualRoute.battleDragPreview:
       // 拖招表现层静态验收:冻结画面(autoStart false)预置引导线 + 蓄势光晕 + 悬停高亮,
