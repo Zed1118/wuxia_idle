@@ -60,6 +60,14 @@ class EnumL10n {
     };
   }
 
+  /// 招式目标类型(批次 1.3 简介浮层 · 拖招手势)。
+  static String targetType(TargetType t) {
+    return switch (t) {
+      TargetType.single => '单体',
+      TargetType.aoe => '群体',
+    };
+  }
+
   /// `<tier><layer>` 完整境界：例 `wuSheng/dengFeng → "武圣登峰"`。
   static String realm(RealmTier t, RealmLayer l) =>
       '${realmTier(t)}${realmLayer(l)}';
