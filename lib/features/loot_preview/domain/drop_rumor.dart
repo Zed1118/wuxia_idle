@@ -10,6 +10,7 @@ enum DropRumorBucket {
 }
 
 /// 桶映射规则。判定顺序：首条命中即返回。
+/// 入参 dropChance 恒 ∈ [0.0, 1.0]（上游 DropEntry.fromYaml 已硬校验）；>1 同 1.0、<0 归江湖传闻。
 DropRumorBucket bucketOf(double dropChance, {required bool isFirstClearGated}) {
   if (dropChance >= 1.0) {
     return isFirstClearGated
