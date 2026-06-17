@@ -365,17 +365,20 @@ class BattleScenarioData {
   /// 主控 single 大招(拖到敌头像指定目标)+ aoe 大招(长按拖下发，松手即对全体触发)演示两种交互。
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioDragLive() {
     // 主控:IF 够放几次大招;eqAtk 低 → 普攻只是弱 chip(不 burst)。
+    // school 默认刚猛(主控保持刚猛,不影响 single 拖招的震伤观感);
+    // 弟子甲改灵巧 → 敌方阴柔命中其头像即触发内伤,供「内伤」标签 hover 复验。
     BattleCharacter player(
       int id,
       String name,
       int slot,
-      List<SkillDef> skills,
-    ) => _char(
+      List<SkillDef> skills, {
+      TechniqueSchool school = TechniqueSchool.gangMeng,
+    }) => _char(
       id: id,
       name: name,
       tier: RealmTier.erLiu,
       layer: RealmLayer.yuanShu,
-      school: TechniqueSchool.gangMeng,
+      school: school,
       maxHp: 12000,
       maxIf: 1500,
       speed: 180,
@@ -416,7 +419,13 @@ class BattleScenarioData {
           targetType: TargetType.aoe,
         ),
       ]),
-      player(2, '弟子甲', 1, [_normal('dl_normal_2', '基础招')]),
+      player(
+        2,
+        '弟子甲',
+        1,
+        [_normal('dl_normal_2', '基础招')],
+        school: TechniqueSchool.lingQiao,
+      ),
       player(3, '弟子乙', 2, [_normal('dl_normal_3', '基础招')]),
     ];
 
