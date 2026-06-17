@@ -22,6 +22,8 @@ class UiStrings {
   static const String battlePause = '暂停';
   static const String battleResume = '继续';
   static const String battlePausedTitle = '已暂停';
+  // 验收路由专用(startPaused):暂停态逐步推进战斗,仅 debug 渲染,生产挂机不出现。
+  static const String battleStepOnce = '单步';
   // H3:投降(主动认输撤退 · 二次确认 · 无掉落 / Boss 不散功)。
   static const String battleSurrender = '投降';
   static const String surrenderConfirmTitle = '认输撤退';

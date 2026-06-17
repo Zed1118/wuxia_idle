@@ -196,6 +196,12 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 路由)。生产路径恒 null,不影响任何真实战斗。配 [autoStart] false 冻结画面。
   final BattleDragPreview? debugDragPreview;
 
+  /// 仅验收路由用(默认 false → 生产/现有调用零影响):起手即暂停,战斗冻结在
+  /// startBattle seed 初态(timer 因 _isPaused 不启,与 [autoStart] 兼容)。
+  /// **为 true 时**头栏额外渲染「单步」按钮(逐步推进战斗,供验收者拖招/看
+  /// 内力不足/debuff hover);生产挂机战斗恒 false,单步按钮严禁出现。
+  final bool startPaused;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
@@ -211,6 +217,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.cycleHint,
     this.allowPlayerIntervention = false,
     this.debugDragPreview,
+    this.startPaused = false,
   });
 
   @override
@@ -308,7 +315,20 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       _rushToActorId = preview.rushActorId;
       _hoveredEnemyId = preview.hoveredEnemyId;
     }
+    // 验收路由 startPaused:起手即暂停 → _startTimer 内 _isPaused gate 兜住
+    // 自动启动路径(autoStart=true 仍会 startBattle,但 timer 不启),战斗冻结
+    // 在 seed 初态等手动单步/继续。生产恒 false 不受影响。
+    if (widget.startPaused) {
+      _isPaused = true;
+    }
     // Timer 不在 initState 启动，等 ref.listen 看到 startBattle 完成后再启动。
+  }
+
+  // 验收路由 startPaused 专用:单步推进战斗 + setState 反映 UI。
+  // gating:仅 widget.startPaused 时渲染按钮调用(生产挂机不出现)。
+  void _stepOnce() {
+    ref.read(battleProvider.notifier).step();
+    setState(() {});
   }
 
   @override
@@ -1027,6 +1047,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       isPaused: _isPaused,
                       onSurrender:
                           widget.onSurrender == null ? null : _confirmSurrender,
+                      // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
+                      onStepOnce: widget.startPaused ? _stepOnce : null,
                     ),
                     _DangerBar(state: state),
                     Expanded(
@@ -1126,7 +1148,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 onClose: () => setState(() => _logOpen = false),
               ),
             // H3 暂停遮罩:战斗未结束且暂停时,轻触任意处或「继续」恢复。
-            if (_isPaused && state.result == null)
+            // 验收路由 startPaused 不挂全屏遮罩——否则会拦截顶栏「单步」点击
+            // 并误触发恢复;此模式靠顶栏暂停/继续 + 单步按钮操作。
+            if (_isPaused && state.result == null && !widget.startPaused)
               Positioned.fill(child: _PauseOverlay(onResume: _togglePause)),
           ],
         ),
@@ -1311,12 +1335,15 @@ class _Header extends StatelessWidget {
   final VoidCallback onPause;
   final bool isPaused;
   final VoidCallback? onSurrender;
+  /// 验收路由(startPaused)专用:暂停态逐步推进。null = 生产挂机不渲染单步按钮。
+  final VoidCallback? onStepOnce;
   const _Header({
     required this.state,
     required this.onToggleLog,
     required this.onPause,
     required this.isPaused,
     this.onSurrender,
+    this.onStepOnce,
   });
 
   @override
@@ -1371,6 +1398,18 @@ class _Header extends StatelessWidget {
               ),
               tooltip: isPaused ? UiStrings.battleResume : UiStrings.battlePause,
               onPressed: onPause,
+            ),
+          // 验收路由(startPaused)专用单步键:仅 onStepOnce 非空时渲染,生产挂机不出现。
+          if (state.result == null && onStepOnce != null)
+            IconButton(
+              key: const ValueKey('battle_step_once'),
+              icon: const Icon(
+                Icons.skip_next,
+                color: WuxiaColors.textSecondary,
+                size: 20,
+              ),
+              tooltip: UiStrings.battleStepOnce,
+              onPressed: onStepOnce,
             ),
           if (state.result == null && onSurrender != null)
             IconButton(

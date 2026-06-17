@@ -122,7 +122,7 @@ enum VisualRoute {
   ),
   battleDragLive(
     'battle_drag_live',
-    '拖招交互真玩/验收(真战斗·已开干预·高血耐久敌久撑 → 长按拖 single 强力技到敌头像 + 点 aoe 大招直发)',
+    '拖招交互真玩/验收(真战斗·已开干预·高血耐久敌久撑 → 长按拖 single 强力技到敌头像指定 + aoe 大招拖动松手即对全体触发)',
   ),
   battleDragPreview(
     'battle_drag_preview',
