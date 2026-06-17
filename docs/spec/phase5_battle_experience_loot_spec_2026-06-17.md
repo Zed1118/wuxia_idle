@@ -47,11 +47,46 @@
 
 ## 4. 主线三 · 关卡/塔层掉落传闻（风险中 · 体量大）
 
-- 复用/扩 `dropTable`（已在）→ 掉落预览数据。
-- 玩家侧分组（`UiStrings`）：常可得 / 偶可得 / 少有人得 / 江湖传闻 / 首通必得；**不显百分比**。
-- 进度门槛：高阶物绑章节/塔层（第N章/塔区间映射 7 阶）；三系锁死提示「机缘可遇，火候未到」。
-- 展示位：关卡列表卡片简版 + 关卡详情完整版 + 塔层详情；首通必得与可重复掉落分开。
-- schema 校验测：dropPreview 不缺失 / 不越阶 / 不暴露概率 / 不出现网游稀有词汇。
+### 4.1 数据现状（Phase 0 调研确认 · 带 file:line）
+- `DropEntry` sealed（`lib/data/defs/drop_entry.dart:20-115`）：`EquipmentDrop{equipmentDefId, dropChance}` / `ItemDrop{inventoryItemDefId, quantityMin/Max, dropChance}`。`dropChance: double [0,1]`。
+- `StageDef.dropTable`（`stage_def.dart:39`）/ `TowerFloorDef.dropTable`（`tower_floor_def.dart:47`）已配（yaml 实例 `stages.yaml:77` / `towers.yaml:24`）。
+- 进度门槛字段现成：`StageDef.requiredRealm`（:18）/ `chapterIndex`（:16）/ `TowerFloorDef.floorIndex`（:26）。
+- **无 firstClear 字段**：首通区分在 service 层（`isFirstClear`），DropEntry 不带首通标记。
+- 玩家侧掉落预览 UI **完全空白**（全仓搜无）。
+
+### 4.2 dropChance → 玩家侧稀有度桶（不显百分比）
+内部 `dropChance` 不变，玩家侧只见传闻分组。提议阈值（集中一处常量，可调，非散写）：
+
+| dropChance | 玩家侧桶 |
+|---|---|
+| = 1.0 | 常可得 |
+| 0.30 – 0.99 | 偶可得 |
+| 0.08 – 0.30 | 少有人得 |
+| < 0.08 | 江湖传闻 |
+
+- 玩家侧词「常可得 / 偶可得 / 少有人得 / 江湖传闻 / 首通必得」走 `UiStrings`。
+- **禁**网游稀有词汇（传奇/SSR）；**禁**显 %。
+
+### 4.3 「首通必得」数据源（⚠️ 待拍板 · 可能涉 schema）
+DropEntry 现无首通标记，首通奖励数据源不明确。两条路：
+- **A. 新增 schema**：DropEntry 加 `firstClearOnly: bool`（或独立 `firstClearReward` 字段）→ `[schema]` 决策 + 迁移。
+- **B. 不加字段**：复用现有首通 unlock / 剧情奖励逻辑映射「首通必得」桶。
+
+**开工 4.x 前需用户拍板 A/B**；在此之前「首通必得」桶按现有 `isFirstClear` 语义占位或留空。（属合法 backlog：待拍板项）
+
+### 4.4 UI（读现有 dropTable，除 4.3 外无 schema 改）
+- 关卡列表卡片简版：「可能收获：X · Y · Z」（取若干高桶代表）。
+- 关卡详情完整版：「本关传闻」按桶分组列。
+- 塔层详情同构。
+- `defId` → 显示名：复用现有 equipment / item 名解析。
+- 三系锁死提示：高于当前境界的可得物标「机缘可遇，火候未到」（`UiStrings`），复用 §5.3 `canEquip` 判定。
+
+### 4.5 数据完整性测（schema / data 级）
+- dropPreview 不缺失：每个 mainline 关 + 塔层 dropTable 非空（或显式标注无掉落）。
+- 不越阶：dropTable 内物品 tier ≤ 关卡 `requiredRealm` 对应阶带（防早关掉神物）。
+- 不暴露概率：UI 层无 % 文本（widget 测断言）。
+- 不出现网游稀有词汇（白名单测）。
+
 
 ## 5. 波次顺序与红线守护
 
@@ -65,4 +100,4 @@
 |---|---|---|
 | 一 战斗 UI 表达 | 1.1-1.4 | ✅ 闭环(d8f956e1/ba0f6227/3e7668f5) |
 | 二 参与机制(门控+即放) | 2.1 ✅诊断 / 2.2 普攻不动 / 2.3-2.5 待开工(2.3 xhigh) | 进行中 |
-| 三 掉落传闻 | — | 待开工 |
+| 三 掉落传闻 | 4.1-4.5 spec 细化✅ | 待开工(4.3 首通数据源待拍板 A/B) |
