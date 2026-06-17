@@ -55,6 +55,24 @@ class UiStrings {
   static String skillCooldownShort(int turns) => '冷却$turns';
   // 内力不足态短标。
   static const String skillInsufficientForce = '内力不足';
+  // 批次 1.3 技能简介浮层：点击技能方块弹出，直接读 SkillDef 活数据。
+  // 字段标签（左列），值由活数据 / EnumL10n 填。
+  static const String skillInfoType = '类型';
+  static const String skillInfoTarget = '目标';
+  static const String skillInfoPower = '倍率';
+  static const String skillInfoCost = '耗内';
+  static const String skillInfoCooldown = '冷却';
+  static const String skillInfoTrait = '特性';
+  // 特性值：可打断 → 破招（命中蓄力中目标可打断其招牌技）。
+  static const String skillTraitInterrupt = '破招（可打断蓄力）';
+  // 无特殊特性时的占位（普通技无可打断等标签）。
+  static const String skillTraitNone = '无';
+  // 冷却值单位（回合）。
+  static String skillInfoCooldownTurns(int turns) => '$turns 回合';
+  // 浮层底部操作提示：长按拖到敌人头像下发。
+  static const String skillInfoDragHint = '长按方块拖到目标头像下发';
+  // 浮层关闭按钮。
+  static const String skillInfoClose = '知道了';
   // 角色头像内力条标签前缀（HpBar labelPrefix），如「内 100 / 100」。
   static const String internalForceShortLabel = '内 ';
   // B3 破招成功「破！」题字 overlay 文案(破招方暖金/敌方绛红)。
