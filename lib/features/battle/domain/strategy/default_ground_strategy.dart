@@ -349,7 +349,9 @@ class DefaultGroundStrategy implements BattleStrategy {
     final int targetId;
     if (forcedSkill != null) {
       skill = forcedSkill;
-      targetId = BattleAI.decide(preActor, preState, n).$2; // 复用目标选择
+      targetId = BattleAI.decide(preActor, preState, n)
+          .$2
+          .first; // 复用目标选择(Task1:暂取首个保持单体,aoe loop 后续)
     } else {
       final decided = BattleAI.decide(preActor, preState, n);
       // (c) 起手蓄力:选中自己的 chargeSkillId 且未蓄力 → 开始蓄力,本 tick 不出伤。
@@ -377,7 +379,7 @@ class DefaultGroundStrategy implements BattleStrategy {
         );
       }
       skill = decided.$1;
-      targetId = decided.$2;
+      targetId = decided.$2.first; // Task1:暂取首个保持单体,aoe loop 后续
     }
     final target = _findById(
       preState,
