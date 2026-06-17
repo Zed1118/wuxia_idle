@@ -9,12 +9,12 @@ import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../domain/drop_name_resolver.dart';
 import '../domain/drop_rumor.dart';
 
-const Map<DropRumorBucket, String> _bucketLabels = {
-  DropRumorBucket.shouTongBiDe: UiStrings.lootBucketShouTongBiDe,
-  DropRumorBucket.changKeDe: UiStrings.lootBucketChangKeDe,
-  DropRumorBucket.ouKeDe: UiStrings.lootBucketOuKeDe,
-  DropRumorBucket.shaoYouRenDe: UiStrings.lootBucketShaoYouRenDe,
-  DropRumorBucket.jiangHuChuanWen: UiStrings.lootBucketJiangHuChuanWen,
+String _bucketLabel(DropRumorBucket b) => switch (b) {
+  DropRumorBucket.shouTongBiDe => UiStrings.lootBucketShouTongBiDe,
+  DropRumorBucket.changKeDe => UiStrings.lootBucketChangKeDe,
+  DropRumorBucket.ouKeDe => UiStrings.lootBucketOuKeDe,
+  DropRumorBucket.shaoYouRenDe => UiStrings.lootBucketShaoYouRenDe,
+  DropRumorBucket.jiangHuChuanWen => UiStrings.lootBucketJiangHuChuanWen,
 };
 
 /// 分组列正文（dialog body / 可独立测，不含 PaperDialog 外壳）。
@@ -41,7 +41,7 @@ class LootRumorContent extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 8, bottom: 4),
             child: Text(
-              _bucketLabels[entry.key]!,
+              _bucketLabel(entry.key),
               style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 color: WuxiaColors.textMuted,
