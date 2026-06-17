@@ -5,6 +5,7 @@ import '../domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import 'avatar_status_tags.dart';
 import 'hp_bar.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 
@@ -87,6 +88,8 @@ class CharacterAvatar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         avatar,
+        // 批次 1.4:buff/debuff 状态标签贴近头像(纯读 state,按生死>操作>纯数值排序)。
+        AvatarStatusTags(character: character),
         const SizedBox(height: 6),
         Text(
           character.name,
