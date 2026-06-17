@@ -730,6 +730,18 @@ class UiStrings {
   static const String stageVictoryConfirm = '继续';
   static const String stageVictoryDropLabel = '掉落：';
   static const String stageVictoryNoDrop = '本战无固定掉落';
+
+  // === 主线三 · 掉落传闻 UI ===
+  static const String lootBucketChangKeDe = '常可得';
+  static const String lootBucketOuKeDe = '偶可得';
+  static const String lootBucketShaoYouRenDe = '少有人得';
+  static const String lootBucketJiangHuChuanWen = '江湖传闻';
+  static const String lootBucketShouTongBiDe = '首通必得';
+  static const String lootSummaryPrefix = '可能收获：';
+  static const String lootRumorDialogTitle = '本关传闻';
+  static const String lootNoFixedDrop = '本关无固定收获';
+  static const String lootAboveRealmHint = '机缘可遇，火候未到';
+  static const String lootTowerFirstClearOnlyFooter = '塔层传闻仅首通可得，错过不补';
   static const String firstClearCeremonySubtitle = '朱印封记';
   static String stageVictoryBossFirstClear(String stageName) =>
       '首胜 · $stageName';
