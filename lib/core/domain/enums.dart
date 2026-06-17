@@ -128,7 +128,8 @@ enum SkillType {
 
 /// 招式目标类型(2026-06-14 拖招交互重做)。
 /// - single: 单体技，拖拽到敌人头像指定目标后触发。
-/// - aoe: 群体技，技能栏点一下直接触发(目标=全体/AI 选最佳)，无需拖拽。
+/// - aoe: 群体技，技能栏单击弹简介浮层，长按拖下发、松手即对全体触发
+///   (目标=全体/AI 选最佳，无需指定落点)。
 /// 红线:ultimate/powerSkill 的 targetType yaml 必填(loader fail-fast);
 /// normalAttack/jointSkill 留空 → fromYaml 默认 single。
 enum TargetType { single, aoe }
