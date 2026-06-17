@@ -65,6 +65,34 @@ void main() {
     visualEffect: '',
   );
 
+  // ── Task 4.2 红线对照:aoe 大招 vs 同倍率 single 大招 ──
+  // A 方案核心不变量:aoe「单次伤害=单体值不抬高」。两技 powerMultiplier 相同,
+  // 仅 targetType 不同(aoe 群体 / 单体)。证 aoe 不在单次伤害维度额外加成。
+  const aoeUltimate = SkillDef(
+    id: 'probe_aoe_ultimate',
+    name: '群体大招',
+    description: '',
+    type: SkillType.powerSkill,
+    targetType: TargetType.aoe,
+    powerMultiplier: 6000, // 大招级倍率(§5.4 大招 5000+)
+    internalForceCost: 200,
+    cooldownTurns: 4,
+    requiresManualTrigger: false,
+    visualEffect: '',
+  );
+
+  const singleUltimate = SkillDef(
+    id: 'probe_single_ultimate',
+    name: '单体大招',
+    description: '',
+    type: SkillType.powerSkill,
+    powerMultiplier: 6000, // 同倍率单体对照
+    internalForceCost: 200,
+    cooldownTurns: 4,
+    requiresManualTrigger: false,
+    visualEffect: '',
+  );
+
   /// 满强化神物 build 武圣极境普攻(刚猛克阴柔 1.25 worst-case)。
   ({int totalEqAtk, int nonCrit, int crit}) measureMaxBuild() {
     final n = GameRepository.instance.numbers;
@@ -125,6 +153,58 @@ void main() {
       // 十万」放宽,6 位数仍玩家可读)。若未来乘子上调把峰值顶进百万 → 本测+诊断测 FAIL。
       expect(m.crit, lessThan(1000000),
           reason: 'GDD/CLAUDE §5.4 软红线唯一硬线:实战可见伤害不进百万级膨胀');
+    });
+
+    // ── Task 4.2 红线对照:aoe 单次伤害不抬高(A 方案核心) ──
+    test('A 方案不变量:aoe 大招对单一目标伤害 == 同倍率 single 大招(单次不抬高)', () {
+      final n = GameRepository.instance.numbers;
+      final totalEqAtk =
+          CharacterDerivedStats.effectiveEquipmentAttack(
+                maxBuild(EquipmentSlot.weapon, 2000), n) +
+              CharacterDerivedStats.effectiveEquipmentAttack(
+                maxBuild(EquipmentSlot.accessory, 850), n);
+
+      // 单一真相源 calculateResolved 跑两次:aoe 技 vs single 技,同攻防/同倍率/
+      // 同 rng seed/同 forceCritical → 唯一差异只有 skill.targetType。
+      int calc(SkillDef skill, {required bool crit}) =>
+          DamageCalculator.calculateResolved(
+            attackerInternalForce: 15000,
+            attackerEquipmentAttack: totalEqAtk,
+            attackerCultivationLayer: CultivationLayer.jiJing,
+            attackerSchool: TechniqueSchool.gangMeng,
+            defenderSchool: TechniqueSchool.yinRou,
+            attackerRealmTier: RealmTier.wuSheng,
+            attackerRealmLayer: RealmLayer.dengFeng,
+            defenderRealmTier: RealmTier.wuSheng,
+            defenderRealmLayer: RealmLayer.dengFeng,
+            defenderDefenseRate: 0.35,
+            defenderEvasionRate: 0.0,
+            attackerCriticalRate: crit ? 1.0 : 0.0,
+            attackPowerMultiplier: 1.0,
+            skill: skill,
+            n: n,
+            rng: Random(7),
+            forceCritical: crit,
+          ).mainDamage;
+
+      final aoeNonCrit = calc(aoeUltimate, crit: false);
+      final singleNonCrit = calc(singleUltimate, crit: false);
+      final aoeCrit = calc(aoeUltimate, crit: true);
+      final singleCrit = calc(singleUltimate, crit: true);
+
+      expect(singleNonCrit, greaterThan(0), reason: '对照 single 必须真出伤害');
+      expect(aoeNonCrit, equals(singleNonCrit),
+          reason: 'A 方案:aoe 大招对单一目标的单次伤害 == 同倍率 single 大招,'
+              'aoe 不在单次伤害维度额外抬高(只是命中全体)');
+      expect(aoeCrit, equals(singleCrit),
+          reason: '暴击路径同理:aoe 单次暴击伤害 == single 暴击伤害');
+
+      // 全体场景(3 敌)总输出不进百万:A 方案下每目标 = 单体峰值(本探针 calculator
+      // 裸值,真实战斗大招峰值 ~21 万,见 §5.4),即便 ×3 ≈ 60+ 万级仍 < 100 万。
+      // 因单次不抬高,红线本质不受 aoe 冲击——单次峰值已由上面软红线测覆盖,此处只补
+      // 「aoe 单次 == single」对照断言,不重复钉单次峰值。
+      expect(aoeCrit * 3, lessThan(1000000),
+          reason: 'A 方案:3 敌全体场景总输出(每目标=单体峰值×3)仍不进百万');
     });
   });
 }
