@@ -181,4 +181,112 @@ void main() {
     expect(aoeDamageOn12, equals(singleDamageOn12),
         reason: 'aoe 对该敌扣血应 == 单体技对该敌伤害(各目标 = 完整单体值,无衰减)');
   });
+
+  // ── Task 4.1 确定性测:aoe loop 不破坏 rng 确定性 ──
+  //
+  // 关注点:Task 3 的 aoe 结算「对全体存活敌人各结算一次」是一个 rng-消费 loop。
+  // 必须证明:同 seed 跑含 aoe 大招的完整战斗两遍,逐 tick / 逐 action 结果全等
+  // (rng 消费顺序不被 aoe loop 引入的额外结算次数破坏)。
+  //
+  // 与上面「无衰减」测的区别:这里 criticalRate > 0(每次攻击都有 rng 暴击 roll),
+  // 让 rng 真分歧——否则伤害全确定,确定性无从证伪。沿 battle_seed_determinism /
+  // battle_step_one 测体例:固定 Random(seed) 跑两个独立 strategy 实例到结束,
+  // 逐 action 摘要(tick|actor|target|skill|finalDamage|interrupted)+ 终态血量
+  // + 胜负全等。
+
+  // 暴击版主控(带 aoe 大招;criticalRate 0.5 → 每次攻击 rng 真分歧)。
+  BattleCharacter critAttacker() => const BattleCharacter(
+        characterId: 1,
+        name: '主控',
+        realmTier: RealmTier.yiLiu,
+        realmLayer: RealmLayer.qiMeng,
+        school: TechniqueSchool.gangMeng,
+        maxHp: 20000,
+        currentHp: 20000,
+        maxInternalForce: 3000,
+        currentInternalForce: 3000,
+        speed: 130,
+        criticalRate: 0.5, // rng 暴击 roll 每次攻击都发生
+        evasionRate: 0.0,
+        defenseRate: 0.1,
+        totalEquipmentAttack: 800,
+        mainCultivationLayer: CultivationLayer.daCheng,
+        availableSkills: [aoePower, normal],
+        skillCooldowns: {},
+        activeBuffs: [],
+        actionPoint: 0,
+        isAlive: true,
+        teamSide: 0,
+        slotIndex: 0,
+      );
+
+  // 暴击版敌人(会还手 → 拉长战斗 / 增加 rng 消费;criticalRate 0.4)。
+  BattleCharacter critEnemy({
+    required int charId,
+    required int slot,
+    required int hp,
+  }) =>
+      BattleCharacter(
+        characterId: charId,
+        name: '敌$slot',
+        realmTier: RealmTier.yiLiu,
+        realmLayer: RealmLayer.qiMeng,
+        school: TechniqueSchool.gangMeng,
+        maxHp: hp,
+        currentHp: hp,
+        maxInternalForce: 1000,
+        currentInternalForce: 1000,
+        speed: 90,
+        criticalRate: 0.4,
+        evasionRate: 0.0,
+        defenseRate: 0.1,
+        totalEquipmentAttack: 400,
+        mainCultivationLayer: CultivationLayer.daCheng,
+        availableSkills: const [normal],
+        skillCooldowns: const {},
+        activeBuffs: const [],
+        actionPoint: 0,
+        isAlive: true,
+        teamSide: 1,
+        slotIndex: slot,
+      );
+
+  String summarize(BattleState s) =>
+      '${s.result}'
+      '#L:${s.leftTeam.map((c) => c.currentHp).join(',')}'
+      '#R:${s.rightTeam.map((c) => c.currentHp).join(',')}'
+      '#${s.actionLog.map((a) => '${a.tick}|${a.actorId}|${a.targetId}|${a.skill?.id}|${a.attackResult?.finalDamage}|${a.interrupted}').join(';')}';
+
+  String runOnce(int seed) {
+    const strategy = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    var s = BattleState.initial(
+      leftTeam: [critAttacker()],
+      rightTeam: [
+        critEnemy(charId: 11, slot: 0, hp: 9000),
+        critEnemy(charId: 12, slot: 1, hp: 12000),
+        critEnemy(charId: 13, slot: 2, hp: 15000),
+      ],
+    );
+    final rng = Random(seed);
+    var guard = 0;
+    while (!s.isFinished && guard < 3000) {
+      s = strategy.tick(s, n, rng: rng);
+      guard++;
+    }
+    return summarize(s);
+  }
+
+  test('aoe 确定性:同 seed 跑含 aoe 大招的完整战斗两遍逐 action + 终态全等', () {
+    final first = runOnce(424242);
+    final second = runOnce(424242);
+
+    // 防空过:场景必须真产生足够多 action(含 aoe 多目标结算 + 暴击 roll),
+    // 否则 aoe loop 的 rng 顺序确定性无从证伪。
+    expect(first.split(';').length, greaterThan(8),
+        reason: '场景应产生足够多 action(aoe 多目标 + 暴击 roll)以暴露 rng 不确定性');
+    expect(first, equals(second),
+        reason: 'aoe 多目标结算 loop 不得破坏 rng 确定性:同 seed 两次跑应逐 action'
+            '(含伤害/暴击/破招)+ 终态血量 + 胜负全等');
+  });
 }
