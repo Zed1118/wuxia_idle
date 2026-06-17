@@ -379,6 +379,21 @@ class UiStrings {
       '闭关：择地静修，将光阴沉淀为修为。地点、时辰、节气皆影响产出；关游戏亦照常累积（在线＝离线）。';
   static const String labelCombatAdvanced = '战斗机制';
 
+  // ── 批次 1.4:头像旁战斗状态标签(buff/debuff)label + hover 释义 ──
+  // 纯展示层,读 BattleCharacter 现有状态字段渲染;无独立 HelpTopic,挂薄 GlossaryTip。
+  /// 内伤 debuff(InternalInjurySlot):守方出手时持续掉血,可致死。
+  static const String statusInternalInjuryLabel = '内伤';
+  static const String statusInternalInjuryGloss =
+      '内伤:经脉受创,每次自己出手都要再受一记暗伤,层数耗尽方止,拖久了能要命。';
+  /// 踉跄 debuff(staggerTicksRemaining):被破招后阵脚大乱,数回合内任人宰割。
+  static const String statusStaggerLabel = '踉跄';
+  static const String statusStaggerGloss =
+      '踉跄:招式被破,阵脚大乱。数息之内防御骤降、难以还手,正是趁势猛攻之机。';
+  /// 剑鸣 buff(swordSongResonanceActive):心剑通灵,暴击附剑鸣威能。
+  static const String statusSwordSongLabel = '剑鸣';
+  static const String statusSwordSongGloss =
+      '剑鸣:人剑通灵之境,暴击之时剑发清吟,威势暗涨。共鸣愈深,剑意愈盛。';
+
   // HelpCatalog 引用的术语 label（集中 sink，复用既有 attr/stat/tab 常量，仅补缺失）。
   static const String labelCultivation = '修炼度';
   static const String labelResonance = '共鸣度';
