@@ -18,6 +18,9 @@ void main() {
     test('0.0799 → 江湖传闻', () {
       expect(bucketOf(0.0799, isFirstClearGated: false), DropRumorBucket.jiangHuChuanWen);
     });
+    test('0.0 → 江湖传闻', () {
+      expect(bucketOf(0.0, isFirstClearGated: false), DropRumorBucket.jiangHuChuanWen);
+    });
   });
 
   group('bucketOf · 塔层上下文(isFirstClearGated=true)', () {
