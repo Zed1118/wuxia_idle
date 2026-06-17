@@ -152,19 +152,25 @@ void main() {
     });
   });
 
-  group('C4 群体技点触', () {
-    testWidgets('点 aoe 技能按钮 → 立即触发 pending（targetId 为空走 AI 选）',
+  group('C4 群体技拖招触发', () {
+    // 批次 1.3：退掉裸单击下发后，aoe 也走长按拖招（_onSkillDragEnd 对 aoe
+    // 忽略落点直接下发，targetId 为空走 AI 选）。点击改为弹简介浮层。
+    testWidgets('长按 aoe 技能方块松手 → 立即触发 pending（targetId 为空走 AI 选）',
         (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_aoe]);
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
-      await tester.pump();
+      // aoe 松手落点无关紧要（落在底栏空白处也下发）。
+      await _longPressDragTo(
+        tester,
+        find.byKey(const ValueKey('skill_cmd_1_aoe1')),
+        const Offset(640, 700),
+      );
 
       expect(notifier.state.pendingUltimates[1]?.id, 'aoe1');
       expect(notifier.state.pendingTargets[1], isNull,
-          reason: 'aoe 点触不指定目标，targetId 为空');
+          reason: 'aoe 拖招不指定目标，targetId 为空');
     });
   });
 

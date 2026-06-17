@@ -157,7 +157,7 @@ void main() {
       rightTeam: [lowHpEnemy, chargingEnemy],
     );
 
-    final (skill, targetId) =
+    final (skill, targetIds) =
         BattleAI.decide(actor, state, GameRepository.instance.numbers);
 
     expect(
@@ -167,8 +167,8 @@ void main() {
     );
     expect(skill.aiUsePolicy, AiUsePolicy.saveForInterrupt);
     expect(
-      targetId,
-      chargingEnemy.characterId,
+      targetIds,
+      [chargingEnemy.characterId],
       reason: '破招技应锁定蓄力敌(12),即使它非血最低(11 血更低)',
     );
   });

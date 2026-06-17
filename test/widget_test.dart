@@ -360,52 +360,71 @@ void main() {
     expect(find.text(UiStrings.battleContinue), findsOneWidget); // '继续'
   });
 
-  testWidgets('T1 指令台大招按钮 enabled 状态随内力 / 重点角色变化', (
+  testWidgets('T1 指令台大招按钮 内力可用性靠状态文案体现 / 随重点角色变化', (
     WidgetTester tester,
   ) async {
+    // 批次 1.3：技能方块 onPressed 恒可点（任何态都能看简介），ElevatedButton.enabled
+    // 不再随内力变 false。内力是否够放大招改由按钮内**状态文案**体现：
+    //   够 → UiStrings.skillCostShort（「耗内N · CDM」）
+    //   不够 → UiStrings.skillInsufficientForce（「内力不足」）
     // BattleDemo mock 数据（每角色 1 个示例大招 cost=800，key=skill_cmd_<id>_demo_ult_<id>）：
-    //   left[0] 萧夜寒 id=1 currentIf=5400 → ready
-    //   left[2] 苏锦书 id=3 currentIf=600  → NOT ready（内力不够）
+    //   left[0] 萧夜寒 id=1 currentIf=5400 → 内力够
+    //   left[2] 苏锦书 id=3 currentIf=600  → 内力不够
     await pumpBattle(tester);
 
-    // 默认重点角色 = left[0]，其大招按钮 enabled。
-    final focus0Ult = tester.widget<ElevatedButton>(
-      find.byKey(const ValueKey('skill_cmd_1_demo_ult_1')),
+    // 默认重点角色 = left[0]（萧夜寒，内力够）→ 其大招按钮显示可用态耗内文案，
+    // 不显示「内力不足」。
+    final focus0UltBtn = find.byKey(const ValueKey('skill_cmd_1_demo_ult_1'));
+    expect(
+      find.descendant(
+        of: focus0UltBtn,
+        matching: find.text(UiStrings.skillCostShort(800, 5)),
+      ),
+      findsOneWidget,
+      reason: 'left[0] 萧夜寒 内力够 → 显示耗内文案',
     );
-    expect(focus0Ult.enabled, true, reason: 'left[0] 萧夜寒 内力够');
+    expect(
+      find.descendant(
+        of: focus0UltBtn,
+        matching: find.text(UiStrings.skillInsufficientForce),
+      ),
+      findsNothing,
+      reason: 'left[0] 内力够，不应显示「内力不足」',
+    );
 
-    // 切重点角色到 left[2]（苏锦书 内力不够）→ 其大招按钮 disabled。
+    // 切重点角色到 left[2]（苏锦书，内力不够）→ 其大招按钮显示「内力不足」。
     await tester.tap(find.byKey(const ValueKey('focus_chip_2')));
     await tester.pump();
-    final focus2Ult = tester.widget<ElevatedButton>(
-      find.byKey(const ValueKey('skill_cmd_3_demo_ult_3')),
+    final focus2UltBtn = find.byKey(const ValueKey('skill_cmd_3_demo_ult_3'));
+    expect(
+      find.descendant(
+        of: focus2UltBtn,
+        matching: find.text(UiStrings.skillInsufficientForce),
+      ),
+      findsOneWidget,
+      reason: 'left[2] 苏锦书 内力不够 → 显示「内力不足」',
     );
-    expect(focus2Ult.enabled, false, reason: 'left[2] 苏锦书 内力不够');
   });
 
-  testWidgets('T1 技能按下盖「待发」印 + 禁用，引擎消费后恢复', (WidgetTester tester) async {
+  testWidgets('T1 点技能方块 → 弹简介浮层，不写 pending、不盖「待发」印（批次 1.3）', (
+    WidgetTester tester,
+  ) async {
     final notifier = await pumpBattle(tester);
 
     const ultKey = ValueKey('skill_cmd_1_demo_ult_1');
     expect(find.text(UiStrings.skillPendingStamp), findsNothing);
 
-    // 按下 left[0] 萧夜寒大招 → pending 写入。
+    // 点 left[0] 萧夜寒大招方块 → 弹简介浮层（不再下发命令 / 不写 pending）。
     await tester.tap(find.byKey(ultKey));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(notifier.state.pendingUltimates[1]?.id, 'demo_ult_1');
-    expect(tester.widget<ElevatedButton>(find.byKey(ultKey)).enabled, false,
-        reason: '排队后禁用，避免连按');
-    expect(find.text(UiStrings.skillPendingStamp), findsOneWidget,
-        reason: '盖「待发」印');
+    // 浮层出现：标题=招名、关闭按钮「知道了」可见。
+    expect(find.text(UiStrings.skillInfoClose), findsOneWidget, reason: '弹出简介浮层');
+    expect(find.text('示例大招'), findsWidgets, reason: '浮层标题=招名');
 
-    // 模拟引擎消费完该 pending（actor 行动后引擎清 pendingUltimates）。
-    notifier.clearPending();
-    await tester.pump();
-
-    expect(tester.widget<ElevatedButton>(find.byKey(ultKey)).enabled, true,
-        reason: '消费后恢复可用');
-    expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+    // 不下发：pendingUltimates 为空、无「待发」印。
+    expect(notifier.state.pendingUltimates, isEmpty, reason: '点击不写 pending');
+    expect(find.text(UiStrings.skillPendingStamp), findsNothing, reason: '不盖「待发」印');
   });
 
   // ── B2 大招题字 overlay ───────────────────────────────────────────────────

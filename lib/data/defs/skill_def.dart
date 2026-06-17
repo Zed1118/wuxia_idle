@@ -66,7 +66,8 @@ class SkillDef {
   final SkillProficiencyEffects? proficiency;
 
   /// 2026-06-14 拖招交互:目标类型。single=单体(拖拽到敌人头像指定目标);
-  /// aoe=群体(技能栏点一下直接触发,目标=全体/AI 选最佳)。yaml 未填默认 single;
+  /// aoe=群体(技能栏单击弹简介、长按拖下发、松手即对全体触发,目标=全体/AI 选最佳,
+  /// 无需指定落点)。yaml 未填默认 single;
   /// 红线(game_repository `_enforceSkillTargetTypeRedLines`):普攻/合击必 single +
   /// production 至少存在一个 aoe 招(防整体回填丢失)。
   final TargetType targetType;

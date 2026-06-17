@@ -362,20 +362,23 @@ class BattleScenarioData {
   ///     会自动连放 ready 的 powerSkill 造成瞬间 burst;ultimate **只走 pending
   ///     手动触发**(拖/点才放),所以自动战斗只剩弱普攻 chip,战斗拖得很长。
   ///   - 敌人**超高血(40000) + 低攻低速** → 普攻 chip 啃半天不死、也不秒玩家。
-  /// 主控 single 大招(拖到敌头像指定目标)+ aoe 大招(点一下群体直发)演示两种交互。
+  /// 主控 single 大招(拖到敌头像指定目标)+ aoe 大招(长按拖下发，松手即对全体触发)演示两种交互。
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioDragLive() {
     // 主控:IF 够放几次大招;eqAtk 低 → 普攻只是弱 chip(不 burst)。
+    // school 默认刚猛(主控保持刚猛,不影响 single 拖招的震伤观感);
+    // 弟子甲改灵巧 → 敌方阴柔命中其头像即触发内伤,供「内伤」标签 hover 复验。
     BattleCharacter player(
       int id,
       String name,
       int slot,
-      List<SkillDef> skills,
-    ) => _char(
+      List<SkillDef> skills, {
+      TechniqueSchool school = TechniqueSchool.gangMeng,
+    }) => _char(
       id: id,
       name: name,
       tier: RealmTier.erLiu,
       layer: RealmLayer.yuanShu,
-      school: TechniqueSchool.gangMeng,
+      school: school,
       maxHp: 12000,
       maxIf: 1500,
       speed: 180,
@@ -402,7 +405,7 @@ class BattleScenarioData {
           requiresManualTrigger: true,
           visualEffect: '',
         ),
-        // aoe 大招:点一下群体直发(targetType.aoe)。
+        // aoe 大招:长按拖下发，松手即对全体触发(targetType.aoe)。
         const SkillDef(
           id: 'dl_aoe_1',
           name: '万钧裂空',
@@ -416,7 +419,13 @@ class BattleScenarioData {
           targetType: TargetType.aoe,
         ),
       ]),
-      player(2, '弟子甲', 1, [_normal('dl_normal_2', '基础招')]),
+      player(
+        2,
+        '弟子甲',
+        1,
+        [_normal('dl_normal_2', '基础招')],
+        school: TechniqueSchool.lingQiao,
+      ),
       player(3, '弟子乙', 2, [_normal('dl_normal_3', '基础招')]),
     ];
 
@@ -588,6 +597,10 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   /// 透传给 BattleScreen.debugDragPreview(拖招表现层静态验收预置态)。
   final BattleDragPreview? debugDragPreview;
 
+  /// 透传给 BattleScreen.startPaused(默认 false 现有用法不变);true 时起手暂停,
+  /// 战斗冻结 seed 初态 + 顶栏出「单步」键供验收者逐步推进操作拖招。
+  final bool startPaused;
+
   const ScenarioLauncher({
     required this.teamsFactory,
     required this.hint,
@@ -596,6 +609,7 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
     this.seed,
     this.allowPlayerIntervention = false,
     this.debugDragPreview,
+    this.startPaused = false,
     super.key,
   });
 
@@ -623,6 +637,7 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
     autoStart: widget.autoStart,
     allowPlayerIntervention: widget.allowPlayerIntervention,
     debugDragPreview: widget.debugDragPreview,
+    startPaused: widget.startPaused,
     onBattleEnd: () => Navigator.of(context).pop(),
   );
 }
