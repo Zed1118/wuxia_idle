@@ -438,12 +438,12 @@ void main() {
         leftTeam: [actor],
         rightTeam: [r0, r1, r2],
       );
-      final (_, targetId) = BattleAI.decide(
+      final (_, targetIds) = BattleAI.decide(
         actor,
         s,
         GameRepository.instance.numbers,
       );
-      expect(targetId, r1.characterId,
+      expect(targetIds, [r1.characterId],
           reason: 'hp 最低且 slotIndex=1 优先于 slotIndex=2');
     });
 
@@ -458,12 +458,12 @@ void main() {
         leftTeam: [actor],
         rightTeam: [r0, r1],
       );
-      final (_, targetId) = BattleAI.decide(
+      final (_, targetIds) = BattleAI.decide(
         actor,
         s,
         GameRepository.instance.numbers,
       );
-      expect(targetId, r1.characterId);
+      expect(targetIds, [r1.characterId]);
     });
   });
 

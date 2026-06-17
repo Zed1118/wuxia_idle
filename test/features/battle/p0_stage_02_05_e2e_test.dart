@@ -325,14 +325,14 @@ void main() {
       rightTeam: [boss, mobLow1, mobLow2],
     );
 
-    final (skill, targetId) = BattleAI.decide(player, state, numbers);
+    final (skill, targetIds) = BattleAI.decide(player, state, numbers);
 
     expect(skill.canInterrupt, isTrue,
         reason: '对面有人蓄力 + 有 saveForInterrupt 破招技 → AI 选破招');
     expect(skill.id, playerBreaker.id);
     expect(
-      targetId,
-      boss.characterId,
+      targetIds,
+      [boss.characterId],
       reason: '破招技应锁定蓄力 Boss(-1),不挑血最低小怪(-3 血 1500 最低)',
     );
   });

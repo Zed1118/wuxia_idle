@@ -16,11 +16,15 @@ import 'battle_state.dart';
 class BattleAI {
   BattleAI._();
 
-  /// 选择本次行动的（招式，目标 characterId）。
+  /// 选择本次行动的（招式，目标 characterId 列表）。
+  ///
+  /// 返回 [targetIds]：single 技为单元素 list（沿用单体选目标逻辑）；aoe 技
+  /// 为全体存活敌人 charId，按 slotIndex 升序（前排先）。callsite 暂取
+  /// `targetIds.first` 保持单体结算，aoe 真 loop 由后续 task 接入。
   ///
   /// 调用前提：[actor.isAlive] == true，对面至少有一个活角色（否则 Engine
   /// 应已判胜负）。违反前提抛 [StateError]。
-  static (SkillDef skill, int targetId) decide(
+  static (SkillDef skill, List<int> targetIds) decide(
     BattleCharacter actor,
     BattleState state,
     NumbersConfig n,
@@ -33,16 +37,24 @@ class BattleAI {
     final skill = _pickSkill(actor, state);
     final enemyTeam = actor.teamSide == 0 ? state.rightTeam : state.leftTeam;
 
+    // 群体技自动打全体存活敌人(按 slotIndex 升序),不走单体选目标 / 手动指定 /
+    // 破招锁定——aoe 本就含蓄力敌,且 pendingTargets 对 aoe 技不写,优先于
+    // pending manualTargetId 单体逻辑。
+    if (skill.targetType == TargetType.aoe) {
+      final targets = enemyTeam.where((e) => e.isAlive).toList()
+        ..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
+      return (skill, targets.map((e) => e.characterId).toList());
+    }
+
     // 半手动 P0 步骤3a:玩家对本次手动技(pending)指定的目标优先于一切默认
-    // 选目标逻辑——前提是本次确实在用 pending 技、目标仍存活。当前引擎全技
-    // 单体,§八#4「群体技自动」为前瞻(AoE 引入后那些技在此忽略指定目标)。
+    // 选目标逻辑——前提是本次确实在用 pending 技、目标仍存活。
     final pending = state.pendingUltimates[actor.characterId];
     final manualTargetId = state.pendingTargets[actor.characterId];
     if (pending != null &&
         identical(skill, pending) &&
         manualTargetId != null &&
         enemyTeam.any((e) => e.isAlive && e.characterId == manualTargetId)) {
-      return (skill, manualTargetId);
+      return (skill, [manualTargetId]);
     }
 
     final charging =
@@ -53,7 +65,7 @@ class BattleAI {
     } else {
       targetId = _pickTargetId(actor, state);
     }
-    return (skill, targetId);
+    return (skill, [targetId]);
   }
 
   /// 招式选择。
