@@ -47,15 +47,15 @@ ImpactProfile? impactProfileFor(BattleAction action, NumbersConfig cfg);
    - `light` = 暴击普攻（`skill.type == normalAttack && isCritical`）
    - `medium` = 强力技（`skill.type == powerSkill`）
    - `heavy` = 大招 / 人剑合一（`isUltimateCaptionSkill(skill)`，复用 `ultimate_caption_overlay.dart:11`）
-3. **glyph 派生**（仅 light/medium，heavy 返 null 走全名题字）：
-   - `action.interrupted` → 「破」（破招优先，覆盖流派字）
+3. **glyph 派生**（仅 light/medium 非破招非大招；heavy / 破招 / 大招返 null）：
+   - `action.interrupted` → null（破招走现有「破！」通道，不重复出单字，见下）
    - `skill.style == gangMeng` → 「震」
    - `skill.style == yinRou` → 「断」
    - `skill.style == lingQiao` 或 `style == null` → 「斩」（默认）
-   - 单字常量进 `UiStrings`（`impactGlyphPo/Zhan/Zhen/Duan`），不散写。
+   - 单字常量进 `UiStrings`（`impactGlyphZhan/Zhen/Duan`，三字），不散写。
 4. **三参数**：按 tier 从 `cfg.combat.impactFeedback.{light,medium,heavy}` 取。
 
-> 「破」单字与现有破招「破!」（`UiStrings.interruptCaption`）语义一致：破招事件本身仍走现有 `UltimateCaptionOverlay` 弹「破!」（带感叹号、全名题字通道），新单字 glyph 通道不重复处理 `interrupted`——即 **glyph 派生里 interrupted 优先返「破」仅用于非破招触发的边界兜底**；实际破招由 `_playAction:438` 既有分支独占，2.4 不动该分支。详 §7 防重叠。
+> 「破·斩·震·断」中的「破」由现有破招「破！」（`UiStrings.interruptCaption`，`_playAction:438` 既有分支独占）承载——2.4 不动该分支，新 glyph 通道只产 斩/震/断。破招仍可经 `impactProfileFor` 拿到 tier（hit-stop/震/闪照常给打击感），仅 glyph 为 null 不弹单字，避免与「破！」双弹。详 §7 防重叠。
 
 ## 3. hit-stop（命中瞬停）
 
@@ -100,7 +100,7 @@ _hitStopTimer = Timer(Duration(milliseconds: profile.hitStopMs), () {
 
 ## 7. 防重叠 / 双轨边界（关键）
 
-- **破招**：`_playAction:438` 既有 `if (action.interrupted)` 分支独占弹「破!」（`UltimateCaptionOverlay`）。2.4 **不改该分支**；`impactProfileFor` 对 `interrupted` 仍可派生 tier（hit-stop/震/闪照常给打击感），但 glyph 通道**不再弹单字「破」**避免与「破!」双弹 → 实现上：`ImpactGlyphOverlay` 触发条件加 `&& !action.interrupted`。
+- **破招**：`_playAction:438` 既有 `if (action.interrupted)` 分支独占弹「破！」（`UltimateCaptionOverlay`）。2.4 **不改该分支**；`impactProfileFor` 对 `interrupted` 仍派生 tier（hit-stop/震/闪照常给打击感），但 glyph 已在 §2 派生中返 null（不弹单字），故 `ImpactGlyphOverlay` 天然不触发，无需额外 gate。
 - **大招 / 人剑合一**：heavy tier 给 hit-stop/震/闪 + 现有全名题字；glyph 为 null 不弹单字。
 - 即：任一 action 至多一个题字通道（全名 XOR 单字 XOR 破!），打击感三件套（stop/震/闪）按 tier 叠加。
 
