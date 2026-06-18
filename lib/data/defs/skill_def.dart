@@ -72,6 +72,11 @@ class SkillDef {
   /// production 至少存在一个 aoe 招(防整体回填丢失)。
   final TargetType targetType;
 
+  /// 第六阶段三人协同:>0 = 命中存活敌人即开「破绽窗口」(不要求蓄力),
+  /// 施加该幅度减防,与破招踉跄共用 staggerTicksRemaining/staggerDefenseDownOverride
+  /// 字段,刷新不叠加。减防经 boss_charge.interrupt_power_cap 地板 clamp(红线 §5.4)。
+  final double defenseBreakPct;
+
   const SkillDef({
     required this.id,
     required this.name,
@@ -92,6 +97,7 @@ class SkillDef {
     this.source,
     this.proficiency,
     this.targetType = TargetType.single,
+    this.defenseBreakPct = 0.0,
   });
 
   /// 奇遇招式 = source == encounter(波B 改单一真相源:drop 招补 tier 后
@@ -136,6 +142,7 @@ class SkillDef {
       targetType: y['targetType'] != null
           ? TargetType.values.byName(y['targetType'] as String)
           : TargetType.single,
+      defenseBreakPct: (y['defenseBreakPct'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
