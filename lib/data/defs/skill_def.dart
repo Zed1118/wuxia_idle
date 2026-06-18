@@ -74,7 +74,8 @@ class SkillDef {
 
   /// 第六阶段三人协同:>0 = 命中存活敌人即开「破绽窗口」(不要求蓄力),
   /// 施加该幅度减防,与破招踉跄共用 staggerTicksRemaining/staggerDefenseDownOverride
-  /// 字段,刷新不叠加。减防经 boss_charge.interrupt_power_cap 地板 clamp(红线 §5.4)。
+  /// 字段,刷新不叠加。减防幅度经 boss_charge.interrupt_power_cap 上限 clamp
+  /// （封顶减防 = 有效防御有地板，红线 §5.4）。
   final double defenseBreakPct;
 
   const SkillDef({
