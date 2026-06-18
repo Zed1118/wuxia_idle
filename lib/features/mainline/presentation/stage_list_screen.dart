@@ -321,6 +321,7 @@ class _StageRow extends StatelessWidget {
     final borderColor = cleared
         ? WuxiaColors.hpHigh
         : (locked ? WuxiaColors.border : WuxiaColors.resultHighlight);
+    // 主线掉落每次胜利都 roll，非首通门控 → false（首通必得桶仅爬塔，见 tower 接入）。
     final rumor = DropRumorTable.fromDropTable(
       def.dropTable,
       isFirstClearGated: false,

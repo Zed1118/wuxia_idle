@@ -35,6 +35,7 @@ void main() {
     required int chapterIndex,
     required MainlineProgress progress,
   }) async {
+    // 高度足够容纳全部关卡行，避免列表滚动截断 LootSummaryLine。
     await tester.binding.setSurfaceSize(const Size(1000, 1600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
