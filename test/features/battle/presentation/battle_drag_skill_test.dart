@@ -14,8 +14,9 @@ import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 /// 战斗交互重做 Phase 4 拖招交互 widget/单元测试。
 ///
 /// 复用 [battle_command_console_test] 的 no-op advance notifier 体例，避免 Timer
-/// 触发时读 GameRepository 崩溃；拖招立即触发(C5)的「快进到出手」属表现层手感，
-/// 由真玩 + Codex 验收，这里只锁死「拖到敌头像→下发 targetId / aoe 点触 / 门控」契约。
+/// 触发时读 GameRepository 崩溃；主线二 2.3 后拖招走 `interveneNow` 立即插队出手
+/// (预支 AP 归零)属引擎层，由真玩 + Codex 验收，这里用 spy override `interveneNow`
+/// 只锁死「拖到敌头像→下发 targetId / aoe 点触 / 门控」UI 契约(不真结算)。
 
 const _testAnim = AnimationNumbers(
   attackRushMs: 10,
@@ -189,7 +190,7 @@ void main() {
   });
 
   group('C3+C4 单体拖招命中下发 targetId', () {
-    testWidgets('单体技长按拖到存活敌头像 → pending + pendingTargets 指向该敌',
+    testWidgets('单体技长按拖到存活敌头像 → interveneNow 立即出手指向该敌',
         (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
