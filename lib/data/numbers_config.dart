@@ -1089,6 +1089,7 @@ class CombatNumbers {
   final EnemyDefaults enemyDefaults;
   final RedLinesConfig redLines;
   final BossChargeConfig bossCharge;
+  final ImpactFeedbackConfig impactFeedback;
 
   const CombatNumbers({
     required this.damageFormula,
@@ -1099,6 +1100,7 @@ class CombatNumbers {
     required this.enemyDefaults,
     required this.redLines,
     required this.bossCharge,
+    required this.impactFeedback,
   });
 
   factory CombatNumbers.fromYaml(Map<String, dynamic> y) {
@@ -1126,6 +1128,9 @@ class CombatNumbers {
       ),
       bossCharge: BossChargeConfig.fromYaml(
         y['boss_charge'] as Map? ?? const {},
+      ),
+      impactFeedback: ImpactFeedbackConfig.fromYaml(
+        y['impact_feedback'] as Map? ?? const {},
       ),
     );
   }
@@ -1157,6 +1162,68 @@ class BossChargeConfig {
             (y['stagger_defense_down'] as num?)?.toDouble() ?? 0.3,
         interruptPowerCap:
             (y['interrupt_power_cap'] as num?)?.toDouble() ?? 0.5,
+      );
+}
+
+/// 批次 2.4 打击感表现层三档参数（numbers.yaml `combat.impact_feedback`）。
+/// 纯表现层（hit-stop 时长 / 镜头震幅 / 全屏闪白 alpha），不影响伤害/逻辑。
+/// fixture 不带该段时回落默认值（沿 BossChargeConfig 防御 fallback 体例）。
+class ImpactFeedbackConfig {
+  final ImpactTierParams light;
+  final ImpactTierParams medium;
+  final ImpactTierParams heavy;
+
+  const ImpactFeedbackConfig({
+    required this.light,
+    required this.medium,
+    required this.heavy,
+  });
+
+  factory ImpactFeedbackConfig.fromYaml(Map y) => ImpactFeedbackConfig(
+        light: ImpactTierParams.fromYaml(
+          y['light'] as Map? ?? const {},
+          defaultHitStopMs: 60,
+          defaultShake: 3.0,
+          defaultFlash: 0.12,
+        ),
+        medium: ImpactTierParams.fromYaml(
+          y['medium'] as Map? ?? const {},
+          defaultHitStopMs: 90,
+          defaultShake: 6.0,
+          defaultFlash: 0.20,
+        ),
+        heavy: ImpactTierParams.fromYaml(
+          y['heavy'] as Map? ?? const {},
+          defaultHitStopMs: 120,
+          defaultShake: 10.0,
+          defaultFlash: 0.30,
+        ),
+      );
+}
+
+class ImpactTierParams {
+  final int hitStopMs;
+  final double shakeMagnitude;
+  final double flashStrength;
+
+  const ImpactTierParams({
+    required this.hitStopMs,
+    required this.shakeMagnitude,
+    required this.flashStrength,
+  });
+
+  factory ImpactTierParams.fromYaml(
+    Map y, {
+    required int defaultHitStopMs,
+    required double defaultShake,
+    required double defaultFlash,
+  }) =>
+      ImpactTierParams(
+        hitStopMs: (y['hit_stop_ms'] as num?)?.toInt() ?? defaultHitStopMs,
+        shakeMagnitude:
+            (y['shake_magnitude'] as num?)?.toDouble() ?? defaultShake,
+        flashStrength:
+            (y['flash_strength'] as num?)?.toDouble() ?? defaultFlash,
       );
 }
 
