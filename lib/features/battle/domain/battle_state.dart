@@ -53,6 +53,10 @@ class BattleAction {
   /// 表现层据此弹「破！」题字 overlay(纯读元数据,不参与战斗结算)。
   final bool interrupted;
 
+  /// 第六阶段 破防开窗:本动作是否开启了破防减防窗口(skill.defenseBreakPct > 0
+  /// 且命中存活目标,不要求目标蓄力)。表现层据此弹「破防！」题字 overlay。
+  final bool openedBreakWindow;
+
   const BattleAction({
     required this.tick,
     required this.actorId,
@@ -61,6 +65,7 @@ class BattleAction {
     this.attackResult,
     required this.description,
     this.interrupted = false,
+    this.openedBreakWindow = false,
   });
 
   @override
