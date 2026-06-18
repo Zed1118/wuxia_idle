@@ -1449,6 +1449,9 @@ class AnimationNumbers {
   final int damagePopupMs;
   final int actionIntervalMs;
   final int fastForwardIntervalMs;
+  /// 批次 2.4 后不再被消费：战斗屏震振幅改走 combat.impact_feedback 分档
+  /// （light/medium/heavy）。保留字段 + yaml key 避免改既有 fixture/schema；
+  /// 若后续确认无任何引用可整体移除。`shakeDurationMs` 仍在用（_shakeCtrl 时长）。
   final double shakeOffsetPx;
   final int shakeDurationMs;
   final double criticalFontScale;
