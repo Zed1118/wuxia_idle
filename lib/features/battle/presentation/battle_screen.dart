@@ -657,17 +657,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   // ─── 指令台（T1） ──────────────────────────────────────────────────────────
 
-  /// 玩家点重点角色的任一可用技能 → 走与大招相同的 [requestUltimate] 路径
-  /// （[BattleAI._pickSkill] 对任意 pending 技能一视同仁地优先消费，不引入新战斗
-  /// 数学）。仅当该技能 ready（存活 + 内力够 + CD 0）才下发，targetId=null 走 AI
-  /// 默认选目标。
+  /// 玩家拖招松手 → 调 [BattleNotifier.interveneNow] 立即插队出手(预支 AP 归零)。
+  /// 仅当该技能 ready（存活 + 内力够 + CD 0）才下发，targetId=null 走 AI 默认选目标。
   ///
-  /// 战斗交互重做 Phase 3:战斗永远自动连续播放,点技能即 pending 下发。Phase 4
-  /// 拖招命中经此传 [targetId] 指定敌人(null = 走 AI 默认选目标)。
-  ///
-  /// 下发后进入「立即触发」(C5):置 [_rushToActorId]=该角色,把 Timer 切到快进
-  /// 间隔,连续 advance 到该角色出手(actionLog 出现其 action)即恢复常速。纯 UI
-  /// 时序加速,不改引擎/rng 消费顺序(确定性安全)。
+  /// 主线二 2.3:即放·真插队——立即出手(预支 AP 归零),不再走 pending+C5 快进路径。
   void _onSkillCommand(int characterId, SkillDef skill, {int? targetId}) {
     if (!widget.allowPlayerIntervention) return; // 门控:群战/纯自动不接受指令
     final s = ref.read(battleProvider);
@@ -679,13 +672,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       }
     }
     if (c == null || !_isSkillReady(c, skill)) return;
+    // 主线二 2.3:即放·真插队——立即出手(预支 AP 归零),不再标记 pending+C5 快进。
     ref
         .read(battleProvider.notifier)
-        .requestUltimate(characterId, skill, targetId: targetId);
-    // C5 立即触发:快进到该角色出手。仅在 Timer 已在跑时切快进间隔。
-    _rushToActorId = characterId;
-    if (_playTimer != null) _startTimer();
-    setState(() {}); // 反映拖招者「蓄势」高亮 + 清拖招态
+        .interveneNow(characterId, skill, targetId: targetId);
+    setState(() {}); // 清拖招态 + 反映出手
   }
 
   /// 批次 1.3:点击技能方块 → 弹简介浮层(直接读 [SkillDef] 活数据)。
