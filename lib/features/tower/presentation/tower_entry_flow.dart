@@ -613,9 +613,12 @@ Future<void> _showVictoryDialog({
   HeroCameraData? heroCamera,
   Set<EquipmentTier> extraDisplayTiers = const {},
 }) async {
-  // 第七阶段 批一:Boss 首胜先弹英雄镜头，再走胜利仪式。
+  // 第七阶段 批一:大Boss 首胜先弹英雄镜头，再走胜利仪式。
+  // 用户拍板「爬塔大Boss」= major(10/20/30),小Boss(5/15/25)不弹(高光不滥)。
   if (shouldShowHeroCamera(
-      isBoss: floor.isBoss, isFirstClear: isFirstClear, data: heroCamera)) {
+      isBoss: floor.bossKind == TowerBossKind.major,
+      isFirstClear: isFirstClear,
+      data: heroCamera)) {
     await presentHeroCamera(context, heroCamera!);
     if (!context.mounted) return;
   }
