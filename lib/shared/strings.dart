@@ -409,6 +409,7 @@ class UiStrings {
   // 宜集中火力以爆发技收割。三流派各有一手破防手：刚猛→破甲掌，灵巧→旋身刺，阴柔→隐影爪。
   // skill_slot_picker 中与 canInterrupt 一致展示为纯文字特性 label，无 GlossaryTip 机制。
   /// 破防技特性 label（skill_slot_picker subtitle · 与 canInterrupt / cangjingPickerCanInterrupt 模式一致）。
+  /// 关联常量：[cangjingPickerCanInterrupt]（同为纯文字特性 label，可检索其 def 参考模式）。
   static const String skillTraitDefenseBreak = '破防';
 
   // HelpCatalog 引用的术语 label（集中 sink，复用既有 attr/stat/tab 常量，仅补缺失）。

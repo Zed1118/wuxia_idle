@@ -93,6 +93,20 @@ void main() {
     visualEffect: '',
   );
 
+  // ── 第六阶段 破绽窗口红线探针 ──
+  // 与 aoeUltimate / singleUltimate 同级置于顶层；在下方 group 内直接引用。
+  const breakWindowUltimate = SkillDef(
+    id: 'probe_break_window_ultimate',
+    name: '爆发大招(破绽窗口)',
+    description: '',
+    type: SkillType.powerSkill,
+    powerMultiplier: 6000, // §5.4 大招 5000+,取现有最高倍率档
+    internalForceCost: 200,
+    cooldownTurns: 4,
+    requiresManualTrigger: false,
+    visualEffect: '',
+  );
+
   /// 满强化神物 build 武圣极境普攻(刚猛克阴柔 1.25 worst-case)。
   ({int totalEqAtk, int nonCrit, int crit}) measureMaxBuild() {
     final n = GameRepository.instance.numbers;
@@ -216,17 +230,7 @@ void main() {
     //   武圣 defenseRate = 0.35  →  effDefRate = 0.35 * (1 - 0.5) = 0.175
     // 注:interruptPowerCap 由 GameRepository.validateSkillDefs 强校验,
     //   任何破招技的有效减防均 ≤ 0.5,本探针直接使用此上限。
-    const breakWindowUltimate = SkillDef(
-      id: 'probe_break_window_ultimate',
-      name: '爆发大招(破绽窗口)',
-      description: '',
-      type: SkillType.powerSkill,
-      powerMultiplier: 6000, // §5.4 大招 5000+,取现有最高倍率档
-      internalForceCost: 200,
-      cooldownTurns: 4,
-      requiresManualTrigger: false,
-      visualEffect: '',
-    );
+    // breakWindowUltimate const 已提至顶层与 aoeUltimate/singleUltimate 并列。
 
     test('破绽窗口 + 满 build 爆发暴击(worst-case)不进百万 < 1000000', () {
       final n = GameRepository.instance.numbers;
@@ -275,6 +279,8 @@ void main() {
       // 预期:武圣极境刚猛克阴柔 ×1.25 + 暴击 ×1.5 + effDefRate=0.175
       //   calculator 探针约 ~17-18 万级(远低于 100 万)。
       // 若本断言 FAIL → 说明破绽窗口减防深度突破了 §5.4 红线,必须向上报告。
+      // 用 finalDamage(= mainDamage + 震伤500穿防)钉玩家实际可见总伤上限;
+      // 兄弟测用 mainDamage 排除震伤,本红线探总伤故用 finalDamage。
       expect(
         result.finalDamage,
         lessThan(1000000),

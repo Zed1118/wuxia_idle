@@ -36,6 +36,8 @@ void main() {
       return null;
     }
 
+    // source==null 仅出现于直接构造的测试 fixture，GameRepository yaml 加载路径
+    // 的 skill 均为 fail-fast 强校验非空；此守卫排除测试 fixture 不影响真实数据。
     bool isPlayerEquipable(SkillDef s) =>
         s.source != null && s.source != SkillSource.special;
 
