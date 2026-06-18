@@ -86,7 +86,7 @@ void main() {
     });
     test('大招 → heavy, glyph null', () {
       final p = impactProfileFor(
-          _action(skill: _skill(type: SkillType.ultimate), result: _result(crit: true)),
+          _action(skill: _skill(type: SkillType.ultimate), result: _result()),
           _cfg);
       expect(p!.tier, ImpactTier.heavy);
       expect(p.glyph, isNull);
@@ -103,6 +103,12 @@ void main() {
     test('attackResult 空 → null', () {
       expect(
         impactProfileFor(_action(skill: _skill(type: SkillType.ultimate)), _cfg),
+        isNull,
+      );
+    });
+    test('skill 为 null + 非闪避 → null', () {
+      expect(
+        impactProfileFor(_action(skill: null, result: _result()), _cfg),
         isNull,
       );
     });
