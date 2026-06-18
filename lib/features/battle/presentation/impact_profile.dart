@@ -10,7 +10,7 @@ enum ImpactTier { light, medium, heavy }
 /// 单次重击的打击感画像（纯派生现有字段，零 schema）。
 class ImpactProfile {
   final ImpactTier tier;
-  final String? glyph; // 「斩/震/断」；heavy/破招/大招为 null
+  final String? glyph; // 单字水墨题字「斩/震/断」或破防开窗「破绽」；heavy/破招(interrupted)/大招为 null
   final int hitStopMs;
   final double shakeMagnitude;
   final double flashStrength;

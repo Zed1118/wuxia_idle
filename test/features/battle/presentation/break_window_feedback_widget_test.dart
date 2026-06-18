@@ -120,5 +120,20 @@ void main() {
         );
       }
     });
+
+    testWidgets('player（左队）stagger>0 时不显示集火高亮（高亮仅限敌方）', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      // 将左队第 0 个角色设置为 stagger>0，模拟玩家方被硬直。
+      final staggeredLeft = List<BattleCharacter>.from(left);
+      staggeredLeft[0] = staggeredLeft[0].copyWith(staggerTicksRemaining: 3);
+      final state = BattleState.initial(leftTeam: staggeredLeft, rightTeam: right);
+      await _pumpBattle(tester, state);
+
+      // 玩家方被硬直不应出现集火高亮（spec §6：破绽高亮仅为敌方集火指示）。
+      expect(
+        find.byKey(ValueKey('stagger_highlight_${staggeredLeft[0].characterId}')),
+        findsNothing,
+      );
+    });
   });
 }
