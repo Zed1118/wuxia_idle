@@ -128,6 +128,12 @@ combat:
     stagger_defense_down: 0.3     # 踉跄期间防御率乘 (1 - 此值)
     interrupt_power_cap: 0.5      # 波A:减防 × (1+interrupt_power_pct) 有效值上限(红线)
 
+  # 批次 2.4 打击感表现层三档（纯表现层，真机调手感后定稿；§5.5 只动屏上播放节拍不改逻辑）。
+  impact_feedback:
+    light:  { hit_stop_ms: 60,  shake_magnitude: 3.0,  flash_strength: 0.12 }
+    medium: { hit_stop_ms: 90,  shake_magnitude: 6.0,  flash_strength: 0.20 }
+    heavy:  { hit_stop_ms: 120, shake_magnitude: 10.0, flash_strength: 0.30 }
+
 # =============================================================================
 # 2. 49 级境界系统
 # =============================================================================
