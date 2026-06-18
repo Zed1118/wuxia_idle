@@ -40,6 +40,7 @@ import '../../encounter/presentation/encounter_hook.dart';
 import '../../jianghu/application/jianghu_providers.dart';
 import '../../sect/presentation/stage_boss_recruit_hook.dart';
 import '../../equipment/application/drop_service.dart';
+import '../../equipment/application/first_acquisition_tiers.dart';
 import '../../event/application/game_event_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../tutorial/application/tutorial_providers.dart';
@@ -225,7 +226,8 @@ Future<void> runStageFlow({
       await presentHeroCamera(context, outcome.heroCamera!);
       if (!context.mounted) return;
     }
-    await presentVictoryCeremony(context, outcome.drops, treasureGate: true);
+    await presentVictoryCeremony(context, outcome.drops,
+        treasureGate: true, extraDisplayTiers: outcome.extraDisplayTiers);
     if (!context.mounted) return;
     await showStageVictoryDialog(
       context: context,
@@ -649,6 +651,7 @@ Future<
       List<ResonanceUpgradeNotice> resonanceUpgrades,
       BattleStatsSummary stats,
       HeroCameraData? heroCamera,
+      Set<EquipmentTier> extraDisplayTiers,
     })?> _applyVictoryResolution({
   required WidgetRef ref,
   required StageDef stage,
@@ -876,12 +879,18 @@ Future<
         : stage.name,
   );
 
+  // 第七阶段 批一 Task 6:计算利器首次获得的 extraDisplayTiers
+  // (须在 putAll 入库后调用,判据:库存总数 ≤ 本次掉落件数)。
+  final extraDisplayTiers =
+      await computeFirstAcquisitionTiers(isar, result.dropResult);
+
   return (
     drops: result.dropResult,
     advancements: advancements,
     resonanceUpgrades: resonanceUpgrades,
     stats: stats,
     heroCamera: heroCamera,
+    extraDisplayTiers: extraDisplayTiers,
   );
 }
 

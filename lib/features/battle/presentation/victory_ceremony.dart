@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
@@ -200,16 +201,18 @@ Future<void> presentHeroCamera(BuildContext context, HeroCameraData data) async 
 }
 
 /// 战斗胜利仪式分档(时序重排 spec 2026-06-12):
-/// 有 ≥重器爆品 → 爆品镜头(印章盖落即胜利宣告,含 reward 音);
+/// 有 ≥重器爆品(或 extraDisplayTiers 内首次获得) → 爆品镜头(印章盖落即胜利宣告,含 reward 音);
 /// 否则(普通掉落 / 无掉落 / 塔重打) → 简版勝淡入淡出。
 /// mainline / tower 两 flow 共用。[treasureGate]=false(塔重打)→ 必走简版勝。
+/// [extraDisplayTiers]:额外允许展示的 tier 集合(如利器首次获得,由 flow 层计算传入)。
 Future<void> presentVictoryCeremony(
   BuildContext context,
   DropResult drops, {
   required bool treasureGate,
+  Set<EquipmentTier> extraDisplayTiers = const {},
 }) async {
-  final playedTreasure =
-      await playTreasureDropIfAny(context, drops, gate: treasureGate);
+  final playedTreasure = await playTreasureDropIfAny(context, drops,
+      gate: treasureGate, extraDisplayTiers: extraDisplayTiers);
   if (playedTreasure) return;
   if (!context.mounted) return;
   await showVictorySealFlash(context);
