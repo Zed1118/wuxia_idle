@@ -188,6 +188,11 @@ class DefaultGroundStrategy implements BattleStrategy {
   /// 4. 借 AP:把该角色 actionPoint 设为正好 1000 → [_resolveAction] 内
   ///    `actionPoint -= 1000` 出手后自然归零(预支这一拍,随后等满周期再动)。
   /// 5. 立即调 [_resolveAction](唯一战斗真相源,消费传入的同一 [rng])结算。
+  ///
+  /// **不变量(调用前提)**:须在 tick 边界态调用(`actorQueue` 为空)。生产端唯一
+  /// 驱动 `BattleNotifier.advance()` 每次 drain 到边界,拖招落在两次 timer tick 之间,
+  /// 队列恒空,满足。**勿**从 step-paused(`step()` 可能留非空队列)等路径调用——
+  /// 否则被拖角色可能本 tick 已在队列中,再插队会二次出手致 AP 变负。
   @override
   BattleState interveneNow(
     BattleState state,
