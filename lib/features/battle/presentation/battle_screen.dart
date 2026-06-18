@@ -29,6 +29,9 @@ import 'battle_scene_background.dart';
 import 'character_avatar.dart';
 import 'damage_popup.dart';
 import 'hit_flash.dart';
+import 'impact_profile.dart';
+import 'impact_glyph_overlay.dart';
+import 'screen_flash.dart';
 import 'projectile_trail.dart';
 import 'ultimate_caption_overlay.dart';
 import 'victory_overlay.dart';
@@ -270,6 +273,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   final GlobalKey<UltimateCaptionOverlayState> _ultimateCaptionKey =
       GlobalKey<UltimateCaptionOverlayState>();
 
+  // 批次 2.4 打击感 overlay key + hit-stop 计时器（命令式触发，纯表现层）。
+  final GlobalKey<ImpactGlyphOverlayState> _impactGlyphKey =
+      GlobalKey<ImpactGlyphOverlayState>();
+  final GlobalKey<ScreenFlashOverlayState> _screenFlashKey =
+      GlobalKey<ScreenFlashOverlayState>();
+  Timer? _hitStopTimer;
+  // 批次 2.4 当前重击屏震振幅（profile 分档；0=不抖）。复用既有 _shakeCtrl。
+  double _impactShakeAmplitude = 0.0;
+
   // ─── Phase 4 拖招交互 ────────────────────────────────────────────────────
   // 敌方 3 槽头像的 GlobalKey(hitTest 命中判定用;右队按 slotIndex 索引)。
   late final List<GlobalKey> _enemyAvatarKeys;
@@ -334,6 +346,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   @override
   void dispose() {
     _playTimer?.cancel();
+    _hitStopTimer?.cancel();
     for (final c in _attackControllers) {
       c.dispose();
     }
@@ -458,6 +471,50 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         SoundManager.instance.playSfx(sfx);
       }
     }
+    // ── 批次 2.4 打击感表现层（重击分级）。纯表现层，不写 state。 ──
+    final cfg = _impactConfigOrNull();
+    if (cfg != null) {
+      final profile = impactProfileFor(action, cfg);
+      if (profile != null) {
+        final isEnemy = actor?.teamSide == 1;
+        if (profile.glyph != null) {
+          _impactGlyphKey.currentState?.show(profile.glyph!, isEnemy: isEnemy);
+        }
+        _screenFlashKey.currentState?.flash(
+          profile.flashStrength,
+          color: action.attackResult!.isCritical
+              ? WuxiaColors.gangMeng
+              : Colors.white,
+        );
+        // hit-stop + 镜头震：快进/拖招态跳过（守 2.3 时序 + 保快进顺滑）。
+        if (!_isFastForward && _rushToActorId == null) {
+          _impactShakeAmplitude = profile.shakeMagnitude;
+          _shakeCtrl.forward(from: 0.0);
+          _applyHitStop(profile.hitStopMs);
+        }
+      }
+    }
+  }
+
+  /// 读打击感配置；GameRepository 未初始化（轻量 widget 测）时返 null 跳过。
+  ImpactFeedbackConfig? _impactConfigOrNull() {
+    try {
+      return ref.read(numbersConfigProvider).combat.impactFeedback;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// hit-stop：命中瞬间停播放 Timer，延后 [ms] 后复播。只动屏上播放节拍
+  /// （advance 结算确定不变，守 §5.5）；_startTimer 内 _isPaused gate 兜住，
+  /// 暂停态不会被复活。
+  void _applyHitStop(int ms) {
+    if (_isPaused) return;
+    _playTimer?.cancel();
+    _hitStopTimer?.cancel();
+    _hitStopTimer = Timer(Duration(milliseconds: ms), () {
+      if (mounted && !ref.read(battleProvider).isFinished) _startTimer();
+    });
   }
 
   /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
@@ -620,9 +677,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     setState(() {
       (_popups[key] ??= []).add(entry);
     });
-    if (result.isCritical) {
-      _shakeCtrl.forward(from: 0.0);
-    }
+    // 屏震触发已上移至 _playAction（批次 2.4 分档屏震集中触发）。
   }
 
   DamagePopupData _buildPopupData(
@@ -1022,7 +1077,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                   return Transform.translate(
                     offset: screenShakeOffset(
                       t: _shakeCtrl.value,
-                      amplitude: widget.animConfig.shakeOffsetPx,
+                      amplitude: _impactShakeAmplitude,
                     ),
                     child: child,
                   );
@@ -1131,7 +1186,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 ),
               ),
             Positioned.fill(
+              child: ScreenFlashOverlay(key: _screenFlashKey),
+            ),
+            Positioned.fill(
               child: UltimateCaptionOverlay(key: _ultimateCaptionKey),
+            ),
+            Positioned.fill(
+              child: ImpactGlyphOverlay(key: _impactGlyphKey),
             ),
             if (_logOpen)
               _LogDrawer(
