@@ -598,15 +598,36 @@ class DefaultGroundStrategy implements BattleStrategy {
       final cs = target.chargingSkill!;
       targetCd[cs.id] = cs.cooldownTurns > 0 ? cs.cooldownTurns : 1;
     }
-    // 波A interrupt_power_pct(方向 b):有效减防 = base × (1 + 当阶 power_pct),
-    // clamp 到 interruptPowerCap 红线(防御率减伤不破)。
-    final staggerDefDown = brokeCharging
+    final cap = n.combat.bossCharge.interruptPowerCap;
+    // 破招(现有):打断蓄力敌 → 加深减防 base × (1+power_pct),上限 clamp(封顶减防)。
+    final interruptDef = brokeCharging
         ? (n.combat.bossCharge.staggerDefenseDown *
                 (1 +
                     SkillProficiency.interruptPowerPct(skill,
                         preActor.skillUses[skill.id] ?? 0, n.skillProficiency)))
-            .clamp(0.0, n.combat.bossCharge.interruptPowerCap)
+            .clamp(0.0, cap)
         : null;
+    // 破防(新增):命中存活敌即开窗,不要求蓄力。减防上限 clamp 到同一 cap(红线 §5.4)。
+    final opensBreak =
+        !result.isDodged && skill.defenseBreakPct > 0 && newTargetHp > 0;
+    final breakDef = opensBreak ? skill.defenseBreakPct.clamp(0.0, cap) : null;
+    final bool windowOpened = brokeCharging || opensBreak;
+    // 统一窗口:破招优先(更强/特定);否则破防;刷新不叠加(取较强减防 + 刷新时长)。
+    final int newStaggerTicks = brokeCharging
+        ? n.combat.bossCharge.defaultStaggerTicks +
+            SkillProficiency.interruptWindowBonus(
+                skill, preActor.skillUses[skill.id] ?? 0, n.skillProficiency)
+        : opensBreak
+            ? n.combat.defenseBreak.windowTicks
+            : target.staggerTicksRemaining;
+    final double? newStaggerDef = brokeCharging
+        ? interruptDef
+        : opensBreak
+            // 刷新不叠加:与现有 override 取 max,不连乘穿透(防多人叠减防穿防)。
+            ? [breakDef!, target.staggerDefenseDownOverride ?? 0.0]
+                .reduce((a, b) => a > b ? a : b)
+            : target.staggerDefenseDownOverride;
+
     final targetAfter = target.copyWith(
       currentHp: newTargetHp,
       isAlive: newTargetHp > 0,
@@ -615,14 +636,8 @@ class DefaultGroundStrategy implements BattleStrategy {
       chargingSkill: brokeCharging ? null : target.chargingSkill,
       chargeTicksRemaining:
           brokeCharging ? 0 : target.chargeTicksRemaining,
-      staggerTicksRemaining: brokeCharging
-          ? n.combat.bossCharge.defaultStaggerTicks +
-              SkillProficiency.interruptWindowBonus(skill,
-                  preActor.skillUses[skill.id] ?? 0, n.skillProficiency)
-          : target.staggerTicksRemaining,
-      staggerDefenseDownOverride: brokeCharging
-          ? staggerDefDown
-          : target.staggerDefenseDownOverride,
+      staggerTicksRemaining: newStaggerTicks,
+      staggerDefenseDownOverride: newStaggerDef,
     );
 
     // 写 BattleAction(description 用 preActor.name == actorAfter.name)
@@ -636,6 +651,7 @@ class DefaultGroundStrategy implements BattleStrategy {
           ? EnumL10n.interrupted(preActor.name, targetAfter.name)
           : _formatAction(preActor, targetAfter, skill, result),
       interrupted: brokeCharging,
+      openedBreakWindow: windowOpened,
     );
 
     return (
