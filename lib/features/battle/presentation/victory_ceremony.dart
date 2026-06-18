@@ -5,6 +5,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/presentation/treasure_drop_overlay.dart';
+import 'hero_camera_overlay.dart';
 
 /// 简版「勝」淡入淡出(时序重排 spec 2026-06-12)。
 ///
@@ -141,6 +142,19 @@ Future<void> showVictorySealFlash(BuildContext context) async {
     transitionDuration: Duration.zero,
     pageBuilder: (ctx, a, b) =>
         VictorySealFlash(onDone: () => Navigator.of(ctx).pop()),
+  );
+}
+
+/// 弹英雄镜头并 await 至消失(numbers hold_seconds 或点击跳过)。Boss 首胜调用。
+Future<void> presentHeroCamera(BuildContext context, HeroCameraData data) async {
+  if (!context.mounted) return;
+  await showGeneralDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.transparent,
+    transitionDuration: Duration.zero,
+    pageBuilder: (ctx, _, _) =>
+        HeroCameraOverlay(data: data, onDone: () => Navigator.of(ctx).maybePop()),
   );
 }
 
