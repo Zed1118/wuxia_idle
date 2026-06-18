@@ -180,6 +180,38 @@ class DefaultGroundStrategy implements BattleStrategy {
     );
   }
 
+  /// 主线二 2.3:玩家拖招立即插队结算(预支语义)。
+  ///
+  /// 1. 该角色(player teamSide=0)不存活 / 战斗已结束 → noop 返原 state。
+  /// 2. 置 pending(复用 [requestUltimate]:`BattleAI` 优先消费拖的招 + 指定目标)。
+  /// 3. 借 AP:把该角色 actionPoint 设为正好 1000 → [_resolveAction] 内
+  ///    `actionPoint -= 1000` 出手后自然归零(预支这一拍,随后等满周期再动)。
+  /// 4. 立即调 [_resolveAction](唯一战斗真相源,消费传入的同一 [rng])结算。
+  @override
+  BattleState interveneNow(
+    BattleState state,
+    int characterId,
+    SkillDef skill, {
+    int? targetId,
+    required NumbersConfig n,
+    required Random rng,
+  }) {
+    if (state.isFinished) return state;
+    final actor0 = _findById(state, characterId, 0);
+    if (actor0 == null || !actor0.isAlive) return state;
+    final pended = requestUltimate(state, characterId, skill, targetId: targetId);
+    final borrowed =
+        _findById(pended, characterId, 0)!.copyWith(actionPoint: 1000);
+    final left = pended.leftTeam.toList();
+    final right = pended.rightTeam.toList();
+    _replaceById(borrowed.teamSide == 0 ? left : right, borrowed);
+    final s = pended.copyWith(
+      leftTeam: List.unmodifiable(left),
+      rightTeam: List.unmodifiable(right),
+    );
+    return _resolveAction(s, borrowed, n, rng);
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // 内部：tick 推进的子步骤
   // ─────────────────────────────────────────────────────────────────────────
