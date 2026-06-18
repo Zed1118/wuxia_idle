@@ -207,4 +207,107 @@ void main() {
           reason: 'A 方案:3 敌全体场景总输出(每目标=单体峰值×3)仍不进百万');
     });
   });
+
+  // ── 第六阶段 红线:破绽窗口极值爆发不进百万 ──
+  group('第六阶段 破绽窗口减防极值(staggerDefenseDownOverride=cap=0.5) 不进百万', () {
+    // 破绽窗口减防机制(default_ground_strategy._calculateInBattle §690-696):
+    //   effDefRate = defender.defenseRate * (1 - staggerDefenseDownOverride)
+    // 最坏情况:staggerDefenseDownOverride = interruptPowerCap = 0.5(上限,yaml 锁死)
+    //   武圣 defenseRate = 0.35  →  effDefRate = 0.35 * (1 - 0.5) = 0.175
+    // 注:interruptPowerCap 由 GameRepository.validateSkillDefs 强校验,
+    //   任何破招技的有效减防均 ≤ 0.5,本探针直接使用此上限。
+    const breakWindowUltimate = SkillDef(
+      id: 'probe_break_window_ultimate',
+      name: '爆发大招(破绽窗口)',
+      description: '',
+      type: SkillType.powerSkill,
+      powerMultiplier: 6000, // §5.4 大招 5000+,取现有最高倍率档
+      internalForceCost: 200,
+      cooldownTurns: 4,
+      requiresManualTrigger: false,
+      visualEffect: '',
+    );
+
+    test('破绽窗口 + 满 build 爆发暴击(worst-case)不进百万 < 1000000', () {
+      final n = GameRepository.instance.numbers;
+      final totalEqAtk =
+          CharacterDerivedStats.effectiveEquipmentAttack(
+                maxBuild(EquipmentSlot.weapon, 2000), n) +
+              CharacterDerivedStats.effectiveEquipmentAttack(
+                maxBuild(EquipmentSlot.accessory, 850), n);
+
+      // 破绽窗口减防上限:cap = interrupt_power_cap = 0.5(由 numbers.yaml 锁死)。
+      // 引擎在 _calculateInBattle §693-696 中:
+      //   effDefRate = defender.defenseRate * (1 - down)   where down ≤ cap
+      // 本探针直接传 effDefRate(已应用减防),与引擎路径等价。
+      const interruptPowerCap = 0.5; // numbers.yaml boss_charge.interrupt_power_cap
+      const wuShengDefenseRate = 0.35; // 武圣固定档
+      final effDefRate = wuShengDefenseRate * (1.0 - interruptPowerCap); // = 0.175
+
+      final result = DamageCalculator.calculateResolved(
+        attackerInternalForce: 15000,
+        attackerEquipmentAttack: totalEqAtk,
+        attackerCultivationLayer: CultivationLayer.jiJing, // 极境(×3.0)
+        attackerSchool: TechniqueSchool.gangMeng,
+        defenderSchool: TechniqueSchool.yinRou, // 刚猛克阴柔 1.25(最坏克制)
+        attackerRealmTier: RealmTier.wuSheng,
+        attackerRealmLayer: RealmLayer.dengFeng,
+        defenderRealmTier: RealmTier.wuSheng,
+        defenderRealmLayer: RealmLayer.dengFeng,
+        defenderDefenseRate: effDefRate, // 0.175(已应用破绽窗口 cap=0.5 减防)
+        defenderEvasionRate: 0.0,
+        attackerCriticalRate: 1.0,
+        attackPowerMultiplier: 1.0,
+        skill: breakWindowUltimate,
+        n: n,
+        rng: Random(7),
+        forceCritical: true, // 强制暴击(worst-case)
+      );
+
+      // 诊断输出:方便日后查看实测值。
+      // ignore: avoid_print
+      print('[第六阶段红线] 破绽窗口爆发暴击 calculator 探针: '
+          '${result.finalDamage} (effDefRate=${effDefRate.toStringAsFixed(3)})');
+      // ignore: avoid_print
+      print('[第六阶段红线] 公式分解: ${result.formulaBreakdown}');
+
+      // §5.4 软红线唯一硬线:不进百万。
+      // 预期:武圣极境刚猛克阴柔 ×1.25 + 暴击 ×1.5 + effDefRate=0.175
+      //   calculator 探针约 ~17-18 万级(远低于 100 万)。
+      // 若本断言 FAIL → 说明破绽窗口减防深度突破了 §5.4 红线,必须向上报告。
+      expect(
+        result.finalDamage,
+        lessThan(1000000),
+        reason: 'GDD §5.4 软红线:第六阶段破绽窗口极值(staggerDefenseDownOverride='
+            '$interruptPowerCap cap)+ 满 build 爆发暴击不进百万。'
+            '若此断言 FAIL 则 §5.4 真实越界,不得削弱断言。',
+      );
+
+      // 确认减防确实生效(破绽窗口伤害 > 同条件无减防基准)。
+      final baselineResult = DamageCalculator.calculateResolved(
+        attackerInternalForce: 15000,
+        attackerEquipmentAttack: totalEqAtk,
+        attackerCultivationLayer: CultivationLayer.jiJing,
+        attackerSchool: TechniqueSchool.gangMeng,
+        defenderSchool: TechniqueSchool.yinRou,
+        attackerRealmTier: RealmTier.wuSheng,
+        attackerRealmLayer: RealmLayer.dengFeng,
+        defenderRealmTier: RealmTier.wuSheng,
+        defenderRealmLayer: RealmLayer.dengFeng,
+        defenderDefenseRate: wuShengDefenseRate, // 无减防基准(0.35)
+        defenderEvasionRate: 0.0,
+        attackerCriticalRate: 1.0,
+        attackPowerMultiplier: 1.0,
+        skill: breakWindowUltimate,
+        n: n,
+        rng: Random(7),
+        forceCritical: true,
+      );
+      expect(
+        result.finalDamage,
+        greaterThan(baselineResult.finalDamage),
+        reason: '破绽窗口减防必须真实增伤(effDefRate=0.175 < 无减防 0.35)',
+      );
+    });
+  });
 }
