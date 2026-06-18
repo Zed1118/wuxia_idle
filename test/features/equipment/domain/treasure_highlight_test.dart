@@ -52,4 +52,35 @@ void main() {
       expect(r?.defId, 'a');
     });
   });
+
+  group('pickTreasureHighlight · extraDisplayTiers', () {
+    const min = EquipmentTier.zhongQi;
+
+    test('利器在 extraDisplayTiers → 被选(虽 < minTier=重器)', () {
+      final r = pickTreasureHighlight(
+        [_c('li', EquipmentTier.liQi)],
+        min,
+        extraDisplayTiers: {EquipmentTier.liQi},
+      );
+      expect(r?.defId, 'li');
+    });
+
+    test('利器不在 extraDisplayTiers → 过滤(< minTier,返回 null)', () {
+      final r = pickTreasureHighlight(
+        [_c('li', EquipmentTier.liQi)],
+        min,
+        // extraDisplayTiers 为空,利器低于 minTier=重器,应被过滤
+      );
+      expect(r, isNull);
+    });
+
+    test('重器 ≥ minTier → 始终选(extraDisplayTiers 空也选)', () {
+      final r = pickTreasureHighlight(
+        [_c('zhong', EquipmentTier.zhongQi)],
+        min,
+        // extraDisplayTiers 默认 const {}
+      );
+      expect(r?.defId, 'zhong');
+    });
+  });
 }

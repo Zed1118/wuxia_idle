@@ -367,12 +367,15 @@ class TreasureGlowLayer extends StatelessWidget {
   }
 }
 
-/// 公共触发:有 ≥门槛爆品且 [gate] 时,播动画(+reward 音)并 await 至结束。
+/// 公共触发:有 ≥门槛爆品(或在 [extraDisplayTiers] 内)且 [gate] 时,播动画
+/// (+reward 音)并 await 至结束。
 /// 返回 true=播了爆品镜头;false=无爆品(gate false / 未加载 / 无重器)。
 /// 主线传 gate=true;塔传 gate=isFirstClear(沿现有 reward gate)。
+/// [extraDisplayTiers]:额外允许展示的 tier 集合(如利器首次获得,由 flow 层计算传入)。
 Future<bool> playTreasureDropIfAny(
     BuildContext context, DropResult drops,
-    {required bool gate}) async {
+    {required bool gate,
+    Set<EquipmentTier> extraDisplayTiers = const {}}) async {
   if (!gate || !GameRepository.isLoaded) return false;
   final minTier = GameRepository.instance.numbers.treasureDrop.minTier;
   final candidates = drops.equipments.map((e) {
@@ -388,7 +391,8 @@ Future<bool> playTreasureDropIfAny(
         speed: e.baseSpeed,
         tagline: def.tagline);
   }).toList();
-  final hl = pickTreasureHighlight(candidates, minTier);
+  final hl = pickTreasureHighlight(candidates, minTier,
+      extraDisplayTiers: extraDisplayTiers);
   if (hl == null || !context.mounted) return false;
   SoundManager.instance.playSfx(SfxId.reward);
   await showGeneralDialog<void>(

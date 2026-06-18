@@ -30,13 +30,18 @@ class TreasureHighlight {
   });
 }
 
-/// 从候选中筛 tier ≥ [minTier] 的最高 tier 那件(并列取首);无则 null。
-/// EquipmentTier 声明序即由低到高,用 .index 比较。
+/// 从候选中筛 tier ≥ [minTier] 或在 [extraDisplayTiers] 内的装备,取最高 tier 那件
+/// (并列取首);无则 null。EquipmentTier 声明序即由低到高,用 .index 比较。
+///
+/// [extraDisplayTiers]:额外允许展示的 tier 集合(如利器首次获得),不受 minTier 下限约束。
 TreasureHighlight? pickTreasureHighlight(
-    List<TreasureHighlight> candidates, EquipmentTier minTier) {
+    List<TreasureHighlight> candidates, EquipmentTier minTier,
+    {Set<EquipmentTier> extraDisplayTiers = const {}}) {
   TreasureHighlight? best;
   for (final c in candidates) {
-    if (c.tier.index < minTier.index) continue;
+    if (c.tier.index < minTier.index && !extraDisplayTiers.contains(c.tier)) {
+      continue;
+    }
     if (best == null || c.tier.index > best.tier.index) best = c;
   }
   return best;

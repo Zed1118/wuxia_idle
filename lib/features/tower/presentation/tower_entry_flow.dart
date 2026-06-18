@@ -28,6 +28,7 @@ import '../../battle/domain/auto_play_mode.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../../features/equipment/application/drop_service.dart';
+import '../../../features/equipment/application/first_acquisition_tiers.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
@@ -195,12 +196,19 @@ Future<void> runTowerFlow({
 
   // ── drops（isFirstClear 控发奖；重打不发奖 CLAUDE §5.1 防刷）──
   DropResult drops = const DropResult(equipments: [], items: []);
+  Set<EquipmentTier> extraDisplayTiers = const {};
   if (clearResult.isFirstClear && GameRepository.isLoaded) {
     drops = DropService(
       equipmentDefLookup: GameRepository.instance.getEquipment,
       defaultObtainedFrom: UiStrings.towerDropSource,
     ).rollTowerRewards(floor, DefaultRng());
     await _persistDrops(ref, drops, floor: floor);
+    // 第七阶段 批一 Task 6:计算利器首次获得的 extraDisplayTiers
+    // (须在 _persistDrops putAll 入库后调用)。
+    final isar = ref.read(isarProvider);
+    if (isar != null) {
+      extraDisplayTiers = await computeFirstAcquisitionTiers(isar, drops);
+    }
   }
 
   // ── leaderboard sync(P0.2 #40 Phase 3,D 方案 Noop placeholder)──
@@ -248,6 +256,7 @@ Future<void> runTowerFlow({
       resonanceUpgrades: resonanceUpgrades,
       stats: victoryRes.stats,
       heroCamera: heroCamera,
+      extraDisplayTiers: extraDisplayTiers,
     );
   }
 
@@ -592,6 +601,7 @@ Future<void> _persistDrops(
 /// 胜利奖励弹窗：首通显示掉落清单，重打显示「重打不发奖」。
 ///
 /// W15 #30 P3 后续 A:加 advancements 参数,首通时在 drop 列后追升层 banner。
+/// 第七阶段 批一 Task 6:加 extraDisplayTiers,透传给 presentVictoryCeremony。
 Future<void> _showVictoryDialog({
   required BuildContext context,
   required TowerFloorDef floor,
@@ -601,6 +611,7 @@ Future<void> _showVictoryDialog({
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
   BattleStatsSummary? stats,
   HeroCameraData? heroCamera,
+  Set<EquipmentTier> extraDisplayTiers = const {},
 }) async {
   // 第七阶段 批一:Boss 首胜先弹英雄镜头，再走胜利仪式。
   if (shouldShowHeroCamera(
@@ -608,9 +619,10 @@ Future<void> _showVictoryDialog({
     await presentHeroCamera(context, heroCamera!);
     if (!context.mounted) return;
   }
-  // 胜利仪式分档:首通有重器→爆品镜头;否则(普通/重打)→简版勝。
+  // 胜利仪式分档:首通有重器→爆品镜头;首次利器→爆品镜头;否则(普通/重打)→简版勝。
   // realmAdvance 在仪式之后、随 dialog 出现时响,避免 fanfare 早响 1.3s。
-  await presentVictoryCeremony(context, drops, treasureGate: isFirstClear);
+  await presentVictoryCeremony(context, drops,
+      treasureGate: isFirstClear, extraDisplayTiers: extraDisplayTiers);
   if (!context.mounted) return;
   // 结算 jingle:跨 tier 大境界突破响 realmAdvance(首通限定)。
   if (isFirstClear && advancements.any((e) => e.result.crossedTier)) {
