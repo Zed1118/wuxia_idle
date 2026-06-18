@@ -332,17 +332,20 @@ class _FloorPlaque extends StatelessWidget {
                                 Expanded(
                                   child: LootSummaryLine(table: rumor),
                                 ),
-                                GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: () => showLootRumorDialog(
-                                    ctx,
-                                    table: rumor,
-                                    currentRealm: currentRealm,
-                                  ),
-                                  child: const Icon(
-                                    Icons.info_outline,
-                                    size: 16,
-                                    color: WuxiaColors.textMuted,
+                                Tooltip(
+                                  message: UiStrings.lootRumorDialogTitle,
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () => showLootRumorDialog(
+                                      ctx,
+                                      table: rumor,
+                                      currentRealm: currentRealm,
+                                    ),
+                                    child: const Icon(
+                                      Icons.info_outline,
+                                      size: 16,
+                                      color: WuxiaColors.textMuted,
+                                    ),
                                   ),
                                 ),
                               ],
