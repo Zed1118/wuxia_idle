@@ -401,15 +401,25 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       try {
-        // ── 入口决策:per-stage override + 全局 → auto / interactive ──
+        // ── 入口决策:首通门控(2.5)优先 → 否则 per-stage override + 全局 ──
         final override =
             await ref.read(stageAutoPlayPrefServiceProvider).override(_battleKey);
         if (!mounted) return;
         final global =
             (await ref.read(gameplaySettingsProvider.future)).autoPlayDefault;
         if (!mounted) return;
-        setState(() => _mode =
-            resolveAutoPlayMode(override: override, globalDefault: global));
+        // 2.5:本场 (stageId, cycle) 首通前强制 interactive(拖招层在场);首通后
+        // 按设置可纯 auto 复刷。GameRepository/Isar 未 ready 兜底非首通(按设置,零回归)。
+        final progress = await MainlineProgressService(isar: IsarSetup.instance)
+            .getOrCreate(saveDataId: IsarSetup.currentSlotId);
+        if (!mounted) return;
+        final firstClear = MainlineProgressService.isFirstClear(
+            progress, widget.stage.id, widget.targetCycle);
+        setState(() => _mode = resolveAutoPlayModeWithFirstClear(
+              isFirstClear: firstClear,
+              override: override,
+              globalDefault: global,
+            ));
 
         final (left, right) = await StageBattleSetup(isar: IsarSetup.instance)
             .buildTeams(widget.stage, cycleIndex: widget.targetCycle);
