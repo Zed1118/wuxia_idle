@@ -1,5 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/skill_unlock_entry.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
@@ -98,6 +99,10 @@ class SkillLoadoutService {
   }
 
   /// 读角色主/辅修心法招 + joint 解锁态，autoFill 补空槽并落库。
+  ///
+  /// 第六阶段 Task 6：[lineageRole] + [isFounder] 传入职责软引导参数；
+  /// 两者默认 null/false，维持旧行为（回归安全）。
+  /// 调用方直接从 [Character] 读取并传入，无需在此查库。
   Future<void> applyAutoFill({
     required int characterId,
     required List<SkillDef> mainTechniqueSkills,
@@ -105,6 +110,9 @@ class SkillLoadoutService {
     required SkillDef? jointSkill,
     required int ultimatePowerThreshold,
     List<SkillDef> interruptSkills = const [],
+    // 第六阶段 Task 6 — lineage tendency 软引导参数（软引导不锁，不影响可选集合）。
+    LineageRole? lineageRole,
+    bool isFounder = false,
   }) async {
     await _isar.writeTxn(() async {
       final c = await _isar.characters.get(characterId);
@@ -118,6 +126,8 @@ class SkillLoadoutService {
         ultimatePowerThreshold: ultimatePowerThreshold,
         interruptSkills: interruptSkills,
         school: c.school,
+        lineageRole: lineageRole,
+        isFounder: isFounder,
       );
       c.mainSkillId1 = filled.mainSkillId1;
       c.mainSkillId2 = filled.mainSkillId2;

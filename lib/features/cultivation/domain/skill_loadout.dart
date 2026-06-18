@@ -51,6 +51,14 @@ class SkillLoadout {
   /// - 共鸣槽：[jointSkill] 非 null 且通过境界 gate 时填入。
   /// - 破招槽（波A）：从 [interruptSkills] 中取 style == [school] 且过境界 gate
   ///   的第一个（school null → 不填，无流派无破招技）。
+  ///
+  /// **第六阶段 Task 6 — 职责软引导（lineage tendency）**：
+  /// 弟子（[lineageRole] == [LineageRole.disciple]）：若主修候选中存在
+  /// defenseBreakPct > 0 的破防技，且默认按 power 降序选出的主修槽内没有破防技，
+  /// 则用该破防技替换最低优先级（后填的）主修槽，保证破防技进入装配。
+  /// 此替换**不缩小可选集合**（玩家仍可在藏经阁手动换装任意招式）。
+  /// [isFounder]=true 的祖师：主修按 power 降序本已优先高倍率，倾向默认满足，无需额外处理。
+  /// 其他身份（grandDisciple / null）：行为与修改前完全一致（回归安全）。
   static SkillLoadout autoFill({
     required List<SkillDef> mainTechniqueSkills,
     required List<SkillDef> assistTechniqueSkills,
@@ -60,6 +68,9 @@ class SkillLoadout {
     required int ultimatePowerThreshold,
     List<SkillDef> interruptSkills = const [],
     TechniqueSchool? school,
+    // 第六阶段 Task 6：职责软引导参数（软引导不锁，不影响可选集合）。
+    LineageRole? lineageRole,
+    bool isFounder = false,
   }) {
     bool gate(SkillDef s) => s.canEquipAtRealm(realmTier);
 
@@ -77,8 +88,45 @@ class SkillLoadout {
     final mainIds = mains.map((s) => s.id).toList();
     final used = <String?>{existing.mainSkillId1, existing.mainSkillId2};
     final pool = mainIds.where((id) => !used.contains(id)).toList();
-    final m1 = existing.mainSkillId1 ?? (pool.isNotEmpty ? pool.removeAt(0) : null);
-    final m2 = existing.mainSkillId2 ?? (pool.isNotEmpty ? pool.removeAt(0) : null);
+    String? m1 = existing.mainSkillId1 ?? (pool.isNotEmpty ? pool.removeAt(0) : null);
+    String? m2 = existing.mainSkillId2 ?? (pool.isNotEmpty ? pool.removeAt(0) : null);
+
+    // 第六阶段 Task 6 — 弟子破防倾向：
+    // 若弟子身份 + 主修槽均无破防技 + 候选中有破防技 → 替换最低优先级空槽（后填的槽）。
+    // 只在该槽原本由 autoFill 新填（existing 对应槽为 null）时才替换（不覆盖玩家手动设置）。
+    if (lineageRole == LineageRole.disciple && !isFounder) {
+      final eligibleBreak = mains
+          .where((s) => s.defenseBreakPct > 0)
+          .toList();
+      if (eligibleBreak.isNotEmpty) {
+        final currentMainIds = {m1, m2};
+        final hasBreakInSlots = currentMainIds.any((id) {
+          if (id == null) return false;
+          final def = mains.firstWhere((s) => s.id == id,
+              orElse: () => eligibleBreak.first);
+          return def.id == id && def.defenseBreakPct > 0;
+        });
+        if (!hasBreakInSlots) {
+          // 找一个不在当前槽中的破防技
+          final breakCandidate = eligibleBreak
+              .firstWhere((s) => s.id != m1 && s.id != m2,
+                  orElse: () => eligibleBreak.first);
+          // 替换逻辑：优先替换 autoFill 新填的槽（existing 为 null 的槽），
+          // 按优先级：m2 先（后填），再 m1（前填）。
+          if (existing.mainSkillId2 == null && m2 != null &&
+              breakCandidate.id != m2) {
+            m2 = breakCandidate.id;
+          } else if (existing.mainSkillId1 == null && m1 != null &&
+              breakCandidate.id != m1) {
+            m1 = breakCandidate.id;
+          } else if (m2 == null && existing.mainSkillId2 == null) {
+            m2 = breakCandidate.id;
+          } else if (m1 == null && existing.mainSkillId1 == null) {
+            m1 = breakCandidate.id;
+          }
+        }
+      }
+    }
 
     // 辅修槽
     final assists = assistTechniqueSkills.where(gate).toList();

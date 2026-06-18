@@ -163,6 +163,7 @@ class StageBattleSetup {
     for (final c in players) {
       // P1b Task5/Task9 共享 resolver：解析主修招 / 辅修招 / joint 共鸣招。
       final sources = await resolver.resolve(c, repository: repo, numbers: numbers);
+      // 第六阶段 Task 6 — 职责软引导：传入角色 lineage 身份，autoFill 按角色倾向填槽。
       await loadoutSvc.applyAutoFill(
         characterId: c.id,
         mainTechniqueSkills: sources.mainTechniqueSkills,
@@ -170,6 +171,8 @@ class StageBattleSetup {
         jointSkill: sources.jointSkill,
         ultimatePowerThreshold: numbers.loadoutUltimatePowerThreshold,
         interruptSkills: sources.interruptSkills,
+        lineageRole: c.lineageRole,
+        isFounder: c.isFounder,
       );
     }
 

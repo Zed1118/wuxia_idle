@@ -141,6 +141,7 @@ class _CangJingGeScreenState extends ConsumerState<CangJingGeScreen> {
       repository: repo,
       numbers: numbers,
     );
+    // 第六阶段 Task 6 — 职责软引导：传入角色 lineage 身份，autoFill 按角色倾向填槽。
     await SkillLoadoutService(isar).applyAutoFill(
       characterId: character.id,
       mainTechniqueSkills: sources.mainTechniqueSkills,
@@ -148,6 +149,8 @@ class _CangJingGeScreenState extends ConsumerState<CangJingGeScreen> {
       jointSkill: sources.jointSkill,
       ultimatePowerThreshold: numbers.loadoutUltimatePowerThreshold,
       interruptSkills: sources.interruptSkills,
+      lineageRole: character.lineageRole,
+      isFounder: character.isFounder,
     );
     if (!mounted) return;
     _refresh(character.id);
