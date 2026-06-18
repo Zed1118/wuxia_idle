@@ -101,6 +101,23 @@ class BattleNotifier extends _$BattleNotifier {
         targetId: targetId);
   }
 
+  /// 主线二 2.3:玩家拖招立即插队出手(委托 strategy,消费本场同一 [_rng])。
+  ///
+  /// 仅玩家 interactive 路径(`_onSkillCommand` gate 后)调用。委托
+  /// [BattleStrategy.interveneNow]:[DefaultGroundStrategy] 立即结算 + 预支归零,
+  /// 其它形态降级 pending。战斗已结束则 noop。
+  void interveneNow(int characterId, SkillDef skill, {int? targetId}) {
+    if (state.isFinished) return;
+    state = _strategy.interveneNow(
+      state,
+      characterId,
+      skill,
+      targetId: targetId,
+      n: ref.read(numbersConfigProvider),
+      rng: _rng,
+    );
+  }
+
   /// UI Timer 驱动的状态前进（phase1_tasks T16.1 spec 字面写 `advanceTick`，
   /// 实际语义是"前进到下一个 action 或战斗结束"）。
   ///
