@@ -142,7 +142,7 @@ class _HeroCameraOverlayState extends State<HeroCameraOverlay>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // 印章符（复用 ceremony 风格：48×48 + 「勝」题字，与 VictoryOverlay 一致）
+                // 印章符（复用 ceremony 风格：48×48 + sealGlyph「武」题字，与 VictoryOverlay 一致）
                 Transform.rotate(
                   angle: -0.08,
                   child: SizedBox(
