@@ -201,6 +201,9 @@ void main() {
       // m1 不被覆盖（玩家保留）
       expect(result.mainSkillId1, highA.id,
           reason: '玩家手动设置的 m1 不应被 autoFill 覆盖');
+      // m2 为空槽，弟子倾向应将破防技注入 m2（部分填充 + 促进入剩余槽）
+      expect(result.mainSkillId2, defBreak.id,
+          reason: '弟子 m2 空槽时，autoFill 应将破防技注入 m2');
     });
 
     // ─── 候选无破防技时弟子行为与默认一致（无破防技可注入时不崩） ──────────
