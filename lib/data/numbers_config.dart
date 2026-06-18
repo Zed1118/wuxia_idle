@@ -213,6 +213,9 @@ class NumbersConfig {
   /// 战报失败诊断阈值（numbers.yaml `battle_report`，spec 2026-06-15）。
   final BattleReportConfig battleReport;
 
+  /// 战后英雄镜头表现参数（第七阶段 批一）。顶层 `post_battle.hero_camera` 段。
+  final HeroCameraConfig heroCamera;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -261,6 +264,7 @@ class NumbersConfig {
     required this.cycleEvolution,
     required this.passiveIdle,
     required this.battleReport,
+    required this.heroCamera,
     required this.raw,
   });
 
@@ -400,6 +404,11 @@ class NumbersConfig {
       ),
       battleReport: BattleReportConfig.fromYaml(
         y['battle_report'] as Map<String, dynamic>,
+      ),
+      heroCamera: HeroCameraConfig.fromYaml(
+        ((y['post_battle'] as Map?)?.cast<String, dynamic>()['hero_camera']
+                as Map?)
+            ?.cast<String, dynamic>(),
       ),
       raw: y,
     );
@@ -2389,6 +2398,33 @@ class SkillProficiencyConfig {
   }
 }
 
+/// 战后英雄镜头表现参数(第七阶段 批一)。顶层 `post_battle.hero_camera` 段。
+class HeroCameraConfig {
+  final double holdSeconds;
+  final double portraitSlidePx;
+  final double portraitScaleFrom;
+  const HeroCameraConfig({
+    required this.holdSeconds,
+    required this.portraitSlidePx,
+    required this.portraitScaleFrom,
+  });
+
+  // 默认须与 numbers.yaml post_battle.hero_camera 保持一致(双源,改一处记得改另一处)。
+  static const empty = HeroCameraConfig(
+      holdSeconds: 3.0, portraitSlidePx: 48, portraitScaleFrom: 0.88);
+
+  factory HeroCameraConfig.fromYaml(Map<String, dynamic>? y) {
+    if (y == null || y.isEmpty) return empty;
+    return HeroCameraConfig(
+      holdSeconds:
+          (y['hold_seconds'] as num?)?.toDouble() ?? empty.holdSeconds,
+      portraitSlidePx:
+          (y['portrait_slide_px'] as num?)?.toDouble() ?? empty.portraitSlidePx,
+      portraitScaleFrom: (y['portrait_scale_from'] as num?)?.toDouble() ??
+          empty.portraitScaleFrom,
+    );
+  }
+}
 
 /// 爆品展示动画门槛(2026-06-11)。顶层 `treasure_drop` 段。
 class TreasureDropConfig {
