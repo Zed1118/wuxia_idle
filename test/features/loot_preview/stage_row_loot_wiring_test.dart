@@ -63,6 +63,9 @@ void main() {
             .length;
     expect(summaryCount, greaterThanOrEqualTo(5),
         reason: '5 关每关都应渲染一行掉落传闻（前缀 or 无固定收获）');
+
+    // 主线关卡行不应出现仅属于爬塔首通必得 bucket 的标签。
+    expect(find.text(UiStrings.lootBucketShouTongBiDe), findsNothing);
   });
 
   testWidgets('点击 info 角标 → 弹出「本关传闻」对话框', (tester) async {

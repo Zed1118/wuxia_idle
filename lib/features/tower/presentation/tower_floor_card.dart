@@ -321,37 +321,35 @@ class _FloorPlaque extends StatelessWidget {
                         ),
                         // ── 掉落传闻行：独立一行，位于卡片底部，不与标签区重叠 ──
                         const SizedBox(height: 6),
-                        Builder(
-                          builder: (ctx) {
-                            final rumor = DropRumorTable.fromDropTable(
-                              def.dropTable,
-                              isFirstClearGated: true,
-                            );
-                            return Row(
-                              children: [
-                                Expanded(
-                                  child: LootSummaryLine(table: rumor),
-                                ),
-                                Tooltip(
-                                  message: UiStrings.lootRumorDialogTitle,
-                                  child: GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTap: () => showLootRumorDialog(
-                                      ctx,
-                                      table: rumor,
-                                      currentRealm: currentRealm,
-                                    ),
-                                    child: const Icon(
-                                      Icons.info_outline,
-                                      size: 16,
-                                      color: WuxiaColors.textMuted,
-                                    ),
+                        () {
+                          final rumor = DropRumorTable.fromDropTable(
+                            def.dropTable,
+                            isFirstClearGated: true,
+                          );
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: LootSummaryLine(table: rumor),
+                              ),
+                              Tooltip(
+                                message: UiStrings.lootRumorDialogTitle,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => showLootRumorDialog(
+                                    context,
+                                    table: rumor,
+                                    currentRealm: currentRealm,
+                                  ),
+                                  child: const Icon(
+                                    Icons.info_outline,
+                                    size: 16,
+                                    color: WuxiaColors.textMuted,
                                   ),
                                 ),
-                              ],
-                            );
-                          },
-                        ),
+                              ),
+                            ],
+                          );
+                        }(),
                       ],
                     ),
                   ),

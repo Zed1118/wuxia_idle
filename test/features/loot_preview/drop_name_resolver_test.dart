@@ -21,4 +21,8 @@ void main() {
     // xunChang(0) <= wuSheng(6) → false
     expect(DropNameResolver.isAboveRealm(EquipmentTier.xunChang, RealmTier.wuSheng), false);
   });
+
+  test('EquipmentTier 与 RealmTier 阶数对齐（isAboveRealm 依赖 index 同尺度）', () {
+    expect(EquipmentTier.values.length, RealmTier.values.length);
+  });
 }
