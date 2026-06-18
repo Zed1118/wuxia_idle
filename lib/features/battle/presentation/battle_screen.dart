@@ -366,6 +366,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // ─── Timer / advance 驱动 ────────────────────────────────────────────────
 
   void _startTimer() {
+    // 任何显式启动都作废挂起的 hit-stop 复播（避免快进/暂停切换撞 hit-stop 时
+    // stale timer 二次 _startTimer 致节拍抖动）。
+    _hitStopTimer?.cancel();
     _playTimer?.cancel();
     if (_isPaused) return; // H3 暂停态:任何重启请求都不启动 timer。
     // 快进态:玩家手动开了快进,或拖招立即触发正在「快进到出手」(C5)。
@@ -482,6 +485,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         }
         _screenFlashKey.currentState?.flash(
           profile.flashStrength,
+          // profile 非空 ⇒ attackResult 非空（见 impactProfileFor 的 null 契约）。
           color: action.attackResult!.isCritical
               ? WuxiaColors.gangMeng
               : Colors.white,
