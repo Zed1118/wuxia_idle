@@ -67,12 +67,11 @@
 - 玩家侧词「常可得 / 偶可得 / 少有人得 / 江湖传闻 / 首通必得」走 `UiStrings`。
 - **禁**网游稀有词汇（传奇/SSR）；**禁**显 %。
 
-### 4.3 「首通必得」数据源（⚠️ 待拍板 · 可能涉 schema）
-DropEntry 现无首通标记，首通奖励数据源不明确。两条路：
-- **A. 新增 schema**：DropEntry 加 `firstClearOnly: bool`（或独立 `firstClearReward` 字段）→ `[schema]` 决策 + 迁移。
-- **B. 不加字段**：复用现有首通 unlock / 剧情奖励逻辑映射「首通必得」桶。
-
-**开工 4.x 前需用户拍板 A/B**；在此之前「首通必得」桶按现有 `isFirstClear` 语义占位或留空。（属合法 backlog：待拍板项）
+### 4.3 「首通必得」数据源（✅ 已拍板 = B · 2026-06-18 · 零 schema）
+DropEntry 现无首通标记。**用户拍板走 B（派生不加字段）**：「首通必得」纯由「上下文是否首通门控」+ `dropChance == 1.0` 派生，不加 `firstClearOnly` schema、不迁移、不改奖励经济。
+- 主线掉落每次胜利都 roll（`battle_resolution.dart` 无首通门控）→ `1.0` 显「常可得」，该上下文无「首通必得」桶。
+- 爬塔 dropTable 仅首通发奖（`tower_progress_service` `isFirstClear` 门控）→ `1.0` 显「首通必得」。
+- 实现：桶映射纯函数 `bucketOf(dropChance, {isFirstClearGated})`，上下文位由调用方传（stage=false / tower=true）。
 
 ### 4.4 UI（读现有 dropTable，除 4.3 外无 schema 改）
 - 关卡列表卡片简版：「可能收获：X · Y · Z」（取若干高桶代表）。
@@ -83,7 +82,7 @@ DropEntry 现无首通标记，首通奖励数据源不明确。两条路：
 
 ### 4.5 数据完整性测（schema / data 级）
 - dropPreview 不缺失：每个 mainline 关 + 塔层 dropTable 非空（或显式标注无掉落）。
-- 不越阶：dropTable 内物品 tier ≤ 关卡 `requiredRealm` 对应阶带（防早关掉神物）。
+- 不越阶（2026-06-18 修正语义）：原「严格 tier ≤ requiredRealm」前提被实测证伪——章末 Boss 前瞻奖励本就掉 +1~+2 阶好装（§5.3 可获得/携带、境界够才可装备），故守卫放宽为 `tier.index ≤ requiredRealm.index + 2`（拦「早关掉神物」离谱越界，准章末前瞻奖励）。
 - 不暴露概率：UI 层无 % 文本（widget 测断言）。
 - 不出现网游稀有词汇（白名单测）。
 
@@ -100,4 +99,4 @@ DropEntry 现无首通标记，首通奖励数据源不明确。两条路：
 |---|---|---|
 | 一 战斗 UI 表达 | 1.1-1.4 | ✅ 闭环(d8f956e1/ba0f6227/3e7668f5) |
 | 二 参与机制(门控+即放) | 2.1 ✅诊断 / 2.2 普攻不动 / 2.3-2.5 待开工(2.3 xhigh) | 进行中 |
-| 三 掉落传闻 | 4.1-4.5 spec 细化✅ | 待开工(4.3 首通数据源待拍板 A/B) |
+| 三 掉落传闻 | 4.1-4.5 全实装✅ | ✅ 闭环(2026-06-18 · B 派生 · feature loot_preview · +29 测) |
