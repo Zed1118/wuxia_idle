@@ -37,6 +37,11 @@ class _TestBattleNotifier extends BattleNotifier {
   final BattleState _initial;
   _TestBattleNotifier(this._initial);
 
+  int? lastInterveneChar;
+  SkillDef? lastInterveneSkill;
+  int? lastInterveneTarget;
+  int interveneCount = 0;
+
   @override
   BattleState build() => _initial;
 
@@ -45,6 +50,14 @@ class _TestBattleNotifier extends BattleNotifier {
 
   @override
   void step() {}
+
+  @override
+  void interveneNow(int characterId, SkillDef skill, {int? targetId}) {
+    lastInterveneChar = characterId;
+    lastInterveneSkill = skill;
+    lastInterveneTarget = targetId;
+    interveneCount++;
+  }
 }
 
 /// 单体技(默认 targetType.single)。
@@ -168,8 +181,9 @@ void main() {
         const Offset(640, 700),
       );
 
-      expect(notifier.state.pendingUltimates[1]?.id, 'aoe1');
-      expect(notifier.state.pendingTargets[1], isNull,
+      expect(notifier.lastInterveneSkill?.id, 'aoe1');
+      expect(notifier.lastInterveneChar, 1);
+      expect(notifier.lastInterveneTarget, isNull,
           reason: 'aoe 拖招不指定目标，targetId 为空');
     });
   });
@@ -192,8 +206,8 @@ void main() {
         tester.getCenter(enemy),
       );
 
-      expect(notifier.state.pendingUltimates[1]?.id, 'single1');
-      expect(notifier.state.pendingTargets[1], 11);
+      expect(notifier.lastInterveneSkill?.id, 'single1');
+      expect(notifier.lastInterveneTarget, 11);
     });
 
     testWidgets('单体技拖到空白处(未命中敌) → 不下发', (tester) async {
@@ -207,8 +221,7 @@ void main() {
         const Offset(640, 700), // 底栏附近空白，非敌头像
       );
 
-      expect(notifier.state.pendingUltimates[1], isNull);
-      expect(notifier.state.pendingTargets[1], isNull);
+      expect(notifier.interveneCount, 0, reason: '未命中敌不下发');
     });
   });
 
@@ -230,7 +243,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(notifier.state.pendingUltimates[1], isNull);
+      expect(notifier.interveneCount, 0);
     });
 
     testWidgets('false 时拖单体技也不下发', (tester) async {
@@ -252,8 +265,7 @@ void main() {
         tester.getCenter(enemy),
       );
 
-      expect(notifier.state.pendingUltimates[1], isNull);
-      expect(notifier.state.pendingTargets[1], isNull);
+      expect(notifier.interveneCount, 0);
     });
   });
 }
