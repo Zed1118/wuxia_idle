@@ -1134,7 +1134,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       state: state,
                       onTap: () => setState(() => _logOpen = true),
                     ),
-                    _CoopBurstPromptBar(state: state),
+                    if (widget.allowPlayerIntervention)
+                      _CoopBurstPromptBar(state: state),
                     _BottomBar(
                       state: state,
                       focusSlotIndex: _effectiveFocus(state),
@@ -1279,7 +1280,7 @@ class _CoopBurstPromptBar extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       decoration: BoxDecoration(
-        color: WuxiaColors.lingQiao.withValues(alpha: 0.12), // 浅金底，水墨克制
+        color: WuxiaColors.resultHighlight.withValues(alpha: 0.12), // 浅金底，水墨克制
         border: const Border(top: BorderSide(color: WuxiaColors.border)),
       ),
       child: const Row(
@@ -1288,13 +1289,13 @@ class _CoopBurstPromptBar extends StatelessWidget {
           Icon(
             Icons.bolt_rounded,
             size: 13,
-            color: WuxiaColors.lingQiao,
+            color: WuxiaColors.resultHighlight,
           ),
           SizedBox(width: 5),
           Text(
             UiStrings.coopBurstPrompt,
             style: TextStyle(
-              color: WuxiaColors.lingQiao,
+              color: WuxiaColors.resultHighlight,
               fontSize: 12,
               letterSpacing: 1.0,
             ),
