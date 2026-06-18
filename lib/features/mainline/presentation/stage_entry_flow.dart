@@ -409,7 +409,8 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
             (await ref.read(gameplaySettingsProvider.future)).autoPlayDefault;
         if (!mounted) return;
         // 2.5:本场 (stageId, cycle) 首通前强制 interactive(拖招层在场);首通后
-        // 按设置可纯 auto 复刷。GameRepository/Isar 未 ready 兜底非首通(按设置,零回归)。
+        // 按设置可纯 auto 复刷。Isar 用 IsarSetup.instance(同下方 buildTeams);若
+        // 未 ready 抛 StateError → 外层 catch 转 _setupError 页(与其它 init 失败一致)。
         final progress = await MainlineProgressService(isar: IsarSetup.instance)
             .getOrCreate(saveDataId: IsarSetup.currentSlotId);
         if (!mounted) return;
