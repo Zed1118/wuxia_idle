@@ -67,7 +67,7 @@ void main() {
     requiresManualTrigger: false,
     visualEffect: 'none',
     tier: 1,
-    defenseBreakPct: 0.5,
+    defenseBreakPct: 0.30, // 与三个真实破防技一致（破甲掌/旋身刺/隐影爪均为 0.30）
   );
 
   // 用 xueTu（index=0）让 tier-7 招锁死（需 index >= 6）
