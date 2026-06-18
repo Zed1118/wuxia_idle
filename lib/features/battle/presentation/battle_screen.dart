@@ -1849,7 +1849,8 @@ class _CharacterSlot extends StatelessWidget {
               hovered: hovered,
               charging: charging,
               // 第六阶段：staggerTicksRemaining>0 → 破绽集火高亮（绛红脉动）。
-              staggered: character.staggerTicksRemaining > 0,
+              // 仅限敌方（isLeftTeam==false）；我方被硬直不显示集火指示。
+              staggered: !isLeftTeam && character.staggerTicksRemaining > 0,
               characterId: character.characterId,
               schoolColor: WuxiaColors.schoolColor(character.school),
               child: CharacterAvatar(
