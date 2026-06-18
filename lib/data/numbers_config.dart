@@ -1171,13 +1171,12 @@ class BossChargeConfig {
 }
 
 /// 第六阶段三人协同:破防开窗参数。fixture 不带该段时回落默认(沿 BossChargeConfig 体例)。
+/// 减防幅度由 per-skill SkillDef.defenseBreakPct 提供,全局不再持 defense_down_pct。
 class DefenseBreakConfig {
   final int windowTicks;
-  final double defenseDownPct;
-  const DefenseBreakConfig({this.windowTicks = 3, this.defenseDownPct = 0.3});
+  const DefenseBreakConfig({this.windowTicks = 3});
   factory DefenseBreakConfig.fromYaml(Map y) => DefenseBreakConfig(
         windowTicks: (y['window_ticks'] as num?)?.toInt() ?? 3,
-        defenseDownPct: (y['defense_down_pct'] as num?)?.toDouble() ?? 0.3,
       );
 }
 

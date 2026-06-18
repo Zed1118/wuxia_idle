@@ -611,14 +611,15 @@ class DefaultGroundStrategy implements BattleStrategy {
     final opensBreak =
         !result.isDodged && skill.defenseBreakPct > 0 && newTargetHp > 0;
     final breakDef = opensBreak ? skill.defenseBreakPct.clamp(0.0, cap) : null;
-    final bool windowOpened = brokeCharging || opensBreak;
-    // 统一窗口:破招优先(更强/特定);否则破防;刷新不叠加(取较强减防 + 刷新时长)。
+    // 统一窗口:破招优先(更强/特定);否则破防;刷新不缩短:取 max,避免破防覆盖已有更长的破招窗口。
     final int newStaggerTicks = brokeCharging
         ? n.combat.bossCharge.defaultStaggerTicks +
             SkillProficiency.interruptWindowBonus(
                 skill, preActor.skillUses[skill.id] ?? 0, n.skillProficiency)
         : opensBreak
-            ? n.combat.defenseBreak.windowTicks
+            ? (n.combat.defenseBreak.windowTicks > target.staggerTicksRemaining
+                ? n.combat.defenseBreak.windowTicks
+                : target.staggerTicksRemaining)
             : target.staggerTicksRemaining;
     final double? newStaggerDef = brokeCharging
         ? interruptDef
@@ -651,7 +652,7 @@ class DefaultGroundStrategy implements BattleStrategy {
           ? EnumL10n.interrupted(preActor.name, targetAfter.name)
           : _formatAction(preActor, targetAfter, skill, result),
       interrupted: brokeCharging,
-      openedBreakWindow: windowOpened,
+      openedBreakWindow: opensBreak && !brokeCharging,
     );
 
     return (

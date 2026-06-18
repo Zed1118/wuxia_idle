@@ -33,11 +33,9 @@ void main() {
   });
 
   test('DefenseBreakConfig.fromYaml 解析 + fallback 默认', () {
-    final c = DefenseBreakConfig.fromYaml({'window_ticks': 3, 'defense_down_pct': 0.3});
+    final c = DefenseBreakConfig.fromYaml({'window_ticks': 3});
     expect(c.windowTicks, 3);
-    expect(c.defenseDownPct, 0.3);
     final fb = DefenseBreakConfig.fromYaml({});
     expect(fb.windowTicks, 3);
-    expect(fb.defenseDownPct, 0.3);
   });
 }

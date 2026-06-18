@@ -14,7 +14,7 @@ import 'package:wuxia_idle/features/battle/domain/strategy/default_ground_strate
 /// 覆盖三个场景:
 /// A. 破防技命中存活非蓄力目标 → 开窗(staggerTicks = windowTicks, override = breakPct,
 ///    BattleAction.openedBreakWindow == true)。
-/// B. 刷新不叠加:已有更强 override(0.4)时,较弱 0.3 破防命中 → 取 max(0.4),
+/// B. 刷新不叠加:已有更强 override(0.4)时,较弱 0.2 破防命中 → 取 max(0.4),
 ///    staggerTicks 刷新到 windowTicks。
 /// C. 普通技(defenseBreakPct == 0)命中非蓄力目标 → 不开窗(openedBreakWindow == false,
 ///    stagger 不变)。
@@ -212,6 +212,42 @@ void main() {
       defenderOf(s).staggerTicksRemaining,
       numbers.combat.defenseBreak.windowTicks,
       reason: 'staggerTicksRemaining 应刷新至 windowTicks',
+    );
+  });
+
+  // ─── 场景 D:超额破防 clamp 到 interruptPowerCap ─────────────────────────────
+
+  test('D 破防 pct=0.8 命中非蓄力目标 → staggerDefenseDownOverride clamp 到 cap(0.5)', () {
+    // defenseBreakPct = 0.8 超过 interruptPowerCap(0.5) → clamp 到 0.5。
+    const overpowerBreakSkill = SkillDef(
+      id: 'skill_t2_overpower_break',
+      name: '强力破防斩',
+      description: '第六阶段 Task2 clamp 测试技',
+      type: SkillType.powerSkill,
+      powerMultiplier: 1000,
+      internalForceCost: 50,
+      cooldownTurns: 0,
+      requiresManualTrigger: false,
+      visualEffect: 'stub',
+      defenseBreakPct: 0.8,
+    );
+    var s = makeState(attackerSkill: overpowerBreakSkill);
+    expect(defenderOf(s).chargingSkill, isNull, reason: '守方初始不蓄力');
+
+    final rng = Random(42);
+    final hpBefore = defenderOf(s).currentHp;
+    var guard = 0;
+    while (guard < 50 && defenderOf(s).currentHp >= hpBefore && !s.isFinished) {
+      s = strategy.tick(s, numbers, rng: rng);
+      guard++;
+    }
+    expect(defenderOf(s).currentHp, lessThan(hpBefore), reason: '守方应被命中掉血');
+
+    // clamp 断言:0.8 被上限截到 interruptPowerCap = 0.5。
+    expect(
+      defenderOf(s).staggerDefenseDownOverride,
+      closeTo(0.5, 1e-9),
+      reason: 'defenseBreakPct(0.8) > cap(0.5) → clamp 到 interruptPowerCap ceiling(§5.4)',
     );
   });
 

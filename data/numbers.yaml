@@ -130,7 +130,7 @@ combat:
 
   defense_break:            # 第六阶段:破防开窗(破招外的第二开窗来源)
     window_ticks: 3         # 破绽窗口时长(踉跄 default_stagger_ticks=2,破防略长)
-    defense_down_pct: 0.30  # 减防幅度,与 stagger_defense_down 同档;经 interrupt_power_cap(0.5) 上限 clamp(封顶减防=防御有地板)
+    # 减防幅度由 per-skill SkillDef.defenseBreakPct 提供,此处不设全局值
 
   # 批次 2.4 打击感表现层三档（纯表现层，真机调手感后定稿；§5.5 只动屏上播放节拍不改逻辑）。
   impact_feedback:
