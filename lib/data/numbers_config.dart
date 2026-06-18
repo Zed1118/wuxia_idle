@@ -1090,6 +1090,7 @@ class CombatNumbers {
   final RedLinesConfig redLines;
   final BossChargeConfig bossCharge;
   final ImpactFeedbackConfig impactFeedback;
+  final DefenseBreakConfig defenseBreak;
 
   const CombatNumbers({
     required this.damageFormula,
@@ -1101,6 +1102,7 @@ class CombatNumbers {
     required this.redLines,
     required this.bossCharge,
     required this.impactFeedback,
+    this.defenseBreak = const DefenseBreakConfig(),
   });
 
   factory CombatNumbers.fromYaml(Map<String, dynamic> y) {
@@ -1132,6 +1134,9 @@ class CombatNumbers {
       impactFeedback: ImpactFeedbackConfig.fromYaml(
         y['impact_feedback'] as Map? ?? const {},
       ),
+      defenseBreak: DefenseBreakConfig.fromYaml(
+        y['defense_break'] as Map? ?? const {},
+      ),
     );
   }
 }
@@ -1162,6 +1167,17 @@ class BossChargeConfig {
             (y['stagger_defense_down'] as num?)?.toDouble() ?? 0.3,
         interruptPowerCap:
             (y['interrupt_power_cap'] as num?)?.toDouble() ?? 0.5,
+      );
+}
+
+/// 第六阶段三人协同:破防开窗参数。fixture 不带该段时回落默认(沿 BossChargeConfig 体例)。
+class DefenseBreakConfig {
+  final int windowTicks;
+  final double defenseDownPct;
+  const DefenseBreakConfig({this.windowTicks = 3, this.defenseDownPct = 0.3});
+  factory DefenseBreakConfig.fromYaml(Map y) => DefenseBreakConfig(
+        windowTicks: (y['window_ticks'] as num?)?.toInt() ?? 3,
+        defenseDownPct: (y['defense_down_pct'] as num?)?.toDouble() ?? 0.3,
       );
 }
 
