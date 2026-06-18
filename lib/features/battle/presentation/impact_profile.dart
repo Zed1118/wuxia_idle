@@ -45,11 +45,16 @@ ImpactProfile? impactProfileFor(BattleAction action, ImpactFeedbackConfig cfg) {
   };
   String? glyph;
   if (tier != ImpactTier.heavy && !action.interrupted) {
-    glyph = switch (skill?.style) {
-      TechniqueSchool.gangMeng => UiStrings.impactGlyphZhen,
-      TechniqueSchool.yinRou => UiStrings.impactGlyphDuan,
-      TechniqueSchool.lingQiao || null => UiStrings.impactGlyphZhan,
-    };
+    if (action.openedBreakWindow) {
+      // 破防开窗专用题字，覆盖流派默认字（互斥于 interrupted 的「破!」）。
+      glyph = UiStrings.impactGlyphBreakWindow;
+    } else {
+      glyph = switch (skill?.style) {
+        TechniqueSchool.gangMeng => UiStrings.impactGlyphZhen,
+        TechniqueSchool.yinRou => UiStrings.impactGlyphDuan,
+        TechniqueSchool.lingQiao || null => UiStrings.impactGlyphZhan,
+      };
+    }
   }
   return ImpactProfile(
     tier: tier,

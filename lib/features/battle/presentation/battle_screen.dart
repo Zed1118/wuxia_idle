@@ -1848,6 +1848,9 @@ class _CharacterSlot extends StatelessWidget {
             child: _GlowAura(
               hovered: hovered,
               charging: charging,
+              // 第六阶段：staggerTicksRemaining>0 → 破绽集火高亮（绛红脉动）。
+              staggered: character.staggerTicksRemaining > 0,
+              characterId: character.characterId,
               schoolColor: WuxiaColors.schoolColor(character.school),
               child: CharacterAvatar(
                 key: avatarKey,
@@ -2442,11 +2445,17 @@ class _ProjectileLayer extends StatelessWidget {
 class _GlowAura extends StatefulWidget {
   final bool hovered;
   final bool charging;
+  // 第六阶段：破绽窗口集火指示（staggerTicksRemaining>0）。
+  final bool staggered;
+  // 用于给破绽高亮 DecoratedBox 挂 Key，供 widget 测查找。
+  final int characterId;
   final Color schoolColor;
   final Widget child;
   const _GlowAura({
     required this.hovered,
     required this.charging,
+    required this.staggered,
+    required this.characterId,
     required this.schoolColor,
     required this.child,
   });
@@ -2462,7 +2471,9 @@ class _GlowAuraState extends State<_GlowAura>
   late final AnimationController _pulse;
 
   // hovered 优先级最高(静态强光),只有「蓄势且未被悬停」才脉动。
-  bool get _pulsing => widget.charging && !widget.hovered;
+  // 第六阶段：破绽窗口也驱动呼吸（绛红集火），优先级低于 hovered/charging。
+  bool get _pulsing =>
+      (widget.charging || widget.staggered) && !widget.hovered;
 
   @override
   void initState() {
@@ -2494,21 +2505,36 @@ class _GlowAuraState extends State<_GlowAura>
 
   @override
   Widget build(BuildContext context) {
-    // 浅金静态强光(hovered) 优先;否则蓄势流派色呼吸脉动;都无则裸 child。
+    // 浅金静态强光(hovered) 优先;蓄势流派色呼吸次之;
+    // 第六阶段：破绽窗口绛红脉动（集火指示）再次；都无则裸 child。
     if (widget.hovered) {
       return _box(WuxiaColors.resultHighlight, 0.85, 22.0, 4.0, widget.child);
     }
-    if (!widget.charging) return widget.child;
+    if (!widget.charging && !widget.staggered) return widget.child;
     return AnimatedBuilder(
       animation: _pulse,
       builder: (context, child) {
         final t = Curves.easeInOut.transform(_pulse.value);
-        return _box(
-          widget.schoolColor,
-          0.45 + 0.4 * t, // alpha 0.45 → 0.85
-          13.0 + 9.0 * t, // blur 13 → 22
-          1.5 + 2.0 * t, // spread 1.5 → 3.5
-          child!,
+        if (widget.charging) {
+          // 蓄势流派色呼吸脉动（原有逻辑）。
+          return _box(
+            widget.schoolColor,
+            0.45 + 0.4 * t, // alpha 0.45 → 0.85
+            13.0 + 9.0 * t, // blur 13 → 22
+            1.5 + 2.0 * t, // spread 1.5 → 3.5
+            child!,
+          );
+        }
+        // 破绽窗口：绛红呼吸脉动（集火指示），水墨克制——稍弱于蓄势强光。
+        return KeyedSubtree(
+          key: ValueKey('stagger_highlight_${widget.characterId}'),
+          child: _box(
+            WuxiaColors.gangMeng, // 绛红 = WuxiaColors.gangMeng（刚猛流派色 / 攻击色）
+            0.35 + 0.35 * t, // alpha 0.35 → 0.70（克制，不刺眼）
+            10.0 + 8.0 * t, // blur 10 → 18
+            1.0 + 1.5 * t, // spread 1.0 → 2.5
+            child!,
+          ),
         );
       },
       child: widget.child,
