@@ -99,12 +99,11 @@ class SkillLoadout {
           .where((s) => s.defenseBreakPct > 0)
           .toList();
       if (eligibleBreak.isNotEmpty) {
-        final currentMainIds = {m1, m2};
-        final hasBreakInSlots = currentMainIds.any((id) {
-          if (id == null) return false;
-          final def = mains.firstWhere((s) => s.id == id,
-              orElse: () => eligibleBreak.first);
-          return def.id == id && def.defenseBreakPct > 0;
+        final hasBreakInSlots = [m1, m2].any((slotId) {
+          if (slotId == null) return false;
+          final matches = mains.where((s) => s.id == slotId);
+          final def = matches.isEmpty ? null : matches.first;
+          return def != null && def.defenseBreakPct > 0;
         });
         if (!hasBreakInSlots) {
           // 找一个不在当前槽中的破防技
@@ -119,6 +118,7 @@ class SkillLoadout {
           } else if (existing.mainSkillId1 == null && m1 != null &&
               breakCandidate.id != m1) {
             m1 = breakCandidate.id;
+          // 空槽兜底：pool 不足导致该槽仍为 null，直接填入破防技。
           } else if (m2 == null && existing.mainSkillId2 == null) {
             m2 = breakCandidate.id;
           } else if (m1 == null && existing.mainSkillId1 == null) {
