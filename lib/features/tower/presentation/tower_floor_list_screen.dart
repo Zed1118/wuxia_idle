@@ -34,7 +34,8 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
   final _scrollController = ScrollController();
   bool _hasScrolled = false;
 
-  // 石阶行约 96px（含掉落传闻行）；用于首次进入时滚到可挑战层附近。
+  // 与 tower_floor_card.dart 的时间线 SizedBox(height: 96) 保持同步；仅用于滚动估算，
+  // 偏差 ±10px 不影响正确性。改卡片高度时同步此值，否则可能重现列表滚动错位。
   static const double _kCardHeight = 96.0;
 
   @override
