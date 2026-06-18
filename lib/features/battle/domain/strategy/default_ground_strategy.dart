@@ -183,10 +183,11 @@ class DefaultGroundStrategy implements BattleStrategy {
   /// 主线二 2.3:玩家拖招立即插队结算(预支语义)。
   ///
   /// 1. 该角色(player teamSide=0)不存活 / 战斗已结束 → noop 返原 state。
-  /// 2. 置 pending(复用 [requestUltimate]:`BattleAI` 优先消费拖的招 + 指定目标)。
-  /// 3. 借 AP:把该角色 actionPoint 设为正好 1000 → [_resolveAction] 内
+  /// 2. 普攻 / 踉跄中 / 蓄力中 → noop(strategy 层防线,避免静默 fizzle 或抛异常)。
+  /// 3. 置 pending(复用 [requestUltimate]:`BattleAI` 优先消费拖的招 + 指定目标)。
+  /// 4. 借 AP:把该角色 actionPoint 设为正好 1000 → [_resolveAction] 内
   ///    `actionPoint -= 1000` 出手后自然归零(预支这一拍,随后等满周期再动)。
-  /// 4. 立即调 [_resolveAction](唯一战斗真相源,消费传入的同一 [rng])结算。
+  /// 5. 立即调 [_resolveAction](唯一战斗真相源,消费传入的同一 [rng])结算。
   @override
   BattleState interveneNow(
     BattleState state,
@@ -199,6 +200,12 @@ class DefaultGroundStrategy implements BattleStrategy {
     if (state.isFinished) return state;
     final actor0 = _findById(state, characterId, 0);
     if (actor0 == null || !actor0.isAlive) return state;
+    // I-2:普攻不走插队(拖招只发技能);strategy 层防线,避免 requestUltimate 抛异常。
+    if (skill.type == SkillType.normalAttack) return state;
+    // I-1:踉跄/蓄力中的角色无法即时出手 → noop,避免拖的招静默 fizzle 又消耗交互。
+    if (actor0.staggerTicksRemaining > 0 || actor0.chargingSkill != null) {
+      return state;
+    }
     final pended = requestUltimate(state, characterId, skill, targetId: targetId);
     final borrowed =
         _findById(pended, characterId, 0)!.copyWith(actionPoint: 1000);

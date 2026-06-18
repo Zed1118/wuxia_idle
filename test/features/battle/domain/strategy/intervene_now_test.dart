@@ -106,4 +106,43 @@ void main() {
     final after = strat.interveneNow(state, 1, power, targetId: -1, n: n, rng: Random(7));
     expect(after.actionLog, isEmpty);
   });
+
+  test('普攻拖招 → noop(strategy 层防线,不抛 ArgumentError)', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final state = BattleState.initial(
+      leftTeam: [unit(charId: 1, teamSide: 0, slot: 0, ap: 300)],
+      rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
+    );
+    final after = strat.interveneNow(state, 1, normal, targetId: -1, n: n, rng: Random(7));
+    expect(after.actionLog, isEmpty, reason: '普攻不走插队,noop 不抛异常');
+  });
+
+  test('踉跄中的玩家角色拖招 → noop(不静默 fizzle)', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final staggered = unit(charId: 1, teamSide: 0, slot: 0, ap: 300)
+        .copyWith(staggerTicksRemaining: 2);
+    final state = BattleState.initial(
+      leftTeam: [staggered],
+      rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
+    );
+    final after = strat.interveneNow(state, 1, power, targetId: -1, n: n, rng: Random(7));
+    expect(after.actionLog, isEmpty, reason: '踉跄中不接受插队');
+    final actor = after.leftTeam.firstWhere((c) => c.characterId == 1);
+    expect(actor.actionPoint, 300, reason: 'noop 不改 AP');
+  });
+
+  test('蓄力中的玩家角色拖招 → noop', () {
+    const strat = DefaultGroundStrategy();
+    final n = GameRepository.instance.numbers;
+    final charging = unit(charId: 1, teamSide: 0, slot: 0, ap: 300)
+        .copyWith(chargingSkill: power, chargeTicksRemaining: 2);
+    final state = BattleState.initial(
+      leftTeam: [charging],
+      rightTeam: [unit(charId: -1, teamSide: 1, slot: 0)],
+    );
+    final after = strat.interveneNow(state, 1, power, targetId: -1, n: n, rng: Random(7));
+    expect(after.actionLog, isEmpty, reason: '蓄力中不接受插队');
+  });
 }
