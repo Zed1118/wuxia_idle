@@ -18,6 +18,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 /// **测试 A**:e0(HP低,stagger=0) vs e1(HP高,stagger=3) → 应集火 e1。
 /// **测试 B**:无破绽窗口敌 → 回落 HP 最低(e0)。
 /// **测试 C**:多个破绽敌中选 HP 最低/slotIndex 最小的。
+/// **测试 D**:死亡敌(isAlive=false, stagger>0) + 活着普通敌 → 不集火死亡敌,选活着敌。
 void main() {
   Future<String> fileLoader(String path) async {
     final f = File(path);
@@ -192,6 +193,42 @@ void main() {
         targetIds2.first,
         eqB.characterId,
         reason: 'HP 相等时 slotIndex 小者(eqB,slot=0)优先',
+      );
+    },
+  );
+
+  test(
+    '测 D:死亡敌(isAlive=false, stagger>0) + 活着普通敌 → 不集火死亡敌,选活着敌',
+    () {
+      final actor = makeActor();
+      // dead:已死亡(isAlive=false),但有破绽窗口 stagger=3 → 不应被集火。
+      final dead = makeEnemy(
+        charId: 51,
+        slotIndex: 0,
+        currentHp: 0,
+        staggerTicksRemaining: 3,
+      ).copyWith(isAlive: false);
+      // living:存活,无破绽窗口,HP 高 → 集火逻辑应回落 _pickTargetId,选此敌。
+      final living = makeEnemy(
+        charId: 52,
+        slotIndex: 1,
+        currentHp: 9000,
+        staggerTicksRemaining: 0,
+      );
+
+      final state = BattleState.initial(
+        leftTeam: [actor],
+        rightTeam: [dead, living],
+      );
+
+      final (_, targetIds) =
+          BattleAI.decide(actor, state, GameRepository.instance.numbers);
+
+      expect(
+        targetIds.first,
+        living.characterId,
+        reason: '死亡敌即使 stagger>0 也不算破绽窗口目标,'
+            '_pickFocusTargetId 守 isAlive 过滤,应选活着的 living(charId=52)',
       );
     },
   );

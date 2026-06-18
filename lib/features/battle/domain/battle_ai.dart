@@ -61,6 +61,7 @@ class BattleAI {
         enemyTeam.where((e) => e.isAlive && e.chargingSkill != null);
     final int targetId;
     if (skill.canInterrupt && charging.isNotEmpty) {
+      // 破招锁定优先于集火(破招窗口比泛破绽更紧急)
       targetId = charging.first.characterId; // P0:破招技锁定蓄力敌人
     } else {
       // 第六阶段:破绽窗口内敌优先集火(链路爆发);无破绽敌回落血最低。
