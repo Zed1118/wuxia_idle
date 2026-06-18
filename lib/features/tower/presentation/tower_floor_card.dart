@@ -73,7 +73,7 @@ class TowerFloorCard extends StatelessWidget {
 
           final isLeft = stepSide == TowerFloorStepSide.left;
           return SizedBox(
-            height: def.isBoss ? 120 : 116,
+            height: def.isBoss ? 100 : 96,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -194,7 +194,7 @@ class _FloorPlaque extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(7),
           child: Container(
-            constraints: BoxConstraints(minHeight: def.isBoss ? 114 : 110),
+            constraints: BoxConstraints(minHeight: def.isBoss ? 94 : 90),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(7),
               border: Border.all(color: accent, width: borderWidth),
@@ -242,106 +242,113 @@ class _FloorPlaque extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(18, 12, 14, 12),
-                    child: Row(
+                    padding: const EdgeInsets.fromLTRB(18, 12, 14, 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _FloorSeal(entry: entry, accent: accent),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                        // ── 主信息行：印章 + 标题/敌人文本 + 状态徽标 ──
+                        Row(
+                          children: [
+                            _FloorSeal(entry: entry, accent: accent),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Flexible(
-                                    child: Text(
-                                      UiStrings.towerFloorLabel(def.floorIndex),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: titleColor,
-                                        fontSize: def.isBoss ? 16 : 14,
-                                        fontWeight: FontWeight.w800,
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          UiStrings.towerFloorLabel(
+                                            def.floorIndex,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: titleColor,
+                                            fontSize: def.isBoss ? 16 : 14,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
                                       ),
+                                      const SizedBox(width: 8),
+                                      _SmallChip(
+                                        label: UiStrings.towerRequiredRealm(
+                                          EnumL10n.realmTier(def.requiredRealm),
+                                        ),
+                                        color: isLocked
+                                            ? WuxiaColors.textMuted
+                                            : WuxiaColors.textSecondary,
+                                      ),
+                                      if (def.isBoss) ...[
+                                        const SizedBox(width: 6),
+                                        _SmallChip(
+                                          label:
+                                              def.bossKind ==
+                                                  TowerBossKind.minor
+                                              ? UiStrings.towerBossMinor
+                                              : UiStrings.towerBossMajor,
+                                          color: accent,
+                                          filled: true,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    isLocked
+                                        ? UiStrings.towerFloorLocked
+                                        : UiStrings.towerFloorEnemies(
+                                            def.enemyTeam.length,
+                                          ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: isLocked
+                                          ? WuxiaColors.textMuted
+                                          : WuxiaColors.textSecondary,
+                                      fontSize: 12,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  _SmallChip(
-                                    label: UiStrings.towerRequiredRealm(
-                                      EnumL10n.realmTier(def.requiredRealm),
-                                    ),
-                                    color: isLocked
-                                        ? WuxiaColors.textMuted
-                                        : WuxiaColors.textSecondary,
-                                  ),
-                                  if (def.isBoss) ...[
-                                    const SizedBox(width: 6),
-                                    _SmallChip(
-                                      label: def.bossKind == TowerBossKind.minor
-                                          ? UiStrings.towerBossMinor
-                                          : UiStrings.towerBossMajor,
-                                      color: accent,
-                                      filled: true,
-                                    ),
-                                  ],
                                 ],
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                isLocked
-                                    ? UiStrings.towerFloorLocked
-                                    : UiStrings.towerFloorEnemies(
-                                        def.enemyTeam.length,
-                                      ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: isLocked
-                                      ? WuxiaColors.textMuted
-                                      : WuxiaColors.textSecondary,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              // 爬塔 dropTable 仅首通发奖 → isFirstClearGated: true（首通必得桶）。
-                              Builder(
-                                builder: (ctx) {
-                                  final rumor = DropRumorTable.fromDropTable(
-                                    def.dropTable,
-                                    isFirstClearGated: true,
-                                  );
-                                  return Row(
-                                    children: [
-                                      Expanded(
-                                        child: LootSummaryLine(table: rumor),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.info_outline,
-                                          size: 16,
-                                        ),
-                                        padding: EdgeInsets.zero,
-                                        constraints: const BoxConstraints(),
-                                        visualDensity: VisualDensity.compact,
-                                        tooltip:
-                                            UiStrings.lootRumorDialogTitle,
-                                        color: WuxiaColors.textMuted,
-                                        onPressed: () => showLootRumorDialog(
-                                          ctx,
-                                          table: rumor,
-                                          currentRealm: currentRealm,
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 10),
+                            _StatusBadge(status: entry.status),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        _StatusBadge(status: entry.status),
+                        // ── 掉落传闻行：独立一行，位于卡片底部，不与标签区重叠 ──
+                        const SizedBox(height: 6),
+                        Builder(
+                          builder: (ctx) {
+                            final rumor = DropRumorTable.fromDropTable(
+                              def.dropTable,
+                              isFirstClearGated: true,
+                            );
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: LootSummaryLine(table: rumor),
+                                ),
+                                GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => showLootRumorDialog(
+                                    ctx,
+                                    table: rumor,
+                                    currentRealm: currentRealm,
+                                  ),
+                                  child: const Icon(
+                                    Icons.info_outline,
+                                    size: 16,
+                                    color: WuxiaColors.textMuted,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),

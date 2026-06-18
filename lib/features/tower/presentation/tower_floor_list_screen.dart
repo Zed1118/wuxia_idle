@@ -34,8 +34,8 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
   final _scrollController = ScrollController();
   bool _hasScrolled = false;
 
-  // 石阶行约 112px（含掉落传闻行）；用于首次进入时滚到可挑战层附近。
-  static const double _kCardHeight = 112.0;
+  // 石阶行约 96px（含掉落传闻行）；用于首次进入时滚到可挑战层附近。
+  static const double _kCardHeight = 96.0;
 
   @override
   void dispose() {
