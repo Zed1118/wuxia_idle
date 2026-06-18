@@ -129,6 +129,56 @@ class SkillLoadoutResolver {
     if (!repo.skillDefs.containsKey(jointSkillId)) return null;
     return repo.getSkill(jointSkillId);
   }
+
+  /// 第六阶段 Task 6：职责软引导——按角色 lineage 身份对候选技能施加倾向排序权重。
+  ///
+  /// **只改顺序，不改集合**（软引导不锁定）。调用方仍可在藏经阁手动换装覆盖。
+  ///
+  /// - 祖师（[Character.isFounder] == true）：高 [SkillDef.powerMultiplier] 优先（爆发倾向）。
+  /// - 弟子（[LineageRole.disciple]，含大弟子/二弟子）：[SkillDef.defenseBreakPct] > 0 优先
+  ///   （破防开窗倾向）。注：[LineageRole] 仅有 disciple，无法在 SkillDef 层区分大/二弟子，
+  ///   两者均获同一倾向；如需二弟子独立倾向需先扩充 LineageRole 枚举（当前限制）。
+  /// - 其他身份（[LineageRole.grandDisciple] / 无 lineage 语义）：原顺序不变。
+  ///
+  /// 排序为**稳定排序**：同优先级内原相对顺序保留，保证旧档 fallback 等价。
+  static List<SkillDef> applyLineageTendency(
+    List<SkillDef> skills,
+    Character character,
+  ) {
+    if (skills.isEmpty) return skills;
+
+    if (character.isFounder) {
+      // 祖师：高倍率爆发技前置；同级别内保持原顺序（稳定）。
+      final maxPower =
+          skills.map((s) => s.powerMultiplier).reduce((a, b) => a > b ? a : b);
+      return _stablePartition(skills, (s) => s.powerMultiplier == maxPower);
+    }
+
+    if (character.lineageRole == LineageRole.disciple) {
+      // 弟子：破防技（defenseBreakPct > 0）前置；无破防技时原顺序不变。
+      return _stablePartition(skills, (s) => s.defenseBreakPct > 0);
+    }
+
+    // grandDisciple / 其他：无倾向，原样返回。
+    return List<SkillDef>.of(skills);
+  }
+
+  /// 稳定分区辅助：满足 [predicate] 的元素在前，不满足的在后，各组内相对顺序不变。
+  static List<SkillDef> _stablePartition(
+    List<SkillDef> skills,
+    bool Function(SkillDef) predicate,
+  ) {
+    final preferred = <SkillDef>[];
+    final rest = <SkillDef>[];
+    for (final s in skills) {
+      if (predicate(s)) {
+        preferred.add(s);
+      } else {
+        rest.add(s);
+      }
+    }
+    return [...preferred, ...rest];
+  }
 }
 
 /// [SkillLoadoutResolver.resolve] 的解析结果三元组。
