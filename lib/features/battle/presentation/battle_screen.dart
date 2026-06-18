@@ -1134,6 +1134,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       state: state,
                       onTap: () => setState(() => _logOpen = true),
                     ),
+                    _CoopBurstPromptBar(state: state),
                     _BottomBar(
                       state: state,
                       focusSlotIndex: _effectiveFocus(state),
@@ -1250,6 +1251,55 @@ class _CycleHintBanner extends StatelessWidget {
       child: Text(
         hint,
         style: const TextStyle(color: Color(0xFFD4A800), fontSize: 12),
+      ),
+    );
+  }
+}
+
+// ─── 破绽窗口指令栏提示（第六阶段 Task 5）─────────────────────────────────
+
+/// 指令栏上方薄提示条：右队（敌方）有存活角色处于破绽窗口（staggerTicksRemaining > 0）
+/// 时显示「破绽 · 该爆发了」，引导玩家拖招释放爆发技。
+///
+/// **只读 state**：不触碰 interveneNow / AP / 逻辑速度（红线 §5.5）。
+/// 窗口关闭（所有敌方 stagger=0）后自然消失（SizedBox.shrink）。
+class _CoopBurstPromptBar extends StatelessWidget {
+  final BattleState state;
+  const _CoopBurstPromptBar({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasBreakWindow = state.rightTeam.any(
+      (e) => e.isAlive && e.staggerTicksRemaining > 0,
+    );
+    if (!hasBreakWindow) return const SizedBox.shrink();
+
+    return Container(
+      key: const ValueKey('coop_burst_prompt_bar'),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+      decoration: BoxDecoration(
+        color: WuxiaColors.lingQiao.withValues(alpha: 0.12), // 浅金底，水墨克制
+        border: const Border(top: BorderSide(color: WuxiaColors.border)),
+      ),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.bolt_rounded,
+            size: 13,
+            color: WuxiaColors.lingQiao,
+          ),
+          SizedBox(width: 5),
+          Text(
+            UiStrings.coopBurstPrompt,
+            style: TextStyle(
+              color: WuxiaColors.lingQiao,
+              fontSize: 12,
+              letterSpacing: 1.0,
+            ),
+          ),
+        ],
       ),
     );
   }
