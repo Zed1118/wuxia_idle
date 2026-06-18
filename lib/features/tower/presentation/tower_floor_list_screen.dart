@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 
+import '../../../core/application/character_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
@@ -33,8 +34,8 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
   final _scrollController = ScrollController();
   bool _hasScrolled = false;
 
-  // 石阶行约 94px；用于首次进入时滚到可挑战层附近。
-  static const double _kCardHeight = 94.0;
+  // 石阶行约 112px（含掉落传闻行）；用于首次进入时滚到可挑战层附近。
+  static const double _kCardHeight = 112.0;
 
   @override
   void dispose() {
@@ -111,6 +112,20 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
               final canAdvance =
                   progress.maxClearedCycle >= progress.currentCycleIndex &&
                       progress.currentCycleIndex < maxCycleTower;
+              // 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。
+              final currentRealm = ref
+                  .watch(activeCharacterIdsProvider)
+                  .maybeWhen(
+                    data: (ids) => ids.isEmpty
+                        ? null
+                        : ref
+                              .watch(characterByIdProvider(ids.first))
+                              .maybeWhen(
+                                data: (c) => c?.realmTier,
+                                orElse: () => null,
+                              ),
+                    orElse: () => null,
+                  );
               return Column(
                 children: [
                   _ProgressCard(progress: progress),
@@ -133,6 +148,7 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
                             : TowerFloorStepSide.right,
                         onChallenge: () =>
                             _onChallenge(context, entries[i].def),
+                        currentRealm: currentRealm,
                       ),
                     ),
                   ),

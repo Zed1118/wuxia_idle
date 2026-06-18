@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../battle/presentation/stage_auto_play_control.dart';
+import '../../loot_preview/domain/drop_rumor.dart';
+import '../../loot_preview/presentation/loot_rumor_dialog.dart';
+import '../../loot_preview/presentation/loot_summary_line.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -26,6 +29,7 @@ class TowerFloorCard extends StatelessWidget {
     required this.entry,
     required this.onChallenge,
     this.stepSide = TowerFloorStepSide.left,
+    this.currentRealm,
   });
 
   /// 层定义 + 解锁状态。
@@ -37,6 +41,9 @@ class TowerFloorCard extends StatelessWidget {
 
   /// 宽屏塔身布局中的石阶方向；窄屏会自动退回单列。
   final TowerFloorStepSide stepSide;
+
+  /// 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。可空。
+  final RealmTier? currentRealm;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +65,7 @@ class TowerFloorCard extends StatelessWidget {
             isCleared: isCleared,
             isAvailable: isAvailable,
             onTap: isLocked ? null : () => _handleTap(context),
+            currentRealm: currentRealm,
           );
           if (!useTimeline) {
             return plaque;
@@ -65,7 +73,7 @@ class TowerFloorCard extends StatelessWidget {
 
           final isLeft = stepSide == TowerFloorStepSide.left;
           return SizedBox(
-            height: def.isBoss ? 92 : 82,
+            height: def.isBoss ? 120 : 116,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -151,6 +159,7 @@ class _FloorPlaque extends StatelessWidget {
     required this.isCleared,
     required this.isAvailable,
     required this.onTap,
+    this.currentRealm,
   });
 
   final TowerFloorEntry entry;
@@ -158,6 +167,7 @@ class _FloorPlaque extends StatelessWidget {
   final bool isCleared;
   final bool isAvailable;
   final VoidCallback? onTap;
+  final RealmTier? currentRealm;
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +194,7 @@ class _FloorPlaque extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(7),
           child: Container(
-            constraints: BoxConstraints(minHeight: def.isBoss ? 86 : 76),
+            constraints: BoxConstraints(minHeight: def.isBoss ? 114 : 110),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(7),
               border: Border.all(color: accent, width: borderWidth),
@@ -292,6 +302,40 @@ class _FloorPlaque extends StatelessWidget {
                                       : WuxiaColors.textSecondary,
                                   fontSize: 12,
                                 ),
+                              ),
+                              const SizedBox(height: 2),
+                              // 爬塔 dropTable 仅首通发奖 → isFirstClearGated: true（首通必得桶）。
+                              Builder(
+                                builder: (ctx) {
+                                  final rumor = DropRumorTable.fromDropTable(
+                                    def.dropTable,
+                                    isFirstClearGated: true,
+                                  );
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: LootSummaryLine(table: rumor),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.info_outline,
+                                          size: 16,
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        visualDensity: VisualDensity.compact,
+                                        tooltip:
+                                            UiStrings.lootRumorDialogTitle,
+                                        color: WuxiaColors.textMuted,
+                                        onPressed: () => showLootRumorDialog(
+                                          ctx,
+                                          table: rumor,
+                                          currentRealm: currentRealm,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),
