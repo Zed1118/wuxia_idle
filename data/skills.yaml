@@ -182,6 +182,7 @@ skills:
     parentTechniqueDefId: tech_gangmeng_changlian
     visualEffect: armor_break_palm
     source: technique
+    defenseBreakPct: 0.30  # 第六阶段:刚猛 开窗手——掌劲裂甲同时撕开破绽窗口
 
   - id: skill_gangmeng_changlian_ult
     name: 山岳震
@@ -225,6 +226,7 @@ skills:
     parentTechniqueDefId: tech_lingqiao_changlian
     visualEffect: twirl_thrust
     source: technique
+    defenseBreakPct: 0.30  # 第六阶段:灵巧 开窗手——旋身借力,剑走偏锋破防御死角
 
   - id: skill_lingqiao_changlian_ult
     name: 万剑诀
@@ -268,6 +270,7 @@ skills:
     parentTechniqueDefId: tech_yinrou_changlian
     visualEffect: hidden_claw
     source: technique
+    defenseBreakPct: 0.30  # 第六阶段:阴柔 开窗手——无声出手穿透防线,露出破绽
 
   - id: skill_yinrou_changlian_ult
     name: 销魂指
