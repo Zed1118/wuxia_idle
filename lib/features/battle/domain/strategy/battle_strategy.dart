@@ -70,4 +70,23 @@ abstract class BattleStrategy {
     SkillDef ultimate, {
     int? targetId,
   });
+
+  /// 主线二 2.3 玩家拖招「即放·真插队」入口。
+  ///
+  /// **默认降级**:非 [DefaultGroundStrategy] 形态(LightFoot/MassBattle)退化为
+  /// [requestUltimate](标记 pending 下次出手),零行为回归。[DefaultGroundStrategy]
+  /// override 为真·立即插队结算(借 AP=1000 → `_resolveAction` 出手 -=1000 自然归零,
+  /// 预支语义,净出手频率近不变 = 非数值杠杆,守 §5.4)。
+  ///
+  /// 仅玩家 interactive 路径调用;auto/挂机无玩家输入永不触发 → seed 确定性测
+  /// (auto 无干预路径)不受影响。
+  BattleState interveneNow(
+    BattleState state,
+    int characterId,
+    SkillDef skill, {
+    int? targetId,
+    required NumbersConfig n,
+    required Random rng,
+  }) =>
+      requestUltimate(state, characterId, skill, targetId: targetId);
 }
