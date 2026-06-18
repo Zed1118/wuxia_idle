@@ -135,6 +135,14 @@ void main() {
       greaterThan(10),
       reason: '场景应产生 >10 个 action,确保有足够暴击 roll 暴露不确定性',
     );
+    // 确保破防技确实至少开过一次破绽窗口;否则"确定性测"形同虚设——
+    // 集火路径根本没被触发,同 seed 相等只是普通战斗确定性的平凡结论。
+    expect(
+      first.contains('|true'),
+      isTrue,
+      reason: 'breakSkill 应至少打开一次破绽窗口(openedBreakWindow=true),'
+          '否则集火路径未被覆盖,该确定性测形同虚设',
+    );
     expect(
       first,
       equals(second),
