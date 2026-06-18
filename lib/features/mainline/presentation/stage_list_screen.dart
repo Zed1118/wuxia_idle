@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/defs/stage_def.dart';
+import '../../../core/application/character_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -9,6 +10,9 @@ import '../../battle/application/selected_cycle_provider.dart';
 import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/presentation/cycle_select_control.dart';
 import '../../battle/presentation/stage_auto_play_control.dart';
+import '../../loot_preview/domain/drop_rumor.dart';
+import '../../loot_preview/presentation/loot_rumor_dialog.dart';
+import '../../loot_preview/presentation/loot_summary_line.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import '../domain/chapter_assets.dart';
@@ -70,6 +74,18 @@ class StageListScreen extends ConsumerWidget {
               );
             }
 
+            // 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。
+            // 任一层 async 未就绪 → null（dialog 宽容 null，仅跳过超境提示）。
+            final currentRealm = ref.watch(activeCharacterIdsProvider).maybeWhen(
+              data: (ids) => ids.isEmpty
+                  ? null
+                  : ref.watch(characterByIdProvider(ids.first)).maybeWhen(
+                      data: (c) => c?.realmTier,
+                      orElse: () => null,
+                    ),
+              orElse: () => null,
+            );
+
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               children: [
@@ -87,6 +103,7 @@ class StageListScreen extends ConsumerWidget {
                       stageIndex: i + 1,
                       def: entries[i].def,
                       status: entries[i].status,
+                      currentRealm: currentRealm,
                       onTap: entries[i].status == StageStatus.locked
                           ? null
                           : () => runStageFlow(
@@ -286,12 +303,14 @@ class _StageRow extends StatelessWidget {
     required this.def,
     required this.status,
     required this.onTap,
+    this.currentRealm,
   });
 
   final int stageIndex;
   final StageDef def;
   final StageStatus status;
   final VoidCallback? onTap;
+  final RealmTier? currentRealm;
 
   @override
   Widget build(BuildContext context) {
@@ -302,6 +321,10 @@ class _StageRow extends StatelessWidget {
     final borderColor = cleared
         ? WuxiaColors.hpHigh
         : (locked ? WuxiaColors.border : WuxiaColors.resultHighlight);
+    final rumor = DropRumorTable.fromDropTable(
+      def.dropTable,
+      isFirstClearGated: false,
+    );
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -370,6 +393,8 @@ class _StageRow extends StatelessWidget {
                         fontSize: 12,
                       ),
                     ),
+                    const SizedBox(height: 2),
+                    LootSummaryLine(table: rumor),
                     // 半手动 P0 步骤5-G3:已通关关卡可逐关切自动/手动。
                     // (周目选择 Phase 2 上移到章层,不再 per-stage。)
                     if (cleared) ...[
@@ -386,7 +411,20 @@ class _StageRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: const Icon(Icons.info_outline, size: 16),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: UiStrings.lootRumorDialogTitle,
+                color: WuxiaColors.textMuted,
+                onPressed: () => showLootRumorDialog(
+                  context,
+                  table: rumor,
+                  currentRealm: currentRealm,
+                ),
+              ),
+              const SizedBox(width: 8),
               _StageStatusBadge(status: status),
             ],
           ),
