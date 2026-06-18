@@ -83,11 +83,11 @@ void main() {
       guard++;
     }
     final s = container.read(battleProvider);
-    return '${s.result}#' +
-        s.actionLog
-            .map((a) =>
-                '${a.tick}|${a.actorId}|${a.targetId}|${a.skill?.id}|${a.attackResult?.finalDamage}')
-            .join(';');
+    final ops = s.actionLog
+        .map((a) =>
+            '${a.tick}|${a.actorId}|${a.targetId}|${a.skill?.id}|${a.attackResult?.finalDamage}')
+        .join(';');
+    return '${s.result}#$ops';
   }
 
   test('红线:同 seed + 同插队时点两跑 actionLog + 胜负全等', () {
