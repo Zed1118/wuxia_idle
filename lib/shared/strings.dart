@@ -1564,4 +1564,11 @@ class UiStrings {
   // ── 心魔镜像(audit M3 散写中文归集)──────────────────────────────────
   /// 心魔镜像角色名：`心魔·<源名>`
   static String innerDemonMirrorName(String name) => '心魔·$name';
+
+  // ── 战后英雄镜头(第七阶段 批一)──────────────────────────────────────
+  /// 英雄镜头击破字幕，参数为 Boss 名。
+  static String heroCameraDefeated(String bossName) => '击破 $bossName';
+
+  /// 英雄镜头本场最强标签。
+  static const String heroCameraTopOutput = '本场最强';
 }
