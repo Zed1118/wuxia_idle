@@ -48,8 +48,9 @@ class _TestBattleNotifier extends BattleNotifier {
 
 Future<void> _pumpBattle(
   WidgetTester tester,
-  BattleState state,
-) async {
+  BattleState state, {
+  bool allowPlayerIntervention = true,
+}) async {
   await tester.binding.setSurfaceSize(const Size(1280, 720));
   addTearDown(() => tester.binding.setSurfaceSize(null));
   await tester.pumpWidget(
@@ -57,8 +58,12 @@ Future<void> _pumpBattle(
       overrides: [
         battleProvider.overrideWith(() => _TestBattleNotifier(state)),
       ],
-      child: const MaterialApp(
-        home: BattleScreen(animConfig: _testAnim, autoStart: false),
+      child: MaterialApp(
+        home: BattleScreen(
+          animConfig: _testAnim,
+          autoStart: false,
+          allowPlayerIntervention: allowPlayerIntervention,
+        ),
       ),
     ),
   );
@@ -98,6 +103,27 @@ void main() {
         find.text(UiStrings.coopBurstPrompt),
         findsNothing,
         reason: '无敌方踉跄时，不应出现「破绽 · 该爆发了」提示',
+      );
+    });
+
+    testWidgets('敌方有踉跄但 allowPlayerIntervention=false 时不显示提示', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      // 右队第 0 个角色处于破绽窗口（stagger>0），但纯自动/挂机模式不允许玩家介入。
+      final staggeredRight = List<BattleCharacter>.from(right);
+      staggeredRight[0] = staggeredRight[0].copyWith(
+        staggerTicksRemaining: 3,
+        isAlive: true,
+      );
+      final state = BattleState.initial(
+        leftTeam: left,
+        rightTeam: staggeredRight,
+      );
+      await _pumpBattle(tester, state, allowPlayerIntervention: false);
+
+      expect(
+        find.text(UiStrings.coopBurstPrompt),
+        findsNothing,
+        reason: '纯自动/挂机模式（allowPlayerIntervention=false）下不应显示爆发提示，避免误导',
       );
     });
   });
