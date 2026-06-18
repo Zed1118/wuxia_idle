@@ -145,6 +145,14 @@ Future<void> showVictorySealFlash(BuildContext context) async {
   );
 }
 
+/// 英雄镜头 gate:仅 Boss 首胜且有出镜数据时弹。
+bool shouldShowHeroCamera({
+  required bool isBoss,
+  required bool isFirstClear,
+  required HeroCameraData? data,
+}) =>
+    isBoss && isFirstClear && data != null;
+
 /// 弹英雄镜头并 await 至消失(numbers hold_seconds 或点击跳过)。Boss 首胜调用。
 Future<void> presentHeroCamera(BuildContext context, HeroCameraData data) async {
   if (!context.mounted) return;
