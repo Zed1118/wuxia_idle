@@ -165,6 +165,12 @@ class MainlineProgressService {
     });
   }
 
+  /// 主线二 2.5 首通门控:该 (stageId, cycle) 是否尚未通关(首通)。
+  /// 数据源 [MainlineProgress.clearedStageCycleKeys](cycleKey=`'$stageId#$cycle'`,
+  /// recordVictory 各周目幂等写入)。首通=该 cycleKey 不在集合中。
+  static bool isFirstClear(MainlineProgress p, String stageId, int cycle) =>
+      !p.clearedStageCycleKeys.contains('$stageId#$cycle');
+
   /// 返回该 stageId 已通关的最高周目编号；从未通关返回 0。
   static int highestClearedCycle(MainlineProgress p, String stageId) {
     var hi = 0;

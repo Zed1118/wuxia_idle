@@ -23,3 +23,16 @@ AutoPlayMode resolveAutoPlayMode({
   required bool globalDefault,
 }) =>
     (override ?? globalDefault) ? AutoPlayMode.auto : AutoPlayMode.interactive;
+
+/// 主线二 2.5 首通门控:某关某周目**首通强制 [AutoPlayMode.interactive]**(挂拖招
+/// 层,无视 auto 设置);首通后退回 [resolveAutoPlayMode] 按 override/global 决策。
+///
+/// 战斗仍自动连播,门控只决定"拖招层在不在",非速度 buff,守 GDD §5.5 在线=离线。
+AutoPlayMode resolveAutoPlayModeWithFirstClear({
+  required bool isFirstClear,
+  required bool? override,
+  required bool globalDefault,
+}) =>
+    isFirstClear
+        ? AutoPlayMode.interactive
+        : resolveAutoPlayMode(override: override, globalDefault: globalDefault);
