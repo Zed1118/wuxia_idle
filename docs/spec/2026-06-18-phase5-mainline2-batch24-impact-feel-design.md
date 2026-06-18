@@ -73,13 +73,15 @@ _hitStopTimer = Timer(Duration(milliseconds: profile.hitStopMs), () {
 - 复用 `_isPaused` gate（暂停态 `_startTimer` 直接 return，不会被 hit-stop 复活）；`dispose` 释放 `_hitStopTimer`。
 - 纯屏上播放节拍延后：`advance()` 结算结果确定不变，只是「何时播放下一拍」后移 80–120ms（守 §5.5 逻辑/速度不变、§5.4 伤害不变）。
 
-## 4. 镜头轻震（CameraShake）
+## 4. 镜头轻震（复用既有 `_shakeCtrl` · 2026-06-18 修订）
 
-新建 `CameraShake`（`battle_screen.dart` 内部 widget 或独立文件），`Transform.translate` 包**战斗场景层**（角色/特效），**不含 HUD / 指令台 / 题字 overlay**（避免 UI 抖、题字糊）。
+> **Phase 0 补漏（开工后发现）**：battle_screen 已有屏震基建——`_shakeCtrl`（`battle_screen.dart:233/298`，`duration = animConfig.shakeDurationMs=100ms`）+ `screenShakeOffset`（`lib/shared/effects/screen_shake.dart`）包整个 SafeArea（含 HUD），**当前仅暴击触发、固定振幅 `animConfig.shakeOffsetPx=3.0`**（`_spawnPopup:623`）。故**复用此基建并分档**，不新建平行 `CameraShake`（两套屏震会在暴击重击双抖）。原 spec「只包场景层」属过度规定——既有 shipped 行为是整 SafeArea 抖，保留一致。
 
-- 命令式 controller（`AnimationController` 约 200–300ms），按 `profile.shakeMagnitude` 衰减抖动（高频小幅，末端归零）。
-- 触发同 hit-stop 条件（重击 + 非快进/拖招）。
-- 实现细节：复用现有 trail/effect 的命令式 controller 模式（spawn → forward → 完成释放）。
+- 加字段 `double _impactShakeAmplitude`（默认 0）。`_playAction` 中 profile != null 且非快进/拖招态 → `_impactShakeAmplitude = profile.shakeMagnitude; _shakeCtrl.forward(from: 0)`。
+- build 中 `screenShakeOffset(amplitude: ...)` 改读 `_impactShakeAmplitude`（替 `animConfig.shakeOffsetPx`）。
+- **删 `_spawnPopup:623` 旧暴击触发**（`_playAction` 集中后避免双抖；`_spawnPopup` 由 `_playAction:423` 调，时序在 profile 块前）。
+- 振幅分档：light 3.0（≈既有暴击振幅，行为不退化）/ medium 6.0 / heavy 10.0（profile 取自 numbers.yaml）。duration 沿用既有 100ms。
+- 触发同 hit-stop（非快进/拖招）——既有暴击震在快进态也触发，本批改为快进/拖招跳过（去 juice 快放，可接受的小行为变更）。
 
 ## 5. 单字题字 overlay（ImpactGlyphOverlay）
 
