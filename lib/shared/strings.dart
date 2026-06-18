@@ -83,6 +83,8 @@ class UiStrings {
   static const String impactGlyphZhan = '斩'; // 灵巧 / 无流派 默认
   static const String impactGlyphZhen = '震'; // 刚猛
   static const String impactGlyphDuan = '断'; // 阴柔
+  // 第六阶段 开窗题字：破防打开破绽窗口时弹出（互斥于 interrupted 的「破!」）。
+  static const String impactGlyphBreakWindow = '破绽'; // 破防开窗
 
   // 伤害飘字（T15）
   static const String dodge = '闪';
