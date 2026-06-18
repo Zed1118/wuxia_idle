@@ -112,6 +112,7 @@ class _SkillSlotPickerSheet extends StatelessWidget {
                         isEquipped: isEquipped,
                         canEquip: canEquip,
                         canInterrupt: skill.canInterrupt,
+                        defenseBreakPct: skill.defenseBreakPct,
                       ),
                       style: const TextStyle(
                         color: WuxiaColors.textMuted,
@@ -148,12 +149,14 @@ class _SkillSlotPickerSheet extends StatelessWidget {
     required bool isEquipped,
     required bool canEquip,
     required bool canInterrupt,
+    required double defenseBreakPct,
   }) {
     final parts = <String>[
       if (tierLabel.isNotEmpty) tierLabel,
       typeLabel,
       UiStrings.cangjingPickerDamage(power),
       if (canInterrupt) UiStrings.cangjingPickerCanInterrupt,
+      if (defenseBreakPct > 0) UiStrings.skillTraitDefenseBreak,
     ];
     final base = parts.join(' · ');
     final descPart = description.trim().isNotEmpty
