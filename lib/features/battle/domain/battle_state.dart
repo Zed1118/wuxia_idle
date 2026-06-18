@@ -53,8 +53,8 @@ class BattleAction {
   /// 表现层据此弹「破！」题字 overlay(纯读元数据,不参与战斗结算)。
   final bool interrupted;
 
-  /// 第六阶段 破防开窗:本动作是否开启了破防减防窗口(skill.defenseBreakPct > 0
-  /// 且命中存活目标,不要求目标蓄力)。表现层据此弹「破防！」题字 overlay。
+  /// 本动作通过破防(defenseBreakPct>0 命中,非破招)打开破绽窗口;破招开窗用
+  /// interrupted 区分,二者互斥——表现层据此分别题字「破绽」/「破!」。
   final bool openedBreakWindow;
 
   const BattleAction({
