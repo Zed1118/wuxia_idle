@@ -63,7 +63,8 @@ class BattleAI {
     if (skill.canInterrupt && charging.isNotEmpty) {
       targetId = charging.first.characterId; // P0:破招技锁定蓄力敌人
     } else {
-      targetId = _pickTargetId(actor, state);
+      // 第六阶段:破绽窗口内敌优先集火(链路爆发);无破绽敌回落血最低。
+      targetId = _pickFocusTargetId(actor, state) ?? _pickTargetId(actor, state);
     }
     return (skill, [targetId]);
   }
@@ -144,6 +145,22 @@ class BattleAI {
       );
     }
     return best.characterId;
+  }
+
+  /// 第六阶段集火:对面处于破绽窗口(staggerTicksRemaining>0)的活角色中血最低、
+  /// 同 hp 取 slotIndex 小;无破绽敌返回 null(回落 _pickTargetId)。纯函数无 side effect。
+  static int? _pickFocusTargetId(BattleCharacter actor, BattleState state) {
+    final enemyTeam = actor.teamSide == 0 ? state.rightTeam : state.leftTeam;
+    BattleCharacter? best;
+    for (final e in enemyTeam) {
+      if (!e.isAlive || e.staggerTicksRemaining <= 0) continue;
+      if (best == null ||
+          e.currentHp < best.currentHp ||
+          (e.currentHp == best.currentHp && e.slotIndex < best.slotIndex)) {
+        best = e;
+      }
+    }
+    return best?.characterId;
   }
 
   /// 内力够 + CD 0 才可用（普攻 cost=0、CD=0 永远 true）。
