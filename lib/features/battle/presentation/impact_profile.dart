@@ -48,7 +48,7 @@ ImpactProfile? impactProfileFor(BattleAction action, ImpactFeedbackConfig cfg) {
     glyph = switch (skill?.style) {
       TechniqueSchool.gangMeng => UiStrings.impactGlyphZhen,
       TechniqueSchool.yinRou => UiStrings.impactGlyphDuan,
-      _ => UiStrings.impactGlyphZhan,
+      TechniqueSchool.lingQiao || null => UiStrings.impactGlyphZhan,
     };
   }
   return ImpactProfile(
