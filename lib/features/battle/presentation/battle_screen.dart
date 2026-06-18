@@ -1834,7 +1834,8 @@ class _CharacterSlot extends StatelessWidget {
 /// 旧版每角色只暴露大招/破招两按钮；新版聚焦单个"重点角色"，把它的
 /// [BattleCharacter.availableSkills]（除普攻）全摊开成 强力/破招/共鸣/大招 分组按钮，
 /// 每按钮带内力消耗 / 冷却 / 待发 状态。点头像切重点角色；敌人蓄力时由
-/// [_BattleScreenState._effectiveFocus] 自动切到可破招者。点击仍走 [requestUltimate]。
+/// [_BattleScreenState._effectiveFocus] 自动切到可破招者。拖招走 [BattleNotifier.interveneNow]
+/// 立即插队出手（主线二 2.3）。
 class _BottomBar extends StatelessWidget {
   final BattleState state;
   final int focusSlotIndex;
