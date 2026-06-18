@@ -52,6 +52,8 @@ import '../application/mainline_providers.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
 import '../../battle/domain/battle_stats.dart';
+import '../../battle/domain/top_damage_contributor.dart';
+import '../../battle/presentation/hero_camera_overlay.dart' show HeroCameraData;
 import '../../battle/presentation/victory_ceremony.dart';
 import 'stage_victory_dialog.dart';
 
@@ -214,7 +216,16 @@ Future<void> runStageFlow({
 
   // W15 #30 P3 后续 A:victory dialog 显 drop + 升层 banner;outcome=null 时
   // (Isar 未 ready / characters 空)兜底跳过 dialog 不阻塞剧情流。
+  // 第七阶段 批一:Boss 首胜先弹英雄镜头，再走胜利仪式。
   if (outcome != null && context.mounted) {
+    final isFirstClear = !clearedBeforeVictory.contains(stage.id);
+    if (shouldShowHeroCamera(
+        isBoss: stage.isBossStage,
+        isFirstClear: isFirstClear,
+        data: outcome.heroCamera)) {
+      await presentHeroCamera(context, outcome.heroCamera!);
+      if (!context.mounted) return;
+    }
     await presentVictoryCeremony(context, outcome.drops, treasureGate: true);
     if (!context.mounted) return;
     await showStageVictoryDialog(
@@ -638,6 +649,7 @@ Future<
       List<AdvancementEntry> advancements,
       List<ResonanceUpgradeNotice> resonanceUpgrades,
       BattleStatsSummary stats,
+      HeroCameraData? heroCamera,
     })?> _applyVictoryResolution({
   required WidgetRef ref,
   required StageDef stage,
@@ -856,11 +868,36 @@ Future<
     }
   });
 
+  // 第七阶段 批一:派生英雄镜头数据（本场最高输出玩家）。纯展示，不改数值。
+  HeroCameraData? heroCamera;
+  final topContributor = TopDamageContributor.from(finalState);
+  if (topContributor != null) {
+    Character? hero;
+    for (final c in characters) {
+      if (c.id == topContributor.actorId) {
+        hero = c;
+        break;
+      }
+    }
+    if (hero != null) {
+      heroCamera = HeroCameraData(
+        portraitPath: hero.portraitPath,
+        heroName: hero.name,
+        realmLabel: EnumL10n.realmTier(hero.realmTier),
+        bossName: stage.enemyTeam.isNotEmpty
+            ? stage.enemyTeam.last.name
+            : stage.name,
+        topDamage: topContributor.totalDamage,
+      );
+    }
+  }
+
   return (
     drops: result.dropResult,
     advancements: advancements,
     resonanceUpgrades: resonanceUpgrades,
     stats: stats,
+    heroCamera: heroCamera,
   );
 }
 
