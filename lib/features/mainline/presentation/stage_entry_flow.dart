@@ -52,7 +52,6 @@ import '../application/mainline_providers.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
 import '../../battle/domain/battle_stats.dart';
-import '../../battle/domain/top_damage_contributor.dart';
 import '../../battle/presentation/hero_camera_overlay.dart' show HeroCameraData;
 import '../../battle/presentation/victory_ceremony.dart';
 import 'stage_victory_dialog.dart';
@@ -869,28 +868,13 @@ Future<
   });
 
   // 第七阶段 批一:派生英雄镜头数据（本场最高输出玩家）。纯展示，不改数值。
-  HeroCameraData? heroCamera;
-  final topContributor = TopDamageContributor.from(finalState);
-  if (topContributor != null) {
-    Character? hero;
-    for (final c in characters) {
-      if (c.id == topContributor.actorId) {
-        hero = c;
-        break;
-      }
-    }
-    if (hero != null) {
-      heroCamera = HeroCameraData(
-        portraitPath: hero.portraitPath,
-        heroName: hero.name,
-        realmLabel: EnumL10n.realmTier(hero.realmTier),
-        bossName: stage.enemyTeam.isNotEmpty
-            ? stage.enemyTeam.last.name
-            : stage.name,
-        topDamage: topContributor.totalDamage,
-      );
-    }
-  }
+  final heroCamera = deriveHeroCameraData(
+    finalState: finalState,
+    characters: characters,
+    bossName: stage.enemyTeam.isNotEmpty
+        ? stage.enemyTeam.last.name
+        : stage.name,
+  );
 
   return (
     drops: result.dropResult,

@@ -39,6 +39,7 @@ import '../../event/application/game_event_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../battle/domain/battle_stats.dart';
+import '../../battle/presentation/hero_camera_overlay.dart' show HeroCameraData;
 import '../../battle/presentation/victory_ceremony.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart'
     show FirstClearBanner, ResonanceUpgradeNotice, ResonanceUpgradeBanner;
@@ -183,6 +184,7 @@ Future<void> runTowerFlow({
   );
   final advancements = victoryRes.advancements;
   final resonanceUpgrades = victoryRes.resonanceUpgrades;
+  final heroCamera = victoryRes.heroCamera;
   // W13-v3 fix: invalidate character/equipment/technique family,否则下次进
   // 角色面板看到 Riverpod 缓存的旧 battleCount / cultivationProgress
   ref.invalidate(characterByIdProvider);
@@ -245,6 +247,7 @@ Future<void> runTowerFlow({
       advancements: advancements,
       resonanceUpgrades: resonanceUpgrades,
       stats: victoryRes.stats,
+      heroCamera: heroCamera,
     );
   }
 
@@ -339,6 +342,7 @@ Future<
     List<AdvancementEntry> advancements,
     List<ResonanceUpgradeNotice> resonanceUpgrades,
     BattleStatsSummary stats,
+    HeroCameraData? heroCamera,
   })
 >
 _applyTowerVictoryResolution({
@@ -350,6 +354,7 @@ _applyTowerVictoryResolution({
     advancements: <AdvancementEntry>[],
     resonanceUpgrades: <ResonanceUpgradeNotice>[],
     stats: BattleStatsSummary(totalDamage: 0, critCount: 0, totalTicks: 0),
+    heroCamera: null,
   );
   final isar = ref.read(isarProvider);
   if (isar == null) return empty;
@@ -512,7 +517,21 @@ _applyTowerVictoryResolution({
     }
   });
 
-  return (advancements: advancements, resonanceUpgrades: resonanceUpgrades, stats: stats);
+  // 第七阶段 批一:派生英雄镜头数据（本场最高输出玩家）。纯展示，不改数值。
+  final heroCamera = deriveHeroCameraData(
+    finalState: finalState,
+    characters: characters,
+    bossName: floor.enemyTeam.isNotEmpty
+        ? floor.enemyTeam.last.name
+        : UiStrings.towerFloorLabel(floor.floorIndex),
+  );
+
+  return (
+    advancements: advancements,
+    resonanceUpgrades: resonanceUpgrades,
+    stats: stats,
+    heroCamera: heroCamera,
+  );
 }
 
 /// Isar 持久化爬塔掉落（W6 nullable propagation：isarProvider 为 null 时短路，测试安全）。
@@ -581,7 +600,14 @@ Future<void> _showVictoryDialog({
   required List<AdvancementEntry> advancements,
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
   BattleStatsSummary? stats,
+  HeroCameraData? heroCamera,
 }) async {
+  // 第七阶段 批一:Boss 首胜先弹英雄镜头，再走胜利仪式。
+  if (shouldShowHeroCamera(
+      isBoss: floor.isBoss, isFirstClear: isFirstClear, data: heroCamera)) {
+    await presentHeroCamera(context, heroCamera!);
+    if (!context.mounted) return;
+  }
   // 胜利仪式分档:首通有重器→爆品镜头;否则(普通/重打)→简版勝。
   // realmAdvance 在仪式之后、随 dialog 出现时响,避免 fanfare 早响 1.3s。
   await presentVictoryCeremony(context, drops, treasureGate: isFirstClear);

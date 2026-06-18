@@ -1,11 +1,44 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/domain/character.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/presentation/treasure_drop_overlay.dart';
+import '../domain/battle_state.dart';
+import '../domain/enum_localizations.dart' show EnumL10n;
+import '../domain/top_damage_contributor.dart';
 import 'hero_camera_overlay.dart';
+
+/// 从战斗结束状态 + 角色列表中派生英雄镜头数据（第七阶段 批一共享 helper）。
+///
+/// 纯函数：只读 [finalState] 和 [characters]，不写任何状态。
+/// 主线 / 爬塔两 flow 共用，避免重复派生逻辑。
+/// 返回 null 的两种情形：无玩家伤害记录 / top actor 在 characters 中找不到。
+HeroCameraData? deriveHeroCameraData({
+  required BattleState finalState,
+  required List<Character> characters,
+  required String bossName,
+}) {
+  final top = TopDamageContributor.from(finalState);
+  if (top == null) return null;
+  Character? hero;
+  for (final c in characters) {
+    if (c.id == top.actorId) {
+      hero = c;
+      break;
+    }
+  }
+  if (hero == null) return null;
+  return HeroCameraData(
+    portraitPath: hero.portraitPath,
+    heroName: hero.name,
+    realmLabel: EnumL10n.realmTier(hero.realmTier),
+    bossName: bossName,
+    topDamage: top.totalDamage,
+  );
+}
 
 /// 简版「勝」淡入淡出(时序重排 spec 2026-06-12)。
 ///
