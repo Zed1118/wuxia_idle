@@ -35,6 +35,7 @@ class ScreenFlashOverlayState extends State<ScreenFlashOverlay>
   }
 
   void flash(double strength, {Color color = Colors.white}) {
+    if (!mounted) return;
     setState(() {
       _strength = strength;
       _color = color;

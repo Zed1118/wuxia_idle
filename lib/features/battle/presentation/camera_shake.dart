@@ -14,6 +14,7 @@ class CameraShake extends StatefulWidget {
 class CameraShakeState extends State<CameraShake>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
+  // 不在 shake 完成后重置；build 内 `_ctrl.value >= 1.0` guard 处理 idle 态。
   double _magnitude = 0.0;
 
   @override
@@ -32,6 +33,7 @@ class CameraShakeState extends State<CameraShake>
   }
 
   void shake(double magnitude) {
+    if (!mounted) return;
     _magnitude = magnitude;
     _ctrl.forward(from: 0.0);
   }
