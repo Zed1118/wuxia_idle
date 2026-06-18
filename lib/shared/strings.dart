@@ -79,6 +79,10 @@ class UiStrings {
   static const String internalForceShortLabel = '内 ';
   // B3 破招成功「破！」题字 overlay 文案(破招方暖金/敌方绛红)。
   static const String interruptCaption = '破！';
+  // 批次 2.4 打击感单字效果字（重击非破招非大招）。破由现有 interruptCaption 承载。
+  static const String impactGlyphZhan = '斩'; // 灵巧 / 无流派 默认
+  static const String impactGlyphZhen = '震'; // 刚猛
+  static const String impactGlyphDuan = '断'; // 阴柔
 
   // 伤害飘字（T15）
   static const String dodge = '闪';
