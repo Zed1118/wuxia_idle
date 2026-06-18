@@ -55,6 +55,21 @@ void main() {
     canInterrupt: true,
   );
 
+  // 破防技（defenseBreakPct>0，tier=1 xueTu 可装配）
+  const skillDefenseBreak = SkillDef(
+    id: 'skill_pojia',
+    name: '破甲掌',
+    description: '撕开护甲破绽',
+    type: SkillType.powerSkill,
+    powerMultiplier: 180,
+    internalForceCost: 20,
+    cooldownTurns: 4,
+    requiresManualTrigger: false,
+    visualEffect: 'none',
+    tier: 1,
+    defenseBreakPct: 0.5,
+  );
+
   // 用 xueTu（index=0）让 tier-7 招锁死（需 index >= 6）
   const lowRealm = RealmTier.xueTu;
 
@@ -251,6 +266,52 @@ void main() {
       expect(
         find.textContaining(UiStrings.cangjingPickerCanInterrupt),
         findsOneWidget,
+      );
+    });
+
+    testWidgets('破防技 subtitle 显示「破防」特性标（与 canInterrupt 模式一致）',
+        (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        wrapWithTrigger((ctx) => openSkillSlotPicker(
+              ctx,
+              candidates: [skillDefenseBreak],
+              currentRealmTier: lowRealm,
+              equippedId: null,
+            )),
+      );
+
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      // defenseBreakPct>0 → subtitle 应包含 UiStrings.skillTraitDefenseBreak
+      expect(
+        find.textContaining(UiStrings.skillTraitDefenseBreak),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('普通技（defenseBreakPct==0）不显示「破防」标', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 1200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        wrapWithTrigger((ctx) => openSkillSlotPicker(
+              ctx,
+              candidates: [skillUnlocked],
+              currentRealmTier: lowRealm,
+              equippedId: null,
+            )),
+      );
+
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining(UiStrings.skillTraitDefenseBreak),
+        findsNothing,
       );
     });
   });

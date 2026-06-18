@@ -404,15 +404,12 @@ class UiStrings {
   static const String statusSwordSongGloss =
       '剑鸣:人剑通灵之境,暴击之时剑发清吟,威势暗涨。共鸣愈深,剑意愈盛。';
 
-  // ── 第六阶段 破防:技能特性释义（GlossaryTip / 招式详情）──
+  // ── 第六阶段 破防:技能特性标签 ──
   // 破防技命中存活敌人即开破绽窗口（不要求蓄力），窗口期内敌防御骤降，
   // 宜集中火力以爆发技收割。三流派各有一手破防手：刚猛→破甲掌，灵巧→旋身刺，阴柔→隐影爪。
-  // 挂薄 GlossaryTip 展示；未来可接 HelpTopic 时从此常量引用，无需改调用侧。
-  /// 破防技特性 label（招式详情标签）。
+  // skill_slot_picker 中与 canInterrupt 一致展示为纯文字特性 label，无 GlossaryTip 机制。
+  /// 破防技特性 label（skill_slot_picker subtitle · 与 canInterrupt / cangjingPickerCanInterrupt 模式一致）。
   static const String skillTraitDefenseBreak = '破防';
-  /// 破防技特性 GlossaryTip 释义：解释开窗机制与三人集火意义。
-  static const String skillTraitDefenseBreakGloss =
-      '破防:命中存活之敌，即撕开破绽窗口，数息之内敌防御骤降。此时同伴集火爆发，事半功倍。三流派各有一手开窗技，缺不得。';
 
   // HelpCatalog 引用的术语 label（集中 sink，复用既有 attr/stat/tab 常量，仅补缺失）。
   static const String labelCultivation = '修炼度';
