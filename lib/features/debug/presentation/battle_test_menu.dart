@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
@@ -452,6 +453,62 @@ class BattleScenarioData {
       tankMob(11, '铁布衫客', 0, 'assets/enemies/qingshan_main.png'),
       tankMob(12, '巷口杀手', 1, 'assets/enemies/killer_a.png'),
       tankMob(13, '巷尾杀手', 2, 'assets/enemies/killer_b.png'),
+    ];
+
+    return (left, right);
+  }
+
+  /// 第七阶段批二目检专用（battle_boss_phase 路由）。
+  ///
+  /// 真 stage_01_05「撑伞高人」Boss 队（经 [StageBattleSetup.buildEnemyTeam] 建，
+  /// bossPhases / schoolDamageTakenMult / 蓄力技全真），Boss HP 抬到 13000 给二阶段
+  /// 留演出余量；配一支 at-level（xueTu·dengFeng）玩家队让战斗势均力敌、不秒杀。
+  ///
+  /// 看点：① 跌破 50% → 背水一击转阶段题字 + 闪白 + 立绘抖动 + 蓄力反扑；
+  /// ② 刚猛（gangMeng）队员打 yinRou Boss → 弱点 ×1.25 会心 glyph；
+  /// ③ 灵巧（lingQiao）队员打 Boss → 抗性 ×0.75（伤害偏低，无会心）。
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioBossPhase() {
+    // ── 右队：真 stage_01_05 敌队；Boss（slot 0）HP 抬高给二阶段演出余量。
+    final stage = GameRepository.instance.getStage('stage_01_05');
+    final realEnemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
+    final right = [
+      for (var i = 0; i < realEnemies.length; i++)
+        i == 0
+            ? realEnemies[i].copyWith(maxHp: 13000, currentHp: 13000)
+            : realEnemies[i],
+    ];
+
+    // ── 左队：at-level 玩家队。2 刚猛（会心来源）+ 1 灵巧（示抗性）；中庸
+    // eqAtk/IF → 普攻是有效 chip 但不秒，战斗够长看完转阶段 + 蓄力反扑。
+    BattleCharacter player(
+      int id,
+      String name,
+      int slot,
+      TechniqueSchool school,
+    ) => _char(
+      id: id,
+      name: name,
+      tier: RealmTier.xueTu,
+      layer: RealmLayer.dengFeng,
+      school: school,
+      maxHp: 9000,
+      maxIf: 850,
+      speed: 165,
+      critRate: 0.05,
+      eqAtk: 280,
+      cultivation: CultivationLayer.daCheng,
+      skills: [
+        _normal('bp_normal_$id', '基础招'),
+        _power('bp_power_$id', '重击', pm: 1200, cost: 400, cd: 3),
+      ],
+      teamSide: 0,
+      slotIndex: slot,
+    );
+
+    final left = [
+      player(1, '主控', 0, TechniqueSchool.gangMeng),
+      player(2, '弟子甲', 1, TechniqueSchool.gangMeng),
+      player(3, '弟子乙', 2, TechniqueSchool.lingQiao),
     ];
 
     return (left, right);
