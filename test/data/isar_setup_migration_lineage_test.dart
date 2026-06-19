@@ -97,13 +97,20 @@ void main() {
           role: LineageRole.disciple,
           masterId: 1,
         );
+        // 通用收徒弟子(id=4):不在 founder.discipleIds 里,迁移不应改动其 role。
+        final generic = makeChar(
+          name: '普通弟子',
+          role: LineageRole.disciple,
+        );
         await isar.characters.put(founder);
         await isar.characters.put(senior);
         await isar.characters.put(junior);
-        // 确认 id 落到 1/2/3(fresh isar autoIncrement 从 1 起)。
+        await isar.characters.put(generic);
+        // 确认 id 落到 1/2/3/4(fresh isar autoIncrement 从 1 起)。
         expect(founder.id, 1);
         expect(senior.id, 2);
         expect(junior.id, 3);
+        expect(generic.id, 4);
 
         final save = (await isar.saveDatas.get(0))!;
         save
@@ -137,6 +144,9 @@ void main() {
       expect(senior.name, '大弟子');
       expect(senior.masterId, 1);
       expect(junior.name, '二弟子');
+      // ⑥ 通用收徒弟子(不在 discipleIds)→ role 保持 disciple,不被重映射
+      final generic = (await isar.characters.get(4))!;
+      expect(generic.lineageRole, LineageRole.disciple);
     });
 
     test('幂等:已 senior/junior 的弟子重跑迁移不被回写', () async {
