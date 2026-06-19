@@ -300,6 +300,11 @@ stages:
         iconPath: assets/enemies/umbrella.png
         isBoss: true
         chargeSkillId: skill_xie_yu_chuan_lian      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        # 批二②:弱点/抗性。yinRou 被 gangMeng 克(阴柔怕刚猛)→ 弱点×1.25;
+        # yinRou 克 lingQiao(阴柔克灵巧)→ 抗性×0.75。
+        schoolDamageTakenMult:
+          gangMeng: 1.25
+          lingQiao: 0.75
         # 第七阶段批二 ①:章末大 Boss 二阶段。满血起手 → 跌破 50% 入「背水一击」,
         # 解锁同阶(jichu·xueTu §5.3)固元术 + 转攻势 + 触发蓄力反击。
         bossPhases:

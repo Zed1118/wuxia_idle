@@ -108,7 +108,12 @@ void main() {
   );
 
   /// 满强化神物 build 武圣极境普攻(刚猛克阴柔 1.25 worst-case)。
-  ({int totalEqAtk, int nonCrit, int crit}) measureMaxBuild() {
+  ///
+  /// [defenderSchoolDamageMult]: 批二②弱点/抗性乘子(default 1.0=无)。
+  /// 传入 1.25 模拟 Boss 弱点加叠在克制乘子上的最坏情况。
+  ({int totalEqAtk, int nonCrit, int crit}) measureMaxBuild({
+    double defenderSchoolDamageMult = 1.0,
+  }) {
     final n = GameRepository.instance.numbers;
     final totalEqAtk =
         CharacterDerivedStats.effectiveEquipmentAttack(
@@ -134,6 +139,7 @@ void main() {
           n: n,
           rng: Random(7),
           forceCritical: crit,
+          defenderSchoolDamageMult: defenderSchoolDamageMult,
         ).mainDamage;
 
     return (totalEqAtk: totalEqAtk, nonCrit: calc(crit: false), crit: calc(crit: true));
@@ -219,6 +225,31 @@ void main() {
       // 「aoe 单次 == single」对照断言,不重复钉单次峰值。
       expect(aoeCrit * 3, lessThan(1000000),
           reason: 'A 方案:3 敌全体场景总输出(每目标=单体峰值×3)仍不进百万');
+    });
+  });
+
+  // ── 批二② 红线:弱点/抗性叠乘极值不进百万 ──
+  group('批二② 弱点叠乘极值(流派克制×1.25 + Boss 弱点×1.25)不进百万', () {
+    // 最坏情况:满 build + 流派克制(刚猛克阴柔 ×1.25,已内置于 measureMaxBuild)
+    // + Boss 弱点(schoolDamageTakenMult gangMeng=1.25)双乘。
+    // 预期 calculator 探针:~57902(基准非暴击)× 1.25(弱点) ≈ ~72K 非暴击;
+    //   暴击 ~86854 × 1.25 ≈ ~108K;两者均远低于 1,000,000。
+    // 注:此为 calculator 探针下界(未含熟练度 ×1.30 / APM / 飞升阶差),
+    // 真实战斗峰值更高但仍在十万级,不进百万是唯一硬线(§5.4 2026-06-14 拍板)。
+    test('最坏叠乘:满 build 普攻 × 克制(×1.25)× Boss 弱点(×1.25)暴击 < 1000000', () {
+      final m = measureMaxBuild(defenderSchoolDamageMult: 1.25);
+      // ignore: avoid_print
+      print('[批二②红线] 弱点叠乘 calculator 探针:'
+          ' 非暴击=${m.nonCrit}  暴击=${m.crit}'
+          '  headroom vs 1M: ${(1000000 - m.crit).toStringAsFixed(0)}'
+          ' (${((1 - m.crit / 1000000) * 100).toStringAsFixed(1)}% 余量)');
+      expect(
+        m.crit,
+        lessThan(1000000),
+        reason: 'GDD §5.4 软红线唯一硬线:弱点(×1.25)叠在流派克制(×1.25)上,'
+            '满 build 普攻暴击 calculator 探针仍不进百万。'
+            '若此断言 FAIL → §5.4 真实越界,不得削弱断言,立即上报。',
+      );
     });
   });
 
