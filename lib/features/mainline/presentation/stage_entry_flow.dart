@@ -40,6 +40,7 @@ import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../jianghu/application/jianghu_providers.dart';
+import '../../lineage/presentation/disciple_join_hook.dart';
 import '../../sect/presentation/stage_boss_recruit_hook.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/application/first_acquisition_tiers.dart';
@@ -280,6 +281,17 @@ Future<void> runStageFlow({
     defeatedSchools:
         stage.enemyTeam.map((e) => e.school).toList(growable: false),
   );
+
+  // 第七阶段批三:命名弟子拜入 hook(过 join 触发关 → 拜师叙事 + 最小立绘题字)。
+  // 在 encounter hook 之后、boss 招降 hook 之前;service 内 gate 决定是否真触发,
+  // 非 join 关 / 已触发为 no-op。
+  if (context.mounted) {
+    await runDiscipleJoinHookAfterVictory(
+      context: context,
+      ref: ref,
+      stageId: stage.id,
+    );
+  }
 
   // P4.1 1.1 Q6B · Boss 战胜后招降 hook(spec p4_1_q6b_stage_boss_recruit_spec
   // _2026-05-26.md §3.2)· 在 encounter hook 之后顺序执行 · isBossStage +
