@@ -840,7 +840,7 @@ class DefaultGroundStrategy implements BattleStrategy {
       defenderCritDamageTakenMult: critDamageTakenMult,
       outputMultiplier: attacker.outputMultiplier,
       // 批二②弱点/抗性:守方按攻方流派的受伤乘子(default 1.0=无)。已由
-      // 加载期 enforceWeaknessRedLines 校到 ≤2.0(守 §5.4),此处仅查表透传。
+      // 加载期 enforceWeaknessRedLines 校到 numbers.yaml max_mult(守 §5.4),此处仅查表透传。
       defenderSchoolDamageMult: weaknessMultOf(attacker, defender),
     );
   }
