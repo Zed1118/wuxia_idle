@@ -42,10 +42,10 @@ void main() {
       expect(IsarSetup.instance.sectEvents, isNotNull);
     });
 
-    test('R4.2 saveVersion 已升当前 0.24.0(M2 范围 B 被动挂机累计字段)', () async {
+    test('R4.2 saveVersion 已升当前 0.25.0(第七阶段批三 队伍成长)', () async {
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = await IsarSetup.instance.saveDatas.get(0);
-      expect(save!.saveVersion, '0.24.0');
+      expect(save!.saveVersion, '0.25.0');
     });
 
     test('R4.3 Sect 写入 → close → reopen 读出字段一致', () async {

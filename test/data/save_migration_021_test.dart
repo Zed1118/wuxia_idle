@@ -65,11 +65,11 @@ void main() {
       });
       await IsarSetup.close();
 
-      // 重新 init → 触发 _migrateSaveData（旧 0.20.0 一路迁到当前 0.24.0）。
+      // 重新 init → 触发 _migrateSaveData（旧 0.20.0 一路迁到当前 0.25.0）。
       await IsarSetup.init(directory: tempDir, inspector: false);
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.24.0', reason: '迁移后升版到当前 0.24.0');
+      expect(save.saveVersion, '0.25.0', reason: '迁移后升版到当前 0.25.0');
 
       final mp =
           await IsarSetup.instance.mainlineProgress.where().findFirst();
@@ -134,12 +134,12 @@ void main() {
       );
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.24.0');
+      expect(save.saveVersion, '0.25.0');
     },
   );
 
   test(
-    'H1 回归：0.22.0 已推进周目存档迁移到 0.24.0，currentCycleIndex/maxClearedCycle 不被重置',
+    'H1 回归：0.22.0 已推进周目存档迁移到 0.25.0，currentCycleIndex/maxClearedCycle 不被重置',
     () async {
       // 构造 0.22.0 存档（周目字段已引入），玩家已推进到周目 2。
       await IsarSetup.init(directory: tempDir, inspector: false);
@@ -159,7 +159,7 @@ void main() {
       });
       await IsarSetup.close();
 
-      // 迁移到 0.24.0：tower 块版本门应跳过 0.21+ 存档，不碰已有周目数据。
+      // 迁移到 0.25.0：tower 块版本门应跳过 0.21+ 存档，不碰已有周目数据。
       await IsarSetup.init(directory: tempDir, inspector: false);
       final tp = await IsarSetup.instance.towerProgress.where().findFirst();
       expect(tp, isNotNull);
@@ -175,7 +175,7 @@ void main() {
       );
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.24.0');
+      expect(save.saveVersion, '0.25.0');
     },
   );
 }
