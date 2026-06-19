@@ -1199,8 +1199,8 @@ class Phase2SeedService {
     //    ensureFoundingMasters 短路,祖师立绘永空(沿其余 visual seed _clearAll 体例)。
     await isar.writeTxn(() => _clearAll());
 
-    // 1. 祖师 + 2 弟子(ensureFoundingMasters · founder id=1,带 portraitPath)
-    await OnboardingService(isar: isar).ensureFoundingMasters();
+    // 1. 祖师 + 2 弟子(ensureFoundingMasters soloStart=false 满队 · founder id=1,带 portraitPath)
+    await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
 
     await isar.writeTxn(() async {
       // 2. Sect lazy-init(沿 runSectRecruitFlow 体例 · sectLevel 3 让 cap 充裕)

@@ -147,7 +147,7 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
 Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
   switch (route) {
     case VisualRoute.mainMenu:
-      await OnboardingService(isar: isar).ensureFoundingMasters();
+      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
       return const MainMenu();
     case VisualRoute.techniquePanelTierAll:
       await Phase2SeedService(isar: isar).seedVisualMasterAllTiers();
@@ -171,7 +171,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await Phase2SeedService(isar: isar).seedCharacterPanelGrowth();
       return const CharacterPanelScreen(characterId: 1);
     case VisualRoute.chapterList:
-      await OnboardingService(isar: isar).ensureFoundingMasters();
+      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
       return const ChapterListScreen();
     case VisualRoute.stageList:
       await isar.writeTxn(() => isar.mainlineProgress.clear());
@@ -188,12 +188,12 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await prefSvc.setOverride(stageBattleKey('stage_01_02'), false);
       return const StageListScreen(chapterIndex: 1);
     case VisualRoute.towerFloorList:
-      await OnboardingService(isar: isar).ensureFoundingMasters();
+      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
       return const TowerFloorListScreen();
     case VisualRoute.towerFloorListAutoPlay:
       // per-floor「挂机自动 / 允许拖招」开关验收:种 1/2 层通关,点已通关层弹的
       // 重打 dialog 内开关:1 层跟随(自动随设置)、2 层 pin 允许拖招。
-      await OnboardingService(isar: isar).ensureFoundingMasters();
+      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
       await isar.writeTxn(() => isar.towerProgress.clear());
       final towerSvc = TowerProgressService(isar: isar);
       await towerSvc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
@@ -205,7 +205,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await towerPrefSvc.setOverride(towerBattleKey(2), false);
       return const TowerFloorListScreen();
     case VisualRoute.seclusionMapList:
-      await OnboardingService(isar: isar).ensureFoundingMasters();
+      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
       final def = GameRepository.instance.getSeclusionMap(
         RetreatMapType.cangJingGe,
       );
@@ -408,7 +408,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const StageListScreen(chapterIndex: 1);
     case VisualRoute.towerCycle:
       // 问鼎轮回验收:种 30 层 cycle1 全通关 → maxClearedCycle=1,显「挑战下一轮回」入口。
-      await OnboardingService(isar: isar).ensureFoundingMasters();
+      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
       await isar.writeTxn(() => isar.towerProgress.clear());
       final towerSvc = TowerProgressService(isar: isar);
       await towerSvc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
