@@ -132,6 +132,10 @@ enum VisualRoute {
     'offline_recap_passive',
     'M2 离线被动归来卡静态验收(无 active 闭关·涓流入库告知卡:水墨 PaperPanel + 离线时长/磨剑石/经验 + 仅「知道了」按钮,无领取按钮守 §5.1)',
   ),
+  battleBossPhase(
+    'battle_boss_phase',
+    '第七阶段批二目检·真 stage_01_05 撑伞高人 Boss(HP抬高)vs at-level 玩家队真玩:跌破50%背水一击转阶段+蓄力反扑 / 刚猛打弱点会心×1.25 / 灵巧吃抗性×0.75(已开干预层可拖招)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);

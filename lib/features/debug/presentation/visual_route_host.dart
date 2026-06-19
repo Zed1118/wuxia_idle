@@ -373,6 +373,15 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const _InnerDemonResidueDefeatPreview();
     case VisualRoute.offlineRecapPassive:
       return const _OfflineRecapPassivePreview();
+    case VisualRoute.battleBossPhase:
+      // 第七阶段批二目检:真 stage_01_05 Boss(HP抬高给二阶段余量)vs at-level
+      // 玩家队,可玩 + 已开干预层。看转阶段题字/闪白/立绘抖动 + 蓄力反扑 + 会心/抗性。
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioBossPhase,
+        hint: '打 Boss 到半血看「背水一击」转阶段 + 蓄力反扑;刚猛队员打 Boss 出「会心」(弱点×1.25),灵巧队员伤害偏低(抗性×0.75)。可长按拖技能干预',
+        sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
+        allowPlayerIntervention: true,
+      );
     case VisualRoute.battleTreasureGlowPeak:
       return const _TreasureGlowPreview(
         defId: 'weapon_shenwu_tian_wen_jian',
