@@ -1608,4 +1608,8 @@ class UiStrings {
     int threshold,
   ) =>
       '得残页 · $skillName($count/$threshold)';
+
+  // ── 第七阶段批三 · 弟子拜入英雄镜头题字──────────────────────────────────
+  /// 弟子拜入英雄镜头题字(第七阶段批三)。[name]=弟子名(大弟子/二弟子)。
+  static String discipleJoinCaption(String name) => '$name 拜入门下';
 }
