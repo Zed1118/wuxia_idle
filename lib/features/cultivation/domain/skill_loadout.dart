@@ -52,13 +52,15 @@ class SkillLoadout {
   /// - 破招槽（波A）：从 [interruptSkills] 中取 style == [school] 且过境界 gate
   ///   的第一个（school null → 不填，无流派无破招技）。
   ///
-  /// **第六阶段 Task 6 — 职责软引导（lineage tendency）**：
-  /// 弟子（[lineageRole] == [LineageRole.disciple]）：若主修候选中存在
+  /// **第六阶段 Task 6 — 职责软引导（lineage tendency）**（第七阶段批三收窄）：
+  /// 大弟子（[lineageRole] == [LineageRole.senior]）：若主修候选中存在
   /// defenseBreakPct > 0 的破防技，且默认按 power 降序选出的主修槽内没有破防技，
   /// 则用该破防技替换最低优先级（后填的）主修槽，保证破防技进入装配。
   /// 此替换**不缩小可选集合**（玩家仍可在藏经阁手动换装任意招式）。
+  /// 二弟子（[LineageRole.junior]）：破招控场职责由 battle_ai 实现，autoFill 不插破防偏向，
+  /// 行为与无身份完全一致（keySkillId 仍按流派匹配 interrupt 技填入）。
   /// [isFounder]=true 的祖师：主修按 power 降序本已优先高倍率，倾向默认满足，无需额外处理。
-  /// 其他身份（grandDisciple / null）：行为与修改前完全一致（回归安全）。
+  /// 通用弟子 / 其他身份（disciple / grandDisciple / null）：行为与修改前完全一致（回归安全）。
   static SkillLoadout autoFill({
     required List<SkillDef> mainTechniqueSkills,
     required List<SkillDef> assistTechniqueSkills,
@@ -91,10 +93,11 @@ class SkillLoadout {
     String? m1 = existing.mainSkillId1 ?? (pool.isNotEmpty ? pool.removeAt(0) : null);
     String? m2 = existing.mainSkillId2 ?? (pool.isNotEmpty ? pool.removeAt(0) : null);
 
-    // 第六阶段 Task 6 — 弟子破防倾向：
-    // 若弟子身份 + 主修槽均无破防技 + 候选中有破防技 → 替换最低优先级空槽（后填的槽）。
+    // 第六阶段 Task 6 — 大弟子(senior)破防倾向（第七阶段批三收窄：disciple→senior）：
+    // 若大弟子身份 + 主修槽均无破防技 + 候选中有破防技 → 替换最低优先级空槽（后填的槽）。
     // 只在该槽原本由 autoFill 新填（existing 对应槽为 null）时才替换（不覆盖玩家手动设置）。
-    if (lineageRole == LineageRole.disciple && !isFounder) {
+    // junior(二弟子)：破招控场走 battle_ai，autoFill 无破防偏向。
+    if (lineageRole == LineageRole.senior && !isFounder) {
       final eligibleBreak = mains
           .where((s) => s.defenseBreakPct > 0)
           .toList();
