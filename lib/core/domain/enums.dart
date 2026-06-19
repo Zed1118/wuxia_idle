@@ -168,6 +168,15 @@ enum LineageRole {
   grandDisciple,  // 徒孙（绝顶境界后解锁）
 }
 
+extension LineageRoleX on LineageRole {
+  /// 是否「弟子」身份(含命名大弟子 senior / 二弟子 junior 与通用收徒 disciple)。
+  /// 用于「是否非祖师弟子」判定;**不含** founder / grandDisciple,保留原 `== disciple` 语义边界。
+  bool get isDiscipleRole =>
+      this == LineageRole.disciple ||
+      this == LineageRole.senior ||
+      this == LineageRole.junior;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 2.5 内容 / 系统
 // ─────────────────────────────────────────────────────────────────────────────

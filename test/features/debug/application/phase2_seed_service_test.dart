@@ -206,13 +206,13 @@ void main() {
     expect(founder.name, '祖师');
 
     final firstDisciple = await isar.characters.get(founder.discipleIds[0]);
-    expect(firstDisciple!.lineageRole, LineageRole.disciple);
+    expect(firstDisciple!.lineageRole, LineageRole.senior);
     expect(firstDisciple.realmTier, RealmTier.erLiu);
     expect(firstDisciple.masterId, 1);
     expect(firstDisciple.name, '大弟子');
 
     final secondDisciple = await isar.characters.get(founder.discipleIds[1]);
-    expect(secondDisciple!.lineageRole, LineageRole.disciple);
+    expect(secondDisciple!.lineageRole, LineageRole.junior);
     expect(secondDisciple.realmTier, RealmTier.sanLiu);
     expect(secondDisciple.masterId, 1);
     expect(secondDisciple.name, '二弟子');

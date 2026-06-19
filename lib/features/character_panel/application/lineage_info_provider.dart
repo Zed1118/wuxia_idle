@@ -30,7 +30,7 @@ class LineageInfo {
   /// 若 active 集合中无 founder（异常存档）返回 null，UI 兜底空态。
   final Character? founder;
 
-  /// 出阵弟子列表（`lineageRole == LineageRole.disciple` 的 active 角色），
+  /// 出阵弟子列表（active 中非 founder 角色,即大弟子/二弟子），
   /// 按 [activeCharacterIdsProvider] 原顺序保留（大弟子 / 二弟子）。
   final List<Character> disciples;
 

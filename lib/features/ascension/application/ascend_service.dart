@@ -144,7 +144,7 @@ class AscendService {
     for (final id in ids) {
       final c = await isar.characters.get(id);
       if (c == null) continue;
-      if (c.lineageRole != LineageRole.disciple) continue;
+      if (!c.lineageRole.isDiscipleRole) continue;
       if (!c.isAlive) continue;
       if (c.isFounder) continue;
       result.add(c);
