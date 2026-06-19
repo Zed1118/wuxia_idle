@@ -140,6 +140,14 @@ enum VisualRoute {
     'disciple_join_ceremony',
     '第七阶段批三目检·拜入立绘题字 overlay 动效(读真 lineage_onboarding 配置:大弟子/二弟子真立绘交替循环滑入+放大+「XX 拜入门下」题字,自动重播;单帧截不出须真机看动效)',
   ),
+  battleRecord(
+    'battle_record',
+    'P4 战绩册主屏目检·已击败纪念卡 + 未击败剩影占位混合态(种 2-3 条纪念,其余 27 槽显剩影)',
+  ),
+  bossMemoryDetail(
+    'boss_memory_detail',
+    'P4 战绩册详情屏目检·完整纪念(伤害/英雄/掉落/阵容) + pre-record 骨架(此役不详)两态',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
