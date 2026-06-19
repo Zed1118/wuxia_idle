@@ -67,6 +67,12 @@ class BattleAI {
     } else if (_currentBossAiMode(actor) == BossAiMode.focus) {
       // Task 4-C:focus 阶段恒打血最低(击杀压制),不偏好破绽窗口目标。
       targetId = _pickTargetId(actor, state);
+    } else if (actor.lineageRole == LineageRole.junior) {
+      // 第七阶段批三:二弟子控场 — 不用破招技这一拍时,优先盯正在蓄力的敌(压制要放大招的威胁),
+      // 无蓄力敌回落破绽窗口 → 血最低。纯目标选择,不改伤害量级(§5.4)。
+      targetId = _pickControlTargetId(actor, state) ??
+          _pickFocusTargetId(actor, state) ??
+          _pickTargetId(actor, state);
     } else {
       // 第六阶段:破绽窗口内敌优先集火(链路爆发);无破绽敌回落血最低。
       targetId = _pickFocusTargetId(actor, state) ?? _pickTargetId(actor, state);
@@ -184,6 +190,23 @@ class BattleAI {
       if (best == null ||
           e.currentHp < best.currentHp ||
           (e.currentHp == best.currentHp && e.slotIndex < best.slotIndex)) {
+        best = e;
+      }
+    }
+    return best?.characterId;
+  }
+
+  /// 第七阶段批三:二弟子控场目标 — 对面正在蓄力(chargingSkill!=null)的活角色中
+  /// chargeTicksRemaining 最小(最快要放)优先,同则 slotIndex 小;无蓄力敌返 null。纯函数无 side effect。
+  static int? _pickControlTargetId(BattleCharacter actor, BattleState state) {
+    final enemyTeam = actor.teamSide == 0 ? state.rightTeam : state.leftTeam;
+    BattleCharacter? best;
+    for (final e in enemyTeam) {
+      if (!e.isAlive || e.chargingSkill == null) continue;
+      if (best == null ||
+          e.chargeTicksRemaining < best.chargeTicksRemaining ||
+          (e.chargeTicksRemaining == best.chargeTicksRemaining &&
+              e.slotIndex < best.slotIndex)) {
         best = e;
       }
     }
