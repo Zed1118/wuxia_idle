@@ -23,6 +23,7 @@ import '../features/sect/domain/sect_event.dart';
 import '../features/pvp/domain/pvp_record.dart';
 import '../features/pvp/domain/pvp_snapshot.dart';
 import '../features/battle_record/domain/boss_memory.dart';
+import '../features/battle_record/application/boss_memory_service.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。
 ///
@@ -157,6 +158,14 @@ class IsarSetup {
     if (existing != null) {
       if (existing.saveVersion != _currentSaveVersion) {
         await _migrateSaveData(isar, existing);
+      }
+      // 0.26.0 新增：老档 Boss 回填骨架（幂等，新档无进度时 no-op）。
+      // GameRepository 未加载时 backfillFromProgress 内部会抛 StateError，
+      // 理论不会：splash 先 loadAllDefs 再 init；防御性 try 包住。
+      try {
+        await BossMemoryService(isar: isar).backfillFromProgress(currentSlotId);
+      } catch (_) {
+        // GameRepository 未加载或进度异常时静默 skip（不阻塞启动）
       }
       return existing;
     }

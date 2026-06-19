@@ -1,7 +1,11 @@
 import 'package:isar_community/isar.dart';
 import '../../../core/domain/enums.dart';
+import '../../../data/game_repository.dart';
 import '../domain/boss_memory.dart';
+import '../domain/boss_memory_key.dart';
 import '../domain/boss_memory_source.dart';
+import '../../mainline/domain/mainline_progress.dart';
+import '../../tower/domain/tower_progress.dart';
 
 /// Boss 战绩写入服务。
 ///
@@ -74,4 +78,100 @@ class BossMemoryService {
       .filter()
       .saveDataIdEqualTo(saveDataId)
       .findAll();
+
+  /// 老档回填：已击败 Boss → isPreRecord 骨架（战绩字段空）。
+  ///
+  /// 幂等：已存在同 bossKey 的纪念（不论 isPreRecord true/false）直接跳过，
+  /// 不重建、不覆盖。
+  ///
+  /// 来源：
+  ///   1. MainlineProgress.clearedStageIds — 仅筛 isBossStage=true 的关卡。
+  ///   2. TowerProgress.highestClearedFloor — Boss 层 {5,10,15,20,25,30} 中
+  ///      ≤ highestClearedFloor 的层数。
+  ///
+  /// 塔回填的 firstClearedAt 为 null（无精确时间）。
+  /// 全部条目在一个 writeTxn 内批量 put。
+  Future<void> backfillFromProgress(int saveDataId) async {
+    final repo = GameRepository.instance;
+
+    // --- 收集待写入条目 ---
+    final toWrite = <BossMemory>[];
+
+    // --- 主线 ---
+    final mpRow = await isar.mainlineProgress
+        .filter()
+        .saveDataIdEqualTo(saveDataId)
+        .findFirst();
+    if (mpRow != null) {
+      final ids = mpRow.clearedStageIds;
+      final dates = mpRow.clearedAt;
+      for (var i = 0; i < ids.length; i++) {
+        final stageId = ids[i];
+        final def = repo.stageDefs[stageId];
+        if (def == null || !def.isBossStage) continue;
+        final key = mainlineBossKey(stageId);
+        // 幂等：已存在则跳过
+        final existing = await _find(saveDataId, key);
+        if (existing != null) continue;
+        final bossName = def.enemyTeam.isNotEmpty ? def.enemyTeam.last.name : '';
+        final m = BossMemory()
+          ..saveDataId = saveDataId
+          ..bossKey = key
+          ..source = BossMemorySource.mainline
+          ..groupIndex = mainlineGroupIndex(stageId)
+          ..bossName = bossName
+          ..firstClearedAt = i < dates.length ? dates[i] : null
+          ..isPreRecord = true
+          ..rosterNames = const []
+          ..rosterPortraits = const []
+          ..defeatCount = 1;
+        toWrite.add(m);
+      }
+    }
+
+    // --- 爬塔 ---
+    const bossFloors = [5, 10, 15, 20, 25, 30];
+    final tpRow = await isar.towerProgress
+        .filter()
+        .saveDataIdEqualTo(saveDataId)
+        .findFirst();
+    if (tpRow != null) {
+      final highest = tpRow.highestClearedFloor;
+      for (final floor in bossFloors) {
+        if (floor > highest) break; // bossFloors 已升序，提前 break
+        final key = towerBossKey(floor);
+        // 幂等：已存在则跳过
+        final existing = await _find(saveDataId, key);
+        if (existing != null) continue;
+        // 取塔层敌人名（从 towerFloors 按 floorIndex 找，floor 从 1 起）
+        final floorDef = floor <= repo.towerFloors.length
+            ? repo.towerFloors[floor - 1]
+            : null;
+        final bossName = floorDef != null && floorDef.enemyTeam.isNotEmpty
+            ? floorDef.enemyTeam.last.name
+            : '';
+        final m = BossMemory()
+          ..saveDataId = saveDataId
+          ..bossKey = key
+          ..source = BossMemorySource.tower
+          ..groupIndex = floor
+          ..bossName = bossName
+          ..firstClearedAt = null
+          ..isPreRecord = true
+          ..rosterNames = const []
+          ..rosterPortraits = const []
+          ..defeatCount = 1;
+        toWrite.add(m);
+      }
+    }
+
+    if (toWrite.isEmpty) return;
+
+    // 批量写入（一个 writeTxn，不嵌套）
+    await isar.writeTxn(() async {
+      for (final m in toWrite) {
+        await isar.bossMemorys.put(m);
+      }
+    });
+  }
 }
