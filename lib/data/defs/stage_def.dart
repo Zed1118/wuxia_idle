@@ -225,7 +225,7 @@ class EnemyDef {
 
   /// 批二①：Boss 阶段配置（null = 单阶段旧行为，向后兼容）。
   /// 仅 [isBoss]=true 的敌人有意义；各阶段 unlockSkillIds 引用的
-  /// skill id 须在 skills.yaml 中存在（`_enforceBossPhaseSkillIds` 校验）。
+  /// skill id 须在 skills.yaml 中存在（`enforceBossPhaseSkillIds` 校验）。
   final List<BossPhaseDef>? bossPhases;
 
   const EnemyDef({
