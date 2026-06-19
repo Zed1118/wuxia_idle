@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/character.dart';
@@ -34,51 +36,57 @@ Future<void> runBossMemoryHookAfterVictory({
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) return;
 
-  // 1. 取 saveDataId。
-  final saveDataId = IsarSetup.currentSlotId;
+  // best-effort：战绩册是非关键档案，留档失败绝不打断玩家胜利流（庆祝/叙事/进度）。
+  // 故整体包 try-catch 降级，仅记日志（区别于既有更核心的 skillDrop hook 不吞错）。
+  try {
+    // 1. 取 saveDataId。
+    final saveDataId = IsarSetup.currentSlotId;
 
-  // 2. roster：读 activeCharacterIds → 各 Character name + portraitPath。
-  final save = await isar.saveDatas.get(0);
-  final activeIds = save?.activeCharacterIds ?? const <int>[];
-  final rosterNames = <String>[];
-  final rosterPortraits = <String>[];
-  for (final cid in activeIds) {
-    final c = await isar.characters.get(cid);
-    if (c != null) {
-      rosterNames.add(c.name);
-      rosterPortraits.add(c.portraitPath ?? '');
+    // 2. roster：读 activeCharacterIds → 各 Character name + portraitPath。
+    final save = await isar.saveDatas.get(0);
+    final activeIds = save?.activeCharacterIds ?? const <int>[];
+    final rosterNames = <String>[];
+    final rosterPortraits = <String>[];
+    for (final cid in activeIds) {
+      final c = await isar.characters.get(cid);
+      if (c != null) {
+        rosterNames.add(c.name);
+        rosterPortraits.add(c.portraitPath ?? '');
+      }
     }
-  }
 
-  // 3. treasure：drops.equipments 中 tier.index 最高的一件。
-  String? treasureName;
-  EquipmentTier? treasureTier;
-  if (drops.equipments.isNotEmpty) {
-    final best = drops.equipments.reduce(
-      (a, b) => a.tier.index >= b.tier.index ? a : b,
+    // 3. treasure：drops.equipments 中 tier.index 最高的一件。
+    String? treasureName;
+    EquipmentTier? treasureTier;
+    if (drops.equipments.isNotEmpty) {
+      final best = drops.equipments.reduce(
+        (a, b) => a.tier.index >= b.tier.index ? a : b,
+      );
+      treasureTier = best.tier;
+      // 尝试从 GameRepository 取 def name；若 def 不存在（测试占位 defId）→ defId 兜底。
+      final def = GameRepository.instance.equipmentDefs[best.defId];
+      treasureName = def?.name ?? best.defId;
+    }
+
+    // 4. 写入战绩册（service 幂等）。
+    await BossMemoryService(isar: isar).recordBossVictory(
+      saveDataId: saveDataId,
+      bossKey: bossKey,
+      source: source,
+      groupIndex: groupIndex,
+      bossName: bossName,
+      totalDamage: stats.totalDamage,
+      critCount: stats.critCount,
+      totalTicks: stats.totalTicks,
+      topContributorName: topContributorName,
+      topContributorDamage: topContributorDamage,
+      treasureName: treasureName,
+      treasureTier: treasureTier,
+      rosterNames: rosterNames,
+      rosterPortraits: rosterPortraits,
+      now: DateTime.now(),
     );
-    treasureTier = best.tier;
-    // 尝试从 GameRepository 取 def name；若 def 不存在（测试占位 defId）→ defId 兜底。
-    final def = GameRepository.instance.equipmentDefs[best.defId];
-    treasureName = def?.name ?? best.defId;
+  } catch (e, s) {
+    debugPrint('runBossMemoryHookAfterVictory 留档失败(降级,不影响胜利流): $e\n$s');
   }
-
-  // 4. 写入战绩册（service 幂等）。
-  await BossMemoryService(isar: isar).recordBossVictory(
-    saveDataId: saveDataId,
-    bossKey: bossKey,
-    source: source,
-    groupIndex: groupIndex,
-    bossName: bossName,
-    totalDamage: stats.totalDamage,
-    critCount: stats.critCount,
-    totalTicks: stats.totalTicks,
-    topContributorName: topContributorName,
-    topContributorDamage: topContributorDamage,
-    treasureName: treasureName,
-    treasureTier: treasureTier,
-    rosterNames: rosterNames,
-    rosterPortraits: rosterPortraits,
-    now: DateTime.now(),
-  );
 }
