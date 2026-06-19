@@ -70,6 +70,58 @@ void main() {
     });
   });
 
+  // ── SkillDropResult ==, hashCode ─────────────────────────────────────────
+  group('SkillDropResult == / hashCode', () {
+    test('none == const SkillDropResult()', () {
+      expect(SkillDropResult.none, equals(const SkillDropResult()));
+      expect(SkillDropResult.none.hashCode,
+          equals(const SkillDropResult().hashCode));
+    });
+
+    test('identical fields → equal', () {
+      const a = SkillDropResult(
+        fragmentSkillId: 'skill_x',
+        fragmentCount: 3,
+        fragmentThreshold: 5,
+        fragmentJustUnlocked: false,
+      );
+      const b = SkillDropResult(
+        fragmentSkillId: 'skill_x',
+        fragmentCount: 3,
+        fragmentThreshold: 5,
+        fragmentJustUnlocked: false,
+      );
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('differing fragmentCount → not equal', () {
+      const a = SkillDropResult(fragmentSkillId: 'skill_x', fragmentCount: 3);
+      const b = SkillDropResult(fragmentSkillId: 'skill_x', fragmentCount: 4);
+      expect(a, isNot(equals(b)));
+    });
+
+    test('differing fragmentSkillId → not equal', () {
+      const a = SkillDropResult(fragmentSkillId: 'skill_x');
+      const b = SkillDropResult(fragmentSkillId: 'skill_y');
+      expect(a, isNot(equals(b)));
+    });
+
+    test('differing manualGranted → not equal', () {
+      const a = SkillDropResult(manualGranted: 'skill_m');
+      const b = SkillDropResult(manualGranted: 'skill_n');
+      expect(a, isNot(equals(b)));
+    });
+
+    test('differing fragmentJustUnlocked → not equal', () {
+      const a = SkillDropResult(
+          fragmentSkillId: 'skill_x', fragmentJustUnlocked: true);
+      const b = SkillDropResult(
+          fragmentSkillId: 'skill_x', fragmentJustUnlocked: false);
+      expect(a, isNot(equals(b)));
+    });
+  });
+
   // ── SkillUnlockService.grantManual 返回 bool ──────────────────────────────
   group('SkillUnlockService.grantManual → Future<bool>', () {
     test('first call returns true (newly granted)', () async {
@@ -115,14 +167,18 @@ void main() {
       expect(await svc.isUnlocked('skill_x'), true);
     });
 
-    test('already unlocked → fragmentJustUnlocked false (short-circuit)',
+    test('already unlocked → returns SkillDropResult.none (no fragment signal)',
         () async {
       final svc =
           SkillUnlockService(IsarSetup.instance, fragmentThreshold: 5);
       await svc.grantManual('skill_y'); // 真解直接解锁
       final r = await svc.addFragment('skill_y', 3); // 已解锁短路
-      expect(r.fragmentJustUnlocked, false);
-      // 已解锁短路不累加残页
+      // 短路应回 none：无残页信号，防止下游误报"得残页"通知
+      expect(r.fragmentSkillId, null);
+      expect(r.isMinorFragment, false);
+      expect(r.isMajor, false);
+      expect(r, SkillDropResult.none);
+      // 残页计数不变
       final (cur, _) = await svc.fragmentProgress('skill_y');
       expect(cur, 0);
     });
@@ -282,6 +338,29 @@ void main() {
       );
       expect(r.manualGranted, null);
       expect(r.fragmentSkillId, null);
+    });
+
+    test(
+        'fragment prob=1.0 on already-unlocked skill → hook returns SkillDropResult.none',
+        () async {
+      // 验证 M1 修复：已解锁的招,hook 调 addFragment 后不应产出 isMinorFragment=true
+      final svc =
+          SkillUnlockService(IsarSetup.instance, fragmentThreshold: 5);
+      // 先真解解锁技能
+      await svc.grantManual('skill_frag_unlocked');
+      final stage = bossStage(fragment: 'skill_frag_unlocked');
+      final r = await runStageSkillDropHookAfterVictory(
+        stage: stage,
+        svc: svc,
+        clearedStageIds: const {},
+        towerFragmentDropProb: 1.0, // 必走 addFragment
+        rng: Random(0),
+      );
+      // 已解锁短路 → none，不得出现 isMinorFragment=true 的误报
+      expect(r, SkillDropResult.none);
+      expect(r.fragmentSkillId, null);
+      expect(r.isMinorFragment, false);
+      expect(r.isMajor, false);
     });
   });
 
