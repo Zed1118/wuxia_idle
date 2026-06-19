@@ -1197,7 +1197,7 @@ class DefenseBreakConfig {
 /// 第七阶段批二②:Boss 弱点/抗性乘子值域(numbers.yaml `combat.weakness`)。
 ///
 /// 每个 Boss 的 `schoolDamageTakenMult` 各值须 ∈ [minMult, maxMult]
-/// (加载期 GameRepository._enforceWeaknessRedLines 校)。maxMult 守 §5.4 ≤2.0。
+/// (加载期 GameRepository.enforceWeaknessRedLines 校)。maxMult 守 §5.4 ≤2.0。
 /// fixture 不带该段时回落默认(沿 BossChargeConfig / DefenseBreakConfig 体例)。
 class WeaknessConfig {
   final double minMult;
