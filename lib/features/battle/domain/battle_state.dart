@@ -209,6 +209,10 @@ class BattleCharacter {
   /// `defenderSchoolDamageMult`;本批仅加字段,无 caller 消费(零行为变更)。
   final Map<TechniqueSchool, double> schoolDamageTakenMult;
 
+  /// 第七阶段批三:角色师徒定位(玩家方透传 [Character.lineageRole];敌人/NPC 恒 null)。
+  /// battle_ai 据此给 junior(二弟子)「优先盯蓄力敌」控场目标偏好。default null=无差异、零回归。
+  final LineageRole? lineageRole;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -248,6 +252,7 @@ class BattleCharacter {
     this.bossPhases,
     this.bossPhaseUnlockSkills,
     this.schoolDamageTakenMult = const {},
+    this.lineageRole,
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -406,6 +411,7 @@ class BattleCharacter {
       swordSongResonanceActive: swordSongActive,
       iconPath: character.portraitPath,
       outputMultiplier: outputMultiplier,
+      lineageRole: character.lineageRole,
     );
   }
 
@@ -448,6 +454,7 @@ class BattleCharacter {
     Object? bossPhases = _unset,
     Object? bossPhaseUnlockSkills = _unset,
     Map<TechniqueSchool, double>? schoolDamageTakenMult,
+    LineageRole? lineageRole,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -503,6 +510,7 @@ class BattleCharacter {
           : bossPhaseUnlockSkills as List<List<SkillDef>>?,
       schoolDamageTakenMult:
           schoolDamageTakenMult ?? this.schoolDamageTakenMult,
+      lineageRole: lineageRole ?? this.lineageRole,
     );
   }
 
