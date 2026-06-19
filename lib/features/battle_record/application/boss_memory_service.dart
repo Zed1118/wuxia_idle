@@ -73,7 +73,9 @@ class BossMemoryService {
     });
   }
 
-  /// 查当前存档所有战绩纪念，按 groupIndex 升序。
+  /// 查当前存档所有战绩纪念（Isar 主键顺序，不保证排序）。
+  /// 分组/排序（按 source 再 groupIndex）由展示层 provider 负责——
+  /// 主线 groupIndex(1-9) 与爬塔 groupIndex(层号 1-30) 同域会碰撞，不可直接跨 source 排序。
   Future<List<BossMemory>> allMemories(int saveDataId) => isar.bossMemorys
       .filter()
       .saveDataIdEqualTo(saveDataId)
