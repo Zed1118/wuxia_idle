@@ -205,16 +205,21 @@ void main() {
 
   test('单次大伤跨越两个阈值 → 一次结算推进到末阶段(不停在中间)', () {
     // 三阶段 Boss:phase0(1.0) / phase1(0.6) / phase2(0.2)。
-    // Boss maxHp=250000:一击约 204000 伤害落在 60% 阈值(150000)与 0 之间,
-    // 残血约 46000 ≈ 18.4% maxHp < 20%,跨越 phase1+phase2 两个阈值但 Boss 存活。
+    //
+    // bigHitter 配置:内力 15000 / 装攻 2000 / 修炼度 jiJing(×3.0) / 刚猛流派
+    // 公式:base = 15000×0.4 + 2000×1.0 + 500 = 8500
+    //       最终 = 8500 × 3.0 × 1.0(中性) × 1.0(无暴击) × 1.0(无防御) = 25500
+    // Boss maxHp=30000:阈值 60%=18000 / 20%=6000
+    //   一击 25500 → 残血 4500(15% maxHp) — 同时跌破两阈值且 Boss 存活。
+    //   这迫使 _advancePhases while-loop 单结算内连续推进 phase0→1→2。
     const boss = BattleCharacter(
       characterId: -1,
       name: '魔头',
       realmTier: RealmTier.yiLiu,
       realmLayer: RealmLayer.qiMeng,
       school: TechniqueSchool.gangMeng,
-      maxHp: 250000,
-      currentHp: 250000,
+      maxHp: 30000,
+      currentHp: 30000,
       maxInternalForce: 10000,
       currentInternalForce: 10000,
       speed: 1,
@@ -246,28 +251,27 @@ void main() {
         <SkillDef>[],
       ],
     );
-    // 玩家高内力 + 高装攻 → 一击约 204000 伤害。
-    // 250000 - 204000 ≈ 46000(~18% maxHp),跨越两阈值(60%/20%)但 Boss 存活。
+    // bigHitter:单击约 25500 伤(无防御/无暴击/同境界)。
+    // maxHp=30000 → 30000-25500=4500(15%)<20% 阈值,单结算跨越两阈值,Boss 存活。
+    // speed=1000:第一个 tick 内 AP += 1000 → 恰好达到 1000,玩家首 tick 即出手。
     final bigHitter = player(eqAtk: 2000).copyWith(
       currentInternalForce: 15000,
       mainCultivationLayer: CultivationLayer.jiJing,
+      speed: 1000,
     );
+    // 只推进一个 tick:bigHitter speed=1000 第一个 tick 即出手,Boss speed=1 不出手。
+    // 一击后 Boss 必须同时跨越两个阈值,验证单结算多阈值路径(_advancePhases loop)。
     var s = BattleState.initial(leftTeam: [bigHitter], rightTeam: [boss]);
-    final rng = Random(42);
-    var guard = 0;
-    while (guard < 20 && !s.isFinished && bossOf(s).bossPhaseIndex < 2) {
-      s = strategy.tick(s, numbers, rng: rng);
-      guard++;
-    }
+    s = strategy.tick(s, numbers, rng: Random(42));
     final after = bossOf(s);
     // Boss 必须存活才能验证多阶段推进机制。
     expect(after.isAlive, isTrue,
         reason: 'Boss 必须存活才能验证多阈值推进(hp=${after.currentHp})');
     expect(after.bossPhaseIndex, 2,
-        reason: '一击跨越两阈值应推进到末阶段(hp=${after.currentHp})');
+        reason: '单结算应推进到末阶段 2(hp=${after.currentHp})');
     final transitions =
         s.actionLog.where((a) => a.bossPhaseTransitionTo != null).toList();
     expect(transitions.map((a) => a.bossPhaseTransitionTo), [1, 2],
-        reason: '应按顺序记录两条转阶段事件(1 then 2)');
+        reason: '应按顺序记录两条转阶段事件(1 then 2),且均在同一结算中产生');
   });
 }
