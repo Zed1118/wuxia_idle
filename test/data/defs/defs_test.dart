@@ -538,4 +538,30 @@ void main() {
       expect(def.attributeProfile.total, 17);
     });
   });
+
+  group('EnemyDef.bossPhases(批二①)', () {
+    test('EnemyDef.fromYaml 解析 bossPhases', () {
+      final e = EnemyDef.fromYaml({
+        'id': 'boss_x', 'name': '魔头', 'realmTier': 'erLiu', 'realmLayer': 'qiMeng',
+        'school': 'gangMeng', 'baseHp': 5000, 'baseAttack': 200, 'baseSpeed': 50,
+        'skillIds': ['skill_normal'], 'iconPath': 'x.png', 'isBoss': true,
+        'bossPhases': [
+          {'hpThresholdPct': 1.0},
+          {'hpThresholdPct': 0.5, 'unlockSkillIds': ['skill_rage']},
+        ],
+      });
+      expect(e.bossPhases, isNotNull);
+      expect(e.bossPhases!.length, 2);
+      expect(e.bossPhases![1].unlockSkillIds, ['skill_rage']);
+    });
+
+    test('EnemyDef.fromYaml bossPhases==null 向后兼容', () {
+      final e = EnemyDef.fromYaml({
+        'id': 'mob', 'name': '小兵', 'realmTier': 'erLiu', 'realmLayer': 'qiMeng',
+        'school': 'gangMeng', 'baseHp': 1000, 'baseAttack': 100, 'baseSpeed': 40,
+        'skillIds': ['skill_normal'], 'iconPath': 'm.png',
+      });
+      expect(e.bossPhases, isNull);
+    });
+  });
 }
