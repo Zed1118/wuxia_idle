@@ -53,12 +53,40 @@ void main() {
     }
   });
 
-  test('R5.1 全新 db ensureFoundingMasters → true + Character × 3 + SaveData wire',
+  test('生产默认 soloStart=true → 只种祖师单人出战', () async {
+    final isar = IsarSetup.instance;
+    final svc = OnboardingService(isar: isar);
+
+    final seeded = await svc.ensureFoundingMasters();
+    expect(seeded, isTrue);
+
+    final save = await isar.saveDatas.get(0);
+    expect(save!.activeCharacterIds, [1]); // 仅祖师
+
+    final chars = await isar.characters.where().findAll();
+    expect(chars.length, 1);
+    expect(chars.first.isFounder, isTrue);
+    expect(chars.first.discipleIds, isEmpty);
+  });
+
+  test('debug soloStart=false → 满队 3 人(回归既有行为)', () async {
+    final isar = IsarSetup.instance;
+    final svc = OnboardingService(isar: isar);
+
+    await svc.ensureFoundingMasters(soloStart: false);
+
+    final save = await isar.saveDatas.get(0);
+    expect(save!.activeCharacterIds, [1, 2, 3]);
+    expect((await isar.characters.where().findAll()).length, 3);
+  });
+
+  test(
+      'R5.1 soloStart=false 全新 db ensureFoundingMasters → true + Character × 3 + SaveData wire',
       () async {
     final isar = IsarSetup.instance;
     final svc = OnboardingService(isar: isar);
 
-    final result = await svc.ensureFoundingMasters();
+    final result = await svc.ensureFoundingMasters(soloStart: false);
 
     expect(result, isTrue);
     expect(await isar.characters.count(), 3);
@@ -125,7 +153,7 @@ void main() {
 
   test('R5.4 装备 9 件 + 心法 4 本 spot-check', () async {
     final isar = IsarSetup.instance;
-    await OnboardingService(isar: isar).ensureFoundingMasters();
+    await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
 
     expect(await isar.equipments.count(), 9); // 3 角色 × 3 槽
     expect(await isar.techniques.count(), 4); // founder 2 + 大弟子 1 + 二弟子 1
@@ -141,7 +169,7 @@ void main() {
   test('R5.5 真战斗 e2e:StageBattleSetup._buildPlayerTeam 不抛 StateError',
       () async {
     final isar = IsarSetup.instance;
-    await OnboardingService(isar: isar).ensureFoundingMasters();
+    await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
 
     // audit P0-1 复现 → 修:onboarding 后 buildTeams 应返 (左 3, 右 ≥1)。
     final stage = GameRepository.instance.getStage('stage_01_01');
