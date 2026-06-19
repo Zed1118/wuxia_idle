@@ -58,6 +58,9 @@ import '../domain/mainline_progress.dart';
 import '../../battle/domain/battle_stats.dart';
 import '../../battle/presentation/hero_camera_overlay.dart' show HeroCameraData;
 import '../../battle/presentation/victory_ceremony.dart';
+import '../../battle_record/application/boss_memory_hook.dart';
+import '../../battle_record/domain/boss_memory_key.dart';
+import '../../battle_record/domain/boss_memory_source.dart';
 import 'stage_victory_dialog.dart';
 
 /// Phase 3 T37 关卡进入流程串联。
@@ -217,6 +220,21 @@ Future<void> runStageFlow({
           GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
       rng: Random(),
     );
+
+    // P4 战绩册:Boss 胜利 → 留档(纯数据写;test stub 路径不进 else,天然跳过,同 recordVictory/skillDrop)。
+    if (stage.isBossStage && outcome != null) {
+      final boss = stage.enemyTeam.isNotEmpty ? stage.enemyTeam.last.name : stage.name;
+      await runBossMemoryHookAfterVictory(
+        source: BossMemorySource.mainline,
+        bossKey: mainlineBossKey(stage.id),
+        groupIndex: mainlineGroupIndex(stage.id),
+        bossName: boss,
+        stats: outcome.stats,
+        drops: outcome.drops,
+        topContributorName: outcome.heroCamera?.heroName,
+        topContributorDamage: outcome.heroCamera?.topDamage,
+      );
+    }
   }
 
   // W15 #30 P3 后续 A:victory dialog 显 drop + 升层 banner;outcome=null 时
