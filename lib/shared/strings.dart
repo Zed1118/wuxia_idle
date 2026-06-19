@@ -1590,4 +1590,20 @@ class UiStrings {
 
   /// 英雄镜头本场最强标签。
   static const String heroCameraTopOutput = '本场最强';
+
+  // ── 第七阶段批二 ④:技能书珍稀卷轴 overlay(真解首通 / 残页集齐重仪式)──────
+  /// 真解首通卷轴题字（manualGranted != null 时展示）。
+  static const String skillTreasureManualCaption = '悟得真解';
+
+  /// 残页集齐卷轴题字（fragmentJustUnlocked 时展示）。
+  static const String skillTreasureFragmentCaption = '残页集齐 · 神功重现';
+
+  /// 残页轻提示（战后 victory dialog 内小行；Task 11 消费）。
+  /// 格式：「得残页 · $skillName($count/$threshold)」
+  static String skillFragmentGainedLine(
+    String skillName,
+    int count,
+    int threshold,
+  ) =>
+      '得残页 · $skillName($count/$threshold)';
 }
