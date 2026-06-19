@@ -527,6 +527,9 @@ class GameRepository {
     // boss_charge tick 数值范围)
     _enforceBossChargeRedLines();
 
+    // 批二①：Boss 阶段 unlockSkillIds 引用必须在 skills.yaml 中存在
+    enforceBossPhaseSkillIds(stageDefs, skillDefs.keys.toSet());
+
     // 波A build gate:破招技(canInterrupt=true)必须有 style 流派归属
     _enforceInterruptSkillRedLines();
 
@@ -1518,6 +1521,34 @@ class GameRepository {
         'boss_charge.defaultStaggerTicks=${bc.defaultStaggerTicks},'
         '应 ∈ [0, 5](P0 破招红线 ②)',
       );
+    }
+  }
+
+  /// 批二①：Boss 阶段 unlockSkillIds 红线校验。
+  ///
+  /// 对所有关卡内每个配置了 [EnemyDef.bossPhases] 的敌人，校验各阶段
+  /// [BossPhaseDef.unlockSkillIds] 中的每个 id 须在 [skillIdSet] 内存在。
+  /// 静态方法便于单元测试独立调用（不依赖 loadAllDefs 完整流程）。
+  static void enforceBossPhaseSkillIds(
+    Map<String, StageDef> stages,
+    Set<String> skillIdSet,
+  ) {
+    for (final s in stages.values) {
+      for (final e in s.enemyTeam) {
+        final phases = e.bossPhases;
+        if (phases == null) continue;
+        for (final phase in phases) {
+          for (final sid in phase.unlockSkillIds) {
+            if (!skillIdSet.contains(sid)) {
+              throw StateError(
+                'stage ${s.id} 敌人 ${e.id} bossPhase hpThresholdPct='
+                '${phase.hpThresholdPct} unlockSkillIds 引用 $sid '
+                '未在 skills.yaml 中存在（批二①红线）',
+              );
+            }
+          }
+        }
+      }
     }
   }
 

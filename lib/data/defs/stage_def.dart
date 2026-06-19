@@ -1,4 +1,5 @@
 import '../../core/domain/enums.dart';
+import 'boss_phase_def.dart';
 import 'drop_entry.dart';
 
 /// 关卡配置（data_schema.md §5.4，纯 Dart，不入 Isar）。
@@ -222,6 +223,11 @@ class EnemyDef {
   /// 战斗中被 BattleAI 选中此 skill 时进入蓄力,可被玩家破招打断踉跄。
   final String? chargeSkillId;
 
+  /// 批二①：Boss 阶段配置（null = 单阶段旧行为，向后兼容）。
+  /// 仅 [isBoss]=true 的敌人有意义；各阶段 unlockSkillIds 引用的
+  /// skill id 须在 skills.yaml 中存在（`_enforceBossPhaseSkillIds` 校验）。
+  final List<BossPhaseDef>? bossPhases;
+
   const EnemyDef({
     required this.id,
     required this.name,
@@ -235,6 +241,7 @@ class EnemyDef {
     required this.iconPath,
     this.isBoss = false,
     this.chargeSkillId,
+    this.bossPhases,
   });
 
   factory EnemyDef.fromYaml(Map<String, dynamic> y) {
@@ -253,6 +260,9 @@ class EnemyDef {
       iconPath: y['iconPath'] as String,
       isBoss: y['isBoss'] as bool? ?? false,
       chargeSkillId: y['chargeSkillId'] as String?,
+      bossPhases: y['bossPhases'] == null
+          ? null
+          : BossPhaseDef.parseList(y['bossPhases'] as List),
     );
   }
 
