@@ -1,3 +1,4 @@
+import '../../../data/defs/boss_phase_def.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/character.dart';
@@ -57,6 +58,14 @@ class BattleAction {
   /// interrupted 区分,二者互斥——表现层据此分别题字「破绽」/「破!」。
   final bool openedBreakWindow;
 
+  /// 第七阶段批二 ①:本动作触发了 Boss 转阶段时,记录进入的新阶段 index(null=未转阶段)。
+  /// 表现层据此弹转阶段题字 overlay(纯读元数据,不参与战斗结算)。
+  final int? bossPhaseTransitionTo;
+
+  /// 第七阶段批二 ①:转阶段题字 UiStrings key(BossPhaseDef.titleKey 透传;
+  /// null=该阶段不题字或非转阶段动作)。
+  final String? bossPhaseTitleKey;
+
   const BattleAction({
     required this.tick,
     required this.actorId,
@@ -66,6 +75,8 @@ class BattleAction {
     required this.description,
     this.interrupted = false,
     this.openedBreakWindow = false,
+    this.bossPhaseTransitionTo,
+    this.bossPhaseTitleKey,
   });
 
   @override
@@ -173,6 +184,19 @@ class BattleCharacter {
   /// 踉跄结束清 null)。null=用 numbers 基础值(兼容直接构造的测试 fixture)。
   final double? staggerDefenseDownOverride;
 
+  /// 第七阶段批二 ①:当前 Boss 阶段下标(默认 0=起始阶段;非 Boss 恒 0)。
+  /// 运行时随血量跌破 [bossPhases] 下一阶段阈值由 strategy 推进(merge 解锁招 + 记事件)。
+  final int bossPhaseIndex;
+
+  /// 第七阶段批二 ①:Boss 阶段定义列表(阈值/aiMode/机制/题字),
+  /// null=单阶段旧行为(非 Boss / 未配 bossPhases)。strategy 只读不改。
+  final List<BossPhaseDef>? bossPhases;
+
+  /// 第七阶段批二 ①:与 [bossPhases] 下标对齐的「进入该阶段并入 availableSkills 的招」
+  /// 预解析结果(setup 期把 unlockSkillIds → SkillDef,避免战中回查 GameRepository)。
+  /// phase 0(起始)条目通常为空列表。null=非 Boss / 未配。
+  final List<List<SkillDef>>? bossPhaseUnlockSkills;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -208,6 +232,9 @@ class BattleCharacter {
     this.chargeTicksRemaining = 0,
     this.staggerTicksRemaining = 0,
     this.staggerDefenseDownOverride,
+    this.bossPhaseIndex = 0,
+    this.bossPhases,
+    this.bossPhaseUnlockSkills,
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -404,6 +431,9 @@ class BattleCharacter {
     int? chargeTicksRemaining,
     int? staggerTicksRemaining,
     Object? staggerDefenseDownOverride = _unset,
+    int? bossPhaseIndex,
+    Object? bossPhases = _unset,
+    Object? bossPhaseUnlockSkills = _unset,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -450,6 +480,13 @@ class BattleCharacter {
       staggerDefenseDownOverride: identical(staggerDefenseDownOverride, _unset)
           ? this.staggerDefenseDownOverride
           : staggerDefenseDownOverride as double?,
+      bossPhaseIndex: bossPhaseIndex ?? this.bossPhaseIndex,
+      bossPhases: identical(bossPhases, _unset)
+          ? this.bossPhases
+          : bossPhases as List<BossPhaseDef>?,
+      bossPhaseUnlockSkills: identical(bossPhaseUnlockSkills, _unset)
+          ? this.bossPhaseUnlockSkills
+          : bossPhaseUnlockSkills as List<List<SkillDef>>?,
     );
   }
 
