@@ -882,8 +882,8 @@ stages:
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       expect(repo.masters.length, 3);
       expect(repo.masters[0].lineageRole, LineageRole.founder);
-      expect(repo.masters[1].lineageRole, LineageRole.disciple);
-      expect(repo.masters[2].lineageRole, LineageRole.disciple);
+      expect(repo.masters[1].lineageRole, LineageRole.senior);
+      expect(repo.masters[2].lineageRole, LineageRole.junior);
       expect(repo.getMasterBySlot(0).id, 'founder');
       expect(repo.getMasterBySlot(2).id, 'second_disciple');
       expect(repo.getFounderMaster().id, 'founder');
