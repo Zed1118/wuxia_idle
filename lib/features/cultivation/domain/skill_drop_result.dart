@@ -30,4 +30,32 @@ class SkillDropResult {
 
   /// 轻提示(掉残页但未集齐)。
   bool get isMinorFragment => fragmentSkillId != null && !fragmentJustUnlocked;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SkillDropResult &&
+          runtimeType == other.runtimeType &&
+          manualGranted == other.manualGranted &&
+          fragmentSkillId == other.fragmentSkillId &&
+          fragmentCount == other.fragmentCount &&
+          fragmentThreshold == other.fragmentThreshold &&
+          fragmentJustUnlocked == other.fragmentJustUnlocked;
+
+  @override
+  int get hashCode => Object.hash(
+        manualGranted,
+        fragmentSkillId,
+        fragmentCount,
+        fragmentThreshold,
+        fragmentJustUnlocked,
+      );
+
+  @override
+  String toString() => 'SkillDropResult('
+      'manualGranted: $manualGranted, '
+      'fragmentSkillId: $fragmentSkillId, '
+      'fragmentCount: $fragmentCount, '
+      'fragmentThreshold: $fragmentThreshold, '
+      'fragmentJustUnlocked: $fragmentJustUnlocked)';
 }

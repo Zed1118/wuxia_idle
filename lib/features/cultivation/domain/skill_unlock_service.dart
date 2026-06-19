@@ -54,10 +54,11 @@ class SkillUnlockService {
   /// - [SkillDropResult.fragmentThreshold]：集齐阈值。
   /// - [SkillDropResult.fragmentJustUnlocked]：`true` 当且仅当本次 add 导致集齐（调用前未解锁 + 加后 >= 阈值）。
   ///
-  /// 若调用前已解锁（短路），返回 `fragmentJustUnlocked: false`，`fragmentCount` 为已有值（通常 0，若之前走残页路径则为当时累计）。
+  /// 若调用前已解锁（短路），返回 [SkillDropResult.none]（无残页信号，防止下游误报"得残页"通知）。
   Future<SkillDropResult> addFragment(String skillId, [int n = 1]) async {
     int countAfter = 0;
     bool justUnlocked = false;
+    bool alreadyUnlocked = false;
     await _isar.writeTxn(() async {
       final s = await _save();
       s.skillUnlockProgress = List.of(s.skillUnlockProgress);
@@ -69,11 +70,12 @@ class SkillUnlockService {
           justUnlocked = true;
         }
       } else {
-        // 已解锁短路：保留已有累计数（真解路径通常为 0）。
-        countAfter = s.skillUnlockProgress.fragmentCountOf(skillId);
+        // 已解锁短路：不累加，不发出任何残页信号。
+        alreadyUnlocked = true;
       }
       await _isar.saveDatas.put(s);
     });
+    if (alreadyUnlocked) return SkillDropResult.none;
     return SkillDropResult(
       fragmentSkillId: skillId,
       fragmentCount: countAfter,
