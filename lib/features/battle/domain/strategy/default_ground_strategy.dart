@@ -327,6 +327,10 @@ class DefaultGroundStrategy implements BattleStrategy {
     }
 
     // === P0 踉跄 pre-step(Task 8 · 必须在蓄力判定之前)===
+    // 注:内伤自伤(上方 §0 dot 结算)会减 actor 自身 hp;若该 actor 恰好是 Boss,
+    // 理论上也可跨阶段阈值。但踉跄/蓄力中/起手蓄力三条早返回路径跳过了
+    // _checkBossPhaseTransitions 调用。可接受——转阶段检测幂等(比当前 hp vs 阈值),
+    // 下一次任意造成实际伤害的行动会补触发;至多延迟一拍,不会永久漏。
     // (a) 踉跄中:跳过本次行动,递减 stagger(踉跄的单位本就不该继续蓄力推进)。
     if (preActor.staggerTicksRemaining > 0) {
       final remainingStagger = preActor.staggerTicksRemaining - 1;

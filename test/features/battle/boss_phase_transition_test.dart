@@ -205,15 +205,16 @@ void main() {
 
   test('单次大伤跨越两个阈值 → 一次结算推进到末阶段(不停在中间)', () {
     // 三阶段 Boss:phase0(1.0) / phase1(0.6) / phase2(0.2)。
-    // Boss 起始血贴近满,玩家一击直接打到 ~10% maxHp,一次结算应连推 phase1→phase2。
+    // Boss maxHp=250000:一击约 204000 伤害落在 60% 阈值(150000)与 0 之间,
+    // 残血约 46000 ≈ 18.4% maxHp < 20%,跨越 phase1+phase2 两个阈值但 Boss 存活。
     const boss = BattleCharacter(
       characterId: -1,
       name: '魔头',
       realmTier: RealmTier.yiLiu,
       realmLayer: RealmLayer.qiMeng,
       school: TechniqueSchool.gangMeng,
-      maxHp: 50000,
-      currentHp: 50000,
+      maxHp: 250000,
+      currentHp: 250000,
       maxInternalForce: 10000,
       currentInternalForce: 10000,
       speed: 1,
@@ -245,7 +246,8 @@ void main() {
         <SkillDef>[],
       ],
     );
-    // 玩家高内力 + 高装攻 → 一击 ~45000 伤害,打到 5000 HP(10% maxHp < 0.2)。
+    // 玩家高内力 + 高装攻 → 一击约 204000 伤害。
+    // 250000 - 204000 ≈ 46000(~18% maxHp),跨越两阈值(60%/20%)但 Boss 存活。
     final bigHitter = player(eqAtk: 2000).copyWith(
       currentInternalForce: 15000,
       mainCultivationLayer: CultivationLayer.jiJing,
@@ -258,14 +260,14 @@ void main() {
       guard++;
     }
     final after = bossOf(s);
-    // 若 Boss 已死,跳过(本测目的是验证跨阈推进,需 Boss 存活到末阶段)。
-    if (after.isAlive) {
-      expect(after.bossPhaseIndex, 2,
-          reason: '一击跨越两阈值应推进到末阶段(hp=${after.currentHp})');
-      final transitions =
-          s.actionLog.where((a) => a.bossPhaseTransitionTo != null).toList();
-      expect(transitions.map((a) => a.bossPhaseTransitionTo), [1, 2],
-          reason: '应按顺序记录两条转阶段事件(1 then 2)');
-    }
+    // Boss 必须存活才能验证多阶段推进机制。
+    expect(after.isAlive, isTrue,
+        reason: 'Boss 必须存活才能验证多阈值推进(hp=${after.currentHp})');
+    expect(after.bossPhaseIndex, 2,
+        reason: '一击跨越两阈值应推进到末阶段(hp=${after.currentHp})');
+    final transitions =
+        s.actionLog.where((a) => a.bossPhaseTransitionTo != null).toList();
+    expect(transitions.map((a) => a.bossPhaseTransitionTo), [1, 2],
+        reason: '应按顺序记录两条转阶段事件(1 then 2)');
   });
 }
