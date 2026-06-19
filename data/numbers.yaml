@@ -1756,9 +1756,11 @@ lineage_onboarding:
     - stage_id: stage_01_02   # 过荒山野店 → 大弟子拜入(2 人)
       master_slot_index: 1
       role: senior
+      narrative_id: lineage_first_disciple_join
     - stage_id: stage_01_04   # 过洛阳城外小Boss → 二弟子拜入(满队迎章末Boss)
       master_slot_index: 2
       role: junior
+      narrative_id: lineage_second_disciple_join
 
 # =============================================================================
 # 文件结束

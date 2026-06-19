@@ -2787,15 +2787,18 @@ class DiscipleJoinDef {
   final String stageId;
   final int masterSlotIndex; // masters.yaml slotIndex(1=大弟子/2=二弟子)
   final LineageRole role;
+  final String narrativeId;
   const DiscipleJoinDef({
     required this.stageId,
     required this.masterSlotIndex,
     required this.role,
+    required this.narrativeId,
   });
   factory DiscipleJoinDef.fromYaml(Map<String, dynamic> y) => DiscipleJoinDef(
         stageId: y['stage_id'] as String,
         masterSlotIndex: (y['master_slot_index'] as num).toInt(),
         role: LineageRole.values.byName(y['role'] as String),
+        narrativeId: y['narrative_id'] as String,
       );
 }
 
