@@ -289,6 +289,31 @@ class _SkillTreasureOverlayState extends State<SkillTreasureOverlay>
   }
 }
 
+/// 残页轻提示行（Task 11 DRY 共享入口）。
+///
+/// 仅 [SkillDropResult.isMinorFragment] 返回非空（集齐走重仪式 [presentSkillTreasure]，
+/// 不走轻提示；SkillDropResult.none 返回 null）。
+/// 招式名经 [GameRepository.getSkill] 查；仓库未载入 / id 不存在时 fallback 用
+/// id 字面量（防 StateError 崩溃，与 [presentSkillTreasure] 一致）。
+String? skillFragmentLineFor(SkillDropResult result) {
+  if (!result.isMinorFragment) return null;
+  final skillId = result.fragmentSkillId;
+  if (skillId == null) return null;
+  String skillName = skillId;
+  if (GameRepository.isLoaded) {
+    try {
+      skillName = GameRepository.instance.getSkill(skillId).name;
+    } catch (_) {
+      // getSkill 抛 StateError：id 不存在，fallback 用 id 字面量。
+    }
+  }
+  return UiStrings.skillFragmentGainedLine(
+    skillName,
+    result.fragmentCount,
+    result.fragmentThreshold,
+  );
+}
+
 /// 公共触发入口：若 [result.isMajor]，播卷轴重仪式并 await 至结束。
 ///
 /// 从 [GameRepository] 查招式名 + 插图路径；若仓库未加载或 id 不存在则

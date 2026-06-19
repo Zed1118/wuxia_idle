@@ -655,7 +655,7 @@ Future<void> _showVictoryDialog({
         advancements: advancements,
         resonanceUpgrades: resonanceUpgrades,
         stats: stats,
-        skillFragmentLine: _towerSkillFragmentLineFor(skillDrop),
+        skillFragmentLine: skillFragmentLineFor(skillDrop),
       ),
       actions: [
         TextButton(
@@ -667,30 +667,6 @@ Future<void> _showVictoryDialog({
         ),
       ],
     ),
-  );
-}
-
-/// 第七阶段批二④:残页轻提示行(掉残页但未集齐 → victory dialog 小字行)。
-///
-/// 仅 [SkillDropResult.isMinorFragment] 返回非空(集齐走重仪式不走轻提示)。
-/// 招式名经 [GameRepository.getSkill] 查;仓库未载入 / id 不存在时 fallback 用
-/// id 字面量(与 [presentSkillTreasure] 一致,防 StateError 崩溃)。
-String? _towerSkillFragmentLineFor(SkillDropResult result) {
-  if (!result.isMinorFragment) return null;
-  final skillId = result.fragmentSkillId;
-  if (skillId == null) return null;
-  String skillName = skillId;
-  if (GameRepository.isLoaded) {
-    try {
-      skillName = GameRepository.instance.getSkill(skillId).name;
-    } catch (_) {
-      // getSkill 抛 StateError:id 不存在,fallback 用 id 字面量。
-    }
-  }
-  return UiStrings.skillFragmentGainedLine(
-    skillName,
-    result.fragmentCount,
-    result.fragmentThreshold,
   );
 }
 

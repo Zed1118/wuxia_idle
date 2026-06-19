@@ -277,6 +277,42 @@ void main() {
     });
   });
 
+  group('skillFragmentLineFor 共享轻提示 helper（Task 11 DRY）', () {
+    test('isMinorFragment → 返回包含 id + count + threshold 的行', () {
+      final result = _minorFragmentResult(); // fragmentSkillId='skill_frag', count=2, threshold=5
+      final line = skillFragmentLineFor(result);
+      expect(line, isNotNull);
+      // GameRepository 未加载 → fallback 用 id 字面量
+      expect(line, contains('skill_frag'));
+      expect(line, contains('2'));
+      expect(line, contains('5'));
+    });
+
+    test('isMajor(真解首通) → 返回 null（走重仪式不走轻提示）', () {
+      expect(skillFragmentLineFor(_manualResult()), isNull);
+    });
+
+    test('isMajor(残页集齐) → 返回 null', () {
+      expect(skillFragmentLineFor(_fragmentResult()), isNull);
+    });
+
+    test('SkillDropResult.none → 返回 null', () {
+      expect(skillFragmentLineFor(SkillDropResult.none), isNull);
+    });
+
+    test('fragmentSkillId 为 null 的 minor fragment → 返回 null', () {
+      // isMinorFragment 要求 fragmentSkillId != null && count < threshold
+      // 若 fragmentSkillId == null 则不可能 isMinorFragment，验证防御路径。
+      const result = SkillDropResult(
+        fragmentSkillId: null,
+        fragmentCount: 2,
+        fragmentThreshold: 5,
+        fragmentJustUnlocked: false,
+      );
+      expect(skillFragmentLineFor(result), isNull);
+    });
+  });
+
   group('presentSkillTreasure non-major no-op', () {
     // SkillDropResult.none 和 isMinorFragment 的结果不应触发重仪式。
     // 验证 isMajor 的契约（域层测试，不需要 widget pump）。
