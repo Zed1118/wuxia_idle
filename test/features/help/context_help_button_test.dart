@@ -9,10 +9,12 @@ import 'package:wuxia_idle/features/help/domain/help_topic.dart';
 import 'package:wuxia_idle/features/help/presentation/context_help_button.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
 
-/// 上下文帮助系统 · ContextHelpButton 行为契约（2026-06-16）。
+/// 上下文帮助系统 · ContextHelpButton 行为契约（2026-06-19 改：三态全部可点）。
 ///
-/// 三态:① 无 codex 条目 → 仅 tooltip;② 已解锁 → 可跳百科;③ 未解锁 → 灰显不可点。
+/// 三态:① 无 codex 条目 → 点击弹短释义浮层;② 已解锁 → 点击跳百科;
+/// ③ 未解锁 → 灰显 + 点击弹「阅历未至」反馈。点击热区 ≥ 36px。
 /// 解锁 gating 走既有 `currentTutorialStepProvider`（override）+ `CodexIndex` step。
 void main() {
   setUpAll(() async {
@@ -41,13 +43,19 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('codexEntryId == null（属性 topic）→ 仅 tooltip，无导航 InkWell', (tester) async {
+  testWidgets('codexEntryId == null（属性 topic）→ hover tooltip + 点击弹短释义浮层', (tester) async {
     await pump(tester, topic: HelpTopic.constitution, step: 8);
 
     expect(find.byIcon(Icons.help_outline), findsOneWidget);
     final tip = tester.widget<Tooltip>(find.byType(Tooltip));
     expect(tip.message, UiStrings.glossaryConstitution);
-    expect(find.byType(InkWell), findsNothing);
+
+    // 三态全部可点：无 codex → 点击弹释义。
+    expect(find.byType(InkWell), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.help_outline));
+    await tester.pumpAndSettle();
+    expect(find.byType(PaperDialog), findsOneWidget);
+    expect(find.text(UiStrings.glossaryConstitution), findsWidgets);
   });
 
   testWidgets('codex topic 已解锁（step=8）→ 可点击跳 CodexEntryDetail', (tester) async {
@@ -59,11 +67,25 @@ void main() {
     expect(find.byType(CodexEntryDetail), findsOneWidget);
   });
 
-  testWidgets('codex topic 未解锁（step=0）→ 灰显 + 阅历未至 tooltip + 不可点', (tester) async {
+  testWidgets('codex topic 未解锁（step=0）→ 灰显 + 点击弹「阅历未至」反馈', (tester) async {
     await pump(tester, topic: HelpTopic.realm, step: 0);
 
     final tip = tester.widget<Tooltip>(find.byType(Tooltip));
     expect(tip.message, UiStrings.contextHelpLocked);
-    expect(find.byType(InkWell), findsNothing);
+
+    // 未解锁也可点：给反馈而非死按钮。
+    expect(find.byType(InkWell), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.help_outline));
+    await tester.pumpAndSettle();
+    expect(find.byType(PaperDialog), findsOneWidget);
+    expect(find.text(UiStrings.contextHelpLocked), findsWidgets);
+  });
+
+  testWidgets('点击热区 ≥ 36px（原仅图标 ~18px 太难命中）', (tester) async {
+    await pump(tester, topic: HelpTopic.constitution, step: 8);
+
+    final size = tester.getSize(find.byType(InkWell));
+    expect(size.width, greaterThanOrEqualTo(36));
+    expect(size.height, greaterThanOrEqualTo(36));
   });
 }
