@@ -461,25 +461,27 @@ class BattleScenarioData {
   /// 第七阶段批二目检专用（battle_boss_phase 路由）。
   ///
   /// 真 stage_01_05「撑伞高人」Boss 队（经 [StageBattleSetup.buildEnemyTeam] 建，
-  /// bossPhases / schoolDamageTakenMult / 蓄力技全真），Boss HP 抬到 13000 给二阶段
-  /// 留演出余量；配一支 at-level（xueTu·dengFeng）玩家队让战斗势均力敌、不秒杀。
+  /// bossPhases / schoolDamageTakenMult / 蓄力技全真），Boss HP 抬到 16000 给两阶段
+  /// 留足演出步数；配一支**刻意压低 DPS**（chuKui 修炼度 ×1.0 / 低 eqAtk·IF）的玩家队，
+  /// 让普攻是「啃」的 chip 而非秒杀——配合路由 startPaused，逐步看清每个动效。
   ///
   /// 看点：① 跌破 50% → 背水一击转阶段题字 + 闪白 + 立绘抖动 + 蓄力反扑；
   /// ② 刚猛（gangMeng）队员打 yinRou Boss → 弱点 ×1.25 会心 glyph；
   /// ③ 灵巧（lingQiao）队员打 Boss → 抗性 ×0.75（伤害偏低，无会心）。
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioBossPhase() {
-    // ── 右队：真 stage_01_05 敌队；Boss（slot 0）HP 抬高给二阶段演出余量。
+    // ── 右队：真 stage_01_05 敌队；Boss（slot 0）HP 抬高给两阶段演出步数。
     final stage = GameRepository.instance.getStage('stage_01_05');
     final realEnemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam);
     final right = [
       for (var i = 0; i < realEnemies.length; i++)
         i == 0
-            ? realEnemies[i].copyWith(maxHp: 13000, currentHp: 13000)
+            ? realEnemies[i].copyWith(maxHp: 16000, currentHp: 16000)
             : realEnemies[i],
     ];
 
-    // ── 左队：at-level 玩家队。2 刚猛（会心来源）+ 1 灵巧（示抗性）；中庸
-    // eqAtk/IF → 普攻是有效 chip 但不秒，战斗够长看完转阶段 + 蓄力反扑。
+    // ── 左队：2 刚猛（会心来源）+ 1 灵巧（示抗性）。**压低 DPS** 是关键：
+    // chuKui 修炼度 ×1.0（daCheng 是 ×1.5）+ 低 eqAtk/IF → 普攻 ~950（弱点）/~570（抗性），
+    // 配 16000 Boss + startPaused 单步 → 战斗够长、每个动效看得清，不被秒杀冲过去。
     BattleCharacter player(
       int id,
       String name,
@@ -492,11 +494,11 @@ class BattleScenarioData {
       layer: RealmLayer.dengFeng,
       school: school,
       maxHp: 9000,
-      maxIf: 850,
+      maxIf: 500,
       speed: 165,
       critRate: 0.05,
-      eqAtk: 280,
-      cultivation: CultivationLayer.daCheng,
+      eqAtk: 150,
+      cultivation: CultivationLayer.chuKui,
       skills: [
         _normal('bp_normal_$id', '基础招'),
         _power('bp_power_$id', '重击', pm: 1200, cost: 400, cd: 3),
