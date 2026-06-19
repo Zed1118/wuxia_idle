@@ -316,6 +316,28 @@ void main() {
       ));
       expect(find.text(UiStrings.stageVictoryDropLabel), findsOneWidget);
     });
+
+    // 第七阶段批二④:残页轻提示行
+    testWidgets('skillFragmentLine 非空 → 渲染残页轻提示行', (tester) async {
+      final line = UiStrings.skillFragmentGainedLine('神龙一式', 3, 5);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StageVictoryContent(
+              drops: _emptyDrops(),
+              advancements: const [],
+              skillFragmentLine: line,
+            ),
+          ),
+        ),
+      );
+      expect(find.text(line), findsOneWidget);
+    });
+
+    testWidgets('skillFragmentLine=null → 不渲染残页行(向后兼容)', (tester) async {
+      await _pumpContent(tester, _emptyDrops(), const []);
+      expect(find.textContaining('得残页'), findsNothing);
+    });
   });
 
   group('showStageVictoryDialog', () {

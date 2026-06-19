@@ -29,6 +29,7 @@ Future<void> showStageVictoryDialog({
   String? firstClearTitle,
   String? firstClearSubtitle,
   BattleStatsSummary? stats,
+  String? skillFragmentLine,
 }) async {
   // 结算 jingle:跨 tier 大境界突破响 realmAdvance(爆装备音已移到 playTreasureDropIfAny
   // 动画层 + 门槛化,2026-06-11)。
@@ -47,6 +48,7 @@ Future<void> showStageVictoryDialog({
         firstClearTitle: firstClearTitle,
         firstClearSubtitle: firstClearSubtitle,
         stats: stats,
+        skillFragmentLine: skillFragmentLine,
       ),
       actions: [
         TextButton(
@@ -71,6 +73,7 @@ class StageVictoryContent extends StatelessWidget {
     this.firstClearTitle,
     this.firstClearSubtitle,
     this.stats,
+    this.skillFragmentLine,
   });
 
   final DropResult drops;
@@ -79,6 +82,10 @@ class StageVictoryContent extends StatelessWidget {
   final String? firstClearTitle;
   final String? firstClearSubtitle;
   final BattleStatsSummary? stats;
+
+  /// 第七阶段批二④:残页轻提示行(掉残页未集齐时,非重仪式)。
+  /// null=本场未掉残页或已走重仪式;非空时在 drop 段末尾追一行小字。
+  final String? skillFragmentLine;
 
   @override
   Widget build(BuildContext context) {
@@ -117,6 +124,16 @@ class StageVictoryContent extends StatelessWidget {
               ),
             ),
         ],
+        // 第七阶段批二④:残页轻提示行(掉残页未集齐 → drop 段末追一行)。
+        // skillFragmentLine 自带「得残页 · …」前缀,不再加列表点。
+        if (skillFragmentLine != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 4),
+            child: Text(
+              skillFragmentLine!,
+              style: const TextStyle(color: WuxiaColors.resultHighlight),
+            ),
+          ),
         if (advancements.any((e) => e.result.didAdvance)) ...[
           const SizedBox(height: 12),
           AdvancementSummary(entries: advancements),

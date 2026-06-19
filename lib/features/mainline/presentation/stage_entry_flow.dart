@@ -33,7 +33,9 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
+import '../../cultivation/presentation/skill_treasure_overlay.dart';
 import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
@@ -186,6 +188,8 @@ Future<void> runStageFlow({
   // 主动 ensure 避免 MainlineProgress 未初始化时抛 StateError
   // 可玩性 P1a:技能书首通判定需"写 clearedStageIds 之前"的快照。
   final clearedBeforeVictory = <String>{};
+  // 第七阶段批二④:捕获技能掉落结果供战后仪式分层(test stub 路径留 .none)。
+  SkillDropResult skillDrop = SkillDropResult.none;
   if (victoryRecorderForTest != null) {
     await victoryRecorderForTest(stage.id);
   } else {
@@ -204,7 +208,7 @@ Future<void> runStageFlow({
     // 可玩性 P1a:Boss 胜利掉技能书(真解首通/残页概率)· spec §二。
     // 纯数据写(无 UI);随生产进度记录路径执行(test stub 路径 victoryRecorderForTest
     // 跳过,与 recordVictory 一致 —— 不依赖未初始化的 IsarSetup)。
-    await runStageSkillDropHookAfterVictory(
+    skillDrop = await runStageSkillDropHookAfterVictory(
       stage: stage,
       svc: SkillUnlockService(IsarSetup.instance),
       clearedStageIds: clearedBeforeVictory,
@@ -226,6 +230,12 @@ Future<void> runStageFlow({
       await presentHeroCamera(context, outcome.heroCamera!);
       if (!context.mounted) return;
     }
+    // 第七阶段批二④:技能珍稀重仪式(真解首通 / 残页集齐)夹在英雄镜头与装备
+    // treasure 之间。非重仪式(isMajor=false)时 presentSkillTreasure no-op。
+    if (skillDrop.isMajor && context.mounted) {
+      await presentSkillTreasure(context, skillDrop);
+      if (!context.mounted) return;
+    }
     await presentVictoryCeremony(context, outcome.drops,
         treasureGate: true, extraDisplayTiers: outcome.extraDisplayTiers);
     if (!context.mounted) return;
@@ -236,6 +246,7 @@ Future<void> runStageFlow({
       advancements: outcome.advancements,
       resonanceUpgrades: outcome.resonanceUpgrades,
       stats: outcome.stats,
+      skillFragmentLine: _skillFragmentLineFor(skillDrop),
     );
   }
 
@@ -1074,6 +1085,30 @@ class _DefeatLossBanner extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 第七阶段批二④:残页轻提示行(掉残页但未集齐 → victory dialog 小字行)。
+///
+/// 仅 [SkillDropResult.isMinorFragment] 返回非空(集齐走重仪式不走轻提示)。
+/// 招式名经 [GameRepository.getSkill] 查;仓库未载入 / id 不存在时 fallback 用
+/// id 字面量(与 [presentSkillTreasure] 一致,防 StateError 崩溃)。
+String? _skillFragmentLineFor(SkillDropResult result) {
+  if (!result.isMinorFragment) return null;
+  final skillId = result.fragmentSkillId;
+  if (skillId == null) return null;
+  String skillName = skillId;
+  if (GameRepository.isLoaded) {
+    try {
+      skillName = GameRepository.instance.getSkill(skillId).name;
+    } catch (_) {
+      // getSkill 抛 StateError:id 不存在,fallback 用 id 字面量。
+    }
+  }
+  return UiStrings.skillFragmentGainedLine(
+    skillName,
+    result.fragmentCount,
+    result.fragmentThreshold,
+  );
 }
 
 Future<void> _applyBossKillReputation({
