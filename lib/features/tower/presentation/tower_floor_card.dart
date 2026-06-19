@@ -6,6 +6,7 @@ import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/presentation/loot_rumor_dialog.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';
+import '../../loot_preview/presentation/weakness_hint_line.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -350,6 +351,11 @@ class _FloorPlaque extends StatelessWidget {
                             ],
                           );
                         }(),
+                        // 批二②:通关后战前可查 Boss 弱点/抗性(未通关 / 无配置 → shrink)。
+                        WeaknessHintLine(
+                          enemyTeam: def.enemyTeam,
+                          cleared: isCleared,
+                        ),
                       ],
                     ),
                   ),

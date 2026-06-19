@@ -87,6 +87,9 @@ class UiStrings {
   static const String impactGlyphBreakWindow = '破绽'; // 破防开窗
   // 第六阶段 破绽窗口指令栏提示：敌方踉跄期间出现，引导玩家拖招爆发技。
   static const String coopBurstPrompt = '破绽 · 该爆发了';
+  // 第七阶段批二 ②：会心题字（命中守方弱点流派 mult>1.0 时弹）。2 字适配单字
+  // glyph overlay box（200px / 72pt），区别于多字转阶段标题走 caption overlay。
+  static const String weaknessHitGlyph = '会心';
 
   // 第七阶段批二 ①：Boss 转阶段题字短标题（4 字水墨）。
   // BossPhaseDef.titleKey → 显示标题；未知 / null → 空串（调用方走
@@ -769,6 +772,11 @@ class UiStrings {
   static const String lootNoFixedDrop = '本关无固定收获';
   static const String lootAboveRealmHint = '机缘可遇，火候未到';
   static const String lootTowerFirstClearOnlyFooter = '塔层传闻仅首通可得，错过不补';
+
+  // === 第七阶段批二 ② · 弱点/抗性「事后可查」战前提示（通关后才显，§5.7）===
+  // X = 流派显示名（EnumL10n.school）。水墨口吻，不写「弱点/抗性」直白词。
+  static String weaknessHintWeak(String school) => '似惧「$school」路数';
+  static String weaknessHintResist(String school) => '「$school」路难伤';
   static const String firstClearCeremonySubtitle = '朱印封记';
   static String stageVictoryBossFirstClear(String stageName) =>
       '首胜 · $stageName';
