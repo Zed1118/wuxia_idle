@@ -6,10 +6,11 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_loadout.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 职责软引导 autoFill 倾向测试（第六阶段 Task 6）
+// 职责软引导 autoFill 倾向测试（第六阶段 Task 6，第七阶段批三收窄）
 //
 // 集成层 — SkillLoadout.autoFill（真实生产入口，与 applyAutoFill 共用同一核心）
-//    验证最终 loadout 按 lineage 倾向变化：弟子→破防技进槽，祖师→不强制，徒孙→不变。
+//    验证最终 loadout 按 lineage 倾向变化：
+//      大弟子(senior)→破防技进槽，祖师→不强制，徒孙/junior/disciple→不变。
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ──── 辅助 Fixture ────────────────────────────────────────────────────────────
@@ -98,9 +99,9 @@ void main() {
   //   defense_break (power=500, defenseBreakPct=0.3)  ← 默认 power-sort 不会选
   //   low_D (power=200, 无破防)
   //
-  // 弟子期望：defense_break 出现在最终 loadout 主修槽之一。
+  // 大弟子(senior)期望：defense_break 出现在最终 loadout 主修槽之一。
   // 祖师期望：high_A + high_B 进槽（power-sort default），defense_break 不进。
-  // 徒孙期望：同祖师（power-sort default，回归）。
+  // 徒孙/junior/disciple 期望：同祖师（power-sort default，回归）。
   // ══════════════════════════════════════════════════════════════════════════
   group('SkillLoadout.autoFill 集成：lineage 倾向对最终 loadout 生效', () {
     // 候选池（power-sort 默认选 highA/highB，不选 defBreak）
@@ -110,29 +111,29 @@ void main() {
     final lowD = _skill('low_d', power: 200);
     final pool = [highA, highB, defBreak, lowD];
 
-    // ─── 弟子：autoFill 后 loadout 包含破防技 ────────────────────────────────
-    test('弟子：最终 autoFill loadout 包含破防技（即使 power 排名不入前 2）', () {
-      final disciple =
-          _character(isFounder: false, lineageRole: LineageRole.disciple);
-      final mains = _fillMains(disciple, pool);
+    // ─── 大弟子(senior)：autoFill 后 loadout 包含破防技 ─────────────────────
+    test('大弟子(senior)：最终 autoFill loadout 包含破防技（即使 power 排名不入前 2）', () {
+      final senior =
+          _character(isFounder: false, lineageRole: LineageRole.senior);
+      final mains = _fillMains(senior, pool);
 
       // 破防技必须在最终主修槽中
       expect(mains.contains(defBreak.id), isTrue,
-          reason: '弟子身份 autoFill 后，破防技应出现在主修槽（无论 power 高低）');
+          reason: '大弟子(senior)身份 autoFill 后，破防技应出现在主修槽（无论 power 高低）');
     });
 
-    test('弟子：最终 loadout 总计 2 个主修槽被填（无空槽）', () {
-      final disciple =
-          _character(isFounder: false, lineageRole: LineageRole.disciple);
-      final mains = _fillMains(disciple, pool);
+    test('大弟子(senior)：最终 loadout 总计 2 个主修槽被填（无空槽）', () {
+      final senior =
+          _character(isFounder: false, lineageRole: LineageRole.senior);
+      final mains = _fillMains(senior, pool);
       expect(mains.length, 2,
           reason: '主修槽应被完整填满（pool 有 4 个候选，2 槽应全填）');
     });
 
-    test('弟子：另一个主修槽为高倍率技（不全换成破防）', () {
-      final disciple =
-          _character(isFounder: false, lineageRole: LineageRole.disciple);
-      final mains = _fillMains(disciple, pool);
+    test('大弟子(senior)：另一个主修槽为高倍率技（不全换成破防）', () {
+      final senior =
+          _character(isFounder: false, lineageRole: LineageRole.senior);
+      final mains = _fillMains(senior, pool);
 
       // 只有一个槽被破防技占，另一个是高倍率技之一
       expect(mains.contains(defBreak.id), isTrue);
@@ -181,52 +182,67 @@ void main() {
       }
     });
 
-    // ─── 弟子已有破防技时不重复替换（现有槽保留） ─────────────────────────
-    test('弟子：若 existing 槽已有高 power 技，autoFill 不覆盖（软引导不覆盖玩家手动设置）', () {
-      final disciple =
-          _character(isFounder: false, lineageRole: LineageRole.disciple);
+    // ─── 大弟子已有破防技时不重复替换（现有槽保留） ─────────────────────────
+    test('大弟子(senior)：若 existing 槽已有高 power 技，autoFill 不覆盖（软引导不覆盖玩家手动设置）', () {
+      final senior =
+          _character(isFounder: false, lineageRole: LineageRole.senior);
       // 玩家已手动设置 m1 = high_a
       const existingWithM1 = SkillLoadout(mainSkillId1: 'high_a');
       final result = SkillLoadout.autoFill(
         mainTechniqueSkills: pool,
         assistTechniqueSkills: const [],
         jointSkill: null,
-        realmTier: disciple.realmTier,
+        realmTier: senior.realmTier,
         existing: existingWithM1,
         ultimatePowerThreshold: _threshold,
-        lineageRole: disciple.lineageRole,
-        isFounder: disciple.isFounder,
+        lineageRole: senior.lineageRole,
+        isFounder: senior.isFounder,
       );
 
       // m1 不被覆盖（玩家保留）
       expect(result.mainSkillId1, highA.id,
           reason: '玩家手动设置的 m1 不应被 autoFill 覆盖');
-      // m2 为空槽，弟子倾向应将破防技注入 m2（部分填充 + 促进入剩余槽）
+      // m2 为空槽，大弟子倾向应将破防技注入 m2（部分填充 + 促进入剩余槽）
       expect(result.mainSkillId2, defBreak.id,
-          reason: '弟子 m2 空槽时，autoFill 应将破防技注入 m2');
+          reason: '大弟子(senior) m2 空槽时，autoFill 应将破防技注入 m2');
     });
 
-    // ─── 候选无破防技时弟子行为与默认一致（无破防技可注入时不崩） ──────────
-    test('弟子：候选中无破防技时，退化为默认 power-sort（不崩，回归安全）', () {
-      final disciple =
-          _character(isFounder: false, lineageRole: LineageRole.disciple);
+    // ─── 候选无破防技时大弟子行为与默认一致（无破防技可注入时不崩） ──────────
+    test('大弟子(senior)：候选中无破防技时，退化为默认 power-sort（不崩，回归安全）', () {
+      final senior =
+          _character(isFounder: false, lineageRole: LineageRole.senior);
       final noBreakPool = [highA, highB, lowD];
-      final mains = _fillMains(disciple, noBreakPool);
+      final mains = _fillMains(senior, noBreakPool);
 
       // 无破防技候选 → 退化为 power-sort
       expect(mains.contains(highA.id), isTrue);
       expect(mains.contains(highB.id), isTrue);
     });
 
-    // ─── 弟子只有 1 个破防技且 power 最高（但低于大招阈值）时自然进槽（不重复、不崩）
-    // 注：_threshold=5000，topBreak power=3000 < 5000 → 留在主修候选池，而非进大招槽
-    test('弟子：破防技本身 power 高于其他主修候选但低于大招阈值时自然进槽（幂等、不崩）', () {
+    // ─── 通用弟子(disciple)：第七阶段批三起不再获得破防倾向（行为变更锁定）──
+    test('通用弟子(disciple)：不再获得破防倾向，行为同 power-sort default', () {
       final disciple =
           _character(isFounder: false, lineageRole: LineageRole.disciple);
+      final mains = _fillMains(disciple, pool);
+
+      // disciple 不获得破防倾向：high_a + high_b 进槽，defBreak 不进
+      expect(mains.contains(highA.id), isTrue,
+          reason: 'disciple 不获得破防倾向，high_a 应进槽');
+      expect(mains.contains(highB.id), isTrue,
+          reason: 'disciple 不获得破防倾向，high_b 应进槽');
+      expect(mains.contains(defBreak.id), isFalse,
+          reason: '第七阶段批三：破防倾向已收窄到 senior，disciple 不应再获得');
+    });
+
+    // ─── 大弟子只有 1 个破防技且 power 最高（但低于大招阈值）时自然进槽（不重复、不崩）
+    // 注：_threshold=5000，topBreak power=3000 < 5000 → 留在主修候选池，而非进大招槽
+    test('大弟子(senior)：破防技本身 power 高于其他主修候选但低于大招阈值时自然进槽（幂等、不崩）', () {
+      final senior =
+          _character(isFounder: false, lineageRole: LineageRole.senior);
       // power=3000 < _threshold(5000)，保留在主修候选中
       final topBreak = _skill('top_break', power: 3000, defenseBreakPct: 0.5);
       final smallPool = [highA, topBreak, lowD]; // highA=2000, topBreak=3000
-      final mains = _fillMains(disciple, smallPool);
+      final mains = _fillMains(senior, smallPool);
 
       // topBreak power 最高（3000 > highA 2000），power-sort 自然选到第一位
       expect(mains.contains(topBreak.id), isTrue,
