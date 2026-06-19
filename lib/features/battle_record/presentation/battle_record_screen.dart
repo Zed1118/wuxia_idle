@@ -22,7 +22,7 @@ import 'boss_memory_detail_screen.dart';
 ///   - 有对应 Memory → [_VictoryTile] 已击败纪念卡
 ///   - 无对应 Memory → [_ShadowTile] 剩影占位（不显 bossName，不剧透）
 ///
-/// 点击纪念卡：T9 BossMemoryDetailScreen 尚未建立，onTap 留 // T9 wire 注释占位。
+/// 点击已击败纪念卡 → push [BossMemoryDetailScreen]（单 Boss 完整纪念详情）。
 class BattleRecordScreen extends ConsumerWidget {
   const BattleRecordScreen({super.key});
 
