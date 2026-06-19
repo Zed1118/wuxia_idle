@@ -106,6 +106,10 @@ class EnumL10n {
   /// P0 破招:踉跄跳过本次行动日志。
   static String staggered(String name) => '$name 踉跄难稳。';
 
+  /// 第七阶段批二 ①:Boss 转阶段日志(血量跌破阈值进入下一阶段)。
+  static String bossPhaseTransition(String name, int phaseIndex) =>
+      '$name 气势陡变,进入第 ${phaseIndex + 1} 阶!';
+
   /// 心法修炼度 9 层（GDD §4.3，与境界 7 层 [realmLayer] 严格不同名）。
   static String cultivationLayer(CultivationLayer l) {
     return switch (l) {

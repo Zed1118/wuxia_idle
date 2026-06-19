@@ -508,7 +508,7 @@ class DefaultGroundStrategy implements BattleStrategy {
       newTargets = Map.unmodifiable(m);
     }
 
-    final next = preState.copyWith(
+    var next = preState.copyWith(
       leftTeam: List.unmodifiable(left),
       rightTeam: List.unmodifiable(right),
       // aoe 每 target 一条 BattleAction(single 单元素,与原逐字节等价)。
@@ -516,6 +516,9 @@ class DefaultGroundStrategy implements BattleStrategy {
       pendingUltimates: newPending,
       pendingTargets: newTargets,
     );
+
+    // 第七阶段批二 ①:伤害写回后检查 Boss 转阶段(跌破下一阶段血量阈值)。
+    next = _checkBossPhaseTransitions(next);
 
     // 胜负判定(全部 target 扣完后判一次)
     final leftAlive = next.leftTeam.any((c) => c.isAlive);
@@ -526,6 +529,84 @@ class DefaultGroundStrategy implements BattleStrategy {
     if (!leftAlive) return next.copyWith(result: BattleResult.rightWin);
     if (!rightAlive) return next.copyWith(result: BattleResult.leftWin);
     return next;
+  }
+
+  /// 第七阶段批二 ① Task 3:Boss 转阶段状态机(伤害写回后调)。
+  ///
+  /// 对每个存活、配了 [BattleCharacter.bossPhases] 且未到末阶段的角色:若
+  /// `currentHp / maxHp <= bossPhases[index+1].hpThresholdPct` → 推进一阶——
+  /// `bossPhaseIndex++` + 并入 `bossPhaseUnlockSkills[newIndex]`(去重) +
+  /// 追加一条 [BattleAction](`bossPhaseTransitionTo` / `bossPhaseTitleKey`)。
+  /// 单次大伤跨越多阈值时循环推进到稳定态(不停在中间阶段)。
+  ///
+  /// **纯机制(§5.4)**:只动 index / 招集合 / 事件日志,不碰任何属性(攻防血内力)。
+  /// **预解析设计**:只读 [BattleCharacter] 上已 pre-resolve 的字段,**不查 GameRepository**。
+  /// aiMode / onEnterMechanic 效果是 Task 4,此处仅推进 index + 携带数据 + 记事件。
+  BattleState _checkBossPhaseTransitions(BattleState state) {
+    final extraActions = <BattleAction>[];
+
+    // 扫描一队:对每个角色尝试推进阶段;有任一变化则返回新 list,否则返 null(原样)。
+    List<BattleCharacter>? scan(List<BattleCharacter> team) {
+      List<BattleCharacter>? mutated;
+      for (var i = 0; i < team.length; i++) {
+        final advanced = _advancePhases(team[i], state.tick, extraActions);
+        if (!identical(advanced, team[i])) {
+          mutated ??= team.toList();
+          mutated[i] = advanced;
+        }
+      }
+      return mutated;
+    }
+
+    final newLeft = scan(state.leftTeam);
+    final newRight = scan(state.rightTeam);
+
+    if (newLeft == null && newRight == null) return state;
+    return state.copyWith(
+      leftTeam: newLeft == null ? null : List.unmodifiable(newLeft),
+      rightTeam: newRight == null ? null : List.unmodifiable(newRight),
+      actionLog: [...state.actionLog, ...extraActions],
+    );
+  }
+
+  /// 推进单个角色的 Boss 阶段(可连跨多阈值),返回新快照(无变化则返原对象)。
+  /// 每推进一阶向 [actions] 追加一条转阶段 [BattleAction]。
+  BattleCharacter _advancePhases(
+    BattleCharacter c,
+    int tick,
+    List<BattleAction> actions,
+  ) {
+    final phases = c.bossPhases;
+    if (phases == null || !c.isAlive || c.maxHp <= 0) return c;
+    var cur = c;
+    while (cur.bossPhaseIndex < phases.length - 1) {
+      final next = cur.bossPhaseIndex + 1;
+      final hpPct = cur.currentHp / cur.maxHp;
+      if (hpPct > phases[next].hpThresholdPct) break;
+      // 并入解锁招(去重:已在 availableSkills 的不重复加)。
+      final unlocks = (cur.bossPhaseUnlockSkills != null &&
+              next < cur.bossPhaseUnlockSkills!.length)
+          ? cur.bossPhaseUnlockSkills![next]
+          : const <SkillDef>[];
+      final existingIds = cur.availableSkills.map((s) => s.id).toSet();
+      final merged = <SkillDef>[
+        ...cur.availableSkills,
+        for (final s in unlocks)
+          if (existingIds.add(s.id)) s,
+      ];
+      cur = cur.copyWith(
+        bossPhaseIndex: next,
+        availableSkills: List.unmodifiable(merged),
+      );
+      actions.add(BattleAction(
+        tick: tick,
+        actorId: cur.characterId,
+        description: EnumL10n.bossPhaseTransition(cur.name, next),
+        bossPhaseTransitionTo: next,
+        bossPhaseTitleKey: phases[next].titleKey,
+      ));
+    }
+    return cur;
   }
 
   /// 单 target 侧结算组装(纯逻辑,**不碰 rng** — [result] 由调用方传入)。

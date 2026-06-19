@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 
 import '../domain/battle_state.dart';
 import '../domain/derived_stats.dart' show RealmUtils;
+import '../../../data/defs/boss_phase_def.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/synergy_def.dart';
@@ -423,6 +424,22 @@ class StageBattleSetup {
         ? const <String>[]
         : (traits.map((t) => 'cycle_$t').toList()..sort());
 
+    // ── 第七阶段批二 ① Task 3:Boss 阶段招式 pre-resolve ────────────────────
+    // 把每个 bossPhases[i].unlockSkillIds → List<SkillDef>(与 enemy.skillIds 同
+    // 一 getSkill 查法),与 bossPhases 下标对齐。战中 strategy 只读这些预解析字段,
+    // 不再回查 GameRepository(BattleCharacter 派生快照不查 Isar 约定)。
+    // 非 Boss / 未配 bossPhases → 三字段全默认(index 0 / null / null)。
+    final List<BossPhaseDef>? bossPhases = enemy.bossPhases;
+    final List<List<SkillDef>>? bossPhaseUnlockSkills = bossPhases == null
+        ? null
+        : [
+            for (final phase in bossPhases)
+              [
+                for (final sid in phase.unlockSkillIds)
+                  GameRepository.instance.getSkill(sid),
+              ],
+          ];
+
     return BattleCharacter(
       characterId: characterIdOverride ?? -(slotIndex + 1),
       name: enemy.name,
@@ -449,6 +466,9 @@ class StageBattleSetup {
       iconPath: enemy.iconPath,
       isBoss: enemy.isBoss,
       chargeSkillId: chargeSkillId,
+      bossPhaseIndex: 0,
+      bossPhases: bossPhases,
+      bossPhaseUnlockSkills: bossPhaseUnlockSkills,
     );
   }
 
