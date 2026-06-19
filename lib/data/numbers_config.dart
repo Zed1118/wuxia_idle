@@ -216,6 +216,11 @@ class NumbersConfig {
   /// 战后英雄镜头表现参数（第七阶段 批一）。顶层 `post_battle.hero_camera` 段。
   final HeroCameraConfig heroCamera;
 
+  /// 命名弟子拜入触发表（第七阶段批三·队伍成长）。顶层 `lineage_onboarding` 段。
+  ///
+  /// 开局单人，弟子按主线关卡节点拜入。空段兜底 [LineageOnboardingConfig]（discipleJoins 空）。
+  final LineageOnboardingConfig lineageOnboarding;
+
   /// numbers.yaml 全量原始 map（已 deep-convert 为 `Map<String, dynamic>`）。
   /// 战斗、装备、闭关等模块强类型化前，先从这里取数。
   final Map<String, dynamic> raw;
@@ -265,6 +270,7 @@ class NumbersConfig {
     required this.passiveIdle,
     required this.battleReport,
     required this.heroCamera,
+    required this.lineageOnboarding,
     required this.raw,
   });
 
@@ -409,6 +415,9 @@ class NumbersConfig {
         ((y['post_battle'] as Map?)?.cast<String, dynamic>()['hero_camera']
                 as Map?)
             ?.cast<String, dynamic>(),
+      ),
+      lineageOnboarding: LineageOnboardingConfig.fromYaml(
+        y['lineage_onboarding'] as Map<String, dynamic>?,
       ),
       raw: y,
     );
@@ -2765,6 +2774,45 @@ class BattleReportConfig {
       minionDamagePct: md,
       frontlineDeathPhasePct: fd,
       survivorHpPct: sv,
+    );
+  }
+}
+
+// =============================================================================
+// 第七阶段批三·队伍成长:命名弟子拜入触发表。
+// =============================================================================
+
+/// 单个弟子的拜入触发定义。
+class DiscipleJoinDef {
+  final String stageId;
+  final int masterSlotIndex; // masters.yaml slotIndex(1=大弟子/2=二弟子)
+  final LineageRole role;
+  const DiscipleJoinDef({
+    required this.stageId,
+    required this.masterSlotIndex,
+    required this.role,
+  });
+  factory DiscipleJoinDef.fromYaml(Map<String, dynamic> y) => DiscipleJoinDef(
+        stageId: y['stage_id'] as String,
+        masterSlotIndex: (y['master_slot_index'] as num).toInt(),
+        role: LineageRole.values.byName(y['role'] as String),
+      );
+}
+
+/// 命名弟子拜入触发表（numbers.yaml `lineage_onboarding`）。
+///
+/// 开局单人，弟子按主线关卡节点拜入。null yaml → 空配置（default-safe）。
+class LineageOnboardingConfig {
+  final List<DiscipleJoinDef> discipleJoins;
+  const LineageOnboardingConfig({this.discipleJoins = const []});
+  Set<String> get joinStageIds => discipleJoins.map((j) => j.stageId).toSet();
+  factory LineageOnboardingConfig.fromYaml(Map<String, dynamic>? y) {
+    if (y == null) return const LineageOnboardingConfig();
+    final raw = (y['disciple_joins'] as List?) ?? const [];
+    return LineageOnboardingConfig(
+      discipleJoins: raw
+          .map((e) => DiscipleJoinDef.fromYaml(Map<String, dynamic>.from(e as Map)))
+          .toList(growable: false),
     );
   }
 }

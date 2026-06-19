@@ -1750,6 +1750,16 @@ post_battle:
     portrait_slide_px: 48   # 立绘侧滑入位移
     portrait_scale_from: 0.88  # 立绘起始缩放(放大到 1.0)
 
+# 第七阶段批三·队伍成长:开局单人,命名弟子按主线关卡节点拜入。
+lineage_onboarding:
+  disciple_joins:
+    - stage_id: stage_01_02   # 过荒山野店 → 大弟子拜入(2 人)
+      master_slot_index: 1
+      role: senior
+    - stage_id: stage_01_04   # 过洛阳城外小Boss → 二弟子拜入(满队迎章末Boss)
+      master_slot_index: 2
+      role: junior
+
 # =============================================================================
 # 文件结束
 # =============================================================================
