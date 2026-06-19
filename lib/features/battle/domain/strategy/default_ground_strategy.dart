@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../core/domain/enums.dart';
 import '../../../../data/numbers_config.dart';
@@ -522,7 +523,7 @@ class DefaultGroundStrategy implements BattleStrategy {
     );
 
     // 第七阶段批二 ①:伤害写回后检查 Boss 转阶段(跌破下一阶段血量阈值)。
-    next = _checkBossPhaseTransitions(next);
+    next = _checkBossPhaseTransitions(next, n);
 
     // 胜负判定(全部 target 扣完后判一次)
     final leftAlive = next.leftTeam.any((c) => c.isAlive);
@@ -546,14 +547,14 @@ class DefaultGroundStrategy implements BattleStrategy {
   /// **纯机制(§5.4)**:只动 index / 招集合 / 事件日志,不碰任何属性(攻防血内力)。
   /// **预解析设计**:只读 [BattleCharacter] 上已 pre-resolve 的字段,**不查 GameRepository**。
   /// aiMode / onEnterMechanic 效果是 Task 4,此处仅推进 index + 携带数据 + 记事件。
-  BattleState _checkBossPhaseTransitions(BattleState state) {
+  BattleState _checkBossPhaseTransitions(BattleState state, NumbersConfig n) {
     final extraActions = <BattleAction>[];
 
     // 扫描一队:对每个角色尝试推进阶段;有任一变化则返回新 list,否则返 null(原样)。
     List<BattleCharacter>? scan(List<BattleCharacter> team) {
       List<BattleCharacter>? mutated;
       for (var i = 0; i < team.length; i++) {
-        final advanced = _advancePhases(team[i], state.tick, extraActions);
+        final advanced = _advancePhases(team[i], state.tick, extraActions, n: n);
         if (!identical(advanced, team[i])) {
           mutated ??= team.toList();
           mutated[i] = advanced;
@@ -578,8 +579,9 @@ class DefaultGroundStrategy implements BattleStrategy {
   BattleCharacter _advancePhases(
     BattleCharacter c,
     int tick,
-    List<BattleAction> actions,
-  ) {
+    List<BattleAction> actions, {
+    NumbersConfig? n,
+  }) {
     final phases = c.bossPhases;
     if (phases == null || !c.isAlive || c.maxHp <= 0) return c;
     var cur = c;
@@ -602,6 +604,28 @@ class DefaultGroundStrategy implements BattleStrategy {
         bossPhaseIndex: next,
         availableSkills: List.unmodifiable(merged),
       );
+      // Task 4-A:onEnterMechanic==chargeCounter → 进阶即把 Boss 推入蓄力态,
+      // 蓄招 = 本阶段解锁招里 powerMultiplier 最高者(招牌反扑)。蓄力 tick 复用
+      // 既有 bossCharge.defaultChargeTicks(与 _resolveAction 起手蓄力同源,
+      // 不硬编新数;n==null 时跳过 = 防御性,正常路径 tick 必传 n)。解锁招为空
+      // 则 no-op(不蓄力)。纯机制无属性 buff(§5.4),后续靠现有破招路径破解。
+      if (phases[next].onEnterMechanic == BossPhaseMechanic.chargeCounter &&
+          n != null &&
+          unlocks.isNotEmpty) {
+        SkillDef? signature;
+        for (final s in unlocks) {
+          if (signature == null ||
+              s.powerMultiplier > signature.powerMultiplier) {
+            signature = s;
+          }
+        }
+        if (signature != null) {
+          cur = cur.copyWith(
+            chargingSkill: signature,
+            chargeTicksRemaining: n.combat.bossCharge.defaultChargeTicks,
+          );
+        }
+      }
       actions.add(BattleAction(
         tick: tick,
         actorId: cur.characterId,

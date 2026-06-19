@@ -1,3 +1,4 @@
+import '../../../data/defs/boss_phase_def.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/numbers_config.dart';
@@ -63,6 +64,9 @@ class BattleAI {
     if (skill.canInterrupt && charging.isNotEmpty) {
       // 破招锁定优先于集火(破招窗口比泛破绽更紧急)
       targetId = charging.first.characterId; // P0:破招技锁定蓄力敌人
+    } else if (_currentBossAiMode(actor) == BossAiMode.focus) {
+      // Task 4-C:focus 阶段恒打血最低(击杀压制),不偏好破绽窗口目标。
+      targetId = _pickTargetId(actor, state);
     } else {
       // 第六阶段:破绽窗口内敌优先集火(链路爆发);无破绽敌回落血最低。
       targetId = _pickFocusTargetId(actor, state) ?? _pickTargetId(actor, state);
@@ -97,6 +101,27 @@ class BattleAI {
       if (s.type != SkillType.jointSkill) continue;
       if (!_canUse(actor, s)) continue;
       return s;
+    }
+
+    // Task 4-B:aggressive 阶段 → 优先放本阶段解锁招里 powerMultiplier 最高的可用招
+    // (新解锁阶段招立即反扑,不被默认排序埋没)。仅在本阶段招都不可用时回落下方
+    // 默认优先级。纯招式选择无属性 buff(§5.4)。
+    if (_currentBossAiMode(actor) == BossAiMode.aggressive) {
+      final phaseSkills = actor.bossPhaseUnlockSkills != null &&
+              actor.bossPhaseIndex < actor.bossPhaseUnlockSkills!.length
+          ? actor.bossPhaseUnlockSkills![actor.bossPhaseIndex]
+          : const <SkillDef>[];
+      final phaseIds = phaseSkills.map((s) => s.id).toSet();
+      SkillDef? bestPhase;
+      for (final s in actor.availableSkills) {
+        if (!phaseIds.contains(s.id)) continue;
+        if (!_canUse(actor, s)) continue;
+        if (bestPhase == null ||
+            s.powerMultiplier > bestPhase.powerMultiplier) {
+          bestPhase = s;
+        }
+      }
+      if (bestPhase != null) return bestPhase;
     }
 
     // 2) 强力技能：内力够 + CD 0，多个挑 powerMultiplier 最高的
@@ -162,6 +187,18 @@ class BattleAI {
       }
     }
     return best?.characterId;
+  }
+
+  /// Task 4:当前所处 Boss 阶段的 [BossAiMode]。非 Boss(bossPhases==null)或
+  /// index 越界 → [BossAiMode.normal](默认行为,零回归)。
+  static BossAiMode _currentBossAiMode(BattleCharacter actor) {
+    final phases = actor.bossPhases;
+    if (phases == null ||
+        actor.bossPhaseIndex < 0 ||
+        actor.bossPhaseIndex >= phases.length) {
+      return BossAiMode.normal;
+    }
+    return phases[actor.bossPhaseIndex].aiMode;
   }
 
   /// 内力够 + CD 0 才可用（普攻 cost=0、CD=0 永远 true）。
