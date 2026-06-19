@@ -118,7 +118,11 @@ class IsarSetup {
   //   无数据迁移动作,仅版本标记 → 0.23.0。
   //   M2 范围 B 被动离线挂机:SaveData 加 totalPassiveMojianshi/totalPassiveExperience
   //   (旧档新 int 字段自动 0,无显式迁移动作,_migrateSaveData 尾部统一落版本号)→ 0.24.0。
-  static const _currentSaveVersion = '0.24.0';
+  // 第七阶段批三 队伍成长:命名弟子 lineageRole 重映射 + 拜入防重预填 → 0.25.0。
+  //   老档(<0.25.0)已由旧 onboarding 种满 3 人队(两弟子 role=disciple)。迁移段 4:
+  //   a) founder.discipleIds 顺序前 2 位 disciple → senior/junior(通用收徒弟子不动);
+  //   b) 预填全部 join stage id(弟子已在,disciple-join hook 不再触发、不重建)。
+  static const _currentSaveVersion = '0.25.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -235,6 +239,48 @@ class IsarSetup {
           tp.currentCycleIndex = 1;
           tp.maxClearedCycle = tp.highestClearedFloor >= 30 ? 1 : 0;
           await isar.towerProgress.put(tp);
+        }
+      }
+
+      // --- 段 4(0.25.0 队伍成长):命名弟子 role 重映射 + 拜入防重预填 ---
+      // 老档(<0.25.0)均由旧 onboarding 种满队,故:
+      //   a) founder.discipleIds 顺序前 2 位 disciple → senior/junior
+      //      (通用收徒弟子,即不在 discipleIds 里的,不动;仅 role==disciple 时改,
+      //       已 senior/junior 不回写 → 幂等);
+      //   b) 预填全部 join stage id(弟子已在,disciple-join hook 不再触发、不重建)。
+      if (_compareVersion(fromVersion, '0.25.0') < 0) {
+        // 先按 founderCharacterId 取 founder,缺失则扫 isFounder(防御性)。
+        Character? founder;
+        if (save.founderCharacterId != null) {
+          founder = await isar.characters.get(save.founderCharacterId!);
+        }
+        if (founder == null) {
+          final all = await isar.characters.where().findAll();
+          for (final c in all) {
+            if (c.isFounder) {
+              founder = c;
+              break;
+            }
+          }
+        }
+        if (founder != null) {
+          for (var i = 0; i < founder.discipleIds.length && i < 2; i++) {
+            final d = await isar.characters.get(founder.discipleIds[i]);
+            if (d == null || d.lineageRole != LineageRole.disciple) continue;
+            d.lineageRole = i == 0 ? LineageRole.senior : LineageRole.junior;
+            await isar.characters.put(d);
+          }
+        }
+        // GameRepository 未加载(理论不会:splash 先 loadAllDefs 再 init)→ 跳过预填,
+        // 弟子仍在故 hook 不会重建,只是 triggered 集合保持空(不影响正确性)。
+        if (GameRepository.isLoaded) {
+          final joinIds =
+              GameRepository.instance.numbers.lineageOnboarding.joinStageIds;
+          final cur = List<String>.of(save.triggeredDiscipleJoinStageIds);
+          for (final id in joinIds) {
+            if (!cur.contains(id)) cur.add(id);
+          }
+          save.triggeredDiscipleJoinStageIds = cur;
         }
       }
 
