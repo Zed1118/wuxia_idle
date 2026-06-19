@@ -123,6 +123,11 @@ class DamageCalculator {
     /// 末端乘 mainDamage，与 attackPowerMultiplier / proficiencyDamageMult 并列。
     /// 值由调用方从 BattleCharacter.outputMultiplier 传入，本函数不硬编码 0.95。
     double outputMultiplier = 1.0,
+    /// 批二②弱点/抗性:守方按攻方流派的受伤乘子(default 1.0=无弱点抗性,零回归)。
+    /// 值由调用方从守方 schoolDamageTakenMult 表按攻方流派查得(>1.0 弱点/<1.0 抗性),
+    /// 末端乘 mainDamage,沿 outputMultiplier 体例。§5.4 红线:弱点最大 ≤2.0,
+    /// 叠乘后仍 <100万(numbers 值域 + 加载期 enforceWeaknessRedLines 双守)。
+    double defenderSchoolDamageMult = 1.0,
   }) {
     // === 1. 闪避 ===
     if (rng.nextDouble() < defenderEvasionRate) {
@@ -203,7 +208,8 @@ class DamageCalculator {
         realmMult *
         attackPowerMultiplier *
         proficiencyDamageMult * // 可玩性 P1a:熟练度综合倍率(已含 130% cap)
-        outputMultiplier; // M6 余毒:输出乘数(default 1.0=无余毒)
+        outputMultiplier * // M6 余毒:输出乘数(default 1.0=无余毒)
+        defenderSchoolDamageMult; // 批二②:弱点/抗性乘子(default 1.0=无)
     final mainDamage = raw.toInt();
 
     // === 9. 刚猛克阴柔附带震伤(§12.1 #7 v1.4 决议)===
@@ -231,6 +237,7 @@ class DamageCalculator {
         '${attackPowerMultiplier != 1.0 ? ' * ${_fmt(attackPowerMultiplier)}' : ''}'
         '${proficiencyDamageMult != 1.0 ? ' * ${_fmt(proficiencyDamageMult)}' : ''}'
         '${outputMultiplier != 1.0 ? ' * ${_fmt(outputMultiplier)}(余毒)' : ''}'
+        '${defenderSchoolDamageMult != 1.0 ? ' * ${_fmt(defenderSchoolDamageMult)}(弱点/抗性)' : ''}'
         ' = $mainDamage'
         '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
         ' [atkLv=$atkLevel,defLv=$defLevel]';

@@ -1100,6 +1100,7 @@ class CombatNumbers {
   final BossChargeConfig bossCharge;
   final ImpactFeedbackConfig impactFeedback;
   final DefenseBreakConfig defenseBreak;
+  final WeaknessConfig weakness;
 
   const CombatNumbers({
     required this.damageFormula,
@@ -1112,6 +1113,7 @@ class CombatNumbers {
     required this.bossCharge,
     required this.impactFeedback,
     this.defenseBreak = const DefenseBreakConfig(),
+    this.weakness = const WeaknessConfig(),
   });
 
   factory CombatNumbers.fromYaml(Map<String, dynamic> y) {
@@ -1145,6 +1147,9 @@ class CombatNumbers {
       ),
       defenseBreak: DefenseBreakConfig.fromYaml(
         y['defense_break'] as Map? ?? const {},
+      ),
+      weakness: WeaknessConfig.fromYaml(
+        y['weakness'] as Map? ?? const {},
       ),
     );
   }
@@ -1186,6 +1191,21 @@ class DefenseBreakConfig {
   const DefenseBreakConfig({this.windowTicks = 3});
   factory DefenseBreakConfig.fromYaml(Map y) => DefenseBreakConfig(
         windowTicks: (y['window_ticks'] as num?)?.toInt() ?? 3,
+      );
+}
+
+/// 第七阶段批二②:Boss 弱点/抗性乘子值域(numbers.yaml `combat.weakness`)。
+///
+/// 每个 Boss 的 `schoolDamageTakenMult` 各值须 ∈ [minMult, maxMult]
+/// (加载期 GameRepository._enforceWeaknessRedLines 校)。maxMult 守 §5.4 ≤2.0。
+/// fixture 不带该段时回落默认(沿 BossChargeConfig / DefenseBreakConfig 体例)。
+class WeaknessConfig {
+  final double minMult;
+  final double maxMult;
+  const WeaknessConfig({this.minMult = 0.5, this.maxMult = 2.0});
+  factory WeaknessConfig.fromYaml(Map y) => WeaknessConfig(
+        minMult: (y['min_mult'] as num?)?.toDouble() ?? 0.5,
+        maxMult: (y['max_mult'] as num?)?.toDouble() ?? 2.0,
       );
 }
 

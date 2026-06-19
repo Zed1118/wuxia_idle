@@ -228,6 +228,13 @@ class EnemyDef {
   /// skill id 须在 skills.yaml 中存在（`enforceBossPhaseSkillIds` 校验）。
   final List<BossPhaseDef>? bossPhases;
 
+  /// 批二②：按攻方流派的弱点/抗性受伤乘子（null = 无弱点抗性，全 ×1.0）。
+  /// key=攻方 [TechniqueSchool]，value>1.0 弱点（多受伤）/ <1.0 抗性（少受伤）。
+  /// 与三流派克制对称，叠乘在伤害末端（Task 7 由 caller 透传到 DamageCalculator
+  /// `defenderSchoolDamageMult`）。值域 [min_mult, max_mult] 由 numbers.yaml
+  /// `combat.weakness` 定，加载期 `enforceWeaknessRedLines` 校（守 §5.4 ≤2.0）。
+  final Map<TechniqueSchool, double>? schoolDamageTakenMult;
+
   const EnemyDef({
     required this.id,
     required this.name,
@@ -242,6 +249,7 @@ class EnemyDef {
     this.isBoss = false,
     this.chargeSkillId,
     this.bossPhases,
+    this.schoolDamageTakenMult,
   });
 
   factory EnemyDef.fromYaml(Map<String, dynamic> y) {
@@ -263,6 +271,14 @@ class EnemyDef {
       bossPhases: y['bossPhases'] == null
           ? null
           : BossPhaseDef.parseList(y['bossPhases'] as List),
+      schoolDamageTakenMult: y['schoolDamageTakenMult'] == null
+          ? null
+          : (y['schoolDamageTakenMult'] as Map).map(
+              (k, v) => MapEntry(
+                TechniqueSchool.values.byName(k as String),
+                (v as num).toDouble(),
+              ),
+            ),
     );
   }
 

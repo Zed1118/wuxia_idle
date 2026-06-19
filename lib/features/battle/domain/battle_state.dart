@@ -66,6 +66,11 @@ class BattleAction {
   /// null=该阶段不题字或非转阶段动作)。
   final String? bossPhaseTitleKey;
 
+  /// 第七阶段批二 ②:本动作命中了目标的弱点流派(受伤乘子 >1.0)。
+  /// 表现层据此弹「会心」glyph(纯读元数据,不参与结算)。default false;
+  /// Task 7 由 caller 据守方 schoolDamageTakenMult 设置,本批仅加字段。
+  final bool weaknessHit;
+
   const BattleAction({
     required this.tick,
     required this.actorId,
@@ -77,6 +82,7 @@ class BattleAction {
     this.openedBreakWindow = false,
     this.bossPhaseTransitionTo,
     this.bossPhaseTitleKey,
+    this.weaknessHit = false,
   });
 
   @override
@@ -197,6 +203,12 @@ class BattleCharacter {
   /// phase 0(起始)条目通常为空列表。null=非 Boss / 未配。
   final List<List<SkillDef>>? bossPhaseUnlockSkills;
 
+  /// 第七阶段批二 ②:本单位按攻方流派的弱点/抗性受伤乘子(EnemyDef 透传,
+  /// 玩家/NPC 恒空)。key=攻方流派,value>1.0 弱点/<1.0 抗性。default const {}。
+  /// Task 7 由 DefaultGroundStrategy 据攻方流派查此表 → DamageCalculator
+  /// `defenderSchoolDamageMult`;本批仅加字段,无 caller 消费(零行为变更)。
+  final Map<TechniqueSchool, double> schoolDamageTakenMult;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -235,6 +247,7 @@ class BattleCharacter {
     this.bossPhaseIndex = 0,
     this.bossPhases,
     this.bossPhaseUnlockSkills,
+    this.schoolDamageTakenMult = const {},
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -434,6 +447,7 @@ class BattleCharacter {
     int? bossPhaseIndex,
     Object? bossPhases = _unset,
     Object? bossPhaseUnlockSkills = _unset,
+    Map<TechniqueSchool, double>? schoolDamageTakenMult,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -487,6 +501,8 @@ class BattleCharacter {
       bossPhaseUnlockSkills: identical(bossPhaseUnlockSkills, _unset)
           ? this.bossPhaseUnlockSkills
           : bossPhaseUnlockSkills as List<List<SkillDef>>?,
+      schoolDamageTakenMult:
+          schoolDamageTakenMult ?? this.schoolDamageTakenMult,
     );
   }
 

@@ -469,6 +469,7 @@ class StageBattleSetup {
       bossPhaseIndex: 0,
       bossPhases: bossPhases,
       bossPhaseUnlockSkills: bossPhaseUnlockSkills,
+      schoolDamageTakenMult: enemy.schoolDamageTakenMult ?? const {},
     );
   }
 
