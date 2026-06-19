@@ -55,6 +55,11 @@ import '../../battle/presentation/character_avatar.dart';
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
+import '../../battle_record/domain/boss_memory.dart';
+import '../../battle_record/domain/boss_memory_source.dart';
+import '../../battle_record/application/boss_memory_service.dart';
+import '../../battle_record/presentation/battle_record_screen.dart';
+import '../../battle_record/presentation/boss_memory_detail_screen.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -390,6 +395,66 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // 第七阶段批三目检:拜入立绘题字 overlay 动效。读真 lineage_onboarding 配置,
       // 大弟子/二弟子真立绘交替循环重播(GameRepository 已在 _prepare 加载完)。
       return const _DiscipleJoinPreview();
+    case VisualRoute.battleRecord:
+      // P4 战绩册主屏目检:种 3 条 BossMemory(2 完整 + 1 pre-record),
+      // 其余 27 槽由 BattleRecordScreen 从 bossCatalogProvider 读出显剩影占位。
+      final svc = BossMemoryService(isar: isar);
+      final now = DateTime(2026, 6, 19);
+      // 完整纪念 1：主线 stage_01_05 风雨渡口 Boss（刚猛队首胜）
+      await svc.recordBossVictory(
+        saveDataId: IsarSetup.currentSlotId,
+        bossKey: 'stage_01_05',
+        source: BossMemorySource.mainline,
+        groupIndex: 5,
+        bossName: '撑伞高人',
+        totalDamage: 43280,
+        critCount: 12,
+        totalTicks: 38,
+        topContributorName: '萧远山',
+        topContributorDamage: 18540,
+        treasureName: '天问剑',
+        treasureTier: EquipmentTier.shenWu,
+        rosterNames: ['萧远山', '阿朱', '玄冥二老'],
+        rosterPortraits: const [],
+        now: now,
+      );
+      // 完整纪念 2：爬塔 10 层（爬塔 Boss 首胜）
+      await svc.recordBossVictory(
+        saveDataId: IsarSetup.currentSlotId,
+        bossKey: 'tower_floor_10',
+        source: BossMemorySource.tower,
+        groupIndex: 10,
+        bossName: '铁掌帮帮主',
+        totalDamage: 28910,
+        critCount: 7,
+        totalTicks: 24,
+        topContributorName: '阿朱',
+        topContributorDamage: 11320,
+        treasureName: '铁掌护甲',
+        treasureTier: EquipmentTier.liQi,
+        rosterNames: ['萧远山', '阿朱'],
+        rosterPortraits: const [],
+        now: now.subtract(const Duration(days: 3)),
+      );
+      // pre-record 骨架：爬塔 5 层（模拟本功能上线前老档回填）
+      await isar.writeTxn(() async {
+        final m = BossMemory()
+          ..saveDataId = IsarSetup.currentSlotId
+          ..bossKey = 'tower_floor_5'
+          ..source = BossMemorySource.tower
+          ..groupIndex = 5
+          ..bossName = '白驼山悍匪'
+          ..firstClearedAt = null
+          ..isPreRecord = true
+          ..rosterNames = const []
+          ..rosterPortraits = const []
+          ..defeatCount = 1;
+        await isar.bossMemorys.put(m);
+      });
+      return const BattleRecordScreen();
+    case VisualRoute.bossMemoryDetail:
+      // P4 战绩册详情屏目检:完整 + pre-record 两态并排（上下各半）。
+      return const _BossMemoryDetailPreview();
     case VisualRoute.battleTreasureGlowPeak:
       return const _TreasureGlowPreview(
         defId: 'weapon_shenwu_tian_wen_jian',
@@ -1159,6 +1224,66 @@ class _EquipmentDetailGallery extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// P4 战绩册详情屏两态预览：完整纪念（上半）+ pre-record 骨架（下半）并排。
+///
+/// 完整态：totalDamage/critCount/totalTicks/topContributor/treasure/rosterNames 全填。
+/// pre-record 态：isPreRecord=true，战绩数字区整块替换为「此役不详·记录之前」。
+/// 纯 debug fixture，中文内联照 host 现有 preview 体例（合法，不算散写）。
+class _BossMemoryDetailPreview extends StatelessWidget {
+  const _BossMemoryDetailPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    // 完整纪念 fixture
+    final full = BossMemory()
+      ..id = 1
+      ..saveDataId = 1
+      ..bossKey = 'stage_01_05'
+      ..source = BossMemorySource.mainline
+      ..groupIndex = 5
+      ..bossName = '撑伞高人'
+      ..firstClearedAt = DateTime(2026, 6, 19)
+      ..isPreRecord = false
+      ..totalDamage = 43280
+      ..critCount = 12
+      ..totalTicks = 38
+      ..topContributorName = '萧远山'
+      ..topContributorDamage = 18540
+      ..treasureName = '天问剑'
+      ..treasureTier = EquipmentTier.shenWu
+      ..rosterNames = ['萧远山', '阿朱', '玄冥二老']
+      ..rosterPortraits = const []
+      ..defeatCount = 3;
+
+    // pre-record 骨架 fixture（老档回填，战绩不详）
+    final pre = BossMemory()
+      ..id = 2
+      ..saveDataId = 1
+      ..bossKey = 'tower_floor_5'
+      ..source = BossMemorySource.tower
+      ..groupIndex = 5
+      ..bossName = '白驼山悍匪'
+      ..firstClearedAt = null
+      ..isPreRecord = true
+      ..rosterNames = const []
+      ..rosterPortraits = const []
+      ..defeatCount = 1;
+
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Column(
+        children: [
+          // 上半：完整纪念
+          Expanded(child: BossMemoryDetailScreen(memory: full)),
+          const Divider(height: 2, thickness: 2, color: WuxiaColors.textMuted),
+          // 下半：pre-record 骨架
+          Expanded(child: BossMemoryDetailScreen(memory: pre)),
+        ],
       ),
     );
   }
