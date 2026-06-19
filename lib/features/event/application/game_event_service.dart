@@ -175,7 +175,7 @@ class GameEventService {
     required AdvancementResult result,
   }) async {
     if (result.layersGained <= 0) return;
-    final isDisciple = character.lineageRole == LineageRole.disciple;
+    final isDisciple = character.lineageRole.isDiscipleRole;
     final eventType = isDisciple
         ? GameEventType.disciplePromoted
         : GameEventType.realmBreakthrough;
