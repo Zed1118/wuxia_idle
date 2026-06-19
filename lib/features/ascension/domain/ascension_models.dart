@@ -21,7 +21,7 @@ class AscensionEligibility {
   /// stage_06_05 已 cleared(Q4d Ch6 末关拦截)。
   final bool mainline0605Cleared;
 
-  /// 至少 1 个 lineageRole=disciple && isAlive=true 的徒弟(transfer target)。
+  /// 至少 1 个 lineageRole 属弟子(disciple/senior/junior · isDiscipleRole) && isAlive=true 的徒弟(transfer target)。
   final bool hasDiscipleTarget;
 
   const AscensionEligibility({
