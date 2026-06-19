@@ -423,6 +423,21 @@ void main() {
     test('isBoss: true 解析', () {
       expect(EnemyDef.fromYaml({...base(), 'isBoss': true}).isBoss, true);
     });
+
+    test('缺省 schoolDamageTakenMult=null(向后兼容,批二②)', () {
+      expect(EnemyDef.fromYaml(base()).schoolDamageTakenMult, isNull);
+    });
+
+    test('schoolDamageTakenMult 解析 enum key + double value(批二②)', () {
+      final def = EnemyDef.fromYaml({
+        ...base(),
+        'schoolDamageTakenMult': {'lingQiao': 1.25, 'yinRou': 0.75},
+      });
+      expect(def.schoolDamageTakenMult, {
+        TechniqueSchool.lingQiao: 1.25,
+        TechniqueSchool.yinRou: 0.75,
+      });
+    });
   });
 
   group('RealmDef.fromYaml', () {
