@@ -260,6 +260,17 @@ floors:
           - skill_lingqiao_jichu_skill
           - skill_lingqiao_jichu_ult
         iconPath: assets/enemies/tower_boss_10.png
+        # 第七阶段批二 ①:爬塔大 Boss(floor 10·major)二阶段。满血起手 → 跌破 50%
+        # 入「背水一击」,解锁同阶(changlian·sanLiu §5.3)大招 + 转攻势 + 蓄力反击。
+        bossPhases:
+          - hpThresholdPct: 1.0
+            titleKey: bossPhase_awaken
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_lingqiao_changlian_ult          # changlian 阶(对齐 sanLiu §5.3)
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
     dropTable:
       - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 1.0
