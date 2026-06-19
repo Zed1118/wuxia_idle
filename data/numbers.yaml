@@ -136,7 +136,7 @@ combat:
     min_mult: 0.5          # 抗性下限(受伤最多减半)
     max_mult: 2.0          # 弱点上限(受伤最多翻倍,守 §5.4 红线 ≤2.0)
     # 每个 Boss 的实际乘子配在 stages.yaml enemy.schoolDamageTakenMult;
-    # 加载期 _enforceWeaknessRedLines 校每值 ∈ [min_mult, max_mult]
+    # 加载期 enforceWeaknessRedLines 校每值 ∈ [min_mult, max_mult]
 
   # 批次 2.4 打击感表现层三档（纯表现层，真机调手感后定稿；§5.5 只动屏上播放节拍不改逻辑）。
   impact_feedback:
