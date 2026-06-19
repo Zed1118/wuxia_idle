@@ -264,6 +264,7 @@ class IsarSetup {
           }
         }
         if (founder != null) {
+          // i<2:命名弟子只有 senior+junior 两位,余者(若有)保持原 role,不重映射。
           for (var i = 0; i < founder.discipleIds.length && i < 2; i++) {
             final d = await isar.characters.get(founder.discipleIds[i]);
             if (d == null || d.lineageRole != LineageRole.disciple) continue;
