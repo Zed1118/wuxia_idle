@@ -136,6 +136,10 @@ enum VisualRoute {
     'battle_boss_phase',
     '第七阶段批二目检·真 stage_01_05 撑伞高人 Boss(HP抬高)vs at-level 玩家队真玩:跌破50%背水一击转阶段+蓄力反扑 / 刚猛打弱点会心×1.25 / 灵巧吃抗性×0.75(已开干预层可拖招)',
   ),
+  discipleJoinCeremony(
+    'disciple_join_ceremony',
+    '第七阶段批三目检·拜入立绘题字 overlay 动效(读真 lineage_onboarding 配置:大弟子/二弟子真立绘交替循环滑入+放大+「XX 拜入门下」题字,自动重播;单帧截不出须真机看动效)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
