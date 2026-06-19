@@ -82,6 +82,13 @@ void main() {
         VisualRoute.offlineRecapPassive,
       );
     });
+
+    test('批三拜入立绘题字 overlay 路由 parse', () {
+      expect(
+        parseVisualRoute('disciple_join_ceremony'),
+        VisualRoute.discipleJoinCeremony,
+      );
+    });
   });
 
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。

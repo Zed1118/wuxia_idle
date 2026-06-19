@@ -26,6 +26,8 @@ import '../../mainline/presentation/stage_list_screen.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
+import '../../onboarding/application/master_builder.dart';
+import '../../lineage/presentation/disciple_join_overlay.dart';
 import '../../sect/presentation/sect_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../tower/application/tower_progress_service.dart';
@@ -384,6 +386,10 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         allowPlayerIntervention: true,
         startPaused: true,
       );
+    case VisualRoute.discipleJoinCeremony:
+      // 第七阶段批三目检:拜入立绘题字 overlay 动效。读真 lineage_onboarding 配置,
+      // 大弟子/二弟子真立绘交替循环重播(GameRepository 已在 _prepare 加载完)。
+      return const _DiscipleJoinPreview();
     case VisualRoute.battleTreasureGlowPeak:
       return const _TreasureGlowPreview(
         defId: 'weapon_shenwu_tian_wen_jian',
@@ -975,6 +981,84 @@ class _InnerDemonResidueDefeatPreview extends StatelessWidget {
         ),
       ]),
       backgroundImagePath: 'assets/scenes/battle_citywall.png',
+    );
+  }
+}
+
+/// 第七阶段批三目检·拜入立绘题字 overlay 动效预览。
+/// 真 [DiscipleJoinOverlay] 叠在战场背景上,读 `lineage_onboarding.disciple_joins`
+/// 真配置(masterSlotIndex → masters 立绘 + [defaultMasterName] 题字),大弟子/二弟子
+/// 交替循环滑入(overlay onDone → 短暂停 → 切下一位换 key 重播),便于真机连看两段动效。
+/// 纯展示:不碰 BattleState / 不建弟子 / 不写 Isar(配置只读)。
+class _DiscipleJoinPreview extends StatefulWidget {
+  const _DiscipleJoinPreview();
+
+  @override
+  State<_DiscipleJoinPreview> createState() => _DiscipleJoinPreviewState();
+}
+
+class _DiscipleJoinPreviewState extends State<_DiscipleJoinPreview> {
+  late final List<({String portrait, String caption})> _entries;
+  int _index = 0;
+  int _replay = 0; // 递增作 key 种子,强制 overlay 重建重播动效
+  bool _switching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final repo = GameRepository.instance;
+    final masters = repo.masters;
+    _entries = [
+      for (final j in repo.numbers.lineageOnboarding.discipleJoins)
+        if (j.masterSlotIndex < masters.length)
+          (
+            portrait: masters[j.masterSlotIndex].portraitPath ?? '',
+            caption: UiStrings.discipleJoinCaption(
+              defaultMasterName(masters[j.masterSlotIndex]),
+            ),
+          ),
+    ];
+  }
+
+  void _next() {
+    if (_switching || _entries.isEmpty) return;
+    _switching = true;
+    // 短暂停后切下一位(单条配置则原地重播),换 key 触发滑入动效重跑。
+    Future<void>.delayed(const Duration(milliseconds: 700), () {
+      if (!mounted) return;
+      setState(() {
+        _index = (_index + 1) % _entries.length;
+        _replay++;
+        _switching = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_entries.isEmpty) {
+      return const Scaffold(
+        backgroundColor: WuxiaColors.background,
+        body: Center(child: Text('无拜入配置(lineage_onboarding.disciple_joins 为空)')),
+      );
+    }
+    final e = _entries[_index];
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const BattleSceneBackground(
+            path: 'assets/scenes/battle_citywall.png',
+          ),
+          DiscipleJoinOverlay(
+            key: ValueKey('disciple_join_$_replay'),
+            portraitPath: e.portrait,
+            caption: e.caption,
+            onDone: _next,
+          ),
+        ],
+      ),
     );
   }
 }
