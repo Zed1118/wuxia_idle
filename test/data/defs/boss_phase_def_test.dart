@@ -40,5 +40,20 @@ void main() {
         throwsStateError,
       );
     });
+    test('parseList 有效降序返回完整列表(order/length)', () {
+      final list = BossPhaseDef.parseList([
+        {'hpThresholdPct': 1.0},
+        {'hpThresholdPct': 0.6, 'unlockSkillIds': ['skill_b']},
+        {'hpThresholdPct': 0.3},
+      ]);
+      expect(list.length, 3);
+      expect(list[0].hpThresholdPct, 1.0);
+      expect(list[1].hpThresholdPct, 0.6);
+      expect(list[1].unlockSkillIds, ['skill_b']);
+      expect(list[2].hpThresholdPct, 0.3);
+    });
+    test('parseList 空输入返回空列表(不抛)', () {
+      expect(BossPhaseDef.parseList([]), isEmpty);
+    });
   });
 }
