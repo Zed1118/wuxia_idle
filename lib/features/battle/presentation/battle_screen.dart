@@ -480,13 +480,27 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // 纯读 action 元数据，不写 BattleState、不参与结算（守 §5.4）。
     _playBossPhaseTransition(action, actor);
 
+    // ── 第七阶段批二 ② 会心题字（命中守方弱点流派）。纯读 action 元数据，不写
+    //    BattleState、不参与结算（守 §5.4）。「会心」2 字适配单字 glyph overlay。
+    //    优先级：本帧若同时有 profile 单字（斩/震/断）也只弹会心一字，避免两 glyph
+    //    同帧叠播（会心更能传达「打中弱点」语义）；flash/shake 仍由下方 profile 路径
+    //    照常触发。无 profile 的普攻弱点命中也能弹（下方块 no-op，此处兜底）。
+    final weaknessGlyphShown = action.weaknessHit;
+    if (weaknessGlyphShown) {
+      _impactGlyphKey.currentState?.show(
+        UiStrings.weaknessHitGlyph,
+        isEnemy: actor?.teamSide == 1,
+      );
+    }
+
     // ── 批次 2.4 打击感表现层（重击分级）。纯表现层，不写 state。 ──
     final cfg = _impactConfigOrNull();
     if (cfg != null) {
       final profile = impactProfileFor(action, cfg);
       if (profile != null) {
         final isEnemy = actor?.teamSide == 1;
-        if (profile.glyph != null) {
+        // 会心已占用本帧 glyph 通道 → profile 单字跳过，不双弹（flash/shake 照常）。
+        if (profile.glyph != null && !weaknessGlyphShown) {
           _impactGlyphKey.currentState?.show(profile.glyph!, isEnemy: isEnemy);
         }
         _screenFlashKey.currentState?.flash(

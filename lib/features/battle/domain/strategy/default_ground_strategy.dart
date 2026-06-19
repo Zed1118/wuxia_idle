@@ -762,6 +762,9 @@ class DefaultGroundStrategy implements BattleStrategy {
           : _formatAction(preActor, targetAfter, skill, result),
       interrupted: brokeCharging,
       openedBreakWindow: opensBreak && !brokeCharging,
+      // 批二②会心:仅「真弱点」(mult>1.0)且命中(非闪避)才打 flag → 表现层弹会心
+      // 题字;抗性(mult<1.0)不算会心。与伤害结算同 weaknessMultOf 查表口径。
+      weaknessHit: !result.isDodged && weaknessMultOf(preActor, target) > 1.0,
     );
 
     return (
@@ -836,8 +839,20 @@ class DefaultGroundStrategy implements BattleStrategy {
       proficiencyDamageMult: profMult,
       defenderCritDamageTakenMult: critDamageTakenMult,
       outputMultiplier: attacker.outputMultiplier,
+      // 批二②弱点/抗性:守方按攻方流派的受伤乘子(default 1.0=无)。已由
+      // 加载期 enforceWeaknessRedLines 校到 ≤2.0(守 §5.4),此处仅查表透传。
+      defenderSchoolDamageMult: weaknessMultOf(attacker, defender),
     );
   }
+
+  /// 批二②:守方按攻方流派查弱点/抗性受伤乘子(无条目 → 1.0)。
+  /// 纯查表,无副作用 — [_calculateInBattle](伤害)与 [_resolveOneTarget]
+  /// (会心 flag)共用,避免两处口径漂移。>1.0 弱点 / <1.0 抗性 / 1.0 中性。
+  static double weaknessMultOf(
+    BattleCharacter attacker,
+    BattleCharacter defender,
+  ) =>
+      defender.schoolDamageTakenMult[attacker.school] ?? 1.0;
 
   /// 调试日志描述串（T13 才正式做中文化，本阶段简化）。
   String _formatAction(

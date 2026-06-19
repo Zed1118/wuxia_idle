@@ -13,6 +13,7 @@ import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/presentation/loot_rumor_dialog.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';
+import '../../loot_preview/presentation/weakness_hint_line.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import '../domain/chapter_assets.dart';
@@ -396,6 +397,11 @@ class _StageRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     LootSummaryLine(table: rumor),
+                    // 批二②:通关后战前可查 Boss 弱点/抗性(未通关 / 无配置 → shrink)。
+                    WeaknessHintLine(
+                      enemyTeam: def.enemyTeam,
+                      cleared: cleared,
+                    ),
                     // 半手动 P0 步骤5-G3:已通关关卡可逐关切自动/手动。
                     // (周目选择 Phase 2 上移到章层,不再 per-stage。)
                     if (cleared) ...[
