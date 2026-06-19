@@ -12,6 +12,7 @@ import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import 'package:wuxia_idle/features/battle_record/application/boss_memory_providers.dart';
 import 'package:wuxia_idle/features/festival/application/festival_service_providers.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
@@ -792,6 +793,70 @@ void main() {
       expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 1.0);
       expect(opacityOf(tester, UiStrings.mainMenuLightFoot), 1.0);
       expect(opacityOf(tester, UiStrings.mainMenuMassBattle), 1.0);
+    });
+  });
+
+  // ── P4 Task10 §5.7 战绩册入口门控（首胜后解锁） ──────────────────────────
+  //
+  // §5.7：首次击败任一 Boss 前隐藏入口；bossMemoryCount>0 才显「战绩册」按钮。
+  // 隐藏式 gating（与灰显不同，按钮整体不渲染）。
+
+  group('§5.7 战绩册入口门控', () {
+    testWidgets('0 纪念 → 无战绩册入口（隐藏）', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bossMemoryCountProvider.overrideWith((ref) async => 0),
+          ],
+          child: const MaterialApp(home: MainMenu()),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuBattleRecord), findsNothing);
+    });
+
+    testWidgets('≥1 纪念 → 有战绩册入口', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bossMemoryCountProvider.overrideWith((ref) async => 1),
+          ],
+          child: const MaterialApp(home: MainMenu()),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuBattleRecord), findsOneWidget);
+    });
+
+    testWidgets('≥1 纪念 → tap 战绩册 → Navigator.push 触发', (tester) async {
+      final observer = _RecordingNavigatorObserver();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bossMemoryCountProvider.overrideWith((ref) async => 3),
+          ],
+          child: MaterialApp(
+            navigatorObservers: [observer],
+            home: const MainMenu(),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      // 扩 viewport 防 off-screen
+      await tester.binding.setSurfaceSize(const Size(800, 3000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pump();
+
+      await tester.tap(find.text(UiStrings.mainMenuBattleRecord));
+      await tester.pump(); // 单帧，不 settle（子屏依赖 Isar）
+
+      expect(observer.pushedRoutes.length, 2);
+      expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
     });
   });
 
