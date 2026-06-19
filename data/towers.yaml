@@ -264,7 +264,7 @@ floors:
         # 入「背水一击」,解锁同阶(changlian·sanLiu §5.3)大招 + 转攻势 + 蓄力反击。
         bossPhases:
           - hpThresholdPct: 1.0
-            titleKey: bossPhase_awaken
+            # hpThresholdPct: 1.0 = 起始阶段；无 titleKey（策略层仅为 next>=1 触发转阶段题字）
           - hpThresholdPct: 0.5
             unlockSkillIds:
               - skill_lingqiao_changlian_ult          # changlian 阶(对齐 sanLiu §5.3)

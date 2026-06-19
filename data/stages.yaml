@@ -304,7 +304,7 @@ stages:
         # 解锁同阶(jichu·xueTu §5.3)固元术 + 转攻势 + 触发蓄力反击。
         bossPhases:
           - hpThresholdPct: 1.0
-            titleKey: bossPhase_awaken
+            # hpThresholdPct: 1.0 = 起始阶段；无 titleKey（策略层仅为 next>=1 触发转阶段题字）
           - hpThresholdPct: 0.5
             unlockSkillIds:
               - skill_yinrou_jichu_fang_ult           # jichu 阶(对齐 xueTu §5.3)

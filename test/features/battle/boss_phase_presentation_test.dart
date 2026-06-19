@@ -38,6 +38,14 @@ void main() {
       expect(title, '背水一击');
     });
 
+    test('titleKey awaken → 用 UiStrings 映射', () {
+      final title = bossPhaseTitleFor(
+        transitionAction(titleKey: 'bossPhase_awaken', phase: 1),
+        '撑伞高人',
+      );
+      expect(title, '困兽之斗');
+    });
+
     test('titleKey 为 null → 回落 EnumL10n.bossPhaseTransition', () {
       final action = transitionAction(titleKey: null, phase: 1);
       final title = bossPhaseTitleFor(action, '撑伞高人');
