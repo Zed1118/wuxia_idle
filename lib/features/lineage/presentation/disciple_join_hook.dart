@@ -27,11 +27,10 @@ Future<void> runDiscipleJoinHookAfterVictory({
   final joined = await svc.joinForClearedStage(stageId);
   if (joined == null) return;
 
-  // 选对应拜师 narrative:join 配置里 stageId 的次序决定 first/second。
+  // 从配置直接读 narrativeId：无脆弱次序假设，任意 join 数量均正确。
   final joins = GameRepository.instance.numbers.lineageOnboarding.discipleJoins;
-  final isFirst = joins.isNotEmpty && joins.first.stageId == stageId;
-  final narrativeId =
-      isFirst ? 'lineage_first_disciple_join' : 'lineage_second_disciple_join';
+  final join = joins.firstWhere((j) => j.stageId == stageId);
+  final narrativeId = join.narrativeId;
 
   if (context.mounted) {
     final content = await NarrativeLoader.load(narrativeId);
