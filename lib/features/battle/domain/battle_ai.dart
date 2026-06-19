@@ -115,6 +115,7 @@ class BattleAI {
       SkillDef? bestPhase;
       for (final s in actor.availableSkills) {
         if (!phaseIds.contains(s.id)) continue;
+        if (s.aiUsePolicy == AiUsePolicy.saveForInterrupt) continue; // 与默认强力技 loop 一致:破招技平时不放(防阶段招混入破招技时被即放,破坏留招语义)
         if (!_canUse(actor, s)) continue;
         if (bestPhase == null ||
             s.powerMultiplier > bestPhase.powerMultiplier) {
