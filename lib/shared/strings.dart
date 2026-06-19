@@ -312,6 +312,8 @@ class UiStrings {
   static const String profilePortraitPlaque = '人物签';
   static const String lineageRoleFounder = '开派祖师';
   static const String lineageRoleDisciple = '门下弟子';
+  static const String lineageRoleSenior = '大弟子';
+  static const String lineageRoleJunior = '二弟子';
   static const String lineageRoleGrandDisciple = '再传弟子';
 
   // 师承段（T56）

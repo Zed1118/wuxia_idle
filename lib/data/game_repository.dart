@@ -1026,7 +1026,7 @@ class GameRepository {
   ///
   /// 校验项：
   ///   - 必须 3 条；slotIndex 0/1/2 各一不重不漏
-  ///   - slotIndex=0 必须 founder，slotIndex=1/2 必须 disciple
+  ///   - slotIndex=0 必须 founder，slotIndex=1/2 必须 disciple/senior/junior
   ///   - founder 仅 1 个；不允许 grandDisciple（Demo 不做徒孙）
   ///   - defaultRealm 严格 < wuSheng（Demo 不做飞升锚点）
   ///   - AttributeProfile 4 项单项 ∈ [1, 10]，总和 ∈ [16, 24]（GDD §4.1）
@@ -1059,9 +1059,14 @@ class GameRepository {
         }
         founderCount++;
       } else {
-        if (m.lineageRole != LineageRole.disciple) {
+        const validDisciple = {
+          LineageRole.disciple,
+          LineageRole.senior,
+          LineageRole.junior,
+        };
+        if (!validDisciple.contains(m.lineageRole)) {
           throw StateError(
-            '师徒 slot=${m.slotIndex} 必须为 disciple，'
+            '师徒 slot=${m.slotIndex} 必须为 disciple/senior/junior，'
             '实际 ${m.lineageRole.name}（id=${m.id}）',
           );
         }

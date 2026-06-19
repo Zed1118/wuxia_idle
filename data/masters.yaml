@@ -31,7 +31,7 @@ masters:
   # === 大弟子 —— 二流 · 启蒙 ===
   # 二流境界 → equipment cap=haoJiaHuo（好家伙）/ technique cap=mingJiaGong（名家功）
   - id: first_disciple
-    lineageRole: disciple
+    lineageRole: senior
     slotIndex: 1
     defaultRealm: erLiu
     defaultLayer: qiMeng
@@ -52,7 +52,7 @@ masters:
   # === 二弟子 —— 三流 · 启蒙 ===
   # 三流境界 → equipment cap=xiangYangHuo（像样货）/ technique cap=changLianGong（常练功）
   - id: second_disciple
-    lineageRole: disciple
+    lineageRole: junior
     slotIndex: 2
     defaultRealm: sanLiu
     defaultLayer: qiMeng

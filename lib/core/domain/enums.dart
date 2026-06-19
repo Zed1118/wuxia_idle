@@ -157,9 +157,14 @@ enum RarityTier {
 }
 
 /// 师徒角色定位（GDD §7.1）。
+/// senior=大弟子 / junior=二弟子（第七阶段批三:开局渐进解锁 + 战斗职责三分）。
+/// disciple 值保留:老档(0.25.0 前)反序列化安全,迁移后按 founder.discipleIds 顺序
+/// 重映射为 senior/junior;通过收徒系统新增的通用弟子仍可为 disciple。
 enum LineageRole {
   founder,        // 开派祖师（玩家本体）
-  disciple,       // 弟子
+  disciple,       // 弟子（通用/老档过渡值）
+  senior,         // 大弟子（批三:破防开窗职责）
+  junior,         // 二弟子（批三:破招打断控场职责）
   grandDisciple,  // 徒孙（绝顶境界后解锁）
 }
 

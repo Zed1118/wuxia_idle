@@ -498,6 +498,8 @@ class _ProfilePortraitPlaque extends StatelessWidget {
     return switch (role) {
       LineageRole.founder => UiStrings.lineageRoleFounder,
       LineageRole.disciple => UiStrings.lineageRoleDisciple,
+      LineageRole.senior => UiStrings.lineageRoleSenior,
+      LineageRole.junior => UiStrings.lineageRoleJunior,
       LineageRole.grandDisciple => UiStrings.lineageRoleGrandDisciple,
     };
   }
