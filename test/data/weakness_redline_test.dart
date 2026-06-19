@@ -8,6 +8,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
+
+TowerFloorDef _towerFloor(int floorIndex, List<EnemyDef> team) => TowerFloorDef(
+      floorIndex: floorIndex,
+      requiredRealm: RealmTier.erLiu,
+      enemyTeam: team,
+    );
 
 EnemyDef _enemy({Map<TechniqueSchool, double>? mult}) => EnemyDef(
       id: 'boss_x',
@@ -87,6 +94,59 @@ void main() {
       };
       expect(
         () => GameRepository.enforceWeaknessRedLines(stages, 0.5, 2.0),
+        returnsNormally,
+      );
+    });
+  });
+
+  group('GameRepository.enforceWeaknessRedLines — tower floors(批二②)', () {
+    test('塔层 boss 乘子在 [0.5, 2.0] → 不抛', () {
+      final floor = _towerFloor(10, [
+        _enemy(mult: {
+          TechniqueSchool.lingQiao: 1.5,
+          TechniqueSchool.yinRou: 0.75,
+        }),
+      ]);
+      expect(
+        () => GameRepository.enforceWeaknessRedLines({}, 0.5, 2.0,
+            towerFloors: [floor]),
+        returnsNormally,
+      );
+    });
+
+    test('塔层 boss 乘子 2.5 > max → 抛 StateError 含敌人/流派/值/floor号', () {
+      final floor = _towerFloor(10, [
+        _enemy(mult: {TechniqueSchool.gangMeng: 2.5}),
+      ]);
+      expect(
+        () => GameRepository.enforceWeaknessRedLines({}, 0.5, 2.0,
+            towerFloors: [floor]),
+        throwsA(
+          isA<StateError>()
+              .having((e) => e.message, 'message', contains('boss_x'))
+              .having((e) => e.message, 'message', contains('gangMeng'))
+              .having((e) => e.message, 'message', contains('2.5'))
+              .having((e) => e.message, 'message', contains('10')),
+        ),
+      );
+    });
+
+    test('塔层 boss 乘子 0.3 < min → 抛 StateError', () {
+      final floor = _towerFloor(5, [
+        _enemy(mult: {TechniqueSchool.yinRou: 0.3}),
+      ]);
+      expect(
+        () => GameRepository.enforceWeaknessRedLines({}, 0.5, 2.0,
+            towerFloors: [floor]),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('塔层 schoolDamageTakenMult==null 的敌人跳过 → 不抛', () {
+      final floor = _towerFloor(3, [_enemy(mult: null)]);
+      expect(
+        () => GameRepository.enforceWeaknessRedLines({}, 0.5, 2.0,
+            towerFloors: [floor]),
         returnsNormally,
       );
     });
