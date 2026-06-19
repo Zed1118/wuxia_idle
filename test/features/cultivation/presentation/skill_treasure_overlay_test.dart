@@ -212,6 +212,71 @@ void main() {
     });
   });
 
+  group('presentSkillTreasure 战后仪式触发(战后接线 seam)', () {
+    testWidgets('major(真解首通)→ 展示 SkillTreasureContent 重仪式', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => ElevatedButton(
+                onPressed: () => presentSkillTreasure(ctx, _manualResult()),
+                child: const Text('go'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('go'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byType(SkillTreasureContent), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('isMinorFragment → no-op 不展示重仪式', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => ElevatedButton(
+                onPressed: () =>
+                    presentSkillTreasure(ctx, _minorFragmentResult()),
+                child: const Text('go'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('go'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byType(SkillTreasureContent), findsNothing);
+    });
+
+    testWidgets('none → no-op 不展示重仪式', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => ElevatedButton(
+                onPressed: () =>
+                    presentSkillTreasure(ctx, SkillDropResult.none),
+                child: const Text('go'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('go'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byType(SkillTreasureContent), findsNothing);
+    });
+  });
+
   group('presentSkillTreasure non-major no-op', () {
     // SkillDropResult.none 和 isMinorFragment 的结果不应触发重仪式。
     // 验证 isMajor 的契约（域层测试，不需要 widget pump）。

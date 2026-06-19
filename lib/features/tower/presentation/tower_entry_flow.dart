@@ -33,7 +33,9 @@ import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
+import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
+import '../../cultivation/presentation/skill_treasure_overlay.dart';
 import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../event/application/game_event_service.dart';
@@ -159,10 +161,12 @@ Future<void> runTowerFlow({
   // 可玩性 P1a：爬塔 Boss 残页掉落(spec §二)。每次 Boss 胜利 rng 掉(非首通限定,
   // 重复刷集残页 grind)。纯数据写;test stub(clearRecorderForTest)路径跳过
   // (与 recordClear 一致,不依赖未初始化 IsarSetup)。
+  // 第七阶段批二④:捕获残页掉落结果供战后仪式分层(test stub 路径留 .none)。
+  SkillDropResult skillDrop = SkillDropResult.none;
   if (clearRecorderForTest == null &&
       floor.dropSkillFragmentId != null &&
       GameRepository.isLoaded) {
-    await runTowerSkillDropHookAfterVictory(
+    skillDrop = await runTowerSkillDropHookAfterVictory(
       floor: floor,
       svc: SkillUnlockService(IsarSetup.instance),
       towerFragmentDropProb:
@@ -257,6 +261,7 @@ Future<void> runTowerFlow({
       stats: victoryRes.stats,
       heroCamera: heroCamera,
       extraDisplayTiers: extraDisplayTiers,
+      skillDrop: skillDrop,
     );
   }
 
@@ -612,6 +617,7 @@ Future<void> _showVictoryDialog({
   BattleStatsSummary? stats,
   HeroCameraData? heroCamera,
   Set<EquipmentTier> extraDisplayTiers = const {},
+  SkillDropResult skillDrop = SkillDropResult.none,
 }) async {
   // 第七阶段 批一:大Boss 首胜先弹英雄镜头，再走胜利仪式。
   // 用户拍板「爬塔大Boss」= major(10/20/30),小Boss(5/15/25)不弹(高光不滥)。
@@ -620,6 +626,12 @@ Future<void> _showVictoryDialog({
       isFirstClear: isFirstClear,
       data: heroCamera)) {
     await presentHeroCamera(context, heroCamera!);
+    if (!context.mounted) return;
+  }
+  // 第七阶段批二④:技能珍稀重仪式(爬塔仅残页集齐 → isMajor)夹在英雄镜头与装备
+  // treasure 之间。非重仪式(isMajor=false)时 presentSkillTreasure no-op。
+  if (skillDrop.isMajor && context.mounted) {
+    await presentSkillTreasure(context, skillDrop);
     if (!context.mounted) return;
   }
   // 胜利仪式分档:首通有重器→爆品镜头;首次利器→爆品镜头;否则(普通/重打)→简版勝。
@@ -636,28 +648,14 @@ Future<void> _showVictoryDialog({
     barrierDismissible: false,
     builder: (ctx) => AlertDialog(
       title: Text(UiStrings.towerFloorLabel(floor.floorIndex)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          isFirstClear
-              ? _FirstClearContent(
-                  floor: floor,
-                  drops: drops,
-                  advancements: advancements,
-                  resonanceUpgrades: resonanceUpgrades,
-                )
-              : const Text(UiStrings.towerReplayNoReward),
-          if (stats != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              UiStrings.battleSummary(
-                  stats.totalDamage, stats.critCount, stats.totalTicks),
-              style: const TextStyle(
-                  color: WuxiaColors.textSecondary, fontSize: 13),
-            ),
-          ],
-        ],
+      content: TowerVictoryContent(
+        floor: floor,
+        isFirstClear: isFirstClear,
+        drops: drops,
+        advancements: advancements,
+        resonanceUpgrades: resonanceUpgrades,
+        stats: stats,
+        skillFragmentLine: _towerSkillFragmentLineFor(skillDrop),
       ),
       actions: [
         TextButton(
@@ -670,6 +668,93 @@ Future<void> _showVictoryDialog({
       ],
     ),
   );
+}
+
+/// 第七阶段批二④:残页轻提示行(掉残页但未集齐 → victory dialog 小字行)。
+///
+/// 仅 [SkillDropResult.isMinorFragment] 返回非空(集齐走重仪式不走轻提示)。
+/// 招式名经 [GameRepository.getSkill] 查;仓库未载入 / id 不存在时 fallback 用
+/// id 字面量(与 [presentSkillTreasure] 一致,防 StateError 崩溃)。
+String? _towerSkillFragmentLineFor(SkillDropResult result) {
+  if (!result.isMinorFragment) return null;
+  final skillId = result.fragmentSkillId;
+  if (skillId == null) return null;
+  String skillName = skillId;
+  if (GameRepository.isLoaded) {
+    try {
+      skillName = GameRepository.instance.getSkill(skillId).name;
+    } catch (_) {
+      // getSkill 抛 StateError:id 不存在,fallback 用 id 字面量。
+    }
+  }
+  return UiStrings.skillFragmentGainedLine(
+    skillName,
+    result.fragmentCount,
+    result.fragmentThreshold,
+  );
+}
+
+/// 爬塔 victory dialog 内容(公开便于 widget test 直接 pump)。
+///
+/// 首通 → [_FirstClearContent](掉落清单 + 升层 + 共鸣度 banner);
+/// 重打 → 「重打不发奖」一行。两者后均可追:残页轻提示行([skillFragmentLine]
+/// 非空时)+ 战斗统计段([stats] 非空时)。
+class TowerVictoryContent extends StatelessWidget {
+  const TowerVictoryContent({
+    super.key,
+    required this.floor,
+    required this.isFirstClear,
+    required this.drops,
+    required this.advancements,
+    this.resonanceUpgrades = const [],
+    this.stats,
+    this.skillFragmentLine,
+  });
+
+  final TowerFloorDef floor;
+  final bool isFirstClear;
+  final DropResult drops;
+  final List<AdvancementEntry> advancements;
+  final List<ResonanceUpgradeNotice> resonanceUpgrades;
+  final BattleStatsSummary? stats;
+
+  /// 残页轻提示行(掉残页未集齐 → 小字一行);null=本场未掉残页或已走重仪式。
+  final String? skillFragmentLine;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        isFirstClear
+            ? _FirstClearContent(
+                floor: floor,
+                drops: drops,
+                advancements: advancements,
+                resonanceUpgrades: resonanceUpgrades,
+              )
+            : const Text(UiStrings.towerReplayNoReward),
+        // 第七阶段批二④:残页轻提示行(首通/重打均可掉残页,故两路都追)。
+        if (skillFragmentLine != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            skillFragmentLine!,
+            style: const TextStyle(color: WuxiaColors.resultHighlight),
+          ),
+        ],
+        if (stats != null) ...[
+          const SizedBox(height: 12),
+          Text(
+            UiStrings.battleSummary(
+                stats!.totalDamage, stats!.critCount, stats!.totalTicks),
+            style: const TextStyle(
+                color: WuxiaColors.textSecondary, fontSize: 13),
+          ),
+        ],
+      ],
+    );
+  }
 }
 
 /// BattleScreen 的 setup 容器（爬塔版，对应主线 _StageBattleHost）。
