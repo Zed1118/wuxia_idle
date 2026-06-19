@@ -13,6 +13,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
+import 'boss_memory_detail_screen.dart';
 
 /// 战绩册主屏（T8）。
 ///
@@ -181,65 +182,72 @@ class _VictoryTile extends StatelessWidget {
         ? '${cleared.year}.${cleared.month}.${cleared.day}'
         : '';
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border.all(color: WuxiaColors.bossFrame.withValues(alpha: 0.45)),
-        borderRadius: BorderRadius.circular(4),
+    return GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => BossMemoryDetailScreen(memory: memory),
+        ),
       ),
-      child: Row(
-        children: [
-          // 立绘方块（缺图退化纸调兜底）
-          _PortraitBox(imagePath: portraitPath),
-          const SizedBox(width: 12),
-          // Boss 名 + 日期 + 击败次数
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  memory.bossName,
-                  style: const TextStyle(
-                    color: WuxiaColors.textPrimary,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
-                  ),
-                ),
-                if (dateStr.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: WuxiaColors.panel,
+          border:
+              Border.all(color: WuxiaColors.bossFrame.withValues(alpha: 0.45)),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
+          children: [
+            // 立绘方块（缺图退化纸调兜底）
+            _PortraitBox(imagePath: portraitPath),
+            const SizedBox(width: 12),
+            // Boss 名 + 日期 + 击败次数
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   Text(
-                    UiStrings.battleRecordClearedAt(dateStr),
+                    memory.bossName,
                     style: const TextStyle(
-                      color: WuxiaColors.textMuted,
+                      color: WuxiaColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  if (dateStr.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      UiStrings.battleRecordClearedAt(dateStr),
+                      style: const TextStyle(
+                        color: WuxiaColors.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 2),
+                  Text(
+                    UiStrings.battleRecordDefeatCount(memory.defeatCount),
+                    style: TextStyle(
+                      color: WuxiaColors.bossFrame.withValues(alpha: 0.9),
                       fontSize: 12,
                     ),
                   ),
                 ],
-                const SizedBox(height: 2),
-                Text(
-                  UiStrings.battleRecordDefeatCount(memory.defeatCount),
-                  style: TextStyle(
-                    color: WuxiaColors.bossFrame.withValues(alpha: 0.9),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-          // 详情箭头（T9 wire 占位）
-          const Icon(
-            Icons.chevron_right,
-            color: WuxiaColors.textMuted,
-            size: 18,
-          ),
-        ],
+            // 详情箭头
+            const Icon(
+              Icons.chevron_right,
+              color: WuxiaColors.textMuted,
+              size: 18,
+            ),
+          ],
+        ),
       ),
     );
-    // T9 wire: onTap → Navigator.of(context).push(BossMemoryDetailScreen(memory))
   }
 }
 
