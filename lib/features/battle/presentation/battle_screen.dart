@@ -516,8 +516,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     final title = bossPhaseTitleFor(action, bossName);
     if (title == null) return;
     final isEnemy = actor?.teamSide == 1;
-    // 题字（复用 2.4 单字题字 overlay，承载短标题）。
-    _impactGlyphKey.currentState?.show(title, isEnemy: isEnemy);
+    // 题字（多字 caption overlay，承载 4 字转阶段标题；单字 glyph 会裁切多字）。
+    _ultimateCaptionKey.currentState?.show(title, isEnemy: isEnemy);
     // 闪白 + 立绘抖动复用 2.4 heavy 档参数（转阶段是重场面）。GameRepository 未
     // 初始化（轻量 widget 测）时 cfg==null，仍保证题字触发、闪白/抖动跳过。
     final cfg = _impactConfigOrNull();

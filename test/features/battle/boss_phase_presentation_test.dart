@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/battle/presentation/boss_phase_presentation.dart';
-import 'package:wuxia_idle/features/battle/presentation/impact_glyph_overlay.dart';
+import 'package:wuxia_idle/features/battle/presentation/ultimate_caption_overlay.dart';
 import 'package:wuxia_idle/features/battle/presentation/screen_flash.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -61,12 +61,12 @@ void main() {
   });
 
   group('转阶段 overlay 通道（题字 + 闪白）', () {
-    testWidgets('glyph overlay show 4 字标题渲染且不抛异常', (tester) async {
+    testWidgets('caption overlay show 4 字标题渲染且不抛异常', (tester) async {
       tester.view.physicalSize = const Size(1280, 720);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
-      final key = GlobalKey<ImpactGlyphOverlayState>();
-      await tester.pumpWidget(MaterialApp(home: ImpactGlyphOverlay(key: key)));
+      final key = GlobalKey<UltimateCaptionOverlayState>();
+      await tester.pumpWidget(MaterialApp(home: UltimateCaptionOverlay(key: key)));
       key.currentState!.show(
         UiStrings.bossPhaseTitle('bossPhase_desperate'),
         isEnemy: true,
