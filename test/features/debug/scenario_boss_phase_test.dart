@@ -25,8 +25,8 @@ void main() {
     final boss = right.first;
     expect(boss.isBoss, isTrue);
     expect(boss.school, TechniqueSchool.yinRou);
-    expect(boss.maxHp, 13000, reason: 'HP 抬到 13000 给二阶段演出余量');
-    expect(boss.currentHp, 13000);
+    expect(boss.maxHp, 16000, reason: 'HP 抬到 16000 给两阶段演出步数');
+    expect(boss.currentHp, 16000);
     expect(boss.bossPhases, isNotNull);
     expect(
       boss.bossPhases!.length,

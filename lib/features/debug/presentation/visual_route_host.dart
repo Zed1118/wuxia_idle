@@ -374,13 +374,15 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.offlineRecapPassive:
       return const _OfflineRecapPassivePreview();
     case VisualRoute.battleBossPhase:
-      // 第七阶段批二目检:真 stage_01_05 Boss(HP抬高给二阶段余量)vs at-level
-      // 玩家队,可玩 + 已开干预层。看转阶段题字/闪白/立绘抖动 + 蓄力反扑 + 会心/抗性。
+      // 第七阶段批二目检:真 stage_01_05 Boss(HP抬高给两阶段步数)vs 压低 DPS 玩家队。
+      // **startPaused 起手暂停**:用顶栏「单步」逐拍推进,每步看清会心/转阶段/蓄力反扑动效
+      // (也可点「继续自动」放掉无聊段);已开干预层可长按拖技能。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioBossPhase,
-        hint: '打 Boss 到半血看「背水一击」转阶段 + 蓄力反扑;刚猛队员打 Boss 出「会心」(弱点×1.25),灵巧队员伤害偏低(抗性×0.75)。可长按拖技能干预',
+        hint: '已暂停。点顶栏「单步」逐拍推进:刚猛打 Boss 出「会心」(弱点×1.25)、灵巧伤害偏低(抗性×0.75)、Boss 半血触发「背水一击」转阶段 + 蓄力反扑。也可点继续自动 / 长按拖技能干预',
         sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
         allowPlayerIntervention: true,
+        startPaused: true,
       );
     case VisualRoute.battleTreasureGlowPeak:
       return const _TreasureGlowPreview(
