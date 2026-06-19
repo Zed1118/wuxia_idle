@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/glossary_tip.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
 
 void main() {
   Widget host(Widget child) => MaterialApp(
@@ -74,6 +75,37 @@ void main() {
       final text = tester.widget<Text>(find.text('机缘'));
       expect(text.style?.fontSize, 21);
       expect(text.style?.fontWeight, FontWeight.w900);
+    });
+
+    testWidgets('点击 ? 标记 → 弹释义浮层', (tester) async {
+      await tester.pumpWidget(
+        host(
+          const GlossaryLabel(
+            label: '身法',
+            definition: '身法：决定出手速度与闪避。',
+          ),
+        ),
+      );
+
+      await tester.tap(find.text(GlossaryLabel.marker));
+      await tester.pumpAndSettle();
+      expect(find.byType(PaperDialog), findsOneWidget);
+      expect(find.text('身法：决定出手速度与闪避。'), findsWidgets);
+    });
+
+    testWidgets('点击标签文字不弹浮层（只裹 marker，保父级点击）', (tester) async {
+      await tester.pumpWidget(
+        host(
+          const GlossaryLabel(
+            label: '身法',
+            definition: '身法：决定出手速度与闪避。',
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('身法'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PaperDialog), findsNothing);
     });
   });
 }

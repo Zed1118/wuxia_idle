@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../strings.dart';
 import '../../theme/wuxia_tokens.dart';
+import 'paper_dialog.dart';
+import 'plaque_button.dart';
 
 /// 术语释义气泡（M4 · 2026-06-14）。
 ///
@@ -86,7 +89,8 @@ class GlossaryLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final markerSize = ((style?.fontSize ?? 14) * 0.6).clamp(9.0, 13.0);
+    // 微增字号（原 [9,13] 太小难见/难点）；上限 15 仍 < 14px 标签行高，不抬行高。
+    final markerSize = ((style?.fontSize ?? 14) * 0.6).clamp(11.0, 15.0);
     return GlossaryTip(
       definition: definition,
       preferBelow: preferBelow,
@@ -103,20 +107,41 @@ class GlossaryLabel extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 2),
-          Padding(
-            // 上标式微抬，贴术语右上角。
-            padding: const EdgeInsets.only(top: 1),
-            child: Text(
-              marker,
-              style: TextStyle(
-                color: markerColor ?? WuxiaUi.muted,
-                fontSize: markerSize,
-                fontWeight: FontWeight.w700,
+          // 标记本身可点 → 弹释义浮层（2026-06-19 修：原内联 `?` 纯 hover、桌面端
+          // 点击无反馈）。**只裹 marker、不裹整行**：保住父级（如 StageProgressRow
+          // 的 InkWell）的 onTap 不被抢；横向 padding 扩点击区、不改行高。
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _showDefinitionPopup(context),
+            child: Padding(
+              // 上标式微抬 + 横向扩点击区（纵向不扩免抬行高）。
+              padding: const EdgeInsets.only(top: 1, left: 1, right: 5),
+              child: Text(
+                marker,
+                style: TextStyle(
+                  color: markerColor ?? WuxiaUi.muted,
+                  fontSize: markerSize.toDouble(),
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showDefinitionPopup(BuildContext context) {
+    PaperDialog.show<void>(
+      context,
+      title: label,
+      body: Text(definition),
+      actions: [
+        PlaqueButton(
+          label: UiStrings.skillInfoClose,
+          onTap: () => Navigator.of(context).pop(),
+        ),
+      ],
     );
   }
 }
