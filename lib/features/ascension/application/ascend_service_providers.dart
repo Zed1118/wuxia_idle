@@ -53,7 +53,7 @@ Future<List<Equipment>> heritageCandidates(Ref ref, int founderId) async {
 
 /// 可继承 disciple 目标列表(AscensionScreen 下拉源)。
 ///
-/// active 中 lineageRole=disciple && isAlive=true 的弟子。order 按
+/// active 中 lineageRole 属弟子(disciple/senior/junior · isDiscipleRole) && isAlive=true 的弟子。order 按
 /// SaveData.activeCharacterIds 顺序(UI 默认选第 1 个 = 大弟子语义)。
 @riverpod
 Future<List<Character>> ascensionDiscipleTargets(Ref ref) async {
