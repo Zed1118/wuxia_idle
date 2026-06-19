@@ -29,6 +29,7 @@ import 'battle_scene_background.dart';
 import 'character_avatar.dart';
 import 'damage_popup.dart';
 import 'hit_flash.dart';
+import 'boss_phase_presentation.dart';
 import 'impact_profile.dart';
 import 'impact_glyph_overlay.dart';
 import 'screen_flash.dart';
@@ -474,6 +475,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         SoundManager.instance.playSfx(sfx);
       }
     }
+    // ── 第七阶段批二 ① Boss 转阶段表现层（题字 + 闪白 + 立绘抖动）。 ──
+    // 转阶段动作无 attackResult，上面 2.4 重击路径对其天然 no-op；此处独立触发。
+    // 纯读 action 元数据，不写 BattleState、不参与结算（守 §5.4）。
+    _playBossPhaseTransition(action, actor);
+
     // ── 批次 2.4 打击感表现层（重击分级）。纯表现层，不写 state。 ──
     final cfg = _impactConfigOrNull();
     if (cfg != null) {
@@ -496,6 +502,34 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
           _shakeCtrl.forward(from: 0.0);
           _applyHitStop(profile.hitStopMs);
         }
+      }
+    }
+  }
+
+  /// 第七阶段批二 ① Boss 转阶段表现层：题字（短标题，未知 key 走 EnumL10n
+  /// 兜底）+ 全屏闪白 + Boss 立绘抖动。复用 2.4 的 glyph / flash / shake 通道，
+  /// 不另起平行系统。纯读 action 元数据，不写 BattleState（守 §5.4）；后台挂机
+  /// 不进此屏播放路径（守 §5.5）。
+  void _playBossPhaseTransition(BattleAction action, BattleCharacter? actor) {
+    if (action.bossPhaseTransitionTo == null) return;
+    final bossName = actor?.name ?? '';
+    final title = bossPhaseTitleFor(action, bossName);
+    if (title == null) return;
+    final isEnemy = actor?.teamSide == 1;
+    // 题字（复用 2.4 单字题字 overlay，承载短标题）。
+    _impactGlyphKey.currentState?.show(title, isEnemy: isEnemy);
+    // 闪白 + 立绘抖动复用 2.4 heavy 档参数（转阶段是重场面）。GameRepository 未
+    // 初始化（轻量 widget 测）时 cfg==null，仍保证题字触发、闪白/抖动跳过。
+    final cfg = _impactConfigOrNull();
+    if (cfg != null) {
+      _screenFlashKey.currentState?.flash(
+        cfg.heavy.flashStrength,
+        color: WuxiaColors.gangMeng,
+      );
+      // 抖动同 2.4：快进 / 拖招态跳过（保顺滑）。
+      if (!_isFastForward && _rushToActorId == null) {
+        _impactShakeAmplitude = cfg.heavy.shakeMagnitude;
+        _shakeCtrl.forward(from: 0.0);
       }
     }
   }

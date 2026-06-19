@@ -88,6 +88,17 @@ class UiStrings {
   // 第六阶段 破绽窗口指令栏提示：敌方踉跄期间出现，引导玩家拖招爆发技。
   static const String coopBurstPrompt = '破绽 · 该爆发了';
 
+  // 第七阶段批二 ①：Boss 转阶段题字短标题（4 字水墨）。
+  // BossPhaseDef.titleKey → 显示标题；未知 / null → 空串（调用方走
+  // EnumL10n.bossPhaseTransition 通用兜底）。中文集中此 sink，不内联进 widget。
+  static String bossPhaseTitle(String? key) {
+    return switch (key) {
+      'bossPhase_awaken' => '困兽之斗',
+      'bossPhase_desperate' => '背水一击',
+      _ => '',
+    };
+  }
+
   // 伤害飘字（T15）
   static const String dodge = '闪';
   static const String counterUp = '⬆';
