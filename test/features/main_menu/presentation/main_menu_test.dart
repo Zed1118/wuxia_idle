@@ -389,10 +389,13 @@ void main() {
   // ── W16 GDD §12.4 节日活动 · 今日节日 chip ──────────────────────────
 
   testWidgets('节日 chip：todayFestival=null（非节日）→ 不显示「今日：」前缀', (tester) async {
-    // 默认 ProviderScope 无 override → festivalServiceProvider 返 null（test
-    // 不加载 GameRepository）→ todayFestivalProvider 返 null → chip 不渲染。
+    // hermetic:显式 override todayFestivalProvider=null,直证「null→不渲染 chip」
+    // 契约,与墙钟日期无关(否则真实日期撞节气/节日时此断言会按日期 flake)。
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: MainMenu())),
+      ProviderScope(
+        overrides: [todayFestivalProvider.overrideWith((ref) => null)],
+        child: const MaterialApp(home: MainMenu()),
+      ),
     );
     expect(find.textContaining('今日：'), findsNothing);
   });
@@ -437,8 +440,14 @@ void main() {
   // _TodayFestivalChip rebuild 显应景中文。
 
   Future<ProviderContainer> pumpAndContainer(WidgetTester tester) async {
+    // hermetic:真实日期基线 override 为 null(festivalService=null),使 clear()
+    // 后 todayFestival 确定回落 null,不被墙钟日期撞节日影响;debug override
+    // 优先级仍在,apply 路径照样被真实测到。
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: MainMenu())),
+      ProviderScope(
+        overrides: [festivalServiceProvider.overrideWith((ref) => null)],
+        child: const MaterialApp(home: MainMenu()),
+      ),
     );
     return ProviderScope.containerOf(tester.element(find.byType(MainMenu)));
   }
