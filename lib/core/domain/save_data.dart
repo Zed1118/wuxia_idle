@@ -73,6 +73,13 @@ class SaveData {
   /// 追加;玩家拒绝 / cap 满 / rng 不命中均不 markTriggered(可重战重遇)。
   List<String> triggeredBossRecruitStageIds = [];
 
+  /// 已触发命名弟子拜入的 stage id（第七阶段批三 · 渐进解锁防重）。
+  ///
+  /// 沿 [triggeredBossRecruitStageIds] 一次性防重模式:过 join 触发关后
+  /// `runDiscipleJoinHookAfterVictory` 创建弟子并 add 本字段,重战不再触发。
+  /// 0.24→0.25 迁移:老档(满队)预填全部 join stage id(弟子已在,不重建)。
+  List<String> triggeredDiscipleJoinStageIds = [];
+
   /// 技能解锁进度(可玩性 P1a · spec §一)。账号级,Boss 真解/残页来源。
   /// 真解首通直接 markUnlocked;爬塔残页 addFragment 累加,达阈值自动 markUnlocked。
   /// 不含奇遇技能(走 equippedEncounterSkillId,两套并存)。
