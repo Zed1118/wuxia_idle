@@ -527,13 +527,18 @@ class GameRepository {
     // boss_charge tick 数值范围)
     _enforceBossChargeRedLines();
 
-    // 批二①：Boss 阶段 unlockSkillIds 引用必须在 skills.yaml 中存在
-    enforceBossPhaseSkillIds(stageDefs, skillDefs.keys.toSet());
-    // 批二②:弱点/抗性乘子值域红线（守 §5.4 弱点 ≤2.0）。
+    // 批二①：Boss 阶段 unlockSkillIds 引用必须在 skills.yaml 中存在（含 tower floors）
+    enforceBossPhaseSkillIds(
+      stageDefs,
+      skillDefs.keys.toSet(),
+      towerFloors: towerFloors,
+    );
+    // 批二②:弱点/抗性乘子值域红线（守 §5.4 弱点 ≤2.0；含 tower floors）。
     enforceWeaknessRedLines(
       stageDefs,
       numbers.combat.weakness.minMult,
       numbers.combat.weakness.maxMult,
+      towerFloors: towerFloors,
     );
 
     // 波A build gate:破招技(canInterrupt=true)必须有 style 流派归属
@@ -1532,13 +1537,16 @@ class GameRepository {
 
   /// 批二①：Boss 阶段 unlockSkillIds 红线校验。
   ///
-  /// 对所有关卡内每个配置了 [EnemyDef.bossPhases] 的敌人，校验各阶段
-  /// [BossPhaseDef.unlockSkillIds] 中的每个 id 须在 [skillIdSet] 内存在。
+  /// 对所有关卡（[stages]）及爬塔楼层（[towerFloors]）内每个配置了
+  /// [EnemyDef.bossPhases] 的敌人，校验各阶段 [BossPhaseDef.unlockSkillIds]
+  /// 中的每个 id 须在 [skillIdSet] 内存在。
   /// 静态方法便于单元测试独立调用（不依赖 loadAllDefs 完整流程）。
   static void enforceBossPhaseSkillIds(
     Map<String, StageDef> stages,
-    Set<String> skillIdSet,
-  ) {
+    Set<String> skillIdSet, {
+    Iterable<TowerFloorDef> towerFloors = const [],
+  }) {
+    // Stage enemies: label includes stage id for locatability.
     for (final s in stages.values) {
       for (final e in s.enemyTeam) {
         final phases = e.bossPhases;
@@ -1556,18 +1564,39 @@ class GameRepository {
         }
       }
     }
+    // Tower-floor enemies: label includes floorIndex for locatability.
+    for (final f in towerFloors) {
+      for (final e in f.enemyTeam) {
+        final phases = e.bossPhases;
+        if (phases == null) continue;
+        for (final phase in phases) {
+          for (final sid in phase.unlockSkillIds) {
+            if (!skillIdSet.contains(sid)) {
+              throw StateError(
+                'tower floor ${f.floorIndex} 敌人 ${e.id} bossPhase hpThresholdPct='
+                '${phase.hpThresholdPct} unlockSkillIds 引用 $sid '
+                '未在 skills.yaml 中存在（批二①红线）',
+              );
+            }
+          }
+        }
+      }
+    }
   }
 
   /// 批二②：弱点/抗性乘子值域红线校验。
   ///
-  /// 对所有关卡内每个配了 [EnemyDef.schoolDamageTakenMult] 的敌人，校验各流派
+  /// 对所有关卡（[stages]）及爬塔楼层（[towerFloors]）内每个配了
+  /// [EnemyDef.schoolDamageTakenMult] 的敌人，校验各流派
   /// 乘子 ∈ [[minMult], [maxMult]]，越界 throw 含敌人 id + 流派 + 值。
   /// 静态方法便于单元测试独立调用（沿 [enforceBossPhaseSkillIds] 体例）。
   static void enforceWeaknessRedLines(
     Map<String, StageDef> stages,
     double minMult,
-    double maxMult,
-  ) {
+    double maxMult, {
+    Iterable<TowerFloorDef> towerFloors = const [],
+  }) {
+    // Stage enemies: label includes stage id for locatability.
     for (final s in stages.values) {
       for (final e in s.enemyTeam) {
         final mults = e.schoolDamageTakenMult;
@@ -1577,6 +1606,22 @@ class GameRepository {
           if (v < minMult || v > maxMult) {
             throw StateError(
               'stage ${s.id} 敌人 ${e.id} schoolDamageTakenMult '
+              '${entry.key.name}=$v 越界，应 ∈ [$minMult, $maxMult]（批二②红线）',
+            );
+          }
+        }
+      }
+    }
+    // Tower-floor enemies: label includes floorIndex for locatability.
+    for (final f in towerFloors) {
+      for (final e in f.enemyTeam) {
+        final mults = e.schoolDamageTakenMult;
+        if (mults == null) continue;
+        for (final entry in mults.entries) {
+          final v = entry.value;
+          if (v < minMult || v > maxMult) {
+            throw StateError(
+              'tower floor ${f.floorIndex} 敌人 ${e.id} schoolDamageTakenMult '
               '${entry.key.name}=$v 越界，应 ∈ [$minMult, $maxMult]（批二②红线）',
             );
           }
