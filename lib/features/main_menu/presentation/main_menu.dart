@@ -13,6 +13,8 @@ import '../../../data/isar_setup.dart';
 import '../../baike/presentation/baike_screen.dart';
 import '../../battle_record/application/boss_memory_providers.dart';
 import '../../battle_record/presentation/battle_record_screen.dart';
+import '../../weapon_codex/application/equipment_catalog_providers.dart';
+import '../../weapon_codex/presentation/weapon_codex_screen.dart';
 import '../../cangjingge/presentation/cangjingge_screen.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
@@ -163,6 +165,12 @@ class MainMenu extends ConsumerWidget {
         .watch(bossMemoryCountProvider)
         .maybeWhen(data: (n) => n, orElse: () => 0);
     final battleRecordUnlocked = bossCount > 0;
+
+    // 兵器谱入口门控：获得过任一装备后解锁（§5.7 隐藏式）。
+    final weaponCodexCount = ref
+        .watch(equipmentCatalogCountProvider)
+        .maybeWhen(data: (n) => n, orElse: () => 0);
+    final weaponCodexUnlocked = weaponCodexCount > 0;
 
     final coreItems = <Widget>[
       WuxiaInkButton(
@@ -336,6 +344,13 @@ class MainMenu extends ConsumerWidget {
           hint: UiStrings.mainMenuBattleRecordHint,
           icon: Icons.history_edu_outlined, // 美术待补专属 thumbnail
           onTap: () => _push(context, const BattleRecordScreen()),
+        ),
+      if (weaponCodexUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.mainMenuWeaponCodex,
+          hint: UiStrings.mainMenuWeaponCodexHint,
+          icon: Icons.auto_stories_outlined,
+          onTap: () => _push(context, const WeaponCodexScreen()),
         ),
       WuxiaInkButton(
         label: UiStrings.mainMenuBaike,
