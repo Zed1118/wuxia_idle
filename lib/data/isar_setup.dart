@@ -24,6 +24,7 @@ import '../features/pvp/domain/pvp_record.dart';
 import '../features/pvp/domain/pvp_snapshot.dart';
 import '../features/battle_record/domain/boss_memory.dart';
 import '../features/battle_record/application/boss_memory_service.dart';
+import '../features/weapon_codex/domain/equipment_catalog_entry.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。
 ///
@@ -86,6 +87,7 @@ class IsarSetup {
     PvpRecordSchema,
     PvpSnapshotSchema,
     BossMemorySchema,
+    EquipmentCatalogEntrySchema,
   ];
 
   /// 当前 schema 对应的存档版本（写入新建 SaveData.saveVersion）。
@@ -128,7 +130,9 @@ class IsarSetup {
   // 段(0.26.0 战绩册):新 BossMemory collection,旧档天然空(正确初始态)。
   // 老档已击败 Boss 的回填骨架在后续 task 由 BossMemoryService.backfillFromProgress 处理,
   // 此处仅 bump 版本号,无 collection 操作。
-  static const _currentSaveVersion = '0.26.0';
+  //   段(0.27.0 兵器谱):新 EquipmentCatalogEntry collection,旧档天然空。
+  //   老档当前持有装备的回填在 reconcileFromInventory 处理(后续 task 接 load 钩子)。
+  static const _currentSaveVersion = '0.27.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
