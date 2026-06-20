@@ -25,6 +25,7 @@ import '../features/pvp/domain/pvp_snapshot.dart';
 import '../features/battle_record/domain/boss_memory.dart';
 import '../features/battle_record/application/boss_memory_service.dart';
 import '../features/weapon_codex/domain/equipment_catalog_entry.dart';
+import '../features/weapon_codex/application/equipment_catalog_service.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。
 ///
@@ -170,6 +171,13 @@ class IsarSetup {
         await BossMemoryService(isar: isar).backfillFromProgress(currentSlotId);
       } catch (_) {
         // GameRepository 未加载或进度异常时静默 skip（不阻塞启动）
+      }
+      // 0.27.0 兵器谱：扫当前库存兜底回填图鉴（幂等，新档库存空时 no-op）。
+      // 兼任老档当前持有装备的点亮 + 任何漏 hook 路径的安全网。
+      try {
+        await EquipmentCatalogService(isar: isar).reconcileFromInventory(currentSlotId);
+      } catch (_) {
+        // 库存异常时静默 skip，不阻塞启动
       }
       return existing;
     }
