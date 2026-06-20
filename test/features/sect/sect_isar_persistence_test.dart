@@ -42,10 +42,10 @@ void main() {
       expect(IsarSetup.instance.sectEvents, isNotNull);
     });
 
-    test('R4.2 saveVersion 已升当前 0.26.0(战绩册 BossMemory collection)', () async {
+    test('R4.2 saveVersion 已升当前 0.27.0(兵器谱 EquipmentCatalogEntry collection)', () async {
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = await IsarSetup.instance.saveDatas.get(0);
-      expect(save!.saveVersion, '0.26.0');
+      expect(save!.saveVersion, '0.27.0');
     });
 
     test('R4.3 Sect 写入 → close → reopen 读出字段一致', () async {

@@ -69,7 +69,7 @@ void main() {
       await IsarSetup.init(directory: tempDir, inspector: false);
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.26.0', reason: '迁移后升版到当前 0.26.0');
+      expect(save.saveVersion, '0.27.0', reason: '迁移后升版到当前 0.27.0');
 
       final mp =
           await IsarSetup.instance.mainlineProgress.where().findFirst();
@@ -134,7 +134,7 @@ void main() {
       );
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.26.0');
+      expect(save.saveVersion, '0.27.0');
     },
   );
 
@@ -175,7 +175,7 @@ void main() {
       );
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.26.0');
+      expect(save.saveVersion, '0.27.0');
     },
   );
 }
