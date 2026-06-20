@@ -152,6 +152,14 @@ enum VisualRoute {
     'boss_memory_detail',
     'P4 战绩册详情屏目检·完整纪念(伤害/英雄/掉落/阵容) + pre-record 骨架(此役不详)两态',
   ),
+  weaponCodex(
+    'weapon_codex',
+    '兵器谱主屏目检·混合态(点亮/回填/剪影三态混排 + slot 筛选 + 分档进度)',
+  ),
+  weaponCodexDetail(
+    'weapon_codex_detail',
+    '兵器谱详情屏目检·正常态(器物档案 + 个人历程 + 首得来源/日期)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);

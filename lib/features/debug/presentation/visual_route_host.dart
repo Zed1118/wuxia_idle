@@ -62,6 +62,10 @@ import '../../battle_record/domain/boss_memory_source.dart';
 import '../../battle_record/application/boss_memory_service.dart';
 import '../../battle_record/presentation/battle_record_screen.dart';
 import '../../battle_record/presentation/boss_memory_detail_screen.dart';
+import '../../weapon_codex/application/equipment_catalog_providers.dart';
+import '../../weapon_codex/domain/equipment_catalog_entry.dart';
+import '../../weapon_codex/presentation/weapon_codex_screen.dart';
+import '../../weapon_codex/presentation/equipment_catalog_detail_screen.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -462,6 +466,13 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.bossMemoryDetail:
       // P4 战绩册详情屏目检:完整 + pre-record 两态并排（上下各半）。
       return const _BossMemoryDetailPreview();
+    case VisualRoute.weaponCodex:
+      // 兵器谱主屏混合态目检：注入混合 entries（4 件点亮跨 tier + 1 件回填骨架），
+      // 其余大量 def 不在 entries 里（= 未获得剪影），验点亮/回填/剪影三态混排 + 进度。
+      return _buildWeaponCodexVisual();
+    case VisualRoute.weaponCodexDetail:
+      // 兵器谱详情屏正常态目检：挑一件有 schoolBias 的典型 def + 正常态 entry。
+      return _buildWeaponCodexDetailVisual();
     case VisualRoute.battleTreasureGlowPeak:
       return const _TreasureGlowPreview(
         defId: 'weapon_shenwu_tian_wen_jian',
@@ -1374,4 +1385,87 @@ class _BossMemoryDetailPreview extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 兵器谱主屏混合态：注入假 entries，覆盖 [equipmentCatalogListProvider]。
+///
+/// 混合态说明：
+///   - 4 件点亮（取 values 前 4 件，尽量跨不同 tier）
+///       - 3 件正常态（firstObtainedAt 非 null + firstObtainedFrom='黑风寨之战'，obtainedCount 1~3）
+///       - 1 件 pre-record 回填骨架（isPreRecord=true / firstObtainedAt=null）
+///   - 其余 def 不在 entries 里 → WeaponCodexScreen 渲染为剪影占位
+/// GameRepository 已在 _prepare 加载（无需额外 isar）。
+Widget _buildWeaponCodexVisual() {
+  final defs = GameRepository.instance.equipmentDefs.values.toList();
+  // 取前 4 件 def 构造 entries（至少 1 件回填，其余正常态）
+  final seed = defs.take(4).toList();
+  final now = DateTime(2026, 6, 20);
+  int idCounter = 1;
+
+  final entries = <EquipmentCatalogEntry>[
+    // 正常态 1
+    EquipmentCatalogEntry()
+      ..id = idCounter++
+      ..saveDataId = 1
+      ..defId = seed[0].id
+      ..firstObtainedAt = now.subtract(const Duration(days: 12))
+      ..firstObtainedFrom = '黑风寨之战'
+      ..obtainedCount = 2
+      ..isPreRecord = false,
+    // 正常态 2
+    if (seed.length > 1)
+      EquipmentCatalogEntry()
+        ..id = idCounter++
+        ..saveDataId = 1
+        ..defId = seed[1].id
+        ..firstObtainedAt = now.subtract(const Duration(days: 5))
+        ..firstObtainedFrom = '黑风寨之战'
+        ..obtainedCount = 1
+        ..isPreRecord = false,
+    // 正常态 3
+    if (seed.length > 2)
+      EquipmentCatalogEntry()
+        ..id = idCounter++
+        ..saveDataId = 1
+        ..defId = seed[2].id
+        ..firstObtainedAt = now.subtract(const Duration(days: 2))
+        ..firstObtainedFrom = '黑风寨之战'
+        ..obtainedCount = 3
+        ..isPreRecord = false,
+    // 回填骨架（isPreRecord=true）
+    if (seed.length > 3)
+      EquipmentCatalogEntry()
+        ..id = idCounter
+        ..saveDataId = 1
+        ..defId = seed[3].id
+        ..firstObtainedAt = null
+        ..firstObtainedFrom = '来历不详'
+        ..obtainedCount = 1
+        ..isPreRecord = true,
+  ];
+
+  return ProviderScope(
+    overrides: [
+      equipmentCatalogListProvider.overrideWith((ref) async => entries),
+    ],
+    child: const WeaponCodexScreen(),
+  );
+}
+
+/// 兵器谱详情屏正常态目检：挑一件有 schoolBias 的典型 def + 正常态 entry。
+/// 优先选有 schoolBias 的，fallback 取 values.first。
+Widget _buildWeaponCodexDetailVisual() {
+  final defs = GameRepository.instance.equipmentDefs.values;
+  final def =
+      defs.firstWhere((d) => d.schoolBias != null, orElse: () => defs.first);
+  final entry =
+      EquipmentCatalogEntry()
+        ..id = 1
+        ..saveDataId = 1
+        ..defId = def.id
+        ..firstObtainedAt = DateTime(2026, 6, 15)
+        ..firstObtainedFrom = '黑风寨之战'
+        ..obtainedCount = 2
+        ..isPreRecord = false;
+  return EquipmentCatalogDetailScreen(def: def, entry: entry);
 }
