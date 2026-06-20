@@ -59,6 +59,7 @@ import '../../battle/domain/battle_stats.dart';
 import '../../battle/presentation/hero_camera_overlay.dart' show HeroCameraData;
 import '../../battle/presentation/victory_ceremony.dart';
 import '../../battle_record/application/boss_memory_hook.dart';
+import '../../weapon_codex/application/equipment_catalog_hook.dart';
 import '../../battle_record/domain/boss_memory_key.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
 import 'stage_victory_dialog.dart';
@@ -924,6 +925,13 @@ Future<
   // (须在 putAll 入库后调用,判据:库存总数 ≤ 本次掉落件数)。
   final extraDisplayTiers =
       await computeFirstAcquisitionTiers(isar, result.dropResult);
+
+  // 兵器谱：新掉落装备已落库(上方 writeTxn putAll(result.dropResult.equipments)
+  // 已 commit),留册图鉴(best-effort)。
+  await runEquipmentCatalogHookAfterObtain(
+    defIds: [for (final e in result.dropResult.equipments) e.defId],
+    from: stage.name,
+  );
 
   return (
     drops: result.dropResult,

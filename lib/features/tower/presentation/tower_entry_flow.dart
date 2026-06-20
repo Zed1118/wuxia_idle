@@ -57,6 +57,7 @@ import '../../../shared/utils/rng.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
 import '../domain/tower_floor_def.dart';
+import '../../weapon_codex/application/equipment_catalog_hook.dart';
 
 /// Phase 3 T43 爬塔进入流程串联。
 ///
@@ -622,6 +623,15 @@ Future<void> _persistDrops(
       }
     }
   });
+
+  // 兵器谱：新掉落装备已落库(上方 writeTxn putAll(drops.equipments) 已 commit),
+  // 留册图鉴(best-effort)。
+  if (drops.equipments.isNotEmpty && floor != null) {
+    await runEquipmentCatalogHookAfterObtain(
+      defIds: [for (final e in drops.equipments) e.defId],
+      from: UiStrings.weaponCodexSourceTowerFloor(floor.floorIndex),
+    );
+  }
 }
 
 /// 胜利奖励弹窗：首通显示掉落清单，重打显示「重打不发奖」。
