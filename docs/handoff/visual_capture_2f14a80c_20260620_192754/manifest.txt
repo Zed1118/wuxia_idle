@@ -1,0 +1,5 @@
+# visual_capture manifest  sha=2f14a80c  ts=20260620_192754
+battle_record_1280x720 -> battle_record_1280x720.png -> READY(干净窗口 wid=53320)
+battle_record_1920x1080 -> battle_record_1920x1080.png -> READY(干净窗口 wid=53340)
+boss_memory_detail_1280x720 -> boss_memory_detail_1280x720.png -> READY(干净窗口 wid=53360)
+boss_memory_detail_1920x1080 -> boss_memory_detail_1920x1080.png -> READY(干净窗口 wid=53380)
