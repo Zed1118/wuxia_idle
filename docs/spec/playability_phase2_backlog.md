@@ -12,7 +12,7 @@
 
 - [x] **技能装配限制 UI**(§2.6):~~P1b 2026-06-10 落地~~(6 槽装配栏 + picker gate);波A 2026-06-11 扩第 7 破招槽(`keySkillId`,canInterrupt && style==school gate)。
 - [x] **藏经阁 screen**:~~P1b 2026-06-10 落地~~(CangJingGeScreen 出战配置+武学库+残页区);波A 扩破招槽 tile。
-- [ ] **统一进度展示组件 wiring**(§三):`MeridianBar` 已就绪,但熟练度/共鸣度/修炼度/残页四系统统一接到"当前阶段+进度+当前效果+下一阶段效果+来源"的展示规范,需逐处 wire。P1b。
+- [x] **统一进度展示组件 wiring**(§三):~~2026-06-12 落地~~(spec `docs/superpowers/specs/2026-06-12-progress-stage-row-unification-design.md`)。固化纯表现层基元 `StageProgressRow`(五要素:阶段名/进度条 MeridianBar/当前效果/下一阶效果/来源)。三系统已接:熟练度→藏经阁 `skill_proficiency_row` · 修炼度→角色面板 `character_panel_screen:1601`+技能面板 `technique_panel_screen:528`(补倍率文案=原最大缺口) · 共鸣度→装备详情 `equipment_detail_screen:427`。残页 spec §⑤ 有意保留 `FragmentProgressRow` 独立(天然无阶段语义,只视觉对齐)。2026-06-20 续30 Phase 0 复核确认全接入,checkbox 此前 stale 未勾(`feedback_living_doc_state_drift`)。**扩到胜利弹窗/掉落 overlay/师承面板等奖励反馈语境=新范围,原 spec 故意排除,待拍板再开。**
 - [x] **24 招全内容**(波B 2026-06-11):真解 6(章末 Boss 首通 · 同招=Boss 蓄力技双用 canon)+ 塔残页 6(Boss 层全配)+ 章末重打残页 3(Ch4-6 farm)+ 破招 3 = 玩家侧流派 6/6/6;Boss 技 6 = 真解双用。14 新招全内容(名/流派/倍率/效果/文案);装配池 wiring(resolver/picker/equip gate/武学库秘传组)+ standalone 招熟练度落账修复一并收口。spec `2026-06-11-wave-b-24-skills-content-design.md`。
 - [ ] **战报诊断规则**(§11.4):killed_by_charge / mob_overrun 等失败复盘提示 + jump_target。归 P3 战后体验,不在 P1a。
 - [x] **per-skill 熟练度效果铺广**(波A 2026-06-11):53 ultimate(含 6 轻功)流派模板(刚猛伤害加速/灵巧CD/阴柔混合)+ 真解/招牌手工高半档;化境 damage_pct 系死配置(combinedMult cap 1.30)改 CD。normalAttack/powerSkill 留全局曲线(4 key 词汇表下无差异化空间,设计立场非砍量)。
@@ -26,7 +26,7 @@
 ## 三 · P1b(P1 的表现层半,P1a 之后接着做)
 
 - [x] 藏经阁 screen(见一,P1b 落地)。
-- [ ] 统一进度展示组件 wiring(见一)。
+- [x] 统一进度展示组件 wiring(见一,2026-06-12 落地 · 续30 复核确认)。
 - [x] 技能装配限制 UI(见一,P1b 落地 + 波A 破招槽)。
 - [x] P1 验收项收口(P1b 落地:藏经阁阶段效果可见 + picker 境界 gate 灰显;波A 加流派 gate)。
 
