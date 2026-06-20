@@ -144,6 +144,14 @@ enum VisualRoute {
     'hero_camera',
     '第七阶段批一目检·Boss 首胜英雄镜头 overlay 动效(祖师真立绘 + 真 stage_01_05 Boss 名「击破 XX」题字,从右滑入+放大,自动重播;单帧截不出须真机看动效。生产仅 Boss 首胜触发,故走此专属路由验)',
   ),
+  battleRecord(
+    'battle_record',
+    'P4 战绩册主屏目检·已击败纪念卡 + 未击败剩影占位混合态(种 2-3 条纪念,其余 27 槽显剩影)',
+  ),
+  bossMemoryDetail(
+    'boss_memory_detail',
+    'P4 战绩册详情屏目检·完整纪念(伤害/英雄/掉落/阵容) + pre-record 骨架(此役不详)两态',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);

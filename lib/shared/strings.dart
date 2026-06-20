@@ -1612,4 +1612,22 @@ class UiStrings {
   // ── 第七阶段批三 · 弟子拜入英雄镜头题字──────────────────────────────────
   /// 弟子拜入英雄镜头题字(第七阶段批三)。[name]=弟子名(大弟子/二弟子)。
   static String discipleJoinCaption(String name) => '$name 拜入门下';
+
+  // ── P4 战绩册(Task 5)────────────────────────────────────────────────────
+  // 主菜单入口
+  static const String mainMenuBattleRecord = '战绩册';
+  static const String mainMenuBattleRecordHint = '回顾历战，名垂江湖';
+  // 屏标题 / 分区 / 占位
+  static const String battleRecordTitle = '战绩册';
+  static const String battleRecordLockedBoss = '未会之敌';
+  static const String battleRecordPreRecord = '此役不详 · 记录之前';
+  static const String battleRecordTopContributorTitle = '此战之最';
+  static const String battleRecordRosterTitle = '出战';
+  static const String battleRecordTreasureTitle = '所获';
+  static const String battleRecordStatsTitle = '首胜战绩';
+  static String battleRecordDefeatCount(int n) => '击败 $n 次';
+  static String battleRecordDamage(int d) => '总伤害 $d';
+  static String battleRecordCrits(int c) => '暴击 $c';
+  static String battleRecordTurns(int t) => '$t 回合';
+  static String battleRecordClearedAt(String date) => '初胜 $date';
 }

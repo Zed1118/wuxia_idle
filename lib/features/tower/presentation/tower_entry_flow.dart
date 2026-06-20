@@ -36,6 +36,9 @@ import '../../cultivation/presentation/advancement_summary.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
 import '../../cultivation/presentation/skill_treasure_overlay.dart';
+import '../../battle_record/application/boss_memory_hook.dart';
+import '../../battle_record/domain/boss_memory_key.dart';
+import '../../battle_record/domain/boss_memory_source.dart';
 import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../encounter/presentation/encounter_hook.dart';
 import '../../event/application/game_event_service.dart';
@@ -213,6 +216,24 @@ Future<void> runTowerFlow({
     if (isar != null) {
       extraDisplayTiers = await computeFirstAcquisitionTiers(isar, drops);
     }
+  }
+
+  // P4 战绩册:爬塔 Boss 层胜利 → 留档(纯数据写;test stub 路径跳过,同 recordClear/skillDrop)。
+  // 普通层 bossKind == null,守卫确保只有 Boss 层才记。
+  if (clearRecorderForTest == null && floor.bossKind != null) {
+    final bossName = floor.enemyTeam.isNotEmpty
+        ? floor.enemyTeam.last.name
+        : UiStrings.towerFloorLabel(floor.floorIndex);
+    await runBossMemoryHookAfterVictory(
+      source: BossMemorySource.tower,
+      bossKey: towerBossKey(floor.floorIndex),
+      groupIndex: floor.floorIndex,
+      bossName: bossName,
+      stats: victoryRes.stats,
+      drops: drops,
+      topContributorName: heroCamera?.heroName,
+      topContributorDamage: heroCamera?.topDamage,
+    );
   }
 
   // ── leaderboard sync(P0.2 #40 Phase 3,D 方案 Noop placeholder)──

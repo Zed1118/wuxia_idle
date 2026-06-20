@@ -1,4 +1,5 @@
 import '../../../core/domain/enums.dart';
+import '../../battle_record/domain/boss_memory_source.dart';
 import '../../encounter/domain/encounter_def.dart' show AttributeKey;
 import 'battle_state.dart' show BattleResult;
 
@@ -234,4 +235,10 @@ class EnumL10n {
       Festival.chongYang => '重阳',
     };
   }
+
+  /// 战绩册 Boss 来源维度（P4 战绩册 · 分组用）。
+  static String bossMemorySource(BossMemorySource s) => switch (s) {
+        BossMemorySource.mainline => '主线征程',
+        BossMemorySource.tower => '爬塔问鼎',
+      };
 }

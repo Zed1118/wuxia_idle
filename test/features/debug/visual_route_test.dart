@@ -96,6 +96,13 @@ void main() {
     test('批一英雄镜头 overlay 路由 parse', () {
       expect(parseVisualRoute('hero_camera'), VisualRoute.heroCamera);
     });
+    test('P4 战绩册路由 parse', () {
+      expect(parseVisualRoute('battle_record'), VisualRoute.battleRecord);
+      expect(
+        parseVisualRoute('boss_memory_detail'),
+        VisualRoute.bossMemoryDetail,
+      );
+    });
   });
 
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。
