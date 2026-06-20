@@ -70,7 +70,7 @@ class _WeaponCodexScreenState extends ConsumerState<WeaponCodexScreen> {
         child: Padding(
           padding: EdgeInsets.all(32),
           child: Text(
-            UiStrings.weaponCodexLockedItem,
+            UiStrings.weaponCodexEmptyHint,
             style: TextStyle(color: WuxiaColors.textMuted, fontSize: 14),
           ),
         ),
