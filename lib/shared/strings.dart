@@ -1649,4 +1649,16 @@ class UiStrings {
   static String weaponCodexFirstObtainedFrom(String src) => '得于 $src';
   static String weaponCodexObtainedCount(int n) => '历得 $n 件';
   static String weaponCodexSourceTowerFloor(int floor) => '宝塔第 $floor 层';
+
+  // 兵器谱详情屏（Task 9）。
+  static const String weaponCodexDetailArchiveTitle = '器物档案';
+  static const String weaponCodexDetailHistoryTitle = '个人历程';
+  static const String weaponCodexDetailSlot = '部位';
+  static const String weaponCodexDetailAttackRange = '攻击';
+  static const String weaponCodexDetailHealthRange = '生命';
+  static const String weaponCodexDetailSpeedRange = '速度';
+  static const String weaponCodexDetailSpecialSkills = '开锋候选技';
+  static const String weaponCodexDetailLineage = '师承遗物·境界相称方可佩用';
+  static String weaponCodexDetailRange(int min, int max) =>
+      min == max ? '$min' : '$min ~ $max';
 }
