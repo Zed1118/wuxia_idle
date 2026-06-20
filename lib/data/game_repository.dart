@@ -515,6 +515,15 @@ class GameRepository {
     _enforceMasterRedLines();
     _enforceRecruitCandidateRedLines();
 
+    // 第七阶段批三 P2：命名弟子拜入配置红线（stage 存在唯一 / slot 合法 /
+    // slot role 与 join role 一致 / role∈{senior,junior} / narrative 非空）。
+    // 防 numbers.yaml↔masters.yaml 漂移静默生成错角色 / stage 拼错永不触发。
+    enforceLineageOnboardingRedLines(
+      joins: numbers.lineageOnboarding.discipleJoins,
+      existingStageIds: stageDefs.keys.toSet(),
+      masters: masters,
+    );
+
     // P4.1 1.1 Q6A:sect_candidates.yaml 校验(空 map → 跳过)
     _enforceSectCandidateRedLines();
 
@@ -1809,6 +1818,62 @@ class GameRepository {
           '战败剧情只应在 Boss 关触发',
         );
       }
+    }
+  }
+}
+
+/// 第七阶段批三 P2：命名弟子拜入配置红线（纯函数，便于单测各违例）。
+///
+/// 配置漂移 fail-fast，不静默生成错角色 / 永不触发：
+/// - stage_id 必须存在于 stageDefs 且在 disciple_joins 内唯一；
+/// - role 只允许 senior / junior（非 founder / disciple）；
+/// - master_slot_index ∈ [0, masters.length)；
+/// - **masters[slot].lineageRole 必须 == join.role**（防 numbers.yaml 与
+///   masters.yaml 双源漂移：dedup 查 join.role 但创建用 masters role，
+///   不一致会「配置说 senior 实际建 junior」）；
+/// - narrative_id 非空。
+void enforceLineageOnboardingRedLines({
+  required List<DiscipleJoinDef> joins,
+  required Set<String> existingStageIds,
+  required List<MasterDef> masters,
+}) {
+  // 空 stages（测试精简 fixture，与覆盖度红线同约定）→ 跳过；生产 stages 必非空。
+  if (existingStageIds.isEmpty) return;
+  final seen = <String>{};
+  for (final j in joins) {
+    if (!existingStageIds.contains(j.stageId)) {
+      throw StateError(
+        'lineage_onboarding.disciple_joins stage_id=${j.stageId} 引用不存在的关卡',
+      );
+    }
+    if (!seen.add(j.stageId)) {
+      throw StateError(
+        'lineage_onboarding.disciple_joins stage_id=${j.stageId} 重复',
+      );
+    }
+    if (j.role != LineageRole.senior && j.role != LineageRole.junior) {
+      throw StateError(
+        'lineage_onboarding stage_id=${j.stageId} role=${j.role.name} '
+        '非法，只允许 senior / junior',
+      );
+    }
+    if (j.masterSlotIndex < 0 || j.masterSlotIndex >= masters.length) {
+      throw StateError(
+        'lineage_onboarding stage_id=${j.stageId} '
+        'master_slot_index=${j.masterSlotIndex} 越界 [0, ${masters.length})',
+      );
+    }
+    final slotRole = masters[j.masterSlotIndex].lineageRole;
+    if (slotRole != j.role) {
+      throw StateError(
+        'lineage_onboarding stage_id=${j.stageId} role=${j.role.name} '
+        '与 masters[${j.masterSlotIndex}].lineageRole=${slotRole.name} 不一致',
+      );
+    }
+    if (j.narrativeId.isEmpty) {
+      throw StateError(
+        'lineage_onboarding stage_id=${j.stageId} narrative_id 为空',
+      );
     }
   }
 }

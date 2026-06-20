@@ -11,6 +11,8 @@ import '../../../core/domain/technique.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../baike/presentation/baike_screen.dart';
+import '../../battle_record/application/boss_memory_providers.dart';
+import '../../battle_record/presentation/battle_record_screen.dart';
 import '../../cangjingge/presentation/cangjingge_screen.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
@@ -155,6 +157,12 @@ class MainMenu extends ConsumerWidget {
     final lateLocked = !cleared.contains(_lateGameUnlockStage);
     final pvpLocked = !cleared.contains(_pvpUnlockStage);
     final socialLocked = !cleared.contains(_socialUnlockStage);
+
+    // P4 战绩册入口门控：首次击败任一 Boss 后解锁（§5.7 隐藏式）。
+    final bossCount = ref
+        .watch(bossMemoryCountProvider)
+        .maybeWhen(data: (n) => n, orElse: () => 0);
+    final battleRecordUnlocked = bossCount > 0;
 
     final coreItems = <Widget>[
       WuxiaInkButton(
@@ -322,6 +330,13 @@ class MainMenu extends ConsumerWidget {
         locked: socialLocked,
         onTap: () => _push(context, const LeaderboardScreen()),
       ),
+      if (battleRecordUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.mainMenuBattleRecord,
+          hint: UiStrings.mainMenuBattleRecordHint,
+          icon: Icons.history_edu_outlined, // 美术待补专属 thumbnail
+          onTap: () => _push(context, const BattleRecordScreen()),
+        ),
       WuxiaInkButton(
         label: UiStrings.mainMenuBaike,
         hint: UiStrings.mainMenuBaikeHint,

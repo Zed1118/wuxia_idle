@@ -22,6 +22,8 @@ import '../features/sect/domain/sect.dart';
 import '../features/sect/domain/sect_event.dart';
 import '../features/pvp/domain/pvp_record.dart';
 import '../features/pvp/domain/pvp_snapshot.dart';
+import '../features/battle_record/domain/boss_memory.dart';
+import '../features/battle_record/application/boss_memory_service.dart';
 
 /// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。
 ///
@@ -83,6 +85,7 @@ class IsarSetup {
     SectEventSchema,
     PvpRecordSchema,
     PvpSnapshotSchema,
+    BossMemorySchema,
   ];
 
   /// 当前 schema 对应的存档版本（写入新建 SaveData.saveVersion）。
@@ -122,7 +125,10 @@ class IsarSetup {
   //   老档(<0.25.0)已由旧 onboarding 种满 3 人队(两弟子 role=disciple)。迁移段 4:
   //   a) founder.discipleIds 顺序前 2 位 disciple → senior/junior(通用收徒弟子不动);
   //   b) 预填全部 join stage id(弟子已在,disciple-join hook 不再触发、不重建)。
-  static const _currentSaveVersion = '0.25.0';
+  // 段(0.26.0 战绩册):新 BossMemory collection,旧档天然空(正确初始态)。
+  // 老档已击败 Boss 的回填骨架在后续 task 由 BossMemoryService.backfillFromProgress 处理,
+  // 此处仅 bump 版本号,无 collection 操作。
+  static const _currentSaveVersion = '0.26.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -152,6 +158,14 @@ class IsarSetup {
     if (existing != null) {
       if (existing.saveVersion != _currentSaveVersion) {
         await _migrateSaveData(isar, existing);
+      }
+      // 0.26.0 新增：老档 Boss 回填骨架（幂等，新档无进度时 no-op）。
+      // GameRepository 未加载时 backfillFromProgress 内部会抛 StateError，
+      // 理论不会：splash 先 loadAllDefs 再 init；防御性 try 包住。
+      try {
+        await BossMemoryService(isar: isar).backfillFromProgress(currentSlotId);
+      } catch (_) {
+        // GameRepository 未加载或进度异常时静默 skip（不阻塞启动）
       }
       return existing;
     }
