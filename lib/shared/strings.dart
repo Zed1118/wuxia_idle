@@ -1635,6 +1635,7 @@ class UiStrings {
   static const String mainMenuWeaponCodex = '兵器谱';
   static const String mainMenuWeaponCodexHint = '历观神兵，谱录江湖';
   static const String weaponCodexTitle = '兵器谱';
+  static const String weaponCodexEmptyHint = '谱册尚未备妥';
   static const String weaponCodexBackfillSource = '来历不详';
   static const String weaponCodexLockedItem = '未得之器';
   static const String weaponCodexHistoryUnknown = '来历已不可考';
