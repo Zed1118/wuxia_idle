@@ -1630,4 +1630,24 @@ class UiStrings {
   static String battleRecordCrits(int c) => '暴击 $c';
   static String battleRecordTurns(int t) => '$t 回合';
   static String battleRecordClearedAt(String date) => '初胜 $date';
+
+  // ── 兵器谱 ──
+  static const String mainMenuWeaponCodex = '兵器谱';
+  static const String mainMenuWeaponCodexHint = '历观神兵，谱录江湖';
+  static const String weaponCodexTitle = '兵器谱';
+  static const String weaponCodexBackfillSource = '来历不详';
+  static const String weaponCodexLockedItem = '未得之器';
+  static const String weaponCodexHistoryUnknown = '来历已不可考';
+  static const String weaponCodexFilterAll = '全部';
+  static const String weaponCodexFilterWeapon = '兵器';
+  static const String weaponCodexFilterArmor = '护甲';
+  static const String weaponCodexFilterAccessory = '饰品';
+  static const String weaponCodexNotObtained = '尚未得手';
+  static const String weaponCodexSourceEncounter = '奇遇所得';
+  static String weaponCodexProgress(int got, int total) => '已录 $got / $total';
+  static String weaponCodexTierProgress(int got, int total) => '$got/$total';
+  static String weaponCodexFirstObtainedAt(String date) => '首得 $date';
+  static String weaponCodexFirstObtainedFrom(String src) => '得于 $src';
+  static String weaponCodexObtainedCount(int n) => '历得 $n 件';
+  static String weaponCodexSourceTowerFloor(int floor) => '宝塔第 $floor 层';
 }
