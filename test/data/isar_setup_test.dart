@@ -60,7 +60,7 @@ void main() {
       // 重新 init → _ensureSaveData 检测版本差异跑迁移。
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.26.0', reason: '迁移后升版到当前(0.26.0)');
+      expect(save.saveVersion, '0.27.0', reason: '迁移后升版到当前(0.27.0)');
       expect(
         save.skillUnlockProgress.isUnlocked('skill_encounter_ting_yu_jian'),
         isTrue,
@@ -94,8 +94,8 @@ void main() {
       // 重开 → 升版当前。
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.26.0',
-          reason: '升版 → 0.26.0(经战绩册 BossMemory 迁移段,无迁移动作纯标记)');
+      expect(save.saveVersion, '0.27.0',
+          reason: '升版 → 0.27.0(经兵器谱 EquipmentCatalogEntry 升版段,无迁移动作纯标记)');
     });
 
     test('首次 init 应自动建 SaveData(id=0) 并填默认值', () async {
@@ -105,8 +105,8 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.26.0',
-          reason: '新建存档写当前 saveVersion 0.26.0');
+      expect(save.saveVersion, '0.27.0',
+          reason: '新建存档写当前 saveVersion 0.27.0');
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);

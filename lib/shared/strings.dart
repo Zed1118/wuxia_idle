@@ -1643,7 +1643,6 @@ class UiStrings {
   static const String weaponCodexFilterArmor = '护甲';
   static const String weaponCodexFilterAccessory = '饰品';
   static const String weaponCodexNotObtained = '尚未得手';
-  static const String weaponCodexSourceEncounter = '奇遇所得';
   static String weaponCodexProgress(int got, int total) => '已录 $got / $total';
   static String weaponCodexTierProgress(int got, int total) => '$got/$total';
   static String weaponCodexFirstObtainedAt(String date) => '首得 $date';
