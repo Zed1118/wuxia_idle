@@ -1,8 +1,11 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/battle/presentation/hero_camera_overlay.dart';
 import 'package:wuxia_idle/features/debug/application/visual_route.dart';
 import 'package:wuxia_idle/features/debug/presentation/battle_test_menu.dart';
 import 'package:wuxia_idle/features/debug/presentation/visual_route_host.dart';
@@ -89,6 +92,10 @@ void main() {
         VisualRoute.discipleJoinCeremony,
       );
     });
+
+    test('批一英雄镜头 overlay 路由 parse', () {
+      expect(parseVisualRoute('hero_camera'), VisualRoute.heroCamera);
+    });
   });
 
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。
@@ -149,6 +156,49 @@ void main() {
       expect(preview, isNotNull, reason: '静态验收必须预置拖招态,否则截图无引导线/光晕');
       expect(preview!.rushActorId, 1, reason: '主控蓄势脉动');
       expect(preview.hoveredEnemyId, 11, reason: '敌 11 悬停浅金高亮');
+    });
+  });
+
+  // 批一英雄镜头 preview：真数据(祖师 + 真 stage_01_05 Boss 名)接线回归。
+  group('hero_camera preview · 真数据接线', () {
+    setUpAll(() async {
+      await Isar.initializeIsarCore(download: true);
+      if (!GameRepository.isLoaded) {
+        await GameRepository.loadAllDefs(
+          loader: (path) => File(path).readAsString(),
+        );
+      }
+    });
+
+    late Directory tempDir;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('wuxia_hero_camera_');
+      await IsarSetup.init(directory: tempDir, inspector: false);
+    });
+
+    tearDown(() async {
+      if (Isar.getInstance('wuxia_save_slot1') != null) {
+        await IsarSetup.close();
+      }
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    testWidgets('hero_camera → HeroCameraOverlay 弹出 + 祖师名号题字(真数据组装不抛异常)',
+        (tester) async {
+      final target = await buildVisualTarget(
+        VisualRoute.heroCamera,
+        IsarSetup.instance,
+      );
+      await tester.pumpWidget(MaterialApp(home: target));
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(HeroCameraOverlay), findsOneWidget,
+          reason: '专属路由必须弹英雄镜头 overlay,否则批一动效仍无法目检');
+      expect(find.text('祖师'), findsOneWidget, reason: '出镜英雄名号取祖师占位名');
     });
   });
 }

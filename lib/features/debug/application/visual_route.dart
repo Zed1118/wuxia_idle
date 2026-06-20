@@ -140,6 +140,10 @@ enum VisualRoute {
     'disciple_join_ceremony',
     '第七阶段批三目检·拜入立绘题字 overlay 动效(读真 lineage_onboarding 配置:大弟子/二弟子真立绘交替循环滑入+放大+「XX 拜入门下」题字,自动重播;单帧截不出须真机看动效)',
   ),
+  heroCamera(
+    'hero_camera',
+    '第七阶段批一目检·Boss 首胜英雄镜头 overlay 动效(祖师真立绘 + 真 stage_01_05 Boss 名「击破 XX」题字,从右滑入+放大,自动重播;单帧截不出须真机看动效。生产仅 Boss 首胜触发,故走此专属路由验)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);

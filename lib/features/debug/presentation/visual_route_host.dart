@@ -52,6 +52,8 @@ import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../data/narrative_loader.dart';
 import '../../mainline/domain/chapter_assets.dart';
 import '../../battle/presentation/character_avatar.dart';
+import '../../battle/presentation/hero_camera_overlay.dart';
+import '../../battle/domain/enum_localizations.dart' show EnumL10n;
 import '../../battle/application/stage_battle_setup.dart';
 import '../../battle/domain/battle_state.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
@@ -390,6 +392,11 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // 第七阶段批三目检:拜入立绘题字 overlay 动效。读真 lineage_onboarding 配置,
       // 大弟子/二弟子真立绘交替循环重播(GameRepository 已在 _prepare 加载完)。
       return const _DiscipleJoinPreview();
+    case VisualRoute.heroCamera:
+      // 第七阶段批一目检:Boss 首胜英雄镜头 overlay 动效。生产仅 Boss 首胜触发
+      // (stage_entry_flow / tower_entry_flow),老档已通关不重触发 → 走此专属路由
+      // 用真数据(祖师立绘 + 真 stage_01_05 Boss 名)组 HeroCameraData 自动循环重播。
+      return const _HeroCameraPreview();
     case VisualRoute.battleTreasureGlowPeak:
       return const _TreasureGlowPreview(
         defId: 'weapon_shenwu_tian_wen_jian',
@@ -1055,6 +1062,86 @@ class _DiscipleJoinPreviewState extends State<_DiscipleJoinPreview> {
             key: ValueKey('disciple_join_$_replay'),
             portraitPath: e.portrait,
             caption: e.caption,
+            onDone: _next,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 第七阶段批一目检:Boss 首胜英雄镜头 overlay 动效(对称 [_DiscipleJoinPreview])。
+///
+/// 英雄镜头生产仅在 Boss 首胜触发(stage_entry_flow / tower_entry_flow,gate
+/// `isBoss && isFirstClear`),老档 Boss 已通关不会重触发 → 单帧也截不出滑入+放大
+/// 运动,故走此专属路由。用真数据组 [HeroCameraData]:祖师立绘/名号/境界 +
+/// 真 stage_01_05 章末 Boss 名,自动循环重播看动效。
+class _HeroCameraPreview extends StatefulWidget {
+  const _HeroCameraPreview();
+
+  @override
+  State<_HeroCameraPreview> createState() => _HeroCameraPreviewState();
+}
+
+class _HeroCameraPreviewState extends State<_HeroCameraPreview> {
+  HeroCameraData? _data;
+  int _replay = 0; // 递增作 key 种子,强制 overlay 重建重播滑入动效。
+  bool _switching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final repo = GameRepository.instance;
+    final masters = repo.masters;
+    if (masters.isEmpty) return;
+    // 祖师(slot 0)作出镜英雄:真立绘 + 占位名号 + 开局境界(学徒,与 Ch1 章末 Boss 同阶)。
+    final founder = masters.first;
+    // 真 stage_01_05 章末 Boss(slot 0)名,经生产 buildEnemyTeam 转换取显示名。
+    final stage = repo.getStage('stage_01_05');
+    final boss = StageBattleSetup.buildEnemyTeam(stage.enemyTeam).first;
+    _data = HeroCameraData(
+      portraitPath: founder.portraitPath,
+      heroName: defaultMasterName(founder),
+      realmLabel: EnumL10n.realmTier(founder.defaultRealm),
+      bossName: boss.name,
+      // 代表性出镜伤害值(仅 debug 展示验题字排版,不参战;Ch1 章末量级)。
+      topDamage: 4800,
+    );
+  }
+
+  void _next() {
+    if (_switching || _data == null) return;
+    _switching = true;
+    // 短暂停后换 key 触发滑入动效重跑(单英雄→原地重播,对称 _DiscipleJoinPreview)。
+    Future<void>.delayed(const Duration(milliseconds: 700), () {
+      if (!mounted) return;
+      setState(() {
+        _replay++;
+        _switching = false;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final data = _data;
+    if (data == null) {
+      return const Scaffold(
+        backgroundColor: WuxiaColors.background,
+        body: Center(child: Text('无祖师配置(masters 为空)')),
+      );
+    }
+    return Scaffold(
+      backgroundColor: WuxiaColors.background,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const BattleSceneBackground(
+            path: 'assets/scenes/battle_citywall.png',
+          ),
+          HeroCameraOverlay(
+            key: ValueKey('hero_camera_$_replay'),
+            data: data,
             onDone: _next,
           ),
         ],
