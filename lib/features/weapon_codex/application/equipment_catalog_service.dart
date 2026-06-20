@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/equipment.dart';
+import '../../../shared/strings.dart';
 import '../domain/equipment_catalog_entry.dart';
 
 /// 兵器谱图鉴留册 service（幂等写入 + 库存兜底回填）。
@@ -14,8 +15,8 @@ class EquipmentCatalogService {
 
   final Isar isar;
 
-  /// 回填档来源字面量（Task 6 改为引用 UiStrings）。
-  static const backfillSource = '来历不详';
+  /// 回填档来源字面量（引用 UiStrings.weaponCodexBackfillSource）。
+  static const backfillSource = UiStrings.weaponCodexBackfillSource;
 
   Future<EquipmentCatalogEntry?> entryFor(int saveDataId, String defId) => isar
       .equipmentCatalogEntrys
