@@ -1,0 +1,3 @@
+# visual_capture manifest  sha=2bdedf67  feature=兵器谱(weapon_codex)  ts=20260621
+weapon_codex (主屏) -> weapon_codex_main.png -> PASS:标题兵器谱/进度已录4-80/slot筛选chips/tier分组寻常货像样货/铁剑折刀轻甲粗布衣点亮+剪影未得之器藏名/tier色边/布局无溢出
+weapon_codex_detail (详情屏) -> equipment_catalog_detail.png -> PASS:标题铁剑/器物档案立绘+寻常货+武器+攻100-160属性范围/个人历程得于黑风寨之战/布局无溢出
