@@ -320,6 +320,9 @@ floors:
       - inventoryItemDefId: item_scroll_yan_zi_san_chao
         quantity: [1, 1]
         dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.20  # 经验丹大档(balance T4 爬塔大Boss扩展)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 3 段 · 二流 (11-15) · 2 人队
@@ -685,6 +688,9 @@ floors:
       - inventoryItemDefId: item_scroll_jin_gang_fu_mo
         quantity: [1, 1]
         dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.20  # 经验丹大档(balance T4 爬塔大Boss扩展)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 5 段 · 绝顶 (21-25) · 3 人队
@@ -1175,3 +1181,6 @@ floors:
       - inventoryItemDefId: item_scroll_yue_luo_wu_sheng
         quantity: [1, 1]
         dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.20  # 经验丹大档(balance T4 爬塔大Boss扩展)
