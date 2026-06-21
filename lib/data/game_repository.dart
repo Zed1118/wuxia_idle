@@ -11,6 +11,7 @@ import 'defs/master_def.dart';
 import 'defs/recruit_candidate_def.dart';
 import 'defs/realm_def.dart';
 import 'defs/sect_candidate_def.dart';
+import 'defs/shop_item_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import 'defs/skill_def.dart';
 import 'defs/stage_def.dart';
@@ -109,6 +110,11 @@ class GameRepository {
   /// stage boss kill 声望 wire 查 rival faction 用。fixture 不带 yaml 时空 map。
   final Map<String, String> factionAlignments;
 
+  /// 材料经济 P1 商店商品 def（`data/shop.yaml`）。
+  /// P1 阶段只卖磨剑石/心血结晶 2 种材料；标价上限 100000。
+  /// **graceful**：test fixture 不带 yaml 时空 map。
+  final Map<String, ShopItemDef> shopItemDefs;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -127,6 +133,7 @@ class GameRepository {
     required this.codexEntries,
     required this.territoryDefs,
     required this.factionAlignments,
+    required this.shopItemDefs,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -336,6 +343,18 @@ class GameRepository {
       };
     } catch (_) {}
 
+    // 材料经济 P1 shop.yaml(graceful;fixture 不带 yaml 时空 map)。
+    // 生产路径红线校验在 _enforceShopRedLines 拦标价越界。
+    Map<String, ShopItemDef> shopItemDefs = const {};
+    try {
+      final shopRaw = parseYamlMap(await load('data/shop.yaml'));
+      shopItemDefs = _parseDefMap(
+        shopRaw['shop'] as List,
+        ShopItemDef.fromYaml,
+        idOf: (d) => d.id,
+      );
+    } catch (_) {}
+
     final repo = GameRepository._(
       numbers: numbers,
       realms: realms,
@@ -354,6 +373,7 @@ class GameRepository {
       codexEntries: codexEntries,
       territoryDefs: territoryDefs,
       factionAlignments: factionAlignments,
+      shopItemDefs: shopItemDefs,
     );
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);
@@ -570,6 +590,9 @@ class GameRepository {
 
     // P1.z 机制百科 md 校验(空 map 兼容 test fixture;graceful 缺档 8)
     _enforceCodexRedLines();
+
+    // 材料经济 P1：商店标价上限校验（空 map 兼容 test fixture）。
+    _enforceShopRedLines();
   }
 
   /// P1.z 机制百科红线(GDD §10.2 第 3 方式):
@@ -607,6 +630,20 @@ class GameRepository {
         throw StateError(
           'codex entry ${e.id} 字数=$chars,应 ∈ [200, 550](GDD §10.2)',
         );
+      }
+    }
+  }
+
+  /// 材料经济 P1 商店标价红线（GDD §5.1）：
+  /// - price ∈ [1, 100000]（test fixture 不带 yaml 时空 map，跳过）。
+  void _enforceShopRedLines() {
+    if (shopItemDefs.isEmpty) return; // test fixture 兼容
+    for (final d in shopItemDefs.values) {
+      if (d.price <= 0) {
+        throw StateError('红线:商店 ${d.id} 标价 ${d.price} ≤ 0');
+      }
+      if (d.price > 100000) {
+        throw StateError('红线:商店 ${d.id} 标价 ${d.price} > 100000');
       }
     }
   }

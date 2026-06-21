@@ -1,0 +1,21 @@
+# 江湖商店商品定义（P1 材料经济 Task 4，GDD §5.1）
+# P1 阶段只卖 2 种强化材料；标价上限 100000（_enforceRedLines 校验）。
+# 字段说明：
+#   id       : 商品唯一 id
+#   itemDefId: 购买后入库的 InventoryItem.defId
+#   itemType : ItemType 枚举值名
+#   price    : 银两标价（单件）
+#   category : 货架分组 key
+
+shop:
+  - id: shop_mojianshi
+    itemDefId: item_mojianshi
+    itemType: moJianShi
+    price: 30
+    category: material
+
+  - id: shop_xinxue_jiejing
+    itemDefId: item_xinxuejiejing
+    itemType: xinXueJieJing
+    price: 120
+    category: material
