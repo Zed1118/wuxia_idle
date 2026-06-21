@@ -108,7 +108,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       ),
       actions: [
         PlaqueButton(
-          label: '取消',
+          label: UiStrings.commonCancel,
           onTap: () => Navigator.of(context).pop(false),
         ),
         PlaqueButton(
