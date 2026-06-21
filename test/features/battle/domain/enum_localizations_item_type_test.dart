@@ -25,6 +25,10 @@ void main() {
       expect(EnumL10n.itemType(ItemType.miscMaterial), '杂项材料');
     });
 
+    test('ItemType.silver 显示名为 银两', () {
+      expect(EnumL10n.itemType(ItemType.silver), '银两');
+    });
+
     test('所有 ItemType enum 值都有非空映射(全覆盖红线)', () {
       for (final t in ItemType.values) {
         expect(

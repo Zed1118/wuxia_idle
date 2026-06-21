@@ -350,7 +350,8 @@ enum ItemType {
   xinXueJieJing,    // 心血结晶（强化保底，GDD §6.3）
   jingYanDan,       // 经验丹
   techniqueScroll,  // 心法秘籍
-  miscMaterial;     // 杂项材料
+  miscMaterial,     // 杂项材料
+  silver;           // 银两（货币）
 
   /// 根据已知 item defId 推断 [ItemType]，未知 id 兜底 [miscMaterial]。
   /// 入库（tower/mainline 写背包）与展示（victory dialog drop banner）共用。
