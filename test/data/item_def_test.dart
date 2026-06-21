@@ -8,17 +8,17 @@ void main() {
 
   tearDown(GameRepository.resetForTest);
 
-  test('经验丹 def fromYaml: type/name/experience 解析', () {
+  test('经验丹 def fromYaml: type/name/layer_fraction 解析', () {
     final d = ItemDef.fromYaml({
       'defId': 'item_jingyandan_small',
       'type': 'jingYanDan',
       'name': '凝神丹',
-      'experience': 200,
+      'layer_fraction': 0.2,
     });
     expect(d.defId, 'item_jingyandan_small');
     expect(d.type, ItemType.jingYanDan);
     expect(d.name, '凝神丹');
-    expect(d.experience, 200);
+    expect(d.layerFraction, 0.2);
     expect(d.unlockSkillId, isNull);
   });
 
@@ -31,10 +31,10 @@ void main() {
     });
     expect(d.type, ItemType.techniqueScroll);
     expect(d.unlockSkillId, 'skill_kai_bei_shou');
-    expect(d.experience, isNull);
+    expect(d.layerFraction, isNull);
   });
 
-  test('经验丹缺 experience → 抛错', () {
+  test('经验丹缺 layer_fraction → 抛错', () {
     expect(
       () => ItemDef.fromYaml({'defId': 'x', 'type': 'jingYanDan', 'name': 'x'}),
       throwsStateError,
@@ -51,7 +51,7 @@ void main() {
   test('GameRepository 加载 items.yaml: 12 条 def', () async {
     final repo = await GameRepository.loadAllDefs();
     expect(repo.itemDefs.length, 12);
-    expect(repo.itemDefs['item_jingyandan_small']?.experience, 200);
+    expect(repo.itemDefs['item_jingyandan_small']?.layerFraction, 0.2);
     expect(repo.itemDefs['item_scroll_kai_bei_shou']?.unlockSkillId, 'skill_kai_bei_shou');
   });
 }

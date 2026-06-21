@@ -669,13 +669,13 @@ class GameRepository {
     }
   }
 
-  /// 材料经济 P2：道具经验值红线（防经验丹变相破数值红线）。
+  /// 材料经济 balance T1：经验丹 layer_fraction 红线（应 ∈ (0.0, 1.0]，防配 0 或超 1 破缩放）。
   void _enforceItemRedLines() {
     if (itemDefs.isEmpty) return; // test fixture 兼容
     for (final d in itemDefs.values) {
-      final exp = d.experience;
-      if (exp != null && (exp <= 0 || exp > 100000)) {
-        throw StateError('红线:道具 ${d.defId} experience $exp 应 ∈ (0, 100000]');
+      final frac = d.layerFraction;
+      if (frac != null && (frac <= 0 || frac > 1.0)) {
+        throw StateError('红线:道具 ${d.defId} layer_fraction $frac 应 ∈ (0.0, 1.0]');
       }
     }
   }
