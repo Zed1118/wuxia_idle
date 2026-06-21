@@ -13,6 +13,9 @@ class SeclusionMapDef {
   final double experiencePerHour;
   final double mojianshiPerHour;
 
+  /// 银两产出系数（P4 材料经济 P1）。每小时银两 = silverPerHour × actualHours × scale × solarBonus。
+  final double silverPerHour;
+
   /// 装备掉落概率权重（1.0 = 基础，1.5 = +50%，与 base_equip_drop_probability 相乘）。
   final double equipmentDropRate;
 
@@ -36,6 +39,7 @@ class SeclusionMapDef {
     required this.requiredRealm,
     required this.experiencePerHour,
     required this.mojianshiPerHour,
+    required this.silverPerHour,
     required this.equipmentDropRate,
     required this.techniqueLearnRate,
     required this.internalForceGrowth,
@@ -52,6 +56,7 @@ class SeclusionMapDef {
       requiredRealm: RealmTier.values.byName(y['required_realm'] as String),
       experiencePerHour: (outputs['experience_per_hour'] as num).toDouble(),
       mojianshiPerHour: (outputs['mojianshi_per_hour'] as num).toDouble(),
+      silverPerHour: (outputs['silver_per_hour'] as num?)?.toDouble() ?? 0.0,
       equipmentDropRate: (outputs['equipment_drop_rate'] as num).toDouble(),
       techniqueLearnRate: (outputs['technique_learn_rate'] as num).toDouble(),
       internalForceGrowth: (outputs['internal_force_growth'] as num).toDouble(),

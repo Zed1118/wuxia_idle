@@ -26,6 +26,7 @@ import '../domain/seclusion_map_def.dart';
 typedef RetreatOutputs = ({
   double actualHours,
   int mojianshi,
+  int silver,
   List<Equipment> equipmentDrops,
   int experiencePoints,
   int techniqueLearnPoints,
@@ -41,6 +42,7 @@ typedef RetreatOutputs = ({
 typedef RetreatResult = ({
   double actualHours,
   int mojianshi,
+  int silver,
   List<Equipment> equipmentDrops,
   int experiencePoints,
   int techniqueLearnPoints,
@@ -209,6 +211,10 @@ class SeclusionService {
         .floor()
         .clamp(0, 999999);
 
+    final silver = (def.silverPerHour * actualHours * scale * solarBonus)
+        .floor()
+        .clamp(0, 999999);
+
     final experiencePoints =
         (def.experiencePerHour * actualHours * scale * solarBonus)
             .floor()
@@ -255,6 +261,7 @@ class SeclusionService {
     return (
       actualHours: actualHours,
       mojianshi: mojianshi,
+      silver: silver,
       equipmentDrops: equipDrops,
       experiencePoints: experiencePoints,
       techniqueLearnPoints: techniqueLearnPoints,
@@ -327,6 +334,17 @@ class SeclusionService {
           defId: 'item_mojianshi',
           itemType: ItemType.moJianShi,
           quantity: outputs.mojianshi,
+          now: now,
+        );
+      }
+
+      // 1b. 写 silver → InventoryItem（P4 材料经济 P1）
+      if (outputs.silver > 0) {
+        await _addInventoryItem(
+          isar,
+          defId: 'item_silver',
+          itemType: ItemType.silver,
+          quantity: outputs.silver,
           now: now,
         );
       }
@@ -458,6 +476,7 @@ class SeclusionService {
     return (
       actualHours: outputs.actualHours,
       mojianshi: outputs.mojianshi,
+      silver: outputs.silver,
       equipmentDrops: outputs.equipmentDrops,
       experiencePoints: outputs.experiencePoints,
       techniqueLearnPoints: outputs.techniqueLearnPoints,

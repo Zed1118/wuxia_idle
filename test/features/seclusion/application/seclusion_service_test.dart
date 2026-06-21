@@ -577,6 +577,37 @@ void main() {
       expect(out.internalForcePoints, lessThan(999999));
       expect(out.internalForcePoints, greaterThan(3000));
     });
+
+    // P4 材料经济 P1：银两产出 ──────────────────────────────────────────────
+
+    test('1 小时山林 silver = floor(silverPerHour × 1h × scale × solarBonus)', () {
+      final start = DateTime(2026, 5, 11, 10, 0); // 非子时非节气
+      final now = start.add(const Duration(hours: 1));
+      final session = makeSession(durationHours: 4, startedAt: start);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+      // shanLin silver_per_hour=5 (P1占位)，xueTu scale=1.0，无节气
+      // floor(5 × 1h × 1.0 × 1.0) = 5
+      expect(out.silver, 5);
+    });
+
+    test('0 小时 → silver=0', () {
+      final now = DateTime(2026, 5, 11, 10, 0);
+      final session = makeSession(startedAt: now);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+      expect(out.silver, 0);
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -1284,6 +1315,86 @@ void main() {
             now: start.add(const Duration(hours: 4)),
           );
       expect(out.actualHours, 4);
+    });
+
+    // P4 材料经济 P1：completeRetreat 入库银两 ────────────────────────────────
+
+    test('收功后 item_silver 数量等于 computeOutputs.silver', () async {
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session = await SeclusionService(isar: IsarSetup.instance)
+          .startRetreat(
+            mapType: RetreatMapType.shanLin,
+            durationHours: 4,
+            saveDataId: kSaveDataId,
+            characterId: kCharId,
+            charRealmTier: RealmTier.xueTu,
+            maps: GameRepository.instance.seclusionMaps,
+            now: start,
+          );
+
+      final completeAt = start.add(const Duration(hours: 4));
+      final out = await SeclusionService(isar: IsarSetup.instance)
+          .completeRetreat(
+            session: session,
+            characterId: kCharId,
+            charRealmTier: RealmTier.xueTu,
+            config: GameRepository.instance.numbers.retreat,
+            maps: GameRepository.instance.seclusionMaps,
+            now: completeAt,
+          );
+
+      expect(out.silver, greaterThan(0));
+
+      final item = await IsarSetup.instance.inventoryItems
+          .filter()
+          .itemTypeEqualTo(ItemType.silver)
+          .findFirst();
+      expect(item, isNotNull, reason: 'item_silver 应入库');
+      expect(item!.defId, 'item_silver');
+      expect(item.quantity, out.silver);
+    });
+
+    test('收功 merge 既有 item_silver 行（防 defId 分裂回归）', () async {
+      final now = DateTime(2026, 5, 12, 9, 0);
+      final seeded = InventoryItem()
+        ..defId = 'item_silver'
+        ..itemType = ItemType.silver
+        ..quantity = 100
+        ..firstObtainedAt = now
+        ..lastObtainedAt = now;
+      await IsarSetup.instance.writeTxn(
+        () => IsarSetup.instance.inventoryItems.put(seeded),
+      );
+
+      final start = DateTime(2026, 5, 12, 10, 0);
+      final session = await SeclusionService(isar: IsarSetup.instance)
+          .startRetreat(
+            mapType: RetreatMapType.shanLin,
+            durationHours: 4,
+            saveDataId: kSaveDataId,
+            characterId: kCharId,
+            charRealmTier: RealmTier.xueTu,
+            maps: GameRepository.instance.seclusionMaps,
+            now: start,
+          );
+      final out = await SeclusionService(isar: IsarSetup.instance)
+          .completeRetreat(
+            session: session,
+            characterId: kCharId,
+            charRealmTier: RealmTier.xueTu,
+            config: GameRepository.instance.numbers.retreat,
+            maps: GameRepository.instance.seclusionMaps,
+            now: start.add(const Duration(hours: 4)),
+          );
+
+      // 必须仍只有 1 行 silver（不能分裂多 defId）
+      final all = await IsarSetup.instance.inventoryItems
+          .filter()
+          .itemTypeEqualTo(ItemType.silver)
+          .findAll();
+      expect(all.length, 1, reason: '同 ItemType.silver 不可分裂多 defId 行');
+      expect(all.first.defId, 'item_silver');
+      expect(all.first.quantity, 100 + out.silver);
     });
   });
 }

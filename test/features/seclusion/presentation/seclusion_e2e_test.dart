@@ -176,6 +176,7 @@ void main() {
     final result = (
       actualHours: 1.0,
       mojianshi: 100,
+      silver: 0,
       equipmentDrops: <Equipment>[],
       experiencePoints: 50,
       techniqueLearnPoints: 5,
@@ -225,6 +226,7 @@ void main() {
     final result = (
       actualHours: 0.5,
       mojianshi: 50,
+      silver: 0,
       equipmentDrops: <Equipment>[],
       experiencePoints: 25,
       techniqueLearnPoints: 2,
