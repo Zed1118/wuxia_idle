@@ -6,11 +6,11 @@ import 'package:wuxia_idle/data/game_repository.dart';
 
 /// 材料经济 balance T5:秘籍(item_scroll_*)掉落校准红线测。
 ///
-/// 核实结论(T5):主线掉落引擎无首通门控,rollDrops 每次胜利都触发;
-/// 爬塔有 isFirstClear 门控(tower_entry_flow:208)。
-/// 校准方案:
-///   - 主线 3 本(stage_01_05/02_05/03_05):dropChance=0.5(较高概率,重复掉幂等)
-///   - 爬塔 6 本(5/10/15/20/25/30 层):dropChance=0.15(残本概率磨砺感)
+/// 方案(T5 首通必得):
+///   - 主线 3 本(stage_01_05/02_05/03_05):dropChance=1.0 + isFirstClear gate 于
+///     stage_entry_flow.dart(非首通跳过写入,避免重复刷)
+///   - 爬塔 6 本(5/10/15/20/25/30 层):dropChance=1.0 + tower_entry_flow
+///     isFirstClear 门控(已有,重打不 roll)
 void main() {
   Future<String> fileLoader(String path) async {
     final f = File(path);
@@ -44,7 +44,7 @@ void main() {
       }
     });
 
-    test('主线 3 本秘籍 dropChance=0.5(较高概率)', () async {
+    test('主线 3 本秘籍 dropChance=1.0(首通必得)', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
       const mainlineScrolls = {
@@ -64,9 +64,9 @@ void main() {
         for (final d in drops) {
           expect(
             d.dropChance,
-            closeTo(0.5, 0.001),
+            closeTo(1.0, 0.001),
             reason:
-                '${entry.key} 秘籍 dropChance 应=0.5(T5 balance:主线较高概率)',
+                '${entry.key} 秘籍 dropChance 应=1.0(T5:首通必得,stage_entry_flow isFirstClear gate 防重复)',
           );
         }
       }
@@ -98,7 +98,7 @@ void main() {
       }
     });
 
-    test('爬塔 6 本秘籍 dropChance=0.15(残本概率)', () async {
+    test('爬塔 6 本秘籍 dropChance=1.0(首通必得)', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
 
       const towerScrolls = {
@@ -121,9 +121,9 @@ void main() {
         for (final d in drops) {
           expect(
             d.dropChance,
-            closeTo(0.15, 0.001),
+            closeTo(1.0, 0.001),
             reason:
-                '爬塔第 ${entry.key} 层秘籍 dropChance 应=0.15(T5 balance:残本概率)',
+                '爬塔第 ${entry.key} 层秘籍 dropChance 应=1.0(T5:首通必得,tower_entry_flow isFirstClear gate)',
           );
         }
       }

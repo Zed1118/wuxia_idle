@@ -821,6 +821,11 @@ Future<
       await isar.equipments.putAll(result.dropResult.equipments);
     }
     for (final item in result.dropResult.items) {
+      // T5 首通必得门控：秘籍(item_scroll_*) 仅首通写入背包，重打跳过。
+      // 银两/经验丹等其余 item 继续每次掉落，不受此 gate 影响。
+      if (item.defId.startsWith('item_scroll_') && !isFirstClearStage) {
+        continue;
+      }
       final existing = await isar.inventoryItems.getByDefId(item.defId);
       if (existing != null) {
         existing.quantity += item.quantity;
