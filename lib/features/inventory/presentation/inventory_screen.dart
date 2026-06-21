@@ -33,14 +33,17 @@ import 'equipment_detail_screen.dart';
 /// 顺序分组（磨剑石 / 心血结晶 / 经验丹 / 心法秘籍 / 杂项材料），目前
 /// Demo 仅磨剑石 + 心血结晶有生产路径。
 class InventoryScreen extends ConsumerStatefulWidget {
-  const InventoryScreen({super.key});
+  const InventoryScreen({super.key, this.initialTab = 0});
+
+  /// 初始 Tab(0=装备 / 1=物料)。默认 0,向后兼容;供视觉验收直开物料 tab。
+  final int initialTab;
 
   @override
   ConsumerState<InventoryScreen> createState() => _InventoryScreenState();
 }
 
 class _InventoryScreenState extends ConsumerState<InventoryScreen> {
-  var _selectedTab = 0;
+  late int _selectedTab = widget.initialTab;
 
   @override
   Widget build(BuildContext context) {

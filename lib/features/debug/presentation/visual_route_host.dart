@@ -66,6 +66,8 @@ import '../../weapon_codex/application/equipment_catalog_providers.dart';
 import '../../weapon_codex/domain/equipment_catalog_entry.dart';
 import '../../weapon_codex/presentation/weapon_codex_screen.dart';
 import '../../weapon_codex/presentation/equipment_catalog_detail_screen.dart';
+import '../../shop/presentation/shop_screen.dart';
+import '../../../core/domain/inventory_item.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -474,6 +476,23 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.weaponCodexDetail:
       // 兵器谱详情屏正常态目检：挑一件有 schoolBias 的典型 def + 正常态 entry。
       return _buildWeaponCodexDetailVisual();
+    case VisualRoute.shop:
+      // 江湖商店主屏目检:种银两 80(够买磨剑石 30 两件·不够心血结晶 120),
+      // 验货币顶栏 + 固定货架 + 可买(绿)/不可买(红 disabled)两态同屏。
+      await _seedInventoryItem(isar, 'item_silver', 80);
+      return const ShopScreen();
+    case VisualRoute.inventoryCurrency:
+      // 背包货币位目检:种银两 + 磨剑石 + 心血结晶,initialTab=1 直开物料 tab,
+      // 验顶部货币位顶栏 + 材料网格(银两不重复进网格,仅磨剑石/心血结晶)。
+      await _seedInventoryItem(isar, 'item_silver', 360);
+      await _seedInventoryItem(isar, 'item_mojianshi', 24);
+      await _seedInventoryItem(isar, 'item_xinxuejiejing', 6);
+      return const InventoryScreen(initialTab: 1);
+    case VisualRoute.mainMenuShop:
+      // 主菜单商店入口目检:种银两解锁商店 → 验「江湖商店」隐藏式入口木牌出现(§5.7)。
+      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+      await _seedInventoryItem(isar, 'item_silver', 200);
+      return const MainMenu();
     case VisualRoute.battleTreasureGlowPeak:
       return const _TreasureGlowPreview(
         defId: 'weapon_shenwu_tian_wen_jian',
@@ -514,6 +533,24 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
+}
+
+/// 材料经济 P1 验收 seed:upsert 一行 [InventoryItem](复用 [ItemType.fromDefId]
+/// 真映射,银两走 item_silver→ItemType.silver 同生产入库路径)。已有同 defId 行
+/// (hub 重复点选/同 db 多跑)则复用 id 覆盖数量,不撞 unique defId 索引。
+Future<void> _seedInventoryItem(Isar isar, String defId, int quantity) async {
+  final now = DateTime(2026, 6, 21);
+  await isar.writeTxn(() async {
+    final existing = await isar.inventoryItems.getByDefId(defId);
+    final item = existing ?? InventoryItem();
+    item
+      ..defId = defId
+      ..itemType = ItemType.fromDefId(defId)
+      ..quantity = quantity
+      ..firstObtainedAt = existing?.firstObtainedAt ?? now
+      ..lastObtainedAt = now;
+    await isar.inventoryItems.put(item);
+  });
 }
 
 /// 验收总入口:build 一次,运行时点按钮 push 各路由目标屏,返回再点下一个。
