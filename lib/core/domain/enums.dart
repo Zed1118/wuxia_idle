@@ -356,6 +356,10 @@ enum ItemType {
   /// 根据已知 item defId 推断 [ItemType]，未知 id 兜底 [miscMaterial]。
   /// 入库（tower/mainline 写背包）与展示（victory dialog drop banner）共用。
   static ItemType fromDefId(String defId) {
+    // 前缀匹配优先（材料经济 P2：经验丹 3 档 + 秘籍 9 本共 12 defId，
+    // 避免逐个 case 冗长易漏静默吞 miscMaterial）。
+    if (defId.startsWith('item_scroll_')) return ItemType.techniqueScroll;
+    if (defId.startsWith('item_jingyandan')) return ItemType.jingYanDan;
     switch (defId) {
       case 'item_mojianshi':
         return ItemType.moJianShi;
