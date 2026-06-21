@@ -493,6 +493,19 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
       await _seedInventoryItem(isar, 'item_silver', 200);
       return const MainMenu();
+    case VisualRoute.itemUseInventory:
+      // P2 材料用途目检:建祖师(经验丹 applyExperience / 秘籍 markUnlocked 需 founder
+      // + SaveData 真目标,否则结果浮层走 noTarget) + 种经验丹三档 + 秘籍 + 磨剑石,
+      // initialTab=1 直开物料 tab。验:三档丹 per-item 名(凝神/培元/大还)不同 +
+      // 秘籍名(开碑手·秘籍) + 丹/秘籍显「使用」按钮 / 磨剑石无按钮(仅可用道具显);
+      // 运行时点「使用」→PaperDialog 确认→结果三态浮层(经验入账/秘籍解锁/已知晓)。
+      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+      await _seedInventoryItem(isar, 'item_jingyandan_small', 3);
+      await _seedInventoryItem(isar, 'item_jingyandan_mid', 2);
+      await _seedInventoryItem(isar, 'item_jingyandan_large', 1);
+      await _seedInventoryItem(isar, 'item_scroll_kai_bei_shou', 1);
+      await _seedInventoryItem(isar, 'item_mojianshi', 12);
+      return const InventoryScreen(initialTab: 1);
     case VisualRoute.battleTreasureGlowPeak:
       return const _TreasureGlowPreview(
         defId: 'weapon_shenwu_tian_wen_jian',

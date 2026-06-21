@@ -458,4 +458,75 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.silverBalanceLabel(0)), findsOneWidget);
   });
+
+  // ─── P2 新材料用途：使用按钮显示条件 + 确认弹窗 ──────────────────────
+  // 真机目检本环境无合成点击工具(cliclick/Quartz/AX 全不可用),用 widget 测
+  // 锚死「使用」按钮显示条件 + 点击弹确认窗(到 writeTxn 前,不触 Isar 死锁);
+  // 点确认后的结果三态由 item_use_service_test 逻辑层兜底。
+
+  testWidgets('P2 使用按钮仅经验丹/秘籍显示·磨剑石无(对比项)', (tester) async {
+    await pumpInv(
+      tester,
+      equipments: [],
+      items: [
+        mkItem(
+          id: 1,
+          defId: 'item_jingyandan_small',
+          itemType: ItemType.jingYanDan,
+          quantity: 3,
+        ),
+        mkItem(
+          id: 2,
+          defId: 'item_scroll_kai_bei_shou',
+          itemType: ItemType.techniqueScroll,
+          quantity: 1,
+        ),
+        mkItem(
+          id: 3,
+          defId: 'item_mojianshi',
+          itemType: ItemType.moJianShi,
+          quantity: 12,
+        ),
+      ],
+    );
+    await tester.tap(find.text('物料'));
+    await tester.pumpAndSettle();
+    // 经验丹/秘籍 per-item 名(items.yaml)各一行。
+    expect(find.text('凝神丹 × 3'), findsOneWidget);
+    expect(find.text('开碑手·秘籍 × 1'), findsOneWidget);
+    expect(find.text('磨剑石 × 12'), findsOneWidget);
+    // 「使用」TextButton 只出现在丹 + 秘籍(2 个),磨剑石行无。
+    expect(
+      find.widgetWithText(TextButton, UiStrings.itemUseButton),
+      findsNWidgets(2),
+      reason: '仅 jingYanDan/techniqueScroll 显使用按钮,磨剑石不显',
+    );
+  });
+
+  testWidgets('P2 点经验丹「使用」→ 弹确认弹窗(per-item 名)', (tester) async {
+    await pumpInv(
+      tester,
+      equipments: [],
+      items: [
+        mkItem(
+          id: 1,
+          defId: 'item_jingyandan_mid',
+          itemType: ItemType.jingYanDan,
+          quantity: 2,
+        ),
+      ],
+    );
+    await tester.tap(find.text('物料'));
+    await tester.pumpAndSettle();
+    // 点物料行的「使用」TextButton(非确认弹窗内 PlaqueButton)。
+    await tester.tap(find.widgetWithText(TextButton, UiStrings.itemUseButton));
+    await tester.pumpAndSettle();
+    // 确认弹窗弹出,正文含 per-item 名(培元丹 = items.yaml name)。
+    expect(
+      find.text(UiStrings.itemUseConfirmBody('培元丹')),
+      findsOneWidget,
+      reason: '点使用应弹确认弹窗且显 items.yaml per-item 名',
+    );
+    expect(find.text(UiStrings.commonCancel), findsOneWidget);
+  });
 }
