@@ -510,6 +510,21 @@ class UiStrings {
     'techniqueScroll' => '研习心法',
     _ => '',
   };
+
+  // ── P4 材料经济 P2 T4:道具使用(经验丹/秘籍)──────────────────────────────
+  static const String itemUseButton = '使用';
+  static const String itemUseConfirmTitle = '使用道具';
+  static String itemUseConfirmBody(String name) => '确定使用「$name」？';
+  static String itemUseExpResult(String name, int layersGained) =>
+      layersGained > 0
+      ? '服下「$name」，境界精进 $layersGained 层。'
+      : '服下「$name」，内息渐长。';
+  static String itemUseScrollResult(String name) =>
+      '研读「$name」，已了然于胸，得此绝学。';
+  static String itemUseAlreadyKnown(String name) => '「$name」所载之招，早已了然于胸。';
+  static const String itemUseFailed = '此物此刻无法使用。';
+  static const String itemUseDismiss = '收下';
+
   // T11 仓库筛选标签。
   static const String inventoryFilterAll = '全部';
   static const String inventoryFilterEquippable = '可装备';
