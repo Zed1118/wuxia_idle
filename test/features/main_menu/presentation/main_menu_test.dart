@@ -17,6 +17,7 @@ import 'package:wuxia_idle/features/festival/application/festival_service_provid
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
@@ -930,6 +931,68 @@ void main() {
 
       expect(opacityOf(tester, UiStrings.mainMenuSkillLibrary), 1.0);
       expect(find.text(UiStrings.mainMenuSkillLibraryHint), findsOneWidget);
+    });
+  });
+
+  // ── 材料经济 P1 Task 9 · 江湖商店入口门控（§5.7 隐藏式） ──────────────────
+
+  group('§5.7 江湖商店入口门控', () {
+    testWidgets('shopUnlocked=false → 无江湖商店入口（隐藏）', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            shopUnlockedProvider.overrideWith((ref) async => false),
+          ],
+          child: const MaterialApp(home: MainMenu()),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuShop), findsNothing);
+    });
+
+    testWidgets('shopUnlocked=true → 有江湖商店入口', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            shopUnlockedProvider.overrideWith((ref) async => true),
+          ],
+          child: const MaterialApp(home: MainMenu()),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuShop), findsOneWidget);
+    });
+
+    testWidgets('shopUnlocked=true → tap 江湖商店 → Navigator.push 触发', (
+      tester,
+    ) async {
+      final observer = _RecordingNavigatorObserver();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            shopUnlockedProvider.overrideWith((ref) async => true),
+          ],
+          child: MaterialApp(
+            navigatorObservers: [observer],
+            home: const MainMenu(),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      await tester.binding.setSurfaceSize(const Size(800, 3000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pump();
+
+      await tester.tap(find.text(UiStrings.mainMenuShop));
+      await tester.pump(); // 单帧，不 settle
+
+      expect(observer.pushedRoutes.length, 2);
+      expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
     });
   });
 }

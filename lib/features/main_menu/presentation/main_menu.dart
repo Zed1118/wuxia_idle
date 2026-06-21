@@ -57,6 +57,8 @@ import '../../tower/application/tower_providers.dart';
 import '../../tower/domain/tower_progress.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
 import '../../mainline/application/mainline_providers.dart';
+import '../../shop/application/shop_providers.dart';
+import '../../shop/presentation/shop_screen.dart';
 
 /// 入口列表布局成 2 列(Phase A 出版美术 · 解菜单纵向过长)。
 /// 奇数末项左对齐 + 右侧空格;同行用 IntrinsicHeight+stretch 等高。
@@ -171,6 +173,11 @@ class MainMenu extends ConsumerWidget {
         .watch(equipmentCatalogCountProvider)
         .maybeWhen(data: (n) => n, orElse: () => 0);
     final weaponCodexUnlocked = weaponCodexCount > 0;
+
+    // 江湖商店入口门控：曾获得银两后解锁（§5.7 隐藏式，沿兵器谱体例）。
+    final shopUnlocked = ref
+        .watch(shopUnlockedProvider)
+        .maybeWhen(data: (b) => b, orElse: () => false);
 
     final coreItems = <Widget>[
       WuxiaInkButton(
@@ -351,6 +358,13 @@ class MainMenu extends ConsumerWidget {
           hint: UiStrings.mainMenuWeaponCodexHint,
           icon: Icons.auto_stories_outlined,
           onTap: () => _push(context, const WeaponCodexScreen()),
+        ),
+      if (shopUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.mainMenuShop,
+          hint: UiStrings.mainMenuShopHint,
+          icon: Icons.storefront_outlined,
+          onTap: () => _push(context, const ShopScreen()),
         ),
       WuxiaInkButton(
         label: UiStrings.mainMenuBaike,

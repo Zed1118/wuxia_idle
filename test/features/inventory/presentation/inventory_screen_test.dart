@@ -12,6 +12,8 @@ import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/features/inventory/presentation/inventory_screen.dart';
+import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/item_slot.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_tab.dart';
@@ -365,5 +367,95 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('暂无物料'), findsOneWidget);
     expect(find.textContaining('磨剑石'), findsNothing);
+  });
+
+  // ─── 银两货币位（材料经济 P1 Task 9） ────────────────────────────────────
+
+  /// pump 含 silverBalanceProvider override 版本。
+  Future<void> pumpInvWithSilver(
+    WidgetTester tester, {
+    required List<Equipment> equipments,
+    required List<InventoryItem> items,
+    required int silverBalance,
+  }) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          allEquipmentsProvider.overrideWith((ref) async => equipments),
+          allInventoryItemsProvider.overrideWith((ref) async => items),
+          activeCharacterIdsProvider.overrideWith((ref) async => []),
+          silverBalanceProvider.overrideWith((ref) async => silverBalance),
+        ],
+        child: const MaterialApp(home: InventoryScreen()),
+      ),
+    );
+    for (var i = 0; i < 4; i++) {
+      await tester.pump();
+    }
+  }
+
+  testWidgets('银两 item 不进材料分组列表（无「银两」分组标题）', (tester) async {
+    await pumpInvWithSilver(
+      tester,
+      equipments: [],
+      items: [
+        mkItem(
+          id: 1,
+          defId: 'item_mojianshi',
+          itemType: ItemType.moJianShi,
+          quantity: 10,
+        ),
+        mkItem(
+          id: 2,
+          defId: 'item_silver',
+          itemType: ItemType.silver,
+          quantity: 500,
+        ),
+      ],
+      silverBalance: 500,
+    );
+    await tester.tap(find.text('物料'));
+    await tester.pumpAndSettle();
+    // 磨剑石分组正常显示
+    expect(find.text('磨剑石 × 10'), findsOneWidget);
+    // 银两不应以材料分组形式出现
+    expect(find.text('银两'), findsNothing, reason: 'item_silver 不应作为材料分组标题');
+  });
+
+  testWidgets('货币顶栏「银两 N」在物料 Tab 可见（silverBalanceLabel）', (tester) async {
+    await pumpInvWithSilver(
+      tester,
+      equipments: [],
+      items: [
+        mkItem(
+          id: 2,
+          defId: 'item_silver',
+          itemType: ItemType.silver,
+          quantity: 888,
+        ),
+      ],
+      silverBalance: 888,
+    );
+    await tester.tap(find.text('物料'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(UiStrings.silverBalanceLabel(888)),
+      findsOneWidget,
+      reason: '物料 Tab 顶栏应显示银两余额',
+    );
+  });
+
+  testWidgets('银两为0时货币顶栏显示「银两 0」', (tester) async {
+    await pumpInvWithSilver(
+      tester,
+      equipments: [],
+      items: [],
+      silverBalance: 0,
+    );
+    await tester.tap(find.text('物料'));
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.silverBalanceLabel(0)), findsOneWidget);
   });
 }
