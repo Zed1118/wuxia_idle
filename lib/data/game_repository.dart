@@ -11,6 +11,7 @@ import 'defs/master_def.dart';
 import 'defs/recruit_candidate_def.dart';
 import 'defs/realm_def.dart';
 import 'defs/sect_candidate_def.dart';
+import 'defs/item_def.dart';
 import 'defs/shop_item_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import 'defs/skill_def.dart';
@@ -115,6 +116,10 @@ class GameRepository {
   /// **graceful**：test fixture 不带 yaml 时空 map。
   final Map<String, ShopItemDef> shopItemDefs;
 
+  /// 道具效果 def（`data/items.yaml`，材料经济 P2）。
+  /// 经验丹经验值 / 秘籍 unlockSkillId / 道具名。fixture 不带 yaml 时空 map。
+  final Map<String, ItemDef> itemDefs;
+
   GameRepository._({
     required this.numbers,
     required this.realms,
@@ -134,6 +139,7 @@ class GameRepository {
     required this.territoryDefs,
     required this.factionAlignments,
     required this.shopItemDefs,
+    required this.itemDefs,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -355,6 +361,17 @@ class GameRepository {
       );
     } catch (_) {}
 
+    // 材料经济 P2 items.yaml(graceful;fixture 不带 yaml 时空 map)。
+    Map<String, ItemDef> itemDefs = const {};
+    try {
+      final itemsRaw = parseYamlMap(await load('data/items.yaml'));
+      itemDefs = _parseDefMap(
+        itemsRaw['items'] as List,
+        ItemDef.fromYaml,
+        idOf: (d) => d.defId,
+      );
+    } catch (_) {}
+
     final repo = GameRepository._(
       numbers: numbers,
       realms: realms,
@@ -374,6 +391,7 @@ class GameRepository {
       territoryDefs: territoryDefs,
       factionAlignments: factionAlignments,
       shopItemDefs: shopItemDefs,
+      itemDefs: itemDefs,
     );
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);
@@ -593,6 +611,9 @@ class GameRepository {
 
     // 材料经济 P1：商店标价上限校验（空 map 兼容 test fixture）。
     _enforceShopRedLines();
+
+    // 材料经济 P2：道具经验值红线（空 map 兼容 test fixture）。
+    _enforceItemRedLines();
   }
 
   /// P1.z 机制百科红线(GDD §10.2 第 3 方式):
@@ -644,6 +665,17 @@ class GameRepository {
       }
       if (d.price > 100000) {
         throw StateError('红线:商店 ${d.id} 标价 ${d.price} > 100000');
+      }
+    }
+  }
+
+  /// 材料经济 P2：道具经验值红线（防经验丹变相破数值红线）。
+  void _enforceItemRedLines() {
+    if (itemDefs.isEmpty) return; // test fixture 兼容
+    for (final d in itemDefs.values) {
+      final exp = d.experience;
+      if (exp != null && (exp <= 0 || exp > 100000)) {
+        throw StateError('红线:道具 ${d.defId} experience $exp 应 ∈ (0, 100000]');
       }
     }
   }
