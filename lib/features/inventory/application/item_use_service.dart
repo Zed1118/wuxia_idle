@@ -41,9 +41,11 @@ class ItemUseService {
           if (founder == null) {
             return const ItemUseResult(kind: ItemUseKind.noTarget);
           }
+          // 经验增益 = 当层升层所需经验 × layer_fraction（随境界缩放）。
+          final gain = (founder.experienceToNextLayer * def.layerFraction!).round();
           final result = CharacterAdvancementService.applyExperience(
             founder,
-            def.experience!,
+            gain,
             realmLookup: realmLookup,
             isLayerLocked: isLayerLocked,
           );

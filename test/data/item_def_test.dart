@@ -34,6 +34,16 @@ void main() {
     expect(d.layerFraction, isNull);
   });
 
+  test('经验丹 layer_fraction 支持整数 yaml 值（1→1.0）', () {
+    final d = ItemDef.fromYaml({
+      'defId': 'x',
+      'type': 'jingYanDan',
+      'name': '丹',
+      'layer_fraction': 1,
+    });
+    expect(d.layerFraction, 1.0);
+  });
+
   test('经验丹缺 layer_fraction → 抛错', () {
     expect(
       () => ItemDef.fromYaml({'defId': 'x', 'type': 'jingYanDan', 'name': 'x'}),
