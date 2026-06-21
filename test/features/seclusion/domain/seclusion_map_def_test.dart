@@ -254,6 +254,7 @@ void main() {
         requiredRealm: RealmTier.xueTu,
         experiencePerHour: 100,
         mojianshiPerHour: 0, // 非法
+        silverPerHour: 5.0,
         equipmentDropRate: 1.0,
         techniqueLearnRate: 1.0,
         internalForceGrowth: 1.0,

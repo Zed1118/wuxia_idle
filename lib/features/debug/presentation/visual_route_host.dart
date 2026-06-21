@@ -279,6 +279,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       final result = (
         actualHours: 4.0,
         mojianshi: 18,
+        silver: 20,
         equipmentDrops: <Equipment>[tieJian],
         experiencePoints: 520,
         techniqueLearnPoints: 6,

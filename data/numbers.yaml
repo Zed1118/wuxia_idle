@@ -927,6 +927,7 @@ retreat:
       base_outputs:
         experience_per_hour: 100             # B2 finding 修正(2026-05-29):低 tier 回 ×1.0(原值)·避免挂机优先早期碾压(满挂 72h 二流 16 层→三流 12 层·对 Ch1 学徒差 1 阶不碾压)·根因A ×2.5 保留在 erLiu+ 中期
         mojianshi_per_hour: 1.0
+        silver_per_hour: 5.0                 # 银两/小时(P1 占位,待 balance)
         equipment_drop_rate: 1.0             # 基础掉率（无加成）
         technique_learn_rate: 1.0
         internal_force_growth: 1.0
@@ -941,6 +942,7 @@ retreat:
       base_outputs:
         experience_per_hour: 80              # B2 finding 修正(2026-05-29):三流图回 ×1.0(原值)·低 tier 不享根因A ×2.5(中期保留在 erLiu+)
         mojianshi_per_hour: 0.8
+        silver_per_hour: 10.0                # 银两/小时(P1 占位,待 balance)
         equipment_drop_rate: 1.5             # 兵器掉率 +50%（GDD §8.3）
         technique_learn_rate: 1.0
         internal_force_growth: 1.0
@@ -955,6 +957,7 @@ retreat:
       base_outputs:
         experience_per_hour: 90              # B2 finding 修正(2026-05-29):三流图回 ×1.0(原值)·低 tier 不享根因A ×2.5(中期保留在 erLiu+)
         mojianshi_per_hour: 0.5
+        silver_per_hour: 12.0                # 银两/小时(P1 占位,待 balance)
         equipment_drop_rate: 1.0
         technique_learn_rate: 1.5            # 心法领悟 +50%
         internal_force_growth: 1.0
@@ -969,6 +972,7 @@ retreat:
       base_outputs:
         experience_per_hour: 175             # 根因A ×2.5(原 70)
         mojianshi_per_hour: 0.5
+        silver_per_hour: 20.0                # 银两/小时(P1 占位,待 balance)
         equipment_drop_rate: 1.0
         technique_learn_rate: 1.0
         internal_force_growth: 1.5           # 内力增长 +50%
@@ -983,6 +987,7 @@ retreat:
       base_outputs:
         experience_per_hour: 500             # 根因A ×2.5(原 200)
         mojianshi_per_hour: 2.0
+        silver_per_hour: 50.0                # 银两/小时(P1 占位,待 balance)
         equipment_drop_rate: 1.5             # 全维度都加 50%
         technique_learn_rate: 1.5
         internal_force_growth: 1.5

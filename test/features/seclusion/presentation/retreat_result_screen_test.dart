@@ -20,6 +20,7 @@ SeclusionMapDef _mkMapDef() => const SeclusionMapDef(
   mapName: '山林',
   requiredRealm: RealmTier.xueTu,
   mojianshiPerHour: 1.0,
+  silverPerHour: 5.0,
   experiencePerHour: 100,
   equipmentDropRate: 1.0,
   techniqueLearnRate: 1.0,
@@ -31,6 +32,7 @@ SeclusionMapDef _mkMapDef() => const SeclusionMapDef(
 RetreatResult _mkResult({
   double actualHours = 4.0,
   int mojianshi = 0,
+  int silver = 0,
   List<Equipment> drops = const [],
   int experience = 0,
   int techniqueLearn = 0,
@@ -39,6 +41,7 @@ RetreatResult _mkResult({
 }) => (
   actualHours: actualHours,
   mojianshi: mojianshi,
+  silver: silver,
   equipmentDrops: drops,
   experiencePoints: experience,
   techniqueLearnPoints: techniqueLearn,
