@@ -362,6 +362,30 @@ class UiStrings {
   static const String lineagePanelNoHeritage = '尚未拥有师承遗物';
   static String lineagePanelHeritageCount(int n) => '$n 件';
 
+  // 门派谱世代卷（1.1）
+  static const String lineageCodexTitle = '门派谱';
+  static String lineageCodexGenerationLabel(int gen) =>
+      gen == 1 ? '第一代 · 太祖' : '第 $gen 代';
+  static const String lineageCodexCurrentTag = '当代';
+  static const String lineageCodexRetiredTag = '已退隐';
+  static String lineageCodexProgress(int gens, int members) =>
+      '传承 $gens 代 · 门人 $members 人';
+  static const String lineageCodexNoDisciples = '孤身一人，传承待续';
+  static const String lineageCodexNoHeritage = '尚无师承遗物';
+  static const String lineageCodexHeritageSection = '师承遗物';
+  static const String lineageCodexDiscipleSection = '门人';
+  // 角色详情屏
+  static const String lineageCharacterDetailTitle = '门人档案';
+  static const String lineageCharacterDetailDeeds = '纪事';
+  static const String lineageCharacterDetailAttributes = '资质';
+  static const String lineageCharacterDetailMainTechnique = '主修';
+  static const String lineageCharacterDetailHeritage = '所持师承遗物';
+  static const String lineageCharacterDetailFounderBuff = '祖师恩泽';
+  static String lineageCharacterDetailJoinedAt(int year, String stage) =>
+      '江湖 $year 年，过「$stage」拜入';
+  static String lineageCharacterDetailFounderGen(int gen) =>
+      gen == 1 ? '开派太祖' : '第 $gen 代掌门';
+
   static const String attrConstitution = '根骨';
   static const String attrEnlightenment = '悟性';
   static const String attrAgility = '身法';
