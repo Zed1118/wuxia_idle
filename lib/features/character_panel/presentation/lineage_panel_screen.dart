@@ -121,7 +121,10 @@ class _GenerationSection extends StatelessWidget {
   void _openDetail(BuildContext context, Character character) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => LineageCharacterDetailScreen(character: character),
+        builder: (_) => LineageCharacterDetailScreen(
+          character: character,
+          generationIndex: genIndex,
+        ),
       ),
     );
   }

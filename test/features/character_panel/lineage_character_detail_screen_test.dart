@@ -35,6 +35,42 @@ void main() {
     );
   });
 
+  testWidgets('多代祖师纪事按 generationIndex 显「第 N 代掌门」非「开派太祖」', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final f = Character()
+      ..id = 4
+      ..name = '陆沉舟'
+      ..realmTier = RealmTier.wuSheng
+      ..realmLayer = RealmLayer.dengFeng
+      ..lineageRole = LineageRole.founder
+      ..isFounder = true
+      ..birthInGameYear = 30
+      ..attributes = Attributes();
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: LineageCharacterDetailScreen(
+            character: f,
+            generationIndex: 2,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // 第 2 代掌门变体显示，太祖（gen 1）变体不显示。
+    expect(
+      find.text(UiStrings.lineageCharacterDetailFounderGen(2)),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.lineageCharacterDetailFounderGen(1)),
+      findsNothing,
+    );
+  });
+
   testWidgets('弟子态不显祖师恩泽', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));

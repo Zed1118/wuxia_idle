@@ -20,10 +20,18 @@ import 'lineage_widgets.dart';
 ///   - 弟子：纪事按 lineageRole 反查拜入关卡，显「江湖 N 年，过「关卡」拜入」。
 ///
 /// 纯展示层（不改数值/平衡），无中文字面量（全走 [UiStrings]/[EnumL10n]）。
+///
+/// [generationIndex] 为该角色所属世代序号（1=太祖代），祖师纪事据此区分
+/// 「开派太祖」(1) 与「第 N 代掌门」(N>1)。默认 1 兼容单代 + 既有调用点。
 class LineageCharacterDetailScreen extends ConsumerWidget {
-  const LineageCharacterDetailScreen({super.key, required this.character});
+  const LineageCharacterDetailScreen({
+    super.key,
+    required this.character,
+    this.generationIndex = 1,
+  });
 
   final Character character;
+  final int generationIndex;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,7 +49,10 @@ class LineageCharacterDetailScreen extends ConsumerWidget {
             children: [
               _HeroHeader(character: character),
               const SizedBox(height: 16),
-              _DeedsSection(character: character),
+              _DeedsSection(
+                character: character,
+                generationIndex: generationIndex,
+              ),
               const SizedBox(height: 16),
               _AttributesSection(character: character),
               _MainTechniqueSection(character: character),
@@ -175,16 +186,20 @@ class _HeroHeader extends StatelessWidget {
   }
 }
 
-/// 纪事段：祖师显「开派太祖」（单代恒为太祖，多代索引透传留 Phase 5+）；
+/// 纪事段：祖师按 [generationIndex] 显「开派太祖」(1) / 「第 N 代掌门」(N>1)；
 /// 弟子按 lineageRole 反查拜入关卡名，反查不到只显年份（不杜撰关卡）。
 class _DeedsSection extends StatelessWidget {
-  const _DeedsSection({required this.character});
+  const _DeedsSection({
+    required this.character,
+    required this.generationIndex,
+  });
 
   final Character character;
+  final int generationIndex;
 
   String _deedsText() {
     if (character.isFounder) {
-      return UiStrings.lineageCharacterDetailFounderGen(1);
+      return UiStrings.lineageCharacterDetailFounderGen(generationIndex);
     }
     final stageName = _resolveJoinStageName();
     if (stageName == null) {
