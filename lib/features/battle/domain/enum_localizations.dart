@@ -27,6 +27,17 @@ class EnumL10n {
     };
   }
 
+  /// 师徒身份（GDD §7.1）。switch 穷尽，增删 enum 值编译期报漏。
+  static String lineageRole(LineageRole r) {
+    return switch (r) {
+      LineageRole.founder => '祖师',
+      LineageRole.senior => '大弟子',
+      LineageRole.junior => '二弟子',
+      LineageRole.disciple => '弟子',
+      LineageRole.grandDisciple => '徒孙',
+    };
+  }
+
   static String realmTier(RealmTier t) {
     return switch (t) {
       RealmTier.xueTu => '学徒',
