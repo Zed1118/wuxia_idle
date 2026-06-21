@@ -165,7 +165,7 @@ floors:
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_scroll_kai_bei_shou
         quantity: [1, 1]
-        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear gate)
+        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear=true 才 rollDrops,重打不 roll)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 2 段 · 三流 (6-10)
@@ -319,7 +319,7 @@ floors:
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_scroll_yan_zi_san_chao
         quantity: [1, 1]
-        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear gate)
+        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear=true 才 rollDrops,重打不 roll)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
         dropChance: 0.20  # 经验丹大档(balance T4 爬塔大Boss扩展)
@@ -500,7 +500,7 @@ floors:
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_scroll_zhu_ying_yao_hong
         quantity: [1, 1]
-        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear gate)
+        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear=true 才 rollDrops,重打不 roll)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 4 段 · 一流 (16-20) · 2 人队
@@ -687,7 +687,7 @@ floors:
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_scroll_jin_gang_fu_mo
         quantity: [1, 1]
-        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear gate)
+        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear=true 才 rollDrops,重打不 roll)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
         dropChance: 0.20  # 经验丹大档(balance T4 爬塔大Boss扩展)
@@ -927,7 +927,7 @@ floors:
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_scroll_jing_hong_zhao_ying
         quantity: [1, 1]
-        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear gate)
+        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear=true 才 rollDrops,重打不 roll)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 6 段 · 宗师 (26-30) · 3 人队
@@ -1180,7 +1180,7 @@ floors:
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_scroll_yue_luo_wu_sheng
         quantity: [1, 1]
-        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear gate)
+        dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear=true 才 rollDrops,重打不 roll)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
         dropChance: 0.20  # 经验丹大档(balance T4 爬塔大Boss扩展)
