@@ -591,9 +591,11 @@ void main() {
         maps: GameRepository.instance.seclusionMaps,
         now: now,
       );
-      // shanLin silver_per_hour=5 (P1占位)，xueTu scale=1.0，无节气
-      // floor(5 × 1h × 1.0 × 1.0) = 5
-      expect(out.silver, 5);
+      // 山林(唯一 xueTu 图) silver_per_hour × xueTu scale(1.0) × 1h × 无节气(1.0)。
+      // 读 config 不硬编码:T6 调 silver_per_hour 后测自动跟随(约束语义非瞬时值)。
+      final shanLin = GameRepository.instance.seclusionMaps
+          .firstWhere((m) => m.requiredRealm == RealmTier.xueTu);
+      expect(out.silver, (shanLin.silverPerHour * 1.0 * 1.0).floor());
     });
 
     test('0 小时 → silver=0', () {
