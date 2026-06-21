@@ -160,6 +160,14 @@ enum VisualRoute {
     'weapon_codex_detail',
     '兵器谱详情屏目检·正常态(器物档案 + 个人历程 + 首得来源/日期)',
   ),
+  lineageCodex(
+    'lineage_codex',
+    '门派谱主屏目检·世代卷(进度头 + 祖师卡 + 门人 + 师承遗物 + 屏底飞升入口)',
+  ),
+  lineageCharacterDetail(
+    'lineage_character_detail',
+    '门派谱角色详情屏目检·祖师态(纪事 + 资质四项 + 主修 + 所持遗物 + 祖师恩泽)',
+  ),
   shop(
     'shop',
     '江湖商店主屏目检·种银两80(够磨剑石30两·不够心血结晶120):货币顶栏 + 固定货架分类 + 磨剑石可买(绿)/心血结晶不可买(红 disabled)两态',

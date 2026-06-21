@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
 import 'battle_test_menu.dart';
+import '../../../core/domain/attributes.dart';
+import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/isar_setup.dart';
@@ -68,6 +70,9 @@ import '../../weapon_codex/presentation/weapon_codex_screen.dart';
 import '../../weapon_codex/presentation/equipment_catalog_detail_screen.dart';
 import '../../shop/presentation/shop_screen.dart';
 import '../../../core/domain/inventory_item.dart';
+import '../../character_panel/application/lineage_codex_provider.dart';
+import '../../character_panel/presentation/lineage_panel_screen.dart';
+import '../../character_panel/presentation/lineage_character_detail_screen.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -476,6 +481,15 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.weaponCodexDetail:
       // 兵器谱详情屏正常态目检：挑一件有 schoolBias 的典型 def + 正常态 entry。
       return _buildWeaponCodexDetailVisual();
+    case VisualRoute.lineageCodex:
+      // 门派谱主屏世代卷目检：注入假世代（祖师 + 大/二弟子 + 1 件师承遗物），
+      // 覆盖 lineageCodexProvider，验进度头 + 祖师卡 + 门人 + 遗物 + 屏底飞升入口。
+      return _buildLineageCodexVisual();
+    case VisualRoute.lineageCharacterDetail:
+      // 门派谱角色详情屏祖师态目检：种祖师 Character 直传 detail 屏。
+      // 主修/遗物段 watch 真 provider（host 内 GameRepository 已加载、真 Isar 存在），
+      // 祖师恩泽段在 isLoaded && buff.isActive 时渲染（两者 host 内均真）。
+      return _buildLineageCharacterDetailVisual();
     case VisualRoute.shop:
       // 江湖商店主屏目检:种银两 80(够买磨剑石 30 两件·不够心血结晶 120),
       // 验货币顶栏 + 固定货架 + 可买(绿)/不可买(红 disabled)两态同屏。
@@ -1519,4 +1533,74 @@ Widget _buildWeaponCodexDetailVisual() {
         ..obtainedCount = 2
         ..isPreRecord = false;
   return EquipmentCatalogDetailScreen(def: def, entry: entry);
+}
+
+/// 门派谱主屏世代卷混合态：注入假世代覆盖 [lineageCodexProvider]。
+///
+/// 世代构造：祖师（武圣登峰）+ 大弟子（一流）+ 二弟子（二流）+ 1 件师承遗物
+/// （宝物阶，owner=祖师，含 1 段传承链）。验进度头 + 祖师卡 + 门人列 + 师承遗物列 +
+/// 屏底飞升入口。GameRepository / Isar 已在 _prepare 加载（遗物名走真 def，飞升段读真配置）。
+/// debug fixture，中文内联照 host 现有 preview 体例。
+Widget _buildLineageCodexVisual() {
+  final founder = Character()
+    ..id = 1
+    ..name = '林青崖'
+    ..realmTier = RealmTier.wuSheng
+    ..realmLayer = RealmLayer.dengFeng
+    ..lineageRole = LineageRole.founder
+    ..isFounder = true
+    ..isActive = true
+    ..attributes = Attributes();
+  final d1 = Character()
+    ..id = 2
+    ..name = '叶清'
+    ..realmTier = RealmTier.yiLiu
+    ..realmLayer = RealmLayer.ruMen
+    ..lineageRole = LineageRole.senior
+    ..isActive = true
+    ..attributes = Attributes();
+  final d2 = Character()
+    ..id = 3
+    ..name = '陆沉'
+    ..realmTier = RealmTier.erLiu
+    ..realmLayer = RealmLayer.ruMen
+    ..lineageRole = LineageRole.junior
+    ..isActive = true
+    ..attributes = Attributes();
+  final relic = Equipment()
+    ..id = 9
+    ..isLineageHeritage = true
+    ..ownerCharacterId = 1
+    ..tier = EquipmentTier.baoWu
+    ..defId = GameRepository.isLoaded
+        ? GameRepository.instance.equipmentDefs.values.first.id
+        : 'placeholder'
+    ..previousOwnerCharacterIds = [0, 1];
+  final gen = LineageGeneration(
+    founder: founder,
+    disciples: [d1, d2],
+    heritageEquipments: [relic],
+    isCurrent: true,
+  );
+  return ProviderScope(
+    overrides: [lineageCodexProvider.overrideWith((ref) async => [gen])],
+    child: const LineagePanelScreen(),
+  );
+}
+
+/// 门派谱角色详情屏祖师态：种祖师 Character（武圣登峰）直传 detail 屏。
+/// 主修/遗物段 watch 真 provider（host 内 GameRepository 已加载、真 Isar 存在 →
+/// 查真数据，祖师 id=1 有无遗物均可目检）；祖师恩泽段在 isLoaded && buff.isActive
+/// 时渲染（host 内两者均真）。debug fixture，中文内联照 host 现有 preview 体例。
+Widget _buildLineageCharacterDetailVisual() {
+  final founder = Character()
+    ..id = 1
+    ..name = '林青崖'
+    ..realmTier = RealmTier.wuSheng
+    ..realmLayer = RealmLayer.dengFeng
+    ..lineageRole = LineageRole.founder
+    ..isFounder = true
+    ..isActive = true
+    ..attributes = Attributes();
+  return LineageCharacterDetailScreen(character: founder);
 }

@@ -103,6 +103,13 @@ void main() {
         VisualRoute.bossMemoryDetail,
       );
     });
+    test('门派谱1.1 双路由 parse', () {
+      expect(parseVisualRoute('lineage_codex'), VisualRoute.lineageCodex);
+      expect(
+        parseVisualRoute('lineage_character_detail'),
+        VisualRoute.lineageCharacterDetail,
+      );
+    });
   });
 
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。
