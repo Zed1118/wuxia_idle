@@ -823,7 +823,9 @@ Future<
     for (final item in result.dropResult.items) {
       // T5 首通必得门控：秘籍(item_scroll_*) 仅首通写入背包，重打跳过。
       // 银两/经验丹等其余 item 继续每次掉落，不受此 gate 影响。
-      if (item.defId.startsWith('item_scroll_') && !isFirstClearStage) {
+      // isFirstClearStage 在 writeTxn 之前快照(本函数 L~800)，首通语义正确；
+      // 勿将此 continue 挪到 recordVictory/clearedStageIds 写入之后，否则首通亦被 gate。
+      if (shouldSkipScrollDrop(item.defId, isFirstClear: isFirstClearStage)) {
         continue;
       }
       final existing = await isar.inventoryItems.getByDefId(item.defId);
@@ -1202,3 +1204,13 @@ class _FormationPickerDialog extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// T5 首通门控纯函数（顶层，供测试锚定 production 逻辑）
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 秘籍(item_scroll_*)首通必得：重打(非首通)跳过写入，避免重复掉。
+/// 银两/装备/经验丹不受此 gate 影响（前缀不匹配，返回 false）。
+@visibleForTesting
+bool shouldSkipScrollDrop(String defId, {required bool isFirstClear}) =>
+    defId.startsWith('item_scroll_') && !isFirstClear;

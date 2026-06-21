@@ -3,6 +3,8 @@ import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
+import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart'
+    show shouldSkipScrollDrop;
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// T5 首通必得门控逻辑单元测。
@@ -69,7 +71,7 @@ void main() {
 
     final written = items
         .where((item) =>
-            !(item.defId.startsWith('item_scroll_') && !isFirstClearStage))
+            !shouldSkipScrollDrop(item.defId, isFirstClear: isFirstClearStage))
         .toList();
 
     expect(written.map((e) => e.defId),
@@ -91,7 +93,7 @@ void main() {
 
     final written = items
         .where((item) =>
-            !(item.defId.startsWith('item_scroll_') && !isFirstClearStage))
+            !shouldSkipScrollDrop(item.defId, isFirstClear: isFirstClearStage))
         .toList();
 
     // 秘籍被 gate 掉
@@ -121,7 +123,7 @@ void main() {
 
     final written = items
         .where((item) =>
-            !(item.defId.startsWith('item_scroll_') && !isFirstClearStage))
+            !shouldSkipScrollDrop(item.defId, isFirstClear: isFirstClearStage))
         .toList();
 
     expect(written.map((e) => e.defId),
