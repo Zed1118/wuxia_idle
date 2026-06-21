@@ -19,16 +19,16 @@ shop:
     category: material
 
   # 经验丹（P2 材料经济 + balance T3 动态标价）——小/中档上货架；大档仅掉落（§5.7 守门）
-  # price_layer_fraction 占位值，balance T6 校准后更新。
-  # 兑换率恒定：银两→经验 = fraction × ETL，无套利窗口。
+  # price_layer_fraction：标价 = 当前境界单层经验(ETL) × 此值(动态防套利)。
+  # 兑换率恒定：银两→经验 = fraction × ETL，buyRatio=fraction/layerFraction 全境界恒定，守无套利。
   - id: shop_jingyandan_small
     itemDefId: item_jingyandan_small
     itemType: jingYanDan
-    price_layer_fraction: 1.0   # 占位待 T6 balance 校准
+    price_layer_fraction: 1.0   # T6 校准:凝神丹 buyRatio=1.0/0.2=5,守无套利(挂机为主丹为辅 §5.5)
     category: pill
 
   - id: shop_jingyandan_mid
     itemDefId: item_jingyandan_mid
     itemType: jingYanDan
-    price_layer_fraction: 2.5   # 占位待 T6 balance 校准
+    price_layer_fraction: 2.5   # T6 校准:培元丹 buyRatio=2.5/0.5=5,守无套利(挂机为主丹为辅 §5.5)
     category: pill

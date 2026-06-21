@@ -322,7 +322,7 @@ floors:
         dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear=true 才 rollDrops,重打不 roll)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
-        dropChance: 0.20  # 经验丹大档(balance T4 爬塔大Boss扩展)
+        dropChance: 1.0  # 经验丹大档(I-1 修:爬塔首通门控一次性 roll,0.20=80%永久错过→改首通必得 bonus 1 颗;主线大还丹保每次胜利概率刷=可farming主来源)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 3 段 · 二流 (11-15) · 2 人队
@@ -690,7 +690,7 @@ floors:
         dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear=true 才 rollDrops,重打不 roll)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
-        dropChance: 0.20  # 经验丹大档(balance T4 爬塔大Boss扩展)
+        dropChance: 1.0  # 经验丹大档(I-1 修:爬塔首通门控一次性 roll,0.20=80%永久错过→改首通必得 bonus 1 颗;主线大还丹保每次胜利概率刷=可farming主来源)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 5 段 · 绝顶 (21-25) · 3 人队
@@ -1183,4 +1183,4 @@ floors:
         dropChance: 1.0  # 秘籍掉落(T5 balance:爬塔首通必得,tower_entry_flow isFirstClear=true 才 rollDrops,重打不 roll)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
-        dropChance: 0.20  # 经验丹大档(balance T4 爬塔大Boss扩展)
+        dropChance: 1.0  # 经验丹大档(I-1 修:爬塔首通门控一次性 roll,0.20=80%永久错过→改首通必得 bonus 1 颗;主线大还丹保每次胜利概率刷=可farming主来源)
