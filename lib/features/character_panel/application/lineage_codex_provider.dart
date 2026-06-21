@@ -60,13 +60,19 @@ List<LineageGeneration> groupGenerations({
         if (!c.isFounder && c.masterId == f.id) c.id,
     };
     if (isCurrent) {
+      // active∪recruited 兜底只补「真正未绑定」的成员。已通过 masterId 绑到
+      // 其他/更早 founder 的成员(多代真传位后的旧代师兄弟仍滞留 active/recruited)
+      // 必须按 masterId 归其本代，否则会同时计入旧代(masterId==旧 founder)和
+      // 当代(兜底 union)，弟子与其师承遗物双计入两代。masterId 绑定优先于当代兜底。
+      bool fallbackEligible(Character c) =>
+          !c.isFounder && (c.masterId == null || c.masterId == f.id);
       for (final id in activeSet) {
         final c = byId[id];
-        if (c != null && !c.isFounder) ids.add(id);
+        if (c != null && fallbackEligible(c)) ids.add(id);
       }
       for (final id in recruitedIds) {
         final c = byId[id];
-        if (c != null && !c.isFounder) ids.add(id);
+        if (c != null && fallbackEligible(c)) ids.add(id);
       }
     }
     final disciples = ids.map((id) => byId[id]).whereType<Character>().toList()
