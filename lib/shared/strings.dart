@@ -383,6 +383,8 @@ class UiStrings {
   static const String lineageCharacterDetailFounderBuff = '祖师恩泽';
   static String lineageCharacterDetailJoinedAt(int year, String stage) =>
       '江湖 $year 年，过「$stage」拜入';
+  static String lineageCharacterDetailJoinedYearOnly(int year) =>
+      '江湖 $year 年拜入';
   static String lineageCharacterDetailFounderGen(int gen) =>
       gen == 1 ? '开派太祖' : '第 $gen 代掌门';
 
