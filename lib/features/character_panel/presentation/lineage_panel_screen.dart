@@ -3,30 +3,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../battle/domain/enum_localizations.dart';
 import '../../../core/domain/character.dart';
-import '../../../core/domain/equipment.dart';
-import '../../../data/game_repository.dart';
-import '../../../data/numbers_config.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../../shared/theme/tier_colors.dart';
 import '../../ascension/application/ascend_service_providers.dart';
 import '../../ascension/presentation/ascension_screen.dart';
-import '../application/lineage_info_provider.dart';
+import '../application/lineage_codex_provider.dart';
+import 'lineage_character_detail_screen.dart';
+import 'lineage_widgets.dart';
 
-/// 师徒名单（W17 候选 E，独立 sub-screen）。
+/// 门派谱（门派谱1.1 Task4 · 纵向世代卷）。
 ///
-/// 主菜单「师徒名单」按钮进入；与 [CharacterPanelScreen] 角色级 Tab 视图
-/// 互补，提供「全局关系视图」：祖师 chip / 弟子 chip / 师承遗物列表。
+/// 主菜单「师徒名单」按钮进入。`lineageCodexProvider` 派生历代传承，
+/// 自顶向下（太祖在前）渲染每代：代标题 + 当代/已退隐标签 + 祖师卡 +
+/// 门人列表 + 师承遗物列表。屏底保留飞升渡劫入口。
 ///
-/// 预研：`docs/handoff/wuxia_phase5_master_disciple_prep_2026-05-17.md`。
+/// 点祖师 / 门人卡 → push [LineageCharacterDetailScreen]。
+/// 纯展示层（不改数值/平衡），无中文字面量（全走 [UiStrings]/[EnumL10n]）。
 class LineagePanelScreen extends ConsumerWidget {
   const LineagePanelScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(lineageInfoProvider);
+    final async = ref.watch(lineageCodexProvider);
     return BgmScope(
       track: BgmTrack.lineage,
       child: Scaffold(
@@ -47,7 +47,7 @@ class LineagePanelScreen extends ConsumerWidget {
                 style: const TextStyle(color: WuxiaColors.hpLow),
               ),
             ),
-            data: (info) => _Body(info: info),
+            data: (gens) => _Body(generations: gens),
           ),
         ),
       ),
@@ -56,21 +56,16 @@ class LineagePanelScreen extends ConsumerWidget {
 }
 
 class _Body extends StatelessWidget {
-  const _Body({required this.info});
+  const _Body({required this.generations});
 
-  final LineageInfo info;
-
-  /// 按 slotIndex 0/1/2 解析 masters[i].portraitPath。
-  /// GameRepository 未加载 / 越界 / 缺字段时 null,_CharacterChip 走 4×28 竖条 fallback。
-  String? _portraitForSlot(int slotIndex) {
-    if (!GameRepository.isLoaded) return null;
-    final masters = GameRepository.instance.masters;
-    if (slotIndex < 0 || slotIndex >= masters.length) return null;
-    return masters[slotIndex].portraitPath;
-  }
+  final List<LineageGeneration> generations;
 
   @override
   Widget build(BuildContext context) {
+    final totalMembers = generations.fold<int>(
+      0,
+      (sum, g) => sum + g.disciples.length,
+    );
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -85,35 +80,127 @@ class _Body extends StatelessWidget {
               errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
           ),
-          _FounderSection(
-            founder: info.founder,
-            portraitPath: _portraitForSlot(0),
-          ),
-          const SizedBox(height: 16),
-          if (GameRepository.isLoaded &&
-              GameRepository.instance.numbers.founderAncestorBuff.isActive)
-            _FounderBuffSection(
-              buff: GameRepository.instance.numbers.founderAncestorBuff,
-            ),
-          if (GameRepository.isLoaded &&
-              GameRepository.instance.numbers.founderAncestorBuff.isActive)
-            const SizedBox(height: 16),
-          _DisciplesSection(
-            disciples: info.disciples,
-            portraitPaths: List.generate(
-              info.disciples.length,
-              (i) => _portraitForSlot(i + 1),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Text(
+              UiStrings.lineageCodexProgress(
+                generations.length,
+                totalMembers,
+              ),
+              style: const TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 13,
+              ),
             ),
           ),
-          if (info.inactiveDisciples.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            _InactiveDisciplesSection(disciples: info.inactiveDisciples),
-          ],
-          const SizedBox(height: 16),
-          _HeritageSection(equipments: info.heritageEquipments),
+          if (generations.isEmpty)
+            const _EmptyText(UiStrings.lineagePanelNoFounder)
+          else
+            for (var i = 0; i < generations.length; i++) ...[
+              if (i > 0) const SizedBox(height: 16),
+              _GenerationSection(
+                generation: generations[i],
+                genIndex: i + 1,
+              ),
+            ],
           const SizedBox(height: 16),
           const _AscensionSection(),
         ],
+      ),
+    );
+  }
+}
+
+/// 单代段：代标题行 + 当代/已退隐标签 + 祖师卡 + 门人 + 师承遗物。
+class _GenerationSection extends StatelessWidget {
+  const _GenerationSection({required this.generation, required this.genIndex});
+
+  final LineageGeneration generation;
+  final int genIndex;
+
+  void _openDetail(BuildContext context, Character character) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => LineageCharacterDetailScreen(character: character),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gen = generation;
+    return LineagePanelCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              LineageSectionTitle(
+                UiStrings.lineageCodexGenerationLabel(genIndex),
+              ),
+              _GenerationTag(isCurrent: gen.isCurrent),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _CharacterChip(
+            character: gen.founder,
+            portraitPath: gen.founder.portraitPath,
+            onTap: () => _openDetail(context, gen.founder),
+          ),
+          const SizedBox(height: 12),
+          const LineageSectionTitle(UiStrings.lineageCodexDiscipleSection),
+          const SizedBox(height: 8),
+          if (gen.disciples.isEmpty)
+            const _EmptyText(UiStrings.lineageCodexNoDisciples)
+          else
+            for (var i = 0; i < gen.disciples.length; i++) ...[
+              if (i > 0) const SizedBox(height: 8),
+              _CharacterChip(
+                character: gen.disciples[i],
+                portraitPath: gen.disciples[i].portraitPath,
+                onTap: () => _openDetail(context, gen.disciples[i]),
+              ),
+            ],
+          const SizedBox(height: 12),
+          const LineageSectionTitle(UiStrings.lineageCodexHeritageSection),
+          const SizedBox(height: 8),
+          if (gen.heritageEquipments.isEmpty)
+            const _EmptyText(UiStrings.lineageCodexNoHeritage)
+          else
+            for (var i = 0; i < gen.heritageEquipments.length; i++) ...[
+              if (i > 0) const SizedBox(height: 6),
+              LineageHeritageRow(equipment: gen.heritageEquipments[i]),
+            ],
+        ],
+      ),
+    );
+  }
+}
+
+/// 当代 / 已退隐标签。
+class _GenerationTag extends StatelessWidget {
+  const _GenerationTag({required this.isCurrent});
+
+  final bool isCurrent;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isCurrent
+        ? WuxiaColors.resultHighlight
+        : WuxiaColors.textMuted;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: WuxiaColors.panel,
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: Text(
+        isCurrent
+            ? UiStrings.lineageCodexCurrentTag
+            : UiStrings.lineageCodexRetiredTag,
+        style: TextStyle(color: color, fontSize: 11),
       ),
     );
   }
@@ -130,11 +217,11 @@ class _AscensionSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(ascensionEligibilityProvider);
-    return _PanelCard(
+    return LineagePanelCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SectionTitle(UiStrings.ascensionPanelSection),
+          const LineageSectionTitle(UiStrings.ascensionPanelSection),
           const SizedBox(height: 4),
           const Text(
             UiStrings.ascensionPanelHint,
@@ -207,220 +294,24 @@ class _AscensionSection extends ConsumerWidget {
   }
 }
 
-class _FounderSection extends StatelessWidget {
-  const _FounderSection({required this.founder, this.portraitPath});
-
-  final Character? founder;
-  final String? portraitPath;
-
-  @override
-  Widget build(BuildContext context) {
-    return _PanelCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _SectionTitle(UiStrings.lineageTabLabels[0]),
-          const SizedBox(height: 8),
-          if (founder == null)
-            const _EmptyText(UiStrings.lineagePanelNoFounder)
-          else
-            _CharacterChip(character: founder!, portraitPath: portraitPath),
-        ],
-      ),
-    );
-  }
-}
-
-class _DisciplesSection extends StatelessWidget {
-  const _DisciplesSection({
-    required this.disciples,
-    this.portraitPaths = const [],
-  });
-
-  final List<Character> disciples;
-  final List<String?> portraitPaths;
-
-  @override
-  Widget build(BuildContext context) {
-    return _PanelCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _SectionTitle(UiStrings.lineagePanelDisciplesSection),
-          const SizedBox(height: 8),
-          if (disciples.isEmpty)
-            const _EmptyText(UiStrings.lineagePanelNoDisciples)
-          else
-            for (var i = 0; i < disciples.length; i++) ...[
-              if (i > 0) const SizedBox(height: 8),
-              _CharacterChip(
-                character: disciples[i],
-                portraitPath: i < portraitPaths.length
-                    ? portraitPaths[i]
-                    : null,
-              ),
-            ],
-        ],
-      ),
-    );
-  }
-}
-
-class _FounderBuffSection extends StatelessWidget {
-  const _FounderBuffSection({required this.buff});
-
-  final FounderAncestorBuff buff;
-
-  String _pctLabel(double v) {
-    if (v == 0) return '—';
-    return '+${(v * 100).toStringAsFixed(0)}%';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _PanelCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _SectionTitle(UiStrings.lineagePanelFounderBuffSection),
-          const SizedBox(height: 8),
-          const Text(
-            UiStrings.lineagePanelFounderBuffSubtitle,
-            style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
-          ),
-          const SizedBox(height: 8),
-          _BuffRow(
-            label: UiStrings.lineagePanelFounderBuffInternalForce,
-            value: _pctLabel(buff.internalForceMaxPct),
-          ),
-          _BuffRow(
-            label: UiStrings.lineagePanelFounderBuffMaxHp,
-            value: _pctLabel(buff.maxHpPct),
-          ),
-          _BuffRow(
-            label: UiStrings.lineagePanelFounderBuffCritRate,
-            value: _pctLabel(buff.critRateBonus),
-          ),
-          // H2 audit S3:cultivationProgressPct 未接修炼度公式(全 lib/ 0 消费),
-          // 移除误导性「+3% 修炼度」行,避免向玩家展示不生效的 buff。
-          // Phase 5+ 接公式后恢复(UiString lineagePanelFounderBuffCultivation 保留待用)。
-        ],
-      ),
-    );
-  }
-}
-
-class _BuffRow extends StatelessWidget {
-  const _BuffRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: WuxiaColors.textSecondary,
-              fontSize: 13,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              color: WuxiaColors.resultHighlight,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InactiveDisciplesSection extends StatelessWidget {
-  const _InactiveDisciplesSection({required this.disciples});
-
-  final List<Character> disciples;
-
-  @override
-  Widget build(BuildContext context) {
-    return _PanelCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _SectionTitle(UiStrings.lineagePanelInactiveSection),
-          const SizedBox(height: 8),
-          if (disciples.isEmpty)
-            const _EmptyText(UiStrings.lineagePanelNoInactive)
-          else
-            for (var i = 0; i < disciples.length; i++) ...[
-              if (i > 0) const SizedBox(height: 8),
-              _CharacterChip(character: disciples[i]),
-            ],
-        ],
-      ),
-    );
-  }
-}
-
-class _HeritageSection extends StatelessWidget {
-  const _HeritageSection({required this.equipments});
-
-  final List<Equipment> equipments;
-
-  @override
-  Widget build(BuildContext context) {
-    return _PanelCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const _SectionTitle(UiStrings.lineagePanelHeritageSection),
-              if (equipments.isNotEmpty)
-                Text(
-                  UiStrings.lineagePanelHeritageCount(equipments.length),
-                  style: const TextStyle(
-                    color: WuxiaColors.textMuted,
-                    fontSize: 12,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (equipments.isEmpty)
-            const _EmptyText(UiStrings.lineagePanelNoHeritage)
-          else
-            for (var i = 0; i < equipments.length; i++) ...[
-              if (i > 0) const SizedBox(height: 6),
-              _HeritageRow(equipment: equipments[i]),
-            ],
-        ],
-      ),
-    );
-  }
-}
-
+/// 角色卡片：阶色条/头像 + 名号 + 境界。可选 [onTap] 包 [InkWell] 使可点。
 class _CharacterChip extends StatelessWidget {
-  const _CharacterChip({required this.character, this.portraitPath});
+  const _CharacterChip({
+    required this.character,
+    this.portraitPath,
+    this.onTap,
+  });
 
   final Character character;
   final String? portraitPath;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final schoolColor = character.school == null
         ? WuxiaColors.textMuted
         : WuxiaColors.schoolColor(character.school!);
-    return Container(
+    final inner = Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: WuxiaColors.avatarFill,
@@ -473,114 +364,8 @@ class _CharacterChip extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _HeritageRow extends StatelessWidget {
-  const _HeritageRow({required this.equipment});
-
-  final Equipment equipment;
-
-  String _resolveName() {
-    if (!GameRepository.isLoaded) return equipment.defId;
-    final def = GameRepository.instance.equipmentDefs[equipment.defId];
-    return def?.name ?? equipment.defId;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tierColor = tierColorForEquipment(equipment.tier);
-    return Row(
-      children: [
-        Container(
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(color: tierColor, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            _resolveName(),
-            style: const TextStyle(
-              color: WuxiaColors.textPrimary,
-              fontSize: 13,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (equipment.enhanceLevel > 0) ...[
-          const SizedBox(width: 8),
-          Text(
-            '+${equipment.enhanceLevel}',
-            style: TextStyle(
-              color: tierColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-        // P5+ 多代传承 chip:prev len > 1 时显「{N} 代传承」(N = prev len + 1)。
-        // 沿 character_panel _LineageHeritageRow 同语义 · gen2 起才显。
-        if (equipment.previousOwnerCharacterIds.length > 1) ...[
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: WuxiaColors.panel,
-              border: Border.all(color: WuxiaColors.border),
-              borderRadius: BorderRadius.circular(2),
-            ),
-            child: Text(
-              UiStrings.ascensionMultiGenChip.replaceFirst(
-                '{0}',
-                '${equipment.previousOwnerCharacterIds.length + 1}',
-              ),
-              style: const TextStyle(
-                color: WuxiaColors.textMuted,
-                fontSize: 11,
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _PanelCard extends StatelessWidget {
-  const _PanelCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border.all(color: WuxiaColors.border),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: child,
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: WuxiaColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
-    );
+    if (onTap == null) return inner;
+    return InkWell(onTap: onTap, child: inner);
   }
 }
 

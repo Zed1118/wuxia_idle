@@ -10,8 +10,8 @@ import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../../shared/theme/tier_colors.dart';
 import '../../battle/domain/enum_localizations.dart';
+import 'lineage_widgets.dart';
 
 /// 门人档案（门派谱1.1 Task3）。
 ///
@@ -84,11 +84,11 @@ class _MainTechniqueSection extends ConsumerWidget {
     if (name == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: _PanelCard(
+      child: LineagePanelCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _SectionTitle(UiStrings.lineageCharacterDetailMainTechnique),
+            const LineageSectionTitle(UiStrings.lineageCharacterDetailMainTechnique),
             const SizedBox(height: 8),
             Text(
               name,
@@ -116,7 +116,7 @@ class _HeroHeader extends StatelessWidget {
         ? WuxiaColors.textMuted
         : WuxiaColors.schoolColor(character.school!);
     final portraitPath = character.portraitPath;
-    return _PanelCard(
+    return LineagePanelCard(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -215,11 +215,11 @@ class _DeedsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _PanelCard(
+    return LineagePanelCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SectionTitle(UiStrings.lineageCharacterDetailDeeds),
+          const LineageSectionTitle(UiStrings.lineageCharacterDetailDeeds),
           const SizedBox(height: 8),
           Text(
             _deedsText(),
@@ -243,11 +243,11 @@ class _AttributesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final a = character.attributes;
-    return _PanelCard(
+    return LineagePanelCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SectionTitle(UiStrings.lineageCharacterDetailAttributes),
+          const LineageSectionTitle(UiStrings.lineageCharacterDetailAttributes),
           const SizedBox(height: 8),
           Wrap(
             spacing: 16,
@@ -300,88 +300,19 @@ class _HeritageSection extends ConsumerWidget {
     if (owned.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: _PanelCard(
+      child: LineagePanelCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _SectionTitle(UiStrings.lineageCharacterDetailHeritage),
+            const LineageSectionTitle(UiStrings.lineageCharacterDetailHeritage),
             const SizedBox(height: 8),
             for (var i = 0; i < owned.length; i++) ...[
               if (i > 0) const SizedBox(height: 6),
-              _HeritageRow(equipment: owned[i]),
+              LineageHeritageRow(equipment: owned[i]),
             ],
           ],
         ),
       ),
-    );
-  }
-}
-
-class _HeritageRow extends StatelessWidget {
-  const _HeritageRow({required this.equipment});
-
-  final Equipment equipment;
-
-  String _resolveName() {
-    if (!GameRepository.isLoaded) return equipment.defId;
-    return GameRepository.instance.equipmentDefs[equipment.defId]?.name ??
-        equipment.defId;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tierColor = tierColorForEquipment(equipment.tier);
-    return Row(
-      children: [
-        Container(
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(color: tierColor, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            _resolveName(),
-            style: const TextStyle(
-              color: WuxiaColors.textPrimary,
-              fontSize: 13,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (equipment.enhanceLevel > 0) ...[
-          const SizedBox(width: 8),
-          Text(
-            '+${equipment.enhanceLevel}',
-            style: TextStyle(
-              color: tierColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-        if (equipment.previousOwnerCharacterIds.length > 1) ...[
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: WuxiaColors.panel,
-              border: Border.all(color: WuxiaColors.border),
-              borderRadius: BorderRadius.circular(2),
-            ),
-            child: Text(
-              UiStrings.ascensionMultiGenChip.replaceFirst(
-                '{0}',
-                '${equipment.previousOwnerCharacterIds.length + 1}',
-              ),
-              style: const TextStyle(
-                color: WuxiaColors.textMuted,
-                fontSize: 11,
-              ),
-            ),
-          ),
-        ],
-      ],
     );
   }
 }
@@ -392,11 +323,6 @@ class _HeritageRow extends StatelessWidget {
 class _FounderBuffSection extends StatelessWidget {
   const _FounderBuffSection();
 
-  String _pctLabel(double v) {
-    if (v == 0) return '—';
-    return '+${(v * 100).toStringAsFixed(0)}%';
-  }
-
   @override
   Widget build(BuildContext context) {
     FounderAncestorBuff? buff;
@@ -404,23 +330,23 @@ class _FounderBuffSection extends StatelessWidget {
       final b = GameRepository.instance.numbers.founderAncestorBuff;
       if (b.isActive) buff = b;
     }
-    return _PanelCard(
+    return LineagePanelCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SectionTitle(UiStrings.lineageCharacterDetailFounderBuff),
+          const LineageSectionTitle(UiStrings.lineageCharacterDetailFounderBuff),
           const SizedBox(height: 8),
-          _BuffRow(
+          LineageBuffRow(
             label: UiStrings.lineagePanelFounderBuffInternalForce,
-            value: _pctLabel(buff?.internalForceMaxPct ?? 0),
+            value: lineagePctLabel(buff?.internalForceMaxPct ?? 0),
           ),
-          _BuffRow(
+          LineageBuffRow(
             label: UiStrings.lineagePanelFounderBuffMaxHp,
-            value: _pctLabel(buff?.maxHpPct ?? 0),
+            value: lineagePctLabel(buff?.maxHpPct ?? 0),
           ),
-          _BuffRow(
+          LineageBuffRow(
             label: UiStrings.lineagePanelFounderBuffCritRate,
-            value: _pctLabel(buff?.critRateBonus ?? 0),
+            value: lineagePctLabel(buff?.critRateBonus ?? 0),
           ),
         ],
       ),
@@ -428,73 +354,3 @@ class _FounderBuffSection extends StatelessWidget {
   }
 }
 
-class _BuffRow extends StatelessWidget {
-  const _BuffRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: WuxiaColors.textSecondary,
-              fontSize: 13,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              color: WuxiaColors.resultHighlight,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PanelCard extends StatelessWidget {
-  const _PanelCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border.all(color: WuxiaColors.border),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: child,
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: WuxiaColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-  }
-}
