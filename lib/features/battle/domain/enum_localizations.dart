@@ -190,6 +190,7 @@ class EnumL10n {
       ItemType.jingYanDan => '经验丹',
       ItemType.techniqueScroll => '心法秘籍',
       ItemType.miscMaterial => '杂项材料',
+      ItemType.silver => '银两',
     };
   }
 
