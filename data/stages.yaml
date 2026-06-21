@@ -377,7 +377,7 @@ stages:
         dropChance: 0.25  # 经验丹大档(balance T4 校准统一 0.2→0.25)
       - inventoryItemDefId: item_scroll_guan_shan_ba_ji
         quantity: [1, 1]
-        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
+        dropChance: 0.5  # 秘籍掉落(T5 balance:主线较高概率;引擎无首通门控,重复掉幂等)
     baseExpReward: 600
     difficultyMultiplier: 1.8
     biome: dock
@@ -724,7 +724,7 @@ stages:
         dropChance: 0.25  # 经验丹大档(balance T4 校准统一 0.2→0.25)
       - inventoryItemDefId: item_scroll_ma_ta_fei_yan
         quantity: [1, 1]
-        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
+        dropChance: 0.5  # 秘籍掉落(T5 balance:主线较高概率;引擎无首通门控,重复掉幂等)
     baseExpReward: 1800
     difficultyMultiplier: 2.3
     biome: alley
@@ -1092,7 +1092,7 @@ stages:
         dropChance: 0.25  # 经验丹大档(balance T4 校准统一 0.2→0.25)
       - inventoryItemDefId: item_scroll_ye_yu_shi_nian_deng
         quantity: [1, 1]
-        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
+        dropChance: 0.5  # 秘籍掉落(T5 balance:主线较高概率;引擎无首通门控,重复掉幂等)
     baseExpReward: 6000
     difficultyMultiplier: 2.8
     biome: drillGround
