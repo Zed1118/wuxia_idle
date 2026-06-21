@@ -1,11 +1,9 @@
 # 江湖商店商品定义（P1 材料经济 Task 4，GDD §5.1）
-# P1 阶段只卖 2 种强化材料；标价上限 100000（_enforceRedLines 校验）。
-# 字段说明：
-#   id       : 商品唯一 id
-#   itemDefId: 购买后入库的 InventoryItem.defId
-#   itemType : ItemType 枚举值名
-#   price    : 银两标价（单件）
-#   category : 货架分组 key
+# 标价二选一（balance T3 经验丹动态标价）：
+#   price             : 银两固定标价（磨剑石/心血结晶等绝对价值材料）
+#   price_layer_fraction : 动态标价系数（经验丹，实际价=round(founderEtl×fraction)）
+# 两字段互斥，fromYaml 校验，两者皆有/皆无均报 StateError。
+# category : 货架分组 key
 
 shop:
   - id: shop_mojianshi
@@ -20,15 +18,17 @@ shop:
     price: 120
     category: material
 
-  # 经验丹（P2 材料经济）——小/中档上货架；大档仅掉落（§5.7 守门）
+  # 经验丹（P2 材料经济 + balance T3 动态标价）——小/中档上货架；大档仅掉落（§5.7 守门）
+  # price_layer_fraction 占位值，balance T6 校准后更新。
+  # 兑换率恒定：银两→经验 = fraction × ETL，无套利窗口。
   - id: shop_jingyandan_small
     itemDefId: item_jingyandan_small
     itemType: jingYanDan
-    price: 50           # 占位待 balance
+    price_layer_fraction: 1.0   # 占位待 T6 balance 校准
     category: pill
 
   - id: shop_jingyandan_mid
     itemDefId: item_jingyandan_mid
     itemType: jingYanDan
-    price: 150          # 占位待 balance
+    price_layer_fraction: 2.5   # 占位待 T6 balance 校准
     category: pill

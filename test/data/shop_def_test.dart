@@ -54,21 +54,29 @@ void main() {
       final mojian = defs['shop_mojianshi'];
       expect(mojian, isNotNull);
       expect(mojian!.itemDefId, 'item_mojianshi');
-      expect(mojian.price > 0, true);
+      expect(mojian.price! > 0, true);
       expect(mojian.itemType, ItemType.moJianShi);
 
       final xinxue = defs['shop_xinxue_jiejing'];
       expect(xinxue, isNotNull);
       expect(xinxue!.itemDefId, 'item_xinxuejiejing');
-      expect(xinxue.price > 0, true);
+      expect(xinxue.price! > 0, true);
       expect(xinxue.itemType, ItemType.xinXueJieJing);
     });
 
-    test('shop.yaml 含经验丹小/中', () async {
+    test('shop.yaml 含经验丹小/中（动态标价）', () async {
       await GameRepository.loadAllDefs(loader: fileLoader);
       final defs = GameRepository.instance.shopItemDefs;
-      expect(defs['shop_jingyandan_small']?.itemType, ItemType.jingYanDan);
-      expect(defs['shop_jingyandan_mid']?.price, 150);
+      final small = defs['shop_jingyandan_small'];
+      final mid = defs['shop_jingyandan_mid'];
+      expect(small?.itemType, ItemType.jingYanDan);
+      expect(small?.isDynamicPrice, true);
+      expect(small?.priceLayerFraction, 1.0);
+      expect(mid?.isDynamicPrice, true);
+      expect(mid?.priceLayerFraction, 2.5);
+      // 动态价商品 price 字段为 null
+      expect(small?.price, isNull);
+      expect(mid?.price, isNull);
     });
 
     test('秘籍不在 shop（§5.7）', () async {

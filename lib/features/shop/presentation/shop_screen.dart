@@ -25,6 +25,9 @@ import '../application/shop_service.dart';
 /// - 点购买 → [PaperDialog] 确认弹窗 → [ShopService.purchase] → 刷新 provider。
 /// - 银两不足：按钮禁用（[PlaqueButton.disabled=true]），图标无变化不弹窗。
 ///
+/// **balance T3 动态标价**：经验丹标价 = `founderEtl × priceLayerFraction`，
+/// 通过 [founderEtlProvider] 获取，显示价与扣费价保持一致。
+///
 /// 约束（§5.1）：固定货架，无随机/限购/每日/抽卡元素。
 class ShopScreen extends ConsumerStatefulWidget {
   const ShopScreen({super.key});
@@ -38,6 +41,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   Widget build(BuildContext context) {
     final silverAsync = ref.watch(silverBalanceProvider);
     final items = ref.watch(shopItemListProvider);
+    final founderEtlAsync = ref.watch(founderEtlProvider);
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -54,13 +58,22 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               style: const TextStyle(color: WuxiaColors.hpLow),
             ),
           ),
-          data: (silver) => _buildBody(context, silver, items),
+          data: (silver) {
+            // founderEtl 加载中时先用 null（动态价商品禁用，固定价正常）
+            final founderEtl = founderEtlAsync.asData?.value;
+            return _buildBody(context, silver, items, founderEtl);
+          },
         ),
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context, int silver, List<ShopItemDef> items) {
+  Widget _buildBody(
+    BuildContext context,
+    int silver,
+    List<ShopItemDef> items,
+    int? founderEtl,
+  ) {
     // 按 category 分组
     final byCategory = <String, List<ShopItemDef>>{};
     for (final def in items) {
@@ -79,7 +92,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             category: entry.key,
             defs: entry.value,
             silver: silver,
-            onBuy: (def) => _handleBuy(context, def, silver),
+            founderEtl: founderEtl,
+            onBuy: (def) => _handleBuy(context, def, silver, founderEtl),
           ),
           const SizedBox(height: 16),
         ],
@@ -92,13 +106,16 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     BuildContext context,
     ShopItemDef def,
     int silver,
+    int? founderEtl,
   ) async {
+    final price = ShopService.effectivePrice(def, founderEtl ?? 0);
+
     final confirmed = await PaperDialog.show<bool>(
       context,
       title: UiStrings.shopBuy,
       body: Text(
         '${EnumL10n.itemType(def.itemType)}  ×1\n'
-        '${UiStrings.shopItemPrice(def.price)}',
+        '${UiStrings.shopItemPrice(price)}',
         style: const TextStyle(
           color: WuxiaUi.ink,
           fontSize: 14,
@@ -125,6 +142,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final result = await ShopService.purchase(
       IsarSetup.instance,
       def: def,
+      founderEtl: founderEtl,
     );
 
     if (!context.mounted) return;
@@ -133,8 +151,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       ref.invalidate(silverBalanceProvider);
       ref.invalidate(allInventoryItemsProvider);
     } else {
+      final msg = result.reason == PurchaseFailReason.pricingUnavailable
+          ? UiStrings.shopPricingUnavailable
+          : UiStrings.shopInsufficientSilver;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(UiStrings.shopInsufficientSilver)),
+        SnackBar(content: Text(msg)),
       );
     }
   }
@@ -177,12 +198,15 @@ class _CategoryPanel extends StatelessWidget {
     required this.category,
     required this.defs,
     required this.silver,
+    required this.founderEtl,
     required this.onBuy,
   });
 
   final String category;
   final List<ShopItemDef> defs;
   final int silver;
+  /// 祖师单层所需经验（动态标价用）。null = founder 未加载或不存在。
+  final int? founderEtl;
   final void Function(ShopItemDef def) onBuy;
 
   String _categoryLabel(String cat) {
@@ -215,7 +239,12 @@ class _CategoryPanel extends StatelessWidget {
             IntrinsicHeight(
               child: _ShopItemTile(
                 def: def,
-                canAfford: silver >= def.price,
+                effectivePrice: ShopService.effectivePrice(def, founderEtl ?? 0),
+                // 动态价商品且 founderEtl 为 null → 禁用（无法定价）
+                canAfford: def.isDynamicPrice && founderEtl == null
+                    ? false
+                    : silver >=
+                        ShopService.effectivePrice(def, founderEtl ?? 0),
                 onBuy: () => onBuy(def),
               ),
             ),
@@ -230,11 +259,14 @@ class _CategoryPanel extends StatelessWidget {
 class _ShopItemTile extends StatelessWidget {
   const _ShopItemTile({
     required this.def,
+    required this.effectivePrice,
     required this.canAfford,
     required this.onBuy,
   });
 
   final ShopItemDef def;
+  /// 有效标价（已由调用方计算，显示与扣费保持一致）。
+  final int effectivePrice;
   final bool canAfford;
   final VoidCallback onBuy;
 
@@ -293,7 +325,7 @@ class _ShopItemTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  UiStrings.shopItemPrice(def.price),
+                  UiStrings.shopItemPrice(effectivePrice),
                   style: TextStyle(
                     color: canAfford
                         ? WuxiaColors.resultHighlight
