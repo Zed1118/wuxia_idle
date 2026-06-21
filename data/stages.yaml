@@ -374,7 +374,7 @@ stages:
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
-        dropChance: 0.2  # 经验丹大档(P2 占位,待 balance)
+        dropChance: 0.25  # 经验丹大档(balance T4 校准统一 0.2→0.25)
       - inventoryItemDefId: item_scroll_guan_shan_ba_ji
         quantity: [1, 1]
         dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
@@ -721,7 +721,7 @@ stages:
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
-        dropChance: 0.2  # 经验丹大档(P2 占位,待 balance)
+        dropChance: 0.25  # 经验丹大档(balance T4 校准统一 0.2→0.25)
       - inventoryItemDefId: item_scroll_ma_ta_fei_yan
         quantity: [1, 1]
         dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
@@ -1089,7 +1089,7 @@ stages:
         dropChance: 1.0  # 银两(P1 占位,待 balance)
       - inventoryItemDefId: item_jingyandan_large
         quantity: [1, 1]
-        dropChance: 0.2  # 经验丹大档(P2 占位,待 balance)
+        dropChance: 0.25  # 经验丹大档(balance T4 校准统一 0.2→0.25)
       - inventoryItemDefId: item_scroll_ye_yu_shi_nian_deng
         quantity: [1, 1]
         dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
@@ -1471,6 +1471,9 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [80, 120]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.25  # 经验丹大档(balance T4 Ch4 章末扩展)
     baseExpReward: 20000
     difficultyMultiplier: 4.0
     biome: frontier
@@ -1846,6 +1849,9 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [130, 180]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.25  # 经验丹大档(balance T4 Ch5 章末扩展)
     baseExpReward: 40000
     difficultyMultiplier: 4.6
     biome: cityWall
@@ -2214,6 +2220,9 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [200, 280]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.25  # 经验丹大档(balance T4 Ch6 章末扩展)
     baseExpReward: 80000
     difficultyMultiplier: 6.1
     biome: mountainForest
