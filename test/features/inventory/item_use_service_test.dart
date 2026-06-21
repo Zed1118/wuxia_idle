@@ -68,20 +68,22 @@ void main() {
     });
   }
 
-  test('经验丹：经验入账 + 升层 + 消费 1', () async {
+  test('经验丹：大还丹(fraction=1.0) 升满一层 + 消费 1', () async {
+    // founder.experienceToNextLayer = 100；gain = round(100 × 1.0) = 100 → 恰好升1层。
     await seedFounder();
     await seedItem('item_jingyandan_large', ItemType.jingYanDan, 2);
-    final def = repo.itemDefs['item_jingyandan_large']!; // experience 1800
+    final def = repo.itemDefs['item_jingyandan_large']!; // layerFraction = 1.0
 
     final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
 
     expect(r.kind, ItemUseKind.experienceApplied);
-    expect(r.layersGained, greaterThan(0)); // 1800 经验跨多层
+    expect(r.layersGained, 1); // 100 经验恰好升 1 层
     final item = await isar.inventoryItems.getByDefId('item_jingyandan_large');
     expect(item?.quantity, 1); // 消费 1
   });
 
-  test('经验丹：isLayerLocked 拦截 → 入账不升层', () async {
+  test('经验丹：isLayerLocked 拦截 → 入账不升层（缩放后实际入账值）', () async {
+    // founder.experienceToNextLayer = 100；大还丹 fraction=1.0；gain = round(100×1.0) = 100。
     await seedFounder();
     await seedItem('item_jingyandan_large', ItemType.jingYanDan, 1);
     final def = repo.itemDefs['item_jingyandan_large']!;
@@ -97,7 +99,52 @@ void main() {
     expect(r.layersGained, 0); // 锁住不升层
     final founder =
         await isar.characters.filter().isFounderEqualTo(true).findFirst();
-    expect(founder?.experience, 1800); // 经验仍入账
+    // 缩放入账：round(100 × 1.0) = 100（而非旧固定值 1800）。
+    expect(founder?.experience, 100);
+  });
+
+  test('经验丹缩放：培元丹(fraction=0.5) 入账 = round(nextLayer × 0.5)', () async {
+    // 验证缩放生效：gain = round(100 × 0.5) = 50，低于100所需不升层。
+    await seedFounder(); // experienceToNextLayer = 100
+    await seedItem('item_jingyandan_mid', ItemType.jingYanDan, 1);
+    final def = repo.itemDefs['item_jingyandan_mid']!; // layerFraction = 0.5
+
+    final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
+
+    expect(r.kind, ItemUseKind.experienceApplied);
+    expect(r.layersGained, 0); // 50 < 100，不升层
+    final founder =
+        await isar.characters.filter().isFounderEqualTo(true).findFirst();
+    expect(founder?.experience, 50); // round(100 × 0.5) = 50
+  });
+
+  test('经验丹缩放对比：高 experienceToNextLayer 获得更多 experience', () async {
+    // 验证高境界 founder 用同一档丹获得更多绝对经验量（缩放生效）。
+    // setup：高 nextLayer=400 的 founder。
+    await isar.writeTxn(() async {
+      await isar.characters.put(Character.create(
+        name: '高境界主角',
+        realmTier: RealmTier.xueTu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes(),
+        rarity: RarityTier.values.first,
+        lineageRole: LineageRole.founder,
+        createdAt: DateTime(2026, 1, 1),
+        isFounder: true,
+        experience: 0,
+        experienceToNextLayer: 400, // 高于 seedFounder 的 100
+        internalForceMax: 800,
+      ));
+    });
+    await seedItem('item_jingyandan_mid', ItemType.jingYanDan, 1);
+    final def = repo.itemDefs['item_jingyandan_mid']!; // layerFraction = 0.5
+
+    await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
+
+    final founder =
+        await isar.characters.filter().isFounderEqualTo(true).findFirst();
+    // gain = round(400 × 0.5) = 200 > 培元丹对低境界(50)的增益。
+    expect(founder?.experience, 200);
   });
 
   test('秘籍：解锁招 + 消费 1', () async {
