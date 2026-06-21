@@ -46,7 +46,10 @@ class LineageCharacterDetailScreen extends ConsumerWidget {
               _AttributesSection(character: character),
               _MainTechniqueSection(character: character),
               _HeritageSection(character: character),
-              if (character.isFounder) ...[
+              if (character.isFounder &&
+                  GameRepository.isLoaded &&
+                  GameRepository.instance.numbers.founderAncestorBuff
+                      .isActive) ...[
                 const SizedBox(height: 16),
                 const _FounderBuffSection(),
               ],
@@ -383,11 +386,9 @@ class _HeritageRow extends StatelessWidget {
   }
 }
 
-/// 祖师恩泽段（仅祖师态显）。
-///
-/// buff 数值防御式读取：[GameRepository] 已加载且 buff active 时显真实 %，
-/// 否则（widget test 无 repo）仍显段标题 + 三行（值占位 —），保证祖师态
-/// 「祖师恩泽」标题恒可见、弟子态恒隐藏。纯展示，不触数值层。
+/// 祖师恩泽段（仅祖师态 + buff active 时显，gate 在 build 层与 sibling
+/// [lineage_panel_screen] 一致）。本段渲染时 [GameRepository] 必已加载且
+/// buff active，故直读真实 %。纯展示，不触数值层。
 class _FounderBuffSection extends StatelessWidget {
   const _FounderBuffSection();
 
