@@ -1,17 +1,17 @@
 # 道具效果定义（材料经济 P2）。
-# 经验丹 experience / 秘籍 unlockSkillId 是道具用途真相源；
+# 经验丹 layer_fraction / 秘籍 unlockSkillId 是道具用途真相源；
 # 道具显示名 name 集中此处（3 档经验丹共享 ItemType.jingYanDan，EnumL10n 分不开）。
-# experience 占位待 balance pass 校准（同 P1 银两数值策略）。
+# layer_fraction 表示使用时推进当前层修炼度的比例（0.0–1.0），由消费层乘以当层所需经验计算实际经验值。
 # 字段：
-#   defId        : 对应 InventoryItem.defId
-#   type         : ItemType 枚举名（jingYanDan / techniqueScroll）
-#   name         : 道具显示名（文案）
-#   experience   : jingYanDan 专用，使用时加的角色经验
-#   unlockSkillId: techniqueScroll 专用，使用时解锁的秘传招 id
+#   defId         : 对应 InventoryItem.defId
+#   type          : ItemType 枚举名（jingYanDan / techniqueScroll）
+#   name          : 道具显示名（文案）
+#   layer_fraction: jingYanDan 专用，使用时推进当前境界层所需经验的比例（0.0–1.0）
+#   unlockSkillId : techniqueScroll 专用，使用时解锁的秘传招 id
 items:
-  - { defId: item_jingyandan_small, type: jingYanDan, name: 凝神丹, experience: 200 }
-  - { defId: item_jingyandan_mid,   type: jingYanDan, name: 培元丹, experience: 600 }
-  - { defId: item_jingyandan_large, type: jingYanDan, name: 大还丹, experience: 1800 }
+  - { defId: item_jingyandan_small, type: jingYanDan, name: 凝神丹, layer_fraction: 0.2 }
+  - { defId: item_jingyandan_mid,   type: jingYanDan, name: 培元丹, layer_fraction: 0.5 }
+  - { defId: item_jingyandan_large, type: jingYanDan, name: 大还丹, layer_fraction: 1.0 }
   - { defId: item_scroll_kai_bei_shou,        type: techniqueScroll, name: 开碑手·秘籍,     unlockSkillId: skill_kai_bei_shou }
   - { defId: item_scroll_yan_zi_san_chao,     type: techniqueScroll, name: 燕子三抄·秘籍,   unlockSkillId: skill_yan_zi_san_chao }
   - { defId: item_scroll_zhu_ying_yao_hong,   type: techniqueScroll, name: 烛影摇红·秘籍,   unlockSkillId: skill_zhu_ying_yao_hong }
