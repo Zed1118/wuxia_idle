@@ -64,6 +64,22 @@ void main() {
       expect(xinxue.itemType, ItemType.xinXueJieJing);
     });
 
+    test('shop.yaml 含经验丹小/中', () async {
+      await GameRepository.loadAllDefs(loader: fileLoader);
+      final defs = GameRepository.instance.shopItemDefs;
+      expect(defs['shop_jingyandan_small']?.itemType, ItemType.jingYanDan);
+      expect(defs['shop_jingyandan_mid']?.price, 150);
+    });
+
+    test('秘籍不在 shop（§5.7）', () async {
+      await GameRepository.loadAllDefs(loader: fileLoader);
+      final defs = GameRepository.instance.shopItemDefs;
+      expect(
+        defs.values.any((d) => d.itemDefId.startsWith('item_scroll_')),
+        isFalse,
+      );
+    });
+
     test('_enforceRedLines 标价超 100000 抛 StateError', () async {
       // 用内存 loader 构造超标价条目，只提供 shop.yaml 其余 yaml 走文件
       final Map<String, String> memOverrides = {

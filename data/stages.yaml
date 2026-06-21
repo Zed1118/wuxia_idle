@@ -372,6 +372,12 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [25, 40]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.2  # 经验丹大档(P2 占位,待 balance)
+      - inventoryItemDefId: item_scroll_guan_shan_ba_ji
+        quantity: [1, 1]
+        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
     baseExpReward: 600
     difficultyMultiplier: 1.8
     biome: dock
@@ -713,6 +719,12 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [35, 50]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.2  # 经验丹大档(P2 占位,待 balance)
+      - inventoryItemDefId: item_scroll_ma_ta_fei_yan
+        quantity: [1, 1]
+        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
     baseExpReward: 1800
     difficultyMultiplier: 2.3
     biome: alley
@@ -1075,6 +1087,12 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [50, 70]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_jingyandan_large
+        quantity: [1, 1]
+        dropChance: 0.2  # 经验丹大档(P2 占位,待 balance)
+      - inventoryItemDefId: item_scroll_ye_yu_shi_nian_deng
+        quantity: [1, 1]
+        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
     baseExpReward: 6000
     difficultyMultiplier: 2.8
     biome: drillGround
