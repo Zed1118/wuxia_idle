@@ -160,6 +160,18 @@ enum VisualRoute {
     'weapon_codex_detail',
     '兵器谱详情屏目检·正常态(器物档案 + 个人历程 + 首得来源/日期)',
   ),
+  shop(
+    'shop',
+    '江湖商店主屏目检·种银两80(够磨剑石30两·不够心血结晶120):货币顶栏 + 固定货架分类 + 磨剑石可买(绿)/心血结晶不可买(红 disabled)两态',
+  ),
+  inventoryCurrency(
+    'inventory_currency',
+    '背包货币位目检·种银两+磨剑石+心血结晶,直开材料 tab:顶部货币位顶栏(银两X两) + 材料网格(磨剑石/心血结晶,银两不重复进网格)',
+  ),
+  mainMenuShop(
+    'main_menu_shop',
+    '主菜单商店入口目检·种银两解锁:验「江湖商店」隐藏式入口木牌出现(§5.7,沿兵器谱体例)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
