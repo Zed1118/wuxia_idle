@@ -1,0 +1,23 @@
+# 道具效果定义（材料经济 P2）。
+# 经验丹 experience / 秘籍 unlockSkillId 是道具用途真相源；
+# 道具显示名 name 集中此处（3 档经验丹共享 ItemType.jingYanDan，EnumL10n 分不开）。
+# experience 占位待 balance pass 校准（同 P1 银两数值策略）。
+# 字段：
+#   defId        : 对应 InventoryItem.defId
+#   type         : ItemType 枚举名（jingYanDan / techniqueScroll）
+#   name         : 道具显示名（文案）
+#   experience   : jingYanDan 专用，使用时加的角色经验
+#   unlockSkillId: techniqueScroll 专用，使用时解锁的秘传招 id
+items:
+  - { defId: item_jingyandan_small, type: jingYanDan, name: 凝神丹, experience: 200 }
+  - { defId: item_jingyandan_mid,   type: jingYanDan, name: 培元丹, experience: 600 }
+  - { defId: item_jingyandan_large, type: jingYanDan, name: 大还丹, experience: 1800 }
+  - { defId: item_scroll_kai_bei_shou,        type: techniqueScroll, name: 开碑手·秘籍,     unlockSkillId: skill_kai_bei_shou }
+  - { defId: item_scroll_yan_zi_san_chao,     type: techniqueScroll, name: 燕子三抄·秘籍,   unlockSkillId: skill_yan_zi_san_chao }
+  - { defId: item_scroll_zhu_ying_yao_hong,   type: techniqueScroll, name: 烛影摇红·秘籍,   unlockSkillId: skill_zhu_ying_yao_hong }
+  - { defId: item_scroll_jin_gang_fu_mo,      type: techniqueScroll, name: 金刚伏魔·秘籍,   unlockSkillId: skill_jin_gang_fu_mo }
+  - { defId: item_scroll_jing_hong_zhao_ying, type: techniqueScroll, name: 惊鸿照影·秘籍,   unlockSkillId: skill_jing_hong_zhao_ying }
+  - { defId: item_scroll_yue_luo_wu_sheng,    type: techniqueScroll, name: 月落无声·秘籍,   unlockSkillId: skill_yue_luo_wu_sheng }
+  - { defId: item_scroll_guan_shan_ba_ji,     type: techniqueScroll, name: 关山拔戟·秘籍,   unlockSkillId: skill_guan_shan_ba_ji }
+  - { defId: item_scroll_ma_ta_fei_yan,       type: techniqueScroll, name: 马踏飞燕·秘籍,   unlockSkillId: skill_ma_ta_fei_yan }
+  - { defId: item_scroll_ye_yu_shi_nian_deng, type: techniqueScroll, name: 夜雨十年灯·秘籍, unlockSkillId: skill_ye_yu_shi_nian_deng }
