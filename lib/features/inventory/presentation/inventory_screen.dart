@@ -1,20 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../battle/domain/enum_localizations.dart';
 import '../../../data/defs/equipment_def.dart';
+import '../../../data/defs/item_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
+import '../../inner_demon/application/inner_demon_service.dart';
+import '../../mainline/domain/mainline_progress.dart';
+import '../application/item_use_service.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../shared/widgets/wuxia_ui/item_slot.dart';
+import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_tab.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
@@ -563,14 +572,26 @@ class _MaterialGroup extends StatelessWidget {
   }
 }
 
-class _MaterialRow extends StatelessWidget {
+/// 单条物料行（材料经济 P2 T4：经验丹 / 秘籍可「使用」）。
+///
+/// 名取 [ItemDef.name]（items.yaml，凝神丹 / 开碑手·秘籍…），缺 def 退回
+/// itemType 组名 [name]。经验丹 / 秘籍行末加「使用」按钮 → 确认弹窗 →
+/// [ItemUseService.use] → 结果浮层 + invalidate（背包 + 角色 provider）。
+/// 磨剑石 / 心血结晶 / 银两无按钮（service 也只识别前二者）。
+class _MaterialRow extends ConsumerWidget {
   const _MaterialRow({required this.item, required this.name});
 
   final InventoryItem item;
   final String name;
 
+  bool get _usable =>
+      item.itemType == ItemType.jingYanDan ||
+      item.itemType == ItemType.techniqueScroll;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final itemDef = GameRepository.instance.itemDefs[item.defId];
+    final displayName = itemDef?.name ?? name;
     final usage = UiStrings.materialUsage(item.itemType.name);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -597,7 +618,7 @@ class _MaterialRow extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  UiStrings.materialQuantity(name, item.quantity),
+                  UiStrings.materialQuantity(displayName, item.quantity),
                   style: const TextStyle(
                     color: WuxiaColors.textPrimary,
                     fontSize: 14,
@@ -618,8 +639,108 @@ class _MaterialRow extends StatelessWidget {
               ],
             ),
           ),
+          if (_usable && itemDef != null)
+            TextButton(
+              onPressed: () => _onUse(context, ref, itemDef, displayName),
+              child: const Text(
+                UiStrings.itemUseButton,
+                style: TextStyle(color: WuxiaColors.textPrimary),
+              ),
+            ),
         ],
       ),
+    );
+  }
+
+  /// 确认 → service → 结果浮层 → invalidate（沿 shop_screen `_handleBuy` 体例）。
+  Future<void> _onUse(
+    BuildContext context,
+    WidgetRef ref,
+    ItemDef itemDef,
+    String displayName,
+  ) async {
+    final confirmed = await PaperDialog.show<bool>(
+      context,
+      title: UiStrings.itemUseConfirmTitle,
+      body: Text(
+        UiStrings.itemUseConfirmBody(displayName),
+        style: const TextStyle(
+          color: WuxiaUi.ink,
+          fontSize: 14,
+          height: 1.8,
+          letterSpacing: 1,
+        ),
+      ),
+      actions: [
+        PlaqueButton(
+          label: UiStrings.commonCancel,
+          onTap: () => Navigator.of(context).pop(false),
+        ),
+        PlaqueButton(
+          label: UiStrings.itemUseButton,
+          primary: true,
+          onTap: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    );
+    if (confirmed != true) return;
+    if (!context.mounted) return;
+
+    final isar = IsarSetup.instance;
+    // 心魔余毒锁层 hook：照搬 stage_entry_flow 体例（升层时拦截）。
+    final progress = await isar.mainlineProgress
+        .filter()
+        .saveDataIdEqualTo(IsarSetup.currentSlotId)
+        .findFirst();
+    final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
+    final innerDemonDef = GameRepository.instance.numbers.innerDemon;
+
+    final result = await ItemUseService.use(
+      isar,
+      def: itemDef,
+      realmLookup: GameRepository.instance.getRealm,
+      isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
+        nextTier: tier,
+        nextLayer: layer,
+        innerDemonDef: innerDemonDef,
+        clearedStageIds: clearedSet,
+      ),
+    );
+
+    // 背包数量 + 角色经验/境界刷新。
+    ref.invalidate(allInventoryItemsProvider);
+    ref.invalidate(characterByIdProvider);
+    ref.invalidate(activeCharacterIdsProvider);
+
+    if (!context.mounted) return;
+    final message = switch (result.kind) {
+      ItemUseKind.experienceApplied => UiStrings.itemUseExpResult(
+        displayName,
+        result.layersGained,
+      ),
+      ItemUseKind.skillUnlocked => UiStrings.itemUseScrollResult(displayName),
+      ItemUseKind.alreadyKnown => UiStrings.itemUseAlreadyKnown(displayName),
+      _ => UiStrings.itemUseFailed,
+    };
+    await PaperDialog.show<void>(
+      context,
+      title: UiStrings.itemUseConfirmTitle,
+      body: Text(
+        message,
+        style: const TextStyle(
+          color: WuxiaUi.ink,
+          fontSize: 14,
+          height: 1.8,
+          letterSpacing: 1,
+        ),
+      ),
+      actions: [
+        PlaqueButton(
+          label: UiStrings.itemUseDismiss,
+          primary: true,
+          onTap: () => Navigator.of(context).pop(),
+        ),
+      ],
     );
   }
 }
