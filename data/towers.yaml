@@ -163,6 +163,9 @@ floors:
       - inventoryItemDefId: item_silver
         quantity: [20, 30]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_scroll_kai_bei_shou
+        quantity: [1, 1]
+        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 2 段 · 三流 (6-10)
@@ -314,6 +317,9 @@ floors:
       - inventoryItemDefId: item_silver
         quantity: [40, 60]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_scroll_yan_zi_san_chao
+        quantity: [1, 1]
+        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 3 段 · 二流 (11-15) · 2 人队
@@ -489,6 +495,9 @@ floors:
       - inventoryItemDefId: item_silver
         quantity: [50, 75]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_scroll_zhu_ying_yao_hong
+        quantity: [1, 1]
+        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 4 段 · 一流 (16-20) · 2 人队
@@ -673,6 +682,9 @@ floors:
       - inventoryItemDefId: item_silver
         quantity: [80, 120]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_scroll_jin_gang_fu_mo
+        quantity: [1, 1]
+        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 5 段 · 绝顶 (21-25) · 3 人队
@@ -907,6 +919,9 @@ floors:
       - inventoryItemDefId: item_silver
         quantity: [120, 170]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_scroll_jing_hong_zhao_ying
+        quantity: [1, 1]
+        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 6 段 · 宗师 (26-30) · 3 人队
@@ -1157,3 +1172,6 @@ floors:
       - inventoryItemDefId: item_silver
         quantity: [200, 280]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
+      - inventoryItemDefId: item_scroll_yue_luo_wu_sheng
+        quantity: [1, 1]
+        dropChance: 0.1  # 秘籍掉落(P2 占位,待 balance)

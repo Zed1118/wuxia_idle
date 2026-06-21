@@ -19,3 +19,16 @@ shop:
     itemType: xinXueJieJing
     price: 120
     category: material
+
+  # 经验丹（P2 材料经济）——小/中档上货架；大档仅掉落（§5.7 守门）
+  - id: shop_jingyandan_small
+    itemDefId: item_jingyandan_small
+    itemType: jingYanDan
+    price: 50           # 占位待 balance
+    category: pill
+
+  - id: shop_jingyandan_mid
+    itemDefId: item_jingyandan_mid
+    itemType: jingYanDan
+    price: 150          # 占位待 balance
+    category: pill
