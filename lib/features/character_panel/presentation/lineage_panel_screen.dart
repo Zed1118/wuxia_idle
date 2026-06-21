@@ -33,7 +33,7 @@ class LineagePanelScreen extends ConsumerWidget {
         backgroundColor: WuxiaColors.background,
         appBar: AppBar(
           backgroundColor: WuxiaColors.background,
-          title: const Text(UiStrings.lineagePanelTitle),
+          title: const Text(UiStrings.lineageCodexTitle),
           leading: Navigator.of(context).canPop()
               ? BackButton(onPressed: () => Navigator.of(context).pop())
               : null,
