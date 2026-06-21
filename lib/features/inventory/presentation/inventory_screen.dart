@@ -20,6 +20,7 @@ import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
+import '../../shop/application/shop_providers.dart';
 import 'equipment_detail_screen.dart';
 
 /// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账 +
@@ -233,26 +234,69 @@ class _MaterialTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(allInventoryItemsProvider);
-    return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
-        child: SelectableText(
-          'load error: $e',
-          style: const TextStyle(color: WuxiaColors.hpLow),
+    final silverAsync = ref.watch(silverBalanceProvider);
+    final silverBalance = silverAsync.maybeWhen(data: (n) => n, orElse: () => 0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 货币位：银两余额顶栏
+        Container(
+          margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: WuxiaColors.panel,
+            border: Border.all(color: WuxiaColors.border),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.monetization_on_outlined,
+                size: 18,
+                color: WuxiaColors.textPrimary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                UiStrings.silverBalanceLabel(silverBalance),
+                style: const TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      data: (list) {
-        final nonEmpty = list.where((it) => it.quantity > 0).toList();
-        if (nonEmpty.isEmpty) {
-          return const Center(
-            child: Text(
-              UiStrings.inventoryMaterialEmpty,
-              style: TextStyle(color: WuxiaColors.textMuted),
+        Expanded(
+          child: async.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(
+              child: SelectableText(
+                'load error: $e',
+                style: const TextStyle(color: WuxiaColors.hpLow),
+              ),
             ),
-          );
-        }
-        return _MaterialList(items: nonEmpty);
-      },
+            data: (list) {
+              // 排除 ItemType.silver：银两以货币位展示，不进材料分组
+              final nonEmpty = list
+                  .where(
+                    (it) => it.quantity > 0 && it.itemType != ItemType.silver,
+                  )
+                  .toList();
+              if (nonEmpty.isEmpty) {
+                return const Center(
+                  child: Text(
+                    UiStrings.inventoryMaterialEmpty,
+                    style: TextStyle(color: WuxiaColors.textMuted),
+                  ),
+                );
+              }
+              return _MaterialList(items: nonEmpty);
+            },
+          ),
+        ),
+      ],
     );
   }
 }
