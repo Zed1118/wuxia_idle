@@ -236,17 +236,22 @@ class _CategoryPanel extends StatelessWidget {
           const SizedBox(height: 12),
           // 商品列表（Column，每 tile 包 IntrinsicHeight 守滚动体例）
           for (final def in defs)
-            IntrinsicHeight(
-              child: _ShopItemTile(
-                def: def,
-                effectivePrice: ShopService.effectivePrice(def, founderEtl ?? 0),
-                // 动态价商品且 founderEtl 为 null → 禁用（无法定价）
-                canAfford: def.isDynamicPrice && founderEtl == null
-                    ? false
-                    : silver >=
-                        ShopService.effectivePrice(def, founderEtl ?? 0),
-                onBuy: () => onBuy(def),
-              ),
+            Builder(
+              builder: (context) {
+                // I-1 + M-1：ep=null 表示动态价商品且 founder 未就绪（无法定价）。
+                // 避免重复调用 effectivePrice，并防止显示「0 两」误导。
+                final ep = (def.isDynamicPrice && founderEtl == null)
+                    ? null
+                    : ShopService.effectivePrice(def, founderEtl ?? 0);
+                return IntrinsicHeight(
+                  child: _ShopItemTile(
+                    def: def,
+                    effectivePrice: ep,
+                    canAfford: ep != null && silver >= ep,
+                    onBuy: () => onBuy(def),
+                  ),
+                );
+              },
             ),
         ],
       ),
@@ -266,7 +271,8 @@ class _ShopItemTile extends StatelessWidget {
 
   final ShopItemDef def;
   /// 有效标价（已由调用方计算，显示与扣费保持一致）。
-  final int effectivePrice;
+  /// null = 动态价商品且 founder 未就绪，显示占位「当前无法定价」。
+  final int? effectivePrice;
   final bool canAfford;
   final VoidCallback onBuy;
 
@@ -325,7 +331,9 @@ class _ShopItemTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  UiStrings.shopItemPrice(effectivePrice),
+                  effectivePrice == null
+                      ? UiStrings.shopPricingUnavailable
+                      : UiStrings.shopItemPrice(effectivePrice!),
                   style: TextStyle(
                     color: canAfford
                         ? WuxiaColors.resultHighlight
