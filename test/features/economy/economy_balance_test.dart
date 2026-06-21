@@ -67,11 +67,13 @@ void main() {
 
     test('经验丹动态标价无套利:买丹银两单价 ≥ 挂机隐含银两单价(全境界 scale 约掉)', () {
       final r = GameRepository.instance;
-      // 挂机隐含「银两/经验」单价 = silverPerHour / baseExpPerHour。用最高产图最严格。
-      final maxSilverPerHour =
-          r.seclusionMaps.map((m) => m.silverPerHour).reduce(math.max);
-      final baseExp = r.numbers.passiveIdle.baseExpPerHour;
-      final idleRatio = maxSilverPerHour / baseExp; // 挂机银两/经验
+      // 套利模型:玩家固定时间,①直接闭关赚经验 vs ②闭关赚银两→买丹换经验。
+      // ②优于①(套利) ⟺ buyRatio(银两/经验) < idleRatio(同图闭关 银两/经验)。
+      // 最易套利场景 = 同图「银两/经验」最高比(silver 与 exp 同图同时段同步 scale,
+      // 跨模式混用 passive_idle exp + seclusion silver 不真实)。
+      final idleRatio = r.seclusionMaps
+          .map((m) => m.silverPerHour / m.experiencePerHour)
+          .reduce(math.max);
 
       for (final pair in const [
         ['shop_jingyandan_small', 'item_jingyandan_small'],
