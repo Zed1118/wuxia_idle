@@ -214,7 +214,7 @@ class UiStrings {
   /// H1 批3 picker 标注:该装备正被队内其他角色穿戴,选它会移装(原角色卸下)。
   /// 自由池移装是合理调配,故只标注提醒不禁用(去掉「静默卸下弟子」的意外感)。
   static const String equipWornByOther = '他人装备中';
-  static const String mainMenuLineage = '师徒名单';
+  static const String mainMenuLineage = '门派谱';
   static const String mainMenuLineageHint = '查看祖师与弟子的传承链路';
 
   // ─── 江湖商店 + 货币(P4 材料经济)──────────────────────────────────────────
@@ -353,14 +353,8 @@ class UiStrings {
     '六弟子',
   ];
 
-  // 师徒名单 panel（W17 候选 E）
-  static const String lineagePanelTitle = '师徒名单';
-  static const String lineagePanelDisciplesSection = '弟子';
-  static const String lineagePanelHeritageSection = '师承遗物';
+  // 门派谱 panel（W17 候选 E → 1.1 世代卷沿用）
   static const String lineagePanelNoFounder = '祖师未定';
-  static const String lineagePanelNoDisciples = '尚无弟子';
-  static const String lineagePanelNoHeritage = '尚未拥有师承遗物';
-  static String lineagePanelHeritageCount(int n) => '$n 件';
 
   // 门派谱世代卷（1.1）
   static const String lineageCodexTitle = '门派谱';
