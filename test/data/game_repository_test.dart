@@ -289,15 +289,29 @@ void main() {
         '其他未配关卡 dropTable 为空（向后兼容）', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final s2 = repo.getStage('stage_01_02');
-      expect(s2.dropTable.length, 3,
-          reason: '荒山野店：2 装备 + 必掉磨剑石');
+      // 材料经济 P1 起：各关 dropTable 加 item_silver，故断言改为 ≥ 原有条数
+      expect(s2.dropTable.length, greaterThanOrEqualTo(3),
+          reason: '荒山野店：2 装备 + 必掉磨剑石(+P1 起加 item_silver)');
+      // 验证 item_mojianshi 仍在 dropTable（而非关注绝对条数）
+      expect(
+        s2.dropTable.whereType<ItemDrop>().map((e) => e.inventoryItemDefId),
+        contains('item_mojianshi'),
+      );
       final sFinal = repo.getStage('stage_03_05');
-      expect(sFinal.dropTable.length, 3,
-          reason: '章末大 Boss：龙泉剑 + 60% 玉佩 + 必掉心血结晶');
+      expect(sFinal.dropTable.length, greaterThanOrEqualTo(3),
+          reason: '章末大 Boss：龙泉剑 + 60% 玉佩 + 必掉心血结晶(+P1 起加 item_silver)');
+      expect(
+        sFinal.dropTable.whereType<ItemDrop>().map((e) => e.inventoryItemDefId),
+        contains('item_xinxuejiejing'),
+      );
       // W13-v3:stage_01_01 加 onboarding dropTable(必掉护甲 + 1 磨剑石)
       final s1 = repo.getStage('stage_01_01');
-      expect(s1.dropTable.length, 3,
-          reason: '新手第一关：100% 布衣 + 30% 铜铃 + 100% 磨剑石');
+      expect(s1.dropTable.length, greaterThanOrEqualTo(3),
+          reason: '新手第一关：100% 布衣 + 30% 铜铃 + 100% 磨剑石(+P1 起加 item_silver)');
+      expect(
+        s1.dropTable.whereType<ItemDrop>().map((e) => e.inventoryItemDefId),
+        contains('item_mojianshi'),
+      );
     });
 
     test('W13-v3 #10 兜底：DropService.rollDrops(stage_01_01) 100% 掉护甲 + 磨剑石',
@@ -309,17 +323,24 @@ void main() {
       final svc = DropService(equipmentDefLookup: repo.getEquipment);
 
       // 跑 5 次,armor 100% 必掉 + accessory 30% 概率掉,验证必掉项非 flake
+      // 材料经济 P1 起：stage_01_01 dropTable 含 item_mojianshi + item_silver
       for (var i = 0; i < 5; i++) {
         final result = svc.rollDrops(stage, DefaultRng(seed: i));
         expect(result.equipments.length, greaterThanOrEqualTo(1),
             reason: 'iter $i:armor_xunchang_bu_yi 100% 必掉');
         expect(result.equipments.map((e) => e.defId),
             contains('armor_xunchang_bu_yi'));
-        expect(result.items.length, 1,
+        // P1 起：物品条目 ≥ 1（mojianshi + silver 各 100% 必掉）
+        expect(result.items.length, greaterThanOrEqualTo(1),
             reason: 'iter $i:item_mojianshi 100% 必掉');
-        expect(result.items.first.defId, 'item_mojianshi');
-        expect(result.items.first.quantity, 1,
+        expect(result.items.map((e) => e.defId), contains('item_mojianshi'),
+            reason: 'iter $i:item_mojianshi 必在 items');
+        final mojianshi = result.items.firstWhere((e) => e.defId == 'item_mojianshi');
+        expect(mojianshi.quantity, 1,
             reason: 'iter $i:quantity [1,1] 永远 1');
+        // P1 新增：item_silver 必掉
+        expect(result.items.map((e) => e.defId), contains('item_silver'),
+            reason: 'iter $i:item_silver 已配 dropChance=1.0 必掉');
       }
     });
 

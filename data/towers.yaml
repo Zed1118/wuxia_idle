@@ -54,6 +54,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [1, 2]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [5, 10]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 2
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -74,6 +77,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [1, 2]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [5, 10]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 3
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -96,6 +102,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [1, 3]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [5, 10]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 4
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -118,6 +127,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [1, 3]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [5, 10]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   # === Floor 5 · 小 Boss · 学徒 dengFeng ===
   - floorIndex: 5
@@ -148,6 +160,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [1, 2]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [20, 30]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 2 段 · 三流 (6-10)
@@ -172,6 +187,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [2, 4]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [8, 15]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 7
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -192,6 +210,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [2, 4]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [8, 15]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 8
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -214,6 +235,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [2, 4]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [8, 15]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 9
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -236,6 +260,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [2, 4]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [8, 15]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   # === Floor 10 · 大 Boss · 三流 dengFeng ===
   - floorIndex: 10
@@ -284,6 +311,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 4]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [40, 60]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 3 段 · 二流 (11-15) · 2 人队
@@ -318,6 +348,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [3, 5]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [12, 20]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 12
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -348,6 +381,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [3, 5]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [12, 20]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 13
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -380,6 +416,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [3, 5]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [12, 20]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 14
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -412,6 +451,9 @@ floors:
       - inventoryItemDefId: item_mojianshi
         quantity: [3, 5]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [12, 20]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   # === Floor 15 · 小 Boss · 二流 dengFeng ===
   - floorIndex: 15
@@ -444,6 +486,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 5]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [50, 75]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 4 段 · 一流 (16-20) · 2 人队
@@ -478,6 +523,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [1, 2]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [20, 35]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 17
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -508,6 +556,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [1, 2]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [20, 35]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 18
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -543,6 +594,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [1, 2]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [20, 35]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 19
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -581,6 +635,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [1, 2]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [20, 35]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   # === Floor 20 · 大 Boss · 一流 dengFeng ===
   - floorIndex: 20
@@ -613,6 +670,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [5, 8]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [80, 120]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 5 段 · 绝顶 (21-25) · 3 人队
@@ -660,6 +720,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 3]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [35, 55]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 22
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -702,6 +765,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 3]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [35, 55]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 23
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -748,6 +814,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 3]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [35, 55]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 24
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -798,6 +867,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [2, 3]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [35, 55]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   # === Floor 25 · 小 Boss · 绝顶 dengFeng ===
   - floorIndex: 25
@@ -832,6 +904,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [6, 10]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [120, 170]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   # ─────────────────────────────────────────────────────────────────────────
   # 第 6 段 · 宗师 (26-30) · 3 人队
@@ -882,6 +957,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 5]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [55, 80]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 27
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -927,6 +1005,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 5]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [55, 80]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 28
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -977,6 +1058,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 5]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [55, 80]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   - floorIndex: 29
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
@@ -1029,6 +1113,9 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [3, 5]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [55, 80]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
 
   # === Floor 30 · 大 Boss · 宗师 dengFeng · 终关 ===
   - floorIndex: 30
@@ -1067,3 +1154,6 @@ floors:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [10, 15]
         dropChance: 1.0
+      - inventoryItemDefId: item_silver
+        quantity: [200, 280]
+        dropChance: 1.0  # 银两(P1 占位,待 balance)
