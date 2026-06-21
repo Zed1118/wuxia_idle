@@ -8,6 +8,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/skill_unlock_entry.dart';
+import 'package:wuxia_idle/data/defs/item_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/inventory/application/item_use_service.dart';
@@ -132,5 +133,29 @@ void main() {
     final def = repo.itemDefs['item_jingyandan_small']!;
     final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
     expect(r.kind, ItemUseKind.noStock);
+  });
+
+  test('非可用 ItemType（磨剑石）→ 返 notUsable 不消费', () async {
+    await seedFounder();
+    await seedItem('item_mojianshi', ItemType.moJianShi, 3);
+    const def = ItemDef(
+      defId: 'item_mojianshi',
+      type: ItemType.moJianShi,
+      name: '磨剑石',
+    );
+    final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
+    expect(r.kind, ItemUseKind.notUsable);
+    final item = await isar.inventoryItems.getByDefId('item_mojianshi');
+    expect(item?.quantity, 3); // 不消费
+  });
+
+  test('经验丹但无 founder → 返 noTarget 不消费', () async {
+    // 不 seedFounder（只有 IsarSetup.init 建的 SaveData(0)，无 founder 角色）。
+    await seedItem('item_jingyandan_small', ItemType.jingYanDan, 2);
+    final def = repo.itemDefs['item_jingyandan_small']!;
+    final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
+    expect(r.kind, ItemUseKind.noTarget);
+    final item = await isar.inventoryItems.getByDefId('item_jingyandan_small');
+    expect(item?.quantity, 2); // 不消费
   });
 }
