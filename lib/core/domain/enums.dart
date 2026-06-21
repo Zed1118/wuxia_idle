@@ -361,6 +361,8 @@ enum ItemType {
         return ItemType.moJianShi;
       case 'item_xinxuejiejing':
         return ItemType.xinXueJieJing;
+      case 'item_silver':
+        return ItemType.silver;
       default:
         return ItemType.miscMaterial;
     }

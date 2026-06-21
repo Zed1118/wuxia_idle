@@ -943,12 +943,9 @@ Future<
   );
 }
 
-/// 主线 victory drop items 的 ItemType 推断（与 tower _itemTypeOf 同源）。
-ItemType _itemTypeOfMainline(String defId) {
-  if (defId == 'item_mojianshi') return ItemType.moJianShi;
-  if (defId == 'item_xinxuejiejing') return ItemType.xinXueJieJing;
-  return ItemType.miscMaterial;
-}
+/// 主线 victory drop items 的 ItemType 推断。
+/// 委托 [ItemType.fromDefId]，避免双真相源；新增 defId 只需在 fromDefId 维护。
+ItemType _itemTypeOfMainline(String defId) => ItemType.fromDefId(defId);
 
 /// Boss 关战败：从 Isar 拉玩家方角色 + 心法 + 装备，跑
 /// [BattleResolutionService.resolve]（isVictory=false），写回 Isar，返回
