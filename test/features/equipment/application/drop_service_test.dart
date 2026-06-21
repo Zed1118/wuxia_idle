@@ -417,6 +417,81 @@ void main() {
       expect(result.isEmpty, isTrue);
     });
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // 9. item_silver 管线验证（材料经济 P1）
+  // ──────────────────────────────────────────────────────────────────────────
+
+  test('item_silver 掉落管线走通：dropChance=1.0 → quantity ∈ [10, 20]', () {
+    final result = service().rollDrops(
+      stageWith(const [
+        ItemDrop(
+          inventoryItemDefId: 'item_silver',
+          quantityMin: 10,
+          quantityMax: 20,
+          dropChance: 1.0,
+        ),
+      ]),
+      DefaultRng(seed: 42),
+    );
+    expect(result.items.length, 1);
+    expect(result.items.first.defId, 'item_silver');
+    expect(result.items.first.quantity, inInclusiveRange(10, 20));
+  });
+
+  test('item_silver 蒙特卡洛 500 次 → 所有 quantity 始终 ∈ [10, 20]', () {
+    final rng = DefaultRng(seed: 7);
+    for (int i = 0; i < 500; i++) {
+      final result = service().rollDrops(
+        stageWith(const [
+          ItemDrop(
+            inventoryItemDefId: 'item_silver',
+            quantityMin: 10,
+            quantityMax: 20,
+            dropChance: 1.0,
+          ),
+        ]),
+        rng,
+      );
+      expect(result.items.first.quantity, inInclusiveRange(10, 20));
+    }
+  });
+
+  test('item_silver 与装备同存 dropTable → 各自独立命中', () {
+    final result = service().rollDrops(
+      stageWith(const [
+        EquipmentDrop(equipmentDefId: 'test_weapon_tie_jian', dropChance: 1.0),
+        ItemDrop(
+          inventoryItemDefId: 'item_silver',
+          quantityMin: 20,
+          quantityMax: 40,
+          dropChance: 1.0,
+        ),
+      ]),
+      DefaultRng(seed: 0),
+    );
+    expect(result.equipments.length, 1);
+    expect(result.items.length, 1);
+    expect(result.items.first.defId, 'item_silver');
+    expect(result.items.first.quantity, inInclusiveRange(20, 40));
+  });
+
+  test('rollTowerRewards 支持 item_silver：dropChance=1.0 → 命中', () {
+    final result = service().rollTowerRewards(
+      floorWith(const [
+        ItemDrop(
+          inventoryItemDefId: 'item_silver',
+          quantityMin: 15,
+          quantityMax: 30,
+          dropChance: 1.0,
+        ),
+      ]),
+      DefaultRng(seed: 99),
+    );
+    expect(result.items.length, 1);
+    expect(result.items.first.defId, 'item_silver');
+    expect(result.items.first.quantity, inInclusiveRange(15, 30));
+  });
 }
 
 /// 注入式 Rng，用于精确控制 nextDouble 返回值。
