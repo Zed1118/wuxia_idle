@@ -656,15 +656,23 @@ class GameRepository {
   }
 
   /// 材料经济 P1 商店标价红线（GDD §5.1）：
-  /// - price ∈ [1, 100000]（test fixture 不带 yaml 时空 map，跳过）。
+  /// - 固定价商品：price ∈ [1, 100000]（test fixture 不带 yaml 时空 map，跳过）。
+  /// - 动态价商品（priceLayerFraction != null）：fraction > 0，跳过绝对价格校验。
   void _enforceShopRedLines() {
     if (shopItemDefs.isEmpty) return; // test fixture 兼容
     for (final d in shopItemDefs.values) {
-      if (d.price <= 0) {
-        throw StateError('红线:商店 ${d.id} 标价 ${d.price} ≤ 0');
-      }
-      if (d.price > 100000) {
-        throw StateError('红线:商店 ${d.id} 标价 ${d.price} > 100000');
+      if (d.isDynamicPrice) {
+        // 动态标价：校验 fraction > 0 即可，绝对价格由 etl 决定
+        if (d.priceLayerFraction! <= 0) {
+          throw StateError('红线:商店 ${d.id} price_layer_fraction ${d.priceLayerFraction} ≤ 0');
+        }
+      } else {
+        if (d.price! <= 0) {
+          throw StateError('红线:商店 ${d.id} 标价 ${d.price} ≤ 0');
+        }
+        if (d.price! > 100000) {
+          throw StateError('红线:商店 ${d.id} 标价 ${d.price} > 100000');
+        }
       }
     }
   }

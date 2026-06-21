@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/application/character_providers.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../data/defs/shop_item_def.dart';
 import '../../../data/game_repository.dart';
@@ -37,4 +38,19 @@ Future<bool> shopUnlocked(Ref ref) async {
 @riverpod
 List<ShopItemDef> shopItemList(Ref ref) {
   return GameRepository.instance.shopItemDefs.values.toList();
+}
+
+/// 祖师（founder）当前单层所需经验（balance T3 动态标价）。
+///
+/// 读 active 角色中 isFounder=true 的 `experienceToNextLayer`。
+/// - 无 founder（存档异常）返回 null → UI 隐藏动态价商品或禁用购买。
+/// - 随 founder 境界推进，provider invalidate 后自动刷新商店显示价。
+@riverpod
+Future<int?> founderEtl(Ref ref) async {
+  final ids = await ref.watch(activeCharacterIdsProvider.future);
+  for (final id in ids) {
+    final c = await ref.watch(characterByIdProvider(id).future);
+    if (c != null && c.isFounder) return c.experienceToNextLayer;
+  }
+  return null; // 无 founder（异常存档兜底）
 }

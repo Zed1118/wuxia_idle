@@ -223,6 +223,8 @@ class UiStrings {
   static const String shopTitle = '江湖商店';
   static const String shopBuy = '购买';
   static const String shopInsufficientSilver = '银两不足';
+  /// balance T3：无法获取祖师经验信息，动态标价商品不可购买。
+  static const String shopPricingUnavailable = '当前无法定价，请稍候';
   static const String shopCategoryMaterial = '炼器材料';
   static String silverBalanceLabel(int n) => '银两 $n';
   static String shopItemPrice(int p) => '$p 两';

@@ -9,6 +9,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/shop/application/shop_service.dart';
 
 /// 材料经济 P1 Task 5：ShopService 购买逻辑验收（TDD）。
+/// 材料经济 balance T3：经验丹动态标价验收（TDD）。
 ///
 /// 不走 testWidgets（真 Isar writeTxn 与 FakeAsync 不兼容，
 /// memory: feedback_isar_widget_test_deadlock），用普通 test() 直调 service。
@@ -17,6 +18,11 @@ import 'package:wuxia_idle/features/shop/application/shop_service.dart';
 /// 1. 银两充足 → 扣银两 + 入货（原子）
 /// 2. 银两不足 → 拒绝，不扣不入
 /// 3. 无 item_silver 行（余额 0）→ 拒绝
+/// 4. [T3] effectivePrice 材料商品 → 固定 price
+/// 5. [T3] effectivePrice 经验丹 → etl × fraction
+/// 6. [T3] 经验丹购买按动态价扣银两
+/// 7. [T3] 高 etl 时经验丹动态价更高
+/// 8. [T3] 余额不足动态价 → 拒绝
 void main() {
   late Directory tempDir;
   late Isar isar;
@@ -27,6 +33,23 @@ void main() {
     itemType: ItemType.moJianShi,
     price: 30,
     category: 'material',
+  );
+
+  // T3: 经验丹 def（动态标价）
+  const jingYanDanSmallDef = ShopItemDef(
+    id: 'shop_jingyandan_small',
+    itemDefId: 'item_jingyandan_small',
+    itemType: ItemType.jingYanDan,
+    priceLayerFraction: 1.0,
+    category: 'pill',
+  );
+
+  const jingYanDanMidDef = ShopItemDef(
+    id: 'shop_jingyandan_mid',
+    itemDefId: 'item_jingyandan_mid',
+    itemType: ItemType.jingYanDan,
+    priceLayerFraction: 2.5,
+    category: 'pill',
   );
 
   setUpAll(() async {
@@ -67,7 +90,11 @@ void main() {
   test('银两充足购买成功：扣银两+入货（原子 writeTxn）', () async {
     await seedSilver(100);
 
-    final result = await ShopService.purchase(isar, def: mojianshiDef);
+    final result = await ShopService.purchase(
+      isar,
+      def: mojianshiDef,
+      founderEtl: null, // 材料不需 etl
+    );
 
     expect(result.success, true);
     expect(result.reason, isNull);
@@ -88,7 +115,11 @@ void main() {
   test('银两不足拒绝：不扣不入', () async {
     await seedSilver(10); // price=30，不足
 
-    final result = await ShopService.purchase(isar, def: mojianshiDef);
+    final result = await ShopService.purchase(
+      isar,
+      def: mojianshiDef,
+      founderEtl: null,
+    );
 
     expect(result.success, false);
     expect(result.reason, PurchaseFailReason.insufficientSilver);
@@ -108,7 +139,11 @@ void main() {
   test('无 item_silver 行（余额0）→ 拒绝', () async {
     // 不预置 silver 行
 
-    final result = await ShopService.purchase(isar, def: mojianshiDef);
+    final result = await ShopService.purchase(
+      isar,
+      def: mojianshiDef,
+      founderEtl: null,
+    );
 
     expect(result.success, false);
     expect(result.reason, PurchaseFailReason.insufficientSilver);
@@ -124,8 +159,8 @@ void main() {
   test('重复购买同品 → quantity 叠加', () async {
     await seedSilver(100);
 
-    await ShopService.purchase(isar, def: mojianshiDef); // 第 1 次
-    await ShopService.purchase(isar, def: mojianshiDef); // 第 2 次
+    await ShopService.purchase(isar, def: mojianshiDef, founderEtl: null); // 第 1 次
+    await ShopService.purchase(isar, def: mojianshiDef, founderEtl: null); // 第 2 次
 
     final silver = await isar.inventoryItems.getByDefId('item_silver');
     expect(silver!.quantity, 40); // 100 - 30 - 30 = 40
@@ -140,7 +175,11 @@ void main() {
   test('银两恰好等于价格 → 成功，扣至 0', () async {
     await seedSilver(30);
 
-    final result = await ShopService.purchase(isar, def: mojianshiDef);
+    final result = await ShopService.purchase(
+      isar,
+      def: mojianshiDef,
+      founderEtl: null,
+    );
 
     expect(result.success, true);
 
@@ -149,5 +188,111 @@ void main() {
 
     final item = await isar.inventoryItems.getByDefId('item_mojianshi');
     expect(item!.quantity, 1);
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // [T3] 6. effectivePrice：材料 → 固定 price
+  // ──────────────────────────────────────────────────────────────────────────
+  test('[T3] effectivePrice：材料商品返回固定 price，不受 etl 影响', () {
+    expect(ShopService.effectivePrice(mojianshiDef, 0), 30);
+    expect(ShopService.effectivePrice(mojianshiDef, 500), 30);
+    expect(ShopService.effectivePrice(mojianshiDef, 9999), 30);
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // [T3] 7. effectivePrice：经验丹（小）= etl × 1.0 取整
+  // ──────────────────────────────────────────────────────────────────────────
+  test('[T3] effectivePrice：经验丹小档 = etl × 1.0', () {
+    expect(ShopService.effectivePrice(jingYanDanSmallDef, 100), 100);
+    expect(ShopService.effectivePrice(jingYanDanSmallDef, 300), 300);
+    expect(ShopService.effectivePrice(jingYanDanSmallDef, 1000), 1000);
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // [T3] 8. effectivePrice：经验丹（中）= etl × 2.5 取整
+  // ──────────────────────────────────────────────────────────────────────────
+  test('[T3] effectivePrice：经验丹中档 = etl × 2.5', () {
+    expect(ShopService.effectivePrice(jingYanDanMidDef, 100), 250);
+    expect(ShopService.effectivePrice(jingYanDanMidDef, 400), 1000);
+    // 取整验证
+    expect(ShopService.effectivePrice(jingYanDanMidDef, 101), (101 * 2.5).round());
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // [T3] 9. 高 etl 时经验丹动态价更高
+  // ──────────────────────────────────────────────────────────────────────────
+  test('[T3] 高 etl 时经验丹价格更高（兑换率恒定）', () {
+    final lowEtlPrice = ShopService.effectivePrice(jingYanDanSmallDef, 100);
+    final highEtlPrice = ShopService.effectivePrice(jingYanDanSmallDef, 1000);
+    expect(highEtlPrice, greaterThan(lowEtlPrice));
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // [T3] 10. 经验丹购买按动态价扣银两
+  // ──────────────────────────────────────────────────────────────────────────
+  test('[T3] 经验丹购买：按 etl×fraction 动态价扣银两', () async {
+    const etl = 200;
+    // small: 200 × 1.0 = 200
+    await seedSilver(500);
+
+    final result = await ShopService.purchase(
+      isar,
+      def: jingYanDanSmallDef,
+      founderEtl: etl,
+    );
+
+    expect(result.success, true);
+
+    final silver = await isar.inventoryItems.getByDefId('item_silver');
+    expect(silver!.quantity, 300); // 500 - 200 = 300
+
+    final item = await isar.inventoryItems.getByDefId('item_jingyandan_small');
+    expect(item!.quantity, 1);
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // [T3] 11. 余额不足动态价 → 拒绝
+  // ──────────────────────────────────────────────────────────────────────────
+  test('[T3] 经验丹余额不足动态价 → 拒绝', () async {
+    const etl = 500;
+    // small: 500 × 1.0 = 500，银两只有 300
+    await seedSilver(300);
+
+    final result = await ShopService.purchase(
+      isar,
+      def: jingYanDanSmallDef,
+      founderEtl: etl,
+    );
+
+    expect(result.success, false);
+    expect(result.reason, PurchaseFailReason.insufficientSilver);
+
+    final silver = await isar.inventoryItems.getByDefId('item_silver');
+    expect(silver!.quantity, 300); // 原封不动
+
+    final item = await isar.inventoryItems.getByDefId('item_jingyandan_small');
+    expect(item, isNull);
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // [T3] 12. founderEtl=null 购买经验丹 → pricingUnavailable 失败
+  // ──────────────────────────────────────────────────────────────────────────
+  test('[T3] founderEtl=null 购买动态定价商品 → pricingUnavailable', () async {
+    await seedSilver(9999);
+
+    final result = await ShopService.purchase(
+      isar,
+      def: jingYanDanSmallDef,
+      founderEtl: null, // 无 founder，无法定价
+    );
+
+    expect(result.success, false);
+    expect(result.reason, PurchaseFailReason.pricingUnavailable);
+
+    final silver = await isar.inventoryItems.getByDefId('item_silver');
+    expect(silver!.quantity, 9999); // 不扣钱
+
+    final item = await isar.inventoryItems.getByDefId('item_jingyandan_small');
+    expect(item, isNull);
   });
 }
