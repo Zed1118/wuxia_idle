@@ -36,11 +36,15 @@ void main() {
     category: 'material',
   );
 
-  /// 封装 pump，注入 silverBalance + shopItemList override。
+  /// 封装 pump，注入 silverBalance + shopItemList + founderEtl override。
+  ///
+  /// [founderEtl] 默认 null（模拟无 founder / 未加载状态）；
+  /// 传具体值模拟有 founder 时的动态定价。
   Future<void> pumpShop(
     WidgetTester tester, {
     required int silver,
     List<ShopItemDef>? items,
+    int? founderEtl,
   }) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -50,6 +54,7 @@ void main() {
         overrides: [
           silverBalanceProvider.overrideWith((_) async => silver),
           shopItemListProvider.overrideWith((_) => items ?? [defMojianshi, defXinxue]),
+          founderEtlProvider.overrideWith((_) async => founderEtl),
         ],
         child: const MaterialApp(home: ShopScreen()),
       ),
@@ -125,5 +130,52 @@ void main() {
 
     // 没有 Dialog 出现
     expect(find.byType(Dialog), findsNothing);
+  });
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // 5. I-1：动态价商品 + 无 founder → 显示占位，不显「0 两」，按钮禁用
+  // ────────────────────────────────────────────────────────────────────────────
+  testWidgets('动态价商品无founder时显示占位文案而非0两且按钮禁用', (tester) async {
+    const defExpPill = ShopItemDef(
+      id: 'shop_jingyandan',
+      itemDefId: 'item_jingyandan_sm',
+      itemType: ItemType.jingYanDan,
+      priceLayerFraction: 0.5, // isDynamicPrice = true
+      category: 'material',
+    );
+
+    // founderEtl=null（默认），有足够银两也不影响结论
+    await pumpShop(tester, silver: 9999, items: [defExpPill]);
+
+    // 不应出现「0 两」
+    expect(find.text(UiStrings.shopItemPrice(0)), findsNothing);
+
+    // 应出现占位文案
+    expect(find.text(UiStrings.shopPricingUnavailable), findsOneWidget);
+
+    // 购买按钮禁用（onTap=null），点击不弹对话框
+    final buyButtons = find.text(UiStrings.shopBuy);
+    await tester.tap(buyButtons.first, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(find.byType(Dialog), findsNothing);
+  });
+
+  testWidgets('动态价商品有founder时显示计算价格而非占位', (tester) async {
+    const defExpPill = ShopItemDef(
+      id: 'shop_jingyandan',
+      itemDefId: 'item_jingyandan_sm',
+      itemType: ItemType.jingYanDan,
+      priceLayerFraction: 0.5, // effectivePrice = (1000 * 0.5).round() = 500
+      category: 'material',
+    );
+
+    // founderEtl=1000 → 动态价 500 两
+    await pumpShop(tester, silver: 9999, items: [defExpPill], founderEtl: 1000);
+
+    // 不应出现占位文案
+    expect(find.text(UiStrings.shopPricingUnavailable), findsNothing);
+
+    // 应显示正确计算价格
+    expect(find.text(UiStrings.shopItemPrice(500)), findsOneWidget);
   });
 }
