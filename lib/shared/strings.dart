@@ -217,6 +217,16 @@ class UiStrings {
   static const String mainMenuLineage = '师徒名单';
   static const String mainMenuLineageHint = '查看祖师与弟子的传承链路';
 
+  // ─── 江湖商店 + 货币(P4 材料经济)──────────────────────────────────────────
+  static const String mainMenuShop = '江湖商店';
+  static const String mainMenuShopHint = '采办所需，行走江湖';
+  static const String shopTitle = '江湖商店';
+  static const String shopBuy = '购买';
+  static const String shopInsufficientSilver = '银两不足';
+  static const String shopCategoryMaterial = '炼器材料';
+  static String silverBalanceLabel(int n) => '银两 $n';
+  static String shopItemPrice(int p) => '$p 两';
+
   // ─── 江湖恩怨 + 声望(P1.2 §12.1+§12.2 GDD)──────────────────────────────
   static const String mainMenuJianghu = '江湖恩怨';
   static const String mainMenuJianghuHint = '声望 7 阶 + 多门派关系 + NPC 仇敌';
