@@ -265,7 +265,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   final Map<int, List<_PopupEntry>> _popups = {};
   int _nextPopupId = 0;
 
-  // 实时 tick 定时器（advance() 驱动）
+  // 实时 tick 定时器（常速: advanceOneAction() / 快进: advance() 驱动）
   Timer? _playTimer;
   bool _isFastForward = false;
   bool _isPaused = false;
@@ -391,7 +391,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         : widget.animConfig.actionIntervalMs;
     _playTimer = Timer.periodic(Duration(milliseconds: interval), (_) {
       if (!mounted) return;
-      ref.read(battleProvider.notifier).advance();
+      final notifier = ref.read(battleProvider.notifier);
+      if (rushing) {
+        notifier.advance();
+      } else {
+        notifier.advanceOneAction();
+      }
     });
   }
 
@@ -526,7 +531,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         if (!_isFastForward && _rushToActorId == null) {
           _impactShakeAmplitude = profile.shakeMagnitude;
           _shakeCtrl.forward(from: 0.0);
-          _applyHitStop(profile.hitStopMs);
+          _applyHitStop(playbackHoldMs(
+            isKey: BattleLog.isKeyAction(action, s),
+            profileHitStopMs: profile.hitStopMs,
+            keyMomentHoldMs: widget.animConfig.keyMomentHoldMs,
+          ));
         }
       }
     }
