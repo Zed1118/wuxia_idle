@@ -49,7 +49,7 @@ class InnerDemonScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
-              '加载失败：$e',
+              UiStrings.loadFailed(e),
               style: const TextStyle(color: WuxiaColors.hpLow),
             ),
           ),
@@ -57,7 +57,7 @@ class InnerDemonScreen extends ConsumerWidget {
             if (stages.isEmpty) {
               return const Center(
                 child: Text(
-                  '心魔七关未启',
+                  UiStrings.innerDemonEmpty,
                   style: TextStyle(color: WuxiaColors.textMuted),
                 ),
               );
@@ -187,7 +187,9 @@ class _InnerDemonRow extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '难度 ${def.difficultyMultiplier.toStringAsFixed(1)}',
+                        UiStrings.innerDemonStageInfo(
+                          def.difficultyMultiplier.toStringAsFixed(1),
+                        ),
                         style: const TextStyle(
                           color: WuxiaColors.textMuted,
                           fontSize: 12,

@@ -466,9 +466,9 @@ class _FloorSeal extends StatelessWidget {
       ),
       child: Text(
         entry.def.bossKind == TowerBossKind.major
-            ? '魁'
+            ? UiStrings.towerFloorGlyphMajor
             : entry.def.bossKind == TowerBossKind.minor
-            ? '关'
+            ? UiStrings.towerFloorGlyphMinor
             : '${entry.def.floorIndex}',
         style: TextStyle(
           color: accent.withValues(alpha: isLocked ? 0.68 : 1),

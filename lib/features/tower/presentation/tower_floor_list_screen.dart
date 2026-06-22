@@ -94,7 +94,7 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
-              '加载失败：$e',
+              UiStrings.loadFailed(e),
               style: const TextStyle(color: WuxiaColors.hpLow),
             ),
           ),
@@ -102,7 +102,7 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(
               child: SelectableText(
-                '加载失败：$e',
+                UiStrings.loadFailed(e),
                 style: const TextStyle(color: WuxiaColors.hpLow),
               ),
             ),
@@ -250,7 +250,9 @@ class _TowerSpineNode extends StatelessWidget {
             height: 10,
             child: isBoss
                 ? Text(
-                    isMajorBoss ? '大' : '小',
+                    isMajorBoss
+                        ? UiStrings.towerBossBadgeMajor
+                        : UiStrings.towerBossBadgeMinor,
                     style: TextStyle(
                       color: color,
                       fontSize: 9,

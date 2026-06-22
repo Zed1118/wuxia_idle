@@ -137,11 +137,20 @@ class TreasureDropContent extends StatelessWidget {
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               const SizedBox(height: 2),
               Row(mainAxisSize: MainAxisSize.min, children: [
-                _AttrChip(label: '攻击', value: highlight.attack, color: seed),
+                _AttrChip(
+                    label: UiStrings.equipStatAttack,
+                    value: highlight.attack,
+                    color: seed),
                 const SizedBox(width: 14),
-                _AttrChip(label: '血量', value: highlight.health, color: seed),
+                _AttrChip(
+                    label: UiStrings.equipStatHealth,
+                    value: highlight.health,
+                    color: seed),
                 const SizedBox(width: 14),
-                _AttrChip(label: '速度', value: highlight.speed, color: seed),
+                _AttrChip(
+                    label: UiStrings.equipStatSpeed,
+                    value: highlight.speed,
+                    color: seed),
               ]),
               if (tagline != null && tagline.trim().isNotEmpty)
                 Padding(

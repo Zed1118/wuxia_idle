@@ -1740,4 +1740,27 @@ class UiStrings {
   static const String weaponCodexDetailLineage = '师承遗物·境界相称方可佩用';
   static String weaponCodexDetailRange(int min, int max) =>
       min == max ? '$min' : '$min ~ $max';
+
+  // ── 审查 M-#2 散写中文归集(2026-06-22):空态/信息串/徽章(错误态复用 loadFailed)──
+  // 三副本空态(stages 为空时)。
+  static const String massBattleEmpty = '守城五处试炼未启';
+  static const String lightFootEmpty = '轻功五处试炼未启';
+  static const String innerDemonEmpty = '心魔七关未启';
+
+  // 三副本关卡信息行(波数/地形/难度)。difficulty 传已格式化字符串。
+  static String massBattleStageInfo(
+          int waves, int enemies, String formation, String difficulty) =>
+      '$waves 波 · 共 $enemies 敌 · 阵型 $formation · 难度 $difficulty';
+  static String lightFootStageInfo(String terrain, String difficulty) =>
+      '$terrain · 难度 $difficulty';
+  static String innerDemonStageInfo(String difficulty) => '难度 $difficulty';
+
+  // 爬塔 boss 徽章字:floor_list 小标(大/小)+ floor_card 字形(魁/关)。
+  static const String towerBossBadgeMajor = '大';
+  static const String towerBossBadgeMinor = '小';
+  static const String towerFloorGlyphMajor = '魁';
+  static const String towerFloorGlyphMinor = '关';
+
+  // 招式列表「当前装配」标。
+  static const String currentEquippedBadge = '[当前]';
 }

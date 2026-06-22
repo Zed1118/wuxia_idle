@@ -52,7 +52,7 @@ class LightFootScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
-              '加载失败：$e',
+              UiStrings.loadFailed(e),
               style: const TextStyle(color: WuxiaColors.hpLow),
             ),
           ),
@@ -60,7 +60,7 @@ class LightFootScreen extends ConsumerWidget {
             if (stages.isEmpty) {
               return const Center(
                 child: Text(
-                  '轻功五处试炼未启',
+                  UiStrings.lightFootEmpty,
                   style: TextStyle(color: WuxiaColors.textMuted),
                 ),
               );
@@ -165,8 +165,10 @@ class _LightFootRow extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '$terrainLabel · 难度 '
-                        '${def.difficultyMultiplier.toStringAsFixed(1)}',
+                        UiStrings.lightFootStageInfo(
+                          terrainLabel,
+                          def.difficultyMultiplier.toStringAsFixed(1),
+                        ),
                         style: const TextStyle(
                           color: WuxiaColors.textMuted,
                           fontSize: 12,
