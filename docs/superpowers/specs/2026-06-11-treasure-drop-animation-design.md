@@ -32,7 +32,7 @@
 - 文案「重器/宝物/神物」走 `EnumL10n.equipmentTier`(已有);标题文案(如「获此神物」)走 UiStrings,不硬编码。
 
 ### 3. 音效(reward 重做)
-- `assets/audio/sfx/reward.mp3` 重新生成(Suno Sounds,珍稀获得质感)。Prompt 写入 `docs/suno_reward_treasure_sfx_prompts_2026-06-11.md`(沿 battlehit v3 prompt 体例),用户生成→裁切归一→替换。enum/路径不变,零接线改动。
+- `assets/audio/sfx/reward.mp3` 重新生成(Suno Sounds,珍稀获得质感)。Prompt 写入 `docs/_archive/suno/suno_reward_treasure_sfx_prompts_2026-06-11.md`(沿 battlehit v3 prompt 体例),用户生成→裁切归一→替换。enum/路径不变,零接线改动。
 - 触发:只在动画播放时(§4 触发点)随动画起播。重器以下静音。
 
 ### 4. Wiring(主线+塔公共触发点)
@@ -49,7 +49,7 @@
 - 红线:门槛进 numbers.yaml(不硬编码)、印章/标题文案走 EnumL10n/UiStrings(不硬编码中文)、§5.4 数值无关、Image.asset 带 errorBuilder。
 
 ## 文件清单
-**新建**:`lib/features/equipment/domain/treasure_highlight.dart`(值对象+纯函数) · `lib/features/equipment/presentation/treasure_drop_overlay.dart`(Content+Overlay+playTreasureDropIfAny) · `docs/suno_reward_treasure_sfx_prompts_2026-06-11.md` · 对应 test。
+**新建**:`lib/features/equipment/domain/treasure_highlight.dart`(值对象+纯函数) · `lib/features/equipment/presentation/treasure_drop_overlay.dart`(Content+Overlay+playTreasureDropIfAny) · `docs/_archive/suno/suno_reward_treasure_sfx_prompts_2026-06-11.md` · 对应 test。
 **修改**:`data/numbers.yaml`(+treasure_drop.min_tier) · Numbers 模型+解析 · `tier_colors.dart`(+treasure 色) · `stage_entry_flow.dart`(插触发点) · `tower_entry_flow.dart`(插触发点+删旧 reward) · `stage_victory_dialog.dart`(删旧 reward) · `assets/audio/sfx/reward.mp3`(重做素材) · UiStrings(标题文案)。
 
 ## 风险 / 开放点

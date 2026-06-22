@@ -63,7 +63,7 @@
 
 ## 下一步
 
-1. **Codex 视觉验收**：按派单 `docs/codex_dispatch_cycle_evolution_2026-06-14.md`（route `stage_list_cycle` / `tower_cycle`）
+1. **Codex 视觉验收**：按派单 `docs/_archive/codex_dispatch/codex_dispatch_cycle_evolution_2026-06-14.md`（route `stage_list_cycle` / `tower_cycle`）
 2. **用户拍板** stage_06_05 红线（选 A 或 B）
 3. PASS + 拍板后 ff-only 合 main
 4. 真玩验收：周目手感 + 词条战斗体验（首通手动→自动回放→二周目江湖记招触发流）
