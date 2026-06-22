@@ -60,3 +60,7 @@
 - [x] **uiPaperOpen 素材**(2026-06-12 完成):Suno 已产出,用户听选 `uiPaperOpen_v1_01`(宣纸轻展 0.55s)落位 `assets/audio/sfx/`,接线 + 守卫测齐(`audio_assets_test.dart`)。
 - [ ] **转用素材听感复核**:battleUlt(realmAdvance_v2_01 裁 2.4s)/ battleChargeStart(defeat_v2_02 负向预警)是转用,真玩听感不合再重打专属 prompt。
 - [x] **扩展 BGM 8 轨**(波C 2026-06-12 `461c1e9a`):mainline/tower/boss/innerDemon/lightFoot/massBattle/lineage/baike 全接线(`BgmTrack` enum + `bgmTrackForStage` 路由 + 各 screen hook);A/B 验收 8 轨全采用 candidate_01。
+
+## 八 · 阶段性审查发现技术债(2026-06-22)
+
+- [ ] **战报 `_formatAction` 死字段 + 双轨战报架构梳理(T13)**：`default_ground_strategy.dart:857 _formatAction` 生成简化中文战报串写入 `BattleAction.description`，实测对攻击行动(`r != null`)**不被消费**——`battle_log.dart:35-37` 仅在非攻击 `r==null` 兜底用 description，攻击行动走 `BattleLog.formatAction` 完整重算(闪避率/流派克制/附带效果/击杀全覆盖）；UI `battle_screen.dart:2424` 读的是 `skill.description` 而非 action.description。故 `_formatAction` 对攻击行动是**事实死字段**(仅 toString debug + 非攻击兜底用到)。**待定方向**：(a) 删 `_formatAction`、攻击行动 description 传空/精简；(b) 先厘清 action.description 在非攻击行动/回放/UI 的真实角色再统一走 battle_log(合法 sink)。自带 T13「正式中文化」标记，审查列 Low(非阻塞·玩家无感·battle_log 已是主路径)。
