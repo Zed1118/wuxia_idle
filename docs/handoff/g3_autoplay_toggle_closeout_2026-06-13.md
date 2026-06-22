@@ -43,6 +43,6 @@
 
 ## 待办(留用户回来)
 
-1. **Codex 视觉验收**:`docs/codex_dispatch_g3_autoplay_toggle_2026-06-13.md`(route `stage_list_autoplay` + `tower_floor_list`)。
+1. **Codex 视觉验收**:`docs/_archive/codex_dispatch/codex_dispatch_g3_autoplay_toggle_2026-06-13.md`(route `stage_list_autoplay` + `tower_floor_list`)。
 2. 真玩:全局开关改了之后,跟随态(override=null)关卡是否随之联动(数据层逻辑已对,验体感)。
 3. Codex PASS + 用户确认后 `git merge --ff-only` 合 main。

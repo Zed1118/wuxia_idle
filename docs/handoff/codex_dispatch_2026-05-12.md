@@ -34,7 +34,7 @@ Mac 端 Claude Opus 4.7 因用量上限暂时下线（2026-05-13 凌晨 3 点重
 
 ## 明天接手优先顺序
 
-1. **先看 yaml 完整性审计报告**（4f29eae，`docs/audits/yaml_integrity_2026-05-12.md`）→ 处理任何 ⚠ 阻塞标记
+1. **先看 yaml 完整性审计报告**（4f29eae，`docs/audit/yaml_integrity_2026-05-12.md`）→ 处理任何 ⚠ 阻塞标记
    - ⚠ 注意：当晚用户没回应「审计有无阻塞性发现」的追问，自己读全文判断
 2. **review 两个代码 commit 的 diff**：
    - I1 b3f3613：纯重构，行为零变化，2 处 screen_shake inline + 3 处 EquipmentTier `_tierColor` inline 替换为 helper 调用；金光 sin 公式（不在 #21 范围）保留未动 — 这是 Codex 主动判断，不是疏忽

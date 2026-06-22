@@ -4,7 +4,7 @@
 - **派单方**：Mac + Opus 4.7
 - **执行方**：Pen + Windows DeepSeek（F:\Projects\wuxia_idle）
 - **关联挂账**：PROGRESS.md #27（方案 B：改 stages.yaml + 通知 DeepSeek 拆文件）
-- **关联审计**：docs/audits/yaml_integrity_2026-05-12.md §2.1 / §3.1
+- **关联审计**：docs/audit/yaml_integrity_2026-05-12.md §2.1 / §3.1
 
 ## 背景
 
