@@ -1,0 +1,7 @@
+# visual_capture manifest  sha=445fa206  ts=20260621_140039
+shop_1280x720 -> shop_1280x720.png -> READY(干净窗口 wid=55895)
+shop_1920x1080 -> shop_1920x1080.png -> READY(干净窗口 wid=55916)
+inventory_currency_1280x720 -> inventory_currency_1280x720.png -> READY(干净窗口 wid=55937)
+inventory_currency_1920x1080 -> inventory_currency_1920x1080.png -> READY(干净窗口 wid=55991)
+main_menu_shop_1280x720 -> main_menu_shop_1280x720.png -> READY(干净窗口 wid=56013)
+main_menu_shop_1920x1080 -> main_menu_shop_1920x1080.png -> READY(干净窗口 wid=56036)
