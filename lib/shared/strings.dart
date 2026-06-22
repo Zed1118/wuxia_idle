@@ -1142,6 +1142,17 @@ class UiStrings {
   static const String baikeTabFeed = '见闻';
   static const String baikeTabLore = '典故';
   static const String baikeTabCodex = '机制';
+  static const String baikeTabEncounter = '奇缘';
+  // 奇遇录(江湖见闻录第4tab)
+  static String encounterCodexProgress(int got, int total) => '已际遇 $got/$total';
+  static String encounterCodexGroupProgress(int got, int total) => '$got/$total 已际遇';
+  static const String encounterCodexGroupInsight = '武学领悟';
+  static const String encounterCodexGroupFortune = '奇缘际遇';
+  static const String encounterCodexGroupFestival = '节庆';
+  static const String encounterCodexEmpty = '江湖路远，奇缘未至';
+  static const String encounterCodexLocked = '？？？';
+  static const String encounterCodexNotMet = '尚未际遇';
+  static const String encounterCodexDetailTitle = '奇缘录';
   static const String baikeFeedEmpty = '尚无见闻,且看下回。';
   static const String baikeLoreEmpty = '装备尚浅,典故未集。';
   static const String baikeCodexEmpty = '机制百科尚未编纂。';
