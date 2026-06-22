@@ -1,0 +1,8 @@
+# visual_capture manifest  sha=3ec2afb3  ts=20260621_184315  route=item_use_inventory
+# 材料经济 P2 新材料用途真机目检（flutter run -d macos · CGEvent 合成点击）
+item_use_inventory_1280x720  -> 物料 tab 主屏 720p：货币顶栏 + 磨剑石/心血结晶(无使用按钮) + 经验丹三档(凝神/培元/大还,各显使用按钮·per-item 名不同) PASS
+item_use_inventory_1920x1080 -> 物料 tab 全屏 1080p：5 组(磨剑石/心血结晶/经验丹3/心法秘籍1) + 开碑手·秘籍显使用按钮 + 用途说明 + 布局无溢出 PASS
+item_use_confirm_dialog      -> 点凝神丹「使用」→ 确认弹窗：标题「使用道具」+ 正文「确定使用「凝神丹」？」(per-item 名) + 取消/使用 水墨 PaperDialog PASS
+# 结果三态浮层：CGEvent 对自定义 PlaqueButton 不触发(物料行 TextButton 有效),工具限制非缺陷;
+#   由 item_use_service_test 三态单测(experienceApplied/skillUnlocked/alreadyKnown/noStock/notUsable/noTarget)
+#   + inventory_screen_test 点使用弹确认窗 widget 测 + 同款 PaperDialog 渲染 兜底。
