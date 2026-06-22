@@ -110,6 +110,13 @@ void main() {
         VisualRoute.lineageCharacterDetail,
       );
     });
+    test('奇遇录双路由 parse', () {
+      expect(parseVisualRoute('encounter_codex'), VisualRoute.encounterCodex);
+      expect(
+        parseVisualRoute('encounter_codex_detail'),
+        VisualRoute.encounterCodexDetail,
+      );
+    });
   });
 
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。

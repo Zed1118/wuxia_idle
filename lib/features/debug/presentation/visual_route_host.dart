@@ -72,6 +72,9 @@ import '../../shop/presentation/shop_screen.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../character_panel/application/lineage_codex_provider.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
+import '../../baike/application/encounter_codex_provider.dart';
+import '../../baike/presentation/encounter_tab.dart';
+import '../../baike/presentation/encounter_detail_screen.dart';
 import '../../character_panel/presentation/lineage_character_detail_screen.dart';
 
 /// 出版美术验收入口 App。
@@ -557,9 +560,40 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         );
       }
       return const TowerFloorListScreen();
+    case VisualRoute.encounterCodex:
+      // 奇遇录 tab 混合态目检：前 2 条 def 标已际遇(带标题)、其余剪影,
+      // 覆盖 encounterCodexProvider,验点亮/剪影 3 段分组 + 段内已际遇计数。
+      return _buildEncounterCodexVisual();
+    case VisualRoute.encounterCodexDetail:
+      // 奇遇录详情屏目检：取一条真 def 直传 detail,回看 opening 故事 + 类型标。
+      return _buildEncounterCodexDetailVisual();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
+}
+
+/// 奇遇录 tab 混合态：注入前 2 条已际遇(带标题)+ 其余剪影,覆盖 [encounterCodexProvider]。
+/// 走真 [groupEncounters] 纯函数分 3 段,验段标/进度/点亮-剪影混排。
+/// debug fixture,中文内联照 host 现有 preview 体例。
+Widget _buildEncounterCodexVisual() {
+  final defs = GameRepository.instance.allEncounters;
+  final triggered = defs.take(2).map((d) => d.id).toSet();
+  final titles = {for (final d in defs.take(2)) d.id: '（已际遇）${d.id}'};
+  final groups = groupEncounters(
+    defs: defs,
+    triggeredIds: triggered,
+    titles: titles,
+  );
+  return ProviderScope(
+    overrides: [encounterCodexProvider.overrideWith((ref) async => groups)],
+    child: const Scaffold(body: EncounterTab()),
+  );
+}
+
+/// 奇遇录详情屏:取首条真 def 直传 [EncounterDetailScreen](opening 由屏内 async 读 yaml)。
+Widget _buildEncounterCodexDetailVisual() {
+  final def = GameRepository.instance.allEncounters.first;
+  return EncounterDetailScreen(def: def);
 }
 
 /// 材料经济 P1 验收 seed:upsert 一行 [InventoryItem](复用 [ItemType.fromDefId]

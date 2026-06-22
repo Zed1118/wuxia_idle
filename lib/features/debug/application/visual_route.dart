@@ -184,6 +184,14 @@ enum VisualRoute {
     'item_use_inventory',
     'P2 材料用途目检·背包物料 tab 直开:种经验丹三档(凝神/培元/大还,验 per-item 名不同)+ 秘籍(开碑手)+ 磨剑石,验丹/秘籍显「使用」按钮·磨剑石无按钮(仅可用道具显),点使用→确认弹窗→结果三态浮层',
   ),
+  encounterCodex(
+    'encounter_codex',
+    '奇遇录 tab 目检·混态(点亮+剪影 3 段分组 + 进度)',
+  ),
+  encounterCodexDetail(
+    'encounter_codex_detail',
+    '奇遇录详情屏目检·回看 opening 故事 + 类型标',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
