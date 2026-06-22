@@ -58,4 +58,52 @@ void main() {
           MartialGroupKind.encounter);
     });
   });
+
+  group('litSkillIds 三套口径', () {
+    final pool = [
+      _skill('ha', SkillSource.technique),           // 心法招
+      _skill('rare', SkillSource.mainlineDrop),      // 稀有招
+      _skill('enc', SkillSource.encounter),          // 稀有招
+      _skill('po', SkillSource.special,
+          canInterrupt: true, style: TechniqueSchool.gangMeng), // 破招·刚猛
+    ];
+    test('心法招走 learned 集', () {
+      final lit = litSkillIds(
+        pool: pool,
+        unlockedIds: const {},
+        learnedHeartArtSkillIds: const {'ha'},
+        activeSchools: const {},
+      );
+      expect(lit, contains('ha'));
+      expect(lit, isNot(contains('rare')));
+    });
+    test('稀有招走 unlockedIds', () {
+      final lit = litSkillIds(
+        pool: pool,
+        unlockedIds: const {'rare', 'enc'},
+        learnedHeartArtSkillIds: const {},
+        activeSchools: const {},
+      );
+      expect(lit, containsAll(['rare', 'enc']));
+      expect(lit, isNot(contains('po')));
+    });
+    test('破招走 activeSchools 含该 style', () {
+      final lit = litSkillIds(
+        pool: pool,
+        unlockedIds: const {},
+        learnedHeartArtSkillIds: const {},
+        activeSchools: const {TechniqueSchool.gangMeng},
+      );
+      expect(lit, contains('po'));
+    });
+    test('破招 style 不在 activeSchools 则不点亮', () {
+      final lit = litSkillIds(
+        pool: pool,
+        unlockedIds: const {},
+        learnedHeartArtSkillIds: const {},
+        activeSchools: const {TechniqueSchool.yinRou},
+      );
+      expect(lit, isNot(contains('po')));
+    });
+  });
 }
