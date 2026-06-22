@@ -55,7 +55,7 @@ class MassBattleScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
-              '加载失败：$e',
+              UiStrings.loadFailed(e),
               style: const TextStyle(color: WuxiaColors.hpLow),
             ),
           ),
@@ -63,7 +63,7 @@ class MassBattleScreen extends ConsumerWidget {
             if (stages.isEmpty) {
               return const Center(
                 child: Text(
-                  '守城五处试炼未启',
+                  UiStrings.massBattleEmpty,
                   style: TextStyle(color: WuxiaColors.textMuted),
                 ),
               );
@@ -179,9 +179,12 @@ class _MassBattleRow extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '$waveCount 波 · 共 $enemyTotal 敌 · '
-                        '阵型 $formationLabel · 难度 '
-                        '${def.difficultyMultiplier.toStringAsFixed(1)}',
+                        UiStrings.massBattleStageInfo(
+                          waveCount,
+                          enemyTotal,
+                          formationLabel,
+                          def.difficultyMultiplier.toStringAsFixed(1),
+                        ),
                         style: const TextStyle(
                           color: WuxiaColors.textMuted,
                           fontSize: 12,

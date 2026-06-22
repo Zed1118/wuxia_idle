@@ -242,7 +242,7 @@ class _SlotDisplay extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'tier ${skill.tier} · 倍率 ${skill.powerMultiplier}',
+                  'tier ${skill.tier} · ${UiStrings.skillInfoPower} ${skill.powerMultiplier}',
                   style: const TextStyle(
                     color: WuxiaColors.textSecondary,
                     fontSize: 12,
@@ -335,9 +335,9 @@ class _PickerSheet extends StatelessWidget {
                     ),
                     subtitle: Text(
                       'tier $tier · ${EnumL10n.skillType(s.type)} '
-                      '· 倍率 ${s.powerMultiplier}'
+                      '· ${UiStrings.skillInfoPower} ${s.powerMultiplier}'
                       '${s.description.trim().isEmpty ? "" : "\n${s.description}"}'
-                      '${isEquipped ? "  [当前]" : ""}',
+                      '${isEquipped ? "  ${UiStrings.currentEquippedBadge}" : ""}',
                       style: const TextStyle(
                         color: WuxiaColors.textMuted,
                         fontSize: 12,

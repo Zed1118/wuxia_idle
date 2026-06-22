@@ -1174,7 +1174,7 @@ class _EquipPickerSheet extends ConsumerWidget {
                               text:
                                   '${EnumL10n.equipmentTier(eq.tier)} · '
                                   '${UiStrings.enhanceLevel(eq.enhanceLevel)}'
-                                  '${isCurrent ? "  [当前]" : ""}',
+                                  '${isCurrent ? "  ${UiStrings.currentEquippedBadge}" : ""}',
                             ),
                             if (wornByOther)
                               const TextSpan(
