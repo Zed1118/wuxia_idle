@@ -1510,6 +1510,10 @@ class AnimationNumbers {
   final double criticalFontScale;
   final int projectileMs;
   final int hitFlashMs;
+  /// 关键帧（暴击/大招/合一/破招/击杀）命中后的额外顿帧时长（ms）。常速播放
+  /// 下与 impact_feedback 的 hitStopMs 取大者，给「这一下重要」留读条停顿。
+  /// 快进/拖招态不触发（沿 hit-stop 既有跳过约定）。
+  final int keyMomentHoldMs;
 
   const AnimationNumbers({
     required this.attackRushMs,
@@ -1525,6 +1529,7 @@ class AnimationNumbers {
     required this.criticalFontScale,
     required this.projectileMs,
     required this.hitFlashMs,
+    this.keyMomentHoldMs = 400,
   });
 
   /// 默认值与 numbers.yaml 保持一致，用于测试或无法加载 yaml 的场景。
@@ -1542,6 +1547,7 @@ class AnimationNumbers {
     criticalFontScale: 1.5,
     projectileMs: 260,
     hitFlashMs: 150,
+    keyMomentHoldMs: 400,
   );
 
   int get attackTotalMs => attackRushMs + attackHoldMs + attackRetreatMs;
@@ -1561,6 +1567,7 @@ class AnimationNumbers {
       criticalFontScale: (y['critical_font_scale'] as num).toDouble(),
       projectileMs: (y['projectile_ms'] as num?)?.toInt() ?? 260,
       hitFlashMs: (y['hit_flash_ms'] as num?)?.toInt() ?? 150,
+      keyMomentHoldMs: (y['key_moment_hold_ms'] as num?)?.toInt() ?? 400,
     );
   }
 }

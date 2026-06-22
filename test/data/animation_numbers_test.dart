@@ -44,4 +44,31 @@ void main() {
     expect(n.projectileMs, 260);
     expect(n.hitFlashMs, 150);
   });
+
+  test('AnimationNumbers.defaults 含 keyMomentHoldMs', () {
+    expect(AnimationNumbers.defaults.keyMomentHoldMs, 400);
+  });
+
+  test('fromYaml 解析 key_moment_hold_ms', () {
+    final n = AnimationNumbers.fromYaml(<String, dynamic>{
+      'attack_rush_ms': 1, 'attack_hold_ms': 1, 'attack_retreat_ms': 1,
+      'attack_rush_offset_px': 1, 'damage_popup_float_px': 1,
+      'damage_popup_ms': 1, 'action_interval_ms': 1,
+      'fast_forward_interval_ms': 1, 'shake_offset_px': 1,
+      'shake_duration_ms': 1, 'critical_font_scale': 1,
+      'key_moment_hold_ms': 555,
+    });
+    expect(n.keyMomentHoldMs, 555);
+  });
+
+  test('fromYaml 缺 key_moment_hold_ms 走默认 400', () {
+    final n = AnimationNumbers.fromYaml(<String, dynamic>{
+      'attack_rush_ms': 1, 'attack_hold_ms': 1, 'attack_retreat_ms': 1,
+      'attack_rush_offset_px': 1, 'damage_popup_float_px': 1,
+      'damage_popup_ms': 1, 'action_interval_ms': 1,
+      'fast_forward_interval_ms': 1, 'shake_offset_px': 1,
+      'shake_duration_ms': 1, 'critical_font_scale': 1,
+    });
+    expect(n.keyMomentHoldMs, 400);
+  });
 }
