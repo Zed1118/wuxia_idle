@@ -1,9 +1,18 @@
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import '../../../core/application/battle_providers.dart';
+import '../../../core/application/character_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/skill_usage_entry.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/defs/skill_def.dart';
+import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../cultivation/domain/skill_proficiency.dart';
+import '../../encounter/application/encounter_service_providers.dart';
+
+part 'martial_codex_provider.g.dart';
 
 /// 武学图鉴 5 来源分组(方案 A)。
 enum MartialGroupKind { heartArt, trueSolution, fragment, interrupt, encounter }
@@ -229,4 +238,46 @@ List<MartialCodexSubGroup> _heartArtSubGroups(
     subs.add(MartialCodexSubGroup(label: null, entries: orphans));
   }
   return subs;
+}
+
+/// 武学收录图鉴派生 provider:聚合 收录池205 + 三套点亮 + 全队最高熟练度 → 5 组。
+/// 纯派生(零写库)。numbersConfig 取 skillProficiency cfg 算熟练阶。
+@riverpod
+Future<List<MartialCodexGroup>> martialCodex(Ref ref) async {
+  if (!GameRepository.isLoaded) return const [];
+  final repo = GameRepository.instance;
+  final pool = repo.skillDefs.values.where(isMartialCodexSkill).toList();
+
+  final cfg = ref.watch(numbersConfigProvider).skillProficiency;
+  final unlockedIds = await ref.watch(unlockedSkillIdSetProvider.future);
+  final activeIds = await ref.watch(activeCharacterIdsProvider.future);
+
+  final allTechniques = <Technique>[];
+  final activeSchools = <TechniqueSchool>{};
+  for (final id in activeIds) {
+    allTechniques.addAll(
+        await ref.watch(characterAllTechniquesProvider(id).future));
+    final c = await ref.watch(characterByIdProvider(id).future);
+    final s = c?.school;
+    if (s != null) activeSchools.add(s);
+  }
+
+  final learned = learnedHeartArtSkillIds(allTechniques, repo.techniqueDefs);
+  final lit = litSkillIds(
+    pool: pool,
+    unlockedIds: unlockedIds,
+    learnedHeartArtSkillIds: learned,
+    activeSchools: activeSchools,
+  );
+  final stageById = <String, SkillProficiencyStageConfig>{};
+  for (final id in lit) {
+    final uses = maxUsesOf(id, allTechniques);
+    if (uses > 0) stageById[id] = SkillProficiency.stageFor(uses, cfg);
+  }
+  return groupMartialSkills(
+    pool: pool,
+    litIds: lit,
+    stageById: stageById,
+    techDefsById: repo.techniqueDefs,
+  );
 }
