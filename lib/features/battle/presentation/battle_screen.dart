@@ -42,6 +42,18 @@ import '../../help/presentation/context_help_button.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 
+/// 常速播放命中后的顿帧时长：关键帧（暴击/大招/合一/破招/击杀）取
+/// `profileHitStopMs` 与 `keyMomentHoldMs` 的大者，否则用 `profileHitStopMs`。
+/// 纯函数便于单测（节奏手感本身走真机目检）。
+int playbackHoldMs({
+  required bool isKey,
+  required int profileHitStopMs,
+  required int keyMomentHoldMs,
+}) =>
+    isKey && keyMomentHoldMs > profileHitStopMs
+        ? keyMomentHoldMs
+        : profileHitStopMs;
+
 /// 单个飘字条目（id + 数据）。
 class _PopupEntry {
   final int id;
