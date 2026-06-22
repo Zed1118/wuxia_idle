@@ -3,6 +3,7 @@ import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../tower/domain/tower_floor_def.dart';
 import '../../../core/domain/equipment.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import 'equipment_factory.dart';
 
@@ -60,7 +61,7 @@ class DropService {
 
   DropService({
     required this.equipmentDefLookup,
-    this.defaultObtainedFrom = '关卡掉落',
+    this.defaultObtainedFrom = UiStrings.dropSourceStageDefault,
     DateTime Function()? now,
   }) : now = now ?? DateTime.now;
 

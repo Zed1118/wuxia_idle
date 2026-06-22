@@ -794,6 +794,8 @@ class UiStrings {
   static String towerRequiredRealm(String realmName) => '推荐 $realmName';
 
   static const String towerDropSource = '爬塔奖励';
+  // 装备掉落默认来历标签(DropService.defaultObtainedFrom · 显于兵器谱/装备详情「个人历程·来历」)。
+  static const String dropSourceStageDefault = '关卡掉落';
   static const String towerVictoryConfirm = '确定';
   static const String towerReplayNoReward = '已重打通关，重打不发奖';
   static const String towerFirstClearLabel = '首通奖励：';
@@ -926,6 +928,8 @@ class UiStrings {
   static String pvpRankNext(int remaining, String nextRank) =>
       '距「$nextRank」尚需 $remaining 分';
   static const String pvpRankTopHint = '已至段位之巅';
+  // mock 对手默认显示名(NoopPvpSync 合成对手 · slotIndex 0-based → 1-based 显示)。
+  static String pvpOpponentName(int oneBasedSlot) => '对手#$oneBasedSlot';
 
   // ─── 门派事务（1.0 P3.4 §12.1,Batch 2.3-2.5 入口)─────────────────────────
   static const String mainMenuSect = '门派事务';
@@ -1150,6 +1154,8 @@ class UiStrings {
   static const String encounterCodexGroupFortune = '奇缘际遇';
   static const String encounterCodexGroupFestival = '节庆';
   static const String encounterCodexEmpty = '江湖路远，奇缘未至';
+  // 奇遇文案缺失时占位 EncounterContent 的默认选项文案(EncounterContent.placeholder)。
+  static const String encounterPlaceholderChoice = '继续';
   static const String encounterCodexLocked = '？？？';
   static const String encounterCodexNotMet = '尚未际遇';
   static const String encounterCodexDetailTitle = '奇缘录';
@@ -1325,6 +1331,13 @@ class UiStrings {
   static const String ascensionPanelHint = '武圣登峰后,可传位遗物于弟子,自此退出江湖。';
   static const String ascensionPanelButton = '步入飞升';
   static const String ascensionPanelLocked = '飞升条件未满足';
+  // 飞升未满足子条件清单(AscensionEligibility.missingReasons · lineage_panel tooltip)。
+  // 顺序对应 AscensionScreen 校验提示顺序。
+  static const String ascensionReasonNotInActive = '祖师不在出战阵容';
+  static const String ascensionReasonNotAtPeak = '祖师未达武圣·登峰';
+  static const String ascensionReasonInnerDemonNotCleared = '心魔末关「心魔·真」未通';
+  static const String ascensionReasonMainlineNotCleared = '飞升主线「昆仑山顶」未通';
+  static const String ascensionReasonNoDiscipleTarget = '无可继承遗物的弟子';
   static const String ascensionTitle = '飞升渡劫';
   static const String ascensionRitualHint =
       '渡劫之夜,你将取最贴身的一二件兵刃甲胄,亲手赠予弟子。其余之物随你而去。';

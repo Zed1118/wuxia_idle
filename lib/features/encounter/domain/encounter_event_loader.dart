@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../../../data/yaml_loader.dart';
+import '../../../shared/strings.dart';
 
 /// 奇遇文案 `events/[id].yaml`(DeepSeek 维护)按需加载器(Phase 4 W14-1)。
 ///
@@ -40,7 +41,7 @@ class EncounterContent {
         opening: '[文案待补:$id]',
         choices: const [
           EncounterChoice(
-            text: '继续',
+            text: UiStrings.encounterPlaceholderChoice,
             outcomeId: 'skip',
             body: '',
           ),
