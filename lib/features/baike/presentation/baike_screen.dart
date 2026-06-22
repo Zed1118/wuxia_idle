@@ -13,6 +13,7 @@ import '../../battle/domain/enum_localizations.dart';
 import '../../codex/presentation/codex_tab.dart';
 import '../../home_feed/application/home_feed_providers.dart';
 import 'encounter_tab.dart';
+import 'martial_arts_tab.dart';
 
 /// 江湖见闻录(P1 #42 Phase 4/P1.z / GDD §10.2 第 3 方式百科)。
 ///
@@ -28,7 +29,7 @@ class BaikeScreen extends StatelessWidget {
     return BgmScope(
       track: BgmTrack.baike,
       child: DefaultTabController(
-        length: 4,
+        length: 5,
         child: Scaffold(
           backgroundColor: WuxiaColors.background,
           appBar: AppBar(
@@ -46,6 +47,7 @@ class BaikeScreen extends StatelessWidget {
                 Tab(text: UiStrings.baikeTabLore),
                 Tab(text: UiStrings.baikeTabCodex),
                 Tab(text: UiStrings.baikeTabEncounter),
+                Tab(text: UiStrings.baikeTabSkills),
               ],
             ),
           ),
@@ -55,6 +57,7 @@ class BaikeScreen extends StatelessWidget {
               _LoreTab(),
               CodexTab(),
               EncounterTab(),
+              MartialArtsTab(),
             ],
           ),
         ),
