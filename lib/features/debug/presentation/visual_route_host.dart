@@ -75,6 +75,9 @@ import '../../character_panel/presentation/lineage_panel_screen.dart';
 import '../../baike/application/encounter_codex_provider.dart';
 import '../../baike/presentation/encounter_tab.dart';
 import '../../baike/presentation/encounter_detail_screen.dart';
+import '../../baike/application/martial_codex_provider.dart';
+import '../../baike/presentation/martial_arts_tab.dart';
+import '../../baike/presentation/skill_codex_detail_screen.dart';
 import '../../character_panel/presentation/lineage_character_detail_screen.dart';
 
 /// 出版美术验收入口 App。
@@ -567,6 +570,13 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.encounterCodexDetail:
       // 奇遇录详情屏目检：取一条真 def 直传 detail,回看 opening 故事 + 类型标。
       return _buildEncounterCodexDetailVisual();
+    case VisualRoute.skillCodex:
+      // 武学图鉴 tab 混合态目检：前 6 招点亮、其余剪影,覆盖 martialCodexProvider,
+      // 验点亮/剪影 5 来源分组 + 心法小节 + 进度。
+      return _buildSkillCodexVisual();
+    case VisualRoute.skillCodexDetail:
+      // 武学详情屏目检：取收录池首招直传 detail 屏(同步展示,maxStage=null 未曾习练态)。
+      return _buildSkillCodexDetailVisual();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
@@ -594,6 +604,32 @@ Widget _buildEncounterCodexVisual() {
 Widget _buildEncounterCodexDetailVisual() {
   final def = GameRepository.instance.allEncounters.first;
   return EncounterDetailScreen(def: def);
+}
+
+/// 武学图鉴 tab 混合态：注入前 6 招已点亮 + 其余剪影,覆盖 [martialCodexProvider]。
+/// 走真 [groupMartialSkills] 纯函数分 5 来源段,验段标/小节/进度/点亮-剪影混排。
+/// debug fixture,中文内联照 host 现有 preview 体例。
+Widget _buildSkillCodexVisual() {
+  final repo = GameRepository.instance;
+  final pool = repo.skillDefs.values.where(isMartialCodexSkill).toList();
+  final litIds = pool.take(6).map((d) => d.id).toSet();
+  final groups = groupMartialSkills(
+    pool: pool,
+    litIds: litIds,
+    stageById: const {},
+    techDefsById: repo.techniqueDefs,
+  );
+  return ProviderScope(
+    overrides: [martialCodexProvider.overrideWith((ref) async => groups)],
+    child: const Scaffold(body: MartialArtsTab()),
+  );
+}
+
+/// 武学详情屏:取收录池首招直传 [SkillCodexDetailScreen](同步展示,maxStage=null 未曾习练态)。
+Widget _buildSkillCodexDetailVisual() {
+  final repo = GameRepository.instance;
+  final def = repo.skillDefs.values.firstWhere(isMartialCodexSkill);
+  return SkillCodexDetailScreen(def: def, maxStage: null);
 }
 
 /// 材料经济 P1 验收 seed:upsert 一行 [InventoryItem](复用 [ItemType.fromDefId]
