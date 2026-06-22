@@ -1153,6 +1153,26 @@ class UiStrings {
   static const String encounterCodexLocked = '？？？';
   static const String encounterCodexNotMet = '尚未际遇';
   static const String encounterCodexDetailTitle = '奇缘录';
+  // ── 藏经阁2.0 武学收录图鉴(P4 子项6) ──
+  static const String baikeTabSkills = '武学';
+  static String skillCodexProgress(int got, int total) => '已习 $got/$total';
+  static String skillCodexGroupProgress(int got, int total) => '$got/$total 已习';
+  static const String skillCodexGroupHeartArt = '心法绝学';
+  static const String skillCodexGroupTrueSolution = '真解';
+  static const String skillCodexGroupFragment = '残页';
+  static const String skillCodexGroupInterrupt = '破招';
+  static const String skillCodexGroupEncounter = '奇遇武学';
+  static const String skillCodexEmpty = '武学无涯，尚需修习';
+  static const String skillCodexLocked = '？？？';
+  static const String skillCodexNotMet = '尚未习得';
+  static const String skillCodexDetailTitle = '武学';
+  static const String skillCodexSource = '来源';
+  static const String skillCodexProficiencyPrefix = '造诣';
+  static const String skillCodexProficiencyNone = '未曾习练';
+  static const String skillCodexBelongTo = '所属';
+  static const String skillCodexMultiplier = '倍率';
+  static const String skillCodexCost = '内力';
+  static const String skillCodexCooldown = '冷却';
   static const String baikeFeedEmpty = '尚无见闻,且看下回。';
   static const String baikeLoreEmpty = '装备尚浅,典故未集。';
   static const String baikeCodexEmpty = '机制百科尚未编纂。';
