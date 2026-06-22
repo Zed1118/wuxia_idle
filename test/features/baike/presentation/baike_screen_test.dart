@@ -20,7 +20,7 @@ void main() {
     }
   });
 
-  testWidgets('AppBar 标题 = 江湖见闻录 + 3 tab 渲染(P1.z 加机制 tab)', (tester) async {
+  testWidgets('AppBar 标题 = 江湖见闻录 + 4 tab 渲染(P1.z 加机制 tab + 奇缘 tab)', (tester) async {
     await tester.pumpWidget(const ProviderScope(
       child: MaterialApp(home: BaikeScreen()),
     ));
@@ -29,6 +29,7 @@ void main() {
     expect(find.text(UiStrings.baikeTabFeed), findsOneWidget);
     expect(find.text(UiStrings.baikeTabLore), findsOneWidget);
     expect(find.text(UiStrings.baikeTabCodex), findsOneWidget);
+    expect(find.text(UiStrings.baikeTabEncounter), findsOneWidget);
   });
 
   testWidgets('见闻 tab 空 feed 显占位', (tester) async {
