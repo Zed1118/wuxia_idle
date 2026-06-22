@@ -192,6 +192,14 @@ enum VisualRoute {
     'encounter_codex_detail',
     '奇遇录详情屏目检·回看 opening 故事 + 类型标',
   ),
+  skillCodex(
+    'skill_codex',
+    '武学图鉴 tab 目检·混态(点亮+剪影按来源5组+心法小节+进度)',
+  ),
+  skillCodexDetail(
+    'skill_codex_detail',
+    '武学详情屏目检·同步显招名+description+数值+所属心法+熟练阶',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
