@@ -1373,10 +1373,10 @@ animation:
 
   # 伤害飘字
   damage_popup_float_px: 50.0  # 向上漂浮幅度
-  damage_popup_ms: 800         # 飘字总时长（含淡出）
+  damage_popup_ms: 700         # 飘字总时长（含淡出）；≤ action_interval_ms 防跨拍渗漏
 
   # 动作播放间隔（每个 action 间隔时间）
-  action_interval_ms: 800      # 正常速度
+  action_interval_ms: 1000     # 正常速度：单拍给够攻击动画(400)+飘字读完
   fast_forward_interval_ms: 100  # 快进速度
 
   # 屏震（暴击时触发）
