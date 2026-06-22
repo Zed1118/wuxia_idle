@@ -23,11 +23,7 @@ class EncounterDetailScreen extends StatelessWidget {
   final EncounterDef def;
 
   /// 类型标文案,归类规则共用 [encounterGroupKindOf](节庆优先于 type)。
-  String get _typeLabel => switch (encounterGroupKindOf(def)) {
-        EncounterGroupKind.insight => UiStrings.encounterCodexGroupInsight,
-        EncounterGroupKind.fortune => UiStrings.encounterCodexGroupFortune,
-        EncounterGroupKind.festival => UiStrings.encounterCodexGroupFestival,
-      };
+  String get _typeLabel => labelForEncounterGroupKind(encounterGroupKindOf(def));
 
   @override
   Widget build(BuildContext context) {
