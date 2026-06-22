@@ -5,6 +5,7 @@ import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// T27 DropService 验收（phase2_tasks T27 §356-386）。
@@ -141,7 +142,8 @@ void main() {
     expect(result.equipments.first.baseAttack,
         inInclusiveRange(100, 150)); // 走了 EquipmentFactory
     expect(result.equipments.first.obtainedAt, fixedTime);
-    expect(result.equipments.first.obtainedFrom, '关卡掉落');
+    expect(result.equipments.first.obtainedFrom,
+        UiStrings.dropSourceStageDefault);
     expect(result.equipments.first.ownerCharacterId, isNull);
     expect(result.items.length, 1);
     expect(result.items.first.defId, 'item_mojianshi');

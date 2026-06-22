@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import '../../../core/domain/enums.dart';
+import '../../../shared/strings.dart';
 import '../../battle/domain/battle_state.dart';
 import '../domain/pvp_record.dart';
 import '../domain/pvp_snapshot.dart';
@@ -84,7 +85,7 @@ class NoopPvpSync implements PvpSyncService {
     final realm = _rankFromElo(playerElo);
     return BattleCharacter(
       characterId: -10001 - slotIndex,
-      name: '对手#${slotIndex + 1}',
+      name: UiStrings.pvpOpponentName(slotIndex + 1),
       realmTier: realm,
       realmLayer: RealmLayer.jingTong,
       school: schools[slotIndex % 3],

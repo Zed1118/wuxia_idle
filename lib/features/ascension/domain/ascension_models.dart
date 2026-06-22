@@ -4,6 +4,8 @@
 /// 摘要。无 Isar 字段(纯 value object · AscendService 返回结构)。
 library;
 
+import '../../../shared/strings.dart';
+
 /// 飞升 eligibility 4 子条件 + 聚合判定(Q4d 3 条件 + active 校验)。
 ///
 /// caller 端 `ref.watch(ascensionEligibilityProvider)` 拿到本对象,据 [canAscend]
@@ -53,11 +55,15 @@ class AscensionEligibility {
   /// 顺序固定(对应 AscensionScreen 校验提示顺序)。
   List<String> get missingReasons {
     final reasons = <String>[];
-    if (!inActiveCharacters) reasons.add('祖师不在出战阵容');
-    if (!realmAtPeak) reasons.add('祖师未达武圣·登峰');
-    if (!innerDemon07Cleared) reasons.add('心魔末关「心魔·真」未通');
-    if (!mainline0605Cleared) reasons.add('飞升主线「昆仑山顶」未通');
-    if (!hasDiscipleTarget) reasons.add('无可继承遗物的弟子');
+    if (!inActiveCharacters) reasons.add(UiStrings.ascensionReasonNotInActive);
+    if (!realmAtPeak) reasons.add(UiStrings.ascensionReasonNotAtPeak);
+    if (!innerDemon07Cleared) {
+      reasons.add(UiStrings.ascensionReasonInnerDemonNotCleared);
+    }
+    if (!mainline0605Cleared) {
+      reasons.add(UiStrings.ascensionReasonMainlineNotCleared);
+    }
+    if (!hasDiscipleTarget) reasons.add(UiStrings.ascensionReasonNoDiscipleTarget);
     return reasons;
   }
 }

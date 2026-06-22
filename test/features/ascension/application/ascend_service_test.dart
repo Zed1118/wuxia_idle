@@ -8,6 +8,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/ascension/application/ascend_service.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/inheritance/application/founder_buff_service.dart';
@@ -181,7 +182,8 @@ void main() {
       final e = await makeService().computeEligibility();
       expect(e.inActiveCharacters, false);
       expect(e.canAscend, false);
-      expect(e.missingReasons, contains('祖师不在出战阵容'));
+      expect(e.missingReasons,
+          contains(UiStrings.ascensionReasonNotInActive));
     });
 
     test('realm 不到 wuSheng·dengFeng → realmAtPeak=false', () async {
