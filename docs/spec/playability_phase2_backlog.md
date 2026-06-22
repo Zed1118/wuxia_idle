@@ -14,7 +14,7 @@
 - [x] **藏经阁 screen**:~~P1b 2026-06-10 落地~~(CangJingGeScreen 出战配置+武学库+残页区);波A 扩破招槽 tile。
 - [x] **统一进度展示组件 wiring**(§三):~~2026-06-12 落地~~(spec `docs/superpowers/specs/2026-06-12-progress-stage-row-unification-design.md`)。固化纯表现层基元 `StageProgressRow`(五要素:阶段名/进度条 MeridianBar/当前效果/下一阶效果/来源)。三系统已接:熟练度→藏经阁 `skill_proficiency_row` · 修炼度→角色面板 `character_panel_screen:1601`+技能面板 `technique_panel_screen:528`(补倍率文案=原最大缺口) · 共鸣度→装备详情 `equipment_detail_screen:427`。残页 spec §⑤ 有意保留 `FragmentProgressRow` 独立(天然无阶段语义,只视觉对齐)。2026-06-20 续30 Phase 0 复核确认全接入,checkbox 此前 stale 未勾(`feedback_living_doc_state_drift`)。**扩到胜利弹窗/掉落 overlay/师承面板等奖励反馈语境=新范围,原 spec 故意排除,待拍板再开。**
 - [x] **24 招全内容**(波B 2026-06-11):真解 6(章末 Boss 首通 · 同招=Boss 蓄力技双用 canon)+ 塔残页 6(Boss 层全配)+ 章末重打残页 3(Ch4-6 farm)+ 破招 3 = 玩家侧流派 6/6/6;Boss 技 6 = 真解双用。14 新招全内容(名/流派/倍率/效果/文案);装配池 wiring(resolver/picker/equip gate/武学库秘传组)+ standalone 招熟练度落账修复一并收口。spec `2026-06-11-wave-b-24-skills-content-design.md`。
-- [ ] **战报诊断规则**(§11.4):killed_by_charge / mob_overrun 等失败复盘提示 + jump_target。归 P3 战后体验,不在 P1a。
+- [x] **战报诊断规则**(§11.4):~~killed_by_charge / mob_overrun 失败复盘提示 + jump_target~~ 已实装(第七阶段:`BattleDiagnosis` 5 规则 + `DiagnosisJumpTarget{skills,equipment,cultivation}` + `battle_screen._handleDiagnosisJump`,进 victory_overlay)。
 - [x] **per-skill 熟练度效果铺广**(波A 2026-06-11):53 ultimate(含 6 轻功)流派模板(刚猛伤害加速/灵巧CD/阴柔混合)+ 真解/招牌手工高半档;化境 damage_pct 系死配置(combinedMult cap 1.30)改 CD。normalAttack/powerSkill 留全局曲线(4 key 词汇表下无差异化空间,设计立场非砍量)。
 
 ## 二 · P1a 默认拍板(用了默认值,二期可推翻)
@@ -32,19 +32,19 @@
 
 ## 四 · master spec 后续阶段(P2/P3/P4,仅指针,细案见 master spec)
 
-- [~] **P2 队伍成长与三人协同**(master spec §四 / §13 P2):**协同深度已实装**(第六阶段 2026-06-18 · 破绽窗口链路 = 破招/破防开窗 + AI 集火 + 即放提示 + 表现层 + autoFill 软引导 · spec/plan `2026-06-18-phase6-coop-break-window-*`)。**续作 backlog**:① 渐进解锁(开局单人→收徒扩队)② 出战编成 UI ③ Boss 协同窗口(围绕破绽链路设计的 Boss)④ 二弟子→控制倾向(依赖 `LineageRole` 加 senior/junior 子枚举 + SkillDef 控制信号,当前两弟子都→破防)。
-- [~] **P3 Boss 标准与战后体验**(§六 / §七 / §13 P3):**已完成**(2026-06-18 批一战后体验✅ + 2026-06-19 批二 Boss 机制✅):英雄镜头最小版 · 珍稀掉落展示(英雄镜头→技能珍稀→装备treasure 仪式接线)· 战后复盘三段式已 wire(`BattleDiagnosis` 进 victory_overlay)· Boss 多阶段(`bossPhases` hp 阈值+蓄力反扑+aiMode)· 弱点/抗性(`schoolDamageTakenMult` ×1.25/×0.75+会心 glyph)· 技能珍稀卷轴展示。**仍待**:战报诊断「队伍」跳转→批三 · ③ Boss 协同窗口(「敌方协同」新概念,先讨论范围再动)。
-- [ ] **P4 长期档案与探索联动**(§八 / §九 / §13 P4):藏经阁/兵器谱/战绩册/门派谱 · 地图/行为/装备/战绩触发奇遇 · 目标型材料进度。
+- [~] **P2 队伍成长与三人协同**(master spec §四 / §13 P2):**协同深度 + ①渐进解锁 + ④控制倾向已实装**(第六阶段破绽窗口 `2026-06-18-phase6-coop-break-window-*` · 第七阶段批三 `disciple_join_service` 开局单人→收徒扩队 · `LineageRole.senior/junior` + senior 破防倾向)。**续作待拍板(非漏做)**:② 出战编成/换人 UI(grep 零命中·挂机是否需手动换队=设计决策)③ Boss 协同窗口(「敌方协同」新概念·先讨论范围再动)。
+- [x] **P3 Boss 标准与战后体验**(§六 / §七 / §13 P3):全部已实装(2026-06-18 批一战后体验:英雄镜头 `HeroCameraData`/珍稀掉落仪式/战后复盘三段式 `BattleDiagnosis` + jump_target · 2026-06-19 批二 Boss 机制:`bossPhases` 多阶段/`schoolDamageTakenMult` 弱点抗性 ×1.25·×0.75/会心 glyph/技能珍稀卷轴)。**仅余 Boss 协同窗口移交 P2③**(待讨论范围)。
+- [x] **P4 长期档案与探索联动**(§八 / §九 / §13 P4):**全 6 子项闭环**(续31-41:战绩册 `4669fbac` / 兵器谱 `2e4b7ed6` / 材料经济 `5f3899fb` / 门派谱1.1 `4cfc1565` / 奇遇录 `fe4c0751` / 藏经阁2.0 武学图鉴)。均纯展示层(材料经济含真消费:经验丹/秘籍/银两)。
 
 ## 五 · §16 待确认问题(P1a 收了部分,其余留对应阶段拍板)
 
 - [x] #1 首批 24 技能:P1a 收**框架 + 最小集**;24 招全内容留(见一)。
-- [ ] #2 主线 3 + 爬塔 3 Boss 机制细案 → P3。
+- [x] #2 主线 3 + 爬塔 3 Boss 机制细案:P3 已实装(`bossPhases` 多阶段+蓄力反扑+aiMode / 弱点抗性 `schoolDamageTakenMult`)。
 - [x] #3 熟练度走不走闭关:P1a 定**否**(只看战斗放招,含挂机自动战斗)。
 - [x] #4 残页集齐数量:P1a 默认真解 1 / 残页 5(可推翻,见二)。
-- [ ] #5 珍稀材料名称与用途 → P4 材料经济。
-- [ ] #6 英雄镜头美术方案(纯 UI 定格 / 立绘切入 / 场景 zoom)→ P3。
-- [ ] #7 藏经阁/兵器谱/战绩册/门派谱解锁时机 → P4。
+- [x] #5 珍稀材料名称与用途:P4 材料经济 P1/P2 已实装(银两 `item_silver` + 经验丹 3 档 `jingYanDan` + 秘籍 9 本 `techniqueScroll` + `ItemUseService` + 江湖商店货架)。
+- [x] #6 英雄镜头美术方案:P3 已实装(`HeroCameraData` + `hero_camera_overlay` 立绘切入定格 · 续26/30 真机目检 PASS)。
+- [x] #7 藏经阁/兵器谱/战绩册/门派谱解锁时机:P4 已实装(战绩册首胜 / 兵器谱获得任一装备 / 藏经阁2.0 习招点亮 / 门派谱世代 · 各档案入口隐藏式解锁守 §5.7)。
 
 ## 六 · P1a 实装期新增 deferred(Phase 0 发现 · 2026-06-10)
 
