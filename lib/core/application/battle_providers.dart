@@ -144,6 +144,30 @@ class BattleNotifier extends _$BattleNotifier {
     state = s;
   }
 
+  /// 常速 UI 播放驱动：推进到「下一个 action」即停（区别于 [advance] 排空整
+  /// tick）。循环 [BattleStrategy.stepOne] 直到 actionLog 恰好 +1 或战斗结束，
+  /// 自动跳过无人出手的 tick 边界空步。复用本场单一 seeded [_rng]，逐 action
+  /// rng 消费顺序与 [advance] / [step] 完全一致 → 战斗结果逐位不变
+  /// （`battle_advance_one_action_test` 红线锁死）。
+  ///
+  /// [maxConsecutiveSteps] 兜底：境界差 3+ 近免疫时连续空 tick 也会被
+  /// strategy maxTicks 兜住，但单次调用不该卡死 UI 线程，限到 300
+  /// （> [advance] 的 100：stepOne 含边界步 + 逐 actor 出队步，粒度更细）。
+  void advanceOneAction({int maxConsecutiveSteps = 300}) {
+    if (state.isFinished) return;
+    final n = ref.read(numbersConfigProvider);
+    var s = state;
+    final originalLogLen = s.actionLog.length;
+    var consumed = 0;
+    while (s.actionLog.length == originalLogLen &&
+        !s.isFinished &&
+        consumed < maxConsecutiveSteps) {
+      s = _strategy.stepOne(s, n, rng: _rng);
+      consumed++;
+    }
+    state = s;
+  }
+
   /// 推进最小一步:走 [BattleStrategy.stepOne] —— tick 边界步(填本回合行动
   /// 队列,无人出手)或结算队列中一个 actor。复用本场单一 seeded [_rng],与
   /// [advance] 整 tick 路径 rng 消费顺序一致(`battle_step_one_test` 红线锁死)。
