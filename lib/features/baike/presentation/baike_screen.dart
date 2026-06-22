@@ -12,6 +12,7 @@ import '../../../shared/theme/colors.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../codex/presentation/codex_tab.dart';
 import '../../home_feed/application/home_feed_providers.dart';
+import 'encounter_tab.dart';
 
 /// 江湖见闻录(P1 #42 Phase 4/P1.z / GDD §10.2 第 3 方式百科)。
 ///
@@ -27,7 +28,7 @@ class BaikeScreen extends StatelessWidget {
     return BgmScope(
       track: BgmTrack.baike,
       child: DefaultTabController(
-        length: 3,
+        length: 4,
         child: Scaffold(
           backgroundColor: WuxiaColors.background,
           appBar: AppBar(
@@ -44,6 +45,7 @@ class BaikeScreen extends StatelessWidget {
                 Tab(text: UiStrings.baikeTabFeed),
                 Tab(text: UiStrings.baikeTabLore),
                 Tab(text: UiStrings.baikeTabCodex),
+                Tab(text: UiStrings.baikeTabEncounter),
               ],
             ),
           ),
@@ -52,6 +54,7 @@ class BaikeScreen extends StatelessWidget {
               _FeedTab(),
               _LoreTab(),
               CodexTab(),
+              EncounterTab(),
             ],
           ),
         ),
