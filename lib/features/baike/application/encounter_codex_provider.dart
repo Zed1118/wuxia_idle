@@ -46,6 +46,7 @@ List<EncounterCodexGroup> groupEncounters({
     if (d.type == EncounterType.techniqueInsight) {
       return EncounterGroupKind.insight;
     }
+    // trial/karma(Phase 2+,当前内容无)暂落奇缘桶,实装时重分类。
     return EncounterGroupKind.fortune;
   }
 

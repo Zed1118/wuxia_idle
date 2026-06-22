@@ -54,6 +54,7 @@ void main() {
           groups.firstWhere((g) => g.kind == EncounterGroupKind.insight);
       expect(insight.triggeredCount, 1);
       expect(insight.entries.length, 2);
+      expect(insight.entries.map((e) => e.def.id), ['a', 'b']);
     });
 
     test('空段不产出(无该类奇遇时该段缺省)', () {
