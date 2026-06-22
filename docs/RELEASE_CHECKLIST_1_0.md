@@ -1,5 +1,7 @@
 # 挂机武侠 1.0 Release Checklist
 
+> ⚠️ **2026-06-22 状态钉**：项目 2026-06-11 起转「1.0 长线打磨期」（CLAUDE.md §7，不设上线时间压力），本清单 readiness/测试数定格在 2026-06-02（~99% · 1667 测）时点；**当前进度唯一源 = PROGRESS.md**（现 2815 测 · P4 长期档案全闭环）。下方 A–E 勾选作历史快照参考。
+
 > **v1.0** 起草 2026-05-25 · Mac+Opus xhigh · **长寿文档**(跨阶段更新)
 > 状态来源:`docs/handoff/1_0_release_audit_v2_2026-05-25.md` 6 系统快照 + 本会话 P5.0
 > 与 `docs/ROADMAP_1_0.md` 互补:ROADMAP 是 16 月宏观规划,本文档是 Steam 上线前**二元勾选清单**
@@ -31,7 +33,7 @@
 - [x] 三系锁 §5.3 测族 5+ 守护(境界 ↔ 装备阶 ↔ 心法阶)
 - [x] §5.5 在线=离线(挂机 = 实际时间)
 - [x] §5.1 反留存(无每日任务 / 登录奖励 / 战令 / 抽卡 / VIP / 体力)
-- [x] §6 公式集中在 `lib/core/combat/formulas.dart` + `damage_calculator.dart`
+- [x] §6 公式集中在 `lib/features/battle/domain/`(damage_calculator.dart + derived_stats.dart)
 - [x] 0 硬编码(中文文案走 `data/narratives/lore/events/` · 数值走 `data/*.yaml`)
 - [x] Isar schema 0.14.0 稳定(Q6B saveVersion 升档)
 - [x] Riverpod 3.x 锁定(无 BLoC)
