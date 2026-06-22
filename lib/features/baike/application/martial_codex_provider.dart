@@ -8,6 +8,7 @@ import '../../../core/domain/technique.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
+import '../../../shared/strings.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../cultivation/domain/skill_proficiency.dart';
 import '../../encounter/application/encounter_service_providers.dart';
@@ -281,3 +282,12 @@ Future<List<MartialCodexGroup>> martialCodex(Ref ref) async {
     techDefsById: repo.techniqueDefs,
   );
 }
+
+/// 来源大组 → 段标显示名。tab 段标与详情屏来源标共用,防双份漂移。
+String labelForMartialGroupKind(MartialGroupKind kind) => switch (kind) {
+      MartialGroupKind.heartArt => UiStrings.skillCodexGroupHeartArt,
+      MartialGroupKind.trueSolution => UiStrings.skillCodexGroupTrueSolution,
+      MartialGroupKind.fragment => UiStrings.skillCodexGroupFragment,
+      MartialGroupKind.interrupt => UiStrings.skillCodexGroupInterrupt,
+      MartialGroupKind.encounter => UiStrings.skillCodexGroupEncounter,
+    };
