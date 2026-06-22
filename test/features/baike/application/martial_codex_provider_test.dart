@@ -3,6 +3,18 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/baike/application/martial_codex_provider.dart';
 
+class _FakeTechDef {
+  _FakeTechDef(
+      {required this.name,
+      required this.tier,
+      required this.school,
+      required this.skillIds});
+  final String name;
+  final TechniqueTier tier;
+  final TechniqueSchool school;
+  final List<String> skillIds;
+}
+
 SkillDef _skill(String id, SkillSource? source,
         {bool canInterrupt = false, TechniqueSchool? style}) =>
     SkillDef(
@@ -104,6 +116,71 @@ void main() {
         activeSchools: const {TechniqueSchool.yinRou},
       );
       expect(lit, isNot(contains('po')));
+    });
+  });
+
+  group('groupMartialSkills', () {
+    test('空段不产出 + 计数 + 剪影 maxStage 为 null', () {
+      final pool = [
+        _skill('rare1', SkillSource.mainlineDrop),
+        _skill('rare2', SkillSource.mainlineDrop),
+        _skill('enc1', SkillSource.encounter),
+      ];
+      final groups = groupMartialSkills(
+        pool: pool,
+        litIds: const {'rare1'},
+        stageById: const {},
+        techDefsById: const {},
+      );
+      expect(groups.map((g) => g.kind),
+          containsAll([MartialGroupKind.trueSolution, MartialGroupKind.encounter]));
+      expect(groups.any((g) => g.kind == MartialGroupKind.fragment), isFalse);
+      final trueSol =
+          groups.firstWhere((g) => g.kind == MartialGroupKind.trueSolution);
+      expect(trueSol.litCount, 1);
+      expect(trueSol.totalCount, 2);
+      final allEntries =
+          trueSol.subGroups.expand((s) => s.entries).toList();
+      expect(allEntries.firstWhere((e) => e.def.id == 'rare2').isLit, isFalse);
+    });
+
+    test('组顺序固定:心法→真解→残页→破招→奇遇', () {
+      final pool = [
+        _skill('enc', SkillSource.encounter),
+        _skill('po', SkillSource.special, canInterrupt: true),
+        _skill('rare', SkillSource.mainlineDrop),
+      ];
+      final groups = groupMartialSkills(
+        pool: pool,
+        litIds: const {},
+        stageById: const {},
+        techDefsById: const {},
+      );
+      expect(groups.map((g) => g.kind).toList(),
+          [MartialGroupKind.trueSolution, MartialGroupKind.interrupt, MartialGroupKind.encounter]);
+    });
+
+    test('心法绝学按所属心法分小节,标题含心法名/tier/流派', () {
+      final pool = [
+        _skill('s1', SkillSource.technique),
+        _skill('s2', SkillSource.technique),
+      ];
+      final fake = _FakeTechDef(
+          name: '太祖长拳',
+          tier: TechniqueTier.ruMenGong,
+          school: TechniqueSchool.gangMeng,
+          skillIds: const ['s1', 's2']);
+      final groups = groupMartialSkills(
+        pool: pool,
+        litIds: const {'s1'},
+        stageById: const {},
+        techDefsById: {'t1': fake},
+      );
+      final heart =
+          groups.firstWhere((g) => g.kind == MartialGroupKind.heartArt);
+      expect(heart.subGroups.first.label, contains('太祖长拳'));
+      expect(heart.subGroups.first.entries.length, 2);
+      expect(heart.litCount, 1); // s1 点亮,s2 剪影
     });
   });
 }
