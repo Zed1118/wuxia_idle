@@ -87,7 +87,7 @@ void main() {
   String summarize(BattleState s) =>
       '${s.result}#${s.actionLog.map((a) => '${a.tick}|${a.actorId}|${a.targetId}|${a.skill?.id}|${a.attackResult?.finalDamage}|${a.interrupted}').join(';')}';
 
-  String runVia(int seed, {required bool oneAction}) {
+  BattleState runVia(int seed, {required bool oneAction}) {
     final container = ProviderContainer();
     addTearDown(container.dispose);
     final sub = container.listen(battleProvider, (_, _) {}, fireImmediately: true);
@@ -103,7 +103,7 @@ void main() {
       }
       guard++;
     }
-    return summarize(container.read(battleProvider));
+    return container.read(battleProvider);
   }
 
   test('advanceOneAction 每次调用 actionLog 恰好 +1（或战斗已结束）', () {
@@ -129,11 +129,19 @@ void main() {
   });
 
   test('红线：advanceOneAction 逐拍跑完 == advance 整 tick 跑完（同 seed 全等）', () {
-    final viaOne = runVia(2468, oneAction: true);
-    final viaAdvance = runVia(2468, oneAction: false);
+    final stateOne = runVia(2468, oneAction: true);
+    final stateAdvance = runVia(2468, oneAction: false);
+    final viaOne = summarize(stateOne);
+    final viaAdvance = summarize(stateAdvance);
     expect(viaOne.split(';').length, greaterThan(10),
         reason: '防空过：需足够多 action 暴露 rng 顺序不一致');
     expect(viaOne, equals(viaAdvance),
         reason: 'advanceOneAction 与 advance 单一 seeded rng 下复刻同一场战斗');
+    expect(stateOne.leftTeam.map((c) => c.currentHp).toList(),
+        equals(stateAdvance.leftTeam.map((c) => c.currentHp).toList()),
+        reason: '左队终态血量逐位全等');
+    expect(stateOne.rightTeam.map((c) => c.currentHp).toList(),
+        equals(stateAdvance.rightTeam.map((c) => c.currentHp).toList()),
+        reason: '右队终态血量逐位全等');
   });
 }
