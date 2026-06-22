@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../encounter/domain/encounter_def.dart';
 import '../../encounter/domain/encounter_event_loader.dart';
+import '../application/encounter_codex_provider.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
@@ -21,16 +22,12 @@ class EncounterDetailScreen extends StatelessWidget {
 
   final EncounterDef def;
 
-  /// 类型标文案,规则同 [groupEncounters] 的 kindOf(节庆优先于 type)。
-  String get _typeLabel {
-    if (def.trigger.festivalRequired != null) {
-      return UiStrings.encounterCodexGroupFestival;
-    }
-    if (def.type == EncounterType.techniqueInsight) {
-      return UiStrings.encounterCodexGroupInsight;
-    }
-    return UiStrings.encounterCodexGroupFortune;
-  }
+  /// 类型标文案,归类规则共用 [encounterGroupKindOf](节庆优先于 type)。
+  String get _typeLabel => switch (encounterGroupKindOf(def)) {
+        EncounterGroupKind.insight => UiStrings.encounterCodexGroupInsight,
+        EncounterGroupKind.fortune => UiStrings.encounterCodexGroupFortune,
+        EncounterGroupKind.festival => UiStrings.encounterCodexGroupFestival,
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +74,7 @@ class EncounterDetailScreen extends StatelessWidget {
                       )
                     else
                       Text(
-                        content?.opening ?? '',
+                        content!.opening,
                         style: const TextStyle(
                           color: WuxiaUi.ink,
                           fontSize: 15,
