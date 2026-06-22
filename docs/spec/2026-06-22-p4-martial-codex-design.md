@@ -35,11 +35,12 @@ lib/features/baike/
 `source ∈ {technique, mainlineDrop, fragment, encounter}` **或** `(source == special && canInterrupt)`。
 > ⚠️ plan 阶段验证项：奇遇招（`data/encounter_skills.yaml`）是否已并入 `repo.skillDefs`。佐证「是」——`cangjingge_screen` `_pickEncounter` 用 `repo.skillDefs[id]` 取奇遇招名 + `repo.encounterSkillIds` 存在。实装前 grep 实证，避免奇遇40漏收。
 
-### 点亮集 — 纯函数 `litSkillIds({unlockProgress, activeTechniques}) → Set<String>`
-账号级两套口径并集：
-- **稀有招**(真解/残页/破招/奇遇)：`SaveData.skillUnlockProgress` 中 `unlocked == true` 的 skillId
-- **心法招**(technique)：account 下任一 active 角色的 `Technique.skillIds`（经 `repo.techniqueDefs[tech.defId].skillIds`）并集 —— 学了该心法 ⇒ 该心法所有招点亮
-> 口径务实度：取 active 角色 techniques 并集，**不追飞升退场的历史角色**（对称兵器谱 isPreRecord 骨架的务实约定）。
+### 点亮集 — 纯函数 `litSkillIds({pool, unlockedIds, activeTechniques, activeSchools}) → Set<String>`
+账号级**三套口径**（破招技解锁机制特殊，2026-06-22 实证补：不走 unlockProgress、不属任何心法，按 style 默认可装配）：
+- **稀有招**(真解/残页/奇遇 · source∈{mainlineDrop,fragment,encounter})：`unlockedIds`（= `unlockedSkillIdSetProvider`，单一真相源 `SaveData.skillUnlockProgress` 中 `unlocked==true`，「奇遇/真解/残页全走此池」`encounter_service_providers.dart:45`）
+- **心法招**(technique)：account 下任一 active 角色的心法招并集（`repo.techniqueDefs[tech.defId].skillIds`）—— 学了该心法 ⇒ 该心法所有招点亮
+- **破招技**(special∩canInterrupt · 3个)：`activeSchools`（active 角色 `character.school` 集）含该招 `style` ⇒ 点亮（门下有该流派弟子 → 该流派破招可见，对称「流派由所属心法承载」既有约定）
+> 口径务实度：取 active 角色 techniques/schools，**不追飞升退场的历史角色**（对称兵器谱 isPreRecord 骨架的务实约定）。
 
 ### 全队最高熟练度 — 纯函数 `maxUsesOf(skillId, activeTechniques) → int`
 遍历 active 角色所有 `Technique.skillUsageCount.countOf(skillId)` 取 max。
@@ -63,7 +64,7 @@ lib/features/baike/
 
 ## 测试
 
-- 纯函数单测：`isMartialCodexSkill`(收录过滤含/不含轻功joint) · `litSkillIds`(两套口径) · `maxUsesOf`(全队聚合) · `groupMartialSkills`(分组序/计数/剪影藏名/空段不产出/心法小标)
+- 纯函数单测：`isMartialCodexSkill`(收录过滤含破招/不含轻功joint) · `litSkillIds`(三套口径:心法招学过/稀有招unlockProgress/破招按派) · `maxUsesOf`(全队聚合) · `groupMartialSkills`(分组序/计数/剪影藏名/空段不产出/心法小标)
 - `baike_screen_test` 补第5 tab 断言（4→5 tab + tab 标题）
 - tab widget 测：点亮/剪影/空态三态（ListView viewport 扩，addTearDown）
 - VISUAL_ROUTE 双路由：`martial_codex`(混态seed：部分点亮+部分剪影) + `martial_codex_detail`
