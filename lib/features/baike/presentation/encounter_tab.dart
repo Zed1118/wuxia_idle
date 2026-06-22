@@ -63,12 +63,6 @@ class EncounterTab extends ConsumerWidget {
   }
 }
 
-String _groupLabel(EncounterGroupKind kind) => switch (kind) {
-      EncounterGroupKind.insight => UiStrings.encounterCodexGroupInsight,
-      EncounterGroupKind.fortune => UiStrings.encounterCodexGroupFortune,
-      EncounterGroupKind.festival => UiStrings.encounterCodexGroupFestival,
-    };
-
 class _GroupSection extends StatelessWidget {
   const _GroupSection({required this.group});
 
@@ -85,7 +79,7 @@ class _GroupSection extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  _groupLabel(group.kind),
+                  labelForEncounterGroupKind(group.kind),
                   style: const TextStyle(
                     color: WuxiaColors.resultHighlight,
                     fontSize: 14,

@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../data/game_repository.dart';
+import '../../../shared/strings.dart';
 import '../../encounter/domain/encounter_def.dart';
 import '../../encounter/domain/encounter_event_loader.dart';
 import '../../encounter/application/encounter_service_providers.dart';
@@ -41,6 +42,13 @@ EncounterGroupKind encounterGroupKindOf(EncounterDef d) {
   // trial/karma(Phase 2+,当前内容无)暂落奇缘桶,实装时重分类。
   return EncounterGroupKind.fortune;
 }
+
+/// 奇遇分组 → 显示名(领悟/奇缘/节庆)。EncounterTab 段标与详情屏类型标共用,防双份漂移。
+String labelForEncounterGroupKind(EncounterGroupKind kind) => switch (kind) {
+      EncounterGroupKind.insight => UiStrings.encounterCodexGroupInsight,
+      EncounterGroupKind.fortune => UiStrings.encounterCodexGroupFortune,
+      EncounterGroupKind.festival => UiStrings.encounterCodexGroupFestival,
+    };
 
 /// 纯函数：按 type/festivalRequired 分 3 段(节庆优先于 type),算点亮/剪影 + 计数。
 /// 空段不产出。段内保 def 输入顺序。
