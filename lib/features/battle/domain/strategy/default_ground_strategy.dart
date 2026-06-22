@@ -750,7 +750,13 @@ class DefaultGroundStrategy implements BattleStrategy {
       staggerDefenseDownOverride: newStaggerDef,
     );
 
-    // 写 BattleAction(description 用 preActor.name == actorAfter.name)
+    // 写 BattleAction。
+    // description 只在「非攻击行动」(attackResult==null,如 staggered/charging/
+    // phase 转换)经 battle_log.dart:37 兜底显示;攻击行动(attackResult!=null)的
+    // 战报由 BattleLog.formatAction 从 attackResult 重格式化(闪避率/克制/效果/
+    // 击杀全覆盖),不读 description。故此处攻击 action 的 description 留空(T13
+    // 双轨收口 · 原 _formatAction 简化串属事实死字段已删),仅破招仍记 EnumL10n
+    // (合法 sink,供 toString debug 标识)。
     final action = BattleAction(
       tick: preState.tick,
       actorId: preActor.characterId,
@@ -759,7 +765,7 @@ class DefaultGroundStrategy implements BattleStrategy {
       attackResult: result,
       description: brokeCharging
           ? EnumL10n.interrupted(preActor.name, targetAfter.name)
-          : _formatAction(preActor, targetAfter, skill, result),
+          : '',
       interrupted: brokeCharging,
       openedBreakWindow: opensBreak && !brokeCharging,
       // 批二②会心:仅「真弱点」(mult>1.0)且命中(非闪避)才打 flag → 表现层弹会心
@@ -853,20 +859,4 @@ class DefaultGroundStrategy implements BattleStrategy {
     BattleCharacter defender,
   ) =>
       defender.schoolDamageTakenMult[attacker.school] ?? 1.0;
-
-  /// 调试日志描述串（T13 才正式做中文化，本阶段简化）。
-  String _formatAction(
-    BattleCharacter actor,
-    BattleCharacter targetAfter,
-    SkillDef skill,
-    AttackResult r,
-  ) {
-    if (r.isDodged) {
-      return '${actor.name} 对 ${targetAfter.name} 使用 ${skill.name}，被闪避';
-    }
-    final crit = r.isCritical ? '【暴击】' : '';
-    return '${actor.name} 对 ${targetAfter.name} 使用 ${skill.name}'
-        '$crit，造成 ${r.finalDamage} 伤害'
-        '${targetAfter.isAlive ? "" : "（击杀）"}';
-  }
 }
