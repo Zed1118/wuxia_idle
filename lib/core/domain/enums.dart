@@ -358,7 +358,7 @@ enum ItemType {
   static ItemType fromDefId(String defId) {
     // 前缀匹配优先（材料经济 P2：经验丹 3 档 + 秘籍 9 本共 12 defId，
     // 避免逐个 case 冗长易漏静默吞 miscMaterial）。
-    if (defId.startsWith('item_scroll_')) return ItemType.techniqueScroll;
+    if (isTechniqueScrollDefId(defId)) return ItemType.techniqueScroll;
     if (defId.startsWith('item_jingyandan')) return ItemType.jingYanDan;
     switch (defId) {
       case 'item_mojianshi':
@@ -372,6 +372,14 @@ enum ItemType {
     }
   }
 }
+
+/// 心法秘籍 defId 判定（前缀 `item_scroll_`）的 canonical 谓词。
+///
+/// 秘籍「首通必得」语义的单一真相源：mainline runtime 写背包门控
+/// (`shouldSkipScrollDrop`)、掉落传闻 preview 逐条门控
+/// (`DropRumorTable.fromDropTable` scrollOnly)、以及 [ItemType.fromDefId]
+/// 三方共用，避免 `item_scroll_` 前缀散写多处 drift（F2/2026-06-23 续48）。
+bool isTechniqueScrollDefId(String defId) => defId.startsWith('item_scroll_');
 
 /// 游戏事件类型（"昨晚发生的事"，GDD §9.2）。
 enum GameEventType {
