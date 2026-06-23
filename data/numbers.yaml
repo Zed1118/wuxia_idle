@@ -94,7 +94,8 @@ combat:
     agility_per_point_rate: 0.005    # 每点身法 +0.5% 暴击率
     max_rate: 0.50                   # 暴击率硬上限 50%
     base_damage_multiplier: 1.5      # 暴击伤害基础倍率
-    max_damage_multiplier: 2.5       # 暴击伤害最高倍率（堆心法/装备后）
+    max_damage_multiplier: 2.5       # 暴击伤害信息性上限（当前不作运行时 clamp；
+                                     # 暴击走固定档 1.5/2.0 已 ≤ 本值，仅 balance 参考）
     lingqiao_critical_bonus: 0.20    # 灵巧流派额外暴击率 +20%（GDD §4.4，T09 用）
     lingqiao_damage_multiplier: 2.0  # 灵巧流派暴击时的伤害倍率（phase1_tasks T10 §584 简化值，T10 用）
 

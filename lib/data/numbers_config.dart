@@ -1406,6 +1406,11 @@ class CriticalConfig {
   final double agilityPerPointRate;
   final double maxRate;
   final double baseDamageMultiplier;
+
+  /// 暴击伤害「信息性上限」——**当前不作运行时 clamp**(审计 C-F2)。暴击倍率在
+  /// damage_calculator 走固定档(base 1.5 / 灵巧 2.0),结构上已 ≤ 本值,无 clamp
+  /// 分支消费它。保留为 balance 文档参考;若日后加可变倍率分支,需在
+  /// DamageCalculator 显式 clamp 到本值才会真正生效。
   final double maxDamageMultiplier;
 
   /// 灵巧流派额外暴击率（GDD §4.4 = 0.20，T09 用）。
