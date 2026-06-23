@@ -1219,4 +1219,4 @@ class _FormationPickerDialog extends StatelessWidget {
 /// 银两/装备/经验丹不受此 gate 影响（前缀不匹配，返回 false）。
 @visibleForTesting
 bool shouldSkipScrollDrop(String defId, {required bool isFirstClear}) =>
-    defId.startsWith('item_scroll_') && !isFirstClear;
+    isTechniqueScrollDefId(defId) && !isFirstClear;

@@ -325,7 +325,7 @@ class _FloorPlaque extends StatelessWidget {
                         () {
                           final rumor = DropRumorTable.fromDropTable(
                             def.dropTable,
-                            isFirstClearGated: true,
+                            gating: FirstClearGating.wholeChannel,
                           );
                           return Row(
                             children: [

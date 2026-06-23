@@ -33,6 +33,13 @@ class LootRumorContent extends StatelessWidget {
       );
     }
     final grouped = table.grouped();
+    // 首通门控脚注：爬塔整渠道显塔层串；主线仅当含秘籍(首通必得条)显主线串。
+    final String? footer = switch (table.gating) {
+      FirstClearGating.wholeChannel => UiStrings.lootTowerFirstClearOnlyFooter,
+      FirstClearGating.scrollOnly => table.hasFirstClearGatedEntry
+          ? UiStrings.lootMainlineScrollFirstClearFooter
+          : null,
+    };
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,12 +58,15 @@ class LootRumorContent extends StatelessWidget {
           for (final e in entry.value)
             _RumorItemRow(entry: e, currentRealm: currentRealm),
         ],
-        if (table.isFirstClearGated)
-          const Padding(
-            padding: EdgeInsets.only(top: 12),
+        if (footer != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
             child: Text(
-              UiStrings.lootTowerFirstClearOnlyFooter,
-              style: TextStyle(fontSize: 11, color: WuxiaColors.textMuted),
+              footer,
+              style: const TextStyle(
+                fontSize: 11,
+                color: WuxiaColors.textMuted,
+              ),
             ),
           ),
       ],
