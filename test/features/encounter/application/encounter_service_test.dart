@@ -433,6 +433,47 @@ void main() {
       expect(p.attributeGainsTotal, 3);
     });
 
+    test('attributeBonus + founderCharacterId → 真正加到角色属性（审计②修复）',
+        () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      // 建 fortune=5 的主角存 Isar，取 autoIncrement id。
+      final ch = Character.create(
+        name: '主角',
+        realmTier: RealmTier.xueTu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: _mkAttrs(fortune: 5),
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.founder,
+        createdAt: DateTime(2026, 1, 1),
+      );
+      late int charId;
+      await IsarSetup.instance.writeTxn(() async {
+        charId = await IsarSetup.instance.characters.put(ch);
+      });
+
+      final r = await svc.applyOutcome(
+        saveDataId: 1,
+        encounter: _mkFortune(),
+        outcomeId: 'gain_wisdom',
+        founderCharacterId: charId,
+      );
+      expect(r, isA<AttributeBonusApplied>());
+
+      final updated = await IsarSetup.instance.characters.get(charId);
+      expect(updated!.attributes.fortune, 6,
+          reason:
+              '奇遇属性奖励应真正写到角色 attributes（旧 bug:只记 EncounterProgress 不改角色）');
+      expect(updated.attributeBonusFromAdventure, 1,
+          reason: '生涯累计计数写活（此前 never-written 死字段）');
+      // EncounterProgress 仍同步记录（cap 追踪不变）。
+      final p = await IsarSetup.instance.encounterProgress
+          .filter()
+          .saveDataIdEqualTo(1)
+          .findFirst();
+      expect(p!.attributeGainsFortune, 1);
+    });
+
     test('skip(未配 outcomeMapping)→ NoneOutcome,不写 Isar', () async {
       final svc = EncounterService(isar: IsarSetup.instance);
       await svc.getOrCreate(saveDataId: 1);
