@@ -16,6 +16,7 @@ import 'defs/shop_item_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
 import 'defs/skill_def.dart';
 import 'defs/stage_def.dart';
+import 'defs/drop_entry.dart';
 import 'defs/synergy_def.dart';
 import 'defs/technique_def.dart';
 import '../features/tower/domain/tower_floor_def.dart';
@@ -570,6 +571,13 @@ class GameRepository {
     _enforceBossRecruitRedLines();
     _enforceSkillDropRedLines();
 
+    // F7（2026-06-23 掉落优化 配置卫生）：dropTable 引用完整性（stage + tower 全覆盖）。
+    enforceDropTableReferences(
+      stageDefs: stageDefs,
+      towerFloors: towerFloors,
+      equipmentIds: equipmentDefs.keys.toSet(),
+    );
+
     // P0 破招:Boss 招牌蓄力技校验(chargeSkillId 必在敌人 skillIds 内 +
     // boss_charge tick 数值范围)
     _enforceBossChargeRedLines();
@@ -661,6 +669,23 @@ class GameRepository {
   void _enforceShopRedLines() {
     if (shopItemDefs.isEmpty) return; // test fixture 兼容
     for (final d in shopItemDefs.values) {
+      // F8（2026-06-23 掉落优化）：§5.7「仅掉落不上架」守门。
+      //   - 秘籍（techniqueScroll）：GDD §5.7 仅掉落，上架破"先感受问题再给答案"。
+      //   - 大还丹（大档经验丹 layerFraction=1.0，"一次顶满一层"）：仅掉落不上架
+      //     （§5.5 挂机为主丹为辅；小/中档 layerFraction<1.0 仍可上架）。
+      if (d.itemType == ItemType.techniqueScroll) {
+        throw StateError(
+          '红线:商店 ${d.id} 上架秘籍 ${d.itemDefId}，违反 §5.7（秘籍仅掉落不上架）',
+        );
+      }
+      final item = itemDefs[d.itemDefId];
+      if (item != null &&
+          item.type == ItemType.jingYanDan &&
+          item.layerFraction == 1.0) {
+        throw StateError(
+          '红线:商店 ${d.id} 上架大还丹 ${d.itemDefId}，违反 §5.7（大档经验丹仅掉落不上架）',
+        );
+      }
       if (d.isDynamicPrice) {
         // 动态标价：校验 fraction > 0 即可，绝对价格由 etl 决定
         if (d.priceLayerFraction! <= 0) {
@@ -1724,6 +1749,52 @@ class GameRepository {
           }
         }
       }
+    }
+  }
+
+  /// F7（2026-06-23 掉落优化 配置卫生 guardrail）：dropTable 引用完整性校验。
+  ///
+  /// 遍历所有主线 stage + 爬塔 floor 的 dropTable，启动期 fail-fast：
+  ///   - [EquipmentDrop.equipmentDefId] 必须在 [equipmentIds]
+  ///     （否则 runtime 取装备会崩 → 战斗中崩，防 Ch5/Ch6 写错悬空）
+  ///   - [ItemDrop.inventoryItemDefId] 必须能被 [ItemType.fromDefId] 解析为非
+  ///     [ItemType.miscMaterial]（miscMaterial 是兜底吞值桶，悬空/拼错 defId 会
+  ///     静默落入并入背包显示成杂项材料；fail-fast 拦下）。
+  ///
+  /// 沿 [enforceWeaknessRedLines] 体例抽 static（接 stageDefs + towerFloors +
+  /// equipmentIds），便于单测直调；[_enforceRedLines] 启动期统一调用。
+  static void enforceDropTableReferences({
+    required Map<String, StageDef> stageDefs,
+    required List<TowerFloorDef> towerFloors,
+    required Set<String> equipmentIds,
+  }) {
+    void check(String owner, List<DropEntry> table) {
+      for (final entry in table) {
+        switch (entry) {
+          case EquipmentDrop(:final equipmentDefId):
+            if (!equipmentIds.contains(equipmentDefId)) {
+              throw StateError(
+                '$owner dropTable 悬空 equipmentDefId=$equipmentDefId'
+                '（不在 equipment.yaml，runtime 取装备会崩）',
+              );
+            }
+          case ItemDrop(:final inventoryItemDefId):
+            if (ItemType.fromDefId(inventoryItemDefId) ==
+                ItemType.miscMaterial) {
+              throw StateError(
+                '$owner dropTable 悬空 inventoryItemDefId=$inventoryItemDefId'
+                '（ItemType.fromDefId 兜底 miscMaterial，疑似拼错/未注册物品）',
+              );
+            }
+        }
+      }
+    }
+
+    for (final s in stageDefs.values) {
+      check('stage ${s.id}', s.dropTable);
+    }
+    for (final f in towerFloors) {
+      check('tower floor ${f.floorIndex}', f.dropTable);
     }
   }
 

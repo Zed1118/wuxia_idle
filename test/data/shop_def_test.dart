@@ -88,6 +88,60 @@ void main() {
       );
     });
 
+    test('秘籍上架 shop → 抛 StateError（§5.7 守门，F8）', () async {
+      final Map<String, String> memOverrides = {
+        'data/shop.yaml': '''
+shop:
+  - id: shop_evil_scroll
+    itemDefId: item_scroll_kai_bei_shou
+    itemType: techniqueScroll
+    price: 100
+    category: material
+''',
+      };
+      Future<String> hybridLoader(String path) async {
+        if (memOverrides.containsKey(path)) return memOverrides[path]!;
+        return fileLoader(path);
+      }
+      await expectLater(
+        GameRepository.loadAllDefs(loader: hybridLoader),
+        throwsA(isA<StateError>()
+            .having((e) => e.toString(), 'message', contains('§5.7'))),
+      );
+    });
+
+    test('大还丹（大档经验丹 layer_fraction=1.0）上架 shop → 抛 StateError（§5.7 守门，F8）',
+        () async {
+      final Map<String, String> memOverrides = {
+        'data/shop.yaml': '''
+shop:
+  - id: shop_evil_dahuandan
+    itemDefId: item_jingyandan_large
+    itemType: jingYanDan
+    price_layer_fraction: 1.0
+    category: pill
+''',
+      };
+      Future<String> hybridLoader(String path) async {
+        if (memOverrides.containsKey(path)) return memOverrides[path]!;
+        return fileLoader(path);
+      }
+      await expectLater(
+        GameRepository.loadAllDefs(loader: hybridLoader),
+        throwsA(isA<StateError>()
+            .having((e) => e.toString(), 'message', contains('§5.7'))),
+      );
+    });
+
+    test('凝神丹/培元丹（小/中档 layer_fraction<1.0）上架 shop → 不因 §5.7 抛（正例，F8）',
+        () async {
+      // 生产 shop.yaml 本就含小/中档,直接加载不应触发 §5.7 守门。
+      await GameRepository.loadAllDefs(loader: fileLoader);
+      final defs = GameRepository.instance.shopItemDefs;
+      expect(defs['shop_jingyandan_small'], isNotNull);
+      expect(defs['shop_jingyandan_mid'], isNotNull);
+    });
+
     test('_enforceRedLines 标价超 100000 抛 StateError', () async {
       // 用内存 loader 构造超标价条目，只提供 shop.yaml 其余 yaml 走文件
       final Map<String, String> memOverrides = {
