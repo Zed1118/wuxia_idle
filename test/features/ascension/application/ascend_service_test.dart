@@ -11,6 +11,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/ascension/application/ascend_service.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
+import 'package:wuxia_idle/features/equipment/application/milestone_equipment_grant_service.dart';
 import 'package:wuxia_idle/features/inheritance/application/founder_buff_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
@@ -168,6 +169,40 @@ void main() {
           await buffSvc.computeBuffActive(GameRepository.instance.numbers);
       expect(buffActive, false,
           reason: 'founder isActive=false → buff 自然退 · spec §6 注');
+    });
+
+    test('F1 飞升授无名剑(ascension_reward)进背包 + 二次飞升不重发', () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+      final svc = makeService();
+      final founder = (await isar.characters.get(1))!;
+      final weapon = founder.equippedWeaponId!;
+      final armor = founder.equippedArmorId!;
+
+      await isar.writeTxn(() => svc.performAscend({weapon: 2, armor: 2}));
+
+      final wmj = await isar.equipments
+          .filter()
+          .defIdEqualTo('weapon_special_wu_ming_jian')
+          .findAll();
+      expect(wmj.length, 1, reason: '飞升授 1 件无名剑');
+      expect(wmj.first.ownerCharacterId, isNull, reason: '入背包不绑角色');
+      final save = (await isar.saveDatas.get(0))!;
+      expect(save.grantedMilestoneEquipmentIds,
+          contains('weapon_special_wu_ming_jian'));
+
+      // 幂等:直接再调 grantForTagInTxn(模拟二次授予路径)→ 不重发。
+      await isar.writeTxn(() async {
+        final s = (await isar.saveDatas.get(0))!;
+        final again = await MilestoneEquipmentGrantService(isar: isar)
+            .grantForTagInTxn(s, 'ascension_reward', obtainedFrom: '飞升所得');
+        expect(again, isEmpty, reason: '已授予 → 幂等 no-op');
+      });
+      final wmj2 = await isar.equipments
+          .filter()
+          .defIdEqualTo('weapon_special_wu_ming_jian')
+          .findAll();
+      expect(wmj2.length, 1, reason: '幂等:仍仅 1 件');
     });
   });
 
