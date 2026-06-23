@@ -47,6 +47,7 @@ void main() {
     required int charId,
     double piercePct = 0.0,
     double lifestealPct = 0.0,
+    int startHp = 10000, // <maxHp 时留回血空间,验证吸血真写回 currentHp
   }) =>
       BattleCharacter(
         characterId: charId,
@@ -55,7 +56,7 @@ void main() {
         realmLayer: RealmLayer.qiMeng,
         school: TechniqueSchool.gangMeng,
         maxHp: 10000,
-        currentHp: 10000,
+        currentHp: startHp,
         maxInternalForce: 0, // 无内力 → 永远走普攻
         currentInternalForce: 0,
         speed: 200, // 比守方快很多，先手多
@@ -132,16 +133,17 @@ void main() {
 
   // ── 吸血测试 ─────────────────────────────────────────────────────────────
   test('吸血:forgingLifestealPct>0 时攻方 currentHp 应高于无 lifesteal 对照', () {
+    // 攻方初始 currentHp=9500(已受伤,留 500 回血空间),验证吸血真写回 currentHp。
     // 对照组：无吸血
     final stateNoLifesteal = runBattle(
-      [attacker(charId: 1, lifestealPct: 0.0)],
+      [attacker(charId: 1, lifestealPct: 0.0, startHp: 9500)],
       [defender(charId: -1)],
       seed: 42,
     );
 
     // 实验组：吸血 20%
     final stateLifesteal = runBattle(
-      [attacker(charId: 1, lifestealPct: 0.20)],
+      [attacker(charId: 1, lifestealPct: 0.20, startHp: 9500)],
       [defender(charId: -1)],
       seed: 42,
     );
@@ -164,7 +166,10 @@ void main() {
           '若=0 说明 calculateResolved 传参未接通（Task 4 未实装）',
     );
 
-    // 副断言：攻方最终 currentHp 在吸血组中高于或等于无吸血组。
+    // 强断言:攻方初始 9500,吸血组每命中回血使 currentHp 严格回升,高于无吸血组。
+    // 无吸血组保持 9500(或受守方攻击更低);吸血组 9500+回血(clamp 10000)。
+    // 主断言已证 lifestealHealed>0(命中回血真发生),故吸血组必严格 > 对照组——
+    // 这条直接验证「吸血回血真写回 currentHp」(非仅 lifestealHeal 被计算)。
     final hpNoLifesteal =
         stateNoLifesteal.leftTeam.firstWhere((c) => c.characterId == 1).currentHp;
     final hpLifesteal =
@@ -172,8 +177,9 @@ void main() {
 
     expect(
       hpLifesteal,
-      greaterThanOrEqualTo(hpNoLifesteal),
-      reason: '吸血组攻方 currentHp($hpLifesteal) 应 >= 无吸血组($hpNoLifesteal)',
+      greaterThan(hpNoLifesteal),
+      reason: '吸血组攻方 currentHp($hpLifesteal) 应严格 > 无吸血组($hpNoLifesteal):'
+          '攻方初始 9500,吸血命中回血使 currentHp 真回升写回',
     );
   });
 
