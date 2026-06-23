@@ -441,6 +441,7 @@ class DefaultGroundStrategy implements BattleStrategy {
     // 时覆盖。无任何触发 → 保 preActor.internalInjury;有触发 → 最后触发的生效
     // (覆盖语义,与单体逐字节等价)。
     InternalInjurySlot? actorFanzhen = preActor.internalInjury;
+    var lifestealTotal = 0;
     for (final tid in targetIds) {
       final target = _findById(preState, tid, oppSide);
       if (target == null) {
@@ -465,6 +466,8 @@ class DefaultGroundStrategy implements BattleStrategy {
       if (resolved.fanzhenTriggered != null) {
         actorFanzhen = resolved.fanzhenTriggered;
       }
+      // 开锋吸血:每命中 target 累积回血量(闪避时 lifestealHeal=0,无需特判)。
+      lifestealTotal += result.lifestealHeal;
     }
 
     // 攻方 actorAfter 构造一次(loop 外):扣内力一次 + 写 skill CD 一次 +
@@ -485,6 +488,10 @@ class DefaultGroundStrategy implements BattleStrategy {
       // = 最后一个触发反震的 target 的 slot 生效;无触发则保 preActor.internalInjury
       // (loop 初值 round-trip,值不变,与单体逐字节等价)。
       internalInjury: actorFanzhen,
+      // 开锋吸血:aoe 全部 target 命中回血累积后一次写回(clamp maxHp 防溢出)。
+      // lifestealTotal=0 时 clamp 保持 currentHp 不变，zero-cost，无回归。
+      currentHp:
+          (preActor.currentHp + lifestealTotal).clamp(0, preActor.maxHp),
     );
 
     // 写回队伍:actorAfter + 所有 targetAfters(逐个 _replaceById)。
@@ -845,6 +852,8 @@ class DefaultGroundStrategy implements BattleStrategy {
       proficiencyDamageMult: profMult,
       defenderCritDamageTakenMult: critDamageTakenMult,
       outputMultiplier: attacker.outputMultiplier,
+      attackerPiercePct: attacker.forgingPiercePct,
+      attackerLifestealPct: attacker.forgingLifestealPct,
       // 批二②弱点/抗性:守方按攻方流派的受伤乘子(default 1.0=无)。已由
       // 加载期 enforceWeaknessRedLines 校到 numbers.yaml max_mult(守 §5.4),此处仅查表透传。
       defenderSchoolDamageMult: weaknessMultOf(attacker, defender),
