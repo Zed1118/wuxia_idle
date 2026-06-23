@@ -41,22 +41,22 @@
 
 ### 低 · 配置卫生 / guardrail 缺失
 
-**F5 — `dropEquipmentDefIds`/`dropItemDefIds` 死字段**
-- stage_def.dart:38-39 + tower_floor_def.dart 定义，注释自承「Phase 1 占位旧字段」，全 lib **0 读取**，live 掉落 100% 走 dropTable
-- 建议：删字段或头注释标 unused（memory feedback_yaml_config_unused_field）
+**F5 — `dropEquipmentDefIds`/`dropItemDefIds` 死字段** ✅ 已修(2026-06-23 续49 · 删字段 `697fedab`)
+- stage_def.dart:38-39 定义（tower_floor_def 仅注释提及，无字段），注释自承「Phase 1 占位旧字段」，全 lib **0 读取**，live 掉落 100% 走 dropTable
+- ~~建议：删字段或头注释标 unused~~ **实修=删字段**：Phase 0 证伪「0引用」前提（yaml 47 关 94 行 + `game_repository_test` 反向引用校验 + 2 红线测试用作 stages.yaml 锚点字符串）；已证 dropTable 是超集，删字段零信息丢失 → 清 stage_def 字段/构造/fromYaml + stages.yaml 94 key 行 + ~15 测试参数 + 2 红线测试换锚 `stage_01_01` 声明行
 
 **F6 — `dropSourceTags` 死字段**（与 F1 同根）✅ 已修(2026-06-23 续47)
 - 0 消费；F1 的 3 个授予通道未实装的直接体现。F1 修复时一并处理
 - 实修:`MilestoneEquipmentGrantService._defsForTag` 按 dropSourceTags 筛装备授予,字段变 live 消费源
 
-**F7 — 无全局 dropTable 引用校验器**
-- `_enforceRedLines`(game_repository.dart:495-617) ~30 条子校验，**无一遍历 dropTable 核对 equipmentDefId/inventoryItemDefId 存在**
-- 当前**0 悬空**（已扫，eq+item 全可解析），但无 guardrail：未来悬空 equipmentDefId 会**战斗中崩**（getEquipment throw），悬空 item 会静默变 miscMaterial（enums.dart:370 default 吞值）
-- 建议：补一条启动期 dropTable 引用校验（fail-fast）
+**F7 — 无全局 dropTable 引用校验器** ✅ 已修(2026-06-23 续49 · `3af2423d`)
+- `_enforceRedLines`(game_repository.dart) ~30 条子校验，**无一遍历 dropTable 核对 equipmentDefId/inventoryItemDefId 存在**
+- 当前**0 悬空**（已扫，eq+item 全可解析），但无 guardrail：未来悬空 equipmentDefId 会**战斗中崩**（getEquipment throw），悬空 item 会静默变 miscMaterial（enums.dart default 吞值）
+- ~~建议~~ **实修**：`GameRepository.enforceDropTableReferences`(static·`_enforceRedLines` 启动期 fail-fast) 遍历 stage+tower 全 dropTable：EquipmentDrop.equipmentDefId∈equipmentDefs / ItemDrop.inventoryItemDefId 经 `ItemType.fromDefId` 解析为非 miscMaterial。补此前无校验的爬塔 floor 盲区。4 红线测
 
-**F8 — shop.yaml §5.7「仅掉落不上架」无 schema 守门**
+**F8 — shop.yaml §5.7「仅掉落不上架」无 schema 守门** ✅ 已修(2026-06-23 续49 · `3af2423d`)
 - 当前货架仅 4 项（磨剑石/心血结晶/凝神丹/培元丹），**0 违规**，秘籍/大还丹均不在架
-- 但仅靠人工维护 shop.yaml，无校验拦截。建议加断言（秘籍/大还丹 defId 不得上架）
+- ~~但仅靠人工维护 shop.yaml，无校验拦截。建议加断言~~ **实修**：`_enforceShopRedLines` 扩展守门——秘籍(`itemType==techniqueScroll`) + 大还丹(大档经验丹 itemDef.layerFraction==1.0) 不得上架，小/中档(layerFraction<1.0)不限。3 红线测(秘籍/大还丹注入抛 + 小中档正例)
 
 ## 健康项（证实无问题，不需动）
 
