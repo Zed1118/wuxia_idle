@@ -6,6 +6,8 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/isar_setup.dart';
 import '../../../data/numbers_config.dart';
+import '../../../shared/strings.dart';
+import '../../equipment/application/milestone_equipment_grant_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../sect/domain/sect.dart';
 import '../domain/ascension_models.dart';
@@ -311,6 +313,14 @@ class AscendService {
         await isar.sects.put(sect);
       }
     }
+
+    // 9. F1 里程碑装备:飞升授无名剑(ascension_reward)。复用本 txn 内 save,
+    //    走 grantForTagInTxn 避免嵌套 writeTxn;service 幂等防重(二次飞升不重发)。
+    await MilestoneEquipmentGrantService(isar: isar).grantForTagInTxn(
+      save,
+      'ascension_reward',
+      obtainedFrom: UiStrings.dropSourceAscensionReward,
+    );
 
     return AscensionResult(
       transferredCount: selections.length,
