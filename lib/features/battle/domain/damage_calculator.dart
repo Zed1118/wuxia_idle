@@ -128,6 +128,13 @@ class DamageCalculator {
     /// 末端乘 mainDamage,沿 outputMultiplier 体例。§5.4 红线:弱点最大 ≤2.0,
     /// 叠乘后仍 <100万(numbers 值域 + 加载期 enforceWeaknessRedLines 双守)。
     double defenderSchoolDamageMult = 1.0,
+    /// 开锋破甲(pierce)词条:绝对减防御率(default 0.0=无破甲,零回归)。
+    /// effectiveDefRate = max(0, defenderDefenseRate - attackerPiercePct)。
+    /// 招式级 piercesDefense(布尔全穿透)独立路径不动。
+    double attackerPiercePct = 0.0,
+    /// 开锋吸血(lifesteal)词条:命中后回血 = mainDamage × lifestealPct(floor)。
+    /// 结果进 AttackResult.lifestealHeal;调用方负责将回血应用到战斗状态。
+    double attackerLifestealPct = 0.0,
   }) {
     // === 1. 闪避 ===
     if (rng.nextDouble() < defenderEvasionRate) {
@@ -172,7 +179,11 @@ class DamageCalculator {
         isCritical ? (critMult - 1.0) * defenderCritDamageTakenMult + 1.0 : 1.0;
 
     // === 6. 防御率 ===
-    final defMult = 1.0 - defenderDefenseRate;
+    // 破甲:开锋 pierce 绝对减防御率(穿透),clamp 0 下界不为负。招式级 piercesDefense
+    // (布尔全穿透)独立路径不动。
+    final effectiveDefRate =
+        (defenderDefenseRate - attackerPiercePct).clamp(0.0, 1.0);
+    final defMult = 1.0 - effectiveDefRate;
 
     // === 7. 境界差修正 ===
     // RealmUtils.realmDiffModifier 返回 yaml 段原值 (attacker, defender)；
@@ -224,6 +235,12 @@ class DamageCalculator {
 
     final effects = <String>[];
     if (extraEffect != null) effects.add(extraEffect);
+    // 破甲标记:实际削了防御(pierce>0 且 defenderDefenseRate>0)才标。
+    if (attackerPiercePct > 0 && defenderDefenseRate > 0) {
+      effects.add('armor_pierce');
+    }
+    // 吸血量:实际主伤害 × 吸血率(震伤不计入)。闪避走 dodged 工厂 heal=0。
+    final lifestealHeal = (mainDamage * attackerLifestealPct).floor();
 
     final breakdown = '($attackerInternalForce*${_fmt(df.internalForceFactor)}'
         ' + $attackerEquipmentAttack'
@@ -257,6 +274,7 @@ class DamageCalculator {
       evasionRate: defenderEvasionRate,
       appliedEffects: effects,
       formulaBreakdown: breakdown,
+      lifestealHeal: lifestealHeal,
     );
   }
 
@@ -349,6 +367,10 @@ class AttackResult {
   /// （phase1_tasks T10 §577）。
   final String formulaBreakdown;
 
+  /// 本次攻击触发的开锋吸血回血量（mainDamage×lifesteal%，floor）。0=无吸血。
+  /// 调用方负责将此值应用到攻方当前 HP（clamp maxHp）。
+  final int lifestealHeal;
+
   const AttackResult({
     required this.finalDamage,
     required this.mainDamage,
@@ -364,6 +386,7 @@ class AttackResult {
     required this.evasionRate,
     required this.appliedEffects,
     required this.formulaBreakdown,
+    this.lifestealHeal = 0,
   });
 
   /// 闪避结果工厂。
