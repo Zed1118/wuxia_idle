@@ -84,6 +84,12 @@ class SaveData {
   /// 0.24→0.25 迁移:老档(满队)预填全部 join stage id(弟子已在,不重建)。
   List<String> triggeredDiscipleJoinStageIds = [];
 
+  /// 已授予的里程碑装备 defId(F1 · 一次性防重)。
+  ///
+  /// 沿 [triggeredDiscipleJoinStageIds] 体例:MilestoneEquipmentGrantService
+  /// 授予后 add 本字段,重打/重飞升不重发。新字段,旧档读默认空。
+  List<String> grantedMilestoneEquipmentIds = [];
+
   /// 技能解锁进度(可玩性 P1a · spec §一)。账号级,Boss 真解/残页来源。
   /// 真解首通直接 markUnlocked;爬塔残页 addFragment 累加,达阈值自动 markUnlocked。
   /// 不含奇遇技能(走 equippedEncounterSkillId,两套并存)。
