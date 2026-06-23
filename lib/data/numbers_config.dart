@@ -274,6 +274,15 @@ class NumbersConfig {
     required this.raw,
   });
 
+  /// F1 里程碑装备授予映射:stageId → dropSourceTags tag(顶层
+  /// `milestone_equipment_grants` 段)。从 [raw] 读,缺段兜底空 map。
+  /// 飞升 tag(ascension_reward)是终局事件非关卡,不入本表(performAscend 内直调)。
+  Map<String, String> get milestoneEquipmentGrants {
+    final m = raw['milestone_equipment_grants'] as Map?;
+    if (m == null) return const {};
+    return m.map((k, v) => MapEntry(k as String, v as String));
+  }
+
   factory NumbersConfig.fromYaml(Map<String, dynamic> y) {
     final meta = y['meta'] as Map<String, dynamic>;
     final combat = y['combat'] as Map<String, dynamic>;

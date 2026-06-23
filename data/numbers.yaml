@@ -1769,6 +1769,14 @@ lineage_onboarding:
       role: junior
       narrative_id: lineage_second_disciple_join
 
+# F1 里程碑装备授予：stageId → dropSourceTags tag。
+# 首通该关 → MilestoneEquipmentGrantService.grantForTag(tag) 授予对应 special
+# 装备进背包(一次性，重打不重发)。飞升 tag(ascension_reward)是终局事件非关卡，
+# 在 performAscend 内直调不入本表。
+milestone_equipment_grants:
+  stage_mass_battle_05: mass_battle_merit   # 群战5关全清 → 百战甲(利器)
+  stage_inner_demon_07: inner_demon_reward  # 降服全部心魔 → 心魔珠(重器)
+
 # =============================================================================
 # 文件结束
 # =============================================================================
