@@ -213,6 +213,12 @@ class BattleCharacter {
   /// battle_ai 据此给 junior(二弟子)「优先盯蓄力敌」控场目标偏好。default null=无差异、零回归。
   final LineageRole? lineageRole;
 
+  /// 开锋破甲穿透率（全身装备 pierce 槽求和，烘焙自 fromCharacter）。0=无破甲。
+  final double forgingPiercePct;
+
+  /// 开锋吸血率（全身装备 lifesteal 槽求和，烘焙自 fromCharacter）。0=无吸血。
+  final double forgingLifestealPct;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -253,6 +259,8 @@ class BattleCharacter {
     this.bossPhaseUnlockSkills,
     this.schoolDamageTakenMult = const {},
     this.lineageRole,
+    this.forgingPiercePct = 0.0,
+    this.forgingLifestealPct = 0.0,
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -326,6 +334,10 @@ class BattleCharacter {
       0,
       (sum, e) => sum + CharacterDerivedStats.effectiveEquipmentAttack(e, numbers),
     );
+    final forgingPiercePct = CharacterDerivedStats.forgingAggregatePct(
+        equipped, ForgingSlotType.pierce);
+    final forgingLifestealPct = CharacterDerivedStats.forgingAggregatePct(
+        equipped, ForgingSlotType.lifesteal);
 
     final techDef =
         GameRepository.instance.getTechnique(mainTechnique.defId);
@@ -412,6 +424,8 @@ class BattleCharacter {
       iconPath: character.portraitPath,
       outputMultiplier: outputMultiplier,
       lineageRole: character.lineageRole,
+      forgingPiercePct: forgingPiercePct,
+      forgingLifestealPct: forgingLifestealPct,
     );
   }
 
@@ -455,6 +469,8 @@ class BattleCharacter {
     Object? bossPhaseUnlockSkills = _unset,
     Map<TechniqueSchool, double>? schoolDamageTakenMult,
     LineageRole? lineageRole,
+    double? forgingPiercePct,
+    double? forgingLifestealPct,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -511,6 +527,8 @@ class BattleCharacter {
       schoolDamageTakenMult:
           schoolDamageTakenMult ?? this.schoolDamageTakenMult,
       lineageRole: lineageRole ?? this.lineageRole,
+      forgingPiercePct: forgingPiercePct ?? this.forgingPiercePct,
+      forgingLifestealPct: forgingLifestealPct ?? this.forgingLifestealPct,
     );
   }
 
