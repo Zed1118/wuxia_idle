@@ -227,6 +227,20 @@ class CharacterDerivedStats {
     return sum / 100.0;
   }
 
+  /// 跨**全身装备**累加指定 [type] 的开锋槽位 bonusValue（百分比小数，15→0.15）。
+  /// 区别于单件 [_forgingBonusPct]：pierce/lifesteal 是攻方整体战斗属性
+  /// （穿透/回血），非单件攻速加成，故全装备求和。仅 `unlocked` 槽计入。
+  static double forgingAggregatePct(
+      List<Equipment> equipped, ForgingSlotType type) {
+    var sum = 0;
+    for (final eq in equipped) {
+      for (final s in eq.forgingSlots) {
+        if (s.unlocked && s.type == type) sum += s.bonusValue;
+      }
+    }
+    return sum / 100.0;
+  }
+
   /// 内力上限（含师承遗物 +5% 叠加，phase2_tasks T22 / GDD §6.1）。
   ///
   /// `Character.internalForceMax` 是基础值（由境界 / 心法 / 修为决定，调用方
