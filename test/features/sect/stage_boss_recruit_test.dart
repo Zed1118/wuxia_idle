@@ -214,12 +214,12 @@ void main() {
     }
 
     test('① 非 isBossStage 配 bossRecruit → 抛 StateError', () async {
-      // stage_01_01 是非 Boss 第一关 · dropEquipmentDefIds: [armor_xunchang_bu_yi]
-      // 是 unique 锚(只 stage_01_01 100% drop 此装备),前插 bossRecruit 段。
+      // stage_01_01 是非 Boss 第一关 · '  - id: stage_01_01' 是 unique 锚
+      // (F5/2026-06-23 删 dropEquipmentDefIds 占位字段后改锚 stage 声明行),注入 bossRecruit 段。
       String inject(String s) => s.replaceFirst(
-            'dropEquipmentDefIds: [armor_xunchang_bu_yi]',
-            'bossRecruit:\n      candidateRef: bamboo_swordsman\n    '
-                'dropEquipmentDefIds: [armor_xunchang_bu_yi]',
+            '  - id: stage_01_01\n',
+            '  - id: stage_01_01\n    bossRecruit:\n'
+                '      candidateRef: bamboo_swordsman\n',
           );
       expect(
         GameRepository.loadAllDefs(loader: makeStagesLoader(inject)),

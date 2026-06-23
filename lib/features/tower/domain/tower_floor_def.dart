@@ -6,8 +6,8 @@ import '../../../core/domain/enums.dart';
 ///
 /// 与 [StageDef] 故意**不共享父类 / 不共享 yaml schema**：
 ///   - 主线按章节 + prevStageId 链解锁，爬塔按 floorIndex 单调递增解锁
-///   - 主线奖励配 dropEquipmentDefIds / dropItemDefIds（Phase 1 旧字段保留），
-///     爬塔只走 [dropTable]（Phase 2 T27 sealed DropEntry）
+///   - 主线与爬塔奖励均只走 [dropTable]（Phase 2 T27 sealed DropEntry；
+///     F5/2026-06-23 删主线 Phase 1 占位字段 dropEquipmentDefIds / dropItemDefIds）
 ///   - 主线允许 enemyTeam 空（剧情关），爬塔每层必须 1-3 个敌人
 ///
 /// 30 层数值曲线（phase3_tasks T40 拍板）：

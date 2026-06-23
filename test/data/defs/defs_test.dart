@@ -284,8 +284,6 @@ void main() {
           },
         ],
         'isBossStage': true,
-        'dropEquipmentDefIds': ['weapon_ghost_blade', 'armor_dark_robe'],
-        'dropItemDefIds': ['item_mojianshi', 'item_xinxuejiejing'],
         'baseExpReward': 1500,
         'difficultyMultiplier': 1.85,
       });
@@ -311,8 +309,6 @@ void main() {
         'chapterIndex': 1,
         'requiredRealm': 'xueTu',
         'enemyTeam': const [],
-        'dropEquipmentDefIds': const [],
-        'dropItemDefIds': const [],
         'baseExpReward': 0,
         'difficultyMultiplier': 1.0,
       });
@@ -346,8 +342,6 @@ void main() {
           },
         ),
         'isBossStage': false,
-        'dropEquipmentDefIds': const [],
-        'dropItemDefIds': const [],
         'baseExpReward': 100,
         'difficultyMultiplier': 1.0,
       });
@@ -370,8 +364,6 @@ void main() {
         'narrativeVictoryId': 'stage_01_02_victory',
         'requiredRealm': 'xueTu',
         'enemyTeam': const [],
-        'dropEquipmentDefIds': const [],
-        'dropItemDefIds': const [],
         'baseExpReward': 0,
         'difficultyMultiplier': 1.0,
       });
@@ -389,8 +381,6 @@ void main() {
         'chapterIndex': 1,
         'requiredRealm': 'xueTu',
         'enemyTeam': const [],
-        'dropEquipmentDefIds': const [],
-        'dropItemDefIds': const [],
         'baseExpReward': 0,
         'difficultyMultiplier': 1.0,
       });

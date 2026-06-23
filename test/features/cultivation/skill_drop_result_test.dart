@@ -204,8 +204,6 @@ void main() {
           requiredRealm: RealmTier.xueTu,
           enemyTeam: const [],
           isBossStage: true,
-          dropEquipmentDefIds: const [],
-          dropItemDefIds: const [],
           baseExpReward: 0,
           difficultyMultiplier: 1.0,
           dropSkillManualId: manual,

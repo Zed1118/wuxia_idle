@@ -25,8 +25,6 @@ StageDef _stage() => const StageDef(
   requiredRealm: RealmTier.xueTu,
   enemyTeam: [],
   isBossStage: false,
-  dropEquipmentDefIds: [],
-  dropItemDefIds: [],
   baseExpReward: 100,
   difficultyMultiplier: 1.0,
 );
