@@ -1399,8 +1399,8 @@ stages:
         dropChance: 1.0
       - equipmentDefId: accessory_zhongqi_qing_yu_huan
         dropChance: 0.50
-      - equipmentDefId: armor_baowu_jin_si_jia
-        dropChance: 0.40
+      - equipmentDefId: armor_zhongqi_han_tie_zhong_jia  # F3:原 baoWu 金丝甲越 2 阶,改 zhongQi 与跨阶 jueDing Boss 同阶对齐(qing_xu_jian/qing_yu_huan 亦 zhongQi);金丝甲回归 dropSourceTags 声明来源 tower_30/zongShi_unlock
+        dropChance: 0.30  # F3:0.40→0.30,与饰品 0.50 拉开层次
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [10, 14]
         dropChance: 1.0
