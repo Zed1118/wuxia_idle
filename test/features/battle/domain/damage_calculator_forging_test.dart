@@ -7,7 +7,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 
-final _skill = SkillDef(
+const _skill = SkillDef(
   id: 's_pierce_test',
   name: 'x',
   description: 'd',
