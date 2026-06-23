@@ -790,6 +790,16 @@ class GameRepository {
   /// 跳过 per-skill cap 校验;但 unlock 引用一致性始终校验(encounters.yaml 在场时),
   /// P2-a 后空池 + 有 unlockSkill 引用 → fail-fast,不再静默跳过。
   void _enforceEncounterSkillRedLines() {
+    // GDD §5.4 红线:全游戏招式 powerMultiplier ≤ 8000。覆盖 skills.yaml +
+    // encounter_skills.yaml 全部 skillDefs——此前该上限只在下方 encounterSkillIds
+    // 循环内校验,普通心法招(skills.yaml)越界会静默 load(审计 C-F4 缺口)。
+    for (final s in skillDefs.values) {
+      if (s.powerMultiplier > 8000) {
+        throw StateError(
+          'skill ${s.id} powerMultiplier=${s.powerMultiplier} > 8000 (GDD §5.4)',
+        );
+      }
+    }
     const tierCaps = [1500, 2000, 2500, 3000, 4000, 5500, 8000];
     for (final id in encounterSkillIds) {
       final s = skillDefs[id]!;
@@ -812,12 +822,8 @@ class GameRepository {
           '${s.powerMultiplier} 越界,应 ≤ $cap',
         );
       }
-      // GDD §5.4 红线:全游戏招式 powerMultiplier ≤ 8000
-      if (s.powerMultiplier > 8000) {
-        throw StateError(
-          'encounter skill $id powerMultiplier=${s.powerMultiplier} > 8000',
-        );
-      }
+      // 全局 ≤ 8000 上限已在方法开头对全部 skillDefs 统一校验,此处只保留
+      // encounter 专属的 per-tier 更严 cap。
     }
     // unlock 引用一致性:encounters.yaml 的所有 unlockSkill outcome
     // 必须能在 encounter skill 池里找到 def(且必须是 encounter skill,
