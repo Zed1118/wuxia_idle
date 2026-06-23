@@ -68,6 +68,8 @@ class BattleLog {
       markers.add(EnumL10n.attackEffect(eff));
     }
 
+    if (r.lifestealHeal > 0) markers.add('吸血 +${r.lifestealHeal}');
+
     final target = _findChar(state, action.targetId!);
     final killed = target != null && !target.isAlive;
     if (killed) markers.add('击杀');

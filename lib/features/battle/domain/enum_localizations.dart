@@ -93,6 +93,7 @@ class EnumL10n {
       'extra_quake_dmg' => '附带震伤',
       'crit_rate_+0.20' => '暴击率 +20%',
       'internal_injury' => '施加内伤',
+      'armor_pierce' => '破甲',
       _ => key,
     };
   }
