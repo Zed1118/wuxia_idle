@@ -39,6 +39,7 @@ import '../../cultivation/presentation/skill_treasure_overlay.dart';
 import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../encounter/presentation/encounter_hook.dart';
+import '../../equipment/presentation/milestone_grant_hook.dart';
 import '../../jianghu/application/jianghu_providers.dart';
 import '../../lineage/presentation/disciple_join_hook.dart';
 import '../../sect/presentation/stage_boss_recruit_hook.dart';
@@ -311,6 +312,11 @@ Future<void> runStageFlow({
       stageId: stage.id,
     );
   }
+
+  // F1 里程碑装备授予 hook:群战/心魔首通终点关 → 授 special 装备进背包。
+  // 在 recordVictory(clearedStageIds 写入)之后;service 内幂等防重,
+  // 非里程碑关 / 已授予 no-op。静默入袋无特效。
+  await runMilestoneGrantHookAfterVictory(stageId: stage.id);
 
   // P4.1 1.1 Q6B · Boss 战胜后招降 hook(spec p4_1_q6b_stage_boss_recruit_spec
   // _2026-05-26.md §3.2)· 在 encounter hook 之后顺序执行 · isBossStage +
