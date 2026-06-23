@@ -64,3 +64,7 @@
 ## 八 · 阶段性审查发现技术债(2026-06-22)
 
 - [x] **战报 `_formatAction` 死字段 + 双轨战报架构梳理(T13)**:已清(`15d4235b`)。实测攻击行动(attackResult!=null)的 description 从不显示——`BattleLog.formatAction` 从 attackResult 重格式化(闪避率/克制/效果/击杀全覆盖)才是 live 路径,description 仅 `battle_log.dart:37` 非攻击兜底(attackResult==null) + toString debug 读,无回放读(replay 按 seed 重跑)。故删 `_formatAction`(连带消其 5 处 §5.6 散写中文),攻击 description 留空 · 破招仍记 EnumL10n(合法 sink) · 非攻击 description(staggered/charging/phase 转换·EnumL10n)不动。无测试依赖其产出。
+
+## 九 · 战斗体验打磨(第五阶段 · 2026-06-23)
+
+- [ ] **战斗节奏真机校值**:A+C 已实装(spec/plan `2026-06-23-battle-pacing-readability-*` · 合 main)。初值 `action_interval_ms=1000`/`key_moment_hold_ms=400`/`damage_popup_ms=700` 待真机 `flutter run -d macos` 看常速战斗手感调定(纯 numbers.yaml 配置·连带同步 `AnimationNumbers.defaults`)。用户拍板先 merge 初值,真机后调。
