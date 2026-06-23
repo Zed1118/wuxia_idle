@@ -253,6 +253,66 @@ void main() {
     });
   });
 
+  // ── Task 6 红线:满破甲 build(Σpierce 0.60)对武圣 35% 防御暴击不进百万 ──
+  group('满破甲 build(Σpierce 0.60)对武圣 35% 防御 暴击 不进百万', () {
+    // 背景:开锋系统允许 3 件装备各配 pierce 槽,每件 pierce 上限 20%。
+    // 满配 Σpierce = 3 × 0.20 = 0.60(绝对减防御率,最坏情况)。
+    // 武圣固定防御率 0.35 → effectiveDefRate = max(0, 0.35 - 0.60) = 0(完全破防)。
+    // 本探针在「现有满 build 参数(满内力/满装备攻击/极境修炼度/最高克制)」基础上
+    // 额外加 attackerPiercePct=0.60,证明即便完全破防 + 暴击也不进百万。
+    test('满破甲 build(Σpierce 0.60)对武圣 35% 防御 暴击仍不进百万', () {
+      final n = GameRepository.instance.numbers;
+      final totalEqAtk =
+          CharacterDerivedStats.effectiveEquipmentAttack(
+                maxBuild(EquipmentSlot.weapon, 2000), n) +
+              CharacterDerivedStats.effectiveEquipmentAttack(
+                maxBuild(EquipmentSlot.accessory, 850), n);
+
+      // 满破甲极值:3 件各 pierce=20% → Σ=0.60,完全破透武圣 35% 防御。
+      const wuShengDefenseRate = 0.35; // 武圣固定档
+      const piercePct = 0.60; // 满 3 件×20% pierce
+
+      final result = DamageCalculator.calculateResolved(
+        attackerInternalForce: 15000, // 满内力(numbers.yaml 上限)
+        attackerEquipmentAttack: totalEqAtk, // 满强化神物×满共鸣×双攻开锋
+        attackerCultivationLayer: CultivationLayer.jiJing, // 极境(×3.0 修炼度)
+        attackerSchool: TechniqueSchool.gangMeng,
+        defenderSchool: TechniqueSchool.yinRou, // 刚猛克阴柔 ×1.25(最坏克制)
+        attackerRealmTier: RealmTier.wuSheng,
+        attackerRealmLayer: RealmLayer.dengFeng,
+        defenderRealmTier: RealmTier.wuSheng,
+        defenderRealmLayer: RealmLayer.dengFeng,
+        defenderDefenseRate: wuShengDefenseRate, // 武圣固定档,破甲从这里减
+        defenderEvasionRate: 0.0,
+        attackerCriticalRate: 1.0,
+        attackPowerMultiplier: 1.0,
+        skill: normal, // 普攻倍率 500(保守探针,大招另有破绽窗口测覆盖)
+        n: n,
+        rng: Random(7),
+        forceCritical: true, // 强制暴击(worst-case)
+        attackerPiercePct: piercePct, // 满破甲 Σ=0.60,完全破透 35% 防御
+      );
+
+      // 诊断输出:记录实测值供人工读数。
+      // ignore: avoid_print
+      print('[Task6满破甲红线] calculator 探针:'
+          ' finalDamage=${result.finalDamage}'
+          '  piercePct=$piercePct  effectiveDefRate='
+          '${(wuShengDefenseRate - piercePct).clamp(0.0, 1.0).toStringAsFixed(3)}'
+          '  headroom vs 1M: ${(1000000 - result.finalDamage).toStringAsFixed(0)}'
+          ' (${((1 - result.finalDamage / 1000000) * 100).toStringAsFixed(1)}% 余量)');
+
+      expect(
+        result.finalDamage,
+        lessThan(1000000),
+        reason: 'GDD/CLAUDE §5.4 软红线唯一硬线:'
+            '满破甲极值 build(Σpierce=$piercePct × 武圣 defenseRate=$wuShengDefenseRate'
+            ' → effectiveDefRate=0)+ 满 build 普攻暴击 calculator 探针仍不进百万。'
+            '若此断言 FAIL → §5.4 真实越界,不得削弱断言,立即上报。',
+      );
+    });
+  });
+
   // ── 第六阶段 红线:破绽窗口极值爆发不进百万 ──
   group('第六阶段 破绽窗口减防极值(staggerDefenseDownOverride=cap=0.5) 不进百万', () {
     // 破绽窗口减防机制(default_ground_strategy._calculateInBattle §690-696):
