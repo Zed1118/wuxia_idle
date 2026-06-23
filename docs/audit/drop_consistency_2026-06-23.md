@@ -14,7 +14,7 @@
 
 ### 高 · 真 content bug
 
-**F1 — 3 件 special 装备完全不可获得**（最高价值）
+**F1 — 3 件 special 装备完全不可获得**（最高价值）✅ 已修(2026-06-23 续47 · 方案 A 实装 3 里程碑通道)
 - `weapon_special_wu_ming_jian`(宝物) / `accessory_special_xin_mo_zhu`(重器) / `armor_special_bai_zhan_jia`(利器)
 - 三件有完整定义 + 美术(icon+detail) + 典故 lore，`dropSourceTags` 声明授予通道 `ascension_reward`/`inner_demon_reward`/`mass_battle_merit`（equipment.yaml:1322/1339/1354）
 - **亲核证实**：① `dropSourceTags` 全 lib **0 消费**（仅 equipment_def.dart:19/58/84 解析）② 3 个 tag 字符串只在 equipment.yaml 出现，无任何消费方 ③ 3 件 defId 全仓查（lib/data/test）**无任何授予逻辑**，只有定义/lore/asset ④ 配合心魔关 `dropTable: []`，飞升/群战/心魔三个声明通道**均未实装**
@@ -45,8 +45,9 @@
 - stage_def.dart:38-39 + tower_floor_def.dart 定义，注释自承「Phase 1 占位旧字段」，全 lib **0 读取**，live 掉落 100% 走 dropTable
 - 建议：删字段或头注释标 unused（memory feedback_yaml_config_unused_field）
 
-**F6 — `dropSourceTags` 死字段**（与 F1 同根）
+**F6 — `dropSourceTags` 死字段**（与 F1 同根）✅ 已修(2026-06-23 续47)
 - 0 消费；F1 的 3 个授予通道未实装的直接体现。F1 修复时一并处理
+- 实修:`MilestoneEquipmentGrantService._defsForTag` 按 dropSourceTags 筛装备授予,字段变 live 消费源
 
 **F7 — 无全局 dropTable 引用校验器**
 - `_enforceRedLines`(game_repository.dart:495-617) ~30 条子校验，**无一遍历 dropTable 核对 equipmentDefId/inventoryItemDefId 存在**
