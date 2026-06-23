@@ -35,9 +35,11 @@
 - 越 2 阶（一流→宝物，需绝顶才解锁），0.40 刚越过 0.30 aspirational 阈值
 - **处置（用户拍板方案 A）**：换 `armor_zhongqi_han_tie_zhong_jia`(重器/绝顶阶，+1 阶) 贴齐跨阶 jueDing Boss 及同关另两件 zhongQi 掉落；dropChance 0.40→0.30 与饰品 0.50 拉开层次。金丝甲回归 dropSourceTags 声明来源 tower_30/zongShi_unlock，不再一流阶提前架空里程碑。无 test 硬引用旧 defId，掉落改动不触战斗红线。analyze 0 / 全量 2855+1skip（0 回归）。
 
-**F4 — 终局塔层奖励含水分**
+**F4 — 终局塔层奖励含水分** — ✅ **resolved 2026-06-24（续51 · 方案 A · commit 0105eaf9）**
 - tower 装备封顶 baoWu，**无 shenWu**（towers.yaml:28 文件头自承占位待补）
 - floor28-30（宗师境界）大量回掉 liQi 低阶装备（越境界往下 3-4 阶），与「爬塔=高阶挑战奖励」哲学冲突，终局塔层价值偏低
+- **Phase 0 修正审计前提（2 处）**：① 「无 shenWu」**非水分**——塔封顶宗师阶（无武圣层，武圣留 Phase 4 飞升），锁步 §5.3 下本不该掉 shenWu（11 件 shenWu 全在主线武圣阶关，towers 0 件，正确）；② 实测最深 **-3 阶**（haoJiaHuo vs baoWu），无 -4。**真问题 = 回掉低阶装备稀释**（floor 23-30，非仅 28-30）。
+- **处置（用户拍板方案 A）**：清 floor 23-30 的 10 件回掉低阶装备（long_quan×5/jin_pao×2/yu_pei_lao×2，floor 30 终局 3 件@100%），保留同阶 zhongqi/baowu + 秘籍 + 经验丹，心血结晶各层加码补偿；shenWu 不进塔（与 F3 消越阶自洽）。移除项均在主线/低层仍可获得（不孤儿）。**残留**：floor 20（一流 boss）yu_pei_lao -1 阶轻微回掉，在 16-20 一流段（超本批 23-30 scope），留底未动。analyze 0 / 全量 2855+1skip（0 回归）。
 
 ### 低 · 配置卫生 / guardrail 缺失
 
