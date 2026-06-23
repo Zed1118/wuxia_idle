@@ -30,12 +30,16 @@ class SaveData {
   /// 最后在线时间，离线挂机用，玩家关游戏时写入。
   late DateTime lastOnlineAt;
 
+  /// 门派名。onboarding 写入，但当前**无读取方**：sect_screen 从 Sect 实体取名
+  /// 显示，本字段为预留（审计 A-F7，写而不读，保留不删免 schema churn）。
   String? sectName;
   int? founderCharacterId;
 
   /// 当前出战阵容（FK → Character.id），长度 ≤3。
   List<int> activeCharacterIds = [];
 
+  /// 累计游玩秒数。预留统计字段，**当前无写入点**（审计 A-F6，never-written，
+  /// 默认 0；会话时长统计未接线，保留不删免 schema churn）。
   int totalPlaySeconds = 0;
   bool isOnboardingCompleted = false;
   int highestTowerLayer = 0;
