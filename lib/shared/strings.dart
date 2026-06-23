@@ -796,6 +796,10 @@ class UiStrings {
   static const String towerDropSource = '爬塔奖励';
   // 装备掉落默认来历标签(DropService.defaultObtainedFrom · 显于兵器谱/装备详情「个人历程·来历」)。
   static const String dropSourceStageDefault = '关卡掉落';
+  // F1 里程碑装备来历(MilestoneEquipmentGrantService 授予 obtainedFrom)。
+  static const String dropSourceMassBattleMerit = '群战军功';
+  static const String dropSourceInnerDemonReward = '降服心魔';
+  static const String dropSourceAscensionReward = '飞升所得';
   static const String towerVictoryConfirm = '确定';
   static const String towerReplayNoReward = '已重打通关，重打不发奖';
   static const String towerFirstClearLabel = '首通奖励：';
