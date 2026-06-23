@@ -38,8 +38,6 @@ StageDef _stage(String id, List<EnemyDef> team) => StageDef(
       requiredRealm: RealmTier.erLiu,
       enemyTeam: team,
       isBossStage: false,
-      dropEquipmentDefIds: const [],
-      dropItemDefIds: const [],
       baseExpReward: 100,
       difficultyMultiplier: 1.0,
     );

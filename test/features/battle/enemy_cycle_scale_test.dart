@@ -284,8 +284,6 @@ void main() {
       requiredRealm: RealmTier.xueTu,
       enemyTeam: [normalEnemy],
       isBossStage: false,
-      dropEquipmentDefIds: [],
-      dropItemDefIds: [],
       baseExpReward: 0,
       difficultyMultiplier: 1.0,
       massBattleWaveCount: 2,

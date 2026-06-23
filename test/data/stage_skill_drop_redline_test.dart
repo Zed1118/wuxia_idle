@@ -22,11 +22,11 @@ void main() {
   });
 
   test('① 非 Boss 关配 dropSkillManualId → 抛 StateError(isBossStage=false)', () async {
-    // stage_01_01 非 Boss · dropEquipmentDefIds: [armor_xunchang_bu_yi] unique 锚
+    // stage_01_01 非 Boss · '  - id: stage_01_01' 是 unique 锚
+    // (F5/2026-06-23 删 dropEquipmentDefIds 占位字段后改锚 stage 声明行)。
     String inject(String s) => s.replaceFirst(
-          'dropEquipmentDefIds: [armor_xunchang_bu_yi]',
-          'dropSkillManualId: skill_qingshan_qingfeng\n    '
-              'dropEquipmentDefIds: [armor_xunchang_bu_yi]',
+          '  - id: stage_01_01\n',
+          '  - id: stage_01_01\n    dropSkillManualId: skill_qingshan_qingfeng\n',
         );
     expect(
       GameRepository.loadAllDefs(loader: makeStagesLoader(inject)),

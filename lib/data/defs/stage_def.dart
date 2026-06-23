@@ -7,9 +7,9 @@ import 'drop_entry.dart';
 /// `enemyTeam` 长度 0–3：剧情关卡可空，普通关卡 1–3 个敌人。
 ///
 /// 掉落机制（phase2_tasks T27）：
-///   - `dropTable` 是带 dropChance 的精细化掉落表，由 `DropService.rollDrops` 消费
-///   - `dropEquipmentDefIds` / `dropItemDefIds` 是 Phase 1 占位的简化列表，
-///     **当前未被任何 service 使用**；保留只为 yaml 向后兼容，Phase 5 整理时再清
+///   - `dropTable` 是带 dropChance 的精细化掉落表，由 `DropService.rollDrops` 消费，
+///     是唯一的 live 掉落来源（F5/2026-06-23：已删 Phase 1 占位的
+///     `dropEquipmentDefIds` / `dropItemDefIds` 冗余简化列表，dropTable 为其超集）
 class StageDef {
   final String id;
   final String name;
@@ -35,8 +35,6 @@ class StageDef {
   /// 章内普通关战败直接返回 stage list（缺文件由 NarrativeLoader 兜底）。
   final String? narrativeDefeatId;
 
-  final List<String> dropEquipmentDefIds;
-  final List<String> dropItemDefIds;
   final List<DropEntry> dropTable;
   final int baseExpReward;
   final double difficultyMultiplier;
@@ -103,8 +101,6 @@ class StageDef {
     this.narrativeOpeningId,
     this.narrativeVictoryId,
     this.narrativeDefeatId,
-    required this.dropEquipmentDefIds,
-    required this.dropItemDefIds,
     this.dropTable = const [],
     required this.baseExpReward,
     required this.difficultyMultiplier,
@@ -137,12 +133,6 @@ class StageDef {
       narrativeOpeningId: y['narrativeOpeningId'] as String?,
       narrativeVictoryId: y['narrativeVictoryId'] as String?,
       narrativeDefeatId: y['narrativeDefeatId'] as String?,
-      dropEquipmentDefIds: List<String>.from(
-        (y['dropEquipmentDefIds'] as List? ?? const []).map((e) => e as String),
-      ),
-      dropItemDefIds: List<String>.from(
-        (y['dropItemDefIds'] as List? ?? const []).map((e) => e as String),
-      ),
       dropTable: ((y['dropTable'] as List?) ?? const [])
           .map((e) => DropEntry.fromYaml(Map<String, dynamic>.from(e as Map)))
           .toList(growable: false),

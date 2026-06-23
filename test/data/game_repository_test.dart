@@ -737,8 +737,6 @@ stages:
     requiredRealm: xueTu
     enemyTeam: []
     isBossStage: false
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     baseExpReward: 0
     difficultyMultiplier: 1.0
 ''';
@@ -768,8 +766,6 @@ stages:
     requiredRealm: xueTu
     enemyTeam: []
     isBossStage: false
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     baseExpReward: 0
     difficultyMultiplier: 1.0
   - id: ch2_stage_wrong_prev
@@ -780,8 +776,6 @@ stages:
     requiredRealm: sanLiu
     enemyTeam: []
     isBossStage: false
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     baseExpReward: 0
     difficultyMultiplier: 1.0
 ''';
@@ -852,12 +846,6 @@ stages:
                     '${entry.equipmentDefId} 应在 equipment.yaml 存在 '
                     '(防 Ch5/Ch6 写错 runtime crash)');
           }
-        }
-        // dropEquipmentDefIds(占位简化列表)反向引用
-        for (final eqId in stage.dropEquipmentDefIds) {
-          expect(equipmentIds.contains(eqId), isTrue,
-              reason: 'stage ${stage.id} dropEquipmentDefIds 引用 $eqId '
-                  '应在 equipment.yaml 存在');
         }
       }
     });

@@ -68,8 +68,6 @@ stages:
         skillIds: [skill_yinrou_jichu_basic]
         iconPath: assets/enemies/thug_c.png
     isBossStage: false
-    dropEquipmentDefIds: [armor_xunchang_bu_yi]
-    dropItemDefIds: []
     # W13-v3 fix: 新手第一关 onboarding(GDD §10.2 教程节奏),100% 掉 1 件
     # 寻常护甲 + 1 块磨剑石,让玩家第一次胜利就拿到装备 + 物料 reward feedback
     dropTable:
@@ -130,8 +128,6 @@ stages:
         skillIds: [skill_yinrou_jichu_basic]
         iconPath: assets/enemies/ruffian_c.png
     isBossStage: false
-    dropEquipmentDefIds: [accessory_xunchang_yu_pei]
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_xunchang_zhe_dao
         dropChance: 0.35
@@ -190,8 +186,6 @@ stages:
         skillIds: [skill_yinrou_jichu_basic]
         iconPath: assets/enemies/bandit_c.png
     isBossStage: false
-    dropEquipmentDefIds: [weapon_xunchang_tie_jian]
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
         dropChance: 0.40
@@ -256,8 +250,6 @@ stages:
         skillIds: [skill_yinrou_jichu_basic]
         iconPath: assets/enemies/gateguard_b.png
     isBossStage: true
-    dropEquipmentDefIds: [weapon_xunchang_tie_jian, accessory_xunchang_yu_pei]
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
         dropChance: 0.60
@@ -352,11 +344,6 @@ stages:
     factionId: shaolin                              # Ch1 竹林 Boss · 少林地盘(orthodox)
     bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
       candidateRef: bamboo_swordsman              # data/sect_candidates.yaml 已配(lingQiao 三系)
-    dropEquipmentDefIds:
-      - armor_xunchang_bu_yi
-      - accessory_xunchang_yu_pei
-      - weapon_xunchang_tie_jian
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
         dropChance: 1.0
@@ -428,10 +415,6 @@ stages:
         skillIds: [skill_yinrou_jichu_basic]
         iconPath: assets/enemies/jianghu_b.png
     isBossStage: false
-    dropEquipmentDefIds:
-      - weapon_xiangyang_gang_dao
-      - armor_xiangyang_pi_jia
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.30
@@ -492,8 +475,6 @@ stages:
         skillIds: [skill_yinrou_jichu_basic]
         iconPath: assets/enemies/kibitzer_b.png
     isBossStage: false
-    dropEquipmentDefIds: [accessory_xiangyang_yin_jie]
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_xiangyang_jiu_jie_bian
         dropChance: 0.35
@@ -554,8 +535,6 @@ stages:
         skillIds: [skill_yinrou_jichu_basic]
         iconPath: assets/enemies/swordtester_b.png
     isBossStage: false
-    dropEquipmentDefIds: [weapon_xiangyang_gang_dao]
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.50
@@ -621,10 +600,6 @@ stages:
         skillIds: [skill_yinrou_jichu_basic, skill_yinrou_jichu_skill]
         iconPath: assets/enemies/langren_b.png
     isBossStage: true
-    dropEquipmentDefIds:
-      - weapon_xiangyang_gang_dao
-      - armor_xiangyang_pi_jia
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 0.80
@@ -704,10 +679,6 @@ stages:
     npcId: cijianzhuang_assassin                 # P1.2 §6 占位 · 1.1+ 接入真 NPC schema
     bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
       candidateRef: desert_wanderer               # data/sect_candidates.yaml 已配(gangMeng 三系)
-    dropEquipmentDefIds:
-      - weapon_haojiahuo_qing_feng_jian
-      - accessory_xiangyang_yin_jie
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_haojiahuo_qing_feng_jian
         dropChance: 0.70
@@ -781,8 +752,6 @@ stages:
           - skill_yinrou_mingjia_skill
         iconPath: assets/enemies/anye.png
     isBossStage: false
-    dropEquipmentDefIds: [armor_haojiahuo_jin_pao]
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_haojiahuo_xuan_hua_fu
         dropChance: 0.30
@@ -847,10 +816,6 @@ stages:
           - skill_yinrou_mingjia_skill
         iconPath: assets/enemies/taixia_b.png
     isBossStage: false
-    dropEquipmentDefIds:
-      - weapon_haojiahuo_qing_feng_jian
-      - armor_haojiahuo_jin_pao
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_haojiahuo_qing_feng_jian
         dropChance: 0.50
@@ -917,8 +882,6 @@ stages:
           - skill_lingqiao_mingjia_skill
         iconPath: assets/enemies/seng_b.png
     isBossStage: false
-    dropEquipmentDefIds: [accessory_haojiahuo_yu_pei_lao]
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: accessory_haojiahuo_yu_pei_lao
         dropChance: 0.40
@@ -988,10 +951,6 @@ stages:
           - skill_yinrou_mingjia_skill
         iconPath: assets/enemies/tongmen_b.png
     isBossStage: true
-    dropEquipmentDefIds:
-      - armor_haojiahuo_jin_pao
-      - accessory_haojiahuo_yu_pei_lao
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: armor_haojiahuo_jin_pao
         dropChance: 0.80
@@ -1072,10 +1031,6 @@ stages:
     npcId: jiaoMen_shidi                         # P1.2 §6 占位
     bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
       candidateRef: mountain_hermit               # data/sect_candidates.yaml 已配(yinRou 三系)
-    dropEquipmentDefIds:
-      - weapon_liqi_long_quan
-      - accessory_haojiahuo_yu_pei_lao
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 1.0
@@ -1151,9 +1106,6 @@ stages:
           - skill_yinrou_menpai_basic
         iconPath: assets/enemies/liukou_c.png
     isBossStage: false
-    dropEquipmentDefIds:
-      - weapon_liqi_long_quan
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 0.80
@@ -1221,9 +1173,6 @@ stages:
           - skill_yinrou_menpai_skill
         iconPath: assets/enemies/guard_c.png
     isBossStage: false
-    dropEquipmentDefIds:
-      - weapon_liqi_pan_long_dao
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_liqi_pan_long_dao
         dropChance: 0.70
@@ -1293,10 +1242,6 @@ stages:
           - skill_lingqiao_menpai_ult
         iconPath: assets/enemies/shafei_c.png
     isBossStage: false
-    dropEquipmentDefIds:
-      - weapon_liqi_lian_zi_bian
-      - accessory_haojiahuo_yu_pei_lao
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_liqi_lian_zi_bian
         dropChance: 0.70
@@ -1368,10 +1313,6 @@ stages:
           - skill_yinrou_menpai_skill
         iconPath: assets/enemies/xiliang_b.png
     isBossStage: true
-    dropEquipmentDefIds:
-      - weapon_liqi_lian_zi_bian
-      - accessory_haojiahuo_yu_pei_lao
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_liqi_lian_zi_bian
         dropChance: 1.0
@@ -1453,11 +1394,6 @@ stages:
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
       candidateRef: river_drifter                 # data/sect_candidates.yaml 已配(lingQiao)
     npcId: cijianzhuang_bazhu                    # P1.2 §6 占位
-    dropEquipmentDefIds:
-      - weapon_zhongqi_qing_xu_jian
-      - accessory_zhongqi_qing_yu_huan
-      - armor_baowu_jin_si_jia
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_zhongqi_qing_xu_jian
         dropChance: 1.0
@@ -1533,9 +1469,6 @@ stages:
           - skill_yinrou_jianghu_basic
         iconPath: assets/enemies/changan_daoke.png
     isBossStage: false
-    dropEquipmentDefIds:
-      - weapon_zhongqi_po_zhen_chui
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_zhongqi_po_zhen_chui
         dropChance: 0.70
@@ -1603,9 +1536,6 @@ stages:
           - skill_gangmeng_jianghu_skill
         iconPath: assets/enemies/zhongzhou_wuxue.png
     isBossStage: false
-    dropEquipmentDefIds:
-      - weapon_zhongqi_du_long_suo
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_zhongqi_du_long_suo
         dropChance: 0.70
@@ -1674,9 +1604,6 @@ stages:
           - skill_yinrou_jianghu_skill
         iconPath: assets/enemies/yidu_jianke.png
     isBossStage: false
-    dropEquipmentDefIds:
-      - armor_zhongqi_yin_lin_jia
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: armor_zhongqi_yin_lin_jia
         dropChance: 0.50
@@ -1746,10 +1673,6 @@ stages:
           - skill_yinrou_jianghu_skill
         iconPath: assets/enemies/zhongzhou_zhuzhen.png
     isBossStage: true
-    dropEquipmentDefIds:
-      - weapon_zhongqi_po_zhen_chui
-      - armor_zhongqi_yin_lin_jia
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_zhongqi_po_zhen_chui
         dropChance: 1.0
@@ -1831,11 +1754,6 @@ stages:
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
       candidateRef: blacksmith_son                # data/sect_candidates.yaml 已配(gangMeng)
     npcId: jiaoMen_songshan_daozong              # P1.2 §6 占位
-    dropEquipmentDefIds:
-      - weapon_baowu_chang_hong_jian
-      - accessory_baowu_yu_long_pei
-      - armor_zhongqi_yin_lin_jia
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_baowu_chang_hong_jian
         dropChance: 1.0
@@ -1899,9 +1817,6 @@ stages:
           - skill_gangmeng_shichuan_skill
         iconPath: assets/enemies/zhongzhou_yiyong.png
     isBossStage: false
-    dropEquipmentDefIds:
-      - weapon_baowu_xuan_tian_fu
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_baowu_xuan_tian_fu
         dropChance: 1.0
@@ -1958,9 +1873,6 @@ stages:
           - skill_lingqiao_shichuan_skill
         iconPath: assets/enemies/songshan_xunshanren.png
     isBossStage: false
-    dropEquipmentDefIds:
-      - weapon_baowu_xue_lian_bian
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_baowu_xue_lian_bian
         dropChance: 1.0
@@ -2030,10 +1942,6 @@ stages:
           - skill_lingqiao_shichuan_skill
         iconPath: assets/enemies/huanghe_shuibing.png
     isBossStage: false
-    dropEquipmentDefIds:
-      - armor_baowu_jin_si_jia
-      - accessory_baowu_yu_long_pei
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: armor_baowu_jin_si_jia
         dropChance: 1.0
@@ -2108,10 +2016,6 @@ stages:
         iconPath: assets/enemies/kunlun_dunke.png
     isBossStage: true
     npcId: cijianzhuang_kunlun_dunke             # P1.2 §6 占位
-    dropEquipmentDefIds:
-      - accessory_shenwu_kun_lun_pei
-      - weapon_baowu_xuan_tian_fu
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: accessory_shenwu_kun_lun_pei
         dropChance: 1.0
@@ -2198,11 +2102,6 @@ stages:
     factionId: luLin                               # Ch6 昆仑 Boss · 绿林(neutral)
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
       candidateRef: valley_hermit                 # data/sect_candidates.yaml 1.1 新增(yinRou)
-    dropEquipmentDefIds:
-      - weapon_shenwu_tian_wen_jian
-      - armor_shenwu_xuan_huang_pao
-      - accessory_baowu_yu_long_pei
-    dropItemDefIds: []
     dropTable:
       - equipmentDefId: weapon_shenwu_tian_wen_jian
         dropChance: 1.0
@@ -2250,8 +2149,6 @@ stages:
     requiredRealm: wuSheng
     enemyTeam: []
     isBossStage: true
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable: []
     baseExpReward: 0
     difficultyMultiplier: 6.2
@@ -2268,8 +2165,6 @@ stages:
     requiredRealm: wuSheng
     enemyTeam: []
     isBossStage: true
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable: []
     baseExpReward: 0
     difficultyMultiplier: 6.4
@@ -2286,8 +2181,6 @@ stages:
     requiredRealm: wuSheng
     enemyTeam: []
     isBossStage: true
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable: []
     baseExpReward: 0
     difficultyMultiplier: 6.6
@@ -2304,8 +2197,6 @@ stages:
     requiredRealm: wuSheng
     enemyTeam: []
     isBossStage: true
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable: []
     baseExpReward: 0
     difficultyMultiplier: 6.8
@@ -2322,8 +2213,6 @@ stages:
     requiredRealm: wuSheng
     enemyTeam: []
     isBossStage: true
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable: []
     baseExpReward: 0
     difficultyMultiplier: 7.0
@@ -2340,8 +2229,6 @@ stages:
     requiredRealm: wuSheng
     enemyTeam: []
     isBossStage: true
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable: []
     baseExpReward: 0
     difficultyMultiplier: 7.2
@@ -2358,8 +2245,6 @@ stages:
     requiredRealm: wuSheng
     enemyTeam: []
     isBossStage: true
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable: []
     baseExpReward: 0
     difficultyMultiplier: 7.5
@@ -2418,8 +2303,6 @@ stages:
           - skill_lightfoot_yiliu_yinrou_basic
         iconPath: assets/enemies/lightfoot_shuikou_c.png
     isBossStage: false
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [6, 9]
@@ -2480,8 +2363,6 @@ stages:
           - skill_lightfoot_yiliu_yinrou_skill
         iconPath: assets/enemies/lightfoot_yexun_c.png
     isBossStage: false
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [7, 10]
@@ -2544,8 +2425,6 @@ stages:
           - skill_lightfoot_yiliu_gangmeng_ult
         iconPath: assets/enemies/lightfoot_zhuke_c.png
     isBossStage: false
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [8, 11]
@@ -2605,8 +2484,6 @@ stages:
           - skill_lightfoot_jueding_gangmeng_skill
         iconPath: assets/enemies/lightfoot_pubu_c.png
     isBossStage: false
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [10, 13]
@@ -2670,8 +2547,6 @@ stages:
           - skill_lightfoot_jueding_yinrou_ult
         iconPath: assets/enemies/lightfoot_changfeng_c.png
     isBossStage: true
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [12, 15]
@@ -2741,8 +2616,6 @@ stages:
           - skill_lightfoot_yiliu_yinrou_basic
         iconPath: assets/enemies/massbattle_cunfei_c.png
     isBossStage: false
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [6, 9]
@@ -2804,8 +2677,6 @@ stages:
           - skill_lightfoot_yiliu_yinrou_skill
         iconPath: assets/enemies/massbattle_zhenkou_c.png
     isBossStage: false
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [7, 10]
@@ -2869,8 +2740,6 @@ stages:
           - skill_lightfoot_yiliu_gangmeng_ult
         iconPath: assets/enemies/massbattle_xianjie_c.png
     isBossStage: false
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [8, 11]
@@ -2931,8 +2800,6 @@ stages:
           - skill_lightfoot_jueding_gangmeng_skill
         iconPath: assets/enemies/massbattle_guanqi_c.png
     isBossStage: false
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [10, 13]
@@ -2997,8 +2864,6 @@ stages:
           - skill_lightfoot_jueding_yinrou_ult
         iconPath: assets/enemies/massbattle_canbu_c.png
     isBossStage: true
-    dropEquipmentDefIds: []
-    dropItemDefIds: []
     dropTable:
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [12, 15]

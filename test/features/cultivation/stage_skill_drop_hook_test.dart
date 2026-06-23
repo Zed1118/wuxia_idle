@@ -17,8 +17,6 @@ StageDef _bossStage({String? manual, String? fragment}) => StageDef(
       requiredRealm: RealmTier.xueTu,
       enemyTeam: const [],
       isBossStage: true,
-      dropEquipmentDefIds: const [],
-      dropItemDefIds: const [],
       baseExpReward: 0,
       difficultyMultiplier: 1.0,
       dropSkillManualId: manual,
