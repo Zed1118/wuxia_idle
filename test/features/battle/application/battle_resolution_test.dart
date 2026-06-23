@@ -166,11 +166,12 @@ void main() {
   StageDef buildStage({
     List<DropEntry> dropTable = const [],
     bool isBossStage = false,
+    StageType stageType = StageType.mainline,
   }) =>
       StageDef(
         id: 'stage_test',
         name: '测试关',
-        stageType: StageType.mainline,
+        stageType: stageType,
         chapterIndex: 1,
         requiredRealm: RealmTier.xueTu,
         enemyTeam: const [],
@@ -801,6 +802,53 @@ void main() {
       expect(w.battleCount, 1);
       // 不掉装备 / 物品
       expect(result.dropResult.isEmpty, isTrue);
+    });
+
+    test('心魔关战败：只触发心魔惩罚，不叠加 Boss 散功（修复双重惩罚）', () {
+      // 回归：7 个 stage_inner_demon_* 全部 isBossStage:true，旧逻辑下 Boss 散功
+      // 分支(isBossStage)与心魔惩罚分支(stageType==innerDemon)同时命中 → 内力被
+      // 扣两次、修炼度双回退。互斥后心魔关只走 InnerDemonService.applyFailurePenalty。
+      final ch = buildCharacter(id: 1, mainTechId: 200);
+      ch.internalForce = 8000;
+      final mainTech = buildTechnique(
+        id: 200,
+        ownerCharId: 1,
+        defId: 'tech_main',
+        layer: CultivationLayer.yuanMan,
+        progress: 1500,
+        progressToNext: 1500,
+      );
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 5,
+        result: BattleResult.rightWin,
+        actionLog: const [],
+      );
+
+      final result = BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: {1: [mainTech]},
+        stageDef: buildStage(isBossStage: true, stageType: StageType.innerDemon),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        isVictory: false,
+        numbersConfig: numbersCfg,
+      );
+
+      // 互斥：Boss 散功分支不触发（旧 bug 下 defeatPenalty 会有 1 条）。
+      expect(result.defeatPenaltyByCharacter, isEmpty,
+          reason: '心魔关战败不应叠加 Boss 散功（双重惩罚 bug 修复）');
+      // 心魔惩罚正常触发，且作用在未被 Boss 散功预扣的原始内力上。
+      expect(result.innerDemonPenaltyByCharacter.length, 1);
+      final p = result.innerDemonPenaltyByCharacter[1]!;
+      expect(p.internalForceBefore, 8000,
+          reason: '旧 bug 下 Boss 散功先把 8000 扣到 4000，心魔 before 会变 4000');
+      expect(ch.internalForce, p.internalForceAfter);
     });
 
     test('普通关战败：不触发散功，dropResult 空，battleCount 仍 ++', () {

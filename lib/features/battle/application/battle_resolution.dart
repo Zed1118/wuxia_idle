@@ -169,9 +169,14 @@ class BattleResolutionService {
         : const DropResult(equipments: [], items: []);
 
     // 4. Phase 4 W10：Boss 关战败 → 对每个有主修的参战角色应用被动散功
-    // tower 路径 stageDef=null 时 defeat 永远不进此分支（Boss 战败散功仅主线触发）
+    // tower 路径 stageDef=null 时 defeat 永远不进此分支（Boss 战败散功仅主线触发）。
+    // 心魔关(stageType==innerDemon)虽 isBossStage=true，但走下方独立心魔惩罚分支，
+    // 此处必须排除，否则两分支同时命中 → 内力双扣 + 修炼度双回退（双重惩罚 bug）。
     final defeatPenalty = <int, DefeatPenaltyResult>{};
-    if (!isVictory && stageDef != null && stageDef.isBossStage) {
+    if (!isVictory &&
+        stageDef != null &&
+        stageDef.isBossStage &&
+        stageDef.stageType != StageType.innerDemon) {
       if (numbersConfig == null) {
         throw ArgumentError(
           'BattleResolutionService.resolve: Boss 关战败必须传 numbersConfig '
@@ -193,7 +198,8 @@ class BattleResolutionService {
     }
 
     // M6:心魔关战败 → 对每个有主修参战角色应用心魔失败惩罚 + 余毒。
-    // 与 Boss 散功互斥(心魔关 isBossStage=false)。stageDef=null(tower) 不进。
+    // 与 Boss 散功互斥:心魔关 isBossStage=true,故由上方 Boss 分支显式排除
+    // stageType==innerDemon 来保证互斥(本分支独占)。stageDef=null(tower) 不进。
     final innerDemonPenalty = <int, InnerDemonPenaltyResult>{};
     if (!isVictory &&
         stageDef != null &&
