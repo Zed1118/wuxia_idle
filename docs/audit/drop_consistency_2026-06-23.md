@@ -23,12 +23,12 @@
 
 ### 中 · 体验/一致性
 
-**F2 — 首通秘籍 loot preview rarity 标签偏差**（子系统 B 的核心命中）
+**F2 — 首通秘籍 loot preview rarity 标签偏差**（子系统 B 的核心命中）✅ 已修(2026-06-23 续48 · 全面修 · `4772c5be`)
 - 主线 3 本秘籍 `item_scroll_*` dropChance=1.0（stages.yaml:380/727/1095）运行时**确实首通门控**（`shouldSkipScrollDrop` stage_entry_flow.dart:1215，应用于 :828）
 - 但主线预览整表硬编码 `isFirstClearGated: false`（stage_list_screen.dart:328）→ 这 3 本被归入 `changKeDe`(常可得)，**实际是首通必得、重打不补**
 - 根因：runtime 首通门控在主线是**逐 defId**（仅 scroll），preview 的 gated 是**整表单布尔**，表达不了「同表内秘籍门控、装备不门控」
 - 爬塔侧不受影响（整渠道 gated，tower_floor_card.dart:328 true 对全表都对）
-- 修复方向：`DropRumorTable.fromDropTable` 支持 per-entry gated 判定（或 `item_scroll_*` 前缀特判）
+- **实修(全面修)**：`fromDropTable` 表级布尔 → `FirstClearGating` 枚举(scrollOnly 逐条/wholeChannel 整渠道)逐条判 gated；抽 `isTechniqueScrollDefId` 谓词入 core/domain/enums，runtime `shouldSkipScrollDrop` + `enums.fromDefId` + preview **三方共用**，消除 `item_scroll_` 前缀散写 3 处 drift；dialog footer 按 gating 选串(主线新串「秘籍首通必得，重打不补」)。bucketOf/爬塔/runtime 掉落行为零变。analyze 0 / 全量 2848+1skip(+9 新测)。
 
 **F3 — stage_04_05 章末 Boss 宝物护甲越 2 阶 + 概率偏高**（边界）
 - `armor_baowu_jin_si_jia`(宝物) 在 requiredRealm=一流 的关卡 dropChance=0.40（stages.yaml:1466，另现于 :2038）
