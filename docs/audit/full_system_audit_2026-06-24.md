@@ -19,7 +19,8 @@
 
 ## A · 面向玩家的真功能缺陷
 
-### A1 [High] 开锋槽 吸血/破甲 词条玩家可强化解锁但战斗零消费
+### A1 [High] 开锋槽 吸血/破甲 词条玩家可强化解锁但战斗零消费 — ✅ **resolved 2026-06-24（接通方向 · commit 5aa89cf2 · spec/plan `docs/spec/2026-06-24-forging-lifesteal-pierce-{design,plan}.md`）**
+- **处置（用户拍板：接通）**：破甲绝对减防御率 `max(0,def−Σpierce)` + 吸血命中回血（实际主伤害×%，clamp maxHp，闪避不回，AOE 每命中），词条烘焙进 BattleCharacter，进战报「破甲」「吸血+N」。subagent-driven 6 task TDD，满破甲红线探针 134121<百万，全量 2876+1skip（+21 测·0 回归）。**specialSkill 槽3 单列 backlog**（需为装备设计专属技能内容 + EquipmentDef.specialSkillCandidates 配置 + availableSkills 接入 + UI 空状态解除，独立 spec）。
 - **位置**：`data/numbers.yaml:616,624`（槽1/2 `available_types:[attack,speed,lifesteal,pierce]` + `bonus_value` 吸10/15·破15/20）→ 消费侧 `derived_stats.dart:222` `_forgingBonusPct` 只 switch `attack`(:200)/`speed`(:216)
 - **问题**（亲核确认）：`battle_state.dart:337` 组装 `availableSkills` 不含 forgingSlots；battle/ 下唯一读 forgingSlots 的是 derived_stats:224（只取 attack/speed bonus）。玩家在槽1/2 能真选并 forge 上 lifesteal/pierce，战斗完全无效，还因"同槽互斥"挤占有效（攻/速）槽。UiStrings.forging（strings.dart:1005「攻、速、吸、破，可任选」）向玩家承诺四道词条。`damage_calculator.dart:274` 注释自承"为后续吸血/破甲扩展"。
 - **specialSkill 区分**：槽3 仅 specialSkill 类型，但 `forging_panel.dart:28` 注释明示默认 `specialSkillCandidates` 为空 → UI 显示「该装备无专属技能」，玩家 forge 不上（属"未启用"，非"暴露无效"）。
