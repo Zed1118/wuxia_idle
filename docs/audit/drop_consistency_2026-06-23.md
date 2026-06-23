@@ -30,10 +30,10 @@
 - 爬塔侧不受影响（整渠道 gated，tower_floor_card.dart:328 true 对全表都对）
 - **实修(全面修)**：`fromDropTable` 表级布尔 → `FirstClearGating` 枚举(scrollOnly 逐条/wholeChannel 整渠道)逐条判 gated；抽 `isTechniqueScrollDefId` 谓词入 core/domain/enums，runtime `shouldSkipScrollDrop` + `enums.fromDefId` + preview **三方共用**，消除 `item_scroll_` 前缀散写 3 处 drift；dialog footer 按 gating 选串(主线新串「秘籍首通必得，重打不补」)。bucketOf/爬塔/runtime 掉落行为零变。analyze 0 / 全量 2848+1skip(+9 新测)。
 
-**F3 — stage_04_05 章末 Boss 宝物护甲越 2 阶 + 概率偏高**（边界）
-- `armor_baowu_jin_si_jia`(宝物) 在 requiredRealm=一流 的关卡 dropChance=0.40（stages.yaml:1466，另现于 :2038）
+**F3 — stage_04_05 章末 Boss 宝物护甲越 2 阶 + 概率偏高**（边界）— ✅ **resolved 2026-06-24（续50 · 方案 A · commit 346712eb）**
+- `armor_baowu_jin_si_jia`(宝物) 在 requiredRealm=一流 的关卡 dropChance=0.40（stages.yaml:1402）
 - 越 2 阶（一流→宝物，需绝顶才解锁），0.40 刚越过 0.30 aspirational 阈值
-- 章末 Boss 给越阶前瞻奖励有合理性，但 0.40 偏高；建议降 ≤0.30 归稀有掉落，或换 +1 阶重器护甲贴成长目标
+- **处置（用户拍板方案 A）**：换 `armor_zhongqi_han_tie_zhong_jia`(重器/绝顶阶，+1 阶) 贴齐跨阶 jueDing Boss 及同关另两件 zhongQi 掉落；dropChance 0.40→0.30 与饰品 0.50 拉开层次。金丝甲回归 dropSourceTags 声明来源 tower_30/zongShi_unlock，不再一流阶提前架空里程碑。无 test 硬引用旧 defId，掉落改动不触战斗红线。analyze 0 / 全量 2855+1skip（0 回归）。
 
 **F4 — 终局塔层奖励含水分**
 - tower 装备封顶 baoWu，**无 shenWu**（towers.yaml:28 文件头自承占位待补）
