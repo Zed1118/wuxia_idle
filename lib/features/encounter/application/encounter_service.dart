@@ -328,6 +328,32 @@ class EncounterService {
               progress.attributeGainsFortune += applied;
           }
           await isar.encounterProgress.put(progress);
+          // 审计②修复:把 +applied 真正加到主角属性(GDD §4.1「生涯弥补」)。
+          // founderCharacterId 由 caller 从 save.founderCharacterId 传(reputation
+          // hook 同源);null 时仅记 EncounterProgress cap 不改角色(向后兼容旧测/
+          // debug 路径)。lifetime cap 已由上方 attributeGainsTotal 兜底,不再额外
+          // 裁剪;按 AttributeKey 写对应 @embedded 字段后 put 持久化。
+          if (founderCharacterId != null && applied > 0) {
+            final character = await isar.characters.get(founderCharacterId);
+            if (character != null) {
+              switch (key) {
+                case AttributeKey.constitution:
+                  character.attributes.constitution += applied;
+                case AttributeKey.enlightenment:
+                  character.attributes.enlightenment += applied;
+                case AttributeKey.agility:
+                  character.attributes.agility += applied;
+                case AttributeKey.fortune:
+                  character.attributes.fortune += applied;
+              }
+              // Character.attributeBonusFromAdventure:本角色经奇遇获得的属性生涯
+              // 累计(此前为 never-written 死字段,审计 A-F3)。在此写活成有意义的
+              // per-char 计数,持久于 Isar,供后续角色页「奇遇弥补 +N」展示(读端
+              // 待接,不删字段免 schema churn)。
+              character.attributeBonusFromAdventure += applied;
+              await isar.characters.put(character);
+            }
+          }
           result = AttributeBonusApplied(key, applied);
 
         case OutcomeType.none:
