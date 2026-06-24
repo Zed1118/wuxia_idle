@@ -4,6 +4,7 @@ import '../features/codex/domain/codex_category.dart';
 import '../features/codex/domain/codex_entry.dart';
 import '../features/codex/domain/codex_index.dart';
 import '../features/encounter/domain/encounter_def.dart';
+import '../features/encounter/domain/encounter_event_loader.dart';
 import '../features/sect/domain/territory_def.dart';
 import 'codex_loader.dart';
 import 'defs/equipment_def.dart';
@@ -396,6 +397,7 @@ class GameRepository {
     );
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);
+    await _validateEncounterEventReferences(encounterDefs, load);
     _instance = repo;
     return repo;
   }
@@ -444,6 +446,46 @@ class GameRepository {
         if (content.defaultLore.isEmpty) {
           throw StateError(
             '装备 ${def.id} presetLore $loreId default_lore 段为空',
+          );
+        }
+      }
+    }
+  }
+
+  /// C2 [审计 2026-06-24]:奇遇 `events/<id>.yaml` 引用一致性校验(仿
+  /// [_validatePresetLoreReferences] 体例,兑现 GDD §8.1「任一端缺失直接抛错」)。
+  ///
+  /// 对每条 [EncounterDef] await [EncounterEventLoader.load]:
+  /// - placeholder 兜底(缺文件 / 解析失败)→ StateError(此前静默显示「[文案待补]」)
+  /// - content.id != encounter id → StateError(yaml 内 id 不自洽)
+  /// - events choices 中除 `skip` 外的 outcome_id 不在 [EncounterDef.outcomeMapping]
+  ///   → StateError(此前 [EncounterDef.resolveOutcome] 静默 fallback
+  ///   [OutcomeType.none],玩家选择后奖励无声丢失)
+  ///
+  /// 兼容 test fixture:encounterDefs 为空时整个跳过(不触 yaml)。
+  /// 串行 await(57 文件量级,启动开销 < 50ms,不并发避免压垮 rootBundle)。
+  static Future<void> _validateEncounterEventReferences(
+    Map<String, EncounterDef> encounterDefs,
+    Future<String> Function(String) load,
+  ) async {
+    for (final def in encounterDefs.values) {
+      final content = await EncounterEventLoader.load(def.id, loader: load);
+      if (content.isPlaceholder) {
+        throw StateError(
+          'encounter ${def.id} 缺 data/events/${def.id}.yaml 或解析失败 (GDD §8.1)',
+        );
+      }
+      if (content.id != def.id) {
+        throw StateError(
+          'encounter ${def.id} events yaml 内 id=${content.id} 不自洽 (GDD §8.1)',
+        );
+      }
+      for (final choice in content.choices) {
+        if (choice.outcomeId == 'skip') continue;
+        if (!def.outcomeMapping.containsKey(choice.outcomeId)) {
+          throw StateError(
+            'encounter ${def.id} events choice outcome_id="${choice.outcomeId}" '
+            '不在 outcomeMapping,resolveOutcome 会静默丢失奖励 (GDD §8.1)',
           );
         }
       }

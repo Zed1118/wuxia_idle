@@ -19,7 +19,9 @@ import '../../../shared/strings.dart';
 /// ```
 ///
 /// 缺文件 / 解析失败:返回 [EncounterContent.placeholder](沿用 narrative
-/// 体例,运行期不抛)。
+/// 体例,运行期不抛)。**启动期**则由 `GameRepository._validateEncounterEventReferences`
+/// 对 placeholder / id 不自洽 / 越界 outcome_id fail-fast(GDD §8.1),
+/// 二者互补:运行期优雅兜底 + 启动期强校验拦截 build 期数据失联。
 class EncounterContent {
   final String id;
   final String? title;

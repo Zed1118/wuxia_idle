@@ -10,7 +10,7 @@
 |---|---|---|
 | A 面向玩家真功能缺陷 | 1 | 已暴露给玩家却无效 |
 | B 系统建好未接 game loop | 3 | B1+B2 ✅ 接通 / B3 ✅ 注释止血 pending-1.1(2026-06-24) |
-| C 需拍板设计冲突/drift | 3 | 文档 vs 代码语义冲突 |
+| C 需拍板设计冲突/drift | 3 | ✅ 全收口(2026-06-24)：C1 GDD §6.1 授权 ETL 动态标价 / C2 奇遇加载层强校验实装 / C3 §5.4 招式倍率改全局单线 |
 | D 配而不用死字段 + 注释 drift | 8 | 卫生债，可批量清 |
 | E 散写中文 | 2 | 卫生 |
 | F 已诚实标注的设计延期 | 3 | 仅留底，无需动 |
@@ -54,21 +54,24 @@
 
 ---
 
-## C · 需拍板的设计冲突 / drift
+## C · 需拍板的设计冲突 / drift（✅ 全收口 2026-06-24，用户逐项拍板）
 
-### C1 [需拍板] 商店经验丹"动态标价"vs GDD §6.1"固定标价·无机缘定价"
+### C1 ✅[resolved] 商店经验丹"动态标价"vs GDD §6.1"固定标价·无机缘定价"
+> **处置（2026-06-24 拍板=GDD 授权动态标价）**：GDD §6.1 明文授权「ETL 恒定兑换率动态标价」并澄清「进度锚定 ≠ §5.1 废除的机缘定价」（后者按机缘属性变价制留存焦虑，前者兑换率恒定无套利）。保留已平衡机制（T3/T6 校准），不改代码，材料类仍固定价。
 - **位置**：`shop.yaml:24-34`（price_layer_fraction）+ `shop_service.dart:25`（effectivePrice=round(founderEtl×fraction)）+ `shop_providers.dart:48`（founderEtl 随境界 invalidate）
 - **问题**：经验丹标价随祖师境界推进变化。GDD §6.1（GDD.md:366）明文"固定货架·固定标价·无刷新…守 §5.1 无机缘定价"。yaml 自辩"兑换率恒定无套利"，但显示银两价非固定，与"固定标价"字面冲突，贴近 §5.1 已废除的机缘定价。
 - confidence：高（代码确凿，定性需拍板）
 - 处置：GDD 明文授权"ETL 恒定兑换率动态标价"并解释非机缘定价，或改回固定价（删 priceLayerFraction 分支）。
 
-### C2 [需拍板] 奇遇↔events"加载层强校验"3 处文档宣称、代码实为静默降级
+### C2 ✅[resolved] 奇遇↔events"加载层强校验"3 处文档宣称、代码实为静默降级
+> **处置（2026-06-24 拍板=加启动期强校验）**：仿 lore `_validatePresetLoreReferences`，在 `game_repository.dart` `loadAllDefs` 末尾加 `_validateEncounterEventReferences`——缺 events 文件 / id 不自洽 / 越界 outcome_id 启动期 fail-fast，兑现 §8.1。新增 4 测（含 57/57 真实数据回归不误报）；loader 文档注明运行期 placeholder 与启动期 fail-fast 互补。analyze 0 / 全量 2904+1skip(+4)。
 - **位置**：`encounter_event_loader.dart:99`（catch 全吞返 placeholder）vs 文档自称强校验：encounters.yaml:33-35 / encounter_def.dart:155-156 / encounter_event_loader.dart:6
 - **问题**：`_enforceEncounterRedLines` 只校 trigger/threshold，从不 load events 文件 → 缺 events/<id>.yaml 显示「[文案待补]」占位、坏 outcome_id 静默 fallback OutcomeType.none（奖励无声丢失），违 §8.1"任一端缺失直接抛错"。**数据现状干净（57/57 对齐、0 mismatch），是潜在风险非活跃 bug**；lore 有真校验（_validatePresetLoreReferences），奇遇缺这道。
 - confidence：高
 - 处置：仿 lore 加启动期校验（缺文件抛错+outcome_id ⊇ 校验），或删 3 处虚假"强校验"文档承诺。
 
-### C3 [需拍板] §5.4 招式倍率 per-type 分档 vs skills.yaml 实际 drift
+### C3 ✅[resolved] §5.4 招式倍率 per-type 分档 vs skills.yaml 实际 drift
+> **处置（2026-06-24 拍板=§5.4 改全局单线）**：CLAUDE.md §5.4 招式倍率表 + §6 参考行均改「全局 ≤8,000 单线 + 注 7 阶缩放」，注明旧 per-type 分档是 7 阶系统铺开前早期参考值、与 §5.2 锁死七阶矛盾（实测 powerSkill 32/73 超 3000、ultimate 41/55 低于 5000，低阶大招＜高阶强力是曲线必然）。schema 真 sink 本就只全局 enforce ≤8000，不改代码不动招式。
 - **位置**：`data/skills.yaml`（powerSkill 达 6400 / ultimate 低至 1500）vs schema 唯一真 sink `game_repository.dart:822` 全局 ≤8000
 - **问题**：§5.4 文档"强力 1000-3000 / 大招 5000+"，实际 21+ 处 powerSkill 超 3000、ultimate 有低于 5000。per-type 分档从未被 schema 强制（只全局 ≤8000）。与"不进百万"软线一致。属文档分档 vs 实际 drift。
 - confidence：高（数值实测）
