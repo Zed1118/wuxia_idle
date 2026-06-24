@@ -4,10 +4,10 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.21**
+> v1.21 变更摘要(2026-06-24 全系统审计 C 组设计冲突拍板 · 0 改战斗数值):三项文档 vs 代码 drift 收口(用户逐项拍板)。① **C1 §6.1 商店经验丹「ETL 恒定兑换率动态标价」明文授权**:经验丹标价随祖师境界 ETL 上涨锁定兑换率恒定(防囤丹套利),明确区分「进度锚定动态标价」≠ §5.1 废除的「机缘定价」(后者按机缘属性变价制留存焦虑),材料类仍固定价;② **C3 §5.4 招式倍率改「全局 ≤8,000 单线」**:旧「强力 1,000–3,000 / 大招 5,000+」per-type 分档是 7 阶系统铺开前早期参考值,与 §5.2 锁死七阶缩放矛盾(实测 powerSkill 32/73 超 3000、ultimate 41/55 低于 5000,低阶大招＜高阶强力是曲线必然),schema 唯一真 sink 本就只全局 enforce ≤8000,改单线消除 drift;③ **C2 奇遇 events 加载层强校验实装(代码)**:仿 lore `_validatePresetLoreReferences` 在 `loadAllDefs` 末尾加 `_validateEncounterEventReferences`,缺 events 文件 / id 不自洽 / 越界 outcome_id 启动期 fail-fast,兑现 §8.1「任一端缺失直接抛错」(此前 catch 全吞静默降级);57/57 现状干净不误报。详 `docs/audit/full_system_audit_2026-06-24.md` C 组 + PROGRESS。
 > **版本:v1.20**
 > v1.20 变更摘要(2026-06-16 全功能真审计修复批 · 0 改数值规则层):① **§5.6 正名集中式枚举本地化为合法 sink**——`EnumL10n`(enum→中文显示名,带 switch 穷尽检查)与 `UiStrings` 同类,不算「散写硬编码」;删 enum_localizations.dart 文件头 stale 的「Phase 4 会迁出」承诺,明确叙事文案走 data/、UI 文案走 UiStrings、枚举显示名走 EnumL10n;② **§6 公式/散功路径 drift 修正**:公式层 `lib/core/combat/formulas.dart`(不存在)→ 实际 `lib/features/battle/domain/`(damage_calculator + derived_stats);散功 `lib/features/cultivation/domain/dispel_cultivation.dart`(不存在)→ 实际 `lib/features/dispel/application/dispel_service.dart` + `lib/core/domain/technique.dart`;③ 本批另修 H1 爬塔周目迁移数据丢失 + M2-M5 散写中文迁 UiStrings(代码层,详 PROGRESS 续15 + `docs/audit/full_audit_2026-06-16.md`)。
-> **版本:v1.19**
-> v1.19 变更摘要(2026-06-11 阶段定调 + 文档体例 · 0 改数值规则层):① **项目定调「1.0 长线打磨期」**(用户拍板:长期打磨质量,不设上线时间压力)——§1/§7 措辞从「收尾冲刺」改长线打磨,§7 新增**打磨期工作原则**(不用 Demo/冲刺心态规划任务 · 能一次做全面就一次做全面 · backlog 只承载依赖未解除/待拍板项,不承载偷懒未做项);② **版本摘要搬家体例**:头部只留最近 2 版,v1.1-v1.17 迁 `docs/_archive/CLAUDE_CHANGELOG.md`(GDD 同步此体例 + 冻结 `GDD_v1.16_frozen_2026-06-11.md` 基线);③ 阶段锚单点 = PROGRESS.md 顶部常驻行。
 
 ---
 
@@ -134,7 +134,7 @@ project_root/
 | 玩家血量 | 20,000 |
 | 内力 | 15,000 |
 | Boss 血量 | 60,000+（不许进 1M；2026-06-14 终局周目膨胀调 50000→60000） |
-| 招式倍率 | 普攻~500 / 强力 1,000–3,000 / 大招 5,000+ |
+| 招式倍率 | **全局 ≤8,000 单线**（schema 唯一真 sink = `game_repository.dart` `_enforceEncounterSkillRedLines` 全局 enforce ≤8000）。per-type 数值按 §5.2 七阶缩放（普攻~500 基准；强力/大招随阶 1,500→6,400，低阶大招＜高阶强力是 7 阶曲线必然），**不按招式类型钉固定区间**——旧「强力 1,000–3,000 / 大招 5,000+」per-type 分档是 7 阶系统铺开前的早期参考值，与锁死的七阶哲学矛盾，2026-06-24 拍板改全局单线消除 drift |
 
 **软红线（极值满 build 实战可见值 · 保可读 · 不进百万膨胀）**：
 
@@ -177,7 +177,7 @@ project_root/
 
 **境界差距修正**（攻方/守方）：同 1.0/1.0｜差 1 阶 1.4/0.7｜差 2 阶 2.5/0.3｜差 3+ 阶 —/**0.05（近免疫）**。
 
-**招式倍率参考**：普攻 500｜强力技能 1,000–3,000｜大招 5,000+。
+**招式倍率**：硬约束 = **全局 ≤8,000 单线**（schema 真 sink，见 §5.4）。普攻~500 为基准，强力/大招按 §5.2 七阶随阶缩放（实测 1,500→6,400，均 ≤8000），不按类型钉固定区间。
 
 **散功代价**（玩家更换主修心法时触发，v1.1 新增）：
 ```
