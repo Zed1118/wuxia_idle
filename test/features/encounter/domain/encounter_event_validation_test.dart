@@ -86,11 +86,11 @@ choices:
       );
     });
 
-    test('真实 data/events 全 57 条对齐 → loadAllDefs 不抛 (回归守门 · 57/57 干净)',
+    test('真实 data/events 全 68 条对齐 → loadAllDefs 不抛 (回归守门 · 68/68 干净)',
         () async {
       // 真实 loader 全量加载,校验通过即不抛。
       await GameRepository.loadAllDefs(loader: realLoad);
-      expect(GameRepository.instance.encounterDefs.length, 57);
+      expect(GameRepository.instance.encounterDefs.length, 68);
     });
   });
 }
