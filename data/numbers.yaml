@@ -1664,6 +1664,12 @@ sect_event:
     cooldown_days: 30
     trigger_realm_min: yiLiu           # 沿 §5.3 三系锁死
     expire_days: 7                     # 7 天不应战 → expired + reputation -5
+    narrative_ids:                     # B1 接通:触发时 rng 选一个文案(FK data/lore/sect_event/)
+      - tournament_01
+      - tournament_02
+      - tournament_03
+      - tournament_04
+      - tournament_05
   reputation:
     initial: 50
     win_delta: 10

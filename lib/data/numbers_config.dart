@@ -2152,11 +2152,16 @@ class SectTournamentDef {
   final String triggerRealmMin;
   final int expireDays;
 
+  /// B1 接通:tournament 触发时从此池 rng 选一个 `narrativeId`(FK
+  /// `data/lore/sect_event/<id>.yaml`)。空池 → tick 不触发(防空 pick 崩)。
+  final List<String> narrativeIds;
+
   const SectTournamentDef({
     required this.triggerProbability,
     required this.cooldownDays,
     required this.triggerRealmMin,
     required this.expireDays,
+    this.narrativeIds = const [],
   });
 
   static const SectTournamentDef empty = SectTournamentDef(
@@ -2164,6 +2169,7 @@ class SectTournamentDef {
     cooldownDays: 30,
     triggerRealmMin: 'yiLiu',
     expireDays: 7,
+    narrativeIds: [],
   );
 
   factory SectTournamentDef.fromYaml(Map<String, dynamic> y) {
@@ -2174,6 +2180,10 @@ class SectTournamentDef {
       cooldownDays: (y['cooldown_days'] as num?)?.toInt() ?? 30,
       triggerRealmMin: (y['trigger_realm_min'] as String?) ?? 'yiLiu',
       expireDays: (y['expire_days'] as num?)?.toInt() ?? 7,
+      narrativeIds: (y['narrative_ids'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
     );
   }
 }

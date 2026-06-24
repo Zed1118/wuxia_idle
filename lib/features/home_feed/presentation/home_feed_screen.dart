@@ -7,6 +7,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../seclusion/presentation/offline_recap_gate.dart';
+import '../../sect/application/sect_providers.dart';
 import '../application/home_feed_providers.dart';
 
 /// "昨晚发生的事"上线第一屏(GDD §9.2 / P1 #42 Phase 3)。
@@ -32,6 +33,10 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       maybeShowOfflineRecap(context: context, ref: ref);
+      // B1 接通:门派月度 tick(真实日历月锚)。无 sect / 无 Isar 静默 no-op,
+      // 不弹任何 UI——纯后台触发 pending 事件 + 声望衰减 + 过期回收,
+      // 下游 sect_screen StreamProvider watch 自动刷新(GDD §5.5 真实时间锚)。
+      maybeRunSectMonthlyTick(ref);
     });
   }
 

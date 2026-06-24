@@ -1396,6 +1396,7 @@ class UiStrings {
   static const String lightFootScreenTitle = '轻功试炼';
   static const String massBattleScreenTitle = '守城试炼';
   static const String sectScreenTitle = '门派事务';
+  static const String sectDebugSpawnEventTooltip = '[调试]立即生成比武事件';
   static const String characterPanelScreenTitle = '角色面板';
   static const String breakthroughGoToInnerDemon = '前往心魔境';
 
