@@ -5,6 +5,7 @@ import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
+import 'package:wuxia_idle/data/defs/drop_entry.dart';
 
 /// Phase 3 T47 · SeclusionMapDef + numbers.yaml 补字段 + GameRepository 加载
 ///
@@ -139,6 +140,43 @@ void main() {
       final def = SeclusionMapDef.fromYaml(mapYaml());
       expect(def.biome, isNull);
       expect(def.weather, isNull);
+    });
+
+    test('fromYaml 解析 dropTable 为 EquipmentDrop 列表，缺省则空表', () {
+      final withTable = SeclusionMapDef.fromYaml({
+        'map_type': 'shanLin',
+        'map_name': '山林',
+        'required_realm': 'xueTu',
+        'base_outputs': {
+          'experience_per_hour': 1.0,
+          'mojianshi_per_hour': 1.0,
+          'equipment_drop_rate': 1.0,
+          'technique_learn_rate': 1.0,
+          'internal_force_growth': 1.0,
+        },
+        'dropTable': [
+          {'equipmentDefId': 'weapon_xunchang_tie_jian', 'dropChance': 1.0},
+        ],
+      });
+      expect(withTable.dropTable, hasLength(1));
+      expect(
+        (withTable.dropTable.first as EquipmentDrop).equipmentDefId,
+        'weapon_xunchang_tie_jian',
+      );
+
+      final noTable = SeclusionMapDef.fromYaml({
+        'map_type': 'shanLin',
+        'map_name': '山林',
+        'required_realm': 'xueTu',
+        'base_outputs': {
+          'experience_per_hour': 1.0,
+          'mojianshi_per_hour': 1.0,
+          'equipment_drop_rate': 1.0,
+          'technique_learn_rate': 1.0,
+          'internal_force_growth': 1.0,
+        },
+      });
+      expect(noTable.dropTable, isEmpty);
     });
   });
 
