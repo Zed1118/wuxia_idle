@@ -1276,3 +1276,200 @@ encounters:
     affectsSectMembership:
       candidateRef: mountain_hermit
       fallbackOutcomeId: decline_meet
+
+  # ═══════════════════════════════════════════════════════════════
+  # 2026-06-25 · 池接线收口(健康报告 #3):11 招搁浅 → 各配 1 个 techniqueInsight
+  # 奇遇,让已创作内容玩家可解锁。trigger 难度按 tier 递增(fortune 2→8)。
+  # 详 docs/spec/2026-06-25-wire-11-encounter-skills-design.md
+  # ═══════════════════════════════════════════════════════════════
+
+  # —— tier 1 ——
+  - id: shan_jing_wu_bu
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        mountainPath: 120
+      fortuneRequired: 2
+    baseProbability: 0.45
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_jian_bu
+      practice_partial:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
+
+  - id: gu_si_tu_na
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        temple: 120
+      fortuneRequired: 2
+    baseProbability: 0.45
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_tun_tu
+      practice_partial:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+
+  # —— tier 2 ——
+  - id: du_kou_cuo_ying
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        dock: 180
+      weatherMinutes:
+        rain: 60
+      fortuneRequired: 3
+    baseProbability: 0.40
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_huo_du
+      practice_partial:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
+
+  # —— tier 4 ——
+  - id: da_mo_zhang_yan
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        desert: 300
+      weatherMinutes:
+        clear: 120
+      fortuneRequired: 5
+    baseProbability: 0.30
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_lie_huo
+      practice_partial:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  - id: xuan_ya_ling_xu
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        cliff: 300
+      fortuneRequired: 5
+    baseProbability: 0.30
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_fei_xian
+      practice_partial:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
+
+  # —— tier 5 ——
+  - id: jiang_xin_heng_jin
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        dock: 360
+      fortuneRequired: 6
+    baseProbability: 0.25
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_jin_gang
+      practice_partial:
+        type: attributeBonus
+        attributeKey: constitution
+        attributeDelta: 1
+
+  - id: fei_pu_lian_jian
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        cliffWaterfall: 360
+      fortuneRequired: 6
+    baseProbability: 0.25
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_shan_he
+      practice_partial:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  - id: shan_dian_yin_lei
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        mountainPath: 360
+      weatherMinutes:
+        rain: 120
+      fortuneRequired: 6
+    baseProbability: 0.25
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_lei_dian
+      practice_partial:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  # —— tier 6 ——
+  - id: bian_chui_tui_zhang
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        frontier: 420
+      fortuneRequired: 7
+    baseProbability: 0.20
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_qian_kun
+      practice_partial:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  - id: huang_sha_fen_kong
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        desert: 420
+      weatherMinutes:
+        clear: 180
+      fortuneRequired: 7
+    baseProbability: 0.20
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_lie_yan
+      practice_partial:
+        type: attributeBonus
+        attributeKey: enlightenment
+        attributeDelta: 1
+
+  - id: xue_ya_ning_han
+    type: techniqueInsight
+    trigger:
+      biomeMinutes:
+        cliff: 420
+      weatherMinutes:
+        snow: 180
+      fortuneRequired: 8
+    baseProbability: 0.20
+    outcomeMapping:
+      insight_success:
+        type: unlockSkill
+        skillId: skill_encounter_xuan_bing
+      practice_partial:
+        type: attributeBonus
+        attributeKey: agility
+        attributeDelta: 1
