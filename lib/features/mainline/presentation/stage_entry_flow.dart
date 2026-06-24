@@ -216,7 +216,11 @@ Future<void> runStageFlow({
     // 跳过,与 recordVictory 一致 —— 不依赖未初始化的 IsarSetup)。
     skillDrop = await runStageSkillDropHookAfterVictory(
       stage: stage,
-      svc: SkillUnlockService(IsarSetup.instance),
+      svc: SkillUnlockService(
+        IsarSetup.instance,
+        fragmentThreshold:
+            GameRepository.instance.numbers.skillUnlock.fragmentThreshold,
+      ),
       clearedStageIds: clearedBeforeVictory,
       towerFragmentDropProb:
           GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,

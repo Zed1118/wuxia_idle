@@ -103,7 +103,7 @@ class _NarrativeReaderScreenState extends State<NarrativeReaderScreen>
                 TextButton(
                   onPressed: _finish,
                   child: const Text(
-                    '跳过',
+                    UiStrings.narrativeSkip,
                     style: TextStyle(color: WuxiaColors.textSecondary),
                   ),
                 ),

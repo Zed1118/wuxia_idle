@@ -76,8 +76,9 @@ class LightFootDef {
 }
 
 /// 单 terrain 的 modifier 配置。烘焙到 BattleCharacter critRate/evasionRate/
-/// defenseRate(LightFootStrategy 入口 _bake),damage_multiplier 留 P3.1.B
-/// 子批接 damage_calculator(本批 YAGNI,3 项 delta 已能拉开分布)。
+/// defenseRate(LightFootStrategy 入口 _bake),damage_multiplier 已接入
+/// (P3.1.B 子批 2026-05-24):LightFootStrategy 把 attackPowerMultiplier 直接 set
+/// 为 terrain.damageMultiplier(双方对等)。
 class LightFootTerrainModifier {
   /// 暴击率 delta(±0.10 量级,clamp ≤0.95)。
   final double criticalRateDelta;
@@ -88,7 +89,7 @@ class LightFootTerrainModifier {
   /// 防御率 delta(±0.05-0.10 量级,clamp ≤0.95)。
   final double defenseRateDelta;
 
-  /// 伤害乘数(P3.1.B 子批接 damage_calculator,本批不消费但加载)。
+  /// 伤害乘数(P3.1.B 子批已接:LightFootStrategy `_bake` set attackPowerMultiplier)。
   final double damageMultiplier;
 
   const LightFootTerrainModifier({

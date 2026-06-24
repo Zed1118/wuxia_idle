@@ -55,12 +55,14 @@ combat:
   # GDD §5.3：基础伤害 = (内力 × 0.4) + (装备攻击 × 8) + 招式倍率
   # 平衡后：    基础伤害 = (内力 × 0.4) + (装备攻击 × 1.0) + 招式倍率
   damage_formula:
-    internal_force_factor: 0.4       # 内力对伤害的系数（GDD 原值，未变）
-    equipment_attack_factor: 1.0     # 装备攻击系数（GDD 原写 8，平衡后调为 1.0）
-    skill_multiplier_added: true     # 招式倍率作为加项（不是乘项）
+    internal_force_factor: 0.4       # 内力对伤害的系数（GDD 原值，未变）· 真消费(damage_calculator)
+    equipment_attack_factor: 1.0     # 装备攻击系数（GDD 原写 8，平衡后调为 1.0）· 真消费(damage_calculator)
+    skill_multiplier_added: true     # ⚠ 纯文档(审计 D7):NumbersConfig 不解析;招式倍率"作为加项"已硬编码在 damage_calculator
 
   # --- 最终伤害公式（GDD §5.4）---
   # 最终伤害 = 基础伤害 × 修炼度加成 × 流派克制 × 暴击系数 × (1-防御率) × 境界差修正
+  # ⚠ 以下 apply_* flags 为纯公式结构文档（审计 D7 2026-06-24）：NumbersConfig 不解析此块，
+  #   damage_calculator.dart 恒应用全部乘子（非可关闭开关）。改这些 true→false 不生效，勿误用。
   final_damage_formula:
     apply_cultivation_multiplier: true   # 应用心法修炼度（1.0~3.0）
     apply_school_counter: true           # 应用流派克制（0.75/1.0/1.25）
@@ -1033,6 +1035,10 @@ retreat:
 
   # --- 时辰加成（GDD §7.3）---
   # 加成基于"开始闭关时刻"，不会因为跨时辰而动态切换
+  # ⚠ time_range 字段为固定时辰文档锚（审计 D6 2026-06-24）：NumbersConfig 只解析
+  #   multiplier/effect/target_attribute/applies_to_school，**不解析 time_range**。
+  #   实际时段判定硬编码在 seclusion_service.dart `_isZiShi`(h∈{23,0}) / `_isZhengWu`(h∈{11,12})。
+  #   子时(23:00-01:00)/正午(11:00-13:00)是固定传统时辰常量、非可调平衡项，编辑此处 time_range 不生效。
   time_of_day_bonus:
     - period: ziShi                          # 子时
       time_range: ["23:00", "01:00"]

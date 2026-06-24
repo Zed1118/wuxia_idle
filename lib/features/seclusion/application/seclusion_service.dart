@@ -73,7 +73,9 @@ typedef RetreatResult = ({
 ///   - internalForce  = floor(config.baseInternalForcePerHour  × def.internalForceGrowth
 ///                            × actualHours × realmScale × solarBonus × ziShiBonus)
 ///   - 装备抽检：per session 单次，概率 = equipmentDropRate × baseEquipDropProbability
-///   - 正午阳刚 +20% 未消费 — 依赖 §12 #7 流派 extra_effect 决议，留挂账
+///   - 正午阳刚 +20%：已实装(§12 #7 v1.4 收口)——正午时段(_isZhengWu) + 主修
+///     == config.zhengWuAppliesToSchool(gangMeng) 时,internalForcePoints 维度乘
+///     zhengWuYangSchoolMultiplier(1.20);见下方 zhengWuBonus 真消费(非刚猛/非正午 → 1.0)
 class SeclusionService {
   const SeclusionService({required this.isar, this.encounterService});
 

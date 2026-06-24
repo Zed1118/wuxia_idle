@@ -159,9 +159,14 @@ class InnerDemonFailurePenalty {
   final double mainCultivationMultiplier;
 
   /// 辅修不受影响（1.00 = 不动）。
+  /// UNUSED(0 生产消费 · 审计 D5 2026-06-24):心魔惩罚仅扣主修
+  /// (mainCultivationMultiplier 真消费),辅修恒不动语义已由"不触碰辅修字段"实现,
+  /// 本字段从无读取方。保留作语义文档(显式声明辅修=1.00),真要分级扣辅修时再接。
   final double subCultivationMultiplier;
 
   /// 心魔余毒 debuff id。
+  /// UNUSED(0 生产消费 · 审计 D5 2026-06-24):仅 inner_demon_service_test 断言其值,
+  /// 余毒 debuff 的实际施加/清解路径不读此字段。保留作配置锚,真要按 id 派发 debuff 时再接。
   final String debuffId;
 
   /// 闭关 N 小时清解 debuff。

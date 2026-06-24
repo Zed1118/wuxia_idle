@@ -11,8 +11,8 @@
 | A 面向玩家真功能缺陷 | 1 | 已暴露给玩家却无效 |
 | B 系统建好未接 game loop | 3 | B1+B2 ✅ 接通 / B3 ✅ 注释止血 pending-1.1(2026-06-24) |
 | C 需拍板设计冲突/drift | 3 | ✅ 全收口(2026-06-24)：C1 GDD §6.1 授权 ETL 动态标价 / C2 奇遇加载层强校验实装 / C3 §5.4 招式倍率改全局单线 |
-| D 配而不用死字段 + 注释 drift | 8 | 卫生债，可批量清 |
-| E 散写中文 | 2 | 卫生 |
+| D 配而不用死字段 + 注释 drift | 8 | ✅ 全收口(2026-06-24)：D2 wire / D1·D3-D7 注释 honest 化 / D8 改 3 stale 注释 |
+| E 散写中文 | 2 | ✅ 收口(2026-06-24)：E1×3 + narrative 跳过 迁 UiStrings / debug 标签+装饰字故意留 |
 | F 已诚实标注的设计延期 | 3 | 仅留底，无需动 |
 
 ---
@@ -79,25 +79,27 @@
 
 ---
 
-## D · 配而不用死字段 + 注释 drift（卫生 · 可批量 TDD 清）
+## D · 配而不用死字段 + 注释 drift（✅ 全收口 2026-06-24）
 
-| # | 缺陷 | 位置 | confidence |
-|---|---|---|---|
-| D1 | `TechniqueDef.internalForceGrowthBonus`/`speedBonus` 死字段（真相源是 numbers.yaml techniques.tiers） | `technique_def.dart:11,28` + techniques.yaml | 高 |
-| D2 | `fragment_threshold` 配而不用，生产硬编码默认 5（潜伏：当前值恰好相同） | `numbers.yaml:1711` / `tower_entry_flow.dart:175` + `stage_entry_flow.dart:219` 不传 fragmentThreshold | 高 |
-| D3 | `StageDef.npcId` 死字段（5 处配置 0 读取） | `stage_def.dart:74,155` + stages.yaml ×5 | 高 |
-| D4 | `Character.attributeBonsFromAdventure` 写入永不读 | `character.dart:96` / `encounter_service.dart:353` | 高 |
-| D5 | 心魔 `sub_cultivation_multiplier`/`debuff_id` 死字段 | `inner_demon_def.dart:162,165` | 高 |
-| D6 | 闭关 `time_range` 配而不用（时段硬编码在 dart `_isZiShi`/`_isZhengWu`） | `seclusion_service.dart:580` / numbers.yaml:1002 | 高 |
-| D7 | `final_damage_formula`+`skill_multiplier_added` 死配置（0 引用） | `numbers.yaml:57-69` | 高 |
-| D8 | **drift 注释 3 处**（实已实装却注释自称未接，误导审计）：正午阳刚"留挂账"(`seclusion_service.dart:74`)/ `stageBossFailRecoverProb`"0 caller"(`numbers_config.dart:2347`)/ light_foot `damage_multiplier`"不消费"(`light_foot_def.dart:79`) | 见左 | 高 |
+> **处置原则**：drift=「文档与行为脱节」→ 让文档诚实。可消费的真 tunable wire 接通；记录真概念/延期/固定常量的字段注释 unused；stale 注释改至与实装一致。0 改战斗数值。
 
-## E · 散写中文（卫生）
-
-| # | 缺陷 | 位置 |
+| # | 缺陷 | 处置（2026-06-24） |
 |---|---|---|
-| E1 | `'角色不存在'` 散写 4 处 | character_panel:128 / technique_panel:79 / cangjingge:116 / shop_service |
-| E2 | narrative `'跳过'`（narrative_reader_screen:106）/ main_menu debug 标签(:399) + `'武'`装饰字（dev-gated，低） | 见左 |
+| D1 | `TechniqueDef.internalForceGrowthBonus`/`speedBonus` 死字段 | ✅ **注释**：0 读取 · 与 numbers.yaml techniques.tiers 对齐的镜像参考值,派生真相源在 tiers/derived_stats,本 def 字段保留作 per-心法 文档对照 |
+| D2 | `fragment_threshold` 配而不用,生产硬编码默认 5 | ✅ **wire**：tower_entry_flow + stage_entry_flow 两 caller 补传 `numbers.skillUnlock.fragmentThreshold`（真 tunable,与隔壁 towerFragmentDropProb 体例一致）|
+| D3 | `StageDef.npcId` 死字段（5 处配置 0 读取）| ✅ **注释 UNUSED-PENDING-1.1**：与 B3 江湖恩怨同源,1.1 双写真 NPC 关系才激活,故意延期留底（stage_def.dart npcId 头注）|
+| D4 | `Character.attributeBonusFromAdventure`（audit 误写 Bons）| ✅ **注释 READ-PENDING**：写端已活（A-F3 encounter_service 累加+持久）,读端待接「奇遇弥补 +N」展示,不删免 Isar schema churn——属延期项非死字段 |
+| D5 | 心魔 `subCultivationMultiplier`/`debuffId` 死字段 | ✅ **注释**：0 生产消费（main 真消费/sub 恒 1.00 不动语义已实现/debuffId 仅 test 断言,余毒施加路径不读）|
+| D6 | 闭关 `time_range` 配而不用（时段硬编码 dart）| ✅ **注释**：子时(23-01)/正午(11-13)是固定传统时辰常量非可调平衡项,NumbersConfig 不解析 time_range,实际硬编码 `_isZiShi`/`_isZhengWu`,编辑 yaml 不生效（块头 ⚠ 注）|
+| D7 | `final_damage_formula`+`skill_multiplier_added` 死配置 | ✅ **注释**：纯公式结构文档,NumbersConfig 不解析,damage_calculator 恒应用全部乘子（非可关开关）,改 true→false 不生效（⚠ 注）|
+| D8 | drift 注释 3 处（实已实装却注释自称未接）| ✅ **改注释至实装一致**：D8a 正午阳刚已实装(seclusion zhengWuBonus:207) / D8b stageBossFailRecoverProb 已实装(stage_boss_recruit_hook:36) / D8c light_foot damageMultiplier 已接(light_foot_strategy:122) |
+
+## E · 散写中文（✅ 收口 2026-06-24）
+
+| # | 缺陷 | 处置 |
+|---|---|---|
+| E1 | `'角色不存在'` 散写 3 处（audit 误计 4：`.g.dart`/shop 是注释非散写）| ✅ **迁 UiStrings.characterNotFound**：character_panel / technique_panel / cangjingge 三屏 |
+| E2 | narrative `'跳过'` / main_menu debug 标签 + `'武'`装饰字 | ✅ narrative `'跳过'`→`UiStrings.narrativeSkip`；debug 标签 + 装饰字 `'武'` **故意留**（kDebugMode-gated 开发工具 / 装饰 glyph,非 shipped 生产文案,守 §5.6 针对生产 UI 散写）|
 
 ## F · 已诚实标注的设计延期（仅留底 · 无需动）
 
