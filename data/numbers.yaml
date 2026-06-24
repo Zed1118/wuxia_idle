@@ -935,6 +935,13 @@ retreat:
       biome: mountainForest                  # C-W14-2 奇遇触发维度
       weather: clear
       image_path: assets/maps/shanLin.png
+      dropTable:
+        - equipmentDefId: weapon_xunchang_tie_jian
+          dropChance: 1.0
+        - equipmentDefId: armor_xunchang_bu_yi
+          dropChance: 1.0
+        - equipmentDefId: accessory_xunchang_yu_pei
+          dropChance: 1.0
 
     # === 古剑冢：兵器掉率 +50% ===
     - map_type: guJianZhong
@@ -950,6 +957,13 @@ retreat:
       biome: swordTomb
       weather: mist
       image_path: assets/maps/guJianZhong.png
+      dropTable:
+        - equipmentDefId: weapon_xunchang_zhe_dao
+          dropChance: 1.0
+        - equipmentDefId: armor_xunchang_duan_gua
+          dropChance: 1.0
+        - equipmentDefId: accessory_xunchang_tong_ling
+          dropChance: 1.0
 
     # === 藏经阁：心法领悟 +50% ===
     - map_type: cangJingGe
@@ -965,6 +979,13 @@ retreat:
       biome: temple
       weather: clear
       image_path: assets/maps/cangJingGe.png
+      dropTable:
+        - equipmentDefId: weapon_xunchang_ruan_bian
+          dropChance: 1.0
+        - equipmentDefId: armor_xunchang_mian_jia
+          dropChance: 1.0
+        - equipmentDefId: accessory_xunchang_yao_nang
+          dropChance: 1.0
 
     # === 悬崖瀑布：内力增长 +50% ===
     - map_type: xuanYaPuBu
@@ -980,6 +1001,13 @@ retreat:
       biome: cliffWaterfall
       weather: rain
       image_path: assets/maps/xuanYaPuBu.png
+      dropTable:
+        - equipmentDefId: weapon_xiangyang_gang_dao
+          dropChance: 1.0
+        - equipmentDefId: armor_xiangyang_pi_jia
+          dropChance: 1.0
+        - equipmentDefId: accessory_xiangyang_yin_jie
+          dropChance: 1.0
 
     # === 断崖绝壁：宗师专属，全维度高产出 ===
     - map_type: duanYaJueBi
@@ -995,6 +1023,13 @@ retreat:
       biome: cliff
       weather: snow
       image_path: assets/maps/duanYaJueBi.png
+      dropTable:
+        - equipmentDefId: weapon_zhongqi_po_zhen_chui
+          dropChance: 1.0
+        - equipmentDefId: armor_zhongqi_yin_lin_jia
+          dropChance: 1.0
+        - equipmentDefId: accessory_zhongqi_qing_yu_huan
+          dropChance: 1.0
 
   # --- 时辰加成（GDD §7.3）---
   # 加成基于"开始闭关时刻"，不会因为跨时辰而动态切换
