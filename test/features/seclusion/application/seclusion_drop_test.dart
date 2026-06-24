@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
@@ -125,5 +126,36 @@ void main() {
       rng: _ConstRng(0.0),
     );
     expect(out.equipmentDrops, isEmpty);
+  });
+
+  test('completeRetreat：收功后掉落装备真入 isar.equipments + obtainedFrom 闭关', () async {
+    final start = DateTime(2026, 5, 11, 10, 0);
+    final completeAt = start.add(const Duration(hours: 4));
+    final session = RetreatSession()
+      ..id = 60
+      ..saveDataId = kSaveDataId
+      ..mapType = RetreatMapType.shanLin
+      ..durationHours = 4
+      ..startedAt = start
+      ..status = RetreatStatus.active
+      ..actualRewards = [];
+    await IsarSetup.instance.writeTxn(
+      () => IsarSetup.instance.retreatSessions.put(session),
+    );
+
+    await SeclusionService(isar: IsarSetup.instance).completeRetreat(
+      session: session,
+      characterId: kCharId,
+      charRealmTier: RealmTier.xueTu,
+      config: GameRepository.instance.numbers.retreat,
+      maps: GameRepository.instance.seclusionMaps,
+      now: completeAt,
+      rng: _ConstRng(0.0), // 强制外层闸命中
+    );
+
+    final eqs = await IsarSetup.instance.equipments.where().findAll();
+    expect(eqs, hasLength(1));
+    expect(eqs.first.tier, EquipmentTier.xunChang);
+    expect(eqs.first.obtainedFrom, UiStrings.dropSourceSeclusion);
   });
 }
