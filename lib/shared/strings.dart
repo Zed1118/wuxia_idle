@@ -316,6 +316,12 @@ class UiStrings {
   static const String hintD = '观察点：低境界（三流）打高境界（绝顶）守方修正 ×0.05，几乎打不动';
 
   // 角色面板（T28）
+  /// 角色 provider 返回 null 时各面板的兜底空态文案（审计 E1 2026-06-24 集中归集）。
+  static const String characterNotFound = '角色不存在';
+
+  /// 叙事/剧情阅读器跳过按钮（审计 E2 2026-06-24 集中归集）。
+  static const String narrativeSkip = '跳过';
+
   static const String panelAttributes = '基础属性';
   static const String panelDerived = '派生数值';
   static const String panelEquipment = '装备';

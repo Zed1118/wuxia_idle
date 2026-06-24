@@ -172,7 +172,11 @@ Future<void> runTowerFlow({
       GameRepository.isLoaded) {
     skillDrop = await runTowerSkillDropHookAfterVictory(
       floor: floor,
-      svc: SkillUnlockService(IsarSetup.instance),
+      svc: SkillUnlockService(
+        IsarSetup.instance,
+        fragmentThreshold:
+            GameRepository.instance.numbers.skillUnlock.fragmentThreshold,
+      ),
       towerFragmentDropProb:
           GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
       rng: Random(),

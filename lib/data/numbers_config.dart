@@ -2354,7 +2354,7 @@ class SectRankPromoteThresholdConfig {
 class SectRecruitConfig {
   final double encounterBaseProb;          // Q6 A
   final double stageBossRecruitProb;       // P4.1 1.1 Q6 B · 战胜 Boss 后招降 NPC rng pick
-  final double stageBossFailRecoverProb;   // P4.1 v1.10 预留 · 0 caller · 战败收降留 P5+/1.1
+  final double stageBossFailRecoverProb;   // P4.1 1.1 战败收降:已实装,stage_boss_recruit_hook 真读(全局 0.30)
   final double missionRecruitProb;         // Q7 B
 
   const SectRecruitConfig({

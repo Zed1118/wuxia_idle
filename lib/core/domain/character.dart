@@ -93,6 +93,9 @@ class Character {
   bool isAlive = true;
   int birthInGameYear = 0;
 
+  /// 本角色经奇遇累计获得的属性点(写端已活:`encounter_service` AttributeBonus
+  /// outcome 累加并持久 Isar)。READ-PENDING(审计 D4 2026-06-24):读端待接——
+  /// 供后续角色页「奇遇弥补 +N」展示。不删字段免 Isar schema churn(saveVer bump)。
   int attributeBonusFromAdventure = 0;
 
   /// 是否入派(P4.1 §12.2 Q3=A 复用 Character + Q2=C 双向 fk)。

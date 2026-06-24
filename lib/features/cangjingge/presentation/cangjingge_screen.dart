@@ -113,7 +113,7 @@ class _CangJingGeScreenState extends ConsumerState<CangJingGeScreen> {
         if (c == null) {
           return const Center(
             child: Text(
-              '角色不存在',
+              UiStrings.characterNotFound,
               style: TextStyle(color: WuxiaColors.textMuted),
             ),
           );

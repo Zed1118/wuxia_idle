@@ -8,6 +8,12 @@ class TechniqueDef {
   final TechniqueSchool school;
   final String description;
   final List<String> skillIds;
+
+  /// UNUSED(0 读取 · 审计 D1 2026-06-24):与 techniques.yaml 的 `tier` 注释一致,
+  /// 此二字段为与 `numbers.yaml techniques.tiers` 对齐的镜像参考值。派生属性的真相源
+  /// 是 numbers.yaml tiers(`internal_force_growth_bonus`/`speed_bonus` 按阶查),
+  /// 经 `derived_stats` 消费;本 def 字段从无生产消费方。保留作 per-心法 文档对照,
+  /// 不删免动全 techniques.yaml 条目;真要消费时再接 derived 路径。
   final double internalForceGrowthBonus;
   final int speedBonus;
   final List<String> acquireSourceTags;

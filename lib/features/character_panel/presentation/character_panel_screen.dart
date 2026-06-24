@@ -125,7 +125,7 @@ class _PanelWithTabs extends ConsumerWidget {
             data: (c) => c == null
                 ? const Center(
                     child: Text(
-                      '角色不存在',
+                      UiStrings.characterNotFound,
                       style: TextStyle(color: WuxiaColors.textMuted),
                     ),
                   )
