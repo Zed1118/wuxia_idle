@@ -9,7 +9,7 @@
 | 类 | 数 | 说明 |
 |---|---|---|
 | A 面向玩家真功能缺陷 | 1 | 已暴露给玩家却无效 |
-| B 系统建好未接 game loop | 3 | B2 ✅ 接通(2026-06-24)；B1/B3 仍待拍板 |
+| B 系统建好未接 game loop | 3 | B1+B2 ✅ 接通(2026-06-24)；B3 仍待拍板 |
 | C 需拍板设计冲突/drift | 3 | 文档 vs 代码语义冲突 |
 | D 配而不用死字段 + 注释 drift | 8 | 卫生债，可批量清 |
 | E 散写中文 | 2 | 卫生 |
@@ -31,7 +31,8 @@
 
 ## B · 系统建好但未接入 game loop（有 deferred 注释 · 需拍板本期接否）
 
-### B1 [Med-High] 门派事件 + 声望衰减整条链未接 game loop
+### B1 [Med-High] 门派事件 + 声望衰减整条链未接 game loop — ✅ **resolved 2026-06-24（接通方向 · spec `docs/spec/2026-06-24-b1-sect-event-game-loop-wiring-design.md`）**
+> 接通（用户拍板·真实日历月锚+仅tournament）：`MonthlyTickCoordinator` + `checkAndTrigger` + `computeDecay` 三死符号全接进 HomeFeed 首帧 app-open 锚（复用 offline-recap 体例·守 §5.5）。新 `Sect.lastTickAt` 防同日重触发 + `SectMonthlyTickService` 纯函数编排（过期扫描每次跑 / 月度 pass `floor(elapsedDays/30)` 月 catch-up clamp ≤3 / decay 按 idle 月累扣）+ `narrative_ids` 池 rng 选 + dev-gated 立即触发按钮。mission/crisis 叙事留底 1.1+，`type=tournament` 硬编码保留正确。零 saveVer / 零战斗数值。全量 2900+1skip（**+16** 新测·0 回归）/ analyze 0。
 - **位置**：`sect_event_service.dart:29`（checkAndTrigger）/ `monthly_tick.dart:9`（MonthlyTickCoordinator）/ `sect_reputation_decay.dart:21`（computeDecay）
 - **问题**（亲核）：三者生产 0 调用（仅定义+test）。`sect_screen.dart:104` 有完整「active 事件列表+应战 CTA」UI，但**永不出现待结算事件**；声望永不衰减。monthly_tick 文件头自承"最简 infra stub"。`sect_event_service.dart:63` 还把 event.type 写死 tournament → 即便接通，mission 招募分支（sect_providers.dart:156）仍 dead。
 - confidence：高

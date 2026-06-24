@@ -1,12 +1,16 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
 import '../../../core/application/battle_providers.dart';
+import '../../../core/application/character_providers.dart';
 import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
+import '../../../core/game_loop/monthly_tick.dart';
 import '../../../data/isar_provider.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../domain/sect.dart';
@@ -15,6 +19,7 @@ import '../domain/sect_outcome.dart';
 import '../domain/territory_def.dart';
 import 'sect_event_service.dart';
 import 'sect_member_service.dart';
+import 'sect_monthly_tick_service.dart';
 import 'sect_reputation_decay.dart';
 import 'territory_service.dart';
 import '../../../shared/strings.dart';
@@ -41,6 +46,97 @@ final sectReputationDecayServiceProvider =
   final numbers = ref.watch(numbersConfigProvider);
   return SectReputationDecayService(numbers: numbers);
 });
+
+/// 门派月度 tick 编排 service(B1 接通 · 组合 checkAndTrigger + computeDecay + 过期)。
+final sectMonthlyTickServiceProvider = Provider<SectMonthlyTickService>((ref) {
+  return SectMonthlyTickService(
+    eventSvc: ref.watch(sectEventServiceProvider),
+    decaySvc: ref.watch(sectReputationDecayServiceProvider),
+    numbers: ref.watch(numbersConfigProvider),
+  );
+});
+
+/// B1 接通:`MonthlyTickCoordinator` 真接 game loop 的单例 Provider。
+///
+/// 构造时注册门派月度 tick callback。keepAlive 普通 Provider 的 `ref` 长生
+/// (非 autoDispose / widget 瞬时 ref),捕获安全(memory
+/// `feedback_riverpod_closure_ref_disposed` 针对的是瞬时 ref)。原 stub
+/// (`monthly_tick.dart` 文件头自承「Phase 4 wire」)至此接通,0 caller 死链解除。
+final monthlyTickCoordinatorProvider = Provider<MonthlyTickCoordinator>((ref) {
+  final coord = MonthlyTickCoordinator();
+  coord.register((now) => _runSectMonthlyTick(ref, now));
+  return coord;
+});
+
+/// 月度 tick 落库执行(coordinator callback)。
+///
+/// Isar 未 init(widget test)/ sect lazy-init race → 提前 no-op(沿
+/// offline_recap_gate 体例)。compute 原地 mutate sect → writeTxn put。
+Future<void> _runSectMonthlyTick(Ref ref, DateTime now) async {
+  final isar = ref.read(isarProvider);
+  if (isar == null) return;
+  final sect = await ref.read(currentSectProvider.future);
+  if (sect == null) return;
+  final active = await ref.read(activeSectEventsProvider.future);
+  final svc = ref.read(sectMonthlyTickServiceProvider);
+
+  final ids = await ref.read(activeCharacterIdsProvider.future);
+  final charId = ids.isNotEmpty ? ids.first : 1;
+  final ch = await ref.read(characterByIdProvider(charId).future);
+  final realm = ch?.realmTier ?? RealmTier.xueTu;
+
+  final result = svc.compute(
+    sect: sect,
+    activeEvents: active,
+    playerRealm: realm,
+    now: now,
+    // 生产非确定性 Random(同 SectEventDialog 体例);确定性验证在
+    // SectMonthlyTickService 纯函数测覆盖。
+    rng: Random(),
+  );
+
+  if (result.newEvents.isEmpty && result.expiredEvents.isEmpty) {
+    // 仍可能只更新了 lastTickAt(空命中月)→ 落 sect 防同日重触发。
+    await isar.writeTxn(() => isar.sects.put(sect));
+    return;
+  }
+  await isar.writeTxn(() async {
+    await isar.sects.put(sect);
+    for (final e in result.newEvents) {
+      await isar.sectEvents.put(e);
+    }
+    for (final e in result.expiredEvents) {
+      await isar.sectEvents.put(e);
+    }
+  });
+}
+
+/// HomeFeed 首帧调:跑一次门派月度 tick(与 `maybeShowOfflineRecap` 并列)。
+///
+/// [now] 仅供测试注入;生产用 [systemClockProvider]。
+Future<void> maybeRunSectMonthlyTick(WidgetRef ref, {DateTime? now}) async {
+  final clock = ref.read(systemClockProvider);
+  await ref.read(monthlyTickCoordinatorProvider).tick(now ?? clock.now());
+}
+
+/// dev 调试:立即生成一个 pending tournament 事件(`kDebugMode` 门控 caller),
+/// 便于真实 30 天节奏下验收 CTA → 结算下游。narrativeId 取池首项。
+Future<void> debugSpawnSectEvent(WidgetRef ref) async {
+  final isar = ref.read(isarProvider);
+  if (isar == null) return;
+  final sect = await ref.read(currentSectProvider.future);
+  if (sect == null) return;
+  final pool = ref.read(numbersConfigProvider).sectEvent.tournament.narrativeIds;
+  if (pool.isEmpty) return;
+  final now = ref.read(systemClockProvider).now();
+  final ev = SectEvent()
+    ..sectId = sect.id
+    ..type = SectEventType.tournament
+    ..status = SectEventStatus.pending
+    ..triggeredAt = now
+    ..narrativeId = pool.first;
+  await isar.writeTxn(() => isar.sectEvents.put(ev));
+}
 
 /// 默认无名宗 Sect 实例(P3.4 spec 初态)。
 Sect _defaultSect(DateTime now) => Sect()

@@ -41,6 +41,12 @@ class Sect {
   /// cooldown 锚 + decay 30 天起算点;null = 从未触发过 event(初创态)。
   DateTime? lastEventAt;
 
+  /// 月度 tick 锚点(B1 接通 · 区别于 [lastEventAt]):上次跑过月度 tick 检查的
+  /// 时间。`null` = 从未跑过(首 tick 从 [createdAt] 起算 elapsedMonths)。
+  /// 每 tick 推进 `elapsedMonths × 30 天`(保留 <30 天余数),防同日重复触发。
+  /// Isar 对 nullable 新增字段向后兼容(旧记录读 null)。
+  DateTime? lastTickAt;
+
   /// 引 `data/territories.yaml` id(P4.1 §12.2 Q4=A 静态 yaml + dynamic owner)。
   ///
   /// `TerritoryService.claim/release` 维护;cap 走 `numbers.yaml

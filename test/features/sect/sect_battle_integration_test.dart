@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/sect/application/sect_event_service.dart';
+import 'package:wuxia_idle/features/sect/application/sect_monthly_tick_service.dart';
 import 'package:wuxia_idle/features/sect/application/sect_providers.dart';
 import 'package:wuxia_idle/features/sect/application/sect_reputation_decay.dart';
 
@@ -65,6 +66,31 @@ void main() {
 
       final svc = container.read(sectEventServiceProvider);
       expect(svc, isA<SectEventService>());
+    });
+  });
+
+  group('B1 月度 tick wire', () {
+    test('R1.10 sectMonthlyTickServiceProvider 注入 → 路径通', () {
+      final container = makeContainer();
+      addTearDown(container.dispose);
+      expect(container.read(sectMonthlyTickServiceProvider),
+          isA<SectMonthlyTickService>());
+    });
+
+    test('R1.11 monthlyTickCoordinatorProvider 注册 1 门派 tick callback(死链解除)',
+        () {
+      final container = makeContainer();
+      addTearDown(container.dispose);
+      final coord = container.read(monthlyTickCoordinatorProvider);
+      expect(coord.registeredCount, 1, reason: '原 0-caller stub 至此接通');
+    });
+
+    test('R1.12 isar null(test 路径)→ tick 静默 no-op 不抛', () async {
+      final container = makeContainer();
+      addTearDown(container.dispose);
+      final coord = container.read(monthlyTickCoordinatorProvider);
+      // isarProvider 未 override → null → _runSectMonthlyTick 提前 return。
+      await expectLater(coord.tick(DateTime(2026, 7, 5)), completes);
     });
   });
 }

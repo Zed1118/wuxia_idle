@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -79,6 +80,16 @@ class SectScreen extends ConsumerWidget {
               title: const Text(UiStrings.sectScreenTitle),
               backgroundColor: WuxiaColors.sidebar,
               foregroundColor: WuxiaColors.textPrimary,
+              actions: [
+                // dev 调试:立即生成一个 pending 比武事件,验收 CTA → 结算下游
+                // (真实 30 天节奏下手动验收用 · release 不显)。
+                if (kDebugMode)
+                  IconButton(
+                    icon: const Icon(Icons.bolt),
+                    tooltip: UiStrings.sectDebugSpawnEventTooltip,
+                    onPressed: () => debugSpawnSectEvent(ref),
+                  ),
+              ],
               bottom: const TabBar(
                 isScrollable: true,
                 tabs: [
