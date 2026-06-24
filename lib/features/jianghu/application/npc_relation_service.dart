@@ -5,6 +5,13 @@ import '../domain/npc_relation.dart';
 
 /// NPC 关系服务(P1.2 §3 · GDD §12.1 江湖恩怨)。
 ///
+/// **UNUSED-PENDING-1.1**(全系统审计 2026-06-24 B3·诚实标注延期·非误删死码):
+/// [upsert] 0 生产写入 caller(仅 `npc_relation_service_test` 引用)→ NpcRelation
+/// 关系永不建立 → 下游 [attackPowerMultFor] / `bakeEnmityMultipliers` 恒返 1.0 noop。
+/// **故意延期 1.1**:真 NPC 恩怨需先扩 `StageDef.npcId` schema(与审计 D3 同源),
+/// 让 stage_boss_kill / encounter resolve 双写真 NPC 关系。service + 红线测全建好,
+/// 1.1 接 schema 即激活,不删。详见 `bakeEnmityMultipliers` 头注。
+///
 /// 设计纪律:
 /// - 稀疏表(Q2=B):仅存有显式关系的 (source, target) pair · 默认 noop = 1.0
 /// - 单向 source→target:互害需 caller 双写
