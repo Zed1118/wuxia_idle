@@ -4,10 +4,11 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.22**
+> v1.22 变更摘要(2026-06-25 文档 drift 订正 · 0 改代码/数值):① **§7/§9 PVP 状态订正**(用户拍板):PVP 已在 1.0 周期实装(P3.3·`lib/features/pvp/` 全套·本地 mirror 镜像对战 + ELO 计算 + PvpScreen UI 可达 main_menu:303·ELO 跨会话持久化留 Phase 5+),从「仍然不做」清单移到「已实装」;§5.1 反主流红线本不含 PVP(红线=氪金/留存机制),无矛盾;「仍然不做」剩 MOD / 跨周目元数据 / 节日活动系统级框架;② **techniques.yaml 头注 stale 清**:description 已就地全填(Mac 单端维护),原「占位 TODO / 归 DeepSeek」注释双重 stale(描述已填 + DeepSeek 协作 2026-05-19 退役)已订正。详健康报告 `docs/audit/project_health_review_2026-06-25.md` #2/#5。
 > **版本:v1.21**
 > v1.21 变更摘要(2026-06-24 全系统审计 C 组设计冲突拍板 · 0 改战斗数值):三项文档 vs 代码 drift 收口(用户逐项拍板)。① **C1 §6.1 商店经验丹「ETL 恒定兑换率动态标价」明文授权**:经验丹标价随祖师境界 ETL 上涨锁定兑换率恒定(防囤丹套利),明确区分「进度锚定动态标价」≠ §5.1 废除的「机缘定价」(后者按机缘属性变价制留存焦虑),材料类仍固定价;② **C3 §5.4 招式倍率改「全局 ≤8,000 单线」**:旧「强力 1,000–3,000 / 大招 5,000+」per-type 分档是 7 阶系统铺开前早期参考值,与 §5.2 锁死七阶缩放矛盾(实测 powerSkill 32/73 超 3000、ultimate 41/55 低于 5000,低阶大招＜高阶强力是曲线必然),schema 唯一真 sink 本就只全局 enforce ≤8000,改单线消除 drift;③ **C2 奇遇 events 加载层强校验实装(代码)**:仿 lore `_validatePresetLoreReferences` 在 `loadAllDefs` 末尾加 `_validateEncounterEventReferences`,缺 events 文件 / id 不自洽 / 越界 outcome_id 启动期 fail-fast,兑现 §8.1「任一端缺失直接抛错」(此前 catch 全吞静默降级);57/57 现状干净不误报。详 `docs/audit/full_system_audit_2026-06-24.md` C 组 + PROGRESS。
 > **版本:v1.20**
-> v1.20 变更摘要(2026-06-16 全功能真审计修复批 · 0 改数值规则层):① **§5.6 正名集中式枚举本地化为合法 sink**——`EnumL10n`(enum→中文显示名,带 switch 穷尽检查)与 `UiStrings` 同类,不算「散写硬编码」;删 enum_localizations.dart 文件头 stale 的「Phase 4 会迁出」承诺,明确叙事文案走 data/、UI 文案走 UiStrings、枚举显示名走 EnumL10n;② **§6 公式/散功路径 drift 修正**:公式层 `lib/core/combat/formulas.dart`(不存在)→ 实际 `lib/features/battle/domain/`(damage_calculator + derived_stats);散功 `lib/features/cultivation/domain/dispel_cultivation.dart`(不存在)→ 实际 `lib/features/dispel/application/dispel_service.dart` + `lib/core/domain/technique.dart`;③ 本批另修 H1 爬塔周目迁移数据丢失 + M2-M5 散写中文迁 UiStrings(代码层,详 PROGRESS 续15 + `docs/audit/full_audit_2026-06-16.md`)。
 
 ---
 
@@ -217,7 +218,7 @@ Demo 必交付内容量（已全部达标）：
 | 心法相生组合 | ≥ 5 |
 | 师徒角色 | 祖师 + 大弟子 + 二弟子（共 3） |
 
-**扩展系统现状**（v1.18 更新，原「Demo 阶段不要做」清单退役）：江湖恩怨/声望（P1.2）、心魔（Batch 2.x）、帮派门派（P4.1）、轻功对决（P3.1）、群战守城（P3.2）、第二条主线 Ch4-6、多代飞升/真传位（P5+）均已在 1.0 周期实装。**仍然不做**：GDD §2.1 反主流清单（见 §5.1，永久红线）+ PVP / MOD / 跨周目元数据 / 节日活动系统级框架（GDD §12.4，1.0 后评估）——动这几项前必须先与人类讨论。
+**扩展系统现状**（v1.22 更新）：江湖恩怨/声望（P1.2）、心魔（Batch 2.x）、帮派门派（P4.1）、轻功对决（P3.1）、群战守城（P3.2）、第二条主线 Ch4-6、多代飞升/真传位（P5+）、**PVP 本地对战**（P3.3·`lib/features/pvp/` 镜像 mirror 对战 + ELO 计算 + PvpScreen UI 可达；ELO 跨会话持久化留 Phase 5+；不违 §5.1——本地镜像非真人竞技、无氪金/留存机制）均已在 1.0 周期实装。**仍然不做**：GDD §2.1 反主流清单（见 §5.1，永久红线）+ MOD / 跨周目元数据 / 节日活动系统级框架（GDD §12.4，1.0 后评估）——动这几项前必须先与人类讨论。
 
 ## 8. 工作流
 
@@ -271,7 +272,7 @@ choices:
 ❌ Dart 代码里写中文字符串文案（`"你战胜了山贼头子"`）
 ❌ 引入其他状态管理库（已锁定 Riverpod 3.x）
 ❌ 引入第三方游戏引擎（Flame、Forge2D 等）
-❌ 未经讨论实装仍未启动的扩展（PVP / MOD / 跨周目元数据 / 节日系统级框架，见 §7）
+❌ 未经讨论实装仍未启动的扩展（MOD / 跨周目元数据 / 节日系统级框架，见 §7）
 ❌ 给玩家做"每日任务""登录奖励""快进券""体力"等留存机制
 ❌ 让任何系统的数值突破 §5.4 的红线
 ❌ 让 yaml 配置在没有 schema 校验的情况下被静默接受
