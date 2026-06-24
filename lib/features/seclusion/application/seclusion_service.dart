@@ -9,6 +9,7 @@ import '../../../core/domain/reward_entry.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/utils/rng.dart';
+import '../../equipment/application/drop_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../../core/domain/technique.dart';
@@ -183,6 +184,7 @@ class SeclusionService {
     TechniqueSchool? charSchool,
     double synergyInternalForceGrowthPct = 0.0,
     double residueInternalForceMultiplier = 1.0,
+    DropService? dropService,
     Rng? rng,
   }) {
     final def = _getDef(session.mapType, maps);
@@ -253,9 +255,9 @@ class SeclusionService {
     final equipRoll = effectiveRng.nextDouble();
     final equipProb = def.equipmentDropRate * config.baseEquipDropProbability;
     final equipDrops = <Equipment>[];
-    if (equipRoll < equipProb) {
-      // Demo 阶段：无独立 seclusion dropTable，概率触发但无 table 时不崩溃
-      // Phase 4 补全 dropTable 时替换此路径
+    if (dropService != null && equipRoll < equipProb) {
+      final eq = dropService.rollOneWeighted(def.dropTable, effectiveRng);
+      if (eq != null) equipDrops.add(eq);
     }
 
     return (

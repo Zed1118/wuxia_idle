@@ -800,6 +800,8 @@ class UiStrings {
   static const String dropSourceMassBattleMerit = '群战军功';
   static const String dropSourceInnerDemonReward = '降服心魔';
   static const String dropSourceAscensionReward = '飞升所得';
+  // B2 闭关掉落来历（DropService.defaultObtainedFrom）。
+  static const String dropSourceSeclusion = '闭关所得';
   static const String towerVictoryConfirm = '确定';
   static const String towerReplayNoReward = '已重打通关，重打不发奖';
   static const String towerFirstClearLabel = '首通奖励：';
