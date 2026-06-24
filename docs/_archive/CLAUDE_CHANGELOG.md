@@ -2,6 +2,9 @@
 
 > 2026-06-11 自 CLAUDE.md 头部迁出(头部只留最近 2 版),逆时序。完整历史亦可 `git log CLAUDE.md`。
 
+> **版本:v1.20**
+> v1.20 变更摘要(2026-06-16 全功能真审计修复批 · 0 改数值规则层):① **§5.6 正名集中式枚举本地化为合法 sink**——`EnumL10n`(enum→中文显示名,带 switch 穷尽检查)与 `UiStrings` 同类,不算「散写硬编码」;删 enum_localizations.dart 文件头 stale 的「Phase 4 会迁出」承诺,明确叙事文案走 data/、UI 文案走 UiStrings、枚举显示名走 EnumL10n;② **§6 公式/散功路径 drift 修正**:公式层 `lib/core/combat/formulas.dart`(不存在)→ 实际 `lib/features/battle/domain/`(damage_calculator + derived_stats);散功 `lib/features/cultivation/domain/dispel_cultivation.dart`(不存在)→ 实际 `lib/features/dispel/application/dispel_service.dart` + `lib/core/domain/technique.dart`;③ 本批另修 H1 爬塔周目迁移数据丢失 + M2-M5 散写中文迁 UiStrings(代码层,详 PROGRESS 续15 + `docs/audit/full_audit_2026-06-16.md`)。
+
 > **版本:v1.19**
 > v1.19 变更摘要(2026-06-11 阶段定调 + 文档体例 · 0 改数值规则层):① **项目定调「1.0 长线打磨期」**(用户拍板:长期打磨质量,不设上线时间压力)——§1/§7 措辞从「收尾冲刺」改长线打磨,§7 新增**打磨期工作原则**(不用 Demo/冲刺心态规划任务 · 能一次做全面就一次做全面 · backlog 只承载依赖未解除/待拍板项,不承载偷懒未做项);② **版本摘要搬家体例**:头部只留最近 2 版,v1.1-v1.17 迁 `docs/_archive/CLAUDE_CHANGELOG.md`(GDD 同步此体例 + 冻结 `GDD_v1.16_frozen_2026-06-11.md` 基线);③ 阶段锚单点 = PROGRESS.md 顶部常驻行。
 
