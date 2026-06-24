@@ -1,4 +1,5 @@
 import '../../../core/domain/enums.dart';
+import '../../../data/defs/drop_entry.dart';
 
 /// 闭关地图定义（numbers.yaml `retreat.maps[]`，Phase 3 T47）。
 ///
@@ -33,6 +34,10 @@ class SeclusionMapDef {
   /// 地图大图资源路径(M4 PoC #46 美术 Stage 2 W6 收官 5 地图 9.0/10)。
   final String? imagePath;
 
+  /// 闭关掉落表（numbers.yaml `retreat.maps[].dropTable`，B2 接通）。
+  /// 压一阶定位：装备 tier 锁地图 requiredRealm 低一阶。缺省空表 = 不掉。
+  final List<DropEntry> dropTable;
+
   const SeclusionMapDef({
     required this.mapType,
     required this.mapName,
@@ -46,6 +51,7 @@ class SeclusionMapDef {
     this.biome,
     this.weather,
     this.imagePath,
+    this.dropTable = const [],
   });
 
   factory SeclusionMapDef.fromYaml(Map<String, dynamic> y) {
@@ -67,6 +73,10 @@ class SeclusionMapDef {
           ? null
           : EncounterWeather.values.byName(y['weather'] as String),
       imagePath: y['image_path'] as String?,
+      dropTable: (y['dropTable'] as List<dynamic>?)
+              ?.map((e) => DropEntry.fromYaml(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
   }
 }
