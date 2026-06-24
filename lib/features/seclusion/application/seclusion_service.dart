@@ -8,6 +8,7 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/reward_entry.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
@@ -320,6 +321,13 @@ class SeclusionService {
       synergyInternalForceGrowthPct: synergyGrowthPct,
       residueInternalForceMultiplier: residueMult,
       rng: rng,
+      dropService: GameRepository.isLoaded
+          ? DropService(
+              equipmentDefLookup: GameRepository.instance.getEquipment,
+              defaultObtainedFrom: UiStrings.dropSourceSeclusion,
+              now: () => now,
+            )
+          : null,
     );
 
     // W15 #30 第 3 期:applyExperience 返回值,在 writeTxn 内闭包 assign,
@@ -349,6 +357,11 @@ class SeclusionService {
           quantity: outputs.silver,
           now: now,
         );
+      }
+
+      // 1c. 写闭关掉落装备 → isar.equipments（B2 接通）。
+      for (final eq in outputs.equipmentDrops) {
+        await isar.equipments.put(eq);
       }
 
       // 2. 更新 session
