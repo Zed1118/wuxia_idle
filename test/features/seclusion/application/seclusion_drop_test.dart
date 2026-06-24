@@ -83,4 +83,47 @@ void main() {
       }
     }
   });
+
+  RetreatSession shanLinSession(int id) => RetreatSession()
+    ..id = id
+    ..saveDataId = kSaveDataId
+    ..mapType = RetreatMapType.shanLin
+    ..durationHours = 4
+    ..startedAt = DateTime(2026, 5, 11, 10, 0)
+    ..status = RetreatStatus.active
+    ..actualRewards = [];
+
+  test('computeOutputs：闸命中 + dropService → 1 件压一阶(山林 xunChang)', () {
+    final now = DateTime(2026, 5, 11, 14, 0); // start + 4h
+    final dropSvc = DropService(
+      equipmentDefLookup: GameRepository.instance.getEquipment,
+      defaultObtainedFrom: UiStrings.dropSourceSeclusion,
+      now: () => now,
+    );
+    final out = SeclusionService.computeOutputs(
+      session: shanLinSession(50),
+      charRealmTier: RealmTier.xueTu,
+      config: GameRepository.instance.numbers.retreat,
+      maps: GameRepository.instance.seclusionMaps,
+      now: now,
+      dropService: dropSvc,
+      rng: _ConstRng(0.0), // 0.0 < equipProb(1.0×0.1) → 命中；抽第 1 条
+    );
+    expect(out.equipmentDrops, hasLength(1));
+    expect(out.equipmentDrops.first.tier, EquipmentTier.xunChang);
+    expect(out.equipmentDrops.first.obtainedFrom, UiStrings.dropSourceSeclusion);
+  });
+
+  test('computeOutputs：不传 dropService → equipDrops 恒空(零回归)', () {
+    final now = DateTime(2026, 5, 11, 14, 0);
+    final out = SeclusionService.computeOutputs(
+      session: shanLinSession(51),
+      charRealmTier: RealmTier.xueTu,
+      config: GameRepository.instance.numbers.retreat,
+      maps: GameRepository.instance.seclusionMaps,
+      now: now,
+      rng: _ConstRng(0.0),
+    );
+    expect(out.equipmentDrops, isEmpty);
+  });
 }
