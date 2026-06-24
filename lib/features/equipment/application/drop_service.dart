@@ -111,6 +111,32 @@ class DropService {
     return DropResult(equipments: equipments, items: items);
   }
 
+  /// 加权抽 1 件装备（B2 闭关用）：按各 [EquipmentDrop.dropChance] 作相对权重
+  /// 选恰好 1 条。表空 / 无 EquipmentDrop / 总权重 ≤ 0 → null。
+  /// 与 [_rollTable] 的 EquipmentDrop 分支同样经 [EquipmentFactory.fromDef] 实例化。
+  Equipment? rollOneWeighted(List<DropEntry> table, Rng rng) {
+    final entries = table.whereType<EquipmentDrop>().toList();
+    if (entries.isEmpty) return null;
+    final total = entries.fold<double>(0, (s, e) => s + e.dropChance);
+    if (total <= 0) return null;
+    var roll = rng.nextDouble() * total;
+    EquipmentDrop chosen = entries.last; // 浮点兜底
+    for (final entry in entries) {
+      roll -= entry.dropChance;
+      if (roll < 0) {
+        chosen = entry;
+        break;
+      }
+    }
+    final def = equipmentDefLookup(chosen.equipmentDefId);
+    return EquipmentFactory.fromDef(
+      def,
+      rng: rng,
+      obtainedAt: now(),
+      obtainedFrom: defaultObtainedFrom,
+    );
+  }
+
   static int _rollQuantity(Rng rng, int min, int max) {
     if (min == max) return min;
     return min + rng.nextInt(max - min + 1);
