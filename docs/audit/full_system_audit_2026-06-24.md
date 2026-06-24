@@ -9,7 +9,7 @@
 | 类 | 数 | 说明 |
 |---|---|---|
 | A 面向玩家真功能缺陷 | 1 | 已暴露给玩家却无效 |
-| B 系统建好未接 game loop | 3 | B1+B2 ✅ 接通(2026-06-24)；B3 仍待拍板 |
+| B 系统建好未接 game loop | 3 | B1+B2 ✅ 接通 / B3 ✅ 注释止血 pending-1.1(2026-06-24) |
 | C 需拍板设计冲突/drift | 3 | 文档 vs 代码语义冲突 |
 | D 配而不用死字段 + 注释 drift | 8 | 卫生债，可批量清 |
 | E 散写中文 | 2 | 卫生 |
@@ -45,7 +45,8 @@
 - confidence：高
 - 处置：补 seclusion dropTable 真发装备，或砍 equipmentDropRate/baseEquipDropProbability 字段标 unused。
 
-### B3 [Med] 江湖恩怨不进战斗
+### B3 [Med] 江湖恩怨不进战斗 — ✅ **resolved 2026-06-24（注释止血 pending-1.1）**
+> 处置（用户拍板·注释止血非接入）：`bakeEnmityMultipliers`（battle_providers）+ `NpcRelationService.upsert`（class 头）各加 `UNUSED-PENDING-1.1` 可扫描头注——诚实标注整链 dormant 为故意延期（非误删死码），1.1 接 `StageDef.npcId` schema（与 D3 同源）双写真 NPC 关系后即激活，service+R5.7 红线测全留底不删。零行为变更（注释纯文档）。analyze 0 / jianghu 50 测全绿 / 2900 baseline 不变。
 - **位置**：`battle_providers.dart:243`（bakeEnmityMultipliers）/ `npc_relation_service.dart:20`（upsert）
 - **问题**（亲核）：bakeEnmityMultipliers 0 生产 caller、upsert 0 写入，恩怨 APM 末端乘 dormant。service+provider+红线测全建好但无路径触发。注释自承"真 NPC 接入 1.1+ 走 StageDef.npcId schema 扩"。
 - confidence：高

@@ -226,6 +226,14 @@ BattleResult? battleResult(Ref ref) =>
 
 /// P1.2 §5 江湖恩怨 attackPowerMultiplier 烘焙(spec §5 · battle setup 阶段一次性 SET)。
 ///
+/// **UNUSED-PENDING-1.1**(全系统审计 2026-06-24 B3·诚实标注延期·非误删死码):
+/// 本函数 0 生产 caller(仅 `jianghu_r5_test` 引用)。整条恩怨→战斗链 dormant:
+/// 上游 [NpcRelationService.upsert] 无生产写入(关系永不建立)+ 本烘焙未接入
+/// stage_battle_setup → APM 末端乘永不触发。**故意延期 1.1**:真 NPC 恩怨需先
+/// 扩 `StageDef.npcId` schema(与审计 D3 npcId 死字段同源),给 stage_boss_kill /
+/// encounter 写入真 NPC 关系后,再在 battle setup await 调本函数。service +
+/// provider + R5.7 红线测全建好,1.1 接 schema 即可激活,不删。
+///
 /// 沿 `light_foot_strategy.dart:120` / `mass_battle_strategy.dart:182` 体例:
 /// 直接 `copyWith(attackPowerMultiplier: mult)` SET 不乘 · 双方对等。
 ///
