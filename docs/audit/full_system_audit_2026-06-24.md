@@ -9,7 +9,7 @@
 | 类 | 数 | 说明 |
 |---|---|---|
 | A 面向玩家真功能缺陷 | 1 | 已暴露给玩家却无效 |
-| B 系统建好未接 game loop | 3 | 有 deferred 注释，需拍板本期接否 |
+| B 系统建好未接 game loop | 3 | B2 ✅ 接通(2026-06-24)；B1/B3 仍待拍板 |
 | C 需拍板设计冲突/drift | 3 | 文档 vs 代码语义冲突 |
 | D 配而不用死字段 + 注释 drift | 8 | 卫生债，可批量清 |
 | E 散写中文 | 2 | 卫生 |
@@ -37,7 +37,8 @@
 - confidence：高
 - 处置：wire MonthlyTickCoordinator 到时间锚 + 注册 checkAndTrigger/computeDecay，或注释止血标"未接 game loop"。
 
-### B2 [Med] 闭关装备掉落死链
+### B2 [Med] 闭关装备掉落死链 — ✅ **resolved 2026-06-24（接通方向 · commit 6f075299 · spec/plan `docs/spec/2026-06-24-b2-seclusion-equipment-drop-{design,plan}.md`）**
+> 接通（用户拍板）：①`SeclusionMapDef.dropTable` 字段 + fromYaml ②`DropService.rollOneWeighted` 外层闸命中后按 dropChance 权重抽 1 件 ③numbers.yaml 5 图 dropTable（压一阶定位·守 §5.3 锁步红线测）④`computeOutputs` 接 `DropService?`（nullable 零回归）填空块 ⑤`completeRetreat` writeTxn 落库 `isar.equipments`、`obtainedFrom = UiStrings.dropSourceSeclusion`。零 saveVer / 零产出数值变更。subagent-driven 5 task TDD（每 task 两段 review）。全量 2884+1skip（**+8** 新测·0 回归）/ analyze 0。
 - **位置**：`seclusion_service.dart:255`
 - **问题**（亲核）：`equipment_drop_rate`(numbers.yaml 5 图 1.0/1.5)×`base_equip_drop_probability`(0.1)=10-15% 命中率配齐、roll 也算了，但 `if (equipRoll < equipProb) {}` 块体空（仅注释 Phase 4 补全），equipDrops 恒空。配了却永不掉装备。
 - confidence：高
