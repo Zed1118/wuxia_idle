@@ -55,6 +55,7 @@ class LineageCharacterDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               _AttributesSection(character: character),
+              _InjurySection(character: character),
               _MainTechniqueSection(character: character),
               _HeritageSection(character: character),
               if (character.isFounder &&
@@ -290,6 +291,73 @@ class _AttrChip extends StatelessWidget {
     return Text(
       text,
       style: const TextStyle(color: WuxiaColors.textSecondary, fontSize: 13),
+    );
+  }
+}
+
+/// 伤势状态段（Task 9）：展示重伤 / 轻伤。
+///
+/// - 重伤（injuryHoursRemaining > 0）：「重伤」chip + 「内伤未愈 · 调息 Nh」提示
+/// - 轻伤（lightInjuryStacks > 0）：「带伤×N」chip
+/// - 两者均无 → 整段隐藏
+class _InjurySection extends StatelessWidget {
+  const _InjurySection({required this.character});
+
+  final Character character;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasHeavy = character.injuryHoursRemaining > 0;
+    final hasLight = character.lightInjuryStacks > 0;
+    if (!hasHeavy && !hasLight) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: LineagePanelCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const LineageSectionTitle(UiStrings.lineageCharacterDetailInjuryTitle),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: [
+                if (hasHeavy) ...[
+                  const _InjuryChip(
+                    label: UiStrings.injuryHeavyLabel,
+                    color: WuxiaColors.hpLow,
+                  ),
+                  _InjuryChip(
+                    label: UiStrings.injuryRecoveryHint(
+                        character.injuryHoursRemaining),
+                    color: WuxiaColors.textSecondary,
+                  ),
+                ],
+                if (hasLight)
+                  _InjuryChip(
+                    label: '${UiStrings.injuryLightLabel}×${character.lightInjuryStacks}',
+                    color: WuxiaColors.textSecondary,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InjuryChip extends StatelessWidget {
+  const _InjuryChip({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: TextStyle(color: color, fontSize: 13),
     );
   }
 }

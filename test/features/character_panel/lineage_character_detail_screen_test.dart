@@ -120,4 +120,79 @@ void main() {
       findsOneWidget,
     );
   });
+
+  // ── 伤势 chip 测试（Task 9）────────────────────────────────────────────────
+
+  testWidgets('重伤角色显示重伤标签与疗养提示', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 2000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final c = Character()
+      ..id = 10
+      ..name = '沈风'
+      ..realmTier = RealmTier.erLiu
+      ..realmLayer = RealmLayer.ruMen
+      ..lineageRole = LineageRole.senior
+      ..isFounder = false
+      ..birthInGameYear = 3
+      ..attributes = Attributes()
+      ..injuryHoursRemaining = 12.0;
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(home: LineageCharacterDetailScreen(character: c)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.injuryHeavyLabel), findsOneWidget);
+    expect(
+      find.text(UiStrings.injuryRecoveryHint(12.0)),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('带伤（轻伤）角色显示带伤标签', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 2000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final c = Character()
+      ..id = 11
+      ..name = '白鸾'
+      ..realmTier = RealmTier.sanLiu
+      ..realmLayer = RealmLayer.ruMen
+      ..lineageRole = LineageRole.junior
+      ..isFounder = false
+      ..birthInGameYear = 5
+      ..attributes = Attributes()
+      ..lightInjuryStacks = 3;
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(home: LineageCharacterDetailScreen(character: c)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // 轻伤显带伤标签（含层数）
+    expect(find.textContaining(UiStrings.injuryLightLabel), findsOneWidget);
+  });
+
+  testWidgets('无伤角色不显示伤势 chip', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 2000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final c = Character()
+      ..id = 12
+      ..name = '莫云'
+      ..realmTier = RealmTier.sanLiu
+      ..realmLayer = RealmLayer.ruMen
+      ..lineageRole = LineageRole.junior
+      ..isFounder = false
+      ..birthInGameYear = 4
+      ..attributes = Attributes()
+      ..lightInjuryStacks = 0
+      ..injuryHoursRemaining = 0;
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(home: LineageCharacterDetailScreen(character: c)),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.injuryHeavyLabel), findsNothing);
+    expect(find.text(UiStrings.injuryLightLabel), findsNothing);
+  });
 }
