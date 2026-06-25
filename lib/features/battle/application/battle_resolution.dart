@@ -11,6 +11,7 @@ import '../../../shared/utils/rng.dart';
 import '../../cultivation/application/cultivation_service.dart';
 import '../../dispel/application/dispel_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
+import '../../injury/application/injury_service.dart';
 import '../../../features/equipment/application/drop_service.dart';
 
 /// 战斗结算服务的汇总返回（phase2_tasks T26 §324-356）。
@@ -109,6 +110,7 @@ class BattleResolutionService {
     StageDef? stageDef,
     bool isVictory = true,
     NumbersConfig? numbersConfig,
+    bool isHardFight = false,
   }) {
     _assertAllParticipated(finalState, participatingCharacters);
 
@@ -219,6 +221,19 @@ class BattleResolutionService {
           residueHours: idDef.failurePenalty.debuffClearViaRetreatHours.toDouble(),
         );
       }
+    }
+
+    // 5. 双层伤势（第八阶段 2026-06-25）：连战轻伤每场累积 + 硬仗重伤
+    // （战败全员 / 惨胜低血存活者）。仅修改传入 Character 字段，持久化归 caller。
+    // 与上方心魔 / Boss 散功分支并存：伤势是通用层，不依赖 stageType。
+    if (numbersConfig != null && participatingCharacters.isNotEmpty) {
+      InjuryService.applyBattleInjuries(
+        participatingCharacters: participatingCharacters,
+        finalState: finalState,
+        config: numbersConfig.injury,
+        isVictory: isVictory,
+        isHardFight: isHardFight,
+      );
     }
 
     return BattleResolutionResult(

@@ -1121,4 +1121,209 @@ void main() {
       expect(result.skillUsageIncrements, isEmpty);
     });
   });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // 双层伤势（第八阶段 2026-06-25）：连战轻伤 + 硬仗重伤
+  // ──────────────────────────────────────────────────────────────────────────
+
+  group('双层伤势判定', () {
+    test('硬仗战败：全 participating 角色重伤（injuryHoursRemaining>0）+ 轻伤+1', () {
+      final ch1 = buildCharacter(id: 1, mainTechId: null, name: 'c1');
+      final ch2 = buildCharacter(id: 2, mainTechId: null, name: 'c2');
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0), buildBattleChar(2, 1)],
+        rightTeam: const [],
+        tick: 10,
+        result: BattleResult.rightWin,
+        actionLog: const [],
+      );
+
+      BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch1, ch2],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: const {},
+        stageDef: buildStage(isBossStage: true),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        isVictory: false,
+        numbersConfig: numbersCfg,
+        isHardFight: true,
+      );
+
+      expect(ch1.injuryHoursRemaining, greaterThan(0));
+      expect(ch2.injuryHoursRemaining, greaterThan(0));
+      expect(ch1.injuryHoursRemaining, numbersCfg.injury.heavyRecoveryHours);
+      expect(ch1.lightInjuryStacks, 1);
+      expect(ch2.lightInjuryStacks, 1);
+    });
+
+    test('硬仗惨胜：低血存活者重伤、高血者不重伤；两者均轻伤+1', () {
+      final low = buildCharacter(id: 1, mainTechId: null, name: '残血');
+      final high = buildCharacter(id: 2, mainTechId: null, name: '满血');
+      // low: 存活但 currentHp < maxHp*0.25；high: 满血存活
+      final threshold = numbersCfg.injury.heavyWinHpThresholdPct;
+      final lowBc = buildBattleChar(1, 0).copyWith(
+        maxHp: 1000,
+        currentHp: (1000 * threshold).floor() - 1,
+        isAlive: true,
+      );
+      final highBc = buildBattleChar(2, 1).copyWith(
+        maxHp: 1000,
+        currentHp: 1000,
+        isAlive: true,
+      );
+      final state = BattleState(
+        leftTeam: [lowBc, highBc],
+        rightTeam: const [],
+        tick: 10,
+        result: BattleResult.leftWin,
+        actionLog: const [],
+      );
+
+      BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [low, high],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: const {},
+        stageDef: buildStage(isBossStage: true),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        isVictory: true,
+        numbersConfig: numbersCfg,
+        isHardFight: true,
+      );
+
+      expect(low.injuryHoursRemaining, greaterThan(0),
+          reason: '低血存活者应重伤');
+      expect(high.injuryHoursRemaining, 0, reason: '满血者不应重伤');
+      expect(low.lightInjuryStacks, 1);
+      expect(high.lightInjuryStacks, 1);
+    });
+
+    test('硬仗惨胜：低血但已阵亡者不重伤（仅存活者判定）', () {
+      final dead = buildCharacter(id: 1, mainTechId: null, name: '阵亡');
+      final deadBc = buildBattleChar(1, 0).copyWith(
+        maxHp: 1000,
+        currentHp: 0,
+        isAlive: false,
+      );
+      final state = BattleState(
+        leftTeam: [deadBc],
+        rightTeam: const [],
+        tick: 10,
+        result: BattleResult.leftWin,
+        actionLog: const [],
+      );
+
+      BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [dead],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: const {},
+        stageDef: buildStage(isBossStage: true),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        isVictory: true,
+        numbersConfig: numbersCfg,
+        isHardFight: true,
+      );
+
+      expect(dead.injuryHoursRemaining, 0, reason: '阵亡者不参与惨胜重伤判定');
+      expect(dead.lightInjuryStacks, 1);
+    });
+
+    test('普通战（isHardFight:false 胜利）：无重伤、轻伤+1', () {
+      final ch = buildCharacter(id: 1, mainTechId: null);
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 10,
+        result: BattleResult.leftWin,
+        actionLog: const [],
+      );
+
+      BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: const {},
+        stageDef: buildStage(),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        isVictory: true,
+        numbersConfig: numbersCfg,
+        isHardFight: false,
+      );
+
+      expect(ch.injuryHoursRemaining, 0);
+      expect(ch.lightInjuryStacks, 1);
+    });
+
+    test('连战轻伤 clamp 到 lightMaxStacks（多场累积）', () {
+      final ch = buildCharacter(id: 1, mainTechId: null);
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 1,
+        result: BattleResult.leftWin,
+        actionLog: const [],
+      );
+      final maxStacks = numbersCfg.injury.lightMaxStacks;
+
+      for (var i = 0; i < maxStacks + 3; i++) {
+        BattleResolutionService.resolve(
+          finalState: state,
+          participatingCharacters: [ch],
+          equipmentsByCharacter: const {},
+          techniquesByCharacter: const {},
+          stageDef: buildStage(),
+          rng: DefaultRng(seed: 1),
+          progressToNextMap: progressMap,
+          techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+          dropService: dropSvc(),
+          isVictory: true,
+          numbersConfig: numbersCfg,
+          isHardFight: false,
+        );
+      }
+
+      expect(ch.lightInjuryStacks, maxStacks);
+    });
+
+    test('numbersConfig 缺省（不传）：伤势逻辑跳过，不报错', () {
+      final ch = buildCharacter(id: 1, mainTechId: null);
+      final state = BattleState(
+        leftTeam: [buildBattleChar(1, 0)],
+        rightTeam: const [],
+        tick: 1,
+        result: BattleResult.leftWin,
+        actionLog: const [],
+      );
+
+      BattleResolutionService.resolve(
+        finalState: state,
+        participatingCharacters: [ch],
+        equipmentsByCharacter: const {},
+        techniquesByCharacter: const {},
+        stageDef: buildStage(),
+        rng: DefaultRng(seed: 1),
+        progressToNextMap: progressMap,
+        techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+        dropService: dropSvc(),
+        // 不传 numbersConfig，不传 isHardFight
+      );
+
+      expect(ch.injuryHoursRemaining, 0);
+      expect(ch.lightInjuryStacks, 0);
+    });
+  });
 }
