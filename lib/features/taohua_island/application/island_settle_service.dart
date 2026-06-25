@@ -32,13 +32,13 @@ class IslandHarvest {
 class IslandSettleService {
   IslandSettleService._();
 
-  // ── 私有 helper：取祖师境界 index ─────────────────────────────────────────
+  // ── 公开 helper：取祖师境界 index ─────────────────────────────────────────
 
   /// 按「founder → active 第一位 → fallback 0」顺序返回境界 index。
   ///
   /// 查 Isar 的同步做不到，故为 async；在 writeTxn 之外调用（txn 不可 await 外部
-  /// async 调用），先拿到再开 txn。
-  static Future<int> _founderRealmIndex(SaveData save) async {
+  /// async 调用），先拿到再开 txn。供 [island_providers.dart] 与 action 层复用。
+  static Future<int> founderRealmIndex(SaveData save) async {
     final isar = IsarSetup.instance;
 
     // 优先用 founderCharacterId 直接取
@@ -115,7 +115,7 @@ class IslandSettleService {
     if (elapsed <= 0) return;
 
     final cfg = GameRepository.instance.numbers.taohuaIsland;
-    final realmIdx = await _founderRealmIndex(save);
+    final realmIdx = await founderRealmIndex(save);
 
     final newStates = IslandProductionService.settle(
       states: save.islandBuildings,
