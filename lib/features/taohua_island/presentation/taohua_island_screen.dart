@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../features/battle/domain/enum_localizations.dart';
@@ -442,8 +443,12 @@ class _UpgradeSection extends StatelessWidget {
     final itemDefs = GameRepository.instance.itemDefs;
     final matName =
         itemDefs[bCfg.upgradeMaterialItem]?.name ?? bCfg.upgradeMaterialItem;
-    final silverCost = bCfg.upgradeSilverFor(level);
-    final matCost = bCfg.upgradeMaterialFor(level);
+    // 满级时无「下一级」成本：upgradeSilverFor/MaterialFor 仅对 level < maxLevel 有效
+    // (节奏 B 银两为 per-level 数组，索引 level-1 在满级会越界)。费用文案本就在
+    // maxLevelReached 时隐藏，故满级取 0 占位，不参与渲染。
+    final atMax = level >= bCfg.maxLevel;
+    final silverCost = atMax ? 0 : bCfg.upgradeSilverFor(level);
+    final matCost = atMax ? 0 : bCfg.upgradeMaterialFor(level);
 
     final canUpgrade = upgradeCheck == null;
 
@@ -451,7 +456,10 @@ class _UpgradeSection extends StatelessWidget {
     final hint = switch (upgradeCheck) {
       UpgradeResult.ok => null,
       UpgradeResult.maxLevelReached => UiStrings.taohuaIslandMaxLevel,
-      UpgradeResult.realmLocked => UiStrings.taohuaIslandRealmLocked,
+      // 节奏 B：分阶 gate 提示具体所需境界（升 level→level+1 需 upgradeRealmFor(level)）。
+      // 仅 realmLocked 分支到达此处，level < maxLevel，索引不越界。
+      UpgradeResult.realmLocked => UiStrings.taohuaIslandRealmLockedFor(
+          EnumL10n.realmTier(RealmTier.values[bCfg.upgradeRealmFor(level)])),
       UpgradeResult.notEnoughSilver =>
         UiStrings.taohuaIslandNotEnoughSilver,
       UpgradeResult.notEnoughMaterial =>

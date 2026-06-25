@@ -1851,6 +1851,13 @@ taohua_island:
   # 线性式 cap(L)=base×L,与产出 ×level 同步缩放。派生下界:源 6×72=432 / 磨剑石
   # 1.5×72=108 / 凝神丹 1.0×72=72,均向上取整留余量(450/120/80)。不变量见
   # island_offline_online_invariant_test。
+  #
+  # 升级成本「节奏 B」(2026-06-25 balance·用户拍板「前低后高 + 境界分阶」):
+  # upgrade_silver_levels = per-level 显式曲线(线性公式做不到前低后高),index = level-1,
+  # 长度必 = max_level-1。upgrade_realm_levels = 每级升级的祖师境界 gate(单调非减,L4→5 需
+  # 一流 realm3,与高阶配方心血/培元同步解锁)。四座全满 ≈ 52,200 银,贯穿二流→一流数境界。
+  # 配方比率(input_per_output)/材料成本(base×level)/产速不动。校验见 taohua_island_config.validate
+  # + 红线测 island_upgrade_curve_b_test。
   unlock_chapter_index: 1       # 主线第二章(index 1)cleared 解锁
   buildings:
     tie_jiang_chang:            # 铁匠厂(原料)
@@ -1860,8 +1867,8 @@ taohua_island:
       cap_base: 450                # ≥ 6×72=432(容 72h 源料·见段首 cap 自洽原则)
       cap_per_level: 450
       max_level: 5
-      upgrade_silver_base: 500
-      upgrade_silver_per_level: 400
+      upgrade_silver_levels: [500, 1200, 2800, 6000]   # 节奏 B 前低后高(L1→2..L4→5·全满 10,500/座)
+      upgrade_realm_levels: [0, 1, 2, 3]               # 升级境界 gate：L2→3 三流/L3→4 二流/L4→5 一流(realm3)
       upgrade_material_item: item_jingtie
       upgrade_material_base: 40
       realm_unlock_index: 0
@@ -1872,8 +1879,8 @@ taohua_island:
       cap_base: 450                # ≥ 6×72=432(容 72h 源料·见段首 cap 自洽原则)
       cap_per_level: 450
       max_level: 5
-      upgrade_silver_base: 500
-      upgrade_silver_per_level: 400
+      upgrade_silver_levels: [500, 1200, 2800, 6000]   # 节奏 B 前低后高(L1→2..L4→5·全满 10,500/座)
+      upgrade_realm_levels: [0, 1, 2, 3]               # 升级境界 gate：L2→3 三流/L3→4 二流/L4→5 一流(realm3)
       upgrade_material_item: item_yaocao
       upgrade_material_base: 40
       realm_unlock_index: 0
@@ -1883,8 +1890,8 @@ taohua_island:
       cap_base: 120               # ≥ 磨剑石 1.5×72=108(成品满 72h·见段首 cap 自洽原则)
       cap_per_level: 120
       max_level: 5
-      upgrade_silver_base: 800
-      upgrade_silver_per_level: 600
+      upgrade_silver_levels: [800, 1800, 4000, 9000]   # 节奏 B 前低后高(L1→2..L4→5·全满 15,600/座)
+      upgrade_realm_levels: [0, 1, 2, 3]               # 升级境界 gate：L4→5 需一流(realm3)·与高阶配方同步解锁
       upgrade_material_item: item_jingtie
       upgrade_material_base: 80
       recipes:
@@ -1896,8 +1903,8 @@ taohua_island:
       cap_base: 80                # ≥ 凝神丹 1.0×72=72(成品满 72h·见段首 cap 自洽原则)
       cap_per_level: 80
       max_level: 5
-      upgrade_silver_base: 800
-      upgrade_silver_per_level: 600
+      upgrade_silver_levels: [800, 1800, 4000, 9000]   # 节奏 B 前低后高(L1→2..L4→5·全满 15,600/座)
+      upgrade_realm_levels: [0, 1, 2, 3]               # 升级境界 gate：L4→5 需一流(realm3)·与高阶配方同步解锁
       upgrade_material_item: item_yaocao
       upgrade_material_base: 80
       recipes:

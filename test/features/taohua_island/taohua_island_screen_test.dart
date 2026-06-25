@@ -170,6 +170,46 @@ void main() {
       await pump(tester, wrap(null));
       expect(find.textContaining('无存档'), findsOneWidget);
     });
+
+    testWidgets('满级建筑(level=maxLevel)渲染不崩 + 显示已至顶级', (tester) async {
+      // 回归守卫(B1)：节奏 B 把升级银两改成 per-level 数组(长度 maxLevel-1)后，
+      // _UpgradeSection 若在满级仍算 upgradeSilverFor(maxLevel) 会数组越界 RangeError。
+      // 满级建筑须正常渲染、显示「已至顶级」、不显示升级费用文案。
+      final tieMax = IslandBuildingState()
+        ..type = BuildingType.tieJiangChang
+        ..level = 5 // = max_level
+        ..stored = 50;
+      final cao = IslandBuildingState()
+        ..type = BuildingType.caoYaoYuan
+        ..level = 1
+        ..stored = 0;
+      final dz = IslandBuildingState()
+        ..type = BuildingType.daZaoTai
+        ..level = 1
+        ..stored = 0
+        ..activeRecipeId = 'forge_mojianshi';
+      final df = IslandBuildingState()
+        ..type = BuildingType.danFang
+        ..level = 1
+        ..stored = 0;
+      final view = IslandView(
+        buildings: [tieMax, cao, dz, df],
+        founderRealmIndex: 6, // 武圣，排除 realmLocked 噪音
+        silver: 999999,
+        materials: const {
+          'item_jingtie': 100,
+          'item_yaocao': 100,
+          'item_mojianshi': 100,
+          'item_xinxuejiejing': 100,
+        },
+      );
+      await pump(tester, wrap(view));
+
+      expect(tester.takeException(), isNull,
+          reason: '满级建筑渲染不应抛 RangeError');
+      expect(find.text(UiStrings.taohuaIslandMaxLevel), findsOneWidget,
+          reason: '满级建筑应显示已至顶级标签');
+    });
   });
 
   // ── 灰化逻辑测试 ──────────────────────────────────────────────────────────

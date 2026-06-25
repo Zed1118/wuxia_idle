@@ -51,6 +51,8 @@
 
 - [ ] **Step 2:** `data/numbers.yaml` 尾部追加(保守占位值,待 balance):
 
+> ⚠️ **schema 已演进(2026-06-25 balance 节奏 B)**:下方 `upgrade_silver_base`/`upgrade_silver_per_level` 标量已被 `upgrade_silver_levels:[...]` 数组 + `upgrade_realm_levels:[...]` 取代(前低后高曲线 + 按等级分阶境界 gate)。**勿照抄此处旧字段**;现行 schema 以 `data/numbers.yaml` 实文件 + `taohua_island_config.dart` + `island_upgrade_curve_b_test.dart` 为准。
+
 ```yaml
 taohua_island:
   cap_hours: 72                 # 沿用闭关 72h 防无限堆积(满则停产·非 FOMO)
