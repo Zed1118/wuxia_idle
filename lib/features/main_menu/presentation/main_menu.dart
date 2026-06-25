@@ -164,10 +164,11 @@ class MainMenu extends ConsumerWidget {
     final socialLocked = !cleared.contains(_socialUnlockStage);
 
     // 桃花岛入口门控：unlock_chapter_index(=1,0-based)对应第二章(chapterIndex=2)通关。
-    // 门槛从 config 读，不硬编码。
+    // 门槛从 config 读，不硬编码。GameRepository 未加载时（轻量 test）视为锁定。
     final taohuaUnlockChIdx =
-        GameRepository.instance.numbers.taohuaIsland.unlockChapterIndex;
+        GameRepository.instanceOrNull?.numbers.taohuaIsland.unlockChapterIndex;
     final taohuaLocked =
+        taohuaUnlockChIdx == null ||
         mainlineProgress == null ||
         !MainlineProgressService.chapterCompleted(
           progress: mainlineProgress,
