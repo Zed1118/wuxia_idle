@@ -5,6 +5,7 @@ import '../features/inner_demon/domain/inner_demon_def.dart';
 import '../features/light_foot/domain/light_foot_def.dart';
 import '../features/mass_battle/domain/mass_battle_def.dart';
 import '../features/seclusion/domain/seclusion_map_def.dart';
+import '../features/taohua_island/domain/taohua_island_config.dart';
 import '../core/domain/enums.dart';
 
 /// 数值总配置（numbers.yaml 全量包装）。
@@ -217,6 +218,9 @@ class NumbersConfig {
   /// M2 范围 B 通用被动离线挂机配置（numbers.yaml `passive_idle`，spec 2026-06-15）。
   final PassiveIdleConfig passiveIdle;
 
+  /// 桃花岛岛屿建筑配置（numbers.yaml `taohua_island`，桃花岛一期）。
+  final TaohuaIslandConfig taohuaIsland;
+
   /// 战报失败诊断阈值（numbers.yaml `battle_report`，spec 2026-06-15）。
   final BattleReportConfig battleReport;
 
@@ -276,6 +280,7 @@ class NumbersConfig {
     required this.loadoutUltimatePowerThreshold,
     required this.cycleEvolution,
     required this.passiveIdle,
+    required this.taohuaIsland,
     required this.battleReport,
     required this.heroCamera,
     required this.lineageOnboarding,
@@ -427,6 +432,9 @@ class NumbersConfig {
       ),
       passiveIdle: PassiveIdleConfig.fromYaml(
         y['passive_idle'] as Map<String, dynamic>,
+      ),
+      taohuaIsland: TaohuaIslandConfig.fromYaml(
+        (y['taohua_island'] as Map).cast<String, dynamic>(),
       ),
       battleReport: BattleReportConfig.fromYaml(
         y['battle_report'] as Map<String, dynamic>,
