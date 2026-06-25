@@ -234,15 +234,23 @@ class StageBattleSetup {
             .battleOutputMultiplier
         : 1.0;
 
+    // 第八阶段 Task5：重伤 debuff → 攻击折扣连乘余毒（outputMultiplier 可乘性组合）。
+    final n = GameRepository.instance.numbers;
+    final heavyInjured = character.injuryHoursRemaining > 0;
+    final injuryAtkMult =
+        heavyInjured ? n.injury.heavyAttackOutputMultiplier : 1.0;
+
     final base = BattleCharacter.fromCharacter(
       character: character,
       equipped: equipped,
       mainTechnique: mainTech,
-      numbers: GameRepository.instance.numbers,
+      numbers: n,
       teamSide: 0,
       slotIndex: slotIndex,
       founderBuffActive: founderBuffActive,
-      outputMultiplier: residueMult,
+      outputMultiplier: residueMult * injuryAtkMult,
+      heavyInjured: heavyInjured,
+      lightInjuryStacks: character.lightInjuryStacks,
     );
 
     // W18-A1 心法相生 buff 注入(GDD §4.5)。命中即 copyWith 调整 maxHp/speed/
