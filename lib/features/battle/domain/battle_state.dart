@@ -283,6 +283,8 @@ class BattleCharacter {
     required int slotIndex,
     bool founderBuffActive = false,
     double outputMultiplier = 1.0,
+    bool heavyInjured = false,
+    int lightInjuryStacks = 0,
   }) {
     final school = character.school;
     if (school == null) {
@@ -316,12 +318,14 @@ class BattleCharacter {
       equipped,
       numbers,
       founderBuffActive: founderBuffActive,
+      heavyInjured: heavyInjured,
     );
     final speed = CharacterDerivedStats.speed(
       character,
       equipped,
       mainTechnique,
       numbers,
+      lightInjuryStacks: lightInjuryStacks,
     );
     final critRate = CharacterDerivedStats.criticalRate(
       character,
