@@ -1869,4 +1869,16 @@ class UiStrings {
 
   /// 建筑暂停状态标签（未配方或原料不足）。
   static const String taohuaIslandIdlePaused = '已停（择配方/补料）';
+
+  /// 数据读取失败错误提示（§5.6 迁出中文字面量）。
+  static String taohuaIslandLoadError(Object e) => '读取失败：$e';
+
+  /// 无存档时的友好态提示（§5.6 迁出中文字面量）。
+  static const String taohuaIslandNoSave = '尚无存档，请先进入游戏。';
+
+  /// 产物名前缀：`产出：name`（§5.6 迁出中文字面量）。
+  static String taohuaIslandOutputPrefix(String name) => '产出：$name';
+
+  /// selectRecipe 不可达路径失败文案（notProcessor / recipeNotFound）。
+  static const String taohuaIslandSelectRecipeFailed = '无法择此配方';
 }

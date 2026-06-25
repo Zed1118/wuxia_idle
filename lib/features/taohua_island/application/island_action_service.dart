@@ -3,6 +3,7 @@ import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../domain/island_building_type.dart';
+import '../domain/taohua_island_config.dart';
 
 /// 建筑升级操作的失败/成功原因。
 enum UpgradeResult {
@@ -40,13 +41,38 @@ enum SelectRecipeResult {
 /// 桃花岛建筑升级 + 选配方服务（Isar 写，原子事务）。
 ///
 /// 职责：
-/// - [upgrade]：检查 maxLevel / realmUnlock / 银两 / 材料，全过则原子写 Isar。
+/// - [upgradeBlockReason]：**纯静态**升级前置检查（不读写 Isar），widget 与 upgrade 共用，消除双源。
+/// - [upgrade]：调用 [upgradeBlockReason] 做 maxLevel / realmUnlock 检查，
+///   然后读 Isar 做银两 / 材料检查，全过则原子写 Isar。
 /// - [selectRecipe]：检查 isProcessor / recipeExists / realmUnlock，全过则原子写 Isar。
 ///
 /// 失败路径**无任何副作用**（check 在 writeTxn 外先做；txn 内仅在全过后写，
 /// 单一 txn 保证原子性）。
 class IslandActionService {
   IslandActionService._();
+
+  // ── upgradeBlockReason（纯静态，不读写 Isar）──────────────────────────────
+
+  /// 检查是否可升级（纯判断，不访问 Isar）。
+  ///
+  /// - 返回 `null` 表示可升级。
+  /// - 返回非 null 表示被阻止的原因（widget 和 upgrade 两端共用此函数消除 drift）。
+  ///
+  /// 注意：[silver] / [material] 须由调用方从缓存 view 或 Isar 读取后传入；
+  /// 此函数只做纯算术比较，不自行访问 Isar。
+  static UpgradeResult? upgradeBlockReason({
+    required BuildingConfig cfg,
+    required int level,
+    required int founderRealmIndex,
+    required int silver,
+    required int material,
+  }) {
+    if (level >= cfg.maxLevel) return UpgradeResult.maxLevelReached;
+    if (cfg.realmUnlockIndex > founderRealmIndex) return UpgradeResult.realmLocked;
+    if (silver < cfg.upgradeSilverFor(level)) return UpgradeResult.notEnoughSilver;
+    if (material < cfg.upgradeMaterialFor(level)) return UpgradeResult.notEnoughMaterial;
+    return null;
+  }
 
   // ── upgrade ───────────────────────────────────────────────────────────────
 
@@ -73,33 +99,45 @@ class IslandActionService {
 
     // ── 纯检查阶段（txn 外，不写 Isar）──────────────────────────────────────
 
-    // 1. 是否已达最高等级
-    if (currentLevel >= bCfg.maxLevel) {
+    // 1 & 2: maxLevel / realmLocked（纯静态，不需要 Isar）
+    // 传 silver=-1 / material=-1 先只检查前两项（后两项待读 Isar 后再检查）
+    final earlyBlock = upgradeBlockReason(
+      cfg: bCfg,
+      level: currentLevel,
+      founderRealmIndex: founderRealmIndex,
+      silver: 0,
+      material: 0,
+    );
+    // earlyBlock 仅覆盖 maxLevelReached / realmLocked（silver/material=0 时
+    // 若实际有资源也会误报 notEnoughSilver，所以分两阶段：先检 level/realm）
+    if (earlyBlock == UpgradeResult.maxLevelReached) {
       return UpgradeResult.maxLevelReached;
     }
-
-    // 2. 建筑境界门槛（config-backed，当前全 0）
-    if (bCfg.realmUnlockIndex > founderRealmIndex) {
+    if (earlyBlock == UpgradeResult.realmLocked) {
       return UpgradeResult.realmLocked;
     }
 
     final isar = IsarSetup.instance;
 
-    // 3. 银两与材料检查（读 Isar 但不写）
+    // 3. 银两与材料检查（读 Isar 但不写，再调纯静态函数复用同一判断逻辑）
     final silverItem = await isar.inventoryItems.getByDefId('item_silver');
     final silverQty = silverItem?.quantity ?? 0;
-    final silverNeeded = bCfg.upgradeSilverFor(currentLevel);
-    if (silverQty < silverNeeded) {
-      return UpgradeResult.notEnoughSilver;
-    }
-
     final materialItem =
         await isar.inventoryItems.getByDefId(bCfg.upgradeMaterialItem);
     final materialQty = materialItem?.quantity ?? 0;
+
+    // 预先算出扣除量（txn 内使用）
+    final silverNeeded = bCfg.upgradeSilverFor(currentLevel);
     final materialNeeded = bCfg.upgradeMaterialFor(currentLevel);
-    if (materialQty < materialNeeded) {
-      return UpgradeResult.notEnoughMaterial;
-    }
+
+    final fullBlock = upgradeBlockReason(
+      cfg: bCfg,
+      level: currentLevel,
+      founderRealmIndex: founderRealmIndex,
+      silver: silverQty,
+      material: materialQty,
+    );
+    if (fullBlock != null) return fullBlock;
 
     // ── 执行阶段（单一 writeTxn 原子）────────────────────────────────────────
     await isar.writeTxn(() async {
