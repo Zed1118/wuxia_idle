@@ -65,7 +65,7 @@ class TaohuaIslandScreen extends ConsumerWidget {
         ),
         error: (e, _) => Center(
           child: Text(
-            '读取失败：$e',
+            UiStrings.taohuaIslandLoadError(e),
             style: const TextStyle(color: WuxiaUi.muted, fontSize: 14),
           ),
         ),
@@ -73,7 +73,7 @@ class TaohuaIslandScreen extends ConsumerWidget {
           if (view == null) {
             return const Center(
               child: Text(
-                '尚无存档，请先进入游戏。',
+                UiStrings.taohuaIslandNoSave,
                 style: TextStyle(color: WuxiaUi.muted, fontSize: 14),
               ),
             );
@@ -177,8 +177,15 @@ class _BuildingCard extends StatelessWidget {
       }
     }
 
-    // 升级可否判断
-    final upgradeCheck = _upgradeCheck(level, view, bCfg);
+    // 升级可否判断（共用 IslandActionService.upgradeBlockReason 纯函数，消除 widget/service 双源）
+    final matHave = view.materials[bCfg.upgradeMaterialItem] ?? 0;
+    final upgradeCheck = IslandActionService.upgradeBlockReason(
+      cfg: bCfg,
+      level: level,
+      founderRealmIndex: view.founderRealmIndex,
+      silver: view.silver,
+      material: matHave,
+    );
 
     return PaperPanel(
       padding: const EdgeInsets.all(14),
@@ -228,7 +235,7 @@ class _BuildingCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: Text(
-                '产出：$outputName',
+                UiStrings.taohuaIslandOutputPrefix(outputName),
                 style: const TextStyle(
                   color: WuxiaUi.ink2,
                   fontSize: 13,
@@ -282,23 +289,6 @@ class _BuildingCard extends StatelessWidget {
     );
   }
 
-  /// 计算升级可否（只检查，不执行）。返回 null = 可升级。
-  _UpgradeBlockReason? _upgradeCheck(
-    int level,
-    IslandView view,
-    BuildingConfig bCfg,
-  ) {
-    if (level >= bCfg.maxLevel) return _UpgradeBlockReason.maxLevel;
-    if (bCfg.realmUnlockIndex > view.founderRealmIndex) {
-      return _UpgradeBlockReason.realmLocked;
-    }
-    final silverNeeded = bCfg.upgradeSilverFor(level);
-    if (view.silver < silverNeeded) return _UpgradeBlockReason.notEnoughSilver;
-    final matNeeded = bCfg.upgradeMaterialFor(level);
-    final matHave = view.materials[bCfg.upgradeMaterialItem] ?? 0;
-    if (matHave < matNeeded) return _UpgradeBlockReason.notEnoughMaterial;
-    return null;
-  }
 }
 
 // ── 选配方组件（processor 专用）────────────────────────────────────────────────
@@ -410,25 +400,24 @@ class _RecipeSelector extends StatelessWidget {
     if (!context.mounted) return;
     final msg = switch (result) {
       SelectRecipeResult.ok => null,
-      SelectRecipeResult.notProcessor => UiStrings.taohuaIslandIdlePaused,
-      SelectRecipeResult.recipeNotFound => UiStrings.taohuaIslandIdlePaused,
+      // notProcessor / recipeNotFound 为正常路径不可达（UI 已过滤），
+      // 加通用文案守住意外分支（修 4：原 taohuaIslandIdlePaused 语义错）。
+      SelectRecipeResult.notProcessor =>
+        UiStrings.taohuaIslandSelectRecipeFailed,
+      SelectRecipeResult.recipeNotFound =>
+        UiStrings.taohuaIslandSelectRecipeFailed,
       SelectRecipeResult.realmLocked => UiStrings.taohuaIslandRealmLocked,
     };
     if (msg != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      // 修 3：失败路径不触发 refresh（仅 ok 时刷新）
+      return;
     }
     onRefresh();
   }
 }
 
 // ── 升级按钮区 ───────────────────────────────────────────────────────────────
-
-enum _UpgradeBlockReason {
-  maxLevel,
-  realmLocked,
-  notEnoughSilver,
-  notEnoughMaterial,
-}
 
 class _UpgradeSection extends StatelessWidget {
   const _UpgradeSection({
@@ -444,7 +433,8 @@ class _UpgradeSection extends StatelessWidget {
   final IslandView view;
   final BuildingConfig bCfg;
   final int level;
-  final _UpgradeBlockReason? upgradeCheck;
+  /// null = 可升级；非 null = 阻止升级的原因（共用 [IslandActionService.upgradeBlockReason]，消除 widget/service 双源）。
+  final UpgradeResult? upgradeCheck;
   final VoidCallback onRefresh;
 
   @override
@@ -459,11 +449,12 @@ class _UpgradeSection extends StatelessWidget {
 
     // 提示文字
     final hint = switch (upgradeCheck) {
-      _UpgradeBlockReason.maxLevel => UiStrings.taohuaIslandMaxLevel,
-      _UpgradeBlockReason.realmLocked => UiStrings.taohuaIslandRealmLocked,
-      _UpgradeBlockReason.notEnoughSilver =>
+      UpgradeResult.ok => null,
+      UpgradeResult.maxLevelReached => UiStrings.taohuaIslandMaxLevel,
+      UpgradeResult.realmLocked => UiStrings.taohuaIslandRealmLocked,
+      UpgradeResult.notEnoughSilver =>
         UiStrings.taohuaIslandNotEnoughSilver,
-      _UpgradeBlockReason.notEnoughMaterial =>
+      UpgradeResult.notEnoughMaterial =>
         UiStrings.taohuaIslandNotEnoughMaterial,
       null => null,
     };
@@ -471,7 +462,7 @@ class _UpgradeSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (upgradeCheck != _UpgradeBlockReason.maxLevel)
+        if (upgradeCheck != UpgradeResult.maxLevelReached)
           Text(
             UiStrings.taohuaIslandUpgradeCost(silverCost, matName, matCost),
             style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
@@ -519,6 +510,8 @@ class _UpgradeSection extends StatelessWidget {
     };
     if (msg != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      // 修 3：失败路径不触发 refresh（仅 ok 时刷新）
+      return;
     }
     onRefresh();
   }
