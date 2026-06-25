@@ -381,6 +381,7 @@ class UiStrings {
   static const String lineageCharacterDetailMainTechnique = '主修';
   static const String lineageCharacterDetailHeritage = '所持师承遗物';
   static const String lineageCharacterDetailFounderBuff = '祖师恩泽';
+  static const String lineageCharacterDetailInjuryTitle = '伤势';
   static String lineageCharacterDetailJoinedAt(int year, String stage) =>
       '江湖 $year 年，过「$stage」拜入';
   static String lineageCharacterDetailJoinedYearOnly(int year) =>
@@ -1679,6 +1680,21 @@ class UiStrings {
 
   /// 心魔失败余毒标记段（追加在内力段之后）：`余毒未消`
   static const String innerDemonResidueNote = '余毒未消';
+
+  // ── 双层伤势 UI（第八阶段 Task 9）──────────────────────────────────────────
+  /// 轻伤状态标签：`带伤`（含层数时由调用方拼接，如 `带伤×3`）。
+  static const String injuryLightLabel = '带伤';
+
+  /// 重伤状态标签：`重伤`。
+  static const String injuryHeavyLabel = '重伤';
+
+  /// 重伤疗养剩余提示：`内伤未愈 · 调息 <N>h`（h 向上取整）。
+  static String injuryRecoveryHint(double hours) =>
+      '内伤未愈 · 调息 ${hours.ceil()}h';
+
+  /// 战败 banner 受伤弟子提示：`<N> 名弟子负伤 · 需调息疗养`。
+  static String defeatInjuredDisciples(int count) =>
+      '$count 名弟子负伤 · 需调息疗养';
 
   // ── 通用加载失败(audit M3 散写中文归集)──────────────────────────────
   /// 异步加载失败提示：`加载失败：<e>`（全角冒号）

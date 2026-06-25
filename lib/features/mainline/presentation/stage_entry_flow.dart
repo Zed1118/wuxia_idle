@@ -593,6 +593,10 @@ class DefeatLossEntry {
   /// Boss 散功 entry 默认 false。
   final bool residueApplied;
 
+  /// 双层伤势重伤标记（Task 9）：战败后该角色是否获得重伤（injuryHoursRemaining>0）。
+  /// 用于 [_DefeatLossBanner] 汇总显示受伤弟子数量。
+  final bool injuryApplied;
+
   const DefeatLossEntry({
     required this.characterName,
     required this.internalForceBefore,
@@ -602,6 +606,7 @@ class DefeatLossEntry {
     this.newLayerLabel,
     this.layersRolledBack = 0,
     this.residueApplied = false,
+    this.injuryApplied = false,
   });
 }
 
@@ -612,6 +617,8 @@ class DefeatLossEntry {
 ///      显示内力回退 + 层数回退，residueApplied=false。
 ///   2. 心魔惩罚（[BattleResolutionResult.innerDemonPenaltyByCharacter]）→
 ///      显示内力回退 + 修炼度回退提示，不掉层，residueApplied=true。
+///   3. 双层伤势重伤（Task 9）：两类 entry 均可附 injuryApplied=true，
+///      由 [_DefeatLossBanner] 汇总显示受伤人数行。
 @visibleForTesting
 List<DefeatLossEntry> buildDefeatLossEntries({
   required List<Character> characters,
@@ -634,6 +641,7 @@ List<DefeatLossEntry> buildDefeatLossEntries({
       newLayerLabel: p.didRollback ? EnumL10n.cultivationLayer(p.newLayer) : null,
       layersRolledBack: p.layersRolledBack,
       residueApplied: false,
+      injuryApplied: ch.injuryHoursRemaining > 0,
     ));
   }
 
@@ -651,6 +659,7 @@ List<DefeatLossEntry> buildDefeatLossEntries({
       newLayerLabel: null,
       layersRolledBack: 0,
       residueApplied: true,
+      injuryApplied: ch.injuryHoursRemaining > 0,
     ));
   }
 
@@ -1101,6 +1110,22 @@ class _DefeatLossBanner extends StatelessWidget {
             ),
           ),
           for (final e in entries) _entryLine(e),
+          // 伤势汇总行（Task 9）：有任一 entry 重伤时追加「N 名弟子负伤」提示。
+          Builder(builder: (context) {
+            final injuredCount = entries.where((e) => e.injuryApplied).length;
+            if (injuredCount == 0) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                UiStrings.defeatInjuredDisciples(injuredCount),
+                style: const TextStyle(
+                  color: WuxiaColors.hpLow,
+                  fontSize: 12,
+                  height: 1.4,
+                ),
+              ),
+            );
+          }),
         ],
       ),
     );
