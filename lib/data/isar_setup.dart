@@ -135,7 +135,8 @@ class IsarSetup {
   //   老档当前持有装备的回填在 reconcileFromInventory 处理(后续 task 接 load 钩子)。
   //   段(0.28.0 F1 里程碑装备授予):SaveData 加 grantedMilestoneEquipmentIds List,
   //   新字段旧档读默认空,无数据迁移动作,仅 bump 版本号。
-  static const _currentSaveVersion = '0.28.0';
+  // 0.29.0 伤势系统:Character +lightInjuryStacks/injuryHoursRemaining,新字段旧档读默认 0,无迁移分支,仅 bump。
+  static const _currentSaveVersion = '0.29.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
