@@ -141,7 +141,11 @@ class _NarrativeReaderScreenState extends State<NarrativeReaderScreen>
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: _next,
-                      child: Center(
+                      // 2026-06-25:文字从垂直居中改为靠上对齐——短段落(一两句)原先
+                      // 漂在大片空白正中,上下都留白显空旷;靠上对齐后文字紧贴顶部、
+                      // 留白只在下方(符合阅读习惯),不再"剧情有空白"。长段落仍可滚动。
+                      child: Align(
+                        alignment: Alignment.topCenter,
                         child: Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(

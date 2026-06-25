@@ -66,38 +66,9 @@ class VictoryOverlay extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 印章符
-            Transform.rotate(
-              angle: -0.08,
-              child: SizedBox(
-                width: 48,
-                height: 48,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Image.asset(
-                      WuxiaUi.ceremonyRedSeal,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: WuxiaColors.gangMeng,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                    ),
-                    const Text(
-                      UiStrings.sealGlyph,
-                      style: TextStyle(
-                        color: WuxiaColors.textPrimary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+            // 2026-06-25:移除大题字上方那枚孤立的「武」小印章——勝/敗 大字本身即焦点,
+            // 小印章渲染偏弱(图常缺失只剩文字)、悬空显突兀。胜利另有 VictorySealFlash
+            // 仪式承担印章高光,此处不重复。
             // 大题字
             Text(
               title,
@@ -187,14 +158,21 @@ class VictoryOverlay extends StatelessWidget {
                       ),
                   ],
                   const SizedBox(height: 10),
-                  Image.asset(
-                    WuxiaUi.inkDivider,
-                    height: 12,
-                    fit: BoxFit.fill,
-                    errorBuilder: (_, _, _) => Container(
-                      width: 180,
+                  // 2026-06-25:原 inkDivider 图常缺失/偏弱(只剩淡线+小卷纹)。换成
+                  // 两端淡出的细水墨横线,克制且不依赖资源加载,显得是有意的分隔而非破图。
+                  Center(
+                    child: Container(
+                      width: 160,
                       height: 1,
-                      color: WuxiaUi.ink.withValues(alpha: 0.42),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            WuxiaUi.ink.withValues(alpha: 0.4),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
