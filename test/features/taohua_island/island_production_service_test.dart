@@ -19,6 +19,7 @@ TaohuaIslandConfig _config({
   double forgeRate = 3,
   double forgeInputPerOutput = 4,
   int forgeRealmUnlock = 0,
+  int tieRealmUnlock = 0,
 }) {
   return TaohuaIslandConfig(
     capHours: capHours,
@@ -37,7 +38,7 @@ TaohuaIslandConfig _config({
         upgradeSilverPerLevel: 50,
         upgradeMaterialItem: 'jingtie',
         upgradeMaterialBase: 10,
-        realmUnlockIndex: 0,
+        realmUnlockIndex: tieRealmUnlock,
         recipes: const [],
       ),
       BuildingType.daZaoTai: BuildingConfig(
@@ -133,51 +134,14 @@ void main() {
     });
 
     test('2b. 源料真正成为瓶颈（铁匠厂未解锁不产）', () {
-      // 铁匠厂 realmUnlockIndex 设 0，但用 founderRealmIndex=-... 不行。
-      // 改用：把铁匠厂建筑 realmUnlock 设高，需要新 config。
-      const cfg = TaohuaIslandConfig(
-        capHours: 72,
-        unlockChapterIndex: 0,
-        buildings: {
-          BuildingType.tieJiangChang: BuildingConfig(
-            type: BuildingType.tieJiangChang,
-            kind: BuildingKind.source,
-            outputItem: 'jingtie',
-            baseRatePerHour: 6,
-            capBase: 200,
-            capPerLevel: 100,
-            maxLevel: 5,
-            upgradeSilverBase: 100,
-            upgradeSilverPerLevel: 50,
-            upgradeMaterialItem: 'jingtie',
-            upgradeMaterialBase: 10,
-            realmUnlockIndex: 5, // 高境界才解锁 → founderRealmIndex=0 时不产
-            recipes: [],
-          ),
-          BuildingType.daZaoTai: BuildingConfig(
-            type: BuildingType.daZaoTai,
-            kind: BuildingKind.processor,
-            inputItem: 'jingtie',
-            baseRatePerHour: 0,
-            capBase: 1000,
-            capPerLevel: 50,
-            maxLevel: 5,
-            upgradeSilverBase: 100,
-            upgradeSilverPerLevel: 50,
-            upgradeMaterialItem: 'jingtie',
-            upgradeMaterialBase: 10,
-            realmUnlockIndex: 0,
-            recipes: [
-              RecipeDef(
-                recipeId: 'forge_mojianshi',
-                outputItem: 'mojianshi',
-                inputPerOutput: 4,
-                ratePerHour: 3,
-                realmUnlockIndex: 0,
-              ),
-            ],
-          ),
-        },
+      // 铁匠厂 realmUnlockIndex 设高(5)，founderRealmIndex=0 时不产，源料固定为预置量。
+      final cfg = _config(
+        tieRealmUnlock: 5, // 高境界才解锁 → founderRealmIndex=0 时不产
+        tieRate: 6,
+        zaoCapBase: 1000,
+        zaoCapPerLevel: 50,
+        forgeInputPerOutput: 4,
+        forgeRate: 3,
       );
       final states = [
         IslandBuildingState(
@@ -300,8 +264,7 @@ void main() {
         elapsedHours: 72,
         founderRealmIndex: 6,
       );
-      for (final type in BuildingType.values
-          .where((t) => t == BuildingType.tieJiangChang || t == BuildingType.daZaoTai)) {
+      for (final type in [BuildingType.tieJiangChang, BuildingType.daZaoTai]) {
         expect(
           _byType(r100, type).stored,
           closeTo(_byType(r72, type).stored, 1e-9),
