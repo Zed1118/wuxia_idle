@@ -328,6 +328,7 @@ class UiStrings {
   static const String panelTechnique = '心法';
   static const String profileRealmLabel = '境界';
   static const String profileLevelLabel = '等级'; // 第八阶段·角色等级 Lv
+  static const String levelUpCeremonyTitle = '修为精进'; // 第八阶段 D·Lv 升级 banner 标题
   static const String profilePortraitPlaque = '人物签';
   static const String lineageRoleFounder = '开派祖师';
   static const String lineageRoleDisciple = '门下弟子';

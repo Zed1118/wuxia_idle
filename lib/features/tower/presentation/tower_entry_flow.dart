@@ -489,13 +489,15 @@ applyTowerVictoryResolution({
           clearedStageIds: clearedSet,
         ),
       );
-      // 第八阶段·角色等级 Lv:与境界 EXP 同源并行喂(塔战亦「打怪」)。
-      LevelService.applyLevelExp(
+      // 第八阶段·角色等级 Lv:与境界 EXP 同源并行喂(塔战亦「打怪」)。升级结果供 victory 反馈(D)。
+      final lvUp = LevelService.applyLevelExp(
         c,
         floor.baseExpReward,
         config: GameRepository.instance.numbers.level,
       );
-      advancements.add(AdvancementEntry(chName: c.name, result: r));
+      advancements.add(
+        AdvancementEntry(chName: c.name, result: r, levelUp: lvUp),
+      );
     }
   }
 
@@ -937,6 +939,11 @@ class _FirstClearContent extends StatelessWidget {
         if (hasAdvanced) ...[
           const SizedBox(height: 12),
           AdvancementSummary(entries: advancements),
+        ],
+        // 第八阶段 D·角色等级 Lv 升级反馈(与境界突破并列独立一格)。
+        if (advancements.any((e) => e.levelUp?.didLevelUp ?? false)) ...[
+          const SizedBox(height: 12),
+          LevelUpSummary(entries: advancements),
         ],
         if (hasResonance) ...[
           const SizedBox(height: 12),

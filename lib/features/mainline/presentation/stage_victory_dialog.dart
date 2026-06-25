@@ -138,6 +138,11 @@ class StageVictoryContent extends StatelessWidget {
           const SizedBox(height: 12),
           AdvancementSummary(entries: advancements),
         ],
+        // 第八阶段 D·角色等级 Lv 升级反馈(与境界突破并列独立一格)。
+        if (advancements.any((e) => e.levelUp?.didLevelUp ?? false)) ...[
+          const SizedBox(height: 12),
+          LevelUpSummary(entries: advancements),
+        ],
         if (resonanceUpgrades.isNotEmpty) ...[
           const SizedBox(height: 12),
           ResonanceUpgradeBanner(notices: resonanceUpgrades),
