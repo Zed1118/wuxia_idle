@@ -457,6 +457,9 @@ _applyTowerVictoryResolution({
     numbersConfig: numbers,
     // stageDef: null —— 爬塔不走 service 内部 roll drops；drops 在外层
     // rollTowerRewards + _persistDrops 单独控制（首通才发奖）
+    // 双层伤势：5/10/15/20/25/30 层（floorIndex % 5 == 0）为 Boss/小 Boss 楼层算硬仗，
+    // resolve 内部据此判定伤势 mutate character；经下方 writeTxn putAll(characters) 落库。
+    isHardFight: floor.floorIndex % 5 == 0,
   );
 
   // W15 #30 P3:isFirstClear 时 active 3 character 每人 += floor.baseExpReward
