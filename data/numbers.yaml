@@ -1844,14 +1844,21 @@ milestone_equipment_grants:
 
 taohua_island:
   cap_hours: 72                 # 沿用闭关 72h 防无限堆积(满则停产·非 FOMO)
+  # cap 自洽原则(2026-06-25 balance·用户拍板「对齐到 72h」):各仓 cap 须 ≥ 该建筑
+  # 满速产出 × cap_hours × level,使「离开 72h 一次性 settle」≈ 持续累积(成品取满)。
+  # settle 先跑完 source 再跑 processor,故 source cap 必须容得下整段 72h 的源料,
+  # 否则提前封顶丢料、加工拿不到足量 → 长挂玩家产量被截。各 cap 用 base=perLevel 的
+  # 线性式 cap(L)=base×L,与产出 ×level 同步缩放。派生下界:源 6×72=432 / 磨剑石
+  # 1.5×72=108 / 凝神丹 1.0×72=72,均向上取整留余量(450/120/80)。不变量见
+  # island_offline_online_invariant_test。
   unlock_chapter_index: 1       # 主线第二章(index 1)cleared 解锁
   buildings:
     tie_jiang_chang:            # 铁匠厂(原料)
       kind: source
       output_item: item_jingtie
       base_rate_per_hour: 6.0
-      cap_base: 200
-      cap_per_level: 100
+      cap_base: 450                # ≥ 6×72=432(容 72h 源料·见段首 cap 自洽原则)
+      cap_per_level: 450
       max_level: 5
       upgrade_silver_base: 500
       upgrade_silver_per_level: 400
@@ -1862,8 +1869,8 @@ taohua_island:
       kind: source
       output_item: item_yaocao
       base_rate_per_hour: 6.0
-      cap_base: 200
-      cap_per_level: 100
+      cap_base: 450                # ≥ 6×72=432(容 72h 源料·见段首 cap 自洽原则)
+      cap_per_level: 450
       max_level: 5
       upgrade_silver_base: 500
       upgrade_silver_per_level: 400
@@ -1873,8 +1880,8 @@ taohua_island:
     da_zao_tai:                 # 打造台(加工)
       kind: processor
       input_item: item_jingtie
-      cap_base: 80
-      cap_per_level: 40
+      cap_base: 120               # ≥ 磨剑石 1.5×72=108(成品满 72h·见段首 cap 自洽原则)
+      cap_per_level: 120
       max_level: 5
       upgrade_silver_base: 800
       upgrade_silver_per_level: 600
@@ -1886,8 +1893,8 @@ taohua_island:
     dan_fang:                   # 丹房(加工)
       kind: processor
       input_item: item_yaocao
-      cap_base: 60
-      cap_per_level: 30
+      cap_base: 80                # ≥ 凝神丹 1.0×72=72(成品满 72h·见段首 cap 自洽原则)
+      cap_per_level: 80
       max_level: 5
       upgrade_silver_base: 800
       upgrade_silver_per_level: 600
