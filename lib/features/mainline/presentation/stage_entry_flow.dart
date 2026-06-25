@@ -768,6 +768,9 @@ Future<
     dropService: dropSvc,
     isVictory: true,
     numbersConfig: numbers,
+    // 双层伤势：Boss/心魔关算硬仗，resolve 内部据此判定伤势 mutate character。
+    // 受影响 character 经下方 writeTxn putAll(characters) 自然落库，无需额外 txn。
+    isHardFight: stage.isBossStage,
   );
 
   // W15 #30 第 3 期:active 3 character 每人 += stage.baseExpReward + 升层。
@@ -1031,6 +1034,9 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
     dropService: dropSvc,
     isVictory: false,
     numbersConfig: numbers,
+    // 双层伤势：Boss/心魔关算硬仗，战败同样可累伤势。
+    // 受影响 character 经下方 writeTxn putAll(characters) 自然落库。
+    isHardFight: stage.isBossStage,
   );
 
   // 写回 Isar：受影响的 character + 所有 technique + 所有装备
