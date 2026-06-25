@@ -1839,6 +1839,18 @@ milestone_equipment_grants:
   stage_mass_battle_05: mass_battle_merit   # 群战5关全清 → 百战甲(利器)
   stage_inner_demon_07: inner_demon_reward  # 降服全部心魔 → 心魔珠(重器)
 
+# 第八阶段 · 角色等级 Lv(全局连续成长轴,独立于境界 · saveVer 0.31)。
+# 升级曲线 expToNext(L) = exp_to_next_base + (L-1)*exp_to_next_per_level。
+# per-level 加成经 CharacterDerivedStats 注入(hp/内力经 §5.4 clamp 硬守红线,
+# 速度无红线)。**初值保守,待真机校**(同伤势系统先例,见 spec A 块)。
+level:
+  max_level: 100
+  exp_to_next_base: 120
+  exp_to_next_per_level: 40
+  bonus_max_hp_per_level: 15              # @L100 +1500(经血量 20000 clamp 兜底)
+  bonus_internal_force_max_per_level: 8   # @L100 +800(经内力 15000 clamp 兜底)
+  bonus_speed_per_level: 1                # @L100 +100(速度无红线)
+
 # =============================================================================
 # 文件结束
 # =============================================================================

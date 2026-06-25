@@ -33,6 +33,7 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../battle/presentation/battle_screen.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../level/application/level_service.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
 import '../../cultivation/presentation/skill_treasure_overlay.dart';
@@ -809,6 +810,13 @@ Future<
           innerDemonDef: innerDemonDef,
           clearedStageIds: clearedSet,
         ),
+      );
+      // 第八阶段·角色等级 Lv:与境界 EXP 同源并行喂(全局连续涨)。in-place 写
+      // c.level/levelExp,随后续 writeTxn 持久。
+      LevelService.applyLevelExp(
+        c,
+        stage.baseExpReward,
+        config: GameRepository.instance.numbers.level,
       );
       advancements.add(AdvancementEntry(chName: c.name, result: r));
     }

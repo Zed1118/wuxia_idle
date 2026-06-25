@@ -8,6 +8,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../data/numbers_config.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../level/application/level_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 
@@ -103,6 +104,12 @@ class OfflinePassiveService {
               innerDemonDef: innerDemonDef,
               clearedStageIds: clearedSet,
             ),
+          );
+          // 第八阶段·角色等级 Lv:与境界 EXP 同源并行喂(离线被动 · 在线=离线守 §5.5)。
+          LevelService.applyLevelExp(
+            c,
+            yield_.experience,
+            config: GameRepository.instance.numbers.level,
           );
         }
         await isar.characters.put(c);
