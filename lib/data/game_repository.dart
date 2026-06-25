@@ -21,6 +21,7 @@ import 'defs/drop_entry.dart';
 import 'defs/synergy_def.dart';
 import 'defs/technique_def.dart';
 import '../features/tower/domain/tower_floor_def.dart';
+import '../features/taohua_island/domain/taohua_island_config.dart';
 import 'lore_loader.dart';
 import '../core/domain/enums.dart';
 import 'numbers_config.dart';
@@ -46,6 +47,9 @@ class GameRepository {
 
   /// 是否已加载（test 多次 setUp 复用判断用）。
   static bool get isLoaded => _instance != null;
+
+  /// 已加载时返回实例，否则返回 null（轻量 Widget/test 防御式读取用，不抛错）。
+  static GameRepository? get instanceOrNull => _instance;
 
   final NumbersConfig numbers;
   final List<RealmDef> realms;
@@ -664,6 +668,9 @@ class GameRepository {
 
     // 材料经济 P2：道具经验值红线（空 map 兼容 test fixture）。
     _enforceItemRedLines();
+
+    // 桃花岛一期：建筑配置红线（itemDefs 为空时跳过，test fixture 兼容）。
+    _enforceTaohuaIslandRedLines();
   }
 
   /// P1.z 机制百科红线(GDD §10.2 第 3 方式):
@@ -753,6 +760,16 @@ class GameRepository {
         throw StateError('红线:道具 ${d.defId} layer_fraction $frac 应 ∈ (0.0, 1.0]');
       }
     }
+  }
+
+  /// 桃花岛一期：建筑配置红线。
+  ///
+  /// itemDefs 为空（test fixture 不带 items.yaml）时跳过，避免误伤 fixture。
+  /// 非空时收集已知 item defId，调 [TaohuaIslandConfig.validate]。
+  void _enforceTaohuaIslandRedLines() {
+    if (itemDefs.isEmpty) return; // test fixture 兼容
+    final knownIds = itemDefs.keys.toSet();
+    TaohuaIslandConfig.validate(numbers.taohuaIsland, knownIds);
   }
 
   /// W18-A1 心法相生红线(GDD §4.5 + numbers 红线对齐):

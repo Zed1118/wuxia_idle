@@ -58,9 +58,9 @@ void main() {
     );
   });
 
-  test('GameRepository 加载 items.yaml: 12 条 def', () async {
+  test('GameRepository 加载 items.yaml: 17 条 def', () async {
     final repo = await GameRepository.loadAllDefs();
-    expect(repo.itemDefs.length, 12);
+    expect(repo.itemDefs.length, 17); // 原 14 + 桃花岛一期：mojianshi/xinxuejiejing/silver 入库
     expect(repo.itemDefs['item_jingyandan_small']?.layerFraction, 0.2);
     expect(repo.itemDefs['item_scroll_kai_bei_shou']?.unlockSkillId, 'skill_kai_bei_shou');
   });

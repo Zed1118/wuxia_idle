@@ -33,6 +33,7 @@ import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../pvp/presentation/pvp_screen.dart';
 import '../../seclusion/application/seclusion_service_providers.dart';
+import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../../seclusion/domain/retreat_session.dart';
 import '../../seclusion/presentation/seclusion_gate.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
@@ -161,6 +162,18 @@ class MainMenu extends ConsumerWidget {
     final lateLocked = !cleared.contains(_lateGameUnlockStage);
     final pvpLocked = !cleared.contains(_pvpUnlockStage);
     final socialLocked = !cleared.contains(_socialUnlockStage);
+
+    // 桃花岛入口门控：unlock_chapter_index(=1,0-based)对应第二章(chapterIndex=2)通关。
+    // 门槛从 config 读，不硬编码。GameRepository 未加载时（轻量 test）视为锁定。
+    final taohuaUnlockChIdx =
+        GameRepository.instanceOrNull?.numbers.taohuaIsland.unlockChapterIndex;
+    final taohuaLocked =
+        taohuaUnlockChIdx == null ||
+        mainlineProgress == null ||
+        !MainlineProgressService.chapterCompleted(
+          progress: mainlineProgress,
+          chapterIndex: taohuaUnlockChIdx + 1, // 0-based → stages.yaml 1-based
+        );
 
     // P4 战绩册入口门控：首次击败任一 Boss 后解锁（§5.7 隐藏式）。
     final bossCount = ref
@@ -301,6 +314,17 @@ class MainMenu extends ConsumerWidget {
         disabled: pvpLocked,
         locked: pvpLocked,
         onTap: () => _push(context, const PvpScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuTaohuaIsland,
+        hint: taohuaLocked
+            ? UiStrings.mainMenuTaohuaIslandLockedHint
+            : UiStrings.mainMenuTaohuaIslandHint,
+        icon: Icons.cottage_outlined,
+        thumbnailPath: WuxiaUi.entryJianghu,
+        disabled: taohuaLocked,
+        locked: taohuaLocked,
+        onTap: () => _push(context, const TaohuaIslandScreen()),
       ),
     ];
 
