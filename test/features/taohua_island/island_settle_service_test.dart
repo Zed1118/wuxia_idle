@@ -247,14 +247,17 @@ void main() {
     final save3 = (await isar.saveDatas.get(0))!;
     final h2 = await IslandSettleService.harvest(save3, t2);
 
-    // 两次 harvest 都有 mojianshi
+    // 强制断言：两次 harvest 都必须产出 mojianshi，否则测试场景静默空跑
+    expect(h1.gained.containsKey('item_mojianshi'), isTrue,
+        reason: '首次 harvest 应有磨剑石');
+    expect(h2.gained.containsKey('item_mojianshi'), isTrue,
+        reason: '二次 harvest 应有磨剑石');
+
+    // 累加量断言
     final item = await isar.inventoryItems.getByDefId('item_mojianshi');
-    if (h1.gained.containsKey('item_mojianshi') &&
-        h2.gained.containsKey('item_mojianshi')) {
-      final expected =
-          (h1.gained['item_mojianshi'] ?? 0) + (h2.gained['item_mojianshi'] ?? 0);
-      expect(item?.quantity, expected, reason: '两次 harvest 数量应累加');
-    }
+    final expected =
+        (h1.gained['item_mojianshi']!) + (h2.gained['item_mojianshi']!);
+    expect(item?.quantity, expected, reason: '两次 harvest 数量应累加');
   });
 
   // ── T7: founder 不存在时 realmIndex fallback 0 ─────────────────────────
