@@ -426,6 +426,95 @@ void main() {
       expect(CharacterDerivedStats.effectiveEquipmentSpeed(eq, n), 54);
     });
   });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Task 4 · 双层伤势 debuff 接入 derived_stats（第八阶段 · 2026-06-25）
+  // ────────────────────────────────────────────────────────────────────────
+
+  group('CharacterDerivedStats.internalForceMaxWithLineage（重伤减内力上限）', () {
+    test('heavyInjured=true 时内力上限 < 无重伤值，且比例 ≈ (1 - heavyInternalForceMaxPenaltyPct)', () {
+      final n = GameRepository.instance.numbers;
+      final c = _mkChar(
+        tier: RealmTier.yiLiu,
+        layer: RealmLayer.qiMeng,
+        internalForce: 5000,
+      );
+      final noInjury = CharacterDerivedStats.internalForceMaxWithLineage(c, [], n);
+      final withInjury = CharacterDerivedStats.internalForceMaxWithLineage(
+        c, [], n, heavyInjured: true,
+      );
+      expect(withInjury, lessThan(noInjury));
+      final expectedPenaltyPct = n.injury.heavyInternalForceMaxPenaltyPct;
+      final ratio = withInjury / noInjury;
+      expect(ratio, closeTo(1.0 - expectedPenaltyPct, 0.01),
+          reason: '重伤扣 ${expectedPenaltyPct * 100}% 内力上限');
+    });
+
+    test('heavyInjured=false（默认）时不影响内力上限（无回归）', () {
+      final n = GameRepository.instance.numbers;
+      final c = _mkChar(
+        tier: RealmTier.yiLiu,
+        layer: RealmLayer.qiMeng,
+        internalForce: 5000,
+      );
+      final withFlag = CharacterDerivedStats.internalForceMaxWithLineage(
+        c, [], n, heavyInjured: false,
+      );
+      final withoutFlag = CharacterDerivedStats.internalForceMaxWithLineage(c, [], n);
+      expect(withFlag, withoutFlag);
+    });
+  });
+
+  group('CharacterDerivedStats.speed（轻伤减速度）', () {
+    test('lightInjuryStacks=3 时速度 = base − 3 * lightSpeedPenaltyPerStack', () {
+      final n = GameRepository.instance.numbers;
+      final c = _mkChar(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.qiMeng,
+        internalForce: 500,
+        agility: 10,
+      );
+      final tech = _mkTech(tier: TechniqueTier.ruMenGong);
+      final baseSpeed = CharacterDerivedStats.speed(c, [], tech, n);
+      final injuredSpeed = CharacterDerivedStats.speed(
+        c, [], tech, n, lightInjuryStacks: 3,
+      );
+      final penaltyPerStack = n.injury.lightSpeedPenaltyPerStack;
+      expect(injuredSpeed, baseSpeed - 3 * penaltyPerStack);
+    });
+
+    test('lightInjuryStacks=0（默认）时速度不变（无回归）', () {
+      final n = GameRepository.instance.numbers;
+      final c = _mkChar(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.qiMeng,
+        internalForce: 500,
+        agility: 10,
+      );
+      final tech = _mkTech(tier: TechniqueTier.ruMenGong);
+      final withStack0 = CharacterDerivedStats.speed(
+        c, [], tech, n, lightInjuryStacks: 0,
+      );
+      final withoutParam = CharacterDerivedStats.speed(c, [], tech, n);
+      expect(withStack0, withoutParam);
+    });
+
+    test('轻伤极端叠层后速度不为负（底 clamp 0）', () {
+      final n = GameRepository.instance.numbers;
+      final c = _mkChar(
+        tier: RealmTier.xueTu,
+        layer: RealmLayer.qiMeng,
+        internalForce: 500,
+        agility: 1,
+      );
+      final tech = _mkTech(tier: TechniqueTier.ruMenGong);
+      // 强制传超大 stacks，验证不会负数
+      final injuredSpeed = CharacterDerivedStats.speed(
+        c, [], tech, n, lightInjuryStacks: 9999,
+      );
+      expect(injuredSpeed, greaterThanOrEqualTo(0));
+    });
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

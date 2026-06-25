@@ -136,12 +136,16 @@ class CharacterDerivedStats {
 
   /// 出手速度 = base + 身法*agFactor + Σ装备速度 + 主修心法 speed_bonus。
   /// 辅修不计速度（phase1_tasks T09 §512）。
+  ///
+  /// **第八阶段·轻伤 debuff**：可选 `lightInjuryStacks`（默认 0），末端
+  /// 扣减 `stacks × lightSpeedPenaltyPerStack`，clamp 到 0 防负数。
   static int speed(
     Character c,
     List<Equipment> equipped,
     Technique mainTech,
-    NumbersConfig n,
-  ) {
+    NumbersConfig n, {
+    int lightInjuryStacks = 0,
+  }) {
     final f = n.combat.speedFormula;
     var sp = f.base.toDouble();
     sp += c.attributes.agility * f.agilityFactor;
@@ -155,6 +159,11 @@ class CharacterDerivedStats {
       );
     }
     sp += bonus;
+    // 轻伤减速：末端扣减，clamp 到 0。
+    if (lightInjuryStacks > 0) {
+      sp -= lightInjuryStacks * n.injury.lightSpeedPenaltyPerStack;
+      if (sp < 0) sp = 0;
+    }
     return sp.toInt();
   }
 
@@ -257,6 +266,7 @@ class CharacterDerivedStats {
     List<Equipment> equipped,
     NumbersConfig n, {
     bool founderBuffActive = false,
+    bool heavyInjured = false,
   }) {
     final heritageCount =
         equipped.where((e) => e.isLineageHeritage).length;
@@ -264,6 +274,10 @@ class CharacterDerivedStats {
     if (founderBuffActive &&
         _founderBuffAppliesTo(c, n.founderAncestorBuff)) {
       mult *= (1.0 + n.founderAncestorBuff.internalForceMaxPct);
+    }
+    // 第八阶段·重伤 debuff：内力上限乘 (1 - penalty_pct)，在 clamp 之前注入。
+    if (heavyInjured) {
+      mult *= (1.0 - n.injury.heavyInternalForceMaxPenaltyPct);
     }
     // §5.4 内力红线 clamp(单一真相源 numbers.yaml combat.red_lines,与
     // stage_battle_setup / game_repository 同源):battle_state 直接调本方法塞进
