@@ -21,3 +21,9 @@ items:
   - { defId: item_scroll_guan_shan_ba_ji,     type: techniqueScroll, name: 关山拔戟·秘籍,   unlockSkillId: skill_guan_shan_ba_ji }
   - { defId: item_scroll_ma_ta_fei_yan,       type: techniqueScroll, name: 马踏飞燕·秘籍,   unlockSkillId: skill_ma_ta_fei_yan }
   - { defId: item_scroll_ye_yu_shi_nian_deng, type: techniqueScroll, name: 夜雨十年灯·秘籍, unlockSkillId: skill_ye_yu_shi_nian_deng }
+  - { defId: item_jingtie,       type: miscMaterial,  name: 精铁 }
+  - { defId: item_yaocao,        type: miscMaterial,  name: 药草 }
+  # 桃花岛加工产物 + 老系统隐式物品（统一入库让跨引用校验可覆盖）
+  - { defId: item_mojianshi,     type: moJianShi,     name: 磨剑石 }
+  - { defId: item_xinxuejiejing, type: xinXueJieJing, name: 心血结晶 }
+  - { defId: item_silver,        type: silver,        name: 银两 }

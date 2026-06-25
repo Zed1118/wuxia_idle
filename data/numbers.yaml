@@ -1841,3 +1841,58 @@ milestone_equipment_grants:
 # =============================================================================
 # 文件结束
 # =============================================================================
+
+taohua_island:
+  cap_hours: 72                 # 沿用闭关 72h 防无限堆积(满则停产·非 FOMO)
+  unlock_chapter_index: 1       # 主线第二章(index 1)cleared 解锁
+  buildings:
+    tie_jiang_chang:            # 铁匠厂(原料)
+      kind: source
+      output_item: item_jingtie
+      base_rate_per_hour: 6.0
+      cap_base: 200
+      cap_per_level: 100
+      max_level: 5
+      upgrade_silver_base: 500
+      upgrade_silver_per_level: 400
+      upgrade_material_item: item_jingtie
+      upgrade_material_base: 40
+      realm_unlock_index: 0
+    cao_yao_yuan:               # 草药园(原料)
+      kind: source
+      output_item: item_yaocao
+      base_rate_per_hour: 6.0
+      cap_base: 200
+      cap_per_level: 100
+      max_level: 5
+      upgrade_silver_base: 500
+      upgrade_silver_per_level: 400
+      upgrade_material_item: item_yaocao
+      upgrade_material_base: 40
+      realm_unlock_index: 0
+    da_zao_tai:                 # 打造台(加工)
+      kind: processor
+      input_item: item_jingtie
+      cap_base: 80
+      cap_per_level: 40
+      max_level: 5
+      upgrade_silver_base: 800
+      upgrade_silver_per_level: 600
+      upgrade_material_item: item_jingtie
+      upgrade_material_base: 80
+      recipes:
+        - { recipe_id: forge_mojianshi, output_item: item_mojianshi,     input_per_output: 4.0,  rate_per_hour: 1.5, realm_unlock_index: 0 }
+        - { recipe_id: forge_xinxue,    output_item: item_xinxuejiejing, input_per_output: 20.0, rate_per_hour: 0.4, realm_unlock_index: 3 }
+    dan_fang:                   # 丹房(加工)
+      kind: processor
+      input_item: item_yaocao
+      cap_base: 60
+      cap_per_level: 30
+      max_level: 5
+      upgrade_silver_base: 800
+      upgrade_silver_per_level: 600
+      upgrade_material_item: item_yaocao
+      upgrade_material_base: 80
+      recipes:
+        - { recipe_id: brew_ningshen, output_item: item_jingyandan_small, input_per_output: 6.0,  rate_per_hour: 1.0, realm_unlock_index: 0 }
+        - { recipe_id: brew_peiyuan,  output_item: item_jingyandan_mid,   input_per_output: 18.0, rate_per_hour: 0.3, realm_unlock_index: 3 }

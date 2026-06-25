@@ -1807,4 +1807,78 @@ class UiStrings {
 
   // 招式列表「当前装配」标。
   static const String currentEquippedBadge = '[当前]';
+
+  // ─── 桃花岛（Phase 2 经营基地）UI 文案 ──────────────────────────────────────
+  // §5.6 合法集中 sink：UI 标签/提示集中此处，文案走水墨克制基调。
+  // 调用方：TaohuaIslandScreen / BuildingCard / HarvestRecapCard 等（Task 11-13 待引用）。
+
+  /// 主菜单入口标签（江湖分组）。
+  static const String mainMenuTaohuaIsland = '桃花岛';
+
+  /// 主菜单入口副文案（解锁后）。
+  static const String mainMenuTaohuaIslandHint = '隐世经营 · 挂机产料炼器';
+
+  /// 主菜单入口副文案（未解锁）。
+  static const String mainMenuTaohuaIslandLockedHint = '通关第二章后开放';
+
+  /// 桃花岛主屏标题。
+  static const String taohuaIslandTitle = '桃花岛';
+
+  /// 建筑等级标签：`第 N 级`。
+  static String taohuaIslandLevelLabel(int lv) => '第 $lv 级';
+
+  /// 建筑仓储进度：`cur / cap`。
+  static String taohuaIslandStorageLabel(int cur, int cap) => '$cur / $cap';
+
+  /// 建筑升级按钮。
+  static const String taohuaIslandUpgrade = '升级';
+
+  /// 建筑选配方按钮。
+  static const String taohuaIslandSelectRecipe = '选配方';
+
+  /// 建筑收取按钮。
+  static const String taohuaIslandHarvest = '收取';
+
+  /// 全部建筑一并收取按钮。
+  static const String taohuaIslandHarvestAll = '一并收取';
+
+  /// 收获 recap 卡标题。
+  static const String taohuaIslandRecapTitle = '桃花岛纪事';
+
+  /// recap 空态文案（各坊尚无产出）。
+  static const String taohuaIslandRecapEmpty = '岛上诸坊尚无所获，且待时日。';
+
+  /// 建筑/操作境界未到的提示标签。
+  static const String taohuaIslandRealmLocked = '境界未至';
+
+  /// 建筑已至最高等级标签。
+  static const String taohuaIslandMaxLevel = '已至顶级';
+
+  /// 升级银两不足提示。
+  static const String taohuaIslandNotEnoughSilver = '银两不足';
+
+  /// 升级材料不足提示。
+  static const String taohuaIslandNotEnoughMaterial = '材料不足';
+
+  /// 升级费用文案：`银两 N · matName ×qty`。
+  static String taohuaIslandUpgradeCost(int silver, String matName, int matQty) =>
+      '银两 $silver · $matName ×$matQty';
+
+  /// 建筑生产中状态标签。
+  static const String taohuaIslandIdleProducing = '产出中';
+
+  /// 建筑暂停状态标签（未配方或原料不足）。
+  static const String taohuaIslandIdlePaused = '已停（择配方/补料）';
+
+  /// 数据读取失败错误提示（§5.6 迁出中文字面量）。
+  static String taohuaIslandLoadError(Object e) => '读取失败：$e';
+
+  /// 无存档时的友好态提示（§5.6 迁出中文字面量）。
+  static const String taohuaIslandNoSave = '尚无存档，请先进入游戏。';
+
+  /// 产物名前缀：`产出：name`（§5.6 迁出中文字面量）。
+  static String taohuaIslandOutputPrefix(String name) => '产出：$name';
+
+  /// selectRecipe 不可达路径失败文案（notProcessor / recipeNotFound）。
+  static const String taohuaIslandSelectRecipeFailed = '无法择此配方';
 }

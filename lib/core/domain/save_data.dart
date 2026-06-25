@@ -1,5 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'skill_unlock_entry.dart';
+import '../../features/taohua_island/domain/island_building_state.dart';
 
 part 'save_data.g.dart';
 
@@ -98,4 +99,12 @@ class SaveData {
   /// M2 范围 B 被动离线挂机累计总产出（仅汇总卡展示，YAGNI 不分维度）。
   int totalPassiveMojianshi = 0;
   int totalPassiveExperience = 0;
+
+  /// 桃花岛建筑状态列表（Task 5 · 0.30.0）。
+  /// 空 = 未初始化（Task 6 首开时建 4 个 level1 建筑）。旧档读默认空列表。
+  List<IslandBuildingState> islandBuildings = [];
+
+  /// 桃花岛最后结算时间（独立于 lastOnlineAt 避免与被动挂机争用）。
+  /// null = 尚未首次结算（Task 6 首开时写入）。旧档读默认 null。
+  DateTime? islandLastSettledAt;
 }
