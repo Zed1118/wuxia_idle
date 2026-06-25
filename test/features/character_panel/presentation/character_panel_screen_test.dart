@@ -216,6 +216,18 @@ void main() {
     expect(find.text('机缘'), findsOneWidget);
   });
 
+  testWidgets('第八阶段·档案头显「等级 Lv N」chip + 经验条', (tester) async {
+    final character = mkCharacter()
+      ..level = 5
+      ..levelExp = 30;
+    await pumpPanel(tester, character: character);
+
+    expect(find.text(UiStrings.profileLevelLabel), findsOneWidget); // 「等级」
+    expect(find.text('Lv 5'), findsOneWidget);
+    // 经验条:GameRepository 已加载 → LinearProgressIndicator 渲染。
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+  });
+
   testWidgets('M4 术语气泡:4 属性 + 派生数值标签走 GlossaryLabel 并挂释义', (tester) async {
     final character = mkCharacter();
     await pumpPanel(tester, character: character);

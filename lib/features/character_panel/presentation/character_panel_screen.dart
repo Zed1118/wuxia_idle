@@ -290,6 +290,10 @@ class _ProfileHeaderCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: 8),
+                // 第八阶段·角色等级 Lv:等级 chip + 经验条(config 读用 instanceOrNull
+                // 守,缺 GameRepository 时退化为纯 Lv 数字不崩轻量测)。
+                _LevelChip(character: character),
                 const SizedBox(height: 12),
                 _AttributeStrip(
                   attributes: [
@@ -318,6 +322,84 @@ class _ProfileHeaderCard extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 第八阶段·角色等级 Lv chip:「等级 Lv N」+ 经验条(满级显「巅峰」)。
+///
+/// config 读用 [GameRepository.instanceOrNull] 守:缺 GameRepository(轻量 widget
+/// 测无 game data)时退化为纯 Lv 数字、不渲染经验条,不崩(沿 home_feed 防御体例)。
+class _LevelChip extends StatelessWidget {
+  const _LevelChip({required this.character});
+
+  final Character character;
+
+  @override
+  Widget build(BuildContext context) {
+    final lvCfg = GameRepository.instanceOrNull?.numbers.level;
+    final atMax = lvCfg != null && character.level >= lvCfg.maxLevel;
+    final toNext =
+        (lvCfg != null && !atMax) ? lvCfg.expToNext(character.level) : 0;
+    final frac =
+        toNext > 0 ? (character.levelExp / toNext).clamp(0.0, 1.0) : 1.0;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: const Color(0x2EF3E6C7),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.28)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text(
+                UiStrings.profileLevelLabel,
+                style: TextStyle(
+                  color: WuxiaUi.muted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Lv ${character.level}',
+                style: const TextStyle(
+                  color: WuxiaUi.ink,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                atMax ? '巅峰' : '${character.levelExp} / $toNext',
+                style: const TextStyle(
+                  color: WuxiaUi.muted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          if (lvCfg != null) ...[
+            const SizedBox(height: 5),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: LinearProgressIndicator(
+                value: frac,
+                minHeight: 4,
+                backgroundColor: WuxiaUi.ink.withValues(alpha: 0.12),
+                valueColor: AlwaysStoppedAnimation(
+                  WuxiaUi.gold.withValues(alpha: 0.85),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
