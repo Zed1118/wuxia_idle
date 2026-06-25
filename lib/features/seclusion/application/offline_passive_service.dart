@@ -76,24 +76,35 @@ class OfflinePassiveService {
       }
 
       final c = await isar.characters.get(characterId);
-      if (c != null && yield_.experience > 0) {
-        final progress = await isar.mainlineProgress
-            .filter()
-            .saveDataIdEqualTo(saveDataId)
-            .findFirst();
-        final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
-        final innerDemonDef = GameRepository.instance.numbers.innerDemon;
-        CharacterAdvancementService.applyExperience(
-          c,
-          yield_.experience,
-          realmLookup: GameRepository.instance.getRealm,
-          isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
-            nextTier: tier,
-            nextLayer: layer,
-            innerDemonDef: innerDemonDef,
-            clearedStageIds: clearedSet,
-          ),
-        );
+      if (c != null) {
+        // Task 8: 双层伤势疗养（§5.5 在线=离线，按 awayHours 真实离线时长累减，
+        // 无加速）。重伤按时长累减 clamp ≥ 0；轻伤离线结算即清零。
+        // 关键：放在 experience>0 之外的无条件路径——即使本次 0 产出，挂机即疗养。
+        if (c.injuryHoursRemaining > 0) {
+          final left = c.injuryHoursRemaining - awayHours;
+          c.injuryHoursRemaining = left < 0 ? 0 : left;
+        }
+        c.lightInjuryStacks = 0;
+
+        if (yield_.experience > 0) {
+          final progress = await isar.mainlineProgress
+              .filter()
+              .saveDataIdEqualTo(saveDataId)
+              .findFirst();
+          final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
+          final innerDemonDef = GameRepository.instance.numbers.innerDemon;
+          CharacterAdvancementService.applyExperience(
+            c,
+            yield_.experience,
+            realmLookup: GameRepository.instance.getRealm,
+            isLayerLocked: (tier, layer) => InnerDemonService.isLayerLocked(
+              nextTier: tier,
+              nextLayer: layer,
+              innerDemonDef: innerDemonDef,
+              clearedStageIds: clearedSet,
+            ),
+          );
+        }
         await isar.characters.put(c);
       }
 

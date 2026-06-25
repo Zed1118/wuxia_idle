@@ -427,6 +427,13 @@ class SeclusionService {
               ch.innerDemonResidueHoursRemaining - outputs.actualHours;
           ch.innerDemonResidueHoursRemaining = left < 0 ? 0 : left;
         }
+        // Task 8: 双层伤势疗养（§5.5 按 actualHours 真实闭关时长累减，无加速）。
+        // 重伤按时长累减 clamp ≥ 0；轻伤收功即调息，无条件清零。
+        if (ch.injuryHoursRemaining > 0) {
+          final left = ch.injuryHoursRemaining - outputs.actualHours;
+          ch.injuryHoursRemaining = left < 0 ? 0 : left;
+        }
+        ch.lightInjuryStacks = 0;
         if (outputs.experiencePoints > 0) {
           // P2.2 §12.1 心魔关 unlock 拦截 hook(Batch 2.2.B):wuSheng 各 layer
           // 升前查 inner_demon stage cleared 集,未通则 EXP 留账不消费(玩家
