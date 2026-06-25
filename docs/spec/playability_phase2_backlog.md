@@ -68,3 +68,7 @@
 ## 九 · 战斗体验打磨(第五阶段 · 2026-06-23)
 
 - [ ] **战斗节奏真机校值**:A+C 已实装(spec/plan `2026-06-23-battle-pacing-readability-*` · 合 main)。初值 `action_interval_ms=1000`/`key_moment_hold_ms=400`/`damage_popup_ms=700` 待真机 `flutter run -d macos` 看常速战斗手感调定(纯 numbers.yaml 配置·连带同步 `AnimationNumbers.defaults`)。用户拍板先 merge 初值,真机后调。
+
+## 十 · 桃花岛(养成经营 · 一期 2026-06-25 合入 main)
+
+- [ ] **桃花岛主屏「场景化画面」重做(待美术·用户拍板 2026-06-25)**:一期主屏是**卡片列表**(4 建筑卡 `taohua_island_screen.dart`·功能完整可用)。用户要求改为**一整幅场景画面**——以桃花岛元素为背景(岛屿/桃林/水景等),各生产建筑(铁匠厂/草药园/打造台/丹房)作为**画面上摆布的视觉元素**(可点的建筑物/地块),而非抽象卡片。**依赖**:用户后期补一次美术素材(背景图 + 各建筑/生产元素立绘/图标)。**届时做**:presentation 层重构(场景 Stack 布局 + 建筑热区点击进升级/选配方/收取面板),数值/服务层(config/settle/action/provider)**不动**,纯换皮。卡片列表版作为功能底座保留到场景版就绪。临时 debug 直达路由(VISUAL_ROUTE=taohua_island)本次验收后已还原,场景版做时可重加。
