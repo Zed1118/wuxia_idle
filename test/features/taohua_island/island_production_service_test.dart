@@ -78,7 +78,7 @@ void main() {
     test('1. 原料滴落 + cap 封顶', () {
       final cfg = _config(tieRate: 6, tieCapBase: 200);
       final states = [
-        IslandBuildingState(type: BuildingType.tieJiangChang, level: 1),
+        IslandBuildingState()..type = BuildingType.tieJiangChang..level = 1,
       ];
 
       // 线性区：5h × 6/h × level1 = 30
@@ -105,16 +105,14 @@ void main() {
       // 铁匠厂 baseRate=0 → 本窗口不产精铁，源料恒为预置量。
       final cfg = _config(tieRate: 0, forgeInputPerOutput: 4, zaoCapBase: 1000);
       final states = [
-        IslandBuildingState(
-          type: BuildingType.tieJiangChang,
-          level: 1,
-          stored: 30, // 预置精铁
-        ),
-        IslandBuildingState(
-          type: BuildingType.daZaoTai,
-          level: 1,
-          activeRecipeId: 'forge_mojianshi',
-        ),
+        IslandBuildingState()
+          ..type = BuildingType.tieJiangChang
+          ..level = 1
+          ..stored = 30, // 预置精铁
+        IslandBuildingState()
+          ..type = BuildingType.daZaoTai
+          ..level = 1
+          ..activeRecipeId = 'forge_mojianshi',
       ];
 
       final r = IslandProductionService.settle(
@@ -144,16 +142,14 @@ void main() {
         forgeRate: 3,
       );
       final states = [
-        IslandBuildingState(
-          type: BuildingType.tieJiangChang,
-          level: 1,
-          stored: 10, // 不再产，固定 10
-        ),
-        IslandBuildingState(
-          type: BuildingType.daZaoTai,
-          level: 1,
-          activeRecipeId: 'forge_mojianshi',
-        ),
+        IslandBuildingState()
+          ..type = BuildingType.tieJiangChang
+          ..level = 1
+          ..stored = 10, // 不再产，固定 10
+        IslandBuildingState()
+          ..type = BuildingType.daZaoTai
+          ..level = 1
+          ..activeRecipeId = 'forge_mojianshi',
       ];
       final r = IslandProductionService.settle(
         states: states,
@@ -171,17 +167,15 @@ void main() {
     test('3. 加工受成品 cap 限', () {
       final cfg = _config(zaoCapBase: 50, forgeRate: 3);
       final states = [
-        IslandBuildingState(
-          type: BuildingType.tieJiangChang,
-          level: 1,
-          stored: 100000, // 源料充裕
-        ),
-        IslandBuildingState(
-          type: BuildingType.daZaoTai,
-          level: 1,
-          stored: 48, // 接近 cap=50
-          activeRecipeId: 'forge_mojianshi',
-        ),
+        IslandBuildingState()
+          ..type = BuildingType.tieJiangChang
+          ..level = 1
+          ..stored = 100000, // 源料充裕
+        IslandBuildingState()
+          ..type = BuildingType.daZaoTai
+          ..level = 1
+          ..stored = 48 // 接近 cap=50
+          ..activeRecipeId = 'forge_mojianshi',
       ];
       final r = IslandProductionService.settle(
         states: states,
@@ -201,16 +195,14 @@ void main() {
         forgeRate: 3,
       );
       List<IslandBuildingState> seed() => [
-            IslandBuildingState(
-              type: BuildingType.tieJiangChang,
-              level: 1,
-              stored: 100000000, // 海量源料
-            ),
-            IslandBuildingState(
-              type: BuildingType.daZaoTai,
-              level: 1,
-              activeRecipeId: 'forge_mojianshi',
-            ),
+            IslandBuildingState()
+              ..type = BuildingType.tieJiangChang
+              ..level = 1
+              ..stored = 100000000, // 海量源料
+            IslandBuildingState()
+              ..type = BuildingType.daZaoTai
+              ..level = 1
+              ..activeRecipeId = 'forge_mojianshi',
           ];
 
       final once = IslandProductionService.settle(
@@ -241,16 +233,14 @@ void main() {
     test('5. capHours 封顶（100h == 72h）', () {
       final cfg = _config(capHours: 72);
       List<IslandBuildingState> seed() => [
-            IslandBuildingState(
-              type: BuildingType.tieJiangChang,
-              level: 1,
-              stored: 100000,
-            ),
-            IslandBuildingState(
-              type: BuildingType.daZaoTai,
-              level: 1,
-              activeRecipeId: 'forge_mojianshi',
-            ),
+            IslandBuildingState()
+              ..type = BuildingType.tieJiangChang
+              ..level = 1
+              ..stored = 100000,
+            IslandBuildingState()
+              ..type = BuildingType.daZaoTai
+              ..level = 1
+              ..activeRecipeId = 'forge_mojianshi',
           ];
       final r100 = IslandProductionService.settle(
         states: seed(),
@@ -276,16 +266,14 @@ void main() {
     test('6. 无 activeRecipe 的加工建筑不产、不耗源料', () {
       final cfg = _config();
       final states = [
-        IslandBuildingState(
-          type: BuildingType.tieJiangChang,
-          level: 1,
-          stored: 500,
-        ),
-        IslandBuildingState(
-          type: BuildingType.daZaoTai,
-          level: 1,
-          // activeRecipeId 为 null
-        ),
+        IslandBuildingState()
+          ..type = BuildingType.tieJiangChang
+          ..level = 1
+          ..stored = 500,
+        IslandBuildingState()
+          ..type = BuildingType.daZaoTai
+          ..level = 1,
+        // activeRecipeId 为 null
       ];
       final r = IslandProductionService.settle(
         states: states,
@@ -302,16 +290,14 @@ void main() {
     test('7. 境界门槛：配方 realm_unlock_index=3 而 founderRealmIndex=0 → 暂停', () {
       final cfg = _config(forgeRealmUnlock: 3);
       final states = [
-        IslandBuildingState(
-          type: BuildingType.tieJiangChang,
-          level: 1,
-          stored: 500,
-        ),
-        IslandBuildingState(
-          type: BuildingType.daZaoTai,
-          level: 1,
-          activeRecipeId: 'forge_mojianshi',
-        ),
+        IslandBuildingState()
+          ..type = BuildingType.tieJiangChang
+          ..level = 1
+          ..stored = 500,
+        IslandBuildingState()
+          ..type = BuildingType.daZaoTai
+          ..level = 1
+          ..activeRecipeId = 'forge_mojianshi',
       ];
       final r = IslandProductionService.settle(
         states: states,
@@ -328,11 +314,10 @@ void main() {
     test('纯函数：不修改输入 states', () {
       final cfg = _config();
       final input = [
-        IslandBuildingState(
-          type: BuildingType.tieJiangChang,
-          level: 1,
-          stored: 0,
-        ),
+        IslandBuildingState()
+          ..type = BuildingType.tieJiangChang
+          ..level = 1
+          ..stored = 0,
       ];
       IslandProductionService.settle(
         states: input,
@@ -346,11 +331,10 @@ void main() {
     test('t<=0 直接返回副本', () {
       final cfg = _config();
       final input = [
-        IslandBuildingState(
-          type: BuildingType.tieJiangChang,
-          level: 1,
-          stored: 42,
-        ),
+        IslandBuildingState()
+          ..type = BuildingType.tieJiangChang
+          ..level = 1
+          ..stored = 42,
       ];
       final r = IslandProductionService.settle(
         states: input,
