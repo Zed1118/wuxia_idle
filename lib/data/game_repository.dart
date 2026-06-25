@@ -48,6 +48,9 @@ class GameRepository {
   /// 是否已加载（test 多次 setUp 复用判断用）。
   static bool get isLoaded => _instance != null;
 
+  /// 已加载时返回实例，否则返回 null（轻量 Widget/test 防御式读取用，不抛错）。
+  static GameRepository? get instanceOrNull => _instance;
+
   final NumbersConfig numbers;
   final List<RealmDef> realms;
   final Map<String, EquipmentDef> equipmentDefs;
