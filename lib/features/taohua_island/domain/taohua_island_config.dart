@@ -9,8 +9,8 @@ class BuildingConfig {
   final int capBase;
   final int capPerLevel;
   final int maxLevel;
-  final int upgradeSilverBase;
-  final int upgradeSilverPerLevel;
+  final List<int> upgradeSilverLevels; // 节奏 B：per-level 升级银两曲线，长度 = maxLevel-1
+  final List<int> upgradeRealmLevels; // 节奏 B：每级升级的境界 gate，长度 = maxLevel-1
   final String upgradeMaterialItem;
   final int upgradeMaterialBase;
   final int realmUnlockIndex;
@@ -25,8 +25,8 @@ class BuildingConfig {
     required this.capBase,
     required this.capPerLevel,
     required this.maxLevel,
-    required this.upgradeSilverBase,
-    required this.upgradeSilverPerLevel,
+    required this.upgradeSilverLevels,
+    required this.upgradeRealmLevels,
     required this.upgradeMaterialItem,
     required this.upgradeMaterialBase,
     required this.realmUnlockIndex,
@@ -36,9 +36,12 @@ class BuildingConfig {
   /// 当前等级对应的库存上限（level 从 1 开始）
   int capFor(int level) => capBase + (level - 1) * capPerLevel;
 
-  /// 当前等级升级所需银两（level 从 1 开始，level=1 升 2 时消耗）
-  int upgradeSilverFor(int level) =>
-      upgradeSilverBase + (level - 1) * upgradeSilverPerLevel;
+  /// 当前等级升级所需银两（level 从 1 开始，level=1 升 2 时消耗）。
+  /// 节奏 B：per-level 显式曲线（前低后高陡增），index = level-1。
+  int upgradeSilverFor(int level) => upgradeSilverLevels[level - 1];
+
+  /// 升到 level+1 所需的祖师境界 index（节奏 B：按等级分阶 gate）。
+  int upgradeRealmFor(int level) => upgradeRealmLevels[level - 1];
 
   /// 当前等级升级所需材料数量
   // 材料成本 = base × level（无独立 perLevel 字段，刻意按等级线性递增）
@@ -84,8 +87,12 @@ class BuildingConfig {
       capBase: (y['cap_base'] as num).toInt(),
       capPerLevel: (y['cap_per_level'] as num).toInt(),
       maxLevel: (y['max_level'] as num).toInt(),
-      upgradeSilverBase: (y['upgrade_silver_base'] as num).toInt(),
-      upgradeSilverPerLevel: (y['upgrade_silver_per_level'] as num).toInt(),
+      upgradeSilverLevels: (y['upgrade_silver_levels'] as List)
+          .map((e) => (e as num).toInt())
+          .toList(),
+      upgradeRealmLevels: (y['upgrade_realm_levels'] as List)
+          .map((e) => (e as num).toInt())
+          .toList(),
       upgradeMaterialItem: y['upgrade_material_item'] as String,
       upgradeMaterialBase: (y['upgrade_material_base'] as num).toInt(),
       realmUnlockIndex: (y['realm_unlock_index'] as num?)?.toInt() ?? 0,
@@ -115,6 +122,8 @@ class TaohuaIslandConfig {
   /// - 每个 recipe：input_per_output > 0；rate_per_hour ≥ 0；realm_unlock_index ∈ [0, 6]。
   /// - 跨引用：recipe.output_item、source.output_item、processor.input_item ∈ [knownItemDefIds]。
   /// - 供应自洽：每个 processor 的 input_item 必须能被某个 source 的 output_item 供应。
+  /// - 节奏 B：upgrade_silver_levels / upgrade_realm_levels 长度须 = max_level-1；
+  ///   upgrade_realm_levels 各项 ∈ [0, 6] 且单调非减（境界 gate 不可倒退）。
   static void validate(TaohuaIslandConfig cfg, Set<String> knownItemDefIds) {
     final sourceOutputItems = <String>{};
 
@@ -133,6 +142,31 @@ class TaohuaIslandConfig {
       if (b.maxLevel < 1) {
         throw StateError(
             'taohua_island: 建筑 $label max_level ${b.maxLevel} < 1');
+      }
+
+      // 节奏 B：升级曲线/境界 gate 数组长度须 = max_level-1（每级一项）
+      final expectedLen = b.maxLevel - 1;
+      if (b.upgradeSilverLevels.length != expectedLen) {
+        throw StateError(
+            'taohua_island: 建筑 $label upgrade_silver_levels 长度 '
+            '${b.upgradeSilverLevels.length} ≠ max_level-1 ($expectedLen)');
+      }
+      if (b.upgradeRealmLevels.length != expectedLen) {
+        throw StateError(
+            'taohua_island: 建筑 $label upgrade_realm_levels 长度 '
+            '${b.upgradeRealmLevels.length} ≠ max_level-1 ($expectedLen)');
+      }
+      for (var i = 0; i < b.upgradeRealmLevels.length; i++) {
+        final r = b.upgradeRealmLevels[i];
+        if (r < 0 || r > 6) {
+          throw StateError(
+              'taohua_island: 建筑 $label upgrade_realm_levels[$i] $r 须 ∈ [0, 6]');
+        }
+        if (i > 0 && r < b.upgradeRealmLevels[i - 1]) {
+          throw StateError(
+              'taohua_island: 建筑 $label upgrade_realm_levels 须单调非减'
+              '（境界 gate 不可倒退）');
+        }
       }
 
       if (b.kind == BuildingKind.source) {

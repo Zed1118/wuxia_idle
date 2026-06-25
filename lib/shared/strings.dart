@@ -1848,8 +1848,12 @@ class UiStrings {
   /// recap 空态文案（各坊尚无产出）。
   static const String taohuaIslandRecapEmpty = '岛上诸坊尚无所获，且待时日。';
 
-  /// 建筑/操作境界未到的提示标签。
+  /// 建筑/操作境界未到的提示标签（通用兜底，无具体境界名时用）。
   static const String taohuaIslandRealmLocked = '境界未至';
+
+  /// 升级境界 gate 提示（节奏 B 分阶解锁）：告知升下一级所需境界，让灰按钮可读。
+  static String taohuaIslandRealmLockedFor(String realmName) =>
+      '需$realmName境界方可升级';
 
   /// 建筑已至最高等级标签。
   static const String taohuaIslandMaxLevel = '已至顶级';

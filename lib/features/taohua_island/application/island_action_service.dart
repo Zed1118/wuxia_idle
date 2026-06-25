@@ -68,7 +68,11 @@ class IslandActionService {
     required int material,
   }) {
     if (level >= cfg.maxLevel) return UpgradeResult.maxLevelReached;
-    if (cfg.realmUnlockIndex > founderRealmIndex) return UpgradeResult.realmLocked;
+    // 节奏 B：按等级分阶境界 gate。升 level→level+1 需祖师达 upgradeRealmFor(level)。
+    // maxLevel 检查在前，保证 level ∈ [1, maxLevel-1]，upgradeRealmFor 索引不越界。
+    if (cfg.upgradeRealmFor(level) > founderRealmIndex) {
+      return UpgradeResult.realmLocked;
+    }
     if (silver < cfg.upgradeSilverFor(level)) return UpgradeResult.notEnoughSilver;
     if (material < cfg.upgradeMaterialFor(level)) return UpgradeResult.notEnoughMaterial;
     return null;

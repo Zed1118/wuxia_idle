@@ -214,6 +214,65 @@ void main() {
         reason: '材料不扣');
   });
 
+  // ── T5b: 节奏 B 按等级分阶 realm gate（高等级需更高境界）─────────────────
+  // 铁匠厂 upgrade_realm_levels=[0,1,2,3]：升 L3→L4 需 realm2(二流)。
+  // founderRealmIndex=1(三流) < 2 → realmLocked，即使银两/材料充足。
+  test('T5b: 升 L3→L4 需 realm2，founderRealmIndex=1 → realmLocked，无副作用', () async {
+    final isar = IsarSetup.instance;
+    await isar.writeTxn(() async {
+      final s = (await isar.saveDatas.get(0))!;
+      s.islandBuildings
+          .firstWhere((b) => b.type == BuildingType.tieJiangChang)
+          .level = 3;
+      await isar.saveDatas.put(s);
+    });
+    await seedInventory('item_silver', 9999);
+    await seedInventory('item_jingtie', 9999);
+
+    final save = (await IsarSetup.instance.saveDatas.get(0))!;
+    final result = await IslandActionService.upgrade(
+      save: save,
+      buildingType: BuildingType.tieJiangChang,
+      founderRealmIndex: 1,
+    );
+
+    expect(result, UpgradeResult.realmLocked);
+    expect(await buildingLevel(BuildingType.tieJiangChang), 3,
+        reason: 'level 不变');
+    expect(await inventoryQty('item_silver'), 9999, reason: '银两不扣');
+    expect(await inventoryQty('item_jingtie'), 9999, reason: '材料不扣');
+  });
+
+  // ── T5c: 节奏 B 境界达标 → 升级成功（同 L3→L4，founderRealmIndex=2）─────────
+  test('T5c: 升 L3→L4 founderRealmIndex=2(二流)达标 → 成功，扣 silver 2800/精铁 120',
+      () async {
+    final isar = IsarSetup.instance;
+    await isar.writeTxn(() async {
+      final s = (await isar.saveDatas.get(0))!;
+      s.islandBuildings
+          .firstWhere((b) => b.type == BuildingType.tieJiangChang)
+          .level = 3;
+      await isar.saveDatas.put(s);
+    });
+    await seedInventory('item_silver', 5000);
+    await seedInventory('item_jingtie', 300);
+
+    final save = (await IsarSetup.instance.saveDatas.get(0))!;
+    final result = await IslandActionService.upgrade(
+      save: save,
+      buildingType: BuildingType.tieJiangChang,
+      founderRealmIndex: 2,
+    );
+
+    expect(result, UpgradeResult.ok);
+    expect(await buildingLevel(BuildingType.tieJiangChang), 4,
+        reason: 'level 升到 4');
+    expect(await inventoryQty('item_silver'), 5000 - 2800,
+        reason: 'B 曲线 L3→4 银两 2800');
+    expect(await inventoryQty('item_jingtie'), 300 - 120,
+        reason: '材料 base×level = 40×3 = 120');
+  });
+
   // ════════════════════════════════════════════════════════════════════════════
   // selectRecipe 测试组
   // ════════════════════════════════════════════════════════════════════════════

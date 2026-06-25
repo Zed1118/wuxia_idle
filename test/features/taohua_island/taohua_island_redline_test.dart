@@ -165,8 +165,8 @@ buildings:
     cap_base: 200
     cap_per_level: 100
     max_level: 5
-    upgrade_silver_base: 500
-    upgrade_silver_per_level: 400
+    upgrade_silver_levels: [500, 1200, 2800, 6000]
+    upgrade_realm_levels: [0, 1, 2, 3]
     upgrade_material_item: item_jingtie
     upgrade_material_base: 40
     realm_unlock_index: 0
@@ -177,8 +177,8 @@ buildings:
     cap_base: 200
     cap_per_level: 100
     max_level: 5
-    upgrade_silver_base: 500
-    upgrade_silver_per_level: 400
+    upgrade_silver_levels: [500, 1200, 2800, 6000]
+    upgrade_realm_levels: [0, 1, 2, 3]
     upgrade_material_item: item_yaocao
     upgrade_material_base: 40
     realm_unlock_index: 0
@@ -188,8 +188,8 @@ buildings:
     cap_base: 80
     cap_per_level: 40
     max_level: 5
-    upgrade_silver_base: 800
-    upgrade_silver_per_level: 600
+    upgrade_silver_levels: [800, 1800, 4000, 9000]
+    upgrade_realm_levels: [0, 1, 2, 3]
     upgrade_material_item: item_jingtie
     upgrade_material_base: 80
     recipes:
@@ -201,8 +201,8 @@ buildings:
     cap_base: 60
     cap_per_level: 30
     max_level: 5
-    upgrade_silver_base: 800
-    upgrade_silver_per_level: 600
+    upgrade_silver_levels: [800, 1800, 4000, 9000]
+    upgrade_realm_levels: [0, 1, 2, 3]
     upgrade_material_item: item_yaocao
     upgrade_material_base: 80
     recipes:
@@ -222,8 +222,8 @@ buildings:
     cap_base: 200
     cap_per_level: 100
     max_level: 5
-    upgrade_silver_base: 500
-    upgrade_silver_per_level: 400
+    upgrade_silver_levels: [500, 1200, 2800, 6000]
+    upgrade_realm_levels: [0, 1, 2, 3]
     upgrade_material_item: item_jingtie
     upgrade_material_base: 40
     realm_unlock_index: 0
@@ -233,8 +233,8 @@ buildings:
     cap_base: 80
     cap_per_level: 40
     max_level: 5
-    upgrade_silver_base: 800
-    upgrade_silver_per_level: 600
+    upgrade_silver_levels: [800, 1800, 4000, 9000]
+    upgrade_realm_levels: [0, 1, 2, 3]
     upgrade_material_item: item_jingtie
     upgrade_material_base: 80
     recipes: []
@@ -252,8 +252,8 @@ buildings:
     cap_base: 200
     cap_per_level: 100
     max_level: 5
-    upgrade_silver_base: 500
-    upgrade_silver_per_level: 400
+    upgrade_silver_levels: [500, 1200, 2800, 6000]
+    upgrade_realm_levels: [0, 1, 2, 3]
     upgrade_material_item: item_jingtie
     upgrade_material_base: 40
     realm_unlock_index: 0
@@ -263,8 +263,8 @@ buildings:
     cap_base: 80
     cap_per_level: 40
     max_level: 5
-    upgrade_silver_base: 800
-    upgrade_silver_per_level: 600
+    upgrade_silver_levels: [800, 1800, 4000, 9000]
+    upgrade_realm_levels: [0, 1, 2, 3]
     upgrade_material_item: item_jingtie
     upgrade_material_base: 80
     recipes:
@@ -283,8 +283,8 @@ buildings:
     cap_base: 200
     cap_per_level: 100
     max_level: 5
-    upgrade_silver_base: 500
-    upgrade_silver_per_level: 400
+    upgrade_silver_levels: [500, 1200, 2800, 6000]
+    upgrade_realm_levels: [0, 1, 2, 3]
     upgrade_material_item: item_jingtie
     upgrade_material_base: 40
     realm_unlock_index: 0
@@ -294,8 +294,8 @@ buildings:
     cap_base: 60
     cap_per_level: 30
     max_level: 5
-    upgrade_silver_base: 800
-    upgrade_silver_per_level: 600
+    upgrade_silver_levels: [800, 1800, 4000, 9000]
+    upgrade_realm_levels: [0, 1, 2, 3]
     upgrade_material_item: item_yaocao
     upgrade_material_base: 80
     recipes:
