@@ -229,6 +229,10 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 内力不足/debuff hover);生产挂机战斗恒 false,单步按钮严禁出现。
   final bool startPaused;
 
+  /// 一键扫荡用(默认 false → 现有调用零影响):起手即快进态,战斗本体直接以
+  /// [AnimationNumbers.fastForwardIntervalMs] 速度连播,免玩家手点快进键。
+  final bool startFastForward;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
@@ -245,6 +249,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.allowPlayerIntervention = false,
     this.debugDragPreview,
     this.startPaused = false,
+    this.startFastForward = false,
   });
 
   @override
@@ -278,7 +283,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   // 实时 tick 定时器（常速: advanceOneAction() / 快进: advance() 驱动）
   Timer? _playTimer;
-  bool _isFastForward = false;
+  bool _isFastForward = false; // initState 据 widget.startFastForward 置初值
   bool _isPaused = false;
 
   // T1 指令台：当前"重点角色"槽位（玩家手动选定的基线）。敌人蓄力时由
@@ -324,6 +329,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   @override
   void initState() {
     super.initState();
+    _isFastForward = widget.startFastForward;
     _attackControllers = List.generate(
       6,
       (_) => AnimationController(

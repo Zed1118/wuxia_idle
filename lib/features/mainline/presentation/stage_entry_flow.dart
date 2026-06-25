@@ -186,7 +186,7 @@ Future<void> runStageFlow({
 
   // ── victory ──
   // Phase 4 W11 #32 销账：装备 battleCount / 心法 skillUsage / 主修升层 + 关卡 drop 落地
-  final outcome = await _applyVictoryResolution(ref: ref, stage: stage);
+  final outcome = await applyVictoryResolution(ref: ref, stage: stage);
   // W13-v3 fix: 同 defeat 分支,invalidate character/equipment/technique family
   _invalidateCharacterFamilyAfterCombat(ref);
 
@@ -713,7 +713,7 @@ Future<
       BattleStatsSummary stats,
       HeroCameraData? heroCamera,
       Set<EquipmentTier> extraDisplayTiers,
-    })?> _applyVictoryResolution({
+    })?> applyVictoryResolution({
   required WidgetRef ref,
   required StageDef stage,
 }) async {

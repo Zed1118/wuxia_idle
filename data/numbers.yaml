@@ -1419,7 +1419,8 @@ animation:
 
   # 动作播放间隔（每个 action 间隔时间）
   action_interval_ms: 1000     # 正常速度：单拍给够攻击动画(400)+飘字读完
-  fast_forward_interval_ms: 100  # 快进速度
+  fast_forward_interval_ms: 100  # 快进速度（一键扫荡的战斗本体也走此速）
+  sweep_inter_battle_gap_ms: 150  # 一键扫荡：连播逐关切换的关间过场停顿
 
   # 屏震（暴击时触发）
   shake_offset_px: 3.0         # 最大偏移幅度

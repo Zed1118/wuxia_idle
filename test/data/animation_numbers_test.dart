@@ -71,4 +71,32 @@ void main() {
     });
     expect(n.keyMomentHoldMs, 400);
   });
+
+  // 一键扫荡 T1：关间过场间隔（连播逐关切换时的短暂停顿）。
+  test('AnimationNumbers.defaults 含 sweepInterBattleGapMs', () {
+    expect(AnimationNumbers.defaults.sweepInterBattleGapMs, 150);
+  });
+
+  test('fromYaml 解析 sweep_inter_battle_gap_ms', () {
+    final n = AnimationNumbers.fromYaml(<String, dynamic>{
+      'attack_rush_ms': 1, 'attack_hold_ms': 1, 'attack_retreat_ms': 1,
+      'attack_rush_offset_px': 1, 'damage_popup_float_px': 1,
+      'damage_popup_ms': 1, 'action_interval_ms': 1,
+      'fast_forward_interval_ms': 1, 'shake_offset_px': 1,
+      'shake_duration_ms': 1, 'critical_font_scale': 1,
+      'sweep_inter_battle_gap_ms': 222,
+    });
+    expect(n.sweepInterBattleGapMs, 222);
+  });
+
+  test('fromYaml 缺 sweep_inter_battle_gap_ms 走默认 150', () {
+    final n = AnimationNumbers.fromYaml(<String, dynamic>{
+      'attack_rush_ms': 1, 'attack_hold_ms': 1, 'attack_retreat_ms': 1,
+      'attack_rush_offset_px': 1, 'damage_popup_float_px': 1,
+      'damage_popup_ms': 1, 'action_interval_ms': 1,
+      'fast_forward_interval_ms': 1, 'shake_offset_px': 1,
+      'shake_duration_ms': 1, 'critical_font_scale': 1,
+    });
+    expect(n.sweepInterBattleGapMs, 150);
+  });
 }

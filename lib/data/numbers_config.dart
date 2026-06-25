@@ -1548,6 +1548,10 @@ class AnimationNumbers {
   /// 快进/拖招态不触发（沿 hit-stop 既有跳过约定）。
   final int keyMomentHoldMs;
 
+  /// 一键扫荡：连播逐关切换时的关间过场停顿（ms）。战斗本体走
+  /// [fastForwardIntervalMs] 快进，本字段只是两场之间喘口气的短停。
+  final int sweepInterBattleGapMs;
+
   const AnimationNumbers({
     required this.attackRushMs,
     required this.attackHoldMs,
@@ -1563,6 +1567,7 @@ class AnimationNumbers {
     required this.projectileMs,
     required this.hitFlashMs,
     this.keyMomentHoldMs = 400,
+    this.sweepInterBattleGapMs = 150,
   });
 
   /// 默认值与 numbers.yaml 保持一致，用于测试或无法加载 yaml 的场景。
@@ -1581,6 +1586,7 @@ class AnimationNumbers {
     projectileMs: 260,
     hitFlashMs: 150,
     keyMomentHoldMs: 400,
+    sweepInterBattleGapMs: 150,
   );
 
   int get attackTotalMs => attackRushMs + attackHoldMs + attackRetreatMs;
@@ -1601,6 +1607,8 @@ class AnimationNumbers {
       projectileMs: (y['projectile_ms'] as num?)?.toInt() ?? 260,
       hitFlashMs: (y['hit_flash_ms'] as num?)?.toInt() ?? 150,
       keyMomentHoldMs: (y['key_moment_hold_ms'] as num?)?.toInt() ?? 400,
+      sweepInterBattleGapMs:
+          (y['sweep_inter_battle_gap_ms'] as num?)?.toInt() ?? 150,
     );
   }
 }
