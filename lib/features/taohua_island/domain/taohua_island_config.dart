@@ -120,7 +120,7 @@ class TaohuaIslandConfig {
 
     for (final entry in cfg.buildings.entries) {
       final b = entry.value;
-      final label = entry.key.toString();
+      final label = entry.key.name;
 
       // 通用数值约束
       if (b.capBase < 0) {
@@ -137,6 +137,7 @@ class TaohuaIslandConfig {
 
       if (b.kind == BuildingKind.source) {
         // source 必须有 output_item，且 rate ≥ 0
+        // 防御:正常 fromYaml 路径 source 必有 output_item,此处兜手动构造
         final out = b.outputItem;
         if (out == null || out.isEmpty) {
           throw StateError('taohua_island: source 建筑 $label 缺少 output_item');
@@ -194,7 +195,7 @@ class TaohuaIslandConfig {
       final inp = b.inputItem!;
       if (!sourceOutputItems.contains(inp)) {
         throw StateError(
-            'taohua_island: processor 建筑 ${entry.key} 的 input_item "$inp" '
+            'taohua_island: processor 建筑 ${entry.key.name} 的 input_item "$inp" '
             '没有任何 source 建筑供应');
       }
     }
