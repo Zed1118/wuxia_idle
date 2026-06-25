@@ -1816,6 +1816,20 @@ lineage_onboarding:
       role: junior
       narrative_id: lineage_second_disciple_join
 
+# =============================================================================
+# 双层伤势系统（第八阶段 · 2026-06-25）
+# spec: 第八阶段 双层伤势系统 spec
+# =============================================================================
+injury:
+  light_injury:
+    speed_penalty_per_stack: 3      # 每层减速度(base 100+,轻微扣减)
+    max_stacks: 5                   # 最大叠层数
+  heavy_injury:
+    recovery_hours: 8.0             # 疗养时长(同心魔余毒先例)
+    internal_force_max_penalty_pct: 0.15   # 内力上限扣减比例
+    attack_output_multiplier: 0.85         # 攻击输出乘数
+    heavy_win_hp_threshold_pct: 0.25       # 惨胜阈值:存活角色 endHp<25% maxHp 吃重伤
+
 # F1 里程碑装备授予：stageId → dropSourceTags tag。
 # 首通该关 → MilestoneEquipmentGrantService.grantForTag(tag) 授予对应 special
 # 装备进背包(一次性，重打不重发)。飞升 tag(ascension_reward)是终局事件非关卡，
