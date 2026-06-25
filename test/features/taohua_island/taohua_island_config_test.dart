@@ -33,6 +33,10 @@ void main() {
     final tie = cfg.buildingOf(BuildingType.tieJiangChang);
     expect(tie.upgradeSilverFor(1), 500);
     expect(tie.upgradeSilverFor(2), 900);
+    // upgradeMaterialFor = base × level（线性递增）
+    expect(tie.upgradeMaterialFor(1), 40);
+    expect(tie.upgradeMaterialFor(2), 80);
+    expect(tie.upgradeMaterialFor(5), 200);
   });
 }
 

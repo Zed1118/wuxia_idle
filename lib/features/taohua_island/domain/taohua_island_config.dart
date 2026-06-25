@@ -41,6 +41,7 @@ class BuildingConfig {
       upgradeSilverBase + (level - 1) * upgradeSilverPerLevel;
 
   /// 当前等级升级所需材料数量
+  // 材料成本 = base × level（无独立 perLevel 字段，刻意按等级线性递增）
   int upgradeMaterialFor(int level) =>
       upgradeMaterialBase + (level - 1) * upgradeMaterialBase;
 
@@ -54,7 +55,11 @@ class BuildingConfig {
 
   factory BuildingConfig.fromYaml(BuildingType type, Map<String, dynamic> y) {
     final kindStr = y['kind'] as String;
-    final kind = kindStr == 'source' ? BuildingKind.source : BuildingKind.processor;
+    final kind = switch (kindStr) {
+      'source' => BuildingKind.source,
+      'processor' => BuildingKind.processor,
+      _ => throw ArgumentError('未知建筑 kind: $kindStr'),
+    };
 
     final String? outputItem =
         kind == BuildingKind.source ? y['output_item'] as String : null;
