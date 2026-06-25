@@ -1885,4 +1885,65 @@ class UiStrings {
 
   /// selectRecipe 不可达路径失败文案（notProcessor / recipeNotFound）。
   static const String taohuaIslandSelectRecipeFailed = '无法择此配方';
+
+  // ── 一键挂机扫荡 ───────────────────────────────────────────────────────
+  /// 主线章节扫荡入口主按钮。
+  static const String sweepChapterButton = '一键扫荡本章';
+
+  /// 爬塔扫荡入口主按钮。
+  static const String sweepTowerButton = '一键扫荡 30 层';
+
+  /// 未达门槛时的灰显提示（需本周目通关全部关卡）。
+  static const String sweepLockedHint = '需本周目通关全部关卡后解锁';
+
+  /// 扫荡屏标题前缀。
+  static String sweepTitle(String unitName) => '一键扫荡 · $unitName';
+
+  /// 连播进度：第 X / N 关。
+  static String sweepProgress(int current, int total) => '连播中 · $current / $total';
+
+  /// 装配下一关过场提示。
+  static const String sweepPreparing = '装配中…';
+
+  /// 醒目停止按钮。
+  static const String sweepStopButton = '停止扫荡';
+
+  /// 收尾 recap 标题（全部扫完）。
+  static const String sweepRecapCompleted = '扫荡完成';
+
+  /// 收尾 recap 标题（用户中途停）。
+  static const String sweepRecapStopped = '已停止扫荡';
+
+  /// 收尾 recap 标题（某关战败 halt）。
+  static String sweepRecapDefeated(int floorIndex) => '扫到第 $floorIndex 关战败';
+
+  /// 战败 halt 原因提示（伤势/内力累积）。
+  static const String sweepDefeatReason = '战力不济（伤势 / 内力累积），已停在此关';
+
+  /// recap 行：成功扫过关数。
+  static String sweepRecapStages(int n) => '通关 · $n 关';
+
+  /// recap 行：掉落装备件数。
+  static String sweepRecapEquipment(int n) => '装备 · $n 件';
+
+  /// recap 行：累计经验。
+  static String sweepRecapExp(int n) => '经验 · $n';
+
+  /// recap 行：升层次数。
+  static String sweepRecapAdvances(int n) => '升层 · $n 次';
+
+  /// recap 行：技能残页。
+  static String sweepRecapFragments(int n) => '残页 · $n 页';
+
+  /// recap 行：银两。
+  static String sweepRecapSilver(int n) => '银两 · $n';
+
+  /// recap 行：材料（非银两物品合计件数）。
+  static String sweepRecapMaterials(int n) => '材料 · $n 件';
+
+  /// 爬塔扫荡重打仅掉残页的说明（守 §5.1 防刷）。
+  static const String sweepTowerRepeatNote = '爬塔重打仅掉技能残页，不掉装备 / 银两';
+
+  /// recap 返回按钮。
+  static const String sweepRecapBack = '返回';
 }

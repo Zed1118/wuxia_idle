@@ -9,6 +9,9 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../data/isar_setup.dart';
+import '../../sweep/application/sweep_unit.dart';
+import '../../sweep/domain/sweep_eligibility.dart';
+import '../../sweep/presentation/sweep_screen.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
 import '../domain/tower_floor_def.dart';
@@ -148,6 +151,18 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
               return Column(
                 children: [
                   _ProgressCard(progress: progress),
+                  // 一键扫荡 30 层入口（醒目主按钮·本周目整塔已通才亮）。
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: _TowerSweepButton(
+                      entries: entries,
+                      cycleIndex: progress.currentCycleIndex,
+                      eligible: SweepEligibility.forTower(
+                        highestClearedFloor: progress.highestClearedFloor,
+                        floorCount: entries.length,
+                      ),
+                    ),
+                  ),
                   // P1 周目进化 E2：爬塔轮回推进卡（30 层全通 + 未达上限时显示）。
                   if (canAdvance)
                     _TowerAdvanceCycleCard(onAdvance: _onAdvanceCycle),
@@ -385,6 +400,54 @@ class _TowerAdvanceCycleCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 一键扫荡 30 层入口（醒目主按钮）。本周目整塔已通 → 高亮可点；否则灰显 + 门槛提示。
+class _TowerSweepButton extends StatelessWidget {
+  const _TowerSweepButton({
+    required this.entries,
+    required this.cycleIndex,
+    required this.eligible,
+  });
+
+  final List<TowerFloorEntry> entries;
+  final int cycleIndex;
+  final bool eligible;
+
+  @override
+  Widget build(BuildContext context) {
+    // §5.7：未解锁（本周目整塔未通）直接隐藏，解锁后才以醒目主按钮出现。
+    if (!eligible) return const SizedBox.shrink();
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        style: FilledButton.styleFrom(
+          backgroundColor: WuxiaColors.bossFrame,
+          foregroundColor: WuxiaColors.background,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          textStyle:
+              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        onPressed: () {
+          final units = [
+            for (final e in entries)
+              TowerSweepUnit(floor: e.def, cycleIndex: cycleIndex),
+          ];
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => SweepScreen(
+                units: units,
+                unitName: UiStrings.towerTitle,
+                towerRepeatNote: true,
+              ),
+            ),
+          );
+        },
+        icon: const Icon(Icons.fast_forward, size: 22),
+        label: const Text(UiStrings.sweepTowerButton),
       ),
     );
   }

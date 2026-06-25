@@ -14,6 +14,9 @@ import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/presentation/loot_rumor_dialog.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';
 import '../../loot_preview/presentation/weakness_hint_line.dart';
+import '../../sweep/application/sweep_unit.dart';
+import '../../sweep/domain/sweep_eligibility.dart';
+import '../../sweep/presentation/sweep_screen.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import '../domain/chapter_assets.dart';
@@ -92,6 +95,18 @@ class StageListScreen extends ConsumerWidget {
               children: [
                 _StageJourneyMap(chapterIndex: chapterIndex, entries: entries),
                 const SizedBox(height: 12),
+                // 一键扫荡本章入口（醒目主按钮·本周目全关已通才亮）。
+                _ChapterSweepButton(
+                  chapterIndex: chapterIndex,
+                  entries: entries,
+                  eligible: progress != null &&
+                      SweepEligibility.forChapter(
+                        clearedStageCycleKeys: progress.clearedStageCycleKeys,
+                        cycle: cycleFor(),
+                        chapterStageIds: [for (final e in entries) e.def.id],
+                      ),
+                  cycle: cycleFor(),
+                ),
                 // 章级周目选择控件(整章已通才显;上移自旧 per-stage 位置)。
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
@@ -522,5 +537,55 @@ class _StageStatusBadge extends StatelessWidget {
         size: 18,
       ),
     };
+  }
+}
+
+/// 一键扫荡本章入口（醒目主按钮）。本周目全关已通 → 高亮可点；否则灰显 + 门槛提示。
+class _ChapterSweepButton extends StatelessWidget {
+  const _ChapterSweepButton({
+    required this.chapterIndex,
+    required this.entries,
+    required this.eligible,
+    required this.cycle,
+  });
+
+  final int chapterIndex;
+  final List<StageEntry> entries;
+  final bool eligible;
+  final int cycle;
+
+  @override
+  Widget build(BuildContext context) {
+    // §5.7：未解锁（本周目未全通）直接隐藏，解锁后才以醒目主按钮出现。
+    if (!eligible) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: FilledButton.icon(
+        style: FilledButton.styleFrom(
+          backgroundColor: WuxiaColors.bossFrame,
+          foregroundColor: WuxiaColors.background,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          textStyle:
+              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        onPressed: () {
+          final units = [
+            for (final e in entries)
+              MainlineSweepUnit(stage: e.def, cycle: cycle),
+          ];
+          Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => SweepScreen(
+                units: units,
+                unitName: UiStrings.chapterTitle(chapterIndex),
+              ),
+            ),
+          );
+        },
+        icon: const Icon(Icons.fast_forward, size: 22),
+        label: const Text(UiStrings.sweepChapterButton),
+      ),
+    );
   }
 }

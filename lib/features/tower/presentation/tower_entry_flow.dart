@@ -190,7 +190,7 @@ Future<void> runTowerFlow({
   // 防刷塔无脑刷 EXP)。
   // W15 #30 P3 后续 A:收 advancements 暂存供 victory dialog banner。
   // P1.1 候选 3-a:同段收 resonanceUpgrades 供 dialog 显共鸣度晋阶 sub-row。
-  final victoryRes = await _applyTowerVictoryResolution(
+  final victoryRes = await applyTowerVictoryResolution(
     ref: ref,
     floor: floor,
     isFirstClear: clearResult.isFirstClear,
@@ -385,7 +385,7 @@ Future<
     HeroCameraData? heroCamera,
   })
 >
-_applyTowerVictoryResolution({
+applyTowerVictoryResolution({
   required WidgetRef ref,
   required TowerFloorDef floor,
   required bool isFirstClear,
