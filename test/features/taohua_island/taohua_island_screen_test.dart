@@ -124,12 +124,13 @@ void main() {
       );
     });
 
-    testWidgets('仓储文本渲染（50/300 for tieJiangChang level=2）', (tester) async {
+    testWidgets('仓储文本渲染（50/900 for tieJiangChang level=2）', (tester) async {
       await pump(tester, wrap(buildTestView()));
-      // tieJiangChang: capFor(2) = capBase(200) + 1*capPerLevel(100) = 300
+      // tieJiangChang: capFor(2) = capBase(450) + 1*capPerLevel(450) = 900
+      //（2026-06-25 cap 对齐 72h 后 200/100 → 450/450）
       // stored = 50.floor() = 50
       expect(
-        find.text(UiStrings.taohuaIslandStorageLabel(50, 300)),
+        find.text(UiStrings.taohuaIslandStorageLabel(50, 900)),
         findsOneWidget,
       );
     });
