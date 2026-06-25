@@ -26,12 +26,12 @@ import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
-/// T32 子提交 3b：[MainMenu] widget 测试（T42 加「问鼎九霄」T49 加「闭关修炼」+ W17 候选 E 加「师徒名单」+ P0.2 #40 加「排行榜」+ P1b Task10 加「藏经阁」后扩 10 个）。
+/// T32 子提交 3b：[MainMenu] widget 测试（T42 加「问鼎九霄」T49 加「闭关修炼」+ W17 候选 E 加「师徒名单」+ P0.2 #40 加「排行榜」+ P1b Task10 加「藏经阁」+ 桃花岛 P1 Task13 后扩 10 个+1 个）。
 ///
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
-///   - 菜单按钮 label 匹配（主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法 / 藏经阁）
-///   - 20 个菜单入口 WuxiaInkButton（按钮全部可点）+ 右上角退出键 = 21 InkWell
+///   - 菜单按钮 label 匹配（主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法 / 藏经阁 / 桃花岛）
+///   - 21 个菜单入口 WuxiaInkButton（按钮全部可点）+ 右上角退出键 = 22 InkWell
 ///   - Tap "Phase 1 战斗测试" → push BattleTestMenu
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
@@ -63,7 +63,7 @@ void main() {
     expect(assetImage(WuxiaUi.mainMenuBg), findsOneWidget);
   });
 
-  testWidgets('20 个菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('21 个菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -72,6 +72,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
     expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPvp), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuTaohuaIsland), findsOneWidget);
     expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSect), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLeaderboard), findsOneWidget);
@@ -123,11 +124,11 @@ void main() {
     expect(y(UiStrings.mainMenuJianghu) < y(UiStrings.mainMenuBaike), isTrue);
   });
 
-  testWidgets('20 个菜单按钮均为 InkWell（可点）', (tester) async {
+  testWidgets('21 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    // 20 个菜单入口(WuxiaInkButton)+ 右上角退出键(IconButton)= 21 个 InkWell。
-    expect(find.byType(WuxiaInkButton), findsNWidgets(20));
-    expect(find.byType(InkWell), findsNWidgets(21));
+    // 21 个菜单入口(WuxiaInkButton)+ 右上角退出键(IconButton)= 22 个 InkWell。
+    expect(find.byType(WuxiaInkButton), findsNWidgets(21));
+    expect(find.byType(InkWell), findsNWidgets(22));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
@@ -990,6 +991,114 @@ void main() {
 
       await tester.tap(find.text(UiStrings.mainMenuShop));
       await tester.pump(); // 单帧，不 settle
+
+      expect(observer.pushedRoutes.length, 2);
+      expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
+    });
+  });
+
+  // ── 桃花岛 P1 Task13 · 第二章通关门控（§5.7 灰显式）────────────────────────
+  //
+  // unlock_chapter_index=1(0-based) → chapterIndex=2(1-based stages.yaml)通关解锁。
+  // 用 mainlineProgressProvider override 注入 clearedStageIds 模拟两态：
+  //   ① 空进度 → taohuaLocked=true → Opacity=0.4 + LockedHint
+  //   ② 第二章所有关卡(stage_02_01~stage_02_05)通关 → taohuaLocked=false → Opacity=1.0 + Hint
+
+  group('§5.7 桃花岛入口门控', () {
+    double opacityOf(WidgetTester tester, String label) => tester
+        .widget<Opacity>(
+          find
+              .ancestor(of: find.text(label), matching: find.byType(Opacity))
+              .first,
+        )
+        .opacity;
+
+    Widget appWithCleared(List<String> cleared) => ProviderScope(
+      overrides: [
+        mainlineProgressProvider.overrideWith(
+          (ref) async => MainlineProgress()..clearedStageIds = cleared,
+        ),
+      ],
+      child: const MaterialApp(home: MainMenu()),
+    );
+
+    testWidgets('空进度 → 桃花岛 disabled(Opacity=0.4) + LockedHint', (tester) async {
+      await tester.pumpWidget(appWithCleared([]));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuTaohuaIsland), findsOneWidget);
+      expect(opacityOf(tester, UiStrings.mainMenuTaohuaIsland), 0.4);
+      expect(
+        find.text(UiStrings.mainMenuTaohuaIslandLockedHint),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.mainMenuTaohuaIslandHint), findsNothing);
+    });
+
+    testWidgets('仅通关第一章末关 → 桃花岛仍灰显', (tester) async {
+      await tester.pumpWidget(appWithCleared(['stage_01_05']));
+      await tester.pump();
+      await tester.pump();
+
+      expect(opacityOf(tester, UiStrings.mainMenuTaohuaIsland), 0.4);
+      expect(
+        find.text(UiStrings.mainMenuTaohuaIslandLockedHint),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('通关第二章所有关(stage_02_01~05) → 桃花岛解锁(Opacity=1.0) + Hint', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        appWithCleared([
+          'stage_02_01',
+          'stage_02_02',
+          'stage_02_03',
+          'stage_02_04',
+          'stage_02_05',
+        ]),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(opacityOf(tester, UiStrings.mainMenuTaohuaIsland), 1.0);
+      expect(find.text(UiStrings.mainMenuTaohuaIslandHint), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuTaohuaIslandLockedHint), findsNothing);
+    });
+
+    testWidgets('解锁态 → tap 桃花岛 → Navigator.push 触发', (tester) async {
+      final observer = _RecordingNavigatorObserver();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            mainlineProgressProvider.overrideWith(
+              (ref) async => MainlineProgress()
+                ..clearedStageIds = [
+                  'stage_02_01',
+                  'stage_02_02',
+                  'stage_02_03',
+                  'stage_02_04',
+                  'stage_02_05',
+                ],
+            ),
+          ],
+          child: MaterialApp(
+            navigatorObservers: [observer],
+            home: const MainMenu(),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      await tester.binding.setSurfaceSize(const Size(800, 3000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pump();
+
+      expect(observer.pushedRoutes.length, 1);
+      await tester.tap(find.text(UiStrings.mainMenuTaohuaIsland));
+      await tester.pump(); // 单帧，不 settle（子屏依赖 Isar）
 
       expect(observer.pushedRoutes.length, 2);
       expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
