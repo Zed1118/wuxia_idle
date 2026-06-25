@@ -24,6 +24,7 @@ class IslandProductionService {
     required double elapsedHours,
     required int founderRealmIndex,
   }) {
+    // 步骤 1:深拷贝输入(保证纯函数)
     final result = states.map((s) => s.copy()).toList();
 
     // capHours 封顶 = 防无限堆积红线
@@ -54,13 +55,14 @@ class IslandProductionService {
 
       // 找源建筑：其 outputItem == 本 processor 的 inputItem 的那个 source
       final inputItem = cfg.inputItem;
+      if (inputItem == null) continue;
       IslandBuildingState? sourceState;
       for (final candidate in result) {
         final cCfg = config.buildingOf(candidate.type);
         if (cCfg.kind == BuildingKind.source &&
             cCfg.outputItem == inputItem) {
           sourceState = candidate;
-          break;
+          break; // 供应自洽校验保证最多一个 source 产此 item,取首个即可
         }
       }
       if (sourceState == null) continue; // 找不到源 → 跳过
@@ -70,7 +72,7 @@ class IslandProductionService {
       final byMaterial = sourceState.stored / recipe.inputPerOutput;
       var made = math.min(want, byMaterial);
       made = math.min(made, cap - s.stored); // 成品仓 cap 限
-      made = math.max(0.0, made); // 浮点负兜底（仓已满 / 源料为 0）
+      made = math.max(0.0, made); // 浮点负兜底:也覆盖 stored > cap 的历史存量(cap 调低后存量合法超限)
 
       sourceState.stored -= made * recipe.inputPerOutput; // 扣源料
       s.stored += made; // 产成品
