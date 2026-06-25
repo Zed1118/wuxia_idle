@@ -1,6 +1,7 @@
 import '../../../core/domain/enums.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
 import '../../encounter/domain/encounter_def.dart' show AttributeKey;
+import '../../taohua_island/domain/island_building_type.dart';
 import 'battle_state.dart' show BattleResult;
 
 /// enum → 中文显示名的集中本地化层。
@@ -254,4 +255,15 @@ class EnumL10n {
         BossMemorySource.mainline => '主线征程',
         BossMemorySource.tower => '爬塔问鼎',
       };
+
+  /// 桃花岛建筑显示名（GDD 桃花岛 Phase 2 · §5.6 合法集中 sink）。
+  /// switch 穷尽，增删 [BuildingType] 值编译期报漏。
+  static String buildingType(BuildingType t) {
+    return switch (t) {
+      BuildingType.tieJiangChang => '铁匠厂',
+      BuildingType.caoYaoYuan => '草药园',
+      BuildingType.daZaoTai => '打造台',
+      BuildingType.danFang => '丹房',
+    };
+  }
 }
