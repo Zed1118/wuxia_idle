@@ -26,7 +26,9 @@ class IslandHarvest {
 ///   更新 islandLastSettledAt、写 InventoryItem。
 ///
 /// **所有方法均接受 SaveData 实例**（调用前由调用方从 Isar 取出），
-/// 内部用单一 writeTxn 完成持久化，避免多 txn 竞态。
+/// 内部各用单一 writeTxn 完成持久化，避免多 txn 竞态。harvest 的
+/// gainedMap 统计与 stored 扣减在同一个 txn 内、基于同一个 save 快照
+/// 完成，保证背包入账与 stored 扣除严格一致、无竞态窗口。
 class IslandSettleService {
   IslandSettleService._();
 
@@ -88,6 +90,7 @@ class IslandSettleService {
 
     final isar = IsarSetup.instance;
     await isar.writeTxn(() async {
+      // txn 内重新 get 取最新版本，不复用 txn 外 save 快照
       final s = (await isar.saveDatas.get(0))!;
       s.islandBuildings = buildings;
       s.islandLastSettledAt = now;
@@ -123,6 +126,7 @@ class IslandSettleService {
 
     final isar = IsarSetup.instance;
     await isar.writeTxn(() async {
+      // txn 内重新 get 取最新版本，不复用 txn 外 save 快照
       final s = (await isar.saveDatas.get(0))!;
       s.islandBuildings = newStates;
       s.islandLastSettledAt = now;
@@ -136,70 +140,58 @@ class IslandSettleService {
   ///
   /// - 小数尾保留在 stored 中（float continuity）。
   /// - 每种成品 defId 对应一条 InventoryItem，已有则累加 quantity。
-  /// - writeTxn 一次性写 save + 全部 inventory。
+  /// - settle 串行完成后，harvest 开单一 writeTxn：在同一 save 快照内同时
+  ///   统计 gainedMap、扣减 stored 小数尾、写 InventoryItem，保证背包入账
+  ///   与 stored 扣除来自同一次读取、严格一致、无竞态窗口。
   static Future<IslandHarvest> harvest(SaveData save, DateTime now) async {
-    // 先 settle
+    // 先 settle（settle 自己的 txn 串行完成，harvest 之后再开自己的 txn）
     await settle(save, now);
 
     final isar = IsarSetup.instance;
     final cfg = GameRepository.instance.numbers.taohuaIsland;
 
-    // 读最新 save（settle 已写回）
-    final latestSave = (await isar.saveDatas.get(0))!;
-    final states = latestSave.islandBuildings;
-
-    // 统计各建筑整数成品
+    // gainedMap 在 writeTxn 内、基于同一 save 快照计算，与 stored 扣减严格一致
     final gainedMap = <String, int>{};
 
-    for (final s in states) {
-      final bCfg = cfg.buildings[s.type]!;
-      final floored = s.stored.floor();
-      if (floored <= 0) continue;
-
-      // 取成品 defId：source 取 outputItem，processor 取当前激活配方的 outputItem
-      String? outputDefId;
-      if (bCfg.kind == BuildingKind.source) {
-        outputDefId = bCfg.outputItem;
-      } else {
-        final recipeId = s.activeRecipeId;
-        if (recipeId == null) continue;
-        outputDefId = bCfg.recipeById(recipeId)?.outputItem;
-      }
-      if (outputDefId == null) continue;
-
-      gainedMap[outputDefId] = (gainedMap[outputDefId] ?? 0) + floored;
-    }
-
-    if (gainedMap.isEmpty) {
-      return const IslandHarvest({});
-    }
-
-    // writeTxn 一次写 save(扣 stored) + inventory
     await isar.writeTxn(() async {
+      // txn 内重新 get 取最新版本，不复用 txn 外 save 快照
       final s = (await isar.saveDatas.get(0))!;
 
-      // 扣除 floor 部分，保留小数尾
+      // 统计各建筑整数成品，同时扣除 floor 部分、保留小数尾
       final newStates = s.islandBuildings.map((b) {
         final copy = b.copy();
         final bCfg = cfg.buildings[b.type]!;
+
+        // 取成品 defId：source 取 outputItem，processor 取激活配方的 outputItem
+        String? outputDefId;
         if (bCfg.kind == BuildingKind.source) {
-          final floored = b.stored.floor();
-          if (floored > 0) copy.stored = b.stored - floored;
+          outputDefId = bCfg.outputItem;
         } else {
           final recipeId = b.activeRecipeId;
           if (recipeId != null) {
-            final floored = b.stored.floor();
-            if (floored > 0) copy.stored = b.stored - floored;
+            outputDefId = bCfg.recipeById(recipeId)?.outputItem;
           }
         }
+
+        final floored = b.stored.floor();
+        if (floored > 0 && outputDefId != null) {
+          gainedMap[outputDefId] = (gainedMap[outputDefId] ?? 0) + floored;
+          copy.stored = b.stored - floored; // 保留小数尾
+        }
+
         return copy;
       }).toList();
+
+      if (gainedMap.isEmpty) {
+        // 无成品：仍需写回（newStates 无变化，但保持 txn 完整性）
+        // 不写 inventory，直接返回即可（txn 内无法提前 return，用 flag 跳过）
+        return;
+      }
 
       s.islandBuildings = newStates;
       await isar.saveDatas.put(s);
 
       // 写入背包（与 offline_passive_service 相同路径）
-      final txNow = now;
       for (final entry in gainedMap.entries) {
         final defId = entry.key;
         final qty = entry.value;
@@ -208,18 +200,22 @@ class IslandSettleService {
         final existing = await isar.inventoryItems.getByDefId(defId);
         if (existing != null) {
           existing.quantity += qty;
-          existing.lastObtainedAt = txNow;
+          existing.lastObtainedAt = now;
           await isar.inventoryItems.put(existing);
         } else {
           await isar.inventoryItems.put(InventoryItem()
             ..defId = defId
             ..itemType = itemType
             ..quantity = qty
-            ..firstObtainedAt = txNow
-            ..lastObtainedAt = txNow);
+            ..firstObtainedAt = now
+            ..lastObtainedAt = now);
         }
       }
     });
+
+    if (gainedMap.isEmpty) {
+      return const IslandHarvest({});
+    }
 
     return IslandHarvest(gainedMap);
   }
