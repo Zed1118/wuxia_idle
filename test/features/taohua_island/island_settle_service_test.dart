@@ -277,4 +277,17 @@ void main() {
     final updated = (await isar.saveDatas.get(0))!;
     expect(updated.islandLastSettledAt, now);
   });
+
+  // ── T8: founderRealmIndex 公开化——直接调用返回正确 index ─────────────────
+  test('T8: founderRealmIndex public helper：有 founder 时返回正确 realmTier.index', () async {
+    await seedFounder(tier: RealmTier.erLiu); // erLiu = 二流，index 应为 2
+    final isar = IsarSetup.instance;
+    final save = (await isar.saveDatas.get(0))!;
+
+    final idx = await IslandSettleService.founderRealmIndex(save);
+    // RealmTier.erLiu.index 根据 enum 顺序：xueTu=0, sanLiu=1, erLiu=2
+    expect(idx, RealmTier.erLiu.index,
+        reason: 'founderRealmIndex 公开化后应与 founder.realmTier.index 一致');
+    expect(idx, 2, reason: '二流境界 index=2');
+  });
 }
