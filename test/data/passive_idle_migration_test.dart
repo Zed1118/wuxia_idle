@@ -30,8 +30,8 @@ void main() {
     expect(save.totalPassiveExperience, 0);
   });
 
-  test('saveVersion 标记为 0.28.0', () async {
+  test('saveVersion 标记为 0.29.0', () async {
     final save = (await IsarSetup.currentSaveData())!;
-    expect(save.saveVersion, '0.28.0');
+    expect(save.saveVersion, '0.29.0');
   });
 }
