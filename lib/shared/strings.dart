@@ -839,6 +839,13 @@ class UiStrings {
   static const String lootTowerFirstClearOnlyFooter = '塔层传闻仅首通可得，错过不补';
   // F2(续48)·主线秘籍逐条首通门控脚注（装备/材料每次可掉，仅秘籍首通必得）。
   static const String lootMainlineScrollFirstClearFooter = '秘籍首通必得，重打不补';
+  // 第八阶段 B/C·悬停预览浮层:推荐境界 + 难度判语(对齐 §5.5 境界差档)。
+  static const String previewRecommendedRealmLabel = '推荐境界';
+  static const String previewHoverHint = '悬停查看';
+  static const String difficultyComfortable = '碾压';
+  static const String difficultySuitable = '适中';
+  static const String difficultyRisky = '偏高';
+  static const String difficultyDeadly = '送死';
 
   // === 第七阶段批二 ② · 弱点/抗性「事后可查」战前提示（通关后才显，§5.7）===
   // X = 流派显示名（EnumL10n.school）。水墨口吻，不写「弱点/抗性」直白词。

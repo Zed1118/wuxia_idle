@@ -13,6 +13,7 @@ import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/presentation/loot_rumor_dialog.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';
+import '../../loot_preview/presentation/stage_preview_card.dart';
 import '../../loot_preview/presentation/weakness_hint_line.dart';
 import '../../sweep/application/sweep_unit.dart';
 import '../../sweep/domain/sweep_eligibility.dart';
@@ -343,7 +344,15 @@ class _StageRow extends StatelessWidget {
       def.dropTable,
       gating: FirstClearGating.scrollOnly,
     );
-    return Material(
+    // 第八阶段 C·悬停预览浮层:推荐境界(B 难度判语)+ 掉落传闻。包整张卡片,
+    // overlay 出流不占列表高度(不挤出靠后关·守 viewport 回归)。info 图标点击式保留作 fallback。
+    return StagePreviewHoverCard(
+      preview: StagePreviewContent(
+        recommendedRealm: def.requiredRealm,
+        rumorTable: rumor,
+        playerRealm: currentRealm,
+      ),
+      child: Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
@@ -452,6 +461,7 @@ class _StageRow extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }
