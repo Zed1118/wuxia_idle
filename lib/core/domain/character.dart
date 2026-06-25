@@ -29,6 +29,14 @@ class Character {
   /// 归 0 即清。在身时:战斗输出 ×residue_debuff.battle_output_multiplier +
   /// 闭关内力产出 ×internal_force_recovery_multiplier。
   double innerDemonResidueHoursRemaining = 0;
+
+  /// 轻伤(疲劳)累积层数。连战每场 +1,挂机 tick/闭关收功清零。减速度。
+  int lightInjuryStacks = 0;
+
+  /// 重伤(内伤)疗养剩余真实小时(0=痊愈)。硬仗战败/惨胜设值,挂机/闭关递减。
+  /// 仿 innerDemonResidueHoursRemaining 体例。带伤可出战(debuff 生效)。
+  double injuryHoursRemaining = 0;
+
   int experience = 0;
   int experienceToNextLayer = 100;
 
@@ -135,6 +143,8 @@ class Character {
     int internalForce = 0,
     int internalForceMax = 500,
     double innerDemonResidueHoursRemaining = 0,
+    int lightInjuryStacks = 0,
+    double injuryHoursRemaining = 0,
     int experience = 0,
     int experienceToNextLayer = 100,
     int insightPoints = 0,
@@ -176,6 +186,8 @@ class Character {
       ..internalForce = internalForce
       ..internalForceMax = internalForceMax
       ..innerDemonResidueHoursRemaining = innerDemonResidueHoursRemaining
+      ..lightInjuryStacks = lightInjuryStacks
+      ..injuryHoursRemaining = injuryHoursRemaining
       ..experience = experience
       ..experienceToNextLayer = experienceToNextLayer
       ..insightPoints = insightPoints
