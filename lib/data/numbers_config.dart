@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../features/injury/domain/injury_config.dart';
 import '../features/inner_demon/domain/inner_demon_def.dart';
 import '../features/light_foot/domain/light_foot_def.dart';
 import '../features/mass_battle/domain/mass_battle_def.dart';
@@ -144,6 +145,12 @@ class NumbersConfig {
   /// `festivals` 段时 [FestivalConfig.empty]。
   final FestivalConfig festivals;
 
+  /// 双层伤势系统配置（numbers.yaml `injury`，第八阶段 2026-06-25）。
+  ///
+  /// 轻伤叠层扣速度 + 重伤惨胜判定 + 疗养时长。
+  /// fixture 不带 `injury` 段时走缺省值（[InjuryConfig.fromYaml] 空 map 兜底）。
+  final InjuryConfig injury;
+
   /// 心魔系统配置（numbers.yaml `inner_demon`，1.0 P2.2 §12.1）。
   ///
   /// 7 关镜像玩家 character +10-20% 强化 + §5.4 cap + 散功 ×0.5 阉割版失败惩罚。
@@ -256,6 +263,7 @@ class NumbersConfig {
     required this.animation,
     required this.retreat,
     required this.festivals,
+    required this.injury,
     required this.innerDemon,
     required this.lightFoot,
     required this.massBattle,
@@ -378,6 +386,9 @@ class NumbersConfig {
       ),
       festivals: FestivalConfig.fromYaml(
         y['festivals'] as Map<String, dynamic>?,
+      ),
+      injury: InjuryConfig.fromYaml(
+        (y['injury'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
       innerDemon: InnerDemonDef.fromYaml(
         y['inner_demon'] as Map<String, dynamic>?,
