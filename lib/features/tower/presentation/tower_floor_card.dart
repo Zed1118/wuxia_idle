@@ -6,6 +6,7 @@ import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/presentation/loot_rumor_dialog.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';
+import '../../loot_preview/presentation/stage_preview_card.dart';
 import '../../loot_preview/presentation/weakness_hint_line.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
@@ -188,7 +189,19 @@ class _FloorPlaque extends StatelessWidget {
         ? const Color(0xFF151618)
         : const Color(0xFF171B20);
 
-    return ConstrainedBox(
+    // 第八阶段 C·悬停预览浮层(塔层 wholeChannel 门控:整渠道首通必得)。推荐境界
+    // (B 难度判语)+ 掉落传闻。overlay 出流不占列表高度(不挤出靠后层·守 viewport 回归)。
+    final previewRumor = DropRumorTable.fromDropTable(
+      def.dropTable,
+      gating: FirstClearGating.wholeChannel,
+    );
+    return StagePreviewHoverCard(
+      preview: StagePreviewContent(
+        recommendedRealm: def.requiredRealm,
+        rumorTable: previewRumor,
+        playerRealm: currentRealm,
+      ),
+      child: ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 720),
       child: Material(
         color: Colors.transparent,
@@ -365,6 +378,7 @@ class _FloorPlaque extends StatelessWidget {
             ),
           ),
         ),
+      ),
       ),
     );
   }
