@@ -812,13 +812,15 @@ Future<
         ),
       );
       // 第八阶段·角色等级 Lv:与境界 EXP 同源并行喂(全局连续涨)。in-place 写
-      // c.level/levelExp,随后续 writeTxn 持久。
-      LevelService.applyLevelExp(
+      // c.level/levelExp,随后续 writeTxn 持久。升级结果供 victory「晋 Lv N」反馈(D)。
+      final lvUp = LevelService.applyLevelExp(
         c,
         stage.baseExpReward,
         config: GameRepository.instance.numbers.level,
       );
-      advancements.add(AdvancementEntry(chName: c.name, result: r));
+      advancements.add(
+        AdvancementEntry(chName: c.name, result: r, levelUp: lvUp),
+      );
     }
   }
 
