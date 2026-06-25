@@ -8,6 +8,8 @@ import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../data/defs/item_def.dart';
 import '../../../data/defs/realm_def.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../level/application/level_service.dart';
+import '../../level/domain/level_config.dart';
 
 /// 材料经济 P2：道具"使用"派发服务。
 ///
@@ -25,6 +27,8 @@ class ItemUseService {
     required ItemDef def,
     required RealmDef Function(RealmTier, RealmLayer) realmLookup,
     bool Function(RealmTier, RealmLayer)? isLayerLocked,
+    // 第八阶段·角色等级 Lv:经验丹增益与境界 EXP 同源并行喂(null=测试不动)。
+    LevelConfig? levelConfig,
   }) async {
     return isar.writeTxn(() async {
       final item = await isar.inventoryItems.getByDefId(def.defId);
@@ -49,6 +53,9 @@ class ItemUseService {
             realmLookup: realmLookup,
             isLayerLocked: isLayerLocked,
           );
+          if (levelConfig != null) {
+            LevelService.applyLevelExp(founder, gain, config: levelConfig);
+          }
           await isar.characters.put(founder);
           await _consumeOne(isar, item);
           return ItemUseResult(

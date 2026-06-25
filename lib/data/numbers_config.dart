@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../features/injury/domain/injury_config.dart';
+import '../features/level/domain/level_config.dart';
 import '../features/inner_demon/domain/inner_demon_def.dart';
 import '../features/light_foot/domain/light_foot_def.dart';
 import '../features/mass_battle/domain/mass_battle_def.dart';
@@ -152,6 +153,12 @@ class NumbersConfig {
   /// fixture 不带 `injury` 段时走缺省值（[InjuryConfig.fromYaml] 空 map 兜底）。
   final InjuryConfig injury;
 
+  /// 角色等级 Lv 配置（numbers.yaml `level`，第八阶段 2026-06-26）。
+  ///
+  /// 升级曲线 + per-level maxHp/内力/速度有界加成（hp/内力经 §5.4 clamp 守红线）。
+  /// fixture 不带 `level` 段时走缺省值（[LevelConfig.fromYaml] 空 map 兜底=生产初值）。
+  final LevelConfig level;
+
   /// 心魔系统配置（numbers.yaml `inner_demon`，1.0 P2.2 §12.1）。
   ///
   /// 7 关镜像玩家 character +10-20% 强化 + §5.4 cap + 散功 ×0.5 阉割版失败惩罚。
@@ -268,6 +275,7 @@ class NumbersConfig {
     required this.retreat,
     required this.festivals,
     required this.injury,
+    required this.level,
     required this.innerDemon,
     required this.lightFoot,
     required this.massBattle,
@@ -391,6 +399,9 @@ class NumbersConfig {
       ),
       festivals: FestivalConfig.fromYaml(
         y['festivals'] as Map<String, dynamic>?,
+      ),
+      level: LevelConfig.fromYaml(
+        (y['level'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
       injury: InjuryConfig.fromYaml(
         (y['injury'] as Map?)?.cast<String, dynamic>() ?? const {},

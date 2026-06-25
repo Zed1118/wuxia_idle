@@ -705,6 +705,7 @@ class _MaterialRow extends ConsumerWidget {
         innerDemonDef: innerDemonDef,
         clearedStageIds: clearedSet,
       ),
+      levelConfig: GameRepository.instance.numbers.level,
     );
 
     // 背包数量 + 角色经验/境界刷新。

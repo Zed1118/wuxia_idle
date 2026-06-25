@@ -16,6 +16,7 @@ import '../../mainline/domain/mainline_progress.dart';
 import '../../../core/domain/technique.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/synergy_service.dart';
+import '../../level/application/level_service.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../event/application/game_event_service.dart';
 import '../../tutorial/application/tutorial_service.dart';
@@ -455,6 +456,12 @@ class SeclusionService {
               innerDemonDef: innerDemonDef,
               clearedStageIds: clearedSet,
             ),
+          );
+          // 第八阶段·角色等级 Lv:与境界 EXP 同源并行喂(闭关收功 · 在线=离线守 §5.5)。
+          LevelService.applyLevelExp(
+            ch,
+            outputs.experiencePoints,
+            config: GameRepository.instance.numbers.level,
           );
         }
         ch.currentRetreatSessionId = null;
