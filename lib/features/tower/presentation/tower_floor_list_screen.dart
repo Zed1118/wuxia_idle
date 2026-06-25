@@ -32,11 +32,18 @@ class TowerFloorListScreen extends ConsumerStatefulWidget {
 
 class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
   final _scrollController = ScrollController();
-  bool _hasScrolled = false;
 
-  // 与 tower_floor_card.dart 的时间线 SizedBox(height: 96) 保持同步；仅用于滚动估算，
-  // 偏差 ±10px 不影响正确性。改卡片高度时同步此值，否则可能重现列表滚动错位。
-  static const double _kCardHeight = 96.0;
+  // 上次已滚动到的 available 层 index。2026-06-25:从一次性 `_hasScrolled` 改为
+  // 跟踪 available index——通关一层后 available 推进到下一层(index 变化)即重新滚到
+  // 新 available 层,玩家不必再从头往下滑找下一层。null=尚未滚过。
+  int? _lastAvailableIndex;
+
+  // 滚动偏移估算用的单卡高度(含 Padding vertical:6 → 卡片外高 ≈ 内容高+12)。
+  // 时间线模式卡片已改 IntrinsicHeight 高度可变,这里取保守估值:普通层 ~108、
+  // Boss 层 ~124(已通关 Boss 含弱点行更高)。仅用于滚动落点估算,±1 卡可接受
+  // (skipLoadingOnReload 已保住既有 offset,本估算只负责把新 available 带进视野)。
+  static const double _kCardHeightNormal = 108.0;
+  static const double _kCardHeightBoss = 124.0;
 
   @override
   void dispose() {
@@ -44,20 +51,25 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
     super.dispose();
   }
 
+  /// available 层 index 变化时(首次进入 / 通关推进)滚到该层附近。
   void _maybeScrollToAvailable(List<TowerFloorEntry> entries) {
-    if (_hasScrolled) return;
-    _hasScrolled = true;
     final idx = entries.indexWhere(
       (e) => e.status == TowerFloorStatus.available,
     );
+    if (idx == _lastAvailableIndex) return; // available 未变 → 不重复滚
+    _lastAvailableIndex = idx;
     if (idx <= 0) return; // 已在顶部或无 available
+    // Boss-aware 累加估算偏移(取代旧的 idx×96 等距估算,后者随楼层累积越偏越多)。
+    var offset = 0.0;
+    for (var j = 0; j < idx && j < entries.length; j++) {
+      offset +=
+          entries[j].def.isBoss ? _kCardHeightBoss : _kCardHeightNormal;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
       final pos = _scrollController.position;
       if (!pos.hasContentDimensions) return;
-      _scrollController.jumpTo(
-        (idx * _kCardHeight).clamp(0.0, pos.maxScrollExtent),
-      );
+      _scrollController.jumpTo(offset.clamp(0.0, pos.maxScrollExtent));
     });
   }
 
@@ -90,7 +102,12 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
         foregroundColor: WuxiaColors.textPrimary,
       ),
       body: SafeArea(
+        // skipLoadingOnReload:通关后 invalidate(towerProgressProvider) 重载时
+        // 不退回 loading 占位 → ListView 不被销毁、滚动 offset 不复位到顶部(第1层)。
+        // 这是「通关后复位到最底层、要往下滑半天」的根因修复;配合 _maybeScrollToAvailable
+        // 在 available 推进时把下一层带进视野。
         child: progressAsync.when(
+          skipLoadingOnReload: true,
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
@@ -99,6 +116,7 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
             ),
           ),
           data: (progress) => floorListAsync.when(
+            skipLoadingOnReload: true,
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(
               child: SelectableText(

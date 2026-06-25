@@ -40,7 +40,9 @@ void main() {
     expect(find.textContaining('12000'), findsOneWidget);
     expect(find.byType(CeremonyImagePanel), findsOneWidget);
     expect(_assetImage(WuxiaUi.ceremonyVictoryTag), findsOneWidget);
-    expect(_assetImage(WuxiaUi.ceremonyRedSeal), findsOneWidget);
+    // 2026-06-25:大题字上方的小「武」印章已移除(显突兀/渲染弱) → 不应再出现。
+    expect(_assetImage(WuxiaUi.ceremonyRedSeal), findsNothing);
+    expect(find.text(UiStrings.sealGlyph), findsNothing);
     expect(find.byType(PlaqueButton), findsOneWidget);
     await tester.tap(find.text(UiStrings.battleContinue));
     expect(tapped, isTrue);

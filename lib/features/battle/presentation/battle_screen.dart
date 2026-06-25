@@ -130,6 +130,17 @@ int? hitTestEnemyId(
   return null;
 }
 
+/// 队列内某槽的竖直比例坐标(0..1),按**实际队伍人数** [teamSize] 均分:
+///   1 人 → 0.5(居中);2 人 → 0.25 / 0.75(上下对称);3 人 → 1/6,3/6,5/6(原行为)。
+///
+/// `_TeamColumn` 的视觉排布与 `_slotFrac` 的弹道坐标共用此式,保证头像位置与
+/// 弹道/特效落点一致(分母从旧的硬编码 3 改为 teamSize 是本次「1 怪居中 / 2 怪对称」
+/// 的唯一改动点)。teamSize ≤ 0 兜底 0.5 防除零。纯函数,单测直接验证。
+double slotVerticalFraction(int slotIndex, int teamSize) {
+  if (teamSize <= 0) return 0.5;
+  return (slotIndex + 0.5) / teamSize;
+}
+
 /// 拖招表现层静态验收预置态(仅 [BattleScreen.debugDragPreview] / battle_drag_preview
 /// 路由用)。拖招引导线/蓄势光晕/悬停高亮都靠长按拖手势触发,Codex 鼠标合成无法重现,
 /// 故用这个免手势预置态截图验新样式。生产路径不构造。
@@ -613,8 +624,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     final entry = _TrailEntry(
       id: _nextTrailId++,
       ctrl: ctrl,
-      startFrac: _slotFrac(actor.teamSide, actor.slotIndex),
-      endFrac: _slotFrac(target.teamSide, target.slotIndex),
+      startFrac: _slotFrac(
+          actor.teamSide, actor.slotIndex, _teamSizeOf(actor.teamSide)),
+      endFrac: _slotFrac(
+          target.teamSide, target.slotIndex, _teamSizeOf(target.teamSide)),
       color: WuxiaColors.schoolColor(actor.school),
       strokeWidth: isUltimateCaptionSkill(action.skill) ? 5.0 : 3.0,
     );
@@ -641,7 +654,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   ) {
     final result = action.attackResult;
     if (result == null) return;
-    final targetFrac = _slotFrac(target.teamSide, target.slotIndex);
+    final targetFrac = _slotFrac(
+        target.teamSide, target.slotIndex, _teamSizeOf(target.teamSide));
 
     if (result.isDodged) {
       _spawnEffect(
@@ -1021,12 +1035,18 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   static int _slotKey(int teamSide, int slotIndex) => teamSide * 3 + slotIndex;
 
-  /// 战场比例坐标（0..1）：左队 x=0.12 / 右队 x=0.88；三行 y=1/6,3/6,5/6。
+  /// 战场比例坐标（0..1）：左队 x=0.12 / 右队 x=0.88；竖直按队伍人数 [teamSize]
+  /// 均分(见 [slotVerticalFraction]):1 怪居中 / 2 怪对称 / 3 怪 1/6,3/6,5/6。
   /// 弹道层在 LayoutBuilder 内解析为像素，避免依赖 RenderBox（widget test 稳定）。
-  static Offset _slotFrac(int teamSide, int slotIndex) {
+  static Offset _slotFrac(int teamSide, int slotIndex, int teamSize) {
     final x = teamSide == 0 ? 0.12 : 0.88;
-    final y = (slotIndex + 0.5) / 3.0;
-    return Offset(x, y);
+    return Offset(x, slotVerticalFraction(slotIndex, teamSize));
+  }
+
+  /// 取某队当前人数(供 [_slotFrac] 竖直均分)。死亡单位保留在队列(灰显)故长度稳定。
+  int _teamSizeOf(int teamSide) {
+    final s = ref.read(battleProvider);
+    return teamSide == 0 ? s.leftTeam.length : s.rightTeam.length;
   }
 
   BattleCharacter? _findCharacter(int characterId, BattleState s) {
@@ -1883,36 +1903,35 @@ class _TeamColumn extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: alignment,
       children: [
-        for (var i = 0; i < 3; i++)
-          // P0-2 fix(2026-06-04 Codex 验收报 RenderFlex overflow 47px @1280×720):
-          // 每槽包 Expanded+FittedBox(scaleDown)——大窗保持原尺寸,最小窗自动等比
-          // 微缩不再溢出;alignment 锁外缘,头像维持 0.12/0.88 与 projectile 比例坐标对齐。
+        // 2026-06-25:只渲染 team.length 个槽(去掉末尾空占位),Column 等分 → 1 怪
+        // 居中 / 2 怪上下对称 / 3 怪不变,与 _slotFrac 的 slotVerticalFraction 同步。
+        // P0-2 fix(2026-06-04 Codex 报 RenderFlex overflow @1280×720):每槽包
+        // Expanded+FittedBox(scaleDown)——大窗保持原尺寸,最小窗自动等比微缩不溢出;
+        // alignment 锁外缘,头像维持 0.12/0.88 与 projectile 比例坐标对齐。
+        for (var i = 0; i < team.length; i++)
           Expanded(
             child: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: isLeftTeam
                   ? Alignment.centerLeft
                   : Alignment.centerRight,
-              child: i < team.length
-                  ? _CharacterSlot(
-                      character: team[i],
-                      isLeftTeam: isLeftTeam,
-                      attackController: attackControllers[teamSide * 3 + i],
-                      slotPopups: popups[teamSide * 3 + i] ?? const [],
-                      animConfig: animConfig,
-                      chargeMaxTicks: chargeMaxTicks,
-                      slotKey: teamSide * 3 + i,
-                      onPopupComplete: onPopupComplete,
-                      hitFlashController: hitFlashControllers[teamSide * 3 + i],
-                      flashColor:
-                          hitFlashColors[teamSide * 3 + i] ?? Colors.white,
-                      avatarKey: i < avatarKeys.length ? avatarKeys[i] : null,
-                      hovered: hoveredEnemyId != null &&
-                          team[i].characterId == hoveredEnemyId,
-                      charging: rushActorId != null &&
-                          team[i].characterId == rushActorId,
-                    )
-                  : const SizedBox(width: 160, height: 80),
+              child: _CharacterSlot(
+                character: team[i],
+                isLeftTeam: isLeftTeam,
+                attackController: attackControllers[teamSide * 3 + i],
+                slotPopups: popups[teamSide * 3 + i] ?? const [],
+                animConfig: animConfig,
+                chargeMaxTicks: chargeMaxTicks,
+                slotKey: teamSide * 3 + i,
+                onPopupComplete: onPopupComplete,
+                hitFlashController: hitFlashControllers[teamSide * 3 + i],
+                flashColor: hitFlashColors[teamSide * 3 + i] ?? Colors.white,
+                avatarKey: i < avatarKeys.length ? avatarKeys[i] : null,
+                hovered: hoveredEnemyId != null &&
+                    team[i].characterId == hoveredEnemyId,
+                charging:
+                    rushActorId != null && team[i].characterId == rushActorId,
+              ),
             ),
           ),
       ],

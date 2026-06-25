@@ -48,7 +48,6 @@ class TowerFloorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final def = entry.def;
     final status = entry.status;
 
     final isLocked = status == TowerFloorStatus.locked;
@@ -73,8 +72,10 @@ class TowerFloorCard extends StatelessWidget {
           }
 
           final isLeft = stepSide == TowerFloorStepSide.left;
-          return SizedBox(
-            height: def.isBoss ? 100 : 96,
+          // 2026-06-25:改 IntrinsicHeight 让石阶 marker 随 plaque 自然高度伸展,
+          // 去掉旧的固定 SizedBox(100/96)——已通关 Boss 层多渲染弱点行时会超出固定高
+          // → "BOTTOM OVERFLOWED" 黄黑条纹。Row(stretch) 下 marker 自动等高,无溢出。
+          return IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
