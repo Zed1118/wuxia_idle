@@ -4,9 +4,10 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
+> **版本**:v1.18
+> **v1.18 变更**(2026-06-27 PVP 功能切除 · 保旧档兼容):PVP 从 1.0 范围彻底移除,不保留玩家入口/路由/provider/service/占位 UI/玩法配置;旧 `StageType.pvp` 与 `PvpRecord`/`PvpSnapshot` 仅作存档兼容忽略。§12 与 1.0 内容表同步改为无 PVP。
 > **版本**:v1.17
 > **v1.17 变更**(2026-06-11 阶段切换 + drift 清账 · 0 改数值规则层):① **项目进入「1.0 长线打磨期」**(用户拍板:长期打磨质量,不设上线时间压力)——§1.1 平台/里程碑行对齐,冻结 v1.16 基线快照;② §11 工作流重写:DeepSeek 双端分工(v1.8 已退役)与「Riverpod 或 BLoC」全对齐现实(Mac 单端 + Riverpod 3.x + Windows AI 工具 2026-06-11 全下线);③ §12 导语从「Demo 阶段不实现」改为实装现状索引(心魔/帮派/轻功/群战/第二主线/江湖恩怨/声望均已落地),江湖恩怨+声望两行补实装注;④ 头部 v1.1-v1.16 变更摘要迁 `docs/_archive/GDD_CHANGELOG.md`。
-> **版本**:v1.16(§7.1 飞升 P5+ UI polish 全完结 · 1300 pass / 0 analyze · 详 `docs/_archive/GDD_CHANGELOG.md`)
 
 ---
 
@@ -653,7 +654,7 @@ data/
 
 ## 12. 未来扩展
 
-> **v1.17 导语更新**：本节原为 Demo 期「不实现、留接口」清单；1.0 内容周期已把多数系统实装（各行内有 ✅ 实装注）。**已实装**：心魔（§12.1）/ 帮派门派（§12.2）/ 江湖恩怨+声望（§12.1/§12.2，P1.2）/ 轻功对决+群战（§12.3）/ 第二条主线 Ch4-6（§12.4）/ 节日 encounter 内容层。**仍未启动**：门派事件 / 婚姻后代 / PVP / 节日活动系统级框架 / MOD / §12.5 长期愿景——动这些前必须先回到本文档讨论。
+> **v1.18 导语更新**：本节原为 Demo 期「不实现、留接口」清单；1.0 内容周期已把多数系统实装（各行内有 ✅ 实装注）。**已实装**：心魔（§12.1）/ 帮派门派（§12.2）/ 江湖恩怨+声望（§12.1/§12.2，P1.2）/ 轻功对决+群战（§12.3）/ 第二条主线 Ch4-6（§12.4）/ 节日 encounter 内容层。**已切除 / 不启动**：PVP（不保留入口、service、UI、玩法配置;仅保旧档 schema 兼容）/ 门派事件 / 婚姻后代 / 节日活动系统级框架 / MOD / §12.5 长期愿景——动这些前必须先回到本文档讨论。
 
 ### 12.1 剧情与世界
 
@@ -671,7 +672,7 @@ data/
 
 - **轻功对决**:在水面、屋脊、竹林上的特殊战斗形态。**v1.12 1.0 P3.1.B 子批收尾 ✅**(2026-05-24 branch `feat/p3_1_b` 主 cwd · 3 commit · 1242 pass / 0 analyze):damage_multiplier 真接入 `BattleCharacter.attackPowerMultiplier`(double default=1.0)+ `default_ground_strategy._calculateInBattle` raw 末乘 + `LightFootStrategy._bake` 烘焙(双方对等)+ R6 4 测;`skills.yaml +18` 招 lightfoot pool(yiLiu 9 招 cap=3000 + jueDing 9 招 cap=4000 · parentTechniqueDefId: null)+ stages.yaml stage_light_foot_01..05 enemyTeam.skillIds 全切到新池。R5.1 实测 bamboo stage_03 draws 4→1(双方等比削减,玩家主导未变)。**v1.11 1.0 P3.1 Batch 2.1-2.4 全收尾 ✅**(2026-05-23 夜 → 2026-05-24 晨,8h overnight worktree `feat/p3_1_lightfoot`,8 commit · 1238 pass / 0 analyze):5 关 `stage_light_foot_01..05` 跨 yiLiu(qiMeng/jingTong/dengFeng)+ jueDing(qiMeng/jingTong)2 Tier × 3 terrain(water/rooftop/bamboo)+ `LightFootStrategy` 组合委派 `DefaultGroundStrategy`(terrain modifier 烘焙到 BattleCharacter critRate/evasionRate/defenseRate · clamp ≤0.95 防红线破)+ `TerrainBiome` 独立 enum 3 项 + `numbers.yaml light_foot` 段(3 terrain × {crit/evasion/defense/damage} delta)+ 平行支线**不接管 wuSheng 突破链**(`isLayerLocked` 无 lightFoot 路径)+ unlock_triggers 链 `stage_06_05 → light_foot_01 → 02 → 03 → 04 → 05`。Batch 2.1-2.4 实装路径详 `docs/spec/p3_1_lightfoot_spec_2026-05-23.md`。
 - **群战 / 守城战**:5v5 或更大规模的特殊关卡。**v1.13 1.0 P3.2 Batch 2.1-2.5 全收尾 ✅**(2026-05-24 worktree `feat/p3_2_mass_battle` · 5 commit · 1268 pass / 0 analyze · ~2h opus xhigh / spec 估 6-7h):5 关 `stage_mass_battle_01..05` 跨 yiLiu(qiMeng/jingTong/dengFeng)+ jueDing(qiMeng/jingTong)2 Tier · wave 2-4 / enemy 5-7「以少胜多」· `MassBattleStrategy` 组合委派 `DefaultGroundStrategy`(immutable runToEnd 一次性跑完 wave 循环 · formation modifier 烘焙**仅 leftTeam** · clamp ≤0.95 防红线破 · `_intermission` HP+IF preserve / actionPoint+cd reset / result 清空)+ `Formation` enum 3 项(yanXing/baGua/fengShi)+ `numbers.yaml mass_battle` 段 50 行 + 平行支线**不接管 wuSheng 突破链**(`isLayerLocked` 无 massBattle 路径)+ unlock_triggers 链 `stage_06_05 → mass_battle_01 → 02 → 03 → 04 → 05` + narrative ~2.2k 字「不躁/不乱/不溃/不让/不忧」五处试炼。**架构决议**:R5 红线测直接调 runToEnd 不走 UI(UI tick by tick 战斗 wiring 留 Batch 3.x)。**挂账 P3.2.B 数值调优**:stage_03/04/05 R5.1 全 draws(玩家 3 vs 累计 17-26 敌 maxTicks=2000 不足)解法候选:wave 间 HP 部分回血 / 敌方后波数值递减 / maxTicks 放宽。详 `docs/handoff/p3_2_mass_battle_closeout_2026-05-24.md`。
-- **生死状 PVP**：异步 PVP，挑战其他玩家阵容（基于 Supabase）。
+- ~~**生死状 PVP**：异步 PVP，挑战其他玩家阵容（基于 Supabase）。~~ **已切除**（2026-06-27）：不保留玩家入口、路由、provider/service、占位 UI 或玩法配置；旧存档相关 schema 仅兼容忽略。
 
 ### 12.4 内容与节奏
 
@@ -700,7 +701,7 @@ data/
 | **武学领悟招式** | 30-50(实测 35) | **70** | 2× | 各阶 + 各流派 + 隐藏组合 |
 | **心法相生** | ≥5(实测 5) | **10-15** | 2-3× | 现有 5 + 1.0 P2 扩 5-10(跨流派 / 跨阶 / 师徒传承相生) |
 | **师徒角色** | 3 硬种 | **飞升传承动态扩展** | 系统级 | A1 飞升 E.2/E.3 + 遗物 transfer(GDD §7.1 + CLAUDE.md §12.2 #10) |
-| **战斗形态** | 1(地面 3v3) | **4**(地面 + 轻功 + 群战 + 异步 PVP) | 4× | P3 启动后扩 strategy 层 plug-in |
+| **战斗形态** | 1(地面 3v3) | **3**(地面 + 轻功 + 群战) | 3× | PVP 已切除;心魔作为突破关内容保留 |
 | **社交系统** | 0 | **4**(帮派 / 声望 / 江湖恩怨 / 门派事件) | 0→4 | P1.2 + P3.4 + P4.1 联合扩 |
 
 #### 1.0 P2 数值红线沿用

@@ -63,7 +63,7 @@ void main() {
     expect(assetImage(WuxiaUi.mainMenuBg), findsOneWidget);
   });
 
-  testWidgets('21 个菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('20 个菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -71,7 +71,6 @@ void main() {
     expect(find.text(UiStrings.mainMenuInnerDemon), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
     expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuPvp), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTaohuaIsland), findsOneWidget);
     expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSect), findsOneWidget);
@@ -116,19 +115,22 @@ void main() {
           2.0,
       isTrue,
     );
-    // 演武组行序(爬塔行 < 轻功行 < 论剑行)
+    // 演武组行序(爬塔行 < 轻功行 < 桃花岛行)
     expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuLightFoot), isTrue);
-    expect(y(UiStrings.mainMenuLightFoot) < y(UiStrings.mainMenuPvp), isTrue);
+    expect(
+      y(UiStrings.mainMenuLightFoot) < y(UiStrings.mainMenuTaohuaIsland),
+      isTrue,
+    );
     // 江湖组行序(师徒行 < 江湖行 < 百科行)
     expect(y(UiStrings.mainMenuLineage) < y(UiStrings.mainMenuJianghu), isTrue);
     expect(y(UiStrings.mainMenuJianghu) < y(UiStrings.mainMenuBaike), isTrue);
   });
 
-  testWidgets('21 个菜单按钮均为 InkWell（可点）', (tester) async {
+  testWidgets('20 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    // 21 个菜单入口(WuxiaInkButton)+ 右上角退出键(IconButton)= 22 个 InkWell。
-    expect(find.byType(WuxiaInkButton), findsNWidgets(21));
-    expect(find.byType(InkWell), findsNWidgets(22));
+    // 20 个菜单入口(WuxiaInkButton)+ 右上角退出键(IconButton)= 21 个 InkWell。
+    expect(find.byType(WuxiaInkButton), findsNWidgets(20));
+    expect(find.byType(InkWell), findsNWidgets(21));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
@@ -765,16 +767,16 @@ void main() {
       child: const MaterialApp(home: MainMenu()),
     );
 
-    testWidgets('全新存档(clearedStageIds 空)→ 心魔/PVP/门派 全 disabled', (
+    testWidgets('全新存档(clearedStageIds 空)→ 心魔/门派 disabled 且无 PVP 入口', (
       tester,
     ) async {
       await tester.pumpWidget(appWithCleared([]));
       await tester.pump();
       await tester.pump();
-      // 后期系统(Ch6 prereq)、PVP(Ch5)、社交(Ch1)在空进度全灰显。
+      // 后期系统(Ch6 prereq)、社交(Ch1)在空进度全灰显;PVP 已切除不再显示。
       expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
-      expect(opacityOf(tester, UiStrings.mainMenuPvp), 0.4);
       expect(opacityOf(tester, UiStrings.mainMenuSect), 0.4);
+      expect(find.text('论剑对决'), findsNothing);
     });
 
     testWidgets('通关 Ch1 末关(stage_01_05)→ 社交系统解锁、后期仍锁', (tester) async {
@@ -807,9 +809,7 @@ void main() {
     testWidgets('0 纪念 → 无战绩册入口（隐藏）', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            bossMemoryCountProvider.overrideWith((ref) async => 0),
-          ],
+          overrides: [bossMemoryCountProvider.overrideWith((ref) async => 0)],
           child: const MaterialApp(home: MainMenu()),
         ),
       );
@@ -822,9 +822,7 @@ void main() {
     testWidgets('≥1 纪念 → 有战绩册入口', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            bossMemoryCountProvider.overrideWith((ref) async => 1),
-          ],
+          overrides: [bossMemoryCountProvider.overrideWith((ref) async => 1)],
           child: const MaterialApp(home: MainMenu()),
         ),
       );
@@ -838,9 +836,7 @@ void main() {
       final observer = _RecordingNavigatorObserver();
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            bossMemoryCountProvider.overrideWith((ref) async => 3),
-          ],
+          overrides: [bossMemoryCountProvider.overrideWith((ref) async => 3)],
           child: MaterialApp(
             navigatorObservers: [observer],
             home: const MainMenu(),
@@ -892,10 +888,7 @@ void main() {
       await tester.pump();
 
       expect(find.text(UiStrings.mainMenuSkillLibrary), findsOneWidget);
-      expect(
-        opacityOf(tester, UiStrings.mainMenuSkillLibrary),
-        0.4,
-      );
+      expect(opacityOf(tester, UiStrings.mainMenuSkillLibrary), 0.4);
       expect(
         find.text(UiStrings.mainMenuSkillLibraryLockedHint),
         findsOneWidget,
@@ -941,9 +934,7 @@ void main() {
     testWidgets('shopUnlocked=false → 无江湖商店入口（隐藏）', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            shopUnlockedProvider.overrideWith((ref) async => false),
-          ],
+          overrides: [shopUnlockedProvider.overrideWith((ref) async => false)],
           child: const MaterialApp(home: MainMenu()),
         ),
       );
@@ -956,9 +947,7 @@ void main() {
     testWidgets('shopUnlocked=true → 有江湖商店入口', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            shopUnlockedProvider.overrideWith((ref) async => true),
-          ],
+          overrides: [shopUnlockedProvider.overrideWith((ref) async => true)],
           child: const MaterialApp(home: MainMenu()),
         ),
       );
@@ -974,9 +963,7 @@ void main() {
       final observer = _RecordingNavigatorObserver();
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            shopUnlockedProvider.overrideWith((ref) async => true),
-          ],
+          overrides: [shopUnlockedProvider.overrideWith((ref) async => true)],
           child: MaterialApp(
             navigatorObservers: [observer],
             home: const MainMenu(),

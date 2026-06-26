@@ -2,16 +2,13 @@ import 'package:isar_community/isar.dart';
 
 part 'pvp_snapshot.g.dart';
 
-/// 异步 PVP 阵容快照(1.0 P3.3 §12.3,spec p3_3_pvp_spec_2026-05-24 §2)。
+/// Legacy PVP 阵容快照 schema。
 ///
-/// 一份快照 = 玩家或对手某时刻的 3 人阵容定格(BattleCharacter[3] JSON 序列化)。
-/// 异步 PVP 不联机,玩家"应战"时拉对手快照,本地用 BattleEngine 跑出胜负。
+/// PVP 玩法已切除;本 collection 仅保留在 Isar schema 中，避免旧存档里曾
+/// 创建过 PVP collection 时无法打开。生产路径不再读写。
 ///
-/// `snapshotJson` 序列化体例 Phase 3 落 codec 时确定(候选:
-/// `{"chars": [{"name":..., "atk":..., "hp":..., ...}]}`)。
-///
-/// `snapshotTtlHours` 由 `numbers.yaml pvp.sync.snapshot_ttl_hours=168` 控制
-/// (7 天过期),application 层定期清理。
+/// 一份快照 = 玩家或对手某时刻的 3 人阵容定格。字段保留给旧 collection
+/// 反序列化，不再有 application 层定期清理或匹配流程。
 @collection
 class PvpSnapshot {
   Id id = Isar.autoIncrement;
