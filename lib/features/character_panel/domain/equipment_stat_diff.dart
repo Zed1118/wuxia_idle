@@ -1,6 +1,5 @@
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
-import '../../../core/domain/forging_slot.dart';
 import '../../../data/numbers_config.dart';
 import '../../battle/domain/derived_stats.dart';
 import '../../battle/domain/enum_localizations.dart';
