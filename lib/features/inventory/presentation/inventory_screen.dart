@@ -30,6 +30,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
 import '../../shop/application/shop_providers.dart';
+import 'bulk_disposal_dialog.dart';
 import 'equipment_detail_screen.dart';
 
 /// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账 +
@@ -131,6 +132,20 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // 批量整理入口（Task 6）
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: PlaqueButton(
+                  label: UiStrings.equipmentBulkEntry,
+                  onTap: () => showDialog<void>(
+                    context: context,
+                    builder: (_) => const BulkDisposalDialog(),
+                  ),
+                ),
+              ),
+            ),
             _FilterBar(
               selected: _filter,
               onSelect: (f) => setState(() => _filter = f),

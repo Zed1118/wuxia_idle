@@ -579,6 +579,10 @@ class UiStrings {
   static const String disposalRejectedEquipped = '装备穿戴中，不可处置。';
   static const String disposalRejectedHeritage = '师承遗物不可处置。';
   static String bulkTierLabel(String tierName, int count) => '$tierName（$count 件）';
+  /// 批量整理对话框按钮（Task 6）。
+  static const String bulkSellButton = '一键出售';
+  static const String bulkDisassembleButton = '一键分解';
+  static const String bulkDisposalEmpty = '暂无可整理装备';
 
   // T11 仓库筛选标签。
   static const String inventoryFilterAll = '全部';
