@@ -10,7 +10,6 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../../shared/widgets/wuxia_paper_panel.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../equipment/application/equipment_service.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
@@ -101,16 +100,22 @@ class _EquipSlotDialogState extends ConsumerState<EquipSlotDialog> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final async = ref.watch(allEquipmentsProvider);
+    // 干净冷色深底面板(对齐 EnhanceDialog/App 主题)。原 WuxiaPaperPanel 暖宣纸
+    // 纹理与冷色 UI 不协调、文字压纹理显模糊(用户实玩反馈),宣纸留给典故/卷轴阅读屏。
     return Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: WuxiaColors.panel,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6),
+        side: const BorderSide(color: WuxiaColors.border),
+      ),
       insetPadding: const EdgeInsets.all(24),
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: 640,
           maxHeight: size.height * 0.75,
         ),
-        child: WuxiaPaperPanel(
-          padding: const EdgeInsets.all(12),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
           child: async.when(
             loading: () => const SizedBox(
               height: 120,
@@ -313,7 +318,8 @@ class _CandidateList extends StatelessWidget {
         final cmp =
             equipmentFullDiff(current: current, candidate: eq, numbers: n);
         return Material(
-          color: isSelected ? WuxiaColors.panel : Colors.transparent,
+          // 选中高亮用更亮的 inkPanelTop(对话框底已是 panel,同色会看不见)。
+          color: isSelected ? WuxiaColors.inkPanelTop : Colors.transparent,
           child: ListTile(
             dense: true,
             enabled: canEquip,
