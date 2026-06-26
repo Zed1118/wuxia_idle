@@ -171,10 +171,12 @@ class _StagePreviewHoverCardState extends State<StagePreviewHoverCard> {
               width: widget.width,
               child: CompositedTransformFollower(
                 link: _link,
+                // 右对齐弹出:卡右缘贴行右缘,向左下(或翻转向左上)展开,不再盖住
+                // 左侧关卡名/掉落文字(旧 bottomLeft 锚把卡甩到左下盖住后续关·突兀)。
                 targetAnchor:
-                    _flipUp ? Alignment.topLeft : Alignment.bottomLeft,
+                    _flipUp ? Alignment.topRight : Alignment.bottomRight,
                 followerAnchor:
-                    _flipUp ? Alignment.bottomLeft : Alignment.topLeft,
+                    _flipUp ? Alignment.bottomRight : Alignment.topRight,
                 offset: Offset(0, _flipUp ? -6 : 6),
                 child: MouseRegion(
                   onEnter: (_) => _show(),
