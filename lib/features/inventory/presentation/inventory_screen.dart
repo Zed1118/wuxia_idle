@@ -15,6 +15,7 @@ import '../../equipment/presentation/enhance_dialog.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../application/item_use_service.dart';
+import '../application/item_usage_lookup_service.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
@@ -651,7 +652,10 @@ class _MaterialGridTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final itemDef = GameRepository.instance.itemDefs[item.defId];
     final displayName = itemDef?.name ?? groupName;
-    final usage = UiStrings.materialUsage(item.itemType.name);
+    final usages = ItemUsageLookupService(
+      GameRepository.instance,
+    ).usagesFor(item.defId);
+    final usage = UiStrings.materialUsageSummary(usages);
     final canUse = _usable && itemDef != null;
     // 显式局部非空引用，供 onTap 闭包捕获（闭包内不做 flow promotion）。
     final usableDef = canUse ? itemDef : null;
@@ -747,7 +751,7 @@ class _MaterialGridTile extends ConsumerWidget {
               padding: const EdgeInsets.only(top: 2),
               child: Text(
                 usage,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
