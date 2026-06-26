@@ -4,6 +4,7 @@
 # 用法:
 #   visual_capture.sh                         # 截全部 route × 全部分辨率
 #   visual_capture.sh main_menu tech...       # 只截指定 route id
+#   visual_capture.sh --suite full --dry-run  # 打印全量 route/seed/检查清单
 #   visual_capture.sh --res 1920x1080 ...     # 只截指定分辨率(可重复;默认 720p+1080p)
 #   visual_capture.sh --dry-run               # 只打印计划不启 app
 #
@@ -16,7 +17,6 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 SWIFT_WINID="$REPO_ROOT/tools/visual_capture/window_id.swift"
 
-ALL_ROUTES=(main_menu technique_panel_tier_all technique_panel_hero battle_charge_break battle_interrupt_caption battle_defeat)
 DEFAULT_RES=(1280x720 1920x1080)
 READY_TIMEOUT=180   # 秒(首跑含编译)
 SETTLE=2            # 截图前等图片加载
@@ -25,17 +25,23 @@ APP_BIN_MATCH="Debug/Products/Debug/wuxia_idle.app"
 
 DRY_RUN=0
 BUILD_MODE=debug   # --profile 出干净 Steam 截图(kDebugMode=false 隐藏 debug chrome)
+SUITE=smoke
 ROUTES=()
 RES=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run) DRY_RUN=1; shift ;;
     --profile) BUILD_MODE=profile; shift ;;
+    --suite) SUITE="$2"; shift 2 ;;
     --res) RES+=("$2"); shift 2 ;;
     *) ROUTES+=("$1"); shift ;;
   esac
 done
-[[ ${#ROUTES[@]} -eq 0 ]] && ROUTES=("${ALL_ROUTES[@]}")
+if [[ ${#ROUTES[@]} -eq 0 ]]; then
+  while IFS= read -r route; do
+    [[ -n "$route" ]] && ROUTES+=("$route")
+  done < <(flutter pub run tool/visual_acceptance.dart routes --suite "$SUITE" --format ids)
+fi
 [[ ${#RES[@]} -eq 0 ]] && RES=("${DEFAULT_RES[@]}")
 
 SHA="$(git rev-parse --short HEAD 2>/dev/null || echo nogit)"
@@ -47,9 +53,14 @@ echo "[visual_capture] repo=$REPO_ROOT sha=$SHA"
 echo "[visual_capture] routes: ${ROUTES[*]}"
 echo "[visual_capture] res:    ${RES[*]}"
 echo "[visual_capture] mode:   $BUILD_MODE"
+echo "[visual_capture] suite:  $SUITE"
 echo "[visual_capture] out: $OUT_DIR"
 
-if [[ $DRY_RUN -eq 1 ]]; then echo "[visual_capture] --dry-run,退出。"; exit 0; fi
+if [[ $DRY_RUN -eq 1 ]]; then
+  flutter pub run tool/visual_acceptance.dart checklist --suite "$SUITE"
+  echo "[visual_capture] --dry-run,退出。"
+  exit 0
+fi
 
 mkdir -p "$OUT_DIR"
 echo "# visual_capture manifest  sha=$SHA  ts=$TS" > "$MANIFEST"
