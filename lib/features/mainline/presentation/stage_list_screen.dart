@@ -70,13 +70,27 @@ class StageListScreen extends ConsumerWidget {
                   data: (d) => d,
                   orElse: () => null,
                 );
+            // watch(非 read):玩家在 CycleSelectControl 切周目时本屏须重建,
+            // 使扫荡按钮标签/门槛、各关卡按周目状态都随选定周目刷新。
+            final selectedCycle =
+                ref.watch(selectedChallengeCycleProvider(chapterKey));
             int cycleFor() {
               if (progress == null) return 1;
-              return resolveTargetCycle(
-                ref.read(selectedChallengeCycleProvider(chapterKey)),
-                progress,
-                chapterKey,
-              );
+              return resolveTargetCycle(selectedCycle, progress, chapterKey);
+            }
+
+            // 按选定周目算关卡显示状态:cycle 1 用原解锁链状态;cycle≥2 时全关已由
+            // 首周目解锁→该周目通过该关(clearedStageCycleKeys 含 id#cycle)显「已通关」,
+            // 否则显「可挑战」。修正旧 bug:二周目视图沿用首周目 clearedStageIds 全显
+            // 「已通关」误导玩家以为本周目已打完。
+            StageStatus statusFor(StageEntry e) {
+              final c = cycleFor();
+              if (c <= 1 || progress == null) return e.status;
+              final clearedThisCycle =
+                  progress.clearedStageCycleKeys.contains('${e.def.id}#$c');
+              return clearedThisCycle
+                  ? StageStatus.cleared
+                  : StageStatus.available;
             }
 
             // 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。
@@ -129,9 +143,9 @@ class StageListScreen extends ConsumerWidget {
                     child: _StageRow(
                       stageIndex: i + 1,
                       def: entries[i].def,
-                      status: entries[i].status,
+                      status: statusFor(entries[i]),
                       currentRealm: currentRealm,
-                      onTap: entries[i].status == StageStatus.locked
+                      onTap: statusFor(entries[i]) == StageStatus.locked
                           ? null
                           : () => runStageFlow(
                               context: context,

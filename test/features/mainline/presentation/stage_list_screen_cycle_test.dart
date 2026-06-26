@@ -58,8 +58,9 @@ void main() {
     WidgetTester tester, {
     required MainlineProgress progress,
     int maxCycle = 3,
+    Size surfaceSize = const Size(1024, 720),
   }) async {
-    await tester.binding.setSurfaceSize(const Size(1024, 720));
+    await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
@@ -147,6 +148,47 @@ void main() {
     expect(find.text(UiStrings.sweepLockedHintCycle(1)), findsOneWidget);
     // 未达门槛→不显可点的高亮扫荡按钮。
     expect(find.text(UiStrings.sweepChapterButtonCycle(1)), findsNothing);
+  });
+
+  testWidgets('切到第2周目 → 扫荡按钮响应式刷新(第1金按钮→第2周目门槛灰显)',
+      (tester) async {
+    // 第1周目全通→默认 cycleFor=1→金按钮;切第2周目(未通)→须响应式变灰显第2周目。
+    // 回归锚:旧 ref.read 非响应式 bug 下,切周目按钮不刷新仍显第1周目。
+    await pumpScreen(tester, progress: mkProgressSweepable());
+
+    expect(find.text(UiStrings.sweepChapterButtonCycle(1)), findsOneWidget,
+        reason: '默认回放第1周目(已全通)→金色可点扫荡按钮');
+
+    await tester.tap(find.text(UiStrings.cycleChallengeNextLabel(2)));
+    await tester.pump();
+
+    expect(find.text(UiStrings.sweepChapterButtonCycle(1)), findsNothing,
+        reason: '切周目后第1周目金按钮应消失(响应式刷新)');
+    expect(find.text(UiStrings.sweepLockedHintCycle(2)), findsOneWidget,
+        reason: '第2周目未手工通关→灰显第2周目门槛提示');
+  });
+
+  testWidgets('第2周目视图 → 关卡按周目显示(本周目未通显可挑战,不再误显已通关)',
+      (tester) async {
+    // 第1周目全 5 关 #1 已通,但无任何 #2。切第2周目后关卡应全显「可挑战」,
+    // 而非沿用第1周目 clearedStageIds 全显「已通关」(修正误导 bug)。
+    await pumpScreen(
+      tester,
+      progress: mkProgressSweepable(),
+      surfaceSize: const Size(1024, 1100),
+    );
+
+    // 第1周目视图:5 关全已通关。
+    expect(find.text(UiStrings.stageListCleared), findsNWidgets(5));
+
+    await tester.tap(find.text(UiStrings.cycleChallengeNextLabel(2)));
+    await tester.pump();
+
+    // 第2周目视图:本周目一关未通→全「可挑战」,无「已通关」。
+    expect(find.text(UiStrings.stageListCleared), findsNothing,
+        reason: '第2周目尚未通任何关→不应显已通关');
+    expect(find.text(UiStrings.stageListAvailable), findsNWidgets(5),
+        reason: '第2周目全关解锁可挑战');
   });
 }
 

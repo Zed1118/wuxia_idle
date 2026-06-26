@@ -549,7 +549,9 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
     }
     return BattleScreen(
       hint: widget.stage.name,
-      cycleHint: widget.targetCycle >= 2 ? UiStrings.jianghuRememberHint : null,
+      cycleHint: widget.targetCycle >= 2
+          ? UiStrings.battleCycleHint(widget.targetCycle)
+          : null,
       sceneBackgroundPath: widget.stage.sceneBackgroundPath,
       bgmTrack: bgmTrackForStage(
         widget.stage.stageType,
