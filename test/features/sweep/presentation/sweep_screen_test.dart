@@ -25,13 +25,14 @@ class _ThrowingUnit implements SweepUnit {
 }
 
 void main() {
-  testWidgets('装配失败 → 战败 recap：显标题/原因/返回按钮', (tester) async {
+  testWidgets('装配失败 → 战败 recap：显标题/原因/返回按钮 + 周目行', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
           home: SweepScreen(
             units: [_ThrowingUnit()],
             unitName: '问鼎江湖',
+            cycle: 2,
           ),
         ),
       ),
@@ -44,5 +45,7 @@ void main() {
     expect(find.text(UiStrings.sweepRecapBack), findsOneWidget);
     // 战败仍记一行「通关 0 关」。
     expect(find.text(UiStrings.sweepRecapStages(0)), findsOneWidget);
+    // recap 告知扫的是第几周目（用户要求：扫完知道扫的是哪个周目）。
+    expect(find.text(UiStrings.sweepRecapCycle(2)), findsOneWidget);
   });
 }

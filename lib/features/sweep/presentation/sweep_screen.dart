@@ -18,6 +18,7 @@ class SweepScreen extends ConsumerStatefulWidget {
     super.key,
     required this.units,
     required this.unitName,
+    required this.cycle,
     this.towerRepeatNote = false,
   });
 
@@ -26,6 +27,10 @@ class SweepScreen extends ConsumerStatefulWidget {
 
   /// 标题用单位名（章名 / 「问鼎江湖」）。
   final String unitName;
+
+  /// 本次扫荡的周目（全单位同周目，由 caller 的 cycleFor()/currentCycleIndex 决定）。
+  /// HUD 与 recap 显「第N周目」，让玩家一眼知道扫的是哪个周目。
+  final int cycle;
 
   /// 爬塔扫荡：顶部显「重打仅掉残页」说明（守 §5.1 防刷）。
   final bool towerRepeatNote;
@@ -145,6 +150,7 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
           child: _SweepHud(
             progressLabel:
                 UiStrings.sweepProgress(_index + 1, widget.units.length),
+            cycleLabel: UiStrings.sweepCycleBadge(widget.cycle),
             towerRepeatNote: widget.towerRepeatNote,
             onStop: _controller.requestStop,
           ),
@@ -174,6 +180,7 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
         .fold<int>(0, (s, e) => s + e.value);
 
     final rows = <String>[
+      UiStrings.sweepRecapCycle(widget.cycle),
       UiStrings.sweepRecapStages(r.stagesCleared),
       if (r.equipmentDrops > 0) UiStrings.sweepRecapEquipment(r.equipmentDrops),
       if (silver > 0) UiStrings.sweepRecapSilver(silver),
@@ -256,11 +263,13 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
 class _SweepHud extends StatelessWidget {
   const _SweepHud({
     required this.progressLabel,
+    required this.cycleLabel,
     required this.onStop,
     required this.towerRepeatNote,
   });
 
   final String progressLabel;
+  final String cycleLabel;
   final VoidCallback onStop;
   final bool towerRepeatNote;
 
@@ -283,6 +292,24 @@ class _SweepHud extends StatelessWidget {
                 style: const TextStyle(
                   color: WuxiaColors.resultHighlight,
                   fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // 周目徽章：连播中也让玩家一眼看到扫的是第几周目。
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: WuxiaColors.panel.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: WuxiaColors.bossFrame),
+              ),
+              child: Text(
+                cycleLabel,
+                style: const TextStyle(
+                  color: WuxiaColors.bossFrame,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),

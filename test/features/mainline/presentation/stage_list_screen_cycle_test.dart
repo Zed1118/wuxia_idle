@@ -105,6 +105,49 @@ void main() {
     expect(find.text(UiStrings.cycleReplayCurrentSuffix), findsNothing);
     expect(find.textContaining('挑战第'), findsNothing);
   });
+
+  /// Ch1 第1周目「全 5 关」已手工首通 → 扫荡门槛达成。
+  MainlineProgress mkProgressSweepable() {
+    return MainlineProgress()
+      ..saveDataId = 1
+      ..currentChapterIndex = 1
+      ..clearedStageIds = [
+        'stage_01_01',
+        'stage_01_02',
+        'stage_01_03',
+        'stage_01_04',
+        'stage_01_05',
+      ]
+      ..clearedAt = List.filled(5, DateTime(2026))
+      ..clearedStageCycleKeys = [
+        'stage_01_01#1',
+        'stage_01_02#1',
+        'stage_01_03#1',
+        'stage_01_04#1',
+        'stage_01_05#1',
+      ]
+      ..clearedChapterCycleKeys = ['ch1#1'];
+  }
+
+  testWidgets('第1周目全关已通 → 扫荡按钮高亮且标签带周目「第 1 周目」', (tester) async {
+    await pumpScreen(tester, progress: mkProgressSweepable());
+
+    // 用户要求:按钮一眼能看出扫的是第几周目。
+    expect(find.text(UiStrings.sweepChapterButtonCycle(1)), findsOneWidget);
+    // 门槛达成→不显灰显锁定提示。
+    expect(find.text(UiStrings.sweepLockedHintCycle(1)), findsNothing);
+  });
+
+  testWidgets('第1周目未全通(仅 Boss) → 扫荡按钮灰显 + 周目门槛提示(§5.7 灰掉不隐藏)',
+      (tester) async {
+    // mkProgressCleared 仅含 stage_01_05#1(Boss),前 4 关无 #1 → 门槛未达。
+    await pumpScreen(tester, progress: mkProgressCleared());
+
+    // 灰显态告知玩家:为何不能扫 + 扫的是哪个周目(取代旧「整块隐藏」)。
+    expect(find.text(UiStrings.sweepLockedHintCycle(1)), findsOneWidget);
+    // 未达门槛→不显可点的高亮扫荡按钮。
+    expect(find.text(UiStrings.sweepChapterButtonCycle(1)), findsNothing);
+  });
 }
 
 /// NumbersConfig stub：只实现 cycleEvolution。

@@ -139,6 +139,35 @@ void main() {
     expect(find.textContaining('战斗准备失败'), findsNothing);
   });
 
+  testWidgets('整塔30层已通 → 扫荡按钮高亮且标签带周目「第 1 周目」', (tester) async {
+    final progress = mkProgress(highest: 30, attempts: 30);
+    await pumpScreen(tester, progress: progress);
+
+    expect(find.text(UiStrings.sweepTowerButtonCycle(1)), findsOneWidget);
+    expect(find.text(UiStrings.sweepLockedHintCycle(1)), findsNothing);
+  });
+
+  testWidgets('已通一周目、二周目整塔未通 → 扫荡按钮灰显 + 周目门槛提示(§5.7 灰掉不隐藏)',
+      (tester) async {
+    // 已通第1周目(maxClearedCycle=1)→ 推进到第2周目(currentCycleIndex=2,
+    // highestClearedFloor 归 0)→ 灰显提示「第2周目需先手工通关」。
+    final progress = mkProgress(highest: 0)
+      ..maxClearedCycle = 1
+      ..currentCycleIndex = 2;
+    await pumpScreen(tester, progress: progress);
+
+    expect(find.text(UiStrings.sweepLockedHintCycle(2)), findsOneWidget);
+    expect(find.text(UiStrings.sweepTowerButtonCycle(2)), findsNothing);
+  });
+
+  testWidgets('全新塔(从未通关) → 扫荡按钮整块隐藏(不在全新塔堆砌锁定按钮)', (tester) async {
+    final progress = mkProgress(highest: 0);
+    await pumpScreen(tester, progress: progress);
+
+    expect(find.text(UiStrings.sweepLockedHintCycle(1)), findsNothing);
+    expect(find.text(UiStrings.sweepTowerButtonCycle(1)), findsNothing);
+  });
+
   testWidgets('点 cleared 层 → 弹重打确认 dialog，确认后进入战斗准备', (tester) async {
     final progress = mkProgress(highest: 3, attempts: 3);
     // 4000px 确保 floor 1（cleared）可见

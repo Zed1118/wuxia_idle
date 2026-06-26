@@ -161,6 +161,8 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
                         highestClearedFloor: progress.highestClearedFloor,
                         floorCount: entries.length,
                       ),
+                      // 灰显门槛提示仅在整塔至少通关过一次后出现;全新塔仍隐藏。
+                      everCleared: progress.maxClearedCycle >= 1,
                     ),
                   ),
                   // P1 周目进化 E2：爬塔轮回推进卡（30 层全通 + 未达上限时显示）。
@@ -411,16 +413,41 @@ class _TowerSweepButton extends StatelessWidget {
     required this.entries,
     required this.cycleIndex,
     required this.eligible,
+    required this.everCleared,
   });
 
   final List<TowerFloorEntry> entries;
   final int cycleIndex;
   final bool eligible;
 
+  /// 整塔是否至少通关过一次（任一周目）。false 且未达门槛 → 整块隐藏。
+  final bool everCleared;
+
   @override
   Widget build(BuildContext context) {
-    // §5.7：未解锁（本周目整塔未通）直接隐藏，解锁后才以醒目主按钮出现。
-    if (!eligible) return const SizedBox.shrink();
+    // 从未通过整塔 → 不显（保持全新塔干净）。
+    if (!eligible && !everCleared) return const SizedBox.shrink();
+    // §5.7：通关过、但本周目整塔未手工通关 → 灰显 + 提示（不再整块隐藏），
+    // 让玩家知道扫的是哪个周目、以及为何还不能扫（需先手工通关本周目整塔）。
+    if (!eligible) {
+      return SizedBox(
+        width: double.infinity,
+        child: FilledButton.icon(
+          style: FilledButton.styleFrom(
+            backgroundColor: WuxiaColors.panel,
+            foregroundColor: WuxiaColors.textMuted,
+            disabledBackgroundColor: WuxiaColors.panel,
+            disabledForegroundColor: WuxiaColors.textMuted,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            textStyle:
+                const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          onPressed: null,
+          icon: const Icon(Icons.lock_outline, size: 18),
+          label: Text(UiStrings.sweepLockedHintCycle(cycleIndex)),
+        ),
+      );
+    }
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
@@ -441,13 +468,14 @@ class _TowerSweepButton extends StatelessWidget {
               builder: (_) => SweepScreen(
                 units: units,
                 unitName: UiStrings.towerTitle,
+                cycle: cycleIndex,
                 towerRepeatNote: true,
               ),
             ),
           );
         },
         icon: const Icon(Icons.fast_forward, size: 22),
-        label: const Text(UiStrings.sweepTowerButton),
+        label: Text(UiStrings.sweepTowerButtonCycle(cycleIndex)),
       ),
     );
   }

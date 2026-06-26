@@ -111,6 +111,7 @@ void main() {
           home: SweepScreen(
             units: [_FastWinUnit()],
             unitName: '问鼎江湖',
+            cycle: 1,
           ),
         ),
       ),
@@ -140,6 +141,7 @@ void main() {
           home: SweepScreen(
             units: [_FastWinUnit(), _FastWinUnit()],
             unitName: '问鼎江湖',
+            cycle: 1,
           ),
         ),
       ),
