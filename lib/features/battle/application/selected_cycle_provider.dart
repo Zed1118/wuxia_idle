@@ -11,9 +11,12 @@ part 'selected_cycle_provider.g.dart';
 /// 选择,caller 用 [resolveTargetCycle] 兜底(已通章→回放最高周目;未通章→cycle 1)。
 /// 玩家在章头点「挑战第(N+1)周目」时设为 N+1,点「回放第N周目」设回 N。
 ///
-/// 纯 UI 状态,不落盘——切屏重进回默认。周目解锁的真相源仍是
+/// 会话级 UI 状态(不落盘)。keepAlive:选定周目须跨「进关卡战斗→打完返回」
+/// 的导航生命周期存活——否则选关屏 unmount 时 autoDispose 回收,选择重置回
+/// null,打完一关就跳回最高已通周目(非 Boss 关不写章周目 key 故退回第1周目)。
+/// 玩家显式改选或 App 重启才回默认。周目解锁的真相源仍是
 /// [MainlineProgress.clearedChapterCycleKeys](service 层)。
-@riverpod
+@Riverpod(keepAlive: true)
 class SelectedChallengeCycle extends _$SelectedChallengeCycle {
   @override
   int? build(String chapterKey) => null;
