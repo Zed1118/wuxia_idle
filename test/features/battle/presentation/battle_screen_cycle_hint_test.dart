@@ -83,4 +83,13 @@ void main() {
       reason: 'cycleHint=null 时不应渲染提示条',
     );
   });
+
+  testWidgets('battleCycleHint(2) → 横幅含明确「第 2 周目」标签', (tester) async {
+    await _pump(tester, cycleHint: UiStrings.battleCycleHint(2));
+    expect(
+      find.textContaining('第 2 周目'),
+      findsOneWidget,
+      reason: '战前横幅须明确标注第几周目,让玩家知道在打第2周目',
+    );
+  });
 }

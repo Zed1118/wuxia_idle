@@ -888,7 +888,9 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
       sceneBackgroundPath: widget.floor.sceneBackgroundPath,
       bgmTrack: BgmTrack.tower,
       deferVictoryToCaller: true,
-      cycleHint: _currentCycleIndex >= 2 ? UiStrings.jianghuRememberHint : null,
+      cycleHint: _currentCycleIndex >= 2
+          ? UiStrings.battleCycleHint(_currentCycleIndex)
+          : null,
       allowPlayerIntervention: _mode == AutoPlayMode.interactive,
       onVictory: () {
         widget.onVictory();

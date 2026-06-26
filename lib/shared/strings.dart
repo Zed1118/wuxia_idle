@@ -1143,6 +1143,11 @@ class UiStrings {
   // 「江湖记招」：敌人已识得玩家路数，高周目进入手动模式的战前提示（E2 wire）。
   static const String jianghuRememberHint = '此敌已识得你的路数，见招拆招。';
 
+  /// 战前周目横幅(cycle≥2):明确标注第几周目 + 敌人识路 flavor + 强化说明,
+  /// 让玩家一眼知道在打第几周目、以及本周目敌人更强。
+  static String battleCycleHint(int cycle) =>
+      '第 $cycle 周目 · 敌人更强（属性提升·额外反制词条）· $jianghuRememberHint';
+
   /// 第 N 周目标签，如「第1周目」。
   static String cycleNthLabel(int n) => '第$n周目';
 
