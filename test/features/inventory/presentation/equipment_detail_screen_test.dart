@@ -93,6 +93,7 @@ void main() {
     expect(find.text('攻击'), findsOneWidget);
     expect(find.text('血量'), findsOneWidget);
     expect(find.text('速度'), findsOneWidget);
+    expect(find.text(UiStrings.equipmentSourceSectionDivider), findsOneWidget);
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
     expect(find.byType(PaperPanel), findsWidgets);
     // T8:info 区前移强化/开锋入口(2)+ 底部 ActionBar 兜底(2)= 4
@@ -235,6 +236,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('典故待补'), findsOneWidget);
+    expect(find.text(UiStrings.equipmentSourceSectionDivider), findsNothing);
   });
 
   // ── W15 后波 fix:师承遗物 chip 读 equipment.isLineageHeritage 而非 def ─────
