@@ -562,6 +562,24 @@ class UiStrings {
   static const String itemUseFailed = '此物此刻无法使用。';
   static const String itemUseDismiss = '收下';
 
+  // ── 装备出售/分解(2026-06-26)──────────────────────────────────────────────
+  static const String equipmentSell = '出售';
+  static const String equipmentDisassemble = '分解';
+  static const String equipmentBulkEntry = '批量整理';
+  static const String equippedBadge = '装备中';
+  static const String inventoryShopEntry = '进商店';
+  static String sellConfirmBody(int count, int silver) =>
+      '将出售 $count 件装备，获得银两 $silver。';
+  static String disassembleConfirmBody(int count, int mojianshi, int xinxue) =>
+      '将分解 $count 件装备，获得磨剑石 $mojianshi${xinxue > 0 ? ' / 心血结晶 $xinxue' : ''}。';
+  static String sellSingleConfirmBody(String name, int silver) =>
+      '出售「$name」，获得银两 $silver。';
+  static String disassembleSingleConfirmBody(String name, int mojianshi, int xinxue) =>
+      '分解「$name」，获得磨剑石 $mojianshi${xinxue > 0 ? ' / 心血结晶 $xinxue' : ''}。';
+  static const String disposalRejectedEquipped = '装备穿戴中，不可处置。';
+  static const String disposalRejectedHeritage = '师承遗物不可处置。';
+  static String bulkTierLabel(String tierName, int count) => '$tierName（$count 件）';
+
   // T11 仓库筛选标签。
   static const String inventoryFilterAll = '全部';
   static const String inventoryFilterEquippable = '可装备';
