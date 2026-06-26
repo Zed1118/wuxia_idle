@@ -5,15 +5,20 @@ import '../../battle/domain/derived_stats.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/equipment_def.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
 import '../../../data/lore_loader.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
+import '../../equipment/application/equipment_disposal_service.dart';
+import '../../equipment/domain/equipment_disposal.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
+import '../../shop/application/shop_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
@@ -79,6 +84,102 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
     );
     if (!mounted) return;
     ref.invalidate(allEquipmentsProvider);
+  }
+
+  /// 出售单件（背包态才可触发，已由调用处守卫确保）。
+  Future<void> _onSell() async {
+    final eq = widget.equipment;
+    final cfg = GameRepository.instance.numbers.disposal;
+    final price = equipmentSellPrice(eq.tier, eq.enhanceLevel, cfg);
+    final confirmed = await PaperDialog.show<bool>(
+      context,
+      title: UiStrings.equipmentSell,
+      body: Text(
+        UiStrings.sellSingleConfirmBody(widget.def.name, price),
+        style: const TextStyle(
+          color: WuxiaUi.ink,
+          fontSize: 14,
+          height: 1.8,
+          letterSpacing: 1,
+        ),
+      ),
+      actions: [
+        PlaqueButton(
+          label: UiStrings.commonCancel,
+          onTap: () => Navigator.of(context).pop(false),
+        ),
+        PlaqueButton(
+          label: UiStrings.equipmentSell,
+          primary: true,
+          onTap: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    );
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    final outcome = await EquipmentDisposalService(
+      isar: IsarSetup.instance,
+      config: cfg,
+    ).sell(eq.id);
+
+    if (!mounted) return;
+    if (outcome == DisposalOutcome.sold) {
+      ref.invalidate(allEquipmentsProvider);
+      ref.invalidate(allInventoryItemsProvider);
+      ref.invalidate(silverBalanceProvider);
+      Navigator.of(context).pop();
+    }
+  }
+
+  /// 分解单件（背包态才可触发，已由调用处守卫确保）。
+  Future<void> _onDisassemble() async {
+    final eq = widget.equipment;
+    final cfg = GameRepository.instance.numbers.disposal;
+    final rewards = equipmentDisassembleRewards(eq.tier, eq.enhanceLevel, cfg);
+    final confirmed = await PaperDialog.show<bool>(
+      context,
+      title: UiStrings.equipmentDisassemble,
+      body: Text(
+        UiStrings.disassembleSingleConfirmBody(
+          widget.def.name,
+          rewards.mojianshi,
+          rewards.xinxuejiejing,
+        ),
+        style: const TextStyle(
+          color: WuxiaUi.ink,
+          fontSize: 14,
+          height: 1.8,
+          letterSpacing: 1,
+        ),
+      ),
+      actions: [
+        PlaqueButton(
+          label: UiStrings.commonCancel,
+          onTap: () => Navigator.of(context).pop(false),
+        ),
+        PlaqueButton(
+          label: UiStrings.equipmentDisassemble,
+          primary: true,
+          onTap: () => Navigator.of(context).pop(true),
+        ),
+      ],
+    );
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    final outcome = await EquipmentDisposalService(
+      isar: IsarSetup.instance,
+      config: cfg,
+    ).disassemble(eq.id);
+
+    if (!mounted) return;
+    if (outcome == DisposalOutcome.disassembled) {
+      ref.invalidate(allEquipmentsProvider);
+      ref.invalidate(allInventoryItemsProvider);
+      ref.invalidate(silverBalanceProvider);
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -150,6 +251,17 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                     _ActionBar(
                       onEnhance: () => _openEnhance(0),
                       onForge: () => _openEnhance(1),
+                      // 仅背包态（ownerCharacterId==null && !isLineageHeritage）
+                      // 显示出售/分解按钮（2026-06-26 红线推翻）。
+                      onSell: (widget.equipment.ownerCharacterId == null &&
+                              !widget.equipment.isLineageHeritage)
+                          ? _onSell
+                          : null,
+                      onDisassemble:
+                          (widget.equipment.ownerCharacterId == null &&
+                                  !widget.equipment.isLineageHeritage)
+                              ? _onDisassemble
+                              : null,
                     ),
                   ],
                 );
@@ -681,30 +793,68 @@ class _SegmentDivider extends StatelessWidget {
 }
 
 class _ActionBar extends StatelessWidget {
-  const _ActionBar({required this.onEnhance, required this.onForge});
+  const _ActionBar({
+    required this.onEnhance,
+    required this.onForge,
+    this.onSell,
+    this.onDisassemble,
+  });
 
   final VoidCallback onEnhance;
   final VoidCallback onForge;
 
+  /// null = 不显示出售按钮（已装备或师承遗物）。
+  final VoidCallback? onSell;
+
+  /// null = 不显示分解按钮（已装备或师承遗物）。
+  final VoidCallback? onDisassemble;
+
   @override
   Widget build(BuildContext context) {
+    final showDisposal = onSell != null && onDisassemble != null;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: SafeArea(
         top: false,
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: PlaqueButton(
-                label: UiStrings.tabEnhance,
-                primary: true,
-                onTap: onEnhance,
+            Row(
+              children: [
+                Expanded(
+                  child: PlaqueButton(
+                    label: UiStrings.tabEnhance,
+                    primary: true,
+                    onTap: onEnhance,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: PlaqueButton(
+                      label: UiStrings.tabForging, onTap: onForge),
+                ),
+              ],
+            ),
+            if (showDisposal) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: PlaqueButton(
+                      label: UiStrings.equipmentSell,
+                      onTap: onSell,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: PlaqueButton(
+                      label: UiStrings.equipmentDisassemble,
+                      onTap: onDisassemble,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: PlaqueButton(label: UiStrings.tabForging, onTap: onForge),
-            ),
+            ],
           ],
         ),
       ),
