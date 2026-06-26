@@ -11,6 +11,7 @@ import '../../../data/isar_setup.dart';
 import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_app_theme.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/utils/rng.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
@@ -93,7 +94,7 @@ class VisualRouteApp extends StatelessWidget {
       child: MaterialApp(
         title: UiStrings.appTitle,
         debugShowCheckedModeBanner: false,
-        theme: ThemeData.dark(useMaterial3: true),
+        theme: wuxiaAppTheme(),
         builder: _wuxiaTextScaleBuilder,
         home: VisualRouteHost(route: route),
       ),
