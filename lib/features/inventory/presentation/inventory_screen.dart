@@ -28,6 +28,7 @@ import '../../../shared/widgets/wuxia_ui/plaque_tab.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../help/domain/help_topic.dart';
+import '../../shop/presentation/shop_screen.dart';
 import '../../help/presentation/context_help_button.dart';
 import '../../shop/application/shop_providers.dart';
 import 'bulk_disposal_dialog.dart';
@@ -290,6 +291,15 @@ class _MaterialTab extends ConsumerWidget {
                   color: WuxiaColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              PlaqueButton(
+                label: UiStrings.inventoryShopEntry,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ShopScreen(),
+                  ),
                 ),
               ),
             ],
