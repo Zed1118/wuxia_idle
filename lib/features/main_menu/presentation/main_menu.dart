@@ -21,6 +21,7 @@ import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
 import '../../debug/presentation/battle_test_menu.dart';
 import '../../debug/presentation/phase2_test_menu.dart';
+import '../../debug/presentation/redline_audit_screen.dart';
 import '../../debug/presentation/sect_recruit_debug_screen.dart';
 import '../../festival/application/festival_service_providers.dart';
 import '../../inventory/presentation/inventory_screen.dart';
@@ -424,6 +425,12 @@ class MainMenu extends ConsumerWidget {
               hint: '走完整 sect recruit flow · 跳过战斗/奇遇触发',
               icon: Icons.person_add_alt_1_outlined,
               onTap: () => _push(context, const SectRecruitDebugScreen()),
+            ),
+            WuxiaInkButton(
+              label: '数值红线审计',
+              hint: '开发工具 · 查看 PASS/WARN/FAIL 与来源',
+              icon: Icons.rule_outlined,
+              onTap: () => _push(context, const RedlineAuditScreen()),
             ),
           ]
         : const <Widget>[];
