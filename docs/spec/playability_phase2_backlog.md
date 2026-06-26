@@ -75,4 +75,6 @@
 
 ## 十一 · 周目实际差异(待用户拍板 · 2026-06-26)
 
-- [ ] **二周目与一周目的实际差异是否加大**(显示已修,差异本身待拍板):2026-06-26 用户实玩反馈"二周目和一周目没明显区分"。**显示层已修并合 main**(`ca8f7e4b`:周目选择响应式 + 关卡按周目状态 + 战斗「第N周目·敌人更强」标签 + 扫荡按钮周目标签/战报周目行)。**现状差异**(numbers.yaml `cycle_evolution`):敌人 hp/攻击/内力 ×(1+0.06×(cycle-1))、+御体词条(防御率+8%·三周目再加反震+识破);**掉落与一周目完全相同**(DropService/稀有彩头均不读 cycle)。**用户本轮拍板"先不动平衡、只保留显示修复"**。**届时若做**:① 加大敌人难度(scale_per_cycle 0.06→? 或加强词条) ② 加大掉落回报(二周目提高稀有彩头概率/额外材料,守 §5.4 红线) ③ 二者皆调。纯 numbers.yaml/DropService 改动,需一轮 balance 调 + 真机校。
+- [x] **① 难度侧已做**(2026-06-26 用户「双调·温和」拍板·合 main `9caef667`):`scale_per_cycle` 0.06→0.10(二周目敌+10%/三周目+20%)+ 主线二周目 assignment `[yuti]`→`[yuti, zhenqi]`(加真气词条·敌多放一次大招)。红线安全(生产 `.clamp(0,60000)`·西凉霸主 cycle3 命中 clamp·玩家伤害独立 scale·simulator peak 不进百万)。**balance 初值待真机校**。
+- [ ] **② 回报侧待做(升 xhigh)**:二周目起加大掉落回报——稀有彩头概率提升(+1阶 5%→8% / +2阶 1.5%→3%·`rare_bonus_drop` 加 `chance_ng_plus`)+ 二周目普通掉落材料小幅加成。**跨文件**:cycle 要从 `selectedChallengeCycleProvider` 穿过主线/爬塔/扫荡 3 条结算路径(`BattleResolutionService.resolve`/`DropService.rollRareBonus`/`selectRareBonusTier` 加 cycle 参)到掉落 roll;`rollDrops` 读 cycle。守 §5.4 红线。用户拍板分两半:难度侧 high 已做,回报侧升 xhigh 单独做。
+  - 显示层已修(`ca8f7e4b`);现状掉落仍不读 cycle(二周目掉落=一周目),待本项实装。
