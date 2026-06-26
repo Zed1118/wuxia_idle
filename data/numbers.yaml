@@ -123,6 +123,10 @@ combat:
     player_hp_max: 20000             # 玩家血量红线（§5.4）
     internal_force_max: 15000        # 内力红线（§5.4）
     boss_hp_max: 60000               # Boss 血量红线（§5.4，2026-06-14 终局周目膨胀调 50000→60000）
+    equipment_base_attack_max: 2000  # 装备基础攻击红线（§5.4，配置基础表值，不含强化/共鸣/开锋派生）
+    skill_power_multiplier_max: 8000 # 招式倍率红线（§5.4，全局单线，配置基础表值）
+    damage_readability_max: 1000000  # 软红线唯一硬线：实战可见伤害不进百万级膨胀
+    normal_damage_typical_target: 8000 # 普通伤害典型 build 设计目标；满 build 极值可越过，但仍守 damage_readability_max
 
   # P0 破招:Boss 蓄力/踉跄
   boss_charge:

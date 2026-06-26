@@ -1361,11 +1361,19 @@ class RedLinesConfig {
   final int playerHpMax;
   final int internalForceMax;
   final int bossHpMax;
+  final int equipmentBaseAttackMax;
+  final int skillPowerMultiplierMax;
+  final int damageReadabilityMax;
+  final int normalDamageTypicalTarget;
 
   const RedLinesConfig({
     required this.playerHpMax,
     required this.internalForceMax,
     required this.bossHpMax,
+    required this.equipmentBaseAttackMax,
+    required this.skillPowerMultiplierMax,
+    required this.damageReadabilityMax,
+    required this.normalDamageTypicalTarget,
   });
 
   factory RedLinesConfig.fromYaml(Map<String, dynamic> y) {
@@ -1373,6 +1381,14 @@ class RedLinesConfig {
       playerHpMax: (y['player_hp_max'] as num?)?.toInt() ?? 20000,
       internalForceMax: (y['internal_force_max'] as num?)?.toInt() ?? 15000,
       bossHpMax: (y['boss_hp_max'] as num?)?.toInt() ?? 60000,
+      equipmentBaseAttackMax:
+          (y['equipment_base_attack_max'] as num?)?.toInt() ?? 2000,
+      skillPowerMultiplierMax:
+          (y['skill_power_multiplier_max'] as num?)?.toInt() ?? 8000,
+      damageReadabilityMax:
+          (y['damage_readability_max'] as num?)?.toInt() ?? 1000000,
+      normalDamageTypicalTarget:
+          (y['normal_damage_typical_target'] as num?)?.toInt() ?? 8000,
     );
   }
 }
