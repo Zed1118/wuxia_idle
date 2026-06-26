@@ -97,7 +97,7 @@ void main() {
   });
 
   // ══════════════════════════════════════════════════════════════════════════
-  // cycle 3 主线：hp/attack ×1.12 + 御体 + 反震 + 识破 词条
+  // cycle 3 主线：hp/attack ×1.20 + 御体 + 反震 + 识破 词条（2026-06-26: scale 0.06→0.10）
   // ══════════════════════════════════════════════════════════════════════════
   group('cycle 3 主线敌人', () {
     late BattleCharacter c1;
@@ -118,14 +118,14 @@ void main() {
       );
     });
 
-    test('hp × scale(1.12)', () {
+    test('hp × scale(c3)', () {
       final ce = GameRepository.instance.numbers.cycleEvolution;
-      final scale = 1 + ce.scalePerCycle * (3 - 1); // 1 + 0.06 * 2 = 1.12
+      final scale = 1 + ce.scalePerCycle * (3 - 1); // 2026-06-26: 1 + 0.10 * 2 = 1.20
       expect(c3.maxHp, (1000 * scale).toInt());
       expect(c3.currentHp, c3.maxHp, reason: 'currentHp = maxHp（满血进战斗）');
     });
 
-    test('attack × scale(1.12)', () {
+    test('attack × scale(c3)', () {
       final ce = GameRepository.instance.numbers.cycleEvolution;
       final scale = 1 + ce.scalePerCycle * (3 - 1);
       expect(c3.totalEquipmentAttack, (500 * scale).toInt());
@@ -154,7 +154,7 @@ void main() {
   });
 
   // ══════════════════════════════════════════════════════════════════════════
-  // cycle 2 主线：只有御体（c2 档加成）
+  // cycle 2 主线：御体 + 真气（2026-06-26 周目平衡加 zhenqi）
   // ══════════════════════════════════════════════════════════════════════════
   group('cycle 2 主线', () {
     late BattleCharacter c2;
@@ -175,8 +175,9 @@ void main() {
       );
     });
 
-    test('activeBuffs 只含 cycle_yuti', () {
-      expect(c2.activeBuffs, containsAll(['cycle_yuti']));
+    test('activeBuffs 含 cycle_yuti + cycle_zhenqi（2026-06-26 周目平衡）', () {
+      expect(c2.activeBuffs, containsAll(['cycle_yuti', 'cycle_zhenqi']),
+          reason: '二周目主线 assignment=[yuti, zhenqi]');
       expect(c2.activeBuffs, isNot(contains('cycle_fanzhen')));
       expect(c2.activeBuffs, isNot(contains('cycle_shipo')));
     });
@@ -290,7 +291,7 @@ void main() {
       massBattleEnemyCounts: [2, 2],
     );
 
-    test('cycleIndex:1 → cycleIndex:2 wave 敌人 hp/attack 各 ×1.06', () {
+    test('cycleIndex:1 → cycleIndex:2 wave 敌人 hp/attack 各 ×1.10', () {
       final waves1 =
           StageBattleSetup.buildEnemyTeamsPerWave(massBattleStage,
               cycleIndex: 1);
@@ -302,7 +303,7 @@ void main() {
       expect(waves2, hasLength(2));
 
       final ce = GameRepository.instance.numbers.cycleEvolution;
-      final scale = 1 + ce.scalePerCycle * (2 - 1); // 1.06
+      final scale = 1 + ce.scalePerCycle * (2 - 1); // 2026-06-26: 1.10
 
       for (var w = 0; w < 2; w++) {
         for (var i = 0; i < waves1[w].length; i++) {

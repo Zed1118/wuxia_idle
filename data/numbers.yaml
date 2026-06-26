@@ -1770,7 +1770,7 @@ treasure_drop:
 # charge_skill_id 复用既有蓄力破招技（stages.yaml chargeSkillId 真实 id）。
 # =============================================================================
 cycle_evolution:
-  scale_per_cycle: 0.06        # 每周目敌人基础属性缩放增幅（+6%）
+  scale_per_cycle: 0.10        # 每周目敌人基础属性缩放增幅（+10%，2026-06-26 周目平衡:二周目区分感不足,0.06→0.10·真机校）
   max_cycle_mainline: 3        # 主线最大周目数
   max_cycle_tower: 2           # 爬塔最大周目数
   defense_rate_cap: 0.6        # 敌人防御率上限（60%，防越 §5.4 红线）
@@ -1789,7 +1789,7 @@ cycle_evolution:
       charge_skill_id: skill_qingshan_qingfeng
   assignment:                  # 各场景 / 周目的词条分配表（cycle key 为整数）
     mainline:                  # 主线（非爬塔）
-      2: [yuti]
+      2: [yuti, zhenqi]        # 2026-06-26 周目平衡:二周目加真气(敌多放一次大招),提升区分感
       3: [yuti, fanzhen, shipo]
     tower_normal:              # 爬塔普通关
       2: [yuti, zhenqi]
