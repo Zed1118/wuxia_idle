@@ -169,12 +169,16 @@ void main() {
     await tester.tap(find.text(UiStrings.bulkSellButton));
     await tester.pumpAndSettle();
 
-    // 二次确认框应显示 sellConfirmBody(2, 40)
-    final expectedBody = UiStrings.sellConfirmBody(2, 40);
+    // 二次确认框应显示 sellConfirmBody(count, silver)，银两从配置动态算，
+    // 避免调 numbers.yaml 后断言变成假绿。
+    final disposalCfg = GameRepository.instance.numbers.disposal;
+    final expectedSilver =
+        equipmentSellPrice(EquipmentTier.xunChang, 0, disposalCfg) * 2;
+    final expectedBody = UiStrings.sellConfirmBody(2, expectedSilver);
     expect(
       find.text(expectedBody),
       findsOneWidget,
-      reason: '确认框应显示 sellConfirmBody(2, 40)',
+      reason: '确认框应显示 sellConfirmBody(2, expectedSilver)',
     );
   });
 
