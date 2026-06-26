@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/domain/enum_localizations.dart' show EnumL10n;
-import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/presentation/loot_rumor_dialog.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';
@@ -105,32 +103,9 @@ class TowerFloorCard extends StatelessWidget {
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text(UiStrings.towerReplayTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(UiStrings.towerReplayBody),
-              const SizedBox(height: 14),
-              // 半手动 P0 步骤5-G3:本层逐关自动/手动开关(塔身固定高,走 dialog)。
-              Row(
-                children: [
-                  const Text(
-                    UiStrings.stageAutoPlayPickLabel,
-                    style: TextStyle(
-                      color: WuxiaColors.textMuted,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  StageAutoPlayControl(
-                    battleKey: towerBattleKey(
-                      entry.def.floorIndex,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+          // 逐关「战斗方式」覆盖已移除(2026-06-26):全局「自动战斗」开关在设置面板,
+          // 逐关覆盖冗余。首通仍强制拖招,重打按全局设置。dialog 仅留重打确认文案。
+          content: const Text(UiStrings.towerReplayBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),

@@ -7,9 +7,7 @@ import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../battle/application/selected_cycle_provider.dart';
-import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/presentation/cycle_select_control.dart';
-import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/presentation/loot_rumor_dialog.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';
@@ -451,19 +449,9 @@ class _StageRow extends StatelessWidget {
                       enemyTeam: def.enemyTeam,
                       cleared: cleared,
                     ),
-                    // 半手动 P0 步骤5-G3:已通关关卡可逐关切自动/手动。
-                    // (周目选择 Phase 2 上移到章层,不再 per-stage。)
-                    if (cleared) ...[
-                      const SizedBox(height: 6),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: StageAutoPlayControl(
-                          battleKey: stageBattleKey(
-                            def.id,
-                          ),
-                        ),
-                      ),
-                    ],
+                    // 逐关「战斗方式」覆盖 chip 已移除(2026-06-26):全局「自动战斗」
+                    // 开关在设置面板,逐关覆盖冗余且挤占列表。首通仍强制拖招,
+                    // 重打按全局设置(resolveAutoPlayModeWithFirstClear override=null→globalDefault)。
                   ],
                 ),
               ),

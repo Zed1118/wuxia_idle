@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
+import 'package:wuxia_idle/features/battle/presentation/stage_auto_play_control.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -77,6 +78,9 @@ void main() {
     expect(find.text(UiStrings.stageListCleared), findsOneWidget);
     expect(find.text(UiStrings.stageListAvailable), findsOneWidget);
     expect(find.byIcon(Icons.lock), findsNWidgets(3));
+    // 逐关「战斗方式」覆盖 chip 已移除(2026-06-26):已通关关卡不再显该控件。
+    expect(find.byType(StageAutoPlayControl), findsNothing,
+        reason: '逐关战斗方式 chip 已删,全局开关在设置面板');
   });
 
   testWidgets('点 available 关卡 → 进入剧情阅读屏（T37 流程串联，P1 #1 真实剧情加载）',
