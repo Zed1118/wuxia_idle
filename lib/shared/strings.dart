@@ -1907,6 +1907,24 @@ class UiStrings {
   /// 未达门槛时的灰显提示（需本周目通关全部关卡）。
   static const String sweepLockedHint = '需本周目通关全部关卡后解锁';
 
+  /// 周目徽章（按钮后缀 / recap / HUD 共用）。
+  static String sweepCycleBadge(int cycle) => '第 $cycle 周目';
+
+  /// 主线章节扫荡按钮（带周目）。
+  static String sweepChapterButtonCycle(int cycle) =>
+      '$sweepChapterButton · ${sweepCycleBadge(cycle)}';
+
+  /// 爬塔扫荡按钮（带周目）。
+  static String sweepTowerButtonCycle(int cycle) =>
+      '$sweepTowerButton · ${sweepCycleBadge(cycle)}';
+
+  /// 未达门槛灰显提示（带周目，§5.7 先手工通关该周目全部关卡）。
+  static String sweepLockedHintCycle(int cycle) =>
+      '${sweepCycleBadge(cycle)}需先手工通关全部关卡';
+
+  /// recap 行：本次扫荡的周目。
+  static String sweepRecapCycle(int cycle) => '扫荡 · ${sweepCycleBadge(cycle)}';
+
   /// 扫荡屏标题前缀。
   static String sweepTitle(String unitName) => '一键扫荡 · $unitName';
 

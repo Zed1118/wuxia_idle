@@ -96,7 +96,14 @@ class StageListScreen extends ConsumerWidget {
               children: [
                 _StageJourneyMap(chapterIndex: chapterIndex, entries: entries),
                 const SizedBox(height: 12),
-                // 一键扫荡本章入口（醒目主按钮·本周目全关已通才亮）。
+                // 章级周目选择控件(整章已通才显)。置于扫荡按钮上方:先选周目、
+                // 再扫荡,扫荡按钮随选定周目刷新标签与门槛。
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: CycleSelectControl(chapterKey: chapterKey),
+                ),
+                // 一键扫荡本章入口:本周目全关已通→醒目金按钮;未通→灰显+提示
+                // (§5.7 灰掉,告知玩家需先手工通关该周目全部关卡)。
                 _ChapterSweepButton(
                   chapterIndex: chapterIndex,
                   entries: entries,
@@ -106,12 +113,15 @@ class StageListScreen extends ConsumerWidget {
                         cycle: cycleFor(),
                         chapterStageIds: [for (final e in entries) e.def.id],
                       ),
+                  // 灰显门槛提示仅在本章至少通关过一次后出现;全新未通章仍隐藏
+                  // (不在每章顶堆砌锁定按钮)。覆盖用户真实困惑:通过一次后切周目不能扫。
+                  everCleared: progress != null &&
+                      MainlineProgressService.highestClearedCycleForChapter(
+                            progress,
+                            chapterKey,
+                          ) >=
+                          1,
                   cycle: cycleFor(),
-                ),
-                // 章级周目选择控件(整章已通才显;上移自旧 per-stage 位置)。
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: CycleSelectControl(chapterKey: chapterKey),
                 ),
                 for (var i = 0; i < entries.length; i++)
                   Padding(
@@ -556,18 +566,44 @@ class _ChapterSweepButton extends StatelessWidget {
     required this.chapterIndex,
     required this.entries,
     required this.eligible,
+    required this.everCleared,
     required this.cycle,
   });
 
   final int chapterIndex;
   final List<StageEntry> entries;
   final bool eligible;
+
+  /// 本章是否至少通关过一次（任一周目）。false 且未达门槛 → 整块隐藏。
+  final bool everCleared;
   final int cycle;
 
   @override
   Widget build(BuildContext context) {
-    // §5.7：未解锁（本周目未全通）直接隐藏，解锁后才以醒目主按钮出现。
-    if (!eligible) return const SizedBox.shrink();
+    // 从未通过本章 → 不显（避免在每章顶堆砌锁定按钮，保持全新章干净）。
+    if (!eligible && !everCleared) return const SizedBox.shrink();
+    // §5.7：通关过、但当前选定周目未全手工通关 → 灰显 + 提示（不再整块隐藏），
+    // 让玩家知道扫的是哪个周目、以及为何还不能扫（需先手工通关该周目全部关卡）。
+    if (!eligible) {
+      return Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 8),
+        child: FilledButton.icon(
+          style: FilledButton.styleFrom(
+            backgroundColor: WuxiaColors.panel,
+            foregroundColor: WuxiaColors.textMuted,
+            disabledBackgroundColor: WuxiaColors.panel,
+            disabledForegroundColor: WuxiaColors.textMuted,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            textStyle:
+                const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          onPressed: null,
+          icon: const Icon(Icons.lock_outline, size: 18),
+          label: Text(UiStrings.sweepLockedHintCycle(cycle)),
+        ),
+      );
+    }
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 8),
@@ -589,12 +625,13 @@ class _ChapterSweepButton extends StatelessWidget {
               builder: (_) => SweepScreen(
                 units: units,
                 unitName: UiStrings.chapterTitle(chapterIndex),
+                cycle: cycle,
               ),
             ),
           );
         },
         icon: const Icon(Icons.fast_forward, size: 22),
-        label: const Text(UiStrings.sweepChapterButton),
+        label: Text(UiStrings.sweepChapterButtonCycle(cycle)),
       ),
     );
   }
