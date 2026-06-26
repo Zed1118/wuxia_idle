@@ -14,7 +14,21 @@ void main() {
   RareBonusDropConfig cfg(List<(int, double)> tiers, {bool enabled = true}) =>
       RareBonusDropConfig(
         enabled: enabled,
-        tiers: tiers.map((t) => RareBonusTier(offset: t.$1, chance: t.$2)).toList(),
+        // 默认 ng_plus = chance(不区分周目),周目用例另用 cfgNg。
+        tiers: tiers
+            .map((t) =>
+                RareBonusTier(offset: t.$1, chance: t.$2, chanceNgPlus: t.$2))
+            .toList(),
+      );
+
+  // 周目差异化:(offset, chance一周目, chanceNgPlus二周目起)。
+  RareBonusDropConfig cfgNg(List<(int, double, double)> tiers) =>
+      RareBonusDropConfig(
+        enabled: true,
+        tiers: tiers
+            .map((t) =>
+                RareBonusTier(offset: t.$1, chance: t.$2, chanceNgPlus: t.$3))
+            .toList(),
       );
 
   test('+1 阶 chance=1.0 → 返回本阶 +1', () {
@@ -51,5 +65,47 @@ void main() {
     final t = selectRareBonusTier(
         EquipmentTier.xunChang, cfg([(1, 1.0)], enabled: false), rng);
     expect(t, isNull);
+  });
+
+  // ── 周目平衡 2026-06-26:cycle≥2 用 chanceNgPlus ──
+  group('周目感知 chanceFor / selectRareBonusTier cycle', () {
+    test('RareBonusTier.chanceFor:cycle1→chance / cycle≥2→chanceNgPlus', () {
+      const t = RareBonusTier(offset: 1, chance: 0.05, chanceNgPlus: 0.08);
+      expect(t.chanceFor(1), 0.05);
+      expect(t.chanceFor(2), 0.08);
+      expect(t.chanceFor(3), 0.08, reason: '三周目仍用 ng_plus(非随周目继续涨)');
+    });
+
+    test('fromYaml 缺 chance_ng_plus → 默认 = chance(向后兼容)', () {
+      final t = RareBonusTier.fromYaml({'offset': 1, 'chance': 0.05});
+      expect(t.chance, 0.05);
+      expect(t.chanceNgPlus, 0.05);
+    });
+
+    test('一周目 chance=0 不命中 / 二周目 chance_ng_plus=1.0 命中', () {
+      // chance 一周目 0(恒不命中)、二周目 1.0(恒命中)→ 验 cycle 切换分支。
+      final config = cfgNg([(1, 0.0, 1.0)]);
+      expect(
+        selectRareBonusTier(EquipmentTier.xunChang, config, DefaultRng(seed: 1),
+            cycle: 1),
+        isNull,
+        reason: '一周目 chance=0 不掉',
+      );
+      expect(
+        selectRareBonusTier(EquipmentTier.xunChang, config, DefaultRng(seed: 1),
+            cycle: 2),
+        EquipmentTier.xiangYang,
+        reason: '二周目 chance_ng_plus=1.0 掉 +1 阶',
+      );
+    });
+
+    test('cycle 默认 1(不传 = 一周目行为)', () {
+      final config = cfgNg([(1, 0.0, 1.0)]);
+      expect(
+        selectRareBonusTier(EquipmentTier.xunChang, config, DefaultRng(seed: 1)),
+        isNull,
+        reason: '不传 cycle 默认一周目 chance=0',
+      );
+    });
   });
 }

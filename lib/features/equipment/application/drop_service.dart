@@ -2,6 +2,7 @@ import '../../../core/domain/enums.dart';
 import '../../../data/defs/drop_entry.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/stage_def.dart';
+import '../domain/cycle_drop_bonus.dart';
 import '../domain/rare_bonus_drop.dart';
 import '../../tower/domain/tower_floor_def.dart';
 import '../../../core/domain/equipment.dart';
@@ -148,8 +149,9 @@ class DropService {
     required Rng rng,
     required List<EquipmentDef> Function(EquipmentTier) poolForTier,
     String? obtainedFrom,
+    int cycle = 1,
   }) {
-    final tier = selectRareBonusTier(baseTier, config, rng);
+    final tier = selectRareBonusTier(baseTier, config, rng, cycle: cycle);
     if (tier == null) return null;
     final pool = poolForTier(tier);
     if (pool.isEmpty) return null;
@@ -166,4 +168,34 @@ class DropService {
     if (min == max) return min;
     return min + rng.nextInt(max - min + 1);
   }
+}
+
+/// 该物品类型是否吃「周目材料加成」(炼器/强化材料)。
+/// miscMaterial(残页/精铁等)/磨剑石/心血结晶 = 是;经验丹/秘籍/银两 = 否
+/// (后三者是货币/进度/门控物,不随周目放量,守 §5.1 不刷)。
+bool isCycleBonusMaterial(ItemType type) =>
+    type == ItemType.miscMaterial ||
+    type == ItemType.moJianShi ||
+    type == ItemType.xinXueJieJing;
+
+/// 周目普通掉落材料加成(纯函数,周目平衡 2026-06-26)。
+///
+/// cycle≥2 时把 [base] 里「材料类」物品数量 ×[config.qtyMultFor](向下取整,
+/// 且不低于原值);装备/经验丹/秘籍/银两原样保留。cycle 1 或倍率 1.0 → 原样返回。
+DropResult applyCycleMaterialBonus(
+  DropResult base,
+  int cycle,
+  CycleDropBonusConfig config,
+) {
+  final mult = config.qtyMultFor(cycle);
+  if (mult == 1.0 || base.items.isEmpty) return base;
+  final boosted = base.items.map((it) {
+    if (!isCycleBonusMaterial(ItemType.fromDefId(it.defId))) return it;
+    final scaled = (it.quantity * mult).floor();
+    return ItemDropResult(
+      defId: it.defId,
+      quantity: scaled < it.quantity ? it.quantity : scaled,
+    );
+  }).toList(growable: false);
+  return DropResult(equipments: base.equipments, items: boosted);
 }
