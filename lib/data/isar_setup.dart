@@ -47,6 +47,9 @@ class IsarSetup {
   /// propagation）：未 init 时返回 null,不抛错。生产路径走 [instance]。
   static Isar? get instanceOrNull => _instance;
 
+  /// 当前存档 schema 版本（展示/测试用）。
+  static String get currentSaveVersion => _currentSaveVersion;
+
   /// 当前槽位 SaveData（id 固定 0）。init 后必非 null；未 init 时 instance 抛错。
   static Future<SaveData?> currentSaveData() => instance.saveDatas.get(0);
 
