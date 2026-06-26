@@ -67,7 +67,7 @@ class BulkDisposalDialog extends ConsumerWidget {
                     error: (e, _) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Text(
-                        '错误：$e',
+                        'load error: $e',
                         style: const TextStyle(color: WuxiaColors.hpLow),
                       ),
                     ),
