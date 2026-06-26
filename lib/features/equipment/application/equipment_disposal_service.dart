@@ -5,6 +5,21 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../domain/equipment_disposal.dart';
 
+/// 批量按品级出售/分解的汇总结果。
+class BulkDisposalResult {
+  final int count;
+  final int totalSilver;
+  final int totalMojianshi;
+  final int totalXinxuejiejing;
+
+  const BulkDisposalResult({
+    this.count = 0,
+    this.totalSilver = 0,
+    this.totalMojianshi = 0,
+    this.totalXinxuejiejing = 0,
+  });
+}
+
 /// 装备单件出售/分解的操作结果。
 enum DisposalOutcome {
   /// 出售成功。
@@ -65,6 +80,56 @@ class EquipmentDisposalService {
         }
         return DisposalOutcome.disassembled;
       });
+
+  /// 批量出售指定品级的全部可处置背包装备（整批一个 [writeTxn]，失败自动回滚）。
+  ///
+  /// 跳过已装备（[Equipment.ownerCharacterId] != null）和师承遗物（[Equipment.isLineageHeritage]）。
+  Future<BulkDisposalResult> sellAllOfTier(EquipmentTier tier) =>
+      isar.writeTxn(() async {
+        final items = await _disposableOfTier(tier);
+        var total = 0;
+        for (final eq in items) {
+          total += equipmentSellPrice(eq.tier, eq.enhanceLevel, config);
+          await isar.equipments.delete(eq.id);
+        }
+        if (total > 0) await _addItem('item_silver', ItemType.silver, total);
+        return BulkDisposalResult(count: items.length, totalSilver: total);
+      });
+
+  /// 批量分解指定品级的全部可处置背包装备（整批一个 [writeTxn]，失败自动回滚）。
+  ///
+  /// 跳过已装备/师承遗物（与 [sellAllOfTier] 相同护栏）。
+  Future<BulkDisposalResult> disassembleAllOfTier(EquipmentTier tier) =>
+      isar.writeTxn(() async {
+        final items = await _disposableOfTier(tier);
+        var mj = 0, xx = 0;
+        for (final eq in items) {
+          final r =
+              equipmentDisassembleRewards(eq.tier, eq.enhanceLevel, config);
+          mj += r.mojianshi;
+          xx += r.xinxuejiejing;
+          await isar.equipments.delete(eq.id);
+        }
+        if (mj > 0) await _addItem('item_mojianshi', ItemType.moJianShi, mj);
+        if (xx > 0) {
+          await _addItem(
+              'item_xinxuejiejing', ItemType.xinXueJieJing, xx);
+        }
+        return BulkDisposalResult(
+            count: items.length,
+            totalMojianshi: mj,
+            totalXinxuejiejing: xx);
+      });
+
+  /// 查询指定品级中可处置的背包装备（ownerCharacterId==null && !isLineageHeritage）。
+  /// 须在 [writeTxn] 内调（读在同事务内）。
+  Future<List<Equipment>> _disposableOfTier(EquipmentTier tier) async {
+    final all =
+        await isar.equipments.filter().tierEqualTo(tier).findAll();
+    return all
+        .where((e) => e.ownerCharacterId == null && !e.isLineageHeritage)
+        .toList();
+  }
 
   /// 前置守卫：null = 可处置；否则返回拒绝/未找到结果。
   DisposalOutcome? _guard(Equipment? eq) {
