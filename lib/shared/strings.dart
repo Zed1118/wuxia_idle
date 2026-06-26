@@ -576,8 +576,6 @@ class UiStrings {
       '出售「$name」，获得银两 $silver。';
   static String disassembleSingleConfirmBody(String name, int mojianshi, int xinxue) =>
       '分解「$name」，获得磨剑石 $mojianshi${xinxue > 0 ? ' / 心血结晶 $xinxue' : ''}。';
-  static const String disposalRejectedEquipped = '装备穿戴中，不可处置。';
-  static const String disposalRejectedHeritage = '师承遗物不可处置。';
   static String bulkTierLabel(String tierName, int count) => '$tierName（$count 件）';
   /// 批量整理对话框按钮（Task 6）。
   static const String bulkSellButton = '一键出售';
