@@ -160,6 +160,10 @@ void main() {
             equipmentByIdProvider(
               entry.key,
             ).overrideWith((ref) async => entry.value),
+          // EquipSlotDialog(点槽弹)watch allEquipmentsProvider → 注 fixture 供其渲染。
+          allEquipmentsProvider.overrideWith(
+            (ref) async => equipments.values.toList(),
+          ),
           for (final entry in techniques.entries)
             techniqueByIdProvider(
               entry.key,
@@ -291,9 +295,10 @@ void main() {
     expect(find.text('饰品'), findsOneWidget);
   });
 
-  // ── 用例 1b：T10 点已穿装备 → 快捷操作面板 ──────────────────────────────
+  // ── 用例 1b：点已穿装备 → EquipSlotDialog 顶部操作图标 ────────────────────
+  // 2026-06-26 一步到位重做:旧贴底「更换/强化/开锋/典故/卸下」菜单收成顶部图标行。
 
-  testWidgets('T10 点已穿装备槽 → 快捷操作面板(更换/查看典故/卸下)', (tester) async {
+  testWidgets('点已穿装备槽 → 对话框顶部操作图标(强化/开锋/典故/卸下)', (tester) async {
     final character = mkCharacter(weaponId: 10);
     final weapon = mkEquipment(
       id: 10,
@@ -306,20 +311,21 @@ void main() {
       equipments: {10: weapon},
     );
 
-    // 点武器槽(已穿)→ 应弹快捷操作面板而非直接换装列表
+    // 点武器槽(已穿)→ 弹 EquipSlotDialog,顶部含操作图标(by tooltip)。
     final slot = find
         .ancestor(of: find.text('武器'), matching: find.byType(InkWell))
         .first;
     await tester.ensureVisible(slot);
     await tester.pump();
     await tester.tap(slot);
-    for (var i = 0; i < 6; i++) {
+    for (var i = 0; i < 8; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
 
-    expect(find.text(UiStrings.equipQuickReplace), findsOneWidget);
-    expect(find.text(UiStrings.equipQuickViewLore), findsOneWidget);
-    expect(find.text(UiStrings.equipUnequip), findsOneWidget);
+    expect(find.byTooltip(UiStrings.tabEnhance), findsOneWidget);
+    expect(find.byTooltip(UiStrings.tabForging), findsOneWidget);
+    expect(find.byTooltip(UiStrings.equipQuickViewLore), findsOneWidget);
+    expect(find.byTooltip(UiStrings.equipUnequip), findsOneWidget);
   });
 
   // ── 用例 2：未装备占位 ─────────────────────────────────────────────────
