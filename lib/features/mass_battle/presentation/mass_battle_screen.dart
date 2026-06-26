@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../battle/application/selected_cycle_provider.dart';
-import '../../battle/application/stage_auto_play_pref.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../battle/presentation/cycle_select_control.dart';
-import '../../battle/presentation/stage_auto_play_control.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
@@ -190,19 +188,9 @@ class _MassBattleRow extends StatelessWidget {
                           fontSize: 12,
                         ),
                       ),
-                      // 半手动 P0 步骤5-G3:已通关可逐关切自动/手动。
-                      // 群战 autoReplay 降级 autoFallback,toggle 仍控自动/手动意图。
-                      if (cleared) ...[
-                        const SizedBox(height: 6),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: StageAutoPlayControl(
-                            battleKey:
-                                stageBattleKey(def.id),
-                          ),
-                        ),
-                        // (周目选择 Phase 2 上移到章层,不再 per-stage。)
-                      ],
+                      // 逐关「战斗方式」覆盖 chip 已移除(2026-06-26):全局
+                      // 「自动战斗」开关在设置面板,逐关覆盖冗余且挤占列表。
+                      // 与主线/爬塔一致(commit 9231e4ae)。周目选择上移到章层。
                     ],
                   ),
                 ),
