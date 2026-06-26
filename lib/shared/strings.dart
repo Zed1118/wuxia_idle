@@ -900,6 +900,31 @@ class UiStrings {
   static String equipmentResonanceNextBonus(int pct) => '下一阶 +$pct%';
   static String equipmentResonanceBattleProgress(int count, int nextMin) =>
       '战斗 $count/$nextMin';
+  static const String equipmentSourceSectionDivider = '◇ 来源 ◇';
+  static String equipmentSourceMainline(
+    int chapterIndex,
+    String stageName,
+    bool isBoss,
+  ) => isBoss
+      ? '主线·第$chapterIndex章 Boss「$stageName」'
+      : '主线·第$chapterIndex章「$stageName」';
+  static String equipmentSourceStage(String stageName, bool isBoss) =>
+      isBoss ? '支线·Boss「$stageName」' : '支线·「$stageName」';
+  static String equipmentSourceTower(int floorIndex, bool isBoss) =>
+      isBoss ? '爬塔·第$floorIndex层 Boss' : '爬塔·第$floorIndex层';
+  static String equipmentSourceSeclusion(String mapName) => '闭关·$mapName';
+  static const String equipmentSourceShop = '江湖商店';
+  static const String equipmentSourceUnknown = '来源未明';
+  static String equipmentSourceTag(String tag) => switch (tag) {
+    'yiLiu_quest' => '一流支线',
+    'jueDing_unlock' => '绝顶解锁',
+    'zongShi_unlock' => '宗师解锁',
+    'wuSheng_unlock' => '武圣解锁',
+    'ascension_reward' => '飞升传承',
+    'inner_demon_reward' => '心魔试炼',
+    'mass_battle_merit' => '群战功勋',
+    _ => equipmentSourceUnknown,
+  };
   // §5.6 审计抽出(2026-06-08):装备详情属性基础值后缀
   static String equipmentStatBaseValue(int base) => '(基 $base)';
 
