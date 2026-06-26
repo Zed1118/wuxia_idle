@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/domain/enums.dart';
@@ -44,9 +45,9 @@ class StagePreviewContent extends StatelessWidget {
               '${UiStrings.previewRecommendedRealmLabel}：'
               '${EnumL10n.realmTier(recommendedRealm)}',
               style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: WuxiaUi.muted,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: WuxiaUi.ink,
               ),
             ),
             if (verdict != null) ...[
@@ -81,8 +82,8 @@ class _DifficultyBadge extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
+          fontSize: 13,
+          fontWeight: FontWeight.w800,
           color: color,
         ),
       ),
@@ -126,6 +127,9 @@ class _StagePreviewHoverCardState extends State<StagePreviewHoverCard> {
   final LayerLink _link = LayerLink();
   final OverlayPortalController _controller = OverlayPortalController();
 
+  /// 指针在屏幕下半时浮层向上翻弹(防底部裁切)。
+  bool _flipUp = false;
+
   void _show() {
     if (!_controller.isShowing) _controller.show();
   }
@@ -134,12 +138,21 @@ class _StagePreviewHoverCardState extends State<StagePreviewHoverCard> {
     if (_controller.isShowing) _controller.hide();
   }
 
+  void _onEnter(PointerEnterEvent e) {
+    final h = MediaQuery.of(context).size.height;
+    final flip = e.position.dy > h * 0.5; // 下半屏 → 向上弹
+    if (flip != _flipUp) setState(() => _flipUp = flip);
+    _show();
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 浮层限高 = 屏幕 60%,长清单内部滚动(防上/下方向都裁切)。
+    final maxH = MediaQuery.of(context).size.height * 0.6;
     return CompositedTransformTarget(
       link: _link,
       child: MouseRegion(
-        onEnter: (_) => _show(),
+        onEnter: _onEnter,
         onExit: (_) => _hide(),
         child: OverlayPortal(
           controller: _controller,
@@ -148,9 +161,11 @@ class _StagePreviewHoverCardState extends State<StagePreviewHoverCard> {
               width: widget.width,
               child: CompositedTransformFollower(
                 link: _link,
-                targetAnchor: Alignment.bottomLeft,
-                followerAnchor: Alignment.topLeft,
-                offset: const Offset(0, 6),
+                targetAnchor:
+                    _flipUp ? Alignment.topLeft : Alignment.bottomLeft,
+                followerAnchor:
+                    _flipUp ? Alignment.bottomLeft : Alignment.topLeft,
+                offset: Offset(0, _flipUp ? -6 : 6),
                 child: MouseRegion(
                   onEnter: (_) => _show(),
                   onExit: (_) => _hide(),
@@ -158,6 +173,7 @@ class _StagePreviewHoverCardState extends State<StagePreviewHoverCard> {
                     color: Colors.transparent,
                     child: Container(
                       padding: const EdgeInsets.all(12),
+                      constraints: BoxConstraints(maxHeight: maxH),
                       decoration: BoxDecoration(
                         color: WuxiaUi.paper,
                         borderRadius: BorderRadius.circular(6),
@@ -172,7 +188,7 @@ class _StagePreviewHoverCardState extends State<StagePreviewHoverCard> {
                           ),
                         ],
                       ),
-                      child: widget.preview,
+                      child: SingleChildScrollView(child: widget.preview),
                     ),
                   ),
                 ),
