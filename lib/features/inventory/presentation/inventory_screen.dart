@@ -14,6 +14,7 @@ import '../../../core/application/inventory_providers.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
+import '../application/inventory_organization.dart';
 import '../application/item_use_service.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -99,10 +100,6 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
   }
 }
 
-/// T11 仓库筛选维度(全部/可装备/已穿戴/可开锋/境界未达)。
-/// 全部维度数据确定、零假入口(不含语义模糊的「可强化」——强化无封顶上限)。
-enum _EquipFilter { all, equippable, equipped, forgeable, realmLocked }
-
 class _EquipmentTab extends ConsumerStatefulWidget {
   const _EquipmentTab();
 
@@ -111,7 +108,10 @@ class _EquipmentTab extends ConsumerStatefulWidget {
 }
 
 class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
-  _EquipFilter _filter = _EquipFilter.all;
+  InventorySlotFilter _slotFilter = InventorySlotFilter.all;
+  InventoryTierFilter _tierFilter = InventoryTierFilter.all;
+  InventoryOwnershipFilter _ownershipFilter = InventoryOwnershipFilter.all;
+  InventoryEquipmentSort _sort = InventoryEquipmentSort.tierDesc;
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +129,16 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
         ),
       ),
       data: (list) {
-        final filtered = list.where((eq) => _matches(eq, playerRealm)).toList();
+        final filtered = organizeInventoryEquipments(
+          list,
+          InventoryEquipmentQuery(
+            slot: _slotFilter,
+            tier: _tierFilter,
+            ownership: _ownershipFilter,
+            sort: _sort,
+          ),
+          realm: playerRealm,
+        );
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -147,9 +156,15 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
                 ),
               ),
             ),
-            _FilterBar(
-              selected: _filter,
-              onSelect: (f) => setState(() => _filter = f),
+            _OrganizationBar(
+              slotFilter: _slotFilter,
+              tierFilter: _tierFilter,
+              ownershipFilter: _ownershipFilter,
+              sort: _sort,
+              onSlotSelect: (f) => setState(() => _slotFilter = f),
+              onTierSelect: (f) => setState(() => _tierFilter = f),
+              onOwnershipSelect: (f) => setState(() => _ownershipFilter = f),
+              onSortSelect: (s) => setState(() => _sort = s),
             ),
             Expanded(
               child: filtered.isEmpty
@@ -166,35 +181,28 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
       },
     );
   }
-
-  bool _matches(Equipment eq, RealmTier? realm) {
-    return switch (_filter) {
-      _EquipFilter.all => true,
-      _EquipFilter.equippable =>
-        eq.ownerCharacterId == null &&
-            (realm == null || eq.isEquippableAtRealm(realm)),
-      _EquipFilter.equipped => eq.ownerCharacterId != null,
-      _EquipFilter.forgeable => eq.forgingSlots.any((s) => !s.unlocked),
-      _EquipFilter.realmLocked =>
-        realm != null && !eq.isEquippableAtRealm(realm),
-    };
-  }
 }
 
-/// T11 筛选条:5 个可选 chip,水墨风。
-class _FilterBar extends StatelessWidget {
-  const _FilterBar({required this.selected, required this.onSelect});
+class _OrganizationBar extends StatelessWidget {
+  const _OrganizationBar({
+    required this.slotFilter,
+    required this.tierFilter,
+    required this.ownershipFilter,
+    required this.sort,
+    required this.onSlotSelect,
+    required this.onTierSelect,
+    required this.onOwnershipSelect,
+    required this.onSortSelect,
+  });
 
-  final _EquipFilter selected;
-  final ValueChanged<_EquipFilter> onSelect;
-
-  static const Map<_EquipFilter, String> _labels = {
-    _EquipFilter.all: UiStrings.inventoryFilterAll,
-    _EquipFilter.equippable: UiStrings.inventoryFilterEquippable,
-    _EquipFilter.equipped: UiStrings.inventoryFilterEquipped,
-    _EquipFilter.forgeable: UiStrings.inventoryFilterForgeable,
-    _EquipFilter.realmLocked: UiStrings.inventoryFilterRealmLocked,
-  };
+  final InventorySlotFilter slotFilter;
+  final InventoryTierFilter tierFilter;
+  final InventoryOwnershipFilter ownershipFilter;
+  final InventoryEquipmentSort sort;
+  final ValueChanged<InventorySlotFilter> onSlotSelect;
+  final ValueChanged<InventoryTierFilter> onTierSelect;
+  final ValueChanged<InventoryOwnershipFilter> onOwnershipSelect;
+  final ValueChanged<InventoryEquipmentSort> onSortSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -204,16 +212,113 @@ class _FilterBar extends StatelessWidget {
         spacing: 8,
         runSpacing: 8,
         children: [
-          for (final f in _EquipFilter.values)
+          for (final f in InventorySlotFilter.values)
             _FilterChip(
-              label: _labels[f]!,
-              selected: f == selected,
-              onTap: () => onSelect(f),
+              label: _slotFilterLabel(f),
+              selected: f == slotFilter,
+              onTap: () => onSlotSelect(f),
             ),
+          for (final f in InventoryTierFilter.values)
+            _FilterChip(
+              label: _tierFilterLabel(f),
+              selected: f == tierFilter,
+              onTap: () => onTierSelect(f),
+            ),
+          for (final f in InventoryOwnershipFilter.values)
+            _FilterChip(
+              label: _ownershipFilterLabel(f),
+              selected: f == ownershipFilter,
+              onTap: () => onOwnershipSelect(f),
+            ),
+          PopupMenuButton<InventoryEquipmentSort>(
+            tooltip: UiStrings.inventorySortLabel(_sortLabel(sort)),
+            color: WuxiaColors.panel,
+            onSelected: onSortSelect,
+            itemBuilder: (context) => [
+              for (final s in InventoryEquipmentSort.values)
+                PopupMenuItem(
+                  value: s,
+                  child: Text(
+                    _sortLabel(s),
+                    style: const TextStyle(color: WuxiaColors.textPrimary),
+                  ),
+                ),
+            ],
+            child: _FilterChip(
+              label: UiStrings.inventorySortLabel(_sortLabel(sort)),
+              selected: true,
+              onTap: null,
+            ),
+          ),
         ],
       ),
     );
   }
+}
+
+String _slotFilterLabel(InventorySlotFilter filter) {
+  return switch (filter) {
+    InventorySlotFilter.all => UiStrings.inventoryFilterSlotAll,
+    InventorySlotFilter.weapon => UiStrings.inventoryFilterSlotLabel(
+      EnumL10n.equipmentSlot(EquipmentSlot.weapon),
+    ),
+    InventorySlotFilter.armor => UiStrings.inventoryFilterSlotLabel(
+      EnumL10n.equipmentSlot(EquipmentSlot.armor),
+    ),
+    InventorySlotFilter.accessory => UiStrings.inventoryFilterSlotLabel(
+      EnumL10n.equipmentSlot(EquipmentSlot.accessory),
+    ),
+  };
+}
+
+String _tierFilterLabel(InventoryTierFilter filter) {
+  return switch (filter) {
+    InventoryTierFilter.all => UiStrings.inventoryFilterTierAll,
+    InventoryTierFilter.xunChang => UiStrings.inventoryFilterTierLabel(
+      EnumL10n.equipmentTier(EquipmentTier.xunChang),
+    ),
+    InventoryTierFilter.xiangYang => UiStrings.inventoryFilterTierLabel(
+      EnumL10n.equipmentTier(EquipmentTier.xiangYang),
+    ),
+    InventoryTierFilter.haoJiaHuo => UiStrings.inventoryFilterTierLabel(
+      EnumL10n.equipmentTier(EquipmentTier.haoJiaHuo),
+    ),
+    InventoryTierFilter.liQi => UiStrings.inventoryFilterTierLabel(
+      EnumL10n.equipmentTier(EquipmentTier.liQi),
+    ),
+    InventoryTierFilter.zhongQi => UiStrings.inventoryFilterTierLabel(
+      EnumL10n.equipmentTier(EquipmentTier.zhongQi),
+    ),
+    InventoryTierFilter.baoWu => UiStrings.inventoryFilterTierLabel(
+      EnumL10n.equipmentTier(EquipmentTier.baoWu),
+    ),
+    InventoryTierFilter.shenWu => UiStrings.inventoryFilterTierLabel(
+      EnumL10n.equipmentTier(EquipmentTier.shenWu),
+    ),
+  };
+}
+
+String _ownershipFilterLabel(InventoryOwnershipFilter filter) {
+  return switch (filter) {
+    InventoryOwnershipFilter.all => UiStrings.inventoryFilterOwnershipAll,
+    InventoryOwnershipFilter.free => UiStrings.inventoryFilterFree,
+    InventoryOwnershipFilter.equipped => UiStrings.inventoryFilterEquipped,
+    InventoryOwnershipFilter.heritage => UiStrings.inventoryFilterHeritage,
+    InventoryOwnershipFilter.equippable => UiStrings.inventoryFilterEquippable,
+    InventoryOwnershipFilter.forgeable => UiStrings.inventoryFilterForgeable,
+    InventoryOwnershipFilter.realmLocked =>
+      UiStrings.inventoryFilterRealmLocked,
+  };
+}
+
+String _sortLabel(InventoryEquipmentSort sort) {
+  return switch (sort) {
+    InventoryEquipmentSort.tierDesc => UiStrings.inventorySortTierDesc,
+    InventoryEquipmentSort.tierAsc => UiStrings.inventorySortTierAsc,
+    InventoryEquipmentSort.enhanceDesc => UiStrings.inventorySortEnhanceDesc,
+    InventoryEquipmentSort.obtainedDesc => UiStrings.inventorySortObtainedDesc,
+    InventoryEquipmentSort.obtainedAsc => UiStrings.inventorySortObtainedAsc,
+  };
 }
 
 class _FilterChip extends StatelessWidget {
@@ -225,7 +330,7 @@ class _FilterChip extends StatelessWidget {
 
   final String label;
   final bool selected;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -263,7 +368,10 @@ class _MaterialTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(allInventoryItemsProvider);
     final silverAsync = ref.watch(silverBalanceProvider);
-    final silverBalance = silverAsync.maybeWhen(data: (n) => n, orElse: () => 0);
+    final silverBalance = silverAsync.maybeWhen(
+      data: (n) => n,
+      orElse: () => 0,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -297,9 +405,7 @@ class _MaterialTab extends ConsumerWidget {
               PlaqueButton(
                 label: UiStrings.inventoryShopEntry,
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const ShopScreen(),
-                  ),
+                  MaterialPageRoute<void>(builder: (_) => const ShopScreen()),
                 ),
               ),
             ],
@@ -354,9 +460,6 @@ class _EquipmentGrid extends ConsumerWidget {
     final bySlot = <EquipmentSlot, List<Equipment>>{};
     for (final eq in equipments) {
       bySlot.putIfAbsent(eq.slot, () => []).add(eq);
-    }
-    for (final list in bySlot.values) {
-      list.sort((a, b) => b.tier.index.compareTo(a.tier.index));
     }
     const order = [
       EquipmentSlot.weapon,
@@ -461,8 +564,9 @@ class _EquipmentGridTile extends ConsumerWidget {
     final def = GameRepository.instance.equipmentDefs[eq.defId];
     final locked = playerRealm != null && !eq.isEquippableAtRealm(playerRealm!);
     // T11:封条显具体境界原因(§5.3 装备阶↔境界 1:1,需同序境界),非泛化「未达境界」。
-    final requiredRealmName =
-        EnumL10n.realmTier(RealmTier.values[eq.tier.index]);
+    final requiredRealmName = EnumL10n.realmTier(
+      RealmTier.values[eq.tier.index],
+    );
 
     return Stack(
       clipBehavior: Clip.none,
@@ -698,9 +802,7 @@ class _MaterialGridTile extends ConsumerWidget {
                         color: WuxiaUi.paper,
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        shadows: [
-                          Shadow(blurRadius: 2, color: Colors.black54),
-                        ],
+                        shadows: [Shadow(blurRadius: 2, color: Colors.black54)],
                       ),
                     ),
                   ),

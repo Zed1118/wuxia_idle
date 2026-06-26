@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
+import '../../inventory/application/inventory_organization.dart';
 import '../domain/equipment_disposal.dart';
 
 /// 批量按品级出售/分解的汇总结果。
@@ -34,6 +35,9 @@ enum DisposalOutcome {
   /// 拒绝：师承遗物（isLineageHeritage）。
   rejectedHeritage,
 
+  /// 拒绝：未来锁定装备（当前 schema 未落字段，先以谓词预留）。
+  rejectedLocked,
+
   /// 拒绝：装备不存在（id 无对应行）。
   notFound,
 }
@@ -44,42 +48,50 @@ enum DisposalOutcome {
 /// **守卫**：已装备（[Equipment.ownerCharacterId] != null）/
 ///         师承遗物（[Equipment.isLineageHeritage]）不可处置。
 class EquipmentDisposalService {
-  EquipmentDisposalService({required this.isar, required this.config});
+  EquipmentDisposalService({
+    required this.isar,
+    required this.config,
+    this.isLocked = _neverLockedForDisposal,
+  });
 
   final Isar isar;
   final EquipmentDisposalConfig config;
+  final EquipmentLockPredicate isLocked;
 
   /// 出售单件：删装备 + 入银两。
-  Future<DisposalOutcome> sell(int equipmentId) =>
-      isar.writeTxn(() async {
-        final eq = await isar.equipments.get(equipmentId);
-        final guard = _guard(eq);
-        if (guard != null) return guard;
+  Future<DisposalOutcome> sell(int equipmentId) => isar.writeTxn(() async {
+    final eq = await isar.equipments.get(equipmentId);
+    final guard = _guard(eq);
+    if (guard != null) return guard;
 
-        final price = equipmentSellPrice(eq!.tier, eq.enhanceLevel, config);
-        await isar.equipments.delete(equipmentId);
-        await _addItem('item_silver', ItemType.silver, price);
-        return DisposalOutcome.sold;
-      });
+    final price = equipmentSellPrice(eq!.tier, eq.enhanceLevel, config);
+    await isar.equipments.delete(equipmentId);
+    await _addItem('item_silver', ItemType.silver, price);
+    return DisposalOutcome.sold;
+  });
 
   /// 分解单件：删装备 + 入磨剑石/心血结晶。
-  Future<DisposalOutcome> disassemble(int equipmentId) =>
-      isar.writeTxn(() async {
-        final eq = await isar.equipments.get(equipmentId);
-        final guard = _guard(eq);
-        if (guard != null) return guard;
+  Future<DisposalOutcome> disassemble(int equipmentId) => isar.writeTxn(
+    () async {
+      final eq = await isar.equipments.get(equipmentId);
+      final guard = _guard(eq);
+      if (guard != null) return guard;
 
-        final r = equipmentDisassembleRewards(eq!.tier, eq.enhanceLevel, config);
-        await isar.equipments.delete(equipmentId);
-        if (r.mojianshi > 0) {
-          await _addItem('item_mojianshi', ItemType.moJianShi, r.mojianshi);
-        }
-        if (r.xinxuejiejing > 0) {
-          await _addItem(
-              'item_xinxuejiejing', ItemType.xinXueJieJing, r.xinxuejiejing);
-        }
-        return DisposalOutcome.disassembled;
-      });
+      final r = equipmentDisassembleRewards(eq!.tier, eq.enhanceLevel, config);
+      await isar.equipments.delete(equipmentId);
+      if (r.mojianshi > 0) {
+        await _addItem('item_mojianshi', ItemType.moJianShi, r.mojianshi);
+      }
+      if (r.xinxuejiejing > 0) {
+        await _addItem(
+          'item_xinxuejiejing',
+          ItemType.xinXueJieJing,
+          r.xinxuejiejing,
+        );
+      }
+      return DisposalOutcome.disassembled;
+    },
+  );
 
   /// 批量出售指定品级的全部可处置背包装备（整批一个 [writeTxn]，失败自动回滚）。
   ///
@@ -104,30 +116,32 @@ class EquipmentDisposalService {
         final items = await _disposableOfTier(tier);
         var mj = 0, xx = 0;
         for (final eq in items) {
-          final r =
-              equipmentDisassembleRewards(eq.tier, eq.enhanceLevel, config);
+          final r = equipmentDisassembleRewards(
+            eq.tier,
+            eq.enhanceLevel,
+            config,
+          );
           mj += r.mojianshi;
           xx += r.xinxuejiejing;
           await isar.equipments.delete(eq.id);
         }
         if (mj > 0) await _addItem('item_mojianshi', ItemType.moJianShi, mj);
         if (xx > 0) {
-          await _addItem(
-              'item_xinxuejiejing', ItemType.xinXueJieJing, xx);
+          await _addItem('item_xinxuejiejing', ItemType.xinXueJieJing, xx);
         }
         return BulkDisposalResult(
-            count: items.length,
-            totalMojianshi: mj,
-            totalXinxuejiejing: xx);
+          count: items.length,
+          totalMojianshi: mj,
+          totalXinxuejiejing: xx,
+        );
       });
 
   /// 查询指定品级中可处置的背包装备（ownerCharacterId==null && !isLineageHeritage）。
   /// 须在 [writeTxn] 内调（读在同事务内）。
   Future<List<Equipment>> _disposableOfTier(EquipmentTier tier) async {
-    final all =
-        await isar.equipments.filter().tierEqualTo(tier).findAll();
+    final all = await isar.equipments.filter().tierEqualTo(tier).findAll();
     return all
-        .where((e) => e.ownerCharacterId == null && !e.isLineageHeritage)
+        .where((e) => isBulkDisposalCandidate(e, isLocked: isLocked))
         .toList();
   }
 
@@ -136,6 +150,7 @@ class EquipmentDisposalService {
     if (eq == null) return DisposalOutcome.notFound;
     if (eq.ownerCharacterId != null) return DisposalOutcome.rejectedEquipped;
     if (eq.isLineageHeritage) return DisposalOutcome.rejectedHeritage;
+    if (isLocked(eq)) return DisposalOutcome.rejectedLocked;
     return null;
   }
 
@@ -148,12 +163,16 @@ class EquipmentDisposalService {
       existing.lastObtainedAt = now;
       await isar.inventoryItems.put(existing);
     } else {
-      await isar.inventoryItems.put(InventoryItem()
-        ..defId = defId
-        ..itemType = type
-        ..quantity = amount
-        ..firstObtainedAt = now
-        ..lastObtainedAt = now);
+      await isar.inventoryItems.put(
+        InventoryItem()
+          ..defId = defId
+          ..itemType = type
+          ..quantity = amount
+          ..firstObtainedAt = now
+          ..lastObtainedAt = now,
+      );
     }
   }
 }
+
+bool _neverLockedForDisposal(Equipment _) => false;
