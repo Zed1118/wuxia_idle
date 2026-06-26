@@ -233,6 +233,13 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// [AnimationNumbers.fastForwardIntervalMs] 速度连播,免玩家手点快进键。
   final bool startFastForward;
 
+  /// 一键扫荡用(默认 false → 现有调用零影响):**挂载时若 battleProvider 已是非空
+  /// 活跃战斗,自动起播**。常规流程(stage/tower host)是「先挂本屏空团、后 postFrame
+  /// startBattle」,靠 build 内 `ref.listen` 的 empty→非空边沿起 timer;扫荡是「先注入、
+  /// 后挂本屏」,挂载时边沿已过 → 监听捕获不到。本标志为扫荡补一条挂载后兜底自启,
+  /// 不影响默认契约(其它调用预填战斗后保持冻结直到显式 advance)。
+  final bool autoStartOnMount;
+
   const BattleScreen({
     super.key,
     this.animConfig = AnimationNumbers.defaults,
@@ -250,6 +257,7 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.debugDragPreview,
     this.startPaused = false,
     this.startFastForward = false,
+    this.autoStartOnMount = false,
   });
 
   @override
@@ -363,7 +371,27 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     if (widget.startPaused) {
       _isPaused = true;
     }
-    // Timer 不在 initState 启动，等 ref.listen 看到 startBattle 完成后再启动。
+    // Timer 不在 initState 同步启动:常规流程(stage/tower host)先挂本屏(空团)再在
+    // postFrame 调 startBattle,由 build 内 `ref.listen` 的 empty→非空边沿起 timer。
+    //
+    // 一键扫荡(SweepScreen)反序「先注入战斗、后挂本屏」:本屏挂载时 battleProvider
+    // 已是非空活跃态,空→非空边沿早已发生 → 监听捕获不到 → timer 永不启动(黑屏
+    // hang)。仅当 caller 显式 opt-in [autoStartOnMount] 时补一条挂载后兜底:挂到一场
+    // 已就绪的活跃战斗且尚无 timer → 自启。默认 false 保持现有契约(其它调用预填战斗
+    // 后保持冻结,由测试/验收显式推进),零回归。
+    if (widget.autoStartOnMount) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted ||
+            !widget.autoStart ||
+            _isPaused ||
+            widget.debugDragPreview != null ||
+            _playTimer != null) {
+          return;
+        }
+        final s = ref.read(battleProvider);
+        if (s.leftTeam.isNotEmpty && !s.isFinished) _startTimer();
+      });
+    }
   }
 
   // 验收路由 startPaused 专用:单步推进战斗 + setState 反映 UI。
