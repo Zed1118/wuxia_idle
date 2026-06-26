@@ -1857,8 +1857,8 @@ milestone_equipment_grants:
 # 速度无红线)。**初值保守,待真机校**(同伤势系统先例,见 spec A 块)。
 level:
   max_level: 100
-  exp_to_next_base: 120
-  exp_to_next_per_level: 40
+  exp_to_next_base: 200         # 2026-06-26 放慢升级·待真机校(原 120)
+  exp_to_next_per_level: 80    # 2026-06-26 放慢升级·待真机校(原 40)
   bonus_max_hp_per_level: 15              # @L100 +1500(经血量 20000 clamp 兜底)
   bonus_internal_force_max_per_level: 8   # @L100 +800(经内力 15000 clamp 兜底)
   bonus_speed_per_level: 1                # @L100 +100(速度无红线)
