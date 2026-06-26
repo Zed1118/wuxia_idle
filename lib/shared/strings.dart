@@ -43,8 +43,11 @@ class UiStrings {
   // P0 破招
   static const String battleInterruptSkill = '破招';
   // T2 蓄力危险条：敌人正在蓄力大招的顶部警示（招名 + 剩余回合）。
-  static String battleDangerCharging(String enemyName, String skillName, int ticks) =>
-      '$enemyName 正在蓄势：$skillName（还有 $ticks 回合发动）';
+  static String battleDangerCharging(
+    String enemyName,
+    String skillName,
+    int ticks,
+  ) => '$enemyName 正在蓄势：$skillName（还有 $ticks 回合发动）';
   static const String battleDangerPrefix = '⚠ ';
 
   // T1 战斗指令台：技能分组标签 + 状态印 + 内力/冷却短标。
@@ -53,7 +56,8 @@ class UiStrings {
   // 破招用 [battleInterruptSkill]='破招'、大招用 [ultimate]='大招'。
   static const String skillPendingStamp = '待发';
   // 可用态：耗内 N · CD M（让玩家知道耗的是内力、看得到基础 CD）。
-  static String skillCostShort(int cost, int cooldown) => '耗内$cost · CD$cooldown';
+  static String skillCostShort(int cost, int cooldown) =>
+      '耗内$cost · CD$cooldown';
   static String skillCooldownShort(int turns) => '冷却$turns';
   // 内力不足态短标。
   static const String skillInsufficientForce = '内力不足';
@@ -138,7 +142,8 @@ class UiStrings {
   static String diagInternalWoundRatio(int pct) => '内伤占比：$pct%';
   static String diagDamageTaken(int dmg) => '受到总伤：$dmg';
   static String diagMinionRatio(int pct) => '小怪伤害占比：$pct%';
-  static String diagFrontlineDeath(String name, int tick) => '$name 在第 $tick 回合倒下';
+  static String diagFrontlineDeath(String name, int tick) =>
+      '$name 在第 $tick 回合倒下';
   static String diagFrontlineMaxHp(int hp) => '其最大血量：$hp';
   static String diagTotalTicks(int tick) => '总回合：$tick';
   static String diagSurvivorHp(int pct) => '敌方残血：平均 $pct%';
@@ -229,6 +234,7 @@ class UiStrings {
   static const String shopTitle = '江湖商店';
   static const String shopBuy = '购买';
   static const String shopInsufficientSilver = '银两不足';
+
   /// balance T3：无法获取祖师经验信息，动态标价商品不可购买。
   static const String shopPricingUnavailable = '当前无法定价，请稍候';
   static const String shopCategoryMaterial = '炼器材料';
@@ -411,14 +417,16 @@ class UiStrings {
   // M4 术语释义气泡（GlossaryTip）：四项属性 + 派生数值 + 养成进度术语。
   // §5.7 框架下用悬停/长按气泡，非教程弹窗。文案水墨克制、不用网游词汇。
   static const String glossaryConstitution = '根骨：体魄根基，决定血量上限。根骨越厚，越能久战不溃。';
-  static const String glossaryEnlightenment = '悟性：资质灵慧，影响修炼速度与武学领悟概率。悟性高者，一点即通。';
+  static const String glossaryEnlightenment =
+      '悟性：资质灵慧，影响修炼速度与武学领悟概率。悟性高者，一点即通。';
   static const String glossaryAgility = '身法：轻灵敏捷，决定出手速度与闪避。身法高者，快人一步。';
   static const String glossaryFortune = '机缘：缘法深浅，影响奇遇触发率与商店折扣。机缘厚者，常逢造化。';
   static const String glossaryHp = '生命：可承受的伤害总量，归零即败。由内力、根骨与装备共同撑起。';
   static const String glossaryInternalForce =
       '内力：施展招式的根本，关乎招式威能与血量基底。战斗中随出招消耗，大招耗内力尤甚。';
   static const String glossarySpeed = '出手速度：决定行动快慢，速度越高出手越频。由身法、装备与心法共同加成。';
-  static const String glossaryCriticalRate = '暴击率：触发暴击的概率，暴击额外加成伤害。身法越高，暴击越易触发。';
+  static const String glossaryCriticalRate =
+      '暴击率：触发暴击的概率，暴击额外加成伤害。身法越高，暴击越易触发。';
   static const String glossaryEvasionRate = '闪避率：完全避开来袭的概率。身法越高，越易闪躲。';
   static const String glossaryCultivation = '修炼度：心法的精熟程度，越高则招式伤害倍率越大。随实战与闭关渐积。';
   static const String glossaryResonance = '共鸣度：人与兵刃的默契，血战中渐积。圆满者可悟人剑合一。';
@@ -432,8 +440,7 @@ class UiStrings {
       '品阶：兵器防具的层次，寻常货至神物共七阶。须境界相称方可佩用，得高阶神物亦不可越阶强用。';
   static const String glossaryStrengthening =
       '强化：耗磨剑石提升装备数值，越高越难成。失败不降级，必返心血结晶兜底。';
-  static const String glossaryForging =
-      '开锋：为兵器开锋镶嵌增益，凑成流派 build。境界未达不可开高阶锋。';
+  static const String glossaryForging = '开锋：为兵器开锋镶嵌增益，凑成流派 build。境界未达不可开高阶锋。';
   static const String glossaryHeartBloodCrystal =
       '心血结晶：强化失败的保底所得，亦是高阶强化的硬通货。多败多攒，终成大器。';
   static const String glossaryLineageHeritage =
@@ -442,10 +449,8 @@ class UiStrings {
       '主修：当前主修心法，定招式与流派根基。换主修须散功，半数内力与修炼度折损，非同小可。';
   static const String glossaryAssistTechnique =
       '辅修：旁修的心法，添额外加成而不动根基。换辅修无散功之痛，可放手尝试。';
-  static const String glossarySchool =
-      '流派：刚猛克灵巧、灵巧克阴柔、阴柔克刚猛，循环相克。顺克加伤，逆克减伤。';
-  static const String glossarySynergy =
-      '相生：特定心法搭配可生额外威能，相辅相成。配伍得当，事半功倍。';
+  static const String glossarySchool = '流派：刚猛克灵巧、灵巧克阴柔、阴柔克刚猛，循环相克。顺克加伤，逆克减伤。';
+  static const String glossarySynergy = '相生：特定心法搭配可生额外威能，相辅相成。配伍得当，事半功倍。';
   static const String glossaryCombatAdvanced =
       '战斗机制：蓄势、破招、内伤、克制环环相扣。看准敌招蓄势时破招，可截下大招、反客为主。';
   static const String glossarySeclusion =
@@ -458,10 +463,12 @@ class UiStrings {
   static const String statusInternalInjuryLabel = '内伤';
   static const String statusInternalInjuryGloss =
       '内伤:经脉受创,每次自己出手都要再受一记暗伤,层数耗尽方止,拖久了能要命。';
+
   /// 踉跄 debuff(staggerTicksRemaining):被破招后阵脚大乱,数回合内任人宰割。
   static const String statusStaggerLabel = '踉跄';
   static const String statusStaggerGloss =
       '踉跄:招式被破,阵脚大乱。数息之内防御骤降、难以还手,正是趁势猛攻之机。';
+
   /// 剑鸣 buff(swordSongResonanceActive):心剑通灵,暴击附剑鸣威能。
   static const String statusSwordSongLabel = '剑鸣';
   static const String statusSwordSongGloss =
@@ -553,11 +560,8 @@ class UiStrings {
   static const String itemUseConfirmTitle = '使用道具';
   static String itemUseConfirmBody(String name) => '确定使用「$name」？';
   static String itemUseExpResult(String name, int layersGained) =>
-      layersGained > 0
-      ? '服下「$name」，境界精进 $layersGained 层。'
-      : '服下「$name」，内息渐长。';
-  static String itemUseScrollResult(String name) =>
-      '研读「$name」，已了然于胸，得此绝学。';
+      layersGained > 0 ? '服下「$name」，境界精进 $layersGained 层。' : '服下「$name」，内息渐长。';
+  static String itemUseScrollResult(String name) => '研读「$name」，已了然于胸，得此绝学。';
   static String itemUseAlreadyKnown(String name) => '「$name」所载之招，早已了然于胸。';
   static const String itemUseFailed = '此物此刻无法使用。';
   static const String itemUseDismiss = '收下';
@@ -574,9 +578,14 @@ class UiStrings {
       '将分解 $count 件装备，获得磨剑石 $mojianshi${xinxue > 0 ? ' / 心血结晶 $xinxue' : ''}。';
   static String sellSingleConfirmBody(String name, int silver) =>
       '出售「$name」，获得银两 $silver。';
-  static String disassembleSingleConfirmBody(String name, int mojianshi, int xinxue) =>
-      '分解「$name」，获得磨剑石 $mojianshi${xinxue > 0 ? ' / 心血结晶 $xinxue' : ''}。';
-  static String bulkTierLabel(String tierName, int count) => '$tierName（$count 件）';
+  static String disassembleSingleConfirmBody(
+    String name,
+    int mojianshi,
+    int xinxue,
+  ) => '分解「$name」，获得磨剑石 $mojianshi${xinxue > 0 ? ' / 心血结晶 $xinxue' : ''}。';
+  static String bulkTierLabel(String tierName, int count) =>
+      '$tierName（$count 件）';
+
   /// 批量整理对话框按钮（Task 6）。
   static const String bulkSellButton = '一键出售';
   static const String bulkDisassembleButton = '一键分解';
@@ -588,6 +597,7 @@ class UiStrings {
   static const String inventoryFilterEquipped = '已穿戴';
   static const String inventoryFilterForgeable = '可开锋';
   static const String inventoryFilterRealmLocked = '境界未达';
+
   /// T11:仓库格子境界锁封条显具体原因(需 X 境界),替泛化「未达境界」。
   static String inventoryRealmLockBanner(String realmName) => '需$realmName境界';
   static const String enhanceDialogTitle = '强化';
@@ -951,38 +961,6 @@ class UiStrings {
   static const String massBattleFormationFengShi = '锋矢阵';
   static const String massBattleFormationFengShiHint = '伤害 ×1.10 · 暴击 +5%';
 
-  // ─── 论剑对决 PVP(1.0 P3.3 §12.3,Phase 4 入口)───────────────────────────
-  static const String mainMenuPvp = '论剑对决';
-  static const String mainMenuPvpHint =
-      '异步快照 PVP · 跨 ELO 段位匹配对手(主线 Ch5 cleared 解锁)';
-
-  static const String pvpTitle = '论剑对决';
-  static const String pvpLockedHint = '主线 Ch5 通关后开放';
-  static const String pvpMatchButton = '立即论剑';
-  static const String pvpMatchPlaceholder =
-      'PVP 真战斗流程留 Phase 5 wire(读玩家阵容 + Isar 持久化)';
-  static const String pvpHistoryTitle = '近期战例';
-  static const String pvpHistoryEmpty = '尚未踏入论剑场';
-  static const String pvpHistoryWin = '胜';
-  static const String pvpHistoryLoss = '负';
-  static const String pvpHistoryDraw = '和';
-  static String pvpHistoryEloDelta(int delta) =>
-      delta > 0 ? '+$delta' : '$delta';
-
-  static const String pvpRankXueTu = '学徒';
-  static const String pvpRankSanLiu = '三流';
-  static const String pvpRankErLiu = '二流';
-  static const String pvpRankYiLiu = '一流';
-  static const String pvpRankJueDing = '绝顶';
-  static const String pvpRankZongShi = '宗师';
-  static const String pvpRankWuSheng = '武圣';
-  static String pvpEloLabel(int elo) => '当前 ELO · $elo';
-  static String pvpRankNext(int remaining, String nextRank) =>
-      '距「$nextRank」尚需 $remaining 分';
-  static const String pvpRankTopHint = '已至段位之巅';
-  // mock 对手默认显示名(NoopPvpSync 合成对手 · slotIndex 0-based → 1-based 显示)。
-  static String pvpOpponentName(int oneBasedSlot) => '对手#$oneBasedSlot';
-
   // ─── 门派事务（1.0 P3.4 §12.1,Batch 2.3-2.5 入口)─────────────────────────
   static const String mainMenuSect = '门派事务';
   static const String mainMenuSectHint = '门派经营 · 比武大会 · 声望积累(一流境界 yiLiu 解锁)';
@@ -1206,7 +1184,8 @@ class UiStrings {
   static const String baikeTabEncounter = '奇缘';
   // 奇遇录(江湖见闻录第4tab)
   static String encounterCodexProgress(int got, int total) => '已际遇 $got/$total';
-  static String encounterCodexGroupProgress(int got, int total) => '$got/$total 已际遇';
+  static String encounterCodexGroupProgress(int got, int total) =>
+      '$got/$total 已际遇';
   static const String encounterCodexGroupInsight = '武学领悟';
   static const String encounterCodexGroupFortune = '奇缘际遇';
   static const String encounterCodexGroupFestival = '节庆';
@@ -1713,8 +1692,7 @@ class UiStrings {
     String? oldLayerLabel,
     String? newLayerLabel,
     int layersRolledBack,
-  ) =>
-      '$techniqueName $oldLayerLabel→$newLayerLabel (-$layersRolledBack层)';
+  ) => '$techniqueName $oldLayerLabel→$newLayerLabel (-$layersRolledBack层)';
 
   /// 战败武学修炼度回退段：`<技名> 修炼度回退`
   static String defeatTechniqueProgressSegment(String techniqueName) =>
@@ -1735,8 +1713,7 @@ class UiStrings {
       '内伤未愈 · 调息 ${hours.ceil()}h';
 
   /// 战败 banner 受伤弟子提示：`<N> 名弟子负伤 · 需调息疗养`。
-  static String defeatInjuredDisciples(int count) =>
-      '$count 名弟子负伤 · 需调息疗养';
+  static String defeatInjuredDisciples(int count) => '$count 名弟子负伤 · 需调息疗养';
 
   // ── 通用加载失败(audit M3 散写中文归集)──────────────────────────────
   /// 异步加载失败提示：`加载失败：<e>`（全角冒号）
@@ -1770,8 +1747,7 @@ class UiStrings {
     String skillName,
     int count,
     int threshold,
-  ) =>
-      '得残页 · $skillName($count/$threshold)';
+  ) => '得残页 · $skillName($count/$threshold)';
 
   // ── 第七阶段批三 · 弟子拜入英雄镜头题字──────────────────────────────────
   /// 弟子拜入英雄镜头题字(第七阶段批三)。[name]=弟子名(大弟子/二弟子)。
@@ -1835,8 +1811,11 @@ class UiStrings {
 
   // 三副本关卡信息行(波数/地形/难度)。difficulty 传已格式化字符串。
   static String massBattleStageInfo(
-          int waves, int enemies, String formation, String difficulty) =>
-      '$waves 波 · 共 $enemies 敌 · 阵型 $formation · 难度 $difficulty';
+    int waves,
+    int enemies,
+    String formation,
+    String difficulty,
+  ) => '$waves 波 · 共 $enemies 敌 · 阵型 $formation · 难度 $difficulty';
   static String lightFootStageInfo(String terrain, String difficulty) =>
       '$terrain · 难度 $difficulty';
   static String innerDemonStageInfo(String difficulty) => '难度 $difficulty';
@@ -1907,8 +1886,11 @@ class UiStrings {
   static const String taohuaIslandNotEnoughMaterial = '材料不足';
 
   /// 升级费用文案：`银两 N · matName ×qty`。
-  static String taohuaIslandUpgradeCost(int silver, String matName, int matQty) =>
-      '银两 $silver · $matName ×$matQty';
+  static String taohuaIslandUpgradeCost(
+    int silver,
+    String matName,
+    int matQty,
+  ) => '银两 $silver · $matName ×$matQty';
 
   /// 建筑生产中状态标签。
   static const String taohuaIslandIdleProducing = '产出中';
@@ -1960,7 +1942,8 @@ class UiStrings {
   static String sweepTitle(String unitName) => '一键扫荡 · $unitName';
 
   /// 连播进度：第 X / N 关。
-  static String sweepProgress(int current, int total) => '连播中 · $current / $total';
+  static String sweepProgress(int current, int total) =>
+      '连播中 · $current / $total';
 
   /// 装配下一关过场提示。
   static const String sweepPreparing = '装配中…';

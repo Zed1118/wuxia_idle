@@ -1637,35 +1637,7 @@ ascension:
       layer: dengFeng
 
 # =============================================================================
-# 13. P3.3 PVP (GDD §12.3 · spec p3_3_pvp_spec_2026-05-24)
-# =============================================================================
-# Q1-Q5 默认决议(占位 · reviewer 改后只改本段):
-#   Q1 B 异步快照战 / Q2 B 3v3 / Q3 A ELO 经典 K=32 / Q4 A Ch5 cleared / Q5 D Noop → Supabase 替换式
-#
-# 不变量:ELO 段位仅 UI 词 · 不进 BattleEngine · 不引入 attackPowerMultiplier 越权 buff(§5.4)
-
-pvp:
-  elo:
-    initial: 1200                       # 新玩家初始
-    k_factor: 32                        # 标准 K
-    draw_factor: 0.5
-  match_range:
-    elo_window: 100                     # 匹配 ±100 ELO
-    fallback_window: 300                # 找不到则扩到 ±300
-    min_pool_size: 3                    # 最小可匹配池
-  ranks:                                # ELO → §5.2 七阶映射(段窗 200 · 武圣 2000+ 无上限)
-    # xueTu 0-999 / sanLiu 1000-1199 / erLiu 1200-1399(初始)/ yiLiu 1400-1599
-    # jueDing 1600-1799 / zongShi 1800-1999 / wuSheng 2000+
-  unlock:
-    requires_stage: stage_05_05         # 主线 Ch5 cleared(Q4 默认)
-  sync:
-    impl: noop                          # Phase 3 落 NoopPvpSync · Phase 5 切 supabase
-    snapshot_ttl_hours: 168             # 快照 7 天过期
-  history:
-    max_records: 200                    # PvpRecord 滚动覆盖上限
-
-# =============================================================================
-# 14. P3.4 门派事件 (GDD §12.1 · spec p3_4_sect_event_spec_2026-05-24)
+# 13. P3.4 门派事件 (GDD §12.1 · spec p3_4_sect_event_spec_2026-05-24)
 # =============================================================================
 # Q1-Q5 默认决议(占位):
 #   Q1 A 玩家自建门派 / Q2 A 比武大会(单 event Demo)/ Q3 A 独立 sect_reputation 轴
