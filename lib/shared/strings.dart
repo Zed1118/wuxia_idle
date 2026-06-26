@@ -565,6 +565,9 @@ class UiStrings {
   // ── 装备出售/分解(2026-06-26)──────────────────────────────────────────────
   static const String equipmentSell = '出售';
   static const String equipmentDisassemble = '分解';
+  static const String equipmentLock = '锁定';
+  static const String equipmentUnlock = '解锁';
+  static const String equipmentLockedLabel = '已锁定';
   static const String equipmentBulkEntry = '批量整理';
   static const String equippedBadge = '装备中';
   static const String inventoryShopEntry = '进商店';
@@ -577,6 +580,19 @@ class UiStrings {
   static String disassembleSingleConfirmBody(String name, int mojianshi, int xinxue) =>
       '分解「$name」，获得磨剑石 $mojianshi${xinxue > 0 ? ' / 心血结晶 $xinxue' : ''}。';
   static String bulkTierLabel(String tierName, int count) => '$tierName（$count 件）';
+  static String bulkProtectedSummary({
+    required int locked,
+    required int equipped,
+    required int heritage,
+  }) {
+    final parts = <String>[
+      if (locked > 0) '锁定 $locked 件',
+      if (equipped > 0) '装备中 $equipped 件',
+      if (heritage > 0) '师承遗物 $heritage 件',
+    ];
+    return parts.isEmpty ? '' : '已排除：${parts.join(' / ')}。';
+  }
+
   /// 批量整理对话框按钮（Task 6）。
   static const String bulkSellButton = '一键出售';
   static const String bulkDisassembleButton = '一键分解';

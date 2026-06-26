@@ -18,11 +18,13 @@ void main() {
   late final NumbersConfig n;
 
   setUpAll(() async {
-    await GameRepository.loadAllDefs(loader: (path) async {
-      final f = File(path);
-      if (!await f.exists()) throw FileSystemException('不存在', path);
-      return f.readAsString();
-    });
+    await GameRepository.loadAllDefs(
+      loader: (path) async {
+        final f = File(path);
+        if (!await f.exists()) throw FileSystemException('不存在', path);
+        return f.readAsString();
+      },
+    );
     n = GameRepository.instance.numbers;
   });
 
@@ -83,6 +85,7 @@ void main() {
       expect(e.lores, isEmpty);
       expect(e.previousOwnerCharacterIds, isEmpty);
       expect(e.battleCount, 0);
+      expect(e.isLocked, isFalse);
     });
 
     test('显式传入 forgingSlots 时应保留传入对象', () {
@@ -106,6 +109,19 @@ void main() {
 
       expect(identical(e.forgingSlots, custom), isTrue);
       expect(e.forgingSlots.first.unlocked, isTrue);
+    });
+
+    test('isLocked 可显式初始化为 true', () {
+      final e = Equipment.create(
+        defId: 'x',
+        tier: EquipmentTier.liQi,
+        slot: EquipmentSlot.weapon,
+        obtainedAt: DateTime(2026),
+        obtainedFrom: 'test',
+        isLocked: true,
+      );
+
+      expect(e.isLocked, isTrue);
     });
   });
 
@@ -132,8 +148,16 @@ void main() {
           obtainedFrom: 't',
           battleCount: entry.key,
         );
-        expect(e.resonanceStage(n), entry.value.$1, reason: 'battleCount=${entry.key}');
-        expect(e.resonanceBonus(n), entry.value.$2, reason: 'battleCount=${entry.key}');
+        expect(
+          e.resonanceStage(n),
+          entry.value.$1,
+          reason: 'battleCount=${entry.key}',
+        );
+        expect(
+          e.resonanceBonus(n),
+          entry.value.$2,
+          reason: 'battleCount=${entry.key}',
+        );
       }
     });
 

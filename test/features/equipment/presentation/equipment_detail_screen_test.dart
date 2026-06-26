@@ -29,8 +29,7 @@ void main() {
   });
 
   /// 快速 fake loader，旁路 rootBundle。
-  Future<LoreContent> fakeLore(String id) async =>
-      LoreContent.placeholder(id);
+  Future<LoreContent> fakeLore(String id) async => LoreContent.placeholder(id);
 
   const testDef = EquipmentDef(
     id: 'test_eq',
@@ -48,7 +47,11 @@ void main() {
     iconPath: '',
   );
 
-  Equipment mkEq({int? ownerCharacterId, bool isLineageHeritage = false}) {
+  Equipment mkEq({
+    int? ownerCharacterId,
+    bool isLineageHeritage = false,
+    bool isLocked = false,
+  }) {
     return Equipment.create(
       defId: 'test_eq',
       tier: EquipmentTier.xunChang,
@@ -58,6 +61,7 @@ void main() {
       baseAttack: 50,
       ownerCharacterId: ownerCharacterId,
       isLineageHeritage: isLineageHeritage,
+      isLocked: isLocked,
     )..id = 1;
   }
 
@@ -83,31 +87,70 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('背包装备(ownerCharacterId==null, !isLineageHeritage) → 出售/分解按钮可见',
-      (tester) async {
+  testWidgets('背包装备(ownerCharacterId==null, !isLineageHeritage) → 出售/分解按钮可见', (
+    tester,
+  ) async {
     final eq = mkEq();
     await pumpScreen(tester, eq);
-    expect(find.text(UiStrings.equipmentSell), findsOneWidget,
-        reason: '背包装备应显示出售按钮');
-    expect(find.text(UiStrings.equipmentDisassemble), findsOneWidget,
-        reason: '背包装备应显示分解按钮');
+    expect(
+      find.text(UiStrings.equipmentSell),
+      findsOneWidget,
+      reason: '背包装备应显示出售按钮',
+    );
+    expect(
+      find.text(UiStrings.equipmentDisassemble),
+      findsOneWidget,
+      reason: '背包装备应显示分解按钮',
+    );
   });
 
   testWidgets('已装备(ownerCharacterId!=null) → 出售/分解按钮不显', (tester) async {
     final eq = mkEq(ownerCharacterId: 99);
     await pumpScreen(tester, eq);
-    expect(find.text(UiStrings.equipmentSell), findsNothing,
-        reason: '已装备时出售按钮不应出现');
-    expect(find.text(UiStrings.equipmentDisassemble), findsNothing,
-        reason: '已装备时分解按钮不应出现');
+    expect(
+      find.text(UiStrings.equipmentSell),
+      findsNothing,
+      reason: '已装备时出售按钮不应出现',
+    );
+    expect(
+      find.text(UiStrings.equipmentDisassemble),
+      findsNothing,
+      reason: '已装备时分解按钮不应出现',
+    );
   });
 
   testWidgets('师承遗物(isLineageHeritage=true) → 出售/分解按钮不显', (tester) async {
     final eq = mkEq(isLineageHeritage: true);
     await pumpScreen(tester, eq);
-    expect(find.text(UiStrings.equipmentSell), findsNothing,
-        reason: '师承遗物出售按钮不应出现');
-    expect(find.text(UiStrings.equipmentDisassemble), findsNothing,
-        reason: '师承遗物分解按钮不应出现');
+    expect(
+      find.text(UiStrings.equipmentSell),
+      findsNothing,
+      reason: '师承遗物出售按钮不应出现',
+    );
+    expect(
+      find.text(UiStrings.equipmentDisassemble),
+      findsNothing,
+      reason: '师承遗物分解按钮不应出现',
+    );
+  });
+
+  testWidgets('锁定装备(isLocked=true) → 出售/分解按钮不显，解锁按钮可见', (tester) async {
+    final eq = mkEq(isLocked: true);
+    await pumpScreen(tester, eq);
+    expect(
+      find.text(UiStrings.equipmentSell),
+      findsNothing,
+      reason: '锁定时出售按钮不应出现',
+    );
+    expect(
+      find.text(UiStrings.equipmentDisassemble),
+      findsNothing,
+      reason: '锁定时分解按钮不应出现',
+    );
+    expect(
+      find.text(UiStrings.equipmentUnlock),
+      findsOneWidget,
+      reason: '锁定装备应显示解锁入口',
+    );
   });
 }
