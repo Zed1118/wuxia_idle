@@ -121,7 +121,7 @@ class CharacterDerivedStats {
     }
     // 第八阶段·角色等级 Lv:平直加成 (level-1)×per_level(level 1 = 0,新角色不白给),
     // 不被 founder/相生乘子缩放;加在 clamp 前 → §5.4 血量红线硬守(满 Lv 极值靠 clamp 兜底)。
-    hp += (c.level - 1) * n.level.bonusMaxHpPerLevel;
+    hp += ((c.level < 1 ? 1 : c.level) - 1) * n.level.bonusMaxHpPerLevel;
     // §5.4 血量红线 clamp(单一真相源 numbers.yaml combat.red_lines,与
     // stage_battle_setup / inner_demon_def 同源):founder buff(玩家自享 +5%)/
     // 心法相生 hpPct(+0.20)乘法可把血量推过红线,battle_state 直接调本方法塞进
@@ -163,7 +163,7 @@ class CharacterDerivedStats {
     }
     sp += bonus;
     // 第八阶段·角色等级 Lv:平直加成 (level-1)×per_level(速度无红线)。
-    sp += (c.level - 1) * n.level.bonusSpeedPerLevel;
+    sp += ((c.level < 1 ? 1 : c.level) - 1) * n.level.bonusSpeedPerLevel;
     // 轻伤减速：末端扣减，clamp 到 0。
     if (lightInjuryStacks > 0) {
       sp -= lightInjuryStacks * n.injury.lightSpeedPenaltyPerStack;
@@ -291,7 +291,7 @@ class CharacterDerivedStats {
     // clamp 守红线(P1-b · review 补 · 2026-05-29 消 hardcode)。
     // 第八阶段·角色等级 Lv:平直加成 (level-1)×per_level,不被 mult 缩放;
     // 加在 clamp 前 → §5.4 内力红线硬守(满 Lv 极值靠 clamp 兜底)。
-    final levelBonus = (c.level - 1) * n.level.bonusInternalForceMaxPerLevel;
+    final levelBonus = ((c.level < 1 ? 1 : c.level) - 1) * n.level.bonusInternalForceMaxPerLevel;
     return (c.internalForceMax * mult + levelBonus)
         .clamp(0, n.combat.redLines.internalForceMax)
         .toInt();
