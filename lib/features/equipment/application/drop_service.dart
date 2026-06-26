@@ -1,6 +1,8 @@
+import '../../../core/domain/enums.dart';
 import '../../../data/defs/drop_entry.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/stage_def.dart';
+import '../domain/rare_bonus_drop.dart';
 import '../../tower/domain/tower_floor_def.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../shared/strings.dart';
@@ -134,6 +136,29 @@ class DropService {
       rng: rng,
       obtainedAt: now(),
       obtainedFrom: defaultObtainedFrom,
+    );
+  }
+
+  /// 第八阶段 E·稀有彩头:按 [config] 选中高于 [baseTier] 的阶 → 从该阶装备池
+  /// [poolForTier] 随机一件实例化。无命中 / 越界 / 池空 → null。
+  /// 调用方在本关固定掉落之外**额外**调一次,把结果并入 drops(若非 null)。
+  Equipment? rollRareBonus({
+    required EquipmentTier baseTier,
+    required RareBonusDropConfig config,
+    required Rng rng,
+    required List<EquipmentDef> Function(EquipmentTier) poolForTier,
+    String? obtainedFrom,
+  }) {
+    final tier = selectRareBonusTier(baseTier, config, rng);
+    if (tier == null) return null;
+    final pool = poolForTier(tier);
+    if (pool.isEmpty) return null;
+    final def = rng.pick(pool);
+    return EquipmentFactory.fromDef(
+      def,
+      rng: rng,
+      obtainedAt: now(),
+      obtainedFrom: obtainedFrom ?? defaultObtainedFrom,
     );
   }
 

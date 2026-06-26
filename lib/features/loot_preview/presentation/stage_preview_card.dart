@@ -58,6 +58,16 @@ class StagePreviewContent extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         LootRumorContent(table: rumorTable, currentRealm: playerRealm),
+        // 第八阶段 E·稀有彩头提示(全局机制:本关固定掉落外偶可遇高阶利器)。
+        const SizedBox(height: 6),
+        Text(
+          UiStrings.previewRareBonusHint,
+          style: TextStyle(
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
+            color: WuxiaUi.gold.withValues(alpha: 0.95),
+          ),
+        ),
       ],
     );
   }

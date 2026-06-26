@@ -1,6 +1,8 @@
 import '../domain/battle_state.dart';
+import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/technique_def.dart';
+import '../../../shared/strings.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
@@ -111,6 +113,9 @@ class BattleResolutionService {
     bool isVictory = true,
     NumbersConfig? numbersConfig,
     bool isHardFight = false,
+    // 第八阶段 E·稀有彩头:阶池查询 + realm→装备阶映射(注入式·null 则不掉彩头)。
+    List<EquipmentDef> Function(EquipmentTier)? equipmentPoolByTier,
+    EquipmentTier Function(RealmTier)? equipmentTierForRealm,
   }) {
     _assertAllParticipated(finalState, participatingCharacters);
 
@@ -166,9 +171,30 @@ class BattleResolutionService {
     }
 
     // 3. 掉落（战败不掉；victory + stageDef==null 时 caller 自处理 drops 不在此 roll）
-    final dropResult = (isVictory && stageDef != null)
+    var dropResult = (isVictory && stageDef != null)
         ? dropService.rollDrops(stageDef, rng)
         : const DropResult(equipments: [], items: []);
+    // 第八阶段 E·稀有彩头:本关固定掉落外额外 roll 高于本关 1-2 阶装备(并入 drops
+    // → 自动持久 + victory 仪式展示)。注入齐备 + victory 时才跑。
+    if (isVictory &&
+        stageDef != null &&
+        numbersConfig != null &&
+        equipmentPoolByTier != null &&
+        equipmentTierForRealm != null) {
+      final bonus = dropService.rollRareBonus(
+        baseTier: equipmentTierForRealm(stageDef.requiredRealm),
+        config: numbersConfig.rareBonusDrop,
+        rng: rng,
+        poolForTier: equipmentPoolByTier,
+        obtainedFrom: UiStrings.dropSourceRareBonus,
+      );
+      if (bonus != null) {
+        dropResult = DropResult(
+          equipments: [...dropResult.equipments, bonus],
+          items: dropResult.items,
+        );
+      }
+    }
 
     // 4. Phase 4 W10：Boss 关战败 → 对每个有主修的参战角色应用被动散功
     // tower 路径 stageDef=null 时 defeat 永远不进此分支（Boss 战败散功仅主线触发）。
