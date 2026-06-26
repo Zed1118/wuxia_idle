@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/application/selected_cycle_provider.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
@@ -33,5 +34,29 @@ void main() {
     // ch1 未通 → 1;innerDemon 已通到 2 → 2。
     expect(resolveTargetCycle(null, p, 'ch1'), 1);
     expect(resolveTargetCycle(null, p, 'innerDemon'), 2);
+  });
+
+  // keepAlive 回归锚:选定周目须跨「进战斗→返回」导航(选关屏 unmount)存活,
+  // 否则打完一关跳回最高已通周目。autoDispose 时移除监听后重读会回 null,
+  // keepAlive 下仍保留选定值。
+  test('SelectedChallengeCycle keepAlive:移除监听后选定值仍保留(不回 null)', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    // 模拟选关屏挂载监听 + 玩家选第2周目。
+    final sub =
+        container.listen(selectedChallengeCycleProvider('ch1'), (_, _) {});
+    container
+        .read(selectedChallengeCycleProvider('ch1').notifier)
+        .select(2);
+    expect(container.read(selectedChallengeCycleProvider('ch1')), 2);
+
+    // 模拟选关屏 unmount(移除监听)→ keepAlive 不回收。
+    sub.close();
+    expect(
+      container.read(selectedChallengeCycleProvider('ch1')),
+      2,
+      reason: 'keepAlive:导航离开选关屏后选定周目仍为2;autoDispose 会回 null',
+    );
   });
 }
