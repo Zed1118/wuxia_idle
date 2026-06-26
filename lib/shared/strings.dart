@@ -210,6 +210,12 @@ class UiStrings {
   static const String equipQuickReplace = '更换装备';
   static const String equipQuickViewLore = '查看典故';
   static const String equipLockedByRealm = '境界不足,无法装备(三系锁死)';
+  // 装备槽对话框(2026-06-26 · 一步到位 + 全量对比两栏)。
+  static const String equipSlotDialogConfirm = '确认更换';
+  static const String equipSlotDialogEquip = '装备';
+  static const String equipSlotDialogPickHint = '选一件查看属性';
+  static const String equipSlotDialogCompareTitle = '属性对比';
+  static const String equipSlotDialogForgingLabel = '开锋';
 
   /// H1 批3 picker 标注:该装备正被队内其他角色穿戴,选它会移装(原角色卸下)。
   /// 自由池移装是合理调配,故只标注提醒不禁用(去掉「静默卸下弟子」的意外感)。
