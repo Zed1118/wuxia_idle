@@ -44,6 +44,12 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
   void initState() {
     super.initState();
     _controller = SweepController(totalUnits: widget.units.length);
+    // battleProvider 是 autoDispose:`_preparing` spinner 期间本屏未挂 BattleScreen,
+    // 没有 watcher。逐关注入(`startBattle`)若发生在这段无监听窗口,注入的队伍会被
+    // autoDispose 回收重置回空团 → 后续挂出的 BattleScreen 拿到空团黑屏。挂一条永久
+    // 监听跨本屏整个生命周期保活 provider,使逐关注入不被回收(挂载顺序兜底见
+    // BattleScreen.initState 的 postFrame 自启 timer)。
+    ref.listenManual(battleProvider, (_, _) {});
     WidgetsBinding.instance.addPostFrameCallback((_) => _startCurrent());
   }
 
@@ -124,6 +130,9 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
             bgmTrack: unit.bgmTrack,
             animConfig: ref.watch(numbersConfigProvider).animation,
             startFastForward: true,
+            // 扫荡「先注入战斗、后挂本屏」:开启挂载后兜底自启,否则错过 startBattle
+            // 的 empty→非空边沿 → timer 不起黑屏 hang(配 initState listenManual 保活)。
+            autoStartOnMount: true,
             deferVictoryToCaller: true,
             onVictory: _onVictory,
             onDefeat: _onDefeat,
