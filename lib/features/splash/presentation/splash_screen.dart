@@ -5,13 +5,15 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../home_feed/presentation/home_feed_screen.dart';
+import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 
 /// 启动闪屏(M4 PoC #46 美术 Stage 2 W6 收官 `landscape_loading.png` 9.5/10 接入)。
 ///
 /// 启动期间显示水墨渔舟远山 + 应用标题,期间并行跑 [GameRepository.loadAllDefs]
-/// 和 [IsarSetup.init]。完成后 pushReplacement 进 [HomeFeedScreen]。
+/// 和 [IsarSetup.init]。完成后 pushReplacement 直接进 [MainMenu](2026-06-26 用户
+/// 拍板跳过原「江湖见闻」过场 feed;离线收益由 OfflinePassiveService 加载期照常
+/// 应用,不受影响)。
 class SplashScreen extends StatefulWidget {
   const SplashScreen({
     super.key,
@@ -80,7 +82,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
         transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (_, _, _) => const HomeFeedScreen(),
+        pageBuilder: (_, _, _) => const MainMenu(),
         transitionsBuilder: (_, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
       ),

@@ -144,14 +144,20 @@ class WuxiaInkButton extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 5),
-                            Text(
-                              hint,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: WuxiaUi.ink.withValues(alpha: 0.72),
-                                fontSize: 12,
-                                height: 1.2,
+                            // hint 恒占 2 行高度:短描述也不让按钮缩矮 → 统一所有
+                            // 菜单按钮高度(原按 hint 行数 1/2 行高度参差,跨列/同列
+                            // 不齐)。fontSize 12 × height 1.2 × 2 行 ≈ 29,取 30 留余。
+                            SizedBox(
+                              height: 30,
+                              child: Text(
+                                hint,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: WuxiaUi.ink.withValues(alpha: 0.72),
+                                  fontSize: 12,
+                                  height: 1.2,
+                                ),
                               ),
                             ),
                           ],
