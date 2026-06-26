@@ -178,9 +178,12 @@ class _StagePreviewHoverCardState extends State<StagePreviewHoverCard> {
                 followerAnchor:
                     _flipUp ? Alignment.bottomRight : Alignment.topRight,
                 offset: Offset(0, _flipUp ? -6 : 6),
-                child: MouseRegion(
-                  onEnter: (_) => _show(),
-                  onExit: (_) => _hide(),
+                // IgnorePointer:浮层向下展开会盖住后续关卡行,若浮层自身吃鼠标,
+                // 从本关下移到下一关时鼠标会"进到浮层"使本关 onExit 后立刻被浮层
+                // onEnter 又拉回,下一关永远 enter 不到(切不动 + 边界抖动卡顿)。
+                // 改纯展示不拦指针 → 鼠标直接穿到下一关行,切换丝滑。长清单滚动
+                // 交给 ⓘ 点击弹窗(showLootRumorDialog)。
+                child: IgnorePointer(
                   child: Material(
                     color: Colors.transparent,
                     child: Container(
