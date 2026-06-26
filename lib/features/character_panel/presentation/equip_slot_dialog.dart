@@ -173,6 +173,7 @@ class _EquipSlotDialogState extends ConsumerState<EquipSlotDialog> {
                   items: items,
                   current: cur,
                   realmTier: widget.character.realmTier,
+                  characterId: widget.character.id,
                   selectedId: _selectedId,
                   onSelect: (id) => setState(() => _selectedId = id),
                 ),
@@ -269,6 +270,7 @@ class _CandidateList extends StatelessWidget {
     required this.items,
     required this.current,
     required this.realmTier,
+    required this.characterId,
     required this.selectedId,
     required this.onSelect,
   });
@@ -276,6 +278,7 @@ class _CandidateList extends StatelessWidget {
   final List<Equipment> items;
   final Equipment? current;
   final RealmTier realmTier;
+  final int characterId;
   final int? selectedId;
   final ValueChanged<int> onSelect;
 
@@ -303,6 +306,10 @@ class _CandidateList extends StatelessWidget {
         final isCurrent = eq.id == current?.id;
         final isSelected = eq.id == selectedId;
         final name = GameRepository.instance.getEquipment(eq.defId).name;
+        // 该件正被队内其他角色穿戴 → 标注(选它会移装,原角色卸下)。不禁用。
+        final ownerId = eq.ownerCharacterId;
+        final wornByOther =
+            ownerId != null && ownerId != characterId && !isCurrent;
         final cmp =
             equipmentFullDiff(current: current, candidate: eq, numbers: n);
         return Material(
@@ -323,13 +330,24 @@ class _CandidateList extends StatelessWidget {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '${EnumL10n.equipmentTier(eq.tier)} · '
-                  '${UiStrings.enhanceLevel(eq.enhanceLevel)}'
-                  '${isCurrent ? "  ${UiStrings.currentEquippedBadge}" : ""}',
-                  style: const TextStyle(
-                    color: WuxiaColors.textMuted,
-                    fontSize: 12,
+                Text.rich(
+                  TextSpan(
+                    style: const TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 12,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: '${EnumL10n.equipmentTier(eq.tier)} · '
+                            '${UiStrings.enhanceLevel(eq.enhanceLevel)}'
+                            '${isCurrent ? "  ${UiStrings.currentEquippedBadge}" : ""}',
+                      ),
+                      if (wornByOther)
+                        const TextSpan(
+                          text: '  · ${UiStrings.equipWornByOther}',
+                          style: TextStyle(color: WuxiaColors.gangMeng),
+                        ),
+                    ],
                   ),
                 ),
                 if (!cmp.isBaseline) _MiniDiff(cmp: cmp),
