@@ -54,7 +54,8 @@ void main() {
     /// 2026-06-14 用户拍板从 50000 调至 60000，终局周目进化（stage_06_05 cycle3=58240）合规。
     late int bossHpRedLine;
 
-    /// 周目缩放系数 cycle 3 主线 = 1 + 0.06 × 2 = 1.12
+    /// 周目缩放系数 cycle 3 主线 = 1 + scalePerCycle × 2（2026-06-26: 0.10 → 1.20）。
+    /// 派生自 config，改 scale_per_cycle 自动跟随。
     late double cycle3Scale;
 
     setUpAll(() {
@@ -117,9 +118,10 @@ void main() {
         isTower: false,
       );
 
-      // 西凉霸主 baseHp=52000，cycle3 scale=1.12 → 58240；58240 ≤ 60000 ✅
+      // 西凉霸主 baseHp=52000，cycle3 scale=1.20 → 62400 > 60000 → clamp 至 60000
+      // （2026-06-26 周目平衡 0.06→0.10 后此 boss 命中 clamp，红线由生产 .clamp 强制）。
       final expectedBossHp =
-          (52000 * cycle3Scale).toInt(); // 52000 × 1.12 = 58240
+          (52000 * cycle3Scale).toInt().clamp(0, bossHpRedLine);
       final bossBc =
           team.firstWhere((bc) => bc.name == '西凉霸主', orElse: () => team.first);
       expect(bossBc.maxHp, expectedBossHp,
@@ -419,20 +421,20 @@ void main() {
   // ════════════════════════════════════════════════════════════════════════════
 
   group('§5 scale 系数符合 spec 约束', () {
-    test('5.1 maxCycleMainline=3 → cycle 3 scale = 1.12（spec 参数锁）', () {
+    test('5.1 maxCycleMainline=3 → cycle 3 scale = 1.20（spec 参数锁·2026-06-26）', () {
       final ce = GameRepository.instance.numbers.cycleEvolution;
       expect(ce.maxCycleMainline, 3);
       expect(ce.maxCycleTower, 2);
       final scale3 = 1.0 + ce.scalePerCycle * (3 - 1);
-      expect(scale3, closeTo(1.12, 0.001),
-          reason: 'cycle 3 主线 scale 应为 1 + 0.06×2 = 1.12');
+      expect(scale3, closeTo(1.20, 0.001),
+          reason: 'cycle 3 主线 scale 应为 1 + 0.10×2 = 1.20');
       final scale2 = 1.0 + ce.scalePerCycle * (2 - 1);
-      expect(scale2, closeTo(1.06, 0.001),
-          reason: 'cycle 2 塔 scale 应为 1 + 0.06×1 = 1.06');
+      expect(scale2, closeTo(1.10, 0.001),
+          reason: 'cycle 2 塔 scale 应为 1 + 0.10×1 = 1.10');
     });
 
     test('5.2 爬塔最大 Boss HP（floor 30 baseHp=15000）cycle 2 内：实测值 ≤ 红线', () {
-      // floor 30 baseHp=15000 × 1.06 = 15900 << 50000，安全边际大
+      // floor 30 baseHp=15000 × 1.10 = 16500 << 60000，安全边际大
       final floor = GameRepository.instance.getTowerFloor(30);
       final team = StageBattleSetup.buildEnemyTeam(
         floor.enemyTeam,
@@ -458,7 +460,7 @@ void main() {
       final bossHpMax =
           GameRepository.instance.numbers.combat.redLines.bossHpMax;
       final scale3 = 1.0 + ce.scalePerCycle * (3 - 1);
-      // 西凉霸主三弟子 baseHp=36600 → 期望 (36600 × 1.12).toInt() = 41,000 (余量 19,000)
+      // 西凉霸主三弟子 baseHp=36600 → 期望 (36600 × 1.20).toInt() = 43,920 (< 60000 不命中 clamp)
       const baseHp = 36600;
       final expectedHp = (baseHp * scale3).toInt();
       final boss =
@@ -483,7 +485,7 @@ void main() {
   //   (b) 记录各最坏情形实测值，供人类数值层审查决策（是否需要限帽 enemy attack）。
 
   group('§6 敌人攻击 scale 精确验算与分布记录', () {
-    test('6.1 stage_05_05 cycle 3 attack scale 精确（baseAttack 1995 × 1.12）', () {
+    test('6.1 stage_05_05 cycle 3 attack scale 精确（baseAttack 1995 × 1.20）', () {
       final stage05 = GameRepository.instance.getStage('stage_05_05');
       final team05 = StageBattleSetup.buildEnemyTeam(
         stage05.enemyTeam,
@@ -502,7 +504,7 @@ void main() {
               '1995 × ${1.0 + ce.scalePerCycle * 2} = $expectedAtk');
     });
 
-    test('6.2 tower floor 30 cycle 2 attack scale 精确（baseAttack 2250 × 1.06）', () {
+    test('6.2 tower floor 30 cycle 2 attack scale 精确（baseAttack 2250 × 1.10）', () {
       final floor30 = GameRepository.instance.getTowerFloor(30);
       final team30 = StageBattleSetup.buildEnemyTeam(
         floor30.enemyTeam,
@@ -556,8 +558,8 @@ void main() {
   //     通过生产路径 debugEnemyToBattle 驱动真实 _enemyToBattle 逻辑，
   //     证明 clamp 分支真正截断而非数学重现。
   //
-  //     baseHp=58000 × cycle3 scale(1.12) = 64960 > bossHpMax(60000)
-  //     → 生产代码：scaledHp = (58000 × 1.12).toInt().clamp(0, 60000) = 60000
+  //     baseHp=58000 × cycle3 scale(1.20) = 69600 > bossHpMax(60000)
+  //     → 生产代码：scaledHp = (58000 × 1.20).toInt().clamp(0, 60000) = 60000
   // ════════════════════════════════════════════════════════════════════════════
 
   group('§7 scaledHp clamp ≤ bossHpMax（生产路径证明）', () {
@@ -567,7 +569,7 @@ void main() {
       final n = GameRepository.instance.numbers;
       final bossHpMax = n.combat.redLines.bossHpMax;
 
-      // 构造 baseHp=58000 虚拟敌人：cycle3 scale=1.12 → 64960 > 60000
+      // 构造 baseHp=58000 虚拟敌人：cycle3 scale=1.20 → 69600 > 60000
       // 生产路径 .clamp(0, bossHpMax) 必须将其截断至 60000。
       final syntheticEnemy = const EnemyDef(
         id: 'test_clamp',
@@ -602,8 +604,10 @@ void main() {
           reason: 'currentHp 初始值应与 maxHp 一致（满血入场）');
     });
 
-    test('7.2 baseHp=52000 cycle 3（58240 < 60000）→ 无 clamp，精确等于 scale 结果', () {
-      // 反例：不超线时 clamp 不截断，结果应精确等于 scale 值（回归锁）
+    test('7.2 baseHp=45000 cycle 3（54000 < 60000）→ 无 clamp，精确等于 scale 结果', () {
+      // 反例：不超线时 clamp 不截断，结果应精确等于 scale 值（回归锁）。
+      // 2026-06-26 scale 0.06→0.10 后 clamp 阈值 baseHp = 60000/1.20 = 50000,
+      // 原 52000 现已命中 clamp，改 45000（×1.20=54000<60000）保持「无截断」语义。
       final n = GameRepository.instance.numbers;
       final bossHpMax = n.combat.redLines.bossHpMax;
       final ce = n.cycleEvolution;
@@ -614,7 +618,7 @@ void main() {
         realmTier: RealmTier.wuSheng,
         realmLayer: RealmLayer.dengFeng,
         school: TechniqueSchool.gangMeng,
-        baseHp: 52000,
+        baseHp: 45000,
         baseAttack: 1000,
         baseSpeed: 100,
         skillIds: [],
@@ -629,7 +633,7 @@ void main() {
         isTower: false,
       );
 
-      final expectedHp = (52000 * (1.0 + ce.scalePerCycle * (3 - 1))).toInt();
+      final expectedHp = (45000 * (1.0 + ce.scalePerCycle * (3 - 1))).toInt();
       expect(expectedHp, lessThanOrEqualTo(bossHpMax),
           reason: '$expectedHp ≤ $bossHpMax，此用例验证无截断路径（回归锁）');
       expect(bc.maxHp, expectedHp,

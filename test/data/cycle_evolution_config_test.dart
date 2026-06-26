@@ -13,7 +13,7 @@ void main() {
   group('CycleEvolutionConfig', () {
     test('scale_per_cycle 与 cap 参数', () {
       final ce = GameRepository.instance.numbers.cycleEvolution;
-      expect(ce.scalePerCycle, closeTo(0.06, 1e-9));
+      expect(ce.scalePerCycle, closeTo(0.10, 1e-9)); // 2026-06-26 周目平衡 0.06→0.10
       expect(ce.maxCycleMainline, 3);
       expect(ce.maxCycleTower, 2);
       expect(ce.defenseRateCap, closeTo(0.6, 1e-9));
@@ -53,11 +53,11 @@ void main() {
         expect(ce.traitsFor(cycle: 1, isBoss: false, isTower: false), isEmpty);
       });
 
-      test('cycle=2 主线普通 → {yuti}', () {
+      test('cycle=2 主线普通 → {yuti, zhenqi}（2026-06-26 周目平衡加 zhenqi）', () {
         final ce = GameRepository.instance.numbers.cycleEvolution;
         expect(
           ce.traitsFor(cycle: 2, isBoss: false, isTower: false),
-          {'yuti'},
+          {'yuti', 'zhenqi'},
         );
       });
 
