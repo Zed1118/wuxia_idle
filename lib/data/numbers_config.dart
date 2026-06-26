@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../features/equipment/domain/cycle_drop_bonus.dart';
+import '../features/equipment/domain/equipment_disposal.dart';
 import '../features/equipment/domain/rare_bonus_drop.dart';
 import '../features/injury/domain/injury_config.dart';
 import '../features/level/domain/level_config.dart';
@@ -90,6 +91,10 @@ class NumbersConfig {
   /// Phase 2 决议：每件 isLineageHeritage=true 装备**独立叠加** +5%（§12 #10 待 Pen
   /// 拍板，本阶段按"独立叠加"实现）。T22 用。
   final double lineageInternalForceMaxBonus;
+
+  /// 装备出售/分解配置（numbers.yaml `equipment.disposal`，2026-06-26 红线推翻）。
+  /// 7 阶出售价 + 强化倍率 + 分解材料量。
+  final EquipmentDisposalConfig disposal;
 
   /// 祖师爷 buff(P1.1 A1 E.5,GDD §7.1)。
   /// numbers.yaml `inheritance.founder_ancestor_buff`,P1.1 阶段决议方案 E.5.A:
@@ -276,6 +281,7 @@ class NumbersConfig {
     required this.resonanceInheritanceRetention,
     required this.resonanceSeclusionBattleCountPerHour,
     required this.lineageInternalForceMaxBonus,
+    required this.disposal,
     required this.founderAncestorBuff,
     required this.heritageItems,
     required this.ascension,
@@ -378,6 +384,9 @@ class NumbersConfig {
       lineageInternalForceMaxBonus: ((equipment['lineage_heritage']
               as Map<String, dynamic>)['internal_force_max_bonus'] as num)
           .toDouble(),
+      disposal: EquipmentDisposalConfig.fromYaml(
+        equipment['disposal'] as Map<String, dynamic>,
+      ),
       founderAncestorBuff: FounderAncestorBuff.fromYaml(
         ((y['inheritance'] as Map<String, dynamic>?)
                 ?['founder_ancestor_buff'] as Map<String, dynamic>?) ??

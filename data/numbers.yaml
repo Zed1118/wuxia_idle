@@ -642,6 +642,15 @@ equipment:
     pieces_per_generation_max: 2     # 每代师父最多传 2 件
     internal_force_max_bonus: 0.05   # 师承遗物自带内力上限 +5% buff
 
+  # 装备出售/分解(2026-06-26 用户拍板推翻「永久收藏品/只买不卖」红线)。
+  # 7 阶数组 index 0-6 = 寻常货..神物。**初值保守,待真机校**。
+  disposal:
+    sell_price: [20, 50, 120, 280, 600, 1200, 2500]
+    sell_enhance_factor: 0.1
+    disassemble_mojianshi: [1, 2, 4, 7, 12, 18, 25]
+    disassemble_xinxuejiejing: [0, 0, 0, 1, 2, 4, 8]
+    disassemble_enhance_mojianshi_per_level: 1
+
 # =============================================================================
 # 4. 心法系统
 # =============================================================================
