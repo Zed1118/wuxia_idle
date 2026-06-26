@@ -46,27 +46,27 @@ void main() {
 
   test('过 join 关 → 懒创建 senior 弟子并入队 + 防重', () async {
     final svc = DiscipleJoinService(isar: isar);
-    final joined = await svc.joinForClearedStage('stage_01_02');
+    final joined = await svc.joinForClearedStage('stage_02_05');
     expect(joined, isNotNull);
     expect(joined!.lineageRole, LineageRole.senior);
     expect(joined.isActive, true);
     final save = await isar.saveDatas.get(0);
     expect(save!.activeCharacterIds.contains(joined.id), true);
-    expect(save.triggeredDiscipleJoinStageIds.contains('stage_01_02'), true);
+    expect(save.triggeredDiscipleJoinStageIds.contains('stage_02_05'), true);
     final founder = await isar.characters.get(1);
     expect(founder!.discipleIds.contains(joined.id), true);
     expect(joined.masterId, 1);
 
     // 幂等:重战同关不再创建
-    final again = await svc.joinForClearedStage('stage_01_02');
+    final again = await svc.joinForClearedStage('stage_02_05');
     expect(again, isNull);
     expect((await isar.characters.where().findAll()).length, 2); // founder + 1
   });
 
   test('二弟子 junior 拜入 + 满队', () async {
     final svc = DiscipleJoinService(isar: isar);
-    await svc.joinForClearedStage('stage_01_02');
-    final j2 = await svc.joinForClearedStage('stage_01_04');
+    await svc.joinForClearedStage('stage_02_05');
+    final j2 = await svc.joinForClearedStage('stage_03_05');
     expect(j2!.lineageRole, LineageRole.junior);
     expect((await isar.saveDatas.get(0))!.activeCharacterIds.length, 3);
   });
@@ -79,7 +79,7 @@ void main() {
 
   test('防御:该 role 命名弟子已存在 → 不重复创建(belt-and-suspenders)', () async {
     final svc = DiscipleJoinService(isar: isar);
-    final first = await svc.joinForClearedStage('stage_01_02'); // 建 senior
+    final first = await svc.joinForClearedStage('stage_02_05'); // 建 senior
     expect(first, isNotNull);
     // 清掉 triggered 标记模拟「防重集丢失」边缘,但 senior 角色已在
     await isar.writeTxn(() async {
@@ -87,7 +87,7 @@ void main() {
       s!.triggeredDiscipleJoinStageIds = [];
       await isar.saveDatas.put(s);
     });
-    final dup = await svc.joinForClearedStage('stage_01_02');
+    final dup = await svc.joinForClearedStage('stage_02_05');
     expect(dup, isNull); // 角色已存在 → 不重建
     // senior 仍只有一个
     final seniors = (await isar.characters.where().findAll())

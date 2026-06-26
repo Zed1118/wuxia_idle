@@ -135,7 +135,7 @@ void main() {
         unawaited(runDiscipleJoinHookAfterVictory(
           context: capturedContext,
           ref: capturedRef,
-          stageId: 'stage_01_02',
+          stageId: 'stage_02_05',
         ));
         // 让 Isar writeTxn + NarrativeLoader.load 真 async 落地。
         await Future<void>.delayed(const Duration(milliseconds: 400));
