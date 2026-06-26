@@ -32,6 +32,7 @@ import '../../mass_battle/domain/mass_battle_def.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/strings.dart';
 import '../../battle/presentation/battle_screen.dart';
+import '../../battle/domain/derived_stats.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../level/application/level_service.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
@@ -781,6 +782,11 @@ Future<
     // 双层伤势：Boss/心魔关算硬仗，resolve 内部据此判定伤势 mutate character。
     // 受影响 character 经下方 writeTxn putAll(characters) 自然落库，无需额外 txn。
     isHardFight: stage.isBossStage,
+    // 第八阶段 E·稀有彩头:阶池 + realm→装备阶映射注入(本关固定掉落外额外 roll)。
+    equipmentPoolByTier: (tier) => GameRepository.instance.equipmentDefs.values
+        .where((e) => e.tier == tier)
+        .toList(growable: false),
+    equipmentTierForRealm: RealmUtils.equipmentTierCapOf,
   );
 
   // W15 #30 第 3 期:active 3 character 每人 += stage.baseExpReward + 升层。

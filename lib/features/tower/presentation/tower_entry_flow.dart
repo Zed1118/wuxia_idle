@@ -24,6 +24,7 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
 import '../../battle/application/battle_resolution.dart';
 import '../../battle/application/stage_auto_play_pref.dart';
+import '../../battle/domain/derived_stats.dart';
 import '../../battle/domain/auto_play_mode.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../battle/domain/enum_localizations.dart';
@@ -211,10 +212,29 @@ Future<void> runTowerFlow({
   DropResult drops = const DropResult(equipments: [], items: []);
   Set<EquipmentTier> extraDisplayTiers = const {};
   if (clearResult.isFirstClear && GameRepository.isLoaded) {
-    drops = DropService(
+    final towerDropSvc = DropService(
       equipmentDefLookup: GameRepository.instance.getEquipment,
       defaultObtainedFrom: UiStrings.towerDropSource,
-    ).rollTowerRewards(floor, DefaultRng());
+    );
+    final towerRng = DefaultRng();
+    drops = towerDropSvc.rollTowerRewards(floor, towerRng);
+    // 第八阶段 E·稀有彩头:塔层首通也额外 roll(与塔奖同 first-clear gating 守 §5.1
+    // 防刷:重打不发,故彩头也仅首通)。
+    final towerBonus = towerDropSvc.rollRareBonus(
+      baseTier: RealmUtils.equipmentTierCapOf(floor.requiredRealm),
+      config: GameRepository.instance.numbers.rareBonusDrop,
+      rng: towerRng,
+      poolForTier: (tier) => GameRepository.instance.equipmentDefs.values
+          .where((e) => e.tier == tier)
+          .toList(growable: false),
+      obtainedFrom: UiStrings.dropSourceRareBonus,
+    );
+    if (towerBonus != null) {
+      drops = DropResult(
+        equipments: [...drops.equipments, towerBonus],
+        items: drops.items,
+      );
+    }
     await _persistDrops(ref, drops, floor: floor);
     // 第七阶段 批一 Task 6:计算利器首次获得的 extraDisplayTiers
     // (须在 _persistDrops putAll 入库后调用)。
