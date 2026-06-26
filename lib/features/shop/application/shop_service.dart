@@ -9,7 +9,7 @@ import '../../../data/defs/shop_item_def.dart';
 /// 固定价材料（磨剑石/心血结晶）不受影响，`def.price` 直接使用。
 ///
 /// 设计约束：
-/// - 只买不卖（§5.1 不做卖出/退款）。
+/// - 购买在此 service；出售/分解见 `EquipmentDisposalService`（§5.1 只买不卖已于 2026-06-26 用户拍板推翻）。
 /// - 购买原子性：扣银两 + 入货品在同一 [Isar.writeTxn] 内，
 ///   避免扣了钱没拿到货。
 /// - 余额不足或无 item_silver 行 → [PurchaseFailReason.insufficientSilver]，
