@@ -496,11 +496,11 @@ void main() {
     expect(find.text('凝神丹 × 3'), findsOneWidget);
     expect(find.text('开碑手·秘籍 × 1'), findsOneWidget);
     expect(find.text('磨剑石 × 12'), findsOneWidget);
-    // 「使用」TextButton 只出现在丹 + 秘籍(2 个),磨剑石行无。
+    // 格子化后「使用」以底部标识条呈现（非 TextButton），只出现在丹 + 秘籍(2 个)。
     expect(
-      find.widgetWithText(TextButton, UiStrings.itemUseButton),
+      find.text(UiStrings.itemUseButton),
       findsNWidgets(2),
-      reason: '仅 jingYanDan/techniqueScroll 显使用按钮,磨剑石不显',
+      reason: '仅 jingYanDan/techniqueScroll 格子显「使用」标识,磨剑石不显',
     );
   });
 
@@ -519,8 +519,8 @@ void main() {
     );
     await tester.tap(find.text('物料'));
     await tester.pumpAndSettle();
-    // 点物料行的「使用」TextButton(非确认弹窗内 PlaqueButton)。
-    await tester.tap(find.widgetWithText(TextButton, UiStrings.itemUseButton));
+    // 格子化后点物料格子底部「使用」标识条（非 TextButton），触发弹窗。
+    await tester.tap(find.text(UiStrings.itemUseButton));
     await tester.pumpAndSettle();
     // 确认弹窗弹出,正文含 per-item 名(培元丹 = items.yaml name)。
     expect(
@@ -598,6 +598,98 @@ void main() {
       find.byType(ShopScreen),
       findsOneWidget,
       reason: '点「进商店」应导航至 ShopScreen',
+    );
+  });
+
+  // ─── Task 9: 物料界面格子化 ────────────────────────────────────────────────
+
+  testWidgets('Task9 物料 Tab 格子化：材料以 Wrap 格子呈现、显数量', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 2000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          allEquipmentsProvider.overrideWith((ref) async => []),
+          allInventoryItemsProvider.overrideWith(
+            (ref) async => [
+              mkItem(
+                id: 1,
+                defId: 'item_mojianshi',
+                itemType: ItemType.moJianShi,
+                quantity: 500,
+              ),
+              mkItem(
+                id: 2,
+                defId: 'item_jingyandan_small',
+                itemType: ItemType.jingYanDan,
+                quantity: 3,
+              ),
+            ],
+          ),
+          activeCharacterIdsProvider.overrideWith((ref) async => []),
+        ],
+        child: const MaterialApp(home: InventoryScreen()),
+      ),
+    );
+    for (var i = 0; i < 4; i++) {
+      await tester.pump();
+    }
+    await tester.tap(find.text('物料'));
+    await tester.pumpAndSettle();
+
+    // 格子网格：Wrap 存在（非旧 ExpansionTile 列表）
+    expect(find.byType(Wrap), findsWidgets,
+        reason: '物料 Tab 应以 Wrap 格子呈现，不再是行列表');
+    // 每格显数量（×N 角标）
+    expect(find.textContaining('×'), findsWidgets,
+        reason: '格子应显示数量（×N 格式角标）');
+    // 磨剑石格子可见（materialQuantity 格式）
+    expect(find.text('磨剑石 × 500'), findsOneWidget,
+        reason: '磨剑石格子应显 materialQuantity 格式');
+    // 经验丹格子可见
+    expect(find.text('凝神丹 × 3'), findsOneWidget,
+        reason: '经验丹格子应显 per-item 名 + 数量');
+    // 可用类格子有「使用」入口（标识条可见）
+    expect(find.text(UiStrings.itemUseButton), findsWidgets,
+        reason: '可用类（经验丹）格子应显「使用」入口');
+    // 磨剑石格子无「使用」入口
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Task9 物料格子可用类：tap 格子触发确认弹窗', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 2000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          allEquipmentsProvider.overrideWith((ref) async => []),
+          allInventoryItemsProvider.overrideWith(
+            (ref) async => [
+              mkItem(
+                id: 1,
+                defId: 'item_jingyandan_mid',
+                itemType: ItemType.jingYanDan,
+                quantity: 1,
+              ),
+            ],
+          ),
+          activeCharacterIdsProvider.overrideWith((ref) async => []),
+        ],
+        child: const MaterialApp(home: InventoryScreen()),
+      ),
+    );
+    for (var i = 0; i < 4; i++) {
+      await tester.pump();
+    }
+    await tester.tap(find.text('物料'));
+    await tester.pumpAndSettle();
+    // tap 「使用」标识条 → 触发 _onUse → 确认弹窗弹出
+    await tester.tap(find.text(UiStrings.itemUseButton));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(UiStrings.itemUseConfirmBody('培元丹')),
+      findsOneWidget,
+      reason: 'tap 格子使用入口应弹出确认弹窗（per-item 名）',
     );
   });
 }
