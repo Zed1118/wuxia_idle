@@ -1,3 +1,5 @@
+import '../core/domain/item_usage.dart';
+
 /// UI 静态中文标签（phase1_tasks.md T14）。
 ///
 /// 与 [lib/features/battle/domain/enum_localizations.dart] 同性质：Phase 1 把"代码内中文"集中
@@ -539,14 +541,26 @@ class UiStrings {
   /// 物料行文案：`磨剑石 × 1234`。
   static String materialQuantity(String name, int qty) => '$name × $qty';
 
-  /// T12:物料用途说明(itemType.name → 用途)。空 = 不显。
-  static String materialUsage(String itemTypeName) => switch (itemTypeName) {
-    'moJianShi' => '用于强化装备',
-    'xinXueJieJing' => '强化保底 / 开锋消耗',
-    'jingYanDan' => '提升修为',
-    'techniqueScroll' => '研习心法',
-    _ => '',
-  };
+  /// 物料用途摘要。空 = 不显。
+  static String materialUsageSummary(List<ItemUsage> usages) {
+    final labels = <String>{for (final usage in usages) itemUsageLabel(usage)}
+      ..remove('');
+    return labels.join(' / ');
+  }
+
+  /// 单项用途标签（集中中文 sink；业务层只返回 enum）。
+  static String itemUsageLabel(ItemUsage usage) {
+    return switch (usage.kind) {
+      ItemUsageKind.realmProgress => '修为突破',
+      ItemUsageKind.techniqueUnlock => '解锁招式',
+      ItemUsageKind.equipmentEnhancement => '装备强化',
+      ItemUsageKind.equipmentGuarantee => '强化保底',
+      ItemUsageKind.shopPurchaseCurrency => '商店采买',
+      ItemUsageKind.islandUpgradeCurrency => '桃花岛升级',
+      ItemUsageKind.islandBuildingUpgrade => '建筑升级',
+      ItemUsageKind.islandRecipeInput => '桃花岛加工',
+    };
+  }
 
   // ── P4 材料经济 P2 T4:道具使用(经验丹/秘籍)──────────────────────────────
   static const String itemUseButton = '使用';
