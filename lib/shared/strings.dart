@@ -1102,6 +1102,7 @@ class UiStrings {
   static String seclusionRequiredRealm(String realmName) => '需要境界：$realmName';
   static String seclusionDurationLabel(int hours) => '$hours 小时';
   static String seclusionMojianshi(int n) => '磨剑石 × $n';
+  static String seclusionSilver(int n) => '银两 × $n';
   static String seclusionInternalForce(int n) => '内力 +$n';
   static String seclusionInsightPoints(int n) => '心法领悟点 +$n';
   // 根因A B3 sink 引导(2026-05-29):结算屏 insightPoints>0 时提示去「心法面板」
@@ -1635,6 +1636,49 @@ class UiStrings {
   static String offlineRecapRewardLine(int mojianshi, int experience) =>
       '预计可收 $mojianshi 磨剑石 · $experience 经验';
 
+  /// 离线收益总览（闭关中）
+  static String offlineRecapRewardOverview(
+    int mojianshi,
+    int silver,
+    int experience,
+  ) => '预计可收 $mojianshi 磨剑石 · $silver 银两 · $experience 经验';
+
+  /// 离线收益明细标题
+  static const String offlineRecapBreakdownTitle = '明细';
+
+  /// 离线收益明细：真实离线时长
+  static String offlineRecapAwayDetail(String hours) => '离线时长：$hours';
+
+  /// 离线收益明细：有效结算时长
+  static String offlineRecapSettledDetail(String hours) => '有效结算：$hours';
+
+  /// 离线收益明细：磨剑石
+  static String offlineRecapMojianshiDetail(int value) => '磨剑石：$value';
+
+  /// 离线收益明细：银两
+  static String offlineRecapSilverDetail(int value) => '银两：$value';
+
+  /// 离线收益明细：经验
+  static String offlineRecapExperienceDetail(int value) => '经验：$value';
+
+  /// 离线收益明细：掉落
+  static String offlineRecapDropDetail(String value) => '掉落：$value';
+
+  /// active 闭关掉落尚未实际掷定
+  static const String offlineRecapDropPending = '收功时揭晓';
+
+  /// passive 被动离线无装备掉落池
+  static const String offlineRecapNoDrop = '无';
+
+  /// 离线收益截断：仍在计划时长内
+  static const String offlineRecapLimitInProgress = '未达上限，按已过时长结算';
+
+  /// 离线收益截断：达到本次计划闭关时长
+  static const String offlineRecapLimitPlanned = '已达本次闭关计划时长';
+
+  /// 离线收益截断：达到系统封顶
+  static const String offlineRecapLimitSystemCap = '已达离线收益封顶';
+
   /// 前去收功按钮
   static const String offlineRecapGoCollect = '前去收功';
 
@@ -1649,6 +1693,10 @@ class UiStrings {
   static String passiveRecapBody(int hours, int moji, int exp) =>
       '离去约 $hours 时辰。这些时日你未曾松懈，行功走架之间，'
       '得磨剑石 $moji、修为 $exp，已收入囊中。';
+
+  /// 被动卡总览
+  static String passiveRecapOverview(int moji, int exp) =>
+      '已入库 $moji 磨剑石 · $exp 经验';
 
   /// 被动卡关闭按钮
   static const String passiveRecapDismiss = '甚好';

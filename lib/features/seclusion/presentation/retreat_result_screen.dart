@@ -30,6 +30,7 @@ class RetreatResultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mojianshi = result.mojianshi;
+    final silver = result.silver;
     final actualHours = result.actualHours;
     final equipDrops = result.equipmentDrops;
     final internalForce = result.internalForcePoints;
@@ -38,6 +39,7 @@ class RetreatResultScreen extends StatelessWidget {
     final advancement = result.advancement;
     final hasReward =
         mojianshi > 0 ||
+        silver > 0 ||
         equipDrops.isNotEmpty ||
         internalForce > 0 ||
         insightPoints > 0 ||
@@ -75,6 +77,11 @@ class RetreatResultScreen extends StatelessWidget {
                         _RewardRow(
                           icon: Icons.construction,
                           label: UiStrings.seclusionMojianshi(mojianshi),
+                        ),
+                      if (silver > 0)
+                        _RewardRow(
+                          icon: Icons.toll,
+                          label: UiStrings.seclusionSilver(silver),
                         ),
                       if (experience > 0)
                         _RewardRow(

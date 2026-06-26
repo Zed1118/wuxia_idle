@@ -72,6 +72,9 @@ void main() {
       expect(recap.progressPct, 1.0);
       expect(recap.estimatedMojianshi, greaterThan(0));
       expect(recap.estimatedExperience, greaterThan(0));
+      expect(recap.estimatedSilver, greaterThan(0));
+      expect(recap.settledHours, 4.0);
+      expect(recap.limitReason, OfflineRecapLimitReason.plannedDuration);
     });
 
     test('进行中（挂 2h < 计划 4h）→ 未满 + progress ≈ 0.5', () {
@@ -86,6 +89,8 @@ void main() {
       expect(recap, isNotNull);
       expect(recap!.isComplete, isFalse);
       expect(recap.progressPct, closeTo(0.5, 0.01));
+      expect(recap.settledHours, closeTo(2.0, 0.01));
+      expect(recap.limitReason, OfflineRecapLimitReason.inProgress);
     });
 
     test('地图名正确映射（shanLin → 山林）', () {
@@ -100,7 +105,7 @@ void main() {
       expect(recap!.mapName, '山林');
     });
 
-    test('预估产出（磨剑石/经验）与 computeOutputs 直接调用一致', () {
+    test('预估产出（磨剑石/银两/经验）与 computeOutputs 直接调用一致', () {
       final started = DateTime(2026, 5, 11, 10);
       final now = started.add(const Duration(hours: 5));
       final session = mkSession(durationHours: 4, startedAt: started);
@@ -119,7 +124,25 @@ void main() {
         now: now,
       );
       expect(recap!.estimatedMojianshi, direct.mojianshi);
+      expect(recap.estimatedSilver, direct.silver);
       expect(recap.estimatedExperience, direct.experiencePoints);
+      expect(recap.settledHours, direct.actualHours);
+    });
+
+    test('超计划离线按 durationHours 截断并标注计划上限', () {
+      final started = DateTime(2026, 5, 11, 10);
+      final recap = OfflineRecapService.buildRecap(
+        session: mkSession(durationHours: 4, startedAt: started),
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: started.add(const Duration(hours: 24)),
+      );
+
+      expect(recap, isNotNull);
+      expect(recap!.awayHours, closeTo(24, 0.01));
+      expect(recap.settledHours, 4.0);
+      expect(recap.limitReason, OfflineRecapLimitReason.plannedDuration);
     });
   });
 }
