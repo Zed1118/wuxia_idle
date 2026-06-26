@@ -340,11 +340,12 @@ class _LevelChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lvCfg = GameRepository.instanceOrNull?.numbers.level;
-    final atMax = lvCfg != null && character.level >= lvCfg.maxLevel;
-    final toNext =
-        (lvCfg != null && !atMax) ? lvCfg.expToNext(character.level) : 0;
-    final frac =
-        toNext > 0 ? (character.levelExp / toNext).clamp(0.0, 1.0) : 1.0;
+    // 防御:旧档 Isar 哨兵 level(负)漏过启动 repair 时仍显 Lv 1 不崩(双保险)。
+    final lv = character.level < 1 ? 1 : character.level;
+    final lvExp = character.levelExp < 0 ? 0 : character.levelExp;
+    final atMax = lvCfg != null && lv >= lvCfg.maxLevel;
+    final toNext = (lvCfg != null && !atMax) ? lvCfg.expToNext(lv) : 0;
+    final frac = toNext > 0 ? (lvExp / toNext).clamp(0.0, 1.0) : 1.0;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
@@ -368,7 +369,7 @@ class _LevelChip extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Lv ${character.level}',
+                'Lv $lv',
                 style: const TextStyle(
                   color: WuxiaUi.ink,
                   fontSize: 15,
@@ -377,7 +378,7 @@ class _LevelChip extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                atMax ? '巅峰' : '${character.levelExp} / $toNext',
+                atMax ? '巅峰' : '$lvExp / $toNext',
                 style: const TextStyle(
                   color: WuxiaUi.muted,
                   fontSize: 11,
