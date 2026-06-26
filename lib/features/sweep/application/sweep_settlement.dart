@@ -31,7 +31,8 @@ Future<SweepBattleOutcome?> settleMainlineSweepVictory({
   required StageDef stage,
   required int cycle,
 }) async {
-  final outcome = await applyVictoryResolution(ref: ref, stage: stage);
+  // 周目平衡 2026-06-26:扫荡透传 cycle → 二周目起提高稀有彩头概率 + 材料加成。
+  final outcome = await applyVictoryResolution(ref: ref, stage: stage, cycle: cycle);
   if (outcome == null) return null;
 
   // 进度记录（幂等 cycleKey append）+ 残页 hook（重打可掉，非首通限定）。

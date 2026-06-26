@@ -34,7 +34,7 @@ void main() {
       baseTier: EquipmentTier.xunChang,
       config: const RareBonusDropConfig(
         enabled: true,
-        tiers: [RareBonusTier(offset: 1, chance: 1.0)],
+        tiers: [RareBonusTier(offset: 1, chance: 1.0, chanceNgPlus: 1.0)],
       ),
       rng: DefaultRng(seed: 3),
       poolForTier: (tier) => GameRepository.instance.equipmentDefs.values
@@ -52,7 +52,7 @@ void main() {
       baseTier: EquipmentTier.xunChang,
       config: const RareBonusDropConfig(
         enabled: true,
-        tiers: [RareBonusTier(offset: 1, chance: 0.0)],
+        tiers: [RareBonusTier(offset: 1, chance: 0.0, chanceNgPlus: 0.0)],
       ),
       rng: DefaultRng(seed: 3),
       poolForTier: (tier) => GameRepository.instance.equipmentDefs.values
@@ -60,5 +60,48 @@ void main() {
           .toList(growable: false),
     );
     expect(eq, isNull);
+  });
+
+  // 周目平衡 2026-06-26:rollRareBonus 透传 cycle → 二周目用 chance_ng_plus。
+  test('cycle=2:一周目 chance=0 不掉、二周目 chance_ng_plus=1.0 掉真装备', () {
+    const config = RareBonusDropConfig(
+      enabled: true,
+      tiers: [RareBonusTier(offset: 1, chance: 0.0, chanceNgPlus: 1.0)],
+    );
+    pool(tier) => GameRepository.instance.equipmentDefs.values
+        .where((e) => e.tier == tier)
+        .toList(growable: false);
+    expect(
+      svc().rollRareBonus(
+          baseTier: EquipmentTier.xunChang,
+          config: config,
+          rng: DefaultRng(seed: 3),
+          poolForTier: pool,
+          cycle: 1),
+      isNull,
+    );
+    final ng = svc().rollRareBonus(
+        baseTier: EquipmentTier.xunChang,
+        config: config,
+        rng: DefaultRng(seed: 3),
+        poolForTier: pool,
+        cycle: 2);
+    expect(ng, isNotNull);
+    expect(ng!.tier, EquipmentTier.xiangYang);
+  });
+
+  // 周目平衡 2026-06-26:真 numbers.yaml → config 契约(yaml key 打错会静默退化)。
+  test('真 numbers.yaml:rare_bonus chance_ng_plus + cycle_drop_bonus 正确加载', () {
+    final n = GameRepository.instance.numbers;
+    expect(n.rareBonusDrop.tiers, hasLength(2));
+    expect(n.rareBonusDrop.tiers[0].offset, 1);
+    expect(n.rareBonusDrop.tiers[0].chance, closeTo(0.05, 1e-9));
+    expect(n.rareBonusDrop.tiers[0].chanceNgPlus, closeTo(0.08, 1e-9),
+        reason: '高 1 阶二周目 8%');
+    expect(n.rareBonusDrop.tiers[1].chance, closeTo(0.015, 1e-9));
+    expect(n.rareBonusDrop.tiers[1].chanceNgPlus, closeTo(0.03, 1e-9),
+        reason: '高 2 阶二周目 3%');
+    expect(n.cycleDropBonus.materialQtyMultNgPlus, closeTo(1.5, 1e-9),
+        reason: '二周目材料数量 ×1.5');
   });
 }

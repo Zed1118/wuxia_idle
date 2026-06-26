@@ -32,31 +32,50 @@ class RareBonusTier {
   /// 高于本关装备阶的阶数(1=高 1 阶,2=高 2 阶)。
   final int offset;
 
-  /// 该档命中概率 [0,1]。
+  /// 一周目命中概率 [0,1]。
   final double chance;
 
-  const RareBonusTier({required this.offset, required this.chance});
+  /// 二周目起(cycle≥2)命中概率 [0,1](周目平衡 2026-06-26:二周目回报加大)。
+  /// yaml 缺 `chance_ng_plus` 时默认 = [chance](向后兼容,旧档行为不变)。
+  final double chanceNgPlus;
 
-  factory RareBonusTier.fromYaml(Map<String, dynamic> y) => RareBonusTier(
-        offset: (y['offset'] as num).toInt(),
-        chance: (y['chance'] as num).toDouble(),
-      );
+  const RareBonusTier({
+    required this.offset,
+    required this.chance,
+    required this.chanceNgPlus,
+  });
+
+  factory RareBonusTier.fromYaml(Map<String, dynamic> y) {
+    final base = (y['chance'] as num).toDouble();
+    return RareBonusTier(
+      offset: (y['offset'] as num).toInt(),
+      chance: base,
+      chanceNgPlus: (y['chance_ng_plus'] as num?)?.toDouble() ?? base,
+    );
+  }
+
+  /// 按周目取命中概率:cycle≥2 用 [chanceNgPlus],否则 [chance]。
+  double chanceFor(int cycle) => cycle >= 2 ? chanceNgPlus : chance;
 }
 
 /// 稀有彩头阶选择(纯函数)。各档独立 roll,命中则记该阶,**取命中的最高阶**
 /// (更稀有优先);全不命中 / disabled / 越界(超神物)→ null。
+///
+/// [cycle] 周目编号:cycle≥2 各档用 [RareBonusTier.chanceNgPlus] 提高命中概率
+/// (周目平衡 2026-06-26)。默认 1 = 一周目原行为。
 EquipmentTier? selectRareBonusTier(
   EquipmentTier baseTier,
   RareBonusDropConfig config,
-  Rng rng,
-) {
+  Rng rng, {
+  int cycle = 1,
+}) {
   if (!config.enabled) return null;
   const tiers = EquipmentTier.values;
   EquipmentTier? hit;
   for (final t in config.tiers) {
     final idx = baseTier.index + t.offset;
     if (idx >= tiers.length) continue; // 越界(超神物)不掉
-    if (rng.nextDouble() < t.chance) hit = tiers[idx]; // 升序覆盖 → 取最高
+    if (rng.nextDouble() < t.chanceFor(cycle)) hit = tiers[idx]; // 升序覆盖 → 取最高
   }
   return hit;
 }

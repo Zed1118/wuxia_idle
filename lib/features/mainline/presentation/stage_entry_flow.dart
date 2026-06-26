@@ -188,7 +188,8 @@ Future<void> runStageFlow({
 
   // ── victory ──
   // Phase 4 W11 #32 销账：装备 battleCount / 心法 skillUsage / 主修升层 + 关卡 drop 落地
-  final outcome = await applyVictoryResolution(ref: ref, stage: stage);
+  final outcome =
+      await applyVictoryResolution(ref: ref, stage: stage, cycle: targetCycle);
   // W13-v3 fix: 同 defeat 分支,invalidate character/equipment/technique family
   _invalidateCharacterFamilyAfterCombat(ref);
 
@@ -720,6 +721,7 @@ Future<
     })?> applyVictoryResolution({
   required WidgetRef ref,
   required StageDef stage,
+  int cycle = 1,
 }) async {
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) return null;
@@ -789,6 +791,8 @@ Future<
         .where((e) => e.tier == tier)
         .toList(growable: false),
     equipmentTierForRealm: RealmUtils.equipmentTierCapOf,
+    // 周目平衡 2026-06-26:二周目起提高稀有彩头概率 + 普通掉落材料加成。
+    cycle: cycle,
   );
 
   // W15 #30 第 3 期:active 3 character 每人 += stage.baseExpReward + 升层。

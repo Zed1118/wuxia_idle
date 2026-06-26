@@ -571,6 +571,45 @@ void main() {
     expect(result.dropResult.items.first.quantity, 2);
   });
 
+  // 周目平衡 2026-06-26:resolve 透传 cycle → 二周目材料类掉落 ×1.5(真 numbers.yaml)。
+  test('周目材料加成：cycle=2 材料 ×1.5、cycle=1 原值', () {
+    final ch = buildCharacter(id: 1, mainTechId: 200);
+    final mainTech = buildTechnique(id: 200, ownerCharId: 1, defId: 'tech_main');
+    BattleState victory() => BattleState(
+          leftTeam: [buildBattleChar(1, 0)],
+          rightTeam: const [],
+          tick: 5,
+          result: BattleResult.leftWin,
+          actionLog: const [],
+        );
+    // item_jingtie → ItemType.miscMaterial(吃加成);qtyMin=qtyMax=4 确定性。
+    final stage = buildStage(dropTable: const [
+      ItemDrop(
+        inventoryItemDefId: 'item_jingtie',
+        quantityMin: 4,
+        quantityMax: 4,
+        dropChance: 1.0,
+      ),
+    ]);
+    BattleResolutionResult run(int cycle) => BattleResolutionService.resolve(
+          finalState: victory(),
+          participatingCharacters: [ch],
+          equipmentsByCharacter: const {},
+          techniquesByCharacter: {1: [mainTech]},
+          stageDef: stage,
+          rng: DefaultRng(seed: 1),
+          progressToNextMap: progressMap,
+          techniqueDefLookup: (id) => buildTechDef(id: id, skillIds: const []),
+          dropService: dropSvc(),
+          numbersConfig: numbersCfg,
+          cycle: cycle,
+        );
+    expect(run(1).dropResult.items.single.quantity, 4,
+        reason: '一周目材料不加成');
+    expect(run(2).dropResult.items.single.quantity, 6,
+        reason: '二周目材料 ×1.5(numbers.yaml cycle_drop_bonus)');
+  });
+
   // ──────────────────────────────────────────────────────────────────────────
   // 10. 主修多 skill 合并升层结果
   // ──────────────────────────────────────────────────────────────────────────

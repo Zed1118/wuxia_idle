@@ -116,6 +116,9 @@ class BattleResolutionService {
     // 第八阶段 E·稀有彩头:阶池查询 + realm→装备阶映射(注入式·null 则不掉彩头)。
     List<EquipmentDef> Function(EquipmentTier)? equipmentPoolByTier,
     EquipmentTier Function(RealmTier)? equipmentTierForRealm,
+    // 周目平衡 2026-06-26:cycle≥2 提高稀有彩头概率 + 普通掉落材料加成(主线/扫荡)。
+    // 默认 1 = 一周目原行为;爬塔走独立 first-clear 路径不经本参。
+    int cycle = 1,
   }) {
     _assertAllParticipated(finalState, participatingCharacters);
 
@@ -174,8 +177,17 @@ class BattleResolutionService {
     var dropResult = (isVictory && stageDef != null)
         ? dropService.rollDrops(stageDef, rng)
         : const DropResult(equipments: [], items: []);
+    // 周目平衡 2026-06-26:二周目起(cycle≥2)普通掉落材料类数量加成(主线/扫荡)。
+    if (isVictory && stageDef != null && numbersConfig != null) {
+      dropResult = applyCycleMaterialBonus(
+        dropResult,
+        cycle,
+        numbersConfig.cycleDropBonus,
+      );
+    }
     // 第八阶段 E·稀有彩头:本关固定掉落外额外 roll 高于本关 1-2 阶装备(并入 drops
     // → 自动持久 + victory 仪式展示)。注入齐备 + victory 时才跑。
+    // 周目平衡:cycle≥2 各档用 chance_ng_plus 提高命中(主线/扫荡)。
     if (isVictory &&
         stageDef != null &&
         numbersConfig != null &&
@@ -187,6 +199,7 @@ class BattleResolutionService {
         rng: rng,
         poolForTier: equipmentPoolByTier,
         obtainedFrom: UiStrings.dropSourceRareBonus,
+        cycle: cycle,
       );
       if (bonus != null) {
         dropResult = DropResult(
