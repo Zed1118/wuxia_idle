@@ -50,8 +50,9 @@ class LootRumorContent extends StatelessWidget {
             child: Text(
               _bucketLabel(entry.key),
               style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: WuxiaColors.textMuted,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: WuxiaColors.textPrimary,
               ),
             ),
           ),
@@ -101,7 +102,16 @@ class _RumorItemRow extends StatelessWidget {
       padding: const EdgeInsets.only(left: 8, top: 2),
       child: Row(
         children: [
-          Flexible(child: Text('· $name', style: TextStyle(color: color))),
+          Flexible(
+            child: Text(
+              '· $name',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: color ?? WuxiaColors.textPrimary,
+              ),
+            ),
+          ),
           if (aboveRealm) ...[
             const SizedBox(width: 6),
             const Text(
