@@ -96,7 +96,8 @@ void main() {
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
     expect(find.byType(PaperPanel), findsWidgets);
     // T8:info 区前移强化/开锋入口(2)+ 底部 ActionBar 兜底(2)= 4
-    expect(find.byType(PlaqueButton), findsNWidgets(4));
+    // Task5:背包态追加出售/分解(2)→ 合计 6
+    expect(find.byType(PlaqueButton), findsNWidgets(6));
     // 首屏 info 区可见带强化等级的入口（不必滚到底部）
     expect(find.text('强化 +12'), findsOneWidget);
   });
