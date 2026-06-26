@@ -569,6 +569,10 @@ class _MaterialList extends StatelessWidget {
   }
 }
 
+/// 物料分组（Task 9 格子化：替代旧 Card + ExpansionTile 列表体例）。
+///
+/// 组标题行（色条 + EnumL10n.itemType + 计数）+ Wrap 格子，spacing/runSpacing=12
+/// 与装备 grid 保持一致。每项走 [_MaterialGridTile]。
 class _MaterialGroup extends StatelessWidget {
   const _MaterialGroup({required this.type, required this.items});
 
@@ -578,118 +582,178 @@ class _MaterialGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = EnumL10n.itemType(type);
-    return Card(
-      color: WuxiaColors.panel,
-      shape: RoundedRectangleBorder(
-        side: const BorderSide(color: WuxiaColors.border),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: ExpansionTile(
-        initiallyExpanded: true,
-        iconColor: WuxiaColors.textPrimary,
-        collapsedIconColor: WuxiaColors.textPrimary,
-        title: Row(
-          children: [
-            Container(width: 3, height: 18, color: WuxiaColors.textPrimary),
-            const SizedBox(width: 8),
-            Text(
-              name,
-              style: const TextStyle(
-                color: WuxiaColors.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 组标题行（保留色条 + 名 + 计数体例）
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                Container(width: 3, height: 18, color: WuxiaColors.textPrimary),
+                const SizedBox(width: 8),
+                Text(
+                  name,
+                  style: const TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '(${items.length})',
+                  style: const TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              '(${items.length})',
-              style: const TextStyle(
-                color: WuxiaColors.textMuted,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-        children: items
-            .map((it) => _MaterialRow(item: it, name: name))
-            .toList(),
+          ),
+          // 格子网格（spacing 与装备 grid 保持一致）
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: items
+                .map((it) => _MaterialGridTile(item: it, groupName: name))
+                .toList(),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// 单条物料行（材料经济 P2 T4：经验丹 / 秘籍可「使用」）。
+/// 物料格子（Task 9 格子化：替代旧 _MaterialRow 行布局）。
 ///
-/// 名取 [ItemDef.name]（items.yaml，凝神丹 / 开碑手·秘籍…），缺 def 退回
-/// itemType 组名 [name]。经验丹 / 秘籍行末加「使用」按钮 → 确认弹窗 →
-/// [ItemUseService.use] → 结果浮层 + invalidate（背包 + 角色 provider）。
-/// 磨剑石 / 心血结晶 / 银两无按钮（service 也只识别前二者）。
-class _MaterialRow extends ConsumerWidget {
-  const _MaterialRow({required this.item, required this.name});
+/// 80×80 宣纸底 + 墨框方块，内显图标（coin_icon 占位）+ 数量角标（×N 右下）。
+/// 可用类（经验丹 / 秘籍 `_usable`）在方块底部附「使用」标识条，整格 tap 触发
+/// 原有 `_onUse` 流程（确认弹窗 → [ItemUseService.use] → 结果浮层 →
+/// invalidate），**逻辑体不动，仅换触发载体**。
+/// 名称 × 数量以 [UiStrings.materialQuantity] 格式显于方块下方（保留 T9 测试兼
+/// 容性）；用途说明（T12）作为小号副文字跟在名称行后。
+class _MaterialGridTile extends ConsumerWidget {
+  const _MaterialGridTile({required this.item, required this.groupName});
 
   final InventoryItem item;
-  final String name;
+  final String groupName; // itemDef 缺失时退回的组名
 
   bool get _usable =>
       item.itemType == ItemType.jingYanDan ||
       item.itemType == ItemType.techniqueScroll;
 
+  static const double _size = 80;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final itemDef = GameRepository.instance.itemDefs[item.defId];
-    final displayName = itemDef?.name ?? name;
+    final displayName = itemDef?.name ?? groupName;
     final usage = UiStrings.materialUsage(item.itemType.name);
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: const BoxDecoration(
-        color: WuxiaColors.avatarFill,
-        border: Border(
-          left: BorderSide(color: WuxiaColors.textPrimary, width: 3),
-        ),
-      ),
-      child: Row(
+    final canUse = _usable && itemDef != null;
+    // 显式局部非空引用，供 onTap 闭包捕获（闭包内不做 flow promotion）。
+    final usableDef = canUse ? itemDef : null;
+
+    return SizedBox(
+      width: _size,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(
-            'assets/ui/coin_icon.png',
-            width: 16,
-            height: 16,
-            fit: BoxFit.contain,
-            errorBuilder: (_, _, _) => const SizedBox(width: 16, height: 16),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  UiStrings.materialQuantity(displayName, item.quantity),
-                  style: const TextStyle(
-                    color: WuxiaColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (usage.isNotEmpty)
+          // 格子方块
+          InkWell(
+            onTap: usableDef != null
+                ? () => _onUse(context, ref, usableDef, displayName)
+                : null,
+            borderRadius: BorderRadius.circular(5),
+            child: Container(
+              width: _size,
+              height: _size,
+              decoration: BoxDecoration(
+                color: WuxiaUi.slotFill,
+                borderRadius: BorderRadius.circular(5),
+                border: Border.all(color: WuxiaUi.ink, width: 2),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // 图标（通用铜钱占位；未来可走 itemDef.iconPath）
                   Padding(
-                    padding: const EdgeInsets.only(top: 2),
+                    padding: const EdgeInsets.all(8),
+                    child: Image.asset(
+                      'assets/ui/coin_icon.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const SizedBox.expand(),
+                    ),
+                  ),
+                  // 数量角标（右下）
+                  Positioned(
+                    bottom: 2,
+                    right: 4,
                     child: Text(
-                      usage,
+                      '×${item.quantity}',
                       style: const TextStyle(
-                        color: WuxiaColors.textMuted,
-                        fontSize: 11,
+                        color: WuxiaUi.paper,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        shadows: [
+                          Shadow(blurRadius: 2, color: Colors.black54),
+                        ],
                       ),
                     ),
                   ),
-              ],
+                  // 可用标识条（底部）—— 使 find.text('使用') 可定位，整格 tap 触发
+                  if (canUse)
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.black38,
+                          borderRadius: BorderRadius.vertical(
+                            bottom: Radius.circular(5),
+                          ),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: const Text(
+                          UiStrings.itemUseButton,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: WuxiaColors.textPrimary,
+                            fontSize: 9,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
-          if (_usable && itemDef != null)
-            TextButton(
-              onPressed: () => _onUse(context, ref, itemDef, displayName),
-              child: const Text(
-                UiStrings.itemUseButton,
-                style: TextStyle(color: WuxiaColors.textPrimary),
+          const SizedBox(height: 4),
+          // 名称 × 数量（UiStrings.materialQuantity 格式，test find.text 兼容）
+          Text(
+            UiStrings.materialQuantity(displayName, item.quantity),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: WuxiaUi.ink, fontSize: 11),
+          ),
+          // 用途说明（T12：materialUsage）
+          if (usage.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                usage,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: WuxiaColors.textMuted,
+                  fontSize: 10,
+                ),
               ),
             ),
         ],
@@ -698,6 +762,7 @@ class _MaterialRow extends ConsumerWidget {
   }
 
   /// 确认 → service → 结果浮层 → invalidate（沿 shop_screen `_handleBuy` 体例）。
+  /// **逻辑体原样保留**，仅触发入口从行末 TextButton 改为格子 InkWell tap。
   Future<void> _onUse(
     BuildContext context,
     WidgetRef ref,
