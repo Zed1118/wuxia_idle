@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
@@ -56,9 +59,27 @@ void main() {
     )..id = id;
   }
 
+  Character mkCharacter({required int id, int? equippedWeaponId}) {
+    return Character.create(
+      name: '测试角色',
+      realmTier: RealmTier.yiLiu,
+      realmLayer: RealmLayer.qiMeng,
+      attributes: Attributes()
+        ..constitution = 5
+        ..enlightenment = 5
+        ..agility = 5
+        ..fortune = 5,
+      rarity: RarityTier.biaoZhun,
+      lineageRole: LineageRole.founder,
+      createdAt: DateTime(2026, 6, 26),
+      equippedWeaponId: equippedWeaponId,
+    )..id = id;
+  }
+
   Future<void> pumpDialog(
     WidgetTester tester, {
     required List<Equipment> equipments,
+    Character? character,
   }) async {
     // memory feedback_listview_widget_test_viewport：扩 viewport 避免
     // ListView shrinkWrap 无高度导致 findsNothing。
@@ -70,6 +91,13 @@ void main() {
           allEquipmentsProvider.overrideWith((ref) async => equipments),
           allInventoryItemsProvider.overrideWith((ref) async => []),
           silverBalanceProvider.overrideWith((ref) async => 0),
+          activeCharacterIdsProvider.overrideWith(
+            (ref) async => character == null ? [] : [character.id],
+          ),
+          if (character != null)
+            characterByIdProvider(
+              character.id,
+            ).overrideWith((ref) async => character),
         ],
         child: const MaterialApp(home: BulkDisposalDialog()),
       ),
@@ -102,7 +130,11 @@ void main() {
       ),
       mkEq(id: 5, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
     ];
-    await pumpDialog(tester, equipments: equipments);
+    await pumpDialog(
+      tester,
+      equipments: equipments,
+      character: mkCharacter(id: 1, equippedWeaponId: 3),
+    );
 
     // 寻常货行：显示 2 件（排除已装备 + 师承）
     expect(
@@ -117,11 +149,7 @@ void main() {
       reason: '利器行件数应为 1',
     );
     // 只有 2 个品级行（xunChang + liQi），没有其他品级
-    expect(
-      find.textContaining('件）'),
-      findsNWidgets(2),
-      reason: '应只有 2 个品级行',
-    );
+    expect(find.textContaining('件）'), findsNWidgets(2), reason: '应只有 2 个品级行');
   });
 
   // ─── ② 品阶行有出售/分解按钮 ─────────────────────────────────────────────
@@ -179,6 +207,29 @@ void main() {
       find.text(expectedBody),
       findsOneWidget,
       reason: '确认框应显示 sellConfirmBody(2, expectedSilver)',
+    );
+  });
+
+  testWidgets('历史 owner 残留但无槽位引用 → 仍计入可处置件数', (tester) async {
+    final equipments = [
+      mkEq(
+        id: 1,
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.weapon,
+        ownerCharacterId: 1,
+      ),
+      mkEq(id: 2, tier: EquipmentTier.xunChang, slot: EquipmentSlot.armor),
+    ];
+    await pumpDialog(
+      tester,
+      equipments: equipments,
+      character: mkCharacter(id: 1),
+    );
+
+    expect(
+      find.text(UiStrings.bulkTierLabel('寻常货', 2)),
+      findsOneWidget,
+      reason: '批量整理只按槽位引用排除已装备，不按历史 owner 排除',
     );
   });
 
@@ -246,6 +297,7 @@ void main() {
             ownerCharacterId: 1, // 已装备
           ),
         );
+        await isar.characters.put(mkCharacter(id: 1, equippedWeaponId: id3));
         id4 = await isar.equipments.put(
           Equipment.create(
             defId: 'e4',

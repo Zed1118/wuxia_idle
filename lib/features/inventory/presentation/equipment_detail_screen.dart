@@ -15,6 +15,7 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/application/equipment_disposal_service.dart';
 import '../../equipment/domain/equipment_disposal.dart';
+import '../../equipment/domain/equipment_slot_occupancy.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
@@ -186,6 +187,9 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
   Widget build(BuildContext context) {
     final color = tierColorForEquipment(widget.def.tier);
     final highTreasure = isHighTreasureTier(widget.def.tier);
+    final equippedIds = _watchActiveEquippedIds(ref);
+    final isEquipped = isEquipmentEquippedBySlot(widget.equipment, equippedIds);
+    final canDispose = !isEquipped && !widget.equipment.isLineageHeritage;
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       appBar: WuxiaTitleBar(
@@ -251,17 +255,10 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                     _ActionBar(
                       onEnhance: () => _openEnhance(0),
                       onForge: () => _openEnhance(1),
-                      // 仅背包态（ownerCharacterId==null && !isLineageHeritage）
+                      // 仅自由态（不在角色装备槽 && !isLineageHeritage）
                       // 显示出售/分解按钮（2026-06-26 红线推翻）。
-                      onSell: (widget.equipment.ownerCharacterId == null &&
-                              !widget.equipment.isLineageHeritage)
-                          ? _onSell
-                          : null,
-                      onDisassemble:
-                          (widget.equipment.ownerCharacterId == null &&
-                                  !widget.equipment.isLineageHeritage)
-                              ? _onDisassemble
-                              : null,
+                      onSell: canDispose ? _onSell : null,
+                      onDisassemble: canDispose ? _onDisassemble : null,
                     ),
                   ],
                 );
@@ -272,6 +269,14 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
       ),
     );
   }
+}
+
+Set<int> _watchActiveEquippedIds(WidgetRef ref) {
+  final ids = ref.watch(activeCharacterIdsProvider).value ?? const <int>[];
+  final characters = [
+    for (final id in ids) ref.watch(characterByIdProvider(id)).value,
+  ].nonNulls;
+  return equippedEquipmentIdsForCharacters(characters);
 }
 
 class _DetailHero extends StatelessWidget {
@@ -831,7 +836,9 @@ class _ActionBar extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: PlaqueButton(
-                      label: UiStrings.tabForging, onTap: onForge),
+                    label: UiStrings.tabForging,
+                    onTap: onForge,
+                  ),
                 ),
               ],
             ),
