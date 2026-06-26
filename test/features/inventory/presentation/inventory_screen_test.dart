@@ -529,4 +529,43 @@ void main() {
     );
     expect(find.text(UiStrings.commonCancel), findsOneWidget);
   });
+
+  // ─── Task 7: 已装备视觉标记 ──────────────────────────────────────────────
+
+  testWidgets('Task7 已装备格子 → 显「装备中」角标', (tester) async {
+    final equipped =
+        mkEq(id: 50, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon)
+          ..ownerCharacterId = 1;
+    final inBag = mkEq(
+      id: 51,
+      tier: EquipmentTier.liQi,
+      slot: EquipmentSlot.armor,
+    );
+    await pumpInv(tester, equipments: [equipped, inBag]);
+    // 已装备格子应显「装备中」角标
+    expect(
+      find.text(UiStrings.equippedBadge),
+      findsWidgets,
+      reason: 'ownerCharacterId != null 的格子应显「装备中」角标',
+    );
+  });
+
+  testWidgets('Task7 背包装备(ownerCharacterId==null) → 无「装备中」角标', (tester) async {
+    final inBag1 = mkEq(
+      id: 60,
+      tier: EquipmentTier.xunChang,
+      slot: EquipmentSlot.weapon,
+    );
+    final inBag2 = mkEq(
+      id: 61,
+      tier: EquipmentTier.xiangYang,
+      slot: EquipmentSlot.armor,
+    );
+    await pumpInv(tester, equipments: [inBag1, inBag2]);
+    expect(
+      find.text(UiStrings.equippedBadge),
+      findsNothing,
+      reason: 'ownerCharacterId == null 的格子不应显「装备中」角标',
+    );
+  });
 }

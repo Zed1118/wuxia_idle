@@ -481,6 +481,26 @@ class _EquipmentGridTile extends ConsumerWidget {
               color: WuxiaColors.bossFrame,
             ),
           ),
+        if (eq.ownerCharacterId != null)
+          Positioned(
+            bottom: 2,
+            right: 2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: const Text(
+                UiStrings.equippedBadge,
+                style: TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 9,
+                  height: 1.2,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
