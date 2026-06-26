@@ -85,8 +85,8 @@ void main() {
         reason: 'islandLastSettledAt 新档默认 null');
   });
 
-  test('P3: saveVersion 已升 0.31.0', () async {
+  test('P3: saveVersion 已升 0.32.0', () async {
     final save = (await IsarSetup.currentSaveData())!;
-    expect(save.saveVersion, '0.31.0');
+    expect(save.saveVersion, '0.32.0');
   });
 }

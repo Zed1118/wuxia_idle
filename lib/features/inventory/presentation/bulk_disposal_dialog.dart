@@ -19,8 +19,8 @@ import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 
 /// 批量整理对话框（Task 6 / 2026-06-26）：一键按品级出售或分解背包装备。
 ///
-/// **过滤规则**：仅展示 `ownerCharacterId==null && !isLineageHeritage` 的背包装备；
-/// 已装备 / 师承遗物不可批量处置，但其数量不计入件数显示。
+/// **过滤规则**：仅展示可处置背包装备；
+/// 已装备 / 师承遗物 / 玩家锁定不可批量处置，但其数量不计入件数显示。
 /// 全品阶均可批量（含宝物/神物），每次操作均走二次确认弹窗（用户拍板）。
 ///
 /// 入口：`inventory_screen.dart` 装备 Tab 顶部 `PlaqueButton(equipmentBulkEntry)`
@@ -95,40 +95,50 @@ class BulkDisposalDialog extends ConsumerWidget {
     WidgetRef ref,
     List<Equipment> list,
   ) {
-    // 按品阶分桶，只保留可处置（背包且非师承）。
+    // 按品阶分桶，只保留可处置装备。
     final byTier = <EquipmentTier, List<Equipment>>{};
+    final protected = _ProtectionCounts.from(list);
     for (final eq in list) {
-      if (eq.ownerCharacterId == null && !eq.isLineageHeritage) {
+      if (isEquipmentDisposable(eq)) {
         byTier.putIfAbsent(eq.tier, () => []).add(eq);
       }
     }
 
     // 高品阶在前（神物→寻常货），只显示非空品阶。
-    final tiers =
-        EquipmentTier.values.reversed.where((t) => byTier.containsKey(t)).toList();
+    final tiers = EquipmentTier.values.reversed
+        .where((t) => byTier.containsKey(t))
+        .toList();
 
     if (tiers.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 24),
-          child: Text(
-            UiStrings.bulkDisposalEmpty,
-            style: TextStyle(color: WuxiaColors.textMuted),
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                UiStrings.bulkDisposalEmpty,
+                style: TextStyle(color: WuxiaColors.textMuted),
+              ),
+            ),
           ),
-        ),
+          _ProtectedSummary(counts: protected),
+        ],
       );
     }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        _ProtectedSummary(counts: protected),
         for (int i = 0; i < tiers.length; i++) ...[
           if (i > 0)
             const Divider(color: WuxiaColors.border, height: 1, thickness: 1),
           _TierRow(
             tier: tiers[i],
             disposable: byTier[tiers[i]]!,
-            onSell: () => _handleSell(context, ref, tiers[i], byTier[tiers[i]]!),
+            onSell: () =>
+                _handleSell(context, ref, tiers[i], byTier[tiers[i]]!),
             onDisassemble: () =>
                 _handleDisassemble(context, ref, tiers[i], byTier[tiers[i]]!),
           ),
@@ -241,6 +251,65 @@ class BulkDisposalDialog extends ConsumerWidget {
   }
 }
 
+class _ProtectionCounts {
+  const _ProtectionCounts({
+    required this.locked,
+    required this.equipped,
+    required this.heritage,
+  });
+
+  final int locked;
+  final int equipped;
+  final int heritage;
+
+  bool get isEmpty => locked == 0 && equipped == 0 && heritage == 0;
+
+  factory _ProtectionCounts.from(List<Equipment> list) {
+    var locked = 0;
+    var equipped = 0;
+    var heritage = 0;
+    for (final eq in list) {
+      if (eq.isLocked) locked++;
+      if (eq.ownerCharacterId != null) equipped++;
+      if (eq.isLineageHeritage) heritage++;
+    }
+    return _ProtectionCounts(
+      locked: locked,
+      equipped: equipped,
+      heritage: heritage,
+    );
+  }
+}
+
+class _ProtectedSummary extends StatelessWidget {
+  const _ProtectedSummary({required this.counts});
+
+  final _ProtectionCounts counts;
+
+  @override
+  Widget build(BuildContext context) {
+    if (counts.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          UiStrings.bulkProtectedSummary(
+            locked: counts.locked,
+            equipped: counts.equipped,
+            heritage: counts.heritage,
+          ),
+          style: const TextStyle(
+            color: WuxiaColors.textMuted,
+            fontSize: 12,
+            height: 1.5,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// 品阶行：品级标签（件数）+ 「一键出售」+「一键分解」按钮。
 class _TierRow extends StatelessWidget {
   const _TierRow({
@@ -278,7 +347,10 @@ class _TierRow extends StatelessWidget {
           const SizedBox(width: 8),
           PlaqueButton(label: UiStrings.bulkSellButton, onTap: onSell),
           const SizedBox(width: 8),
-          PlaqueButton(label: UiStrings.bulkDisassembleButton, onTap: onDisassemble),
+          PlaqueButton(
+            label: UiStrings.bulkDisassembleButton,
+            onTap: onDisassemble,
+          ),
         ],
       ),
     );

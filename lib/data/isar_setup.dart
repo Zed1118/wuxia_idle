@@ -139,7 +139,8 @@ class IsarSetup {
   // 0.29.0 伤势系统:Character +lightInjuryStacks/injuryHoursRemaining,新字段旧档读默认 0,无迁移分支,仅 bump。
   // 0.30.0 桃花岛:SaveData +islandBuildings/islandLastSettledAt(嵌入 IslandBuildingState),新字段旧档读默认空/null,无迁移分支纯 bump。
   // 0.31.0 第八阶段角色等级:Character +level(默认1)/levelExp(默认0),新字段旧档读默认值,无迁移分支纯 bump。
-  static const _currentSaveVersion = '0.31.0';
+  // 0.32.0 装备锁定:Equipment +isLocked(默认 false),旧档装备均视为未锁定,无迁移分支纯 bump。
+  static const _currentSaveVersion = '0.32.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -181,7 +182,9 @@ class IsarSetup {
       // 0.27.0 兵器谱：扫当前库存兜底回填图鉴（幂等，新档库存空时 no-op）。
       // 兼任老档当前持有装备的点亮 + 任何漏 hook 路径的安全网。
       try {
-        await EquipmentCatalogService(isar: isar).reconcileFromInventory(currentSlotId);
+        await EquipmentCatalogService(
+          isar: isar,
+        ).reconcileFromInventory(currentSlotId);
       } catch (_) {
         // 库存异常时静默 skip，不阻塞启动
       }
@@ -216,8 +219,7 @@ class IsarSetup {
   @visibleForTesting
   static Future<void> repairCharacterLevels(Isar isar) async {
     final all = await isar.characters.where().findAll();
-    final broken =
-        all.where((c) => c.level < 1 || c.levelExp < 0).toList();
+    final broken = all.where((c) => c.level < 1 || c.levelExp < 0).toList();
     if (broken.isEmpty) return;
     await isar.writeTxn(() async {
       for (final c in broken) {
@@ -282,9 +284,10 @@ class IsarSetup {
             final def = defs[parts[0]];
             if (def == null || !def.isBossStage) continue;
             final chapterKey =
-                (def.stageType == StageType.mainline && def.chapterIndex != null)
-                    ? 'ch${def.chapterIndex}'
-                    : def.stageType.name;
+                (def.stageType == StageType.mainline &&
+                    def.chapterIndex != null)
+                ? 'ch${def.chapterIndex}'
+                : def.stageType.name;
             final chKey = '$chapterKey#${parts[1]}';
             if (!cKeys.contains(chKey)) cKeys.add(chKey);
           }

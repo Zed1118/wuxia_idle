@@ -100,4 +100,18 @@ class EquipmentService {
       await isar.characters.put(character);
     });
   }
+
+  /// 设置装备锁定状态。锁定只影响出售/分解/批量整理，不改变穿戴与养成状态。
+  Future<EquipOutcome> setLocked({
+    required int equipmentId,
+    required bool locked,
+  }) async {
+    return isar.writeTxn(() async {
+      final eq = await isar.equipments.get(equipmentId);
+      if (eq == null) return EquipOutcome.notFound;
+      eq.isLocked = locked;
+      await isar.equipments.put(eq);
+      return EquipOutcome.success;
+    });
+  }
 }

@@ -62,6 +62,7 @@ void main() {
     String? defId,
     int enhanceLevel = 0,
     bool isLineageHeritage = false,
+    bool isLocked = false,
   }) {
     return Equipment.create(
       defId: defId ?? 'test_$id',
@@ -72,6 +73,7 @@ void main() {
       baseAttack: 50,
       enhanceLevel: enhanceLevel,
       isLineageHeritage: isLineageHeritage,
+      isLocked: isLocked,
     )..id = id;
   }
 
@@ -236,10 +238,24 @@ void main() {
     expect(find.byIcon(Icons.auto_awesome), findsWidgets, reason: '师承遗物应显标记');
   });
 
+  testWidgets('锁定装备 → 显锁定标记', (tester) async {
+    final eq = mkEq(
+      id: 41,
+      tier: EquipmentTier.baoWu,
+      slot: EquipmentSlot.weapon,
+      defId: 'weapon_baowu_bing_po_zhen',
+      isLocked: true,
+    );
+    await pumpInv(tester, equipments: [eq]);
+    expect(find.byIcon(Icons.lock_outline), findsWidgets, reason: '锁定装备应显锁标记');
+  });
+
   testWidgets('T11 筛选「已穿戴」→ 只显已穿戴装备', (tester) async {
-    final worn =
-        mkEq(id: 10, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon)
-          ..ownerCharacterId = 1;
+    final worn = mkEq(
+      id: 10,
+      tier: EquipmentTier.liQi,
+      slot: EquipmentSlot.weapon,
+    )..ownerCharacterId = 1;
     final free = mkEq(
       id: 11,
       tier: EquipmentTier.liQi,
@@ -534,9 +550,11 @@ void main() {
   // ─── Task 7: 已装备视觉标记 ──────────────────────────────────────────────
 
   testWidgets('Task7 已装备格子 → 显「装备中」角标', (tester) async {
-    final equipped =
-        mkEq(id: 50, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon)
-          ..ownerCharacterId = 1;
+    final equipped = mkEq(
+      id: 50,
+      tier: EquipmentTier.liQi,
+      slot: EquipmentSlot.weapon,
+    )..ownerCharacterId = 1;
     final inBag = mkEq(
       id: 51,
       tier: EquipmentTier.liQi,
@@ -638,20 +656,31 @@ void main() {
     await tester.pumpAndSettle();
 
     // 格子网格：Wrap 存在（非旧 ExpansionTile 列表）
-    expect(find.byType(Wrap), findsWidgets,
-        reason: '物料 Tab 应以 Wrap 格子呈现，不再是行列表');
+    expect(
+      find.byType(Wrap),
+      findsWidgets,
+      reason: '物料 Tab 应以 Wrap 格子呈现，不再是行列表',
+    );
     // 每格显数量（×N 角标）
-    expect(find.textContaining('×'), findsWidgets,
-        reason: '格子应显示数量（×N 格式角标）');
+    expect(find.textContaining('×'), findsWidgets, reason: '格子应显示数量（×N 格式角标）');
     // 磨剑石格子可见（materialQuantity 格式）
-    expect(find.text('磨剑石 × 500'), findsOneWidget,
-        reason: '磨剑石格子应显 materialQuantity 格式');
+    expect(
+      find.text('磨剑石 × 500'),
+      findsOneWidget,
+      reason: '磨剑石格子应显 materialQuantity 格式',
+    );
     // 经验丹格子可见
-    expect(find.text('凝神丹 × 3'), findsOneWidget,
-        reason: '经验丹格子应显 per-item 名 + 数量');
+    expect(
+      find.text('凝神丹 × 3'),
+      findsOneWidget,
+      reason: '经验丹格子应显 per-item 名 + 数量',
+    );
     // 可用类格子有「使用」入口（标识条可见）
-    expect(find.text(UiStrings.itemUseButton), findsWidgets,
-        reason: '可用类（经验丹）格子应显「使用」入口');
+    expect(
+      find.text(UiStrings.itemUseButton),
+      findsWidgets,
+      reason: '可用类（经验丹）格子应显「使用」入口',
+    );
     // 磨剑石格子无「使用」入口
     expect(tester.takeException(), isNull);
   });

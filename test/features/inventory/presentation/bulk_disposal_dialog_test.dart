@@ -42,6 +42,7 @@ void main() {
     int enhanceLevel = 0,
     bool isLineageHeritage = false,
     int? ownerCharacterId,
+    bool isLocked = false,
   }) {
     return Equipment.create(
       defId: 'test_$id',
@@ -53,6 +54,7 @@ void main() {
       enhanceLevel: enhanceLevel,
       isLineageHeritage: isLineageHeritage,
       ownerCharacterId: ownerCharacterId,
+      isLocked: isLocked,
     )..id = id;
   }
 
@@ -82,8 +84,8 @@ void main() {
 
   // ─── ① 列出有可处置品阶行 ───────────────────────────────────────────────
 
-  testWidgets('① 对话框列出有可处置装备的品阶行，件数排除已装备/师承', (tester) async {
-    // xunChang: 2 件可处置 + 1 件已装备 + 1 件师承遗物 → 显示件数 = 2
+  testWidgets('① 对话框列出有可处置装备的品阶行，件数排除已装备/师承/锁定', (tester) async {
+    // xunChang: 2 件可处置 + 1 件已装备 + 1 件师承遗物 + 1 件锁定 → 显示件数 = 2
     // liQi: 1 件可处置 → 显示件数 = 1
     final equipments = [
       mkEq(id: 1, tier: EquipmentTier.xunChang, slot: EquipmentSlot.weapon),
@@ -100,15 +102,21 @@ void main() {
         slot: EquipmentSlot.armor,
         isLineageHeritage: true,
       ),
+      mkEq(
+        id: 6,
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.accessory,
+        isLocked: true,
+      ),
       mkEq(id: 5, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
     ];
     await pumpDialog(tester, equipments: equipments);
 
-    // 寻常货行：显示 2 件（排除已装备 + 师承）
+    // 寻常货行：显示 2 件（排除已装备 + 师承 + 锁定）
     expect(
       find.text(UiStrings.bulkTierLabel('寻常货', 2)),
       findsOneWidget,
-      reason: '寻常货行件数应为 2，已装备/师承不计',
+      reason: '寻常货行件数应为 2，已装备/师承/锁定不计',
     );
     // 利器行：1 件
     expect(
@@ -117,10 +125,13 @@ void main() {
       reason: '利器行件数应为 1',
     );
     // 只有 2 个品级行（xunChang + liQi），没有其他品级
+    expect(find.textContaining('件）'), findsNWidgets(2), reason: '应只有 2 个品级行');
     expect(
-      find.textContaining('件）'),
-      findsNWidgets(2),
-      reason: '应只有 2 个品级行',
+      find.text(
+        UiStrings.bulkProtectedSummary(locked: 1, equipped: 1, heritage: 1),
+      ),
+      findsOneWidget,
+      reason: '批量对话框应说明锁定/装备中/师承遗物已被排除',
     );
   });
 
@@ -215,8 +226,8 @@ void main() {
     test('确认后可处置装备消失、银两增加、已装备/师承装备仍在', () async {
       final isar = IsarSetup.instance;
 
-      // Seed: 2 可处置 + 1 已装备 + 1 师承遗物（同 xunChang 品级）
-      late int id1, id2, id3, id4;
+      // Seed: 2 可处置 + 1 已装备 + 1 师承遗物 + 1 锁定（同 xunChang 品级）
+      late int id1, id2, id3, id4, id5;
       await isar.writeTxn(() async {
         id1 = await isar.equipments.put(
           Equipment.create(
@@ -256,6 +267,16 @@ void main() {
             isLineageHeritage: true, // 师承遗物
           ),
         );
+        id5 = await isar.equipments.put(
+          Equipment.create(
+            defId: 'e5',
+            tier: EquipmentTier.xunChang,
+            slot: EquipmentSlot.accessory,
+            obtainedAt: DateTime(2026, 6, 26),
+            obtainedFrom: 'test',
+            isLocked: true, // 玩家锁定
+          ),
+        );
       });
 
       final service = EquipmentDisposalService(isar: isar, config: cfg);
@@ -269,9 +290,10 @@ void main() {
       expect(await isar.equipments.get(id1), isNull, reason: '可处置件 e1 应已删除');
       expect(await isar.equipments.get(id2), isNull, reason: '可处置件 e2 应已删除');
 
-      // 已装备 + 师承遗物仍在
+      // 已装备 + 师承遗物 + 锁定仍在
       expect(await isar.equipments.get(id3), isNotNull, reason: '已装备件应保留');
       expect(await isar.equipments.get(id4), isNotNull, reason: '师承遗物应保留');
+      expect(await isar.equipments.get(id5), isNotNull, reason: '锁定装备应保留');
 
       // 银两增加
       final silver = await isar.inventoryItems.getByDefId('item_silver');

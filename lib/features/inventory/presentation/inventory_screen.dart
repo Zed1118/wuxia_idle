@@ -263,7 +263,10 @@ class _MaterialTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(allInventoryItemsProvider);
     final silverAsync = ref.watch(silverBalanceProvider);
-    final silverBalance = silverAsync.maybeWhen(data: (n) => n, orElse: () => 0);
+    final silverBalance = silverAsync.maybeWhen(
+      data: (n) => n,
+      orElse: () => 0,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -297,9 +300,7 @@ class _MaterialTab extends ConsumerWidget {
               PlaqueButton(
                 label: UiStrings.inventoryShopEntry,
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const ShopScreen(),
-                  ),
+                  MaterialPageRoute<void>(builder: (_) => const ShopScreen()),
                 ),
               ),
             ],
@@ -461,8 +462,9 @@ class _EquipmentGridTile extends ConsumerWidget {
     final def = GameRepository.instance.equipmentDefs[eq.defId];
     final locked = playerRealm != null && !eq.isEquippableAtRealm(playerRealm!);
     // T11:封条显具体境界原因(§5.3 装备阶↔境界 1:1,需同序境界),非泛化「未达境界」。
-    final requiredRealmName =
-        EnumL10n.realmTier(RealmTier.values[eq.tier.index]);
+    final requiredRealmName = EnumL10n.realmTier(
+      RealmTier.values[eq.tier.index],
+    );
 
     return Stack(
       clipBehavior: Clip.none,
@@ -487,6 +489,16 @@ class _EquipmentGridTile extends ConsumerWidget {
             left: 2,
             child: Icon(
               Icons.auto_awesome,
+              size: 14,
+              color: WuxiaColors.bossFrame,
+            ),
+          ),
+        if (eq.isLocked)
+          const Positioned(
+            top: 2,
+            right: 2,
+            child: Icon(
+              Icons.lock_outline,
               size: 14,
               color: WuxiaColors.bossFrame,
             ),
@@ -698,9 +710,7 @@ class _MaterialGridTile extends ConsumerWidget {
                         color: WuxiaUi.paper,
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        shadows: [
-                          Shadow(blurRadius: 2, color: Colors.black54),
-                        ],
+                        shadows: [Shadow(blurRadius: 2, color: Colors.black54)],
                       ),
                     ),
                   ),
