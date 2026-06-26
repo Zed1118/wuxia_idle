@@ -134,8 +134,8 @@ void main() {
       // ② id=3 → junior
       expect(junior.lineageRole, LineageRole.junior);
       // ③ join stage id 全部预填
-      expect(save.triggeredDiscipleJoinStageIds, contains('stage_01_02'));
-      expect(save.triggeredDiscipleJoinStageIds, contains('stage_01_04'));
+      expect(save.triggeredDiscipleJoinStageIds, contains('stage_02_05'));
+      expect(save.triggeredDiscipleJoinStageIds, contains('stage_03_05'));
       // ④ 版本升到 0.31.0
       expect(save.saveVersion, '0.31.0');
       // ⑤ activeCharacterIds 未动(弟子未删/未改)
