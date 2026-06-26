@@ -52,8 +52,9 @@ Future<void> maybeShowOfflineRecap({
           onDismiss: () => Navigator.of(ctx).pop(),
           onGoCollect: () {
             Navigator.of(ctx).pop();
-            final mapDef =
-                GameRepository.instance.getSeclusionMap(session.mapType);
+            final mapDef = GameRepository.instance.getSeclusionMap(
+              session.mapType,
+            );
             Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) => ActiveRetreatScreen(
@@ -111,6 +112,8 @@ Future<void> maybeShowOfflineRecap({
         mojianshi: yield_.mojianshi,
         experience: yield_.experience,
         awayHours: awayHours,
+        settledHours: yield_.settledHours,
+        isCapped: yield_.isCapped,
         onDismiss: () => Navigator.of(ctx).pop(),
       ),
     ),
