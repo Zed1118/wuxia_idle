@@ -13,6 +13,7 @@ import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/features/inventory/presentation/inventory_screen.dart';
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
+import 'package:wuxia_idle/features/shop/presentation/shop_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/item_slot.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_panel.dart';
@@ -566,6 +567,37 @@ void main() {
       find.text(UiStrings.equippedBadge),
       findsNothing,
       reason: 'ownerCharacterId == null 的格子不应显「装备中」角标',
+    );
+  });
+
+  // ─── Task 8: 商店入口 ─────────────────────────────────────────────────
+
+  testWidgets('Task8 物料 tab 有「进商店」按钮', (tester) async {
+    await pumpInv(tester, equipments: [], items: []);
+    await tester.tap(find.text('物料'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(UiStrings.inventoryShopEntry),
+      findsOneWidget,
+      reason: '物料 Tab 银两顶栏应有「进商店」按钮',
+    );
+  });
+
+  testWidgets('Task8 点「进商店」→ ShopScreen 入栈', (tester) async {
+    await pumpInvWithSilver(
+      tester,
+      equipments: [],
+      items: [],
+      silverBalance: 0,
+    );
+    await tester.tap(find.text('物料'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.inventoryShopEntry));
+    await tester.pumpAndSettle();
+    expect(
+      find.byType(ShopScreen),
+      findsOneWidget,
+      reason: '点「进商店」应导航至 ShopScreen',
     );
   });
 }
