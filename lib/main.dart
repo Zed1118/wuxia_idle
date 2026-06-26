@@ -17,6 +17,7 @@ import 'features/splash/presentation/splash_screen.dart';
 import 'shared/audio/audio_players_backend.dart';
 import 'shared/audio/sound_manager.dart';
 import 'shared/strings.dart';
+import 'shared/theme/wuxia_app_theme.dart';
 import 'shared/theme/wuxia_tokens.dart';
 
 Future<void> main() async {
@@ -103,7 +104,7 @@ class _WuxiaAppState extends ConsumerState<WuxiaApp> {
         },
         child: MaterialApp(
           title: UiStrings.appTitle,
-          theme: ThemeData.dark(useMaterial3: true),
+          theme: wuxiaAppTheme(),
           debugShowCheckedModeBanner: false,
           builder: _wuxiaTextScaleBuilder,
           home: const SplashScreen(),
