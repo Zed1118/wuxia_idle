@@ -76,5 +76,5 @@
 ## 十一 · 周目实际差异(待用户拍板 · 2026-06-26)
 
 - [x] **① 难度侧已做**(2026-06-26 用户「双调·温和」拍板·合 main `9caef667`):`scale_per_cycle` 0.06→0.10(二周目敌+10%/三周目+20%)+ 主线二周目 assignment `[yuti]`→`[yuti, zhenqi]`(加真气词条·敌多放一次大招)。红线安全(生产 `.clamp(0,60000)`·西凉霸主 cycle3 命中 clamp·玩家伤害独立 scale·simulator peak 不进百万)。**balance 初值待真机校**。
-- [ ] **② 回报侧待做(升 xhigh)**:二周目起加大掉落回报——稀有彩头概率提升(+1阶 5%→8% / +2阶 1.5%→3%·`rare_bonus_drop` 加 `chance_ng_plus`)+ 二周目普通掉落材料小幅加成。**跨文件**:cycle 要从 `selectedChallengeCycleProvider` 穿过主线/爬塔/扫荡 3 条结算路径(`BattleResolutionService.resolve`/`DropService.rollRareBonus`/`selectRareBonusTier` 加 cycle 参)到掉落 roll;`rollDrops` 读 cycle。守 §5.4 红线。用户拍板分两半:难度侧 high 已做,回报侧升 xhigh 单独做。
-  - 显示层已修(`ca8f7e4b`);现状掉落仍不读 cycle(二周目掉落=一周目),待本项实装。
+- [x] **② 回报侧已做**(2026-06-26 xhigh·合 main `f03d5b34`):主线+扫荡二周目起回报加大。稀有彩头 cycle 感知(`RareBonusTier.chanceNgPlus`+`chanceFor`·+1阶5%→8%/+2阶1.5%→3%)+ 普通掉落材料加成(新 `CycleDropBonusConfig`+`applyCycleMaterialBonus`·材料类 miscMaterial/磨剑石/心血结晶 ×1.5·装备/经验丹/秘籍/银两不动)。cycle 透传:`resolve` 加 cycle ← `applyVictoryResolution`(主线 runStageFlow targetCycle·扫荡 settleMainlineSweepVictory cycle)。**爬塔不变**:rare bonus 仅 isFirstClear 触发,二周目非首通故不发(守 §5.1 防刷),无需接 cycle。红线全守。TDD +16/全量 3130+1skip。**balance 初值待真机校**(彩头 8%·3%/材料 ×1.5)。
+  - 显示层已修(`ca8f7e4b`)·难度侧 ①(`9caef667`)·回报侧 ②(`f03d5b34`)——周目可见化+难度+回报全闭环。
