@@ -1,5 +1,24 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/domain/skill_unlock_entry.dart';
+import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../../battle_record/application/boss_memory_providers.dart';
+import '../../weapon_codex/application/equipment_catalog_providers.dart';
 import '../../../shared/strings.dart';
 import '../domain/archive_clue.dart';
+
+final zangjuangeCluesProvider = FutureProvider<List<ArchiveClue>>((ref) async {
+  final missingEquipmentCount = await _missingEquipmentCount(ref);
+  final missingFragmentCount = await _missingFragmentCount();
+  final unbrokenBossCycleCount = await _unrecordedBossCount(ref);
+
+  return buildZangjuangeClues(
+    missingEquipmentCount: missingEquipmentCount,
+    missingFragmentCount: missingFragmentCount,
+    unbrokenBossCycleCount: unbrokenBossCycleCount,
+  );
+});
 
 List<ArchiveClue> buildZangjuangeClues({
   required int missingEquipmentCount,
@@ -41,4 +60,39 @@ List<ArchiveClue> buildZangjuangeClues({
     );
   }
   return clues;
+}
+
+Future<int> _missingEquipmentCount(Ref ref) async {
+  if (!GameRepository.isLoaded || IsarSetup.instanceOrNull == null) {
+    return 0;
+  }
+  final entries = await ref.watch(equipmentCatalogListProvider.future);
+  final missing = GameRepository.instance.equipmentDefs.length - entries.length;
+  return missing < 0 ? 0 : missing;
+}
+
+Future<int> _missingFragmentCount() async {
+  final isar = IsarSetup.instanceOrNull;
+  if (isar == null) return 0;
+
+  final save = await IsarSetup.currentSaveData();
+  final collecting = save?.skillUnlockProgress.where(_isCollectingFragment);
+  return collecting?.length ?? 0;
+}
+
+Future<int> _unrecordedBossCount(Ref ref) async {
+  if (!GameRepository.isLoaded || IsarSetup.instanceOrNull == null) {
+    return 0;
+  }
+  final catalog = ref.read(bossCatalogProvider);
+  final memories = await ref.watch(bossMemoryListProvider.future);
+  final recordedKeys = {for (final memory in memories) memory.bossKey};
+  final missing = catalog
+      .where((entry) => !recordedKeys.contains(entry.bossKey))
+      .length;
+  return missing < 0 ? 0 : missing;
+}
+
+bool _isCollectingFragment(SkillUnlockEntry entry) {
+  return !entry.unlocked && entry.fragmentCount > 0;
 }
