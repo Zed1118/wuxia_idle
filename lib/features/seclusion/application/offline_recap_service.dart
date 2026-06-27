@@ -4,6 +4,8 @@ import '../domain/retreat_session.dart';
 import '../domain/seclusion_map_def.dart';
 import 'seclusion_service.dart';
 
+enum OfflineRecapLimitReason { inProgress, plannedDuration, systemCap }
+
 /// M2 离线收益汇总「欢迎回来」卡的展示数据。
 ///
 /// 由 [OfflineRecapService.buildRecap] 纯函数产出,供启动后 recap 卡渲染。
@@ -25,6 +27,15 @@ typedef OfflineRecap = ({
 
   /// 预计可收经验。
   int estimatedExperience,
+
+  /// 预计可收银两。
+  int estimatedSilver,
+
+  /// 本次按公式实际参与结算的小时数。
+  double settledHours,
+
+  /// 结算上限/截断原因。
+  OfflineRecapLimitReason limitReason,
 });
 
 /// M2 离线收益汇总（范围 A）计算服务。
@@ -65,9 +76,16 @@ class OfflineRecapService {
 
     final planned = session.durationHours.toDouble();
     final isComplete = elapsed >= planned;
-    final progressPct =
-        planned <= 0 ? 1.0 : (elapsed / planned).clamp(0.0, 1.0).toDouble();
+    final progressPct = planned <= 0
+        ? 1.0
+        : (elapsed / planned).clamp(0.0, 1.0).toDouble();
     final def = maps.firstWhere((m) => m.mapType == session.mapType);
+    final cap = config.capHours.toDouble();
+    final limitReason = outputs.actualHours >= cap && cap <= planned
+        ? OfflineRecapLimitReason.systemCap
+        : isComplete
+        ? OfflineRecapLimitReason.plannedDuration
+        : OfflineRecapLimitReason.inProgress;
 
     return (
       awayHours: elapsed,
@@ -76,6 +94,9 @@ class OfflineRecapService {
       progressPct: progressPct,
       estimatedMojianshi: outputs.mojianshi,
       estimatedExperience: outputs.experiencePoints,
+      estimatedSilver: outputs.silver,
+      settledHours: outputs.actualHours,
+      limitReason: limitReason,
     );
   }
 }
