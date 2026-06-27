@@ -1,9 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yaml/yaml.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/taohua_island_config.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  tearDown(GameRepository.resetForTest);
+
   final y = (loadYaml(_yaml) as YamlMap).cast<String, dynamic>();
   final cfg = TaohuaIslandConfig.fromYaml(y);
 
@@ -43,6 +48,16 @@ void main() {
     expect(buildingTypeFromYamlKey('mu_gong_fang'), BuildingType.muGongFang);
     expect(buildingTypeFromYamlKey('ling_quan'), BuildingType.lingQuan);
     expect(buildingTypeFromYamlKey('zhu_zao_tai'), BuildingType.zhuZaoTai);
+  });
+
+  test('GameRepository 加载 phase 2 桃花岛建筑配置', () async {
+    await GameRepository.loadAllDefs();
+    final cfg = GameRepository.instance.numbers.taohuaIsland;
+
+    expect(cfg.buildings.length, greaterThanOrEqualTo(7));
+    expect(cfg.buildings[BuildingType.muGongFang]!.kind, BuildingKind.source);
+    expect(cfg.buildings[BuildingType.lingQuan]!.kind, BuildingKind.source);
+    expect(cfg.buildings[BuildingType.zhuZaoTai]!.kind, BuildingKind.processor);
   });
 }
 
