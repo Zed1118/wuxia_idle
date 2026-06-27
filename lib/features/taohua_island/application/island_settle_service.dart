@@ -6,6 +6,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../domain/island_building_state.dart';
 import '../domain/island_building_type.dart';
+import '../domain/taohua_island_config.dart';
 import 'island_production_service.dart';
 
 /// 桃花岛一次收获的产出汇总。
@@ -63,39 +64,57 @@ class IslandSettleService {
 
   // ── ensureInitialized ─────────────────────────────────────────────────────
 
-  /// 首开初始化：若 [save.islandBuildings] 为空，按配置建 4 个 level-1 建筑，
-  /// 并将 [save.islandLastSettledAt] 设为 [now]。已初始化则 no-op。
+  /// 首开/补建初始化：按配置补齐缺失的 level-1 建筑。
+  ///
+  /// - 空档：写入全量建筑，并将 [save.islandLastSettledAt] 设为 [now]。
+  /// - 旧档：保留已有建筑 level/stored/activeRecipeId，只追加缺失建筑；
+  ///   不重置 [save.islandLastSettledAt]。
   ///
   /// 内部调用 writeTxn 完成持久化（与 offline_passive_service 体例一致）。
   static Future<void> ensureInitialized(SaveData save, DateTime now) async {
-    if (save.islandBuildings.isNotEmpty) return; // 已初始化 → no-op
-
     final cfg = GameRepository.instance.numbers.taohuaIsland;
-
-    // 按 BuildingType 枚举顺序建 4 个建筑（顺序确定可测）
-    final buildings = BuildingType.values.map((type) {
-      final bCfg = cfg.buildings[type]!;
-      final state = IslandBuildingState()
-        ..type = type
-        ..level = 1
-        ..stored = 0;
-
-      // processor 建筑选第一条配方为默认激活配方
-      if (bCfg.kind == BuildingKind.processor && bCfg.recipes.isNotEmpty) {
-        state.activeRecipeId = bCfg.recipes.first.recipeId;
-      }
-
-      return state;
-    }).toList();
 
     final isar = IsarSetup.instance;
     await isar.writeTxn(() async {
       // txn 内重新 get 取最新版本，不复用 txn 外 save 快照
       final s = (await isar.saveDatas.get(0))!;
+
+      final existingTypes = s.islandBuildings.map((b) => b.type).toSet();
+      final missingTypes = BuildingType.values
+          .where((type) => cfg.buildings.containsKey(type))
+          .where((type) => !existingTypes.contains(type))
+          .toList();
+
+      if (s.islandBuildings.isNotEmpty && missingTypes.isEmpty) return;
+
+      final buildings = s.islandBuildings.map((b) => b.copy()).toList();
+      for (final type in missingTypes) {
+        buildings.add(_initialBuildingState(type, cfg.buildings[type]!));
+      }
+
       s.islandBuildings = buildings;
-      s.islandLastSettledAt = now;
+      if (s.islandLastSettledAt == null) {
+        s.islandLastSettledAt = now;
+      }
       await isar.saveDatas.put(s);
     });
+  }
+
+  static IslandBuildingState _initialBuildingState(
+    BuildingType type,
+    BuildingConfig bCfg,
+  ) {
+    final state = IslandBuildingState()
+      ..type = type
+      ..level = 1
+      ..stored = 0;
+
+    // processor 建筑选第一条配方为默认激活配方
+    if (bCfg.kind == BuildingKind.processor && bCfg.recipes.isNotEmpty) {
+      state.activeRecipeId = bCfg.recipes.first.recipeId;
+    }
+
+    return state;
   }
 
   // ── settle ────────────────────────────────────────────────────────────────
@@ -105,16 +124,25 @@ class IslandSettleService {
   /// - 若 [save.islandLastSettledAt] 为 null，先调 [ensureInitialized]。
   /// - 调用 [IslandProductionService.settle] 得到新状态后写回 Isar。
   static Future<void> settle(SaveData save, DateTime now) async {
+    final cfg = GameRepository.instance.numbers.taohuaIsland;
+
     // 若未初始化先建
     if (save.islandLastSettledAt == null || save.islandBuildings.isEmpty) {
       await ensureInitialized(save, now);
       return; // ensureInitialized 已写 now，无需再 settle（elapsed=0）
     }
 
-    final elapsed = now.difference(save.islandLastSettledAt!).inSeconds / 3600.0;
+    // 旧档可能已有一期建筑和结算时间，但缺少二期新增建筑。先补建再重读，
+    // 保留原 islandLastSettledAt，让新建筑参与同一段离线结算。
+    if (!_hasAllConfiguredBuildings(save, cfg)) {
+      await ensureInitialized(save, now);
+      save = (await IsarSetup.instance.saveDatas.get(0))!;
+    }
+
+    final elapsed =
+        now.difference(save.islandLastSettledAt!).inSeconds / 3600.0;
     if (elapsed <= 0) return;
 
-    final cfg = GameRepository.instance.numbers.taohuaIsland;
     final realmIdx = await founderRealmIndex(save);
 
     final newStates = IslandProductionService.settle(
@@ -132,6 +160,14 @@ class IslandSettleService {
       s.islandLastSettledAt = now;
       await isar.saveDatas.put(s);
     });
+  }
+
+  static bool _hasAllConfiguredBuildings(
+    SaveData save,
+    TaohuaIslandConfig cfg,
+  ) {
+    final existingTypes = save.islandBuildings.map((b) => b.type).toSet();
+    return cfg.buildings.keys.every(existingTypes.contains);
   }
 
   // ── harvest ──────────────────────────────────────────────────────────────
@@ -203,12 +239,14 @@ class IslandSettleService {
           existing.lastObtainedAt = now;
           await isar.inventoryItems.put(existing);
         } else {
-          await isar.inventoryItems.put(InventoryItem()
-            ..defId = defId
-            ..itemType = itemType
-            ..quantity = qty
-            ..firstObtainedAt = now
-            ..lastObtainedAt = now);
+          await isar.inventoryItems.put(
+            InventoryItem()
+              ..defId = defId
+              ..itemType = itemType
+              ..quantity = qty
+              ..firstObtainedAt = now
+              ..lastObtainedAt = now,
+          );
         }
       }
     });
