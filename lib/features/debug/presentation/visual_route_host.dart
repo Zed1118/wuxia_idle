@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
 import 'battle_test_menu.dart';
+import 'redline_audit_screen.dart';
 import '../../../core/domain/attributes.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
@@ -578,6 +579,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.skillCodexDetail:
       // 武学详情屏目检：取收录池首招直传 detail 屏(同步展示,maxStage=null 未曾习练态)。
       return _buildSkillCodexDetailVisual();
+    case VisualRoute.redlineAudit:
+      return const RedlineAuditScreen();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
   }
