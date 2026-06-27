@@ -2165,4 +2165,54 @@ class UiStrings {
 
   /// recap 返回按钮。
   static const String sweepRecapBack = '返回';
+
+  // ── Debug · 数值红线审计（§5.6 集中归集 2026-06-27，仅 kDebugMode 工具）──
+  // main_menu debug 区两个按钮
+  static const String mainMenuSectRecruit = '强制招募 NPC';
+  static const String mainMenuSectRecruitHint = '走完整 sect recruit flow · 跳过战斗/奇遇触发';
+  static const String mainMenuRedlineAudit = '数值红线审计';
+  static const String mainMenuRedlineAuditHint = '开发工具 · 查看 PASS/WARN/FAIL 与来源';
+
+  // 审计屏文案
+  static const String redlineAuditScreenTitle = '数值红线审计';
+  static const String redlineAuditRepoNotLoaded = 'GameRepository 未加载';
+  static String redlineAuditSummary(String status, int count) =>
+      '总览 $status · $count 项红线';
+  static const String redlineAuditMetricObserved = '当前最大值';
+  static const String redlineAuditMetricLimit = '红线';
+  static const String redlineAuditMetricHeadroom = '余量';
+  static String redlineAuditSourceLine(String source) => '来源: $source';
+
+  // markdown 报告头
+  static const String redlineAuditMdTitle = '# 数值红线审计报告';
+  static const String redlineAuditMdIntro =
+      '> 工具生成，入口: `VISUAL_ROUTE=redline_audit`。';
+  static const String redlineAuditMdTableHeader =
+      '| 项目 | 状态 | 当前最大值 | 红线 | 来源 |';
+  static const String redlineAuditMdNotesHeader = '## 备注';
+
+  // 审计项 label
+  static const String redlineItemEquipmentAttack = '装备基础攻击';
+  static const String redlineItemPlayerHp = '玩家血量';
+  static const String redlineItemBossHp = 'Boss 血量';
+  static const String redlineItemInternalForce = '内力上限';
+  static const String redlineItemSkillMultiplier = '招式倍率';
+  static const String redlineItemNormalDamage = '普通伤害';
+  static const String redlineItemUltimateCrit = '大招暴击';
+
+  // 审计项 note（带探针参数的用方法）
+  static const String redlineNoteEquipmentAttack =
+      '只审计配置基础表值；强化、共鸣、开锋后的派生攻击不属于该硬红线。';
+  static String redlineNotePlayerHp(int maxLevel) =>
+      '使用满 build + L$maxLevel + founder buff 极值探针，走 CharacterDerivedStats.maxHp。';
+  static const String redlineNoteBossHp =
+      '扫描主线和爬塔 Boss 配置 baseHp；周目 clamp 仍由既有 battle/setup 测试兜底。';
+  static String redlineNoteInternalForce(int maxLevel) =>
+      '使用满 build + L$maxLevel + founder buff 极值探针，走 CharacterDerivedStats.internalForceMaxWithLineage。';
+  static const String redlineNoteSkillMultiplier =
+      '扫描 skills.yaml 与 encounter_skills.yaml 合并后的 skillDefs 全池。';
+  static String redlineNoteNormalDamage(int typicalTarget) =>
+      '软红线：典型目标 $typicalTarget，满 build 极值可越过；唯一硬线是不进百万。';
+  static const String redlineNoteUltimateCrit =
+      '软红线：使用当前最高 ultimate 倍率和满 build 暴击探针；真实战斗峰值仍由 balance_simulator 兜底。';
 }
