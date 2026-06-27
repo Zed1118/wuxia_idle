@@ -32,7 +32,11 @@ Future<SweepBattleOutcome?> settleMainlineSweepVictory({
   required int cycle,
 }) async {
   // 周目平衡 2026-06-26:扫荡透传 cycle → 二周目起提高稀有彩头概率 + 材料加成。
-  final outcome = await applyVictoryResolution(ref: ref, stage: stage, cycle: cycle);
+  final outcome = await applyVictoryResolution(
+    ref: ref,
+    stage: stage,
+    cycle: cycle,
+  );
   if (outcome == null) return null;
 
   // 进度记录（幂等 cycleKey append）+ 残页 hook（重打可掉，非首通限定）。
@@ -64,19 +68,25 @@ Future<SweepBattleOutcome?> settleMainlineSweepVictory({
   if (skillDrop.fragmentSkillId != null) skillFragments = 1;
 
   final items = <String, int>{};
+  var ignoredDrops = 0;
   for (final item in outcome.drops.items) {
     // 扫荡恒重打：秘籍重打不补，不计入 recap。
-    if (isTechniqueScrollDefId(item.defId)) continue;
+    if (isTechniqueScrollDefId(item.defId)) {
+      ignoredDrops += 1;
+      continue;
+    }
     items[item.defId] = (items[item.defId] ?? 0) + item.quantity;
   }
-  final advances =
-      outcome.advancements.where((e) => e.result.didAdvance).length;
+  final advances = outcome.advancements
+      .where((e) => e.result.didAdvance)
+      .length;
   return SweepBattleOutcome(
     equipmentDrops: outcome.drops.equipments.length,
     itemsByDefId: items,
     expGained: stage.baseExpReward,
     realmAdvances: advances,
     skillFragments: skillFragments,
+    ignoredDrops: ignoredDrops,
   );
 }
 

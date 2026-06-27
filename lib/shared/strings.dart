@@ -2248,6 +2248,12 @@ class UiStrings {
   /// recap 行：掉落装备件数。
   static String sweepRecapEquipment(int n) => '装备 · $n 件';
 
+  static const String sweepLayerRare = '稀有收获';
+  static const String sweepLayerEquipment = '装备';
+  static const String sweepLayerMaterials = '材料';
+  static const String sweepLayerResources = '货币 / 资源';
+  static const String sweepLayerIneffective = '无效 / 已满';
+
   /// recap 行：累计经验。
   static String sweepRecapExp(int n) => '经验 · $n';
 
@@ -2257,11 +2263,19 @@ class UiStrings {
   /// recap 行：技能残页。
   static String sweepRecapFragments(int n) => '残页 · $n 页';
 
+  static String sweepRecapLargePills(int n) => '大还丹 · $n 枚';
+
+  static String sweepRecapPills(int n) => '经验丹 · $n 枚';
+
   /// recap 行：银两。
   static String sweepRecapSilver(int n) => '银两 · $n';
 
   /// recap 行：材料（非银两物品合计件数）。
   static String sweepRecapMaterials(int n) => '材料 · $n 件';
+
+  static String sweepRecapIgnored(int n) => '未入账 · $n 项';
+
+  static const String sweepRecapNoGains = '无新增收益';
 
   /// 爬塔扫荡重打仅掉残页的说明（守 §5.1 防刷）。
   static const String sweepTowerRepeatNote = '爬塔重打仅掉技能残页，不掉装备 / 银两';

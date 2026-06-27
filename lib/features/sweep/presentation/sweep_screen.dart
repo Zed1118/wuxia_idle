@@ -83,7 +83,10 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     if (!mounted) return;
     if (_controller.isRunning) {
       _index++;
-      final gap = ref.read(numbersConfigProvider).animation.sweepInterBattleGapMs;
+      final gap = ref
+          .read(numbersConfigProvider)
+          .animation
+          .sweepInterBattleGapMs;
       await Future<void>.delayed(Duration(milliseconds: gap));
       if (!mounted) return;
       await _startCurrent();
@@ -120,8 +123,10 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 12),
-                Text(UiStrings.sweepPreparing,
-                    style: TextStyle(color: WuxiaColors.textSecondary)),
+                Text(
+                  UiStrings.sweepPreparing,
+                  style: TextStyle(color: WuxiaColors.textSecondary),
+                ),
               ],
             ),
           )
@@ -148,8 +153,10 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
           left: 12,
           right: 12,
           child: _SweepHud(
-            progressLabel:
-                UiStrings.sweepProgress(_index + 1, widget.units.length),
+            progressLabel: UiStrings.sweepProgress(
+              _index + 1,
+              widget.units.length,
+            ),
             cycleLabel: UiStrings.sweepCycleBadge(widget.cycle),
             towerRepeatNote: widget.towerRepeatNote,
             onStop: _controller.requestStop,
@@ -174,86 +181,140 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
         title = '';
     }
 
-    final silver = r.itemsByDefId['item_silver'] ?? 0;
-    final materials = r.itemsByDefId.entries
-        .where((e) => e.key != 'item_silver')
-        .fold<int>(0, (s, e) => s + e.value);
-
-    final rows = <String>[
+    final overviewRows = <String>[
       UiStrings.sweepRecapCycle(widget.cycle),
       UiStrings.sweepRecapStages(r.stagesCleared),
-      if (r.equipmentDrops > 0) UiStrings.sweepRecapEquipment(r.equipmentDrops),
-      if (silver > 0) UiStrings.sweepRecapSilver(silver),
-      if (materials > 0) UiStrings.sweepRecapMaterials(materials),
-      if (r.expGained > 0) UiStrings.sweepRecapExp(r.expGained),
-      if (r.realmAdvances > 0) UiStrings.sweepRecapAdvances(r.realmAdvances),
-      if (r.skillFragments > 0) UiStrings.sweepRecapFragments(r.skillFragments),
     ];
+    final layers = r.resultLayers();
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
-        child: Container(
-          margin: const EdgeInsets.all(24),
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: WuxiaColors.panel,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: defeated ? WuxiaColors.hpLow : WuxiaColors.bossFrame,
-              width: 1.5,
-            ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: WuxiaColors.resultHighlight,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: WuxiaColors.panel,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: defeated ? WuxiaColors.hpLow : WuxiaColors.bossFrame,
+                width: 1.5,
               ),
-              if (defeated) ...[
-                const SizedBox(height: 8),
-                const Text(
-                  UiStrings.sweepDefeatReason,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  title,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: WuxiaColors.textMuted, fontSize: 13),
-                ),
-              ],
-              const SizedBox(height: 16),
-              for (final line in rows)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(
-                    line,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: WuxiaColors.textSecondary,
-                      fontSize: 16,
-                    ),
+                  style: const TextStyle(
+                    color: WuxiaColors.resultHighlight,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              const SizedBox(height: 20),
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: WuxiaColors.bossFrame,
-                  foregroundColor: WuxiaColors.background,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                if (defeated) ...[
+                  const SizedBox(height: 8),
+                  const Text(
+                    UiStrings.sweepDefeatReason,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                for (final line in overviewRows)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      line,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: WuxiaColors.textSecondary,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 12),
+                for (final layer in layers) ...[
+                  _SweepResultLayerSection(layer: layer),
+                  const SizedBox(height: 8),
+                ],
+                const SizedBox(height: 20),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: WuxiaColors.bossFrame,
+                    foregroundColor: WuxiaColors.background,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  child: const Text(
+                    UiStrings.sweepRecapBack,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
-                onPressed: () => Navigator.of(context).maybePop(),
-                child: const Text(
-                  UiStrings.sweepRecapBack,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SweepResultLayerSection extends StatelessWidget {
+  const _SweepResultLayerSection({required this.layer});
+
+  final SweepResultLayer layer;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = layer.highlighted
+        ? WuxiaColors.resultHighlight
+        : WuxiaColors.border;
+    final titleColor = layer.highlighted
+        ? WuxiaColors.resultHighlight
+        : WuxiaColors.textMuted;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: borderColor.withValues(alpha: 0.72)),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            layer.title,
+            style: TextStyle(
+              color: titleColor,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 6),
+          for (final line in layer.lines)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Text(
+                line.text,
+                style: TextStyle(
+                  color: line.highlighted
+                      ? WuxiaColors.resultHighlight
+                      : WuxiaColors.textSecondary,
+                  fontSize: 15,
+                  fontWeight: line.highlighted
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -319,8 +380,10 @@ class _SweepHud extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: WuxiaColors.sealCrimson,
                 foregroundColor: WuxiaColors.textPrimary,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
               ),
               onPressed: onStop,
               icon: const Icon(Icons.stop_circle_outlined, size: 20),

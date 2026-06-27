@@ -25,6 +25,10 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// 修复前战斗永不前进 → 永不显「扫荡完成」recap（本测 RED）；
 /// 修复后逐场真跑到胜负 → 收工显 recap（GREEN）。
 class _FastWinUnit implements SweepUnit {
+  const _FastWinUnit({this.outcome = const SweepBattleOutcome()});
+
+  final SweepBattleOutcome outcome;
+
   @override
   String get label => '试炼一关';
   @override
@@ -39,7 +43,9 @@ class _FastWinUnit implements SweepUnit {
     // 复刻真实 startBattle 的 async 间隙：装配队伍是 await Isar 的，注入发生在
     // spinner 重建之后（此刻 BattleScreen 尚未挂载、无 watcher）。
     await Future<void>.delayed(Duration.zero);
-    ref.read(battleProvider.notifier).startBattle(
+    ref
+        .read(battleProvider.notifier)
+        .startBattle(
           _team(side: 0, hp: 12000),
           _team(side: 1, hp: 80), // 右队残血 → 数拍内必 leftWin
           seed: 7,
@@ -47,8 +53,7 @@ class _FastWinUnit implements SweepUnit {
   }
 
   @override
-  Future<SweepBattleOutcome?> settle(WidgetRef ref) async =>
-      const SweepBattleOutcome();
+  Future<SweepBattleOutcome?> settle(WidgetRef ref) async => outcome;
 
   static const _normal = SkillDef(
     id: 'skill_sweep_normal',
@@ -100,13 +105,12 @@ void main() {
     }
   });
 
-  testWidgets('一键扫荡：逐关真跑战斗到胜负，收工显「扫荡完成」recap（黑屏 hang 回归锚）',
-      (tester) async {
+  testWidgets('一键扫荡：逐关真跑战斗到胜负，收工显「扫荡完成」recap（黑屏 hang 回归锚）', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
           home: SweepScreen(
             units: [_FastWinUnit()],
@@ -119,24 +123,27 @@ void main() {
 
     // 有界 pump 循环：战斗经 fastForward timer 逐拍前进直到 leftWin → onVictory
     // → settle → 收工 recap。修复前永不到 recap，循环耗尽后断言失败（RED）。
-    for (var i = 0;
-        i < 400 &&
-            find.text(UiStrings.sweepRecapCompleted).evaluate().isEmpty;
-        i++) {
+    for (
+      var i = 0;
+      i < 400 && find.text(UiStrings.sweepRecapCompleted).evaluate().isEmpty;
+      i++
+    ) {
       await tester.pump(const Duration(milliseconds: 50));
     }
 
-    expect(find.text(UiStrings.sweepRecapCompleted), findsOneWidget,
-        reason: '扫荡战斗应真跑到胜负并收工显 recap；若卡黑屏说明 hang 未修');
+    expect(
+      find.text(UiStrings.sweepRecapCompleted),
+      findsOneWidget,
+      reason: '扫荡战斗应真跑到胜负并收工显 recap；若卡黑屏说明 hang 未修',
+    );
   });
 
-  testWidgets('一键扫荡：多关连播跨场转换不卡，2 关全打完收工（保活跨间隙回归锚）',
-      (tester) async {
+  testWidgets('一键扫荡：多关连播跨场转换不卡，2 关全打完收工（保活跨间隙回归锚）', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
           home: SweepScreen(
             units: [_FastWinUnit(), _FastWinUnit()],
@@ -147,16 +154,71 @@ void main() {
       ),
     );
 
-    for (var i = 0;
-        i < 600 &&
-            find.text(UiStrings.sweepRecapCompleted).evaluate().isEmpty;
-        i++) {
+    for (
+      var i = 0;
+      i < 600 && find.text(UiStrings.sweepRecapCompleted).evaluate().isEmpty;
+      i++
+    ) {
       await tester.pump(const Duration(milliseconds: 50));
     }
 
     expect(find.text(UiStrings.sweepRecapCompleted), findsOneWidget);
     // 两关均真跑到胜负 → recap 计「通关 2 关」(跨场注入未被 autoDispose 回收)。
-    expect(find.text(UiStrings.sweepRecapStages(2)), findsOneWidget,
-        reason: '第 2 关须接着第 1 关连播；若只 1 关说明跨场转换/保活失效');
+    expect(
+      find.text(UiStrings.sweepRecapStages(2)),
+      findsOneWidget,
+      reason: '第 2 关须接着第 1 关连播；若只 1 关说明跨场转换/保活失效',
+    );
+  });
+
+  testWidgets('扫荡完成 recap 按收益层级展示，并克制突出稀有项', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          home: SweepScreen(
+            units: [
+              _FastWinUnit(
+                outcome: SweepBattleOutcome(
+                  equipmentDrops: 1,
+                  itemsByDefId: {
+                    'item_silver': 90,
+                    'item_mojianshi': 4,
+                    'item_jingyandan_small': 1,
+                  },
+                  expGained: 30,
+                  realmAdvances: 1,
+                  skillFragments: 1,
+                  ignoredDrops: 1,
+                ),
+              ),
+            ],
+            unitName: '问鼎江湖',
+            cycle: 1,
+          ),
+        ),
+      ),
+    );
+
+    for (
+      var i = 0;
+      i < 400 && find.text(UiStrings.sweepRecapCompleted).evaluate().isEmpty;
+      i++
+    ) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    expect(find.text(UiStrings.sweepLayerRare), findsOneWidget);
+    expect(find.text(UiStrings.sweepLayerEquipment), findsOneWidget);
+    expect(find.text(UiStrings.sweepLayerMaterials), findsOneWidget);
+    expect(find.text(UiStrings.sweepLayerResources), findsOneWidget);
+    expect(find.text(UiStrings.sweepLayerIneffective), findsOneWidget);
+    expect(find.text(UiStrings.sweepRecapFragments(1)), findsOneWidget);
+    expect(find.text(UiStrings.sweepRecapEquipment(1)), findsOneWidget);
+    expect(find.text(UiStrings.sweepRecapMaterials(4)), findsOneWidget);
+    expect(find.text(UiStrings.sweepRecapSilver(90)), findsOneWidget);
+    expect(find.text(UiStrings.sweepRecapIgnored(1)), findsOneWidget);
   });
 }
