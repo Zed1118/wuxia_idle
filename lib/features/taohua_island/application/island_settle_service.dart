@@ -93,9 +93,7 @@ class IslandSettleService {
       }
 
       s.islandBuildings = buildings;
-      if (s.islandLastSettledAt == null) {
-        s.islandLastSettledAt = now;
-      }
+      s.islandLastSettledAt ??= now;
       await isar.saveDatas.put(s);
     });
   }
