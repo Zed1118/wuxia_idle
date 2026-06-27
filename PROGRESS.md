@@ -7,6 +7,8 @@
 
 ## 当前阶段
 
+> 🌸 **2026-06-27 桃花岛二期 + 藏卷阁 Hub + 整备建议联动合入 main(PR #17 · merge `7335927e`)**:三条 Codex 前置分支集成——桃花岛二期底座(muGongFang/lingQuan/zhuZaoTai 7 栋两层生产链 + 据点式分组屏 + 旧档安全补建) / 藏卷阁 Hub(聚合战绩册/兵器谱/奇遇/藏经阁,装备·残页·Boss周目三类只读派生线索,主菜单 social 门控入口) / 整备建议 + 岛务工程碑只读 first slice(不写存档不发奖励)。审核发现灵泉水孤儿产出 → 修:丹房疗伤丹改双输入(药草+灵泉水·扩 secondaryInput schema + 供应自洽/防 unused 校验 · 灵泉供给 4/hr>满速消耗 3/hr 恒非约束 → 离线=在线不变性测 brew_liaoshang×5 level 全过)。全量 `flutter analyze` 0 issue · `flutter test` 3207 passed/1 skip/0 fail。清理 3 worktree + 3 已合并分支。**backlog**:疗伤丹/锻材/开锋辅材/行囊补给 4 加工产物暂无终端消费系统(疗伤/开锋系统未接)待拍板。
+
 > 🧹 **2026-06-27 Codex 14 分支批量复核→合并→push 完成**:一次性复核 14 个 Codex worktree/分支,**13 个合入 main(`0d75f49b`,已 push)**,1 个(突破材料缺口提示)**挂起**(死代码/机制不存在,见下)。PVP 按拍板切除;装备集群(owner 修复/锁定 schema0.32/库存整理/来源/用途)串行解冲突;离线明细/百科/存档备份/红线审计/视觉验收工具/水墨审计/章末文案 一并落地。修 2 处(离线「小时」走 UiStrings · 主菜单按钮计数 20→21)。全量 `flutter analyze` 0 issue · `flutter test` **3176 passed / 0 failed**。清理 15 worktree+15 分支+备份 tag;~~保留 `codex/breakthrough-material-gaps`(worktree bcf9)待重启~~ **2026-06-27 已退役销账(见下)**。详 `docs/handoff/codex_branch_merge_closeout_2026-06-27.md`。
 
 > 🗑️ **2026-06-27 #8 突破材料缺口(bcf9)评估退役(用户拍板方案 B·不引入)**:重启评估挂起分支 `codex/breakthrough-material-gaps`。实测当前突破=EXP+心魔关双门控、零材料(`character_advancement_service.dart:37-94` 升层只扣 experience·守 §5.1);bcf9 仅 7 文件纯只读 UI 框架(resolver+ViewModel+list widget+6 测),无 yaml 配置/不改突破逻辑/character_panel 写死 `.empty()`→合入=死代码+误导空 UI。「突破消耗材料」是 GDD 级新养成闸,与反主流写实基调张力大、§5.7 与心魔关叙事叠床架屋→用户拍板**不引入**。删分支+worktree bcf9(was a20c50c0),#8 正式销账(原挂起项清零)。
@@ -42,8 +44,6 @@
 > **2026-06-04 两条已压缩归档**(8 张装备图重出+工作树清理+UI 包装方案 v1 `9ea8f4f` / P0-3 ②③ 主修 hero+心魔瓶颈面板 `f9425b8` · 1697→1712 测):详 git log + 各 spec/closeout。
 
 > **2026-06-01..03 详条已压缩归档**(git log/closeout 完整可溯 · 1661→1697 测/0 analyze):① **P0-2 战斗单位可见化全闭环**(玩家立绘+单位放大 110+死亡 grayscale+弹道笔触+受击闪+折叠日志+胜负 vignette · 弹道/受击走 actionLog 不写 BattleState 红线 · `c7fb79c`)② **P0-3 角色卡 ① 装备外观可视化**(装备槽 iconPath+tier 色 _EquipGlyph)③ **P0-4b 仓库格子化实装**(列表→部位分组网格+tier 边框+强化徽章+师承标+境界锁灰化 · `2049265` · Codex R3 PASS `880d7f7`)④ **装备 detail 45 件 + 敌人图 37/37 全归位**(美术缺口归零 `239d1d9` · 129 敌人图 + 80 装备 detail)⑤ **验收提速基建**(`VISUAL_ROUTE=hub` 一次 build 点遍 12 路由 + `tool/build_acceptance.sh` 预编 · `d94a56a`)。详 `docs/handoff/overnight_2026-06-03_handoff.md` + 各 closeout。
-
-> **2026-05-30..06-02 出版美术 pass(1.0 Presentation Pass)全闭环已归档**(1581→1667 测/0 analyze · `docs/PUBLISHING_ART_PASS_1_0.md`):战斗屏(主菜单水墨山门 + B1 背景按 biome 接线+scrim+胜负仪式 overlay + B2 大招题字+Boss 金边)+剧情屏(narrative_scene 基建+30 图)+战斗场景 16 biome 全覆盖+角色页档案化+章节封面 6 章 · Codex 多门视觉验收 PASS · D 段性能稳定性验证(8h/leak/ANR 逻辑层已验)+窗口 min size Pen 3/3 PASS + B1 release audit doc 同步(CLAUDE v1.17 测数 1667)+ P5.2 敌人内力按境界对称化 scale=0.20 + 文案 polish H 段全角标点 + #4③ 数值迁 yaml + V3 神物金掉落验收 3/3 PASS。git log `c97c682→880d7f7` 区间 + 各 closeout 完整可溯。
 
 ---
 
