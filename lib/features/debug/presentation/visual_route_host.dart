@@ -81,6 +81,7 @@ import '../../baike/application/martial_codex_provider.dart';
 import '../../baike/presentation/martial_arts_tab.dart';
 import '../../baike/presentation/skill_codex_detail_screen.dart';
 import '../../character_panel/presentation/lineage_character_detail_screen.dart';
+import '../../zangjuange/presentation/zangjuange_screen.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -579,6 +580,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.skillCodexDetail:
       // 武学详情屏目检：取收录池首招直传 detail 屏(同步展示,maxStage=null 未曾习练态)。
       return _buildSkillCodexDetailVisual();
+    case VisualRoute.zangjuange:
+      return const ZangjuangeScreen();
     case VisualRoute.redlineAudit:
       return const RedlineAuditScreen();
     case VisualRoute.hub:

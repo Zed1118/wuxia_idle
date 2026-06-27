@@ -117,6 +117,9 @@ void main() {
         VisualRoute.encounterCodexDetail,
       );
     });
+    test('藏卷阁 Hub 路由 parse', () {
+      expect(parseVisualRoute('zangjuange'), VisualRoute.zangjuange);
+    });
   });
 
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。

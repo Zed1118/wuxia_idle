@@ -200,6 +200,10 @@ enum VisualRoute {
     'skill_codex_detail',
     '武学详情屏目检·同步显招名+description+数值+所属心法+熟练阶',
   ),
+  zangjuange(
+    'zangjuange',
+    '藏卷阁 Hub 目检·战绩册/兵器谱/奇遇录/藏经阁聚合入口 + 卷中线索',
+  ),
   redlineAudit(
     'redline_audit',
     '数值红线审计·开发工具视图(PASS/WARN/FAIL + 当前最大值 + 来源)',
