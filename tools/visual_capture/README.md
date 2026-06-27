@@ -5,12 +5,31 @@
 
 ## 用法
 
-    tools/visual_capture/visual_capture.sh              # 截全部 route
+    tools/visual_capture/visual_capture.sh              # 截 smoke 固定 route
+    tools/visual_capture/visual_capture.sh --suite full # 截全量 route(耗时长)
     tools/visual_capture/visual_capture.sh main_menu    # 只截指定 route id
-    tools/visual_capture/visual_capture.sh --dry-run    # 打印计划不启 app
+    tools/visual_capture/visual_capture.sh --dry-run    # 打印 route/seed/检查清单,不启 app
+    flutter pub run tool/visual_acceptance.dart checklist --suite smoke
 
 route id 见 `lib/features/debug/application/visual_route.dart` 的 `VisualRoute`。
-新增验收屏:加 VisualRoute 枚举值 + VisualRouteHost 映射 + 本脚本 ALL_ROUTES。
+固定验收计划由 `lib/features/debug/application/visual_acceptance_plan.dart`
+生成:
+
+- `smoke`:默认快验入口,覆盖主菜单、心法面板、战斗破招/败北等高频视觉面。
+- `full`:全部 `VisualRoute.values`(排除 `hub`),用于大改 UI 后完整回收。
+
+新增验收屏:加 `VisualRoute` 枚举值 + `VisualRouteHost` 映射。若需纳入快验,
+再把 route 加进 `visual_acceptance_plan.dart` 的 `smoke` 清单。
+
+## 固定 seed
+
+清单中的 seed 为 `visual-route-host-fixture-20260627`。它表示 route 由
+`VisualRouteHost` 里的固定 seed service / fixture 构造,同一 route 在同一代码版本下
+应稳定复现。需检查具体截图点时,先跑:
+
+    flutter pub run tool/visual_acceptance.dart dry-run --suite smoke
+
+再按清单读取 route label 与 checks。
 
 ## 依赖
 
