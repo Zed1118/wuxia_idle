@@ -10,6 +10,12 @@
 
 ---
 
+## Recovery Point
+
+- 2026-06-27: `codex/island-prep-advice-integration` 已合并 `codex/taohua-island-phase2-foundation` (`5a4dd839`) 与 `codex/zangjuange-hub-clues` (`5d1a97ec`)。当前下一步：Task 1-2，新增 `IslandPrepAdvice` 模型并映射 `ArchiveClue`。
+
+---
+
 ## Branch
 
 Start this branch only after the first two branches are merged:
