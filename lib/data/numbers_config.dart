@@ -1354,6 +1354,34 @@ class ImpactTierParams {
   );
 }
 
+/// 命中演出分级表现层参数（numbers.yaml `animation.hit_tier`）。
+/// 纯表现层（题字字号/辉光、特写缩放/脉冲时长），不影响伤害/逻辑。
+/// fixture 不带该段时回落默认值（沿 ImpactFeedbackConfig 防御体例）。
+class HitTierConfig {
+  final int captionPeakSize;
+  final double captionGlowBlur;
+  final double closeupScale;
+  final int closeupPulseMs;
+  const HitTierConfig({
+    required this.captionPeakSize,
+    required this.captionGlowBlur,
+    required this.closeupScale,
+    required this.closeupPulseMs,
+  });
+  factory HitTierConfig.fromYaml(Map y) => HitTierConfig(
+    captionPeakSize: (y['caption_peak_size'] as num?)?.toInt() ?? 68,
+    captionGlowBlur: (y['caption_glow_blur'] as num?)?.toDouble() ?? 12.0,
+    closeupScale: (y['closeup_scale'] as num?)?.toDouble() ?? 1.10,
+    closeupPulseMs: (y['closeup_pulse_ms'] as num?)?.toInt() ?? 220,
+  );
+  static const HitTierConfig defaults = HitTierConfig(
+    captionPeakSize: 68,
+    captionGlowBlur: 12.0,
+    closeupScale: 1.10,
+    closeupPulseMs: 220,
+  );
+}
+
 /// 数值红线 cap 强类型（numbers.yaml `combat.red_lines`，GDD §5.4 硬上限）。
 ///
 /// 单一真相源:替代 derived_stats / stage_battle_setup / game_repository 各自
@@ -1611,6 +1639,9 @@ class AnimationNumbers {
   /// [fastForwardIntervalMs] 快进，本字段只是两场之间喘口气的短停。
   final int sweepInterBattleGapMs;
 
+  /// 命中演出分级表现层参数（numbers.yaml `animation.hit_tier`）。
+  final HitTierConfig hitTier;
+
   const AnimationNumbers({
     required this.attackRushMs,
     required this.attackHoldMs,
@@ -1627,6 +1658,7 @@ class AnimationNumbers {
     required this.hitFlashMs,
     this.keyMomentHoldMs = 400,
     this.sweepInterBattleGapMs = 150,
+    this.hitTier = HitTierConfig.defaults,
   });
 
   /// 默认值与 numbers.yaml 保持一致，用于测试或无法加载 yaml 的场景。
@@ -1646,6 +1678,7 @@ class AnimationNumbers {
     hitFlashMs: 150,
     keyMomentHoldMs: 400,
     sweepInterBattleGapMs: 150,
+    hitTier: HitTierConfig.defaults,
   );
 
   int get attackTotalMs => attackRushMs + attackHoldMs + attackRetreatMs;
@@ -1668,6 +1701,7 @@ class AnimationNumbers {
       keyMomentHoldMs: (y['key_moment_hold_ms'] as num?)?.toInt() ?? 400,
       sweepInterBattleGapMs:
           (y['sweep_inter_battle_gap_ms'] as num?)?.toInt() ?? 150,
+      hitTier: HitTierConfig.fromYaml(y['hit_tier'] as Map? ?? const {}),
     );
   }
 }
