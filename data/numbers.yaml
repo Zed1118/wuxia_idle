@@ -1792,15 +1792,16 @@ post_battle:
 
 # 第七阶段批三·队伍成长:开局单人,命名弟子按主线关卡节点拜入。
 lineage_onboarding:
-  # 2026-06-26:解锁靠后(用户拍板)——前期单主角打主线刷塔,第一主线后半逐个收徒。
-  # 大弟子 Ch2末(巷中夜雨)/二弟子 Ch3末(一剑封名),飞升(Ch4)前满队。
-  # 时序:02_05 < 03_05,故二弟子拜入时大弟子已在队,「三人成众」框架成立。
+  # 2026-06-27:解锁后移至全主线通关后(spec A,用户拍板)——祖师单人走完 Ch1-6,
+  # 终局(stage_06_05 通关)一并拜入两弟子,把组队爽感留到终局。同关命中两条 join,
+  # senior 先 junior 后,连续两段拜师叙事 + 立绘后满队;06_05 通关与拜入同一时点,
+  # 飞升五条件(含弟子在场)时序天然吻合。
   disciple_joins:
-    - stage_id: stage_02_05   # 过巷中夜雨(Ch2末Boss) → 大弟子拜入(2 人)
+    - stage_id: stage_06_05   # 全主线通关 → 大弟子拜入(senior 先)
       master_slot_index: 1
       role: senior
       narrative_id: lineage_first_disciple_join
-    - stage_id: stage_03_05   # 过一剑封名(Ch3末Boss) → 二弟子拜入(满队迎飞升)
+    - stage_id: stage_06_05   # 同关 → 二弟子拜入(junior 后,满队迎飞升)
       master_slot_index: 2
       role: junior
       narrative_id: lineage_second_disciple_join

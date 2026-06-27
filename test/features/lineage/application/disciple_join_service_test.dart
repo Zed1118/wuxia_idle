@@ -44,55 +44,65 @@ void main() {
     }
   });
 
-  test('过 join 关 → 懒创建 senior 弟子并入队 + 防重', () async {
+  test('过主线终局关(06_05) → 懒创建 senior+junior 并入队 + 关级防重', () async {
     final svc = DiscipleJoinService(isar: isar);
-    final joined = await svc.joinForClearedStage('stage_02_05');
-    expect(joined, isNotNull);
-    expect(joined!.lineageRole, LineageRole.senior);
-    expect(joined.isActive, true);
+    final joined = await svc.joinForClearedStage('stage_06_05');
+    expect(joined.length, 2, reason: '06_05 命中两条 disciple_joins');
+    expect(joined[0].lineageRole, LineageRole.senior, reason: 'senior 先');
+    expect(joined[1].lineageRole, LineageRole.junior, reason: 'junior 后');
+    final senior = joined[0];
+    expect(senior.isActive, true);
     final save = await isar.saveDatas.get(0);
-    expect(save!.activeCharacterIds.contains(joined.id), true);
-    expect(save.triggeredDiscipleJoinStageIds.contains('stage_02_05'), true);
+    expect(save!.activeCharacterIds.contains(senior.id), true);
+    expect(save.activeCharacterIds.length, 3, reason: '祖师 + 两弟子满队');
+    expect(save.triggeredDiscipleJoinStageIds.contains('stage_06_05'), true);
     final founder = await isar.characters.get(1);
-    expect(founder!.discipleIds.contains(joined.id), true);
-    expect(joined.masterId, 1);
+    expect(founder!.discipleIds.contains(senior.id), true);
+    expect(senior.masterId, 1);
 
     // 幂等:重战同关不再创建
-    final again = await svc.joinForClearedStage('stage_02_05');
-    expect(again, isNull);
-    expect((await isar.characters.where().findAll()).length, 2); // founder + 1
+    final again = await svc.joinForClearedStage('stage_06_05');
+    expect(again, isEmpty);
+    expect((await isar.characters.where().findAll()).length, 3); // founder + 2
   });
 
-  test('二弟子 junior 拜入 + 满队', () async {
+  test('旧触发关(02_05/03_05)不再拜入', () async {
     final svc = DiscipleJoinService(isar: isar);
-    await svc.joinForClearedStage('stage_02_05');
-    final j2 = await svc.joinForClearedStage('stage_03_05');
-    expect(j2!.lineageRole, LineageRole.junior);
-    expect((await isar.saveDatas.get(0))!.activeCharacterIds.length, 3);
-  });
-
-  test('非 join 关 → null 无副作用', () async {
-    final svc = DiscipleJoinService(isar: isar);
-    expect(await svc.joinForClearedStage('stage_01_01'), isNull);
+    expect(await svc.joinForClearedStage('stage_02_05'), isEmpty);
+    expect(await svc.joinForClearedStage('stage_03_05'), isEmpty);
     expect((await isar.characters.where().findAll()).length, 1); // 仅 founder
   });
 
-  test('防御:该 role 命名弟子已存在 → 不重复创建(belt-and-suspenders)', () async {
+  test('非 join 关 → 空列表无副作用', () async {
     final svc = DiscipleJoinService(isar: isar);
-    final first = await svc.joinForClearedStage('stage_02_05'); // 建 senior
-    expect(first, isNotNull);
-    // 清掉 triggered 标记模拟「防重集丢失」边缘,但 senior 角色已在
+    expect(await svc.joinForClearedStage('stage_01_01'), isEmpty);
+    expect((await isar.characters.where().findAll()).length, 1); // 仅 founder
+  });
+
+  test('旧档祖年化:已有 senior 的档过 06_05 → 不重建 senior,junior 正常补入',
+      () async {
+    final svc = DiscipleJoinService(isar: isar);
+    // 先在 06_05 拜两人,再删 junior + 清关级标记,模拟「旧档只有 senior 在队」。
+    final first = await svc.joinForClearedStage('stage_06_05');
+    expect(first.length, 2);
+    final juniorId =
+        first.firstWhere((c) => c.lineageRole == LineageRole.junior).id;
     await isar.writeTxn(() async {
+      await isar.characters.delete(juniorId);
       final s = await isar.saveDatas.get(0);
-      s!.triggeredDiscipleJoinStageIds = [];
+      s!
+        ..activeCharacterIds =
+            s.activeCharacterIds.where((id) => id != juniorId).toList()
+        ..triggeredDiscipleJoinStageIds = []; // 清关级标记模拟旧档未按新关标记
       await isar.saveDatas.put(s);
     });
-    final dup = await svc.joinForClearedStage('stage_02_05');
-    expect(dup, isNull); // 角色已存在 → 不重建
-    // senior 仍只有一个
+    // 再过 06_05:senior 已存在被角色级 guard 跳过,junior 补入。
+    final second = await svc.joinForClearedStage('stage_06_05');
+    expect(second.length, 1, reason: '仅补 junior');
+    expect(second.first.lineageRole, LineageRole.junior);
     final seniors = (await isar.characters.where().findAll())
         .where((c) => c.lineageRole == LineageRole.senior)
         .toList();
-    expect(seniors.length, 1);
+    expect(seniors.length, 1, reason: 'senior 不重建');
   });
 }
