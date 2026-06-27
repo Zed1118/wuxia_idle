@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
+import '../../zangjuange/application/zangjuange_providers.dart';
+import '../domain/island_prep_advice.dart';
 import '../domain/island_building_state.dart';
 import '../domain/island_building_type.dart';
+import 'island_prep_advice_service.dart';
 import 'island_settle_service.dart';
 
 /// 进屏 settle 后的桃花岛视图契约（供 Task 11 主屏 watch）。
@@ -25,11 +28,15 @@ class IslandView {
   /// 供升级可负担判断。
   final Map<String, int> materials;
 
+  /// 藏卷阁线索转化而来的只读整备建议。
+  final List<IslandPrepAdvice> prepAdvice;
+
   const IslandView({
     required this.buildings,
     required this.founderRealmIndex,
     required this.silver,
     required this.materials,
+    this.prepAdvice = const [],
   });
 }
 
@@ -45,8 +52,9 @@ class IslandView {
 ///
 /// Task 11 主屏调用：`ref.watch(taohuaIslandViewProvider)`；
 /// 操作（升级/配方切换）完成后：`ref.invalidate(taohuaIslandViewProvider)`。
-final taohuaIslandViewProvider =
-    FutureProvider.autoDispose<IslandView?>((ref) async {
+final taohuaIslandViewProvider = FutureProvider.autoDispose<IslandView?>((
+  ref,
+) async {
   // Isar 未初始化时 instanceOrNull == null → 返回 null
   if (IsarSetup.instanceOrNull == null) return null;
 
@@ -73,8 +81,7 @@ final taohuaIslandViewProvider =
 
   // 取银两库存
   final isarInst = IsarSetup.instance;
-  final silverItem =
-      await isarInst.inventoryItems.getByDefId('item_silver');
+  final silverItem = await isarInst.inventoryItems.getByDefId('item_silver');
   final silverQty = silverItem?.quantity ?? 0;
 
   // 收集各建筑升级材料 defId（去重后批量查）
@@ -90,10 +97,14 @@ final taohuaIslandViewProvider =
     materials[defId] = item?.quantity ?? 0;
   }
 
+  final clues = await ref.watch(zangjuangeCluesProvider.future);
+  final prepAdvice = IslandPrepAdviceService.fromClues(clues);
+
   return IslandView(
     buildings: settledSave.islandBuildings,
     founderRealmIndex: realmIdx,
     silver: silverQty,
     materials: materials,
+    prepAdvice: prepAdvice,
   );
 });

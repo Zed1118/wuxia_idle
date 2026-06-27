@@ -12,6 +12,7 @@ import '../application/island_providers.dart';
 import '../application/island_settle_service.dart';
 import '../domain/island_building_state.dart';
 import '../domain/island_building_type.dart';
+import '../domain/island_prep_advice.dart';
 import '../domain/taohua_island_config.dart';
 import 'island_recap_card.dart';
 
@@ -124,6 +125,12 @@ class _IslandBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       children: [
+        if (view.prepAdvice.isNotEmpty) ...[
+          _PrepAdvicePanel(
+            advice: view.prepAdvice.take(3).toList(growable: false),
+          ),
+          const SizedBox(height: 18),
+        ],
         _BuildingSection(
           label: UiStrings.taohuaIslandSectionRaw,
           types: _rawBuildingTypes,
@@ -202,6 +209,81 @@ class _SectionHeader extends StatelessWidget {
         fontSize: 15,
         fontWeight: FontWeight.bold,
         letterSpacing: 3,
+      ),
+    );
+  }
+}
+
+class _PrepAdvicePanel extends StatelessWidget {
+  const _PrepAdvicePanel({required this.advice});
+
+  final List<IslandPrepAdvice> advice;
+
+  @override
+  Widget build(BuildContext context) {
+    return PaperPanel(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            UiStrings.islandPrepSectionTitle,
+            style: TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 3,
+            ),
+          ),
+          const SizedBox(height: 10),
+          for (final item in advice) ...[
+            _PrepAdviceRow(advice: item),
+            if (item != advice.last) const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PrepAdviceRow extends StatelessWidget {
+  const _PrepAdviceRow({required this.advice});
+
+  final IslandPrepAdvice advice;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = advice.priority == IslandPrepAdvicePriority.high
+        ? WuxiaUi.jiang
+        : WuxiaUi.qing;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(left: BorderSide(color: accent, width: 3)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              advice.title,
+              style: TextStyle(
+                color: accent,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              advice.body,
+              style: const TextStyle(
+                color: WuxiaUi.ink2,
+                fontSize: 12,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

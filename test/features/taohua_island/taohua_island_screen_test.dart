@@ -7,6 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/taohua_island/application/island_providers.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_state.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
+import 'package:wuxia_idle/features/taohua_island/domain/island_prep_advice.dart';
 import 'package:wuxia_idle/features/taohua_island/presentation/taohua_island_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
@@ -41,6 +42,7 @@ void main() {
     int silver = 100,
     Map<String, int>? materials,
     int founderRealmIndex = 0,
+    List<IslandPrepAdvice> prepAdvice = const [],
   }) {
     final tieState = IslandBuildingState()
       ..type = BuildingType.tieJiangChang
@@ -103,6 +105,7 @@ void main() {
             'item_mucai': 100,
             'item_lingquanshui': 100,
           },
+      prepAdvice: prepAdvice,
     );
   }
 
@@ -188,6 +191,25 @@ void main() {
     testWidgets('一并收取按钮存在', (tester) async {
       await pump(tester, wrap(buildTestView()));
       expect(find.text(UiStrings.taohuaIslandHarvestAll), findsOneWidget);
+    });
+
+    testWidgets('整备建议非空时渲染只读建议面板', (tester) async {
+      final view = buildTestView(
+        prepAdvice: const [
+          IslandPrepAdvice(
+            kind: IslandPrepAdviceKind.bossCycle,
+            title: UiStrings.islandPrepBossCycleTitle,
+            body: UiStrings.islandPrepBossCycleBody,
+            priority: IslandPrepAdvicePriority.high,
+          ),
+        ],
+      );
+
+      await pump(tester, wrap(view));
+
+      expect(find.text(UiStrings.islandPrepSectionTitle), findsOneWidget);
+      expect(find.text(UiStrings.islandPrepBossCycleTitle), findsOneWidget);
+      expect(find.text(UiStrings.islandPrepBossCycleBody), findsOneWidget);
     });
 
     testWidgets('null view 显示无存档友好态', (tester) async {
