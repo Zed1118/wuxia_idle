@@ -10,7 +10,7 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// override slotListProvider 注入混合 fixtures,避免真 Isar(隔离 UI 层)。
 void main() {
   final mixed = <SlotSummary>[
-    SlotSummary(
+    const SlotSummary(
       slotId: 1,
       isEmpty: false,
       founderName: '风清扬',
