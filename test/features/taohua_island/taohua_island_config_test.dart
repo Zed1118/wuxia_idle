@@ -12,7 +12,7 @@ void main() {
   final y = (loadYaml(_yaml) as YamlMap).cast<String, dynamic>();
   final cfg = TaohuaIslandConfig.fromYaml(y);
 
-  test('解析 cap/解锁 + 4 建筑', () {
+  test('解析 fixture cap/解锁 + 4 建筑', () {
     expect(cfg.capHours, 72);
     expect(cfg.unlockChapterIndex, 1);
     expect(cfg.buildings.length, 4);

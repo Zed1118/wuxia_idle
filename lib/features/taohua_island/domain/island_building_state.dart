@@ -11,7 +11,7 @@ part 'island_building_state.g.dart';
 @embedded
 class IslandBuildingState {
   @Enumerated(EnumType.name)
-  // @embedded 占位默认值,实际建筑类型由 Task 6 首开写入时覆盖
+  // @embedded 占位默认值,实际建筑类型由初始化/补建流程覆盖
   BuildingType type = BuildingType.tieJiangChang;
 
   int level = 1;
@@ -31,4 +31,3 @@ class IslandBuildingState {
     ..stored = stored
     ..activeRecipeId = activeRecipeId;
 }
-
