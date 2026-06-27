@@ -2021,6 +2021,15 @@ class UiStrings {
   /// 桃花岛主屏标题。
   static const String taohuaIslandTitle = '桃花岛';
 
+  /// 桃花岛据点分区：原料产出。
+  static const String taohuaIslandSectionRaw = '物产';
+
+  /// 桃花岛据点分区：加工建筑。
+  static const String taohuaIslandSectionWorkshop = '作坊';
+
+  /// 桃花岛据点分区：后续码头面板。
+  static const String taohuaIslandSectionDock = '码头';
+
   /// 建筑等级标签：`第 N 级`。
   static String taohuaIslandLevelLabel(int lv) => '第 $lv 级';
 
@@ -2169,7 +2178,8 @@ class UiStrings {
   // ── Debug · 数值红线审计（§5.6 集中归集 2026-06-27，仅 kDebugMode 工具）──
   // main_menu debug 区两个按钮
   static const String mainMenuSectRecruit = '强制招募 NPC';
-  static const String mainMenuSectRecruitHint = '走完整 sect recruit flow · 跳过战斗/奇遇触发';
+  static const String mainMenuSectRecruitHint =
+      '走完整 sect recruit flow · 跳过战斗/奇遇触发';
   static const String mainMenuRedlineAudit = '数值红线审计';
   static const String mainMenuRedlineAuditHint = '开发工具 · 查看 PASS/WARN/FAIL 与来源';
 
