@@ -7,6 +7,8 @@
 
 ## 当前阶段
 
+> 💾 **2026-06-27 多存档槽(选择/新开/删除/切换 · spec B · 独立 worktree multi-save-slot)**:多 db 方案落地——`IsarSetup` 实装 `switchSlot`(flush→close→open→set currentSlotId 原子化)/`slotHasSave`/`listSlots`(当前槽 `Isar.getInstance` 直读不重开·临时只读实例读完必 close 防句柄泄漏)/`deleteSlot`(当前槽先 close 实例置空+删 .isar/.isar.lock)+ `_directory` 目录记忆 + 新 `SlotSummary` 值对象(祖师名/境界/章节/最后游玩·**不新增 schema 字段**)。启动 splash 不再 auto-init→`SaveSelectScreen`(3 槽:有档点入·空槽确认新开·删档确认),选中走 switchSlot+ensureFoundingMasters(幂等)+`ref.invalidate(isarProvider)` 级联重读。设置面板加「切换存档」入口(flush→清栈回选择屏)。现有玩家档=slot1 不迁移。全量 `flutter analyze` 0 · `flutter test` **3220 passed/1 skip/0 fail**。
+
 > 🧑‍🏫 **2026-06-27 弟子加入战斗后移至终局解锁(spec A · 独立 worktree disciple-endgame-unlock)**:`disciple_joins` 两条 stage_id 02_05/03_05 → 均改 `stage_06_05`(祖师单人走完 Ch1-6,终局一并拜入两弟子)。`DiscipleJoinService.joinForClearedStage` 单匹配→遍历多匹配返回 `List<Character>`,**关级防重标记移到遍历后一次性写**(防 senior 先标记挡掉同关 junior);hook 遍历多弟子按 role 依次弹拜师叙事+立绘;红线校验 dedup 由 stage_id 唯一→**role 唯一**(允许同关多 role)。旧档祖年化(角色级 guard 不重建/迁移 backfill 读 live config 标 06_05)。飞升/真传/师承遗物**不改**(06_05 通关与拜入同时点)。全量 `flutter analyze` 0 · `flutter test` **3210 passed/1 skip/0 fail**。**独立验证项(spec §4 未做)**:主线变单人,武圣单人能否通 Ch4-6(尤其 06_05 Boss 52000 血)需 balance_simulator 单独跑+不可通则敌人调参待用户拍板,本任务不静默 buff/nerf。
 
 > 🌸 **2026-06-27 桃花岛二期 + 藏卷阁 Hub + 整备建议联动合入 main(PR #17 · merge `7335927e`)**:三条 Codex 前置分支集成——桃花岛二期底座(muGongFang/lingQuan/zhuZaoTai 7 栋两层生产链 + 据点式分组屏 + 旧档安全补建) / 藏卷阁 Hub(聚合战绩册/兵器谱/奇遇/藏经阁,装备·残页·Boss周目三类只读派生线索,主菜单 social 门控入口) / 整备建议 + 岛务工程碑只读 first slice(不写存档不发奖励)。审核发现灵泉水孤儿产出 → 修:丹房疗伤丹改双输入(药草+灵泉水·扩 secondaryInput schema + 供应自洽/防 unused 校验 · 灵泉供给 4/hr>满速消耗 3/hr 恒非约束 → 离线=在线不变性测 brew_liaoshang×5 level 全过)。全量 `flutter analyze` 0 issue · `flutter test` 3207 passed/1 skip/0 fail。清理 3 worktree + 3 已合并分支。**backlog**:疗伤丹/锻材/开锋辅材/行囊补给 4 加工产物暂无终端消费系统(疗伤/开锋系统未接)待拍板。另:CLAUDE.md §8.0 可恢复任务协议(v1.25)cherry-pick 补回 main(`0b7c888a`),planning 分支唯一独有提交保全,三 Codex worktree(含 .codex 磁盘空残留目录 rmdir)+4 分支(含 planning)全清理。
@@ -29,9 +31,7 @@
 
 > **2026-06-16 续15-18 已压缩归档**(全功能真审计纠幻觉重跑 1H+7M+1L+2drift·3 吹的 High 实证误报 + 规则层全域摸排按级修复 `c384a0d3` + M6 心魔失败惩罚实装 `cf694faf`/余毒战败摘要 UI · 合 main `b8330c14`→2286 测 · 详 `docs/audit/full_audit_2026-06-16.md` + git log)
 
-> **2026-06-15 续10-续14 五条已压缩归档**(全 commit/spec/closeout 可溯 · 2190→2245 测):续10 L3 闭关非阻塞 + M2 离线收益范围A(`7efb82c8`)+ L1 显示设置 window_manager 全屏/3 档分辨率(`130b40ac`) · 续11 L1 Codex 验收 + 两 fail 回修(720p overflow / F11→Alt+Enter `a0f77a8b`) · 续12 M2 范围B 通用被动离线挂机(saveVer0.24.0 · 9 决策 · `212b572c`) · 续13 P1b MeridianBar wiring(StageProgressRow 四系统收口) · 续14 P3 战报失败诊断(三段式复盘 `BattleDiagnosis` 5 规则 · `6a32901a`)。spec `2026-06-15-*`。
-
-> **2026-06-14 红线/战斗交互重做批已压缩归档**(git log `7adc8532→3edc99ae` · 详各 closeout · 2160→2165 测):战斗交互重做 Phase1-4(自动播放+随时拖招,废半手动/录制回放净 -2050 行)+ 周目按章(saveVer0.23)+ 周目进化 A-F1(敌人 scale/5 反制词条/Boss HP 红线 50000→60000 · Codex 视觉 10/10)+ 拖招表现层微调(引导线外发光/蓄势呼吸光晕 · Codex 5/5)+ **红线语义收口分两层**(硬=配置基础表值 schema 拦截 / 软=极值满 build 实战可见值不进百万,balance_simulator 极值×周目诊断证伪「不进十万」)+ towers 注释补漏。
+> **2026-06-14..15 续10-14 + 红线/战斗交互重做批已压缩归档**(git log/spec/closeout 可溯 · 2160→2245 测):续10-14(闭关非阻塞/离线收益 A+B 被动挂机 saveVer0.24/显示设置全屏3档/MeridianBar wiring/战报失败诊断 `BattleDiagnosis`)+ 战斗交互重做 Phase1-4(自动播放+随时拖招,废录制回放净 -2050 行)+ 周目按章 saveVer0.23 + 周目进化 A-F1(敌人 scale/5 反制词条/Boss HP 50000→60000)+ **红线语义收口分两层**(硬=配置基础表值 schema 拦截 / 软=极值满 build 实战可见不进百万)。
 
 > **2026-06-12..13 半手动战斗 master spec/P0 + UX 整合/爆品展示批已压缩归档**(详 `2026-06-1{2,3}-*` spec + 各 closeout · 1950→2067 测):半手动+seed重放+周目进化 master spec 定稿 → P0 3b-5 全闭环(逐 actor stepOne/单步 UI/重放/schema 0.19 BattleReplayRecord/自手印章)+ AGENTS.md 瘦身根治双文档漂移;战斗/装备 UX 整合 12/12(藏经阁+装备链路+指令台 Codex 5/5)+ 爆品展示(印章动画/tagline 35句/时序重排)+ BGM 扩 8 轨 + StageProgressRow + 神物金光 + E 音频 Phase0。
 
