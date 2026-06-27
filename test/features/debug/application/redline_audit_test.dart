@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/debug/application/redline_audit.dart';
 
@@ -59,6 +60,20 @@ void main() {
       expect(markdown, contains('数值红线审计报告'));
       expect(markdown, contains('装备基础攻击'));
       expect(markdown, contains('大招暴击'));
+    });
+
+    test('ultimate_critical 探针走 SkillType.ultimate（防误取 powerSkill）', () {
+      final repo = GameRepository.instance;
+      final report = buildRedlineAuditReport(repo);
+      final item = report.items.firstWhere((i) => i.id == 'ultimate_critical');
+      // source 格式 'damage_probe:<skillId>'，解析出的招式必须是大招类型。
+      // 误取 powerSkill 会低估大招峰值，使审计自称的「大招暴击」名不副实。
+      final skillId = item.source.split(':').last;
+      expect(
+        repo.skillDefs[skillId]?.type,
+        SkillType.ultimate,
+        reason: '大招暴击探针必须取 SkillType.ultimate 招式，不能取 powerSkill',
+      );
     });
   });
 }

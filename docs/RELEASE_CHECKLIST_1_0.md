@@ -9,7 +9,7 @@
 
 ## TL;DR
 
-**当前 release readiness:~99%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **出版美术 pass 整体全闭环**〔战斗屏 A+B1+B2 + 剧情屏 + 战斗场景 16 biome + §12 上线门 11/12,唯音频缺〕· **1667 测 / 1 skip / 0 analyze** · stage_05_05 跨阶墙 sim 复核销账 2026-05-31)
+**当前 release readiness:~99%**(A+B+C 全 PASS · 0 P0/P1 阻塞 · **出版美术 pass 整体全闭环**〔战斗屏 A+B1+B2 + 剧情屏 + 战斗场景 16 biome + §12 上线门 11/12,唯音频缺〕· **~~1667 测 / 1 skip~~（2026-05-29 快照已陈旧，现以 PROGRESS.md 实测为准：3177 测 / 1 skip）/ 0 analyze** · stage_05_05 跨阶墙 sim 复核销账 2026-05-31)
 
 **2026-05-29 方向调整 + D/H 首批落地**:用户拍板「先把游戏打磨完成,再启 Steam 上架」→ **F + G 段搁置**(留 ship 前 1-2 月)+ **聚焦 D + H 新增 + E 部分**(E1 SoundManager + E5 BGM 1 套)。1.0 路径 ≠ 全 D/E/F/G 串行,而是「游戏打磨完成度」优先。**当日 H/D 首批已落**:H 中期/后期/卡点三审计全完 + H 接线 polish 5 项 + 外部 review 5 项硬化(P1-a 三系锁死 auto_swap / P2-c 公式单源 / P2-a/b 健壮性 / P3 文档 drift)+ 根因A 挂机循环重平衡(B1+B2+B3)+ idle_economy 经济曲线验证 + 红线值统一 numbers.yaml(单一真相源)。
 

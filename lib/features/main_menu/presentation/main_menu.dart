@@ -409,14 +409,14 @@ class MainMenu extends ConsumerWidget {
               onTap: () => _push(context, const Phase2TestMenu()),
             ),
             WuxiaInkButton(
-              label: '强制招募 NPC',
-              hint: '走完整 sect recruit flow · 跳过战斗/奇遇触发',
+              label: UiStrings.mainMenuSectRecruit,
+              hint: UiStrings.mainMenuSectRecruitHint,
               icon: Icons.person_add_alt_1_outlined,
               onTap: () => _push(context, const SectRecruitDebugScreen()),
             ),
             WuxiaInkButton(
-              label: '数值红线审计',
-              hint: '开发工具 · 查看 PASS/WARN/FAIL 与来源',
+              label: UiStrings.mainMenuRedlineAudit,
+              hint: UiStrings.mainMenuRedlineAuditHint,
               icon: Icons.rule_outlined,
               onTap: () => _push(context, const RedlineAuditScreen()),
             ),
