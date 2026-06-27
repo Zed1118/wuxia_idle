@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../data/isar_setup.dart';
 import '../../../shared/app_exit.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../save_slot/presentation/save_select_screen.dart';
 import '../../save_management/application/save_management_providers.dart';
 import '../../save_management/application/save_management_service.dart';
 import '../../save_management/domain/save_management_status.dart';
@@ -85,6 +88,12 @@ class SettingsPanel extends ConsumerWidget {
               const _SaveManagementSection(),
               const Divider(height: 1),
               ListTile(
+                leading: const Icon(Icons.swap_horiz),
+                title: const Text(UiStrings.slotSwitch),
+                onTap: () => _switchSlotFlow(context),
+              ),
+              const Divider(height: 1),
+              ListTile(
                 leading: const Icon(Icons.info_outline),
                 title: const Text(UiStrings.settingsAbout),
                 subtitle: Text(
@@ -103,6 +112,41 @@ class SettingsPanel extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// 游戏内切换存档(spec B §3.6):确认 → flush 当前槽 → 清栈回存档选择屏重选。
+/// 实际切档(flush→close→open)由 [SaveSelectScreen] 选中后 [IsarSetup.switchSlot] 完成。
+Future<void> _switchSlotFlow(BuildContext context) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (c) => AlertDialog(
+      backgroundColor: WuxiaColors.panel,
+      title: const Text(UiStrings.slotSwitch,
+          style: TextStyle(color: WuxiaColors.resultHighlight)),
+      content: const Text(UiStrings.slotSwitchConfirm,
+          style: TextStyle(color: WuxiaColors.textSecondary)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(c, false),
+          child: const Text(UiStrings.slotCancel,
+              style: TextStyle(color: WuxiaColors.textMuted)),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(c, true),
+          child: const Text(UiStrings.slotSwitch,
+              style: TextStyle(color: WuxiaColors.resultHighlight)),
+        ),
+      ],
+    ),
+  );
+  if (ok != true) return;
+  await IsarSetup.touchOnlineNow(); // flush:落最后在线时间(挂机结算基准)
+  if (!context.mounted) return;
+  // 清整个栈(设置对话框 + 主菜单)→ 存档选择屏,玩家重选/新开/删除。
+  Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+    MaterialPageRoute<void>(builder: (_) => const SaveSelectScreen()),
+    (route) => false,
+  );
 }
 
 class _SaveManagementSection extends ConsumerWidget {
