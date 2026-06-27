@@ -95,7 +95,7 @@ void main() {
     expect(founder, isNotNull);
     expect(founder!.isFounder, isTrue);
     expect(founder.lineageRole, LineageRole.founder);
-    expect(founder.realmTier, RealmTier.yiLiu);
+    expect(founder.realmTier, RealmTier.xueTu); // 2026-06-27 祖师改学徒新手起手
     expect(founder.discipleIds.length, 2);
 
     final save = await isar.saveDatas.get(0);
@@ -155,14 +155,16 @@ void main() {
     final isar = IsarSetup.instance;
     await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
 
-    expect(await isar.equipments.count(), 9); // 3 角色 × 3 槽
+    // 2026-06-27 祖师空手起家：装备 6 = 祖师 0 + 大弟子 3 + 二弟子 3（原 9）。
+    expect(await isar.equipments.count(), 6);
     expect(await isar.techniques.count(), 4); // founder 2 + 大弟子 1 + 二弟子 1
 
     final founder = await isar.characters.get(1);
-    expect(founder!.equippedWeaponId, isNotNull);
-    expect(founder.equippedArmorId, isNotNull);
-    expect(founder.equippedAccessoryId, isNotNull);
-    expect(founder.mainTechniqueId, isNotNull);
+    // 祖师空手 → 三槽全空（学徒新手，师承遗物改游戏中获得）。
+    expect(founder!.equippedWeaponId, isNull);
+    expect(founder.equippedArmorId, isNull);
+    expect(founder.equippedAccessoryId, isNull);
+    expect(founder.mainTechniqueId, isNotNull); // 入门功心法仍在
     expect(founder.assistTechniqueIds.length, 1);
   });
 

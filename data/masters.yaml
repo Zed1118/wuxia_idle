@@ -6,12 +6,16 @@
 
 masters:
 
-  # === 祖师（玩家本人）—— 一流 · 启蒙 ===
-  # 一流境界 → equipment cap=liQi（利器）/ technique cap=menPaiJueXue（门派绝学）
+  # === 祖师（玩家本人）—— 学徒 · 启蒙（新手开局，回归 GDD Ch1「学武出山」）===
+  # 学徒境界 → equipment cap=寻常货 / technique cap=ruMenGong（入门功）
+  # 2026-06-27：从一流 fixture 降为学徒新手 + 空手起家。Demo 期高境界 fixture
+  #   （week4_d 方案 A：开局展示完整师徒队伍 / 全员<武圣避飞升锚点）理由已全部失效
+  #   （弟子改终局拜入 / 飞升已实装），且与 GDD Ch1-3=学徒→一流 进程矛盾。
+  #   师承遗物改游戏中获得（T55 起手要求已放宽，详 spec 2026-06-27-founder-start-realm-novice）。
   - id: founder
     lineageRole: founder
     slotIndex: 0
-    defaultRealm: yiLiu
+    defaultRealm: xueTu
     defaultLayer: qiMeng
     attributeProfile:
       constitution: 5
@@ -19,12 +23,9 @@ masters:
       agility: 5
       fortune: 5
     startingTechniqueIds:
-      - tech_gangmeng_mingjia
+      - tech_gangmeng_jichu
       - tech_lingqiao_jichu
-    startingEquipmentIds:
-      - weapon_liqi_long_quan
-      - armor_haojiahuo_jin_pao
-      - accessory_haojiahuo_yu_pei_lao
+    startingEquipmentIds: []  # 空手起家（学徒新手；师承遗物改游戏中获得，T55 已放宽）
     enabledInDemo: true
     portraitPath: assets/characters/founder.png
 
