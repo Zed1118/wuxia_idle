@@ -20,6 +20,8 @@ import '../../cultivation/application/skill_loadout_service.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../inheritance/application/founder_buff_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
+import '../../jianghu/application/enmity_battle_modifier.dart';
+import '../../jianghu/application/npc_relation_service.dart';
 import '../../sect/domain/sect.dart';
 
 /// 关卡战斗准备（Phase 3 T37，对应 PROGRESS #22 销账）。
@@ -57,8 +59,18 @@ class StageBattleSetup {
             stageId: stage.id,
             innerDemonDef: GameRepository.instance.numbers.innerDemon,
           )
-        : buildEnemyTeam(stage.enemyTeam, cycleIndex: cycleIndex, isTower: false);
-    return (left, right);
+        : buildEnemyTeam(
+            stage.enemyTeam,
+            cycleIndex: cycleIndex,
+            isTower: false,
+            stageNpcId: stage.isBossStage ? stage.npcId : null,
+          );
+    if (!stage.isBossStage || stage.npcId == null) return (left, right);
+    return EnmityBattleModifier.bakeMultipliers(
+      npcService: NpcRelationService(isar, GameRepository.instance.numbers),
+      leftTeam: left,
+      rightTeam: right,
+    );
   }
 
   /// 拼装 (left, right) 战斗双方，准备调 `startBattle`（爬塔版）。
@@ -70,7 +82,11 @@ class StageBattleSetup {
     int cycleIndex = 1,
   }) async {
     final left = await _buildPlayerTeam();
-    final right = buildEnemyTeam(floor.enemyTeam, cycleIndex: cycleIndex, isTower: true);
+    final right = buildEnemyTeam(
+      floor.enemyTeam,
+      cycleIndex: cycleIndex,
+      isTower: true,
+    );
     return (left, right);
   }
 
@@ -83,15 +99,21 @@ class StageBattleSetup {
     List<EnemyDef> enemies, {
     int cycleIndex = 1,
     bool isTower = false,
+    String? stageNpcId,
   }) {
     final right = <BattleCharacter>[];
     for (var i = 0; i < enemies.length && i < 3; i++) {
-      right.add(_enemyToBattle(
-        enemy: enemies[i],
-        slotIndex: i,
-        cycleIndex: cycleIndex,
-        isTower: isTower,
-      ));
+      right.add(
+        _enemyToBattle(
+          enemy: enemies[i],
+          slotIndex: i,
+          characterIdOverride: i == 0 && stageNpcId != null
+              ? EnmityBattleModifier.targetIdForNpcId(stageNpcId)
+              : null,
+          cycleIndex: cycleIndex,
+          isTower: isTower,
+        ),
+      );
     }
     return right;
   }
@@ -163,7 +185,11 @@ class StageBattleSetup {
     final repo = GameRepository.instance;
     for (final c in players) {
       // P1b Task5/Task9 共享 resolver：解析主修招 / 辅修招 / joint 共鸣招。
-      final sources = await resolver.resolve(c, repository: repo, numbers: numbers);
+      final sources = await resolver.resolve(
+        c,
+        repository: repo,
+        numbers: numbers,
+      );
       // 第六阶段 Task 6 — 职责软引导：传入角色 lineage 身份，autoFill 按角色倾向填槽。
       await loadoutSvc.applyAutoFill(
         characterId: c.id,
@@ -230,15 +256,20 @@ class StageBattleSetup {
 
     // M6 Task6：余毒在身 debuff → 战斗输出 ×0.95（§5.6 从 config 读，不写死）。
     final residueMult = character.innerDemonResidueHoursRemaining > 0
-        ? GameRepository.instance.numbers.innerDemon.residueDebuff
-            .battleOutputMultiplier
+        ? GameRepository
+              .instance
+              .numbers
+              .innerDemon
+              .residueDebuff
+              .battleOutputMultiplier
         : 1.0;
 
     // 第八阶段 Task5：重伤 debuff → 攻击折扣连乘余毒（outputMultiplier 可乘性组合）。
     final n = GameRepository.instance.numbers;
     final heavyInjured = character.injuryHoursRemaining > 0;
-    final injuryAtkMult =
-        heavyInjured ? n.injury.heavyAttackOutputMultiplier : 1.0;
+    final injuryAtkMult = heavyInjured
+        ? n.injury.heavyAttackOutputMultiplier
+        : 1.0;
 
     final base = BattleCharacter.fromCharacter(
       character: character,
@@ -377,15 +408,18 @@ class StageBattleSetup {
     final scale = 1.0 + ce.scalePerCycle * (cycleIndex - 1);
 
     // ── hp：baseHp × scale，clamp ≤ Boss HP 红线（§5.4，防终局周目越线）────
-    final scaledHp = (enemy.baseHp * scale)
-        .toInt()
-        .clamp(0, numbers.combat.redLines.bossHpMax);
+    final scaledHp = (enemy.baseHp * scale).toInt().clamp(
+      0,
+      numbers.combat.redLines.bossHpMax,
+    );
 
     // ── attack：baseAttack × scale ────────────────────────────────────────
     final scaledAttack = (enemy.baseAttack * scale).toInt();
 
     // ── 内力：境界 IF × internalForceScale × scale（真气词条在词条块处理）──
-    final baseIf = (realm.internalForceMax * enemyDefaults.internalForceScale * scale).round();
+    final baseIf =
+        (realm.internalForceMax * enemyDefaults.internalForceScale * scale)
+            .round();
 
     // ── 词条分配（cycle ≤ 1 时 traitsFor 返回空集）────────────────────────
     final traits = ce.traitsFor(
@@ -490,9 +524,9 @@ class StageBattleSetup {
     int cycleIndex = 1,
     bool isTower = false,
   }) => _enemyToBattle(
-      enemy: enemy,
-      slotIndex: slotIndex,
-      cycleIndex: cycleIndex,
-      isTower: isTower,
-    );
+    enemy: enemy,
+    slotIndex: slotIndex,
+    cycleIndex: cycleIndex,
+    isTower: isTower,
+  );
 }

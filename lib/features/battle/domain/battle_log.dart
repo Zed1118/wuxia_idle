@@ -70,6 +70,13 @@ class BattleLog {
 
     if (r.lifestealHeal > 0) markers.add('吸血 +${r.lifestealHeal}');
 
+    final actor = _findChar(state, action.actorId);
+    if (actor?.attackPowerMultiplierSource ==
+            AttackPowerMultiplierSource.jianghuEnmity &&
+        actor!.attackPowerMultiplier > 1.0) {
+      markers.add('江湖恩怨 ×${_fmt(actor.attackPowerMultiplier)}');
+    }
+
     final target = _findChar(state, action.targetId!);
     final killed = target != null && !target.isAlive;
     if (killed) markers.add('击杀');
@@ -92,27 +99,23 @@ class BattleLog {
   /// ```
   static String formatSummary(BattleState s) {
     final result = s.result;
-    final resultStr =
-        result == null ? '未结束' : EnumL10n.battleResult(result);
-    final lines = <String>[
-      '战斗结束（$resultStr）。共 ${s.tick} 回合。',
-    ];
+    final resultStr = result == null ? '未结束' : EnumL10n.battleResult(result);
+    final lines = <String>['战斗结束（$resultStr）。共 ${s.tick} 回合。'];
 
     // 最高单次伤害
     BattleAction? top;
     for (final a in s.actionLog) {
       final dmg = a.attackResult?.finalDamage ?? 0;
       if (dmg <= 0) continue;
-      if (top == null || (a.attackResult!.finalDamage > top.attackResult!.finalDamage)) {
+      if (top == null ||
+          (a.attackResult!.finalDamage > top.attackResult!.finalDamage)) {
         top = a;
       }
     }
     if (top != null) {
       final actor = _findName(s, top.actorId) ?? '未知';
       final target = _findName(s, top.targetId!) ?? '未知';
-      lines.add(
-        '最高单次伤害：$actor ${top.attackResult!.finalDamage}（对 $target）。',
-      );
+      lines.add('最高单次伤害：$actor ${top.attackResult!.finalDamage}（对 $target）。');
     }
 
     // 被击杀的角色
@@ -159,9 +162,16 @@ class BattleLog {
   }
 
   /// 最近 [limit] 条关键战报，**最新在前**（index 0 = 最近）。
-  static List<BattleAction> recentKeyActions(BattleState state, {int limit = 3}) {
+  static List<BattleAction> recentKeyActions(
+    BattleState state, {
+    int limit = 3,
+  }) {
     final out = <BattleAction>[];
-    for (var i = state.actionLog.length - 1; i >= 0 && out.length < limit; i--) {
+    for (
+      var i = state.actionLog.length - 1;
+      i >= 0 && out.length < limit;
+      i--
+    ) {
       if (isKeyAction(state.actionLog[i], state)) out.add(state.actionLog[i]);
     }
     return out;

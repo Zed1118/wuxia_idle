@@ -12,6 +12,8 @@ import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart';
+import 'package:wuxia_idle/features/jianghu/application/enmity_battle_modifier.dart';
+import 'package:wuxia_idle/features/jianghu/application/npc_relation_service.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 
@@ -155,6 +157,50 @@ void main() {
     expect(right.length, 3);
     expect(right[0].name, '灰衣人');
     expect(right[0].maxHp, 11000); // baseHp from yaml
+  });
+
+  test('江湖恩怨：带 npcId 的 Boss 关进战斗时烘焙 APM 与来源', () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+    final stage = GameRepository.instance.getStage('stage_02_05');
+    final npcId = stage.npcId!;
+    final npcTargetId = EnmityBattleModifier.targetIdForNpcId(npcId);
+    final emc = GameRepository.instance.numbers.jianghu.enmityCombatModifier;
+
+    final svc = NpcRelationService(
+      IsarSetup.instance,
+      GameRepository.instance.numbers,
+    );
+    await svc.upsert(
+      sourceCharacterId: 1,
+      targetCharacterId: npcTargetId,
+      type: 'foe',
+      level: emc.severeThreshold,
+    );
+
+    final (left, right) = await StageBattleSetup(
+      isar: IsarSetup.instance,
+    ).buildTeams(stage);
+
+    expect(
+      right.first.characterId,
+      npcTargetId,
+      reason: 'stage.npcId 应映射到稳定 target id，而非普通 slot id',
+    );
+    expect(left.first.attackPowerMultiplier, emc.severeMult);
+    expect(right.first.attackPowerMultiplier, emc.severeMult);
+    expect(
+      left.first.attackPowerMultiplierSource,
+      AttackPowerMultiplierSource.jianghuEnmity,
+    );
+    expect(
+      right.first.attackPowerMultiplierSource,
+      AttackPowerMultiplierSource.jianghuEnmity,
+    );
+    expect(
+      right.skip(1).every((c) => c.attackPowerMultiplier == 1.0),
+      isTrue,
+      reason: 'stage.npcId 只绑定 Boss 主体，不影响随从',
+    );
   });
 
   // ── W18-A1.2 心法相生 6 字段注入(defensePct 加法叠加 defenseRate) ──────
@@ -489,55 +535,51 @@ void main() {
   // ── P1b Task5: applyAutoFill wire ─────────────────────────────────────────
   // 断言：5 装配槽全空的角色，经 buildTeams(→ _buildPlayerTeam → applyAutoFill)
   // 后，其 mainSkillId1 已被填入（非 null），证明走了装配而非 fallback。
-  test(
-    'Task5 wire: 5 槽全空角色进战斗前 autoFill 填主修招 → mainSkillId1 非 null',
-    () async {
-      // P3 种子：角色有主修心法 tech_gangmeng_jichu，5 装配槽初始全 null。
-      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
-      final isar = IsarSetup.instance;
+  test('Task5 wire: 5 槽全空角色进战斗前 autoFill 填主修招 → mainSkillId1 非 null', () async {
+    // P3 种子：角色有主修心法 tech_gangmeng_jichu，5 装配槽初始全 null。
+    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+    final isar = IsarSetup.instance;
 
-      // 确认进战斗前 5 槽全空
-      final before = await isar.characters.get(1);
-      expect(before?.mainSkillId1, isNull,
-          reason: 'P3 种子不预填装配槽，进战斗前应全空');
+    // 确认进战斗前 5 槽全空
+    final before = await isar.characters.get(1);
+    expect(before?.mainSkillId1, isNull, reason: 'P3 种子不预填装配槽，进战斗前应全空');
 
-      final stage = GameRepository.instance.getStage('stage_01_01');
-      await StageBattleSetup(isar: isar).buildTeams(stage);
+    final stage = GameRepository.instance.getStage('stage_01_01');
+    await StageBattleSetup(isar: isar).buildTeams(stage);
 
-      // buildTeams 调用后 autoFill 已落库
-      final after = await isar.characters.get(1);
-      expect(after?.mainSkillId1, isNotNull,
-          reason: 'autoFill wire 应填入主修招到 mainSkillId1');
-    },
-  );
+    // buildTeams 调用后 autoFill 已落库
+    final after = await isar.characters.get(1);
+    expect(
+      after?.mainSkillId1,
+      isNotNull,
+      reason: 'autoFill wire 应填入主修招到 mainSkillId1',
+    );
+  });
 
-  test(
-    'Task5 wire: autoFill 后 availableSkills 含主修招（走装配非 fallback）',
-    () async {
-      // P3 种子：角色有主修心法 tech_gangmeng_jichu，5 装配槽全 null。
-      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
-      final isar = IsarSetup.instance;
+  test('Task5 wire: autoFill 后 availableSkills 含主修招（走装配非 fallback）', () async {
+    // P3 种子：角色有主修心法 tech_gangmeng_jichu，5 装配槽全 null。
+    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+    final isar = IsarSetup.instance;
 
-      // 进战斗前确认槽全空
-      final before = await isar.characters.get(1);
-      expect(before?.mainSkillId1, isNull);
+    // 进战斗前确认槽全空
+    final before = await isar.characters.get(1);
+    expect(before?.mainSkillId1, isNull);
 
-      final stage = GameRepository.instance.getStage('stage_01_01');
-      final (left, _) = await StageBattleSetup(isar: isar).buildTeams(stage);
+    final stage = GameRepository.instance.getStage('stage_01_01');
+    final (left, _) = await StageBattleSetup(isar: isar).buildTeams(stage);
 
-      final player = left.first;
-      final skillIds = player.availableSkills.map((s) => s.id).toSet();
+    final player = left.first;
+    final skillIds = player.availableSkills.map((s) => s.id).toSet();
 
-      // autoFill 后走装配路径，availableSkills 是装配槽子集。
-      // P3 种子主修心法 tech_gangmeng_mingjia 有 3 招：basic/skill/ult。
-      // autoFill 按 powerMultiplier 分配到主修槽和大招槽，至少一招被装配。
-      expect(
-        skillIds.any((id) => id.startsWith('skill_gangmeng_mingjia_')),
-        isTrue,
-        reason: 'autoFill 后 availableSkills 应含主修心法招(tech_gangmeng_mingjia)',
-      );
-    },
-  );
+    // autoFill 后走装配路径，availableSkills 是装配槽子集。
+    // P3 种子主修心法 tech_gangmeng_mingjia 有 3 招：basic/skill/ult。
+    // autoFill 按 powerMultiplier 分配到主修槽和大招槽，至少一招被装配。
+    expect(
+      skillIds.any((id) => id.startsWith('skill_gangmeng_mingjia_')),
+      isTrue,
+      reason: 'autoFill 后 availableSkills 应含主修心法招(tech_gangmeng_mingjia)',
+    );
+  });
 
   // ── 第八阶段 Task5: 伤势烘焙进 BattleCharacter ────────────────────────────
 
@@ -562,121 +604,111 @@ void main() {
       });
     }
 
-    test(
-      '重伤角色 outputMultiplier ≤ heavyAttackOutputMultiplier（含折扣）',
-      () async {
-        await Phase2SeedService(isar: IsarSetup.instance).seedP3();
-        await setHeavyInjured(IsarSetup.instance);
-        final stage = GameRepository.instance.getStage('stage_01_01');
+    test('重伤角色 outputMultiplier ≤ heavyAttackOutputMultiplier（含折扣）', () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      await setHeavyInjured(IsarSetup.instance);
+      final stage = GameRepository.instance.getStage('stage_01_01');
 
-        final (left, _) =
-            await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
+      final (left, _) = await StageBattleSetup(
+        isar: IsarSetup.instance,
+      ).buildTeams(stage);
 
-        final player = left.first;
-        final injuryMult = GameRepository.instance.numbers.injury
-            .heavyAttackOutputMultiplier;
+      final player = left.first;
+      final injuryMult =
+          GameRepository.instance.numbers.injury.heavyAttackOutputMultiplier;
+      expect(
+        player.outputMultiplier,
+        lessThanOrEqualTo(injuryMult),
+        reason:
+            '重伤角色 outputMultiplier 应 ≤ heavyAttackOutputMultiplier=$injuryMult',
+      );
+      expect(
+        player.outputMultiplier,
+        lessThan(1.0),
+        reason: '重伤攻击折扣应 < 1.0（比无伤低）',
+      );
+    });
+
+    test('重伤角色 maxInternalForce 低于无伤同角色', () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      final stage = GameRepository.instance.getStage('stage_01_01');
+
+      // 无伤 baseline
+      final (leftBase, _) = await StageBattleSetup(
+        isar: IsarSetup.instance,
+      ).buildTeams(stage);
+      final baseIf = leftBase.first.maxInternalForce;
+
+      // 重设为重伤
+      await setHeavyInjured(IsarSetup.instance);
+      final (leftInjured, _) = await StageBattleSetup(
+        isar: IsarSetup.instance,
+      ).buildTeams(stage);
+      final injuredIf = leftInjured.first.maxInternalForce;
+
+      expect(
+        injuredIf,
+        lessThan(baseIf),
+        reason: '重伤 maxInternalForce=$injuredIf 应 < 无伤 baseline=$baseIf',
+      );
+    });
+
+    test('轻伤角色 speed 低于无伤同角色', () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      final stage = GameRepository.instance.getStage('stage_01_01');
+
+      // 无伤 baseline
+      final (leftBase, _) = await StageBattleSetup(
+        isar: IsarSetup.instance,
+      ).buildTeams(stage);
+      final baseSpeed = leftBase.first.speed;
+
+      // 重设为轻伤
+      await setLightInjured(IsarSetup.instance, stacks: 3);
+      final (leftInjured, _) = await StageBattleSetup(
+        isar: IsarSetup.instance,
+      ).buildTeams(stage);
+      final injuredSpeed = leftInjured.first.speed;
+
+      expect(
+        injuredSpeed,
+        lessThan(baseSpeed),
+        reason: '轻伤 speed=$injuredSpeed 应 < 无伤 baseline=$baseSpeed（3 stack 减速）',
+      );
+    });
+
+    test('无伤角色 outputMultiplier = 1.0（余毒无 + 重伤无）', () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      final stage = GameRepository.instance.getStage('stage_01_01');
+
+      final (left, _) = await StageBattleSetup(
+        isar: IsarSetup.instance,
+      ).buildTeams(stage);
+
+      expect(
+        left.first.outputMultiplier,
+        closeTo(1.0, 1e-9),
+        reason: '无伤 + 无余毒角色 outputMultiplier 应为 1.0',
+      );
+    });
+
+    test('镜像/敌方不带玩家伤势（重伤玩家 → 敌方 outputMultiplier 仍 = 1.0）', () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      await setHeavyInjured(IsarSetup.instance);
+      final stage = GameRepository.instance.getStage('stage_01_01');
+
+      final (_, right) = await StageBattleSetup(
+        isar: IsarSetup.instance,
+      ).buildTeams(stage);
+
+      for (final enemy in right) {
         expect(
-          player.outputMultiplier,
-          lessThanOrEqualTo(injuryMult),
-          reason:
-              '重伤角色 outputMultiplier 应 ≤ heavyAttackOutputMultiplier=$injuryMult',
-        );
-        expect(
-          player.outputMultiplier,
-          lessThan(1.0),
-          reason: '重伤攻击折扣应 < 1.0（比无伤低）',
-        );
-      },
-    );
-
-    test(
-      '重伤角色 maxInternalForce 低于无伤同角色',
-      () async {
-        await Phase2SeedService(isar: IsarSetup.instance).seedP3();
-        final stage = GameRepository.instance.getStage('stage_01_01');
-
-        // 无伤 baseline
-        final (leftBase, _) =
-            await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
-        final baseIf = leftBase.first.maxInternalForce;
-
-        // 重设为重伤
-        await setHeavyInjured(IsarSetup.instance);
-        final (leftInjured, _) =
-            await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
-        final injuredIf = leftInjured.first.maxInternalForce;
-
-        expect(
-          injuredIf,
-          lessThan(baseIf),
-          reason:
-              '重伤 maxInternalForce=$injuredIf 应 < 无伤 baseline=$baseIf',
-        );
-      },
-    );
-
-    test(
-      '轻伤角色 speed 低于无伤同角色',
-      () async {
-        await Phase2SeedService(isar: IsarSetup.instance).seedP3();
-        final stage = GameRepository.instance.getStage('stage_01_01');
-
-        // 无伤 baseline
-        final (leftBase, _) =
-            await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
-        final baseSpeed = leftBase.first.speed;
-
-        // 重设为轻伤
-        await setLightInjured(IsarSetup.instance, stacks: 3);
-        final (leftInjured, _) =
-            await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
-        final injuredSpeed = leftInjured.first.speed;
-
-        expect(
-          injuredSpeed,
-          lessThan(baseSpeed),
-          reason:
-              '轻伤 speed=$injuredSpeed 应 < 无伤 baseline=$baseSpeed（3 stack 减速）',
-        );
-      },
-    );
-
-    test(
-      '无伤角色 outputMultiplier = 1.0（余毒无 + 重伤无）',
-      () async {
-        await Phase2SeedService(isar: IsarSetup.instance).seedP3();
-        final stage = GameRepository.instance.getStage('stage_01_01');
-
-        final (left, _) =
-            await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
-
-        expect(
-          left.first.outputMultiplier,
+          enemy.outputMultiplier,
           closeTo(1.0, 1e-9),
-          reason: '无伤 + 无余毒角色 outputMultiplier 应为 1.0',
+          reason: '敌方 ${enemy.name} outputMultiplier 不受玩家伤势影响',
         );
-      },
-    );
-
-    test(
-      '镜像/敌方不带玩家伤势（重伤玩家 → 敌方 outputMultiplier 仍 = 1.0）',
-      () async {
-        await Phase2SeedService(isar: IsarSetup.instance).seedP3();
-        await setHeavyInjured(IsarSetup.instance);
-        final stage = GameRepository.instance.getStage('stage_01_01');
-
-        final (_, right) =
-            await StageBattleSetup(isar: IsarSetup.instance).buildTeams(stage);
-
-        for (final enemy in right) {
-          expect(
-            enemy.outputMultiplier,
-            closeTo(1.0, 1e-9),
-            reason: '敌方 ${enemy.name} outputMultiplier 不受玩家伤势影响',
-          );
-        }
-      },
-    );
+      }
+    });
   });
 }
 
