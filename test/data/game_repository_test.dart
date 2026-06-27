@@ -104,6 +104,23 @@ void main() {
           isTrue);
     });
 
+    test('祖师起手 = 学徒新手·空手·入门功（2026-06-27 回归 GDD / T55 放宽）',
+        () async {
+      // 加载不抛 = T55「祖师起手须含师承遗物」已放宽（空 startingEquipmentIds
+      // 合法）+ 三系锁死（tier ≤ 学徒 cap）通过。
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      final founder = repo.masters[0];
+      expect(founder.lineageRole, LineageRole.founder);
+      expect(founder.defaultRealm, RealmTier.xueTu, reason: '学徒新手起手');
+      expect(founder.defaultLayer, RealmLayer.qiMeng);
+      expect(founder.startingEquipmentIds, isEmpty, reason: '空手起家');
+      expect(founder.startingTechniqueIds, isNotEmpty);
+      for (final id in founder.startingTechniqueIds) {
+        expect(repo.techniqueDefs[id]?.tier, TechniqueTier.ruMenGong,
+            reason: '$id 应为入门功（学徒 cap）');
+      }
+    });
+
     test('NumbersConfig 强类型字段（damage_formula / max_hp_formula / 防御率）', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       expect(repo.numbers.combat.damageFormula.equipmentAttackFactor, 1.0);
@@ -1068,10 +1085,12 @@ masters:
       );
     });
 
-    test('T55：祖师 startingEquipmentIds 无 isLineageHeritage 装备 → 抛 StateError',
+    test('T55 放宽（2026-06-27）：祖师无师承遗物起手 → 加载通过（不再抛）',
         () async {
-      // 祖师 starting 只挂寻常货武器（非遗物），缺师承遗物
-      const broken = '''
+      // 原 T55 要求祖师起手须含 isLineageHeritage 装备；2026-06-27 放宽移除
+      // （祖师改学徒新手空手起家，师承遗物改游戏中获得）。同一 fixture（祖师
+      // 只挂寻常货武器、无遗物）现应正常加载——本测守 T55 放宽不被回退。
+      const ok = '''
 masters:
   - id: founder
     lineageRole: founder
@@ -1082,27 +1101,21 @@ masters:
     startingEquipmentIds:
       - weapon_xunchang_tie_jian
   - id: first_disciple
-    lineageRole: disciple
+    lineageRole: senior
     slotIndex: 1
     defaultRealm: erLiu
     defaultLayer: qiMeng
     attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
   - id: second_disciple
-    lineageRole: disciple
+    lineageRole: junior
     slotIndex: 2
     defaultRealm: sanLiu
     defaultLayer: qiMeng
     attributeProfile: {constitution: 5, enlightenment: 5, agility: 5, fortune: 5}
 ''';
 
-      expect(
-        GameRepository.loadAllDefs(loader: mastersLoader(broken)),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('isLineageHeritage'),
-        )),
-      );
+      final repo = await GameRepository.loadAllDefs(loader: mastersLoader(ok));
+      expect(repo.masters[0].lineageRole, LineageRole.founder);
     });
 
     test('startingTechniqueId 在 techniques.yaml 不存在 → 抛 StateError', () async {
