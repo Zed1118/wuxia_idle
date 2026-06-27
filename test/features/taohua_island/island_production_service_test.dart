@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/taohua_island/application/island_production_service.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_state.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
@@ -72,6 +75,19 @@ TaohuaIslandConfig _config({
 IslandBuildingState _byType(
         List<IslandBuildingState> states, BuildingType type) =>
     states.firstWhere((s) => s.type == type);
+
+List<IslandBuildingState> _phaseTwoLevelOneStates(TaohuaIslandConfig cfg) =>
+    BuildingType.values.map((type) {
+      final building = IslandBuildingState()
+        ..type = type
+        ..level = 1;
+      final buildingCfg = cfg.buildingOf(type);
+      if (buildingCfg.kind == BuildingKind.processor &&
+          buildingCfg.recipes.isNotEmpty) {
+        building.activeRecipeId = buildingCfg.recipes.first.recipeId;
+      }
+      return building;
+    }).toList();
 
 void main() {
   group('IslandProductionService.settle', () {
@@ -227,6 +243,40 @@ void main() {
       expect(
         _byType(once, BuildingType.daZaoTai).stored,
         closeTo(_byType(twice, BuildingType.daZaoTai).stored, 1e-6),
+      );
+    });
+
+    test('4b. phase 2 多源多加工 offline=online：8h 一次性 == 4h+4h', () async {
+      if (!GameRepository.isLoaded) {
+        await GameRepository.loadAllDefs(
+          loader: (path) => File(path).readAsString(),
+        );
+      }
+      final cfg = GameRepository.instance.numbers.taohuaIsland;
+      final initialStates = _phaseTwoLevelOneStates(cfg);
+
+      final once = IslandProductionService.settle(
+        states: initialStates,
+        config: cfg,
+        elapsedHours: 8,
+        founderRealmIndex: 6,
+      );
+      final first = IslandProductionService.settle(
+        states: initialStates,
+        config: cfg,
+        elapsedHours: 4,
+        founderRealmIndex: 6,
+      );
+      final twice = IslandProductionService.settle(
+        states: first,
+        config: cfg,
+        elapsedHours: 4,
+        founderRealmIndex: 6,
+      );
+
+      expect(
+        twice.map((s) => s.stored.floor()).toList(),
+        once.map((s) => s.stored.floor()).toList(),
       );
     });
 
