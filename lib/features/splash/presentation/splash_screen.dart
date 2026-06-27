@@ -2,18 +2,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../data/game_repository.dart';
-import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../main_menu/presentation/main_menu.dart';
-import '../../onboarding/application/onboarding_service.dart';
+import '../../save_slot/presentation/save_select_screen.dart';
 
 /// 启动闪屏(M4 PoC #46 美术 Stage 2 W6 收官 `landscape_loading.png` 9.5/10 接入)。
 ///
-/// 启动期间显示水墨渔舟远山 + 应用标题,期间并行跑 [GameRepository.loadAllDefs]
-/// 和 [IsarSetup.init]。完成后 pushReplacement 直接进 [MainMenu](2026-06-26 用户
-/// 拍板跳过原「江湖见闻」过场 feed;离线收益由 OfflinePassiveService 加载期照常
-/// 应用,不受影响)。
+/// 启动期间显示水墨渔舟远山 + 应用标题,期间跑 [GameRepository.loadAllDefs](与槽
+/// 无关的配置)。**不再**在此 init Isar / onboard——多存档槽(spec B)启动先进
+/// [SaveSelectScreen] 选档,选中后才 switchSlot 开对应 db + onboarding。离线收益在
+/// 进入槽位后由 OfflinePassiveService 照常应用。
 class SplashScreen extends StatefulWidget {
   const SplashScreen({
     super.key,
@@ -55,12 +53,8 @@ class _SplashScreenState extends State<SplashScreen> {
         '(numbers v${repo.numbers.version})',
       );
     }
-    if (!kIsWeb) {
-      await IsarSetup.init();
-      // 2026-05-25 P0-1 release 阻塞修复:首次启动 production seed 3 师徒。
-      // 幂等 — 已有 founder 跳过。详 docs/spec/p5_onboarding_seed_spec_2026-05-25.md
-      await OnboardingService(isar: IsarSetup.instance).ensureFoundingMasters();
-    }
+    // 多存档槽(spec B):不在此 init Isar / onboard——交由 SaveSelectScreen 选档后
+    // switchSlot 开对应 db + ensureFoundingMasters(幂等)。
     if (!mounted) return;
     setState(() => _loaded = true);
     _maybeNavigate();
@@ -82,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
         transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (_, _, _) => const MainMenu(),
+        pageBuilder: (_, _, _) => const SaveSelectScreen(),
         transitionsBuilder: (_, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
       ),

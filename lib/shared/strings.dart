@@ -1246,6 +1246,21 @@ class UiStrings {
       '已删除备份：$fileName';
   static String saveManagementDeleteConfirmMessage(String fileName) =>
       '只删除备份文件，不影响当前存档：$fileName';
+
+  // ── 多存档槽(spec B 选择/新开/删除/切换)────────────────────────────
+  static const String slotSelectTitle = '选择江湖';
+  static const String slotSaveEmpty = '空 · 新开江湖';
+  static const String slotNewGameTitle = '新开江湖';
+  static const String slotNewGameConfirm = '在此卷开启一段全新的江湖路？';
+  static const String slotDelete = '删除存档';
+  static const String slotDeleteConfirm = '删除此存档？此举不可挽回。';
+  static const String slotSwitch = '切换存档';
+  static const String slotSwitchConfirm = '返回存档选择，切换到其它江湖？';
+  static const String slotCancel = '取消';
+  static const String slotEnter = '入此江湖';
+  static String slotChapterProgress(int chapter, int cleared) =>
+      '第 $chapter 章 · 已通关 $cleared 关';
+  static String slotCardTitle(int n) => '第 $n 卷';
   // 战斗交互重做 Phase 3:选关屏 per-stage「挂机自动 / 允许拖招」开关。
   static const String stageAutoPlayAuto = '自动';
   static const String stageAutoPlayManual = '拖招';
