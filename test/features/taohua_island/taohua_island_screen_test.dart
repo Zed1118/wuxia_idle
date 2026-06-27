@@ -212,6 +212,13 @@ void main() {
       expect(find.text(UiStrings.islandPrepBossCycleBody), findsOneWidget);
     });
 
+    testWidgets('岛务工程碑 first slice 始终渲染只读说明', (tester) async {
+      await pump(tester, wrap(buildTestView()));
+
+      expect(find.text(UiStrings.islandProjectSteleTitle), findsOneWidget);
+      expect(find.text(UiStrings.islandProjectSteleLockedLine), findsOneWidget);
+    });
+
     testWidgets('null view 显示无存档友好态', (tester) async {
       await pump(tester, wrap(null));
       expect(find.textContaining('无存档'), findsOneWidget);
