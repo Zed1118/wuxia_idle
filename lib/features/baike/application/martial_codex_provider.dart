@@ -6,6 +6,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/skill_usage_entry.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/defs/skill_def.dart';
+import '../../../data/defs/technique_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
@@ -138,6 +139,27 @@ class MartialCodexGroup {
   final int totalCount;
 }
 
+/// 心法百科条目:心法本体 + 对应三招 + 可修炼最低境界。
+class TechniqueCodexEntry {
+  const TechniqueCodexEntry({
+    required this.def,
+    required this.requiredRealmTier,
+    required this.skills,
+  });
+
+  final TechniqueDef def;
+  final RealmTier requiredRealmTier;
+  final List<SkillDef> skills;
+}
+
+/// 心法百科按 7 阶分组。
+class TechniqueCodexGroup {
+  const TechniqueCodexGroup({required this.tier, required this.entries});
+
+  final TechniqueTier tier;
+  final List<TechniqueCodexEntry> entries;
+}
+
 const _kindOrder = [
   MartialGroupKind.heartArt,
   MartialGroupKind.trueSolution,
@@ -189,12 +211,14 @@ List<MartialCodexGroup> groupMartialSkills({
       ];
     }
     final entries = subGroups.expand((s) => s.entries).toList();
-    result.add(MartialCodexGroup(
-      kind: kind,
-      subGroups: subGroups,
-      litCount: entries.where((e) => e.isLit).length,
-      totalCount: entries.length,
-    ));
+    result.add(
+      MartialCodexGroup(
+        kind: kind,
+        subGroups: subGroups,
+        litCount: entries.where((e) => e.isLit).length,
+        totalCount: entries.length,
+      ),
+    );
   }
   return result;
 }
@@ -213,7 +237,9 @@ List<MartialCodexSubGroup> _heartArtSubGroups(
   final techDefs = techDefsById.values.toList()
     ..sort((a, b) {
       final t = (a.tier.index as int).compareTo(b.tier.index as int);
-      return t != 0 ? t : (a.school.index as int).compareTo(b.school.index as int);
+      return t != 0
+          ? t
+          : (a.school.index as int).compareTo(b.school.index as int);
     });
   for (final td in techDefs) {
     final entries = <MartialCodexEntry>[];
@@ -224,11 +250,13 @@ List<MartialCodexSubGroup> _heartArtSubGroups(
       entries.add(_entryOf(d, litIds, stageById));
     }
     if (entries.isEmpty) continue;
-    subs.add(MartialCodexSubGroup(
-      label:
-          '${td.name} · ${EnumL10n.techniqueTier(td.tier)} · ${EnumL10n.school(td.school)}',
-      entries: entries,
-    ));
+    subs.add(
+      MartialCodexSubGroup(
+        label:
+            '${td.name} · ${EnumL10n.techniqueTier(td.tier)} · ${EnumL10n.school(td.school)}',
+        entries: entries,
+      ),
+    );
   }
   final orphans = [
     for (final d in poolById.values)
@@ -239,6 +267,50 @@ List<MartialCodexSubGroup> _heartArtSubGroups(
     subs.add(MartialCodexSubGroup(label: null, entries: orphans));
   }
   return subs;
+}
+
+RealmTier requiredRealmForTechniqueTier(TechniqueTier tier) =>
+    RealmTier.values[tier.index];
+
+List<TechniqueCodexEntry> buildTechniqueCodexEntries({
+  required Iterable<TechniqueDef> techniques,
+  required Map<String, SkillDef> skillDefsById,
+}) {
+  final entries = <TechniqueCodexEntry>[
+    for (final t in techniques)
+      TechniqueCodexEntry(
+        def: t,
+        requiredRealmTier: requiredRealmForTechniqueTier(t.tier),
+        skills: [
+          for (final sid in t.skillIds)
+            if (skillDefsById[sid] != null) skillDefsById[sid]!,
+        ],
+      ),
+  ];
+  entries.sort((a, b) {
+    final tier = a.def.tier.index.compareTo(b.def.tier.index);
+    if (tier != 0) return tier;
+    final school = a.def.school.index.compareTo(b.def.school.index);
+    if (school != 0) return school;
+    return a.def.name.compareTo(b.def.name);
+  });
+  return entries;
+}
+
+List<TechniqueCodexGroup> groupTechniqueCodex({
+  required Iterable<TechniqueCodexEntry> entries,
+  TechniqueTier? tierFilter,
+}) {
+  final byTier = <TechniqueTier, List<TechniqueCodexEntry>>{};
+  for (final entry in entries) {
+    if (tierFilter != null && entry.def.tier != tierFilter) continue;
+    byTier.putIfAbsent(entry.def.tier, () => []).add(entry);
+  }
+  return [
+    for (final tier in TechniqueTier.values)
+      if (byTier[tier]?.isNotEmpty ?? false)
+        TechniqueCodexGroup(tier: tier, entries: byTier[tier]!),
+  ];
 }
 
 /// 武学收录图鉴派生 provider:聚合 收录池205 + 三套点亮 + 全队最高熟练度 → 5 组。
@@ -257,7 +329,8 @@ Future<List<MartialCodexGroup>> martialCodex(Ref ref) async {
   final activeSchools = <TechniqueSchool>{};
   for (final id in activeIds) {
     allTechniques.addAll(
-        await ref.watch(characterAllTechniquesProvider(id).future));
+      await ref.watch(characterAllTechniquesProvider(id).future),
+    );
     final c = await ref.watch(characterByIdProvider(id).future);
     final s = c?.school;
     if (s != null) activeSchools.add(s);
@@ -283,11 +356,26 @@ Future<List<MartialCodexGroup>> martialCodex(Ref ref) async {
   );
 }
 
+/// 心法百科派生 provider:纯读取 techniques.yaml + skills.yaml。
+@riverpod
+Future<List<TechniqueCodexGroup>> techniqueCodex(
+  Ref ref, {
+  TechniqueTier? tierFilter,
+}) async {
+  if (!GameRepository.isLoaded) return const [];
+  final repo = GameRepository.instance;
+  final entries = buildTechniqueCodexEntries(
+    techniques: repo.techniqueDefs.values,
+    skillDefsById: repo.skillDefs,
+  );
+  return groupTechniqueCodex(entries: entries, tierFilter: tierFilter);
+}
+
 /// 来源大组 → 段标显示名。tab 段标与详情屏来源标共用,防双份漂移。
 String labelForMartialGroupKind(MartialGroupKind kind) => switch (kind) {
-      MartialGroupKind.heartArt => UiStrings.skillCodexGroupHeartArt,
-      MartialGroupKind.trueSolution => UiStrings.skillCodexGroupTrueSolution,
-      MartialGroupKind.fragment => UiStrings.skillCodexGroupFragment,
-      MartialGroupKind.interrupt => UiStrings.skillCodexGroupInterrupt,
-      MartialGroupKind.encounter => UiStrings.skillCodexGroupEncounter,
-    };
+  MartialGroupKind.heartArt => UiStrings.skillCodexGroupHeartArt,
+  MartialGroupKind.trueSolution => UiStrings.skillCodexGroupTrueSolution,
+  MartialGroupKind.fragment => UiStrings.skillCodexGroupFragment,
+  MartialGroupKind.interrupt => UiStrings.skillCodexGroupInterrupt,
+  MartialGroupKind.encounter => UiStrings.skillCodexGroupEncounter,
+};
