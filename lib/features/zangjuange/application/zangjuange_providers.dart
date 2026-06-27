@@ -1,11 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
-import '../../mainline/application/mainline_providers.dart';
-import '../../tower/application/tower_providers.dart';
 import '../../../shared/strings.dart';
+import '../../mainline/domain/mainline_progress.dart';
+import '../../tower/domain/tower_progress.dart';
 import '../../weapon_codex/application/equipment_catalog_providers.dart';
 import '../domain/archive_clue.dart';
 
@@ -97,13 +98,20 @@ Future<int> _unbrokenBossCycleCount(Ref ref) async {
   if (!GameRepository.isLoaded || IsarSetup.instanceOrNull == null) {
     return 0;
   }
-  final mainline = await ref.watch(mainlineProgressProvider.future);
-  final tower = await ref.watch(towerProgressProvider.future);
+  final isar = IsarSetup.instance;
+  final mainline = await isar.mainlineProgress
+      .filter()
+      .saveDataIdEqualTo(IsarSetup.currentSlotId)
+      .findFirst();
+  final tower = await isar.towerProgress
+      .filter()
+      .saveDataIdEqualTo(IsarSetup.currentSlotId)
+      .findFirst();
   final cycleConfig = GameRepository.instance.numbers.cycleEvolution;
   return countUnbrokenBossCycles(
-    clearedChapterCycleKeys: mainline.clearedChapterCycleKeys,
+    clearedChapterCycleKeys: mainline?.clearedChapterCycleKeys ?? const [],
     maxCycleMainline: cycleConfig.maxCycleMainline,
-    towerMaxClearedCycle: tower.maxClearedCycle,
+    towerMaxClearedCycle: tower?.maxClearedCycle ?? 0,
     maxCycleTower: cycleConfig.maxCycleTower,
   );
 }

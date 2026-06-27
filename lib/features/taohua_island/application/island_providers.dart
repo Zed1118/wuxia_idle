@@ -97,8 +97,7 @@ final taohuaIslandViewProvider = FutureProvider.autoDispose<IslandView?>((
     materials[defId] = item?.quantity ?? 0;
   }
 
-  final clues = await ref.watch(zangjuangeCluesProvider.future);
-  final prepAdvice = IslandPrepAdviceService.fromClues(clues);
+  final prepAdvice = await ref.watch(islandPrepAdviceProvider.future);
 
   return IslandView(
     buildings: settledSave.islandBuildings,
@@ -108,3 +107,16 @@ final taohuaIslandViewProvider = FutureProvider.autoDispose<IslandView?>((
     prepAdvice: prepAdvice,
   );
 });
+
+/// 藏卷阁线索到桃花岛整备建议的只读 best-effort 桥接。
+///
+/// 线索失败不应阻断桃花岛主屏；整备建议只是方向提示，不是任务/奖励循环。
+final islandPrepAdviceProvider =
+    FutureProvider.autoDispose<List<IslandPrepAdvice>>((ref) async {
+      try {
+        final clues = await ref.watch(zangjuangeCluesProvider.future);
+        return IslandPrepAdviceService.fromClues(clues);
+      } catch (_) {
+        return const [];
+      }
+    });
