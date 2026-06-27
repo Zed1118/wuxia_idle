@@ -5,6 +5,7 @@ class BuildingConfig {
   final BuildingKind kind;
   final String? outputItem; // source 专用
   final String? inputItem; // processor 专用
+  final String? secondaryInputItem; // processor 可选次要原料（双输入配方，如丹房灵泉水）
   final double baseRatePerHour; // source 专用，processor 给 0
   final int capBase;
   final int capPerLevel;
@@ -21,6 +22,7 @@ class BuildingConfig {
     required this.kind,
     this.outputItem,
     this.inputItem,
+    this.secondaryInputItem,
     required this.baseRatePerHour,
     required this.capBase,
     required this.capPerLevel,
@@ -68,6 +70,9 @@ class BuildingConfig {
         kind == BuildingKind.source ? y['output_item'] as String : null;
     final String? inputItem =
         kind == BuildingKind.processor ? y['input_item'] as String : null;
+    final String? secondaryInputItem = kind == BuildingKind.processor
+        ? y['secondary_input_item'] as String?
+        : null;
     final double baseRatePerHour = kind == BuildingKind.source
         ? (y['base_rate_per_hour'] as num).toDouble()
         : 0.0;
@@ -83,6 +88,7 @@ class BuildingConfig {
       kind: kind,
       outputItem: outputItem,
       inputItem: inputItem,
+      secondaryInputItem: secondaryInputItem,
       baseRatePerHour: baseRatePerHour,
       capBase: (y['cap_base'] as num).toInt(),
       capPerLevel: (y['cap_per_level'] as num).toInt(),
@@ -218,6 +224,33 @@ class TaohuaIslandConfig {
                 'taohua_island: recipe ${r.recipeId} output_item '
                 '"${r.outputItem}" 不在 knownItemDefIds');
           }
+          if (r.secondaryInputPerOutput < 0) {
+            throw StateError(
+                'taohua_island: recipe ${r.recipeId} secondary_input_per_output '
+                '${r.secondaryInputPerOutput} < 0');
+          }
+          // 配方声明了次要消耗 → 所属建筑必须配 secondary_input_item
+          if (r.secondaryInputPerOutput > 0 && b.secondaryInputItem == null) {
+            throw StateError(
+                'taohua_island: recipe ${r.recipeId} secondary_input_per_output > 0 '
+                '但建筑 $label 未配 secondary_input_item');
+          }
+        }
+
+        // 次要原料：known + 防 unused（配了 item 却无任一配方消费 → 脱节配置）
+        final secInp = b.secondaryInputItem;
+        if (secInp != null) {
+          if (!knownItemDefIds.contains(secInp)) {
+            throw StateError(
+                'taohua_island: processor 建筑 $label secondary_input_item '
+                '"$secInp" 不在 knownItemDefIds');
+          }
+          final used = b.recipes.any((r) => r.secondaryInputPerOutput > 0);
+          if (!used) {
+            throw StateError(
+                'taohua_island: processor 建筑 $label 配了 secondary_input_item '
+                '"$secInp" 却无任一配方消费（脱节配置）');
+          }
         }
       }
     }
@@ -231,6 +264,12 @@ class TaohuaIslandConfig {
         throw StateError(
             'taohua_island: processor 建筑 ${entry.key.name} 的 input_item "$inp" '
             '没有任何 source 建筑供应');
+      }
+      final secInp = b.secondaryInputItem;
+      if (secInp != null && !sourceOutputItems.contains(secInp)) {
+        throw StateError(
+            'taohua_island: processor 建筑 ${entry.key.name} 的 secondary_input_item '
+            '"$secInp" 没有任何 source 建筑供应');
       }
     }
   }
