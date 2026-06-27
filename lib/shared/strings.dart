@@ -2186,7 +2186,8 @@ class UiStrings {
   // ── Debug · 数值红线审计（§5.6 集中归集 2026-06-27，仅 kDebugMode 工具）──
   // main_menu debug 区两个按钮
   static const String mainMenuSectRecruit = '强制招募 NPC';
-  static const String mainMenuSectRecruitHint = '走完整 sect recruit flow · 跳过战斗/奇遇触发';
+  static const String mainMenuSectRecruitHint =
+      '走完整 sect recruit flow · 跳过战斗/奇遇触发';
   static const String mainMenuRedlineAudit = '数值红线审计';
   static const String mainMenuRedlineAuditHint = '开发工具 · 查看 PASS/WARN/FAIL 与来源';
 

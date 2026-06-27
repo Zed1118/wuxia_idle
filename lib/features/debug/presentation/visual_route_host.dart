@@ -176,7 +176,9 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
 Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
   switch (route) {
     case VisualRoute.mainMenu:
-      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
       return const MainMenu();
     case VisualRoute.techniquePanelTierAll:
       await Phase2SeedService(isar: isar).seedVisualMasterAllTiers();
@@ -200,7 +202,9 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await Phase2SeedService(isar: isar).seedCharacterPanelGrowth();
       return const CharacterPanelScreen(characterId: 1);
     case VisualRoute.chapterList:
-      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
       return const ChapterListScreen();
     case VisualRoute.stageList:
       await isar.writeTxn(() => isar.mainlineProgress.clear());
@@ -217,24 +221,38 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await prefSvc.setOverride(stageBattleKey('stage_01_02'), false);
       return const StageListScreen(chapterIndex: 1);
     case VisualRoute.towerFloorList:
-      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
       return const TowerFloorListScreen();
     case VisualRoute.towerFloorListAutoPlay:
       // per-floor「挂机自动 / 允许拖招」开关验收:种 1/2 层通关,点已通关层弹的
       // 重打 dialog 内开关:1 层跟随(自动随设置)、2 层 pin 允许拖招。
-      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
       await isar.writeTxn(() => isar.towerProgress.clear());
       final towerSvc = TowerProgressService(isar: isar);
       await towerSvc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
       final towerNow = DateTime.now();
-      await towerSvc.recordClear(floorIndex: 1, now: towerNow, elapsedMs: 60000);
-      await towerSvc.recordClear(floorIndex: 2, now: towerNow, elapsedMs: 60000);
+      await towerSvc.recordClear(
+        floorIndex: 1,
+        now: towerNow,
+        elapsedMs: 60000,
+      );
+      await towerSvc.recordClear(
+        floorIndex: 2,
+        now: towerNow,
+        elapsedMs: 60000,
+      );
       final towerPrefSvc = StageAutoPlayPrefService();
       await towerPrefSvc.setOverride(towerBattleKey(1), null);
       await towerPrefSvc.setOverride(towerBattleKey(2), false);
       return const TowerFloorListScreen();
     case VisualRoute.seclusionMapList:
-      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
       final def = GameRepository.instance.getSeclusionMap(
         RetreatMapType.cangJingGe,
       );
@@ -409,7 +427,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // (也可点「继续自动」放掉无聊段);已开干预层可长按拖技能。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioBossPhase,
-        hint: '已暂停。点顶栏「单步」逐拍推进:刚猛打 Boss 出「会心」(弱点×1.25)、灵巧伤害偏低(抗性×0.75)、Boss 半血触发「背水一击」转阶段 + 蓄力反扑。也可点继续自动 / 长按拖技能干预',
+        hint:
+            '已暂停。点顶栏「单步」逐拍推进:刚猛打 Boss 出「会心」(弱点×1.25)、灵巧伤害偏低(抗性×0.75)、Boss 半血触发「背水一击」转阶段 + 蓄力反扑。也可点继续自动 / 长按拖技能干预',
         sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
         allowPlayerIntervention: true,
         startPaused: true,
@@ -513,7 +532,9 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const InventoryScreen(initialTab: 1);
     case VisualRoute.mainMenuShop:
       // 主菜单商店入口目检:种银两解锁商店 → 验「江湖商店」隐藏式入口木牌出现(§5.7)。
-      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
       await _seedInventoryItem(isar, 'item_silver', 200);
       return const MainMenu();
     case VisualRoute.itemUseInventory:
@@ -522,7 +543,9 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // initialTab=1 直开物料 tab。验:三档丹 per-item 名(凝神/培元/大还)不同 +
       // 秘籍名(开碑手·秘籍) + 丹/秘籍显「使用」按钮 / 磨剑石无按钮(仅可用道具显);
       // 运行时点「使用」→PaperDialog 确认→结果三态浮层(经验入账/秘籍解锁/已知晓)。
-      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
       await _seedInventoryItem(isar, 'item_jingyandan_small', 3);
       await _seedInventoryItem(isar, 'item_jingyandan_mid', 2);
       await _seedInventoryItem(isar, 'item_jingyandan_large', 1);
@@ -553,7 +576,9 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const StageListScreen(chapterIndex: 1);
     case VisualRoute.towerCycle:
       // 问鼎轮回验收:种 30 层 cycle1 全通关 → maxClearedCycle=1,显「挑战下一轮回」入口。
-      await OnboardingService(isar: isar).ensureFoundingMasters(soloStart: false);
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
       await isar.writeTxn(() => isar.towerProgress.clear());
       final towerSvc = TowerProgressService(isar: isar);
       await towerSvc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
@@ -742,8 +767,12 @@ class _TreasureGlowPreview extends StatelessWidget {
           ),
           // 复现 overlay 半透明暗幕底
           const ColoredBox(color: Color(0xB3000000)),
-          Positioned.fill(child: TreasureDropContent(highlight: hl, t: t)),
-          Positioned.fill(child: TreasureGlowLayer(tier: hl.tier, t: t)),
+          Positioned.fill(
+            child: TreasureDropContent(highlight: hl, t: t),
+          ),
+          Positioned.fill(
+            child: TreasureGlowLayer(tier: hl.tier, t: t),
+          ),
         ],
       ),
     );
@@ -1185,9 +1214,7 @@ class _InnerDemonResidueDefeatPreview extends StatelessWidget {
       content: const NarrativeContent(
         id: 'visual_inner_demon_defeat',
         title: '心魔反噬',
-        paragraphs: [
-          '你一时心神动摇,为心魔所乘。功体受损,一缕余毒缠身,需闭关静养方能涤净。',
-        ],
+        paragraphs: ['你一时心神动摇,为心魔所乘。功体受损,一缕余毒缠身,需闭关静养方能涤净。'],
         isPlaceholder: false,
         mandatory: true,
       ),
@@ -1266,7 +1293,9 @@ class _DiscipleJoinPreviewState extends State<_DiscipleJoinPreview> {
     if (_entries.isEmpty) {
       return const Scaffold(
         backgroundColor: WuxiaColors.background,
-        body: Center(child: Text('无拜入配置(lineage_onboarding.disciple_joins 为空)')),
+        body: Center(
+          child: Text('无拜入配置(lineage_onboarding.disciple_joins 为空)'),
+        ),
       );
     }
     final e = _entries[_index];
@@ -1600,17 +1629,18 @@ Widget _buildWeaponCodexVisual() {
 /// 优先选有 schoolBias 的，fallback 取 values.first。
 Widget _buildWeaponCodexDetailVisual() {
   final defs = GameRepository.instance.equipmentDefs.values;
-  final def =
-      defs.firstWhere((d) => d.schoolBias != null, orElse: () => defs.first);
-  final entry =
-      EquipmentCatalogEntry()
-        ..id = 1
-        ..saveDataId = 1
-        ..defId = def.id
-        ..firstObtainedAt = DateTime(2026, 6, 15)
-        ..firstObtainedFrom = '黑风寨之战'
-        ..obtainedCount = 2
-        ..isPreRecord = false;
+  final def = defs.firstWhere(
+    (d) => d.schoolBias != null,
+    orElse: () => defs.first,
+  );
+  final entry = EquipmentCatalogEntry()
+    ..id = 1
+    ..saveDataId = 1
+    ..defId = def.id
+    ..firstObtainedAt = DateTime(2026, 6, 15)
+    ..firstObtainedFrom = '黑风寨之战'
+    ..obtainedCount = 2
+    ..isPreRecord = false;
   return EquipmentCatalogDetailScreen(def: def, entry: entry);
 }
 
@@ -1662,7 +1692,9 @@ Widget _buildLineageCodexVisual() {
     isCurrent: true,
   );
   return ProviderScope(
-    overrides: [lineageCodexProvider.overrideWith((ref) async => [gen])],
+    overrides: [
+      lineageCodexProvider.overrideWith((ref) async => [gen]),
+    ],
     child: const LineagePanelScreen(),
   );
 }

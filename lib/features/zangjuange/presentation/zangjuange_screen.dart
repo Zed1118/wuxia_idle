@@ -128,7 +128,9 @@ class _ClueTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0x2214181D),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: WuxiaColors.textMuted.withOpacity(0.35)),
+        border: Border.all(
+          color: WuxiaColors.textMuted.withValues(alpha: 0.35),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(10),
