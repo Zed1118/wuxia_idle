@@ -200,6 +200,10 @@ enum VisualRoute {
     'skill_codex_detail',
     '武学详情屏目检·同步显招名+description+数值+所属心法+熟练阶',
   ),
+  redlineAudit(
+    'redline_audit',
+    '数值红线审计·开发工具视图(PASS/WARN/FAIL + 当前最大值 + 来源)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
