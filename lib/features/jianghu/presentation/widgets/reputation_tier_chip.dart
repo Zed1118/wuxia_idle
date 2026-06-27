@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../shared/strings.dart';
+import '../../../../shared/theme/colors.dart';
 
 /// 江湖声望 7 阶 chip(P1.2 §4 GDD §12.2)。
 ///
@@ -23,21 +24,21 @@ class ReputationTierChip extends StatelessWidget {
   Color _color() {
     switch (tier) {
       case 'xueTu':
-        return Colors.grey;
+        return WuxiaColors.textMuted;
       case 'sanLiu':
-        return Colors.deepOrange.shade300;
+        return WuxiaColors.sealCrimson;
       case 'erLiu':
-        return Colors.grey.shade400;
+        return WuxiaColors.textSecondary;
       case 'yiLiu':
-        return Colors.teal.shade300;
+        return WuxiaColors.internalForce;
       case 'jueDing':
-        return Colors.amber.shade300;
+        return WuxiaColors.resultHighlight;
       case 'zongShi':
-        return Colors.amber.shade700;
+        return WuxiaColors.bossFrame;
       case 'wuSheng':
-        return Colors.red.shade700;
+        return WuxiaColors.gangMeng;
       default:
-        return Colors.grey;
+        return WuxiaColors.textMuted;
     }
   }
 
