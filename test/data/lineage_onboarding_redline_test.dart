@@ -70,12 +70,26 @@ void main() {
     );
   });
 
-  test('stage 重复 → 抛', () {
+  test('同关多 role(终局 06_05 同关拜两弟子)→ 合法不抛', () {
     expect(
       () => enforceLineageOnboardingRedLines(
         joins: [
           join('stage_01_02', 1, LineageRole.senior),
           join('stage_01_02', 2, LineageRole.junior),
+        ],
+        existingStageIds: stageIds,
+        masters: masters,
+      ),
+      returnsNormally,
+    );
+  });
+
+  test('role 重复(两个 senior)→ 抛', () {
+    expect(
+      () => enforceLineageOnboardingRedLines(
+        joins: [
+          join('stage_01_02', 1, LineageRole.senior),
+          join('stage_01_04', 1, LineageRole.senior),
         ],
         existingStageIds: stageIds,
         masters: masters,

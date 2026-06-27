@@ -2038,7 +2038,9 @@ class GameRepository {
 /// 第七阶段批三 P2：命名弟子拜入配置红线（纯函数，便于单测各违例）。
 ///
 /// 配置漂移 fail-fast，不静默生成错角色 / 永不触发：
-/// - stage_id 必须存在于 stageDefs 且在 disciple_joins 内唯一；
+/// - stage_id 必须存在于 stageDefs（同一关可挂多条 join,如终局 06_05 同关拜两弟子）；
+/// - **role 在 disciple_joins 内唯一**（每个弟子 role 只拜入一次,防「两个 senior」误配；
+///   spec A 后移后允许同 stage_id 多 role,故 dedup 改 role 而非 stage_id）；
 /// - role 只允许 senior / junior（非 founder / disciple）；
 /// - master_slot_index ∈ [0, masters.length)；
 /// - **masters[slot].lineageRole 必须 == join.role**（防 numbers.yaml 与
@@ -2052,16 +2054,17 @@ void enforceLineageOnboardingRedLines({
 }) {
   // 空 stages（测试精简 fixture，与覆盖度红线同约定）→ 跳过；生产 stages 必非空。
   if (existingStageIds.isEmpty) return;
-  final seen = <String>{};
+  final seenRoles = <LineageRole>{};
   for (final j in joins) {
     if (!existingStageIds.contains(j.stageId)) {
       throw StateError(
         'lineage_onboarding.disciple_joins stage_id=${j.stageId} 引用不存在的关卡',
       );
     }
-    if (!seen.add(j.stageId)) {
+    if (!seenRoles.add(j.role)) {
       throw StateError(
-        'lineage_onboarding.disciple_joins stage_id=${j.stageId} 重复',
+        'lineage_onboarding.disciple_joins role=${j.role.name} 重复'
+        '（每个弟子 role 只能拜入一次）',
       );
     }
     if (j.role != LineageRole.senior && j.role != LineageRole.junior) {
