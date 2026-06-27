@@ -38,6 +38,12 @@ void main() {
     expect(tie.upgradeMaterialFor(2), 80);
     expect(tie.upgradeMaterialFor(5), 200);
   });
+
+  test('phase 2 island building yaml keys parse', () {
+    expect(buildingTypeFromYamlKey('mu_gong_fang'), BuildingType.muGongFang);
+    expect(buildingTypeFromYamlKey('ling_quan'), BuildingType.lingQuan);
+    expect(buildingTypeFromYamlKey('zhu_zao_tai'), BuildingType.zhuZaoTai);
+  });
 }
 
 const _yaml = '''
