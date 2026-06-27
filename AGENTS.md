@@ -7,10 +7,10 @@
 
 买断制、写实武侠挂机游戏(发布目标 Windows,开发/验收在 macOS)。Flutter Desktop,3v3 自动战斗 + 离线挂机。当前阶段:**1.0 长线打磨期**(质量优先,不设上线时间压力 · 详 CLAUDE.md §7 / GDD §1)。
 
-## 当前协作模式(2026-06-11 起)
+## 当前协作模式(2026-06-27 起)
 
 - **Mac 单端**:Claude Code(Opus)写 `lib/` / `data/`(数值 yaml + narratives/lore/events 文案)/ `test/` / `GDD.md`。读 **CLAUDE.md**。
-- **Codex(Mac 本地)**:仅做**视觉验收**(已编译 app + 固定路由 + seed + 截图回收 closeout),不写代码/文案。
+- **Codex(Mac 本地)**:可作为主窗口调度/规划/视觉验收入口;长任务按 **CLAUDE.md §8.0 可恢复任务协议** 执行(主窗口调度 + 独立分支/worktree + 小切片 commit + 恢复点)。
 - Windows DeepSeek 端 + `WINDOWS_DEEPSEEK_GUIDE.md` 已退役(归档 `docs/_archive/`)。
 
 ## 核心红线(完整版见 CLAUDE.md §5 / GDD §2.1 §5)
