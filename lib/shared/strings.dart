@@ -1130,6 +1130,36 @@ class UiStrings {
   static const String settingsResolutionHd720 = '1280 × 720';
   static const String settingsResolutionHd900 = '1600 × 900';
   static const String settingsResolutionHd1080 = '1920 × 1080';
+  // 设置「存档管理」:当前档状态 + 本地备份快照。
+  static const String saveManagementTitle = '存档管理';
+  static const String saveManagementLoading = '正在读取存档状态';
+  static const String saveManagementCreatedAt = '开档';
+  static const String saveManagementLastSavedAt = '保存';
+  static const String saveManagementLastOnlineAt = '离线';
+  static const String saveManagementLatestBackup = '最近备份';
+  static const String saveManagementCreateBackup = '备份当前存档';
+  static const String saveManagementRestore = '恢复备份';
+  static const String saveManagementDeleteLatest = '删除最近备份';
+  static const String saveManagementRestoreTodo =
+      '恢复需要关闭当前数据库并重载全局状态，本版先提供安全备份/导出能力。';
+  static const String saveManagementDeleteConfirmTitle = '删除备份';
+  static const String saveManagementDeleteConfirmAction = '删除备份';
+  static String saveManagementSummary(
+    int slotId,
+    String saveVersion,
+    int backupCount,
+  ) => 'slot $slotId · v$saveVersion · $backupCount 个备份';
+  static String saveManagementDateTime(DateTime value) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${value.year}-${two(value.month)}-${two(value.day)} '
+        '${two(value.hour)}:${two(value.minute)}';
+  }
+
+  static String saveManagementBackupCreated(String fileName) => '已备份：$fileName';
+  static String saveManagementBackupDeleted(String fileName) =>
+      '已删除备份：$fileName';
+  static String saveManagementDeleteConfirmMessage(String fileName) =>
+      '只删除备份文件，不影响当前存档：$fileName';
   // 战斗交互重做 Phase 3:选关屏 per-stage「挂机自动 / 允许拖招」开关。
   static const String stageAutoPlayAuto = '自动';
   static const String stageAutoPlayManual = '拖招';

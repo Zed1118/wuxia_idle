@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/app_exit.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../save_management/application/save_management_providers.dart';
+import '../../save_management/application/save_management_service.dart';
+import '../../save_management/domain/save_management_status.dart';
 import '../application/audio_settings_provider.dart';
 import '../application/display_settings_providers.dart';
 import '../application/gameplay_settings_provider.dart';
@@ -79,6 +82,8 @@ class SettingsPanel extends ConsumerWidget {
               const Divider(height: 1),
               const _DisplaySettingsSection(),
               const Divider(height: 1),
+              const _SaveManagementSection(),
+              const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.info_outline),
                 title: const Text(UiStrings.settingsAbout),
@@ -95,6 +100,184 @@ class SettingsPanel extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SaveManagementSection extends ConsumerWidget {
+  const _SaveManagementSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(saveManagementStatusProvider);
+    final service = ref.watch(saveManagementServiceProvider);
+    return async.when(
+      loading: () => const ListTile(
+        leading: Icon(Icons.save_outlined),
+        title: Text(UiStrings.saveManagementTitle),
+        subtitle: Text(UiStrings.saveManagementLoading),
+      ),
+      error: (e, _) => ListTile(
+        leading: const Icon(Icons.save_outlined),
+        title: const Text(UiStrings.saveManagementTitle),
+        subtitle: Text(UiStrings.loadFailed(e)),
+      ),
+      data: (status) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.save_outlined),
+            title: const Text(UiStrings.saveManagementTitle),
+            subtitle: Text(
+              UiStrings.saveManagementSummary(
+                status.slotId,
+                status.saveVersion,
+                status.backupCount,
+              ),
+            ),
+          ),
+          _SaveStatusLine(
+            label: UiStrings.saveManagementCreatedAt,
+            value: UiStrings.saveManagementDateTime(status.createdAt),
+          ),
+          _SaveStatusLine(
+            label: UiStrings.saveManagementLastSavedAt,
+            value: UiStrings.saveManagementDateTime(status.lastSavedAt),
+          ),
+          _SaveStatusLine(
+            label: UiStrings.saveManagementLastOnlineAt,
+            value: UiStrings.saveManagementDateTime(status.lastOnlineAt),
+          ),
+          if (status.latestBackup != null)
+            _SaveStatusLine(
+              label: UiStrings.saveManagementLatestBackup,
+              value: status.latestBackup!.fileName,
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.archive_outlined),
+                  label: const Text(UiStrings.saveManagementCreateBackup),
+                  onPressed: service == null
+                      ? null
+                      : () async {
+                          final messenger = ScaffoldMessenger.of(context);
+                          try {
+                            final backup = await service.createBackup();
+                            ref.invalidate(saveManagementStatusProvider);
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  UiStrings.saveManagementBackupCreated(
+                                    backup.fileName,
+                                  ),
+                                ),
+                              ),
+                            );
+                          } catch (e) {
+                            messenger.showSnackBar(
+                              SnackBar(content: Text(UiStrings.loadFailed(e))),
+                            );
+                          }
+                        },
+                ),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.restore_outlined),
+                  label: const Text(UiStrings.saveManagementRestore),
+                  onPressed: null,
+                ),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text(UiStrings.saveManagementDeleteLatest),
+                  onPressed: service == null || status.latestBackup == null
+                      ? null
+                      : () => _confirmDeleteLatest(
+                          context,
+                          ref,
+                          service,
+                          status.latestBackup!,
+                        ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                UiStrings.saveManagementRestoreTodo,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Future<void> _confirmDeleteLatest(
+    BuildContext context,
+    WidgetRef ref,
+    SaveManagementService service,
+    SaveBackupInfo backup,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text(UiStrings.saveManagementDeleteConfirmTitle),
+        content: Text(
+          UiStrings.saveManagementDeleteConfirmMessage(backup.fileName),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(UiStrings.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(UiStrings.saveManagementDeleteConfirmAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await service.deleteBackup(backup);
+      ref.invalidate(saveManagementStatusProvider);
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(UiStrings.saveManagementBackupDeleted(backup.fileName)),
+        ),
+      );
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(UiStrings.loadFailed(e))));
+    }
+  }
+}
+
+class _SaveStatusLine extends StatelessWidget {
+  const _SaveStatusLine({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      child: Row(
+        children: [
+          SizedBox(width: 84, child: Text(label)),
+          Expanded(child: Text(value, textAlign: TextAlign.right)),
+        ],
       ),
     );
   }
