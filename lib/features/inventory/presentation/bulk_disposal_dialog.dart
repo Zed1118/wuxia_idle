@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/inventory_providers.dart';
+import '../../../core/application/character_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/game_repository.dart';
@@ -9,6 +10,7 @@ import '../../../data/isar_setup.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../equipment/application/equipment_disposal_service.dart';
 import '../../equipment/domain/equipment_disposal.dart';
+import '../../equipment/domain/equipment_slot_occupancy.dart';
 import '../../shop/application/shop_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -19,7 +21,7 @@ import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 
 /// 批量整理对话框（Task 6 / 2026-06-26）：一键按品级出售或分解背包装备。
 ///
-/// **过滤规则**：仅展示 `ownerCharacterId==null && !isLineageHeritage` 的背包装备；
+/// **过滤规则**：仅展示「不在任何出战角色装备槽 && !isLineageHeritage」的自由装备；
 /// 已装备 / 师承遗物不可批量处置，但其数量不计入件数显示。
 /// 全品阶均可批量（含宝物/神物），每次操作均走二次确认弹窗（用户拍板）。
 ///
@@ -95,17 +97,20 @@ class BulkDisposalDialog extends ConsumerWidget {
     WidgetRef ref,
     List<Equipment> list,
   ) {
+    final equippedIds = _watchActiveEquippedIds(ref);
     // 按品阶分桶，只保留可处置（背包且非师承）。
     final byTier = <EquipmentTier, List<Equipment>>{};
     for (final eq in list) {
-      if (eq.ownerCharacterId == null && !eq.isLineageHeritage) {
+      if (!isEquipmentEquippedBySlot(eq, equippedIds) &&
+          !eq.isLineageHeritage) {
         byTier.putIfAbsent(eq.tier, () => []).add(eq);
       }
     }
 
     // 高品阶在前（神物→寻常货），只显示非空品阶。
-    final tiers =
-        EquipmentTier.values.reversed.where((t) => byTier.containsKey(t)).toList();
+    final tiers = EquipmentTier.values.reversed
+        .where((t) => byTier.containsKey(t))
+        .toList();
 
     if (tiers.isEmpty) {
       return const Center(
@@ -128,7 +133,8 @@ class BulkDisposalDialog extends ConsumerWidget {
           _TierRow(
             tier: tiers[i],
             disposable: byTier[tiers[i]]!,
-            onSell: () => _handleSell(context, ref, tiers[i], byTier[tiers[i]]!),
+            onSell: () =>
+                _handleSell(context, ref, tiers[i], byTier[tiers[i]]!),
             onDisassemble: () =>
                 _handleDisassemble(context, ref, tiers[i], byTier[tiers[i]]!),
           ),
@@ -241,6 +247,14 @@ class BulkDisposalDialog extends ConsumerWidget {
   }
 }
 
+Set<int> _watchActiveEquippedIds(WidgetRef ref) {
+  final ids = ref.watch(activeCharacterIdsProvider).value ?? const <int>[];
+  final characters = [
+    for (final id in ids) ref.watch(characterByIdProvider(id)).value,
+  ].nonNulls;
+  return equippedEquipmentIdsForCharacters(characters);
+}
+
 /// 品阶行：品级标签（件数）+ 「一键出售」+「一键分解」按钮。
 class _TierRow extends StatelessWidget {
   const _TierRow({
@@ -278,7 +292,10 @@ class _TierRow extends StatelessWidget {
           const SizedBox(width: 8),
           PlaqueButton(label: UiStrings.bulkSellButton, onTap: onSell),
           const SizedBox(width: 8),
-          PlaqueButton(label: UiStrings.bulkDisassembleButton, onTap: onDisassemble),
+          PlaqueButton(
+            label: UiStrings.bulkDisassembleButton,
+            onTap: onDisassemble,
+          ),
         ],
       ),
     );

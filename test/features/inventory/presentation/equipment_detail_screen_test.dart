@@ -34,6 +34,7 @@ void main() {
     int enhanceLevel = 0,
     int battleCount = 0,
     bool isLineageHeritage = false,
+    int? ownerCharacterId,
   }) {
     return Equipment.create(
       defId: def.id,
@@ -47,6 +48,7 @@ void main() {
       enhanceLevel: enhanceLevel,
       battleCount: battleCount,
       isLineageHeritage: isLineageHeritage,
+      ownerCharacterId: ownerCharacterId,
     )..id = 1;
   }
 
@@ -100,6 +102,37 @@ void main() {
     expect(find.byType(PlaqueButton), findsNWidgets(6));
     // 首屏 info 区可见带强化等级的入口（不必滚到底部）
     expect(find.text('强化 +12'), findsOneWidget);
+  });
+
+  testWidgets('历史 owner 残留但无槽位引用 → 出售/分解按钮仍显示', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final def = GameRepository.instance.getEquipment(
+      'weapon_xunchang_tie_jian',
+    );
+    final eq = mkEq(def: def, ownerCharacterId: 1);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: EquipmentDetailScreen(
+            equipment: eq,
+            def: def,
+            loreLoader: fakeLoader(segments: const ['一段']),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text(UiStrings.equipmentSell),
+      300,
+      scrollable: find.byType(Scrollable),
+    );
+    expect(find.text(UiStrings.equipmentSell), findsOneWidget);
+    expect(find.text(UiStrings.equipmentDisassemble), findsOneWidget);
   });
 
   testWidgets('T8 修复:窄屏小高度下强化/开锋入口仍在首屏内(不被裁出)', (tester) async {
