@@ -126,11 +126,11 @@ void main() {
     expect(y(UiStrings.mainMenuJianghu) < y(UiStrings.mainMenuBaike), isTrue);
   });
 
-  testWidgets('20 个菜单按钮均为 InkWell（可点）', (tester) async {
+  testWidgets('21 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    // 20 个菜单入口(WuxiaInkButton)+ 右上角退出键(IconButton)= 21 个 InkWell。
-    expect(find.byType(WuxiaInkButton), findsNWidgets(20));
-    expect(find.byType(InkWell), findsNWidgets(21));
+    // 21 个菜单入口(WuxiaInkButton·含 debug 数值红线审计)+ 右上角退出键(IconButton)= 22 个 InkWell。
+    expect(find.byType(WuxiaInkButton), findsNWidgets(21));
+    expect(find.byType(InkWell), findsNWidgets(22));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
