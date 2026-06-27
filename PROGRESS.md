@@ -7,6 +7,8 @@
 
 ## 当前阶段
 
+> 🧑‍🏫 **2026-06-27 弟子加入战斗后移至终局解锁(spec A · 独立 worktree disciple-endgame-unlock)**:`disciple_joins` 两条 stage_id 02_05/03_05 → 均改 `stage_06_05`(祖师单人走完 Ch1-6,终局一并拜入两弟子)。`DiscipleJoinService.joinForClearedStage` 单匹配→遍历多匹配返回 `List<Character>`,**关级防重标记移到遍历后一次性写**(防 senior 先标记挡掉同关 junior);hook 遍历多弟子按 role 依次弹拜师叙事+立绘;红线校验 dedup 由 stage_id 唯一→**role 唯一**(允许同关多 role)。旧档祖年化(角色级 guard 不重建/迁移 backfill 读 live config 标 06_05)。飞升/真传/师承遗物**不改**(06_05 通关与拜入同时点)。全量 `flutter analyze` 0 · `flutter test` **3210 passed/1 skip/0 fail**。**独立验证项(spec §4 未做)**:主线变单人,武圣单人能否通 Ch4-6(尤其 06_05 Boss 52000 血)需 balance_simulator 单独跑+不可通则敌人调参待用户拍板,本任务不静默 buff/nerf。
+
 > 🌸 **2026-06-27 桃花岛二期 + 藏卷阁 Hub + 整备建议联动合入 main(PR #17 · merge `7335927e`)**:三条 Codex 前置分支集成——桃花岛二期底座(muGongFang/lingQuan/zhuZaoTai 7 栋两层生产链 + 据点式分组屏 + 旧档安全补建) / 藏卷阁 Hub(聚合战绩册/兵器谱/奇遇/藏经阁,装备·残页·Boss周目三类只读派生线索,主菜单 social 门控入口) / 整备建议 + 岛务工程碑只读 first slice(不写存档不发奖励)。审核发现灵泉水孤儿产出 → 修:丹房疗伤丹改双输入(药草+灵泉水·扩 secondaryInput schema + 供应自洽/防 unused 校验 · 灵泉供给 4/hr>满速消耗 3/hr 恒非约束 → 离线=在线不变性测 brew_liaoshang×5 level 全过)。全量 `flutter analyze` 0 issue · `flutter test` 3207 passed/1 skip/0 fail。清理 3 worktree + 3 已合并分支。**backlog**:疗伤丹/锻材/开锋辅材/行囊补给 4 加工产物暂无终端消费系统(疗伤/开锋系统未接)待拍板。另:CLAUDE.md §8.0 可恢复任务协议(v1.25)cherry-pick 补回 main(`0b7c888a`),planning 分支唯一独有提交保全,三 Codex worktree(含 .codex 磁盘空残留目录 rmdir)+4 分支(含 planning)全清理。
 
 > 🧹 **2026-06-27 Codex 14 分支批量复核→合并→push 完成**:一次性复核 14 个 Codex worktree/分支,**13 个合入 main(`0d75f49b`,已 push)**,1 个(突破材料缺口提示)**挂起**(死代码/机制不存在,见下)。PVP 按拍板切除;装备集群(owner 修复/锁定 schema0.32/库存整理/来源/用途)串行解冲突;离线明细/百科/存档备份/红线审计/视觉验收工具/水墨审计/章末文案 一并落地。修 2 处(离线「小时」走 UiStrings · 主菜单按钮计数 20→21)。全量 `flutter analyze` 0 issue · `flutter test` **3176 passed / 0 failed**。清理 15 worktree+15 分支+备份 tag;~~保留 `codex/breakthrough-material-gaps`(worktree bcf9)待重启~~ **2026-06-27 已退役销账(见下)**。详 `docs/handoff/codex_branch_merge_closeout_2026-06-27.md`。
@@ -25,9 +27,7 @@
 
 > **2026-06-17..20 续19-续30 已压缩归档**(第五~七阶段·git log/各closeout可溯·2301→2605测)：续19上下文帮助系统·续20主线一战斗UI表达+aoe全体伤害·续22主线三掉落传闻UI·续23即放时序2.3+首通门控2.5·续24打击感表现层2.4·续25三人协同破绽窗口·续26战后体验英雄镜头·续27Boss多阶段/弱点抗性/技能珍稀·续28批二目检+帮助按钮修·续29队伍成长渐进解锁+二弟子控制·续30四批真机目检全PASS+hero_camera路由。spec `2026-06-1{7,8,9}-*`。
 
-> **2026-06-16 续16-18 已压缩归档**(规则层全域摸排+按级修复 `c384a0d3` + M6 心魔失败惩罚实装 `cf694faf` + M6 余毒战败摘要 UI 上下文感知标题视觉验收 · 2247→2286 测 · 详 git log + `docs/audit/full_audit_2026-06-16.md`)
-
-> ✅ **2026-06-16 续15 已压缩归档**(全功能真审计 + 按级修复 · 合 main `b8330c14` · 2247 测):纠上会话幻觉(谎称落盘的「45 项」审计全仓查无)→重跑真审计(1 High+7 Med+1 Low+2 drift,3 个吹的 High 红线项实证全误报,报告 `docs/audit/full_audit_2026-06-16.md`)。修 H1 爬塔周目迁移数据丢失版本门 + §6 路径 drift + EnumL10n/battle_log 正名合法 sink + M3-M5 散写中文迁 UiStrings + M6 确认心魔惩罚未 wire 留拍板。
+> **2026-06-16 续15-18 已压缩归档**(全功能真审计纠幻觉重跑 1H+7M+1L+2drift·3 吹的 High 实证误报 + 规则层全域摸排按级修复 `c384a0d3` + M6 心魔失败惩罚实装 `cf694faf`/余毒战败摘要 UI · 合 main `b8330c14`→2286 测 · 详 `docs/audit/full_audit_2026-06-16.md` + git log)
 
 > **2026-06-15 续10-续14 五条已压缩归档**(全 commit/spec/closeout 可溯 · 2190→2245 测):续10 L3 闭关非阻塞 + M2 离线收益范围A(`7efb82c8`)+ L1 显示设置 window_manager 全屏/3 档分辨率(`130b40ac`) · 续11 L1 Codex 验收 + 两 fail 回修(720p overflow / F11→Alt+Enter `a0f77a8b`) · 续12 M2 范围B 通用被动离线挂机(saveVer0.24.0 · 9 决策 · `212b572c`) · 续13 P1b MeridianBar wiring(StageProgressRow 四系统收口) · 续14 P3 战报失败诊断(三段式复盘 `BattleDiagnosis` 5 规则 · `6a32901a`)。spec `2026-06-15-*`。
 
