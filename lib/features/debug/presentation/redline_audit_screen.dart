@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../data/game_repository.dart';
+import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../application/redline_audit.dart';
@@ -12,14 +13,16 @@ class RedlineAuditScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final repo = GameRepository.instanceOrNull;
     if (repo == null) {
-      return const Scaffold(body: Center(child: Text('GameRepository 未加载')));
+      return const Scaffold(
+        body: Center(child: Text(UiStrings.redlineAuditRepoNotLoaded)),
+      );
     }
 
     final report = buildRedlineAuditReport(repo);
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       appBar: AppBar(
-        title: const Text('数值红线审计'),
+        title: const Text(UiStrings.redlineAuditScreenTitle),
         backgroundColor: WuxiaUi.paper,
         foregroundColor: WuxiaUi.ink,
       ),
@@ -59,8 +62,10 @@ class _SummaryBanner extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              '总览 ${statusLabel(report.status)} · '
-              '${report.items.length} 项红线',
+              UiStrings.redlineAuditSummary(
+                statusLabel(report.status),
+                report.items.length,
+              ),
               style: const TextStyle(
                 color: WuxiaUi.ink,
                 fontWeight: FontWeight.w700,
@@ -120,14 +125,23 @@ class _AuditTile extends StatelessWidget {
             spacing: 12,
             runSpacing: 6,
             children: [
-              _Metric(label: '当前最大值', value: item.observed.toString()),
-              _Metric(label: '红线', value: item.limit.toString()),
-              _Metric(label: '余量', value: item.headroom.toString()),
+              _Metric(
+                label: UiStrings.redlineAuditMetricObserved,
+                value: item.observed.toString(),
+              ),
+              _Metric(
+                label: UiStrings.redlineAuditMetricLimit,
+                value: item.limit.toString(),
+              ),
+              _Metric(
+                label: UiStrings.redlineAuditMetricHeadroom,
+                value: item.headroom.toString(),
+              ),
             ],
           ),
           const SizedBox(height: 8),
           Text(
-            '来源: ${item.source}',
+            UiStrings.redlineAuditSourceLine(item.source),
             style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
           ),
           const SizedBox(height: 6),
