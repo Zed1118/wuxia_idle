@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/domain/character.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
@@ -31,12 +32,20 @@ class IslandView {
   /// 藏卷阁线索转化而来的只读整备建议。
   final List<IslandPrepAdvice> prepAdvice;
 
+  /// 当前阵容中仍需疗养的弟子数量。
+  final int injuredCharacterCount;
+
+  /// 当前阵容中最长的重伤疗养剩余小时数。
+  final double maxInjuryHoursRemaining;
+
   const IslandView({
     required this.buildings,
     required this.founderRealmIndex,
     required this.silver,
     required this.materials,
     this.prepAdvice = const [],
+    this.injuredCharacterCount = 0,
+    this.maxInjuryHoursRemaining = 0,
   });
 }
 
@@ -97,6 +106,18 @@ final taohuaIslandViewProvider = FutureProvider.autoDispose<IslandView?>((
     materials[defId] = item?.quantity ?? 0;
   }
 
+  var injuredCharacterCount = 0;
+  var maxInjuryHoursRemaining = 0.0;
+  for (final id in settledSave.activeCharacterIds) {
+    final ch = await isarInst.characters.get(id);
+    final hours = ch?.injuryHoursRemaining ?? 0;
+    if (hours <= 0) continue;
+    injuredCharacterCount += 1;
+    if (hours > maxInjuryHoursRemaining) {
+      maxInjuryHoursRemaining = hours;
+    }
+  }
+
   final prepAdvice = await ref.watch(islandPrepAdviceProvider.future);
 
   return IslandView(
@@ -105,6 +126,8 @@ final taohuaIslandViewProvider = FutureProvider.autoDispose<IslandView?>((
     silver: silverQty,
     materials: materials,
     prepAdvice: prepAdvice,
+    injuredCharacterCount: injuredCharacterCount,
+    maxInjuryHoursRemaining: maxInjuryHoursRemaining,
   );
 });
 

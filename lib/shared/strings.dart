@@ -2096,14 +2096,56 @@ class UiStrings {
   /// 桃花岛主屏标题。
   static const String taohuaIslandTitle = '桃花岛';
 
+  /// 桃花岛场景化主屏总览。
+  static const String taohuaIslandOverviewTitle = '岛上总览';
+  static const String taohuaIslandOverviewBody = '洞府、药圃、炉坊沿岛势分布，物产、加工与疗养一屏可察。';
+  static const String taohuaIslandSceneCave = '洞府';
+  static const String taohuaIslandSceneCaveBody = '门人调息疗养，出岛前先看伤势。';
+  static const String taohuaIslandSceneField = '药圃';
+  static const String taohuaIslandSceneFieldBody = '草药、灵泉与木材随时辰积蓄。';
+  static const String taohuaIslandSceneWorkshop = '炉坊';
+  static const String taohuaIslandSceneWorkshopBody = '精铁入炉，丹药与辅材各守配方。';
+  static const String taohuaIslandSceneDock = '渡口';
+  static const String taohuaIslandSceneDockBody = '暂作外出整备与后续工程留白。';
+
+  /// 桃花岛总览状态摘要。
+  static const String taohuaIslandStatusRawTitle = '当前物产';
+  static String taohuaIslandStatusRawValue(int stored) => '可收 $stored 件';
+  static const String taohuaIslandStatusWorkshopTitle = '作坊加工';
+  static String taohuaIslandStatusWorkshopValue(
+    int stored,
+    int active,
+    int paused,
+  ) => paused > 0
+      ? '成品 $stored · $active 动 $paused 停'
+      : '成品 $stored · $active 坊运转';
+  static const String taohuaIslandStatusHealingTitle = '洞府疗养';
+  static const String taohuaIslandStatusHealingNone = '无人重伤';
+  static String taohuaIslandStatusHealingValue(int count, double hours) =>
+      '$count 名调息 · 余 ${hours.ceil()}h';
+
   /// 桃花岛据点分区：原料产出。
   static const String taohuaIslandSectionRaw = '物产';
+
+  static const String taohuaIslandSectionRawBody = '药圃、林场与灵泉先蓄源料。';
+  static String taohuaIslandSectionRawSummary(int stored) => '当前可收物产 $stored 件';
 
   /// 桃花岛据点分区：加工建筑。
   static const String taohuaIslandSectionWorkshop = '作坊';
 
+  static const String taohuaIslandSectionWorkshopBody = '炉火、丹鼎与铸台把源料转成整备物。';
+  static String taohuaIslandSectionWorkshopSummary(
+    int stored,
+    int active,
+    int paused,
+  ) => paused > 0
+      ? '成品 $stored 件 · $active 间运转 · $paused 间停工'
+      : '成品 $stored 件 · $active 间运转';
+
   /// 桃花岛据点分区：后续码头面板。
   static const String taohuaIslandSectionDock = '码头';
+
+  static const String taohuaIslandSectionDockBody = '船只未发，先把岛务与补给理顺。';
 
   /// 建筑等级标签：`第 N 级`。
   static String taohuaIslandLevelLabel(int lv) => '第 $lv 级';
