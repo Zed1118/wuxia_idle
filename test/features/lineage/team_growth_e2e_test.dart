@@ -42,7 +42,7 @@ void main() {
     }
   });
 
-  test('单人开局 → 过 01_02 → 2 人 → 过 01_04 → 满队 3 人', () async {
+  test('单人开局 → 过 06_05 → 一关两弟子拜入 → 满队 3 人', () async {
     // Step 1: 单人开局 — 仅祖师
     await OnboardingService(isar: isar).ensureFoundingMasters();
     final saveAfterOnboard = await isar.saveDatas.get(0);
@@ -52,25 +52,19 @@ void main() {
 
     final svc = DiscipleJoinService(isar: isar);
 
-    // Step 2: 过 stage_02_05 → 大弟子拜入
-    final s1 = await svc.joinForClearedStage('stage_02_05');
-    expect(s1, isNotNull, reason: 'stage_02_05 是大弟子触发关,应返回新建弟子');
-    expect(s1!.lineageRole, LineageRole.senior, reason: '大弟子角色应为 senior');
-    final saveAfter2 = await isar.saveDatas.get(0);
-    expect(saveAfter2!.activeCharacterIds.length, 2,
-        reason: '大弟子拜入后队伍应为 2 人');
+    // Step 2: 过 stage_06_05(全主线终局)→ 同关连续拜入 senior + junior → 满队
+    final joined = await svc.joinForClearedStage('stage_06_05');
+    expect(joined.length, 2, reason: '终局关一并拜入两弟子');
+    expect(joined[0].lineageRole, LineageRole.senior, reason: 'senior 先');
+    expect(joined[1].lineageRole, LineageRole.junior, reason: 'junior 后');
 
-    // Step 3: 过 stage_03_05 → 小弟子拜入 → 满队
-    final s2 = await svc.joinForClearedStage('stage_03_05');
-    expect(s2, isNotNull, reason: 'stage_03_05 是小弟子触发关,应返回新建弟子');
-    expect(s2!.lineageRole, LineageRole.junior, reason: '小弟子角色应为 junior');
     final saveFinal = await isar.saveDatas.get(0);
     expect(saveFinal!.activeCharacterIds.length, 3,
-        reason: '小弟子拜入后队伍应为 3 人(满队)');
+        reason: '两弟子拜入后队伍应为 3 人(满队)');
     expect(
       saveFinal.triggeredDiscipleJoinStageIds,
-      containsAll(['stage_02_05', 'stage_03_05']),
-      reason: '两个触发关均应记录在防重集中',
+      contains('stage_06_05'),
+      reason: '终局触发关应记录在防重集中',
     );
   });
 
@@ -80,14 +74,17 @@ void main() {
     final founderId = save0!.founderCharacterId!;
 
     final svc = DiscipleJoinService(isar: isar);
-    final senior = await svc.joinForClearedStage('stage_02_05');
-    final junior = await svc.joinForClearedStage('stage_03_05');
+    final joined = await svc.joinForClearedStage('stage_06_05');
+    final senior =
+        joined.firstWhere((c) => c.lineageRole == LineageRole.senior);
+    final junior =
+        joined.firstWhere((c) => c.lineageRole == LineageRole.junior);
 
     final founder = await isar.characters.get(founderId);
     expect(founder, isNotNull);
     expect(
       founder!.discipleIds,
-      containsAll([senior!.id, junior!.id]),
+      containsAll([senior.id, junior.id]),
       reason: 'founder.discipleIds 应包含大弟子和小弟子',
     );
     expect(senior.masterId, founderId,

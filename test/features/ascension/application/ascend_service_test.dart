@@ -40,7 +40,9 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('wuxia_ascend_test_');
     await IsarSetup.init(directory: tempDir, inspector: false);
     final isar = IsarSetup.instance;
-    // 基础 fixture:3 角色(祖师 + 大弟子 + 二弟子)+ active 入阵 + 装备 + 心法
+    // 基础 fixture:3 角色(祖师 + 大弟子 + 二弟子)+ active 入阵 + 装备 + 心法。
+    // 注:1.0 起弟子在 stage_06_05 通关后才拜入(spec A 后移);本测试直接 seed 到位
+    // 以隔离验证飞升/遗物 transfer,不依赖拜入时机。
     await Phase2SeedService(isar: isar).seedMasterDisciple();
   });
 
@@ -254,6 +256,22 @@ void main() {
       final e = await makeService().computeEligibility();
       expect(e.canAscend, true);
       expect(e.missingReasons, isEmpty);
+    });
+
+    test('无弟子(spec A 后移:06_05 前单人未拜入) → hasDiscipleTarget=false → '
+        'canAscend=false', () async {
+      await boostToAscensionReady();
+      final isar = IsarSetup.instance;
+      // 移除 active 中两弟子,模拟「弟子尚未在 stage_06_05 拜入」的单人状态。
+      await isar.writeTxn(() async {
+        final save = await isar.saveDatas.get(0);
+        save!.activeCharacterIds =
+            save.activeCharacterIds.where((id) => id == 1).toList();
+        await isar.saveDatas.put(save);
+      });
+      final e = await makeService().computeEligibility();
+      expect(e.hasDiscipleTarget, false, reason: 'active 无 disciple');
+      expect(e.canAscend, false, reason: '无弟子时不可飞升(弟子终局才拜入)');
     });
   });
 
