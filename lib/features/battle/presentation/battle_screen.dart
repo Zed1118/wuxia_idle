@@ -268,6 +268,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // 屏震 controller（暴击时触发）
   late final AnimationController _shakeCtrl;
 
+  // 命中特写 controller（大招暴击/击杀：缩放脉冲；快进/扫荡/拖招时抑制）。
+  late final AnimationController _closeupCtrl;
+
   // 6 个受击闪 controller（slotKey 索引；静止 value=1.0 → 不显，命中 forward(from:0) 淡出）。
   late final List<AnimationController> _hitFlashControllers;
   // 受击闪颜色（slotKey→暴击绛红/普攻白），spawn 时写入，纯 UI state。
@@ -345,6 +348,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       vsync: this,
       duration: Duration(milliseconds: widget.animConfig.shakeDurationMs),
     );
+    _closeupCtrl = AnimationController(
+      vsync: this,
+      duration: Duration(
+          milliseconds: widget.animConfig.hitTier.closeupPulseMs),
+    );
     _hitFlashControllers = List.generate(
       6,
       (_) => AnimationController(
@@ -414,6 +422,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       if (!e.disposed) e.ctrl.dispose();
     }
     _shakeCtrl.dispose();
+    _closeupCtrl.dispose();
     super.dispose();
   }
 
@@ -587,6 +596,16 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
           );
         }
       }
+    }
+
+    // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡/拖招抑制（守在线=离线）。
+    // 独立于 profile != null 块：普攻击杀无 profile 也须触发特写。
+    if (!_isFastForward &&
+        _rushToActorId == null &&
+        hitClimaxFor(action, s) != HitClimax.none) {
+      _closeupCtrl.forward(from: 0.0).then((_) {
+        if (mounted) _closeupCtrl.reverse();
+      });
     }
   }
 
@@ -1217,17 +1236,25 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             ),
             SafeArea(
               child: AnimatedBuilder(
-                animation: _shakeCtrl,
-                builder: (ctx, child) {
-                  return Transform.translate(
-                    offset: screenShakeOffset(
-                      t: _shakeCtrl.value,
-                      amplitude: _impactShakeAmplitude,
-                    ),
-                    child: child,
-                  );
+                animation: _closeupCtrl,
+                builder: (context, child) {
+                  final scale = 1.0 +
+                      (widget.animConfig.hitTier.closeupScale - 1.0) *
+                          _closeupCtrl.value;
+                  return Transform.scale(scale: scale, child: child);
                 },
-                child: Column(
+                child: AnimatedBuilder(
+                  animation: _shakeCtrl,
+                  builder: (ctx, child) {
+                    return Transform.translate(
+                      offset: screenShakeOffset(
+                        t: _shakeCtrl.value,
+                        amplitude: _impactShakeAmplitude,
+                      ),
+                      child: child,
+                    );
+                  },
+                  child: Column(
                   children: [
                     if (widget.hint != null) _HintBanner(hint: widget.hint!),
                     if (widget.cycleHint != null)
@@ -1296,6 +1323,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 ),
               ),
             ),
+          ),
             // Phase 4 拖招引导线层(技能按钮锚点 → 指针,流派色笔触)。
             if (_dragOrigin != null &&
                 _dragPointer != null &&
