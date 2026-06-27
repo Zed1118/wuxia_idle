@@ -1314,6 +1314,36 @@ class UiStrings {
   static const String skillCodexMultiplier = '倍率';
   static const String skillCodexCost = '内力';
   static const String skillCodexCooldown = '冷却';
+  static const String skillCodexSectionSkills = '招式';
+  static const String skillCodexSectionTechniques = '心法';
+  static const String techniqueCodexEmpty = '心法未录，待入藏经。';
+  static const String techniqueCodexFilterAll = '全部';
+  static String techniqueCodexProgress(int total) => '已录 $total 门';
+  static String techniqueCodexRowMeta(String school, String realm) =>
+      '$school · $realm 可修';
+  static const String techniqueCodexDetailTitle = '心法';
+  static const String techniqueCodexTier = '品阶';
+  static const String techniqueCodexSchool = '流派';
+  static const String techniqueCodexRealmRequirement = '限制';
+  static String techniqueCodexRealmRequirementValue(String realm) =>
+      '$realm 及以上可修';
+  static const String techniqueCodexSource = '来源';
+  static const String techniqueCodexSkills = '招式';
+  static const String codexUnknownOrPending = '未记录/待补';
+  static const String codexValueSeparator = '、';
+  static String techniqueCodexSourceTag(String tag) {
+    return switch (tag) {
+      'starter' => '开局传授',
+      'mainline_ch1' => '主线第一章',
+      'mainline_ch3' => '主线第三章',
+      'tower_15' => '爬塔十五层',
+      'tower_25' => '爬塔二十五层',
+      'wuxue_lingwu' => '武学领悟',
+      'wuxue_lingwu_top' => '高阶武学领悟',
+      _ => tag,
+    };
+  }
+
   static const String baikeFeedEmpty = '尚无见闻,且看下回。';
   static const String baikeLoreEmpty = '装备尚浅,典故未集。';
   static const String baikeCodexEmpty = '机制百科尚未编纂。';
