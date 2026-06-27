@@ -35,6 +35,7 @@ void main() {
     int battleCount = 0,
     bool isLineageHeritage = false,
     int? ownerCharacterId,
+    bool isLocked = false,
   }) {
     return Equipment.create(
       defId: def.id,
@@ -49,6 +50,7 @@ void main() {
       battleCount: battleCount,
       isLineageHeritage: isLineageHeritage,
       ownerCharacterId: ownerCharacterId,
+      isLocked: isLocked,
     )..id = 1;
   }
 
@@ -97,9 +99,9 @@ void main() {
     expect(find.text('速度'), findsOneWidget);
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
     expect(find.byType(PaperPanel), findsWidgets);
-    // T8:info 区前移强化/开锋入口(2)+ 底部 ActionBar 兜底(2)= 4
-    // Task5:背包态追加出售/分解(2)→ 合计 6
-    expect(find.byType(PlaqueButton), findsNWidgets(6));
+    // T8:info 区前移强化/开锋入口(2)+ 底部 ActionBar 兜底(强化/开锋/锁定 3)
+    // Task5:背包态追加出售/分解(2)→ 合计 7
+    expect(find.byType(PlaqueButton), findsNWidgets(7));
     // 首屏 info 区可见带强化等级的入口（不必滚到底部）
     expect(find.text('强化 +12'), findsOneWidget);
   });
@@ -341,6 +343,31 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(UiStrings.lineageHeritageLabel), findsNothing);
+  });
+
+  testWidgets('locked chip · 实例 isLocked=true → chip 必显', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final def = GameRepository.instance.getEquipment(
+      'weapon_xunchang_tie_jian',
+    );
+    final eq = mkEq(def: def, isLocked: true);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: EquipmentDetailScreen(
+            equipment: eq,
+            def: def,
+            loreLoader: fakeLoader(segments: const ['x']),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(UiStrings.equipmentLockedLabel), findsOneWidget);
   });
 
   testWidgets(

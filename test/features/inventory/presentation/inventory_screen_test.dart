@@ -62,6 +62,7 @@ void main() {
     String? defId,
     int enhanceLevel = 0,
     bool isLineageHeritage = false,
+    bool isLocked = false,
   }) {
     return Equipment.create(
       defId: defId ?? 'test_$id',
@@ -72,6 +73,7 @@ void main() {
       baseAttack: 50,
       enhanceLevel: enhanceLevel,
       isLineageHeritage: isLineageHeritage,
+      isLocked: isLocked,
     )..id = id;
   }
 
@@ -234,6 +236,18 @@ void main() {
     );
     await pumpInv(tester, equipments: [eq]);
     expect(find.byIcon(Icons.auto_awesome), findsWidgets, reason: '师承遗物应显标记');
+  });
+
+  testWidgets('锁定装备 → 显锁定标记', (tester) async {
+    final eq = mkEq(
+      id: 41,
+      tier: EquipmentTier.baoWu,
+      slot: EquipmentSlot.weapon,
+      defId: 'weapon_baowu_bing_po_zhen',
+      isLocked: true,
+    );
+    await pumpInv(tester, equipments: [eq]);
+    expect(find.byIcon(Icons.lock_outline), findsWidgets, reason: '锁定装备应显锁标记');
   });
 
   testWidgets('T11 筛选「已穿戴」→ 只显已穿戴装备', (tester) async {

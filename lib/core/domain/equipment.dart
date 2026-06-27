@@ -39,6 +39,7 @@ class Equipment {
   int? ownerCharacterId;
 
   bool isLineageHeritage = false;
+  bool isLocked = false;
   List<int> previousOwnerCharacterIds = [];
 
   int battleCount = 0;
@@ -67,6 +68,7 @@ class Equipment {
     int enhanceLevel = 0,
     int? ownerCharacterId,
     bool isLineageHeritage = false,
+    bool isLocked = false,
     List<int>? previousOwnerCharacterIds,
     int battleCount = 0,
     List<ForgingSlot>? forgingSlots,
@@ -86,6 +88,7 @@ class Equipment {
       ..enhanceLevel = enhanceLevel
       ..ownerCharacterId = ownerCharacterId
       ..isLineageHeritage = isLineageHeritage
+      ..isLocked = isLocked
       ..previousOwnerCharacterIds = previousOwnerCharacterIds ?? []
       ..battleCount = battleCount
       ..forgingSlots = forgingSlots ?? _defaultForgingSlots()
@@ -93,10 +96,10 @@ class Equipment {
   }
 
   static List<ForgingSlot> _defaultForgingSlots() => [
-        ForgingSlot()..slotIndex = 1,
-        ForgingSlot()..slotIndex = 2,
-        ForgingSlot()..slotIndex = 3,
-      ];
+    ForgingSlot()..slotIndex = 1,
+    ForgingSlot()..slotIndex = 2,
+    ForgingSlot()..slotIndex = 3,
+  ];
 
   /// §5.3 三系锁死:装备阶 ≤ 角色境界阶才可上身(EquipmentTier 与 RealmTier
   /// index 一一对应 · 例 二流 idx2 → 最多装 好家伙 idx2)。
@@ -104,7 +107,8 @@ class Equipment {
   /// **师承遗物不例外**(CLAUDE.md §5.3):虽自带传承 buff,徒弟境界未达对应阶时
   /// 仍不可装备 —— 只能 owner 持有(背包)/观摩,等够阶再上身。飞升 auto_swap
   /// (AscendService.performAscend)上身前必经此守卫,否则武圣神物会落到低境界徒弟。
-  bool isEquippableAtRealm(RealmTier realmTier) => tier.index <= realmTier.index;
+  bool isEquippableAtRealm(RealmTier realmTier) =>
+      tier.index <= realmTier.index;
 }
 
 /// 派生属性扩展（不入库，data_schema.md §4.3）。
@@ -138,10 +142,7 @@ extension EquipmentResonance on Equipment {
   /// 读取的实例 `previousOwnerCharacterIds` 是 fixed-length,不能 `.add()`。
   /// 必须 reassign 新 list(`[...old, new]`)而非 mutate(P2.3 飞升暴露的 bug)。
   void inheritFrom(int previousOwnerId, NumbersConfig n) {
-    previousOwnerCharacterIds = [
-      ...previousOwnerCharacterIds,
-      previousOwnerId,
-    ];
+    previousOwnerCharacterIds = [...previousOwnerCharacterIds, previousOwnerId];
     battleCount = (battleCount * n.resonanceInheritanceRetention).toInt();
     isLineageHeritage = true;
   }

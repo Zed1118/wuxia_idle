@@ -520,6 +520,16 @@ class _EquipmentGridTile extends ConsumerWidget {
               color: WuxiaColors.bossFrame,
             ),
           ),
+        if (eq.isLocked)
+          const Positioned(
+            top: 2,
+            right: 2,
+            child: Icon(
+              Icons.lock_outline,
+              size: 14,
+              color: WuxiaColors.bossFrame,
+            ),
+          ),
         if (equipped)
           Positioned(
             bottom: 2,

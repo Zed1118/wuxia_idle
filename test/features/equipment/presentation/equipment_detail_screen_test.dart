@@ -68,7 +68,11 @@ void main() {
     iconPath: '',
   );
 
-  Equipment mkEq({int? ownerCharacterId, bool isLineageHeritage = false}) {
+  Equipment mkEq({
+    int? ownerCharacterId,
+    bool isLineageHeritage = false,
+    bool isLocked = false,
+  }) {
     return Equipment.create(
       defId: 'test_eq',
       tier: EquipmentTier.xunChang,
@@ -78,6 +82,7 @@ void main() {
       baseAttack: 50,
       ownerCharacterId: ownerCharacterId,
       isLineageHeritage: isLineageHeritage,
+      isLocked: isLocked,
     )..id = 1;
   }
 
@@ -169,6 +174,26 @@ void main() {
       find.text(UiStrings.equipmentDisassemble),
       findsNothing,
       reason: '师承遗物分解按钮不应出现',
+    );
+  });
+
+  testWidgets('锁定装备(isLocked=true) → 出售/分解按钮不显，解锁按钮可见', (tester) async {
+    final eq = mkEq(isLocked: true);
+    await pumpScreen(tester, eq);
+    expect(
+      find.text(UiStrings.equipmentSell),
+      findsNothing,
+      reason: '锁定时出售按钮不应出现',
+    );
+    expect(
+      find.text(UiStrings.equipmentDisassemble),
+      findsNothing,
+      reason: '锁定时分解按钮不应出现',
+    );
+    expect(
+      find.text(UiStrings.equipmentUnlock),
+      findsOneWidget,
+      reason: '锁定装备应显示解锁入口',
     );
   });
 }

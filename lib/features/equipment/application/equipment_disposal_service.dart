@@ -36,6 +36,9 @@ enum DisposalOutcome {
   /// 拒绝：师承遗物（isLineageHeritage）。
   rejectedHeritage,
 
+  /// 拒绝：玩家锁定保护（isLocked）。
+  rejectedLocked,
+
   /// 拒绝：装备不存在（id 无对应行）。
   notFound,
 }
@@ -44,7 +47,8 @@ enum DisposalOutcome {
 ///
 /// **原子事务**：校验 → 删装备 → 入银两/材料，走单个 [writeTxn]。
 /// **守卫**：已装备（任一 `Character.equipped{Slot}Id` 指向该装备）/
-///         师承遗物（[Equipment.isLineageHeritage]）不可处置。
+///         师承遗物（[Equipment.isLineageHeritage]）/
+///         玩家锁定（[Equipment.isLocked]）不可处置。
 class EquipmentDisposalService {
   EquipmentDisposalService({required this.isar, required this.config});
 
@@ -88,7 +92,8 @@ class EquipmentDisposalService {
 
   /// 批量出售指定品级的全部可处置背包装备（整批一个 [writeTxn]，失败自动回滚）。
   ///
-  /// 跳过已装备（任一角色槽位引用）和师承遗物（[Equipment.isLineageHeritage]）。
+  /// 跳过已装备（任一角色槽位引用）、师承遗物（[Equipment.isLineageHeritage]）
+  /// 和玩家锁定（[Equipment.isLocked]）装备。
   Future<BulkDisposalResult> sellAllOfTier(EquipmentTier tier) =>
       isar.writeTxn(() async {
         final items = await _disposableOfTier(tier);
@@ -103,7 +108,7 @@ class EquipmentDisposalService {
 
   /// 批量分解指定品级的全部可处置背包装备（整批一个 [writeTxn]，失败自动回滚）。
   ///
-  /// 跳过已装备/师承遗物（与 [sellAllOfTier] 相同护栏）。
+  /// 跳过已装备/师承遗物/玩家锁定（与 [sellAllOfTier] 相同护栏）。
   Future<BulkDisposalResult> disassembleAllOfTier(EquipmentTier tier) =>
       isar.writeTxn(() async {
         final items = await _disposableOfTier(tier);
@@ -129,15 +134,13 @@ class EquipmentDisposalService {
         );
       });
 
-  /// 查询指定品级中可处置的自由装备（不在任一角色槽位 && !isLineageHeritage）。
+  /// 查询指定品级中可处置的自由装备
+  /// （不在任一角色槽位 && !isLineageHeritage && !isLocked）。
   /// 须在 [writeTxn] 内调（读在同事务内）。
   Future<List<Equipment>> _disposableOfTier(EquipmentTier tier) async {
     final all = await isar.equipments.filter().tierEqualTo(tier).findAll();
     final equippedIds = await _equippedEquipmentIds();
-    return all
-        .where((e) => !e.isLineageHeritage)
-        .where((e) => !isEquipmentEquippedBySlot(e, equippedIds))
-        .toList();
+    return all.where((e) => isEquipmentDisposable(e, equippedIds)).toList();
   }
 
   /// 前置守卫：null = 可处置；否则返回拒绝/未找到结果。
@@ -147,6 +150,7 @@ class EquipmentDisposalService {
       return DisposalOutcome.rejectedEquipped;
     }
     if (eq.isLineageHeritage) return DisposalOutcome.rejectedHeritage;
+    if (eq.isLocked) return DisposalOutcome.rejectedLocked;
     return null;
   }
 
@@ -175,3 +179,10 @@ class EquipmentDisposalService {
     }
   }
 }
+
+/// 装备是否可被出售/分解。供 service 与 UI 批量入口共用，避免筛选漂移。
+/// 已装备走槽位真值源（[isEquipmentEquippedBySlot]），不再看 ownerCharacterId。
+bool isEquipmentDisposable(Equipment e, Set<int> equippedEquipmentIds) =>
+    !isEquipmentEquippedBySlot(e, equippedEquipmentIds) &&
+    !e.isLineageHeritage &&
+    !e.isLocked;
