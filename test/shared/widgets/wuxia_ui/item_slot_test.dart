@@ -15,6 +15,9 @@ void main() {
     int enhanceLevel = 0,
     bool locked = false,
     bool highTier = false,
+    String? statusText,
+    IconData? leadingBadgeIcon,
+    IconData? trailingBadgeIcon,
   }) => ItemSlot(
     imagePath: imagePath,
     name: '青锋剑',
@@ -23,6 +26,9 @@ void main() {
     enhanceLevel: enhanceLevel,
     locked: locked,
     highTier: highTier,
+    statusText: statusText,
+    leadingBadgeIcon: leadingBadgeIcon,
+    trailingBadgeIcon: trailingBadgeIcon,
   );
 
   BoxDecoration cellDeco(WidgetTester tester) =>
@@ -51,6 +57,23 @@ void main() {
   testWidgets('enhanceLevel=0 不显朱印', (tester) async {
     await tester.pumpWidget(host(slot(enhanceLevel: 0)));
     expect(find.byType(SealBadge), findsNothing);
+  });
+
+  testWidgets('状态与角标渲染在图内，名称独立保留', (tester) async {
+    await tester.pumpWidget(
+      host(
+        slot(
+          statusText: '装备中',
+          leadingBadgeIcon: Icons.auto_awesome,
+          trailingBadgeIcon: Icons.lock_outline,
+        ),
+      ),
+    );
+
+    expect(find.text('装备中'), findsOneWidget);
+    expect(find.text('青锋剑'), findsOneWidget);
+    expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
+    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
   });
 
   testWidgets('locked 显封条文字', (tester) async {

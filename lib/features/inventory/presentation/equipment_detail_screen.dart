@@ -33,7 +33,7 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 ///
 /// 展示装备基础信息(数值/共鸣度阶段/战斗次数)+ default_lore 段(W15 #35
 /// DeepSeek 交付 75 段,按 tier 差异化:寻常货 1 段 / 像样货~利器 2 段 /
-/// 重器~神物 3 段)+ 底部操作按钮分流 [EnhanceDialog] 强化 / 开锋 Tab。
+/// 重器~神物 3 段)+ 图片右侧信息卡操作分流 [EnhanceDialog] 强化 / 开锋 Tab。
 ///
 /// **lore 消费路径**:UI 层 `Equipment.defId → EquipmentDef.presetLoreIds.first
 /// → LoreLoader.load`,**不写 Equipment.lores Isar 字段**(W15 LoreLoader 接入
@@ -250,6 +250,9 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                   def: widget.def,
                   onEnhance: () => _openEnhance(0),
                   onForge: () => _openEnhance(1),
+                  onLockToggle: () => _setLocked(!widget.equipment.isLocked),
+                  onSell: canDispose ? _onSell : null,
+                  onDisassemble: canDispose ? _onDisassemble : null,
                 );
                 return ListView(
                   padding: const EdgeInsets.all(20),
@@ -274,18 +277,6 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                     _LoreSection(
                       future: _loreFuture,
                       equipment: widget.equipment,
-                    ),
-                    const SizedBox(height: 16),
-                    _ActionBar(
-                      onEnhance: () => _openEnhance(0),
-                      onForge: () => _openEnhance(1),
-                      onLockToggle: () =>
-                          _setLocked(!widget.equipment.isLocked),
-                      locked: widget.equipment.isLocked,
-                      // 仅自由态（不在角色装备槽 && !isLineageHeritage && !isLocked）
-                      // 显示出售/分解按钮（2026-06-26 红线推翻）。
-                      onSell: canDispose ? _onSell : null,
-                      onDisassemble: canDispose ? _onDisassemble : null,
                     ),
                   ],
                 );
@@ -424,6 +415,9 @@ class _InfoCard extends ConsumerWidget {
     required this.def,
     required this.onEnhance,
     required this.onForge,
+    required this.onLockToggle,
+    this.onSell,
+    this.onDisassemble,
   });
 
   final Equipment equipment;
@@ -432,6 +426,13 @@ class _InfoCard extends ConsumerWidget {
   /// T8:信息卡首屏强化/开锋入口(复用 detail 屏 _openEnhance(0/1))。
   final VoidCallback onEnhance;
   final VoidCallback onForge;
+  final VoidCallback onLockToggle;
+
+  /// null = 不显示出售按钮（已装备、师承遗物或锁定）。
+  final VoidCallback? onSell;
+
+  /// null = 不显示分解按钮（已装备、师承遗物或锁定）。
+  final VoidCallback? onDisassemble;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -489,8 +490,8 @@ class _InfoCard extends ConsumerWidget {
                   ),
               ],
             ),
-            // T8:养成入口前移到信息卡首屏顶部(紧贴品阶行),保证窄屏/矮窗首屏即见
-            // (Codex 验收在 ~800×632 下原入口在大图+属性下方被裁出 → 上移到品阶行下)。
+            // T8:养成入口前移到信息卡首屏顶部(紧贴品阶行),保证窄屏/矮窗首屏即见。
+            // 2026-06-27:锁定/整理动作也收进信息卡,避免底部重复按钮。
             const SizedBox(height: 12),
             Row(
               children: [
@@ -508,8 +509,37 @@ class _InfoCard extends ConsumerWidget {
                     onTap: onForge,
                   ),
                 ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: PlaqueButton(
+                    label: equipment.isLocked
+                        ? UiStrings.equipmentUnlock
+                        : UiStrings.equipmentLock,
+                    onTap: onLockToggle,
+                  ),
+                ),
               ],
             ),
+            if (onSell != null && onDisassemble != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: PlaqueButton(
+                      label: UiStrings.equipmentSell,
+                      onTap: onSell,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: PlaqueButton(
+                      label: UiStrings.equipmentDisassemble,
+                      onTap: onDisassemble,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 10),
             _StatRow(
               attack: equipment.baseAttack,
@@ -876,91 +906,6 @@ class _SegmentDivider extends StatelessWidget {
           ),
           Expanded(child: Container(height: 1, color: lineColor)),
         ],
-      ),
-    );
-  }
-}
-
-class _ActionBar extends StatelessWidget {
-  const _ActionBar({
-    required this.onEnhance,
-    required this.onForge,
-    required this.onLockToggle,
-    required this.locked,
-    this.onSell,
-    this.onDisassemble,
-  });
-
-  final VoidCallback onEnhance;
-  final VoidCallback onForge;
-  final VoidCallback onLockToggle;
-  final bool locked;
-
-  /// null = 不显示出售按钮（已装备、师承遗物或锁定）。
-  final VoidCallback? onSell;
-
-  /// null = 不显示分解按钮（已装备、师承遗物或锁定）。
-  final VoidCallback? onDisassemble;
-
-  @override
-  Widget build(BuildContext context) {
-    final showDisposal = onSell != null && onDisassemble != null;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: PlaqueButton(
-                    label: UiStrings.tabEnhance,
-                    primary: true,
-                    onTap: onEnhance,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: PlaqueButton(
-                    label: UiStrings.tabForging,
-                    onTap: onForge,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: PlaqueButton(
-                    label: locked
-                        ? UiStrings.equipmentUnlock
-                        : UiStrings.equipmentLock,
-                    onTap: onLockToggle,
-                  ),
-                ),
-              ],
-            ),
-            if (showDisposal) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: PlaqueButton(
-                      label: UiStrings.equipmentSell,
-                      onTap: onSell,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: PlaqueButton(
-                      label: UiStrings.equipmentDisassemble,
-                      onTap: onDisassemble,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ],
-        ),
       ),
     );
   }

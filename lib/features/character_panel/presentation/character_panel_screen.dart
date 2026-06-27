@@ -1086,7 +1086,7 @@ class _EquipmentSlotTile extends ConsumerWidget {
                     Text(
                       GameRepository.instance.equipmentDefs[eq.defId]!.name,
                       style: const TextStyle(
-                        color: WuxiaColors.textPrimary,
+                        color: WuxiaUi.ink,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -1604,7 +1604,7 @@ class _LineageBiographyRow extends StatelessWidget {
     return const _LineageRow(
       label: UiStrings.lineageBiographyLabel,
       value: UiStrings.lineageBiographyPlaceholder,
-      valueColor: WuxiaColors.textMuted,
+      valueColor: WuxiaUi.muted,
     );
   }
 }
@@ -1668,7 +1668,7 @@ class _LineageHeritageRow extends ConsumerWidget {
             '{0}',
             '${maxPrevLen + 1}',
           ),
-          valueColor: WuxiaColors.textMuted,
+          valueColor: WuxiaUi.muted,
         ),
       ],
     );
@@ -1684,7 +1684,7 @@ class _LineageRow extends StatelessWidget {
   const _LineageRow({
     required this.label,
     required this.value,
-    this.valueColor = WuxiaColors.textPrimary,
+    this.valueColor = WuxiaUi.ink,
   });
 
   final String label;
@@ -1700,7 +1700,11 @@ class _LineageRow extends StatelessWidget {
           width: 56,
           child: Text(
             label,
-            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+            style: const TextStyle(
+              color: WuxiaUi.ink2,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         const SizedBox(width: 8),
@@ -1710,7 +1714,8 @@ class _LineageRow extends StatelessWidget {
             style: TextStyle(
               color: valueColor,
               fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
+              height: 1.45,
             ),
           ),
         ),
