@@ -136,8 +136,8 @@ void main() {
       // ③ join stage id 全部预填
       expect(save.triggeredDiscipleJoinStageIds, contains('stage_02_05'));
       expect(save.triggeredDiscipleJoinStageIds, contains('stage_03_05'));
-      // ④ 版本升到 0.31.0
-      expect(save.saveVersion, '0.31.0');
+      // ④ 版本升到 0.32.0
+      expect(save.saveVersion, '0.32.0');
       // ⑤ activeCharacterIds 未动(弟子未删/未改)
       expect(save.activeCharacterIds, [1, 2, 3]);
       // 弟子其余数据未动

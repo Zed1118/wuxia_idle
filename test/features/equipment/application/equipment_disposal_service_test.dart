@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_disposal_service.dart';
+import 'package:wuxia_idle/features/equipment/application/equipment_service.dart';
 import 'package:wuxia_idle/features/equipment/domain/equipment_disposal.dart';
 
 /// Task 2 TDD：装备出售/分解 service 单件验收。
@@ -21,6 +22,7 @@ import 'package:wuxia_idle/features/equipment/domain/equipment_disposal.dart';
 /// 2. disassemble 背包装备 → disassembled；装备删除；磨剑石/心血结晶累加
 /// 3. sell/disassemble 已装备(角色槽位引用) → rejectedEquipped；不变
 /// 4. sell/disassemble 师承遗物(isLineageHeritage) → rejectedHeritage；不变
+/// 4b. sell/disassemble 锁定装备(isLocked) → rejectedLocked；不变
 /// 5. 不存在的 id → notFound
 void main() {
   late Directory tempDir;
@@ -61,6 +63,7 @@ void main() {
     int enhanceLevel = 0,
     int? ownerCharacterId,
     bool isLineageHeritage = false,
+    bool isLocked = false,
   }) async {
     final eq = Equipment.create(
       defId: 'equip_test',
@@ -71,6 +74,7 @@ void main() {
       enhanceLevel: enhanceLevel,
       ownerCharacterId: ownerCharacterId,
       isLineageHeritage: isLineageHeritage,
+      isLocked: isLocked,
     );
     late int id;
     await isar.writeTxn(() async {
@@ -305,6 +309,48 @@ void main() {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
+  // 4b. 锁定装备 → rejectedLocked；解锁后恢复资格
+  // ──────────────────────────────────────────────────────────────────────────
+  test('sell 锁定装备 → rejectedLocked；装备仍在；银两不变', () async {
+    final id = await seedEquipment(isLocked: true);
+
+    final result = await makeService().sell(id);
+    expect(result, DisposalOutcome.rejectedLocked);
+
+    final eq = await isar.equipments.get(id);
+    expect(eq, isNotNull);
+
+    final silver = await isar.inventoryItems.getByDefId('item_silver');
+    expect(silver, isNull);
+  });
+
+  test('disassemble 锁定装备 → rejectedLocked；装备仍在；材料不变', () async {
+    final id = await seedEquipment(isLocked: true);
+
+    final result = await makeService().disassemble(id);
+    expect(result, DisposalOutcome.rejectedLocked);
+
+    final eq = await isar.equipments.get(id);
+    expect(eq, isNotNull);
+
+    final mj = await isar.inventoryItems.getByDefId('item_mojianshi');
+    expect(mj, isNull);
+  });
+
+  test('解锁后 sell 恢复处理资格', () async {
+    final id = await seedEquipment(isLocked: true);
+
+    final unlock = await EquipmentService(
+      isar: isar,
+    ).setLocked(equipmentId: id, locked: false);
+    expect(unlock, EquipOutcome.success);
+
+    final result = await makeService().sell(id);
+    expect(result, DisposalOutcome.sold);
+    expect(await isar.equipments.get(id), isNull);
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
   // 5. 不存在的 id → notFound
   // ──────────────────────────────────────────────────────────────────────────
   test('sell 不存在的 id → notFound', () async {
@@ -322,7 +368,9 @@ void main() {
   // ──────────────────────────────────────────────────────────────────────────
 
   /// 帮助：同 tier 准备 2 件背包 + 1 件已装备 + 1 件师承遗物，返回 4 个 id。
-  Future<({int backpack1, int backpack2, int equipped, int heritage})>
+  Future<
+    ({int backpack1, int backpack2, int equipped, int heritage, int locked})
+  >
   seedBulkFixture({
     EquipmentTier tier = EquipmentTier.xunChang,
     int enhanceLevel = 0,
@@ -340,13 +388,24 @@ void main() {
       enhanceLevel: enhanceLevel,
       isLineageHeritage: true,
     );
-    return (backpack1: b1, backpack2: b2, equipped: eq, heritage: ht);
+    final locked = await seedEquipment(
+      tier: tier,
+      enhanceLevel: enhanceLevel,
+      isLocked: true,
+    );
+    return (
+      backpack1: b1,
+      backpack2: b2,
+      equipped: eq,
+      heritage: ht,
+      locked: locked,
+    );
   }
 
   // ──────────────────────────────────────────────────────────────────────────
   // 3a. sellAllOfTier：只处置背包装备，已装备/师承遗物不动
   // ──────────────────────────────────────────────────────────────────────────
-  test('sellAllOfTier 寻常货 → count==2；银两==40；已装备/师承仍在 isar', () async {
+  test('sellAllOfTier 寻常货 → count==2；银两==40；已装备/师承/锁定仍在 isar', () async {
     // 寻常货 +0：每件出售价 = 20
     final ids = await seedBulkFixture(tier: EquipmentTier.xunChang);
 
@@ -362,6 +421,7 @@ void main() {
     // 已装备 + 师承遗物仍在
     expect(await isar.equipments.get(ids.equipped), isNotNull);
     expect(await isar.equipments.get(ids.heritage), isNotNull);
+    expect(await isar.equipments.get(ids.locked), isNotNull);
 
     // 银两新建 = 40
     final silver = await isar.inventoryItems.getByDefId('item_silver');
@@ -389,7 +449,7 @@ void main() {
   // 3b. disassembleAllOfTier：只处置背包装备，已装备/师承遗物不动
   // ──────────────────────────────────────────────────────────────────────────
   test(
-    'disassembleAllOfTier 宝物(index=5)+0 → count==2；磨剑石==36；心血结晶==8',
+    'disassembleAllOfTier 宝物(index=5)+0 → count==2；磨剑石==36；心血结晶==8；锁定不动',
     () async {
       // 宝物(index=5)：基础磨剑石=18，心血结晶=4；+0 无强化加成
       // 2 件：磨剑石 18×2=36，心血结晶 4×2=8
@@ -410,6 +470,7 @@ void main() {
       // 已装备 + 师承遗物仍在
       expect(await isar.equipments.get(ids.equipped), isNotNull);
       expect(await isar.equipments.get(ids.heritage), isNotNull);
+      expect(await isar.equipments.get(ids.locked), isNotNull);
 
       // 磨剑石/心血结晶写入
       final mj = await isar.inventoryItems.getByDefId('item_mojianshi');

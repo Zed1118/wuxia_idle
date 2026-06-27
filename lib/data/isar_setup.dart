@@ -144,7 +144,8 @@ class IsarSetup {
   // 0.29.0 伤势系统:Character +lightInjuryStacks/injuryHoursRemaining,新字段旧档读默认 0,无迁移分支,仅 bump。
   // 0.30.0 桃花岛:SaveData +islandBuildings/islandLastSettledAt(嵌入 IslandBuildingState),新字段旧档读默认空/null,无迁移分支纯 bump。
   // 0.31.0 第八阶段角色等级:Character +level(默认1)/levelExp(默认0),新字段旧档读默认值,无迁移分支纯 bump。
-  static const _currentSaveVersion = '0.31.0';
+  // 0.32.0 装备锁定:Equipment +isLocked(默认 false),旧档装备均视为未锁定,无迁移分支纯 bump。
+  static const _currentSaveVersion = '0.32.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({

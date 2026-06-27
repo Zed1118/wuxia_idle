@@ -14,6 +14,7 @@ import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/application/equipment_disposal_service.dart';
+import '../../equipment/application/equipment_service.dart';
 import '../../equipment/domain/equipment_disposal.dart';
 import '../../equipment/domain/equipment_slot_occupancy.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
@@ -183,13 +184,27 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
     }
   }
 
+  Future<void> _setLocked(bool locked) async {
+    final outcome = await EquipmentService(
+      isar: IsarSetup.instance,
+    ).setLocked(equipmentId: widget.equipment.id, locked: locked);
+    if (!mounted || outcome != EquipOutcome.success) return;
+    setState(() {
+      widget.equipment.isLocked = locked;
+    });
+    ref.invalidate(allEquipmentsProvider);
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = tierColorForEquipment(widget.def.tier);
     final highTreasure = isHighTreasureTier(widget.def.tier);
     final equippedIds = _watchActiveEquippedIds(ref);
     final isEquipped = isEquipmentEquippedBySlot(widget.equipment, equippedIds);
-    final canDispose = !isEquipped && !widget.equipment.isLineageHeritage;
+    final canDispose =
+        !isEquipped &&
+        !widget.equipment.isLineageHeritage &&
+        !widget.equipment.isLocked;
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       appBar: WuxiaTitleBar(
@@ -255,7 +270,10 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                     _ActionBar(
                       onEnhance: () => _openEnhance(0),
                       onForge: () => _openEnhance(1),
-                      // 仅自由态（不在角色装备槽 && !isLineageHeritage）
+                      onLockToggle: () =>
+                          _setLocked(!widget.equipment.isLocked),
+                      locked: widget.equipment.isLocked,
+                      // 仅自由态（不在角色装备槽 && !isLineageHeritage && !isLocked）
                       // 显示出售/分解按钮（2026-06-26 红线推翻）。
                       onSell: canDispose ? _onSell : null,
                       onDisassemble: canDispose ? _onDisassemble : null,
@@ -394,6 +412,11 @@ class _InfoCard extends ConsumerWidget {
                   const _Chip(
                     text: UiStrings.lineageHeritageLabel,
                     color: WuxiaColors.hpLow,
+                  ),
+                if (equipment.isLocked)
+                  const _Chip(
+                    text: UiStrings.equipmentLockedLabel,
+                    color: WuxiaColors.bossFrame,
                   ),
                 // M1:境界不足显「需X境界」(§5.3 装备 tier ↔ 同序境界锁死)。
                 if (realmLocked)
@@ -801,17 +824,21 @@ class _ActionBar extends StatelessWidget {
   const _ActionBar({
     required this.onEnhance,
     required this.onForge,
+    required this.onLockToggle,
+    required this.locked,
     this.onSell,
     this.onDisassemble,
   });
 
   final VoidCallback onEnhance;
   final VoidCallback onForge;
+  final VoidCallback onLockToggle;
+  final bool locked;
 
-  /// null = 不显示出售按钮（已装备或师承遗物）。
+  /// null = 不显示出售按钮（已装备、师承遗物或锁定）。
   final VoidCallback? onSell;
 
-  /// null = 不显示分解按钮（已装备或师承遗物）。
+  /// null = 不显示分解按钮（已装备、师承遗物或锁定）。
   final VoidCallback? onDisassemble;
 
   @override
@@ -838,6 +865,15 @@ class _ActionBar extends StatelessWidget {
                   child: PlaqueButton(
                     label: UiStrings.tabForging,
                     onTap: onForge,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: PlaqueButton(
+                    label: locked
+                        ? UiStrings.equipmentUnlock
+                        : UiStrings.equipmentLock,
+                    onTap: onLockToggle,
                   ),
                 ),
               ],
