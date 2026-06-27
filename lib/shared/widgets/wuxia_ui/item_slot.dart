@@ -24,6 +24,11 @@ class ItemSlot extends StatelessWidget {
     this.lockText = '未达境界',
     this.highTier = false,
     this.size = 96,
+    this.leadingBadgeIcon,
+    this.leadingBadgeColor,
+    this.trailingBadgeIcon,
+    this.trailingBadgeColor,
+    this.statusText,
     this.onTap,
   });
 
@@ -36,6 +41,11 @@ class ItemSlot extends StatelessWidget {
   final String lockText;
   final bool highTier;
   final double size;
+  final IconData? leadingBadgeIcon;
+  final Color? leadingBadgeColor;
+  final IconData? trailingBadgeIcon;
+  final Color? trailingBadgeColor;
+  final String? statusText;
   final VoidCallback? onTap;
 
   @override
@@ -74,11 +84,64 @@ class ItemSlot extends StatelessWidget {
                             fallback: glyph,
                           ),
                   ),
-                  if (enhanceLevel > 0)
+                  if (leadingBadgeIcon != null)
+                    Positioned(
+                      top: 2,
+                      left: 2,
+                      child: _SlotIconBadge(
+                        icon: leadingBadgeIcon!,
+                        color: leadingBadgeColor ?? WuxiaUi.gold,
+                      ),
+                    ),
+                  if (enhanceLevel > 0 || trailingBadgeIcon != null)
                     Positioned(
                       top: 2,
                       right: 2,
-                      child: SealBadge(text: '+$enhanceLevel'),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          if (enhanceLevel > 0)
+                            SealBadge(text: '+$enhanceLevel'),
+                          if (trailingBadgeIcon != null) ...[
+                            if (enhanceLevel > 0) const SizedBox(height: 2),
+                            _SlotIconBadge(
+                              icon: trailingBadgeIcon!,
+                              color: trailingBadgeColor ?? WuxiaUi.jiang,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  if (statusText != null)
+                    Positioned(
+                      right: 3,
+                      bottom: 3,
+                      child: Container(
+                        constraints: BoxConstraints(maxWidth: size - 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: WuxiaUi.ink.withValues(alpha: 0.72),
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(
+                            color: WuxiaUi.paper.withValues(alpha: 0.45),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Text(
+                          statusText!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: WuxiaUi.paper,
+                            fontSize: 9,
+                            height: 1.15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                     ),
                   if (locked)
                     Positioned.fill(
@@ -112,6 +175,27 @@ class ItemSlot extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SlotIconBadge extends StatelessWidget {
+  const _SlotIconBadge({required this.icon, required this.color});
+
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 18,
+      height: 18,
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: color.withValues(alpha: 0.75), width: 0.8),
+      ),
+      child: Icon(icon, size: 13, color: color),
     );
   }
 }

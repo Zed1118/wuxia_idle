@@ -594,64 +594,24 @@ class _EquipmentGridTile extends ConsumerWidget {
       RealmTier.values[eq.tier.index],
     );
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        ItemSlot(
-          imagePath: def?.iconPath,
-          name: def?.name ?? eq.defId,
-          tierColor: color,
-          equipmentSlot: eq.slot,
-          enhanceLevel: eq.enhanceLevel,
-          locked: locked,
-          lockText: UiStrings.inventoryRealmLockBanner(requiredRealmName),
-          highTier:
-              eq.tier == EquipmentTier.baoWu || eq.tier == EquipmentTier.shenWu,
-          onTap: () async {
-            await _openEquipment(context, ref, def, eq);
-          },
-        ),
-        if (eq.isLineageHeritage)
-          const Positioned(
-            top: 2,
-            left: 2,
-            child: Icon(
-              Icons.auto_awesome,
-              size: 14,
-              color: WuxiaColors.bossFrame,
-            ),
-          ),
-        if (eq.isLocked)
-          const Positioned(
-            top: 2,
-            right: 2,
-            child: Icon(
-              Icons.lock_outline,
-              size: 14,
-              color: WuxiaColors.bossFrame,
-            ),
-          ),
-        if (equipped)
-          Positioned(
-            bottom: 2,
-            right: 2,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: const Text(
-                UiStrings.equippedBadge,
-                style: TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 9,
-                  height: 1.2,
-                ),
-              ),
-            ),
-          ),
-      ],
+    return ItemSlot(
+      imagePath: def?.iconPath,
+      name: def?.name ?? eq.defId,
+      tierColor: color,
+      equipmentSlot: eq.slot,
+      enhanceLevel: eq.enhanceLevel,
+      locked: locked,
+      lockText: UiStrings.inventoryRealmLockBanner(requiredRealmName),
+      highTier:
+          eq.tier == EquipmentTier.baoWu || eq.tier == EquipmentTier.shenWu,
+      leadingBadgeIcon: eq.isLineageHeritage ? Icons.auto_awesome : null,
+      leadingBadgeColor: WuxiaColors.bossFrame,
+      trailingBadgeIcon: eq.isLocked ? Icons.lock_outline : null,
+      trailingBadgeColor: WuxiaColors.bossFrame,
+      statusText: equipped ? UiStrings.equippedBadge : null,
+      onTap: () async {
+        await _openEquipment(context, ref, def, eq);
+      },
     );
   }
 

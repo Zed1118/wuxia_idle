@@ -100,9 +100,8 @@ void main() {
     expect(find.text(UiStrings.equipmentSourceSectionDivider), findsOneWidget);
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
     expect(find.byType(PaperPanel), findsWidgets);
-    // T8:info 区前移强化/开锋入口(2)+ 底部 ActionBar 兜底(强化/开锋/锁定 3)
-    // Task5:背包态追加出售/分解(2)→ 合计 7
-    expect(find.byType(PlaqueButton), findsNWidgets(7));
+    // 2026-06-27:强化/开锋/锁定与出售/分解统一收进信息卡，不再有底部重复 ActionBar。
+    expect(find.byType(PlaqueButton), findsNWidgets(5));
     // 首屏 info 区可见带强化等级的入口（不必滚到底部）
     expect(find.text('强化 +12'), findsOneWidget);
   });
@@ -428,13 +427,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // 详情屏底部「强化」按钮(PlaqueButton)。按钮在详情滚动页底部，先滚到可见。
-    final enhanceBtn = find.text('强化');
-    await tester.scrollUntilVisible(
-      enhanceBtn,
-      300,
-      scrollable: find.byType(Scrollable),
-    );
+    // 信息卡首屏「强化 +N」按钮。
+    final enhanceBtn = find.text('强化 +0');
     expect(enhanceBtn, findsOneWidget);
     await tester.tap(enhanceBtn);
     await tester.pump();
