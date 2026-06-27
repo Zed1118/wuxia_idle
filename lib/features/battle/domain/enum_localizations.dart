@@ -264,6 +264,9 @@ class EnumL10n {
       BuildingType.caoYaoYuan => '草药园',
       BuildingType.daZaoTai => '打造台',
       BuildingType.danFang => '丹房',
+      BuildingType.muGongFang => '木工坊',
+      BuildingType.lingQuan => '灵泉',
+      BuildingType.zhuZaoTai => '铸造台',
     };
   }
 }

@@ -12,10 +12,11 @@ import '../application/island_providers.dart';
 import '../application/island_settle_service.dart';
 import '../domain/island_building_state.dart';
 import '../domain/island_building_type.dart';
+import '../domain/island_prep_advice.dart';
 import '../domain/taohua_island_config.dart';
 import 'island_recap_card.dart';
 
-/// 桃花岛主屏：4 建筑卡 + 升级 / 选配方 / 一并收取。
+/// 桃花岛主屏：据点分区 + 升级 / 选配方 / 一并收取。
 ///
 /// 数据全来自 [taohuaIslandViewProvider]（进屏 settle gate），
 /// 操作后 `ref.invalidate(taohuaIslandViewProvider)` 刷新。
@@ -59,11 +60,8 @@ class TaohuaIslandScreen extends ConsumerWidget {
         ],
       ),
       body: asyncView.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(
-            color: WuxiaUi.qing,
-          ),
-        ),
+        loading: () =>
+            const Center(child: CircularProgressIndicator(color: WuxiaUi.qing)),
         error: (e, _) => Center(
           child: Text(
             UiStrings.taohuaIslandLoadError(e),
@@ -79,7 +77,10 @@ class TaohuaIslandScreen extends ConsumerWidget {
               ),
             );
           }
-          return _IslandBody(view: view, onRefresh: () => ref.invalidate(taohuaIslandViewProvider));
+          return _IslandBody(
+            view: view,
+            onRefresh: () => ref.invalidate(taohuaIslandViewProvider),
+          );
         },
       ),
     );
@@ -96,13 +97,23 @@ class TaohuaIslandScreen extends ConsumerWidget {
   }
 }
 
-// ── 主体：4 建筑卡滚动列 ──────────────────────────────────────────────────────
+// ── 主体：据点分区滚动列 ─────────────────────────────────────────────────────
+
+const _rawBuildingTypes = [
+  BuildingType.tieJiangChang,
+  BuildingType.caoYaoYuan,
+  BuildingType.muGongFang,
+  BuildingType.lingQuan,
+];
+
+const _workshopBuildingTypes = [
+  BuildingType.daZaoTai,
+  BuildingType.danFang,
+  BuildingType.zhuZaoTai,
+];
 
 class _IslandBody extends StatelessWidget {
-  const _IslandBody({
-    required this.view,
-    required this.onRefresh,
-  });
+  const _IslandBody({required this.view, required this.onRefresh});
 
   final IslandView view;
   final VoidCallback onRefresh;
@@ -111,30 +122,201 @@ class _IslandBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final cfg = GameRepository.instance.numbers.taohuaIsland;
 
-    return ListView.separated(
+    return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      itemCount: BuildingType.values.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (context, i) {
-        final type = BuildingType.values[i];
-        final state = view.buildings.firstWhere(
-          (b) => b.type == type,
-          orElse: IslandBuildingState.new,
-        );
-        final bCfg = cfg.buildings[type]!;
-
-        // 用 IntrinsicHeight 包裹：PaperPanel 用 StackFit.expand，
-        // 在 ListView 无界高度场景须显式约束（feedback_wuxia_paper_panel_scroll_tile）
-        return IntrinsicHeight(
-          child: _BuildingCard(
-            type: type,
-            state: state,
-            bCfg: bCfg,
-            view: view,
-            onRefresh: onRefresh,
+      children: [
+        if (view.prepAdvice.isNotEmpty) ...[
+          _PrepAdvicePanel(
+            advice: view.prepAdvice.take(3).toList(growable: false),
           ),
-        );
-      },
+          const SizedBox(height: 18),
+        ],
+        const _ProjectStelePanel(),
+        const SizedBox(height: 18),
+        _BuildingSection(
+          label: UiStrings.taohuaIslandSectionRaw,
+          types: _rawBuildingTypes,
+          cfg: cfg,
+          view: view,
+          onRefresh: onRefresh,
+        ),
+        const SizedBox(height: 18),
+        _BuildingSection(
+          label: UiStrings.taohuaIslandSectionWorkshop,
+          types: _workshopBuildingTypes,
+          cfg: cfg,
+          view: view,
+          onRefresh: onRefresh,
+        ),
+        const SizedBox(height: 18),
+        const _SectionHeader(label: UiStrings.taohuaIslandSectionDock),
+      ],
+    );
+  }
+}
+
+class _BuildingSection extends StatelessWidget {
+  const _BuildingSection({
+    required this.label,
+    required this.types,
+    required this.cfg,
+    required this.view,
+    required this.onRefresh,
+  });
+
+  final String label;
+  final List<BuildingType> types;
+  final TaohuaIslandConfig cfg;
+  final IslandView view;
+  final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionHeader(label: label),
+        const SizedBox(height: 10),
+        for (final type in types) ...[
+          IntrinsicHeight(
+            child: _BuildingCard(
+              type: type,
+              state: view.buildings.firstWhere(
+                (b) => b.type == type,
+                orElse: () => IslandBuildingState()..type = type,
+              ),
+              bCfg: cfg.buildings[type]!,
+              view: view,
+              onRefresh: onRefresh,
+            ),
+          ),
+          if (type != types.last) const SizedBox(height: 12),
+        ],
+      ],
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: WuxiaUi.ink,
+        fontSize: 15,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 3,
+      ),
+    );
+  }
+}
+
+class _ProjectStelePanel extends StatelessWidget {
+  const _ProjectStelePanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return const PaperPanel(
+      padding: EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            UiStrings.islandProjectSteleTitle,
+            style: TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 3,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            UiStrings.islandProjectSteleLockedLine,
+            style: TextStyle(color: WuxiaUi.ink2, fontSize: 12, height: 1.35),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PrepAdvicePanel extends StatelessWidget {
+  const _PrepAdvicePanel({required this.advice});
+
+  final List<IslandPrepAdvice> advice;
+
+  @override
+  Widget build(BuildContext context) {
+    return PaperPanel(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            UiStrings.islandPrepSectionTitle,
+            style: TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 3,
+            ),
+          ),
+          const SizedBox(height: 10),
+          for (final item in advice) ...[
+            _PrepAdviceRow(advice: item),
+            if (item != advice.last) const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PrepAdviceRow extends StatelessWidget {
+  const _PrepAdviceRow({required this.advice});
+
+  final IslandPrepAdvice advice;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = advice.priority == IslandPrepAdvicePriority.high
+        ? WuxiaUi.jiang
+        : WuxiaUi.qing;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(left: BorderSide(color: accent, width: 3)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              advice.title,
+              style: TextStyle(
+                color: accent,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              advice.body,
+              style: const TextStyle(
+                color: WuxiaUi.ink2,
+                fontSize: 12,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -208,10 +390,7 @@ class _BuildingCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 UiStrings.taohuaIslandLevelLabel(level),
-                style: const TextStyle(
-                  color: WuxiaUi.muted,
-                  fontSize: 13,
-                ),
+                style: const TextStyle(color: WuxiaUi.muted, fontSize: 13),
               ),
               const Spacer(),
               // 生产状态标签（processor 专用）
@@ -237,20 +416,14 @@ class _BuildingCard extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 6),
               child: Text(
                 UiStrings.taohuaIslandOutputPrefix(outputName),
-                style: const TextStyle(
-                  color: WuxiaUi.ink2,
-                  fontSize: 13,
-                ),
+                style: const TextStyle(color: WuxiaUi.ink2, fontSize: 13),
               ),
             ),
 
           // ── 仓储进度 ──
           Text(
             UiStrings.taohuaIslandStorageLabel(stored, cap),
-            style: const TextStyle(
-              color: WuxiaUi.muted,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
           ),
           const SizedBox(height: 4),
           ClipRRect(
@@ -289,7 +462,6 @@ class _BuildingCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 // ── 选配方组件（processor 专用）────────────────────────────────────────────────
@@ -353,7 +525,9 @@ class _RecipeSelector extends StatelessWidget {
                           : WuxiaUi.paper2.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(
-                        color: isActive ? WuxiaUi.qing : WuxiaUi.ink.withValues(alpha: 0.3),
+                        color: isActive
+                            ? WuxiaUi.qing
+                            : WuxiaUi.ink.withValues(alpha: 0.3),
                         width: WuxiaUi.borderWidth,
                       ),
                     ),
@@ -434,6 +608,7 @@ class _UpgradeSection extends StatelessWidget {
   final IslandView view;
   final BuildingConfig bCfg;
   final int level;
+
   /// null = 可升级；非 null = 阻止升级的原因（共用 [IslandActionService.upgradeBlockReason]，消除 widget/service 双源）。
   final UpgradeResult? upgradeCheck;
   final VoidCallback onRefresh;
@@ -459,9 +634,9 @@ class _UpgradeSection extends StatelessWidget {
       // 节奏 B：分阶 gate 提示具体所需境界（升 level→level+1 需 upgradeRealmFor(level)）。
       // 仅 realmLocked 分支到达此处，level < maxLevel，索引不越界。
       UpgradeResult.realmLocked => UiStrings.taohuaIslandRealmLockedFor(
-          EnumL10n.realmTier(RealmTier.values[bCfg.upgradeRealmFor(level)])),
-      UpgradeResult.notEnoughSilver =>
-        UiStrings.taohuaIslandNotEnoughSilver,
+        EnumL10n.realmTier(RealmTier.values[bCfg.upgradeRealmFor(level)]),
+      ),
+      UpgradeResult.notEnoughSilver => UiStrings.taohuaIslandNotEnoughSilver,
       UpgradeResult.notEnoughMaterial =>
         UiStrings.taohuaIslandNotEnoughMaterial,
       null => null,
@@ -480,10 +655,7 @@ class _UpgradeSection extends StatelessWidget {
             padding: const EdgeInsets.only(top: 2, bottom: 4),
             child: Text(
               hint,
-              style: const TextStyle(
-                color: WuxiaUi.jiang,
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: WuxiaUi.jiang, fontSize: 11),
             ),
           ),
         const SizedBox(height: 4),

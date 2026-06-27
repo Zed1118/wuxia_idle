@@ -1167,6 +1167,23 @@ class UiStrings {
   static const String mainMenuBaike = '江湖见闻录';
   static const String mainMenuBaikeHint = '记事与典故,永久可查';
 
+  // ── 藏卷阁 Hub ──
+  static const String mainMenuZangjuange = '藏卷阁';
+  static const String mainMenuZangjuangeHint = '合看战绩、兵器、奇遇与武学缺口';
+  static const String zangjuangeTitle = '藏卷阁';
+  static const String zangjuangeCluesTitle = '卷中线索';
+  static const String zangjuangeCluesEmpty = '卷册暂未显出新的缺口';
+  static const String zangjuangeArchiveTitle = '四部卷册';
+  static const String zangjuangeClueEquipmentTitle = '兵器谱缺口';
+  static String zangjuangeClueEquipmentSummary(int count) =>
+      '尚有 $count 件器物未入谱，可循章节与掉落传闻回查。';
+  static const String zangjuangeClueFragmentTitle = '武学残页缺口';
+  static String zangjuangeClueFragmentSummary(int count) =>
+      '尚有 $count 处残页线索未合拢，可回看塔层、首领与奇遇来源。';
+  static const String zangjuangeClueBossCycleTitle = '周目异势未破';
+  static String zangjuangeClueBossCycleSummary(int count) =>
+      '尚有 $count 处首领异势未破，可从战绩册回看形态与出战记录。';
+
   // 设置面板
   static const String mainMenuSettings = '设置';
   static const String mainMenuSettingsHint = '音量 · 静音';
@@ -2021,6 +2038,15 @@ class UiStrings {
   /// 桃花岛主屏标题。
   static const String taohuaIslandTitle = '桃花岛';
 
+  /// 桃花岛据点分区：原料产出。
+  static const String taohuaIslandSectionRaw = '物产';
+
+  /// 桃花岛据点分区：加工建筑。
+  static const String taohuaIslandSectionWorkshop = '作坊';
+
+  /// 桃花岛据点分区：后续码头面板。
+  static const String taohuaIslandSectionDock = '码头';
+
   /// 建筑等级标签：`第 N 级`。
   static String taohuaIslandLevelLabel(int lv) => '第 $lv 级';
 
@@ -2085,6 +2111,25 @@ class UiStrings {
 
   /// selectRecipe 不可达路径失败文案（notProcessor / recipeNotFound）。
   static const String taohuaIslandSelectRecipeFailed = '无法择此配方';
+
+  /// 桃花岛整备建议区标题。
+  static const String islandPrepSectionTitle = '整备建议';
+
+  /// 缺装备线索转化的整备建议。
+  static const String islandPrepEquipmentTitle = '补兵器缺口';
+  static const String islandPrepEquipmentBody = '翻检兵器谱缺页，出岛前可预备强化材料与疗伤丹。';
+
+  /// 缺残页线索转化的整备建议。
+  static const String islandPrepFragmentTitle = '补武学残页';
+  static const String islandPrepFragmentBody = '藏经阁尚有残页未齐，临行前可备开锋辅材与破招余量。';
+
+  /// Boss 周目线索转化的整备建议。
+  static const String islandPrepBossCycleTitle = '备异势再战';
+  static const String islandPrepBossCycleBody = '有首破周目尚待回看，宜先整顿疗养与补给再登程。';
+
+  /// 岛务工程碑 first slice：只读长期工程占位，不消耗资源、不写存档。
+  static const String islandProjectSteleTitle = '岛务工程碑';
+  static const String islandProjectSteleLockedLine = '长期工程尚在筹备，只记录此番整备方向。';
 
   // ── 一键挂机扫荡 ───────────────────────────────────────────────────────
   /// 主线章节扫荡入口主按钮。
@@ -2169,7 +2214,8 @@ class UiStrings {
   // ── Debug · 数值红线审计（§5.6 集中归集 2026-06-27，仅 kDebugMode 工具）──
   // main_menu debug 区两个按钮
   static const String mainMenuSectRecruit = '强制招募 NPC';
-  static const String mainMenuSectRecruitHint = '走完整 sect recruit flow · 跳过战斗/奇遇触发';
+  static const String mainMenuSectRecruitHint =
+      '走完整 sect recruit flow · 跳过战斗/奇遇触发';
   static const String mainMenuRedlineAudit = '数值红线审计';
   static const String mainMenuRedlineAuditHint = '开发工具 · 查看 PASS/WARN/FAIL 与来源';
 

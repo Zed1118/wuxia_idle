@@ -92,10 +92,7 @@ enum VisualRoute {
     'battle_interrupt_caption',
     '战斗屏·破招「破！」题字静态验收(破招方暖金 + 敌方绛红 两态)',
   ),
-  battleDefeat(
-    'battle_defeat',
-    '战斗屏·败北页验收(敗 题字 + 败北 + 破招提示 + 战报,战场背景上结算)',
-  ),
+  battleDefeat('battle_defeat', '战斗屏·败北页验收(敗 题字 + 败北 + 破招提示 + 战报,战场背景上结算)'),
   defeatInnerDemonResidue(
     'defeat_inner_demon_residue',
     'M6 心魔关战败损失摘要·余毒未消段排版验收(战败剧情屏顶 banner:混合「含主修最长行」+「仅内力」两条余毒 entry,验内力段·修炼度回退段·余毒未消段拼接换行)',
@@ -116,10 +113,7 @@ enum VisualRoute {
     'stage_list_cycle',
     '主线选关·章层周目控件 + 拖招真关卡入口(整章 Ch1 cycle1 全通 → 章头显周目控件;点 tile 进真战斗验纯自动流+拖招)',
   ),
-  towerCycle(
-    'tower_cycle',
-    '爬塔·问鼎轮回验收(通关 30 层 cycle1 → 显当前轮回 + 挑战下一轮回入口)',
-  ),
+  towerCycle('tower_cycle', '爬塔·问鼎轮回验收(通关 30 层 cycle1 → 显当前轮回 + 挑战下一轮回入口)'),
   battleDragLive(
     'battle_drag_live',
     '拖招交互真玩/验收(真战斗·已开干预·高血耐久敌久撑 → 长按拖 single 强力技到敌头像指定 + aoe 大招拖动松手即对全体触发)',
@@ -152,18 +146,12 @@ enum VisualRoute {
     'boss_memory_detail',
     'P4 战绩册详情屏目检·完整纪念(伤害/英雄/掉落/阵容) + pre-record 骨架(此役不详)两态',
   ),
-  weaponCodex(
-    'weapon_codex',
-    '兵器谱主屏目检·混合态(点亮/回填/剪影三态混排 + slot 筛选 + 分档进度)',
-  ),
+  weaponCodex('weapon_codex', '兵器谱主屏目检·混合态(点亮/回填/剪影三态混排 + slot 筛选 + 分档进度)'),
   weaponCodexDetail(
     'weapon_codex_detail',
     '兵器谱详情屏目检·正常态(器物档案 + 个人历程 + 首得来源/日期)',
   ),
-  lineageCodex(
-    'lineage_codex',
-    '门派谱主屏目检·世代卷(进度头 + 祖师卡 + 门人 + 师承遗物 + 屏底飞升入口)',
-  ),
+  lineageCodex('lineage_codex', '门派谱主屏目检·世代卷(进度头 + 祖师卡 + 门人 + 师承遗物 + 屏底飞升入口)'),
   lineageCharacterDetail(
     'lineage_character_detail',
     '门派谱角色详情屏目检·祖师态(纪事 + 资质四项 + 主修 + 所持遗物 + 祖师恩泽)',
@@ -184,26 +172,18 @@ enum VisualRoute {
     'item_use_inventory',
     'P2 材料用途目检·背包物料 tab 直开:种经验丹三档(凝神/培元/大还,验 per-item 名不同)+ 秘籍(开碑手)+ 磨剑石,验丹/秘籍显「使用」按钮·磨剑石无按钮(仅可用道具显),点使用→确认弹窗→结果三态浮层',
   ),
-  encounterCodex(
-    'encounter_codex',
-    '奇遇录 tab 目检·混态(点亮+剪影 3 段分组 + 进度)',
-  ),
+  encounterCodex('encounter_codex', '奇遇录 tab 目检·混态(点亮+剪影 3 段分组 + 进度)'),
   encounterCodexDetail(
     'encounter_codex_detail',
     '奇遇录详情屏目检·回看 opening 故事 + 类型标',
   ),
-  skillCodex(
-    'skill_codex',
-    '武学图鉴 tab 目检·混态(点亮+剪影按来源5组+心法小节+进度)',
-  ),
+  skillCodex('skill_codex', '武学图鉴 tab 目检·混态(点亮+剪影按来源5组+心法小节+进度)'),
   skillCodexDetail(
     'skill_codex_detail',
     '武学详情屏目检·同步显招名+description+数值+所属心法+熟练阶',
   ),
-  redlineAudit(
-    'redline_audit',
-    '数值红线审计·开发工具视图(PASS/WARN/FAIL + 当前最大值 + 来源)',
-  ),
+  zangjuange('zangjuange', '藏卷阁 Hub 目检·战绩册/兵器谱/奇遇录/藏经阁聚合入口 + 卷中线索'),
+  redlineAudit('redline_audit', '数值红线审计·开发工具视图(PASS/WARN/FAIL + 当前最大值 + 来源)'),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);

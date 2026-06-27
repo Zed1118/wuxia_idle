@@ -37,7 +37,7 @@ void main() {
           List<IslandBuildingState> states, BuildingType type) =>
       states.firstWhere((s) => s.type == type);
 
-  /// 构造满供应链快照:两源 + 两加工,全部 level=[level],各加工激活指定配方。
+  /// 构造满供应链快照:四源 + 三加工,全部 level=[level],各加工激活指定配方。
   List<IslandBuildingState> seed(
     int level, {
     required String daRecipe,
@@ -53,6 +53,14 @@ void main() {
           ..level = level
           ..stored = 0,
         IslandBuildingState()
+          ..type = BuildingType.muGongFang
+          ..level = level
+          ..stored = 0,
+        IslandBuildingState()
+          ..type = BuildingType.lingQuan
+          ..level = level
+          ..stored = 0,
+        IslandBuildingState()
           ..type = BuildingType.daZaoTai
           ..level = level
           ..stored = 0
@@ -62,6 +70,11 @@ void main() {
           ..level = level
           ..stored = 0
           ..activeRecipeId = danRecipe,
+        IslandBuildingState()
+          ..type = BuildingType.zhuZaoTai
+          ..level = level
+          ..stored = 0
+          ..activeRecipeId = 'forge_kaifeng_fucai',
       ];
 
   /// 一次性结算整段 [hours]。founderRealmIndex=6 → 全配方解锁,不受境界门槛干扰。
@@ -99,6 +112,9 @@ void main() {
     final recipeCombos = <(String, String, String)>[
       ('realm0 默认(磨剑石/凝神丹)', 'forge_mojianshi', 'brew_ningshen'),
       ('realm3 高阶(心血结晶/培元丹)', 'forge_xinxue', 'brew_peiyuan'),
+      // 双输入配方:疗伤丹 = 药草 + 灵泉水。把 lingQuan 拉进消费链,验
+      // offline=online 在「次要原料也限产」时仍成立(7 建筑全覆盖)。
+      ('realm1 双输入(磨剑石/疗伤丹)', 'forge_mojianshi', 'brew_liaoshang'),
     ];
 
     test('配置前提:cap_hours=72 且 max_level=5(漂移则同步本测常量)', () {
@@ -142,6 +158,37 @@ void main() {
           reason: 'level=$level 凝神丹应满产 ${1.0 * level * 72},未被成品 cap 截断',
         );
       }
+    });
+
+    test('双输入 sink 真实性:疗伤丹满产 + 灵泉水被真实消耗(非孤儿产出)', () {
+      // 疗伤丹 rate 0.6 × level × 72;灵泉水净存量 = 产 4×level×72 − 消耗 made×5。
+      for (var level = 1; level <= 3; level++) {
+        final r = once(level, 'forge_mojianshi', 'brew_liaoshang', 72);
+        final made = 0.6 * level * 72;
+        expect(
+          byType(r, BuildingType.danFang).stored,
+          closeTo(made, 1e-3),
+          reason: 'level=$level 疗伤丹应满产 $made(灵泉水供给充足非约束)',
+        );
+        // 灵泉水若无消费 = 产满 4×level×72;接了 sink 后必少掉 made×5。
+        final produced = 4.0 * level * 72;
+        final consumed = made * 5.0;
+        expect(
+          byType(r, BuildingType.lingQuan).stored,
+          closeTo(produced - consumed, 1e-3),
+          reason: 'level=$level 灵泉水应被疗伤丹真实消耗 $consumed(证 sink 生效)',
+        );
+        expect(consumed, greaterThan(0), reason: '灵泉水确有消耗 = 非孤儿产出');
+      }
+    });
+
+    test('实配字段:丹房双输入 = 药草 + 灵泉水(防 numbers.yaml 漂移)', () {
+      final dan = cfg.buildingOf(BuildingType.danFang);
+      expect(dan.inputItem, 'item_yaocao');
+      expect(dan.secondaryInputItem, 'item_lingquanshui',
+          reason: '灵泉水 sink 落在丹房疗伤丹双输入');
+      final liao = dan.recipeById('brew_liaoshang')!;
+      expect(liao.secondaryInputPerOutput, 5.0);
     });
   });
 }

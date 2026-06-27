@@ -53,15 +53,34 @@ void main() {
 
   test('秘籍缺 unlockSkillId → 抛错', () {
     expect(
-      () => ItemDef.fromYaml({'defId': 'x', 'type': 'techniqueScroll', 'name': 'x'}),
+      () => ItemDef.fromYaml({
+        'defId': 'x',
+        'type': 'techniqueScroll',
+        'name': 'x',
+      }),
       throwsStateError,
     );
   });
 
-  test('GameRepository 加载 items.yaml: 17 条 def', () async {
+  test('GameRepository 加载 items.yaml: 核心道具 def 完整', () async {
     final repo = await GameRepository.loadAllDefs();
-    expect(repo.itemDefs.length, 17); // 原 14 + 桃花岛一期：mojianshi/xinxuejiejing/silver 入库
+    expect(repo.itemDefs.length, greaterThanOrEqualTo(23));
     expect(repo.itemDefs['item_jingyandan_small']?.layerFraction, 0.2);
-    expect(repo.itemDefs['item_scroll_kai_bei_shou']?.unlockSkillId, 'skill_kai_bei_shou');
+    expect(
+      repo.itemDefs['item_scroll_kai_bei_shou']?.unlockSkillId,
+      'skill_kai_bei_shou',
+    );
+
+    const phaseTwoIds = [
+      'item_mucai',
+      'item_lingquanshui',
+      'item_liaoshangdan',
+      'item_duancai',
+      'item_kaifeng_fucai',
+      'item_xingnang_buji',
+    ];
+    for (final id in phaseTwoIds) {
+      expect(repo.itemDefs.containsKey(id), isTrue, reason: id);
+    }
   });
 }

@@ -31,7 +31,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
 ///   - 菜单按钮 label 匹配（主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法 / 藏经阁 / 桃花岛）
-///   - 21 个菜单入口 WuxiaInkButton（按钮全部可点）+ 右上角退出键 = 22 InkWell
+///   - 22 个菜单入口 WuxiaInkButton（按钮全部可点）+ 右上角退出键 = 23 InkWell
 ///   - Tap "Phase 1 战斗测试" → push BattleTestMenu
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
@@ -63,7 +63,7 @@ void main() {
     expect(assetImage(WuxiaUi.mainMenuBg), findsOneWidget);
   });
 
-  testWidgets('20 个菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('22 个菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -75,6 +75,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSect), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLeaderboard), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuZangjuange), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase1), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase2), findsOneWidget);
@@ -121,16 +122,24 @@ void main() {
       y(UiStrings.mainMenuLightFoot) < y(UiStrings.mainMenuTaohuaIsland),
       isTrue,
     );
-    // 江湖组行序(师徒行 < 江湖行 < 百科行)
+    // 江湖组行序(师徒行 < 江湖行 < 藏卷阁/百科行)
     expect(y(UiStrings.mainMenuLineage) < y(UiStrings.mainMenuJianghu), isTrue);
-    expect(y(UiStrings.mainMenuJianghu) < y(UiStrings.mainMenuBaike), isTrue);
+    expect(
+      y(UiStrings.mainMenuJianghu) < y(UiStrings.mainMenuZangjuange),
+      isTrue,
+    );
+    expect(
+      (y(UiStrings.mainMenuZangjuange) - y(UiStrings.mainMenuBaike)).abs() <
+          2.0,
+      isTrue,
+    );
   });
 
-  testWidgets('21 个菜单按钮均为 InkWell（可点）', (tester) async {
+  testWidgets('22 个菜单按钮均为 InkWell（可点）', (tester) async {
     await tester.pumpWidget(app());
-    // 21 个菜单入口(WuxiaInkButton·含 debug 数值红线审计)+ 右上角退出键(IconButton)= 22 个 InkWell。
-    expect(find.byType(WuxiaInkButton), findsNWidgets(21));
-    expect(find.byType(InkWell), findsNWidgets(22));
+    // 22 个菜单入口(WuxiaInkButton·含 debug 数值红线审计)+ 右上角退出键(IconButton)= 23 个 InkWell。
+    expect(find.byType(WuxiaInkButton), findsNWidgets(22));
+    expect(find.byType(InkWell), findsNWidgets(23));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
@@ -143,6 +152,7 @@ void main() {
     expect(find.byIcon(Icons.landscape_outlined), findsOneWidget);
     expect(find.byIcon(Icons.filter_hdr_outlined), findsOneWidget);
     expect(find.byIcon(Icons.account_tree_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.library_books_outlined), findsOneWidget);
     // 百科 + 藏经阁共 2 个 menu_book_outlined 图标
     expect(find.byIcon(Icons.menu_book_outlined), findsNWidgets(2));
   });
@@ -776,6 +786,7 @@ void main() {
       // 后期系统(Ch6 prereq)、社交(Ch1)在空进度全灰显;PVP 已切除不再显示。
       expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
       expect(opacityOf(tester, UiStrings.mainMenuSect), 0.4);
+      expect(opacityOf(tester, UiStrings.mainMenuZangjuange), 0.4);
       expect(find.text('论剑对决'), findsNothing);
     });
 
@@ -783,9 +794,10 @@ void main() {
       await tester.pumpWidget(appWithCleared(['stage_01_05']));
       await tester.pump();
       await tester.pump();
-      // 社交(江湖/门派/排行榜)Ch1 prereq 满足 → enabled。
+      // 社交(江湖/门派/排行榜/藏卷阁)Ch1 prereq 满足 → enabled。
       expect(opacityOf(tester, UiStrings.mainMenuSect), 1.0);
       expect(opacityOf(tester, UiStrings.mainMenuJianghu), 1.0);
+      expect(opacityOf(tester, UiStrings.mainMenuZangjuange), 1.0);
       // 心魔仍需 Ch6 末关 → 仍 disabled。
       expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
     });
