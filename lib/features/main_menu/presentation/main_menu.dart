@@ -60,6 +60,7 @@ import '../../tower/presentation/tower_floor_list_screen.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../shop/application/shop_providers.dart';
 import '../../shop/presentation/shop_screen.dart';
+import '../../zangjuange/presentation/zangjuange_screen.dart';
 
 /// 入口列表布局成 2 列(Phase A 出版美术 · 解菜单纵向过长)。
 /// 奇数末项左对齐 + 右侧空格;同行用 IntrinsicHeight+stretch 等高。
@@ -357,6 +358,17 @@ class MainMenu extends ConsumerWidget {
         disabled: socialLocked,
         locked: socialLocked,
         onTap: () => _push(context, const LeaderboardScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuZangjuange,
+        hint: socialLocked
+            ? UiStrings.mainMenuSocialLockedHint
+            : UiStrings.mainMenuZangjuangeHint,
+        icon: Icons.library_books_outlined,
+        thumbnailPath: WuxiaUi.entryCodex,
+        disabled: socialLocked,
+        locked: socialLocked,
+        onTap: () => _push(context, const ZangjuangeScreen()),
       ),
       if (battleRecordUnlocked)
         WuxiaInkButton(
