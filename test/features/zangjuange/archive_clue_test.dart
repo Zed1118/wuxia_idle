@@ -30,4 +30,26 @@ void main() {
       ArchiveClueCategory.bossCycle,
     });
   });
+
+  test('boss cycle clue count ignores bosses without first cycle clear', () {
+    expect(
+      countUnbrokenBossCycles(
+        clearedChapterCycleKeys: const [],
+        maxCycleMainline: 2,
+        towerMaxClearedCycle: 0,
+        maxCycleTower: 2,
+      ),
+      0,
+    );
+
+    expect(
+      countUnbrokenBossCycles(
+        clearedChapterCycleKeys: const ['ch1#1', 'ch2#2'],
+        maxCycleMainline: 2,
+        towerMaxClearedCycle: 1,
+        maxCycleTower: 2,
+      ),
+      2,
+    );
+  });
 }
