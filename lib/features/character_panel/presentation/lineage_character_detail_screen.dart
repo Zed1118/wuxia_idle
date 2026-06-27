@@ -55,12 +55,15 @@ class LineageCharacterDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               _AttributesSection(character: character),
-              _InjurySection(character: character),
+              _ConditionSection(character: character),
               _MainTechniqueSection(character: character),
               _HeritageSection(character: character),
               if (character.isFounder &&
                   GameRepository.isLoaded &&
-                  GameRepository.instance.numbers.founderAncestorBuff
+                  GameRepository
+                      .instance
+                      .numbers
+                      .founderAncestorBuff
                       .isActive) ...[
                 const SizedBox(height: 16),
                 const _FounderBuffSection(),
@@ -100,7 +103,9 @@ class _MainTechniqueSection extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const LineageSectionTitle(UiStrings.lineageCharacterDetailMainTechnique),
+            const LineageSectionTitle(
+              UiStrings.lineageCharacterDetailMainTechnique,
+            ),
             const SizedBox(height: 8),
             Text(
               name,
@@ -190,10 +195,7 @@ class _HeroHeader extends StatelessWidget {
 /// 纪事段：祖师按 [generationIndex] 显「开派太祖」(1) / 「第 N 代掌门」(N>1)；
 /// 弟子按 lineageRole 反查拜入关卡名，反查不到只显年份（不杜撰关卡）。
 class _DeedsSection extends StatelessWidget {
-  const _DeedsSection({
-    required this.character,
-    required this.generationIndex,
-  });
+  const _DeedsSection({required this.character, required this.generationIndex});
 
   final Character character;
   final int generationIndex;
@@ -217,7 +219,8 @@ class _DeedsSection extends StatelessWidget {
   /// 按 lineageRole 反查拜入关卡名。未加载 / 无匹配 / 关卡名缺失时返回 null。
   String? _resolveJoinStageName() {
     if (!GameRepository.isLoaded) return null;
-    final joins = GameRepository.instance.numbers.lineageOnboarding.discipleJoins;
+    final joins =
+        GameRepository.instance.numbers.lineageOnboarding.discipleJoins;
     DiscipleJoinDef? def;
     for (final j in joins) {
       if (j.role == character.lineageRole) {
@@ -295,47 +298,85 @@ class _AttrChip extends StatelessWidget {
   }
 }
 
-/// 伤势状态段（Task 9）：展示重伤 / 轻伤。
+/// 状态段（Task 9 + 心魔余毒表现强化）：展示心魔余毒 / 重伤 / 轻伤。
 ///
+/// - 心魔余毒（innerDemonResidueHoursRemaining > 0）：「心魔余毒」chip +
+///   来源 / 影响 / 闭关清解路径
 /// - 重伤（injuryHoursRemaining > 0）：「重伤」chip + 「内伤未愈 · 调息 Nh」提示
 /// - 轻伤（lightInjuryStacks > 0）：「带伤×N」chip
-/// - 两者均无 → 整段隐藏
-class _InjurySection extends StatelessWidget {
-  const _InjurySection({required this.character});
+/// - 三者均无 → 整段隐藏
+class _ConditionSection extends StatelessWidget {
+  const _ConditionSection({required this.character});
 
   final Character character;
 
   @override
   Widget build(BuildContext context) {
+    final hasResidue = character.innerDemonResidueHoursRemaining > 0;
     final hasHeavy = character.injuryHoursRemaining > 0;
     final hasLight = character.lightInjuryStacks > 0;
-    if (!hasHeavy && !hasLight) return const SizedBox.shrink();
+    if (!hasResidue && !hasHeavy && !hasLight) return const SizedBox.shrink();
+    final residueDebuff = GameRepository.isLoaded
+        ? GameRepository.instance.numbers.innerDemon.residueDebuff
+        : null;
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: LineagePanelCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const LineageSectionTitle(UiStrings.lineageCharacterDetailInjuryTitle),
+            const LineageSectionTitle(
+              UiStrings.lineageCharacterDetailConditionTitle,
+            ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 16,
               runSpacing: 8,
               children: [
+                if (hasResidue) ...[
+                  const _ConditionChip(
+                    label: UiStrings.conditionInnerDemonResidueLabel,
+                    color: WuxiaColors.hpLow,
+                  ),
+                  const _ConditionChip(
+                    label: UiStrings.conditionInnerDemonResidueSource,
+                    color: WuxiaColors.textSecondary,
+                  ),
+                  if (residueDebuff != null)
+                    _ConditionChip(
+                      label: UiStrings.conditionInnerDemonResidueEffect(
+                        battleOutputPenaltyPct: _penaltyPct(
+                          residueDebuff.battleOutputMultiplier,
+                        ),
+                        internalForceRecoveryPenaltyPct: _penaltyPct(
+                          residueDebuff.internalForceRecoveryMultiplier,
+                        ),
+                      ),
+                      color: WuxiaColors.textSecondary,
+                    ),
+                  _ConditionChip(
+                    label: UiStrings.conditionInnerDemonResidueRecovery(
+                      character.innerDemonResidueHoursRemaining,
+                    ),
+                    color: WuxiaColors.textSecondary,
+                  ),
+                ],
                 if (hasHeavy) ...[
-                  const _InjuryChip(
+                  const _ConditionChip(
                     label: UiStrings.injuryHeavyLabel,
                     color: WuxiaColors.hpLow,
                   ),
-                  _InjuryChip(
+                  _ConditionChip(
                     label: UiStrings.injuryRecoveryHint(
-                        character.injuryHoursRemaining),
+                      character.injuryHoursRemaining,
+                    ),
                     color: WuxiaColors.textSecondary,
                   ),
                 ],
                 if (hasLight)
-                  _InjuryChip(
-                    label: '${UiStrings.injuryLightLabel}×${character.lightInjuryStacks}',
+                  _ConditionChip(
+                    label:
+                        '${UiStrings.injuryLightLabel}×${character.lightInjuryStacks}',
                     color: WuxiaColors.textSecondary,
                   ),
               ],
@@ -345,20 +386,20 @@ class _InjurySection extends StatelessWidget {
       ),
     );
   }
+
+  static int _penaltyPct(double multiplier) =>
+      ((1.0 - multiplier) * 100).round();
 }
 
-class _InjuryChip extends StatelessWidget {
-  const _InjuryChip({required this.label, required this.color});
+class _ConditionChip extends StatelessWidget {
+  const _ConditionChip({required this.label, required this.color});
 
   final String label;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: TextStyle(color: color, fontSize: 13),
-    );
+    return Text(label, style: TextStyle(color: color, fontSize: 13));
   }
 }
 
@@ -417,7 +458,9 @@ class _FounderBuffSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const LineageSectionTitle(UiStrings.lineageCharacterDetailFounderBuff),
+          const LineageSectionTitle(
+            UiStrings.lineageCharacterDetailFounderBuff,
+          ),
           const SizedBox(height: 8),
           LineageBuffRow(
             label: UiStrings.lineagePanelFounderBuffInternalForce,
@@ -436,4 +479,3 @@ class _FounderBuffSection extends StatelessWidget {
     );
   }
 }
-

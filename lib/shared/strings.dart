@@ -397,7 +397,7 @@ class UiStrings {
   static const String lineageCharacterDetailMainTechnique = '主修';
   static const String lineageCharacterDetailHeritage = '所持师承遗物';
   static const String lineageCharacterDetailFounderBuff = '祖师恩泽';
-  static const String lineageCharacterDetailInjuryTitle = '伤势';
+  static const String lineageCharacterDetailConditionTitle = '状态';
   static String lineageCharacterDetailJoinedAt(int year, String stage) =>
       '江湖 $year 年，过「$stage」拜入';
   static String lineageCharacterDetailJoinedYearOnly(int year) =>
@@ -1910,6 +1910,23 @@ class UiStrings {
   static const String innerDemonResidueNote = '余毒未消';
 
   // ── 双层伤势 UI（第八阶段 Task 9）──────────────────────────────────────────
+  /// 心魔余毒状态标签。
+  static const String conditionInnerDemonResidueLabel = '心魔余毒';
+
+  /// 心魔余毒来源提示。
+  static const String conditionInnerDemonResidueSource = '来源：心魔战败反噬';
+
+  /// 心魔余毒持续影响提示。
+  static String conditionInnerDemonResidueEffect({
+    required int battleOutputPenaltyPct,
+    required int internalForceRecoveryPenaltyPct,
+  }) =>
+      '影响：战斗输出 -$battleOutputPenaltyPct% · 闭关内力 -$internalForceRecoveryPenaltyPct%';
+
+  /// 心魔余毒清解提示。
+  static String conditionInnerDemonResidueRecovery(double hours) =>
+      '清解：闭关清调 ${hours.ceil()}h';
+
   /// 轻伤状态标签：`带伤`（含层数时由调用方拼接，如 `带伤×3`）。
   static const String injuryLightLabel = '带伤';
 
