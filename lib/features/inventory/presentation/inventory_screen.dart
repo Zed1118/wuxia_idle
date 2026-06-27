@@ -12,6 +12,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
+import '../../equipment/domain/equipment_slot_occupancy.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../application/item_use_service.dart';
@@ -33,6 +34,14 @@ import '../../help/presentation/context_help_button.dart';
 import '../../shop/application/shop_providers.dart';
 import 'bulk_disposal_dialog.dart';
 import 'equipment_detail_screen.dart';
+
+Set<int> _watchActiveEquippedIds(WidgetRef ref) {
+  final ids = ref.watch(activeCharacterIdsProvider).value ?? const <int>[];
+  final characters = [
+    for (final id in ids) ref.watch(characterByIdProvider(id)).value,
+  ].nonNulls;
+  return equippedEquipmentIdsForCharacters(characters);
+}
 
 /// 装备仓库（phase2_tasks T29 §424-425 + T32 #22a/#22b 销账 +
 /// W15 #30 P3 后续 A 物料 Tab）。
@@ -120,6 +129,7 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
     final playerRealm = ids.isEmpty
         ? null
         : ref.watch(characterByIdProvider(ids.first)).value?.realmTier;
+    final equippedIds = _watchActiveEquippedIds(ref);
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
@@ -129,7 +139,9 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
         ),
       ),
       data: (list) {
-        final filtered = list.where((eq) => _matches(eq, playerRealm)).toList();
+        final filtered = list
+            .where((eq) => _matches(eq, playerRealm, equippedIds))
+            .toList();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -159,7 +171,11 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
                         style: TextStyle(color: WuxiaColors.textMuted),
                       ),
                     )
-                  : _EquipmentGrid(equipments: filtered),
+                  : _EquipmentGrid(
+                      equipments: filtered,
+                      playerRealm: playerRealm,
+                      equippedIds: equippedIds,
+                    ),
             ),
           ],
         );
@@ -167,13 +183,13 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
     );
   }
 
-  bool _matches(Equipment eq, RealmTier? realm) {
+  bool _matches(Equipment eq, RealmTier? realm, Set<int> equippedIds) {
     return switch (_filter) {
       _EquipFilter.all => true,
       _EquipFilter.equippable =>
-        eq.ownerCharacterId == null &&
+        !isEquipmentEquippedBySlot(eq, equippedIds) &&
             (realm == null || eq.isEquippableAtRealm(realm)),
-      _EquipFilter.equipped => eq.ownerCharacterId != null,
+      _EquipFilter.equipped => isEquipmentEquippedBySlot(eq, equippedIds),
       _EquipFilter.forgeable => eq.forgingSlots.any((s) => !s.unlocked),
       _EquipFilter.realmLocked =>
         realm != null && !eq.isEquippableAtRealm(realm),
@@ -263,7 +279,10 @@ class _MaterialTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(allInventoryItemsProvider);
     final silverAsync = ref.watch(silverBalanceProvider);
-    final silverBalance = silverAsync.maybeWhen(data: (n) => n, orElse: () => 0);
+    final silverBalance = silverAsync.maybeWhen(
+      data: (n) => n,
+      orElse: () => 0,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -297,9 +316,7 @@ class _MaterialTab extends ConsumerWidget {
               PlaqueButton(
                 label: UiStrings.inventoryShopEntry,
                 onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const ShopScreen(),
-                  ),
+                  MaterialPageRoute<void>(builder: (_) => const ShopScreen()),
                 ),
               ),
             ],
@@ -339,18 +356,18 @@ class _MaterialTab extends ConsumerWidget {
 }
 
 class _EquipmentGrid extends ConsumerWidget {
-  const _EquipmentGrid({required this.equipments});
+  const _EquipmentGrid({
+    required this.equipments,
+    required this.playerRealm,
+    required this.equippedIds,
+  });
 
   final List<Equipment> equipments;
+  final RealmTier? playerRealm;
+  final Set<int> equippedIds;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 玩家主角境界 → 可装备状态判定基准(取 active 队首;无则不锁)。
-    final ids = ref.watch(activeCharacterIdsProvider).value ?? const [];
-    final playerRealm = ids.isEmpty
-        ? null
-        : ref.watch(characterByIdProvider(ids.first)).value?.realmTier;
-
     final bySlot = <EquipmentSlot, List<Equipment>>{};
     for (final eq in equipments) {
       bySlot.putIfAbsent(eq.slot, () => []).add(eq);
@@ -381,6 +398,7 @@ class _EquipmentGrid extends ConsumerWidget {
                       slot: slot,
                       items: bySlot[slot]!,
                       playerRealm: playerRealm,
+                      equippedIds: equippedIds,
                     ),
                     if (slot != sections.last) const SizedBox(height: 14),
                   ],
@@ -396,6 +414,7 @@ class _EquipmentGrid extends ConsumerWidget {
                       slot: slot,
                       items: bySlot[slot]!,
                       playerRealm: playerRealm,
+                      equippedIds: equippedIds,
                     ),
                   ),
                   if (slot != sections.last) const SizedBox(width: 14),
@@ -415,11 +434,13 @@ class _SlotGroupSection extends StatelessWidget {
     required this.slot,
     required this.items,
     required this.playerRealm,
+    required this.equippedIds,
   });
 
   final EquipmentSlot slot;
   final List<Equipment> items;
   final RealmTier? playerRealm;
+  final Set<int> equippedIds;
 
   @override
   Widget build(BuildContext context) {
@@ -434,7 +455,11 @@ class _SlotGroupSection extends StatelessWidget {
             runSpacing: 12,
             children: [
               for (final eq in items)
-                _EquipmentGridTile(equipment: eq, playerRealm: playerRealm),
+                _EquipmentGridTile(
+                  equipment: eq,
+                  playerRealm: playerRealm,
+                  equippedIds: equippedIds,
+                ),
             ],
           ),
         ],
@@ -449,10 +474,12 @@ class _EquipmentGridTile extends ConsumerWidget {
   const _EquipmentGridTile({
     required this.equipment,
     required this.playerRealm,
+    required this.equippedIds,
   });
 
   final Equipment equipment;
   final RealmTier? playerRealm;
+  final Set<int> equippedIds;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -460,9 +487,11 @@ class _EquipmentGridTile extends ConsumerWidget {
     final color = tierColorForEquipment(eq.tier);
     final def = GameRepository.instance.equipmentDefs[eq.defId];
     final locked = playerRealm != null && !eq.isEquippableAtRealm(playerRealm!);
+    final equipped = isEquipmentEquippedBySlot(eq, equippedIds);
     // T11:封条显具体境界原因(§5.3 装备阶↔境界 1:1,需同序境界),非泛化「未达境界」。
-    final requiredRealmName =
-        EnumL10n.realmTier(RealmTier.values[eq.tier.index]);
+    final requiredRealmName = EnumL10n.realmTier(
+      RealmTier.values[eq.tier.index],
+    );
 
     return Stack(
       clipBehavior: Clip.none,
@@ -491,7 +520,7 @@ class _EquipmentGridTile extends ConsumerWidget {
               color: WuxiaColors.bossFrame,
             ),
           ),
-        if (eq.ownerCharacterId != null)
+        if (equipped)
           Positioned(
             bottom: 2,
             right: 2,
@@ -698,9 +727,7 @@ class _MaterialGridTile extends ConsumerWidget {
                         color: WuxiaUi.paper,
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        shadows: [
-                          Shadow(blurRadius: 2, color: Colors.black54),
-                        ],
+                        shadows: [Shadow(blurRadius: 2, color: Colors.black54)],
                       ),
                     ),
                   ),

@@ -17,7 +17,7 @@ import 'package:wuxia_idle/features/equipment/application/equipment_service.dart
 ///
 /// 用例:
 /// - 空槽装备 → success + char.equippedWeaponId == eq.id + eq.ownerCharacterId
-/// - 换装 → 旧装回自由池(char slot 指向新装 · 旧装无角色槽指向)
+/// - 换装 → 旧装回自由池(char slot 指向新装 · 旧装 owner 回收)
 /// - §5.3 境界不达 → lockedByRealm + 0 状态变化
 /// - unequip → 槽位 null
 /// - 移装(eq 原在他角色槽)→ 他角色槽清空(防双持)
@@ -113,21 +113,27 @@ void main() {
     await service.equip(characterId: cid, equipmentId: newId);
 
     final c = await IsarSetup.instance.characters.get(cid);
+    final oldEq = await IsarSetup.instance.equipments.get(oldId);
     expect(c!.equippedWeaponId, newId, reason: '槽位应指向新装');
+    expect(oldEq!.ownerCharacterId, isNull, reason: '旧装 owner 应回收');
     // 旧装不再被任何角色槽位指向 = 回自由池。
     final all = await IsarSetup.instance.characters.where().findAll();
-    final stillHeld = all.any((h) =>
-        h.equippedWeaponId == oldId ||
-        h.equippedArmorId == oldId ||
-        h.equippedAccessoryId == oldId);
+    final stillHeld = all.any(
+      (h) =>
+          h.equippedWeaponId == oldId ||
+          h.equippedArmorId == oldId ||
+          h.equippedAccessoryId == oldId,
+    );
     expect(stillHeld, isFalse, reason: '旧装应回自由池');
   });
 
   test('§5.3 境界不达 → lockedByRealm + 0 状态变化', () async {
     // 学徒角色 vs 神物装备(神物 = 最高阶,远超学徒)。
     final cid = await seedCharacter(realmTier: RealmTier.xueTu);
-    final eid =
-        await seedEquipment(tier: EquipmentTier.shenWu, slot: EquipmentSlot.weapon);
+    final eid = await seedEquipment(
+      tier: EquipmentTier.shenWu,
+      slot: EquipmentSlot.weapon,
+    );
 
     final outcome = await service.equip(characterId: cid, equipmentId: eid);
     expect(outcome, EquipOutcome.lockedByRealm);
@@ -138,14 +144,16 @@ void main() {
     expect(eq!.ownerCharacterId, isNull, reason: 'owner 不变');
   });
 
-  test('unequip → 槽位 null', () async {
+  test('unequip → 槽位 null + owner 回收', () async {
     final cid = await seedCharacter();
     final eid = await seedEquipment(slot: EquipmentSlot.armor);
     await service.equip(characterId: cid, equipmentId: eid);
 
     await service.unequip(characterId: cid, slot: EquipmentSlot.armor);
     final c = await IsarSetup.instance.characters.get(cid);
+    final eq = await IsarSetup.instance.equipments.get(eid);
     expect(c!.equippedArmorId, isNull);
+    expect(eq!.ownerCharacterId, isNull, reason: '卸装后 owner 应回收');
   });
 
   test('移装 → 原持有角色槽位清空(防双持)', () async {
