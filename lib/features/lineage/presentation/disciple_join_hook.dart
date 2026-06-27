@@ -25,30 +25,33 @@ Future<void> runDiscipleJoinHookAfterVictory({
   if (isar == null) return;
   final svc = DiscipleJoinService(isar: isar);
   final joined = await svc.joinForClearedStage(stageId);
-  if (joined == null) return;
+  if (joined.isEmpty) return;
 
-  // 从配置直接读 narrativeId：无脆弱次序假设，任意 join 数量均正确。
   final joins = GameRepository.instance.numbers.lineageOnboarding.discipleJoins;
-  final join = joins.firstWhere((j) => j.stageId == stageId);
-  final narrativeId = join.narrativeId;
-
-  if (context.mounted) {
-    final content = await NarrativeLoader.load(narrativeId);
-    if (context.mounted) {
-      await Navigator.of(context).push<void>(MaterialPageRoute(
-        builder: (_) => NarrativeReaderScreen(
-          content: content,
-          fallbackTitle: UiStrings.discipleJoinCaption(joined.name),
-        ),
-      ));
-    }
-  }
-  if (context.mounted) {
-    await presentDiscipleJoin(
-      context,
-      // portraitPath 为 String? → 空串走 errorBuilder 纸调兜底。
-      portraitPath: joined.portraitPath ?? '',
-      caption: UiStrings.discipleJoinCaption(joined.name),
+  // 按拜入顺序(senior 先 junior 后)依次弹拜师叙事 + 立绘。终局 06_05 同关拜两弟子。
+  for (final disciple in joined) {
+    // 按 role 精确匹配该关 join 配置取 narrativeId,无脆弱次序假设。
+    final join = joins.firstWhere(
+      (j) => j.stageId == stageId && j.role == disciple.lineageRole,
     );
+    if (context.mounted) {
+      final content = await NarrativeLoader.load(join.narrativeId);
+      if (context.mounted) {
+        await Navigator.of(context).push<void>(MaterialPageRoute(
+          builder: (_) => NarrativeReaderScreen(
+            content: content,
+            fallbackTitle: UiStrings.discipleJoinCaption(disciple.name),
+          ),
+        ));
+      }
+    }
+    if (context.mounted) {
+      await presentDiscipleJoin(
+        context,
+        // portraitPath 为 String? → 空串走 errorBuilder 纸调兜底。
+        portraitPath: disciple.portraitPath ?? '',
+        caption: UiStrings.discipleJoinCaption(disciple.name),
+      );
+    }
   }
 }

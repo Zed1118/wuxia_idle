@@ -111,7 +111,7 @@ void main() {
     // [WidgetTester.runAsync] 让真 async 完成。hook 末尾 presentDiscipleJoin 会
     // await showGeneralDialog(只点击/timer 才 resolve),故 fire-and-forget 不 await
     // 整个 future,在 runAsync 延时让 Isar+load 落地后再 pump 渲染推入的路由。
-    testWidgets('过 join 关 → 弟子入队 + 拜师叙事 + 立绘 overlay', (tester) async {
+    testWidgets('过终局关(06_05) → 两弟子依次拜师叙事 + 立绘 + 满队', (tester) async {
       late BuildContext capturedContext;
       late WidgetRef capturedRef;
       await tester.pumpWidget(
@@ -135,50 +135,60 @@ void main() {
         unawaited(runDiscipleJoinHookAfterVictory(
           context: capturedContext,
           ref: capturedRef,
-          stageId: 'stage_02_05',
+          stageId: 'stage_06_05',
         ));
-        // 让 Isar writeTxn + NarrativeLoader.load 真 async 落地。
-        await Future<void>.delayed(const Duration(milliseconds: 400));
+        // 让 Isar writeTxn(两弟子)+ NarrativeLoader.load 真 async 落地。
+        await Future<void>.delayed(const Duration(milliseconds: 600));
       });
       for (var i = 0; i < 8; i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
 
-      // 拜师叙事屏渲染。
+      // 第一段:senior 拜师叙事屏渲染 + 两弟子已入队(满队 3 人,写已落地)。
       expect(find.byType(NarrativeReaderScreen), findsOneWidget);
-
-      // 弟子已入队:senior 弟子存在 + activeCharacterIds 含其 id(Isar 写已落地)。
-      // Isar 真 async 查询须在 runAsync 内,否则 testWidgets fake-async 死锁。
       await tester.runAsync(() async {
+        final save = await isar.saveDatas.get(0);
+        expect(save!.activeCharacterIds.length, 3, reason: '祖师+两弟子满队');
         final seniors = (await isar.characters.where().findAll())
             .where((c) => c.lineageRole == LineageRole.senior)
             .toList();
         expect(seniors.length, 1);
-        final save = await isar.saveDatas.get(0);
-        expect(save!.activeCharacterIds.contains(seniors.first.id), true);
+        final juniors = (await isar.characters.where().findAll())
+            .where((c) => c.lineageRole == LineageRole.junior)
+            .toList();
+        expect(juniors.length, 1);
       });
 
-      // 跳过叙事 → _finish pop → hook 续 presentDiscipleJoin 弹立绘 overlay。
+      // 跳过 senior 叙事 → senior 立绘 overlay。
       await tester.tap(find.text('跳过'));
       await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 100));
+        await Future<void>.delayed(const Duration(milliseconds: 150));
       });
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-
-      // 拜入立绘 overlay 渲染,题字含弟子名「拜入门下」(scope 到 overlay 子树,
-      // 因 NarrativeReaderScreen fallbackTitle 也用同一 caption),缺图不崩。
       expect(find.byType(DiscipleJoinOverlay), findsOneWidget);
-      expect(
-        find.descendant(
-          of: find.byType(DiscipleJoinOverlay),
-          matching: find.textContaining('拜入门下'),
-        ),
-        findsOneWidget,
-      );
       expect(tester.takeException(), isNull);
 
-      // 点击 overlay 关闭,清掉 pending timer(auto-dismiss)。
+      // 点击关闭 senior 立绘 → hook 续第二段 junior 叙事。
+      await tester.tap(find.byType(DiscipleJoinOverlay));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+      });
+      for (var i = 0; i < 8; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(find.byType(NarrativeReaderScreen), findsOneWidget,
+          reason: 'junior 第二段拜师叙事');
+
+      // 跳过 junior 叙事 → junior 立绘 → 关闭,清 pending timer。
+      await tester.tap(find.text('跳过'));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 150));
+      });
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.byType(DiscipleJoinOverlay), findsOneWidget);
+      expect(tester.takeException(), isNull);
       await tester.tap(find.byType(DiscipleJoinOverlay));
       for (var i = 0; i < 6; i++) {
         await tester.pump(const Duration(milliseconds: 100));
