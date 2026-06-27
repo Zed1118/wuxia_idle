@@ -1,4 +1,12 @@
-enum BuildingType { tieJiangChang, caoYaoYuan, daZaoTai, danFang }
+enum BuildingType {
+  tieJiangChang,
+  caoYaoYuan,
+  daZaoTai,
+  danFang,
+  muGongFang,
+  lingQuan,
+  zhuZaoTai,
+}
 
 enum BuildingKind { source, processor }
 
@@ -31,6 +39,9 @@ const _yamlKeyByType = {
   'cao_yao_yuan': BuildingType.caoYaoYuan,
   'da_zao_tai': BuildingType.daZaoTai,
   'dan_fang': BuildingType.danFang,
+  'mu_gong_fang': BuildingType.muGongFang,
+  'ling_quan': BuildingType.lingQuan,
+  'zhu_zao_tai': BuildingType.zhuZaoTai,
 };
 
 BuildingType buildingTypeFromYamlKey(String k) =>
