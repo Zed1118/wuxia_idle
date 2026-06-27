@@ -504,9 +504,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       }
     }
     if (isUltimateCaptionSkill(action.skill)) {
+      final climax = hitClimaxFor(action, s);
+      final isCrit = action.attackResult?.isCritical ?? false;
       _ultimateCaptionKey.currentState?.show(
         action.skill!.name,
         isEnemy: actor?.teamSide == 1,
+        fontSize: climax == HitClimax.ultimateCrit
+            ? widget.animConfig.hitTier.captionPeakSize.toDouble()
+            : 56,
+        glowBlur: isCrit ? widget.animConfig.hitTier.captionGlowBlur : 0,
       );
     }
     // B3 破招:打断蓄力 → 弹「破！」题字(破招方暖金/敌方绛红,纯读 state)。

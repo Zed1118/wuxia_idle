@@ -66,4 +66,19 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('破！'), findsNWidgets(2));
   });
+
+  testWidgets('大招暴击峰值: fontSize=68 + glowBlur=12 不崩', (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: UltimateCaptionContent(
+          name: '破',
+          isEnemy: false,
+          fontSize: 68,
+          glowBlur: 12,
+        ),
+      ),
+    ));
+    expect(tester.takeException(), isNull);
+    expect(find.text('破'), findsNWidgets(2));
+  });
 }
