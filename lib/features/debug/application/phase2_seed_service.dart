@@ -269,6 +269,9 @@ class Phase2SeedService {
       // 1. 创建 3 角色，祖师固定 id=1（与既有 main_menu / character_panel 对齐）。
       //    大弟子 / 二弟子由 Isar autoIncrement → id=2 / id=3。
       final founder = buildMasterCharacter(masters[0], now: now)..id = 1;
+      // debug seed 显式复现进阶祖师（一流·启蒙），与生产学徒空手新手解耦（2026-06-27 祖师改动）
+      founder.realmTier = RealmTier.yiLiu;
+      founder.realmLayer = RealmLayer.qiMeng;
       await isar.characters.put(founder);
       final firstDisciple = buildMasterCharacter(masters[1], now: now);
       await isar.characters.put(firstDisciple);
@@ -283,16 +286,28 @@ class Phase2SeedService {
       // 3. 按 slot 顺序装备 + 学心法。
       //    顺序：先装备/学心法（会写回 character 的 equippedXxxId / mainTechniqueId 字段），
       //    最后 putAll 一次性把 character 改动持久化。
+      //    祖师装备：显式复现旧 3 件（一流·利器/好家伙套），与生产空手新手解耦（2026-06-27 祖师改动）。
+      //    weapon_liqi_long_quan + armor_haojiahuo_jin_pao 均为 isLineageHeritage=true，
+      //    保证飞升遗物 transfer / BattleCharacter lineage buff 测试语义完整。
+      const founderStartingEquipmentIds = [
+        'weapon_liqi_long_quan',
+        'armor_haojiahuo_jin_pao',
+        'accessory_haojiahuo_yu_pei_lao',
+      ];
       final pairs = [
         (masters[0], founder),
         (masters[1], firstDisciple),
         (masters[2], secondDisciple),
       ];
       for (final pair in pairs) {
+        // 祖师特判：用显式常量装备列表代替（现已为空的）startingEquipmentIds
+        final defIds = pair.$2 == founder
+            ? founderStartingEquipmentIds
+            : pair.$1.startingEquipmentIds;
         await equipMasterStarting(
           isar,
           character: pair.$2,
-          defIds: pair.$1.startingEquipmentIds,
+          defIds: defIds,
           rng: rng,
           now: now,
         );
