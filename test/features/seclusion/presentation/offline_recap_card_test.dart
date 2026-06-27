@@ -34,19 +34,36 @@ void main() {
       progressPct: 1.0,
       estimatedMojianshi: 120,
       estimatedExperience: 300,
+      estimatedSilver: 45,
+      settledHours: 4.0,
+      limitReason: OfflineRecapLimitReason.plannedDuration,
     );
-    await pumpCard(
-      tester,
-      recap: recap,
-      onGoCollect: () {},
-      onDismiss: () {},
-    );
+    await pumpCard(tester, recap: recap, onGoCollect: () {}, onDismiss: () {});
 
     expect(find.text(UiStrings.offlineRecapTitle), findsOneWidget);
     expect(find.textContaining('山林'), findsOneWidget);
     expect(find.textContaining('圆满'), findsOneWidget);
-    expect(find.textContaining('120'), findsOneWidget);
-    expect(find.textContaining('300'), findsOneWidget);
+    expect(
+      find.text(UiStrings.offlineRecapRewardOverview(120, 45, 300)),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.offlineRecapMojianshiDetail(120)),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.offlineRecapSilverDetail(45)), findsOneWidget);
+    expect(
+      find.text(UiStrings.offlineRecapExperienceDetail(300)),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(UiStrings.offlineRecapDropPending),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(UiStrings.offlineRecapLimitPlanned),
+      findsOneWidget,
+    );
     expect(find.text(UiStrings.offlineRecapGoCollect), findsOneWidget);
     expect(find.text(UiStrings.offlineRecapDismiss), findsOneWidget);
   });
@@ -59,16 +76,18 @@ void main() {
       progressPct: 0.5,
       estimatedMojianshi: 40,
       estimatedExperience: 90,
+      estimatedSilver: 15,
+      settledHours: 2.0,
+      limitReason: OfflineRecapLimitReason.inProgress,
     );
-    await pumpCard(
-      tester,
-      recap: recap,
-      onGoCollect: () {},
-      onDismiss: () {},
-    );
+    await pumpCard(tester, recap: recap, onGoCollect: () {}, onDismiss: () {});
 
     expect(find.textContaining('50%'), findsOneWidget);
     expect(find.textContaining('古剑冢'), findsOneWidget);
+    expect(
+      find.textContaining(UiStrings.offlineRecapLimitInProgress),
+      findsOneWidget,
+    );
   });
 
   testWidgets('点「前去收功」触发 onGoCollect', (tester) async {
@@ -80,6 +99,9 @@ void main() {
       progressPct: 1.0,
       estimatedMojianshi: 120,
       estimatedExperience: 300,
+      estimatedSilver: 45,
+      settledHours: 4.0,
+      limitReason: OfflineRecapLimitReason.plannedDuration,
     );
     await pumpCard(
       tester,
@@ -102,6 +124,9 @@ void main() {
       progressPct: 1.0,
       estimatedMojianshi: 120,
       estimatedExperience: 300,
+      estimatedSilver: 45,
+      settledHours: 4.0,
+      limitReason: OfflineRecapLimitReason.plannedDuration,
     );
     await pumpCard(
       tester,

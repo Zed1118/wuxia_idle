@@ -91,13 +91,14 @@ void main() {
     });
   });
 
-  group('RetreatResultScreen W15 #30 5 维度展示', () {
-    testWidgets('5 维度全有 → 5 行 + 实际时长', (tester) async {
+  group('RetreatResultScreen W15 #30 维度展示', () {
+    testWidgets('资源维度全有 → 展示各收益 + 实际时长', (tester) async {
       await _pump(
         tester,
         _mkResult(
           actualHours: 4.0,
           mojianshi: 12,
+          silver: 20,
           experience: 400,
           techniqueLearn: 5,
           internalForce: 30,
@@ -108,6 +109,7 @@ void main() {
       expect(_assetImage(WuxiaUi.ceremonyRetreatResult), findsOneWidget);
       expect(find.text(UiStrings.seclusionActualHours(4.0)), findsOneWidget);
       expect(find.text(UiStrings.seclusionMojianshi(12)), findsOneWidget);
+      expect(find.text(UiStrings.seclusionSilver(20)), findsOneWidget);
       expect(find.text(UiStrings.seclusionExperience(400)), findsOneWidget);
       expect(find.text(UiStrings.seclusionInternalForce(30)), findsOneWidget);
       expect(find.text(UiStrings.seclusionInsightPoints(5)), findsOneWidget);

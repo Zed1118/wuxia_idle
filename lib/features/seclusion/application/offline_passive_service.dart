@@ -13,7 +13,13 @@ import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 
 /// 被动离线挂机一次结算的产量（纯数据）。
-typedef PassiveYield = ({int mojianshi, int experience});
+typedef PassiveYield = ({
+  int mojianshi,
+  int experience,
+  double awayHours,
+  double settledHours,
+  bool isCapped,
+});
 
 /// M2 范围 B 通用被动离线挂机服务。
 ///
@@ -31,11 +37,20 @@ class OfflinePassiveService {
   }) {
     final capped = awayHours.clamp(0, config.capHours.toDouble());
     final scale = config.realmScaleFor(realmTier);
-    final mojianshi =
-        (config.baseMojianshiPerHour * capped * scale).floor().clamp(0, 999999);
-    final experience =
-        (config.baseExpPerHour * capped * scale).floor().clamp(0, 999999);
-    return (mojianshi: mojianshi, experience: experience);
+    final mojianshi = (config.baseMojianshiPerHour * capped * scale)
+        .floor()
+        .clamp(0, 999999);
+    final experience = (config.baseExpPerHour * capped * scale).floor().clamp(
+      0,
+      999999,
+    );
+    return (
+      mojianshi: mojianshi,
+      experience: experience,
+      awayHours: awayHours,
+      settledHours: capped.toDouble(),
+      isCapped: awayHours > config.capHours,
+    );
   }
 
   /// 结算一次被动离线产出并写 Isar（同事务）：
@@ -67,12 +82,14 @@ class OfflinePassiveService {
           existing.lastObtainedAt = now;
           await isar.inventoryItems.put(existing);
         } else {
-          await isar.inventoryItems.put(InventoryItem()
-            ..defId = 'item_mojianshi'
-            ..itemType = ItemType.moJianShi
-            ..quantity = yield_.mojianshi
-            ..firstObtainedAt = now
-            ..lastObtainedAt = now);
+          await isar.inventoryItems.put(
+            InventoryItem()
+              ..defId = 'item_mojianshi'
+              ..itemType = ItemType.moJianShi
+              ..quantity = yield_.mojianshi
+              ..firstObtainedAt = now
+              ..lastObtainedAt = now,
+          );
         }
       }
 
