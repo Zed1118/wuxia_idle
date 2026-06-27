@@ -7,6 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/taohua_island/application/island_providers.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_state.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
+import 'package:wuxia_idle/features/taohua_island/domain/island_prep_advice.dart';
 import 'package:wuxia_idle/features/taohua_island/presentation/taohua_island_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
@@ -28,16 +29,20 @@ void main() {
 
   // ── 构造测试 view ──────────────────────────────────────────────────────────
 
-  /// 构建 4 个建筑的 IslandBuildingState 测试快照。
+  /// 构建 7 个建筑的 IslandBuildingState 测试快照。
   ///
   /// - tieJiangChang: level=2, stored=50（source，无 recipe）
   /// - caoYaoYuan:    level=1, stored=10（source，无 recipe）
+  /// - muGongFang:    level=1, stored=8（source，无 recipe）
+  /// - lingQuan:      level=1, stored=6（source，无 recipe）
   /// - daZaoTai:      level=1, stored=3, activeRecipeId='forge_mojianshi'（processor）
   /// - danFang:       level=1, stored=0, activeRecipeId=null（processor，停产）
+  /// - zhuZaoTai:     level=1, stored=2, activeRecipeId='forge_kaifeng_fucai'（processor）
   IslandView buildTestView({
     int silver = 100,
     Map<String, int>? materials,
     int founderRealmIndex = 0,
+    List<IslandPrepAdvice> prepAdvice = const [],
   }) {
     final tieState = IslandBuildingState()
       ..type = BuildingType.tieJiangChang
@@ -48,6 +53,16 @@ void main() {
       ..type = BuildingType.caoYaoYuan
       ..level = 1
       ..stored = 10;
+
+    final mgState = IslandBuildingState()
+      ..type = BuildingType.muGongFang
+      ..level = 1
+      ..stored = 8;
+
+    final lqState = IslandBuildingState()
+      ..type = BuildingType.lingQuan
+      ..level = 1
+      ..stored = 6;
 
     final dzState = IslandBuildingState()
       ..type = BuildingType.daZaoTai
@@ -61,30 +76,43 @@ void main() {
       ..stored = 0;
     // activeRecipeId = null → 停产
 
+    final zzState = IslandBuildingState()
+      ..type = BuildingType.zhuZaoTai
+      ..level = 1
+      ..stored = 2
+      ..activeRecipeId = 'forge_kaifeng_fucai';
+
     return IslandView(
-      buildings: [tieState, caoState, dzState, dfState],
+      buildings: [
+        tieState,
+        caoState,
+        mgState,
+        lqState,
+        dzState,
+        dfState,
+        zzState,
+      ],
       founderRealmIndex: founderRealmIndex,
       silver: silver,
-      materials: materials ??
+      materials:
+          materials ??
           {
             // 各建筑升级材料（按 data/taohua_island.yaml 的 upgrade_material_item）
             'item_mojianshi': 100,
             'item_jingtie': 100,
             'item_yaocao': 100,
             'item_xinxuejiejing': 100,
+            'item_mucai': 100,
+            'item_lingquanshui': 100,
           },
+      prepAdvice: prepAdvice,
     );
   }
 
   Widget wrap(IslandView? view) => ProviderScope(
-        overrides: [
-          taohuaIslandViewProvider
-              .overrideWith((ref) async => view),
-        ],
-        child: const MaterialApp(
-          home: TaohuaIslandScreen(),
-        ),
-      );
+    overrides: [taohuaIslandViewProvider.overrideWith((ref) async => view)],
+    child: const MaterialApp(home: TaohuaIslandScreen()),
+  );
 
   // ── 辅助：扩大 viewport ────────────────────────────────────────────────────
 
@@ -103,7 +131,7 @@ void main() {
       expect(find.text(UiStrings.taohuaIslandTitle), findsOneWidget);
     });
 
-    testWidgets('4 个建筑名均渲染', (tester) async {
+    testWidgets('7 个建筑名均渲染', (tester) async {
       await pump(tester, wrap(buildTestView()));
 
       for (final type in BuildingType.values) {
@@ -115,13 +143,18 @@ void main() {
       }
     });
 
+    testWidgets('据点分区标签均渲染', (tester) async {
+      await pump(tester, wrap(buildTestView()));
+
+      expect(find.text(UiStrings.taohuaIslandSectionRaw), findsOneWidget);
+      expect(find.text(UiStrings.taohuaIslandSectionWorkshop), findsOneWidget);
+      expect(find.text(UiStrings.taohuaIslandSectionDock), findsOneWidget);
+    });
+
     testWidgets('等级文本渲染（level=2 的 tieJiangChang）', (tester) async {
       await pump(tester, wrap(buildTestView()));
       // tieJiangChang level=2 → '第 2 级'
-      expect(
-        find.text(UiStrings.taohuaIslandLevelLabel(2)),
-        findsOneWidget,
-      );
+      expect(find.text(UiStrings.taohuaIslandLevelLabel(2)), findsOneWidget);
     });
 
     testWidgets('仓储文本渲染（50/900 for tieJiangChang level=2）', (tester) async {
@@ -138,25 +171,19 @@ void main() {
     testWidgets('升级按钮存在', (tester) async {
       await pump(tester, wrap(buildTestView()));
       // 至少 1 个升级按钮可见
-      expect(
-        find.text(UiStrings.taohuaIslandUpgrade),
-        findsWidgets,
-      );
+      expect(find.text(UiStrings.taohuaIslandUpgrade), findsWidgets);
     });
 
     testWidgets('processor 建筑有选配方文案', (tester) async {
       await pump(tester, wrap(buildTestView()));
-      // 两个 processor 各有选配方标签
-      expect(
-        find.text(UiStrings.taohuaIslandSelectRecipe),
-        findsNWidgets(2),
-      );
+      // 三个 processor 各有选配方标签
+      expect(find.text(UiStrings.taohuaIslandSelectRecipe), findsNWidgets(3));
     });
 
     testWidgets('产出中 / 已停标签正确', (tester) async {
       await pump(tester, wrap(buildTestView()));
-      // daZaoTai activeRecipeId 非 null → 产出中
-      expect(find.text(UiStrings.taohuaIslandIdleProducing), findsOneWidget);
+      // daZaoTai / zhuZaoTai activeRecipeId 非 null → 产出中
+      expect(find.text(UiStrings.taohuaIslandIdleProducing), findsNWidgets(2));
       // danFang activeRecipeId == null → 已停
       expect(find.text(UiStrings.taohuaIslandIdlePaused), findsOneWidget);
     });
@@ -164,6 +191,68 @@ void main() {
     testWidgets('一并收取按钮存在', (tester) async {
       await pump(tester, wrap(buildTestView()));
       expect(find.text(UiStrings.taohuaIslandHarvestAll), findsOneWidget);
+    });
+
+    testWidgets('整备建议非空时渲染只读建议面板', (tester) async {
+      final view = buildTestView(
+        prepAdvice: const [
+          IslandPrepAdvice(
+            kind: IslandPrepAdviceKind.bossCycle,
+            title: UiStrings.islandPrepBossCycleTitle,
+            body: UiStrings.islandPrepBossCycleBody,
+            priority: IslandPrepAdvicePriority.high,
+          ),
+        ],
+      );
+
+      await pump(tester, wrap(view));
+
+      expect(find.text(UiStrings.islandPrepSectionTitle), findsOneWidget);
+      expect(find.text(UiStrings.islandPrepBossCycleTitle), findsOneWidget);
+      expect(find.text(UiStrings.islandPrepBossCycleBody), findsOneWidget);
+    });
+
+    testWidgets('整备建议面板最多渲染前三条', (tester) async {
+      const hiddenTitle = '第四条不应出现';
+      final view = buildTestView(
+        prepAdvice: const [
+          IslandPrepAdvice(
+            kind: IslandPrepAdviceKind.equipment,
+            title: '建议一',
+            body: UiStrings.islandPrepEquipmentBody,
+          ),
+          IslandPrepAdvice(
+            kind: IslandPrepAdviceKind.skillFragment,
+            title: '建议二',
+            body: UiStrings.islandPrepFragmentBody,
+          ),
+          IslandPrepAdvice(
+            kind: IslandPrepAdviceKind.bossCycle,
+            title: '建议三',
+            body: UiStrings.islandPrepBossCycleBody,
+            priority: IslandPrepAdvicePriority.high,
+          ),
+          IslandPrepAdvice(
+            kind: IslandPrepAdviceKind.equipment,
+            title: hiddenTitle,
+            body: UiStrings.islandPrepEquipmentBody,
+          ),
+        ],
+      );
+
+      await pump(tester, wrap(view));
+
+      expect(find.text('建议一'), findsOneWidget);
+      expect(find.text('建议二'), findsOneWidget);
+      expect(find.text('建议三'), findsOneWidget);
+      expect(find.text(hiddenTitle), findsNothing);
+    });
+
+    testWidgets('岛务工程碑 first slice 始终渲染只读说明', (tester) async {
+      await pump(tester, wrap(buildTestView()));
+
+      expect(find.text(UiStrings.islandProjectSteleTitle), findsOneWidget);
+      expect(find.text(UiStrings.islandProjectSteleLockedLine), findsOneWidget);
     });
 
     testWidgets('null view 显示无存档友好态', (tester) async {
@@ -177,10 +266,19 @@ void main() {
       // 满级建筑须正常渲染、显示「已至顶级」、不显示升级费用文案。
       final tieMax = IslandBuildingState()
         ..type = BuildingType.tieJiangChang
-        ..level = 5 // = max_level
+        ..level =
+            5 // = max_level
         ..stored = 50;
       final cao = IslandBuildingState()
         ..type = BuildingType.caoYaoYuan
+        ..level = 1
+        ..stored = 0;
+      final mg = IslandBuildingState()
+        ..type = BuildingType.muGongFang
+        ..level = 1
+        ..stored = 0;
+      final lq = IslandBuildingState()
+        ..type = BuildingType.lingQuan
         ..level = 1
         ..stored = 0;
       final dz = IslandBuildingState()
@@ -192,8 +290,13 @@ void main() {
         ..type = BuildingType.danFang
         ..level = 1
         ..stored = 0;
+      final zz = IslandBuildingState()
+        ..type = BuildingType.zhuZaoTai
+        ..level = 1
+        ..stored = 0
+        ..activeRecipeId = 'forge_kaifeng_fucai';
       final view = IslandView(
-        buildings: [tieMax, cao, dz, df],
+        buildings: [tieMax, cao, mg, lq, dz, df, zz],
         founderRealmIndex: 6, // 武圣，排除 realmLocked 噪音
         silver: 999999,
         materials: const {
@@ -201,14 +304,18 @@ void main() {
           'item_yaocao': 100,
           'item_mojianshi': 100,
           'item_xinxuejiejing': 100,
+          'item_mucai': 100,
+          'item_lingquanshui': 100,
         },
       );
       await pump(tester, wrap(view));
 
-      expect(tester.takeException(), isNull,
-          reason: '满级建筑渲染不应抛 RangeError');
-      expect(find.text(UiStrings.taohuaIslandMaxLevel), findsOneWidget,
-          reason: '满级建筑应显示已至顶级标签');
+      expect(tester.takeException(), isNull, reason: '满级建筑渲染不应抛 RangeError');
+      expect(
+        find.text(UiStrings.taohuaIslandMaxLevel),
+        findsOneWidget,
+        reason: '满级建筑应显示已至顶级标签',
+      );
     });
   });
 
@@ -236,6 +343,8 @@ void main() {
           'item_jingtie': 0,
           'item_yaocao': 0,
           'item_xinxuejiejing': 0,
+          'item_mucai': 0,
+          'item_lingquanshui': 0,
         },
       );
       await pump(tester, wrap(view));
@@ -249,7 +358,9 @@ void main() {
   });
 
   group('配方境界门槛灰化', () {
-    testWidgets('founderRealmIndex=0 时 realmUnlockIndex=3 配方半透（灰化）', (tester) async {
+    testWidgets('founderRealmIndex=0 时 realmUnlockIndex=3 配方半透（灰化）', (
+      tester,
+    ) async {
       // founderRealmIndex=0，高阶配方 realm=3 → 应灰化
       // forge_xinxue (realm=3) 和 brew_peiyuan (realm=3) 应被 Opacity 0.4 包裹
       final view = buildTestView(founderRealmIndex: 0);

@@ -1,13 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yaml/yaml.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/taohua_island_config.dart';
 import 'package:wuxia_idle/features/taohua_island/domain/island_building_type.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  tearDown(GameRepository.resetForTest);
+
   final y = (loadYaml(_yaml) as YamlMap).cast<String, dynamic>();
   final cfg = TaohuaIslandConfig.fromYaml(y);
 
-  test('解析 cap/解锁 + 4 建筑', () {
+  test('解析 fixture cap/解锁 + 4 建筑', () {
     expect(cfg.capHours, 72);
     expect(cfg.unlockChapterIndex, 1);
     expect(cfg.buildings.length, 4);
@@ -37,6 +42,80 @@ void main() {
     expect(tie.upgradeMaterialFor(1), 40);
     expect(tie.upgradeMaterialFor(2), 80);
     expect(tie.upgradeMaterialFor(5), 200);
+  });
+
+  test('phase 2 island building yaml keys parse', () {
+    expect(buildingTypeFromYamlKey('mu_gong_fang'), BuildingType.muGongFang);
+    expect(buildingTypeFromYamlKey('ling_quan'), BuildingType.lingQuan);
+    expect(buildingTypeFromYamlKey('zhu_zao_tai'), BuildingType.zhuZaoTai);
+  });
+
+  test('GameRepository 加载 phase 2 桃花岛建筑配置', () async {
+    final repo = await GameRepository.loadAllDefs();
+    final cfg = GameRepository.instance.numbers.taohuaIsland;
+
+    expect(cfg.buildings.length, greaterThanOrEqualTo(7));
+
+    final muGongFang = cfg.buildingOf(BuildingType.muGongFang);
+    expect(muGongFang.kind, BuildingKind.source);
+    expect(muGongFang.outputItem, 'item_mucai');
+
+    final lingQuan = cfg.buildingOf(BuildingType.lingQuan);
+    expect(lingQuan.kind, BuildingKind.source);
+    expect(lingQuan.outputItem, 'item_lingquanshui');
+
+    final zhuZaoTai = cfg.buildingOf(BuildingType.zhuZaoTai);
+    expect(zhuZaoTai.kind, BuildingKind.processor);
+    expect(zhuZaoTai.inputItem, 'item_mucai');
+    expect(
+      zhuZaoTai.recipes.map((r) => r.outputItem),
+      containsAll(['item_kaifeng_fucai', 'item_xingnang_buji']),
+    );
+
+    final daZaoTai = cfg.buildingOf(BuildingType.daZaoTai);
+    expect(daZaoTai.inputItem, 'item_jingtie');
+    expect(
+      daZaoTai.recipeById('forge_mojianshi')!.outputItem,
+      'item_mojianshi',
+    );
+    expect(
+      daZaoTai.recipeById('forge_xinxue')!.outputItem,
+      'item_xinxuejiejing',
+    );
+    expect(daZaoTai.recipeById('forge_duancai')!.outputItem, 'item_duancai');
+
+    final danFang = cfg.buildingOf(BuildingType.danFang);
+    expect(danFang.inputItem, 'item_yaocao');
+    expect(
+      danFang.recipeById('brew_ningshen')!.outputItem,
+      'item_jingyandan_small',
+    );
+    expect(
+      danFang.recipeById('brew_peiyuan')!.outputItem,
+      'item_jingyandan_mid',
+    );
+    expect(
+      danFang.recipeById('brew_liaoshang')!.outputItem,
+      'item_liaoshangdan',
+    );
+
+    final productionItemRefs = <String>{
+      for (final b in cfg.buildings.values) ...[
+        if (b.outputItem != null) b.outputItem!,
+        if (b.inputItem != null) b.inputItem!,
+        for (final r in b.recipes) r.outputItem,
+      ],
+    };
+    const phaseTwoItemIds = {
+      'item_mucai',
+      'item_lingquanshui',
+      'item_liaoshangdan',
+      'item_duancai',
+      'item_kaifeng_fucai',
+      'item_xingnang_buji',
+    };
+    expect(repo.itemDefs.keys, containsAll(phaseTwoItemIds));
+    expect(productionItemRefs, containsAll(phaseTwoItemIds));
   });
 }
 

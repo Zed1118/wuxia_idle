@@ -101,7 +101,7 @@ class SaveData {
   int totalPassiveExperience = 0;
 
   /// 桃花岛建筑状态列表（Task 5 · 0.30.0）。
-  /// 空 = 未初始化（Task 6 首开时建 4 个 level1 建筑）。旧档读默认空列表。
+  /// 空 = 未初始化（首开时按配置建 level1 建筑）。旧档读默认空列表。
   List<IslandBuildingState> islandBuildings = [];
 
   /// 桃花岛最后结算时间（独立于 lastOnlineAt 避免与被动挂机争用）。

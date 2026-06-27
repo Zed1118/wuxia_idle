@@ -31,7 +31,7 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('wuxia_island_action_');
     await IsarSetup.init(directory: tempDir, inspector: false);
 
-    // 初始化桃花岛（建 4 建筑）
+    // 初始化桃花岛（按当前配置建全量建筑）
     final isar = IsarSetup.instance;
     final save = (await isar.saveDatas.get(0))!;
     await IslandSettleService.ensureInitialized(save, DateTime(2026, 6, 25));
