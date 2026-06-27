@@ -49,10 +49,9 @@ int playbackHoldMs({
   required bool isKey,
   required int profileHitStopMs,
   required int keyMomentHoldMs,
-}) =>
-    isKey && keyMomentHoldMs > profileHitStopMs
-        ? keyMomentHoldMs
-        : profileHitStopMs;
+}) => isKey && keyMomentHoldMs > profileHitStopMs
+    ? keyMomentHoldMs
+    : profileHitStopMs;
 
 /// 单个飘字条目（id + 数据）。
 class _PopupEntry {
@@ -120,10 +119,7 @@ class _EffectEntry {
 /// 拖招命中测试(Phase 4 · C3):指针全局坐标落在哪个敌人头像矩形内 → 返回
 /// 该 enemyId(无命中返回 null)。敌列纵向排布不重叠,取首个命中即可。纯函数,
 /// 与 widget 解耦,便于单测。
-int? hitTestEnemyId(
-  Offset pointer,
-  List<({int enemyId, Rect rect})> targets,
-) {
+int? hitTestEnemyId(Offset pointer, List<({int enemyId, Rect rect})> targets) {
   for (final t in targets) {
     if (t.rect.contains(pointer)) return t.enemyId;
   }
@@ -185,7 +181,7 @@ class BattleScreen extends ConsumerStatefulWidget {
   final VoidCallback? onDefeat;
 
   /// H3 投降:玩家主动认输撤退回调(经确认对话框)。null 则不显投降键
-  /// (demo/debug/pvp 等无 flow 路径)。host 接此回调跳过战败结算直接退出。
+  /// (demo/debug 等无 flow 路径)。host 接此回调跳过战败结算直接退出。
   final VoidCallback? onSurrender;
 
   /// M4 Stage 3 美术(2026-05-21):战斗屏场景背景 png 路径。
@@ -200,7 +196,7 @@ class BattleScreen extends ConsumerStatefulWidget {
 
   /// 时序重排(spec 2026-06-12):flow 路径传 true → 胜利时不弹 VictoryOverlay,
   /// 直接回调让 caller(stage/tower flow)接管,按掉落分档播爆品/简版勝。
-  /// 败北不受影响;demo/pvp/debug 等无 flow 路径保持默认 false(仍弹 overlay)。
+  /// 败北不受影响;demo/debug 等无 flow 路径保持默认 false(仍弹 overlay)。
   final bool deferVictoryToCaller;
 
   /// 战斗 BGM 轨。调用方按 StageType（+ Boss 关）经 [bgmTrackForStage] 注入，
@@ -576,11 +572,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         if (!_isFastForward && _rushToActorId == null) {
           _impactShakeAmplitude = profile.shakeMagnitude;
           _shakeCtrl.forward(from: 0.0);
-          _applyHitStop(playbackHoldMs(
-            isKey: BattleLog.isKeyAction(action, s),
-            profileHitStopMs: profile.hitStopMs,
-            keyMomentHoldMs: widget.animConfig.keyMomentHoldMs,
-          ));
+          _applyHitStop(
+            playbackHoldMs(
+              isKey: BattleLog.isKeyAction(action, s),
+              profileHitStopMs: profile.hitStopMs,
+              keyMomentHoldMs: widget.animConfig.keyMomentHoldMs,
+            ),
+          );
         }
       }
     }
@@ -659,9 +657,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       id: _nextTrailId++,
       ctrl: ctrl,
       startFrac: _slotFrac(
-          actor.teamSide, actor.slotIndex, _teamSizeOf(actor.teamSide)),
+        actor.teamSide,
+        actor.slotIndex,
+        _teamSizeOf(actor.teamSide),
+      ),
       endFrac: _slotFrac(
-          target.teamSide, target.slotIndex, _teamSizeOf(target.teamSide)),
+        target.teamSide,
+        target.slotIndex,
+        _teamSizeOf(target.teamSide),
+      ),
       color: WuxiaColors.schoolColor(actor.school),
       strokeWidth: isUltimateCaptionSkill(action.skill) ? 5.0 : 3.0,
     );
@@ -689,7 +693,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     final result = action.attackResult;
     if (result == null) return;
     final targetFrac = _slotFrac(
-        target.teamSide, target.slotIndex, _teamSizeOf(target.teamSide));
+      target.teamSide,
+      target.slotIndex,
+      _teamSizeOf(target.teamSide),
+    );
 
     if (result.isDodged) {
       _spawnEffect(
@@ -930,17 +937,18 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   List<({int enemyId, Rect rect})> _collectEnemyTargets() {
     final s = ref.read(battleProvider);
     final targets = <({int enemyId, Rect rect})>[];
-    for (var i = 0; i < s.rightTeam.length && i < _enemyAvatarKeys.length; i++) {
+    for (
+      var i = 0;
+      i < s.rightTeam.length && i < _enemyAvatarKeys.length;
+      i++
+    ) {
       final enemy = s.rightTeam[i];
       if (!enemy.isAlive) continue;
       final ctx = _enemyAvatarKeys[i].currentContext;
       final box = ctx?.findRenderObject();
       if (box is! RenderBox || !box.hasSize) continue;
       final topLeft = box.localToGlobal(Offset.zero);
-      targets.add((
-        enemyId: enemy.characterId,
-        rect: topLeft & box.size,
-      ));
+      targets.add((enemyId: enemy.characterId, rect: topLeft & box.size));
     }
     return targets;
   }
@@ -1042,7 +1050,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   BattleDiagnosis? _safeDiagnose(BattleState s) {
     try {
       return BattleDiagnosis.from(
-          s, ref.read(numbersConfigProvider).battleReport);
+        s,
+        ref.read(numbersConfigProvider).battleReport,
+      );
     } catch (_) {
       return null;
     }
@@ -1054,13 +1064,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     final playerId = s.leftTeam.isEmpty
         ? 0
         : s.leftTeam
-            .reduce((a, b) => a.slotIndex <= b.slotIndex ? a : b)
-            .characterId;
+              .reduce((a, b) => a.slotIndex <= b.slotIndex ? a : b)
+              .characterId;
     final Widget screen = switch (target) {
       DiagnosisJumpTarget.skills => CangJingGeScreen(characterId: playerId),
       DiagnosisJumpTarget.equipment => const InventoryScreen(),
-      DiagnosisJumpTarget.cultivation =>
-        TechniquePanelScreen(characterId: playerId),
+      DiagnosisJumpTarget.cultivation => TechniquePanelScreen(
+        characterId: playerId,
+      ),
     };
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
   }
@@ -1213,14 +1224,16 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 child: Column(
                   children: [
                     if (widget.hint != null) _HintBanner(hint: widget.hint!),
-                    if (widget.cycleHint != null) _CycleHintBanner(hint: widget.cycleHint!),
+                    if (widget.cycleHint != null)
+                      _CycleHintBanner(hint: widget.cycleHint!),
                     _Header(
                       state: state,
                       onToggleLog: () => setState(() => _logOpen = !_logOpen),
                       onPause: _togglePause,
                       isPaused: _isPaused,
-                      onSurrender:
-                          widget.onSurrender == null ? null : _confirmSurrender,
+                      onSurrender: widget.onSurrender == null
+                          ? null
+                          : _confirmSurrender,
                       // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
                       onStepOnce: widget.startPaused ? _stepOnce : null,
                     ),
@@ -1278,7 +1291,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
               ),
             ),
             // Phase 4 拖招引导线层(技能按钮锚点 → 指针,流派色笔触)。
-            if (_dragOrigin != null && _dragPointer != null && _dragSkill != null)
+            if (_dragOrigin != null &&
+                _dragPointer != null &&
+                _dragSkill != null)
               Positioned.fill(
                 child: IgnorePointer(
                   child: _DragGuideLayer(
@@ -1315,15 +1330,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                   ),
                 ),
               ),
-            Positioned.fill(
-              child: ScreenFlashOverlay(key: _screenFlashKey),
-            ),
+            Positioned.fill(child: ScreenFlashOverlay(key: _screenFlashKey)),
             Positioned.fill(
               child: UltimateCaptionOverlay(key: _ultimateCaptionKey),
             ),
-            Positioned.fill(
-              child: ImpactGlyphOverlay(key: _impactGlyphKey),
-            ),
+            Positioned.fill(child: ImpactGlyphOverlay(key: _impactGlyphKey)),
             if (_logOpen)
               _LogDrawer(
                 state: state,
@@ -1566,6 +1577,7 @@ class _Header extends StatelessWidget {
   final VoidCallback onPause;
   final bool isPaused;
   final VoidCallback? onSurrender;
+
   /// 验收路由(startPaused)专用:暂停态逐步推进。null = 生产挂机不渲染单步按钮。
   final VoidCallback? onStepOnce;
   const _Header({
@@ -1627,7 +1639,9 @@ class _Header extends StatelessWidget {
                 color: WuxiaColors.textSecondary,
                 size: 20,
               ),
-              tooltip: isPaused ? UiStrings.battleResume : UiStrings.battlePause,
+              tooltip: isPaused
+                  ? UiStrings.battleResume
+                  : UiStrings.battlePause,
               onPressed: onPause,
             ),
           // 验收路由(startPaused)专用单步键:仅 onStepOnce 非空时渲染,生产挂机不出现。
@@ -1961,7 +1975,8 @@ class _TeamColumn extends StatelessWidget {
                 hitFlashController: hitFlashControllers[teamSide * 3 + i],
                 flashColor: hitFlashColors[teamSide * 3 + i] ?? Colors.white,
                 avatarKey: i < avatarKeys.length ? avatarKeys[i] : null,
-                hovered: hoveredEnemyId != null &&
+                hovered:
+                    hoveredEnemyId != null &&
                     team[i].characterId == hoveredEnemyId,
                 charging:
                     rushActorId != null && team[i].characterId == rushActorId,
@@ -2091,7 +2106,7 @@ class _BottomBar extends StatelessWidget {
   final bool isFastForward;
   // Phase 4 拖招回调(单体技长按拖)。
   final void Function(int characterId, SkillDef skill, Offset origin)
-      onSkillDragStart;
+  onSkillDragStart;
   final void Function(Offset pointer) onSkillDragUpdate;
   final void Function(Offset pointer) onSkillDragEnd;
   final VoidCallback onSkillDragCancel;
@@ -2174,8 +2189,8 @@ class _BottomBar extends StatelessWidget {
                             highlight: enemyCharging && s.canInterrupt,
                             allowPlayerIntervention: allowPlayerIntervention,
                             onPressed: () => onShowSkillInfo(s),
-                            onDragStart: (origin) => onSkillDragStart(
-                                focus.characterId, s, origin),
+                            onDragStart: (origin) =>
+                                onSkillDragStart(focus.characterId, s, origin),
                             onDragUpdate: onSkillDragUpdate,
                             onDragEnd: onSkillDragEnd,
                             onDragCancel: onSkillDragCancel,
@@ -2187,10 +2202,7 @@ class _BottomBar extends StatelessWidget {
                   ),
           ),
           const SizedBox(width: 8),
-          _FastForwardButton(
-            onPressed: onFastForward,
-            isActive: isFastForward,
-          ),
+          _FastForwardButton(onPressed: onFastForward, isActive: isFastForward),
         ],
       ),
     );
@@ -2387,8 +2399,9 @@ class _SkillCommandButton extends StatelessWidget {
           // disabled* 兜底——背景已由 bgColor(!ready→buttonDisabled)表达,
           // 前景按 enabled 手动切 muted/primary 保留「不可下发」灰态观感。
           backgroundColor: bgColor,
-          foregroundColor:
-              enabled ? WuxiaColors.textPrimary : WuxiaColors.textMuted,
+          foregroundColor: enabled
+              ? WuxiaColors.textPrimary
+              : WuxiaColors.textMuted,
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           side: highlight && enabled
               ? const BorderSide(color: WuxiaColors.textPrimary, width: 2)
@@ -2496,11 +2509,7 @@ class _SkillInfoBody extends StatelessWidget {
         // 描述活文本(SkillDef.description)。
         Text(
           skill.description,
-          style: const TextStyle(
-            color: WuxiaUi.ink,
-            fontSize: 13,
-            height: 1.5,
-          ),
+          style: const TextStyle(color: WuxiaUi.ink, fontSize: 13, height: 1.5),
         ),
         const SizedBox(height: 14),
         for (final (label, value) in rows)
@@ -2536,11 +2545,7 @@ class _SkillInfoBody extends StatelessWidget {
         const SizedBox(height: 8),
         const Text(
           UiStrings.skillInfoDragHint,
-          style: TextStyle(
-            color: WuxiaUi.qing,
-            fontSize: 11,
-            letterSpacing: 1,
-          ),
+          style: TextStyle(color: WuxiaUi.qing, fontSize: 11, letterSpacing: 1),
         ),
       ],
     );
@@ -2647,8 +2652,7 @@ class _GlowAuraState extends State<_GlowAura>
 
   // hovered 优先级最高(静态强光),只有「蓄势且未被悬停」才脉动。
   // 第六阶段：破绽窗口也驱动呼吸（绛红集火），优先级低于 hovered/charging。
-  bool get _pulsing =>
-      (widget.charging || widget.staggered) && !widget.hovered;
+  bool get _pulsing => (widget.charging || widget.staggered) && !widget.hovered;
 
   @override
   void initState() {
@@ -2716,8 +2720,13 @@ class _GlowAuraState extends State<_GlowAura>
     );
   }
 
-  Widget _box(Color color, double alpha, double blur, double spread,
-      Widget child) {
+  Widget _box(
+    Color color,
+    double alpha,
+    double blur,
+    double spread,
+    Widget child,
+  ) {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),

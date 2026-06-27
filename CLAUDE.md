@@ -4,10 +4,10 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.24**
+> v1.24 变更摘要(2026-06-27 PVP 功能切除 · 保旧档兼容):① 删除/停用 PVP 玩家入口、PvpScreen 占位 UI、PVP provider/service/strategy、`numbers.yaml pvp` 配置、PVP lore 文案与测试;② `StageType.pvp` 与 `PvpRecord`/`PvpSnapshot` Isar collection 仅作为旧存档/旧枚举反序列化兼容保留,生产路径不再读写;③ §7/§9 现状口径改回无 PVP,1.0 当前战斗形态为地面 3v3 + 轻功 + 群战 + 心魔等单机内容。
 > **版本:v1.23**
 > v1.23 变更摘要(2026-06-26 推翻装备永久收藏品/只买不卖红线 · 0 改代码数值):① **GDD §2.1 装备分解反主流项推翻**:「装备分解→装备永久保留收藏品」从「不做」清单标注推翻，改为「装备可出售换银两 / 可分解成强化材料」；② **CLAUDE §5.1 同步**:反主流清单移除「装备分解」一项；③ **`shop_service.dart` 头注订正**:「只买不卖」→购买/出售分离注释。理由：玩家处理冗余装备真实痛点；出售/分解为良性 sink，非氪金/留存机制。spec：`docs/spec/2026-06-26-equip-sell-decompose-inventory-design.md` §红线决策史。
-> **版本:v1.22**
-> v1.22 变更摘要(2026-06-25 文档 drift 订正 · 0 改代码/数值):① **§7/§9 PVP 状态订正**(用户拍板):PVP 已在 1.0 周期实装(P3.3·`lib/features/pvp/` 全套·本地 mirror 镜像对战 + ELO 计算 + PvpScreen UI 可达 main_menu:303·ELO 跨会话持久化留 Phase 5+),从「仍然不做」清单移到「已实装」;§5.1 反主流红线本不含 PVP(红线=氪金/留存机制),无矛盾;「仍然不做」剩 MOD / 跨周目元数据 / 节日活动系统级框架;② **techniques.yaml 头注 stale 清**:description 已就地全填(Mac 单端维护),原「占位 TODO / 归 DeepSeek」注释双重 stale(描述已填 + DeepSeek 协作 2026-05-19 退役)已订正。详健康报告 `docs/audit/project_health_review_2026-06-25.md` #2/#5。
 > **版本:v1.21**
 > v1.21 变更摘要(2026-06-24 全系统审计 C 组设计冲突拍板 · 0 改战斗数值):三项文档 vs 代码 drift 收口(用户逐项拍板)。① **C1 §6.1 商店经验丹「ETL 恒定兑换率动态标价」明文授权**:经验丹标价随祖师境界 ETL 上涨锁定兑换率恒定(防囤丹套利),明确区分「进度锚定动态标价」≠ §5.1 废除的「机缘定价」(后者按机缘属性变价制留存焦虑),材料类仍固定价;② **C3 §5.4 招式倍率改「全局 ≤8,000 单线」**:旧「强力 1,000–3,000 / 大招 5,000+」per-type 分档是 7 阶系统铺开前早期参考值,与 §5.2 锁死七阶缩放矛盾(实测 powerSkill 32/73 超 3000、ultimate 41/55 低于 5000,低阶大招＜高阶强力是曲线必然),schema 唯一真 sink 本就只全局 enforce ≤8000,改单线消除 drift;③ **C2 奇遇 events 加载层强校验实装(代码)**:仿 lore `_validatePresetLoreReferences` 在 `loadAllDefs` 末尾加 `_validateEncounterEventReferences`,缺 events 文件 / id 不自洽 / 越界 outcome_id 启动期 fail-fast,兑现 §8.1「任一端缺失直接抛错」(此前 catch 全吞静默降级);57/57 现状干净不误报。详 `docs/audit/full_system_audit_2026-06-24.md` C 组 + PROGRESS。
 > **版本:v1.20**
@@ -221,7 +221,7 @@ Demo 必交付内容量（已全部达标）：
 | 心法相生组合 | ≥ 5 |
 | 师徒角色 | 祖师 + 大弟子 + 二弟子（共 3） |
 
-**扩展系统现状**（v1.22 更新）：江湖恩怨/声望（P1.2）、心魔（Batch 2.x）、帮派门派（P4.1）、轻功对决（P3.1）、群战守城（P3.2）、第二条主线 Ch4-6、多代飞升/真传位（P5+）、**PVP 本地对战**（P3.3·`lib/features/pvp/` 镜像 mirror 对战 + ELO 计算 + PvpScreen UI 可达；ELO 跨会话持久化留 Phase 5+；不违 §5.1——本地镜像非真人竞技、无氪金/留存机制）均已在 1.0 周期实装。**仍然不做**：GDD §2.1 反主流清单（见 §5.1，永久红线）+ MOD / 跨周目元数据 / 节日活动系统级框架（GDD §12.4，1.0 后评估）——动这几项前必须先与人类讨论。
+**扩展系统现状**（v1.24 更新）：江湖恩怨/声望（P1.2）、心魔（Batch 2.x）、帮派门派（P4.1）、轻功对决（P3.1）、群战守城（P3.2）、第二条主线 Ch4-6、多代飞升/真传位（P5+）均已在 1.0 周期实装。**PVP 已切除**：不保留玩家入口、路由、service/provider、占位 UI 或玩法配置；`StageType.pvp` 与 `PvpRecord`/`PvpSnapshot` 仅作旧档兼容忽略。**仍然不做**：GDD §2.1 反主流清单（见 §5.1，永久红线）+ PVP + MOD / 跨周目元数据 / 节日活动系统级框架（GDD §12.4，1.0 后评估）——动这几项前必须先与人类讨论。
 
 ## 8. 工作流
 

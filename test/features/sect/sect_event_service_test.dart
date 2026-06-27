@@ -28,11 +28,7 @@ void main() {
         'max': 100,
         'min': 0,
       },
-      'sect_level': {
-        'max': 7,
-        'initial': 1,
-        'promote_wins_threshold': 3,
-      },
+      'sect_level': {'max': 7, 'initial': 1, 'promote_wins_threshold': 3},
       'active_events_max': 3,
     },
   };
@@ -57,26 +53,28 @@ void main() {
     ..narrativeId = 'tournament_active';
 
   group('P3.4 sect_event service R1 触发链路', () {
-    test('R1.1 cooldown OK + 境界 OK + active 未满 + rng=0.0 必触发 → 返 pending event',
-        () {
-      final sect = baseSect(lastEventAt: null);
-      final rng = _DeterministicRng([0.0]);
-      final ev = svc.checkAndTrigger(
-        sect: sect,
-        activeEvents: const [],
-        playerRealm: RealmTier.yiLiu,
-        now: DateTime(2026, 5, 24),
-        pickedNarrativeId: 'tournament_01',
-        rng: rng,
-      );
-      expect(ev, isNotNull);
-      expect(ev!.sectId, 1);
-      expect(ev.type, SectEventType.tournament);
-      expect(ev.status, SectEventStatus.pending);
-      expect(ev.narrativeId, 'tournament_01');
-      expect(ev.resolvedAt, isNull);
-      expect(ev.reputationDelta, isNull);
-    });
+    test(
+      'R1.1 cooldown OK + 境界 OK + active 未满 + rng=0.0 必触发 → 返 pending event',
+      () {
+        final sect = baseSect(lastEventAt: null);
+        final rng = _DeterministicRng([0.0]);
+        final ev = svc.checkAndTrigger(
+          sect: sect,
+          activeEvents: const [],
+          playerRealm: RealmTier.yiLiu,
+          now: DateTime(2026, 5, 24),
+          pickedNarrativeId: 'tournament_01',
+          rng: rng,
+        );
+        expect(ev, isNotNull);
+        expect(ev!.sectId, 1);
+        expect(ev.type, SectEventType.tournament);
+        expect(ev.status, SectEventStatus.pending);
+        expect(ev.narrativeId, 'tournament_01');
+        expect(ev.resolvedAt, isNull);
+        expect(ev.reputationDelta, isNull);
+      },
+    );
 
     test('R1.2 cooldown 未到(lastEventAt 1 天前)→ 返 null', () {
       final now = DateTime(2026, 5, 24);
@@ -104,7 +102,11 @@ void main() {
         pickedNarrativeId: 'tournament_01',
         rng: rng,
       );
-      expect(ev, isNull, reason: 'trigger_realm_min=yiLiu,xueTu index(0) < yiLiu index(3)');
+      expect(
+        ev,
+        isNull,
+        reason: 'trigger_realm_min=yiLiu,xueTu index(0) < yiLiu index(3)',
+      );
     });
 
     test('R1.4 activeEvents 已 3 条达上限 → 返 null', () {
@@ -134,15 +136,13 @@ class NumbersConfigStub implements NumbersConfig {
 
   @override
   SectEventDef get sectEvent => SectEventDef.fromYaml(
-      (_raw['sect_event'] as Map?)?.cast<String, dynamic>());
-
-  @override
-  PvpDef get pvp =>
-      PvpDef.fromYaml((_raw['pvp'] as Map?)?.cast<String, dynamic>());
+    (_raw['sect_event'] as Map?)?.cast<String, dynamic>(),
+  );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError(
-      'NumbersConfigStub: only raw impl, invocation=${invocation.memberName}');
+    'NumbersConfigStub: only raw impl, invocation=${invocation.memberName}',
+  );
 }
 
 /// 确定性 rng:按 queue 顺序吐固定 double 值(供 R1 触发概率分支测)。

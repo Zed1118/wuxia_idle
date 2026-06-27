@@ -11,7 +11,6 @@ import '../battle_state.dart';
 /// 自己的实装:
 /// - LightFootStrategy(轻功对决,水面/屋脊/竹林地形修正)
 /// - MassBattleStrategy(群战守城,5v5+ 阵型)
-/// - PvpStrategy(异步快照对战,Supabase 接入)
 ///
 /// 粗粒度 3 method(memory `feedback_avoid_over_engineer_abstraction`):Demo
 /// 1 实装,P3 三形态真痛点在主循环,粗粒度足够;遇真痛点(选招 / 选目标
@@ -26,11 +25,7 @@ abstract class BattleStrategy {
   /// 推进一个 tick(对应原 `BattleEngine.tick`)。
   ///
   /// [rng] 用于伤害计算中的闪避 / 暴击 roll;测试传 `Random(seed)` 复现。
-  BattleState tick(
-    BattleState state,
-    NumbersConfig n, {
-    Random? rng,
-  });
+  BattleState tick(BattleState state, NumbersConfig n, {Random? rng});
 
   /// 半手动战斗 P0 步骤3b:推进「最小一步」——tick 边界(填 actor 队列 +
   /// 推进 AP/CD,不结算)或结算队列中一个 actor。
@@ -40,11 +35,7 @@ abstract class BattleStrategy {
   /// 为「边界 stepOne + 循环 drain」,使 stepOne 成唯一 actor 结算真相源。
   ///
   /// [rng] 同 [tick]:仅在真正结算 actor 那一步消费;边界步不消费。
-  BattleState stepOne(
-    BattleState state,
-    NumbersConfig n, {
-    Random? rng,
-  }) =>
+  BattleState stepOne(BattleState state, NumbersConfig n, {Random? rng}) =>
       tick(state, n, rng: rng);
 
   /// 跑完整场战斗(对应原 `BattleEngine.runToEnd`)。
@@ -87,6 +78,5 @@ abstract class BattleStrategy {
     int? targetId,
     required NumbersConfig n,
     required Random rng,
-  }) =>
-      requestUltimate(state, characterId, skill, targetId: targetId);
+  }) => requestUltimate(state, characterId, skill, targetId: targetId);
 }

@@ -64,14 +64,7 @@ void main() {
         bgmTrackForStage(StageType.mainline, isBoss: false),
         BgmTrack.mainline,
       );
-      expect(
-        bgmTrackForStage(StageType.mainline, isBoss: true),
-        BgmTrack.boss,
-      );
-    });
-
-    test('pvp 走通用 battle 兜底', () {
-      expect(bgmTrackForStage(StageType.pvp, isBoss: false), BgmTrack.battle);
+      expect(bgmTrackForStage(StageType.mainline, isBoss: true), BgmTrack.boss);
     });
 
     test('全 StageType 都有映射（无 fallthrough）', () {

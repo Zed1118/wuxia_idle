@@ -24,16 +24,14 @@ part 'battle_providers.g.dart';
 /// 启动时 `GameRepository.loadAllDefs()` 完成后即可读。测试中可通过
 /// `numbersConfigProvider.overrideWithValue(testNumbers)` 注入。
 @riverpod
-NumbersConfig numbersConfig(Ref ref) =>
-    GameRepository.instance.numbers;
+NumbersConfig numbersConfig(Ref ref) => GameRepository.instance.numbers;
 
 /// 装备掉落服务（T27 DropService）的 provider。
 ///
 /// 走 [GameRepository] 单例查 EquipmentDef；测试中可 override 注入 mock。
 @riverpod
-DropService dropService(Ref ref) => DropService(
-      equipmentDefLookup: GameRepository.instance.getEquipment,
-    );
+DropService dropService(Ref ref) =>
+    DropService(equipmentDefLookup: GameRepository.instance.getEquipment);
 
 /// 战斗状态 Notifier（phase1_tasks T16.1）。
 ///
@@ -57,7 +55,7 @@ class BattleNotifier extends _$BattleNotifier {
   ///
   /// 默认 [DefaultGroundStrategy](Demo 阶段唯一实装);P3 §12.3 三战斗形态
   /// 扩展时 startBattle 传 LightFootStrategy / MassBattleStrategy /
-  /// PvpStrategy 即可换形态,advance / requestUltimate 自动走对应实装。
+  /// 自定义 BattleStrategy 即可换形态,advance / requestUltimate 自动走对应实装。
   BattleStrategy _strategy = const DefaultGroundStrategy();
 
   /// 本场战斗的单一 seeded rng(确定性地基,balance_simulator 数千局依赖)。
@@ -67,10 +65,8 @@ class BattleNotifier extends _$BattleNotifier {
   Random _rng = Random();
 
   @override
-  BattleState build() => BattleState.initial(
-        leftTeam: const [],
-        rightTeam: const [],
-      );
+  BattleState build() =>
+      BattleState.initial(leftTeam: const [], rightTeam: const []);
 
   /// 启动新战斗：重置 state 为 initial，actionLog / pendingUltimates 全清。
   ///
@@ -97,8 +93,12 @@ class BattleNotifier extends _$BattleNotifier {
   void requestUltimate(int characterId, SkillDef ultimate, {int? targetId}) {
     // 委托 strategy 校验(非 normalAttack 等)并置 pending;该角色下次行动消费。
     // Phase 4 拖招命中走此入口(targetId = 命中的敌人)。
-    state = _strategy.requestUltimate(state, characterId, ultimate,
-        targetId: targetId);
+    state = _strategy.requestUltimate(
+      state,
+      characterId,
+      ultimate,
+      targetId: targetId,
+    );
   }
 
   /// 主线二 2.3:玩家拖招立即插队出手(委托 strategy,消费本场同一 [_rng])。
@@ -176,8 +176,11 @@ class BattleNotifier extends _$BattleNotifier {
   /// pending 后,连续 [step] 快进到该角色出手(确定性安全,不真插队)。
   void step() {
     if (state.isFinished) return;
-    state =
-        _strategy.stepOne(state, ref.read(numbersConfigProvider), rng: _rng);
+    state = _strategy.stepOne(
+      state,
+      ref.read(numbersConfigProvider),
+      rng: _rng,
+    );
   }
 
   /// 战斗结算 hook（phase2_tasks T26 §340）。
@@ -221,8 +224,7 @@ class BattleNotifier extends _$BattleNotifier {
 /// 派生 provider：战斗结果。`null` = 进行中；非空 = 已结束。
 /// UI 用 `ref.listen` 监听非空翻转触发结算 overlay。
 @riverpod
-BattleResult? battleResult(Ref ref) =>
-    ref.watch(battleProvider).result;
+BattleResult? battleResult(Ref ref) => ref.watch(battleProvider).result;
 
 /// P1.2 §5 江湖恩怨 attackPowerMultiplier 烘焙(spec §5 · battle setup 阶段一次性 SET)。
 ///
@@ -260,8 +262,10 @@ Future<(List<BattleCharacter>, List<BattleCharacter>)> bakeEnmityMultipliers({
   var maxMult = 1.0;
   final newRight = <BattleCharacter>[];
   for (final enemy in rightTeam) {
-    final mult =
-        await npcService.attackPowerMultFor(playerCharId, enemy.characterId);
+    final mult = await npcService.attackPowerMultFor(
+      playerCharId,
+      enemy.characterId,
+    );
     if (mult > 1.0) {
       newRight.add(enemy.copyWith(attackPowerMultiplier: mult));
       if (mult > maxMult) maxMult = mult;

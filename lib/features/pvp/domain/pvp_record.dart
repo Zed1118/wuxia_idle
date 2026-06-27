@@ -2,10 +2,13 @@ import 'package:isar_community/isar.dart';
 
 part 'pvp_record.g.dart';
 
-/// 异步 PVP 战例记录(1.0 P3.3 §12.3,spec p3_3_pvp_spec_2026-05-24 §2)。
+/// Legacy PVP 战例记录 schema。
 ///
-/// 一行 = 一场 PVP 完整结算。`(playerId, timestamp)` composite index 支持
-/// 按玩家倒序拉历史(`numbers.yaml pvp.history.max_records=200` 滚动覆盖)。
+/// PVP 玩法已切除;本 collection 仅保留在 Isar schema 中，避免旧存档里曾
+/// 创建过 PVP collection 时无法打开。生产路径不再读写。
+///
+/// 一行 = 一场 PVP 完整结算。`(playerId, timestamp)` composite index 曾用于
+/// 按玩家倒序拉历史。
 ///
 /// 关键字段语义:
 ///   - [matchId]:application 层生成的 uuid v4,跨 leftSnapshot/opponentSnapshot 唯一索引
@@ -15,7 +18,6 @@ part 'pvp_record.g.dart';
 ///   - [leftSnapshotId] / [opponentSnapshotId]:都指向 [PvpSnapshot.id],
 ///     leftSnapshot 是玩家出战阵容快照(应战时已固定,防强化后回放数值漂移)
 ///
-/// Phase 2 仅 schema 冻结,application 层(ELO / matchmaker / strategy)留 Phase 3+。
 @collection
 class PvpRecord {
   Id id = Isar.autoIncrement;

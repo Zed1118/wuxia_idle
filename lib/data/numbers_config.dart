@@ -206,11 +206,6 @@ class NumbersConfig {
   /// 空段兜底 [JianghuConfig.empty](fixture / 老存档迁移)。
   final JianghuConfig jianghu;
 
-  /// 1.0 P3.3 PVP 配置(spec p3_3_pvp_spec_2026-05-24 §9 · T19b 升强类型)。
-  /// numbers.yaml `pvp` 段:elo / match_range / ranks / unlock / sync / history。
-  /// 空段兜底 [PvpDef.empty](fixture / 老存档迁移)。
-  final PvpDef pvp;
-
   /// 1.0 P3.4 门派事件配置(spec p3_4_sect_event_spec_2026-05-24 · T19b 升强类型)。
   /// numbers.yaml `sect_event` 段:tournament / reputation / sect_level / active_events_max。
   /// 空段兜底 [SectEventDef.empty](fixture / 老存档迁移)。
@@ -301,7 +296,6 @@ class NumbersConfig {
     required this.lightFoot,
     required this.massBattle,
     required this.jianghu,
-    required this.pvp,
     required this.sectEvent,
     required this.sectManagement,
     required this.adventureAttributeLifetimeCap,
@@ -348,9 +342,10 @@ class NumbersConfig {
         realms['level_diff_modifier'] as Map<String, dynamic>,
       ),
       defenseRateByTier: _parseDefenseRates(realms['tiers'] as List),
-      enhancementBonusPerLevel: ((equipment['enhancement']
-              as Map<String, dynamic>)['bonus_per_level'] as num)
-          .toDouble(),
+      enhancementBonusPerLevel:
+          ((equipment['enhancement'] as Map<String, dynamic>)['bonus_per_level']
+                  as num)
+              .toDouble(),
       enhancement: EnhancementConfig.fromYaml(
         enhancement: equipment['enhancement'] as Map<String, dynamic>,
         xinxueJiejing: equipment['xinxue_jiejing'] as Map<String, dynamic>,
@@ -358,69 +353,87 @@ class NumbersConfig {
       forging: ForgingConfig.fromYaml(
         equipment['forging'] as Map<String, dynamic>,
       ),
-      techniqueSpeedBonus:
-          _parseTechniqueSpeedBonus(techniques['tiers'] as List),
+      techniqueSpeedBonus: _parseTechniqueSpeedBonus(
+        techniques['tiers'] as List,
+      ),
       cultivationMultiplier: _parseCultivationMultiplier(
         techniques['cultivation'] as Map<String, dynamic>,
       ),
       cultivationProgressToNext: _parseCultivationProgressToNext(
         techniques['cultivation'] as Map<String, dynamic>,
       ),
-      insightToCultivationRatio: ((techniques['cultivation']
-              as Map<String, dynamic>)['insight_to_cultivation_ratio'] as num)
-          .toDouble(),
+      insightToCultivationRatio:
+          ((techniques['cultivation']
+                      as Map<String, dynamic>)['insight_to_cultivation_ratio']
+                  as num)
+              .toDouble(),
       schoolCounter: SchoolCounterMatrix.fromYaml(
         techniques['schools'] as Map<String, dynamic>,
       ),
       resonanceStages: _parseResonanceStages(
         equipment['resonance'] as Map<String, dynamic>,
       ),
-      resonanceInheritanceRetention: ((equipment['resonance']
-              as Map<String, dynamic>)['inheritance_retention'] as num)
-          .toDouble(),
-      resonanceSeclusionBattleCountPerHour: ((equipment['resonance']
-              as Map<String, dynamic>)['seclusion_battle_count_per_hour'] as num)
-          .toInt(),
-      lineageInternalForceMaxBonus: ((equipment['lineage_heritage']
-              as Map<String, dynamic>)['internal_force_max_bonus'] as num)
-          .toDouble(),
+      resonanceInheritanceRetention:
+          ((equipment['resonance']
+                      as Map<String, dynamic>)['inheritance_retention']
+                  as num)
+              .toDouble(),
+      resonanceSeclusionBattleCountPerHour:
+          ((equipment['resonance']
+                      as Map<
+                        String,
+                        dynamic
+                      >)['seclusion_battle_count_per_hour']
+                  as num)
+              .toInt(),
+      lineageInternalForceMaxBonus:
+          ((equipment['lineage_heritage']
+                      as Map<String, dynamic>)['internal_force_max_bonus']
+                  as num)
+              .toDouble(),
       disposal: EquipmentDisposalConfig.fromYaml(
         equipment['disposal'] as Map<String, dynamic>,
       ),
       founderAncestorBuff: FounderAncestorBuff.fromYaml(
-        ((y['inheritance'] as Map<String, dynamic>?)
-                ?['founder_ancestor_buff'] as Map<String, dynamic>?) ??
+        ((y['inheritance'] as Map<String, dynamic>?)?['founder_ancestor_buff']
+                as Map<String, dynamic>?) ??
             const {},
       ),
       heritageItems: HeritageItems.fromYaml(
-        ((y['inheritance'] as Map<String, dynamic>?)
-                ?['heritage_items'] as Map<String, dynamic>?) ??
+        ((y['inheritance'] as Map<String, dynamic>?)?['heritage_items']
+                as Map<String, dynamic>?) ??
             const {},
       ),
       ascension: AscensionConfig.fromYaml(
         y['ascension'] as Map<String, dynamic>?,
       ),
-      dispersionCultivationPenalty: ((techniques['dispersion']
-              as Map<String, dynamic>)['cultivation_penalty'] as num)
-          .toDouble(),
-      dispersionInternalForcePenalty: ((techniques['dispersion']
-              as Map<String, dynamic>)['internal_force_penalty'] as num)
-          .toDouble(),
-      defeatBossInternalForcePenalty: ((techniques['defeat']
-              as Map<String, dynamic>)['boss_internal_force_penalty'] as num)
-          .toDouble(),
-      defeatBossCultivationPenalty: ((techniques['defeat']
-              as Map<String, dynamic>)['boss_cultivation_penalty'] as num)
-          .toDouble(),
+      dispersionCultivationPenalty:
+          ((techniques['dispersion']
+                      as Map<String, dynamic>)['cultivation_penalty']
+                  as num)
+              .toDouble(),
+      dispersionInternalForcePenalty:
+          ((techniques['dispersion']
+                      as Map<String, dynamic>)['internal_force_penalty']
+                  as num)
+              .toDouble(),
+      defeatBossInternalForcePenalty:
+          ((techniques['defeat']
+                      as Map<String, dynamic>)['boss_internal_force_penalty']
+                  as num)
+              .toDouble(),
+      defeatBossCultivationPenalty:
+          ((techniques['defeat']
+                      as Map<String, dynamic>)['boss_cultivation_penalty']
+                  as num)
+              .toDouble(),
       learningCost: LearningCostConfig.fromYaml(
         techniques['learning_cost'] as Map<String, dynamic>,
       ),
       animation: AnimationNumbers.fromYaml(
         y['animation'] as Map<String, dynamic>,
       ),
-      retreat: RetreatConfig.fromYaml(
-        y['retreat'] as Map<String, dynamic>,
-      ),
+      retreat: RetreatConfig.fromYaml(y['retreat'] as Map<String, dynamic>),
       festivals: FestivalConfig.fromYaml(
         y['festivals'] as Map<String, dynamic>?,
       ),
@@ -445,27 +458,32 @@ class NumbersConfig {
       massBattle: MassBattleDef.fromYaml(
         y['mass_battle'] as Map<String, dynamic>?,
       ),
-      jianghu: JianghuConfig.fromYaml(
-        y['jianghu'] as Map<String, dynamic>?,
-      ),
-      pvp: PvpDef.fromYaml(y['pvp'] as Map<String, dynamic>?),
+      jianghu: JianghuConfig.fromYaml(y['jianghu'] as Map<String, dynamic>?),
       sectEvent: SectEventDef.fromYaml(
         y['sect_event'] as Map<String, dynamic>?,
       ),
       sectManagement: SectManagementConfig.fromYaml(
         y['sect_management'] as Map<String, dynamic>?,
       ),
-      adventureAttributeLifetimeCap: (((y['character']
-                  as Map<String, dynamic>?)?['adventure_attribute_bonus']
-              as Map<String, dynamic>?)?['lifetime_cap_per_character'] as num?)
+      adventureAttributeLifetimeCap:
+          (((y['character']
+                          as Map<
+                            String,
+                            dynamic
+                          >?)?['adventure_attribute_bonus']
+                      as Map<String, dynamic>?)?['lifetime_cap_per_character']
+                  as num?)
               ?.toInt() ??
           5,
-      encounterFortuneSensitivity: ((y['encounter']
-                  as Map<String, dynamic>?)?['fortune_sensitivity'] as num?)
+      encounterFortuneSensitivity:
+          ((y['encounter'] as Map<String, dynamic>?)?['fortune_sensitivity']
+                  as num?)
               ?.toDouble() ??
           20.0,
-      loadoutUltimatePowerThreshold: ((y['skill_loadout']
-                  as Map<String, dynamic>?)?['ultimate_power_threshold'] as num?)
+      loadoutUltimatePowerThreshold:
+          ((y['skill_loadout']
+                      as Map<String, dynamic>?)?['ultimate_power_threshold']
+                  as num?)
               ?.toInt() ??
           5000,
       cycleEvolution: CycleEvolutionConfig.fromYaml(
@@ -528,8 +546,9 @@ class NumbersConfig {
     final entries = cultivation['progress_to_next'] as List;
     final m = <CultivationLayer, int>{};
     for (final e in entries) {
-      final fromLayer =
-          CultivationLayer.values.byName(e['from_layer'] as String);
+      final fromLayer = CultivationLayer.values.byName(
+        e['from_layer'] as String,
+      );
       m[fromLayer] = (e['progress_required'] as num).toInt();
     }
     return m;
@@ -543,10 +562,9 @@ class NumbersConfig {
       for (final s in stages)
         ResonanceStageConfig(
           stage: ResonanceStage.values.byName(s['stage'] as String),
-          minBattleCount:
-              ((s['battle_count_range'] as List)[0] as num).toInt(),
-          maxBattleCount:
-              ((s['battle_count_range'] as List)[1] as num?)?.toInt(),
+          minBattleCount: ((s['battle_count_range'] as List)[0] as num).toInt(),
+          maxBattleCount: ((s['battle_count_range'] as List)[1] as num?)
+              ?.toInt(),
           bonusMultiplier: (s['bonus_multiplier'] as num).toDouble(),
           unlocksJointSkill: (s['unlocks_joint_skill'] as bool?) ?? false,
           hasSwordSongEffect: (s['has_sword_song_effect'] as bool?) ?? false,
@@ -619,14 +637,13 @@ class FounderAncestorBuff {
     }
     return FounderAncestorBuff(
       enabledWhenAlive: enabled,
-      internalForceMaxPct:
-          ((swb['internal_force_max_pct'] as num?) ?? 0).toDouble(),
+      internalForceMaxPct: ((swb['internal_force_max_pct'] as num?) ?? 0)
+          .toDouble(),
       maxHpPct: ((swb['max_hp_pct'] as num?) ?? 0).toDouble(),
       critRateBonus: ((swb['crit_rate_bonus'] as num?) ?? 0).toDouble(),
-      cultivationProgressPct:
-          ((swb['cultivation_progress_pct'] as num?) ?? 0).toDouble(),
-      applyToDisciplesOnly:
-          (swb['apply_to_disciples_only'] as bool?) ?? false,
+      cultivationProgressPct: ((swb['cultivation_progress_pct'] as num?) ?? 0)
+          .toDouble(),
+      applyToDisciplesOnly: (swb['apply_to_disciples_only'] as bool?) ?? false,
     );
   }
 
@@ -689,8 +706,7 @@ class HeritageItems {
           (y['transfer_trigger'] as String?) ?? 'ascend_to_wusheng',
       multiDiscipleAllocation:
           (y['multi_disciple_allocation'] as String?) ?? 'player_pick',
-      stackAcrossGenerations:
-          (y['stack_across_generations'] as bool?) ?? false,
+      stackAcrossGenerations: (y['stack_across_generations'] as bool?) ?? false,
       conflictSlotResolution:
           (y['conflict_slot_resolution'] as String?) ?? 'auto_swap',
     );
@@ -731,7 +747,8 @@ class AscensionConfig {
     if (y == null) return empty;
     final triggers = y['unlock_triggers'] as Map<String, dynamic>?;
     if (triggers == null) return empty;
-    final stages = (triggers['cleared_stages'] as List?)
+    final stages =
+        (triggers['cleared_stages'] as List?)
             ?.map((e) => e as String)
             .toList(growable: false) ??
         const [];
@@ -791,8 +808,7 @@ class EnhancementConfig {
       crystalGuarantees: _parseCrystalGuarantees(
         xinxueJiejing['guaranteed_success_costs'] as List,
       ),
-      crystalGainPerFailure:
-          (xinxueJiejing['gain_per_failure'] as num).toInt(),
+      crystalGainPerFailure: (xinxueJiejing['gain_per_failure'] as num).toInt(),
       neverDegrade: enhancement['never_degrade'] as bool? ?? true,
     );
   }
@@ -1061,8 +1077,8 @@ class SchoolCounterMatrix {
     required this.neutral,
     required this.gangMengQuake,
     required this.yinRouInternalInjury,
-  })  : _counterTarget = counterTarget,
-        _extraEffect = extraEffect;
+  }) : _counterTarget = counterTarget,
+       _extraEffect = extraEffect;
 
   factory SchoolCounterMatrix.fromYaml(Map<String, dynamic> y) {
     final relations = y['counter_relations'] as List;
@@ -1205,12 +1221,8 @@ class CombatNumbers {
       speedFormula: SpeedFormula.fromYaml(
         y['speed_formula'] as Map<String, dynamic>,
       ),
-      critical: CriticalConfig.fromYaml(
-        y['critical'] as Map<String, dynamic>,
-      ),
-      evasion: EvasionConfig.fromYaml(
-        y['evasion'] as Map<String, dynamic>,
-      ),
+      critical: CriticalConfig.fromYaml(y['critical'] as Map<String, dynamic>),
+      evasion: EvasionConfig.fromYaml(y['evasion'] as Map<String, dynamic>),
       enemyDefaults: EnemyDefaults.fromYaml(
         y['enemy_defaults'] as Map<String, dynamic>,
       ),
@@ -1226,9 +1238,7 @@ class CombatNumbers {
       defenseBreak: DefenseBreakConfig.fromYaml(
         y['defense_break'] as Map? ?? const {},
       ),
-      weakness: WeaknessConfig.fromYaml(
-        y['weakness'] as Map? ?? const {},
-      ),
+      weakness: WeaknessConfig.fromYaml(y['weakness'] as Map? ?? const {}),
     );
   }
 }
@@ -1253,13 +1263,11 @@ class BossChargeConfig {
     this.interruptPowerCap = 0.5,
   });
   factory BossChargeConfig.fromYaml(Map y) => BossChargeConfig(
-        defaultChargeTicks: (y['default_charge_ticks'] as num?)?.toInt() ?? 3,
-        defaultStaggerTicks: (y['default_stagger_ticks'] as num?)?.toInt() ?? 2,
-        staggerDefenseDown:
-            (y['stagger_defense_down'] as num?)?.toDouble() ?? 0.3,
-        interruptPowerCap:
-            (y['interrupt_power_cap'] as num?)?.toDouble() ?? 0.5,
-      );
+    defaultChargeTicks: (y['default_charge_ticks'] as num?)?.toInt() ?? 3,
+    defaultStaggerTicks: (y['default_stagger_ticks'] as num?)?.toInt() ?? 2,
+    staggerDefenseDown: (y['stagger_defense_down'] as num?)?.toDouble() ?? 0.3,
+    interruptPowerCap: (y['interrupt_power_cap'] as num?)?.toDouble() ?? 0.5,
+  );
 }
 
 /// 第六阶段三人协同:破防开窗参数。fixture 不带该段时回落默认(沿 BossChargeConfig 体例)。
@@ -1268,8 +1276,8 @@ class DefenseBreakConfig {
   final int windowTicks;
   const DefenseBreakConfig({this.windowTicks = 3});
   factory DefenseBreakConfig.fromYaml(Map y) => DefenseBreakConfig(
-        windowTicks: (y['window_ticks'] as num?)?.toInt() ?? 3,
-      );
+    windowTicks: (y['window_ticks'] as num?)?.toInt() ?? 3,
+  );
 }
 
 /// 第七阶段批二②:Boss 弱点/抗性乘子值域(numbers.yaml `combat.weakness`)。
@@ -1282,9 +1290,9 @@ class WeaknessConfig {
   final double maxMult;
   const WeaknessConfig({this.minMult = 0.5, this.maxMult = 2.0});
   factory WeaknessConfig.fromYaml(Map y) => WeaknessConfig(
-        minMult: (y['min_mult'] as num?)?.toDouble() ?? 0.5,
-        maxMult: (y['max_mult'] as num?)?.toDouble() ?? 2.0,
-      );
+    minMult: (y['min_mult'] as num?)?.toDouble() ?? 0.5,
+    maxMult: (y['max_mult'] as num?)?.toDouble() ?? 2.0,
+  );
 }
 
 /// 批次 2.4 打击感表现层三档参数（numbers.yaml `combat.impact_feedback`）。
@@ -1302,25 +1310,25 @@ class ImpactFeedbackConfig {
   });
 
   factory ImpactFeedbackConfig.fromYaml(Map y) => ImpactFeedbackConfig(
-        light: ImpactTierParams.fromYaml(
-          y['light'] as Map? ?? const {},
-          defaultHitStopMs: 60,
-          defaultShake: 3.0,
-          defaultFlash: 0.12,
-        ),
-        medium: ImpactTierParams.fromYaml(
-          y['medium'] as Map? ?? const {},
-          defaultHitStopMs: 90,
-          defaultShake: 6.0,
-          defaultFlash: 0.20,
-        ),
-        heavy: ImpactTierParams.fromYaml(
-          y['heavy'] as Map? ?? const {},
-          defaultHitStopMs: 120,
-          defaultShake: 10.0,
-          defaultFlash: 0.30,
-        ),
-      );
+    light: ImpactTierParams.fromYaml(
+      y['light'] as Map? ?? const {},
+      defaultHitStopMs: 60,
+      defaultShake: 3.0,
+      defaultFlash: 0.12,
+    ),
+    medium: ImpactTierParams.fromYaml(
+      y['medium'] as Map? ?? const {},
+      defaultHitStopMs: 90,
+      defaultShake: 6.0,
+      defaultFlash: 0.20,
+    ),
+    heavy: ImpactTierParams.fromYaml(
+      y['heavy'] as Map? ?? const {},
+      defaultHitStopMs: 120,
+      defaultShake: 10.0,
+      defaultFlash: 0.30,
+    ),
+  );
 }
 
 class ImpactTierParams {
@@ -1339,14 +1347,11 @@ class ImpactTierParams {
     required int defaultHitStopMs,
     required double defaultShake,
     required double defaultFlash,
-  }) =>
-      ImpactTierParams(
-        hitStopMs: (y['hit_stop_ms'] as num?)?.toInt() ?? defaultHitStopMs,
-        shakeMagnitude:
-            (y['shake_magnitude'] as num?)?.toDouble() ?? defaultShake,
-        flashStrength:
-            (y['flash_strength'] as num?)?.toDouble() ?? defaultFlash,
-      );
+  }) => ImpactTierParams(
+    hitStopMs: (y['hit_stop_ms'] as num?)?.toInt() ?? defaultHitStopMs,
+    shakeMagnitude: (y['shake_magnitude'] as num?)?.toDouble() ?? defaultShake,
+    flashStrength: (y['flash_strength'] as num?)?.toDouble() ?? defaultFlash,
+  );
 }
 
 /// 数值红线 cap 强类型（numbers.yaml `combat.red_lines`，GDD §5.4 硬上限）。
@@ -1456,10 +1461,7 @@ class SpeedFormula {
   final int base;
   final int agilityFactor;
 
-  const SpeedFormula({
-    required this.base,
-    required this.agilityFactor,
-  });
+  const SpeedFormula({required this.base, required this.agilityFactor});
 
   factory SpeedFormula.fromYaml(Map<String, dynamic> y) {
     return SpeedFormula(
@@ -1505,10 +1507,9 @@ class CriticalConfig {
       maxRate: (y['max_rate'] as num).toDouble(),
       baseDamageMultiplier: (y['base_damage_multiplier'] as num).toDouble(),
       maxDamageMultiplier: (y['max_damage_multiplier'] as num).toDouble(),
-      lingqiaoCriticalBonus:
-          (y['lingqiao_critical_bonus'] as num).toDouble(),
-      lingqiaoDamageMultiplier:
-          (y['lingqiao_damage_multiplier'] as num).toDouble(),
+      lingqiaoCriticalBonus: (y['lingqiao_critical_bonus'] as num).toDouble(),
+      lingqiaoDamageMultiplier: (y['lingqiao_damage_multiplier'] as num)
+          .toDouble(),
     );
   }
 }
@@ -1549,8 +1550,7 @@ class LevelDiffModifier {
   });
 
   factory LevelDiffModifier.fromYaml(Map<String, dynamic> y) {
-    final diff2 =
-        TierMod.fromYaml(y['diff_2_tier'] as Map<String, dynamic>);
+    final diff2 = TierMod.fromYaml(y['diff_2_tier'] as Map<String, dynamic>);
     final raw3 = y['diff_3_or_more'] as Map<String, dynamic>;
     return LevelDiffModifier(
       sameTier: TierMod.fromYaml(y['same_tier'] as Map<String, dynamic>),
@@ -1576,6 +1576,7 @@ class AnimationNumbers {
   final int damagePopupMs;
   final int actionIntervalMs;
   final int fastForwardIntervalMs;
+
   /// 批次 2.4 后不再被消费：战斗屏震振幅改走 combat.impact_feedback 分档
   /// （light/medium/heavy）。保留字段 + yaml key 避免改既有 fixture/schema；
   /// 若后续确认无任何引用可整体移除。`shakeDurationMs` 仍在用（_shakeCtrl 时长）。
@@ -1584,6 +1585,7 @@ class AnimationNumbers {
   final double criticalFontScale;
   final int projectileMs;
   final int hitFlashMs;
+
   /// 关键帧（暴击/大招/合一/破招/击杀）命中后的额外顿帧时长（ms）。常速播放
   /// 下与 impact_feedback 的 hitStopMs 取大者，给「这一下重要」留读条停顿。
   /// 快进/拖招态不触发（沿 hit-stop 既有跳过约定）。
@@ -1763,27 +1765,28 @@ class RetreatConfig {
     final rawSolar = y['solar_term_bonus'] as Map<String, dynamic>;
     final rawTimeOfDay = y['time_of_day_bonus'] as List;
     // 提取子时（period=ziShi）的 multiplier，effect=internal_force_growth
-    final ziShi = rawTimeOfDay.firstWhere(
-      (e) => (e as Map)['period'] == 'ziShi',
-      orElse: () => <String, dynamic>{'multiplier': 1.0},
-    ) as Map;
+    final ziShi =
+        rawTimeOfDay.firstWhere(
+              (e) => (e as Map)['period'] == 'ziShi',
+              orElse: () => <String, dynamic>{'multiplier': 1.0},
+            )
+            as Map;
     // 正午(period=zhengWu)v1.4 加成定向落到 internal_force_points + 仅 gangMeng 触发。
-    final zhengWu = rawTimeOfDay.firstWhere(
-      (e) => (e as Map)['period'] == 'zhengWu',
-      orElse: () => <String, dynamic>{
-        'multiplier': 1.0,
-        'target_attribute': 'internal_force_points',
-        'applies_to_school': 'gangMeng',
-      },
-    ) as Map;
+    final zhengWu =
+        rawTimeOfDay.firstWhere(
+              (e) => (e as Map)['period'] == 'zhengWu',
+              orElse: () => <String, dynamic>{
+                'multiplier': 1.0,
+                'target_attribute': 'internal_force_points',
+                'applies_to_school': 'gangMeng',
+              },
+            )
+            as Map;
     final solarDays = (rawSolar['days_2026'] as List)
         .map((e) {
           final dateStr = (e as Map)['date'] as String;
           final parts = dateStr.split('-');
-          return (
-            month: int.parse(parts[1]),
-            day: int.parse(parts[2]),
-          );
+          return (month: int.parse(parts[1]), day: int.parse(parts[2]));
         })
         .toList(growable: false);
     return RetreatConfig(
@@ -1796,19 +1799,20 @@ class RetreatConfig {
       ],
       realmScalePerTier: (y['realm_scale_per_tier'] as num).toDouble(),
       capHours: (y['cap_hours'] as num).toInt(),
-      baseEquipDropProbability:
-          (y['base_equip_drop_probability'] as num).toDouble(),
-      baseInternalForcePerHour:
-          (y['base_internal_force_per_hour'] as num).toDouble(),
-      baseTechniqueLearnPerHour:
-          (y['base_technique_learn_per_hour'] as num).toDouble(),
+      baseEquipDropProbability: (y['base_equip_drop_probability'] as num)
+          .toDouble(),
+      baseInternalForcePerHour: (y['base_internal_force_per_hour'] as num)
+          .toDouble(),
+      baseTechniqueLearnPerHour: (y['base_technique_learn_per_hour'] as num)
+          .toDouble(),
       solarTermMultiplier: (rawSolar['multiplier'] as num).toDouble(),
       solarTermDays: solarDays,
       ziShiInternalForceMultiplier: (ziShi['multiplier'] as num).toDouble(),
       zhengWuYangSchoolMultiplier: (zhengWu['multiplier'] as num).toDouble(),
       zhengWuTargetAttribute: zhengWu['target_attribute'] as String,
-      zhengWuAppliesToSchool:
-          TechniqueSchool.values.byName(zhengWu['applies_to_school'] as String),
+      zhengWuAppliesToSchool: TechniqueSchool.values.byName(
+        zhengWu['applies_to_school'] as String,
+      ),
     );
   }
 
@@ -1861,8 +1865,7 @@ class FestivalConfig {
     final parsed = <({Festival festival, int month, int day})>[];
     for (final raw in rawDays) {
       final entry = raw as Map;
-      final festival =
-          Festival.values.byName(entry['festival'] as String);
+      final festival = Festival.values.byName(entry['festival'] as String);
       final dateStr = entry['date'] as String;
       final parts = dateStr.split('-');
       parsed.add((
@@ -1910,8 +1913,9 @@ class JianghuConfig {
     final tiersRaw = (y['reputation_tiers'] as List?) ?? const [];
     final tiers = <ReputationTierDef>[];
     for (final raw in tiersRaw) {
-      tiers.add(ReputationTierDef.fromYaml(
-          Map<String, dynamic>.from(raw as Map)));
+      tiers.add(
+        ReputationTierDef.fromYaml(Map<String, dynamic>.from(raw as Map)),
+      );
     }
     return JianghuConfig(
       reputationTiers: List.unmodifiable(tiers),
@@ -1955,8 +1959,8 @@ class ReputationTierDef {
 class EnmityCombatModifier {
   final int threshold;
   final double playerAttackPowerMult;
-  /// TODO B3+ 接入:未来 PVP 镜像配置(对手 NPC 攻击倍率)预留;
-  /// 目前仅 schema 占位,实战代码 0 caller(R5 schema 校验已覆盖)。
+
+  /// 对手 NPC 攻击倍率预留;目前仅 schema 占位,实战代码 0 caller(R5 schema 校验已覆盖)。
   final double enemyAttackPowerMult;
   final int severeThreshold;
   final double severeMult;
@@ -2019,152 +2023,13 @@ class JianghuTriggers {
   factory JianghuTriggers.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return empty;
     return JianghuTriggers(
-      stageBossKillDelta:
-          (y['stage_boss_kill_delta'] as num?)?.toInt() ?? 0,
+      stageBossKillDelta: (y['stage_boss_kill_delta'] as num?)?.toInt() ?? 0,
       stageBossKillRivalDelta:
           (y['stage_boss_kill_rival_delta'] as num?)?.toInt() ?? 0,
       encounterNpcDeltaMin:
           (y['encounter_npc_delta_min'] as num?)?.toInt() ?? 0,
       encounterNpcDeltaMax:
           (y['encounter_npc_delta_max'] as num?)?.toInt() ?? 0,
-    );
-  }
-}
-
-// =============================================================================
-// 1.0 P3.3 PVP 强类型定义(T19b 技术债清账 · 沿 JianghuConfig 体例)
-// =============================================================================
-
-/// 1.0 P3.3 PVP 配置(spec p3_3_pvp_spec_2026-05-24 §9)。
-///
-/// 替原 `numbers.raw['pvp']` dynamic map(避撞 T13/T14 cherry-pick conflict
-/// 的折中,Phase 4+ T19b 升强类型清账)。空段兜底 [PvpDef.empty]。
-class PvpDef {
-  final EloConfig elo;
-  final PvpMatchRange matchRange;
-  final PvpSync sync;
-  final PvpHistory history;
-  final String? unlockRequiresStage;
-
-  const PvpDef({
-    required this.elo,
-    required this.matchRange,
-    required this.sync,
-    required this.history,
-    required this.unlockRequiresStage,
-  });
-
-  static const PvpDef empty = PvpDef(
-    elo: EloConfig.empty,
-    matchRange: PvpMatchRange.empty,
-    sync: PvpSync.empty,
-    history: PvpHistory.empty,
-    unlockRequiresStage: null,
-  );
-
-  factory PvpDef.fromYaml(Map<String, dynamic>? y) {
-    if (y == null || y.isEmpty) return empty;
-    return PvpDef(
-      elo: EloConfig.fromYaml(
-        (y['elo'] as Map?)?.cast<String, dynamic>() ?? const {},
-      ),
-      matchRange: PvpMatchRange.fromYaml(
-        (y['match_range'] as Map?)?.cast<String, dynamic>() ?? const {},
-      ),
-      sync: PvpSync.fromYaml(
-        (y['sync'] as Map?)?.cast<String, dynamic>() ?? const {},
-      ),
-      history: PvpHistory.fromYaml(
-        (y['history'] as Map?)?.cast<String, dynamic>() ?? const {},
-      ),
-      unlockRequiresStage:
-          (y['unlock'] as Map?)?['requires_stage'] as String?,
-    );
-  }
-}
-
-class EloConfig {
-  final int initial;
-  final int kFactor;
-  final double drawFactor;
-
-  const EloConfig({
-    required this.initial,
-    required this.kFactor,
-    required this.drawFactor,
-  });
-
-  static const EloConfig empty = EloConfig(
-    initial: 1200,
-    kFactor: 32,
-    drawFactor: 0.5,
-  );
-
-  factory EloConfig.fromYaml(Map<String, dynamic> y) {
-    if (y.isEmpty) return empty;
-    return EloConfig(
-      initial: (y['initial'] as num?)?.toInt() ?? 1200,
-      kFactor: (y['k_factor'] as num?)?.toInt() ?? 32,
-      drawFactor: (y['draw_factor'] as num?)?.toDouble() ?? 0.5,
-    );
-  }
-}
-
-class PvpMatchRange {
-  final int eloWindow;
-  final int fallbackWindow;
-  final int minPoolSize;
-
-  const PvpMatchRange({
-    required this.eloWindow,
-    required this.fallbackWindow,
-    required this.minPoolSize,
-  });
-
-  static const PvpMatchRange empty = PvpMatchRange(
-    eloWindow: 100,
-    fallbackWindow: 300,
-    minPoolSize: 3,
-  );
-
-  factory PvpMatchRange.fromYaml(Map<String, dynamic> y) {
-    if (y.isEmpty) return empty;
-    return PvpMatchRange(
-      eloWindow: (y['elo_window'] as num?)?.toInt() ?? 100,
-      fallbackWindow: (y['fallback_window'] as num?)?.toInt() ?? 300,
-      minPoolSize: (y['min_pool_size'] as num?)?.toInt() ?? 3,
-    );
-  }
-}
-
-class PvpSync {
-  final String impl;
-  final int snapshotTtlHours;
-
-  const PvpSync({required this.impl, required this.snapshotTtlHours});
-
-  static const PvpSync empty = PvpSync(impl: 'noop', snapshotTtlHours: 168);
-
-  factory PvpSync.fromYaml(Map<String, dynamic> y) {
-    if (y.isEmpty) return empty;
-    return PvpSync(
-      impl: (y['impl'] as String?) ?? 'noop',
-      snapshotTtlHours: (y['snapshot_ttl_hours'] as num?)?.toInt() ?? 168,
-    );
-  }
-}
-
-class PvpHistory {
-  final int maxRecords;
-
-  const PvpHistory({required this.maxRecords});
-
-  static const PvpHistory empty = PvpHistory(maxRecords: 200);
-
-  factory PvpHistory.fromYaml(Map<String, dynamic> y) {
-    if (y.isEmpty) return empty;
-    return PvpHistory(
-      maxRecords: (y['max_records'] as num?)?.toInt() ?? 200,
     );
   }
 }
@@ -2243,14 +2108,12 @@ class SectTournamentDef {
   factory SectTournamentDef.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return empty;
     return SectTournamentDef(
-      triggerProbability:
-          (y['trigger_probability'] as num?)?.toDouble() ?? 0.0,
+      triggerProbability: (y['trigger_probability'] as num?)?.toDouble() ?? 0.0,
       cooldownDays: (y['cooldown_days'] as num?)?.toInt() ?? 30,
       triggerRealmMin: (y['trigger_realm_min'] as String?) ?? 'yiLiu',
       expireDays: (y['expire_days'] as num?)?.toInt() ?? 7,
-      narrativeIds: (y['narrative_ids'] as List?)
-              ?.map((e) => e.toString())
-              .toList() ??
+      narrativeIds:
+          (y['narrative_ids'] as List?)?.map((e) => e.toString()).toList() ??
           const [],
     );
   }
@@ -2288,8 +2151,7 @@ class SectReputationDef {
       initial: (y['initial'] as num?)?.toInt() ?? 50,
       winDelta: (y['win_delta'] as num?)?.toInt() ?? 10,
       lossDelta: (y['loss_delta'] as num?)?.toInt() ?? -5,
-      decayPerMonthIdle:
-          (y['decay_per_month_idle'] as num?)?.toInt() ?? 5,
+      decayPerMonthIdle: (y['decay_per_month_idle'] as num?)?.toInt() ?? 5,
       max: (y['max'] as num?)?.toInt() ?? 100,
       min: (y['min'] as num?)?.toInt() ?? 0,
     );
@@ -2318,8 +2180,7 @@ class SectLevelDef {
     return SectLevelDef(
       max: (y['max'] as num?)?.toInt() ?? 7,
       initial: (y['initial'] as num?)?.toInt() ?? 1,
-      promoteWinsThreshold:
-          (y['promote_wins_threshold'] as num?)?.toInt() ?? 3,
+      promoteWinsThreshold: (y['promote_wins_threshold'] as num?)?.toInt() ?? 3,
     );
   }
 }
@@ -2402,9 +2263,9 @@ class SectRankPromoteThresholdConfig {
 
   static const SectRankPromoteThresholdConfig empty =
       SectRankPromoteThresholdConfig(
-    innerMinContribution: 10,
-    elderMinContribution: 30,
-  );
+        innerMinContribution: 10,
+        elderMinContribution: 30,
+      );
 
   factory SectRankPromoteThresholdConfig.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return empty;
@@ -2420,10 +2281,11 @@ class SectRankPromoteThresholdConfig {
 /// 多维 trigger 招收 softProbability:encounter / stage_boss recruit(战胜招降)/
 /// stage_boss fail recover(战败收降 · P5+/1.1 留) / sect_event mission。
 class SectRecruitConfig {
-  final double encounterBaseProb;          // Q6 A
-  final double stageBossRecruitProb;       // P4.1 1.1 Q6 B · 战胜 Boss 后招降 NPC rng pick
-  final double stageBossFailRecoverProb;   // P4.1 1.1 战败收降:已实装,stage_boss_recruit_hook 真读(全局 0.30)
-  final double missionRecruitProb;         // Q7 B
+  final double encounterBaseProb; // Q6 A
+  final double stageBossRecruitProb; // P4.1 1.1 Q6 B · 战胜 Boss 后招降 NPC rng pick
+  final double
+  stageBossFailRecoverProb; // P4.1 1.1 战败收降:已实装,stage_boss_recruit_hook 真读(全局 0.30)
+  final double missionRecruitProb; // Q7 B
 
   const SectRecruitConfig({
     required this.encounterBaseProb,
@@ -2442,8 +2304,7 @@ class SectRecruitConfig {
   factory SectRecruitConfig.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return empty;
     return SectRecruitConfig(
-      encounterBaseProb:
-          (y['encounter_base_prob'] as num?)?.toDouble() ?? 0.15,
+      encounterBaseProb: (y['encounter_base_prob'] as num?)?.toDouble() ?? 0.15,
       stageBossRecruitProb:
           (y['stage_boss_recruit_prob'] as num?)?.toDouble() ?? 0.40,
       stageBossFailRecoverProb:
@@ -2456,7 +2317,7 @@ class SectRecruitConfig {
 
 /// Q4=A 静态 territory yaml + dynamic owner · `Sect.territoryIds.length` cap。
 class SectTerritoryNumbersConfig {
-  final int demoInitialCount;       // `data/territories.yaml` 静态 def 数量
+  final int demoInitialCount; // `data/territories.yaml` 静态 def 数量
   final List<int> maxPerSectByLevel; // sectLevel 1-7 阶 cap
 
   const SectTerritoryNumbersConfig({
@@ -2481,14 +2342,16 @@ class SectTerritoryNumbersConfig {
   }
 }
 
-
 /// 招式熟练度单个阶段(可玩性 P1a · spec §三)。
 class SkillProficiencyStageConfig {
   final String id;
   final int minUses;
   final double damageMult;
-  const SkillProficiencyStageConfig(
-      {required this.id, required this.minUses, required this.damageMult});
+  const SkillProficiencyStageConfig({
+    required this.id,
+    required this.minUses,
+    required this.damageMult,
+  });
 
   factory SkillProficiencyStageConfig.fromYaml(Map<String, dynamic> y) =>
       SkillProficiencyStageConfig(
@@ -2510,8 +2373,11 @@ class SkillProficiencyConfig {
   factory SkillProficiencyConfig.fromYaml(Map<String, dynamic>? y) {
     final raw = (y?['stages'] as List?) ?? const [];
     final stages = raw
-        .map((e) => SkillProficiencyStageConfig.fromYaml(
-            Map<String, dynamic>.from(e as Map)))
+        .map(
+          (e) => SkillProficiencyStageConfig.fromYaml(
+            Map<String, dynamic>.from(e as Map),
+          ),
+        )
         .toList(growable: false);
     // 单调红线:min_uses 严格递增 + damage_mult 不可递减
     for (var i = 1; i < stages.length; i++) {
@@ -2539,16 +2405,19 @@ class HeroCameraConfig {
 
   // 默认须与 numbers.yaml post_battle.hero_camera 保持一致(双源,改一处记得改另一处)。
   static const empty = HeroCameraConfig(
-      holdSeconds: 3.0, portraitSlidePx: 48, portraitScaleFrom: 0.88);
+    holdSeconds: 3.0,
+    portraitSlidePx: 48,
+    portraitScaleFrom: 0.88,
+  );
 
   factory HeroCameraConfig.fromYaml(Map<String, dynamic>? y) {
     if (y == null || y.isEmpty) return empty;
     return HeroCameraConfig(
-      holdSeconds:
-          (y['hold_seconds'] as num?)?.toDouble() ?? empty.holdSeconds,
+      holdSeconds: (y['hold_seconds'] as num?)?.toDouble() ?? empty.holdSeconds,
       portraitSlidePx:
           (y['portrait_slide_px'] as num?)?.toDouble() ?? empty.portraitSlidePx,
-      portraitScaleFrom: (y['portrait_scale_from'] as num?)?.toDouble() ??
+      portraitScaleFrom:
+          (y['portrait_scale_from'] as num?)?.toDouble() ??
           empty.portraitScaleFrom,
     );
   }
@@ -2574,11 +2443,15 @@ class TreasureDropConfig {
 class SkillUnlockConfig {
   final int fragmentThreshold;
   final double towerFragmentDropProb;
-  const SkillUnlockConfig(
-      {required this.fragmentThreshold, required this.towerFragmentDropProb});
+  const SkillUnlockConfig({
+    required this.fragmentThreshold,
+    required this.towerFragmentDropProb,
+  });
 
-  static const empty =
-      SkillUnlockConfig(fragmentThreshold: 5, towerFragmentDropProb: 0.20);
+  static const empty = SkillUnlockConfig(
+    fragmentThreshold: 5,
+    towerFragmentDropProb: 0.20,
+  );
 
   factory SkillUnlockConfig.fromYaml(Map<String, dynamic>? y) {
     if (y == null || y.isEmpty) return empty;
@@ -2606,11 +2479,9 @@ class YutiTraitParams {
   });
 
   factory YutiTraitParams.fromYaml(Map<String, dynamic> y) => YutiTraitParams(
-        defenseRateBonusC2:
-            (y['defense_rate_bonus_c2'] as num).toDouble(),
-        defenseRateBonusC3:
-            (y['defense_rate_bonus_c3'] as num).toDouble(),
-      );
+    defenseRateBonusC2: (y['defense_rate_bonus_c2'] as num).toDouble(),
+    defenseRateBonusC3: (y['defense_rate_bonus_c3'] as num).toDouble(),
+  );
 }
 
 /// 反震词条参数（受击反伤 DoT）。
@@ -2618,10 +2489,7 @@ class FanzhenTraitParams {
   final int damagePerTick;
   final int ticks;
 
-  const FanzhenTraitParams({
-    required this.damagePerTick,
-    required this.ticks,
-  });
+  const FanzhenTraitParams({required this.damagePerTick, required this.ticks});
 
   factory FanzhenTraitParams.fromYaml(Map<String, dynamic> y) =>
       FanzhenTraitParams(
@@ -2661,9 +2529,7 @@ class ShipoTraitParams {
   const ShipoTraitParams({required this.chargeSkillId});
 
   factory ShipoTraitParams.fromYaml(Map<String, dynamic> y) =>
-      ShipoTraitParams(
-        chargeSkillId: y['charge_skill_id'] as String,
-      );
+      ShipoTraitParams(chargeSkillId: y['charge_skill_id'] as String);
 }
 
 /// 全部反制词条参数容器（numbers.yaml `cycle_evolution.traits`）。
@@ -2685,15 +2551,20 @@ class CycleTraitsConfig {
   factory CycleTraitsConfig.fromYaml(Map<String, dynamic> y) =>
       CycleTraitsConfig(
         yuti: YutiTraitParams.fromYaml(
-            (y['yuti'] as Map).cast<String, dynamic>()),
+          (y['yuti'] as Map).cast<String, dynamic>(),
+        ),
         fanzhen: FanzhenTraitParams.fromYaml(
-            (y['fanzhen'] as Map).cast<String, dynamic>()),
+          (y['fanzhen'] as Map).cast<String, dynamic>(),
+        ),
         ningjia: NingjiaTraitParams.fromYaml(
-            (y['ningjia'] as Map).cast<String, dynamic>()),
+          (y['ningjia'] as Map).cast<String, dynamic>(),
+        ),
         zhenqi: ZhenqiTraitParams.fromYaml(
-            (y['zhenqi'] as Map).cast<String, dynamic>()),
+          (y['zhenqi'] as Map).cast<String, dynamic>(),
+        ),
         shipo: ShipoTraitParams.fromYaml(
-            (y['shipo'] as Map).cast<String, dynamic>()),
+          (y['shipo'] as Map).cast<String, dynamic>(),
+        ),
       );
 }
 
@@ -2742,8 +2613,7 @@ class CycleEvolutionConfig {
     maxCycleTower: 1,
     defenseRateCap: 0.6,
     traits: CycleTraitsConfig(
-      yuti: YutiTraitParams(
-          defenseRateBonusC2: 0.0, defenseRateBonusC3: 0.0),
+      yuti: YutiTraitParams(defenseRateBonusC2: 0.0, defenseRateBonusC3: 0.0),
       fanzhen: FanzhenTraitParams(damagePerTick: 0, ticks: 0),
       ningjia: NingjiaTraitParams(critDamageTakenMult: 1.0),
       zhenqi: ZhenqiTraitParams(internalForcePct: 0.0),
@@ -2760,14 +2630,17 @@ class CycleEvolutionConfig {
       maxCycleTower: (y['max_cycle_tower'] as num).toInt(),
       defenseRateCap: (y['defense_rate_cap'] as num).toDouble(),
       traits: CycleTraitsConfig.fromYaml(
-          (y['traits'] as Map).cast<String, dynamic>()),
+        (y['traits'] as Map).cast<String, dynamic>(),
+      ),
       assignment: _parseAssignment(
-          (y['assignment'] as Map?)?.cast<String, dynamic>() ?? const {}),
+        (y['assignment'] as Map?)?.cast<String, dynamic>() ?? const {},
+      ),
     );
   }
 
   static Map<String, Map<int, Set<String>>> _parseAssignment(
-      Map<String, dynamic> raw) {
+    Map<String, dynamic> raw,
+  ) {
     final result = <String, Map<int, Set<String>>>{};
     for (final tableEntry in raw.entries) {
       final tableKey = tableEntry.key; // e.g. 'mainline'
@@ -2799,7 +2672,9 @@ class CycleEvolutionConfig {
     required bool isTower,
   }) {
     if (cycle <= 1) return const {};
-    final tableKey = isTower ? (isBoss ? 'tower_boss' : 'tower_normal') : 'mainline';
+    final tableKey = isTower
+        ? (isBoss ? 'tower_boss' : 'tower_normal')
+        : 'mainline';
     return _assignment[tableKey]?[cycle] ?? const {};
   }
 }
@@ -2894,11 +2769,11 @@ class DiscipleJoinDef {
     required this.narrativeId,
   });
   factory DiscipleJoinDef.fromYaml(Map<String, dynamic> y) => DiscipleJoinDef(
-        stageId: y['stage_id'] as String,
-        masterSlotIndex: (y['master_slot_index'] as num).toInt(),
-        role: LineageRole.values.byName(y['role'] as String),
-        narrativeId: y['narrative_id'] as String,
-      );
+    stageId: y['stage_id'] as String,
+    masterSlotIndex: (y['master_slot_index'] as num).toInt(),
+    role: LineageRole.values.byName(y['role'] as String),
+    narrativeId: y['narrative_id'] as String,
+  );
 }
 
 /// 命名弟子拜入触发表（numbers.yaml `lineage_onboarding`）。
@@ -2913,7 +2788,10 @@ class LineageOnboardingConfig {
     final raw = (y['disciple_joins'] as List?) ?? const [];
     return LineageOnboardingConfig(
       discipleJoins: raw
-          .map((e) => DiscipleJoinDef.fromYaml(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) =>
+                DiscipleJoinDef.fromYaml(Map<String, dynamic>.from(e as Map)),
+          )
           .toList(growable: false),
     );
   }

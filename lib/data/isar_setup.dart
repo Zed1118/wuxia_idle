@@ -106,6 +106,8 @@ class IsarSetup {
   /// P1.1 A1 E.1 SaveData 加 recruitmentOffered/recruitedDiscipleIds(收徒)→ 升 0.12.0。
   /// P1.2 T17 + P3 T19b 合并升:Reputation/NpcRelation(P1.2)+ Sect/SectEvent/PvpRecord/
   /// PvpSnapshot(T19b)6 schema 一并接入 `_allSchemas` → 升 0.13.0。
+  /// PVP 已于 2026-06-27 切除;PvpRecord/PvpSnapshot 仅为旧档 collection 兼容保留,
+  /// 生产路径不再读写。
   /// P4.1 1.1 Q6B SaveData 加 triggeredBossRecruitStageIds(Boss 招降防刷)→ 升 0.14.0。
   /// sect 立绘 wiring Character 加 portraitPath String?(sect 成员立绘)→ 升 0.15.0。
   // P1b 藏经阁:Character 加 5 装配槽字段(mainSkillId1/2/assist/resonance/ultimate)→ 0.17.0。
@@ -181,7 +183,9 @@ class IsarSetup {
       // 0.27.0 兵器谱：扫当前库存兜底回填图鉴（幂等，新档库存空时 no-op）。
       // 兼任老档当前持有装备的点亮 + 任何漏 hook 路径的安全网。
       try {
-        await EquipmentCatalogService(isar: isar).reconcileFromInventory(currentSlotId);
+        await EquipmentCatalogService(
+          isar: isar,
+        ).reconcileFromInventory(currentSlotId);
       } catch (_) {
         // 库存异常时静默 skip，不阻塞启动
       }
@@ -216,8 +220,7 @@ class IsarSetup {
   @visibleForTesting
   static Future<void> repairCharacterLevels(Isar isar) async {
     final all = await isar.characters.where().findAll();
-    final broken =
-        all.where((c) => c.level < 1 || c.levelExp < 0).toList();
+    final broken = all.where((c) => c.level < 1 || c.levelExp < 0).toList();
     if (broken.isEmpty) return;
     await isar.writeTxn(() async {
       for (final c in broken) {
@@ -282,9 +285,10 @@ class IsarSetup {
             final def = defs[parts[0]];
             if (def == null || !def.isBossStage) continue;
             final chapterKey =
-                (def.stageType == StageType.mainline && def.chapterIndex != null)
-                    ? 'ch${def.chapterIndex}'
-                    : def.stageType.name;
+                (def.stageType == StageType.mainline &&
+                    def.chapterIndex != null)
+                ? 'ch${def.chapterIndex}'
+                : def.stageType.name;
             final chKey = '$chapterKey#${parts[1]}';
             if (!cKeys.contains(chKey)) cKeys.add(chKey);
           }
