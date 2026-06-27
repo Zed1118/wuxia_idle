@@ -67,14 +67,39 @@ class IslandProductionService {
       }
       if (sourceState == null) continue; // 找不到源 → 跳过
 
+      // 双输入配方：额外找次要源建筑（如丹房疗伤丹的灵泉水）。
+      // 校验层保证 secondary_input_per_output>0 ⇒ 建筑配了 secondary_input_item 且有 source 供应。
+      IslandBuildingState? secondarySource;
+      if (recipe.secondaryInputPerOutput > 0) {
+        final secItem = cfg.secondaryInputItem;
+        for (final candidate in result) {
+          final cCfg = config.buildingOf(candidate.type);
+          if (cCfg.kind == BuildingKind.source &&
+              cCfg.outputItem == secItem) {
+            secondarySource = candidate;
+            break;
+          }
+        }
+        if (secondarySource == null) continue; // 次要源缺失（防御）→ 跳过
+      }
+
       final cap = cfg.capFor(s.level).toDouble();
       final want = recipe.ratePerHour * s.level * t;
       final byMaterial = sourceState.stored / recipe.inputPerOutput;
       var made = math.min(want, byMaterial);
+      if (secondarySource != null) {
+        // 次要原料也限产，取更紧的约束（离线=在线：所有 min 可交换，与分段无关）
+        final bySecondary =
+            secondarySource.stored / recipe.secondaryInputPerOutput;
+        made = math.min(made, bySecondary);
+      }
       made = math.min(made, cap - s.stored); // 成品仓 cap 限
       made = math.max(0.0, made); // 浮点负兜底:也覆盖 stored > cap 的历史存量(cap 调低后存量合法超限)
 
       sourceState.stored -= made * recipe.inputPerOutput; // 扣源料
+      if (secondarySource != null) {
+        secondarySource.stored -= made * recipe.secondaryInputPerOutput; // 扣次要源料
+      }
       s.stored += made; // 产成品
     }
 
