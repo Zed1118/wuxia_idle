@@ -13,10 +13,12 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
+import '../../equipment/application/equipment_source_lookup.dart';
 import '../../equipment/application/equipment_disposal_service.dart';
 import '../../equipment/application/equipment_service.dart';
 import '../../equipment/domain/equipment_disposal.dart';
 import '../../equipment/domain/equipment_slot_occupancy.dart';
+import '../../equipment/domain/equipment_source.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
@@ -205,6 +207,11 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
         !isEquipped &&
         !widget.equipment.isLineageHeritage &&
         !widget.equipment.isLocked;
+    final repo = GameRepository.instanceOrNull;
+    final sources =
+        repo == null || !repo.equipmentDefs.containsKey(widget.def.id)
+        ? const <EquipmentSource>[]
+        : EquipmentSourceLookup(repo).sourcesFor(widget.def.id);
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       appBar: WuxiaTitleBar(
@@ -262,6 +269,8 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                       info,
                     ],
                     const SizedBox(height: 16),
+                    _SourceSection(sources: sources),
+                    if (sources.isNotEmpty) const SizedBox(height: 16),
                     _LoreSection(
                       future: _loreFuture,
                       equipment: widget.equipment,
@@ -295,6 +304,58 @@ Set<int> _watchActiveEquippedIds(WidgetRef ref) {
     for (final id in ids) ref.watch(characterByIdProvider(id)).value,
   ].nonNulls;
   return equippedEquipmentIdsForCharacters(characters);
+}
+
+class _SourceSection extends StatelessWidget {
+  const _SourceSection({required this.sources});
+
+  final List<EquipmentSource> sources;
+
+  @override
+  Widget build(BuildContext context) {
+    if (sources.isEmpty) return const SizedBox.shrink();
+    return PaperPanel(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SectionHeader(UiStrings.equipmentSourceSectionDivider),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final source in sources)
+                _Chip(text: _sourceLabel(source), color: WuxiaUi.ink2),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _sourceLabel(EquipmentSource source) {
+    return switch (source.kind) {
+      EquipmentSourceKind.mainline => UiStrings.equipmentSourceMainline(
+        source.chapterIndex ?? 0,
+        source.name ?? UiStrings.equipmentSourceUnknown,
+        source.isBoss,
+      ),
+      EquipmentSourceKind.stage => UiStrings.equipmentSourceStage(
+        source.name ?? UiStrings.equipmentSourceUnknown,
+        source.isBoss,
+      ),
+      EquipmentSourceKind.tower => UiStrings.equipmentSourceTower(
+        source.floorIndex ?? 0,
+        source.isBoss,
+      ),
+      EquipmentSourceKind.seclusion => UiStrings.equipmentSourceSeclusion(
+        source.name ?? UiStrings.equipmentSourceUnknown,
+      ),
+      EquipmentSourceKind.shop => UiStrings.equipmentSourceShop,
+      EquipmentSourceKind.tag => UiStrings.equipmentSourceTag(source.tag ?? ''),
+    };
+  }
 }
 
 class _DetailHero extends StatelessWidget {
