@@ -14,6 +14,7 @@
 
 - 2026-06-27: `codex/island-prep-advice-integration` 已合并 `codex/taohua-island-phase2-foundation` (`5a4dd839`) 与 `codex/zangjuange-hub-clues` (`5d1a97ec`)。
 - 2026-06-27: Task 1-2 已完成，本地新增 `IslandPrepAdvice` 与 `IslandPrepAdviceService.fromClues`，`flutter test test/features/taohua_island/island_prep_advice_service_test.dart` 通过。当前下一步：Task 3，接入 `taohuaIslandViewProvider`。
+- 2026-06-27: Task 3-4 已完成，`IslandView.prepAdvice` 从 `zangjuangeCluesProvider` 映射并在桃花岛顶部只读展示，`flutter test test/features/taohua_island/island_prep_advice_service_test.dart test/features/taohua_island/taohua_island_screen_test.dart` 通过。当前下一步：Task 5，岛务工程碑 read-only first slice。
 
 ---
 
