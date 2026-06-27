@@ -612,6 +612,19 @@ class UiStrings {
   static const String inventoryFilterEquipped = '已穿戴';
   static const String inventoryFilterForgeable = '可开锋';
   static const String inventoryFilterRealmLocked = '境界未达';
+  static const String inventoryFilterSlotAll = '类型：全部';
+  static const String inventoryFilterTierAll = '阶位：全部';
+  static const String inventoryFilterOwnershipAll = '状态：全部';
+  static String inventoryFilterSlotLabel(String name) => '类型：$name';
+  static String inventoryFilterTierLabel(String name) => '阶位：$name';
+  static const String inventoryFilterFree = '自由';
+  static const String inventoryFilterHeritage = '师承遗物';
+  static const String inventorySortTierDesc = '阶位高→低';
+  static const String inventorySortTierAsc = '阶位低→高';
+  static const String inventorySortEnhanceDesc = '强化高→低';
+  static const String inventorySortObtainedDesc = '入手新→旧';
+  static const String inventorySortObtainedAsc = '入手旧→新';
+  static String inventorySortLabel(String label) => '排序：$label';
 
   /// T11:仓库格子境界锁封条显具体原因(需 X 境界),替泛化「未达境界」。
   static String inventoryRealmLockBanner(String realmName) => '需$realmName境界';

@@ -12,6 +12,7 @@ import '../../equipment/application/equipment_disposal_service.dart';
 import '../../equipment/domain/equipment_disposal.dart';
 import '../../equipment/domain/equipment_slot_occupancy.dart';
 import '../../shop/application/shop_providers.dart';
+import '../application/inventory_organization.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
@@ -98,21 +99,11 @@ class BulkDisposalDialog extends ConsumerWidget {
     List<Equipment> list,
   ) {
     final equippedIds = _watchActiveEquippedIds(ref);
-    // 按品阶分桶，只保留可处置（不在槽位 && 非师承 && 非锁定）。
-    final byTier = <EquipmentTier, List<Equipment>>{};
     final protected = _ProtectionCounts.from(list, equippedIds);
-    for (final eq in list) {
-      if (isEquipmentDisposable(eq, equippedIds)) {
-        byTier.putIfAbsent(eq.tier, () => []).add(eq);
-      }
-    }
+    // 按品阶分桶（不在槽位 && 非师承 && 非锁定），高品阶在前。
+    final plan = buildBulkDisposalPlan(list, equippedIds);
 
-    // 高品阶在前（神物→寻常货），只显示非空品阶。
-    final tiers = EquipmentTier.values.reversed
-        .where((t) => byTier.containsKey(t))
-        .toList();
-
-    if (tiers.isEmpty) {
+    if (plan.isEmpty) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -134,16 +125,24 @@ class BulkDisposalDialog extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _ProtectedSummary(counts: protected),
-        for (int i = 0; i < tiers.length; i++) ...[
+        for (int i = 0; i < plan.tiers.length; i++) ...[
           if (i > 0)
             const Divider(color: WuxiaColors.border, height: 1, thickness: 1),
           _TierRow(
-            tier: tiers[i],
-            disposable: byTier[tiers[i]]!,
-            onSell: () =>
-                _handleSell(context, ref, tiers[i], byTier[tiers[i]]!),
-            onDisassemble: () =>
-                _handleDisassemble(context, ref, tiers[i], byTier[tiers[i]]!),
+            tier: plan.tiers[i],
+            disposable: plan.itemsFor(plan.tiers[i]),
+            onSell: () => _handleSell(
+              context,
+              ref,
+              plan.tiers[i],
+              plan.itemsFor(plan.tiers[i]),
+            ),
+            onDisassemble: () => _handleDisassemble(
+              context,
+              ref,
+              plan.tiers[i],
+              plan.itemsFor(plan.tiers[i]),
+            ),
           ),
         ],
       ],

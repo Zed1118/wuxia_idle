@@ -255,7 +255,7 @@ void main() {
       id: 10,
       tier: EquipmentTier.liQi,
       slot: EquipmentSlot.weapon,
-    );
+    )..ownerCharacterId = 1;
     final free = mkEq(
       id: 11,
       tier: EquipmentTier.liQi,
@@ -274,6 +274,45 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('test_10'), findsOneWidget);
     expect(find.text('test_11'), findsNothing);
+  });
+
+  testWidgets('库存整理控件：类型/阶位/状态筛选 + 排序入口可见', (tester) async {
+    await pumpInv(
+      tester,
+      equipments: [
+        mkEq(id: 70, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
+        mkEq(id: 71, tier: EquipmentTier.baoWu, slot: EquipmentSlot.armor),
+      ],
+    );
+
+    expect(find.text(UiStrings.inventoryFilterSlotAll), findsOneWidget);
+    expect(find.text(UiStrings.inventoryFilterTierAll), findsOneWidget);
+    expect(find.text(UiStrings.inventoryFilterOwnershipAll), findsOneWidget);
+    expect(
+      find.text(UiStrings.inventorySortLabel(UiStrings.inventorySortTierDesc)),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('库存整理控件：状态筛选「师承遗物」只显示遗物', (tester) async {
+    final heritage = mkEq(
+      id: 80,
+      tier: EquipmentTier.baoWu,
+      slot: EquipmentSlot.weapon,
+      isLineageHeritage: true,
+    );
+    final free = mkEq(
+      id: 81,
+      tier: EquipmentTier.baoWu,
+      slot: EquipmentSlot.armor,
+    );
+    await pumpInv(tester, equipments: [heritage, free]);
+
+    await tester.tap(find.text(UiStrings.inventoryFilterHeritage));
+    await tester.pumpAndSettle();
+
+    expect(find.text('test_80'), findsOneWidget);
+    expect(find.text('test_81'), findsNothing);
   });
 
   testWidgets('木牌 2 tab + 默认装备 Tab 显部位段', (tester) async {
