@@ -64,3 +64,23 @@ ImpactProfile? impactProfileFor(BattleAction action, ImpactFeedbackConfig cfg) {
     flashStrength: params.flashStrength,
   );
 }
+
+/// 命中峰值类型（特写触发源）。none=不特写。
+enum HitClimax { none, ultimateCrit, kill }
+
+/// 由 [action] + [state] 派生峰值类型。纯函数。
+/// ultimateCrit = 大招/人剑合一 且暴击；kill = 本击使目标死亡。
+/// 二者皆中时 ultimateCrit 优先（题字更大）。
+HitClimax hitClimaxFor(BattleAction action, BattleState state) {
+  final r = action.attackResult;
+  if (r == null || r.isDodged) return HitClimax.none;
+  if (isUltimateCaptionSkill(action.skill) && r.isCritical) {
+    return HitClimax.ultimateCrit;
+  }
+  final targetId = action.targetId;
+  if (targetId != null) {
+    final target = state.characterById(targetId);
+    if (target != null && !target.isAlive) return HitClimax.kill;
+  }
+  return HitClimax.none;
+}

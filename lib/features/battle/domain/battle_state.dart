@@ -659,6 +659,17 @@ class BattleState {
 
   bool get isFinished => result != null;
 
+  /// 按角色 id 在 left/right 两队查找；找不到返 null。
+  BattleCharacter? characterById(int id) {
+    for (final c in leftTeam) {
+      if (c.characterId == id) return c;
+    }
+    for (final c in rightTeam) {
+      if (c.characterId == id) return c;
+    }
+    return null;
+  }
+
   BattleState copyWith({
     List<BattleCharacter>? leftTeam,
     List<BattleCharacter>? rightTeam,
