@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/features/zangjuange/application/zangjuange_providers.dart';
 import 'package:wuxia_idle/features/zangjuange/domain/archive_clue.dart';
 
 void main() {
@@ -14,5 +15,19 @@ void main() {
     expect(clue.category, ArchiveClueCategory.equipment);
     expect(clue.targetKind, ArchiveClueTargetKind.stage);
     expect(clue.targetId, 'stage_04_03');
+  });
+
+  test('clue builder limits first slice to three clue categories', () {
+    final clues = buildZangjuangeClues(
+      missingEquipmentCount: 2,
+      missingFragmentCount: 1,
+      unbrokenBossCycleCount: 3,
+    );
+
+    expect(clues.map((c) => c.category).toSet(), {
+      ArchiveClueCategory.equipment,
+      ArchiveClueCategory.skillFragment,
+      ArchiveClueCategory.bossCycle,
+    });
   });
 }
