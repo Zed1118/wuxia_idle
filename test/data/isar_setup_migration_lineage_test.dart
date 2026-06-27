@@ -133,9 +133,17 @@ void main() {
       expect(senior.lineageRole, LineageRole.senior);
       // ② id=3 → junior
       expect(junior.lineageRole, LineageRole.junior);
-      // ③ join stage id 全部预填
-      expect(save.triggeredDiscipleJoinStageIds, contains('stage_02_05'));
-      expect(save.triggeredDiscipleJoinStageIds, contains('stage_03_05'));
+      // ③ 当前 config 的 join stage id 全部预填(spec A 后移后 = {stage_06_05};
+      //    用 live config 断言防未来配置改动再次硬编码失配)。
+      final expectedJoinIds =
+          GameRepository.instance.numbers.lineageOnboarding.joinStageIds;
+      expect(expectedJoinIds, contains('stage_06_05'),
+          reason: 'spec A:弟子拜入关已后移至 stage_06_05');
+      expect(
+        save.triggeredDiscipleJoinStageIds.toSet(),
+        containsAll(expectedJoinIds),
+        reason: '迁移预填全部当前 join stage id,防 hook 重触发',
+      );
       // ④ 版本升到 0.32.0
       expect(save.saveVersion, '0.32.0');
       // ⑤ activeCharacterIds 未动(弟子未删/未改)

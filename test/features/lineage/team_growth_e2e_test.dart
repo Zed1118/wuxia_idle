@@ -12,8 +12,8 @@ import 'package:wuxia_idle/features/onboarding/application/onboarding_service.da
 
 /// 第七阶段批三 · Task 12: 队伍成长 e2e — 全弧线验证
 ///
-/// 单人开局 → 过 stage_02_05 → 大弟子拜入 (2 人) → 过 stage_03_05 → 小弟子拜入 (3 人满队)
-/// 同时验证 founder↔disciple 双向绑定正确写入。
+/// 单人开局 → 过 stage_06_05(全主线终局)→ 同关一并拜入大弟子+小弟子 (3 人满队)
+/// 同时验证 founder↔disciple 双向绑定正确写入。(spec A:弟子拜入后移至终局)
 void main() {
   late Directory tempDir;
   late Isar isar;
