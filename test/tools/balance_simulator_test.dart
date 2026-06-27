@@ -308,6 +308,139 @@ void main() {
     expect(globalPeak, lessThan(1000000),
         reason: '极值 build 实战玩家单击峰值不得进百万级膨胀(§5.4 绝对天花板)');
   }, timeout: const Timeout(Duration(minutes: 15)));
+
+  // ── spec A 弟子后移诊断:武圣单人(on-level) Ch4-6 可通性(2026-06-27)──
+  // 弟子拜入后移至 stage_06_05 后,整条主线 Ch1-6 变「祖师单人」。Ch4-6 原可能
+  // 按 3 人队调过敌人。本诊断量化:祖师单人(on-level · floor 欠配置 / ceiling 活跃)
+  // 能否通 Ch4-6,尤其 stage_06_05 Boss。附 3 人队 ceiling 对照列看「单人变难多少」。
+  // 纯诊断(不改 numbers.yaml / 不硬断言 winRate 阈值):调参是 spec §4 下游用户拍板项。
+  // 输出 md 到 output/,断言仅 runs>0。
+  test('spec A 单人主线诊断:祖师单人 Ch4-6 可通性 × 超阶幅度(on-level/+1/+2/武圣)',
+      () async {
+    final ch456 = repo.stageDefs.values
+        .where((s) =>
+            s.stageType == StageType.mainline &&
+            s.enemyTeam.isNotEmpty &&
+            (s.chapterIndex == 4 ||
+                s.chapterIndex == 5 ||
+                s.chapterIndex == 6))
+        .toList()
+      ..sort((a, b) => a.id.compareTo(b.id));
+    const seeds = 50;
+
+    // 单人 1 打 3:on-level(玩家=requiredRealm)被数量碾压必 0%,非公平基线。挂机
+    // 游戏单人会自然练级超阶,用境界差距修正(差1阶 atk×1.4/def×0.7 · 差2阶 ×2.5/×0.3)
+    // 补偿数量劣势。扫 +0/+1/+2/武圣(顶阶)solo ceiling,找单人可通所需超阶幅度。
+    RealmTier tierAtOffset(RealmTier base, int off) {
+      final i = (RealmTier.values.indexOf(base) + off)
+          .clamp(0, RealmTier.values.length - 1);
+      return RealmTier.values[i];
+    }
+
+    double soloCeil(StageDef stage, RealmTier tier) {
+      var w = 0;
+      for (var seed = 0; seed < seeds; seed++) {
+        final r = _simulateStage(stage, seed, repo, _BuildProfile.ceiling,
+            soloFounder: true, playerTierOverride: tier);
+        if (r.result == 'leftWin') w++;
+      }
+      return w / seeds;
+    }
+
+    double teamCeil(StageDef stage) {
+      var w = 0;
+      for (var seed = 0; seed < seeds; seed++) {
+        final r = _simulateStage(stage, seed, repo, _BuildProfile.ceiling,
+            soloFounder: false);
+        if (r.result == 'leftWin') w++;
+      }
+      return w / seeds;
+    }
+
+    String pct(double v) => '${(v * 100).round()}%';
+
+    final buf = StringBuffer()
+      ..writeln('# spec A 单人主线诊断 · Ch4-6 × 超阶幅度 · 2026-06-27')
+      ..writeln()
+      ..writeln('弟子后移至 stage_06_05 后主线变「祖师单人」。单人 1 打 1-3,on-level'
+          '被数量碾压;靠超阶(挂机自然练级)的境界差距修正补偿。solo ceiling(活跃满配'
+          '单人)× {on-level,+1,+2,武圣顶阶} · $seeds seed/格。team3=3 人队 on-level 对照。')
+      ..writeln()
+      ..writeln('| stage | reqRealm | Boss | solo +0 | solo +1 | solo +2 | '
+          'solo 武圣 | team3 +0 |')
+      ..writeln('|---|---|---|---|---|---|---|---|');
+
+    // 单人「可通」门槛:取使该关 solo ceiling ≥ 50% 的最小超阶幅度。
+    final neededOffset = <String, String>{};
+    for (final stage in ch456) {
+      final base = stage.requiredRealm;
+      final s0 = soloCeil(stage, tierAtOffset(base, 0));
+      final s1 = soloCeil(stage, tierAtOffset(base, 1));
+      final s2 = soloCeil(stage, tierAtOffset(base, 2));
+      final sw = soloCeil(stage, RealmTier.wuSheng);
+      final tc = teamCeil(stage);
+      buf.writeln('| ${stage.id} | ${base.name} | '
+          '${stage.isBossStage ? "Boss" : "—"} | ${pct(s0)} | ${pct(s1)} | '
+          '${pct(s2)} | ${pct(sw)} | ${pct(tc)} |');
+      final need = s0 >= 0.5
+          ? 'on-level 即可'
+          : s1 >= 0.5
+              ? '+1 阶'
+              : s2 >= 0.5
+                  ? '+2 阶'
+                  : sw >= 0.5
+                      ? '武圣(顶阶)'
+                      : '武圣仍 < 50% ⚠️';
+      neededOffset[stage.id] = need;
+    }
+
+    final boss0605 = repo.stageDefs['stage_06_05'];
+    final wuShengBlocked = neededOffset.entries
+        .where((e) => e.value.contains('仍 < 50%'))
+        .map((e) => e.key)
+        .toList();
+    buf
+      ..writeln()
+      ..writeln('## 每关单人可通所需超阶幅度')
+      ..writeln();
+    for (final e in neededOffset.entries) {
+      buf.writeln('- ${e.key}: ${e.value}');
+    }
+    buf
+      ..writeln()
+      ..writeln('## 诊断')
+      ..writeln()
+      ..writeln('- **即便武圣(顶阶 +1~+3)单人仍 < 50% 的关(硬卡点·调参候选·待拍板)**:'
+          '${wuShengBlocked.isEmpty ? "无 —— 武圣单人可通全 Ch4-6 ✅" : wuShengBlocked.join(" / ")}')
+      ..writeln('- stage_06_05 Boss:武圣单人 ceiling '
+          '${pct(soloCeil(boss0605!, RealmTier.wuSheng))} · '
+          '敌队总 HP=${boss0605.enemyTeam.fold<int>(0, (s, e) => s + e.baseHp)}'
+          '(${boss0605.enemyTeam.length} 敌)')
+      ..writeln()
+      ..writeln('## 结论口径')
+      ..writeln()
+      ..writeln('- 单人 on-level 必败(1 打 3 数量劣势),这是挂机游戏的正常预期——'
+          '玩家靠练级超阶通关。读「所需超阶幅度」判断后移是否制造不合理墙。')
+      ..writeln('- 若多数关 +1~+2 阶即可、且武圣无硬卡点 = 后移可接受(单人靠正常'
+          '挂机练级推进),**无需调参**。')
+      ..writeln('- 若存在武圣仍 < 50% 的硬卡点 = 该关按 3 人队调过,单人无解,'
+          '**敌人/关卡调参作为 spec §4 下游独立项待用户拍板**(本诊断不改 numbers.yaml)。')
+      ..writeln()
+      ..writeln('## 局限')
+      ..writeln()
+      ..writeln('- on-level/固定刚猛/无辅修 synergy/无 drop 真解招(装配为玩家主动'
+          '行为);单人少 2 输出位 + 协同破绽窗口。境界差距修正(差≥3 阶守方 ×0.05 '
+          '近免疫)是单人超阶的主要补偿来源。');
+
+    final outPath = '$_outputDir/solo_mainline_ch456_2026-06-27.md';
+    File(outPath).writeAsStringSync(buf.toString());
+    print('=== spec A 单人 Ch4-6 × 超阶诊断 ===');
+    print(buf.toString());
+    print('solo Ch4-6 diagnosis done · summary=$outPath');
+    print('武圣仍卡点 = ${wuShengBlocked.isEmpty ? "无 ✅" : wuShengBlocked.join(" / ")}');
+
+    expect(ch456, isNotEmpty, reason: 'Ch4-6 应有 mainline 战斗关');
+  }, timeout: const Timeout(Duration(minutes: 15)));
 }
 
 class _SimResult {
@@ -349,6 +482,7 @@ _SimResult _simulateStage(
     {int proficiencyUses = 0,
     int cycleIndex = 1,
     bool isTower = false,
+    bool soloFounder = false,
     RealmTier? playerTierOverride}) {
   // 玩家境界 = stage.requiredRealm(on-level 诚实基线 · 2026-05-29 去 +1 confound):
   // 原 +1「玩家超阶」是旧假 _synthPlayer 时代的补偿 hack;真 build 下 +1 与同阶
@@ -360,16 +494,19 @@ _SimResult _simulateStage(
   final tierIndex =
       RealmTier.values.indexOf(playerTierOverride ?? stage.requiredRealm);
   final playerTier = RealmTier.values[tierIndex.clamp(0, RealmTier.values.length - 1)];
+  // soloFounder(spec A 弟子后移诊断):祖师单人,无弟子在阵(主线变单人挑战)。
   final players = [
     _buildRealPlayer(repo, playerTier,
         slot: 0, name: '玩家', isFounder: true, profile: profile,
         proficiencyUses: proficiencyUses),
-    _buildRealPlayer(repo, playerTier,
-        slot: 1, name: '徒弟一', isFounder: false, profile: profile,
-        proficiencyUses: proficiencyUses),
-    _buildRealPlayer(repo, playerTier,
-        slot: 2, name: '徒弟二', isFounder: false, profile: profile,
-        proficiencyUses: proficiencyUses),
+    if (!soloFounder) ...[
+      _buildRealPlayer(repo, playerTier,
+          slot: 1, name: '徒弟一', isFounder: false, profile: profile,
+          proficiencyUses: proficiencyUses),
+      _buildRealPlayer(repo, playerTier,
+          slot: 2, name: '徒弟二', isFounder: false, profile: profile,
+          proficiencyUses: proficiencyUses),
+    ],
   ];
   final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam,
       cycleIndex: cycleIndex, isTower: isTower);
