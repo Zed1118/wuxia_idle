@@ -1079,6 +1079,7 @@ class UiStrings {
 
   static String seclusionRequiredRealm(String realmName) => '需要境界：$realmName';
   static String seclusionDurationLabel(int hours) => '$hours 小时';
+  static String hoursAmountLabel(String value) => '$value 小时';
   static String seclusionMojianshi(int n) => '磨剑石 × $n';
   static String seclusionSilver(int n) => '银两 × $n';
   static String seclusionInternalForce(int n) => '内力 +$n';

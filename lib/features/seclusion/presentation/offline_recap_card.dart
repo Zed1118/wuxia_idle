@@ -230,9 +230,9 @@ class OfflineRecapCard extends StatelessWidget {
   static String _formatHours(double hours) {
     final rounded = (hours * 10).round() / 10;
     if (rounded == rounded.truncateToDouble()) {
-      return '${rounded.toInt()} 小时';
+      return UiStrings.hoursAmountLabel('${rounded.toInt()}');
     }
-    return '$rounded 小时';
+    return UiStrings.hoursAmountLabel('$rounded');
   }
 
   static String _limitReasonText(OfflineRecapLimitReason reason) {
