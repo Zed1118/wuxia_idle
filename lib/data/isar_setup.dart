@@ -5,8 +5,10 @@ import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'game_repository.dart';
+import 'slot_summary.dart';
 import '../core/domain/enums.dart';
 import '../core/domain/character.dart';
+import '../features/battle/domain/enum_localizations.dart';
 import '../features/encounter/domain/encounter_progress.dart';
 import '../core/domain/equipment.dart';
 import '../core/domain/game_event.dart';
@@ -28,12 +30,12 @@ import '../features/battle_record/application/boss_memory_service.dart';
 import '../features/weapon_codex/domain/equipment_catalog_entry.dart';
 import '../features/weapon_codex/application/equipment_catalog_service.dart';
 
-/// Isar 初始化与生命周期（data_schema.md §7.1，简化版）。
+/// Isar 初始化与生命周期（data_schema.md §7.1）。
 ///
-/// **Phase 1 简化**：只支持单槽位（slotId=1）。多槽切换 / 列表 / 删除
-/// 推迟到 Phase 5（见类内 TODO Phase 5 标注）。
-///
-/// 文件命名仍按 `wuxia_save_slot{slotId}.isar`，便于 Phase 5 扩展。
+/// **多存档槽（1.0 spec B）**：固定 3 槽，多 db 方案——每槽一个独立
+/// `wuxia_save_slot{slotId}.isar` 文件，切 db = 切全部数据，无串档。
+/// [switchSlot] / [slotHasSave] / [listSlots] / [deleteSlot] 实装见类尾。
+/// 启动先进存档选择屏（SaveSelectScreen），选中后 [switchSlot] 开槽。
 class IsarSetup {
   static Isar? _instance;
 
@@ -67,6 +69,10 @@ class IsarSetup {
   }
 
   static int currentSlotId = 1;
+
+  /// 存档目录记忆(init/switchSlot 时存):供 slot 方法在生产路径复用同一目录,
+  /// 不必每次 path_provider 重解析。测试经各方法的可选 `directory` 参数注入覆盖。
+  static Directory? _directory;
 
   /// 全部持久化 schema 清单（data_schema.md §7.1）。
   ///
@@ -156,6 +162,7 @@ class IsarSetup {
     assert(slotId >= 1 && slotId <= 3, 'slotId 必须是 1/2/3');
 
     final dir = directory ?? await getApplicationDocumentsDirectory();
+    _directory = dir;
     _instance = await Isar.open(
       _allSchemas,
       directory: dir.path,
@@ -377,7 +384,112 @@ class IsarSetup {
     _instance = null;
   }
 
-  // TODO Phase 5: switchSlot(int newSlotId) — 切换存档槽位
-  // TODO Phase 5: listAllSlots() — 存档选择界面用
-  // TODO Phase 5: deleteSlot(int slotId) — 删除指定槽位
+  // ── 多存档槽(1.0 spec B · 固定 3 槽 · 多 db 方案)───────────────────────
+
+  /// 解析存档目录(记忆优先,生产兜底 path_provider)。
+  static Future<Directory> _resolveDir(Directory? directory) async =>
+      directory ?? _directory ?? await getApplicationDocumentsDirectory();
+
+  /// 原子切档:flush 当前(结算离线基准)→ close → open 新槽 → set currentSlotId。
+  /// provider 刷新由调用点 `ref.invalidate(isarProvider)` 负责(本方法 static 无 ref)。
+  static Future<void> switchSlot(int n, {Directory? directory}) async {
+    assert(n >= 1 && n <= 3, 'slotId 必须是 1/2/3');
+    if (_instance != null) {
+      await touchOnlineNow(); // flush:落最后在线时间,结算离线计时基准
+      await close();
+    }
+    await init(slotId: n, directory: await _resolveDir(directory));
+  }
+
+  /// 该槽是否有存档(db 文件存在且含 founder)。当前已打开槽直接读不重开。
+  static Future<bool> slotHasSave(int n, {Directory? directory}) async {
+    final dir = await _resolveDir(directory);
+    final name = 'wuxia_save_slot$n';
+    if (!await File('${dir.path}/$name.isar').exists()) return false;
+    final already = Isar.getInstance(name);
+    final isar = already ??
+        await Isar.open(
+          _allSchemas,
+          directory: dir.path,
+          name: name,
+          inspector: false,
+        );
+    try {
+      return await isar.characters.filter().isFounderEqualTo(true).count() > 0;
+    } finally {
+      if (already == null) await isar.close(); // 只关临时开的,不关当前槽
+    }
+  }
+
+  /// 遍历 1..3 槽读轻量摘要(选择屏用)。当前已打开槽直接读不重开;临时只读
+  /// 实例读完即 close(spec §4 防句柄泄漏)。
+  static Future<List<SlotSummary>> listSlots({Directory? directory}) async {
+    final dir = await _resolveDir(directory);
+    final out = <SlotSummary>[];
+    for (var n = 1; n <= 3; n++) {
+      final name = 'wuxia_save_slot$n';
+      if (!await File('${dir.path}/$name.isar').exists()) {
+        out.add(SlotSummary.empty(n));
+        continue;
+      }
+      final already = Isar.getInstance(name);
+      final isar = already ??
+          await Isar.open(
+            _allSchemas,
+            directory: dir.path,
+            name: name,
+            inspector: false,
+          );
+      try {
+        out.add(await _readSummary(isar, n));
+      } finally {
+        if (already == null) await isar.close();
+      }
+    }
+    return out;
+  }
+
+  static Future<SlotSummary> _readSummary(Isar isar, int n) async {
+    final save = await isar.saveDatas.get(0);
+    final founderId = save?.founderCharacterId;
+    final founder =
+        founderId == null ? null : await isar.characters.get(founderId);
+    if (founder == null) return SlotSummary.empty(n);
+    final mp =
+        await isar.mainlineProgress.filter().saveDataIdEqualTo(n).findFirst();
+    return SlotSummary(
+      slotId: n,
+      isEmpty: false,
+      founderName: founder.name,
+      realmDisplay: EnumL10n.realm(founder.realmTier, founder.realmLayer),
+      chapterIndex: mp?.currentChapterIndex ?? 1,
+      clearedStageCount: mp?.clearedStageIds.length ?? 0,
+      lastPlayed: save?.lastOnlineAt,
+    );
+  }
+
+  /// 删除指定槽 db(若为当前槽先 close → 实例置空)+ 删 .isar/.isar.lock 文件。
+  /// 删当前档后 [instanceOrNull] 变 null,调用点须回选择屏(spec §4)。
+  static Future<void> deleteSlot(int n, {Directory? directory}) async {
+    final dir = await _resolveDir(directory);
+    final name = 'wuxia_save_slot$n';
+    if (currentSlotId == n && _instance != null) {
+      await close();
+    } else {
+      final open = Isar.getInstance(name);
+      if (open != null) await open.close();
+    }
+    for (final ext in ['.isar', '.isar.lock']) {
+      final f = File('${dir.path}/$name$ext');
+      if (await f.exists()) await f.delete();
+    }
+  }
+
+  /// 测试复位:清实例 + 目录记忆 + currentSlotId(各测 setUp/tearDown 纯净起点)。
+  @visibleForTesting
+  static void resetForTest() {
+    _instance = null;
+    _directory = null;
+    currentSlotId = 1;
+  }
 }
