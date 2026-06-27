@@ -43,6 +43,8 @@ void main() {
     Map<String, int>? materials,
     int founderRealmIndex = 0,
     List<IslandPrepAdvice> prepAdvice = const [],
+    int injuredCharacterCount = 0,
+    double maxInjuryHoursRemaining = 0,
   }) {
     final tieState = IslandBuildingState()
       ..type = BuildingType.tieJiangChang
@@ -106,6 +108,8 @@ void main() {
             'item_lingquanshui': 100,
           },
       prepAdvice: prepAdvice,
+      injuredCharacterCount: injuredCharacterCount,
+      maxInjuryHoursRemaining: maxInjuryHoursRemaining,
     );
   }
 
@@ -117,7 +121,7 @@ void main() {
   // ── 辅助：扩大 viewport ────────────────────────────────────────────────────
 
   Future<void> pump(WidgetTester tester, Widget widget) async {
-    await tester.binding.setSurfaceSize(const Size(800, 2000));
+    await tester.binding.setSurfaceSize(const Size(800, 3200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(widget);
     await tester.pumpAndSettle();
@@ -149,6 +153,43 @@ void main() {
       expect(find.text(UiStrings.taohuaIslandSectionRaw), findsOneWidget);
       expect(find.text(UiStrings.taohuaIslandSectionWorkshop), findsOneWidget);
       expect(find.text(UiStrings.taohuaIslandSectionDock), findsOneWidget);
+    });
+
+    testWidgets('岛上总览展示物产、加工与关键空间', (tester) async {
+      await pump(tester, wrap(buildTestView()));
+
+      expect(find.text(UiStrings.taohuaIslandOverviewTitle), findsOneWidget);
+      expect(
+        find.text(UiStrings.taohuaIslandStatusRawValue(74)),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.taohuaIslandStatusWorkshopValue(5, 2, 1)),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.taohuaIslandStatusHealingNone),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.taohuaIslandSceneCave), findsOneWidget);
+      expect(find.text(UiStrings.taohuaIslandSceneField), findsOneWidget);
+      expect(find.text(UiStrings.taohuaIslandSceneWorkshop), findsOneWidget);
+      expect(find.text(UiStrings.taohuaIslandSceneDock), findsOneWidget);
+    });
+
+    testWidgets('洞府疗养摘要显示受伤弟子与剩余时辰', (tester) async {
+      await pump(
+        tester,
+        wrap(
+          buildTestView(injuredCharacterCount: 2, maxInjuryHoursRemaining: 5.2),
+        ),
+      );
+
+      expect(
+        find.text(UiStrings.taohuaIslandStatusHealingValue(2, 5.2)),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.taohuaIslandStatusHealingNone), findsNothing);
     });
 
     testWidgets('等级文本渲染（level=2 的 tieJiangChang）', (tester) async {

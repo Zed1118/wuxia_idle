@@ -121,10 +121,13 @@ class _IslandBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cfg = GameRepository.instance.numbers.taohuaIsland;
+    final snapshot = _IslandSnapshot.from(view, cfg);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       children: [
+        _IslandOverviewPanel(snapshot: snapshot),
+        const SizedBox(height: 18),
         if (view.prepAdvice.isNotEmpty) ...[
           _PrepAdvicePanel(
             advice: view.prepAdvice.take(3).toList(growable: false),
@@ -135,6 +138,8 @@ class _IslandBody extends StatelessWidget {
         const SizedBox(height: 18),
         _BuildingSection(
           label: UiStrings.taohuaIslandSectionRaw,
+          body: UiStrings.taohuaIslandSectionRawBody,
+          summary: UiStrings.taohuaIslandSectionRawSummary(snapshot.rawStored),
           types: _rawBuildingTypes,
           cfg: cfg,
           view: view,
@@ -143,14 +148,287 @@ class _IslandBody extends StatelessWidget {
         const SizedBox(height: 18),
         _BuildingSection(
           label: UiStrings.taohuaIslandSectionWorkshop,
+          body: UiStrings.taohuaIslandSectionWorkshopBody,
+          summary: UiStrings.taohuaIslandSectionWorkshopSummary(
+            snapshot.workshopStored,
+            snapshot.activeProcessors,
+            snapshot.pausedProcessors,
+          ),
           types: _workshopBuildingTypes,
           cfg: cfg,
           view: view,
           onRefresh: onRefresh,
         ),
         const SizedBox(height: 18),
-        const _SectionHeader(label: UiStrings.taohuaIslandSectionDock),
+        const _SectionHeader(
+          label: UiStrings.taohuaIslandSectionDock,
+          body: UiStrings.taohuaIslandSectionDockBody,
+        ),
       ],
+    );
+  }
+}
+
+class _IslandSnapshot {
+  const _IslandSnapshot({
+    required this.rawStored,
+    required this.workshopStored,
+    required this.activeProcessors,
+    required this.pausedProcessors,
+    required this.injuredCharacterCount,
+    required this.maxInjuryHoursRemaining,
+  });
+
+  final int rawStored;
+  final int workshopStored;
+  final int activeProcessors;
+  final int pausedProcessors;
+  final int injuredCharacterCount;
+  final double maxInjuryHoursRemaining;
+
+  factory _IslandSnapshot.from(IslandView view, TaohuaIslandConfig cfg) {
+    var rawStored = 0;
+    var workshopStored = 0;
+    var activeProcessors = 0;
+    var pausedProcessors = 0;
+
+    for (final type in BuildingType.values) {
+      final bCfg = cfg.buildings[type];
+      if (bCfg == null) continue;
+      final state = view.buildings.firstWhere(
+        (b) => b.type == type,
+        orElse: () => IslandBuildingState()..type = type,
+      );
+      final stored = state.stored.floor();
+      if (bCfg.kind == BuildingKind.source) {
+        rawStored += stored;
+        continue;
+      }
+      workshopStored += stored;
+      if (state.activeRecipeId == null) {
+        pausedProcessors += 1;
+      } else {
+        activeProcessors += 1;
+      }
+    }
+
+    return _IslandSnapshot(
+      rawStored: rawStored,
+      workshopStored: workshopStored,
+      activeProcessors: activeProcessors,
+      pausedProcessors: pausedProcessors,
+      injuredCharacterCount: view.injuredCharacterCount,
+      maxInjuryHoursRemaining: view.maxInjuryHoursRemaining,
+    );
+  }
+}
+
+class _IslandOverviewPanel extends StatelessWidget {
+  const _IslandOverviewPanel({required this.snapshot});
+
+  final _IslandSnapshot snapshot;
+
+  @override
+  Widget build(BuildContext context) {
+    return PaperPanel(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            UiStrings.taohuaIslandOverviewTitle,
+            style: TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 3,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            UiStrings.taohuaIslandOverviewBody,
+            style: TextStyle(color: WuxiaUi.ink2, fontSize: 12, height: 1.35),
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 20,
+            runSpacing: 10,
+            children: [
+              _StatusPillar(
+                icon: Icons.grass_outlined,
+                title: UiStrings.taohuaIslandStatusRawTitle,
+                value: UiStrings.taohuaIslandStatusRawValue(snapshot.rawStored),
+              ),
+              _StatusPillar(
+                icon: Icons.local_fire_department_outlined,
+                title: UiStrings.taohuaIslandStatusWorkshopTitle,
+                value: UiStrings.taohuaIslandStatusWorkshopValue(
+                  snapshot.workshopStored,
+                  snapshot.activeProcessors,
+                  snapshot.pausedProcessors,
+                ),
+              ),
+              _StatusPillar(
+                icon: Icons.self_improvement_outlined,
+                title: UiStrings.taohuaIslandStatusHealingTitle,
+                value: snapshot.injuredCharacterCount > 0
+                    ? UiStrings.taohuaIslandStatusHealingValue(
+                        snapshot.injuredCharacterCount,
+                        snapshot.maxInjuryHoursRemaining,
+                      )
+                    : UiStrings.taohuaIslandStatusHealingNone,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const _IslandSceneLines(),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusPillar extends StatelessWidget {
+  const _StatusPillar({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 170,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: WuxiaUi.qing),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: WuxiaUi.muted,
+                    fontSize: 11,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: WuxiaUi.ink,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _IslandSceneLines extends StatelessWidget {
+  const _IslandSceneLines();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        _SceneLine(
+          icon: Icons.house_siding_outlined,
+          label: UiStrings.taohuaIslandSceneCave,
+          body: UiStrings.taohuaIslandSceneCaveBody,
+        ),
+        _SceneDivider(),
+        _SceneLine(
+          icon: Icons.spa_outlined,
+          label: UiStrings.taohuaIslandSceneField,
+          body: UiStrings.taohuaIslandSceneFieldBody,
+        ),
+        _SceneDivider(),
+        _SceneLine(
+          icon: Icons.handyman_outlined,
+          label: UiStrings.taohuaIslandSceneWorkshop,
+          body: UiStrings.taohuaIslandSceneWorkshopBody,
+        ),
+        _SceneDivider(),
+        _SceneLine(
+          icon: Icons.anchor_outlined,
+          label: UiStrings.taohuaIslandSceneDock,
+          body: UiStrings.taohuaIslandSceneDockBody,
+        ),
+      ],
+    );
+  }
+}
+
+class _SceneLine extends StatelessWidget {
+  const _SceneLine({
+    required this.icon,
+    required this.label,
+    required this.body,
+  });
+
+  final IconData icon;
+  final String label;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: WuxiaUi.ink2),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 46,
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            body,
+            style: const TextStyle(
+              color: WuxiaUi.ink2,
+              fontSize: 12,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SceneDivider extends StatelessWidget {
+  const _SceneDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Divider(
+        height: WuxiaUi.borderWidth,
+        color: WuxiaUi.ink.withValues(alpha: 0.18),
+      ),
     );
   }
 }
@@ -158,6 +436,8 @@ class _IslandBody extends StatelessWidget {
 class _BuildingSection extends StatelessWidget {
   const _BuildingSection({
     required this.label,
+    required this.body,
+    required this.summary,
     required this.types,
     required this.cfg,
     required this.view,
@@ -165,6 +445,8 @@ class _BuildingSection extends StatelessWidget {
   });
 
   final String label;
+  final String body;
+  final String summary;
   final List<BuildingType> types;
   final TaohuaIslandConfig cfg;
   final IslandView view;
@@ -175,7 +457,7 @@ class _BuildingSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _SectionHeader(label: label),
+        _SectionHeader(label: label, body: body, summary: summary),
         const SizedBox(height: 10),
         for (final type in types) ...[
           IntrinsicHeight(
@@ -198,20 +480,57 @@ class _BuildingSection extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.label});
+  const _SectionHeader({required this.label, this.body, this.summary});
 
   final String label;
+  final String? body;
+  final String? summary;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: const TextStyle(
-        color: WuxiaUi.ink,
-        fontSize: 15,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 3,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 3,
+              ),
+            ),
+            if (summary != null) ...[
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  summary!,
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    color: WuxiaUi.muted,
+                    fontSize: 12,
+                    height: 1.25,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        if (body != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            body!,
+            style: const TextStyle(
+              color: WuxiaUi.ink2,
+              fontSize: 12,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
