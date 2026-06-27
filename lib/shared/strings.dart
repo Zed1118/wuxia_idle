@@ -1167,6 +1167,23 @@ class UiStrings {
   static const String mainMenuBaike = '江湖见闻录';
   static const String mainMenuBaikeHint = '记事与典故,永久可查';
 
+  // ── 藏卷阁 Hub ──
+  static const String mainMenuZangjuange = '藏卷阁';
+  static const String mainMenuZangjuangeHint = '合看战绩、兵器、奇遇与武学缺口';
+  static const String zangjuangeTitle = '藏卷阁';
+  static const String zangjuangeCluesTitle = '卷中线索';
+  static const String zangjuangeCluesEmpty = '卷册暂未显出新的缺口';
+  static const String zangjuangeArchiveTitle = '四部卷册';
+  static const String zangjuangeClueEquipmentTitle = '兵器谱缺口';
+  static String zangjuangeClueEquipmentSummary(int count) =>
+      '尚有 $count 件器物未入谱，可循章节与掉落传闻回查。';
+  static const String zangjuangeClueFragmentTitle = '武学残页缺口';
+  static String zangjuangeClueFragmentSummary(int count) =>
+      '尚有 $count 处残页线索未合拢，可回看塔层、首领与奇遇来源。';
+  static const String zangjuangeClueBossCycleTitle = '周目异势未破';
+  static String zangjuangeClueBossCycleSummary(int count) =>
+      '尚有 $count 处首领异势未破，可从战绩册回看形态与出战记录。';
+
   // 设置面板
   static const String mainMenuSettings = '设置';
   static const String mainMenuSettingsHint = '音量 · 静音';
