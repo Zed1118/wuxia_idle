@@ -42,9 +42,7 @@ List<ArchiveClue> buildZangjuangeClues({
       ArchiveClue(
         category: ArchiveClueCategory.skillFragment,
         title: UiStrings.zangjuangeClueFragmentTitle,
-        summary: UiStrings.zangjuangeClueFragmentSummary(
-          missingFragmentCount,
-        ),
+        summary: UiStrings.zangjuangeClueFragmentSummary(missingFragmentCount),
       ),
     );
   }

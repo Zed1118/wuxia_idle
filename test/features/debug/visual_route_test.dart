@@ -162,8 +162,11 @@ void main() {
       );
       expect(target, isA<ScenarioLauncher>());
       final launcher = target as ScenarioLauncher;
-      expect(launcher.allowPlayerIntervention, isTrue,
-          reason: '拖招验收路由必须开干预,否则技能按钮不挂拖手势(本次 FAIL 根因)');
+      expect(
+        launcher.allowPlayerIntervention,
+        isTrue,
+        reason: '拖招验收路由必须开干预,否则技能按钮不挂拖手势(本次 FAIL 根因)',
+      );
       expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,拖招随时干预');
     });
 
@@ -210,8 +213,9 @@ void main() {
       }
     });
 
-    testWidgets('hero_camera → HeroCameraOverlay 弹出 + 祖师名号题字(真数据组装不抛异常)',
-        (tester) async {
+    testWidgets('hero_camera → HeroCameraOverlay 弹出 + 祖师名号题字(真数据组装不抛异常)', (
+      tester,
+    ) async {
       final target = await buildVisualTarget(
         VisualRoute.heroCamera,
         IsarSetup.instance,
@@ -220,8 +224,11 @@ void main() {
       await tester.pump();
 
       expect(tester.takeException(), isNull);
-      expect(find.byType(HeroCameraOverlay), findsOneWidget,
-          reason: '专属路由必须弹英雄镜头 overlay,否则批一动效仍无法目检');
+      expect(
+        find.byType(HeroCameraOverlay),
+        findsOneWidget,
+        reason: '专属路由必须弹英雄镜头 overlay,否则批一动效仍无法目检',
+      );
       expect(find.text('祖师'), findsOneWidget, reason: '出镜英雄名号取祖师占位名');
     });
   });
