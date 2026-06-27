@@ -367,7 +367,7 @@ void main() {
     expect(find.text('心血结晶'), findsNothing);
     expect(find.text('暂无物料'), findsNothing);
     // T12:物料行带用途说明
-    expect(find.textContaining('用于强化装备'), findsOneWidget);
+    expect(find.textContaining('装备强化'), findsOneWidget);
   });
 
   testWidgets('物料 Tab 2 行 / 2 种 → 按 enum 顺序分组（磨剑石在前）', (tester) async {
