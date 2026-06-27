@@ -16,6 +16,8 @@ void main() {
     'item_xinxuejiejing',
     'item_jingyandan_small',
     'item_jingyandan_mid',
+    'item_lingquanshui',
+    'item_liaoshangdan',
   };
 
   TaohuaIslandConfig parse(String yaml) {
@@ -149,7 +151,92 @@ void main() {
       throwsA(isA<StateError>()),
     );
   });
+
+  // ── 双输入（secondary_input_item）校验 ───────────────────────────────────
+  test('合法双输入配置 → 不抛', () {
+    final cfg = parse(_validDualInputYaml);
+    expect(() => TaohuaIslandConfig.validate(cfg, knownIds), returnsNormally);
+  });
+
+  test('recipe 声明 secondary_input_per_output 但建筑无 secondary_input_item → StateError', () {
+    // 去掉 secondary_input_item 行,但配方仍带 secondary_input_per_output
+    final cfg = parse(_validDualInputYaml.replaceFirst(
+      '    secondary_input_item: item_lingquanshui\n',
+      '',
+    ));
+    expect(
+      () => TaohuaIslandConfig.validate(cfg, knownIds),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('secondary_input_item 配了却无配方消费（脱节配置）→ StateError', () {
+    final cfg = parse(_validDualInputYaml.replaceFirst(
+      ', secondary_input_per_output: 5.0 }',
+      ' }',
+    ));
+    expect(
+      () => TaohuaIslandConfig.validate(cfg, knownIds),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('secondary_input_item 无 source 供应 → StateError', () {
+    // 把次要原料改成一个 known 但无 source 产出的 item
+    final cfg = parse(_validDualInputYaml.replaceFirst(
+      'secondary_input_item: item_lingquanshui',
+      'secondary_input_item: item_liaoshangdan',
+    ));
+    expect(
+      () => TaohuaIslandConfig.validate(cfg, knownIds),
+      throwsA(isA<StateError>()),
+    );
+  });
 }
+
+/// 合法双输入：灵泉 source 产 item_lingquanshui，丹房疗伤丹双输入消费它。
+const _validDualInputYaml = '''
+cap_hours: 72
+unlock_chapter_index: 1
+buildings:
+  cao_yao_yuan:
+    kind: source
+    output_item: item_yaocao
+    base_rate_per_hour: 6.0
+    cap_base: 200
+    cap_per_level: 100
+    max_level: 5
+    upgrade_silver_levels: [500, 1200, 2800, 6000]
+    upgrade_realm_levels: [0, 1, 2, 3]
+    upgrade_material_item: item_yaocao
+    upgrade_material_base: 40
+    realm_unlock_index: 0
+  ling_quan:
+    kind: source
+    output_item: item_lingquanshui
+    base_rate_per_hour: 4.0
+    cap_base: 200
+    cap_per_level: 100
+    max_level: 5
+    upgrade_silver_levels: [500, 1200, 2800, 6000]
+    upgrade_realm_levels: [0, 1, 2, 3]
+    upgrade_material_item: item_lingquanshui
+    upgrade_material_base: 40
+    realm_unlock_index: 0
+  dan_fang:
+    kind: processor
+    input_item: item_yaocao
+    secondary_input_item: item_lingquanshui
+    cap_base: 80
+    cap_per_level: 40
+    max_level: 5
+    upgrade_silver_levels: [800, 1800, 4000, 9000]
+    upgrade_realm_levels: [0, 1, 2, 3]
+    upgrade_material_item: item_yaocao
+    upgrade_material_base: 80
+    recipes:
+      - { recipe_id: brew_liaoshang, output_item: item_liaoshangdan, input_per_output: 10.0, rate_per_hour: 0.6, realm_unlock_index: 1, secondary_input_per_output: 5.0 }
+''';
 
 // ── YAML 夹具 ──────────────────────────────────────────────────────────────
 
