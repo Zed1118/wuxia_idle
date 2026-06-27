@@ -71,10 +71,8 @@ class StageDef {
   /// P1.2 §6 boss NPC 关联(GDD §12.1 江湖恩怨)。
   /// 仅 boss stage(`isBossStage: true`)配置 · null = 该 boss 无 NPC 身份(纯敌人)。
   ///
-  /// UNUSED-PENDING-1.1(审计 D3 2026-06-24 · 与 B3 江湖恩怨同源):当前 5 处配置
-  /// 0 读取——江湖恩怨整链 dormant(`NpcRelationService.upsert` 0 caller),需先在此
-  /// 字段双写真 NPC 关系才激活(详 `npc_relation_service.dart` UNUSED-PENDING-1.1 头注)。
-  /// 1.1+ 接入真 NPC schema 后映射 `NpcRelation.targetCharacterId`。故意延期留底,非死码误删。
+  /// 进战斗时映射为稳定负数 target id，供 `NpcRelation.targetCharacterId`
+  /// 查询江湖恩怨倍率；未写入关系时默认 1.0 noop。
   final String? npcId;
 
   /// P4.1 1.1 Q6B · Boss 战胜后招降配置(spec p4_1_q6b_stage_boss_recruit_spec_2026-05-26)。

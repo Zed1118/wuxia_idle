@@ -39,6 +39,9 @@ const _playerTeamSide = 0;
 /// 战斗最终结局（phase1_tasks.md T11 §635）。
 enum BattleResult { leftWin, rightWin, draw }
 
+/// attackPowerMultiplier 的来源，用于战报解释乘区。
+enum AttackPowerMultiplierSource { jianghuEnmity }
+
 /// 一次战斗动作（phase1_tasks.md T11 §638-645）。
 ///
 /// 用于动画播放与事件日志（T13 / T15）。一旦写入 [BattleState.actionLog] 即不再修改。
@@ -167,6 +170,9 @@ class BattleCharacter {
   /// 战斗路径自动得 1.0(fromCharacter / _enemyToBattle 不 expose)。
   final double attackPowerMultiplier;
 
+  /// [attackPowerMultiplier] 的解释来源。null 表示无需在战报中展示专名。
+  final AttackPowerMultiplierSource? attackPowerMultiplierSource;
+
   /// M6 心魔余毒:战斗输出乘数(默认 1.0=无)。余毒在身玩家角色 stage_battle_setup
   /// 设为 residue_debuff.battle_output_multiplier(0.95)。独立末端乘,可乘性组合
   /// (不与 attackPowerMultiplier 的 SET 语义冲突)。damage_calculator 末端乘 mainDamage。
@@ -178,10 +184,13 @@ class BattleCharacter {
 
   /// P0 破招:此单位的招牌技 id(仅 Boss 配置;null=不蓄力)。
   final String? chargeSkillId;
+
   /// P0 破招:运行时——当前正在蓄力的招(null=未蓄力)。
   final SkillDef? chargingSkill;
+
   /// P0 破招:蓄力剩余 tick(0=未蓄力)。
   final int chargeTicksRemaining;
+
   /// P0 破招:踉跄剩余 tick(0=未踉跄)。
   final int staggerTicksRemaining;
 
@@ -247,6 +256,7 @@ class BattleCharacter {
     this.swordSongResonanceActive = false,
     this.iconPath,
     this.attackPowerMultiplier = 1.0,
+    this.attackPowerMultiplierSource,
     this.outputMultiplier = 1.0,
     this.isBoss = false,
     this.chargeSkillId,
@@ -336,15 +346,19 @@ class BattleCharacter {
     final defRate = RealmUtils.defenseRateOf(character.realmTier);
     final totalEqAtk = equipped.fold<int>(
       0,
-      (sum, e) => sum + CharacterDerivedStats.effectiveEquipmentAttack(e, numbers),
+      (sum, e) =>
+          sum + CharacterDerivedStats.effectiveEquipmentAttack(e, numbers),
     );
     final forgingPiercePct = CharacterDerivedStats.forgingAggregatePct(
-        equipped, ForgingSlotType.pierce);
+      equipped,
+      ForgingSlotType.pierce,
+    );
     final forgingLifestealPct = CharacterDerivedStats.forgingAggregatePct(
-        equipped, ForgingSlotType.lifesteal);
+      equipped,
+      ForgingSlotType.lifesteal,
+    );
 
-    final techDef =
-        GameRepository.instance.getTechnique(mainTechnique.defId);
+    final techDef = GameRepository.instance.getTechnique(mainTechnique.defId);
     // P1b 藏经阁:availableSkills = 6 装配槽非空技能(主修×2 / 辅修 / 共鸣 / 大招 /
     // 奇遇)。getSkill 共享 skillDefs Map(skills.yaml + encounter_skills.yaml
     // 加载合并),encounter skill 与心法招式 runtime 同型(SkillDef)。joint 现在走
@@ -366,7 +380,8 @@ class BattleCharacter {
     // 兼容兜底:5 个心法槽全空(从未 autoFill,旧存档/旧测试 fixture)→ fallback
     // 回「主修心法全招 + 奇遇」,保持旧行为不破。autoFill(Task5 进战斗前调)补满
     // 槽后,正常玩法自然走装配。
-    final allLoadoutSlotsEmpty = character.mainSkillId1 == null &&
+    final allLoadoutSlotsEmpty =
+        character.mainSkillId1 == null &&
         character.mainSkillId2 == null &&
         character.assistSkillId == null &&
         character.resonanceSkillId == null &&
@@ -390,8 +405,10 @@ class BattleCharacter {
     for (final e in equipped) {
       if (e.slot != EquipmentSlot.weapon) continue;
       final stage = e.resonanceStage(numbers);
-      final cfg = numbers.resonanceStages
-          .firstWhere((c) => c.stage == stage, orElse: () => _shengShuFallback);
+      final cfg = numbers.resonanceStages.firstWhere(
+        (c) => c.stage == stage,
+        orElse: () => _shengShuFallback,
+      );
       if (cfg.hasSwordSongEffect) swordSongActive = true;
     }
     // 波A build gate:P0.5「破势广发」已拆——破招技走 keySkillId 第 7 装配槽
@@ -407,7 +424,7 @@ class BattleCharacter {
       maxHp: maxHp,
       currentHp: maxHp,
       maxInternalForce: maxIf,
-      currentInternalForce: maxIf,   // P0:战斗内力进场满(每场预算 · 与敌方对称)
+      currentInternalForce: maxIf, // P0:战斗内力进场满(每场预算 · 与敌方对称)
       speed: speed,
       criticalRate: critRate,
       evasionRate: evRate,
@@ -417,7 +434,8 @@ class BattleCharacter {
       availableSkills: List.unmodifiable(skills),
       skillCooldowns: const {},
       skillUses: {
-        for (final sk in skills) sk.id: mainTechnique.skillUsageCount.countOf(sk.id),
+        for (final sk in skills)
+          sk.id: mainTechnique.skillUsageCount.countOf(sk.id),
       },
       activeBuffs: const [],
       actionPoint: 0,
@@ -461,6 +479,7 @@ class BattleCharacter {
     bool? swordSongResonanceActive,
     String? iconPath,
     double? attackPowerMultiplier,
+    Object? attackPowerMultiplierSource = _unset,
     double? outputMultiplier,
     bool? isBoss,
     Object? chargeSkillId = _unset,
@@ -490,10 +509,8 @@ class BattleCharacter {
       criticalRate: criticalRate ?? this.criticalRate,
       evasionRate: evasionRate ?? this.evasionRate,
       defenseRate: defenseRate ?? this.defenseRate,
-      totalEquipmentAttack:
-          totalEquipmentAttack ?? this.totalEquipmentAttack,
-      mainCultivationLayer:
-          mainCultivationLayer ?? this.mainCultivationLayer,
+      totalEquipmentAttack: totalEquipmentAttack ?? this.totalEquipmentAttack,
+      mainCultivationLayer: mainCultivationLayer ?? this.mainCultivationLayer,
       availableSkills: availableSkills ?? this.availableSkills,
       skillCooldowns: skillCooldowns ?? this.skillCooldowns,
       skillUses: skillUses ?? this.skillUses,
@@ -510,14 +527,21 @@ class BattleCharacter {
       iconPath: iconPath ?? this.iconPath,
       attackPowerMultiplier:
           attackPowerMultiplier ?? this.attackPowerMultiplier,
+      attackPowerMultiplierSource:
+          identical(attackPowerMultiplierSource, _unset)
+          ? this.attackPowerMultiplierSource
+          : attackPowerMultiplierSource as AttackPowerMultiplierSource?,
       outputMultiplier: outputMultiplier ?? this.outputMultiplier,
       isBoss: isBoss ?? this.isBoss,
       chargeSkillId: identical(chargeSkillId, _unset)
-          ? this.chargeSkillId : chargeSkillId as String?,
+          ? this.chargeSkillId
+          : chargeSkillId as String?,
       chargingSkill: identical(chargingSkill, _unset)
-          ? this.chargingSkill : chargingSkill as SkillDef?,
+          ? this.chargingSkill
+          : chargingSkill as SkillDef?,
       chargeTicksRemaining: chargeTicksRemaining ?? this.chargeTicksRemaining,
-      staggerTicksRemaining: staggerTicksRemaining ?? this.staggerTicksRemaining,
+      staggerTicksRemaining:
+          staggerTicksRemaining ?? this.staggerTicksRemaining,
       staggerDefenseDownOverride: identical(staggerDefenseDownOverride, _unset)
           ? this.staggerDefenseDownOverride
           : staggerDefenseDownOverride as double?,

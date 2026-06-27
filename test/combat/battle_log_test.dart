@@ -66,8 +66,11 @@ void main() {
       for (final v in RealmLayer.values) {
         final s = EnumL10n.realmLayer(v);
         expect(s.length, greaterThan(0));
-        expect(s, isNot(contains(v.name)),
-            reason: 'RealmLayer.${v.name} 不应出现拼音原值');
+        expect(
+          s,
+          isNot(contains(v.name)),
+          reason: 'RealmLayer.${v.name} 不应出现拼音原值',
+        );
       }
     });
 
@@ -92,12 +95,10 @@ void main() {
       final tick = EnumL10n.internalInjuryTick('祖师', 200);
       expect(tick, contains('祖师'));
       expect(tick, contains('200'));
-      expect(tick, contains('内伤'),
-          reason: '内伤发作日志必含「内伤」关键字便于玩家识别');
+      expect(tick, contains('内伤'), reason: '内伤发作日志必含「内伤」关键字便于玩家识别');
       final fatal = EnumL10n.internalInjuryFatal('祖师');
       expect(fatal, contains('祖师'));
-      expect(fatal, contains('内伤'),
-          reason: '内伤致死日志必含「内伤」关键字');
+      expect(fatal, contains('内伤'), reason: '内伤致死日志必含「内伤」关键字');
       // tick 与 fatal 必不同 — 避免玩家分不清「还在掉」vs「已死」。
       expect(tick, isNot(fatal));
     });
@@ -155,8 +156,10 @@ void main() {
         actorId: 1,
         targetId: 11,
         skill: GameRepository.instance.getSkill('skill_gangmeng_jichu_basic'),
-        attackResult:
-            AttackResult.dodged(evasionRate: 0.12, breakdown: 'DODGED'),
+        attackResult: AttackResult.dodged(
+          evasionRate: 0.12,
+          breakdown: 'DODGED',
+        ),
         description: '',
       );
       final str = BattleLog.formatAction(action, s);
@@ -167,7 +170,11 @@ void main() {
 
     test('流派克制 — 攻方克制：刚猛 vs 阴柔，含「刚猛克阴柔」与倍率', () {
       // 阴柔 defender 用 yinRou tech；attacker 用 gangMeng（默认）
-      final left = _mkBC(charId: 1, teamSide: 0, school: TechniqueSchool.gangMeng);
+      final left = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        school: TechniqueSchool.gangMeng,
+      );
       final right = _mkBC(
         charId: 11,
         teamSide: 1,
@@ -204,7 +211,11 @@ void main() {
         techDefId: 'tech_yinrou_jichu',
         techTier: TechniqueTier.ruMenGong,
       );
-      final right = _mkBC(charId: 11, teamSide: 1, school: TechniqueSchool.gangMeng);
+      final right = _mkBC(
+        charId: 11,
+        teamSide: 1,
+        school: TechniqueSchool.gangMeng,
+      );
       final s = BattleState.initial(leftTeam: [left], rightTeam: [right]);
       final action = BattleAction(
         tick: 4,
@@ -222,10 +233,10 @@ void main() {
 
     test('击杀：target 已死亡 → 含「击杀」', () {
       final left = _mkBC(charId: 1, teamSide: 0);
-      final dead = _mkBC(charId: 11, teamSide: 1).copyWith(
-        currentHp: 0,
-        isAlive: false,
-      );
+      final dead = _mkBC(
+        charId: 11,
+        teamSide: 1,
+      ).copyWith(currentHp: 0, isAlive: false);
       final s = BattleState.initial(leftTeam: [left], rightTeam: [dead]);
       final action = BattleAction(
         tick: 47,
@@ -238,6 +249,28 @@ void main() {
       final str = BattleLog.formatAction(action, s);
       expect(str, contains('击杀'));
     });
+
+    test('江湖恩怨 APM：含来源与倍率 marker', () {
+      final left = _mkBC(
+        charId: 1,
+        teamSide: 0,
+        attackPowerMultiplier: 1.15,
+        attackPowerMultiplierSource: AttackPowerMultiplierSource.jianghuEnmity,
+      );
+      final right = _mkBC(charId: 11, teamSide: 1);
+      final s = BattleState.initial(leftTeam: [left], rightTeam: [right]);
+      final action = BattleAction(
+        tick: 9,
+        actorId: 1,
+        targetId: 11,
+        skill: GameRepository.instance.getSkill('skill_gangmeng_jichu_basic'),
+        attackResult: _normalHit(damage: 1200),
+        description: '',
+      );
+      final str = BattleLog.formatAction(action, s);
+      expect(str, contains('江湖恩怨'));
+      expect(str, contains('×1.15'));
+    });
   });
 
   // ────────────────────────────────────────────────────────────────────────
@@ -247,10 +280,10 @@ void main() {
   group('BattleLog.formatSummary', () {
     test('胜负 + 总 tick + 最高伤害 + 击杀名单', () {
       final left = _mkBC(charId: 1, teamSide: 0);
-      final dead = _mkBC(charId: 11, teamSide: 1).copyWith(
-        currentHp: 0,
-        isAlive: false,
-      );
+      final dead = _mkBC(
+        charId: 11,
+        teamSide: 1,
+      ).copyWith(currentHp: 0, isAlive: false);
       final s = BattleState(
         leftTeam: [left],
         rightTeam: [dead],
@@ -261,7 +294,9 @@ void main() {
             tick: 10,
             actorId: 1,
             targetId: 11,
-            skill: GameRepository.instance.getSkill('skill_gangmeng_jichu_basic'),
+            skill: GameRepository.instance.getSkill(
+              'skill_gangmeng_jichu_basic',
+            ),
             attackResult: _normalHit(damage: 500),
             description: '',
           ),
@@ -269,7 +304,9 @@ void main() {
             tick: 30,
             actorId: 1,
             targetId: 11,
-            skill: GameRepository.instance.getSkill('skill_gangmeng_jichu_skill'),
+            skill: GameRepository.instance.getSkill(
+              'skill_gangmeng_jichu_skill',
+            ),
             attackResult: _normalHit(damage: 8420, isCritical: true),
             description: '',
           ),
@@ -325,15 +362,15 @@ void main() {
     final combined = '$allLogs\n$summary';
 
     // 行动顺序：每条以 [第 N tick] 开头
-    expect(allLogs.split('\n').every((line) => line.startsWith('[第 ')), true,
-        reason: 'formatAllActions 每行应以 tick 标记开头');
+    expect(
+      allLogs.split('\n').every((line) => line.startsWith('[第 ')),
+      true,
+      reason: 'formatAllActions 每行应以 tick 标记开头',
+    );
     // 含伤害数字
     expect(combined, matches(RegExp(r'\d+ 伤害')));
     // 含胜负
-    expect(
-      combined,
-      anyOf(contains('左队胜'), contains('右队胜'), contains('平局')),
-    );
+    expect(combined, anyOf(contains('左队胜'), contains('右队胜'), contains('平局')));
     // 不出现 enum 拼音（验收 §748 钉死）
     final pinyinHits = [
       'gangMeng',
@@ -345,8 +382,7 @@ void main() {
       'powerSkill',
     ];
     for (final p in pinyinHits) {
-      expect(combined, isNot(contains(p)),
-          reason: '日志不应出现 enum 拼音 "$p"');
+      expect(combined, isNot(contains(p)), reason: '日志不应出现 enum 拼音 "$p"');
     }
   });
 }
@@ -394,6 +430,8 @@ BattleCharacter _mkBC({
   TechniqueSchool school = TechniqueSchool.gangMeng,
   String techDefId = 'tech_gangmeng_mingjia',
   TechniqueTier techTier = TechniqueTier.mingJiaGong,
+  double attackPowerMultiplier = 1.0,
+  AttackPowerMultiplierSource? attackPowerMultiplierSource,
 }) {
   final c = Character.create(
     name: '${teamSide == 0 ? "左" : "右"}$slotIndex',
@@ -434,5 +472,8 @@ BattleCharacter _mkBC({
     numbers: GameRepository.instance.numbers,
     teamSide: teamSide,
     slotIndex: slotIndex,
+  ).copyWith(
+    attackPowerMultiplier: attackPowerMultiplier,
+    attackPowerMultiplierSource: attackPowerMultiplierSource,
   );
 }

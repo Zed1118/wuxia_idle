@@ -7,6 +7,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
+import 'package:wuxia_idle/features/jianghu/application/enmity_battle_modifier.dart';
 import 'package:wuxia_idle/features/jianghu/application/npc_relation_service.dart';
 import 'package:wuxia_idle/features/jianghu/application/reputation_service.dart';
 import 'package:wuxia_idle/features/jianghu/domain/npc_relation.dart';
@@ -51,27 +52,40 @@ void main() {
   // ── R5.3 §5.4 红线 ────────────────────────────────────────────────────────
 
   group('R5.3 §5.4 普伤红线 ≤ 8000(enmity APM 1.25 fixture)', () {
-    test('enmity_combat_modifier.clamp_max ≤ 1.25(spec 契约 · 引 T20 R5.8 audit)',
-        () {
-      final emc = GameRepository.instance.numbers.jianghu.enmityCombatModifier;
-      expect(emc.clampMax, lessThanOrEqualTo(1.25),
-          reason: 'P1.2 spec §2:enmity APM clamp_max 不可超 1.25 · §5.4 红线兜底');
-      expect(emc.severeMult, lessThanOrEqualTo(emc.clampMax),
-          reason: 'severe_mult ≤ clamp_max:单 mult 不可越上限');
-      expect(emc.playerAttackPowerMult, lessThanOrEqualTo(emc.clampMax),
-          reason: 'player_attack_power_mult ≤ clamp_max:阶 1 mult 不可越上限');
-    });
+    test(
+      'enmity_combat_modifier.clamp_max ≤ 1.25(spec 契约 · 引 T20 R5.8 audit)',
+      () {
+        final emc =
+            GameRepository.instance.numbers.jianghu.enmityCombatModifier;
+        expect(
+          emc.clampMax,
+          lessThanOrEqualTo(1.25),
+          reason: 'P1.2 spec §2:enmity APM clamp_max 不可超 1.25 · §5.4 红线兜底',
+        );
+        expect(
+          emc.severeMult,
+          lessThanOrEqualTo(emc.clampMax),
+          reason: 'severe_mult ≤ clamp_max:单 mult 不可越上限',
+        );
+        expect(
+          emc.playerAttackPowerMult,
+          lessThanOrEqualTo(emc.clampMax),
+          reason: 'player_attack_power_mult ≤ clamp_max:阶 1 mult 不可越上限',
+        );
+      },
+    );
 
     test('enemy_attack_power_mult == player_attack_power_mult 双向对等', () {
       final emc = GameRepository.instance.numbers.jianghu.enmityCombatModifier;
-      expect(emc.enemyAttackPowerMult, equals(emc.playerAttackPowerMult),
-          reason: 'spec §2:双向对等 · 玩家敌人享同 mult');
+      expect(
+        emc.enemyAttackPowerMult,
+        equals(emc.playerAttackPowerMult),
+        reason: 'spec §2:双向对等 · 玩家敌人享同 mult',
+      );
     });
 
-    test('attackPowerMultFor level=-100 返 ≤ clamp_max(实测 clamp 路径)',
-        () async {
-      final svc =
-          NpcRelationService(isar, GameRepository.instance.numbers);
+    test('attackPowerMultFor level=-100 返 ≤ clamp_max(实测 clamp 路径)', () async {
+      final svc = NpcRelationService(isar, GameRepository.instance.numbers);
       await svc.upsert(
         sourceCharacterId: 1,
         targetCharacterId: 100,
@@ -81,8 +95,11 @@ void main() {
       final mult = await svc.attackPowerMultFor(1, 100);
       final cap =
           GameRepository.instance.numbers.jianghu.enmityCombatModifier.clampMax;
-      expect(mult, lessThanOrEqualTo(cap),
-          reason: 'attackPowerMultFor 返值受 clamp_max 兜底');
+      expect(
+        mult,
+        lessThanOrEqualTo(cap),
+        reason: 'attackPowerMultFor 返值受 clamp_max 兜底',
+      );
     });
   });
 
@@ -91,26 +108,22 @@ void main() {
   group('R5.4 trigger 数值 e2e', () {
     test('stage_boss_kill_delta = 5(spec §3 触发数值锁)', () {
       final t = GameRepository.instance.numbers.jianghu.triggers;
-      expect(t.stageBossKillDelta, 5,
-          reason: '击杀有派别 boss · 该派 -5');
+      expect(t.stageBossKillDelta, 5, reason: '击杀有派别 boss · 该派 -5');
     });
 
     test('stage_boss_kill_rival_delta = 3(敌对派联动 + delta)', () {
       final t = GameRepository.instance.numbers.jianghu.triggers;
-      expect(t.stageBossKillRivalDelta, 3,
-          reason: '击杀有派别 boss · 敌对派 +3');
+      expect(t.stageBossKillRivalDelta, 3, reason: '击杀有派别 boss · 敌对派 +3');
     });
 
-    test('encounter_npc_delta_min/max = ±8(encounter resolve delta 范围契约)',
-        () {
+    test('encounter_npc_delta_min/max = ±8(encounter resolve delta 范围契约)', () {
       final t = GameRepository.instance.numbers.jianghu.triggers;
       expect(t.encounterNpcDeltaMin, -8);
       expect(t.encounterNpcDeltaMax, 8);
     });
 
     test('applyDelta 累积 ReputationService · stage_boss_kill 模拟', () async {
-      final repSvc =
-          ReputationService(isar, GameRepository.instance.numbers);
+      final repSvc = ReputationService(isar, GameRepository.instance.numbers);
       final t = GameRepository.instance.numbers.jianghu.triggers;
       // 模拟玩家击杀 shaolin boss × 2 + 敌对 jiaoMen +rival delta
       await repSvc.applyDelta(1, 'shaolin', -t.stageBossKillDelta);
@@ -125,19 +138,21 @@ void main() {
 
   group('R5.5 §5.2 七阶 label 锁(防 GDD 偏移)', () {
     test('reputation_tiers 7 阶顺序 + tier name 锁', () {
-      final tiers =
-          GameRepository.instance.numbers.jianghu.reputationTiers;
+      final tiers = GameRepository.instance.numbers.jianghu.reputationTiers;
       expect(tiers.length, 7);
-      expect(
-        tiers.map((t) => t.tier).toList(),
-        ['xueTu', 'sanLiu', 'erLiu', 'yiLiu', 'jueDing', 'zongShi', 'wuSheng'],
-        reason: '七阶顺序沿 GDD §5.2,不可乱序 / 不可换名',
-      );
+      expect(tiers.map((t) => t.tier).toList(), [
+        'xueTu',
+        'sanLiu',
+        'erLiu',
+        'yiLiu',
+        'jueDing',
+        'zongShi',
+        'wuSheng',
+      ], reason: '七阶顺序沿 GDD §5.2,不可乱序 / 不可换名');
     });
 
     test('reputation_tiers 7 阶 label 锁(UiStrings 同步)', () {
-      final tiers =
-          GameRepository.instance.numbers.jianghu.reputationTiers;
+      final tiers = GameRepository.instance.numbers.jianghu.reputationTiers;
       final byTier = {for (final t in tiers) t.tier: t.label};
       expect(byTier['xueTu'], UiStrings.reputationTierXueTu);
       expect(byTier['sanLiu'], UiStrings.reputationTierSanLiu);
@@ -149,13 +164,15 @@ void main() {
     });
 
     test('reputation_tiers 区间无 gap + 全覆盖 [-100, +100]', () {
-      final tiers =
-          GameRepository.instance.numbers.jianghu.reputationTiers;
+      final tiers = GameRepository.instance.numbers.jianghu.reputationTiers;
       expect(tiers.first.min, -100, reason: '左端贴 -100');
       expect(tiers.last.max, 100, reason: '右端贴 +100');
       for (var i = 1; i < tiers.length; i++) {
-        expect(tiers[i].min, tiers[i - 1].max + 1,
-            reason: '相邻 tier 区间无 gap(${tiers[i - 1].tier}→${tiers[i].tier})');
+        expect(
+          tiers[i].min,
+          tiers[i - 1].max + 1,
+          reason: '相邻 tier 区间无 gap(${tiers[i - 1].tier}→${tiers[i].tier})',
+        );
       }
     });
   });
@@ -164,12 +181,21 @@ void main() {
 
   group('R5.6 schema 隔离(Reputation vs SectEvent)', () {
     test('ReputationSchema name 不为 SectReputation 或 Sect', () {
-      expect(ReputationSchema.name, isNot(equals('SectReputation')),
-          reason: 'P3.4 隔离:Reputation 与 Sect.sectReputation 字段不撞 collection name');
-      expect(ReputationSchema.name, isNot(equals('Sect')),
-          reason: 'Reputation 是独立 collection 不撞 Sect');
-      expect(ReputationSchema.name, equals('Reputation'),
-          reason: 'collection name 锁 Reputation');
+      expect(
+        ReputationSchema.name,
+        isNot(equals('SectReputation')),
+        reason: 'P3.4 隔离:Reputation 与 Sect.sectReputation 字段不撞 collection name',
+      );
+      expect(
+        ReputationSchema.name,
+        isNot(equals('Sect')),
+        reason: 'Reputation 是独立 collection 不撞 Sect',
+      );
+      expect(
+        ReputationSchema.name,
+        equals('Reputation'),
+        reason: 'collection name 锁 Reputation',
+      );
     });
 
     test('NpcRelationSchema name 独立(不撞 Character / Sect)', () {
@@ -181,17 +207,21 @@ void main() {
     test('Reputation + NpcRelation 双 collection 共存 · 不互沾', () async {
       // 同 Isar 实例并行写两表,各自 count 独立
       await isar.writeTxn(() async {
-        await isar.reputations.put(Reputation()
-          ..playerId = 1
-          ..factionId = 'shaolin'
-          ..value = 30
-          ..updatedAt = DateTime(2026, 5, 25));
-        await isar.npcRelations.put(NpcRelation()
-          ..sourceCharacterId = 1
-          ..targetCharacterId = 100
-          ..type = 'foe'
-          ..level = -50
-          ..updatedAt = DateTime(2026, 5, 25));
+        await isar.reputations.put(
+          Reputation()
+            ..playerId = 1
+            ..factionId = 'shaolin'
+            ..value = 30
+            ..updatedAt = DateTime(2026, 5, 25),
+        );
+        await isar.npcRelations.put(
+          NpcRelation()
+            ..sourceCharacterId = 1
+            ..targetCharacterId = 100
+            ..type = 'foe'
+            ..level = -50
+            ..updatedAt = DateTime(2026, 5, 25),
+        );
       });
       expect(await isar.reputations.count(), 1);
       expect(await isar.npcRelations.count(), 1);
@@ -247,10 +277,24 @@ void main() {
         leftTeam: [mkBC(id: 1, teamSide: 0)],
         rightTeam: [mkBC(id: 10, teamSide: 1)],
       );
-      expect(left.first.attackPowerMultiplier, 1.15,
-          reason: '双向对等:player 同 mult');
-      expect(right.first.attackPowerMultiplier, 1.15,
-          reason: '双向对等:enemy 同 mult');
+      expect(
+        left.first.attackPowerMultiplier,
+        1.15,
+        reason: '双向对等:player 同 mult',
+      );
+      expect(
+        right.first.attackPowerMultiplier,
+        1.15,
+        reason: '双向对等:enemy 同 mult',
+      );
+      expect(
+        left.first.attackPowerMultiplierSource,
+        AttackPowerMultiplierSource.jianghuEnmity,
+      );
+      expect(
+        right.first.attackPowerMultiplierSource,
+        AttackPowerMultiplierSource.jianghuEnmity,
+      );
     });
 
     test('max-across-enemies · 多 enemy 不同 enmity → player 取 max', () async {
@@ -272,8 +316,11 @@ void main() {
         leftTeam: [mkBC(id: 1, teamSide: 0)],
         rightTeam: [mkBC(id: 10, teamSide: 1), mkBC(id: 11, teamSide: 1)],
       );
-      expect(left.first.attackPowerMultiplier, 1.25,
-          reason: 'player 取 max(1.15, 1.25) = 1.25');
+      expect(
+        left.first.attackPowerMultiplier,
+        1.25,
+        reason: 'player 取 max(1.15, 1.25) = 1.25',
+      );
       expect(right[0].attackPowerMultiplier, 1.15);
       expect(right[1].attackPowerMultiplier, 1.25);
     });
@@ -311,6 +358,23 @@ void main() {
       expect(left, isEmpty);
       expect(right, isEmpty);
     });
+
+    test('npcId → targetCharacterId 稳定且落在独立负数空间', () {
+      final idA = EnmityBattleModifier.targetIdForNpcId(
+        'cijianzhuang_assassin',
+      );
+      final idB = EnmityBattleModifier.targetIdForNpcId(
+        'cijianzhuang_assassin',
+      );
+      final other = EnmityBattleModifier.targetIdForNpcId('jiaoMen_shidi');
+      expect(idA, idB);
+      expect(
+        idA,
+        lessThan(-1000000),
+        reason: 'npcId target id 应避开普通 EnemyDef slot -1/-2/-3',
+      );
+      expect(other, isNot(idA));
+    });
   });
 
   // ── R5.8 Boss 击杀 → 声望 delta wire ──────────────────────────────────────
@@ -323,8 +387,11 @@ void main() {
           .toList();
       expect(bossFactionStages.length, greaterThanOrEqualTo(6));
       for (final s in bossFactionStages) {
-        expect(repo.factionAlignments.containsKey(s.factionId), isTrue,
-            reason: '${s.id} factionId=${s.factionId} 不在 factions.yaml');
+        expect(
+          repo.factionAlignments.containsKey(s.factionId),
+          isTrue,
+          reason: '${s.id} factionId=${s.factionId} 不在 factions.yaml',
+        );
       }
     });
 
@@ -347,24 +414,25 @@ void main() {
       expect(repo.rivalFactionIds('luLin'), isEmpty);
     });
 
-    test('applyDelta e2e · 击杀 orthodox Boss → boss 派 -5 + evil 派各 +3',
-        () async {
-      final repo = GameRepository.instance;
-      final svc = ReputationService(isar, repo.numbers);
-      final triggers = repo.numbers.jianghu.triggers;
-      const bossFaction = 'shaolin';
+    test(
+      'applyDelta e2e · 击杀 orthodox Boss → boss 派 -5 + evil 派各 +3',
+      () async {
+        final repo = GameRepository.instance;
+        final svc = ReputationService(isar, repo.numbers);
+        final triggers = repo.numbers.jianghu.triggers;
+        const bossFaction = 'shaolin';
 
-      await svc.applyDelta(1, bossFaction, -triggers.stageBossKillDelta);
-      for (final rival in repo.rivalFactionIds(bossFaction)) {
-        await svc.applyDelta(1, rival, triggers.stageBossKillRivalDelta);
-      }
+        await svc.applyDelta(1, bossFaction, -triggers.stageBossKillDelta);
+        for (final rival in repo.rivalFactionIds(bossFaction)) {
+          await svc.applyDelta(1, rival, triggers.stageBossKillRivalDelta);
+        }
 
-      expect(await svc.valueFor(1, 'shaolin'), -5);
-      expect(await svc.valueFor(1, 'jiaoMen'), 3);
-      expect(await svc.valueFor(1, 'cijianzhuang'), 3);
-      expect(await svc.valueFor(1, 'wudang'), 0,
-          reason: '同阵营不受 rival delta');
-    });
+        expect(await svc.valueFor(1, 'shaolin'), -5);
+        expect(await svc.valueFor(1, 'jiaoMen'), 3);
+        expect(await svc.valueFor(1, 'cijianzhuang'), 3);
+        expect(await svc.valueFor(1, 'wudang'), 0, reason: '同阵营不受 rival delta');
+      },
+    );
 
     test('factionAlignments 加载 6 门派完整', () {
       final repo = GameRepository.instance;
