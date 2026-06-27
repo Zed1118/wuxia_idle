@@ -9,6 +9,7 @@ import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../shared/strings.dart';
 import '../../battle/domain/damage_calculator.dart';
 import '../../battle/domain/derived_stats.dart';
 
@@ -52,11 +53,11 @@ class RedlineAuditReport {
 
   String toMarkdown() {
     final buf = StringBuffer()
-      ..writeln('# 数值红线审计报告')
+      ..writeln(UiStrings.redlineAuditMdTitle)
       ..writeln()
-      ..writeln('> 工具生成，入口: `VISUAL_ROUTE=redline_audit`。')
+      ..writeln(UiStrings.redlineAuditMdIntro)
       ..writeln()
-      ..writeln('| 项目 | 状态 | 当前最大值 | 红线 | 来源 |')
+      ..writeln(UiStrings.redlineAuditMdTableHeader)
       ..writeln('|---|---|---:|---:|---|');
     for (final item in items) {
       buf.writeln(
@@ -65,7 +66,7 @@ class RedlineAuditReport {
       );
     }
     buf.writeln();
-    buf.writeln('## 备注');
+    buf.writeln(UiStrings.redlineAuditMdNotesHeader);
     for (final item in items) {
       buf.writeln('- ${item.label}: ${item.note}');
     }
@@ -108,7 +109,7 @@ RedlineAuditReport buildRedlineAuditReport(GameRepository repo) {
   return RedlineAuditReport([
     RedlineAuditItem(
       id: 'equipment_base_attack',
-      label: '装备基础攻击',
+      label: UiStrings.redlineItemEquipmentAttack,
       observed: maxEquipmentAttack.value,
       limit: red.equipmentBaseAttackMax,
       source: 'equipment:${maxEquipmentAttack.source}',
@@ -116,11 +117,11 @@ RedlineAuditReport buildRedlineAuditReport(GameRepository repo) {
         observed: maxEquipmentAttack.value,
         limit: red.equipmentBaseAttackMax,
       ),
-      note: '只审计配置基础表值；强化、共鸣、开锋后的派生攻击不属于该硬红线。',
+      note: UiStrings.redlineNoteEquipmentAttack,
     ),
     RedlineAuditItem(
       id: 'player_hp',
-      label: '玩家血量',
+      label: UiStrings.redlineItemPlayerHp,
       observed: playerProbe.maxHp,
       limit: red.playerHpMax,
       source: playerProbe.hpSource,
@@ -128,21 +129,20 @@ RedlineAuditReport buildRedlineAuditReport(GameRepository repo) {
         observed: playerProbe.maxHp,
         limit: red.playerHpMax,
       ),
-      note:
-          '使用满 build + L${repo.numbers.level.maxLevel} + founder buff 极值探针，走 CharacterDerivedStats.maxHp。',
+      note: UiStrings.redlineNotePlayerHp(repo.numbers.level.maxLevel),
     ),
     RedlineAuditItem(
       id: 'boss_hp',
-      label: 'Boss 血量',
+      label: UiStrings.redlineItemBossHp,
       observed: maxBossHp.value,
       limit: red.bossHpMax,
       source: maxBossHp.source,
       status: classifyRedline(observed: maxBossHp.value, limit: red.bossHpMax),
-      note: '扫描主线和爬塔 Boss 配置 baseHp；周目 clamp 仍由既有 battle/setup 测试兜底。',
+      note: UiStrings.redlineNoteBossHp,
     ),
     RedlineAuditItem(
       id: 'internal_force',
-      label: '内力上限',
+      label: UiStrings.redlineItemInternalForce,
       observed: playerProbe.maxInternalForce,
       limit: red.internalForceMax,
       source: playerProbe.internalForceSource,
@@ -150,12 +150,11 @@ RedlineAuditReport buildRedlineAuditReport(GameRepository repo) {
         observed: playerProbe.maxInternalForce,
         limit: red.internalForceMax,
       ),
-      note:
-          '使用满 build + L${repo.numbers.level.maxLevel} + founder buff 极值探针，走 CharacterDerivedStats.internalForceMaxWithLineage。',
+      note: UiStrings.redlineNoteInternalForce(repo.numbers.level.maxLevel),
     ),
     RedlineAuditItem(
       id: 'skill_power_multiplier',
-      label: '招式倍率',
+      label: UiStrings.redlineItemSkillMultiplier,
       observed: maxSkillPower.value,
       limit: red.skillPowerMultiplierMax,
       source: 'skill:${maxSkillPower.source}',
@@ -163,11 +162,11 @@ RedlineAuditReport buildRedlineAuditReport(GameRepository repo) {
         observed: maxSkillPower.value,
         limit: red.skillPowerMultiplierMax,
       ),
-      note: '扫描 skills.yaml 与 encounter_skills.yaml 合并后的 skillDefs 全池。',
+      note: UiStrings.redlineNoteSkillMultiplier,
     ),
     RedlineAuditItem(
       id: 'normal_damage',
-      label: '普通伤害',
+      label: UiStrings.redlineItemNormalDamage,
       observed: damageProbe.normalCrit,
       limit: red.damageReadabilityMax,
       source: damageProbe.normalSource,
@@ -175,12 +174,11 @@ RedlineAuditReport buildRedlineAuditReport(GameRepository repo) {
         observed: damageProbe.normalCrit,
         limit: red.damageReadabilityMax,
       ),
-      note:
-          '软红线：典型目标 ${red.normalDamageTypicalTarget}，满 build 极值可越过；唯一硬线是不进百万。',
+      note: UiStrings.redlineNoteNormalDamage(red.normalDamageTypicalTarget),
     ),
     RedlineAuditItem(
       id: 'ultimate_critical',
-      label: '大招暴击',
+      label: UiStrings.redlineItemUltimateCrit,
       observed: damageProbe.ultimateCrit,
       limit: red.damageReadabilityMax,
       source: damageProbe.ultimateSource,
@@ -188,8 +186,7 @@ RedlineAuditReport buildRedlineAuditReport(GameRepository repo) {
         observed: damageProbe.ultimateCrit,
         limit: red.damageReadabilityMax,
       ),
-      note:
-          '软红线：使用当前最高 powerSkill 倍率和满 build 暴击探针；真实战斗峰值仍由 balance_simulator 兜底。',
+      note: UiStrings.redlineNoteUltimateCrit,
     ),
   ]);
 }
@@ -333,7 +330,7 @@ _measurePlayerExtremum(GameRepository repo) {
 ({int normalCrit, String normalSource, int ultimateCrit, String ultimateSource})
 _measureDamageProbe(GameRepository repo) {
   final normalSkill = _maxSkillByType(repo, SkillType.normalAttack);
-  final ultimateSkill = _maxSkillByType(repo, SkillType.powerSkill);
+  final ultimateSkill = _maxSkillByType(repo, SkillType.ultimate);
   final totalEqAtk = _maxDamageProbeEquipmentAttack(repo);
 
   int calc(SkillDef skill) => DamageCalculator.calculateResolved(
