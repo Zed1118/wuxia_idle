@@ -221,9 +221,9 @@ class _ProjectStelePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PaperPanel(
-      padding: const EdgeInsets.all(14),
-      child: const Column(
+    return const PaperPanel(
+      padding: EdgeInsets.all(14),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(

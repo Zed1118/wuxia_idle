@@ -212,6 +212,42 @@ void main() {
       expect(find.text(UiStrings.islandPrepBossCycleBody), findsOneWidget);
     });
 
+    testWidgets('整备建议面板最多渲染前三条', (tester) async {
+      const hiddenTitle = '第四条不应出现';
+      final view = buildTestView(
+        prepAdvice: const [
+          IslandPrepAdvice(
+            kind: IslandPrepAdviceKind.equipment,
+            title: '建议一',
+            body: UiStrings.islandPrepEquipmentBody,
+          ),
+          IslandPrepAdvice(
+            kind: IslandPrepAdviceKind.skillFragment,
+            title: '建议二',
+            body: UiStrings.islandPrepFragmentBody,
+          ),
+          IslandPrepAdvice(
+            kind: IslandPrepAdviceKind.bossCycle,
+            title: '建议三',
+            body: UiStrings.islandPrepBossCycleBody,
+            priority: IslandPrepAdvicePriority.high,
+          ),
+          IslandPrepAdvice(
+            kind: IslandPrepAdviceKind.equipment,
+            title: hiddenTitle,
+            body: UiStrings.islandPrepEquipmentBody,
+          ),
+        ],
+      );
+
+      await pump(tester, wrap(view));
+
+      expect(find.text('建议一'), findsOneWidget);
+      expect(find.text('建议二'), findsOneWidget);
+      expect(find.text('建议三'), findsOneWidget);
+      expect(find.text(hiddenTitle), findsNothing);
+    });
+
     testWidgets('岛务工程碑 first slice 始终渲染只读说明', (tester) async {
       await pump(tester, wrap(buildTestView()));
 

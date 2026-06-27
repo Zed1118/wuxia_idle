@@ -17,6 +17,7 @@
 - 2026-06-27: Task 3-4 已完成，`IslandView.prepAdvice` 从 `zangjuangeCluesProvider` 映射并在桃花岛顶部只读展示，`flutter test test/features/taohua_island/island_prep_advice_service_test.dart test/features/taohua_island/taohua_island_screen_test.dart` 通过。当前下一步：Task 5，岛务工程碑 read-only first slice。
 - 2026-06-27: Task 5 已完成，岛务工程碑以只读 `PaperPanel` 渲染，不接 action/service/save；同一 targeted test 命令通过。当前下一步：Task 6，运行 `test/features/taohua_island`、`test/features/zangjuange`、`flutter analyze`，条件允许跑全量 `flutter test`。
 - 2026-06-27: Task 3-4 质量审查反馈已修复：`islandPrepAdviceProvider` best-effort 降级为空建议；藏卷阁 Boss 周目线索改为只读查询现有进度行，不经 `getOrCreate` 写入缺失行。`flutter test test/features/taohua_island/island_prep_advice_service_test.dart test/features/taohua_island/taohua_island_screen_test.dart test/features/zangjuange` 通过。
+- 2026-06-27: 最终审查反馈已修复：`_ProjectStelePanel` const lint 清零，并补 4 条建议只渲染前三条的 widget test。`flutter test test/features/taohua_island/taohua_island_screen_test.dart` 与 `flutter analyze` 通过。
 
 ---
 
