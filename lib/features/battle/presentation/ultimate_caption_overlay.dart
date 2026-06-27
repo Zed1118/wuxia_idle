@@ -14,19 +14,28 @@ bool isUltimateCaptionSkill(SkillDef? skill) =>
 
 /// 大招题字视觉(纯展示,无动画)。供动画 overlay 与视觉验收路由复用。
 /// 玩家方暖金、敌方绛红，水墨大字 + 墨色描边。
+/// [fontSize] 默认 56；暴击峰值时传 captionPeakSize(68)。
+/// [glowBlur] 默认 0(无辉光)；暴击时传 captionGlowBlur。
 class UltimateCaptionContent extends StatelessWidget {
   final String name;
   final bool isEnemy;
+  final double fontSize;
+  final double glowBlur;
 
   const UltimateCaptionContent({
     super.key,
     required this.name,
     required this.isEnemy,
+    this.fontSize = 56,
+    this.glowBlur = 0,
   });
 
   @override
   Widget build(BuildContext context) {
     final accent = isEnemy ? WuxiaColors.gangMeng : WuxiaColors.resultHighlight;
+    final glowShadows = glowBlur > 0
+        ? [Shadow(color: accent, blurRadius: glowBlur)]
+        : null;
     return Align(
       alignment: const Alignment(0, -0.45),
       child: SizedBox(
@@ -52,15 +61,16 @@ class UltimateCaptionContent extends StatelessWidget {
               ),
             ),
             Text(name, style: _captionStyle(stroke: true)),
-            Text(name, style: _captionStyle(stroke: false)),
+            Text(name, style: _captionStyle(stroke: false, shadows: glowShadows)),
           ],
         ),
       ),
     );
   }
 
-  TextStyle _captionStyle({required bool stroke}) => TextStyle(
-        fontSize: 56,
+  TextStyle _captionStyle({required bool stroke, List<Shadow>? shadows}) =>
+      TextStyle(
+        fontSize: fontSize,
         fontWeight: FontWeight.bold,
         letterSpacing: 6,
         color: stroke ? null : WuxiaUi.paper,
@@ -70,6 +80,7 @@ class UltimateCaptionContent extends StatelessWidget {
               ..strokeWidth = 5
               ..color = const Color(0xCC0A0A0A))
             : null,
+        shadows: shadows,
       );
 }
 
@@ -87,6 +98,8 @@ class UltimateCaptionOverlayState extends State<UltimateCaptionOverlay>
   late final AnimationController _ctrl;
   String? _name;
   bool _isEnemy = false;
+  double _fontSize = 56;
+  double _glowBlur = 0;
 
   // 250ms 淡入 + 1200ms 停留 + 350ms 淡出 = 1800ms 总时长
   static const _fadeInMs = 250;
@@ -116,10 +129,15 @@ class UltimateCaptionOverlayState extends State<UltimateCaptionOverlay>
   }
 
   /// 触发题字。覆盖语义:重置动画 + 换文字。
-  void show(String name, {required bool isEnemy}) {
+  /// [fontSize] 默认 56；暴击峰值时传 captionPeakSize。
+  /// [glowBlur] 默认 0；暴击时传 captionGlowBlur 产生辉光效果。
+  void show(String name,
+      {required bool isEnemy, double fontSize = 56, double glowBlur = 0}) {
     setState(() {
       _name = name;
       _isEnemy = isEnemy;
+      _fontSize = fontSize;
+      _glowBlur = glowBlur;
     });
     _ctrl.forward(from: 0.0);
   }
@@ -141,7 +159,12 @@ class UltimateCaptionOverlayState extends State<UltimateCaptionOverlay>
         animation: _ctrl,
         builder: (_, _) => Opacity(
           opacity: _opacity.clamp(0.0, 1.0),
-          child: UltimateCaptionContent(name: _name!, isEnemy: _isEnemy),
+          child: UltimateCaptionContent(
+            name: _name!,
+            isEnemy: _isEnemy,
+            fontSize: _fontSize,
+            glowBlur: _glowBlur,
+          ),
         ),
       ),
     );
