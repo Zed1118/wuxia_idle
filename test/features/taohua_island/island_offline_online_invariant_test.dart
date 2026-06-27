@@ -37,7 +37,7 @@ void main() {
           List<IslandBuildingState> states, BuildingType type) =>
       states.firstWhere((s) => s.type == type);
 
-  /// 构造满供应链快照:两源 + 两加工,全部 level=[level],各加工激活指定配方。
+  /// 构造满供应链快照:四源 + 三加工,全部 level=[level],各加工激活指定配方。
   List<IslandBuildingState> seed(
     int level, {
     required String daRecipe,
@@ -53,6 +53,14 @@ void main() {
           ..level = level
           ..stored = 0,
         IslandBuildingState()
+          ..type = BuildingType.muGongFang
+          ..level = level
+          ..stored = 0,
+        IslandBuildingState()
+          ..type = BuildingType.lingQuan
+          ..level = level
+          ..stored = 0,
+        IslandBuildingState()
           ..type = BuildingType.daZaoTai
           ..level = level
           ..stored = 0
@@ -62,6 +70,11 @@ void main() {
           ..level = level
           ..stored = 0
           ..activeRecipeId = danRecipe,
+        IslandBuildingState()
+          ..type = BuildingType.zhuZaoTai
+          ..level = level
+          ..stored = 0
+          ..activeRecipeId = 'forge_kaifeng_fucai',
       ];
 
   /// 一次性结算整段 [hours]。founderRealmIndex=6 → 全配方解锁,不受境界门槛干扰。
