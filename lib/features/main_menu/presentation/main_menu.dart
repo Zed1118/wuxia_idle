@@ -31,7 +31,6 @@ import '../../mass_battle/presentation/mass_battle_screen.dart';
 import '../../mainline/application/mainline_progress_service.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/domain/mainline_progress.dart';
-import '../../pvp/presentation/pvp_screen.dart';
 import '../../seclusion/application/seclusion_service_providers.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../../seclusion/domain/retreat_session.dart';
@@ -112,7 +111,6 @@ class MainMenu extends ConsumerWidget {
 
   // H1 批1 §5.7:未解锁系统门控 — 镜像各屏 clearedStageIds prereq(单一真相源)。
   static const String _lateGameUnlockStage = 'stage_06_05'; // 心魔/轻功/群战
-  static const String _pvpUnlockStage = 'stage_05_05';
   static const String _socialUnlockStage = 'stage_01_05'; // 江湖/门派/排行榜
 
   static TutorialHintDef? _firstUnreadHint(
@@ -160,7 +158,6 @@ class MainMenu extends ConsumerWidget {
     final techLocked = step < _techniquesUnlockStep;
     final skillLibLocked = step < _techniquesUnlockStep; // §5.7：修了心法才有技能可装
     final lateLocked = !cleared.contains(_lateGameUnlockStage);
-    final pvpLocked = !cleared.contains(_pvpUnlockStage);
     final socialLocked = !cleared.contains(_socialUnlockStage);
 
     // 桃花岛入口门控：unlock_chapter_index(=1,0-based)对应第二章(chapterIndex=2)通关。
@@ -307,15 +304,6 @@ class MainMenu extends ConsumerWidget {
         ),
       ),
       WuxiaInkButton(
-        label: UiStrings.mainMenuPvp,
-        hint: pvpLocked ? UiStrings.pvpLockedHint : UiStrings.mainMenuPvpHint,
-        icon: Icons.gavel_outlined,
-        thumbnailPath: WuxiaUi.entryJianghu,
-        disabled: pvpLocked,
-        locked: pvpLocked,
-        onTap: () => _push(context, const PvpScreen()),
-      ),
-      WuxiaInkButton(
         label: UiStrings.mainMenuTaohuaIsland,
         hint: taohuaLocked
             ? UiStrings.mainMenuTaohuaIslandLockedHint
@@ -431,109 +419,110 @@ class MainMenu extends ConsumerWidget {
     return BgmScope(
       track: BgmTrack.mainMenu,
       child: Scaffold(
-      backgroundColor: WuxiaColors.background,
-      body: Stack(
-        children: [
-          // A2 全屏水墨门面背景(占位 mountain_bg · 精修 bg 后补)。
-          Positioned.fill(
-            child: Image.asset(
-              WuxiaUi.mainMenuBg,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const SizedBox.shrink(),
-            ),
-          ),
-          const Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0x6614181D), Color(0xF014181D)],
-                ),
+        backgroundColor: WuxiaColors.background,
+        body: Stack(
+          children: [
+            // A2 全屏水墨门面背景(占位 mountain_bg · 精修 bg 后补)。
+            Positioned.fill(
+              child: Image.asset(
+                WuxiaUi.mainMenuBg,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
             ),
-          ),
-          SafeArea(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1120),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 32,
-                    horizontal: 16,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Text(
-                        UiStrings.mainMenuTitle,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: WuxiaColors.textPrimary,
-                          fontSize: 40,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 8,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        UiStrings.mainMenuSubtitle,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: WuxiaColors.resultHighlight,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 4,
-                        ),
-                      ),
-                      const _TodayFestivalChip(),
-                      if (activeHint != null)
-                        TutorialBannerCard(
-                          hint: activeHint,
-                          onTapOverride: activeHint.step == 6
-                              ? () async {
-                                  if (!context.mounted) return;
-                                  await Navigator.of(context).push<void>(
-                                    MaterialPageRoute(
-                                      builder: (_) => const RecruitmentDialog(),
-                                    ),
-                                  );
-                                }
-                              : null,
-                        ),
-                      const MainMenuRetreatBanner(),
-                      const SizedBox(height: 24),
-                      _MenuSectionsLayout(
-                        coreItems: coreItems,
-                        battleItems: battleItems,
-                        jianghuItems: jianghuItems,
-                        debugItems: debugItems,
-                      ),
-                    ],
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x6614181D), Color(0xF014181D)],
                   ),
                 ),
               ),
             ),
-          ),
-          // 退出游戏:右上角常驻入口(桌面标配)。置于最上层确保可点。
-          SafeArea(
-            child: Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: IconButton(
-                  tooltip: UiStrings.mainMenuQuitTooltip,
-                  icon: const Icon(
-                    Icons.power_settings_new,
-                    color: WuxiaColors.textMuted,
+            SafeArea(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1120),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 32,
+                      horizontal: 16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          UiStrings.mainMenuTitle,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: WuxiaColors.textPrimary,
+                            fontSize: 40,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 8,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          UiStrings.mainMenuSubtitle,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: WuxiaColors.resultHighlight,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 4,
+                          ),
+                        ),
+                        const _TodayFestivalChip(),
+                        if (activeHint != null)
+                          TutorialBannerCard(
+                            hint: activeHint,
+                            onTapOverride: activeHint.step == 6
+                                ? () async {
+                                    if (!context.mounted) return;
+                                    await Navigator.of(context).push<void>(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const RecruitmentDialog(),
+                                      ),
+                                    );
+                                  }
+                                : null,
+                          ),
+                        const MainMenuRetreatBanner(),
+                        const SizedBox(height: 24),
+                        _MenuSectionsLayout(
+                          coreItems: coreItems,
+                          battleItems: battleItems,
+                          jianghuItems: jianghuItems,
+                          debugItems: debugItems,
+                        ),
+                      ],
+                    ),
                   ),
-                  onPressed: () => AppExit.confirmAndQuit(context),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+            // 退出游戏:右上角常驻入口(桌面标配)。置于最上层确保可点。
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: IconButton(
+                    tooltip: UiStrings.mainMenuQuitTooltip,
+                    icon: const Icon(
+                      Icons.power_settings_new,
+                      color: WuxiaColors.textMuted,
+                    ),
+                    onPressed: () => AppExit.confirmAndQuit(context),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

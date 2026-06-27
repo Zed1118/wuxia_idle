@@ -5,11 +5,11 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 ///
 /// 战斗轨按 [StageType]（+ mainline 的 Boss 关）细分 6 类，营造氛围差异；
 /// 非战斗场景 [lineage]（传承）/[baike]（百科）各一轨。[battle] 留通用兜底
-/// （demo/debug/pvp）。缺素材时 SoundManager._guard 静默 no-op。
+/// （demo/debug/legacy）。缺素材时 SoundManager._guard 静默 no-op。
 enum BgmTrack {
   mainMenu,
   seclusion,
-  battle, // 通用兜底（demo/debug/pvp）
+  battle, // 通用兜底（demo/debug/legacy）
   mainline, // 主线普通关
   tower, // 爬塔
   boss, // 章末/主线 Boss 关（压迫感）
@@ -25,7 +25,7 @@ enum BgmTrack {
 /// - massBattle/innerDemon/lightFoot/tower：各用同名类型轨（类型氛围优先，
 ///   即便该类型内是 Boss 层也保持类型轨）。
 /// - mainline：Boss 关切 [BgmTrack.boss] 制造压迫感，普通关用 [BgmTrack.mainline]。
-/// - pvp：暂走通用 [BgmTrack.battle]（mock 阶段，无专属素材）。
+/// - legacy pvp：旧枚举值保底走 [BgmTrack.battle]，当前不再由入口生成。
 BgmTrack bgmTrackForStage(StageType type, {required bool isBoss}) {
   switch (type) {
     case StageType.massBattle:
@@ -39,6 +39,7 @@ BgmTrack bgmTrackForStage(StageType type, {required bool isBoss}) {
     case StageType.mainline:
       return isBoss ? BgmTrack.boss : BgmTrack.mainline;
     case StageType.pvp:
+      // 保留旧 StageType.pvp 反序列化/回放兜底，不提供 PVP 玩法入口。
       return BgmTrack.battle;
   }
 }

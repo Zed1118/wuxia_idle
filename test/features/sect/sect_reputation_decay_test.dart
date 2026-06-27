@@ -26,11 +26,7 @@ void main() {
         'max': 100,
         'min': 0,
       },
-      'sect_level': {
-        'max': 7,
-        'initial': 1,
-        'promote_wins_threshold': 3,
-      },
+      'sect_level': {'max': 7, 'initial': 1, 'promote_wins_threshold': 3},
       'active_events_max': 3,
     },
   };
@@ -43,16 +39,15 @@ void main() {
     int totalWins = 0,
     int level = 1,
     DateTime? lastEventAt,
-  }) =>
-      Sect()
-        ..id = 1
-        ..name = '无名宗'
-        ..founderId = 1
-        ..sectLevel = level
-        ..sectReputation = rep
-        ..totalWins = totalWins
-        ..createdAt = DateTime(2026, 5, 1)
-        ..lastEventAt = lastEventAt;
+  }) => Sect()
+    ..id = 1
+    ..name = '无名宗'
+    ..founderId = 1
+    ..sectLevel = level
+    ..sectReputation = rep
+    ..totalWins = totalWins
+    ..createdAt = DateTime(2026, 5, 1)
+    ..lastEventAt = lastEventAt;
 
   SectEvent pending() => SectEvent()
     ..sectId = 1
@@ -142,8 +137,11 @@ void main() {
         now: DateTime(2026, 6, 1),
       );
       expect(s2.sectReputation, 45);
-      expect(e2.status, SectEventStatus.expired,
-          reason: 'expired 路 status 不是 resolved');
+      expect(
+        e2.status,
+        SectEventStatus.expired,
+        reason: 'expired 路 status 不是 resolved',
+      );
       expect(e2.reputationDelta, -5);
       expect(e2.resolvedAt, DateTime(2026, 6, 1));
     });
@@ -152,15 +150,24 @@ void main() {
       final now = DateTime(2026, 6, 24);
 
       // 距 30 天 → -5
-      final stale = baseSect(rep: 50, lastEventAt: now.subtract(const Duration(days: 30)));
+      final stale = baseSect(
+        rep: 50,
+        lastEventAt: now.subtract(const Duration(days: 30)),
+      );
       expect(decay.computeDecay(sect: stale, now: now), -5);
 
       // 距 31 天 → -5
-      final older = baseSect(rep: 50, lastEventAt: now.subtract(const Duration(days: 31)));
+      final older = baseSect(
+        rep: 50,
+        lastEventAt: now.subtract(const Duration(days: 31)),
+      );
       expect(decay.computeDecay(sect: older, now: now), -5);
 
       // 距 29 天 → 0
-      final fresh = baseSect(rep: 50, lastEventAt: now.subtract(const Duration(days: 29)));
+      final fresh = baseSect(
+        rep: 50,
+        lastEventAt: now.subtract(const Duration(days: 29)),
+      );
       expect(decay.computeDecay(sect: fresh, now: now), 0);
 
       // null → 0(新建 sect)
@@ -211,13 +218,11 @@ class NumbersConfigStub implements NumbersConfig {
 
   @override
   SectEventDef get sectEvent => SectEventDef.fromYaml(
-      (_raw['sect_event'] as Map?)?.cast<String, dynamic>());
-
-  @override
-  PvpDef get pvp =>
-      PvpDef.fromYaml((_raw['pvp'] as Map?)?.cast<String, dynamic>());
+    (_raw['sect_event'] as Map?)?.cast<String, dynamic>(),
+  );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError(
-      'NumbersConfigStub: only raw impl, invocation=${invocation.memberName}');
+    'NumbersConfigStub: only raw impl, invocation=${invocation.memberName}',
+  );
 }

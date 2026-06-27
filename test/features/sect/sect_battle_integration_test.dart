@@ -32,11 +32,7 @@ void main() {
         'max': 100,
         'min': 0,
       },
-      'sect_level': {
-        'max': 7,
-        'initial': 1,
-        'promote_wins_threshold': 3,
-      },
+      'sect_level': {'max': 7, 'initial': 1, 'promote_wins_threshold': 3},
       'active_events_max': 3,
     },
   };
@@ -44,9 +40,7 @@ void main() {
   ProviderContainer makeContainer() {
     final numbers = NumbersConfigStub(yaml);
     final container = ProviderContainer(
-      overrides: [
-        numbersConfigProvider.overrideWithValue(numbers),
-      ],
+      overrides: [numbersConfigProvider.overrideWithValue(numbers)],
     );
     return container;
   }
@@ -73,17 +67,21 @@ void main() {
     test('R1.10 sectMonthlyTickServiceProvider 注入 → 路径通', () {
       final container = makeContainer();
       addTearDown(container.dispose);
-      expect(container.read(sectMonthlyTickServiceProvider),
-          isA<SectMonthlyTickService>());
+      expect(
+        container.read(sectMonthlyTickServiceProvider),
+        isA<SectMonthlyTickService>(),
+      );
     });
 
-    test('R1.11 monthlyTickCoordinatorProvider 注册 1 门派 tick callback(死链解除)',
-        () {
-      final container = makeContainer();
-      addTearDown(container.dispose);
-      final coord = container.read(monthlyTickCoordinatorProvider);
-      expect(coord.registeredCount, 1, reason: '原 0-caller stub 至此接通');
-    });
+    test(
+      'R1.11 monthlyTickCoordinatorProvider 注册 1 门派 tick callback(死链解除)',
+      () {
+        final container = makeContainer();
+        addTearDown(container.dispose);
+        final coord = container.read(monthlyTickCoordinatorProvider);
+        expect(coord.registeredCount, 1, reason: '原 0-caller stub 至此接通');
+      },
+    );
 
     test('R1.12 isar null(test 路径)→ tick 静默 no-op 不抛', () async {
       final container = makeContainer();
@@ -104,13 +102,11 @@ class NumbersConfigStub implements NumbersConfig {
 
   @override
   SectEventDef get sectEvent => SectEventDef.fromYaml(
-      (_raw['sect_event'] as Map?)?.cast<String, dynamic>());
-
-  @override
-  PvpDef get pvp =>
-      PvpDef.fromYaml((_raw['pvp'] as Map?)?.cast<String, dynamic>());
+    (_raw['sect_event'] as Map?)?.cast<String, dynamic>(),
+  );
 
   @override
   dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError(
-      'NumbersConfigStub: only raw impl, invocation=${invocation.memberName}');
+    'NumbersConfigStub: only raw impl, invocation=${invocation.memberName}',
+  );
 }
