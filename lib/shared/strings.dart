@@ -2112,6 +2112,21 @@ class UiStrings {
   /// selectRecipe 不可达路径失败文案（notProcessor / recipeNotFound）。
   static const String taohuaIslandSelectRecipeFailed = '无法择此配方';
 
+  /// 桃花岛整备建议区标题。
+  static const String islandPrepSectionTitle = '整备建议';
+
+  /// 缺装备线索转化的整备建议。
+  static const String islandPrepEquipmentTitle = '补兵器缺口';
+  static const String islandPrepEquipmentBody = '翻检兵器谱缺页，出岛前可预备强化材料与疗伤丹。';
+
+  /// 缺残页线索转化的整备建议。
+  static const String islandPrepFragmentTitle = '补武学残页';
+  static const String islandPrepFragmentBody = '藏经阁尚有残页未齐，临行前可备开锋辅材与破招余量。';
+
+  /// Boss 周目线索转化的整备建议。
+  static const String islandPrepBossCycleTitle = '备异势再战';
+  static const String islandPrepBossCycleBody = '有首破周目尚待回看，宜先整顿疗养与补给再登程。';
+
   // ── 一键挂机扫荡 ───────────────────────────────────────────────────────
   /// 主线章节扫荡入口主按钮。
   static const String sweepChapterButton = '一键扫荡本章';
