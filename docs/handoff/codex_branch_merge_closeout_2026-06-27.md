@@ -18,7 +18,7 @@
 | martial-manual-encyclopedia | 合并 | 武学百科（§5.7 替代教程弹窗） |
 | redline-audit-view | 合并 | Debug 红线审计；阈值与 §5.4 一致；入口 kDebugMode 门控 |
 | visual-acceptance-automation | 合并 | 视觉验收工具，不动产品玩法 |
-| art-tone-audit | 合并 | 水墨色调审计，Material 默认色清零 |
+| art-tone-audit | 合并 | 水墨色调审计：**high 级 Material 饱和色清零**；medium 4 / low 44 次级债仍列在 art_tone_audit.md（非阻断，2026-06-27 审查口径订正）|
 | main-story-polish-pack | 合并 | 章末文案打磨；HEAD `c642d6c6`（=021b340a 超集，兄弟 -2/-3 已弃） |
 | **breakthrough-material-gaps** | **挂起** | 见下 |
 
@@ -47,6 +47,8 @@ remove-pvp → visual-acceptance-automation → art-tone-audit → main-story-po
 **重启条件**：突破真的要消耗材料、且有对应 `data/*.yaml` 配置时再捡起。
 
 **保留物**：分支 `codex/breakthrough-material-gaps` + worktree `/Users/a10506/.codex/worktrees/bcf9/挂机武侠`（HEAD `a20c50c0`）未删，可直接续。
+
+> **2026-06-27 续 · 已退役**：重启评估后用户拍板方案 B（不引入「突破消耗材料」机制——本作突破 = EXP + 心魔关双门控、零材料，该机制不存在）。分支 `codex/breakthrough-material-gaps` + worktree bcf9（was `a20c50c0`）**已删除**，#8 正式销账。详 PROGRESS 顶段退役条目。
 
 ## 清理（已做）
 
