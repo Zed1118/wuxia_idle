@@ -2127,6 +2127,10 @@ class UiStrings {
   static const String islandPrepBossCycleTitle = '备异势再战';
   static const String islandPrepBossCycleBody = '有首破周目尚待回看，宜先整顿疗养与补给再登程。';
 
+  /// 岛务工程碑 first slice：只读长期工程占位，不消耗资源、不写存档。
+  static const String islandProjectSteleTitle = '岛务工程碑';
+  static const String islandProjectSteleLockedLine = '长期工程尚在筹备，只记录此番整备方向。';
+
   // ── 一键挂机扫荡 ───────────────────────────────────────────────────────
   /// 主线章节扫荡入口主按钮。
   static const String sweepChapterButton = '一键扫荡本章';

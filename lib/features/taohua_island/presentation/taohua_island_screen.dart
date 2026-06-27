@@ -131,6 +131,8 @@ class _IslandBody extends StatelessWidget {
           ),
           const SizedBox(height: 18),
         ],
+        const _ProjectStelePanel(),
+        const SizedBox(height: 18),
         _BuildingSection(
           label: UiStrings.taohuaIslandSectionRaw,
           types: _rawBuildingTypes,
@@ -209,6 +211,36 @@ class _SectionHeader extends StatelessWidget {
         fontSize: 15,
         fontWeight: FontWeight.bold,
         letterSpacing: 3,
+      ),
+    );
+  }
+}
+
+class _ProjectStelePanel extends StatelessWidget {
+  const _ProjectStelePanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return PaperPanel(
+      padding: const EdgeInsets.all(14),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            UiStrings.islandProjectSteleTitle,
+            style: TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 3,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            UiStrings.islandProjectSteleLockedLine,
+            style: TextStyle(color: WuxiaUi.ink2, fontSize: 12, height: 1.35),
+          ),
+        ],
       ),
     );
   }
