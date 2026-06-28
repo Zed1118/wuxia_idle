@@ -46,7 +46,60 @@ void main() {
       );
       expect(
         detail.rows,
-        contains(UiStrings.offlineRecapTechniqueSkillDetail(3, 0)),
+        contains(UiStrings.offlineRecapTechniqueLearnDetail(3)),
+      );
+      expect(
+        detail.groups.map((g) => g.title),
+        containsAll([
+          UiStrings.offlineRecapSettlementGroupTitle,
+          UiStrings.offlineRecapRetreatGainGroupTitle,
+          UiStrings.offlineRecapCollectGroupTitle,
+        ]),
+      );
+      expect(
+        detail.rows,
+        isNot(contains(UiStrings.offlineRecapSkillProficiencyDetail(0))),
+      );
+    });
+
+    test('active recap 隐藏 0 值收益项但保留收功揭晓说明', () {
+      const recap = (
+        awayHours: 2.0,
+        mapName: '山林',
+        isComplete: false,
+        progressPct: 0.5,
+        estimatedMojianshi: 0,
+        estimatedExperience: 0,
+        estimatedItemRewards: {'item_yaocao': 0},
+        estimatedTechniqueLearnPoints: 0,
+        estimatedSilver: 0,
+        settledHours: 2.0,
+        limitReason: OfflineRecapLimitReason.inProgress,
+      );
+
+      final detail = OfflineRecapDetailFormatter.forRetreat(
+        recap,
+        itemNameOf: (_) => '药草',
+      );
+
+      expect(
+        detail.rows,
+        isNot(contains(UiStrings.offlineRecapExperienceDetail(0))),
+      );
+      expect(
+        detail.rows,
+        isNot(contains(UiStrings.offlineRecapSilverDetail(0))),
+      );
+      expect(
+        detail.rows,
+        isNot(contains(UiStrings.offlineRecapMaterialDetail('无'))),
+      );
+      expect(detail.rows, contains(UiStrings.offlineRecapNoGainsDetail));
+      expect(
+        detail.rows,
+        contains(
+          UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapDropPending),
+        ),
       );
     });
 
@@ -70,9 +123,26 @@ void main() {
       expect(detail.equipmentDropPending, isFalse);
       expect(
         detail.rows,
-        contains(
-          UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapNoDrop),
+        isNot(contains(UiStrings.offlineRecapSilverDetail(0))),
+      );
+      expect(
+        detail.rows,
+        isNot(contains(UiStrings.offlineRecapSkillProficiencyDetail(0))),
+      );
+      expect(
+        detail.rows,
+        isNot(
+          contains(
+            UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapNoDrop),
+          ),
         ),
+      );
+      expect(
+        detail.groups.map((g) => g.title),
+        containsAll([
+          UiStrings.offlineRecapSettlementGroupTitle,
+          UiStrings.offlineRecapPassiveGainGroupTitle,
+        ]),
       );
     });
   });
