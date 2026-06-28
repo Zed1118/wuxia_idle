@@ -26,10 +26,10 @@ This slice implements the backlog item **装备筛选与锁定优化** only. It 
 
 ## Current Recovery Point
 
-- Status: plan ready, baseline target test passed after `flutter pub get` and `dart run build_runner build --delete-conflicting-outputs`.
-- Last completed: created worktree and confirmed `inventory_organization_test.dart` passes on current branch.
-- Next step: Task 1, add failing tests for school and lock/protection filters.
-- Verification run: `flutter test --no-pub test/features/inventory/application/inventory_organization_test.dart` passed 4/4.
+- Status: implementation complete.
+- Last completed: school, locked, and protection filters added and wired.
+- Next step: review/merge decision.
+- Verification run: `flutter test --no-pub test/features/inventory/application/inventory_organization_test.dart` passed 6/6; `flutter analyze lib/features/inventory/application/inventory_organization.dart lib/features/inventory/presentation/inventory_screen.dart lib/shared/strings.dart` passed with no issues.
 - Blockers: none.
 
 ## File Map
@@ -391,4 +391,3 @@ Set:
 git add docs/superpowers/plans/2026-06-28-equipment-filter-lock.md
 git commit -m "docs: update equipment filter recovery point"
 ```
-
