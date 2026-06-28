@@ -110,17 +110,24 @@ void main() {
     );
   });
 
-  testWidgets('点击 info 角标 → 弹出「本关传闻」对话框', (tester) async {
+  testWidgets('点击 info 角标 → 弹出战前情报（掉落并入「可能收获」段）', (tester) async {
     await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
 
     // 找到第一个 info 角标并点击
     await tester.tap(find.byIcon(Icons.info_outline).first);
     await tester.pumpAndSettle();
 
+    // info 角标已升级为战前情报入口：掉落内容并入「可能收获」段（复用 LootRumorContent），
+    // 不再弹独立「本关传闻」对话框。
+    expect(
+      find.text(UiStrings.prebattleIntelLootSection),
+      findsOneWidget,
+      reason: '战前情报弹窗保留掉落 wiring，归入「可能收获」段',
+    );
     expect(
       find.text(UiStrings.lootRumorDialogTitle),
-      findsOneWidget,
-      reason: '点击 info 角标后应弹出掉落传闻对话框',
+      findsNothing,
+      reason: '旧独立掉落传闻对话框入口已被战前情报取代',
     );
   });
 }
