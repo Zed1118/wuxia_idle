@@ -11,7 +11,6 @@ import '../../battle/presentation/cycle_select_control.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/presentation/loot_rumor_dialog.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';
-import '../../loot_preview/presentation/stage_preview_card.dart';
 import '../../loot_preview/presentation/weakness_hint_line.dart';
 import '../../sweep/application/sweep_unit.dart';
 import '../../sweep/domain/sweep_eligibility.dart';
@@ -64,14 +63,14 @@ class StageListScreen extends ConsumerWidget {
             }
             // 周目按章(Phase 2):章 key + 该章已通最高周目决定进入周目。
             final chapterKey = 'ch$chapterIndex';
-            final progress = ref.watch(mainlineProgressProvider).maybeWhen(
-                  data: (d) => d,
-                  orElse: () => null,
-                );
+            final progress = ref
+                .watch(mainlineProgressProvider)
+                .maybeWhen(data: (d) => d, orElse: () => null);
             // watch(非 read):玩家在 CycleSelectControl 切周目时本屏须重建,
             // 使扫荡按钮标签/门槛、各关卡按周目状态都随选定周目刷新。
-            final selectedCycle =
-                ref.watch(selectedChallengeCycleProvider(chapterKey));
+            final selectedCycle = ref.watch(
+              selectedChallengeCycleProvider(chapterKey),
+            );
             int cycleFor() {
               if (progress == null) return 1;
               return resolveTargetCycle(selectedCycle, progress, chapterKey);
@@ -84,8 +83,9 @@ class StageListScreen extends ConsumerWidget {
             StageStatus statusFor(StageEntry e) {
               final c = cycleFor();
               if (c <= 1 || progress == null) return e.status;
-              final clearedThisCycle =
-                  progress.clearedStageCycleKeys.contains('${e.def.id}#$c');
+              final clearedThisCycle = progress.clearedStageCycleKeys.contains(
+                '${e.def.id}#$c',
+              );
               return clearedThisCycle
                   ? StageStatus.cleared
                   : StageStatus.available;
@@ -93,15 +93,19 @@ class StageListScreen extends ConsumerWidget {
 
             // 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。
             // 任一层 async 未就绪 → null（dialog 宽容 null，仅跳过超境提示）。
-            final currentRealm = ref.watch(activeCharacterIdsProvider).maybeWhen(
-              data: (ids) => ids.isEmpty
-                  ? null
-                  : ref.watch(characterByIdProvider(ids.first)).maybeWhen(
-                      data: (c) => c?.realmTier,
-                      orElse: () => null,
-                    ),
-              orElse: () => null,
-            );
+            final currentRealm = ref
+                .watch(activeCharacterIdsProvider)
+                .maybeWhen(
+                  data: (ids) => ids.isEmpty
+                      ? null
+                      : ref
+                            .watch(characterByIdProvider(ids.first))
+                            .maybeWhen(
+                              data: (c) => c?.realmTier,
+                              orElse: () => null,
+                            ),
+                  orElse: () => null,
+                );
 
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -119,7 +123,8 @@ class StageListScreen extends ConsumerWidget {
                 _ChapterSweepButton(
                   chapterIndex: chapterIndex,
                   entries: entries,
-                  eligible: progress != null &&
+                  eligible:
+                      progress != null &&
                       SweepEligibility.forChapter(
                         clearedStageCycleKeys: progress.clearedStageCycleKeys,
                         cycle: cycleFor(),
@@ -127,7 +132,8 @@ class StageListScreen extends ConsumerWidget {
                       ),
                   // 灰显门槛提示仅在本章至少通关过一次后出现;全新未通章仍隐藏
                   // (不在每章顶堆砌锁定按钮)。覆盖用户真实困惑:通过一次后切周目不能扫。
-                  everCleared: progress != null &&
+                  everCleared:
+                      progress != null &&
                       MainlineProgressService.highestClearedCycleForChapter(
                             progress,
                             chapterKey,
@@ -366,15 +372,7 @@ class _StageRow extends StatelessWidget {
       def.dropTable,
       gating: FirstClearGating.scrollOnly,
     );
-    // 第八阶段 C·悬停预览浮层:推荐境界(B 难度判语)+ 掉落传闻。包整张卡片,
-    // overlay 出流不占列表高度(不挤出靠后关·守 viewport 回归)。info 图标点击式保留作 fallback。
-    return StagePreviewHoverCard(
-      preview: StagePreviewContent(
-        recommendedRealm: def.requiredRealm,
-        rumorTable: rumor,
-        playerRealm: currentRealm,
-      ),
-      child: Material(
+    return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
@@ -405,34 +403,69 @@ class _StageRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            def.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: locked
-                                  ? WuxiaColors.textMuted
-                                  : WuxiaColors.textPrimary,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final compact = constraints.maxWidth < 460;
+                        final title = Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                def.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: locked
+                                      ? WuxiaColors.textMuted
+                                      : WuxiaColors.textPrimary,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        if (boss) ...[
-                          const SizedBox(width: 8),
-                          const Text(
-                            UiStrings.stageListBoss,
-                            style: TextStyle(
-                              color: WuxiaColors.resultHighlight,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
+                            if (boss) ...[
+                              const SizedBox(width: 8),
+                              const Text(
+                                UiStrings.stageListBoss,
+                                style: TextStyle(
+                                  color: WuxiaColors.resultHighlight,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ],
+                        );
+                        final inlineLoot = InlineLootSummaryLine(
+                          table: rumor,
+                          recommendedRealm: def.requiredRealm,
+                          alignment: compact
+                              ? WrapAlignment.start
+                              : WrapAlignment.end,
+                        );
+                        if (compact) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              title,
+                              const SizedBox(height: 3),
+                              inlineLoot,
+                            ],
+                          );
+                        }
+                        return Row(
+                          children: [
+                            Expanded(child: title),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: inlineLoot,
+                              ),
                             ),
-                          ),
-                        ],
-                      ],
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -442,8 +475,6 @@ class _StageRow extends StatelessWidget {
                         fontSize: 12,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    LootSummaryLine(table: rumor),
                     // 批二②:通关后战前可查 Boss 弱点/抗性(未通关 / 无配置 → shrink)。
                     WeaknessHintLine(
                       enemyTeam: def.enemyTeam,
@@ -473,7 +504,6 @@ class _StageRow extends StatelessWidget {
             ],
           ),
         ),
-      ),
       ),
     );
   }
@@ -597,8 +627,10 @@ class _ChapterSweepButton extends StatelessWidget {
             disabledBackgroundColor: WuxiaColors.panel,
             disabledForegroundColor: WuxiaColors.textMuted,
             padding: const EdgeInsets.symmetric(vertical: 14),
-            textStyle:
-                const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            textStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           onPressed: null,
           icon: const Icon(Icons.lock_outline, size: 18),
@@ -614,8 +646,7 @@ class _ChapterSweepButton extends StatelessWidget {
           backgroundColor: WuxiaColors.bossFrame,
           foregroundColor: WuxiaColors.background,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          textStyle:
-              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         onPressed: () {
           final units = [

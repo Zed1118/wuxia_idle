@@ -4,6 +4,7 @@
 // 通过 StageListScreen 端到端渲染（镜像 stage_list_screen_test.dart 模式）。
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -50,22 +51,58 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('关卡行显示掉落传闻简版行（有掉落显前缀，无掉落显占位）', (tester) async {
+  testWidgets('关卡行显示行内推荐境界与掉落传闻', (tester) async {
     await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
 
-    // stage_01_01 无 dropTable → 应显「本关无固定收获」；其他关卡有掉落显前缀。
-    // 至少一行掉落传闻文案（前缀 OR 无固定收获）出现 5 次（5 关各一行）。
-    final summaryCount = tester
-            .widgetList(find.textContaining(UiStrings.lootSummaryPrefix))
-            .length +
-        tester
-            .widgetList(find.textContaining(UiStrings.lootNoFixedDrop))
-            .length;
-    expect(summaryCount, greaterThanOrEqualTo(5),
-        reason: '5 关每关都应渲染一行掉落传闻（前缀 or 无固定收获）');
+    expect(
+      tester
+          .widgetList(
+            find.textContaining(UiStrings.previewRecommendedRealmLabel),
+          )
+          .length,
+      greaterThanOrEqualTo(5),
+      reason: '5 关每关都应直接渲染推荐境界',
+    );
+    expect(
+      find.textContaining(UiStrings.lootBucketChangKeDe),
+      findsWidgets,
+      reason: '行内掉落传闻应显示分桶文字，不再只显示「可能收获」前缀',
+    );
 
     // 主线关卡行不应出现仅属于爬塔首通必得 bucket 的标签。
     expect(find.text(UiStrings.lootBucketShouTongBiDe), findsNothing);
+  });
+
+  testWidgets('关卡标题区直接显示推荐境界与分桶掉落，悬停不再弹预览浮层', (tester) async {
+    await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
+
+    expect(
+      find.textContaining(UiStrings.previewRecommendedRealmLabel),
+      findsWidgets,
+      reason: '推荐境界应直接显示在每个关卡行标题区域内，而不是只在悬浮预览里',
+    );
+    expect(
+      find.textContaining(UiStrings.lootBucketChangKeDe),
+      findsWidgets,
+      reason: '掉落爆率分桶应直接显示在关卡行内，不依赖悬浮预览',
+    );
+    expect(
+      find.text(UiStrings.previewRareBonusHint),
+      findsNothing,
+      reason: '旧悬浮预览内容不应常驻显示',
+    );
+
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer(location: Offset.zero);
+    addTearDown(gesture.removePointer);
+    await gesture.moveTo(tester.getCenter(find.text('山门之外')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(UiStrings.previewRareBonusHint),
+      findsNothing,
+      reason: '关卡行悬停不应再弹出独立掉落/推荐境界浮层',
+    );
   });
 
   testWidgets('点击 info 角标 → 弹出「本关传闻」对话框', (tester) async {
@@ -75,7 +112,10 @@ void main() {
     await tester.tap(find.byIcon(Icons.info_outline).first);
     await tester.pumpAndSettle();
 
-    expect(find.text(UiStrings.lootRumorDialogTitle), findsOneWidget,
-        reason: '点击 info 角标后应弹出掉落传闻对话框');
+    expect(
+      find.text(UiStrings.lootRumorDialogTitle),
+      findsOneWidget,
+      reason: '点击 info 角标后应弹出掉落传闻对话框',
+    );
   });
 }
