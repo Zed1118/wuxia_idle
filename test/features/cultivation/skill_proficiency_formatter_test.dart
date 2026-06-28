@@ -155,7 +155,7 @@ void main() {
 
   test('bestSkillSummaryForTechnique picks highest use count skill', () {
     final low = skill();
-    final high = SkillDef(
+    const high = SkillDef(
       id: 'skill_high',
       name: '常用招',
       description: 'd',
