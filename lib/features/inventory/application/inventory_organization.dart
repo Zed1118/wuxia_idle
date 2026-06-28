@@ -15,11 +15,15 @@ enum InventoryTierFilter {
   shenWu,
 }
 
+enum InventorySchoolFilter { all, gangMeng, lingQiao, yinRou, none }
+
 enum InventoryOwnershipFilter {
   all,
   free,
   equipped,
   heritage,
+  locked,
+  protected,
   equippable,
   forgeable,
   realmLocked,
@@ -36,12 +40,14 @@ enum InventoryEquipmentSort {
 class InventoryEquipmentQuery {
   final InventorySlotFilter slot;
   final InventoryTierFilter tier;
+  final InventorySchoolFilter school;
   final InventoryOwnershipFilter ownership;
   final InventoryEquipmentSort sort;
 
   const InventoryEquipmentQuery({
     this.slot = InventorySlotFilter.all,
     this.tier = InventoryTierFilter.all,
+    this.school = InventorySchoolFilter.all,
     this.ownership = InventoryOwnershipFilter.all,
     this.sort = InventoryEquipmentSort.tierDesc,
   });
@@ -51,11 +57,22 @@ List<Equipment> organizeInventoryEquipments(
   Iterable<Equipment> equipments,
   InventoryEquipmentQuery query, {
   RealmTier? realm,
+  Set<int> equippedEquipmentIds = const {},
+  Set<int> activeFormationEquipmentIds = const {},
+  EquipmentProtectionPolicy policy = EquipmentProtectionPolicy.defaultPolicy,
 }) {
   final result = equipments.where((eq) {
     return _matchesSlot(eq, query.slot) &&
         _matchesTier(eq, query.tier) &&
-        _matchesOwnership(eq, query.ownership, realm);
+        _matchesSchool(eq, query.school) &&
+        _matchesOwnership(
+          eq,
+          query.ownership,
+          realm,
+          equippedEquipmentIds,
+          activeFormationEquipmentIds,
+          policy,
+        );
   }).toList();
   result.sort((a, b) => _compareEquipment(a, b, query.sort));
   return result;
@@ -138,16 +155,38 @@ bool _matchesTier(Equipment eq, InventoryTierFilter filter) {
   return tier == null || eq.tier == tier;
 }
 
+bool _matchesSchool(Equipment eq, InventorySchoolFilter filter) {
+  return switch (filter) {
+    InventorySchoolFilter.all => true,
+    InventorySchoolFilter.gangMeng => eq.school == TechniqueSchool.gangMeng,
+    InventorySchoolFilter.lingQiao => eq.school == TechniqueSchool.lingQiao,
+    InventorySchoolFilter.yinRou => eq.school == TechniqueSchool.yinRou,
+    InventorySchoolFilter.none => eq.school == null,
+  };
+}
+
 bool _matchesOwnership(
   Equipment eq,
   InventoryOwnershipFilter filter,
   RealmTier? realm,
+  Set<int> equippedEquipmentIds,
+  Set<int> activeFormationEquipmentIds,
+  EquipmentProtectionPolicy policy,
 ) {
   return switch (filter) {
     InventoryOwnershipFilter.all => true,
     InventoryOwnershipFilter.free => eq.ownerCharacterId == null,
     InventoryOwnershipFilter.equipped => eq.ownerCharacterId != null,
     InventoryOwnershipFilter.heritage => eq.isLineageHeritage,
+    InventoryOwnershipFilter.locked => eq.isLocked,
+    InventoryOwnershipFilter.protected =>
+      equipmentProtectionReason(
+            eq,
+            equippedEquipmentIds: equippedEquipmentIds,
+            activeFormationEquipmentIds: activeFormationEquipmentIds,
+            policy: policy,
+          ) !=
+          null,
     InventoryOwnershipFilter.equippable =>
       eq.ownerCharacterId == null &&
           (realm == null || eq.isEquippableAtRealm(realm)),
