@@ -22,6 +22,7 @@ class EnhanceResult {
   final int oldLevel;
   final int newLevel;
   final int mojianshiSpent;
+  final int duancaiSpent;
   final int crystalsGained;
   final int crystalsSpent;
 
@@ -36,6 +37,7 @@ class EnhanceResult {
     required this.oldLevel,
     required this.newLevel,
     this.mojianshiSpent = 0,
+    this.duancaiSpent = 0,
     this.crystalsGained = 0,
     this.crystalsSpent = 0,
     this.successRate,
@@ -50,6 +52,7 @@ enum EnhanceOutcome {
   failure,
   capped,
   insufficientMojianshi,
+  insufficientDuancai,
   insufficientCrystal,
   noGuaranteeAvailable,
 }
@@ -87,6 +90,7 @@ class EnhancementService {
     required int characterAbsoluteLevel,
     required Rng rng,
     required int currentMojianshi,
+    int? currentDuancai,
     required EnhancementConfig config,
   }) {
     if (!config.neverDegrade) {
@@ -105,10 +109,20 @@ class EnhancementService {
 
     final targetLevel = oldLevel + 1;
     final cost = config.mojianshiCostFor(targetLevel);
+    final duancaiCost = currentDuancai == null
+        ? 0
+        : config.duancaiCostFor(targetLevel);
 
     if (currentMojianshi < cost) {
       return EnhanceResult(
         outcome: EnhanceOutcome.insufficientMojianshi,
+        oldLevel: oldLevel,
+        newLevel: oldLevel,
+      );
+    }
+    if (currentDuancai != null && currentDuancai < duancaiCost) {
+      return EnhanceResult(
+        outcome: EnhanceOutcome.insufficientDuancai,
         oldLevel: oldLevel,
         newLevel: oldLevel,
       );
@@ -124,6 +138,7 @@ class EnhancementService {
         oldLevel: oldLevel,
         newLevel: targetLevel,
         mojianshiSpent: cost,
+        duancaiSpent: duancaiCost,
         successRate: successRate,
         rolledRate: roll,
       );
@@ -137,6 +152,7 @@ class EnhancementService {
       oldLevel: oldLevel,
       newLevel: oldLevel,
       mojianshiSpent: actualSpent,
+      duancaiSpent: duancaiCost,
       crystalsGained: config.crystalGainPerFailure,
       successRate: successRate,
       rolledRate: roll,
@@ -221,11 +237,17 @@ class EnhancementService {
             .itemTypeEqualTo(ItemType.moJianShi)
             .findFirst();
         if (row == null) {
-          throw StateError(
-            'InventoryItem(itemType=moJianShi) 行不存在；种子阶段必须创建',
-          );
+          throw StateError('InventoryItem(itemType=moJianShi) 行不存在；种子阶段必须创建');
         }
         row.quantity -= result.mojianshiSpent;
+        await isar.inventoryItems.put(row);
+      }
+      if (result.duancaiSpent > 0) {
+        final row = await isar.inventoryItems.getByDefId('item_duancai');
+        if (row == null) {
+          throw StateError('InventoryItem(defId=item_duancai) 行不存在；桃花岛锻材不足');
+        }
+        row.quantity -= result.duancaiSpent;
         await isar.inventoryItems.put(row);
       }
       if (result.crystalsGained > 0 || result.crystalsSpent > 0) {

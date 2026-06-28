@@ -20,16 +20,16 @@ void main() {
   });
 
   Equipment newEq({int enhanceLevel = 0}) => Equipment.create(
-        defId: 'test',
-        tier: EquipmentTier.haoJiaHuo,
-        slot: EquipmentSlot.weapon,
-        baseAttack: 100,
-        baseHealth: 0,
-        baseSpeed: 10,
-        enhanceLevel: enhanceLevel,
-        obtainedAt: DateTime(2026, 5, 11),
-        obtainedFrom: 'test',
-      );
+    defId: 'test',
+    tier: EquipmentTier.haoJiaHuo,
+    slot: EquipmentSlot.weapon,
+    baseAttack: 100,
+    baseHealth: 0,
+    baseSpeed: 10,
+    enhanceLevel: enhanceLevel,
+    obtainedAt: DateTime(2026, 5, 11),
+    obtainedFrom: 'test',
+  );
 
   /// 注入式 rng：`nextDouble` 永远返回固定值 [fixed]。
   /// 测试时用 0.0 强制成功 / 0.999 强制失败。
@@ -54,7 +54,10 @@ void main() {
       // +20-49 段公式 max(0.30, 0.50 - 0.02 × (level - 19))
       expect(cfg.successRateFor(20), closeTo(0.48, 0.001));
       expect(cfg.successRateFor(25), closeTo(0.38, 0.001));
-      expect(cfg.successRateFor(29), closeTo(0.30, 0.001)); // 0.50 - 0.20 = 0.30
+      expect(
+        cfg.successRateFor(29),
+        closeTo(0.30, 0.001),
+      ); // 0.50 - 0.20 = 0.30
       expect(cfg.successRateFor(35), 0.30); // floor 0.30
       expect(cfg.successRateFor(49), 0.30);
     });
@@ -126,6 +129,34 @@ void main() {
       expect(eq.enhanceLevel, 12);
       expect(r.mojianshiSpent, 4);
       expect(r.successRate, 0.90);
+    });
+
+    test('+12 段锻材不足 → insufficientDuancai', () {
+      final eq = newEq(enhanceLevel: 11);
+      final r = EnhancementService.tryEnhance(
+        eq: eq,
+        characterAbsoluteLevel: 14,
+        rng: rngFixed(0.0),
+        currentMojianshi: 100,
+        currentDuancai: 0,
+        config: cfg,
+      );
+      expect(r.outcome, EnhanceOutcome.insufficientDuancai);
+      expect(eq.enhanceLevel, 11);
+    });
+
+    test('+12 段传入锻材库存 → 成功并记录锻材消耗', () {
+      final eq = newEq(enhanceLevel: 11);
+      final r = EnhancementService.tryEnhance(
+        eq: eq,
+        characterAbsoluteLevel: 14,
+        rng: rngFixed(0.0),
+        currentMojianshi: 100,
+        currentDuancai: 3,
+        config: cfg,
+      );
+      expect(r.outcome, EnhanceOutcome.success);
+      expect(r.duancaiSpent, cfg.duancaiCostFor(12));
     });
 
     test('+12 段 roll=0.95 失败：penalty=half → 扣 2，结晶 +1，等级不变', () {
@@ -226,8 +257,11 @@ void main() {
         );
         if (r.outcome == EnhanceOutcome.success) successCount++;
       }
-      expect(successCount, inInclusiveRange(850, 950),
-          reason: '90% 期望 ±5%，实测 $successCount/1000');
+      expect(
+        successCount,
+        inInclusiveRange(850, 950),
+        reason: '90% 期望 ±5%，实测 $successCount/1000',
+      );
     });
   });
 
@@ -318,6 +352,7 @@ void main() {
     final badConfig = EnhancementConfig(
       successCurve: cfg.successCurve,
       mojianshiCost: cfg.mojianshiCost,
+      duancaiCost: cfg.duancaiCost,
       crystalGuarantees: cfg.crystalGuarantees,
       crystalGainPerFailure: cfg.crystalGainPerFailure,
       neverDegrade: false,

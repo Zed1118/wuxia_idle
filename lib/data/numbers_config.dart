@@ -781,6 +781,7 @@ class AscensionConfig {
 class EnhancementConfig {
   final List<EnhanceLevelBracket> successCurve;
   final List<MaterialCostBracket> mojianshiCost;
+  final List<MaterialCostBracket> duancaiCost;
   final List<CrystalGuaranteeBracket> crystalGuarantees;
 
   /// 每次强化失败必得心血结晶数（GDD §6.3 = 1）。
@@ -793,6 +794,7 @@ class EnhancementConfig {
   const EnhancementConfig({
     required this.successCurve,
     required this.mojianshiCost,
+    required this.duancaiCost,
     required this.crystalGuarantees,
     required this.crystalGainPerFailure,
     required this.neverDegrade,
@@ -805,6 +807,9 @@ class EnhancementConfig {
     return EnhancementConfig(
       successCurve: _parseSuccessCurve(enhancement['success_curve'] as List),
       mojianshiCost: _parseMaterialCost(enhancement['mojianshi_cost'] as List),
+      duancaiCost: _parseMaterialCost(
+        enhancement['duancai_cost'] as List? ?? const [],
+      ),
       crystalGuarantees: _parseCrystalGuarantees(
         xinxueJiejing['guaranteed_success_costs'] as List,
       ),
@@ -832,6 +837,17 @@ class EnhancementConfig {
       }
     }
     throw StateError('mojianshi_cost 缺少 targetLevel=$targetLevel 的覆盖区间');
+  }
+
+  /// 取 [targetLevel] 的锻材附加消耗。老 fixture 没有 `duancai_cost` 时为 0。
+  int duancaiCostFor(int targetLevel) {
+    if (duancaiCost.isEmpty) return 0;
+    for (final b in duancaiCost) {
+      if (targetLevel >= b.minLevel && targetLevel <= b.maxLevel) {
+        return b.cost;
+      }
+    }
+    throw StateError('duancai_cost 缺少 targetLevel=$targetLevel 的覆盖区间');
   }
 
   /// 取 [targetLevel] 的心血结晶保底消耗，null 表示该段无保底（+1-13）。
@@ -979,6 +995,7 @@ class ForgingConfig {
 class ForgingSlotConfig {
   final int slotIndex;
   final int unlockAtEnhanceLevel;
+  final int fucaiCost;
   final List<ForgingSlotType> availableTypes;
   final Map<ForgingSlotType, int> bonusValue;
 
@@ -988,6 +1005,7 @@ class ForgingSlotConfig {
   const ForgingSlotConfig({
     required this.slotIndex,
     required this.unlockAtEnhanceLevel,
+    required this.fucaiCost,
     required this.availableTypes,
     required this.bonusValue,
     required this.excludePreviousSlotType,
@@ -1006,6 +1024,7 @@ class ForgingSlotConfig {
     return ForgingSlotConfig(
       slotIndex: (y['slot_index'] as num).toInt(),
       unlockAtEnhanceLevel: (y['unlock_at_enhance_level'] as num).toInt(),
+      fucaiCost: (y['fucai_cost'] as num?)?.toInt() ?? 0,
       availableTypes: available,
       bonusValue: bonus,
       excludePreviousSlotType: y['constraint'] != null,

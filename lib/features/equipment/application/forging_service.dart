@@ -3,6 +3,7 @@ import 'package:isar_community/isar.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
+import '../../../core/domain/inventory_item.dart';
 import '../../../data/numbers_config.dart';
 
 /// 开锋结果（phase2_tasks T21）。
@@ -128,10 +129,28 @@ class ForgingService {
   }
 
   /// T32 #22b：将 [forge] 的 in-place 改写（forgingSlots 修改）落地到 Isar。
-  /// 开锋无物料消耗（GDD §6.5），writeTxn 只需 `equipments.put(eq)`。
-  Future<void> persistResult({required Equipment eq}) async {
+  /// 若传入 [slotIndex]/[config]，同时扣桃花岛铸造台产出的开锋辅材。
+  Future<void> persistResult({
+    required Equipment eq,
+    int? slotIndex,
+    ForgingConfig? config,
+  }) async {
     await isar.writeTxn(() async {
       await isar.equipments.put(eq);
+      if (slotIndex == null || config == null) return;
+      final cost = config.slotByIndex(slotIndex).fucaiCost;
+      if (cost <= 0) return;
+      final item = await isar.inventoryItems.getByDefId('item_kaifeng_fucai');
+      if (item == null || item.quantity < cost) {
+        throw StateError('InventoryItem(defId=item_kaifeng_fucai) 行不存在或数量不足');
+      }
+      item.quantity -= cost;
+      if (item.quantity <= 0) {
+        await isar.inventoryItems.delete(item.id);
+      } else {
+        item.lastObtainedAt = DateTime.now();
+        await isar.inventoryItems.put(item);
+      }
     });
   }
 }
