@@ -63,17 +63,20 @@ void main() {
       greaterThanOrEqualTo(5),
       reason: '5 关每关都应直接渲染推荐境界',
     );
+    expect(find.textContaining('粗布衣'), findsWidgets);
+    expect(find.textContaining('磨剑石'), findsWidgets);
     expect(
       find.textContaining(UiStrings.lootBucketChangKeDe),
-      findsWidgets,
-      reason: '行内掉落传闻应显示分桶文字，不再只显示「可能收获」前缀',
+      findsNothing,
+      reason: '行内掉落传闻不再显示「常可得」等桶名，只显示名称',
     );
+    expect(find.textContaining(UiStrings.lootBucketOuKeDe), findsNothing);
 
     // 主线关卡行不应出现仅属于爬塔首通必得 bucket 的标签。
     expect(find.text(UiStrings.lootBucketShouTongBiDe), findsNothing);
   });
 
-  testWidgets('关卡标题区直接显示推荐境界与分桶掉落，悬停不再弹预览浮层', (tester) async {
+  testWidgets('关卡标题区直接显示推荐境界与掉落名称，悬停不再弹预览浮层', (tester) async {
     await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
 
     expect(
@@ -82,10 +85,12 @@ void main() {
       reason: '推荐境界应直接显示在每个关卡行标题区域内，而不是只在悬浮预览里',
     );
     expect(
-      find.textContaining(UiStrings.lootBucketChangKeDe),
+      find.textContaining('磨剑石'),
       findsWidgets,
-      reason: '掉落爆率分桶应直接显示在关卡行内，不依赖悬浮预览',
+      reason: '掉落名称应直接显示在关卡行内，不依赖悬浮预览',
     );
+    expect(find.textContaining(UiStrings.lootBucketChangKeDe), findsNothing);
+    expect(find.textContaining(UiStrings.lootBucketOuKeDe), findsNothing);
     expect(
       find.text(UiStrings.previewRareBonusHint),
       findsNothing,
