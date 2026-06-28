@@ -34,18 +34,21 @@ void main() {
     expect(d.layerFraction, isNull);
   });
 
-  test('疗伤调理品 def fromYaml: heal_injury_hours / clear_light 解析', () {
+  test('疗伤 def fromYaml: recovery 字段解析', () {
     final d = ItemDef.fromYaml({
       'defId': 'item_liaoshangdan',
       'type': 'miscMaterial',
       'name': '疗伤丹',
-      'heal_injury_hours': 4,
-      'clear_light_injury_stacks': true,
+      'injury_heal_hours': 4,
+      'residue_heal_hours': 2.0,
+      'clear_light_injury': true,
     });
     expect(d.type, ItemType.miscMaterial);
-    expect(d.healInjuryHours, 4.0);
-    expect(d.clearLightInjuryStacks, isTrue);
-    expect(d.hasInjuryReliefEffect, isTrue);
+    expect(d.injuryHealHours, 4.0);
+    expect(d.residueHealHours, 2.0);
+    expect(d.clearLightInjury, isTrue);
+    expect(d.hasRecoveryEffect, isTrue);
+    expect(d.isUsable, isTrue);
   });
 
   test('经验丹 layer_fraction 支持整数 yaml 值（1→1.0）', () {
@@ -80,8 +83,9 @@ void main() {
     final repo = await GameRepository.loadAllDefs();
     expect(repo.itemDefs.length, greaterThanOrEqualTo(23));
     expect(repo.itemDefs['item_jingyandan_small']?.layerFraction, 0.2);
-    expect(repo.itemDefs['item_liaoshangdan']?.healInjuryHours, 4.0);
-    expect(repo.itemDefs['item_liaoshangdan']?.clearLightInjuryStacks, isTrue);
+    expect(repo.itemDefs['item_liaoshangdan']?.injuryHealHours, 4.0);
+    expect(repo.itemDefs['item_liaoshangdan']?.residueHealHours, 2.0);
+    expect(repo.itemDefs['item_liaoshangdan']?.clearLightInjury, isTrue);
     expect(
       repo.itemDefs['item_scroll_kai_bei_shou']?.unlockSkillId,
       'skill_kai_bei_shou',

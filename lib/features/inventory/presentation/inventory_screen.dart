@@ -751,11 +751,7 @@ class _MaterialGridTile extends ConsumerWidget {
       GameRepository.instance,
     ).usagesFor(item.defId);
     final usage = UiStrings.materialUsageSummary(usages);
-    final canUse =
-        itemDef != null &&
-        (item.itemType == ItemType.jingYanDan ||
-            item.itemType == ItemType.techniqueScroll ||
-            itemDef.hasInjuryReliefEffect);
+    final canUse = itemDef?.isUsable ?? false;
     // 显式局部非空引用，供 onTap 闭包捕获（闭包内不做 flow promotion）。
     final usableDef = canUse ? itemDef : null;
 
@@ -931,11 +927,15 @@ class _MaterialGridTile extends ConsumerWidget {
         result.layersGained,
       ),
       ItemUseKind.skillUnlocked => UiStrings.itemUseScrollResult(displayName),
-      ItemUseKind.alreadyKnown => UiStrings.itemUseAlreadyKnown(displayName),
-      ItemUseKind.injuryRelieved => UiStrings.itemUseInjuryRelieved(
+      ItemUseKind.recoveryApplied => UiStrings.itemUseRecoveryResult(
         displayName,
+        result.targetName ?? '',
       ),
-      ItemUseKind.noEffect => UiStrings.itemUseNoEffect(displayName),
+      ItemUseKind.alreadyKnown => UiStrings.itemUseAlreadyKnown(displayName),
+      ItemUseKind.noEffect => UiStrings.itemUseNoEffect(
+        displayName,
+        result.targetName ?? '',
+      ),
       _ => UiStrings.itemUseFailed,
     };
     await PaperDialog.show<void>(

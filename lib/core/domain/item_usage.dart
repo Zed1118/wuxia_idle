@@ -4,9 +4,9 @@
 enum ItemUsageKind {
   realmProgress,
   techniqueUnlock,
-  injuryRelief,
   equipmentEnhancement,
   equipmentGuarantee,
+  injuryRecovery,
   shopPurchaseCurrency,
   islandUpgradeCurrency,
   islandBuildingUpgrade,

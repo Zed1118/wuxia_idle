@@ -39,10 +39,9 @@ class ItemUsageLookupService {
           ),
         );
       default:
-        if (def.hasInjuryReliefEffect) {
-          result.add(const ItemUsage(kind: ItemUsageKind.injuryRelief));
+        if (def.hasRecoveryEffect) {
+          result.add(const ItemUsage(kind: ItemUsageKind.injuryRecovery));
         }
-        break;
     }
   }
 

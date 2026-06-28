@@ -57,6 +57,28 @@ void main() {
     return id;
   }
 
+  Future<int> seedInjuredFounder() async {
+    late int id;
+    await isar.writeTxn(() async {
+      final c = Character.create(
+        name: '伤者',
+        realmTier: RealmTier.xueTu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes(),
+        rarity: RarityTier.values.first,
+        lineageRole: LineageRole.founder,
+        createdAt: DateTime(2026, 1, 1),
+        isFounder: true,
+        isActive: true,
+        injuryHoursRemaining: 6,
+        innerDemonResidueHoursRemaining: 3,
+        lightInjuryStacks: 2,
+      );
+      id = await isar.characters.put(c);
+    });
+    return id;
+  }
+
   Future<void> seedItem(String defId, ItemType type, int qty) async {
     await isar.writeTxn(() async {
       await isar.inventoryItems.put(
@@ -205,50 +227,6 @@ void main() {
     expect(item?.quantity, 1); // 不消费
   });
 
-  test('疗伤丹：减少重伤时长 + 清轻伤 + 消费 1', () async {
-    final charId = await seedFounder();
-    await isar.writeTxn(() async {
-      final ch = await isar.characters.get(charId);
-      ch!
-        ..injuryHoursRemaining = 6
-        ..lightInjuryStacks = 3;
-      await isar.characters.put(ch);
-    });
-    await seedItem('item_liaoshangdan', ItemType.miscMaterial, 2);
-    final def = repo.itemDefs['item_liaoshangdan']!;
-
-    final r = await ItemUseService.use(
-      isar,
-      def: def,
-      realmLookup: repo.getRealm,
-    );
-
-    expect(r.kind, ItemUseKind.injuryRelieved);
-    expect(r.injuryHoursReduced, 4.0);
-    expect(r.lightStacksCleared, 3);
-    final ch = await isar.characters.get(charId);
-    expect(ch?.injuryHoursRemaining, 2);
-    expect(ch?.lightInjuryStacks, 0);
-    final item = await isar.inventoryItems.getByDefId('item_liaoshangdan');
-    expect(item?.quantity, 1);
-  });
-
-  test('疗伤丹：无伤势 → noEffect 且不消费', () async {
-    await seedFounder();
-    await seedItem('item_liaoshangdan', ItemType.miscMaterial, 1);
-    final def = repo.itemDefs['item_liaoshangdan']!;
-
-    final r = await ItemUseService.use(
-      isar,
-      def: def,
-      realmLookup: repo.getRealm,
-    );
-
-    expect(r.kind, ItemUseKind.noEffect);
-    final item = await isar.inventoryItems.getByDefId('item_liaoshangdan');
-    expect(item?.quantity, 1);
-  });
-
   test('无库存 → 返 noStock 不写入', () async {
     await seedFounder();
     final def = repo.itemDefs['item_jingyandan_small']!;
@@ -276,6 +254,47 @@ void main() {
     expect(r.kind, ItemUseKind.notUsable);
     final item = await isar.inventoryItems.getByDefId('item_mojianshi');
     expect(item?.quantity, 3); // 不消费
+  });
+
+  test('疗伤丹：减少重伤/余毒并清轻伤 + 消费 1', () async {
+    final id = await seedInjuredFounder();
+    await seedItem('item_liaoshangdan', ItemType.miscMaterial, 2);
+    final def = repo.itemDefs['item_liaoshangdan']!;
+
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
+
+    expect(r.kind, ItemUseKind.recoveryApplied);
+    expect(r.targetName, '伤者');
+    expect(r.injuryHoursReduced, 4.0);
+    expect(r.residueHoursReduced, 2.0);
+    expect(r.lightInjuryStacksCleared, 2);
+
+    final ch = await isar.characters.get(id);
+    expect(ch?.injuryHoursRemaining, 2.0);
+    expect(ch?.innerDemonResidueHoursRemaining, 1.0);
+    expect(ch?.lightInjuryStacks, 0);
+    final item = await isar.inventoryItems.getByDefId('item_liaoshangdan');
+    expect(item?.quantity, 1);
+  });
+
+  test('疗伤丹：无伤势 → noEffect 且不消费', () async {
+    await seedFounder();
+    await seedItem('item_liaoshangdan', ItemType.miscMaterial, 1);
+    final def = repo.itemDefs['item_liaoshangdan']!;
+
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
+
+    expect(r.kind, ItemUseKind.noEffect);
+    final item = await isar.inventoryItems.getByDefId('item_liaoshangdan');
+    expect(item?.quantity, 1);
   });
 
   test('经验丹但无 founder → 返 noTarget 不消费', () async {

@@ -522,7 +522,7 @@ void main() {
   // 锚死「使用」按钮显示条件 + 点击弹确认窗(到 writeTxn 前,不触 Isar 死锁);
   // 点确认后的结果三态由 item_use_service_test 逻辑层兜底。
 
-  testWidgets('P2 使用按钮仅经验丹/秘籍显示·磨剑石无(对比项)', (tester) async {
+  testWidgets('P2 使用按钮按 itemDef 可用性显示·磨剑石无(对比项)', (tester) async {
     await pumpInv(
       tester,
       equipments: [],
@@ -541,6 +541,12 @@ void main() {
         ),
         mkItem(
           id: 3,
+          defId: 'item_liaoshangdan',
+          itemType: ItemType.miscMaterial,
+          quantity: 2,
+        ),
+        mkItem(
+          id: 4,
           defId: 'item_mojianshi',
           itemType: ItemType.moJianShi,
           quantity: 12,
@@ -552,12 +558,14 @@ void main() {
     // 经验丹/秘籍 per-item 名(items.yaml)各一行。
     expect(find.text('凝神丹 × 3'), findsOneWidget);
     expect(find.text('开碑手·秘籍 × 1'), findsOneWidget);
+    expect(find.text('疗伤丹 × 2'), findsOneWidget);
     expect(find.text('磨剑石 × 12'), findsOneWidget);
-    // 格子化后「使用」以底部标识条呈现（非 TextButton），只出现在丹 + 秘籍(2 个)。
+    expect(find.textContaining('疗伤整备'), findsOneWidget);
+    // 格子化后「使用」以底部标识条呈现（非 TextButton），出现在经验丹 + 秘籍 + 疗伤丹。
     expect(
       find.text(UiStrings.itemUseButton),
-      findsNWidgets(2),
-      reason: '仅 jingYanDan/techniqueScroll 格子显「使用」标识,磨剑石不显',
+      findsNWidgets(3),
+      reason: '仅 itemDef 有使用语义的格子显「使用」标识,磨剑石不显',
     );
   });
 
