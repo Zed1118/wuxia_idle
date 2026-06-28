@@ -88,18 +88,9 @@ void main() {
       stage(enemies: const [chargeEnemy]),
     );
 
-    expect(
-      manualRoute.kinds,
-      contains(MainlineReplayRewardKind.proficiency),
-    );
-    expect(
-      fragmentRoute.kinds,
-      contains(MainlineReplayRewardKind.proficiency),
-    );
-    expect(
-      chargeRoute.kinds,
-      contains(MainlineReplayRewardKind.proficiency),
-    );
+    expect(manualRoute.kinds, contains(MainlineReplayRewardKind.proficiency));
+    expect(fragmentRoute.kinds, contains(MainlineReplayRewardKind.proficiency));
+    expect(chargeRoute.kinds, contains(MainlineReplayRewardKind.proficiency));
   });
 
   test('route order is stable equipment material proficiency', () {

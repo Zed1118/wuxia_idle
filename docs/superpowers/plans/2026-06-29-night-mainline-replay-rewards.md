@@ -38,25 +38,25 @@
     - `dropSkillFragmentId`, `dropSkillManualId`, or enemy `chargeSkillId` → proficiency route.
   - Add tests in `test/features/mainline/domain/mainline_replay_reward_route_test.dart`.
 
-- [ ] **Task 2: UiStrings and compact row widget**
+- [x] **Task 2: UiStrings and compact row widget**
   - Add `UiStrings` labels for replay route title, per-kind labels, and empty fallback.
   - Create a compact widget or private row in `stage_list_screen.dart` that renders route chips only when `status == StageStatus.cleared`.
   - Keep layout stable on compact width with `Wrap`.
 
-- [ ] **Task 3: Stage list wiring**
+- [x] **Task 3: Stage list wiring**
   - Wire the route row below the existing整备/弱点 area for cleared mainline stages.
   - Preserve row tap behavior: clicking the row still enters replay; info icon still opens战前情报.
   - Do not change drop rumor, sweep, battle flow, or reward settlement.
 
-- [ ] **Task 4: Verification and commit**
+- [x] **Task 4: Verification and commit**
   - Run `flutter test` for the new domain test and relevant stage list widget tests.
   - Run `flutter analyze` on touched Dart files.
   - Update this recovery point and commit.
 
 ## Current Recovery Point
 
-- **Status:** Task 1 complete; UI wiring not started.
-- **Last completed:** Added `MainlineReplayRewardRoute.fromStage` pure model and domain tests for equipment/material/proficiency route derivation.
-- **Next step:** Add `UiStrings` labels and render compact replay route chips on cleared stage rows.
-- **Verification run:** `flutter test test/features/mainline/domain/mainline_replay_reward_route_test.dart`.
+- **Status:** Complete.
+- **Last completed:** Added cleared-stage replay route chips to `StageListScreen`, with centralized `UiStrings` labels and widget tests for visible/hidden states.
+- **Next step:** Main window review; do not merge or push from this worktree.
+- **Verification run:** `dart run build_runner build --delete-conflicting-outputs` (current build_runner ignores the flag, generated 112 gitignored outputs); `flutter test test/features/mainline/domain/mainline_replay_reward_route_test.dart`; `flutter test test/features/mainline/domain/mainline_replay_reward_route_test.dart test/features/mainline/presentation/stage_list_screen_test.dart`; `flutter test test/features/loot_preview/stage_row_loot_wiring_test.dart`; `dart analyze lib/features/mainline/domain/mainline_replay_reward_route.dart lib/features/mainline/presentation/stage_list_screen.dart lib/shared/strings.dart test/features/mainline/domain/mainline_replay_reward_route_test.dart test/features/mainline/presentation/stage_list_screen_test.dart`.
 - **Blockers:** CodeGraph is not initialized in this worktree; continuing without it unless user approves indexing.

@@ -116,6 +116,37 @@ void main() {
       findsNothing,
       reason: '逐关战斗方式 chip 已删,全局开关在设置面板',
     );
+    expect(find.text(UiStrings.stageReplayRouteTitle), findsOneWidget);
+    expect(find.text(UiStrings.stageReplayRouteEquipment), findsOneWidget);
+    expect(find.text(UiStrings.stageReplayRouteMaterial), findsOneWidget);
+  });
+
+  testWidgets('未通关主线行不显示重打收益路线', (tester) async {
+    await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
+
+    expect(find.text(UiStrings.stageReplayRouteTitle), findsNothing);
+    expect(find.text(UiStrings.stageReplayRouteEquipment), findsNothing);
+    expect(find.text(UiStrings.stageReplayRouteMaterial), findsNothing);
+    expect(find.text(UiStrings.stageReplayRouteProficiency), findsNothing);
+  });
+
+  testWidgets('已通关 Boss 行显示练熟练度路线', (tester) async {
+    await pumpScreen(
+      tester,
+      chapterIndex: 1,
+      progress: mkProgress(
+        cleared: const [
+          'stage_01_01',
+          'stage_01_02',
+          'stage_01_03',
+          'stage_01_04',
+          'stage_01_05',
+        ],
+      ),
+    );
+
+    expect(find.text(UiStrings.stageReplayRouteTitle), findsWidgets);
+    expect(find.text(UiStrings.stageReplayRouteProficiency), findsWidgets);
   });
 
   testWidgets('关卡行显示推荐整备条：推荐境界 + 判语 + 补强方向', (tester) async {
