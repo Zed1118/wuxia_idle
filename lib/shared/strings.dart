@@ -1843,7 +1843,19 @@ class UiStrings {
   static const String cangjingSlotHintKey = '打断蓄力';
   static const String cangjingSlotHintEncounter = '江湖奇招';
   static const String cangjingProficiencyMaxStage = '已达化境';
+  static const String cangjingProficiencySourceCombat = '战斗放招增长';
   static const String cangjingEquippedTag = '装';
+  static String cangjingProficiencyNeedWithSource(int n) =>
+      '${cangjingProficiencyNeed(n)} · $cangjingProficiencySourceCombat';
+  static String cangjingProficiencyCurrent(String effect) => '当前 $effect';
+  static String cangjingProficiencyNext(String effect) => '下阶 $effect';
+  static String cangjingProficiencyDamageBonus(int pct) => '伤害 +$pct%';
+  static String cangjingProficiencyCooldownReduction(int turns) =>
+      '冷却 -$turns回合';
+  static String cangjingProficiencyInterruptPower(int pct) => '破招减防 +$pct%';
+  static String cangjingProficiencyInterruptWindow(int turns) => '破绽 +$turns回合';
+  static String cangjingProficiencyEffectList(List<String> effects) =>
+      effects.join(' · ');
   static String cangjingPickerDamage(int n) => '伤害 $n';
   static const String cangjingPickerCanInterrupt = '可破招';
   // T6 武学库直接装配:选槽面板。

@@ -14,13 +14,31 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/meridian_bar.dart';
 /// [FragmentProgressRow] 方块进度与 UiStrings 文案。
 void main() {
   // 最小 5 阶配置（对应 numbers.yaml skill_proficiency.stages）
-  final cfg = const SkillProficiencyConfig(stages: [
-    SkillProficiencyStageConfig(id: 'chuShi', minUses: 0, damageMult: 1.00),
-    SkillProficiencyStageConfig(id: 'shunShou', minUses: 30, damageMult: 1.05),
-    SkillProficiencyStageConfig(id: 'shuLian', minUses: 100, damageMult: 1.12),
-    SkillProficiencyStageConfig(id: 'jingTong', minUses: 300, damageMult: 1.20),
-    SkillProficiencyStageConfig(id: 'huaJing', minUses: 800, damageMult: 1.30),
-  ]);
+  final cfg = const SkillProficiencyConfig(
+    stages: [
+      SkillProficiencyStageConfig(id: 'chuShi', minUses: 0, damageMult: 1.00),
+      SkillProficiencyStageConfig(
+        id: 'shunShou',
+        minUses: 30,
+        damageMult: 1.05,
+      ),
+      SkillProficiencyStageConfig(
+        id: 'shuLian',
+        minUses: 100,
+        damageMult: 1.12,
+      ),
+      SkillProficiencyStageConfig(
+        id: 'jingTong',
+        minUses: 300,
+        damageMult: 1.20,
+      ),
+      SkillProficiencyStageConfig(
+        id: 'huaJing',
+        minUses: 800,
+        damageMult: 1.30,
+      ),
+    ],
+  );
 
   // 最简 SkillDef（name 字段是关键，其余用默认值）
   final skill = const SkillDef(
@@ -36,26 +54,20 @@ void main() {
   );
 
   Widget wrap(Widget child) => MaterialApp(
-        home: Scaffold(
-          body: SizedBox(width: 400, child: child),
-        ),
-      );
+    home: Scaffold(body: SizedBox(width: 400, child: child)),
+  );
 
   group('SkillProficiencyRow', () {
-    testWidgets('中间阶(shunShou 50 uses)→ 显示阶段名+MeridianBar+加成%',
-        (tester) async {
+    testWidgets('中间阶(shunShou 50 uses)→ 显示阶段名+MeridianBar+加成%', (tester) async {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       // 50 uses → shunShou 阶（30 ~ 99），下一阶 shuLian minUses=100
-      await tester.pumpWidget(wrap(
-        SkillProficiencyRow(
-          skill: skill,
-          uses: 50,
-          cfg: cfg,
-          equipped: true,
+      await tester.pumpWidget(
+        wrap(
+          SkillProficiencyRow(skill: skill, uses: 50, cfg: cfg, equipped: true),
         ),
-      ));
+      );
 
       // 阶段中文名「顺手」
       expect(find.textContaining('顺手'), findsOneWidget);
@@ -63,28 +75,39 @@ void main() {
       expect(find.byType(MeridianBar), findsOneWidget);
       // 伤害加成：shunShou damageMult=1.05 → +5%
       expect(find.textContaining('+5'), findsOneWidget);
+      // 下一阶效果：shuLian damageMult=1.12 → +12%
+      expect(
+        find.textContaining(UiStrings.cangjingProficiencyDamageBonus(12)),
+        findsOneWidget,
+      );
       // 还需次数：100 - 50 = 50
       expect(
         find.textContaining(UiStrings.cangjingProficiencyNeed(50)),
+        findsOneWidget,
+      );
+      // 来源说明：战斗放招增长
+      expect(
+        find.textContaining(UiStrings.cangjingProficiencySourceCombat),
         findsOneWidget,
       );
       // 已装配标记
       expect(find.textContaining('装'), findsOneWidget);
     });
 
-    testWidgets('最高阶(huaJing)→ 满格 MeridianBar + 不显示还需次数',
-        (tester) async {
+    testWidgets('最高阶(huaJing)→ 满格 MeridianBar + 不显示还需次数', (tester) async {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(wrap(
-        SkillProficiencyRow(
-          skill: skill,
-          uses: 900,
-          cfg: cfg,
-          equipped: false,
+      await tester.pumpWidget(
+        wrap(
+          SkillProficiencyRow(
+            skill: skill,
+            uses: 900,
+            cfg: cfg,
+            equipped: false,
+          ),
         ),
-      ));
+      );
 
       // 化境阶段名（至少一处显示含「化境」的文字）
       expect(find.textContaining('化境'), findsWidgets);
@@ -93,20 +116,75 @@ void main() {
       expect(find.textContaining('再用'), findsNothing);
       // 最高阶显示「已达化境」
       expect(find.textContaining('已达化境'), findsOneWidget);
+      expect(
+        find.textContaining(UiStrings.cangjingProficiencySourceCombat),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('per-skill 熟练度效果渲染到当前与下一阶说明', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final advancedSkill = SkillDef(
+        id: 'skill_test_po',
+        name: '破云手',
+        description: '一掌破云',
+        type: SkillType.powerSkill,
+        powerMultiplier: 120,
+        internalForceCost: 0,
+        cooldownTurns: 4,
+        requiresManualTrigger: false,
+        visualEffect: 'none',
+        proficiency: SkillProficiencyEffects.fromYaml({
+          'effects': {
+            'jingTong': {'cooldown_delta': -1, 'interrupt_power_pct': 0.12},
+            'huaJing': {
+              'cooldown_delta': -3,
+              'interrupt_window_bonus_ticks': 1,
+            },
+          },
+        }),
+      );
+
+      await tester.pumpWidget(
+        wrap(
+          SkillProficiencyRow(
+            skill: advancedSkill,
+            uses: 300,
+            cfg: cfg,
+            equipped: false,
+          ),
+        ),
+      );
+
+      expect(
+        find.textContaining(UiStrings.cangjingProficiencyCooldownReduction(1)),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(UiStrings.cangjingProficiencyInterruptPower(12)),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(UiStrings.cangjingProficiencyCooldownReduction(3)),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(UiStrings.cangjingProficiencyInterruptWindow(1)),
+        findsOneWidget,
+      );
     });
 
     testWidgets('初识阶(chuShi 0 uses) → +0%', (tester) async {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(wrap(
-        SkillProficiencyRow(
-          skill: skill,
-          uses: 0,
-          cfg: cfg,
-          equipped: false,
+      await tester.pumpWidget(
+        wrap(
+          SkillProficiencyRow(skill: skill, uses: 0, cfg: cfg, equipped: false),
         ),
-      ));
+      );
 
       expect(find.textContaining('初识'), findsOneWidget);
       // 加成为 0%
@@ -118,15 +196,17 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       var tapped = false;
-      await tester.pumpWidget(wrap(
-        SkillProficiencyRow(
-          skill: skill,
-          uses: 0,
-          cfg: cfg,
-          equipped: false,
-          onTap: () => tapped = true,
+      await tester.pumpWidget(
+        wrap(
+          SkillProficiencyRow(
+            skill: skill,
+            uses: 0,
+            cfg: cfg,
+            equipped: false,
+            onTap: () => tapped = true,
+          ),
         ),
-      ));
+      );
 
       await tester.tap(find.byType(SkillProficiencyRow));
       await tester.pumpAndSettle();
@@ -140,9 +220,9 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(wrap(
-        const FragmentProgressRow(name: '裂石掌谱', has: 3, total: 5),
-      ));
+      await tester.pumpWidget(
+        wrap(const FragmentProgressRow(name: '裂石掌谱', has: 3, total: 5)),
+      );
 
       // UiStrings.cangjingFragmentProgress(3, 5) = '3 / 5 页'
       expect(
@@ -152,19 +232,16 @@ void main() {
       // 秘籍名
       expect(find.textContaining('裂石掌谱'), findsOneWidget);
       // 实心 ▣ × 3
-      expect(
-        find.textContaining('▣'),
-        findsWidgets,
-      );
+      expect(find.textContaining('▣'), findsWidgets);
     });
 
     testWidgets('0/5 → 全空心方块', (tester) async {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(wrap(
-        const FragmentProgressRow(name: '玄铁剑谱', has: 0, total: 5),
-      ));
+      await tester.pumpWidget(
+        wrap(const FragmentProgressRow(name: '玄铁剑谱', has: 0, total: 5)),
+      );
 
       expect(
         find.textContaining(UiStrings.cangjingFragmentProgress(0, 5)),
@@ -180,9 +257,9 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(wrap(
-        const FragmentProgressRow(name: '圣火令', has: 5, total: 5),
-      ));
+      await tester.pumpWidget(
+        wrap(const FragmentProgressRow(name: '圣火令', has: 5, total: 5)),
+      );
 
       // 无空心方块
       expect(find.textContaining('▢'), findsNothing);
@@ -192,14 +269,16 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(wrap(
-        const FragmentProgressRow(
-          name: '开碑手谱',
-          has: 2,
-          total: 5,
-          source: '爬塔·第5层',
+      await tester.pumpWidget(
+        wrap(
+          const FragmentProgressRow(
+            name: '开碑手谱',
+            has: 2,
+            total: 5,
+            source: '爬塔·第5层',
+          ),
         ),
-      ));
+      );
 
       expect(find.textContaining('爬塔·第5层'), findsOneWidget);
     });
@@ -208,9 +287,9 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(800, 600));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      await tester.pumpWidget(wrap(
-        const FragmentProgressRow(name: '谜谱', has: 1, total: 5),
-      ));
+      await tester.pumpWidget(
+        wrap(const FragmentProgressRow(name: '谜谱', has: 1, total: 5)),
+      );
 
       expect(find.textContaining('来源未明'), findsOneWidget);
     });
