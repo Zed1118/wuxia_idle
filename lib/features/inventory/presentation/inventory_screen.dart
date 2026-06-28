@@ -120,6 +120,7 @@ class _EquipmentTab extends ConsumerStatefulWidget {
 class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
   InventorySlotFilter _slotFilter = InventorySlotFilter.all;
   InventoryTierFilter _tierFilter = InventoryTierFilter.all;
+  InventorySchoolFilter _schoolFilter = InventorySchoolFilter.all;
   InventoryOwnershipFilter _ownershipFilter = InventoryOwnershipFilter.all;
   InventoryEquipmentSort _sort = InventoryEquipmentSort.tierDesc;
 
@@ -145,10 +146,13 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
           InventoryEquipmentQuery(
             slot: _slotFilter,
             tier: _tierFilter,
+            school: _schoolFilter,
             ownership: _ownershipFilter,
             sort: _sort,
           ),
           realm: playerRealm,
+          equippedEquipmentIds: equippedIds,
+          activeFormationEquipmentIds: equippedIds,
         );
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -170,10 +174,12 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
             _OrganizationBar(
               slotFilter: _slotFilter,
               tierFilter: _tierFilter,
+              schoolFilter: _schoolFilter,
               ownershipFilter: _ownershipFilter,
               sort: _sort,
               onSlotSelect: (f) => setState(() => _slotFilter = f),
               onTierSelect: (f) => setState(() => _tierFilter = f),
+              onSchoolSelect: (f) => setState(() => _schoolFilter = f),
               onOwnershipSelect: (f) => setState(() => _ownershipFilter = f),
               onSortSelect: (s) => setState(() => _sort = s),
             ),
@@ -202,20 +208,24 @@ class _OrganizationBar extends StatelessWidget {
   const _OrganizationBar({
     required this.slotFilter,
     required this.tierFilter,
+    required this.schoolFilter,
     required this.ownershipFilter,
     required this.sort,
     required this.onSlotSelect,
     required this.onTierSelect,
+    required this.onSchoolSelect,
     required this.onOwnershipSelect,
     required this.onSortSelect,
   });
 
   final InventorySlotFilter slotFilter;
   final InventoryTierFilter tierFilter;
+  final InventorySchoolFilter schoolFilter;
   final InventoryOwnershipFilter ownershipFilter;
   final InventoryEquipmentSort sort;
   final ValueChanged<InventorySlotFilter> onSlotSelect;
   final ValueChanged<InventoryTierFilter> onTierSelect;
+  final ValueChanged<InventorySchoolFilter> onSchoolSelect;
   final ValueChanged<InventoryOwnershipFilter> onOwnershipSelect;
   final ValueChanged<InventoryEquipmentSort> onSortSelect;
 
@@ -238,6 +248,12 @@ class _OrganizationBar extends StatelessWidget {
               label: _tierFilterLabel(f),
               selected: f == tierFilter,
               onTap: () => onTierSelect(f),
+            ),
+          for (final f in InventorySchoolFilter.values)
+            _FilterChip(
+              label: _schoolFilterLabel(f),
+              selected: f == schoolFilter,
+              onTap: () => onSchoolSelect(f),
             ),
           for (final f in InventoryOwnershipFilter.values)
             _FilterChip(
@@ -313,12 +329,30 @@ String _tierFilterLabel(InventoryTierFilter filter) {
   };
 }
 
+String _schoolFilterLabel(InventorySchoolFilter filter) {
+  return switch (filter) {
+    InventorySchoolFilter.all => UiStrings.inventoryFilterSchoolAll,
+    InventorySchoolFilter.gangMeng => UiStrings.inventoryFilterSchoolLabel(
+      EnumL10n.school(TechniqueSchool.gangMeng),
+    ),
+    InventorySchoolFilter.lingQiao => UiStrings.inventoryFilterSchoolLabel(
+      EnumL10n.school(TechniqueSchool.lingQiao),
+    ),
+    InventorySchoolFilter.yinRou => UiStrings.inventoryFilterSchoolLabel(
+      EnumL10n.school(TechniqueSchool.yinRou),
+    ),
+    InventorySchoolFilter.none => UiStrings.inventoryFilterSchoolNone,
+  };
+}
+
 String _ownershipFilterLabel(InventoryOwnershipFilter filter) {
   return switch (filter) {
     InventoryOwnershipFilter.all => UiStrings.inventoryFilterOwnershipAll,
     InventoryOwnershipFilter.free => UiStrings.inventoryFilterFree,
     InventoryOwnershipFilter.equipped => UiStrings.inventoryFilterEquipped,
     InventoryOwnershipFilter.heritage => UiStrings.inventoryFilterHeritage,
+    InventoryOwnershipFilter.locked => UiStrings.inventoryFilterLocked,
+    InventoryOwnershipFilter.protected => UiStrings.inventoryFilterProtected,
     InventoryOwnershipFilter.equippable => UiStrings.inventoryFilterEquippable,
     InventoryOwnershipFilter.forgeable => UiStrings.inventoryFilterForgeable,
     InventoryOwnershipFilter.realmLocked =>
