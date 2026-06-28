@@ -4,7 +4,7 @@ import 'offline_recap_service.dart';
 
 class OfflineRecapDetail {
   const OfflineRecapDetail({
-    required this.rows,
+    required this.groups,
     required this.experience,
     required this.silver,
     required this.materialQuantity,
@@ -14,7 +14,7 @@ class OfflineRecapDetail {
     required this.equipmentDropPending,
   });
 
-  final List<String> rows;
+  final List<OfflineRecapDetailGroup> groups;
   final int experience;
   final int silver;
   final int materialQuantity;
@@ -22,6 +22,15 @@ class OfflineRecapDetail {
   final int skillProficiencyPoints;
   final int equipmentDropCount;
   final bool equipmentDropPending;
+
+  List<String> get rows => [for (final group in groups) ...group.rows];
+}
+
+class OfflineRecapDetailGroup {
+  const OfflineRecapDetailGroup({required this.title, required this.rows});
+
+  final String title;
+  final List<String> rows;
 }
 
 class OfflineRecapDetailFormatter {
@@ -34,6 +43,33 @@ class OfflineRecapDetailFormatter {
     final materialQuantity =
         recap.estimatedMojianshi +
         recap.estimatedItemRewards.values.fold<int>(0, (a, b) => a + b);
+    final settlementRows = [
+      UiStrings.offlineRecapAwayDetail(_formatHours(recap.awayHours)),
+      UiStrings.offlineRecapSettledDetail(_formatHours(recap.settledHours)),
+      _limitReasonText(recap.limitReason),
+    ];
+    final gainRows = _nonEmptyRows([
+      recap.estimatedExperience > 0
+          ? UiStrings.offlineRecapExperienceDetail(recap.estimatedExperience)
+          : null,
+      recap.estimatedSilver > 0
+          ? UiStrings.offlineRecapSilverDetail(recap.estimatedSilver)
+          : null,
+      materialQuantity > 0
+          ? UiStrings.offlineRecapMaterialDetail(
+              _materialText(
+                mojianshi: recap.estimatedMojianshi,
+                itemRewards: recap.estimatedItemRewards,
+                itemNameOf: itemNameOf,
+              ),
+            )
+          : null,
+      recap.estimatedTechniqueLearnPoints > 0
+          ? UiStrings.offlineRecapTechniqueLearnDetail(
+              recap.estimatedTechniqueLearnPoints,
+            )
+          : null,
+    ]);
     final detail = OfflineRecapDetail(
       experience: recap.estimatedExperience,
       silver: recap.estimatedSilver,
@@ -42,30 +78,39 @@ class OfflineRecapDetailFormatter {
       skillProficiencyPoints: 0,
       equipmentDropCount: 0,
       equipmentDropPending: true,
-      rows: [
-        UiStrings.offlineRecapAwayDetail(_formatHours(recap.awayHours)),
-        UiStrings.offlineRecapSettledDetail(_formatHours(recap.settledHours)),
-        UiStrings.offlineRecapExperienceDetail(recap.estimatedExperience),
-        UiStrings.offlineRecapSilverDetail(recap.estimatedSilver),
-        UiStrings.offlineRecapMaterialDetail(
-          _materialText(
-            mojianshi: recap.estimatedMojianshi,
-            itemRewards: recap.estimatedItemRewards,
-            itemNameOf: itemNameOf,
-          ),
+      groups: [
+        OfflineRecapDetailGroup(
+          title: UiStrings.offlineRecapSettlementGroupTitle,
+          rows: settlementRows,
         ),
-        UiStrings.offlineRecapTechniqueSkillDetail(
-          recap.estimatedTechniqueLearnPoints,
-          0,
+        OfflineRecapDetailGroup(
+          title: UiStrings.offlineRecapRetreatGainGroupTitle,
+          rows: gainRows.isEmpty
+              ? [UiStrings.offlineRecapNoGainsDetail]
+              : gainRows,
         ),
-        UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapDropPending),
-        _limitReasonText(recap.limitReason),
+        OfflineRecapDetailGroup(
+          title: UiStrings.offlineRecapCollectGroupTitle,
+          rows: [
+            UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapDropPending),
+          ],
+        ),
       ],
     );
     return detail;
   }
 
   static OfflineRecapDetail forPassive(PassiveYield yield_) {
+    final gainRows = _nonEmptyRows([
+      yield_.experience > 0
+          ? UiStrings.offlineRecapExperienceDetail(yield_.experience)
+          : null,
+      yield_.mojianshi > 0
+          ? UiStrings.offlineRecapMaterialDetail(
+              _materialText(mojianshi: yield_.mojianshi),
+            )
+          : null,
+    ]);
     final detail = OfflineRecapDetail(
       experience: yield_.experience,
       silver: 0,
@@ -74,23 +119,32 @@ class OfflineRecapDetailFormatter {
       skillProficiencyPoints: 0,
       equipmentDropCount: 0,
       equipmentDropPending: false,
-      rows: [
-        UiStrings.offlineRecapAwayDetail(_formatHours(yield_.awayHours)),
-        UiStrings.offlineRecapSettledDetail(_formatHours(yield_.settledHours)),
-        UiStrings.offlineRecapExperienceDetail(yield_.experience),
-        UiStrings.offlineRecapSilverDetail(0),
-        UiStrings.offlineRecapMaterialDetail(
-          _materialText(mojianshi: yield_.mojianshi),
+      groups: [
+        OfflineRecapDetailGroup(
+          title: UiStrings.offlineRecapSettlementGroupTitle,
+          rows: [
+            UiStrings.offlineRecapAwayDetail(_formatHours(yield_.awayHours)),
+            UiStrings.offlineRecapSettledDetail(
+              _formatHours(yield_.settledHours),
+            ),
+            yield_.isCapped
+                ? UiStrings.offlineRecapLimitSystemCap
+                : UiStrings.offlineRecapLimitInProgress,
+          ],
         ),
-        UiStrings.offlineRecapTechniqueSkillDetail(0, 0),
-        UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapNoDrop),
-        yield_.isCapped
-            ? UiStrings.offlineRecapLimitSystemCap
-            : UiStrings.offlineRecapLimitInProgress,
+        OfflineRecapDetailGroup(
+          title: UiStrings.offlineRecapPassiveGainGroupTitle,
+          rows: gainRows.isEmpty
+              ? [UiStrings.offlineRecapNoGainsDetail]
+              : gainRows,
+        ),
       ],
     );
     return detail;
   }
+
+  static List<String> _nonEmptyRows(List<String?> rows) =>
+      rows.whereType<String>().toList();
 
   static String _formatHours(double hours) {
     final rounded = (hours * 10).round() / 10;
@@ -110,6 +164,7 @@ class OfflineRecapDetailFormatter {
       parts.add(UiStrings.offlineRecapMaterialPartMojianshi(mojianshi));
     }
     for (final entry in itemRewards.entries) {
+      if (entry.value <= 0) continue;
       parts.add(
         UiStrings.offlineRecapMaterialPart(
           itemNameOf?.call(entry.key) ?? entry.key,
