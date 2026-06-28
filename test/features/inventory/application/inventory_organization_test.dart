@@ -14,6 +14,7 @@ void main() {
     int? ownerCharacterId,
     bool isLineageHeritage = false,
     bool isLocked = false,
+    TechniqueSchool? school,
     List<Lore>? lores,
     List<int>? previousOwnerCharacterIds,
   }) {
@@ -27,6 +28,7 @@ void main() {
       ownerCharacterId: ownerCharacterId,
       isLineageHeritage: isLineageHeritage,
       isLocked: isLocked,
+      school: school,
       lores: lores,
       previousOwnerCharacterIds: previousOwnerCharacterIds,
     )..id = id;
@@ -102,6 +104,74 @@ void main() {
       );
 
       expect(result.map((e) => e.id), [3, 2, 1]);
+    });
+
+    test('按流派筛选装备，空流派可单独查出', () {
+      final result = organizeInventoryEquipments([
+        eq(
+          id: 1,
+          tier: EquipmentTier.liQi,
+          slot: EquipmentSlot.weapon,
+          school: TechniqueSchool.gangMeng,
+        ),
+        eq(
+          id: 2,
+          tier: EquipmentTier.liQi,
+          slot: EquipmentSlot.weapon,
+          school: TechniqueSchool.lingQiao,
+        ),
+        eq(id: 3, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
+      ], const InventoryEquipmentQuery(school: InventorySchoolFilter.gangMeng));
+
+      expect(result.map((e) => e.id), [1]);
+
+      final none = organizeInventoryEquipments([
+        eq(
+          id: 1,
+          tier: EquipmentTier.liQi,
+          slot: EquipmentSlot.weapon,
+          school: TechniqueSchool.gangMeng,
+        ),
+        eq(id: 3, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
+      ], const InventoryEquipmentQuery(school: InventorySchoolFilter.none));
+
+      expect(none.map((e) => e.id), [3]);
+    });
+
+    test('可显式筛出锁定与批量受保护装备', () {
+      final locked = eq(
+        id: 1,
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.weapon,
+        isLocked: true,
+      );
+      final highTier = eq(
+        id: 2,
+        tier: EquipmentTier.zhongQi,
+        slot: EquipmentSlot.weapon,
+      );
+      final free = eq(
+        id: 3,
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.weapon,
+      );
+
+      final lockedResult = organizeInventoryEquipments(
+        [locked, highTier, free],
+        const InventoryEquipmentQuery(
+          ownership: InventoryOwnershipFilter.locked,
+        ),
+      );
+      expect(lockedResult.map((e) => e.id), [1]);
+
+      final protectedResult = organizeInventoryEquipments(
+        [locked, highTier, free],
+        const InventoryEquipmentQuery(
+          ownership: InventoryOwnershipFilter.protected,
+        ),
+        equippedEquipmentIds: const {},
+      );
+      expect(protectedResult.map((e) => e.id), [2, 1]);
     });
   });
 
