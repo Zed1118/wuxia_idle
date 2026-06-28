@@ -127,9 +127,9 @@ void main() {
         isTower: false,
       );
 
-      // 西凉霸主 baseHp=52000，cycle3 scale=1.20 → 62400 > 60000 → clamp 至 60000
+      // 西凉霸主 baseHp=32000（2026-06-29 solo 平衡 52000→32000），cycle3 scale=1.20 → 38400 < 60000
       // （2026-06-26 周目平衡 0.06→0.10 后此 boss 命中 clamp，红线由生产 .clamp 强制）。
-      final expectedBossHp = (52000 * cycle3Scale).toInt().clamp(
+      final expectedBossHp = (32000 * cycle3Scale).toInt().clamp(
         0,
         bossHpRedLine,
       );
@@ -562,8 +562,8 @@ void main() {
       final bossHpMax =
           GameRepository.instance.numbers.combat.redLines.bossHpMax;
       final scale3 = 1.0 + ce.scalePerCycle * (3 - 1);
-      // 西凉霸主三弟子 baseHp=36600 → 期望 (36600 × 1.20).toInt() = 43,920 (< 60000 不命中 clamp)
-      const baseHp = 36600;
+      // 西凉霸主三弟子 baseHp=24000（2026-06-29 solo 36600→24000）→ (24000 × 1.20).toInt() = 28,800
+      const baseHp = 24000;
       final expectedHp = (baseHp * scale3).toInt();
       final boss = team.firstWhere(
         (bc) => bc.name == '西凉霸主三弟子',
@@ -604,7 +604,7 @@ void main() {
         isTower: false,
       );
       final ce = GameRepository.instance.numbers.cycleEvolution;
-      const baseAtk05Boss = 1995; // 西凉霸主三弟子 baseAttack（yaml 锚）
+      const baseAtk05Boss = 1500; // 西凉霸主三弟子 baseAttack（yaml 锚 · 2026-06-29 solo 1995→1500）
       final expectedAtk = (baseAtk05Boss * (1.0 + ce.scalePerCycle * 2))
           .toInt();
       final boss05 = team05.firstWhere(

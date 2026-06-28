@@ -298,7 +298,7 @@ void main() {
       );
       expect(
         repo.getStage('stage_03_02').enemyTeam.length,
-        3,
+        1,
       );
     });
 

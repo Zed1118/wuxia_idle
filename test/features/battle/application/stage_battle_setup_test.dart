@@ -148,7 +148,7 @@ void main() {
     );
   });
 
-  test('stage_03_05 章末大 Boss：右队 3 名 + isBossStage=true 不影响转换', () async {
+  test('stage_03_05 章末大 Boss：右队 1 名（solo 章末 Boss）+ isBossStage=true 不影响转换', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
     final stage = GameRepository.instance.getStage('stage_03_05');
     expect(stage.isBossStage, isTrue);
@@ -157,9 +157,9 @@ void main() {
     final (_, right) = await StageBattleSetup(
       isar: IsarSetup.instance,
     ).buildTeams(stage);
-    expect(right.length, 3);
+    expect(right.length, 1);
     expect(right[0].name, '灰衣人');
-    expect(right[0].maxHp, 11000); // baseHp from yaml
+    expect(right[0].maxHp, 9000); // baseHp from yaml（2026-06-29 solo 11000→9000）
   });
 
   test('江湖恩怨：带 npcId 的 Boss 关进战斗时烘焙 APM 与来源', () async {

@@ -64,6 +64,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          inventoryQuantityByDefIdProvider(
+            'item_duancai',
+          ).overrideWith((ref) async => 100),
           inventoryQuantityByTypeProvider(
             ItemType.moJianShi,
           ).overrideWith((ref) async => mojianshiQty),
@@ -165,6 +168,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          inventoryQuantityByDefIdProvider(
+            'item_duancai',
+          ).overrideWith((ref) async => 100),
           inventoryQuantityByTypeProvider(
             ItemType.moJianShi,
           ).overrideWith((ref) async => 1000),
@@ -210,6 +216,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          inventoryQuantityByDefIdProvider(
+            'item_duancai',
+          ).overrideWith((ref) async => 100),
           inventoryQuantityByTypeProvider(
             ItemType.moJianShi,
           ).overrideWith((ref) async => 1000),
