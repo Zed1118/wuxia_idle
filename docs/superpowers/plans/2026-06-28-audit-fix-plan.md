@@ -30,9 +30,9 @@
 
 ## 当前恢复点
 
-- 状态：被动离线银两红线切片已完成，待提交。
-- 最后完成：`offline_passive_settle_test` 覆盖被动结算不新建 `item_silver`，且不改动既有银两数量。
-- 下一步：提交被动离线切片，然后补爬塔 Boss 体感只读诊断。
+- 状态：爬塔 Boss 体感诊断切片已完成，待提交。
+- 最后完成：新增 `test/tools/tower_boss_feel_diagnostic_test.dart`，量化 24→25、29→30 在 floor/ceiling 三人队下的胜率、回合、剩余血、phase transition。
+- 下一步：提交爬塔诊断切片，然后跑本批 targeted tests 与 touched-file analyze。
 - 已跑验证：
   - `git status --short --branch`
   - `git log --oneline --decorate -12`
@@ -44,4 +44,6 @@
   - `flutter test test/features/taohua_island/taohua_island_config_test.dart test/features/taohua_island/island_upgrade_curve_b_test.dart`
   - `flutter test test/tools/enhancement_material_supply_test.dart`
   - `flutter test test/features/seclusion/application/offline_passive_service_test.dart test/features/seclusion/application/offline_passive_redline_test.dart test/features/seclusion/application/offline_passive_settle_test.dart test/features/seclusion/application/offline_recap_detail_test.dart`
+  - `dart format test/tools/tower_boss_feel_diagnostic_test.dart`
+  - `flutter test test/tools/tower_boss_feel_diagnostic_test.dart`
 - 阻塞项：无。
