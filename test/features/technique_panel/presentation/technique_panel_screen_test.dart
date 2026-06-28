@@ -7,6 +7,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -357,10 +358,15 @@ void main() {
         id: 100,
         ownerId: 1,
         role: TechniqueRole.main,
+        defId: 'tech_gangmeng_jichu',
         cultivationLayer: CultivationLayer.chuKui,
         cultivationProgress: 30,
         cultivationProgressToNext: 100,
-      );
+      )..skillUsageCount = [
+          SkillUsageEntry()
+            ..skillId = 'skill_gangmeng_jichu_skill'
+            ..count = 300,
+        ];
       final assist = mkTechnique(
         id: 101,
         ownerId: 1,
@@ -376,6 +382,7 @@ void main() {
       // 修炼度 tile 接入 5 要素规范组件（含水墨 MeridianBar 进度条）。
       expect(find.byType(StageProgressRow), findsWidgets);
       expect(find.byType(MeridianBar), findsWidgets);
+      expect(find.textContaining('招式熟练 ·'), findsOneWidget);
       // 不再用 Material 默认进度条（违水墨基调，§9）。
       expect(find.byType(LinearProgressIndicator), findsNothing);
     },
