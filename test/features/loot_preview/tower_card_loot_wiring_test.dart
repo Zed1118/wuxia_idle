@@ -40,7 +40,7 @@ Widget _harness(TowerFloorEntry entry, {RealmTier? currentRealm}) {
 // ── tests ────────────────────────────────────────────────────────────────────
 
 void main() {
-  testWidgets('有掉落时显示「可能收获：」前缀行', (tester) async {
+  testWidgets('有掉落时显示首通必得分桶行', (tester) async {
     await tester.binding.setSurfaceSize(const Size(900, 700));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -59,9 +59,9 @@ void main() {
     await tester.pump();
 
     expect(
-      find.textContaining(UiStrings.lootSummaryPrefix),
+      find.textContaining(UiStrings.lootBucketShouTongBiDe),
       findsOneWidget,
-      reason: '有掉落条目时应渲染「可能收获：」前缀行',
+      reason: '有掉落条目时应直接渲染分桶传闻行',
     );
   });
 

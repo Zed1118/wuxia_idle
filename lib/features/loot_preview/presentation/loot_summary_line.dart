@@ -1,8 +1,11 @@
 // lib/features/loot_preview/presentation/loot_summary_line.dart
 import 'package:flutter/material.dart';
 
+import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/tier_colors.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../domain/drop_name_resolver.dart';
 import '../domain/drop_rumor.dart';
 
@@ -23,9 +26,11 @@ class LootSummaryLine extends StatelessWidget {
     }
     final reps = table.topRepresentatives(maxItems);
     final names = reps
-        .map((e) => e.isEquipment
-            ? DropNameResolver.equipmentName(e.defId)
-            : DropNameResolver.itemName(e.defId))
+        .map(
+          (e) => e.isEquipment
+              ? DropNameResolver.equipmentName(e.defId)
+              : DropNameResolver.itemName(e.defId),
+        )
         .join(' · ');
     return Text(
       '${UiStrings.lootSummaryPrefix}$names',
@@ -35,3 +40,100 @@ class LootSummaryLine extends StatelessWidget {
     );
   }
 }
+
+/// 关卡卡片标题区行内掉落摘要。
+///
+/// 不显示百分比，只显示推荐境界与掉落传闻桶；装备条目用装备阶色区分。
+class InlineLootSummaryLine extends StatelessWidget {
+  const InlineLootSummaryLine({
+    super.key,
+    required this.table,
+    this.recommendedRealm,
+    this.showRecommendedRealm = true,
+    this.maxItems = 3,
+    this.alignment = WrapAlignment.end,
+  });
+
+  final DropRumorTable table;
+  final RealmTier? recommendedRealm;
+  final bool showRecommendedRealm;
+  final int maxItems;
+  final WrapAlignment alignment;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = <Widget>[];
+    if (showRecommendedRealm && recommendedRealm != null) {
+      tokens.add(
+        Text(
+          '${UiStrings.previewRecommendedRealmLabel}: '
+          '${EnumL10n.realmTier(recommendedRealm!)}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: WuxiaColors.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    }
+    if (table.isEmpty) {
+      tokens.add(
+        const Text(
+          UiStrings.lootNoFixedDrop,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: WuxiaColors.textMuted,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      );
+    } else {
+      tokens.addAll(
+        table.topRepresentatives(maxItems).map(_InlineLootToken.new),
+      );
+    }
+    return Wrap(
+      alignment: alignment,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 8,
+      runSpacing: 2,
+      children: tokens,
+    );
+  }
+}
+
+class _InlineLootToken extends StatelessWidget {
+  const _InlineLootToken(this.entry);
+
+  final DropRumorEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final name = entry.isEquipment
+        ? DropNameResolver.equipmentName(entry.defId)
+        : DropNameResolver.itemName(entry.defId);
+    Color color = WuxiaColors.textMuted;
+    if (entry.isEquipment) {
+      final tier = DropNameResolver.equipmentTier(entry.defId);
+      if (tier != null) color = tierColorForEquipment(tier);
+    }
+    return Text(
+      '${_bucketLabel(entry.bucket)} $name',
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700),
+    );
+  }
+}
+
+String _bucketLabel(DropRumorBucket b) => switch (b) {
+  DropRumorBucket.shouTongBiDe => UiStrings.lootBucketShouTongBiDe,
+  DropRumorBucket.changKeDe => UiStrings.lootBucketChangKeDe,
+  DropRumorBucket.ouKeDe => UiStrings.lootBucketOuKeDe,
+  DropRumorBucket.shaoYouRenDe => UiStrings.lootBucketShaoYouRenDe,
+  DropRumorBucket.jiangHuChuanWen => UiStrings.lootBucketJiangHuChuanWen,
+};
