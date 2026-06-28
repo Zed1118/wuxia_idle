@@ -1958,7 +1958,8 @@ taohua_island:
   # 升级成本「节奏 B」(2026-06-25 balance·用户拍板「前低后高 + 境界分阶」):
   # upgrade_silver_levels = per-level 显式曲线(线性公式做不到前低后高),index = level-1,
   # 长度必 = max_level-1。upgrade_realm_levels = 每级升级的祖师境界 gate(单调非减,L4→5 需
-  # 一流 realm3,与高阶配方心血/培元同步解锁)。四座全满 ≈ 52,200 银,贯穿二流→一流数境界。
+  # 一流 realm3,与高阶配方心血/培元同步解锁)。Phase 2 真实七座全满 = 88,800 银
+  # (4 座 source ×10,500 + 3 座 processor ×15,600),贯穿二流→一流数境界。
   # 配方比率(input_per_output)/材料成本(base×level)/产速不动。校验见 taohua_island_config.validate
   # + 红线测 island_upgrade_curve_b_test。
   unlock_chapter_index: 1       # 主线第二章(index 1)cleared 解锁
