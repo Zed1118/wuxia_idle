@@ -54,7 +54,7 @@ void main() {
     final repo = await GameRepository.loadAllDefs();
     final cfg = GameRepository.instance.numbers.taohuaIsland;
 
-    expect(cfg.buildings.length, greaterThanOrEqualTo(7));
+    expect(cfg.buildings.length, 7);
 
     final muGongFang = cfg.buildingOf(BuildingType.muGongFang);
     expect(muGongFang.kind, BuildingKind.source);
@@ -116,6 +116,46 @@ void main() {
     };
     expect(repo.itemDefs.keys, containsAll(phaseTwoItemIds));
     expect(productionItemRefs, containsAll(phaseTwoItemIds));
+  });
+
+  test('GameRepository phase 2 桃花岛真实 7 建筑全满累计 = 88,800 银', () async {
+    await GameRepository.loadAllDefs();
+    final cfg = GameRepository.instance.numbers.taohuaIsland;
+
+    int fullCost(BuildingType type) {
+      final building = cfg.buildingOf(type);
+      var total = 0;
+      for (var level = 1; level < building.maxLevel; level++) {
+        total += building.upgradeSilverFor(level);
+      }
+      return total;
+    }
+
+    final sourceTypes = cfg.buildings.values
+        .where((building) => building.kind == BuildingKind.source)
+        .map((building) => building.type)
+        .toList();
+    final processorTypes = cfg.buildings.values
+        .where((building) => building.kind == BuildingKind.processor)
+        .map((building) => building.type)
+        .toList();
+
+    expect(sourceTypes, hasLength(4));
+    expect(processorTypes, hasLength(3));
+    expect(
+      sourceTypes.fold<int>(0, (sum, type) => sum + fullCost(type)),
+      42000,
+      reason: '4 座 source × 10,500',
+    );
+    expect(
+      processorTypes.fold<int>(0, (sum, type) => sum + fullCost(type)),
+      46800,
+      reason: '3 座 processor × 15,600',
+    );
+    expect(
+      cfg.buildings.keys.fold<int>(0, (sum, type) => sum + fullCost(type)),
+      88800,
+    );
   });
 }
 

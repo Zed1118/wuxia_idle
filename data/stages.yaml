@@ -3,8 +3,9 @@
 # =============================================================================
 # 共 47 关：mainline 30（6 章 × 5，含第二主线 Ch4-6）+ innerDemon 8 +
 # lightFoot 5 + massBattle 5。stageType 按关分填（非全 mainline）。
-# 每关 3 敌人（StageDef.enemyTeam 上限 3）；三流派分布尽量覆盖 gangMeng /
-# lingQiao / yinRou。难度按章递增 xueTu → sanLiu → erLiu。
+# 常规关尽量 3 敌人（StageDef.enemyTeam 上限 3）；三流派分布尽量覆盖
+# gangMeng / lingQiao / yinRou。stage_01_01 是 production 单人空手开局的
+# 开场战，使用 1 敌人避免首战断链。难度按章递增 xueTu → sanLiu → erLiu。
 #
 # Phase 3 Week 5 schema：在 T33 三段 narrative 基础上加 `narrativeDefeatId`。
 #   narrativeOpeningId   —— 进入关卡前播放（联结 data/narratives/stages/<id>.yaml）
@@ -47,26 +48,6 @@ stages:
         baseSpeed: 100
         skillIds: [skill_gangmeng_jichu_basic]
         iconPath: assets/enemies/thug_a.png
-      - id: enemy_xueTu_thug_b
-        name: 流民乙
-        realmTier: xueTu
-        realmLayer: qiMeng
-        school: lingQiao
-        baseHp: 1300
-        baseAttack: 90
-        baseSpeed: 115
-        skillIds: [skill_lingqiao_jichu_basic]
-        iconPath: assets/enemies/thug_b.png
-      - id: enemy_xueTu_thug_c
-        name: 流民丙
-        realmTier: xueTu
-        realmLayer: qiMeng
-        school: yinRou
-        baseHp: 1400
-        baseAttack: 85
-        baseSpeed: 105
-        skillIds: [skill_yinrou_jichu_basic]
-        iconPath: assets/enemies/thug_c.png
     isBossStage: false
     # W13-v3 fix: 新手第一关 onboarding(GDD §10.2 教程节奏),100% 掉 1 件
     # 寻常护甲 + 1 块磨剑石,让玩家第一次胜利就拿到装备 + 物料 reward feedback
@@ -107,30 +88,10 @@ stages:
         baseSpeed: 100
         skillIds: [skill_gangmeng_jichu_basic]
         iconPath: assets/enemies/ruffian_a.png
-      - id: enemy_xueTu_rufflian_b
-        name: 山道伏客
-        realmTier: xueTu
-        realmLayer: ruMen
-        school: lingQiao
-        baseHp: 1900
-        baseAttack: 115
-        baseSpeed: 120
-        skillIds: [skill_lingqiao_jichu_basic]
-        iconPath: assets/enemies/ruffian_b.png
-      - id: enemy_xueTu_rufflian_c
-        name: 闲汉
-        realmTier: xueTu
-        realmLayer: ruMen
-        school: yinRou
-        baseHp: 2000
-        baseAttack: 110
-        baseSpeed: 110
-        skillIds: [skill_yinrou_jichu_basic]
-        iconPath: assets/enemies/ruffian_c.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_xunchang_zhe_dao
-        dropChance: 0.35
+        dropChance: 1.0   # production 单人开局:Boss 前保证首把武器,闭合 15-30 分钟整备
       - equipmentDefId: armor_xunchang_duan_gua
         dropChance: 0.25
       - inventoryItemDefId: item_mojianshi
@@ -165,26 +126,6 @@ stages:
         baseSpeed: 110
         skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
         iconPath: assets/enemies/bandit_head.png
-      - id: enemy_xueTu_bandit_b
-        name: 山贼乙
-        realmTier: xueTu
-        realmLayer: jingTong
-        school: lingQiao
-        baseHp: 2500
-        baseAttack: 120
-        baseSpeed: 125
-        skillIds: [skill_lingqiao_jichu_basic]
-        iconPath: assets/enemies/bandit_b.png
-      - id: enemy_xueTu_bandit_c
-        name: 山贼丙
-        realmTier: xueTu
-        realmLayer: jingTong
-        school: yinRou
-        baseHp: 2600
-        baseAttack: 125
-        baseSpeed: 115
-        skillIds: [skill_yinrou_jichu_basic]
-        iconPath: assets/enemies/bandit_c.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
@@ -221,34 +162,14 @@ stages:
         realmTier: xueTu
         realmLayer: dengFeng
         school: lingQiao
-        baseHp: 3200
-        baseAttack: 145
+        baseHp: 2200     # production 单人线小 Boss:保留压迫,避免早于章末形成硬失败点
+        baseAttack: 100
         baseSpeed: 140
         skillIds:
           - skill_lingqiao_jichu_basic
           - skill_lingqiao_jichu_skill
         iconPath: assets/enemies/qingshan.png
         isBoss: true
-      - id: enemy_xueTu_gateguard_a
-        name: 城兵甲
-        realmTier: xueTu
-        realmLayer: jingTong
-        school: gangMeng
-        baseHp: 3000
-        baseAttack: 135
-        baseSpeed: 110
-        skillIds: [skill_gangmeng_jichu_basic]
-        iconPath: assets/enemies/gateguard_a.png
-      - id: enemy_xueTu_gateguard_b
-        name: 城兵乙
-        realmTier: xueTu
-        realmLayer: jingTong
-        school: yinRou
-        baseHp: 2900
-        baseAttack: 130
-        baseSpeed: 115
-        skillIds: [skill_yinrou_jichu_basic]
-        iconPath: assets/enemies/gateguard_b.png
     isBossStage: true
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
