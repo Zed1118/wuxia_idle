@@ -902,14 +902,24 @@ floors:
         realmTier: jueDing
         realmLayer: dengFeng
         school: lingQiao
-        baseHp: 12600
-        baseAttack: 1900
+        # 2026-06-28 审计修:24→25 不应从三人普通层掉成更轻单体 Boss。
+        # 25 层作为绝顶段小 Boss,总 HP/攻需高于 floor24 三人组(13350 / 2100)。
+        baseHp: 15000
+        baseAttack: 2300
         baseSpeed: 230
         skillIds:
           - skill_lingqiao_jianghu_basic
           - skill_lingqiao_jianghu_skill
           - skill_lingqiao_jianghu_ult
         iconPath: assets/enemies/tower_boss_25.png
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_lingqiao_jianghu_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
     dropTable:
       # F4:清回掉低阶装备(原 weapon_liqi_long_quan -1 + accessory_haojiahuo_yu_pei_lao -2 阶),心血结晶加码补偿
       - equipmentDefId: weapon_zhongqi_qing_xu_jian
@@ -1144,14 +1154,24 @@ floors:
         realmTier: zongShi
         realmLayer: dengFeng
         school: yinRou
-        baseHp: 15000
-        baseAttack: 2250
+        # 2026-06-28 审计修:终关单体 Boss 不应弱于 floor29 三人组
+        # (16050 / 2400)。仍远低于 boss_hp_max=60000,避免数值膨胀。
+        baseHp: 20000
+        baseAttack: 2800
         baseSpeed: 245
         skillIds:
           - skill_yinrou_shichuan_basic
           - skill_yinrou_shichuan_skill
           - skill_yinrou_shichuan_ult
         iconPath: assets/enemies/tower_boss_30.png
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.5
+            unlockSkillIds:
+              - skill_yinrou_shichuan_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
     dropTable:
       # F4:终局大 Boss 清 3 件回掉低阶装备(原 weapon_liqi_long_quan -2 / accessory_haojiahuo_yu_pei_lao -3 / armor_haojiahuo_jin_pao -3 阶,宗师阶下死重),价值落同阶宝物+秘籍+心血结晶大加码
       - equipmentDefId: weapon_baowu_xue_lian_bian

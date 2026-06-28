@@ -57,6 +57,10 @@ void main() {
     expect(save.totalPassiveMojianshi, 2);
     expect(save.totalPassiveExperience, 250);
     expect(save.lastOnlineAt, DateTime(2026, 6, 15, 12)); // 重置基准
+
+    final silver =
+        await IsarSetup.instance.inventoryItems.getByDefId('item_silver');
+    expect(silver, isNull, reason: '被动离线只产经验/磨剑石,不可新建银两行');
   });
 
   test('settle 幂等：第二次结算继续累加（基于新 lastOnlineAt 应由 caller clamp，'
@@ -80,5 +84,29 @@ void main() {
     expect(save.totalPassiveMojianshi, 4);
     expect(save.totalPassiveExperience, 500);
     expect(save.lastOnlineAt, DateTime(2026, 6, 15, 22));
+  });
+
+  test('settle 不改动既有 item_silver 数量', () async {
+    final silver = InventoryItem()
+      ..defId = 'item_silver'
+      ..itemType = ItemType.silver
+      ..quantity = 123
+      ..firstObtainedAt = DateTime(2026, 6, 1)
+      ..lastObtainedAt = DateTime(2026, 6, 1);
+    await IsarSetup.instance.writeTxn(
+      () => IsarSetup.instance.inventoryItems.put(silver),
+    );
+
+    await OfflinePassiveService.settle(
+      saveDataId: 1,
+      characterId: kCharId,
+      awayHours: 10,
+      now: DateTime(2026, 6, 15, 12),
+    );
+
+    final saved =
+        await IsarSetup.instance.inventoryItems.getByDefId('item_silver');
+    expect(saved, isNotNull);
+    expect(saved!.quantity, 123, reason: '被动离线结算不应提供或扣减银两');
   });
 }
