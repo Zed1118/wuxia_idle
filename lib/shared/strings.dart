@@ -1964,14 +1964,33 @@ class UiStrings {
   /// 离线收益明细：磨剑石
   static String offlineRecapMojianshiDetail(int value) => '磨剑石：$value';
 
+  /// 离线收益明细：材料汇总
+  static String offlineRecapMaterialDetail(String value) => '材料：$value';
+
+  /// 离线收益明细：材料子项（磨剑石）
+  static String offlineRecapMaterialPartMojianshi(int value) => '磨剑石 $value';
+
+  /// 离线收益明细：材料子项（通用物品）
+  static String offlineRecapMaterialPart(String name, int value) =>
+      '$name $value';
+
   /// 离线收益明细：银两
   static String offlineRecapSilverDetail(int value) => '银两：$value';
 
   /// 离线收益明细：经验
   static String offlineRecapExperienceDetail(int value) => '经验：$value';
 
+  /// 离线收益明细：心法 / 招式熟练度
+  static String offlineRecapTechniqueSkillDetail(
+    int techniqueLearn,
+    int skillProficiency,
+  ) => '心法领悟：$techniqueLearn · 招式熟练度：$skillProficiency';
+
   /// 离线收益明细：掉落
   static String offlineRecapDropDetail(String value) => '掉落：$value';
+
+  /// 离线收益明细分隔符
+  static const String offlineRecapDetailSeparator = ' · ';
 
   /// active 闭关掉落尚未实际掷定
   static const String offlineRecapDropPending = '收功时揭晓';

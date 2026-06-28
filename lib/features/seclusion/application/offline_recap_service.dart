@@ -28,6 +28,12 @@ typedef OfflineRecap = ({
   /// 预计可收经验。
   int estimatedExperience,
 
+  /// 预计可收通用材料（defId → quantity）。
+  Map<String, int> estimatedItemRewards,
+
+  /// 预计可收心法领悟点。
+  int estimatedTechniqueLearnPoints,
+
   /// 预计可收银两。
   int estimatedSilver,
 
@@ -94,6 +100,8 @@ class OfflineRecapService {
       progressPct: progressPct,
       estimatedMojianshi: outputs.mojianshi,
       estimatedExperience: outputs.experiencePoints,
+      estimatedItemRewards: outputs.itemRewards,
+      estimatedTechniqueLearnPoints: outputs.techniqueLearnPoints,
       estimatedSilver: outputs.silver,
       settledHours: outputs.actualHours,
       limitReason: limitReason,
