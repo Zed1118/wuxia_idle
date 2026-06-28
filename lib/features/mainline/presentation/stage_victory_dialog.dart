@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/domain/equipment.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
@@ -13,6 +14,11 @@ import '../../battle/domain/battle_stats.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/drop_service.dart';
+import '../../equipment/application/equipment_source_lookup.dart';
+import '../../equipment/domain/equipment_source.dart';
+
+typedef EquipmentDropLockHandler =
+    Future<bool> Function(Equipment equipment, bool locked);
 
 /// 主线 victory dialog(W15 #30 P3 后续 A 任务)。
 ///
@@ -30,6 +36,7 @@ Future<void> showStageVictoryDialog({
   String? firstClearSubtitle,
   BattleStatsSummary? stats,
   String? skillFragmentLine,
+  EquipmentDropLockHandler? onEquipmentLockToggle,
 }) async {
   // 结算 jingle:跨 tier 大境界突破响 realmAdvance(爆装备音已移到 playTreasureDropIfAny
   // 动画层 + 门槛化,2026-06-11)。
@@ -49,6 +56,7 @@ Future<void> showStageVictoryDialog({
         firstClearSubtitle: firstClearSubtitle,
         stats: stats,
         skillFragmentLine: skillFragmentLine,
+        onEquipmentLockToggle: onEquipmentLockToggle,
       ),
       actions: [
         TextButton(
@@ -74,6 +82,7 @@ class StageVictoryContent extends StatelessWidget {
     this.firstClearSubtitle,
     this.stats,
     this.skillFragmentLine,
+    this.onEquipmentLockToggle,
   });
 
   final DropResult drops;
@@ -86,6 +95,7 @@ class StageVictoryContent extends StatelessWidget {
   /// 第七阶段批二④:残页轻提示行(掉残页未集齐时,非重仪式)。
   /// null=本场未掉残页或已走重仪式;非空时在 drop 段末尾追一行小字。
   final String? skillFragmentLine;
+  final EquipmentDropLockHandler? onEquipmentLockToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +124,11 @@ class StageVictoryContent extends StatelessWidget {
         else ...[
           // H1 批3:装备掉落按品阶上色 + 勋章图标,神物/寻常货一眼可辨(§10
           // 仪式感),消除「磨剑石与神物视觉同」的零反馈。道具仍走朴素列。
-          for (final eq in drops.equipments) _EquipmentDropRow(defId: eq.defId),
+          for (final eq in drops.equipments)
+            _EquipmentDropRow(
+              equipment: eq,
+              onLockToggle: onEquipmentLockToggle,
+            ),
           for (final item in drops.items)
             Padding(
               padding: const EdgeInsets.only(left: 8),
@@ -151,9 +165,14 @@ class StageVictoryContent extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             UiStrings.battleSummary(
-                stats!.totalDamage, stats!.critCount, stats!.totalTicks),
+              stats!.totalDamage,
+              stats!.critCount,
+              stats!.totalTicks,
+            ),
             style: const TextStyle(
-                color: WuxiaColors.textSecondary, fontSize: 13),
+              color: WuxiaColors.textSecondary,
+              fontSize: 13,
+            ),
           ),
         ],
       ],
@@ -235,43 +254,313 @@ class FirstClearBanner extends StatelessWidget {
 /// 品阶色取 [tierColorForEquipment](寻常货暗灰 → 神物高亮金),让稀有掉落
 /// 一眼跳出(§10 仪式感)。GameRepository 未加载时降级纯 defId(沿原兜底)。
 /// 公开省略 —— 仅本 dialog 内部用。
-class _EquipmentDropRow extends StatelessWidget {
-  const _EquipmentDropRow({required this.defId});
+class _EquipmentDropRow extends StatefulWidget {
+  const _EquipmentDropRow({required this.equipment, this.onLockToggle});
 
-  final String defId;
+  final Equipment equipment;
+  final EquipmentDropLockHandler? onLockToggle;
+
+  @override
+  State<_EquipmentDropRow> createState() => _EquipmentDropRowState();
+}
+
+class _EquipmentDropRowState extends State<_EquipmentDropRow> {
+  late bool _locked = widget.equipment.isLocked;
+  bool _deferred = false;
+
+  Future<void> _setLocked(bool locked) async {
+    if (widget.onLockToggle == null) {
+      setState(() => _locked = locked);
+      return;
+    }
+    final ok = await widget.onLockToggle!(widget.equipment, locked);
+    if (!mounted || !ok) return;
+    setState(() => _locked = locked);
+  }
+
+  void _showSources(List<EquipmentSource> sources) {
+    PaperDialog.show<void>(
+      context,
+      title: UiStrings.equipmentDropSourceTitle,
+      body: _EquipmentSourceBody(sources: sources),
+      actions: [
+        PlaqueButton(
+          label: UiStrings.stageVictoryConfirm,
+          primary: true,
+          onTap: () => Navigator.of(context).pop(),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     if (!GameRepository.isLoaded) {
       return Padding(
         padding: const EdgeInsets.only(left: 8),
-        child: Text('· $defId'),
+        child: Text('· ${widget.equipment.defId}'),
       );
     }
-    final def = GameRepository.instance.getEquipment(defId);
+    final def = GameRepository.instance.getEquipment(widget.equipment.defId);
     final color = tierColorForEquipment(def.tier);
+    final sources = EquipmentSourceLookup(
+      GameRepository.instance,
+    ).sourcesFor(def.id);
+    final protected =
+        widget.equipment.isLineageHeritage ||
+        widget.equipment.ownerCharacterId != null ||
+        _locked;
+    final sourceSummary = sources.isEmpty
+        ? UiStrings.equipmentSourceUnknown
+        : _sourceLabel(sources.first);
     return Padding(
-      padding: const EdgeInsets.only(left: 8, top: 2),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.workspace_premium, size: 15, color: color),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              def.name,
-              style: TextStyle(color: color, fontWeight: FontWeight.w600),
+      padding: const EdgeInsets.only(left: 8, top: 6, right: 2),
+      child: AnimatedOpacity(
+        opacity: _deferred ? 0.58 : 1,
+        duration: const Duration(milliseconds: 160),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            border: Border(left: BorderSide(color: color, width: 2)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 7, 8, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.workspace_premium, size: 15, color: color),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        def.name,
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      EnumL10n.equipmentTier(def.tier),
+                      style: TextStyle(color: color, fontSize: 11),
+                    ),
+                    if (_locked) ...[
+                      const SizedBox(width: 6),
+                      const _DropBadge(
+                        text: UiStrings.equipmentLockedLabel,
+                        color: WuxiaColors.bossFrame,
+                      ),
+                    ],
+                    if (widget.equipment.isLineageHeritage) ...[
+                      const SizedBox(width: 6),
+                      const _DropBadge(
+                        text: UiStrings.lineageHeritageLabel,
+                        color: WuxiaColors.hpLow,
+                      ),
+                    ],
+                    if (widget.equipment.ownerCharacterId != null) ...[
+                      const SizedBox(width: 6),
+                      const _DropBadge(
+                        text: UiStrings.equipmentDropActionEquipped,
+                        color: WuxiaColors.textSecondary,
+                      ),
+                    ],
+                    if (_deferred) ...[
+                      const SizedBox(width: 6),
+                      const _DropBadge(
+                        text: UiStrings.equipmentDropActionDone,
+                        color: WuxiaColors.textMuted,
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  sourceSummary,
+                  style: const TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 11,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _TinyActionButton(
+                      label: _locked
+                          ? UiStrings.equipmentUnlock
+                          : UiStrings.equipmentLock,
+                      icon: _locked ? Icons.lock_open : Icons.lock_outline,
+                      onTap: () => _setLocked(!_locked),
+                    ),
+                    _TinyActionButton(
+                      label: _locked
+                          ? UiStrings.equipmentDropFavoriteLabel
+                          : UiStrings.equipmentDropActionFavorite,
+                      icon: Icons.bookmark_border,
+                      onTap: _locked ? null : () => _setLocked(true),
+                    ),
+                    _TinyActionButton(
+                      label: UiStrings.equipmentDropActionSource,
+                      icon: Icons.travel_explore,
+                      onTap: () => _showSources(sources),
+                    ),
+                    _TinyActionButton(
+                      label: UiStrings.equipmentDropActionLater,
+                      icon: Icons.schedule,
+                      onTap: () => setState(() => _deferred = true),
+                    ),
+                    if (protected)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 4),
+                        child: Text(
+                          UiStrings.equipmentDropActionProtected,
+                          style: TextStyle(
+                            color: WuxiaColors.textMuted,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                if (!_locked)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 5),
+                    child: Text(
+                      UiStrings.equipmentDropFavoriteHint,
+                      style: TextStyle(
+                        color: WuxiaColors.textMuted,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
-          const SizedBox(width: 6),
-          Text(
-            EnumL10n.equipmentTier(def.tier),
-            style: TextStyle(color: color, fontSize: 11),
-          ),
-        ],
+        ),
       ),
     );
   }
+}
+
+class _DropBadge extends StatelessWidget {
+  const _DropBadge({required this.text, required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.36)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: color,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TinyActionButton extends StatelessWidget {
+  const _TinyActionButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      style: OutlinedButton.styleFrom(
+        visualDensity: VisualDensity.compact,
+        foregroundColor: WuxiaColors.textSecondary,
+        disabledForegroundColor: WuxiaColors.textMuted,
+        side: BorderSide(
+          color: onTap == null
+              ? WuxiaColors.textMuted.withValues(alpha: 0.22)
+              : WuxiaColors.textMuted.withValues(alpha: 0.48),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        minimumSize: const Size(0, 30),
+        textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+      ),
+      onPressed: onTap,
+      icon: Icon(icon, size: 14),
+      label: Text(label),
+    );
+  }
+}
+
+class _EquipmentSourceBody extends StatelessWidget {
+  const _EquipmentSourceBody({required this.sources});
+
+  final List<EquipmentSource> sources;
+
+  @override
+  Widget build(BuildContext context) {
+    if (sources.isEmpty) {
+      return const Text(
+        UiStrings.equipmentDropSourceEmpty,
+        style: TextStyle(color: WuxiaUi.ink, height: 1.7),
+      );
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final source in sources)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Text(
+              '· ${_sourceLabel(source)}',
+              style: const TextStyle(color: WuxiaUi.ink, height: 1.6),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+String _sourceLabel(EquipmentSource source) {
+  return switch (source.kind) {
+    EquipmentSourceKind.mainline => UiStrings.equipmentSourceMainline(
+      source.chapterIndex ?? 0,
+      source.name ?? UiStrings.equipmentSourceUnknown,
+      source.isBoss,
+    ),
+    EquipmentSourceKind.stage => UiStrings.equipmentSourceStage(
+      source.name ?? UiStrings.equipmentSourceUnknown,
+      source.isBoss,
+    ),
+    EquipmentSourceKind.tower => UiStrings.equipmentSourceTower(
+      source.floorIndex ?? 0,
+      source.isBoss,
+    ),
+    EquipmentSourceKind.seclusion => UiStrings.equipmentSourceSeclusion(
+      source.name ?? UiStrings.equipmentSourceUnknown,
+    ),
+    EquipmentSourceKind.shop => UiStrings.equipmentSourceShop,
+    EquipmentSourceKind.tag => UiStrings.equipmentSourceTag(source.tag ?? ''),
+  };
 }
 
 /// 单条共鸣度晋阶通知(P1.1 候选 3-a)。

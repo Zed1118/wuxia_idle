@@ -688,6 +688,16 @@ class UiStrings {
   static const String equipmentLock = '锁定';
   static const String equipmentUnlock = '解锁';
   static const String equipmentLockedLabel = '已锁定';
+  static const String equipmentDropActionLater = '稍后处理';
+  static const String equipmentDropActionSource = '查看来源';
+  static const String equipmentDropActionFavorite = '标记常用';
+  static const String equipmentDropFavoriteLabel = '常用';
+  static const String equipmentDropActionDone = '已处理';
+  static const String equipmentDropSourceTitle = '装备来源';
+  static const String equipmentDropSourceEmpty = '此物来源未明。';
+  static const String equipmentDropActionProtected = '已受保护';
+  static const String equipmentDropActionEquipped = '已穿戴';
+  static const String equipmentDropFavoriteHint = '常用装备将以锁定状态保留，避免整理时误处置。';
   static const String equipmentBulkEntry = '批量整理';
   static const String equippedBadge = '装备中';
   static const String inventoryShopEntry = '进商店';

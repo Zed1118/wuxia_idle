@@ -46,6 +46,7 @@ import '../../jianghu/application/jianghu_providers.dart';
 import '../../lineage/presentation/disciple_join_hook.dart';
 import '../../sect/presentation/stage_boss_recruit_hook.dart';
 import '../../equipment/application/drop_service.dart';
+import '../../equipment/application/equipment_service.dart';
 import '../../equipment/application/first_acquisition_tiers.dart';
 import '../../event/application/game_event_service.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
@@ -94,10 +95,11 @@ Future<void> runStageFlow({
   @visibleForTesting
   Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
   @visibleForTesting Future<bool> Function()? stageRetryDeciderForTest,
-  @visibleForTesting Future<void> Function(String stageId)? victoryRecorderForTest,
+  @visibleForTesting
+  Future<void> Function(String stageId)? victoryRecorderForTest,
   @visibleForTesting
   Future<List<DefeatLossEntry>> Function(StageDef stage)?
-      bossDefeatPenaltyForTest,
+  bossDefeatPenaltyForTest,
 }) async {
   // ── opening ──
   if (stage.narrativeOpeningId != null) {
@@ -188,8 +190,11 @@ Future<void> runStageFlow({
 
   // ── victory ──
   // Phase 4 W11 #32 销账：装备 battleCount / 心法 skillUsage / 主修升层 + 关卡 drop 落地
-  final outcome =
-      await applyVictoryResolution(ref: ref, stage: stage, cycle: targetCycle);
+  final outcome = await applyVictoryResolution(
+    ref: ref,
+    stage: stage,
+    cycle: targetCycle,
+  );
   // W13-v3 fix: 同 defeat 分支,invalidate character/equipment/technique family
   _invalidateCharacterFamilyAfterCombat(ref);
 
@@ -232,7 +237,9 @@ Future<void> runStageFlow({
 
     // P4 战绩册:Boss 胜利 → 留档(纯数据写;test stub 路径不进 else,天然跳过,同 recordVictory/skillDrop)。
     if (stage.isBossStage && outcome != null) {
-      final boss = stage.enemyTeam.isNotEmpty ? stage.enemyTeam.last.name : stage.name;
+      final boss = stage.enemyTeam.isNotEmpty
+          ? stage.enemyTeam.last.name
+          : stage.name;
       await runBossMemoryHookAfterVictory(
         source: BossMemorySource.mainline,
         bossKey: mainlineBossKey(stage.id),
@@ -252,9 +259,10 @@ Future<void> runStageFlow({
   if (outcome != null && context.mounted) {
     final isFirstClear = !clearedBeforeVictory.contains(stage.id);
     if (shouldShowHeroCamera(
-        isBoss: stage.isBossStage,
-        isFirstClear: isFirstClear,
-        data: outcome.heroCamera)) {
+      isBoss: stage.isBossStage,
+      isFirstClear: isFirstClear,
+      data: outcome.heroCamera,
+    )) {
       await presentHeroCamera(context, outcome.heroCamera!);
       if (!context.mounted) return;
     }
@@ -264,8 +272,12 @@ Future<void> runStageFlow({
       await presentSkillTreasure(context, skillDrop);
       if (!context.mounted) return;
     }
-    await presentVictoryCeremony(context, outcome.drops,
-        treasureGate: true, extraDisplayTiers: outcome.extraDisplayTiers);
+    await presentVictoryCeremony(
+      context,
+      outcome.drops,
+      treasureGate: true,
+      extraDisplayTiers: outcome.extraDisplayTiers,
+    );
     if (!context.mounted) return;
     await showStageVictoryDialog(
       context: context,
@@ -275,6 +287,12 @@ Future<void> runStageFlow({
       resonanceUpgrades: outcome.resonanceUpgrades,
       stats: outcome.stats,
       skillFragmentLine: skillFragmentLineFor(skillDrop),
+      onEquipmentLockToggle: (equipment, locked) async {
+        final result = await EquipmentService(
+          isar: IsarSetup.instance,
+        ).setLocked(equipmentId: equipment.id, locked: locked);
+        return result == EquipOutcome.success;
+      },
     );
   }
 
@@ -305,8 +323,9 @@ Future<void> runStageFlow({
   await runEncounterHookAfterVictory(
     context: context,
     ref: ref,
-    defeatedSchools:
-        stage.enemyTeam.map((e) => e.school).toList(growable: false),
+    defeatedSchools: stage.enemyTeam
+        .map((e) => e.school)
+        .toList(growable: false),
   );
 
   // 第七阶段批三:命名弟子拜入 hook(过 join 触发关 → 拜师叙事 + 最小立绘题字)。
@@ -369,34 +388,36 @@ Future<({bool won, bool surrendered})> _runBattle({
   final completer = Completer<({bool won, bool surrendered})>();
   // 不 await push:胜利时 BattleScreen 留在栈上,由 runStageFlow 播完胜利仪式/
   // 结算后再 pop(让爆品/简版勝盖在战斗场景上,而非退回列表后才弹)。失败/投降时 host 自 pop。
-  Navigator.of(context).push<void>(
-    MaterialPageRoute(
-      builder: (_) => _StageBattleHost(
-        stage: stage,
-        targetCycle: targetCycle,
-        onVictory: () {
-          if (!completer.isCompleted) {
-            completer.complete((won: true, surrendered: false));
-          }
-        },
-        onDefeat: () {
-          if (!completer.isCompleted) {
-            completer.complete((won: false, surrendered: false));
-          }
-        },
-        onSurrender: () {
-          if (!completer.isCompleted) {
-            completer.complete((won: false, surrendered: true));
-          }
-        },
-      ),
-    ),
-  ).then((_) {
-    // 兜底:BattleScreen 被 pop(系统返回/失败 host pop)而未触发回调 → 未胜非投降。
-    if (!completer.isCompleted) {
-      completer.complete((won: false, surrendered: false));
-    }
-  });
+  Navigator.of(context)
+      .push<void>(
+        MaterialPageRoute(
+          builder: (_) => _StageBattleHost(
+            stage: stage,
+            targetCycle: targetCycle,
+            onVictory: () {
+              if (!completer.isCompleted) {
+                completer.complete((won: true, surrendered: false));
+              }
+            },
+            onDefeat: () {
+              if (!completer.isCompleted) {
+                completer.complete((won: false, surrendered: false));
+              }
+            },
+            onSurrender: () {
+              if (!completer.isCompleted) {
+                completer.complete((won: false, surrendered: true));
+              }
+            },
+          ),
+        ),
+      )
+      .then((_) {
+        // 兜底:BattleScreen 被 pop(系统返回/失败 host pop)而未触发回调 → 未胜非投降。
+        if (!completer.isCompleted) {
+          completer.complete((won: false, surrendered: false));
+        }
+      });
   return completer.future;
 }
 
@@ -469,38 +490,50 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
       if (!mounted) return;
       try {
         // ── 入口决策:首通门控(2.5)优先 → 否则 per-stage override + 全局 ──
-        final override =
-            await ref.read(stageAutoPlayPrefServiceProvider).override(_battleKey);
+        final override = await ref
+            .read(stageAutoPlayPrefServiceProvider)
+            .override(_battleKey);
         if (!mounted) return;
-        final global =
-            (await ref.read(gameplaySettingsProvider.future)).autoPlayDefault;
+        final global = (await ref.read(
+          gameplaySettingsProvider.future,
+        )).autoPlayDefault;
         if (!mounted) return;
         // 2.5:本场 (stageId, cycle) 首通前强制 interactive(拖招层在场);首通后
         // 按设置可纯 auto 复刷。Isar 用 IsarSetup.instance(同下方 buildTeams);若
         // 未 ready 抛 StateError → 外层 catch 转 _setupError 页(与其它 init 失败一致)。
-        final progress = await MainlineProgressService(isar: IsarSetup.instance)
-            .getOrCreate(saveDataId: IsarSetup.currentSlotId);
+        final progress = await MainlineProgressService(
+          isar: IsarSetup.instance,
+        ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
         if (!mounted) return;
         final firstClear = MainlineProgressService.isFirstClear(
-            progress, widget.stage.id, widget.targetCycle);
-        setState(() => _mode = resolveAutoPlayModeWithFirstClear(
-              isFirstClear: firstClear,
-              override: override,
-              globalDefault: global,
-            ));
+          progress,
+          widget.stage.id,
+          widget.targetCycle,
+        );
+        setState(
+          () => _mode = resolveAutoPlayModeWithFirstClear(
+            isFirstClear: firstClear,
+            override: override,
+            globalDefault: global,
+          ),
+        );
 
-        final (left, right) = await StageBattleSetup(isar: IsarSetup.instance)
-            .buildTeams(widget.stage, cycleIndex: widget.targetCycle);
+        final (left, right) = await StageBattleSetup(
+          isar: IsarSetup.instance,
+        ).buildTeams(widget.stage, cycleIndex: widget.targetCycle);
         if (!mounted) return;
 
         if (widget.stage.stageType == StageType.massBattle) {
           final enemyWaves = StageBattleSetup.buildEnemyTeamsPerWave(
-              widget.stage,
-              cycleIndex: widget.targetCycle);
+            widget.stage,
+            cycleIndex: widget.targetCycle,
+          );
           final config = GameRepository.instance.numbers.massBattle;
           final formation = await _pickFormation(context, widget.stage, config);
           if (!mounted) return;
-          ref.read(battleProvider.notifier).startBattle(
+          ref
+              .read(battleProvider.notifier)
+              .startBattle(
                 left,
                 right,
                 strategy: MassBattleStrategy(
@@ -511,7 +544,9 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
               );
         } else if (widget.stage.stageType == StageType.lightFoot &&
             widget.stage.terrainBiome != null) {
-          ref.read(battleProvider.notifier).startBattle(
+          ref
+              .read(battleProvider.notifier)
+              .startBattle(
                 left,
                 right,
                 strategy: LightFootStrategy(
@@ -637,17 +672,23 @@ List<DefeatLossEntry> buildDefeatLossEntries({
     final p = result.defeatPenaltyByCharacter[ch.id];
     if (p == null) continue;
     final techName = _resolveTechName(ch, techsByCh);
-    entries.add(DefeatLossEntry(
-      characterName: ch.name,
-      internalForceBefore: p.internalForceBefore,
-      internalForceAfter: p.internalForceAfter,
-      techniqueName: techName,
-      oldLayerLabel: p.didRollback ? EnumL10n.cultivationLayer(p.oldLayer) : null,
-      newLayerLabel: p.didRollback ? EnumL10n.cultivationLayer(p.newLayer) : null,
-      layersRolledBack: p.layersRolledBack,
-      residueApplied: false,
-      injuryApplied: ch.injuryHoursRemaining > 0,
-    ));
+    entries.add(
+      DefeatLossEntry(
+        characterName: ch.name,
+        internalForceBefore: p.internalForceBefore,
+        internalForceAfter: p.internalForceAfter,
+        techniqueName: techName,
+        oldLayerLabel: p.didRollback
+            ? EnumL10n.cultivationLayer(p.oldLayer)
+            : null,
+        newLayerLabel: p.didRollback
+            ? EnumL10n.cultivationLayer(p.newLayer)
+            : null,
+        layersRolledBack: p.layersRolledBack,
+        residueApplied: false,
+        injuryApplied: ch.injuryHoursRemaining > 0,
+      ),
+    );
   }
 
   // 心魔惩罚 entries（不掉层，余毒标记）
@@ -655,17 +696,19 @@ List<DefeatLossEntry> buildDefeatLossEntries({
     final ip = result.innerDemonPenaltyByCharacter[ch.id];
     if (ip == null) continue;
     final techName = _resolveTechName(ch, techsByCh);
-    entries.add(DefeatLossEntry(
-      characterName: ch.name,
-      internalForceBefore: ip.internalForceBefore,
-      internalForceAfter: ip.internalForceAfter,
-      techniqueName: techName,
-      oldLayerLabel: null,
-      newLayerLabel: null,
-      layersRolledBack: 0,
-      residueApplied: true,
-      injuryApplied: ch.injuryHoursRemaining > 0,
-    ));
+    entries.add(
+      DefeatLossEntry(
+        characterName: ch.name,
+        internalForceBefore: ip.internalForceBefore,
+        internalForceAfter: ip.internalForceAfter,
+        techniqueName: techName,
+        oldLayerLabel: null,
+        newLayerLabel: null,
+        layersRolledBack: 0,
+        residueApplied: true,
+        injuryApplied: ch.injuryHoursRemaining > 0,
+      ),
+    );
   }
 
   return entries;
@@ -711,14 +754,16 @@ String? _resolveTechName(Character ch, Map<int, List<Technique>> techsByCh) {
 /// [showStageVictoryDialog] 显 drop + 升层 banner。
 /// P1.1 候选 3-a:record 加 `resonanceUpgrades` 供 dialog 显共鸣度晋阶 sub-row。
 Future<
-    ({
-      DropResult drops,
-      List<AdvancementEntry> advancements,
-      List<ResonanceUpgradeNotice> resonanceUpgrades,
-      BattleStatsSummary stats,
-      HeroCameraData? heroCamera,
-      Set<EquipmentTier> extraDisplayTiers,
-    })?> applyVictoryResolution({
+  ({
+    DropResult drops,
+    List<AdvancementEntry> advancements,
+    List<ResonanceUpgradeNotice> resonanceUpgrades,
+    BattleStatsSummary stats,
+    HeroCameraData? heroCamera,
+    Set<EquipmentTier> extraDisplayTiers,
+  })?
+>
+applyVictoryResolution({
   required WidgetRef ref,
   required StageDef stage,
   int cycle = 1,
@@ -808,8 +853,7 @@ Future<
         .filter()
         .saveDataIdEqualTo(IsarSetup.currentSlotId)
         .findFirst();
-    final clearedSet =
-        progress?.clearedStageIds.toSet() ?? <String>{};
+    final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
     final innerDemonDef = GameRepository.instance.numbers.innerDemon;
     for (final c in characters) {
       final r = CharacterAdvancementService.applyExperience(
@@ -842,9 +886,8 @@ Future<
       .filter()
       .saveDataIdEqualTo(IsarSetup.currentSlotId)
       .findFirst();
-  final isFirstClearStage = !(mainlineProgressSnapshot?.clearedStageIds
-          .contains(stage.id) ??
-      false);
+  final isFirstClearStage =
+      !(mainlineProgressSnapshot?.clearedStageIds.contains(stage.id) ?? false);
   final founderId = save?.founderCharacterId;
 
   // P1.1 候选 3-a:writeTxn 内 push notice,函数末 return 给 caller 传 dialog。
@@ -894,8 +937,9 @@ Future<
     // didAdvance;#7 resonanceUpgraded 战斗中跨档装备;#8 bossDefeated 仅
     // isBossStage && isFirstClearStage 触发。
     final events = GameEventService(isar);
-    final allEquips =
-        equipsByCh.values.expand((list) => list).toList(growable: false);
+    final allEquips = equipsByCh.values
+        .expand((list) => list)
+        .toList(growable: false);
     for (final eqId in result.resonanceUpgradedEquipmentIds) {
       Equipment? eq;
       for (final e in allEquips) {
@@ -914,10 +958,9 @@ Future<
         newStage: stage.index + 1,
       );
       // P1.1 候选 3-a:cache notice 供 victory dialog 显共鸣度晋阶 sub-row。
-      resonanceUpgrades.add(ResonanceUpgradeNotice(
-        equipmentName: def.name,
-        newStage: stage,
-      ));
+      resonanceUpgrades.add(
+        ResonanceUpgradeNotice(equipmentName: def.name, newStage: stage),
+      );
     }
     for (final drop in result.dropResult.equipments) {
       final def = GameRepository.instance.getEquipment(drop.defId);
@@ -937,10 +980,7 @@ Future<
         (c) => c.name == entry.chName,
         orElse: () => characters.first,
       );
-      await events.recordRealmBreakthrough(
-        character: ch,
-        result: entry.result,
-      );
+      await events.recordRealmBreakthrough(character: ch, result: entry.result);
       // P1 #42 Phase 2 §10 P1.y:主角达一流 → 推 step 6(收徒门槛)。
       // 沿 ch == characters.first 判定主角(test fixture 多角色升层时只对
       // founder 推进,与 founderId 路径保持一致)。
@@ -974,8 +1014,10 @@ Future<
 
   // 第七阶段 批一 Task 6:计算利器首次获得的 extraDisplayTiers
   // (须在 putAll 入库后调用,判据:库存总数 ≤ 本次掉落件数)。
-  final extraDisplayTiers =
-      await computeFirstAcquisitionTiers(isar, result.dropResult);
+  final extraDisplayTiers = await computeFirstAcquisitionTiers(
+    isar,
+    result.dropResult,
+  );
 
   // 兵器谱：新掉落装备已落库(上方 writeTxn putAll(result.dropResult.equipments)
   // 已 commit),留册图鉴(best-effort)。
@@ -1133,21 +1175,23 @@ class _DefeatLossBanner extends StatelessWidget {
           ),
           for (final e in entries) _entryLine(e),
           // 伤势汇总行（Task 9）：有任一 entry 重伤时追加「N 名弟子负伤」提示。
-          Builder(builder: (context) {
-            final injuredCount = entries.where((e) => e.injuryApplied).length;
-            if (injuredCount == 0) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                UiStrings.defeatInjuredDisciples(injuredCount),
-                style: const TextStyle(
-                  color: WuxiaColors.hpLow,
-                  fontSize: 12,
-                  height: 1.4,
+          Builder(
+            builder: (context) {
+              final injuredCount = entries.where((e) => e.injuryApplied).length;
+              if (injuredCount == 0) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  UiStrings.defeatInjuredDisciples(injuredCount),
+                  style: const TextStyle(
+                    color: WuxiaColors.hpLow,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -1155,7 +1199,9 @@ class _DefeatLossBanner extends StatelessWidget {
 
   Widget _entryLine(DefeatLossEntry e) {
     final ifSegment = UiStrings.defeatInternalForceSegment(
-        e.internalForceBefore, e.internalForceAfter);
+      e.internalForceBefore,
+      e.internalForceAfter,
+    );
     String? techSegment;
     if (e.techniqueName != null && e.layersRolledBack > 0) {
       techSegment = UiStrings.defeatTechniqueLayerSegment(
@@ -1165,12 +1211,12 @@ class _DefeatLossBanner extends StatelessWidget {
         e.layersRolledBack,
       );
     } else if (e.techniqueName != null) {
-      techSegment =
-          UiStrings.defeatTechniqueProgressSegment(e.techniqueName!);
+      techSegment = UiStrings.defeatTechniqueProgressSegment(e.techniqueName!);
     }
     // 余毒标记段（心魔惩罚 residueApplied=true 时追加）
-    final String? residueSegment =
-        e.residueApplied ? UiStrings.innerDemonResidueNote : null;
+    final String? residueSegment = e.residueApplied
+        ? UiStrings.innerDemonResidueNote
+        : null;
 
     // 拼接完整行文本
     final parts = [
@@ -1244,15 +1290,24 @@ class _FormationPickerDialog extends StatelessWidget {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _tile(context, Formation.yanXing,
-              UiStrings.massBattleFormationYanXing,
-              UiStrings.massBattleFormationYanXingHint),
-          _tile(context, Formation.baGua,
-              UiStrings.massBattleFormationBaGua,
-              UiStrings.massBattleFormationBaGuaHint),
-          _tile(context, Formation.fengShi,
-              UiStrings.massBattleFormationFengShi,
-              UiStrings.massBattleFormationFengShiHint),
+          _tile(
+            context,
+            Formation.yanXing,
+            UiStrings.massBattleFormationYanXing,
+            UiStrings.massBattleFormationYanXingHint,
+          ),
+          _tile(
+            context,
+            Formation.baGua,
+            UiStrings.massBattleFormationBaGua,
+            UiStrings.massBattleFormationBaGuaHint,
+          ),
+          _tile(
+            context,
+            Formation.fengShi,
+            UiStrings.massBattleFormationFengShi,
+            UiStrings.massBattleFormationFengShiHint,
+          ),
         ],
       ),
     );
