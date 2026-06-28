@@ -37,6 +37,7 @@ import 'projectile_trail.dart';
 import 'ultimate_caption_overlay.dart';
 import 'victory_overlay.dart';
 import '../../cangjingge/presentation/cangjingge_screen.dart';
+import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
 import '../../inventory/presentation/inventory_screen.dart';
@@ -1097,6 +1098,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       DiagnosisJumpTarget.cultivation => TechniquePanelScreen(
         characterId: playerId,
       ),
+      DiagnosisJumpTarget.roster => CharacterPanelScreen(characterId: playerId),
+      DiagnosisJumpTarget.supplies => const InventoryScreen(),
     };
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
   }

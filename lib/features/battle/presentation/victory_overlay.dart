@@ -36,10 +36,12 @@ class VictoryOverlay extends StatelessWidget {
   bool get _isVictory => result == BattleResult.leftWin;
 
   static String _jumpLabel(DiagnosisJumpTarget t) => switch (t) {
-        DiagnosisJumpTarget.skills => UiStrings.diagJumpSkills,
-        DiagnosisJumpTarget.equipment => UiStrings.diagJumpEquipment,
-        DiagnosisJumpTarget.cultivation => UiStrings.diagJumpCultivation,
-      };
+    DiagnosisJumpTarget.skills => UiStrings.diagJumpSkills,
+    DiagnosisJumpTarget.equipment => UiStrings.diagJumpEquipment,
+    DiagnosisJumpTarget.cultivation => UiStrings.diagJumpCultivation,
+    DiagnosisJumpTarget.roster => UiStrings.diagJumpRoster,
+    DiagnosisJumpTarget.supplies => UiStrings.diagJumpSupplies,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -108,6 +110,20 @@ class VictoryOverlay extends StatelessWidget {
                   // 战报失败诊断三段式（spec 2026-06-15-battle-report-diagnosis）。
                   if (!_isVictory && diagnosis != null) ...[
                     const SizedBox(height: 10),
+                    Text(
+                      UiStrings.defeatShortfallLabel(
+                        UiStrings.defeatShortfallName(
+                          diagnosis!.shortfall.name,
+                        ),
+                      ),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: WuxiaUi.ink.withValues(alpha: 0.72),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
                     Text(
                       diagnosis!.primaryCause,
                       textAlign: TextAlign.center,

@@ -1196,6 +1196,7 @@ class _DefeatCeremonyPreview extends StatelessWidget {
             totalTicks: 42,
             diagnosis: const BattleDiagnosis(
               ruleId: 'killed_by_charge',
+              shortfall: DefeatShortfall.technique,
               primaryCause: '被 Boss 蓄力大招击溃',
               dataLines: ['致命一击：摧心掌 720', '内力余量：180/500'],
               suggestions: [

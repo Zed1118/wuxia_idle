@@ -116,6 +116,7 @@ class UiStrings {
   // 战斗结算（T16）
   static const String close = '关闭';
   static const String backToMenu = '返回菜单';
+  static const String unknown = '未明';
 
   // ─── 胜负仪式 overlay(出版美术 B1)──────────────────────────────────────
   static const String victoryTitle = '勝';
@@ -130,32 +131,56 @@ class UiStrings {
       '总伤害 $totalDamage    暴击 $critCount 次    用时 $totalTicks 回合';
 
   // ── 战报失败诊断（spec 2026-06-15-battle-report-diagnosis）──
+  static String defeatShortfallLabel(String label) => '主要短板：$label';
+  static String defeatShortfallName(String name) {
+    return switch (name) {
+      'realm' => '等级 / 境界',
+      'equipment' => '装备',
+      'technique' => '心法 / 招式',
+      'roster' => '阵容',
+      'counter' => '流派克制',
+      'supplies' => '补给 / 续航',
+      _ => unknown,
+    };
+  }
+
   // 主因（1 条/规则）
+  static const String diagCauseRealm = '境界差距压住了招式';
   static const String diagCauseCharge = '被 Boss 蓄力大招击溃';
+  static const String diagCauseCounter = '主力流派被对面克住';
   static const String diagCauseInternalWound = '被内伤层层拖垮';
   static const String diagCauseMob = '被群敌围殴拖死';
   static const String diagCauseFrontline = '前排太脆，过早倒下';
+  static const String diagCauseSupplies = '续航不足，伤势拖到见底';
   static const String diagCauseDps = '输出不足，未能速决';
   static const String diagCauseGeneric = '惜败，调整战术后再战';
 
   // 关键数据（2 条/规则）
+  static String diagPlayerTopRealm(String realm) => '己方最高境界：$realm';
+  static String diagEnemyTopRealm(String realm) => '敌方最高境界：$realm';
   static String diagLethalHit(String skill, int dmg) => '致命一击：$skill $dmg';
   static String diagInternalForceLeft(int cur, int max) => '内力余量：$cur/$max';
+  static String diagCounteredDamageRatio(int pct) => '受克制伤害占比：$pct%';
+  static String diagDominantEnemySchool(String school) => '敌方主攻流派：$school';
   static String diagInternalWoundRatio(int pct) => '内伤占比：$pct%';
   static String diagDamageTaken(int dmg) => '受到总伤：$dmg';
   static String diagMinionRatio(int pct) => '小怪伤害占比：$pct%';
   static String diagFrontlineDeath(String name, int tick) =>
       '$name 在第 $tick 回合倒下';
   static String diagFrontlineMaxHp(int hp) => '其最大血量：$hp';
+  static String diagRecoveryDone(int hp) => '战中回复：$hp';
   static String diagTotalTicks(int tick) => '总回合：$tick';
   static String diagSurvivorHp(int pct) => '敌方残血：平均 $pct%';
   static String diagTotalDamage(int dmg) => '总伤害：$dmg';
 
   // 建议（1 条/规则）
+  static const String diagSuggestRealm = '先闭关推境界，再回来碰硬仗。';
   static const String diagSuggestCharge = '保留内力、装配破招技，看准蓄力时机破招。';
-  static const String diagSuggestInternalWound = '速杀或修抗性心法、备回复，化解内伤。';
-  static const String diagSuggestMob = '装配群体技，优先清场再攻坚。';
+  static const String diagSuggestCounter = '换一名主修不被克的门人上阵，或调整主修流派。';
+  static const String diagSuggestInternalWound = '备好回复，或换能压住内伤的心法。';
+  static const String diagSuggestMob = '补一名清场手，先清场再攻坚。';
   static const String diagSuggestFrontline = '强化护具、以虚弱/回复护住前排。';
+  static const String diagSuggestSupplies = '查看药囊、疗伤丹与带回复的装备。';
   static const String diagSuggestDps = '提升技能熟练度，使用破防技提速。';
   static const String diagSuggestGeneric = '检视技能装配，调整后再战。';
 
@@ -163,6 +188,8 @@ class UiStrings {
   static const String diagJumpSkills = '查看技能装配';
   static const String diagJumpEquipment = '查看装备';
   static const String diagJumpCultivation = '查看心法';
+  static const String diagJumpRoster = '查看角色面板';
+  static const String diagJumpSupplies = '查看行囊补给';
 
   // 主菜单（T32 子提交 3b；G1 剥「调试」字样,production-facing 产品名）
   static const String mainMenuTitle = '挂机武侠';
