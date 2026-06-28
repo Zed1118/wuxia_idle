@@ -5,6 +5,7 @@ import '../domain/battle_diagnosis.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../inventory/presentation/post_battle_healing_panel.dart';
 
 /// 胜负仪式全屏 overlay(出版美术 B1)。
 /// 暗幕 + 印章符 + 金「勝」/绛红「敗」大题字 + 副标题 + 统计 + 继续按钮。
@@ -201,6 +202,7 @@ class VictoryOverlay extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  const PostBattleHealingPanel(),
                   const SizedBox(height: 18),
                   PlaqueButton(
                     label: UiStrings.battleContinue,

@@ -6,6 +6,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/features/equipment/application/forging_service.dart';
 
 /// T32 #22b ForgingService.persistResult 真 Isar 落地测试。
@@ -55,6 +56,19 @@ void main() {
     return eq;
   }
 
+  Future<void> seedFucai(int quantity) async {
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.inventoryItems.put(
+        InventoryItem()
+          ..defId = 'item_kaifeng_fucai'
+          ..itemType = ItemType.miscMaterial
+          ..quantity = quantity
+          ..firstObtainedAt = DateTime(2026, 6, 29)
+          ..lastObtainedAt = DateTime(2026, 6, 29),
+      );
+    });
+  }
+
   test('forge success → persistResult 后 forgingSlots[0] 已落地 Isar', () async {
     final eq = await seedEq(enhanceLevel: 10);
     final def = GameRepository.instance.equipmentDefs.values.first;
@@ -71,9 +85,7 @@ void main() {
     expect(eq.forgingSlots[0].unlocked, isTrue);
     expect(eq.forgingSlots[0].type, ForgingSlotType.attack);
 
-    await ForgingService(isar: IsarSetup.instance).persistResult(
-      eq: eq,
-    );
+    await ForgingService(isar: IsarSetup.instance).persistResult(eq: eq);
 
     // 关闭再开,确认真落盘
     await IsarSetup.close();
@@ -105,11 +117,35 @@ void main() {
     );
     expect(result, ForgeResult.success);
 
-    await ForgingService(isar: IsarSetup.instance).persistResult(
-      eq: eq,
-    );
+    await ForgingService(isar: IsarSetup.instance).persistResult(eq: eq);
 
     final eqBack = await IsarSetup.instance.equipments.get(eq.id);
     expect(eqBack?.enhanceLevel, 15, reason: '开锋不改 enhanceLevel');
+  });
+
+  test('persistResult 传 slot/config → 扣开锋辅材', () async {
+    final eq = await seedEq(enhanceLevel: 10);
+    final def = GameRepository.instance.equipmentDefs.values.first;
+    final config = GameRepository.instance.numbers.forging;
+    final cost = config.slotByIndex(1).fucaiCost;
+    await seedFucai(cost + 2);
+
+    final result = ForgingService.forge(
+      eq: eq,
+      def: def,
+      slotIndex: 1,
+      type: ForgingSlotType.attack,
+      config: config,
+    );
+    expect(result, ForgeResult.success);
+
+    await ForgingService(
+      isar: IsarSetup.instance,
+    ).persistResult(eq: eq, slotIndex: 1, config: config);
+
+    final item = await IsarSetup.instance.inventoryItems.getByDefId(
+      'item_kaifeng_fucai',
+    );
+    expect(item?.quantity, 2);
   });
 }

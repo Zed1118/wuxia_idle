@@ -40,11 +40,23 @@ void main() {
       kindsOf('item_xinxuejiejing'),
       contains(ItemUsageKind.equipmentGuarantee),
     );
+    expect(
+      kindsOf('item_duancai'),
+      contains(ItemUsageKind.equipmentEnhancement),
+    );
+    expect(
+      kindsOf('item_kaifeng_fucai'),
+      contains(ItemUsageKind.equipmentForging),
+    );
   });
 
   test('疗伤丹反查到疗伤整备用途', () {
     expect(
       kindsOf('item_liaoshangdan'),
+      contains(ItemUsageKind.injuryRecovery),
+    );
+    expect(
+      kindsOf('item_xingnang_buji'),
       contains(ItemUsageKind.injuryRecovery),
     );
   });

@@ -43,6 +43,7 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
   Future<void> _onForgeTap({
     required int slotIndex,
     required ForgingSlotType type,
+    required int fucaiQty,
   }) async {
     String? specialSkillId;
     if (type == ForgingSlotType.specialSkill) {
@@ -50,6 +51,10 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
       if (specialSkillId == null) return;
       if (!mounted) return;
     }
+
+    final config = ref.read(numbersConfigProvider).forging;
+    final fucaiCost = config.slotByIndex(slotIndex).fucaiCost;
+    if (fucaiQty < fucaiCost) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -59,9 +64,9 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
           UiStrings.forgingConfirmTitle,
           style: TextStyle(color: WuxiaColors.textPrimary),
         ),
-        content: const Text(
-          UiStrings.forgingConfirmBody,
-          style: TextStyle(color: WuxiaColors.textSecondary),
+        content: Text(
+          UiStrings.forgingConfirmBodyWithCost(fucaiCost),
+          style: const TextStyle(color: WuxiaColors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -80,7 +85,6 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
     );
     if (confirmed != true) return;
 
-    final config = ref.read(numbersConfigProvider).forging;
     final result = ForgingService.forge(
       eq: widget.equipment,
       def: widget.def,
@@ -94,8 +98,13 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
       // 测试旁路：未 init Isar 时 service 为 null,短路（替代旧 Isar.getInstance guard）。
       final service = ref.read(forgingServiceProvider);
       if (service != null) {
-        await service.persistResult(eq: widget.equipment);
+        await service.persistResult(
+          eq: widget.equipment,
+          slotIndex: slotIndex,
+          config: config,
+        );
         if (!mounted) return;
+        ref.invalidate(inventoryQuantityByDefIdProvider('item_kaifeng_fucai'));
         ref.invalidate(allEquipmentsProvider);
       }
       if (!mounted) return;
@@ -149,14 +158,16 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
   @override
   Widget build(BuildContext context) {
     final config = ref.watch(numbersConfigProvider).forging;
+    final fucaiAsync = ref.watch(
+      inventoryQuantityByDefIdProvider('item_kaifeng_fucai'),
+    );
+    final fucaiQty = fucaiAsync.value ?? 0;
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const MaterialSourceNote(
-            itemIds: ['item_mojianshi', 'item_xinxuejiejing'],
-          ),
+          const MaterialSourceNote(itemIds: ['item_kaifeng_fucai']),
           const SizedBox(height: 10),
           for (int i = 1; i <= 3; i++) ...[
             _SlotCard(
@@ -169,7 +180,10 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
                 slotIndex: i,
                 config: config,
               ),
-              onForge: (type) => _onForgeTap(slotIndex: i, type: type),
+              fucaiQty: fucaiQty,
+              fucaiCost: config.slotByIndex(i).fucaiCost,
+              onForge: (type) =>
+                  _onForgeTap(slotIndex: i, type: type, fucaiQty: fucaiQty),
             ),
             if (i < 3) const SizedBox(height: 8),
           ],
@@ -186,6 +200,8 @@ class _SlotCard extends StatelessWidget {
     required this.def,
     required this.unlockAtEnhanceLevel,
     required this.availableTypes,
+    required this.fucaiQty,
+    required this.fucaiCost,
     required this.onForge,
   });
 
@@ -194,6 +210,8 @@ class _SlotCard extends StatelessWidget {
   final EquipmentDef def;
   final int unlockAtEnhanceLevel;
   final List<ForgingSlotType> availableTypes;
+  final int fucaiQty;
+  final int fucaiCost;
   final ValueChanged<ForgingSlotType> onForge;
 
   @override
@@ -220,7 +238,12 @@ class _SlotCard extends StatelessWidget {
       body = const _NoSpecialSkillBody();
     } else {
       borderColor = WuxiaColors.border;
-      body = _ChoicesBody(types: availableTypes, onTap: onForge);
+      body = _ChoicesBody(
+        types: availableTypes,
+        fucaiQty: fucaiQty,
+        fucaiCost: fucaiCost,
+        onTap: onForge,
+      );
     }
 
     return Container(
@@ -264,6 +287,18 @@ class _SlotCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
+          if (!forged && unlocked) ...[
+            Text(
+              UiStrings.forgingFucaiUsage(fucaiQty, fucaiCost),
+              style: TextStyle(
+                color: fucaiQty < fucaiCost
+                    ? WuxiaColors.hpLow
+                    : WuxiaColors.textMuted,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 6),
+          ],
           body,
         ],
       ),
@@ -298,9 +333,16 @@ class _NoSpecialSkillBody extends StatelessWidget {
 }
 
 class _ChoicesBody extends StatelessWidget {
-  const _ChoicesBody({required this.types, required this.onTap});
+  const _ChoicesBody({
+    required this.types,
+    required this.fucaiQty,
+    required this.fucaiCost,
+    required this.onTap,
+  });
 
   final List<ForgingSlotType> types;
+  final int fucaiQty;
+  final int fucaiCost;
   final ValueChanged<ForgingSlotType> onTap;
 
   @override
@@ -317,7 +359,7 @@ class _ChoicesBody extends StatelessWidget {
       children: [
         for (final t in types)
           OutlinedButton(
-            onPressed: () => onTap(t),
+            onPressed: fucaiQty >= fucaiCost ? () => onTap(t) : null,
             style: OutlinedButton.styleFrom(
               foregroundColor: WuxiaColors.textPrimary,
               side: const BorderSide(color: WuxiaColors.border),

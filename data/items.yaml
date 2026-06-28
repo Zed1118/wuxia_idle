@@ -31,7 +31,7 @@ items:
   - { defId: item_liaoshangdan,  type: miscMaterial,  name: 疗伤丹, injury_heal_hours: 4.0, residue_heal_hours: 2.0, clear_light_injury: true }
   - { defId: item_duancai,       type: miscMaterial,  name: 锻材 }
   - { defId: item_kaifeng_fucai, type: miscMaterial,  name: 开锋辅材 }
-  - { defId: item_xingnang_buji, type: miscMaterial,  name: 行囊补给 }
+  - { defId: item_xingnang_buji, type: miscMaterial,  name: 行囊补给, clear_light_injury: true }
   # 桃花岛加工产物 + 老系统隐式物品（统一入库让跨引用校验可覆盖）
   - { defId: item_mojianshi,     type: moJianShi,     name: 磨剑石 }
   - { defId: item_xinxuejiejing, type: xinXueJieJing, name: 心血结晶 }

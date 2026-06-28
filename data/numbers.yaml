@@ -565,6 +565,18 @@ equipment:
       - level_range: [31, 49]
         cost: 25
 
+    # 锻材消耗曲线（桃花岛打造台加工产物）。作为中高强化的附加材料，
+    # 不替代磨剑石；低阶强化不消耗，避免新手被多材料门槛卡住。
+    duancai_cost:
+      - level_range: [1, 10]
+        cost: 0
+      - level_range: [11, 19]
+        cost: 1
+      - level_range: [20, 30]
+        cost: 2
+      - level_range: [31, 49]
+        cost: 3
+
     # 关键设计：永不破防降级（GDD §6.2 红线）
     never_degrade: true              # 失败仅扣材料，不会从 +18 掉到 +12
 
@@ -619,6 +631,7 @@ equipment:
     slots:
       - slot_index: 1
         unlock_at_enhance_level: 10  # +10 解锁开锋一
+        fucai_cost: 1
         available_types: [attack, speed, lifesteal, pierce]
         bonus_value:
           attack: 15        # 攻击 +15%
@@ -627,6 +640,7 @@ equipment:
           pierce: 15        # 破甲 15%（无视目标 15% 防御）
       - slot_index: 2
         unlock_at_enhance_level: 15  # +15 解锁开锋二
+        fucai_cost: 2
         available_types: [attack, speed, lifesteal, pierce]
         bonus_value:
           attack: 20
@@ -636,6 +650,7 @@ equipment:
         constraint: "不能与开锋一相同类型"
       - slot_index: 3
         unlock_at_enhance_level: 19  # +19 解锁开锋三
+        fucai_cost: 3
         available_types: [specialSkill]   # 仅可解锁专属技能
         bonus_value:
           specialSkill: 1   # 解锁一个专属技能词条（具体技能由 EquipmentDef 定义）
