@@ -43,7 +43,8 @@ class LootSummaryLine extends StatelessWidget {
 
 /// 关卡卡片标题区行内掉落摘要。
 ///
-/// 不显示百分比，只显示推荐境界与掉落传闻桶；装备条目用装备阶色区分。
+/// 不显示百分比与掉落桶名，只显示推荐境界与掉落名称。
+/// 装备条目用装备阶色，物品条目用物品类型色区分。
 class InlineLootSummaryLine extends StatelessWidget {
   const InlineLootSummaryLine({
     super.key,
@@ -116,24 +117,32 @@ class _InlineLootToken extends StatelessWidget {
     final name = entry.isEquipment
         ? DropNameResolver.equipmentName(entry.defId)
         : DropNameResolver.itemName(entry.defId);
-    Color color = WuxiaColors.textMuted;
-    if (entry.isEquipment) {
-      final tier = DropNameResolver.equipmentTier(entry.defId);
-      if (tier != null) color = tierColorForEquipment(tier);
-    }
     return Text(
-      '${_bucketLabel(entry.bucket)} $name',
+      name,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700),
+      style: TextStyle(
+        color: _inlineLootColor(entry),
+        fontSize: 13,
+        fontWeight: FontWeight.w800,
+      ),
     );
   }
 }
 
-String _bucketLabel(DropRumorBucket b) => switch (b) {
-  DropRumorBucket.shouTongBiDe => UiStrings.lootBucketShouTongBiDe,
-  DropRumorBucket.changKeDe => UiStrings.lootBucketChangKeDe,
-  DropRumorBucket.ouKeDe => UiStrings.lootBucketOuKeDe,
-  DropRumorBucket.shaoYouRenDe => UiStrings.lootBucketShaoYouRenDe,
-  DropRumorBucket.jiangHuChuanWen => UiStrings.lootBucketJiangHuChuanWen,
-};
+Color _inlineLootColor(DropRumorEntry entry) {
+  if (entry.isEquipment) {
+    final tier = DropNameResolver.equipmentTier(entry.defId);
+    return tier == null
+        ? WuxiaColors.textSecondary
+        : tierColorForEquipment(tier);
+  }
+  return switch (ItemType.fromDefId(entry.defId)) {
+    ItemType.moJianShi => WuxiaColors.internalForce,
+    ItemType.xinXueJieJing => WuxiaColors.yinRou,
+    ItemType.jingYanDan => WuxiaColors.hpHigh,
+    ItemType.techniqueScroll => WuxiaColors.lingQiao,
+    ItemType.miscMaterial => WuxiaColors.hpMid,
+    ItemType.silver => WuxiaColors.resultHighlight,
+  };
+}

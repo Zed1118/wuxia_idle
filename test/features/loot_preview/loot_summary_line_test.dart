@@ -6,6 +6,7 @@ import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/features/loot_preview/domain/drop_rumor.dart';
 import 'package:wuxia_idle/features/loot_preview/presentation/loot_summary_line.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/colors.dart';
 
 Widget _host(Widget body) => MaterialApp(home: Scaffold(body: body));
 
@@ -39,7 +40,7 @@ void main() {
     expect(find.textContaining('%'), findsNothing);
   });
 
-  testWidgets('行内版显示推荐境界与分桶掉落，不显示百分号', (tester) async {
+  testWidgets('行内版显示推荐境界与掉落名称，不显示桶名和百分号', (tester) async {
     final table = DropRumorTable.fromDropTable(const [
       EquipmentDrop(equipmentDefId: 'weapon_a', dropChance: 1.0),
       ItemDrop(
@@ -60,8 +61,15 @@ void main() {
       find.textContaining(UiStrings.previewRecommendedRealmLabel),
       findsOneWidget,
     );
-    expect(find.textContaining(UiStrings.lootBucketChangKeDe), findsOneWidget);
-    expect(find.textContaining(UiStrings.lootBucketOuKeDe), findsOneWidget);
+    expect(find.text('weapon_a'), findsOneWidget);
+    expect(find.text('磨剑石'), findsOneWidget);
+    expect(find.textContaining(UiStrings.lootBucketChangKeDe), findsNothing);
+    expect(find.textContaining(UiStrings.lootBucketOuKeDe), findsNothing);
     expect(find.textContaining('%'), findsNothing);
+
+    final equipmentText = tester.widget<Text>(find.text('weapon_a'));
+    final materialText = tester.widget<Text>(find.text('磨剑石'));
+    expect(equipmentText.style?.color, WuxiaColors.textSecondary);
+    expect(materialText.style?.color, WuxiaColors.internalForce);
   });
 }
