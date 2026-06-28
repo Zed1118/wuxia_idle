@@ -1,8 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/application/character_providers.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/item_usage.dart';
 import 'package:wuxia_idle/data/defs/shop_item_def.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/features/shop/presentation/shop_screen.dart';
@@ -19,6 +26,10 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// 注：ShopService.purchase 走真 Isar，widget 测不覆盖（见 shop_service_test.dart）。
 /// 本测 override provider 跳过 Isar，只测 UI 渲染与弹窗逻辑。
 void main() {
+  setUpAll(() async {
+    await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
+  });
+
   // 两件测试商品（仿 shop.yaml）
   const defMojianshi = ShopItemDef(
     id: 'shop_mojianshi',
@@ -45,6 +56,7 @@ void main() {
     required int silver,
     List<ShopItemDef>? items,
     int? founderEtl,
+    List<Character> activeCharacters = const [],
   }) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -57,6 +69,13 @@ void main() {
             (_) => items ?? [defMojianshi, defXinxue],
           ),
           founderEtlProvider.overrideWith((_) async => founderEtl),
+          activeCharacterIdsProvider.overrideWith(
+            (_) async => activeCharacters.map((c) => c.id).toList(),
+          ),
+          for (final character in activeCharacters)
+            characterByIdProvider(
+              character.id,
+            ).overrideWith((_) async => character),
         ],
         child: const MaterialApp(home: ShopScreen()),
       ),
@@ -162,6 +181,54 @@ void main() {
     expect(find.text(UiStrings.shopStatusDynamicPrice), findsOneWidget);
     expect(
       find.text(UiStrings.shopItemPurpose('item_jingyandan_small')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('货架需求提示显示当前可用角色和消耗系统', (tester) async {
+    const defExpPill = ShopItemDef(
+      id: 'shop_jingyandan_small',
+      itemDefId: 'item_jingyandan_small',
+      itemType: ItemType.jingYanDan,
+      priceLayerFraction: 1.0,
+      category: 'pill',
+    );
+    final founder = Character.create(
+      name: '沈青',
+      realmTier: RealmTier.xueTu,
+      realmLayer: RealmLayer.qiMeng,
+      attributes: Attributes(),
+      rarity: RarityTier.biaoZhun,
+      lineageRole: LineageRole.founder,
+      createdAt: DateTime(2026, 6, 29),
+      isFounder: true,
+      isActive: true,
+    )..id = 101;
+
+    await pumpShop(
+      tester,
+      silver: 1200,
+      items: [defExpPill, defMojianshi],
+      founderEtl: 1000,
+      activeCharacters: [founder],
+    );
+
+    expect(find.text('凝神丹'), findsOneWidget);
+    expect(find.text(UiStrings.shopNeedCurrentUsers(['沈青'])), findsOneWidget);
+    expect(
+      find.text(
+        UiStrings.shopNeedUsageSummary(const [
+          ItemUsage(kind: ItemUsageKind.realmProgress),
+        ]),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.text(
+        UiStrings.shopNeedUsageSummary(const [
+          ItemUsage(kind: ItemUsageKind.equipmentEnhancement),
+        ]),
+      ),
       findsOneWidget,
     );
   });
