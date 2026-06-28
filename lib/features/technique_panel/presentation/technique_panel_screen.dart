@@ -15,6 +15,7 @@ import '../../dispel/application/dispel_service.dart';
 import '../../dispel/application/dispel_service_providers.dart';
 import '../../cultivation/application/insight_exchange_service.dart';
 import '../../cultivation/application/insight_exchange_service_providers.dart';
+import '../domain/technique_equip_suggestion.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_paper_panel.dart';
@@ -536,6 +537,10 @@ class _TechniqueTile extends ConsumerWidget {
               technique.cultivationProgressToNext,
             ),
           ),
+          _TechniqueEquipSuggestionPanel(
+            currentCharacter: character,
+            technique: technique,
+          ),
           const SizedBox(height: 4),
           Row(
             children: [
@@ -694,6 +699,191 @@ class _TechniqueTile extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+class _TechniqueEquipSuggestionPanel extends ConsumerWidget {
+  const _TechniqueEquipSuggestionPanel({
+    required this.currentCharacter,
+    required this.technique,
+  });
+
+  final Character currentCharacter;
+  final Technique technique;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!GameRepository.isLoaded) return const SizedBox.shrink();
+    final def = GameRepository.instance.techniqueDefs[technique.defId];
+    if (def == null) return const SizedBox.shrink();
+
+    final idsAsync = ref.watch(activeCharacterIdsProvider);
+    final ids = idsAsync.asData?.value ?? [currentCharacter.id];
+    final characters = <Character>[];
+    final learnedByCharacter = <int, List<Technique>>{};
+
+    for (final id in ids) {
+      final character = ref.watch(characterByIdProvider(id)).asData?.value;
+      if (character == null) continue;
+      characters.add(character);
+      learnedByCharacter[id] =
+          ref.watch(characterAllTechniquesProvider(id)).asData?.value ??
+          const <Technique>[];
+    }
+
+    if (characters.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final suggestions = TechniqueEquipSuggestionService.buildSuggestions(
+      technique: def,
+      characters: characters,
+      learnedTechniquesByCharacter: learnedByCharacter,
+      learningCost: ref.watch(numbersConfigProvider).learningCost,
+    );
+    if (suggestions.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+        decoration: BoxDecoration(
+          color: WuxiaColors.inkPanelBottom.withValues(alpha: 0.48),
+          border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.72)),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              UiStrings.techniqueEquipSuggestionTitle,
+              style: TextStyle(
+                color: WuxiaColors.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            for (final suggestion in suggestions) ...[
+              _TechniqueEquipSuggestionRow(suggestion: suggestion),
+              if (suggestion != suggestions.last) const SizedBox(height: 5),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TechniqueEquipSuggestionRow extends StatelessWidget {
+  const _TechniqueEquipSuggestionRow({required this.suggestion});
+
+  final TechniqueEquipSuggestion suggestion;
+
+  @override
+  Widget build(BuildContext context) {
+    final statusColor = suggestion.isEquipable
+        ? WuxiaColors.resultHighlight
+        : WuxiaColors.textMuted;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            suggestion.character.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: WuxiaColors.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          _statusText(suggestion.status),
+          style: TextStyle(
+            color: statusColor,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 3,
+          child: Text(
+            _detailText(suggestion),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: WuxiaColors.textMuted,
+              fontSize: 11,
+              height: 1.25,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static String _statusText(TechniqueEquipSuggestionStatus status) {
+    return switch (status) {
+      TechniqueEquipSuggestionStatus.alreadyMain =>
+        UiStrings.techniqueEquipSuggestionAlreadyMain,
+      TechniqueEquipSuggestionStatus.alreadyAssist =>
+        UiStrings.techniqueEquipSuggestionAlreadyAssist,
+      TechniqueEquipSuggestionStatus.readyForMain =>
+        UiStrings.techniqueEquipSuggestionReadyMain,
+      TechniqueEquipSuggestionStatus.readyForAssist =>
+        UiStrings.techniqueEquipSuggestionReadyAssist,
+      TechniqueEquipSuggestionStatus.realmLocked =>
+        UiStrings.techniqueEquipSuggestionRealmLocked,
+      TechniqueEquipSuggestionStatus.assistSlotsFull =>
+        UiStrings.techniqueEquipSuggestionAssistFull,
+      TechniqueEquipSuggestionStatus.insufficientInsight =>
+        UiStrings.techniqueEquipSuggestionInsightLocked,
+    };
+  }
+
+  static String _detailText(TechniqueEquipSuggestion suggestion) {
+    if (suggestion.status == TechniqueEquipSuggestionStatus.realmLocked) {
+      return UiStrings.techniqueEquipBlockRealm(
+        EnumL10n.techniqueTier(suggestion.currentCap),
+        EnumL10n.techniqueTier(suggestion.requiredTier),
+      );
+    }
+    if (suggestion.status ==
+        TechniqueEquipSuggestionStatus.insufficientInsight) {
+      return UiStrings.techniqueEquipBlockInsight(
+        suggestion.character.insightPoints,
+        suggestion.requiredInsight,
+      );
+    }
+    final reasons = suggestion.reasons
+        .map(_reasonText)
+        .where((s) => s.isNotEmpty)
+        .toList();
+    if (reasons.isEmpty) return UiStrings.techniqueEquipNoReason;
+    return reasons.join(UiStrings.codexValueSeparator);
+  }
+
+  static String _reasonText(TechniqueEquipSuggestionReason reason) {
+    return switch (reason) {
+      TechniqueEquipSuggestionReason.sameSchool =>
+        UiStrings.techniqueEquipReasonSameSchool,
+      TechniqueEquipSuggestionReason.fillsMainSlot =>
+        UiStrings.techniqueEquipReasonFillsMain,
+      TechniqueEquipSuggestionReason.fillsAssistSlot =>
+        UiStrings.techniqueEquipReasonFillsAssist,
+      TechniqueEquipSuggestionReason.tierFitsRealm =>
+        UiStrings.techniqueEquipReasonTierFits,
+      TechniqueEquipSuggestionReason.highEnlightenment =>
+        UiStrings.techniqueEquipReasonHighEnlightenment,
+      TechniqueEquipSuggestionReason.alreadyPracticed =>
+        UiStrings.techniqueEquipReasonAlreadyPracticed,
+    };
   }
 }
 
@@ -899,7 +1089,9 @@ class _LayerLadder extends StatelessWidget {
     final isMaxLayer = curIdx >= layers.length - 1;
     final nextMultText = isMaxLayer
         ? UiStrings.cultivationMaxLayer
-        : UiStrings.cultivationNextDamageMult(mult[layers[curIdx + 1]] ?? curMult);
+        : UiStrings.cultivationNextDamageMult(
+            mult[layers[curIdx + 1]] ?? curMult,
+          );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
