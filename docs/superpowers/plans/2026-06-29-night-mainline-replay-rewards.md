@@ -30,7 +30,7 @@
   - Create branch `codex/night-mainline-replay-rewards`.
   - Note: CodeGraph is not initialized here; per project instruction, do not run `codegraph init` without user approval, continue with `rg` and targeted reads.
 
-- [ ] **Task 1: Pure replay reward route model**
+- [x] **Task 1: Pure replay reward route model**
   - Create `lib/features/mainline/domain/mainline_replay_reward_route.dart`.
   - Add `MainlineReplayRewardRoute.fromStage(StageDef)` that derives route kinds from:
     - equipment drops in `dropTable` → equipment route;
@@ -55,8 +55,8 @@
 
 ## Current Recovery Point
 
-- **Status:** Plan written; implementation not started.
-- **Last completed:** Required docs read; branch created; existing stage list / drop rumor / material source lookup / proficiency UI scanned.
-- **Next step:** Implement Task 1 pure replay reward route model and tests.
-- **Verification run:** None yet.
+- **Status:** Task 1 complete; UI wiring not started.
+- **Last completed:** Added `MainlineReplayRewardRoute.fromStage` pure model and domain tests for equipment/material/proficiency route derivation.
+- **Next step:** Add `UiStrings` labels and render compact replay route chips on cleared stage rows.
+- **Verification run:** `flutter test test/features/mainline/domain/mainline_replay_reward_route_test.dart`.
 - **Blockers:** CodeGraph is not initialized in this worktree; continuing without it unless user approves indexing.
