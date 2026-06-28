@@ -30,11 +30,14 @@
 
 ## 当前恢复点
 
-- 状态：计划已创建，尚未修改生产代码。
-- 最后完成：确认 `main` 已包含上一批 merge，创建 worktree/branch `codex/audit-fix-plan`。
-- 下一步：运行基线 targeted tests，然后从新手首章战斗测试开始红绿循环。
+- 状态：新手首章战斗红线切片已完成，待提交。
+- 最后完成：新增 production 单人开局首章战斗测试；将 Ch1 01-04 调整为单人线节奏，02 关保证首把武器，04 小 Boss 校准为 Boss 前小考。
+- 下一步：提交新手切片，然后修正桃花岛真实 7 建筑银两总量口径。
 - 已跑验证：
   - `git status --short --branch`
   - `git log --oneline --decorate -12`
   - `codegraph_status`
+  - `dart run build_runner build --delete-conflicting-outputs`
+  - `flutter test test/features/onboarding/application/onboarding_service_test.dart test/features/taohua_island/taohua_island_config_test.dart test/features/taohua_island/island_upgrade_curve_b_test.dart test/features/seclusion/application/offline_passive_service_test.dart test/features/tower/domain/tower_floor_def_test.dart test/features/equipment/application/enhancement_service_test.dart`
+  - `flutter test test/features/onboarding/onboarding_first_30min_battle_test.dart`
 - 阻塞项：无。
