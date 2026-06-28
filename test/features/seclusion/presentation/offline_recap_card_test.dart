@@ -53,15 +53,25 @@ void main() {
       find.text(UiStrings.offlineRecapMaterialDetail('磨剑石 120')),
       findsOneWidget,
     );
+    expect(
+      find.text(UiStrings.offlineRecapSettlementGroupTitle),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.offlineRecapRetreatGainGroupTitle),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.offlineRecapCollectGroupTitle), findsOneWidget);
     expect(find.text(UiStrings.offlineRecapSilverDetail(45)), findsOneWidget);
     expect(
       find.text(UiStrings.offlineRecapExperienceDetail(300)),
       findsOneWidget,
     );
     expect(
-      find.text(UiStrings.offlineRecapTechniqueSkillDetail(2, 0)),
+      find.text(UiStrings.offlineRecapTechniqueLearnDetail(2)),
       findsOneWidget,
     );
+    expect(find.textContaining('招式熟练度：0'), findsNothing);
     expect(
       find.textContaining(UiStrings.offlineRecapDropPending),
       findsOneWidget,
@@ -94,6 +104,38 @@ void main() {
     expect(find.textContaining('古剑冢'), findsOneWidget);
     expect(
       find.textContaining(UiStrings.offlineRecapLimitInProgress),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.offlineRecapTechniqueLearnDetail(0)),
+      findsNothing,
+    );
+  });
+
+  testWidgets('0 值收益项隐藏，保留结算说明与收功揭晓', (tester) async {
+    const recap = (
+      awayHours: 2.0,
+      mapName: '古剑冢',
+      isComplete: false,
+      progressPct: 0.5,
+      estimatedMojianshi: 0,
+      estimatedExperience: 0,
+      estimatedItemRewards: <String, int>{},
+      estimatedTechniqueLearnPoints: 0,
+      estimatedSilver: 0,
+      settledHours: 2.0,
+      limitReason: OfflineRecapLimitReason.inProgress,
+    );
+    await pumpCard(tester, recap: recap, onGoCollect: () {}, onDismiss: () {});
+
+    expect(find.text(UiStrings.offlineRecapExperienceDetail(0)), findsNothing);
+    expect(find.text(UiStrings.offlineRecapSilverDetail(0)), findsNothing);
+    expect(find.text(UiStrings.offlineRecapMaterialDetail('无')), findsNothing);
+    expect(find.text(UiStrings.offlineRecapNoGainsDetail), findsOneWidget);
+    expect(
+      find.text(
+        UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapDropPending),
+      ),
       findsOneWidget,
     );
   });

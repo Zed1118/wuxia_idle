@@ -1959,6 +1959,21 @@ class UiStrings {
   /// 离线收益明细标题
   static const String offlineRecapBreakdownTitle = '明细';
 
+  /// 离线收益明细分组：结算口径
+  static const String offlineRecapSettlementGroupTitle = '结算说明';
+
+  /// 离线收益明细分组：闭关实际收益
+  static const String offlineRecapRetreatGainGroupTitle = '闭关收益';
+
+  /// 离线收益明细分组：被动离线收益
+  static const String offlineRecapPassiveGainGroupTitle = '离线精进';
+
+  /// 离线收益明细分组：收功时才掷定的内容
+  static const String offlineRecapCollectGroupTitle = '收功揭晓';
+
+  /// 离线收益明细空收益兜底
+  static const String offlineRecapNoGainsDetail = '本次无新增收益';
+
   /// 离线收益明细：真实离线时长
   static String offlineRecapAwayDetail(String hours) => '离线时长：$hours';
 
@@ -1989,6 +2004,12 @@ class UiStrings {
     int techniqueLearn,
     int skillProficiency,
   ) => '心法领悟：$techniqueLearn · 招式熟练度：$skillProficiency';
+
+  /// 离线收益明细：心法领悟点
+  static String offlineRecapTechniqueLearnDetail(int value) => '心法领悟：$value';
+
+  /// 离线收益明细：招式熟练度
+  static String offlineRecapSkillProficiencyDetail(int value) => '招式熟练度：$value';
 
   /// 离线收益明细：掉落
   static String offlineRecapDropDetail(String value) => '掉落：$value';

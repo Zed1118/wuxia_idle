@@ -113,7 +113,7 @@ class OfflineRecapCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _BreakdownBlock(rows: detail.rows),
+            _BreakdownBlock(groups: detail.groups),
             const SizedBox(height: 18),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -190,7 +190,7 @@ class OfflineRecapCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _BreakdownBlock(rows: detail.rows),
+            _BreakdownBlock(groups: detail.groups),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -215,9 +215,9 @@ class OfflineRecapCard extends StatelessWidget {
 }
 
 class _BreakdownBlock extends StatelessWidget {
-  const _BreakdownBlock({required this.rows});
+  const _BreakdownBlock({required this.groups});
 
-  final List<String> rows;
+  final List<OfflineRecapDetailGroup> groups;
 
   @override
   Widget build(BuildContext context) {
@@ -240,9 +240,37 @@ class _BreakdownBlock extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            for (final row in rows) _BreakdownRow(row),
+            for (final group in groups) _BreakdownGroup(group),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _BreakdownGroup extends StatelessWidget {
+  const _BreakdownGroup(this.group);
+
+  final OfflineRecapDetailGroup group;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            group.title,
+            style: const TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 2),
+          for (final row in group.rows) _BreakdownRow(row),
+        ],
       ),
     );
   }

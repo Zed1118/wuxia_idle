@@ -24,15 +24,24 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // 标题含「精进」字样（passiveRecapTitle）
-    expect(find.textContaining('精进'), findsOneWidget);
+    // 标题为 passiveRecapTitle；分组标题另有「离线精进」。
+    expect(find.text(UiStrings.passiveRecapTitle), findsOneWidget);
 
     // 正文含产量数字
     expect(find.textContaining('磨剑石'), findsWidgets);
     expect(find.textContaining('2'), findsWidgets);
     expect(find.textContaining('250'), findsWidgets);
-    expect(find.textContaining('银两：0'), findsOneWidget);
-    expect(find.textContaining('掉落：无'), findsOneWidget);
+    expect(
+      find.text(UiStrings.offlineRecapSettlementGroupTitle),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.offlineRecapPassiveGainGroupTitle),
+      findsOneWidget,
+    );
+    expect(find.textContaining('银两：0'), findsNothing);
+    expect(find.textContaining('掉落：无'), findsNothing);
+    expect(find.textContaining('招式熟练度：0'), findsNothing);
 
     // 无「前去收功/领取」等留存诱导按钮（守 §5.1）
     expect(find.textContaining('收功'), findsNothing);
@@ -131,11 +140,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('材料：无'), findsOneWidget);
-    expect(find.textContaining('经验：0'), findsOneWidget);
+    expect(find.textContaining('材料：无'), findsNothing);
+    expect(find.textContaining('经验：0'), findsNothing);
+    expect(find.text(UiStrings.offlineRecapNoGainsDetail), findsOneWidget);
     expect(
       find.text(UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapNoDrop)),
-      findsOneWidget,
+      findsNothing,
     );
   });
 }
