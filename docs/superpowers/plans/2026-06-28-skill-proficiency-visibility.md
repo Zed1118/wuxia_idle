@@ -17,20 +17,20 @@
 - [x] 读取 `AGENTS.md`、`CLAUDE.md §8.0`、`GDD.md §4.2-4.5 / §7.2`、`docs/spec/playability_phase2_backlog.md §十二`。
 - [x] 创建并切到 `codex/skill-proficiency-visibility`。
 - [x] 定位招式熟练度数据源与当前展示点。
-- [ ] 抽纯 Dart formatter：当前加成、下一阶、来源短句、进度字段。
-- [ ] 为 formatter 与藏经阁行补 targeted 测试。
-- [ ] 接入藏经阁 `SkillProficiencyRow`，文案走 `UiStrings`。
-- [ ] 跑 targeted test + touched-file analyze。
-- [ ] 小切片提交并更新恢复点。
+- [x] 抽纯 Dart formatter：当前加成、下一阶、来源短句、进度字段。
+- [x] 为 formatter 与藏经阁行补 targeted 测试。
+- [x] 接入藏经阁 `SkillProficiencyRow`，文案走 `UiStrings`。
+- [x] 跑 targeted test + touched-file analyze。
+- [x] 小切片提交并更新恢复点。
 
 ## 当前恢复点
 
-**状态:** 进行中。
+**状态:** 第一切片完成。
 
-**最后完成:** 已读指定文档，已在 worktree 创建并切到 `codex/skill-proficiency-visibility`；CodeGraph 未初始化，已改用 `rg`/直接读文件定位。确认熟练度数据源为 `SkillProficiencyConfig`、`SkillDef.proficiency` 与 `SkillProficiency` 纯域，当前展示点为藏经阁 `SkillProficiencyRow`。
+**最后完成:** 已新增 `SkillProficiencyFormatter.summarize`，藏经阁 `SkillProficiencyRow` 改为展示当前效果、下一阶效果与“战斗放招增长”来源短句；补了纯 formatter 测试与藏经阁 widget 测试。
 
-**下一步:** 新增纯 formatter，接入 `SkillProficiencyRow`，补 formatter/widget 测试。
+**下一步:** 交主窗口检查；后续可继续扩到角色页或战报入口。
 
-**已跑验证:** 文档/代码定位命令；尚未跑测试。
+**已跑验证:** `DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart test/features/cangjingge/cangjingge_widgets_test.dart`；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter analyze lib/features/cultivation/application/skill_proficiency_formatter.dart lib/features/cangjingge/presentation/skill_proficiency_row.dart lib/shared/strings.dart test/features/cultivation/skill_proficiency_formatter_test.dart test/features/cangjingge/cangjingge_widgets_test.dart`。
 
 **阻塞项:** 无。
