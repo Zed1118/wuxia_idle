@@ -1012,6 +1012,33 @@ class UiStrings {
   static const String difficultySuitable = '适中';
   static const String difficultyRisky = '偏高';
   static const String difficultyDeadly = '送死';
+  static const String prebattleIntelTitle = '战前情报';
+  static const String prebattleIntelEnemySection = '敌阵';
+  static const String prebattleIntelResponseSection = '应对';
+  static const String prebattleIntelRiskSection = '风险';
+  static const String prebattleIntelLootSection = '可能收获';
+  static const String prebattleIntelNoEnemy = '未见敌踪';
+  static const String prebattleIntelBossTag = '首领';
+  static const String prebattleIntelChargeTag = '蓄力';
+  static String prebattleIntelDialogTitle(String stageName) =>
+      '$prebattleIntelTitle · $stageName';
+  static String prebattleEnemyLine(
+    String name,
+    String realm,
+    String school,
+    String tags,
+  ) => tags.isEmpty
+      ? '$name · $realm · $school'
+      : '$name · $realm · $school · $tags';
+  static String prebattlePrepCounterSchool(String school) =>
+      '敌阵偏$school，可备克制路数。';
+  static const String prebattlePrepBoss = '首领关宜留足内力，先处理随从再攻坚。';
+  static const String prebattlePrepGroup = '敌众时备一门群体招，先清场再压主目标。';
+  static const String prebattlePrepCharge = '敌方有蓄力招，保留破招或爆发内力。';
+  static const String prebattleRiskBoss = '首领战败会触发额外折损，勿空内力硬拼。';
+  static const String prebattleRiskCharge = '蓄力招若未打断，可能瞬间扭转战局。';
+  static const String prebattleRiskOutnumbered = '敌方人数较多，拖久容易被围攻。';
+  static const String prebattleRiskNone = '未见明显险兆，按常规节奏推进。';
   static const String stagePrepareLabel = '整备';
   static String stagePrepareRecommended(String realmName) => '推荐 $realmName';
   static const String stagePrepareReady = '火候已到 · 可挑战';
