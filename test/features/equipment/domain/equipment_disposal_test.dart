@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/features/equipment/domain/equipment_disposal.dart';
 
 void main() {
@@ -32,5 +33,61 @@ void main() {
     final r2 = equipmentDisassembleRewards(EquipmentTier.shenWu, 12, cfg);
     expect(r2.mojianshi, 37);
     expect(r2.xinxuejiejing, 8);
+  });
+
+  group('equipmentProtectionReason', () {
+    Equipment eq({
+      required int id,
+      EquipmentTier tier = EquipmentTier.xunChang,
+      bool isLocked = false,
+      bool isLineageHeritage = false,
+      String obtainedFrom = 'test',
+    }) => Equipment.create(
+      defId: 'eq_$id',
+      tier: tier,
+      slot: EquipmentSlot.weapon,
+      obtainedAt: DateTime(2026, 6, 28),
+      obtainedFrom: obtainedFrom,
+      isLocked: isLocked,
+      isLineageHeritage: isLineageHeritage,
+    )..id = id;
+
+    test('已装备/锁定/遗物/高阶/受保护来源均返回保护原因', () {
+      expect(
+        equipmentProtectionReason(eq(id: 1), equippedEquipmentIds: const {1}),
+        EquipmentProtectionReason.equipped,
+      );
+      expect(
+        equipmentProtectionReason(
+          eq(id: 2, isLocked: true),
+          equippedEquipmentIds: const {},
+        ),
+        EquipmentProtectionReason.locked,
+      );
+      expect(
+        equipmentProtectionReason(
+          eq(id: 3, isLineageHeritage: true),
+          equippedEquipmentIds: const {},
+        ),
+        EquipmentProtectionReason.lineageHeritage,
+      );
+      expect(
+        equipmentProtectionReason(
+          eq(id: 4, tier: EquipmentTier.zhongQi),
+          equippedEquipmentIds: const {},
+        ),
+        EquipmentProtectionReason.highTier,
+      );
+      expect(
+        equipmentProtectionReason(
+          eq(id: 5, obtainedFrom: 'story_reward'),
+          equippedEquipmentIds: const {},
+          policy: const EquipmentProtectionPolicy(
+            protectedObtainedFrom: {'story_reward'},
+          ),
+        ),
+        EquipmentProtectionReason.protectedSource,
+      );
+    });
   });
 }
