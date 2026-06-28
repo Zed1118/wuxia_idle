@@ -183,7 +183,7 @@ Use `SkillProficiencyFormatter.summarize` when `maxStage != null`; render `Stage
 
 Run the relevant detail/widget test file.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 Run:
 ```bash
@@ -193,25 +193,25 @@ git commit -m "feat: 武学详情显示熟练度效果"
 
 ### Task 6: 验证与收口
 
-- [ ] **Step 1: Run targeted tests**
+- [x] **Step 1: Run targeted tests**
 
 Run:
 ```bash
 DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart test/combat/battle_log_test.dart test/features/character_panel/presentation/character_panel_screen_test.dart test/features/technique_panel/presentation/technique_panel_screen_test.dart test/features/cangjingge/cangjingge_widgets_test.dart
 ```
 
-- [ ] **Step 2: Run touched-file analyze**
+- [x] **Step 2: Run touched-file analyze**
 
 Run:
 ```bash
 DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter analyze lib/features/cultivation/application/skill_proficiency_formatter.dart lib/features/battle/domain/battle_log.dart lib/features/character_panel/presentation/character_panel_screen.dart lib/features/technique_panel/presentation/technique_panel_screen.dart lib/features/baike/presentation/skill_codex_detail_screen.dart lib/shared/strings.dart test/features/cultivation/skill_proficiency_formatter_test.dart test/combat/battle_log_test.dart test/features/character_panel/presentation/character_panel_screen_test.dart test/features/technique_panel/presentation/technique_panel_screen_test.dart test/features/cangjingge/cangjingge_widgets_test.dart
 ```
 
-- [ ] **Step 3: 更新 backlog 与 PROGRESS**
+- [x] **Step 3: 更新 backlog 与 PROGRESS**
 
 Mark `docs/spec/playability_phase2_backlog.md` 十二「招式熟练度可视化打磨」done and add a concise `PROGRESS.md` line if the implementation is complete.
 
-- [ ] **Step 4: 更新恢复点并提交收口**
+- [x] **Step 4: 更新恢复点并提交收口**
 
 Run:
 ```bash
@@ -221,12 +221,12 @@ git commit -m "docs: 记录招式熟练度可视化二期完成"
 
 ## 当前恢复点
 
-**状态:** Task 5 武学详情页展示已完成，准备提交代码切片。
+**状态:** 全部任务完成，准备提交最终文档收口。
 
-**最后完成:** 已提交角色/心法页切片；武学详情页在已习练时追加熟练度 `StageProgressRow`，使用最高阶段的 `minUses` 派生当前/下一阶效果；`martial_arts_tab_test` 覆盖当前效果、下阶效果和来源。
+**最后完成:** 已提交武学详情页切片；backlog 已勾选「招式熟练度可视化打磨」并补二期说明；`PROGRESS.md` 已登记完成记录；final targeted tests 与 touched-file analyze 均通过。
 
-**下一步:** 提交武学详情页切片，然后执行 Task 6 验证与文档收口。
+**下一步:** 提交最终文档收口，检查 git 状态并汇报分支、提交、验证与剩余风险。
 
-**已跑验证:** `mcp__codegraph.codegraph_status` 返回当前 worktree 未初始化；`DEVELOPER_DIR=/Library/Developer/CommandLineTools dart run build_runner build --delete-conflicting-outputs` 生成缺失 Isar/Riverpod 文件且未留下 git 变更；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart` 通过；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/combat/battle_log_test.dart` 通过；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/character_panel/presentation/character_panel_screen_test.dart test/features/technique_panel/presentation/technique_panel_screen_test.dart` 通过；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/baike/presentation/martial_arts_tab_test.dart` 通过。
+**已跑验证:** `mcp__codegraph.codegraph_status` 返回当前 worktree 未初始化；`DEVELOPER_DIR=/Library/Developer/CommandLineTools dart run build_runner build --delete-conflicting-outputs` 生成缺失 Isar/Riverpod 文件且未留下 git 变更；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart` 通过；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/combat/battle_log_test.dart` 通过；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/character_panel/presentation/character_panel_screen_test.dart test/features/technique_panel/presentation/technique_panel_screen_test.dart` 通过；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/baike/presentation/martial_arts_tab_test.dart` 通过；最终组合 `DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart test/combat/battle_log_test.dart test/features/character_panel/presentation/character_panel_screen_test.dart test/features/technique_panel/presentation/technique_panel_screen_test.dart test/features/baike/presentation/martial_arts_tab_test.dart` 通过；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter analyze ...` touched-file analyze 0 issue。
 
 **阻塞项:** 无。CodeGraph 未初始化，按项目规则记录；本切片用 `rg` 和直接读文件继续。
