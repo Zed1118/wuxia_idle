@@ -34,6 +34,8 @@ typedef RetreatOutputs = ({
   int experiencePoints,
   int techniqueLearnPoints,
   int internalForcePoints,
+  List<String> routeSteps,
+  List<RetreatMapEventRecord> mapEvents,
 });
 
 /// 闭关收功完整结果(W15 #30 第 3 期扩 advancement)。
@@ -50,6 +52,8 @@ typedef RetreatResult = ({
   int experiencePoints,
   int techniqueLearnPoints,
   int internalForcePoints,
+  List<String> routeSteps,
+  List<RetreatMapEventRecord> mapEvents,
   AdvancementResult? advancement,
 });
 
@@ -264,6 +268,8 @@ class SeclusionService {
       if (eq != null) equipDrops.add(eq);
     }
 
+    final mapEvents = _deriveMapEvents(def, actualHours);
+
     return (
       actualHours: actualHours,
       mojianshi: mojianshi,
@@ -272,6 +278,8 @@ class SeclusionService {
       experiencePoints: experiencePoints,
       techniqueLearnPoints: techniqueLearnPoints,
       internalForcePoints: internalForcePoints,
+      routeSteps: def.routeSteps,
+      mapEvents: mapEvents,
     );
   }
 
@@ -424,8 +432,7 @@ class SeclusionService {
         }
         // M6 Task 7: 余毒累减（§5.5 按 actualHours 闭关时长，不依赖真实时间戳）
         if (ch.innerDemonResidueHoursRemaining > 0) {
-          final left =
-              ch.innerDemonResidueHoursRemaining - outputs.actualHours;
+          final left = ch.innerDemonResidueHoursRemaining - outputs.actualHours;
           ch.innerDemonResidueHoursRemaining = left < 0 ? 0 : left;
         }
         // Task 8: 双层伤势疗养（§5.5 按 actualHours 真实闭关时长累减，无加速）。
@@ -512,8 +519,29 @@ class SeclusionService {
       experiencePoints: outputs.experiencePoints,
       techniqueLearnPoints: outputs.techniqueLearnPoints,
       internalForcePoints: outputs.internalForcePoints,
+      routeSteps: outputs.routeSteps,
+      mapEvents: outputs.mapEvents,
       advancement: advancement,
     );
+  }
+
+  static List<RetreatMapEventRecord> _deriveMapEvents(
+    SeclusionMapDef def,
+    double actualHours,
+  ) {
+    if (actualHours <= 0 || def.eventNotes.isEmpty) return const [];
+    final out = <RetreatMapEventRecord>[];
+    for (final note in def.eventNotes) {
+      if (actualHours + 0.0001 < note.triggerAfterHours) continue;
+      out.add(
+        RetreatMapEventRecord(
+          hourMark: note.triggerAfterHours,
+          kind: note.kind,
+          text: note.text,
+        ),
+      );
+    }
+    return List.unmodifiable(out);
   }
 
   /// W18-A1.2 心法相生 internalForceGrowthPct 检测(闭关收功用)。

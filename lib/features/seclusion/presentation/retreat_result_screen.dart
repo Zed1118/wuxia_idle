@@ -67,6 +67,14 @@ class RetreatResultScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _ResultHero(mapDef: mapDef, actualHours: actualHours),
+                    if (result.routeSteps.isNotEmpty ||
+                        result.mapEvents.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      _RouteLog(
+                        routeSteps: result.routeSteps,
+                        mapEvents: result.mapEvents,
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     const SectionHeader(UiStrings.seclusionResultReportTitle),
                     const SizedBox(height: 10),
@@ -274,6 +282,134 @@ class _RewardRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _RouteLog extends StatelessWidget {
+  const _RouteLog({required this.routeSteps, required this.mapEvents});
+
+  final List<String> routeSteps;
+  final List<RetreatMapEventRecord> mapEvents;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SectionHeader(UiStrings.seclusionResultRouteTitle),
+        const SizedBox(height: 8),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: WuxiaUi.paper.withValues(alpha: 0.24),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: WuxiaUi.muted.withValues(alpha: 0.22)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < routeSteps.length; i++)
+                  _RouteStep(index: i + 1, text: routeSteps[i]),
+                for (final event in mapEvents) _MapEventLine(event: event),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RouteStep extends StatelessWidget {
+  const _RouteStep({required this.index, required this.text});
+
+  final int index;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 7),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$index.',
+            style: const TextStyle(
+              color: WuxiaUi.gold,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: WuxiaColors.textSecondary,
+                fontSize: 13,
+                height: 1.32,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MapEventLine extends StatelessWidget {
+  const _MapEventLine({required this.event});
+
+  final RetreatMapEventRecord event;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = switch (event.kind) {
+      RetreatMapEventKind.harvest => UiStrings.seclusionMapEventHarvest,
+      RetreatMapEventKind.risk => UiStrings.seclusionMapEventRisk,
+      RetreatMapEventKind.trace => UiStrings.seclusionMapEventTrace,
+    };
+    final color = switch (event.kind) {
+      RetreatMapEventKind.harvest => WuxiaUi.gold,
+      RetreatMapEventKind.risk => WuxiaColors.gangMeng,
+      RetreatMapEventKind.trace => WuxiaColors.textSecondary,
+    };
+    return Container(
+      margin: const EdgeInsets.only(top: 2, bottom: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(_iconFor(event.kind), color: color, size: 17),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '${UiStrings.seclusionMapEventHour(event.hourMark)} · $label：${event.text}',
+              style: const TextStyle(
+                color: WuxiaColors.textPrimary,
+                fontSize: 13,
+                height: 1.32,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _iconFor(RetreatMapEventKind kind) {
+    return switch (kind) {
+      RetreatMapEventKind.harvest => Icons.local_florist,
+      RetreatMapEventKind.risk => Icons.warning_amber_rounded,
+      RetreatMapEventKind.trace => Icons.route,
+    };
   }
 }
 

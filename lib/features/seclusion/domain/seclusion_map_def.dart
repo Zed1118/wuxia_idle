@@ -38,6 +38,14 @@ class SeclusionMapDef {
   /// 压一阶定位：装备 tier 锁地图 requiredRealm 低一阶。缺省空表 = 不掉。
   final List<DropEntry> dropTable;
 
+  /// 地图路径记录（numbers.yaml `retreat.maps[].route`）。
+  /// 只用于收功回看，不改变收益，保证在线/离线同源。
+  final List<String> routeSteps;
+
+  /// 地图事件记录候选（numbers.yaml `retreat.maps[].event_notes`）。
+  /// 按 actualHours 的 threshold 触发，只做叙事提示，不制造加速或留存压力。
+  final List<RetreatMapEventDef> eventNotes;
+
   const SeclusionMapDef({
     required this.mapType,
     required this.mapName,
@@ -52,6 +60,8 @@ class SeclusionMapDef {
     this.weather,
     this.imagePath,
     this.dropTable = const [],
+    this.routeSteps = const [],
+    this.eventNotes = const [],
   });
 
   factory SeclusionMapDef.fromYaml(Map<String, dynamic> y) {
@@ -73,10 +83,53 @@ class SeclusionMapDef {
           ? null
           : EncounterWeather.values.byName(y['weather'] as String),
       imagePath: y['image_path'] as String?,
-      dropTable: (y['dropTable'] as List<dynamic>?)
+      dropTable:
+          (y['dropTable'] as List<dynamic>?)
               ?.map((e) => DropEntry.fromYaml(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      routeSteps: ((y['route'] as List<dynamic>?) ?? const []).cast<String>(),
+      eventNotes: ((y['event_notes'] as List<dynamic>?) ?? const [])
+          .map(
+            (e) => RetreatMapEventDef.fromYaml(
+              Map<String, dynamic>.from(e as Map),
+            ),
+          )
+          .toList(growable: false),
     );
   }
+}
+
+class RetreatMapEventDef {
+  final double triggerAfterHours;
+  final RetreatMapEventKind kind;
+  final String text;
+
+  const RetreatMapEventDef({
+    required this.triggerAfterHours,
+    required this.kind,
+    required this.text,
+  });
+
+  factory RetreatMapEventDef.fromYaml(Map<String, dynamic> y) {
+    return RetreatMapEventDef(
+      triggerAfterHours: (y['trigger_after_hours'] as num).toDouble(),
+      kind: RetreatMapEventKind.values.byName(y['kind'] as String),
+      text: y['text'] as String,
+    );
+  }
+}
+
+enum RetreatMapEventKind { harvest, risk, trace }
+
+class RetreatMapEventRecord {
+  final double hourMark;
+  final RetreatMapEventKind kind;
+  final String text;
+
+  const RetreatMapEventRecord({
+    required this.hourMark,
+    required this.kind,
+    required this.text,
+  });
 }

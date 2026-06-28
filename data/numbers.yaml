@@ -950,6 +950,20 @@ retreat:
       biome: mountainForest                  # C-W14-2 奇遇触发维度
       weather: clear
       image_path: assets/maps/shanLin.png
+      route:
+        - "沿旧樵径入山，竹叶遮住来路，只留一线天光。"
+        - "在溪石旁结庐调息，夜里听见远处松涛如潮。"
+        - "收功前循原路下山，衣上沾了半袖草露。"
+      event_notes:
+        - trigger_after_hours: 1
+          kind: harvest
+          text: "溪畔药香渐浓，辨得几株可入汤的山草。"
+        - trigger_after_hours: 4
+          kind: trace
+          text: "林深处有旧脚印绕过庐前，像是过路侠客避而不扰。"
+        - trigger_after_hours: 12
+          kind: risk
+          text: "夜半山风骤紧，屋脊轻响，幸而心神未乱。"
       dropTable:
         - equipmentDefId: weapon_xunchang_tie_jian
           dropChance: 1.0
@@ -972,6 +986,20 @@ retreat:
       biome: swordTomb
       weather: mist
       image_path: assets/maps/guJianZhong.png
+      route:
+        - "从残碑之间入冢，断剑半埋泥中，雾气贴地而行。"
+        - "择一处无主剑台盘坐，听铁锈在风里细响。"
+        - "离冢时绕开塌陷石阶，剑鸣在身后渐低。"
+      event_notes:
+        - trigger_after_hours: 1
+          kind: trace
+          text: "石台刻痕新旧交错，似有人曾在此试招三十六式。"
+        - trigger_after_hours: 4
+          kind: harvest
+          text: "雾散一瞬，泥下露出一截尚可磨洗的旧剑格。"
+        - trigger_after_hours: 12
+          kind: risk
+          text: "冢底寒意逼骨，内息若走岔便会被剑煞牵动。"
       dropTable:
         - equipmentDefId: weapon_xunchang_zhe_dao
           dropChance: 1.0
@@ -994,6 +1022,20 @@ retreat:
       biome: temple
       weather: clear
       image_path: assets/maps/cangJingGe.png
+      route:
+        - "入阁先拂去窗棂浮灰，借天光辨清残卷题签。"
+        - "在经架尽头燃一盏小灯，按页脚批注默记行功次第。"
+        - "离阁前将残卷归位，不带走一页，只带走几分明悟。"
+      event_notes:
+        - trigger_after_hours: 1
+          kind: trace
+          text: "书脊间夹着前人纸条，只写着一行走火入魔后的悔语。"
+        - trigger_after_hours: 4
+          kind: harvest
+          text: "残卷边角藏有一段吐纳口诀，与主修心法暗暗相合。"
+        - trigger_after_hours: 12
+          kind: risk
+          text: "灯油将尽时字影重叠，若贪读不止，心火反乱。"
       dropTable:
         - equipmentDefId: weapon_xunchang_ruan_bian
           dropChance: 1.0
@@ -1016,6 +1058,20 @@ retreat:
       biome: cliffWaterfall
       weather: rain
       image_path: assets/maps/xuanYaPuBu.png
+      route:
+        - "踏湿苔上崖，瀑声先至，震得胸中浊气翻涌。"
+        - "在水帘侧畔行功，借寒流一遍遍压住浮躁。"
+        - "收功后沿崖壁缓下，掌心仍留水汽与石粉。"
+      event_notes:
+        - trigger_after_hours: 1
+          kind: risk
+          text: "崖壁碎石忽落，险些打断周天，幸亏及时收束气机。"
+        - trigger_after_hours: 4
+          kind: harvest
+          text: "瀑后石缝有冷泉渗出，入口微甘，内息随之澄明。"
+        - trigger_after_hours: 12
+          kind: trace
+          text: "水声深处似有剑啸回环，分不清是旧招还是山鸣。"
       dropTable:
         - equipmentDefId: weapon_xiangyang_gang_dao
           dropChance: 1.0
@@ -1038,6 +1094,20 @@ retreat:
       biome: cliff
       weather: snow
       image_path: assets/maps/duanYaJueBi.png
+      route:
+        - "攀上断崖时云海压脚，回头已不见来路。"
+        - "在绝壁石台坐定，雪粒击面如针，逼人守住一念。"
+        - "收功下崖，天色未明，身后只余一圈浅浅坐痕。"
+      event_notes:
+        - trigger_after_hours: 1
+          kind: risk
+          text: "崖风忽变，真气几乎被卷散，只能以慢守快。"
+        - trigger_after_hours: 4
+          kind: trace
+          text: "石台边缘有旧掌印入岩三分，像是宗师临崖留证。"
+        - trigger_after_hours: 12
+          kind: harvest
+          text: "云开月现一刻，周身窍穴如被寒光洗过。"
       dropTable:
         - equipmentDefId: weapon_zhongqi_po_zhen_chui
           dropChance: 1.0
