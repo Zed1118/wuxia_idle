@@ -121,13 +121,15 @@ void main() {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       expect(repo.towerFloors.length, 30);
       for (var i = 0; i < repo.towerFloors.length; i++) {
-        expect(repo.towerFloors[i].floorIndex, i + 1,
-            reason: 'floorIndex 必须连续 1-30');
+        expect(
+          repo.towerFloors[i].floorIndex,
+          i + 1,
+          reason: 'floorIndex 必须连续 1-30',
+        );
       }
     });
 
-    test('Boss 分布严格：minor=5/15/25、major=10/20/30，其他层 bossKind=null',
-        () async {
+    test('Boss 分布严格：minor=5/15/25、major=10/20/30，其他层 bossKind=null', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       const minor = {5, 15, 25};
       const major = {10, 20, 30};
@@ -135,10 +137,13 @@ void main() {
         final expected = minor.contains(f.floorIndex)
             ? TowerBossKind.minor
             : major.contains(f.floorIndex)
-                ? TowerBossKind.major
-                : null;
-        expect(f.bossKind, expected,
-            reason: 'floor=${f.floorIndex} bossKind 不符');
+            ? TowerBossKind.major
+            : null;
+        expect(
+          f.bossKind,
+          expected,
+          reason: 'floor=${f.floorIndex} bossKind 不符',
+        );
       }
     });
 
@@ -146,15 +151,27 @@ void main() {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       for (final f in repo.towerFloors) {
         if (f.bossKind == null) {
-          expect(f.narrativeOpeningId, isNull,
-              reason: '普通 floor=${f.floorIndex} 不应配 opening');
-          expect(f.narrativeVictoryId, isNull,
-              reason: '普通 floor=${f.floorIndex} 不应配 victory');
+          expect(
+            f.narrativeOpeningId,
+            isNull,
+            reason: '普通 floor=${f.floorIndex} 不应配 opening',
+          );
+          expect(
+            f.narrativeVictoryId,
+            isNull,
+            reason: '普通 floor=${f.floorIndex} 不应配 victory',
+          );
         } else {
-          expect(f.narrativeOpeningId, isNotNull,
-              reason: 'Boss floor=${f.floorIndex} 应有 opening id');
-          expect(f.narrativeVictoryId, isNotNull,
-              reason: 'Boss floor=${f.floorIndex} 应有 victory id');
+          expect(
+            f.narrativeOpeningId,
+            isNotNull,
+            reason: 'Boss floor=${f.floorIndex} 应有 opening id',
+          );
+          expect(
+            f.narrativeVictoryId,
+            isNotNull,
+            reason: 'Boss floor=${f.floorIndex} 应有 victory id',
+          );
         }
       }
     });
@@ -171,8 +188,11 @@ void main() {
       };
       for (final entry in expectedByRange.entries) {
         for (var i = entry.value[0]; i <= entry.value[1]; i++) {
-          expect(repo.getTowerFloor(i).requiredRealm, entry.key,
-              reason: 'floor=$i 期望境界 ${entry.key.name}');
+          expect(
+            repo.getTowerFloor(i).requiredRealm,
+            entry.key,
+            reason: 'floor=$i 期望境界 ${entry.key.name}',
+          );
         }
       }
     });
@@ -181,11 +201,17 @@ void main() {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       for (final f in repo.towerFloors) {
         if (f.bossKind != null) {
-          expect(f.enemyTeam.length, 1,
-              reason: 'Boss floor=${f.floorIndex} 必须 1 个敌人');
+          expect(
+            f.enemyTeam.length,
+            1,
+            reason: 'Boss floor=${f.floorIndex} 必须 1 个敌人',
+          );
         } else {
-          expect(f.enemyTeam.length, inInclusiveRange(1, 3),
-              reason: '普通 floor=${f.floorIndex} 敌人数 ∉ [1, 3]');
+          expect(
+            f.enemyTeam.length,
+            inInclusiveRange(1, 3),
+            reason: '普通 floor=${f.floorIndex} 敌人数 ∉ [1, 3]',
+          );
         }
       }
     });
@@ -214,34 +240,42 @@ void main() {
     test('普通层带 narrativeOpeningId → StateError', () async {
       final overrides = _buildBrokenTowersYaml((floors) {
         // floor=1 是普通层，强行塞 narrativeOpeningId
-        floors[0] =
-            floors[0].replaceFirst('requiredRealm: xueTu', '''requiredRealm: xueTu
-    narrativeOpeningId: not_allowed_for_normal_floor''');
+        floors[0] = floors[0].replaceFirst(
+          'requiredRealm: xueTu',
+          '''requiredRealm: xueTu
+    narrativeOpeningId: not_allowed_for_normal_floor''',
+        );
       });
       expect(
         GameRepository.loadAllDefs(loader: makeLoader(overrides)),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('普通层不应配 narrative'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('普通层不应配 narrative'),
+          ),
+        ),
       );
     });
 
     test('Boss 分布错位（floor=6 写成 minor）→ StateError', () async {
       final overrides = _buildBrokenTowersYaml((floors) {
         // floor=6 是普通层，强行塞 bossKind: minor
-        floors[5] =
-            floors[5].replaceFirst('requiredRealm: sanLiu', '''requiredRealm: sanLiu
-    bossKind: minor''');
+        floors[5] = floors[5].replaceFirst(
+          'requiredRealm: sanLiu',
+          '''requiredRealm: sanLiu
+    bossKind: minor''',
+        );
       });
       expect(
         GameRepository.loadAllDefs(loader: makeLoader(overrides)),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('bossKind'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('bossKind'),
+          ),
+        ),
       );
     });
 
@@ -252,11 +286,13 @@ void main() {
       });
       expect(
         GameRepository.loadAllDefs(loader: makeLoader(overrides)),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          anyOf(contains('层数'), contains('不连续')),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            anyOf(contains('层数'), contains('不连续')),
+          ),
+        ),
       );
     });
 
@@ -264,15 +300,19 @@ void main() {
       final overrides = _buildBrokenTowersYaml((floors) {
         // floor=30 大 Boss baseHp 拉到越界值
         floors[29] = floors[29].replaceFirst(
-            'baseHp: 15000', 'baseHp: 99999');
+          RegExp(r'baseHp:\s+\d+'),
+          'baseHp: 99999',
+        );
       });
       expect(
         GameRepository.loadAllDefs(loader: makeLoader(overrides)),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('60000'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('60000'),
+          ),
+        ),
       );
     });
   });
@@ -281,8 +321,9 @@ void main() {
 /// 读真 towers.yaml，按 `- floorIndex:` 切成 30 块，让 mutator 改若干块，
 /// 然后拼回 yaml 字符串。用于构造 fail-fast 测试的 broken fixture。
 String _buildBrokenTowersYaml(void Function(List<String> floorBlocks) mutator) {
-  final raw =
-      File('data/towers.yaml').readAsStringSync().replaceAll('\r\n', '\n');
+  final raw = File(
+    'data/towers.yaml',
+  ).readAsStringSync().replaceAll('\r\n', '\n');
   // 找 "floors:" header 后面所有 - floorIndex: N 起始的块
   final headerEnd = raw.indexOf('floors:');
   if (headerEnd < 0) {
