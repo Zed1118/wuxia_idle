@@ -16,6 +16,7 @@ import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/application/equipment_source_lookup.dart';
 import '../../equipment/domain/equipment_source.dart';
+import '../../inventory/presentation/post_battle_healing_panel.dart';
 
 typedef EquipmentDropLockHandler =
     Future<bool> Function(Equipment equipment, bool locked);
@@ -175,6 +176,7 @@ class StageVictoryContent extends StatelessWidget {
             ),
           ),
         ],
+        const PostBattleHealingPanel(),
       ],
     );
   }

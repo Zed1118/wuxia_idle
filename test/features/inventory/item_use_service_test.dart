@@ -297,6 +297,33 @@ void main() {
     expect(item?.quantity, 1);
   });
 
+  test('行囊补给：清除轻伤层数 + 消费 1', () async {
+    final id = await seedInjuredFounder();
+    await isar.writeTxn(() async {
+      final ch = await isar.characters.get(id);
+      ch!
+        ..injuryHoursRemaining = 0
+        ..innerDemonResidueHoursRemaining = 0
+        ..lightInjuryStacks = 3;
+      await isar.characters.put(ch);
+    });
+    await seedItem('item_xingnang_buji', ItemType.miscMaterial, 2);
+    final def = repo.itemDefs['item_xingnang_buji']!;
+
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
+
+    expect(r.kind, ItemUseKind.recoveryApplied);
+    expect(r.lightInjuryStacksCleared, 3);
+    final ch = await isar.characters.get(id);
+    expect(ch?.lightInjuryStacks, 0);
+    final item = await isar.inventoryItems.getByDefId('item_xingnang_buji');
+    expect(item?.quantity, 1);
+  });
+
   test('经验丹但无 founder → 返 noTarget 不消费', () async {
     // 不 seedFounder（只有 IsarSetup.init 建的 SaveData(0)，无 founder 角色）。
     await seedItem('item_jingyandan_small', ItemType.jingYanDan, 2);

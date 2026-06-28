@@ -52,6 +52,15 @@ class ItemUsageLookupService {
         if (repo.numbers.enhancement.mojianshiCost.isNotEmpty) {
           result.add(const ItemUsage(kind: ItemUsageKind.equipmentEnhancement));
         }
+      case ItemType.miscMaterial:
+        if (itemId == 'item_duancai' &&
+            repo.numbers.enhancement.duancaiCost.isNotEmpty) {
+          result.add(const ItemUsage(kind: ItemUsageKind.equipmentEnhancement));
+        }
+        if (itemId == 'item_kaifeng_fucai' &&
+            repo.numbers.forging.slots.any((s) => s.fucaiCost > 0)) {
+          result.add(const ItemUsage(kind: ItemUsageKind.equipmentForging));
+        }
       case ItemType.xinXueJieJing:
         if (repo.numbers.enhancement.crystalGuarantees.isNotEmpty) {
           result.add(const ItemUsage(kind: ItemUsageKind.equipmentGuarantee));

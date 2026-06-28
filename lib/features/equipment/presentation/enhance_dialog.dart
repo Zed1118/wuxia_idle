@@ -105,7 +105,10 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     }
   }
 
-  Future<void> _onEnhance(int mojianshiQty) async {
+  Future<void> _onEnhance({
+    required int mojianshiQty,
+    required int duancaiQty,
+  }) async {
     final config = ref.read(numbersConfigProvider).enhancement;
     final rng = ref.read(rngProvider);
     final result = EnhancementService.tryEnhance(
@@ -113,6 +116,7 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
       characterAbsoluteLevel: _capHardLimit,
       rng: rng,
       currentMojianshi: mojianshiQty,
+      currentDuancai: duancaiQty,
       config: config,
     );
     if (result.outcome == EnhanceOutcome.success ||
@@ -154,6 +158,7 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     if (!mounted) return;
     ref.invalidate(inventoryQuantityByTypeProvider(ItemType.moJianShi));
     ref.invalidate(inventoryQuantityByTypeProvider(ItemType.xinXueJieJing));
+    ref.invalidate(inventoryQuantityByDefIdProvider('item_duancai'));
     ref.invalidate(allEquipmentsProvider);
   }
 
@@ -165,16 +170,23 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     final crystalAsync = ref.watch(
       inventoryQuantityByTypeProvider(ItemType.xinXueJieJing),
     );
+    final duancaiAsync = ref.watch(
+      inventoryQuantityByDefIdProvider('item_duancai'),
+    );
 
     return Dialog(
       backgroundColor: WuxiaColors.panel,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
-        child: (mojianshiAsync.hasValue && crystalAsync.hasValue)
+        child:
+            (mojianshiAsync.hasValue &&
+                crystalAsync.hasValue &&
+                duancaiAsync.hasValue)
             ? _buildTabs(
                 mojianshiQty: mojianshiAsync.value!,
                 crystalQty: crystalAsync.value!,
+                duancaiQty: duancaiAsync.value!,
               )
             : const Padding(
                 padding: EdgeInsets.symmetric(vertical: 40),
@@ -184,7 +196,11 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     );
   }
 
-  Widget _buildTabs({required int mojianshiQty, required int crystalQty}) {
+  Widget _buildTabs({
+    required int mojianshiQty,
+    required int crystalQty,
+    required int duancaiQty,
+  }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -208,6 +224,7 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
                 child: _buildBody(
                   mojianshiQty: mojianshiQty,
                   crystalQty: crystalQty,
+                  duancaiQty: duancaiQty,
                 ),
               ),
               Padding(
@@ -231,18 +248,24 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     );
   }
 
-  Widget _buildBody({required int mojianshiQty, required int crystalQty}) {
+  Widget _buildBody({
+    required int mojianshiQty,
+    required int crystalQty,
+    required int duancaiQty,
+  }) {
     final eq = widget.equipment;
     final config = ref.watch(numbersConfigProvider).enhancement;
     final atCap = eq.enhanceLevel >= _capHardLimit;
     final targetLevel = atCap ? eq.enhanceLevel : eq.enhanceLevel + 1;
     final successRate = atCap ? 0.0 : config.successRateFor(targetLevel);
     final mojianshiCost = atCap ? 0 : config.mojianshiCostFor(targetLevel);
+    final duancaiCost = atCap ? 0 : config.duancaiCostFor(targetLevel);
     final crystalCost = atCap
         ? null
         : config.crystalCostToGuarantee(targetLevel);
 
-    final canEnhance = !atCap && mojianshiQty >= mojianshiCost;
+    final canEnhance =
+        !atCap && mojianshiQty >= mojianshiCost && duancaiQty >= duancaiCost;
     final canGuarantee =
         !atCap && crystalCost != null && crystalQty >= crystalCost;
 
@@ -269,12 +292,14 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
             successRate: atCap ? null : successRate,
             mojianshiQty: mojianshiQty,
             mojianshiCost: mojianshiCost,
+            duancaiQty: duancaiQty,
+            duancaiCost: duancaiCost,
             crystalQty: crystalQty,
             crystalCost: crystalCost,
           ),
           const SizedBox(height: 8),
           const MaterialSourceNote(
-            itemIds: ['item_mojianshi', 'item_xinxuejiejing'],
+            itemIds: ['item_mojianshi', 'item_duancai', 'item_xinxuejiejing'],
           ),
           const SizedBox(height: 12),
           _ResultBanner(result: _lastResult),
@@ -306,7 +331,10 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
                   ),
                   onPressed: canEnhance
                       ? () {
-                          _onEnhance(mojianshiQty);
+                          _onEnhance(
+                            mojianshiQty: mojianshiQty,
+                            duancaiQty: duancaiQty,
+                          );
                         }
                       : null,
                   child: const Text(UiStrings.enhanceButton),
@@ -414,6 +442,8 @@ class _MetricsRow extends StatelessWidget {
     required this.successRate,
     required this.mojianshiQty,
     required this.mojianshiCost,
+    required this.duancaiQty,
+    required this.duancaiCost,
     required this.crystalQty,
     required this.crystalCost,
   });
@@ -421,6 +451,8 @@ class _MetricsRow extends StatelessWidget {
   final double? successRate;
   final int mojianshiQty;
   final int mojianshiCost;
+  final int duancaiQty;
+  final int duancaiCost;
   final int crystalQty;
   final int? crystalCost;
 
@@ -439,6 +471,12 @@ class _MetricsRow extends StatelessWidget {
           label: UiStrings.metricMaterial,
           value: UiStrings.mojianshiUsage(mojianshiQty, mojianshiCost),
           valueColor: mojianshiQty < mojianshiCost ? WuxiaColors.hpLow : null,
+        ),
+        const SizedBox(height: 4),
+        _StatLine(
+          label: UiStrings.metricForgingMaterial,
+          value: UiStrings.duancaiUsage(duancaiQty, duancaiCost),
+          valueColor: duancaiQty < duancaiCost ? WuxiaColors.hpLow : null,
         ),
         const SizedBox(height: 4),
         _StatLine(

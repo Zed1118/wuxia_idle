@@ -658,6 +658,7 @@ class UiStrings {
       ItemUsageKind.realmProgress => '修为突破',
       ItemUsageKind.techniqueUnlock => '解锁招式',
       ItemUsageKind.equipmentEnhancement => '装备强化',
+      ItemUsageKind.equipmentForging => '装备开锋',
       ItemUsageKind.equipmentGuarantee => '强化保底',
       ItemUsageKind.injuryRecovery => '疗伤整备',
       ItemUsageKind.shopPurchaseCurrency => '商店采买',
@@ -679,6 +680,12 @@ class UiStrings {
   static String itemUseAlreadyKnown(String name) => '「$name」所载之招，早已了然于胸。';
   static String itemUseNoEffect(String name, String targetName) =>
       '$targetName此刻无需服用「$name」。';
+  static const String postBattleHealingTitle = '战后疗伤';
+  static String postBattleHealingAvailable(int count) => '疗伤丹 ×$count';
+  static const String postBattleHealingAction = '服用疗伤丹';
+  static String postBattleHealingApplied(String targetName) =>
+      '$targetName伤势稍平。';
+  static const String postBattleHealingFailed = '暂时无法用药。';
   static const String itemUseFailed = '此物此刻无法使用。';
   static const String itemUseDismiss = '收下';
 
@@ -776,6 +783,9 @@ class UiStrings {
   /// 磨剑石余量 / 需求：`磨剑石 X / Y`。
   static String mojianshiUsage(int current, int cost) => '磨剑石 $current / $cost';
 
+  /// 锻材余量 / 需求：`锻材 X / Y`。
+  static String duancaiUsage(int current, int cost) => '锻材 $current / $cost';
+
   /// 心血结晶余量：`心血结晶 X`。
   static String crystalAvailable(int qty) => '心血结晶 $qty';
 
@@ -787,6 +797,7 @@ class UiStrings {
 
   static const String metricSuccessRate = '成功率';
   static const String metricMaterial = '材料';
+  static const String metricForgingMaterial = '锻材';
   static const String metricCrystal = '结晶';
 
   // 开锋（T30）
@@ -797,8 +808,12 @@ class UiStrings {
   static const String forgingSpecialSkillPickerTitle = '选择专属技能';
   static const String forgingConfirmTitle = '确认开锋';
   static const String forgingConfirmBody = '开锋一旦下手不能更改。确认在此槽位开锋？';
+  static String forgingConfirmBodyWithCost(int cost) =>
+      cost > 0 ? '开锋一旦下手不能更改。本次消耗开锋辅材 $cost。确认下手？' : forgingConfirmBody;
   static const String forgingConfirmOk = '确认';
   static const String forgingConfirmCancel = '取消';
+  static String forgingFucaiUsage(int current, int cost) =>
+      '开锋辅材 $current / $cost';
 
   /// 槽位标题：`槽 1` / `槽 2` / `槽 3`。
   static String forgingSlotTitle(int slotIndex) => '槽 $slotIndex';

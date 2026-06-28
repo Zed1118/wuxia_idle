@@ -51,6 +51,7 @@ import '../../battle/presentation/hero_camera_overlay.dart' show HeroCameraData;
 import '../../battle/presentation/victory_ceremony.dart';
 import '../../mainline/presentation/stage_victory_dialog.dart'
     show FirstClearBanner, ResonanceUpgradeNotice, ResonanceUpgradeBanner;
+import '../../inventory/presentation/post_battle_healing_panel.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../../../shared/strings.dart';
@@ -791,11 +792,17 @@ class TowerVictoryContent extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             UiStrings.battleSummary(
-                stats!.totalDamage, stats!.critCount, stats!.totalTicks),
+              stats!.totalDamage,
+              stats!.critCount,
+              stats!.totalTicks,
+            ),
             style: const TextStyle(
-                color: WuxiaColors.textSecondary, fontSize: 13),
+              color: WuxiaColors.textSecondary,
+              fontSize: 13,
+            ),
           ),
         ],
+        const PostBattleHealingPanel(),
       ],
     );
   }

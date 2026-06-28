@@ -16,14 +16,19 @@ part 'inventory_providers.g.dart';
 /// **不写 Isar**——纯查询；强化扣材料归调用方在 `writeTxn` 内修改 quantity
 /// 后 `ref.invalidate(inventoryQuantityByTypeProvider(type))` 触发刷新。
 @riverpod
-Future<int> inventoryQuantityByType(
-  Ref ref,
-  ItemType type,
-) async {
+Future<int> inventoryQuantityByType(Ref ref, ItemType type) async {
   final item = await IsarSetup.instance.inventoryItems
       .filter()
       .itemTypeEqualTo(type)
       .findFirst();
+  return item?.quantity ?? 0;
+}
+
+/// 背包物品数量（按 defId 查）。miscMaterial 下有多种桃花岛加工产物，
+/// 不能只按 [ItemType.miscMaterial] 聚合。
+@riverpod
+Future<int> inventoryQuantityByDefId(Ref ref, String defId) async {
+  final item = await IsarSetup.instance.inventoryItems.getByDefId(defId);
   return item?.quantity ?? 0;
 }
 
