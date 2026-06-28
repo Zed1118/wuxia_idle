@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/data/defs/equipment_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -67,6 +68,11 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          inventoryQuantityByDefIdProvider(
+            'item_kaifeng_fucai',
+          ).overrideWith((ref) async => 100),
+        ],
         child: MaterialApp(
           home: Scaffold(
             body: ForgingPanel(equipment: eq, def: def),

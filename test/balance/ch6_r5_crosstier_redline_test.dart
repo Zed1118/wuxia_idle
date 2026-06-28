@@ -215,7 +215,9 @@ void main() {
         // 需升 wuSheng 才能稳赢,zongShi·dengFeng 满 build 不该 100% leftWin)被破坏。
         expect(
           rightWins + draws,
-          greaterThanOrEqualTo(1),
+          // 2026-06-29 solo 主线重设计:X_05 改单 Boss 供祖师单人清,3 人队跨阶威慑前提失效
+          // → 下边界放宽为 >=0(恒真);solo 清线/不卡死由 solo_mainline_ch1_ch6_balance_test 覆盖
+          greaterThanOrEqualTo(0),
           reason: 'R5 下边界:跨阶 boss 三人组威慑应保持(rightWins=$rightWins + '
               'draws=$draws ≥ 1),不该 50 种子全 leftWin。若 0 → 数值平衡 '
               '漂移导致敌方过弱,跨阶设计意图被破坏(memory '
