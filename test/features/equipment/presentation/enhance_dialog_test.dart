@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/shared/utils/rng_provider.dart';
 import 'package:wuxia_idle/features/equipment/presentation/enhance_dialog.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// T29 EnhanceDialog widget 测试（phase2_tasks.md §433-434）。
@@ -63,12 +64,12 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          inventoryQuantityByTypeProvider(ItemType.moJianShi).overrideWith(
-            (ref) async => mojianshiQty,
-          ),
-          inventoryQuantityByTypeProvider(ItemType.xinXueJieJing).overrideWith(
-            (ref) async => crystalQty,
-          ),
+          inventoryQuantityByTypeProvider(
+            ItemType.moJianShi,
+          ).overrideWith((ref) async => mojianshiQty),
+          inventoryQuantityByTypeProvider(
+            ItemType.xinXueJieJing,
+          ).overrideWith((ref) async => crystalQty),
           if (rng != null) rngProvider.overrideWithValue(rng),
         ],
         child: MaterialApp(
@@ -91,6 +92,7 @@ void main() {
     expect(find.text('成功率'), findsOneWidget);
     expect(find.text('材料'), findsOneWidget);
     expect(find.text('结晶'), findsOneWidget);
+    expect(find.textContaining(UiStrings.materialSourcePrefix), findsOneWidget);
   });
 
   testWidgets('mock Rng nextDouble=0.01 → 强化成功 + 新 +N 显示', (tester) async {
@@ -114,8 +116,9 @@ void main() {
     expect(find.text('+21'), findsWidgets);
   });
 
-  testWidgets('mock Rng nextDouble=0.99 → 强化失败 + 「+1 心血结晶」 + +N 不变',
-      (tester) async {
+  testWidgets('mock Rng nextDouble=0.99 → 强化失败 + 「+1 心血结晶」 + +N 不变', (
+    tester,
+  ) async {
     // +20 -> +21 fallback formula = 0.46
     // roll=0.99 >= 0.46 → 失败（永不破防降级）
     final eq = mkEq(enhanceLevel: 20);
@@ -162,16 +165,18 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          inventoryQuantityByTypeProvider(ItemType.moJianShi).overrideWith(
-            (ref) async => 1000,
-          ),
-          inventoryQuantityByTypeProvider(ItemType.xinXueJieJing).overrideWith(
-            (ref) async => 100,
-          ),
+          inventoryQuantityByTypeProvider(
+            ItemType.moJianShi,
+          ).overrideWith((ref) async => 1000),
+          inventoryQuantityByTypeProvider(
+            ItemType.xinXueJieJing,
+          ).overrideWith((ref) async => 100),
         ],
         child: MaterialApp(
           home: Scaffold(
-            body: Center(child: EnhanceDialog(equipment: eq, def: def)),
+            body: Center(
+              child: EnhanceDialog(equipment: eq, def: def),
+            ),
           ),
         ),
       ),
@@ -180,8 +185,53 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('龙泉剑'), findsOneWidget,
-        reason: 'EnhanceDialog header 应渲染 def.name');
+    expect(
+      find.text('龙泉剑'),
+      findsOneWidget,
+      reason: 'EnhanceDialog header 应渲染 def.name',
+    );
+  });
+
+  testWidgets('开锋页显示材料主要来源提示', (tester) async {
+    final def = GameRepository.instance.getEquipment('weapon_liqi_long_quan');
+    final eq = Equipment.create(
+      defId: def.id,
+      tier: def.tier,
+      slot: def.slot,
+      obtainedAt: DateTime(2026, 5, 11),
+      obtainedFrom: 'test',
+      baseAttack: def.baseAttackMin,
+      enhanceLevel: 10,
+    )..id = 1;
+
+    await tester.binding.setSurfaceSize(const Size(800, 600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          inventoryQuantityByTypeProvider(
+            ItemType.moJianShi,
+          ).overrideWith((ref) async => 1000),
+          inventoryQuantityByTypeProvider(
+            ItemType.xinXueJieJing,
+          ).overrideWith((ref) async => 100),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: EnhanceDialog(equipment: eq, def: def, initialTab: 1),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(UiStrings.tabForging), findsOneWidget);
+    expect(find.textContaining(UiStrings.materialSourcePrefix), findsOneWidget);
   });
 }
 

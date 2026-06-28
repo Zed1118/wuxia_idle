@@ -9,6 +9,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/forging_slot.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
+import '../../inventory/presentation/material_source_note.dart';
 import '../application/forging_service.dart';
 import '../application/equipment_service_providers.dart';
 import '../../../shared/strings.dart';
@@ -153,6 +154,10 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const MaterialSourceNote(
+            itemIds: ['item_mojianshi', 'item_xinxuejiejing'],
+          ),
+          const SizedBox(height: 10),
           for (int i = 1; i <= 3; i++) ...[
             _SlotCard(
               slotIndex: i,

@@ -9,6 +9,7 @@ import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
+import '../../inventory/presentation/material_source_note.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/enhancement_service.dart';
 import '../application/equipment_service_providers.dart';
@@ -270,6 +271,10 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
             mojianshiCost: mojianshiCost,
             crystalQty: crystalQty,
             crystalCost: crystalCost,
+          ),
+          const SizedBox(height: 8),
+          const MaterialSourceNote(
+            itemIds: ['item_mojianshi', 'item_xinxuejiejing'],
           ),
           const SizedBox(height: 12),
           _ResultBanner(result: _lastResult),
