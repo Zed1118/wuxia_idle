@@ -587,6 +587,7 @@ class UiStrings {
     return switch (usage.kind) {
       ItemUsageKind.realmProgress => '修为突破',
       ItemUsageKind.techniqueUnlock => '解锁招式',
+      ItemUsageKind.injuryRelief => '疗伤调理',
       ItemUsageKind.equipmentEnhancement => '装备强化',
       ItemUsageKind.equipmentGuarantee => '强化保底',
       ItemUsageKind.shopPurchaseCurrency => '商店采买',
@@ -604,6 +605,8 @@ class UiStrings {
       layersGained > 0 ? '服下「$name」，境界精进 $layersGained 层。' : '服下「$name」，内息渐长。';
   static String itemUseScrollResult(String name) => '研读「$name」，已了然于胸，得此绝学。';
   static String itemUseAlreadyKnown(String name) => '「$name」所载之招，早已了然于胸。';
+  static String itemUseInjuryRelieved(String name) => '服下「$name」，经脉伤势稍平。';
+  static String itemUseNoEffect(String name) => '「$name」暂且收好，眼下无需疗伤。';
   static const String itemUseFailed = '此物此刻无法使用。';
   static const String itemUseDismiss = '收下';
 
@@ -1203,6 +1206,7 @@ class UiStrings {
   static String hoursAmountLabel(String value) => '$value 小时';
   static String seclusionMojianshi(int n) => '磨剑石 × $n';
   static String seclusionSilver(int n) => '银两 × $n';
+  static String seclusionItemReward(String name, int n) => '$name × $n';
   static String seclusionInternalForce(int n) => '内力 +$n';
   static String seclusionInsightPoints(int n) => '心法领悟点 +$n';
   // 根因A B3 sink 引导(2026-05-29):结算屏 insightPoints>0 时提示去「心法面板」

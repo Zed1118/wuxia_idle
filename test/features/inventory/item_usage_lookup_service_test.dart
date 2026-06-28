@@ -31,6 +31,10 @@ void main() {
     expect(kinds, contains(ItemUsageKind.islandRecipeInput));
   });
 
+  test('疗伤丹反查到疗伤调理用途', () {
+    expect(kindsOf('item_liaoshangdan'), contains(ItemUsageKind.injuryRelief));
+  });
+
   test('装备材料：磨剑石与心血结晶只反查实际装备消耗', () {
     expect(
       kindsOf('item_mojianshi'),

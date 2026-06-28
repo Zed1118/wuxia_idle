@@ -636,6 +636,20 @@ void main() {
       expect(out.silver, (shanLin.silverPerHour * 1.0 * 1.0).floor());
     });
 
+    test('4 小时山林产出药草 itemRewards', () {
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final now = start.add(const Duration(hours: 4));
+      final session = makeSession(durationHours: 4, startedAt: start);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+      expect(out.itemRewards['item_yaocao'], 6);
+    });
+
     test('0 小时 → silver=0', () {
       final now = DateTime(2026, 5, 11, 10, 0);
       final session = makeSession(startedAt: now);
@@ -647,6 +661,7 @@ void main() {
         now: now,
       );
       expect(out.silver, 0);
+      expect(out.itemRewards, isEmpty);
     });
   });
 
@@ -761,6 +776,45 @@ void main() {
           .findFirst();
       expect(item, isNotNull);
       expect(item!.quantity, greaterThan(0));
+    });
+
+    test('收功后药草入库并写入 actualRewards', () async {
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session = await SeclusionService(isar: IsarSetup.instance)
+          .startRetreat(
+            mapType: RetreatMapType.shanLin,
+            durationHours: 4,
+            saveDataId: kSaveDataId,
+            characterId: kCharId,
+            charRealmTier: RealmTier.xueTu,
+            maps: GameRepository.instance.seclusionMaps,
+            now: start,
+          );
+
+      final out = await SeclusionService(isar: IsarSetup.instance)
+          .completeRetreat(
+            session: session,
+            characterId: kCharId,
+            charRealmTier: RealmTier.xueTu,
+            config: GameRepository.instance.numbers.retreat,
+            maps: GameRepository.instance.seclusionMaps,
+            now: start.add(const Duration(hours: 4)),
+          );
+
+      expect(out.itemRewards['item_yaocao'], 6);
+      final herb = await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_yaocao',
+      );
+      expect(herb?.quantity, 6);
+      expect(herb?.itemType, ItemType.miscMaterial);
+      final updated = await IsarSetup.instance.retreatSessions.get(session.id);
+      expect(
+        updated?.actualRewards
+            .where((r) => r.rewardKey == 'item_yaocao')
+            .single
+            .quantity,
+        6,
+      );
     });
 
     // W15 #30 第 2 期消费层接入 ──────────────────────────────────────────────

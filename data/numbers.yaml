@@ -947,6 +947,8 @@ retreat:
         equipment_drop_rate: 1.0             # 基础掉率（无加成）
         technique_learn_rate: 1.0
         internal_force_growth: 1.0
+        item_outputs_per_hour:
+          item_yaocao: 1.5                   # 药草来源:山林采药,供桃花岛丹房/疗伤丹闭环
       biome: mountainForest                  # C-W14-2 奇遇触发维度
       weather: clear
       image_path: assets/maps/shanLin.png
@@ -1055,6 +1057,8 @@ retreat:
         equipment_drop_rate: 1.0
         technique_learn_rate: 1.0
         internal_force_growth: 1.5           # 内力增长 +50%
+        item_outputs_per_hour:
+          item_lingquanshui: 0.8             # 灵泉水来源:瀑布取泉,供疗伤丹次要输入
       biome: cliffWaterfall
       weather: rain
       image_path: assets/maps/xuanYaPuBu.png
@@ -1091,6 +1095,9 @@ retreat:
         equipment_drop_rate: 1.5             # 全维度都加 50%
         technique_learn_rate: 1.5
         internal_force_growth: 1.5
+        item_outputs_per_hour:
+          item_yaocao: 2.0
+          item_lingquanshui: 1.2
       biome: cliff
       weather: snow
       image_path: assets/maps/duanYaJueBi.png

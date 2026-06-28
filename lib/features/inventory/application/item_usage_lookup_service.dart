@@ -39,6 +39,9 @@ class ItemUsageLookupService {
           ),
         );
       default:
+        if (def.hasInjuryReliefEffect) {
+          result.add(const ItemUsage(kind: ItemUsageKind.injuryRelief));
+        }
         break;
     }
   }

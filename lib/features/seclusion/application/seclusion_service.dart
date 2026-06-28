@@ -30,6 +30,7 @@ typedef RetreatOutputs = ({
   double actualHours,
   int mojianshi,
   int silver,
+  Map<String, int> itemRewards,
   List<Equipment> equipmentDrops,
   int experiencePoints,
   int techniqueLearnPoints,
@@ -48,6 +49,7 @@ typedef RetreatResult = ({
   double actualHours,
   int mojianshi,
   int silver,
+  Map<String, int> itemRewards,
   List<Equipment> equipmentDrops,
   int experiencePoints,
   int techniqueLearnPoints,
@@ -225,6 +227,14 @@ class SeclusionService {
         .floor()
         .clamp(0, 999999);
 
+    final itemRewards = <String, int>{};
+    for (final entry in def.itemOutputsPerHour.entries) {
+      final quantity = (entry.value * actualHours * scale * solarBonus)
+          .floor()
+          .clamp(0, 999999);
+      if (quantity > 0) itemRewards[entry.key] = quantity;
+    }
+
     final experiencePoints =
         (def.experiencePerHour * actualHours * scale * solarBonus)
             .floor()
@@ -274,6 +284,7 @@ class SeclusionService {
       actualHours: actualHours,
       mojianshi: mojianshi,
       silver: silver,
+      itemRewards: itemRewards,
       equipmentDrops: equipDrops,
       experiencePoints: experiencePoints,
       techniqueLearnPoints: techniqueLearnPoints,
@@ -370,7 +381,18 @@ class SeclusionService {
         );
       }
 
-      // 1c. 写闭关掉落装备 → isar.equipments（B2 接通）。
+      // 1c. 写通用物品产出（药材/调理品原料等）。
+      for (final entry in outputs.itemRewards.entries) {
+        await _addInventoryItem(
+          isar,
+          defId: entry.key,
+          itemType: ItemType.fromDefId(entry.key),
+          quantity: entry.value,
+          now: now,
+        );
+      }
+
+      // 1d. 写闭关掉落装备 → isar.equipments（B2 接通）。
       for (final eq in outputs.equipmentDrops) {
         await isar.equipments.put(eq);
       }
@@ -382,6 +404,13 @@ class SeclusionService {
           RewardEntry()
             ..rewardKey = 'item_mojianshi'
             ..quantity = outputs.mojianshi,
+        );
+      }
+      for (final entry in outputs.itemRewards.entries) {
+        rewards.add(
+          RewardEntry()
+            ..rewardKey = entry.key
+            ..quantity = entry.value,
         );
       }
       session
@@ -515,6 +544,7 @@ class SeclusionService {
       actualHours: outputs.actualHours,
       mojianshi: outputs.mojianshi,
       silver: outputs.silver,
+      itemRewards: outputs.itemRewards,
       equipmentDrops: outputs.equipmentDrops,
       experiencePoints: outputs.experiencePoints,
       techniqueLearnPoints: outputs.techniqueLearnPoints,

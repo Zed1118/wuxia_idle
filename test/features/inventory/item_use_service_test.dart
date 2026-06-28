@@ -59,12 +59,14 @@ void main() {
 
   Future<void> seedItem(String defId, ItemType type, int qty) async {
     await isar.writeTxn(() async {
-      await isar.inventoryItems.put(InventoryItem()
-        ..defId = defId
-        ..itemType = type
-        ..quantity = qty
-        ..firstObtainedAt = DateTime(2026, 1, 1)
-        ..lastObtainedAt = DateTime(2026, 1, 1));
+      await isar.inventoryItems.put(
+        InventoryItem()
+          ..defId = defId
+          ..itemType = type
+          ..quantity = qty
+          ..firstObtainedAt = DateTime(2026, 1, 1)
+          ..lastObtainedAt = DateTime(2026, 1, 1),
+      );
     });
   }
 
@@ -74,7 +76,11 @@ void main() {
     await seedItem('item_jingyandan_large', ItemType.jingYanDan, 2);
     final def = repo.itemDefs['item_jingyandan_large']!; // layerFraction = 1.0
 
-    final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
 
     expect(r.kind, ItemUseKind.experienceApplied);
     expect(r.layersGained, 1); // 100 经验恰好升 1 层
@@ -97,8 +103,10 @@ void main() {
 
     expect(r.kind, ItemUseKind.experienceApplied);
     expect(r.layersGained, 0); // 锁住不升层
-    final founder =
-        await isar.characters.filter().isFounderEqualTo(true).findFirst();
+    final founder = await isar.characters
+        .filter()
+        .isFounderEqualTo(true)
+        .findFirst();
     // 缩放入账：round(100 × 1.0) = 100（而非旧固定值 1800）。
     expect(founder?.experience, 100);
   });
@@ -109,12 +117,18 @@ void main() {
     await seedItem('item_jingyandan_mid', ItemType.jingYanDan, 1);
     final def = repo.itemDefs['item_jingyandan_mid']!; // layerFraction = 0.5
 
-    final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
 
     expect(r.kind, ItemUseKind.experienceApplied);
     expect(r.layersGained, 0); // 50 < 100，不升层
-    final founder =
-        await isar.characters.filter().isFounderEqualTo(true).findFirst();
+    final founder = await isar.characters
+        .filter()
+        .isFounderEqualTo(true)
+        .findFirst();
     expect(founder?.experience, 50); // round(100 × 0.5) = 50
   });
 
@@ -122,27 +136,31 @@ void main() {
     // 验证高境界 founder 用同一档丹获得更多绝对经验量（缩放生效）。
     // setup：高 nextLayer=400 的 founder。
     await isar.writeTxn(() async {
-      await isar.characters.put(Character.create(
-        name: '高境界主角',
-        realmTier: RealmTier.xueTu,
-        realmLayer: RealmLayer.qiMeng,
-        attributes: Attributes(),
-        rarity: RarityTier.values.first,
-        lineageRole: LineageRole.founder,
-        createdAt: DateTime(2026, 1, 1),
-        isFounder: true,
-        experience: 0,
-        experienceToNextLayer: 400, // 高于 seedFounder 的 100
-        internalForceMax: 800,
-      ));
+      await isar.characters.put(
+        Character.create(
+          name: '高境界主角',
+          realmTier: RealmTier.xueTu,
+          realmLayer: RealmLayer.qiMeng,
+          attributes: Attributes(),
+          rarity: RarityTier.values.first,
+          lineageRole: LineageRole.founder,
+          createdAt: DateTime(2026, 1, 1),
+          isFounder: true,
+          experience: 0,
+          experienceToNextLayer: 400, // 高于 seedFounder 的 100
+          internalForceMax: 800,
+        ),
+      );
     });
     await seedItem('item_jingyandan_mid', ItemType.jingYanDan, 1);
     final def = repo.itemDefs['item_jingyandan_mid']!; // layerFraction = 0.5
 
     await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
 
-    final founder =
-        await isar.characters.filter().isFounderEqualTo(true).findFirst();
+    final founder = await isar.characters
+        .filter()
+        .isFounderEqualTo(true)
+        .findFirst();
     // gain = round(400 × 0.5) = 200 > 培元丹对低境界(50)的增益。
     expect(founder?.experience, 200);
   });
@@ -152,12 +170,18 @@ void main() {
     await seedItem('item_scroll_kai_bei_shou', ItemType.techniqueScroll, 1);
     final def = repo.itemDefs['item_scroll_kai_bei_shou']!;
 
-    final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
 
     expect(r.kind, ItemUseKind.skillUnlocked);
     final save = await isar.saveDatas.get(0);
     expect(save!.skillUnlockProgress.isUnlocked('skill_kai_bei_shou'), isTrue);
-    final item = await isar.inventoryItems.getByDefId('item_scroll_kai_bei_shou');
+    final item = await isar.inventoryItems.getByDefId(
+      'item_scroll_kai_bei_shou',
+    );
     expect(item?.quantity ?? 0, 0); // 消费 1 归 0
   });
 
@@ -168,17 +192,71 @@ void main() {
     await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
     await seedItem('item_scroll_kai_bei_shou', ItemType.techniqueScroll, 1);
 
-    final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
 
     expect(r.kind, ItemUseKind.alreadyKnown);
-    final item = await isar.inventoryItems.getByDefId('item_scroll_kai_bei_shou');
+    final item = await isar.inventoryItems.getByDefId(
+      'item_scroll_kai_bei_shou',
+    );
     expect(item?.quantity, 1); // 不消费
+  });
+
+  test('疗伤丹：减少重伤时长 + 清轻伤 + 消费 1', () async {
+    final charId = await seedFounder();
+    await isar.writeTxn(() async {
+      final ch = await isar.characters.get(charId);
+      ch!
+        ..injuryHoursRemaining = 6
+        ..lightInjuryStacks = 3;
+      await isar.characters.put(ch);
+    });
+    await seedItem('item_liaoshangdan', ItemType.miscMaterial, 2);
+    final def = repo.itemDefs['item_liaoshangdan']!;
+
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
+
+    expect(r.kind, ItemUseKind.injuryRelieved);
+    expect(r.injuryHoursReduced, 4.0);
+    expect(r.lightStacksCleared, 3);
+    final ch = await isar.characters.get(charId);
+    expect(ch?.injuryHoursRemaining, 2);
+    expect(ch?.lightInjuryStacks, 0);
+    final item = await isar.inventoryItems.getByDefId('item_liaoshangdan');
+    expect(item?.quantity, 1);
+  });
+
+  test('疗伤丹：无伤势 → noEffect 且不消费', () async {
+    await seedFounder();
+    await seedItem('item_liaoshangdan', ItemType.miscMaterial, 1);
+    final def = repo.itemDefs['item_liaoshangdan']!;
+
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
+
+    expect(r.kind, ItemUseKind.noEffect);
+    final item = await isar.inventoryItems.getByDefId('item_liaoshangdan');
+    expect(item?.quantity, 1);
   });
 
   test('无库存 → 返 noStock 不写入', () async {
     await seedFounder();
     final def = repo.itemDefs['item_jingyandan_small']!;
-    final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
     expect(r.kind, ItemUseKind.noStock);
   });
 
@@ -190,7 +268,11 @@ void main() {
       type: ItemType.moJianShi,
       name: '磨剑石',
     );
-    final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
     expect(r.kind, ItemUseKind.notUsable);
     final item = await isar.inventoryItems.getByDefId('item_mojianshi');
     expect(item?.quantity, 3); // 不消费
@@ -200,7 +282,11 @@ void main() {
     // 不 seedFounder（只有 IsarSetup.init 建的 SaveData(0)，无 founder 角色）。
     await seedItem('item_jingyandan_small', ItemType.jingYanDan, 2);
     final def = repo.itemDefs['item_jingyandan_small']!;
-    final r = await ItemUseService.use(isar, def: def, realmLookup: repo.getRealm);
+    final r = await ItemUseService.use(
+      isar,
+      def: def,
+      realmLookup: repo.getRealm,
+    );
     expect(r.kind, ItemUseKind.noTarget);
     final item = await isar.inventoryItems.getByDefId('item_jingyandan_small');
     expect(item?.quantity, 2); // 不消费
