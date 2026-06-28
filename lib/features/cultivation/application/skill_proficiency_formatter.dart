@@ -4,6 +4,8 @@ import 'package:wuxia_idle/features/cultivation/domain/skill_proficiency.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 class SkillProficiencySummary {
+  final SkillDef skill;
+  final int uses;
   final String stageName;
   final double ratio;
   final String currentEffect;
@@ -11,6 +13,8 @@ class SkillProficiencySummary {
   final String progressText;
 
   const SkillProficiencySummary({
+    required this.skill,
+    required this.uses,
     required this.stageName,
     required this.ratio,
     required this.currentEffect,
@@ -48,6 +52,8 @@ class SkillProficiencyFormatter {
     }
 
     return SkillProficiencySummary(
+      skill: skill,
+      uses: uses,
       stageName: UiStrings.cangjingProficiencyStageName(stage.id),
       ratio: ratio,
       currentEffect: UiStrings.cangjingProficiencyCurrent(
@@ -64,6 +70,40 @@ class SkillProficiencyFormatter {
             ),
       progressText: progressText,
     );
+  }
+
+  static String compactEffect({
+    required SkillDef skill,
+    required int uses,
+    required SkillProficiencyConfig cfg,
+  }) {
+    final summary = summarize(skill: skill, uses: uses, cfg: cfg);
+    return UiStrings.skillProficiencyCompact(
+      summary.stageName,
+      _effectTextForStage(
+        skill: skill,
+        stage: SkillProficiency.stageFor(uses, cfg),
+        cfg: cfg,
+      ),
+    );
+  }
+
+  static SkillProficiencySummary? bestSkillSummaryForTechnique({
+    required Iterable<SkillDef> skills,
+    required Map<String, int> usage,
+    required SkillProficiencyConfig cfg,
+  }) {
+    SkillDef? bestSkill;
+    var bestUses = -1;
+    for (final skill in skills) {
+      final uses = usage[skill.id] ?? 0;
+      if (uses > bestUses) {
+        bestSkill = skill;
+        bestUses = uses;
+      }
+    }
+    if (bestSkill == null) return null;
+    return summarize(skill: bestSkill, uses: bestUses, cfg: cfg);
   }
 
   static String _effectTextForStage({

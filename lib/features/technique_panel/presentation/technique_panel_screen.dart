@@ -15,6 +15,7 @@ import '../../dispel/application/dispel_service.dart';
 import '../../dispel/application/dispel_service_providers.dart';
 import '../../cultivation/application/insight_exchange_service.dart';
 import '../../cultivation/application/insight_exchange_service_providers.dart';
+import '../../cultivation/application/skill_proficiency_formatter.dart';
 import '../domain/technique_equip_suggestion.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -473,6 +474,19 @@ class _TechniqueTile extends ConsumerWidget {
         : UiStrings.cultivationNextDamageMult(
             mult[layers[layerIdx + 1]] ?? curMult,
           );
+    final techDef = GameRepository.instance.techniqueDefs[technique.defId];
+    final skillUsage = {
+      for (final entry in technique.skillUsageCount) entry.skillId: entry.count,
+    };
+    final skillSummary = SkillProficiencyFormatter.bestSkillSummaryForTechnique(
+      skills: [
+        for (final id in techDef?.skillIds ?? const <String>[])
+          if (GameRepository.instance.skillDefs.containsKey(id))
+            GameRepository.instance.getSkill(id),
+      ],
+      usage: skillUsage,
+      cfg: GameRepository.instance.numbers.skillProficiency,
+    );
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -537,6 +551,19 @@ class _TechniqueTile extends ConsumerWidget {
               technique.cultivationProgressToNext,
             ),
           ),
+          if (skillSummary != null) ...[
+            const SizedBox(height: 8),
+            StageProgressRow(
+              title: UiStrings.skillProficiencyBestSkillTitle(
+                skillSummary.skill.name,
+              ),
+              stageName: skillSummary.stageName,
+              ratio: skillSummary.ratio,
+              currentEffect: skillSummary.currentEffect,
+              nextEffect: skillSummary.nextEffect,
+              progressText: skillSummary.progressText,
+            ),
+          ],
           _TechniqueEquipSuggestionPanel(
             currentCharacter: character,
             technique: technique,

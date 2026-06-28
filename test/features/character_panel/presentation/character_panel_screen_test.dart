@@ -384,13 +384,18 @@ void main() {
 
       // D：修炼度进度条 hero 化为 StageProgressRow（内含 MeridianBar）。
       final row = tester.widget<StageProgressRow>(
-        find.byType(StageProgressRow),
+        find.byWidgetPredicate(
+          (w) =>
+              w is StageProgressRow &&
+              w.progressText == UiStrings.cultivationProgress(50, 100),
+        ),
       );
       expect(row.ratio, closeTo(0.5, 1e-9));
       expect(find.text('50 / 100'), findsOneWidget);
       expect(find.text('主修'), findsOneWidget);
       // D：五要素「当前效果」= 伤害倍率文案出现（真痛点补齐）。
       expect(find.textContaining('伤害 ×'), findsWidgets);
+      expect(find.textContaining('招式熟练 ·'), findsOneWidget);
     },
   );
 

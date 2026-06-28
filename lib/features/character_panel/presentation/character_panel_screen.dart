@@ -10,6 +10,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
+import '../../cultivation/application/skill_proficiency_formatter.dart';
 import '../../cultivation/application/synergy_service.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
 import '../../sect/application/sect_providers.dart';
@@ -1311,6 +1312,20 @@ class _MainTechniqueTile extends ConsumerWidget {
             : UiStrings.cultivationNextDamageMult(
                 n.cultivationMultiplier[layers[layerIdx + 1]] ?? curMult,
               );
+        final techDef = GameRepository.instance.techniqueDefs[t.defId];
+        final skillUsage = {
+          for (final entry in t.skillUsageCount) entry.skillId: entry.count,
+        };
+        final skillSummary =
+            SkillProficiencyFormatter.bestSkillSummaryForTechnique(
+              skills: [
+                for (final id in techDef?.skillIds ?? const <String>[])
+                  if (GameRepository.instance.skillDefs.containsKey(id))
+                    GameRepository.instance.getSkill(id),
+              ],
+              usage: skillUsage,
+              cfg: n.skillProficiency,
+            );
         return IntrinsicHeight(
           child: WuxiaPaperPanel(
             padding: const EdgeInsets.all(14),
@@ -1361,6 +1376,19 @@ class _MainTechniqueTile extends ConsumerWidget {
                       t.cultivationProgressToNext,
                     ),
                   ),
+                  if (skillSummary != null) ...[
+                    const SizedBox(height: 8),
+                    StageProgressRow(
+                      title: UiStrings.skillProficiencyBestSkillTitle(
+                        skillSummary.skill.name,
+                      ),
+                      stageName: skillSummary.stageName,
+                      ratio: skillSummary.ratio,
+                      currentEffect: skillSummary.currentEffect,
+                      nextEffect: skillSummary.nextEffect,
+                      progressText: skillSummary.progressText,
+                    ),
+                  ],
                 ],
               ),
             ),
