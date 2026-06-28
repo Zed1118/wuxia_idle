@@ -12,8 +12,10 @@ void main() {
 
   test('玩家高于推荐 → comfortable(碾压)', () {
     expect(v(RealmTier.sanLiu, RealmTier.erLiu), DifficultyVerdict.comfortable);
-    expect(v(RealmTier.sanLiu, RealmTier.wuSheng),
-        DifficultyVerdict.comfortable);
+    expect(
+      v(RealmTier.sanLiu, RealmTier.wuSheng),
+      DifficultyVerdict.comfortable,
+    );
   });
 
   test('玩家同阶 → suitable(适中)', () {
@@ -34,5 +36,45 @@ void main() {
 
   test('边界:学徒推荐 vs 学徒玩家 → suitable', () {
     expect(v(RealmTier.xueTu, RealmTier.xueTu), DifficultyVerdict.suitable);
+  });
+
+  group('StagePreparationSummary', () {
+    StagePreparationSummary s(RealmTier rec, RealmTier? player) =>
+        StagePreparationSummary.assess(recommended: rec, playerTier: player);
+
+    test('无出战角色 → 提示先派人', () {
+      final summary = s(RealmTier.xueTu, null);
+
+      expect(summary.focus, StagePreparationFocus.assignCharacter);
+      expect(summary.verdict, isNull);
+      expect(summary.realmGap, 0);
+    });
+
+    test('同阶或高阶 → 已可挑战', () {
+      expect(
+        s(RealmTier.erLiu, RealmTier.erLiu).focus,
+        StagePreparationFocus.ready,
+      );
+      expect(
+        s(RealmTier.erLiu, RealmTier.yiLiu).focus,
+        StagePreparationFocus.ready,
+      );
+    });
+
+    test('低 1 阶 → 优先装备/心法补强', () {
+      final summary = s(RealmTier.erLiu, RealmTier.sanLiu);
+
+      expect(summary.focus, StagePreparationFocus.polishLoadout);
+      expect(summary.realmGap, 1);
+      expect(summary.verdict, DifficultyVerdict.risky);
+    });
+
+    test('低 2+ 阶 → 优先闭关突破', () {
+      final summary = s(RealmTier.yiLiu, RealmTier.xueTu);
+
+      expect(summary.focus, StagePreparationFocus.realmBreakthrough);
+      expect(summary.realmGap, 3);
+      expect(summary.verdict, DifficultyVerdict.deadly);
+    });
   });
 }

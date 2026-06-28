@@ -10,6 +10,67 @@ import '../../../core/domain/enums.dart';
 /// - 低 2+ 阶(差 ≥ 2)→ [deadly] 送死(§5.5 守方 ×0.3 / ×0.05 近免疫)
 enum DifficultyVerdict { comfortable, suitable, risky, deadly }
 
+/// 关卡挑战前的一条式整备重点。
+enum StagePreparationFocus {
+  ready,
+  polishLoadout,
+  realmBreakthrough,
+  assignCharacter,
+}
+
+class StagePreparationSummary {
+  const StagePreparationSummary({
+    required this.recommended,
+    required this.playerTier,
+    required this.focus,
+    required this.realmGap,
+    required this.verdict,
+  });
+
+  final RealmTier recommended;
+  final RealmTier? playerTier;
+  final StagePreparationFocus focus;
+
+  /// 推荐境界 - 玩家境界；正数表示玩家低于推荐。
+  final int realmGap;
+  final DifficultyVerdict? verdict;
+
+  static StagePreparationSummary assess({
+    required RealmTier recommended,
+    required RealmTier? playerTier,
+  }) {
+    if (playerTier == null) {
+      return StagePreparationSummary(
+        recommended: recommended,
+        playerTier: null,
+        focus: StagePreparationFocus.assignCharacter,
+        realmGap: 0,
+        verdict: null,
+      );
+    }
+
+    final gap = recommended.index - playerTier.index;
+    final verdict = StageDifficultyAssessor.assess(
+      recommended: recommended,
+      playerTier: playerTier,
+    );
+    final focus = switch (verdict) {
+      DifficultyVerdict.comfortable ||
+      DifficultyVerdict.suitable => StagePreparationFocus.ready,
+      DifficultyVerdict.risky => StagePreparationFocus.polishLoadout,
+      DifficultyVerdict.deadly => StagePreparationFocus.realmBreakthrough,
+    };
+
+    return StagePreparationSummary(
+      recommended: recommended,
+      playerTier: playerTier,
+      focus: focus,
+      realmGap: gap,
+      verdict: verdict,
+    );
+  }
+}
+
 /// 纯函数难度评估(不查 Isar / 不读 config)。
 class StageDifficultyAssessor {
   StageDifficultyAssessor._();
