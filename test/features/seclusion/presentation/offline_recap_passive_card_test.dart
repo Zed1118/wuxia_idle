@@ -131,8 +131,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('磨剑石：0'), findsOneWidget);
+    expect(find.textContaining('材料：无'), findsOneWidget);
     expect(find.textContaining('经验：0'), findsOneWidget);
-    expect(find.textContaining(UiStrings.offlineRecapNoDrop), findsOneWidget);
+    expect(
+      find.text(UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapNoDrop)),
+      findsOneWidget,
+    );
   });
 }

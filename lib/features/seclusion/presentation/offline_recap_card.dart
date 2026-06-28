@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
+import '../application/offline_recap_detail.dart';
 import '../application/offline_recap_service.dart';
 
 /// M2 离线收益汇总「归来」卡。
@@ -60,6 +62,10 @@ class OfflineRecapCard extends StatelessWidget {
     if (_isPassive) return _buildPassive();
     final recap = this.recap!;
     final onGoCollect = this.onGoCollect!;
+    final detail = OfflineRecapDetailFormatter.forRetreat(
+      recap,
+      itemNameOf: _itemNameOf,
+    );
     final statusLine = recap.isComplete
         ? UiStrings.offlineRecapMapComplete(recap.mapName)
         : UiStrings.offlineRecapMapProgress(
@@ -107,23 +113,7 @@ class OfflineRecapCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _BreakdownBlock(
-              rows: [
-                UiStrings.offlineRecapAwayDetail(_formatHours(recap.awayHours)),
-                UiStrings.offlineRecapSettledDetail(
-                  _formatHours(recap.settledHours),
-                ),
-                UiStrings.offlineRecapExperienceDetail(
-                  recap.estimatedExperience,
-                ),
-                UiStrings.offlineRecapSilverDetail(recap.estimatedSilver),
-                UiStrings.offlineRecapMojianshiDetail(recap.estimatedMojianshi),
-                UiStrings.offlineRecapDropDetail(
-                  UiStrings.offlineRecapDropPending,
-                ),
-                _limitReasonText(recap.limitReason),
-              ],
-            ),
+            _BreakdownBlock(rows: detail.rows),
             const SizedBox(height: 18),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -150,6 +140,13 @@ class OfflineRecapCard extends StatelessWidget {
   ///
   /// 产出已在 settle 时自动入库，此卡纯告知，无「前去收功/领取」按钮。
   Widget _buildPassive() {
+    final detail = OfflineRecapDetailFormatter.forPassive((
+      mojianshi: passiveMojianshi!,
+      experience: passiveExperience!,
+      awayHours: passiveAwayHours!,
+      settledHours: passiveSettledHours!,
+      isCapped: passiveIsCapped!,
+    ));
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 420),
       child: PaperPanel(
@@ -193,23 +190,7 @@ class OfflineRecapCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _BreakdownBlock(
-              rows: [
-                UiStrings.offlineRecapAwayDetail(
-                  _formatHours(passiveAwayHours!),
-                ),
-                UiStrings.offlineRecapSettledDetail(
-                  _formatHours(passiveSettledHours!),
-                ),
-                UiStrings.offlineRecapExperienceDetail(passiveExperience!),
-                UiStrings.offlineRecapSilverDetail(0),
-                UiStrings.offlineRecapMojianshiDetail(passiveMojianshi!),
-                UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapNoDrop),
-                passiveIsCapped!
-                    ? UiStrings.offlineRecapLimitSystemCap
-                    : UiStrings.offlineRecapLimitInProgress,
-              ],
-            ),
+            _BreakdownBlock(rows: detail.rows),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -227,23 +208,9 @@ class OfflineRecapCard extends StatelessWidget {
     );
   }
 
-  static String _formatHours(double hours) {
-    final rounded = (hours * 10).round() / 10;
-    if (rounded == rounded.truncateToDouble()) {
-      return UiStrings.hoursAmountLabel('${rounded.toInt()}');
-    }
-    return UiStrings.hoursAmountLabel('$rounded');
-  }
-
-  static String _limitReasonText(OfflineRecapLimitReason reason) {
-    switch (reason) {
-      case OfflineRecapLimitReason.inProgress:
-        return UiStrings.offlineRecapLimitInProgress;
-      case OfflineRecapLimitReason.plannedDuration:
-        return UiStrings.offlineRecapLimitPlanned;
-      case OfflineRecapLimitReason.systemCap:
-        return UiStrings.offlineRecapLimitSystemCap;
-    }
+  static String _itemNameOf(String defId) {
+    if (!GameRepository.isLoaded) return defId;
+    return GameRepository.instance.itemDefs[defId]?.name ?? defId;
   }
 }
 

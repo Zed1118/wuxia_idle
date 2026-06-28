@@ -73,6 +73,7 @@ void main() {
       expect(recap.estimatedMojianshi, greaterThan(0));
       expect(recap.estimatedExperience, greaterThan(0));
       expect(recap.estimatedSilver, greaterThan(0));
+      expect(recap.estimatedTechniqueLearnPoints, greaterThanOrEqualTo(0));
       expect(recap.settledHours, 4.0);
       expect(recap.limitReason, OfflineRecapLimitReason.plannedDuration);
     });
@@ -126,6 +127,8 @@ void main() {
       expect(recap!.estimatedMojianshi, direct.mojianshi);
       expect(recap.estimatedSilver, direct.silver);
       expect(recap.estimatedExperience, direct.experiencePoints);
+      expect(recap.estimatedItemRewards, direct.itemRewards);
+      expect(recap.estimatedTechniqueLearnPoints, direct.techniqueLearnPoints);
       expect(recap.settledHours, direct.actualHours);
     });
 
