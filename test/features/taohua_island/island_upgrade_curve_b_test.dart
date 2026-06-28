@@ -47,7 +47,7 @@ void main() {
       expect(fullCost(BuildingType.daZaoTai), 15600);
     });
 
-    test('四座建筑全满累计 = 52,200 银（2×10,500 + 2×15,600）', () {
+    test('四座节奏 B fixture 全满累计 = 52,200 银（2×10,500 + 2×15,600）', () {
       final total = fullCost(BuildingType.tieJiangChang) +
           fullCost(BuildingType.caoYaoYuan) +
           fullCost(BuildingType.daZaoTai) +

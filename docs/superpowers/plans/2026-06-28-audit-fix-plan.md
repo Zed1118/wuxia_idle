@@ -30,9 +30,9 @@
 
 ## 当前恢复点
 
-- 状态：新手首章战斗红线切片已完成，待提交。
-- 最后完成：新增 production 单人开局首章战斗测试；将 Ch1 01-04 调整为单人线节奏，02 关保证首把武器，04 小 Boss 校准为 Boss 前小考。
-- 下一步：提交新手切片，然后修正桃花岛真实 7 建筑银两总量口径。
+- 状态：桃花岛银两总量口径切片已完成，待提交。
+- 最后完成：新增 production 7 建筑全满 88,800 银断言；修正 `numbers.yaml` 旧四座 52,200 注释；四座 fixture 测试名已标明是 fixture。
+- 下一步：提交桃花岛口径切片，然后新增强化材料供需只读模拟。
 - 已跑验证：
   - `git status --short --branch`
   - `git log --oneline --decorate -12`
@@ -40,4 +40,6 @@
   - `dart run build_runner build --delete-conflicting-outputs`
   - `flutter test test/features/onboarding/application/onboarding_service_test.dart test/features/taohua_island/taohua_island_config_test.dart test/features/taohua_island/island_upgrade_curve_b_test.dart test/features/seclusion/application/offline_passive_service_test.dart test/features/tower/domain/tower_floor_def_test.dart test/features/equipment/application/enhancement_service_test.dart`
   - `flutter test test/features/onboarding/onboarding_first_30min_battle_test.dart`
+  - `flutter test test/data/game_repository_test.dart test/features/onboarding/onboarding_first_30min_battle_test.dart`
+  - `flutter test test/features/taohua_island/taohua_island_config_test.dart test/features/taohua_island/island_upgrade_curve_b_test.dart`
 - 阻塞项：无。
