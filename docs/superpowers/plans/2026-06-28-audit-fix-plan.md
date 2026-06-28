@@ -30,9 +30,9 @@
 
 ## 当前恢复点
 
-- 状态：桃花岛银两总量口径切片已完成，待提交。
-- 最后完成：新增 production 7 建筑全满 88,800 银断言；修正 `numbers.yaml` 旧四座 52,200 注释；四座 fixture 测试名已标明是 fixture。
-- 下一步：提交桃花岛口径切片，然后新增强化材料供需只读模拟。
+- 状态：强化材料供需模拟切片已完成，待提交。
+- 最后完成：新增 `test/tools/enhancement_material_supply_test.dart`，量化首通供给与单件装备 +15/+30/+49 自然/保底需求。
+- 下一步：提交材料模拟切片，然后固化被动离线 fallback 不产银两口径。
 - 已跑验证：
   - `git status --short --branch`
   - `git log --oneline --decorate -12`
@@ -42,4 +42,5 @@
   - `flutter test test/features/onboarding/onboarding_first_30min_battle_test.dart`
   - `flutter test test/data/game_repository_test.dart test/features/onboarding/onboarding_first_30min_battle_test.dart`
   - `flutter test test/features/taohua_island/taohua_island_config_test.dart test/features/taohua_island/island_upgrade_curve_b_test.dart`
+  - `flutter test test/tools/enhancement_material_supply_test.dart`
 - 阻塞项：无。
