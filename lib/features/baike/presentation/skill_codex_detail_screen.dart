@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
+import '../../../features/cultivation/application/skill_proficiency_formatter.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
+import '../../../shared/widgets/wuxia_ui/stage_progress_row.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/martial_codex_provider.dart';
@@ -41,6 +43,14 @@ class SkillCodexDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final belong = _belongTechniqueName;
+    final proficiencySummary =
+        maxStage == null || !GameRepository.isLoaded
+            ? null
+            : SkillProficiencyFormatter.summarize(
+                skill: def,
+                uses: maxStage!.minUses,
+                cfg: GameRepository.instance.numbers.skillProficiency,
+              );
     return Scaffold(
       backgroundColor: WuxiaColors.background,
       appBar: WuxiaTitleBar(
@@ -91,6 +101,17 @@ class SkillCodexDetailScreen extends StatelessWidget {
                       ? UiStrings.skillCodexProficiencyNone
                       : UiStrings.cangjingProficiencyStageName(maxStage!.id),
                 ),
+                if (proficiencySummary != null) ...[
+                  const SizedBox(height: 10),
+                  StageProgressRow(
+                    title: UiStrings.skillProficiencyBestSkillTitle(def.name),
+                    stageName: proficiencySummary.stageName,
+                    ratio: proficiencySummary.ratio,
+                    currentEffect: proficiencySummary.currentEffect,
+                    nextEffect: proficiencySummary.nextEffect,
+                    progressText: proficiencySummary.progressText,
+                  ),
+                ],
               ],
             ),
           ),
