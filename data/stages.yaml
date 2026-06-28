@@ -184,7 +184,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [15, 25]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 350
+    baseExpReward: 500
     difficultyMultiplier: 1.6
     biome: cityWall
     sceneBackgroundPath: assets/scenes/battle_citywall.png
@@ -241,26 +241,6 @@ stages:
             aiMode: aggressive
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
-      - id: enemy_xueTu_dock_a
-        name: 渡口刀客
-        realmTier: xueTu
-        realmLayer: dengFeng
-        school: gangMeng
-        baseHp: 3500
-        baseAttack: 150
-        baseSpeed: 145
-        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
-        iconPath: assets/enemies/dock_a.png
-      - id: enemy_xueTu_dock_b
-        name: 渡口剑客
-        realmTier: xueTu
-        realmLayer: dengFeng
-        school: lingQiao
-        baseHp: 3500
-        baseAttack: 155
-        baseSpeed: 155
-        skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
-        iconPath: assets/enemies/dock_b.png
     isBossStage: true
     factionId: shaolin                              # Ch1 竹林 Boss · 少林地盘(orthodox)
     bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
@@ -268,7 +248,11 @@ stages:
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
         dropChance: 1.0
+      - equipmentDefId: weapon_xiangyang_chang_jian
+        dropChance: 1.0
       - equipmentDefId: armor_xunchang_bu_yi
+        dropChance: 0.50
+      - equipmentDefId: armor_xiangyang_pi_jia
         dropChance: 0.50
       - equipmentDefId: weapon_xunchang_fei_shi
         dropChance: 0.50
@@ -286,7 +270,7 @@ stages:
       - inventoryItemDefId: item_scroll_guan_shan_ba_ji
         quantity: [1, 1]
         dropChance: 1.0  # 秘籍掉落(T5 balance:首通必得,isFirstClear gate 于 stage_entry_flow;重打 skip)
-    baseExpReward: 600
+    baseExpReward: 750
     difficultyMultiplier: 1.8
     biome: dock
     sceneBackgroundPath: assets/scenes/battle_dock.png
@@ -315,32 +299,12 @@ stages:
         baseSpeed: 150
         skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
         iconPath: assets/enemies/black_killer.png
-      - id: enemy_sanLiu_thief_b
-        name: 江湖客甲
-        realmTier: sanLiu
-        realmLayer: qiMeng
-        school: gangMeng
-        baseHp: 4200
-        baseAttack: 260
-        baseSpeed: 130
-        skillIds: [skill_gangmeng_jichu_basic]
-        iconPath: assets/enemies/jianghu_a.png
-      - id: enemy_sanLiu_thief_c
-        name: 江湖客乙
-        realmTier: sanLiu
-        realmLayer: qiMeng
-        school: yinRou
-        baseHp: 3800
-        baseAttack: 270
-        baseSpeed: 140
-        skillIds: [skill_yinrou_jichu_basic]
-        iconPath: assets/enemies/jianghu_b.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_xiangyang_chang_jian
         dropChance: 0.30
       - equipmentDefId: accessory_xiangyang_tie_hu_wan
-        dropChance: 0.25
+        dropChance: 1.0
       - inventoryItemDefId: item_mojianshi
         quantity: [2, 4]
         dropChance: 1.0
@@ -375,39 +339,19 @@ stages:
           - skill_gangmeng_jichu_basic
           - skill_gangmeng_jichu_skill
         iconPath: assets/enemies/elder_grey.png
-      - id: enemy_sanLiu_kibitzer_a
-        name: 旁观武人甲
-        realmTier: sanLiu
-        realmLayer: ruMen
-        school: lingQiao
-        baseHp: 4500
-        baseAttack: 320
-        baseSpeed: 155
-        skillIds: [skill_lingqiao_jichu_basic]
-        iconPath: assets/enemies/kibitzer_a.png
-      - id: enemy_sanLiu_kibitzer_b
-        name: 旁观武人乙
-        realmTier: sanLiu
-        realmLayer: ruMen
-        school: yinRou
-        baseHp: 4400
-        baseAttack: 330
-        baseSpeed: 150
-        skillIds: [skill_yinrou_jichu_basic]
-        iconPath: assets/enemies/kibitzer_b.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_xiangyang_jiu_jie_bian
         dropChance: 0.35
       - equipmentDefId: armor_xiangyang_ye_xing_yi
-        dropChance: 0.25
+        dropChance: 1.0
       - inventoryItemDefId: item_mojianshi
         quantity: [3, 5]
         dropChance: 1.0
       - inventoryItemDefId: item_silver
         quantity: [8, 15]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 550
+    baseExpReward: 700
     difficultyMultiplier: 1.7
     biome: teaHouse
     sceneBackgroundPath: assets/scenes/battle_teahouse.png
@@ -426,35 +370,14 @@ stages:
       - id: enemy_sanLiu_shaonian
         name: 春水堂少年
         realmTier: sanLiu
-        realmLayer: jingTong
+        realmLayer: shuLian
         school: lingQiao
-        baseHp: 5100
-        baseAttack: 380
+        baseHp: 2600
+        baseAttack: 200
         baseSpeed: 165
         skillIds:
           - skill_lingqiao_jichu_basic
-          - skill_lingqiao_jichu_skill
         iconPath: assets/enemies/shaonian.png
-      - id: enemy_sanLiu_swordtester_a
-        name: 试剑客
-        realmTier: sanLiu
-        realmLayer: jingTong
-        school: gangMeng
-        baseHp: 5500
-        baseAttack: 400
-        baseSpeed: 145
-        skillIds: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
-        iconPath: assets/enemies/swordtester_a.png
-      - id: enemy_sanLiu_swordtester_b
-        name: 散修客
-        realmTier: sanLiu
-        realmLayer: jingTong
-        school: yinRou
-        baseHp: 5300
-        baseAttack: 390
-        baseSpeed: 150
-        skillIds: [skill_yinrou_jichu_basic]
-        iconPath: assets/enemies/swordtester_b.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_xiangyang_gang_dao
@@ -469,7 +392,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [8, 15]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 800
+    baseExpReward: 950
     difficultyMultiplier: 1.9
     biome: smithy
     sceneBackgroundPath: assets/scenes/battle_smithy.png
@@ -489,10 +412,10 @@ stages:
       - id: enemy_sanLiu_guntou
         name: 光头汉子
         realmTier: sanLiu
-        realmLayer: huaJing
+        realmLayer: jingTong
         school: gangMeng
-        baseHp: 6000
-        baseAttack: 430
+        baseHp: 4500
+        baseAttack: 320
         baseSpeed: 150
         skillIds:
           - skill_gangmeng_jichu_basic
@@ -500,26 +423,6 @@ stages:
           - skill_gangmeng_jichu_ult
         iconPath: assets/enemies/guntou.png
         isBoss: true
-      - id: enemy_sanLiu_langren_a
-        name: 校场浪人
-        realmTier: sanLiu
-        realmLayer: huaJing
-        school: lingQiao
-        baseHp: 5700
-        baseAttack: 410
-        baseSpeed: 165
-        skillIds: [skill_lingqiao_jichu_basic, skill_lingqiao_jichu_skill]
-        iconPath: assets/enemies/langren_a.png
-      - id: enemy_sanLiu_langren_b
-        name: 校场刀客
-        realmTier: sanLiu
-        realmLayer: huaJing
-        school: yinRou
-        baseHp: 5800
-        baseAttack: 420
-        baseSpeed: 155
-        skillIds: [skill_yinrou_jichu_basic, skill_yinrou_jichu_skill]
-        iconPath: assets/enemies/langren_b.png
     isBossStage: true
     dropTable:
       - equipmentDefId: weapon_xiangyang_gang_dao
@@ -570,31 +473,6 @@ stages:
         iconPath: assets/enemies/qingshan_main.png
         isBoss: true
         chargeSkillId: skill_qingshan_qingfeng      # P0.5 破招 · 招牌蓄力技「青锋绝」(玩家用破势拦截)
-      - id: enemy_sanLiu_killer_a
-        name: 巷口杀手
-        realmTier: sanLiu
-        realmLayer: yuanShu
-        school: yinRou
-        baseHp: 7500
-        baseAttack: 1000
-        baseSpeed: 160
-        skillIds:
-          - skill_yinrou_jichu_basic
-          - skill_yinrou_jichu_skill
-          - skill_yinrou_jichu_ult
-        iconPath: assets/enemies/killer_a.png
-      - id: enemy_sanLiu_killer_b
-        name: 巷尾杀手
-        realmTier: sanLiu
-        realmLayer: yuanShu
-        school: gangMeng
-        baseHp: 7800
-        baseAttack: 1010
-        baseSpeed: 155
-        skillIds:
-          - skill_gangmeng_jichu_basic
-          - skill_gangmeng_jichu_skill
-        iconPath: assets/enemies/killer_b.png
     isBossStage: true
     factionId: jiaoMen                             # Ch2 大漠 Boss · 邪教地盘(evil)
     npcId: cijianzhuang_assassin                 # P1.2 §6 占位 · 1.1+ 接入真 NPC schema
@@ -602,7 +480,9 @@ stages:
       candidateRef: desert_wanderer               # data/sect_candidates.yaml 已配(gangMeng 三系)
     dropTable:
       - equipmentDefId: weapon_haojiahuo_qing_feng_jian
-        dropChance: 0.70
+        dropChance: 1.0
+      - equipmentDefId: armor_haojiahuo_jin_pao
+        dropChance: 1.0
       - equipmentDefId: accessory_xiangyang_yin_jie
         dropChance: 0.50
       - inventoryItemDefId: item_xinxuejiejing
@@ -641,37 +521,12 @@ stages:
         realmTier: erLiu
         realmLayer: qiMeng
         school: lingQiao
-        baseHp: 7000
-        baseAttack: 600
+        baseHp: 3200
+        baseAttack: 220
         baseSpeed: 175
         skillIds:
           - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
         iconPath: assets/enemies/mingmen_a.png
-      - id: enemy_erLiu_master_b
-        name: 江湖前辈
-        realmTier: erLiu
-        realmLayer: ruMen
-        school: gangMeng
-        baseHp: 8500
-        baseAttack: 580
-        baseSpeed: 160
-        skillIds:
-          - skill_gangmeng_mingjia_basic
-          - skill_gangmeng_mingjia_skill
-        iconPath: assets/enemies/jianghu_qianbei.png
-      - id: enemy_erLiu_master_c
-        name: 暗夜使者
-        realmTier: erLiu
-        realmLayer: ruMen
-        school: yinRou
-        baseHp: 7500
-        baseAttack: 600
-        baseSpeed: 170
-        skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-        iconPath: assets/enemies/anye.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_haojiahuo_xuan_hua_fu
@@ -703,39 +558,15 @@ stages:
       - id: enemy_erLiu_guntou_zhu
         name: 擂主光头汉
         realmTier: erLiu
-        realmLayer: ruMen
+        realmLayer: qiMeng
         school: gangMeng
-        baseHp: 8800
-        baseAttack: 700
+        baseHp: 4500
+        baseAttack: 350
         baseSpeed: 170
         skillIds:
           - skill_gangmeng_mingjia_basic
           - skill_gangmeng_mingjia_skill
         iconPath: assets/enemies/guntou_zhu.png
-      - id: enemy_erLiu_taixia_a
-        name: 台下挑战者
-        realmTier: erLiu
-        realmLayer: ruMen
-        school: lingQiao
-        baseHp: 8200
-        baseAttack: 670
-        baseSpeed: 180
-        skillIds:
-          - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
-        iconPath: assets/enemies/taixia_a.png
-      - id: enemy_erLiu_taixia_b
-        name: 旁观高手
-        realmTier: erLiu
-        realmLayer: ruMen
-        school: yinRou
-        baseHp: 8000
-        baseAttack: 680
-        baseSpeed: 165
-        skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-        iconPath: assets/enemies/taixia_b.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_haojiahuo_qing_feng_jian
@@ -769,39 +600,15 @@ stages:
       - id: enemy_erLiu_seng_huiyi
         name: 灰袍僧人
         realmTier: erLiu
-        realmLayer: jingTong
+        realmLayer: shuLian
         school: yinRou
-        baseHp: 9200
-        baseAttack: 740
+        baseHp: 5000
+        baseAttack: 380
         baseSpeed: 175
         skillIds:
           - skill_yinrou_mingjia_basic
           - skill_yinrou_mingjia_skill
         iconPath: assets/enemies/seng_huiyi.png
-      - id: enemy_erLiu_seng_a
-        name: 寺中沙弥
-        realmTier: erLiu
-        realmLayer: jingTong
-        school: gangMeng
-        baseHp: 8900
-        baseAttack: 720
-        baseSpeed: 160
-        skillIds:
-          - skill_gangmeng_mingjia_basic
-          - skill_gangmeng_mingjia_skill
-        iconPath: assets/enemies/seng_a.png
-      - id: enemy_erLiu_seng_b
-        name: 寺中行者
-        realmTier: erLiu
-        realmLayer: jingTong
-        school: lingQiao
-        baseHp: 9000
-        baseAttack: 730
-        baseSpeed: 170
-        skillIds:
-          - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
-        iconPath: assets/enemies/seng_b.png
     isBossStage: false
     dropTable:
       - equipmentDefId: accessory_haojiahuo_yu_pei_lao
@@ -816,7 +623,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [12, 20]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 2800
+    baseExpReward: 3200
     difficultyMultiplier: 2.4
     biome: temple
     sceneBackgroundPath: assets/scenes/battle_temple.png
@@ -836,41 +643,16 @@ stages:
       - id: enemy_erLiu_balian
         name: 疤脸汉子
         realmTier: erLiu
-        realmLayer: huaJing
+        realmLayer: shuLian
         school: gangMeng
-        baseHp: 10000
-        baseAttack: 800
+        baseHp: 4200
+        baseAttack: 320
         baseSpeed: 175
         skillIds:
           - skill_gangmeng_mingjia_basic
           - skill_gangmeng_mingjia_skill
-          - skill_gangmeng_mingjia_ult
         iconPath: assets/enemies/balian.png
         isBoss: true
-      - id: enemy_erLiu_tongmen_a
-        name: 雁门同伙甲
-        realmTier: erLiu
-        realmLayer: huaJing
-        school: lingQiao
-        baseHp: 9500
-        baseAttack: 770
-        baseSpeed: 185
-        skillIds:
-          - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
-        iconPath: assets/enemies/tongmen_a.png
-      - id: enemy_erLiu_tongmen_b
-        name: 雁门同伙乙
-        realmTier: erLiu
-        realmLayer: huaJing
-        school: yinRou
-        baseHp: 9700
-        baseAttack: 780
-        baseSpeed: 170
-        skillIds:
-          - skill_yinrou_mingjia_basic
-          - skill_yinrou_mingjia_skill
-        iconPath: assets/enemies/tongmen_b.png
     isBossStage: true
     dropTable:
       - equipmentDefId: armor_haojiahuo_jin_pao
@@ -910,8 +692,8 @@ stages:
         realmTier: erLiu
         realmLayer: yuanShu
         school: yinRou
-        baseHp: 11000
-        baseAttack: 900
+        baseHp: 9000
+        baseAttack: 700
         baseSpeed: 190
         skillIds:
           - skill_yinrou_mingjia_basic
@@ -921,32 +703,6 @@ stages:
         iconPath: assets/enemies/huiyi.png
         isBoss: true
         chargeSkillId: skill_qian_jun_zhui_yue      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
-      - id: enemy_erLiu_shidi_a
-        name: 灰衣师弟
-        realmTier: erLiu
-        realmLayer: yuanShu
-        school: gangMeng
-        baseHp: 10500
-        baseAttack: 850
-        baseSpeed: 175
-        skillIds:
-          - skill_gangmeng_mingjia_basic
-          - skill_gangmeng_mingjia_skill
-          - skill_gangmeng_mingjia_ult
-        iconPath: assets/enemies/shidi_a.png
-      - id: enemy_erLiu_shidi_b
-        name: 灰衣师妹
-        realmTier: erLiu
-        realmLayer: yuanShu
-        school: lingQiao
-        baseHp: 10300
-        baseAttack: 870
-        baseSpeed: 195
-        skillIds:
-          - skill_lingqiao_mingjia_basic
-          - skill_lingqiao_mingjia_skill
-          - skill_lingqiao_mingjia_ult
-        iconPath: assets/enemies/shidi_b.png
     isBossStage: true
     factionId: wudang                              # Ch3 山林 Boss · 武当地盘(orthodox)
     npcId: jiaoMen_shidi                         # P1.2 §6 占位
@@ -1004,28 +760,6 @@ stages:
           - skill_gangmeng_menpai_basic
           - skill_gangmeng_menpai_skill
         iconPath: assets/enemies/liukou_a.png
-      - id: enemy_yiLiu_liukou_b
-        name: 流寇副手
-        realmTier: yiLiu
-        realmLayer: qiMeng
-        school: lingQiao
-        baseHp: 6800
-        baseAttack: 750
-        baseSpeed: 180
-        skillIds:
-          - skill_lingqiao_menpai_basic
-        iconPath: assets/enemies/liukou_b.png
-      - id: enemy_yiLiu_liukou_c
-        name: 流寇刀手
-        realmTier: yiLiu
-        realmLayer: qiMeng
-        school: yinRou
-        baseHp: 7000
-        baseAttack: 730
-        baseSpeed: 165
-        skillIds:
-          - skill_yinrou_menpai_basic
-        iconPath: assets/enemies/liukou_c.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
@@ -1040,7 +774,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 10000
+    baseExpReward: 11000
     difficultyMultiplier: 3.0
     biome: mountainForest
     sceneBackgroundPath: assets/scenes/battle_mountainforest.png
@@ -1059,40 +793,16 @@ stages:
       - id: enemy_yiLiu_guard_a
         name: 玉门关把总
         realmTier: yiLiu
-        realmLayer: shuLian
+        realmLayer: ruMen
         school: gangMeng
-        baseHp: 8500
-        baseAttack: 820
+        baseHp: 7500
+        baseAttack: 700
         baseSpeed: 175
         skillIds:
           - skill_gangmeng_menpai_basic
           - skill_gangmeng_menpai_skill
           - skill_gangmeng_menpai_ult
         iconPath: assets/enemies/guard_a.png
-      - id: enemy_yiLiu_guard_b
-        name: 西凉骑士
-        realmTier: yiLiu
-        realmLayer: ruMen
-        school: lingQiao
-        baseHp: 8000
-        baseAttack: 850
-        baseSpeed: 190
-        skillIds:
-          - skill_lingqiao_menpai_basic
-          - skill_lingqiao_menpai_skill
-        iconPath: assets/enemies/guard_b.png
-      - id: enemy_yiLiu_guard_c
-        name: 商队护卫
-        realmTier: yiLiu
-        realmLayer: shuLian
-        school: yinRou
-        baseHp: 8200
-        baseAttack: 800
-        baseSpeed: 170
-        skillIds:
-          - skill_yinrou_menpai_basic
-          - skill_yinrou_menpai_skill
-        iconPath: assets/enemies/guard_c.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_liqi_pan_long_dao
@@ -1107,7 +817,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 12000
+    baseExpReward: 13000
     difficultyMultiplier: 3.2
     biome: frontier
     sceneBackgroundPath: assets/scenes/battle_frontier.png
@@ -1126,42 +836,15 @@ stages:
       - id: enemy_yiLiu_shafei_a
         name: 沙匪头领
         realmTier: yiLiu
-        realmLayer: jingTong
+        realmLayer: shuLian
         school: gangMeng
-        baseHp: 9500
-        baseAttack: 950
+        baseHp: 6500
+        baseAttack: 600
         baseSpeed: 180
         skillIds:
           - skill_gangmeng_menpai_basic
           - skill_gangmeng_menpai_skill
-          - skill_gangmeng_menpai_ult
         iconPath: assets/enemies/shafei_a.png
-      - id: enemy_yiLiu_shafei_b
-        name: 沙盗刀手
-        realmTier: yiLiu
-        realmLayer: jingTong
-        school: yinRou
-        baseHp: 9000
-        baseAttack: 920
-        baseSpeed: 175
-        skillIds:
-          - skill_yinrou_menpai_basic
-          - skill_yinrou_menpai_skill
-          - skill_yinrou_menpai_ult
-        iconPath: assets/enemies/shafei_b.png
-      - id: enemy_yiLiu_shafei_c
-        name: 沙盗弓手
-        realmTier: yiLiu
-        realmLayer: shuLian
-        school: lingQiao
-        baseHp: 8800
-        baseAttack: 980
-        baseSpeed: 200
-        skillIds:
-          - skill_lingqiao_menpai_basic
-          - skill_lingqiao_menpai_skill
-          - skill_lingqiao_menpai_ult
-        iconPath: assets/enemies/shafei_c.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_liqi_lian_zi_bian
@@ -1178,7 +861,7 @@ stages:
       - inventoryItemDefId: item_silver
         quantity: [20, 35]
         dropChance: 1.0  # 银两(P1 占位,待 balance)
-    baseExpReward: 14000
+    baseExpReward: 15500
     difficultyMultiplier: 3.4
     biome: desert
     sceneBackgroundPath: assets/scenes/battle_desert.png
@@ -1198,47 +881,26 @@ stages:
       - id: enemy_yiLiu_xiliangboss
         name: 西凉武林名宿
         realmTier: yiLiu
-        realmLayer: yuanShu
+        realmLayer: jingTong
         school: gangMeng
-        baseHp: 11500
-        baseAttack: 1050
+        baseHp: 8500
+        baseAttack: 800
         baseSpeed: 195
         skillIds:
           - skill_gangmeng_menpai_basic
           - skill_gangmeng_menpai_skill
-          - skill_gangmeng_menpai_ult
         iconPath: assets/enemies/xiliangboss.png
         isBoss: true
-      - id: enemy_yiLiu_xiliang_a
-        name: 武林名宿之徒
-        realmTier: yiLiu
-        realmLayer: jingTong
-        school: lingQiao
-        baseHp: 10500
-        baseAttack: 1000
-        baseSpeed: 200
-        skillIds:
-          - skill_lingqiao_menpai_basic
-          - skill_lingqiao_menpai_skill
-        iconPath: assets/enemies/xiliang_a.png
-      - id: enemy_yiLiu_xiliang_b
-        name: 武林名宿之徒
-        realmTier: yiLiu
-        realmLayer: jingTong
-        school: yinRou
-        baseHp: 10500
-        baseAttack: 1020
-        baseSpeed: 185
-        skillIds:
-          - skill_yinrou_menpai_basic
-          - skill_yinrou_menpai_skill
-        iconPath: assets/enemies/xiliang_b.png
     isBossStage: true
     dropTable:
       - equipmentDefId: weapon_liqi_lian_zi_bian
         dropChance: 1.0
+      - equipmentDefId: weapon_zhongqi_qing_xu_jian
+        dropChance: 1.0
       - equipmentDefId: accessory_haojiahuo_yu_pei_lao
         dropChance: 0.60
+      - equipmentDefId: armor_zhongqi_han_tie_zhong_jia
+        dropChance: 0.50
       - equipmentDefId: accessory_liqi_fei_yu_pei
         dropChance: 0.40
       - equipmentDefId: armor_liqi_tie_ye_jia
@@ -1266,15 +928,15 @@ stages:
     narrativeOpeningId: stage_04_05_opening
     narrativeVictoryId: stage_04_05_victory
     narrativeDefeatId: stage_04_05_defeat
-    requiredRealm: yiLiu
+    requiredRealm: jueDing
     enemyTeam:
       - id: enemy_jueDing_xiliangbazhu
         name: 西凉霸主
         realmTier: jueDing
         realmLayer: qiMeng
         school: yinRou
-        baseHp: 19375
-        baseAttack: 1375
+        baseHp: 14000
+        baseAttack: 1000
         baseSpeed: 215
         skillIds:
           - skill_yinrou_jianghu_basic
@@ -1284,32 +946,6 @@ stages:
         iconPath: assets/enemies/xiliangbazhu.png
         isBoss: true
         chargeSkillId: skill_feng_juan_liu_sha      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
-      - id: enemy_yiLiu_bazhu_zuofu
-        name: 西凉左护法
-        realmTier: yiLiu
-        realmLayer: dengFeng
-        school: gangMeng
-        baseHp: 16250
-        baseAttack: 1265
-        baseSpeed: 200
-        skillIds:
-          - skill_gangmeng_menpai_basic
-          - skill_gangmeng_menpai_skill
-          - skill_gangmeng_menpai_ult
-        iconPath: assets/enemies/bazhu_zuofu.png
-      - id: enemy_yiLiu_bazhu_youfu
-        name: 西凉右护法
-        realmTier: yiLiu
-        realmLayer: dengFeng
-        school: lingQiao
-        baseHp: 15625
-        baseAttack: 1210
-        baseSpeed: 210
-        skillIds:
-          - skill_lingqiao_menpai_basic
-          - skill_lingqiao_menpai_skill
-          - skill_lingqiao_menpai_ult
-        iconPath: assets/enemies/bazhu_youfu.png
     isBossStage: true
     factionId: cijianzhuang                        # Ch4 西出阳关 Boss · 刺剑庄(evil)
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
@@ -1367,28 +1003,6 @@ stages:
           - skill_gangmeng_jianghu_basic
           - skill_gangmeng_jianghu_skill
         iconPath: assets/enemies/tongguan_shoujiang.png
-      - id: enemy_jueDing_weishui_chuangong
-        name: 渭水船工头
-        realmTier: jueDing
-        realmLayer: qiMeng
-        school: lingQiao
-        baseHp: 13500
-        baseAttack: 1180
-        baseSpeed: 210
-        skillIds:
-          - skill_lingqiao_jianghu_basic
-        iconPath: assets/enemies/weishui_chuangong.png
-      - id: enemy_jueDing_changan_daoke
-        name: 长安刀客
-        realmTier: jueDing
-        realmLayer: qiMeng
-        school: yinRou
-        baseHp: 13800
-        baseAttack: 1150
-        baseSpeed: 195
-        skillIds:
-          - skill_yinrou_jianghu_basic
-        iconPath: assets/enemies/changan_daoke.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_zhongqi_po_zhen_chui
@@ -1424,38 +1038,12 @@ stages:
         realmTier: jueDing
         realmLayer: shuLian
         school: lingQiao
-        baseHp: 17000
-        baseAttack: 1350
+        baseHp: 10000
+        baseAttack: 800
         baseSpeed: 215
         skillIds:
           - skill_lingqiao_jianghu_basic
-          - skill_lingqiao_jianghu_skill
-          - skill_lingqiao_jianghu_ult
         iconPath: assets/enemies/songshan_daozong_dizi.png
-      - id: enemy_jueDing_daojia_jianke
-        name: 道家剑客
-        realmTier: jueDing
-        realmLayer: ruMen
-        school: yinRou
-        baseHp: 16500
-        baseAttack: 1300
-        baseSpeed: 220
-        skillIds:
-          - skill_yinrou_jianghu_basic
-          - skill_yinrou_jianghu_skill
-        iconPath: assets/enemies/daojia_jianke.png
-      - id: enemy_jueDing_zhongzhou_wuxue
-        name: 中州武学传人
-        realmTier: jueDing
-        realmLayer: shuLian
-        school: gangMeng
-        baseHp: 16200
-        baseAttack: 1280
-        baseSpeed: 210
-        skillIds:
-          - skill_gangmeng_jianghu_basic
-          - skill_gangmeng_jianghu_skill
-        iconPath: assets/enemies/zhongzhou_wuxue.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_zhongqi_du_long_suo
@@ -1489,41 +1077,14 @@ stages:
       - id: enemy_jueDing_caobang_duozhu
         name: 漕帮舵主
         realmTier: jueDing
-        realmLayer: jingTong
+        realmLayer: shuLian
         school: gangMeng
-        baseHp: 20500
-        baseAttack: 1500
+        baseHp: 7500
+        baseAttack: 560
         baseSpeed: 230
         skillIds:
           - skill_gangmeng_jianghu_basic
-          - skill_gangmeng_jianghu_skill
-          - skill_gangmeng_jianghu_ult
         iconPath: assets/enemies/caobang_duozhu.png
-      - id: enemy_jueDing_huanghe_shuikou
-        name: 黄河水寇
-        realmTier: jueDing
-        realmLayer: jingTong
-        school: lingQiao
-        baseHp: 19800
-        baseAttack: 1450
-        baseSpeed: 240
-        skillIds:
-          - skill_lingqiao_jianghu_basic
-          - skill_lingqiao_jianghu_skill
-          - skill_lingqiao_jianghu_ult
-        iconPath: assets/enemies/huanghe_shuikou.png
-      - id: enemy_jueDing_yidu_jianke
-        name: 义渡剑客
-        realmTier: jueDing
-        realmLayer: shuLian
-        school: yinRou
-        baseHp: 19500
-        baseAttack: 1420
-        baseSpeed: 225
-        skillIds:
-          - skill_yinrou_jianghu_basic
-          - skill_yinrou_jianghu_skill
-        iconPath: assets/enemies/yidu_jianke.png
     isBossStage: false
     dropTable:
       - equipmentDefId: armor_zhongqi_yin_lin_jia
@@ -1558,43 +1119,21 @@ stages:
       - id: enemy_jueDing_zhongzhou_lunjian_xianfeng
         name: 中州论剑先锋
         realmTier: jueDing
-        realmLayer: yuanShu
+        realmLayer: jingTong
         school: gangMeng
-        baseHp: 24000
-        baseAttack: 1700
+        baseHp: 10000
+        baseAttack: 850
         baseSpeed: 240
         skillIds:
           - skill_gangmeng_jianghu_basic
-          - skill_gangmeng_jianghu_skill
-          - skill_gangmeng_jianghu_ult
         iconPath: assets/enemies/zhongzhou_lunjian_xianfeng.png
         isBoss: true
-      - id: enemy_jueDing_zhongzhou_fushou
-        name: 中州论剑副手
-        realmTier: jueDing
-        realmLayer: jingTong
-        school: lingQiao
-        baseHp: 22500
-        baseAttack: 1620
-        baseSpeed: 235
-        skillIds:
-          - skill_lingqiao_jianghu_basic
-          - skill_lingqiao_jianghu_skill
-        iconPath: assets/enemies/zhongzhou_fushou.png
-      - id: enemy_jueDing_zhongzhou_zhuzhen
-        name: 中州论剑助阵
-        realmTier: jueDing
-        realmLayer: jingTong
-        school: yinRou
-        baseHp: 22300
-        baseAttack: 1600
-        baseSpeed: 245
-        skillIds:
-          - skill_yinrou_jianghu_basic
-          - skill_yinrou_jianghu_skill
-        iconPath: assets/enemies/zhongzhou_zhuzhen.png
     isBossStage: true
     dropTable:
+      - equipmentDefId: weapon_baowu_xuan_tian_fu
+        dropChance: 1.0
+      - equipmentDefId: armor_baowu_can_si_ruan_jia
+        dropChance: 1.0
       - equipmentDefId: weapon_zhongqi_po_zhen_chui
         dropChance: 1.0
       - equipmentDefId: armor_zhongqi_yin_lin_jia
@@ -1626,15 +1165,15 @@ stages:
     narrativeOpeningId: stage_05_05_opening
     narrativeVictoryId: stage_05_05_victory
     narrativeDefeatId: stage_05_05_defeat
-    requiredRealm: jueDing
+    requiredRealm: zongShi
     enemyTeam:
       - id: enemy_zongShi_xiliang_sandizi
         name: 西凉霸主三弟子
         realmTier: zongShi
         realmLayer: qiMeng
         school: yinRou
-        baseHp: 36600
-        baseAttack: 1995
+        baseHp: 24000
+        baseAttack: 1500
         baseSpeed: 250
         skillIds:
           - skill_yinrou_shichuan_basic
@@ -1644,32 +1183,6 @@ stages:
         iconPath: assets/enemies/xiliang_sandizi.png
         isBoss: true
         chargeSkillId: skill_shi_dang_shi_jue      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
-      - id: enemy_jueDing_zhongzhou_lunjian
-        name: 中州论剑顶
-        realmTier: jueDing
-        realmLayer: dengFeng
-        school: gangMeng
-        baseHp: 30900
-        baseAttack: 1790
-        baseSpeed: 235
-        skillIds:
-          - skill_gangmeng_jianghu_basic
-          - skill_gangmeng_jianghu_skill
-          - skill_gangmeng_jianghu_ult
-        iconPath: assets/enemies/zhongzhou_lunjian.png
-      - id: enemy_jueDing_songshan_daozong
-        name: 嵩山道宗
-        realmTier: jueDing
-        realmLayer: dengFeng
-        school: lingQiao
-        baseHp: 29750
-        baseAttack: 1740
-        baseSpeed: 245
-        skillIds:
-          - skill_lingqiao_jianghu_basic
-          - skill_lingqiao_jianghu_skill
-          - skill_lingqiao_jianghu_ult
-        iconPath: assets/enemies/songshan_daozong.png
     isBossStage: true
     factionId: emei                                # Ch5 中原 Boss · 峨眉地盘(orthodox)
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
@@ -1718,25 +1231,12 @@ stages:
         realmTier: zongShi
         realmLayer: qiMeng
         school: yinRou
-        baseHp: 30000
-        baseAttack: 2000
+        baseHp: 15000
+        baseAttack: 1100
         baseSpeed: 245
         skillIds:
           - skill_yinrou_shichuan_basic
-          - skill_yinrou_shichuan_skill
         iconPath: assets/enemies/lunjian_sanchang_xunluo.png
-      - id: enemy_zongShi_zhongzhou_yiyong
-        name: 中州义勇
-        realmTier: zongShi
-        realmLayer: qiMeng
-        school: gangMeng
-        baseHp: 28000
-        baseAttack: 1950
-        baseSpeed: 235
-        skillIds:
-          - skill_gangmeng_shichuan_basic
-          - skill_gangmeng_shichuan_skill
-        iconPath: assets/enemies/zhongzhou_yiyong.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_baowu_xuan_tian_fu
@@ -1774,25 +1274,13 @@ stages:
         realmTier: zongShi
         realmLayer: shuLian
         school: yinRou
-        baseHp: 33000
-        baseAttack: 2150
+        baseHp: 17000
+        baseAttack: 1250
         baseSpeed: 252
         skillIds:
           - skill_yinrou_shichuan_basic
           - skill_yinrou_shichuan_skill
         iconPath: assets/enemies/songshan_shouguan.png
-      - id: enemy_zongShi_songshan_xunshanren
-        name: 嵩山巡山人
-        realmTier: zongShi
-        realmLayer: shuLian
-        school: lingQiao
-        baseHp: 31000
-        baseAttack: 2100
-        baseSpeed: 245
-        skillIds:
-          - skill_lingqiao_shichuan_basic
-          - skill_lingqiao_shichuan_skill
-        iconPath: assets/enemies/songshan_xunshanren.png
     isBossStage: false
     dropTable:
       - equipmentDefId: weapon_baowu_xue_lian_bian
@@ -1828,40 +1316,15 @@ stages:
       - id: enemy_zongShi_huanghe_yuantou_yufu
         name: 黄河源头渔人
         realmTier: zongShi
-        realmLayer: jingTong
+        realmLayer: shuLian
         school: gangMeng
-        baseHp: 36000
-        baseAttack: 2300
+        baseHp: 18000
+        baseAttack: 1300
         baseSpeed: 260
         skillIds:
           - skill_gangmeng_shichuan_basic
           - skill_gangmeng_shichuan_skill
-          - skill_gangmeng_shichuan_ult
         iconPath: assets/enemies/huanghe_yuantou_yufu.png
-      - id: enemy_zongShi_huanghe_jichuang
-        name: 黄河急流人
-        realmTier: zongShi
-        realmLayer: jingTong
-        school: yinRou
-        baseHp: 34000
-        baseAttack: 2250
-        baseSpeed: 255
-        skillIds:
-          - skill_yinrou_shichuan_basic
-          - skill_yinrou_shichuan_skill
-        iconPath: assets/enemies/huanghe_jichuang.png
-      - id: enemy_zongShi_huanghe_shuibing
-        name: 黄河水兵
-        realmTier: zongShi
-        realmLayer: jingTong
-        school: lingQiao
-        baseHp: 33000
-        baseAttack: 2200
-        baseSpeed: 250
-        skillIds:
-          - skill_lingqiao_shichuan_basic
-          - skill_lingqiao_shichuan_skill
-        iconPath: assets/enemies/huanghe_shuibing.png
     isBossStage: false
     dropTable:
       - equipmentDefId: armor_baowu_jin_si_jia
@@ -1900,54 +1363,29 @@ stages:
       - id: enemy_zongShi_kunlun_waimen_shouguan
         name: 昆仑外门守关
         realmTier: zongShi
-        realmLayer: yuanShu
+        realmLayer: jingTong
         school: lingQiao
-        baseHp: 40000
-        baseAttack: 2400
+        baseHp: 22000
+        baseAttack: 1500
         baseSpeed: 268
         skillIds:
           - skill_lingqiao_shichuan_basic
           - skill_lingqiao_shichuan_skill
-          - skill_lingqiao_shichuan_ult
         iconPath: assets/enemies/kunlun_waimen_shouguan.png
         isBoss: true
-      - id: enemy_zongShi_kunlun_xiyuan_jianke
-        name: 昆仑西渐剑客
-        realmTier: zongShi
-        realmLayer: jingTong
-        school: gangMeng
-        baseHp: 37000
-        baseAttack: 2300
-        baseSpeed: 258
-        skillIds:
-          - skill_gangmeng_shichuan_basic
-          - skill_gangmeng_shichuan_skill
-        iconPath: assets/enemies/kunlun_xiyuan_jianke.png
-      - id: enemy_zongShi_kunlun_dunke
-        name: 昆仑遁客
-        realmTier: zongShi
-        realmLayer: jingTong
-        school: yinRou
-        baseHp: 36000
-        baseAttack: 2270
-        baseSpeed: 265
-        skillIds:
-          - skill_yinrou_shichuan_basic
-          - skill_yinrou_shichuan_skill
-        iconPath: assets/enemies/kunlun_dunke.png
     isBossStage: true
     npcId: cijianzhuang_kunlun_dunke             # P1.2 §6 占位
     dropTable:
       - equipmentDefId: accessory_shenwu_kun_lun_pei
         dropChance: 1.0
+      - equipmentDefId: weapon_shenwu_po_jun_dao
+        dropChance: 1.0
+      - equipmentDefId: armor_shenwu_tian_can_bao_jia
+        dropChance: 1.0
       - equipmentDefId: weapon_baowu_xuan_tian_fu
         dropChance: 0.50
-      - equipmentDefId: weapon_shenwu_po_jun_dao
-        dropChance: 0.20
       - equipmentDefId: weapon_shenwu_huan_meng_bian
         dropChance: 0.15
-      - equipmentDefId: armor_shenwu_tian_can_bao_jia
-        dropChance: 0.10
       - equipmentDefId: accessory_shenwu_she_li_zhu
         dropChance: 0.15
       - inventoryItemDefId: item_xinxuejiejing
@@ -1975,50 +1413,23 @@ stages:
     narrativeOpeningId: stage_06_05_opening
     narrativeVictoryId: stage_06_05_victory
     narrativeDefeatId: stage_06_05_defeat
-    requiredRealm: zongShi
+    requiredRealm: wuSheng
     enemyTeam:
       - id: enemy_wuSheng_xiliang_bazhu
         name: 西凉霸主
         realmTier: wuSheng
         realmLayer: qiMeng
         school: yinRou
-        baseHp: 52000
-        baseAttack: 2700
+        baseHp: 32000
+        baseAttack: 1800
         baseSpeed: 270
         skillIds:
           - skill_yinrou_chuanshuo_basic
           - skill_yinrou_chuanshuo_skill
-          - skill_yinrou_chuanshuo_ult
           - skill_yang_guan_wu_gu_ren                 # 波B 真解双用:Boss 招牌蓄力技「阳关无故人」
         iconPath: assets/enemies/xiliang_bazhu.png
         isBoss: true
         chargeSkillId: skill_yang_guan_wu_gu_ren      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
-      - id: enemy_zongShi_xiliang_disciple_gang
-        name: 西凉三弟子·刚猛
-        realmTier: zongShi
-        realmLayer: dengFeng
-        school: gangMeng
-        baseHp: 43000
-        baseAttack: 2200
-        baseSpeed: 250
-        skillIds:
-          - skill_gangmeng_shichuan_basic
-          - skill_gangmeng_shichuan_skill
-          - skill_gangmeng_shichuan_ult
-        iconPath: assets/enemies/xiliang_disciple_gang.png
-      - id: enemy_zongShi_xiliang_disciple_ling
-        name: 西凉三弟子·灵巧
-        realmTier: zongShi
-        realmLayer: dengFeng
-        school: lingQiao
-        baseHp: 42000
-        baseAttack: 2150
-        baseSpeed: 260
-        skillIds:
-          - skill_lingqiao_shichuan_basic
-          - skill_lingqiao_shichuan_skill
-          - skill_lingqiao_shichuan_ult
-        iconPath: assets/enemies/xiliang_disciple_ling.png
     isBossStage: true
     factionId: luLin                               # Ch6 昆仑 Boss · 绿林(neutral)
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
