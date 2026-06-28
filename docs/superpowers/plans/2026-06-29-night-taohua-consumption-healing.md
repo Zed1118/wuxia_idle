@@ -29,8 +29,8 @@
 
 ## 当前恢复点
 
-- 状态：实现已完成并通过定向验证；待最终 diff/status 复核后提交实现切片。
+- 状态：完成。计划切片提交 `3cd1eed1`，实现切片提交 `8d5915f3`。
 - 最后完成：锻材接入强化附加消耗；开锋辅材接入开锋持久化扣料；行囊补给接入清轻伤道具效果；战后疗伤丹面板接入普通胜负 overlay、主线胜利 dialog、爬塔胜利 dialog；用途反查已覆盖新增消费路径。
-- 下一步：最终检查 diff/status，提交实现切片，必要时补跑最终 analyze/targeted tests。
+- 下一步：主窗口复核/合并；如需体验验收，可真机检查强化、开锋和战后结算面板的排版密度。
 - 已跑验证：`dart run build_runner build --delete-conflicting-outputs`；`flutter analyze` 通过；`flutter test --no-pub -j1 test/features/equipment/application/enhancement_service_test.dart test/features/equipment/application/enhancement_persist_test.dart test/features/equipment/application/forge_persist_test.dart test/features/equipment/application/forging_service_test.dart test/features/inventory/item_use_service_test.dart test/features/inventory/item_usage_lookup_service_test.dart` 68/68 通过。
 - 阻塞项：无。
