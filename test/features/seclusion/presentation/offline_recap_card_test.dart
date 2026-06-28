@@ -34,6 +34,8 @@ void main() {
       progressPct: 1.0,
       estimatedMojianshi: 120,
       estimatedExperience: 300,
+      estimatedItemRewards: <String, int>{},
+      estimatedTechniqueLearnPoints: 2,
       estimatedSilver: 45,
       settledHours: 4.0,
       limitReason: OfflineRecapLimitReason.plannedDuration,
@@ -48,12 +50,16 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text(UiStrings.offlineRecapMojianshiDetail(120)),
+      find.text(UiStrings.offlineRecapMaterialDetail('磨剑石 120')),
       findsOneWidget,
     );
     expect(find.text(UiStrings.offlineRecapSilverDetail(45)), findsOneWidget);
     expect(
       find.text(UiStrings.offlineRecapExperienceDetail(300)),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.offlineRecapTechniqueSkillDetail(2, 0)),
       findsOneWidget,
     );
     expect(
@@ -76,6 +82,8 @@ void main() {
       progressPct: 0.5,
       estimatedMojianshi: 40,
       estimatedExperience: 90,
+      estimatedItemRewards: <String, int>{},
+      estimatedTechniqueLearnPoints: 0,
       estimatedSilver: 15,
       settledHours: 2.0,
       limitReason: OfflineRecapLimitReason.inProgress,
@@ -99,6 +107,8 @@ void main() {
       progressPct: 1.0,
       estimatedMojianshi: 120,
       estimatedExperience: 300,
+      estimatedItemRewards: <String, int>{},
+      estimatedTechniqueLearnPoints: 0,
       estimatedSilver: 45,
       settledHours: 4.0,
       limitReason: OfflineRecapLimitReason.plannedDuration,
@@ -124,6 +134,8 @@ void main() {
       progressPct: 1.0,
       estimatedMojianshi: 120,
       estimatedExperience: 300,
+      estimatedItemRewards: <String, int>{},
+      estimatedTechniqueLearnPoints: 0,
       estimatedSilver: 45,
       settledHours: 4.0,
       limitReason: OfflineRecapLimitReason.plannedDuration,
