@@ -186,8 +186,9 @@ class GameRepository {
     // 合并到同 Map;允许测试 fixture 不带,空 set 让红线层 noop)。
     final encounterSkillIds = <String>{};
     try {
-      final encounterSkillsRaw =
-          parseYamlMap(await load('data/encounter_skills.yaml'));
+      final encounterSkillsRaw = parseYamlMap(
+        await load('data/encounter_skills.yaml'),
+      );
       final encounterSkills = _parseDefMap(
         encounterSkillsRaw['encounter_skills'] as List,
         SkillDef.fromYaml,
@@ -215,16 +216,21 @@ class GameRepository {
       StageDef.fromYaml,
       idOf: (d) => d.id,
     );
-    final towerFloors = ((towersRaw['floors'] as List?) ?? const [])
-        .map((e) => TowerFloorDef.fromYaml(Map<String, dynamic>.from(e as Map)))
-        .toList(growable: false)
-      ..sort((a, b) => a.floorIndex.compareTo(b.floorIndex));
+    final towerFloors =
+        ((towersRaw['floors'] as List?) ?? const [])
+            .map(
+              (e) =>
+                  TowerFloorDef.fromYaml(Map<String, dynamic>.from(e as Map)),
+            )
+            .toList(growable: false)
+          ..sort((a, b) => a.floorIndex.compareTo(b.floorIndex));
 
     final mastersRaw = parseYamlMap(await load('data/masters.yaml'));
-    final masters = ((mastersRaw['masters'] as List?) ?? const [])
-        .map((e) => MasterDef.fromYaml(Map<String, dynamic>.from(e as Map)))
-        .toList(growable: false)
-      ..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
+    final masters =
+        ((mastersRaw['masters'] as List?) ?? const [])
+            .map((e) => MasterDef.fromYaml(Map<String, dynamic>.from(e as Map)))
+            .toList(growable: false)
+          ..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
 
     // P1.1 A1 E.1:收徒候选 yaml(允许 test fixture 不带 → 空 map)。
     // 生产路径红线校验在 _enforceRecruitCandidateRedLines 拦三系锁死违例。
@@ -234,8 +240,9 @@ class GameRepository {
     // 生产 yaml 引用全部对齐,自然 pass 进入严格红线校验。
     Map<String, RecruitCandidateDef> recruitCandidates = const {};
     try {
-      final recruitRaw =
-          parseYamlMap(await load('data/recruit_candidates.yaml'));
+      final recruitRaw = parseYamlMap(
+        await load('data/recruit_candidates.yaml'),
+      );
       final loaded = _parseDefMap(
         recruitRaw['recruit_candidates'] as List,
         RecruitCandidateDef.fromYaml,
@@ -268,8 +275,9 @@ class GameRepository {
     // 生产路径红线校验在 _enforceSectCandidateRedLines 拦三系锁死违例。
     Map<String, SectCandidateDef> sectCandidates = const {};
     try {
-      final sectCandidatesRaw =
-          parseYamlMap(await load('data/sect_candidates.yaml'));
+      final sectCandidatesRaw = parseYamlMap(
+        await load('data/sect_candidates.yaml'),
+      );
       final loaded = _parseDefMap(
         sectCandidatesRaw['sect_candidates'] as List,
         SectCandidateDef.fromYaml,
@@ -317,8 +325,7 @@ class GameRepository {
     try {
       final synergiesRaw = parseYamlMap(await load('data/synergies.yaml'));
       synergies = ((synergiesRaw['synergies'] as List?) ?? const [])
-          .map((e) =>
-              SynergyDef.fromYaml(Map<String, dynamic>.from(e as Map)))
+          .map((e) => SynergyDef.fromYaml(Map<String, dynamic>.from(e as Map)))
           .toList(growable: false);
     } catch (e) {
       // test fixture 不带 synergies.yaml 时静默
@@ -335,9 +342,10 @@ class GameRepository {
     try {
       final territoriesRaw = parseYamlList(await load('data/territories.yaml'));
       final defs = territoriesRaw
-          .map((raw) => TerritoryDef.fromYaml(
-                Map<String, dynamic>.from(raw as Map),
-              ))
+          .map(
+            (raw) =>
+                TerritoryDef.fromYaml(Map<String, dynamic>.from(raw as Map)),
+          )
           .toList(growable: false);
       territoryDefs = {for (final d in defs) d.id: d};
     } catch (e) {
@@ -448,9 +456,7 @@ class GameRepository {
           );
         }
         if (content.defaultLore.isEmpty) {
-          throw StateError(
-            '装备 ${def.id} presetLore $loreId default_lore 段为空',
-          );
+          throw StateError('装备 ${def.id} presetLore $loreId default_lore 段为空');
         }
       }
     }
@@ -502,20 +508,24 @@ class GameRepository {
     final out = <RealmDef>[];
     for (final t in tiers) {
       final tier = RealmTier.values.byName(t['tier'] as String);
-      final eqCap =
-          EquipmentTier.values.byName(t['equipment_tier_cap'] as String);
-      final techCap =
-          TechniqueTier.values.byName(t['technique_tier_cap'] as String);
+      final eqCap = EquipmentTier.values.byName(
+        t['equipment_tier_cap'] as String,
+      );
+      final techCap = TechniqueTier.values.byName(
+        t['technique_tier_cap'] as String,
+      );
       for (final l in (t['layers'] as List)) {
-        out.add(RealmDef(
-          tier: tier,
-          layer: RealmLayer.values.byName(l['layer'] as String),
-          absoluteLevel: (l['absolute_level'] as num).toInt(),
-          internalForceMax: (l['internal_force_max'] as num).toInt(),
-          experienceToNext: (l['experience_to_next'] as num).toInt(),
-          equipmentTierCap: eqCap,
-          techniqueTierCap: techCap,
-        ));
+        out.add(
+          RealmDef(
+            tier: tier,
+            layer: RealmLayer.values.byName(l['layer'] as String),
+            absoluteLevel: (l['absolute_level'] as num).toInt(),
+            internalForceMax: (l['internal_force_max'] as num).toInt(),
+            experienceToNext: (l['experience_to_next'] as num).toInt(),
+            equipmentTierCap: eqCap,
+            techniqueTierCap: techCap,
+          ),
+        );
       }
     }
     return out;
@@ -567,9 +577,7 @@ class GameRepository {
       if (prev == null) continue;
       final prevDef = stageDefs[prev];
       if (prevDef == null) {
-        throw StateError(
-          'stage ${s.id} prevStageId=$prev 引用不存在的关卡',
-        );
+        throw StateError('stage ${s.id} prevStageId=$prev 引用不存在的关卡');
       }
       if (s.chapterIndex != null &&
           prevDef.chapterIndex != null &&
@@ -691,14 +699,10 @@ class GameRepository {
       final step = e.step;
       if (e.category.isMechanic) {
         if (step == null || step < 1 || step > 8) {
-          throw StateError(
-            'codex entry ${e.id} 机制条目 step=$step 应 ∈ [1, 8]',
-          );
+          throw StateError('codex entry ${e.id} 机制条目 step=$step 应 ∈ [1, 8]');
         }
       } else if (e.category.isLore && step != null) {
-        throw StateError(
-          'codex entry ${e.id} lore 条目 step=$step 应为 null',
-        );
+        throw StateError('codex entry ${e.id} lore 条目 step=$step 应为 null');
       }
       if (e.paragraphs.isEmpty) {
         throw StateError('codex entry ${e.id} paragraphs 为空');
@@ -723,9 +727,7 @@ class GameRepository {
       //   - 大还丹（大档经验丹 layerFraction=1.0，"一次顶满一层"）：仅掉落不上架
       //     （§5.5 挂机为主丹为辅；小/中档 layerFraction<1.0 仍可上架）。
       if (d.itemType == ItemType.techniqueScroll) {
-        throw StateError(
-          '红线:商店 ${d.id} 上架秘籍 ${d.itemDefId}，违反 §5.7（秘籍仅掉落不上架）',
-        );
+        throw StateError('红线:商店 ${d.id} 上架秘籍 ${d.itemDefId}，违反 §5.7（秘籍仅掉落不上架）');
       }
       final item = itemDefs[d.itemDefId];
       if (item != null &&
@@ -738,7 +740,9 @@ class GameRepository {
       if (d.isDynamicPrice) {
         // 动态标价：校验 fraction > 0 即可，绝对价格由 etl 决定
         if (d.priceLayerFraction! <= 0) {
-          throw StateError('红线:商店 ${d.id} price_layer_fraction ${d.priceLayerFraction} ≤ 0');
+          throw StateError(
+            '红线:商店 ${d.id} price_layer_fraction ${d.priceLayerFraction} ≤ 0',
+          );
         }
       } else {
         if (d.price! <= 0) {
@@ -757,7 +761,22 @@ class GameRepository {
     for (final d in itemDefs.values) {
       final frac = d.layerFraction;
       if (frac != null && (frac <= 0 || frac > 1.0)) {
-        throw StateError('红线:道具 ${d.defId} layer_fraction $frac 应 ∈ (0.0, 1.0]');
+        throw StateError(
+          '红线:道具 ${d.defId} layer_fraction $frac 应 ∈ (0.0, 1.0]',
+        );
+      }
+      final healHours = d.healInjuryHours;
+      if (healHours != null && healHours <= 0) {
+        throw StateError('红线:道具 ${d.defId} heal_injury_hours $healHours 应 > 0');
+      }
+    }
+    for (final map in numbers.retreat.maps) {
+      for (final itemId in map.itemOutputsPerHour.keys) {
+        if (!itemDefs.containsKey(itemId)) {
+          throw StateError(
+            '红线:闭关地图 ${map.mapType.name} item_outputs_per_hour 引用不存在道具 $itemId',
+          );
+        }
       }
     }
   }
@@ -792,9 +811,7 @@ class GameRepository {
         throw StateError('synergy id 重复: ${s.id}');
       }
       if (!s.multipliers.isWithinRedLine) {
-        throw StateError(
-          'synergy ${s.id} multiplier 越界(应各项 ∈ [0, 0.30])',
-        );
+        throw StateError('synergy ${s.id} multiplier 越界(应各项 ∈ [0, 0.30])');
       }
       switch (s.requirementType) {
         case SynergyRequirementType.specificTechniques:
@@ -889,9 +906,7 @@ class GameRepository {
       final s = skillDefs[id]!;
       final tier = s.tier;
       if (tier == null || tier < 1 || tier > 7) {
-        throw StateError(
-          'encounter skill $id tier=$tier,应 ∈ [1, 7]',
-        );
+        throw StateError('encounter skill $id tier=$tier,应 ∈ [1, 7]');
       }
       if (s.parentTechniqueDefId != null) {
         throw StateError(
@@ -971,9 +986,7 @@ class GameRepository {
       }
       final fr = def.trigger.fortuneRequired;
       if (fr != null && (fr < 1 || fr > 10)) {
-        throw StateError(
-          'encounter ${def.id} fortuneRequired=$fr 应 ∈ [1, 10]',
-        );
+        throw StateError('encounter ${def.id} fortuneRequired=$fr 应 ∈ [1, 10]');
       }
       // P4.1 1.1 Q6A:affectsSectMembership 引用 + accept_recruit 约定校
       final asm = def.affectsSectMembership;
@@ -995,8 +1008,7 @@ class GameRepository {
         }
         // fallbackOutcomeId 必须在 outcomeMapping 中(若指定)
         final fallback = asm.fallbackOutcomeId;
-        if (fallback != null &&
-            !def.outcomeMapping.containsKey(fallback)) {
+        if (fallback != null && !def.outcomeMapping.containsKey(fallback)) {
           throw StateError(
             'encounter ${def.id} affectsSectMembership.fallbackOutcomeId='
             '$fallback 未在 outcomeMapping 中(spec §3 cap 满/拒绝 fallback)',
@@ -1017,12 +1029,11 @@ class GameRepository {
     if (techniqueDefs.isEmpty) return;
     for (final tier in TechniqueTier.values) {
       for (final school in TechniqueSchool.values) {
-        final hit = techniqueDefs.values
-            .any((t) => t.tier == tier && t.school == school);
+        final hit = techniqueDefs.values.any(
+          (t) => t.tier == tier && t.school == school,
+        );
         if (!hit) {
-          throw StateError(
-            '心法覆盖度不足：缺 ${tier.name}/${school.name} 组合',
-          );
+          throw StateError('心法覆盖度不足：缺 ${tier.name}/${school.name} 组合');
         }
       }
     }
@@ -1093,14 +1104,13 @@ class GameRepository {
     for (final tier in EquipmentTier.values) {
       final tierItems = equipmentDefs.values.where((e) => e.tier == tier);
       if (tierItems.length < 5) {
-        throw StateError(
-          '装备覆盖度不足：${tier.name} 阶共 ${tierItems.length} 件,应 ≥ 5',
-        );
+        throw StateError('装备覆盖度不足：${tier.name} 阶共 ${tierItems.length} 件,应 ≥ 5');
       }
       final weapons = tierItems.where((e) => e.slot == EquipmentSlot.weapon);
       final armors = tierItems.where((e) => e.slot == EquipmentSlot.armor);
-      final accessories =
-          tierItems.where((e) => e.slot == EquipmentSlot.accessory);
+      final accessories = tierItems.where(
+        (e) => e.slot == EquipmentSlot.accessory,
+      );
       if (armors.isEmpty) {
         throw StateError('装备覆盖度不足：${tier.name} 阶缺 armor');
       }
@@ -1110,9 +1120,7 @@ class GameRepository {
       for (final school in TechniqueSchool.values) {
         final hit = weapons.any((w) => w.schoolBias == school);
         if (!hit) {
-          throw StateError(
-            '装备覆盖度不足：${tier.name} 阶缺 ${school.name} 流派武器',
-          );
+          throw StateError('装备覆盖度不足：${tier.name} 阶缺 ${school.name} 流派武器');
         }
       }
     }
@@ -1121,9 +1129,7 @@ class GameRepository {
   void _enforceTowerRedLines() {
     if (towerFloors.isEmpty) return; // 允许测试 fixture 不带 towers
     if (towerFloors.length != 30) {
-      throw StateError(
-        '爬塔层数应为 30，实际 ${towerFloors.length}',
-      );
+      throw StateError('爬塔层数应为 30，实际 ${towerFloors.length}');
     }
     const minorBossFloors = {5, 15, 25};
     const majorBossFloors = {10, 20, 30};
@@ -1131,9 +1137,7 @@ class GameRepository {
     for (var i = 0; i < towerFloors.length; i++) {
       final f = towerFloors[i];
       if (f.floorIndex != i + 1) {
-        throw StateError(
-          '爬塔层不连续：期望 floorIndex=${i + 1}，实际 ${f.floorIndex}',
-        );
+        throw StateError('爬塔层不连续：期望 floorIndex=${i + 1}，实际 ${f.floorIndex}');
       }
       if (!seen.add(f.floorIndex)) {
         throw StateError('爬塔 floorIndex 重复：${f.floorIndex}');
@@ -1142,8 +1146,8 @@ class GameRepository {
       final expectedKind = minorBossFloors.contains(f.floorIndex)
           ? TowerBossKind.minor
           : majorBossFloors.contains(f.floorIndex)
-              ? TowerBossKind.major
-              : null;
+          ? TowerBossKind.major
+          : null;
       if (f.bossKind != expectedKind) {
         throw StateError(
           '爬塔 floor=${f.floorIndex} bossKind=${f.bossKind?.name ?? "null"}，'
@@ -1153,9 +1157,7 @@ class GameRepository {
       // 普通层不得带 narrative
       if (f.bossKind == null &&
           (f.narrativeOpeningId != null || f.narrativeVictoryId != null)) {
-        throw StateError(
-          '爬塔 floor=${f.floorIndex} 普通层不应配 narrative',
-        );
+        throw StateError('爬塔 floor=${f.floorIndex} 普通层不应配 narrative');
       }
       // 每层 1-3 个敌人
       if (f.enemyTeam.isEmpty || f.enemyTeam.length > 3) {
@@ -1249,9 +1251,7 @@ class GameRepository {
       }
       // 飞升锚点
       if (m.defaultRealm == RealmTier.wuSheng) {
-        throw StateError(
-          '师徒 ${m.id} defaultRealm=wuSheng，Demo 阶段不允许（飞升锚点）',
-        );
+        throw StateError('师徒 ${m.id} defaultRealm=wuSheng，Demo 阶段不允许（飞升锚点）');
       }
       // AttributeProfile 范围
       final ap = m.attributeProfile;
@@ -1414,9 +1414,7 @@ class GameRepository {
     }
     for (final c in sectCandidates.values) {
       if (c.defaultRealm == RealmTier.wuSheng) {
-        throw StateError(
-          '门派招收候选 ${c.id} defaultRealm=wuSheng,不允许飞升锚点',
-        );
+        throw StateError('门派招收候选 ${c.id} defaultRealm=wuSheng,不允许飞升锚点');
       }
       // AttributeProfile 范围
       final ap = c.attributeProfile;
@@ -1648,9 +1646,7 @@ class GameRepository {
         final orphan = skills.difference(mounts.toSet());
         final dangling = mounts.toSet().difference(skills);
         if (orphan.isNotEmpty || dangling.isNotEmpty) {
-          throw StateError(
-            '$kind 招挂载不完备(波B 红线 ⑦):孤儿=$orphan 错挂=$dangling',
-          );
+          throw StateError('$kind 招挂载不完备(波B 红线 ⑦):孤儿=$orphan 错挂=$dangling');
         }
       }
 
@@ -1863,16 +1859,12 @@ class GameRepository {
         throw StateError('未知闭关地图类型：${m.mapType.name}');
       }
       if (m.mojianshiPerHour <= 0) {
-        throw StateError(
-          '闭关地图 ${m.mapType.name} mojianshiPerHour 必须 > 0',
-        );
+        throw StateError('闭关地图 ${m.mapType.name} mojianshiPerHour 必须 > 0');
       }
     }
     final config = numbers.retreat;
     if (config.capHours < 1 || config.capHours > 168) {
-      throw StateError(
-        '闭关 capHours=${config.capHours}，应 ∈ [1, 168]',
-      );
+      throw StateError('闭关 capHours=${config.capHours}，应 ∈ [1, 168]');
     }
   }
 
@@ -1888,8 +1880,7 @@ class GameRepository {
   RealmDef getRealm(RealmTier tier, RealmLayer layer) {
     return realms.firstWhere(
       (r) => r.tier == tier && r.layer == layer,
-      orElse: () =>
-          throw StateError('境界 ${tier.name}/${layer.name} 未配置'),
+      orElse: () => throw StateError('境界 ${tier.name}/${layer.name} 未配置'),
     );
   }
 
@@ -1901,20 +1892,16 @@ class GameRepository {
   }
 
   EquipmentDef getEquipment(String defId) =>
-      equipmentDefs[defId] ??
-      (throw StateError('EquipmentDef 未配置: $defId'));
+      equipmentDefs[defId] ?? (throw StateError('EquipmentDef 未配置: $defId'));
 
   TechniqueDef getTechnique(String defId) =>
-      techniqueDefs[defId] ??
-      (throw StateError('TechniqueDef 未配置: $defId'));
+      techniqueDefs[defId] ?? (throw StateError('TechniqueDef 未配置: $defId'));
 
   SkillDef getSkill(String defId) =>
-      skillDefs[defId] ??
-      (throw StateError('SkillDef 未配置: $defId'));
+      skillDefs[defId] ?? (throw StateError('SkillDef 未配置: $defId'));
 
   StageDef getStage(String defId) =>
-      stageDefs[defId] ??
-      (throw StateError('StageDef 未配置: $defId'));
+      stageDefs[defId] ?? (throw StateError('StageDef 未配置: $defId'));
 
   /// 取第 N 层爬塔（1-30）。越界抛 [RangeError]。
   TowerFloorDef getTowerFloor(int floorIndex) {
@@ -1928,8 +1915,7 @@ class GameRepository {
   SeclusionMapDef getSeclusionMap(RetreatMapType mapType) =>
       seclusionMaps.firstWhere(
         (m) => m.mapType == mapType,
-        orElse: () =>
-            throw StateError('SeclusionMapDef 未配置: ${mapType.name}'),
+        orElse: () => throw StateError('SeclusionMapDef 未配置: ${mapType.name}'),
       );
 
   /// 按 slotIndex 取师徒定义（0=祖师 / 1=大弟子 / 2=二弟子）。
@@ -1997,18 +1983,14 @@ class GameRepository {
     // 必须从 1 起连续递增(不跳号)
     for (var i = 0; i < chapters.length; i++) {
       if (chapters[i] != i + 1) {
-        throw StateError(
-          '主线 chapterIndex 必须从 1 起连续递增,实际 $chapters',
-        );
+        throw StateError('主线 chapterIndex 必须从 1 起连续递增,实际 $chapters');
       }
     }
     // 每章必须正好 5 关
     for (final ch in chapters) {
       final inCh = byChapter[ch]!;
       if (inCh.length != 5) {
-        throw StateError(
-          '主线 ch=$ch 应有 5 关,实际 ${inCh.length}',
-        );
+        throw StateError('主线 ch=$ch 应有 5 关,实际 ${inCh.length}');
       }
     }
     // 总数 == 5 * chapterCount

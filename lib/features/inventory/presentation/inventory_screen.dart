@@ -741,10 +741,6 @@ class _MaterialGridTile extends ConsumerWidget {
   final InventoryItem item;
   final String groupName; // itemDef 缺失时退回的组名
 
-  bool get _usable =>
-      item.itemType == ItemType.jingYanDan ||
-      item.itemType == ItemType.techniqueScroll;
-
   static const double _size = 80;
 
   @override
@@ -755,7 +751,11 @@ class _MaterialGridTile extends ConsumerWidget {
       GameRepository.instance,
     ).usagesFor(item.defId);
     final usage = UiStrings.materialUsageSummary(usages);
-    final canUse = _usable && itemDef != null;
+    final canUse =
+        itemDef != null &&
+        (item.itemType == ItemType.jingYanDan ||
+            item.itemType == ItemType.techniqueScroll ||
+            itemDef.hasInjuryReliefEffect);
     // 显式局部非空引用，供 onTap 闭包捕获（闭包内不做 flow promotion）。
     final usableDef = canUse ? itemDef : null;
 
@@ -932,6 +932,10 @@ class _MaterialGridTile extends ConsumerWidget {
       ),
       ItemUseKind.skillUnlocked => UiStrings.itemUseScrollResult(displayName),
       ItemUseKind.alreadyKnown => UiStrings.itemUseAlreadyKnown(displayName),
+      ItemUseKind.injuryRelieved => UiStrings.itemUseInjuryRelieved(
+        displayName,
+      ),
+      ItemUseKind.noEffect => UiStrings.itemUseNoEffect(displayName),
       _ => UiStrings.itemUseFailed,
     };
     await PaperDialog.show<void>(

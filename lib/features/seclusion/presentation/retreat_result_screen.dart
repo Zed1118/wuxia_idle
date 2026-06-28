@@ -33,6 +33,7 @@ class RetreatResultScreen extends StatelessWidget {
     final silver = result.silver;
     final actualHours = result.actualHours;
     final equipDrops = result.equipmentDrops;
+    final itemRewards = result.itemRewards;
     final internalForce = result.internalForcePoints;
     final insightPoints = result.techniqueLearnPoints;
     final experience = result.experiencePoints;
@@ -40,6 +41,7 @@ class RetreatResultScreen extends StatelessWidget {
     final hasReward =
         mojianshi > 0 ||
         silver > 0 ||
+        itemRewards.isNotEmpty ||
         equipDrops.isNotEmpty ||
         internalForce > 0 ||
         insightPoints > 0 ||
@@ -90,6 +92,15 @@ class RetreatResultScreen extends StatelessWidget {
                         _RewardRow(
                           icon: Icons.toll,
                           label: UiStrings.seclusionSilver(silver),
+                        ),
+                      for (final entry in itemRewards.entries)
+                        _RewardRow(
+                          icon: Icons.grass,
+                          label: UiStrings.seclusionItemReward(
+                            GameRepository.instance.itemDefs[entry.key]?.name ??
+                                entry.key,
+                            entry.value,
+                          ),
                         ),
                       if (experience > 0)
                         _RewardRow(

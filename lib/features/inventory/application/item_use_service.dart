@@ -46,7 +46,8 @@ class ItemUseService {
             return const ItemUseResult(kind: ItemUseKind.noTarget);
           }
           // 经验增益 = 当层升层所需经验 × layer_fraction（随境界缩放）。
-          final gain = (founder.experienceToNextLayer * def.layerFraction!).round();
+          final gain = (founder.experienceToNextLayer * def.layerFraction!)
+              .round();
           final result = CharacterAdvancementService.applyExperience(
             founder,
             gain,
@@ -88,7 +89,44 @@ class ItemUseService {
           );
 
         default:
-          // 磨剑石/心血结晶/银两/杂项无"使用"语义。
+          if (def.hasInjuryReliefEffect) {
+            final founder = await isar.characters
+                .filter()
+                .isFounderEqualTo(true)
+                .findFirst();
+            if (founder == null) {
+              return const ItemUseResult(kind: ItemUseKind.noTarget);
+            }
+
+            final heavyBefore = founder.injuryHoursRemaining;
+            final lightBefore = founder.lightInjuryStacks;
+            if (heavyBefore <= 0 && lightBefore <= 0) {
+              return ItemUseResult(
+                kind: ItemUseKind.noEffect,
+                itemName: def.name,
+              );
+            }
+
+            final healHours = def.healInjuryHours ?? 0.0;
+            if (healHours > 0 && founder.injuryHoursRemaining > 0) {
+              final left = founder.injuryHoursRemaining - healHours;
+              founder.injuryHoursRemaining = left < 0 ? 0 : left;
+            }
+            if (def.clearLightInjuryStacks) {
+              founder.lightInjuryStacks = 0;
+            }
+
+            await isar.characters.put(founder);
+            await _consumeOne(isar, item);
+            return ItemUseResult(
+              kind: ItemUseKind.injuryRelieved,
+              itemName: def.name,
+              injuryHoursReduced: heavyBefore - founder.injuryHoursRemaining,
+              lightStacksCleared: lightBefore - founder.lightInjuryStacks,
+            );
+          }
+
+          // 磨剑石/心血结晶/银两/普通杂项无"使用"语义。
           return const ItemUseResult(kind: ItemUseKind.notUsable);
       }
     });
@@ -111,8 +149,10 @@ enum ItemUseKind {
   experienceApplied, // 经验丹入账（layersGained 区分是否升层）
   skillUnlocked, // 秘籍新解锁
   alreadyKnown, // 秘籍已解锁（未消费）
+  injuryRelieved, // 疗伤调理品生效
   noStock, // 无库存
   noTarget, // 无 founder / SaveData
+  noEffect, // 目标无对应伤势（未消费）
   notUsable, // 该 ItemType 无使用语义
 }
 
@@ -122,11 +162,15 @@ class ItemUseResult {
   final int layersGained;
   final String? itemName;
   final String? unlockedSkillId;
+  final double injuryHoursReduced;
+  final int lightStacksCleared;
 
   const ItemUseResult({
     required this.kind,
     this.layersGained = 0,
     this.itemName,
     this.unlockedSkillId,
+    this.injuryHoursReduced = 0,
+    this.lightStacksCleared = 0,
   });
 }

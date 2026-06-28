@@ -316,6 +316,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         actualHours: 4.0,
         mojianshi: 18,
         silver: 20,
+        itemRewards: const <String, int>{},
         equipmentDrops: <Equipment>[tieJian],
         experiencePoints: 520,
         techniqueLearnPoints: 6,

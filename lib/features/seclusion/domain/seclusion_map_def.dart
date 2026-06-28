@@ -23,6 +23,10 @@ class SeclusionMapDef {
   final double techniqueLearnRate;
   final double internalForceGrowth;
 
+  /// 闭关通用物品产出（InventoryItem.defId → 每小时基础产出）。
+  /// 与磨剑石/银两同乘 actualHours × realmScale × solarBonus。
+  final Map<String, double> itemOutputsPerHour;
+
   /// 场景生境(C-W14-2)。闭关 actualHours 通过
   /// [EncounterService.recordIdleMinutes] 喂 biome 累计分钟。null = 未标。
   final EncounterBiome? biome;
@@ -56,6 +60,7 @@ class SeclusionMapDef {
     required this.equipmentDropRate,
     required this.techniqueLearnRate,
     required this.internalForceGrowth,
+    this.itemOutputsPerHour = const {},
     this.biome,
     this.weather,
     this.imagePath,
@@ -76,6 +81,12 @@ class SeclusionMapDef {
       equipmentDropRate: (outputs['equipment_drop_rate'] as num).toDouble(),
       techniqueLearnRate: (outputs['technique_learn_rate'] as num).toDouble(),
       internalForceGrowth: (outputs['internal_force_growth'] as num).toDouble(),
+      itemOutputsPerHour: {
+        for (final e
+            in (outputs['item_outputs_per_hour'] as Map<String, dynamic>? ?? {})
+                .entries)
+          e.key: (e.value as num).toDouble(),
+      },
       biome: (y['biome'] as String?) == null
           ? null
           : EncounterBiome.values.byName(y['biome'] as String),

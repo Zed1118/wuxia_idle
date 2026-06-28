@@ -41,6 +41,7 @@ RetreatResult _mkResult({
   double actualHours = 4.0,
   int mojianshi = 0,
   int silver = 0,
+  Map<String, int> itemRewards = const {},
   List<Equipment> drops = const [],
   int experience = 0,
   int techniqueLearn = 0,
@@ -52,6 +53,7 @@ RetreatResult _mkResult({
   actualHours: actualHours,
   mojianshi: mojianshi,
   silver: silver,
+  itemRewards: itemRewards,
   equipmentDrops: drops,
   experiencePoints: experience,
   techniqueLearnPoints: techniqueLearn,
@@ -101,6 +103,13 @@ void main() {
       expect(find.text('铁剑'), findsOneWidget);
       expect(find.textContaining('weapon_xunchang'), findsNothing);
     });
+  });
+
+  testWidgets('通用物品奖励显示 items.yaml 名称与数量', (tester) async {
+    await _pump(tester, _mkResult(itemRewards: {'item_yaocao': 3}));
+
+    expect(find.textContaining('药草 × 3'), findsOneWidget);
+    expect(find.textContaining('item_yaocao'), findsNothing);
   });
 
   group('RetreatResultScreen W15 #30 维度展示', () {

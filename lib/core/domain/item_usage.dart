@@ -4,6 +4,7 @@
 enum ItemUsageKind {
   realmProgress,
   techniqueUnlock,
+  injuryRelief,
   equipmentEnhancement,
   equipmentGuarantee,
   shopPurchaseCurrency,
