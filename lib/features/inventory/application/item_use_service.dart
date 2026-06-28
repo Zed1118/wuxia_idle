@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/character.dart';
@@ -17,6 +19,7 @@ import '../../level/domain/level_config.dart';
 /// - jingYanDan → [CharacterAdvancementService.applyExperience]（founder 角色）。
 /// - techniqueScroll → inline 解锁 `skillUnlockProgress`（**不调 grantManual**：
 ///   后者自开 writeTxn，嵌套会抛）。已解锁则不消费。
+/// - recovery item（如桃花岛疗伤丹）→ 减少轻伤/重伤/心魔余毒。
 class ItemUseService {
   /// 使用一份道具 [def]。
   ///
@@ -89,40 +92,49 @@ class ItemUseService {
           );
 
         default:
-          if (def.hasInjuryReliefEffect) {
-            final founder = await isar.characters
-                .filter()
-                .isFounderEqualTo(true)
-                .findFirst();
-            if (founder == null) {
+          if (def.hasRecoveryEffect) {
+            final target = await _findRecoveryTarget(isar);
+            if (target == null) {
               return const ItemUseResult(kind: ItemUseKind.noTarget);
             }
 
-            final heavyBefore = founder.injuryHoursRemaining;
-            final lightBefore = founder.lightInjuryStacks;
-            if (heavyBefore <= 0 && lightBefore <= 0) {
+            final beforeInjury = target.injuryHoursRemaining;
+            final beforeResidue = target.innerDemonResidueHoursRemaining;
+            final beforeLight = target.lightInjuryStacks;
+            final changed =
+                (def.injuryHealHours > 0 && beforeInjury > 0) ||
+                (def.residueHealHours > 0 && beforeResidue > 0) ||
+                (def.clearLightInjury && beforeLight > 0);
+            if (!changed) {
               return ItemUseResult(
                 kind: ItemUseKind.noEffect,
                 itemName: def.name,
+                targetName: target.name,
               );
             }
 
-            final healHours = def.healInjuryHours ?? 0.0;
-            if (healHours > 0 && founder.injuryHoursRemaining > 0) {
-              final left = founder.injuryHoursRemaining - healHours;
-              founder.injuryHoursRemaining = left < 0 ? 0 : left;
-            }
-            if (def.clearLightInjuryStacks) {
-              founder.lightInjuryStacks = 0;
+            target.injuryHoursRemaining = math.max(
+              0.0,
+              target.injuryHoursRemaining - def.injuryHealHours,
+            );
+            target.innerDemonResidueHoursRemaining = math.max(
+              0.0,
+              target.innerDemonResidueHoursRemaining - def.residueHealHours,
+            );
+            if (def.clearLightInjury) {
+              target.lightInjuryStacks = 0;
             }
 
-            await isar.characters.put(founder);
+            await isar.characters.put(target);
             await _consumeOne(isar, item);
             return ItemUseResult(
-              kind: ItemUseKind.injuryRelieved,
+              kind: ItemUseKind.recoveryApplied,
               itemName: def.name,
-              injuryHoursReduced: heavyBefore - founder.injuryHoursRemaining,
-              lightStacksCleared: lightBefore - founder.lightInjuryStacks,
+              targetName: target.name,
+              injuryHoursReduced: beforeInjury - target.injuryHoursRemaining,
+              residueHoursReduced:
+                  beforeResidue - target.innerDemonResidueHoursRemaining,
+              lightInjuryStacksCleared: beforeLight - target.lightInjuryStacks,
             );
           }
 
@@ -130,6 +142,33 @@ class ItemUseService {
           return const ItemUseResult(kind: ItemUseKind.notUsable);
       }
     });
+  }
+
+  static Future<Character?> _findRecoveryTarget(Isar isar) async {
+    final active = await isar.characters
+        .filter()
+        .isActiveEqualTo(true)
+        .findAll();
+    final founder = await isar.characters
+        .filter()
+        .isFounderEqualTo(true)
+        .findFirst();
+    final candidates = active.isNotEmpty ? active : [?founder];
+    if (candidates.isEmpty) return null;
+
+    Character? best;
+    var bestScore = -1.0;
+    for (final c in candidates) {
+      final score =
+          c.injuryHoursRemaining +
+          c.innerDemonResidueHoursRemaining +
+          c.lightInjuryStacks;
+      if (score > bestScore) {
+        best = c;
+        bestScore = score;
+      }
+    }
+    return best;
   }
 
   /// 扣 1（归 0 删行）。
@@ -148,11 +187,11 @@ class ItemUseService {
 enum ItemUseKind {
   experienceApplied, // 经验丹入账（layersGained 区分是否升层）
   skillUnlocked, // 秘籍新解锁
+  recoveryApplied, // 疗伤/余毒恢复已应用
   alreadyKnown, // 秘籍已解锁（未消费）
-  injuryRelieved, // 疗伤调理品生效
+  noEffect, // 有目标但无需用药（未消费）
   noStock, // 无库存
   noTarget, // 无 founder / SaveData
-  noEffect, // 目标无对应伤势（未消费）
   notUsable, // 该 ItemType 无使用语义
 }
 
@@ -162,15 +201,19 @@ class ItemUseResult {
   final int layersGained;
   final String? itemName;
   final String? unlockedSkillId;
+  final String? targetName;
   final double injuryHoursReduced;
-  final int lightStacksCleared;
+  final double residueHoursReduced;
+  final int lightInjuryStacksCleared;
 
   const ItemUseResult({
     required this.kind,
     this.layersGained = 0,
     this.itemName,
     this.unlockedSkillId,
-    this.injuryHoursReduced = 0,
-    this.lightStacksCleared = 0,
+    this.targetName,
+    this.injuryHoursReduced = 0.0,
+    this.residueHoursReduced = 0.0,
+    this.lightInjuryStacksCleared = 0,
   });
 }

@@ -587,9 +587,9 @@ class UiStrings {
     return switch (usage.kind) {
       ItemUsageKind.realmProgress => '修为突破',
       ItemUsageKind.techniqueUnlock => '解锁招式',
-      ItemUsageKind.injuryRelief => '疗伤调理',
       ItemUsageKind.equipmentEnhancement => '装备强化',
       ItemUsageKind.equipmentGuarantee => '强化保底',
+      ItemUsageKind.injuryRecovery => '疗伤整备',
       ItemUsageKind.shopPurchaseCurrency => '商店采买',
       ItemUsageKind.islandUpgradeCurrency => '桃花岛升级',
       ItemUsageKind.islandBuildingUpgrade => '建筑升级',
@@ -604,9 +604,11 @@ class UiStrings {
   static String itemUseExpResult(String name, int layersGained) =>
       layersGained > 0 ? '服下「$name」，境界精进 $layersGained 层。' : '服下「$name」，内息渐长。';
   static String itemUseScrollResult(String name) => '研读「$name」，已了然于胸，得此绝学。';
+  static String itemUseRecoveryResult(String name, String targetName) =>
+      '给$targetName服下「$name」，伤势渐平。';
   static String itemUseAlreadyKnown(String name) => '「$name」所载之招，早已了然于胸。';
-  static String itemUseInjuryRelieved(String name) => '服下「$name」，经脉伤势稍平。';
-  static String itemUseNoEffect(String name) => '「$name」暂且收好，眼下无需疗伤。';
+  static String itemUseNoEffect(String name, String targetName) =>
+      '$targetName此刻无需服用「$name」。';
   static const String itemUseFailed = '此物此刻无法使用。';
   static const String itemUseDismiss = '收下';
 

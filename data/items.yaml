@@ -1,14 +1,16 @@
 # 道具效果定义（材料经济 P2）。
-# 经验丹 layer_fraction / 秘籍 unlockSkillId 是道具用途真相源；
+# 经验丹 layer_fraction / 秘籍 unlockSkillId / 疗伤 recovery 字段是道具用途真相源；
 # 道具显示名 name 集中此处（3 档经验丹共享 ItemType.jingYanDan，EnumL10n 分不开）。
 # layer_fraction 表示使用时推进当前层修炼度的比例（0.0–1.0），由消费层乘以当层所需经验计算实际经验值。
 # 字段：
 #   defId         : 对应 InventoryItem.defId
-#   type          : ItemType 枚举名（jingYanDan / techniqueScroll）
+#   type          : ItemType 枚举名（jingYanDan / techniqueScroll / miscMaterial 等）
 #   name          : 道具显示名（文案）
-#   layer_fraction: jingYanDan 专用，使用时推进当前境界层所需经验的比例（0.0–1.0）
-#   unlockSkillId : techniqueScroll 专用，使用时解锁的秘传招 id
-#   heal_injury_hours / clear_light_injury_stacks: 疗伤调理品专用
+#   layer_fraction       : jingYanDan 专用，使用时推进当前境界层所需经验的比例（0.0–1.0）
+#   unlockSkillId        : techniqueScroll 专用，使用时解锁的秘传招 id
+#   injury_heal_hours    : 疗伤类物品专用，减少重伤疗养剩余小时
+#   residue_heal_hours   : 疗伤类物品专用，减少心魔余毒剩余小时
+#   clear_light_injury   : 疗伤类物品专用，是否清除轻伤层数
 items:
   - { defId: item_jingyandan_small, type: jingYanDan, name: 凝神丹, layer_fraction: 0.2 }
   - { defId: item_jingyandan_mid,   type: jingYanDan, name: 培元丹, layer_fraction: 0.5 }
@@ -26,7 +28,7 @@ items:
   - { defId: item_yaocao,        type: miscMaterial,  name: 药草 }
   - { defId: item_mucai,         type: miscMaterial,  name: 木材 }
   - { defId: item_lingquanshui,  type: miscMaterial,  name: 灵泉水 }
-  - { defId: item_liaoshangdan,  type: miscMaterial,  name: 疗伤丹, heal_injury_hours: 4.0, clear_light_injury_stacks: true }
+  - { defId: item_liaoshangdan,  type: miscMaterial,  name: 疗伤丹, injury_heal_hours: 4.0, residue_heal_hours: 2.0, clear_light_injury: true }
   - { defId: item_duancai,       type: miscMaterial,  name: 锻材 }
   - { defId: item_kaifeng_fucai, type: miscMaterial,  name: 开锋辅材 }
   - { defId: item_xingnang_buji, type: miscMaterial,  name: 行囊补给 }

@@ -765,9 +765,11 @@ class GameRepository {
           '红线:道具 ${d.defId} layer_fraction $frac 应 ∈ (0.0, 1.0]',
         );
       }
-      final healHours = d.healInjuryHours;
-      if (healHours != null && healHours <= 0) {
-        throw StateError('红线:道具 ${d.defId} heal_injury_hours $healHours 应 > 0');
+      if (d.injuryHealHours < 0 || d.residueHealHours < 0) {
+        throw StateError(
+          '红线:道具 ${d.defId} recovery hours 不可为负 '
+          '(injury=${d.injuryHealHours}, residue=${d.residueHealHours})',
+        );
       }
     }
     for (final map in numbers.retreat.maps) {
