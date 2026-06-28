@@ -690,11 +690,16 @@ class UiStrings {
   static const String inventoryFilterRealmLocked = '境界未达';
   static const String inventoryFilterSlotAll = '类型：全部';
   static const String inventoryFilterTierAll = '阶位：全部';
+  static const String inventoryFilterSchoolAll = '流派：全部';
+  static const String inventoryFilterSchoolNone = '流派：无';
   static const String inventoryFilterOwnershipAll = '状态：全部';
   static String inventoryFilterSlotLabel(String name) => '类型：$name';
   static String inventoryFilterTierLabel(String name) => '阶位：$name';
+  static String inventoryFilterSchoolLabel(String name) => '流派：$name';
   static const String inventoryFilterFree = '自由';
   static const String inventoryFilterHeritage = '师承遗物';
+  static const String inventoryFilterLocked = '已锁定';
+  static const String inventoryFilterProtected = '受保护';
   static const String inventorySortTierDesc = '阶位高→低';
   static const String inventorySortTierAsc = '阶位低→高';
   static const String inventorySortEnhanceDesc = '强化高→低';
