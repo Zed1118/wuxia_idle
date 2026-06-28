@@ -53,8 +53,9 @@ class _EquipSlotDialogState extends ConsumerState<EquipSlotDialog> {
   Future<void> _equip(Equipment eq) async {
     final isar = ref.read(isarProvider);
     if (isar == null) return;
-    final outcome = await EquipmentService(isar: isar)
-        .equip(characterId: widget.character.id, equipmentId: eq.id);
+    final outcome = await EquipmentService(
+      isar: isar,
+    ).equip(characterId: widget.character.id, equipmentId: eq.id);
     if (!mounted) return;
     if (outcome == EquipOutcome.lockedByRealm) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -62,6 +63,13 @@ class _EquipSlotDialogState extends ConsumerState<EquipSlotDialog> {
       );
       return;
     }
+    if (outcome == EquipOutcome.protectedCurrentEquipment) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.equipProtectedCurrent)),
+      );
+      return;
+    }
+    if (outcome != EquipOutcome.success) return;
     _invalidate(touched: eq.id);
     Navigator.pop(context);
   }
@@ -69,8 +77,9 @@ class _EquipSlotDialogState extends ConsumerState<EquipSlotDialog> {
   Future<void> _unequip() async {
     final isar = ref.read(isarProvider);
     if (isar == null) return;
-    await EquipmentService(isar: isar)
-        .unequip(characterId: widget.character.id, slot: widget.slot);
+    await EquipmentService(
+      isar: isar,
+    ).unequip(characterId: widget.character.id, slot: widget.slot);
     if (!mounted) return;
     _invalidate();
     Navigator.pop(context);
@@ -123,8 +132,10 @@ class _EquipSlotDialogState extends ConsumerState<EquipSlotDialog> {
             ),
             error: (e, _) => Padding(
               padding: const EdgeInsets.all(16),
-              child:
-                  Text('$e', style: const TextStyle(color: WuxiaColors.hpLow)),
+              child: Text(
+                '$e',
+                style: const TextStyle(color: WuxiaColors.hpLow),
+              ),
             ),
             data: _content,
           ),
@@ -257,17 +268,15 @@ class _Header extends StatelessWidget {
   }
 
   Widget _iconBtn(IconData icon, String tip, VoidCallback? onTap) => IconButton(
-        icon: Icon(
-          icon,
-          size: 20,
-          color: onTap == null
-              ? WuxiaColors.textMuted
-              : WuxiaColors.textSecondary,
-        ),
-        tooltip: tip,
-        onPressed: onTap,
-        visualDensity: VisualDensity.compact,
-      );
+    icon: Icon(
+      icon,
+      size: 20,
+      color: onTap == null ? WuxiaColors.textMuted : WuxiaColors.textSecondary,
+    ),
+    tooltip: tip,
+    onPressed: onTap,
+    visualDensity: VisualDensity.compact,
+  );
 }
 
 class _CandidateList extends StatelessWidget {
@@ -315,8 +324,11 @@ class _CandidateList extends StatelessWidget {
         final ownerId = eq.ownerCharacterId;
         final wornByOther =
             ownerId != null && ownerId != characterId && !isCurrent;
-        final cmp =
-            equipmentFullDiff(current: current, candidate: eq, numbers: n);
+        final cmp = equipmentFullDiff(
+          current: current,
+          candidate: eq,
+          numbers: n,
+        );
         return Material(
           // 选中高亮用更亮的 inkPanelTop(对话框底已是 panel,同色会看不见)。
           color: isSelected ? WuxiaColors.inkPanelTop : Colors.transparent,
@@ -344,7 +356,8 @@ class _CandidateList extends StatelessWidget {
                     ),
                     children: [
                       TextSpan(
-                        text: '${EnumL10n.equipmentTier(eq.tier)} · '
+                        text:
+                            '${EnumL10n.equipmentTier(eq.tier)} · '
                             '${UiStrings.enhanceLevel(eq.enhanceLevel)}'
                             '${isCurrent ? "  ${UiStrings.currentEquippedBadge}" : ""}',
                       ),
@@ -391,18 +404,20 @@ class _MiniDiff extends StatelessWidget {
       final c = r.direction == StatDirection.up
           ? WuxiaColors.hpHigh
           : r.direction == StatDirection.down
-              ? WuxiaColors.hpLow
-              : WuxiaColors.textMuted;
+          ? WuxiaColors.hpLow
+          : WuxiaColors.textMuted;
       final arrow = r.direction == StatDirection.up
           ? '↑'
           : r.direction == StatDirection.down
-              ? '↓'
-              : '·';
+          ? '↓'
+          : '·';
       final tag = r.label.substring(2, 3); // 攻/血/速
-      spans.add(TextSpan(
-        text: '$tag$arrow${delta.abs()}  ',
-        style: TextStyle(color: c, fontSize: 11),
-      ));
+      spans.add(
+        TextSpan(
+          text: '$tag$arrow${delta.abs()}  ',
+          style: TextStyle(color: c, fontSize: 11),
+        ),
+      );
     }
     return Text.rich(TextSpan(children: spans));
   }
@@ -413,14 +428,14 @@ class _ComparePlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            UiStrings.equipSlotDialogPickHint,
-            style: TextStyle(color: WuxiaColors.textMuted),
-          ),
-        ),
-      );
+    child: Padding(
+      padding: EdgeInsets.all(24),
+      child: Text(
+        UiStrings.equipSlotDialogPickHint,
+        style: TextStyle(color: WuxiaColors.textMuted),
+      ),
+    ),
+  );
 }
 
 class _ComparePane extends StatelessWidget {
@@ -437,8 +452,11 @@ class _ComparePane extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final n = GameRepository.instance.numbers;
-    final cmp =
-        equipmentFullDiff(current: current, candidate: candidate, numbers: n);
+    final cmp = equipmentFullDiff(
+      current: current,
+      candidate: candidate,
+      numbers: n,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -459,8 +477,7 @@ class _ComparePane extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                for (final r in cmp.numericRows)
-                  _numericRow(r, cmp.isBaseline),
+                for (final r in cmp.numericRows) _numericRow(r, cmp.isBaseline),
                 for (final r in cmp.categoryRows)
                   _categoryRow(r, cmp.isBaseline),
                 _forgingRows(cmp),
@@ -488,8 +505,8 @@ class _ComparePane extends StatelessWidget {
     final c = r.direction == StatDirection.up
         ? WuxiaColors.hpHigh
         : r.direction == StatDirection.down
-            ? WuxiaColors.hpLow
-            : WuxiaColors.textPrimary;
+        ? WuxiaColors.hpLow
+        : WuxiaColors.textPrimary;
     final right = baseline || r.currentValue == null
         ? '${r.candidateValue}'
         : '${r.currentValue} ▸ ${r.candidateValue}';
@@ -500,8 +517,10 @@ class _ComparePane extends StatelessWidget {
           Expanded(
             child: Text(
               r.label,
-              style:
-                  const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+              style: const TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 12,
+              ),
             ),
           ),
           Text(
@@ -528,8 +547,10 @@ class _ComparePane extends StatelessWidget {
           Expanded(
             child: Text(
               r.label,
-              style:
-                  const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+              style: const TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 12,
+              ),
             ),
           ),
           Text(

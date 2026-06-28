@@ -1,5 +1,6 @@
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
+import '../../equipment/domain/equipment_disposal.dart';
 import '../../equipment/domain/equipment_slot_occupancy.dart';
 
 enum InventorySlotFilter { all, weapon, armor, accessory }
@@ -66,20 +67,32 @@ List<Equipment> organizeInventoryEquipments(
 /// && 非师承遗物（[Equipment.isLineageHeritage]）&& 非玩家锁定（[Equipment.isLocked]）。
 bool isBulkDisposalCandidate(
   Equipment equipment,
-  Set<int> equippedEquipmentIds,
-) {
-  return !isEquipmentEquippedBySlot(equipment, equippedEquipmentIds) &&
-      !equipment.isLineageHeritage &&
-      !equipment.isLocked;
-}
+  Set<int> equippedEquipmentIds, {
+  Set<int> activeFormationEquipmentIds = const {},
+  EquipmentProtectionPolicy policy = EquipmentProtectionPolicy.defaultPolicy,
+}) => !isEquipmentProtected(
+  equipment,
+  equippedEquipmentIds: equippedEquipmentIds,
+  activeFormationEquipmentIds: activeFormationEquipmentIds,
+  policy: policy,
+);
 
 BulkDisposalPlan buildBulkDisposalPlan(
   Iterable<Equipment> equipments,
-  Set<int> equippedEquipmentIds,
-) {
+  Set<int> equippedEquipmentIds, {
+  Set<int> activeFormationEquipmentIds = const {},
+  EquipmentProtectionPolicy policy = EquipmentProtectionPolicy.defaultPolicy,
+}) {
   final byTier = <EquipmentTier, List<Equipment>>{};
   for (final eq in equipments) {
-    if (!isBulkDisposalCandidate(eq, equippedEquipmentIds)) continue;
+    if (!isBulkDisposalCandidate(
+      eq,
+      equippedEquipmentIds,
+      activeFormationEquipmentIds: activeFormationEquipmentIds,
+      policy: policy,
+    )) {
+      continue;
+    }
     byTier.putIfAbsent(eq.tier, () => []).add(eq);
   }
   for (final items in byTier.values) {

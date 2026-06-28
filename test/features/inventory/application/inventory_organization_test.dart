@@ -101,7 +101,7 @@ void main() {
   });
 
   group('bulk disposal candidates', () {
-    test('排除已装备(槽位真值源)、师承遗物和锁定装备', () {
+    test('排除已装备(槽位真值源)、师承遗物、锁定和高阶装备', () {
       final free = eq(
         id: 1,
         tier: EquipmentTier.xunChang,
@@ -124,6 +124,11 @@ void main() {
         slot: EquipmentSlot.weapon,
         isLocked: true,
       );
+      final high = eq(
+        id: 5,
+        tier: EquipmentTier.zhongQi,
+        slot: EquipmentSlot.weapon,
+      );
 
       // 已装备走槽位真值源：equipped(id=2) 在出战槽位集合内。
       final equippedIds = {2};
@@ -131,19 +136,23 @@ void main() {
       expect(isBulkDisposalCandidate(equipped, equippedIds), isFalse);
       expect(isBulkDisposalCandidate(heritage, equippedIds), isFalse);
       expect(isBulkDisposalCandidate(locked, equippedIds), isFalse);
+      expect(isBulkDisposalCandidate(high, equippedIds), isFalse);
     });
 
     test('按品阶建立候选计划，仅统计可批量处理装备', () {
-      final plan = buildBulkDisposalPlan([
-        eq(id: 1, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
-        eq(id: 2, tier: EquipmentTier.liQi, slot: EquipmentSlot.armor),
-        eq(id: 3, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
-        eq(id: 4, tier: EquipmentTier.baoWu, slot: EquipmentSlot.weapon),
-      ], {3});
+      final plan = buildBulkDisposalPlan(
+        [
+          eq(id: 1, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
+          eq(id: 2, tier: EquipmentTier.liQi, slot: EquipmentSlot.armor),
+          eq(id: 3, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
+          eq(id: 4, tier: EquipmentTier.baoWu, slot: EquipmentSlot.weapon),
+        ],
+        {3},
+      );
 
-      expect(plan.tiers, [EquipmentTier.baoWu, EquipmentTier.liQi]);
+      expect(plan.tiers, [EquipmentTier.liQi]);
       expect(plan.itemsFor(EquipmentTier.liQi).map((e) => e.id), [2, 1]);
-      expect(plan.itemsFor(EquipmentTier.baoWu).map((e) => e.id), [4]);
+      expect(plan.itemsFor(EquipmentTier.baoWu), isEmpty);
     });
   });
 }

@@ -202,11 +202,12 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
     final color = tierColorForEquipment(widget.def.tier);
     final highTreasure = isHighTreasureTier(widget.def.tier);
     final equippedIds = _watchActiveEquippedIds(ref);
-    final isEquipped = isEquipmentEquippedBySlot(widget.equipment, equippedIds);
-    final canDispose =
-        !isEquipped &&
-        !widget.equipment.isLineageHeritage &&
-        !widget.equipment.isLocked;
+    final canDispose = !isEquipmentProtected(
+      widget.equipment,
+      equippedEquipmentIds: equippedIds,
+      activeFormationEquipmentIds: equippedIds,
+      policy: defaultEquipmentProtectionPolicy(),
+    );
     final repo = GameRepository.instanceOrNull;
     final sources =
         repo == null || !repo.equipmentDefs.containsKey(widget.def.id)

@@ -99,9 +99,15 @@ class BulkDisposalDialog extends ConsumerWidget {
     List<Equipment> list,
   ) {
     final equippedIds = _watchActiveEquippedIds(ref);
-    final protected = _ProtectionCounts.from(list, equippedIds);
+    final policy = defaultEquipmentProtectionPolicy();
+    final protected = _ProtectionCounts.from(list, equippedIds, policy);
     // 按品阶分桶（不在槽位 && 非师承 && 非锁定），高品阶在前。
-    final plan = buildBulkDisposalPlan(list, equippedIds);
+    final plan = buildBulkDisposalPlan(
+      list,
+      equippedIds,
+      activeFormationEquipmentIds: equippedIds,
+      policy: policy,
+    );
 
     if (plan.isEmpty) {
       return Column(
@@ -266,27 +272,53 @@ class _ProtectionCounts {
     required this.locked,
     required this.equipped,
     required this.heritage,
+    required this.protected,
   });
 
   final int locked;
   final int equipped;
   final int heritage;
+  final int protected;
 
-  bool get isEmpty => locked == 0 && equipped == 0 && heritage == 0;
+  bool get isEmpty =>
+      locked == 0 && equipped == 0 && heritage == 0 && protected == 0;
 
-  factory _ProtectionCounts.from(List<Equipment> list, Set<int> equippedIds) {
+  factory _ProtectionCounts.from(
+    List<Equipment> list,
+    Set<int> equippedIds,
+    EquipmentProtectionPolicy policy,
+  ) {
     var locked = 0;
     var equipped = 0;
     var heritage = 0;
+    var protected = 0;
     for (final eq in list) {
-      if (eq.isLocked) locked++;
-      if (isEquipmentEquippedBySlot(eq, equippedIds)) equipped++;
-      if (eq.isLineageHeritage) heritage++;
+      final reason = equipmentProtectionReason(
+        eq,
+        equippedEquipmentIds: equippedIds,
+        activeFormationEquipmentIds: equippedIds,
+        policy: policy,
+      );
+      switch (reason) {
+        case EquipmentProtectionReason.locked:
+          locked++;
+        case EquipmentProtectionReason.currentFormation:
+        case EquipmentProtectionReason.equipped:
+          equipped++;
+        case EquipmentProtectionReason.lineageHeritage:
+          heritage++;
+        case EquipmentProtectionReason.highTier:
+        case EquipmentProtectionReason.protectedSource:
+          protected++;
+        case null:
+          break;
+      }
     }
     return _ProtectionCounts(
       locked: locked,
       equipped: equipped,
       heritage: heritage,
+      protected: protected,
     );
   }
 }
@@ -308,6 +340,7 @@ class _ProtectedSummary extends StatelessWidget {
             locked: counts.locked,
             equipped: counts.equipped,
             heritage: counts.heritage,
+            protected: counts.protected,
           ),
           style: const TextStyle(
             color: WuxiaColors.textMuted,

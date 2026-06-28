@@ -4,6 +4,8 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
+import '../../../core/domain/save_data.dart';
+import '../../../shared/strings.dart';
 import '../domain/equipment_disposal.dart';
 import '../domain/equipment_slot_occupancy.dart';
 
@@ -39,9 +41,22 @@ enum DisposalOutcome {
   /// 拒绝：玩家锁定保护（isLocked）。
   rejectedLocked,
 
+  /// 拒绝：高阶/稀有/剧情来源等保护规则。
+  rejectedProtected,
+
   /// 拒绝：装备不存在（id 无对应行）。
   notFound,
 }
+
+EquipmentProtectionPolicy defaultEquipmentProtectionPolicy() =>
+    const EquipmentProtectionPolicy(
+      protectedObtainedFrom: {
+        UiStrings.dropSourceRareBonus,
+        UiStrings.dropSourceMassBattleMerit,
+        UiStrings.dropSourceInnerDemonReward,
+        UiStrings.dropSourceAscensionReward,
+      },
+    );
 
 /// 装备出售/分解 service（2026-06-26 用户拍板推翻「永久收藏品/只买不卖」红线）。
 ///
@@ -50,10 +65,16 @@ enum DisposalOutcome {
 ///         师承遗物（[Equipment.isLineageHeritage]）/
 ///         玩家锁定（[Equipment.isLocked]）不可处置。
 class EquipmentDisposalService {
-  EquipmentDisposalService({required this.isar, required this.config});
+  EquipmentDisposalService({
+    required this.isar,
+    required this.config,
+    EquipmentProtectionPolicy? protectionPolicy,
+  }) : protectionPolicy =
+           protectionPolicy ?? defaultEquipmentProtectionPolicy();
 
   final Isar isar;
   final EquipmentDisposalConfig config;
+  final EquipmentProtectionPolicy protectionPolicy;
 
   /// 出售单件：删装备 + 入银两。
   Future<DisposalOutcome> sell(int equipmentId) => isar.writeTxn(() async {
@@ -140,23 +161,55 @@ class EquipmentDisposalService {
   Future<List<Equipment>> _disposableOfTier(EquipmentTier tier) async {
     final all = await isar.equipments.filter().tierEqualTo(tier).findAll();
     final equippedIds = await _equippedEquipmentIds();
-    return all.where((e) => isEquipmentDisposable(e, equippedIds)).toList();
+    final activeEquippedIds = await _activeFormationEquipmentIds();
+    return all
+        .where(
+          (e) => isEquipmentDisposable(
+            e,
+            equippedIds,
+            activeFormationEquipmentIds: activeEquippedIds,
+            policy: protectionPolicy,
+          ),
+        )
+        .toList();
   }
 
   /// 前置守卫：null = 可处置；否则返回拒绝/未找到结果。
   Future<DisposalOutcome?> _guard(Equipment? eq) async {
     if (eq == null) return DisposalOutcome.notFound;
-    if (isEquipmentEquippedBySlot(eq, await _equippedEquipmentIds())) {
+    final reason = equipmentProtectionReason(
+      eq,
+      equippedEquipmentIds: await _equippedEquipmentIds(),
+      activeFormationEquipmentIds: await _activeFormationEquipmentIds(),
+      policy: protectionPolicy,
+    );
+    if (reason == EquipmentProtectionReason.currentFormation ||
+        reason == EquipmentProtectionReason.equipped) {
       return DisposalOutcome.rejectedEquipped;
     }
-    if (eq.isLineageHeritage) return DisposalOutcome.rejectedHeritage;
-    if (eq.isLocked) return DisposalOutcome.rejectedLocked;
+    if (reason == EquipmentProtectionReason.lineageHeritage) {
+      return DisposalOutcome.rejectedHeritage;
+    }
+    if (reason == EquipmentProtectionReason.locked) {
+      return DisposalOutcome.rejectedLocked;
+    }
+    if (reason != null) return DisposalOutcome.rejectedProtected;
     return null;
   }
 
   Future<Set<int>> _equippedEquipmentIds() async {
     final characters = await isar.characters.where().findAll();
     return equippedEquipmentIdsForCharacters(characters);
+  }
+
+  Future<Set<int>> _activeFormationEquipmentIds() async {
+    final save = await isar.saveDatas.get(0);
+    final activeIds = save?.activeCharacterIds.toSet() ?? const <int>{};
+    if (activeIds.isEmpty) return const {};
+    final characters = await isar.characters.where().findAll();
+    return equippedEquipmentIdsForCharacters(
+      characters.where((c) => activeIds.contains(c.id)),
+    );
   }
 
   /// upsert（仿 ShopService 76-89 体例）：已有行累加，无则新建。须在 [writeTxn] 内调。
@@ -182,7 +235,14 @@ class EquipmentDisposalService {
 
 /// 装备是否可被出售/分解。供 service 与 UI 批量入口共用，避免筛选漂移。
 /// 已装备走槽位真值源（[isEquipmentEquippedBySlot]），不再看 ownerCharacterId。
-bool isEquipmentDisposable(Equipment e, Set<int> equippedEquipmentIds) =>
-    !isEquipmentEquippedBySlot(e, equippedEquipmentIds) &&
-    !e.isLineageHeritage &&
-    !e.isLocked;
+bool isEquipmentDisposable(
+  Equipment e,
+  Set<int> equippedEquipmentIds, {
+  Set<int> activeFormationEquipmentIds = const {},
+  EquipmentProtectionPolicy policy = EquipmentProtectionPolicy.defaultPolicy,
+}) => !isEquipmentProtected(
+  e,
+  equippedEquipmentIds: equippedEquipmentIds,
+  activeFormationEquipmentIds: activeFormationEquipmentIds,
+  policy: policy,
+);

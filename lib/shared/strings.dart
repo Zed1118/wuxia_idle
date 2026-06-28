@@ -217,6 +217,7 @@ class UiStrings {
   static const String equipQuickReplace = '更换装备';
   static const String equipQuickViewLore = '查看典故';
   static const String equipLockedByRealm = '境界不足,无法装备(三系锁死)';
+  static const String equipProtectedCurrent = '当前装备受保护,请先卸下或解锁';
   // 装备槽对话框(2026-06-26 · 一步到位 + 全量对比两栏)。
   static const String equipSlotDialogConfirm = '确认更换';
   static const String equipSlotDialogEquip = '装备';
@@ -632,11 +633,13 @@ class UiStrings {
     required int locked,
     required int equipped,
     required int heritage,
+    int protected = 0,
   }) {
     final parts = <String>[
       if (locked > 0) '锁定 $locked 件',
       if (equipped > 0) '装备中 $equipped 件',
       if (heritage > 0) '师承遗物 $heritage 件',
+      if (protected > 0) '高阶/剧情 $protected 件',
     ];
     return parts.isEmpty ? '' : '已排除：${parts.join(' / ')}。';
   }
