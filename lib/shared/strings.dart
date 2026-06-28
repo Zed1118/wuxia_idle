@@ -239,9 +239,35 @@ class UiStrings {
 
   /// balance T3：无法获取祖师经验信息，动态标价商品不可购买。
   static const String shopPricingUnavailable = '当前无法定价，请稍候';
+  static const String shopFilterAll = '全部';
+  static const String shopFilterAffordable = '可买';
+  static const String shopFilterNeedSaving = '需攒钱';
+  static const String shopFilterWatch = '关注';
+  static const String shopStatusAffordable = '可买';
+  static const String shopStatusPricingPending = '待定价';
+  static const String shopStatusDynamicPrice = '随境界标价';
+  static const String shopWatchHint = '值得关注';
   static const String shopCategoryMaterial = '炼器材料';
+  static const String shopCategoryPill = '药品';
+  static const String shopCategoryEquipment = '装备';
+  static const String shopCategoryTechniqueClue = '心法线索';
+  static const String shopCategoryOther = '杂项';
   static String silverBalanceLabel(int n) => '银两 $n';
   static String shopItemPrice(int p) => '$p 两';
+  static String shopFilterLabel(String label, int count) => '$label $count';
+  static String shopNeedSilver(int n) => '还差 $n 两';
+  static String shopCategorySummary({
+    required int total,
+    required int affordable,
+    required int needSaving,
+  }) => '$total 件 · $affordable 可买 · $needSaving 需攒钱';
+  static String shopItemPurpose(String itemDefId) => switch (itemDefId) {
+    'item_mojianshi' => '强化兵刃的常用材料，适合先备几块。',
+    'item_xinxuejiejing' => '强化受挫后积攒的硬材料，后段开销更紧。',
+    'item_jingyandan_small' => '补一截境界经验，适合临近升层时补足。',
+    'item_jingyandan_mid' => '补更多境界经验，标价随当前境界同步上涨。',
+    _ => '江湖行走备用之物。',
+  };
 
   // ─── 江湖恩怨 + 声望(P1.2 §12.1+§12.2 GDD)──────────────────────────────
   static const String mainMenuJianghu = '江湖恩怨';
