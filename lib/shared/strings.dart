@@ -1,3 +1,4 @@
+import '../core/domain/item_source.dart';
 import '../core/domain/item_usage.dart';
 
 /// UI 静态中文标签（phase1_tasks.md T14）。
@@ -607,6 +608,32 @@ class UiStrings {
     final labels = <String>{for (final usage in usages) itemUsageLabel(usage)}
       ..remove('');
     return labels.join(' / ');
+  }
+
+  /// 物料主要来源摘要。空 = 不显。
+  static String materialSourceSummary(List<ItemSource> sources) {
+    final labels = <String>{
+      for (final source in sources) itemSourceLabel(source),
+    }..remove('');
+    if (labels.isEmpty) return '';
+    return '$materialSourcePrefix${labels.take(6).join(' / ')}';
+  }
+
+  static const String materialSourcePrefix = '主要来源：';
+
+  /// 单项来源标签（集中中文 sink；业务层只返回 enum）。
+  static String itemSourceLabel(ItemSource source) {
+    return switch (source.kind) {
+      ItemSourceKind.mainline => '主线掉落',
+      ItemSourceKind.stage => '关卡掉落',
+      ItemSourceKind.tower => '爬塔奖励',
+      ItemSourceKind.seclusion => '闭关所得',
+      ItemSourceKind.shop => '江湖商店',
+      ItemSourceKind.equipmentDisassembly => '装备分解',
+      ItemSourceKind.enhancementFailure => '强化失败',
+      ItemSourceKind.islandSource => '桃花岛采集',
+      ItemSourceKind.islandRecipe => '桃花岛加工',
+    };
   }
 
   /// 单项用途标签（集中中文 sink；业务层只返回 enum）。
