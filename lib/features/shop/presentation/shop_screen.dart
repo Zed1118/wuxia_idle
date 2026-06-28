@@ -37,6 +37,8 @@ class ShopScreen extends ConsumerStatefulWidget {
 }
 
 class _ShopScreenState extends ConsumerState<ShopScreen> {
+  _ShopShelfFilter _filter = _ShopShelfFilter.all;
+
   @override
   Widget build(BuildContext context) {
     final silverAsync = ref.watch(silverBalanceProvider);
@@ -74,10 +76,17 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     List<ShopItemDef> items,
     int? founderEtl,
   ) {
+    final allEntries = items
+        .map((def) => _ShopShelfEntry.fromDef(def, silver, founderEtl))
+        .toList();
+    final visibleEntries = allEntries
+        .where((entry) => _filter.includes(entry))
+        .toList();
+
     // 按 category 分组
-    final byCategory = <String, List<ShopItemDef>>{};
-    for (final def in items) {
-      byCategory.putIfAbsent(def.category, () => []).add(def);
+    final byCategory = <String, List<_ShopShelfEntry>>{};
+    for (final entry in visibleEntries) {
+      byCategory.putIfAbsent(entry.def.category, () => []).add(entry);
     }
 
     return ListView(
@@ -86,13 +95,18 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         // ── 货币顶栏 ───────────────────────────────────────────────────────
         _SilverBalanceBar(silver: silver),
         const SizedBox(height: 16),
+        _ShelfFilterBar(
+          selected: _filter,
+          entries: allEntries,
+          onSelected: (filter) => setState(() => _filter = filter),
+        ),
+        const SizedBox(height: 16),
         // ── 分类货架面板 ───────────────────────────────────────────────────
         for (final entry in byCategory.entries) ...[
           _CategoryPanel(
             category: entry.key,
-            defs: entry.value,
+            entries: entry.value,
             silver: silver,
-            founderEtl: founderEtl,
             onBuy: (def) => _handleBuy(context, def, silver, founderEtl),
           ),
           const SizedBox(height: 16),
@@ -154,9 +168,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       final msg = result.reason == PurchaseFailReason.pricingUnavailable
           ? UiStrings.shopPricingUnavailable
           : UiStrings.shopInsufficientSilver;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
   }
 }
@@ -174,7 +186,11 @@ class _SilverBalanceBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          const Icon(Icons.monetization_on_outlined, color: WuxiaUi.ink, size: 20),
+          const Icon(
+            Icons.monetization_on_outlined,
+            color: WuxiaUi.ink,
+            size: 20,
+          ),
           const SizedBox(width: 8),
           Text(
             UiStrings.silverBalanceLabel(silver),
@@ -191,27 +207,164 @@ class _SilverBalanceBar extends StatelessWidget {
   }
 }
 
+// ── 货架筛选 ────────────────────────────────────────────────────────────────
+
+enum _ShopShelfFilter { all, affordable, needSaving, watch }
+
+extension _ShopShelfFilterText on _ShopShelfFilter {
+  String get label => switch (this) {
+    _ShopShelfFilter.all => UiStrings.shopFilterAll,
+    _ShopShelfFilter.affordable => UiStrings.shopFilterAffordable,
+    _ShopShelfFilter.needSaving => UiStrings.shopFilterNeedSaving,
+    _ShopShelfFilter.watch => UiStrings.shopFilterWatch,
+  };
+
+  bool includes(_ShopShelfEntry entry) => switch (this) {
+    _ShopShelfFilter.all => true,
+    _ShopShelfFilter.affordable => entry.canAfford,
+    _ShopShelfFilter.needSaving => entry.needsSaving,
+    _ShopShelfFilter.watch => entry.needsAttention,
+  };
+}
+
+class _ShopShelfEntry {
+  const _ShopShelfEntry({
+    required this.def,
+    required this.effectivePrice,
+    required this.canAfford,
+  });
+
+  factory _ShopShelfEntry.fromDef(
+    ShopItemDef def,
+    int silver,
+    int? founderEtl,
+  ) {
+    final effectivePrice = (def.isDynamicPrice && founderEtl == null)
+        ? null
+        : ShopService.effectivePrice(def, founderEtl ?? 0);
+    return _ShopShelfEntry(
+      def: def,
+      effectivePrice: effectivePrice,
+      canAfford: effectivePrice != null && silver >= effectivePrice,
+    );
+  }
+
+  final ShopItemDef def;
+  final int? effectivePrice;
+  final bool canAfford;
+
+  bool get needsSaving => effectivePrice != null && !canAfford;
+  bool get pricingPending => effectivePrice == null;
+  bool get needsAttention =>
+      needsSaving || pricingPending || def.isDynamicPrice;
+}
+
+class _ShelfFilterBar extends StatelessWidget {
+  const _ShelfFilterBar({
+    required this.selected,
+    required this.entries,
+    required this.onSelected,
+  });
+
+  final _ShopShelfFilter selected;
+  final List<_ShopShelfEntry> entries;
+  final ValueChanged<_ShopShelfFilter> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return PaperPanel(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final filter in _ShopShelfFilter.values)
+            _ShelfFilterChip(
+              label: UiStrings.shopFilterLabel(
+                filter.label,
+                entries.where(filter.includes).length,
+              ),
+              selected: selected == filter,
+              onTap: () => onSelected(filter),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShelfFilterChip extends StatelessWidget {
+  const _ShelfFilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(4),
+        onTap: onTap,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: selected
+                ? WuxiaUi.jiang.withValues(alpha: 0.18)
+                : WuxiaUi.paper.withValues(alpha: 0.26),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(
+              color: selected
+                  ? WuxiaUi.jiang
+                  : WuxiaUi.ink.withValues(alpha: 0.35),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: selected ? WuxiaUi.jiang : WuxiaUi.ink2,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ── 分类货架面板 ──────────────────────────────────────────────────────────────
 
 class _CategoryPanel extends StatelessWidget {
   const _CategoryPanel({
     required this.category,
-    required this.defs,
+    required this.entries,
     required this.silver,
-    required this.founderEtl,
     required this.onBuy,
   });
 
   final String category;
-  final List<ShopItemDef> defs;
+  final List<_ShopShelfEntry> entries;
   final int silver;
-  /// 祖师单层所需经验（动态标价用）。null = founder 未加载或不存在。
-  final int? founderEtl;
   final void Function(ShopItemDef def) onBuy;
 
   String _categoryLabel(String cat) {
     return switch (cat) {
       'material' => UiStrings.shopCategoryMaterial,
+      'pill' => UiStrings.shopCategoryPill,
+      'equipment' => UiStrings.shopCategoryEquipment,
+      'technique_clue' => UiStrings.shopCategoryTechniqueClue,
+      'techniqueClue' => UiStrings.shopCategoryTechniqueClue,
+      'clue' => UiStrings.shopCategoryTechniqueClue,
+      'other' => UiStrings.shopCategoryOther,
       _ => cat,
     };
   }
@@ -224,34 +377,44 @@ class _CategoryPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // 分类标题
-          Text(
-            _categoryLabel(category),
-            style: const TextStyle(
-              color: WuxiaColors.resultHighlight,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 2,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _categoryLabel(category),
+                  style: const TextStyle(
+                    color: WuxiaColors.resultHighlight,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ),
+              Text(
+                UiStrings.shopCategorySummary(
+                  total: entries.length,
+                  affordable: entries.where((entry) => entry.canAfford).length,
+                  needSaving: entries
+                      .where((entry) => entry.needsSaving)
+                      .length,
+                ),
+                style: const TextStyle(
+                  color: WuxiaUi.muted,
+                  fontSize: 12,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           // 商品列表（Column，每 tile 包 IntrinsicHeight 守滚动体例）
-          for (final def in defs)
-            Builder(
-              builder: (context) {
-                // I-1 + M-1：ep=null 表示动态价商品且 founder 未就绪（无法定价）。
-                // 避免重复调用 effectivePrice，并防止显示「0 两」误导。
-                final ep = (def.isDynamicPrice && founderEtl == null)
-                    ? null
-                    : ShopService.effectivePrice(def, founderEtl ?? 0);
-                return IntrinsicHeight(
-                  child: _ShopItemTile(
-                    def: def,
-                    effectivePrice: ep,
-                    canAfford: ep != null && silver >= ep,
-                    onBuy: () => onBuy(def),
-                  ),
-                );
-              },
+          for (final entry in entries)
+            IntrinsicHeight(
+              child: _ShopItemTile(
+                entry: entry,
+                silver: silver,
+                onBuy: () => onBuy(entry.def),
+              ),
             ),
         ],
       ),
@@ -263,22 +426,21 @@ class _CategoryPanel extends StatelessWidget {
 
 class _ShopItemTile extends StatelessWidget {
   const _ShopItemTile({
-    required this.def,
-    required this.effectivePrice,
-    required this.canAfford,
+    required this.entry,
+    required this.silver,
     required this.onBuy,
   });
 
-  final ShopItemDef def;
-  /// 有效标价（已由调用方计算，显示与扣费保持一致）。
-  /// null = 动态价商品且 founder 未就绪，显示占位「当前无法定价」。
-  final int? effectivePrice;
-  final bool canAfford;
+  final _ShopShelfEntry entry;
+  final int silver;
   final VoidCallback onBuy;
 
   @override
   Widget build(BuildContext context) {
+    final def = entry.def;
     final name = EnumL10n.itemType(def.itemType);
+    final effectivePrice = entry.effectivePrice;
+    final canAfford = entry.canAfford;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -331,9 +493,19 @@ class _ShopItemTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
+                  UiStrings.shopItemPurpose(def.itemDefId),
+                  style: const TextStyle(
+                    color: WuxiaUi.muted,
+                    fontSize: 12,
+                    height: 1.35,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
                   effectivePrice == null
                       ? UiStrings.shopPricingUnavailable
-                      : UiStrings.shopItemPrice(effectivePrice!),
+                      : UiStrings.shopItemPrice(effectivePrice),
                   style: TextStyle(
                     color: canAfford
                         ? WuxiaColors.resultHighlight
@@ -342,6 +514,8 @@ class _ShopItemTile extends StatelessWidget {
                     letterSpacing: 0.5,
                   ),
                 ),
+                const SizedBox(height: 6),
+                _ShopItemStatus(entry: entry, silver: silver),
               ],
             ),
           ),
@@ -353,6 +527,62 @@ class _ShopItemTile extends StatelessWidget {
             onTap: canAfford ? onBuy : null,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ShopItemStatus extends StatelessWidget {
+  const _ShopItemStatus({required this.entry, required this.silver});
+
+  final _ShopShelfEntry entry;
+  final int silver;
+
+  @override
+  Widget build(BuildContext context) {
+    final labels = <String>[
+      if (entry.pricingPending)
+        UiStrings.shopStatusPricingPending
+      else if (entry.canAfford)
+        UiStrings.shopStatusAffordable
+      else
+        UiStrings.shopNeedSilver(entry.effectivePrice! - silver),
+      if (entry.def.isDynamicPrice) UiStrings.shopStatusDynamicPrice,
+      if (entry.needsAttention) UiStrings.shopWatchHint,
+    ];
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      children: [for (final label in labels) _ShopStatusPill(label: label)],
+    );
+  }
+}
+
+class _ShopStatusPill extends StatelessWidget {
+  const _ShopStatusPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.ink.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.18)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: WuxiaUi.ink2,
+            fontSize: 11,
+            height: 1,
+            letterSpacing: 0.5,
+          ),
+        ),
       ),
     );
   }

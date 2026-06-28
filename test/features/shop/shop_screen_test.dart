@@ -53,7 +53,9 @@ void main() {
       ProviderScope(
         overrides: [
           silverBalanceProvider.overrideWith((_) async => silver),
-          shopItemListProvider.overrideWith((_) => items ?? [defMojianshi, defXinxue]),
+          shopItemListProvider.overrideWith(
+            (_) => items ?? [defMojianshi, defXinxue],
+          ),
           founderEtlProvider.overrideWith((_) async => founderEtl),
         ],
         child: const MaterialApp(home: ShopScreen()),
@@ -83,6 +85,11 @@ void main() {
     final mojianshiName = EnumL10n.itemType(ItemType.moJianShi);
     expect(find.text(mojianshiName), findsOneWidget);
     expect(find.text(UiStrings.shopItemPrice(30)), findsOneWidget);
+    expect(
+      find.text(UiStrings.shopItemPurpose('item_mojianshi')),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.shopStatusAffordable), findsOneWidget);
   });
 
   testWidgets('货品卡显示心血结晶名称与标价', (tester) async {
@@ -91,6 +98,72 @@ void main() {
     final xinxueName = EnumL10n.itemType(ItemType.xinXueJieJing);
     expect(find.text(xinxueName), findsOneWidget);
     expect(find.text(UiStrings.shopItemPrice(120)), findsOneWidget);
+    expect(find.text(UiStrings.shopNeedSilver(20)), findsOneWidget);
+    expect(find.text(UiStrings.shopWatchHint), findsOneWidget);
+  });
+
+  testWidgets('货架显示筛选计数和分类摘要', (tester) async {
+    await pumpShop(tester, silver: 100);
+
+    expect(
+      find.text(UiStrings.shopFilterLabel(UiStrings.shopFilterAll, 2)),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.shopFilterLabel(UiStrings.shopFilterAffordable, 1)),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.shopFilterLabel(UiStrings.shopFilterNeedSaving, 1)),
+      findsOneWidget,
+    );
+    expect(
+      find.text(
+        UiStrings.shopCategorySummary(total: 2, affordable: 1, needSaving: 1),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('需攒钱筛选只保留买不起的货品', (tester) async {
+    await pumpShop(tester, silver: 100);
+
+    await tester.tap(
+      find.text(UiStrings.shopFilterLabel(UiStrings.shopFilterNeedSaving, 1)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(EnumL10n.itemType(ItemType.moJianShi)), findsNothing);
+    expect(
+      find.text(EnumL10n.itemType(ItemType.xinXueJieJing)),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.shopNeedSilver(20)), findsOneWidget);
+  });
+
+  testWidgets('药品分类单独成组', (tester) async {
+    const defExpPill = ShopItemDef(
+      id: 'shop_jingyandan_small',
+      itemDefId: 'item_jingyandan_small',
+      itemType: ItemType.jingYanDan,
+      priceLayerFraction: 1.0,
+      category: 'pill',
+    );
+
+    await pumpShop(
+      tester,
+      silver: 1200,
+      items: [defMojianshi, defExpPill],
+      founderEtl: 1000,
+    );
+
+    expect(find.text(UiStrings.shopCategoryMaterial), findsOneWidget);
+    expect(find.text(UiStrings.shopCategoryPill), findsOneWidget);
+    expect(find.text(UiStrings.shopStatusDynamicPrice), findsOneWidget);
+    expect(
+      find.text(UiStrings.shopItemPurpose('item_jingyandan_small')),
+      findsOneWidget,
+    );
   });
 
   // ────────────────────────────────────────────────────────────────────────────
