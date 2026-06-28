@@ -45,7 +45,7 @@
 - [x] **Step 1:** 读取指定文档章节并确认红线。
 - [x] **Step 2:** 创建分支 `codex/onboarding-30min-polish-audit`。
 - [x] **Step 3:** 写入本计划文件。
-- [ ] **Step 4:** 提交计划切片。
+- [x] **Step 4:** 提交计划切片。
 
 ### Task 2: 取证当前新手路径
 
@@ -65,19 +65,19 @@
 - [x] **Step 1:** 确认新档 seed：单人学徒、空手、50 磨剑石、0 心血结晶。
 - [x] **Step 2:** 确认 Ch1 关卡链、首关掉落、章末 Boss 和失败处理。
 - [x] **Step 3:** 确认菜单门控、关卡整备条、掉落预览、装备穿戴/强化入口。
-- [ ] **Step 4:** 整理证据到审计报告。
+- [x] **Step 4:** 整理证据到审计报告。
 
 ### Task 3: 写审计报告
 
 **Files:**
 - Create: `docs/audit/onboarding_30min_review_2026-06-28.md`
 
-- [ ] **Step 1:** 写“0-30 分钟路径”。
-- [ ] **Step 2:** 写“当前摩擦”并绑定证据。
-- [ ] **Step 3:** 写“推荐修复切片”。
-- [ ] **Step 4:** 写“验证与局限”。
-- [ ] **Step 5:** 更新本计划恢复点。
-- [ ] **Step 6:** 提交审计报告切片。
+- [x] **Step 1:** 写“0-30 分钟路径”。
+- [x] **Step 2:** 写“当前摩擦”并绑定证据。
+- [x] **Step 3:** 写“推荐修复切片”。
+- [x] **Step 4:** 写“验证与局限”。
+- [x] **Step 5:** 更新本计划恢复点。
+- [x] **Step 6:** 提交审计报告切片。
 
 ### Task 4: 定向验证
 
@@ -88,14 +88,14 @@
 - `flutter test test/features/mainline/presentation/stage_list_screen_test.dart test/features/loot_preview/stage_row_loot_wiring_test.dart`
 - `flutter test test/features/equipment/application/equipment_service_test.dart test/features/character_panel/presentation/equip_slot_dialog_test.dart`
 
-- [ ] **Step 1:** 运行定向测试。
-- [ ] **Step 2:** 若测试失败，判断是否与本审计改动相关。
-- [ ] **Step 3:** 更新审计报告和恢复点中的验证记录。
+- [x] **Step 1:** 运行定向测试。
+- [x] **Step 2:** 若测试失败，判断是否与本审计改动相关。
+- [x] **Step 3:** 更新审计报告和恢复点中的验证记录。
 
 ## 当前恢复点
 
-- **状态:** Task 1 进行中。
-- **最后完成:** 已读 AGENTS.md、CLAUDE.md §8.0、GDD.md §10 / §5.7、`playability_phase2_backlog.md` §十二；已创建分支。
-- **下一步:** 提交计划文件，然后写审计报告。
-- **已跑验证:** `git status --short --branch` 确认当前分支为 `codex/onboarding-30min-polish-audit`。
-- **阻塞项:** CodeGraph 未初始化，结构查询改用 `rg`/定向读取；本任务不运行 `codegraph init -i`。
+- **状态:** 审计完成，等待主窗口检查。
+- **最后完成:** 已产出 `docs/audit/onboarding_30min_review_2026-06-28.md`，并更新本计划文件。
+- **下一步:** 提交审计报告切片；主窗口可基于报告优先派发 Slice A（production 单人开局首章战斗红线测试）。
+- **已跑验证:** 首次 `flutter test ...` 因 fresh worktree 缺 `.g.dart` 生成文件编译失败；随后运行 `dart run build_runner build --delete-conflicting-outputs`，生成成功（112 outputs，参数被当前 build_runner 提示忽略）；重跑定向测试 103 tests 全部通过。
+- **阻塞项:** CodeGraph 未初始化，结构查询改用 `rg`/定向读取；本任务不运行 `codegraph init -i`。未做真实 UI 视觉验收；现有测试仍缺 production `soloStart=true` 的首章真实胜负覆盖，已列为最高优先级后续切片。
