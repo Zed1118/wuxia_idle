@@ -109,6 +109,7 @@ Future<void> _pumpContent(
   DropResult drops,
   List<AdvancementEntry> advancements, {
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
+  EquipmentDropLockHandler? onEquipmentLockToggle,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -117,6 +118,7 @@ Future<void> _pumpContent(
           drops: drops,
           advancements: advancements,
           resonanceUpgrades: resonanceUpgrades,
+          onEquipmentLockToggle: onEquipmentLockToggle,
         ),
       ),
     ),
@@ -288,30 +290,124 @@ void main() {
       expect(find.byIcon(Icons.workspace_premium), findsNWidgets(2));
     });
 
+    testWidgets('装备掉落动作区 → 显锁定/常用/来源/稍后,且不显出售分解', (tester) async {
+      await _pumpContent(
+        tester,
+        _equipDrops(['weapon_xunchang_tie_jian']),
+        const [],
+      );
+      expect(find.text(UiStrings.equipmentLock), findsOneWidget);
+      expect(find.text(UiStrings.equipmentDropActionFavorite), findsOneWidget);
+      expect(find.text(UiStrings.equipmentDropActionSource), findsOneWidget);
+      expect(find.text(UiStrings.equipmentDropActionLater), findsOneWidget);
+      expect(find.text(UiStrings.equipmentSell), findsNothing);
+      expect(find.text(UiStrings.equipmentDisassemble), findsNothing);
+    });
+
+    testWidgets('点击锁定 → 调用回调并更新为解锁/已锁定', (tester) async {
+      final calls = <bool>[];
+      await _pumpContent(
+        tester,
+        _equipDrops(['weapon_xunchang_tie_jian']),
+        const [],
+        onEquipmentLockToggle: (equipment, locked) async {
+          calls.add(locked);
+          return true;
+        },
+      );
+
+      await tester.tap(find.text(UiStrings.equipmentLock));
+      await tester.pumpAndSettle();
+
+      expect(calls, [true]);
+      expect(find.text(UiStrings.equipmentUnlock), findsOneWidget);
+      expect(find.text(UiStrings.equipmentLockedLabel), findsOneWidget);
+    });
+
+    testWidgets('点击标记常用 → 复用锁定保护', (tester) async {
+      final calls = <bool>[];
+      await _pumpContent(
+        tester,
+        _equipDrops(['weapon_xunchang_tie_jian']),
+        const [],
+        onEquipmentLockToggle: (equipment, locked) async {
+          calls.add(locked);
+          return true;
+        },
+      );
+
+      await tester.tap(find.text(UiStrings.equipmentDropActionFavorite));
+      await tester.pumpAndSettle();
+
+      expect(calls, [true]);
+      expect(find.text(UiStrings.equipmentDropFavoriteLabel), findsOneWidget);
+      expect(find.text(UiStrings.equipmentLockedLabel), findsOneWidget);
+    });
+
+    testWidgets('查看来源 → 弹出来源列表', (tester) async {
+      await _pumpContent(
+        tester,
+        _equipDrops(['weapon_xunchang_tie_jian']),
+        const [],
+      );
+
+      await tester.tap(find.text(UiStrings.equipmentDropActionSource));
+      await tester.pumpAndSettle();
+
+      expect(find.text(UiStrings.equipmentDropSourceTitle), findsOneWidget);
+      expect(find.textContaining('主线'), findsWidgets);
+    });
+
+    testWidgets('稍后处理 → 标记已处理但不写库', (tester) async {
+      var calls = 0;
+      await _pumpContent(
+        tester,
+        _equipDrops(['weapon_xunchang_tie_jian']),
+        const [],
+        onEquipmentLockToggle: (equipment, locked) async {
+          calls += 1;
+          return true;
+        },
+      );
+
+      await tester.tap(find.text(UiStrings.equipmentDropActionLater));
+      await tester.pumpAndSettle();
+
+      expect(calls, 0);
+      expect(find.text(UiStrings.equipmentDropActionDone), findsOneWidget);
+    });
+
     // Task 5:战斗统计段
     testWidgets('StageVictoryContent 显示战斗统计段', (tester) async {
-      await tester.pumpWidget(const MaterialApp(
-        home: Scaffold(
-          body: StageVictoryContent(
-            drops: DropResult(equipments: [], items: []),
-            advancements: [],
-            stats: BattleStatsSummary(
-                totalDamage: 1234, critCount: 3, totalTicks: 9),
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: StageVictoryContent(
+              drops: DropResult(equipments: [], items: []),
+              advancements: [],
+              stats: BattleStatsSummary(
+                totalDamage: 1234,
+                critCount: 3,
+                totalTicks: 9,
+              ),
+            ),
           ),
         ),
-      ));
+      );
       expect(find.text(UiStrings.battleSummary(1234, 3, 9)), findsOneWidget);
     });
 
     testWidgets('stats=null 时不显统计段(向后兼容)', (tester) async {
-      await tester.pumpWidget(const MaterialApp(
-        home: Scaffold(
-          body: StageVictoryContent(
-            drops: DropResult(equipments: [], items: []),
-            advancements: [],
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: StageVictoryContent(
+              drops: DropResult(equipments: [], items: []),
+              advancements: [],
+            ),
           ),
         ),
-      ));
+      );
       expect(find.text(UiStrings.stageVictoryDropLabel), findsOneWidget);
     });
 
@@ -427,9 +523,7 @@ void main() {
       await open(
         tester,
         _emptyDrops(),
-        advancements: [
-          AdvancementEntry(chName: '张三', result: _crossedTier()),
-        ],
+        advancements: [AdvancementEntry(chName: '张三', result: _crossedTier())],
       );
       expect(rec.sfxPlays, contains(sfxAssetPath(SfxId.realmAdvance)));
     });
@@ -443,15 +537,11 @@ void main() {
       expect(rec.sfxPlays, isNot(contains(sfxAssetPath(SfxId.realmAdvance))));
     });
 
-    testWidgets('跨 tier + 装备掉落 → 只播 realmAdvance,reward 让位不叠响', (
-      tester,
-    ) async {
+    testWidgets('跨 tier + 装备掉落 → 只播 realmAdvance,reward 让位不叠响', (tester) async {
       await open(
         tester,
         _equipDrops(['weapon_xunchang_tie_jian']),
-        advancements: [
-          AdvancementEntry(chName: '张三', result: _crossedTier()),
-        ],
+        advancements: [AdvancementEntry(chName: '张三', result: _crossedTier())],
       );
       expect(rec.sfxPlays, contains(sfxAssetPath(SfxId.realmAdvance)));
       expect(rec.sfxPlays, isNot(contains(sfxAssetPath(SfxId.reward))));
