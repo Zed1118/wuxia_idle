@@ -68,7 +68,7 @@ git switch -c codex/night-skill-proficiency-visibility-2
 Create:
 `docs/superpowers/plans/2026-06-29-night-skill-proficiency-visibility-2.md`
 
-- [ ] **Step 4: Commit 计划**
+- [x] **Step 4: Commit 计划**
 
 Run:
 ```bash
@@ -78,7 +78,7 @@ git commit -m "docs: 写招式熟练度可视化二期计划"
 
 ### Task 2: Formatter 二期能力
 
-- [ ] **Step 1: 写 formatter 测试**
+- [x] **Step 1: 写 formatter 测试**
 
 Add tests that assert:
 - `compactEffect` includes stage and current effect.
@@ -90,13 +90,13 @@ Run:
 DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart
 ```
 
-- [ ] **Step 2: 实现 formatter helper**
+- [x] **Step 2: 实现 formatter helper**
 
 Modify `SkillProficiencyFormatter` to expose:
 - `compactEffect({required SkillDef skill, required int uses, required SkillProficiencyConfig cfg})`
 - `bestSkillSummaryForTechnique({required Iterable<SkillDef> skills, required Map<String, int> usage, required SkillProficiencyConfig cfg})`
 
-- [ ] **Step 3: Run formatter test**
+- [x] **Step 3: Run formatter test**
 
 Run:
 ```bash
@@ -221,12 +221,12 @@ git commit -m "docs: 记录招式熟练度可视化二期完成"
 
 ## 当前恢复点
 
-**状态:** 计划已创建，尚未提交。
+**状态:** Task 2 formatter helper 已完成，准备提交代码切片。
 
-**最后完成:** 已读必读文档，已切到 `codex/night-skill-proficiency-visibility-2`，确认一期藏经阁已经通过 `SkillProficiencyFormatter` + `StageProgressRow` 完成当前/下一阶展示。
+**最后完成:** 已提交计划文档；`SkillProficiencyFormatter` 新增 `compactEffect` 与 `bestSkillSummaryForTechnique`，纯测试覆盖 compact 文案、最高使用次数选择与空列表 null。
 
-**下一步:** 提交计划文档，然后执行 Task 2 formatter helper。
+**下一步:** 提交 formatter 切片，然后执行 Task 3 战报 marker。
 
-**已跑验证:** `mcp__codegraph.codegraph_status` 返回当前 worktree 未初始化；未运行代码测试。
+**已跑验证:** `mcp__codegraph.codegraph_status` 返回当前 worktree 未初始化；`DEVELOPER_DIR=/Library/Developer/CommandLineTools dart run build_runner build --delete-conflicting-outputs` 生成缺失 Isar/Riverpod 文件且未留下 git 变更；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart` 通过。
 
 **阻塞项:** 无。CodeGraph 未初始化，按项目规则记录；本切片用 `rg` 和直接读文件继续。
