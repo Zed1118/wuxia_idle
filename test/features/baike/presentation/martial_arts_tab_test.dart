@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/defs/technique_def.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/baike/application/martial_codex_provider.dart';
 import 'package:wuxia_idle/features/baike/presentation/martial_arts_tab.dart';
 import 'package:wuxia_idle/features/baike/presentation/skill_codex_detail_screen.dart';
@@ -63,6 +66,16 @@ Widget _techHost({
 );
 
 void main() {
+  setUpAll(() async {
+    if (!GameRepository.isLoaded) {
+      await GameRepository.loadAllDefs(
+        loader: (path) => File(path).readAsString(),
+      );
+    }
+  });
+
+  tearDownAll(GameRepository.resetForTest);
+
   testWidgets('混态:点亮显名 + 剪影显??? + 进度', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 2000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -132,6 +145,26 @@ void main() {
     expect(find.text('d'), findsOneWidget);
     expect(find.textContaining('1000'), findsWidgets);
     expect(find.text(UiStrings.skillCodexProficiencyNone), findsOneWidget);
+  });
+
+  testWidgets('详情屏已练:显示熟练度当前效果、下阶效果和来源', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 2000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final def = _s('po_shi', SkillSource.special, ci: true);
+    final stage = GameRepository.instance.numbers.skillProficiency.stages[2];
+
+    await tester.pumpWidget(
+      MaterialApp(home: SkillCodexDetailScreen(def: def, maxStage: stage)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('招式熟练 · po_shi名'), findsOneWidget);
+    expect(find.textContaining('当前 伤害 +'), findsOneWidget);
+    expect(find.textContaining('下阶 伤害 +'), findsOneWidget);
+    expect(
+      find.textContaining(UiStrings.cangjingProficiencySourceCombat),
+      findsOneWidget,
+    );
   });
 
   testWidgets('心法页:切换后渲染列表、境界限制和来源', (tester) async {
