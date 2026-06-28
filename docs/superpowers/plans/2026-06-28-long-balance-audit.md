@@ -30,8 +30,8 @@ The audit should identify whether long-term rewards feel visible without driftin
 
 ## Current Recovery Point
 
-- Status: plan created; audit not yet run.
-- Last completed: required context read and branch `codex/long-balance-audit` created from `b2bc6066`.
-- Next step: inventory relevant tests/configs/services, then run targeted validation.
-- Validation run: none yet.
+- Status: audit report completed; ready for main-window review.
+- Last completed: wrote `docs/audit/long_balance_audit_2026-06-28.md` with data sources, commands/tests, severity findings, suggested task slices, and user decision items.
+- Next step: main window reviews the audit and decides whether to open follow-up slices for material expectation simulation, silver total redline, passive silver policy, or NG+ reward tuning.
+- Validation run: `dart run build_runner build --delete-conflicting-outputs`; targeted balance/economy/drop/offline/extreme tests (`108 pass / 1 transient Isar dylib load failure`); single rerun `flutter test test/features/equipment/application/equipment_disposal_service_test.dart` (`25/25 pass`);桃花岛 targeted tests (`35/35 pass`); read-only Ruby YAML resource summary.
 - Blockers: none.
