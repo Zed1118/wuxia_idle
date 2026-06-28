@@ -11,8 +11,8 @@ import '../../battle/domain/enum_localizations.dart';
 import '../../battle/presentation/cycle_select_control.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/domain/stage_difficulty.dart';
-import '../../loot_preview/presentation/loot_rumor_dialog.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';
+import '../../loot_preview/presentation/stage_intel_dialog.dart';
 import '../../loot_preview/presentation/stage_preview_card.dart'
     show difficultyLabelColor;
 import '../../loot_preview/presentation/weakness_hint_line.dart';
@@ -500,11 +500,12 @@ class _StageRow extends StatelessWidget {
                 icon: const Icon(Icons.info_outline, size: 16),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
-                tooltip: UiStrings.lootRumorDialogTitle,
+                tooltip: UiStrings.prebattleIntelTitle,
                 color: WuxiaColors.textMuted,
-                onPressed: () => showLootRumorDialog(
+                onPressed: () => showStageIntelDialog(
                   context,
-                  table: rumor,
+                  stage: def,
+                  rumorTable: rumor,
                   currentRealm: currentRealm,
                 ),
               ),
