@@ -29,6 +29,15 @@ class WuxiaColors {
   static const Color textSecondary = Color(0xFFCCCCCC);
   static const Color textMuted = Color(0xFF8A93A0);
   static const Color resultHighlight = Color(0xFFE8C547);
+  static const Color cycleHintText = Color(0xFFD4A800);
+  static const Color visualGoldShadow = Color(0x88B99A3B);
+  static const Color treasureAuraInner = Color(0x00F0CC72);
+  static const Color treasureAuraMid = Color(0x44F0CC72);
+  static const Color treasureAuraEdge = Color(0xCCE8B84A);
+
+  static const Color auditPass = Color(0xFF2E7D32);
+  static const Color auditWarn = Color(0xFFB26A00);
+  static const Color auditFail = Color(0xFF9D2F2F);
 
   /// 警示色（T2 蓄力危险条 / 敌方威胁提示）：绛红，与 hpLow 同调表"危险"。
   static const Color danger = Color(0xFFB22222);
@@ -41,7 +50,9 @@ class WuxiaColors {
 
   /// 战斗背景图上的压暗遮罩(出版美术 B1):保证偏亮背景不抢前景。
   static const Color battleSceneScrim = Color(0x66000000); // black 40%
-  static const Color narrativeSceneScrim = Color(0x80000000); // black 50%(正文长文需更重压暗)
+  static const Color narrativeSceneScrim = Color(
+    0x80000000,
+  ); // black 50%(正文长文需更重压暗)
 
   static const Color buttonDisabled = Color(0xFF3A3A3A);
 

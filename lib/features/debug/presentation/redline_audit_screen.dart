@@ -187,9 +187,9 @@ class _Metric extends StatelessWidget {
 }
 
 Color _statusColor(RedlineAuditStatus status) => switch (status) {
-  RedlineAuditStatus.pass => const Color(0xFF2E7D32),
-  RedlineAuditStatus.warn => const Color(0xFFB26A00),
-  RedlineAuditStatus.fail => const Color(0xFF9D2F2F),
+  RedlineAuditStatus.pass => WuxiaColors.auditPass,
+  RedlineAuditStatus.warn => WuxiaColors.auditWarn,
+  RedlineAuditStatus.fail => WuxiaColors.auditFail,
 };
 
 IconData _statusIcon(RedlineAuditStatus status) => switch (status) {

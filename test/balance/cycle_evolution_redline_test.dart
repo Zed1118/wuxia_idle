@@ -17,7 +17,7 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 ///   - Boss HP    ≤ 60,000（§5.4，2026-06-14 从 50k 调至 60k；config-driven from
 ///                           numbers.yaml combat.red_lines.boss_hp_max）
 ///   - 装备攻击   §5.4「装备攻击 ≤ 2,000」为玩家装备红线，不直接约束 enemy.baseAttack；
-///               Ch6 敌人 baseAttack 2150-2700 / tower floor30 2250 均为设计内值，不硬断言
+///               Ch6 敌人 baseAttack 2150-2700 / tower floor30 当前配置值均为设计内值，不硬断言
 ///   - 内力上限   ≤ 15,000（numbers.yaml combat.red_lines.internal_force_max）
 ///   - 防御率     ≤      0.6（numbers.yaml cycle_evolution.defense_rate_cap）
 ///
@@ -28,7 +28,7 @@ import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 ///   1. 主线 stage_06_05（最高境界 wuSheng boss，baseHp=52000）cycle 3 → 58,240 ≤ 60,000 ✅
 ///   2. 主线 stage_05_05（zongShi boss，baseHp=36600）cycle 3
 ///   3. 主线 stage_04_05（jueDing boss，baseHp=15625）cycle 3
-///   4. 爬塔 floor 30（最高 Boss，baseHp=15000，baseAttack=2250）cycle 2
+///   4. 爬塔 floor 30（最高 Boss，baseHp/baseAttack 从 towers.yaml 当前配置派生）cycle 2
 ///   5. 爬塔 floor 20（大 Boss，isTower，cycle 2 凝甲/反震/识破）
 ///   6. 御体 defenseRate clamp ≤ defenseRateCap（C2/C3 高境界敌人）
 ///   7. 真气 + scale → maxInternalForce ≤ 红线（爬塔 cycle 2）
@@ -59,10 +59,11 @@ void main() {
     late double cycle3Scale;
 
     setUpAll(() {
-      bossHpRedLine =
-          GameRepository.instance.numbers.combat.redLines.bossHpMax;
-      cycle3Scale = 1.0 +
-          GameRepository.instance.numbers.cycleEvolution.scalePerCycle * (3 - 1);
+      bossHpRedLine = GameRepository.instance.numbers.combat.redLines.bossHpMax;
+      cycle3Scale =
+          1.0 +
+          GameRepository.instance.numbers.cycleEvolution.scalePerCycle *
+              (3 - 1);
     });
 
     // ── 1.1  stage_04_05 · jueDing 跨阶 Boss ────────────────────────────────
@@ -79,12 +80,16 @@ void main() {
         expect(
           bc.maxHp,
           lessThanOrEqualTo(bossHpRedLine),
-          reason: '${bc.name}(${bc.characterId}) cycle 3 maxHp=${bc.maxHp} '
+          reason:
+              '${bc.name}(${bc.characterId}) cycle 3 maxHp=${bc.maxHp} '
               '超 §5.4 Boss HP 红线=$bossHpRedLine',
         );
       }
-      addTearDown(() => printOnFailure(
-          'stage_04_05 cycle3 max enemy HP = $maxHp（红线=$bossHpRedLine，安全余量=${bossHpRedLine - maxHp}）'));
+      addTearDown(
+        () => printOnFailure(
+          'stage_04_05 cycle3 max enemy HP = $maxHp（红线=$bossHpRedLine，安全余量=${bossHpRedLine - maxHp}）',
+        ),
+      );
     });
 
     // ── 1.2  stage_05_05 · zongShi 跨阶 Boss ────────────────────────────────
@@ -101,12 +106,16 @@ void main() {
         expect(
           bc.maxHp,
           lessThanOrEqualTo(bossHpRedLine),
-          reason: '${bc.name}(${bc.characterId}) cycle 3 maxHp=${bc.maxHp} '
+          reason:
+              '${bc.name}(${bc.characterId}) cycle 3 maxHp=${bc.maxHp} '
               '超 §5.4 Boss HP 红线=$bossHpRedLine',
         );
       }
-      addTearDown(() => printOnFailure(
-          'stage_05_05 cycle3 max enemy HP = $maxHp（红线=$bossHpRedLine，安全余量=${bossHpRedLine - maxHp}）'));
+      addTearDown(
+        () => printOnFailure(
+          'stage_05_05 cycle3 max enemy HP = $maxHp（红线=$bossHpRedLine，安全余量=${bossHpRedLine - maxHp}）',
+        ),
+      );
     });
 
     // ── 1.3  stage_06_05 · wuSheng 最终 Boss（2026-06-14 已合规：60k 红线）────
@@ -120,12 +129,19 @@ void main() {
 
       // 西凉霸主 baseHp=52000，cycle3 scale=1.20 → 62400 > 60000 → clamp 至 60000
       // （2026-06-26 周目平衡 0.06→0.10 后此 boss 命中 clamp，红线由生产 .clamp 强制）。
-      final expectedBossHp =
-          (52000 * cycle3Scale).toInt().clamp(0, bossHpRedLine);
-      final bossBc =
-          team.firstWhere((bc) => bc.name == '西凉霸主', orElse: () => team.first);
-      expect(bossBc.maxHp, expectedBossHp,
-          reason: 'cycle 3 scale 系数 $cycle3Scale 对应西凉霸主 HP 应为 $expectedBossHp');
+      final expectedBossHp = (52000 * cycle3Scale).toInt().clamp(
+        0,
+        bossHpRedLine,
+      );
+      final bossBc = team.firstWhere(
+        (bc) => bc.name == '西凉霸主',
+        orElse: () => team.first,
+      );
+      expect(
+        bossBc.maxHp,
+        expectedBossHp,
+        reason: 'cycle 3 scale 系数 $cycle3Scale 对应西凉霸主 HP 应为 $expectedBossHp',
+      );
 
       var maxHp = 0;
       for (final bc in team) {
@@ -133,12 +149,16 @@ void main() {
         expect(
           bc.maxHp,
           lessThanOrEqualTo(bossHpRedLine),
-          reason: '${bc.name}(${bc.characterId}) cycle 3 maxHp=${bc.maxHp} '
+          reason:
+              '${bc.name}(${bc.characterId}) cycle 3 maxHp=${bc.maxHp} '
               '超 §5.4 Boss HP 红线=$bossHpRedLine（60000）',
         );
       }
-      addTearDown(() => printOnFailure(
-          'stage_06_05 cycle3 max HP=$maxHp（红线=$bossHpRedLine，安全余量=${bossHpRedLine - maxHp}）'));
+      addTearDown(
+        () => printOnFailure(
+          'stage_06_05 cycle3 max HP=$maxHp（红线=$bossHpRedLine，安全余量=${bossHpRedLine - maxHp}）',
+        ),
+      );
     });
 
     // ── 1.4  全主线 Boss 关 cycle 3 HP 扫描（全量枚举 isBossStage，含 stage_06_05）
@@ -165,14 +185,18 @@ void main() {
           expect(
             bc.maxHp,
             lessThanOrEqualTo(bossHpRedLine),
-            reason: '[${stage.id}] ${bc.name} cycle 3 maxHp=${bc.maxHp} '
+            reason:
+                '[${stage.id}] ${bc.name} cycle 3 maxHp=${bc.maxHp} '
                 '超 §5.4 Boss HP 红线=$bossHpRedLine（60000）',
           );
         }
       }
 
-      addTearDown(() => printOnFailure(
-          '全主线 Boss 关 cycle3 max HP = $maxObservedHp（来自 $maxStageId，红线=$bossHpRedLine）'));
+      addTearDown(
+        () => printOnFailure(
+          '全主线 Boss 关 cycle3 max HP = $maxObservedHp（来自 $maxStageId，红线=$bossHpRedLine）',
+        ),
+      );
     });
   });
 
@@ -183,8 +207,7 @@ void main() {
   group('§2 爬塔 cycle 2 Boss stat 静态红线', () {
     late int bossHpRedLine;
     setUpAll(() {
-      bossHpRedLine =
-          GameRepository.instance.numbers.combat.redLines.bossHpMax;
+      bossHpRedLine = GameRepository.instance.numbers.combat.redLines.bossHpMax;
     });
 
     // tower_boss_30（最高层大 Boss）
@@ -198,11 +221,18 @@ void main() {
       var maxHp = 0;
       for (final bc in team) {
         if (bc.maxHp > maxHp) maxHp = bc.maxHp;
-        expect(bc.maxHp, lessThanOrEqualTo(bossHpRedLine),
-            reason: '爬塔 floor 30 cycle 2 ${bc.name} maxHp=${bc.maxHp} 超 $bossHpRedLine');
+        expect(
+          bc.maxHp,
+          lessThanOrEqualTo(bossHpRedLine),
+          reason:
+              '爬塔 floor 30 cycle 2 ${bc.name} maxHp=${bc.maxHp} 超 $bossHpRedLine',
+        );
       }
-      addTearDown(() => printOnFailure(
-          'tower floor 30 cycle2 max HP = $maxHp（红线=$bossHpRedLine，余量=${bossHpRedLine - maxHp}）'));
+      addTearDown(
+        () => printOnFailure(
+          'tower floor 30 cycle2 max HP = $maxHp（红线=$bossHpRedLine，余量=${bossHpRedLine - maxHp}）',
+        ),
+      );
     });
 
     // tower_boss_20（中层大 Boss）
@@ -214,8 +244,12 @@ void main() {
         isTower: true,
       );
       for (final bc in team) {
-        expect(bc.maxHp, lessThanOrEqualTo(bossHpRedLine),
-            reason: 'tower floor 20 cycle 2 ${bc.name} maxHp=${bc.maxHp} 超 $bossHpRedLine');
+        expect(
+          bc.maxHp,
+          lessThanOrEqualTo(bossHpRedLine),
+          reason:
+              'tower floor 20 cycle 2 ${bc.name} maxHp=${bc.maxHp} 超 $bossHpRedLine',
+        );
       }
     });
 
@@ -228,8 +262,12 @@ void main() {
         isTower: true,
       );
       for (final bc in team) {
-        expect(bc.maxHp, lessThanOrEqualTo(bossHpRedLine),
-            reason: 'tower floor 25 cycle 2 ${bc.name} maxHp=${bc.maxHp} 超 $bossHpRedLine');
+        expect(
+          bc.maxHp,
+          lessThanOrEqualTo(bossHpRedLine),
+          reason:
+              'tower floor 25 cycle 2 ${bc.name} maxHp=${bc.maxHp} 超 $bossHpRedLine',
+        );
       }
     });
 
@@ -247,12 +285,19 @@ void main() {
         );
         for (final bc in team) {
           if (bc.maxHp > maxHp) maxHp = bc.maxHp;
-          expect(bc.maxHp, lessThanOrEqualTo(bossHpRedLine),
-              reason: 'tower floor $i cycle 2 ${bc.name} maxHp=${bc.maxHp} 超 $bossHpRedLine');
+          expect(
+            bc.maxHp,
+            lessThanOrEqualTo(bossHpRedLine),
+            reason:
+                'tower floor $i cycle 2 ${bc.name} maxHp=${bc.maxHp} 超 $bossHpRedLine',
+          );
         }
       }
-      addTearDown(() => printOnFailure(
-          '全爬塔 Boss 层 cycle2 max HP = $maxHp（红线=$bossHpRedLine）'));
+      addTearDown(
+        () => printOnFailure(
+          '全爬塔 Boss 层 cycle2 max HP = $maxHp（红线=$bossHpRedLine）',
+        ),
+      );
     });
   });
 
@@ -263,7 +308,8 @@ void main() {
   group('§3 真气 + cycle scale 后 maxInternalForce ≤ 内力红线', () {
     test('3.1 爬塔 floor 30（最高 Boss，cycle 2 tower_boss 词条集）', () {
       final floor = GameRepository.instance.getTowerFloor(30);
-      final redLine = GameRepository.instance.numbers.combat.redLines.internalForceMax;
+      final redLine =
+          GameRepository.instance.numbers.combat.redLines.internalForceMax;
       final team = StageBattleSetup.buildEnemyTeam(
         floor.enemyTeam,
         cycleIndex: 2,
@@ -272,32 +318,45 @@ void main() {
       var maxIf = 0;
       for (final bc in team) {
         if (bc.maxInternalForce > maxIf) maxIf = bc.maxInternalForce;
-        expect(bc.maxInternalForce, lessThanOrEqualTo(redLine),
-            reason: 'tower floor 30 cycle 2 ${bc.name} '
-                'maxInternalForce=${bc.maxInternalForce} 超 §5.4 红线=$redLine');
+        expect(
+          bc.maxInternalForce,
+          lessThanOrEqualTo(redLine),
+          reason:
+              'tower floor 30 cycle 2 ${bc.name} '
+              'maxInternalForce=${bc.maxInternalForce} 超 §5.4 红线=$redLine',
+        );
       }
-      addTearDown(() => printOnFailure(
-          'tower floor 30 cycle2 max IF = $maxIf（红线=$redLine，余量=${redLine - maxIf}）'));
+      addTearDown(
+        () => printOnFailure(
+          'tower floor 30 cycle2 max IF = $maxIf（红线=$redLine，余量=${redLine - maxIf}）',
+        ),
+      );
     });
 
     test('3.2 爬塔 floor 20（中 Boss，cycle 2 tower_boss 词条集）', () {
       final floor = GameRepository.instance.getTowerFloor(20);
-      final redLine = GameRepository.instance.numbers.combat.redLines.internalForceMax;
+      final redLine =
+          GameRepository.instance.numbers.combat.redLines.internalForceMax;
       final team = StageBattleSetup.buildEnemyTeam(
         floor.enemyTeam,
         cycleIndex: 2,
         isTower: true,
       );
       for (final bc in team) {
-        expect(bc.maxInternalForce, lessThanOrEqualTo(redLine),
-            reason: 'tower floor 20 cycle 2 ${bc.name} '
-                'maxInternalForce=${bc.maxInternalForce} 超 §5.4 红线=$redLine');
+        expect(
+          bc.maxInternalForce,
+          lessThanOrEqualTo(redLine),
+          reason:
+              'tower floor 20 cycle 2 ${bc.name} '
+              'maxInternalForce=${bc.maxInternalForce} 超 §5.4 红线=$redLine',
+        );
       }
     });
 
     test('3.3 主线 stage_06_05 cycle 3（最高主线 boss，无真气词条）', () {
       final stage = GameRepository.instance.getStage('stage_06_05');
-      final redLine = GameRepository.instance.numbers.combat.redLines.internalForceMax;
+      final redLine =
+          GameRepository.instance.numbers.combat.redLines.internalForceMax;
       final team = StageBattleSetup.buildEnemyTeam(
         stage.enemyTeam,
         cycleIndex: 3,
@@ -306,12 +365,19 @@ void main() {
       var maxIf = 0;
       for (final bc in team) {
         if (bc.maxInternalForce > maxIf) maxIf = bc.maxInternalForce;
-        expect(bc.maxInternalForce, lessThanOrEqualTo(redLine),
-            reason: 'stage_06_05 cycle 3 ${bc.name} '
-                'maxInternalForce=${bc.maxInternalForce} 超 §5.4 红线=$redLine');
+        expect(
+          bc.maxInternalForce,
+          lessThanOrEqualTo(redLine),
+          reason:
+              'stage_06_05 cycle 3 ${bc.name} '
+              'maxInternalForce=${bc.maxInternalForce} 超 §5.4 红线=$redLine',
+        );
       }
-      addTearDown(() => printOnFailure(
-          'stage_06_05 cycle3 max IF = $maxIf（红线=$redLine，余量=${redLine - maxIf}）'));
+      addTearDown(
+        () => printOnFailure(
+          'stage_06_05 cycle3 max IF = $maxIf（红线=$redLine，余量=${redLine - maxIf}）',
+        ),
+      );
     });
 
     test('3.4 全爬塔所有层（普通+Boss）cycle 2 maxInternalForce ≤ 红线', () {
@@ -327,13 +393,18 @@ void main() {
         );
         for (final bc in team) {
           if (bc.maxInternalForce > maxIf) maxIf = bc.maxInternalForce;
-          expect(bc.maxInternalForce, lessThanOrEqualTo(redLine),
-              reason: 'tower floor $i cycle 2 ${bc.name} '
-                  'maxIF=${bc.maxInternalForce} 超 §5.4 红线=$redLine');
+          expect(
+            bc.maxInternalForce,
+            lessThanOrEqualTo(redLine),
+            reason:
+                'tower floor $i cycle 2 ${bc.name} '
+                'maxIF=${bc.maxInternalForce} 超 §5.4 红线=$redLine',
+          );
         }
       }
-      addTearDown(() =>
-          printOnFailure('全爬塔 cycle2 max IF = $maxIf（红线=$redLine）'));
+      addTearDown(
+        () => printOnFailure('全爬塔 cycle2 max IF = $maxIf（红线=$redLine）'),
+      );
     });
   });
 
@@ -362,13 +433,20 @@ void main() {
         );
         for (final bc in team) {
           if (bc.defenseRate > maxDr) maxDr = bc.defenseRate;
-          expect(bc.defenseRate, lessThanOrEqualTo(cap),
-              reason: '[${stage.id}] ${bc.name} cycle 3 '
-                  'defenseRate=${bc.defenseRate} 超 defenseRateCap=$cap');
+          expect(
+            bc.defenseRate,
+            lessThanOrEqualTo(cap),
+            reason:
+                '[${stage.id}] ${bc.name} cycle 3 '
+                'defenseRate=${bc.defenseRate} 超 defenseRateCap=$cap',
+          );
         }
       }
-      addTearDown(() => printOnFailure(
-          '全主线 Boss 关 cycle3 max defenseRate = $maxDr（cap=$cap，余量=${cap - maxDr}）'));
+      addTearDown(
+        () => printOnFailure(
+          '全主线 Boss 关 cycle3 max defenseRate = $maxDr（cap=$cap，余量=${cap - maxDr}）',
+        ),
+      );
     });
 
     test('4.2 cycle 2 爬塔 Boss（tower_boss 词条集含御体）defenseRate ≤ cap', () {
@@ -384,13 +462,19 @@ void main() {
         );
         for (final bc in team) {
           if (bc.defenseRate > maxDr) maxDr = bc.defenseRate;
-          expect(bc.defenseRate, lessThanOrEqualTo(cap),
-              reason: 'tower floor $i Boss cycle 2 ${bc.name} '
-                  'defenseRate=${bc.defenseRate} 超 cap=$cap');
+          expect(
+            bc.defenseRate,
+            lessThanOrEqualTo(cap),
+            reason:
+                'tower floor $i Boss cycle 2 ${bc.name} '
+                'defenseRate=${bc.defenseRate} 超 cap=$cap',
+          );
         }
       }
-      addTearDown(() => printOnFailure(
-          '爬塔 Boss cycle2 max defenseRate = $maxDr（cap=$cap）'));
+      addTearDown(
+        () =>
+            printOnFailure('爬塔 Boss cycle2 max defenseRate = $maxDr（cap=$cap）'),
+      );
     });
 
     test('4.3 全爬塔普通层 cycle 2（tower_normal 词条含御体）defenseRate ≤ cap', () {
@@ -406,13 +490,18 @@ void main() {
         );
         for (final bc in team) {
           if (bc.defenseRate > maxDr) maxDr = bc.defenseRate;
-          expect(bc.defenseRate, lessThanOrEqualTo(cap),
-              reason: 'tower floor $i normal cycle 2 ${bc.name} '
-                  'defenseRate=${bc.defenseRate} 超 cap=$cap');
+          expect(
+            bc.defenseRate,
+            lessThanOrEqualTo(cap),
+            reason:
+                'tower floor $i normal cycle 2 ${bc.name} '
+                'defenseRate=${bc.defenseRate} 超 cap=$cap',
+          );
         }
       }
-      addTearDown(() => printOnFailure(
-          '爬塔普通层 cycle2 max defenseRate = $maxDr（cap=$cap）'));
+      addTearDown(
+        () => printOnFailure('爬塔普通层 cycle2 max defenseRate = $maxDr（cap=$cap）'),
+      );
     });
   });
 
@@ -421,20 +510,28 @@ void main() {
   // ════════════════════════════════════════════════════════════════════════════
 
   group('§5 scale 系数符合 spec 约束', () {
-    test('5.1 maxCycleMainline=3 → cycle 3 scale = 1.20（spec 参数锁·2026-06-26）', () {
-      final ce = GameRepository.instance.numbers.cycleEvolution;
-      expect(ce.maxCycleMainline, 3);
-      expect(ce.maxCycleTower, 2);
-      final scale3 = 1.0 + ce.scalePerCycle * (3 - 1);
-      expect(scale3, closeTo(1.20, 0.001),
-          reason: 'cycle 3 主线 scale 应为 1 + 0.10×2 = 1.20');
-      final scale2 = 1.0 + ce.scalePerCycle * (2 - 1);
-      expect(scale2, closeTo(1.10, 0.001),
-          reason: 'cycle 2 塔 scale 应为 1 + 0.10×1 = 1.10');
-    });
+    test(
+      '5.1 maxCycleMainline=3 → cycle 3 scale = 1.20（spec 参数锁·2026-06-26）',
+      () {
+        final ce = GameRepository.instance.numbers.cycleEvolution;
+        expect(ce.maxCycleMainline, 3);
+        expect(ce.maxCycleTower, 2);
+        final scale3 = 1.0 + ce.scalePerCycle * (3 - 1);
+        expect(
+          scale3,
+          closeTo(1.20, 0.001),
+          reason: 'cycle 3 主线 scale 应为 1 + 0.10×2 = 1.20',
+        );
+        final scale2 = 1.0 + ce.scalePerCycle * (2 - 1);
+        expect(
+          scale2,
+          closeTo(1.10, 0.001),
+          reason: 'cycle 2 塔 scale 应为 1 + 0.10×1 = 1.10',
+        );
+      },
+    );
 
-    test('5.2 爬塔最大 Boss HP（floor 30 baseHp=15000）cycle 2 内：实测值 ≤ 红线', () {
-      // floor 30 baseHp=15000 × 1.10 = 16500 << 60000，安全边际大
+    test('5.2 爬塔最大 Boss HP（floor 30 当前 baseHp）cycle 2 scale 精确', () {
       final floor = GameRepository.instance.getTowerFloor(30);
       final team = StageBattleSetup.buildEnemyTeam(
         floor.enemyTeam,
@@ -442,11 +539,16 @@ void main() {
         isTower: true,
       );
       final boss = team.first; // floor 30 单人
-      const baseHpFloor30 = 15000;
+      final baseHpFloor30 = floor.enemyTeam.single.baseHp;
       final ce = GameRepository.instance.numbers.cycleEvolution;
       final expectedHp = (baseHpFloor30 * (1.0 + ce.scalePerCycle)).toInt();
-      expect(boss.maxHp, expectedHp,
-          reason: 'floor 30 cycle 2 boss HP 应精确 = $expectedHp（scale 逻辑验算）');
+      expect(
+        boss.maxHp,
+        expectedHp,
+        reason:
+            'floor 30 cycle 2 boss HP 应精确 = $baseHpFloor30 × '
+            '${1.0 + ce.scalePerCycle} = $expectedHp（scale 逻辑验算）',
+      );
     });
 
     test('5.3 主线 stage_05_05 Boss（baseHp=36600）cycle 3 scale 精确验算', () {
@@ -463,12 +565,21 @@ void main() {
       // 西凉霸主三弟子 baseHp=36600 → 期望 (36600 × 1.20).toInt() = 43,920 (< 60000 不命中 clamp)
       const baseHp = 36600;
       final expectedHp = (baseHp * scale3).toInt();
-      final boss =
-          team.firstWhere((bc) => bc.name == '西凉霸主三弟子', orElse: () => team.first);
-      expect(boss.maxHp, expectedHp,
-          reason: 'stage_05_05 cycle 3 boss HP 应精确 = $expectedHp');
-      expect(boss.maxHp, lessThanOrEqualTo(bossHpMax),
-          reason: '${boss.name} cycle 3 maxHp=${boss.maxHp} 应 ≤ §5.4 Boss HP 红线 $bossHpMax');
+      final boss = team.firstWhere(
+        (bc) => bc.name == '西凉霸主三弟子',
+        orElse: () => team.first,
+      );
+      expect(
+        boss.maxHp,
+        expectedHp,
+        reason: 'stage_05_05 cycle 3 boss HP 应精确 = $expectedHp',
+      );
+      expect(
+        boss.maxHp,
+        lessThanOrEqualTo(bossHpMax),
+        reason:
+            '${boss.name} cycle 3 maxHp=${boss.maxHp} 应 ≤ §5.4 Boss HP 红线 $bossHpMax',
+      );
     });
   });
 
@@ -478,7 +589,7 @@ void main() {
   //
   // §5.4「装备攻击 ≤ 2000」为**玩家装备**红线，不直接约束 enemy.baseAttack。
   // Ch6 全章（stage_06_01..06_05）enemy baseAttack 在 1950-2700 区间，
-  // tower floor 30 baseAttack=2250 — 均为 pre-P1 数值层已有设计，非 P1 引入。
+  // tower floor 30 也按当前配置派生 — 均为数值层设计，非 P1 引入。
   //
   // 本节的职责是：
   //   (a) 确认 P1 scale 逻辑精确（attack × scale 整数对上）；
@@ -494,30 +605,42 @@ void main() {
       );
       final ce = GameRepository.instance.numbers.cycleEvolution;
       const baseAtk05Boss = 1995; // 西凉霸主三弟子 baseAttack（yaml 锚）
-      final expectedAtk = (baseAtk05Boss * (1.0 + ce.scalePerCycle * 2)).toInt();
+      final expectedAtk = (baseAtk05Boss * (1.0 + ce.scalePerCycle * 2))
+          .toInt();
       final boss05 = team05.firstWhere(
         (bc) => bc.name == '西凉霸主三弟子',
         orElse: () => team05.first,
       );
-      expect(boss05.totalEquipmentAttack, expectedAtk,
-          reason: 'stage_05_05 cycle 3 attack scale 精确验算 '
-              '1995 × ${1.0 + ce.scalePerCycle * 2} = $expectedAtk');
+      expect(
+        boss05.totalEquipmentAttack,
+        expectedAtk,
+        reason:
+            'stage_05_05 cycle 3 attack scale 精确验算 '
+            '1995 × ${1.0 + ce.scalePerCycle * 2} = $expectedAtk',
+      );
     });
 
-    test('6.2 tower floor 30 cycle 2 attack scale 精确（baseAttack 2250 × 1.10）', () {
-      final floor30 = GameRepository.instance.getTowerFloor(30);
-      final team30 = StageBattleSetup.buildEnemyTeam(
-        floor30.enemyTeam,
-        cycleIndex: 2,
-        isTower: true,
-      );
-      final ce = GameRepository.instance.numbers.cycleEvolution;
-      const baseAtk30 = 2250; // floor 30 九霄魔尊 baseAttack（yaml 锚）
-      final expectedAtk = (baseAtk30 * (1.0 + ce.scalePerCycle)).toInt();
-      expect(team30.first.totalEquipmentAttack, expectedAtk,
-          reason: 'tower floor 30 cycle 2 attack scale 精确验算 '
-              '2250 × ${1.0 + ce.scalePerCycle} = $expectedAtk');
-    });
+    test(
+      '6.2 tower floor 30 cycle 2 attack scale 精确（当前 baseAttack × 1.10）',
+      () {
+        final floor30 = GameRepository.instance.getTowerFloor(30);
+        final team30 = StageBattleSetup.buildEnemyTeam(
+          floor30.enemyTeam,
+          cycleIndex: 2,
+          isTower: true,
+        );
+        final ce = GameRepository.instance.numbers.cycleEvolution;
+        final baseAtk30 = floor30.enemyTeam.single.baseAttack;
+        final expectedAtk = (baseAtk30 * (1.0 + ce.scalePerCycle)).toInt();
+        expect(
+          team30.first.totalEquipmentAttack,
+          expectedAtk,
+          reason:
+              'tower floor 30 cycle 2 attack scale 精确验算 '
+              '$baseAtk30 × ${1.0 + ce.scalePerCycle} = $expectedAtk',
+        );
+      },
+    );
 
     test('6.3 全主线 Boss 关 cycle 3 totalEquipmentAttack 分布记录（不 fail）', () {
       final repo = GameRepository.instance;
@@ -542,13 +665,19 @@ void main() {
         }
       }
       // 记录峰值（不 fail — §5.4 enemy attack 无硬约束，由 boss HP 红线间接控制威胁）
-      addTearDown(() =>
-          printOnFailure('[F1-RECORD] 全主线 Boss 关 cycle3 peak totalEquipmentAttack='
-              '$maxAtk（来自 [$maxStage] $maxEnemy，§5.4 参考 2000，'
-              '超线=${maxAtk > 2000 ? maxAtk - 2000 : "无"}）'));
+      addTearDown(
+        () => printOnFailure(
+          '[F1-RECORD] 全主线 Boss 关 cycle3 peak totalEquipmentAttack='
+          '$maxAtk（来自 [$maxStage] $maxEnemy，§5.4 参考 2000，'
+          '超线=${maxAtk > 2000 ? maxAtk - 2000 : "无"}）',
+        ),
+      );
       // 轻量健壮性断言：数值合理（不超过 baseAttack×1.20=无理值）
-      expect(maxAtk, lessThanOrEqualTo(5000),
-          reason: 'cycle 3 单敌 attack 不应超过极端上界 5000（scale 失控检测）');
+      expect(
+        maxAtk,
+        lessThanOrEqualTo(5000),
+        reason: 'cycle 3 单敌 attack 不应超过极端上界 5000（scale 失控检测）',
+      );
     });
   });
 
@@ -564,45 +693,57 @@ void main() {
 
   group('§7 scaledHp clamp ≤ bossHpMax（生产路径证明）', () {
     test(
-        '7.1 baseHp=58000 cycle 3 → debugEnemyToBattle 返回 maxHp=bossHpMax（clamp 分支真截断）',
-        () {
-      final n = GameRepository.instance.numbers;
-      final bossHpMax = n.combat.redLines.bossHpMax;
+      '7.1 baseHp=58000 cycle 3 → debugEnemyToBattle 返回 maxHp=bossHpMax（clamp 分支真截断）',
+      () {
+        final n = GameRepository.instance.numbers;
+        final bossHpMax = n.combat.redLines.bossHpMax;
 
-      // 构造 baseHp=58000 虚拟敌人：cycle3 scale=1.20 → 69600 > 60000
-      // 生产路径 .clamp(0, bossHpMax) 必须将其截断至 60000。
-      final syntheticEnemy = const EnemyDef(
-        id: 'test_clamp',
-        name: '测试截断',
-        realmTier: RealmTier.wuSheng,
-        realmLayer: RealmLayer.dengFeng,
-        school: TechniqueSchool.gangMeng,
-        baseHp: 58000,
-        baseAttack: 1000,
-        baseSpeed: 100,
-        skillIds: [],
-        iconPath: '',
-        isBoss: true,
-      );
+        // 构造 baseHp=58000 虚拟敌人：cycle3 scale=1.20 → 69600 > 60000
+        // 生产路径 .clamp(0, bossHpMax) 必须将其截断至 60000。
+        final syntheticEnemy = const EnemyDef(
+          id: 'test_clamp',
+          name: '测试截断',
+          realmTier: RealmTier.wuSheng,
+          realmLayer: RealmLayer.dengFeng,
+          school: TechniqueSchool.gangMeng,
+          baseHp: 58000,
+          baseAttack: 1000,
+          baseSpeed: 100,
+          skillIds: [],
+          iconPath: '',
+          isBoss: true,
+        );
 
-      final bc = StageBattleSetup.debugEnemyToBattle(
-        enemy: syntheticEnemy,
-        slotIndex: 0,
-        cycleIndex: 3,
-        isTower: false,
-      );
+        final bc = StageBattleSetup.debugEnemyToBattle(
+          enemy: syntheticEnemy,
+          slotIndex: 0,
+          cycleIndex: 3,
+          isTower: false,
+        );
 
-      // 64960 > 60000：生产 clamp 必须截断
-      final scaledRaw =
-          (58000 * (1.0 + n.cycleEvolution.scalePerCycle * (3 - 1))).toInt();
-      expect(scaledRaw, greaterThan(bossHpMax),
-          reason: 'scaledRaw=$scaledRaw 必须 > bossHpMax=$bossHpMax 才能验证 clamp 分支');
-      expect(bc.maxHp, bossHpMax,
-          reason: '生产路径 clamp 后 maxHp 必须精确等于 bossHpMax=$bossHpMax，'
-              '而非 scaledRaw=$scaledRaw');
-      expect(bc.currentHp, bossHpMax,
-          reason: 'currentHp 初始值应与 maxHp 一致（满血入场）');
-    });
+        // 64960 > 60000：生产 clamp 必须截断
+        final scaledRaw =
+            (58000 * (1.0 + n.cycleEvolution.scalePerCycle * (3 - 1))).toInt();
+        expect(
+          scaledRaw,
+          greaterThan(bossHpMax),
+          reason:
+              'scaledRaw=$scaledRaw 必须 > bossHpMax=$bossHpMax 才能验证 clamp 分支',
+        );
+        expect(
+          bc.maxHp,
+          bossHpMax,
+          reason:
+              '生产路径 clamp 后 maxHp 必须精确等于 bossHpMax=$bossHpMax，'
+              '而非 scaledRaw=$scaledRaw',
+        );
+        expect(
+          bc.currentHp,
+          bossHpMax,
+          reason: 'currentHp 初始值应与 maxHp 一致（满血入场）',
+        );
+      },
+    );
 
     test('7.2 baseHp=45000 cycle 3（54000 < 60000）→ 无 clamp，精确等于 scale 结果', () {
       // 反例：不超线时 clamp 不截断，结果应精确等于 scale 值（回归锁）。
@@ -634,10 +775,16 @@ void main() {
       );
 
       final expectedHp = (45000 * (1.0 + ce.scalePerCycle * (3 - 1))).toInt();
-      expect(expectedHp, lessThanOrEqualTo(bossHpMax),
-          reason: '$expectedHp ≤ $bossHpMax，此用例验证无截断路径（回归锁）');
-      expect(bc.maxHp, expectedHp,
-          reason: '未超线时 maxHp 应精确等于 scale 结果 $expectedHp，不应被 clamp 截断');
+      expect(
+        expectedHp,
+        lessThanOrEqualTo(bossHpMax),
+        reason: '$expectedHp ≤ $bossHpMax，此用例验证无截断路径（回归锁）',
+      );
+      expect(
+        bc.maxHp,
+        expectedHp,
+        reason: '未超线时 maxHp 应精确等于 scale 结果 $expectedHp，不应被 clamp 截断',
+      );
     });
   });
 
@@ -682,14 +829,21 @@ void main() {
             maxStage = stage.id;
             maxEnemy = bc.name;
           }
-          expect(dmg, lessThanOrEqualTo(normalDamageRedLine),
-              reason: '[${stage.id}] ${bc.name} cycle 3 中性普攻基础伤害=$dmg '
-                  '超 §5.4 普通伤害红线=$normalDamageRedLine');
+          expect(
+            dmg,
+            lessThanOrEqualTo(normalDamageRedLine),
+            reason:
+                '[${stage.id}] ${bc.name} cycle 3 中性普攻基础伤害=$dmg '
+                '超 §5.4 普通伤害红线=$normalDamageRedLine',
+          );
         }
       }
-      addTearDown(() => printOnFailure(
+      addTearDown(
+        () => printOnFailure(
           '全主线 Boss 关 cycle3 中性普攻峰值=$maxDmg（来自 [$maxStage] $maxEnemy，'
-          '红线=$normalDamageRedLine，余量=${normalDamageRedLine - maxDmg}）'));
+          '红线=$normalDamageRedLine，余量=${normalDamageRedLine - maxDmg}）',
+        ),
+      );
     });
 
     test('8.2 全爬塔 Boss 层 cycle 2：中性普攻基础伤害 ≤ 8000', () {
@@ -712,14 +866,21 @@ void main() {
             maxFloor = i;
             maxEnemy = bc.name;
           }
-          expect(dmg, lessThanOrEqualTo(normalDamageRedLine),
-              reason: 'tower floor $i cycle 2 ${bc.name} 中性普攻基础伤害=$dmg '
-                  '超 §5.4 普通伤害红线=$normalDamageRedLine');
+          expect(
+            dmg,
+            lessThanOrEqualTo(normalDamageRedLine),
+            reason:
+                'tower floor $i cycle 2 ${bc.name} 中性普攻基础伤害=$dmg '
+                '超 §5.4 普通伤害红线=$normalDamageRedLine',
+          );
         }
       }
-      addTearDown(() => printOnFailure(
+      addTearDown(
+        () => printOnFailure(
           '全爬塔 Boss 层 cycle2 中性普攻峰值=$maxDmg（来自 floor $maxFloor $maxEnemy，'
-          '红线=$normalDamageRedLine，余量=${normalDamageRedLine - maxDmg}）'));
+          '红线=$normalDamageRedLine，余量=${normalDamageRedLine - maxDmg}）',
+        ),
+      );
     });
   });
 }

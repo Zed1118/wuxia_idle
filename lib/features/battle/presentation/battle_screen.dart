@@ -352,7 +352,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     _closeupCtrl = AnimationController(
       vsync: this,
       duration: Duration(
-          milliseconds: widget.animConfig.hitTier.closeupPulseMs),
+        milliseconds: widget.animConfig.hitTier.closeupPulseMs,
+      ),
     );
     _hitFlashControllers = List.generate(
       6,
@@ -1241,7 +1242,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
               child: AnimatedBuilder(
                 animation: _closeupCtrl,
                 builder: (context, child) {
-                  final scale = 1.0 +
+                  final scale =
+                      1.0 +
                       (widget.animConfig.hitTier.closeupScale - 1.0) *
                           _closeupCtrl.value;
                   return Transform.scale(scale: scale, child: child);
@@ -1258,75 +1260,75 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                     );
                   },
                   child: Column(
-                  children: [
-                    if (widget.hint != null) _HintBanner(hint: widget.hint!),
-                    if (widget.cycleHint != null)
-                      _CycleHintBanner(hint: widget.cycleHint!),
-                    _Header(
-                      state: state,
-                      onToggleLog: () => setState(() => _logOpen = !_logOpen),
-                      onPause: _togglePause,
-                      isPaused: _isPaused,
-                      onSurrender: widget.onSurrender == null
-                          ? null
-                          : _confirmSurrender,
-                      // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
-                      onStepOnce: widget.startPaused ? _stepOnce : null,
-                    ),
-                    _DangerBar(state: state),
-                    Expanded(
-                      child: Stack(
-                        children: [
-                          _BattleField(
-                            state: state,
-                            attackControllers: _attackControllers,
-                            popups: _popups,
-                            animConfig: widget.animConfig,
-                            chargeMaxTicks: chargeMaxTicks,
-                            onPopupComplete: _removePopup,
-                            hitFlashControllers: _hitFlashControllers,
-                            hitFlashColors: _hitFlashColors,
-                            enemyAvatarKeys: _enemyAvatarKeys,
-                            hoveredEnemyId: _hoveredEnemyId,
-                            rushActorId: _rushToActorId,
-                          ),
-                          Positioned.fill(
-                            child: IgnorePointer(
-                              child: _ProjectileLayer(trails: _activeTrails),
-                            ),
-                          ),
-                          Positioned.fill(
-                            child: IgnorePointer(
-                              child: _EffectLayer(effects: _activeEffects),
-                            ),
-                          ),
-                        ],
+                    children: [
+                      if (widget.hint != null) _HintBanner(hint: widget.hint!),
+                      if (widget.cycleHint != null)
+                        _CycleHintBanner(hint: widget.cycleHint!),
+                      _Header(
+                        state: state,
+                        onToggleLog: () => setState(() => _logOpen = !_logOpen),
+                        onPause: _togglePause,
+                        isPaused: _isPaused,
+                        onSurrender: widget.onSurrender == null
+                            ? null
+                            : _confirmSurrender,
+                        // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
+                        onStepOnce: widget.startPaused ? _stepOnce : null,
                       ),
-                    ),
-                    _BattleReportStrip(
-                      state: state,
-                      onTap: () => setState(() => _logOpen = true),
-                    ),
-                    if (widget.allowPlayerIntervention)
-                      _CoopBurstPromptBar(state: state),
-                    _BottomBar(
-                      state: state,
-                      focusSlotIndex: _effectiveFocus(state),
-                      allowPlayerIntervention: widget.allowPlayerIntervention,
-                      onSelectFocus: _onSelectFocus,
-                      onShowSkillInfo: _showSkillInfo,
-                      onFastForward: _toggleFastForward,
-                      isFastForward: _isFastForward,
-                      onSkillDragStart: _onSkillDragStart,
-                      onSkillDragUpdate: _onSkillDragUpdate,
-                      onSkillDragEnd: _onSkillDragEnd,
-                      onSkillDragCancel: _onSkillDragCancel,
-                    ),
-                  ],
+                      _DangerBar(state: state),
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            _BattleField(
+                              state: state,
+                              attackControllers: _attackControllers,
+                              popups: _popups,
+                              animConfig: widget.animConfig,
+                              chargeMaxTicks: chargeMaxTicks,
+                              onPopupComplete: _removePopup,
+                              hitFlashControllers: _hitFlashControllers,
+                              hitFlashColors: _hitFlashColors,
+                              enemyAvatarKeys: _enemyAvatarKeys,
+                              hoveredEnemyId: _hoveredEnemyId,
+                              rushActorId: _rushToActorId,
+                            ),
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: _ProjectileLayer(trails: _activeTrails),
+                              ),
+                            ),
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: _EffectLayer(effects: _activeEffects),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      _BattleReportStrip(
+                        state: state,
+                        onTap: () => setState(() => _logOpen = true),
+                      ),
+                      if (widget.allowPlayerIntervention)
+                        _CoopBurstPromptBar(state: state),
+                      _BottomBar(
+                        state: state,
+                        focusSlotIndex: _effectiveFocus(state),
+                        allowPlayerIntervention: widget.allowPlayerIntervention,
+                        onSelectFocus: _onSelectFocus,
+                        onShowSkillInfo: _showSkillInfo,
+                        onFastForward: _toggleFastForward,
+                        isFastForward: _isFastForward,
+                        onSkillDragStart: _onSkillDragStart,
+                        onSkillDragUpdate: _onSkillDragUpdate,
+                        onSkillDragEnd: _onSkillDragEnd,
+                        onSkillDragCancel: _onSkillDragCancel,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
             // Phase 4 拖招引导线层(技能按钮锚点 → 指针,流派色笔触)。
             if (_dragOrigin != null &&
                 _dragPointer != null &&
@@ -1423,7 +1425,7 @@ class _CycleHintBanner extends StatelessWidget {
       color: const Color(0xFF3A2E00),
       child: Text(
         hint,
-        style: const TextStyle(color: Color(0xFFD4A800), fontSize: 12),
+        style: const TextStyle(color: WuxiaColors.cycleHintText, fontSize: 12),
       ),
     );
   }
