@@ -1001,7 +1001,10 @@ class _VictorySealMarkState extends State<_VictorySealMark>
                                 blurRadius: 16,
                                 offset: Offset(0, 5),
                               ),
-                              Shadow(color: Color(0x88B99A3B), blurRadius: 14),
+                              Shadow(
+                                color: WuxiaColors.visualGoldShadow,
+                                blurRadius: 14,
+                              ),
                             ],
                           ),
                         ),

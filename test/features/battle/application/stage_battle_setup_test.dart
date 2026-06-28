@@ -47,7 +47,7 @@ void main() {
     }
   });
 
-  test('P3 种子（含主修）+ stage_01_01 → 左队 1 人 + 右队 3 名敌人', () async {
+  test('P3 种子（含主修）+ stage_01_01 → 左队 1 人 + 右队按 yaml 装配', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
     final stage = GameRepository.instance.getStage('stage_01_01');
 
@@ -60,10 +60,12 @@ void main() {
     expect(left.first.teamSide, 0);
     expect(left.first.slotIndex, 0);
 
-    expect(right.length, 3, reason: 'stage_01_01 三敌');
+    expect(
+      right.length,
+      stage.enemyTeam.length,
+      reason: 'stage_01_01 敌人数跟随 production yaml',
+    );
     expect(right[0].name, '流民甲');
-    expect(right[1].name, '流民乙');
-    expect(right[2].name, '流民丙');
   });
 
   test(
@@ -86,7 +88,7 @@ void main() {
     },
   );
 
-  test('敌人 characterId 用负数防冲突（-1/-2/-3）', () async {
+  test('敌人 characterId 用负数防冲突（按 slot 递减）', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
     final stage = GameRepository.instance.getStage('stage_01_01');
 
@@ -95,9 +97,10 @@ void main() {
     ).buildTeams(stage);
 
     expect(left.first.characterId, greaterThan(0), reason: '玩家 isar id 是正数');
-    expect(right[0].characterId, -1);
-    expect(right[1].characterId, -2);
-    expect(right[2].characterId, -3);
+    expect(
+      right.map((e) => e.characterId).toList(),
+      List.generate(stage.enemyTeam.length, (i) => -(i + 1)),
+    );
   });
 
   test('SaveData.activeCharacterIds 显式指定 → 取该列表，不走 fallback', () async {

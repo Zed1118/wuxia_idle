@@ -45,128 +45,169 @@ class TreasureDropContent extends StatelessWidget {
       alignment: const Alignment(0, -0.12),
       child: Transform.translate(
         offset: Offset(shake, 0),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          // ── crest: 墨团氛围 + 图标名居中 + 印章右下落款 ──
-          SizedBox(
-            width: 320,
-            height: 226,
-            child: Stack(children: [
-              // 墨团背景(染 tier glow)
-              Center(
-                child: Transform.scale(
-                  scale: blobScale.clamp(0.0, 1.2),
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.mode(glow, BlendMode.srcIn),
-                    child: Image.asset(
-                      _kInkBlobAsset,
-                      width: 260,
-                      height: 190,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => Container(
-                          width: 240,
-                          height: 170,
-                          decoration: BoxDecoration(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ── crest: 墨团氛围 + 图标名居中 + 印章右下落款 ──
+            SizedBox(
+              width: 320,
+              height: 226,
+              child: Stack(
+                children: [
+                  // 墨团背景(染 tier glow)
+                  Center(
+                    child: Transform.scale(
+                      scale: blobScale.clamp(0.0, 1.2),
+                      child: ColorFiltered(
+                        colorFilter: ColorFilter.mode(glow, BlendMode.srcIn),
+                        child: Image.asset(
+                          _kInkBlobAsset,
+                          width: 260,
+                          height: 190,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, _, _) => Container(
+                            width: 240,
+                            height: 170,
+                            decoration: BoxDecoration(
                               color: glow,
-                              borderRadius: BorderRadius.circular(120))),
-                    ),
-                  ),
-                ),
-              ),
-              // 装备图标 + 名(居中清晰)
-              Center(
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  SizedBox(
-                      width: 64,
-                      height: 64,
-                      child: Image.asset(
-                        highlight.iconPath,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, _, _) =>
-                            EquipGlyph(tierColor: seed, slot: highlight.slot),
-                      )),
-                  const SizedBox(height: 4),
-                  Text(highlight.name,
-                      style: const TextStyle(
-                          color: WuxiaColors.textPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          shadows: [Shadow(color: Colors.black, blurRadius: 6)])),
-                ]),
-              ),
-              // 印章盖落(绛红 + tier 题字,右下角落款 78px)
-              Positioned(
-                right: 16,
-                bottom: 18,
-                child: Transform.translate(
-                  offset: Offset(0, sealDy),
-                  child: Transform.rotate(
-                    angle: sealRot,
-                    child: Opacity(
-                      opacity: sealT,
-                      child: Container(
-                        width: 78,
-                        height: 78,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                            color: WuxiaColors.sealCrimson,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                                color: const Color(0xFF7A1F1A), width: 2),
-                            boxShadow: const [
-                              BoxShadow(
-                                  color: Color(0x80000000),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 2))
-                            ]),
-                        child: Text(EnumL10n.equipmentTier(highlight.tier),
-                            style: const TextStyle(
-                                color: Color(0xFFF3E6D0),
-                                fontSize: 25,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 1)),
+                              borderRadius: BorderRadius.circular(120),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  // 装备图标 + 名(居中清晰)
+                  Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 64,
+                          height: 64,
+                          child: Image.asset(
+                            highlight.iconPath,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, _, _) => EquipGlyph(
+                              tierColor: seed,
+                              slot: highlight.slot,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          highlight.name,
+                          style: const TextStyle(
+                            color: WuxiaColors.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            shadows: [
+                              Shadow(color: Colors.black, blurRadius: 6),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // 印章盖落(绛红 + tier 题字,右下角落款 78px)
+                  Positioned(
+                    right: 16,
+                    bottom: 18,
+                    child: Transform.translate(
+                      offset: Offset(0, sealDy),
+                      child: Transform.rotate(
+                        angle: sealRot,
+                        child: Opacity(
+                          opacity: sealT,
+                          child: Container(
+                            width: 78,
+                            height: 78,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: WuxiaColors.sealCrimson,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: const Color(0xFF7A1F1A),
+                                width: 2,
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x80000000),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              EnumL10n.equipmentTier(highlight.tier),
+                              style: const TextStyle(
+                                color: Color(0xFFF3E6D0),
+                                fontSize: 25,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ]),
-          ),
-          // ── extra: 属性行 + 典故金句(印章定后渐入) ──
-          Opacity(
-            opacity: contentT,
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              const SizedBox(height: 2),
-              Row(mainAxisSize: MainAxisSize.min, children: [
-                _AttrChip(
-                    label: UiStrings.equipStatAttack,
-                    value: highlight.attack,
-                    color: seed),
-                const SizedBox(width: 14),
-                _AttrChip(
-                    label: UiStrings.equipStatHealth,
-                    value: highlight.health,
-                    color: seed),
-                const SizedBox(width: 14),
-                _AttrChip(
-                    label: UiStrings.equipStatSpeed,
-                    value: highlight.speed,
-                    color: seed),
-              ]),
-              if (tagline != null && tagline.trim().isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
-                  child: Text(tagline,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
+            ),
+            // ── extra: 属性行 + 典故金句(印章定后渐入) ──
+            Opacity(
+              opacity: contentT,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 2),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _AttrChip(
+                        label: UiStrings.equipStatAttack,
+                        value: highlight.attack,
+                        color: seed,
+                      ),
+                      const SizedBox(width: 14),
+                      _AttrChip(
+                        label: UiStrings.equipStatHealth,
+                        value: highlight.health,
+                        color: seed,
+                      ),
+                      const SizedBox(width: 14),
+                      _AttrChip(
+                        label: UiStrings.equipStatSpeed,
+                        value: highlight.speed,
+                        color: seed,
+                      ),
+                    ],
+                  ),
+                  if (tagline != null && tagline.trim().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 8,
+                        left: 16,
+                        right: 16,
+                      ),
+                      child: Text(
+                        tagline,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
                           color: Color(0xFFD8C79A),
                           fontSize: 12.5,
                           fontStyle: FontStyle.italic,
                           height: 1.5,
-                          shadows: [Shadow(color: Colors.black, blurRadius: 3)])),
-                ),
-            ]),
-          ),
-        ]),
+                          shadows: [Shadow(color: Colors.black, blurRadius: 3)],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -177,28 +218,37 @@ class _AttrChip extends StatelessWidget {
   final String label;
   final int value;
   final Color color;
-  const _AttrChip(
-      {required this.label, required this.value, required this.color});
+  const _AttrChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     return RichText(
-      text: TextSpan(children: [
-        TextSpan(
+      text: TextSpan(
+        children: [
+          TextSpan(
             text: '$label ',
             style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                shadows: const [Shadow(color: Colors.black, blurRadius: 3)])),
-        TextSpan(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              shadows: const [Shadow(color: Colors.black, blurRadius: 3)],
+            ),
+          ),
+          TextSpan(
             text: '$value',
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                shadows: [Shadow(color: Colors.black, blurRadius: 3)])),
-      ]),
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              shadows: [Shadow(color: Colors.black, blurRadius: 3)],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -208,8 +258,11 @@ class _AttrChip extends StatelessWidget {
 class TreasureDropOverlay extends StatefulWidget {
   final TreasureHighlight highlight;
   final VoidCallback onDone;
-  const TreasureDropOverlay(
-      {super.key, required this.highlight, required this.onDone});
+  const TreasureDropOverlay({
+    super.key,
+    required this.highlight,
+    required this.onDone,
+  });
 
   @override
   State<TreasureDropOverlay> createState() => _TreasureDropOverlayState();
@@ -226,8 +279,9 @@ class _TreasureDropOverlayState extends State<TreasureDropOverlay>
     // 动画播完停留在末态(属性+典故全显),不自动消失——等用户轻触才继续,
     // 让"得宝"瞬间能停下来看够典故与属性。
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1300))
-      ..forward();
+      vsync: this,
+      duration: const Duration(milliseconds: 1300),
+    )..forward();
   }
 
   void _finish() {
@@ -253,35 +307,37 @@ class _TreasureDropOverlayState extends State<TreasureDropOverlay>
           animation: _ctrl,
           builder: (_, _) {
             final t = _ctrl.value;
-            return Stack(children: [
-              Positioned.fill(
-                  child: TreasureDropContent(
-                      highlight: widget.highlight, t: t)),
-              // 神物专属金光层(辉光 + 盖章金闪 + 双环涟漪)。拆出 TreasureGlowLayer:
-              // 既给固定 t 视觉验收路由复用,也便于 tier-gate widget test。
-              Positioned.fill(
-                child: TreasureGlowLayer(
-                  tier: widget.highlight.tier,
-                  t: t,
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: TreasureDropContent(highlight: widget.highlight, t: t),
                 ),
-              ),
-              // 「轻触继续」提示(动画末期淡入,引导停留后手动继续)
-              Positioned(
-                bottom: 40,
-                left: 0,
-                right: 0,
-                child: Opacity(
-                  opacity: ((t - 0.5) / 0.3).clamp(0.0, 1.0),
-                  child: const Text(UiStrings.splashTapToContinue,
+                // 神物专属金光层(辉光 + 盖章金闪 + 双环涟漪)。拆出 TreasureGlowLayer:
+                // 既给固定 t 视觉验收路由复用,也便于 tier-gate widget test。
+                Positioned.fill(
+                  child: TreasureGlowLayer(tier: widget.highlight.tier, t: t),
+                ),
+                // 「轻触继续」提示(动画末期淡入,引导停留后手动继续)
+                Positioned(
+                  bottom: 40,
+                  left: 0,
+                  right: 0,
+                  child: Opacity(
+                    opacity: ((t - 0.5) / 0.3).clamp(0.0, 1.0),
+                    child: const Text(
+                      UiStrings.splashTapToContinue,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                          color: Color(0x99FFFFFF),
-                          fontSize: 12,
-                          letterSpacing: 2,
-                          shadows: [Shadow(color: Colors.black, blurRadius: 4)])),
+                        color: Color(0x99FFFFFF),
+                        fontSize: 12,
+                        letterSpacing: 2,
+                        shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ]);
+              ],
+            );
           },
         ),
       ),
@@ -322,9 +378,9 @@ class TreasureGlowLayer extends StatelessWidget {
                   gradient: RadialGradient(
                     radius: 1.1,
                     colors: [
-                      Color(0x00F0CC72),
-                      Color(0x44F0CC72),
-                      Color(0xCCE8B84A),
+                      WuxiaColors.treasureAuraInner,
+                      WuxiaColors.treasureAuraMid,
+                      WuxiaColors.treasureAuraEdge,
                     ],
                     stops: [0.28, 0.62, 1.0],
                   ),
@@ -382,26 +438,32 @@ class TreasureGlowLayer extends StatelessWidget {
 /// 主线传 gate=true;塔传 gate=isFirstClear(沿现有 reward gate)。
 /// [extraDisplayTiers]:额外允许展示的 tier 集合(如利器首次获得,由 flow 层计算传入)。
 Future<bool> playTreasureDropIfAny(
-    BuildContext context, DropResult drops,
-    {required bool gate,
-    Set<EquipmentTier> extraDisplayTiers = const {}}) async {
+  BuildContext context,
+  DropResult drops, {
+  required bool gate,
+  Set<EquipmentTier> extraDisplayTiers = const {},
+}) async {
   if (!gate || !GameRepository.isLoaded) return false;
   final minTier = GameRepository.instance.numbers.treasureDrop.minTier;
   final candidates = drops.equipments.map((e) {
     final def = GameRepository.instance.getEquipment(e.defId);
     return TreasureHighlight(
-        defId: e.defId,
-        name: def.name,
-        tier: def.tier,
-        slot: def.slot,
-        iconPath: def.iconPath,
-        attack: e.baseAttack,
-        health: e.baseHealth,
-        speed: e.baseSpeed,
-        tagline: def.tagline);
+      defId: e.defId,
+      name: def.name,
+      tier: def.tier,
+      slot: def.slot,
+      iconPath: def.iconPath,
+      attack: e.baseAttack,
+      health: e.baseHealth,
+      speed: e.baseSpeed,
+      tagline: def.tagline,
+    );
   }).toList();
-  final hl = pickTreasureHighlight(candidates, minTier,
-      extraDisplayTiers: extraDisplayTiers);
+  final hl = pickTreasureHighlight(
+    candidates,
+    minTier,
+    extraDisplayTiers: extraDisplayTiers,
+  );
   if (hl == null || !context.mounted) return false;
   SoundManager.instance.playSfx(SfxId.reward);
   await showGeneralDialog<void>(
@@ -410,7 +472,9 @@ Future<bool> playTreasureDropIfAny(
     barrierColor: Colors.transparent,
     transitionDuration: Duration.zero,
     pageBuilder: (ctx, _, _) => TreasureDropOverlay(
-        highlight: hl, onDone: () => Navigator.of(ctx).pop()),
+      highlight: hl,
+      onDone: () => Navigator.of(ctx).pop(),
+    ),
   );
   return true;
 }
