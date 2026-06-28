@@ -53,6 +53,7 @@ enum EquipmentProtectionReason {
   lineageHeritage,
   highTier,
   protectedSource,
+  story,
 }
 
 /// 装备处置/替换保护策略。
@@ -62,10 +63,12 @@ enum EquipmentProtectionReason {
 class EquipmentProtectionPolicy {
   final EquipmentTier? protectTierAtOrAbove;
   final Set<String> protectedObtainedFrom;
+  final bool protectPersonalHistory;
 
   const EquipmentProtectionPolicy({
     this.protectTierAtOrAbove = EquipmentTier.zhongQi,
     this.protectedObtainedFrom = const {},
+    this.protectPersonalHistory = true,
   });
 
   static const defaultPolicy = EquipmentProtectionPolicy();
@@ -93,6 +96,11 @@ EquipmentProtectionReason? equipmentProtectionReason(
   }
   if (policy.protectedObtainedFrom.contains(equipment.obtainedFrom)) {
     return EquipmentProtectionReason.protectedSource;
+  }
+  if (policy.protectPersonalHistory &&
+      (equipment.lores.isNotEmpty ||
+          equipment.previousOwnerCharacterIds.isNotEmpty)) {
+    return EquipmentProtectionReason.story;
   }
   return null;
 }

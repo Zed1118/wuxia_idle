@@ -117,7 +117,7 @@ class EquipmentDisposalService {
   /// 和玩家锁定（[Equipment.isLocked]）装备。
   Future<BulkDisposalResult> sellAllOfTier(EquipmentTier tier) =>
       isar.writeTxn(() async {
-        final items = await _disposableOfTier(tier);
+        final items = await _bulkSellableOfTier(tier);
         var total = 0;
         for (final eq in items) {
           total += equipmentSellPrice(eq.tier, eq.enhanceLevel, config);
@@ -155,8 +155,7 @@ class EquipmentDisposalService {
         );
       });
 
-  /// 查询指定品级中可处置的自由装备
-  /// （不在任一角色槽位 && !isLineageHeritage && !isLocked）。
+  /// 查询指定品级中可处置的自由装备，沿用单件处置守卫。
   /// 须在 [writeTxn] 内调（读在同事务内）。
   Future<List<Equipment>> _disposableOfTier(EquipmentTier tier) async {
     final all = await isar.equipments.filter().tierEqualTo(tier).findAll();
@@ -172,6 +171,10 @@ class EquipmentDisposalService {
           ),
         )
         .toList();
+  }
+
+  Future<List<Equipment>> _bulkSellableOfTier(EquipmentTier tier) async {
+    return _disposableOfTier(tier);
   }
 
   /// 前置守卫：null = 可处置；否则返回拒绝/未找到结果。

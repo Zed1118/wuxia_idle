@@ -633,20 +633,21 @@ class UiStrings {
     required int locked,
     required int equipped,
     required int heritage,
-    int protected = 0,
+    required int highTier,
+    required int story,
   }) {
     final parts = <String>[
       if (locked > 0) '锁定 $locked 件',
       if (equipped > 0) '装备中 $equipped 件',
       if (heritage > 0) '师承遗物 $heritage 件',
-      if (protected > 0) '高阶/剧情 $protected 件',
+      if (highTier > 0) '高阶 $highTier 件',
+      if (story > 0) '典故/传承 $story 件',
     ];
     return parts.isEmpty ? '' : '已排除：${parts.join(' / ')}。';
   }
 
   /// 批量整理对话框按钮（Task 6）。
   static const String bulkSellButton = '一键出售';
-  static const String bulkDisassembleButton = '一键分解';
   static const String bulkDisposalEmpty = '暂无可整理装备';
 
   // T11 仓库筛选标签。
