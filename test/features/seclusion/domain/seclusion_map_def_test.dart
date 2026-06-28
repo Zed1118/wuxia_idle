@@ -40,19 +40,23 @@ void main() {
       double equipDrop = 1.0,
       double techniqueLearn = 1.0,
       double internalForce = 1.0,
-    }) =>
-        {
-          'map_type': mapType,
-          'map_name': mapName,
-          'required_realm': requiredRealm,
-          'base_outputs': {
-            'experience_per_hour': experience,
-            'mojianshi_per_hour': mojianshi,
-            'equipment_drop_rate': equipDrop,
-            'technique_learn_rate': techniqueLearn,
-            'internal_force_growth': internalForce,
-          },
-        };
+    }) => {
+      'map_type': mapType,
+      'map_name': mapName,
+      'required_realm': requiredRealm,
+      'base_outputs': {
+        'experience_per_hour': experience,
+        'mojianshi_per_hour': mojianshi,
+        'equipment_drop_rate': equipDrop,
+        'technique_learn_rate': techniqueLearn,
+        'internal_force_growth': internalForce,
+      },
+      'route': const ['入山', '结庐', '收功'],
+      'event_notes': const [
+        {'trigger_after_hours': 1, 'kind': 'harvest', 'text': '溪畔药香渐浓'},
+        {'trigger_after_hours': 4, 'kind': 'risk', 'text': '夜半山风骤紧'},
+      ],
+    };
 
     test('山林 - 学徒可进，基础产出正确', () {
       final def = SeclusionMapDef.fromYaml(mapYaml());
@@ -62,6 +66,11 @@ void main() {
       expect(def.experiencePerHour, 100.0);
       expect(def.mojianshiPerHour, 1.0);
       expect(def.equipmentDropRate, 1.0);
+      expect(def.routeSteps, ['入山', '结庐', '收功']);
+      expect(def.eventNotes, hasLength(2));
+      expect(def.eventNotes.first.kind, RetreatMapEventKind.harvest);
+      expect(def.eventNotes.first.triggerAfterHours, 1.0);
+      expect(def.eventNotes.first.text, '溪畔药香渐浓');
     });
 
     test('古剑冢 - 三流可进，兵器掉率 1.5', () {
@@ -235,16 +244,18 @@ void main() {
 
     test('shanLin 可 getSeclusionMap 查询', () async {
       await GameRepository.loadAllDefs(loader: fileLoader);
-      final def =
-          GameRepository.instance.getSeclusionMap(RetreatMapType.shanLin);
+      final def = GameRepository.instance.getSeclusionMap(
+        RetreatMapType.shanLin,
+      );
       expect(def.mapName, '山林');
       expect(def.requiredRealm, RealmTier.xueTu);
     });
 
     test('duanYaJueBi 解锁境界为 zongShi', () async {
       await GameRepository.loadAllDefs(loader: fileLoader);
-      final def = GameRepository.instance
-          .getSeclusionMap(RetreatMapType.duanYaJueBi);
+      final def = GameRepository.instance.getSeclusionMap(
+        RetreatMapType.duanYaJueBi,
+      );
       expect(def.requiredRealm, RealmTier.zongShi);
     });
 
@@ -253,22 +264,25 @@ void main() {
       expect(GameRepository.instance.numbers.retreat.capHours, 72);
     });
 
-    test('requiredRealm 顺序：shanLin ≤ guJianZhong / cangJingGe ≤ xuanYaPuBu ≤ duanYaJueBi', () async {
-      await GameRepository.loadAllDefs(loader: fileLoader);
-      final maps = {
-        for (final m in GameRepository.instance.seclusionMaps)
-          m.mapType: m.requiredRealm,
-      };
-      expect(
-        maps[RetreatMapType.shanLin]!.index,
-        lessThanOrEqualTo(maps[RetreatMapType.guJianZhong]!.index),
-      );
-      expect(
-        maps[RetreatMapType.xuanYaPuBu]!.index,
-        lessThanOrEqualTo(maps[RetreatMapType.duanYaJueBi]!.index),
-      );
-      expect(maps[RetreatMapType.duanYaJueBi], RealmTier.zongShi);
-    });
+    test(
+      'requiredRealm 顺序：shanLin ≤ guJianZhong / cangJingGe ≤ xuanYaPuBu ≤ duanYaJueBi',
+      () async {
+        await GameRepository.loadAllDefs(loader: fileLoader);
+        final maps = {
+          for (final m in GameRepository.instance.seclusionMaps)
+            m.mapType: m.requiredRealm,
+        };
+        expect(
+          maps[RetreatMapType.shanLin]!.index,
+          lessThanOrEqualTo(maps[RetreatMapType.guJianZhong]!.index),
+        );
+        expect(
+          maps[RetreatMapType.xuanYaPuBu]!.index,
+          lessThanOrEqualTo(maps[RetreatMapType.duanYaJueBi]!.index),
+        );
+        expect(maps[RetreatMapType.duanYaJueBi], RealmTier.zongShi);
+      },
+    );
   });
 
   // ─────────────────────────────────────────────────────────────────────────

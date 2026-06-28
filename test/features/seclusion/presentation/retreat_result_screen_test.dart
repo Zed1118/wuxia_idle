@@ -27,6 +27,14 @@ SeclusionMapDef _mkMapDef() => const SeclusionMapDef(
   internalForceGrowth: 1.0,
   biome: null,
   weather: null,
+  routeSteps: ['沿旧樵径入山', '在溪石旁结庐调息'],
+  eventNotes: [
+    RetreatMapEventDef(
+      triggerAfterHours: 1,
+      kind: RetreatMapEventKind.harvest,
+      text: '溪畔药香渐浓',
+    ),
+  ],
 );
 
 RetreatResult _mkResult({
@@ -37,6 +45,8 @@ RetreatResult _mkResult({
   int experience = 0,
   int techniqueLearn = 0,
   int internalForce = 0,
+  List<String>? routeSteps,
+  List<RetreatMapEventRecord>? mapEvents,
   AdvancementResult? advancement,
 }) => (
   actualHours: actualHours,
@@ -46,6 +56,8 @@ RetreatResult _mkResult({
   experiencePoints: experience,
   techniqueLearnPoints: techniqueLearn,
   internalForcePoints: internalForce,
+  routeSteps: routeSteps ?? const [],
+  mapEvents: mapEvents ?? const [],
   advancement: advancement,
 );
 
@@ -114,6 +126,31 @@ void main() {
       expect(find.text(UiStrings.seclusionInternalForce(30)), findsOneWidget);
       expect(find.text(UiStrings.seclusionInsightPoints(5)), findsOneWidget);
       expect(find.text(UiStrings.seclusionResultEmpty), findsNothing);
+    });
+
+    testWidgets('地图路径与事件记录从结果数据展示', (tester) async {
+      await _pump(
+        tester,
+        _mkResult(
+          routeSteps: const ['沿旧樵径入山', '在溪石旁结庐调息'],
+          mapEvents: const [
+            RetreatMapEventRecord(
+              hourMark: 1,
+              kind: RetreatMapEventKind.harvest,
+              text: '溪畔药香渐浓',
+            ),
+          ],
+        ),
+      );
+
+      expect(find.text(UiStrings.seclusionResultRouteTitle), findsOneWidget);
+      expect(find.text('沿旧樵径入山'), findsOneWidget);
+      expect(find.text('在溪石旁结庐调息'), findsOneWidget);
+      expect(find.textContaining('溪畔药香渐浓'), findsOneWidget);
+      expect(
+        find.textContaining(UiStrings.seclusionMapEventHarvest),
+        findsOneWidget,
+      );
     });
 
     testWidgets('只有 internalForce → 仅显内力行', (tester) async {

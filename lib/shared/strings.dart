@@ -1194,6 +1194,7 @@ class UiStrings {
 
   static const String seclusionResultTitle = '闭关收获';
   static const String seclusionResultReportTitle = '收功战报';
+  static const String seclusionResultRouteTitle = '行迹记录';
   static const String seclusionResultEmpty = '此次收获甚微';
   static const String seclusionResultBack = '返回';
 
@@ -1214,6 +1215,11 @@ class UiStrings {
       '实际挂机 ${h.toStringAsFixed(1)} 小时';
   static String seclusionExpected(String key, double perHour) =>
       '$key：${perHour.toStringAsFixed(1)}/h';
+  static String seclusionMapEventHour(double h) =>
+      '第 ${h.toStringAsFixed(0)} 时';
+  static const String seclusionMapEventHarvest = '偶得';
+  static const String seclusionMapEventRisk = '险兆';
+  static const String seclusionMapEventTrace = '见闻';
 
   // ── P1 #42 Phase 4 · BaikeScreen 江湖见闻录(GDD §10.2 第 3 方式)──
 

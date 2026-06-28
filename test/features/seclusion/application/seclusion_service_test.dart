@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/encounter/application/encounter_service.dart
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
+import 'package:wuxia_idle/features/seclusion/domain/seclusion_map_def.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 
 /// Phase 3 T48 · SeclusionService 真 Isar 落地测试。
@@ -264,6 +265,42 @@ void main() {
         expect(out.actualHours, closeTo(1.0, 0.01));
       },
     );
+
+    test('地图路径常驻，事件记录按 actualHours 阈值触发', () {
+      final start = DateTime(2026, 5, 11, 10, 0);
+      final session = makeSession(durationHours: 12, startedAt: start);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: start.add(const Duration(hours: 4)),
+      );
+
+      expect(out.routeSteps, hasLength(3));
+      expect(out.routeSteps.first, contains('旧樵径'));
+      expect(out.mapEvents, hasLength(2));
+      expect(out.mapEvents.map((e) => e.kind), [
+        RetreatMapEventKind.harvest,
+        RetreatMapEventKind.trace,
+      ]);
+      expect(out.mapEvents.last.hourMark, 4.0);
+    });
+
+    test('0 小时时不触发地图事件记录', () {
+      final now = DateTime(2026, 5, 11, 10, 0);
+      final session = makeSession(startedAt: now);
+      final out = SeclusionService.computeOutputs(
+        session: session,
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: now,
+      );
+
+      expect(out.routeSteps, hasLength(3));
+      expect(out.mapEvents, isEmpty);
+    });
 
     test('72h 封顶：超过计划时长取 min(elapsed, plan, cap)', () {
       final start = DateTime(2026, 5, 11, 10, 0);
@@ -593,8 +630,9 @@ void main() {
       );
       // 山林(唯一 xueTu 图) silver_per_hour × xueTu scale(1.0) × 1h × 无节气(1.0)。
       // 读 config 不硬编码:T6 调 silver_per_hour 后测自动跟随(约束语义非瞬时值)。
-      final shanLin = GameRepository.instance.seclusionMaps
-          .firstWhere((m) => m.requiredRealm == RealmTier.xueTu);
+      final shanLin = GameRepository.instance.seclusionMaps.firstWhere(
+        (m) => m.requiredRealm == RealmTier.xueTu,
+      );
       expect(out.silver, (shanLin.silverPerHour * 1.0 * 1.0).floor());
     });
 
