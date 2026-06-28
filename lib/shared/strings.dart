@@ -720,6 +720,26 @@ class UiStrings {
   static const String techniquePanelTitle = '心法面板';
   static const String techniquePanelEmpty = '尚未学习任何心法';
   static const String techniquePanelMainHeroLabel = '主修心法';
+  static const String techniqueEquipSuggestionTitle = '装配建议';
+  static const String techniqueEquipSuggestionEmpty = '暂无可评估角色';
+  static const String techniqueEquipSuggestionAlreadyMain = '已主修';
+  static const String techniqueEquipSuggestionAlreadyAssist = '已辅修';
+  static const String techniqueEquipSuggestionReadyMain = '可修为主修';
+  static const String techniqueEquipSuggestionReadyAssist = '可修为辅修';
+  static const String techniqueEquipSuggestionRealmLocked = '境界不足';
+  static const String techniqueEquipSuggestionAssistFull = '辅修已满';
+  static const String techniqueEquipSuggestionInsightLocked = '领悟点不足';
+  static const String techniqueEquipReasonSameSchool = '同流派';
+  static const String techniqueEquipReasonFillsMain = '补主修';
+  static const String techniqueEquipReasonFillsAssist = '补辅修';
+  static const String techniqueEquipReasonTierFits = '阶位贴合';
+  static const String techniqueEquipReasonHighEnlightenment = '悟性高';
+  static const String techniqueEquipReasonAlreadyPracticed = '已习练';
+  static const String techniqueEquipNoReason = '泛用';
+  static String techniqueEquipBlockRealm(String current, String required) =>
+      '当前上限$current,需$required';
+  static String techniqueEquipBlockInsight(int current, int required) =>
+      '领悟$current/$required';
   static const String techniqueSchoolMatrixTitle = '三系相克';
   static const String techniqueSchoolMatrixHint = '刚猛克阴柔，阴柔克灵巧，灵巧克刚猛';
   static const String techniqueSchoolMatrixCurrentPrefix = '当前';
