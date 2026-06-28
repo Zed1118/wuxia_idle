@@ -30,9 +30,9 @@
 
 ## 当前恢复点
 
-- 状态：爬塔 Boss 体感诊断切片已完成，待提交。
-- 最后完成：新增 `test/tools/tower_boss_feel_diagnostic_test.dart`，量化 24→25、29→30 在 floor/ceiling 三人队下的胜率、回合、剩余血、phase transition。
-- 下一步：提交爬塔诊断切片，然后跑本批 targeted tests 与 touched-file analyze。
+- 状态：本批修复计划已完成，等待人工/Claude review 与合并。
+- 最后完成：targeted tests 与 touched-file analyze 全部通过；材料模拟测试清理未用 import。
+- 下一步：由主窗口或 Claude 复核 `codex/audit-fix-plan` 分支，确认后合并。
 - 已跑验证：
   - `git status --short --branch`
   - `git log --oneline --decorate -12`
@@ -46,4 +46,7 @@
   - `flutter test test/features/seclusion/application/offline_passive_service_test.dart test/features/seclusion/application/offline_passive_redline_test.dart test/features/seclusion/application/offline_passive_settle_test.dart test/features/seclusion/application/offline_recap_detail_test.dart`
   - `dart format test/tools/tower_boss_feel_diagnostic_test.dart`
   - `flutter test test/tools/tower_boss_feel_diagnostic_test.dart`
+  - `flutter test test/data/game_repository_test.dart test/features/onboarding/onboarding_first_30min_battle_test.dart test/features/taohua_island/taohua_island_config_test.dart test/features/taohua_island/island_upgrade_curve_b_test.dart test/tools/enhancement_material_supply_test.dart test/features/seclusion/application/offline_passive_service_test.dart test/features/seclusion/application/offline_passive_redline_test.dart test/features/seclusion/application/offline_passive_settle_test.dart test/features/seclusion/application/offline_recap_detail_test.dart test/tools/tower_boss_feel_diagnostic_test.dart`
+  - `flutter analyze test/features/onboarding/onboarding_first_30min_battle_test.dart test/features/taohua_island/taohua_island_config_test.dart test/features/taohua_island/island_upgrade_curve_b_test.dart test/tools/enhancement_material_supply_test.dart test/features/seclusion/application/offline_passive_settle_test.dart test/tools/tower_boss_feel_diagnostic_test.dart`
+  - `flutter test test/tools/enhancement_material_supply_test.dart`
 - 阻塞项：无。
