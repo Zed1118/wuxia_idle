@@ -123,6 +123,23 @@ void main() {
       );
     });
 
+    test('塔挑战门槛只看层进度，不按弟子/队伍人数额外锁门', () {
+      final p = TowerProgress()
+        ..saveDataId = 1
+        ..highestClearedFloor = 19;
+      expect(TowerProgressService.availableFloor(p), 20);
+      expect(
+        TowerProgressService.canChallenge(progress: p, floorIndex: 20),
+        isTrue,
+        reason: 'floor 20 已按顺序推进到下一层时可挑战；队伍人数由战斗难度自然体现',
+      );
+      expect(
+        TowerProgressService.canChallenge(progress: p, floorIndex: 21),
+        isFalse,
+        reason: '仍然不允许跳层，锁门只来自层进度',
+      );
+    });
+
     test('30 层全通 → availableFloor 封顶 30', () async {
       await TowerProgressService(isar: IsarSetup.instance).getOrCreate(saveDataId: 1);
       for (var i = 1; i <= 30; i++) {

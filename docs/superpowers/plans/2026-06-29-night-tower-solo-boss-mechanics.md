@@ -30,8 +30,12 @@
 
 ## 当前恢复点
 
-- 状态：已创建计划文件，尚未提交。
-- 最后完成：读取 `AGENTS.md`、`CLAUDE.md`、`GDD.md`、`PROGRESS.md`、`docs/spec/playability_phase2_backlog.md`、`docs/audit/tower_structure_review_2026-06-28.md`；从 detached HEAD 创建分支 `codex/night-tower-solo-boss-mechanics`。
-- 下一步：提交计划文件，然后读取 `data/towers.yaml`、塔 schema 与现有 balance/tower 测试，设计最小机制改动。
-- 已跑验证：无。
+- 状态：实现完成，targeted verification 已通过，待提交最终切片。
+- 最后完成：`data/towers.yaml` 20/25/30 层改为主 Boss + 护法/影侍多目标压力；20 层补三段阶段反扑，25/30 层扩为三段；6 个 Boss 主敌均标 `isBoss: true`；加载红线从“Boss 固定 1 敌”改为“Boss 层 1-3 敌且至少 1 个 isBoss 主敌”；测试覆盖后段 Boss 机制与塔挑战不按队伍人数锁门。
+- 下一步：提交最终切片并汇报分支、提交、验证、风险。
+- 已跑验证：
+  - `ruby -ryaml -e ...`：20/25/30 多目标 Boss 结构、阶段、弱点与血量红线轻量检查通过。
+  - `dart run build_runner build --delete-conflicting-outputs`：补齐本地生成产物，112 outputs，生成文件未进入 git diff。
+  - `flutter test --no-pub --no-test-assets test/features/tower/domain/tower_floor_def_test.dart test/features/tower/application/tower_progress_service_test.dart test/data/boss_phase_redline_test.dart test/data/weakness_redline_test.dart`：53 tests passed。
+  - `flutter analyze`：No issues found。
 - 阻塞项：无。

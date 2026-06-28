@@ -13,7 +13,7 @@ import '../../../core/domain/enums.dart';
 /// 30 层数值曲线（phase3_tasks T40 拍板）：
 ///   - 1-5 学徒 / 6-10 三流 / 11-15 二流 / 16-20 一流 / 21-25 绝顶 / 26-30 宗师
 ///   - 普通层 HP 800→12000 线性插值；普通层攻 200→2500
-///   - Boss 层在该阶巅峰 HP/攻 ×1.5
+///   - Boss 层以主 Boss 为核心；后段 Boss 可带 1-2 名护法形成多目标压力
 ///
 /// 数值红线（[GameRepository._enforceRedLines] 校验）：
 ///   - 普伤 ≤ 8000、Boss HP ≤ 60000（§5.4，2026-06-14 调）、玩家血 ≤ 20000、内力 ≤ 15000
@@ -28,7 +28,7 @@ class TowerFloorDef {
   /// 推荐境界，仅用于 UI 提示（**不做硬挡**：挑战自由，难度自然惩罚）。
   final RealmTier requiredRealm;
 
-  /// 敌人队伍，1-3 个；Boss 层固定 1 个但 HP/攻拉满。
+  /// 敌人队伍，1-3 个；Boss 层至少 1 个主 Boss，后段可带护法。
   final List<EnemyDef> enemyTeam;
 
   /// Boss 类型；null 表示普通层。
