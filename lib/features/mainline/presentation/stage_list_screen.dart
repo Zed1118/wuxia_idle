@@ -22,6 +22,7 @@ import '../../sweep/presentation/sweep_screen.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import '../domain/chapter_assets.dart';
+import '../domain/mainline_replay_reward_route.dart';
 import 'stage_entry_flow.dart';
 
 /// 章节内关卡列表（Phase 3 T35）。
@@ -489,6 +490,10 @@ class _StageRow extends StatelessWidget {
                       enemyTeam: def.enemyTeam,
                       cleared: cleared,
                     ),
+                    if (cleared)
+                      _ReplayRewardRouteLine(
+                        route: MainlineReplayRewardRoute.fromStage(def),
+                      ),
                     // 逐关「战斗方式」覆盖 chip 已移除(2026-06-26):全局「自动战斗」
                     // 开关在设置面板,逐关覆盖冗余且挤占列表。首通仍强制拖招,
                     // 重打按全局设置(resolveAutoPlayModeWithFirstClear override=null→globalDefault)。
@@ -620,6 +625,99 @@ class _StagePreparationBar extends StatelessWidget {
       StagePreparationFocus.assignCharacter => WuxiaColors.textMuted,
     };
   }
+}
+
+class _ReplayRewardRouteLine extends StatelessWidget {
+  const _ReplayRewardRouteLine({required this.route});
+
+  final MainlineReplayRewardRoute route;
+
+  @override
+  Widget build(BuildContext context) {
+    if (route.isEmpty) return const SizedBox.shrink();
+    return Semantics(
+      label: [
+        UiStrings.stageReplayRouteTitle,
+        ...route.kinds.map(_labelFor),
+      ].join(' · '),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Wrap(
+          spacing: 6,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.replay_circle_filled_outlined,
+                  size: 13,
+                  color: WuxiaColors.textMuted,
+                ),
+                SizedBox(width: 3),
+                Text(
+                  UiStrings.stageReplayRouteTitle,
+                  style: TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            for (final kind in route.kinds) _ReplayRewardChip(kind: kind),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReplayRewardChip extends StatelessWidget {
+  const _ReplayRewardChip({required this.kind});
+
+  final MainlineReplayRewardKind kind;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _colorFor(kind);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.42)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        child: Text(
+          _labelFor(kind),
+          style: TextStyle(
+            color: color,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _labelFor(MainlineReplayRewardKind kind) {
+  return switch (kind) {
+    MainlineReplayRewardKind.equipment => UiStrings.stageReplayRouteEquipment,
+    MainlineReplayRewardKind.material => UiStrings.stageReplayRouteMaterial,
+    MainlineReplayRewardKind.proficiency =>
+      UiStrings.stageReplayRouteProficiency,
+  };
+}
+
+Color _colorFor(MainlineReplayRewardKind kind) {
+  return switch (kind) {
+    MainlineReplayRewardKind.equipment => WuxiaColors.resultHighlight,
+    MainlineReplayRewardKind.material => WuxiaColors.internalForce,
+    MainlineReplayRewardKind.proficiency => WuxiaColors.lingQiao,
+  };
 }
 
 class _StageMarker extends StatelessWidget {
