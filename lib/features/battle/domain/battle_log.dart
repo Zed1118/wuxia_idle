@@ -1,4 +1,6 @@
 import '../../../core/domain/enums.dart';
+import '../../../data/game_repository.dart';
+import '../../cultivation/application/skill_proficiency_formatter.dart';
 import 'battle_state.dart';
 import 'enum_localizations.dart';
 
@@ -75,6 +77,16 @@ class BattleLog {
             AttackPowerMultiplierSource.jianghuEnmity &&
         actor!.attackPowerMultiplier > 1.0) {
       markers.add('江湖恩怨 ×${_fmt(actor.attackPowerMultiplier)}');
+    }
+
+    if (actor != null && action.skill != null && GameRepository.isLoaded) {
+      markers.add(
+        SkillProficiencyFormatter.compactEffect(
+          skill: action.skill!,
+          uses: actor.skillUses[action.skill!.id] ?? 0,
+          cfg: GameRepository.instance.numbers.skillProficiency,
+        ),
+      );
     }
 
     final target = _findChar(state, action.targetId!);

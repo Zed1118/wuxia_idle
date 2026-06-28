@@ -141,4 +141,54 @@ void main() {
     expect(summary.nextEffect, UiStrings.cangjingProficiencyMaxStage);
     expect(summary.progressText, UiStrings.cangjingProficiencySourceCombat);
   });
+
+  test('compactEffect includes stage and current effect', () {
+    final text = SkillProficiencyFormatter.compactEffect(
+      skill: skill(),
+      uses: 300,
+      cfg: cfg,
+    );
+
+    expect(text, contains(UiStrings.cangjingProficiencyStageName('jingTong')));
+    expect(text, contains(UiStrings.cangjingProficiencyDamageBonus(20)));
+  });
+
+  test('bestSkillSummaryForTechnique picks highest use count skill', () {
+    final low = skill();
+    const high = SkillDef(
+      id: 'skill_high',
+      name: '常用招',
+      description: 'd',
+      type: SkillType.ultimate,
+      powerMultiplier: 1800,
+      internalForceCost: 200,
+      cooldownTurns: 5,
+      requiresManualTrigger: false,
+      visualEffect: 'v',
+    );
+
+    final summary = SkillProficiencyFormatter.bestSkillSummaryForTechnique(
+      skills: [low, high],
+      usage: {low.id: 30, high.id: 300},
+      cfg: cfg,
+    );
+
+    expect(summary, isNotNull);
+    expect(summary!.skill.id, 'skill_high');
+    expect(summary.uses, 300);
+    expect(
+      summary.stageName,
+      UiStrings.cangjingProficiencyStageName('jingTong'),
+    );
+  });
+
+  test('bestSkillSummaryForTechnique returns null for empty skills', () {
+    final summary = SkillProficiencyFormatter.bestSkillSummaryForTechnique(
+      skills: const [],
+      usage: const {},
+      cfg: cfg,
+    );
+
+    expect(summary, isNull);
+  });
 }

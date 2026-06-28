@@ -271,6 +271,31 @@ void main() {
       expect(str, contains('江湖恩怨'));
       expect(str, contains('×1.15'));
     });
+
+    test('招式熟练度：含当前阶段与当前效果 marker', () {
+      final skill = GameRepository.instance.getSkill(
+        'skill_gangmeng_mingjia_ult',
+      );
+      final left = _mkBC(charId: 1, teamSide: 0).copyWith(
+        availableSkills: [skill],
+        skillUses: {skill.id: 300},
+      );
+      final right = _mkBC(charId: 11, teamSide: 1);
+      final s = BattleState.initial(leftTeam: [left], rightTeam: [right]);
+      final action = BattleAction(
+        tick: 10,
+        actorId: 1,
+        targetId: 11,
+        skill: skill,
+        attackResult: _normalHit(damage: 3200),
+        description: '',
+      );
+
+      final str = BattleLog.formatAction(action, s);
+
+      expect(str, contains('熟练度精通'));
+      expect(str, contains('伤害 +'));
+    });
   });
 
   // ────────────────────────────────────────────────────────────────────────
