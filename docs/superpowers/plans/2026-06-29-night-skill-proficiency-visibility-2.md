@@ -103,7 +103,7 @@ Run:
 DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 Run:
 ```bash
@@ -113,11 +113,11 @@ git commit -m "feat: 扩展招式熟练度展示 formatter"
 
 ### Task 3: 战报熟练度说明
 
-- [ ] **Step 1: 写战报测试**
+- [x] **Step 1: 写战报测试**
 
 Add a `BattleLog.formatAction` test where actor has `skillUses[skill.id] = 300`; assert the output contains the configured stage/effect.
 
-- [ ] **Step 2: 实现战报 marker**
+- [x] **Step 2: 实现战报 marker**
 
 Modify `BattleLog.formatAction`:
 - Read actor snapshot from `_findChar`.
@@ -125,7 +125,7 @@ Modify `BattleLog.formatAction`:
 - Append returned text to `markers`.
 - Keep this purely presentational; do not call damage calculator.
 
-- [ ] **Step 3: Run battle log test**
+- [x] **Step 3: Run battle log test**
 
 Run:
 ```bash
@@ -221,12 +221,12 @@ git commit -m "docs: 记录招式熟练度可视化二期完成"
 
 ## 当前恢复点
 
-**状态:** Task 2 formatter helper 已完成，准备提交代码切片。
+**状态:** Task 3 战报 marker 已完成，准备提交代码切片。
 
-**最后完成:** 已提交计划文档；`SkillProficiencyFormatter` 新增 `compactEffect` 与 `bestSkillSummaryForTechnique`，纯测试覆盖 compact 文案、最高使用次数选择与空列表 null。
+**最后完成:** 已提交 formatter 切片；`BattleLog.formatAction` 在 repo 已加载时从 actor `skillUses` 读取当前招式使用次数，追加熟练度阶段与当前效果 marker；`battle_log_test` 覆盖精通阶段输出。
 
-**下一步:** 提交 formatter 切片，然后执行 Task 3 战报 marker。
+**下一步:** 提交战报切片，然后执行 Task 4 角色页与心法页展示。
 
-**已跑验证:** `mcp__codegraph.codegraph_status` 返回当前 worktree 未初始化；`DEVELOPER_DIR=/Library/Developer/CommandLineTools dart run build_runner build --delete-conflicting-outputs` 生成缺失 Isar/Riverpod 文件且未留下 git 变更；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart` 通过。
+**已跑验证:** `mcp__codegraph.codegraph_status` 返回当前 worktree 未初始化；`DEVELOPER_DIR=/Library/Developer/CommandLineTools dart run build_runner build --delete-conflicting-outputs` 生成缺失 Isar/Riverpod 文件且未留下 git 变更；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart` 通过；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/combat/battle_log_test.dart` 通过。
 
 **阻塞项:** 无。CodeGraph 未初始化，按项目规则记录；本切片用 `rg` 和直接读文件继续。
