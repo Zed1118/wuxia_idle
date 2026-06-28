@@ -174,4 +174,18 @@ void main() {
       reason: 'DeepSeek narrative title 渲染（stage_01_01_opening.yaml）',
     );
   });
+
+  testWidgets('点行尾 info 图标 → 弹战前情报（含敌阵段）而非纯掉落', (tester) async {
+    await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
+
+    await tester.tap(find.byIcon(Icons.info_outline).first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(
+      find.text(UiStrings.prebattleIntelEnemySection),
+      findsOneWidget,
+      reason: 'info 图标升级为战前情报入口，含行内没有的敌阵详列',
+    );
+  });
 }
