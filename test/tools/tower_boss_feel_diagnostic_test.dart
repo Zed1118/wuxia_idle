@@ -89,26 +89,62 @@ void main() {
     );
     expect(results.where((r) => r.result != 'timeout'), isNotEmpty);
 
+    _expectBossDoesNotRegress(repo.getTowerFloor(24), repo.getTowerFloor(25));
+    _expectBossDoesNotRegress(repo.getTowerFloor(29), repo.getTowerFloor(30));
+
     final floor25 = repo.getTowerFloor(25).enemyTeam.single;
     final floor30 = repo.getTowerFloor(30).enemyTeam.single;
     expect(
       floor25.bossPhases,
-      isNull,
-      reason: '当前 25 层 Boss 未配置 phase,诊断需显式记录此事实',
+      isNotNull,
+      reason: '25 层小 Boss 应至少有二阶段,避免单体 Boss 体感弱于前一普通层',
     );
     expect(
       floor30.bossPhases,
-      isNull,
-      reason: '当前 30 层 Boss 未配置 phase,诊断需显式记录此事实',
+      isNotNull,
+      reason: '30 层终关 Boss 应至少有二阶段,避免终关体感弱于前一普通层',
     );
-    expect(
-      results
-          .where((r) => r.floorIndex == 25 || r.floorIndex == 30)
-          .every((r) => r.phaseTransitions == 0),
-      isTrue,
-      reason: '25/30 未配置 phase 时,战斗日志不应出现 phase transition',
-    );
+    for (final floorIndex in [25, 30]) {
+      for (final profile in _BuildProfile.values) {
+        final triggered = results
+            .where((r) => r.floorIndex == floorIndex && r.profile == profile)
+            .where((r) => r.phaseTransitions > 0)
+            .length;
+        expect(
+          triggered,
+          greaterThanOrEqualTo((_seeds * 0.8).ceil()),
+          reason: 'floor $floorIndex ${profile.name} 至少 80% seed 应触发二阶段',
+        );
+      }
+    }
   }, timeout: const Timeout(Duration(minutes: 10)));
+}
+
+void _expectBossDoesNotRegress(TowerFloorDef previous, TowerFloorDef boss) {
+  final previousHp = previous.enemyTeam.fold<int>(
+    0,
+    (sum, e) => sum + e.baseHp,
+  );
+  final bossHp = boss.enemyTeam.fold<int>(0, (sum, e) => sum + e.baseHp);
+  final previousAttack = previous.enemyTeam.fold<int>(
+    0,
+    (sum, e) => sum + e.baseAttack,
+  );
+  final bossAttack = boss.enemyTeam.fold<int>(
+    0,
+    (sum, e) => sum + e.baseAttack,
+  );
+
+  expect(
+    bossHp,
+    greaterThan(previousHp),
+    reason: 'floor ${boss.floorIndex} Boss 总 baseHp 不应低于前一普通层',
+  );
+  expect(
+    bossAttack,
+    greaterThan(previousAttack),
+    reason: 'floor ${boss.floorIndex} Boss 总 baseAttack 不应低于前一普通层',
+  );
 }
 
 _FloorResult _simulateFloor(
@@ -347,8 +383,8 @@ String _summarize(List<_FloorResult> results, List<TowerFloorDef> floors) {
   buf.writeln('## 解读边界');
   buf.writeln();
   buf.writeln('- 玩家 build 使用 on-level 三人队,固定刚猛,两档投入(floor/ceiling)。');
-  buf.writeln('- 25/30 当前没有 bossPhases,phaseTransitions 为 0 是配置事实,不是调优结论。');
-  buf.writeln('- 本诊断只给方向:若 Boss 胜率/耗时/剩余血低于前一普通层,再进入数值调整计划。');
+  buf.writeln('- 25/30 必须配置 bossPhases；若高爆发直接击杀,少量 seed 可跳过 transition。');
+  buf.writeln('- Boss 总 baseHp/baseAttack 必须高于前一普通层,避免单体 Boss 体感倒退。');
 
   return buf.toString();
 }
