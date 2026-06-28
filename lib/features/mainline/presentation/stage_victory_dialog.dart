@@ -13,6 +13,7 @@ import '../../battle/domain/battle_stats.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/drop_service.dart';
+import '../../inventory/presentation/post_battle_healing_panel.dart';
 
 /// 主线 victory dialog(W15 #30 P3 后续 A 任务)。
 ///
@@ -151,11 +152,17 @@ class StageVictoryContent extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             UiStrings.battleSummary(
-                stats!.totalDamage, stats!.critCount, stats!.totalTicks),
+              stats!.totalDamage,
+              stats!.critCount,
+              stats!.totalTicks,
+            ),
             style: const TextStyle(
-                color: WuxiaColors.textSecondary, fontSize: 13),
+              color: WuxiaColors.textSecondary,
+              fontSize: 13,
+            ),
           ),
         ],
+        const PostBattleHealingPanel(),
       ],
     );
   }
