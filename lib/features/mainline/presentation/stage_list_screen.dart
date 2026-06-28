@@ -7,10 +7,14 @@ import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../battle/application/selected_cycle_provider.dart';
+import '../../battle/domain/enum_localizations.dart';
 import '../../battle/presentation/cycle_select_control.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
+import '../../loot_preview/domain/stage_difficulty.dart';
 import '../../loot_preview/presentation/loot_rumor_dialog.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';
+import '../../loot_preview/presentation/stage_preview_card.dart'
+    show difficultyLabelColor;
 import '../../loot_preview/presentation/weakness_hint_line.dart';
 import '../../sweep/application/sweep_unit.dart';
 import '../../sweep/domain/sweep_eligibility.dart';
@@ -475,6 +479,11 @@ class _StageRow extends StatelessWidget {
                         fontSize: 12,
                       ),
                     ),
+                    const SizedBox(height: 4),
+                    _StagePreparationBar(
+                      recommendedRealm: def.requiredRealm,
+                      playerRealm: currentRealm,
+                    ),
                     // 批二②:通关后战前可查 Boss 弱点/抗性(未通关 / 无配置 → shrink)。
                     WeaknessHintLine(
                       enemyTeam: def.enemyTeam,
@@ -511,6 +520,104 @@ class _StageRow extends StatelessWidget {
   String _subtitleFor(StageDef def, StageStatus status) {
     if (status == StageStatus.locked) return UiStrings.stageListPrevHint;
     return UiStrings.stageListEnemyCount(def.enemyTeam.length);
+  }
+}
+
+class _StagePreparationBar extends StatelessWidget {
+  const _StagePreparationBar({
+    required this.recommendedRealm,
+    required this.playerRealm,
+  });
+
+  final RealmTier recommendedRealm;
+  final RealmTier? playerRealm;
+
+  @override
+  Widget build(BuildContext context) {
+    final summary = StagePreparationSummary.assess(
+      recommended: recommendedRealm,
+      playerTier: playerRealm,
+    );
+    final verdict = summary.verdict;
+    final (verdictLabel, verdictColor) = verdict == null
+        ? ('', WuxiaColors.textMuted)
+        : difficultyLabelColor(verdict);
+    final actionText = _actionText(summary);
+
+    return Semantics(
+      label: [
+        UiStrings.stagePrepareLabel,
+        UiStrings.stagePrepareRecommended(EnumL10n.realmTier(recommendedRealm)),
+        if (verdictLabel.isNotEmpty) verdictLabel,
+        actionText,
+      ].join(' · '),
+      child: DefaultTextStyle(
+        style: const TextStyle(
+          color: WuxiaColors.textMuted,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+        child: Wrap(
+          spacing: 6,
+          runSpacing: 3,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.shield_outlined,
+                  size: 13,
+                  color: WuxiaColors.textMuted,
+                ),
+                SizedBox(width: 3),
+                Text(UiStrings.stagePrepareLabel),
+              ],
+            ),
+            Text(
+              UiStrings.stagePrepareRecommended(
+                EnumL10n.realmTier(recommendedRealm),
+              ),
+            ),
+            if (verdictLabel.isNotEmpty)
+              Text(verdictLabel, style: TextStyle(color: verdictColor)),
+            Text(
+              actionText,
+              style: TextStyle(
+                color: _actionColor(summary),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _actionText(StagePreparationSummary summary) {
+    return switch (summary.focus) {
+      StagePreparationFocus.ready =>
+        summary.realmGap < 0
+            ? UiStrings.stagePrepareSteady
+            : UiStrings.stagePrepareReady,
+      StagePreparationFocus.polishLoadout => UiStrings.stagePrepareLoadoutGap(
+        summary.realmGap,
+      ),
+      StagePreparationFocus.realmBreakthrough => UiStrings.stagePrepareRealmGap(
+        summary.realmGap,
+      ),
+      StagePreparationFocus.assignCharacter =>
+        UiStrings.stagePrepareAssignCharacter,
+    };
+  }
+
+  Color _actionColor(StagePreparationSummary summary) {
+    return switch (summary.focus) {
+      StagePreparationFocus.ready => WuxiaColors.hpHigh,
+      StagePreparationFocus.polishLoadout => WuxiaColors.resultHighlight,
+      StagePreparationFocus.realmBreakthrough => WuxiaColors.hpLow,
+      StagePreparationFocus.assignCharacter => WuxiaColors.textMuted,
+    };
   }
 }
 

@@ -3,6 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/application/character_providers.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/battle/presentation/stage_auto_play_control.dart';
@@ -31,21 +35,44 @@ void main() {
       ..clearedAt = List.generate(cleared.length, (_) => DateTime(2026, 5, 11));
   }
 
+  Character mkCharacter({required RealmTier realm}) {
+    return Character.create(
+      name: 'test hero',
+      realmTier: realm,
+      realmLayer: RealmLayer.qiMeng,
+      attributes: Attributes(),
+      rarity: RarityTier.biaoZhun,
+      lineageRole: LineageRole.founder,
+      createdAt: DateTime(2026, 5, 11),
+    )..id = 7;
+  }
+
   Future<void> pumpScreen(
     WidgetTester tester, {
     required int chapterIndex,
     required MainlineProgress progress,
+    Character? activeCharacter,
   }) async {
-    await tester.binding.setSurfaceSize(const Size(1024, 720));
+    await tester.binding.setSurfaceSize(const Size(1024, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           mainlineProgressProvider.overrideWith((ref) async => progress),
+          if (activeCharacter != null) ...[
+            activeCharacterIdsProvider.overrideWith(
+              (ref) async => [activeCharacter.id],
+            ),
+            characterByIdProvider(
+              activeCharacter.id,
+            ).overrideWith((ref) async => activeCharacter),
+          ],
         ],
         child: MaterialApp(home: StageListScreen(chapterIndex: chapterIndex)),
       ),
     );
+    await tester.pump();
+    await tester.pump();
     await tester.pump();
     await tester.pump();
   }
@@ -63,12 +90,17 @@ void main() {
     // 01 是 available（chip 文案）；02-05 锁（4 个锁图标）
     expect(find.text(UiStrings.stageListAvailable), findsOneWidget);
     expect(find.byIcon(Icons.lock), findsNWidgets(4));
-    expect(find.text(UiStrings.stageListPrevHint), findsNWidgets(4),
-        reason: '锁关卡显示「通关前一关解锁」副标题');
+    expect(
+      find.text(UiStrings.stageListPrevHint),
+      findsNWidgets(4),
+      reason: '锁关卡显示「通关前一关解锁」副标题',
+    );
     expect(find.textContaining(UiStrings.stageListCleared), findsNothing);
   });
 
-  testWidgets('Ch1 通过 01 → 01 cleared + 02 available + 03-05 锁', (tester) async {
+  testWidgets('Ch1 通过 01 → 01 cleared + 02 available + 03-05 锁', (
+    tester,
+  ) async {
     await pumpScreen(
       tester,
       chapterIndex: 1,
@@ -79,12 +111,48 @@ void main() {
     expect(find.text(UiStrings.stageListAvailable), findsOneWidget);
     expect(find.byIcon(Icons.lock), findsNWidgets(3));
     // 逐关「战斗方式」覆盖 chip 已移除(2026-06-26):已通关关卡不再显该控件。
-    expect(find.byType(StageAutoPlayControl), findsNothing,
-        reason: '逐关战斗方式 chip 已删,全局开关在设置面板');
+    expect(
+      find.byType(StageAutoPlayControl),
+      findsNothing,
+      reason: '逐关战斗方式 chip 已删,全局开关在设置面板',
+    );
   });
 
-  testWidgets('点 available 关卡 → 进入剧情阅读屏（T37 流程串联，P1 #1 真实剧情加载）',
-      (tester) async {
+  testWidgets('关卡行显示推荐整备条：推荐境界 + 判语 + 补强方向', (tester) async {
+    await pumpScreen(
+      tester,
+      chapterIndex: 3,
+      progress: mkProgress(
+        cleared: const [
+          'stage_01_01',
+          'stage_01_02',
+          'stage_01_03',
+          'stage_01_04',
+          'stage_01_05',
+          'stage_02_01',
+          'stage_02_02',
+          'stage_02_03',
+          'stage_02_04',
+          'stage_02_05',
+        ],
+      ),
+      activeCharacter: mkCharacter(realm: RealmTier.sanLiu),
+    );
+
+    expect(find.text(UiStrings.stagePrepareLabel), findsWidgets);
+    expect(find.text(UiStrings.stagePrepareRecommended('二流')), findsWidgets);
+    expect(find.text(UiStrings.difficultyRisky), findsWidgets);
+    expect(find.text(UiStrings.stagePrepareLoadoutGap(1)), findsWidgets);
+    expect(
+      find.byIcon(Icons.info_outline),
+      findsWidgets,
+      reason: '整备条不应替代或遮挡本关传闻 info 入口',
+    );
+  });
+
+  testWidgets('点 available 关卡 → 进入剧情阅读屏（T37 流程串联，P1 #1 真实剧情加载）', (
+    tester,
+  ) async {
     await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
 
     await tester.tap(find.text('山门之外'));
@@ -95,9 +163,15 @@ void main() {
     // P1 #1 后 NarrativeLoader 扫 data/narratives/stages/ 子目录，
     // widget test 中 rootBundle 能读到 pubspec 声明的真实 asset →
     // 加载 DeepSeek 写的「山门之外 · 启」，不走 placeholder
-    expect(find.textContaining('剧情占位'), findsNothing,
-        reason: 'P1 #1 narrative schema 对齐后真实文案已可加载，不再兜底');
-    expect(find.text('山门之外 · 启'), findsOneWidget,
-        reason: 'DeepSeek narrative title 渲染（stage_01_01_opening.yaml）');
+    expect(
+      find.textContaining('剧情占位'),
+      findsNothing,
+      reason: 'P1 #1 narrative schema 对齐后真实文案已可加载，不再兜底',
+    );
+    expect(
+      find.text('山门之外 · 启'),
+      findsOneWidget,
+      reason: 'DeepSeek narrative title 渲染（stage_01_01_opening.yaml）',
+    );
   });
 }

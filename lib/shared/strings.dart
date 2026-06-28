@@ -985,6 +985,13 @@ class UiStrings {
   static const String difficultySuitable = '适中';
   static const String difficultyRisky = '偏高';
   static const String difficultyDeadly = '送死';
+  static const String stagePrepareLabel = '整备';
+  static String stagePrepareRecommended(String realmName) => '推荐 $realmName';
+  static const String stagePrepareReady = '火候已到 · 可挑战';
+  static const String stagePrepareSteady = '高出推荐 · 可稳刷';
+  static String stagePrepareLoadoutGap(int gap) => '低$gap阶 · 装备/心法补强';
+  static String stagePrepareRealmGap(int gap) => '低$gap阶 · 闭关突破';
+  static const String stagePrepareAssignCharacter = '未派出角色 · 角色面板';
 
   // === 第七阶段批二 ② · 弱点/抗性「事后可查」战前提示（通关后才显，§5.7）===
   // X = 流派显示名（EnumL10n.school）。水墨口吻，不写「弱点/抗性」直白词。
