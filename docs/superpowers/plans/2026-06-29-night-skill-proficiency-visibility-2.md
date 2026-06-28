@@ -132,7 +132,7 @@ Run:
 DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/combat/battle_log_test.dart
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 Run:
 ```bash
@@ -142,19 +142,19 @@ git commit -m "feat: 战报显示招式熟练度效果"
 
 ### Task 4: 角色页与心法页展示
 
-- [ ] **Step 1: 写/扩 widget tests**
+- [x] **Step 1: 写/扩 widget tests**
 
 Assert character panel and technique panel render at least one `StageProgressRow` whose current/next text matches `SkillProficiencyFormatter` output for a seeded technique usage.
 
-- [ ] **Step 2: 实现角色页主修卡展示**
+- [x] **Step 2: 实现角色页主修卡展示**
 
 In `_MainTechniqueTile`, resolve current technique skill defs from `GameRepository.instance.skillDefs`, pick highest usage via formatter, render a compact `StageProgressRow` below cultivation row.
 
-- [ ] **Step 3: 实现心法页 tile 展示**
+- [x] **Step 3: 实现心法页 tile 展示**
 
 In `_TechniqueTile`, use the same formatter helper and render the same `StageProgressRow` below the cultivation row.
 
-- [ ] **Step 4: Run widget tests**
+- [x] **Step 4: Run widget tests**
 
 Run:
 ```bash
@@ -221,12 +221,12 @@ git commit -m "docs: 记录招式熟练度可视化二期完成"
 
 ## 当前恢复点
 
-**状态:** Task 3 战报 marker 已完成，准备提交代码切片。
+**状态:** Task 4 角色页与心法页展示已完成，准备提交代码切片。
 
-**最后完成:** 已提交 formatter 切片；`BattleLog.formatAction` 在 repo 已加载时从 actor `skillUses` 读取当前招式使用次数，追加熟练度阶段与当前效果 marker；`battle_log_test` 覆盖精通阶段输出。
+**最后完成:** 已提交战报切片；角色页主修卡与心法页 tile 追加招式熟练 `StageProgressRow`，使用 formatter 选择该心法内使用次数最高的招式；角色页/心法页 widget 测试覆盖新行。
 
-**下一步:** 提交战报切片，然后执行 Task 4 角色页与心法页展示。
+**下一步:** 提交角色/心法页切片，然后执行 Task 5 武学详情页展示。
 
-**已跑验证:** `mcp__codegraph.codegraph_status` 返回当前 worktree 未初始化；`DEVELOPER_DIR=/Library/Developer/CommandLineTools dart run build_runner build --delete-conflicting-outputs` 生成缺失 Isar/Riverpod 文件且未留下 git 变更；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart` 通过；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/combat/battle_log_test.dart` 通过。
+**已跑验证:** `mcp__codegraph.codegraph_status` 返回当前 worktree 未初始化；`DEVELOPER_DIR=/Library/Developer/CommandLineTools dart run build_runner build --delete-conflicting-outputs` 生成缺失 Isar/Riverpod 文件且未留下 git 变更；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/cultivation/skill_proficiency_formatter_test.dart` 通过；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/combat/battle_log_test.dart` 通过；`DEVELOPER_DIR=/Library/Developer/CommandLineTools flutter test test/features/character_panel/presentation/character_panel_screen_test.dart test/features/technique_panel/presentation/technique_panel_screen_test.dart` 通过。
 
 **阻塞项:** 无。CodeGraph 未初始化，按项目规则记录；本切片用 `rg` 和直接读文件继续。
