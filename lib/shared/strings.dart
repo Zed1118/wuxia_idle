@@ -1888,6 +1888,10 @@ class UiStrings {
   static String cangjingProficiencyInterruptWindow(int turns) => '破绽 +$turns回合';
   static String cangjingProficiencyEffectList(List<String> effects) =>
       effects.join(' · ');
+  static String skillProficiencyCompact(String stage, String effect) =>
+      '熟练度$stage · $effect';
+  static String skillProficiencyBestSkillTitle(String skillName) =>
+      '招式熟练 · $skillName';
   static String cangjingPickerDamage(int n) => '伤害 $n';
   static const String cangjingPickerCanInterrupt = '可破招';
   // T6 武学库直接装配:选槽面板。
