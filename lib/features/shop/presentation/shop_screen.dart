@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
+import '../../../core/domain/character.dart';
 import '../../../data/defs/shop_item_def.dart';
+import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -13,6 +16,7 @@ import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../application/shop_need_hint_service.dart';
 import '../application/shop_providers.dart';
 import '../application/shop_service.dart';
 
@@ -63,7 +67,13 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           data: (silver) {
             // founderEtl 加载中时先用 null（动态价商品禁用，固定价正常）
             final founderEtl = founderEtlAsync.asData?.value;
-            return _buildBody(context, silver, items, founderEtl);
+            return _buildBody(
+              context,
+              silver,
+              items,
+              founderEtl,
+              _readActiveCharacters(),
+            );
           },
         ),
       ),
@@ -75,9 +85,20 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     int silver,
     List<ShopItemDef> items,
     int? founderEtl,
+    List<Character> activeCharacters,
   ) {
+    final repo = GameRepository.instanceOrNull;
+    final hintService = repo == null ? null : ShopNeedHintService(repo);
     final allEntries = items
-        .map((def) => _ShopShelfEntry.fromDef(def, silver, founderEtl))
+        .map(
+          (def) => _ShopShelfEntry.fromDef(
+            def,
+            silver,
+            founderEtl,
+            hintService: hintService,
+            activeCharacters: activeCharacters,
+          ),
+        )
         .toList();
     final visibleEntries = allEntries
         .where((entry) => _filter.includes(entry))
@@ -171,6 +192,18 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
   }
+
+  List<Character> _readActiveCharacters() {
+    final ids = ref.watch(activeCharacterIdsProvider).asData?.value;
+    if (ids == null || ids.isEmpty) return const [];
+
+    final characters = <Character>[];
+    for (final id in ids) {
+      final character = ref.watch(characterByIdProvider(id)).asData?.value;
+      if (character != null) characters.add(character);
+    }
+    return characters;
+  }
 }
 
 // ── 货币顶栏 ──────────────────────────────────────────────────────────────────
@@ -232,26 +265,38 @@ class _ShopShelfEntry {
     required this.def,
     required this.effectivePrice,
     required this.canAfford,
+    required this.displayName,
+    required this.hint,
   });
 
   factory _ShopShelfEntry.fromDef(
     ShopItemDef def,
     int silver,
-    int? founderEtl,
-  ) {
+    int? founderEtl, {
+    ShopNeedHintService? hintService,
+    List<Character> activeCharacters = const [],
+  }) {
     final effectivePrice = (def.isDynamicPrice && founderEtl == null)
         ? null
         : ShopService.effectivePrice(def, founderEtl ?? 0);
+    final hint = hintService?.hintFor(
+      def: def,
+      activeCharacters: activeCharacters,
+    );
     return _ShopShelfEntry(
       def: def,
       effectivePrice: effectivePrice,
       canAfford: effectivePrice != null && silver >= effectivePrice,
+      displayName: hint?.displayName ?? EnumL10n.itemType(def.itemType),
+      hint: hint,
     );
   }
 
   final ShopItemDef def;
   final int? effectivePrice;
   final bool canAfford;
+  final String displayName;
+  final ShopNeedHint? hint;
 
   bool get needsSaving => effectivePrice != null && !canAfford;
   bool get pricingPending => effectivePrice == null;
@@ -438,7 +483,6 @@ class _ShopItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final def = entry.def;
-    final name = EnumL10n.itemType(def.itemType);
     final effectivePrice = entry.effectivePrice;
     final canAfford = entry.canAfford;
 
@@ -483,7 +527,7 @@ class _ShopItemTile extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  name,
+                  entry.displayName,
                   style: const TextStyle(
                     color: WuxiaColors.textPrimary,
                     fontSize: 15,
@@ -492,6 +536,8 @@ class _ShopItemTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
+                _ShopNeedHintLines(hint: entry.hint),
+                if (entry.hint?.hasAnyHint == true) const SizedBox(height: 4),
                 Text(
                   UiStrings.shopItemPurpose(def.itemDefId),
                   style: const TextStyle(
@@ -555,6 +601,49 @@ class _ShopItemStatus extends StatelessWidget {
       spacing: 6,
       runSpacing: 4,
       children: [for (final label in labels) _ShopStatusPill(label: label)],
+    );
+  }
+}
+
+class _ShopNeedHintLines extends StatelessWidget {
+  const _ShopNeedHintLines({required this.hint});
+
+  final ShopNeedHint? hint;
+
+  @override
+  Widget build(BuildContext context) {
+    final hint = this.hint;
+    if (hint == null || !hint.hasAnyHint) return const SizedBox.shrink();
+
+    final lines = <String>[
+      if (hint.showCurrentUsers)
+        UiStrings.shopNeedCurrentUsers(hint.currentUserNames),
+      UiStrings.shopNeedUsageSummary(hint.usages),
+      UiStrings.shopNeedAlternateSourceSummary(hint.alternateSources),
+    ]..removeWhere((line) => line.isEmpty);
+
+    if (lines.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final line in lines)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Text(
+              line,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 11,
+                height: 1.2,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

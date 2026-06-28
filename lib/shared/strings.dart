@@ -297,6 +297,22 @@ class UiStrings {
     'item_jingyandan_mid' => '补更多境界经验，标价随当前境界同步上涨。',
     _ => '江湖行走备用之物。',
   };
+  static String shopNeedCurrentUsers(List<String> names) {
+    if (names.isEmpty) return '当前可用：暂无合适角色';
+    return '当前可用：${names.take(3).join(' / ')}';
+  }
+
+  static String shopNeedUsageSummary(List<ItemUsage> usages) {
+    final summary = materialUsageSummary(usages);
+    return summary.isEmpty ? '' : '消耗系统：$summary';
+  }
+
+  static String shopNeedAlternateSourceSummary(List<ItemSource> sources) {
+    final labels = <String>{
+      for (final source in sources) itemSourceLabel(source),
+    }..remove('');
+    return labels.isEmpty ? '' : '其他来源：${labels.take(4).join(' / ')}';
+  }
 
   // ─── 江湖恩怨 + 声望(P1.2 §12.1+§12.2 GDD)──────────────────────────────
   static const String mainMenuJianghu = '江湖恩怨';
