@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/lore.dart';
 import 'package:wuxia_idle/features/inventory/application/inventory_organization.dart';
 
 void main() {
@@ -13,6 +14,8 @@ void main() {
     int? ownerCharacterId,
     bool isLineageHeritage = false,
     bool isLocked = false,
+    List<Lore>? lores,
+    List<int>? previousOwnerCharacterIds,
   }) {
     return Equipment.create(
       defId: 'eq_$id',
@@ -24,6 +27,8 @@ void main() {
       ownerCharacterId: ownerCharacterId,
       isLineageHeritage: isLineageHeritage,
       isLocked: isLocked,
+      lores: lores,
+      previousOwnerCharacterIds: previousOwnerCharacterIds,
     )..id = id;
   }
 
@@ -101,7 +106,7 @@ void main() {
   });
 
   group('bulk disposal candidates', () {
-    test('排除已装备(槽位真值源)、师承遗物、锁定和高阶装备', () {
+    test('排除已装备(槽位真值源)、师承遗物、锁定、高阶和典故装备', () {
       final free = eq(
         id: 1,
         tier: EquipmentTier.xunChang,
@@ -124,10 +129,22 @@ void main() {
         slot: EquipmentSlot.weapon,
         isLocked: true,
       );
-      final high = eq(
+      final highTier = eq(
         id: 5,
         tier: EquipmentTier.zhongQi,
         slot: EquipmentSlot.weapon,
+      );
+      final lore = eq(
+        id: 6,
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.weapon,
+        lores: [Lore()..text = 'test lore'],
+      );
+      final inherited = eq(
+        id: 7,
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.weapon,
+        previousOwnerCharacterIds: [99],
       );
 
       // 已装备走槽位真值源：equipped(id=2) 在出战槽位集合内。
@@ -136,7 +153,9 @@ void main() {
       expect(isBulkDisposalCandidate(equipped, equippedIds), isFalse);
       expect(isBulkDisposalCandidate(heritage, equippedIds), isFalse);
       expect(isBulkDisposalCandidate(locked, equippedIds), isFalse);
-      expect(isBulkDisposalCandidate(high, equippedIds), isFalse);
+      expect(isBulkDisposalCandidate(highTier, equippedIds), isFalse);
+      expect(isBulkDisposalCandidate(lore, equippedIds), isFalse);
+      expect(isBulkDisposalCandidate(inherited, equippedIds), isFalse);
     });
 
     test('按品阶建立候选计划，仅统计可批量处理装备', () {
@@ -145,13 +164,15 @@ void main() {
           eq(id: 1, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
           eq(id: 2, tier: EquipmentTier.liQi, slot: EquipmentSlot.armor),
           eq(id: 3, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
-          eq(id: 4, tier: EquipmentTier.baoWu, slot: EquipmentSlot.weapon),
+          eq(id: 4, tier: EquipmentTier.haoJiaHuo, slot: EquipmentSlot.weapon),
+          eq(id: 5, tier: EquipmentTier.baoWu, slot: EquipmentSlot.weapon),
         ],
         {3},
       );
 
-      expect(plan.tiers, [EquipmentTier.liQi]);
+      expect(plan.tiers, [EquipmentTier.liQi, EquipmentTier.haoJiaHuo]);
       expect(plan.itemsFor(EquipmentTier.liQi).map((e) => e.id), [2, 1]);
+      expect(plan.itemsFor(EquipmentTier.haoJiaHuo).map((e) => e.id), [4]);
       expect(plan.itemsFor(EquipmentTier.baoWu), isEmpty);
     });
   });

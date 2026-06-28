@@ -7,6 +7,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
+import 'package:wuxia_idle/core/domain/lore.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_disposal_service.dart';
@@ -67,6 +68,8 @@ void main() {
     bool isLineageHeritage = false,
     bool isLocked = false,
     String obtainedFrom = 'test',
+    List<Lore>? lores,
+    List<int>? previousOwnerCharacterIds,
   }) async {
     final eq = Equipment.create(
       defId: 'equip_test',
@@ -78,6 +81,8 @@ void main() {
       ownerCharacterId: ownerCharacterId,
       isLineageHeritage: isLineageHeritage,
       isLocked: isLocked,
+      lores: lores,
+      previousOwnerCharacterIds: previousOwnerCharacterIds,
     );
     late int id;
     await isar.writeTxn(() async {
@@ -482,6 +487,26 @@ void main() {
     expect(await isar.equipments.get(liQiId), isNotNull);
     expect(await isar.equipments.get(b1), isNull);
     expect(await isar.equipments.get(b2), isNull);
+  });
+
+  test('sellAllOfTier 高阶与典故装备受批量保护', () async {
+    final highTier = await seedEquipment(tier: EquipmentTier.zhongQi);
+    final lore = await seedEquipment(
+      tier: EquipmentTier.xunChang,
+      lores: [Lore()..text = 'test lore'],
+    );
+
+    final highTierResult = await makeService().sellAllOfTier(
+      EquipmentTier.zhongQi,
+    );
+    final loreResult = await makeService().sellAllOfTier(
+      EquipmentTier.xunChang,
+    );
+
+    expect(highTierResult.count, 0);
+    expect(loreResult.count, 0);
+    expect(await isar.equipments.get(highTier), isNotNull);
+    expect(await isar.equipments.get(lore), isNotNull);
   });
 
   // ──────────────────────────────────────────────────────────────────────────

@@ -1,7 +1,6 @@
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../equipment/domain/equipment_disposal.dart';
-import '../../equipment/domain/equipment_slot_occupancy.dart';
 
 enum InventorySlotFilter { all, weapon, armor, accessory }
 
@@ -62,9 +61,8 @@ List<Equipment> organizeInventoryEquipments(
   return result;
 }
 
-/// 装备是否为批量处置候选。与 [EquipmentDisposalService] 的权威谓词
-/// （`isEquipmentDisposable`）口径一致：不在任一角色装备槽（[isEquipmentEquippedBySlot]）
-/// && 非师承遗物（[Equipment.isLineageHeritage]）&& 非玩家锁定（[Equipment.isLocked]）。
+/// 装备是否为批量出售候选。批量入口比单件出售更保守：已装备、锁定、师承、
+/// 高阶和带个人典故/传承链路的装备都不进入批量计划。
 bool isBulkDisposalCandidate(
   Equipment equipment,
   Set<int> equippedEquipmentIds, {

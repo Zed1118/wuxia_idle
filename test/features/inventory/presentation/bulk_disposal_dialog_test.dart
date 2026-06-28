@@ -11,6 +11,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
+import 'package:wuxia_idle/core/domain/lore.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_disposal_service.dart';
@@ -23,7 +24,7 @@ import 'package:wuxia_idle/shared/strings.dart';
 ///
 /// 覆盖范围：
 /// ① 对话框列出有可处置装备的品阶行（件数排除已装备/师承）
-/// ② 某 tier 行有「一键出售」「一键分解」按钮
+/// ② 某 tier 行有「一键出售」按钮，且不提供批量分解
 /// ③ 点「一键出售」→ 二次确认框显 sellConfirmBody(count, silver)
 /// ④（test）确认后可处置装备从 isar 消失、银两增加、已装备/师承装备仍在
 ///    (memory feedback_isar_widget_test_deadlock: writeTxn 在 testWidgets 内死锁，
@@ -46,6 +47,8 @@ void main() {
     bool isLineageHeritage = false,
     int? ownerCharacterId,
     bool isLocked = false,
+    List<Lore>? lores,
+    List<int>? previousOwnerCharacterIds,
   }) {
     return Equipment.create(
       defId: 'test_$id',
@@ -58,6 +61,8 @@ void main() {
       isLineageHeritage: isLineageHeritage,
       ownerCharacterId: ownerCharacterId,
       isLocked: isLocked,
+      lores: lores,
+      previousOwnerCharacterIds: previousOwnerCharacterIds,
     )..id = id;
   }
 
@@ -112,9 +117,11 @@ void main() {
 
   // ─── ① 列出有可处置品阶行 ───────────────────────────────────────────────
 
-  testWidgets('① 对话框列出有可处置装备的品阶行，件数排除已装备/师承/锁定', (tester) async {
-    // xunChang: 2 件可处置 + 1 件已装备 + 1 件师承遗物 + 1 件锁定 → 显示件数 = 2
+  testWidgets('① 对话框列出有可处置装备的品阶行，件数排除保护装备', (tester) async {
+    // xunChang: 2 件可处置 + 1 件已装备 + 1 件师承遗物 + 1 件锁定
+    // + 1 件典故 + 1 件传承链路 → 显示件数 = 2
     // liQi: 1 件可处置 → 显示件数 = 1
+    // zhongQi: 高阶保护 → 不显示行，只计入排除说明
     final equipments = [
       mkEq(id: 1, tier: EquipmentTier.xunChang, slot: EquipmentSlot.weapon),
       mkEq(id: 2, tier: EquipmentTier.xunChang, slot: EquipmentSlot.armor),
@@ -136,7 +143,20 @@ void main() {
         slot: EquipmentSlot.accessory,
         isLocked: true,
       ),
+      mkEq(
+        id: 7,
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.accessory,
+        lores: [Lore()..text = 'test lore'],
+      ),
+      mkEq(
+        id: 8,
+        tier: EquipmentTier.xunChang,
+        slot: EquipmentSlot.accessory,
+        previousOwnerCharacterIds: [99],
+      ),
       mkEq(id: 5, tier: EquipmentTier.liQi, slot: EquipmentSlot.weapon),
+      mkEq(id: 9, tier: EquipmentTier.zhongQi, slot: EquipmentSlot.weapon),
     ];
     await pumpDialog(
       tester,
@@ -160,16 +180,22 @@ void main() {
     expect(find.textContaining('件）'), findsNWidgets(2), reason: '应只有 2 个品级行');
     expect(
       find.text(
-        UiStrings.bulkProtectedSummary(locked: 1, equipped: 1, heritage: 1),
+        UiStrings.bulkProtectedSummary(
+          locked: 1,
+          equipped: 1,
+          heritage: 1,
+          highTier: 1,
+          story: 2,
+        ),
       ),
       findsOneWidget,
-      reason: '批量对话框应说明锁定/装备中/师承遗物已被排除',
+      reason: '批量对话框应说明各类保护装备已被排除',
     );
   });
 
-  // ─── ② 品阶行有出售/分解按钮 ─────────────────────────────────────────────
+  // ─── ② 品阶行有出售按钮，无批量分解 ─────────────────────────────────────
 
-  testWidgets('② 品阶行有「一键出售」「一键分解」按钮', (tester) async {
+  testWidgets('② 品阶行有「一键出售」按钮，且无批量分解入口', (tester) async {
     final equipments = [
       mkEq(id: 1, tier: EquipmentTier.xunChang, slot: EquipmentSlot.weapon),
     ];
@@ -181,9 +207,9 @@ void main() {
       reason: '应有「一键出售」按钮',
     );
     expect(
-      find.text(UiStrings.bulkDisassembleButton),
-      findsOneWidget,
-      reason: '应有「一键分解」按钮',
+      find.text(UiStrings.equipmentDisassemble),
+      findsNothing,
+      reason: '本批不提供批量分解入口',
     );
   });
 
@@ -281,8 +307,8 @@ void main() {
     test('确认后可处置装备消失、银两增加、已装备/师承装备仍在', () async {
       final isar = IsarSetup.instance;
 
-      // Seed: 2 可处置 + 1 已装备 + 1 师承遗物 + 1 锁定（同 xunChang 品级）
-      late int id1, id2, id3, id4, id5;
+      // Seed: 2 可处置 + 1 已装备 + 1 师承遗物 + 1 锁定 + 1 高阶 + 1 典故
+      late int id1, id2, id3, id4, id5, id6, id7;
       await isar.writeTxn(() async {
         id1 = await isar.equipments.put(
           Equipment.create(
@@ -333,6 +359,25 @@ void main() {
             isLocked: true, // 玩家锁定
           ),
         );
+        id6 = await isar.equipments.put(
+          Equipment.create(
+            defId: 'e6',
+            tier: EquipmentTier.zhongQi,
+            slot: EquipmentSlot.weapon,
+            obtainedAt: DateTime(2026, 6, 26),
+            obtainedFrom: 'test',
+          ),
+        );
+        id7 = await isar.equipments.put(
+          Equipment.create(
+            defId: 'e7',
+            tier: EquipmentTier.xunChang,
+            slot: EquipmentSlot.weapon,
+            obtainedAt: DateTime(2026, 6, 26),
+            obtainedFrom: 'test',
+            lores: [Lore()..text = 'test lore'],
+          ),
+        );
       });
 
       final service = EquipmentDisposalService(isar: isar, config: cfg);
@@ -350,6 +395,8 @@ void main() {
       expect(await isar.equipments.get(id3), isNotNull, reason: '已装备件应保留');
       expect(await isar.equipments.get(id4), isNotNull, reason: '师承遗物应保留');
       expect(await isar.equipments.get(id5), isNotNull, reason: '锁定装备应保留');
+      expect(await isar.equipments.get(id6), isNotNull, reason: '高阶装备应保留');
+      expect(await isar.equipments.get(id7), isNotNull, reason: '典故装备应保留');
 
       // 银两增加
       final silver = await isar.inventoryItems.getByDefId('item_silver');

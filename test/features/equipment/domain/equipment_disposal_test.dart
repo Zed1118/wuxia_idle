@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/lore.dart';
 import 'package:wuxia_idle/features/equipment/domain/equipment_disposal.dart';
 
 void main() {
@@ -42,6 +43,8 @@ void main() {
       bool isLocked = false,
       bool isLineageHeritage = false,
       String obtainedFrom = 'test',
+      List<Lore>? lores,
+      List<int>? previousOwnerCharacterIds,
     }) => Equipment.create(
       defId: 'eq_$id',
       tier: tier,
@@ -50,9 +53,11 @@ void main() {
       obtainedFrom: obtainedFrom,
       isLocked: isLocked,
       isLineageHeritage: isLineageHeritage,
+      lores: lores,
+      previousOwnerCharacterIds: previousOwnerCharacterIds,
     )..id = id;
 
-    test('已装备/锁定/遗物/高阶/受保护来源均返回保护原因', () {
+    test('已装备/锁定/遗物/高阶/受保护来源/典故均返回保护原因', () {
       expect(
         equipmentProtectionReason(eq(id: 1), equippedEquipmentIds: const {1}),
         EquipmentProtectionReason.equipped,
@@ -87,6 +92,20 @@ void main() {
           ),
         ),
         EquipmentProtectionReason.protectedSource,
+      );
+      expect(
+        equipmentProtectionReason(
+          eq(id: 6, lores: [Lore()..text = 'test lore']),
+          equippedEquipmentIds: const {},
+        ),
+        EquipmentProtectionReason.story,
+      );
+      expect(
+        equipmentProtectionReason(
+          eq(id: 7, previousOwnerCharacterIds: [99]),
+          equippedEquipmentIds: const {},
+        ),
+        EquipmentProtectionReason.story,
       );
     });
   });

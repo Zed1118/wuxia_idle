@@ -20,11 +20,11 @@ import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 
-/// 批量整理对话框（Task 6 / 2026-06-26）：一键按品级出售或分解背包装备。
+/// 批量整理对话框（Task 6 / 2026-06-26）：一键按品级出售背包装备。
 ///
-/// **过滤规则**：仅展示「不在任何出战角色装备槽 && !isLineageHeritage && !isLocked」
-/// 的自由装备；已装备 / 师承遗物 / 玩家锁定不可批量处置，但其数量不计入件数显示。
-/// 全品阶均可批量（含宝物/神物），每次操作均走二次确认弹窗（用户拍板）。
+/// **过滤规则**：仅展示批量安全策略允许的自由装备；已装备 / 师承遗物 /
+/// 玩家锁定 / 高阶 / 带个人典故或传承链路的装备不可批量出售，并在顶部汇总原因。
+/// 每次操作均走二次确认弹窗。
 ///
 /// 入口：`inventory_screen.dart` 装备 Tab 顶部 `PlaqueButton(equipmentBulkEntry)`
 /// 通过 `showDialog<void>(builder: (_) => const BulkDisposalDialog())` 弹出。
@@ -143,12 +143,6 @@ class BulkDisposalDialog extends ConsumerWidget {
               plan.tiers[i],
               plan.itemsFor(plan.tiers[i]),
             ),
-            onDisassemble: () => _handleDisassemble(
-              context,
-              ref,
-              plan.tiers[i],
-              plan.itemsFor(plan.tiers[i]),
-            ),
           ),
         ],
       ],
@@ -204,59 +198,6 @@ class BulkDisposalDialog extends ConsumerWidget {
     ref.invalidate(allInventoryItemsProvider);
     ref.invalidate(silverBalanceProvider);
   }
-
-  Future<void> _handleDisassemble(
-    BuildContext context,
-    WidgetRef ref,
-    EquipmentTier tier,
-    List<Equipment> disposable,
-  ) async {
-    final config = GameRepository.instance.numbers.disposal;
-    final count = disposable.length;
-    var totalMj = 0;
-    var totalXx = 0;
-    for (final eq in disposable) {
-      final r = equipmentDisassembleRewards(eq.tier, eq.enhanceLevel, config);
-      totalMj += r.mojianshi;
-      totalXx += r.xinxuejiejing;
-    }
-
-    final confirmed = await PaperDialog.show<bool>(
-      context,
-      title: UiStrings.equipmentDisassemble,
-      body: Text(
-        UiStrings.disassembleConfirmBody(count, totalMj, totalXx),
-        style: const TextStyle(
-          color: WuxiaUi.ink,
-          fontSize: 14,
-          height: 1.8,
-          letterSpacing: 1,
-        ),
-      ),
-      actions: [
-        PlaqueButton(
-          label: UiStrings.commonCancel,
-          onTap: () => Navigator.of(context).pop(false),
-        ),
-        PlaqueButton(
-          label: UiStrings.equipmentDisassemble,
-          primary: true,
-          onTap: () => Navigator.of(context).pop(true),
-        ),
-      ],
-    );
-    if (confirmed != true) return;
-    if (!context.mounted) return;
-
-    await EquipmentDisposalService(
-      isar: IsarSetup.instance,
-      config: config,
-    ).disassembleAllOfTier(tier);
-
-    ref.invalidate(allEquipmentsProvider);
-    ref.invalidate(allInventoryItemsProvider);
-    ref.invalidate(silverBalanceProvider);
-  }
 }
 
 Set<int> _watchActiveEquippedIds(WidgetRef ref) {
@@ -272,16 +213,22 @@ class _ProtectionCounts {
     required this.locked,
     required this.equipped,
     required this.heritage,
-    required this.protected,
+    required this.highTier,
+    required this.story,
   });
 
   final int locked;
   final int equipped;
   final int heritage;
-  final int protected;
+  final int highTier;
+  final int story;
 
   bool get isEmpty =>
-      locked == 0 && equipped == 0 && heritage == 0 && protected == 0;
+      locked == 0 &&
+      equipped == 0 &&
+      heritage == 0 &&
+      highTier == 0 &&
+      story == 0;
 
   factory _ProtectionCounts.from(
     List<Equipment> list,
@@ -291,7 +238,8 @@ class _ProtectionCounts {
     var locked = 0;
     var equipped = 0;
     var heritage = 0;
-    var protected = 0;
+    var highTier = 0;
+    var story = 0;
     for (final eq in list) {
       final reason = equipmentProtectionReason(
         eq,
@@ -308,8 +256,10 @@ class _ProtectionCounts {
         case EquipmentProtectionReason.lineageHeritage:
           heritage++;
         case EquipmentProtectionReason.highTier:
+          highTier++;
         case EquipmentProtectionReason.protectedSource:
-          protected++;
+        case EquipmentProtectionReason.story:
+          story++;
         case null:
           break;
       }
@@ -318,7 +268,8 @@ class _ProtectionCounts {
       locked: locked,
       equipped: equipped,
       heritage: heritage,
-      protected: protected,
+      highTier: highTier,
+      story: story,
     );
   }
 }
@@ -340,7 +291,8 @@ class _ProtectedSummary extends StatelessWidget {
             locked: counts.locked,
             equipped: counts.equipped,
             heritage: counts.heritage,
-            protected: counts.protected,
+            highTier: counts.highTier,
+            story: counts.story,
           ),
           style: const TextStyle(
             color: WuxiaColors.textMuted,
@@ -353,19 +305,17 @@ class _ProtectedSummary extends StatelessWidget {
   }
 }
 
-/// 品阶行：品级标签（件数）+ 「一键出售」+「一键分解」按钮。
+/// 品阶行：品级标签（件数）+ 「一键出售」按钮。
 class _TierRow extends StatelessWidget {
   const _TierRow({
     required this.tier,
     required this.disposable,
     required this.onSell,
-    required this.onDisassemble,
   });
 
   final EquipmentTier tier;
   final List<Equipment> disposable;
   final VoidCallback onSell;
-  final VoidCallback onDisassemble;
 
   @override
   Widget build(BuildContext context) {
@@ -389,11 +339,6 @@ class _TierRow extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           PlaqueButton(label: UiStrings.bulkSellButton, onTap: onSell),
-          const SizedBox(width: 8),
-          PlaqueButton(
-            label: UiStrings.bulkDisassembleButton,
-            onTap: onDisassemble,
-          ),
         ],
       ),
     );
