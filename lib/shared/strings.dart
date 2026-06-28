@@ -700,6 +700,7 @@ class UiStrings {
   static const String tabForging = '开锋';
   static const String forgingForged = '已开锋';
   static const String forgingNoSpecialSkill = '该装备无专属技能';
+  static const String forgingSpecialSkillPickerTitle = '选择专属技能';
   static const String forgingConfirmTitle = '确认开锋';
   static const String forgingConfirmBody = '开锋一旦下手不能更改。确认在此槽位开锋？';
   static const String forgingConfirmOk = '确认';
@@ -715,6 +716,8 @@ class UiStrings {
   /// 已开锋词条：`攻击 +15%`。
   static String forgingBonusLabel(String typeLabel, int bonus) =>
       '$typeLabel +$bonus%';
+
+  static String forgingSpecialSkillLabel(String skillName) => '专属技能：$skillName';
 
   // 心法面板 / 散功 dialog（T31）
   static const String techniquePanelTitle = '心法面板';

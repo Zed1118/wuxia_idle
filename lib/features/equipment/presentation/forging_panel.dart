@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../battle/domain/enum_localizations.dart';
+import '../../../data/game_repository.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
@@ -28,11 +29,7 @@ import '../../../shared/theme/colors.dart';
 /// `EquipmentDef.specialSkillCandidates` 为空，UI 显示「该装备无专属技能」
 /// 后不会弹二次确认；非空时（未来 yaml 补全）按词条点击路径走二确。
 class ForgingPanel extends ConsumerStatefulWidget {
-  const ForgingPanel({
-    super.key,
-    required this.equipment,
-    required this.def,
-  });
+  const ForgingPanel({super.key, required this.equipment, required this.def});
 
   final Equipment equipment;
   final EquipmentDef def;
@@ -46,6 +43,13 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
     required int slotIndex,
     required ForgingSlotType type,
   }) async {
+    String? specialSkillId;
+    if (type == ForgingSlotType.specialSkill) {
+      specialSkillId = await _pickSpecialSkill();
+      if (specialSkillId == null) return;
+      if (!mounted) return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -81,6 +85,7 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
       def: widget.def,
       slotIndex: slotIndex,
       type: type,
+      specialSkillId: specialSkillId,
       config: config,
     );
     if (result == ForgeResult.success) {
@@ -99,6 +104,47 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
     // UI 已经预先校验拦住，理论上不会到这；保留 service 防御返回。
   }
 
+  Future<String?> _pickSpecialSkill() async {
+    final candidates = widget.def.specialSkillCandidates;
+    if (candidates.isEmpty) return null;
+    return showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: WuxiaColors.panel,
+        title: const Text(
+          UiStrings.forgingSpecialSkillPickerTitle,
+          style: TextStyle(color: WuxiaColors.textPrimary),
+        ),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final id in candidates)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    _skillName(id),
+                    style: const TextStyle(color: WuxiaColors.textPrimary),
+                  ),
+                  onTap: () => Navigator.of(context).pop(id),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(UiStrings.forgingConfirmCancel),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _skillName(String id) =>
+      GameRepository.instanceOrNull?.skillDefs[id]?.name ?? id;
+
   @override
   Widget build(BuildContext context) {
     final config = ref.watch(numbersConfigProvider).forging;
@@ -112,8 +158,7 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
               slotIndex: i,
               equipment: widget.equipment,
               def: widget.def,
-              unlockAtEnhanceLevel:
-                  config.slotByIndex(i).unlockAtEnhanceLevel,
+              unlockAtEnhanceLevel: config.slotByIndex(i).unlockAtEnhanceLevel,
               availableTypes: ForgingService.availableTypesForSlot(
                 eq: widget.equipment,
                 slotIndex: i,
@@ -161,7 +206,8 @@ class _SlotCard extends StatelessWidget {
     } else if (!unlocked) {
       borderColor = WuxiaColors.buttonDisabled;
       body = _LockedBody(unlockAtEnhanceLevel: unlockAtEnhanceLevel);
-    } else if (isSpecialSkillSlot && def.specialSkillCandidates.isEmpty &&
+    } else if (isSpecialSkillSlot &&
+        def.specialSkillCandidates.isEmpty &&
         availableTypes.length == 1 &&
         availableTypes.first == ForgingSlotType.specialSkill) {
       // 槽 3 仅 specialSkill 可选 + 候选为空 → 空状态
@@ -270,8 +316,7 @@ class _ChoicesBody extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               foregroundColor: WuxiaColors.textPrimary,
               side: const BorderSide(color: WuxiaColors.border),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             ),
             child: Text(EnumL10n.forgingSlotType(t)),
           ),
@@ -296,7 +341,11 @@ class _ForgedBody extends StatelessWidget {
     }
     if (type == ForgingSlotType.specialSkill) {
       return Text(
-        '${EnumL10n.forgingSlotType(type)}：${slot.specialSkillId ?? UiStrings.dashPlaceholder}',
+        UiStrings.forgingSpecialSkillLabel(
+          slot.specialSkillId == null
+              ? UiStrings.dashPlaceholder
+              : _skillName(slot.specialSkillId!),
+        ),
         style: const TextStyle(color: WuxiaColors.textPrimary, fontSize: 13),
       );
     }
@@ -312,4 +361,7 @@ class _ForgedBody extends StatelessWidget {
       ),
     );
   }
+
+  static String _skillName(String id) =>
+      GameRepository.instanceOrNull?.skillDefs[id]?.name ?? id;
 }
