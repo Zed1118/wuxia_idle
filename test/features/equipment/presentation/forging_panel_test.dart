@@ -91,8 +91,7 @@ void main() {
     expect(find.text('槽 3'), findsOneWidget);
   });
 
-  testWidgets('槽 1 已开 attack + enhanceLevel=15 → 槽 2 词条不含「攻击」',
-      (tester) async {
+  testWidgets('槽 1 已开 attack + enhanceLevel=15 → 槽 2 词条不含「攻击」', (tester) async {
     final slots = [
       ForgingSlot()
         ..slotIndex = 1
@@ -117,13 +116,38 @@ void main() {
     expect(find.widgetWithText(OutlinedButton, '破甲'), findsWidgets);
   });
 
-  testWidgets('槽 3 enhanceLevel=19 + specialSkillCandidates 空 → 「该装备无专属技能」',
-      (tester) async {
+  testWidgets('槽 3 enhanceLevel=19 + specialSkillCandidates 空 → 「该装备无专属技能」', (
+    tester,
+  ) async {
     final eq = mkEq(enhanceLevel: 19);
     final def = mkDef(); // specialSkillCandidates 默认空
     await pumpPanel(tester, eq: eq, def: def);
 
     expect(find.text('该装备无专属技能'), findsOneWidget);
+  });
+
+  testWidgets('槽 3 specialSkill 候选非空 → 可选择并写入 specialSkillId', (tester) async {
+    const specialSkillId = 'skill_lingqiao_jichu_skill';
+    final skillName = GameRepository.instance.skillDefs[specialSkillId]!.name;
+    final eq = mkEq(enhanceLevel: 19);
+    final def = mkDef(specialSkillCandidates: const [specialSkillId]);
+    await pumpPanel(tester, eq: eq, def: def);
+
+    await tester.tap(find.widgetWithText(OutlinedButton, '专属技能'));
+    await tester.pumpAndSettle();
+    expect(find.text('选择专属技能'), findsOneWidget);
+    expect(find.text(skillName), findsOneWidget);
+
+    await tester.tap(find.text(skillName));
+    await tester.pumpAndSettle();
+    expect(find.text('确认开锋'), findsOneWidget);
+
+    await tester.tap(find.text('确认'));
+    await tester.pumpAndSettle();
+
+    expect(eq.forgingSlots[2].specialSkillId, specialSkillId);
+    expect(eq.forgingSlots[2].type, ForgingSlotType.specialSkill);
+    expect(find.text('专属技能：$skillName'), findsOneWidget);
   });
 
   testWidgets('已开锋槽显示「<类型> +X%」+「已开锋」灰色标签', (tester) async {

@@ -18,21 +18,19 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
+      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
     }
   });
 
   Equipment mkWeapon(List<ForgingSlot> slots) => Equipment.create(
-        defId: 'weapon_zhongqi_test',
-        tier: EquipmentTier.zhongQi,
-        slot: EquipmentSlot.weapon,
-        obtainedAt: DateTime(2026, 1, 1),
-        obtainedFrom: 'test',
-        baseAttack: 500,
-        forgingSlots: slots,
-      );
+    defId: 'weapon_zhongqi_test',
+    tier: EquipmentTier.zhongQi,
+    slot: EquipmentSlot.weapon,
+    obtainedAt: DateTime(2026, 1, 1),
+    obtainedFrom: 'test',
+    baseAttack: 500,
+    forgingSlots: slots,
+  );
 
   test('fromCharacter 烘焙 pierce/lifesteal 派生字段', () {
     final weapon = mkWeapon([
@@ -59,6 +57,53 @@ void main() {
     expect(bc.forgingLifestealPct, closeTo(0.15, 1e-9));
   });
 
+  test('fromCharacter 将开锋三专属技能加入 availableSkills', () {
+    const specialSkillId = 'skill_lingqiao_shichuan_skill';
+    final weapon = mkWeapon([
+      ForgingSlot()..slotIndex = 1,
+      ForgingSlot()..slotIndex = 2,
+      ForgingSlot()
+        ..slotIndex = 3
+        ..type = ForgingSlotType.specialSkill
+        ..unlocked = true
+        ..bonusValue = 1
+        ..specialSkillId = specialSkillId,
+    ]);
+    final bc = BattleCharacter.fromCharacter(
+      character: _mkChar(),
+      equipped: [weapon],
+      mainTechnique: _mkTech(),
+      numbers: GameRepository.instance.numbers,
+      teamSide: 0,
+      slotIndex: 0,
+    );
+
+    expect(bc.availableSkills.map((s) => s.id), contains(specialSkillId));
+  });
+
+  test('fromCharacter 拒绝低境界角色使用高阶装备', () {
+    final weapon = Equipment.create(
+      defId: 'weapon_shenwu_test',
+      tier: EquipmentTier.shenWu,
+      slot: EquipmentSlot.weapon,
+      obtainedAt: DateTime(2026, 1, 1),
+      obtainedFrom: 'test',
+      baseAttack: 500,
+    );
+
+    expect(
+      () => BattleCharacter.fromCharacter(
+        character: _mkChar(realmTier: RealmTier.erLiu),
+        equipped: [weapon],
+        mainTechnique: _mkTech(),
+        numbers: GameRepository.instance.numbers,
+        teamSide: 0,
+        slotIndex: 0,
+      ),
+      throwsStateError,
+    );
+  });
+
   test('裸装 → 0', () {
     final bc = BattleCharacter.fromCharacter(
       character: _mkChar(),
@@ -73,7 +118,7 @@ void main() {
   });
 }
 
-Character _mkChar() {
+Character _mkChar({RealmTier realmTier = RealmTier.jueDing}) {
   final attrs = Attributes()
     ..constitution = 5
     ..enlightenment = 5
@@ -81,7 +126,7 @@ Character _mkChar() {
     ..fortune = 5;
   return Character.create(
     name: '测试侠',
-    realmTier: RealmTier.jueDing,
+    realmTier: realmTier,
     realmLayer: RealmLayer.ruMen,
     attributes: attrs,
     rarity: RarityTier.biaoZhun,
@@ -94,10 +139,10 @@ Character _mkChar() {
 }
 
 Technique _mkTech() => Technique.create(
-      defId: 'tech_gangmeng_jichu',
-      ownerCharacterId: 1,
-      tier: TechniqueTier.ruMenGong,
-      school: TechniqueSchool.gangMeng,
-      role: TechniqueRole.main,
-      learnedAt: DateTime(2026, 1, 1),
-    );
+  defId: 'tech_gangmeng_jichu',
+  ownerCharacterId: 1,
+  tier: TechniqueTier.ruMenGong,
+  school: TechniqueSchool.gangMeng,
+  role: TechniqueRole.main,
+  learnedAt: DateTime(2026, 1, 1),
+);

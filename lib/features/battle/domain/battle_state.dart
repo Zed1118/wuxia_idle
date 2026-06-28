@@ -316,6 +316,14 @@ class BattleCharacter {
     if (slotIndex < 0 || slotIndex > 2) {
       throw RangeError.value(slotIndex, 'slotIndex', '必须 ∈ [0, 2]');
     }
+    for (final eq in equipped) {
+      if (!eq.isEquippableAtRealm(character.realmTier)) {
+        throw StateError(
+          'BattleCharacter.fromCharacter: ${character.name} 境界 '
+          '${character.realmTier.name} 不能装备 ${eq.defId}(${eq.tier.name})',
+        );
+      }
+    }
 
     final maxHp = CharacterDerivedStats.maxHp(
       character,
@@ -397,6 +405,24 @@ class BattleCharacter {
         if (teamSide == _playerTeamSide && character.keySkillId == null)
           ...?_matchingInterruptSkill(repo, school),
       ];
+    }
+    final skillIds = <String>{for (final s in skills) s.id};
+    for (final eq in equipped) {
+      for (final slot in eq.forgingSlots) {
+        if (!slot.unlocked ||
+            slot.type != ForgingSlotType.specialSkill ||
+            slot.specialSkillId == null) {
+          continue;
+        }
+        final skill = repo.skillDefs[slot.specialSkillId!];
+        if (skill == null ||
+            !skill.canEquipAtRealm(character.realmTier) ||
+            skillIds.contains(skill.id)) {
+          continue;
+        }
+        skills.add(skill);
+        skillIds.add(skill.id);
+      }
     }
     // P1.1 候选 3-c:玩家方/师徒 NPC 任一武器 resonanceStage 达到 hasSwordSongEffect
     // 阶(numbers.yaml `resonance.stages` 心剑通灵)→ swordSongResonanceActive,
