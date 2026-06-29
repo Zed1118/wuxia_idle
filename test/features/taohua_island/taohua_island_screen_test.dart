@@ -261,6 +261,14 @@ void main() {
         findsWidgets,
       );
       expect(find.text(UiStrings.taohuaIslandFullStorageUnknown), findsWidgets);
+      expect(
+        find.text(UiStrings.taohuaIslandOutputUsageTagUpgrade),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.taohuaIslandOutputUsageTagRecipe),
+        findsOneWidget,
+      );
 
       // 切打造台(processor·forge_mojianshi):当前配方磨剑石 + 产物去向装备强化。
       await selectBuilding(tester, BuildingType.daZaoTai);
@@ -270,6 +278,21 @@ void main() {
       );
       expect(
         find.text(UiStrings.taohuaIslandOutputUsage('装备强化')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.taohuaIslandOutputUsageTagEnhancement),
+        findsOneWidget,
+      );
+
+      // 切铸造台(processor·forge_kaifeng_fucai):开锋辅材要标出开锋去向。
+      await selectBuilding(tester, BuildingType.zhuZaoTai);
+      expect(
+        find.text(UiStrings.taohuaIslandCurrentRecipe('开锋辅材')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.taohuaIslandOutputUsageTagForging),
         findsOneWidget,
       );
 
@@ -318,10 +341,7 @@ void main() {
       );
       expect(
         find.textContaining(
-          UiStrings.taohuaIslandBuildingManualOutputUsage(
-            '精铁',
-            '建筑升级 / 桃花岛加工',
-          ),
+          UiStrings.taohuaIslandBuildingManualOutputUsage('精铁', '建筑升级 / 桃花岛加工'),
         ),
         findsOneWidget,
       );
