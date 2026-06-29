@@ -59,7 +59,8 @@ void main() {
           ..saveDataId = 1
           ..highestClearedFloor = 30
           ..createdAt = DateTime(2026, 1, 1)
-          ..currentCycleIndex = 1 // 旧档默认值（Isar 会用字段默认值）
+          ..currentCycleIndex =
+              1 // 旧档默认值（Isar 会用字段默认值）
           ..maxClearedCycle = 0; // 旧档未设置
         await IsarSetup.instance.towerProgress.put(tp);
       });
@@ -69,10 +70,13 @@ void main() {
       await IsarSetup.init(directory: tempDir, inspector: false);
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.32.0', reason: '迁移后升版到当前 0.32.0');
+      expect(
+        save.saveVersion,
+        IsarSetup.currentSaveVersion,
+        reason: '迁移后升版到当前版本',
+      );
 
-      final mp =
-          await IsarSetup.instance.mainlineProgress.where().findFirst();
+      final mp = await IsarSetup.instance.mainlineProgress.where().findFirst();
       expect(mp, isNotNull);
       expect(
         mp!.clearedStageCycleKeys,
@@ -92,12 +96,9 @@ void main() {
       // 幂等：再 close/init 一次，cycleKeys 不重复 append。
       await IsarSetup.close();
       await IsarSetup.init(directory: tempDir, inspector: false);
-      final mp2 =
-          await IsarSetup.instance.mainlineProgress.where().findFirst();
+      final mp2 = await IsarSetup.instance.mainlineProgress.where().findFirst();
       expect(
-        mp2!.clearedStageCycleKeys
-            .where((k) => k == 'stage_01_01#1')
-            .length,
+        mp2!.clearedStageCycleKeys.where((k) => k == 'stage_01_01#1').length,
         1,
         reason: '幂等：stage_01_01#1 只出现一次',
       );
@@ -134,7 +135,7 @@ void main() {
       );
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.32.0');
+      expect(save.saveVersion, IsarSetup.currentSaveVersion);
     },
   );
 
@@ -163,19 +164,11 @@ void main() {
       await IsarSetup.init(directory: tempDir, inspector: false);
       final tp = await IsarSetup.instance.towerProgress.where().findFirst();
       expect(tp, isNotNull);
-      expect(
-        tp!.currentCycleIndex,
-        2,
-        reason: 'H1: 已推进的周目不得被迁移重置为 1（数据丢失）',
-      );
-      expect(
-        tp.maxClearedCycle,
-        1,
-        reason: 'H1: 周目 1 通关成就不得被迁移清掉',
-      );
+      expect(tp!.currentCycleIndex, 2, reason: 'H1: 已推进的周目不得被迁移重置为 1（数据丢失）');
+      expect(tp.maxClearedCycle, 1, reason: 'H1: 周目 1 通关成就不得被迁移清掉');
 
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.32.0');
+      expect(save.saveVersion, IsarSetup.currentSaveVersion);
     },
   );
 }

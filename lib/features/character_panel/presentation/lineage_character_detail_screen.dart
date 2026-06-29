@@ -202,7 +202,33 @@ class _DeedsSection extends StatelessWidget {
 
   String _deedsText() {
     if (character.isFounder) {
-      return UiStrings.lineageCharacterDetailFounderGen(generationIndex);
+      final generationText = UiStrings.lineageCharacterDetailFounderGen(
+        generationIndex,
+      );
+      final schoolId = character.founderCreationSchoolId;
+      final originId = character.founderCreationOriginId;
+      final fateId = character.founderCreationFateId;
+      if (schoolId == null ||
+          originId == null ||
+          fateId == null ||
+          !GameRepository.isLoaded) {
+        return generationText;
+      }
+      final config = GameRepository.instance.founderCreation;
+      try {
+        final school = config.schoolById(schoolId);
+        final origin = config.originById(originId);
+        final fate = config.fateById(fateId);
+        return UiStrings.founderCreationDeeds(
+          generationText,
+          school.label,
+          origin.label,
+          fate.label,
+          origin.biographyLine,
+        );
+      } catch (_) {
+        return generationText;
+      }
     }
     final stageName = _resolveJoinStageName();
     if (stageName == null) {

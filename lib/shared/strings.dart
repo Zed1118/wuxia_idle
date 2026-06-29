@@ -1796,6 +1796,40 @@ class UiStrings {
   }
 
   static String slotCardTitle(int n) => '第 $n 卷';
+
+  // 祖师开局塑形
+  static const String founderCreateTitle = '开派祖师';
+  static const String founderCreateSubtitle = '择流派、定出身、观命盘';
+  static const String founderCreateSchoolSection = '一 · 定流派';
+  static const String founderCreateOriginSection = '二 · 问出身';
+  static const String founderCreateFateSection = '三 · 观命盘';
+  static const String founderCreatePreviewSection = '资质预览';
+  static const String founderCreateConfirm = '立派入世';
+  static const String founderCreateBack = '返回存档';
+  static const String founderCreateNoConfig = '祖师创建配置未加载';
+  static const String founderCreateSelected = '已选';
+  static const String founderCreateStartingTechnique = '起手心法';
+  static const String founderCreateStartingResource = '起手资源';
+  static const String founderCreateGoalHint = '开局建议';
+  static const String founderCreateFateFocus = '命盘侧重';
+  static String founderCreateAttributeTotal(int total) => '总点 $total';
+  static String founderCreateTechniqueName(String name) => '主修「$name」';
+  static String founderCreateConfirmLine(
+    String school,
+    String origin,
+    String fate,
+  ) => '$school · $origin · $fate';
+  static const String founderCreateAttrConstitutionHint = '影响最大生命,久战不溃';
+  static const String founderCreateAttrEnlightenmentHint = '影响修炼速度与武学领悟';
+  static const String founderCreateAttrAgilityHint = '影响速度、暴击与闪避';
+  static const String founderCreateAttrFortuneHint = '影响奇遇与偶得机缘';
+  static String founderCreationDeeds(
+    String generationText,
+    String school,
+    String origin,
+    String fate,
+    String originLine,
+  ) => '$generationText · $school · $origin · $fate\n$originLine';
   // 战斗交互重做 Phase 3:选关屏 per-stage「挂机自动 / 允许拖招」开关。
   static const String stageAutoPlayAuto = '自动';
   static const String stageAutoPlayManual = '拖招';

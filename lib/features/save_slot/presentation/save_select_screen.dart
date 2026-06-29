@@ -10,6 +10,7 @@ import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
+import '../../onboarding/presentation/founder_creation_screen.dart';
 import '../application/slot_list_provider.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
@@ -42,7 +43,14 @@ class SaveSelectScreen extends ConsumerWidget {
       body: UiStrings.slotNewGameConfirm,
       action: UiStrings.slotEnter,
     );
-    if (ok && context.mounted) await _enterSlot(context, ref, n);
+    if (!ok || !context.mounted) return;
+    await IsarSetup.switchSlot(n);
+    ref.invalidate(isarProvider);
+    if (!context.mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const FounderCreationScreen()),
+    );
+    ref.invalidate(slotListProvider);
   }
 
   Future<void> _renameSlot(

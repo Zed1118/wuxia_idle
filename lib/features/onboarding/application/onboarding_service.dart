@@ -6,6 +6,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/defs/master_def.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
+import '../domain/founder_creation_selection.dart';
 import 'master_builder.dart';
 
 /// 首次启动 production seed 路径(2026-05-25 P0-1 release 阻塞修复)。
@@ -52,8 +53,25 @@ class OnboardingService {
   ///
   /// 调用方:[SplashScreen._bootstrap] IsarSetup.init 之后(splash loading 期间).
   Future<bool> ensureFoundingMasters({bool soloStart = true}) async {
-    final existing =
-        await isar.characters.filter().isFounderEqualTo(true).count();
+    return _seedFoundingMasters(soloStart: soloStart);
+  }
+
+  /// 新档创建页确认后的祖师塑形 seed。已有 founder 时幂等跳过。
+  Future<bool> createFoundingMaster({
+    required FounderCreationSelection selection,
+    bool soloStart = true,
+  }) async {
+    return _seedFoundingMasters(soloStart: soloStart, creation: selection);
+  }
+
+  Future<bool> _seedFoundingMasters({
+    required bool soloStart,
+    FounderCreationSelection? creation,
+  }) async {
+    final existing = await isar.characters
+        .filter()
+        .isFounderEqualTo(true)
+        .count();
     if (existing > 0) return false;
 
     final repo = GameRepository.instance;
@@ -63,7 +81,14 @@ class OnboardingService {
 
     await isar.writeTxn(() async {
       // 1. 祖师固定 id=1(与既有 main_menu / character_panel 对齐)。
-      final founder = buildMasterCharacter(masters[0], now: now)..id = 1;
+      final founder = buildMasterCharacter(
+        masters[0],
+        now: now,
+        attributeProfile: creation?.fate.attributeProfile,
+        founderCreationSchoolId: creation?.school.id,
+        founderCreationOriginId: creation?.origin.id,
+        founderCreationFateId: creation?.fate.id,
+      )..id = 1;
       await isar.characters.put(founder);
 
       // 2. 阵容:soloStart 仅祖师;否则满队(大弟子 / 二弟子 autoIncrement id=2/3)。
@@ -98,7 +123,9 @@ class OnboardingService {
         await learnMasterStarting(
           isar,
           character: seeded[i],
-          techDefIds: defs[i].startingTechniqueIds,
+          techDefIds: i == 0 && creation != null
+              ? creation.school.startingTechniqueIds
+              : defs[i].startingTechniqueIds,
           now: now,
         );
       }
@@ -116,8 +143,8 @@ class OnboardingService {
       // 5. 基础物料(磨剑石 50 / 心血结晶 0)。
       await seedBasicMaterials(
         isar,
-        mojianshi: _starterMojianshi,
-        jieJing: _starterJieJing,
+        mojianshi: _starterMojianshi + (creation?.origin.mojianshiBonus ?? 0),
+        jieJing: _starterJieJing + (creation?.origin.jieJingBonus ?? 0),
         at: now,
       );
     });
