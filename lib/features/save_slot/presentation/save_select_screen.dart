@@ -8,6 +8,9 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
+import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../onboarding/presentation/founder_creation_screen.dart';
@@ -89,39 +92,28 @@ class SaveSelectScreen extends ConsumerWidget {
     required String action,
     bool destructive = false,
   }) async {
-    final r = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        backgroundColor: WuxiaColors.panel,
-        title: Text(
-          title,
-          style: const TextStyle(color: WuxiaColors.resultHighlight),
-        ),
-        content: Text(
-          body,
-          style: const TextStyle(color: WuxiaColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(c, false),
-            child: const Text(
-              UiStrings.slotCancel,
-              style: TextStyle(color: WuxiaColors.textMuted),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(c, true),
-            child: Text(
-              action,
-              style: TextStyle(
-                color: destructive
-                    ? WuxiaColors.danger
-                    : WuxiaColors.resultHighlight,
-              ),
-            ),
-          ),
-        ],
+    final r = await PaperDialog.show<bool>(
+      context,
+      title: title,
+      body: Text(
+        body,
+        style: const TextStyle(color: WuxiaColors.textSecondary),
       ),
+      actions: [
+        Builder(
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.slotCancel,
+            onTap: () => Navigator.pop(ctx, false),
+          ),
+        ),
+        Builder(
+          builder: (ctx) => PlaqueButton(
+            label: action,
+            primary: !destructive,
+            onTap: () => Navigator.pop(ctx, true),
+          ),
+        ),
+      ],
     );
     return r ?? false;
   }
@@ -131,41 +123,34 @@ class SaveSelectScreen extends ConsumerWidget {
     SlotSummary summary,
   ) async {
     var currentName = summary.slotName ?? '';
-    return showDialog<String?>(
-      context: context,
-      builder: (c) => AlertDialog(
-        backgroundColor: WuxiaColors.panel,
-        title: const Text(
-          UiStrings.slotRenameTitle,
-          style: TextStyle(color: WuxiaColors.resultHighlight),
+    return PaperDialog.show<String?>(
+      context,
+      title: UiStrings.slotRenameTitle,
+      body: TextFormField(
+        initialValue: currentName,
+        onChanged: (value) => currentName = value,
+        autofocus: true,
+        style: const TextStyle(color: WuxiaColors.textPrimary),
+        decoration: const InputDecoration(
+          labelText: UiStrings.slotRenameInputLabel,
+          helperText: UiStrings.slotRenameClearHint,
         ),
-        content: TextFormField(
-          initialValue: currentName,
-          onChanged: (value) => currentName = value,
-          autofocus: true,
-          style: const TextStyle(color: WuxiaColors.textPrimary),
-          decoration: const InputDecoration(
-            labelText: UiStrings.slotRenameInputLabel,
-            helperText: UiStrings.slotRenameClearHint,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(c),
-            child: const Text(
-              UiStrings.slotCancel,
-              style: TextStyle(color: WuxiaColors.textMuted),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(c, currentName),
-            child: const Text(
-              UiStrings.slotRenameSave,
-              style: TextStyle(color: WuxiaColors.resultHighlight),
-            ),
-          ),
-        ],
       ),
+      actions: [
+        Builder(
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.slotCancel,
+            onTap: () => Navigator.pop(ctx),
+          ),
+        ),
+        Builder(
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.slotRenameSave,
+            primary: true,
+            onTap: () => Navigator.pop(ctx, currentName),
+          ),
+        ),
+      ],
     );
   }
 
@@ -182,13 +167,9 @@ class SaveSelectScreen extends ConsumerWidget {
       builder: (c) => StatefulBuilder(
         builder: (context, setState) {
           final canDelete = typedName.trim() == requiredName;
-          return AlertDialog(
-            backgroundColor: WuxiaColors.panel,
-            title: Text(
-              title,
-              style: const TextStyle(color: WuxiaColors.resultHighlight),
-            ),
-            content: SingleChildScrollView(
+          return PaperDialog(
+            title: title,
+            body: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,23 +197,14 @@ class SaveSelectScreen extends ConsumerWidget {
               ),
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(c, false),
-                child: const Text(
-                  UiStrings.slotCancel,
-                  style: TextStyle(color: WuxiaColors.textMuted),
-                ),
+              PlaqueButton(
+                label: UiStrings.slotCancel,
+                onTap: () => Navigator.pop(c, false),
               ),
-              TextButton(
-                onPressed: canDelete ? () => Navigator.pop(c, true) : null,
-                child: Text(
-                  action,
-                  style: TextStyle(
-                    color: canDelete
-                        ? WuxiaColors.danger
-                        : WuxiaColors.textMuted,
-                  ),
-                ),
+              PlaqueButton(
+                label: action,
+                disabled: !canDelete,
+                onTap: canDelete ? () => Navigator.pop(c, true) : null,
               ),
             ],
           );
@@ -424,21 +396,17 @@ class _FilledSlot extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(
-              icon: const Icon(
-                Icons.edit_outlined,
-                color: WuxiaColors.textMuted,
-              ),
+            WuxiaIconButton(
+              icon: Icons.edit_outlined,
               tooltip: UiStrings.slotRename,
               onPressed: onRename,
             ),
-            IconButton(
-              icon: const Icon(
-                Icons.delete_outline,
-                color: WuxiaColors.textMuted,
-              ),
+            const SizedBox(width: 6),
+            WuxiaIconButton(
+              icon: Icons.delete_outline,
               tooltip: UiStrings.slotDelete,
               onPressed: onDelete,
+              destructive: true,
             ),
           ],
         ),

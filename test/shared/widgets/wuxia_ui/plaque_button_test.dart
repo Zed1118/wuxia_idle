@@ -9,15 +9,22 @@ void main() {
   );
 
   FocusableActionDetector fad(WidgetTester tester) => tester.widget(
-        find.descendant(
-          of: find.byType(PlaqueButton),
-          matching: find.byType(FocusableActionDetector),
-        ),
-      );
+    find.descendant(
+      of: find.byType(PlaqueButton),
+      matching: find.byType(FocusableActionDetector),
+    ),
+  );
 
   testWidgets('渲染 label', (tester) async {
     await tester.pumpWidget(host(const PlaqueButton(label: '强化', onTap: null)));
     expect(find.text('强化'), findsOneWidget);
+  });
+
+  testWidgets('固定桌面热区不小于 72×44', (tester) async {
+    await tester.pumpWidget(host(PlaqueButton(label: '行', onTap: () {})));
+    final size = tester.getSize(find.byType(PlaqueButton));
+    expect(size.width, greaterThanOrEqualTo(PlaqueButton.minWidth));
+    expect(size.height, greaterThanOrEqualTo(PlaqueButton.minHeight));
   });
 
   testWidgets('点击触发 onTap', (tester) async {
@@ -36,6 +43,16 @@ void main() {
     expect(n, 0);
     final op = tester.widget<Opacity>(find.byType(Opacity));
     expect(op.opacity, 0.4);
+  });
+
+  testWidgets('onTap=null 视为不可用', (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(host(const PlaqueButton(label: '卸下', onTap: null)));
+    expect(
+      tester.getSemantics(find.byType(PlaqueButton)),
+      isSemantics(isButton: true, isEnabled: false),
+    );
+    handle.dispose();
   });
 
   testWidgets('无外层 Material 时也不红屏(overlay/dialog 安全)', (tester) async {
@@ -57,9 +74,8 @@ void main() {
 
   testWidgets('按下显暗层(AnimatedOpacity 由 0→1),抬起复位', (tester) async {
     await tester.pumpWidget(host(PlaqueButton(label: '确认', onTap: () {})));
-    AnimatedOpacity overlay() => tester.widget<AnimatedOpacity>(
-          find.byType(AnimatedOpacity),
-        );
+    AnimatedOpacity overlay() =>
+        tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
     expect(overlay().opacity, 0.0, reason: '初始无按下暗层');
 
     final gesture = await tester.startGesture(
@@ -122,12 +138,14 @@ void main() {
   testWidgets('disabled → 键盘 Enter 不激活', (tester) async {
     var n = 0;
     await tester.pumpWidget(
-      host(PlaqueButton(
-        label: '卸下',
-        onTap: () => n++,
-        disabled: true,
-        autofocus: true,
-      )),
+      host(
+        PlaqueButton(
+          label: '卸下',
+          onTap: () => n++,
+          disabled: true,
+          autofocus: true,
+        ),
+      ),
     );
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);

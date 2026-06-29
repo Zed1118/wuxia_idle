@@ -5,6 +5,8 @@ import 'package:wuxia_idle/data/slot_summary.dart';
 import 'package:wuxia_idle/features/save_slot/application/slot_list_provider.dart';
 import 'package:wuxia_idle/features/save_slot/presentation/save_select_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 
 /// 存档选择屏(spec B §5):列 3 槽、有档显摘要、空槽显新开、删除确认流。
 /// override slotListProvider 注入混合 fixtures,避免真 Isar(隔离 UI 层)。
@@ -60,6 +62,7 @@ void main() {
     // 仅 slot1 有删除按钮(空槽 trailing 是 chevron 不是删除)
     expect(find.byIcon(Icons.delete_outline), findsOneWidget);
     expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
+    expect(find.byType(WuxiaIconButton), findsNWidgets(2));
     expect(find.byIcon(Icons.chevron_right), findsNWidgets(2));
   });
 
@@ -90,17 +93,17 @@ void main() {
       find.text(UiStrings.slotDeleteProtectionValue('夜雨江湖')),
       findsOneWidget,
     );
-    var deleteButton = tester.widget<TextButton>(
-      find.widgetWithText(TextButton, UiStrings.slotDelete),
+    var deleteButton = tester.widget<PlaqueButton>(
+      find.widgetWithText(PlaqueButton, UiStrings.slotDelete),
     );
-    expect(deleteButton.onPressed, isNull);
+    expect(deleteButton.disabled, isTrue);
 
     await tester.enterText(find.byType(TextField), '夜雨江湖');
     await tester.pumpAndSettle();
-    deleteButton = tester.widget<TextButton>(
-      find.widgetWithText(TextButton, UiStrings.slotDelete),
+    deleteButton = tester.widget<PlaqueButton>(
+      find.widgetWithText(PlaqueButton, UiStrings.slotDelete),
     );
-    expect(deleteButton.onPressed, isNotNull);
+    expect(deleteButton.disabled, isFalse);
 
     // 取消关闭,不调 deleteSlot(无真 Isar 也不崩)
     await tester.tap(find.text(UiStrings.slotCancel));
