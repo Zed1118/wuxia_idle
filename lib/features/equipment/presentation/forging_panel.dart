@@ -137,6 +137,13 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
                     _skillName(id),
                     style: const TextStyle(color: WuxiaColors.textPrimary),
                   ),
+                  subtitle: Text(
+                    _skillSummary(id),
+                    style: const TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
                   onTap: () => Navigator.of(context).pop(id),
                 ),
             ],
@@ -154,6 +161,19 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
 
   static String _skillName(String id) =>
       GameRepository.instanceOrNull?.skillDefs[id]?.name ?? id;
+
+  static String _skillSummary(String id) {
+    final skill = GameRepository.instanceOrNull?.skillDefs[id];
+    if (skill == null) return id;
+    final styleLabel = skill.style == null
+        ? UiStrings.dashPlaceholder
+        : EnumL10n.school(skill.style!);
+    return UiStrings.forgingSpecialSkillSummary(
+      styleLabel,
+      skill.tier,
+      skill.powerMultiplier,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -325,9 +345,19 @@ class _NoSpecialSkillBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Text(
-      UiStrings.forgingNoSpecialSkill,
-      style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          UiStrings.forgingNoSpecialSkill,
+          style: TextStyle(color: WuxiaColors.textSecondary, fontSize: 12),
+        ),
+        SizedBox(height: 4),
+        Text(
+          UiStrings.forgingNoSpecialSkillHint,
+          style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+        ),
+      ],
     );
   }
 }

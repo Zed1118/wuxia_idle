@@ -16,7 +16,7 @@ import 'package:wuxia_idle/features/equipment/presentation/forging_panel.dart';
 /// 4 用例：
 /// - 3 槽锁定状态：enhanceLevel=0 → 显示「强化到 +10/+15/+19 解锁」
 /// - 槽 2 互斥过滤：enhanceLevel=15 + 槽 1 已开 attack → 槽 2 无攻击按钮
-/// - 槽 3 specialSkill 候选为空 → 显示「该装备无专属技能」
+/// - 槽 3 specialSkill 候选为空 → 显示专属锋意空状态
 /// - 已开锋显示「攻击 +X%」+「已开锋」标签
 void main() {
   setUpAll(() async {
@@ -122,18 +122,19 @@ void main() {
     expect(find.widgetWithText(OutlinedButton, '破甲'), findsWidgets);
   });
 
-  testWidgets('槽 3 enhanceLevel=19 + specialSkillCandidates 空 → 「该装备无专属技能」', (
+  testWidgets('槽 3 enhanceLevel=19 + specialSkillCandidates 空 → 专属锋意空状态', (
     tester,
   ) async {
     final eq = mkEq(enhanceLevel: 19);
     final def = mkDef(); // specialSkillCandidates 默认空
     await pumpPanel(tester, eq: eq, def: def);
 
-    expect(find.text('该装备无专属技能'), findsOneWidget);
+    expect(find.text('此装备尚未记载专属锋意'), findsOneWidget);
+    expect(find.text('换一件武器,或先打磨前两道锋意。'), findsOneWidget);
   });
 
   testWidgets('槽 3 specialSkill 候选非空 → 可选择并写入 specialSkillId', (tester) async {
-    const specialSkillId = 'skill_lingqiao_jichu_skill';
+    const specialSkillId = 'skill_edge_xunchang_lingqiao';
     final skillName = GameRepository.instance.skillDefs[specialSkillId]!.name;
     final eq = mkEq(enhanceLevel: 19);
     final def = mkDef(specialSkillCandidates: const [specialSkillId]);
@@ -143,6 +144,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('选择专属技能'), findsOneWidget);
     expect(find.text(skillName), findsOneWidget);
+    expect(find.text('灵巧 · 第1阶 · 威力 1250'), findsOneWidget);
 
     await tester.tap(find.text(skillName));
     await tester.pumpAndSettle();
