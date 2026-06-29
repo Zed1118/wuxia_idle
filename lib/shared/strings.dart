@@ -2734,6 +2734,37 @@ class UiStrings {
   static const String taohuaIslandFullStorageUnknown = '满仓：暂不可估';
   static String taohuaIslandOutputUsage(String usage) => '去向：$usage';
   static const String taohuaIslandOutputUsageNone = '去向：暂未形成消耗';
+  static const String taohuaIslandBuildingManualTitle = '建筑志';
+  static const String taohuaIslandBuildingManualProduces = '产物';
+  static const String taohuaIslandBuildingManualConsumes = '消耗';
+  static const String taohuaIslandBuildingManualSynergy = '协同';
+  static const String taohuaIslandBuildingManualUsage = '去向';
+  static const String taohuaIslandBuildingManualNone = '无';
+  static const String taohuaIslandBuildingManualUsageNone = '暂未形成消耗';
+  static String taohuaIslandBuildingManualLine(String label, String value) =>
+      '$label：$value';
+  static String taohuaIslandBuildingManualGatherRate(String itemName) =>
+      '采集 $itemName';
+  static String taohuaIslandBuildingManualRecipeOutputs(String names) =>
+      '配方产出 $names';
+  static String taohuaIslandBuildingManualUpgradeMaterial(String itemName) =>
+      '升级修缮用 $itemName';
+  static String taohuaIslandBuildingManualRecipeCost(
+    String recipe,
+    String cost,
+  ) => '$recipe：$cost';
+  static String taohuaIslandBuildingManualSynergyTarget(
+    String targetName,
+    int percent,
+  ) => '助 $targetName 每级 +$percent%';
+  static String taohuaIslandBuildingManualSynergySource(
+    String sourceName,
+    int percent,
+  ) => '受 $sourceName 每级 +$percent%';
+  static String taohuaIslandBuildingManualOutputUsage(
+    String outputName,
+    String usage,
+  ) => '$outputName：$usage';
   static String taohuaIslandDuration(double hours) {
     if (hours <= 0) return '片刻';
     final minutes = ((hours * 60) - 1e-6).ceil();

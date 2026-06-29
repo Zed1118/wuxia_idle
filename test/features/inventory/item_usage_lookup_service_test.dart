@@ -31,6 +31,12 @@ void main() {
     expect(kinds, contains(ItemUsageKind.islandRecipeInput));
   });
 
+  test('次要原料：灵泉水反查到桃花岛加工用途', () {
+    final kinds = kindsOf('item_lingquanshui');
+
+    expect(kinds, contains(ItemUsageKind.islandRecipeInput));
+  });
+
   test('装备材料：磨剑石与心血结晶只反查实际装备消耗', () {
     expect(
       kindsOf('item_mojianshi'),
