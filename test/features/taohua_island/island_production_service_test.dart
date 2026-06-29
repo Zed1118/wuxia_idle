@@ -23,10 +23,23 @@ TaohuaIslandConfig _config({
   double forgeInputPerOutput = 4,
   int forgeRealmUnlock = 0,
   int tieRealmUnlock = 0,
+  double tieToZaoBonusPerLevel = 0,
 }) {
   return TaohuaIslandConfig(
     capHours: capHours,
     unlockChapterIndex: 0,
+    synergies: TaohuaBuildingSynergyConfig(
+      maxRateBonusPerSourceLevel: tieToZaoBonusPerLevel,
+      rules: tieToZaoBonusPerLevel > 0
+          ? [
+              TaohuaBuildingSynergyRule(
+                sourceBuilding: BuildingType.tieJiangChang,
+                targetBuilding: BuildingType.daZaoTai,
+                rateBonusPerSourceLevel: tieToZaoBonusPerLevel,
+              ),
+            ]
+          : const [],
+    ),
     buildings: {
       BuildingType.tieJiangChang: BuildingConfig(
         type: BuildingType.tieJiangChang,
@@ -73,8 +86,9 @@ TaohuaIslandConfig _config({
 }
 
 IslandBuildingState _byType(
-        List<IslandBuildingState> states, BuildingType type) =>
-    states.firstWhere((s) => s.type == type);
+  List<IslandBuildingState> states,
+  BuildingType type,
+) => states.firstWhere((s) => s.type == type);
 
 List<IslandBuildingState> _phaseTwoLevelOneStates(TaohuaIslandConfig cfg) =>
     BuildingType.values.map((type) {
@@ -94,7 +108,9 @@ void main() {
     test('1. 原料滴落 + cap 封顶', () {
       final cfg = _config(tieRate: 6, tieCapBase: 200);
       final states = [
-        IslandBuildingState()..type = BuildingType.tieJiangChang..level = 1,
+        IslandBuildingState()
+          ..type = BuildingType.tieJiangChang
+          ..level = 1,
       ];
 
       // 线性区：5h × 6/h × level1 = 30
@@ -190,7 +206,8 @@ void main() {
         IslandBuildingState()
           ..type = BuildingType.daZaoTai
           ..level = 1
-          ..stored = 48 // 接近 cap=50
+          ..stored =
+              48 // 接近 cap=50
           ..activeRecipeId = 'forge_mojianshi',
       ];
       final r = IslandProductionService.settle(
@@ -205,21 +222,17 @@ void main() {
 
     test('4. offline=online 可加性（线性区：源料充裕 + 成品仓远未满）', () {
       // 线性区前提：源料海量(不会被扣空)，成品 cap 极大(不会满)。
-      final cfg = _config(
-        zaoCapBase: 1000000,
-        zaoCapPerLevel: 0,
-        forgeRate: 3,
-      );
+      final cfg = _config(zaoCapBase: 1000000, zaoCapPerLevel: 0, forgeRate: 3);
       List<IslandBuildingState> seed() => [
-            IslandBuildingState()
-              ..type = BuildingType.tieJiangChang
-              ..level = 1
-              ..stored = 100000000, // 海量源料
-            IslandBuildingState()
-              ..type = BuildingType.daZaoTai
-              ..level = 1
-              ..activeRecipeId = 'forge_mojianshi',
-          ];
+        IslandBuildingState()
+          ..type = BuildingType.tieJiangChang
+          ..level = 1
+          ..stored = 100000000, // 海量源料
+        IslandBuildingState()
+          ..type = BuildingType.daZaoTai
+          ..level = 1
+          ..activeRecipeId = 'forge_mojianshi',
+      ];
 
       final once = IslandProductionService.settle(
         states: seed(),
@@ -243,6 +256,53 @@ void main() {
       expect(
         _byType(once, BuildingType.daZaoTai).stored,
         closeTo(_byType(twice, BuildingType.daZaoTai).stored, 1e-6),
+      );
+    });
+
+    test('4c. 固定建筑协同提升加工产速且仍 offline=online', () {
+      final cfg = _config(
+        zaoCapBase: 1000000,
+        zaoCapPerLevel: 0,
+        forgeRate: 3,
+        tieToZaoBonusPerLevel: 0.02,
+      );
+      List<IslandBuildingState> seed() => [
+        IslandBuildingState()
+          ..type = BuildingType.tieJiangChang
+          ..level = 3
+          ..stored = 100000000,
+        IslandBuildingState()
+          ..type = BuildingType.daZaoTai
+          ..level = 2
+          ..activeRecipeId = 'forge_mojianshi',
+      ];
+
+      final once = IslandProductionService.settle(
+        states: seed(),
+        config: cfg,
+        elapsedHours: 4,
+        founderRealmIndex: 6,
+      );
+      final first = IslandProductionService.settle(
+        states: seed(),
+        config: cfg,
+        elapsedHours: 2,
+        founderRealmIndex: 6,
+      );
+      final twice = IslandProductionService.settle(
+        states: first,
+        config: cfg,
+        elapsedHours: 2,
+        founderRealmIndex: 6,
+      );
+
+      expect(
+        _byType(once, BuildingType.daZaoTai).stored,
+        closeTo(3 * (1 + 3 * 0.02) * 2 * 4, 1e-6),
+      );
+      expect(
+        _byType(twice, BuildingType.daZaoTai).stored,
+        closeTo(_byType(once, BuildingType.daZaoTai).stored, 1e-6),
       );
     });
 
@@ -283,15 +343,15 @@ void main() {
     test('5. capHours 封顶（100h == 72h）', () {
       final cfg = _config(capHours: 72);
       List<IslandBuildingState> seed() => [
-            IslandBuildingState()
-              ..type = BuildingType.tieJiangChang
-              ..level = 1
-              ..stored = 100000,
-            IslandBuildingState()
-              ..type = BuildingType.daZaoTai
-              ..level = 1
-              ..activeRecipeId = 'forge_mojianshi',
-          ];
+        IslandBuildingState()
+          ..type = BuildingType.tieJiangChang
+          ..level = 1
+          ..stored = 100000,
+        IslandBuildingState()
+          ..type = BuildingType.daZaoTai
+          ..level = 1
+          ..activeRecipeId = 'forge_mojianshi',
+      ];
       final r100 = IslandProductionService.settle(
         states: seed(),
         config: cfg,

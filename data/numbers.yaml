@@ -1984,6 +1984,12 @@ taohua_island:
   # 配方比率(input_per_output)/材料成本(base×level)/产速不动。校验见 taohua_island_config.validate
   # + 红线测 island_upgrade_curve_b_test。
   unlock_chapter_index: 1       # 主线第二章(index 1)cleared 解锁
+  synergies:
+    max_rate_bonus_per_source_level: 0.02
+    rules:
+      - { source_building: tie_jiang_chang, target_building: da_zao_tai, rate_bonus_per_source_level: 0.02 }
+      - { source_building: ling_quan,       target_building: dan_fang,   rate_bonus_per_source_level: 0.02 }
+      - { source_building: mu_gong_fang,    target_building: zhu_zao_tai, rate_bonus_per_source_level: 0.02 }
   buildings:
     tie_jiang_chang:            # 铁匠厂(原料)
       kind: source

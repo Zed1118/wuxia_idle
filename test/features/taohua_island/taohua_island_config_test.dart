@@ -34,6 +34,15 @@ void main() {
     expect(dz.recipeById('forge_xinxue')!.realmUnlockIndex, 3);
   });
 
+  test('固定建筑协同解析', () {
+    expect(cfg.synergies.maxRateBonusPerSourceLevel, 0.02);
+    expect(cfg.synergies.rules, hasLength(1));
+    final rule = cfg.synergies.rules.single;
+    expect(rule.sourceBuilding, BuildingType.tieJiangChang);
+    expect(rule.targetBuilding, BuildingType.daZaoTai);
+    expect(rule.rateBonusPerSourceLevel, 0.02);
+  });
+
   test('升级成本随等级', () {
     final tie = cfg.buildingOf(BuildingType.tieJiangChang);
     expect(tie.upgradeSilverFor(1), 500);
@@ -99,6 +108,16 @@ void main() {
       'item_liaoshangdan',
     );
 
+    expect(cfg.synergies.rules, hasLength(3));
+    expect(
+      cfg.synergies.rules.map((r) => (r.sourceBuilding, r.targetBuilding)),
+      containsAll([
+        (BuildingType.tieJiangChang, BuildingType.daZaoTai),
+        (BuildingType.lingQuan, BuildingType.danFang),
+        (BuildingType.muGongFang, BuildingType.zhuZaoTai),
+      ]),
+    );
+
     final productionItemRefs = <String>{
       for (final b in cfg.buildings.values) ...[
         if (b.outputItem != null) b.outputItem!,
@@ -157,11 +176,41 @@ void main() {
       88800,
     );
   });
+
+  test('协同红线：目标必须是 processor 且加成不超过配置上限', () {
+    const badTarget = TaohuaBuildingSynergyConfig(
+      maxRateBonusPerSourceLevel: 0.02,
+      rules: [
+        TaohuaBuildingSynergyRule(
+          sourceBuilding: BuildingType.tieJiangChang,
+          targetBuilding: BuildingType.caoYaoYuan,
+          rateBonusPerSourceLevel: 0.01,
+        ),
+      ],
+    );
+    expect(() => badTarget.validate(cfg.buildings), throwsA(isA<StateError>()));
+
+    const tooHigh = TaohuaBuildingSynergyConfig(
+      maxRateBonusPerSourceLevel: 0.02,
+      rules: [
+        TaohuaBuildingSynergyRule(
+          sourceBuilding: BuildingType.tieJiangChang,
+          targetBuilding: BuildingType.daZaoTai,
+          rateBonusPerSourceLevel: 0.03,
+        ),
+      ],
+    );
+    expect(() => tooHigh.validate(cfg.buildings), throwsA(isA<StateError>()));
+  });
 }
 
 const _yaml = '''
 cap_hours: 72
 unlock_chapter_index: 1
+synergies:
+  max_rate_bonus_per_source_level: 0.02
+  rules:
+    - { source_building: tie_jiang_chang, target_building: da_zao_tai, rate_bonus_per_source_level: 0.02 }
 buildings:
   tie_jiang_chang:
     kind: source

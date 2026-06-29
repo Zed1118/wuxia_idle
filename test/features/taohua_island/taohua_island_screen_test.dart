@@ -229,6 +229,44 @@ void main() {
       expect(find.text(UiStrings.taohuaIslandIdlePaused), findsOneWidget);
     });
 
+    testWidgets('加工建筑展示固定协同加成', (tester) async {
+      await pump(tester, wrap(buildTestView()));
+
+      expect(
+        find.text(
+          UiStrings.taohuaIslandSynergyLine([
+            UiStrings.taohuaIslandSynergyPart(
+              EnumL10n.buildingType(BuildingType.tieJiangChang),
+              4,
+            ),
+          ]),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          UiStrings.taohuaIslandSynergyLine([
+            UiStrings.taohuaIslandSynergyPart(
+              EnumL10n.buildingType(BuildingType.lingQuan),
+              2,
+            ),
+          ]),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          UiStrings.taohuaIslandSynergyLine([
+            UiStrings.taohuaIslandSynergyPart(
+              EnumL10n.buildingType(BuildingType.muGongFang),
+              2,
+            ),
+          ]),
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('一并收取按钮存在', (tester) async {
       await pump(tester, wrap(buildTestView()));
       expect(find.text(UiStrings.taohuaIslandHarvestAll), findsOneWidget);
