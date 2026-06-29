@@ -76,10 +76,19 @@ void main() {
     final progress = mkProgress();
     await pumpScreen(tester, progress: progress);
 
-    expect(find.text(UiStrings.towerProgressCleared(0)), findsOneWidget);
+    expect(find.text(UiStrings.towerProgressBarLabel(0, 30)), findsOneWidget);
+    expect(find.text(UiStrings.towerCurrentChallengeFloor(1)), findsOneWidget);
+    expect(find.text(UiStrings.towerHighestClearedNone), findsOneWidget);
+    expect(
+      find.text(
+        UiStrings.towerNextMilestoneTarget(5, UiStrings.towerBossMinor),
+      ),
+      findsOneWidget,
+    );
     expect(find.text(UiStrings.towerProgressAttempts(0)), findsOneWidget);
     expect(find.text(UiStrings.towerProgressDefeats(0)), findsOneWidget);
     expect(find.text(UiStrings.towerSpineTitle), findsOneWidget);
+    expect(find.text(UiStrings.towerSpineLegend), findsOneWidget);
     expect(find.text(UiStrings.towerFloorLabel(1)), findsOneWidget);
     expect(find.text(UiStrings.towerFloorChallenge), findsOneWidget);
   });
@@ -111,8 +120,12 @@ void main() {
   testWidgets('Boss 层视觉差异：第5层（小 Boss）显示「小 Boss」chip', (tester) async {
     // highest=0：floor 1 available，floor 5 locked + minor boss
     final progress = mkProgress();
-    // 720px 视口足够看到前 ~12 层（每层约 60px），floor5 在 ~300px 内
-    await pumpScreen(tester, progress: progress);
+    // 顶部进度摘要变高后，用更高视口保证 floor5 在首屏内。
+    await pumpScreen(
+      tester,
+      progress: progress,
+      surfaceSize: const Size(1024, 1200),
+    );
 
     expect(find.text(UiStrings.towerBossMinor), findsOneWidget);
   });
@@ -145,10 +158,11 @@ void main() {
 
     expect(find.text(UiStrings.sweepTowerButtonCycle(1)), findsOneWidget);
     expect(find.text(UiStrings.sweepLockedHintCycle(1)), findsNothing);
+    expect(find.text(UiStrings.towerCurrentChallengeComplete), findsOneWidget);
+    expect(find.text(UiStrings.towerNextMilestoneComplete), findsOneWidget);
   });
 
-  testWidgets('已通一周目、二周目整塔未通 → 扫荡按钮灰显 + 周目门槛提示(§5.7 灰掉不隐藏)',
-      (tester) async {
+  testWidgets('已通一周目、二周目整塔未通 → 扫荡按钮灰显 + 周目门槛提示(§5.7 灰掉不隐藏)', (tester) async {
     // 已通第1周目(maxClearedCycle=1)→ 推进到第2周目(currentCycleIndex=2,
     // highestClearedFloor 归 0)→ 灰显提示「第2周目需先手工通关」。
     final progress = mkProgress(highest: 0)

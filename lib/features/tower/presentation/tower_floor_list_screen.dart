@@ -13,6 +13,7 @@ import '../../sweep/application/sweep_unit.dart';
 import '../../sweep/domain/sweep_eligibility.dart';
 import '../../sweep/presentation/sweep_screen.dart';
 import '../application/tower_progress_service.dart';
+import '../application/tower_progress_summary.dart';
 import '../application/tower_providers.dart';
 import '../domain/tower_floor_def.dart';
 import '../domain/tower_progress.dart';
@@ -21,7 +22,7 @@ import 'tower_floor_card.dart';
 
 /// 爬塔层列表屏幕（Phase 3 T42）。
 ///
-/// 顶部进度卡显示已通层数 / 总尝试 / 失败次数。
+/// 顶部进度卡显示进度条 / 当前可挑战层 / 最高进度 / 下一节点。
 /// 主体 30 行 [TowerFloorCard]，首次进入自动滚到 available 层（一次性）。
 /// 点 available push 进入 TowerEntryFlow。
 @Dependencies([towerProgress])
@@ -65,8 +66,7 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
     // Boss-aware 累加估算偏移(取代旧的 idx×96 等距估算,后者随楼层累积越偏越多)。
     var offset = 0.0;
     for (var j = 0; j < idx && j < entries.length; j++) {
-      offset +=
-          entries[j].def.isBoss ? _kCardHeightBoss : _kCardHeightNormal;
+      offset += entries[j].def.isBoss ? _kCardHeightBoss : _kCardHeightNormal;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !_scrollController.hasClients) return;
@@ -129,11 +129,15 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
             ),
             data: (entries) {
               _maybeScrollToAvailable(entries);
+              final summary = TowerProgressSummary.from(
+                progress: progress,
+                entries: entries,
+              );
               final maxCycleTower =
                   GameRepository.instance.numbers.cycleEvolution.maxCycleTower;
               final canAdvance =
                   progress.maxClearedCycle >= progress.currentCycleIndex &&
-                      progress.currentCycleIndex < maxCycleTower;
+                  progress.currentCycleIndex < maxCycleTower;
               // 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。
               final currentRealm = ref
                   .watch(activeCharacterIdsProvider)
@@ -150,7 +154,7 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
                   );
               return Column(
                 children: [
-                  _ProgressCard(progress: progress),
+                  _ProgressCard(progress: progress, summary: summary),
                   // 一键扫荡 30 层入口（醒目主按钮·本周目整塔已通才亮）。
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -170,7 +174,10 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
                     _TowerAdvanceCycleCard(onAdvance: _onAdvanceCycle),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                    child: _TowerSpineOverview(entries: entries),
+                    child: _TowerSpineOverview(
+                      entries: entries,
+                      summary: summary,
+                    ),
                   ),
                   Expanded(
                     child: ListView.builder(
@@ -199,9 +206,10 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
 }
 
 class _TowerSpineOverview extends StatelessWidget {
-  const _TowerSpineOverview({required this.entries});
+  const _TowerSpineOverview({required this.entries, required this.summary});
 
   final List<TowerFloorEntry> entries;
+  final TowerProgressSummary summary;
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +225,7 @@ class _TowerSpineOverview extends StatelessWidget {
             child: Row(
               children: [
                 for (final entry in entries) ...[
-                  _TowerSpineNode(entry: entry),
+                  _TowerSpineNode(entry: entry, summary: summary),
                   if (entry.def.floorIndex != entries.last.def.floorIndex)
                     Container(
                       width: 12,
@@ -228,6 +236,11 @@ class _TowerSpineOverview extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 8),
+          const Text(
+            UiStrings.towerSpineLegend,
+            style: TextStyle(color: WuxiaColors.textMuted, fontSize: 11),
+          ),
         ],
       ),
     );
@@ -235,12 +248,18 @@ class _TowerSpineOverview extends StatelessWidget {
 }
 
 class _TowerSpineNode extends StatelessWidget {
-  const _TowerSpineNode({required this.entry});
+  const _TowerSpineNode({required this.entry, required this.summary});
 
   final TowerFloorEntry entry;
+  final TowerProgressSummary summary;
 
   @override
   Widget build(BuildContext context) {
+    final isCurrent =
+        !summary.isComplete && entry.def.floorIndex == summary.currentFloor;
+    final isHighest =
+        summary.hasAnyClear &&
+        entry.def.floorIndex == summary.highestClearedFloor;
     final color = switch (entry.status) {
       TowerFloorStatus.cleared => WuxiaColors.hpHigh,
       TowerFloorStatus.available => WuxiaColors.resultHighlight,
@@ -248,6 +267,13 @@ class _TowerSpineNode extends StatelessWidget {
     };
     final isBoss = entry.def.isBoss;
     final isMajorBoss = entry.def.bossKind == TowerBossKind.major;
+    final borderWidth = isCurrent
+        ? 2.2
+        : isHighest
+        ? 1.8
+        : isBoss
+        ? 1.6
+        : 1.1;
     return SizedBox(
       width: isBoss ? 36 : 24,
       child: Column(
@@ -260,11 +286,11 @@ class _TowerSpineNode extends StatelessWidget {
             decoration: BoxDecoration(
               color: color.withValues(alpha: isBoss ? 0.22 : 0.14),
               borderRadius: BorderRadius.circular(isBoss ? 5 : 11),
-              border: Border.all(color: color, width: isBoss ? 1.6 : 1.1),
-              boxShadow: entry.status == TowerFloorStatus.available
+              border: Border.all(color: color, width: borderWidth),
+              boxShadow: isCurrent
                   ? [
                       BoxShadow(
-                        color: color.withValues(alpha: 0.28),
+                        color: color.withValues(alpha: 0.34),
                         blurRadius: 10,
                         spreadRadius: 1,
                       ),
@@ -280,21 +306,27 @@ class _TowerSpineNode extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 4),
           SizedBox(
-            height: 10,
-            child: isBoss
-                ? Text(
-                    isMajorBoss
-                        ? UiStrings.towerBossBadgeMajor
-                        : UiStrings.towerBossBadgeMinor,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  )
-                : const SizedBox.shrink(),
+            height: 14,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                isBoss
+                    ? (isMajorBoss
+                          ? UiStrings.towerBossBadgeMajor
+                          : UiStrings.towerBossBadgeMinor)
+                    : isCurrent
+                    ? UiStrings.towerSpineCurrentBadge
+                    : isHighest
+                    ? UiStrings.towerSpineHighestBadge
+                    : '',
+                style: TextStyle(
+                  color: color,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -303,9 +335,10 @@ class _TowerSpineNode extends StatelessWidget {
 }
 
 class _ProgressCard extends StatelessWidget {
-  const _ProgressCard({required this.progress});
+  const _ProgressCard({required this.progress, required this.summary});
 
   final TowerProgress progress;
+  final TowerProgressSummary summary;
 
   @override
   Widget build(BuildContext context) {
@@ -316,25 +349,76 @@ class _ProgressCard extends StatelessWidget {
         color: WuxiaColors.panel,
         border: Border(bottom: BorderSide(color: WuxiaColors.border)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _StatItem(
-            label: UiStrings.towerProgressCleared(progress.highestClearedFloor),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  UiStrings.towerProgressBarLabel(
+                    summary.highestClearedFloor,
+                    summary.totalFloors,
+                  ),
+                  style: const TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              _StatItem(
+                label: UiStrings.towerCurrentCycleLabel(
+                  progress.currentCycleIndex,
+                ),
+              ),
+            ],
           ),
-          _StatItem(
-            label: UiStrings.towerProgressAttempts(progress.totalAttempts),
-          ),
-          _StatItem(
-            label: UiStrings.towerProgressDefeats(progress.totalDefeats),
-          ),
-          // P1 周目进化 E2：当前轮回标签。
-          _StatItem(
-            label: UiStrings.towerCurrentCycleLabel(progress.currentCycleIndex),
+          const SizedBox(height: 10),
+          MeridianBar(ratio: summary.progressRatio, height: 10),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _ProgressPill(
+                label: summary.isComplete
+                    ? UiStrings.towerCurrentChallengeComplete
+                    : UiStrings.towerCurrentChallengeFloor(
+                        summary.currentFloor,
+                      ),
+                emphasized: !summary.isComplete,
+              ),
+              _ProgressPill(
+                label: summary.hasAnyClear
+                    ? UiStrings.towerHighestClearedFloor(
+                        summary.highestClearedFloor,
+                      )
+                    : UiStrings.towerHighestClearedNone,
+              ),
+              _ProgressPill(label: _nextMilestoneLabel(summary)),
+              _ProgressPill(
+                label: UiStrings.towerProgressAttempts(progress.totalAttempts),
+              ),
+              _ProgressPill(
+                label: UiStrings.towerProgressDefeats(progress.totalDefeats),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  String _nextMilestoneLabel(TowerProgressSummary summary) {
+    final milestone = summary.nextMilestone;
+    if (milestone == null) return UiStrings.towerNextMilestoneComplete;
+    final name = milestone.floorIndex == summary.totalFloors
+        ? UiStrings.towerMilestoneSummitBoss
+        : milestone.bossKind == TowerBossKind.major
+        ? UiStrings.towerBossMajor
+        : UiStrings.towerBossMinor;
+    return UiStrings.towerNextMilestoneTarget(milestone.floorIndex, name);
   }
 }
 
@@ -348,6 +432,38 @@ class _StatItem extends StatelessWidget {
     return Text(
       label,
       style: const TextStyle(color: WuxiaColors.textSecondary, fontSize: 13),
+    );
+  }
+}
+
+class _ProgressPill extends StatelessWidget {
+  const _ProgressPill({required this.label, this.emphasized = false});
+
+  final String label;
+  final bool emphasized;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = emphasized
+        ? WuxiaColors.resultHighlight
+        : WuxiaColors.textSecondary;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: emphasized ? 0.10 : 0.06),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.42), width: 0.8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 12,
+            fontWeight: emphasized ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -381,18 +497,14 @@ class _TowerAdvanceCycleCard extends StatelessWidget {
           const Expanded(
             child: Text(
               UiStrings.towerCycleReadyHint,
-              style: TextStyle(
-                color: WuxiaColors.textSecondary,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: WuxiaColors.textSecondary, fontSize: 12),
             ),
           ),
           TextButton(
             onPressed: onAdvance,
             style: TextButton.styleFrom(
               foregroundColor: WuxiaColors.resultHighlight,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -439,8 +551,10 @@ class _TowerSweepButton extends StatelessWidget {
             disabledBackgroundColor: WuxiaColors.panel,
             disabledForegroundColor: WuxiaColors.textMuted,
             padding: const EdgeInsets.symmetric(vertical: 14),
-            textStyle:
-                const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            textStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           onPressed: null,
           icon: const Icon(Icons.lock_outline, size: 18),
@@ -455,8 +569,7 @@ class _TowerSweepButton extends StatelessWidget {
           backgroundColor: WuxiaColors.bossFrame,
           foregroundColor: WuxiaColors.background,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          textStyle:
-              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         onPressed: () {
           final units = [
