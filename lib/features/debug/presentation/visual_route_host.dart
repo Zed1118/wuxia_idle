@@ -167,7 +167,7 @@ class _VisualRouteHostState extends ConsumerState<VisualRouteHost> {
       return Scaffold(body: Center(child: Text('VISUAL_ROUTE_ERROR: $_error')));
     }
     return _target ??
-        const Scaffold(body: Center(child: CircularProgressIndicator()));
+        const Scaffold(body: Center(child: InkLoadingIndicator()));
   }
 }
 

@@ -23,6 +23,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../core/application/character_providers.dart';
+import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/item_slot.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
@@ -36,6 +37,7 @@ import '../../help/presentation/context_help_button.dart';
 import '../../shop/application/shop_providers.dart';
 import 'bulk_disposal_dialog.dart';
 import 'equipment_detail_screen.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 Set<int> _watchActiveEquippedIds(WidgetRef ref) {
   final ids = ref.watch(activeCharacterIdsProvider).value ?? const <int>[];
@@ -133,12 +135,10 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
         : ref.watch(characterByIdProvider(ids.first)).value?.realmTier;
     final equippedIds = _watchActiveEquippedIds(ref);
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
-        child: SelectableText(
-          'load error: $e',
-          style: const TextStyle(color: WuxiaColors.hpLow),
-        ),
+      loading: () => const Center(child: InkLoadingIndicator()),
+      error: (e, _) => ErrorFallback(
+        error: e,
+        onRetry: () => ref.invalidate(allEquipmentsProvider),
       ),
       data: (list) {
         final filtered = organizeInventoryEquipments(
@@ -462,12 +462,10 @@ class _MaterialTab extends ConsumerWidget {
         ),
         Expanded(
           child: async.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(
-              child: SelectableText(
-                'load error: $e',
-                style: const TextStyle(color: WuxiaColors.hpLow),
-              ),
+            loading: () => const Center(child: InkLoadingIndicator()),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () => ref.invalidate(allInventoryItemsProvider),
             ),
             data: (list) {
               // 排除 ItemType.silver：银两以货币位展示，不进材料分组

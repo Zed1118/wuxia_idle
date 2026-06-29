@@ -793,7 +793,7 @@ class _LoreSection extends StatelessWidget {
       future: future,
       builder: (ctx, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: InkLoadingIndicator());
         }
         final content = snap.data;
         final hasPreset = content != null && !content.isPlaceholder;

@@ -16,6 +16,7 @@ import '../domain/sect_event.dart';
 import '../domain/sect_rank.dart';
 import '../domain/territory_def.dart';
 import 'widgets/sect_event_dialog.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 门派事务屏(1.0 P3.4 §12.1,Batch 2.3 nightshift T16 · spec §5)。
 ///
@@ -39,7 +40,7 @@ class SectScreen extends ConsumerWidget {
     return sectAsync.when(
       loading: () => const Scaffold(
         backgroundColor: WuxiaColors.background,
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: InkLoadingIndicator()),
       ),
       error: (e, _) => Scaffold(
         backgroundColor: WuxiaColors.background,
@@ -384,7 +385,7 @@ class _MemberList extends ConsumerWidget {
     final numbers = ref.watch(numbersConfigProvider);
     final cap = SectMemberService.memberCapFor(numbers, sect.sectLevel);
     return membersAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: InkLoadingIndicator()),
       error: (e, _) => Center(
         child: Text(UiStrings.sectLoadFailed(e),
             style: const TextStyle(color: WuxiaColors.textMuted)),

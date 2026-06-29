@@ -15,6 +15,11 @@ class UiStrings {
   /// 应用标题(splash screen / window title)。
   static const String appTitle = '挂机武侠';
 
+  /// P0-4(2026-06-29 审查修复):统一错误兜底文案。原始异常不上屏(走
+  /// debugPrint),玩家只见友好中文 + 可选「重试」。
+  static const String errorFallbackMessage = '数据加载异常，请重试';
+  static const String errorRetry = '重试';
+
   /// 战斗顶栏标题：`战斗 N v M`，N/M 为双方存活人数。
   static String battleTitle(int leftAlive, int rightAlive) =>
       '战斗 $leftAlive v $rightAlive';

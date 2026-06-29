@@ -5,6 +5,7 @@ import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../save_slot/presentation/save_select_screen.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 启动闪屏(M4 PoC #46 美术 Stage 2 W6 收官 `landscape_loading.png` 9.5/10 接入)。
 ///
@@ -175,11 +176,8 @@ class _SplashFooter extends StatelessWidget {
         SizedBox(
           width: 24,
           height: 24,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              WuxiaColors.resultHighlight.withValues(alpha: 0.7),
-            ),
+          child: InkLoadingIndicator(
+            color: WuxiaColors.resultHighlight.withValues(alpha: 0.7),
           ),
         ),
         const SizedBox(height: 12),

@@ -1324,4 +1324,58 @@ recruit_candidates:
       );
     });
   });
+
+  // P0-1(2026-06-29 审查修复):可选 yaml(shop/items/factions/synergies/
+  // territories)加载区分两种异常——文件不存在(loader 抛)允许静默 fallback;
+  // 文件存在但解析失败(yaml 损坏/字段类型错)必须 rethrow 含文件名,
+  // 不再静默降级致生产配置损坏时商店空架/道具失效无感知。
+  group('P0-1 可选 yaml 损坏 fail-fast', () {
+    test('shop.yaml 存在但字段类型错(shop 非 List)→ 抛 FormatException 含文件名',
+        () async {
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('shop.yaml')) return 'shop: 123\n'; // 非 List
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(isA<FormatException>().having(
+          (e) => e.message,
+          'message',
+          contains('shop.yaml'),
+        )),
+      );
+    });
+
+    test('items.yaml 存在但字段类型错(items 非 List)→ 抛 FormatException 含文件名',
+        () async {
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('items.yaml')) return 'items: not_a_list\n';
+        return fileLoader(path);
+      }
+
+      expect(
+        GameRepository.loadAllDefs(loader: brokenLoader),
+        throwsA(isA<FormatException>().having(
+          (e) => e.message,
+          'message',
+          contains('items.yaml'),
+        )),
+      );
+    });
+
+    test('shop.yaml 不存在(loader 抛)→ 静默空架,不影响启动(向后兼容)',
+        () async {
+      Future<String> brokenLoader(String path) async {
+        if (path.endsWith('shop.yaml')) {
+          throw const FileSystemException('不存在', 'data/shop.yaml');
+        }
+        return fileLoader(path);
+      }
+
+      final repo = await GameRepository.loadAllDefs(loader: brokenLoader);
+      expect(repo.shopItemDefs, isEmpty,
+          reason: '文件不存在 → fallback 空 map,红线 isEmpty 跳过');
+    });
+  });
 }

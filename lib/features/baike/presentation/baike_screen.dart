@@ -14,6 +14,7 @@ import '../../codex/presentation/codex_tab.dart';
 import '../../home_feed/application/home_feed_providers.dart';
 import 'encounter_tab.dart';
 import 'martial_arts_tab.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 江湖见闻录(P1 #42 Phase 4/P1.z / GDD §10.2 第 3 方式百科)。
 ///
@@ -77,7 +78,7 @@ class _FeedTab extends ConsumerWidget {
           ? const _EmptyHint(text: UiStrings.baikeFeedEmpty)
           : _FeedList(events: events),
       loading: () => const Center(
-        child: CircularProgressIndicator(
+        child: InkLoadingIndicator(
           color: WuxiaColors.resultHighlight,
         ),
       ),

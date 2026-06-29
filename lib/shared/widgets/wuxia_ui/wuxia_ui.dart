@@ -1,6 +1,8 @@
 // wuxia kit barrel：9 组件 + 母题 token 便引（UI 包装改造方案 v1）。
 export '../../theme/wuxia_tokens.dart';
 export 'paper_panel.dart';
+export 'error_fallback.dart';
+export 'ink_loading.dart';
 export 'section_header.dart';
 export 'seal_badge.dart';
 export 'item_slot.dart';
