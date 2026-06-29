@@ -1719,13 +1719,9 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           if (state.result == null)
-            IconButton(
+            _BattleHeaderIconButton(
               key: const ValueKey('battle_pause_toggle'),
-              icon: Icon(
-                isPaused ? Icons.play_arrow : Icons.pause,
-                color: WuxiaColors.textSecondary,
-                size: 20,
-              ),
+              icon: isPaused ? Icons.play_arrow : Icons.pause,
               tooltip: isPaused
                   ? UiStrings.battleResume
                   : UiStrings.battlePause,
@@ -1733,40 +1729,67 @@ class _Header extends StatelessWidget {
             ),
           // 验收路由(startPaused)专用单步键:仅 onStepOnce 非空时渲染,生产挂机不出现。
           if (state.result == null && onStepOnce != null)
-            IconButton(
+            _BattleHeaderIconButton(
               key: const ValueKey('battle_step_once'),
-              icon: const Icon(
-                Icons.skip_next,
-                color: WuxiaColors.textSecondary,
-                size: 20,
-              ),
+              icon: Icons.skip_next,
               tooltip: UiStrings.battleStepOnce,
               onPressed: onStepOnce,
             ),
           if (state.result == null && onSurrender != null)
-            IconButton(
+            _BattleHeaderIconButton(
               key: const ValueKey('battle_surrender'),
-              icon: const Icon(
-                Icons.flag_outlined,
-                color: WuxiaColors.textSecondary,
-                size: 20,
-              ),
+              icon: Icons.flag_outlined,
               tooltip: UiStrings.battleSurrender,
               onPressed: onSurrender,
             ),
-          IconButton(
+          _BattleHeaderIconButton(
             key: const ValueKey('battle_log_toggle'),
-            icon: const Icon(
-              Icons.list_alt,
-              color: WuxiaColors.textSecondary,
-              size: 20,
-            ),
+            icon: Icons.list_alt,
             tooltip: UiStrings.battleLog,
             onPressed: onToggleLog,
           ),
           const SizedBox(width: 4),
           const ContextHelpButton(topic: HelpTopic.combatAdvanced, size: 20),
         ],
+      ),
+    );
+  }
+}
+
+class _BattleHeaderIconButton extends StatelessWidget {
+  const _BattleHeaderIconButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: IconButton(
+        tooltip: tooltip,
+        onPressed: onPressed,
+        icon: Icon(icon, size: 19),
+        color: WuxiaColors.textSecondary,
+        disabledColor: WuxiaColors.textMuted,
+        constraints: const BoxConstraints.tightFor(width: 36, height: 36),
+        padding: EdgeInsets.zero,
+        splashRadius: 18,
+        style: IconButton.styleFrom(
+          backgroundColor: WuxiaColors.sidebar.withValues(alpha: 0.58),
+          hoverColor: WuxiaColors.resultHighlight.withValues(alpha: 0.10),
+          highlightColor: WuxiaColors.resultHighlight.withValues(alpha: 0.14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+            side: BorderSide(color: WuxiaColors.border.withValues(alpha: 0.78)),
+          ),
+        ),
       ),
     );
   }
@@ -2242,8 +2265,8 @@ class _BottomBar extends StatelessWidget {
     ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
 
     return Container(
-      height: 92,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      height: 104,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: const BoxDecoration(
         color: WuxiaColors.panel,
         border: Border(top: BorderSide(color: WuxiaColors.border)),
@@ -2257,8 +2280,8 @@ class _BottomBar extends StatelessWidget {
             onSelectFocus: onSelectFocus,
           ),
           const SizedBox(width: 10),
-          Container(width: 1, height: 60, color: WuxiaColors.border),
-          const SizedBox(width: 10),
+          Container(width: 1, height: 68, color: WuxiaColors.border),
+          const SizedBox(width: 12),
           Expanded(
             child: focus == null
                 ? const SizedBox.shrink()
@@ -2282,13 +2305,13 @@ class _BottomBar extends StatelessWidget {
                             onDragEnd: onSkillDragEnd,
                             onDragCancel: onSkillDragCancel,
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 8),
                         ],
                       ],
                     ),
                   ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           _FastForwardButton(onPressed: onFastForward, isActive: isFastForward),
         ],
       ),
@@ -2320,7 +2343,7 @@ class _FocusSelector extends StatelessWidget {
             selected: i == focusSlotIndex,
             onTap: () => onSelectFocus(i),
           ),
-          if (i < team.length - 1) const SizedBox(width: 4),
+          if (i < team.length - 1) const SizedBox(width: 6),
         ],
       ],
     );
@@ -2347,8 +2370,8 @@ class _FocusChip extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
       child: Container(
-        width: 46,
-        height: 60,
+        width: 52,
+        height: 66,
         decoration: BoxDecoration(
           color: selected ? color.withValues(alpha: 0.28) : WuxiaColors.sidebar,
           border: Border.all(
@@ -2378,7 +2401,7 @@ class _FocusChip extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 9,
+                    fontSize: 10,
                     height: 1.1,
                     color: dim
                         ? WuxiaColors.textMuted
@@ -2474,8 +2497,8 @@ class _SkillCommandButton extends StatelessWidget {
     }
 
     final button = SizedBox(
-      width: 92,
-      height: 76,
+      width: 112,
+      height: 82,
       child: ElevatedButton(
         key: ValueKey('skill_cmd_${character.characterId}_${skill.id}'),
         // 批次 1.3:点击 = 弹简介浮层(始终可读,CD/内力不足/待发态亦可看)。
@@ -2489,7 +2512,7 @@ class _SkillCommandButton extends StatelessWidget {
           foregroundColor: enabled
               ? WuxiaColors.textPrimary
               : WuxiaColors.textMuted,
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           side: highlight && enabled
               ? const BorderSide(color: WuxiaColors.textPrimary, width: 2)
               : BorderSide(
@@ -2498,46 +2521,47 @@ class _SkillCommandButton extends StatelessWidget {
                 ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                _groupLabel(skill),
-                style: const TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
-                  height: 1.1,
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _groupLabel(skill),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                height: 1.1,
               ),
-              const SizedBox(height: 2),
-              Text(
-                skill.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  height: 1.15,
-                ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              skill.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                height: 1.15,
               ),
-              const SizedBox(height: 2),
-              Text(
-                statusText,
-                style: TextStyle(
-                  fontSize: 10,
-                  height: 1.1,
-                  fontWeight: isPending ? FontWeight.bold : FontWeight.normal,
-                  color: isPending
-                      ? WuxiaColors.resultHighlight
-                      : (enabled
-                            ? WuxiaColors.textPrimary
-                            : WuxiaColors.textMuted),
-                ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              statusText,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                height: 1.1,
+                fontWeight: isPending ? FontWeight.bold : FontWeight.w600,
+                color: isPending
+                    ? WuxiaColors.resultHighlight
+                    : (enabled
+                          ? WuxiaColors.textPrimary
+                          : WuxiaColors.textMuted),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

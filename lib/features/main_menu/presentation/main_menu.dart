@@ -79,13 +79,13 @@ List<Widget> _twoColumn(List<Widget> items) {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(child: items[i]),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(child: right ?? const SizedBox.shrink()),
           ],
         ),
       ),
     );
-    if (i + 2 < items.length) rows.add(const SizedBox(height: 12));
+    if (i + 2 < items.length) rows.add(const SizedBox(height: 14));
   }
   return rows;
 }
@@ -94,7 +94,7 @@ List<Widget> _oneColumn(List<Widget> items) {
   final rows = <Widget>[];
   for (var i = 0; i < items.length; i++) {
     rows.add(items[i]);
-    if (i + 1 < items.length) rows.add(const SizedBox(height: 10));
+    if (i + 1 < items.length) rows.add(const SizedBox(height: 12));
   }
   return rows;
 }
@@ -481,7 +481,7 @@ class MainMenu extends ConsumerWidget {
             SafeArea(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1120),
+                  constraints: const BoxConstraints(maxWidth: 1160),
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(
                       vertical: 32,
@@ -720,7 +720,7 @@ class _MenuSectionsLayout extends StatelessWidget {
                 items: journeyItems,
                 twoColumn: canUseTwoColumns,
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 18),
               _MenuSection(
                 title: UiStrings.mainMenuGroupGrowth,
                 subtitle: UiStrings.mainMenuGroupGrowthHint,
@@ -728,7 +728,7 @@ class _MenuSectionsLayout extends StatelessWidget {
                 items: growthItems,
                 twoColumn: canUseTwoColumns,
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 18),
               _MenuSection(
                 title: UiStrings.mainMenuGroupArchive,
                 subtitle: UiStrings.mainMenuGroupArchiveHint,
@@ -736,7 +736,7 @@ class _MenuSectionsLayout extends StatelessWidget {
                 items: archiveItems,
                 twoColumn: canUseTwoColumns,
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 18),
               _MenuSection(
                 title: UiStrings.mainMenuGroupSettings,
                 subtitle: UiStrings.mainMenuGroupSettingsHint,
@@ -745,7 +745,7 @@ class _MenuSectionsLayout extends StatelessWidget {
                 twoColumn: false,
               ),
               if (debugItems.isNotEmpty) ...[
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
                 _MenuSection(
                   title: UiStrings.mainMenuGroupDebug,
                   subtitle: UiStrings.mainMenuGroupDebugHint,
@@ -774,7 +774,7 @@ class _MenuSectionsLayout extends StatelessWidget {
                     featured: true,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 18),
                 Expanded(
                   flex: 7,
                   child: _MenuSection(
@@ -787,7 +787,7 @@ class _MenuSectionsLayout extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -801,7 +801,7 @@ class _MenuSectionsLayout extends StatelessWidget {
                     twoColumn: true,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 18),
                 Expanded(
                   flex: 5,
                   child: Column(
@@ -814,7 +814,7 @@ class _MenuSectionsLayout extends StatelessWidget {
                         items: settingsItems,
                       ),
                       if (debugItems.isNotEmpty) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 18),
                         _MenuSection(
                           title: UiStrings.mainMenuGroupDebug,
                           subtitle: UiStrings.mainMenuGroupDebugHint,
@@ -866,9 +866,9 @@ class _MenuSection extends StatelessWidget {
         ),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x55000000),
-            blurRadius: 12,
-            offset: Offset(0, 8),
+            color: Color(0x33000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -887,12 +887,12 @@ class _MenuSection extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _SectionLabel(title: title, subtitle: subtitle, icon: icon),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   ...body,
                 ],
               ),

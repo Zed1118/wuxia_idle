@@ -204,10 +204,14 @@ class VictoryOverlay extends StatelessWidget {
                   ),
                   const PostBattleHealingPanel(),
                   const SizedBox(height: 18),
-                  PlaqueButton(
-                    label: UiStrings.battleContinue,
-                    primary: true,
-                    onTap: onContinue,
+                  SizedBox(
+                    width: 128,
+                    height: 42,
+                    child: PlaqueButton(
+                      label: UiStrings.battleContinue,
+                      primary: true,
+                      onTap: onContinue,
+                    ),
                   ),
                 ],
               ),
