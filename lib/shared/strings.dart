@@ -1495,12 +1495,36 @@ class UiStrings {
   static const String slotNewGameConfirm = '在此卷开启一段全新的江湖路？';
   static const String slotDelete = '删除存档';
   static const String slotDeleteConfirm = '删除此存档？此举不可挽回。';
+  static const String slotDeleteProtectionHint = '输入下方存档名后才可删除';
+  static const String slotDeleteInputLabel = '存档名';
+  static String slotDeleteConfirmFor(String name) => '删除「$name」？此举不可挽回。';
+  static String slotDeleteProtectionValue(String name) => '请输入：$name';
+  static const String slotRename = '重命名';
+  static const String slotRenameTitle = '命名此卷';
+  static const String slotRenameInputLabel = '存档名称';
+  static const String slotRenameClearHint = '留空则使用默认卷名';
+  static const String slotRenameSave = '保存';
+  static const String slotRecentBadge = '最近游玩';
+  static const String slotFounderLabel = '祖师';
+  static const String slotMainlineLabel = '主线';
+  static const String slotTowerLabel = '问鼎';
+  static const String slotLastPlayedNever = '尚未记录';
   static const String slotSwitch = '切换存档';
   static const String slotSwitchConfirm = '返回存档选择，切换到其它江湖？';
   static const String slotCancel = '取消';
   static const String slotEnter = '入此江湖';
   static String slotChapterProgress(int chapter, int cleared) =>
       '第 $chapter 章 · 已通关 $cleared 关';
+  static String slotTowerProgress(int floor) =>
+      floor <= 0 ? '未登塔' : '最高第 $floor 层';
+  static String slotFounderSummary(String founder, String realm) =>
+      '$founder · $realm';
+  static String slotLastPlayed(DateTime value) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${value.year}-${two(value.month)}-${two(value.day)} '
+        '${two(value.hour)}:${two(value.minute)}';
+  }
+
   static String slotCardTitle(int n) => '第 $n 卷';
   // 战斗交互重做 Phase 3:选关屏 per-stage「挂机自动 / 允许拖招」开关。
   static const String stageAutoPlayAuto = '自动';
