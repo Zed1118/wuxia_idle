@@ -10,6 +10,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
+import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/technique_panel/presentation/technique_panel_screen.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
@@ -155,6 +156,26 @@ void main() {
 
     expect(find.text('入门功'), findsOneWidget);
     expect(find.text('常练功'), findsOneWidget);
+    expect(find.text(UiStrings.techniqueMeridianOverviewTitle), findsOneWidget);
+    expect(
+      find.text(
+        UiStrings.techniqueMeridianMain(
+          EnumL10n.school(TechniqueSchool.gangMeng),
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.techniqueMeridianAssist(2, 3)), findsOneWidget);
+    expect(find.text(UiStrings.techniqueMeridianInsight(0)), findsOneWidget);
+    expect(
+      find.text(
+        UiStrings.techniqueMeridianHighest(
+          EnumL10n.cultivationLayer(CultivationLayer.chuKui),
+          3,
+        ),
+      ),
+      findsOneWidget,
+    );
     expect(find.text(UiStrings.techniqueSchoolMatrixTitle), findsOneWidget);
     expect(find.text('主修'), findsOneWidget);
     expect(find.text('辅修'), findsNWidgets(2));
@@ -354,19 +375,21 @@ void main() {
         mainTechniqueId: 100,
         assistTechniqueIds: [101],
       );
-      final main = mkTechnique(
-        id: 100,
-        ownerId: 1,
-        role: TechniqueRole.main,
-        defId: 'tech_gangmeng_jichu',
-        cultivationLayer: CultivationLayer.chuKui,
-        cultivationProgress: 30,
-        cultivationProgressToNext: 100,
-      )..skillUsageCount = [
-          SkillUsageEntry()
-            ..skillId = 'skill_gangmeng_jichu_skill'
-            ..count = 300,
-        ];
+      final main =
+          mkTechnique(
+              id: 100,
+              ownerId: 1,
+              role: TechniqueRole.main,
+              defId: 'tech_gangmeng_jichu',
+              cultivationLayer: CultivationLayer.chuKui,
+              cultivationProgress: 30,
+              cultivationProgressToNext: 100,
+            )
+            ..skillUsageCount = [
+              SkillUsageEntry()
+                ..skillId = 'skill_gangmeng_jichu_skill'
+                ..count = 300,
+            ];
       final assist = mkTechnique(
         id: 101,
         ownerId: 1,

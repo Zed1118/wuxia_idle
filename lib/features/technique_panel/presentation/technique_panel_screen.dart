@@ -85,8 +85,9 @@ class TechniquePanelScreen extends ConsumerWidget {
                 loading: () => const Center(child: InkLoadingIndicator()),
                 error: (e, _) => ErrorFallback(
                   error: e,
-                  onRetry: () =>
-                      ref.invalidate(characterAllTechniquesProvider(characterId)),
+                  onRetry: () => ref.invalidate(
+                    characterAllTechniquesProvider(characterId),
+                  ),
                 ),
                 data: (techs) => _Body(character: c, techniques: techs),
               );
@@ -135,6 +136,12 @@ class _Body extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          _MeridianOverviewPanel(
+            character: character,
+            techniques: techniques,
+            mainTech: mainTech,
+          ),
+          const SizedBox(height: 16),
           if (mainTech != null) ...[
             _MainTechniqueHero(mainTech: mainTech),
             const SizedBox(height: 16),
@@ -186,6 +193,166 @@ class _Body extends StatelessWidget {
             const SizedBox(height: 8),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _MeridianOverviewPanel extends StatelessWidget {
+  const _MeridianOverviewPanel({
+    required this.character,
+    required this.techniques,
+    required this.mainTech,
+  });
+
+  final Character character;
+  final List<Technique> techniques;
+  final Technique? mainTech;
+
+  @override
+  Widget build(BuildContext context) {
+    final mainSchool = mainTech?.school;
+    final accent = mainSchool == null
+        ? WuxiaColors.resultHighlight
+        : WuxiaColors.schoolColor(mainSchool);
+    final assistCount = math.min(
+      3,
+      techniques.where((t) => t.role == TechniqueRole.assist).length,
+    );
+    var highest = techniques.first.cultivationLayer;
+    for (final technique in techniques.skip(1)) {
+      if (technique.cultivationLayer.index > highest.index) {
+        highest = technique.cultivationLayer;
+      }
+    }
+    final mainText = mainSchool == null
+        ? UiStrings.techniqueSchoolMatrixUnset
+        : EnumL10n.school(mainSchool);
+    final items = [
+      _MeridianOverviewItem(
+        icon: Icons.auto_stories_outlined,
+        label: UiStrings.techniqueMeridianMain(mainText),
+        color: accent,
+      ),
+      _MeridianOverviewItem(
+        icon: Icons.hub_outlined,
+        label: UiStrings.techniqueMeridianAssist(assistCount, 3),
+        color: WuxiaUi.qing,
+      ),
+      _MeridianOverviewItem(
+        icon: Icons.tips_and_updates_outlined,
+        label: UiStrings.techniqueMeridianInsight(character.insightPoints),
+        color: WuxiaUi.gold,
+      ),
+      _MeridianOverviewItem(
+        icon: Icons.local_fire_department_outlined,
+        label: UiStrings.techniqueMeridianHighest(
+          EnumL10n.cultivationLayer(highest),
+          techniques.length,
+        ),
+        color: WuxiaUi.jiang,
+      ),
+    ];
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaColors.inkPanelBottom.withValues(alpha: 0.58),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: accent.withValues(alpha: 0.56)),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 13),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.spa_outlined, color: accent, size: 18),
+                const SizedBox(width: 8),
+                const Text(
+                  UiStrings.techniqueMeridianOverviewTitle,
+                  style: TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.4,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  width: 56,
+                  height: 1,
+                  color: accent.withValues(alpha: 0.62),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final item in items) _MeridianOverviewChip(item: item),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MeridianOverviewItem {
+  const _MeridianOverviewItem({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+}
+
+class _MeridianOverviewChip extends StatelessWidget {
+  const _MeridianOverviewChip({required this.item});
+
+  final _MeridianOverviewItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: item.color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: item.color.withValues(alpha: 0.34)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(item.icon, color: item.color, size: 15),
+            const SizedBox(width: 6),
+            Text(
+              item.label,
+              style: TextStyle(
+                color: item.color == WuxiaUi.gold
+                    ? WuxiaColors.textPrimary
+                    : item.color,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                height: 1.15,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
