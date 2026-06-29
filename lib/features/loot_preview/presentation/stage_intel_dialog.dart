@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
+import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
+import '../../battle/domain/cycle_trait_intel.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../domain/drop_rumor.dart';
 import 'loot_rumor_dialog.dart';
@@ -21,6 +23,7 @@ Future<void> showStageIntelDialog(
   required StageDef stage,
   required DropRumorTable rumorTable,
   RealmTier? currentRealm,
+  int targetCycle = 1,
 }) {
   return PaperDialog.show<void>(
     context,
@@ -30,6 +33,7 @@ Future<void> showStageIntelDialog(
         stage: stage,
         rumorTable: rumorTable,
         currentRealm: currentRealm,
+        targetCycle: targetCycle,
       ),
     ),
     actions: [
@@ -48,17 +52,25 @@ class StageIntelContent extends StatelessWidget {
     required this.stage,
     required this.rumorTable,
     this.currentRealm,
+    this.targetCycle = 1,
   });
 
   final StageDef stage;
   final DropRumorTable rumorTable;
   final RealmTier? currentRealm;
+  final int targetCycle;
 
   @override
   Widget build(BuildContext context) {
     final responseLines = _teamPreparationLines(
       stage.enemyTeam,
       isBossStage: stage.isBossStage,
+    );
+    final cycleTraits = CycleTraitIntel.entriesFor(
+      config: GameRepository.instance.numbers.cycleEvolution,
+      cycle: targetCycle,
+      isBoss: stage.isBossStage,
+      isTower: false,
     );
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -68,6 +80,11 @@ class StageIntelContent extends StatelessWidget {
           title: UiStrings.prebattleIntelEnemySection,
           child: _EnemyIntelList(enemies: stage.enemyTeam),
         ),
+        if (cycleTraits.isNotEmpty)
+          _IntelSection(
+            title: UiStrings.prebattleIntelCycleTraitSection,
+            child: _CycleTraitIntelList(entries: cycleTraits),
+          ),
         if (responseLines.isNotEmpty)
           _IntelSection(
             title: UiStrings.prebattleIntelResponseSection,
@@ -84,6 +101,23 @@ class StageIntelContent extends StatelessWidget {
             currentRealm: currentRealm,
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _CycleTraitIntelList extends StatelessWidget {
+  const _CycleTraitIntelList({required this.entries});
+
+  final List<CycleTraitIntelEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final entry in entries)
+          _IntelLine('${entry.name} · ${entry.detailText}'),
       ],
     );
   }
