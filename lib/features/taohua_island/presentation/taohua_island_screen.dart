@@ -112,59 +112,88 @@ const _workshopBuildingTypes = [
   BuildingType.zhuZaoTai,
 ];
 
-class _IslandBody extends StatelessWidget {
+const _allBuildingTypes = [..._rawBuildingTypes, ..._workshopBuildingTypes];
+
+class _IslandBody extends StatefulWidget {
   const _IslandBody({required this.view, required this.onRefresh});
 
   final IslandView view;
   final VoidCallback onRefresh;
 
   @override
+  State<_IslandBody> createState() => _IslandBodyState();
+}
+
+class _IslandBodyState extends State<_IslandBody> {
+  BuildingType _selectedType = BuildingType.tieJiangChang;
+
+  @override
   Widget build(BuildContext context) {
     final cfg = GameRepository.instance.numbers.taohuaIsland;
-    final snapshot = _IslandSnapshot.from(view, cfg);
+    final snapshot = _IslandSnapshot.from(widget.view, cfg);
+    final selectedCfg = cfg.buildings[_selectedType]!;
+    final selectedState = _stateFor(_selectedType);
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       children: [
         _IslandOverviewPanel(snapshot: snapshot),
         const SizedBox(height: 18),
-        if (view.prepAdvice.isNotEmpty) ...[
+        _IslandSceneHub(
+          selectedType: _selectedType,
+          snapshot: snapshot,
+          states: widget.view.buildings,
+          cfg: cfg,
+          onSelect: (type) => setState(() => _selectedType = type),
+        ),
+        const SizedBox(height: 18),
+        _SectionHeader(
+          label: UiStrings.taohuaIslandSelectedBuildingTitle(
+            EnumL10n.buildingType(_selectedType),
+          ),
+          body: UiStrings.taohuaIslandSelectedBuildingBody,
+          summary: _selectedSummary(_selectedType, snapshot),
+        ),
+        const SizedBox(height: 10),
+        _BuildingCard(
+          type: _selectedType,
+          state: selectedState,
+          bCfg: selectedCfg,
+          cfg: cfg,
+          view: widget.view,
+          onRefresh: widget.onRefresh,
+        ),
+        const SizedBox(height: 18),
+        if (widget.view.prepAdvice.isNotEmpty) ...[
           _PrepAdvicePanel(
-            advice: view.prepAdvice.take(3).toList(growable: false),
+            advice: widget.view.prepAdvice.take(3).toList(growable: false),
           ),
           const SizedBox(height: 18),
         ],
         const _ProjectStelePanel(),
-        const SizedBox(height: 18),
-        _BuildingSection(
-          label: UiStrings.taohuaIslandSectionRaw,
-          body: UiStrings.taohuaIslandSectionRawBody,
-          summary: UiStrings.taohuaIslandSectionRawSummary(snapshot.rawStored),
-          types: _rawBuildingTypes,
-          cfg: cfg,
-          view: view,
-          onRefresh: onRefresh,
-        ),
-        const SizedBox(height: 18),
-        _BuildingSection(
-          label: UiStrings.taohuaIslandSectionWorkshop,
-          body: UiStrings.taohuaIslandSectionWorkshopBody,
-          summary: UiStrings.taohuaIslandSectionWorkshopSummary(
-            snapshot.workshopStored,
-            snapshot.activeProcessors,
-            snapshot.pausedProcessors,
-          ),
-          types: _workshopBuildingTypes,
-          cfg: cfg,
-          view: view,
-          onRefresh: onRefresh,
-        ),
         const SizedBox(height: 18),
         const _SectionHeader(
           label: UiStrings.taohuaIslandSectionDock,
           body: UiStrings.taohuaIslandSectionDockBody,
         ),
       ],
+    );
+  }
+
+  IslandBuildingState _stateFor(BuildingType type) =>
+      widget.view.buildings.firstWhere(
+        (b) => b.type == type,
+        orElse: () => IslandBuildingState()..type = type,
+      );
+
+  String _selectedSummary(BuildingType type, _IslandSnapshot snapshot) {
+    if (_rawBuildingTypes.contains(type)) {
+      return UiStrings.taohuaIslandSectionRawSummary(snapshot.rawStored);
+    }
+    return UiStrings.taohuaIslandSectionWorkshopSummary(
+      snapshot.workshopStored,
+      snapshot.activeProcessors,
+      snapshot.pausedProcessors,
     );
   }
 }
@@ -221,6 +250,309 @@ class _IslandSnapshot {
       maxInjuryHoursRemaining: view.maxInjuryHoursRemaining,
     );
   }
+}
+
+// ── 场景式建筑热区 ─────────────────────────────────────────────────────────────
+
+class _IslandSceneHub extends StatelessWidget {
+  const _IslandSceneHub({
+    required this.selectedType,
+    required this.snapshot,
+    required this.states,
+    required this.cfg,
+    required this.onSelect,
+  });
+
+  final BuildingType selectedType;
+  final _IslandSnapshot snapshot;
+  final List<IslandBuildingState> states;
+  final TaohuaIslandConfig cfg;
+  final ValueChanged<BuildingType> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper2.withValues(alpha: 0.54),
+        borderRadius: BorderRadius.circular(WuxiaUi.radius),
+        border: Border.all(
+          color: WuxiaUi.ink.withValues(alpha: 0.32),
+          width: WuxiaUi.borderWidth,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Expanded(
+                  child: Text(
+                    UiStrings.taohuaIslandSceneMapTitle,
+                    style: TextStyle(
+                      color: WuxiaUi.ink,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 3,
+                    ),
+                  ),
+                ),
+                Text(
+                  UiStrings.taohuaIslandSceneMapSummary(
+                    snapshot.rawStored,
+                    snapshot.workshopStored,
+                  ),
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    color: WuxiaUi.muted,
+                    fontSize: 12,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            AspectRatio(
+              aspectRatio: 2.0,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(WuxiaUi.radius),
+                child: CustomPaint(
+                  painter: _IslandScenePainter(),
+                  child: Stack(
+                    children: [
+                      for (final type in _allBuildingTypes)
+                        _SceneBuildingHotspot(
+                          type: type,
+                          state: _stateFor(type),
+                          bCfg: cfg.buildings[type]!,
+                          selected: type == selectedType,
+                          onTap: () => onSelect(type),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IslandBuildingState _stateFor(BuildingType type) => states.firstWhere(
+    (b) => b.type == type,
+    orElse: () => IslandBuildingState()..type = type,
+  );
+}
+
+class _SceneBuildingHotspot extends StatelessWidget {
+  const _SceneBuildingHotspot({
+    required this.type,
+    required this.state,
+    required this.bCfg,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final BuildingType type;
+  final IslandBuildingState state;
+  final BuildingConfig bCfg;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final spec = _BuildingSceneSpec.forType(type);
+    final stored = state.stored.floor();
+    final active =
+        bCfg.kind == BuildingKind.source || state.activeRecipeId != null;
+    return Align(
+      alignment: spec.alignment,
+      child: FractionallySizedBox(
+        widthFactor: 0.2,
+        heightFactor: 0.28,
+        child: Tooltip(
+          message: EnumL10n.buildingType(type),
+          child: InkWell(
+            key: Key('taohua_scene_hotspot_${type.name}'),
+            borderRadius: BorderRadius.circular(7),
+            onTap: onTap,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+              decoration: BoxDecoration(
+                color: selected
+                    ? WuxiaUi.paper.withValues(alpha: 0.92)
+                    : WuxiaUi.paper.withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(7),
+                border: Border.all(
+                  color: selected
+                      ? WuxiaUi.jiang
+                      : WuxiaUi.ink.withValues(alpha: 0.38),
+                  width: selected ? 2 : WuxiaUi.borderWidth,
+                ),
+                boxShadow: [
+                  if (selected)
+                    BoxShadow(
+                      color: WuxiaUi.jiang.withValues(alpha: 0.16),
+                      blurRadius: 12,
+                      spreadRadius: 1,
+                    ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    spec.icon,
+                    size: 22,
+                    color: selected ? WuxiaUi.jiang : WuxiaUi.qing,
+                  ),
+                  const SizedBox(height: 3),
+                  Flexible(
+                    child: Text(
+                      EnumL10n.buildingType(type),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: selected ? WuxiaUi.ink : WuxiaUi.ink2,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    UiStrings.taohuaIslandSceneHotspotMeta(state.level, stored),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: active ? WuxiaUi.muted : WuxiaUi.jiang,
+                      fontSize: 9,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BuildingSceneSpec {
+  const _BuildingSceneSpec({required this.alignment, required this.icon});
+
+  final Alignment alignment;
+  final IconData icon;
+
+  static _BuildingSceneSpec forType(BuildingType type) => switch (type) {
+    BuildingType.tieJiangChang => const _BuildingSceneSpec(
+      alignment: Alignment(-0.78, 0.1),
+      icon: Icons.local_fire_department_outlined,
+    ),
+    BuildingType.caoYaoYuan => const _BuildingSceneSpec(
+      alignment: Alignment(-0.36, -0.48),
+      icon: Icons.grass_outlined,
+    ),
+    BuildingType.muGongFang => const _BuildingSceneSpec(
+      alignment: Alignment(0.06, 0.46),
+      icon: Icons.forest_outlined,
+    ),
+    BuildingType.lingQuan => const _BuildingSceneSpec(
+      alignment: Alignment(0.48, -0.5),
+      icon: Icons.water_drop_outlined,
+    ),
+    BuildingType.daZaoTai => const _BuildingSceneSpec(
+      alignment: Alignment(-0.18, 0.02),
+      icon: Icons.handyman_outlined,
+    ),
+    BuildingType.danFang => const _BuildingSceneSpec(
+      alignment: Alignment(0.36, 0.02),
+      icon: Icons.science_outlined,
+    ),
+    BuildingType.zhuZaoTai => const _BuildingSceneSpec(
+      alignment: Alignment(0.78, 0.32),
+      icon: Icons.construction_outlined,
+    ),
+  };
+}
+
+class _IslandScenePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final waterPaint = Paint()..color = WuxiaUi.qing.withValues(alpha: 0.18);
+    canvas.drawRect(Offset.zero & size, waterPaint);
+
+    final islandPaint = Paint()..color = WuxiaUi.paper.withValues(alpha: 0.84);
+    final island = Path()
+      ..moveTo(size.width * 0.08, size.height * 0.6)
+      ..quadraticBezierTo(
+        size.width * 0.18,
+        size.height * 0.18,
+        size.width * 0.46,
+        size.height * 0.16,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.78,
+        size.height * 0.1,
+        size.width * 0.92,
+        size.height * 0.48,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.84,
+        size.height * 0.88,
+        size.width * 0.5,
+        size.height * 0.84,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.2,
+        size.height * 0.88,
+        size.width * 0.08,
+        size.height * 0.6,
+      )
+      ..close();
+    canvas.drawPath(island, islandPaint);
+
+    final shorePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = WuxiaUi.borderWidth
+      ..color = WuxiaUi.ink.withValues(alpha: 0.22);
+    canvas.drawPath(island, shorePaint);
+
+    final trailPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round
+      ..color = WuxiaUi.ink.withValues(alpha: 0.16);
+    final trail = Path()
+      ..moveTo(size.width * 0.18, size.height * 0.56)
+      ..cubicTo(
+        size.width * 0.34,
+        size.height * 0.42,
+        size.width * 0.47,
+        size.height * 0.6,
+        size.width * 0.62,
+        size.height * 0.42,
+      )
+      ..cubicTo(
+        size.width * 0.72,
+        size.height * 0.3,
+        size.width * 0.82,
+        size.height * 0.44,
+        size.width * 0.78,
+        size.height * 0.66,
+      );
+    canvas.drawPath(trail, trailPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _IslandOverviewPanel extends StatelessWidget {
@@ -429,53 +761,6 @@ class _SceneDivider extends StatelessWidget {
         height: WuxiaUi.borderWidth,
         color: WuxiaUi.ink.withValues(alpha: 0.18),
       ),
-    );
-  }
-}
-
-class _BuildingSection extends StatelessWidget {
-  const _BuildingSection({
-    required this.label,
-    required this.body,
-    required this.summary,
-    required this.types,
-    required this.cfg,
-    required this.view,
-    required this.onRefresh,
-  });
-
-  final String label;
-  final String body;
-  final String summary;
-  final List<BuildingType> types;
-  final TaohuaIslandConfig cfg;
-  final IslandView view;
-  final VoidCallback onRefresh;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _SectionHeader(label: label, body: body, summary: summary),
-        const SizedBox(height: 10),
-        for (final type in types) ...[
-          IntrinsicHeight(
-            child: _BuildingCard(
-              type: type,
-              state: view.buildings.firstWhere(
-                (b) => b.type == type,
-                orElse: () => IslandBuildingState()..type = type,
-              ),
-              bCfg: cfg.buildings[type]!,
-              cfg: cfg,
-              view: view,
-              onRefresh: onRefresh,
-            ),
-          ),
-          if (type != types.last) const SizedBox(height: 12),
-        ],
-      ],
     );
   }
 }
