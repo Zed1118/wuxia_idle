@@ -144,8 +144,9 @@ void main() {
     Map<int, Equipment> equipments = const {},
     Map<int, Technique> techniques = const {},
     InnerDemonProgress? innerDemonProgress,
+    Size surfaceSize = const Size(1280, 720),
   }) async {
-    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     final ids = activeIds ?? <int>[character.id, ...extraCharacters.keys];
@@ -194,7 +195,7 @@ void main() {
   Future<void> tapFirstEmptyEquipmentSlot(WidgetTester tester) async {
     final slotInkWell = find
         .ancestor(
-          of: find.text(UiStrings.slotEmpty).first,
+          of: find.text(UiStrings.equipmentSlotEmptyStatus).first,
           matching: find.byType(InkWell),
         )
         .first;
@@ -218,6 +219,13 @@ void main() {
     expect(find.byType(PortraitFrame), findsOneWidget);
     expect(find.text(UiStrings.injuryStatusHealthy), findsOneWidget);
     expect(find.text(UiStrings.profilePortraitPlaque), findsOneWidget);
+    expect(find.text(UiStrings.panelIdentity), findsOneWidget);
+    expect(find.text(UiStrings.panelRealmCultivation), findsOneWidget);
+    expect(find.text(UiStrings.panelAttributes), findsOneWidget);
+    expect(find.text(UiStrings.panelDerived), findsOneWidget);
+    expect(find.text(UiStrings.panelEquipment), findsOneWidget);
+    expect(find.text(UiStrings.panelTechnique), findsOneWidget);
+    expect(find.text(UiStrings.panelStatusEffects), findsOneWidget);
     expect(find.text(UiStrings.characterBiographyTitle), findsOneWidget);
     expect(
       find.text(UiStrings.characterBiographyRole(UiStrings.lineageRoleFounder)),
@@ -266,6 +274,7 @@ void main() {
 
     expect(find.text(UiStrings.profileLevelLabel), findsOneWidget); // 「等级」
     expect(find.text(UiStrings.profileLevelValue(5)), findsOneWidget);
+    expect(find.text(UiStrings.realmEquipmentCap('寻常货')), findsOneWidget);
     // 经验条:GameRepository 已加载 → LinearProgressIndicator 渲染。
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
   });
@@ -299,24 +308,82 @@ void main() {
     expect(tipMessages, contains(UiStrings.glossaryFortune));
   });
 
+  testWidgets('桌面视口 smoke:1440x900 信息结构与装备概况无布局异常', (tester) async {
+    final character = mkCharacter(
+      realmTier: RealmTier.erLiu,
+      weaponId: 10,
+      armorId: 11,
+      accessoryId: 12,
+      mainTechniqueId: 20,
+    );
+    final weapon = mkEquipment(
+      id: 10,
+      slot: EquipmentSlot.weapon,
+      tier: EquipmentTier.xunChang,
+      defId: 'weapon_xunchang_tie_jian',
+    );
+    final armor = mkEquipment(
+      id: 11,
+      slot: EquipmentSlot.armor,
+      tier: EquipmentTier.haoJiaHuo,
+      defId: 'armor_haojiahuo_jin_pao',
+    );
+    final acc = mkEquipment(
+      id: 12,
+      slot: EquipmentSlot.accessory,
+      tier: EquipmentTier.liQi,
+    );
+    final main = mkTechnique(
+      id: 20,
+      ownerId: 1,
+      role: TechniqueRole.main,
+      defId: GameRepository.instance.techniqueDefs.keys.first,
+      cultivationProgress: 50,
+      cultivationProgressToNext: 100,
+    );
+
+    await pumpPanel(
+      tester,
+      character: character,
+      equipments: {10: weapon, 11: armor, 12: acc},
+      techniques: {20: main},
+      surfaceSize: const Size(1440, 900),
+    );
+
+    expect(find.text(UiStrings.panelIdentity), findsOneWidget);
+    expect(find.text(UiStrings.panelEquipment), findsOneWidget);
+    expect(find.text(UiStrings.equipmentSlotRealmLocked), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   // ── 用例 1：3 装备槽全显示 ─────────────────────────────────────────────
 
-  testWidgets('3 装备槽全装备时，+N 强化等级全部渲染', (tester) async {
-    final character = mkCharacter(weaponId: 10, armorId: 11, accessoryId: 12);
+  testWidgets('3 装备槽全装备时，显示强化、品阶与境界匹配状态', (tester) async {
+    final character = mkCharacter(
+      realmTier: RealmTier.erLiu,
+      weaponId: 10,
+      armorId: 11,
+      accessoryId: 12,
+    );
     final weapon = mkEquipment(
       id: 10,
       slot: EquipmentSlot.weapon,
       enhanceLevel: 5,
+      tier: EquipmentTier.xunChang,
+      defId: 'weapon_xunchang_tie_jian',
     );
     final armor = mkEquipment(
       id: 11,
       slot: EquipmentSlot.armor,
       enhanceLevel: 3,
+      tier: EquipmentTier.haoJiaHuo,
+      defId: 'armor_haojiahuo_jin_pao',
     );
     final acc = mkEquipment(
       id: 12,
       slot: EquipmentSlot.accessory,
       enhanceLevel: 7,
+      tier: EquipmentTier.liQi,
     );
 
     await pumpPanel(
@@ -331,6 +398,12 @@ void main() {
     expect(find.text('武器'), findsOneWidget);
     expect(find.text('护甲'), findsOneWidget);
     expect(find.text('饰品'), findsOneWidget);
+    expect(find.text('铁剑'), findsOneWidget);
+    expect(find.text('锦袍'), findsOneWidget);
+    expect(find.text(UiStrings.equipmentSlotRealmUsable), findsNWidgets(2));
+    expect(find.text(UiStrings.equipmentSlotRealmLocked), findsOneWidget);
+    expect(find.text(UiStrings.equipmentSlotBelowRealm), findsOneWidget);
+    expect(find.text(UiStrings.equipmentSlotRealmMatched), findsOneWidget);
   });
 
   // ── 用例 1b：点已穿装备 → EquipSlotDialog 顶部操作图标 ────────────────────
@@ -368,7 +441,7 @@ void main() {
     final character = mkCharacter();
     await pumpPanel(tester, character: character);
 
-    expect(find.text('未装备'), findsNWidgets(3));
+    expect(find.text(UiStrings.equipmentSlotEmptyStatus), findsNWidgets(3));
     expect(find.text('未修主修'), findsOneWidget);
     expect(find.text('未学'), findsNWidgets(3));
   });
