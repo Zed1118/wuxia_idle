@@ -16,6 +16,9 @@ void main() {
     bool locked = false,
     bool highTier = false,
     String? statusText,
+    String? tierLabel,
+    bool protected = false,
+    bool selected = false,
     IconData? leadingBadgeIcon,
     IconData? trailingBadgeIcon,
   }) => ItemSlot(
@@ -27,17 +30,19 @@ void main() {
     locked: locked,
     highTier: highTier,
     statusText: statusText,
+    tierLabel: tierLabel,
+    protected: protected,
+    protectedText: protected ? '护' : null,
+    protectedTooltip: protected ? '受保护' : null,
+    selected: selected,
     leadingBadgeIcon: leadingBadgeIcon,
     trailingBadgeIcon: trailingBadgeIcon,
   );
 
   BoxDecoration cellDeco(WidgetTester tester) =>
       tester
-              .widget<Container>(
-                find.descendant(
-                  of: find.byType(ItemSlot),
-                  matching: find.byType(Container),
-                ),
+              .widget<AnimatedContainer>(
+                find.byKey(const ValueKey('itemSlotFrame')),
               )
               .decoration
           as BoxDecoration;
@@ -64,6 +69,9 @@ void main() {
       host(
         slot(
           statusText: '装备中',
+          tierLabel: '利器',
+          protected: true,
+          selected: true,
           leadingBadgeIcon: Icons.auto_awesome,
           trailingBadgeIcon: Icons.lock_outline,
         ),
@@ -71,6 +79,8 @@ void main() {
     );
 
     expect(find.text('装备中'), findsOneWidget);
+    expect(find.text('利器'), findsOneWidget);
+    expect(find.text('护'), findsOneWidget);
     expect(find.text('青锋剑'), findsOneWidget);
     expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
     expect(find.byIcon(Icons.lock_outline), findsOneWidget);
@@ -103,7 +113,13 @@ void main() {
 
     await tester.pumpWidget(host(slot(imagePath: null, highTier: false)));
     final lo = cellDeco(tester);
-    expect((lo.border as Border).top.color, WuxiaUi.ink);
+    expect((lo.border as Border).top.color, const Color(0xFF566B63));
     expect(lo.boxShadow, isNull);
+  });
+
+  testWidgets('selected=true 使用朱红边框', (tester) async {
+    await tester.pumpWidget(host(slot(imagePath: null, selected: true)));
+    final selected = cellDeco(tester);
+    expect((selected.border as Border).top.color, WuxiaUi.jiang);
   });
 }
