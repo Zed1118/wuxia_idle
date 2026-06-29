@@ -29,29 +29,29 @@
   - Confirm first-tier mainline replay rewards are present and do not depend on the deferred tower/Boss 03 branch.
   - Note: CodeGraph is not initialized in this worktree; continue with targeted reads without running index init.
 
-- [ ] **Task 1: Pure chapter farm spot model**
+- [x] **Task 1: Pure chapter farm spot model**
   - Add a domain helper that returns up to 2 recommended spots only when the full chapter is cleared.
   - Score candidates from `MainlineReplayRewardRoute.fromStage`; prefer richer routes and Boss/proficiency spots without hardcoded per-chapter tables.
   - Add focused domain tests for hidden-before-complete, capped recommendations, and route-kind reuse.
 
-- [ ] **Task 2: Stage list UI wiring**
+- [x] **Task 2: Stage list UI wiring**
   - Render the chapter-level recommendation under the journey map / before sweep controls.
   - Use compact `Wrap` chips and stable dimensions; keep row taps and info buttons unchanged.
   - Centralize all new Chinese strings in `UiStrings`.
 
-- [ ] **Task 3: Widget coverage**
+- [x] **Task 3: Widget coverage**
   - Extend `stage_list_screen_test.dart` for hidden incomplete chapter and visible completed chapter states.
   - Assert 1-2 spot names and route labels render, without introducing personal gap language.
 
-- [ ] **Task 4: Verification and closeout**
+- [x] **Task 4: Verification and closeout**
   - Run targeted domain/widget tests and touched-file analyze.
   - Update `PROGRESS.md` and this recovery point.
   - Commit implementation slice(s) with concise messages.
 
 ## Current Recovery Point
 
-- **Status:** Plan written; implementation not started.
-- **Last completed:** Read required docs, created branch, confirmed existing `MainlineReplayRewardRoute` and `StageListScreen` extension point.
-- **Next step:** Implement pure chapter farm spot model and tests.
-- **Verification run:** None yet.
-- **Blockers:** CodeGraph is not initialized in this worktree; not blocking because the relevant files are already identified.
+- **Status:** Complete.
+- **Last completed:** Added `MainlineChapterFarmSpotSelector`, rendered the chapter-level `通章刷点` panel after full chapter clear, and covered hidden/visible states in domain + widget tests.
+- **Next step:** Main window review; do not merge or push from this worktree.
+- **Verification run:** `flutter pub get`; `dart run build_runner build --delete-conflicting-outputs` (current build_runner ignored the removed flag, wrote 112 gitignored outputs); `flutter test --no-pub -j1 test/features/mainline/domain/mainline_replay_reward_route_test.dart test/features/mainline/presentation/stage_list_screen_test.dart`; `dart analyze lib/features/mainline/domain/mainline_replay_reward_route.dart lib/features/mainline/presentation/stage_list_screen.dart lib/shared/strings.dart test/features/mainline/domain/mainline_replay_reward_route_test.dart test/features/mainline/presentation/stage_list_screen_test.dart`.
+- **Blockers:** None. CodeGraph is not initialized in this worktree; targeted reads were sufficient.

@@ -116,6 +116,7 @@ class StageListScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               children: [
                 _StageJourneyMap(chapterIndex: chapterIndex, entries: entries),
+                _ChapterFarmSpotsPanel(entries: entries),
                 const SizedBox(height: 12),
                 // 章级周目选择控件(整章已通才显)。置于扫荡按钮上方:先选周目、
                 // 再扫荡,扫荡按钮随选定周目刷新标签与门槛。
@@ -280,6 +281,134 @@ class _StageJourneyMap extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ChapterFarmSpotsPanel extends StatelessWidget {
+  const _ChapterFarmSpotsPanel({required this.entries});
+
+  final List<StageEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    final spots = MainlineChapterFarmSpotSelector.fromEntries(entries);
+    if (spots.isEmpty) return const SizedBox.shrink();
+
+    return Semantics(
+      label: [
+        UiStrings.chapterFarmSpotsTitle,
+        for (final spot in spots)
+          [
+            UiStrings.chapterFarmSpotStage(spot.stageIndex),
+            spot.stage.name,
+            ...spot.route.kinds.map(_labelFor),
+          ].join(' · '),
+      ].join(' · '),
+      child: Container(
+        margin: const EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: WuxiaColors.panel.withValues(alpha: 0.82),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: WuxiaColors.resultHighlight.withValues(alpha: 0.30),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(
+                  Icons.travel_explore,
+                  size: 15,
+                  color: WuxiaColors.resultHighlight,
+                ),
+                SizedBox(width: 5),
+                Text(
+                  UiStrings.chapterFarmSpotsTitle,
+                  style: TextStyle(
+                    color: WuxiaColors.resultHighlight,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    UiStrings.chapterFarmSpotsHint,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                for (final spot in spots) _ChapterFarmSpotChip(spot: spot),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChapterFarmSpotChip extends StatelessWidget {
+  const _ChapterFarmSpotChip({required this.spot});
+
+  final MainlineChapterFarmSpot spot;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.7)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Wrap(
+          spacing: 6,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              UiStrings.chapterFarmSpotStage(spot.stageIndex),
+              style: const TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 128),
+              child: Text(
+                spot.stage.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            for (final kind in spot.route.kinds) _ReplayRewardChip(kind: kind),
+          ],
+        ),
       ),
     );
   }
