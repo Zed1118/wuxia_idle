@@ -27,11 +27,17 @@ void main() {
     }
   });
 
-  MainlineProgress mkProgress({List<String> cleared = const []}) {
+  MainlineProgress mkProgress({
+    List<String> cleared = const [],
+    List<String> clearedStageCycleKeys = const [],
+    List<String> clearedChapterCycleKeys = const [],
+  }) {
     return MainlineProgress()
       ..saveDataId = 1
       ..currentChapterIndex = 1
       ..clearedStageIds = List.of(cleared)
+      ..clearedStageCycleKeys = List.of(clearedStageCycleKeys)
+      ..clearedChapterCycleKeys = List.of(clearedChapterCycleKeys)
       ..clearedAt = List.generate(cleared.length, (_) => DateTime(2026, 5, 11));
   }
 
@@ -128,6 +134,39 @@ void main() {
     expect(find.text(UiStrings.stageReplayRouteEquipment), findsNothing);
     expect(find.text(UiStrings.stageReplayRouteMaterial), findsNothing);
     expect(find.text(UiStrings.stageReplayRouteProficiency), findsNothing);
+  });
+
+  testWidgets('选择二周目后关卡行显示敌人词条摘要', (tester) async {
+    await pumpScreen(
+      tester,
+      chapterIndex: 1,
+      progress: mkProgress(
+        cleared: const [
+          'stage_01_01',
+          'stage_01_02',
+          'stage_01_03',
+          'stage_01_04',
+          'stage_01_05',
+        ],
+        clearedStageCycleKeys: const [
+          'stage_01_01#1',
+          'stage_01_02#1',
+          'stage_01_03#1',
+          'stage_01_04#1',
+          'stage_01_05#1',
+        ],
+        clearedChapterCycleKeys: const ['ch1#1'],
+      ),
+    );
+
+    expect(find.textContaining('御体 ·'), findsNothing);
+
+    await tester.tap(find.text(UiStrings.cycleChallengeNextLabel(2)));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.textContaining('御体 ·'), findsWidgets);
+    expect(find.textContaining('真气 ·'), findsWidgets);
   });
 
   testWidgets('已通关 Boss 行显示练熟练度路线', (tester) async {

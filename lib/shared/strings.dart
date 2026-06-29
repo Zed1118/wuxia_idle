@@ -1091,6 +1091,7 @@ class UiStrings {
   static const String difficultyDeadly = '送死';
   static const String prebattleIntelTitle = '战前情报';
   static const String prebattleIntelEnemySection = '敌阵';
+  static const String prebattleIntelCycleTraitSection = '周目词条';
   static const String prebattleIntelResponseSection = '应对';
   static const String prebattleIntelRiskSection = '风险';
   static const String prebattleIntelLootSection = '可能收获';
@@ -1123,6 +1124,33 @@ class UiStrings {
   static String stagePrepareLoadoutGap(int gap) => '低$gap阶 · 装备/心法补强';
   static String stagePrepareRealmGap(int gap) => '低$gap阶 · 闭关突破';
   static const String stagePrepareAssignCharacter = '未派出角色 · 角色面板';
+
+  static String cycleTraitSummary(int cycle, List<String> names) =>
+      '第$cycle周目词条：${names.join(' / ')}';
+  static String cycleTraitName(String id) => switch (id) {
+    'yuti' => '御体',
+    'zhenqi' => '真气',
+    'fanzhen' => '反震',
+    'shipo' => '识破',
+    'ningjia' => '凝甲',
+    _ => '未知词条',
+  };
+  static String cycleTraitShortYuti(String pct) => '防御 +$pct';
+  static String cycleTraitShortZhenqi(String pct) => '内力 +$pct';
+  static const String cycleTraitShortFanzhen = '受击反震';
+  static const String cycleTraitShortShipo = '补蓄力反制';
+  static const String cycleTraitShortNingjia = '暴击减伤';
+  static String cycleTraitShortUnknown(String id) => '未识别：$id';
+  static String cycleTraitDetailYuti(String pct) =>
+      '御体：敌方防御率提高 $pct，更耐久，适合用克制流派或破甲手段处理。';
+  static String cycleTraitDetailZhenqi(String pct) =>
+      '真气：敌方内力上限提高 $pct，更容易多放一次大招。';
+  static String cycleTraitDetailFanzhen(int ticks, int damagePerTick) =>
+      '反震：命中带词条的敌人后，攻击者会承受 $ticks 回合内伤，每回合 $damagePerTick。';
+  static const String cycleTraitDetailShipo = '识破：无蓄力技的敌人会补一式蓄力反制，需保留破招或爆发内力。';
+  static String cycleTraitDetailNingjia(String reductionPct) =>
+      '凝甲：敌方受到暴击时，暴击增量降低 $reductionPct，别只押会心一线。';
+  static String cycleTraitDetailUnknown(String id) => '未识别的周目词条：$id。';
 
   // === 第七阶段批二 ② · 弱点/抗性「事后可查」战前提示（通关后才显，§5.7）===
   // X = 流派显示名（EnumL10n.school）。水墨口吻，不写「弱点/抗性」直白词。

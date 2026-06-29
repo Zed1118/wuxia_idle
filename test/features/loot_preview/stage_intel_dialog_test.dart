@@ -1,13 +1,24 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/loot_preview/domain/drop_rumor.dart';
 import 'package:wuxia_idle/features/loot_preview/presentation/stage_intel_dialog.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 void main() {
+  setUpAll(() async {
+    if (!GameRepository.isLoaded) {
+      await GameRepository.loadAllDefs(
+        loader: (path) => File(path).readAsString(),
+      );
+    }
+  });
+
   StageDef stage({bool boss = false, List<EnemyDef>? enemies}) {
     return StageDef(
       id: 'stage_test',
@@ -33,7 +44,10 @@ void main() {
           ],
       isBossStage: boss,
       dropTable: const [
-        EquipmentDrop(equipmentDefId: 'weapon_test', dropChance: 0.3),
+        EquipmentDrop(
+          equipmentDefId: 'weapon_xunchang_tie_jian',
+          dropChance: 0.3,
+        ),
         ItemDrop(
           inventoryItemDefId: 'item_mojianshi',
           quantityMin: 1,
@@ -50,6 +64,7 @@ void main() {
     WidgetTester tester,
     StageDef stage, {
     RealmTier currentRealm = RealmTier.xueTu,
+    int targetCycle = 1,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -57,6 +72,7 @@ void main() {
           body: StageIntelContent(
             stage: stage,
             currentRealm: currentRealm,
+            targetCycle: targetCycle,
             rumorTable: DropRumorTable.fromDropTable(
               stage.dropTable,
               gating: FirstClearGating.scrollOnly,
@@ -77,6 +93,7 @@ void main() {
     expect(find.text(UiStrings.prebattleRiskNone), findsOneWidget);
     expect(find.text(UiStrings.prebattleIntelLootSection), findsOneWidget);
     expect(find.text(UiStrings.lootBucketChangKeDe), findsOneWidget);
+    expect(find.text(UiStrings.prebattleIntelCycleTraitSection), findsNothing);
     expect(find.textContaining('推荐：'), findsNothing);
     expect(find.textContaining('境界低于推荐'), findsNothing);
   });
@@ -141,5 +158,17 @@ void main() {
     expect(find.text(UiStrings.prebattleRiskBoss), findsOneWidget);
     expect(find.text(UiStrings.prebattleRiskCharge), findsOneWidget);
     expect(find.text(UiStrings.prebattleRiskOutnumbered), findsOneWidget);
+  });
+
+  testWidgets('二周目战前情报解释周目词条', (tester) async {
+    await pumpIntel(tester, stage(), targetCycle: 2);
+
+    expect(
+      find.text(UiStrings.prebattleIntelCycleTraitSection),
+      findsOneWidget,
+    );
+    expect(find.textContaining('御体'), findsOneWidget);
+    expect(find.textContaining('真气'), findsOneWidget);
+    expect(find.textContaining('多放一次大招'), findsOneWidget);
   });
 }
