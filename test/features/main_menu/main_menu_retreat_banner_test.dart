@@ -18,12 +18,13 @@ void main() {
     }
   });
 
-  RetreatSession fakeSession() => RetreatSession()
-    ..saveDataId = 1
-    ..mapType = RetreatMapType.shanLin
-    ..durationHours = 4
-    ..startedAt = DateTime.now()
-    ..status = RetreatStatus.active;
+  RetreatSession fakeSession({DateTime? startedAt, int durationHours = 4}) =>
+      RetreatSession()
+        ..saveDataId = 1
+        ..mapType = RetreatMapType.shanLin
+        ..durationHours = durationHours
+        ..startedAt = startedAt ?? DateTime.now()
+        ..status = RetreatStatus.active;
 
   Future<void> pumpBanner(
     WidgetTester tester, {
@@ -34,9 +35,7 @@ void main() {
         overrides: [
           activeRetreatSessionProvider.overrideWith((ref) async => session),
         ],
-        child: const MaterialApp(
-          home: Scaffold(body: MainMenuRetreatBanner()),
-        ),
+        child: const MaterialApp(home: Scaffold(body: MainMenuRetreatBanner())),
       ),
     );
     await tester.pumpAndSettle();
@@ -46,6 +45,20 @@ void main() {
     await pumpBanner(tester, session: fakeSession());
     expect(find.textContaining('闭关中'), findsOneWidget);
     expect(find.textContaining('山林'), findsOneWidget);
+  });
+
+  testWidgets('达到收益封顶 → 横幅显示已满与收功入口', (tester) async {
+    final capHours = GameRepository.instance.numbers.retreat.capHours;
+    await pumpBanner(
+      tester,
+      session: fakeSession(
+        durationHours: capHours,
+        startedAt: DateTime.now().subtract(Duration(hours: capHours + 1)),
+      ),
+    );
+    expect(find.textContaining('收益已满'), findsOneWidget);
+    expect(find.textContaining('点此收功'), findsOneWidget);
+    expect(find.textContaining('剩'), findsNothing);
   });
 
   testWidgets('无 session → 横幅隐藏', (tester) async {

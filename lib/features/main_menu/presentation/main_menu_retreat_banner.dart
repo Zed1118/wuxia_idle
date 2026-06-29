@@ -27,12 +27,15 @@ class MainMenuRetreatBanner extends ConsumerWidget {
 
     final mapDef = GameRepository.instance.getSeclusionMap(session.mapType);
     final plannedMin = session.durationHours * 60;
+    final capMin = (GameRepository.instance.numbers.retreat.capHours * 60)
+        .round();
     final elapsedMin = DateTime.now().difference(session.startedAt).inMinutes;
     final remainingMin = (plannedMin - elapsedMin).clamp(0, plannedMin);
     final remaining = UiStrings.retreatRemainingText(
       remainingMin ~/ 60,
       remainingMin % 60,
     );
+    final isCapped = capMin <= plannedMin && elapsedMin >= capMin;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -50,11 +53,22 @@ class MainMenuRetreatBanner extends ConsumerWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.self_improvement, color: WuxiaUi.jiang, size: 18),
+                const Icon(
+                  Icons.self_improvement,
+                  color: WuxiaUi.jiang,
+                  size: 18,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    UiStrings.mainMenuRetreatBannerLine(mapDef.mapName, remaining),
+                    isCapped
+                        ? UiStrings.mainMenuRetreatBannerCappedLine(
+                            mapDef.mapName,
+                          )
+                        : UiStrings.mainMenuRetreatBannerLine(
+                            mapDef.mapName,
+                            remaining,
+                          ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
