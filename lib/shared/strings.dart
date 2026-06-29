@@ -2524,6 +2524,10 @@ class UiStrings {
 
   /// 残页集齐卷轴题字（fragmentJustUnlocked 时展示）。
   static const String skillTreasureFragmentCaption = '残页集齐 · 神功重现';
+  static const String skillTreasureScrollLabel = '得卷';
+  static const String skillTreasureManualHint = 'Boss 真解入卷，可入藏经阁研习。';
+  static const String skillTreasureFragmentHint = '散页合为一卷，旧招重见全貌。';
+  static const String skillTreasureFallbackGlyph = '卷';
 
   /// 残页轻提示（战后 victory dialog 内小行；Task 11 消费）。
   /// 格式：「得残页 · $skillName($count/$threshold)」
