@@ -2275,34 +2275,40 @@ class UiStrings {
   ) => '预计可收 $mojianshi 磨剑石 · $silver 银两 · $experience 经验';
 
   /// 离线收益明细标题
-  static const String offlineRecapBreakdownTitle = '明细';
+  static const String offlineRecapBreakdownTitle = '归来小结';
 
-  /// 离线收益明细分组：结算口径
-  static const String offlineRecapSettlementGroupTitle = '结算说明';
+  /// 离线收益明细分组：时间与结算口径
+  static const String offlineRecapSettlementGroupTitle = '江湖游历';
 
-  /// 离线收益明细分组：闭关实际收益
-  static const String offlineRecapRetreatGainGroupTitle = '闭关收益';
+  /// 离线收益明细分组：修行成长
+  static const String offlineRecapRetreatGainGroupTitle = '修行沉淀';
 
-  /// 离线收益明细分组：被动离线收益
-  static const String offlineRecapPassiveGainGroupTitle = '离线精进';
+  /// 离线收益明细分组：被动离线成长
+  static const String offlineRecapPassiveGainGroupTitle = '修行沉淀';
+
+  /// 离线收益明细分组：银两与材料类收获
+  static const String offlineRecapMaterialGroupTitle = '装备与材料';
 
   /// 离线收益明细分组：收功时才掷定的内容
-  static const String offlineRecapCollectGroupTitle = '收功揭晓';
+  static const String offlineRecapCollectGroupTitle = '收功时揭晓';
 
   /// 离线收益明细空收益兜底
-  static const String offlineRecapNoGainsDetail = '本次无新增收益';
+  static const String offlineRecapNoGainsDetail = '本次没有新的入账';
+
+  /// 离线收益明细：在线离线同口径说明
+  static const String offlineRecapParityDetail = '在线离线同源结算，不含加速或额外奖励';
 
   /// 离线收益明细：真实离线时长
-  static String offlineRecapAwayDetail(String hours) => '离线时长：$hours';
+  static String offlineRecapAwayDetail(String hours) => '游历时长：$hours';
 
   /// 离线收益明细：有效结算时长
-  static String offlineRecapSettledDetail(String hours) => '有效结算：$hours';
+  static String offlineRecapSettledDetail(String hours) => '计入收益：$hours';
 
   /// 离线收益明细：磨剑石
   static String offlineRecapMojianshiDetail(int value) => '磨剑石：$value';
 
   /// 离线收益明细：材料汇总
-  static String offlineRecapMaterialDetail(String value) => '材料：$value';
+  static String offlineRecapMaterialDetail(String value) => '材料入囊：$value';
 
   /// 离线收益明细：材料子项（磨剑石）
   static String offlineRecapMaterialPartMojianshi(int value) => '磨剑石 $value';
@@ -2312,10 +2318,10 @@ class UiStrings {
       '$name $value';
 
   /// 离线收益明细：银两
-  static String offlineRecapSilverDetail(int value) => '银两：$value';
+  static String offlineRecapSilverDetail(int value) => '银两入账：$value';
 
   /// 离线收益明细：经验
-  static String offlineRecapExperienceDetail(int value) => '经验：$value';
+  static String offlineRecapExperienceDetail(int value) => '阅历沉淀：$value';
 
   /// 离线收益明细：心法 / 招式熟练度
   static String offlineRecapTechniqueSkillDetail(
@@ -2330,7 +2336,7 @@ class UiStrings {
   static String offlineRecapSkillProficiencyDetail(int value) => '招式熟练度：$value';
 
   /// 离线收益明细：掉落
-  static String offlineRecapDropDetail(String value) => '掉落：$value';
+  static String offlineRecapDropDetail(String value) => '装备/掉落：$value';
 
   /// 离线收益明细分隔符
   static const String offlineRecapDetailSeparator = ' · ';
