@@ -497,8 +497,22 @@ class UiStrings {
   static const String panelTechnique = '心法';
   static const String profileRealmLabel = '境界';
   static const String profileLevelLabel = '等级'; // 第八阶段·角色等级 Lv
+  static const String profileLevelPeak = '巅峰';
+  static String profileLevelValue(int level) => 'Lv $level';
+  static String profileLevelProgress(int current, int next) =>
+      '$current / $next';
   static const String levelUpCeremonyTitle = '修为精进'; // 第八阶段 D·Lv 升级 banner 标题
   static const String profilePortraitPlaque = '人物签';
+  static const String characterBiographyTitle = '门人小传';
+  static String characterBiographyRole(String role) => '身份 $role';
+  static String characterBiographySchool(String school) => '路数 $school';
+  static const String characterBiographySchoolUnset = '路数未定';
+  static String characterBiographyEquipment(int equipped, int total) =>
+      '装备 $equipped/$total';
+  static String characterBiographyTechnique(int learned, int total) =>
+      '心法 $learned/$total';
+  static const String characterBiographyConditionHealthy = '状态安稳';
+  static const String characterBiographyConditionInjured = '有伤待养';
   static const String lineageRoleFounder = '开派祖师';
   static const String lineageRoleDisciple = '门下弟子';
   static const String lineageRoleSenior = '大弟子';
