@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/wuxia_tokens.dart';
 import 'asset_fallback.dart';
+import 'wuxia_image.dart';
 
 /// 装备图渲染在宣纸面板上(G2.2 抠白底)。
 ///
@@ -37,7 +38,9 @@ class EquipmentArtImage extends StatelessWidget {
         ),
         child: Padding(
           padding: padding,
-          child: Image.asset(
+          // 经 WuxiaImage 按渲染尺寸限制解码(网格小图标降数十倍解码量,
+          // 详情大图自动取更大 cacheWidth 保清晰)。见 wuxia_image.dart。
+          child: WuxiaImage(
             imagePath,
             fit: fit,
             errorBuilder: wuxiaAssetErrorBuilder(() => fallback),

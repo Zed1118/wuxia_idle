@@ -11,6 +11,7 @@ import '../../../shared/audio/sound_manager.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../battle/domain/battle_stats.dart';
 import '../../battle/domain/enum_localizations.dart';
@@ -96,7 +97,7 @@ Future<void> showStageVictoryDialog({
                   SizedBox(
                     width: 30,
                     height: 30,
-                    child: Image.asset(
+                    child: WuxiaImage(
                       WuxiaUi.sealRed,
                       fit: BoxFit.contain,
                       errorBuilder: (_, _, _) => const SizedBox.shrink(),
@@ -458,7 +459,7 @@ class FirstClearBanner extends StatelessWidget {
           const SizedBox(width: 10),
           Transform.rotate(
             angle: 0.07,
-            child: Image.asset(
+            child: WuxiaImage(
               WuxiaUi.ceremonyRedSeal,
               width: 42,
               height: 42,

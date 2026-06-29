@@ -8,6 +8,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import 'avatar_status_tags.dart';
 import 'hp_bar.dart';
 import '../../../shared/widgets/asset_fallback.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 
 /// 战斗角色头像（phase1_tasks.md T14 §784;M4 Stage 3 2026-05-21 美术接入)。
 ///
@@ -57,7 +58,7 @@ class CharacterAvatar extends StatelessWidget {
               color: WuxiaColors.avatarFill,
             ),
             child: ClipOval(
-              child: Image.asset(
+              child: WuxiaImage(
                 character.iconPath!,
                 width: avatarSize,
                 height: avatarSize,
@@ -192,7 +193,7 @@ class _BossAvatarFrame extends StatelessWidget {
             width: frameSize,
             height: frameSize,
             child: IgnorePointer(
-              child: Image.asset(
+              child: WuxiaImage(
                 WuxiaUi.bossFrameLarge,
                 fit: BoxFit.contain,
                 errorBuilder: (_, _, _) => const SizedBox.shrink(),

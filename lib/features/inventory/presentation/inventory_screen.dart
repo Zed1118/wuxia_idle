@@ -24,6 +24,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../core/application/character_providers.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/item_slot.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
@@ -826,7 +827,7 @@ class _MaterialGridTile extends ConsumerWidget {
                   // 图标（通用铜钱占位；未来可走 itemDef.iconPath）
                   Padding(
                     padding: const EdgeInsets.all(8),
-                    child: Image.asset(
+                    child: WuxiaImage(
                       'assets/ui/coin_icon.png',
                       fit: BoxFit.contain,
                       errorBuilder: (_, _, _) => const SizedBox.expand(),

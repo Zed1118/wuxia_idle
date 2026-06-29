@@ -4,6 +4,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/presentation/treasure_drop_overlay.dart';
@@ -118,7 +119,7 @@ class _VictorySealFlashState extends State<VictorySealFlash>
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          Image.asset(
+                          WuxiaImage(
                             WuxiaUi.ceremonyRedSeal,
                             fit: BoxFit.contain,
                             errorBuilder: (_, e, s) => DecoratedBox(

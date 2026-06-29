@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/image_test_helpers.dart';
+
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/damage_calculator.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
@@ -156,8 +158,7 @@ void main() {
   Finder assetImage(String path) => find.byWidgetPredicate(
     (w) =>
         w is Image &&
-        w.image is AssetImage &&
-        (w.image as AssetImage).assetName == path,
+        assetNameOf(w.image) == path,
   );
 
   // ── T14 静态布局 ────────────────────────────────────────────────────────

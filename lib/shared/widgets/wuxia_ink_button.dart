@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../audio/sound_manager.dart';
 import '../audio/audio_assets.dart';
 import '../theme/colors.dart';
+import 'wuxia_image.dart';
 import 'wuxia_ui/wuxia_ui.dart';
 
 /// 水墨入口按钮（Phase A 出版美术 · 从 `main_menu` 的 `_MenuButton` 抽出共用）。
@@ -72,7 +73,7 @@ class WuxiaInkButton extends StatelessWidget {
                 Positioned.fill(
                   child: Opacity(
                     opacity: 0.16,
-                    child: Image.asset(
+                    child: WuxiaImage(
                       WuxiaUi.paperBg,
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => const SizedBox.shrink(),
@@ -223,7 +224,7 @@ class _InkButtonThumbnail extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(
+        WuxiaImage(
           path,
           fit: BoxFit.cover,
           errorBuilder: (_, _, _) => const SizedBox.shrink(),

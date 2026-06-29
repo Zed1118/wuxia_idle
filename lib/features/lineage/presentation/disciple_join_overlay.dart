@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 /// 第七阶段批三 · 最小拜入立绘题字 overlay。
@@ -139,7 +140,7 @@ class _DiscipleJoinOverlayState extends State<DiscipleJoinOverlay>
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Image.asset(
+                        WuxiaImage(
                           WuxiaUi.ceremonyRedSeal,
                           fit: BoxFit.contain,
                           errorBuilder: (_, _, _) => DecoratedBox(
@@ -204,7 +205,7 @@ class _Portrait extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (portraitPath.isEmpty) return _fallback();
-    return Image.asset(
+    return WuxiaImage(
       portraitPath,
       height: _height,
       fit: BoxFit.contain,
