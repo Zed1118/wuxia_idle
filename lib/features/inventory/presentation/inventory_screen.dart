@@ -12,6 +12,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
+import '../../equipment/domain/equipment_disposal.dart';
 import '../../equipment/domain/equipment_slot_occupancy.dart';
 import '../../inner_demon/application/inner_demon_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
@@ -621,6 +622,11 @@ class _EquipmentGridTile extends ConsumerWidget {
     final def = GameRepository.instance.equipmentDefs[eq.defId];
     final locked = playerRealm != null && !eq.isEquippableAtRealm(playerRealm!);
     final equipped = isEquipmentEquippedBySlot(eq, equippedIds);
+    final protected = isEquipmentProtected(
+      eq,
+      equippedEquipmentIds: equippedIds,
+      activeFormationEquipmentIds: equippedIds,
+    );
     // T11:封条显具体境界原因(§5.3 装备阶↔境界 1:1,需同序境界),非泛化「未达境界」。
     final requiredRealmName = EnumL10n.realmTier(
       RealmTier.values[eq.tier.index],
@@ -636,11 +642,18 @@ class _EquipmentGridTile extends ConsumerWidget {
       lockText: UiStrings.inventoryRealmLockBanner(requiredRealmName),
       highTier:
           eq.tier == EquipmentTier.baoWu || eq.tier == EquipmentTier.shenWu,
+      tierLabel: EnumL10n.equipmentTier(eq.tier),
       leadingBadgeIcon: eq.isLineageHeritage ? Icons.auto_awesome : null,
       leadingBadgeColor: WuxiaColors.bossFrame,
+      leadingBadgeTooltip: UiStrings.inventoryLineageSealLabel,
       trailingBadgeIcon: eq.isLocked ? Icons.lock_outline : null,
       trailingBadgeColor: WuxiaColors.bossFrame,
+      trailingBadgeTooltip: UiStrings.inventoryLockedSealLabel,
+      protected: protected,
+      protectedText: UiStrings.inventoryProtectedSealText,
+      protectedTooltip: UiStrings.inventoryProtectedSealLabel,
       statusText: equipped ? UiStrings.equippedBadge : null,
+      selected: equipped,
       onTap: () async {
         await _openEquipment(context, ref, def, eq);
       },
