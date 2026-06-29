@@ -421,7 +421,8 @@ class IsarSetup {
     final name = 'wuxia_save_slot$n';
     if (!await File('${dir.path}/$name.isar').exists()) return false;
     final already = Isar.getInstance(name);
-    final isar = already ??
+    final isar =
+        already ??
         await Isar.open(
           _allSchemas,
           directory: dir.path,
@@ -447,7 +448,8 @@ class IsarSetup {
         continue;
       }
       final already = Isar.getInstance(name);
-      final isar = already ??
+      final isar =
+          already ??
           await Isar.open(
             _allSchemas,
             directory: dir.path,
@@ -460,26 +462,82 @@ class IsarSetup {
         if (already == null) await isar.close();
       }
     }
-    return out;
+    DateTime? mostRecent;
+    for (final s in out) {
+      if (s.isEmpty || s.lastPlayed == null) continue;
+      if (mostRecent == null || s.lastPlayed!.isAfter(mostRecent)) {
+        mostRecent = s.lastPlayed;
+      }
+    }
+    if (mostRecent == null) return out;
+    return [
+      for (final s in out)
+        s.copyWith(isMostRecent: !s.isEmpty && s.lastPlayed == mostRecent),
+    ];
   }
 
   static Future<SlotSummary> _readSummary(Isar isar, int n) async {
     final save = await isar.saveDatas.get(0);
     final founderId = save?.founderCharacterId;
-    final founder =
-        founderId == null ? null : await isar.characters.get(founderId);
+    final founder = founderId == null
+        ? null
+        : await isar.characters.get(founderId);
     if (founder == null) return SlotSummary.empty(n);
-    final mp =
-        await isar.mainlineProgress.filter().saveDataIdEqualTo(n).findFirst();
+    final mp = await isar.mainlineProgress
+        .filter()
+        .saveDataIdEqualTo(n)
+        .findFirst();
+    final tp = await isar.towerProgress
+        .filter()
+        .saveDataIdEqualTo(n)
+        .findFirst();
     return SlotSummary(
       slotId: n,
       isEmpty: false,
+      slotName: save?.slotName?.trim().isEmpty == true
+          ? null
+          : save?.slotName?.trim(),
       founderName: founder.name,
       realmDisplay: EnumL10n.realm(founder.realmTier, founder.realmLayer),
       chapterIndex: mp?.currentChapterIndex ?? 1,
       clearedStageCount: mp?.clearedStageIds.length ?? 0,
+      highestTowerFloor:
+          tp?.highestClearedFloor ?? save?.highestTowerLayer ?? 0,
       lastPlayed: save?.lastOnlineAt,
     );
+  }
+
+  /// 重命名存档槽。复用 SaveData.slotName 既有字段,空白视为清除自定义名。
+  static Future<void> renameSlot(
+    int n,
+    String rawName, {
+    Directory? directory,
+  }) async {
+    assert(n >= 1 && n <= 3, 'slotId 必须是 1/2/3');
+    final dir = await _resolveDir(directory);
+    final name = 'wuxia_save_slot$n';
+    if (!await File('${dir.path}/$name.isar').exists()) return;
+    final already = Isar.getInstance(name);
+    final isar =
+        already ??
+        await Isar.open(
+          _allSchemas,
+          directory: dir.path,
+          name: name,
+          inspector: false,
+        );
+    try {
+      final save = await isar.saveDatas.get(0);
+      if (save == null) return;
+      final trimmed = rawName.trim();
+      await isar.writeTxn(() async {
+        save.slotName = trimmed.isEmpty ? null : trimmed;
+        save.lastSavedAt = DateTime.now();
+        await isar.saveDatas.put(save);
+      });
+    } finally {
+      if (already == null) await isar.close();
+    }
   }
 
   /// 删除指定槽 db(若为当前槽先 close → 实例置空)+ 删 .isar/.isar.lock 文件。
