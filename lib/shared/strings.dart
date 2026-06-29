@@ -1232,6 +1232,8 @@ class UiStrings {
   static String mainMenuSeclusionActiveStatus(String mapName) =>
       '闭关中 · $mapName';
   static String mainMenuSeclusionDoneStatus(String mapName) => '可收功 · $mapName';
+  static String mainMenuSeclusionCappedStatus(String mapName) =>
+      '收益已满 · $mapName';
 
   // ─── 心魔境（1.0 P2.2 §12.1,Batch 2.5.B 入口）─────────────────────────────
   static const String mainMenuInnerDemon = '心魔境';
@@ -1991,6 +1993,10 @@ class UiStrings {
   static String mainMenuRetreatBannerLine(String mapName, String remaining) =>
       '闭关中 · $mapName · 剩 $remaining';
 
+  /// 主菜单闭关横幅行:收益封顶后直接提示可收功
+  static String mainMenuRetreatBannerCappedLine(String mapName) =>
+      '收益已满 · $mapName · 点此收功';
+
   /// 剩余时长格式:有小时显「N 时 M 分」,否则「M 分」
   static String retreatRemainingText(int hours, int minutes) =>
       hours > 0 ? '$hours 时 $minutes 分' : '$minutes 分';
@@ -2013,6 +2019,9 @@ class UiStrings {
 
   /// 闭关已挂满状态行
   static String offlineRecapMapComplete(String mapName) => '「$mapName」闭关已圆满';
+
+  /// 闭关已达系统收益封顶状态行
+  static String offlineRecapMapCapped(String mapName) => '「$mapName」闭关收益已满';
 
   /// 闭关进行中状态行（带进度百分比）
   static String offlineRecapMapProgress(String mapName, int pct) =>
@@ -2104,6 +2113,9 @@ class UiStrings {
 
   /// 离线收益截断：达到系统封顶
   static const String offlineRecapLimitSystemCap = '已达离线收益封顶';
+
+  /// 已达封顶后的收功按钮
+  static const String offlineRecapCollectCapped = '一键收功';
 
   /// 前去收功按钮
   static const String offlineRecapGoCollect = '前去收功';
