@@ -7,6 +7,7 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../ascension/application/ascend_service_providers.dart';
 import '../../ascension/presentation/ascension_screen.dart';
 import '../application/lineage_codex_provider.dart';
@@ -41,11 +42,9 @@ class LineagePanelScreen extends ConsumerWidget {
         body: SafeArea(
           child: async.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(
-              child: SelectableText(
-                'load error: $e',
-                style: const TextStyle(color: WuxiaColors.hpLow),
-              ),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () => ref.invalidate(lineageCodexProvider),
             ),
             data: (gens) => _Body(generations: gens),
           ),
@@ -242,9 +241,9 @@ class _AscensionSection extends ConsumerWidget {
                 ),
               ),
             ),
-            error: (e, _) => Text(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow, fontSize: 12),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () => ref.invalidate(ascensionEligibilityProvider),
             ),
             data: (e) => Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,

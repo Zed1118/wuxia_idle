@@ -73,11 +73,9 @@ class _CharacterPanelScreenState extends ConsumerState<CharacterPanelScreen> {
       body: SafeArea(
         child: idsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(
-            child: SelectableText(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow),
-            ),
+          error: (e, _) => ErrorFallback(
+            error: e,
+            onRetry: () => ref.invalidate(activeCharacterIdsProvider),
           ),
           data: (ids) => _PanelWithTabs(
             ids: ids.isEmpty ? [widget.characterId] : ids,
@@ -114,11 +112,9 @@ class _PanelWithTabs extends ConsumerWidget {
         Expanded(
           child: async.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(
-              child: SelectableText(
-                'load error: $e',
-                style: const TextStyle(color: WuxiaColors.hpLow),
-              ),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () => ref.invalidate(characterByIdProvider(effectiveId)),
             ),
             data: (c) => c == null
                 ? const Center(

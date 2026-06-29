@@ -70,11 +70,9 @@ class _CangJingGeScreenState extends ConsumerState<CangJingGeScreen> {
       body: SafeArea(
         child: idsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(
-            child: SelectableText(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow),
-            ),
+          error: (e, _) => ErrorFallback(
+            error: e,
+            onRetry: () => ref.invalidate(activeCharacterIdsProvider),
           ),
           data: (ids) {
             final list = ids.isEmpty ? [widget.characterId] : ids;
@@ -103,11 +101,9 @@ class _CangJingGeScreenState extends ConsumerState<CangJingGeScreen> {
     final async = ref.watch(characterByIdProvider(characterId));
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
-        child: SelectableText(
-          'load error: $e',
-          style: const TextStyle(color: WuxiaColors.hpLow),
-        ),
+      error: (e, _) => ErrorFallback(
+        error: e,
+        onRetry: () => ref.invalidate(characterByIdProvider(characterId)),
       ),
       data: (c) {
         if (c == null) {
@@ -559,9 +555,10 @@ class _LibrarySection extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 16),
               child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
             ),
-            error: (e, _) => Text(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow, fontSize: 12),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () =>
+                  ref.invalidate(characterAllTechniquesProvider(character.id)),
             ),
             data: (techs) => _buildGroups(
               context,
@@ -839,9 +836,9 @@ class _FragmentSection extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 12),
               child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
             ),
-            error: (e, _) => Text(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow, fontSize: 12),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () => ref.invalidate(_fragmentEntriesProvider),
             ),
             data: (entries) {
               if (entries.isEmpty) {

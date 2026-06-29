@@ -42,9 +42,9 @@ class EncounterSkillSection extends ConsumerWidget {
               height: 60,
               child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
             ),
-            error: (e, _) => Text(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow, fontSize: 12),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () => ref.invalidate(unlockedSkillIdSetProvider),
             ),
             data: (unlockedSet) => _Content(
               character: character,

@@ -11,6 +11,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
@@ -49,11 +50,9 @@ class _WeaponCodexScreenState extends ConsumerState<WeaponCodexScreen> {
       body: SafeArea(
         child: entriesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(
-            child: SelectableText(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow),
-            ),
+          error: (e, _) => ErrorFallback(
+            error: e,
+            onRetry: () => ref.invalidate(equipmentCatalogListProvider),
           ),
           data: (entries) => _buildBody(context, entries),
         ),

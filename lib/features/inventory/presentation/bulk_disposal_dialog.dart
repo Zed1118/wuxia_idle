@@ -16,6 +16,7 @@ import '../application/inventory_organization.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
@@ -67,12 +68,9 @@ class BulkDisposalDialog extends ConsumerWidget {
                         child: CircularProgressIndicator(),
                       ),
                     ),
-                    error: (e, _) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Text(
-                        'load error: $e',
-                        style: const TextStyle(color: WuxiaColors.hpLow),
-                      ),
+                    error: (e, _) => ErrorFallback(
+                      error: e,
+                      onRetry: () => ref.invalidate(allEquipmentsProvider),
                     ),
                     data: (list) => _buildContent(context, ref, list),
                   ),
