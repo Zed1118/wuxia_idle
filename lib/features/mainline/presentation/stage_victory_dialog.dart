@@ -52,29 +52,90 @@ Future<void> showStageVictoryDialog({
   await showDialog<void>(
     context: context,
     barrierDismissible: false,
-    builder: (ctx) => AlertDialog(
-      title: Text('${stage.name} · ${UiStrings.stageVictoryTitle}'),
-      content: StageVictoryContent(
-        drops: drops,
-        advancements: advancements,
-        resonanceUpgrades: resonanceUpgrades,
-        firstClearTitle: firstClearTitle,
-        firstClearSubtitle: firstClearSubtitle,
-        stats: stats,
-        injurySummaryCharacters: injurySummaryCharacters,
-        equipmentHintCharacters: equipmentHintCharacters,
-        skillFragmentLine: skillFragmentLine,
-        onEquipmentLockToggle: onEquipmentLockToggle,
-      ),
-      actions: [
-        TextButton(
-          style: TextButton.styleFrom(
-            foregroundColor: WuxiaColors.resultHighlight,
+    builder: (ctx) => Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 620),
+        child: PaperPanel(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+          paperOpacity: 0.22,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${stage.name} · ${UiStrings.stageVictoryTitle}',
+                          style: const TextStyle(
+                            color: WuxiaUi.ink,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 3,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        const Text(
+                          UiStrings.stageVictoryReportTitle,
+                          style: TextStyle(
+                            color: WuxiaUi.muted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: Image.asset(
+                      WuxiaUi.sealRed,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              DefaultTextStyle.merge(
+                style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
+                child: StageVictoryContent(
+                  drops: drops,
+                  advancements: advancements,
+                  resonanceUpgrades: resonanceUpgrades,
+                  firstClearTitle: firstClearTitle,
+                  firstClearSubtitle: firstClearSubtitle,
+                  stats: stats,
+                  injurySummaryCharacters: injurySummaryCharacters,
+                  equipmentHintCharacters: equipmentHintCharacters,
+                  skillFragmentLine: skillFragmentLine,
+                  onEquipmentLockToggle: onEquipmentLockToggle,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: WuxiaUi.jiang,
+                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text(UiStrings.stageVictoryConfirm),
+                ),
+              ),
+            ],
           ),
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text(UiStrings.stageVictoryConfirm),
         ),
-      ],
+      ),
     ),
   );
 }
@@ -111,89 +172,207 @@ class StageVictoryContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (firstClearTitle != null) ...[
-          FirstClearBanner(
-            title: firstClearTitle!,
-            subtitle:
-                firstClearSubtitle ?? UiStrings.firstClearCeremonySubtitle,
+    final didAdvance = advancements.any((e) => e.result.didAdvance);
+    final didLevelUp = advancements.any((e) => e.levelUp?.didLevelUp ?? false);
+    final materialItems = drops.items
+        .where(
+          (item) => ItemType.fromDefId(item.defId) != ItemType.techniqueScroll,
+        )
+        .toList(growable: false);
+    final manualItems = drops.items
+        .where(
+          (item) => ItemType.fromDefId(item.defId) == ItemType.techniqueScroll,
+        )
+        .toList(growable: false);
+    final hasTechniqueSection =
+        manualItems.isNotEmpty || skillFragmentLine != null;
+    final hasDropSection = materialItems.isNotEmpty || drops.isEmpty;
+    final hasEquipmentSection =
+        resonanceUpgrades.isNotEmpty || drops.equipments.isNotEmpty;
+    final viewportHeight = MediaQuery.sizeOf(context).height;
+    final maxHeight = (viewportHeight * 0.66).clamp(320.0, 620.0).toDouble();
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 560, maxHeight: maxHeight),
+      child: Scrollbar(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(right: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (firstClearTitle != null) ...[
+                FirstClearBanner(
+                  title: firstClearTitle!,
+                  subtitle:
+                      firstClearSubtitle ??
+                      UiStrings.firstClearCeremonySubtitle,
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (didAdvance || didLevelUp)
+                _VictoryReportSection(
+                  title: UiStrings.stageVictoryExperienceSection,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (didAdvance) AdvancementSummary(entries: advancements),
+                      if (didAdvance && didLevelUp) const SizedBox(height: 10),
+                      // 第八阶段 D·角色等级 Lv 升级反馈(与境界突破并列独立一格)。
+                      if (didLevelUp) LevelUpSummary(entries: advancements),
+                    ],
+                  ),
+                ),
+              if (hasEquipmentSection)
+                _VictoryReportSection(
+                  title: UiStrings.stageVictoryEquipmentSection,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (resonanceUpgrades.isNotEmpty)
+                        ResonanceUpgradeBanner(notices: resonanceUpgrades),
+                      if (resonanceUpgrades.isNotEmpty &&
+                          drops.equipments.isNotEmpty)
+                        const SizedBox(height: 10),
+                      if (drops.equipments.isNotEmpty)
+                        for (final eq in drops.equipments)
+                          _EquipmentDropRow(
+                            equipment: eq,
+                            hintCharacters: equipmentHintCharacters,
+                            onLockToggle: onEquipmentLockToggle,
+                          ),
+                    ],
+                  ),
+                ),
+              if (hasDropSection)
+                _VictoryReportSection(
+                  title: UiStrings.stageVictoryDropLabel,
+                  child: drops.isEmpty
+                      ? const _VictoryMutedLine(UiStrings.stageVictoryNoDrop)
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (final item in materialItems)
+                              _VictoryItemRow(item: item),
+                          ],
+                        ),
+                ),
+              if (hasTechniqueSection)
+                _VictoryReportSection(
+                  title: UiStrings.stageVictoryManualSection,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final item in manualItems)
+                        _VictoryItemRow(item: item),
+                      // 第七阶段批二④:残页轻提示行(掉残页未集齐 → 卷宗单列)。
+                      // skillFragmentLine 自带「得残页 · …」前缀,不再加列表点。
+                      if (skillFragmentLine != null)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 4),
+                          child: Text(
+                            skillFragmentLine!,
+                            style: const TextStyle(
+                              color: WuxiaUi.gold,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              if (stats != null)
+                _VictoryReportSection(
+                  title: UiStrings.stageVictoryBattleSection,
+                  child: Text(
+                    UiStrings.battleSummary(
+                      stats!.totalDamage,
+                      stats!.critCount,
+                      stats!.totalTicks,
+                    ),
+                    style: const TextStyle(
+                      color: WuxiaUi.ink2,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              if (injurySummaryCharacters.isNotEmpty)
+                _VictoryReportSection(
+                  title: UiStrings.stageVictoryInjurySection,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _InjurySummaryLines(characters: injurySummaryCharacters),
+                      const PostBattleHealingPanel(),
+                    ],
+                  ),
+                )
+              else
+                const PostBattleHealingPanel(),
+            ],
           ),
-          const SizedBox(height: 12),
-        ],
-        const Text(UiStrings.stageVictoryDropLabel),
-        const SizedBox(height: 4),
-        if (drops.isEmpty)
-          const Padding(
-            padding: EdgeInsets.only(left: 8),
-            child: Text(
-              UiStrings.stageVictoryNoDrop,
-              style: TextStyle(color: WuxiaColors.textMuted),
-            ),
-          )
-        else ...[
-          // H1 批3:装备掉落按品阶上色 + 勋章图标,神物/寻常货一眼可辨(§10
-          // 仪式感),消除「磨剑石与神物视觉同」的零反馈。道具仍走朴素列。
-          for (final eq in drops.equipments)
-            _EquipmentDropRow(
-              equipment: eq,
-              hintCharacters: equipmentHintCharacters,
-              onLockToggle: onEquipmentLockToggle,
-            ),
-          for (final item in drops.items)
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Text(
-                '· ${EnumL10n.itemType(ItemType.fromDefId(item.defId))} '
-                '×${item.quantity}',
-              ),
-            ),
-        ],
-        // 第七阶段批二④:残页轻提示行(掉残页未集齐 → drop 段末追一行)。
-        // skillFragmentLine 自带「得残页 · …」前缀,不再加列表点。
-        if (skillFragmentLine != null)
-          Padding(
-            padding: const EdgeInsets.only(left: 8, top: 4),
-            child: Text(
-              skillFragmentLine!,
-              style: const TextStyle(color: WuxiaColors.resultHighlight),
-            ),
-          ),
-        if (advancements.any((e) => e.result.didAdvance)) ...[
-          const SizedBox(height: 12),
-          AdvancementSummary(entries: advancements),
-        ],
-        // 第八阶段 D·角色等级 Lv 升级反馈(与境界突破并列独立一格)。
-        if (advancements.any((e) => e.levelUp?.didLevelUp ?? false)) ...[
-          const SizedBox(height: 12),
-          LevelUpSummary(entries: advancements),
-        ],
-        if (resonanceUpgrades.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          ResonanceUpgradeBanner(notices: resonanceUpgrades),
-        ],
-        if (stats != null) ...[
-          const SizedBox(height: 12),
-          Text(
-            UiStrings.battleSummary(
-              stats!.totalDamage,
-              stats!.critCount,
-              stats!.totalTicks,
-            ),
-            style: const TextStyle(
-              color: WuxiaColors.textSecondary,
-              fontSize: 13,
-            ),
-          ),
-        ],
-        if (injurySummaryCharacters.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          _InjurySummaryLines(characters: injurySummaryCharacters),
-        ],
-        const PostBattleHealingPanel(),
-      ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VictoryReportSection extends StatelessWidget {
+  const _VictoryReportSection({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [SectionHeader(title), child],
+      ),
+    );
+  }
+}
+
+class _VictoryMutedLine extends StatelessWidget {
+  const _VictoryMutedLine(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: Text(
+        text,
+        style: const TextStyle(color: WuxiaUi.muted, fontSize: 13),
+      ),
+    );
+  }
+}
+
+class _VictoryItemRow extends StatelessWidget {
+  const _VictoryItemRow({required this.item});
+
+  final ItemDropResult item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8, bottom: 4),
+      child: Text(
+        '· ${EnumL10n.itemType(ItemType.fromDefId(item.defId))} '
+        '×${item.quantity}',
+        style: const TextStyle(color: WuxiaUi.ink2, fontSize: 13),
+      ),
     );
   }
 }

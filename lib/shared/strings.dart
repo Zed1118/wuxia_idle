@@ -1273,6 +1273,12 @@ class UiStrings {
   static const String stageVictoryConfirm = '继续';
   static const String stageVictoryDropLabel = '掉落：';
   static const String stageVictoryNoDrop = '本战无固定掉落';
+  static const String stageVictoryReportTitle = '战后卷宗';
+  static const String stageVictoryExperienceSection = '经验 / 修为';
+  static const String stageVictoryEquipmentSection = '装备';
+  static const String stageVictoryManualSection = '秘籍 / 残页';
+  static const String stageVictoryBattleSection = '战况';
+  static const String stageVictoryInjurySection = '伤势 / 疗伤';
 
   // === 主线三 · 掉落传闻 UI ===
   static const String lootBucketChangKeDe = '常可得';
