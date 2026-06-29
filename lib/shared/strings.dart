@@ -248,6 +248,29 @@ class UiStrings {
   static String mainMenuTodayFestival(String festivalName) =>
       '今日：$festivalName';
 
+  // 主菜单状态摘要二期（只读派生，不改变结算 / 门槛 / 收益）。
+  static const String mainMenuStatusSummaryTitle = '当前要事';
+  static const String mainMenuStatusRetreatTitle = '闭关中';
+  static const String mainMenuStatusIslandTitle = '桃花岛可收';
+  static const String mainMenuStatusInjuryTitle = '伤势待处理';
+  static const String mainMenuStatusBreakthroughTitle = '修为已满';
+  static const String mainMenuStatusMainlineTitle = '主线目标';
+  static const String mainMenuStatusMainlineCompleteDetail = '江湖主线已收束';
+  static String mainMenuStatusRetreatDetail(String mapName, String remaining) =>
+      '$mapName · $remaining';
+  static String mainMenuStatusRetreatCappedDetail(String mapName) =>
+      '$mapName · 收益已满';
+  static String mainMenuStatusIslandDetail(int count) => '约$count 件产物待收';
+  static String mainMenuStatusInjuryDetail(int count, double maxHours) {
+    if (maxHours <= 0) return '$count 名角色需调息';
+    return '$count 名角色需疗养 · 最长 ${maxHours.toStringAsFixed(1)} 小时';
+  }
+
+  static String mainMenuStatusBreakthroughDetail(String name) =>
+      '$name 经验已满，查看瓶颈';
+  static String mainMenuStatusMainlineDetail(int chapterIndex, String stage) =>
+      '前往第$chapterIndex章 · $stage';
+
   static const String mainMenuPhase1 = 'Phase 1 战斗测试';
   static const String mainMenuPhase1Hint =
       '4 个 3v3 战斗场景（基础对决 / 流派克制 / 装备影响 / 境界差距）';

@@ -64,6 +64,7 @@ import '../../mainline/application/mainline_providers.dart';
 import '../../shop/application/shop_providers.dart';
 import '../../shop/presentation/shop_screen.dart';
 import '../../zangjuange/presentation/zangjuange_screen.dart';
+import 'main_menu_status_summary.dart';
 
 /// 入口列表布局成 2 列(Phase A 出版美术 · 解菜单纵向过长)。
 /// 奇数末项左对齐 + 右侧空格;同行用 IntrinsicHeight+stretch 等高。
@@ -523,6 +524,7 @@ class MainMenu extends ConsumerWidget {
                                 : null,
                           ),
                         const MainMenuRetreatBanner(),
+                        const MainMenuStatusSummaryPanel(),
                         const SizedBox(height: 24),
                         _MenuSectionsLayout(
                           coreItems: coreItems,
