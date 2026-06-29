@@ -6,6 +6,7 @@ import '../../../shared/app_exit.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../save_slot/presentation/save_select_screen.dart';
 import '../../save_management/application/save_management_providers.dart';
 import '../../save_management/application/save_management_service.dart';
@@ -28,9 +29,9 @@ class SettingsPanel extends ConsumerWidget {
       body: const SizedBox(width: 360, child: SettingsPanel()),
       actions: [
         Builder(
-          builder: (ctx) => TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(UiStrings.settingsClose),
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.settingsClose,
+            onTap: () => Navigator.of(ctx).pop(),
           ),
         ),
       ],
@@ -145,35 +146,28 @@ class _SettingsSectionHeader extends StatelessWidget {
 /// 游戏内切换存档(spec B §3.6):确认 → flush 当前槽 → 清栈回存档选择屏重选。
 /// 实际切档(flush→close→open)由 [SaveSelectScreen] 选中后 [IsarSetup.switchSlot] 完成。
 Future<void> _switchSlotFlow(BuildContext context) async {
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (c) => AlertDialog(
-      backgroundColor: WuxiaColors.panel,
-      title: const Text(
-        UiStrings.slotSwitch,
-        style: TextStyle(color: WuxiaColors.resultHighlight),
-      ),
-      content: const Text(
-        UiStrings.slotSwitchConfirm,
-        style: TextStyle(color: WuxiaColors.textSecondary),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(c, false),
-          child: const Text(
-            UiStrings.slotCancel,
-            style: TextStyle(color: WuxiaColors.textMuted),
-          ),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(c, true),
-          child: const Text(
-            UiStrings.slotSwitch,
-            style: TextStyle(color: WuxiaColors.resultHighlight),
-          ),
-        ),
-      ],
+  final ok = await PaperDialog.show<bool>(
+    context,
+    title: UiStrings.slotSwitch,
+    body: const Text(
+      UiStrings.slotSwitchConfirm,
+      style: TextStyle(color: WuxiaColors.textSecondary),
     ),
+    actions: [
+      Builder(
+        builder: (ctx) => PlaqueButton(
+          label: UiStrings.slotCancel,
+          onTap: () => Navigator.pop(ctx, false),
+        ),
+      ),
+      Builder(
+        builder: (ctx) => PlaqueButton(
+          label: UiStrings.slotSwitch,
+          primary: true,
+          onTap: () => Navigator.pop(ctx, true),
+        ),
+      ),
+    ],
   );
   if (ok != true) return;
   await IsarSetup.touchOnlineNow(); // flush:落最后在线时间(挂机结算基准)
@@ -240,10 +234,10 @@ class _SaveManagementSection extends ConsumerWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.archive_outlined),
-                  label: const Text(UiStrings.saveManagementCreateBackup),
-                  onPressed: service == null
+                PlaqueButton(
+                  label: UiStrings.saveManagementCreateBackup,
+                  disabled: service == null,
+                  onTap: service == null
                       ? null
                       : () async {
                           final messenger = ScaffoldMessenger.of(context);
@@ -266,15 +260,15 @@ class _SaveManagementSection extends ConsumerWidget {
                           }
                         },
                 ),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.restore_outlined),
-                  label: const Text(UiStrings.saveManagementRestore),
-                  onPressed: null,
+                const PlaqueButton(
+                  label: UiStrings.saveManagementRestore,
+                  onTap: null,
+                  disabled: true,
                 ),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.delete_outline),
-                  label: const Text(UiStrings.saveManagementDeleteLatest),
-                  onPressed: service == null || status.latestBackup == null
+                PlaqueButton(
+                  label: UiStrings.saveManagementDeleteLatest,
+                  disabled: service == null || status.latestBackup == null,
+                  onTap: service == null || status.latestBackup == null
                       ? null
                       : () => _confirmDeleteLatest(
                           context,
@@ -307,24 +301,25 @@ class _SaveManagementSection extends ConsumerWidget {
     SaveManagementService service,
     SaveBackupInfo backup,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text(UiStrings.saveManagementDeleteConfirmTitle),
-        content: Text(
-          UiStrings.saveManagementDeleteConfirmMessage(backup.fileName),
+    final confirmed = await PaperDialog.show<bool>(
+      context,
+      title: UiStrings.saveManagementDeleteConfirmTitle,
+      body: Text(UiStrings.saveManagementDeleteConfirmMessage(backup.fileName)),
+      actions: [
+        Builder(
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.commonCancel,
+            onTap: () => Navigator.of(ctx).pop(false),
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text(UiStrings.commonCancel),
+        Builder(
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.saveManagementDeleteConfirmAction,
+            primary: true,
+            onTap: () => Navigator.of(ctx).pop(true),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(UiStrings.saveManagementDeleteConfirmAction),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
     if (confirmed != true || !context.mounted) return;
 
@@ -521,13 +516,22 @@ class _VolumeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SizedBox(width: 72, child: Text(label)),
-        Expanded(
-          child: Slider(value: value, onChanged: enabled ? onChanged : null),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            SizedBox(width: 72, child: Text(label)),
+            Expanded(
+              child: Slider(
+                value: value,
+                onChanged: enabled ? onChanged : null,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
