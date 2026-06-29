@@ -612,7 +612,8 @@ class _ShopItemTile extends StatelessWidget {
                 Text(
                   entry.displayName,
                   style: const TextStyle(
-                    color: WuxiaColors.textPrimary,
+                    // 浅宣纸底用墨色 WuxiaUi.ink；white 叠浅底几乎不可见。
+                    color: WuxiaUi.ink,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1,
@@ -720,7 +721,8 @@ class _ShopNeedHintLines extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                color: WuxiaColors.textMuted,
+                // 浅宣纸底用墨色柔灰 WuxiaUi.muted；WuxiaColors.textMuted 是深色 UI 专用浅灰会糊。
+                color: WuxiaUi.muted,
                 fontSize: 11,
                 height: 1.2,
                 letterSpacing: 0.4,
