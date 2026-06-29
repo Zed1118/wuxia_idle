@@ -1474,8 +1474,12 @@ class UiStrings {
 
   // 设置面板
   static const String mainMenuSettings = '设置';
-  static const String mainMenuSettingsHint = '音量 · 静音';
+  static const String mainMenuSettingsHint = '音量 · 显示 · 舒适性';
   static const String settingsTitle = '设置';
+  static const String settingsAudioSection = '音频';
+  static const String settingsComfortSection = '战斗舒适性';
+  static const String settingsDisplaySection = '窗口与显示';
+  static const String settingsSaveSection = '存档与系统';
   static const String settingsMasterVolume = '总音量';
   static const String settingsBgmVolume = '背景音乐';
   static const String settingsSfxVolume = '音效';
@@ -1497,6 +1501,19 @@ class UiStrings {
   // 战斗交互重做 Phase 3:全局战斗模式默认开关(自动连续播放 / 允许拖招干预)。
   static const String settingsAutoPlayDefault = '自动战斗';
   static const String settingsAutoPlayDefaultHint = '战斗自动连续播放(可逐关切「允许拖招」干预)';
+  static const String settingsBattleSpeed = '战斗速度';
+  static const String settingsBattleSpeedHint = '只调整播放节拍,不影响胜负和收益';
+  static const String settingsBattleSpeedRelaxed = '舒缓';
+  static const String settingsBattleSpeedNormal = '标准';
+  static const String settingsBattleSpeedBrisk = '利落';
+  static const String settingsBattleSpeedRapid = '快速';
+  static const String settingsTextDensity = '文字密度';
+  static const String settingsTextDensityHint = '影响支持该偏好的信息面板排布';
+  static const String settingsTextDensityComfortable = '舒展';
+  static const String settingsTextDensityStandard = '标准';
+  static const String settingsTextDensityCompact = '紧凑';
+  static const String settingsReduceFlashing = '减少闪烁';
+  static const String settingsReduceFlashingHint = '降低战斗中的闪白与受击闪效果';
   // L1 显示设置（2026-06-15）:全屏 + 窗口分辨率预设。
   static const String settingsFullscreen = '全屏';
   static const String settingsFullscreenHint = '快捷键 F11 / Alt+Enter';
