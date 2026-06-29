@@ -115,13 +115,15 @@ void main() {
       await tester.pumpAndSettle();
 
       // 3 preset 卷目全部可见；首段默认展开，其余按需展开。
-      expect(find.text(UiStrings.loreSectionDivider), findsOneWidget);
+      expect(find.text(UiStrings.equipmentLoreSectionDivider), findsOneWidget);
       expect(find.text(UiStrings.lorePresetTitle(1)), findsOneWidget);
       expect(find.text(UiStrings.lorePresetTitle(2)), findsOneWidget);
       expect(find.text(UiStrings.lorePresetTitle(3)), findsOneWidget);
       expect(find.text('preset段0'), findsOneWidget);
       expect(find.text('preset段1'), findsNothing);
       expect(find.text('preset段2'), findsNothing);
+      await tester.ensureVisible(find.text(UiStrings.lorePresetTitle(2)));
+      await tester.pumpAndSettle();
       await tester.tap(find.text(UiStrings.lorePresetTitle(2)));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text(UiStrings.lorePresetTitle(3)));
@@ -226,6 +228,8 @@ void main() {
 
       // 2 preset 段 + 3 延续 chip 全出现
       expect(find.text('preset段A'), findsOneWidget);
+      await tester.ensureVisible(find.text(UiStrings.lorePresetTitle(2)));
+      await tester.pumpAndSettle();
       await tester.tap(find.text(UiStrings.lorePresetTitle(2)));
       await tester.pumpAndSettle();
       expect(find.text('preset段B'), findsOneWidget);
