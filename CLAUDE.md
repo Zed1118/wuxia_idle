@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.26**
+> v1.26 变更摘要(2026-06-29 协作交付门槛 + 合并 Gate 固化 · 0 改代码):3 梯队批量合并验证「Codex 产任务 + Claude 合并审核」工作流有效后,把交付门槛与合并 gate 写入 §8.2 长期规则(Codex 子任务交付标准 4 项 + UI 视口/桌面语义加码 + 外部审查只进 triage + Claude 合并审核 Gate + 批末验证/清理/PROGRESS 四态)。源:2026-06-29 Codex 全量审查(无 P0/P1 阻断 · analyze/3391 test 全过 · 风险=PlaqueButton 桌面语义/ErrorFallback rebuild 日志/超高视口非常规体验/残留 worktree)。
 > **版本:v1.25**
 > v1.25 变更摘要(2026-06-27 可恢复任务协议):① 长任务默认采用「主窗口调度 + 独立 worktree/分支执行」;② 每个子任务必须有 `docs/superpowers/plans/` 计划文件、明确恢复点、小切片 commit;③ 依赖型任务不提前空转,由主窗口在前置分支稳定后唤醒,并统一复核/合并顺序。
 > **版本:v1.24**
@@ -291,6 +293,22 @@ choices:
 ```
 
 同样规则适用于：装备 (`equipment.yaml` ↔ `lore/<equipment_id>.yaml`)、关卡 (`stages.yaml` ↔ `narratives/<stage_id>.yaml`)。
+
+### 8.2 Codex/Claude 协作交付门槛与合并 Gate
+
+> 2026-06-29 v1.26 固化:3 梯队批量合并验证「Codex 产任务 + Claude 合并审核」工作流有效后定为长期 exit criteria。换线程 / 压缩上下文 / 多人并行时按此守,防漂移。Codex 规划任务、Claude 合并审核共同遵守。
+
+**Codex 子任务交付标准**(恢复点/交付说明必带,缺项视作未交付不可合):
+1. **生产接线证据**——接入真实 production path,非停在 fixture/demo/孤立组件;说明入口与消费方在哪。
+2. **targeted test 结果**——至少跑任务直接相关测试,贴命令 + 通过数(不能只 analyze)。
+3. **红线影响说明**——是否触 数值硬红线 / 三系锁死 / 在线=离线 / §5.1 反主流不做项 / 文案数值不硬编码;触及则附守门测试或验证方式。
+4. **残留风险**——未覆盖测试 / 未目检 / 日志噪声 / 性能 / 数据迁移风险列清。
+- **UI/UX 任务加码**:widget test 外必顾常规桌面视口——做 1280×720 / 1440×900 visual smoke,**禁只用超高视口(如 1024×2400)证「内容存在」**(证不了常规窗口体验);改交互组件(按钮/输入等)须验 semantics / 键盘激活 / focus / mouse cursor(`InkWell`→`GestureDetector` 一类改动易丢这些桌面语义)。
+- **外部审查只进 triage**:WorkBuddy 等外部报告**先证伪再修复**,false positive 多、前提常错,**不得直接转任务清单照单执行**。
+
+**Claude 合并审核 Gate**(合每个 Codex 分支前逐项过):核上述 4 证据齐全 + UI 视口/视觉口径 + 外审项已证伪;另查 ⓐ 无中文文案 / 数值常量散写进 Dart ⓑ 无高频路径 debug 日志噪声(如 `build()` 内 `debugPrint` 随 rebuild 刷屏)ⓒ 无误提交(未清 worktree / 未跟踪文件 / capture 目录 / 临时文档 / `.g.dart` / log / 截图,**用户指定保留的 worktree/分支除外**)。
+
+**批次合并后必做**(每梯队/批末):`flutter analyze` 0 issue → 相关 targeted tests → 批末一次全量 `flutter test --no-pub -j1` → UI 密集改动至少一轮常规桌面视口 smoke → 清理或归档已合并 worktree/分支 + capture 文件(**用户指定保留的除外**)→ PROGRESS 顶段更新区分四态:**已完成 / 已验证 / 已知风险 / 下批建议**(避免 N 个分支各自堆叠进度段)。
 
 ## 9. 不要做的事（操作清单）
 
