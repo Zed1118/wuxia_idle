@@ -188,8 +188,10 @@ class IsarSetup {
       // 理论不会：splash 先 loadAllDefs 再 init；防御性 try 包住。
       try {
         await BossMemoryService(isar: isar).backfillFromProgress(currentSlotId);
-      } catch (_) {
-        // GameRepository 未加载或进度异常时静默 skip（不阻塞启动）
+      } catch (e) {
+        // GameRepository 未加载或进度异常时静默 skip（不阻塞启动）；
+        // P0-1(2026-06-29):补 debugPrint 让安全网吞掉的异常至少有日志可溯。
+        debugPrint('IsarSetup: BossMemory 回填 skip(不阻塞启动): $e');
       }
       // 0.27.0 兵器谱：扫当前库存兜底回填图鉴（幂等，新档库存空时 no-op）。
       // 兼任老档当前持有装备的点亮 + 任何漏 hook 路径的安全网。
@@ -197,8 +199,10 @@ class IsarSetup {
         await EquipmentCatalogService(
           isar: isar,
         ).reconcileFromInventory(currentSlotId);
-      } catch (_) {
-        // 库存异常时静默 skip，不阻塞启动
+      } catch (e) {
+        // 库存异常时静默 skip，不阻塞启动；
+        // P0-1(2026-06-29):补 debugPrint 让安全网吞掉的异常至少有日志可溯。
+        debugPrint('IsarSetup: EquipmentCatalog 回填 skip(不阻塞启动): $e');
       }
       // 0.31.0 角色等级 Lv 安全网回填(幂等·每次启动跑):
       // Isar **不应用 Dart 字段默认值**,旧档 Character 无 level 字段读回是 int64
@@ -207,8 +211,10 @@ class IsarSetup {
       // (纯 bump 迁移漏回填 → 升版后迁移不再跑,故需启动期幂等安全网而非仅迁移块)。
       try {
         await repairCharacterLevels(isar);
-      } catch (_) {
-        // 角色异常时静默 skip,不阻塞启动
+      } catch (e) {
+        // 角色异常时静默 skip,不阻塞启动；
+        // P0-1(2026-06-29):补 debugPrint 让安全网吞掉的异常至少有日志可溯。
+        debugPrint('IsarSetup: repairCharacterLevels skip(不阻塞启动): $e');
       }
       return existing;
     }
