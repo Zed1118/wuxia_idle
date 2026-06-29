@@ -50,31 +50,29 @@ void main() {
     required int id,
     int atk = 50,
     EquipmentTier tier = EquipmentTier.xunChang,
-  }) =>
-      Equipment.create(
-        defId: 'weapon_xunchang_tie_jian',
-        tier: tier,
-        slot: EquipmentSlot.weapon,
-        obtainedAt: DateTime(2026),
-        obtainedFrom: 'test',
-        baseAttack: atk,
-        baseHealth: 100,
-        baseSpeed: 10,
-      )..id = id;
+  }) => Equipment.create(
+    defId: 'weapon_xunchang_tie_jian',
+    tier: tier,
+    slot: EquipmentSlot.weapon,
+    obtainedAt: DateTime(2026),
+    obtainedFrom: 'test',
+    baseAttack: atk,
+    baseHealth: 100,
+    baseSpeed: 10,
+  )..id = id;
 
   Future<void> pump(
     WidgetTester tester, {
     required int? currentId,
     required List<Equipment> all,
     RealmTier realmTier = RealmTier.wuSheng,
+    Size surfaceSize = const Size(1280, 720),
   }) async {
-    await tester.binding.setSurfaceSize(const Size(900, 1400));
+    await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          allEquipmentsProvider.overrideWith((ref) async => all),
-        ],
+        overrides: [allEquipmentsProvider.overrideWith((ref) async => all)],
         child: MaterialApp(
           home: Scaffold(
             body: EquipSlotDialog(
@@ -105,6 +103,8 @@ void main() {
     await tester.tap(find.byIcon(Icons.chevron_right).first);
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.equipSlotDialogConfirm), findsOneWidget);
+    expect(find.text(UiStrings.equipmentCompareAttack), findsOneWidget);
+    expect(find.text(UiStrings.equipmentDeltaValue(70)), findsOneWidget);
   });
 
   testWidgets('空槽态:无卸下图标 + 初始占位 + 选后显装备', (tester) async {
@@ -126,11 +126,26 @@ void main() {
       all: [mkWeapon(id: 11, tier: EquipmentTier.xiangYang)],
       realmTier: RealmTier.xueTu,
     );
-    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+    expect(find.byIcon(Icons.lock_outline), findsWidgets);
+    expect(find.text(UiStrings.equipRealmLockedPill), findsOneWidget);
+    expect(find.text(UiStrings.equipRealmLockHint('三流')), findsOneWidget);
     // 点锁定行不应刷出对比(右栏仍占位)
-    await tester.tap(find.byIcon(Icons.lock_outline));
+    await tester.tap(find.byType(ListTile).first);
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.equipSlotDialogPickHint), findsOneWidget);
     expect(find.text(UiStrings.equipSlotDialogEquip), findsNothing);
+  });
+
+  testWidgets('1440x900 桌面视口 smoke:选择候选后无布局异常', (tester) async {
+    await pump(
+      tester,
+      currentId: 10,
+      all: [mkWeapon(id: 10, atk: 80), mkWeapon(id: 11, atk: 160)],
+      surfaceSize: const Size(1440, 900),
+    );
+    await tester.tap(find.byIcon(Icons.chevron_right).first);
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.equipSlotDialogCompareTitle), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

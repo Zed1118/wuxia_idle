@@ -16,6 +16,10 @@ class WuxiaColors {
   static const Color hpHigh = Color(0xFF2E8B57);
   static const Color hpMid = Color(0xFFC9A227);
   static const Color hpLow = Color(0xFFB22222);
+  // 装备/仓库对比状态色：比 HP 红绿更克制，避免 UI 读成强告警。
+  static const Color statIncrease = Color(0xFF79A889);
+  static const Color statDecrease = Color(0xFFC27A70);
+  static const Color statNeutral = Color(0xFF8A93A0);
 
   static const Color internalForce = Color(0xFF4682B4);
 
