@@ -52,7 +52,7 @@ class ChapterListScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
               UiStrings.loadFailed(e),

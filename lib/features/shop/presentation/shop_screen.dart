@@ -20,6 +20,7 @@ import '../../battle/domain/enum_localizations.dart';
 import '../application/shop_need_hint_service.dart';
 import '../application/shop_providers.dart';
 import '../application/shop_service.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 江湖商店主屏（材料经济 P1 Task 8，GDD §5.1）。
 ///
@@ -58,7 +59,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       ),
       body: SafeArea(
         child: silverAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => ErrorFallback(
             error: e,
             onRetry: () => ref.invalidate(silverBalanceProvider),

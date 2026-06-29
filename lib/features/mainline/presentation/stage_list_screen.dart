@@ -28,6 +28,7 @@ import '../application/mainline_providers.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_replay_reward_route.dart';
 import 'stage_entry_flow.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 章节内关卡列表（Phase 3 T35）。
 ///
@@ -54,7 +55,7 @@ class StageListScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
               UiStrings.loadFailed(e),

@@ -69,7 +69,7 @@ class _CangJingGeScreenState extends ConsumerState<CangJingGeScreen> {
       ),
       body: SafeArea(
         child: idsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => ErrorFallback(
             error: e,
             onRetry: () => ref.invalidate(activeCharacterIdsProvider),
@@ -100,7 +100,7 @@ class _CangJingGeScreenState extends ConsumerState<CangJingGeScreen> {
   Widget _bodyFor(int characterId) {
     final async = ref.watch(characterByIdProvider(characterId));
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: InkLoadingIndicator()),
       error: (e, _) => ErrorFallback(
         error: e,
         onRetry: () => ref.invalidate(characterByIdProvider(characterId)),
@@ -553,7 +553,7 @@ class _LibrarySection extends ConsumerWidget {
           techsAsync.when(
             loading: () => const Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              child: Center(child: InkLoadingIndicator()),
             ),
             error: (e, _) => ErrorFallback(
               error: e,
@@ -834,7 +834,7 @@ class _FragmentSection extends ConsumerWidget {
           entriesAsync.when(
             loading: () => const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              child: Center(child: InkLoadingIndicator()),
             ),
             error: (e, _) => ErrorFallback(
               error: e,

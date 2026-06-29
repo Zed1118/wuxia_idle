@@ -9,6 +9,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 奇缘录详情屏(Task 3)。
 ///
@@ -61,8 +62,7 @@ class EncounterDetailScreen extends StatelessWidget {
                           child: SizedBox(
                             width: 28,
                             height: 28,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.4,
+                            child: InkLoadingIndicator(
                               color: WuxiaUi.jiang,
                             ),
                           ),

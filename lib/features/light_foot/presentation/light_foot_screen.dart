@@ -12,6 +12,7 @@ import '../../battle/presentation/cycle_select_control.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../application/light_foot_service.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 轻功试炼 stage list 屏(1.0 P3.1 §12.3,Batch B.3 reactive 三态)。
 ///
@@ -47,7 +48,7 @@ class LightFootScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
               UiStrings.loadFailed(e),

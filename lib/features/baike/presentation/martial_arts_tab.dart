@@ -7,6 +7,7 @@ import '../../../shared/theme/colors.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/martial_codex_provider.dart';
 import 'skill_codex_detail_screen.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 武学收录图鉴 tab(Task6):江湖见闻录第 5 tab「武学」。
 ///
@@ -61,7 +62,7 @@ class _SkillCodexBody extends StatelessWidget {
     final async = ref.watch(martialCodexProvider);
     return async.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: WuxiaColors.resultHighlight),
+        child: InkLoadingIndicator(color: WuxiaColors.resultHighlight),
       ),
       error: (e, _) => const _EmptyHint(text: UiStrings.skillCodexEmpty),
       data: (groups) => _buildBody(context, groups),
@@ -110,7 +111,7 @@ class _TechniqueCodexBody extends ConsumerWidget {
     final async = ref.watch(techniqueCodexProvider(tierFilter: tierFilter));
     return async.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: WuxiaColors.resultHighlight),
+        child: InkLoadingIndicator(color: WuxiaColors.resultHighlight),
       ),
       error: (e, _) => const _EmptyHint(text: UiStrings.techniqueCodexEmpty),
       data: (groups) {

@@ -37,6 +37,7 @@ import '../../help/presentation/context_help_button.dart';
 import '../../shop/application/shop_providers.dart';
 import 'bulk_disposal_dialog.dart';
 import 'equipment_detail_screen.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 Set<int> _watchActiveEquippedIds(WidgetRef ref) {
   final ids = ref.watch(activeCharacterIdsProvider).value ?? const <int>[];
@@ -134,7 +135,7 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
         : ref.watch(characterByIdProvider(ids.first)).value?.realmTier;
     final equippedIds = _watchActiveEquippedIds(ref);
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: InkLoadingIndicator()),
       error: (e, _) => ErrorFallback(
         error: e,
         onRetry: () => ref.invalidate(allEquipmentsProvider),
@@ -461,7 +462,7 @@ class _MaterialTab extends ConsumerWidget {
         ),
         Expanded(
           child: async.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(child: InkLoadingIndicator()),
             error: (e, _) => ErrorFallback(
               error: e,
               onRetry: () => ref.invalidate(allInventoryItemsProvider),

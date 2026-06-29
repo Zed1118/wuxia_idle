@@ -40,7 +40,7 @@ class EncounterSkillSection extends ConsumerWidget {
           unlockedAsync.when(
             loading: () => const SizedBox(
               height: 60,
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              child: Center(child: InkLoadingIndicator()),
             ),
             error: (e, _) => ErrorFallback(
               error: e,
