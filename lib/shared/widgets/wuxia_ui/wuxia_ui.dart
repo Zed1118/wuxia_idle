@@ -14,3 +14,4 @@ export 'wuxia_title_bar.dart';
 export 'plaque_tab.dart';
 export 'paper_dialog.dart';
 export 'ceremony_image_panel.dart';
+export 'wuxia_status_pill.dart';

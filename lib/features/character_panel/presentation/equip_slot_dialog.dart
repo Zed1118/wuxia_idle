@@ -16,6 +16,7 @@ import '../../equipment/presentation/enhance_dialog.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../domain/equipment_stat_diff.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_status_pill.dart';
 
 /// 装备槽统一对话框（2026-06-26 · 一步到位 + 全量对比）。
 ///
@@ -121,8 +122,8 @@ class _EquipSlotDialogState extends ConsumerState<EquipSlotDialog> {
       insetPadding: const EdgeInsets.all(24),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: 640,
-          maxHeight: size.height * 0.75,
+          maxWidth: 760,
+          maxHeight: size.height * 0.82,
         ),
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -321,6 +322,7 @@ class _CandidateList extends StatelessWidget {
         final isCurrent = eq.id == current?.id;
         final isSelected = eq.id == selectedId;
         final name = GameRepository.instance.getEquipment(eq.defId).name;
+        final requiredRealm = RealmTier.values[eq.tier.index];
         // 该件正被队内其他角色穿戴 → 标注(选它会移装,原角色卸下)。不禁用。
         final ownerId = eq.ownerCharacterId;
         final wornByOther =
@@ -349,27 +351,57 @@ class _CandidateList extends StatelessWidget {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text.rich(
-                  TextSpan(
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 5,
+                  children: [
+                    WuxiaStatusPill(
+                      label: EnumL10n.equipmentTier(eq.tier),
+                      tone: canEquip
+                          ? WuxiaStatusTone.neutral
+                          : WuxiaStatusTone.warning,
+                      dense: true,
+                    ),
+                    WuxiaStatusPill(
+                      label: UiStrings.enhanceLevel(eq.enhanceLevel),
+                      tone: WuxiaStatusTone.accent,
+                      dense: true,
+                    ),
+                    if (isCurrent)
+                      const WuxiaStatusPill(
+                        label: UiStrings.currentEquippedBadge,
+                        tone: WuxiaStatusTone.positive,
+                        icon: Icons.check,
+                        dense: true,
+                      ),
+                    if (wornByOther)
+                      const WuxiaStatusPill(
+                        label: UiStrings.equipWornByOther,
+                        tone: WuxiaStatusTone.warning,
+                        dense: true,
+                      ),
+                    if (!canEquip)
+                      const WuxiaStatusPill(
+                        label: UiStrings.equipRealmLockedPill,
+                        tone: WuxiaStatusTone.warning,
+                        icon: Icons.lock_outline,
+                        dense: true,
+                      ),
+                  ],
+                ),
+                if (!canEquip) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    UiStrings.equipRealmLockHint(
+                      EnumL10n.realmTier(requiredRealm),
+                    ),
                     style: const TextStyle(
                       color: WuxiaColors.textMuted,
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
-                    children: [
-                      TextSpan(
-                        text:
-                            '${EnumL10n.equipmentTier(eq.tier)} · '
-                            '${UiStrings.enhanceLevel(eq.enhanceLevel)}'
-                            '${isCurrent ? "  ${UiStrings.currentEquippedBadge}" : ""}',
-                      ),
-                      if (wornByOther)
-                        const TextSpan(
-                          text: '  · ${UiStrings.equipWornByOther}',
-                          style: TextStyle(color: WuxiaColors.gangMeng),
-                        ),
-                    ],
                   ),
-                ),
+                ],
                 if (!cmp.isBaseline) _MiniDiff(cmp: cmp),
               ],
             ),
@@ -400,22 +432,27 @@ class _MiniDiff extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spans = <InlineSpan>[];
-    for (final r in cmp.numericRows.where((r) => r.label.startsWith('实战'))) {
+    final labels = [
+      UiStrings.equipmentStatAttackShort,
+      UiStrings.equipmentStatHealthShort,
+      UiStrings.equipmentStatSpeedShort,
+    ];
+    for (var i = 0; i < labels.length; i++) {
+      final r = cmp.numericRows[i];
       final delta = r.candidateValue - (r.currentValue ?? r.candidateValue);
       final c = r.direction == StatDirection.up
-          ? WuxiaColors.hpHigh
+          ? WuxiaColors.statIncrease
           : r.direction == StatDirection.down
-          ? WuxiaColors.hpLow
-          : WuxiaColors.textMuted;
+          ? WuxiaColors.statDecrease
+          : WuxiaColors.statNeutral;
       final arrow = r.direction == StatDirection.up
-          ? '↑'
+          ? UiStrings.equipmentDeltaUpGlyph
           : r.direction == StatDirection.down
-          ? '↓'
-          : '·';
-      final tag = r.label.substring(2, 3); // 攻/血/速
+          ? UiStrings.equipmentDeltaDownGlyph
+          : UiStrings.equipmentDeltaFlatGlyph;
       spans.add(
         TextSpan(
-          text: '$tag$arrow${delta.abs()}  ',
+          text: '${labels[i]}$arrow${delta.abs()}  ',
           style: TextStyle(color: c, fontSize: 11),
         ),
       );
@@ -458,21 +495,55 @@ class _ComparePane extends StatelessWidget {
       candidate: candidate,
       numbers: n,
     );
+    final name = GameRepository.instance.getEquipment(candidate.defId).name;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(bottom: 6),
-          child: Text(
-            UiStrings.equipSlotDialogCompareTitle,
-            style: TextStyle(
-              color: WuxiaColors.textSecondary,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                UiStrings.equipSlotDialogCompareTitle,
+                style: TextStyle(
+                  color: WuxiaColors.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 5,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      color: WuxiaColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  WuxiaStatusPill(
+                    label: EnumL10n.equipmentTier(candidate.tier),
+                    tone: WuxiaStatusTone.neutral,
+                    dense: true,
+                  ),
+                  WuxiaStatusPill(
+                    label: UiStrings.enhanceLevel(candidate.enhanceLevel),
+                    tone: WuxiaStatusTone.accent,
+                    dense: true,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
+        const Divider(height: 1, color: WuxiaColors.border),
+        const SizedBox(height: 6),
         Flexible(
           child: SingleChildScrollView(
             child: Column(
@@ -486,10 +557,17 @@ class _ComparePane extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         SizedBox(
           width: double.infinity,
           child: FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: WuxiaColors.inkPanelEdge,
+              foregroundColor: WuxiaColors.textPrimary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
             onPressed: onConfirm,
             child: Text(
               cmp.isBaseline
@@ -503,16 +581,13 @@ class _ComparePane extends StatelessWidget {
   }
 
   Widget _numericRow(StatDiffRow r, bool baseline) {
-    final c = r.direction == StatDirection.up
-        ? WuxiaColors.hpHigh
-        : r.direction == StatDirection.down
-        ? WuxiaColors.hpLow
-        : WuxiaColors.textPrimary;
+    final c = _directionColor(r.direction);
     final right = baseline || r.currentValue == null
         ? '${r.candidateValue}'
         : '${r.currentValue} ▸ ${r.candidateValue}';
+    final delta = r.candidateValue - (r.currentValue ?? r.candidateValue);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Expanded(
@@ -532,6 +607,14 @@ class _ComparePane extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
+          const SizedBox(width: 8),
+          WuxiaStatusPill(
+            label: baseline
+                ? UiStrings.equipmentDeltaBaseline
+                : UiStrings.equipmentDeltaValue(delta),
+            tone: _directionTone(baseline ? StatDirection.up : r.direction),
+            dense: true,
+          ),
         ],
       ),
     );
@@ -541,8 +624,10 @@ class _ComparePane extends StatelessWidget {
     final right = baseline || r.currentText == null
         ? r.candidateText
         : '${r.currentText} ▸ ${r.candidateText}';
+    final changed =
+        !baseline && r.currentText != null && r.currentText != r.candidateText;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Expanded(
@@ -558,12 +643,26 @@ class _ComparePane extends StatelessWidget {
             right,
             style: TextStyle(
               color: r.highlightUp
-                  ? WuxiaColors.hpHigh
+                  ? WuxiaColors.statIncrease
                   : WuxiaColors.textPrimary,
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
           ),
+          if (baseline || changed) ...[
+            const SizedBox(width: 8),
+            WuxiaStatusPill(
+              label: baseline
+                  ? UiStrings.equipmentDeltaBaseline
+                  : r.highlightUp
+                  ? UiStrings.equipmentDeltaUp
+                  : UiStrings.equipmentDeltaChanged,
+              tone: baseline || r.highlightUp
+                  ? WuxiaStatusTone.positive
+                  : WuxiaStatusTone.accent,
+              dense: true,
+            ),
+          ],
         ],
       ),
     );
@@ -580,17 +679,33 @@ class _ComparePane extends StatelessWidget {
             style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
           for (var i = 0; i < 3; i++)
-            Text(
-              cmp.isBaseline
-                  ? cmp.forgingCandidate[i]
-                  : '${cmp.forgingCurrent[i]} ▸ ${cmp.forgingCandidate[i]}',
-              style: const TextStyle(
-                color: WuxiaColors.textPrimary,
-                fontSize: 12,
+            Padding(
+              padding: const EdgeInsets.only(top: 3),
+              child: Text(
+                cmp.isBaseline
+                    ? cmp.forgingCandidate[i]
+                    : '${cmp.forgingCurrent[i]} ▸ ${cmp.forgingCandidate[i]}',
+                style: const TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 12,
+                ),
               ),
             ),
         ],
       ),
     );
   }
+
+  Color _directionColor(StatDirection direction) => switch (direction) {
+    StatDirection.up => WuxiaColors.statIncrease,
+    StatDirection.down => WuxiaColors.statDecrease,
+    StatDirection.flat => WuxiaColors.textPrimary,
+  };
+
+  WuxiaStatusTone _directionTone(StatDirection direction) =>
+      switch (direction) {
+        StatDirection.up => WuxiaStatusTone.positive,
+        StatDirection.down => WuxiaStatusTone.negative,
+        StatDirection.flat => WuxiaStatusTone.neutral,
+      };
 }
