@@ -89,7 +89,7 @@ Run:
 
 Record status, files changed, verification results, and risks below.
 
-- [ ] **Step 3: Commit and mark ready**
+- [x] **Step 3: Commit and mark ready**
 
 Commit with `feat(inventory): polish equipment grid visuals`, then add a ready tip marker if needed so the final branch tip starts with `[READY]`.
 
@@ -97,9 +97,9 @@ Commit with `feat(inventory): polish equipment grid visuals`, then add a ready t
 
 ## Current Recovery Point
 
-Status: implementation and required verification complete; commit pending.
-Last completed: `ItemSlot` visual polish, inventory state wiring, widget assertions, and required verification.
-Next step: commit and add `[READY]` tip marker.
+Status: complete and marked ready for review.
+Last completed: feature commit `952e0764` and `[READY]` tip marker.
+Next step: Claude/main-window review and merge gate.
 Verification run:
 - `dart run build_runner build --delete-conflicting-outputs` passed; generated 112 local outputs. Tool warned that `--delete-conflicting-outputs` is ignored by this build_runner version.
 - Initial pre-generation `flutter test ...` failed because generated `.g.dart` files were absent in this worktree.
