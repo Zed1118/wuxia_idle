@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/item_usage.dart';
+import 'package:wuxia_idle/core/domain/resource_overview_display.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/resource_overview/application/resource_overview_service.dart';
 import 'package:wuxia_idle/features/resource_overview/domain/resource_overview_item.dart';
@@ -51,6 +52,14 @@ void main() {
         currency.items.single.usages.map((u) => u.kind),
         contains(ItemUsageKind.shopPurchaseCurrency),
       );
+      expect(
+        currency.items.single.usageGroups,
+        containsAll([ResourceUsageGroup.island, ResourceUsageGroup.shopping]),
+      );
+      expect(
+        currency.items.single.consumptionDirection,
+        ResourceConsumptionDirection.mixed,
+      );
 
       final equipment = section(
         sections,
@@ -65,6 +74,14 @@ void main() {
         equipment.items.map((i) => i.defId),
         isNot(contains('item_jingtie')),
       );
+      final mojianshi = equipment.items.singleWhere(
+        (i) => i.defId == 'item_mojianshi',
+      );
+      expect(mojianshi.usageGroups, [ResourceUsageGroup.equipment]);
+      expect(
+        mojianshi.consumptionDirection,
+        ResourceConsumptionDirection.equipment,
+      );
 
       final island = section(sections, ResourceOverviewCategory.islandProduct);
       expect(island.items.map((i) => i.defId), contains('item_jingtie'));
@@ -72,6 +89,14 @@ void main() {
 
       final pills = section(sections, ResourceOverviewCategory.pill);
       expect(pills.items.map((i) => i.defId), contains('item_liaoshangdan'));
+      final recoveryPill = pills.items.singleWhere(
+        (i) => i.defId == 'item_liaoshangdan',
+      );
+      expect(recoveryPill.usageGroups, [ResourceUsageGroup.recovery]);
+      expect(
+        recoveryPill.consumptionDirection,
+        ResourceConsumptionDirection.recovery,
+      );
       expect(
         pills.items.map((i) => i.defId),
         contains('item_jingyandan_small'),
