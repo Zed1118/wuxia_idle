@@ -88,7 +88,10 @@ void main() {
       });
 
       expect(def.specialSkillCandidates, hasLength(2));
-      expect(def.specialSkillCandidates, contains('skill_lingqiao_jichu_skill'));
+      expect(
+        def.specialSkillCandidates,
+        contains('skill_lingqiao_jichu_skill'),
+      );
       expect(def.specialSkillCandidates, contains('skill_lingqiao_jichu_ult'));
     });
 
@@ -352,8 +355,7 @@ void main() {
 
     // ── T33 Phase 3 schema 升级：prevStageId / narrativeOpening/VictoryId ──
 
-    test('T33 新字段全填：prevStageId + narrativeOpeningId + narrativeVictoryId',
-        () {
+    test('T33 新字段全填：prevStageId + narrativeOpeningId + narrativeVictoryId', () {
       final def = StageDef.fromYaml({
         'id': 'stage_01_02',
         'name': '林间伏击',
@@ -389,22 +391,21 @@ void main() {
       expect(def.narrativeOpeningId, isNull);
       expect(def.narrativeVictoryId, isNull);
     });
-
   });
 
   group('EnemyDef.isBoss(B2)', () {
     Map<String, dynamic> base() => {
-          'id': 'e1',
-          'name': '黑风寨主',
-          'realmTier': 'yiLiu',
-          'realmLayer': 'qiMeng',
-          'school': 'gangMeng',
-          'baseHp': 5000,
-          'baseAttack': 400,
-          'baseSpeed': 200,
-          'skillIds': ['s1'],
-          'iconPath': 'assets/enemies/x.png',
-        };
+      'id': 'e1',
+      'name': '黑风寨主',
+      'realmTier': 'yiLiu',
+      'realmLayer': 'qiMeng',
+      'school': 'gangMeng',
+      'baseHp': 5000,
+      'baseAttack': 400,
+      'baseSpeed': 200,
+      'skillIds': ['s1'],
+      'iconPath': 'assets/enemies/x.png',
+    };
 
     test('缺省 isBoss=false(向后兼容)', () {
       expect(EnemyDef.fromYaml(base()).isBoss, false);
@@ -547,12 +548,23 @@ void main() {
   group('EnemyDef.bossPhases(批二①)', () {
     test('EnemyDef.fromYaml 解析 bossPhases', () {
       final e = EnemyDef.fromYaml({
-        'id': 'boss_x', 'name': '魔头', 'realmTier': 'erLiu', 'realmLayer': 'qiMeng',
-        'school': 'gangMeng', 'baseHp': 5000, 'baseAttack': 200, 'baseSpeed': 50,
-        'skillIds': ['skill_normal'], 'iconPath': 'x.png', 'isBoss': true,
+        'id': 'boss_x',
+        'name': '魔头',
+        'realmTier': 'erLiu',
+        'realmLayer': 'qiMeng',
+        'school': 'gangMeng',
+        'baseHp': 5000,
+        'baseAttack': 200,
+        'baseSpeed': 50,
+        'skillIds': ['skill_normal'],
+        'iconPath': 'x.png',
+        'isBoss': true,
         'bossPhases': [
           {'hpThresholdPct': 1.0},
-          {'hpThresholdPct': 0.5, 'unlockSkillIds': ['skill_rage']},
+          {
+            'hpThresholdPct': 0.5,
+            'unlockSkillIds': ['skill_rage'],
+          },
         ],
       });
       expect(e.bossPhases, isNotNull);
@@ -560,11 +572,85 @@ void main() {
       expect(e.bossPhases![1].unlockSkillIds, ['skill_rage']);
     });
 
+    test('EnemyDef.fromYaml 解析 cycleBossPhases 并按周目选择覆盖', () {
+      final e = EnemyDef.fromYaml({
+        'id': 'boss_x',
+        'name': '魔头',
+        'realmTier': 'erLiu',
+        'realmLayer': 'qiMeng',
+        'school': 'gangMeng',
+        'baseHp': 5000,
+        'baseAttack': 200,
+        'baseSpeed': 50,
+        'skillIds': ['skill_normal'],
+        'iconPath': 'x.png',
+        'isBoss': true,
+        'bossPhases': [
+          {'hpThresholdPct': 1.0},
+          {
+            'hpThresholdPct': 0.5,
+            'unlockSkillIds': ['skill_base_rage'],
+          },
+        ],
+        'cycleBossPhases': {
+          2: [
+            {'hpThresholdPct': 1.0},
+            {
+              'hpThresholdPct': 0.75,
+              'unlockSkillIds': ['skill_cycle2_rage'],
+            },
+          ],
+          '3': [
+            {'hpThresholdPct': 1.0},
+            {
+              'hpThresholdPct': 0.85,
+              'unlockSkillIds': ['skill_cycle3_rage'],
+            },
+          ],
+        },
+      });
+      expect(e.bossPhasesForCycle(1)![1].unlockSkillIds, ['skill_base_rage']);
+      expect(e.bossPhasesForCycle(2)![1].unlockSkillIds, ['skill_cycle2_rage']);
+      expect(e.bossPhasesForCycle(3)![1].unlockSkillIds, ['skill_cycle3_rage']);
+      expect(e.bossPhasesForCycle(4)![1].unlockSkillIds, ['skill_cycle3_rage']);
+    });
+
+    test('EnemyDef.fromYaml cycleBossPhases key < 2 抛 StateError', () {
+      expect(
+        () => EnemyDef.fromYaml({
+          'id': 'boss_x',
+          'name': '魔头',
+          'realmTier': 'erLiu',
+          'realmLayer': 'qiMeng',
+          'school': 'gangMeng',
+          'baseHp': 5000,
+          'baseAttack': 200,
+          'baseSpeed': 50,
+          'skillIds': ['skill_normal'],
+          'iconPath': 'x.png',
+          'isBoss': true,
+          'cycleBossPhases': {
+            1: [
+              {'hpThresholdPct': 1.0},
+            ],
+          },
+        }),
+        throwsStateError,
+      );
+    });
+
     test('EnemyDef.fromYaml bossPhases==null 向后兼容', () {
       final e = EnemyDef.fromYaml({
-        'id': 'mob', 'name': '小兵', 'realmTier': 'erLiu', 'realmLayer': 'qiMeng',
-        'school': 'gangMeng', 'baseHp': 1000, 'baseAttack': 100, 'baseSpeed': 40,
-        'skillIds': ['skill_normal'], 'iconPath': 'm.png',
+        'id': 'mob',
+        'name': '小兵',
+        'realmTier': 'erLiu',
+        'realmLayer': 'qiMeng',
+        'school': 'gangMeng',
+        'baseHp': 1000,
+        'baseAttack': 100,
+        'baseSpeed': 40,
+        'skillIds': ['skill_normal'],
+        'iconPath': 'm.png',
       });
       expect(e.bossPhases, isNull);
     });

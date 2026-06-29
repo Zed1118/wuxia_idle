@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/boss_phase_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
@@ -67,6 +68,43 @@ void main() {
     chargeSkillId: 'skill_own_charge',
   );
 
+  const bossWithCyclePhases = EnemyDef(
+    id: 'test_boss_cycle_phases',
+    name: '高周目Boss',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    baseHp: 10000,
+    baseAttack: 800,
+    baseSpeed: 120,
+    skillIds: [],
+    iconPath: 'assets/enemies/stub.png',
+    isBoss: true,
+    bossPhases: [
+      BossPhaseDef(hpThresholdPct: 1.0),
+      BossPhaseDef(
+        hpThresholdPct: 0.5,
+        unlockSkillIds: ['skill_gangmeng_jichu_skill'],
+      ),
+    ],
+    cycleBossPhases: {
+      2: [
+        BossPhaseDef(hpThresholdPct: 1.0),
+        BossPhaseDef(
+          hpThresholdPct: 0.8,
+          unlockSkillIds: ['skill_lingqiao_jichu_skill'],
+        ),
+      ],
+      3: [
+        BossPhaseDef(hpThresholdPct: 1.0),
+        BossPhaseDef(
+          hpThresholdPct: 0.9,
+          unlockSkillIds: ['skill_qingshan_qingfeng'],
+        ),
+      ],
+    },
+  );
+
   // ══════════════════════════════════════════════════════════════════════════
   // cycle 1 = 零变化（回归：不破既有行为）
   // ══════════════════════════════════════════════════════════════════════════
@@ -82,8 +120,7 @@ void main() {
     });
 
     test('activeBuffs 为空', () {
-      expect(c1.activeBuffs, isEmpty,
-          reason: 'cycle 1 不应注入任何周目词条');
+      expect(c1.activeBuffs, isEmpty, reason: 'cycle 1 不应注入任何周目词条');
     });
 
     test('chargeSkillId 保持 null（无自带）', () {
@@ -93,6 +130,47 @@ void main() {
     test('hp/attack 不变（scale=1.0）', () {
       expect(c1.maxHp, 1000);
       expect(c1.totalEquipmentAttack, 500);
+    });
+  });
+
+  group('高周目 Boss 阶段覆盖', () {
+    test('cycle 1 使用基础 bossPhases', () {
+      final c1 = StageBattleSetup.debugEnemyToBattle(
+        enemy: bossWithCyclePhases,
+        slotIndex: 0,
+        cycleIndex: 1,
+        isTower: false,
+      );
+      expect(c1.bossPhases![1].hpThresholdPct, 0.5);
+      expect(
+        c1.bossPhaseUnlockSkills![1].single.id,
+        'skill_gangmeng_jichu_skill',
+      );
+    });
+
+    test('cycle 2 使用二周目阶段覆盖', () {
+      final c2 = StageBattleSetup.debugEnemyToBattle(
+        enemy: bossWithCyclePhases,
+        slotIndex: 0,
+        cycleIndex: 2,
+        isTower: false,
+      );
+      expect(c2.bossPhases![1].hpThresholdPct, 0.8);
+      expect(
+        c2.bossPhaseUnlockSkills![1].single.id,
+        'skill_lingqiao_jichu_skill',
+      );
+    });
+
+    test('cycle 4 继承不超过当前周目的最高覆盖', () {
+      final c4 = StageBattleSetup.debugEnemyToBattle(
+        enemy: bossWithCyclePhases,
+        slotIndex: 0,
+        cycleIndex: 4,
+        isTower: false,
+      );
+      expect(c4.bossPhases![1].hpThresholdPct, 0.9);
+      expect(c4.bossPhaseUnlockSkills![1].single.id, 'skill_qingshan_qingfeng');
     });
   });
 
@@ -120,7 +198,8 @@ void main() {
 
     test('hp × scale(c3)', () {
       final ce = GameRepository.instance.numbers.cycleEvolution;
-      final scale = 1 + ce.scalePerCycle * (3 - 1); // 2026-06-26: 1 + 0.10 * 2 = 1.20
+      final scale =
+          1 + ce.scalePerCycle * (3 - 1); // 2026-06-26: 1 + 0.10 * 2 = 1.20
       expect(c3.maxHp, (1000 * scale).toInt());
       expect(c3.currentHp, c3.maxHp, reason: 'currentHp = maxHp（满血进战斗）');
     });
@@ -132,20 +211,24 @@ void main() {
     });
 
     test('御体：defenseRate 高于 cycle 1', () {
-      expect(c3.defenseRate, greaterThan(c1.defenseRate),
-          reason: '御体词条应提升防御率');
+      expect(c3.defenseRate, greaterThan(c1.defenseRate), reason: '御体词条应提升防御率');
     });
 
     test('识破：chargeSkillId = config 指定值（敌无自带时）', () {
       final ce = GameRepository.instance.numbers.cycleEvolution;
-      expect(c3.chargeSkillId, ce.traits.shipo.chargeSkillId,
-          reason: '敌无自带蓄力技，识破注入 config.chargeSkillId');
+      expect(
+        c3.chargeSkillId,
+        ce.traits.shipo.chargeSkillId,
+        reason: '敌无自带蓄力技，识破注入 config.chargeSkillId',
+      );
     });
 
     test('activeBuffs 含 cycle_yuti / cycle_fanzhen / cycle_shipo', () {
-      expect(c3.activeBuffs,
-          containsAll(['cycle_yuti', 'cycle_fanzhen', 'cycle_shipo']),
-          reason: 'cycle 3 主线：yuti + fanzhen + shipo 词条标签全部注入');
+      expect(
+        c3.activeBuffs,
+        containsAll(['cycle_yuti', 'cycle_fanzhen', 'cycle_shipo']),
+        reason: 'cycle 3 主线：yuti + fanzhen + shipo 词条标签全部注入',
+      );
     });
 
     test('activeBuffs 不含 cycle_zhenqi（主线 assignment 不分配）', () {
@@ -176,16 +259,22 @@ void main() {
     });
 
     test('activeBuffs 含 cycle_yuti + cycle_zhenqi（2026-06-26 周目平衡）', () {
-      expect(c2.activeBuffs, containsAll(['cycle_yuti', 'cycle_zhenqi']),
-          reason: '二周目主线 assignment=[yuti, zhenqi]');
+      expect(
+        c2.activeBuffs,
+        containsAll(['cycle_yuti', 'cycle_zhenqi']),
+        reason: '二周目主线 assignment=[yuti, zhenqi]',
+      );
       expect(c2.activeBuffs, isNot(contains('cycle_fanzhen')));
       expect(c2.activeBuffs, isNot(contains('cycle_shipo')));
     });
 
     test('c2 御体 defenseRateBonusC2 < c3 defenseRateBonusC3', () {
       // c2 用 defenseRateBonusC2(0.08)，c3 用 defenseRateBonusC3(0.12)
-      expect(c3.defenseRate, greaterThan(c2.defenseRate),
-          reason: 'c3 御体档位加成（0.12）大于 c2（0.08）');
+      expect(
+        c3.defenseRate,
+        greaterThan(c2.defenseRate),
+        reason: 'c3 御体档位加成（0.12）大于 c2（0.08）',
+      );
     });
   });
 
@@ -200,8 +289,11 @@ void main() {
       isTower: false,
     );
     final ce = GameRepository.instance.numbers.cycleEvolution;
-    expect(c3.defenseRate, lessThanOrEqualTo(ce.defenseRateCap),
-        reason: '防御率不应超过 defenseRateCap=${ce.defenseRateCap}');
+    expect(
+      c3.defenseRate,
+      lessThanOrEqualTo(ce.defenseRateCap),
+      reason: '防御率不应超过 defenseRateCap=${ce.defenseRateCap}',
+    );
   });
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -227,8 +319,11 @@ void main() {
     });
 
     test('maxInternalForce > cycle 1（scale + 真气 pct 双重叠加）', () {
-      expect(c2.maxInternalForce, greaterThan(c1.maxInternalForce),
-          reason: 'scale + 真气 pct 双重叠加后 IF 应更高');
+      expect(
+        c2.maxInternalForce,
+        greaterThan(c1.maxInternalForce),
+        reason: 'scale + 真气 pct 双重叠加后 IF 应更高',
+      );
     });
 
     test('activeBuffs 含 cycle_yuti 和 cycle_zhenqi', () {
@@ -253,8 +348,11 @@ void main() {
       cycleIndex: 2,
       isTower: true,
     );
-    expect(c2.chargeSkillId, 'skill_own_charge',
-        reason: '敌有自带蓄力技时，识破不覆盖，保留 skill_own_charge');
+    expect(
+      c2.chargeSkillId,
+      'skill_own_charge',
+      reason: '敌有自带蓄力技时，识破不覆盖，保留 skill_own_charge',
+    );
   });
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -269,8 +367,11 @@ void main() {
     );
     final redLine =
         GameRepository.instance.numbers.combat.redLines.internalForceMax;
-    expect(c2.maxInternalForce, lessThanOrEqualTo(redLine),
-        reason: '真气 + scale 后 IF 不应突破 §5.4 红线=$redLine');
+    expect(
+      c2.maxInternalForce,
+      lessThanOrEqualTo(redLine),
+      reason: '真气 + scale 后 IF 不应突破 §5.4 红线=$redLine',
+    );
   });
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -292,12 +393,14 @@ void main() {
     );
 
     test('cycleIndex:1 → cycleIndex:2 wave 敌人 hp/attack 各 ×1.10', () {
-      final waves1 =
-          StageBattleSetup.buildEnemyTeamsPerWave(massBattleStage,
-              cycleIndex: 1);
-      final waves2 =
-          StageBattleSetup.buildEnemyTeamsPerWave(massBattleStage,
-              cycleIndex: 2);
+      final waves1 = StageBattleSetup.buildEnemyTeamsPerWave(
+        massBattleStage,
+        cycleIndex: 1,
+      );
+      final waves2 = StageBattleSetup.buildEnemyTeamsPerWave(
+        massBattleStage,
+        cycleIndex: 2,
+      );
 
       expect(waves1, hasLength(2), reason: '应有 2 波');
       expect(waves2, hasLength(2));
