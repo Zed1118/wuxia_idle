@@ -308,6 +308,20 @@ floors:
             aiMode: aggressive
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.75
+              unlockSkillIds:
+                - skill_lingqiao_changlian_fang_skill
+              aiMode: focus
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.40
+              unlockSkillIds:
+                - skill_lingqiao_changlian_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
     dropTable:
       - equipmentDefId: weapon_xiangyang_gang_dao
         dropChance: 1.0
@@ -695,6 +709,21 @@ floors:
             aiMode: aggressive
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.80
+              unlockSkillIds:
+                - skill_gangmeng_menpai_fang_skill
+              aiMode: focus
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.45
+              unlockSkillIds:
+                - skill_gangmeng_menpai_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
       - id: enemy_tower_20_guard_a
         name: 霸主铁卫
         realmTier: yiLiu
@@ -975,6 +1004,21 @@ floors:
             aiMode: aggressive
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.82
+              unlockSkillIds:
+                - skill_lingqiao_jianghu_fang_skill
+              aiMode: focus
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.42
+              unlockSkillIds:
+                - skill_lingqiao_jianghu_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
       - id: enemy_tower_25_shadow_a
         name: 剑魔影侍
         realmTier: jueDing
@@ -1262,6 +1306,21 @@ floors:
             aiMode: aggressive
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.92
+              unlockSkillIds:
+                - skill_yinrou_shichuan_fang_skill
+              aiMode: focus
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.60
+              unlockSkillIds:
+                - skill_yinrou_shichuan_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
       - id: enemy_tower_30_cultist_a
         name: 九霄左使
         realmTier: zongShi
