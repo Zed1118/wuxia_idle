@@ -94,8 +94,9 @@ class _SeclusionMapListScreenState
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            UiStrings.seclusionRequiredRealm(
+            UiStrings.seclusionRequiredRealmWithCurrent(
               EnumL10n.realmTier(def.requiredRealm),
+              EnumL10n.realmTier(widget.charRealmTier),
             ),
           ),
         ),
@@ -190,6 +191,7 @@ class _SeclusionMapListScreenState
                             canEnter: canEnter,
                             activeSession: isActive ? active : null,
                             onTap: () => _onMapTap(context, def),
+                            currentRealm: widget.charRealmTier,
                           );
                         },
                       );
@@ -279,6 +281,7 @@ class _MapCard extends StatelessWidget {
   final bool canEnter;
   final RetreatSession? activeSession;
   final VoidCallback? onTap;
+  final RealmTier currentRealm;
 
   const _MapCard({
     required this.def,
@@ -286,6 +289,7 @@ class _MapCard extends StatelessWidget {
     required this.canEnter,
     required this.activeSession,
     required this.onTap,
+    required this.currentRealm,
   });
 
   @override
@@ -299,8 +303,9 @@ class _MapCard extends StatelessWidget {
     final traitColor = SeclusionMapVisuals.primaryColor(def);
 
     final footerText = locked
-        ? UiStrings.seclusionRequiredRealm(
+        ? UiStrings.seclusionRequiredRealmWithCurrent(
             EnumL10n.realmTier(def.requiredRealm),
+            EnumL10n.realmTier(currentRealm),
           )
         : isActive
         ? _activeHint()
