@@ -40,12 +40,13 @@ DropResult _itemDrops() => const DropResult(
 
 Character _character({
   String name = '沈青',
+  RealmTier realmTier = RealmTier.xueTu,
   double injuryHours = 0,
   int lightStacks = 0,
 }) {
   final c = Character.create(
     name: name,
-    realmTier: RealmTier.xueTu,
+    realmTier: realmTier,
     realmLayer: RealmLayer.qiMeng,
     attributes: Attributes()
       ..constitution = 5
@@ -136,6 +137,7 @@ Future<void> _pumpContent(
   DropResult drops,
   List<AdvancementEntry> advancements, {
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
+  List<Character> equipmentHintCharacters = const [],
   EquipmentDropLockHandler? onEquipmentLockToggle,
 }) async {
   await tester.pumpWidget(
@@ -145,6 +147,7 @@ Future<void> _pumpContent(
           drops: drops,
           advancements: advancements,
           resonanceUpgrades: resonanceUpgrades,
+          equipmentHintCharacters: equipmentHintCharacters,
           onEquipmentLockToggle: onEquipmentLockToggle,
         ),
       ),
@@ -329,6 +332,46 @@ void main() {
       expect(find.text(UiStrings.equipmentDropActionLater), findsOneWidget);
       expect(find.text(UiStrings.equipmentSell), findsNothing);
       expect(find.text(UiStrings.equipmentDisassemble), findsNothing);
+    });
+
+    testWidgets('装备掉落详情 → 显示门槛、可用角色、适合流派与锁定建议', (tester) async {
+      await _pumpContent(
+        tester,
+        _equipDrops(['weapon_xunchang_tie_jian']),
+        const [],
+        equipmentHintCharacters: [
+          _character(name: '沈青', realmTier: RealmTier.xueTu),
+        ],
+      );
+
+      expect(find.text(UiStrings.equipmentDropRealmGate('学徒')), findsOneWidget);
+      expect(
+        find.text(UiStrings.equipmentDropUsableCharacters('沈青')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.equipmentDropSchoolFit('灵巧')),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.equipmentDropLockAdviceFit), findsOneWidget);
+    });
+
+    testWidgets('装备掉落详情 → 无达标角色时显示不可用与高阶锁定建议', (tester) async {
+      await _pumpContent(
+        tester,
+        _equipDrops(['weapon_shenwu_tian_wen_jian']),
+        const [],
+        equipmentHintCharacters: [
+          _character(name: '沈青', realmTier: RealmTier.xueTu),
+        ],
+      );
+
+      expect(find.text(UiStrings.equipmentDropRealmGate('武圣')), findsOneWidget);
+      expect(
+        find.text(UiStrings.equipmentDropNoUsableCharacters),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.equipmentDropLockAdviceRare), findsOneWidget);
     });
 
     testWidgets('点击锁定 → 调用回调并更新为解锁/已锁定', (tester) async {
