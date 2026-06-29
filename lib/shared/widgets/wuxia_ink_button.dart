@@ -38,145 +38,157 @@ class WuxiaInkButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: disabled ? 0.4 : 1.0,
-      child: InkWell(
-        onTap: disabled
-            ? null
-            : () {
-                SoundManager.instance.playSfx(SfxId.uiTap);
-                onTap?.call();
-              },
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 76),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xE6D9C396), Color(0xE0B9915D), Color(0xE0695130)],
-            ),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.72)),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x66000000),
-                blurRadius: 7,
-                offset: Offset(0, 4),
+    return Semantics(
+      button: true,
+      enabled: !disabled,
+      label: label,
+      child: Opacity(
+        opacity: disabled ? 0.4 : 1.0,
+        child: InkWell(
+          onTap: disabled
+              ? null
+              : () {
+                  SoundManager.instance.playSfx(SfxId.uiTap);
+                  onTap?.call();
+                },
+          mouseCursor: disabled
+              ? SystemMouseCursors.basic
+              : SystemMouseCursors.click,
+          borderRadius: BorderRadius.circular(6),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 76),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xE6D9C396),
+                  Color(0xE0B9915D),
+                  Color(0xE0695130),
+                ],
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(5),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Opacity(
-                    opacity: 0.16,
-                    child: WuxiaImage(
-                      WuxiaUi.paperBg,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: thumbnailPath == null ? 7 : 96,
-                    color: WuxiaUi.ink.withValues(alpha: 0.42),
-                    child: thumbnailPath == null
-                        ? null
-                        : _InkButtonThumbnail(thumbnailPath!, icon: icon),
-                  ),
-                ),
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        top: BorderSide(
-                          color: WuxiaUi.paper.withValues(alpha: 0.34),
-                        ),
-                        bottom: BorderSide(
-                          color: WuxiaUi.ink.withValues(alpha: 0.24),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    thumbnailPath != null ? 108 : (icon == null ? 22 : 16),
-                    14,
-                    16,
-                    14,
-                  ),
-                  child: Row(
-                    children: [
-                      if (thumbnailPath == null && icon != null) ...[
-                        _InkButtonIcon(icon!),
-                        const SizedBox(width: 12),
-                      ],
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    label,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: WuxiaUi.ink,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ),
-                                if (status != null) ...[
-                                  const SizedBox(width: 8),
-                                  _InkButtonStatusChip(status!),
-                                ],
-                              ],
-                            ),
-                            const SizedBox(height: 5),
-                            // hint 恒占 2 行高度:短描述也不让按钮缩矮 → 统一所有
-                            // 菜单按钮高度(原按 hint 行数 1/2 行高度参差,跨列/同列
-                            // 不齐)。fontSize 12 × height 1.2 × 2 行 ≈ 29,取 30 留余。
-                            SizedBox(
-                              height: 30,
-                              child: Text(
-                                hint,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: WuxiaUi.ink.withValues(alpha: 0.72),
-                                  fontSize: 12,
-                                  height: 1.2,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (locked)
-                        const Padding(
-                          padding: EdgeInsets.only(left: 8),
-                          child: Icon(
-                            Icons.lock_outline,
-                            size: 16,
-                            color: WuxiaColors.textMuted,
-                          ),
-                        ),
-                    ],
-                  ),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.72)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x66000000),
+                  blurRadius: 7,
+                  offset: Offset(0, 4),
                 ),
               ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 0.16,
+                      child: WuxiaImage(
+                        WuxiaUi.paperBg,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: thumbnailPath == null ? 7 : 96,
+                      color: WuxiaUi.ink.withValues(alpha: 0.42),
+                      child: thumbnailPath == null
+                          ? null
+                          : _InkButtonThumbnail(thumbnailPath!, icon: icon),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(
+                            color: WuxiaUi.paper.withValues(alpha: 0.34),
+                          ),
+                          bottom: BorderSide(
+                            color: WuxiaUi.ink.withValues(alpha: 0.24),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      thumbnailPath != null ? 108 : (icon == null ? 22 : 16),
+                      14,
+                      16,
+                      14,
+                    ),
+                    child: Row(
+                      children: [
+                        if (thumbnailPath == null && icon != null) ...[
+                          _InkButtonIcon(icon!),
+                          const SizedBox(width: 12),
+                        ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      label,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: WuxiaUi.ink,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                  if (status != null) ...[
+                                    const SizedBox(width: 8),
+                                    _InkButtonStatusChip(status!),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              // hint 恒占 2 行高度:短描述也不让按钮缩矮 → 统一所有
+                              // 菜单按钮高度(原按 hint 行数 1/2 行高度参差,跨列/同列
+                              // 不齐)。fontSize 12 × height 1.2 × 2 行 ≈ 29,取 30 留余。
+                              SizedBox(
+                                height: 30,
+                                child: Text(
+                                  hint,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: WuxiaUi.ink.withValues(alpha: 0.72),
+                                    fontSize: 12,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (locked)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8),
+                            child: Icon(
+                              Icons.lock_outline,
+                              size: 16,
+                              color: WuxiaColors.textMuted,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

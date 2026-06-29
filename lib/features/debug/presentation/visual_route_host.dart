@@ -84,6 +84,7 @@ import '../../baike/presentation/martial_arts_tab.dart';
 import '../../baike/presentation/skill_codex_detail_screen.dart';
 import '../../character_panel/presentation/lineage_character_detail_screen.dart';
 import '../../zangjuange/presentation/zangjuange_screen.dart';
+import 'hitbox_debug_overlay.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -100,7 +101,7 @@ class VisualRouteApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: wuxiaAppTheme(),
         builder: _wuxiaTextScaleBuilder,
-        home: VisualRouteHost(route: route),
+        home: HitboxDebugOverlay.maybeWrap(VisualRouteHost(route: route)),
       ),
     );
   }
