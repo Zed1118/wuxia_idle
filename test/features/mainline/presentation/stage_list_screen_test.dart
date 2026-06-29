@@ -188,6 +188,58 @@ void main() {
     expect(find.text(UiStrings.stageReplayRouteProficiency), findsWidgets);
   });
 
+  testWidgets('整章可扫荡时显示扫荡前收益预估', (tester) async {
+    final progress =
+        mkProgress(
+            cleared: const [
+              'stage_01_01',
+              'stage_01_02',
+              'stage_01_03',
+              'stage_01_04',
+              'stage_01_05',
+            ],
+          )
+          ..clearedStageCycleKeys = const [
+            'stage_01_01#1',
+            'stage_01_02#1',
+            'stage_01_03#1',
+            'stage_01_04#1',
+            'stage_01_05#1',
+          ]
+          ..clearedChapterCycleKeys = const ['ch1#1'];
+
+    await pumpScreen(tester, chapterIndex: 1, progress: progress);
+
+    expect(find.text(UiStrings.sweepPreviewTitle), findsOneWidget);
+    expect(find.text(UiStrings.stageReplayRouteEquipment), findsWidgets);
+    expect(
+      find.textContaining(UiStrings.sweepPreviewDropsPrefix),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(UiStrings.sweepPreviewProficiencyPrefix),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(UiStrings.sweepPreviewMaterialHitsPrefix),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('当前周目不可扫荡时不显示收益预估', (tester) async {
+    await pumpScreen(
+      tester,
+      chapterIndex: 1,
+      progress: mkProgress(cleared: const ['stage_01_01']),
+    );
+
+    expect(find.text(UiStrings.sweepPreviewTitle), findsNothing);
+    expect(
+      find.textContaining(UiStrings.sweepPreviewMaterialHitsPrefix),
+      findsNothing,
+    );
+  });
+
   testWidgets('关卡行显示推荐整备条：推荐境界 + 判语 + 补强方向', (tester) async {
     await pumpScreen(
       tester,

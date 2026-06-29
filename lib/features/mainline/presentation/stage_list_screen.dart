@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../data/game_repository.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/application/character_providers.dart';
@@ -20,6 +21,7 @@ import '../../loot_preview/presentation/stage_preview_card.dart'
 import '../../loot_preview/presentation/weakness_hint_line.dart';
 import '../../sweep/application/sweep_unit.dart';
 import '../../sweep/domain/sweep_eligibility.dart';
+import '../../sweep/domain/sweep_reward_preview.dart';
 import '../../sweep/presentation/sweep_screen.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
@@ -935,34 +937,202 @@ class _ChapterSweepButton extends StatelessWidget {
         ),
       );
     }
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: FilledButton.icon(
-        style: FilledButton.styleFrom(
-          backgroundColor: WuxiaColors.bossFrame,
-          foregroundColor: WuxiaColors.background,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        onPressed: () {
-          final units = [
-            for (final e in entries)
-              MainlineSweepUnit(stage: e.def, cycle: cycle),
-          ];
-          Navigator.of(context).push<void>(
-            MaterialPageRoute(
-              builder: (_) => SweepScreen(
-                units: units,
-                unitName: UiStrings.chapterTitle(chapterIndex),
-                cycle: cycle,
+    final preview = GameRepository.isLoaded
+        ? SweepRewardPreview.fromMainlineStages(
+            stages: entries.map((e) => e.def),
+            repo: GameRepository.instance,
+          )
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (preview != null && !preview.isEmpty)
+          _SweepRewardPreviewPanel(preview: preview),
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 8),
+          child: FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: WuxiaColors.bossFrame,
+              foregroundColor: WuxiaColors.background,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              textStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          );
-        },
-        icon: const Icon(Icons.fast_forward, size: 22),
-        label: Text(UiStrings.sweepChapterButtonCycle(cycle)),
+            onPressed: () {
+              final units = [
+                for (final e in entries)
+                  MainlineSweepUnit(stage: e.def, cycle: cycle),
+              ];
+              Navigator.of(context).push<void>(
+                MaterialPageRoute(
+                  builder: (_) => SweepScreen(
+                    units: units,
+                    unitName: UiStrings.chapterTitle(chapterIndex),
+                    cycle: cycle,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.fast_forward, size: 22),
+            label: Text(UiStrings.sweepChapterButtonCycle(cycle)),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SweepRewardPreviewPanel extends StatelessWidget {
+  const _SweepRewardPreviewPanel({required this.preview});
+
+  final SweepRewardPreview preview;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: WuxiaColors.panel.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: WuxiaColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            UiStrings.sweepPreviewTitle,
+            style: TextStyle(
+              color: WuxiaColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          if (preview.primaryKinds.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final kind in preview.primaryKinds)
+                  _SweepPreviewChip(label: _labelFor(kind)),
+              ],
+            ),
+          ],
+          const SizedBox(height: 8),
+          _PreviewLine(
+            text: UiStrings.sweepPreviewLine(
+              UiStrings.sweepPreviewDropsPrefix,
+              _dropSummary(preview),
+            ),
+          ),
+          if (preview.proficiencyHints.isNotEmpty)
+            _PreviewLine(
+              text: UiStrings.sweepPreviewLine(
+                UiStrings.sweepPreviewProficiencyPrefix,
+                preview.proficiencyHints.map(_proficiencyHintLabel).join(' / '),
+              ),
+            ),
+          _PreviewLine(
+            text: UiStrings.sweepPreviewLine(
+              UiStrings.sweepPreviewMaterialHitsPrefix,
+              _materialHitSummary(preview.materialHits),
+            ),
+          ),
+        ],
       ),
     );
   }
+}
+
+class _SweepPreviewChip extends StatelessWidget {
+  const _SweepPreviewChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: WuxiaColors.resultHighlight.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: WuxiaColors.resultHighlight.withValues(alpha: 0.45),
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: WuxiaColors.resultHighlight,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewLine extends StatelessWidget {
+  const _PreviewLine({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Text(
+        text,
+        style: const TextStyle(color: WuxiaColors.textSecondary, fontSize: 12),
+      ),
+    );
+  }
+}
+
+String _dropSummary(SweepRewardPreview preview) {
+  final parts = <String>[
+    if (preview.equipmentDropCount > 0)
+      UiStrings.sweepPreviewEquipmentDrops(preview.equipmentDropCount),
+    ..._limited(preview.possibleItemNames),
+  ];
+  return parts.isEmpty ? UiStrings.sweepPreviewNoDrops : parts.join(' / ');
+}
+
+String _materialHitSummary(List<SweepMaterialHit> hits) {
+  if (hits.isEmpty) return UiStrings.sweepPreviewNoMaterialHits;
+  return _limited(
+    hits.map((hit) {
+      return UiStrings.sweepPreviewMaterialHit(
+        hit.itemName,
+        UiStrings.materialUsageSummary(hit.usages),
+      );
+    }),
+  ).join(' / ');
+}
+
+Iterable<String> _limited(Iterable<String> values, {int max = 3}) sync* {
+  var emitted = 0;
+  final iterator = values.iterator;
+  while (emitted < max && iterator.moveNext()) {
+    emitted++;
+    yield iterator.current;
+  }
+  var rest = 0;
+  while (iterator.moveNext()) {
+    rest++;
+  }
+  if (rest > 0) yield UiStrings.sweepPreviewMore(rest);
+}
+
+String _proficiencyHintLabel(SweepProficiencyHint hint) {
+  return switch (hint) {
+    SweepProficiencyHint.skillManual => UiStrings.sweepPreviewSkillManual,
+    SweepProficiencyHint.skillFragment => UiStrings.sweepPreviewSkillFragment,
+    SweepProficiencyHint.chargeSkill => UiStrings.sweepPreviewChargeSkill,
+  };
 }
