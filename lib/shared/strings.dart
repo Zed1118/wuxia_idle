@@ -934,8 +934,12 @@ class UiStrings {
   static const String stageListPrevHint = '通关前一关解锁';
   static const String stageListEmpty = '该章暂无关卡';
   static const String stageListJourneyTitle = '章内行程';
+  static const String stageListTimelineTitle = '章节卷轴';
+  static const String stageListTimelineHint = '沿路标推进，朱印为章末首领';
   static const String stageListBoss = 'Boss';
   static String stageListJourneyNodeLabel(int stageIndex) => '第$stageIndex关';
+  static String stageListTimelineStopLabel(int stageIndex, String stageName) =>
+      '第$stageIndex关 · $stageName';
   static const String chapterFarmSpotsTitle = '通章刷点';
   static const String chapterFarmSpotsHint = '本章已通，可回头刷这些关卡';
   static String chapterFarmSpotStage(int stageIndex) => '第$stageIndex关';
