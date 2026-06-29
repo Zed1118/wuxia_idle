@@ -636,18 +636,72 @@ void main() {
       expect(out.silver, (shanLin.silverPerHour * 1.0 * 1.0).floor());
     });
 
-    test('4 小时山林产出药草 itemRewards', () {
+    test('五张闭关地图均配置轻量特色产出，且引用现有 item def', () {
+      const expected = <RetreatMapType, Set<String>>{
+        RetreatMapType.shanLin: {'item_yaocao'},
+        RetreatMapType.guJianZhong: {'item_duancai'},
+        RetreatMapType.cangJingGe: {'item_kaifeng_fucai'},
+        RetreatMapType.xuanYaPuBu: {'item_lingquanshui'},
+        RetreatMapType.duanYaJueBi: {
+          'item_yaocao',
+          'item_lingquanshui',
+          'item_duancai',
+          'item_kaifeng_fucai',
+        },
+      };
+
+      for (final map in GameRepository.instance.seclusionMaps) {
+        expect(
+          map.itemOutputsPerHour.keys.toSet(),
+          expected[map.mapType],
+          reason: '${map.mapName} 应有专属小产出配置',
+        );
+        for (final itemId in map.itemOutputsPerHour.keys) {
+          expect(
+            GameRepository.instance.itemDefs.containsKey(itemId),
+            isTrue,
+            reason: '${map.mapName} 引用不存在的道具 $itemId',
+          );
+        }
+      }
+    });
+
+    test('4 小时五图特色产出均进入 itemRewards', () {
       final start = DateTime(2026, 5, 11, 10, 0);
       final now = start.add(const Duration(hours: 4));
-      final session = makeSession(durationHours: 4, startedAt: start);
-      final out = SeclusionService.computeOutputs(
-        session: session,
-        charRealmTier: RealmTier.xueTu,
-        config: GameRepository.instance.numbers.retreat,
-        maps: GameRepository.instance.seclusionMaps,
-        now: now,
-      );
-      expect(out.itemRewards['item_yaocao'], 6);
+      const tiers = <RetreatMapType, RealmTier>{
+        RetreatMapType.shanLin: RealmTier.xueTu,
+        RetreatMapType.guJianZhong: RealmTier.sanLiu,
+        RetreatMapType.cangJingGe: RealmTier.sanLiu,
+        RetreatMapType.xuanYaPuBu: RealmTier.erLiu,
+        RetreatMapType.duanYaJueBi: RealmTier.zongShi,
+      };
+
+      for (final map in GameRepository.instance.seclusionMaps) {
+        final session = RetreatSession()
+          ..id = 20 + map.mapType.index
+          ..saveDataId = kSaveDataId
+          ..mapType = map.mapType
+          ..durationHours = 4
+          ..startedAt = start
+          ..status = RetreatStatus.active
+          ..actualRewards = [];
+        final out = SeclusionService.computeOutputs(
+          session: session,
+          charRealmTier: tiers[map.mapType]!,
+          config: GameRepository.instance.numbers.retreat,
+          maps: GameRepository.instance.seclusionMaps,
+          now: now,
+        );
+
+        for (final itemId in map.itemOutputsPerHour.keys) {
+          expect(
+            out.itemRewards[itemId],
+            greaterThan(0),
+            reason: '${map.mapName} 4h 应产出 $itemId',
+          );
+        }
+      }
     });
 
     test('0 小时 → silver=0', () {
@@ -778,15 +832,15 @@ void main() {
       expect(item!.quantity, greaterThan(0));
     });
 
-    test('收功后药草入库并写入 actualRewards', () async {
+    test('收功后地图特色产出入库并写入 actualRewards', () async {
       final start = DateTime(2026, 5, 11, 10, 0);
       final session = await SeclusionService(isar: IsarSetup.instance)
           .startRetreat(
-            mapType: RetreatMapType.shanLin,
+            mapType: RetreatMapType.cangJingGe,
             durationHours: 4,
             saveDataId: kSaveDataId,
             characterId: kCharId,
-            charRealmTier: RealmTier.xueTu,
+            charRealmTier: RealmTier.sanLiu,
             maps: GameRepository.instance.seclusionMaps,
             now: start,
           );
@@ -795,25 +849,25 @@ void main() {
           .completeRetreat(
             session: session,
             characterId: kCharId,
-            charRealmTier: RealmTier.xueTu,
+            charRealmTier: RealmTier.sanLiu,
             config: GameRepository.instance.numbers.retreat,
             maps: GameRepository.instance.seclusionMaps,
             now: start.add(const Duration(hours: 4)),
           );
 
-      expect(out.itemRewards['item_yaocao'], 6);
-      final herb = await IsarSetup.instance.inventoryItems.getByDefId(
-        'item_yaocao',
+      expect(out.itemRewards['item_kaifeng_fucai'], 3);
+      final fucai = await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_kaifeng_fucai',
       );
-      expect(herb?.quantity, 6);
-      expect(herb?.itemType, ItemType.miscMaterial);
+      expect(fucai?.quantity, 3);
+      expect(fucai?.itemType, ItemType.miscMaterial);
       final updated = await IsarSetup.instance.retreatSessions.get(session.id);
       expect(
         updated?.actualRewards
-            .where((r) => r.rewardKey == 'item_yaocao')
+            .where((r) => r.rewardKey == 'item_kaifeng_fucai')
             .single
             .quantity,
-        6,
+        3,
       );
     });
 
