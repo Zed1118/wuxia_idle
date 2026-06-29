@@ -936,6 +936,9 @@ class UiStrings {
   static const String stageListJourneyTitle = '章内行程';
   static const String stageListBoss = 'Boss';
   static String stageListJourneyNodeLabel(int stageIndex) => '第$stageIndex关';
+  static const String chapterFarmSpotsTitle = '通章刷点';
+  static const String chapterFarmSpotsHint = '本章已通，可回头刷这些关卡';
+  static String chapterFarmSpotStage(int stageIndex) => '第$stageIndex关';
   static const String stageReplayRouteTitle = '重打路线';
   static const String stageReplayRouteEquipment = '刷装备';
   static const String stageReplayRouteMaterial = '刷材料';
