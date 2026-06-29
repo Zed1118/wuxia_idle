@@ -6,7 +6,7 @@ import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
-import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../application/seclusion_service_providers.dart';
 import '../domain/retreat_session.dart';
 import 'retreat_result_screen.dart';
@@ -18,10 +18,10 @@ import 'retreat_result_screen.dart';
 /// `ref.invalidate(activeRetreatSessionProvider)` 刷新。
 final activeRetreatSessionProvider =
     FutureProvider.autoDispose<RetreatSession?>((ref) async {
-  final svc = ref.watch(seclusionServiceProvider);
-  if (svc == null) return null;
-  return svc.getActiveSession(IsarSetup.currentSlotId);
-});
+      final svc = ref.watch(seclusionServiceProvider);
+      if (svc == null) return null;
+      return svc.getActiveSession(IsarSetup.currentSlotId);
+    });
 
 /// 出战守卫:闭关进行中拦截战斗入口。
 ///
@@ -40,30 +40,19 @@ Future<void> guardBattleEntry({
   if (!context.mounted) return;
   final endEarly = await showDialog<bool>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      backgroundColor: WuxiaColors.panel,
-      title: const Text(
-        UiStrings.seclusionBattleLockTitle,
-        style: TextStyle(color: WuxiaColors.textPrimary),
-      ),
-      content: const Text(
-        UiStrings.seclusionBattleLockBody,
-        style: TextStyle(color: WuxiaColors.textSecondary),
-      ),
+    builder: (ctx) => PaperDialog(
+      title: UiStrings.seclusionBattleLockTitle,
+      body: const Text(UiStrings.seclusionBattleLockBody),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, false),
-          child: const Text(
-            UiStrings.seclusionBattleLockStay,
-            style: TextStyle(color: WuxiaColors.textSecondary),
-          ),
+        PlaqueButton(
+          label: UiStrings.seclusionBattleLockStay,
+          onTap: () => Navigator.pop(ctx, false),
         ),
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          child: const Text(
-            UiStrings.seclusionBattleLockEndEarly,
-            style: TextStyle(color: WuxiaColors.gangMeng),
-          ),
+        PlaqueButton(
+          label: UiStrings.seclusionBattleLockEndEarly,
+          primary: true,
+          autofocus: true,
+          onTap: () => Navigator.pop(ctx, true),
         ),
       ],
     ),

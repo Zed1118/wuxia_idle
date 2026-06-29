@@ -10,6 +10,8 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
+import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/application/lineage_info_provider.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
@@ -77,8 +79,7 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
               );
             }
             return disciplesAsync.when(
-              loading: () =>
-                  const Center(child: InkLoadingIndicator()),
+              loading: () => const Center(child: InkLoadingIndicator()),
               error: (e, _) => ErrorFallback(
                 error: e,
                 onRetry: () => ref.invalidate(ascensionDiscipleTargetsProvider),
@@ -151,13 +152,9 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: WuxiaColors.panel,
-        title: const Text(
-          UiStrings.ascensionConfirmDialogTitle,
-          style: TextStyle(color: WuxiaColors.textPrimary),
-        ),
-        content: Column(
+      builder: (ctx) => PaperDialog(
+        title: UiStrings.ascensionConfirmDialogTitle,
+        body: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -167,8 +164,10 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              UiStrings.ascensionConfirmDialogPromotedLine
-                  .replaceFirst('{0}', promotedDiscipleName),
+              UiStrings.ascensionConfirmDialogPromotedLine.replaceFirst(
+                '{0}',
+                promotedDiscipleName,
+              ),
               style: const TextStyle(
                 color: WuxiaColors.resultHighlight,
                 fontWeight: FontWeight.w600,
@@ -177,16 +176,15 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text(UiStrings.ascensionConfirmDialogCancel),
+          PlaqueButton(
+            label: UiStrings.ascensionConfirmDialogCancel,
+            onTap: () => Navigator.of(ctx).pop(false),
           ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: WuxiaColors.resultHighlight,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(UiStrings.ascensionConfirmDialogOk),
+          PlaqueButton(
+            label: UiStrings.ascensionConfirmDialogOk,
+            primary: true,
+            autofocus: true,
+            onTap: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),
@@ -234,8 +232,9 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
       //   (太祖→师父→我→新弟子续灯弧 · Tier wuSheng 化机)
       // - gen1(founder 无师承遗物 isContinuation=false)→ ascension_complete
       //   (师父别山 + 化境门开 · 一代飞升原体例)
-      final narrativeId =
-          isContinuation ? 'ascension_lineage_chant' : 'ascension_complete';
+      final narrativeId = isContinuation
+          ? 'ascension_lineage_chant'
+          : 'ascension_complete';
       final completeNarrative = await NarrativeLoader.load(narrativeId);
       if (!mounted) return;
       await Navigator.of(context).push<void>(
@@ -253,18 +252,20 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
         '${result.transferredCount}',
       );
       final promotedMsg = result.promotedDiscipleId != null
-          ? UiStrings.ascensionCompletePromotedSuffix
-              .replaceFirst('{0}', promotedDiscipleName)
+          ? UiStrings.ascensionCompletePromotedSuffix.replaceFirst(
+              '{0}',
+              promotedDiscipleName,
+            )
           : '';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$baseMsg$promotedMsg')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('$baseMsg$promotedMsg')));
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(UiStrings.ascensionFailed(e))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(UiStrings.ascensionFailed(e))));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -300,17 +301,15 @@ class _Body extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final candidatesAsync =
-        ref.watch(heritageCandidatesProvider(founder.id));
+    final candidatesAsync = ref.watch(heritageCandidatesProvider(founder.id));
     final n = GameRepository.isLoaded
         ? GameRepository.instance.numbers.heritageItems
         : null;
     final pickMin = n?.piecesPerGenerationMin ?? 1;
     final pickMax = n?.piecesPerGenerationMax ?? 2;
     final selectedCount = selectedIds.length;
-    final canConfirm = !isSubmitting &&
-        selectedCount >= pickMin &&
-        selectedCount <= pickMax;
+    final canConfirm =
+        !isSubmitting && selectedCount >= pickMin && selectedCount <= pickMax;
 
     return candidatesAsync.when(
       loading: () => const Center(child: InkLoadingIndicator()),
@@ -341,7 +340,8 @@ class _Body extends ConsumerWidget {
                   equipment: eq,
                   isSelected: selectedIds.contains(eq.id),
                   canSelectMore:
-                      selectedIds.length < pickMax || selectedIds.contains(eq.id),
+                      selectedIds.length < pickMax ||
+                      selectedIds.contains(eq.id),
                   disciples: disciples,
                   assignedTo: assignments[eq.id],
                   onToggle: () => onToggle(eq.id, defaultDiscipleId),
@@ -355,22 +355,15 @@ class _Body extends ConsumerWidget {
               onPromote: onPromote,
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              height: 44,
-              child: ElevatedButton(
-                onPressed: canConfirm ? onConfirm : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: WuxiaColors.resultHighlight,
-                  disabledBackgroundColor:
-                      WuxiaColors.panel.withValues(alpha: 0.5),
-                ),
-                child: Text(
-                  isSubmitting ? '飞升中…' : UiStrings.ascensionConfirmButton,
-                  style: const TextStyle(
-                    color: WuxiaColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: PlaqueButton(
+                label: isSubmitting
+                    ? UiStrings.ascensionSubmitting
+                    : UiStrings.ascensionConfirmButton,
+                primary: true,
+                disabled: !canConfirm,
+                onTap: canConfirm ? onConfirm : null,
               ),
             ),
           ],
@@ -490,8 +483,9 @@ class _EquipmentRow extends StatelessWidget {
             children: [
               Checkbox(
                 value: isSelected,
-                onChanged:
-                    (canSelectMore || isSelected) ? (_) => onToggle() : null,
+                onChanged: (canSelectMore || isSelected)
+                    ? (_) => onToggle()
+                    : null,
                 fillColor: WidgetStateProperty.all(color),
               ),
               Expanded(
@@ -504,10 +498,7 @@ class _EquipmentRow extends StatelessWidget {
                   ),
                 ),
               ),
-              Text(
-                tierName,
-                style: TextStyle(color: color, fontSize: 12),
-              ),
+              Text(tierName, style: TextStyle(color: color, fontSize: 12)),
             ],
           ),
           if (isSelected && disciples.isNotEmpty)
@@ -532,10 +523,7 @@ class _EquipmentRow extends StatelessWidget {
                     ),
                     items: [
                       for (final d in disciples)
-                        DropdownMenuItem(
-                          value: d.id,
-                          child: Text(d.name),
-                        ),
+                        DropdownMenuItem(value: d.id, child: Text(d.name)),
                     ],
                     onChanged: (id) {
                       if (id != null) onAssign(id);
@@ -613,10 +601,7 @@ class _PromotedDiscipleRow extends StatelessWidget {
             ),
             items: [
               for (final d in disciples)
-                DropdownMenuItem(
-                  value: d.id,
-                  child: Text(d.name),
-                ),
+                DropdownMenuItem(value: d.id, child: Text(d.name)),
             ],
             onChanged: (id) {
               if (id != null) onPromote(id);

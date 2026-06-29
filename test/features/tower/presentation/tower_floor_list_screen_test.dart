@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_floor_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
 
 /// T42 TowerFloorListScreen widget 测试（不接真实 Isar）。
 ///
@@ -195,7 +196,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.byType(PaperDialog), findsOneWidget);
     expect(find.text(UiStrings.towerReplayBody), findsOneWidget);
 
     await tester.tap(find.text(UiStrings.towerReplayConfirm));

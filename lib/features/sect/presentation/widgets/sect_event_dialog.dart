@@ -6,7 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yaml/yaml.dart';
 
 import '../../../../shared/strings.dart';
-import '../../../../shared/theme/colors.dart';
+import '../../../../shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../application/sect_providers.dart';
 import '../../domain/sect.dart';
 import '../../domain/sect_event.dart';
@@ -58,9 +59,15 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
       final yaml = loadYaml(str) as Map;
       return _NarrativeData(
         title: (yaml['title'] as String?) ?? widget.event.narrativeId,
-        opening: (yaml['opening'] as String?) ?? UiStrings.sectEventNarrativeFallbackOpening,
-        victoryText: (yaml['victory_text'] as String?) ?? UiStrings.sectEventNarrativeFallbackVictory,
-        defeatText: (yaml['defeat_text'] as String?) ?? UiStrings.sectEventNarrativeFallbackDefeat,
+        opening:
+            (yaml['opening'] as String?) ??
+            UiStrings.sectEventNarrativeFallbackOpening,
+        victoryText:
+            (yaml['victory_text'] as String?) ??
+            UiStrings.sectEventNarrativeFallbackVictory,
+        defeatText:
+            (yaml['defeat_text'] as String?) ??
+            UiStrings.sectEventNarrativeFallbackDefeat,
       );
     } catch (_) {
       return _NarrativeData(
@@ -76,11 +83,9 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
     final rng = widget.rng ?? Random();
     final win = rng.nextBool();
     final outcome = win ? SectOutcome.win : SectOutcome.loss;
-    ref.read(resolveSectEventProvider.notifier).resolve(
-          sect: widget.sect,
-          event: widget.event,
-          outcome: outcome,
-        );
+    ref
+        .read(resolveSectEventProvider.notifier)
+        .resolve(sect: widget.sect, event: widget.event, outcome: outcome);
     if (!mounted) return;
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -92,7 +97,9 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
   }
 
   void _handleRefuse() {
-    ref.read(resolveSectEventProvider.notifier).resolve(
+    ref
+        .read(resolveSectEventProvider.notifier)
+        .resolve(
           sect: widget.sect,
           event: widget.event,
           outcome: SectOutcome.loss,
@@ -103,89 +110,54 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: WuxiaColors.sidebar,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: const BorderSide(color: WuxiaColors.border),
-      ),
-      child: FutureBuilder<_NarrativeData>(
-        future: _future,
-        builder: (ctx, snap) {
-          if (!snap.hasData) {
-            return const Padding(
+    return FutureBuilder<_NarrativeData>(
+      future: _future,
+      builder: (ctx, snap) {
+        if (!snap.hasData) {
+          return const Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Padding(
               padding: EdgeInsets.all(24),
               child: SizedBox(
                 width: 40,
                 height: 40,
                 child: InkLoadingIndicator(),
               ),
-            );
-          }
-          final n = snap.data!;
-          return ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 480,
-              // L1(审计):限高 80% 屏,长事件文案在 720p 不再 bottom overflow。
-              maxHeight: MediaQuery.of(context).size.height * 0.8,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    n.title,
-                    style: const TextStyle(
-                      color: WuxiaColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // L1(审计):opening 为 yaml 自由文案,长文在 720p 会溢出 →
-                  // Flexible + 滚动,标题与按钮保持固定可见。
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: Text(
-                        n.opening,
-                        style: const TextStyle(
-                          color: WuxiaColors.textSecondary,
-                          fontSize: 14,
-                          height: 1.6,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: _handleRefuse,
-                        child: const Text(
-                          UiStrings.sectEventRefuseButton,
-                          style: TextStyle(color: WuxiaColors.textMuted),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () => _handleAccept(n),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: WuxiaColors.hpHigh,
-                          foregroundColor: WuxiaColors.textPrimary,
-                        ),
-                        child: const Text(UiStrings.sectEventEnterBattle),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
             ),
           );
-        },
-      ),
+        }
+        final n = snap.data!;
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 480,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: PaperDialog(
+            title: n.title,
+            body: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.48,
+              ),
+              child: SingleChildScrollView(
+                child: Text(n.opening, style: const TextStyle(height: 1.6)),
+              ),
+            ),
+            actions: [
+              PlaqueButton(
+                label: UiStrings.sectEventRefuseButton,
+                onTap: _handleRefuse,
+              ),
+              PlaqueButton(
+                label: UiStrings.sectEventEnterBattle,
+                primary: true,
+                autofocus: true,
+                onTap: () => _handleAccept(n),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

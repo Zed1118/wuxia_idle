@@ -7,6 +7,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../features/battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../inventory/application/item_usage_lookup_service.dart';
 import '../application/island_action_service.dart';
@@ -65,18 +66,22 @@ class TaohuaIslandScreen extends ConsumerWidget {
       body: asyncView.when(
         loading: () =>
             const Center(child: InkLoadingIndicator(color: WuxiaUi.qing)),
-        error: (e, _) => Center(
-          child: Text(
-            UiStrings.taohuaIslandLoadError(e),
-            style: const TextStyle(color: WuxiaUi.muted, fontSize: 14),
-          ),
+        error: (e, _) => ErrorFallback(
+          message: UiStrings.errorFallbackMessage,
+          error: e,
+          onRetry: () => ref.invalidate(taohuaIslandViewProvider),
         ),
         data: (view) {
           if (view == null) {
             return const Center(
-              child: Text(
-                UiStrings.taohuaIslandNoSave,
-                style: TextStyle(color: WuxiaUi.muted, fontSize: 14),
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: InkEmptyState(
+                  variant: InkEmptyStateVariant.unavailable,
+                  title: UiStrings.errorNoSaveTitle,
+                  body: UiStrings.taohuaIslandNoSave,
+                  icon: Icons.menu_book_outlined,
+                ),
               ),
             );
           }

@@ -64,30 +64,19 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
         ? true
         : await showDialog<bool>(
             context: context,
-            builder: (ctx) => AlertDialog(
-              backgroundColor: WuxiaColors.panel,
-              title: const Text(
-                UiStrings.activeRetreatConfirmTitle,
-                style: TextStyle(color: WuxiaColors.textPrimary),
-              ),
-              content: const Text(
-                UiStrings.activeRetreatConfirmBody,
-                style: TextStyle(color: WuxiaColors.textSecondary),
-              ),
+            builder: (ctx) => PaperDialog(
+              title: UiStrings.activeRetreatConfirmTitle,
+              body: const Text(UiStrings.activeRetreatConfirmBody),
               actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text(
-                    UiStrings.activeRetreatCancel,
-                    style: TextStyle(color: WuxiaColors.textSecondary),
-                  ),
+                PlaqueButton(
+                  label: UiStrings.activeRetreatCancel,
+                  onTap: () => Navigator.pop(ctx, false),
                 ),
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text(
-                    UiStrings.activeRetreatConfirm,
-                    style: TextStyle(color: WuxiaColors.gangMeng),
-                  ),
+                PlaqueButton(
+                  label: UiStrings.activeRetreatConfirm,
+                  primary: true,
+                  autofocus: true,
+                  onTap: () => Navigator.pop(ctx, true),
                 ),
               ],
             ),

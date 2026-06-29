@@ -112,20 +112,16 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
         child: progressAsync.when(
           skipLoadingOnReload: true,
           loading: () => const Center(child: InkLoadingIndicator()),
-          error: (e, _) => Center(
-            child: SelectableText(
-              UiStrings.loadFailed(e),
-              style: const TextStyle(color: WuxiaColors.hpLow),
-            ),
+          error: (e, _) => ErrorFallback(
+            error: e,
+            onRetry: () => ref.invalidate(towerProgressProvider),
           ),
           data: (progress) => floorListAsync.when(
             skipLoadingOnReload: true,
             loading: () => const Center(child: InkLoadingIndicator()),
-            error: (e, _) => Center(
-              child: SelectableText(
-                UiStrings.loadFailed(e),
-                style: const TextStyle(color: WuxiaColors.hpLow),
-              ),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () => ref.invalidate(towerFloorListProvider),
             ),
             data: (entries) {
               _maybeScrollToAvailable(entries);
@@ -501,18 +497,10 @@ class _TowerAdvanceCycleCard extends StatelessWidget {
               style: TextStyle(color: WuxiaColors.textSecondary, fontSize: 12),
             ),
           ),
-          TextButton(
-            onPressed: onAdvance,
-            style: TextButton.styleFrom(
-              foregroundColor: WuxiaColors.resultHighlight,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: const Text(
-              UiStrings.towerAdvanceCycleButton,
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-            ),
+          PlaqueButton(
+            label: UiStrings.towerAdvanceCycleButton,
+            primary: true,
+            onTap: onAdvance,
           ),
         ],
       ),
@@ -545,34 +533,19 @@ class _TowerSweepButton extends StatelessWidget {
     if (!eligible) {
       return SizedBox(
         width: double.infinity,
-        child: FilledButton.icon(
-          style: FilledButton.styleFrom(
-            backgroundColor: WuxiaColors.panel,
-            foregroundColor: WuxiaColors.textMuted,
-            disabledBackgroundColor: WuxiaColors.panel,
-            disabledForegroundColor: WuxiaColors.textMuted,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            textStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          onPressed: null,
-          icon: const Icon(Icons.lock_outline, size: 18),
-          label: Text(UiStrings.sweepLockedHintCycle(cycleIndex)),
+        child: PlaqueButton(
+          label: UiStrings.sweepLockedHintCycle(cycleIndex),
+          disabled: true,
+          onTap: null,
         ),
       );
     }
     return SizedBox(
       width: double.infinity,
-      child: FilledButton.icon(
-        style: FilledButton.styleFrom(
-          backgroundColor: WuxiaColors.bossFrame,
-          foregroundColor: WuxiaColors.background,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        onPressed: () {
+      child: PlaqueButton(
+        label: UiStrings.sweepTowerButtonCycle(cycleIndex),
+        primary: true,
+        onTap: () {
           final units = [
             for (final e in entries)
               TowerSweepUnit(floor: e.def, cycleIndex: cycleIndex),
@@ -588,8 +561,6 @@ class _TowerSweepButton extends StatelessWidget {
             ),
           );
         },
-        icon: const Icon(Icons.fast_forward, size: 22),
-        label: Text(UiStrings.sweepTowerButtonCycle(cycleIndex)),
       ),
     );
   }
