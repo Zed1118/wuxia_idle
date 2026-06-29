@@ -9,6 +9,7 @@ import '../../../data/isar_setup.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
@@ -134,7 +135,7 @@ class _SeclusionMapListScreenState
             const ContextHelpButton(topic: HelpTopic.seclusion),
             Padding(
               padding: const EdgeInsets.only(left: 8, right: 16),
-              child: Image.asset(
+              child: WuxiaImage(
                 'assets/ui/meditation_icon.png',
                 width: 24,
                 height: 24,

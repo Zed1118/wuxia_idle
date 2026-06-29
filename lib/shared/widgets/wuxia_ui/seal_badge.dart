@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/wuxia_tokens.dart';
+import '../wuxia_image.dart';
 
 /// 朱印角标（UI kit · demo `.islot .enh`）：`seal_red.png` 朱印底 + 居中题字。
 ///
@@ -27,7 +28,7 @@ class SealBadge extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           Positioned.fill(
-            child: Image.asset(
+            child: WuxiaImage(
               WuxiaUi.sealRed,
               fit: BoxFit.contain,
               errorBuilder: (_, _, _) => const DecoratedBox(

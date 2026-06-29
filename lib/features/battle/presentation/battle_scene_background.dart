@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 
 enum BattleSceneBackgroundStyle {
   generic,
@@ -49,7 +50,7 @@ class BattleSceneBackground extends StatelessWidget {
           painter: _DistantMountainPainter(profile),
         ),
         if (hasImage)
-          Image.asset(
+          WuxiaImage(
             p,
             fit: BoxFit.cover,
             errorBuilder: (_, _, _) => const SizedBox.shrink(),

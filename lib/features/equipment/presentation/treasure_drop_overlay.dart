@@ -6,6 +6,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/drop_service.dart';
 import '../../../core/domain/enums.dart';
@@ -60,7 +61,7 @@ class TreasureDropContent extends StatelessWidget {
                       scale: blobScale.clamp(0.0, 1.2),
                       child: ColorFiltered(
                         colorFilter: ColorFilter.mode(glow, BlendMode.srcIn),
-                        child: Image.asset(
+                        child: WuxiaImage(
                           _kInkBlobAsset,
                           width: 260,
                           height: 190,
@@ -85,7 +86,7 @@ class TreasureDropContent extends StatelessWidget {
                         SizedBox(
                           width: 64,
                           height: 64,
-                          child: Image.asset(
+                          child: WuxiaImage(
                             highlight.iconPath,
                             fit: BoxFit.contain,
                             errorBuilder: (_, _, _) => EquipGlyph(

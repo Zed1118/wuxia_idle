@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../support/image_test_helpers.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/victory_overlay.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -13,8 +15,7 @@ Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 Finder _assetImage(String path) => find.byWidgetPredicate(
   (w) =>
       w is Image &&
-      w.image is AssetImage &&
-      (w.image as AssetImage).assetName == path,
+      assetNameOf(w.image) == path,
 );
 
 void main() {

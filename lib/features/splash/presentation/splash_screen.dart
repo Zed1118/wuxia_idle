@@ -5,6 +5,7 @@ import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../save_slot/presentation/save_select_screen.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 启动闪屏(M4 PoC #46 美术 Stage 2 W6 收官 `landscape_loading.png` 9.5/10 接入)。
@@ -100,7 +101,7 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(
+              WuxiaImage(
                 'assets/ui/landscape_loading.png',
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => Container(

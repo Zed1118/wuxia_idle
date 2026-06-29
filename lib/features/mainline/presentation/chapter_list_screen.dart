@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../domain/chapter_assets.dart';
 import '../application/mainline_progress_service.dart';
@@ -41,7 +42,7 @@ class ChapterListScreen extends ConsumerWidget {
           preferredSize: const Size.fromHeight(36),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-            child: Image.asset(
+            child: WuxiaImage(
               'assets/ui/scroll_horizontal.png',
               height: 28,
               fit: BoxFit.fitWidth,
@@ -289,7 +290,7 @@ class _RouteChapterPanel extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.asset(
+                  WuxiaImage(
                     chapterCoverPath(chapterIndex),
                     fit: BoxFit.cover,
                     errorBuilder: wuxiaAssetErrorBuilder(
@@ -542,7 +543,7 @@ class _ChapterCard extends StatelessWidget {
                     // 锁章调暗保留「锁」信号(卡片另有锁图标+灰标题),但 0.35
                     // 过暗把封面美术埋成黑泥(Codex Ch5 验收反馈) → 0.5 让封面可辨。
                     opacity: locked ? 0.5 : 1.0,
-                    child: Image.asset(
+                    child: WuxiaImage(
                       chapterCoverPath(chapterIndex),
                       fit: BoxFit.cover,
                       errorBuilder: wuxiaAssetErrorBuilder(

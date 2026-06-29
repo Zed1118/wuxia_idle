@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/wuxia_tokens.dart';
+import '../wuxia_image.dart';
 
 /// 宣纸浅色面板（UI kit · demo `.wx .panel`）。
 ///
@@ -40,7 +41,7 @@ class PaperPanel extends StatelessWidget {
             Positioned.fill(
               child: Opacity(
                 opacity: paperOpacity,
-                child: Image.asset(
+                child: WuxiaImage(
                   WuxiaUi.paperBg,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => const SizedBox.shrink(),

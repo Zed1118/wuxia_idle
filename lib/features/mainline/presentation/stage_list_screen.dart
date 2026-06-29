@@ -8,6 +8,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/glossary_tip.dart';
 import '../../battle/application/selected_cycle_provider.dart';
 import '../../battle/domain/enum_localizations.dart';
@@ -208,7 +209,7 @@ class _StageJourneyMap extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
+          WuxiaImage(
             chapterCoverPath(chapterIndex),
             fit: BoxFit.cover,
             errorBuilder: (_, _, _) => Container(color: WuxiaColors.avatarFill),

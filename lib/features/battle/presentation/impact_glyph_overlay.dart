@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 
 const String _kInkBlobAsset = 'assets/ui/mj/caption_ink_blob.png';
 
@@ -88,7 +89,7 @@ class ImpactGlyphOverlayState extends State<ImpactGlyphOverlay>
                   Positioned.fill(
                     child: ColorFiltered(
                       colorFilter: ColorFilter.mode(accent, BlendMode.srcIn),
-                      child: Image.asset(
+                      child: WuxiaImage(
                         _kInkBlobAsset,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>

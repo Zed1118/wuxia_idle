@@ -31,6 +31,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/equipment_art_image.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 /// 装备详情屏(Phase 4 W15 LoreLoader 接入下一步)。
@@ -234,7 +235,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
           Positioned.fill(
             child: Opacity(
               opacity: 0.12,
-              child: Image.asset(
+              child: WuxiaImage(
                 'assets/ui/paper_bg.png',
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => const SizedBox.shrink(),
@@ -352,7 +353,7 @@ class _DetailHero extends StatelessWidget {
             children: [
               Opacity(
                 opacity: 0.18,
-                child: Image.asset(
+                child: WuxiaImage(
                   WuxiaUi.paperBg,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => const SizedBox.shrink(),

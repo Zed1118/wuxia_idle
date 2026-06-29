@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/image_test_helpers.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 void main() {
@@ -48,8 +50,7 @@ void main() {
       find.byWidgetPredicate(
         (w) =>
             w is Image &&
-            w.image is AssetImage &&
-            (w.image as AssetImage).assetName == path,
+            assetNameOf(w.image) == path,
       ),
       findsOneWidget,
     );

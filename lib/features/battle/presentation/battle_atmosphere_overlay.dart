@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 
 /// 战斗背景氛围层：只叠加轻雾、远灯与低血暗角，不参与交互和战斗结算。
 class BattleAtmosphereOverlay extends StatelessWidget {
@@ -50,7 +51,7 @@ class _AtmosphereImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Opacity(
       opacity: opacity,
-      child: Image.asset(
+      child: WuxiaImage(
         path,
         fit: BoxFit.cover,
         errorBuilder: (_, _, _) => const SizedBox.shrink(),
