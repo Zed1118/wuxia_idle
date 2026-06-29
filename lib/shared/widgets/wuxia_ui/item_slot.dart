@@ -99,249 +99,260 @@ class _ItemSlotState extends State<ItemSlot> {
           offset: const Offset(0, 2),
         ),
     ];
-    return SizedBox(
-      width: widget.size,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          InkWell(
-            onTap: widget.onTap,
-            onHover: (value) => setState(() => _hovered = value),
-            onHighlightChanged: (value) => setState(() => _pressed = value),
-            borderRadius: BorderRadius.circular(5),
-            child: AnimatedContainer(
-              key: const ValueKey('itemSlotFrame'),
-              duration: const Duration(milliseconds: 120),
-              curve: Curves.easeOut,
-              width: widget.size,
-              height: widget.size,
-              padding: EdgeInsets.all(_pressed ? 5 : 4),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    WuxiaUi.paper.withValues(alpha: _hovered ? 0.92 : 0.82),
-                    WuxiaUi.slotFill,
-                    WuxiaUi.paper2.withValues(alpha: 0.78),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(5),
-                border: Border.all(color: frameColor, width: frameWidth),
-                boxShadow: glow.isEmpty ? null : glow,
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: DecoratedBox(
+    // RepaintBoundary:格子有渐变+多重阴影+图标,页面切换动画/hover 时
+    // 隔离重绘——栅格化一次后合成,不随过渡每帧重绘整片网格(144Hz 实测
+    // 进仓库持续 8-11ms 光栅丢帧根因)。
+    return RepaintBoundary(
+      child: SizedBox(
+        width: widget.size,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InkWell(
+              onTap: widget.onTap,
+              onHover: (value) => setState(() => _hovered = value),
+              onHighlightChanged: (value) => setState(() => _pressed = value),
+              borderRadius: BorderRadius.circular(5),
+              child: AnimatedContainer(
+                key: const ValueKey('itemSlotFrame'),
+                duration: const Duration(milliseconds: 120),
+                curve: Curves.easeOut,
+                width: widget.size,
+                height: widget.size,
+                padding: EdgeInsets.all(_pressed ? 5 : 4),
                 decoration: BoxDecoration(
-                  color: WuxiaUi.slotFill.withValues(alpha: 0.62),
-                  borderRadius: BorderRadius.circular(3),
-                  border: Border.all(
-                    color: WuxiaUi.ink.withValues(alpha: 0.52),
-                    width: 0.8,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      WuxiaUi.paper.withValues(alpha: _hovered ? 0.92 : 0.82),
+                      WuxiaUi.slotFill,
+                      WuxiaUi.paper2.withValues(alpha: 0.78),
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(color: frameColor, width: frameWidth),
+                  boxShadow: glow.isEmpty ? null : glow,
                 ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Positioned(
-                      left: 7,
-                      right: 7,
-                      bottom: 18,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: WuxiaUi.woodDark.withValues(alpha: 0.22),
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        child: const SizedBox(height: 3),
-                      ),
+                clipBehavior: Clip.antiAlias,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: WuxiaUi.slotFill.withValues(alpha: 0.62),
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(
+                      color: WuxiaUi.ink.withValues(alpha: 0.52),
+                      width: 0.8,
                     ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        7,
-                        widget.tierLabel == null ? 7 : 18,
-                        7,
-                        widget.statusText == null ? 7 : 17,
-                      ),
-                      child: widget.imagePath == null
-                          ? glyph
-                          : EquipmentArtImage(
-                              imagePath: widget.imagePath!,
-                              fallback: glyph,
-                            ),
-                    ),
-                    if (widget.tierLabel != null)
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
                       Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
+                        left: 7,
+                        right: 7,
+                        bottom: 18,
+                        child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: frameColor.withValues(alpha: 0.88),
-                            border: Border(
-                              bottom: BorderSide(
-                                color: WuxiaUi.paper.withValues(alpha: 0.34),
+                            color: WuxiaUi.woodDark.withValues(alpha: 0.22),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: const SizedBox(height: 3),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          7,
+                          widget.tierLabel == null ? 7 : 18,
+                          7,
+                          widget.statusText == null ? 7 : 17,
+                        ),
+                        child: widget.imagePath == null
+                            ? glyph
+                            : EquipmentArtImage(
+                                imagePath: widget.imagePath!,
+                                fallback: glyph,
+                              ),
+                      ),
+                      if (widget.tierLabel != null)
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            decoration: BoxDecoration(
+                              color: frameColor.withValues(alpha: 0.88),
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: WuxiaUi.paper.withValues(alpha: 0.34),
+                                  width: 0.5,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              widget.tierLabel!,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: WuxiaUi.paper,
+                                fontSize: 9,
+                                height: 1.05,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (widget.leadingBadgeIcon != null)
+                        Positioned(
+                          top: widget.tierLabel == null ? 3 : 18,
+                          left: 3,
+                          child: _SlotIconBadge(
+                            icon: widget.leadingBadgeIcon!,
+                            color: widget.leadingBadgeColor ?? WuxiaUi.gold,
+                            tooltip: widget.leadingBadgeTooltip,
+                          ),
+                        ),
+                      if (widget.enhanceLevel > 0 ||
+                          widget.trailingBadgeIcon != null)
+                        Positioned(
+                          top: widget.tierLabel == null ? 3 : 18,
+                          right: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              if (widget.enhanceLevel > 0)
+                                SealBadge(text: '+${widget.enhanceLevel}'),
+                              if (widget.trailingBadgeIcon != null) ...[
+                                if (widget.enhanceLevel > 0)
+                                  const SizedBox(height: 2),
+                                _SlotIconBadge(
+                                  icon: widget.trailingBadgeIcon!,
+                                  color:
+                                      widget.trailingBadgeColor ??
+                                      WuxiaUi.jiang,
+                                  tooltip: widget.trailingBadgeTooltip,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      if (widget.protected && widget.protectedText != null)
+                        Positioned(
+                          left: 3,
+                          bottom: 3,
+                          child: Tooltip(
+                            message:
+                                widget.protectedTooltip ??
+                                widget.protectedText!,
+                            child: SealBadge(
+                              text: widget.protectedText!,
+                              size: 22,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      if (widget.statusText != null)
+                        Positioned(
+                          right: 3,
+                          bottom: 3,
+                          child: Container(
+                            constraints: BoxConstraints(
+                              maxWidth: widget.protected
+                                  ? widget.size - 34
+                                  : widget.size - 8,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: WuxiaUi.ink.withValues(alpha: 0.78),
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(
+                                color: WuxiaUi.paper.withValues(alpha: 0.48),
                                 width: 0.5,
                               ),
                             ),
-                          ),
-                          child: Text(
-                            widget.tierLabel!,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: WuxiaUi.paper,
-                              fontSize: 9,
-                              height: 1.05,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (widget.leadingBadgeIcon != null)
-                      Positioned(
-                        top: widget.tierLabel == null ? 3 : 18,
-                        left: 3,
-                        child: _SlotIconBadge(
-                          icon: widget.leadingBadgeIcon!,
-                          color: widget.leadingBadgeColor ?? WuxiaUi.gold,
-                          tooltip: widget.leadingBadgeTooltip,
-                        ),
-                      ),
-                    if (widget.enhanceLevel > 0 ||
-                        widget.trailingBadgeIcon != null)
-                      Positioned(
-                        top: widget.tierLabel == null ? 3 : 18,
-                        right: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            if (widget.enhanceLevel > 0)
-                              SealBadge(text: '+${widget.enhanceLevel}'),
-                            if (widget.trailingBadgeIcon != null) ...[
-                              if (widget.enhanceLevel > 0)
-                                const SizedBox(height: 2),
-                              _SlotIconBadge(
-                                icon: widget.trailingBadgeIcon!,
-                                color:
-                                    widget.trailingBadgeColor ?? WuxiaUi.jiang,
-                                tooltip: widget.trailingBadgeTooltip,
+                            child: Text(
+                              widget.statusText!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: WuxiaUi.paper,
+                                fontSize: 9,
+                                height: 1.15,
+                                fontWeight: FontWeight.w700,
                               ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    if (widget.protected && widget.protectedText != null)
-                      Positioned(
-                        left: 3,
-                        bottom: 3,
-                        child: Tooltip(
-                          message:
-                              widget.protectedTooltip ?? widget.protectedText!,
-                          child: SealBadge(
-                            text: widget.protectedText!,
-                            size: 22,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ),
-                    if (widget.statusText != null)
-                      Positioned(
-                        right: 3,
-                        bottom: 3,
-                        child: Container(
-                          constraints: BoxConstraints(
-                            maxWidth: widget.protected
-                                ? widget.size - 34
-                                : widget.size - 8,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: WuxiaUi.ink.withValues(alpha: 0.78),
-                            borderRadius: BorderRadius.circular(3),
-                            border: Border.all(
-                              color: WuxiaUi.paper.withValues(alpha: 0.48),
-                              width: 0.5,
-                            ),
-                          ),
-                          child: Text(
-                            widget.statusText!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: WuxiaUi.paper,
-                              fontSize: 9,
-                              height: 1.15,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
-                      ),
-                    if (_hovered && !widget.locked)
-                      Positioned.fill(
-                        child: IgnorePointer(
+                      if (_hovered && !widget.locked)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: ColoredBox(
+                              color: WuxiaUi.paper.withValues(alpha: 0.08),
+                            ),
+                          ),
+                        ),
+                      if (widget.locked)
+                        Positioned.fill(
                           child: ColoredBox(
-                            color: WuxiaUi.paper.withValues(alpha: 0.08),
-                          ),
-                        ),
-                      ),
-                    if (widget.locked)
-                      Positioned.fill(
-                        child: ColoredBox(
-                          color: WuxiaUi.ink.withValues(alpha: 0.70),
-                          child: Center(
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 8),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: WuxiaUi.jiang.withValues(alpha: 0.84),
-                                borderRadius: BorderRadius.circular(3),
-                                border: Border.all(
-                                  color: WuxiaUi.paper.withValues(alpha: 0.38),
-                                  width: 0.6,
+                            color: WuxiaUi.ink.withValues(alpha: 0.70),
+                            child: Center(
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 8,
                                 ),
-                              ),
-                              child: Text(
-                                widget.lockText,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: WuxiaUi.paper,
-                                  fontSize: 12,
-                                  height: 1.15,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: WuxiaUi.jiang.withValues(alpha: 0.84),
+                                  borderRadius: BorderRadius.circular(3),
+                                  border: Border.all(
+                                    color: WuxiaUi.paper.withValues(
+                                      alpha: 0.38,
+                                    ),
+                                    width: 0.6,
+                                  ),
+                                ),
+                                child: Text(
+                                  widget.lockText,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: WuxiaUi.paper,
+                                    fontSize: 12,
+                                    height: 1.15,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            widget.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: widget.highTier ? WuxiaUi.gold : WuxiaUi.ink,
-              fontSize: 12,
-              fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
+            const SizedBox(height: 5),
+            Text(
+              widget.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: widget.highTier ? WuxiaUi.gold : WuxiaUi.ink,
+                fontSize: 12,
+                fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

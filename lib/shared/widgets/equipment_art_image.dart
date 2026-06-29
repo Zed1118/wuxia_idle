@@ -29,6 +29,7 @@ class EquipmentArtImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 2.0;
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: DecoratedBox(
@@ -37,13 +38,30 @@ class EquipmentArtImage extends StatelessWidget {
         ),
         child: Padding(
           padding: padding,
-          child: Image.asset(
-            imagePath,
-            fit: fit,
-            errorBuilder: wuxiaAssetErrorBuilder(() => fallback),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Image.asset(
+                imagePath,
+                fit: fit,
+                // 源图 1024² 装备图被网格 ~80px 格全分辨率解码=4MB/张纹理,
+                // 切换到图标密集页(仓库)时几十张同解致光栅丢帧(实测 raster 65ms)。
+                // 按实际渲染宽×DPR 限制解码分辨率,量化到 64px 桶避免
+                // ItemSlot 按压 padding 4↔5px 抖动引发每帧重解码。详情大图
+                // 自动取更大 cacheWidth 保清晰,网格小图标解码量降数十倍。
+                cacheWidth: _decodeCacheWidth(constraints.maxWidth, dpr),
+                errorBuilder: wuxiaAssetErrorBuilder(() => fallback),
+              );
+            },
           ),
         ),
       ),
     );
+  }
+
+  /// 按渲染宽×DPR 求解码宽,量化到 64px 桶;无界约束返回 null(不限制)。
+  static int? _decodeCacheWidth(double maxWidth, double dpr) {
+    if (!maxWidth.isFinite || maxWidth <= 0) return null;
+    final physical = maxWidth * dpr;
+    return (physical / 64).ceil() * 64;
   }
 }

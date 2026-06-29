@@ -925,11 +925,13 @@ void main() {
     await tester.pumpAndSettle();
     final imgs = tester.widgetList<Image>(find.byType(Image));
     expect(
-      imgs.any(
-        (i) =>
-            i.image is AssetImage &&
-            (i.image as AssetImage).assetName == entry.value.iconPath,
-      ),
+      imgs.any((i) {
+        // 装备图经 cacheWidth 优化后 provider 是 ResizeImage 包 AssetImage,穿透取名。
+        final p = i.image is ResizeImage
+            ? (i.image as ResizeImage).imageProvider
+            : i.image;
+        return p is AssetImage && p.assetName == entry.value.iconPath;
+      }),
       isTrue,
     );
   });
