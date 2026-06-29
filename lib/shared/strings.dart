@@ -1528,6 +1528,11 @@ class UiStrings {
   static const String seclusionMapReady = '可闭关';
   static const String seclusionMapAtlasTitle = '山水地点图册';
   static const String seclusionMapActiveHint = '已有闭关正在此地进行';
+  static const String seclusionMapRealmGateLabel = '境界门槛';
+  static const String seclusionMapExpectedOutputLabel = '预期产出';
+  static const String seclusionMapStatusLabel = '当前状态';
+  static const String seclusionMapReadyHint = '可进入闭关';
+  static const String seclusionMapLockedHint = '未达门槛';
   // 地图卡产出加成摘要 / 进行中提示(_mapBonusSummary + _activeHint)。
   static const String seclusionBonusEquipDrop = '兵器掉率 +50%';
   static const String seclusionBonusTechniqueLearn = '心法领悟 +50%';
@@ -1536,6 +1541,9 @@ class UiStrings {
   static const String seclusionMapActiveDoneHint = '已完成，可收功';
   static String seclusionMapActiveRemainingHint(int remainingMinutes) =>
       '剩余 ${remainingMinutes ~/ 60}h${remainingMinutes % 60}min，可查看';
+  static String seclusionMapActiveBannerRemaining(String remaining) =>
+      '$seclusionMapActive · 剩余 $remaining';
+  static String seclusionMapActiveBannerDone() => '$activeRetreatDone · 可收功';
 
   static const String seclusionSetupTitle = '选择时长';
   static const String seclusionSetupStartButton = '开始闭关';
