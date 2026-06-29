@@ -92,8 +92,8 @@ void main() {
     _expectBossDoesNotRegress(repo.getTowerFloor(24), repo.getTowerFloor(25));
     _expectBossDoesNotRegress(repo.getTowerFloor(29), repo.getTowerFloor(30));
 
-    final floor25 = repo.getTowerFloor(25).enemyTeam.single;
-    final floor30 = repo.getTowerFloor(30).enemyTeam.single;
+    final floor25 = repo.getTowerFloor(25).enemyTeam.firstWhere((e) => e.isBoss);
+    final floor30 = repo.getTowerFloor(30).enemyTeam.firstWhere((e) => e.isBoss);
     expect(
       floor25.bossPhases,
       isNotNull,
