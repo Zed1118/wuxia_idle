@@ -197,22 +197,58 @@ void main() {
       }
     });
 
-    test('Boss 层固定 1 个敌人；普通层每队 1-3 人', () async {
+    test('所有塔层敌人数均在 1-3；Boss 层至少 1 个主 Boss', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       for (final f in repo.towerFloors) {
+        expect(
+          f.enemyTeam.length,
+          inInclusiveRange(1, 3),
+          reason: 'floor=${f.floorIndex} 敌人数 ∉ [1, 3]',
+        );
         if (f.bossKind != null) {
           expect(
-            f.enemyTeam.length,
-            1,
-            reason: 'Boss floor=${f.floorIndex} 必须 1 个敌人',
-          );
-        } else {
-          expect(
-            f.enemyTeam.length,
-            inInclusiveRange(1, 3),
-            reason: '普通 floor=${f.floorIndex} 敌人数 ∉ [1, 3]',
+            f.enemyTeam.any((e) => e.isBoss),
+            isTrue,
+            reason: 'Boss floor=${f.floorIndex} 至少应有 1 个 isBoss 主敌',
           );
         }
+      }
+    });
+
+    test('20/25/30 层后段 Boss 具备多目标压力、弱点抗性与阶段反扑', () async {
+      final repo = await GameRepository.loadAllDefs(loader: fileLoader);
+      for (final floorIndex in const [20, 25, 30]) {
+        final floor = repo.getTowerFloor(floorIndex);
+        expect(
+          floor.enemyTeam.length,
+          greaterThanOrEqualTo(2),
+          reason: 'floor=$floorIndex 应通过护法/影侍形成多目标压力',
+        );
+        final boss = floor.enemyTeam.singleWhere((e) => e.isBoss);
+        expect(
+          boss.schoolDamageTakenMult,
+          isNotNull,
+          reason: 'floor=$floorIndex 主 Boss 应提示流派弱点/抗性',
+        );
+        expect(
+          boss.bossPhases,
+          isNotNull,
+          reason: 'floor=$floorIndex 主 Boss 应有阶段机制',
+        );
+        expect(
+          boss.bossPhases!.length,
+          greaterThanOrEqualTo(3),
+          reason: 'floor=$floorIndex 应至少有起手+两段反扑',
+        );
+        expect(
+          boss.bossPhases!.skip(1).every(
+                (p) =>
+                    p.unlockSkillIds.isNotEmpty &&
+                    p.onEnterMechanic != null,
+              ),
+          isTrue,
+          reason: 'floor=$floorIndex 每个后续阶段都应提供可破招反制窗口',
+        );
       }
     });
 

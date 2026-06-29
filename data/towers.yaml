@@ -13,7 +13,7 @@
 #   - Boss 层 = 该阶 dengFeng baseline × 1.5
 #   - 多人队 scale：1 人 ×1.0 / 2 人 ×0.7 / 3 人 ×0.55
 #       → 团队总威胁 ×1.0 / ×1.4 / ×1.65 平滑递增
-#   - 敌人数：1-10 层 1 人 / 11-20 层 2 人 / 21-30 层 3 人；Boss 层固定 1 人
+#   - 敌人数：1-10 层 1 人 / 11-20 层 2 人 / 21-30 层 3 人；20/25/30 Boss 可带护法形成多目标压力
 #
 # 红线（GameRepository._enforceRedLines 校验）：
 #   - floorIndex ∈ [1, 30] 唯一连续
@@ -154,6 +154,7 @@ floors:
           - skill_gangmeng_jichu_skill
           - skill_gangmeng_jichu_ult
         iconPath: assets/enemies/tower_boss_05.png
+        isBoss: true
     dropTable:
       - equipmentDefId: weapon_xunchang_tie_jian
         dropChance: 1.0
@@ -290,6 +291,7 @@ floors:
           - skill_lingqiao_jichu_skill
           - skill_lingqiao_jichu_ult
         iconPath: assets/enemies/tower_boss_10.png
+        isBoss: true
         # 批二②:弱点/抗性。lingQiao 被 yinRou 克(灵巧怕阴柔)→ 弱点×1.25;
         # lingQiao 克 gangMeng(灵巧克刚猛)→ 抗性×0.75。
         schoolDamageTakenMult:
@@ -487,6 +489,7 @@ floors:
           - skill_yinrou_mingjia_skill
           - skill_yinrou_mingjia_ult
         iconPath: assets/enemies/tower_boss_15.png
+        isBoss: true
     dropTable:
       - equipmentDefId: weapon_haojiahuo_qing_feng_jian
         dropChance: 1.0
@@ -670,10 +673,52 @@ floors:
         baseAttack: 1600
         baseSpeed: 210
         skillIds:
-          - skill_gangmeng_mingjia_basic
-          - skill_gangmeng_mingjia_skill
-          - skill_gangmeng_mingjia_ult
+          - skill_gangmeng_menpai_basic
+          - skill_gangmeng_menpai_skill
+          - skill_gangmeng_menpai_ult
         iconPath: assets/enemies/tower_boss_20.png
+        isBoss: true
+        schoolDamageTakenMult:
+          lingQiao: 1.25
+          yinRou: 0.75
+        bossPhases:
+          - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.65
+            unlockSkillIds:
+              - skill_gangmeng_menpai_fang_skill
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.35
+            unlockSkillIds:
+              - skill_gangmeng_menpai_fang_ult
+            aiMode: aggressive
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+      - id: enemy_tower_20_guard_a
+        name: 霸主铁卫
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 2600
+        baseAttack: 520
+        baseSpeed: 175
+        skillIds:
+          - skill_yinrou_menpai_basic
+          - skill_yinrou_menpai_skill
+        iconPath: assets/enemies/jianghu_qianbei.png
+      - id: enemy_tower_20_guard_b
+        name: 霸主游卫
+        realmTier: yiLiu
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 2400
+        baseAttack: 500
+        baseSpeed: 205
+        skillIds:
+          - skill_lingqiao_menpai_basic
+          - skill_lingqiao_menpai_skill
+        iconPath: assets/enemies/zuo_hufa.png
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 1.0
@@ -912,14 +957,48 @@ floors:
           - skill_lingqiao_jianghu_skill
           - skill_lingqiao_jianghu_ult
         iconPath: assets/enemies/tower_boss_25.png
+        isBoss: true
+        schoolDamageTakenMult:
+          yinRou: 1.25
+          gangMeng: 0.75
         bossPhases:
           - hpThresholdPct: 1.0
+          - hpThresholdPct: 0.70
+            unlockSkillIds:
+              - skill_lingqiao_jianghu_fang_skill
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
           - hpThresholdPct: 0.5
             unlockSkillIds:
               - skill_lingqiao_jianghu_fang_ult
             aiMode: aggressive
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
+      - id: enemy_tower_25_shadow_a
+        name: 剑魔影侍
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: yinRou
+        baseHp: 3200
+        baseAttack: 620
+        baseSpeed: 205
+        skillIds:
+          - skill_yinrou_jianghu_basic
+          - skill_yinrou_jianghu_skill
+        iconPath: assets/enemies/anye.png
+      - id: enemy_tower_25_shadow_b
+        name: 剑魔快剑
+        realmTier: jueDing
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 3400
+        baseAttack: 650
+        baseSpeed: 195
+        skillIds:
+          - skill_gangmeng_jianghu_basic
+          - skill_gangmeng_jianghu_skill
+        iconPath: assets/enemies/jianghu_qianbei.png
     dropTable:
       # F4:清回掉低阶装备(原 weapon_liqi_long_quan -1 + accessory_haojiahuo_yu_pei_lao -2 阶),心血结晶加码补偿
       - equipmentDefId: weapon_zhongqi_qing_xu_jian
@@ -1164,14 +1243,48 @@ floors:
           - skill_yinrou_shichuan_skill
           - skill_yinrou_shichuan_ult
         iconPath: assets/enemies/tower_boss_30.png
+        isBoss: true
+        schoolDamageTakenMult:
+          gangMeng: 1.25
+          lingQiao: 0.75
         bossPhases:
           - hpThresholdPct: 1.0
-          - hpThresholdPct: 0.5
+          - hpThresholdPct: 0.70
+            unlockSkillIds:
+              - skill_yinrou_shichuan_fang_skill
+            aiMode: focus
+            onEnterMechanic: chargeCounter
+            titleKey: bossPhase_desperate
+          - hpThresholdPct: 0.4
             unlockSkillIds:
               - skill_yinrou_shichuan_fang_ult
             aiMode: aggressive
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
+      - id: enemy_tower_30_cultist_a
+        name: 九霄左使
+        realmTier: zongShi
+        realmLayer: jingTong
+        school: gangMeng
+        baseHp: 4200
+        baseAttack: 700
+        baseSpeed: 220
+        skillIds:
+          - skill_gangmeng_shichuan_basic
+          - skill_gangmeng_shichuan_skill
+        iconPath: assets/enemies/zuo_hufa.png
+      - id: enemy_tower_30_cultist_b
+        name: 九霄右使
+        realmTier: zongShi
+        realmLayer: jingTong
+        school: lingQiao
+        baseHp: 4000
+        baseAttack: 680
+        baseSpeed: 235
+        skillIds:
+          - skill_lingqiao_shichuan_basic
+          - skill_lingqiao_shichuan_skill
+        iconPath: assets/enemies/you_hufa.png
     dropTable:
       # F4:终局大 Boss 清 3 件回掉低阶装备(原 weapon_liqi_long_quan -2 / accessory_haojiahuo_yu_pei_lao -3 / armor_haojiahuo_jin_pao -3 阶,宗师阶下死重),价值落同阶宝物+秘籍+心血结晶大加码
       - equipmentDefId: weapon_baowu_xue_lian_bian

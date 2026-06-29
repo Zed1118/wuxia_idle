@@ -1168,11 +1168,10 @@ class GameRepository {
           '应 ∈ [1, 3]',
         );
       }
-      // Boss 层固定 1 个敌人
-      if (f.bossKind != null && f.enemyTeam.length != 1) {
+      // Boss 层至少有一个主 Boss；20/25/30 可带护法形成多目标压力。
+      if (f.bossKind != null && !f.enemyTeam.any((e) => e.isBoss)) {
         throw StateError(
-          '爬塔 Boss floor=${f.floorIndex} 应为 1 个敌人，'
-          '实际 ${f.enemyTeam.length}',
+          '爬塔 Boss floor=${f.floorIndex} 至少应有 1 个 isBoss 主敌',
         );
       }
       // §5.4 红线：Boss baseHp ≤ bossHpMax（config-driven，2026-06-14 调至 60000）
