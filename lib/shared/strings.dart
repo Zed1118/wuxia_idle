@@ -343,10 +343,26 @@ class UiStrings {
   static const String shopCategoryEquipment = '装备';
   static const String shopCategoryTechniqueClue = '心法线索';
   static const String shopCategoryOther = '杂项';
+  static const String shopShelfGroupCultivation = '修行补给';
+  static const String shopShelfGroupEnhancement = '兵刃强化';
+  static const String shopShelfGroupForging = '开锋整备';
+  static const String shopShelfGroupRecovery = '疗伤补给';
+  static const String shopShelfGroupIslandProduction = '桃花岛营造';
+  static const String shopShelfGroupTechnique = '武学秘卷';
+  static const String shopShelfGroupCommon = '行囊常备';
+  static const String shopShelfGroupCultivationDesc = '补足修为进境，标价随当前境界同步。';
+  static const String shopShelfGroupEnhancementDesc = '强化、保底相关材料，按现有货架采买。';
+  static const String shopShelfGroupForgingDesc = '开锋相关整备物，只显示当前货架已有项。';
+  static const String shopShelfGroupRecoveryDesc = '伤后整备所需物，只显示当前货架已有项。';
+  static const String shopShelfGroupIslandProductionDesc =
+      '岛上修缮与加工牵涉物，只读分层不改产出。';
+  static const String shopShelfGroupTechniqueDesc = '武学与秘籍相关线索，仍守江湖偶得。';
+  static const String shopShelfGroupCommonDesc = '暂未归入专门用途的常备之物。';
   static String silverBalanceLabel(int n) => '银两 $n';
   static String shopItemPrice(int p) => '$p 两';
   static String shopFilterLabel(String label, int count) => '$label $count';
   static String shopNeedSilver(int n) => '还差 $n 两';
+  static String shopOwnedQuantity(int n) => '已有 ×$n';
   static String shopCategorySummary({
     required int total,
     required int affordable,

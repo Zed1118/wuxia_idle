@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/item_usage.dart';
 import '../../../data/defs/shop_item_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
@@ -50,6 +51,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final silverAsync = ref.watch(silverBalanceProvider);
     final items = ref.watch(shopItemListProvider);
     final founderEtlAsync = ref.watch(founderEtlProvider);
+    final inventoryAsync = ref.watch(allInventoryItemsProvider);
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -73,6 +75,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
               items,
               founderEtl,
               _readActiveCharacters(),
+              {
+                for (final item in inventoryAsync.asData?.value ?? const [])
+                  item.defId: item.quantity,
+              },
             );
           },
         ),
@@ -86,6 +92,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     List<ShopItemDef> items,
     int? founderEtl,
     List<Character> activeCharacters,
+    Map<String, int> inventoryQuantities,
   ) {
     final repo = GameRepository.instanceOrNull;
     final hintService = repo == null ? null : ShopNeedHintService(repo);
@@ -97,6 +104,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             founderEtl,
             hintService: hintService,
             activeCharacters: activeCharacters,
+            inventoryQuantities: inventoryQuantities,
           ),
         )
         .toList();
@@ -104,10 +112,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         .where((entry) => _filter.includes(entry))
         .toList();
 
-    // 按 category 分组
-    final byCategory = <String, List<_ShopShelfEntry>>{};
+    // 按购买意图分组，只改变阅读层，不改变真实货架内容。
+    final byGroup = <_ShopShelfGroupKind, List<_ShopShelfEntry>>{};
     for (final entry in visibleEntries) {
-      byCategory.putIfAbsent(entry.def.category, () => []).add(entry);
+      byGroup.putIfAbsent(entry.group, () => []).add(entry);
     }
 
     return ListView(
@@ -122,16 +130,17 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           onSelected: (filter) => setState(() => _filter = filter),
         ),
         const SizedBox(height: 16),
-        // ── 分类货架面板 ───────────────────────────────────────────────────
-        for (final entry in byCategory.entries) ...[
-          _CategoryPanel(
-            category: entry.key,
-            entries: entry.value,
-            silver: silver,
-            onBuy: (def) => _handleBuy(context, def, silver, founderEtl),
-          ),
-          const SizedBox(height: 16),
-        ],
+        // ── 用途货架面板 ───────────────────────────────────────────────────
+        for (final group in _ShopShelfGroupKind.values)
+          if (byGroup[group]?.isNotEmpty == true) ...[
+            _ShelfGroupPanel(
+              group: group,
+              entries: byGroup[group]!,
+              silver: silver,
+              onBuy: (def) => _handleBuy(context, def, silver, founderEtl),
+            ),
+            const SizedBox(height: 16),
+          ],
       ],
     );
   }
@@ -260,6 +269,40 @@ extension _ShopShelfFilterText on _ShopShelfFilter {
   };
 }
 
+enum _ShopShelfGroupKind {
+  cultivation,
+  enhancement,
+  forging,
+  recovery,
+  islandProduction,
+  technique,
+  common,
+}
+
+extension _ShopShelfGroupText on _ShopShelfGroupKind {
+  String get label => switch (this) {
+    _ShopShelfGroupKind.cultivation => UiStrings.shopShelfGroupCultivation,
+    _ShopShelfGroupKind.enhancement => UiStrings.shopShelfGroupEnhancement,
+    _ShopShelfGroupKind.forging => UiStrings.shopShelfGroupForging,
+    _ShopShelfGroupKind.recovery => UiStrings.shopShelfGroupRecovery,
+    _ShopShelfGroupKind.islandProduction =>
+      UiStrings.shopShelfGroupIslandProduction,
+    _ShopShelfGroupKind.technique => UiStrings.shopShelfGroupTechnique,
+    _ShopShelfGroupKind.common => UiStrings.shopShelfGroupCommon,
+  };
+
+  String get description => switch (this) {
+    _ShopShelfGroupKind.cultivation => UiStrings.shopShelfGroupCultivationDesc,
+    _ShopShelfGroupKind.enhancement => UiStrings.shopShelfGroupEnhancementDesc,
+    _ShopShelfGroupKind.forging => UiStrings.shopShelfGroupForgingDesc,
+    _ShopShelfGroupKind.recovery => UiStrings.shopShelfGroupRecoveryDesc,
+    _ShopShelfGroupKind.islandProduction =>
+      UiStrings.shopShelfGroupIslandProductionDesc,
+    _ShopShelfGroupKind.technique => UiStrings.shopShelfGroupTechniqueDesc,
+    _ShopShelfGroupKind.common => UiStrings.shopShelfGroupCommonDesc,
+  };
+}
+
 class _ShopShelfEntry {
   const _ShopShelfEntry({
     required this.def,
@@ -267,6 +310,8 @@ class _ShopShelfEntry {
     required this.canAfford,
     required this.displayName,
     required this.hint,
+    required this.ownedQuantity,
+    required this.group,
   });
 
   factory _ShopShelfEntry.fromDef(
@@ -275,6 +320,7 @@ class _ShopShelfEntry {
     int? founderEtl, {
     ShopNeedHintService? hintService,
     List<Character> activeCharacters = const [],
+    Map<String, int> inventoryQuantities = const {},
   }) {
     final effectivePrice = (def.isDynamicPrice && founderEtl == null)
         ? null
@@ -289,6 +335,8 @@ class _ShopShelfEntry {
       canAfford: effectivePrice != null && silver >= effectivePrice,
       displayName: hint?.displayName ?? EnumL10n.itemType(def.itemType),
       hint: hint,
+      ownedQuantity: inventoryQuantities[def.itemDefId] ?? 0,
+      group: _resolveShelfGroup(def, hint),
     );
   }
 
@@ -297,11 +345,49 @@ class _ShopShelfEntry {
   final bool canAfford;
   final String displayName;
   final ShopNeedHint? hint;
+  final int ownedQuantity;
+  final _ShopShelfGroupKind group;
 
   bool get needsSaving => effectivePrice != null && !canAfford;
   bool get pricingPending => effectivePrice == null;
   bool get needsAttention =>
       needsSaving || pricingPending || def.isDynamicPrice;
+}
+
+_ShopShelfGroupKind _resolveShelfGroup(ShopItemDef def, ShopNeedHint? hint) {
+  final usageKinds = {
+    for (final usage in hint?.usages ?? const <ItemUsage>[]) usage.kind,
+  };
+
+  if (usageKinds.contains(ItemUsageKind.realmProgress)) {
+    return _ShopShelfGroupKind.cultivation;
+  }
+  if (usageKinds.contains(ItemUsageKind.techniqueUnlock)) {
+    return _ShopShelfGroupKind.technique;
+  }
+  if (usageKinds.contains(ItemUsageKind.equipmentForging)) {
+    return _ShopShelfGroupKind.forging;
+  }
+  if (usageKinds.contains(ItemUsageKind.injuryRecovery)) {
+    return _ShopShelfGroupKind.recovery;
+  }
+  if (usageKinds.contains(ItemUsageKind.islandBuildingUpgrade) ||
+      usageKinds.contains(ItemUsageKind.islandRecipeInput) ||
+      usageKinds.contains(ItemUsageKind.islandUpgradeCurrency)) {
+    return _ShopShelfGroupKind.islandProduction;
+  }
+  if (usageKinds.contains(ItemUsageKind.equipmentEnhancement) ||
+      usageKinds.contains(ItemUsageKind.equipmentGuarantee)) {
+    return _ShopShelfGroupKind.enhancement;
+  }
+
+  return switch (def.category) {
+    'pill' => _ShopShelfGroupKind.cultivation,
+    'technique_clue' ||
+    'techniqueClue' ||
+    'clue' => _ShopShelfGroupKind.technique,
+    _ => _ShopShelfGroupKind.common,
+  };
 }
 
 class _ShelfFilterBar extends StatelessWidget {
@@ -386,33 +472,20 @@ class _ShelfFilterChip extends StatelessWidget {
   }
 }
 
-// ── 分类货架面板 ──────────────────────────────────────────────────────────────
+// ── 用途货架面板 ──────────────────────────────────────────────────────────────
 
-class _CategoryPanel extends StatelessWidget {
-  const _CategoryPanel({
-    required this.category,
+class _ShelfGroupPanel extends StatelessWidget {
+  const _ShelfGroupPanel({
+    required this.group,
     required this.entries,
     required this.silver,
     required this.onBuy,
   });
 
-  final String category;
+  final _ShopShelfGroupKind group;
   final List<_ShopShelfEntry> entries;
   final int silver;
   final void Function(ShopItemDef def) onBuy;
-
-  String _categoryLabel(String cat) {
-    return switch (cat) {
-      'material' => UiStrings.shopCategoryMaterial,
-      'pill' => UiStrings.shopCategoryPill,
-      'equipment' => UiStrings.shopCategoryEquipment,
-      'technique_clue' => UiStrings.shopCategoryTechniqueClue,
-      'techniqueClue' => UiStrings.shopCategoryTechniqueClue,
-      'clue' => UiStrings.shopCategoryTechniqueClue,
-      'other' => UiStrings.shopCategoryOther,
-      _ => cat,
-    };
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -421,12 +494,12 @@ class _CategoryPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 分类标题
+          // 分组标题
           Row(
             children: [
               Expanded(
                 child: Text(
-                  _categoryLabel(category),
+                  group.label,
                   style: const TextStyle(
                     color: WuxiaColors.resultHighlight,
                     fontSize: 14,
@@ -450,6 +523,16 @@ class _CategoryPanel extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            group.description,
+            style: const TextStyle(
+              color: WuxiaUi.muted,
+              fontSize: 12,
+              height: 1.35,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(height: 12),
           // 商品列表（Column，每 tile 包 IntrinsicHeight 守滚动体例）
@@ -587,6 +670,7 @@ class _ShopItemStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final labels = <String>[
+      UiStrings.shopOwnedQuantity(entry.ownedQuantity),
       if (entry.pricingPending)
         UiStrings.shopStatusPricingPending
       else if (entry.canAfford)
