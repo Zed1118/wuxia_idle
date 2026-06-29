@@ -218,6 +218,24 @@ void main() {
     expect(find.byType(PortraitFrame), findsOneWidget);
     expect(find.text(UiStrings.injuryStatusHealthy), findsOneWidget);
     expect(find.text(UiStrings.profilePortraitPlaque), findsOneWidget);
+    expect(find.text(UiStrings.characterBiographyTitle), findsOneWidget);
+    expect(
+      find.text(UiStrings.characterBiographyRole(UiStrings.lineageRoleFounder)),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.characterBiographySchool('刚猛')), findsOneWidget);
+    expect(
+      find.text(UiStrings.characterBiographyEquipment(0, 3)),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.characterBiographyTechnique(0, 4)),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.characterBiographyConditionHealthy),
+      findsOneWidget,
+    );
     expect(find.text('测试者'), findsOneWidget); // 姓名
     expect(find.text('刚猛'), findsOneWidget); // EnumL10n.school(gangMeng)
     expect(find.text('根骨'), findsOneWidget);
@@ -234,6 +252,10 @@ void main() {
     expect(find.textContaining(UiStrings.injuryHeavyLabel), findsOneWidget);
     expect(find.textContaining(UiStrings.injuryLightLabel), findsOneWidget);
     expect(find.text(UiStrings.injuryStatusRecoveryHint), findsOneWidget);
+    expect(
+      find.text(UiStrings.characterBiographyConditionInjured),
+      findsOneWidget,
+    );
   });
 
   testWidgets('第八阶段·档案头显「等级 Lv N」chip + 经验条', (tester) async {
@@ -243,7 +265,7 @@ void main() {
     await pumpPanel(tester, character: character);
 
     expect(find.text(UiStrings.profileLevelLabel), findsOneWidget); // 「等级」
-    expect(find.text('Lv 5'), findsOneWidget);
+    expect(find.text(UiStrings.profileLevelValue(5)), findsOneWidget);
     // 经验条:GameRepository 已加载 → LinearProgressIndicator 渲染。
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
   });
