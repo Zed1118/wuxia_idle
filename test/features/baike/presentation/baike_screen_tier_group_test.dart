@@ -26,12 +26,16 @@ Future<String> _fixtureLoader(String path) async {
   if (path == 'data/equipment.yaml') return _buildEquipmentYaml();
   if (path == 'data/masters.yaml') return _kMastersYaml;
   if (path == 'data/techniques.yaml') return 'techniques: []\n';
+  if (path == 'data/founder_creation.yaml') {
+    return 'schools: []\norigins: []\nfatePool: []\n';
+  }
   if (path == 'data/skills.yaml') return 'skills: []\n';
   if (path == 'data/stages.yaml') return 'stages: []\n';
   if (path == 'data/towers.yaml') return 'floors: []\n';
   if (path.startsWith('data/lore/')) {
-    final loreId =
-        path.replaceFirst('data/lore/', '').replaceFirst('.yaml', '');
+    final loreId = path
+        .replaceFirst('data/lore/', '')
+        .replaceFirst('.yaml', '');
     return 'id: $loreId\nname: 测试典故\ndefault_lore:\n  - text: 测试内容\n';
   }
   return File(path).readAsString();
@@ -249,8 +253,7 @@ void main() {
     await goToLoreTab(tester);
 
     // EquipmentTier.values 白名单定义"正确顺序"——不写「第 1 个是寻常货」
-    final tierL10ns =
-        EquipmentTier.values.map(EnumL10n.equipmentTier).toList();
+    final tierL10ns = EquipmentTier.values.map(EnumL10n.equipmentTier).toList();
     final allTexts = tester
         .widgetList<Text>(find.byType(Text))
         .map((w) => w.data ?? '')
@@ -269,7 +272,11 @@ void main() {
     await goToLoreTab(tester);
 
     final def = GameRepository.instance.equipmentDefs['t_test_zero']!;
-    expect(def.presetLoreIds, isEmpty, reason: '测试前提：fixture t_test_zero 段数为 0');
+    expect(
+      def.presetLoreIds,
+      isEmpty,
+      reason: '测试前提：fixture t_test_zero 段数为 0',
+    );
     // 断言用「def.presetLoreIds.length 维度等价」，不写字面数字
     expect(
       find.text('${def.presetLoreIds.length} 段典故'),
@@ -282,11 +289,16 @@ void main() {
     await goToLoreTab(tester);
 
     final def = GameRepository.instance.equipmentDefs['t_test_one']!;
-    expect(def.presetLoreIds.length, equals(1), reason: '测试前提：fixture t_test_one 段数为 1');
+    expect(
+      def.presetLoreIds.length,
+      equals(1),
+      reason: '测试前提：fixture t_test_one 段数为 1',
+    );
     expect(
       find.text('${def.presetLoreIds.length} 段典故'),
       findsAtLeastNWidgets(1),
-      reason: 'presetLoreIds.length=1 → widget 渲染 ${def.presetLoreIds.length} 段典故',
+      reason:
+          'presetLoreIds.length=1 → widget 渲染 ${def.presetLoreIds.length} 段典故',
     );
   });
 
@@ -294,22 +306,21 @@ void main() {
     await goToLoreTab(tester);
 
     final testIds = ['t_test_one', 't_test_three', 't_test_five'];
-    final defs =
-        testIds
-            .map((id) => GameRepository.instance.equipmentDefs[id]!)
-            .toList();
+    final defs = testIds
+        .map((id) => GameRepository.instance.equipmentDefs[id]!)
+        .toList();
 
     // 验证 fixture 本身: 3 件装备段数各不相同
-    final expectedTexts =
-        defs.map((d) => '${d.presetLoreIds.length} 段典故').toSet();
+    final expectedTexts = defs
+        .map((d) => '${d.presetLoreIds.length} 段典故')
+        .toSet();
     expect(expectedTexts.length, equals(3), reason: 'fixture 3 件装备应有 3 个不同段数');
 
     // 集合等价：widget tree 中每个预期段数文本均出现
-    final rendered =
-        tester
-            .widgetList<Text>(find.byType(Text))
-            .map((w) => w.data ?? '')
-            .toSet();
+    final rendered = tester
+        .widgetList<Text>(find.byType(Text))
+        .map((w) => w.data ?? '')
+        .toSet();
     for (final expected in expectedTexts) {
       expect(
         rendered.contains(expected),

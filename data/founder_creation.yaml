@@ -1,0 +1,130 @@
+# 新档祖师塑形配置。
+# 规则:
+# - schools:决定祖师主修流派与起手心法。
+# - origins:只给少量起手资源差异,不制造长期数值膨胀。
+# - fatePool:创建页从池中抽 3 份命盘候选;单项属性守 [1,10],总点守 [16,24]。
+
+schools:
+  - id: gang_meng
+    school: gangMeng
+    label: 刚猛
+    temperament: 山岳骨
+    summary: 以力开路,重正面破局,适合喜欢硬碰硬的祖师。
+    attributeHint: 更看重根骨与内力承压,起手战斗更稳。
+    startingTechniqueIds:
+      - tech_gangmeng_jichu
+    goalHint: 先稳住主线前几关,用厚血量换取出手机会。
+
+  - id: ling_qiao
+    school: lingQiao
+    label: 灵巧
+    temperament: 飞鸿影
+    summary: 以快制慢,讲究闪转腾挪,适合喜欢速度与暴击的祖师。
+    attributeHint: 更看重身法与出手频率,起手节奏更轻快。
+    startingTechniqueIds:
+      - tech_lingqiao_jichu
+    goalHint: 先熟悉拖招与破招时机,用速度拉开回合差。
+
+  - id: yin_rou
+    school: yinRou
+    label: 阴柔
+    temperament: 寒潭息
+    summary: 以内息入骨,重消耗与后劲,适合喜欢稳扎稳打的祖师。
+    attributeHint: 更看重悟性与内息积累,起手成长更细水长流。
+    startingTechniqueIds:
+      - tech_yinrou_jichu
+    goalHint: 先养主修心法,用持续内伤压住强敌节奏。
+
+origins:
+  - id: mountain_wanderer
+    label: 山野散人
+    summary: 久居荒山,粗通采药与自守,开山时少有外物牵挂。
+    mojianshiBonus: 0
+    jieJingBonus: 0
+    resourceSummary: 无额外资源,但履历最干净。
+    biographyLine: 少年行于山野,以一身旧衣开山立派。
+
+  - id: escort_apprentice
+    label: 镖局旧徒
+    summary: 曾随镖队走南北,懂些兵器保养,起手多带几枚磨剑石。
+    mojianshiBonus: 20
+    jieJingBonus: 0
+    resourceSummary: 磨剑石 +20。
+    biographyLine: 曾随镖旗走过官道,见过刀光,也识得人情冷暖。
+
+  - id: academy_exile
+    label: 书院弃生
+    summary: 读书不成,悟性未失,开派时更懂从心法里找路。
+    mojianshiBonus: 5
+    jieJingBonus: 0
+    resourceSummary: 磨剑石 +5,偏重悟性叙事。
+    biographyLine: 曾在残卷灯下读到天明,弃书入江湖后仍记得字里锋芒。
+
+  - id: herb_hut_keeper
+    label: 药庐门人
+    summary: 曾在药庐看火分药,起手资源不多,但更懂留命再战。
+    mojianshiBonus: 10
+    jieJingBonus: 1
+    resourceSummary: 磨剑石 +10,心血结晶 +1。
+    biographyLine: 在药香与炉火里学会忍耐,知人命脆,也知筋骨可养。
+
+fatePool:
+  - id: thick_bones
+    label: 筋骨厚
+    verse: 骨重如石,气沉丹田。
+    focus: 根骨高,适合正面久战。
+    attributeProfile:
+      constitution: 8
+      enlightenment: 5
+      agility: 4
+      fortune: 4
+
+  - id: clear_mind
+    label: 悟性明
+    verse: 一灯照夜,万法入心。
+    focus: 悟性高,适合重视心法成长。
+    attributeProfile:
+      constitution: 4
+      enlightenment: 8
+      agility: 5
+      fortune: 4
+
+  - id: swift_steps
+    label: 身法轻
+    verse: 落叶不惊,步过无痕。
+    focus: 身法高,适合快节奏战斗。
+    attributeProfile:
+      constitution: 4
+      enlightenment: 5
+      agility: 8
+      fortune: 4
+
+  - id: deep_fortune
+    label: 机缘深
+    verse: 旧桥遇雨,偏有舟来。
+    focus: 机缘高,适合期待奇遇与偶得。
+    attributeProfile:
+      constitution: 5
+      enlightenment: 4
+      agility: 4
+      fortune: 8
+
+  - id: balanced_seed
+    label: 根器匀
+    verse: 四气归中,不偏不倚。
+    focus: 四项均衡,适合稳妥开局。
+    attributeProfile:
+      constitution: 6
+      enlightenment: 6
+      agility: 5
+      fortune: 5
+
+  - id: hard_learner
+    label: 苦修骨
+    verse: 先慢后稳,百折不回。
+    focus: 根骨与悟性并重,短板在机缘。
+    attributeProfile:
+      constitution: 7
+      enlightenment: 7
+      agility: 4
+      fortune: 3

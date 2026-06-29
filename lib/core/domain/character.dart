@@ -139,6 +139,12 @@ class Character {
   /// 默认 null → 无立绘位(不破布局)。
   String? portraitPath;
 
+  /// 新档祖师塑形选择 id。仅 [isFounder] 角色在新创建流程中写入;旧档 / debug
+  /// seed 为空时 UI 回退到传统「开派太祖」纪事。
+  String? founderCreationSchoolId;
+  String? founderCreationOriginId;
+  String? founderCreationFateId;
+
   late DateTime createdAt;
 
   Character();
@@ -188,6 +194,9 @@ class Character {
     int? sectId,
     SectRank? sectRank,
     String? portraitPath,
+    String? founderCreationSchoolId,
+    String? founderCreationOriginId,
+    String? founderCreationFateId,
   }) {
     return Character()
       ..name = name
@@ -232,6 +241,9 @@ class Character {
       ..isInSect = isInSect
       ..sectId = sectId
       ..sectRank = sectRank
-      ..portraitPath = portraitPath;
+      ..portraitPath = portraitPath
+      ..founderCreationSchoolId = founderCreationSchoolId
+      ..founderCreationOriginId = founderCreationOriginId
+      ..founderCreationFateId = founderCreationFateId;
   }
 }
