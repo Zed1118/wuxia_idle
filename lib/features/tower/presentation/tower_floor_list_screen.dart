@@ -239,7 +239,8 @@ class _TowerSpineOverview extends StatelessWidget {
           const SizedBox(height: 8),
           const Text(
             UiStrings.towerSpineLegend,
-            style: TextStyle(color: WuxiaColors.textMuted, fontSize: 11),
+            // 浅宣纸底用墨色柔灰 WuxiaUi.muted；WuxiaColors.textMuted 是深色 UI 专用浅灰，叠浅底会糊。
+            style: TextStyle(color: WuxiaUi.muted, fontSize: 11),
           ),
         ],
       ),

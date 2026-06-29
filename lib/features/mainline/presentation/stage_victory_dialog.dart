@@ -435,8 +435,9 @@ class FirstClearBanner extends StatelessWidget {
               children: [
                 Text(
                   subtitle,
+                  // CeremonyImagePanel 浅纸 veil(0.7) 底用墨色 WuxiaUi；深色 UI 专用 textSecondary/textPrimary 叠浅底会糊。
                   style: const TextStyle(
-                    color: WuxiaColors.textSecondary,
+                    color: WuxiaUi.ink2,
                     fontSize: 11,
                     letterSpacing: 2,
                     fontWeight: FontWeight.w600,
@@ -446,7 +447,7 @@ class FirstClearBanner extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: WuxiaColors.textPrimary,
+                    color: WuxiaUi.ink,
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                   ),
