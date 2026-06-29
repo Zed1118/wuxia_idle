@@ -2534,6 +2534,16 @@ class UiStrings {
   static const String taohuaIslandSceneWorkshopBody = '精铁入炉，丹药与辅材各守配方。';
   static const String taohuaIslandSceneDock = '渡口';
   static const String taohuaIslandSceneDockBody = '暂作外出整备与后续工程留白。';
+  static const String taohuaIslandSceneMapTitle = '岛屿场景';
+  static String taohuaIslandSceneMapSummary(
+    int rawStored,
+    int workshopStored,
+  ) => '物产 $rawStored · 成品 $workshopStored';
+  static String taohuaIslandSceneHotspotMeta(int level, int stored) =>
+      'Lv.$level · $stored';
+  static String taohuaIslandSelectedBuildingTitle(String buildingName) =>
+      '$buildingName详情';
+  static const String taohuaIslandSelectedBuildingBody = '仓储、配方与修缮俱归此处。';
 
   /// 桃花岛总览状态摘要。
   static const String taohuaIslandStatusRawTitle = '当前物产';
