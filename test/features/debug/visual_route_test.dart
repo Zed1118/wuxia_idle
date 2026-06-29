@@ -120,6 +120,13 @@ void main() {
     test('藏卷阁 Hub 路由 parse', () {
       expect(parseVisualRoute('zangjuange'), VisualRoute.zangjuange);
     });
+    test('批次3系统页路由 parse', () {
+      expect(parseVisualRoute('taohua_island'), VisualRoute.taohuaIsland);
+      expect(
+        parseVisualRoute('recruitment_dialog'),
+        VisualRoute.recruitmentDialog,
+      );
+    });
   });
 
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。

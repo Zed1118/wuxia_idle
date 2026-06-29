@@ -14,6 +14,7 @@ import '../../codex/presentation/codex_tab.dart';
 import '../../home_feed/application/home_feed_providers.dart';
 import 'encounter_tab.dart';
 import 'martial_arts_tab.dart';
+import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 江湖见闻录(P1 #42 Phase 4/P1.z / GDD §10.2 第 3 方式百科)。
@@ -78,9 +79,7 @@ class _FeedTab extends ConsumerWidget {
           ? const _EmptyHint(text: UiStrings.baikeFeedEmpty)
           : _FeedList(events: events),
       loading: () => const Center(
-        child: InkLoadingIndicator(
-          color: WuxiaColors.resultHighlight,
-        ),
+        child: InkLoadingIndicator(color: WuxiaColors.resultHighlight),
       ),
       error: (e, st) => const _EmptyHint(text: UiStrings.baikeFeedEmpty),
     );
@@ -228,14 +227,11 @@ class _EmptyHint extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: WuxiaColors.textMuted,
-            fontSize: 15,
-            height: 1.6,
-          ),
+        child: InkEmptyState(
+          variant: InkEmptyStateVariant.empty,
+          title: UiStrings.baikeEmptyTitle,
+          body: text,
+          icon: Icons.auto_stories_outlined,
         ),
       ),
     );
