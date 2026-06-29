@@ -1403,10 +1403,13 @@ class _HintBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      color: const Color(0xFF2A3A2A),
+      color: WuxiaColors.hintBannerBg,
       child: Text(
         hint,
-        style: const TextStyle(color: Color(0xFF8BC28B), fontSize: 13),
+        style: const TextStyle(
+          color: WuxiaColors.hintBannerText,
+          fontSize: 13,
+        ),
       ),
     );
   }
@@ -1423,7 +1426,7 @@ class _CycleHintBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-      color: const Color(0xFF3A2E00),
+      color: WuxiaColors.cycleHintBg,
       child: Text(
         hint,
         style: const TextStyle(color: WuxiaColors.cycleHintText, fontSize: 12),

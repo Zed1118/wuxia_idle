@@ -30,6 +30,10 @@ class WuxiaColors {
   static const Color textMuted = Color(0xFF8A93A0);
   static const Color resultHighlight = Color(0xFFE8C547);
   static const Color cycleHintText = Color(0xFFD4A800);
+  // P2-3(2026-06-29 审查修复):战斗提示横幅色收入 token,替 battle_screen 散写魔数。
+  static const Color hintBannerBg = Color(0xFF2A3A2A); // 通用提示条墨绿底
+  static const Color hintBannerText = Color(0xFF8BC28B); // 通用提示条淡绿字
+  static const Color cycleHintBg = Color(0xFF3A2E00); // 周目记招提示条暗琥珀底
   static const Color visualGoldShadow = Color(0x88B99A3B);
   static const Color treasureAuraInner = Color(0x00F0CC72);
   static const Color treasureAuraMid = Color(0x44F0CC72);
