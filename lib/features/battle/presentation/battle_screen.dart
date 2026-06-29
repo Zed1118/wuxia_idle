@@ -41,6 +41,8 @@ import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
 import '../../inventory/presentation/inventory_screen.dart';
+import '../../settings/application/gameplay_settings_provider.dart';
+import '../../settings/domain/gameplay_settings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
@@ -439,9 +441,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     if (_isPaused) return; // H3 暂停态:任何重启请求都不启动 timer。
     // 快进态:玩家手动开了快进,或拖招立即触发正在「快进到出手」(C5)。
     final rushing = _isFastForward || _rushToActorId != null;
+    final gameplaySettings = _currentGameplaySettings;
     final interval = rushing
         ? widget.animConfig.fastForwardIntervalMs
-        : widget.animConfig.actionIntervalMs;
+        : gameplaySettings.scaledBattleIntervalMs(
+            widget.animConfig.actionIntervalMs,
+          );
     _playTimer = Timer.periodic(Duration(milliseconds: interval), (_) {
       if (!mounted) return;
       final notifier = ref.read(battleProvider.notifier);
@@ -579,13 +584,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         if (profile.glyph != null && !weaknessGlyphShown) {
           _impactGlyphKey.currentState?.show(profile.glyph!, isEnemy: isEnemy);
         }
-        _screenFlashKey.currentState?.flash(
-          profile.flashStrength,
-          // profile 非空 ⇒ attackResult 非空（见 impactProfileFor 的 null 契约）。
-          color: action.attackResult!.isCritical
-              ? WuxiaColors.gangMeng
-              : Colors.white,
-        );
+        if (!_reduceFlashing) {
+          _screenFlashKey.currentState?.flash(
+            profile.flashStrength,
+            // profile 非空 ⇒ attackResult 非空（见 impactProfileFor 的 null 契约）。
+            color: action.attackResult!.isCritical
+                ? WuxiaColors.gangMeng
+                : Colors.white,
+          );
+        }
         // hit-stop + 镜头震：快进/拖招态跳过（守 2.3 时序 + 保快进顺滑）。
         if (!_isFastForward && _rushToActorId == null) {
           _impactShakeAmplitude = profile.shakeMagnitude;
@@ -629,10 +636,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // 初始化（轻量 widget 测）时 cfg==null，仍保证题字触发、闪白/抖动跳过。
     final cfg = _impactConfigOrNull();
     if (cfg != null) {
-      _screenFlashKey.currentState?.flash(
-        cfg.heavy.flashStrength,
-        color: WuxiaColors.gangMeng,
-      );
+      if (!_reduceFlashing) {
+        _screenFlashKey.currentState?.flash(
+          cfg.heavy.flashStrength,
+          color: WuxiaColors.gangMeng,
+        );
+      }
       // 抖动同 2.4：快进 / 拖招态跳过（保顺滑）。
       if (!_isFastForward && _rushToActorId == null) {
         _impactShakeAmplitude = cfg.heavy.shakeMagnitude;
@@ -650,6 +659,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     }
   }
 
+  GameplaySettings get _currentGameplaySettings => ref
+      .read(gameplaySettingsProvider)
+      .maybeWhen(data: (s) => s, orElse: () => const GameplaySettings());
+
+  bool get _reduceFlashing => _currentGameplaySettings.reduceFlashing;
+
   /// hit-stop：命中瞬间停播放 Timer，延后 [ms] 后复播。只动屏上播放节拍
   /// （advance 结算确定不变，守 §5.5）；_startTimer 内 _isPaused gate 兜住，
   /// 暂停态不会被复活。
@@ -664,6 +679,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
   void _triggerHitFlash(BattleCharacter target, bool isCritical) {
+    if (_reduceFlashing) return;
     final key = _slotKey(target.teamSide, target.slotIndex);
     setState(() {
       _hitFlashColors[key] = isCritical ? WuxiaColors.gangMeng : Colors.white;
@@ -1204,6 +1220,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       for (final sfx in chargeTransitionSfx(prev, next)) {
         SoundManager.instance.playSfx(sfx);
       }
+    });
+
+    ref.listen(gameplaySettingsProvider, (_, _) {
+      final s = ref.read(battleProvider);
+      if (_playTimer != null && !s.isFinished) _startTimer();
     });
 
     // team 空时（startBattle 还未调用）渲染 placeholder
