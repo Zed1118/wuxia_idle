@@ -468,6 +468,7 @@ class _BuildingSection extends StatelessWidget {
                 orElse: () => IslandBuildingState()..type = type,
               ),
               bCfg: cfg.buildings[type]!,
+              cfg: cfg,
               view: view,
               onRefresh: onRefresh,
             ),
@@ -647,6 +648,7 @@ class _BuildingCard extends StatelessWidget {
     required this.type,
     required this.state,
     required this.bCfg,
+    required this.cfg,
     required this.view,
     required this.onRefresh,
   });
@@ -654,6 +656,7 @@ class _BuildingCard extends StatelessWidget {
   final BuildingType type;
   final IslandBuildingState state;
   final BuildingConfig bCfg;
+  final TaohuaIslandConfig cfg;
   final IslandView view;
   final VoidCallback onRefresh;
 
@@ -664,6 +667,7 @@ class _BuildingCard extends StatelessWidget {
     final cap = bCfg.capFor(level);
     final stored = state.stored.floor();
     final isProcessor = bCfg.kind == BuildingKind.processor;
+    final synergyLine = _synergyLine();
 
     // 产物名
     String outputName = '';
@@ -758,6 +762,17 @@ class _BuildingCard extends StatelessWidget {
 
           // ── 选配方（仅 processor）──
           if (isProcessor) ...[
+            if (synergyLine != null) ...[
+              Text(
+                synergyLine,
+                style: const TextStyle(
+                  color: WuxiaUi.qing,
+                  fontSize: 12,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
             _RecipeSelector(
               type: type,
               state: state,
@@ -780,6 +795,35 @@ class _BuildingCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String? _synergyLine() {
+    if (bCfg.kind != BuildingKind.processor) return null;
+    final parts = <String>[];
+    for (final rule in cfg.synergies.rulesForTarget(type)) {
+      final sourceCfg = cfg.buildings[rule.sourceBuilding];
+      if (sourceCfg == null) continue;
+      if (sourceCfg.realmUnlockIndex > view.founderRealmIndex) continue;
+      IslandBuildingState? sourceState;
+      for (final b in view.buildings) {
+        if (b.type == rule.sourceBuilding) {
+          sourceState = b;
+          break;
+        }
+      }
+      if (sourceState == null) continue;
+      final percent = (sourceState.level * rule.rateBonusPerSourceLevel * 100)
+          .round();
+      if (percent <= 0) continue;
+      parts.add(
+        UiStrings.taohuaIslandSynergyPart(
+          EnumL10n.buildingType(rule.sourceBuilding),
+          percent,
+        ),
+      );
+    }
+    if (parts.isEmpty) return null;
+    return UiStrings.taohuaIslandSynergyLine(parts);
   }
 }
 

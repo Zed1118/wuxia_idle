@@ -66,10 +66,12 @@ class BuildingConfig {
       _ => throw ArgumentError('未知建筑 kind: $kindStr'),
     };
 
-    final String? outputItem =
-        kind == BuildingKind.source ? y['output_item'] as String : null;
-    final String? inputItem =
-        kind == BuildingKind.processor ? y['input_item'] as String : null;
+    final String? outputItem = kind == BuildingKind.source
+        ? y['output_item'] as String
+        : null;
+    final String? inputItem = kind == BuildingKind.processor
+        ? y['input_item'] as String
+        : null;
     final String? secondaryInputItem = kind == BuildingKind.processor
         ? y['secondary_input_item'] as String?
         : null;
@@ -79,8 +81,10 @@ class BuildingConfig {
 
     final List<RecipeDef> recipes = kind == BuildingKind.processor
         ? (y['recipes'] as List)
-            .map((e) => RecipeDef.fromYaml((e as Map).cast<String, dynamic>()))
-            .toList()
+              .map(
+                (e) => RecipeDef.fromYaml((e as Map).cast<String, dynamic>()),
+              )
+              .toList()
         : const [];
 
     return BuildingConfig(
@@ -111,11 +115,13 @@ class TaohuaIslandConfig {
   final int capHours;
   final int unlockChapterIndex;
   final Map<BuildingType, BuildingConfig> buildings;
+  final TaohuaBuildingSynergyConfig synergies;
 
   const TaohuaIslandConfig({
     required this.capHours,
     required this.unlockChapterIndex,
     required this.buildings,
+    required this.synergies,
   });
 
   BuildingConfig buildingOf(BuildingType t) => buildings[t]!;
@@ -143,35 +149,41 @@ class TaohuaIslandConfig {
       }
       if (b.capPerLevel < 0) {
         throw StateError(
-            'taohua_island: 建筑 $label cap_per_level ${b.capPerLevel} < 0');
+          'taohua_island: 建筑 $label cap_per_level ${b.capPerLevel} < 0',
+        );
       }
       if (b.maxLevel < 1) {
         throw StateError(
-            'taohua_island: 建筑 $label max_level ${b.maxLevel} < 1');
+          'taohua_island: 建筑 $label max_level ${b.maxLevel} < 1',
+        );
       }
 
       // 节奏 B：升级曲线/境界 gate 数组长度须 = max_level-1（每级一项）
       final expectedLen = b.maxLevel - 1;
       if (b.upgradeSilverLevels.length != expectedLen) {
         throw StateError(
-            'taohua_island: 建筑 $label upgrade_silver_levels 长度 '
-            '${b.upgradeSilverLevels.length} ≠ max_level-1 ($expectedLen)');
+          'taohua_island: 建筑 $label upgrade_silver_levels 长度 '
+          '${b.upgradeSilverLevels.length} ≠ max_level-1 ($expectedLen)',
+        );
       }
       if (b.upgradeRealmLevels.length != expectedLen) {
         throw StateError(
-            'taohua_island: 建筑 $label upgrade_realm_levels 长度 '
-            '${b.upgradeRealmLevels.length} ≠ max_level-1 ($expectedLen)');
+          'taohua_island: 建筑 $label upgrade_realm_levels 长度 '
+          '${b.upgradeRealmLevels.length} ≠ max_level-1 ($expectedLen)',
+        );
       }
       for (var i = 0; i < b.upgradeRealmLevels.length; i++) {
         final r = b.upgradeRealmLevels[i];
         if (r < 0 || r > 6) {
           throw StateError(
-              'taohua_island: 建筑 $label upgrade_realm_levels[$i] $r 须 ∈ [0, 6]');
+            'taohua_island: 建筑 $label upgrade_realm_levels[$i] $r 须 ∈ [0, 6]',
+          );
         }
         if (i > 0 && r < b.upgradeRealmLevels[i - 1]) {
           throw StateError(
-              'taohua_island: 建筑 $label upgrade_realm_levels 须单调非减'
-              '（境界 gate 不可倒退）');
+            'taohua_island: 建筑 $label upgrade_realm_levels 须单调非减'
+            '（境界 gate 不可倒退）',
+          );
         }
       }
 
@@ -184,11 +196,13 @@ class TaohuaIslandConfig {
         }
         if (!knownItemDefIds.contains(out)) {
           throw StateError(
-              'taohua_island: source 建筑 $label output_item "$out" 不在 knownItemDefIds');
+            'taohua_island: source 建筑 $label output_item "$out" 不在 knownItemDefIds',
+          );
         }
         if (b.baseRatePerHour < 0) {
           throw StateError(
-              'taohua_island: source 建筑 $label base_rate_per_hour ${b.baseRatePerHour} < 0');
+            'taohua_island: source 建筑 $label base_rate_per_hour ${b.baseRatePerHour} < 0',
+          );
         }
         sourceOutputItems.add(out);
       } else {
@@ -199,41 +213,49 @@ class TaohuaIslandConfig {
         }
         if (!knownItemDefIds.contains(inp)) {
           throw StateError(
-              'taohua_island: processor 建筑 $label input_item "$inp" 不在 knownItemDefIds');
+            'taohua_island: processor 建筑 $label input_item "$inp" 不在 knownItemDefIds',
+          );
         }
         if (b.recipes.isEmpty) {
           throw StateError(
-              'taohua_island: processor 建筑 $label 没有任何 recipe（至少 1 个）');
+            'taohua_island: processor 建筑 $label 没有任何 recipe（至少 1 个）',
+          );
         }
         for (final r in b.recipes) {
           if (r.inputPerOutput <= 0) {
             throw StateError(
-                'taohua_island: recipe ${r.recipeId} input_per_output ${r.inputPerOutput} 须 > 0');
+              'taohua_island: recipe ${r.recipeId} input_per_output ${r.inputPerOutput} 须 > 0',
+            );
           }
           if (r.ratePerHour < 0) {
             throw StateError(
-                'taohua_island: recipe ${r.recipeId} rate_per_hour ${r.ratePerHour} < 0');
+              'taohua_island: recipe ${r.recipeId} rate_per_hour ${r.ratePerHour} < 0',
+            );
           }
           if (r.realmUnlockIndex < 0 || r.realmUnlockIndex > 6) {
             throw StateError(
-                'taohua_island: recipe ${r.recipeId} realm_unlock_index '
-                '${r.realmUnlockIndex} 须 ∈ [0, 6]');
+              'taohua_island: recipe ${r.recipeId} realm_unlock_index '
+              '${r.realmUnlockIndex} 须 ∈ [0, 6]',
+            );
           }
           if (!knownItemDefIds.contains(r.outputItem)) {
             throw StateError(
-                'taohua_island: recipe ${r.recipeId} output_item '
-                '"${r.outputItem}" 不在 knownItemDefIds');
+              'taohua_island: recipe ${r.recipeId} output_item '
+              '"${r.outputItem}" 不在 knownItemDefIds',
+            );
           }
           if (r.secondaryInputPerOutput < 0) {
             throw StateError(
-                'taohua_island: recipe ${r.recipeId} secondary_input_per_output '
-                '${r.secondaryInputPerOutput} < 0');
+              'taohua_island: recipe ${r.recipeId} secondary_input_per_output '
+              '${r.secondaryInputPerOutput} < 0',
+            );
           }
           // 配方声明了次要消耗 → 所属建筑必须配 secondary_input_item
           if (r.secondaryInputPerOutput > 0 && b.secondaryInputItem == null) {
             throw StateError(
-                'taohua_island: recipe ${r.recipeId} secondary_input_per_output > 0 '
-                '但建筑 $label 未配 secondary_input_item');
+              'taohua_island: recipe ${r.recipeId} secondary_input_per_output > 0 '
+              '但建筑 $label 未配 secondary_input_item',
+            );
           }
         }
 
@@ -242,14 +264,16 @@ class TaohuaIslandConfig {
         if (secInp != null) {
           if (!knownItemDefIds.contains(secInp)) {
             throw StateError(
-                'taohua_island: processor 建筑 $label secondary_input_item '
-                '"$secInp" 不在 knownItemDefIds');
+              'taohua_island: processor 建筑 $label secondary_input_item '
+              '"$secInp" 不在 knownItemDefIds',
+            );
           }
           final used = b.recipes.any((r) => r.secondaryInputPerOutput > 0);
           if (!used) {
             throw StateError(
-                'taohua_island: processor 建筑 $label 配了 secondary_input_item '
-                '"$secInp" 却无任一配方消费（脱节配置）');
+              'taohua_island: processor 建筑 $label 配了 secondary_input_item '
+              '"$secInp" 却无任一配方消费（脱节配置）',
+            );
           }
         }
       }
@@ -262,16 +286,20 @@ class TaohuaIslandConfig {
       final inp = b.inputItem!;
       if (!sourceOutputItems.contains(inp)) {
         throw StateError(
-            'taohua_island: processor 建筑 ${entry.key.name} 的 input_item "$inp" '
-            '没有任何 source 建筑供应');
+          'taohua_island: processor 建筑 ${entry.key.name} 的 input_item "$inp" '
+          '没有任何 source 建筑供应',
+        );
       }
       final secInp = b.secondaryInputItem;
       if (secInp != null && !sourceOutputItems.contains(secInp)) {
         throw StateError(
-            'taohua_island: processor 建筑 ${entry.key.name} 的 secondary_input_item '
-            '"$secInp" 没有任何 source 建筑供应');
+          'taohua_island: processor 建筑 ${entry.key.name} 的 secondary_input_item '
+          '"$secInp" 没有任何 source 建筑供应',
+        );
       }
     }
+
+    cfg.synergies.validate(cfg.buildings);
   }
 
   factory TaohuaIslandConfig.fromYaml(Map<String, dynamic> y) {
@@ -290,6 +318,138 @@ class TaohuaIslandConfig {
       capHours: capHours,
       unlockChapterIndex: unlockChapterIndex,
       buildings: buildings,
+      synergies: TaohuaBuildingSynergyConfig.fromYaml(
+        (y['synergies'] as Map?)?.cast<String, dynamic>(),
+      ),
     );
   }
+}
+
+class TaohuaBuildingSynergyConfig {
+  final double maxRateBonusPerSourceLevel;
+  final List<TaohuaBuildingSynergyRule> rules;
+
+  const TaohuaBuildingSynergyConfig({
+    required this.maxRateBonusPerSourceLevel,
+    required this.rules,
+  });
+
+  static const none = TaohuaBuildingSynergyConfig(
+    maxRateBonusPerSourceLevel: 0.0,
+    rules: [],
+  );
+
+  Iterable<TaohuaBuildingSynergyRule> rulesForTarget(BuildingType target) =>
+      rules.where((r) => r.targetBuilding == target);
+
+  double rateMultiplierFor({
+    required BuildingType target,
+    required Iterable<IslandBuildingLevel> buildingLevels,
+    required int founderRealmIndex,
+    required Map<BuildingType, BuildingConfig> buildings,
+  }) {
+    var bonus = 0.0;
+    for (final rule in rulesForTarget(target)) {
+      final sourceCfg = buildings[rule.sourceBuilding];
+      if (sourceCfg == null) continue;
+      if (sourceCfg.realmUnlockIndex > founderRealmIndex) continue;
+      int? sourceLevel;
+      for (final b in buildingLevels) {
+        if (b.type == rule.sourceBuilding) {
+          sourceLevel = b.level;
+          break;
+        }
+      }
+      if (sourceLevel == null) continue;
+      bonus += sourceLevel * rule.rateBonusPerSourceLevel;
+    }
+    return 1.0 + bonus;
+  }
+
+  void validate(Map<BuildingType, BuildingConfig> buildings) {
+    if (maxRateBonusPerSourceLevel < 0) {
+      throw StateError(
+        'taohua_island: synergies max_rate_bonus_per_source_level < 0',
+      );
+    }
+
+    final seenPairs = <String>{};
+    for (final rule in rules) {
+      final source = buildings[rule.sourceBuilding];
+      final target = buildings[rule.targetBuilding];
+      if (source == null) {
+        throw StateError(
+          'taohua_island: synergy source_building ${rule.sourceBuilding.name} 不存在',
+        );
+      }
+      if (target == null) {
+        throw StateError(
+          'taohua_island: synergy target_building ${rule.targetBuilding.name} 不存在',
+        );
+      }
+      if (source.kind != BuildingKind.source) {
+        throw StateError(
+          'taohua_island: synergy source_building ${rule.sourceBuilding.name} 必须是 source',
+        );
+      }
+      if (target.kind != BuildingKind.processor) {
+        throw StateError(
+          'taohua_island: synergy target_building ${rule.targetBuilding.name} 必须是 processor',
+        );
+      }
+      if (rule.rateBonusPerSourceLevel < 0 ||
+          rule.rateBonusPerSourceLevel > maxRateBonusPerSourceLevel) {
+        throw StateError(
+          'taohua_island: synergy ${rule.sourceBuilding.name}->${rule.targetBuilding.name} '
+          'rate_bonus_per_source_level ${rule.rateBonusPerSourceLevel} 越界',
+        );
+      }
+      final pair = '${rule.sourceBuilding.name}:${rule.targetBuilding.name}';
+      if (!seenPairs.add(pair)) {
+        throw StateError('taohua_island: synergy 重复配置 $pair');
+      }
+    }
+  }
+
+  factory TaohuaBuildingSynergyConfig.fromYaml(Map<String, dynamic>? y) {
+    if (y == null) return none;
+    return TaohuaBuildingSynergyConfig(
+      maxRateBonusPerSourceLevel: (y['max_rate_bonus_per_source_level'] as num)
+          .toDouble(),
+      rules: ((y['rules'] as List?) ?? const [])
+          .map(
+            (e) => TaohuaBuildingSynergyRule.fromYaml(
+              (e as Map).cast<String, dynamic>(),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class TaohuaBuildingSynergyRule {
+  final BuildingType sourceBuilding;
+  final BuildingType targetBuilding;
+  final double rateBonusPerSourceLevel;
+
+  const TaohuaBuildingSynergyRule({
+    required this.sourceBuilding,
+    required this.targetBuilding,
+    required this.rateBonusPerSourceLevel,
+  });
+
+  factory TaohuaBuildingSynergyRule.fromYaml(Map<String, dynamic> y) =>
+      TaohuaBuildingSynergyRule(
+        sourceBuilding: buildingTypeFromYamlKey(y['source_building'] as String),
+        targetBuilding: buildingTypeFromYamlKey(y['target_building'] as String),
+        rateBonusPerSourceLevel: (y['rate_bonus_per_source_level'] as num)
+            .toDouble(),
+      );
+}
+
+class IslandBuildingLevel {
+  final BuildingType type;
+  final int level;
+
+  const IslandBuildingLevel({required this.type, required this.level});
 }
