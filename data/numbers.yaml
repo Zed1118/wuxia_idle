@@ -1000,6 +1000,8 @@ retreat:
         equipment_drop_rate: 1.5             # 兵器掉率 +50%（GDD §8.3）
         technique_learn_rate: 1.0
         internal_force_growth: 1.0
+        item_outputs_per_hour:
+          item_duancai: 0.7                  # 锻材来源:古剑冢拾取旧铁砂,支援装备强化附加消耗
       biome: swordTomb
       weather: mist
       image_path: assets/maps/guJianZhong.png
@@ -1036,6 +1038,8 @@ retreat:
         equipment_drop_rate: 1.0
         technique_learn_rate: 1.5            # 心法领悟 +50%
         internal_force_growth: 1.0
+        item_outputs_per_hour:
+          item_kaifeng_fucai: 0.6            # 开锋辅材来源:藏经阁旧卷护签/残片,支援装备开锋
       biome: temple
       weather: clear
       image_path: assets/maps/cangJingGe.png
@@ -1113,6 +1117,8 @@ retreat:
         item_outputs_per_hour:
           item_yaocao: 2.0
           item_lingquanshui: 1.2
+          item_duancai: 0.8
+          item_kaifeng_fucai: 0.7
       biome: cliff
       weather: snow
       image_path: assets/maps/duanYaJueBi.png
