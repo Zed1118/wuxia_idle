@@ -8,6 +8,7 @@ import '../../battle/presentation/battle_screen.dart';
 import '../application/sweep_controller.dart';
 import '../application/sweep_unit.dart';
 import '../domain/sweep_recap.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 一键挂机扫荡屏：逐关托管真战斗，强制 auto + 快进连播，可中途停、战败 halt。
 ///
@@ -121,7 +122,7 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(),
+                InkLoadingIndicator(),
                 SizedBox(height: 12),
                 Text(
                   UiStrings.sweepPreparing,

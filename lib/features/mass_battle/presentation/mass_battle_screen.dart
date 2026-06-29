@@ -12,6 +12,7 @@ import '../../../shared/theme/colors.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../application/mass_battle_service.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 群战守城 stage list 屏(1.0 P3.2 §12.3,Batch 2.4 reactive 三态)。
 ///
@@ -50,7 +51,7 @@ class MassBattleScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
               UiStrings.loadFailed(e),

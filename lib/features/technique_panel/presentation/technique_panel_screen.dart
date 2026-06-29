@@ -67,7 +67,7 @@ class TechniquePanelScreen extends ConsumerWidget {
       body: WuxiaPaperPanel(
         child: SafeArea(
           child: chAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(child: InkLoadingIndicator()),
             error: (e, _) => ErrorFallback(
               error: e,
               onRetry: () => ref.invalidate(characterByIdProvider(characterId)),
@@ -82,7 +82,7 @@ class TechniquePanelScreen extends ConsumerWidget {
                 );
               }
               return techsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: InkLoadingIndicator()),
                 error: (e, _) => ErrorFallback(
                   error: e,
                   onRetry: () =>

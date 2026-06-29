@@ -11,6 +11,7 @@ import '../../application/sect_providers.dart';
 import '../../domain/sect.dart';
 import '../../domain/sect_event.dart';
 import '../../domain/sect_outcome.dart';
+import '../../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 门派事件弹窗(1.0 P3.4 §12.1,Batch 2.3 nightshift T16 · spec §4+§5)。
 ///
@@ -117,7 +118,7 @@ class _SectEventDialogState extends ConsumerState<SectEventDialog> {
               child: SizedBox(
                 width: 40,
                 height: 40,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                child: InkLoadingIndicator(),
               ),
             );
           }

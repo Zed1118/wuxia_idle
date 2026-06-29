@@ -72,7 +72,7 @@ class _CharacterPanelScreenState extends ConsumerState<CharacterPanelScreen> {
       ),
       body: SafeArea(
         child: idsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => ErrorFallback(
             error: e,
             onRetry: () => ref.invalidate(activeCharacterIdsProvider),
@@ -111,7 +111,7 @@ class _PanelWithTabs extends ConsumerWidget {
         _LineageTabBar(ids: ids, selectedId: effectiveId, onSelect: onSelect),
         Expanded(
           child: async.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(child: InkLoadingIndicator()),
             error: (e, _) => ErrorFallback(
               error: e,
               onRetry: () => ref.invalidate(characterByIdProvider(effectiveId)),
@@ -765,7 +765,7 @@ class _DerivedStatsSection extends ConsumerWidget {
           if (!ready)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: InkLoadingIndicator()),
             )
           else
             _renderStats(
@@ -1005,7 +1005,7 @@ class _EquipmentSlotTile extends ConsumerWidget {
     return async.when(
       loading: () => const _EquipmentSlotShell(
         borderColor: WuxiaColors.border,
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        child: Center(child: InkLoadingIndicator()),
       ),
       error: (e, _) => _EquipmentSlotShell(
         borderColor: WuxiaColors.hpLow,
@@ -1278,7 +1278,7 @@ class _MainTechniqueTile extends ConsumerWidget {
     return async.when(
       loading: () => const _TechniqueShell(
         borderColor: WuxiaColors.border,
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        child: Center(child: InkLoadingIndicator()),
       ),
       error: (e, _) => _TechniqueShell(
         borderColor: WuxiaColors.hpLow,
@@ -1432,7 +1432,7 @@ class _AssistTechniqueTile extends ConsumerWidget {
     return async.when(
       loading: () => const _SlotShell(
         borderColor: WuxiaColors.border,
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        child: Center(child: InkLoadingIndicator()),
       ),
       error: (e, _) => _SlotShell(
         borderColor: WuxiaColors.hpLow,

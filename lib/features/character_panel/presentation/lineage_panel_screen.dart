@@ -13,6 +13,7 @@ import '../../ascension/presentation/ascension_screen.dart';
 import '../application/lineage_codex_provider.dart';
 import 'lineage_character_detail_screen.dart';
 import 'lineage_widgets.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 门派谱（门派谱1.1 Task4 · 纵向世代卷）。
 ///
@@ -41,7 +42,7 @@ class LineagePanelScreen extends ConsumerWidget {
         ),
         body: SafeArea(
           child: async.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(child: InkLoadingIndicator()),
             error: (e, _) => ErrorFallback(
               error: e,
               onRetry: () => ref.invalidate(lineageCodexProvider),
@@ -237,7 +238,7 @@ class _AscensionSection extends ConsumerWidget {
                 child: SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: InkLoadingIndicator(),
                 ),
               ),
             ),

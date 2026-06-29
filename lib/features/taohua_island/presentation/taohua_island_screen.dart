@@ -61,7 +61,7 @@ class TaohuaIslandScreen extends ConsumerWidget {
       ),
       body: asyncView.when(
         loading: () =>
-            const Center(child: CircularProgressIndicator(color: WuxiaUi.qing)),
+            const Center(child: InkLoadingIndicator(color: WuxiaUi.qing)),
         error: (e, _) => Center(
           child: Text(
             UiStrings.taohuaIslandLoadError(e),

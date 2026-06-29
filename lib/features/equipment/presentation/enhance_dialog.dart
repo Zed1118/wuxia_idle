@@ -18,6 +18,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import 'forging_panel.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 强化对话框（phase2_tasks T29 §426-430 + T32 #22a writeTxn 补漏）。
 ///
@@ -190,7 +191,7 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
               )
             : const Padding(
                 padding: EdgeInsets.symmetric(vertical: 40),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: InkLoadingIndicator()),
               ),
       ),
     );

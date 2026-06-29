@@ -10,6 +10,7 @@ import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../application/slot_list_provider.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 存档选择屏(spec B §3.2)。启动 splash 加载 defs 后进此屏,3 固定槽:
 /// 有档 → 点入直接 [switchSlot]→主菜单;空槽 → 确认「新开江湖」后同流程开新档;
@@ -99,7 +100,7 @@ class SaveSelectScreen extends ConsumerWidget {
       body: SafeArea(
         child: Center(
           child: slotsAsync.when(
-            loading: () => const CircularProgressIndicator(),
+            loading: () => const InkLoadingIndicator(),
             error: (e, _) => ErrorFallback(
               error: e,
               onRetry: () => ref.invalidate(slotListProvider),

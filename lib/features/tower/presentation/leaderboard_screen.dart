@@ -5,6 +5,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../application/tower_providers.dart';
 import '../domain/tower_progress.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// P0.2 #40 Phase 4 本地排行榜屏(D 方案,Demo 不接 Supabase backend)。
 ///
@@ -32,7 +33,7 @@ class LeaderboardScreen extends ConsumerWidget {
         iconTheme: const IconThemeData(color: WuxiaColors.textPrimary),
       ),
       body: progressAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: InkLoadingIndicator()),
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),

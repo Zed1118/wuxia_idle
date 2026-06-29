@@ -11,6 +11,7 @@ import '../../battle/presentation/cycle_select_control.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../domain/inner_demon_def.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 心魔关 stage list 屏(1.0 P2.2 §12.1,Batch 2.5.B reactive 三态)。
 ///
@@ -44,7 +45,7 @@ class InnerDemonScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
               UiStrings.loadFailed(e),

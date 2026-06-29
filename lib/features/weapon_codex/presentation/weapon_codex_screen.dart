@@ -16,6 +16,7 @@ import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import 'equipment_catalog_detail_screen.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 兵器谱收集图鉴主屏（Task 8）。
 ///
@@ -49,7 +50,7 @@ class _WeaponCodexScreenState extends ConsumerState<WeaponCodexScreen> {
       ),
       body: SafeArea(
         child: entriesAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => ErrorFallback(
             error: e,
             onRetry: () => ref.invalidate(equipmentCatalogListProvider),

@@ -2,6 +2,7 @@
 export '../../theme/wuxia_tokens.dart';
 export 'paper_panel.dart';
 export 'error_fallback.dart';
+export 'ink_loading.dart';
 export 'section_header.dart';
 export 'seal_badge.dart';
 export 'item_slot.dart';

@@ -15,6 +15,7 @@ import '../application/display_settings_providers.dart';
 import '../application/gameplay_settings_provider.dart';
 import '../domain/display_settings.dart';
 import '../domain/gameplay_settings.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 设置面板：3 滑条 + 静音开关，改动即存（provider 内持久化 + 应用引擎）。
 class SettingsPanel extends ConsumerWidget {
@@ -43,7 +44,7 @@ class SettingsPanel extends ConsumerWidget {
     return async.when(
       loading: () => const Padding(
         padding: EdgeInsets.all(24),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: InkLoadingIndicator()),
       ),
       error: (e, _) =>
           Padding(padding: const EdgeInsets.all(24), child: Text('$e')),
