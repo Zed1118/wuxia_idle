@@ -26,8 +26,10 @@ import '../../sweep/domain/sweep_reward_preview.dart';
 import '../../sweep/presentation/sweep_screen.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
+import '../application/new_save_goal_guidance.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_replay_reward_route.dart';
+import 'new_save_goal_guidance_view.dart';
 import 'stage_entry_flow.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
@@ -118,6 +120,13 @@ class StageListScreen extends ConsumerWidget {
             final currentRealm = activeCharacters.isEmpty
                 ? null
                 : activeCharacters.first.realmTier;
+            final currentGoal = NewSaveGoalGuidance.fromChapterEntries(
+              chapterIndex: chapterIndex,
+              entries: [
+                for (final entry in entries)
+                  (def: entry.def, status: statusFor(entry)),
+              ],
+            );
 
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -164,6 +173,9 @@ class StageListScreen extends ConsumerWidget {
                       targetCycle: cycleFor(),
                       currentRealm: currentRealm,
                       activeCharacters: activeCharacters,
+                      goalGuidance: currentGoal?.stage.id == entries[i].def.id
+                          ? currentGoal
+                          : null,
                       onTap: statusFor(entries[i]) == StageStatus.locked
                           ? null
                           : () => runStageFlow(
@@ -494,6 +506,7 @@ class _StageRow extends StatelessWidget {
     required this.onTap,
     this.currentRealm,
     this.activeCharacters = const [],
+    this.goalGuidance,
   });
 
   final int stageIndex;
@@ -503,6 +516,7 @@ class _StageRow extends StatelessWidget {
   final VoidCallback? onTap;
   final RealmTier? currentRealm;
   final List<Character> activeCharacters;
+  final NewSaveGoalGuidance? goalGuidance;
 
   @override
   Widget build(BuildContext context) {
@@ -633,6 +647,8 @@ class _StageRow extends StatelessWidget {
                       recommendedRealm: def.requiredRealm,
                       playerRealm: currentRealm,
                     ),
+                    if (goalGuidance != null)
+                      NewSaveGoalHintLine(guidance: goalGuidance!),
                     if (cycleTraits.isNotEmpty)
                       _CycleTraitSummaryLine(
                         cycle: targetCycle,
@@ -667,6 +683,7 @@ class _StageRow extends StatelessWidget {
                   currentRealm: currentRealm,
                   targetCycle: targetCycle,
                   activeCharacters: activeCharacters,
+                  goalGuidance: goalGuidance,
                 ),
               ),
               const SizedBox(width: 8),
