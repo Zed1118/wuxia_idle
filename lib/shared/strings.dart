@@ -949,6 +949,22 @@ class UiStrings {
       '$typeLabel +$bonus%';
 
   static String forgingSpecialSkillLabel(String skillName) => '专属技能：$skillName';
+  static const String forgingSpecialSkillDetailTitle = '器物绝招';
+  static const String forgingSpecialSkillDetailSubtitle = '第三锋意已定，战斗中随装备带入。';
+  static const String forgingSpecialSkillTriggerManual = '触发：手动下发';
+  static const String forgingSpecialSkillTriggerInterrupt = '触发：敌方蓄力时优先破招';
+  static const String forgingSpecialSkillTriggerAuto = '触发：内力足、冷却就绪时自动出手';
+  static const String forgingSpecialSkillTriggerReady = '触发：自动战斗可用';
+  static String forgingSpecialSkillSchool(String label) => '流派：$label';
+  static String forgingSpecialSkillTarget(String label) => '目标：$label';
+  static String forgingSpecialSkillCostCooldown(int cost, int cooldown) =>
+      '内力 $cost · 冷却 $cooldown 回合';
+  static String forgingSpecialSkillFitCharacters(String school, String names) =>
+      '适合：$school 路数 · $names';
+  static String forgingSpecialSkillFitSchool(String school) =>
+      '适合：$school 路数角色';
+  static const String forgingSpecialSkillFitFlexible = '适合：按招式定位搭配';
+  static const String forgingSpecialSkillUnknown = '未载入招式配置';
 
   // 心法面板 / 散功 dialog（T31）
   static const String techniquePanelTitle = '心法面板';
