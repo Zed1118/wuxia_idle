@@ -10,6 +10,7 @@ import '../../battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
@@ -308,7 +309,7 @@ class _PortraitBox extends StatelessWidget {
     if (imagePath == null) return _placeholder();
     return ClipRRect(
       borderRadius: BorderRadius.circular(3),
-      child: Image.asset(
+      child: WuxiaImage(
         imagePath!,
         width: 44,
         height: 44,

@@ -50,6 +50,7 @@ import '../../../shared/strings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ink_button.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../../tutorial/domain/tutorial_hint_def.dart';
@@ -460,7 +461,7 @@ class MainMenu extends ConsumerWidget {
           children: [
             // A2 全屏水墨门面背景(占位 mountain_bg · 精修 bg 后补)。
             Positioned.fill(
-              child: Image.asset(
+              child: WuxiaImage(
                 WuxiaUi.mainMenuBg,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => const SizedBox.shrink(),
@@ -878,7 +879,7 @@ class _MenuSection extends StatelessWidget {
             Positioned.fill(
               child: Opacity(
                 opacity: featured ? 0.12 : 0.08,
-                child: Image.asset(
+                child: WuxiaImage(
                   WuxiaUi.paperBg,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => const SizedBox.shrink(),

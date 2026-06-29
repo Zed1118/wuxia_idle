@@ -13,6 +13,7 @@ import 'package:isar_community/isar.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_app_theme.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/utils/rng.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
@@ -1491,7 +1492,7 @@ class _EquipmentDetailGallery extends StatelessWidget {
           return Column(
             children: [
               Expanded(
-                child: Image.asset(
+                child: WuxiaImage(
                   d.detailPath!,
                   fit: BoxFit.contain,
                   errorBuilder: (_, _, _) => const ColoredBox(

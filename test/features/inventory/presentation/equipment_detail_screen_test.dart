@@ -14,6 +14,13 @@ import 'package:wuxia_idle/features/inventory/presentation/equipment_detail_scre
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
 
+/// 取 Image provider 的底层 asset 名;装备图经 cacheWidth 优化后
+/// provider 是 ResizeImage 包 AssetImage,须穿透取 assetName。
+String? assetNameOf(ImageProvider provider) {
+  final p = provider is ResizeImage ? provider.imageProvider : provider;
+  return p is AssetImage ? p.assetName : null;
+}
+
 /// EquipmentDetailScreen widget 测试(W15 LoreLoader 接入下一步)。
 ///
 /// 5 用例:
@@ -735,10 +742,7 @@ void main() {
     // 详情大图(detailPath)所在 Container 的 border(高阶 Border.all / 普通仅底边)。
     Border coverBorder(WidgetTester tester, EquipmentDef def) {
       final img = find.byWidgetPredicate(
-        (w) =>
-            w is Image &&
-            w.image is AssetImage &&
-            (w.image as AssetImage).assetName == def.detailPath,
+        (w) => w is Image && assetNameOf(w.image) == def.detailPath,
       );
       final container = tester.widget<Container>(
         find.ancestor(of: img, matching: find.byType(Container)).first,
@@ -791,10 +795,7 @@ void main() {
 
       final img = tester.widget<Image>(
         find.byWidgetPredicate(
-          (w) =>
-              w is Image &&
-              w.image is AssetImage &&
-              (w.image as AssetImage).assetName == def.detailPath,
+          (w) => w is Image && assetNameOf(w.image) == def.detailPath,
         ),
       );
       expect(img.fit, BoxFit.contain, reason: '细长兵器需完整展示,不能 cover 裁切');

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../domain/skill_drop_result.dart';
 
@@ -52,7 +53,7 @@ class SkillTreasureContent extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    Image.asset(
+                    WuxiaImage(
                       WuxiaUi.ceremonyRedSeal,
                       fit: BoxFit.contain,
                       errorBuilder: (_, _, _) => DecoratedBox(
@@ -234,7 +235,7 @@ class _SkillImage extends StatelessWidget {
     final path = imagePath;
     if (path == null) return _fallback();
 
-    return Image.asset(
+    return WuxiaImage(
       path,
       height: 180,
       fit: BoxFit.contain,

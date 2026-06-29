@@ -6,6 +6,7 @@ import '../../battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
@@ -240,7 +241,7 @@ class _BossPortraitHero extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: imagePath != null
-            ? Image.asset(
+            ? WuxiaImage(
                 imagePath!,
                 width: 120,
                 height: 120,
@@ -287,7 +288,7 @@ class _RosterChip extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(3),
           child: portraitPath != null
-              ? Image.asset(
+              ? WuxiaImage(
                   portraitPath!,
                   width: 28,
                   height: 28,

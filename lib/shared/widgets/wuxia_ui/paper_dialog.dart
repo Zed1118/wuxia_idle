@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../audio/sound_manager.dart';
 import '../../audio/audio_assets.dart';
 import '../../theme/wuxia_tokens.dart';
+import '../wuxia_image.dart';
 import 'paper_panel.dart';
 
 /// 卷轴/册页弹窗（UI kit · demo `.report`）：替 Material AlertDialog。
@@ -75,7 +76,7 @@ class PaperDialog extends StatelessWidget {
                     SizedBox(
                       width: 28,
                       height: 28,
-                      child: Image.asset(
+                      child: WuxiaImage(
                         WuxiaUi.sealRed,
                         fit: BoxFit.contain,
                         errorBuilder: (_, _, _) => const SizedBox.shrink(),

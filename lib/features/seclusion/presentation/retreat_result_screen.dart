@@ -4,6 +4,7 @@ import '../../../data/game_repository.dart';
 import '../../../features/battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../help/domain/help_topic.dart';
@@ -178,7 +179,7 @@ class _ResultHero extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(
+            WuxiaImage(
               WuxiaUi.ceremonyRetreatResult,
               fit: BoxFit.cover,
               alignment: Alignment.center,

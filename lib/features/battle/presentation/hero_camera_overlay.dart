@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 /// 英雄镜头数据值对象（第七阶段 批一）。
@@ -151,7 +152,7 @@ class _HeroCameraOverlayState extends State<HeroCameraOverlay>
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Image.asset(
+                        WuxiaImage(
                           WuxiaUi.ceremonyRedSeal,
                           fit: BoxFit.contain,
                           errorBuilder: (_, _, _) => DecoratedBox(
@@ -176,7 +177,7 @@ class _HeroCameraOverlayState extends State<HeroCameraOverlay>
                 const SizedBox(height: 12),
                 // 立绘（null 或 asset 缺失均 fallback SizedBox.shrink）
                 if (widget.data.portraitPath != null)
-                  Image.asset(
+                  WuxiaImage(
                     widget.data.portraitPath!,
                     height: 280,
                     fit: BoxFit.contain,

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../support/image_test_helpers.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
@@ -118,8 +120,7 @@ void main() {
   Finder assetImage(String path) => find.byWidgetPredicate(
     (w) =>
         w is Image &&
-        w.image is AssetImage &&
-        (w.image as AssetImage).assetName == path,
+        assetNameOf(w.image) == path,
   );
 
   // ── 用例 1：分组渲染 ──────────────────────────────────────────────────

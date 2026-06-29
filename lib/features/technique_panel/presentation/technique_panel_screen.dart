@@ -19,6 +19,7 @@ import '../../cultivation/application/skill_proficiency_formatter.dart';
 import '../domain/technique_equip_suggestion.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import 'dispel_dialog.dart';
@@ -54,7 +55,7 @@ class TechniquePanelScreen extends ConsumerWidget {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: Image.asset(
+            child: WuxiaImage(
               'assets/ui/lotus_icon.png',
               width: 24,
               height: 24,
@@ -1192,7 +1193,7 @@ class _MainTechniqueHero extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Image.asset(
+                WuxiaImage(
                   'assets/ui/meditation_icon.png',
                   width: 64,
                   height: 64,
@@ -1364,7 +1365,7 @@ class _SealBadge extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Image.asset(
+          WuxiaImage(
             'assets/ui/seal_red.png',
             width: 44,
             height: 44,

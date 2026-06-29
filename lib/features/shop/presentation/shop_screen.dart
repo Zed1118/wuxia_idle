@@ -12,6 +12,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/asset_fallback.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
@@ -577,7 +578,7 @@ class _ShopItemTile extends StatelessWidget {
           // 商品图标（材料多无专图，走 fallback glyph）
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: Image.asset(
+            child: WuxiaImage(
               'assets/images/items/${def.itemDefId}.png',
               width: 48,
               height: 48,
