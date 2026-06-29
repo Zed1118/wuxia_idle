@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 
 /// 剧情阅读场景背景层(出版美术):背景图 + scrim 压暗遮罩。
 /// path 空/缺图 → SizedBox.shrink(降级到 reader 纯色底兜底)。
@@ -16,7 +17,7 @@ class NarrativeSceneBackground extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        Image.asset(p, fit: BoxFit.cover,
+        WuxiaImage(p, fit: BoxFit.cover,
             errorBuilder: (_, _, _) => const SizedBox.shrink()),
         const ColoredBox(color: WuxiaColors.narrativeSceneScrim),
       ],

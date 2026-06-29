@@ -24,6 +24,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/equipment_glyph.dart';
 import '../../../shared/widgets/portrait_frame.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/widgets/equipment_art_image.dart';
@@ -696,7 +697,7 @@ class _ProfilePortraitPlaque extends StatelessWidget {
                 child: SizedBox(
                   width: 24,
                   height: 24,
-                  child: Image.asset(
+                  child: WuxiaImage(
                     WuxiaUi.sealRed,
                     fit: BoxFit.contain,
                     errorBuilder: (_, _, _) => const SizedBox.shrink(),
@@ -2040,7 +2041,7 @@ class _SlotShell extends StatelessWidget {
             Positioned.fill(
               child: Opacity(
                 opacity: 0.12,
-                child: Image.asset(
+                child: WuxiaImage(
                   WuxiaUi.paperBg,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => const SizedBox.shrink(),
@@ -2088,7 +2089,7 @@ class _EquipmentSlotShell extends StatelessWidget {
             Positioned.fill(
               child: Opacity(
                 opacity: 0.16,
-                child: Image.asset(
+                child: WuxiaImage(
                   WuxiaUi.paperBg,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => const SizedBox.shrink(),

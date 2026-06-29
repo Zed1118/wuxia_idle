@@ -10,6 +10,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../battle/domain/enum_localizations.dart';
 import 'lineage_widgets.dart';
 
@@ -147,7 +148,7 @@ class _HeroHeader extends StatelessWidget {
                 border: Border.all(color: schoolColor, width: 1),
                 color: WuxiaColors.avatarFill,
               ),
-              child: Image.asset(
+              child: WuxiaImage(
                 portraitPath,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) =>

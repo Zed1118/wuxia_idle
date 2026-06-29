@@ -9,6 +9,7 @@ import '../../main_menu/presentation/main_menu.dart';
 import '../../seclusion/presentation/offline_recap_gate.dart';
 import '../../sect/application/sect_providers.dart';
 import '../application/home_feed_providers.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// "昨晚发生的事"上线第一屏(GDD §9.2 / P1 #42 Phase 3)。
@@ -61,7 +62,7 @@ class _HomeFeedScreenState extends ConsumerState<HomeFeedScreen> {
           // M4 PoC #46 美术 Stage 2 W6 收官:水墨红印章落款,水墨克制氛围锚点。
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: Image.asset(
+            child: WuxiaImage(
               'assets/ui/seal_red.png',
               width: 36,
               height: 36,

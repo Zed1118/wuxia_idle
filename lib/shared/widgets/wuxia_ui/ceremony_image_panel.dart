@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/wuxia_tokens.dart';
+import '../wuxia_image.dart';
 
 /// MJ 仪式图承载层：底图只作氛围，伪文字由半透明宣纸面遮盖。
 class CeremonyImagePanel extends StatelessWidget {
@@ -52,7 +53,7 @@ class CeremonyImagePanel extends StatelessWidget {
             Positioned.fill(
               child: Opacity(
                 opacity: imageOpacity,
-                child: Image.asset(
+                child: WuxiaImage(
                   assetPath,
                   fit: fit,
                   alignment: alignment,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/colors.dart';
+import 'wuxia_image.dart';
 
 /// 宣纸底面板（Phase B 出版美术 · 心法/秘籍面板「卷轴感」底层）。
 ///
@@ -43,7 +44,7 @@ class WuxiaPaperPanel extends StatelessWidget {
           Positioned.fill(
             child: Opacity(
               opacity: paperOpacity,
-              child: Image.asset(
+              child: WuxiaImage(
                 'assets/ui/paper_bg.png',
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => const SizedBox.shrink(),

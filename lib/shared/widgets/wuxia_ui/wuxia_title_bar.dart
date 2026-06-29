@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../strings.dart';
 import '../../theme/wuxia_tokens.dart';
+import '../wuxia_image.dart';
 
 /// 宣纸顶栏（UI kit · demo `.titlebar`）：替 Material AppBar。
 ///
@@ -102,7 +103,7 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
             SizedBox(
               width: 30,
               height: 30,
-              child: Image.asset(
+              child: WuxiaImage(
                 WuxiaUi.sealRed,
                 fit: BoxFit.contain,
                 errorBuilder: (_, _, _) => const SizedBox.shrink(),

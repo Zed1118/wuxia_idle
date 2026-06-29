@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/widgets/wuxia_image.dart';
+
 /// 单次战斗 MJ 特效贴片。由外层 actionLog 边沿创建，动画结束后移除。
 class BattleEffectSprite extends StatelessWidget {
   const BattleEffectSprite({
@@ -36,7 +38,7 @@ class BattleEffectSprite extends StatelessWidget {
             scaleY: scale,
             child: Transform.rotate(
               angle: rotation,
-              child: Image.asset(
+              child: WuxiaImage(
                 assetPath,
                 width: size,
                 height: size,

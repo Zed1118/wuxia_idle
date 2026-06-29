@@ -7,6 +7,7 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../ascension/application/ascend_service_providers.dart';
 import '../../ascension/presentation/ascension_screen.dart';
@@ -73,7 +74,7 @@ class _Body extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Image.asset(
+            child: WuxiaImage(
               'assets/ui/scroll_vertical.png',
               height: 80,
               fit: BoxFit.contain,
@@ -333,7 +334,7 @@ class _CharacterChip extends StatelessWidget {
                 border: Border.all(color: schoolColor, width: 1),
                 color: WuxiaColors.avatarFill,
               ),
-              child: Image.asset(
+              child: WuxiaImage(
                 portraitPath!,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) =>
