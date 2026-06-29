@@ -1,6 +1,8 @@
 import '../core/domain/item_source.dart';
 import '../core/domain/item_usage.dart';
 
+enum CombatTerm { charge, interrupt, zhenqi, yuti, phase, heavyInjury }
+
 /// UI 静态中文标签（phase1_tasks.md T14）。
 ///
 /// 与 [lib/features/battle/domain/enum_localizations.dart] 同性质：Phase 1 把"代码内中文"集中
@@ -43,6 +45,33 @@ class UiStrings {
   static const String ultimate = '大招';
   static const String fastForward = '快进';
 
+  static String combatTermLabel(CombatTerm term) => switch (term) {
+    CombatTerm.charge => '蓄力',
+    CombatTerm.interrupt => '破招',
+    CombatTerm.zhenqi => '真气',
+    CombatTerm.yuti => '御体',
+    CombatTerm.phase => '相位',
+    CombatTerm.heavyInjury => '重伤',
+  };
+
+  static String combatTermGloss(
+    CombatTerm term, {
+    String? pct,
+    double? hours,
+    int? attackPenaltyPct,
+    int? internalForcePenaltyPct,
+  }) => switch (term) {
+    CombatTerm.charge => '蓄力：敌方招牌技发动前的预备状态。倒数结束会释放重招，可用破招截断。',
+    CombatTerm.interrupt => '破招：命中蓄力中的目标可打断其招牌技，并让目标短暂踉跄、防御骤降。',
+    CombatTerm.zhenqi => '真气：敌方内力上限提高 ${pct ?? ''}，更容易多放一次大招。',
+    CombatTerm.yuti => '御体：敌方防御率提高 ${pct ?? ''}，更耐久，适合用克制流派或破甲手段处理。',
+    CombatTerm.phase => '相位：Boss 血量跌破阈值后的阶段变化，会切换招式节奏或触发蓄力反扑。',
+    CombatTerm.heavyInjury =>
+      '重伤：硬仗战败或惨胜后的伤势。'
+          '调息 ${hours?.ceil() ?? 0}h，输出 -${attackPenaltyPct ?? 0}%，'
+          '内力上限 -${internalForcePenaltyPct ?? 0}%。',
+  };
+
   // P0 破招
   static const String battleInterruptSkill = '破招';
   // T2 蓄力危险条：敌人正在蓄力大招的顶部警示（招名 + 剩余回合）。
@@ -50,7 +79,8 @@ class UiStrings {
     String enemyName,
     String skillName,
     int ticks,
-  ) => '$enemyName 正在蓄势：$skillName（还有 $ticks 回合发动）';
+  ) =>
+      '$enemyName 正在${combatTermLabel(CombatTerm.charge)}：$skillName（还有 $ticks 回合发动）';
   static const String battleDangerPrefix = '⚠ ';
 
   // T1 战斗指令台：技能分组标签 + 状态印 + 内力/冷却短标。
@@ -73,7 +103,8 @@ class UiStrings {
   static const String skillInfoCooldown = '冷却';
   static const String skillInfoTrait = '特性';
   // 特性值：可打断 → 破招（命中蓄力中目标可打断其招牌技）。
-  static const String skillTraitInterrupt = '破招（可打断蓄力）';
+  static String get skillTraitInterrupt =>
+      '${combatTermLabel(CombatTerm.interrupt)} · 可打断${combatTermLabel(CombatTerm.charge)}';
   // 无特殊特性时的占位（普通技无可打断等标签）。
   static const String skillTraitNone = '无';
   // 冷却值单位（回合）。
@@ -525,7 +556,7 @@ class UiStrings {
   static const String glossarySchool = '流派：刚猛克灵巧、灵巧克阴柔、阴柔克刚猛，循环相克。顺克加伤，逆克减伤。';
   static const String glossarySynergy = '相生：特定心法搭配可生额外威能，相辅相成。配伍得当，事半功倍。';
   static const String glossaryCombatAdvanced =
-      '战斗机制：蓄势、破招、内伤、克制环环相扣。看准敌招蓄势时破招，可截下大招、反客为主。';
+      '战斗机制：蓄力、破招、内伤、克制环环相扣。看准敌招蓄力时破招，可截下大招、反客为主。';
   static const String glossarySeclusion =
       '闭关：择地静修，将光阴沉淀为修为。地点、时辰、节气皆影响产出；关游戏亦照常累积（在线＝离线）。';
   static const String labelCombatAdvanced = '战斗机制';
@@ -539,8 +570,7 @@ class UiStrings {
 
   /// 踉跄 debuff(staggerTicksRemaining):被破招后阵脚大乱,数回合内任人宰割。
   static const String statusStaggerLabel = '踉跄';
-  static const String statusStaggerGloss =
-      '踉跄:招式被破,阵脚大乱。数息之内防御骤降、难以还手,正是趁势猛攻之机。';
+  static String get statusStaggerGloss => combatTermGloss(CombatTerm.interrupt);
 
   /// 剑鸣 buff(swordSongResonanceActive):心剑通灵,暴击附剑鸣威能。
   static const String statusSwordSongLabel = '剑鸣';
@@ -1101,7 +1131,8 @@ class UiStrings {
   static const String prebattleIntelLootSection = '可能收获';
   static const String prebattleIntelNoEnemy = '未见敌踪';
   static const String prebattleIntelBossTag = '首领';
-  static const String prebattleIntelChargeTag = '蓄力';
+  static String get prebattleIntelChargeTag =>
+      combatTermLabel(CombatTerm.charge);
   static String prebattleIntelDialogTitle(String stageName) =>
       '$prebattleIntelTitle · $stageName';
   static String prebattleEnemyLine(
@@ -1116,9 +1147,11 @@ class UiStrings {
       '敌阵偏$school，可备克制路数。';
   static const String prebattlePrepBoss = '首领关宜留足内力，先处理随从再攻坚。';
   static const String prebattlePrepGroup = '敌众时备一门群体招，先清场再压主目标。';
-  static const String prebattlePrepCharge = '敌方有蓄力招，保留破招或爆发内力。';
+  static String get prebattlePrepCharge =>
+      '敌方有${combatTermLabel(CombatTerm.charge)}招，保留${combatTermLabel(CombatTerm.interrupt)}或爆发内力。';
   static const String prebattleRiskBoss = '首领战败会触发额外折损，勿空内力硬拼。';
-  static const String prebattleRiskCharge = '蓄力招若未打断，可能瞬间扭转战局。';
+  static String get prebattleRiskCharge =>
+      '${combatTermLabel(CombatTerm.charge)}招若未打断，可能瞬间扭转战局。';
   static const String prebattleRiskOutnumbered = '敌方人数较多，拖久容易被围攻。';
   static const String prebattleRiskNone = '未见明显险兆，按常规节奏推进。';
   static const String stagePrepareLabel = '整备';
@@ -1132,8 +1165,8 @@ class UiStrings {
   static String cycleTraitSummary(int cycle, List<String> names) =>
       '第$cycle周目词条：${names.join(' / ')}';
   static String cycleTraitName(String id) => switch (id) {
-    'yuti' => '御体',
-    'zhenqi' => '真气',
+    'yuti' => combatTermLabel(CombatTerm.yuti),
+    'zhenqi' => combatTermLabel(CombatTerm.zhenqi),
     'fanzhen' => '反震',
     'shipo' => '识破',
     'ningjia' => '凝甲',
@@ -1146,12 +1179,13 @@ class UiStrings {
   static const String cycleTraitShortNingjia = '暴击减伤';
   static String cycleTraitShortUnknown(String id) => '未识别：$id';
   static String cycleTraitDetailYuti(String pct) =>
-      '御体：敌方防御率提高 $pct，更耐久，适合用克制流派或破甲手段处理。';
+      combatTermGloss(CombatTerm.yuti, pct: pct);
   static String cycleTraitDetailZhenqi(String pct) =>
-      '真气：敌方内力上限提高 $pct，更容易多放一次大招。';
+      combatTermGloss(CombatTerm.zhenqi, pct: pct);
   static String cycleTraitDetailFanzhen(int ticks, int damagePerTick) =>
       '反震：命中带词条的敌人后，攻击者会承受 $ticks 回合内伤，每回合 $damagePerTick。';
-  static const String cycleTraitDetailShipo = '识破：无蓄力技的敌人会补一式蓄力反制，需保留破招或爆发内力。';
+  static String get cycleTraitDetailShipo =>
+      '识破：无${combatTermLabel(CombatTerm.charge)}技的敌人会补一式${combatTermLabel(CombatTerm.charge)}反制，需保留${combatTermLabel(CombatTerm.interrupt)}或爆发内力。';
   static String cycleTraitDetailNingjia(String reductionPct) =>
       '凝甲：敌方受到暴击时，暴击增量降低 $reductionPct，别只押会心一线。';
   static String cycleTraitDetailUnknown(String id) => '未识别的周目词条：$id。';
@@ -2238,7 +2272,7 @@ class UiStrings {
   static const String injuryLightLabel = '带伤';
 
   /// 重伤状态标签：`重伤`。
-  static const String injuryHeavyLabel = '重伤';
+  static String get injuryHeavyLabel => combatTermLabel(CombatTerm.heavyInjury);
 
   /// 重伤疗养剩余提示：`内伤未愈 · 调息 <N>h`（h 向上取整）。
   static String injuryRecoveryHint(double hours) =>
@@ -2252,8 +2286,12 @@ class UiStrings {
     required double hours,
     required int attackPenaltyPct,
     required int internalForcePenaltyPct,
-  }) =>
-      '重伤 · 调息 ${hours.ceil()}h · 输出 -$attackPenaltyPct% · 内力上限 -$internalForcePenaltyPct%';
+  }) => combatTermGloss(
+    CombatTerm.heavyInjury,
+    hours: hours,
+    attackPenaltyPct: attackPenaltyPct,
+    internalForcePenaltyPct: internalForcePenaltyPct,
+  );
   static String injuryStatusLine(String name, String status) => '$name：$status';
   static const String injuryStatusRecoveryHint = '可闭关调息，或服用疗伤丹处理。';
   static const String injuryStatusRecoveryAction = '服用疗伤丹';
@@ -2638,7 +2676,8 @@ class UiStrings {
   static const String sweepPreviewNoMaterialHits = '未命中已知材料缺口';
   static const String sweepPreviewSkillManual = '秘籍解招';
   static const String sweepPreviewSkillFragment = '残页积累';
-  static const String sweepPreviewChargeSkill = '敌方蓄力技';
+  static String get sweepPreviewChargeSkill =>
+      '敌方${combatTermLabel(CombatTerm.charge)}技';
 
   static String sweepPreviewEquipmentDrops(int count) => '装备 $count 类';
 
