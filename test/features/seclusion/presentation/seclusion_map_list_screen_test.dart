@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_map_list_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_setup_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -107,4 +108,34 @@ void main() {
     // 开始按钮可见
     expect(find.text(UiStrings.seclusionSetupStartButton), findsOneWidget);
   });
+
+  // ─── Test 4（任务9·A 方案）─────────────────────────────────────────────────
+  // locked 卡显示真实境界门槛 + 当前境界对比；闭关入图仅境界一维门控,
+  // 不显示伪造的章节/材料门槛。
+
+  testWidgets('locked 卡显示需要境界与当前境界对比', (tester) async {
+    await pumpMapList(tester, charRealmTier: RealmTier.xueTu);
+
+    final guJian = GameRepository.instance.getSeclusionMap(
+      RetreatMapType.guJianZhong,
+    );
+    final expected = UiStrings.seclusionRequiredRealmWithCurrent(
+      EnumL10n.realmTier(guJian.requiredRealm),
+      EnumL10n.realmTier(RealmTier.xueTu),
+    );
+
+    expect(find.text(expected), findsWidgets);
+    expect(find.textContaining('当前 '), findsWidgets);
+  });
+
+  testWidgets('locked 卡不显示伪造的章节/材料门槛', (tester) async {
+    await pumpMapList(tester, charRealmTier: RealmTier.xueTu);
+
+    // 闭关入图实际只有境界门控（canEnterMap 仅比 realm）,不得编造章节/材料条件。
+    expect(find.textContaining('第一章通关后开放'), findsNothing);
+    expect(find.textContaining('无额外消耗'), findsNothing);
+    expect(find.textContaining('章节：'), findsNothing);
+    expect(find.textContaining('材料：'), findsNothing);
+  });
+
 }

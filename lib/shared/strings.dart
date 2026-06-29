@@ -1376,6 +1376,10 @@ class UiStrings {
   static const String seclusionResultBack = '返回';
 
   static String seclusionRequiredRealm(String realmName) => '需要境界：$realmName';
+  static String seclusionRequiredRealmWithCurrent(
+    String requiredRealm,
+    String currentRealm,
+  ) => '需要境界：$requiredRealm（当前 $currentRealm）';
   static String seclusionDurationLabel(int hours) => '$hours 小时';
   static String hoursAmountLabel(String value) => '$value 小时';
   static String seclusionMojianshi(int n) => '磨剑石 × $n';
