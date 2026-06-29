@@ -36,8 +36,13 @@
 
 ## 当前恢复点
 
-- 状态：进行中。
-- 最后完成：已读取 `AGENTS.md`、`CLAUDE.md` §8.2/§8.3、`GDD.md`、`docs/spec/rejected_task_registry.md`；CodeGraph 初始查询发现未初始化，执行 `codegraph init -i` 后进程 OOM 退出，但数据库可用，`codegraph_status` 显示 460 files / 8655 nodes；已用 CodeGraph 定位 inventory 文件和 `InventoryScreen` / `EquipmentDetailScreen`。
-- 下一步：提交计划文件后实施仓库摘要与文案切片。
-- 已跑验证：`codegraph_status`、`codegraph_files lib/features/inventory`、`codegraph_context`、`codegraph_search InventoryScreen`、`codegraph_search EquipmentDetailScreen`。
-- 阻塞项：无。CodeGraph 初始化命令退出码 133/OOM，但索引已可查询，后续以已可用查询结果作为结构定位依据。
+- 状态：实现切片完成，待最终 `[READY]` 冻结。
+- 最后完成：已读取 `AGENTS.md`、`CLAUDE.md` §8.2/§8.3、`GDD.md`、`docs/spec/rejected_task_registry.md`；CodeGraph 初始查询发现未初始化，执行 `codegraph init -i` 后进程 OOM 退出，但数据库可用，`codegraph_status` 显示 460 files / 8655 nodes；已用 CodeGraph 定位 inventory 文件和 `InventoryScreen` / `EquipmentDetailScreen`。仓库装备卡片已改为摘要卡，新增仓库总览、短化筛选/排序文案、查看操作；详情页已拆为「基础信息 / 属性与养成 / 操作 / 来源 / 典故」；UI 文案集中在 `UiStrings`。
+- 下一步：提交实现切片，检查工作区，追加 `[READY]` tip commit。
+- 已跑验证：
+  - `dart run build_runner build --delete-conflicting-outputs`（本地生成 ignored `.g.dart` 供验证）
+  - `flutter test test/features/inventory/application/inventory_organization_test.dart test/features/inventory/presentation/inventory_screen_test.dart test/features/inventory/presentation/equipment_detail_screen_test.dart test/features/equipment/presentation/equipment_detail_screen_test.dart`：62/62 passed
+  - `flutter analyze`：No issues found
+  - 常规桌面视口 smoke：`inventory_screen_test.dart` 覆盖 1280x720 / 1440x900；详情窄屏 820x640 首屏操作入口回归仍覆盖
+- 红线核对：未改数值、掉落、收益、三系锁死、在线/离线逻辑；未触碰角色信息页整体布局或 EquipSlotDialog；未实装 rejected registry 中的装备目标追踪/高阶装备暂存柜；presentation 新增中文均通过 `UiStrings`。
+- 阻塞项：无。CodeGraph 初始化命令退出码 133/OOM，但索引已可查询，已完成要求的结构定位。
