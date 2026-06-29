@@ -2595,6 +2595,26 @@ class UiStrings {
   /// 爬塔扫荡重打仅掉残页的说明（守 §5.1 防刷）。
   static const String sweepTowerRepeatNote = '爬塔重打仅掉技能残页，不掉装备 / 银两';
 
+  static const String sweepPreviewTitle = '扫荡前预估';
+  static const String sweepPreviewDropsPrefix = '可能掉落';
+  static const String sweepPreviewProficiencyPrefix = '熟练度方向';
+  static const String sweepPreviewMaterialHitsPrefix = '命中缺口';
+  static const String sweepPreviewNoDrops = '无明确掉落';
+  static const String sweepPreviewNoMaterialHits = '未命中已知材料缺口';
+  static const String sweepPreviewSkillManual = '秘籍解招';
+  static const String sweepPreviewSkillFragment = '残页积累';
+  static const String sweepPreviewChargeSkill = '敌方蓄力技';
+
+  static String sweepPreviewEquipmentDrops(int count) => '装备 $count 类';
+
+  static String sweepPreviewLine(String prefix, String body) =>
+      '$prefix · $body';
+
+  static String sweepPreviewMore(int count) => '另 $count 项';
+
+  static String sweepPreviewMaterialHit(String itemName, String usageSummary) =>
+      '$itemName($usageSummary)';
+
   /// recap 返回按钮。
   static const String sweepRecapBack = '返回';
 
