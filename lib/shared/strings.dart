@@ -492,10 +492,14 @@ class UiStrings {
   static const String narrativeSkip = '跳过';
 
   static const String panelAttributes = '基础属性';
-  static const String panelDerived = '派生数值';
-  static const String panelEquipment = '装备';
-  static const String panelTechnique = '心法';
+  static const String panelIdentity = '身份信息';
+  static const String panelRealmCultivation = '境界修为';
+  static const String panelDerived = '战斗属性';
+  static const String panelEquipment = '装备概况';
+  static const String panelTechnique = '心法概况';
+  static const String panelStatusEffects = '状态效果';
   static const String profileRealmLabel = '境界';
+  static String realmEquipmentCap(String tier) => '可用装备：$tier';
   static const String profileLevelLabel = '等级'; // 第八阶段·角色等级 Lv
   static const String profileLevelPeak = '巅峰';
   static String profileLevelValue(int level) => 'Lv $level';
@@ -694,6 +698,13 @@ class UiStrings {
   static const String techniqueRoleAssist = '辅修';
 
   static const String slotEmpty = '未装备';
+  static const String equipmentSlotEmptyStatus = '空槽';
+  static const String equipmentNameUnknown = '未名器';
+  static const String equipmentSlotRealmUsable = '可用';
+  static const String equipmentSlotRealmLocked = '境界不足';
+  static const String equipmentSlotBelowRealm = '低于当前境界';
+  static const String equipmentSlotRealmMatched = '境界相称';
+  static String equipmentBattleCountShort(int count) => '#$count';
   static const String techniqueEmpty = '未学';
   static const String noMainTechnique = '未修主修';
   static const String dashPlaceholder = '—';

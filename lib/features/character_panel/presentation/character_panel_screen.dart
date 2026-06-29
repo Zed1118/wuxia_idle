@@ -182,13 +182,19 @@ class _Body extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _ProfileHeaderCard(character: character),
+          const SizedBox(height: 16),
+          _RealmCultivationSection(character: character),
           _BreakthroughBlockerSection(character: character),
+          const SizedBox(height: 16),
+          _BaseAttributesSection(character: character),
           const SizedBox(height: 16),
           _DerivedStatsSection(character: character),
           const SizedBox(height: 16),
           _EquipmentSection(character: character),
           const SizedBox(height: 16),
           _TechniqueSection(character: character),
+          const SizedBox(height: 16),
+          _StatusEffectsSection(character: character),
           const SizedBox(height: 16),
           EncounterSkillSection(character: character),
           const SizedBox(height: 16),
@@ -199,7 +205,7 @@ class _Body extends StatelessWidget {
   }
 }
 
-/// 角色档案头:立绘 + 姓名 + 境界·层 + 流派名 + 4 基础属性,聚成一张武侠档案卡。
+/// 身份信息:立绘 + 姓名 + 流派 + 门人小传。
 /// 立绘走 [PortraitFrame](portraitPath 为 null 时优雅退占位)。
 class _ProfileHeaderCard extends StatelessWidget {
   const _ProfileHeaderCard({required this.character});
@@ -211,13 +217,14 @@ class _ProfileHeaderCard extends StatelessWidget {
     final schoolColor = character.school == null
         ? WuxiaUi.muted
         : WuxiaColors.schoolColor(character.school!);
-    final a = character.attributes;
     return _PanelCard(
       child: LayoutBuilder(
         builder: (context, constraints) {
           final details = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const _SectionTitle(UiStrings.panelIdentity),
+              const SizedBox(height: 10),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -241,77 +248,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0x2EF3E6C7),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: WuxiaUi.ink.withValues(alpha: 0.28),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Text(
-                      UiStrings.profileRealmLabel,
-                      style: TextStyle(
-                        color: WuxiaUi.muted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      EnumL10n.realm(character.realmTier, character.realmLayer),
-                      style: const TextStyle(
-                        color: WuxiaUi.ink,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              // 第八阶段·角色等级 Lv:等级 chip + 经验条(config 读用 instanceOrNull
-              // 守,缺 GameRepository 时退化为纯 Lv 数字不崩轻量测)。
-              _LevelChip(character: character),
-              const SizedBox(height: 8),
               _BiographyStrip(character: character, schoolColor: schoolColor),
-              const SizedBox(height: 8),
-              InjuryStatusPanel(
-                character: character,
-                alwaysShow: true,
-                showRecoveryAction: true,
-              ),
-              const SizedBox(height: 12),
-              _AttributeStrip(
-                attributes: [
-                  _AttributeView(
-                    UiStrings.attrConstitution,
-                    a.constitution,
-                    UiStrings.glossaryConstitution,
-                  ),
-                  _AttributeView(
-                    UiStrings.attrEnlightenment,
-                    a.enlightenment,
-                    UiStrings.glossaryEnlightenment,
-                  ),
-                  _AttributeView(
-                    UiStrings.attrAgility,
-                    a.agility,
-                    UiStrings.glossaryAgility,
-                  ),
-                  _AttributeView(
-                    UiStrings.attrFortune,
-                    a.fortune,
-                    UiStrings.glossaryFortune,
-                  ),
-                ],
-              ),
             ],
           );
 
@@ -343,6 +280,116 @@ class _ProfileHeaderCard extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _RealmCultivationSection extends StatelessWidget {
+  const _RealmCultivationSection({required this.character});
+
+  final Character character;
+
+  @override
+  Widget build(BuildContext context) {
+    return _PanelCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _SectionTitle(UiStrings.panelRealmCultivation),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            decoration: BoxDecoration(
+              color: const Color(0x2EF3E6C7),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.28)),
+            ),
+            child: Row(
+              children: [
+                const GlossaryLabel(
+                  label: UiStrings.profileRealmLabel,
+                  definition: UiStrings.glossaryRealm,
+                  style: TextStyle(
+                    color: WuxiaUi.muted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    EnumL10n.realm(character.realmTier, character.realmLayer),
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: WuxiaUi.ink,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                Text(
+                  UiStrings.realmEquipmentCap(
+                    EnumL10n.equipmentTier(
+                      EquipmentTier.values[character.realmTier.index],
+                    ),
+                  ),
+                  style: const TextStyle(
+                    color: WuxiaUi.muted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          _LevelChip(character: character),
+        ],
+      ),
+    );
+  }
+}
+
+class _BaseAttributesSection extends StatelessWidget {
+  const _BaseAttributesSection({required this.character});
+
+  final Character character;
+
+  @override
+  Widget build(BuildContext context) {
+    final a = character.attributes;
+    return _PanelCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _SectionTitle(UiStrings.panelAttributes),
+          const SizedBox(height: 10),
+          _AttributeStrip(
+            attributes: [
+              _AttributeView(
+                UiStrings.attrConstitution,
+                a.constitution,
+                UiStrings.glossaryConstitution,
+              ),
+              _AttributeView(
+                UiStrings.attrEnlightenment,
+                a.enlightenment,
+                UiStrings.glossaryEnlightenment,
+              ),
+              _AttributeView(
+                UiStrings.attrAgility,
+                a.agility,
+                UiStrings.glossaryAgility,
+              ),
+              _AttributeView(
+                UiStrings.attrFortune,
+                a.fortune,
+                UiStrings.glossaryFortune,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -1053,6 +1100,30 @@ class _DerivedStatsSection extends ConsumerWidget {
   }
 }
 
+class _StatusEffectsSection extends StatelessWidget {
+  const _StatusEffectsSection({required this.character});
+
+  final Character character;
+
+  @override
+  Widget build(BuildContext context) {
+    return _PanelCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const _SectionTitle(UiStrings.panelStatusEffects),
+          const SizedBox(height: 10),
+          InjuryStatusPanel(
+            character: character,
+            alwaysShow: true,
+            showRecoveryAction: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _EquipmentSection extends ConsumerWidget {
   const _EquipmentSection({required this.character});
 
@@ -1118,7 +1189,11 @@ class _EquipmentSection extends ConsumerWidget {
           currentId: equipmentId,
         ),
       ),
-      child: _EquipmentSlotTile(slot: slot, equipmentId: equipmentId),
+      child: _EquipmentSlotTile(
+        character: character,
+        slot: slot,
+        equipmentId: equipmentId,
+      ),
     );
   }
 }
@@ -1126,8 +1201,13 @@ class _EquipmentSection extends ConsumerWidget {
 /// 单个装备槽。`equipmentId == null` 时直接渲染未装备占位，**不 watch**
 /// family（避免 null id 进 provider）。
 class _EquipmentSlotTile extends ConsumerWidget {
-  const _EquipmentSlotTile({required this.slot, required this.equipmentId});
+  const _EquipmentSlotTile({
+    required this.character,
+    required this.slot,
+    required this.equipmentId,
+  });
 
+  final Character character;
   final EquipmentSlot slot;
   final int? equipmentId;
 
@@ -1146,7 +1226,7 @@ class _EquipmentSlotTile extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             const Text(
-              UiStrings.slotEmpty,
+              UiStrings.equipmentSlotEmptyStatus,
               style: TextStyle(
                 color: WuxiaUi.ink,
                 fontSize: 13,
@@ -1187,6 +1267,16 @@ class _EquipmentSlotTile extends ConsumerWidget {
         final resonance = eq.resonanceStage(n);
         final iconPath =
             GameRepository.instance.equipmentDefs[eq.defId]?.iconPath;
+        final equipmentName =
+            GameRepository.instance.equipmentDefs[eq.defId]?.name ??
+            UiStrings.equipmentNameUnknown;
+        final realmUsable = eq.isEquippableAtRealm(character.realmTier);
+        final tierRelation = eq.tier.index < character.realmTier.index
+            ? UiStrings.equipmentSlotBelowRealm
+            : UiStrings.equipmentSlotRealmMatched;
+        final realmStatus = realmUsable
+            ? UiStrings.equipmentSlotRealmUsable
+            : UiStrings.equipmentSlotRealmLocked;
         return _EquipmentSlotShell(
           borderColor: tierColor,
           child: Column(
@@ -1239,39 +1329,43 @@ class _EquipmentSlotTile extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              Row(
+              Text(
+                equipmentName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: WuxiaUi.ink,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
                 children: [
-                  if ((GameRepository.instance.equipmentDefs[eq.defId]?.name ??
-                          '')
-                      .isNotEmpty) ...[
-                    Text(
-                      GameRepository.instance.equipmentDefs[eq.defId]!.name,
-                      style: const TextStyle(
-                        color: WuxiaUi.ink,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-                  Text(
-                    EnumL10n.equipmentTier(eq.tier),
-                    style: TextStyle(
-                      color: tierColor,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  _EquipmentMetaPill(
+                    label: EnumL10n.equipmentTier(eq.tier),
+                    color: tierColor,
                   ),
-                  const Spacer(),
-                  // W12 fix: 视觉验收 debug 字段——battleCount 数字直显。
-                  Text(
-                    EnumL10n.resonanceStage(resonance),
-                    style: const TextStyle(color: WuxiaUi.ink, fontSize: 12),
+                  _EquipmentMetaPill(
+                    label: realmStatus,
+                    color: realmUsable ? WuxiaUi.qing : WuxiaUi.jiang,
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '#${eq.battleCount}',
-                    style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
+                  if (realmUsable)
+                    _EquipmentMetaPill(
+                      label: tierRelation,
+                      color: eq.tier.index < character.realmTier.index
+                          ? WuxiaUi.muted
+                          : WuxiaUi.ink,
+                    ),
+                  _EquipmentMetaPill(
+                    label: EnumL10n.resonanceStage(resonance),
+                    color: WuxiaUi.ink,
+                  ),
+                  _EquipmentMetaPill(
+                    label: UiStrings.equipmentBattleCountShort(eq.battleCount),
+                    color: WuxiaUi.muted,
                   ),
                 ],
               ),
@@ -1279,6 +1373,38 @@ class _EquipmentSlotTile extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _EquipmentMetaPill extends StatelessWidget {
+  const _EquipmentMetaPill({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: color,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            height: 1.15,
+          ),
+        ),
+      ),
     );
   }
 }
