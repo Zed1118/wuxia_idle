@@ -112,6 +112,31 @@ void main() {
     );
   });
 
+  testWidgets('系统封顶 recap：提示收益已满 + 一键收功入口', (tester) async {
+    const recap = (
+      awayHours: 75.0,
+      mapName: '断崖绝壁',
+      isComplete: true,
+      progressPct: 1.0,
+      estimatedMojianshi: 720,
+      estimatedExperience: 7200,
+      estimatedItemRewards: <String, int>{},
+      estimatedTechniqueLearnPoints: 36,
+      estimatedSilver: 576,
+      settledHours: 72.0,
+      limitReason: OfflineRecapLimitReason.systemCap,
+    );
+    await pumpCard(tester, recap: recap, onGoCollect: () {}, onDismiss: () {});
+
+    expect(find.text(UiStrings.offlineRecapMapCapped('断崖绝壁')), findsOneWidget);
+    expect(
+      find.textContaining(UiStrings.offlineRecapLimitSystemCap),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.offlineRecapCollectCapped), findsOneWidget);
+    expect(find.text(UiStrings.offlineRecapGoCollect), findsNothing);
+  });
+
   testWidgets('0 值收益项隐藏，保留结算说明与收功揭晓', (tester) async {
     const recap = (
       awayHours: 2.0,

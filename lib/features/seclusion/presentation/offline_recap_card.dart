@@ -66,7 +66,10 @@ class OfflineRecapCard extends StatelessWidget {
       recap,
       itemNameOf: _itemNameOf,
     );
-    final statusLine = recap.isComplete
+    final isCapped = recap.limitReason == OfflineRecapLimitReason.systemCap;
+    final statusLine = isCapped
+        ? UiStrings.offlineRecapMapCapped(recap.mapName)
+        : recap.isComplete
         ? UiStrings.offlineRecapMapComplete(recap.mapName)
         : UiStrings.offlineRecapMapProgress(
             recap.mapName,
@@ -124,7 +127,9 @@ class OfflineRecapCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 PlaqueButton(
-                  label: UiStrings.offlineRecapGoCollect,
+                  label: isCapped
+                      ? UiStrings.offlineRecapCollectCapped
+                      : UiStrings.offlineRecapGoCollect,
                   onTap: onGoCollect,
                   primary: true,
                 ),
