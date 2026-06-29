@@ -107,7 +107,7 @@ Run: `flutter test --no-pub test/features/sweep/domain/sweep_reward_preview_test
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit domain slice**
+- [x] **Step 5: Commit domain slice**
 
 Run:
 
@@ -171,7 +171,7 @@ Run: `flutter test --no-pub test/features/mainline/presentation/stage_list_scree
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit UI slice**
+- [x] **Step 5: Commit UI slice**
 
 Run:
 
@@ -186,7 +186,7 @@ git commit -m "feat: show preview before chapter sweep"
 - Modify: `PROGRESS.md`
 - Modify: `docs/superpowers/plans/2026-06-29-night-tier2-sweep-preview.md`
 
-- [ ] **Step 1: Run targeted verification**
+- [x] **Step 1: Run targeted verification**
 
 Run:
 
@@ -197,11 +197,11 @@ dart analyze lib/features/sweep/domain/sweep_reward_preview.dart lib/features/ma
 
 Expected: tests PASS and analyze 0 issues.
 
-- [ ] **Step 2: Update recovery point**
+- [x] **Step 2: Update recovery point**
 
 Set current recovery point below to complete with final commit hash and verification output.
 
-- [ ] **Step 3: Commit docs/progress**
+- [x] **Step 3: Commit docs/progress**
 
 Run:
 
@@ -212,12 +212,12 @@ git commit -m "docs: record sweep preview completion"
 
 ## Current Recovery Point
 
-Status: domain + UI implementation complete, targeted domain/UI tests passing, first commit pending.
+Status: complete.
 
-Last completed: `SweepRewardPreview` added; mainline eligible sweep button now renders compact preview; tests added.
+Last completed: docs/progress closeout committed.
 
-Next step: commit implementation slice, then run broader targeted tests/analyze and update PROGRESS.
+Next step: hand off branch for review/merge.
 
-Verification run: `flutter test --no-pub test/features/sweep/domain/sweep_reward_preview_test.dart test/features/mainline/presentation/stage_list_screen_test.dart` PASS; `flutter analyze lib/features/sweep/domain/sweep_reward_preview.dart lib/features/mainline/presentation/stage_list_screen.dart lib/shared/strings.dart` PASS after build_runner generation.
+Verification run: `dart run build_runner build --delete-conflicting-outputs` PASS (flag ignored by current build_runner, 112 gitignored outputs); `flutter test --no-pub test/features/sweep/domain/sweep_reward_preview_test.dart test/features/mainline/presentation/stage_list_screen_test.dart test/features/mainline/domain/mainline_replay_reward_route_test.dart test/features/inventory/material_source_lookup_service_test.dart test/features/inventory/item_usage_lookup_service_test.dart` PASS, 26 tests; `flutter analyze lib/features/sweep/domain/sweep_reward_preview.dart lib/features/mainline/presentation/stage_list_screen.dart lib/shared/strings.dart` PASS, 0 issues.
 
 Blocked: none.
