@@ -13,11 +13,13 @@ class PlaqueTab extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    this.autofocus = false,
   });
 
   final String label;
   final bool selected;
   final VoidCallback? onTap;
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
@@ -34,28 +36,41 @@ class PlaqueTab extends StatelessWidget {
           );
     final fg = selected ? const Color(0xFFF3E2C0) : const Color(0xFF3A2C14);
     final borderColor = selected ? const Color(0xFF491510) : WuxiaUi.woodDark;
-    return InkWell(
-      onTap: onTap == null
-          ? null
-          : () {
-              SoundManager.instance.playSfx(SfxId.uiTabSwitch);
-              onTap!();
-            },
-      borderRadius: BorderRadius.circular(4),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: borderColor, width: WuxiaUi.borderWidth),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: fg,
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1,
+    final enabled = onTap != null;
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: enabled,
+      label: label,
+      child: InkWell(
+        onTap: !enabled
+            ? null
+            : () {
+                SoundManager.instance.playSfx(SfxId.uiTabSwitch);
+                onTap!();
+              },
+        autofocus: autofocus,
+        mouseCursor: enabled
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: gradient,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: borderColor, width: WuxiaUi.borderWidth),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: fg,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+            ),
           ),
         ),
       ),

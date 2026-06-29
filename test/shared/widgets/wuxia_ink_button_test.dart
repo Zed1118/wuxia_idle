@@ -47,11 +47,7 @@ void main() {
     );
     expect(find.byIcon(Icons.map_outlined), findsOneWidget);
     expect(
-      find.byWidgetPredicate(
-        (w) =>
-            w is Image &&
-            assetNameOf(w.image) == path,
-      ),
+      find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path),
       findsOneWidget,
     );
   });
@@ -63,6 +59,35 @@ void main() {
     );
     await tester.tap(find.byType(WuxiaInkButton));
     expect(tapped, 1);
+  });
+
+  testWidgets('Semantics 标记入口为 button', (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      host(const WuxiaInkButton(label: '主线', hint: '继续江湖路', onTap: null)),
+    );
+    expect(
+      tester.getSemantics(find.byType(WuxiaInkButton)),
+      isSemantics(isButton: true, isEnabled: true),
+    );
+    handle.dispose();
+  });
+
+  testWidgets('icon 入口真实 hitbox 高度不低于 76px', (tester) async {
+    await tester.pumpWidget(
+      host(
+        const WuxiaInkButton(
+          label: '主线',
+          hint: '继续江湖路',
+          icon: Icons.map_outlined,
+          onTap: null,
+        ),
+      ),
+    );
+    expect(
+      tester.getSize(find.byType(WuxiaInkButton)).height,
+      greaterThanOrEqualTo(76),
+    );
   });
 
   testWidgets('disabled 拦截点击且半透明 0.4', (tester) async {
