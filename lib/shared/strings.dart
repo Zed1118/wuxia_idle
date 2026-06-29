@@ -22,6 +22,8 @@ class UiStrings {
   /// debugPrint),玩家只见友好中文 + 可选「重试」。
   static const String errorFallbackMessage = '数据加载异常，请重试';
   static const String errorRetry = '重试';
+  static const String errorNoSaveTitle = '卷宗未启';
+  static const String errorNoSaveAction = '返回';
 
   /// 战斗顶栏标题：`战斗 N v M`，N/M 为双方存活人数。
   static String battleTitle(int leftAlive, int rightAlive) =>
@@ -1946,6 +1948,7 @@ class UiStrings {
   static const String towerCycleReadyHint = '已通 30 层，可挑战下一轮回';
 
   static const String baikeScreenTitle = '江湖见闻录';
+  static const String baikeEmptyTitle = '卷册暂空';
   static const String baikeTabFeed = '见闻';
   static const String baikeTabLore = '典故';
   static const String baikeTabCodex = '机制';
@@ -2181,6 +2184,8 @@ class UiStrings {
   static const String recruitmentStartingTechniqueLabel = '起手心法';
   static const String recruitmentStartingEquipmentLabel = '起手装备';
   static const String recruitmentNoStartingTechnique = '无(待师父亲授)';
+  static const String recruitmentCandidatesMissingTitle = '名册未至';
+  static const String recruitmentCandidatesMissingBody = '收徒名册尚未载入，稍后再来。';
 
   // ── P1.1 A1 E.1 · LineagePanelScreen inactive 段 ──
   static const String lineagePanelInactiveSection = '在册弟子(未出阵)';
@@ -2219,6 +2224,7 @@ class UiStrings {
       '飞升之后你将退出江湖,门派由弟子继承。\n此举无法回头,确认?';
   static const String ascensionConfirmDialogOk = '确认飞升';
   static const String ascensionConfirmDialogCancel = '再思量片刻';
+  static const String ascensionSubmitting = '飞升中…';
   static const String ascensionCompleteSnackbar =
       '飞升渡劫已成 · 已传 {0} 件遗物 · 你已退出江湖';
   static const String ascensionNoEquipments = '尚无装备可传';

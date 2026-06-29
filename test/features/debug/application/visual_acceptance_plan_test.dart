@@ -23,6 +23,8 @@ void main() {
 
     expect(ids, expected);
     expect(ids, isNot(contains(VisualRoute.hub.id)));
+    expect(ids, contains(VisualRoute.taohuaIsland.id));
+    expect(ids, contains(VisualRoute.recruitmentDialog.id));
   });
 
   test('checklist 输出 route、seed、截图命令', () {

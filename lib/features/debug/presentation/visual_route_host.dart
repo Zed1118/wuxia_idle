@@ -84,6 +84,8 @@ import '../../baike/presentation/martial_arts_tab.dart';
 import '../../baike/presentation/skill_codex_detail_screen.dart';
 import '../../character_panel/presentation/lineage_character_detail_screen.dart';
 import '../../zangjuange/presentation/zangjuange_screen.dart';
+import '../../taohua_island/presentation/taohua_island_screen.dart';
+import '../../recruitment/presentation/recruitment_dialog.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -564,6 +566,23 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await _seedInventoryItem(isar, 'item_scroll_kai_bei_shou', 1);
       await _seedInventoryItem(isar, 'item_mojianshi', 12);
       return const InventoryScreen(initialTab: 1);
+    case VisualRoute.taohuaIsland:
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
+      await _seedInventoryItem(isar, 'item_silver', 260);
+      await _seedInventoryItem(isar, 'item_mojianshi', 90);
+      await _seedInventoryItem(isar, 'item_xinxuejiejing', 12);
+      await _seedInventoryItem(isar, 'item_jingtie', 60);
+      await _seedInventoryItem(isar, 'item_yaocao', 60);
+      await _seedInventoryItem(isar, 'item_mucai', 60);
+      await _seedInventoryItem(isar, 'item_lingquanshui', 60);
+      return const TaohuaIslandScreen();
+    case VisualRoute.recruitmentDialog:
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
+      return const RecruitmentDialog();
     case VisualRoute.battleTreasureGlowPeak:
       return const _TreasureGlowPreview(
         defId: 'weapon_shenwu_tian_wen_jian',

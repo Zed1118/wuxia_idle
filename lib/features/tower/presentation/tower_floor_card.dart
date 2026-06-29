@@ -100,22 +100,19 @@ class TowerFloorCard extends StatelessWidget {
     if (entry.status == TowerFloorStatus.cleared) {
       final confirmed = await showDialog<bool>(
         context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text(UiStrings.towerReplayTitle),
-          // 逐关「战斗方式」覆盖已移除(2026-06-26):全局「自动战斗」开关在设置面板,
-          // 逐关覆盖冗余。首通仍强制拖招,重打按全局设置。dialog 仅留重打确认文案。
-          content: const Text(UiStrings.towerReplayBody),
+        builder: (ctx) => PaperDialog(
+          title: UiStrings.towerReplayTitle,
+          body: const Text(UiStrings.towerReplayBody),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text(UiStrings.towerReplayCancel),
+            PlaqueButton(
+              label: UiStrings.towerReplayCancel,
+              onTap: () => Navigator.of(ctx).pop(false),
             ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: WuxiaColors.resultHighlight,
-              ),
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text(UiStrings.towerReplayConfirm),
+            PlaqueButton(
+              label: UiStrings.towerReplayConfirm,
+              primary: true,
+              autofocus: true,
+              onTap: () => Navigator.of(ctx).pop(true),
             ),
           ],
         ),

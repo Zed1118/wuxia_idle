@@ -9,6 +9,8 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
+import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../application/recruitment_providers.dart';
@@ -74,11 +76,11 @@ class _RecruitmentDialogState extends ConsumerState<RecruitmentDialog> {
               if (candidates.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Center(
-                    child: Text(
-                      'recruit_candidates.yaml 未加载',
-                      style: TextStyle(color: WuxiaColors.textMuted),
-                    ),
+                  child: InkEmptyState(
+                    variant: InkEmptyStateVariant.unavailable,
+                    title: UiStrings.recruitmentCandidatesMissingTitle,
+                    body: UiStrings.recruitmentCandidatesMissingBody,
+                    icon: Icons.person_search_outlined,
                   ),
                 )
               else
@@ -92,15 +94,12 @@ class _RecruitmentDialogState extends ConsumerState<RecruitmentDialog> {
                   ),
                 ],
               const SizedBox(height: 24),
-              OutlinedButton(
-                onPressed: _submitting ? null : _onDecline,
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: WuxiaColors.border),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text(
-                  UiStrings.recruitmentDeclineButton,
-                  style: TextStyle(color: WuxiaColors.textSecondary),
+              Align(
+                alignment: Alignment.centerRight,
+                child: PlaqueButton(
+                  label: UiStrings.recruitmentDeclineButton,
+                  disabled: _submitting,
+                  onTap: _submitting ? null : _onDecline,
                 ),
               ),
             ],
@@ -113,27 +112,19 @@ class _RecruitmentDialogState extends ConsumerState<RecruitmentDialog> {
   Future<void> _onAccept(RecruitCandidateDef candidate) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: WuxiaColors.panel,
-        title: const Text(
-          UiStrings.recruitmentConfirmTitle,
-          style: TextStyle(color: WuxiaColors.textPrimary),
-        ),
-        content: Text(
-          UiStrings.recruitmentConfirmBody(candidate.name),
-          style: const TextStyle(color: WuxiaColors.textSecondary),
-        ),
+      builder: (ctx) => PaperDialog(
+        title: UiStrings.recruitmentConfirmTitle,
+        body: Text(UiStrings.recruitmentConfirmBody(candidate.name)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(UiStrings.recruitmentConfirmNo),
+          PlaqueButton(
+            label: UiStrings.recruitmentConfirmNo,
+            onTap: () => Navigator.of(ctx).pop(false),
           ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: WuxiaColors.resultHighlight,
-            ),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(UiStrings.recruitmentConfirmYes),
+          PlaqueButton(
+            label: UiStrings.recruitmentConfirmYes,
+            primary: true,
+            autofocus: true,
+            onTap: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),
@@ -167,24 +158,19 @@ class _RecruitmentDialogState extends ConsumerState<RecruitmentDialog> {
   Future<void> _onDecline() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: WuxiaColors.panel,
-        title: const Text(
-          UiStrings.recruitmentDeclineConfirmTitle,
-          style: TextStyle(color: WuxiaColors.textPrimary),
-        ),
-        content: const Text(
-          UiStrings.recruitmentDeclineConfirmBody,
-          style: TextStyle(color: WuxiaColors.textSecondary),
-        ),
+      builder: (ctx) => PaperDialog(
+        title: UiStrings.recruitmentDeclineConfirmTitle,
+        body: const Text(UiStrings.recruitmentDeclineConfirmBody),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(UiStrings.recruitmentConfirmNo),
+          PlaqueButton(
+            label: UiStrings.recruitmentConfirmNo,
+            onTap: () => Navigator.of(ctx).pop(false),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(UiStrings.recruitmentConfirmYes),
+          PlaqueButton(
+            label: UiStrings.recruitmentConfirmYes,
+            primary: true,
+            autofocus: true,
+            onTap: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),
@@ -290,17 +276,16 @@ class _CandidateCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             border: Border.all(color: schoolColor),
                             borderRadius: BorderRadius.circular(2),
                           ),
                           child: Text(
                             _schoolLabel(candidate.school),
-                            style: TextStyle(
-                              color: schoolColor,
-                              fontSize: 11,
-                            ),
+                            style: TextStyle(color: schoolColor, fontSize: 11),
                           ),
                         ),
                       ],
@@ -340,15 +325,11 @@ class _CandidateCard extends StatelessWidget {
           const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
-            child: ElevatedButton(
-              onPressed: onAccept,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: WuxiaColors.resultHighlight,
-                foregroundColor: WuxiaColors.background,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 10),
-              ),
-              child: const Text(UiStrings.recruitmentAcceptButton),
+            child: PlaqueButton(
+              label: UiStrings.recruitmentAcceptButton,
+              primary: true,
+              disabled: onAccept == null,
+              onTap: onAccept,
             ),
           ),
         ],
@@ -370,17 +351,21 @@ class _AttrRow extends StatelessWidget {
       runSpacing: 4,
       children: [
         _AttrItem(
-            label: UiStrings.recruitmentAttrConstitutionLabel,
-            value: profile.constitution),
+          label: UiStrings.recruitmentAttrConstitutionLabel,
+          value: profile.constitution,
+        ),
         _AttrItem(
-            label: UiStrings.recruitmentAttrEnlightenmentLabel,
-            value: profile.enlightenment),
+          label: UiStrings.recruitmentAttrEnlightenmentLabel,
+          value: profile.enlightenment,
+        ),
         _AttrItem(
-            label: UiStrings.recruitmentAttrAgilityLabel,
-            value: profile.agility),
+          label: UiStrings.recruitmentAttrAgilityLabel,
+          value: profile.agility,
+        ),
         _AttrItem(
-            label: UiStrings.recruitmentAttrFortuneLabel,
-            value: profile.fortune),
+          label: UiStrings.recruitmentAttrFortuneLabel,
+          value: profile.fortune,
+        ),
       ],
     );
   }
@@ -399,10 +384,7 @@ class _AttrItem extends StatelessWidget {
         children: [
           TextSpan(
             text: '$label ',
-            style: const TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
           TextSpan(
             text: '$value',
@@ -440,10 +422,7 @@ class _ChipRow extends StatelessWidget {
           width: 72,
           child: Text(
             label,
-            style: const TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
         ),
         Expanded(
@@ -481,10 +460,7 @@ class _Chip extends StatelessWidget {
         border: Border.all(color: c),
         borderRadius: BorderRadius.circular(2),
       ),
-      child: Text(
-        text,
-        style: TextStyle(color: c, fontSize: 11),
-      ),
+      child: Text(text, style: TextStyle(color: c, fontSize: 11)),
     );
   }
 }
