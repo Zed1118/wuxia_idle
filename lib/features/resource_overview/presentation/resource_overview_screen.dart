@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/domain/item_source.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
@@ -119,6 +120,9 @@ class _ResourceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final usage = UiStrings.materialUsageSummary(item.usages);
     final source = UiStrings.materialSourceSummary(item.sources);
+    final showSourceDetails =
+        item.category != ResourceOverviewCategory.scroll &&
+        item.sources.isNotEmpty;
     return PaperPanel(
       padding: const EdgeInsets.all(12),
       paperOpacity: 0.12,
@@ -168,11 +172,33 @@ class _ResourceCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${UiStrings.resourceOverviewDirectionLabel}'
+                      '${UiStrings.resourceConsumptionDirectionLabel(item.consumptionDirection)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: WuxiaColors.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
+          if (item.usageGroups.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final group in item.usageGroups)
+                  _UsageChip(label: UiStrings.resourceUsageGroupLabel(group)),
+              ],
+            ),
+          ],
           const SizedBox(height: 10),
           _MetaLine(
             label: UiStrings.resourceOverviewUsageLabel,
@@ -183,7 +209,83 @@ class _ResourceCard extends StatelessWidget {
             label: UiStrings.resourceOverviewSourceLabel,
             value: source.isEmpty ? UiStrings.resourceOverviewNoSource : source,
           ),
+          if (showSourceDetails) ...[
+            const SizedBox(height: 8),
+            _SourceDetails(sources: item.sources),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _UsageChip extends StatelessWidget {
+  const _UsageChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: WuxiaUi.qing.withValues(alpha: 0.1),
+        border: Border.all(color: WuxiaUi.qing.withValues(alpha: 0.45)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(color: WuxiaUi.qing, fontSize: 11),
+      ),
+    );
+  }
+}
+
+class _SourceDetails extends StatelessWidget {
+  const _SourceDetails({required this.sources});
+
+  final List<ItemSource> sources;
+
+  @override
+  Widget build(BuildContext context) {
+    final labels = <String>{
+      for (final source in sources) UiStrings.itemSourceLabel(source),
+    }..remove('');
+    if (labels.isEmpty) return const SizedBox.shrink();
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.2),
+        border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 10),
+          childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+          iconColor: WuxiaUi.ink2,
+          collapsedIconColor: WuxiaUi.muted,
+          title: const Text(
+            UiStrings.resourceOverviewSourceDetailTitle,
+            style: TextStyle(
+              color: WuxiaUi.ink2,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final label in labels.take(6)) _UsageChip(label: label),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
