@@ -243,15 +243,13 @@ void main() {
       expect(find.text(UiStrings.taohuaIslandIdlePaused), findsOneWidget);
     });
 
+    // 场景化主屏单卡模型(scene-hub):一次只渲染选中建筑卡,故按建筑分阶段断言。
     testWidgets('建筑卡显示当前队列、剩余时间、满仓时间与产物去向', (tester) async {
       await pump(tester, wrap(buildTestView()));
 
+      // 默认卡 tieJiangChang(source):采集精铁 + 下次产出时间 + 满仓未知。
       expect(
         find.text(UiStrings.taohuaIslandCurrentGathering('精铁')),
-        findsOneWidget,
-      );
-      expect(
-        find.text(UiStrings.taohuaIslandCurrentRecipe('磨剑石')),
         findsOneWidget,
       );
       expect(
@@ -263,10 +261,20 @@ void main() {
         findsWidgets,
       );
       expect(find.text(UiStrings.taohuaIslandFullStorageUnknown), findsWidgets);
+
+      // 切打造台(processor·forge_mojianshi):当前配方磨剑石 + 产物去向装备强化。
+      await selectBuilding(tester, BuildingType.daZaoTai);
+      expect(
+        find.text(UiStrings.taohuaIslandCurrentRecipe('磨剑石')),
+        findsOneWidget,
+      );
       expect(
         find.text(UiStrings.taohuaIslandOutputUsage('装备强化')),
         findsOneWidget,
       );
+
+      // 切丹房(processor·无配方):无配方 + 已停。
+      await selectBuilding(tester, BuildingType.danFang);
       expect(
         find.text(UiStrings.taohuaIslandCurrentRecipeNone),
         findsOneWidget,
