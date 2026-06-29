@@ -112,6 +112,8 @@ class _PlaqueTabState extends State<PlaqueTab> {
                   ),
                   child: Text(
                     widget.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: fg,
                       fontSize: 13,

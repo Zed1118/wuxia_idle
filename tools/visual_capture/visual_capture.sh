@@ -1,136 +1,155 @@
 #!/usr/bin/env bash
-# 出版美术视觉验收批量截图:对每个 VISUAL_ROUTE 启动 macOS debug app,
-# 等就绪信号 + settle,截"干净窗口"(无桌面/dock),退出。产图到 docs/handoff/。
-# 用法:
-#   visual_capture.sh                         # 截全部 route × 全部分辨率
-#   visual_capture.sh main_menu tech...       # 只截指定 route id
-#   visual_capture.sh --suite full --dry-run  # 打印全量 route/seed/检查清单
-#   visual_capture.sh --res 1920x1080 ...     # 只截指定分辨率(可重复;默认 720p+1080p)
-#   visual_capture.sh --dry-run               # 只打印计划不启 app
-#
-# 截图策略(2026-06-09 重做):用 swift window_id.swift(CGWindowList,零权限)取
-# app 窗口 id → screencapture -o -l<id> 截纯窗口。取不到才全屏兜底(-x)。
-# 双分辨率:VISUAL_WINDOW_W/H 环境变量传给原生 MainFlutterWindow 强制初始窗口尺寸。
-set -uo pipefail
+set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-cd "$REPO_ROOT"
-SWIFT_WINID="$REPO_ROOT/tools/visual_capture/window_id.swift"
-
-DEFAULT_RES=(1280x720 1920x1080)
-READY_TIMEOUT=180   # 秒(首跑含编译)
-SETTLE=2            # 截图前等图片加载
-APP_PROCESS_NAME="wuxia_idle"   # = pubspec name + CGWindow owner name
-APP_BIN_MATCH="Debug/Products/Debug/wuxia_idle.app"
-
+SUITE="smoke"
+OUTPUT_DIR="build/visual_acceptance"
+RESOLUTIONS="1280x720,1440x900,1920x1080,2560x1080"
+ROUTE=""
 DRY_RUN=0
-BUILD_MODE=debug   # --profile 出干净 Steam 截图(kDebugMode=false 隐藏 debug chrome)
-SUITE=smoke
-ROUTES=()
-RES=()
+HITBOX=0
+WAIT_SECONDS=12
+
+usage() {
+  cat <<'USAGE'
+Local visual route screenshot helper.
+
+Usage:
+  tools/visual_capture/visual_capture.sh [options]
+
+Options:
+  --suite smoke|full         Route suite from tool/visual_acceptance.dart.
+  --route <id>               Capture one route instead of the suite.
+  --resolutions <csv>        Window sizes, e.g. 1280x720,1920x1080.
+  --output <dir>             Output directory. Default: build/visual_acceptance.
+  --hitbox                   Enable debug hitbox overlay.
+  --wait <seconds>           Seconds to wait after launch before screenshot.
+  --dry-run                  Print planned commands only.
+  -h, --help                 Show this help.
+
+Notes:
+  - Uses only local Flutter/macOS tools and screencapture.
+  - Captures the front macOS window after resizing it with AppleScript.
+  - Output path pattern: <output>/<suite-or-route>/<resolution>/<route>.png
+USAGE
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --dry-run) DRY_RUN=1; shift ;;
-    --profile) BUILD_MODE=profile; shift ;;
-    --suite) SUITE="$2"; shift 2 ;;
-    --res) RES+=("$2"); shift 2 ;;
-    *) ROUTES+=("$1"); shift ;;
+    --suite)
+      SUITE="$2"
+      shift 2
+      ;;
+    --route)
+      ROUTE="$2"
+      shift 2
+      ;;
+    --resolutions)
+      RESOLUTIONS="$2"
+      shift 2
+      ;;
+    --output)
+      OUTPUT_DIR="$2"
+      shift 2
+      ;;
+    --hitbox)
+      HITBOX=1
+      shift
+      ;;
+    --wait)
+      WAIT_SECONDS="$2"
+      shift 2
+      ;;
+    --dry-run)
+      DRY_RUN=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage
+      exit 2
+      ;;
   esac
 done
-if [[ ${#ROUTES[@]} -eq 0 ]]; then
-  while IFS= read -r route; do
-    [[ -n "$route" ]] && ROUTES+=("$route")
-  done < <(flutter pub run tool/visual_acceptance.dart routes --suite "$SUITE" --format ids)
-fi
-[[ ${#RES[@]} -eq 0 ]] && RES=("${DEFAULT_RES[@]}")
 
-SHA="$(git rev-parse --short HEAD 2>/dev/null || echo nogit)"
-TS="$(date +%Y%m%d_%H%M%S)"
-OUT_DIR="docs/handoff/visual_capture_${SHA}_${TS}"
-MANIFEST="$OUT_DIR/manifest.txt"
-
-echo "[visual_capture] repo=$REPO_ROOT sha=$SHA"
-echo "[visual_capture] routes: ${ROUTES[*]}"
-echo "[visual_capture] res:    ${RES[*]}"
-echo "[visual_capture] mode:   $BUILD_MODE"
-echo "[visual_capture] suite:  $SUITE"
-echo "[visual_capture] out: $OUT_DIR"
-
-if [[ $DRY_RUN -eq 1 ]]; then
-  flutter pub run tool/visual_acceptance.dart checklist --suite "$SUITE"
-  echo "[visual_capture] --dry-run,退出。"
-  exit 0
-fi
-
-mkdir -p "$OUT_DIR"
-echo "# visual_capture manifest  sha=$SHA  ts=$TS" > "$MANIFEST"
-
-_kill_stale_app() { pkill -f "$APP_BIN_MATCH" 2>/dev/null || true; sleep 1; }
-
-# swift CGWindowList 取 app 主窗 id(零权限);失败回显空。
-_window_id() {
-  local err; err="$(mktemp -t vc_winid.XXXXXX)"
-  swift "$SWIFT_WINID" "$APP_PROCESS_NAME" >/dev/null 2>"$err" || true
-  local best; best="$(grep -o 'BEST=[0-9-]*' "$err" | cut -d= -f2)"
-  rm -f "$err"
-  [[ "$best" =~ ^[0-9]+$ ]] && echo "$best" || echo ""
+route_ids() {
+  if [[ -n "$ROUTE" ]]; then
+    printf '%s\n' "$ROUTE"
+  else
+    flutter pub run tool/visual_acceptance.dart routes \
+      --suite "$SUITE" \
+      --format ids
+  fi
 }
 
-capture_one() {
-  local route="$1" w="$2" h="$3"
-  local log; log="$(mktemp -t vc_${route}_${w}x${h}.XXXXXX.log)"
-  local png="$OUT_DIR/${route}_${w}x${h}.png"
+resize_front_window() {
+  local width="$1"
+  local height="$2"
+  osascript <<OSA
+tell application "System Events"
+  set frontApp to first application process whose frontmost is true
+  set position of front window of frontApp to {0, 0}
+  set size of front window of frontApp to {$width, $height}
+end tell
+OSA
+}
 
-  echo "[visual_capture] === $route @ ${w}x${h} ==="
-  _kill_stale_app
-  local mode_flag=""; [[ "$BUILD_MODE" == "profile" ]] && mode_flag="--profile"
-  VISUAL_WINDOW_W="$w" VISUAL_WINDOW_H="$h" \
-    flutter run -d macos $mode_flag --dart-define=VISUAL_ROUTE="$route" >"$log" 2>&1 &
-  local run_pid=$!
+capture_front_window() {
+  local output="$1"
+  osascript <<'OSA' | tr -d '\n' | xargs -I{} screencapture -x -o -l {} "$output"
+tell application "System Events"
+  set frontApp to first application process whose frontmost is true
+  set winId to value of attribute "AXWindowNumber" of front window of frontApp
+  return winId
+end tell
+OSA
+}
 
-  local waited=0 ready=0
-  while [[ $waited -lt $READY_TIMEOUT ]]; do
-    if grep -q "VISUAL_ROUTE_READY: $route" "$log"; then ready=1; break; fi
-    if grep -qE "VISUAL_ROUTE_ERROR|Compilation failed" "$log"; then
-      echo "[visual_capture] $route 失败签名,见 $log"; break; fi
-    if ! kill -0 "$run_pid" 2>/dev/null; then
-      echo "[visual_capture] $route 进程早退,见 $log"; break; fi
-    sleep 1; waited=$((waited+1))
-  done
-
-  if [[ $ready -eq 1 ]]; then
-    sleep "$SETTLE"
-    local wid; wid="$(_window_id)"
-    if [[ -n "$wid" ]]; then
-      if screencapture -o -l"$wid" "$png" 2>/dev/null && [[ -s "$png" ]]; then
-        echo "[visual_capture] $route@${w}x${h} 干净窗口 -> $png"
-        echo "${route}_${w}x${h} -> ${route}_${w}x${h}.png -> READY(干净窗口 wid=$wid)" >> "$MANIFEST"
-      else
-        screencapture -x "$png"
-        echo "[visual_capture] $route@${w}x${h} -l 失败→全屏兜底 -> $png"
-        echo "${route}_${w}x${h} -> ${route}_${w}x${h}.png -> READY(全屏兜底)" >> "$MANIFEST"
-      fi
-    else
-      screencapture -x "$png"
-      echo "[visual_capture] $route@${w}x${h} 窗口 id 取失败→全屏兜底 -> $png"
-      echo "${route}_${w}x${h} -> ${route}_${w}x${h}.png -> READY(全屏兜底·无 wid)" >> "$MANIFEST"
-    fi
-  else
-    echo "${route}_${w}x${h} -> (无图) -> TIMEOUT/FAIL (log: $log)" >> "$MANIFEST"
-    echo "[visual_capture] $route@${w}x${h} 未就绪(${waited}s),跳过。日志 $log"
+run_capture() {
+  local route="$1"
+  local resolution="$2"
+  local width="${resolution%x*}"
+  local height="${resolution#*x}"
+  local group="${ROUTE:-$SUITE}"
+  local dir="$OUTPUT_DIR/$group/$resolution"
+  local png="$dir/$route.png"
+  local log="$dir/$route.log"
+  local hitbox_define="false"
+  if [[ "$HITBOX" -eq 1 ]]; then
+    hitbox_define="true"
   fi
 
-  kill "$run_pid" 2>/dev/null || true
-  wait "$run_pid" 2>/dev/null || true
-  _kill_stale_app
+  mkdir -p "$dir"
+
+  local cmd=(
+    flutter run -d macos
+    --dart-define=VISUAL_ROUTE="$route"
+    --dart-define=HITBOX_DEBUG="$hitbox_define"
+  )
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    printf '[dry-run] %s\n' "${cmd[*]}"
+    printf '[dry-run] resize %sx%s; capture %s\n' "$width" "$height" "$png"
+    return
+  fi
+
+  "${cmd[@]}" >"$log" 2>&1 &
+  local pid=$!
+  sleep "$WAIT_SECONDS"
+  resize_front_window "$width" "$height"
+  sleep 1
+  capture_front_window "$png"
+  kill "$pid" >/dev/null 2>&1 || true
+  wait "$pid" >/dev/null 2>&1 || true
 }
 
-for route in "${ROUTES[@]}"; do
-  for res in "${RES[@]}"; do
-    w="${res%x*}"; h="${res#*x}"
-    capture_one "$route" "$w" "$h"
+IFS=',' read -r -a resolution_list <<< "$RESOLUTIONS"
+while IFS= read -r route; do
+  [[ -z "$route" ]] && continue
+  for resolution in "${resolution_list[@]}"; do
+    run_capture "$route" "$resolution"
   done
-done
-
-echo "[visual_capture] 完成。manifest: $MANIFEST"
-cat "$MANIFEST"
+done < <(route_ids)

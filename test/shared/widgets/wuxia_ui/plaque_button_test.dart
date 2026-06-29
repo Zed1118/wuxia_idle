@@ -162,4 +162,12 @@ void main() {
     );
     expect(fad(tester).mouseCursor, SystemMouseCursors.basic);
   });
+
+  testWidgets('真实 hitbox 高度不低于 36px', (tester) async {
+    await tester.pumpWidget(host(PlaqueButton(label: '确认', onTap: () {})));
+    expect(
+      tester.getSize(find.byType(PlaqueButton)).height,
+      greaterThanOrEqualTo(36),
+    );
+  });
 }
