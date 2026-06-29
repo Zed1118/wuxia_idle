@@ -1887,7 +1887,9 @@ class UiStrings {
   static const String equipStatHealth = '血量';
   static const String equipStatSpeed = '速度';
   static const String loreEmptyPlaceholder = '典故待补';
-  static const String loreSectionDivider = '◇ 典故 ◇';
+  static const String loreSectionDivider = '◇ 器物志 ◇';
+  static String lorePresetTitle(int index) => '旧闻 $index';
+  static const String loreHolderMemoryTitle = '持有人记忆';
 
   // narrative_reader 翻页按钮。
   static const String narrativeReaderFinish = '完成';

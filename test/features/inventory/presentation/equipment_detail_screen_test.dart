@@ -174,7 +174,7 @@ void main() {
     );
   });
 
-  testWidgets('lore 3 段全渲染 + 段间分隔', (tester) async {
+  testWidgets('lore 3 段以器物志卷目渲染并可展开', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -198,15 +198,23 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('◇ 典故 ◇'), findsOneWidget);
+    expect(find.text(UiStrings.loreSectionDivider), findsOneWidget);
+    expect(find.text(UiStrings.lorePresetTitle(1)), findsOneWidget);
+    expect(find.text(UiStrings.lorePresetTitle(2)), findsOneWidget);
+    expect(find.text(UiStrings.lorePresetTitle(3)), findsOneWidget);
     expect(find.text('段一文本'), findsOneWidget);
+    expect(find.text('段二文本'), findsNothing);
+    expect(find.text('段三文本'), findsNothing);
+
+    await tester.tap(find.text(UiStrings.lorePresetTitle(2)));
+    await tester.pumpAndSettle();
     expect(find.text('段二文本'), findsOneWidget);
+
+    await tester.ensureVisible(find.text(UiStrings.lorePresetTitle(3)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.lorePresetTitle(3)));
+    await tester.pumpAndSettle();
     expect(find.text('段三文本'), findsOneWidget);
-    expect(
-      find.text('· · ·'),
-      findsNWidgets(2),
-      reason: '3 段之间应有 2 个 · · · 分隔符',
-    );
   });
 
   testWidgets('loader 返回 placeholder → "典故待补"', (tester) async {
