@@ -79,7 +79,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase1), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase2), findsOneWidget);
-    expect(find.text('强制招募 NPC'), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuSectRecruit), findsOneWidget);
     expect(find.text(UiStrings.mainMenuCharacterPanel), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLineage), findsOneWidget);
     expect(find.text(UiStrings.mainMenuBaike), findsOneWidget);
@@ -88,45 +88,53 @@ void main() {
     expect(find.text(UiStrings.mainMenuTechniques), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSettings), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSkillLibrary), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuGroupJourney), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuGroupGrowth), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuGroupArchive), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuGroupSettings), findsOneWidget);
 
-    // 顺序(Phase A 双列分组):修行/演武/江湖 三组,每组组内 2 列。
-    // 行序:组首项 < 组次行项;同行两项 y 近似相等。
-    // 扩 viewport 防 off-screen(memory feedback_listview_widget_test_viewport)。
+    // 顺序(视觉批次水墨版式):江湖行程 / 养成经营 / 档案藏卷 / 设置。
+    // 900 宽触发窄屏两列堆叠,便于断言分区纵向顺序。
     await tester.binding.setSurfaceSize(const Size(900, 3000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pump();
 
     double y(String label) => tester.getCenter(find.text(label)).dy;
 
-    // 组序(各组首项):修行 < 演武 < 江湖
-    expect(y(UiStrings.mainMenuMainline) < y(UiStrings.mainMenuTower), isTrue);
-    expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuLineage), isTrue);
-    // 修行组行序(主线行 < 装备行 < 心法行)
+    // 分区顺序。
     expect(
-      y(UiStrings.mainMenuMainline) < y(UiStrings.mainMenuInventory),
+      y(UiStrings.mainMenuGroupJourney) < y(UiStrings.mainMenuGroupGrowth),
       isTrue,
     );
     expect(
-      y(UiStrings.mainMenuInventory) < y(UiStrings.mainMenuTechniques),
+      y(UiStrings.mainMenuGroupGrowth) < y(UiStrings.mainMenuGroupArchive),
       isTrue,
     );
-    // 同行配对:主线 / 角色 同行,y 近似相等
     expect(
-      (y(UiStrings.mainMenuMainline) - y(UiStrings.mainMenuCharacterPanel))
-              .abs() <
-          2.0,
+      y(UiStrings.mainMenuGroupArchive) < y(UiStrings.mainMenuGroupSettings),
       isTrue,
     );
-    // 演武组行序(爬塔行 < 轻功行 < 桃花岛行)
+
+    // 江湖行程:主线 / 爬塔同排,再进入晚期试炼。
+    expect(
+      (y(UiStrings.mainMenuMainline) - y(UiStrings.mainMenuTower)).abs() < 2.0,
+      isTrue,
+    );
     expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuLightFoot), isTrue);
+
+    // 养成经营:角色/装备在前,心法与闭关/桃花岛承接。
     expect(
-      y(UiStrings.mainMenuLightFoot) < y(UiStrings.mainMenuTaohuaIsland),
+      y(UiStrings.mainMenuCharacterPanel) < y(UiStrings.mainMenuTechniques),
       isTrue,
     );
-    // 江湖组行序(师徒行 < 江湖行 < 藏卷阁/百科行)
-    expect(y(UiStrings.mainMenuLineage) < y(UiStrings.mainMenuJianghu), isTrue);
     expect(
-      y(UiStrings.mainMenuJianghu) < y(UiStrings.mainMenuZangjuange),
+      y(UiStrings.mainMenuSeclusion) < y(UiStrings.mainMenuTaohuaIsland),
+      isTrue,
+    );
+
+    // 档案藏卷:谱牒/榜单先于藏卷/百科。
+    expect(
+      y(UiStrings.mainMenuLineage) < y(UiStrings.mainMenuZangjuange),
       isTrue,
     );
     expect(
@@ -158,6 +166,24 @@ void main() {
     // 百科 + 藏经阁共 2 个 menu_book_outlined 图标
     expect(find.byIcon(Icons.menu_book_outlined), findsNWidgets(2));
   });
+
+  for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
+    testWidgets('常规桌面视口 smoke：${size.width.toInt()}x${size.height.toInt()}', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(app());
+      await tester.pump();
+
+      expect(find.text(UiStrings.mainMenuGroupJourney), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuGroupGrowth), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuGroupArchive), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuGroupSettings), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('入口状态 chip：主线 / 爬塔 / 装备 / 心法 / 闭关', (tester) async {
     final now = DateTime(2026, 6, 7);
