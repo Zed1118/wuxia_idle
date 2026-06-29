@@ -900,6 +900,11 @@ class UiStrings {
 
   static const String mainMenuMainline = '主线';
   static const String mainMenuMainlineHint = '6 章 30 关,按章节顺序解锁';
+  static String mainMenuMainlineGoalHint(
+    String target,
+    String reward,
+    String reason,
+  ) => '目标：打$target · 取$reward · $reason';
   static String mainMenuMainlineStatus(int chapterIndex, String stageName) =>
       '第$chapterIndex章 · $stageName';
   static const String mainMenuMainlineCompleteStatus = '主线已通';
@@ -943,6 +948,24 @@ class UiStrings {
   static const String stageReplayRouteEquipment = '刷装备';
   static const String stageReplayRouteMaterial = '刷材料';
   static const String stageReplayRouteProficiency = '练熟练度';
+  static const String stageGoalGuidanceTitle = '当前目标';
+  static String stageGoalTarget(
+    int chapterIndex,
+    int stageIndex,
+    String name,
+  ) => '第$chapterIndex章第$stageIndex关「$name」';
+  static String stageGoalGuidanceLine(
+    String target,
+    String reward,
+    String reason,
+  ) => '打$target · 取$reward · $reason';
+  static const String stageGoalRewardSkillManual = '武学真解';
+  static const String stageGoalRewardProgress = '过关线索';
+  static const String stageGoalReasonBoss = '章末关会打开下一段江湖路。';
+  static const String stageGoalReasonSkill = '首通可学新招，后续战斗多一个解法。';
+  static const String stageGoalReasonEquipment = '补上早期装备，推关更稳。';
+  static const String stageGoalReasonMaterial = '攒下养成材料，强化与整备都用得上。';
+  static const String stageGoalReasonProgress = '先把主线往前推，系统会自然展开。';
 
   static String chapterRouteNodeLabel(int chapterIndex) => '第$chapterIndex章';
 

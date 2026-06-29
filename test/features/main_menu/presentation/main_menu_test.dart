@@ -234,6 +234,7 @@ void main() {
       find.text(UiStrings.mainMenuMainlineStatus(1, '荒山野店')),
       findsOneWidget,
     );
+    expect(find.textContaining('目标：打第1章第2关「荒山野店」'), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTowerBossStatus(9, 10)), findsOneWidget);
     expect(
       find.text(UiStrings.mainMenuInventoryStatus(2, '宝物')),

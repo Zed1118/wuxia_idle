@@ -10,6 +10,7 @@ import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/loot_preview/domain/drop_rumor.dart';
 import 'package:wuxia_idle/features/loot_preview/presentation/stage_intel_dialog.dart';
+import 'package:wuxia_idle/features/mainline/application/new_save_goal_guidance.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 void main() {
@@ -68,6 +69,7 @@ void main() {
     RealmTier currentRealm = RealmTier.xueTu,
     int targetCycle = 1,
     List<Character> activeCharacters = const [],
+    NewSaveGoalGuidance? goalGuidance,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -77,6 +79,7 @@ void main() {
             currentRealm: currentRealm,
             targetCycle: targetCycle,
             activeCharacters: activeCharacters,
+            goalGuidance: goalGuidance,
             rumorTable: DropRumorTable.fromDropTable(
               stage.dropTable,
               gating: FirstClearGating.scrollOnly,
@@ -205,5 +208,22 @@ void main() {
     );
     expect(find.textContaining('沈青：'), findsOneWidget);
     expect(find.textContaining(UiStrings.injuryLightLabel), findsOneWidget);
+  });
+
+  testWidgets('传入目标引导时显示当前目标段', (tester) async {
+    final def = stage();
+    await pumpIntel(
+      tester,
+      def,
+      goalGuidance: NewSaveGoalGuidance.fromStage(
+        chapterIndex: 1,
+        stageIndex: 2,
+        stage: def,
+      ),
+    );
+
+    expect(find.text(UiStrings.stageGoalGuidanceTitle), findsOneWidget);
+    expect(find.textContaining('打第1章第2关「试剑坡」'), findsOneWidget);
+    expect(find.textContaining('取磨剑石'), findsOneWidget);
   });
 }
