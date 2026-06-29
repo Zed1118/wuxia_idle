@@ -10,6 +10,7 @@ import '../../../data/isar_setup.dart';
 import '../../../data/lore_loader.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/domain/equipment.dart';
+import '../../../core/domain/lore.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
@@ -273,11 +274,10 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                       info,
                     ],
                     const SizedBox(height: 16),
-                    _SourceSection(sources: sources),
-                    if (sources.isNotEmpty) const SizedBox(height: 16),
                     _LoreSection(
                       future: _loreFuture,
                       equipment: widget.equipment,
+                      sources: sources,
                     ),
                   ],
                 );
@@ -298,56 +298,27 @@ Set<int> _watchActiveEquippedIds(WidgetRef ref) {
   return equippedEquipmentIdsForCharacters(characters);
 }
 
-class _SourceSection extends StatelessWidget {
-  const _SourceSection({required this.sources});
-
-  final List<EquipmentSource> sources;
-
-  @override
-  Widget build(BuildContext context) {
-    if (sources.isEmpty) return const SizedBox.shrink();
-    return PaperPanel(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionHeader(UiStrings.equipmentSourceSectionDivider),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final source in sources)
-                _Chip(text: _sourceLabel(source), color: WuxiaUi.ink2),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _sourceLabel(EquipmentSource source) {
-    return switch (source.kind) {
-      EquipmentSourceKind.mainline => UiStrings.equipmentSourceMainline(
-        source.chapterIndex ?? 0,
-        source.name ?? UiStrings.equipmentSourceUnknown,
-        source.isBoss,
-      ),
-      EquipmentSourceKind.stage => UiStrings.equipmentSourceStage(
-        source.name ?? UiStrings.equipmentSourceUnknown,
-        source.isBoss,
-      ),
-      EquipmentSourceKind.tower => UiStrings.equipmentSourceTower(
-        source.floorIndex ?? 0,
-        source.isBoss,
-      ),
-      EquipmentSourceKind.seclusion => UiStrings.equipmentSourceSeclusion(
-        source.name ?? UiStrings.equipmentSourceUnknown,
-      ),
-      EquipmentSourceKind.shop => UiStrings.equipmentSourceShop,
-      EquipmentSourceKind.tag => UiStrings.equipmentSourceTag(source.tag ?? ''),
-    };
-  }
+String _sourceLabel(EquipmentSource source) {
+  return switch (source.kind) {
+    EquipmentSourceKind.mainline => UiStrings.equipmentSourceMainline(
+      source.chapterIndex ?? 0,
+      source.name ?? UiStrings.equipmentSourceUnknown,
+      source.isBoss,
+    ),
+    EquipmentSourceKind.stage => UiStrings.equipmentSourceStage(
+      source.name ?? UiStrings.equipmentSourceUnknown,
+      source.isBoss,
+    ),
+    EquipmentSourceKind.tower => UiStrings.equipmentSourceTower(
+      source.floorIndex ?? 0,
+      source.isBoss,
+    ),
+    EquipmentSourceKind.seclusion => UiStrings.equipmentSourceSeclusion(
+      source.name ?? UiStrings.equipmentSourceUnknown,
+    ),
+    EquipmentSourceKind.shop => UiStrings.equipmentSourceShop,
+    EquipmentSourceKind.tag => UiStrings.equipmentSourceTag(source.tag ?? ''),
+  };
 }
 
 class _DetailHero extends StatelessWidget {
@@ -779,25 +750,39 @@ class _StatRow extends StatelessWidget {
   }
 }
 
-class _LoreSection extends StatelessWidget {
-  const _LoreSection({required this.future, required this.equipment});
+class _LoreSection extends StatefulWidget {
+  const _LoreSection({
+    required this.future,
+    required this.equipment,
+    required this.sources,
+  });
 
   final Future<LoreContent?> future;
   final Equipment equipment;
+  final List<EquipmentSource> sources;
 
   @override
+  State<_LoreSection> createState() => _LoreSectionState();
+}
+
+class _LoreSectionState extends State<_LoreSection> {
+  @override
   Widget build(BuildContext context) {
-    final continued = equipment.lores.where((l) => !l.isPreset).toList()
+    final continued = widget.equipment.lores.where((l) => !l.isPreset).toList()
       ..sort((a, b) => a.addedAt.compareTo(b.addedAt));
+    final sourceLabels = widget.sources.map(_sourceLabel).toList();
     return FutureBuilder<LoreContent?>(
-      future: future,
+      future: widget.future,
       builder: (ctx, snap) {
         if (snap.connectionState != ConnectionState.done) {
           return const Center(child: InkLoadingIndicator());
         }
         final content = snap.data;
-        final hasPreset = content != null && !content.isPlaceholder;
-        if (!hasPreset && continued.isEmpty) {
+        final hasPreset =
+            content != null &&
+            !content.isPlaceholder &&
+            content.defaultLore.isNotEmpty;
+        if (!hasPreset && continued.isEmpty && sourceLabels.isEmpty) {
           return const PaperPanel(
             child: Center(
               child: Text(
@@ -813,42 +798,171 @@ class _LoreSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SectionHeader(UiStrings.loreSectionDivider),
-              const SizedBox(height: 10),
-              if (hasPreset)
+              if (sourceLabels.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  UiStrings.equipmentSourceSectionDivider,
+                  style: TextStyle(
+                    color: WuxiaUi.ink2,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final source in sourceLabels)
+                      _Chip(text: source, color: WuxiaUi.ink2),
+                  ],
+                ),
+              ],
+              if (hasPreset) ...[
+                const SizedBox(height: 14),
                 for (int i = 0; i < content.defaultLore.length; i++) ...[
-                  if (i > 0) const _SegmentDivider(),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      content.defaultLore[i].text,
-                      style: const TextStyle(
-                        color: WuxiaUi.ink,
-                        fontSize: 14,
-                        height: 1.8,
-                      ),
-                    ),
+                  if (i > 0) const SizedBox(height: 8),
+                  _LorePresetCard(
+                    index: i,
+                    text: content.defaultLore[i].text,
+                    initiallyExpanded: i == 0,
                   ),
                 ],
-              for (final lore in continued) ...[
+              ],
+              if (continued.isNotEmpty) ...[
                 const _SegmentDivider(),
-                const _ContinuedLoreChip(),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(
-                    lore.text,
-                    style: const TextStyle(
-                      color: WuxiaUi.ink,
-                      fontSize: 14,
-                      height: 1.8,
-                    ),
+                const Text(
+                  UiStrings.loreHolderMemoryTitle,
+                  style: TextStyle(
+                    color: WuxiaColors.internalForce,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
                   ),
+                ),
+                const SizedBox(height: 8),
+                for (final lore in continued) ...[
+                  _LoreMemoryCard(lore: lore),
+                  const SizedBox(height: 8),
+                ],
+              ],
+              if (!hasPreset && continued.isEmpty) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  UiStrings.loreEmptyPlaceholder,
+                  style: TextStyle(color: WuxiaUi.muted, fontSize: 13),
                 ),
               ],
             ],
           ),
         );
       },
+    );
+  }
+}
+
+class _LorePresetCard extends StatelessWidget {
+  const _LorePresetCard({
+    required this.index,
+    required this.text,
+    required this.initiallyExpanded,
+  });
+
+  final int index;
+  final String text;
+  final bool initiallyExpanded;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.24),
+        border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.55)),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          initiallyExpanded: initiallyExpanded,
+          iconColor: WuxiaUi.ink2,
+          collapsedIconColor: WuxiaUi.muted,
+          title: Text(
+            UiStrings.lorePresetTitle(index + 1),
+            style: const TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+            ),
+          ),
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                text,
+                style: const TextStyle(
+                  color: WuxiaUi.ink,
+                  fontSize: 14,
+                  height: 1.8,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LoreMemoryCard extends StatelessWidget {
+  const _LoreMemoryCard({required this.lore});
+
+  final Lore lore;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaColors.internalForce.withValues(alpha: 0.08),
+        border: Border.all(
+          color: WuxiaColors.internalForce.withValues(alpha: 0.35),
+          width: 0.8,
+        ),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _ContinuedLoreChip(),
+            const SizedBox(height: 8),
+            Text(
+              lore.text,
+              style: const TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 14,
+                height: 1.8,
+              ),
+            ),
+            if (lore.triggerEventDesc != null &&
+                lore.triggerEventDesc!.trim().isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                lore.triggerEventDesc!.trim(),
+                style: const TextStyle(
+                  color: WuxiaUi.muted,
+                  fontSize: 12,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

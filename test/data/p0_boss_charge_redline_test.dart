@@ -121,8 +121,11 @@ void main() {
     });
 
     test('破势 style 被剥掉 → 抛 StateError', () async {
+      // 精准剥 破势 的 style(带「波A build gate」注释,唯一)。不可用「首个
+      // style: gangMeng」——开锋专属技批(skills.yaml +21)已在 破势 前插入多条
+      // gangMeng style,首匹配会落到非 canInterrupt 专属技,剥掉不触发红线。
       String inject(String s) => s.replaceFirst(
-            RegExp(r'style: gangMeng[^\n]*'),
+            RegExp(r'style: gangMeng\s+# 波A build gate[^\n]*'),
             '',
           );
       expect(

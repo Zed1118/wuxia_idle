@@ -58,6 +58,7 @@ class SettingsPanel extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const _SettingsSectionHeader(UiStrings.settingsAudioSection),
               _VolumeRow(
                 label: UiStrings.settingsMasterVolume,
                 value: s.masterVolume,
@@ -82,10 +83,13 @@ class SettingsPanel extends ConsumerWidget {
                 onChanged: notifier.setMuted,
               ),
               const Divider(height: 1),
-              const _AutoPlayDefaultTile(),
+              const _SettingsSectionHeader(UiStrings.settingsComfortSection),
+              const _GameplayComfortSection(),
               const Divider(height: 1),
+              const _SettingsSectionHeader(UiStrings.settingsDisplaySection),
               const _DisplaySettingsSection(),
               const Divider(height: 1),
+              const _SettingsSectionHeader(UiStrings.settingsSaveSection),
               const _SaveManagementSection(),
               const Divider(height: 1),
               ListTile(
@@ -115,6 +119,29 @@ class SettingsPanel extends ConsumerWidget {
   }
 }
 
+class _SettingsSectionHeader extends StatelessWidget {
+  const _SettingsSectionHeader(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: WuxiaColors.resultHighlight,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// 游戏内切换存档(spec B §3.6):确认 → flush 当前槽 → 清栈回存档选择屏重选。
 /// 实际切档(flush→close→open)由 [SaveSelectScreen] 选中后 [IsarSetup.switchSlot] 完成。
 Future<void> _switchSlotFlow(BuildContext context) async {
@@ -122,20 +149,28 @@ Future<void> _switchSlotFlow(BuildContext context) async {
     context: context,
     builder: (c) => AlertDialog(
       backgroundColor: WuxiaColors.panel,
-      title: const Text(UiStrings.slotSwitch,
-          style: TextStyle(color: WuxiaColors.resultHighlight)),
-      content: const Text(UiStrings.slotSwitchConfirm,
-          style: TextStyle(color: WuxiaColors.textSecondary)),
+      title: const Text(
+        UiStrings.slotSwitch,
+        style: TextStyle(color: WuxiaColors.resultHighlight),
+      ),
+      content: const Text(
+        UiStrings.slotSwitchConfirm,
+        style: TextStyle(color: WuxiaColors.textSecondary),
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(c, false),
-          child: const Text(UiStrings.slotCancel,
-              style: TextStyle(color: WuxiaColors.textMuted)),
+          child: const Text(
+            UiStrings.slotCancel,
+            style: TextStyle(color: WuxiaColors.textMuted),
+          ),
         ),
         TextButton(
           onPressed: () => Navigator.pop(c, true),
-          child: const Text(UiStrings.slotSwitch,
-              style: TextStyle(color: WuxiaColors.resultHighlight)),
+          child: const Text(
+            UiStrings.slotSwitch,
+            style: TextStyle(color: WuxiaColors.resultHighlight),
+          ),
         ),
       ],
     ),
@@ -328,28 +363,93 @@ class _SaveStatusLine extends StatelessWidget {
   }
 }
 
-/// 半手动战斗 P0 步骤5-G2:全局「自动战斗」默认开关。
-/// 已通关关卡是否默认走自动重演(每关可在选关屏覆盖)。
-class _AutoPlayDefaultTile extends ConsumerWidget {
-  const _AutoPlayDefaultTile();
+/// 全局玩法/表现舒适性设置。
+class _GameplayComfortSection extends ConsumerWidget {
+  const _GameplayComfortSection();
+
+  static String _speedLabel(BattlePlaybackSpeed speed) => switch (speed) {
+    BattlePlaybackSpeed.relaxed => UiStrings.settingsBattleSpeedRelaxed,
+    BattlePlaybackSpeed.normal => UiStrings.settingsBattleSpeedNormal,
+    BattlePlaybackSpeed.brisk => UiStrings.settingsBattleSpeedBrisk,
+    BattlePlaybackSpeed.rapid => UiStrings.settingsBattleSpeedRapid,
+  };
+
+  static String _densityLabel(TextDensityPreference density) =>
+      switch (density) {
+        TextDensityPreference.comfortable =>
+          UiStrings.settingsTextDensityComfortable,
+        TextDensityPreference.standard => UiStrings.settingsTextDensityStandard,
+        TextDensityPreference.compact => UiStrings.settingsTextDensityCompact,
+      };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(gameplaySettingsProvider);
-    final on = async.maybeWhen(
-      data: (d) => d.autoPlayDefault,
-      orElse: () => true,
+    final settings = async.maybeWhen(
+      data: (d) => d,
+      orElse: () => const GameplaySettings(),
     );
+    final service = ref.read(gameplaySettingsServiceProvider);
+
+    Future<void> save(GameplaySettings next) async {
+      await service.save(next);
+      ref.invalidate(gameplaySettingsProvider);
+    }
+
     return SwitchListTile(
       title: const Text(UiStrings.settingsAutoPlayDefault),
       subtitle: const Text(UiStrings.settingsAutoPlayDefaultHint),
-      value: on,
-      onChanged: (v) async {
-        await ref
-            .read(gameplaySettingsServiceProvider)
-            .save(GameplaySettings(autoPlayDefault: v));
-        ref.invalidate(gameplaySettingsProvider);
-      },
+      value: settings.autoPlayDefault,
+      onChanged: (v) => save(settings.copyWith(autoPlayDefault: v)),
+    ).withFollowing([
+      ListTile(
+        title: const Text(UiStrings.settingsBattleSpeed),
+        subtitle: const Text(UiStrings.settingsBattleSpeedHint),
+        trailing: DropdownButton<BattlePlaybackSpeed>(
+          value: settings.battlePlaybackSpeed,
+          onChanged: (v) {
+            if (v == null) return;
+            save(settings.copyWith(battlePlaybackSpeed: v));
+          },
+          items: [
+            for (final speed in BattlePlaybackSpeed.values)
+              DropdownMenuItem(value: speed, child: Text(_speedLabel(speed))),
+          ],
+        ),
+      ),
+      ListTile(
+        title: const Text(UiStrings.settingsTextDensity),
+        subtitle: const Text(UiStrings.settingsTextDensityHint),
+        trailing: DropdownButton<TextDensityPreference>(
+          value: settings.textDensity,
+          onChanged: (v) {
+            if (v == null) return;
+            save(settings.copyWith(textDensity: v));
+          },
+          items: [
+            for (final density in TextDensityPreference.values)
+              DropdownMenuItem(
+                value: density,
+                child: Text(_densityLabel(density)),
+              ),
+          ],
+        ),
+      ),
+      SwitchListTile(
+        title: const Text(UiStrings.settingsReduceFlashing),
+        subtitle: const Text(UiStrings.settingsReduceFlashingHint),
+        value: settings.reduceFlashing,
+        onChanged: (v) => save(settings.copyWith(reduceFlashing: v)),
+      ),
+    ]);
+  }
+}
+
+extension _TileGroup on Widget {
+  Widget withFollowing(List<Widget> children) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [this, ...children],
     );
   }
 }

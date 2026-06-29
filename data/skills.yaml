@@ -1,8 +1,8 @@
 # =============================================================================
 # skills.yaml · 招式 fixture（P2.1 Batch 2 扩 147 心法招 + 19 独立招）
 # =============================================================================
-# 共 184 招（2026-06 实测）：基线 166（49 心法 × 3 = 147 + 18 轻功 + 1 joint_skill）
-# + 波A/波B 等后续批新增真解/残页/破招技 18 招 = 184。
+# 共 205 招（2026-06 实测）：基线 166（49 心法 × 3 = 147 + 18 轻功 + 1 joint_skill）
+# + 波A/波B 等后续批新增真解/残页/破招技 18 招 + 开锋槽3装备专属技 21 招 = 205。
 #
 # 倍率约束（numbers.yaml `techniques.tiers.max_skill_multiplier`，软约定,
 # 当前仅 fixture 端遵守,代码暂无倍率 enforce;Phase 5 cleanup 时加强校验。
@@ -1247,6 +1247,334 @@ skills:
       effects:
         shuLian: { damage_pct: 0.05 }
         huaJing: { cooldown_delta: -1 }
+
+  # =============================================================================
+  # 开锋槽 3 装备专属技 · 7 阶 × 3 流派
+  # =============================================================================
+  # 仅由 EquipmentDef.specialSkillCandidates 引用,通过开锋三槽写入装备。
+  # parentTechniqueDefId=null 表示不属于心法体系;tier/style 仍用于三系锁死和流派识别。
+
+  # ─── 第 1 阶 寻常货 ───
+  - id: skill_edge_xunchang_gangmeng
+    name: 钝锋震骨
+    description: 刀背沉压,不求锋利,只凭一股拙劲震入骨缝。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 1300
+    internalForceCost: 110
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_blunt_shock
+    source: special
+    style: gangMeng
+    tier: 1
+
+  - id: skill_edge_xunchang_lingqiao
+    name: 生锋一点
+    description: 剑尖初开寒意,只点一线,胜在干净利落。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 1250
+    internalForceCost: 100
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_first_spark
+    source: special
+    style: lingQiao
+    tier: 1
+
+  - id: skill_edge_xunchang_yinrou
+    name: 暗缠微芒
+    description: 软刃绕腕而出,锋芒不显,暗劲先入。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 1200
+    internalForceCost: 95
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_hidden_glimmer
+    source: special
+    style: yinRou
+    tier: 1
+
+  # ─── 第 2 阶 像样货 ───
+  - id: skill_edge_xiangyang_gangmeng
+    name: 铁口崩山
+    description: 刃口压实如铁闸落下,一击崩开敌势。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 1750
+    internalForceCost: 160
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_iron_gate
+    source: special
+    style: gangMeng
+    tier: 2
+
+  - id: skill_edge_xiangyang_lingqiao
+    name: 流刃回身
+    description: 身随刃走,一线寒光回绕,逼得敌人错步。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 1700
+    internalForceCost: 150
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_flowing_turn
+    source: special
+    style: lingQiao
+    tier: 2
+
+  - id: skill_edge_xiangyang_yinrou
+    name: 绕锋入隙
+    description: 鞭影绕过正面,从甲隙与袖口之间悄然钻入。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 1650
+    internalForceCost: 145
+    cooldownTurns: 3
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_coiling_gap
+    source: special
+    style: yinRou
+    tier: 2
+
+  # ─── 第 3 阶 好家伙 ───
+  - id: skill_edge_haojiahuo_gangmeng
+    name: 雁背裂甲
+    description: 长刃斜劈如雁背压云,专取甲片交叠之处。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 2200
+    internalForceCost: 230
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_wild_goose_cleave
+    source: special
+    style: gangMeng
+    tier: 3
+
+  - id: skill_edge_haojiahuo_lingqiao
+    name: 银线掠喉
+    description: 剑光细若银线,掠过咽喉前三寸便已收回。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 2150
+    internalForceCost: 220
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_silver_thread
+    source: special
+    style: lingQiao
+    tier: 3
+
+  - id: skill_edge_haojiahuo_yinrou
+    name: 锁环缠心
+    description: 锁链微响,刃环贴身一绕,暗劲扣住心口。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 2100
+    internalForceCost: 215
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_chain_heart
+    source: special
+    style: yinRou
+    tier: 3
+
+  # ─── 第 4 阶 利器 ───
+  - id: skill_edge_liqi_gangmeng
+    name: 炉火断门
+    description: 名匠炉火淬出的重锋,一斩如破城门。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 2800
+    internalForceCost: 320
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_forge_gate
+    source: special
+    style: gangMeng
+    tier: 4
+
+  - id: skill_edge_liqi_lingqiao
+    name: 清锋折影
+    description: 剑身映出半道人影,真招却从影外折回。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 2750
+    internalForceCost: 300
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_clear_shadow
+    source: special
+    style: lingQiao
+    tier: 4
+
+  - id: skill_edge_liqi_yinrou
+    name: 缠丝断息
+    description: 细锋如丝,贴着呼吸起落,断在对方换气一瞬。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 2700
+    internalForceCost: 300
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_silk_breath
+    source: special
+    style: yinRou
+    tier: 4
+
+  # ─── 第 5 阶 重器 ───
+  - id: skill_edge_zhongqi_gangmeng
+    name: 古战摧锋
+    description: 旧战场上养出的沉烈锋意,一动便有千军压阵。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 3600
+    internalForceCost: 460
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_ancient_battle
+    source: special
+    style: gangMeng
+    tier: 5
+
+  - id: skill_edge_zhongqi_lingqiao
+    name: 青影穿阵
+    description: 青影一闪穿过阵脚,敌人回身时锋已入背。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 3500
+    internalForceCost: 430
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_blue_shadow
+    source: special
+    style: lingQiao
+    tier: 5
+
+  - id: skill_edge_zhongqi_yinrou
+    name: 旧怨入骨
+    description: 器上旧怨随锋而出,不喧不响,却寒入骨髓。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 3450
+    internalForceCost: 420
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_old_grudge
+    source: special
+    style: yinRou
+    tier: 5
+
+  # ─── 第 6 阶 宝物 ───
+  - id: skill_edge_baowu_gangmeng
+    name: 宝锋镇岳
+    description: 宝刃沉鸣,锋意如山岳落定,逼得敌人无处借力。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 5000
+    internalForceCost: 700
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_treasure_mountain
+    source: special
+    style: gangMeng
+    tier: 6
+
+  - id: skill_edge_baowu_lingqiao
+    name: 星河渡锋
+    description: 剑光连成星河,一步渡尽,一锋落在命门。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 4900
+    internalForceCost: 660
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_star_river
+    source: special
+    style: lingQiao
+    tier: 6
+
+  - id: skill_edge_baowu_yinrou
+    name: 玉魄寒缠
+    description: 玉色寒气沿刃而行,缠上经脉后才露杀意。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 4800
+    internalForceCost: 640
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_jade_cold
+    source: special
+    style: yinRou
+    tier: 6
+
+  # ─── 第 7 阶 神物 ───
+  - id: skill_edge_shenwu_gangmeng
+    name: 神锋开天
+    description: 神物一鸣,锋势如开天之隙,天地间只剩这一击。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 7000
+    internalForceCost: 1050
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_sky_split
+    source: special
+    style: gangMeng
+    tier: 7
+
+  - id: skill_edge_shenwu_lingqiao
+    name: 天问回锋
+    description: 一问出鞘,锋光回环九转,似要向天索答。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 6900
+    internalForceCost: 1000
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_heaven_question
+    source: special
+    style: lingQiao
+    tier: 7
+
+  - id: skill_edge_shenwu_yinrou
+    name: 无相归墟
+    description: 锋意收尽形迹,只在敌人气息断处现出一线归墟。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 6800
+    internalForceCost: 980
+    cooldownTurns: 5
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: edge_formless_return
+    source: special
+    style: yinRou
+    tier: 7
 
 
   # =============================================================================

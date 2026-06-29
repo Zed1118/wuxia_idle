@@ -159,8 +159,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('招式熟练 · po_shi名'), findsOneWidget);
-    expect(find.textContaining('当前 伤害 +'), findsOneWidget);
-    expect(find.textContaining('下阶 伤害 +'), findsOneWidget);
+    // skill-detail 二期加「秘本纲要·熟练收益」摘要 StatLine,与既有
+    // StageProgressRow 双显当前/下阶效果(summary→detail)。语义只校「效果有显示」,
+    // 不写死份数,容后续若 de-dup。
+    expect(find.textContaining('当前 伤害 +'), findsWidgets);
+    expect(find.textContaining('下阶 伤害 +'), findsWidgets);
     expect(
       find.textContaining(UiStrings.cangjingProficiencySourceCombat),
       findsOneWidget,

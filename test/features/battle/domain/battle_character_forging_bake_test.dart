@@ -58,7 +58,7 @@ void main() {
   });
 
   test('fromCharacter 将开锋三专属技能加入 availableSkills', () {
-    const specialSkillId = 'skill_lingqiao_shichuan_skill';
+    const specialSkillId = 'skill_edge_zhongqi_gangmeng';
     final weapon = mkWeapon([
       ForgingSlot()..slotIndex = 1,
       ForgingSlot()..slotIndex = 2,
@@ -79,6 +79,42 @@ void main() {
     );
 
     expect(bc.availableSkills.map((s) => s.id), contains(specialSkillId));
+  });
+
+  test('fromCharacter 按境界过滤开锋三高阶专属技能', () {
+    const highTierSpecialSkillId = 'skill_edge_shenwu_gangmeng';
+    final weapon = Equipment.create(
+      defId: 'weapon_xunchang_test',
+      tier: EquipmentTier.xunChang,
+      slot: EquipmentSlot.weapon,
+      obtainedAt: DateTime(2026, 1, 1),
+      obtainedFrom: 'test',
+      baseAttack: 100,
+      forgingSlots: [
+        ForgingSlot()..slotIndex = 1,
+        ForgingSlot()..slotIndex = 2,
+        ForgingSlot()
+          ..slotIndex = 3
+          ..type = ForgingSlotType.specialSkill
+          ..unlocked = true
+          ..bonusValue = 1
+          ..specialSkillId = highTierSpecialSkillId,
+      ],
+    );
+    final bc = BattleCharacter.fromCharacter(
+      character: _mkChar(realmTier: RealmTier.erLiu),
+      equipped: [weapon],
+      mainTechnique: _mkTech(),
+      numbers: GameRepository.instance.numbers,
+      teamSide: 0,
+      slotIndex: 0,
+    );
+
+    expect(
+      bc.availableSkills.map((s) => s.id),
+      isNot(contains(highTierSpecialSkillId)),
+      reason: '开锋三专属技也必须经 SkillDef.canEquipAtRealm 守三系锁死',
+    );
   });
 
   test('fromCharacter 拒绝低境界角色使用高阶装备', () {

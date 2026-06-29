@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/shared/audio/audio_assets.dart';
+import 'package:wuxia_idle/shared/audio/dedicated_audio_assets.dart';
 
 void main() {
   test('bgmAssetPath 拼接正确', () {
@@ -40,6 +41,17 @@ void main() {
       final p = 'assets/${sfxAssetPath(s)}';
       expect(File(p).existsSync(), isTrue, reason: '缺 SFX 素材文件: $p');
     }
+  });
+
+  test('battleUlt / battleChargeStart 文件存在不等于专属素材已完成', () {
+    expect(
+      dedicatedSfxStatusFor(SfxId.battleUlt)!.readiness,
+      DedicatedAudioAssetReadiness.temporaryBorrowed,
+    );
+    expect(
+      dedicatedSfxStatusFor(SfxId.battleChargeStart)!.readiness,
+      DedicatedAudioAssetReadiness.temporaryBorrowed,
+    );
   });
 
   group('bgmTrackForStage 路由', () {
