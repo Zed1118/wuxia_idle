@@ -8,6 +8,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/glossary_tip.dart';
 import '../../battle/application/selected_cycle_provider.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../battle/domain/cycle_trait_intel.dart';
@@ -734,22 +735,25 @@ class _CycleTraitChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: WuxiaColors.internalForce.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: WuxiaColors.internalForce.withValues(alpha: 0.42),
+    return GlossaryTip(
+      definition: entry.detailText,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: WuxiaColors.internalForce.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: WuxiaColors.internalForce.withValues(alpha: 0.42),
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        child: Text(
-          '${entry.name} · ${entry.shortText}',
-          style: const TextStyle(
-            color: WuxiaColors.internalForce,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          child: Text(
+            '${entry.name} · ${entry.shortText}',
+            style: const TextStyle(
+              color: WuxiaColors.internalForce,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
       ),

@@ -193,6 +193,7 @@ void main() {
     );
     expect(find.textContaining('御体'), findsOneWidget);
     expect(find.textContaining('真气'), findsOneWidget);
+    expect(find.textContaining('御体 · 御体'), findsNothing);
     expect(find.textContaining('多放一次大招'), findsOneWidget);
   });
 
