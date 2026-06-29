@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/item_usage.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../features/battle/domain/enum_localizations.dart';
@@ -1136,7 +1137,8 @@ class _ProductionQueueIntel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final usage = _usageSummary();
+    final usages = _outputUsages();
+    final usage = _usageSummary(usages);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: WuxiaUi.paper2.withValues(alpha: 0.45),
@@ -1174,6 +1176,8 @@ class _ProductionQueueIntel extends StatelessWidget {
             if (usage.isNotEmpty) ...[
               const SizedBox(height: 5),
               _IntelLine(icon: Icons.call_split_outlined, text: usage),
+              const SizedBox(height: 7),
+              _UsageTagWrap(usages: usages),
             ],
           ],
         ),
@@ -1203,16 +1207,65 @@ class _ProductionQueueIntel extends StatelessWidget {
     );
   }
 
-  String _usageSummary() {
+  List<ItemUsage> _outputUsages() {
     final outputItemId = intel.outputItemId;
-    if (outputItemId == null) return '';
-    final usages = ItemUsageLookupService(
+    if (outputItemId == null) return const [];
+    return ItemUsageLookupService(
       GameRepository.instance,
     ).usagesFor(outputItemId);
+  }
+
+  String _usageSummary(List<ItemUsage> usages) {
+    if (intel.outputItemId == null) return '';
     final summary = UiStrings.materialUsageSummary(usages);
     return summary.isEmpty
         ? UiStrings.taohuaIslandOutputUsageNone
         : UiStrings.taohuaIslandOutputUsage(summary);
+  }
+}
+
+class _UsageTagWrap extends StatelessWidget {
+  const _UsageTagWrap({required this.usages});
+
+  final List<ItemUsage> usages;
+
+  @override
+  Widget build(BuildContext context) {
+    final labels = <String>{
+      for (final usage in usages) UiStrings.taohuaIslandOutputUsageTag(usage),
+    }..remove('');
+    if (labels.isEmpty) {
+      labels.add(UiStrings.taohuaIslandOutputUsageTagNone);
+    }
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final label in labels)
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: WuxiaUi.qing.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: WuxiaUi.qing.withValues(alpha: 0.32),
+                width: WuxiaUi.borderWidth,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: WuxiaUi.ink2,
+                  fontSize: 11,
+                  height: 1.15,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }
 
