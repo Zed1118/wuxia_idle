@@ -175,7 +175,7 @@ void main() {
     await pumpScreen(
       tester,
       progress: mkProgressSweepable(),
-      surfaceSize: const Size(1024, 1100),
+      surfaceSize: const Size(1024, 2400),
     );
 
     // 第1周目视图:5 关全已通关。
