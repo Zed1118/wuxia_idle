@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/game_repository.dart';
 import '../../../data/defs/stage_def.dart';
-import '../../../data/game_repository.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
