@@ -320,6 +320,36 @@ class UiStrings {
   static const String equipSlotDialogPickHint = '选一件查看属性';
   static const String equipSlotDialogCompareTitle = '属性对比';
   static const String equipSlotDialogForgingLabel = '开锋';
+  static const String equipRealmLockedPill = '境界不足';
+  static const String equipmentCompareAttack = '实战攻击';
+  static const String equipmentCompareHealth = '实战血量';
+  static const String equipmentCompareSpeed = '实战速度';
+  static const String equipmentCompareEnhance = '强化等级';
+  static const String equipmentCompareTier = '品阶';
+  static const String equipmentCompareResonance = '共鸣';
+  static const String equipmentCompareSchool = '流派';
+  static const String equipmentCompareHeritage = '师承遗物';
+  static const String equipmentCompareEmptyForging = '—';
+  static const String equipmentCompareSchoolNone = '无';
+  static const String equipmentCompareHeritageYes = '遗物';
+  static const String equipmentCompareHeritageNo = '—';
+  static const String equipmentDeltaUp = '提升';
+  static const String equipmentDeltaDown = '下降';
+  static const String equipmentDeltaFlat = '持平';
+  static const String equipmentDeltaChanged = '更替';
+  static const String equipmentDeltaBaseline = '新增';
+  static const String equipmentStatAttackShort = '攻';
+  static const String equipmentStatHealthShort = '血';
+  static const String equipmentStatSpeedShort = '速';
+  static const String equipmentDeltaUpGlyph = '↑';
+  static const String equipmentDeltaDownGlyph = '↓';
+  static const String equipmentDeltaFlatGlyph = '·';
+  static String equipRealmLockHint(String realm) => '需达$realm境界';
+  static String equipmentDeltaValue(int delta) {
+    if (delta > 0) return '+$delta';
+    if (delta < 0) return '$delta';
+    return equipmentDeltaFlat;
+  }
 
   /// H1 批3 picker 标注:该装备正被队内其他角色穿戴,选它会移装(原角色卸下)。
   /// 自由池移装是合理调配,故只标注提醒不禁用(去掉「静默卸下弟子」的意外感)。
