@@ -16,56 +16,62 @@ void main() {
     }
   });
 
-  test('aggregates primary kinds, possible drops and proficiency direction', () {
-    final repo = GameRepository.instance;
-    final stages = [
-      repo.getStage('stage_01_01'),
-      repo.getStage('stage_01_05'),
-    ];
+  test(
+    'aggregates primary kinds, possible drops and proficiency direction',
+    () {
+      final repo = GameRepository.instance;
+      final stages = [
+        repo.getStage('stage_01_01'),
+        repo.getStage('stage_01_05'),
+      ];
 
-    final preview = SweepRewardPreview.fromMainlineStages(
-      stages: stages,
-      repo: repo,
-    );
-
-    expect(
-      preview.primaryKinds,
-      containsAllInOrder(const [
-        MainlineReplayRewardKind.equipment,
-        MainlineReplayRewardKind.material,
-        MainlineReplayRewardKind.proficiency,
-      ]),
-    );
-    expect(preview.equipmentDropCount, greaterThan(0));
-    expect(preview.possibleItemNames, isNotEmpty);
-    expect(
-      preview.proficiencyHints,
-      contains(SweepProficiencyHint.chargeSkill),
-    );
-  });
-
-  test('material hits only include chapter drops with existing usage routes', () {
-    final repo = GameRepository.instance;
-    final stage = repo.stageDefs.values.firstWhere((stage) {
-      return stage.dropTable.any(
-        (entry) =>
-            entry is ItemDrop && entry.inventoryItemDefId == 'item_mojianshi',
+      final preview = SweepRewardPreview.fromMainlineStages(
+        stages: stages,
+        repo: repo,
       );
-    });
 
-    final preview = SweepRewardPreview.fromMainlineStages(
-      stages: [stage],
-      repo: repo,
-    );
+      expect(
+        preview.primaryKinds,
+        containsAllInOrder(const [
+          MainlineReplayRewardKind.equipment,
+          MainlineReplayRewardKind.material,
+          MainlineReplayRewardKind.proficiency,
+        ]),
+      );
+      expect(preview.equipmentDropCount, greaterThan(0));
+      expect(preview.possibleItemNames, isNotEmpty);
+      expect(
+        preview.proficiencyHints,
+        contains(SweepProficiencyHint.chargeSkill),
+      );
+    },
+  );
 
-    final mojianshi = preview.materialHits.firstWhere(
-      (hit) => hit.itemId == 'item_mojianshi',
-    );
+  test(
+    'material hits only include chapter drops with existing usage routes',
+    () {
+      final repo = GameRepository.instance;
+      final stage = repo.stageDefs.values.firstWhere((stage) {
+        return stage.dropTable.any(
+          (entry) =>
+              entry is ItemDrop && entry.inventoryItemDefId == 'item_mojianshi',
+        );
+      });
 
-    expect(mojianshi.itemName, '磨剑石');
-    expect(
-      mojianshi.usages.map((usage) => usage.kind),
-      contains(ItemUsageKind.equipmentEnhancement),
-    );
-  });
+      final preview = SweepRewardPreview.fromMainlineStages(
+        stages: [stage],
+        repo: repo,
+      );
+
+      final mojianshi = preview.materialHits.firstWhere(
+        (hit) => hit.itemId == 'item_mojianshi',
+      );
+
+      expect(mojianshi.itemName, '磨剑石');
+      expect(
+        mojianshi.usages.map((usage) => usage.kind),
+        contains(ItemUsageKind.equipmentEnhancement),
+      );
+    },
+  );
 }
