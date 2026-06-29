@@ -102,6 +102,14 @@ class OfflineRecapCard extends StatelessWidget {
               statusLine,
               style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
             ),
+            // P1-6:达系统上限 → 温和建议(不焦虑·守反留存红线)。
+            if (isCapped) ...[
+              const SizedBox(height: 4),
+              const Text(
+                UiStrings.offlineCappedAdvice,
+                style: TextStyle(color: WuxiaUi.ink2, fontSize: 12),
+              ),
+            ],
             const SizedBox(height: 6),
             Text(
               UiStrings.offlineRecapRewardOverview(
@@ -194,6 +202,14 @@ class OfflineRecapCard extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
+            // P1-6:被动挂机达系统上限 → 同样温和建议。
+            if (passiveIsCapped!) ...[
+              const SizedBox(height: 4),
+              const Text(
+                UiStrings.offlineCappedAdvice,
+                style: TextStyle(color: WuxiaUi.ink2, fontSize: 12),
+              ),
+            ],
             const SizedBox(height: 12),
             _BreakdownBlock(groups: detail.groups),
             const SizedBox(height: 20),
