@@ -271,11 +271,15 @@ class IsarSetup {
     final towerRows = await isar.towerProgress.where().findAll();
 
     await isar.writeTxn(() async {
-      // --- 段 1 ---
-      save.skillUnlockProgress = List.of(save.skillUnlockProgress);
-      for (final p in progresses) {
-        for (final sid in p.unlockedSkillIds) {
-          save.skillUnlockProgress.markUnlocked(sid);
+      // --- 段 1(0.18.0 · 版本门 <0.18.0)---
+      // P0-5(2026-06-29):补版本门。0.18+ 存档旧 unlock 池已并入,不再每次升级
+      // 重跑(此前仅靠 markUnlocked 幂等承诺)。markUnlocked 仍幂等,门是防御加固。
+      if (_compareVersion(fromVersion, '0.18.0') < 0) {
+        save.skillUnlockProgress = List.of(save.skillUnlockProgress);
+        for (final p in progresses) {
+          for (final sid in p.unlockedSkillIds) {
+            save.skillUnlockProgress.markUnlocked(sid);
+          }
         }
       }
 
@@ -289,11 +293,15 @@ class IsarSetup {
           }
         }
         mp.clearedStageCycleKeys = keys;
-        // 段 3(0.22.0 周目按章):旧 per-stage cycle key 中的章末 Boss 关(isBoss)
-        // → per-chapter cycle key "chapterKey#cycle"。chapterKey 逻辑须与
-        // MainlineProgressService.chapterKeyForStage 同步。GameRepository 未加载
-        // (理论不会:splash 先 loadAllDefs 再 init)→ 跳过,玩家重打 Boss 时重建。
-        if (GameRepository.isLoaded) {
+        // 段 3(0.22.0 周目按章 · 版本门 <0.22.0):旧 per-stage cycle key 中的章末
+        // Boss 关(isBoss)→ per-chapter cycle key "chapterKey#cycle"。chapterKey
+        // 逻辑须与 MainlineProgressService.chapterKeyForStage 同步。
+        // P0-5(2026-06-29):补版本门。0.22+ 存档章 key 已建,不再每次升级重跑,
+        // 也不再对 0.22+ 存档依赖「splash 先 loadAllDefs 再 init」的隐式启动顺序
+        // 契约(GameRepository.isLoaded)。仅 <0.22.0 旧档需重建,且仍要 isLoaded
+        // (未加载时跳过,玩家重打 Boss 时重建)。
+        if (_compareVersion(fromVersion, '0.22.0') < 0 &&
+            GameRepository.isLoaded) {
           final defs = GameRepository.instance.stageDefs;
           final cKeys = List<String>.of(mp.clearedChapterCycleKeys);
           for (final k in keys) {
