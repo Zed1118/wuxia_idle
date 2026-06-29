@@ -2433,6 +2433,13 @@ class UiStrings {
   /// 建筑暂停状态标签（未配方或原料不足）。
   static const String taohuaIslandIdlePaused = '已停（择配方/补料）';
 
+  /// 建筑协同提示。
+  static String taohuaIslandSynergyLine(List<String> parts) =>
+      '协同：${parts.join(' / ')}';
+
+  static String taohuaIslandSynergyPart(String sourceName, int percent) =>
+      '$sourceName +$percent%';
+
   /// 数据读取失败错误提示（§5.6 迁出中文字面量）。
   static String taohuaIslandLoadError(Object e) => '读取失败：$e';
 

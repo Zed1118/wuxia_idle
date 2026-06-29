@@ -59,8 +59,7 @@ class IslandProductionService {
       IslandBuildingState? sourceState;
       for (final candidate in result) {
         final cCfg = config.buildingOf(candidate.type);
-        if (cCfg.kind == BuildingKind.source &&
-            cCfg.outputItem == inputItem) {
+        if (cCfg.kind == BuildingKind.source && cCfg.outputItem == inputItem) {
           sourceState = candidate;
           break; // 供应自洽校验保证最多一个 source 产此 item,取首个即可
         }
@@ -74,8 +73,7 @@ class IslandProductionService {
         final secItem = cfg.secondaryInputItem;
         for (final candidate in result) {
           final cCfg = config.buildingOf(candidate.type);
-          if (cCfg.kind == BuildingKind.source &&
-              cCfg.outputItem == secItem) {
+          if (cCfg.kind == BuildingKind.source && cCfg.outputItem == secItem) {
             secondarySource = candidate;
             break;
           }
@@ -84,21 +82,34 @@ class IslandProductionService {
       }
 
       final cap = cfg.capFor(s.level).toDouble();
-      final want = recipe.ratePerHour * s.level * t;
-      final byMaterial = sourceState.stored / recipe.inputPerOutput;
+      final synergyMultiplier = config.synergies.rateMultiplierFor(
+        target: s.type,
+        buildingLevels: result.map(
+          (b) => IslandBuildingLevel(type: b.type, level: b.level),
+        ),
+        founderRealmIndex: founderRealmIndex,
+        buildings: config.buildings,
+      );
+      final want = recipe.ratePerHour * synergyMultiplier * s.level * t;
+      final effectiveInputPerOutput = recipe.inputPerOutput / synergyMultiplier;
+      final byMaterial = sourceState.stored / effectiveInputPerOutput;
       var made = math.min(want, byMaterial);
+      var effectiveSecondaryInputPerOutput = recipe.secondaryInputPerOutput;
       if (secondarySource != null) {
+        effectiveSecondaryInputPerOutput =
+            recipe.secondaryInputPerOutput / synergyMultiplier;
         // 次要原料也限产，取更紧的约束（离线=在线：所有 min 可交换，与分段无关）
         final bySecondary =
-            secondarySource.stored / recipe.secondaryInputPerOutput;
+            secondarySource.stored / effectiveSecondaryInputPerOutput;
         made = math.min(made, bySecondary);
       }
       made = math.min(made, cap - s.stored); // 成品仓 cap 限
       made = math.max(0.0, made); // 浮点负兜底:也覆盖 stored > cap 的历史存量(cap 调低后存量合法超限)
 
-      sourceState.stored -= made * recipe.inputPerOutput; // 扣源料
+      sourceState.stored -= made * effectiveInputPerOutput; // 扣源料
       if (secondarySource != null) {
-        secondarySource.stored -= made * recipe.secondaryInputPerOutput; // 扣次要源料
+        secondarySource.stored -=
+            made * effectiveSecondaryInputPerOutput; // 扣次要源料
       }
       s.stored += made; // 产成品
     }
