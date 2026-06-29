@@ -163,29 +163,20 @@ class StageListScreen extends ConsumerWidget {
                           1,
                   cycle: cycleFor(),
                 ),
-                for (var i = 0; i < entries.length; i++)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _StageRow(
-                      stageIndex: i + 1,
-                      def: entries[i].def,
-                      status: statusFor(entries[i]),
-                      targetCycle: cycleFor(),
-                      currentRealm: currentRealm,
-                      activeCharacters: activeCharacters,
-                      goalGuidance: currentGoal?.stage.id == entries[i].def.id
-                          ? currentGoal
-                          : null,
-                      onTap: statusFor(entries[i]) == StageStatus.locked
-                          ? null
-                          : () => runStageFlow(
-                              context: context,
-                              ref: ref,
-                              stage: entries[i].def,
-                              targetCycle: cycleFor(),
-                            ),
-                    ),
+                _ChapterStageTimeline(
+                  entries: entries,
+                  statusFor: statusFor,
+                  targetCycle: cycleFor(),
+                  currentRealm: currentRealm,
+                  activeCharacters: activeCharacters,
+                  goalGuidance: currentGoal,
+                  onRunStage: (stage) => runStageFlow(
+                    context: context,
+                    ref: ref,
+                    stage: stage,
+                    targetCycle: cycleFor(),
                   ),
+                ),
               ],
             );
           },
@@ -194,6 +185,9 @@ class StageListScreen extends ConsumerWidget {
     );
   }
 }
+
+typedef _StageStatusResolver = StageStatus Function(StageEntry entry);
+typedef _StageRunCallback = void Function(StageDef stage);
 
 class _StageJourneyMap extends StatelessWidget {
   const _StageJourneyMap({required this.chapterIndex, required this.entries});
@@ -299,6 +293,243 @@ class _StageJourneyMap extends StatelessWidget {
                   ],
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChapterStageTimeline extends StatelessWidget {
+  const _ChapterStageTimeline({
+    required this.entries,
+    required this.statusFor,
+    required this.targetCycle,
+    required this.currentRealm,
+    required this.activeCharacters,
+    required this.onRunStage,
+    this.goalGuidance,
+  });
+
+  final List<StageEntry> entries;
+  final _StageStatusResolver statusFor;
+  final int targetCycle;
+  final RealmTier? currentRealm;
+  final List<Character> activeCharacters;
+  final _StageRunCallback onRunStage;
+  final NewSaveGoalGuidance? goalGuidance;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: [
+        UiStrings.stageListTimelineTitle,
+        for (var i = 0; i < entries.length; i++)
+          UiStrings.stageListTimelineStopLabel(i + 1, entries[i].def.name),
+      ].join(' · '),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const _TimelineHeader(),
+            const SizedBox(height: 6),
+            for (var i = 0; i < entries.length; i++)
+              _TimelineStageStop(
+                stageIndex: i + 1,
+                entry: entries[i],
+                status: statusFor(entries[i]),
+                first: i == 0,
+                last: i == entries.length - 1,
+                targetCycle: targetCycle,
+                currentRealm: currentRealm,
+                activeCharacters: activeCharacters,
+                onRunStage: onRunStage,
+                goalGuidance: goalGuidance?.stage.id == entries[i].def.id
+                    ? goalGuidance
+                    : null,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TimelineHeader extends StatelessWidget {
+  const _TimelineHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(4, 2, 4, 2),
+      child: Row(
+        children: [
+          Icon(
+            Icons.route_outlined,
+            size: 16,
+            color: WuxiaColors.resultHighlight,
+          ),
+          SizedBox(width: 6),
+          Text(
+            UiStrings.stageListTimelineTitle,
+            style: TextStyle(
+              color: WuxiaColors.resultHighlight,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              UiStrings.stageListTimelineHint,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimelineStageStop extends StatelessWidget {
+  const _TimelineStageStop({
+    required this.stageIndex,
+    required this.entry,
+    required this.status,
+    required this.first,
+    required this.last,
+    required this.targetCycle,
+    required this.currentRealm,
+    required this.activeCharacters,
+    required this.onRunStage,
+    this.goalGuidance,
+  });
+
+  final int stageIndex;
+  final StageEntry entry;
+  final StageStatus status;
+  final bool first;
+  final bool last;
+  final int targetCycle;
+  final RealmTier? currentRealm;
+  final List<Character> activeCharacters;
+  final _StageRunCallback onRunStage;
+  final NewSaveGoalGuidance? goalGuidance;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 54,
+          child: _TimelineAxisMarker(
+            stageIndex: stageIndex,
+            status: status,
+            boss: entry.def.isBossStage,
+            first: first,
+            last: last,
+          ),
+        ),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: last ? 0 : 10),
+            child: _StageRow(
+              stageIndex: stageIndex,
+              def: entry.def,
+              status: status,
+              targetCycle: targetCycle,
+              currentRealm: currentRealm,
+              activeCharacters: activeCharacters,
+              showMarker: false,
+              goalGuidance: goalGuidance,
+              onTap: status == StageStatus.locked
+                  ? null
+                  : () => onRunStage(entry.def),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TimelineAxisMarker extends StatelessWidget {
+  const _TimelineAxisMarker({
+    required this.stageIndex,
+    required this.status,
+    required this.boss,
+    required this.first,
+    required this.last,
+  });
+
+  final int stageIndex;
+  final StageStatus status;
+  final bool boss;
+  final bool first;
+  final bool last;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (status) {
+      StageStatus.cleared => WuxiaColors.hpHigh,
+      StageStatus.available => WuxiaColors.resultHighlight,
+      StageStatus.locked => WuxiaColors.textMuted,
+    };
+    final lineColor = WuxiaColors.textMuted.withValues(alpha: 0.34);
+    return SizedBox(
+      height: 112,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            top: first ? 28 : 0,
+            bottom: last ? 74 : 0,
+            child: Container(width: 2, color: lineColor),
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Container(
+                width: boss ? 42 : 34,
+                height: boss ? 42 : 34,
+                decoration: BoxDecoration(
+                  color: WuxiaColors.background.withValues(alpha: 0.88),
+                  borderRadius: BorderRadius.circular(boss ? 6 : 17),
+                  border: Border.all(
+                    color: color,
+                    width: status == StageStatus.available ? 2 : 1.3,
+                  ),
+                  boxShadow: [
+                    if (status == StageStatus.available)
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.22),
+                        blurRadius: 12,
+                        spreadRadius: 1,
+                      ),
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: boss
+                    ? Icon(Icons.military_tech, color: color, size: 20)
+                    : Text(
+                        UiStrings.mainlineRouteStageNode(stageIndex),
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+              ),
             ),
           ),
         ],
@@ -507,6 +738,7 @@ class _StageRow extends StatelessWidget {
     this.currentRealm,
     this.activeCharacters = const [],
     this.goalGuidance,
+    this.showMarker = true,
   });
 
   final int stageIndex;
@@ -517,6 +749,7 @@ class _StageRow extends StatelessWidget {
   final RealmTier? currentRealm;
   final List<Character> activeCharacters;
   final NewSaveGoalGuidance? goalGuidance;
+  final bool showMarker;
 
   @override
   Widget build(BuildContext context) {
@@ -559,13 +792,15 @@ class _StageRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              _StageMarker(
-                stageIndex: stageIndex,
-                boss: boss,
-                color: borderColor,
-                active: available,
-              ),
-              const SizedBox(width: 12),
+              if (showMarker) ...[
+                _StageMarker(
+                  stageIndex: stageIndex,
+                  boss: boss,
+                  color: borderColor,
+                  active: available,
+                ),
+                const SizedBox(width: 12),
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
