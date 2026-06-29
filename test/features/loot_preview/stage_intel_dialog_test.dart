@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
@@ -65,6 +67,7 @@ void main() {
     StageDef stage, {
     RealmTier currentRealm = RealmTier.xueTu,
     int targetCycle = 1,
+    List<Character> activeCharacters = const [],
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -73,6 +76,7 @@ void main() {
             stage: stage,
             currentRealm: currentRealm,
             targetCycle: targetCycle,
+            activeCharacters: activeCharacters,
             rumorTable: DropRumorTable.fromDropTable(
               stage.dropTable,
               gating: FirstClearGating.scrollOnly,
@@ -81,6 +85,26 @@ void main() {
         ),
       ),
     );
+  }
+
+  Character woundedCharacter() {
+    final c = Character.create(
+      name: '沈青',
+      realmTier: RealmTier.xueTu,
+      realmLayer: RealmLayer.qiMeng,
+      attributes: Attributes()
+        ..constitution = 5
+        ..enlightenment = 5
+        ..agility = 5
+        ..fortune = 5,
+      rarity: RarityTier.biaoZhun,
+      lineageRole: LineageRole.founder,
+      createdAt: DateTime(2026, 6, 29),
+      internalForce: 100,
+      internalForceMax: 500,
+    );
+    c.lightInjuryStacks = 2;
+    return c;
   }
 
   testWidgets('战前情报显敌阵/应对/风险/掉落，去整备难度冗余', (tester) async {
@@ -170,5 +194,16 @@ void main() {
     expect(find.textContaining('御体'), findsOneWidget);
     expect(find.textContaining('真气'), findsOneWidget);
     expect(find.textContaining('多放一次大招'), findsOneWidget);
+  });
+
+  testWidgets('有受伤出战角色时显示我方伤势段', (tester) async {
+    await pumpIntel(tester, stage(), activeCharacters: [woundedCharacter()]);
+
+    expect(
+      find.text(UiStrings.prebattleIntelAllyConditionSection),
+      findsOneWidget,
+    );
+    expect(find.textContaining('沈青：'), findsOneWidget);
+    expect(find.textContaining(UiStrings.injuryLightLabel), findsOneWidget);
   });
 }

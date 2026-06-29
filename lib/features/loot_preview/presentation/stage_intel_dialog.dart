@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
@@ -10,6 +11,7 @@ import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../battle/domain/cycle_trait_intel.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../injury/presentation/injury_status_view.dart';
 import '../domain/drop_rumor.dart';
 import 'loot_rumor_dialog.dart';
 
@@ -24,6 +26,7 @@ Future<void> showStageIntelDialog(
   required DropRumorTable rumorTable,
   RealmTier? currentRealm,
   int targetCycle = 1,
+  List<Character> activeCharacters = const [],
 }) {
   return PaperDialog.show<void>(
     context,
@@ -34,6 +37,7 @@ Future<void> showStageIntelDialog(
         rumorTable: rumorTable,
         currentRealm: currentRealm,
         targetCycle: targetCycle,
+        activeCharacters: activeCharacters,
       ),
     ),
     actions: [
@@ -53,12 +57,14 @@ class StageIntelContent extends StatelessWidget {
     required this.rumorTable,
     this.currentRealm,
     this.targetCycle = 1,
+    this.activeCharacters = const [],
   });
 
   final StageDef stage;
   final DropRumorTable rumorTable;
   final RealmTier? currentRealm;
   final int targetCycle;
+  final List<Character> activeCharacters;
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +78,10 @@ class StageIntelContent extends StatelessWidget {
       isBoss: stage.isBossStage,
       isTower: false,
     );
+    final injuryLines = activeCharacters
+        .where(InjuryStatusFormatter.hasInjury)
+        .map(InjuryStatusFormatter.namedStatusLine)
+        .toList(growable: false);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,6 +94,11 @@ class StageIntelContent extends StatelessWidget {
           _IntelSection(
             title: UiStrings.prebattleIntelCycleTraitSection,
             child: _CycleTraitIntelList(entries: cycleTraits),
+          ),
+        if (injuryLines.isNotEmpty)
+          _IntelSection(
+            title: UiStrings.prebattleIntelAllyConditionSection,
+            child: _IntelLines(lines: injuryLines),
           ),
         if (responseLines.isNotEmpty)
           _IntelSection(

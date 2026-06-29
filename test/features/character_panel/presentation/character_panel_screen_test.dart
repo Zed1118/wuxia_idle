@@ -60,27 +60,32 @@ void main() {
     int? accessoryId,
     int? masterId,
     List<int>? discipleIds,
+    double injuryHours = 0,
+    int lightInjuryStacks = 0,
   }) {
     final now = DateTime(2026, 5, 11);
     return Character.create(
-      name: name,
-      realmTier: realmTier,
-      realmLayer: RealmLayer.qiMeng,
-      attributes: mkAttrs(),
-      rarity: RarityTier.biaoZhun,
-      lineageRole: lineageRole,
-      createdAt: now,
-      internalForce: 200,
-      internalForceMax: internalForceMax,
-      school: TechniqueSchool.gangMeng,
-      mainTechniqueId: mainTechniqueId,
-      assistTechniqueIds: assistTechniqueIds,
-      equippedWeaponId: weaponId,
-      equippedArmorId: armorId,
-      equippedAccessoryId: accessoryId,
-      masterId: masterId,
-      discipleIds: discipleIds,
-    )..id = id;
+        name: name,
+        realmTier: realmTier,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: mkAttrs(),
+        rarity: RarityTier.biaoZhun,
+        lineageRole: lineageRole,
+        createdAt: now,
+        internalForce: 200,
+        internalForceMax: internalForceMax,
+        school: TechniqueSchool.gangMeng,
+        mainTechniqueId: mainTechniqueId,
+        assistTechniqueIds: assistTechniqueIds,
+        equippedWeaponId: weaponId,
+        equippedArmorId: armorId,
+        equippedAccessoryId: accessoryId,
+        masterId: masterId,
+        discipleIds: discipleIds,
+      )
+      ..id = id
+      ..injuryHoursRemaining = injuryHours
+      ..lightInjuryStacks = lightInjuryStacks;
   }
 
   Equipment mkEquipment({
@@ -211,6 +216,7 @@ void main() {
     expect(find.byType(SectionHeader), findsWidgets);
     expect(find.byType(PlaqueButton), findsOneWidget);
     expect(find.byType(PortraitFrame), findsOneWidget);
+    expect(find.text(UiStrings.injuryStatusHealthy), findsOneWidget);
     expect(find.text(UiStrings.profilePortraitPlaque), findsOneWidget);
     expect(find.text('测试者'), findsOneWidget); // 姓名
     expect(find.text('刚猛'), findsOneWidget); // EnumL10n.school(gangMeng)
@@ -218,6 +224,16 @@ void main() {
     expect(find.text('悟性'), findsOneWidget);
     expect(find.text('身法'), findsOneWidget);
     expect(find.text('机缘'), findsOneWidget);
+  });
+
+  testWidgets('档案头:受伤角色显示伤势影响与恢复入口', (tester) async {
+    final character = mkCharacter(injuryHours: 4, lightInjuryStacks: 2);
+    await pumpPanel(tester, character: character);
+
+    expect(find.text(UiStrings.injuryStatusTitle), findsOneWidget);
+    expect(find.textContaining(UiStrings.injuryHeavyLabel), findsOneWidget);
+    expect(find.textContaining(UiStrings.injuryLightLabel), findsOneWidget);
+    expect(find.text(UiStrings.injuryStatusRecoveryHint), findsOneWidget);
   });
 
   testWidgets('第八阶段·档案头显「等级 Lv N」chip + 经验条', (tester) async {
@@ -305,11 +321,7 @@ void main() {
       slot: EquipmentSlot.weapon,
       defId: 'weapon_xunchang_tie_jian',
     );
-    await pumpPanel(
-      tester,
-      character: character,
-      equipments: {10: weapon},
-    );
+    await pumpPanel(tester, character: character, equipments: {10: weapon});
 
     // 点武器槽(已穿)→ 弹 EquipSlotDialog,顶部含操作图标(by tooltip)。
     final slot = find
@@ -366,38 +378,37 @@ void main() {
 
   // ── 用例 4：修炼度进度条 ──────────────────────────────────────────────
 
-  testWidgets(
-    '主修 progress=50 / toNext=100 → StageProgressRow.ratio=0.5',
-    (tester) async {
-      final character = mkCharacter(mainTechniqueId: 20);
-      final main = mkTechnique(
-        id: 20,
-        ownerId: 1,
-        role: TechniqueRole.main,
-        // 真 defId → 主修名为真实技能名,不与「主修」role 标签撞(hero 化后)。
-        defId: GameRepository.instance.techniqueDefs.keys.first,
-        cultivationProgress: 50,
-        cultivationProgressToNext: 100,
-      );
+  testWidgets('主修 progress=50 / toNext=100 → StageProgressRow.ratio=0.5', (
+    tester,
+  ) async {
+    final character = mkCharacter(mainTechniqueId: 20);
+    final main = mkTechnique(
+      id: 20,
+      ownerId: 1,
+      role: TechniqueRole.main,
+      // 真 defId → 主修名为真实技能名,不与「主修」role 标签撞(hero 化后)。
+      defId: GameRepository.instance.techniqueDefs.keys.first,
+      cultivationProgress: 50,
+      cultivationProgressToNext: 100,
+    );
 
-      await pumpPanel(tester, character: character, techniques: {20: main});
+    await pumpPanel(tester, character: character, techniques: {20: main});
 
-      // D：修炼度进度条 hero 化为 StageProgressRow（内含 MeridianBar）。
-      final row = tester.widget<StageProgressRow>(
-        find.byWidgetPredicate(
-          (w) =>
-              w is StageProgressRow &&
-              w.progressText == UiStrings.cultivationProgress(50, 100),
-        ),
-      );
-      expect(row.ratio, closeTo(0.5, 1e-9));
-      expect(find.text('50 / 100'), findsOneWidget);
-      expect(find.text('主修'), findsOneWidget);
-      // D：五要素「当前效果」= 伤害倍率文案出现（真痛点补齐）。
-      expect(find.textContaining('伤害 ×'), findsWidgets);
-      expect(find.textContaining('招式熟练 ·'), findsOneWidget);
-    },
-  );
+    // D：修炼度进度条 hero 化为 StageProgressRow（内含 MeridianBar）。
+    final row = tester.widget<StageProgressRow>(
+      find.byWidgetPredicate(
+        (w) =>
+            w is StageProgressRow &&
+            w.progressText == UiStrings.cultivationProgress(50, 100),
+      ),
+    );
+    expect(row.ratio, closeTo(0.5, 1e-9));
+    expect(find.text('50 / 100'), findsOneWidget);
+    expect(find.text('主修'), findsOneWidget);
+    // D：五要素「当前效果」= 伤害倍率文案出现（真痛点补齐）。
+    expect(find.textContaining('伤害 ×'), findsWidgets);
+    expect(find.textContaining('招式熟练 ·'), findsOneWidget);
+  });
 
   // ── T56 用例 5：3 角色 Tab 切换 ────────────────────────────────────────
 

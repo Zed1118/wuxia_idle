@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -35,6 +37,31 @@ DropResult _itemDrops() => const DropResult(
   equipments: [],
   items: [ItemDropResult(defId: 'item_mojianshi', quantity: 2)],
 );
+
+Character _character({
+  String name = '沈青',
+  double injuryHours = 0,
+  int lightStacks = 0,
+}) {
+  final c = Character.create(
+    name: name,
+    realmTier: RealmTier.xueTu,
+    realmLayer: RealmLayer.qiMeng,
+    attributes: Attributes()
+      ..constitution = 5
+      ..enlightenment = 5
+      ..agility = 5
+      ..fortune = 5,
+    rarity: RarityTier.biaoZhun,
+    lineageRole: LineageRole.founder,
+    createdAt: DateTime(2026, 6, 29),
+    internalForce: 100,
+    internalForceMax: 500,
+  );
+  c.injuryHoursRemaining = injuryHours;
+  c.lightInjuryStacks = lightStacks;
+  return c;
+}
 
 /// H1 批3:真装备掉落(需 GameRepository 已加载,defId→名+品阶)。
 DropResult _equipDrops(List<String> defIds) => DropResult(
@@ -395,6 +422,29 @@ void main() {
         ),
       );
       expect(find.text(UiStrings.battleSummary(1234, 3, 9)), findsOneWidget);
+    });
+
+    testWidgets('StageVictoryContent 显示战后伤势摘要', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StageVictoryContent(
+              drops: _emptyDrops(),
+              advancements: const [],
+              injurySummaryCharacters: [
+                _character(injuryHours: 2, lightStacks: 1),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(
+        find.textContaining(UiStrings.injuryBattleSummaryTitle),
+        findsOneWidget,
+      );
+      expect(find.textContaining('沈青：'), findsOneWidget);
+      expect(find.textContaining(UiStrings.injuryHeavyLabel), findsOneWidget);
     });
 
     testWidgets('stats=null 时不显统计段(向后兼容)', (tester) async {
