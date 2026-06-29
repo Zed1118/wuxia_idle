@@ -60,7 +60,11 @@ void main() {
       // 重新 init → _ensureSaveData 检测版本差异跑迁移。
       await IsarSetup.init(directory: tempDir, inspector: false);
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.32.0', reason: '迁移后升版到当前(0.32.0)');
+      expect(
+        save.saveVersion,
+        IsarSetup.currentSaveVersion,
+        reason: '迁移后升版到当前版本',
+      );
       expect(
         save.skillUnlockProgress.isUnlocked('skill_encounter_ting_yu_jian'),
         isTrue,
@@ -79,24 +83,29 @@ void main() {
       );
     });
 
-    test('Phase 3 迁移:0.18 旧档升当前(BattleReplayRecord collection 已删,无数据迁移)',
-        () async {
-      // 构造 0.18 旧档。Phase 3 废录制回放后 BattleReplayRecord collection 已从
-      // schema 移除,旧档该 collection 数据 orphaned 不再读;升版为纯标记动作。
-      await IsarSetup.init(directory: tempDir, inspector: false);
-      await IsarSetup.instance.writeTxn(() async {
-        final save = (await IsarSetup.instance.saveDatas.get(0))!;
-        save.saveVersion = '0.18.0';
-        await IsarSetup.instance.saveDatas.put(save);
-      });
-      await IsarSetup.close();
+    test(
+      'Phase 3 迁移:0.18 旧档升当前(BattleReplayRecord collection 已删,无数据迁移)',
+      () async {
+        // 构造 0.18 旧档。Phase 3 废录制回放后 BattleReplayRecord collection 已从
+        // schema 移除,旧档该 collection 数据 orphaned 不再读;升版为纯标记动作。
+        await IsarSetup.init(directory: tempDir, inspector: false);
+        await IsarSetup.instance.writeTxn(() async {
+          final save = (await IsarSetup.instance.saveDatas.get(0))!;
+          save.saveVersion = '0.18.0';
+          await IsarSetup.instance.saveDatas.put(save);
+        });
+        await IsarSetup.close();
 
-      // 重开 → 升版当前。
-      await IsarSetup.init(directory: tempDir, inspector: false);
-      final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.32.0',
-          reason: '升版 → 0.32.0(经桃花岛 SaveData 新字段升版段,无迁移动作纯标记)');
-    });
+        // 重开 → 升版当前。
+        await IsarSetup.init(directory: tempDir, inspector: false);
+        final save = (await IsarSetup.instance.saveDatas.get(0))!;
+        expect(
+          save.saveVersion,
+          IsarSetup.currentSaveVersion,
+          reason: '升版到当前版本(经桃花岛 SaveData 新字段升版段,无迁移动作纯标记)',
+        );
+      },
+    );
 
     test('首次 init 应自动建 SaveData(id=0) 并填默认值', () async {
       await IsarSetup.init(directory: tempDir, inspector: false);
@@ -105,8 +114,11 @@ void main() {
       expect(save, isNotNull);
       expect(save!.id, 0);
       expect(save.slotId, 1);
-      expect(save.saveVersion, '0.32.0',
-          reason: '新建存档写当前 saveVersion 0.32.0');
+      expect(
+        save.saveVersion,
+        IsarSetup.currentSaveVersion,
+        reason: '新建存档写当前 saveVersion',
+      );
       expect(save.activeCharacterIds, isEmpty);
       expect(save.totalPlaySeconds, 0);
       expect(save.isOnboardingCompleted, isFalse);
@@ -122,8 +134,9 @@ void main() {
 
     test('已有 SaveData 时再次 init 应读出原值，不覆盖', () async {
       await IsarSetup.init(directory: tempDir, inspector: false);
-      final originalCreatedAt =
-          (await IsarSetup.instance.saveDatas.get(0))!.createdAt;
+      final originalCreatedAt = (await IsarSetup.instance.saveDatas.get(
+        0,
+      ))!.createdAt;
       await IsarSetup.instance.writeTxn(() async {
         final s = await IsarSetup.instance.saveDatas.get(0);
         s!
@@ -291,8 +304,10 @@ void main() {
       );
       await isar.writeTxn(() => isar.techniques.put(t));
 
-      final byDef =
-          await isar.techniques.filter().defIdEqualTo('tech_x').findFirst();
+      final byDef = await isar.techniques
+          .filter()
+          .defIdEqualTo('tech_x')
+          .findFirst();
       expect(byDef?.ownerCharacterId, 7);
 
       final byOwner = await isar.techniques

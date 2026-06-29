@@ -9,6 +9,7 @@ import '../features/sect/domain/territory_def.dart';
 import 'codex_loader.dart';
 import 'defs/equipment_def.dart';
 import 'defs/boss_phase_def.dart';
+import 'defs/founder_creation_def.dart';
 import 'defs/master_def.dart';
 import 'defs/recruit_candidate_def.dart';
 import 'defs/realm_def.dart';
@@ -69,6 +70,9 @@ class GameRepository {
   /// 师徒角色 3 条，按 slotIndex 升序（0=祖师 / 1=大弟子 / 2=二弟子）。
   /// 索引方式：`masters[slotIndex]`（红线校验保证 0-2 连续唯一）。
   final List<MasterDef> masters;
+
+  /// 新档祖师塑形配置(`data/founder_creation.yaml`)。
+  final FounderCreationConfig founderCreation;
 
   /// 收徒候选 NPC 列表(P1.1 A1 E.1,GDD §7.1)。
   /// 加载源:`data/recruit_candidates.yaml`,固定 3 候选(audit doc 方案 3 + D2.b)。
@@ -137,6 +141,7 @@ class GameRepository {
     required this.towerFloors,
     required this.seclusionMaps,
     required this.masters,
+    required this.founderCreation,
     required this.recruitCandidates,
     required this.sectCandidates,
     required this.encounterDefs,
@@ -233,6 +238,13 @@ class GameRepository {
             .toList(growable: false)
           ..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
 
+    final founderCreation = await _loadOptionalAsset<FounderCreationConfig>(
+      load,
+      'data/founder_creation.yaml',
+      (raw) => FounderCreationConfig.fromYaml(parseYamlMap(raw)),
+      fallback: FounderCreationConfig.empty,
+    );
+
     // P1.1 A1 E.1:收徒候选 yaml(允许 test fixture 不带 → 空 map)。
     // 生产路径红线校验在 _enforceRecruitCandidateRedLines 拦三系锁死违例。
     // **fixture 兜底**:某些 fixture loader 走 File fallback 读生产 yaml,但
@@ -322,19 +334,14 @@ class GameRepository {
 
     // W18-A1:心法相生 yaml(允许 test fixture 不带,空 list)。生产路径
     // 红线校验在 _enforceSynergyRedLines 强制 ≥ 5 + multiplier 范围。
-    final synergies = await _loadOptionalAsset(
-      load,
-      'data/synergies.yaml',
-      (raw) {
-        final synergiesRaw = parseYamlMap(raw);
-        return ((synergiesRaw['synergies'] as List?) ?? const [])
-            .map(
-              (e) => SynergyDef.fromYaml(Map<String, dynamic>.from(e as Map)),
-            )
-            .toList(growable: false);
-      },
-      fallback: const <SynergyDef>[],
-    );
+    final synergies = await _loadOptionalAsset(load, 'data/synergies.yaml', (
+      raw,
+    ) {
+      final synergiesRaw = parseYamlMap(raw);
+      return ((synergiesRaw['synergies'] as List?) ?? const [])
+          .map((e) => SynergyDef.fromYaml(Map<String, dynamic>.from(e as Map)))
+          .toList(growable: false);
+    }, fallback: const <SynergyDef>[]);
 
     // P1.z 机制百科 md(graceful;档 8 缺失或 fixture 不带均允许空 map)。
     final codexList = await CodexLoader.loadAll(loader: load);
@@ -375,34 +382,26 @@ class GameRepository {
 
     // 材料经济 P1 shop.yaml(graceful;fixture 不带 yaml 时空 map)。
     // 生产路径红线校验在 _enforceShopRedLines 拦标价越界。
-    final shopItemDefs = await _loadOptionalAsset(
-      load,
-      'data/shop.yaml',
-      (raw) {
-        final shopRaw = parseYamlMap(raw);
-        return _parseDefMap(
-          shopRaw['shop'] as List,
-          ShopItemDef.fromYaml,
-          idOf: (d) => d.id,
-        );
-      },
-      fallback: const <String, ShopItemDef>{},
-    );
+    final shopItemDefs = await _loadOptionalAsset(load, 'data/shop.yaml', (
+      raw,
+    ) {
+      final shopRaw = parseYamlMap(raw);
+      return _parseDefMap(
+        shopRaw['shop'] as List,
+        ShopItemDef.fromYaml,
+        idOf: (d) => d.id,
+      );
+    }, fallback: const <String, ShopItemDef>{});
 
     // 材料经济 P2 items.yaml(graceful;fixture 不带 yaml 时空 map)。
-    final itemDefs = await _loadOptionalAsset(
-      load,
-      'data/items.yaml',
-      (raw) {
-        final itemsRaw = parseYamlMap(raw);
-        return _parseDefMap(
-          itemsRaw['items'] as List,
-          ItemDef.fromYaml,
-          idOf: (d) => d.defId,
-        );
-      },
-      fallback: const <String, ItemDef>{},
-    );
+    final itemDefs = await _loadOptionalAsset(load, 'data/items.yaml', (raw) {
+      final itemsRaw = parseYamlMap(raw);
+      return _parseDefMap(
+        itemsRaw['items'] as List,
+        ItemDef.fromYaml,
+        idOf: (d) => d.defId,
+      );
+    }, fallback: const <String, ItemDef>{});
 
     final repo = GameRepository._(
       numbers: numbers,
@@ -414,6 +413,7 @@ class GameRepository {
       towerFloors: towerFloors,
       seclusionMaps: numbers.retreat.maps,
       masters: masters,
+      founderCreation: founderCreation,
       recruitCandidates: recruitCandidates,
       sectCandidates: sectCandidates,
       encounterDefs: encounterDefs,
@@ -650,6 +650,7 @@ class GameRepository {
 
     // Phase 3 Week 4 T53：师徒 3 角色校验
     _enforceMasterRedLines();
+    _enforceFounderCreationRedLines();
     _enforceRecruitCandidateRedLines();
 
     // 第七阶段批三 P2：命名弟子拜入配置红线（stage 存在唯一 / slot 合法 /
@@ -1214,9 +1215,7 @@ class GameRepository {
       }
       // Boss 层至少有一个主 Boss；20/25/30 可带护法形成多目标压力。
       if (f.bossKind != null && !f.enemyTeam.any((e) => e.isBoss)) {
-        throw StateError(
-          '爬塔 Boss floor=${f.floorIndex} 至少应有 1 个 isBoss 主敌',
-        );
+        throw StateError('爬塔 Boss floor=${f.floorIndex} 至少应有 1 个 isBoss 主敌');
       }
       // §5.4 红线：Boss baseHp ≤ bossHpMax（config-driven，2026-06-14 调至 60000）
       final bossHpMax = numbers.combat.redLines.bossHpMax;
@@ -1355,6 +1354,89 @@ class GameRepository {
     // T55「祖师起手必带师承遗物」于 2026-06-27 放宽移除：祖师改学徒新手、空手起家，
     // 师承遗物改为游戏中获得（Ch3/tower 掉落）；飞升时任选已装备/库存传徒，不依赖
     // 起手种子（ascend_service 空选优雅兜底）。详 spec 2026-06-27-founder-start-realm-novice-design。
+  }
+
+  /// 新档祖师塑形红线:
+  /// - 三流派选项必须齐全且不重复；
+  /// - 每个流派至少 1 本起手心法,且心法存在、入门阶、流派一致；
+  /// - 出身资源差异只能是低量非负数；
+  /// - 命盘池至少 3 份,每份属性单项 [1,10] / 总和 [16,24]。
+  void _enforceFounderCreationRedLines() {
+    if (founderCreation.schools.isEmpty &&
+        founderCreation.origins.isEmpty &&
+        founderCreation.fatePool.isEmpty) {
+      return;
+    }
+    final schoolSet = <TechniqueSchool>{};
+    final schoolIds = <String>{};
+    for (final option in founderCreation.schools) {
+      if (!schoolIds.add(option.id)) {
+        throw StateError('founder_creation schools id 重复:${option.id}');
+      }
+      schoolSet.add(option.school);
+      if (option.startingTechniqueIds.isEmpty) {
+        throw StateError('founder_creation ${option.id} 未配置起手心法');
+      }
+      for (final techId in option.startingTechniqueIds) {
+        final tech = techniqueDefs[techId];
+        if (tech == null) {
+          throw StateError('founder_creation $techId 未在 techniques.yaml 中');
+        }
+        if (tech.tier != TechniqueTier.ruMenGong) {
+          throw StateError('founder_creation $techId 必须是入门功');
+        }
+        if (tech.school != option.school) {
+          throw StateError('founder_creation $techId 流派与 ${option.id} 不一致');
+        }
+      }
+    }
+    if (schoolSet.length != TechniqueSchool.values.length) {
+      throw StateError('founder_creation 必须覆盖刚猛/灵巧/阴柔三流派');
+    }
+
+    final originIds = <String>{};
+    for (final origin in founderCreation.origins) {
+      if (!originIds.add(origin.id)) {
+        throw StateError('founder_creation origins id 重复:${origin.id}');
+      }
+      if (origin.mojianshiBonus < 0 || origin.jieJingBonus < 0) {
+        throw StateError('founder_creation 出身资源 bonus 不可为负:${origin.id}');
+      }
+      if (origin.mojianshiBonus > 50 || origin.jieJingBonus > 3) {
+        throw StateError('founder_creation 出身资源 bonus 过高:${origin.id}');
+      }
+    }
+    if (founderCreation.origins.isEmpty) {
+      throw StateError('founder_creation 至少需要 1 个出身');
+    }
+
+    final fateIds = <String>{};
+    for (final fate in founderCreation.fatePool) {
+      if (!fateIds.add(fate.id)) {
+        throw StateError('founder_creation fatePool id 重复:${fate.id}');
+      }
+      final ap = fate.attributeProfile;
+      for (final entry in <String, int>{
+        'constitution': ap.constitution,
+        'enlightenment': ap.enlightenment,
+        'agility': ap.agility,
+        'fortune': ap.fortune,
+      }.entries) {
+        if (entry.value < 1 || entry.value > 10) {
+          throw StateError(
+            'founder_creation ${fate.id} ${entry.key}=${entry.value},应 ∈ [1,10]',
+          );
+        }
+      }
+      if (ap.total < 16 || ap.total > 24) {
+        throw StateError(
+          'founder_creation ${fate.id} 总点 ${ap.total} 应 ∈ [16,24]',
+        );
+      }
+    }
+    if (founderCreation.fatePool.length < 3) {
+      throw StateError('founder_creation fatePool 至少需要 3 份命盘');
+    }
   }
 
   /// P1.1 A1 E.1:收徒候选 NPC 红线(GDD §7.1 + audit 方案 3)。

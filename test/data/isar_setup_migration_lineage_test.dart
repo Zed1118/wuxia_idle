@@ -33,7 +33,9 @@ void main() {
     late Directory tempDir;
 
     setUp(() async {
-      tempDir = await Directory.systemTemp.createTemp('wuxia_isar_mig_lineage_');
+      tempDir = await Directory.systemTemp.createTemp(
+        'wuxia_isar_mig_lineage_',
+      );
     });
 
     tearDown(() async {
@@ -98,10 +100,7 @@ void main() {
           masterId: 1,
         );
         // 通用收徒弟子(id=4):不在 founder.discipleIds 里,迁移不应改动其 role。
-        final generic = makeChar(
-          name: '普通弟子',
-          role: LineageRole.disciple,
-        );
+        final generic = makeChar(name: '普通弟子', role: LineageRole.disciple);
         await isar.characters.put(founder);
         await isar.characters.put(senior);
         await isar.characters.put(junior);
@@ -137,15 +136,18 @@ void main() {
       //    用 live config 断言防未来配置改动再次硬编码失配)。
       final expectedJoinIds =
           GameRepository.instance.numbers.lineageOnboarding.joinStageIds;
-      expect(expectedJoinIds, contains('stage_06_05'),
-          reason: 'spec A:弟子拜入关已后移至 stage_06_05');
+      expect(
+        expectedJoinIds,
+        contains('stage_06_05'),
+        reason: 'spec A:弟子拜入关已后移至 stage_06_05',
+      );
       expect(
         save.triggeredDiscipleJoinStageIds.toSet(),
         containsAll(expectedJoinIds),
         reason: '迁移预填全部当前 join stage id,防 hook 重触发',
       );
-      // ④ 版本升到 0.32.0
-      expect(save.saveVersion, '0.32.0');
+      // ④ 版本升到当前版本
+      expect(save.saveVersion, IsarSetup.currentSaveVersion);
       // ⑤ activeCharacterIds 未动(弟子未删/未改)
       expect(save.activeCharacterIds, [1, 2, 3]);
       // 弟子其余数据未动
