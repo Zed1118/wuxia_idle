@@ -1532,6 +1532,18 @@ class UiStrings {
   static const String activeRetreatEarlyHint = '行功未满，提前收功将按实际时长结算';
   static String activeRetreatTimeRange(String start, String end, int hours) =>
       '$start → $end（$hours h）';
+  static const String activeRetreatStatusCardTitle = '闭关状态';
+  static String activeRetreatStatusLocation(String mapName) => '地点：$mapName';
+  static String activeRetreatElapsed(String elapsed) => '已闭关：$elapsed';
+  static String activeRetreatPlannedHours(int hours) => '计划：$hours 小时';
+  static const String activeRetreatExpectedTypes = '预计收获';
+  static const String activeRetreatRewardMojianshi = '磨剑石';
+  static const String activeRetreatRewardExperience = '修为经验';
+  static const String activeRetreatRewardSilver = '银两';
+  static const String activeRetreatRewardTechnique = '心法领悟';
+  static const String activeRetreatRewardInternalForce = '内力沉淀';
+  static const String activeRetreatRewardEquipment = '装备机缘';
+  static String activeRetreatRewardTypes(String labels) => labels;
   static String activeRetreatProgressPct(int pct) => '$pct%';
   static const String activeRetreatConfirmTitle = '确认提前收功';
   static const String activeRetreatConfirmBody = '现在收功将按实际时间结算，是否确认？';
