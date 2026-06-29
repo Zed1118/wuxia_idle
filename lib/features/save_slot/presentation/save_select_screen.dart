@@ -7,6 +7,7 @@ import '../../../data/slot_summary.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
+import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../application/slot_list_provider.dart';
@@ -343,23 +344,13 @@ class _EmptySlot extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     children: [
       Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                color: WuxiaColors.resultHighlight,
-                fontSize: 18,
-                letterSpacing: 2,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              UiStrings.slotSaveEmpty,
-              style: TextStyle(color: WuxiaColors.textSecondary),
-            ),
-          ],
+        child: InkEmptyState(
+          variant: InkEmptyStateVariant.empty,
+          title: title,
+          body: UiStrings.slotSaveEmpty,
+          icon: Icons.add_circle_outline,
+          compact: true,
+          showFrame: false,
         ),
       ),
       const Icon(Icons.chevron_right, color: WuxiaColors.textMuted),
