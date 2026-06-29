@@ -1592,6 +1592,31 @@ class UiStrings {
   static const String skillCodexMultiplier = '倍率';
   static const String skillCodexCost = '内力';
   static const String skillCodexCooldown = '冷却';
+  static const String skillCodexManualSection = '秘本纲要';
+  static const String skillCodexSchool = '流派';
+  static const String skillCodexSchoolInherited = '承所属心法';
+  static const String skillCodexSchoolUnknown = '未记流派';
+  static const String skillCodexInterrupt = '破招';
+  static const String skillCodexProficiencyBenefit = '熟练收益';
+  static const String skillCodexTypicalUse = '典型用途';
+  static const String skillCodexInterruptCanBreak = '可打断蓄力';
+  static const String skillCodexInterruptCanBreakAndOpenWindow =
+      '可打断蓄力 · 命中开破绽';
+  static const String skillCodexInterruptOpenWindow = '命中开破绽';
+  static const String skillCodexInterruptNone = '不可破招';
+  static String skillCodexSchoolValue(String school, bool inherited) =>
+      inherited ? '$school · $skillCodexSchoolInherited' : school;
+  static String skillCodexProficiencyBenefitValue(
+    String current,
+    String? next,
+  ) => next == null ? current : '$current\n$next';
+  static const String skillCodexUseInterrupt = '留作敌方蓄力时截断关键招';
+  static const String skillCodexUseAoeUltimate = '群敌压阵时打出整场爆发';
+  static const String skillCodexUseSingleUltimate = '锁定首领或残血强敌收束战局';
+  static const String skillCodexUseAoePower = '清理多名敌人并压低全场血线';
+  static const String skillCodexUsePower = '常规爆发,用于压低关键目标';
+  static const String skillCodexUseJoint = '共鸣成形后用于高价值收尾';
+  static const String skillCodexUseNormal = '稳定出手,积累熟练与基础伤害';
   static const String skillCodexSectionSkills = '招式';
   static const String skillCodexSectionTechniques = '心法';
   static const String techniqueCodexEmpty = '心法未录，待入藏经。';
