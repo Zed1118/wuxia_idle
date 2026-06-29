@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.27**
+> v1.27 变更摘要(2026-06-29 Codex→Claude 就绪信号 · git 原生标记 · 0 改代码):解决「codex 在多个 worktree 持续写时,Claude 分不清哪个分支冻结可评、哪个还在写(tip 随时变 / 工作区脏)」的并行 race。新增 §8.3:codex 任务写完须 ① 工作区干净(全 commit) ② 把分支 tip commit 消息前缀打成 `[READY]`(需用户拍板的打 `[BLOCKED]`,其余视为 WIP)。Claude 只评审/合并 tip 以 `[READY]` 开头且 worktree 干净的分支;codex 再提交→tip 不再是 `[READY]`→Claude 自动当其仍在写跳过(freeze 自动判定);`[BLOCKED]` 不合、汇报用户拍板。无新文件、单一事实源 git、主分支可见、零文档漂移。源:2026-06-29 4 个 codex 在途 worktree 实测(taohua 4min 前提交 / equipment-drop 脏未 commit)证明无就绪信号则只能逐个问用户。
 > **版本:v1.26**
 > v1.26 变更摘要(2026-06-29 协作交付门槛 + 合并 Gate 固化 · 0 改代码):3 梯队批量合并验证「Codex 产任务 + Claude 合并审核」工作流有效后,把交付门槛与合并 gate 写入 §8.2 长期规则(Codex 子任务交付标准 4 项 + UI 视口/桌面语义加码 + 外部审查只进 triage + Claude 合并审核 Gate + 批末验证/清理/PROGRESS 四态)。源:2026-06-29 Codex 全量审查(无 P0/P1 阻断 · analyze/3391 test 全过 · 风险=PlaqueButton 桌面语义/ErrorFallback rebuild 日志/超高视口非常规体验/残留 worktree)。
 > **版本:v1.25**
@@ -309,6 +311,24 @@ choices:
 **Claude 合并审核 Gate**(合每个 Codex 分支前逐项过):核上述 4 证据齐全 + UI 视口/视觉口径 + 外审项已证伪;另查 ⓐ 无中文文案 / 数值常量散写进 Dart ⓑ 无高频路径 debug 日志噪声(如 `build()` 内 `debugPrint` 随 rebuild 刷屏)ⓒ 无误提交(未清 worktree / 未跟踪文件 / capture 目录 / 临时文档 / `.g.dart` / log / 截图,**用户指定保留的 worktree/分支除外**)。
 
 **批次合并后必做**(每梯队/批末):`flutter analyze` 0 issue → 相关 targeted tests → 批末一次全量 `flutter test --no-pub -j1` → UI 密集改动至少一轮常规桌面视口 smoke → 清理或归档已合并 worktree/分支 + capture 文件(**用户指定保留的除外**)→ PROGRESS 顶段更新区分四态:**已完成 / 已验证 / 已知风险 / 下批建议**(避免 N 个分支各自堆叠进度段)。
+
+### 8.3 Codex→Claude 就绪信号(git 原生标记)
+
+> 2026-06-29 v1.27 新增。解决并行 race:codex 在多个 worktree 持续写,Claude 负责评审+合并,但无显式「写完了」信号时 Claude 分不清哪个分支是冻结可评、哪个还在写(tip 随时变 / 工作区脏)→ 只能逐个问用户。本节用 git 自带的 tip commit 消息做信号,无新文件、单一事实源、主分支可见、freeze 自动判定。
+
+**Codex 任务写完时必做(否则视为未交付,Claude 不会碰)**:
+1. **冻结 worktree**:所有改动 commit,工作区干净(`git status` 无未提交实质改动 / 无未跟踪源码或 plan)。tip 不再变动。
+2. **打就绪标记**:让分支 **tip commit 的消息前缀** = `[READY]`(写完待评)或 `[BLOCKED]`(需用户拍板,不要合)。其余任何前缀一律视为 `WIP`(进行中)。标记可用最后一个真实 commit 直接带该前缀,也可追加空 commit:`git commit --allow-empty -m "[READY] <一句话交付摘要>"`。
+3. 仍按 §8.0 在 plan 文件恢复点写清状态/验证/阻塞(供 Claude 读交付证据),但**就绪与否以 tip 前缀为准**(plan 文本会漂移,git tip 不会)。
+
+**Claude 评审/合并纪律(扫 tip 前缀,不问用户)**:
+- 一个分支同时满足 ⓐ `git log -1 --format=%s <branch>` 以 `[READY]` 开头 ⓑ 对应 worktree `git status` 干净 → 进入 §8.2 合并 Gate 评审。
+- tip 前缀是 `[BLOCKED]` → **不合**,把待拍板点汇报用户。
+- tip 不以 `[READY]` 开头(WIP)或 worktree 脏 → **跳过不碰**,等 codex 冻结。
+- **freeze 自动判定**:评审某分支后、合并前 codex 又提交(tip 变了、不再是当初那个 `[READY]`)→ 视为又进 WIP,本轮不合,等下次重新冻结。
+- 合并通过后 `git branch -d`(就绪标记随分支消失,无残留;用户指定保留的分支除外)。
+
+**例外**:用户显式点名「现在评审 X 分支」→ 直接走 §8.2,不要求先打 `[READY]`。
 
 ## 9. 不要做的事（操作清单）
 
