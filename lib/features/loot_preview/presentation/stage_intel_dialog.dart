@@ -130,10 +130,7 @@ class _CycleTraitIntelList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (final entry in entries)
-          _IntelLine('${entry.name} · ${entry.detailText}'),
-      ],
+      children: [for (final entry in entries) _IntelLine(entry.detailText)],
     );
   }
 }
