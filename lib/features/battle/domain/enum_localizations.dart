@@ -2,6 +2,7 @@ import '../../../core/domain/enums.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
 import '../../encounter/domain/encounter_def.dart' show AttributeKey;
 import '../../taohua_island/domain/island_building_type.dart';
+import '../../../shared/strings.dart';
 import 'battle_state.dart' show BattleResult;
 
 /// enum → 中文显示名的集中本地化层。
@@ -104,8 +105,7 @@ class EnumL10n {
       '$actorName 内伤发作,扣 $damage 血';
 
   /// §12.1 #7 v1.4 阴柔内伤 dot 致死日志(actor 死亡)。
-  static String internalInjuryFatal(String actorName) =>
-      '$actorName 内伤崩裂,经脉俱断';
+  static String internalInjuryFatal(String actorName) => '$actorName 内伤崩裂,经脉俱断';
 
   /// P0 破招:Boss 起手蓄力招牌技日志。
   static String chargeStart(String name, String skill) => '$name 凝气蓄势:$skill';
@@ -122,7 +122,7 @@ class EnumL10n {
 
   /// 第七阶段批二 ①:Boss 转阶段日志(血量跌破阈值进入下一阶段)。
   static String bossPhaseTransition(String name, int phaseIndex) =>
-      '$name 气势陡变,进入第 ${phaseIndex + 1} 阶!';
+      '$name 气势陡变,进入第 ${phaseIndex + 1} ${UiStrings.combatTermLabel(CombatTerm.phase)}!';
 
   /// 心法修炼度 9 层（GDD §4.3，与境界 7 层 [realmLayer] 严格不同名）。
   static String cultivationLayer(CultivationLayer l) {
@@ -252,9 +252,9 @@ class EnumL10n {
 
   /// 战绩册 Boss 来源维度（P4 战绩册 · 分组用）。
   static String bossMemorySource(BossMemorySource s) => switch (s) {
-        BossMemorySource.mainline => '主线征程',
-        BossMemorySource.tower => '爬塔问鼎',
-      };
+    BossMemorySource.mainline => '主线征程',
+    BossMemorySource.tower => '爬塔问鼎',
+  };
 
   /// 桃花岛建筑显示名（GDD 桃花岛 Phase 2 · §5.6 合法集中 sink）。
   /// switch 穷尽，增删 [BuildingType] 值编译期报漏。

@@ -127,6 +127,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> selectBuilding(WidgetTester tester, BuildingType type) async {
+    await tester.tap(find.byKey(Key('taohua_scene_hotspot_${type.name}')));
+    await tester.pumpAndSettle();
+  }
+
   // ── 渲染测试 ──────────────────────────────────────────────────────────────
 
   group('TaohuaIslandScreen 渲染', () {
@@ -135,23 +140,30 @@ void main() {
       expect(find.text(UiStrings.taohuaIslandTitle), findsOneWidget);
     });
 
-    testWidgets('7 个建筑名均渲染', (tester) async {
+    testWidgets('7 个建筑热区均渲染', (tester) async {
       await pump(tester, wrap(buildTestView()));
 
       for (final type in BuildingType.values) {
         expect(
-          find.text(EnumL10n.buildingType(type)),
+          find.byKey(Key('taohua_scene_hotspot_${type.name}')),
           findsOneWidget,
-          reason: '${EnumL10n.buildingType(type)} 应出现',
+          reason: '${EnumL10n.buildingType(type)} 应有可点击热区',
         );
       }
     });
 
-    testWidgets('据点分区标签均渲染', (tester) async {
+    testWidgets('场景标题与默认建筑详情均渲染', (tester) async {
       await pump(tester, wrap(buildTestView()));
 
-      expect(find.text(UiStrings.taohuaIslandSectionRaw), findsOneWidget);
-      expect(find.text(UiStrings.taohuaIslandSectionWorkshop), findsOneWidget);
+      expect(find.text(UiStrings.taohuaIslandSceneMapTitle), findsOneWidget);
+      expect(
+        find.text(
+          UiStrings.taohuaIslandSelectedBuildingTitle(
+            EnumL10n.buildingType(BuildingType.tieJiangChang),
+          ),
+        ),
+        findsOneWidget,
+      );
       expect(find.text(UiStrings.taohuaIslandSectionDock), findsOneWidget);
     });
 
@@ -211,27 +223,69 @@ void main() {
 
     testWidgets('升级按钮存在', (tester) async {
       await pump(tester, wrap(buildTestView()));
-      // 至少 1 个升级按钮可见
-      expect(find.text(UiStrings.taohuaIslandUpgrade), findsWidgets);
+      expect(find.text(UiStrings.taohuaIslandUpgrade), findsOneWidget);
     });
 
-    testWidgets('processor 建筑有选配方文案', (tester) async {
+    testWidgets('点击加工建筑热区后显示选配方文案', (tester) async {
       await pump(tester, wrap(buildTestView()));
-      // 三个 processor 各有选配方标签
-      expect(find.text(UiStrings.taohuaIslandSelectRecipe), findsNWidgets(3));
+      await selectBuilding(tester, BuildingType.danFang);
+
+      expect(find.text(UiStrings.taohuaIslandSelectRecipe), findsOneWidget);
     });
 
-    testWidgets('产出中 / 已停标签正确', (tester) async {
+    testWidgets('点击不同加工建筑后产出中 / 已停标签正确', (tester) async {
       await pump(tester, wrap(buildTestView()));
-      // daZaoTai / zhuZaoTai activeRecipeId 非 null → 产出中
-      expect(find.text(UiStrings.taohuaIslandIdleProducing), findsNWidgets(2));
-      // danFang activeRecipeId == null → 已停
+
+      await selectBuilding(tester, BuildingType.daZaoTai);
+      expect(find.text(UiStrings.taohuaIslandIdleProducing), findsOneWidget);
+
+      await selectBuilding(tester, BuildingType.danFang);
       expect(find.text(UiStrings.taohuaIslandIdlePaused), findsOneWidget);
+    });
+
+    // 场景化主屏单卡模型(scene-hub):一次只渲染选中建筑卡,故按建筑分阶段断言。
+    testWidgets('建筑卡显示当前队列、剩余时间、满仓时间与产物去向', (tester) async {
+      await pump(tester, wrap(buildTestView()));
+
+      // 默认卡 tieJiangChang(source):采集精铁 + 下次产出时间 + 满仓未知。
+      expect(
+        find.text(UiStrings.taohuaIslandCurrentGathering('精铁')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          UiStrings.taohuaIslandNextOutputIn(
+            UiStrings.taohuaIslandDuration(1 / 6),
+          ),
+        ),
+        findsWidgets,
+      );
+      expect(find.text(UiStrings.taohuaIslandFullStorageUnknown), findsWidgets);
+
+      // 切打造台(processor·forge_mojianshi):当前配方磨剑石 + 产物去向装备强化。
+      await selectBuilding(tester, BuildingType.daZaoTai);
+      expect(
+        find.text(UiStrings.taohuaIslandCurrentRecipe('磨剑石')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.taohuaIslandOutputUsage('装备强化')),
+        findsOneWidget,
+      );
+
+      // 切丹房(processor·无配方):无配方 + 已停。
+      await selectBuilding(tester, BuildingType.danFang);
+      expect(
+        find.text(UiStrings.taohuaIslandCurrentRecipeNone),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.taohuaIslandNextOutputPaused), findsWidgets);
     });
 
     testWidgets('加工建筑展示固定协同加成', (tester) async {
       await pump(tester, wrap(buildTestView()));
 
+      await selectBuilding(tester, BuildingType.daZaoTai);
       expect(
         find.text(
           UiStrings.taohuaIslandSynergyLine([
@@ -243,6 +297,7 @@ void main() {
         ),
         findsOneWidget,
       );
+      await selectBuilding(tester, BuildingType.danFang);
       expect(
         find.text(
           UiStrings.taohuaIslandSynergyLine([
@@ -254,6 +309,7 @@ void main() {
         ),
         findsOneWidget,
       );
+      await selectBuilding(tester, BuildingType.zhuZaoTai);
       expect(
         find.text(
           UiStrings.taohuaIslandSynergyLine([
@@ -265,6 +321,22 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+
+    testWidgets('点击建筑热区会切换下方详情面板', (tester) async {
+      await pump(tester, wrap(buildTestView()));
+
+      await selectBuilding(tester, BuildingType.danFang);
+
+      expect(
+        find.text(
+          UiStrings.taohuaIslandSelectedBuildingTitle(
+            EnumL10n.buildingType(BuildingType.danFang),
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.taohuaIslandIdlePaused), findsOneWidget);
     });
 
     testWidgets('一并收取按钮存在', (tester) async {
@@ -405,6 +477,7 @@ void main() {
       // silver=0 → 所有建筑银两不足
       final view = buildTestView(silver: 0);
       await pump(tester, wrap(view));
+      await selectBuilding(tester, BuildingType.caoYaoYuan);
 
       expect(
         find.text(UiStrings.taohuaIslandNotEnoughSilver),
@@ -427,6 +500,7 @@ void main() {
         },
       );
       await pump(tester, wrap(view));
+      await selectBuilding(tester, BuildingType.caoYaoYuan);
 
       expect(
         find.text(UiStrings.taohuaIslandNotEnoughMaterial),
@@ -444,6 +518,7 @@ void main() {
       // forge_xinxue (realm=3) 和 brew_peiyuan (realm=3) 应被 Opacity 0.4 包裹
       final view = buildTestView(founderRealmIndex: 0);
       await pump(tester, wrap(view));
+      await selectBuilding(tester, BuildingType.danFang);
 
       // 找到所有 Opacity=0.4 的 widget，验证至少有灰化元素
       final opacityWidgets = tester.widgetList<Opacity>(find.byType(Opacity));
@@ -452,8 +527,8 @@ void main() {
           .length;
       expect(
         grayedCount,
-        greaterThanOrEqualTo(2),
-        reason: '两个高阶配方（realm=3）在 founderRealmIndex=0 时应各自灰化',
+        greaterThanOrEqualTo(1),
+        reason: '高阶配方（realm=3）在 founderRealmIndex=0 时应灰化',
       );
     });
 
@@ -461,6 +536,7 @@ void main() {
       // realm=3 祖师 → 高阶配方 unlock
       final view = buildTestView(founderRealmIndex: 3, silver: 999999);
       await pump(tester, wrap(view));
+      await selectBuilding(tester, BuildingType.danFang);
 
       // 境界已到，不应有 realmLocked 提示
       expect(find.text(UiStrings.taohuaIslandRealmLocked), findsNothing);

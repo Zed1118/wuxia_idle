@@ -1,6 +1,8 @@
 import '../core/domain/item_source.dart';
 import '../core/domain/item_usage.dart';
 
+enum CombatTerm { charge, interrupt, zhenqi, yuti, phase, heavyInjury }
+
 /// UI 静态中文标签（phase1_tasks.md T14）。
 ///
 /// 与 [lib/features/battle/domain/enum_localizations.dart] 同性质：Phase 1 把"代码内中文"集中
@@ -48,6 +50,33 @@ class UiStrings {
   static const String ultimate = '大招';
   static const String fastForward = '快进';
 
+  static String combatTermLabel(CombatTerm term) => switch (term) {
+    CombatTerm.charge => '蓄力',
+    CombatTerm.interrupt => '破招',
+    CombatTerm.zhenqi => '真气',
+    CombatTerm.yuti => '御体',
+    CombatTerm.phase => '相位',
+    CombatTerm.heavyInjury => '重伤',
+  };
+
+  static String combatTermGloss(
+    CombatTerm term, {
+    String? pct,
+    double? hours,
+    int? attackPenaltyPct,
+    int? internalForcePenaltyPct,
+  }) => switch (term) {
+    CombatTerm.charge => '蓄力：敌方招牌技发动前的预备状态。倒数结束会释放重招，可用破招截断。',
+    CombatTerm.interrupt => '破招：命中蓄力中的目标可打断其招牌技，并让目标短暂踉跄、防御骤降。',
+    CombatTerm.zhenqi => '真气：敌方内力上限提高 ${pct ?? ''}，更容易多放一次大招。',
+    CombatTerm.yuti => '御体：敌方防御率提高 ${pct ?? ''}，更耐久，适合用克制流派或破甲手段处理。',
+    CombatTerm.phase => '相位：Boss 血量跌破阈值后的阶段变化，会切换招式节奏或触发蓄力反扑。',
+    CombatTerm.heavyInjury =>
+      '重伤：硬仗战败或惨胜后的伤势。'
+          '调息 ${hours?.ceil() ?? 0}h，输出 -${attackPenaltyPct ?? 0}%，'
+          '内力上限 -${internalForcePenaltyPct ?? 0}%。',
+  };
+
   // P0 破招
   static const String battleInterruptSkill = '破招';
   // T2 蓄力危险条：敌人正在蓄力大招的顶部警示（招名 + 剩余回合）。
@@ -55,7 +84,8 @@ class UiStrings {
     String enemyName,
     String skillName,
     int ticks,
-  ) => '$enemyName 正在蓄势：$skillName（还有 $ticks 回合发动）';
+  ) =>
+      '$enemyName 正在${combatTermLabel(CombatTerm.charge)}：$skillName（还有 $ticks 回合发动）';
   static const String battleDangerPrefix = '⚠ ';
 
   // T1 战斗指令台：技能分组标签 + 状态印 + 内力/冷却短标。
@@ -78,7 +108,8 @@ class UiStrings {
   static const String skillInfoCooldown = '冷却';
   static const String skillInfoTrait = '特性';
   // 特性值：可打断 → 破招（命中蓄力中目标可打断其招牌技）。
-  static const String skillTraitInterrupt = '破招（可打断蓄力）';
+  static String get skillTraitInterrupt =>
+      '${combatTermLabel(CombatTerm.interrupt)} · 可打断${combatTermLabel(CombatTerm.charge)}';
   // 无特殊特性时的占位（普通技无可打断等标签）。
   static const String skillTraitNone = '无';
   // 冷却值单位（回合）。
@@ -229,6 +260,8 @@ class UiStrings {
   static const String mainMenuInventoryHint = '查看 / 强化 / 开锋装备';
   static String mainMenuInventoryStatus(int count, String topTier) =>
       count <= 0 ? '暂无装备' : '$count件 · $topTier';
+  static const String mainMenuResourceOverview = '资源总览';
+  static const String mainMenuResourceOverviewHint = '库存 / 来源 / 用途一屏可察';
   static const String mainMenuTechniques = '心法面板';
   static const String mainMenuTechniquesHint = '查看主修 / 辅修 / 散功换主修';
   static const String mainMenuTechniquesLockedHint = '通过第三关后开放';
@@ -530,7 +563,7 @@ class UiStrings {
   static const String glossarySchool = '流派：刚猛克灵巧、灵巧克阴柔、阴柔克刚猛，循环相克。顺克加伤，逆克减伤。';
   static const String glossarySynergy = '相生：特定心法搭配可生额外威能，相辅相成。配伍得当，事半功倍。';
   static const String glossaryCombatAdvanced =
-      '战斗机制：蓄势、破招、内伤、克制环环相扣。看准敌招蓄势时破招，可截下大招、反客为主。';
+      '战斗机制：蓄力、破招、内伤、克制环环相扣。看准敌招蓄力时破招，可截下大招、反客为主。';
   static const String glossarySeclusion =
       '闭关：择地静修，将光阴沉淀为修为。地点、时辰、节气皆影响产出；关游戏亦照常累积（在线＝离线）。';
   static const String labelCombatAdvanced = '战斗机制';
@@ -544,8 +577,7 @@ class UiStrings {
 
   /// 踉跄 debuff(staggerTicksRemaining):被破招后阵脚大乱,数回合内任人宰割。
   static const String statusStaggerLabel = '踉跄';
-  static const String statusStaggerGloss =
-      '踉跄:招式被破,阵脚大乱。数息之内防御骤降、难以还手,正是趁势猛攻之机。';
+  static String get statusStaggerGloss => combatTermGloss(CombatTerm.interrupt);
 
   /// 剑鸣 buff(swordSongResonanceActive):心剑通灵,暴击附剑鸣威能。
   static const String statusSwordSongLabel = '剑鸣';
@@ -620,6 +652,23 @@ class UiStrings {
   static const String inventoryTabEquipment = '装备';
   static const String inventoryTabMaterial = '物料';
   static const String inventoryMaterialEmpty = '暂无物料';
+
+  // 资源总览页（只读经营面板）。
+  static const String resourceOverviewTitle = '资源总览';
+  static const String resourceOverviewIntro =
+      '汇总当前库存与主要去向，只作经营判断，不在此处消费、购买或结算。';
+  static const String resourceOverviewEmpty = '暂无相关资源';
+  static const String resourceOverviewUsageLabel = '用途：';
+  static const String resourceOverviewSourceLabel = '来源：';
+  static const String resourceOverviewNoUsage = '暂无已接入用途';
+  static const String resourceOverviewNoSource = '暂无稳定来源';
+  static const String resourceOverviewCategoryCurrency = '银两';
+  static const String resourceOverviewCategoryEquipmentMaterial = '炼器材料';
+  static const String resourceOverviewCategoryIslandProduct = '桃花岛产物';
+  static const String resourceOverviewCategoryPill = '丹药补给';
+  static const String resourceOverviewCategoryScroll = '秘籍残卷';
+  static String resourceOverviewQuantity(int quantity) => '库存 ×$quantity';
+  static String resourceOverviewLoadFailed(Object error) => '资源读取失败：$error';
 
   /// 物料行文案：`磨剑石 × 1234`。
   static String materialQuantity(String name, int qty) => '$name × $qty';
@@ -809,8 +858,16 @@ class UiStrings {
   static const String tabEnhance = '强化';
   static const String tabForging = '开锋';
   static const String forgingForged = '已开锋';
-  static const String forgingNoSpecialSkill = '该装备无专属技能';
+  static const String forgingNoSpecialSkill = '此装备尚未记载专属锋意';
+  static const String forgingNoSpecialSkillHint = '换一件武器,或先打磨前两道锋意。';
   static const String forgingSpecialSkillPickerTitle = '选择专属技能';
+  static String forgingSpecialSkillSummary(
+    String styleLabel,
+    int? tier,
+    int power,
+  ) => tier == null
+      ? '$styleLabel · 威力 $power'
+      : '$styleLabel · 第$tier阶 · 威力 $power';
   static const String forgingConfirmTitle = '确认开锋';
   static const String forgingConfirmBody = '开锋一旦下手不能更改。确认在此槽位开锋？';
   static String forgingConfirmBodyWithCost(int cost) =>
@@ -905,6 +962,11 @@ class UiStrings {
 
   static const String mainMenuMainline = '主线';
   static const String mainMenuMainlineHint = '6 章 30 关,按章节顺序解锁';
+  static String mainMenuMainlineGoalHint(
+    String target,
+    String reward,
+    String reason,
+  ) => '目标：打$target · 取$reward · $reason';
   static String mainMenuMainlineStatus(int chapterIndex, String stageName) =>
       '第$chapterIndex章 · $stageName';
   static const String mainMenuMainlineCompleteStatus = '主线已通';
@@ -939,8 +1001,12 @@ class UiStrings {
   static const String stageListPrevHint = '通关前一关解锁';
   static const String stageListEmpty = '该章暂无关卡';
   static const String stageListJourneyTitle = '章内行程';
+  static const String stageListTimelineTitle = '章节卷轴';
+  static const String stageListTimelineHint = '沿路标推进，朱印为章末首领';
   static const String stageListBoss = 'Boss';
   static String stageListJourneyNodeLabel(int stageIndex) => '第$stageIndex关';
+  static String stageListTimelineStopLabel(int stageIndex, String stageName) =>
+      '第$stageIndex关 · $stageName';
   static const String chapterFarmSpotsTitle = '通章刷点';
   static const String chapterFarmSpotsHint = '本章已通，可回头刷这些关卡';
   static String chapterFarmSpotStage(int stageIndex) => '第$stageIndex关';
@@ -948,6 +1014,24 @@ class UiStrings {
   static const String stageReplayRouteEquipment = '刷装备';
   static const String stageReplayRouteMaterial = '刷材料';
   static const String stageReplayRouteProficiency = '练熟练度';
+  static const String stageGoalGuidanceTitle = '当前目标';
+  static String stageGoalTarget(
+    int chapterIndex,
+    int stageIndex,
+    String name,
+  ) => '第$chapterIndex章第$stageIndex关「$name」';
+  static String stageGoalGuidanceLine(
+    String target,
+    String reward,
+    String reason,
+  ) => '打$target · 取$reward · $reason';
+  static const String stageGoalRewardSkillManual = '武学真解';
+  static const String stageGoalRewardProgress = '过关线索';
+  static const String stageGoalReasonBoss = '章末关会打开下一段江湖路。';
+  static const String stageGoalReasonSkill = '首通可学新招，后续战斗多一个解法。';
+  static const String stageGoalReasonEquipment = '补上早期装备，推关更稳。';
+  static const String stageGoalReasonMaterial = '攒下养成材料，强化与整备都用得上。';
+  static const String stageGoalReasonProgress = '先把主线往前推，系统会自然展开。';
 
   static String chapterRouteNodeLabel(int chapterIndex) => '第$chapterIndex章';
 
@@ -1106,7 +1190,8 @@ class UiStrings {
   static const String prebattleIntelLootSection = '可能收获';
   static const String prebattleIntelNoEnemy = '未见敌踪';
   static const String prebattleIntelBossTag = '首领';
-  static const String prebattleIntelChargeTag = '蓄力';
+  static String get prebattleIntelChargeTag =>
+      combatTermLabel(CombatTerm.charge);
   static String prebattleIntelDialogTitle(String stageName) =>
       '$prebattleIntelTitle · $stageName';
   static String prebattleEnemyLine(
@@ -1121,9 +1206,11 @@ class UiStrings {
       '敌阵偏$school，可备克制路数。';
   static const String prebattlePrepBoss = '首领关宜留足内力，先处理随从再攻坚。';
   static const String prebattlePrepGroup = '敌众时备一门群体招，先清场再压主目标。';
-  static const String prebattlePrepCharge = '敌方有蓄力招，保留破招或爆发内力。';
+  static String get prebattlePrepCharge =>
+      '敌方有${combatTermLabel(CombatTerm.charge)}招，保留${combatTermLabel(CombatTerm.interrupt)}或爆发内力。';
   static const String prebattleRiskBoss = '首领战败会触发额外折损，勿空内力硬拼。';
-  static const String prebattleRiskCharge = '蓄力招若未打断，可能瞬间扭转战局。';
+  static String get prebattleRiskCharge =>
+      '${combatTermLabel(CombatTerm.charge)}招若未打断，可能瞬间扭转战局。';
   static const String prebattleRiskOutnumbered = '敌方人数较多，拖久容易被围攻。';
   static const String prebattleRiskNone = '未见明显险兆，按常规节奏推进。';
   static const String stagePrepareLabel = '整备';
@@ -1137,8 +1224,8 @@ class UiStrings {
   static String cycleTraitSummary(int cycle, List<String> names) =>
       '第$cycle周目词条：${names.join(' / ')}';
   static String cycleTraitName(String id) => switch (id) {
-    'yuti' => '御体',
-    'zhenqi' => '真气',
+    'yuti' => combatTermLabel(CombatTerm.yuti),
+    'zhenqi' => combatTermLabel(CombatTerm.zhenqi),
     'fanzhen' => '反震',
     'shipo' => '识破',
     'ningjia' => '凝甲',
@@ -1151,12 +1238,13 @@ class UiStrings {
   static const String cycleTraitShortNingjia = '暴击减伤';
   static String cycleTraitShortUnknown(String id) => '未识别：$id';
   static String cycleTraitDetailYuti(String pct) =>
-      '御体：敌方防御率提高 $pct，更耐久，适合用克制流派或破甲手段处理。';
+      combatTermGloss(CombatTerm.yuti, pct: pct);
   static String cycleTraitDetailZhenqi(String pct) =>
-      '真气：敌方内力上限提高 $pct，更容易多放一次大招。';
+      combatTermGloss(CombatTerm.zhenqi, pct: pct);
   static String cycleTraitDetailFanzhen(int ticks, int damagePerTick) =>
       '反震：命中带词条的敌人后，攻击者会承受 $ticks 回合内伤，每回合 $damagePerTick。';
-  static const String cycleTraitDetailShipo = '识破：无蓄力技的敌人会补一式蓄力反制，需保留破招或爆发内力。';
+  static String get cycleTraitDetailShipo =>
+      '识破：无${combatTermLabel(CombatTerm.charge)}技的敌人会补一式${combatTermLabel(CombatTerm.charge)}反制，需保留${combatTermLabel(CombatTerm.interrupt)}或爆发内力。';
   static String cycleTraitDetailNingjia(String reductionPct) =>
       '凝甲：敌方受到暴击时，暴击增量降低 $reductionPct，别只押会心一线。';
   static String cycleTraitDetailUnknown(String id) => '未识别的周目词条：$id。';
@@ -1432,8 +1520,12 @@ class UiStrings {
 
   // 设置面板
   static const String mainMenuSettings = '设置';
-  static const String mainMenuSettingsHint = '音量 · 静音';
+  static const String mainMenuSettingsHint = '音量 · 显示 · 舒适性';
   static const String settingsTitle = '设置';
+  static const String settingsAudioSection = '音频';
+  static const String settingsComfortSection = '战斗舒适性';
+  static const String settingsDisplaySection = '窗口与显示';
+  static const String settingsSaveSection = '存档与系统';
   static const String settingsMasterVolume = '总音量';
   static const String settingsBgmVolume = '背景音乐';
   static const String settingsSfxVolume = '音效';
@@ -1455,6 +1547,19 @@ class UiStrings {
   // 战斗交互重做 Phase 3:全局战斗模式默认开关(自动连续播放 / 允许拖招干预)。
   static const String settingsAutoPlayDefault = '自动战斗';
   static const String settingsAutoPlayDefaultHint = '战斗自动连续播放(可逐关切「允许拖招」干预)';
+  static const String settingsBattleSpeed = '战斗速度';
+  static const String settingsBattleSpeedHint = '只调整播放节拍,不影响胜负和收益';
+  static const String settingsBattleSpeedRelaxed = '舒缓';
+  static const String settingsBattleSpeedNormal = '标准';
+  static const String settingsBattleSpeedBrisk = '利落';
+  static const String settingsBattleSpeedRapid = '快速';
+  static const String settingsTextDensity = '文字密度';
+  static const String settingsTextDensityHint = '影响支持该偏好的信息面板排布';
+  static const String settingsTextDensityComfortable = '舒展';
+  static const String settingsTextDensityStandard = '标准';
+  static const String settingsTextDensityCompact = '紧凑';
+  static const String settingsReduceFlashing = '减少闪烁';
+  static const String settingsReduceFlashingHint = '降低战斗中的闪白与受击闪效果';
   // L1 显示设置（2026-06-15）:全屏 + 窗口分辨率预设。
   static const String settingsFullscreen = '全屏';
   static const String settingsFullscreenHint = '快捷键 F11 / Alt+Enter';
@@ -1500,12 +1605,36 @@ class UiStrings {
   static const String slotNewGameConfirm = '在此卷开启一段全新的江湖路？';
   static const String slotDelete = '删除存档';
   static const String slotDeleteConfirm = '删除此存档？此举不可挽回。';
+  static const String slotDeleteProtectionHint = '输入下方存档名后才可删除';
+  static const String slotDeleteInputLabel = '存档名';
+  static String slotDeleteConfirmFor(String name) => '删除「$name」？此举不可挽回。';
+  static String slotDeleteProtectionValue(String name) => '请输入：$name';
+  static const String slotRename = '重命名';
+  static const String slotRenameTitle = '命名此卷';
+  static const String slotRenameInputLabel = '存档名称';
+  static const String slotRenameClearHint = '留空则使用默认卷名';
+  static const String slotRenameSave = '保存';
+  static const String slotRecentBadge = '最近游玩';
+  static const String slotFounderLabel = '祖师';
+  static const String slotMainlineLabel = '主线';
+  static const String slotTowerLabel = '问鼎';
+  static const String slotLastPlayedNever = '尚未记录';
   static const String slotSwitch = '切换存档';
   static const String slotSwitchConfirm = '返回存档选择，切换到其它江湖？';
   static const String slotCancel = '取消';
   static const String slotEnter = '入此江湖';
   static String slotChapterProgress(int chapter, int cleared) =>
       '第 $chapter 章 · 已通关 $cleared 关';
+  static String slotTowerProgress(int floor) =>
+      floor <= 0 ? '未登塔' : '最高第 $floor 层';
+  static String slotFounderSummary(String founder, String realm) =>
+      '$founder · $realm';
+  static String slotLastPlayed(DateTime value) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${value.year}-${two(value.month)}-${two(value.day)} '
+        '${two(value.hour)}:${two(value.minute)}';
+  }
+
   static String slotCardTitle(int n) => '第 $n 卷';
   // 战斗交互重做 Phase 3:选关屏 per-stage「挂机自动 / 允许拖招」开关。
   static const String stageAutoPlayAuto = '自动';
@@ -1592,6 +1721,31 @@ class UiStrings {
   static const String skillCodexMultiplier = '倍率';
   static const String skillCodexCost = '内力';
   static const String skillCodexCooldown = '冷却';
+  static const String skillCodexManualSection = '秘本纲要';
+  static const String skillCodexSchool = '流派';
+  static const String skillCodexSchoolInherited = '承所属心法';
+  static const String skillCodexSchoolUnknown = '未记流派';
+  static const String skillCodexInterrupt = '破招';
+  static const String skillCodexProficiencyBenefit = '熟练收益';
+  static const String skillCodexTypicalUse = '典型用途';
+  static const String skillCodexInterruptCanBreak = '可打断蓄力';
+  static const String skillCodexInterruptCanBreakAndOpenWindow =
+      '可打断蓄力 · 命中开破绽';
+  static const String skillCodexInterruptOpenWindow = '命中开破绽';
+  static const String skillCodexInterruptNone = '不可破招';
+  static String skillCodexSchoolValue(String school, bool inherited) =>
+      inherited ? '$school · $skillCodexSchoolInherited' : school;
+  static String skillCodexProficiencyBenefitValue(
+    String current,
+    String? next,
+  ) => next == null ? current : '$current\n$next';
+  static const String skillCodexUseInterrupt = '留作敌方蓄力时截断关键招';
+  static const String skillCodexUseAoeUltimate = '群敌压阵时打出整场爆发';
+  static const String skillCodexUseSingleUltimate = '锁定首领或残血强敌收束战局';
+  static const String skillCodexUseAoePower = '清理多名敌人并压低全场血线';
+  static const String skillCodexUsePower = '常规爆发,用于压低关键目标';
+  static const String skillCodexUseJoint = '共鸣成形后用于高价值收尾';
+  static const String skillCodexUseNormal = '稳定出手,积累熟练与基础伤害';
   static const String skillCodexSectionSkills = '招式';
   static const String skillCodexSectionTechniques = '心法';
   static const String techniqueCodexEmpty = '心法未录，待入藏经。';
@@ -1892,7 +2046,9 @@ class UiStrings {
   static const String equipStatHealth = '血量';
   static const String equipStatSpeed = '速度';
   static const String loreEmptyPlaceholder = '典故待补';
-  static const String loreSectionDivider = '◇ 典故 ◇';
+  static const String loreSectionDivider = '◇ 器物志 ◇';
+  static String lorePresetTitle(int index) => '旧闻 $index';
+  static const String loreHolderMemoryTitle = '持有人记忆';
 
   // narrative_reader 翻页按钮。
   static const String narrativeReaderFinish = '完成';
@@ -2250,7 +2406,7 @@ class UiStrings {
   static const String injuryLightLabel = '带伤';
 
   /// 重伤状态标签：`重伤`。
-  static const String injuryHeavyLabel = '重伤';
+  static String get injuryHeavyLabel => combatTermLabel(CombatTerm.heavyInjury);
 
   /// 重伤疗养剩余提示：`内伤未愈 · 调息 <N>h`（h 向上取整）。
   static String injuryRecoveryHint(double hours) =>
@@ -2264,8 +2420,12 @@ class UiStrings {
     required double hours,
     required int attackPenaltyPct,
     required int internalForcePenaltyPct,
-  }) =>
-      '重伤 · 调息 ${hours.ceil()}h · 输出 -$attackPenaltyPct% · 内力上限 -$internalForcePenaltyPct%';
+  }) => combatTermGloss(
+    CombatTerm.heavyInjury,
+    hours: hours,
+    attackPenaltyPct: attackPenaltyPct,
+    internalForcePenaltyPct: internalForcePenaltyPct,
+  );
   static String injuryStatusLine(String name, String status) => '$name：$status';
   static const String injuryStatusRecoveryHint = '可闭关调息，或服用疗伤丹处理。';
   static const String injuryStatusRecoveryAction = '服用疗伤丹';
@@ -2420,6 +2580,16 @@ class UiStrings {
   static const String taohuaIslandSceneWorkshopBody = '精铁入炉，丹药与辅材各守配方。';
   static const String taohuaIslandSceneDock = '渡口';
   static const String taohuaIslandSceneDockBody = '暂作外出整备与后续工程留白。';
+  static const String taohuaIslandSceneMapTitle = '岛屿场景';
+  static String taohuaIslandSceneMapSummary(
+    int rawStored,
+    int workshopStored,
+  ) => '物产 $rawStored · 成品 $workshopStored';
+  static String taohuaIslandSceneHotspotMeta(int level, int stored) =>
+      'Lv.$level · $stored';
+  static String taohuaIslandSelectedBuildingTitle(String buildingName) =>
+      '$buildingName详情';
+  static const String taohuaIslandSelectedBuildingBody = '仓储、配方与修缮俱归此处。';
 
   /// 桃花岛总览状态摘要。
   static const String taohuaIslandStatusRawTitle = '当前物产';
@@ -2528,6 +2698,26 @@ class UiStrings {
 
   /// 产物名前缀：`产出：name`（§5.6 迁出中文字面量）。
   static String taohuaIslandOutputPrefix(String name) => '产出：$name';
+
+  /// 桃花岛生产队列可读化。
+  static String taohuaIslandCurrentGathering(String name) => '当前采集：$name';
+  static String taohuaIslandCurrentRecipe(String name) => '当前配方：$name';
+  static const String taohuaIslandCurrentRecipeNone = '当前配方：未选择';
+  static String taohuaIslandNextOutputIn(String duration) => '下一件：约 $duration';
+  static const String taohuaIslandNextOutputPaused = '下一件：停产中';
+  static const String taohuaIslandNextOutputFull = '下一件：仓满';
+  static String taohuaIslandFullStorageIn(String duration) => '满仓：约 $duration';
+  static const String taohuaIslandFullStorageNow = '满仓：已满';
+  static const String taohuaIslandFullStorageUnknown = '满仓：暂不可估';
+  static String taohuaIslandOutputUsage(String usage) => '去向：$usage';
+  static const String taohuaIslandOutputUsageNone = '去向：暂未形成消耗';
+  static String taohuaIslandDuration(double hours) {
+    if (hours <= 0) return '片刻';
+    final minutes = ((hours * 60) - 1e-6).ceil();
+    if (minutes < 60) return '$minutes 分';
+    final roundedHours = (hours - 1e-6).ceil();
+    return '${roundedHours}h';
+  }
 
   /// selectRecipe 不可达路径失败文案（notProcessor / recipeNotFound）。
   static const String taohuaIslandSelectRecipeFailed = '无法择此配方';
@@ -2650,7 +2840,8 @@ class UiStrings {
   static const String sweepPreviewNoMaterialHits = '未命中已知材料缺口';
   static const String sweepPreviewSkillManual = '秘籍解招';
   static const String sweepPreviewSkillFragment = '残页积累';
-  static const String sweepPreviewChargeSkill = '敌方蓄力技';
+  static String get sweepPreviewChargeSkill =>
+      '敌方${combatTermLabel(CombatTerm.charge)}技';
 
   static String sweepPreviewEquipmentDrops(int count) => '装备 $count 类';
 

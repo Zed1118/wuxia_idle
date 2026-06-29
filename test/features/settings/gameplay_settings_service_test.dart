@@ -14,11 +14,34 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final svc = GameplaySettingsService();
 
-    expect((await svc.load()).autoPlayDefault, isTrue,
-        reason: '用户拍板#3:已通关默认走自动战斗');
+    expect(
+      (await svc.load()).autoPlayDefault,
+      isTrue,
+      reason: '用户拍板#3:已通关默认走自动战斗',
+    );
 
-    await svc.save(const GameplaySettings(autoPlayDefault: false));
-    expect((await svc.load()).autoPlayDefault, isFalse,
-        reason: '关闭后持久化读回');
+    await svc.save(
+      const GameplaySettings(
+        autoPlayDefault: false,
+        battlePlaybackSpeed: BattlePlaybackSpeed.brisk,
+        textDensity: TextDensityPreference.compact,
+        reduceFlashing: true,
+      ),
+    );
+    final read = await svc.load();
+    expect(read.autoPlayDefault, isFalse, reason: '关闭后持久化读回');
+    expect(read.battlePlaybackSpeed, BattlePlaybackSpeed.brisk);
+    expect(read.textDensity, TextDensityPreference.compact);
+    expect(read.reduceFlashing, isTrue);
+  });
+
+  test('新增舒适性选项默认值保持现状', () async {
+    SharedPreferences.setMockInitialValues({});
+    final s = await GameplaySettingsService().load();
+
+    expect(s.battlePlaybackSpeed, BattlePlaybackSpeed.normal);
+    expect(s.textDensity, TextDensityPreference.standard);
+    expect(s.reduceFlashing, isFalse);
+    expect(s.scaledBattleIntervalMs(1000), 1000);
   });
 }

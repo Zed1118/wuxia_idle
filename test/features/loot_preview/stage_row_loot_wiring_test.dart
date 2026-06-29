@@ -76,6 +76,26 @@ void main() {
     expect(find.text(UiStrings.lootBucketShouTongBiDe), findsNothing);
   });
 
+  testWidgets('仅当前可挑战关显示自然目标提示', (tester) async {
+    await pumpScreen(
+      tester,
+      chapterIndex: 1,
+      progress: mkProgress(cleared: ['stage_01_01']),
+    );
+
+    expect(find.textContaining('打第1章第2关「荒山野店」'), findsOneWidget);
+    expect(
+      find.textContaining('打第1章第1关「山门之外」'),
+      findsNothing,
+      reason: '已通关不应继续显示为当前目标',
+    );
+    expect(
+      find.textContaining('打第1章第3关'),
+      findsNothing,
+      reason: '锁定/后续关不应抢当前目标',
+    );
+  });
+
   testWidgets('关卡标题区直接显示推荐境界与掉落名称，悬停不再弹预览浮层', (tester) async {
     await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
 

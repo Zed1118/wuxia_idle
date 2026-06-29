@@ -29,9 +29,12 @@ import '../../inner_demon/presentation/inner_demon_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../mass_battle/presentation/mass_battle_screen.dart';
+import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../../mainline/application/mainline_progress_service.dart';
+import '../../mainline/application/new_save_goal_guidance.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/domain/mainline_progress.dart';
+import '../../mainline/presentation/new_save_goal_guidance_view.dart';
 import '../../seclusion/application/seclusion_service_providers.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../../seclusion/domain/retreat_session.dart';
@@ -142,6 +145,7 @@ class MainMenu extends ConsumerWidget {
       orElse: () => <String>{},
     );
     final mainlineStatus = _mainlineMenuStatus(mainlineProgress);
+    final mainlineGoal = _mainlineGoalGuidance(mainlineProgress);
 
     final towerStatus = ref
         .watch(towerProgressProvider)
@@ -194,7 +198,9 @@ class MainMenu extends ConsumerWidget {
     final coreItems = <Widget>[
       WuxiaInkButton(
         label: UiStrings.mainMenuMainline,
-        hint: UiStrings.mainMenuMainlineHint,
+        hint: mainlineGoal == null
+            ? UiStrings.mainMenuMainlineHint
+            : NewSaveGoalText.mainMenuHint(mainlineGoal),
         icon: Icons.map_outlined,
         thumbnailPath: WuxiaUi.entryMainline,
         status: mainlineStatus,
@@ -221,6 +227,13 @@ class MainMenu extends ConsumerWidget {
         thumbnailPath: WuxiaUi.entryInventory,
         status: inventoryStatus,
         onTap: () => _push(context, const InventoryScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuResourceOverview,
+        hint: UiStrings.mainMenuResourceOverviewHint,
+        icon: Icons.account_balance_wallet_outlined,
+        thumbnailPath: WuxiaUi.entryInventory,
+        onTap: () => _push(context, const ResourceOverviewScreen()),
       ),
       _TechniqueMenuButton(
         characterId: _defaultCharacterId,
@@ -560,6 +573,24 @@ class MainMenu extends ConsumerWidget {
       }
     }
     return UiStrings.mainMenuMainlineCompleteStatus;
+  }
+
+  static NewSaveGoalGuidance? _mainlineGoalGuidance(
+    MainlineProgress? progress,
+  ) {
+    if (progress == null || !GameRepository.isLoaded) return null;
+    for (var chapterIndex = 1; chapterIndex <= 6; chapterIndex++) {
+      final entries = MainlineProgressService.availableStages(
+        progress: progress,
+        chapterIndex: chapterIndex,
+      );
+      final guidance = NewSaveGoalGuidance.fromChapterEntries(
+        chapterIndex: chapterIndex,
+        entries: entries,
+      );
+      if (guidance != null) return guidance;
+    }
+    return null;
   }
 
   static String _towerMenuStatus(TowerProgress progress) {

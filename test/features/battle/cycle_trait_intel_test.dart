@@ -36,6 +36,12 @@ void main() {
     expect(entries.map((e) => e.id), ['yuti', 'zhenqi']);
     expect(entries.map((e) => e.name), ['御体', '真气']);
     expect(entries.first.shortText, contains('8%'));
+    expect(entries.first.detailText, isNot(startsWith('御体：御体')));
+    expect(
+      entries.first.detailText,
+      contains(UiStrings.combatTermLabel(CombatTerm.yuti)),
+    );
+    expect(entries.first.detailText, isNot(contains('玉体')));
     expect(entries.last.detailText, contains('多放一次大招'));
     expect(
       CycleTraitIntel.summaryLabel(2, entries),

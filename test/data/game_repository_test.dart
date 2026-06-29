@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
+import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
@@ -36,10 +37,11 @@ void main() {
       // P2.1 Batch 2: 49 心法 × 3 = 147 + 18 lightfoot + 1 joint = 166
       // + P0.5: 破势 + 青锋绝 = 168;波A: + 截影 + 拂脉(三流派破招技)= 170
       // + 波B 24 招内容批: 真解 5 + 塔残页 6 + 章末重打残页 3 = 184
-      // + 40 encounter_skills.yaml = 224 total
-      expect(repo.skillDefs.length, 224,
-          reason: '184 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
-              ' + 14 波B 真解残页) + 40 奇遇招');
+      // + 开锋槽 3 装备专属技 21 = 205
+      // + 40 encounter_skills.yaml = 245 total
+      expect(repo.skillDefs.length, 245,
+          reason: '205 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+              ' + 14 波B 真解残页 + 21 开锋专属技) + 40 奇遇招');
       expect(repo.encounterSkillIds.length, 40,
           reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
       final mainlineCount = repo.stageDefs.values
@@ -71,7 +73,7 @@ void main() {
           reason: '心法相生 12 组合(P2.1 Batch 4 扩充,5 schoolPair + 1 sameSchool + 1 sameTier + 5 specificTechniques)');
     });
 
-    test('P1.1 A4：36 件 weapon specialSkillCandidates 2 候选 / 44 件 armor+accessory 留空', () async {
+    test('开锋槽 3：36 件 weapon 使用真正专属技候选 / 44 件 armor+accessory 留空', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final weapons = repo.equipmentDefs.values
           .where((e) => e.slot == EquipmentSlot.weapon)
@@ -84,11 +86,20 @@ void main() {
       expect(nonWeapons.length, 44, reason: '7 阶 × (armor 3 + accessory 3) + 2 特殊');
 
       for (final w in weapons) {
-        expect(w.specialSkillCandidates, hasLength(2),
-            reason: 'weapon ${w.id} 应配 2 个候选(skill + ult)');
+        expect(w.specialSkillCandidates, isNotEmpty,
+            reason: 'weapon ${w.id} 应配至少 1 个开锋专属技候选');
         for (final skillId in w.specialSkillCandidates) {
-          expect(repo.skillDefs.containsKey(skillId), isTrue,
+          final skill = repo.skillDefs[skillId];
+          expect(skill, isNotNull,
               reason: '${w.id} 引用的 $skillId 必须在 skills.yaml 中存在');
+          expect(skill!.source, SkillSource.special,
+              reason: '${w.id} 槽 3 候选必须是真正装备专属技,不能复用心法招');
+          expect(skill.parentTechniqueDefId, isNull,
+              reason: '${w.id} 槽 3 候选不得绑定心法体系');
+          expect(skill.tier, isNotNull,
+              reason: '$skillId 必须有 tier,由 canEquipAtRealm 守三系锁死');
+          expect(skill.style, isNotNull,
+              reason: '$skillId 必须有 style,用于展示流派与 build 识别');
         }
       }
       for (final e in nonWeapons) {

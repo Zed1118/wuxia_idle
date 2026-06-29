@@ -362,7 +362,7 @@ class _ConditionSection extends StatelessWidget {
                   ),
                 ],
                 if (hasHeavy) ...[
-                  const _ConditionChip(
+                  _ConditionChip(
                     label: UiStrings.injuryHeavyLabel,
                     color: WuxiaColors.hpLow,
                   ),

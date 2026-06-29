@@ -12,6 +12,8 @@ import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../battle/domain/cycle_trait_intel.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../injury/presentation/injury_status_view.dart';
+import '../../mainline/application/new_save_goal_guidance.dart';
+import '../../mainline/presentation/new_save_goal_guidance_view.dart';
 import '../domain/drop_rumor.dart';
 import 'loot_rumor_dialog.dart';
 
@@ -27,6 +29,7 @@ Future<void> showStageIntelDialog(
   RealmTier? currentRealm,
   int targetCycle = 1,
   List<Character> activeCharacters = const [],
+  NewSaveGoalGuidance? goalGuidance,
 }) {
   return PaperDialog.show<void>(
     context,
@@ -38,6 +41,7 @@ Future<void> showStageIntelDialog(
         currentRealm: currentRealm,
         targetCycle: targetCycle,
         activeCharacters: activeCharacters,
+        goalGuidance: goalGuidance,
       ),
     ),
     actions: [
@@ -58,6 +62,7 @@ class StageIntelContent extends StatelessWidget {
     this.currentRealm,
     this.targetCycle = 1,
     this.activeCharacters = const [],
+    this.goalGuidance,
   });
 
   final StageDef stage;
@@ -65,6 +70,7 @@ class StageIntelContent extends StatelessWidget {
   final RealmTier? currentRealm;
   final int targetCycle;
   final List<Character> activeCharacters;
+  final NewSaveGoalGuidance? goalGuidance;
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +92,14 @@ class StageIntelContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (goalGuidance != null)
+          _IntelSection(
+            title: UiStrings.stageGoalGuidanceTitle,
+            child: NewSaveGoalHintLine(
+              guidance: goalGuidance!,
+              padding: EdgeInsets.zero,
+            ),
+          ),
         _IntelSection(
           title: UiStrings.prebattleIntelEnemySection,
           child: _EnemyIntelList(enemies: stage.enemyTeam),
@@ -130,10 +144,7 @@ class _CycleTraitIntelList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (final entry in entries)
-          _IntelLine('${entry.name} · ${entry.detailText}'),
-      ],
+      children: [for (final entry in entries) _IntelLine(entry.detailText)],
     );
   }
 }

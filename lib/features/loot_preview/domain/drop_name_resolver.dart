@@ -16,8 +16,13 @@ abstract final class DropNameResolver {
     return GameRepository.instance.getEquipment(defId).tier;
   }
 
-  static String itemName(String defId) =>
-      EnumL10n.itemType(ItemType.fromDefId(defId));
+  static String itemName(String defId) {
+    if (GameRepository.isLoaded) {
+      final def = GameRepository.instance.itemDefs[defId];
+      if (def != null) return def.name;
+    }
+    return EnumL10n.itemType(ItemType.fromDefId(defId));
+  }
 
   static bool isAboveRealm(EquipmentTier tier, RealmTier currentRealm) =>
       tier.index > currentRealm.index;

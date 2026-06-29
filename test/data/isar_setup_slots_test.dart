@@ -3,9 +3,12 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 
 /// 多存档槽(spec B §3.1/§5):IsarSetup switchSlot / slotHasSave / listSlots /
 /// deleteSlot 隔离与生命周期。多 db 方案 → 切 db = 切全部数据,无串档。
@@ -56,6 +59,24 @@ void main() {
   test('slotHasSave / listSlots:混合有档+空槽摘要正确 + 无句柄泄漏', () async {
     await IsarSetup.switchSlot(1, directory: tempDir);
     await OnboardingService(isar: IsarSetup.instance).ensureFoundingMasters();
+    final save = (await IsarSetup.currentSaveData())!
+      ..slotName = '旧雨江湖'
+      ..lastOnlineAt = DateTime(2026, 6, 29, 9, 30);
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.saveDatas.put(save);
+      await IsarSetup.instance.mainlineProgress.put(
+        MainlineProgress()
+          ..saveDataId = 1
+          ..currentChapterIndex = 4
+          ..clearedStageIds = ['stage_01_01', 'stage_01_02'],
+      );
+      await IsarSetup.instance.towerProgress.put(
+        TowerProgress()
+          ..saveDataId = 1
+          ..highestClearedFloor = 12
+          ..createdAt = DateTime(2026, 6, 29),
+      );
+    });
     await IsarSetup.close();
 
     expect(await IsarSetup.slotHasSave(1, directory: tempDir), true);
@@ -65,8 +86,13 @@ void main() {
     expect(summaries.length, 3);
     expect(summaries[0].slotId, 1);
     expect(summaries[0].isEmpty, false);
+    expect(summaries[0].slotName, '旧雨江湖');
     expect(summaries[0].founderName, isNotNull);
     expect(summaries[0].realmDisplay, isNotNull);
+    expect(summaries[0].chapterIndex, 4);
+    expect(summaries[0].clearedStageCount, 2);
+    expect(summaries[0].highestTowerFloor, 12);
+    expect(summaries[0].isMostRecent, true);
     expect(summaries[2].isEmpty, true, reason: 'slot3 无 db → 空槽');
 
     // 读完只读实例必 close,无句柄泄漏。
@@ -80,8 +106,11 @@ void main() {
     // slot1 当前打开:list 后 slot1 仍打开(不被 list 关掉)。
     final summaries = await IsarSetup.listSlots(directory: tempDir);
     expect(summaries[0].isEmpty, false);
-    expect(Isar.getInstance('wuxia_save_slot1'), isNotNull,
-        reason: '当前槽 list 后仍打开');
+    expect(
+      Isar.getInstance('wuxia_save_slot1'),
+      isNotNull,
+      reason: '当前槽 list 后仍打开',
+    );
   });
 
   test('deleteSlot:删非当前槽 → slotHasSave=false + 文件移除', () async {
@@ -92,10 +121,7 @@ void main() {
 
     await IsarSetup.deleteSlot(1, directory: tempDir);
     expect(await IsarSetup.slotHasSave(1, directory: tempDir), false);
-    expect(
-      await File('${tempDir.path}/wuxia_save_slot1.isar').exists(),
-      false,
-    );
+    expect(await File('${tempDir.path}/wuxia_save_slot1.isar').exists(), false);
   });
 
   test('deleteSlot 当前槽:先 close 再删,实例置空', () async {
@@ -104,5 +130,18 @@ void main() {
     await IsarSetup.deleteSlot(1, directory: tempDir); // 删当前槽
     expect(IsarSetup.instanceOrNull, isNull, reason: '删当前档后实例置空');
     expect(await IsarSetup.slotHasSave(1, directory: tempDir), false);
+  });
+
+  test('renameSlot:复用 SaveData.slotName,空白可清回默认卷名', () async {
+    await IsarSetup.switchSlot(1, directory: tempDir);
+    await OnboardingService(isar: IsarSetup.instance).ensureFoundingMasters();
+
+    await IsarSetup.renameSlot(1, '  夜雨档  ', directory: tempDir);
+    var summaries = await IsarSetup.listSlots(directory: tempDir);
+    expect(summaries[0].slotName, '夜雨档');
+
+    await IsarSetup.renameSlot(1, '   ', directory: tempDir);
+    summaries = await IsarSetup.listSlots(directory: tempDir);
+    expect(summaries[0].slotName, isNull);
   });
 }
