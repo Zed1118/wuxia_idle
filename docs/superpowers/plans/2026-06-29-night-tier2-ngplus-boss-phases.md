@@ -18,19 +18,19 @@
 
 ## 任务切片
 
-1. 读取必读文档与当前 main 合入状态，确认分支与边界。
-2. 写计划文件并提交恢复点。
-3. 扩展 Boss 阶段配置 schema：新增按周目覆盖字段，复用 `BossPhaseDef`。
-4. 接入战斗 setup：按 `cycleIndex` 选择运行时 Boss phases，仅影响敌方快照。
-5. 配置代表性主线/塔 Boss 的二周目以上阶段差异，避免覆盖一周目基础机制。
-6. 补 targeted tests：解析、红线、setup、关键配置诊断。
-7. 跑 targeted tests / analyze，按结果修正。
-8. 更新 backlog/PROGRESS 与本计划恢复点，做收尾提交。
+1. [x] 读取必读文档与当前 main 合入状态，确认分支与边界。
+2. [x] 写计划文件并提交恢复点。
+3. [x] 扩展 Boss 阶段配置 schema：新增按周目覆盖字段，复用 `BossPhaseDef`。
+4. [x] 接入战斗 setup：按 `cycleIndex` 选择运行时 Boss phases，仅影响敌方快照。
+5. [x] 配置代表性主线/塔 Boss 的二周目以上阶段差异，避免覆盖一周目基础机制。
+6. [x] 补 targeted tests：解析、红线、setup、关键配置诊断。
+7. [x] 跑 targeted tests / analyze，按结果修正。
+8. [x] 更新 backlog/PROGRESS 与本计划恢复点，做收尾提交。
 
 ## 当前恢复点
 
-- 状态：已开始，文档阅读完成；当前 worktree 从包含 `7fd27826`、`21c31ec1`、`b47393ae`、`b2e3612a` 的最新 main detached HEAD 切出分支。
-- 最后完成：确认任务属于 `docs/spec/playability_phase2_backlog.md` 第二梯队「高周目 Boss 阶段差异」，未命中 `/Users/a10506/Desktop/挂机武侠_已否任务.md` 的禁止方向。
-- 下一步：提交本计划文件，然后实现 `cycleBossPhases` 配置层与 setup 运行时选择。
-- 已跑验证：尚未跑测试；仅做文档/代码结构读取。
-- 阻塞项：CodeGraph 未初始化于当前 worktree，按项目说明未擅自执行 `codegraph init -i`，暂用 `rg` 与定向文件读取推进。
+- 状态：完成，待主窗口复核/合并。
+- 最后完成：`cycleBossPhases` schema、运行时选择、主线 6 个章末 Boss 与塔 10/20/25/30 高周目覆盖配置、targeted tests、backlog/PROGRESS 同步均已完成。
+- 下一步：主窗口复核分支 `codex/night-tier2-ngplus-boss-phases`；如需更细手感，再跑 tower/mainline 体感诊断或真机目检。
+- 已跑验证：`dart run build_runner build --delete-conflicting-outputs`（工具提示该参数已移除但生成成功，未产生 git diff）；`flutter analyze` 0 issue；`flutter test --no-pub -j1 test/data/defs/defs_test.dart test/data/boss_phase_redline_test.dart test/features/battle/enemy_cycle_scale_test.dart test/data/ngplus_boss_phase_config_test.dart` 61 passed。
+- 阻塞项：无。备注：首次不带 `-j1` 的同组 targeted test 在 Flutter tool native-assets 路径触发 `Bad state: No element` 崩溃，重跑 `-j1` 已通过；CodeGraph 未初始化于当前 worktree，按项目说明未擅自执行 `codegraph init -i`。
