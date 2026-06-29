@@ -98,15 +98,15 @@
 
 ### 2026-06-28 晚间第二梯队
 
-- [ ] **周目敌人词条可视化**:二周目、三周目的真气/玉体等词条在关卡行和战前情报里解释清楚,让周目差异不只是暗中变难。
+- [x] **周目敌人词条可视化**(2026-06-29 合 `codex/night-tier2-cycle-trait-visibility` merge `8cddab47`):新增 `CycleTraitIntel` 纯函数,关卡行 chip + 战前情报「周目词条」段解释二/三周目真气/御体/反震等词条;纯展示零结算改动(用「御体」对齐 lore/代码,避开 backlog「玉体」笔误)。
 - [x] **闭关地图专属小产出**:2026-06-29 完成(`codex/night-tier2-seclusion-map-yields`)。五张闭关地图均走 `retreat.maps[].base_outputs.item_outputs_per_hour` 配轻量特色产出:山林药草、古剑冢锻材、藏经阁开锋辅材、悬崖瀑布灵泉水、断崖绝壁高阶混合;复用 `SeclusionService.computeOutputs/completeRetreat` 同源结算,守在线=离线。
-- [ ] **扫荡前收益预估**:一键扫荡前显示预计主收益类型、可能掉落、熟练度方向和材料缺口命中,不改变收益,只让决策更清楚。
-- [ ] **角色伤势状态表现增强**:伤势不只在数值里体现,在角色卡、战斗前、战后摘要中有明确状态文案和恢复入口。
-- [ ] **闭关溢出保护**:闭关达到收益上限后,主界面和回归卡提示已满,并给一键收功入口;不提高收益上限。
+- [x] **扫荡前收益预估**(2026-06-29 合 `codex/night-tier2-sweep-preview` merge `64e77ed2`):新增 `SweepRewardPreview` 只读派生,整章扫荡前显示主收益类型/可能掉落/熟练度方向/材料缺口命中;不改实际扫荡结算。
+- [x] **角色伤势状态表现增强**(2026-06-29 合 `codex/night-tier2-injury-state-visibility` merge `168dacd1`):新增 `InjuryStatusFormatter/Panel`,角色卡/战前情报/战后摘要显示伤势状态文案 + 复用 `ItemUseService` 疗伤丹恢复入口;不改伤势数值/结算。
+- [x] **闭关溢出保护**(2026-06-29 合 `codex/night-tier2-seclusion-cap-protection` merge `706f42e2`):闭关达 `cap_hours` 上限后主菜单/回归卡显示「收益已满」+ 一键收功入口;不提高上限、复用既有收功逻辑。
 - [x] **高周目 Boss 阶段差异**(2026-06-29 `codex/night-tier2-ngplus-boss-phases`):新增 `cycleBossPhases` 配置覆盖层,二周目以上主线章末 Boss + 塔 10/20/25/30 可切换更早阶段/技能顺序;一周目 `bossPhases` 原样保留,塔 20/25/30 第一梯队机制不覆盖。
-- [ ] **主线章节推荐刷点**:每章通关后标出 1-2 个适合刷材料/熟练度/装备的关卡,但不追踪个人缺口。
-- [ ] **桃花岛建筑协同加成**:建筑之间形成固定协同,例如灵泉提升丹房产能、矿洞支援锻造台,不做随机或限时。
-- [ ] **闭关地图解锁门槛可读化**:地图未解锁时展示需要的境界/章节/材料条件,减少灰按钮困惑。
+- [x] **主线章节推荐刷点**(2026-06-29 合 `codex/night-tier2-mainline-farm-spots` merge `e3be2c82`):整章通关后每章标 ≤2 个高价值刷点(刷装备/材料/熟练度),从既有 `MainlineReplayRewardRoute` 静态派生;不追踪个人缺口、无新存档字段。
+- [x] **桃花岛建筑协同加成**(2026-06-29 合 `codex/night-tier2-taohua-building-synergy` merge `a1a90d48`):新增 `taohua_island.synergies` 固定协同(铁匠厂→打造台/灵泉→丹房/木工坊→铸造台,+0.02/级 ≤+10%);走 settle 即时计算守在线=离线不变性,无 schema/saveVer。
+- [ ] **闭关地图解锁门槛可读化**(2026-06-29 暂缓合并 · `codex/night-tier2-seclusion-unlock-readable-2`):实装对所有 locked 地图静态显示「章节:第一章通关后开放」「材料:无额外消耗」,但闭关入图实际只有境界一维门控(`canEnterMap` 仅比 realm),章节/材料门槛是伪造文案会误导玩家且测试已固化假文案。是否只显示真实境界门槛(改动最小)或落地真实章节/材料门控属产品决策,待用户拍板后重做。旧 `codex/night-tier2-seclusion-unlock-readable`(无 -2)0 提交空壳已排除。
 
 ### 2026-06-28 晚间本轮暂缓
 
