@@ -42,16 +42,32 @@ class SaveSelectScreen extends ConsumerWidget {
     if (ok && context.mounted) await _enterSlot(context, ref, n);
   }
 
-  Future<void> _deleteSlot(BuildContext context, WidgetRef ref, int n) async {
-    final ok = await _confirm(
+  Future<void> _renameSlot(
+    BuildContext context,
+    WidgetRef ref,
+    SlotSummary summary,
+  ) async {
+    final name = await _renameDialog(context, summary);
+    if (name == null) return;
+    await IsarSetup.renameSlot(summary.slotId, name);
+    ref.invalidate(slotListProvider);
+  }
+
+  Future<void> _deleteSlot(
+    BuildContext context,
+    WidgetRef ref,
+    SlotSummary summary,
+  ) async {
+    final displayName = _slotDisplayName(summary);
+    final ok = await _confirmDelete(
       context,
       title: UiStrings.slotDelete,
-      body: UiStrings.slotDeleteConfirm,
+      body: UiStrings.slotDeleteConfirmFor(displayName),
+      requiredName: displayName,
       action: UiStrings.slotDelete,
-      destructive: true,
     );
     if (!ok) return;
-    await IsarSetup.deleteSlot(n);
+    await IsarSetup.deleteSlot(summary.slotId);
     ref.invalidate(slotListProvider); // 删后刷新槽列表
   }
 
@@ -66,28 +82,159 @@ class SaveSelectScreen extends ConsumerWidget {
       context: context,
       builder: (c) => AlertDialog(
         backgroundColor: WuxiaColors.panel,
-        title: Text(title,
-            style: const TextStyle(color: WuxiaColors.resultHighlight)),
-        content: Text(body,
-            style: const TextStyle(color: WuxiaColors.textSecondary)),
+        title: Text(
+          title,
+          style: const TextStyle(color: WuxiaColors.resultHighlight),
+        ),
+        content: Text(
+          body,
+          style: const TextStyle(color: WuxiaColors.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text(UiStrings.slotCancel,
-                style: TextStyle(color: WuxiaColors.textMuted)),
+            child: const Text(
+              UiStrings.slotCancel,
+              style: TextStyle(color: WuxiaColors.textMuted),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(c, true),
-            child: Text(action,
-                style: TextStyle(
-                    color: destructive
-                        ? WuxiaColors.danger
-                        : WuxiaColors.resultHighlight)),
+            child: Text(
+              action,
+              style: TextStyle(
+                color: destructive
+                    ? WuxiaColors.danger
+                    : WuxiaColors.resultHighlight,
+              ),
+            ),
           ),
         ],
       ),
     );
     return r ?? false;
+  }
+
+  Future<String?> _renameDialog(
+    BuildContext context,
+    SlotSummary summary,
+  ) async {
+    var currentName = summary.slotName ?? '';
+    return showDialog<String?>(
+      context: context,
+      builder: (c) => AlertDialog(
+        backgroundColor: WuxiaColors.panel,
+        title: const Text(
+          UiStrings.slotRenameTitle,
+          style: TextStyle(color: WuxiaColors.resultHighlight),
+        ),
+        content: TextFormField(
+          initialValue: currentName,
+          onChanged: (value) => currentName = value,
+          autofocus: true,
+          style: const TextStyle(color: WuxiaColors.textPrimary),
+          decoration: const InputDecoration(
+            labelText: UiStrings.slotRenameInputLabel,
+            helperText: UiStrings.slotRenameClearHint,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text(
+              UiStrings.slotCancel,
+              style: TextStyle(color: WuxiaColors.textMuted),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, currentName),
+            child: const Text(
+              UiStrings.slotRenameSave,
+              style: TextStyle(color: WuxiaColors.resultHighlight),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool> _confirmDelete(
+    BuildContext context, {
+    required String title,
+    required String body,
+    required String requiredName,
+    required String action,
+  }) async {
+    var typedName = '';
+    final r = await showDialog<bool>(
+      context: context,
+      builder: (c) => StatefulBuilder(
+        builder: (context, setState) {
+          final canDelete = typedName.trim() == requiredName;
+          return AlertDialog(
+            backgroundColor: WuxiaColors.panel,
+            title: Text(
+              title,
+              style: const TextStyle(color: WuxiaColors.resultHighlight),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    body,
+                    style: const TextStyle(color: WuxiaColors.textSecondary),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    UiStrings.slotDeleteProtectionValue(requiredName),
+                    style: const TextStyle(color: WuxiaColors.textMuted),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    autofocus: true,
+                    onChanged: (value) => setState(() => typedName = value),
+                    style: const TextStyle(color: WuxiaColors.textPrimary),
+                    decoration: const InputDecoration(
+                      labelText: UiStrings.slotDeleteInputLabel,
+                      helperText: UiStrings.slotDeleteProtectionHint,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(c, false),
+                child: const Text(
+                  UiStrings.slotCancel,
+                  style: TextStyle(color: WuxiaColors.textMuted),
+                ),
+              ),
+              TextButton(
+                onPressed: canDelete ? () => Navigator.pop(c, true) : null,
+                child: Text(
+                  action,
+                  style: TextStyle(
+                    color: canDelete
+                        ? WuxiaColors.danger
+                        : WuxiaColors.textMuted,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    return r ?? false;
+  }
+
+  static String _slotDisplayName(SlotSummary summary) {
+    final name = summary.slotName?.trim();
+    if (name != null && name.isNotEmpty) return name;
+    return UiStrings.slotCardTitle(summary.slotId);
   }
 
   @override
@@ -99,8 +246,10 @@ class SaveSelectScreen extends ConsumerWidget {
         child: Center(
           child: slotsAsync.when(
             loading: () => const CircularProgressIndicator(),
-            error: (e, _) => Text('$e',
-                style: const TextStyle(color: WuxiaColors.textSecondary)),
+            error: (e, _) => Text(
+              '$e',
+              style: const TextStyle(color: WuxiaColors.textSecondary),
+            ),
             data: (slots) => SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -123,9 +272,12 @@ class SaveSelectScreen extends ConsumerWidget {
                       onTap: () => s.isEmpty
                           ? _confirmNewGame(context, ref, s.slotId)
                           : _enterSlot(context, ref, s.slotId),
+                      onRename: s.isEmpty
+                          ? null
+                          : () => _renameSlot(context, ref, s),
                       onDelete: s.isEmpty
                           ? null
-                          : () => _deleteSlot(context, ref, s.slotId),
+                          : () => _deleteSlot(context, ref, s),
                     ),
                 ],
               ),
@@ -141,19 +293,18 @@ class _SlotCard extends StatelessWidget {
   const _SlotCard({
     required this.summary,
     required this.onTap,
+    this.onRename,
     this.onDelete,
   });
 
   final SlotSummary summary;
   final VoidCallback onTap;
+  final VoidCallback? onRename;
   final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
-    final subtitle = summary.isEmpty
-        ? UiStrings.slotSaveEmpty
-        : '${summary.founderName} · ${summary.realmDisplay}\n'
-            '${UiStrings.slotChapterProgress(summary.chapterIndex, summary.clearedStageCount)}';
+    final displayName = SaveSelectScreen._slotDisplayName(summary);
     return Container(
       width: 380,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 24),
@@ -162,35 +313,196 @@ class _SlotCard extends StatelessWidget {
         border: Border.all(color: WuxiaColors.border),
         borderRadius: BorderRadius.circular(6),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-        title: Text(
-          UiStrings.slotCardTitle(summary.slotId),
-          style: const TextStyle(
-            color: WuxiaColors.resultHighlight,
-            fontSize: 18,
-            letterSpacing: 2,
-          ),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            subtitle,
-            style: const TextStyle(
-                color: WuxiaColors.textSecondary, height: 1.4),
-          ),
-        ),
-        isThreeLine: !summary.isEmpty,
+      child: InkWell(
         onTap: onTap,
-        trailing: onDelete == null
-            ? const Icon(Icons.chevron_right, color: WuxiaColors.textMuted)
-            : IconButton(
-                icon: const Icon(Icons.delete_outline,
-                    color: WuxiaColors.textMuted),
-                tooltip: UiStrings.slotDelete,
-                onPressed: onDelete,
-              ),
+        borderRadius: BorderRadius.circular(6),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          child: summary.isEmpty
+              ? _EmptySlot(title: displayName)
+              : _FilledSlot(
+                  summary: summary,
+                  displayName: displayName,
+                  onRename: onRename,
+                  onDelete: onDelete,
+                ),
+        ),
       ),
     );
   }
+}
+
+class _EmptySlot extends StatelessWidget {
+  const _EmptySlot({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: WuxiaColors.resultHighlight,
+                fontSize: 18,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              UiStrings.slotSaveEmpty,
+              style: TextStyle(color: WuxiaColors.textSecondary),
+            ),
+          ],
+        ),
+      ),
+      const Icon(Icons.chevron_right, color: WuxiaColors.textMuted),
+    ],
+  );
+}
+
+class _FilledSlot extends StatelessWidget {
+  const _FilledSlot({
+    required this.summary,
+    required this.displayName,
+    this.onRename,
+    this.onDelete,
+  });
+
+  final SlotSummary summary;
+  final String displayName;
+  final VoidCallback? onRename;
+  final VoidCallback? onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final lastPlayed = summary.lastPlayed == null
+        ? UiStrings.slotLastPlayedNever
+        : UiStrings.slotLastPlayed(summary.lastPlayed!);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          displayName,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: WuxiaColors.resultHighlight,
+                            fontSize: 18,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ),
+                      if (summary.isMostRecent) ...[
+                        const SizedBox(width: 8),
+                        const _RecentBadge(),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    UiStrings.slotFounderSummary(
+                      summary.founderName ?? '',
+                      summary.realmDisplay ?? '',
+                    ),
+                    style: const TextStyle(color: WuxiaColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.edit_outlined,
+                color: WuxiaColors.textMuted,
+              ),
+              tooltip: UiStrings.slotRename,
+              onPressed: onRename,
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.delete_outline,
+                color: WuxiaColors.textMuted,
+              ),
+              tooltip: UiStrings.slotDelete,
+              onPressed: onDelete,
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: [
+            _MetaPill(
+              label: UiStrings.slotMainlineLabel,
+              value: UiStrings.slotChapterProgress(
+                summary.chapterIndex,
+                summary.clearedStageCount,
+              ),
+            ),
+            _MetaPill(
+              label: UiStrings.slotTowerLabel,
+              value: UiStrings.slotTowerProgress(summary.highestTowerFloor),
+            ),
+            _MetaPill(
+              label: UiStrings.saveManagementLastOnlineAt,
+              value: lastPlayed,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _RecentBadge extends StatelessWidget {
+  const _RecentBadge();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+    decoration: BoxDecoration(
+      color: WuxiaColors.resultHighlight.withValues(alpha: 0.12),
+      border: Border.all(color: WuxiaColors.resultHighlight),
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: const Text(
+      UiStrings.slotRecentBadge,
+      style: TextStyle(color: WuxiaColors.resultHighlight, fontSize: 11),
+    ),
+  );
+}
+
+class _MetaPill extends StatelessWidget {
+  const _MetaPill({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+    decoration: BoxDecoration(
+      color: WuxiaColors.background,
+      border: Border.all(color: WuxiaColors.border),
+      borderRadius: BorderRadius.circular(4),
+    ),
+    child: Text(
+      '$label $value',
+      style: const TextStyle(color: WuxiaColors.textSecondary, fontSize: 12),
+    ),
+  );
 }
