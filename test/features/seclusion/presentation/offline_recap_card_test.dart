@@ -61,7 +61,9 @@ void main() {
       find.text(UiStrings.offlineRecapRetreatGainGroupTitle),
       findsOneWidget,
     );
+    expect(find.text(UiStrings.offlineRecapMaterialGroupTitle), findsOneWidget);
     expect(find.text(UiStrings.offlineRecapCollectGroupTitle), findsOneWidget);
+    expect(find.text(UiStrings.offlineRecapParityDetail), findsOneWidget);
     expect(find.text(UiStrings.offlineRecapSilverDetail(45)), findsOneWidget);
     expect(
       find.text(UiStrings.offlineRecapExperienceDetail(300)),
@@ -73,7 +75,9 @@ void main() {
     );
     expect(find.textContaining('招式熟练度：0'), findsNothing);
     expect(
-      find.textContaining(UiStrings.offlineRecapDropPending),
+      find.text(
+        UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapDropPending),
+      ),
       findsOneWidget,
     );
     expect(
