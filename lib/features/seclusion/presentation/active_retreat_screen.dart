@@ -143,6 +143,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
     final endStr = _formatTime(
       session.startedAt.add(Duration(hours: session.durationHours)),
     );
+    final now = DateTime.now();
     final progress = _progress;
     final done = _isDone;
 
@@ -204,11 +205,15 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                                 children: [
                                   Padding(
                                     padding: const EdgeInsets.only(right: 14),
-                                    child: SeclusionMapTraitIcon(def: def, size: 50),
+                                    child: SeclusionMapTraitIcon(
+                                      def: def,
+                                      size: 50,
+                                    ),
                                   ),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         const _StateSeal(),
                                         const SizedBox(height: 10),
@@ -242,6 +247,12 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                                 start: startStr,
                                 end: endStr,
                                 hours: session.durationHours,
+                              ),
+                              const SizedBox(height: 12),
+                              _ActiveRetreatStatusCard(
+                                session: session,
+                                mapDef: def,
+                                now: now,
                               ),
                               const SizedBox(height: 22),
                               const SectionHeader(
@@ -401,6 +412,146 @@ class _TimeRangePanel extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ActiveRetreatStatusCard extends StatelessWidget {
+  const _ActiveRetreatStatusCard({
+    required this.session,
+    required this.mapDef,
+    required this.now,
+  });
+
+  final RetreatSession session;
+  final SeclusionMapDef mapDef;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final elapsed = now.difference(session.startedAt);
+    final rewardLabels = _rewardLabels(mapDef);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.32),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: WuxiaUi.ink2.withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            UiStrings.activeRetreatStatusCardTitle,
+            style: TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _StatusChip(
+                text: UiStrings.activeRetreatStatusLocation(mapDef.mapName),
+              ),
+              _StatusChip(
+                text: UiStrings.activeRetreatElapsed(_formatElapsed(elapsed)),
+              ),
+              _StatusChip(
+                text: UiStrings.activeRetreatPlannedHours(
+                  session.durationHours,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            UiStrings.activeRetreatExpectedTypes,
+            style: TextStyle(
+              color: WuxiaUi.muted,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            UiStrings.activeRetreatRewardTypes(rewardLabels.join(' / ')),
+            style: const TextStyle(
+              color: WuxiaUi.ink2,
+              fontSize: 13,
+              height: 1.45,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static List<String> _rewardLabels(SeclusionMapDef def) {
+    final labels = <String>[];
+    if (def.mojianshiPerHour > 0) {
+      labels.add(UiStrings.activeRetreatRewardMojianshi);
+    }
+    if (def.experiencePerHour > 0) {
+      labels.add(UiStrings.activeRetreatRewardExperience);
+    }
+    if (def.silverPerHour > 0) {
+      labels.add(UiStrings.activeRetreatRewardSilver);
+    }
+    if (def.techniqueLearnRate > 0) {
+      labels.add(UiStrings.activeRetreatRewardTechnique);
+    }
+    if (def.internalForceGrowth > 0) {
+      labels.add(UiStrings.activeRetreatRewardInternalForce);
+    }
+    for (final itemId in def.itemOutputsPerHour.keys) {
+      final itemName =
+          GameRepository.instanceOrNull?.itemDefs[itemId]?.name ?? itemId;
+      labels.add(itemName);
+    }
+    if (def.equipmentDropRate > 0) {
+      labels.add(UiStrings.activeRetreatRewardEquipment);
+    }
+    return labels;
+  }
+
+  static String _formatElapsed(Duration elapsed) {
+    final safe = elapsed.isNegative ? Duration.zero : elapsed;
+    final hours = safe.inHours;
+    final minutes = safe.inMinutes.remainder(60);
+    return '${hours}h${minutes.toString().padLeft(2, '0')}min';
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.ink2.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: WuxiaUi.ink2.withValues(alpha: 0.28)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: WuxiaUi.ink2,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }
