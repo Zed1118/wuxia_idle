@@ -1816,6 +1816,9 @@ class UiStrings {
   static const String encounterCodexLocked = '？？？';
   static const String encounterCodexNotMet = '尚未际遇';
   static const String encounterCodexDetailTitle = '奇缘录';
+  static const String encounterCodexNoteLabel = '江湖札记';
+  static const String encounterCodexTriggeredStatus = '已收入札记';
+  static const String encounterCodexLockedStatus = '未际遇';
   // ── 藏经阁2.0 武学收录图鉴(P4 子项6) ──
   static const String baikeTabSkills = '武学';
   static String skillCodexProgress(int got, int total) => '已习 $got/$total';
@@ -1901,6 +1904,13 @@ class UiStrings {
   static const String codexUnlockedHintLabel = '已解锁';
   static String codexUnlockedHint(int unlocked, int total) =>
       '$codexUnlockedHintLabel $unlocked / $total';
+  static const String codexMechanicSectionTitle = '机制卷宗';
+  static const String codexMechanicSectionSubtitle = '修行、战斗与器用规矩';
+  static const String codexLoreSectionSubtitle = '门派、江湖与器物旧闻';
+  static String codexMechanicVolumeLabel(int step) => '第$step卷';
+  static const String codexLoreVolumeLabel = '书册';
+  static const String codexUnlockedStatus = '可翻阅';
+  static const String codexLockedStatus = '未启封';
   // P2 扩段:江湖背景段标题(永久可查,与 8 档机制分段)
   static const String codexLoreSectionTitle = '江湖背景';
 
