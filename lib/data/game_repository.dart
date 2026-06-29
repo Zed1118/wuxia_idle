@@ -8,6 +8,7 @@ import '../features/encounter/domain/encounter_event_loader.dart';
 import '../features/sect/domain/territory_def.dart';
 import 'codex_loader.dart';
 import 'defs/equipment_def.dart';
+import 'defs/boss_phase_def.dart';
 import 'defs/master_def.dart';
 import 'defs/recruit_candidate_def.dart';
 import 'defs/realm_def.dart';
@@ -1717,40 +1718,43 @@ class GameRepository {
     Set<String> skillIdSet, {
     Iterable<TowerFloorDef> towerFloors = const [],
   }) {
+    void checkPhases({
+      required Iterable<BossPhaseDef> phases,
+      required String label,
+    }) {
+      for (final phase in phases) {
+        for (final sid in phase.unlockSkillIds) {
+          if (!skillIdSet.contains(sid)) {
+            throw StateError(
+              '$label bossPhase hpThresholdPct='
+              '${phase.hpThresholdPct} unlockSkillIds 引用 $sid '
+              '未在 skills.yaml 中存在（批二①红线）',
+            );
+          }
+        }
+      }
+    }
+
+    void checkEnemy({required EnemyDef enemy, required String label}) {
+      final phases = enemy.bossPhases;
+      if (phases != null) {
+        checkPhases(phases: phases, label: label);
+      }
+      for (final entry in enemy.cycleBossPhases.entries) {
+        checkPhases(phases: entry.value, label: '$label cycle ${entry.key}');
+      }
+    }
+
     // Stage enemies: label includes stage id for locatability.
     for (final s in stages.values) {
       for (final e in s.enemyTeam) {
-        final phases = e.bossPhases;
-        if (phases == null) continue;
-        for (final phase in phases) {
-          for (final sid in phase.unlockSkillIds) {
-            if (!skillIdSet.contains(sid)) {
-              throw StateError(
-                'stage ${s.id} 敌人 ${e.id} bossPhase hpThresholdPct='
-                '${phase.hpThresholdPct} unlockSkillIds 引用 $sid '
-                '未在 skills.yaml 中存在（批二①红线）',
-              );
-            }
-          }
-        }
+        checkEnemy(enemy: e, label: 'stage ${s.id} 敌人 ${e.id}');
       }
     }
     // Tower-floor enemies: label includes floorIndex for locatability.
     for (final f in towerFloors) {
       for (final e in f.enemyTeam) {
-        final phases = e.bossPhases;
-        if (phases == null) continue;
-        for (final phase in phases) {
-          for (final sid in phase.unlockSkillIds) {
-            if (!skillIdSet.contains(sid)) {
-              throw StateError(
-                'tower floor ${f.floorIndex} 敌人 ${e.id} bossPhase hpThresholdPct='
-                '${phase.hpThresholdPct} unlockSkillIds 引用 $sid '
-                '未在 skills.yaml 中存在（批二①红线）',
-              );
-            }
-          }
-        }
+        checkEnemy(enemy: e, label: 'tower floor ${f.floorIndex} 敌人 ${e.id}');
       }
     }
   }

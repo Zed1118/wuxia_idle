@@ -18,38 +18,39 @@ EnemyDef _enemy({
   String id = 'boss_x',
   bool isBoss = true,
   List<BossPhaseDef>? bossPhases,
-}) =>
-    EnemyDef(
-      id: id,
-      name: '测试Boss',
-      realmTier: RealmTier.erLiu,
-      realmLayer: RealmLayer.qiMeng,
-      school: TechniqueSchool.gangMeng,
-      baseHp: 5000,
-      baseAttack: 200,
-      baseSpeed: 50,
-      skillIds: const ['skill_normal'],
-      iconPath: 'x.png',
-      isBoss: isBoss,
-      bossPhases: bossPhases,
-    );
+  Map<int, List<BossPhaseDef>> cycleBossPhases = const {},
+}) => EnemyDef(
+  id: id,
+  name: '测试Boss',
+  realmTier: RealmTier.erLiu,
+  realmLayer: RealmLayer.qiMeng,
+  school: TechniqueSchool.gangMeng,
+  baseHp: 5000,
+  baseAttack: 200,
+  baseSpeed: 50,
+  skillIds: const ['skill_normal'],
+  iconPath: 'x.png',
+  isBoss: isBoss,
+  bossPhases: bossPhases,
+  cycleBossPhases: cycleBossPhases,
+);
 
 TowerFloorDef _towerFloor(int floorIndex, List<EnemyDef> team) => TowerFloorDef(
-      floorIndex: floorIndex,
-      requiredRealm: RealmTier.erLiu,
-      enemyTeam: team,
-    );
+  floorIndex: floorIndex,
+  requiredRealm: RealmTier.erLiu,
+  enemyTeam: team,
+);
 
 StageDef _stage(String id, List<EnemyDef> team) => StageDef(
-      id: id,
-      name: '测试关',
-      stageType: StageType.mainline,
-      requiredRealm: RealmTier.erLiu,
-      enemyTeam: team,
-      isBossStage: false,
-      baseExpReward: 100,
-      difficultyMultiplier: 1.0,
-    );
+  id: id,
+  name: '测试关',
+  stageType: StageType.mainline,
+  requiredRealm: RealmTier.erLiu,
+  enemyTeam: team,
+  isBossStage: false,
+  baseExpReward: 100,
+  difficultyMultiplier: 1.0,
+);
 
 // ── tests ───────────────────────────────────────────────────────────────────
 
@@ -65,12 +66,14 @@ void main() {
           ),
         ],
       );
-      final stages = {'s1': _stage('s1', [enemy])};
+      final stages = {
+        's1': _stage('s1', [enemy]),
+      };
       expect(
-        () => GameRepository.enforceBossPhaseSkillIds(
-          stages,
-          {'skill_normal', 'skill_rage'},
-        ),
+        () => GameRepository.enforceBossPhaseSkillIds(stages, {
+          'skill_normal',
+          'skill_rage',
+        }),
         returnsNormally,
       );
     });
@@ -85,12 +88,11 @@ void main() {
           ),
         ],
       );
-      final stages = {'s1': _stage('s1', [enemy])};
+      final stages = {
+        's1': _stage('s1', [enemy]),
+      };
       expect(
-        () => GameRepository.enforceBossPhaseSkillIds(
-          stages,
-          {'skill_normal'},
-        ),
+        () => GameRepository.enforceBossPhaseSkillIds(stages, {'skill_normal'}),
         throwsA(
           isA<StateError>().having(
             (e) => e.message,
@@ -103,7 +105,9 @@ void main() {
 
     test('bossPhases==null 的敌人跳过，不抛', () {
       final mob = _enemy(id: 'mob', isBoss: false, bossPhases: null);
-      final stages = {'s1': _stage('s1', [mob])};
+      final stages = {
+        's1': _stage('s1', [mob]),
+      };
       expect(
         () => GameRepository.enforceBossPhaseSkillIds(stages, {}),
         returnsNormally,
@@ -117,10 +121,63 @@ void main() {
           const BossPhaseDef(hpThresholdPct: 0.5),
         ],
       );
-      final stages = {'s1': _stage('s1', [enemy])};
+      final stages = {
+        's1': _stage('s1', [enemy]),
+      };
       expect(
         () => GameRepository.enforceBossPhaseSkillIds(stages, {}),
         returnsNormally,
+      );
+    });
+
+    test('cycleBossPhases unlockSkillIds 全在 skillIdSet → 不抛', () {
+      final enemy = _enemy(
+        bossPhases: [const BossPhaseDef(hpThresholdPct: 1.0)],
+        cycleBossPhases: {
+          2: [
+            const BossPhaseDef(hpThresholdPct: 1.0),
+            const BossPhaseDef(
+              hpThresholdPct: 0.8,
+              unlockSkillIds: ['skill_cycle_rage'],
+            ),
+          ],
+        },
+      );
+      final stages = {
+        's1': _stage('s1', [enemy]),
+      };
+      expect(
+        () => GameRepository.enforceBossPhaseSkillIds(stages, {
+          'skill_cycle_rage',
+        }),
+        returnsNormally,
+      );
+    });
+
+    test('cycleBossPhases unlockSkillIds 引用不存在 id → 抛 StateError 含 cycle', () {
+      final enemy = _enemy(
+        cycleBossPhases: {
+          2: [
+            const BossPhaseDef(hpThresholdPct: 1.0),
+            const BossPhaseDef(
+              hpThresholdPct: 0.8,
+              unlockSkillIds: ['skill_cycle_missing'],
+            ),
+          ],
+        },
+      );
+      final stages = {
+        's1': _stage('s1', [enemy]),
+      };
+      expect(
+        () => GameRepository.enforceBossPhaseSkillIds(stages, {'skill_normal'}),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('skill_cycle_missing'), contains('cycle 2')),
+          ),
+        ),
       );
     });
   });
@@ -140,7 +197,9 @@ void main() {
         () => GameRepository.enforceBossPhaseSkillIds(
           {},
           {'skill_tower_rage'},
-          towerFloors: [_towerFloor(10, [enemy])],
+          towerFloors: [
+            _towerFloor(10, [enemy]),
+          ],
         ),
         returnsNormally,
       );
@@ -160,7 +219,9 @@ void main() {
         () => GameRepository.enforceBossPhaseSkillIds(
           {},
           {'skill_normal'},
-          towerFloors: [_towerFloor(10, [enemy])],
+          towerFloors: [
+            _towerFloor(10, [enemy]),
+          ],
         ),
         throwsA(
           isA<StateError>().having(
@@ -178,7 +239,9 @@ void main() {
         () => GameRepository.enforceBossPhaseSkillIds(
           {},
           {},
-          towerFloors: [_towerFloor(3, [mob])],
+          towerFloors: [
+            _towerFloor(3, [mob]),
+          ],
         ),
         returnsNormally,
       );

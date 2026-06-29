@@ -471,7 +471,7 @@ class StageBattleSetup {
     // 一 getSkill 查法),与 bossPhases 下标对齐。战中 strategy 只读这些预解析字段,
     // 不再回查 GameRepository(BattleCharacter 派生快照不查 Isar 约定)。
     // 非 Boss / 未配 bossPhases → 三字段全默认(index 0 / null / null)。
-    final List<BossPhaseDef>? bossPhases = enemy.bossPhases;
+    final List<BossPhaseDef>? bossPhases = enemy.bossPhasesForCycle(cycleIndex);
     final List<List<SkillDef>>? bossPhaseUnlockSkills = bossPhases == null
         ? null
         : [
