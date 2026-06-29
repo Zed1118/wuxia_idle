@@ -29,6 +29,7 @@ import '../../inner_demon/presentation/inner_demon_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../mass_battle/presentation/mass_battle_screen.dart';
+import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../../mainline/application/mainline_progress_service.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/domain/mainline_progress.dart';
@@ -221,6 +222,13 @@ class MainMenu extends ConsumerWidget {
         thumbnailPath: WuxiaUi.entryInventory,
         status: inventoryStatus,
         onTap: () => _push(context, const InventoryScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuResourceOverview,
+        hint: UiStrings.mainMenuResourceOverviewHint,
+        icon: Icons.account_balance_wallet_outlined,
+        thumbnailPath: WuxiaUi.entryInventory,
+        onTap: () => _push(context, const ResourceOverviewScreen()),
       ),
       _TechniqueMenuButton(
         characterId: _defaultCharacterId,
