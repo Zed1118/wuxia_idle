@@ -322,15 +322,19 @@ class GameRepository {
 
     // W18-A1:心法相生 yaml(允许 test fixture 不带,空 list)。生产路径
     // 红线校验在 _enforceSynergyRedLines 强制 ≥ 5 + multiplier 范围。
-    List<SynergyDef> synergies = const [];
-    try {
-      final synergiesRaw = parseYamlMap(await load('data/synergies.yaml'));
-      synergies = ((synergiesRaw['synergies'] as List?) ?? const [])
-          .map((e) => SynergyDef.fromYaml(Map<String, dynamic>.from(e as Map)))
-          .toList(growable: false);
-    } catch (e) {
-      // test fixture 不带 synergies.yaml 时静默
-    }
+    final synergies = await _loadOptionalAsset(
+      load,
+      'data/synergies.yaml',
+      (raw) {
+        final synergiesRaw = parseYamlMap(raw);
+        return ((synergiesRaw['synergies'] as List?) ?? const [])
+            .map(
+              (e) => SynergyDef.fromYaml(Map<String, dynamic>.from(e as Map)),
+            )
+            .toList(growable: false);
+      },
+      fallback: const <SynergyDef>[],
+    );
 
     // P1.z 机制百科 md(graceful;档 8 缺失或 fixture 不带均允许空 map)。
     final codexList = await CodexLoader.loadAll(loader: load);
@@ -339,53 +343,66 @@ class GameRepository {
     };
 
     // P4.1 §12.2 territories.yaml(graceful;fixture 不带 yaml 时空 map)。
-    Map<String, TerritoryDef> territoryDefs = const {};
-    try {
-      final territoriesRaw = parseYamlList(await load('data/territories.yaml'));
-      final defs = territoriesRaw
-          .map(
-            (raw) =>
-                TerritoryDef.fromYaml(Map<String, dynamic>.from(raw as Map)),
-          )
-          .toList(growable: false);
-      territoryDefs = {for (final d in defs) d.id: d};
-    } catch (e) {
-      // test fixture 不带 territories.yaml 时静默,生产路径由 B4 红线校验。
-    }
+    final territoryDefs = await _loadOptionalAsset(
+      load,
+      'data/territories.yaml',
+      (raw) {
+        final territoriesRaw = parseYamlList(raw);
+        final defs = territoriesRaw
+            .map(
+              (r) => TerritoryDef.fromYaml(Map<String, dynamic>.from(r as Map)),
+            )
+            .toList(growable: false);
+        return {for (final d in defs) d.id: d};
+      },
+      fallback: const <String, TerritoryDef>{},
+    );
 
     // P1.2 factions.yaml → factionId→alignment 映射(graceful;fixture 不带时空 map)。
-    Map<String, String> factionAlignments = const {};
-    try {
-      final factionsRaw = parseYamlMap(await load('data/factions.yaml'));
-      final list = (factionsRaw['factions'] as List?) ?? const [];
-      factionAlignments = {
-        for (final f in list)
-          (f as Map)['id'] as String: (f)['alignment'] as String,
-      };
-    } catch (_) {}
+    final factionAlignments = await _loadOptionalAsset(
+      load,
+      'data/factions.yaml',
+      (raw) {
+        final factionsRaw = parseYamlMap(raw);
+        final list = (factionsRaw['factions'] as List?) ?? const [];
+        return <String, String>{
+          for (final f in list)
+            (f as Map)['id'] as String: (f)['alignment'] as String,
+        };
+      },
+      fallback: const <String, String>{},
+    );
 
     // 材料经济 P1 shop.yaml(graceful;fixture 不带 yaml 时空 map)。
     // 生产路径红线校验在 _enforceShopRedLines 拦标价越界。
-    Map<String, ShopItemDef> shopItemDefs = const {};
-    try {
-      final shopRaw = parseYamlMap(await load('data/shop.yaml'));
-      shopItemDefs = _parseDefMap(
-        shopRaw['shop'] as List,
-        ShopItemDef.fromYaml,
-        idOf: (d) => d.id,
-      );
-    } catch (_) {}
+    final shopItemDefs = await _loadOptionalAsset(
+      load,
+      'data/shop.yaml',
+      (raw) {
+        final shopRaw = parseYamlMap(raw);
+        return _parseDefMap(
+          shopRaw['shop'] as List,
+          ShopItemDef.fromYaml,
+          idOf: (d) => d.id,
+        );
+      },
+      fallback: const <String, ShopItemDef>{},
+    );
 
     // 材料经济 P2 items.yaml(graceful;fixture 不带 yaml 时空 map)。
-    Map<String, ItemDef> itemDefs = const {};
-    try {
-      final itemsRaw = parseYamlMap(await load('data/items.yaml'));
-      itemDefs = _parseDefMap(
-        itemsRaw['items'] as List,
-        ItemDef.fromYaml,
-        idOf: (d) => d.defId,
-      );
-    } catch (_) {}
+    final itemDefs = await _loadOptionalAsset(
+      load,
+      'data/items.yaml',
+      (raw) {
+        final itemsRaw = parseYamlMap(raw);
+        return _parseDefMap(
+          itemsRaw['items'] as List,
+          ItemDef.fromYaml,
+          idOf: (d) => d.defId,
+        );
+      },
+      fallback: const <String, ItemDef>{},
+    );
 
     final repo = GameRepository._(
       numbers: numbers,
@@ -413,6 +430,32 @@ class GameRepository {
     await _validateEncounterEventReferences(encounterDefs, load);
     _instance = repo;
     return repo;
+  }
+
+  /// 加载可选 yaml asset(P0-1 2026-06-29 审查修复)。区分两类异常:
+  /// - `load(assetPath)` 抛 → 文件不存在/不可读(test fixture 不带某 yaml 的
+  ///   合法情况,或生产 asset 缺失)→ 返回 [fallback],静默。
+  /// - `load` 成功但 [parse] 抛 → yaml 存在但损坏/字段类型错 → 抛
+  ///   [FormatException] 附文件名 rethrow,**不再静默降级**(此前 `catch (_) {}`
+  ///   会把损坏 yaml 吞成空,致商店空架/道具失效/阵营 wire 断链而玩家无感知,
+  ///   启动也不 fail-fast)。缺失走红线层 `isEmpty return` 跳过,损坏在此拦下。
+  static Future<T> _loadOptionalAsset<T>(
+    Future<String> Function(String) load,
+    String assetPath,
+    T Function(String raw) parse, {
+    required T fallback,
+  }) async {
+    final String raw;
+    try {
+      raw = await load(assetPath);
+    } catch (_) {
+      return fallback;
+    }
+    try {
+      return parse(raw);
+    } catch (e) {
+      throw FormatException('解析 $assetPath 失败(yaml 损坏或字段类型错误): $e');
+    }
   }
 
   /// 查 [factionId] 的对立阵营所有 faction id。
