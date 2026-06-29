@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/defs/stage_def.dart';
+import '../../../data/game_repository.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../battle/application/selected_cycle_provider.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../battle/domain/cycle_trait_intel.dart';
 import '../../battle/presentation/cycle_select_control.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/domain/stage_difficulty.dart';
@@ -153,6 +155,7 @@ class StageListScreen extends ConsumerWidget {
                       stageIndex: i + 1,
                       def: entries[i].def,
                       status: statusFor(entries[i]),
+                      targetCycle: cycleFor(),
                       currentRealm: currentRealm,
                       onTap: statusFor(entries[i]) == StageStatus.locked
                           ? null
@@ -352,6 +355,7 @@ class _StageRow extends StatelessWidget {
     required this.stageIndex,
     required this.def,
     required this.status,
+    required this.targetCycle,
     required this.onTap,
     this.currentRealm,
   });
@@ -359,6 +363,7 @@ class _StageRow extends StatelessWidget {
   final int stageIndex;
   final StageDef def;
   final StageStatus status;
+  final int targetCycle;
   final VoidCallback? onTap;
   final RealmTier? currentRealm;
 
@@ -376,6 +381,12 @@ class _StageRow extends StatelessWidget {
     final rumor = DropRumorTable.fromDropTable(
       def.dropTable,
       gating: FirstClearGating.scrollOnly,
+    );
+    final cycleTraits = CycleTraitIntel.entriesFor(
+      config: GameRepository.instance.numbers.cycleEvolution,
+      cycle: targetCycle,
+      isBoss: def.isBossStage,
+      isTower: false,
     );
     return Material(
       color: Colors.transparent,
@@ -485,6 +496,11 @@ class _StageRow extends StatelessWidget {
                       recommendedRealm: def.requiredRealm,
                       playerRealm: currentRealm,
                     ),
+                    if (cycleTraits.isNotEmpty)
+                      _CycleTraitSummaryLine(
+                        cycle: targetCycle,
+                        entries: cycleTraits,
+                      ),
                     // 批二②:通关后战前可查 Boss 弱点/抗性(未通关 / 无配置 → shrink)。
                     WeaknessHintLine(
                       enemyTeam: def.enemyTeam,
@@ -512,6 +528,7 @@ class _StageRow extends StatelessWidget {
                   stage: def,
                   rumorTable: rumor,
                   currentRealm: currentRealm,
+                  targetCycle: targetCycle,
                 ),
               ),
               const SizedBox(width: 8),
@@ -526,6 +543,80 @@ class _StageRow extends StatelessWidget {
   String _subtitleFor(StageDef def, StageStatus status) {
     if (status == StageStatus.locked) return UiStrings.stageListPrevHint;
     return UiStrings.stageListEnemyCount(def.enemyTeam.length);
+  }
+}
+
+class _CycleTraitSummaryLine extends StatelessWidget {
+  const _CycleTraitSummaryLine({required this.cycle, required this.entries});
+
+  final int cycle;
+  final List<CycleTraitIntelEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: CycleTraitIntel.summaryLabel(cycle, entries),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Wrap(
+          spacing: 6,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.auto_fix_high,
+                  size: 13,
+                  color: WuxiaColors.textMuted,
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  UiStrings.cycleNthLabel(cycle),
+                  style: const TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            for (final entry in entries) _CycleTraitChip(entry: entry),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CycleTraitChip extends StatelessWidget {
+  const _CycleTraitChip({required this.entry});
+
+  final CycleTraitIntelEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaColors.internalForce.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: WuxiaColors.internalForce.withValues(alpha: 0.42),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        child: Text(
+          '${entry.name} · ${entry.shortText}',
+          style: const TextStyle(
+            color: WuxiaColors.internalForce,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
   }
 }
 
