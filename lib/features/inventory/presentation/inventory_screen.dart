@@ -336,9 +336,12 @@ class _InventorySummaryPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          PlaqueButton(
-            label: UiStrings.equipmentBulkEntry,
-            onTap: onBulkDisposal,
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 118),
+            child: PlaqueButton(
+              label: UiStrings.equipmentBulkEntry,
+              onTap: onBulkDisposal,
+            ),
           ),
         ],
       ),
@@ -525,26 +528,30 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: selected
-              ? WuxiaColors.textPrimary.withValues(alpha: 0.15)
-              : WuxiaColors.panel,
-          border: Border.all(
-            color: selected ? WuxiaColors.textPrimary : WuxiaColors.border,
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 36),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: selected
+                ? WuxiaColors.textPrimary.withValues(alpha: 0.15)
+                : WuxiaColors.panel,
+            border: Border.all(
+              color: selected ? WuxiaColors.textPrimary : WuxiaColors.border,
+            ),
+            borderRadius: BorderRadius.circular(4),
           ),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? WuxiaColors.textPrimary : WuxiaColors.textMuted,
-            fontSize: 12,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? WuxiaColors.textPrimary : WuxiaColors.textMuted,
+              fontSize: 12,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            ),
           ),
         ),
       ),
@@ -593,10 +600,13 @@ class _MaterialTab extends ConsumerWidget {
                 ),
               ),
               const Spacer(),
-              PlaqueButton(
-                label: UiStrings.inventoryShopEntry,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const ShopScreen()),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 104),
+                child: PlaqueButton(
+                  label: UiStrings.inventoryShopEntry,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => const ShopScreen()),
+                  ),
                 ),
               ),
             ],
@@ -903,7 +913,7 @@ class _EquipmentSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 332,
+      width: 348,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: WuxiaUi.paper.withValues(alpha: 0.45),
@@ -960,9 +970,12 @@ class _EquipmentSummaryCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: PlaqueButton(
-                    label: UiStrings.equipmentCardActionView,
-                    onTap: onView,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: 96),
+                    child: PlaqueButton(
+                      label: UiStrings.equipmentCardActionView,
+                      onTap: onView,
+                    ),
                   ),
                 ),
               ],

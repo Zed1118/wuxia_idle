@@ -161,7 +161,9 @@ class _Body extends StatelessWidget {
                   Expanded(
                     child: Container(
                       height: 1,
-                      color: WuxiaColors.resultHighlight.withValues(alpha: 0.42),
+                      color: WuxiaColors.resultHighlight.withValues(
+                        alpha: 0.42,
+                      ),
                     ),
                   ),
                   Padding(
@@ -180,7 +182,9 @@ class _Body extends StatelessWidget {
                   Expanded(
                     child: Container(
                       height: 1,
-                      color: WuxiaColors.resultHighlight.withValues(alpha: 0.42),
+                      color: WuxiaColors.resultHighlight.withValues(
+                        alpha: 0.42,
+                      ),
                     ),
                   ),
                 ],
@@ -750,39 +754,59 @@ class _TechniqueTile extends ConsumerWidget {
               ],
               const Spacer(),
               if (!isMain && character.mainTechniqueId != null)
-                TextButton(
-                  onPressed: () => _onSetAsMain(context, ref),
-                  style: TextButton.styleFrom(
-                    foregroundColor: schoolColor,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
+                SizedBox(
+                  height: 38,
+                  child: TextButton(
+                    onPressed: () => _onSetAsMain(context, ref),
+                    style: TextButton.styleFrom(
+                      foregroundColor: schoolColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      minimumSize: const Size(96, 38),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        side: BorderSide(
+                          color: schoolColor.withValues(alpha: 0.42),
+                        ),
+                      ),
                     ),
+                    child: const Text(UiStrings.setAsMainButton),
                   ),
-                  child: const Text(UiStrings.setAsMainButton),
                 ),
               // 根因A:主修可凝练领悟点(闭关挂机攒的 insightPoints)兑换修炼度。
               // H1 批3:入口常驻显点数,0 点时灰显不可点(原靠点击后 SnackBar
               // 才知,§5.7 让玩家先感知状态)。
               if (isMain)
-                TextButton(
-                  onPressed: character.insightPoints > 0
-                      ? () => _onRefineInsight(context, ref)
-                      : null,
-                  style: TextButton.styleFrom(
-                    foregroundColor: schoolColor,
-                    disabledForegroundColor: WuxiaColors.textMuted,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
+                SizedBox(
+                  height: 38,
+                  child: TextButton(
+                    onPressed: character.insightPoints > 0
+                        ? () => _onRefineInsight(context, ref)
+                        : null,
+                    style: TextButton.styleFrom(
+                      foregroundColor: schoolColor,
+                      disabledForegroundColor: WuxiaColors.textMuted,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      minimumSize: const Size(118, 38),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                        side: BorderSide(
+                          color:
+                              (character.insightPoints > 0
+                                      ? schoolColor
+                                      : WuxiaColors.textMuted)
+                                  .withValues(alpha: 0.42),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    character.insightPoints > 0
-                        ? UiStrings.refineInsightButtonWithPoints(
-                            character.insightPoints,
-                          )
-                        : UiStrings.refineInsightButtonEmpty,
+                    child: Text(
+                      character.insightPoints > 0
+                          ? UiStrings.refineInsightButtonWithPoints(
+                              character.insightPoints,
+                            )
+                          : UiStrings.refineInsightButtonEmpty,
+                    ),
                   ),
                 ),
             ],

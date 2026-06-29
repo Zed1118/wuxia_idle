@@ -1179,20 +1179,26 @@ class _EquipmentSection extends ConsumerWidget {
     EquipmentSlot slot,
     int? equipmentId,
   ) {
-    return InkWell(
-      // 2026-06-26:点槽一步到位进居中两栏对话框(候选mini-diff + 全量对比)。
-      onTap: () => showDialog<void>(
-        context: context,
-        builder: (_) => EquipSlotDialog(
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(WuxiaUi.radius),
+        hoverColor: WuxiaUi.gold.withValues(alpha: 0.08),
+        highlightColor: WuxiaUi.gold.withValues(alpha: 0.12),
+        // 2026-06-26:点槽一步到位进居中两栏对话框(候选mini-diff + 全量对比)。
+        onTap: () => showDialog<void>(
+          context: context,
+          builder: (_) => EquipSlotDialog(
+            character: character,
+            slot: slot,
+            currentId: equipmentId,
+          ),
+        ),
+        child: _EquipmentSlotTile(
           character: character,
           slot: slot,
-          currentId: equipmentId,
+          equipmentId: equipmentId,
         ),
-      ),
-      child: _EquipmentSlotTile(
-        character: character,
-        slot: slot,
-        equipmentId: equipmentId,
       ),
     );
   }

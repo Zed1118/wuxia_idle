@@ -516,27 +516,36 @@ class _InfoCard extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: PlaqueButton(
-                    label:
-                        '${UiStrings.equipmentActionStrengthen} +${equipment.enhanceLevel}',
-                    primary: true,
-                    onTap: onEnhance,
+                  child: SizedBox(
+                    height: 42,
+                    child: PlaqueButton(
+                      label:
+                          '${UiStrings.equipmentActionStrengthen} +${equipment.enhanceLevel}',
+                      primary: true,
+                      onTap: onEnhance,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: PlaqueButton(
-                    label: UiStrings.equipmentActionForge,
-                    onTap: onForge,
+                  child: SizedBox(
+                    height: 42,
+                    child: PlaqueButton(
+                      label: UiStrings.equipmentActionForge,
+                      onTap: onForge,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: PlaqueButton(
-                    label: equipment.isLocked
-                        ? UiStrings.equipmentUnlock
-                        : UiStrings.equipmentLock,
-                    onTap: onLockToggle,
+                  child: SizedBox(
+                    height: 42,
+                    child: PlaqueButton(
+                      label: equipment.isLocked
+                          ? UiStrings.equipmentUnlock
+                          : UiStrings.equipmentLock,
+                      onTap: onLockToggle,
+                    ),
                   ),
                 ),
               ],
@@ -546,16 +555,22 @@ class _InfoCard extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(
-                    child: PlaqueButton(
-                      label: UiStrings.equipmentSell,
-                      onTap: onSell,
+                    child: SizedBox(
+                      height: 42,
+                      child: PlaqueButton(
+                        label: UiStrings.equipmentSell,
+                        onTap: onSell,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: PlaqueButton(
-                      label: UiStrings.equipmentDisassemble,
-                      onTap: onDisassemble,
+                    child: SizedBox(
+                      height: 42,
+                      child: PlaqueButton(
+                        label: UiStrings.equipmentDisassemble,
+                        onTap: onDisassemble,
+                      ),
                     ),
                   ),
                 ],
