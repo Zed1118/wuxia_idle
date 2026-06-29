@@ -241,6 +241,20 @@ stages:
             aiMode: aggressive
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.80
+              unlockSkillIds:
+                - skill_yinrou_jichu_fang_skill
+              aiMode: focus
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.45
+              unlockSkillIds:
+                - skill_yinrou_jichu_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
     isBossStage: true
     factionId: shaolin                              # Ch1 竹林 Boss · 少林地盘(orthodox)
     bossRecruit:                                  # P4.1 1.1 Q6B · 战胜后 40% rng pick 招降
@@ -473,6 +487,20 @@ stages:
         iconPath: assets/enemies/qingshan_main.png
         isBoss: true
         chargeSkillId: skill_qingshan_qingfeng      # P0.5 破招 · 招牌蓄力技「青锋绝」(玩家用破势拦截)
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.75
+              unlockSkillIds:
+                - skill_lingqiao_changlian_fang_skill
+              aiMode: focus
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.40
+              unlockSkillIds:
+                - skill_lingqiao_changlian_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
     isBossStage: true
     factionId: jiaoMen                             # Ch2 大漠 Boss · 邪教地盘(evil)
     npcId: cijianzhuang_assassin                 # P1.2 §6 占位 · 1.1+ 接入真 NPC schema
@@ -703,6 +731,20 @@ stages:
         iconPath: assets/enemies/huiyi.png
         isBoss: true
         chargeSkillId: skill_qian_jun_zhui_yue      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.75
+              unlockSkillIds:
+                - skill_yinrou_mingjia_fang_skill
+              aiMode: focus
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.40
+              unlockSkillIds:
+                - skill_yinrou_mingjia_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
     isBossStage: true
     factionId: wudang                              # Ch3 山林 Boss · 武当地盘(orthodox)
     npcId: jiaoMen_shidi                         # P1.2 §6 占位
@@ -946,6 +988,20 @@ stages:
         iconPath: assets/enemies/xiliangbazhu.png
         isBoss: true
         chargeSkillId: skill_feng_juan_liu_sha      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.78
+              unlockSkillIds:
+                - skill_yinrou_jianghu_fang_skill
+              aiMode: focus
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.42
+              unlockSkillIds:
+                - skill_yinrou_jianghu_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
     isBossStage: true
     factionId: cijianzhuang                        # Ch4 西出阳关 Boss · 刺剑庄(evil)
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
@@ -1183,6 +1239,20 @@ stages:
         iconPath: assets/enemies/xiliang_sandizi.png
         isBoss: true
         chargeSkillId: skill_shi_dang_shi_jue      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.78
+              unlockSkillIds:
+                - skill_yinrou_shichuan_fang_skill
+              aiMode: focus
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.42
+              unlockSkillIds:
+                - skill_yinrou_shichuan_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
     isBossStage: true
     factionId: emei                                # Ch5 中原 Boss · 峨眉地盘(orthodox)
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降
@@ -1430,6 +1500,20 @@ stages:
         iconPath: assets/enemies/xiliang_bazhu.png
         isBoss: true
         chargeSkillId: skill_yang_guan_wu_gu_ren      # 波B 破招:蓄力技(玩家破招拦截,首通掉同招真解)
+        cycleBossPhases:
+          2:
+            - hpThresholdPct: 1.0
+            - hpThresholdPct: 0.82
+              unlockSkillIds:
+                - skill_yinrou_chuanshuo_fang_skill
+              aiMode: focus
+              titleKey: bossPhase_desperate
+            - hpThresholdPct: 0.45
+              unlockSkillIds:
+                - skill_yinrou_chuanshuo_fang_ult
+              aiMode: aggressive
+              onEnterMechanic: chargeCounter
+              titleKey: bossPhase_desperate
     isBossStage: true
     factionId: luLin                               # Ch6 昆仑 Boss · 绿林(neutral)
     bossRecruit:                                  # 1.1 池扩 · 战胜后 40% rng pick 招降

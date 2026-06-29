@@ -220,6 +220,11 @@ class EnemyDef {
   /// skill id 须在 skills.yaml 中存在（`enforceBossPhaseSkillIds` 校验）。
   final List<BossPhaseDef>? bossPhases;
 
+  /// 高周目 Boss 阶段覆盖配置。key=周目数（2 起），value=该周目起使用的
+  /// 完整阶段列表。运行时取 `<= cycleIndex` 的最高 key；未命中则回落
+  /// [bossPhases]。用于二周目以上追加阶段/技能顺序差异，不改一周目基础机制。
+  final Map<int, List<BossPhaseDef>> cycleBossPhases;
+
   /// 批二②：按攻方流派的弱点/抗性受伤乘子（null = 无弱点抗性，全 ×1.0）。
   /// key=攻方 [TechniqueSchool]，value>1.0 弱点（多受伤）/ <1.0 抗性（少受伤）。
   /// 与三流派克制对称，叠乘在伤害末端（Task 7 由 caller 透传到 DamageCalculator
@@ -241,6 +246,7 @@ class EnemyDef {
     this.isBoss = false,
     this.chargeSkillId,
     this.bossPhases,
+    this.cycleBossPhases = const {},
     this.schoolDamageTakenMult,
   });
 
@@ -263,6 +269,7 @@ class EnemyDef {
       bossPhases: y['bossPhases'] == null
           ? null
           : BossPhaseDef.parseList(y['bossPhases'] as List),
+      cycleBossPhases: _parseCycleBossPhases(y['cycleBossPhases'] as Map?),
       schoolDamageTakenMult: y['schoolDamageTakenMult'] == null
           ? null
           : (y['schoolDamageTakenMult'] as Map).map(
@@ -272,6 +279,33 @@ class EnemyDef {
               ),
             ),
     );
+  }
+
+  static Map<int, List<BossPhaseDef>> _parseCycleBossPhases(Map? raw) {
+    if (raw == null || raw.isEmpty) return const {};
+    final result = <int, List<BossPhaseDef>>{};
+    for (final entry in raw.entries) {
+      final cycle = entry.key is int
+          ? entry.key as int
+          : int.parse(entry.key.toString());
+      if (cycle < 2) {
+        throw StateError('cycleBossPhases key 必须 >= 2（收到 $cycle）');
+      }
+      result[cycle] = BossPhaseDef.parseList(entry.value as List);
+    }
+    return Map.unmodifiable(result);
+  }
+
+  List<BossPhaseDef>? bossPhasesForCycle(int cycleIndex) {
+    if (cycleIndex <= 1 || cycleBossPhases.isEmpty) return bossPhases;
+    int? selectedCycle;
+    for (final cycle in cycleBossPhases.keys) {
+      if (cycle <= cycleIndex &&
+          (selectedCycle == null || cycle > selectedCycle)) {
+        selectedCycle = cycle;
+      }
+    }
+    return selectedCycle == null ? bossPhases : cycleBossPhases[selectedCycle];
   }
 
   @override
