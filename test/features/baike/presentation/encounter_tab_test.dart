@@ -8,36 +8,55 @@ import 'package:wuxia_idle/features/baike/presentation/encounter_detail_screen.d
 import 'package:wuxia_idle/shared/strings.dart';
 
 EncounterDef _def(String id) => EncounterDef(
-      id: id, type: EncounterType.techniqueInsight,
-      trigger: const EncounterTrigger(), baseProbability: 0.1, outcomeMapping: const {});
+  id: id,
+  type: EncounterType.techniqueInsight,
+  trigger: const EncounterTrigger(),
+  baseProbability: 0.1,
+  outcomeMapping: const {},
+);
 
 void main() {
   testWidgets('点亮+剪影混态渲染 + 进度', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final groups = [
-      EncounterCodexGroup(kind: EncounterGroupKind.insight, triggeredCount: 1, entries: [
-        EncounterCodexEntry(def: _def('a'), isTriggered: true, title: '听雨悟剑'),
-        EncounterCodexEntry(def: _def('b'), isTriggered: false),
-      ]),
+      EncounterCodexGroup(
+        kind: EncounterGroupKind.insight,
+        triggeredCount: 1,
+        entries: [
+          EncounterCodexEntry(def: _def('a'), isTriggered: true, title: '听雨悟剑'),
+          EncounterCodexEntry(def: _def('b'), isTriggered: false),
+        ],
+      ),
     ];
-    await tester.pumpWidget(ProviderScope(
-      overrides: [encounterCodexProvider.overrideWith((ref) async => groups)],
-      child: const MaterialApp(home: Scaffold(body: EncounterTab())),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [encounterCodexProvider.overrideWith((ref) async => groups)],
+        child: const MaterialApp(home: Scaffold(body: EncounterTab())),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('听雨悟剑'), findsOneWidget);
     expect(find.text(UiStrings.encounterCodexLocked), findsWidgets); // 剪影 ???
+    expect(find.text(UiStrings.encounterCodexNoteLabel), findsNWidgets(2));
+    expect(find.text(UiStrings.encounterCodexTriggeredStatus), findsOneWidget);
+    expect(find.text(UiStrings.encounterCodexLockedStatus), findsOneWidget);
     expect(find.text(UiStrings.encounterCodexProgress(1, 2)), findsOneWidget);
   });
 
   testWidgets('空态:groups 为空→空提示,不甩剪影墙', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(ProviderScope(
-      overrides: [encounterCodexProvider.overrideWith((ref) async => <EncounterCodexGroup>[])],
-      child: const MaterialApp(home: Scaffold(body: EncounterTab())),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          encounterCodexProvider.overrideWith(
+            (ref) async => <EncounterCodexGroup>[],
+          ),
+        ],
+        child: const MaterialApp(home: Scaffold(body: EncounterTab())),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.encounterCodexEmpty), findsOneWidget);
   });
@@ -46,15 +65,21 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(800, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final groups = [
-      EncounterCodexGroup(kind: EncounterGroupKind.insight, triggeredCount: 0, entries: [
-        EncounterCodexEntry(def: _def('a'), isTriggered: false),
-        EncounterCodexEntry(def: _def('b'), isTriggered: false),
-      ]),
+      EncounterCodexGroup(
+        kind: EncounterGroupKind.insight,
+        triggeredCount: 0,
+        entries: [
+          EncounterCodexEntry(def: _def('a'), isTriggered: false),
+          EncounterCodexEntry(def: _def('b'), isTriggered: false),
+        ],
+      ),
     ];
-    await tester.pumpWidget(ProviderScope(
-      overrides: [encounterCodexProvider.overrideWith((ref) async => groups)],
-      child: const MaterialApp(home: Scaffold(body: EncounterTab())),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [encounterCodexProvider.overrideWith((ref) async => groups)],
+        child: const MaterialApp(home: Scaffold(body: EncounterTab())),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.encounterCodexEmpty), findsOneWidget);
     expect(find.text(UiStrings.encounterCodexLocked), findsNothing); // 不甩剪影墙
@@ -64,17 +89,48 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(800, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final groups = [
-      EncounterCodexGroup(kind: EncounterGroupKind.insight, triggeredCount: 1, entries: [
-        EncounterCodexEntry(def: _def('a'), isTriggered: true, title: '听雨悟剑'),
-      ]),
+      EncounterCodexGroup(
+        kind: EncounterGroupKind.insight,
+        triggeredCount: 1,
+        entries: [
+          EncounterCodexEntry(def: _def('a'), isTriggered: true, title: '听雨悟剑'),
+        ],
+      ),
     ];
-    await tester.pumpWidget(ProviderScope(
-      overrides: [encounterCodexProvider.overrideWith((ref) async => groups)],
-      child: const MaterialApp(home: Scaffold(body: EncounterTab())),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [encounterCodexProvider.overrideWith((ref) async => groups)],
+        child: const MaterialApp(home: Scaffold(body: EncounterTab())),
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('听雨悟剑'));
     await tester.pumpAndSettle();
     expect(find.byType(EncounterDetailScreen), findsOneWidget);
+  });
+
+  testWidgets('desktop smoke 1440×900:札记卡片首屏可见且无条件泄露', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1440, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final groups = [
+      EncounterCodexGroup(
+        kind: EncounterGroupKind.insight,
+        triggeredCount: 1,
+        entries: [
+          EncounterCodexEntry(def: _def('a'), isTriggered: true, title: '听雨悟剑'),
+          EncounterCodexEntry(def: _def('b'), isTriggered: false),
+        ],
+      ),
+    ];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [encounterCodexProvider.overrideWith((ref) async => groups)],
+        child: const MaterialApp(home: Scaffold(body: EncounterTab())),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.encounterCodexNoteLabel), findsNWidgets(2));
+    expect(find.text(UiStrings.encounterCodexLocked), findsOneWidget);
+    expect(find.text('b'), findsNothing);
   });
 }

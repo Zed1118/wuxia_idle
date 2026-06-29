@@ -18,8 +18,9 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// 机制条目按 tutorialStep gating;lore 永远 unlocked(GDD §10.2 永久可查)。
 void main() {
   // 语义化断言依赖动态计数,不写死 12/7 防止 P3+ 扩段后 break。
-  final mechanicCount =
-      CodexIndex.entries.where((e) => e.category.isMechanic).length;
+  final mechanicCount = CodexIndex.entries
+      .where((e) => e.category.isMechanic)
+      .length;
   final loreCount = CodexIndex.entries.where((e) => e.category.isLore).length;
 
   setUpAll(() async {
@@ -30,17 +31,23 @@ void main() {
     }
   });
 
-  Future<void> pumpCodexTab(WidgetTester tester, {required int step}) async {
+  Future<void> pumpCodexTab(
+    WidgetTester tester, {
+    required int step,
+    Size surfaceSize = const Size(800, 3000),
+  }) async {
     // 扩 viewport 让 21 行 ListView 全部渲染(默认 800x600 装不下);
     // memory feedback_listview_widget_test_viewport。
-    await tester.binding.setSurfaceSize(const Size(800, 3000));
+    await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        currentTutorialStepProvider.overrideWith((ref) async => step),
-      ],
-      child: const MaterialApp(home: Scaffold(body: CodexTab())),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          currentTutorialStepProvider.overrideWith((ref) async => step),
+        ],
+        child: const MaterialApp(home: Scaffold(body: CodexTab())),
+      ),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -49,11 +56,20 @@ void main() {
     expect(find.text(UiStrings.codexLockedTitle), findsNWidgets(mechanicCount));
     expect(find.byIcon(Icons.lock_outline), findsNWidgets(mechanicCount));
     expect(find.text(UiStrings.codexUnlockedHint(0, 8)), findsOneWidget);
+    expect(find.text(UiStrings.codexMechanicSectionTitle), findsOneWidget);
+    expect(find.text(UiStrings.codexMechanicSectionSubtitle), findsOneWidget);
+    expect(
+      find.text(UiStrings.codexLockedStatus),
+      findsNWidgets(mechanicCount),
+    );
     // lore 段永远 unlocked,SectionHeader 渲染
     expect(find.text(UiStrings.codexLoreSectionTitle), findsOneWidget);
+    expect(find.text(UiStrings.codexLoreSectionSubtitle), findsOneWidget);
   });
 
-  testWidgets('部分解锁(step=5):机制 1-5 档解锁 + 6/7/8 档灰显 + lore 段不受 step 影响', (tester) async {
+  testWidgets('部分解锁(step=5):机制 1-5 档解锁 + 6/7/8 档灰显 + lore 段不受 step 影响', (
+    tester,
+  ) async {
     await pumpCodexTab(tester, step: 5);
     // 机制条目按 step gating:6/7/8 档 3 条灰显(每档 1 条机制条目,A 组无挂这 3 档)
     final lockedMechanic = CodexIndex.entries
@@ -68,6 +84,7 @@ void main() {
     await pumpCodexTab(tester, step: 8);
     expect(find.byIcon(Icons.lock_outline), findsNothing);
     expect(find.text(UiStrings.codexUnlockedHint(8, 8)), findsOneWidget);
+    expect(find.text(UiStrings.codexUnlockedStatus), findsWidgets);
     expect(find.text(UiStrings.codexLoreSectionTitle), findsOneWidget);
   });
 
@@ -162,20 +179,24 @@ void main() {
   testWidgets('provider error fallback:step=0 不崩溃 + 机制全锁', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 3000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        currentTutorialStepProvider.overrideWith(
-          (ref) async => throw Exception('test error'),
-        ),
-      ],
-      child: const MaterialApp(home: Scaffold(body: CodexTab())),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          currentTutorialStepProvider.overrideWith(
+            (ref) async => throw Exception('test error'),
+          ),
+        ],
+        child: const MaterialApp(home: Scaffold(body: CodexTab())),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.codexUnlockedHint(0, 8)), findsOneWidget);
     expect(find.byIcon(Icons.lock_outline), findsNWidgets(mechanicCount));
   });
 
-  testWidgets('A 组补充阅读不计入 chip 分母(step=8 分母固定 8 非 mechanicCount)', (tester) async {
+  testWidgets('A 组补充阅读不计入 chip 分母(step=8 分母固定 8 非 mechanicCount)', (
+    tester,
+  ) async {
     await pumpCodexTab(tester, step: 8);
     expect(find.text(UiStrings.codexUnlockedHint(8, 8)), findsOneWidget);
     expect(find.byIcon(Icons.lock_outline), findsNothing);
@@ -188,40 +209,47 @@ void main() {
     }
   });
 
-  testWidgets('chip 走 [unlockedCodexCountProvider]:override provider → 5,step=2 时 chip 仍显「5 / 8」',
-      (tester) async {
-    await tester.binding.setSurfaceSize(const Size(800, 3000));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        currentTutorialStepProvider.overrideWith((ref) async => 2),
-        unlockedCodexCountProvider.overrideWith((ref) async => 5),
-      ],
-      child: const MaterialApp(home: Scaffold(body: CodexTab())),
-    ));
-    await tester.pumpAndSettle();
-    expect(find.text(UiStrings.codexUnlockedHint(5, 8)), findsOneWidget);
-    // mechanic gating 仍走 step=2(provider 不影响 lock 数)
-    final locked = CodexIndex.entries
-        .where((e) => e.category.isMechanic && (e.step ?? 0) > 2)
-        .length;
-    expect(find.byIcon(Icons.lock_outline), findsNWidgets(locked));
-  });
+  testWidgets(
+    'chip 走 [unlockedCodexCountProvider]:override provider → 5,step=2 时 chip 仍显「5 / 8」',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 3000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentTutorialStepProvider.overrideWith((ref) async => 2),
+            unlockedCodexCountProvider.overrideWith((ref) async => 5),
+          ],
+          child: const MaterialApp(home: Scaffold(body: CodexTab())),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(UiStrings.codexUnlockedHint(5, 8)), findsOneWidget);
+      // mechanic gating 仍走 step=2(provider 不影响 lock 数)
+      final locked = CodexIndex.entries
+          .where((e) => e.category.isMechanic && (e.step ?? 0) > 2)
+          .length;
+      expect(find.byIcon(Icons.lock_outline), findsNWidgets(locked));
+    },
+  );
 
-  testWidgets('viewport 800×3000:末尾 lore entry title 在渲染树中可 find', (tester) async {
+  testWidgets('viewport 800×3000:末尾 lore entry title 在渲染树中可 find', (
+    tester,
+  ) async {
     await pumpCodexTab(tester, step: 8);
-    final lastLoreEntry =
-        CodexIndex.entries.lastWhere((e) => e.category.isLore);
-    final title =
-        GameRepository.instance.codexEntries[lastLoreEntry.id]?.title;
+    final lastLoreEntry = CodexIndex.entries.lastWhere(
+      (e) => e.category.isLore,
+    );
+    final title = GameRepository.instance.codexEntries[lastLoreEntry.id]?.title;
     expect(title, isNotNull, reason: '末尾 lore md 未加载,P2 应已落齐');
     expect(find.text(title!), findsOneWidget);
   });
 
   testWidgets('lore 渲染顺序 = CodexIndex 登记顺序(前两条 Y 坐标升序)', (tester) async {
     await pumpCodexTab(tester, step: 8);
-    final loreEntries =
-        CodexIndex.entries.where((e) => e.category.isLore).toList();
+    final loreEntries = CodexIndex.entries
+        .where((e) => e.category.isLore)
+        .toList();
     if (loreEntries.length >= 2) {
       final firstTitle =
           GameRepository.instance.codexEntries[loreEntries.first.id]?.title;
@@ -233,5 +261,12 @@ void main() {
         expect(firstY, lessThan(secondY));
       }
     }
+  });
+
+  testWidgets('desktop smoke 1280×720:卷宗结构首屏可见且无 overflow', (tester) async {
+    await pumpCodexTab(tester, step: 8, surfaceSize: const Size(1280, 720));
+    expect(find.text(UiStrings.codexMechanicSectionTitle), findsOneWidget);
+    expect(find.text(UiStrings.codexMechanicSectionSubtitle), findsOneWidget);
+    expect(find.text('境界'), findsOneWidget);
   });
 }
