@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/enums.dart';
+import '../../../data/defs/equipment_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/audio/audio_assets.dart';
@@ -39,6 +40,7 @@ Future<void> showStageVictoryDialog({
   String? firstClearSubtitle,
   BattleStatsSummary? stats,
   List<Character> injurySummaryCharacters = const [],
+  List<Character> equipmentHintCharacters = const [],
   String? skillFragmentLine,
   EquipmentDropLockHandler? onEquipmentLockToggle,
 }) async {
@@ -60,6 +62,7 @@ Future<void> showStageVictoryDialog({
         firstClearSubtitle: firstClearSubtitle,
         stats: stats,
         injurySummaryCharacters: injurySummaryCharacters,
+        equipmentHintCharacters: equipmentHintCharacters,
         skillFragmentLine: skillFragmentLine,
         onEquipmentLockToggle: onEquipmentLockToggle,
       ),
@@ -87,6 +90,7 @@ class StageVictoryContent extends StatelessWidget {
     this.firstClearSubtitle,
     this.stats,
     this.injurySummaryCharacters = const [],
+    this.equipmentHintCharacters = const [],
     this.skillFragmentLine,
     this.onEquipmentLockToggle,
   });
@@ -98,6 +102,7 @@ class StageVictoryContent extends StatelessWidget {
   final String? firstClearSubtitle;
   final BattleStatsSummary? stats;
   final List<Character> injurySummaryCharacters;
+  final List<Character> equipmentHintCharacters;
 
   /// 第七阶段批二④:残页轻提示行(掉残页未集齐时,非重仪式)。
   /// null=本场未掉残页或已走重仪式;非空时在 drop 段末尾追一行小字。
@@ -134,6 +139,7 @@ class StageVictoryContent extends StatelessWidget {
           for (final eq in drops.equipments)
             _EquipmentDropRow(
               equipment: eq,
+              hintCharacters: equipmentHintCharacters,
               onLockToggle: onEquipmentLockToggle,
             ),
           for (final item in drops.items)
@@ -292,9 +298,14 @@ class FirstClearBanner extends StatelessWidget {
 /// 一眼跳出(§10 仪式感)。GameRepository 未加载时降级纯 defId(沿原兜底)。
 /// 公开省略 —— 仅本 dialog 内部用。
 class _EquipmentDropRow extends StatefulWidget {
-  const _EquipmentDropRow({required this.equipment, this.onLockToggle});
+  const _EquipmentDropRow({
+    required this.equipment,
+    required this.hintCharacters,
+    this.onLockToggle,
+  });
 
   final Equipment equipment;
+  final List<Character> hintCharacters;
   final EquipmentDropLockHandler? onLockToggle;
 
   @override
@@ -350,6 +361,7 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
     final sourceSummary = sources.isEmpty
         ? UiStrings.equipmentSourceUnknown
         : _sourceLabel(sources.first);
+    final detailLines = _detailLines(def);
     return Padding(
       padding: const EdgeInsets.only(left: 8, top: 6, right: 2),
       child: AnimatedOpacity(
@@ -422,6 +434,19 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
                     fontSize: 11,
                   ),
                 ),
+                const SizedBox(height: 5),
+                for (final line in detailLines)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: Text(
+                      line,
+                      style: const TextStyle(
+                        color: WuxiaColors.textMuted,
+                        fontSize: 11,
+                        height: 1.25,
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 8,
@@ -481,6 +506,38 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
         ),
       ),
     );
+  }
+
+  List<String> _detailLines(EquipmentDef def) {
+    final requiredRealm = RealmTier.values[def.tier.index];
+    final usable = widget.hintCharacters
+        .where((c) => widget.equipment.isEquippableAtRealm(c.realmTier))
+        .map((c) => c.name)
+        .toList(growable: false);
+    final school = widget.equipment.school ?? def.schoolBias;
+    return [
+      UiStrings.equipmentDropRealmGate(EnumL10n.realmTier(requiredRealm)),
+      usable.isEmpty
+          ? UiStrings.equipmentDropNoUsableCharacters
+          : UiStrings.equipmentDropUsableCharacters(usable.take(3).join(' / ')),
+      school == null
+          ? UiStrings.equipmentDropSchoolFitAny
+          : UiStrings.equipmentDropSchoolFit(EnumL10n.school(school)),
+      _lockAdvice(usable.isNotEmpty, def.tier),
+    ];
+  }
+
+  String _lockAdvice(bool hasUsableCharacter, EquipmentTier tier) {
+    if (tier.index >= EquipmentTier.baoWu.index) {
+      return UiStrings.equipmentDropLockAdviceRare;
+    }
+    if (hasUsableCharacter) {
+      return UiStrings.equipmentDropLockAdviceFit;
+    }
+    if (tier.index > RealmTier.xueTu.index) {
+      return UiStrings.equipmentDropLockAdviceWait;
+    }
+    return UiStrings.equipmentDropLockAdviceCommon;
   }
 }
 

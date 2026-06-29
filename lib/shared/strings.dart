@@ -782,6 +782,15 @@ class UiStrings {
   static const String equipmentDropActionProtected = '已受保护';
   static const String equipmentDropActionEquipped = '已穿戴';
   static const String equipmentDropFavoriteHint = '常用装备将以锁定状态保留，避免整理时误处置。';
+  static String equipmentDropRealmGate(String realmName) => '门槛：$realmName及以上';
+  static String equipmentDropUsableCharacters(String names) => '可用：$names';
+  static const String equipmentDropNoUsableCharacters = '可用：暂无达标角色';
+  static String equipmentDropSchoolFit(String schoolName) => '适合：$schoolName流派';
+  static const String equipmentDropSchoolFitAny = '适合：通用整备';
+  static const String equipmentDropLockAdviceRare = '建议锁定：高阶装备，先留作核心养成。';
+  static const String equipmentDropLockAdviceFit = '建议锁定：当前队伍已有合适人选。';
+  static const String equipmentDropLockAdviceWait = '建议稍候：境界未达，先留仓观望。';
+  static const String equipmentDropLockAdviceCommon = '建议按需锁定：寻常装备可先看属性再整理。';
   static const String equipmentBulkEntry = '批量整理';
   static const String equippedBadge = '装备中';
   static const String inventoryShopEntry = '进商店';
