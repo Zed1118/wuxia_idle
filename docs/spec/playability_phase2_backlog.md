@@ -106,7 +106,7 @@
 - [x] **高周目 Boss 阶段差异**(2026-06-29 `codex/night-tier2-ngplus-boss-phases`):新增 `cycleBossPhases` 配置覆盖层,二周目以上主线章末 Boss + 塔 10/20/25/30 可切换更早阶段/技能顺序;一周目 `bossPhases` 原样保留,塔 20/25/30 第一梯队机制不覆盖。
 - [x] **主线章节推荐刷点**(2026-06-29 合 `codex/night-tier2-mainline-farm-spots` merge `e3be2c82`):整章通关后每章标 ≤2 个高价值刷点(刷装备/材料/熟练度),从既有 `MainlineReplayRewardRoute` 静态派生;不追踪个人缺口、无新存档字段。
 - [x] **桃花岛建筑协同加成**(2026-06-29 合 `codex/night-tier2-taohua-building-synergy` merge `a1a90d48`):新增 `taohua_island.synergies` 固定协同(铁匠厂→打造台/灵泉→丹房/木工坊→铸造台,+0.02/级 ≤+10%);走 settle 即时计算守在线=离线不变性,无 schema/saveVer。
-- [ ] **闭关地图解锁门槛可读化**(2026-06-29 暂缓合并 · `codex/night-tier2-seclusion-unlock-readable-2`):实装对所有 locked 地图静态显示「章节:第一章通关后开放」「材料:无额外消耗」,但闭关入图实际只有境界一维门控(`canEnterMap` 仅比 realm),章节/材料门槛是伪造文案会误导玩家且测试已固化假文案。是否只显示真实境界门槛(改动最小)或落地真实章节/材料门控属产品决策,待用户拍板后重做。旧 `codex/night-tier2-seclusion-unlock-readable`(无 -2)0 提交空壳已排除。
+- [x] **闭关地图解锁门槛可读化**(2026-06-29 A 方案重做 · 合 `a4d6c23b`):原 `seclusion-unlock-readable-2` 因伪造「第一章通关后开放/无额外消耗」门槛(闭关入图实际仅境界一维门控)暂缓未合;改在 main 直接实装真实门槛——locked 卡 footer + 点击 SnackBar 显示 `seclusionRequiredRealmWithCurrent`="需要境界:X(当前 Y)"境界对比,不显示任何章节/材料条件。TDD +2 widget 测(显对比 / 不显伪造门槛)。旧无 -2 分支 0 提交空壳已排除。
 
 ### 2026-06-28 晚间本轮暂缓
 
