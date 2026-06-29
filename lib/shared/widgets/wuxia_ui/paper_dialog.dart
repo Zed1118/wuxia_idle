@@ -93,6 +93,7 @@ class PaperDialog extends StatelessWidget {
                 const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     for (var i = 0; i < actions.length; i++) ...[
                       if (i > 0) const SizedBox(width: 10),

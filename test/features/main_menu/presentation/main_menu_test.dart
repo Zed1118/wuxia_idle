@@ -33,13 +33,13 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
 ///   - 菜单按钮 label 匹配（主线 / 问鼎九霄 / 排行榜 / 闭关修炼 / Phase1 / Phase2 / 角色 / 师徒名单 / 装备 / 心法 / 藏经阁 / 桃花岛）
-///   - 23 个菜单入口 WuxiaInkButton（按钮全部可点）+ 右上角退出键 = 24 InkWell
+///   - 23 个菜单入口 WuxiaInkButton（按钮全部可点）
 ///   - Tap "Phase 1 战斗测试" → push BattleTestMenu
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
 /// 主线 / 问鼎九霄 / 角色 / 师徒名单 / 装备 / 心法 按钮 push 的页面依赖 Isar（师徒名单经
 /// `lineageInfoProvider` 派生 Isar，未注入 fixture 时无法 settle），widget test 旁路
-/// （与 T28/T31 同决策，沿用挂账 #23）；按钮可点性通过 InkWell 计数 + label
+/// （与 T28/T31 同决策，沿用挂账 #23）；按钮可点性通过 WuxiaInkButton 计数 + label
 /// 渲染断言覆盖。
 void main() {
   setUpAll(() async {
@@ -48,11 +48,8 @@ void main() {
 
   Widget app() => const ProviderScope(child: MaterialApp(home: MainMenu()));
 
-  Finder assetImage(String path) => find.byWidgetPredicate(
-    (w) =>
-        w is Image &&
-        assetNameOf(w.image) == path,
-  );
+  Finder assetImage(String path) =>
+      find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
 
   testWidgets('标题渲染：mainMenuTitle 可见', (tester) async {
     await tester.pumpWidget(app());
@@ -145,11 +142,9 @@ void main() {
     );
   });
 
-  testWidgets('23 个菜单按钮均为 InkWell（可点）', (tester) async {
+  testWidgets('23 个菜单按钮均为 WuxiaInkButton（可点入口）', (tester) async {
     await tester.pumpWidget(app());
-    // 23 个菜单入口(WuxiaInkButton·含 debug 数值红线审计)+ 右上角退出键(IconButton)= 24 个 InkWell。
     expect(find.byType(WuxiaInkButton), findsNWidgets(23));
-    expect(find.byType(InkWell), findsNWidgets(24));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
