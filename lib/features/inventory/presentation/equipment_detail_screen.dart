@@ -5,11 +5,14 @@ import '../../battle/domain/derived_stats.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/equipment_def.dart';
+import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../data/lore_loader.dart';
 import '../../../data/numbers_config.dart';
+import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
+import '../../../core/domain/forging_slot.dart';
 import '../../../core/domain/lore.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/character_providers.dart';
@@ -414,9 +417,12 @@ class _InfoCard extends ConsumerWidget {
     // M1:境界不足时显「需X境界」锁提示(§5.3 三系锁死)。
     final activeIds =
         ref.watch(activeCharacterIdsProvider).value ?? const <int>[];
-    final playerRealm = activeIds.isEmpty
+    final activeCharacters = [
+      for (final id in activeIds) ref.watch(characterByIdProvider(id)).value,
+    ].nonNulls.toList();
+    final playerRealm = activeCharacters.isEmpty
         ? null
-        : ref.watch(characterByIdProvider(activeIds.first)).value?.realmTier;
+        : activeCharacters.first.realmTier;
     final realmLocked =
         playerRealm != null && !equipment.isEquippableAtRealm(playerRealm);
     return SizedBox(
@@ -543,6 +549,11 @@ class _InfoCard extends ConsumerWidget {
               nextStageCfg: _findNextStageCfg(n.resonanceStages, resonance),
               battleCount: equipment.battleCount,
             ),
+            _ForgingSpecialSkillSection(
+              equipment: equipment,
+              def: def,
+              activeCharacters: activeCharacters,
+            ),
           ],
         ),
       ),
@@ -655,6 +666,161 @@ class _ResonanceDetailsSection extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _ForgingSpecialSkillSection extends StatelessWidget {
+  const _ForgingSpecialSkillSection({
+    required this.equipment,
+    required this.def,
+    required this.activeCharacters,
+  });
+
+  final Equipment equipment;
+  final EquipmentDef def;
+  final List<Character> activeCharacters;
+
+  @override
+  Widget build(BuildContext context) {
+    final slot = _specialSkillSlot(equipment);
+    final skillId = slot?.specialSkillId;
+    if (skillId == null || skillId.isEmpty) return const SizedBox.shrink();
+
+    final skill = GameRepository.instanceOrNull?.skillDefs[skillId];
+    final title = skill?.name ?? skillId;
+    final chips = skill == null
+        ? [UiStrings.forgingSpecialSkillUnknown]
+        : [
+            _triggerLabel(skill),
+            UiStrings.forgingSpecialSkillSchool(
+              skill.style == null
+                  ? UiStrings.dashPlaceholder
+                  : EnumL10n.school(skill.style!),
+            ),
+            UiStrings.forgingSpecialSkillTarget(
+              EnumL10n.targetType(skill.targetType),
+            ),
+            UiStrings.forgingSpecialSkillCostCooldown(
+              skill.internalForceCost,
+              skill.cooldownTurns,
+            ),
+            _fitLabel(skill, def, activeCharacters),
+          ];
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: WuxiaUi.paper.withValues(alpha: 0.26),
+          border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.55)),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      UiStrings.forgingSpecialSkillDetailTitle,
+                      style: TextStyle(
+                        color: WuxiaUi.ink,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                  _Chip(
+                    text: UiStrings.forgingSlotTitle(3),
+                    color: WuxiaColors.internalForce,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                UiStrings.forgingSpecialSkillLabel(title),
+                style: const TextStyle(
+                  color: WuxiaUi.ink,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                UiStrings.forgingSpecialSkillDetailSubtitle,
+                style: TextStyle(color: WuxiaUi.muted, fontSize: 12),
+              ),
+              if (skill != null && skill.description.trim().isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  skill.description.trim(),
+                  style: const TextStyle(
+                    color: WuxiaUi.ink2,
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final chip in chips)
+                    _Chip(text: chip, color: WuxiaColors.textSecondary),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static ForgingSlot? _specialSkillSlot(Equipment equipment) {
+    for (final slot in equipment.forgingSlots) {
+      if (slot.slotIndex == 3 &&
+          slot.unlocked &&
+          slot.type == ForgingSlotType.specialSkill) {
+        return slot;
+      }
+    }
+    return null;
+  }
+
+  static String _triggerLabel(SkillDef skill) {
+    if (skill.requiresManualTrigger) {
+      return UiStrings.forgingSpecialSkillTriggerManual;
+    }
+    if (skill.aiUsePolicy == AiUsePolicy.saveForInterrupt) {
+      return UiStrings.forgingSpecialSkillTriggerInterrupt;
+    }
+    if (skill.internalForceCost > 0 || skill.cooldownTurns > 0) {
+      return UiStrings.forgingSpecialSkillTriggerAuto;
+    }
+    return UiStrings.forgingSpecialSkillTriggerReady;
+  }
+
+  static String _fitLabel(
+    SkillDef skill,
+    EquipmentDef def,
+    List<Character> activeCharacters,
+  ) {
+    final school = skill.style ?? def.schoolBias;
+    if (school == null) return UiStrings.forgingSpecialSkillFitFlexible;
+    final schoolLabel = EnumL10n.school(school);
+    final names = activeCharacters
+        .where((character) => character.school == school)
+        .map((character) => character.name)
+        .take(3)
+        .join(' / ');
+    if (names.isEmpty) {
+      return UiStrings.forgingSpecialSkillFitSchool(schoolLabel);
+    }
+    return UiStrings.forgingSpecialSkillFitCharacters(schoolLabel, names);
   }
 }
 

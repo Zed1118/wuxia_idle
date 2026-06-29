@@ -8,6 +8,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/lore_loader.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/forging_slot.dart';
+import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
 import 'package:wuxia_idle/features/inventory/presentation/equipment_detail_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
@@ -36,6 +38,7 @@ void main() {
     bool isLineageHeritage = false,
     int? ownerCharacterId,
     bool isLocked = false,
+    List<ForgingSlot>? forgingSlots,
   }) {
     return Equipment.create(
       defId: def.id,
@@ -51,6 +54,7 @@ void main() {
       isLineageHeritage: isLineageHeritage,
       ownerCharacterId: ownerCharacterId,
       isLocked: isLocked,
+      forgingSlots: forgingSlots,
     )..id = 1;
   }
 
@@ -614,6 +618,96 @@ void main() {
         findsNothing,
         reason: 'effective==base 时不显冗余副标',
       );
+    });
+  });
+
+  group('开锋槽 3 专属技详情展示', () {
+    Future<void> pumpDetail(
+      WidgetTester tester,
+      Equipment eq,
+      EquipmentDef def,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(1280, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: EquipmentDetailScreen(
+              equipment: eq,
+              def: def,
+              loreLoader: fakeLoader(segments: const ['x']),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('第三槽已开专属技 → 显示器物绝招详情', (tester) async {
+      final def = GameRepository.instance.getEquipment(
+        'weapon_xunchang_tie_jian',
+      );
+      const skillId = 'skill_edge_xunchang_lingqiao';
+      final skill = GameRepository.instance.skillDefs[skillId]!;
+      final eq = mkEq(
+        def: def,
+        enhanceLevel: 19,
+        forgingSlots: [
+          ForgingSlot()..slotIndex = 1,
+          ForgingSlot()..slotIndex = 2,
+          ForgingSlot()
+            ..slotIndex = 3
+            ..unlocked = true
+            ..type = ForgingSlotType.specialSkill
+            ..specialSkillId = skillId,
+        ],
+      );
+
+      await pumpDetail(tester, eq, def);
+
+      expect(
+        find.text(UiStrings.forgingSpecialSkillDetailTitle),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.forgingSpecialSkillLabel(skill.name)),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          UiStrings.forgingSpecialSkillSchool(EnumL10n.school(skill.style!)),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          UiStrings.forgingSpecialSkillTarget(
+            EnumL10n.targetType(skill.targetType),
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(UiStrings.forgingSpecialSkillTriggerAuto),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          UiStrings.forgingSpecialSkillFitSchool(EnumL10n.school(skill.style!)),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('第三槽未开专属技 → 不显示器物绝招详情', (tester) async {
+      final def = GameRepository.instance.getEquipment(
+        'weapon_xunchang_tie_jian',
+      );
+      final eq = mkEq(def: def, enhanceLevel: 19);
+
+      await pumpDetail(tester, eq, def);
+
+      expect(find.text(UiStrings.forgingSpecialSkillDetailTitle), findsNothing);
     });
   });
 
