@@ -7,6 +7,7 @@ import '../../tutorial/application/tutorial_providers.dart';
 import '../application/codex_providers.dart';
 import '../domain/codex_category.dart';
 import 'codex_entry_detail.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// P1 #42 Phase 2 §10 P1.z BaikeScreen 第 3 tab「机制」(GDD §10.2 第 3 方式)。
 ///
@@ -29,7 +30,7 @@ class CodexTab extends ConsumerWidget {
     return asyncStep.when(
       data: (step) => _CodexListView(items: items, step: step),
       loading: () => const Center(
-        child: CircularProgressIndicator(color: WuxiaColors.resultHighlight),
+        child: InkLoadingIndicator(color: WuxiaColors.resultHighlight),
       ),
       error: (_, _) => _CodexListView(items: items, step: 0),
     );

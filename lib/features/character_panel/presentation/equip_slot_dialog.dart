@@ -15,6 +15,7 @@ import '../../equipment/application/equipment_service.dart';
 import '../../equipment/presentation/enhance_dialog.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../domain/equipment_stat_diff.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 装备槽统一对话框（2026-06-26 · 一步到位 + 全量对比）。
 ///
@@ -128,7 +129,7 @@ class _EquipSlotDialogState extends ConsumerState<EquipSlotDialog> {
           child: async.when(
             loading: () => const SizedBox(
               height: 120,
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              child: Center(child: InkLoadingIndicator()),
             ),
             error: (e, _) => Padding(
               padding: const EdgeInsets.all(16),

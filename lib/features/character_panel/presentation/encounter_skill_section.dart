@@ -40,11 +40,11 @@ class EncounterSkillSection extends ConsumerWidget {
           unlockedAsync.when(
             loading: () => const SizedBox(
               height: 60,
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              child: Center(child: InkLoadingIndicator()),
             ),
-            error: (e, _) => Text(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow, fontSize: 12),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () => ref.invalidate(unlockedSkillIdSetProvider),
             ),
             data: (unlockedSet) => _Content(
               character: character,

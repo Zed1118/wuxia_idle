@@ -6,6 +6,7 @@ import '../../../shared/theme/colors.dart';
 import '../application/jianghu_providers.dart';
 import '../domain/reputation.dart';
 import 'widgets/reputation_tier_chip.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 江湖声望面板(P1.2 §4 GDD §12.2)。
 ///
@@ -32,7 +33,7 @@ class ReputationPanelScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
               '${UiStrings.reputationPanelLoadError}: $e',

@@ -9,11 +9,13 @@ import '../../../data/narrative_loader.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../../character_panel/application/lineage_info_provider.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../application/ascend_service_providers.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// P2.3 §7.1 飞升 + 遗物 transfer 屏(spec p2_3_ascension_spec_2026-05-24)。
 ///
@@ -59,12 +61,10 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
       ),
       body: SafeArea(
         child: lineageAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(
-            child: SelectableText(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow),
-            ),
+          loading: () => const Center(child: InkLoadingIndicator()),
+          error: (e, _) => ErrorFallback(
+            error: e,
+            onRetry: () => ref.invalidate(lineageInfoProvider),
           ),
           data: (info) {
             final founder = info.founder;
@@ -78,12 +78,10 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
             }
             return disciplesAsync.when(
               loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: SelectableText(
-                  'load error: $e',
-                  style: const TextStyle(color: WuxiaColors.hpLow),
-                ),
+                  const Center(child: InkLoadingIndicator()),
+              error: (e, _) => ErrorFallback(
+                error: e,
+                onRetry: () => ref.invalidate(ascensionDiscipleTargetsProvider),
               ),
               data: (disciples) {
                 if (disciples.isEmpty) {
@@ -315,12 +313,10 @@ class _Body extends ConsumerWidget {
         selectedCount <= pickMax;
 
     return candidatesAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
-        child: SelectableText(
-          'load error: $e',
-          style: const TextStyle(color: WuxiaColors.hpLow),
-        ),
+      loading: () => const Center(child: InkLoadingIndicator()),
+      error: (e, _) => ErrorFallback(
+        error: e,
+        onRetry: () => ref.invalidate(heritageCandidatesProvider(founder.id)),
       ),
       data: (equipments) => SingleChildScrollView(
         padding: const EdgeInsets.all(16),

@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/battle_record/domain/boss_memory.dart';
 import 'package:wuxia_idle/features/battle_record/domain/boss_memory_source.dart';
 import 'package:wuxia_idle/features/battle_record/presentation/battle_record_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// T8 BattleRecordScreen widget 测试。
 ///
@@ -245,7 +246,7 @@ void main() {
       ),
     );
     // 不 pump()，直接检查 loading 态
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(InkLoadingIndicator), findsOneWidget);
     // 收尾：完成 completer 避免 timer/pending 警告
     completer.complete([]);
   });

@@ -111,7 +111,7 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
         // 在 available 推进时把下一层带进视野。
         child: progressAsync.when(
           skipLoadingOnReload: true,
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Center(child: InkLoadingIndicator()),
           error: (e, _) => Center(
             child: SelectableText(
               UiStrings.loadFailed(e),
@@ -120,7 +120,7 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
           ),
           data: (progress) => floorListAsync.when(
             skipLoadingOnReload: true,
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Center(child: InkLoadingIndicator()),
             error: (e, _) => Center(
               child: SelectableText(
                 UiStrings.loadFailed(e),

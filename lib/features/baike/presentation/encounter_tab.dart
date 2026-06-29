@@ -5,6 +5,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../application/encounter_codex_provider.dart';
 import 'encounter_detail_screen.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 奇遇录 tab(Task 4):江湖见闻录第 4 tab「奇缘」。
 ///
@@ -24,7 +25,7 @@ class EncounterTab extends ConsumerWidget {
     final async = ref.watch(encounterCodexProvider);
     return async.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: WuxiaColors.resultHighlight),
+        child: InkLoadingIndicator(color: WuxiaColors.resultHighlight),
       ),
       error: (e, _) => const _EmptyHint(text: UiStrings.encounterCodexEmpty),
       data: (groups) => _buildBody(context, groups),

@@ -42,6 +42,7 @@ import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 常速播放命中后的顿帧时长：关键帧（暴击/大招/合一/破招/击杀）取
 /// `profileHitStopMs` 与 `keyMomentHoldMs` 的大者，否则用 `profileHitStopMs`。
@@ -1212,7 +1213,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         child: const Scaffold(
           backgroundColor: WuxiaColors.background,
           body: Center(
-            child: CircularProgressIndicator(color: WuxiaColors.textMuted),
+            child: InkLoadingIndicator(color: WuxiaColors.textMuted),
           ),
         ),
       );
@@ -1402,10 +1403,13 @@ class _HintBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      color: const Color(0xFF2A3A2A),
+      color: WuxiaColors.hintBannerBg,
       child: Text(
         hint,
-        style: const TextStyle(color: Color(0xFF8BC28B), fontSize: 13),
+        style: const TextStyle(
+          color: WuxiaColors.hintBannerText,
+          fontSize: 13,
+        ),
       ),
     );
   }
@@ -1422,7 +1426,7 @@ class _CycleHintBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-      color: const Color(0xFF3A2E00),
+      color: WuxiaColors.cycleHintBg,
       child: Text(
         hint,
         style: const TextStyle(color: WuxiaColors.cycleHintText, fontSize: 12),

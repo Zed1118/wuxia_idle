@@ -5,6 +5,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../domain/chapter_assets.dart';
 import 'stage_list_screen.dart';
+import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 章节翻篇过场（H2 小套餐 C1）。
 ///
@@ -52,7 +53,7 @@ class ChapterTransitionScreen extends StatelessWidget {
           future: _load(),
           builder: (context, snap) {
             if (!snap.hasData) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: InkLoadingIndicator());
             }
             final c = snap.data!;
             return Column(
