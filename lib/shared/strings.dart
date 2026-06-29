@@ -260,6 +260,8 @@ class UiStrings {
   static const String mainMenuInventoryHint = '查看 / 强化 / 开锋装备';
   static String mainMenuInventoryStatus(int count, String topTier) =>
       count <= 0 ? '暂无装备' : '$count件 · $topTier';
+  static const String mainMenuResourceOverview = '资源总览';
+  static const String mainMenuResourceOverviewHint = '库存 / 来源 / 用途一屏可察';
   static const String mainMenuTechniques = '心法面板';
   static const String mainMenuTechniquesHint = '查看主修 / 辅修 / 散功换主修';
   static const String mainMenuTechniquesLockedHint = '通过第三关后开放';
@@ -650,6 +652,23 @@ class UiStrings {
   static const String inventoryTabEquipment = '装备';
   static const String inventoryTabMaterial = '物料';
   static const String inventoryMaterialEmpty = '暂无物料';
+
+  // 资源总览页（只读经营面板）。
+  static const String resourceOverviewTitle = '资源总览';
+  static const String resourceOverviewIntro =
+      '汇总当前库存与主要去向，只作经营判断，不在此处消费、购买或结算。';
+  static const String resourceOverviewEmpty = '暂无相关资源';
+  static const String resourceOverviewUsageLabel = '用途：';
+  static const String resourceOverviewSourceLabel = '来源：';
+  static const String resourceOverviewNoUsage = '暂无已接入用途';
+  static const String resourceOverviewNoSource = '暂无稳定来源';
+  static const String resourceOverviewCategoryCurrency = '银两';
+  static const String resourceOverviewCategoryEquipmentMaterial = '炼器材料';
+  static const String resourceOverviewCategoryIslandProduct = '桃花岛产物';
+  static const String resourceOverviewCategoryPill = '丹药补给';
+  static const String resourceOverviewCategoryScroll = '秘籍残卷';
+  static String resourceOverviewQuantity(int quantity) => '库存 ×$quantity';
+  static String resourceOverviewLoadFailed(Object error) => '资源读取失败：$error';
 
   /// 物料行文案：`磨剑石 × 1234`。
   static String materialQuantity(String name, int qty) => '$name × $qty';
