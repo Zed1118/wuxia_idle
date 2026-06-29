@@ -3,12 +3,60 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/battle/domain/enum_localizations.dart';
+import 'package:wuxia_idle/features/encounter/application/encounter_service.dart';
+import 'package:wuxia_idle/features/seclusion/application/seclusion_service.dart';
+import 'package:wuxia_idle/features/seclusion/application/seclusion_service_providers.dart';
+import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_map_list_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_setup_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+
+class _FakeSeclusionService implements SeclusionService {
+  RetreatSession? activeSession;
+
+  @override
+  Isar get isar => throw UnimplementedError('fake isar should not be read');
+
+  @override
+  EncounterService? get encounterService => null;
+
+  @override
+  Future<RetreatSession?> getActiveSession(int saveDataId) async =>
+      activeSession;
+
+  @override
+  Future<RetreatSession> startRetreat({
+    required RetreatMapType mapType,
+    required int durationHours,
+    required int saveDataId,
+    required int characterId,
+    required RealmTier charRealmTier,
+    required List<dynamic> maps,
+    required DateTime now,
+  }) => throw UnimplementedError('fake startRetreat should not be called');
+
+  @override
+  Future<RetreatResult> completeRetreat({
+    required RetreatSession session,
+    required int characterId,
+    required RealmTier charRealmTier,
+    required dynamic config,
+    required List<dynamic> maps,
+    required DateTime now,
+    dynamic rng,
+  }) => throw UnimplementedError('fake completeRetreat should not be called');
+
+  @override
+  Future<void> abandonRetreat({
+    required RetreatSession session,
+    required int characterId,
+    required DateTime now,
+  }) => throw UnimplementedError('fake abandonRetreat should not be called');
+}
 
 /// T49 · 闭关 UI widget 测试。
 ///
@@ -32,11 +80,16 @@ void main() {
   Future<void> pumpMapList(
     WidgetTester tester, {
     RealmTier charRealmTier = RealmTier.xueTu,
+    _FakeSeclusionService? fakeService,
   }) async {
     await tester.binding.setSurfaceSize(const Size(1024, 1800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          if (fakeService != null)
+            seclusionServiceProvider.overrideWithValue(fakeService),
+        ],
         child: MaterialApp(
           home: SeclusionMapListScreen(
             charRealmTier: charRealmTier,
@@ -47,6 +100,18 @@ void main() {
     );
     // 一次 pump 触发 FutureBuilder 初始构建，getActiveSession 错误被 snap.error 静默捕获
     await tester.pump();
+  }
+
+  RetreatSession fakeActiveSession() {
+    return RetreatSession()
+      ..id = 1
+      ..saveDataId = 1
+      ..mapType = RetreatMapType.shanLin
+      ..durationHours = 1
+      ..startedAt = DateTime.now()
+      ..completedAt = null
+      ..status = RetreatStatus.active
+      ..actualRewards = [];
   }
 
   // ─── Test 1 ───────────────────────────────────────────────────────────────
@@ -128,6 +193,38 @@ void main() {
     expect(find.textContaining('当前 '), findsWidgets);
   });
 
+  testWidgets('地图卡显示境界门槛、预期产出与当前状态', (tester) async {
+    await pumpMapList(tester, charRealmTier: RealmTier.zongShi);
+
+    expect(find.text(UiStrings.seclusionMapRealmGateLabel), findsWidgets);
+    expect(find.text(UiStrings.seclusionMapExpectedOutputLabel), findsWidgets);
+    expect(find.text(UiStrings.seclusionMapStatusLabel), findsWidgets);
+    expect(find.text(UiStrings.seclusionMapReadyHint), findsWidgets);
+    expect(find.text(UiStrings.seclusionOutputMojianshi), findsWidgets);
+    expect(find.text(UiStrings.seclusionOutputExperience), findsWidgets);
+    expect(find.text(UiStrings.activeRetreatRewardSilver), findsWidgets);
+  });
+
+  testWidgets('active 卡显示进行中状态与查看提示', (tester) async {
+    final fakeService = _FakeSeclusionService()
+      ..activeSession = fakeActiveSession();
+    await pumpMapList(tester, fakeService: fakeService);
+
+    expect(find.text(UiStrings.seclusionMapActive), findsWidgets);
+    expect(
+      find.text(UiStrings.seclusionMapActiveRemainingHint(60)),
+      findsOneWidget,
+    );
+    expect(
+      find.text(
+        UiStrings.seclusionMapActiveBannerRemaining(
+          UiStrings.retreatRemainingText(1, 0),
+        ),
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('locked 卡不显示伪造的章节/材料门槛', (tester) async {
     await pumpMapList(tester, charRealmTier: RealmTier.xueTu);
 
@@ -137,5 +234,4 @@ void main() {
     expect(find.textContaining('章节：'), findsNothing);
     expect(find.textContaining('材料：'), findsNothing);
   });
-
 }
