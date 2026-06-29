@@ -130,6 +130,7 @@ void main() {
   testWidgets('未通关主线行不显示重打收益路线', (tester) async {
     await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
 
+    expect(find.text(UiStrings.chapterFarmSpotsTitle), findsNothing);
     expect(find.text(UiStrings.stageReplayRouteTitle), findsNothing);
     expect(find.text(UiStrings.stageReplayRouteEquipment), findsNothing);
     expect(find.text(UiStrings.stageReplayRouteMaterial), findsNothing);
@@ -167,6 +168,39 @@ void main() {
 
     expect(find.textContaining('御体 ·'), findsWidgets);
     expect(find.textContaining('真气 ·'), findsWidgets);
+  });
+
+  testWidgets('章节未全通 → 不显示章节推荐刷点', (tester) async {
+    await pumpScreen(
+      tester,
+      chapterIndex: 1,
+      progress: mkProgress(cleared: const ['stage_01_01']),
+    );
+
+    expect(find.text(UiStrings.chapterFarmSpotsTitle), findsNothing);
+    expect(find.text(UiStrings.chapterFarmSpotsHint), findsNothing);
+  });
+
+  testWidgets('章节全通 → 显示最多两个章节推荐刷点', (tester) async {
+    await pumpScreen(
+      tester,
+      chapterIndex: 1,
+      progress: mkProgress(
+        cleared: const [
+          'stage_01_01',
+          'stage_01_02',
+          'stage_01_03',
+          'stage_01_04',
+          'stage_01_05',
+        ],
+      ),
+    );
+
+    expect(find.text(UiStrings.chapterFarmSpotsTitle), findsOneWidget);
+    expect(find.text(UiStrings.chapterFarmSpotsHint), findsOneWidget);
+    expect(find.text(UiStrings.chapterFarmSpotStage(5)), findsOneWidget);
+    expect(find.text('风雨渡口'), findsNWidgets(2));
+    expect(find.text(UiStrings.stageReplayRouteProficiency), findsWidgets);
   });
 
   testWidgets('已通关 Boss 行显示练熟练度路线', (tester) async {
