@@ -39,6 +39,8 @@ void main() {
       find.text(UiStrings.offlineRecapPassiveGainGroupTitle),
       findsOneWidget,
     );
+    expect(find.text(UiStrings.offlineRecapMaterialGroupTitle), findsOneWidget);
+    expect(find.text(UiStrings.offlineRecapParityDetail), findsOneWidget);
     expect(find.textContaining('银两：0'), findsNothing);
     expect(find.textContaining('掉落：无'), findsNothing);
     expect(find.textContaining('招式熟练度：0'), findsNothing);
@@ -115,8 +117,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('离线时长：100 小时'), findsOneWidget);
-    expect(find.textContaining('有效结算：72 小时'), findsOneWidget);
+    expect(
+      find.textContaining(UiStrings.offlineRecapAwayDetail('100 小时')),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining(UiStrings.offlineRecapSettledDetail('72 小时')),
+      findsOneWidget,
+    );
     expect(
       find.textContaining(UiStrings.offlineRecapLimitSystemCap),
       findsOneWidget,

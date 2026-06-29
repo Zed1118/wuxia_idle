@@ -47,11 +47,19 @@ class OfflineRecapDetailFormatter {
       UiStrings.offlineRecapAwayDetail(_formatHours(recap.awayHours)),
       UiStrings.offlineRecapSettledDetail(_formatHours(recap.settledHours)),
       _limitReasonText(recap.limitReason),
+      UiStrings.offlineRecapParityDetail,
     ];
-    final gainRows = _nonEmptyRows([
+    final cultivationRows = _nonEmptyRows([
       recap.estimatedExperience > 0
           ? UiStrings.offlineRecapExperienceDetail(recap.estimatedExperience)
           : null,
+      recap.estimatedTechniqueLearnPoints > 0
+          ? UiStrings.offlineRecapTechniqueLearnDetail(
+              recap.estimatedTechniqueLearnPoints,
+            )
+          : null,
+    ]);
+    final materialRows = _nonEmptyRows([
       recap.estimatedSilver > 0
           ? UiStrings.offlineRecapSilverDetail(recap.estimatedSilver)
           : null,
@@ -64,12 +72,12 @@ class OfflineRecapDetailFormatter {
               ),
             )
           : null,
-      recap.estimatedTechniqueLearnPoints > 0
-          ? UiStrings.offlineRecapTechniqueLearnDetail(
-              recap.estimatedTechniqueLearnPoints,
-            )
-          : null,
     ]);
+    final gainGroups = _gainGroups(
+      cultivationRows: cultivationRows,
+      materialRows: materialRows,
+      emptyGroupTitle: UiStrings.offlineRecapRetreatGainGroupTitle,
+    );
     final detail = OfflineRecapDetail(
       experience: recap.estimatedExperience,
       silver: recap.estimatedSilver,
@@ -83,12 +91,7 @@ class OfflineRecapDetailFormatter {
           title: UiStrings.offlineRecapSettlementGroupTitle,
           rows: settlementRows,
         ),
-        OfflineRecapDetailGroup(
-          title: UiStrings.offlineRecapRetreatGainGroupTitle,
-          rows: gainRows.isEmpty
-              ? [UiStrings.offlineRecapNoGainsDetail]
-              : gainRows,
-        ),
+        ...gainGroups,
         OfflineRecapDetailGroup(
           title: UiStrings.offlineRecapCollectGroupTitle,
           rows: [
@@ -101,16 +104,23 @@ class OfflineRecapDetailFormatter {
   }
 
   static OfflineRecapDetail forPassive(PassiveYield yield_) {
-    final gainRows = _nonEmptyRows([
+    final cultivationRows = _nonEmptyRows([
       yield_.experience > 0
           ? UiStrings.offlineRecapExperienceDetail(yield_.experience)
           : null,
+    ]);
+    final materialRows = _nonEmptyRows([
       yield_.mojianshi > 0
           ? UiStrings.offlineRecapMaterialDetail(
               _materialText(mojianshi: yield_.mojianshi),
             )
           : null,
     ]);
+    final gainGroups = _gainGroups(
+      cultivationRows: cultivationRows,
+      materialRows: materialRows,
+      emptyGroupTitle: UiStrings.offlineRecapPassiveGainGroupTitle,
+    );
     final detail = OfflineRecapDetail(
       experience: yield_.experience,
       silver: 0,
@@ -130,17 +140,40 @@ class OfflineRecapDetailFormatter {
             yield_.isCapped
                 ? UiStrings.offlineRecapLimitSystemCap
                 : UiStrings.offlineRecapLimitInProgress,
+            UiStrings.offlineRecapParityDetail,
           ],
         ),
-        OfflineRecapDetailGroup(
-          title: UiStrings.offlineRecapPassiveGainGroupTitle,
-          rows: gainRows.isEmpty
-              ? [UiStrings.offlineRecapNoGainsDetail]
-              : gainRows,
-        ),
+        ...gainGroups,
       ],
     );
     return detail;
+  }
+
+  static List<OfflineRecapDetailGroup> _gainGroups({
+    required List<String> cultivationRows,
+    required List<String> materialRows,
+    required String emptyGroupTitle,
+  }) {
+    if (cultivationRows.isEmpty && materialRows.isEmpty) {
+      return [
+        OfflineRecapDetailGroup(
+          title: emptyGroupTitle,
+          rows: [UiStrings.offlineRecapNoGainsDetail],
+        ),
+      ];
+    }
+    return [
+      if (cultivationRows.isNotEmpty)
+        OfflineRecapDetailGroup(
+          title: UiStrings.offlineRecapRetreatGainGroupTitle,
+          rows: cultivationRows,
+        ),
+      if (materialRows.isNotEmpty)
+        OfflineRecapDetailGroup(
+          title: UiStrings.offlineRecapMaterialGroupTitle,
+          rows: materialRows,
+        ),
+    ];
   }
 
   static List<String> _nonEmptyRows(List<String?> rows) =>
