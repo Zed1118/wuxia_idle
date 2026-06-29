@@ -209,7 +209,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text(UiStrings.loreSectionDivider), findsOneWidget);
+    expect(find.text(UiStrings.equipmentLoreSectionDivider), findsOneWidget);
     expect(find.text(UiStrings.lorePresetTitle(1)), findsOneWidget);
     expect(find.text(UiStrings.lorePresetTitle(2)), findsOneWidget);
     expect(find.text(UiStrings.lorePresetTitle(3)), findsOneWidget);
@@ -217,6 +217,8 @@ void main() {
     expect(find.text('段二文本'), findsNothing);
     expect(find.text('段三文本'), findsNothing);
 
+    await tester.ensureVisible(find.text(UiStrings.lorePresetTitle(2)));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(UiStrings.lorePresetTitle(2)));
     await tester.pumpAndSettle();
     expect(find.text('段二文本'), findsOneWidget);
@@ -291,7 +293,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('典故待补'), findsOneWidget);
-    expect(find.text(UiStrings.equipmentSourceSectionDivider), findsNothing);
+    expect(find.text(UiStrings.equipmentSourceSectionDivider), findsOneWidget);
+    expect(find.text(UiStrings.equipmentSourceEmpty), findsOneWidget);
   });
 
   // ── W15 后波 fix:师承遗物 chip 读 equipment.isLineageHeritage 而非 def ─────

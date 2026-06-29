@@ -704,6 +704,26 @@ class UiStrings {
   // 仓库 / 强化对话框（T29）
   static const String inventoryTitle = '装备仓库';
   static const String inventoryEmpty = '仓库空空如也';
+  static const String inventorySummaryTitle = '仓库总览';
+  static String inventorySummaryLine({
+    required int total,
+    required int shown,
+    required int equippable,
+    required int equipped,
+    required int locked,
+    required int realmLocked,
+  }) =>
+      '显示 $shown / $total 件 · 可装备 $equippable · 已穿戴 $equipped · 锁定 $locked · 境界不足 $realmLocked';
+  static String inventoryCurrentCondition(String condition, String sort) =>
+      '条件：$condition · $sort';
+  static const String inventoryConditionAll = '全部';
+  static String inventoryConditionParts(List<String> parts) =>
+      parts.isEmpty ? inventoryConditionAll : parts.join(' / ');
+  static const String equipmentCardCoreStats = '核心属性';
+  static const String equipmentCardRealmGate = '门槛';
+  static const String equipmentCardStatusReady = '可装备';
+  static const String equipmentCardStatusFree = '未穿戴';
+  static const String equipmentCardActionView = '查看';
 
   /// 装备详情共鸣行:`战斗 N 次`。
   static String equipmentBattleCount(int count) => '战斗 $count 次';
@@ -835,6 +855,8 @@ class UiStrings {
   static const String equipmentDisassemble = '分解';
   static const String equipmentLock = '锁定';
   static const String equipmentUnlock = '解锁';
+  static const String equipmentActionStrengthen = '强化';
+  static const String equipmentActionForge = '开锋';
   static const String equipmentLockedLabel = '已锁定';
   static const String equipmentDropActionLater = '稍后处理';
   static const String equipmentDropActionSource = '查看来源';
@@ -855,7 +877,7 @@ class UiStrings {
   static const String equipmentDropLockAdviceFit = '建议锁定：当前队伍已有合适人选。';
   static const String equipmentDropLockAdviceWait = '建议稍候：境界未达，先留仓观望。';
   static const String equipmentDropLockAdviceCommon = '建议按需锁定：寻常装备可先看属性再整理。';
-  static const String equipmentBulkEntry = '批量整理';
+  static const String equipmentBulkEntry = '整理';
   static const String equippedBadge = '装备中';
   static const String inventoryLineageSealLabel = '师承遗物';
   static const String inventoryLockedSealLabel = '已锁定';
@@ -902,24 +924,24 @@ class UiStrings {
   static const String inventoryFilterEquipped = '已穿戴';
   static const String inventoryFilterForgeable = '可开锋';
   static const String inventoryFilterRealmLocked = '境界未达';
-  static const String inventoryFilterSlotAll = '类型：全部';
-  static const String inventoryFilterTierAll = '阶位：全部';
-  static const String inventoryFilterSchoolAll = '流派：全部';
-  static const String inventoryFilterSchoolNone = '流派：无';
-  static const String inventoryFilterOwnershipAll = '状态：全部';
-  static String inventoryFilterSlotLabel(String name) => '类型：$name';
-  static String inventoryFilterTierLabel(String name) => '阶位：$name';
-  static String inventoryFilterSchoolLabel(String name) => '流派：$name';
+  static const String inventoryFilterSlotAll = '部位·全部';
+  static const String inventoryFilterTierAll = '品阶·全部';
+  static const String inventoryFilterSchoolAll = '流派·全部';
+  static const String inventoryFilterSchoolNone = '无流派';
+  static const String inventoryFilterOwnershipAll = '状态·全部';
+  static String inventoryFilterSlotLabel(String name) => '部位·$name';
+  static String inventoryFilterTierLabel(String name) => '品阶·$name';
+  static String inventoryFilterSchoolLabel(String name) => '流派·$name';
   static const String inventoryFilterFree = '自由';
   static const String inventoryFilterHeritage = '师承遗物';
   static const String inventoryFilterLocked = '已锁定';
   static const String inventoryFilterProtected = '受保护';
-  static const String inventorySortTierDesc = '阶位高→低';
-  static const String inventorySortTierAsc = '阶位低→高';
-  static const String inventorySortEnhanceDesc = '强化高→低';
-  static const String inventorySortObtainedDesc = '入手新→旧';
-  static const String inventorySortObtainedAsc = '入手旧→新';
-  static String inventorySortLabel(String label) => '排序：$label';
+  static const String inventorySortTierDesc = '品阶降序';
+  static const String inventorySortTierAsc = '品阶升序';
+  static const String inventorySortEnhanceDesc = '强化优先';
+  static const String inventorySortObtainedDesc = '新获优先';
+  static const String inventorySortObtainedAsc = '旧物优先';
+  static String inventorySortLabel(String label) => '排序·$label';
 
   /// T11:仓库格子境界锁封条显具体原因(需 X 境界),替泛化「未达境界」。
   static String inventoryRealmLockBanner(String realmName) => '需$realmName境界';
@@ -1413,7 +1435,12 @@ class UiStrings {
   static String equipmentResonanceNextBonus(int pct) => '下一阶 +$pct%';
   static String equipmentResonanceBattleProgress(int count, int nextMin) =>
       '战斗 $count/$nextMin';
+  static const String equipmentDetailBasicSection = '基础信息';
+  static const String equipmentDetailGrowthSection = '属性与养成';
+  static const String equipmentDetailActionSection = '操作';
   static const String equipmentSourceSectionDivider = '◇ 来源 ◇';
+  static const String equipmentSourceEmpty = '来源未明';
+  static const String equipmentLoreSectionDivider = '◇ 典故 ◇';
   static String equipmentSourceMainline(
     int chapterIndex,
     String stageName,

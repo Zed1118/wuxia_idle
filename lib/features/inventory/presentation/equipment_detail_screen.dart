@@ -249,7 +249,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                 final hero = _DetailHero(
                   def: widget.def,
                   // 窄屏(<900)矮窗下大图压缩高度,给信息卡养成入口留首屏空间(T8)。
-                  height: wide ? 520 : 300,
+                  height: wide ? 520 : 180,
                 );
                 final info = _InfoCard(
                   equipment: widget.equipment,
@@ -278,10 +278,11 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                       info,
                     ],
                     const SizedBox(height: 16),
+                    _SourceSection(sources: sources),
+                    const SizedBox(height: 16),
                     _LoreSection(
                       future: _loreFuture,
                       equipment: widget.equipment,
-                      sources: sources,
                     ),
                   ],
                 );
@@ -433,6 +434,8 @@ class _InfoCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SectionHeader(UiStrings.equipmentDetailBasicSection),
+            const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -469,56 +472,8 @@ class _InfoCard extends ConsumerWidget {
                   ),
               ],
             ),
-            // T8:养成入口前移到信息卡首屏顶部(紧贴品阶行),保证窄屏/矮窗首屏即见。
-            // 2026-06-27:锁定/整理动作也收进信息卡,避免底部重复按钮。
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: PlaqueButton(
-                    label: '${UiStrings.tabEnhance} +${equipment.enhanceLevel}',
-                    primary: true,
-                    onTap: onEnhance,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: PlaqueButton(
-                    label: UiStrings.tabForging,
-                    onTap: onForge,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: PlaqueButton(
-                    label: equipment.isLocked
-                        ? UiStrings.equipmentUnlock
-                        : UiStrings.equipmentLock,
-                    onTap: onLockToggle,
-                  ),
-                ),
-              ],
-            ),
-            if (onSell != null && onDisassemble != null) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: PlaqueButton(
-                      label: UiStrings.equipmentSell,
-                      onTap: onSell,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: PlaqueButton(
-                      label: UiStrings.equipmentDisassemble,
-                      onTap: onDisassemble,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            const SectionHeader(UiStrings.equipmentDetailGrowthSection),
             const SizedBox(height: 10),
             _StatRow(
               attack: equipment.baseAttack,
@@ -555,6 +510,57 @@ class _InfoCard extends ConsumerWidget {
               def: def,
               activeCharacters: activeCharacters,
             ),
+            const SizedBox(height: 14),
+            const SectionHeader(UiStrings.equipmentDetailActionSection),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: PlaqueButton(
+                    label:
+                        '${UiStrings.equipmentActionStrengthen} +${equipment.enhanceLevel}',
+                    primary: true,
+                    onTap: onEnhance,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: PlaqueButton(
+                    label: UiStrings.equipmentActionForge,
+                    onTap: onForge,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: PlaqueButton(
+                    label: equipment.isLocked
+                        ? UiStrings.equipmentUnlock
+                        : UiStrings.equipmentLock,
+                    onTap: onLockToggle,
+                  ),
+                ),
+              ],
+            ),
+            if (onSell != null && onDisassemble != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: PlaqueButton(
+                      label: UiStrings.equipmentSell,
+                      onTap: onSell,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: PlaqueButton(
+                      label: UiStrings.equipmentDisassemble,
+                      onTap: onDisassemble,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -917,16 +923,46 @@ class _StatRow extends StatelessWidget {
   }
 }
 
+class _SourceSection extends StatelessWidget {
+  const _SourceSection({required this.sources});
+
+  final List<EquipmentSource> sources;
+
+  @override
+  Widget build(BuildContext context) {
+    final sourceLabels = sources.map(_sourceLabel).toList();
+    return PaperPanel(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SectionHeader(UiStrings.equipmentSourceSectionDivider),
+          const SizedBox(height: 10),
+          if (sourceLabels.isEmpty)
+            const Text(
+              UiStrings.equipmentSourceEmpty,
+              style: TextStyle(color: WuxiaUi.muted, fontSize: 13),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final source in sourceLabels)
+                  _Chip(text: source, color: WuxiaUi.ink2),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _LoreSection extends StatefulWidget {
-  const _LoreSection({
-    required this.future,
-    required this.equipment,
-    required this.sources,
-  });
+  const _LoreSection({required this.future, required this.equipment});
 
   final Future<LoreContent?> future;
   final Equipment equipment;
-  final List<EquipmentSource> sources;
 
   @override
   State<_LoreSection> createState() => _LoreSectionState();
@@ -937,7 +973,6 @@ class _LoreSectionState extends State<_LoreSection> {
   Widget build(BuildContext context) {
     final continued = widget.equipment.lores.where((l) => !l.isPreset).toList()
       ..sort((a, b) => a.addedAt.compareTo(b.addedAt));
-    final sourceLabels = widget.sources.map(_sourceLabel).toList();
     return FutureBuilder<LoreContent?>(
       future: widget.future,
       builder: (ctx, snap) {
@@ -949,7 +984,7 @@ class _LoreSectionState extends State<_LoreSection> {
             content != null &&
             !content.isPlaceholder &&
             content.defaultLore.isNotEmpty;
-        if (!hasPreset && continued.isEmpty && sourceLabels.isEmpty) {
+        if (!hasPreset && continued.isEmpty) {
           return const PaperPanel(
             child: Center(
               child: Text(
@@ -964,28 +999,7 @@ class _LoreSectionState extends State<_LoreSection> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SectionHeader(UiStrings.loreSectionDivider),
-              if (sourceLabels.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                const Text(
-                  UiStrings.equipmentSourceSectionDivider,
-                  style: TextStyle(
-                    color: WuxiaUi.ink2,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final source in sourceLabels)
-                      _Chip(text: source, color: WuxiaUi.ink2),
-                  ],
-                ),
-              ],
+              const SectionHeader(UiStrings.equipmentLoreSectionDivider),
               if (hasPreset) ...[
                 const SizedBox(height: 14),
                 for (int i = 0; i < content.defaultLore.length; i++) ...[
