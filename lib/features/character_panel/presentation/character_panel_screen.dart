@@ -18,6 +18,7 @@ import '../../inner_demon/application/inner_demon_providers.dart';
 import '../../inner_demon/domain/inner_demon_panel.dart';
 import '../../inner_demon/presentation/breakthrough_blocker.dart';
 import '../../inner_demon/presentation/inner_demon_screen.dart';
+import '../../injury/presentation/injury_status_view.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
@@ -291,6 +292,12 @@ class _ProfileHeaderCard extends StatelessWidget {
                 // 第八阶段·角色等级 Lv:等级 chip + 经验条(config 读用 instanceOrNull
                 // 守,缺 GameRepository 时退化为纯 Lv 数字不崩轻量测)。
                 _LevelChip(character: character),
+                const SizedBox(height: 8),
+                InjuryStatusPanel(
+                  character: character,
+                  alwaysShow: true,
+                  showRecoveryAction: true,
+                ),
                 const SizedBox(height: 12),
                 _AttributeStrip(
                   attributes: [

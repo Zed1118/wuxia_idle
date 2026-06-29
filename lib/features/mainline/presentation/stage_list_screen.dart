@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/defs/stage_def.dart';
 import '../../../core/application/character_providers.dart';
+import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -98,19 +99,20 @@ class StageListScreen extends ConsumerWidget {
 
             // 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。
             // 任一层 async 未就绪 → null（dialog 宽容 null，仅跳过超境提示）。
-            final currentRealm = ref
+            final activeIds = ref
                 .watch(activeCharacterIdsProvider)
-                .maybeWhen(
-                  data: (ids) => ids.isEmpty
-                      ? null
-                      : ref
-                            .watch(characterByIdProvider(ids.first))
-                            .maybeWhen(
-                              data: (c) => c?.realmTier,
-                              orElse: () => null,
-                            ),
-                  orElse: () => null,
-                );
+                .maybeWhen(data: (ids) => ids, orElse: () => const <int>[]);
+            final activeCharacters = <Character>[
+              for (final id in activeIds)
+                if (ref
+                        .watch(characterByIdProvider(id))
+                        .maybeWhen(data: (c) => c, orElse: () => null)
+                    case final Character c)
+                  c,
+            ];
+            final currentRealm = activeCharacters.isEmpty
+                ? null
+                : activeCharacters.first.realmTier;
 
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -154,6 +156,7 @@ class StageListScreen extends ConsumerWidget {
                       def: entries[i].def,
                       status: statusFor(entries[i]),
                       currentRealm: currentRealm,
+                      activeCharacters: activeCharacters,
                       onTap: statusFor(entries[i]) == StageStatus.locked
                           ? null
                           : () => runStageFlow(
@@ -354,6 +357,7 @@ class _StageRow extends StatelessWidget {
     required this.status,
     required this.onTap,
     this.currentRealm,
+    this.activeCharacters = const [],
   });
 
   final int stageIndex;
@@ -361,6 +365,7 @@ class _StageRow extends StatelessWidget {
   final StageStatus status;
   final VoidCallback? onTap;
   final RealmTier? currentRealm;
+  final List<Character> activeCharacters;
 
   @override
   Widget build(BuildContext context) {
@@ -512,6 +517,7 @@ class _StageRow extends StatelessWidget {
                   stage: def,
                   rumorTable: rumor,
                   currentRealm: currentRealm,
+                  activeCharacters: activeCharacters,
                 ),
               ),
               const SizedBox(width: 8),

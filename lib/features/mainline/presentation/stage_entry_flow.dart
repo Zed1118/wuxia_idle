@@ -286,6 +286,7 @@ Future<void> runStageFlow({
       advancements: outcome.advancements,
       resonanceUpgrades: outcome.resonanceUpgrades,
       stats: outcome.stats,
+      injurySummaryCharacters: outcome.characters,
       skillFragmentLine: skillFragmentLineFor(skillDrop),
       onEquipmentLockToggle: (equipment, locked) async {
         final result = await EquipmentService(
@@ -761,6 +762,7 @@ Future<
     BattleStatsSummary stats,
     HeroCameraData? heroCamera,
     Set<EquipmentTier> extraDisplayTiers,
+    List<Character> characters,
   })?
 >
 applyVictoryResolution({
@@ -1033,6 +1035,7 @@ applyVictoryResolution({
     stats: stats,
     heroCamera: heroCamera,
     extraDisplayTiers: extraDisplayTiers,
+    characters: List<Character>.unmodifiable(characters),
   );
 }
 
