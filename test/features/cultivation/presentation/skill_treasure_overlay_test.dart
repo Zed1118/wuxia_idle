@@ -13,20 +13,19 @@ SkillDropResult _fragmentResult({
   String skillId = 'skill_frag',
   int count = 5,
   int threshold = 5,
-}) =>
-    SkillDropResult(
-      fragmentSkillId: skillId,
-      fragmentCount: count,
-      fragmentThreshold: threshold,
-      fragmentJustUnlocked: true,
-    );
+}) => SkillDropResult(
+  fragmentSkillId: skillId,
+  fragmentCount: count,
+  fragmentThreshold: threshold,
+  fragmentJustUnlocked: true,
+);
 
 SkillDropResult _minorFragmentResult() => const SkillDropResult(
-      fragmentSkillId: 'skill_frag',
-      fragmentCount: 2,
-      fragmentThreshold: 5,
-      fragmentJustUnlocked: false,
-    );
+  fragmentSkillId: 'skill_frag',
+  fragmentCount: 2,
+  fragmentThreshold: 5,
+  fragmentJustUnlocked: false,
+);
 
 // 供测试直接 pump 的 SkillTreasureContent（公开的 testable widget）。
 // 不依赖 GameRepository（skillName / imagePath 由调用方传入）。
@@ -51,6 +50,8 @@ void main() {
 
       expect(find.text('青锋斩'), findsOneWidget);
       expect(find.text(UiStrings.skillTreasureManualCaption), findsOneWidget);
+      expect(find.text(UiStrings.skillTreasureScrollLabel), findsOneWidget);
+      expect(find.text(UiStrings.skillTreasureManualHint), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -70,6 +71,7 @@ void main() {
 
       expect(find.text('残云决'), findsOneWidget);
       expect(find.text(UiStrings.skillTreasureFragmentCaption), findsOneWidget);
+      expect(find.text(UiStrings.skillTreasureFragmentHint), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -89,6 +91,7 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text('独孤剑'), findsOneWidget);
+      expect(find.text(UiStrings.skillTreasureFallbackGlyph), findsOneWidget);
     });
 
     testWidgets('imagePath 指向不存在资产 — errorBuilder 兜底无异常', (tester) async {
@@ -279,7 +282,8 @@ void main() {
 
   group('skillFragmentLineFor 共享轻提示 helper（Task 11 DRY）', () {
     test('isMinorFragment → 返回包含 id + count + threshold 的行', () {
-      final result = _minorFragmentResult(); // fragmentSkillId='skill_frag', count=2, threshold=5
+      final result =
+          _minorFragmentResult(); // fragmentSkillId='skill_frag', count=2, threshold=5
       final line = skillFragmentLineFor(result);
       expect(line, isNotNull);
       // GameRepository 未加载 → fallback 用 id 字面量

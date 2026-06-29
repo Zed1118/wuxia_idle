@@ -32,6 +32,9 @@ class SkillTreasureContent extends StatelessWidget {
     final caption = isManual
         ? UiStrings.skillTreasureManualCaption
         : UiStrings.skillTreasureFragmentCaption;
+    final hint = isManual
+        ? UiStrings.skillTreasureManualHint
+        : UiStrings.skillTreasureFragmentHint;
 
     return Align(
       alignment: const Alignment(0, -0.10),
@@ -73,51 +76,148 @@ class SkillTreasureContent extends StatelessWidget {
             ),
             const SizedBox(height: 14),
 
-            // 卷轴感题字「武学新得」/ 「秘传重现」(caption 语境标)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-              decoration: BoxDecoration(
-                color: WuxiaColors.resultHighlight.withValues(alpha: 0.15),
-                border: Border.all(
-                  color: WuxiaColors.resultHighlight.withValues(alpha: 0.45),
-                ),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                caption,
-                style: const TextStyle(
-                  color: WuxiaColors.resultHighlight,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
+            _ScrollPanel(
+              caption: caption,
+              hint: hint,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 招式插图（null 或资产缺失 → 水墨卷轴占位符）
+                  _SkillImage(imagePath: imagePath),
+                  const SizedBox(height: 14),
 
-            // 招式插图（null 或资产缺失 → 水墨卷轴占位符）
-            _SkillImage(imagePath: imagePath),
-            const SizedBox(height: 14),
-
-            // 招式名（大，金色题字感）
-            Text(
-              skillName,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: WuxiaColors.resultHighlight,
-                fontSize: 38,
-                fontWeight: FontWeight.bold,
-                shadows: [
-                  Shadow(
-                    blurRadius: 10,
-                    color: Color(0xCC000000),
-                    offset: Offset(2, 3),
+                  // 招式名（大，金色题字感）
+                  Text(
+                    skillName,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: WuxiaColors.resultHighlight,
+                      fontSize: 38,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 10,
+                          color: Color(0xCC000000),
+                          offset: Offset(2, 3),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ScrollPanel extends StatelessWidget {
+  const _ScrollPanel({
+    required this.caption,
+    required this.hint,
+    required this.child,
+  });
+
+  final String caption;
+  final String hint;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.92),
+        border: Border.all(
+          color: WuxiaColors.resultHighlight.withValues(alpha: 0.42),
+          width: 1.4,
+        ),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x77000000),
+            blurRadius: 18,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const _ScrollRod(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: WuxiaColors.resultHighlight.withValues(alpha: 0.12),
+                    border: Border.all(
+                      color: WuxiaColors.resultHighlight.withValues(alpha: 0.4),
+                    ),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: const Text(
+                    UiStrings.skillTreasureScrollLabel,
+                    style: TextStyle(
+                      color: WuxiaColors.resultHighlight,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 3,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  caption,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: WuxiaUi.ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  hint,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: WuxiaUi.muted,
+                    fontSize: 12,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                child,
+              ],
+            ),
+          ),
+          const _ScrollRod(),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScrollRod extends StatelessWidget {
+  const _ScrollRod();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 10,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: WuxiaColors.resultHighlight.withValues(alpha: 0.62),
+          borderRadius: BorderRadius.circular(5),
         ),
       ),
     );
@@ -156,7 +256,7 @@ class _SkillImage extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: const Text(
-        '武',
+        UiStrings.skillTreasureFallbackGlyph,
         style: TextStyle(
           color: WuxiaColors.resultHighlight,
           fontSize: 56,
@@ -204,10 +304,9 @@ class _SkillTreasureOverlayState extends State<SkillTreasureOverlay>
   bool _done = false;
   Timer? _autoTimer;
 
-  double get _holdSeconds =>
-      GameRepository.isLoaded
-          ? GameRepository.instance.numbers.heroCamera.holdSeconds
-          : 3.0;
+  double get _holdSeconds => GameRepository.isLoaded
+      ? GameRepository.instance.numbers.heroCamera.holdSeconds
+      : 3.0;
 
   @override
   void initState() {
@@ -271,10 +370,7 @@ class _SkillTreasureOverlayState extends State<SkillTreasureOverlay>
               offset: Offset(0, _slide.value * 32),
               child: Transform.scale(
                 scale: _scale.value,
-                child: Opacity(
-                  opacity: _opacity.value,
-                  child: child,
-                ),
+                child: Opacity(opacity: _opacity.value, child: child),
               ),
             );
           },
