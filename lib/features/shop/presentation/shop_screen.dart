@@ -11,6 +11,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/asset_fallback.dart';
+import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
@@ -58,11 +59,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       body: SafeArea(
         child: silverAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(
-            child: SelectableText(
-              'load error: $e',
-              style: const TextStyle(color: WuxiaColors.hpLow),
-            ),
+          error: (e, _) => ErrorFallback(
+            error: e,
+            onRetry: () => ref.invalidate(silverBalanceProvider),
           ),
           data: (silver) {
             // founderEtl 加载中时先用 null（动态价商品禁用，固定价正常）

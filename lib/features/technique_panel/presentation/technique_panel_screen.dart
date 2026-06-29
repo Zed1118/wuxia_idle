@@ -68,11 +68,9 @@ class TechniquePanelScreen extends ConsumerWidget {
         child: SafeArea(
           child: chAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(
-              child: SelectableText(
-                'load error: $e',
-                style: const TextStyle(color: WuxiaColors.hpLow),
-              ),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () => ref.invalidate(characterByIdProvider(characterId)),
             ),
             data: (c) {
               if (c == null) {
@@ -85,11 +83,10 @@ class TechniquePanelScreen extends ConsumerWidget {
               }
               return techsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(
-                  child: SelectableText(
-                    'load error: $e',
-                    style: const TextStyle(color: WuxiaColors.hpLow),
-                  ),
+                error: (e, _) => ErrorFallback(
+                  error: e,
+                  onRetry: () =>
+                      ref.invalidate(characterAllTechniquesProvider(characterId)),
                 ),
                 data: (techs) => _Body(character: c, techniques: techs),
               );

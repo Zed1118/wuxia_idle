@@ -6,6 +6,7 @@ import '../../../data/isar_setup.dart';
 import '../../../data/slot_summary.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../application/slot_list_provider.dart';
@@ -99,8 +100,10 @@ class SaveSelectScreen extends ConsumerWidget {
         child: Center(
           child: slotsAsync.when(
             loading: () => const CircularProgressIndicator(),
-            error: (e, _) => Text('$e',
-                style: const TextStyle(color: WuxiaColors.textSecondary)),
+            error: (e, _) => ErrorFallback(
+              error: e,
+              onRetry: () => ref.invalidate(slotListProvider),
+            ),
             data: (slots) => SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
