@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wuxia_idle/features/settings/application/gameplay_settings_service.dart';
+import 'package:wuxia_idle/features/settings/domain/gameplay_settings.dart';
 import 'package:wuxia_idle/features/settings/presentation/settings_panel.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -24,7 +25,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // 默认 on。
-    final tile = find.widgetWithText(SwitchListTile, UiStrings.settingsAutoPlayDefault);
+    final tile = find.widgetWithText(
+      SwitchListTile,
+      UiStrings.settingsAutoPlayDefault,
+    );
     expect(tile, findsOneWidget);
     expect(tester.widget<SwitchListTile>(tile).value, isTrue);
 
@@ -33,5 +37,39 @@ void main() {
     await tester.pumpAndSettle();
     final svc = GameplaySettingsService();
     expect((await svc.load()).autoPlayDefault, isFalse);
+  });
+
+  testWidgets('设置面板集中展示舒适性选项, 可持久化减少闪烁', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.binding.setSurfaceSize(const Size(420, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: Scaffold(body: SettingsPanel())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(UiStrings.settingsAudioSection), findsOneWidget);
+    expect(find.text(UiStrings.settingsComfortSection), findsOneWidget);
+    expect(find.text(UiStrings.settingsDisplaySection), findsOneWidget);
+    expect(find.text(UiStrings.settingsBattleSpeed), findsOneWidget);
+    expect(find.text(UiStrings.settingsTextDensity), findsOneWidget);
+
+    final reduceFlashing = find.widgetWithText(
+      SwitchListTile,
+      UiStrings.settingsReduceFlashing,
+    );
+    expect(reduceFlashing, findsOneWidget);
+    await tester.ensureVisible(reduceFlashing);
+    await tester.pumpAndSettle();
+    await tester.tap(reduceFlashing);
+    await tester.pumpAndSettle();
+
+    final s = await GameplaySettingsService().load();
+    expect(s.reduceFlashing, isTrue);
+    expect(s.battlePlaybackSpeed, BattlePlaybackSpeed.normal);
+    expect(s.textDensity, TextDensityPreference.standard);
   });
 }
