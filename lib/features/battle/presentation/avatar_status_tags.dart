@@ -34,27 +34,33 @@ class AvatarStatusTags extends StatelessWidget {
 
     // ① 影响生死:内伤(持续掉血可致死)。
     if (character.internalInjury != null) {
-      tags.add(const AvatarStatusSpec(
-        label: UiStrings.statusInternalInjuryLabel,
-        gloss: UiStrings.statusInternalInjuryGloss,
-        color: WuxiaColors.yinRou,
-      ));
+      tags.add(
+        const AvatarStatusSpec(
+          label: UiStrings.statusInternalInjuryLabel,
+          gloss: UiStrings.statusInternalInjuryGloss,
+          color: WuxiaColors.yinRou,
+        ),
+      );
     }
     // ② 影响操作:踉跄(被破招后防御骤降、难还手)。
     if (character.staggerTicksRemaining > 0) {
-      tags.add(const AvatarStatusSpec(
-        label: UiStrings.statusStaggerLabel,
-        gloss: UiStrings.statusStaggerGloss,
-        color: WuxiaColors.hpLow,
-      ));
+      tags.add(
+        AvatarStatusSpec(
+          label: UiStrings.statusStaggerLabel,
+          gloss: UiStrings.statusStaggerGloss,
+          color: WuxiaColors.hpLow,
+        ),
+      );
     }
     // ③ 纯数值 buff:剑鸣(暴击附威能)。
     if (character.swordSongResonanceActive) {
-      tags.add(const AvatarStatusSpec(
-        label: UiStrings.statusSwordSongLabel,
-        gloss: UiStrings.statusSwordSongGloss,
-        color: WuxiaColors.resultHighlight,
-      ));
+      tags.add(
+        const AvatarStatusSpec(
+          label: UiStrings.statusSwordSongLabel,
+          gloss: UiStrings.statusSwordSongGloss,
+          color: WuxiaColors.resultHighlight,
+        ),
+      );
     }
 
     if (tags.isEmpty) return const SizedBox.shrink();
