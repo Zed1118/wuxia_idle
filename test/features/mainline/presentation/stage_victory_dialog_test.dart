@@ -169,6 +169,7 @@ void main() {
       await _pumpContent(tester, _emptyDrops(), const []);
       expect(find.text(UiStrings.stageVictoryDropLabel), findsOneWidget);
       expect(find.text(UiStrings.stageVictoryNoDrop), findsOneWidget);
+      expect(find.text(UiStrings.stageVictoryExperienceSection), findsNothing);
       expect(find.byIcon(Icons.auto_awesome), findsNothing);
     });
 
@@ -205,6 +206,10 @@ void main() {
       ]);
       expect(find.text(UiStrings.stageVictoryNoDrop), findsOneWidget);
       expect(find.text(UiStrings.advancementCeremonyTitle), findsOneWidget);
+      expect(
+        find.text(UiStrings.stageVictoryExperienceSection),
+        findsOneWidget,
+      );
       expect(_assetImage(WuxiaUi.ceremonyRealmBreakthrough), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
       expect(find.textContaining('甲 · 突破至'), findsOneWidget);
@@ -252,6 +257,7 @@ void main() {
         find.text(UiStrings.stageVictoryResonanceCeremonyTitle),
         findsOneWidget,
       );
+      expect(find.text(UiStrings.stageVictoryEquipmentSection), findsOneWidget);
       expect(find.text(UiStrings.stageVictoryResonanceLabel), findsOneWidget);
       expect(find.textContaining('「青锋剑」共鸣度晋至 默契'), findsOneWidget);
       expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
@@ -349,10 +355,7 @@ void main() {
         find.text(UiStrings.equipmentDropUsableCharacters('沈青')),
         findsOneWidget,
       );
-      expect(
-        find.text(UiStrings.equipmentDropSchoolFit('灵巧')),
-        findsOneWidget,
-      );
+      expect(find.text(UiStrings.equipmentDropSchoolFit('灵巧')), findsOneWidget);
       expect(find.text(UiStrings.equipmentDropLockAdviceFit), findsOneWidget);
     });
 
@@ -524,6 +527,143 @@ void main() {
     testWidgets('skillFragmentLine=null → 不渲染残页行(向后兼容)', (tester) async {
       await _pumpContent(tester, _emptyDrops(), const []);
       expect(find.textContaining('得残页'), findsNothing);
+    });
+
+    testWidgets('卷轴结算按经验、掉落、装备、秘籍、战况、伤势分区', (tester) async {
+      final fragmentLine = UiStrings.skillFragmentGainedLine('神龙一式', 3, 5);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StageVictoryContent(
+              drops: DropResult(
+                equipments: _equipDrops([
+                  'weapon_xunchang_tie_jian',
+                ]).equipments,
+                items: const [
+                  ItemDropResult(defId: 'item_mojianshi', quantity: 2),
+                  ItemDropResult(defId: 'item_scroll_test_manual', quantity: 1),
+                ],
+              ),
+              advancements: [
+                AdvancementEntry(chName: '甲', result: _advanced()),
+              ],
+              resonanceUpgrades: const [
+                ResonanceUpgradeNotice(
+                  equipmentName: '青锋剑',
+                  newStage: ResonanceStage.moQi,
+                ),
+              ],
+              stats: const BattleStatsSummary(
+                totalDamage: 1234,
+                critCount: 3,
+                totalTicks: 9,
+              ),
+              injurySummaryCharacters: [_character(injuryHours: 2)],
+              skillFragmentLine: fragmentLine,
+            ),
+          ),
+        ),
+      );
+
+      expect(
+        find.text(UiStrings.stageVictoryExperienceSection),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.stageVictoryDropLabel), findsOneWidget);
+      expect(find.text(UiStrings.stageVictoryEquipmentSection), findsOneWidget);
+      expect(find.text(UiStrings.stageVictoryManualSection), findsOneWidget);
+      expect(find.text(UiStrings.stageVictoryBattleSection), findsOneWidget);
+      expect(find.text(UiStrings.stageVictoryInjurySection), findsOneWidget);
+      expect(find.textContaining('磨剑石 ×2'), findsOneWidget);
+      expect(find.textContaining('心法秘籍 ×1'), findsOneWidget);
+      expect(find.text(fragmentLine), findsOneWidget);
+      expect(find.text(UiStrings.stageVictoryNoDrop), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('长掉落列表在卷轴层内可滚动且不溢出', (tester) async {
+      tester.view.physicalSize = const Size(600, 360);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StageVictoryContent(
+              drops: DropResult(
+                equipments: const [],
+                items: [
+                  for (var i = 0; i < 32; i++)
+                    ItemDropResult(defId: 'item_mojianshi', quantity: i + 1),
+                ],
+              ),
+              advancements: const [],
+            ),
+          ),
+        ),
+      );
+
+      final scrollable = tester.state<ScrollableState>(find.byType(Scrollable));
+      expect(scrollable.position.maxScrollExtent, greaterThan(0));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('常规桌面视口 smoke：1280x720 / 1440x900 不溢出', (tester) async {
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      for (final size in const [Size(1280, 720), Size(1440, 900)]) {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: StageVictoryContent(
+                  drops: DropResult(
+                    equipments: _equipDrops([
+                      'weapon_xunchang_tie_jian',
+                      'weapon_shenwu_tian_wen_jian',
+                    ]).equipments,
+                    items: const [
+                      ItemDropResult(defId: 'item_mojianshi', quantity: 2),
+                      ItemDropResult(
+                        defId: 'item_scroll_test_manual',
+                        quantity: 1,
+                      ),
+                    ],
+                  ),
+                  advancements: [
+                    AdvancementEntry(chName: '甲', result: _advanced()),
+                  ],
+                  stats: const BattleStatsSummary(
+                    totalDamage: 1234,
+                    critCount: 3,
+                    totalTicks: 9,
+                  ),
+                  injurySummaryCharacters: [_character(injuryHours: 2)],
+                  skillFragmentLine: UiStrings.skillFragmentGainedLine(
+                    '神龙一式',
+                    3,
+                    5,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+        expect(
+          find.text(UiStrings.stageVictoryEquipmentSection),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      }
     });
   });
 
