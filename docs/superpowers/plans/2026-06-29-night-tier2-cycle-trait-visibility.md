@@ -27,8 +27,8 @@
 
 ## 当前恢复点
 
-- 状态：计划文件已创建，尚未改代码。
-- 最后完成：读取 `AGENTS.md`、`CLAUDE.md`、`GDD.md`、`PROGRESS.md`、`docs/spec/playability_phase2_backlog.md`、`/Users/a10506/Desktop/挂机武侠_已否任务.md`；创建分支。
-- 下一步：定位周目词条相关模型、UI 与测试。
-- 已跑验证：无。
+- 状态：完成，等待上游复核/合并。
+- 最后完成：新增 `CycleTraitIntel` 集中 formatter；关卡行显示高周目词条摘要；战前情报新增「周目词条」段；补纯函数与 widget tests；更新 `PROGRESS.md`。
+- 下一步：主窗口复核分支 diff，必要时做真机视觉目检后合并。
+- 已跑验证：`dart run build_runner build --delete-conflicting-outputs`；`flutter test --no-pub test/features/battle/cycle_trait_intel_test.dart test/features/loot_preview/stage_intel_dialog_test.dart test/features/mainline/presentation/stage_list_screen_test.dart`；`dart analyze lib/features/battle/domain/cycle_trait_intel.dart lib/features/mainline/presentation/stage_list_screen.dart lib/features/loot_preview/presentation/stage_intel_dialog.dart lib/shared/strings.dart test/features/battle/cycle_trait_intel_test.dart test/features/loot_preview/stage_intel_dialog_test.dart test/features/mainline/presentation/stage_list_screen_test.dart`。
 - 阻塞项：无。
