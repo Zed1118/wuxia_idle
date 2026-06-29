@@ -1,5 +1,6 @@
 import '../core/domain/item_source.dart';
 import '../core/domain/item_usage.dart';
+import '../core/domain/resource_overview_display.dart';
 
 enum CombatTerm { charge, interrupt, zhenqi, yuti, phase, heavyInjury }
 
@@ -683,8 +684,11 @@ class UiStrings {
   static const String resourceOverviewEmpty = '暂无相关资源';
   static const String resourceOverviewUsageLabel = '用途：';
   static const String resourceOverviewSourceLabel = '来源：';
+  static const String resourceOverviewDirectionLabel = '近期去向：';
+  static const String resourceOverviewSourceDetailTitle = '主要来源';
   static const String resourceOverviewNoUsage = '暂无已接入用途';
   static const String resourceOverviewNoSource = '暂无稳定来源';
+  static const String resourceOverviewNoDirection = '暂未接入消耗';
   static const String resourceOverviewCategoryCurrency = '银两';
   static const String resourceOverviewCategoryEquipmentMaterial = '炼器材料';
   static const String resourceOverviewCategoryIslandProduct = '桃花岛产物';
@@ -692,6 +696,30 @@ class UiStrings {
   static const String resourceOverviewCategoryScroll = '秘籍残卷';
   static String resourceOverviewQuantity(int quantity) => '库存 ×$quantity';
   static String resourceOverviewLoadFailed(Object error) => '资源读取失败：$error';
+
+  static String resourceUsageGroupLabel(ResourceUsageGroup group) {
+    return switch (group) {
+      ResourceUsageGroup.cultivation => '修炼',
+      ResourceUsageGroup.equipment => '炼器',
+      ResourceUsageGroup.island => '桃花岛',
+      ResourceUsageGroup.recovery => '疗伤',
+      ResourceUsageGroup.shopping => '采买',
+    };
+  }
+
+  static String resourceConsumptionDirectionLabel(
+    ResourceConsumptionDirection direction,
+  ) {
+    return switch (direction) {
+      ResourceConsumptionDirection.cultivation => '修为与招式消耗',
+      ResourceConsumptionDirection.equipment => '装备强化与开锋消耗',
+      ResourceConsumptionDirection.island => '桃花岛建设与加工消耗',
+      ResourceConsumptionDirection.recovery => '疗伤整备消耗',
+      ResourceConsumptionDirection.shopping => '江湖采买通用消耗',
+      ResourceConsumptionDirection.mixed => '多系统共同消耗',
+      ResourceConsumptionDirection.none => resourceOverviewNoDirection,
+    };
+  }
 
   /// 物料行文案：`磨剑石 × 1234`。
   static String materialQuantity(String name, int qty) => '$name × $qty';

@@ -1,5 +1,7 @@
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/inventory_item.dart';
+import '../../../core/domain/item_usage.dart';
+import '../../../core/domain/resource_overview_display.dart';
 import '../../../data/game_repository.dart';
 import '../../inventory/application/item_usage_lookup_service.dart';
 import '../../inventory/application/material_source_lookup_service.dart';
@@ -86,13 +88,13 @@ class ResourceOverviewService {
     final items = [
       for (final id in ids)
         if (repo.itemDefs[id] case final def?)
-          ResourceOverviewItem(
-            defId: id,
+          _itemFor(
+            id: id,
             name: def.name,
             quantity: quantities[id] ?? 0,
             category: category,
-            usages: usageLookup.usagesFor(id),
-            sources: sourceLookup.sourcesFor(id),
+            usageLookup: usageLookup,
+            sourceLookup: sourceLookup,
           ),
     ];
 
@@ -102,5 +104,68 @@ class ResourceOverviewService {
       return a.name.compareTo(b.name);
     });
     return List.unmodifiable(items);
+  }
+
+  ResourceOverviewItem _itemFor({
+    required String id,
+    required String name,
+    required int quantity,
+    required ResourceOverviewCategory category,
+    required ItemUsageLookupService usageLookup,
+    required MaterialSourceLookupService sourceLookup,
+  }) {
+    final usages = usageLookup.usagesFor(id);
+    final sources = sourceLookup.sourcesFor(id);
+    final usageGroups = _usageGroupsFor(usages);
+    return ResourceOverviewItem(
+      defId: id,
+      name: name,
+      quantity: quantity,
+      category: category,
+      usages: usages,
+      sources: sources,
+      usageGroups: usageGroups,
+      consumptionDirection: _directionFor(usageGroups),
+    );
+  }
+
+  List<ResourceUsageGroup> _usageGroupsFor(List<ItemUsage> usages) {
+    final groups = <ResourceUsageGroup>{};
+    for (final usage in usages) {
+      switch (usage.kind) {
+        case ItemUsageKind.realmProgress:
+        case ItemUsageKind.techniqueUnlock:
+          groups.add(ResourceUsageGroup.cultivation);
+        case ItemUsageKind.equipmentEnhancement:
+        case ItemUsageKind.equipmentForging:
+        case ItemUsageKind.equipmentGuarantee:
+          groups.add(ResourceUsageGroup.equipment);
+        case ItemUsageKind.islandUpgradeCurrency:
+        case ItemUsageKind.islandBuildingUpgrade:
+        case ItemUsageKind.islandRecipeInput:
+          groups.add(ResourceUsageGroup.island);
+        case ItemUsageKind.injuryRecovery:
+          groups.add(ResourceUsageGroup.recovery);
+        case ItemUsageKind.shopPurchaseCurrency:
+          groups.add(ResourceUsageGroup.shopping);
+      }
+    }
+    return List.unmodifiable([
+      for (final group in ResourceUsageGroup.values)
+        if (groups.contains(group)) group,
+    ]);
+  }
+
+  ResourceConsumptionDirection _directionFor(List<ResourceUsageGroup> groups) {
+    if (groups.isEmpty) return ResourceConsumptionDirection.none;
+    if (groups.length > 1) return ResourceConsumptionDirection.mixed;
+    return switch (groups.single) {
+      ResourceUsageGroup.cultivation =>
+        ResourceConsumptionDirection.cultivation,
+      ResourceUsageGroup.equipment => ResourceConsumptionDirection.equipment,
+      ResourceUsageGroup.island => ResourceConsumptionDirection.island,
+      ResourceUsageGroup.recovery => ResourceConsumptionDirection.recovery,
+      ResourceUsageGroup.shopping => ResourceConsumptionDirection.shopping,
+    };
   }
 }
