@@ -9,6 +9,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../injury/presentation/injury_status_view.dart';
 import '../application/item_use_service.dart';
 
 /// 战后疗伤丹快捷入口。只复用背包道具使用服务，不重算战斗结果。
@@ -43,14 +44,18 @@ class _PostBattleHealingPanelState
         .isFounderEqualTo(true)
         .findFirst();
     final candidates = active.isNotEmpty ? active : [?founder];
-    final hasInjury = candidates.whereType<Character>().any(
-      (c) =>
-          c.injuryHoursRemaining > 0 ||
-          c.innerDemonResidueHoursRemaining > 0 ||
-          c.lightInjuryStacks > 0,
-    );
-    if (!hasInjury) return const _PostBattleHealingState.hidden();
-    return _PostBattleHealingState.visible(qty);
+    final injuryLines = candidates
+        .whereType<Character>()
+        .where(
+          (c) =>
+              c.injuryHoursRemaining > 0 ||
+              c.innerDemonResidueHoursRemaining > 0 ||
+              c.lightInjuryStacks > 0,
+        )
+        .map(InjuryStatusFormatter.namedStatusLine)
+        .toList(growable: false);
+    if (injuryLines.isEmpty) return const _PostBattleHealingState.hidden();
+    return _PostBattleHealingState.visible(qty, injuryLines);
   }
 
   Future<void> _useHealingPill() async {
@@ -115,6 +120,15 @@ class _PostBattleHealingPanelState
                         fontSize: 12,
                       ),
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      state.injuryLines.join('\n'),
+                      style: const TextStyle(
+                        color: WuxiaColors.hpLow,
+                        fontSize: 12,
+                        height: 1.25,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -133,8 +147,13 @@ class _PostBattleHealingPanelState
 class _PostBattleHealingState {
   final bool visible;
   final int quantity;
+  final List<String> injuryLines;
 
-  const _PostBattleHealingState.hidden() : visible = false, quantity = 0;
+  const _PostBattleHealingState.hidden()
+    : visible = false,
+      quantity = 0,
+      injuryLines = const [];
 
-  const _PostBattleHealingState.visible(this.quantity) : visible = true;
+  const _PostBattleHealingState.visible(this.quantity, this.injuryLines)
+    : visible = true;
 }

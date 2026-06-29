@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
@@ -16,6 +17,7 @@ import '../../cultivation/presentation/advancement_summary.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/application/equipment_source_lookup.dart';
 import '../../equipment/domain/equipment_source.dart';
+import '../../injury/presentation/injury_status_view.dart';
 import '../../inventory/presentation/post_battle_healing_panel.dart';
 
 typedef EquipmentDropLockHandler =
@@ -36,6 +38,7 @@ Future<void> showStageVictoryDialog({
   String? firstClearTitle,
   String? firstClearSubtitle,
   BattleStatsSummary? stats,
+  List<Character> injurySummaryCharacters = const [],
   String? skillFragmentLine,
   EquipmentDropLockHandler? onEquipmentLockToggle,
 }) async {
@@ -56,6 +59,7 @@ Future<void> showStageVictoryDialog({
         firstClearTitle: firstClearTitle,
         firstClearSubtitle: firstClearSubtitle,
         stats: stats,
+        injurySummaryCharacters: injurySummaryCharacters,
         skillFragmentLine: skillFragmentLine,
         onEquipmentLockToggle: onEquipmentLockToggle,
       ),
@@ -82,6 +86,7 @@ class StageVictoryContent extends StatelessWidget {
     this.firstClearTitle,
     this.firstClearSubtitle,
     this.stats,
+    this.injurySummaryCharacters = const [],
     this.skillFragmentLine,
     this.onEquipmentLockToggle,
   });
@@ -92,6 +97,7 @@ class StageVictoryContent extends StatelessWidget {
   final String? firstClearTitle;
   final String? firstClearSubtitle;
   final BattleStatsSummary? stats;
+  final List<Character> injurySummaryCharacters;
 
   /// 第七阶段批二④:残页轻提示行(掉残页未集齐时,非重仪式)。
   /// null=本场未掉残页或已走重仪式;非空时在 drop 段末尾追一行小字。
@@ -176,8 +182,37 @@ class StageVictoryContent extends StatelessWidget {
             ),
           ),
         ],
+        if (injurySummaryCharacters.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          _InjurySummaryLines(characters: injurySummaryCharacters),
+        ],
         const PostBattleHealingPanel(),
       ],
+    );
+  }
+}
+
+class _InjurySummaryLines extends StatelessWidget {
+  const _InjurySummaryLines({required this.characters});
+
+  final List<Character> characters;
+
+  @override
+  Widget build(BuildContext context) {
+    final injured = characters
+        .where(InjuryStatusFormatter.hasInjury)
+        .map(InjuryStatusFormatter.namedStatusLine)
+        .toList(growable: false);
+    final text = injured.isEmpty
+        ? UiStrings.injuryBattleSummaryNone
+        : injured.join('\n');
+    return Text(
+      '${UiStrings.injuryBattleSummaryTitle}$text',
+      style: TextStyle(
+        color: injured.isEmpty ? WuxiaColors.textMuted : WuxiaColors.hpLow,
+        fontSize: 12,
+        height: 1.35,
+      ),
     );
   }
 }
