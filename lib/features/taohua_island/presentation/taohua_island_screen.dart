@@ -7,7 +7,9 @@ import '../../../data/isar_setup.dart';
 import '../../../features/battle/domain/enum_localizations.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../inventory/application/item_usage_lookup_service.dart';
 import '../application/island_action_service.dart';
+import '../application/island_production_readability.dart';
 import '../application/island_providers.dart';
 import '../application/island_settle_service.dart';
 import '../domain/island_building_state.dart';
@@ -668,19 +670,18 @@ class _BuildingCard extends StatelessWidget {
     final stored = state.stored.floor();
     final isProcessor = bCfg.kind == BuildingKind.processor;
     final synergyLine = _synergyLine();
+    final productionIntel = IslandProductionReadability.from(
+      state: state,
+      allStates: view.buildings,
+      config: cfg,
+      founderRealmIndex: view.founderRealmIndex,
+    );
 
     // 产物名
     String outputName = '';
-    if (!isProcessor) {
-      outputName = itemDefs[bCfg.outputItem]?.name ?? (bCfg.outputItem ?? '');
-    } else {
-      final recipeId = state.activeRecipeId;
-      if (recipeId != null) {
-        final recipe = bCfg.recipeById(recipeId);
-        if (recipe != null) {
-          outputName = itemDefs[recipe.outputItem]?.name ?? recipe.outputItem;
-        }
-      }
+    final outputItemId = productionIntel.outputItemId;
+    if (outputItemId != null) {
+      outputName = itemDefs[outputItemId]?.name ?? outputItemId;
     }
 
     // 升级可否判断（共用 IslandActionService.upgradeBlockReason 纯函数，消除 widget/service 双源）
@@ -760,6 +761,13 @@ class _BuildingCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
+          _ProductionQueueIntel(
+            isProcessor: isProcessor,
+            outputName: outputName,
+            intel: productionIntel,
+          ),
+          const SizedBox(height: 12),
+
           // ── 选配方（仅 processor）──
           if (isProcessor) ...[
             if (synergyLine != null) ...[
@@ -824,6 +832,127 @@ class _BuildingCard extends StatelessWidget {
     }
     if (parts.isEmpty) return null;
     return UiStrings.taohuaIslandSynergyLine(parts);
+  }
+}
+
+class _ProductionQueueIntel extends StatelessWidget {
+  const _ProductionQueueIntel({
+    required this.isProcessor,
+    required this.outputName,
+    required this.intel,
+  });
+
+  final bool isProcessor;
+  final String outputName;
+  final IslandProductionReadability intel;
+
+  @override
+  Widget build(BuildContext context) {
+    final usage = _usageSummary();
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper2.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: WuxiaUi.ink.withValues(alpha: 0.16),
+          width: WuxiaUi.borderWidth,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _IntelLine(
+              icon: isProcessor
+                  ? Icons.receipt_long_outlined
+                  : Icons.grass_outlined,
+              text: isProcessor
+                  ? outputName.isEmpty
+                        ? UiStrings.taohuaIslandCurrentRecipeNone
+                        : UiStrings.taohuaIslandCurrentRecipe(outputName)
+                  : UiStrings.taohuaIslandCurrentGathering(outputName),
+            ),
+            const SizedBox(height: 5),
+            _IntelLine(
+              icon: Icons.hourglass_bottom_outlined,
+              text: _nextOutputText(),
+            ),
+            const SizedBox(height: 5),
+            _IntelLine(
+              icon: Icons.inventory_2_outlined,
+              text: _fullStorageText(),
+            ),
+            if (usage.isNotEmpty) ...[
+              const SizedBox(height: 5),
+              _IntelLine(icon: Icons.call_split_outlined, text: usage),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _nextOutputText() {
+    if (intel.pauseReason == IslandProductionPauseReason.full) {
+      return UiStrings.taohuaIslandNextOutputFull;
+    }
+    final hours = intel.hoursToNextItem;
+    if (hours == null) return UiStrings.taohuaIslandNextOutputPaused;
+    return UiStrings.taohuaIslandNextOutputIn(
+      UiStrings.taohuaIslandDuration(hours),
+    );
+  }
+
+  String _fullStorageText() {
+    if (intel.pauseReason == IslandProductionPauseReason.full) {
+      return UiStrings.taohuaIslandFullStorageNow;
+    }
+    final hours = intel.hoursToFull;
+    if (hours == null) return UiStrings.taohuaIslandFullStorageUnknown;
+    return UiStrings.taohuaIslandFullStorageIn(
+      UiStrings.taohuaIslandDuration(hours),
+    );
+  }
+
+  String _usageSummary() {
+    final outputItemId = intel.outputItemId;
+    if (outputItemId == null) return '';
+    final usages = ItemUsageLookupService(
+      GameRepository.instance,
+    ).usagesFor(outputItemId);
+    final summary = UiStrings.materialUsageSummary(usages);
+    return summary.isEmpty
+        ? UiStrings.taohuaIslandOutputUsageNone
+        : UiStrings.taohuaIslandOutputUsage(summary);
+  }
+}
+
+class _IntelLine extends StatelessWidget {
+  const _IntelLine({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 14, color: WuxiaUi.qing),
+        const SizedBox(width: 7),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: WuxiaUi.ink2,
+              fontSize: 12,
+              height: 1.25,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
