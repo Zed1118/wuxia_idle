@@ -92,3 +92,7 @@ docs/screenshots/
 
 # throwaway UI 原型 demo(prototype skill 产物,不入库)
 docs/demos/
+
+# 外部工具目录 / 视觉验收截图产物(非源码,2026-06-29 handoff 处置)
+.workbuddy/
+docs/handoff/visual_capture_*/
