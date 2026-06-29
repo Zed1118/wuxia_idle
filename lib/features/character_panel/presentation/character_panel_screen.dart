@@ -212,117 +212,271 @@ class _ProfileHeaderCard extends StatelessWidget {
         : WuxiaColors.schoolColor(character.school!);
     final a = character.attributes;
     return _PanelCard(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _ProfilePortraitPlaque(
-            character: character,
-            borderColor: schoolColor,
-          ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final details = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      character.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: WuxiaUi.ink,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  if (character.school != null)
+                    _SchoolBadge(
+                      label: EnumL10n.school(character.school!),
+                      color: schoolColor,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0x2EF3E6C7),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: WuxiaUi.ink.withValues(alpha: 0.28),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Text(
+                      UiStrings.profileRealmLabel,
+                      style: TextStyle(
+                        color: WuxiaUi.muted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      EnumL10n.realm(character.realmTier, character.realmLayer),
+                      style: const TextStyle(
+                        color: WuxiaUi.ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              // 第八阶段·角色等级 Lv:等级 chip + 经验条(config 读用 instanceOrNull
+              // 守,缺 GameRepository 时退化为纯 Lv 数字不崩轻量测)。
+              _LevelChip(character: character),
+              const SizedBox(height: 8),
+              _BiographyStrip(character: character, schoolColor: schoolColor),
+              const SizedBox(height: 8),
+              InjuryStatusPanel(
+                character: character,
+                alwaysShow: true,
+                showRecoveryAction: true,
+              ),
+              const SizedBox(height: 12),
+              _AttributeStrip(
+                attributes: [
+                  _AttributeView(
+                    UiStrings.attrConstitution,
+                    a.constitution,
+                    UiStrings.glossaryConstitution,
+                  ),
+                  _AttributeView(
+                    UiStrings.attrEnlightenment,
+                    a.enlightenment,
+                    UiStrings.glossaryEnlightenment,
+                  ),
+                  _AttributeView(
+                    UiStrings.attrAgility,
+                    a.agility,
+                    UiStrings.glossaryAgility,
+                  ),
+                  _AttributeView(
+                    UiStrings.attrFortune,
+                    a.fortune,
+                    UiStrings.glossaryFortune,
+                  ),
+                ],
+              ),
+            ],
+          );
+
+          if (constraints.maxWidth < 620) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        character.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: WuxiaUi.ink,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    if (character.school != null)
-                      _SchoolBadge(
-                        label: EnumL10n.school(character.school!),
-                        color: schoolColor,
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 7,
+                Center(
+                  child: _ProfilePortraitPlaque(
+                    character: character,
+                    borderColor: schoolColor,
                   ),
-                  decoration: BoxDecoration(
-                    color: const Color(0x2EF3E6C7),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: WuxiaUi.ink.withValues(alpha: 0.28),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Text(
-                        UiStrings.profileRealmLabel,
-                        style: TextStyle(
-                          color: WuxiaUi.muted,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        EnumL10n.realm(
-                          character.realmTier,
-                          character.realmLayer,
-                        ),
-                        style: const TextStyle(
-                          color: WuxiaUi.ink,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                // 第八阶段·角色等级 Lv:等级 chip + 经验条(config 读用 instanceOrNull
-                // 守,缺 GameRepository 时退化为纯 Lv 数字不崩轻量测)。
-                _LevelChip(character: character),
-                const SizedBox(height: 8),
-                InjuryStatusPanel(
-                  character: character,
-                  alwaysShow: true,
-                  showRecoveryAction: true,
                 ),
                 const SizedBox(height: 12),
-                _AttributeStrip(
-                  attributes: [
-                    _AttributeView(
-                      UiStrings.attrConstitution,
-                      a.constitution,
-                      UiStrings.glossaryConstitution,
-                    ),
-                    _AttributeView(
-                      UiStrings.attrEnlightenment,
-                      a.enlightenment,
-                      UiStrings.glossaryEnlightenment,
-                    ),
-                    _AttributeView(
-                      UiStrings.attrAgility,
-                      a.agility,
-                      UiStrings.glossaryAgility,
-                    ),
-                    _AttributeView(
-                      UiStrings.attrFortune,
-                      a.fortune,
-                      UiStrings.glossaryFortune,
-                    ),
-                  ],
-                ),
+                details,
+              ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _ProfilePortraitPlaque(
+                character: character,
+                borderColor: schoolColor,
+              ),
+              const SizedBox(width: 18),
+              Expanded(child: details),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _BiographyStrip extends StatelessWidget {
+  const _BiographyStrip({required this.character, required this.schoolColor});
+
+  final Character character;
+  final Color schoolColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final equippedCount = [
+      character.equippedWeaponId,
+      character.equippedArmorId,
+      character.equippedAccessoryId,
+    ].whereType<int>().length;
+    final techniqueCount =
+        (character.mainTechniqueId == null ? 0 : 1) +
+        character.assistTechniqueIds.length;
+    final hasInjury =
+        character.lightInjuryStacks > 0 ||
+        character.injuryHoursRemaining > 0 ||
+        character.innerDemonResidueHoursRemaining > 0;
+
+    final items = [
+      _BiographyItem(
+        UiStrings.characterBiographyRole(
+          _lineageRoleLabel(character.lineageRole),
+        ),
+        WuxiaUi.ink,
+      ),
+      _BiographyItem(
+        character.school == null
+            ? UiStrings.characterBiographySchoolUnset
+            : UiStrings.characterBiographySchool(
+                EnumL10n.school(character.school!),
+              ),
+        schoolColor,
+      ),
+      _BiographyItem(
+        UiStrings.characterBiographyEquipment(equippedCount, 3),
+        WuxiaUi.gold,
+      ),
+      _BiographyItem(
+        UiStrings.characterBiographyTechnique(techniqueCount, 4),
+        WuxiaUi.qing,
+      ),
+      _BiographyItem(
+        hasInjury
+            ? UiStrings.characterBiographyConditionInjured
+            : UiStrings.characterBiographyConditionHealthy,
+        hasInjury ? WuxiaUi.jiang : WuxiaUi.qing,
+      ),
+    ];
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.34),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.2)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              UiStrings.characterBiographyTitle,
+              style: TextStyle(
+                color: WuxiaUi.muted,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 7),
+            Wrap(
+              spacing: 7,
+              runSpacing: 7,
+              children: [
+                for (final item in items)
+                  _BiographyChip(label: item.label, color: item.color),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _lineageRoleLabel(LineageRole role) {
+    return switch (role) {
+      LineageRole.founder => UiStrings.lineageRoleFounder,
+      LineageRole.disciple => UiStrings.lineageRoleDisciple,
+      LineageRole.senior => UiStrings.lineageRoleSenior,
+      LineageRole.junior => UiStrings.lineageRoleJunior,
+      LineageRole.grandDisciple => UiStrings.lineageRoleGrandDisciple,
+    };
+  }
+}
+
+class _BiographyItem {
+  const _BiographyItem(this.label, this.color);
+
+  final String label;
+  final Color color;
+}
+
+class _BiographyChip extends StatelessWidget {
+  const _BiographyChip({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.32)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color == WuxiaUi.gold ? WuxiaUi.ink : color,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            height: 1.15,
           ),
-        ],
+        ),
       ),
     );
   }
@@ -369,7 +523,7 @@ class _LevelChip extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Lv $lv',
+                UiStrings.profileLevelValue(lv),
                 style: const TextStyle(
                   color: WuxiaUi.ink,
                   fontSize: 15,
@@ -378,7 +532,9 @@ class _LevelChip extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                atMax ? '巅峰' : '$lvExp / $toNext',
+                atMax
+                    ? UiStrings.profileLevelPeak
+                    : UiStrings.profileLevelProgress(lvExp, toNext),
                 style: const TextStyle(
                   color: WuxiaUi.muted,
                   fontSize: 11,
