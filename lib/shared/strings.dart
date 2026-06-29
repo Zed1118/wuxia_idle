@@ -2036,6 +2036,13 @@ class UiStrings {
   /// 闭关已达系统收益封顶状态行
   static String offlineRecapMapCapped(String mapName) => '「$mapName」闭关收益已满';
 
+  /// P1-6(2026-06-29 审查修复):闭关开始界面前瞻提示——离线最长计入时长。
+  /// 消除「挂 24h 回来只算 X h 觉得亏」的预期落差(在线=离线哲学,想玩才玩)。
+  static String seclusionCapHint(int capHours) => '本次闭关最长计入 $capHours 小时，超出不计';
+
+  /// P1-6:离线归来已达上限时的温和建议(不制造焦虑·守反留存红线)。
+  static const String offlineCappedAdvice = '已达离线上限，可缩短下次闭关间隔';
+
   /// 闭关进行中状态行（带进度百分比）
   static String offlineRecapMapProgress(String mapName, int pct) =>
       '「$mapName」闭关进行中 · $pct%';
