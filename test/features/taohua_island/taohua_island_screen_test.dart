@@ -229,6 +229,37 @@ void main() {
       expect(find.text(UiStrings.taohuaIslandIdlePaused), findsOneWidget);
     });
 
+    testWidgets('建筑卡显示当前队列、剩余时间、满仓时间与产物去向', (tester) async {
+      await pump(tester, wrap(buildTestView()));
+
+      expect(
+        find.text(UiStrings.taohuaIslandCurrentGathering('精铁')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.taohuaIslandCurrentRecipe('磨剑石')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          UiStrings.taohuaIslandNextOutputIn(
+            UiStrings.taohuaIslandDuration(1 / 6),
+          ),
+        ),
+        findsWidgets,
+      );
+      expect(find.text(UiStrings.taohuaIslandFullStorageUnknown), findsWidgets);
+      expect(
+        find.text(UiStrings.taohuaIslandOutputUsage('装备强化')),
+        findsOneWidget,
+      );
+      expect(
+        find.text(UiStrings.taohuaIslandCurrentRecipeNone),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.taohuaIslandNextOutputPaused), findsWidgets);
+    });
+
     testWidgets('加工建筑展示固定协同加成', (tester) async {
       await pump(tester, wrap(buildTestView()));
 

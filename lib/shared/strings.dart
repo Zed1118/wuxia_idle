@@ -2517,6 +2517,26 @@ class UiStrings {
   /// 产物名前缀：`产出：name`（§5.6 迁出中文字面量）。
   static String taohuaIslandOutputPrefix(String name) => '产出：$name';
 
+  /// 桃花岛生产队列可读化。
+  static String taohuaIslandCurrentGathering(String name) => '当前采集：$name';
+  static String taohuaIslandCurrentRecipe(String name) => '当前配方：$name';
+  static const String taohuaIslandCurrentRecipeNone = '当前配方：未选择';
+  static String taohuaIslandNextOutputIn(String duration) => '下一件：约 $duration';
+  static const String taohuaIslandNextOutputPaused = '下一件：停产中';
+  static const String taohuaIslandNextOutputFull = '下一件：仓满';
+  static String taohuaIslandFullStorageIn(String duration) => '满仓：约 $duration';
+  static const String taohuaIslandFullStorageNow = '满仓：已满';
+  static const String taohuaIslandFullStorageUnknown = '满仓：暂不可估';
+  static String taohuaIslandOutputUsage(String usage) => '去向：$usage';
+  static const String taohuaIslandOutputUsageNone = '去向：暂未形成消耗';
+  static String taohuaIslandDuration(double hours) {
+    if (hours <= 0) return '片刻';
+    final minutes = ((hours * 60) - 1e-6).ceil();
+    if (minutes < 60) return '$minutes 分';
+    final roundedHours = (hours - 1e-6).ceil();
+    return '${roundedHours}h';
+  }
+
   /// selectRecipe 不可达路径失败文案（notProcessor / recipeNotFound）。
   static const String taohuaIslandSelectRecipeFailed = '无法择此配方';
 
