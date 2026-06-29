@@ -27,8 +27,8 @@
 
 ## 当前恢复点
 
-- 状态：执行中。
-- 最后完成：已读 `AGENTS.md`、`CLAUDE.md`、`GDD.md`、`PROGRESS.md`、`docs/spec/playability_phase2_backlog.md`、`/Users/a10506/Desktop/挂机武侠_已否任务.md`；已创建分支。
-- 下一步：提交计划文件，然后补闭关地图特色产出配置与测试。
-- 已跑验证：尚未运行。
+- 状态：完成。
+- 最后完成：五张闭关地图均已配置轻量特色产出；补充闭关 service 测试覆盖五图配置、`computeOutputs` 同源产出、`completeRetreat` 入库与 `actualRewards`。
+- 下一步：等待主窗口复核/合并。
+- 已跑验证：`dart run build_runner build --delete-conflicting-outputs`（当前 build_runner 版本提示该参数已忽略，生成 112 个 gitignored outputs）；`flutter test --no-pub test/features/seclusion/application/seclusion_service_test.dart test/data/item_def_test.dart test/data/game_repository_test.dart`（103 passed）；`dart analyze test/features/seclusion/application/seclusion_service_test.dart lib/features/seclusion/domain/seclusion_map_def.dart lib/features/seclusion/application/seclusion_service.dart lib/data/game_repository.dart`（0 issue）。
 - 阻塞项：无。
