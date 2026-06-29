@@ -104,6 +104,16 @@ void main() {
     expect(find.textContaining(UiStrings.stageListCleared), findsNothing);
   });
 
+  testWidgets('关卡列表以章节轴呈现并保留原关卡状态', (tester) async {
+    await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
+
+    expect(find.text(UiStrings.stageListTimelineTitle), findsOneWidget);
+    expect(find.text(UiStrings.stageListTimelineHint), findsOneWidget);
+    expect(find.text('山门之外'), findsOneWidget);
+    expect(find.text(UiStrings.stageListAvailable), findsOneWidget);
+    expect(find.byIcon(Icons.lock), findsNWidgets(4));
+  });
+
   testWidgets('Ch1 通过 01 → 01 cleared + 02 available + 03-05 锁', (
     tester,
   ) async {
