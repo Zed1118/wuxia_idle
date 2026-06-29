@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
+import 'package:wuxia_idle/core/application/inventory_providers.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/item_usage.dart';
 import 'package:wuxia_idle/data/defs/shop_item_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -57,8 +59,10 @@ void main() {
     List<ShopItemDef>? items,
     int? founderEtl,
     List<Character> activeCharacters = const [],
+    Map<String, int> inventory = const {},
+    Size surfaceSize = const Size(1280, 720),
   }) async {
-    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -69,6 +73,17 @@ void main() {
             (_) => items ?? [defMojianshi, defXinxue],
           ),
           founderEtlProvider.overrideWith((_) async => founderEtl),
+          allInventoryItemsProvider.overrideWith(
+            (_) async => [
+              for (final entry in inventory.entries)
+                InventoryItem()
+                  ..defId = entry.key
+                  ..itemType = ItemType.fromDefId(entry.key)
+                  ..quantity = entry.value
+                  ..firstObtainedAt = DateTime(2026, 6, 29)
+                  ..lastObtainedAt = DateTime(2026, 6, 29),
+            ],
+          ),
           activeCharacterIdsProvider.overrideWith(
             (_) async => activeCharacters.map((c) => c.id).toList(),
           ),
@@ -108,6 +123,7 @@ void main() {
       find.text(UiStrings.shopItemPurpose('item_mojianshi')),
       findsOneWidget,
     );
+    expect(find.text(UiStrings.shopOwnedQuantity(0)), findsWidgets);
     expect(find.text(UiStrings.shopStatusAffordable), findsOneWidget);
   });
 
@@ -121,7 +137,7 @@ void main() {
     expect(find.text(UiStrings.shopWatchHint), findsOneWidget);
   });
 
-  testWidgets('货架显示筛选计数和分类摘要', (tester) async {
+  testWidgets('货架显示筛选计数和用途分组摘要', (tester) async {
     await pumpShop(tester, silver: 100);
 
     expect(
@@ -136,6 +152,8 @@ void main() {
       find.text(UiStrings.shopFilterLabel(UiStrings.shopFilterNeedSaving, 1)),
       findsOneWidget,
     );
+    expect(find.text(UiStrings.shopShelfGroupEnhancement), findsOneWidget);
+    expect(find.text(UiStrings.shopShelfGroupEnhancementDesc), findsOneWidget);
     expect(
       find.text(
         UiStrings.shopCategorySummary(total: 2, affordable: 1, needSaving: 1),
@@ -160,7 +178,7 @@ void main() {
     expect(find.text(UiStrings.shopNeedSilver(20)), findsOneWidget);
   });
 
-  testWidgets('药品分类单独成组', (tester) async {
+  testWidgets('修行补给与强化材料按购买意图分组', (tester) async {
     const defExpPill = ShopItemDef(
       id: 'shop_jingyandan_small',
       itemDefId: 'item_jingyandan_small',
@@ -176,13 +194,39 @@ void main() {
       founderEtl: 1000,
     );
 
-    expect(find.text(UiStrings.shopCategoryMaterial), findsOneWidget);
-    expect(find.text(UiStrings.shopCategoryPill), findsOneWidget);
+    expect(find.text(UiStrings.shopShelfGroupCultivation), findsOneWidget);
+    expect(find.text(UiStrings.shopShelfGroupEnhancement), findsOneWidget);
     expect(find.text(UiStrings.shopStatusDynamicPrice), findsOneWidget);
     expect(
       find.text(UiStrings.shopItemPurpose('item_jingyandan_small')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('货物卡显示当前库存已有量', (tester) async {
+    await pumpShop(
+      tester,
+      silver: 100,
+      items: [defMojianshi, defXinxue],
+      inventory: const {'item_mojianshi': 3, 'item_xinxuejiejing': 0},
+    );
+
+    expect(find.text(UiStrings.shopOwnedQuantity(3)), findsOneWidget);
+    expect(find.text(UiStrings.shopOwnedQuantity(0)), findsOneWidget);
+  });
+
+  testWidgets('用途分组在常规桌面视口可渲染', (tester) async {
+    for (final size in const [Size(1280, 720), Size(1440, 900)]) {
+      await pumpShop(
+        tester,
+        silver: 100,
+        items: [defMojianshi, defXinxue],
+        surfaceSize: size,
+      );
+
+      expect(find.text(UiStrings.shopShelfGroupEnhancement), findsOneWidget);
+      expect(find.text(UiStrings.shopOwnedQuantity(0)), findsWidgets);
+    }
   });
 
   testWidgets('货架需求提示显示当前可用角色和消耗系统', (tester) async {
