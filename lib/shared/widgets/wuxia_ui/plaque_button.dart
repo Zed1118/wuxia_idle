@@ -29,6 +29,9 @@ class PlaqueButton extends StatefulWidget {
   final bool disabled;
   final bool autofocus;
 
+  static const double minHeight = 44;
+  static const double minWidth = 72;
+
   @override
   State<PlaqueButton> createState() => _PlaqueButtonState();
 }
@@ -42,14 +45,14 @@ class _PlaqueButtonState extends State<PlaqueButton> {
   }
 
   void _activate() {
-    if (widget.disabled) return;
+    if (widget.disabled || widget.onTap == null) return;
     SoundManager.instance.playSfx(SfxId.uiTap);
     widget.onTap?.call();
   }
 
   @override
   Widget build(BuildContext context) {
-    final disabled = widget.disabled;
+    final disabled = widget.disabled || widget.onTap == null;
     final gradient = widget.primary
         ? const LinearGradient(
             begin: Alignment.topCenter,
@@ -61,10 +64,12 @@ class _PlaqueButtonState extends State<PlaqueButton> {
             end: Alignment.bottomCenter,
             colors: [Color(0xFFCDB585), Color(0xFFB89A63)],
           );
-    final fg =
-        widget.primary ? const Color(0xFFF3E2C0) : const Color(0xFF3A2C14);
-    final borderColor =
-        widget.primary ? const Color(0xFF491510) : WuxiaUi.woodDark;
+    final fg = widget.primary
+        ? const Color(0xFFF3E2C0)
+        : const Color(0xFF3A2C14);
+    final borderColor = widget.primary
+        ? const Color(0xFF491510)
+        : WuxiaUi.woodDark;
     return Semantics(
       button: true,
       enabled: !disabled,
@@ -72,8 +77,9 @@ class _PlaqueButtonState extends State<PlaqueButton> {
       child: FocusableActionDetector(
         enabled: !disabled,
         autofocus: widget.autofocus,
-        mouseCursor:
-            disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
+        mouseCursor: disabled
+            ? SystemMouseCursors.basic
+            : SystemMouseCursors.click,
         actions: <Type, Action<Intent>>{
           ActivateIntent: CallbackAction<ActivateIntent>(
             onInvoke: (_) {
@@ -93,9 +99,14 @@ class _PlaqueButtonState extends State<PlaqueButton> {
             child: Stack(
               children: [
                 Container(
+                  constraints: const BoxConstraints(
+                    minWidth: PlaqueButton.minWidth,
+                    minHeight: PlaqueButton.minHeight,
+                  ),
+                  alignment: Alignment.center,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 22,
-                    vertical: 10,
+                    vertical: 9,
                   ),
                   decoration: BoxDecoration(
                     gradient: gradient,

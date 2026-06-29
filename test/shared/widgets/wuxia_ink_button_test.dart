@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/image_test_helpers.dart';
@@ -47,11 +48,7 @@ void main() {
     );
     expect(find.byIcon(Icons.map_outlined), findsOneWidget);
     expect(
-      find.byWidgetPredicate(
-        (w) =>
-            w is Image &&
-            assetNameOf(w.image) == path,
-      ),
+      find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path),
       findsOneWidget,
     );
   });
@@ -63,6 +60,15 @@ void main() {
     );
     await tester.tap(find.byType(WuxiaInkButton));
     expect(tapped, 1);
+  });
+
+  testWidgets('固定桌面热区且无 InkWell 水波纹', (tester) async {
+    await tester.pumpWidget(
+      host(WuxiaInkButton(label: '心法', hint: 'x', onTap: () {})),
+    );
+    final size = tester.getSize(find.byType(WuxiaInkButton));
+    expect(size.height, greaterThanOrEqualTo(WuxiaInkButton.minHeight));
+    expect(find.byType(InkWell), findsNothing);
   });
 
   testWidgets('disabled 拦截点击且半透明 0.4', (tester) async {
@@ -83,6 +89,46 @@ void main() {
       find.byWidgetPredicate((w) => w is Opacity && w.opacity == 0.4),
     );
     expect(opacity.opacity, 0.4);
+  });
+
+  testWidgets('status chip 渲染且超长文本不会撑破', (tester) async {
+    await tester.pumpWidget(
+      host(
+        const WuxiaInkButton(
+          label: '问鼎',
+          hint: 'x',
+          status: '很长很长的状态说明文字',
+          onTap: null,
+        ),
+      ),
+    );
+    final chip = find.text('很长很长的状态说明文字');
+    expect(chip, findsOneWidget);
+    expect(tester.getSize(chip).width, lessThanOrEqualTo(116));
+  });
+
+  testWidgets('Semantics 与键盘 Enter 激活', (tester) async {
+    final handle = tester.ensureSemantics();
+    var tapped = 0;
+    await tester.pumpWidget(
+      host(
+        WuxiaInkButton(
+          label: '心法',
+          hint: 'x',
+          onTap: () => tapped++,
+          autofocus: true,
+        ),
+      ),
+    );
+    expect(
+      tester.getSemantics(find.byType(WuxiaInkButton)),
+      isSemantics(isButton: true, isEnabled: true),
+    );
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pump();
+    expect(tapped, 1);
+    handle.dispose();
   });
 
   testWidgets('locked=true 显锁印图标 · false 不显', (tester) async {
