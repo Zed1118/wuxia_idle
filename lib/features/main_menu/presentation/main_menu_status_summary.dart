@@ -144,8 +144,9 @@ class _SummaryTile extends StatelessWidget {
                       item.detail,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                      // 浅宣纸 tile 底用墨色柔灰 WuxiaUi.muted；WuxiaColors.textSecondary 是深色 UI 专用浅灰会糊。
                       style: const TextStyle(
-                        color: WuxiaColors.textSecondary,
+                        color: WuxiaUi.muted,
                         fontSize: 12,
                         height: 1.2,
                       ),

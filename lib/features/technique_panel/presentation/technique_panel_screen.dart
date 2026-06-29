@@ -149,40 +149,40 @@ class _Body extends StatelessWidget {
           _SchoolRelationPanel(mainSchool: mainTech?.school),
           const SizedBox(height: 16),
           for (final tier in sortedTiers) ...[
-            // M4 Stage 3 美术(2026-05-21):tier section 起手 7 阶卷轴 cover banner。
-            // 约定路径 assets/techniques/tier_<name>.png,无图走 errorBuilder shrink
-            // (widget test 不加载 pubspec assets,memory feedback_image_asset_error_builder)。
-            // 卷轴 cover 完整居中呈现(含织锦/金框装帧 = 7 阶梯度所在),
-            // 不用 height 60 + BoxFit.cover(会裁掉上下边框令梯度消失)。
-            // 图 1952×608(≈3.21:1);maxWidth 480 → 高约 150。无图走 errorBuilder shrink。
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
-                child: AspectRatio(
-                  aspectRatio: 1952 / 608,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/techniques/tier_${tier.name}.png',
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                      ),
-                      // 卷轴故意无字(避伪书法红线),阶名以墨色叠在卷轴中央。
-                      Center(
-                        child: Text(
-                          EnumL10n.techniqueTier(tier),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: WuxiaUi.ink,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
+            // 7 阶 tier 分组水墨文字头(2026-06-29 替原 tier_*.png 卷轴 cover):
+            // 原写实木轴卷轴 PNG 抠图白边残留,叠深底面板突兀(用户目检),
+            // 改纯绘制「两侧淡金线 + 居中淡金阶名」——呼应原卷轴金框梯度装帧意图,
+            // 深底可读、无破图风险,且彻底避抠图白边。淡金 resultHighlight 区别正文白。
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 1,
+                      color: WuxiaColors.resultHighlight.withValues(alpha: 0.42),
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: Text(
+                      EnumL10n.techniqueTier(tier),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: WuxiaColors.resultHighlight,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 4,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: 1,
+                      color: WuxiaColors.resultHighlight.withValues(alpha: 0.42),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 4),
