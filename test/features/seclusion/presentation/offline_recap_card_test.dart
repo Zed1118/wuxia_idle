@@ -135,6 +135,8 @@ void main() {
     );
     expect(find.text(UiStrings.offlineRecapCollectCapped), findsOneWidget);
     expect(find.text(UiStrings.offlineRecapGoCollect), findsNothing);
+    // P1-6:达系统上限 → 温和建议(不焦虑)。
+    expect(find.text(UiStrings.offlineCappedAdvice), findsOneWidget);
   });
 
   testWidgets('0 值收益项隐藏，保留结算说明与收功揭晓', (tester) async {
@@ -157,6 +159,8 @@ void main() {
     expect(find.text(UiStrings.offlineRecapSilverDetail(0)), findsNothing);
     expect(find.text(UiStrings.offlineRecapMaterialDetail('无')), findsNothing);
     expect(find.text(UiStrings.offlineRecapNoGainsDetail), findsOneWidget);
+    // P1-6:非系统上限 → 不显温和建议。
+    expect(find.text(UiStrings.offlineCappedAdvice), findsNothing);
     expect(
       find.text(
         UiStrings.offlineRecapDropDetail(UiStrings.offlineRecapDropPending),

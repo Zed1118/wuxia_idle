@@ -139,6 +139,15 @@ void main() {
     expect(find.byType(SeclusionSetupScreen), findsOneWidget);
     // setup 屏可见开始按钮
     expect(find.text(UiStrings.seclusionSetupStartButton), findsOneWidget);
+    // P1-6:setup 屏前瞻提示离线最长计入时长。
+    expect(
+      find.text(
+        UiStrings.seclusionCapHint(
+          GameRepository.instance.numbers.retreat.capHours,
+        ),
+      ),
+      findsOneWidget,
+    );
   });
 
   // ─── e2e #2 ────────────────────────────────────────────────────────────────

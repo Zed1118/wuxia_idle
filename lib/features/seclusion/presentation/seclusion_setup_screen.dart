@@ -168,6 +168,17 @@ class _SeclusionSetupScreenState extends ConsumerState<SeclusionSetupScreen> {
                         );
                       },
                     ),
+                    SizedBox(height: compact ? 6 : 10),
+                    // P1-6:前瞻提示离线最长计入时长(消除「挂久了只算一截」落差)。
+                    Text(
+                      UiStrings.seclusionCapHint(
+                        GameRepository.instance.numbers.retreat.capHours,
+                      ),
+                      style: const TextStyle(
+                        color: WuxiaUi.ink2,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
               ),
