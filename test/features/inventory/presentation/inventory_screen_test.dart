@@ -278,6 +278,44 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('专业摘要卡：总览、门槛、核心属性与查看操作可读', (tester) async {
+    final ready = mkEq(
+      id: 43,
+      tier: EquipmentTier.xunChang,
+      slot: EquipmentSlot.weapon,
+      defId: 'weapon_xunchang_tie_jian',
+      enhanceLevel: 1,
+    );
+    final locked = mkEq(
+      id: 44,
+      tier: EquipmentTier.shenWu,
+      slot: EquipmentSlot.weapon,
+      defId: 'weapon_shenwu_tian_wen_jian',
+      isLocked: true,
+    );
+
+    await pumpInv(
+      tester,
+      equipments: [ready, locked],
+      player: mkCharacter(id: 1, realmTier: RealmTier.xueTu),
+    );
+
+    expect(find.text(UiStrings.inventorySummaryTitle), findsOneWidget);
+    expect(find.textContaining('显示 2 / 2 件'), findsOneWidget);
+    expect(find.text(UiStrings.equipmentCardActionView), findsNWidgets(2));
+    expect(
+      find.textContaining('${UiStrings.equipmentCardRealmGate}：学徒'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('${UiStrings.equipmentCardRealmGate}：武圣'),
+      findsOneWidget,
+    );
+    expect(find.textContaining(UiStrings.equipmentCardCoreStats), findsWidgets);
+    expect(find.text(UiStrings.equipmentCardStatusReady), findsWidgets);
+    expect(find.text(UiStrings.inventoryFilterRealmLocked), findsWidgets);
+  });
+
   testWidgets('视觉二期：1280x720 与 1440x900 常规桌面视口 smoke', (tester) async {
     for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
       await pumpInv(
@@ -330,7 +368,7 @@ void main() {
     expect(find.text('test_11'), findsOneWidget);
 
     // 点「已穿戴」筛选 → 只剩 worn
-    await tester.tap(find.text('已穿戴'));
+    await tester.tap(find.text(UiStrings.inventoryFilterEquipped).first);
     await tester.pumpAndSettle();
     expect(find.text('test_10'), findsOneWidget);
     expect(find.text('test_11'), findsNothing);
@@ -368,7 +406,7 @@ void main() {
     );
     await pumpInv(tester, equipments: [heritage, free]);
 
-    await tester.tap(find.text(UiStrings.inventoryFilterHeritage));
+    await tester.tap(find.text(UiStrings.inventoryFilterHeritage).first);
     await tester.pumpAndSettle();
 
     expect(find.text('test_80'), findsOneWidget);

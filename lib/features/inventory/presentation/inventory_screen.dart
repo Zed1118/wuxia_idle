@@ -143,34 +143,36 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
         onRetry: () => ref.invalidate(allEquipmentsProvider),
       ),
       data: (list) {
+        final query = InventoryEquipmentQuery(
+          slot: _slotFilter,
+          tier: _tierFilter,
+          school: _schoolFilter,
+          ownership: _ownershipFilter,
+          sort: _sort,
+        );
         final filtered = organizeInventoryEquipments(
           list,
-          InventoryEquipmentQuery(
-            slot: _slotFilter,
-            tier: _tierFilter,
-            school: _schoolFilter,
-            ownership: _ownershipFilter,
-            sort: _sort,
-          ),
+          query,
           realm: playerRealm,
           equippedEquipmentIds: equippedIds,
           activeFormationEquipmentIds: equippedIds,
         );
+        final summary = _buildEquipmentSummary(
+          list,
+          filtered,
+          playerRealm,
+          equippedIds,
+        );
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 批量整理入口（Task 6）
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: PlaqueButton(
-                  label: UiStrings.equipmentBulkEntry,
-                  onTap: () => showDialog<void>(
-                    context: context,
-                    builder: (_) => const BulkDisposalDialog(),
-                  ),
-                ),
+            _InventorySummaryPanel(
+              summary: summary,
+              condition: _conditionLabel(query),
+              sortLabel: _sortLabel(_sort),
+              onBulkDisposal: () => showDialog<void>(
+                context: context,
+                builder: (_) => const BulkDisposalDialog(),
               ),
             ),
             _OrganizationBar(
@@ -202,6 +204,144 @@ class _EquipmentTabState extends ConsumerState<_EquipmentTab> {
           ],
         );
       },
+    );
+  }
+}
+
+class _EquipmentInventorySummary {
+  const _EquipmentInventorySummary({
+    required this.total,
+    required this.shown,
+    required this.equippable,
+    required this.equipped,
+    required this.locked,
+    required this.realmLocked,
+  });
+
+  final int total;
+  final int shown;
+  final int equippable;
+  final int equipped;
+  final int locked;
+  final int realmLocked;
+}
+
+_EquipmentInventorySummary _buildEquipmentSummary(
+  List<Equipment> all,
+  List<Equipment> shown,
+  RealmTier? playerRealm,
+  Set<int> equippedIds,
+) {
+  var equippable = 0;
+  var equipped = 0;
+  var locked = 0;
+  var realmLocked = 0;
+  for (final eq in all) {
+    final isEquipped = isEquipmentEquippedBySlot(eq, equippedIds);
+    final isRealmLocked =
+        playerRealm != null && !eq.isEquippableAtRealm(playerRealm);
+    if (isEquipped) equipped++;
+    if (eq.isLocked) locked++;
+    if (isRealmLocked) realmLocked++;
+    if (eq.ownerCharacterId == null && !isRealmLocked) equippable++;
+  }
+  return _EquipmentInventorySummary(
+    total: all.length,
+    shown: shown.length,
+    equippable: equippable,
+    equipped: equipped,
+    locked: locked,
+    realmLocked: realmLocked,
+  );
+}
+
+String _conditionLabel(InventoryEquipmentQuery query) {
+  final parts = <String>[];
+  if (query.slot != InventorySlotFilter.all) {
+    parts.add(_slotFilterLabel(query.slot));
+  }
+  if (query.tier != InventoryTierFilter.all) {
+    parts.add(_tierFilterLabel(query.tier));
+  }
+  if (query.school != InventorySchoolFilter.all) {
+    parts.add(_schoolFilterLabel(query.school));
+  }
+  if (query.ownership != InventoryOwnershipFilter.all) {
+    parts.add(_ownershipFilterLabel(query.ownership));
+  }
+  return UiStrings.inventoryConditionParts(parts);
+}
+
+class _InventorySummaryPanel extends StatelessWidget {
+  const _InventorySummaryPanel({
+    required this.summary,
+    required this.condition,
+    required this.sortLabel,
+    required this.onBulkDisposal,
+  });
+
+  final _EquipmentInventorySummary summary;
+  final String condition;
+  final String sortLabel;
+  final VoidCallback onBulkDisposal;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 6, 20, 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: WuxiaColors.panel,
+        border: Border.all(color: WuxiaColors.border),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  UiStrings.inventorySummaryTitle,
+                  style: TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  UiStrings.inventorySummaryLine(
+                    total: summary.total,
+                    shown: summary.shown,
+                    equippable: summary.equippable,
+                    equipped: summary.equipped,
+                    locked: summary.locked,
+                    realmLocked: summary.realmLocked,
+                  ),
+                  style: const TextStyle(
+                    color: WuxiaColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  UiStrings.inventoryCurrentCondition(condition, sortLabel),
+                  style: const TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          PlaqueButton(
+            label: UiStrings.equipmentBulkEntry,
+            onTap: onBulkDisposal,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -633,29 +773,49 @@ class _EquipmentGridTile extends ConsumerWidget {
       RealmTier.values[eq.tier.index],
     );
 
-    return ItemSlot(
-      imagePath: def?.iconPath,
-      name: def?.name ?? eq.defId,
-      tierColor: color,
-      equipmentSlot: eq.slot,
-      enhanceLevel: eq.enhanceLevel,
-      locked: locked,
-      lockText: UiStrings.inventoryRealmLockBanner(requiredRealmName),
-      highTier:
-          eq.tier == EquipmentTier.baoWu || eq.tier == EquipmentTier.shenWu,
-      tierLabel: EnumL10n.equipmentTier(eq.tier),
-      leadingBadgeIcon: eq.isLineageHeritage ? Icons.auto_awesome : null,
-      leadingBadgeColor: WuxiaColors.bossFrame,
-      leadingBadgeTooltip: UiStrings.inventoryLineageSealLabel,
-      trailingBadgeIcon: eq.isLocked ? Icons.lock_outline : null,
-      trailingBadgeColor: WuxiaColors.bossFrame,
-      trailingBadgeTooltip: UiStrings.inventoryLockedSealLabel,
-      protected: protected,
-      protectedText: UiStrings.inventoryProtectedSealText,
-      protectedTooltip: UiStrings.inventoryProtectedSealLabel,
-      statusText: equipped ? UiStrings.equippedBadge : null,
-      selected: equipped,
-      onTap: () async {
+    final name = def?.name ?? eq.defId;
+    final status = _equipmentStatusLabels(
+      eq,
+      equipped: equipped,
+      realmLocked: locked,
+    );
+
+    return _EquipmentSummaryCard(
+      slot: ItemSlot(
+        imagePath: def?.iconPath,
+        name: '',
+        tierColor: color,
+        equipmentSlot: eq.slot,
+        enhanceLevel: eq.enhanceLevel,
+        locked: locked,
+        lockText: UiStrings.inventoryRealmLockBanner(requiredRealmName),
+        highTier:
+            eq.tier == EquipmentTier.baoWu || eq.tier == EquipmentTier.shenWu,
+        tierLabel: EnumL10n.equipmentTier(eq.tier),
+        leadingBadgeIcon: eq.isLineageHeritage ? Icons.auto_awesome : null,
+        leadingBadgeColor: WuxiaColors.bossFrame,
+        leadingBadgeTooltip: UiStrings.inventoryLineageSealLabel,
+        trailingBadgeIcon: eq.isLocked ? Icons.lock_outline : null,
+        trailingBadgeColor: WuxiaColors.bossFrame,
+        trailingBadgeTooltip: UiStrings.inventoryLockedSealLabel,
+        protected: protected,
+        protectedText: UiStrings.inventoryProtectedSealText,
+        protectedTooltip: UiStrings.inventoryProtectedSealLabel,
+        statusText: equipped ? UiStrings.equippedBadge : null,
+        selected: equipped,
+        onTap: () async {
+          await _openEquipment(context, ref, def, eq);
+        },
+      ),
+      name: name,
+      tier: EnumL10n.equipmentTier(eq.tier),
+      slotLabel: EnumL10n.equipmentSlot(eq.slot),
+      schoolLabel: eq.school == null ? null : EnumL10n.school(eq.school!),
+      realmGate: requiredRealmName,
+      coreStats: _equipmentCoreStats(eq),
+      statusLabels: status,
+      accent: color,
+      onView: () async {
         await _openEquipment(context, ref, def, eq);
       },
     );
@@ -681,6 +841,181 @@ class _EquipmentGridTile extends ConsumerWidget {
     }
     ref.invalidate(allEquipmentsProvider);
     ref.invalidate(allInventoryItemsProvider);
+  }
+}
+
+List<String> _equipmentCoreStats(Equipment eq) {
+  final stats = <String>[];
+  if (eq.baseAttack > 0) {
+    stats.add('${UiStrings.equipStatAttack} ${eq.baseAttack}');
+  }
+  if (eq.baseHealth > 0) {
+    stats.add('${UiStrings.equipStatHealth} ${eq.baseHealth}');
+  }
+  if (eq.baseSpeed > 0) {
+    stats.add('${UiStrings.equipStatSpeed} ${eq.baseSpeed}');
+  }
+  return stats.isEmpty ? [UiStrings.dashPlaceholder] : stats;
+}
+
+List<String> _equipmentStatusLabels(
+  Equipment eq, {
+  required bool equipped,
+  required bool realmLocked,
+}) {
+  final labels = <String>[];
+  if (equipped) labels.add(UiStrings.inventoryFilterEquipped);
+  if (eq.isLocked) labels.add(UiStrings.inventoryFilterLocked);
+  if (realmLocked) {
+    labels.add(UiStrings.inventoryFilterRealmLocked);
+  } else if (!equipped) {
+    labels.add(UiStrings.equipmentCardStatusReady);
+  }
+  if (eq.isLineageHeritage) labels.add(UiStrings.inventoryLineageSealLabel);
+  return labels;
+}
+
+class _EquipmentSummaryCard extends StatelessWidget {
+  const _EquipmentSummaryCard({
+    required this.slot,
+    required this.name,
+    required this.tier,
+    required this.slotLabel,
+    required this.realmGate,
+    required this.coreStats,
+    required this.statusLabels,
+    required this.accent,
+    required this.onView,
+    this.schoolLabel,
+  });
+
+  final Widget slot;
+  final String name;
+  final String tier;
+  final String slotLabel;
+  final String? schoolLabel;
+  final String realmGate;
+  final List<String> coreStats;
+  final List<String> statusLabels;
+  final Color accent;
+  final VoidCallback onView;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 332,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.45),
+        border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.75)),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          slot,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: accent,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  '$tier · $slotLabel${schoolLabel == null ? '' : ' · $schoolLabel'}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: WuxiaColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                _EquipmentSummaryLine(
+                  label: UiStrings.equipmentCardRealmGate,
+                  value: realmGate,
+                ),
+                _EquipmentSummaryLine(
+                  label: UiStrings.equipmentCardCoreStats,
+                  value: coreStats.join(' / '),
+                ),
+                const SizedBox(height: 7),
+                Wrap(
+                  spacing: 5,
+                  runSpacing: 5,
+                  children: [
+                    for (final status in statusLabels)
+                      _EquipmentStatusBadge(text: status, accent: accent),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: PlaqueButton(
+                    label: UiStrings.equipmentCardActionView,
+                    onTap: onView,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EquipmentSummaryLine extends StatelessWidget {
+  const _EquipmentSummaryLine({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Text(
+        '$label：$value',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 11),
+      ),
+    );
+  }
+}
+
+class _EquipmentStatusBadge extends StatelessWidget {
+  const _EquipmentStatusBadge({required this.text, required this.accent});
+
+  final String text;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.10),
+        border: Border.all(color: accent.withValues(alpha: 0.55)),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: accent, fontSize: 10),
+      ),
+    );
   }
 }
 
