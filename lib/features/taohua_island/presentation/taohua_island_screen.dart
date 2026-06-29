@@ -1053,6 +1053,9 @@ class _BuildingCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
+          _BuildingManualPanel(type: type, bCfg: bCfg, cfg: cfg),
+          const SizedBox(height: 12),
+
           // ── 选配方（仅 processor）──
           if (isProcessor) ...[
             if (synergyLine != null) ...[
@@ -1238,6 +1241,176 @@ class _IntelLine extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _BuildingManualPanel extends StatelessWidget {
+  const _BuildingManualPanel({
+    required this.type,
+    required this.bCfg,
+    required this.cfg,
+  });
+
+  final BuildingType type;
+  final BuildingConfig bCfg;
+  final TaohuaIslandConfig cfg;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: WuxiaUi.ink.withValues(alpha: 0.16),
+          width: WuxiaUi.borderWidth,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              UiStrings.taohuaIslandBuildingManualTitle,
+              style: TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 7),
+            _IntelLine(
+              icon: Icons.inventory_2_outlined,
+              text: _line(
+                UiStrings.taohuaIslandBuildingManualProduces,
+                _produces(),
+              ),
+            ),
+            const SizedBox(height: 5),
+            _IntelLine(
+              icon: Icons.receipt_long_outlined,
+              text: _line(
+                UiStrings.taohuaIslandBuildingManualConsumes,
+                _consumes(),
+              ),
+            ),
+            const SizedBox(height: 5),
+            _IntelLine(
+              icon: Icons.call_split_outlined,
+              text: _line(
+                UiStrings.taohuaIslandBuildingManualSynergy,
+                _synergies(),
+              ),
+            ),
+            const SizedBox(height: 5),
+            _IntelLine(
+              icon: Icons.route_outlined,
+              text: _line(UiStrings.taohuaIslandBuildingManualUsage, _usage()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _line(String label, String value) =>
+      UiStrings.taohuaIslandBuildingManualLine(label, value);
+
+  String _produces() {
+    if (bCfg.kind == BuildingKind.source) {
+      return UiStrings.taohuaIslandBuildingManualGatherRate(
+        _itemName(bCfg.outputItem),
+      );
+    }
+    final outputs = <String>{
+      for (final recipe in bCfg.recipes) _itemName(recipe.outputItem),
+    };
+    return UiStrings.taohuaIslandBuildingManualRecipeOutputs(
+      outputs.join(' / '),
+    );
+  }
+
+  String _consumes() {
+    if (bCfg.kind == BuildingKind.source) {
+      return UiStrings.taohuaIslandBuildingManualUpgradeMaterial(
+        _itemName(bCfg.upgradeMaterialItem),
+      );
+    }
+    final lines = <String>[];
+    for (final recipe in bCfg.recipes) {
+      final parts = [
+        '${_itemName(bCfg.inputItem)} ×${_formatAmount(recipe.inputPerOutput)}',
+        if (recipe.secondaryInputPerOutput > 0)
+          '${_itemName(bCfg.secondaryInputItem)} ×${_formatAmount(recipe.secondaryInputPerOutput)}',
+      ];
+      lines.add(
+        UiStrings.taohuaIslandBuildingManualRecipeCost(
+          _itemName(recipe.outputItem),
+          parts.join(' · '),
+        ),
+      );
+    }
+    return lines.join(' / ');
+  }
+
+  String _synergies() {
+    final parts = <String>[];
+    if (bCfg.kind == BuildingKind.source) {
+      for (final rule in cfg.synergies.rules) {
+        if (rule.sourceBuilding != type) continue;
+        parts.add(
+          UiStrings.taohuaIslandBuildingManualSynergyTarget(
+            EnumL10n.buildingType(rule.targetBuilding),
+            (rule.rateBonusPerSourceLevel * 100).round(),
+          ),
+        );
+      }
+    } else {
+      for (final rule in cfg.synergies.rulesForTarget(type)) {
+        parts.add(
+          UiStrings.taohuaIslandBuildingManualSynergySource(
+            EnumL10n.buildingType(rule.sourceBuilding),
+            (rule.rateBonusPerSourceLevel * 100).round(),
+          ),
+        );
+      }
+    }
+    return parts.isEmpty
+        ? UiStrings.taohuaIslandBuildingManualNone
+        : parts.join(' / ');
+  }
+
+  String _usage() {
+    final usageLines = <String>[];
+    final outputIds = bCfg.kind == BuildingKind.source
+        ? [if (bCfg.outputItem != null) bCfg.outputItem!]
+        : [for (final recipe in bCfg.recipes) recipe.outputItem];
+    for (final itemId in outputIds) {
+      final usage = UiStrings.materialUsageSummary(
+        ItemUsageLookupService(GameRepository.instance).usagesFor(itemId),
+      );
+      usageLines.add(
+        UiStrings.taohuaIslandBuildingManualOutputUsage(
+          _itemName(itemId),
+          usage.isEmpty ? UiStrings.taohuaIslandBuildingManualUsageNone : usage,
+        ),
+      );
+    }
+    return usageLines.join(' / ');
+  }
+
+  String _itemName(String? itemId) {
+    if (itemId == null || itemId.isEmpty) {
+      return UiStrings.taohuaIslandBuildingManualNone;
+    }
+    return GameRepository.instance.itemDefs[itemId]?.name ?? itemId;
+  }
+
+  String _formatAmount(double value) {
+    if (value == value.roundToDouble()) return value.toInt().toString();
+    return value.toStringAsFixed(1);
   }
 }
 

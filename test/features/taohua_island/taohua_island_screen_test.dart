@@ -282,6 +282,88 @@ void main() {
       expect(find.text(UiStrings.taohuaIslandNextOutputPaused), findsWidgets);
     });
 
+    testWidgets('source 建筑显示建筑志、协同影响与产物去向', (tester) async {
+      await pump(tester, wrap(buildTestView()));
+
+      expect(
+        find.text(UiStrings.taohuaIslandBuildingManualTitle),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          UiStrings.taohuaIslandBuildingManualLine(
+            UiStrings.taohuaIslandBuildingManualProduces,
+            UiStrings.taohuaIslandBuildingManualGatherRate('精铁'),
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          UiStrings.taohuaIslandBuildingManualLine(
+            UiStrings.taohuaIslandBuildingManualConsumes,
+            UiStrings.taohuaIslandBuildingManualUpgradeMaterial('精铁'),
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(
+          UiStrings.taohuaIslandBuildingManualSynergyTarget(
+            EnumL10n.buildingType(BuildingType.daZaoTai),
+            2,
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(
+          UiStrings.taohuaIslandBuildingManualOutputUsage(
+            '精铁',
+            '建筑升级 / 桃花岛加工',
+          ),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('processor 建筑显示建筑志、配方消耗与协同来源', (tester) async {
+      await pump(tester, wrap(buildTestView()));
+      await selectBuilding(tester, BuildingType.daZaoTai);
+
+      expect(
+        find.text(UiStrings.taohuaIslandBuildingManualTitle),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(
+          UiStrings.taohuaIslandBuildingManualRecipeOutputs('磨剑石'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(
+          UiStrings.taohuaIslandBuildingManualRecipeCost('磨剑石', '精铁 ×4'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(
+          UiStrings.taohuaIslandBuildingManualSynergySource(
+            EnumL10n.buildingType(BuildingType.tieJiangChang),
+            2,
+          ),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(
+          UiStrings.taohuaIslandBuildingManualOutputUsage('磨剑石', '装备强化'),
+        ),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('加工建筑展示固定协同加成', (tester) async {
       await pump(tester, wrap(buildTestView()));
 

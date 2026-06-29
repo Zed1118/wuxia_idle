@@ -107,6 +107,16 @@ class ItemUsageLookupService {
           ),
         );
       }
+      if (building.kind == BuildingKind.processor &&
+          building.secondaryInputItem == itemId &&
+          building.recipes.any((r) => r.secondaryInputPerOutput > 0)) {
+        result.add(
+          ItemUsage(
+            kind: ItemUsageKind.islandRecipeInput,
+            targetId: entry.key.name,
+          ),
+        );
+      }
     }
 
     if (hasSilverUpgrade) {
