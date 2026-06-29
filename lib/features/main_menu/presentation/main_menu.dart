@@ -196,7 +196,7 @@ class MainMenu extends ConsumerWidget {
         .watch(shopUnlockedProvider)
         .maybeWhen(data: (b) => b, orElse: () => false);
 
-    final coreItems = <Widget>[
+    final journeyItems = <Widget>[
       WuxiaInkButton(
         label: UiStrings.mainMenuMainline,
         hint: mainlineGoal == null
@@ -211,61 +211,6 @@ class MainMenu extends ConsumerWidget {
           onAllowed: () => _push(context, const ChapterListScreen()),
         ),
       ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuCharacterPanel,
-        hint: UiStrings.mainMenuCharacterPanelHint,
-        icon: Icons.person_outline,
-        thumbnailPath: WuxiaUi.entryCharacter,
-        onTap: () => _push(
-          context,
-          const CharacterPanelScreen(characterId: _defaultCharacterId),
-        ),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuInventory,
-        hint: UiStrings.mainMenuInventoryHint,
-        icon: Icons.inventory_2_outlined,
-        thumbnailPath: WuxiaUi.entryInventory,
-        status: inventoryStatus,
-        onTap: () => _push(context, const InventoryScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuResourceOverview,
-        hint: UiStrings.mainMenuResourceOverviewHint,
-        icon: Icons.account_balance_wallet_outlined,
-        thumbnailPath: WuxiaUi.entryInventory,
-        onTap: () => _push(context, const ResourceOverviewScreen()),
-      ),
-      _TechniqueMenuButton(
-        characterId: _defaultCharacterId,
-        tutorialLocked: techLocked,
-        onPush: (screen) => _push(context, screen),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuSkillLibrary,
-        hint: skillLibLocked
-            ? UiStrings.mainMenuSkillLibraryLockedHint
-            : UiStrings.mainMenuSkillLibraryHint,
-        icon: Icons.menu_book_outlined,
-        thumbnailPath: WuxiaUi.entryTechnique,
-        disabled: skillLibLocked,
-        locked: skillLibLocked,
-        onTap: skillLibLocked
-            ? null
-            : () => _push(
-                context,
-                const CangJingGeScreen(characterId: _defaultCharacterId),
-              ),
-      ),
-      _SeclusionMenuButton(
-        defaultCharacterId: _defaultCharacterId,
-        defaultRealmTier: _defaultRealmTier,
-        onPush: (screen) => _push(context, screen),
-        tutorialLocked: step < _seclusionUnlockStep,
-      ),
-    ];
-
-    final battleItems = <Widget>[
       WuxiaInkButton(
         label: UiStrings.mainMenuTower,
         hint: UiStrings.mainMenuTowerHint,
@@ -319,6 +264,61 @@ class MainMenu extends ConsumerWidget {
           onAllowed: () => _push(context, const MassBattleScreen()),
         ),
       ),
+    ];
+
+    final growthItems = <Widget>[
+      WuxiaInkButton(
+        label: UiStrings.mainMenuCharacterPanel,
+        hint: UiStrings.mainMenuCharacterPanelHint,
+        icon: Icons.person_outline,
+        thumbnailPath: WuxiaUi.entryCharacter,
+        onTap: () => _push(
+          context,
+          const CharacterPanelScreen(characterId: _defaultCharacterId),
+        ),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuInventory,
+        hint: UiStrings.mainMenuInventoryHint,
+        icon: Icons.inventory_2_outlined,
+        thumbnailPath: WuxiaUi.entryInventory,
+        status: inventoryStatus,
+        onTap: () => _push(context, const InventoryScreen()),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuResourceOverview,
+        hint: UiStrings.mainMenuResourceOverviewHint,
+        icon: Icons.account_balance_wallet_outlined,
+        thumbnailPath: WuxiaUi.entryInventory,
+        onTap: () => _push(context, const ResourceOverviewScreen()),
+      ),
+      _TechniqueMenuButton(
+        characterId: _defaultCharacterId,
+        tutorialLocked: techLocked,
+        onPush: (screen) => _push(context, screen),
+      ),
+      WuxiaInkButton(
+        label: UiStrings.mainMenuSkillLibrary,
+        hint: skillLibLocked
+            ? UiStrings.mainMenuSkillLibraryLockedHint
+            : UiStrings.mainMenuSkillLibraryHint,
+        icon: Icons.menu_book_outlined,
+        thumbnailPath: WuxiaUi.entryTechnique,
+        disabled: skillLibLocked,
+        locked: skillLibLocked,
+        onTap: skillLibLocked
+            ? null
+            : () => _push(
+                context,
+                const CangJingGeScreen(characterId: _defaultCharacterId),
+              ),
+      ),
+      _SeclusionMenuButton(
+        defaultCharacterId: _defaultCharacterId,
+        defaultRealmTier: _defaultRealmTier,
+        onPush: (screen) => _push(context, screen),
+        tutorialLocked: step < _seclusionUnlockStep,
+      ),
       WuxiaInkButton(
         label: UiStrings.mainMenuTaohuaIsland,
         hint: taohuaLocked
@@ -329,16 +329,6 @@ class MainMenu extends ConsumerWidget {
         disabled: taohuaLocked,
         locked: taohuaLocked,
         onTap: () => _push(context, const TaohuaIslandScreen()),
-      ),
-    ];
-
-    final jianghuItems = <Widget>[
-      WuxiaInkButton(
-        label: UiStrings.mainMenuLineage,
-        hint: UiStrings.mainMenuLineageHint,
-        icon: Icons.account_tree_outlined,
-        thumbnailPath: WuxiaUi.entryCharacter,
-        onTap: () => _push(context, const LineagePanelScreen()),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuSect,
@@ -361,6 +351,23 @@ class MainMenu extends ConsumerWidget {
         disabled: socialLocked,
         locked: socialLocked,
         onTap: () => _push(context, const ReputationPanelScreen()),
+      ),
+      if (shopUnlocked)
+        WuxiaInkButton(
+          label: UiStrings.mainMenuShop,
+          hint: UiStrings.mainMenuShopHint,
+          icon: Icons.storefront_outlined,
+          onTap: () => _push(context, const ShopScreen()),
+        ),
+    ];
+
+    final archiveItems = <Widget>[
+      WuxiaInkButton(
+        label: UiStrings.mainMenuLineage,
+        hint: UiStrings.mainMenuLineageHint,
+        icon: Icons.account_tree_outlined,
+        thumbnailPath: WuxiaUi.entryCharacter,
+        onTap: () => _push(context, const LineagePanelScreen()),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuLeaderboard,
@@ -398,13 +405,6 @@ class MainMenu extends ConsumerWidget {
           icon: Icons.auto_stories_outlined,
           onTap: () => _push(context, const WeaponCodexScreen()),
         ),
-      if (shopUnlocked)
-        WuxiaInkButton(
-          label: UiStrings.mainMenuShop,
-          hint: UiStrings.mainMenuShopHint,
-          icon: Icons.storefront_outlined,
-          onTap: () => _push(context, const ShopScreen()),
-        ),
       WuxiaInkButton(
         label: UiStrings.mainMenuBaike,
         hint: UiStrings.mainMenuBaikeHint,
@@ -412,6 +412,9 @@ class MainMenu extends ConsumerWidget {
         thumbnailPath: WuxiaUi.entryCodex,
         onTap: () => _push(context, const BaikeScreen()),
       ),
+    ];
+
+    final settingsItems = <Widget>[
       WuxiaInkButton(
         label: UiStrings.mainMenuSettings,
         hint: UiStrings.mainMenuSettingsHint,
@@ -527,9 +530,10 @@ class MainMenu extends ConsumerWidget {
                         const MainMenuStatusSummaryPanel(),
                         const SizedBox(height: 24),
                         _MenuSectionsLayout(
-                          coreItems: coreItems,
-                          battleItems: battleItems,
-                          jianghuItems: jianghuItems,
+                          journeyItems: journeyItems,
+                          growthItems: growthItems,
+                          archiveItems: archiveItems,
+                          settingsItems: settingsItems,
                           debugItems: debugItems,
                         ),
                       ],
@@ -622,48 +626,80 @@ class MainMenu extends ConsumerWidget {
   }
 }
 
-/// 入口分组标签(Phase A · 主/次分组):小字 + 分隔线。
+/// 入口分组标签:篆印图标 + 标题 + 短说明,用于水墨分区版式。
 class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
+  const _SectionLabel({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
 
-  final String text;
+  final String title;
+  final String subtitle;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 28, bottom: 10),
-      child: Row(
-        children: [
-          Text(
-            text,
-            style: const TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 13,
-              letterSpacing: 6,
-              fontWeight: FontWeight.w500,
-            ),
+    return Row(
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: WuxiaUi.jiang.withValues(alpha: 0.16),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: WuxiaUi.jiang.withValues(alpha: 0.58)),
           ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Divider(color: WuxiaColors.border, thickness: 1),
+          child: Icon(icon, size: 18, color: WuxiaUi.paper),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 15,
+                  letterSpacing: 4,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: WuxiaColors.textMuted,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
 class _MenuSectionsLayout extends StatelessWidget {
   const _MenuSectionsLayout({
-    required this.coreItems,
-    required this.battleItems,
-    required this.jianghuItems,
+    required this.journeyItems,
+    required this.growthItems,
+    required this.archiveItems,
+    required this.settingsItems,
     required this.debugItems,
   });
 
-  final List<Widget> coreItems;
-  final List<Widget> battleItems;
-  final List<Widget> jianghuItems;
+  final List<Widget> journeyItems;
+  final List<Widget> growthItems;
+  final List<Widget> archiveItems;
+  final List<Widget> settingsItems;
   final List<Widget> debugItems;
 
   @override
@@ -671,31 +707,52 @@ class _MenuSectionsLayout extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final wide = constraints.maxWidth >= 980;
+        final canUseTwoColumns = constraints.maxWidth >= 680;
         if (!wide) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _MenuSection(
-                title: UiStrings.mainMenuGroupCore,
-                items: coreItems,
-                compact: true,
+                title: UiStrings.mainMenuGroupJourney,
+                subtitle: UiStrings.mainMenuGroupJourneyHint,
+                icon: Icons.explore_outlined,
+                items: journeyItems,
+                twoColumn: canUseTwoColumns,
               ),
+              const SizedBox(height: 14),
               _MenuSection(
-                title: UiStrings.mainMenuGroupBattle,
-                items: battleItems,
-                compact: true,
+                title: UiStrings.mainMenuGroupGrowth,
+                subtitle: UiStrings.mainMenuGroupGrowthHint,
+                icon: Icons.spa_outlined,
+                items: growthItems,
+                twoColumn: canUseTwoColumns,
               ),
+              const SizedBox(height: 14),
               _MenuSection(
-                title: UiStrings.mainMenuGroupJianghu,
-                items: jianghuItems,
-                compact: true,
+                title: UiStrings.mainMenuGroupArchive,
+                subtitle: UiStrings.mainMenuGroupArchiveHint,
+                icon: Icons.article_outlined,
+                items: archiveItems,
+                twoColumn: canUseTwoColumns,
               ),
-              if (debugItems.isNotEmpty)
+              const SizedBox(height: 14),
+              _MenuSection(
+                title: UiStrings.mainMenuGroupSettings,
+                subtitle: UiStrings.mainMenuGroupSettingsHint,
+                icon: Icons.tune_outlined,
+                items: settingsItems,
+                twoColumn: false,
+              ),
+              if (debugItems.isNotEmpty) ...[
+                const SizedBox(height: 14),
                 _MenuSection(
                   title: UiStrings.mainMenuGroupDebug,
+                  subtitle: UiStrings.mainMenuGroupDebugHint,
+                  icon: Icons.bug_report_outlined,
                   items: debugItems,
-                  compact: true,
+                  twoColumn: canUseTwoColumns,
                 ),
+              ],
             ],
           );
         }
@@ -707,35 +764,69 @@ class _MenuSectionsLayout extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
+                  flex: 5,
                   child: _MenuSection(
-                    title: UiStrings.mainMenuGroupCore,
-                    items: coreItems,
+                    title: UiStrings.mainMenuGroupJourney,
+                    subtitle: UiStrings.mainMenuGroupJourneyHint,
+                    icon: Icons.explore_outlined,
+                    items: journeyItems,
+                    featured: true,
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 16),
                 Expanded(
+                  flex: 7,
                   child: _MenuSection(
-                    title: UiStrings.mainMenuGroupBattle,
-                    items: battleItems,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _MenuSection(
-                    title: UiStrings.mainMenuGroupJianghu,
-                    items: jianghuItems,
+                    title: UiStrings.mainMenuGroupGrowth,
+                    subtitle: UiStrings.mainMenuGroupGrowthHint,
+                    icon: Icons.spa_outlined,
+                    items: growthItems,
+                    twoColumn: true,
                   ),
                 ),
               ],
             ),
-            if (debugItems.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _MenuSection(
-                title: UiStrings.mainMenuGroupDebug,
-                items: debugItems,
-                compact: true,
-              ),
-            ],
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 7,
+                  child: _MenuSection(
+                    title: UiStrings.mainMenuGroupArchive,
+                    subtitle: UiStrings.mainMenuGroupArchiveHint,
+                    icon: Icons.article_outlined,
+                    items: archiveItems,
+                    twoColumn: true,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 5,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _MenuSection(
+                        title: UiStrings.mainMenuGroupSettings,
+                        subtitle: UiStrings.mainMenuGroupSettingsHint,
+                        icon: Icons.tune_outlined,
+                        items: settingsItems,
+                      ),
+                      if (debugItems.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        _MenuSection(
+                          title: UiStrings.mainMenuGroupDebug,
+                          subtitle: UiStrings.mainMenuGroupDebugHint,
+                          icon: Icons.bug_report_outlined,
+                          items: debugItems,
+                          twoColumn: true,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ],
         );
       },
@@ -746,22 +837,68 @@ class _MenuSectionsLayout extends StatelessWidget {
 class _MenuSection extends StatelessWidget {
   const _MenuSection({
     required this.title,
+    required this.subtitle,
+    required this.icon,
     required this.items,
-    this.compact = false,
+    this.twoColumn = false,
+    this.featured = false,
   });
 
   final String title;
+  final String subtitle;
+  final IconData icon;
   final List<Widget> items;
-  final bool compact;
+  final bool twoColumn;
+  final bool featured;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _SectionLabel(title),
-        ...compact ? _twoColumn(items) : _oneColumn(items),
-      ],
+    final body = twoColumn ? _twoColumn(items) : _oneColumn(items);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaColors.panel.withValues(alpha: featured ? 0.78 : 0.68),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: featured
+              ? WuxiaUi.gold.withValues(alpha: 0.52)
+              : WuxiaColors.border,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x55000000),
+            blurRadius: 12,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Opacity(
+                opacity: featured ? 0.12 : 0.08,
+                child: Image.asset(
+                  WuxiaUi.paperBg,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _SectionLabel(title: title, subtitle: subtitle, icon: icon),
+                  const SizedBox(height: 12),
+                  ...body,
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

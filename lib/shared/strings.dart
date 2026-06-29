@@ -238,11 +238,17 @@ class UiStrings {
   /// 主菜单副标题（Phase A 出版美术 · 题字感）。
   static const String mainMenuSubtitle = '一剑霜寒 · 江湖路远';
 
-  /// 主菜单入口分组标签（Phase A 出版美术 · 主/次分组）。
-  static const String mainMenuGroupCore = '修行';
-  static const String mainMenuGroupBattle = '演武';
-  static const String mainMenuGroupJianghu = '江湖';
+  /// 主菜单入口分组标签（视觉批次 · 水墨行程版式）。
+  static const String mainMenuGroupJourney = '江湖行程';
+  static const String mainMenuGroupJourneyHint = '主线、登塔与各路试炼';
+  static const String mainMenuGroupGrowth = '养成经营';
+  static const String mainMenuGroupGrowthHint = '门人、装备、闭关与产业';
+  static const String mainMenuGroupArchive = '档案藏卷';
+  static const String mainMenuGroupArchiveHint = '谱牒、战绩、见闻与榜单';
+  static const String mainMenuGroupSettings = '设置与系统';
+  static const String mainMenuGroupSettingsHint = '音量、显示与舒适性';
   static const String mainMenuGroupDebug = '调试';
+  static const String mainMenuGroupDebugHint = '开发期校验入口';
 
   /// 主菜单「今日节日」chip（W16 GDD §12.4）。
   /// [festivalName] 走 [EnumL10n.festival]，例：「今日：春节」。
