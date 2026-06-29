@@ -1233,9 +1233,10 @@ floors:
         realmTier: zongShi
         realmLayer: dengFeng
         school: yinRou
-        # 2026-06-28 审计修:终关单体 Boss 不应弱于 floor29 三人组
-        # (16050 / 2400)。仍远低于 boss_hp_max=60000,避免数值膨胀。
-        baseHp: 20000
+        # 2026-06-28 审计修:终关单体 Boss 不应弱于 floor29 三人组(16050/2400)。
+        # 2026-06-29 相位修:20000→42000 让 on-level ceiling 队无法首击秒杀,
+        # 多相位机制(0.90/0.50 阈值)才有时间触发。仍 <boss_hp_max=60000。
+        baseHp: 42000
         baseAttack: 2800
         baseSpeed: 245
         skillIds:
@@ -1249,13 +1250,13 @@ floors:
           lingQiao: 0.75
         bossPhases:
           - hpThresholdPct: 1.0
-          - hpThresholdPct: 0.70
+          - hpThresholdPct: 0.90
             unlockSkillIds:
               - skill_yinrou_shichuan_fang_skill
             aiMode: focus
             onEnterMechanic: chargeCounter
             titleKey: bossPhase_desperate
-          - hpThresholdPct: 0.4
+          - hpThresholdPct: 0.50
             unlockSkillIds:
               - skill_yinrou_shichuan_fang_ult
             aiMode: aggressive

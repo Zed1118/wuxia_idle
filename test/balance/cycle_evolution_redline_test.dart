@@ -539,7 +539,7 @@ void main() {
         isTower: true,
       );
       final boss = team.first; // floor 30 单人
-      final baseHpFloor30 = floor.enemyTeam.single.baseHp;
+      final baseHpFloor30 = floor.enemyTeam.firstWhere((e) => e.isBoss).baseHp;
       final ce = GameRepository.instance.numbers.cycleEvolution;
       final expectedHp = (baseHpFloor30 * (1.0 + ce.scalePerCycle)).toInt();
       expect(
@@ -630,7 +630,7 @@ void main() {
           isTower: true,
         );
         final ce = GameRepository.instance.numbers.cycleEvolution;
-        final baseAtk30 = floor30.enemyTeam.single.baseAttack;
+        final baseAtk30 = floor30.enemyTeam.firstWhere((e) => e.isBoss).baseAttack;
         final expectedAtk = (baseAtk30 * (1.0 + ce.scalePerCycle)).toInt();
         expect(
           team30.first.totalEquipmentAttack,
