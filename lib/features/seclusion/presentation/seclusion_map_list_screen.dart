@@ -125,84 +125,85 @@ class _SeclusionMapListScreenState
     return BgmScope(
       track: BgmTrack.seclusion,
       child: Scaffold(
-      backgroundColor: WuxiaColors.background,
-      appBar: AppBar(
-        title: const Text(UiStrings.seclusionTitle),
-        backgroundColor: WuxiaColors.sidebar,
-        foregroundColor: WuxiaColors.textPrimary,
-        actions: [
-          const ContextHelpButton(topic: HelpTopic.seclusion),
-          Padding(
-            padding: const EdgeInsets.only(left: 8, right: 16),
-            child: Image.asset(
-              'assets/ui/meditation_icon.png',
-              width: 24,
-              height: 24,
-              fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+        backgroundColor: WuxiaColors.background,
+        appBar: AppBar(
+          title: const Text(UiStrings.seclusionTitle),
+          backgroundColor: WuxiaColors.sidebar,
+          foregroundColor: WuxiaColors.textPrimary,
+          actions: [
+            const ContextHelpButton(topic: HelpTopic.seclusion),
+            Padding(
+              padding: const EdgeInsets.only(left: 8, right: 16),
+              child: Image.asset(
+                'assets/ui/meditation_icon.png',
+                width: 24,
+                height: 24,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              ),
             ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: FutureBuilder<RetreatSession?>(
-          future: _activeFuture,
-          builder: (context, snap) {
-            final active = snap.data;
-            final activeDef = active == null
-                ? null
-                : GameRepository.instance.getSeclusionMap(active.mapType);
-            return Column(
-              children: [
-                if (active != null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-                    child: _ActiveBanner(session: active, mapDef: activeDef!),
-                  ),
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final columns = constraints.maxWidth >= 940 ? 2 : 1;
-                      final cardHeight = columns == 2 ? 244.0 : 236.0;
-                      final cardWidth =
-                          (constraints.maxWidth - 32 - (columns - 1) * 14) /
-                          columns;
-                      return GridView.builder(
-                        padding: const EdgeInsets.all(16),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: columns,
-                          mainAxisSpacing: 14,
-                          crossAxisSpacing: 14,
-                          childAspectRatio: cardWidth / cardHeight,
-                        ),
-                        itemCount: maps.length,
-                        itemBuilder: (context, i) {
-                          final def = maps[i];
-                          final isActive =
-                              active != null && active.mapType == def.mapType;
-                          final canEnter = SeclusionService.canEnterMap(
-                            mapType: def.mapType,
-                            charRealmTier: widget.charRealmTier,
-                            maps: maps,
-                          );
-                          return _MapCard(
-                            def: def,
-                            isActive: isActive,
-                            canEnter: canEnter,
-                            activeSession: isActive ? active : null,
-                            onTap: () => _onMapTap(context, def),
-                            currentRealm: widget.charRealmTier,
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
+          ],
         ),
-      ),
+        body: SafeArea(
+          child: FutureBuilder<RetreatSession?>(
+            future: _activeFuture,
+            builder: (context, snap) {
+              final active = snap.data;
+              final activeDef = active == null
+                  ? null
+                  : GameRepository.instance.getSeclusionMap(active.mapType);
+              return Column(
+                children: [
+                  if (active != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                      child: _ActiveBanner(session: active, mapDef: activeDef!),
+                    ),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final columns = constraints.maxWidth >= 940 ? 2 : 1;
+                        final cardHeight = columns == 2 ? 268.0 : 258.0;
+                        final cardWidth =
+                            (constraints.maxWidth - 32 - (columns - 1) * 14) /
+                            columns;
+                        return GridView.builder(
+                          padding: const EdgeInsets.all(16),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: columns,
+                                mainAxisSpacing: 14,
+                                crossAxisSpacing: 14,
+                                childAspectRatio: cardWidth / cardHeight,
+                              ),
+                          itemCount: maps.length,
+                          itemBuilder: (context, i) {
+                            final def = maps[i];
+                            final isActive =
+                                active != null && active.mapType == def.mapType;
+                            final canEnter = SeclusionService.canEnterMap(
+                              mapType: def.mapType,
+                              charRealmTier: widget.charRealmTier,
+                              maps: maps,
+                            );
+                            return _MapCard(
+                              def: def,
+                              isActive: isActive,
+                              canEnter: canEnter,
+                              activeSession: isActive ? active : null,
+                              onTap: () => _onMapTap(context, def),
+                              currentRealm: widget.charRealmTier,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -256,8 +257,13 @@ class _ActiveBanner extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     remaining > 0
-                        ? '${UiStrings.seclusionMapActive} · 剩余 ${remaining ~/ 60}h${remaining % 60}min'
-                        : '${UiStrings.activeRetreatDone} · 可收功',
+                        ? UiStrings.seclusionMapActiveBannerRemaining(
+                            UiStrings.retreatRemainingText(
+                              remaining ~/ 60,
+                              remaining % 60,
+                            ),
+                          )
+                        : UiStrings.seclusionMapActiveBannerDone(),
                     style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
                   ),
                 ],
@@ -299,21 +305,25 @@ class _MapCard extends StatelessWidget {
         ? WuxiaColors.resultHighlight
         : locked
         ? WuxiaUi.muted
-        : WuxiaColors.hpHigh;
+        : WuxiaUi.qing;
     final traitColor = SeclusionMapVisuals.primaryColor(def);
-
-    final footerText = locked
+    final gateText = locked
         ? UiStrings.seclusionRequiredRealmWithCurrent(
             EnumL10n.realmTier(def.requiredRealm),
             EnumL10n.realmTier(currentRealm),
           )
-        : isActive
+        : UiStrings.seclusionRequiredRealm(
+            EnumL10n.realmTier(def.requiredRealm),
+          );
+    final statusDetail = isActive
         ? _activeHint()
-        : _outputSummary();
+        : locked
+        ? UiStrings.seclusionMapLocked
+        : UiStrings.seclusionMapReadyHint;
     final statusLabel = isActive
         ? UiStrings.seclusionMapActive
         : locked
-        ? UiStrings.seclusionMapLocked
+        ? UiStrings.seclusionMapLockedHint
         : UiStrings.seclusionMapReady;
 
     return Material(
@@ -357,8 +367,8 @@ class _MapCard extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withValues(alpha: 0.04),
-                        Colors.black.withValues(alpha: locked ? 0.72 : 0.56),
+                        Colors.black.withValues(alpha: locked ? 0.14 : 0.02),
+                        Colors.black.withValues(alpha: locked ? 0.76 : 0.5),
                       ],
                     ),
                   ),
@@ -367,8 +377,25 @@ class _MapCard extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: WuxiaUi.paper.withValues(alpha: 0.3),
+                        color: WuxiaUi.paper.withValues(alpha: 0.38),
                         width: 5,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 10,
+                  top: 10,
+                  right: 10,
+                  bottom: 10,
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: traitColor.withValues(
+                            alpha: locked ? 0.18 : 0.32,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -386,7 +413,7 @@ class _MapCard extends StatelessWidget {
                 Positioned(
                   left: 16,
                   right: 16,
-                  bottom: 62,
+                  bottom: 122,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -418,51 +445,75 @@ class _MapCard extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
+                  left: 12,
+                  right: 12,
+                  bottom: 12,
                   child: Container(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 14, 13),
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
                     decoration: BoxDecoration(
-                      color: WuxiaColors.sidebar.withValues(alpha: 0.88),
-                      border: Border(
-                        top: BorderSide(
-                          color: traitColor.withValues(
-                            alpha: locked ? 0.18 : 0.34,
-                          ),
+                      color: WuxiaUi.paper.withValues(
+                        alpha: locked ? 0.78 : 0.88,
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: traitColor.withValues(
+                          alpha: locked ? 0.2 : 0.42,
                         ),
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.24),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(
-                          child: Text(
-                            footerText,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: locked
-                                  ? WuxiaColors.textMuted
-                                  : WuxiaColors.textSecondary,
-                              fontSize: 13,
-                              fontWeight: isActive
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _MapInfoLine(
+                                label: UiStrings.seclusionMapRealmGateLabel,
+                                value: gateText,
+                                accent: statusColor,
+                                locked: locked,
+                              ),
                             ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _MapInfoLine(
+                                label: UiStrings.seclusionMapStatusLabel,
+                                value: statusDetail,
+                                accent: statusColor,
+                                locked: locked,
+                              ),
+                            ),
+                            const SizedBox(width: 2),
+                            Icon(
+                              isActive
+                                  ? Icons.arrow_forward_ios
+                                  : locked
+                                  ? Icons.lock
+                                  : Icons.login,
+                              color: locked ? WuxiaUi.muted : statusColor,
+                              size: 17,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 9),
+                        Text(
+                          UiStrings.seclusionMapExpectedOutputLabel,
+                          style: TextStyle(
+                            color: locked ? WuxiaUi.muted : WuxiaUi.ink2,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          isActive
-                              ? Icons.arrow_forward_ios
-                              : locked
-                              ? Icons.lock
-                              : Icons.login,
-                          color: locked
-                              ? WuxiaColors.textMuted
-                              : WuxiaColors.textSecondary,
-                          size: 17,
-                        ),
+                        const SizedBox(height: 6),
+                        SeclusionMapOutputStrip(def: def, locked: locked),
                       ],
                     ),
                   ),
@@ -475,21 +526,6 @@ class _MapCard extends StatelessWidget {
     );
   }
 
-  String _outputSummary() {
-    final parts = <String>[];
-    if (def.equipmentDropRate > 1.0) {
-      parts.add(UiStrings.seclusionBonusEquipDrop);
-    }
-    if (def.techniqueLearnRate > 1.0) {
-      parts.add(UiStrings.seclusionBonusTechniqueLearn);
-    }
-    if (def.internalForceGrowth > 1.0) {
-      parts.add(UiStrings.seclusionBonusInternalForce);
-    }
-    if (parts.isEmpty) parts.add(UiStrings.seclusionBonusBalanced);
-    return parts.join('｜');
-  }
-
   String _activeHint() {
     final session = activeSession;
     if (session == null) return UiStrings.seclusionMapActiveHint;
@@ -498,6 +534,51 @@ class _MapCard extends StatelessWidget {
     final remaining = (planned - elapsed).clamp(0, planned);
     if (remaining <= 0) return UiStrings.seclusionMapActiveDoneHint;
     return UiStrings.seclusionMapActiveRemainingHint(remaining);
+  }
+}
+
+class _MapInfoLine extends StatelessWidget {
+  const _MapInfoLine({
+    required this.label,
+    required this.value,
+    required this.accent,
+    required this.locked,
+  });
+
+  final String label;
+  final String value;
+  final Color accent;
+  final bool locked;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: locked ? WuxiaUi.muted : accent,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          value,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: locked ? WuxiaUi.muted : WuxiaUi.ink,
+            fontSize: 12,
+            height: 1.18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
   }
 }
 
