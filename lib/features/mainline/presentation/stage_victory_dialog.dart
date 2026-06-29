@@ -124,13 +124,13 @@ Future<void> showStageVictoryDialog({
               const SizedBox(height: 14),
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: WuxiaUi.jiang,
-                    textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 112),
+                  child: PlaqueButton(
+                    label: UiStrings.stageVictoryConfirm,
+                    primary: true,
+                    onTap: () => Navigator.of(ctx).pop(),
                   ),
-                  onPressed: () => Navigator.of(ctx).pop(),
-                  child: const Text(UiStrings.stageVictoryConfirm),
                 ),
               ),
             ],
@@ -774,12 +774,13 @@ class _TinyActionButton extends StatelessWidget {
               ? WuxiaColors.textMuted.withValues(alpha: 0.22)
               : WuxiaColors.textMuted.withValues(alpha: 0.48),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-        minimumSize: const Size(0, 30),
-        textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        minimumSize: const Size(86, 36),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
       ),
       onPressed: onTap,
-      icon: Icon(icon, size: 14),
+      icon: Icon(icon, size: 15),
       label: Text(label),
     );
   }

@@ -779,6 +779,7 @@ class _StageRow extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(6),
         child: Container(
+          constraints: const BoxConstraints(minHeight: 112),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             color: locked
@@ -790,6 +791,13 @@ class _StageRow extends StatelessWidget {
                   ? WuxiaColors.resultHighlight.withValues(alpha: 0.55)
                   : WuxiaColors.border.withValues(alpha: 0.6),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: available ? 0.18 : 0.10),
+                blurRadius: available ? 8 : 5,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -909,9 +917,25 @@ class _StageRow extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.info_outline, size: 16),
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+                constraints: const BoxConstraints.tightFor(
+                  width: 36,
+                  height: 36,
+                ),
+                splashRadius: 18,
                 tooltip: UiStrings.prebattleIntelTitle,
                 color: WuxiaColors.textMuted,
+                style: IconButton.styleFrom(
+                  backgroundColor: WuxiaColors.sidebar.withValues(alpha: 0.46),
+                  hoverColor: WuxiaColors.resultHighlight.withValues(
+                    alpha: 0.10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                    side: BorderSide(
+                      color: WuxiaColors.border.withValues(alpha: 0.62),
+                    ),
+                  ),
+                ),
                 onPressed: () => showStageIntelDialog(
                   context,
                   stage: def,

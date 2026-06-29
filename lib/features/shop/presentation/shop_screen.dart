@@ -456,7 +456,7 @@ class _ShelfFilterChip extends StatelessWidget {
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             child: Text(
               label,
               style: TextStyle(
@@ -570,8 +570,14 @@ class _ShopItemTile extends StatelessWidget {
     final effectivePrice = entry.effectivePrice;
     final canAfford = entry.canAfford;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.fromLTRB(10, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: 0.20),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.16)),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -651,11 +657,15 @@ class _ShopItemTile extends StatelessWidget {
             ),
           ),
           // 购买按钮（余额不足→disabled）
-          PlaqueButton(
-            label: UiStrings.shopBuy,
-            primary: true,
-            disabled: !canAfford,
-            onTap: canAfford ? onBuy : null,
+          SizedBox(
+            width: 96,
+            height: 42,
+            child: PlaqueButton(
+              label: UiStrings.shopBuy,
+              primary: true,
+              disabled: !canAfford,
+              onTap: canAfford ? onBuy : null,
+            ),
           ),
         ],
       ),
