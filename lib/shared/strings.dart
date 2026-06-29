@@ -2771,6 +2771,30 @@ class UiStrings {
   static const String taohuaIslandFullStorageUnknown = '满仓：暂不可估';
   static String taohuaIslandOutputUsage(String usage) => '去向：$usage';
   static const String taohuaIslandOutputUsageNone = '去向：暂未形成消耗';
+  static const String taohuaIslandOutputUsageTagCultivation = '用于修炼';
+  static const String taohuaIslandOutputUsageTagTechnique = '用于解招';
+  static const String taohuaIslandOutputUsageTagEnhancement = '用于强化';
+  static const String taohuaIslandOutputUsageTagForging = '用于开锋';
+  static const String taohuaIslandOutputUsageTagGuarantee = '用于保底';
+  static const String taohuaIslandOutputUsageTagRecovery = '用于疗伤';
+  static const String taohuaIslandOutputUsageTagShopping = '用于采买';
+  static const String taohuaIslandOutputUsageTagUpgrade = '用于修缮';
+  static const String taohuaIslandOutputUsageTagRecipe = '用于加工';
+  static const String taohuaIslandOutputUsageTagNone = '暂未消耗';
+  static String taohuaIslandOutputUsageTag(
+    ItemUsage usage,
+  ) => switch (usage.kind) {
+    ItemUsageKind.realmProgress => taohuaIslandOutputUsageTagCultivation,
+    ItemUsageKind.techniqueUnlock => taohuaIslandOutputUsageTagTechnique,
+    ItemUsageKind.equipmentEnhancement => taohuaIslandOutputUsageTagEnhancement,
+    ItemUsageKind.equipmentForging => taohuaIslandOutputUsageTagForging,
+    ItemUsageKind.equipmentGuarantee => taohuaIslandOutputUsageTagGuarantee,
+    ItemUsageKind.injuryRecovery => taohuaIslandOutputUsageTagRecovery,
+    ItemUsageKind.shopPurchaseCurrency => taohuaIslandOutputUsageTagShopping,
+    ItemUsageKind.islandUpgradeCurrency ||
+    ItemUsageKind.islandBuildingUpgrade => taohuaIslandOutputUsageTagUpgrade,
+    ItemUsageKind.islandRecipeInput => taohuaIslandOutputUsageTagRecipe,
+  };
   static const String taohuaIslandBuildingManualTitle = '建筑志';
   static const String taohuaIslandBuildingManualProduces = '产物';
   static const String taohuaIslandBuildingManualConsumes = '消耗';
