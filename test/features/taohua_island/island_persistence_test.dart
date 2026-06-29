@@ -79,14 +79,16 @@ void main() {
   test('P2: 旧档（未设 islandBuildings/islandLastSettledAt）读回默认空/null', () async {
     // 新 init 创建的档不设 island 字段 → 读取应为空列表 + null，不崩。
     final save = (await IsarSetup.instance.saveDatas.get(0))!;
-    expect(save.islandBuildings, isEmpty,
-        reason: 'islandBuildings 新档默认空列表');
-    expect(save.islandLastSettledAt, isNull,
-        reason: 'islandLastSettledAt 新档默认 null');
+    expect(save.islandBuildings, isEmpty, reason: 'islandBuildings 新档默认空列表');
+    expect(
+      save.islandLastSettledAt,
+      isNull,
+      reason: 'islandLastSettledAt 新档默认 null',
+    );
   });
 
-  test('P3: saveVersion 已升 0.32.0', () async {
+  test('P3: saveVersion 已升当前版本', () async {
     final save = (await IsarSetup.currentSaveData())!;
-    expect(save.saveVersion, '0.32.0');
+    expect(save.saveVersion, IsarSetup.currentSaveVersion);
   });
 }

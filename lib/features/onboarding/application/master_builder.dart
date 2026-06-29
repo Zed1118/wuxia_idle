@@ -26,20 +26,28 @@ import '../../equipment/application/equipment_factory.dart';
 /// 按 [MasterDef] 构造 Character(slotIndex 决定占位名)。
 ///
 /// `internalForce` 满血默认(境界对应 [RealmDef.internalForceMax])。
-Character buildMasterCharacter(MasterDef def, {required DateTime now}) {
+Character buildMasterCharacter(
+  MasterDef def, {
+  required DateTime now,
+  AttributeProfile? attributeProfile,
+  String? founderCreationSchoolId,
+  String? founderCreationOriginId,
+  String? founderCreationFateId,
+}) {
   final realmDef = GameRepository.instance.getRealm(
     def.defaultRealm,
     def.defaultLayer,
   );
+  final profile = attributeProfile ?? def.attributeProfile;
   return Character.create(
     name: defaultMasterName(def),
     realmTier: def.defaultRealm,
     realmLayer: def.defaultLayer,
     attributes: Attributes()
-      ..constitution = def.attributeProfile.constitution
-      ..enlightenment = def.attributeProfile.enlightenment
-      ..agility = def.attributeProfile.agility
-      ..fortune = def.attributeProfile.fortune,
+      ..constitution = profile.constitution
+      ..enlightenment = profile.enlightenment
+      ..agility = profile.agility
+      ..fortune = profile.fortune,
     rarity: RarityTier.biaoZhun,
     lineageRole: def.lineageRole,
     isFounder: def.lineageRole == LineageRole.founder,
@@ -49,6 +57,9 @@ Character buildMasterCharacter(MasterDef def, {required DateTime now}) {
     experienceToNextLayer: realmDef.experienceToNext,
     portraitPath: def.portraitPath,
     isActive: true,
+    founderCreationSchoolId: founderCreationSchoolId,
+    founderCreationOriginId: founderCreationOriginId,
+    founderCreationFateId: founderCreationFateId,
   );
 }
 
@@ -132,10 +143,7 @@ Future<void> learnMasterStarting(
       character.mainTechniqueId = tech.id;
       character.school = def.school;
     } else {
-      character.assistTechniqueIds = [
-        ...character.assistTechniqueIds,
-        tech.id,
-      ];
+      character.assistTechniqueIds = [...character.assistTechniqueIds, tech.id];
     }
   }
 }
