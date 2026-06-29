@@ -4,14 +4,24 @@ import 'package:wuxia_idle/features/debug/application/visual_route.dart';
 
 void main() {
   test('smoke suite 固定覆盖核心视觉 route', () {
-    expect(visualAcceptanceRouteIds(VisualAcceptanceSuite.smoke), [
-      'main_menu',
-      'technique_panel_tier_all',
-      'technique_panel_hero',
-      'battle_charge_break',
-      'battle_interrupt_caption',
-      'battle_defeat',
-    ]);
+    final ids = visualAcceptanceRouteIds(VisualAcceptanceSuite.smoke);
+
+    expect(ids.first, 'main_menu');
+    expect(
+      ids,
+      containsAllInOrder([
+        'main_menu',
+        'inventory',
+        'battle_scene',
+        'technique_panel_tier_all',
+        'shop',
+        'seclusion_map_list',
+        'tower_floor_list',
+        'zangjuange',
+        'encounter_codex',
+        'skill_codex',
+      ]),
+    );
   });
 
   test('full suite 覆盖全部可直达 route,排除 hub', () {
@@ -35,6 +45,8 @@ void main() {
     expect(markdown, contains('suite: `smoke`'));
     expect(markdown, contains('seed: `$visualAcceptanceSeed`'));
     expect(markdown, contains('tools/visual_capture/visual_capture.sh'));
+    expect(markdown, contains('1440x900'));
+    expect(markdown, contains('2560x1080'));
     expect(markdown, contains('`main_menu`'));
     expect(markdown, contains('主菜单入口可见'));
   });

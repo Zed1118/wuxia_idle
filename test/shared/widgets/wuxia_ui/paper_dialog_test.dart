@@ -5,15 +5,17 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 
 void main() {
   testWidgets('渲染标题与正文', (tester) async {
-    await tester.pumpWidget(const MaterialApp(
-      home: Scaffold(
-        body: PaperDialog(
-          title: '凯旋',
-          body: Text('斩 山贼头目 · 历 6 回合'),
-          actions: [],
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: PaperDialog(
+            title: '凯旋',
+            body: Text('斩 山贼头目 · 历 6 回合'),
+            actions: [],
+          ),
         ),
       ),
-    ));
+    );
     expect(find.text('凯旋'), findsOneWidget);
     expect(find.text('斩 山贼头目 · 历 6 回合'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -21,17 +23,46 @@ void main() {
 
   testWidgets('actions 内 PlaqueButton 可点', (tester) async {
     var n = 0;
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: PaperDialog(
-          title: '强化',
-          body: const Text('确认强化？'),
-          actions: [PlaqueButton(label: '确认', primary: true, onTap: () => n++)],
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: PaperDialog(
+            title: '强化',
+            body: const Text('确认强化？'),
+            actions: [
+              PlaqueButton(label: '确认', primary: true, onTap: () => n++),
+            ],
+          ),
         ),
       ),
-    ));
+    );
     await tester.tap(find.text('确认'));
     expect(n, 1);
+  });
+
+  testWidgets('动作区窄宽度可换行,避免按钮文字溢出', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 260,
+              child: PaperDialog(
+                title: '收功',
+                body: Text('确认离开闭关？'),
+                actions: [
+                  PlaqueButton(label: '继续闭关', onTap: null),
+                  PlaqueButton(label: '收功离开', onTap: null),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byType(Wrap), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('PaperDialog.show 弹出并显标题', (tester) async {

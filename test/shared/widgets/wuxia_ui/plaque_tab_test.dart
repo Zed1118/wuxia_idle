@@ -64,6 +64,16 @@ void main() {
     expect(n, 1);
   });
 
+  testWidgets('真实 hitbox 高度不低于 36px', (tester) async {
+    await tester.pumpWidget(
+      host(const PlaqueTab(label: '祖师', selected: true, onTap: null)),
+    );
+    expect(
+      tester.getSize(find.byType(PlaqueTab)).height,
+      greaterThanOrEqualTo(36),
+    );
+  });
+
   testWidgets('选中态字色与未选不同（朱漆 vs 木色）', (tester) async {
     await tester.pumpWidget(
       host(const PlaqueTab(label: 'A', selected: true, onTap: null)),
