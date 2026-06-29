@@ -287,6 +287,7 @@ Future<void> runStageFlow({
       resonanceUpgrades: outcome.resonanceUpgrades,
       stats: outcome.stats,
       injurySummaryCharacters: outcome.characters,
+      equipmentHintCharacters: outcome.characters,
       skillFragmentLine: skillFragmentLineFor(skillDrop),
       onEquipmentLockToggle: (equipment, locked) async {
         final result = await EquipmentService(
