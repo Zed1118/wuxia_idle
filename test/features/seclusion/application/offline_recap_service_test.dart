@@ -147,5 +147,22 @@ void main() {
       expect(recap.settledHours, 4.0);
       expect(recap.limitReason, OfflineRecapLimitReason.plannedDuration);
     });
+
+    test('达到 retreat.capHours 时标注系统收益封顶且不提高结算上限', () {
+      final started = DateTime(2026, 5, 11, 10);
+      final capHours = GameRepository.instance.numbers.retreat.capHours;
+      final recap = OfflineRecapService.buildRecap(
+        session: mkSession(durationHours: capHours, startedAt: started),
+        charRealmTier: RealmTier.xueTu,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: started.add(Duration(hours: capHours + 3)),
+      );
+
+      expect(recap, isNotNull);
+      expect(recap!.awayHours, closeTo(capHours + 3, 0.01));
+      expect(recap.settledHours, capHours.toDouble());
+      expect(recap.limitReason, OfflineRecapLimitReason.systemCap);
+    });
   });
 }
