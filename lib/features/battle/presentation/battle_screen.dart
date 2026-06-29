@@ -1252,7 +1252,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         body: Stack(
           children: [
             Positioned.fill(
-              child: BattleSceneBackground(path: widget.sceneBackgroundPath),
+              child: BattleSceneBackground(
+                path: widget.sceneBackgroundPath,
+                style: _backgroundStyleForTrack(widget.bgmTrack),
+              ),
             ),
             Positioned.fill(
               child: BattleAtmosphereOverlay(
@@ -1413,6 +1416,29 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   }
 }
 
+BattleSceneBackgroundStyle _backgroundStyleForTrack(BgmTrack track) {
+  switch (track) {
+    case BgmTrack.tower:
+      return BattleSceneBackgroundStyle.tower;
+    case BgmTrack.boss:
+      return BattleSceneBackgroundStyle.boss;
+    case BgmTrack.innerDemon:
+      return BattleSceneBackgroundStyle.innerDemon;
+    case BgmTrack.lightFoot:
+      return BattleSceneBackgroundStyle.lightFoot;
+    case BgmTrack.massBattle:
+      return BattleSceneBackgroundStyle.massBattle;
+    case BgmTrack.mainline:
+      return BattleSceneBackgroundStyle.mainline;
+    case BgmTrack.battle:
+    case BgmTrack.mainMenu:
+    case BgmTrack.seclusion:
+    case BgmTrack.lineage:
+    case BgmTrack.baike:
+      return BattleSceneBackgroundStyle.generic;
+  }
+}
+
 // ─── 场景 hint 横幅（T17）─────────────────────────────────────────────────
 
 class _HintBanner extends StatelessWidget {
@@ -1427,10 +1453,7 @@ class _HintBanner extends StatelessWidget {
       color: WuxiaColors.hintBannerBg,
       child: Text(
         hint,
-        style: const TextStyle(
-          color: WuxiaColors.hintBannerText,
-          fontSize: 13,
-        ),
+        style: const TextStyle(color: WuxiaColors.hintBannerText, fontSize: 13),
       ),
     );
   }
