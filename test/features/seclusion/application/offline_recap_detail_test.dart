@@ -53,9 +53,11 @@ void main() {
         containsAll([
           UiStrings.offlineRecapSettlementGroupTitle,
           UiStrings.offlineRecapRetreatGainGroupTitle,
+          UiStrings.offlineRecapMaterialGroupTitle,
           UiStrings.offlineRecapCollectGroupTitle,
         ]),
       );
+      expect(detail.rows, contains(UiStrings.offlineRecapParityDetail));
       expect(
         detail.rows,
         isNot(contains(UiStrings.offlineRecapSkillProficiencyDetail(0))),
@@ -142,8 +144,10 @@ void main() {
         containsAll([
           UiStrings.offlineRecapSettlementGroupTitle,
           UiStrings.offlineRecapPassiveGainGroupTitle,
+          UiStrings.offlineRecapMaterialGroupTitle,
         ]),
       );
+      expect(detail.rows, contains(UiStrings.offlineRecapParityDetail));
     });
   });
 }
