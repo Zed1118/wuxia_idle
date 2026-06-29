@@ -34,13 +34,13 @@
 - [x] 改造奇遇录札记卡片视觉。
 - [x] 补充必要 widget 断言。
 - [x] 跑生成、测试、analyze、diff check。
-- [ ] 更新恢复点并提交。
+- [x] 更新恢复点并提交。
 
 ## 当前恢复点
 
-- 状态:实现与验证完成,待提交。
+- 状态:完成,已提交实现 commit `da76ff32`,当前 tip 为 `[READY]` 交付标记。
 - 最后完成:`CodexTab` 改成机制卷宗/江湖背景分段卡片;`EncounterTab` 改成江湖札记卡,已触发显示标题/组别/状态,未触发仍只显示剪影与未际遇。
-- 下一步:提交 `codex/visual-codex-encounter-cards`。
+- 下一步:等待主窗口复核/合并。
 - 已跑验证:
   - `dart run build_runner build --delete-conflicting-outputs`(成功;当前 build_runner 提示该参数已忽略;无生成文件 diff)。
   - `flutter test --no-pub -j1 test/features/baike test/features/codex`(91/91 passed,含 1280×720 / 1440×900 widget smoke)。
