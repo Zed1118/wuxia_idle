@@ -34,61 +34,81 @@ void main() {
   });
 
   IslandBuildingState byType(
-          List<IslandBuildingState> states, BuildingType type) =>
-      states.firstWhere((s) => s.type == type);
+    List<IslandBuildingState> states,
+    BuildingType type,
+  ) => states.firstWhere((s) => s.type == type);
+
+  double synergyMultiplier(BuildingType target, int level) =>
+      cfg.synergies.rateMultiplierFor(
+        target: target,
+        buildingLevels: [
+          for (final type in BuildingType.values)
+            IslandBuildingLevel(type: type, level: level),
+        ],
+        founderRealmIndex: 6,
+        buildings: cfg.buildings,
+      );
 
   /// 构造满供应链快照:四源 + 三加工,全部 level=[level],各加工激活指定配方。
   List<IslandBuildingState> seed(
     int level, {
     required String daRecipe,
     required String danRecipe,
-  }) =>
-      [
-        IslandBuildingState()
-          ..type = BuildingType.tieJiangChang
-          ..level = level
-          ..stored = 0,
-        IslandBuildingState()
-          ..type = BuildingType.caoYaoYuan
-          ..level = level
-          ..stored = 0,
-        IslandBuildingState()
-          ..type = BuildingType.muGongFang
-          ..level = level
-          ..stored = 0,
-        IslandBuildingState()
-          ..type = BuildingType.lingQuan
-          ..level = level
-          ..stored = 0,
-        IslandBuildingState()
-          ..type = BuildingType.daZaoTai
-          ..level = level
-          ..stored = 0
-          ..activeRecipeId = daRecipe,
-        IslandBuildingState()
-          ..type = BuildingType.danFang
-          ..level = level
-          ..stored = 0
-          ..activeRecipeId = danRecipe,
-        IslandBuildingState()
-          ..type = BuildingType.zhuZaoTai
-          ..level = level
-          ..stored = 0
-          ..activeRecipeId = 'forge_kaifeng_fucai',
-      ];
+  }) => [
+    IslandBuildingState()
+      ..type = BuildingType.tieJiangChang
+      ..level = level
+      ..stored = 0,
+    IslandBuildingState()
+      ..type = BuildingType.caoYaoYuan
+      ..level = level
+      ..stored = 0,
+    IslandBuildingState()
+      ..type = BuildingType.muGongFang
+      ..level = level
+      ..stored = 0,
+    IslandBuildingState()
+      ..type = BuildingType.lingQuan
+      ..level = level
+      ..stored = 0,
+    IslandBuildingState()
+      ..type = BuildingType.daZaoTai
+      ..level = level
+      ..stored = 0
+      ..activeRecipeId = daRecipe,
+    IslandBuildingState()
+      ..type = BuildingType.danFang
+      ..level = level
+      ..stored = 0
+      ..activeRecipeId = danRecipe,
+    IslandBuildingState()
+      ..type = BuildingType.zhuZaoTai
+      ..level = level
+      ..stored = 0
+      ..activeRecipeId = 'forge_kaifeng_fucai',
+  ];
 
   /// 一次性结算整段 [hours]。founderRealmIndex=6 → 全配方解锁,不受境界门槛干扰。
-  List<IslandBuildingState> once(int level, String da, String dan, double hours) =>
-      IslandProductionService.settle(
-        states: seed(level, daRecipe: da, danRecipe: dan),
-        config: cfg,
-        elapsedHours: hours,
-        founderRealmIndex: 6,
-      );
+  List<IslandBuildingState> once(
+    int level,
+    String da,
+    String dan,
+    double hours,
+  ) => IslandProductionService.settle(
+    states: seed(level, daRecipe: da, danRecipe: dan),
+    config: cfg,
+    elapsedHours: hours,
+    founderRealmIndex: 6,
+  );
 
   /// 分 [n] 段持续结算(模拟玩家中途多次回岛 settle),累积到同样 [hours]。
   List<IslandBuildingState> chunked(
-      int level, String da, String dan, double hours, int n) {
+    int level,
+    String da,
+    String dan,
+    double hours,
+    int n,
+  ) {
     var st = seed(level, daRecipe: da, danRecipe: dan);
     final step = hours / n;
     for (var i = 0; i < n; i++) {
@@ -119,8 +139,11 @@ void main() {
 
     test('配置前提:cap_hours=72 且 max_level=5(漂移则同步本测常量)', () {
       expect(cfg.capHours, capHours, reason: 'cap_hours 改了须同步本测常量与派生 cap');
-      expect(cfg.buildingOf(BuildingType.daZaoTai).maxLevel, maxLevel,
-          reason: 'max_level 改了须同步本测 maxLevel 循环上界');
+      expect(
+        cfg.buildingOf(BuildingType.daZaoTai).maxLevel,
+        maxLevel,
+        reason: 'max_level 改了须同步本测 maxLevel 循环上界',
+      );
     });
 
     for (final (label, da, dan) in recipeCombos) {
@@ -133,7 +156,8 @@ void main() {
             expect(
               byType(r1, type).stored,
               closeTo(byType(rN, type).stored, 1e-3),
-              reason: '$type 在 $label/level=$level 下,'
+              reason:
+                  '$type 在 $label/level=$level 下,'
                   '一次性结算与分块结算 stored 应一致'
                   '(不一致 = cap 被一次性结算提前截断,违 offline=online)',
             );
@@ -143,19 +167,23 @@ void main() {
     }
 
     test('防回退:成品确实拿满 72h 理论量(cap 未截断 realm0 配方)', () {
-      // 磨剑石 = rate(1.5) × level × 72;凝神丹 = rate(1.0) × level × 72。
+      // 磨剑石/凝神丹 = rate × 建筑等级 × 协同乘区 × 72。
       // 若 cap 回退到旧值(打造台 80 / 丹房 60)→ 此处会被 cap 截断 → 断言失败。
       for (var level = 1; level <= 3; level++) {
         final r = once(level, 'forge_mojianshi', 'brew_ningshen', 72);
+        final daExpected =
+            1.5 * synergyMultiplier(BuildingType.daZaoTai, level) * level * 72;
+        final danExpected =
+            1.0 * synergyMultiplier(BuildingType.danFang, level) * level * 72;
         expect(
           byType(r, BuildingType.daZaoTai).stored,
-          closeTo(1.5 * level * 72, 1e-3),
-          reason: 'level=$level 磨剑石应满产 ${1.5 * level * 72},未被成品 cap 截断',
+          closeTo(daExpected, 1e-3),
+          reason: 'level=$level 磨剑石应满产 $daExpected,未被成品 cap 截断',
         );
         expect(
           byType(r, BuildingType.danFang).stored,
-          closeTo(1.0 * level * 72, 1e-3),
-          reason: 'level=$level 凝神丹应满产 ${1.0 * level * 72},未被成品 cap 截断',
+          closeTo(danExpected, 1e-3),
+          reason: 'level=$level 凝神丹应满产 $danExpected,未被成品 cap 截断',
         );
       }
     });
@@ -164,7 +192,8 @@ void main() {
       // 疗伤丹 rate 0.6 × level × 72;灵泉水净存量 = 产 4×level×72 − 消耗 made×5。
       for (var level = 1; level <= 3; level++) {
         final r = once(level, 'forge_mojianshi', 'brew_liaoshang', 72);
-        final made = 0.6 * level * 72;
+        final made =
+            0.6 * synergyMultiplier(BuildingType.danFang, level) * level * 72;
         expect(
           byType(r, BuildingType.danFang).stored,
           closeTo(made, 1e-3),
@@ -172,7 +201,8 @@ void main() {
         );
         // 灵泉水若无消费 = 产满 4×level×72;接了 sink 后必少掉 made×5。
         final produced = 4.0 * level * 72;
-        final consumed = made * 5.0;
+        final consumed =
+            made * 5.0 / synergyMultiplier(BuildingType.danFang, level);
         expect(
           byType(r, BuildingType.lingQuan).stored,
           closeTo(produced - consumed, 1e-3),
@@ -185,8 +215,11 @@ void main() {
     test('实配字段:丹房双输入 = 药草 + 灵泉水(防 numbers.yaml 漂移)', () {
       final dan = cfg.buildingOf(BuildingType.danFang);
       expect(dan.inputItem, 'item_yaocao');
-      expect(dan.secondaryInputItem, 'item_lingquanshui',
-          reason: '灵泉水 sink 落在丹房疗伤丹双输入');
+      expect(
+        dan.secondaryInputItem,
+        'item_lingquanshui',
+        reason: '灵泉水 sink 落在丹房疗伤丹双输入',
+      );
       final liao = dan.recipeById('brew_liaoshang')!;
       expect(liao.secondaryInputPerOutput, 5.0);
     });

@@ -29,8 +29,8 @@
 
 ## 当前恢复点
 
-- 状态：计划已建立，尚未改代码。
-- 最后完成：已读取 AGENTS.md、CLAUDE.md、GDD.md、PROGRESS.md、`docs/spec/playability_phase2_backlog.md`、`/Users/a10506/Desktop/挂机武侠_已否任务.md`；确认 CodeGraph 未初始化，改用 `rg`/定点读文件。
-- 下一步：扩展配置模型与结算公式。
-- 已跑验证：无。
+- 状态：完成。计划切片提交 `108349f0`；实现切片待提交。
+- 最后完成：新增 `taohua_island.synergies` 固定配置与红线校验；配置三条链路：铁匠厂→打造台、灵泉→丹房、木工坊→铸造台；`IslandProductionService.settle` 将协同作为加工产速与用料效率同乘区，仍由同一纯函数保证在线=离线；桃花岛主屏加工建筑卡显示当前协同来源与百分比。
+- 下一步：主窗口复核/合并；如需体验验收，可真机看桃花岛建筑卡协同行的信息密度。
+- 已跑验证：`dart run build_runner build --delete-conflicting-outputs`（成功，当前 build_runner 版本提示该参数已忽略，写出 112 个 gitignored outputs）；`flutter analyze lib/features/taohua_island/domain/taohua_island_config.dart lib/features/taohua_island/application/island_production_service.dart lib/features/taohua_island/presentation/taohua_island_screen.dart lib/shared/strings.dart test/features/taohua_island/island_production_service_test.dart test/features/taohua_island/island_offline_online_invariant_test.dart test/features/taohua_island/taohua_island_config_test.dart test/features/taohua_island/taohua_island_screen_test.dart` 0 issue；`flutter test --no-pub -j1 test/features/taohua_island/island_production_service_test.dart test/features/taohua_island/island_offline_online_invariant_test.dart test/features/taohua_island/taohua_island_config_test.dart test/features/taohua_island/taohua_island_screen_test.dart` 60/60 passed。
 - 阻塞项：无。
