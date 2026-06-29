@@ -99,8 +99,9 @@ void main() {
     required List<Equipment> equipments,
     List<InventoryItem> items = const [],
     Character? player,
+    Size surfaceSize = const Size(1280, 720),
   }) async {
-    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
@@ -248,6 +249,65 @@ void main() {
     );
     await pumpInv(tester, equipments: [eq]);
     expect(find.byIcon(Icons.lock_outline), findsWidgets, reason: '锁定装备应显锁标记');
+  });
+
+  testWidgets('视觉二期：阶位条、装备中、师承、锁定与保护印同格可见', (tester) async {
+    final eq = mkEq(
+      id: 42,
+      tier: EquipmentTier.shenWu,
+      slot: EquipmentSlot.weapon,
+      defId: 'weapon_shenwu_tian_wen_jian',
+      enhanceLevel: 9,
+      isLineageHeritage: true,
+      isLocked: true,
+    );
+    final player = mkCharacter(id: 1, realmTier: RealmTier.wuSheng)
+      ..equippedWeaponId = eq.id;
+    await pumpInv(tester, equipments: [eq], player: player);
+
+    expect(find.text('神物'), findsOneWidget, reason: '格子应直接显阶位条');
+    expect(find.text('+9'), findsOneWidget, reason: '强化朱印仍应保留');
+    expect(find.text(UiStrings.equippedBadge), findsOneWidget);
+    expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
+    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+    expect(
+      find.text(UiStrings.inventoryProtectedSealText),
+      findsOneWidget,
+      reason: '受保护装备应显示保护印，不改变保护规则',
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('视觉二期：1280x720 与 1440x900 常规桌面视口 smoke', (tester) async {
+    for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
+      await pumpInv(
+        tester,
+        surfaceSize: size,
+        equipments: [
+          mkEq(
+            id: size.width.toInt(),
+            tier: EquipmentTier.shenWu,
+            slot: EquipmentSlot.weapon,
+            defId: 'weapon_shenwu_tian_wen_jian',
+            enhanceLevel: 6,
+            isLineageHeritage: true,
+          ),
+          mkEq(
+            id: size.height.toInt(),
+            tier: EquipmentTier.liQi,
+            slot: EquipmentSlot.armor,
+            defId: 'armor_liqi_xuan_tie_jia',
+          ),
+        ],
+        player: mkCharacter(id: 1, realmTier: RealmTier.wuSheng),
+      );
+
+      expect(find.text('武器'), findsOneWidget);
+      expect(find.text('神物'), findsOneWidget);
+      expect(find.text(UiStrings.inventoryProtectedSealText), findsWidgets);
+      expect(find.byIcon(Icons.auto_awesome), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('T11 筛选「已穿戴」→ 只显已穿戴装备', (tester) async {

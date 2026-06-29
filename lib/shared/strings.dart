@@ -837,6 +837,10 @@ class UiStrings {
   static const String equipmentDropLockAdviceCommon = '建议按需锁定：寻常装备可先看属性再整理。';
   static const String equipmentBulkEntry = '批量整理';
   static const String equippedBadge = '装备中';
+  static const String inventoryLineageSealLabel = '师承遗物';
+  static const String inventoryLockedSealLabel = '已锁定';
+  static const String inventoryProtectedSealLabel = '受保护';
+  static const String inventoryProtectedSealText = '护';
   static const String inventoryShopEntry = '进商店';
   static String sellConfirmBody(int count, int silver) =>
       '将出售 $count 件装备，获得银两 $silver。';
