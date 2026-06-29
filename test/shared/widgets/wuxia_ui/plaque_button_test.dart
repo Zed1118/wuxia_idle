@@ -40,4 +40,28 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('继续'), findsOneWidget);
   });
+
+  // P2-6(2026-06-29 审查修复):木牌不该有 Material 灰色水波纹,改按下暗层。
+  testWidgets('去除 InkWell 水波纹', (tester) async {
+    await tester.pumpWidget(host(PlaqueButton(label: '确认', onTap: () {})));
+    expect(find.byType(InkWell), findsNothing);
+  });
+
+  testWidgets('按下显暗层(AnimatedOpacity 由 0→1),抬起复位', (tester) async {
+    await tester.pumpWidget(host(PlaqueButton(label: '确认', onTap: () {})));
+    AnimatedOpacity overlay() => tester.widget<AnimatedOpacity>(
+          find.byType(AnimatedOpacity),
+        );
+    expect(overlay().opacity, 0.0, reason: '初始无按下暗层');
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byType(PlaqueButton)),
+    );
+    await tester.pump();
+    expect(overlay().opacity, greaterThan(0.0), reason: '按下显暗层');
+
+    await gesture.up();
+    await tester.pump();
+    expect(overlay().opacity, 0.0, reason: '抬起复位');
+  });
 }
