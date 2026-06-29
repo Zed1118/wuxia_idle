@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../shared/strings.dart';
@@ -8,6 +9,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../injury/presentation/injury_status_view.dart';
 import '../domain/drop_rumor.dart';
 import 'loot_rumor_dialog.dart';
 
@@ -21,6 +23,7 @@ Future<void> showStageIntelDialog(
   required StageDef stage,
   required DropRumorTable rumorTable,
   RealmTier? currentRealm,
+  List<Character> activeCharacters = const [],
 }) {
   return PaperDialog.show<void>(
     context,
@@ -30,6 +33,7 @@ Future<void> showStageIntelDialog(
         stage: stage,
         rumorTable: rumorTable,
         currentRealm: currentRealm,
+        activeCharacters: activeCharacters,
       ),
     ),
     actions: [
@@ -48,11 +52,13 @@ class StageIntelContent extends StatelessWidget {
     required this.stage,
     required this.rumorTable,
     this.currentRealm,
+    this.activeCharacters = const [],
   });
 
   final StageDef stage;
   final DropRumorTable rumorTable;
   final RealmTier? currentRealm;
+  final List<Character> activeCharacters;
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +66,10 @@ class StageIntelContent extends StatelessWidget {
       stage.enemyTeam,
       isBossStage: stage.isBossStage,
     );
+    final injuryLines = activeCharacters
+        .where(InjuryStatusFormatter.hasInjury)
+        .map(InjuryStatusFormatter.namedStatusLine)
+        .toList(growable: false);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,6 +78,11 @@ class StageIntelContent extends StatelessWidget {
           title: UiStrings.prebattleIntelEnemySection,
           child: _EnemyIntelList(enemies: stage.enemyTeam),
         ),
+        if (injuryLines.isNotEmpty)
+          _IntelSection(
+            title: UiStrings.prebattleIntelAllyConditionSection,
+            child: _IntelLines(lines: injuryLines),
+          ),
         if (responseLines.isNotEmpty)
           _IntelSection(
             title: UiStrings.prebattleIntelResponseSection,

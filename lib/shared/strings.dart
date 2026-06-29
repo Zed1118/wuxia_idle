@@ -1091,6 +1091,7 @@ class UiStrings {
   static const String difficultyDeadly = '送死';
   static const String prebattleIntelTitle = '战前情报';
   static const String prebattleIntelEnemySection = '敌阵';
+  static const String prebattleIntelAllyConditionSection = '我方伤势';
   static const String prebattleIntelResponseSection = '应对';
   static const String prebattleIntelRiskSection = '风险';
   static const String prebattleIntelLootSection = '可能收获';
@@ -2195,6 +2196,26 @@ class UiStrings {
   /// 重伤疗养剩余提示：`内伤未愈 · 调息 <N>h`（h 向上取整）。
   static String injuryRecoveryHint(double hours) =>
       '内伤未愈 · 调息 ${hours.ceil()}h';
+
+  static const String injuryStatusTitle = '伤势';
+  static const String injuryStatusHealthy = '无伤 · 可出战';
+  static String injuryStatusLight(int stacks, int speedPenalty) =>
+      '带伤×$stacks · 出手速度 -$speedPenalty';
+  static String injuryStatusHeavy({
+    required double hours,
+    required int attackPenaltyPct,
+    required int internalForcePenaltyPct,
+  }) =>
+      '重伤 · 调息 ${hours.ceil()}h · 输出 -$attackPenaltyPct% · 内力上限 -$internalForcePenaltyPct%';
+  static String injuryStatusLine(String name, String status) => '$name：$status';
+  static const String injuryStatusRecoveryHint = '可闭关调息，或服用疗伤丹处理。';
+  static const String injuryStatusRecoveryAction = '服用疗伤丹';
+  static String injuryStatusRecoveryApplied(String targetName) =>
+      '已为$targetName处理伤势';
+  static const String injuryStatusRecoveryUnavailable = '暂无可用疗伤丹';
+  static const String injuryStatusRecoveryFailed = '未能处理伤势';
+  static const String injuryBattleSummaryTitle = '伤势：';
+  static const String injuryBattleSummaryNone = '本战无人新增重伤';
 
   /// 战败 banner 受伤弟子提示：`<N> 名弟子负伤 · 需调息疗养`。
   static String defeatInjuredDisciples(int count) => '$count 名弟子负伤 · 需调息疗养';

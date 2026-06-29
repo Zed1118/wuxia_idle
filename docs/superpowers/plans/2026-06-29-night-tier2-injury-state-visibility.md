@@ -36,8 +36,11 @@
 
 ## 当前恢复点
 
-- 状态：计划文件已创建，尚未开始代码定位与实现。
-- 最后完成：读取 `AGENTS.md`、`CLAUDE.md`、`GDD.md`、`PROGRESS.md`、`docs/spec/playability_phase2_backlog.md`、`/Users/a10506/Desktop/挂机武侠_已否任务.md`；确认本任务边界。
-- 下一步：定位现有伤势字段、疗伤丹面板与三处目标 UI。
-- 已跑验证：无。
+- 状态：实现完成，待提交。
+- 最后完成：新增伤势状态 formatter/widget；角色卡显示无伤/带伤/重伤状态与疗伤丹入口；战前情报显示受伤出战角色；主线战后摘要显示伤势状态；既有战后疗伤丹面板追加当前伤势行，覆盖普通 overlay / 主线 / 爬塔已接入口。
+- 下一步：提交实现切片，最终复核 git 状态。
+- 已跑验证：
+  - `dart run build_runner build --delete-conflicting-outputs`（当前 build_runner 版本忽略该参数，写出 112 个 gitignored outputs）
+  - `flutter test --no-pub test/features/injury/presentation/injury_status_view_test.dart test/features/loot_preview/stage_intel_dialog_test.dart test/features/mainline/presentation/stage_list_screen_test.dart test/features/loot_preview/stage_row_loot_wiring_test.dart test/features/character_panel/presentation/character_panel_screen_test.dart test/features/mainline/presentation/stage_victory_dialog_test.dart`（70/70 passed）
+  - `dart analyze lib/features/injury/presentation/injury_status_view.dart lib/features/inventory/presentation/post_battle_healing_panel.dart lib/features/character_panel/presentation/character_panel_screen.dart lib/features/loot_preview/presentation/stage_intel_dialog.dart lib/features/mainline/presentation/stage_list_screen.dart lib/features/mainline/presentation/stage_entry_flow.dart lib/features/mainline/presentation/stage_victory_dialog.dart lib/shared/strings.dart test/features/injury/presentation/injury_status_view_test.dart test/features/loot_preview/stage_intel_dialog_test.dart test/features/character_panel/presentation/character_panel_screen_test.dart test/features/mainline/presentation/stage_victory_dialog_test.dart`（No issues found）
 - 阻塞项：无。
