@@ -809,8 +809,16 @@ class UiStrings {
   static const String tabEnhance = '强化';
   static const String tabForging = '开锋';
   static const String forgingForged = '已开锋';
-  static const String forgingNoSpecialSkill = '该装备无专属技能';
+  static const String forgingNoSpecialSkill = '此装备尚未记载专属锋意';
+  static const String forgingNoSpecialSkillHint = '换一件武器,或先打磨前两道锋意。';
   static const String forgingSpecialSkillPickerTitle = '选择专属技能';
+  static String forgingSpecialSkillSummary(
+    String styleLabel,
+    int? tier,
+    int power,
+  ) => tier == null
+      ? '$styleLabel · 威力 $power'
+      : '$styleLabel · 第$tier阶 · 威力 $power';
   static const String forgingConfirmTitle = '确认开锋';
   static const String forgingConfirmBody = '开锋一旦下手不能更改。确认在此槽位开锋？';
   static String forgingConfirmBodyWithCost(int cost) =>

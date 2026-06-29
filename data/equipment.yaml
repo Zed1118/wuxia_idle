@@ -35,7 +35,7 @@ equipment:
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_tie_jian.png
     detailPath: assets/equipment/weapon_xunchang_tie_jian_detail.png
-    specialSkillCandidates: [skill_lingqiao_jichu_skill, skill_lingqiao_jichu_ult]
+    specialSkillCandidates: [skill_edge_xunchang_lingqiao]
 
   - id: weapon_xunchang_zhe_dao
     name: 折刀
@@ -52,7 +52,7 @@ equipment:
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_zhe_dao.png
     detailPath: assets/equipment/weapon_xunchang_zhe_dao_detail.png
-    specialSkillCandidates: [skill_gangmeng_jichu_skill, skill_gangmeng_jichu_ult]
+    specialSkillCandidates: [skill_edge_xunchang_gangmeng]
 
   - id: weapon_xunchang_ruan_bian
     name: 软鞭
@@ -69,7 +69,7 @@ equipment:
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_ruan_bian.png
     detailPath: assets/equipment/weapon_xunchang_ruan_bian_detail.png
-    specialSkillCandidates: [skill_yinrou_jichu_skill, skill_yinrou_jichu_ult]
+    specialSkillCandidates: [skill_edge_xunchang_yinrou]
 
   - id: armor_xunchang_bu_yi
     name: 粗布衣
@@ -117,7 +117,7 @@ equipment:
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_gang_dao.png
     detailPath: assets/equipment/weapon_xiangyang_gang_dao_detail.png
-    specialSkillCandidates: [skill_gangmeng_changlian_skill, skill_gangmeng_changlian_ult]
+    specialSkillCandidates: [skill_edge_xiangyang_gangmeng]
 
   - id: weapon_xiangyang_chang_jian
     name: 长剑
@@ -134,7 +134,7 @@ equipment:
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_chang_jian.png
     detailPath: assets/equipment/weapon_xiangyang_chang_jian_detail.png
-    specialSkillCandidates: [skill_lingqiao_changlian_skill, skill_lingqiao_changlian_ult]
+    specialSkillCandidates: [skill_edge_xiangyang_lingqiao]
 
   - id: weapon_xiangyang_jiu_jie_bian
     name: 九节鞭
@@ -151,7 +151,7 @@ equipment:
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_jiu_jie_bian.png
     detailPath: assets/equipment/weapon_xiangyang_jiu_jie_bian_detail.png
-    specialSkillCandidates: [skill_yinrou_changlian_skill, skill_yinrou_changlian_ult]
+    specialSkillCandidates: [skill_edge_xiangyang_yinrou]
 
   - id: armor_xiangyang_pi_jia
     name: 皮甲
@@ -199,7 +199,7 @@ equipment:
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_qing_feng_jian.png
     detailPath: assets/equipment/weapon_haojiahuo_qing_feng_jian_detail.png
-    specialSkillCandidates: [skill_lingqiao_mingjia_skill, skill_lingqiao_mingjia_ult]
+    specialSkillCandidates: [skill_edge_haojiahuo_lingqiao]
 
   - id: weapon_haojiahuo_xuan_hua_fu
     name: 玄花斧
@@ -216,7 +216,7 @@ equipment:
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_xuan_hua_fu.png
     detailPath: assets/equipment/weapon_haojiahuo_xuan_hua_fu_detail.png
-    specialSkillCandidates: [skill_gangmeng_mingjia_skill, skill_gangmeng_mingjia_ult]
+    specialSkillCandidates: [skill_edge_haojiahuo_gangmeng]
 
   - id: weapon_haojiahuo_chan_si_suo
     name: 缠丝索
@@ -233,7 +233,7 @@ equipment:
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_chan_si_suo.png
     detailPath: assets/equipment/weapon_haojiahuo_chan_si_suo_detail.png
-    specialSkillCandidates: [skill_yinrou_mingjia_skill, skill_yinrou_mingjia_ult]
+    specialSkillCandidates: [skill_edge_haojiahuo_yinrou]
 
   - id: armor_haojiahuo_jin_pao
     name: 锦袍
@@ -282,7 +282,7 @@ equipment:
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_long_quan.png
     detailPath: assets/equipment/weapon_liqi_long_quan_detail.png
-    specialSkillCandidates: [skill_lingqiao_menpai_skill, skill_lingqiao_menpai_ult]
+    specialSkillCandidates: [skill_edge_liqi_lingqiao]
     isLineageHeritage: true   # 师承遗物（祖师传家武器，GDD §6.1 + Phase 3 W4 T55）
 
   - id: weapon_liqi_pan_long_dao
@@ -300,7 +300,7 @@ equipment:
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_pan_long_dao.png
     detailPath: assets/equipment/weapon_liqi_pan_long_dao_detail.png
-    specialSkillCandidates: [skill_gangmeng_menpai_skill, skill_gangmeng_menpai_ult]
+    specialSkillCandidates: [skill_edge_liqi_gangmeng]
 
   - id: weapon_liqi_lian_zi_bian
     name: 链子鞭
@@ -317,7 +317,7 @@ equipment:
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_lian_zi_bian.png
     detailPath: assets/equipment/weapon_liqi_lian_zi_bian_detail.png
-    specialSkillCandidates: [skill_yinrou_menpai_skill, skill_yinrou_menpai_ult]
+    specialSkillCandidates: [skill_edge_liqi_yinrou]
 
   - id: armor_liqi_xuan_tie_jia
     name: 玄铁甲
@@ -366,7 +366,7 @@ equipment:
     dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_po_zhen_chui.png
     detailPath: assets/equipment/weapon_zhongqi_po_zhen_chui_detail.png
-    specialSkillCandidates: [skill_gangmeng_jianghu_skill, skill_gangmeng_jianghu_ult]
+    specialSkillCandidates: [skill_edge_zhongqi_gangmeng]
 
   - id: weapon_zhongqi_qing_xu_jian
     name: 青虚剑
@@ -384,7 +384,7 @@ equipment:
     dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_qing_xu_jian.png
     detailPath: assets/equipment/weapon_zhongqi_qing_xu_jian_detail.png
-    specialSkillCandidates: [skill_lingqiao_jianghu_skill, skill_lingqiao_jianghu_ult]
+    specialSkillCandidates: [skill_edge_zhongqi_lingqiao]
 
   - id: weapon_zhongqi_du_long_suo
     name: 毒龙索
@@ -402,7 +402,7 @@ equipment:
     dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_du_long_suo.png
     detailPath: assets/equipment/weapon_zhongqi_du_long_suo_detail.png
-    specialSkillCandidates: [skill_yinrou_jianghu_skill, skill_yinrou_jianghu_ult]
+    specialSkillCandidates: [skill_edge_zhongqi_yinrou]
 
   - id: armor_zhongqi_yin_lin_jia
     name: 银鳞甲
@@ -453,7 +453,7 @@ equipment:
     dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_xuan_tian_fu.png
     detailPath: assets/equipment/weapon_baowu_xuan_tian_fu_detail.png
-    specialSkillCandidates: [skill_gangmeng_shichuan_skill, skill_gangmeng_shichuan_ult]
+    specialSkillCandidates: [skill_edge_baowu_gangmeng]
 
   - id: weapon_baowu_chang_hong_jian
     name: 长虹剑
@@ -471,7 +471,7 @@ equipment:
     dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_chang_hong_jian.png
     detailPath: assets/equipment/weapon_baowu_chang_hong_jian_detail.png
-    specialSkillCandidates: [skill_lingqiao_shichuan_skill, skill_lingqiao_shichuan_ult]
+    specialSkillCandidates: [skill_edge_baowu_lingqiao]
 
   - id: weapon_baowu_xue_lian_bian
     name: 血莲鞭
@@ -489,7 +489,7 @@ equipment:
     dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_xue_lian_bian.png
     detailPath: assets/equipment/weapon_baowu_xue_lian_bian_detail.png
-    specialSkillCandidates: [skill_yinrou_shichuan_skill, skill_yinrou_shichuan_ult]
+    specialSkillCandidates: [skill_edge_baowu_yinrou]
 
   - id: armor_baowu_jin_si_jia
     name: 金丝甲
@@ -540,7 +540,7 @@ equipment:
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/weapon_shenwu_po_jun_dao.png
     detailPath: assets/equipment/weapon_shenwu_po_jun_dao_detail.png
-    specialSkillCandidates: [skill_gangmeng_chuanshuo_skill, skill_gangmeng_chuanshuo_ult]
+    specialSkillCandidates: [skill_edge_shenwu_gangmeng]
 
   - id: weapon_shenwu_tian_wen_jian
     name: 天问剑
@@ -558,7 +558,7 @@ equipment:
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/weapon_shenwu_tian_wen_jian.png
     detailPath: assets/equipment/weapon_shenwu_tian_wen_jian_detail.png
-    specialSkillCandidates: [skill_lingqiao_chuanshuo_skill, skill_lingqiao_chuanshuo_ult]
+    specialSkillCandidates: [skill_edge_shenwu_lingqiao]
 
   - id: weapon_shenwu_huan_meng_bian
     name: 幻梦鞭
@@ -576,7 +576,7 @@ equipment:
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/weapon_shenwu_huan_meng_bian.png
     detailPath: assets/equipment/weapon_shenwu_huan_meng_bian_detail.png
-    specialSkillCandidates: [skill_yinrou_chuanshuo_skill, skill_yinrou_chuanshuo_ult]
+    specialSkillCandidates: [skill_edge_shenwu_yinrou]
 
   - id: armor_shenwu_xuan_huang_pao
     name: 玄黄袍
@@ -631,7 +631,7 @@ equipment:
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_chai_dao.png
     detailPath: assets/equipment/weapon_xunchang_chai_dao_detail.png
-    specialSkillCandidates: [skill_gangmeng_jichu_skill, skill_gangmeng_jichu_ult]
+    specialSkillCandidates: [skill_edge_xunchang_gangmeng]
 
   - id: weapon_xunchang_fei_shi
     name: 飞石
@@ -648,7 +648,7 @@ equipment:
     dropSourceTags: ["mainline_ch1"]
     iconPath: assets/equipment/weapon_xunchang_fei_shi.png
     detailPath: assets/equipment/weapon_xunchang_fei_shi_detail.png
-    specialSkillCandidates: [skill_yinrou_jichu_skill, skill_yinrou_jichu_ult]
+    specialSkillCandidates: [skill_edge_xunchang_yinrou]
 
   - id: armor_xunchang_duan_gua
     name: 短褂
@@ -727,7 +727,7 @@ equipment:
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_liu_ye_dao.png
     detailPath: assets/equipment/weapon_xiangyang_liu_ye_dao_detail.png
-    specialSkillCandidates: [skill_lingqiao_changlian_skill, skill_lingqiao_changlian_ult]
+    specialSkillCandidates: [skill_edge_xiangyang_lingqiao]
 
   - id: weapon_xiangyang_xiu_jian
     name: 袖箭
@@ -744,7 +744,7 @@ equipment:
     dropSourceTags: ["mainline_ch2"]
     iconPath: assets/equipment/weapon_xiangyang_xiu_jian.png
     detailPath: assets/equipment/weapon_xiangyang_xiu_jian_detail.png
-    specialSkillCandidates: [skill_gangmeng_changlian_skill, skill_gangmeng_changlian_ult]
+    specialSkillCandidates: [skill_edge_xiangyang_gangmeng]
 
   - id: armor_xiangyang_ye_xing_yi
     name: 夜行衣
@@ -823,7 +823,7 @@ equipment:
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_yuan_yang_yue.png
     detailPath: assets/equipment/weapon_haojiahuo_yuan_yang_yue_detail.png
-    specialSkillCandidates: [skill_yinrou_mingjia_skill, skill_yinrou_mingjia_ult]
+    specialSkillCandidates: [skill_edge_haojiahuo_yinrou]
 
   - id: weapon_haojiahuo_mei_hua_biao
     name: 梅花镖
@@ -840,7 +840,7 @@ equipment:
     dropSourceTags: ["mainline_ch3", "tower_15"]
     iconPath: assets/equipment/weapon_haojiahuo_mei_hua_biao.png
     detailPath: assets/equipment/weapon_haojiahuo_mei_hua_biao_detail.png
-    specialSkillCandidates: [skill_lingqiao_mingjia_skill, skill_lingqiao_mingjia_ult]
+    specialSkillCandidates: [skill_edge_haojiahuo_lingqiao]
 
   - id: armor_haojiahuo_chou_shan
     name: 绸衫
@@ -919,7 +919,7 @@ equipment:
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_hu_tou_gou.png
     detailPath: assets/equipment/weapon_liqi_hu_tou_gou_detail.png
-    specialSkillCandidates: [skill_gangmeng_menpai_skill, skill_gangmeng_menpai_ult]
+    specialSkillCandidates: [skill_edge_liqi_gangmeng]
 
   - id: weapon_liqi_li_hua_zhen
     name: 梨花针
@@ -936,7 +936,7 @@ equipment:
     dropSourceTags: ["tower_25", "yiLiu_quest"]
     iconPath: assets/equipment/weapon_liqi_li_hua_zhen.png
     detailPath: assets/equipment/weapon_liqi_li_hua_zhen_detail.png
-    specialSkillCandidates: [skill_yinrou_menpai_skill, skill_yinrou_menpai_ult]
+    specialSkillCandidates: [skill_edge_liqi_yinrou]
 
   - id: armor_liqi_qing_luo_shan
     name: 轻罗衫
@@ -1016,7 +1016,7 @@ equipment:
     dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_ri_yue_lun.png
     detailPath: assets/equipment/weapon_zhongqi_ri_yue_lun_detail.png
-    specialSkillCandidates: [skill_lingqiao_jianghu_skill, skill_lingqiao_jianghu_ult]
+    specialSkillCandidates: [skill_edge_zhongqi_lingqiao]
 
   - id: weapon_zhongqi_zhui_hun_ding
     name: 追魂钉
@@ -1034,7 +1034,7 @@ equipment:
     dropSourceTags: ["tower_25", "jueDing_unlock"]
     iconPath: assets/equipment/weapon_zhongqi_zhui_hun_ding.png
     detailPath: assets/equipment/weapon_zhongqi_zhui_hun_ding_detail.png
-    specialSkillCandidates: [skill_gangmeng_jianghu_skill, skill_gangmeng_jianghu_ult]
+    specialSkillCandidates: [skill_edge_zhongqi_gangmeng]
 
   - id: armor_zhongqi_yu_lin_qing_jia
     name: 鱼鳞轻甲
@@ -1118,7 +1118,7 @@ equipment:
     dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_yin_yang_ci.png
     detailPath: assets/equipment/weapon_baowu_yin_yang_ci_detail.png
-    specialSkillCandidates: [skill_yinrou_shichuan_skill, skill_yinrou_shichuan_ult]
+    specialSkillCandidates: [skill_edge_baowu_yinrou]
 
   - id: weapon_baowu_bing_po_zhen
     name: 冰魄针
@@ -1136,7 +1136,7 @@ equipment:
     dropSourceTags: ["tower_30", "zongShi_unlock"]
     iconPath: assets/equipment/weapon_baowu_bing_po_zhen.png
     detailPath: assets/equipment/weapon_baowu_bing_po_zhen_detail.png
-    specialSkillCandidates: [skill_lingqiao_shichuan_skill, skill_lingqiao_shichuan_ult]
+    specialSkillCandidates: [skill_edge_baowu_lingqiao]
 
   - id: armor_baowu_can_si_ruan_jia
     name: 蚕丝软甲
@@ -1220,7 +1220,7 @@ equipment:
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/weapon_shenwu_hun_yuan_chui.png
     detailPath: assets/equipment/weapon_shenwu_hun_yuan_chui_detail.png
-    specialSkillCandidates: [skill_gangmeng_chuanshuo_skill, skill_gangmeng_chuanshuo_ult]
+    specialSkillCandidates: [skill_edge_shenwu_gangmeng]
 
   - id: weapon_shenwu_kong_que_ling
     name: 孔雀翎
@@ -1238,7 +1238,7 @@ equipment:
     dropSourceTags: ["wuSheng_unlock"]
     iconPath: assets/equipment/weapon_shenwu_kong_que_ling.png
     detailPath: assets/equipment/weapon_shenwu_kong_que_ling_detail.png
-    specialSkillCandidates: [skill_yinrou_chuanshuo_skill, skill_yinrou_chuanshuo_ult]
+    specialSkillCandidates: [skill_edge_shenwu_yinrou]
 
   - id: armor_shenwu_bing_can_yi
     name: 冰蚕衣
@@ -1322,7 +1322,7 @@ equipment:
     dropSourceTags: ["ascension_reward"]
     iconPath: assets/equipment/weapon_special_wu_ming_jian.png
     detailPath: assets/equipment/weapon_special_wu_ming_jian_detail.png
-    specialSkillCandidates: [skill_lingqiao_shichuan_skill, skill_lingqiao_shichuan_ult]
+    specialSkillCandidates: [skill_edge_baowu_lingqiao]
 
   - id: accessory_special_xin_mo_zhu
     name: 心魔珠
