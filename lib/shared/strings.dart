@@ -1205,6 +1205,17 @@ class UiStrings {
   static String towerProgressCleared(int cleared) => '已通 $cleared / 30 层';
   static String towerProgressAttempts(int n) => '总尝试 $n 次';
   static String towerProgressDefeats(int n) => '失败 $n 次';
+  static String towerProgressBarLabel(int cleared, int total) =>
+      '已通 $cleared / $total 层';
+  static String towerCurrentChallengeFloor(int floor) => '当前可挑战：第 $floor 层';
+  static const String towerCurrentChallengeComplete = '当前可挑战：已登顶';
+  static String towerHighestClearedFloor(int floor) => '最高进度：第 $floor 层';
+  static const String towerHighestClearedNone = '最高进度：未破首层';
+  static String towerNextMilestoneTarget(int floor, String name) =>
+      '下一节点：第 $floor 层 · $name';
+  static const String towerNextMilestoneComplete = '下一节点：三十层已尽';
+  static const String towerMilestoneSummitBoss = '登顶大 Boss';
+  static const String towerSpineLegend = 'Boss 作节点，亮印为当前可挑战层，厚边为最高已通层';
 
   static String towerFloorLabel(int floorIndex) => '第 $floorIndex 层';
   static String towerFloorEnemies(int count) => '$count 名敌人';
@@ -2641,6 +2652,8 @@ class UiStrings {
   // 爬塔 boss 徽章字:floor_list 小标(大/小)+ floor_card 字形(魁/关)。
   static const String towerBossBadgeMajor = '大';
   static const String towerBossBadgeMinor = '小';
+  static const String towerSpineCurrentBadge = '今';
+  static const String towerSpineHighestBadge = '至';
   static const String towerFloorGlyphMajor = '魁';
   static const String towerFloorGlyphMinor = '关';
 
