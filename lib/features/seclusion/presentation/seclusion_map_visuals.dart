@@ -17,8 +17,58 @@ class SeclusionMapTrait {
   final Color color;
 }
 
+class SeclusionMapOutputVisual {
+  const SeclusionMapOutputVisual({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+}
+
 class SeclusionMapVisuals {
   const SeclusionMapVisuals._();
+
+  static List<SeclusionMapOutputVisual> outputs(SeclusionMapDef def) {
+    return [
+      const SeclusionMapOutputVisual(
+        icon: Icons.construction,
+        label: UiStrings.seclusionOutputMojianshi,
+        color: WuxiaUi.woodLight,
+      ),
+      const SeclusionMapOutputVisual(
+        icon: Icons.trending_up,
+        label: UiStrings.seclusionOutputExperience,
+        color: WuxiaUi.qing,
+      ),
+      const SeclusionMapOutputVisual(
+        icon: Icons.payments,
+        label: UiStrings.activeRetreatRewardSilver,
+        color: WuxiaUi.gold,
+      ),
+      if (def.equipmentDropRate > 1.0)
+        const SeclusionMapOutputVisual(
+          icon: Icons.sports_martial_arts,
+          label: UiStrings.seclusionOutputEquipDrop,
+          color: WuxiaUi.woodLight,
+        ),
+      if (def.techniqueLearnRate > 1.0)
+        const SeclusionMapOutputVisual(
+          icon: Icons.auto_stories,
+          label: UiStrings.seclusionOutputTechniqueLearn,
+          color: WuxiaUi.qing,
+        ),
+      if (def.internalForceGrowth > 1.0)
+        const SeclusionMapOutputVisual(
+          icon: Icons.bolt,
+          label: UiStrings.seclusionOutputInternalForce,
+          color: WuxiaColors.internalForce,
+        ),
+    ];
+  }
 
   static List<SeclusionMapTrait> traits(SeclusionMapDef def) {
     final traits = <SeclusionMapTrait>[];
@@ -69,6 +119,33 @@ class SeclusionMapVisuals {
   static IconData primaryIcon(SeclusionMapDef def) {
     final mapTraits = traits(def);
     return mapTraits.length > 1 ? Icons.all_inclusive : mapTraits.first.icon;
+  }
+}
+
+class SeclusionMapOutputStrip extends StatelessWidget {
+  const SeclusionMapOutputStrip({
+    super.key,
+    required this.def,
+    this.locked = false,
+  });
+
+  final SeclusionMapDef def;
+  final bool locked;
+
+  @override
+  Widget build(BuildContext context) {
+    final outputs = SeclusionMapVisuals.outputs(def);
+    return Opacity(
+      opacity: locked ? 0.56 : 1,
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (final output in outputs)
+            _OutputChip(output: output, locked: locked),
+        ],
+      ),
+    );
   }
 }
 
@@ -140,6 +217,41 @@ class SeclusionMapTraitIcon extends StatelessWidget {
         SeclusionMapVisuals.primaryIcon(def),
         color: color,
         size: size * 0.52,
+      ),
+    );
+  }
+}
+
+class _OutputChip extends StatelessWidget {
+  const _OutputChip({required this.output, required this.locked});
+
+  final SeclusionMapOutputVisual output;
+  final bool locked;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = locked ? WuxiaUi.muted : output.color;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: WuxiaUi.ink.withValues(alpha: locked ? 0.22 : 0.32),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.38)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(output.icon, size: 12, color: color),
+          const SizedBox(width: 5),
+          Text(
+            output.label,
+            style: TextStyle(
+              color: locked ? WuxiaColors.textMuted : WuxiaUi.ink,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
