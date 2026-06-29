@@ -150,29 +150,26 @@ void main() {
   });
 
   testWidgets('整章可扫荡时显示扫荡前收益预估', (tester) async {
-    final progress = mkProgress(
-      cleared: const [
-        'stage_01_01',
-        'stage_01_02',
-        'stage_01_03',
-        'stage_01_04',
-        'stage_01_05',
-      ],
-    )
-      ..clearedStageCycleKeys = const [
-        'stage_01_01#1',
-        'stage_01_02#1',
-        'stage_01_03#1',
-        'stage_01_04#1',
-        'stage_01_05#1',
-      ]
-      ..clearedChapterCycleKeys = const ['ch1#1'];
+    final progress =
+        mkProgress(
+            cleared: const [
+              'stage_01_01',
+              'stage_01_02',
+              'stage_01_03',
+              'stage_01_04',
+              'stage_01_05',
+            ],
+          )
+          ..clearedStageCycleKeys = const [
+            'stage_01_01#1',
+            'stage_01_02#1',
+            'stage_01_03#1',
+            'stage_01_04#1',
+            'stage_01_05#1',
+          ]
+          ..clearedChapterCycleKeys = const ['ch1#1'];
 
-    await pumpScreen(
-      tester,
-      chapterIndex: 1,
-      progress: progress,
-    );
+    await pumpScreen(tester, chapterIndex: 1, progress: progress);
 
     expect(find.text(UiStrings.sweepPreviewTitle), findsOneWidget);
     expect(find.text(UiStrings.stageReplayRouteEquipment), findsWidgets);

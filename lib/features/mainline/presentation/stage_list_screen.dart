@@ -943,9 +943,7 @@ class _SweepRewardPreviewPanel extends StatelessWidget {
             _PreviewLine(
               text: UiStrings.sweepPreviewLine(
                 UiStrings.sweepPreviewProficiencyPrefix,
-                preview.proficiencyHints
-                    .map(_proficiencyHintLabel)
-                    .join(' / '),
+                preview.proficiencyHints.map(_proficiencyHintLabel).join(' / '),
               ),
             ),
           _PreviewLine(
