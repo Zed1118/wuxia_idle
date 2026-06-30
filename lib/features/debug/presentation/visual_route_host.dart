@@ -73,6 +73,7 @@ import '../../weapon_codex/domain/equipment_catalog_entry.dart';
 import '../../weapon_codex/presentation/weapon_codex_screen.dart';
 import '../../weapon_codex/presentation/equipment_catalog_detail_screen.dart';
 import '../../shop/presentation/shop_screen.dart';
+import '../../shop/application/shop_service.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../character_panel/application/lineage_codex_provider.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
@@ -539,6 +540,11 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // 验货币顶栏 + 固定货架 + 可买(绿)/不可买(红 disabled)两态同屏。
       await _seedInventoryItem(isar, 'item_silver', 80);
       return const ShopScreen();
+    case VisualRoute.shopBuyConfirm:
+      // 商店购买确认弹窗打开态:种银两 80 让货架正常渲染,叠真 ShopScreen 背景 +
+      // 复刻 _handleBuy 的 PaperDialog 确认弹窗(磨剑石 ×1 · 定价取真 def),冻结打开态供截图。
+      await _seedInventoryItem(isar, 'item_silver', 80);
+      return const _ShopBuyConfirmPreview();
     case VisualRoute.inventoryCurrency:
       // 背包货币位目检:种银两 + 磨剑石 + 心血结晶,initialTab=1 直开物料 tab,
       // 验顶部货币位顶栏 + 材料网格(银两不重复进网格,仅磨剑石/心血结晶)。
@@ -568,6 +574,19 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await _seedInventoryItem(isar, 'item_scroll_kai_bei_shou', 1);
       await _seedInventoryItem(isar, 'item_mojianshi', 12);
       return const InventoryScreen(initialTab: 1);
+    case VisualRoute.itemUseConfirmDialog:
+      // 道具使用确认弹窗打开态:照 itemUseInventory 种祖师 + 经验丹三档/秘籍/磨剑石,
+      // 物料 tab(initialTab=1)真 InventoryScreen 背景 + 复刻 _onUse 的 PaperDialog
+      // 使用确认弹窗(凝神丹 · 道具名取真 ItemDef),冻结打开态供截图。
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
+      await _seedInventoryItem(isar, 'item_jingyandan_small', 3);
+      await _seedInventoryItem(isar, 'item_jingyandan_mid', 2);
+      await _seedInventoryItem(isar, 'item_jingyandan_large', 1);
+      await _seedInventoryItem(isar, 'item_scroll_kai_bei_shou', 1);
+      await _seedInventoryItem(isar, 'item_mojianshi', 12);
+      return const _ItemUseConfirmPreview();
     case VisualRoute.taohuaIsland:
       await OnboardingService(
         isar: isar,
@@ -635,6 +654,11 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       // 武学图鉴 tab 混合态目检：前 6 招点亮、其余剪影,覆盖 martialCodexProvider,
       // 验点亮/剪影 5 来源分组 + 心法小节 + 进度。
       return _buildSkillCodexVisual();
+    case VisualRoute.skillCodexLockedSnackbar:
+      // 武学图鉴点剪影 snackbar 态:复用 _buildSkillCodexVisual 混态(前6点亮+其余剪影)
+      // 为背景,post-frame 触发与 _SilhouetteRow 一致的 ScaffoldMessenger snackbar
+      // (UiStrings.skillCodexNotMet),仅延长 duration 让 SnackBar 驻留供截图。
+      return _SkillCodexLockedSnackbarPreview(child: _buildSkillCodexVisual());
     case VisualRoute.skillCodexDetail:
       // 武学详情屏目检：取收录池首招直传 detail 屏(同步展示,maxStage=null 未曾习练态)。
       return _buildSkillCodexDetailVisual();
@@ -1100,6 +1124,124 @@ class _RefineInsightDialogPreview extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 商店购买确认弹窗打开态静态验收:真 [ShopScreen] 货架为背景 + 暗幕 + 复刻
+/// shop_screen `_handleBuy` 的 [PaperDialog] 确认弹窗(磨剑石 ×1 · 定价取真 def),
+/// 冻结在弹窗打开态供截图。文案/定价全走既有 UiStrings / EnumL10n / 真 def,不新写文案。
+class _ShopBuyConfirmPreview extends StatelessWidget {
+  const _ShopBuyConfirmPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    final def = GameRepository.instance.shopItemDefs['shop_mojianshi']!;
+    final price = ShopService.effectivePrice(def, 0);
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const ShopScreen(),
+        const ModalBarrier(color: Color(0x99000000)),
+        Center(
+          child: PaperDialog(
+            title: UiStrings.shopBuy,
+            body: Text(
+              '${EnumL10n.itemType(def.itemType)}  ×1\n'
+              '${UiStrings.shopItemPrice(price)}',
+              style: const TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 14,
+                height: 1.8,
+                letterSpacing: 1,
+              ),
+            ),
+            actions: [
+              PlaqueButton(label: UiStrings.commonCancel, onTap: () {}),
+              PlaqueButton(
+                label: UiStrings.shopBuy,
+                primary: true,
+                onTap: () {},
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 道具使用确认弹窗打开态静态验收:真 [InventoryScreen](物料 tab)为背景 + 暗幕 +
+/// 复刻 inventory `_onUse` 的 [PaperDialog] 使用确认弹窗(道具名取真 [ItemDef] name),
+/// 冻结打开态供截图。文案全走既有 UiStrings,不新写文案。
+class _ItemUseConfirmPreview extends StatelessWidget {
+  const _ItemUseConfirmPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    final displayName =
+        GameRepository.instance.itemDefs['item_jingyandan_small']!.name;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const InventoryScreen(initialTab: 1),
+        const ModalBarrier(color: Color(0x99000000)),
+        Center(
+          child: PaperDialog(
+            title: UiStrings.itemUseConfirmTitle,
+            body: Text(
+              UiStrings.itemUseConfirmBody(displayName),
+              style: const TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 14,
+                height: 1.8,
+                letterSpacing: 1,
+              ),
+            ),
+            actions: [
+              PlaqueButton(label: UiStrings.commonCancel, onTap: () {}),
+              PlaqueButton(
+                label: UiStrings.itemUseButton,
+                primary: true,
+                onTap: () {},
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// 武学图鉴点剪影 snackbar 态静态验收:渲染真混态图鉴([_buildSkillCodexVisual])为
+/// 背景,首帧后 post-frame 触发与 [_SilhouetteRow] 一致的 [ScaffoldMessenger] snackbar
+/// (UiStrings.skillCodexNotMet),仅延长 duration 让 SnackBar 驻留供截图(文案/样式不变)。
+class _SkillCodexLockedSnackbarPreview extends StatefulWidget {
+  const _SkillCodexLockedSnackbarPreview({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_SkillCodexLockedSnackbarPreview> createState() =>
+      _SkillCodexLockedSnackbarPreviewState();
+}
+
+class _SkillCodexLockedSnackbarPreviewState
+    extends State<_SkillCodexLockedSnackbarPreview> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(UiStrings.skillCodexNotMet),
+          duration: Duration(minutes: 5),
+        ),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class _EncounterOutcomeBannerPreview extends StatelessWidget {

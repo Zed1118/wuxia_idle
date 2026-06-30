@@ -461,7 +461,7 @@ class _ShelfFilterChip extends StatelessWidget {
               label,
               style: TextStyle(
                 color: selected ? WuxiaUi.jiang : WuxiaUi.ink2,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1,
               ),
@@ -503,7 +503,7 @@ class _ShelfGroupPanel extends StatelessWidget {
                   group.label,
                   style: const TextStyle(
                     color: WuxiaColors.resultHighlight,
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 2,
                   ),
@@ -519,7 +519,7 @@ class _ShelfGroupPanel extends StatelessWidget {
                 ),
                 style: const TextStyle(
                   color: WuxiaUi.muted,
-                  fontSize: 12,
+                  fontSize: 12.5,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -530,8 +530,8 @@ class _ShelfGroupPanel extends StatelessWidget {
             group.description,
             style: const TextStyle(
               color: WuxiaUi.muted,
-              fontSize: 12,
-              height: 1.35,
+              fontSize: 13,
+              height: 1.4,
               letterSpacing: 0.5,
             ),
           ),
@@ -621,7 +621,7 @@ class _ShopItemTile extends StatelessWidget {
                   style: const TextStyle(
                     // 浅宣纸底用墨色 WuxiaUi.ink；white 叠浅底几乎不可见。
                     color: WuxiaUi.ink,
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1,
                   ),
@@ -633,8 +633,8 @@ class _ShopItemTile extends StatelessWidget {
                   UiStrings.shopItemPurpose(def.itemDefId),
                   style: const TextStyle(
                     color: WuxiaUi.muted,
-                    fontSize: 12,
-                    height: 1.35,
+                    fontSize: 13,
+                    height: 1.4,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -647,7 +647,8 @@ class _ShopItemTile extends StatelessWidget {
                     color: canAfford
                         ? WuxiaColors.resultHighlight
                         : WuxiaColors.hpLow,
-                    fontSize: 13,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -734,8 +735,8 @@ class _ShopNeedHintLines extends StatelessWidget {
               style: const TextStyle(
                 // 浅宣纸底用墨色柔灰 WuxiaUi.muted；WuxiaColors.textMuted 是深色 UI 专用浅灰会糊。
                 color: WuxiaUi.muted,
-                fontSize: 11,
-                height: 1.2,
+                fontSize: 12,
+                height: 1.3,
                 letterSpacing: 0.4,
               ),
             ),
@@ -764,7 +765,7 @@ class _ShopStatusPill extends StatelessWidget {
           label,
           style: const TextStyle(
             color: WuxiaUi.ink2,
-            fontSize: 11,
+            fontSize: 12,
             height: 1,
             letterSpacing: 0.5,
           ),
