@@ -166,14 +166,11 @@ OSA
 }
 
 terminate_visual_app() {
-  osascript <<'OSA' >/dev/null 2>&1 || true
+  osascript <<OSA >/dev/null 2>&1 || true
 tell application "System Events"
-  set candidates to {"wuxia_idle", "挂机武侠", "Runner"}
-  repeat with appName in candidates
-    if exists application process (appName as text) then
-      tell application (appName as text) to quit
-    end if
-  end repeat
+  if exists application process "$APP_PROCESS_NAME" then
+    tell application "$APP_PROCESS_NAME" to quit
+  end if
 end tell
 OSA
   local elapsed=0
@@ -219,7 +216,6 @@ run_capture() {
   fi
 
   mkdir -p "$dir"
-  terminate_visual_app
 
   local cmd=(
     flutter run -d macos
@@ -232,6 +228,8 @@ run_capture() {
     printf '[dry-run] VISUAL_WINDOW_W=%s VISUAL_WINDOW_H=%s; window-id capture %s\n' "$width" "$height" "$png"
     return
   fi
+
+  terminate_visual_app
 
   VISUAL_WINDOW_W="$width" VISUAL_WINDOW_H="$height" \
     "${cmd[@]}" >"$log" 2>&1 < /dev/null &
