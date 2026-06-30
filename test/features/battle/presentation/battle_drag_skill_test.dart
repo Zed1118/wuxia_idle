@@ -161,6 +161,25 @@ void main() {
       expect(notifier.interveneCount, 0);
     });
 
+    testWidgets('待发态中点 AOE → AOE 出手且待发态清除(不冻结)', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single, _aoe]);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      expect(notifier.interveneCount, 0, reason: 'single 先进待发态');
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.pump();
+      expect(notifier.lastInterveneSkill?.id, 'aoe1');
+      expect(notifier.interveneCount, 1, reason: 'AOE 出手');
+      final enemy = find.byWidgetPredicate(
+        (w) => w is CharacterAvatar && w.character.characterId == 11,
+      );
+      await tester.tap(enemy);
+      await tester.pump();
+      expect(notifier.interveneCount, 1, reason: 'AOE 出手后待发态已清,点敌不再触发 single');
+    });
+
     testWidgets('待发态再点同一技能 → 取消(点敌不出手)', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
