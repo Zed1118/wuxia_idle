@@ -179,7 +179,7 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
       backgroundColor: WuxiaColors.panel,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
+        constraints: const BoxConstraints(maxWidth: 520),
         child:
             (mojianshiAsync.hasValue &&
                 crystalAsync.hasValue &&
@@ -210,18 +210,19 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
           labelColor: WuxiaColors.textPrimary,
           unselectedLabelColor: WuxiaColors.textMuted,
           indicatorColor: WuxiaColors.resultHighlight,
+          indicatorWeight: 2.4,
           tabs: const [
             Tab(text: UiStrings.tabEnhance),
             Tab(text: UiStrings.tabForging),
           ],
         ),
         SizedBox(
-          height: 420,
+          height: 430,
           child: TabBarView(
             controller: _tabCtrl,
             children: [
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
                 child: _buildBody(
                   mojianshiQty: mojianshiQty,
                   crystalQty: crystalQty,
@@ -229,7 +230,7 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
                 child: widget.def == null
                     ? const Center(
                         child: Text(
@@ -288,7 +289,7 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
             targetLevel: targetLevel,
             scale: _scaleCtrl,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           _MetricsRow(
             successRate: atCap ? null : successRate,
             mojianshiQty: mojianshiQty,
@@ -304,44 +305,15 @@ class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
           ),
           const SizedBox(height: 12),
           _ResultBanner(result: _lastResult),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (atCap)
-                const Text(
-                  UiStrings.enhanceCapped,
-                  style: TextStyle(color: WuxiaColors.textMuted),
-                )
-              else ...[
-                if (crystalCost != null)
-                  TextButton(
-                    onPressed: canGuarantee
-                        ? () {
-                            _onGuarantee(crystalQty);
-                          }
-                        : null,
-                    child: Text(
-                      '${UiStrings.guaranteeButton}（${UiStrings.guaranteeCost(crystalCost)}）',
-                    ),
-                  ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: WuxiaColors.resultHighlight,
-                  ),
-                  onPressed: canEnhance
-                      ? () {
-                          _onEnhance(
-                            mojianshiQty: mojianshiQty,
-                            duancaiQty: duancaiQty,
-                          );
-                        }
-                      : null,
-                  child: const Text(UiStrings.enhanceButton),
-                ),
-              ],
-            ],
+          const Spacer(),
+          _EnhanceActionBar(
+            atCap: atCap,
+            crystalCost: crystalCost,
+            canGuarantee: canGuarantee,
+            canEnhance: canEnhance,
+            onGuarantee: () => _onGuarantee(crystalQty),
+            onEnhance: () =>
+                _onEnhance(mojianshiQty: mojianshiQty, duancaiQty: duancaiQty),
           ),
         ],
       ),
@@ -378,11 +350,22 @@ class _Header extends StatelessWidget {
         return Transform.scale(
           scale: s,
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
             decoration: BoxDecoration(
-              color: WuxiaColors.avatarFill,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [WuxiaColors.inkPanelTop, WuxiaColors.avatarFill],
+              ),
               border: Border.all(color: activeBorder, width: 2),
               borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                BoxShadow(
+                  color: activeBorder.withValues(alpha: 0.12),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: child,
           ),
@@ -424,12 +407,22 @@ class _Header extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            UiStrings.enhancePreview(equipment.enhanceLevel, targetLevel),
-            style: const TextStyle(
-              color: WuxiaColors.textPrimary,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: WuxiaColors.resultHighlight.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: WuxiaColors.resultHighlight.withValues(alpha: 0.5),
+              ),
+            ),
+            child: Text(
+              UiStrings.enhancePreview(equipment.enhanceLevel, targetLevel),
+              style: const TextStyle(
+                color: WuxiaColors.textPrimary,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],
@@ -459,28 +452,27 @@ class _MetricsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: [
         if (successRate != null)
-          _StatLine(
+          _StatChip(
             label: UiStrings.metricSuccessRate,
             value: UiStrings.percent(successRate!),
+            emphasized: true,
           ),
-        const SizedBox(height: 4),
-        _StatLine(
+        _StatChip(
           label: UiStrings.metricMaterial,
           value: UiStrings.mojianshiUsage(mojianshiQty, mojianshiCost),
-          valueColor: mojianshiQty < mojianshiCost ? WuxiaColors.hpLow : null,
+          low: mojianshiQty < mojianshiCost,
         ),
-        const SizedBox(height: 4),
-        _StatLine(
+        _StatChip(
           label: UiStrings.metricForgingMaterial,
           value: UiStrings.duancaiUsage(duancaiQty, duancaiCost),
-          valueColor: duancaiQty < duancaiCost ? WuxiaColors.hpLow : null,
+          low: duancaiQty < duancaiCost,
         ),
-        const SizedBox(height: 4),
-        _StatLine(
+        _StatChip(
           label: UiStrings.metricCrystal,
           value: UiStrings.crystalAvailable(crystalQty),
         ),
@@ -489,32 +481,52 @@ class _MetricsRow extends StatelessWidget {
   }
 }
 
-class _StatLine extends StatelessWidget {
-  const _StatLine({required this.label, required this.value, this.valueColor});
+class _StatChip extends StatelessWidget {
+  const _StatChip({
+    required this.label,
+    required this.value,
+    this.low = false,
+    this.emphasized = false,
+  });
 
   final String label;
   final String value;
-  final Color? valueColor;
+  final bool low;
+  final bool emphasized;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 72,
-          child: Text(
+    final color = low
+        ? WuxiaColors.hpLow
+        : emphasized
+        ? WuxiaColors.resultHighlight
+        : WuxiaColors.textPrimary;
+    return Container(
+      constraints: const BoxConstraints(minWidth: 148),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: low ? 0.14 : 0.08),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: low ? 0.5 : 0.26)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
             label,
             style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            color: valueColor ?? WuxiaColors.textPrimary,
-            fontSize: 14,
+          const SizedBox(width: 8),
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: 14,
+              fontWeight: low || emphasized ? FontWeight.w800 : FontWeight.w700,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -563,6 +575,92 @@ class _ResultBanner extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+class _EnhanceActionBar extends StatelessWidget {
+  const _EnhanceActionBar({
+    required this.atCap,
+    required this.crystalCost,
+    required this.canGuarantee,
+    required this.canEnhance,
+    required this.onGuarantee,
+    required this.onEnhance,
+  });
+
+  final bool atCap;
+  final int? crystalCost;
+  final bool canGuarantee;
+  final bool canEnhance;
+  final VoidCallback onGuarantee;
+  final VoidCallback onEnhance;
+
+  @override
+  Widget build(BuildContext context) {
+    if (atCap) {
+      return const Align(
+        alignment: Alignment.centerRight,
+        child: Text(
+          UiStrings.enhanceCapped,
+          style: TextStyle(color: WuxiaColors.textMuted),
+        ),
+      );
+    }
+    return OverflowBar(
+      alignment: MainAxisAlignment.end,
+      overflowAlignment: OverflowBarAlignment.end,
+      spacing: 8,
+      overflowSpacing: 8,
+      children: [
+        if (crystalCost != null)
+          TextButton.icon(
+            onPressed: canGuarantee ? onGuarantee : null,
+            icon: const Icon(Icons.verified_outlined, size: 16),
+            label: Text(
+              '${UiStrings.guaranteeButton}（${UiStrings.guaranteeCost(crystalCost!)}）',
+            ),
+            style: TextButton.styleFrom(
+              foregroundColor: WuxiaColors.resultHighlight,
+              disabledForegroundColor: WuxiaColors.textMuted,
+              backgroundColor:
+                  (canGuarantee
+                          ? WuxiaColors.resultHighlight
+                          : WuxiaColors.buttonDisabled)
+                      .withValues(alpha: 0.1),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+                side: BorderSide(
+                  color:
+                      (canGuarantee
+                              ? WuxiaColors.resultHighlight
+                              : WuxiaColors.buttonDisabled)
+                          .withValues(alpha: 0.48),
+                ),
+              ),
+            ),
+          ),
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: WuxiaColors.inkPanelBottom,
+            backgroundColor: WuxiaColors.resultHighlight,
+            disabledForegroundColor: WuxiaColors.textMuted,
+            disabledBackgroundColor: WuxiaColors.buttonDisabled,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+              side: const BorderSide(color: WuxiaColors.inkPanelEdge),
+            ),
+          ),
+          onPressed: canEnhance ? onEnhance : null,
+          icon: const Icon(Icons.upgrade, size: 17),
+          label: const Text(
+            UiStrings.enhanceButton,
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
+        ),
+      ],
     );
   }
 }
