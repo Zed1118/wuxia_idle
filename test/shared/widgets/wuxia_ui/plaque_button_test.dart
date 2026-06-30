@@ -27,6 +27,29 @@ void main() {
     expect(size.height, greaterThanOrEqualTo(PlaqueButton.minHeight));
   });
 
+  testWidgets('真实热区使用 opaque 且长文案单行截断', (tester) async {
+    await tester.pumpWidget(
+      host(
+        SizedBox(
+          width: 96,
+          child: PlaqueButton(label: '很长很长的确认操作', onTap: () {}),
+        ),
+      ),
+    );
+    final detector = tester.widget<GestureDetector>(
+      find.descendant(
+        of: find.byType(PlaqueButton),
+        matching: find.byType(GestureDetector),
+      ),
+    );
+    expect(detector.behavior, HitTestBehavior.opaque);
+
+    final text = tester.widget<Text>(find.text('很长很长的确认操作'));
+    expect(text.maxLines, 1);
+    expect(text.overflow, TextOverflow.ellipsis);
+    expect(text.softWrap, isFalse);
+  });
+
   testWidgets('点击触发 onTap', (tester) async {
     var n = 0;
     await tester.pumpWidget(host(PlaqueButton(label: '继续', onTap: () => n++)));
@@ -74,19 +97,42 @@ void main() {
 
   testWidgets('按下显暗层(AnimatedOpacity 由 0→1),抬起复位', (tester) async {
     await tester.pumpWidget(host(PlaqueButton(label: '确认', onTap: () {})));
-    AnimatedOpacity overlay() =>
-        tester.widget<AnimatedOpacity>(find.byType(AnimatedOpacity));
-    expect(overlay().opacity, 0.0, reason: '初始无按下暗层');
+    List<AnimatedOpacity> overlays() => tester
+        .widgetList<AnimatedOpacity>(find.byType(AnimatedOpacity))
+        .toList();
+    expect(
+      overlays().map((w) => w.opacity),
+      everyElement(0.0),
+      reason: '初始无 hover/按下暗层',
+    );
 
     final gesture = await tester.startGesture(
       tester.getCenter(find.byType(PlaqueButton)),
     );
     await tester.pump();
-    expect(overlay().opacity, greaterThan(0.0), reason: '按下显暗层');
+    expect(
+      overlays().map((w) => w.opacity),
+      contains(greaterThan(0.0)),
+      reason: '按下显暗层',
+    );
 
     await gesture.up();
     await tester.pump();
-    expect(overlay().opacity, 0.0, reason: '抬起复位');
+    expect(overlays().map((w) => w.opacity), everyElement(0.0), reason: '抬起复位');
+  });
+
+  testWidgets('destructive 使用危险朱色但保留按钮语义', (tester) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      host(PlaqueButton(label: '删除', destructive: true, onTap: () {})),
+    );
+    expect(
+      tester.getSemantics(find.byType(PlaqueButton)),
+      isSemantics(isButton: true, isEnabled: true),
+    );
+    final color = tester.widget<Text>(find.text('删除')).style!.color;
+    expect(color, const Color(0xFFF3E2C0));
+    handle.dispose();
   });
 
   // 2026-06-29 桌面语义补强(§8.2 UI 验收):GestureDetector 改造后补回
