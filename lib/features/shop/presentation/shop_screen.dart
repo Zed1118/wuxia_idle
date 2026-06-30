@@ -119,30 +119,42 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       byGroup.putIfAbsent(entry.group, () => []).add(entry);
     }
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-      children: [
-        // ── 货币顶栏 ───────────────────────────────────────────────────────
-        _SilverBalanceBar(silver: silver),
-        const SizedBox(height: 16),
-        _ShelfFilterBar(
-          selected: _filter,
-          entries: allEntries,
-          onSelected: (filter) => setState(() => _filter = filter),
-        ),
-        const SizedBox(height: 16),
-        // ── 用途货架面板 ───────────────────────────────────────────────────
-        for (final group in _ShopShelfGroupKind.values)
-          if (byGroup[group]?.isNotEmpty == true) ...[
-            _ShelfGroupPanel(
-              group: group,
-              entries: byGroup[group]!,
-              silver: silver,
-              onBuy: (def) => _handleBuy(context, def, silver, founderEtl),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = constraints.maxWidth > 1420
+            ? (constraints.maxWidth - 1360) / 2
+            : 16.0;
+        return ListView(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            12,
+            horizontalPadding,
+            32,
+          ),
+          children: [
+            // ── 货币顶栏 ───────────────────────────────────────────────────────
+            _SilverBalanceBar(silver: silver),
+            const SizedBox(height: 16),
+            _ShelfFilterBar(
+              selected: _filter,
+              entries: allEntries,
+              onSelected: (filter) => setState(() => _filter = filter),
             ),
             const SizedBox(height: 16),
+            // ── 用途货架面板 ───────────────────────────────────────────────────
+            for (final group in _ShopShelfGroupKind.values)
+              if (byGroup[group]?.isNotEmpty == true) ...[
+                _ShelfGroupPanel(
+                  group: group,
+                  entries: byGroup[group]!,
+                  silver: silver,
+                  onBuy: (def) => _handleBuy(context, def, silver, founderEtl),
+                ),
+                const SizedBox(height: 16),
+              ],
           ],
-      ],
+        );
+      },
     );
   }
 
@@ -169,14 +181,20 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         ),
       ),
       actions: [
-        PlaqueButton(
-          label: UiStrings.commonCancel,
-          onTap: () => Navigator.of(context).pop(false),
+        SizedBox(
+          width: 104,
+          child: PlaqueButton(
+            label: UiStrings.commonCancel,
+            onTap: () => Navigator.of(context).pop(false),
+          ),
         ),
-        PlaqueButton(
-          label: UiStrings.shopBuy,
-          primary: true,
-          onTap: () => Navigator.of(context).pop(true),
+        SizedBox(
+          width: 104,
+          child: PlaqueButton(
+            label: UiStrings.shopBuy,
+            primary: true,
+            onTap: () => Navigator.of(context).pop(true),
+          ),
         ),
       ],
     );
@@ -610,7 +628,7 @@ class _ShopItemTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          // 名称 + 标价
+          // 名称 + 用途
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -638,34 +656,48 @@ class _ShopItemTile extends StatelessWidget {
                     letterSpacing: 0.5,
                   ),
                 ),
-                const SizedBox(height: 4),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          // 价格、持有数与购买按钮同列，避免宽屏时信息左下堆叠、按钮孤立在最右。
+          SizedBox(
+            width: 178,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 Text(
                   effectivePrice == null
                       ? UiStrings.shopPricingUnavailable
                       : UiStrings.shopItemPrice(effectivePrice),
+                  textAlign: TextAlign.right,
                   style: TextStyle(
                     color: canAfford
                         ? WuxiaColors.resultHighlight
                         : WuxiaColors.hpLow,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 _ShopItemStatus(entry: entry, silver: silver),
+                const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    width: 104,
+                    height: 42,
+                    child: PlaqueButton(
+                      label: UiStrings.shopBuy,
+                      primary: true,
+                      disabled: !canAfford,
+                      onTap: canAfford ? onBuy : null,
+                    ),
+                  ),
+                ),
               ],
-            ),
-          ),
-          // 购买按钮（余额不足→disabled）
-          SizedBox(
-            width: 96,
-            height: 42,
-            child: PlaqueButton(
-              label: UiStrings.shopBuy,
-              primary: true,
-              disabled: !canAfford,
-              onTap: canAfford ? onBuy : null,
             ),
           ),
         ],
@@ -697,6 +729,7 @@ class _ShopItemStatus extends StatelessWidget {
     return Wrap(
       spacing: 6,
       runSpacing: 4,
+      alignment: WrapAlignment.end,
       children: [for (final label in labels) _ShopStatusPill(label: label)],
     );
   }
