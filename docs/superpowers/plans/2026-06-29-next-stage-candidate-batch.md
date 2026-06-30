@@ -8,14 +8,16 @@
 
 **Tech Stack:** Flutter Desktop, Riverpod 3.x, Isar, YAML data, Wuxia UI components, existing docs/spec workflow.
 
+**2026-06-30 truth-sync 审计状态:** 本计划已执行收口。13 个候选中 12 个随 `64706eb9` 合入,「主菜单状态摘要二期」后续经用户拍板以 `8b7fca48` 合入;音频专属素材项仅完成 metadata/manifest/prompt,真音频生成/筛选仍是外部素材挂账,不应重复开代码分支。
+
 ---
 
 ## 启动门槛
 
-- [ ] Claude 二梯队全部合并完成。
-- [ ] main 已完成合并后 smoke 状态确认,且没有正在处理的冲突修复。
-- [ ] 重新读取 `AGENTS.md` / `CLAUDE.md` / `GDD.md` / `PROGRESS.md` / `docs/spec/playability_phase2_backlog.md`。
-- [ ] 按用户最终选择确认本批启动数量。默认不一次性全开,优先 3-5 个低冲突任务并行。
+- [x] Claude 二梯队全部合并完成。
+- [x] main 已完成合并后 smoke 状态确认,且没有正在处理的冲突修复。
+- [x] 重新读取 `AGENTS.md` / `CLAUDE.md` / `GDD.md` / `PROGRESS.md` / `docs/spec/playability_phase2_backlog.md`。
+- [x] 按用户最终选择确认本批启动数量。实际按独立 worktree/分支拆分推进并已合入收口。
 
 ## 本批已选待办
 
@@ -96,7 +98,7 @@
 
 ### 第一小批(二梯队合并后优先)
 
-- [ ] 主菜单状态摘要二期 — **暂缓待拍板**(2026-06-29 Claude 评审):实现完整、技术红线过,但「当前要事」to-do 推动面板触 §5.1 反主流红线「留存焦虑」判断项,需用户拍板是否接受这种目标导向 UI。分支 `codex/next-main-menu-status-summary` 保留不合。
+- [x] 主菜单状态摘要二期 — 合 main(2026-06-29 后续拍板 `8b7fca48`):只读摘要 provider + 主菜单摘要面板已接入;原「当前要事」to-do 推动面板红线争议经用户拍板后收口。
 - [x] 设置页二期 — 合 main(2026-06-29):战斗播放速度(只缩放播放节拍守在线=离线)+文字密度+减少闪烁,SharedPreferences 持久化。
 - [x] 资源总览页 — 合 main(2026-06-29):五类库存只读聚合+来源/用途,主菜单入口;明示「不在此消费/结算」。
 - [x] 桃花岛生产队列可读化 — 合 main(2026-06-29):二分探测下一件/满仓时间只读派生,建筑卡内嵌生产情报,守在线=离线。
@@ -136,6 +138,6 @@
 
 ## 当前恢复点
 
-- 状态:批次规划完成,等待 Claude 二梯队合并。
-- 下一步:二梯队合并完成后,从“第一小批”中挑 3-4 项创建独立详细计划与 worktree。
-- 已更新:`docs/spec/playability_phase2_backlog.md` 的 2026-06-29 下一阶段选入待办。
+- 状态:批次执行完成并 truth-sync 审计收口。
+- 下一步:不要从本计划重复创建 next-stage 实现分支;只保留音频真素材外部生成/筛选挂账。
+- 已更新:`docs/spec/playability_phase2_backlog.md` 的 2026-06-29 下一阶段选入待办与真实剩余摘要。
