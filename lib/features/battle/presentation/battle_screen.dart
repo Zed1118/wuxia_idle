@@ -175,7 +175,7 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 非空时在 hint 横幅下方额外渲染一条琥珀色提示条，战斗开始后自动常驻（不阻塞）。
   final String? cycleHint;
 
-  /// 战斗交互重做 Phase 3:本场是否允许玩家拖招干预(host 由 [resolveAutoPlayMode]
+  /// 战斗交互重做 Phase 3:本场是否允许玩家手动干预(host 由 [resolveAutoPlayMode]
   /// → `AutoPlayMode.interactive` 算出注入)。**Phase 3 暂无可见行为差异**(战斗
   /// 无论如何都自动连续播放);Phase 4 拖招层将以此门控技能栏 GestureDetector /
   /// 引导线 —— `false` = 纯挂机不挂拖招层。
@@ -183,7 +183,7 @@ class BattleScreen extends ConsumerStatefulWidget {
 
   /// 仅验收路由用(默认 false → 生产/现有调用零影响):起手即暂停,战斗冻结在
   /// startBattle seed 初态(timer 因 _isPaused 不启,与 [autoStart] 兼容)。
-  /// **为 true 时**头栏额外渲染「单步」按钮(逐步推进战斗,供验收者拖招/看
+  /// **为 true 时**头栏额外渲染「单步」按钮(逐步推进战斗,供验收者点选技能/看
   /// 内力不足/debuff hover);生产挂机战斗恒 false,单步按钮严禁出现。
   final bool startPaused;
 
@@ -197,6 +197,11 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 后挂本屏」,挂载时边沿已过 → 监听捕获不到。本标志为扫荡补一条挂载后兜底自启,
   /// 不影响默认契约(其它调用预填战斗后保持冻结直到显式 advance)。
   final bool autoStartOnMount;
+
+  /// Debug/visual preview only:初始渲染一个纯 presentation 待发态。
+  /// 只驱动按钮「待发」印与敌头像可选高亮,不写 [BattleState.pendingUltimates]。
+  final int? previewPendingCharacterId;
+  final String? previewPendingSkillId;
 
   const BattleScreen({
     super.key,
@@ -215,6 +220,8 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.startPaused = false,
     this.startFastForward = false,
     this.autoStartOnMount = false,
+    this.previewPendingCharacterId,
+    this.previewPendingSkillId,
   });
 
   @override
@@ -280,10 +287,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   double _impactShakeAmplitude = 0.0;
 
   // ─── 两段点选 tap 释放 ───────────────────────────────────────────────────
-  // 待发态(纯 UI,不写 BattleState):已点选待发的单体技与其拖招者 charId。
+  // 待发态(纯 UI,不写 BattleState):已点选待发的单体技与其角色 charId。
   // null = 无待发。AOE 不进待发态(点按钮直接出手)。
   SkillDef? _pendingSkill;
   int? _pendingCharId;
+
+  bool get _pendingActive =>
+      _pendingSkill != null ||
+      (widget.previewPendingCharacterId != null &&
+          widget.previewPendingSkillId != null);
 
   // ─── 生命周期 ────────────────────────────────────────────────────────────
 
@@ -332,10 +344,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // 后保持冻结,由测试/验收显式推进),零回归。
     if (widget.autoStartOnMount) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted ||
-            !widget.autoStart ||
-            _isPaused ||
-            _playTimer != null) {
+        if (!mounted || !widget.autoStart || _isPaused || _playTimer != null) {
           return;
         }
         final s = ref.read(battleProvider);
@@ -555,8 +564,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
     // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡抑制（守在线=离线）。
     // 独立于 profile != null 块：普攻击杀无 profile 也须触发特写。
-    if (!_isFastForward &&
-        hitClimaxFor(action, s) != HitClimax.none) {
+    if (!_isFastForward && hitClimaxFor(action, s) != HitClimax.none) {
       _closeupCtrl.forward(from: 0.0).then((_) {
         if (mounted) _closeupCtrl.reverse();
       });
@@ -829,7 +837,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   // ─── 指令台（T1） ──────────────────────────────────────────────────────────
 
-  /// 玩家拖招松手 → 调 [BattleNotifier.interveneNow] 立即插队出手(预支 AP 归零)。
+  /// 玩家点选技能 → 调 [BattleNotifier.interveneNow] 立即插队出手(预支 AP 归零)。
   /// 仅当该技能 ready（存活 + 内力够 + CD 0）才下发，targetId=null 走 AI 默认选目标。
   ///
   /// 主线二 2.3:即放·真插队——立即出手(预支 AP 归零),不再走 pending+C5 快进路径。
@@ -848,11 +856,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     ref
         .read(battleProvider.notifier)
         .interveneNow(characterId, skill, targetId: targetId);
-    setState(() {}); // 清拖招态 + 反映出手
+    setState(() {}); // 反映出手
   }
 
   /// 批次 1.3:点击技能方块 → 弹简介浮层(直接读 [SkillDef] 活数据)。
-  /// 不下发命令(下发改走长按拖招);CD/内力不足态也可点开查看。
+  /// 不下发命令;CD/内力不足态也可点开查看。
   void _showSkillInfo(SkillDef skill) {
     PaperDialog.show<void>(
       context,
@@ -1195,7 +1203,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                     onKeyEvent: (node, event) {
                       if (event is KeyDownEvent &&
                           event.logicalKey == LogicalKeyboardKey.escape &&
-                          _pendingSkill != null) {
+                          _pendingActive) {
                         _clearPending();
                         return KeyEventResult.handled;
                       }
@@ -1204,70 +1212,83 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onTap: () {
-                        if (_pendingSkill != null) _clearPending();
+                        if (_pendingActive) _clearPending();
                       },
                       child: Column(
                         children: [
-                      if (widget.hint != null) _HintBanner(hint: widget.hint!),
-                      if (widget.cycleHint != null)
-                        _CycleHintBanner(hint: widget.cycleHint!),
-                      _Header(
-                        state: state,
-                        onToggleLog: () => setState(() => _logOpen = !_logOpen),
-                        onPause: _togglePause,
-                        isPaused: _isPaused,
-                        onSurrender: widget.onSurrender == null
-                            ? null
-                            : _confirmSurrender,
-                        // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
-                        onStepOnce: widget.startPaused ? _stepOnce : null,
-                      ),
-                      _DangerBar(state: state),
-                      Expanded(
-                        child: Stack(
-                          children: [
-                            _BattleField(
-                              state: state,
-                              attackControllers: _attackControllers,
-                              popups: _popups,
-                              animConfig: widget.animConfig,
-                              chargeMaxTicks: chargeMaxTicks,
-                              onPopupComplete: _removePopup,
-                              hitFlashControllers: _hitFlashControllers,
-                              hitFlashColors: _hitFlashColors,
-                              onEnemyTap: _onEnemyTap,
-                              pendingActive: _pendingSkill != null,
+                          if (widget.hint != null)
+                            _HintBanner(hint: widget.hint!),
+                          if (widget.cycleHint != null)
+                            _CycleHintBanner(hint: widget.cycleHint!),
+                          _Header(
+                            state: state,
+                            onToggleLog: () =>
+                                setState(() => _logOpen = !_logOpen),
+                            onPause: _togglePause,
+                            isPaused: _isPaused,
+                            onSurrender: widget.onSurrender == null
+                                ? null
+                                : _confirmSurrender,
+                            // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
+                            onStepOnce: widget.startPaused ? _stepOnce : null,
+                          ),
+                          _DangerBar(state: state),
+                          Expanded(
+                            child: Stack(
+                              children: [
+                                _BattleField(
+                                  state: state,
+                                  attackControllers: _attackControllers,
+                                  popups: _popups,
+                                  animConfig: widget.animConfig,
+                                  chargeMaxTicks: chargeMaxTicks,
+                                  onPopupComplete: _removePopup,
+                                  hitFlashControllers: _hitFlashControllers,
+                                  hitFlashColors: _hitFlashColors,
+                                  onEnemyTap: _onEnemyTap,
+                                  pendingActive: _pendingActive,
+                                ),
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    child: _ProjectileLayer(
+                                      trails: _activeTrails,
+                                    ),
+                                  ),
+                                ),
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    child: _EffectLayer(
+                                      effects: _activeEffects,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            Positioned.fill(
-                              child: IgnorePointer(
-                                child: _ProjectileLayer(trails: _activeTrails),
-                              ),
-                            ),
-                            Positioned.fill(
-                              child: IgnorePointer(
-                                child: _EffectLayer(effects: _activeEffects),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      _BattleReportStrip(
-                        state: state,
-                        onTap: () => setState(() => _logOpen = true),
-                      ),
-                      if (widget.allowPlayerIntervention)
-                        _CoopBurstPromptBar(state: state),
-                      _BottomBar(
-                        state: state,
-                        focusSlotIndex: _effectiveFocus(state),
-                        allowPlayerIntervention: widget.allowPlayerIntervention,
-                        onSelectFocus: _onSelectFocus,
-                        onShowSkillInfo: _showSkillInfo,
-                        onFastForward: _toggleFastForward,
-                        isFastForward: _isFastForward,
-                        onSkillTap: _onSkillTap,
-                      ),
-                    ],
+                          ),
+                          _BattleReportStrip(
+                            state: state,
+                            onTap: () => setState(() => _logOpen = true),
+                          ),
+                          if (widget.allowPlayerIntervention)
+                            _CoopBurstPromptBar(state: state),
+                          _BottomBar(
+                            state: state,
+                            focusSlotIndex: _effectiveFocus(state),
+                            allowPlayerIntervention:
+                                widget.allowPlayerIntervention,
+                            onSelectFocus: _onSelectFocus,
+                            onShowSkillInfo: _showSkillInfo,
+                            onFastForward: _toggleFastForward,
+                            isFastForward: _isFastForward,
+                            onSkillTap: _onSkillTap,
+                            pendingCharacterId:
+                                _pendingCharId ??
+                                widget.previewPendingCharacterId,
+                            pendingSkillId:
+                                _pendingSkill?.id ??
+                                widget.previewPendingSkillId,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -1287,10 +1308,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             // H3 暂停遮罩:战斗未结束且暂停时,轻触任意处或「继续」恢复。
             // 验收路由 startPaused 不挂全屏遮罩——否则会拦截顶栏「单步」点击
             // 并误触发恢复;此模式靠顶栏暂停/继续 + 单步按钮操作。
-            // 待发态(_pendingSkill != null)的软暂停不挂遮罩——否则会拦截点敌头像
+            // 待发态(_pendingActive)的软暂停不挂遮罩——否则会拦截点敌头像
             // 选目标的 tap;待发态靠再点同一技能 / 空白点击 / ESC 取消。
             if (_isPaused &&
-                _pendingSkill == null &&
+                !_pendingActive &&
                 state.result == null &&
                 !widget.startPaused)
               Positioned.fill(child: _PauseOverlay(onResume: _togglePause)),
@@ -2095,6 +2116,9 @@ class _BottomBar extends StatelessWidget {
   final bool isFastForward;
   // 两段点选:点技能按钮(single → 进待发态 / aoe → 一键出手 / 待发态再点同一技能取消)。
   final void Function(int characterId, SkillDef skill) onSkillTap;
+  // 两段点选本地待发态:纯 presentation,不写 BattleState.pendingUltimates。
+  final int? pendingCharacterId;
+  final String? pendingSkillId;
 
   const _BottomBar({
     required this.state,
@@ -2105,6 +2129,8 @@ class _BottomBar extends StatelessWidget {
     required this.onFastForward,
     required this.isFastForward,
     required this.onSkillTap,
+    required this.pendingCharacterId,
+    required this.pendingSkillId,
   });
 
   /// 排序/分组秩：强力 0 → 破招 1 → 共鸣 2 → 大招 3（普攻 4，已被过滤）。
@@ -2126,9 +2152,13 @@ class _BottomBar extends StatelessWidget {
     final hasFocus =
         focusSlotIndex >= 0 && focusSlotIndex < state.leftTeam.length;
     final focus = hasFocus ? state.leftTeam[focusSlotIndex] : null;
-    final pending = focus == null
+    final domainPending = focus == null
         ? null
         : state.pendingUltimates[focus.characterId];
+    final localPendingForFocus =
+        focus != null && pendingCharacterId == focus.characterId
+        ? pendingSkillId
+        : null;
 
     final skills = <SkillDef>[
       if (focus != null)
@@ -2162,16 +2192,28 @@ class _BottomBar extends StatelessWidget {
                     child: Row(
                       children: [
                         for (final s in skills) ...[
-                          _SkillCommandButton(
-                            character: focus,
-                            skill: s,
-                            isPending: pending?.id == s.id,
-                            queuedAnother:
-                                pending != null && pending.id != s.id,
-                            highlight: enemyCharging && s.canInterrupt,
-                            allowPlayerIntervention: allowPlayerIntervention,
-                            onTap: () => onSkillTap(focus.characterId, s),
-                            onShowInfo: () => onShowSkillInfo(s),
+                          Builder(
+                            builder: (context) {
+                              final localPendingThis =
+                                  localPendingForFocus == s.id;
+                              final domainPendingThis =
+                                  domainPending?.id == s.id;
+                              return _SkillCommandButton(
+                                character: focus,
+                                skill: s,
+                                isPending:
+                                    localPendingThis || domainPendingThis,
+                                pendingTapEnabled: localPendingThis,
+                                queuedAnother:
+                                    domainPending != null &&
+                                    domainPending.id != s.id,
+                                highlight: enemyCharging && s.canInterrupt,
+                                allowPlayerIntervention:
+                                    allowPlayerIntervention,
+                                onTap: () => onSkillTap(focus.characterId, s),
+                                onShowInfo: () => onShowSkillInfo(s),
+                              );
+                            },
                           ),
                           const SizedBox(width: 10),
                         ],
@@ -2294,6 +2336,7 @@ class _SkillCommandButton extends StatelessWidget {
   final BattleCharacter character;
   final SkillDef skill;
   final bool isPending;
+  final bool pendingTapEnabled;
   final bool queuedAnother;
   final bool highlight;
   final bool allowPlayerIntervention;
@@ -2305,6 +2348,7 @@ class _SkillCommandButton extends StatelessWidget {
     required this.character,
     required this.skill,
     required this.isPending,
+    required this.pendingTapEnabled,
     required this.queuedAnother,
     required this.highlight,
     required this.allowPlayerIntervention,
@@ -2327,7 +2371,10 @@ class _SkillCommandButton extends StatelessWidget {
     final cd = character.skillCooldowns[skill.id] ?? 0;
     final ready = _BattleScreenState._isSkillReady(character, skill);
     final enabled =
-        ready && !isPending && !queuedAnother && allowPlayerIntervention;
+        ready &&
+        (!isPending || pendingTapEnabled) &&
+        !queuedAnother &&
+        allowPlayerIntervention;
 
     final Color bgColor;
     final baseSchoolColor = WuxiaColors.schoolColor(character.school);
@@ -2432,7 +2479,8 @@ class _SkillCommandButton extends StatelessWidget {
         ? UiStrings.skillBadgeAoe
         : UiStrings.skillBadgeSingle;
     final badgeColor = skill.targetType == TargetType.aoe
-        ? WuxiaColors.resultHighlight // 群体用暖金色，醒目提示一键释放
+        ? WuxiaColors
+              .resultHighlight // 群体用暖金色，醒目提示一键释放
         : WuxiaColors.textMuted.withValues(alpha: 0.70); // 单体用静默灰，提示需选目标
     final buttonWithBadge = Stack(
       clipBehavior: Clip.none,

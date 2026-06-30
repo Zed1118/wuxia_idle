@@ -195,57 +195,145 @@ class BattleScenarioData {
     // Codex 验收发现 battle_scene 路由用测试角色无 iconPath 全落首字 fallback)。
     return (
       [
-        c(21, '刚猛甲', TechniqueSchool.gangMeng, 0, 0,
-            'assets/enemies/thug_a.png'),
-        c(22, '灵巧乙', TechniqueSchool.lingQiao, 0, 1,
-            'assets/enemies/ruffian_a.png'),
-        c(23, '阴柔丙', TechniqueSchool.yinRou, 0, 2,
-            'assets/enemies/bandit_b.png'),
+        c(
+          21,
+          '刚猛甲',
+          TechniqueSchool.gangMeng,
+          0,
+          0,
+          'assets/enemies/thug_a.png',
+        ),
+        c(
+          22,
+          '灵巧乙',
+          TechniqueSchool.lingQiao,
+          0,
+          1,
+          'assets/enemies/ruffian_a.png',
+        ),
+        c(
+          23,
+          '阴柔丙',
+          TechniqueSchool.yinRou,
+          0,
+          2,
+          'assets/enemies/bandit_b.png',
+        ),
       ],
       [
-        c(31, '阴柔甲', TechniqueSchool.yinRou, 1, 0,
-            'assets/enemies/you_hufa.png'),
-        c(32, '刚猛乙', TechniqueSchool.gangMeng, 1, 1,
-            'assets/enemies/shidi_b.png'),
-        c(33, '灵巧丙', TechniqueSchool.lingQiao, 1, 2,
-            'assets/enemies/xiliangboss.png'),
+        c(
+          31,
+          '阴柔甲',
+          TechniqueSchool.yinRou,
+          1,
+          0,
+          'assets/enemies/you_hufa.png',
+        ),
+        c(
+          32,
+          '刚猛乙',
+          TechniqueSchool.gangMeng,
+          1,
+          1,
+          'assets/enemies/shidi_b.png',
+        ),
+        c(
+          33,
+          '灵巧丙',
+          TechniqueSchool.lingQiao,
+          1,
+          2,
+          'assets/enemies/xiliangboss.png',
+        ),
       ],
     );
   }
 
   /// B2 Boss 边框验收:同 scenarioB 但右队首位标 Boss。
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioBoss() {
-    BattleCharacter c(int id, String name, TechniqueSchool school, int side,
-            int slot,
-            {bool isBoss = false, String? icon}) =>
-        _char(
-          id: id, name: name,
-          tier: RealmTier.yiLiu, layer: RealmLayer.qiMeng,
-          school: school, maxHp: 12000, maxIf: 4000, speed: 200,
-          critRate: 0.05, eqAtk: 550, cultivation: CultivationLayer.xiaoCheng,
-          skills: [
-            _normal('boss_normal_$id', '普攻'),
-            _power('boss_power_$id', '重击', pm: 1200, cost: 1000, cd: 3),
-          ],
-          teamSide: side, slotIndex: slot, isBoss: isBoss, iconPath: icon,
-        );
+    BattleCharacter c(
+      int id,
+      String name,
+      TechniqueSchool school,
+      int side,
+      int slot, {
+      bool isBoss = false,
+      String? icon,
+    }) => _char(
+      id: id,
+      name: name,
+      tier: RealmTier.yiLiu,
+      layer: RealmLayer.qiMeng,
+      school: school,
+      maxHp: 12000,
+      maxIf: 4000,
+      speed: 200,
+      critRate: 0.05,
+      eqAtk: 550,
+      cultivation: CultivationLayer.xiaoCheng,
+      skills: [
+        _normal('boss_normal_$id', '普攻'),
+        _power('boss_power_$id', '重击', pm: 1200, cost: 1000, cd: 3),
+      ],
+      teamSide: side,
+      slotIndex: slot,
+      isBoss: isBoss,
+      iconPath: icon,
+    );
     // Boss 位注入真实 boss 立绘(xiliangboss)验金边;其余真敌人图。
     return (
       [
-        c(21, '刚猛甲', TechniqueSchool.gangMeng, 0, 0,
-            icon: 'assets/enemies/thug_a.png'),
-        c(22, '灵巧乙', TechniqueSchool.lingQiao, 0, 1,
-            icon: 'assets/enemies/ruffian_a.png'),
-        c(23, '阴柔丙', TechniqueSchool.yinRou, 0, 2,
-            icon: 'assets/enemies/bandit_b.png'),
+        c(
+          21,
+          '刚猛甲',
+          TechniqueSchool.gangMeng,
+          0,
+          0,
+          icon: 'assets/enemies/thug_a.png',
+        ),
+        c(
+          22,
+          '灵巧乙',
+          TechniqueSchool.lingQiao,
+          0,
+          1,
+          icon: 'assets/enemies/ruffian_a.png',
+        ),
+        c(
+          23,
+          '阴柔丙',
+          TechniqueSchool.yinRou,
+          0,
+          2,
+          icon: 'assets/enemies/bandit_b.png',
+        ),
       ],
       [
-        c(31, '西凉霸主', TechniqueSchool.yinRou, 1, 0,
-            isBoss: true, icon: 'assets/enemies/xiliangboss.png'),
-        c(32, '刚猛乙', TechniqueSchool.gangMeng, 1, 1,
-            icon: 'assets/enemies/you_hufa.png'),
-        c(33, '灵巧丙', TechniqueSchool.lingQiao, 1, 2,
-            icon: 'assets/enemies/shidi_b.png'),
+        c(
+          31,
+          '西凉霸主',
+          TechniqueSchool.yinRou,
+          1,
+          0,
+          isBoss: true,
+          icon: 'assets/enemies/xiliangboss.png',
+        ),
+        c(
+          32,
+          '刚猛乙',
+          TechniqueSchool.gangMeng,
+          1,
+          1,
+          icon: 'assets/enemies/you_hufa.png',
+        ),
+        c(
+          33,
+          '灵巧丙',
+          TechniqueSchool.lingQiao,
+          1,
+          2,
+          icon: 'assets/enemies/shidi_b.png',
+        ),
       ],
     );
   }
@@ -261,23 +349,27 @@ class BattleScenarioData {
     final poShi = repo.getSkill('skill_po_shi'); // 破势(玩家破招技)
 
     // ── 左队(玩家):主控带破势 + 基础招,内力满、破势不在 CD → 破招按钮 ready+高亮。
-    BattleCharacter player(int id, String name, int slot, List<SkillDef> skills) =>
-        _char(
-          id: id,
-          name: name,
-          tier: RealmTier.sanLiu,
-          layer: RealmLayer.yuanShu,
-          school: TechniqueSchool.gangMeng,
-          maxHp: 8000,
-          maxIf: 600, // ≥ 主控全技能 cost(破势120/强力150/共鸣200/大招250)→ 全 ready
-          speed: 180,
-          critRate: 0.05,
-          eqAtk: 400,
-          cultivation: CultivationLayer.daCheng,
-          skills: skills,
-          teamSide: 0,
-          slotIndex: slot,
-        );
+    BattleCharacter player(
+      int id,
+      String name,
+      int slot,
+      List<SkillDef> skills,
+    ) => _char(
+      id: id,
+      name: name,
+      tier: RealmTier.sanLiu,
+      layer: RealmLayer.yuanShu,
+      school: TechniqueSchool.gangMeng,
+      maxHp: 8000,
+      maxIf: 600, // ≥ 主控全技能 cost(破势120/强力150/共鸣200/大招250)→ 全 ready
+      speed: 180,
+      critRate: 0.05,
+      eqAtk: 400,
+      cultivation: CultivationLayer.daCheng,
+      skills: skills,
+      teamSide: 0,
+      slotIndex: slot,
+    );
 
     final left = [
       player(1, '主控', 0, [
@@ -304,29 +396,30 @@ class BattleScenarioData {
     ];
 
     // ── 右队(敌):首位青衫剑客 seed 成「正蓄青锋绝」态;另 2 小怪普通。
-    final qingshan = _char(
-      id: 11,
-      name: '青衫剑客',
-      tier: RealmTier.sanLiu,
-      layer: RealmLayer.yuanShu,
-      school: TechniqueSchool.lingQiao,
-      maxHp: 9500,
-      maxIf: 4000,
-      speed: 175,
-      critRate: 0.05,
-      eqAtk: 1150,
-      cultivation: CultivationLayer.daCheng,
-      skills: [_normal('cb_qs_normal', '青锋斩'), qingfeng],
-      teamSide: 1,
-      slotIndex: 0,
-      isBoss: true,
-      iconPath: 'assets/enemies/qingshan_main.png',
-    ).copyWith(
-      // 关键:seed 成已蓄力 → BattleScreen 显蓄力条 + 底栏破招高亮。
-      chargeSkillId: 'skill_qingshan_qingfeng',
-      chargingSkill: qingfeng,
-      chargeTicksRemaining: 2,
-    );
+    final qingshan =
+        _char(
+          id: 11,
+          name: '青衫剑客',
+          tier: RealmTier.sanLiu,
+          layer: RealmLayer.yuanShu,
+          school: TechniqueSchool.lingQiao,
+          maxHp: 9500,
+          maxIf: 4000,
+          speed: 175,
+          critRate: 0.05,
+          eqAtk: 1150,
+          cultivation: CultivationLayer.daCheng,
+          skills: [_normal('cb_qs_normal', '青锋斩'), qingfeng],
+          teamSide: 1,
+          slotIndex: 0,
+          isBoss: true,
+          iconPath: 'assets/enemies/qingshan_main.png',
+        ).copyWith(
+          // 关键:seed 成已蓄力 → BattleScreen 显蓄力条 + 底栏破招高亮。
+          chargeSkillId: 'skill_qingshan_qingfeng',
+          chargingSkill: qingfeng,
+          chargeTicksRemaining: 2,
+        );
 
     BattleCharacter mob(int id, String name, int slot, String icon) => _char(
       id: id,
@@ -355,18 +448,18 @@ class BattleScenarioData {
     return (left, right);
   }
 
-  /// 拖招交互真玩/验收专用(battle_tap_live 路由)。
+  /// 两段点选交互真玩/验收专用(battle_tap_live / battle_tap_preview 路由)。
   ///
   /// 配合 ScenarioLauncher(allowPlayerIntervention:true, autoStart:true):战斗自动
-  /// 播放、拖招干预层已挂。**给足时间拖**是核心:
+  /// 播放、点选干预层已挂。**给足时间操作**是核心:
   ///   - 主控**只带普攻 + 两个大招(ultimate)**,不带 powerSkill —— AI `_pickSkill`
   ///     会自动连放 ready 的 powerSkill 造成瞬间 burst;ultimate **只走 pending
   ///     手动触发**(拖/点才放),所以自动战斗只剩弱普攻 chip,战斗拖得很长。
   ///   - 敌人**超高血(40000) + 低攻低速** → 普攻 chip 啃半天不死、也不秒玩家。
-  /// 主控 single 大招(拖到敌头像指定目标)+ aoe 大招(长按拖下发，松手即对全体触发)演示两种交互。
+  /// 主控 single 大招(点敌头像指定目标)+ aoe 大招(点技能即对全体触发)演示两种交互。
   static (List<BattleCharacter>, List<BattleCharacter>) scenarioDragLive() {
     // 主控:IF 够放几次大招;eqAtk 低 → 普攻只是弱 chip(不 burst)。
-    // school 默认刚猛(主控保持刚猛,不影响 single 拖招的震伤观感);
+    // school 默认刚猛(主控保持刚猛,不影响 single 指定目标的震伤观感);
     // 弟子甲改灵巧 → 敌方阴柔命中其头像即触发内伤,供「内伤」标签 hover 复验。
     BattleCharacter player(
       int id,
@@ -406,7 +499,7 @@ class BattleScenarioData {
           requiresManualTrigger: true,
           visualEffect: '',
         ),
-        // aoe 大招:长按拖下发，松手即对全体触发(targetType.aoe)。
+        // aoe 大招:点技能即对全体触发(targetType.aoe)。
         const SkillDef(
           id: 'dl_aoe_1',
           name: '万钧裂空',
@@ -420,34 +513,31 @@ class BattleScenarioData {
           targetType: TargetType.aoe,
         ),
       ]),
-      player(
-        2,
-        '弟子甲',
-        1,
-        [_normal('dl_normal_2', '基础招')],
-        school: TechniqueSchool.lingQiao,
-      ),
+      player(2, '弟子甲', 1, [
+        _normal('dl_normal_2', '基础招'),
+      ], school: TechniqueSchool.lingQiao),
       player(3, '弟子乙', 2, [_normal('dl_normal_3', '基础招')]),
     ];
 
-    // 敌人:超高血(久撑) + 低攻击/低速(不秒玩家)→ 战斗拖很长,从容拖招。
-    BattleCharacter tankMob(int id, String name, int slot, String icon) => _char(
-      id: id,
-      name: name,
-      tier: RealmTier.erLiu,
-      layer: RealmLayer.yuanShu,
-      school: TechniqueSchool.yinRou,
-      maxHp: 40000,
-      maxIf: 300,
-      speed: 110,
-      critRate: 0.05,
-      eqAtk: 150,
-      cultivation: CultivationLayer.daCheng,
-      skills: [_normal('dl_mob_$id', '缠斗')],
-      teamSide: 1,
-      slotIndex: slot,
-      iconPath: icon,
-    );
+    // 敌人:超高血(久撑) + 低攻击/低速(不秒玩家)→ 战斗拖很长,从容点选。
+    BattleCharacter tankMob(int id, String name, int slot, String icon) =>
+        _char(
+          id: id,
+          name: name,
+          tier: RealmTier.erLiu,
+          layer: RealmLayer.yuanShu,
+          school: TechniqueSchool.yinRou,
+          maxHp: 40000,
+          maxIf: 300,
+          speed: 110,
+          critRate: 0.05,
+          eqAtk: 150,
+          cultivation: CultivationLayer.daCheng,
+          skills: [_normal('dl_mob_$id', '缠斗')],
+          teamSide: 1,
+          slotIndex: slot,
+          iconPath: icon,
+        );
 
     final right = [
       tankMob(11, '铁布衫客', 0, 'assets/enemies/qingshan_main.png'),
@@ -652,6 +742,10 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   /// true 时挂干预层(技能按钮点选 + 引导高亮),供 battle_tap_live 路由真玩/Codex 验证。
   final bool allowPlayerIntervention;
 
+  /// 静态验收预览专用:纯 presentation 初始待发态,不写 BattleState。
+  final int? previewPendingCharacterId;
+  final String? previewPendingSkillId;
+
   /// 透传给 BattleScreen.startPaused(默认 false 现有用法不变);true 时起手暂停,
   /// 战斗冻结 seed 初态 + 顶栏出「单步」键供验收者逐步推进操作点选。
   final bool startPaused;
@@ -663,6 +757,8 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
     this.autoStart = true,
     this.seed,
     this.allowPlayerIntervention = false,
+    this.previewPendingCharacterId,
+    this.previewPendingSkillId,
     this.startPaused = false,
     super.key,
   });
@@ -690,6 +786,8 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
     sceneBackgroundPath: widget.sceneBackgroundPath,
     autoStart: widget.autoStart,
     allowPlayerIntervention: widget.allowPlayerIntervention,
+    previewPendingCharacterId: widget.previewPendingCharacterId,
+    previewPendingSkillId: widget.previewPendingSkillId,
     startPaused: widget.startPaused,
     onBattleEnd: () => Navigator.of(context).pop(),
   );

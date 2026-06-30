@@ -96,6 +96,13 @@ void main() {
     test('批一英雄镜头 overlay 路由 parse', () {
       expect(parseVisualRoute('hero_camera'), VisualRoute.heroCamera);
     });
+    test('两段点选双路由 parse', () {
+      expect(parseVisualRoute('battle_tap_live'), VisualRoute.battleTapLive);
+      expect(
+        parseVisualRoute('battle_tap_preview'),
+        VisualRoute.battleTapPreview,
+      );
+    });
     test('P4 战绩册路由 parse', () {
       expect(parseVisualRoute('battle_record'), VisualRoute.battleRecord);
       expect(
@@ -128,10 +135,7 @@ void main() {
       );
     });
     test('动态态 dedicated 路由 parse(确认弹窗 / 使用弹窗 / 未解锁 snackbar)', () {
-      expect(
-        parseVisualRoute('shop_buy_confirm'),
-        VisualRoute.shopBuyConfirm,
-      );
+      expect(parseVisualRoute('shop_buy_confirm'), VisualRoute.shopBuyConfirm);
       expect(
         parseVisualRoute('item_use_confirm_dialog'),
         VisualRoute.itemUseConfirmDialog,
@@ -186,11 +190,24 @@ void main() {
       expect(
         launcher.allowPlayerIntervention,
         isTrue,
-        reason: '拖招验收路由必须开干预,否则技能按钮不挂拖手势(本次 FAIL 根因)',
+        reason: '两段点选验收路由必须开干预,否则技能按钮不接收点选',
       );
-      expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,拖招随时干预');
+      expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,点选随时干预');
     });
 
+    test('battle_tap_preview → 冻结态 + 纯 presentation 待发预览', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleTapPreview,
+        IsarSetup.instance,
+      );
+      expect(target, isA<ScenarioLauncher>());
+      final launcher = target as ScenarioLauncher;
+      expect(launcher.allowPlayerIntervention, isTrue);
+      expect(launcher.autoStart, isFalse, reason: 'preview 必须冻结在预置态');
+      expect(launcher.startPaused, isTrue);
+      expect(launcher.previewPendingCharacterId, 1);
+      expect(launcher.previewPendingSkillId, 'dl_single_1');
+    });
   });
 
   // 批一英雄镜头 preview：真数据(祖师 + 真 stage_01_05 Boss 名)接线回归。

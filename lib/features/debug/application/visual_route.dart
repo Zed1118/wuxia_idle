@@ -118,6 +118,10 @@ enum VisualRoute {
     'battle_tap_live',
     '两段点选交互真玩/验收(真战斗·已开干预·高血耐久敌久撑 → 点 single 强力技进待发态(软暂停)点敌头像出手 / 点 aoe 大招一键即对全体触发)',
   ),
+  battleTapPreview(
+    'battle_tap_preview',
+    '两段点选交互静态预览(冻结态·single 技能待发高亮 + 敌头像可选标记 + 单体/群体角标)',
+  ),
   offlineRecapPassive(
     'offline_recap_passive',
     'M2 离线被动归来卡静态验收(无 active 闭关·涓流入库告知卡:水墨 PaperPanel + 离线时长/磨剑石/经验 + 仅「知道了」按钮,无领取按钮守 §5.1)',

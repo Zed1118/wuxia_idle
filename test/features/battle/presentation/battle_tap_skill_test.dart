@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 /// 战斗交互重做：两段点选 tap 释放 widget 测试。
 ///
@@ -133,8 +134,7 @@ void main() {
       expect(notifier.lastInterveneTarget, isNull);
     });
 
-    testWidgets('点 single 技能按钮进待发态(不出手) → 点敌头像出手指向该敌',
-        (tester) async {
+    testWidgets('点 single 技能按钮进待发态(不出手) → 点敌头像出手指向该敌', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
@@ -148,6 +148,18 @@ void main() {
       await tester.pump();
       expect(notifier.lastInterveneSkill?.id, 'single1');
       expect(notifier.lastInterveneTarget, 11);
+    });
+
+    testWidgets('点 single 技能按钮 → 按钮显示待发视觉但不写 domain pending', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      expect(find.text(UiStrings.skillPendingStamp), findsOneWidget);
+      expect(notifier.state.pendingUltimates[1], isNull);
+      expect(notifier.interveneCount, 0);
     });
 
     testWidgets('非待发态点敌头像不出手', (tester) async {
@@ -196,6 +208,46 @@ void main() {
       await tester.tap(enemy);
       await tester.pump();
       expect(notifier.interveneCount, 0, reason: '已取消');
+    });
+
+    testWidgets('待发态空白点击 → 取消(点敌不出手)', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      expect(find.text(UiStrings.skillPendingStamp), findsOneWidget);
+
+      await tester.tapAt(const Offset(640, 280));
+      await tester.pump();
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+
+      final enemy = find.byWidgetPredicate(
+        (w) => w is CharacterAvatar && w.character.characterId == 11,
+      );
+      await tester.tap(enemy);
+      await tester.pump();
+      expect(notifier.interveneCount, 0, reason: '空白点击已取消待发');
+    });
+
+    testWidgets('待发态点暂停键 → 取消(点敌不出手)', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      expect(find.text(UiStrings.skillPendingStamp), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('battle_pause_toggle')));
+      await tester.pump();
+      expect(find.text(UiStrings.skillPendingStamp), findsNothing);
+
+      final enemy = find.byWidgetPredicate(
+        (w) => w is CharacterAvatar && w.character.characterId == 11,
+      );
+      await tester.tap(enemy);
+      await tester.pump();
+      expect(notifier.interveneCount, 0, reason: '暂停键已取消待发');
     });
 
     testWidgets('待发态 ESC 键取消(点敌不出手)', (tester) async {
