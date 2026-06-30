@@ -124,6 +124,13 @@ class UiStrings {
   // 技能按钮角标：区分单体 / 群体目标类型。
   static const String skillBadgeSingle = '单';
   static const String skillBadgeAoe = '群';
+  // Debug visual routes:两段点选验收提示。
+  static const String battleTapLiveHint =
+      '两段点选技能下发:单体技先点技能进入待发,再点敌头像指定目标 · 群体技点技能即对全体触发 · 已暂停,点单步推进或继续自动';
+  static const String battleTapPreviewHint =
+      '两段点选预览:单体技能已待发,敌头像为可选目标,技能角标区分单体/群体';
+  static const String battleBossPhaseHint =
+      '已暂停。点顶栏「单步」逐拍推进:刚猛打 Boss 出「会心」(弱点×1.25)、灵巧伤害偏低(抗性×0.75)、Boss 半血触发「背水一击」转阶段 + 蓄力反扑。也可点继续自动 / 点选技能干预';
   // 浮层关闭按钮。
   static const String skillInfoClose = '知道了';
   // 角色头像内力条标签前缀（HpBar labelPrefix），如「内 100 / 100」。
