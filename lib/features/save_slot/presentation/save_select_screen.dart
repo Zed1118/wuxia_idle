@@ -198,6 +198,7 @@ class SaveSelectScreen extends ConsumerWidget {
               ),
               PlaqueButton(
                 label: action,
+                destructive: true,
                 disabled: !canDelete,
                 onTap: canDelete ? () => Navigator.pop(c, true) : null,
               ),

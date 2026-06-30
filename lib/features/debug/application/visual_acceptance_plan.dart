@@ -129,6 +129,11 @@ List<String> _checksFor(VisualRoute route) {
     ],
     VisualRoute.battleDefeat => const ['败北题字与战报可读', '破招提示存在', '背景压暗后内容层级清楚'],
     VisualRoute.shop => const ['货币顶栏可读', '可买/不可买态清楚', '货架按钮无文字溢出'],
+    VisualRoute.resourceOverview => const [
+      '五类资源分组可扫读',
+      '来源/用途/近期去向文字无溢出',
+      '库存数量与折叠来源可辨认',
+    ],
     VisualRoute.seclusionMapList => const [
       '五处闭关地图可扫读',
       '状态 chip 不挤压',

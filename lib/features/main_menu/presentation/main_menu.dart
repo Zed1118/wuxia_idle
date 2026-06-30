@@ -67,6 +67,10 @@ import '../../shop/presentation/shop_screen.dart';
 import '../../zangjuange/presentation/zangjuange_screen.dart';
 import 'main_menu_status_summary.dart';
 
+const double _mainMenuContentMaxWidth = 1088;
+const double _entryColumnGap = 16;
+const double _entryRowGap = 16;
+
 /// 入口列表布局成 2 列(Phase A 出版美术 · 解菜单纵向过长)。
 /// 奇数末项左对齐 + 右侧空格;同行用 IntrinsicHeight+stretch 等高。
 List<Widget> _twoColumn(List<Widget> items) {
@@ -79,13 +83,13 @@ List<Widget> _twoColumn(List<Widget> items) {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(child: items[i]),
-            const SizedBox(width: 14),
+            const SizedBox(width: _entryColumnGap),
             Expanded(child: right ?? const SizedBox.shrink()),
           ],
         ),
       ),
     );
-    if (i + 2 < items.length) rows.add(const SizedBox(height: 14));
+    if (i + 2 < items.length) rows.add(const SizedBox(height: _entryRowGap));
   }
   return rows;
 }
@@ -481,11 +485,14 @@ class MainMenu extends ConsumerWidget {
             SafeArea(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1160),
+                  key: const ValueKey('main-menu-content'),
+                  constraints: const BoxConstraints(
+                    maxWidth: _mainMenuContentMaxWidth,
+                  ),
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(
                       vertical: 32,
-                      horizontal: 16,
+                      horizontal: 24,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -761,22 +768,20 @@ class _MenuSectionsLayout extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _MenuSection(
+              title: UiStrings.mainMenuGroupJourney,
+              subtitle: UiStrings.mainMenuGroupJourneyHint,
+              icon: Icons.explore_outlined,
+              items: journeyItems,
+              twoColumn: true,
+              featured: true,
+            ),
+            const SizedBox(height: 18),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  flex: 5,
-                  child: _MenuSection(
-                    title: UiStrings.mainMenuGroupJourney,
-                    subtitle: UiStrings.mainMenuGroupJourneyHint,
-                    icon: Icons.explore_outlined,
-                    items: journeyItems,
-                    featured: true,
-                  ),
-                ),
-                const SizedBox(width: 18),
-                Expanded(
-                  flex: 7,
+                  flex: 6,
                   child: _MenuSection(
                     title: UiStrings.mainMenuGroupGrowth,
                     subtitle: UiStrings.mainMenuGroupGrowthHint,
@@ -785,49 +790,60 @@ class _MenuSectionsLayout extends StatelessWidget {
                     twoColumn: true,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+                const SizedBox(width: 18),
                 Expanded(
-                  flex: 7,
+                  flex: 5,
                   child: _MenuSection(
                     title: UiStrings.mainMenuGroupArchive,
                     subtitle: UiStrings.mainMenuGroupArchiveHint,
                     icon: Icons.article_outlined,
                     items: archiveItems,
-                    twoColumn: true,
-                  ),
-                ),
-                const SizedBox(width: 18),
-                Expanded(
-                  flex: 5,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _MenuSection(
-                        title: UiStrings.mainMenuGroupSettings,
-                        subtitle: UiStrings.mainMenuGroupSettingsHint,
-                        icon: Icons.tune_outlined,
-                        items: settingsItems,
-                      ),
-                      if (debugItems.isNotEmpty) ...[
-                        const SizedBox(height: 18),
-                        _MenuSection(
-                          title: UiStrings.mainMenuGroupDebug,
-                          subtitle: UiStrings.mainMenuGroupDebugHint,
-                          icon: Icons.bug_report_outlined,
-                          items: debugItems,
-                          twoColumn: true,
-                        ),
-                      ],
-                    ],
+                    twoColumn: false,
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 18),
+            if (debugItems.isEmpty)
+              Align(
+                alignment: Alignment.centerRight,
+                child: SizedBox(
+                  width: 420,
+                  child: _MenuSection(
+                    title: UiStrings.mainMenuGroupSettings,
+                    subtitle: UiStrings.mainMenuGroupSettingsHint,
+                    icon: Icons.tune_outlined,
+                    items: settingsItems,
+                    twoColumn: false,
+                  ),
+                ),
+              )
+            else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _MenuSection(
+                      title: UiStrings.mainMenuGroupSettings,
+                      subtitle: UiStrings.mainMenuGroupSettingsHint,
+                      icon: Icons.tune_outlined,
+                      items: settingsItems,
+                      twoColumn: false,
+                    ),
+                  ),
+                  const SizedBox(width: 18),
+                  Expanded(
+                    flex: 2,
+                    child: _MenuSection(
+                      title: UiStrings.mainMenuGroupDebug,
+                      subtitle: UiStrings.mainMenuGroupDebugHint,
+                      icon: Icons.bug_report_outlined,
+                      items: debugItems,
+                      twoColumn: true,
+                    ),
+                  ),
+                ],
+              ),
           ],
         );
       },

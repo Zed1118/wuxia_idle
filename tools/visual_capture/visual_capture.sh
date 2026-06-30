@@ -165,6 +165,25 @@ end tell
 OSA
 }
 
+terminate_visual_app() {
+  osascript <<OSA >/dev/null 2>&1 || true
+tell application "System Events"
+  if exists application process "$APP_PROCESS_NAME" then
+    tell application "$APP_PROCESS_NAME" to quit
+  end if
+end tell
+OSA
+  local elapsed=0
+  while [[ "$elapsed" -lt 5 ]]; do
+    if ! pgrep -x "$APP_PROCESS_NAME" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+  pkill -x "$APP_PROCESS_NAME" >/dev/null 2>&1 || true
+}
+
 wait_for_route_ready() {
   local route="$1"
   local log="$2"
@@ -209,6 +228,8 @@ run_capture() {
     printf '[dry-run] VISUAL_WINDOW_W=%s VISUAL_WINDOW_H=%s; window-id capture %s\n' "$width" "$height" "$png"
     return
   fi
+
+  terminate_visual_app
 
   VISUAL_WINDOW_W="$width" VISUAL_WINDOW_H="$height" \
     "${cmd[@]}" >"$log" 2>&1 < /dev/null &

@@ -7,6 +7,7 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/portrait_frame.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../ascension/application/ascend_service_providers.dart';
@@ -84,10 +85,7 @@ class _Body extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: Text(
-              UiStrings.lineageCodexProgress(
-                generations.length,
-                totalMembers,
-              ),
+              UiStrings.lineageCodexProgress(generations.length, totalMembers),
               style: const TextStyle(
                 color: WuxiaColors.textMuted,
                 fontSize: 13,
@@ -99,10 +97,7 @@ class _Body extends StatelessWidget {
           else
             for (var i = 0; i < generations.length; i++) ...[
               if (i > 0) const SizedBox(height: 16),
-              _GenerationSection(
-                generation: generations[i],
-                genIndex: i + 1,
-              ),
+              _GenerationSection(generation: generations[i], genIndex: i + 1),
             ],
           const SizedBox(height: 16),
           const _AscensionSection(),
@@ -324,23 +319,12 @@ class _CharacterChip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          if (portraitPath == null)
-            Container(width: 4, height: 28, color: schoolColor)
-          else
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                border: Border.all(color: schoolColor, width: 1),
-                color: WuxiaColors.avatarFill,
-              ),
-              child: WuxiaImage(
-                portraitPath!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) =>
-                    Container(color: WuxiaColors.avatarFill),
-              ),
-            ),
+          PortraitFrame(
+            portraitPath: portraitPath,
+            size: 72,
+            borderColor: schoolColor,
+            placeholderText: character.name,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

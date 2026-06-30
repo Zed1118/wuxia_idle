@@ -56,6 +56,7 @@ Future<void> showStageVictoryDialog({
     builder: (ctx) => Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 620),
         child: PaperPanel(
@@ -74,6 +75,8 @@ Future<void> showStageVictoryDialog({
                       children: [
                         Text(
                           '${stage.name} · ${UiStrings.stageVictoryTitle}',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: WuxiaUi.ink,
                             fontSize: 18,
@@ -122,14 +125,25 @@ Future<void> showStageVictoryDialog({
                 ),
               ),
               const SizedBox(height: 14),
-              Align(
-                alignment: Alignment.centerRight,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 112),
-                  child: PlaqueButton(
-                    label: UiStrings.stageVictoryConfirm,
-                    primary: true,
-                    onTap: () => Navigator.of(ctx).pop(),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: WuxiaUi.ink.withValues(alpha: 0.16)),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minWidth: 112),
+                      child: PlaqueButton(
+                        label: UiStrings.stageVictoryConfirm,
+                        primary: true,
+                        autofocus: true,
+                        onTap: () => Navigator.of(ctx).pop(),
+                      ),
+                    ),
                   ),
                 ),
               ),

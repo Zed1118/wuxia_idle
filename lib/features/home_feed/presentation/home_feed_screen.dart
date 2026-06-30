@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,12 +7,17 @@ import '../../../core/domain/game_event.dart';
 import '../../../data/isar_provider.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../seclusion/presentation/offline_recap_gate.dart';
 import '../../sect/application/sect_providers.dart';
 import '../application/home_feed_providers.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
+
+const double _homeFeedContentMaxWidth = 760;
+const double _homeFeedActionMaxWidth = 420;
 
 /// "昨晚发生的事"上线第一屏(GDD §9.2 / P1 #42 Phase 3)。
 ///
@@ -110,16 +117,20 @@ class _EmptyHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(32),
-        child: Text(
-          UiStrings.homeFeedEmptyHint,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: WuxiaColors.textMuted,
-            fontSize: 16,
-            height: 1.6,
+    return Center(
+      child: ConstrainedBox(
+        key: const ValueKey('home-feed-content'),
+        constraints: const BoxConstraints(maxWidth: _homeFeedContentMaxWidth),
+        child: const Padding(
+          padding: EdgeInsets.all(32),
+          child: Text(
+            UiStrings.homeFeedEmptyHint,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: WuxiaColors.textMuted,
+              fontSize: 16,
+              height: 1.6,
+            ),
           ),
         ),
       ),
@@ -135,12 +146,17 @@ class _FeedList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      itemCount: events.length,
-      separatorBuilder: (_, _) =>
-          const Divider(height: 24, color: WuxiaColors.border),
-      itemBuilder: (context, i) => _FeedItem(event: events[i], now: now),
+    return Center(
+      child: ConstrainedBox(
+        key: const ValueKey('home-feed-content'),
+        constraints: const BoxConstraints(maxWidth: _homeFeedContentMaxWidth),
+        child: ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          itemCount: events.length,
+          separatorBuilder: (_, _) => const SizedBox(height: 12),
+          itemBuilder: (context, i) => _FeedItem(event: events[i], now: now),
+        ),
+      ),
     );
   }
 }
@@ -153,44 +169,74 @@ class _FeedItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaColors.panel.withValues(alpha: 0.74),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: WuxiaColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x26000000),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 13, 16, 14),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(
-                event.title,
-                style: const TextStyle(
-                  color: WuxiaColors.resultHighlight,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  height: 1.4,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    event.title,
+                    style: const TextStyle(
+                      color: WuxiaColors.resultHighlight,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: WuxiaUi.ink.withValues(alpha: 0.22),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: WuxiaUi.paper.withValues(alpha: 0.14),
+                    ),
+                  ),
+                  child: Text(
+                    UiStrings.homeFeedRelativeTime(event.occurredAt, now),
+                    style: const TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
+            const SizedBox(height: 7),
             Text(
-              UiStrings.homeFeedRelativeTime(event.occurredAt, now),
+              event.summary,
               style: const TextStyle(
-                color: WuxiaColors.textMuted,
-                fontSize: 12,
+                color: WuxiaColors.textSecondary,
+                fontSize: 14,
+                height: 1.62,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 6),
-        Text(
-          event.summary,
-          style: const TextStyle(
-            color: WuxiaColors.textSecondary,
-            fontSize: 14,
-            height: 1.6,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -202,26 +248,27 @@ class _QuickClaimButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+    return DecoratedBox(
       decoration: const BoxDecoration(
+        color: WuxiaColors.panel,
         border: Border(top: BorderSide(color: WuxiaColors.border)),
       ),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: onTap,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: WuxiaColors.resultHighlight,
-            foregroundColor: WuxiaColors.background,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: _homeFeedActionMaxWidth,
             ),
-          ),
-          child: const Text(
-            UiStrings.homeFeedQuickClaimLabel,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            child: SizedBox(
+              key: const ValueKey('home-feed-quick-claim-button'),
+              width: double.infinity,
+              child: PlaqueButton(
+                label: UiStrings.homeFeedQuickClaimLabel,
+                primary: true,
+                onTap: () => unawaited(onTap()),
+              ),
+            ),
           ),
         ),
       ),
