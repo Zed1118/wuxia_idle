@@ -65,26 +65,40 @@ class ChapterListScreen extends ConsumerWidget {
               for (final ch in _chapters)
                 ch: _statusFor(progress: progress, chapterIndex: ch),
             };
-            return ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              children: [
-                _ChapterRouteMap(
-                  statuses: chapterStatuses,
-                  stagesByChapter: {
-                    for (final ch in _chapters)
-                      ch: MainlineProgressService.availableStages(
-                        progress: progress,
-                        chapterIndex: ch,
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                return Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1160),
+                    child: ListView(
+                      padding: EdgeInsets.fromLTRB(
+                        constraints.maxWidth >= 900 ? 24 : 16,
+                        16,
+                        constraints.maxWidth >= 900 ? 24 : 16,
+                        20,
                       ),
-                  },
-                ),
-                const SizedBox(height: 12),
-                for (final ch in _chapters)
-                  _ChapterCardShell(
-                    chapterIndex: ch,
-                    status: chapterStatuses[ch]!,
+                      children: [
+                        _ChapterRouteMap(
+                          statuses: chapterStatuses,
+                          stagesByChapter: {
+                            for (final ch in _chapters)
+                              ch: MainlineProgressService.availableStages(
+                                progress: progress,
+                                chapterIndex: ch,
+                              ),
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _ChapterCardGrid(
+                          chapters: _chapters,
+                          statuses: chapterStatuses,
+                        ),
+                      ],
+                    ),
                   ),
-              ],
+                );
+              },
             );
           },
         ),
@@ -114,6 +128,39 @@ class ChapterListScreen extends ConsumerWidget {
 
 enum _ChapterStatus { locked, inProgress, cleared }
 
+class _ChapterCardGrid extends StatelessWidget {
+  const _ChapterCardGrid({required this.chapters, required this.statuses});
+
+  final List<int> chapters;
+  final Map<int, _ChapterStatus> statuses;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 900 ? 2 : 1;
+        final spacing = columns == 1 ? 0.0 : 14.0;
+        final cardWidth =
+            (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: 14,
+          children: [
+            for (final ch in chapters)
+              SizedBox(
+                width: cardWidth,
+                child: _ChapterCardShell(
+                  chapterIndex: ch,
+                  status: statuses[ch]!,
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _ChapterCardShell extends StatelessWidget {
   const _ChapterCardShell({required this.chapterIndex, required this.status});
 
@@ -122,31 +169,28 @@ class _ChapterCardShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: _ChapterCard(
-        chapterIndex: chapterIndex,
-        status: status,
-        onTap: status == _ChapterStatus.locked
-            ? null
-            : () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => StageListScreen(chapterIndex: chapterIndex),
+    return _ChapterCard(
+      chapterIndex: chapterIndex,
+      status: status,
+      onTap: status == _ChapterStatus.locked
+          ? null
+          : () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => StageListScreen(chapterIndex: chapterIndex),
+              ),
+            ),
+      // H2 C1:解锁章节加「卷」入口 → 翻篇过场(卷首/卷尾)。
+      // 卷尾仅 cleared 解锁。锁定章节不给入口。
+      onViewScroll: status == _ChapterStatus.locked
+          ? null
+          : () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => ChapterTransitionScreen(
+                  chapterIndex: chapterIndex,
+                  showEpilogue: status == _ChapterStatus.cleared,
                 ),
               ),
-        // H2 C1:解锁章节加「卷」入口 → 翻篇过场(卷首/卷尾)。
-        // 卷尾仅 cleared 解锁。锁定章节不给入口。
-        onViewScroll: status == _ChapterStatus.locked
-            ? null
-            : () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => ChapterTransitionScreen(
-                    chapterIndex: chapterIndex,
-                    showEpilogue: status == _ChapterStatus.cleared,
-                  ),
-                ),
-              ),
-      ),
+            ),
     );
   }
 }
@@ -207,7 +251,14 @@ class _ChapterRouteMap extends StatelessWidget {
                   ],
                 ],
               );
-              if (!compact) return route;
+              if (!compact) {
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1040),
+                    child: route,
+                  ),
+                );
+              }
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: route,
@@ -265,7 +316,7 @@ class _RouteChapterPanel extends StatelessWidget {
       duration: const Duration(milliseconds: 160),
       opacity: locked ? 0.58 : 1,
       child: Container(
-        height: 162,
+        height: 170,
         decoration: BoxDecoration(
           color: WuxiaUi.paper.withValues(alpha: locked ? 0.42 : 0.72),
           borderRadius: BorderRadius.circular(8),
@@ -286,7 +337,7 @@ class _RouteChapterPanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
-              height: 82,
+              height: 88,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
