@@ -46,125 +46,160 @@ class EquipmentCatalogDetailScreen extends StatelessWidget {
         onBack: () => Navigator.of(context).maybePop(),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
-          children: [
-            // ── 器物档案区（静态 def）─────────────────────────────────────
-            PaperPanel(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SectionHeader(
-                    UiStrings.weaponCodexDetailArchiveTitle,
-                  ),
-                  const SizedBox(height: 4),
-                  _DetailHero(imagePath: imagePath),
-                  const SizedBox(height: 12),
-                  _ArchiveRow(
-                    label: UiStrings.labelEquipmentTier,
-                    value: EnumL10n.equipmentTier(def.tier),
-                  ),
-                  _ArchiveRow(
-                    label: UiStrings.weaponCodexDetailSlot,
-                    value: EnumL10n.equipmentSlot(def.slot),
-                  ),
-                  _ArchiveRow(
-                    label: UiStrings.weaponCodexDetailAttackRange,
-                    value: UiStrings.weaponCodexDetailRange(
-                      def.baseAttackMin,
-                      def.baseAttackMax,
-                    ),
-                  ),
-                  _ArchiveRow(
-                    label: UiStrings.weaponCodexDetailHealthRange,
-                    value: UiStrings.weaponCodexDetailRange(
-                      def.baseHealthMin,
-                      def.baseHealthMax,
-                    ),
-                  ),
-                  _ArchiveRow(
-                    label: UiStrings.weaponCodexDetailSpeedRange,
-                    value: UiStrings.weaponCodexDetailRange(
-                      def.baseSpeedMin,
-                      def.baseSpeedMax,
-                    ),
-                  ),
-                  if (def.schoolBias != null)
-                    _ArchiveRow(
-                      label: UiStrings.labelSchool,
-                      value: EnumL10n.school(def.schoolBias!),
-                    ),
-                  if (def.specialSkillCandidates.isNotEmpty)
-                    _ArchiveRow(
-                      label: UiStrings.weaponCodexDetailSpecialSkills,
-                      value: '${def.specialSkillCandidates.length}',
-                    ),
-                  if (def.isLineageHeritage) ...[
-                    const SizedBox(height: 4),
-                    const Text(
-                      UiStrings.weaponCodexDetailLineage,
-                      style: TextStyle(
-                        color: WuxiaColors.bossFrame,
-                        fontSize: 12,
-                        letterSpacing: 0.5,
-                        fontStyle: FontStyle.italic,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 760),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+              children: [
+                PaperPanel(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                  child: _ArchivePanelContent(def: def, imagePath: imagePath),
+                ),
+                const SizedBox(height: 12),
+                PaperPanel(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SectionHeader(
+                        UiStrings.weaponCodexDetailHistoryTitle,
                       ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // ── 个人历程区（entry）────────────────────────────────────────
-            PaperPanel(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SectionHeader(
-                    UiStrings.weaponCodexDetailHistoryTitle,
-                  ),
-                  if (unknownHistory)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        UiStrings.weaponCodexHistoryUnknown,
-                        style: TextStyle(
-                          color: WuxiaUi.muted,
-                          fontSize: 13,
-                          letterSpacing: 1,
-                          fontStyle: FontStyle.italic,
+                      if (unknownHistory)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            UiStrings.weaponCodexHistoryUnknown,
+                            style: TextStyle(
+                              color: WuxiaUi.muted,
+                              fontSize: 13,
+                              letterSpacing: 1,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        )
+                      else ...[
+                        _HistoryRow(
+                          label: UiStrings.weaponCodexFirstObtainedFrom(
+                            entry.firstObtainedFrom,
+                          ),
                         ),
+                        _HistoryRow(
+                          label: UiStrings.weaponCodexFirstObtainedAt(
+                            _fmtDate(entry.firstObtainedAt!),
+                          ),
+                          muted: true,
+                        ),
+                      ],
+                      const SizedBox(height: 4),
+                      _HistoryRow(
+                        label: UiStrings.weaponCodexObtainedCount(
+                          entry.obtainedCount,
+                        ),
+                        muted: true,
                       ),
-                    )
-                  else ...[
-                    _HistoryRow(
-                      label: UiStrings.weaponCodexFirstObtainedFrom(
-                        entry.firstObtainedFrom,
-                      ),
-                    ),
-                    _HistoryRow(
-                      label: UiStrings.weaponCodexFirstObtainedAt(
-                        _fmtDate(entry.firstObtainedAt!),
-                      ),
-                      muted: true,
-                    ),
-                  ],
-                  const SizedBox(height: 4),
-                  _HistoryRow(
-                    label: UiStrings.weaponCodexObtainedCount(
-                      entry.obtainedCount,
-                    ),
-                    muted: true,
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _ArchivePanelContent extends StatelessWidget {
+  const _ArchivePanelContent({required this.def, required this.imagePath});
+
+  final EquipmentDef def;
+  final String imagePath;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _ArchiveRow(
+          label: UiStrings.labelEquipmentTier,
+          value: EnumL10n.equipmentTier(def.tier),
+        ),
+        _ArchiveRow(
+          label: UiStrings.weaponCodexDetailSlot,
+          value: EnumL10n.equipmentSlot(def.slot),
+        ),
+        _ArchiveRow(
+          label: UiStrings.weaponCodexDetailAttackRange,
+          value: UiStrings.weaponCodexDetailRange(
+            def.baseAttackMin,
+            def.baseAttackMax,
+          ),
+        ),
+        _ArchiveRow(
+          label: UiStrings.weaponCodexDetailHealthRange,
+          value: UiStrings.weaponCodexDetailRange(
+            def.baseHealthMin,
+            def.baseHealthMax,
+          ),
+        ),
+        _ArchiveRow(
+          label: UiStrings.weaponCodexDetailSpeedRange,
+          value: UiStrings.weaponCodexDetailRange(
+            def.baseSpeedMin,
+            def.baseSpeedMax,
+          ),
+        ),
+        if (def.schoolBias != null)
+          _ArchiveRow(
+            label: UiStrings.labelSchool,
+            value: EnumL10n.school(def.schoolBias!),
+          ),
+        if (def.specialSkillCandidates.isNotEmpty)
+          _ArchiveRow(
+            label: UiStrings.weaponCodexDetailSpecialSkills,
+            value: '${def.specialSkillCandidates.length}',
+          ),
+        if (def.isLineageHeritage) ...[
+          const SizedBox(height: 4),
+          const Text(
+            UiStrings.weaponCodexDetailLineage,
+            style: TextStyle(
+              color: WuxiaColors.bossFrame,
+              fontSize: 12,
+              letterSpacing: 0.5,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ],
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= 620;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SectionHeader(UiStrings.weaponCodexDetailArchiveTitle),
+            const SizedBox(height: 6),
+            if (wide)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _DetailHero(imagePath: imagePath),
+                  const SizedBox(width: 18),
+                  Expanded(child: rows),
+                ],
+              )
+            else ...[
+              _DetailHero(imagePath: imagePath),
+              const SizedBox(height: 12),
+              rows,
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -183,8 +218,8 @@ class _DetailHero extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: WuxiaImage(
           imagePath,
-          width: 120,
-          height: 120,
+          width: 132,
+          height: 132,
           fit: BoxFit.cover,
           errorBuilder: (_, _, _) => _placeholder(),
         ),
@@ -194,18 +229,14 @@ class _DetailHero extends StatelessWidget {
 
   Widget _placeholder() {
     return Container(
-      width: 120,
-      height: 120,
+      width: 132,
+      height: 132,
       decoration: BoxDecoration(
         color: WuxiaUi.panelFill,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.3)),
       ),
-      child: const Icon(
-        Icons.shield_outlined,
-        color: Colors.white24,
-        size: 56,
-      ),
+      child: const Icon(Icons.shield_outlined, color: Colors.white24, size: 56),
     );
   }
 }
@@ -243,6 +274,7 @@ class _ArchiveRow extends StatelessWidget {
                 color: WuxiaUi.ink,
                 fontSize: 13,
                 letterSpacing: 0.5,
+                height: 1.35,
               ),
             ),
           ),
