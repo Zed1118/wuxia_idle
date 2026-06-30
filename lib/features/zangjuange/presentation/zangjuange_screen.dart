@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ink_button.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
-import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../baike/presentation/baike_screen.dart';
@@ -38,36 +38,48 @@ class ZangjuangeScreen extends ConsumerWidget {
         onBack: () => Navigator.of(context).maybePop(),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-          children: [
-            _CluePanel(clues: clues),
-            const SizedBox(height: 16),
-            PaperPanel(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SectionHeader(UiStrings.zangjuangeArchiveTitle),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 760),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+              children: [
+                _CluePanel(clues: clues),
+                const SizedBox(height: 16),
+                PaperPanel(
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      PlaqueButton(
+                      const SectionHeader(UiStrings.zangjuangeArchiveTitle),
+                      const SizedBox(height: 12),
+                      WuxiaInkButton(
+                        icon: Icons.military_tech_outlined,
                         label: UiStrings.mainMenuBattleRecord,
-                        onTap: () => _push(context, const BattleRecordScreen()),
+                        hint: UiStrings.mainMenuBattleRecordHint,
+                        onTap: () =>
+                            _push(context, const BattleRecordScreen()),
                       ),
-                      PlaqueButton(
+                      const SizedBox(height: 12),
+                      WuxiaInkButton(
+                        icon: Icons.hardware_outlined,
                         label: UiStrings.mainMenuWeaponCodex,
-                        onTap: () => _push(context, const WeaponCodexScreen()),
+                        hint: UiStrings.mainMenuWeaponCodexHint,
+                        onTap: () =>
+                            _push(context, const WeaponCodexScreen()),
                       ),
-                      PlaqueButton(
+                      const SizedBox(height: 12),
+                      WuxiaInkButton(
+                        icon: Icons.travel_explore_outlined,
                         label: UiStrings.mainMenuBaike,
+                        hint: UiStrings.mainMenuBaikeHint,
                         onTap: () => _push(context, const BaikeScreen()),
                       ),
-                      PlaqueButton(
+                      const SizedBox(height: 12),
+                      WuxiaInkButton(
+                        icon: Icons.auto_stories_outlined,
                         label: UiStrings.mainMenuSkillLibrary,
+                        hint: UiStrings.mainMenuSkillLibraryHint,
                         onTap: () => _push(
                           context,
                           const CangJingGeScreen(
@@ -77,10 +89,10 @@ class ZangjuangeScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

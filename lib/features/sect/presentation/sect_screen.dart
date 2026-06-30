@@ -29,7 +29,11 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 /// 读 `isar.sects.watchObject(1)` + `activeSectEventsProvider` / `historicalSectEventsProvider`
 /// 各走 status filter watch。AsyncValue 三态(data / loading / error)。
 class SectScreen extends ConsumerWidget {
-  const SectScreen({super.key});
+  const SectScreen({super.key, this.initialTabIndex = 0});
+
+  /// 默认进「当前事件」tab(index 0)。debug 视觉验收入口可传 2 直达「成员」tab
+  /// 看成员立绘;默认值保持生产行为不变。
+  final int initialTabIndex;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -75,6 +79,7 @@ class SectScreen extends ConsumerWidget {
         }
         return DefaultTabController(
           length: 4,
+          initialIndex: initialTabIndex,
           child: Scaffold(
             backgroundColor: WuxiaColors.background,
             appBar: AppBar(
