@@ -158,7 +158,7 @@ class _ResourceCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: WuxiaColors.textPrimary,
+                        color: WuxiaUi.ink,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -179,7 +179,7 @@ class _ResourceCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: WuxiaColors.textMuted,
+                        color: WuxiaUi.muted,
                         fontSize: 12,
                       ),
                     ),

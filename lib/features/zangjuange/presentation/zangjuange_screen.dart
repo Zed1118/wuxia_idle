@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ink_button.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
@@ -57,16 +58,14 @@ class ZangjuangeScreen extends ConsumerWidget {
                         icon: Icons.military_tech_outlined,
                         label: UiStrings.mainMenuBattleRecord,
                         hint: UiStrings.mainMenuBattleRecordHint,
-                        onTap: () =>
-                            _push(context, const BattleRecordScreen()),
+                        onTap: () => _push(context, const BattleRecordScreen()),
                       ),
                       const SizedBox(height: 12),
                       WuxiaInkButton(
                         icon: Icons.hardware_outlined,
                         label: UiStrings.mainMenuWeaponCodex,
                         hint: UiStrings.mainMenuWeaponCodexHint,
-                        onTap: () =>
-                            _push(context, const WeaponCodexScreen()),
+                        onTap: () => _push(context, const WeaponCodexScreen()),
                       ),
                       const SizedBox(height: 12),
                       WuxiaInkButton(
@@ -116,7 +115,7 @@ class _CluePanel extends StatelessWidget {
           if (clues.isEmpty)
             const Text(
               UiStrings.zangjuangeCluesEmpty,
-              style: TextStyle(color: WuxiaColors.textMuted, fontSize: 13),
+              style: TextStyle(color: WuxiaUi.muted, fontSize: 13),
             )
           else
             for (final clue in clues) ...[

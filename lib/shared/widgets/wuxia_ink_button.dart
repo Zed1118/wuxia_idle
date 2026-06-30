@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../audio/sound_manager.dart';
 import '../audio/audio_assets.dart';
-import '../theme/colors.dart';
 import 'wuxia_image.dart';
 import 'wuxia_ui/wuxia_ui.dart';
 
@@ -234,7 +233,7 @@ class _WuxiaInkButtonState extends State<WuxiaInkButton> {
                                 child: Icon(
                                   Icons.lock_outline,
                                   size: 16,
-                                  color: WuxiaColors.textMuted,
+                                  color: WuxiaUi.muted,
                                 ),
                               ),
                           ],

@@ -986,10 +986,7 @@ class _EquipmentSummaryCard extends StatelessWidget {
                   '$tier · $slotLabel${schoolLabel == null ? '' : ' · $schoolLabel'}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: WuxiaColors.textSecondary,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 _EquipmentSummaryLine(
@@ -1303,6 +1300,7 @@ class _MaterialGridTile extends ConsumerWidget {
                           UiStrings.itemUseButton,
                           textAlign: TextAlign.center,
                           style: TextStyle(
+                            // paper-text-audit: allow black overlay label uses dark-surface text token
                             color: WuxiaColors.textPrimary,
                             fontSize: 9,
                           ),

@@ -423,9 +423,7 @@ class _MapCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: locked
-                              ? WuxiaColors.textSecondary
-                              : WuxiaColors.textPrimary,
+                          color: locked ? WuxiaUi.muted : WuxiaUi.ink,
                           fontSize: 23,
                           fontWeight: FontWeight.w900,
                           shadows: [

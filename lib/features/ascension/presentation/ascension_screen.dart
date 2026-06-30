@@ -9,6 +9,7 @@ import '../../../data/narrative_loader.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
@@ -160,7 +161,7 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
           children: [
             const Text(
               UiStrings.ascensionConfirmDialogBody,
-              style: TextStyle(color: WuxiaColors.textPrimary),
+              style: TextStyle(color: WuxiaUi.ink),
             ),
             const SizedBox(height: 12),
             Text(

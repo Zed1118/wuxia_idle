@@ -531,7 +531,7 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
       );
     }
     final def = GameRepository.instance.getEquipment(widget.equipment.defId);
-    final color = tierColorForEquipment(def.tier);
+    final color = _paperTierColorForEquipment(def.tier);
     final sources = EquipmentSourceLookup(
       GameRepository.instance,
     ).sourcesFor(def.id);
@@ -550,7 +550,7 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
         duration: const Duration(milliseconds: 160),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.08),
+            color: WuxiaUi.slotFill,
             border: Border(left: BorderSide(color: color, width: 2)),
           ),
           child: Padding(
@@ -595,14 +595,14 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
                       const SizedBox(width: 6),
                       const _DropBadge(
                         text: UiStrings.equipmentDropActionEquipped,
-                        color: WuxiaColors.textSecondary,
+                        color: WuxiaUi.ink2,
                       ),
                     ],
                     if (_deferred) ...[
                       const SizedBox(width: 6),
                       const _DropBadge(
                         text: UiStrings.equipmentDropActionDone,
-                        color: WuxiaColors.textMuted,
+                        color: WuxiaUi.muted,
                       ),
                     ],
                   ],
@@ -611,8 +611,9 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
                 Text(
                   sourceSummary,
                   style: const TextStyle(
-                    color: WuxiaColors.textMuted,
-                    fontSize: 11,
+                    color: WuxiaUi.ink2,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -622,9 +623,10 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
                     child: Text(
                       line,
                       style: const TextStyle(
-                        color: WuxiaColors.textMuted,
-                        fontSize: 11,
-                        height: 1.25,
+                        color: WuxiaUi.ink2,
+                        fontSize: 11.5,
+                        height: 1.3,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -663,8 +665,9 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
                         child: Text(
                           UiStrings.equipmentDropActionProtected,
                           style: TextStyle(
-                            color: WuxiaColors.textMuted,
+                            color: WuxiaUi.muted,
                             fontSize: 11,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -676,8 +679,9 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
                     child: Text(
                       UiStrings.equipmentDropFavoriteHint,
                       style: TextStyle(
-                        color: WuxiaColors.textMuted,
+                        color: WuxiaUi.muted,
                         fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -720,6 +724,19 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
     }
     return UiStrings.equipmentDropLockAdviceCommon;
   }
+}
+
+Color _paperTierColorForEquipment(EquipmentTier tier) {
+  return switch (tier) {
+    EquipmentTier.xunChang => WuxiaUi.ink2,
+    EquipmentTier.xiangYang => WuxiaUi.muted,
+    EquipmentTier.shenWu => _paperReadableTierColor(WuxiaUi.gold),
+    _ => _paperReadableTierColor(tierColorForEquipment(tier)),
+  };
+}
+
+Color _paperReadableTierColor(Color color) {
+  return Color.lerp(color, WuxiaUi.ink, 0.34)!;
 }
 
 class _DropBadge extends StatelessWidget {
@@ -767,12 +784,12 @@ class _TinyActionButton extends StatelessWidget {
     return OutlinedButton.icon(
       style: OutlinedButton.styleFrom(
         visualDensity: VisualDensity.compact,
-        foregroundColor: WuxiaColors.textSecondary,
-        disabledForegroundColor: WuxiaColors.textMuted,
+        foregroundColor: WuxiaUi.ink2,
+        disabledForegroundColor: WuxiaUi.muted.withValues(alpha: 0.72),
         side: BorderSide(
           color: onTap == null
-              ? WuxiaColors.textMuted.withValues(alpha: 0.22)
-              : WuxiaColors.textMuted.withValues(alpha: 0.48),
+              ? WuxiaUi.muted.withValues(alpha: 0.34)
+              : WuxiaUi.muted.withValues(alpha: 0.62),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         minimumSize: const Size(86, 36),
