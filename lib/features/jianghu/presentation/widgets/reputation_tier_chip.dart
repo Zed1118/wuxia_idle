@@ -12,7 +12,11 @@ import '../../../../shared/theme/colors.dart';
 ///
 /// label 走 [UiStrings.reputationTier*],不在代码硬编中文(§5.6)。
 class ReputationTierChip extends StatelessWidget {
-  const ReputationTierChip({super.key, required this.tier, required this.value});
+  const ReputationTierChip({
+    super.key,
+    required this.tier,
+    required this.value,
+  });
 
   /// 7 阶枚举名(xueTu / sanLiu / erLiu / yiLiu / jueDing / zongShi / wuSheng),
   /// 走 [ReputationService.tierOf] 派生。
@@ -65,12 +69,27 @@ class ReputationTierChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      label: Text('${_label()} · $value'),
-      backgroundColor: _color(),
-      labelStyle: const TextStyle(color: Colors.white, fontSize: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    final color = _color();
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.68), width: 0.9),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+        child: Text(
+          '${_label()} · $value',
+          style: TextStyle(
+            color: color == WuxiaColors.textMuted
+                ? WuxiaColors.textSecondary
+                : color,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            height: 1.0,
+          ),
+        ),
+      ),
     );
   }
 }

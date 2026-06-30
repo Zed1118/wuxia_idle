@@ -49,14 +49,26 @@ class ReputationPanelScreen extends ConsumerWidget {
                 ),
               );
             }
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: list.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (_, i) => _ReputationRow(
-                reputation: list[i],
-                tier: svc.tierOf(list[i].value),
-              ),
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final maxWidth = constraints.maxWidth >= 920
+                    ? 860.0
+                    : constraints.maxWidth;
+                return ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: list.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  itemBuilder: (_, i) => Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: maxWidth),
+                      child: _ReputationRow(
+                        reputation: list[i],
+                        tier: svc.tierOf(list[i].value),
+                      ),
+                    ),
+                  ),
+                );
+              },
             );
           },
         ),
@@ -73,27 +85,70 @@ class _ReputationRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final value = reputation.value.clamp(-100, 100);
+    final normalized = (value + 100) / 200;
+    final accent = value > 0
+        ? WuxiaColors.hpHigh
+        : value < 0
+        ? WuxiaColors.sealCrimson
+        : WuxiaColors.textMuted;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
-        color: WuxiaColors.panel,
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [accent.withValues(alpha: 0.12), WuxiaColors.panel],
+        ),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: WuxiaColors.border),
+        border: Border.all(color: accent.withValues(alpha: 0.42)),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Text(
-              reputation.factionId,
-              style: const TextStyle(
-                color: WuxiaColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+          Container(
+            width: 4,
+            height: 44,
+            decoration: BoxDecoration(
+              color: accent,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
-          ReputationTierChip(tier: tier, value: reputation.value),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        reputation.factionId,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: WuxiaColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ReputationTierChip(tier: tier, value: reputation.value),
+                  ],
+                ),
+                const SizedBox(height: 9),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(3),
+                  child: LinearProgressIndicator(
+                    value: normalized,
+                    backgroundColor: WuxiaColors.background,
+                    valueColor: AlwaysStoppedAnimation<Color>(accent),
+                    minHeight: 5,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
