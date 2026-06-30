@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../shared/strings.dart';
+import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 
 /// Debug-only hitbox visualizer for visual acceptance routes.
@@ -19,6 +20,7 @@ class HitboxDebugOverlay extends StatefulWidget {
 
   static Widget maybeWrap(Widget child) {
     if (!kDebugMode || !enabledFromEnv) return child;
+    debugPrint('HITBOX_DEBUG enabled=true debug=true');
     return HitboxDebugOverlay(child: child);
   }
 
@@ -115,29 +117,45 @@ class _HitboxMark {
 class _HitboxPainter extends CustomPainter {
   const _HitboxPainter(this.marks);
 
+  static const double _minInteractiveSide = 36;
+
   final List<_HitboxMark> marks;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final fill = Paint()
-      ..color = WuxiaUi.gold.withValues(alpha: 0.16)
+    final regularFill = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.28)
       ..style = PaintingStyle.fill;
-    final stroke = Paint()
-      ..color = WuxiaUi.jiang.withValues(alpha: 0.82)
+    final smallFill = Paint()
+      ..color = WuxiaColors.danger.withValues(alpha: 0.22)
+      ..style = PaintingStyle.fill;
+    final regularStroke = Paint()
+      ..color = WuxiaUi.jiang.withValues(alpha: 0.96)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4;
+      ..strokeWidth = 2.4;
+    final smallStroke = Paint()
+      ..color = WuxiaColors.danger
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
     final labelStyle = TextStyle(
       color: WuxiaUi.ink,
-      fontSize: 10,
-      fontWeight: FontWeight.w700,
-      backgroundColor: WuxiaUi.paper.withValues(alpha: 0.78),
+      fontSize: 12,
+      fontWeight: FontWeight.w800,
+      backgroundColor: WuxiaUi.paper.withValues(alpha: 0.92),
     );
 
     for (final mark in marks) {
       final rect = mark.rect.intersect(Offset.zero & size);
       if (rect.isEmpty) continue;
-      canvas.drawRect(rect, fill);
-      canvas.drawRect(rect, stroke);
+      final isSmall =
+          rect.width < _minInteractiveSide || rect.height < _minInteractiveSide;
+      canvas.drawRect(rect, isSmall ? smallFill : regularFill);
+      canvas.drawRect(rect, isSmall ? smallStroke : regularStroke);
+      if (isSmall) {
+        canvas
+          ..drawLine(rect.topLeft, rect.bottomRight, smallStroke)
+          ..drawLine(rect.topRight, rect.bottomLeft, smallStroke);
+      }
     }
 
     final summary = TextPainter(
