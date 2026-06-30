@@ -148,9 +148,6 @@ class BattleDragPreview {
   /// 引导线起手角色 charId(取其流派色画线)。
   final int dragCharId;
 
-  /// 蓄势脉动角色 charId(左队,流派色呼吸光晕)。
-  final int rushActorId;
-
   /// 悬停命中高亮的敌人 charId(浅金静态强光);null 不高亮。
   final int? hoveredEnemyId;
 
@@ -162,7 +159,6 @@ class BattleDragPreview {
 
   const BattleDragPreview({
     required this.dragCharId,
-    required this.rushActorId,
     required this.origin,
     required this.pointer,
     this.hoveredEnemyId,
@@ -332,8 +328,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   Offset? _dragOrigin;
   Offset? _dragPointer;
   int? _hoveredEnemyId;
-  // C5 立即触发:拖/点技能后快进到该角色出手的目标 charId(出手即清,恢复常速)。
-  int? _rushToActorId;
 
   // ─── 生命周期 ────────────────────────────────────────────────────────────
 
@@ -371,7 +365,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // 冻结画面,蓄势光晕脉动常驻,悬停高亮不被手势清。
     final preview = widget.debugDragPreview;
     if (preview != null) {
-      _rushToActorId = preview.rushActorId;
       _hoveredEnemyId = preview.hoveredEnemyId;
     }
     // 验收路由 startPaused:起手即暂停 → _startTimer 内 _isPaused gate 兜住
@@ -439,8 +432,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     _hitStopTimer?.cancel();
     _playTimer?.cancel();
     if (_isPaused) return; // H3 暂停态:任何重启请求都不启动 timer。
-    // 快进态:玩家手动开了快进,或拖招立即触发正在「快进到出手」(C5)。
-    final rushing = _isFastForward || _rushToActorId != null;
+    // 快进态:玩家手动开了快进。
+    final rushing = _isFastForward;
     final gameplaySettings = _currentGameplaySettings;
     final interval = rushing
         ? widget.animConfig.fastForwardIntervalMs
@@ -593,8 +586,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 : Colors.white,
           );
         }
-        // hit-stop + 镜头震：快进/拖招态跳过（守 2.3 时序 + 保快进顺滑）。
-        if (!_isFastForward && _rushToActorId == null) {
+        // hit-stop + 镜头震：快进态跳过（守 2.3 时序 + 保快进顺滑）。
+        if (!_isFastForward) {
           _impactShakeAmplitude = profile.shakeMagnitude;
           _shakeCtrl.forward(from: 0.0);
           _applyHitStop(
@@ -608,10 +601,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       }
     }
 
-    // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡/拖招抑制（守在线=离线）。
+    // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡抑制（守在线=离线）。
     // 独立于 profile != null 块：普攻击杀无 profile 也须触发特写。
     if (!_isFastForward &&
-        _rushToActorId == null &&
         hitClimaxFor(action, s) != HitClimax.none) {
       _closeupCtrl.forward(from: 0.0).then((_) {
         if (mounted) _closeupCtrl.reverse();
@@ -642,8 +634,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
           color: WuxiaColors.gangMeng,
         );
       }
-      // 抖动同 2.4：快进 / 拖招态跳过（保顺滑）。
-      if (!_isFastForward && _rushToActorId == null) {
+      // 抖动同 2.4：快进态跳过（保顺滑）。
+      if (!_isFastForward) {
         _impactShakeAmplitude = cfg.heavy.shakeMagnitude;
         _shakeCtrl.forward(from: 0.0);
       }
@@ -1191,28 +1183,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       //    无需本地解除置灰）。
       if (prev != null && next.actionLog.length > prev.actionLog.length) {
         final newActions = next.actionLog.sublist(prev.actionLog.length);
-        final wasRushing = _rushToActorId != null;
         for (final a in newActions) {
           _playAction(a, next);
-          // C5:拖招者出手 → 快进结束。
-          if (_rushToActorId != null && a.actorId == _rushToActorId) {
-            _rushToActorId = null;
-          }
-        }
-        // C5 兜底:拖招者在出手前被击杀 → 其 action 永不入 actionLog,清 rush
-        // 防卡死快进(纯表现层,advance 结算不受影响)。
-        if (_rushToActorId != null) {
-          final rushActor = _findCharacter(_rushToActorId!, next);
-          if (rushActor == null || !rushActor.isAlive) {
-            _rushToActorId = null;
-          }
-        }
-        // 刚结束快进 → 恢复常速 Timer(战斗未结束且仍在自动播放)。
-        if (wasRushing &&
-            _rushToActorId == null &&
-            _playTimer != null &&
-            !next.isFinished) {
-          _startTimer();
         }
       }
 
@@ -1315,7 +1287,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                               hitFlashColors: _hitFlashColors,
                               enemyAvatarKeys: _enemyAvatarKeys,
                               hoveredEnemyId: _hoveredEnemyId,
-                              rushActorId: _rushToActorId,
                             ),
                             Positioned.fill(
                               child: IgnorePointer(
@@ -1954,10 +1925,9 @@ class _BattleField extends StatelessWidget {
   final void Function(int slotKey, int popupId) onPopupComplete;
   final List<AnimationController> hitFlashControllers;
   final Map<int, Color> hitFlashColors;
-  // Phase 4 拖招:敌头像 hitTest key、当前悬停命中敌 id、快进中的拖招者 id。
+  // Phase 4 拖招:敌头像 hitTest key、当前悬停命中敌 id。
   final List<GlobalKey> enemyAvatarKeys;
   final int? hoveredEnemyId;
-  final int? rushActorId;
 
   const _BattleField({
     required this.state,
@@ -1970,7 +1940,6 @@ class _BattleField extends StatelessWidget {
     required this.hitFlashColors,
     required this.enemyAvatarKeys,
     required this.hoveredEnemyId,
-    required this.rushActorId,
   });
 
   @override
@@ -1994,7 +1963,6 @@ class _BattleField extends StatelessWidget {
               hitFlashColors: hitFlashColors,
               avatarKeys: const [],
               hoveredEnemyId: null,
-              rushActorId: rushActorId,
             ),
           ),
           const SizedBox(width: 24),
@@ -2012,7 +1980,6 @@ class _BattleField extends StatelessWidget {
               hitFlashColors: hitFlashColors,
               avatarKeys: enemyAvatarKeys,
               hoveredEnemyId: hoveredEnemyId,
-              rushActorId: null,
             ),
           ),
         ],
@@ -2032,11 +1999,9 @@ class _TeamColumn extends StatelessWidget {
   final void Function(int slotKey, int popupId) onPopupComplete;
   final List<AnimationController> hitFlashControllers;
   final Map<int, Color> hitFlashColors;
-  // Phase 4 拖招:本队各槽头像 hitTest key(空=不挂,如我方队)、悬停命中敌 id、
-  // 快进中的拖招者 id(本队命中则其头像「蓄势」高亮)。
+  // Phase 4 拖招:本队各槽头像 hitTest key(空=不挂,如我方队)、悬停命中敌 id。
   final List<GlobalKey> avatarKeys;
   final int? hoveredEnemyId;
-  final int? rushActorId;
 
   const _TeamColumn({
     required this.team,
@@ -2051,7 +2016,6 @@ class _TeamColumn extends StatelessWidget {
     required this.hitFlashColors,
     required this.avatarKeys,
     required this.hoveredEnemyId,
-    required this.rushActorId,
   });
 
   @override
@@ -2088,8 +2052,6 @@ class _TeamColumn extends StatelessWidget {
                 hovered:
                     hoveredEnemyId != null &&
                     team[i].characterId == hoveredEnemyId,
-                charging:
-                    rushActorId != null && team[i].characterId == rushActorId,
               ),
             ),
           ),
@@ -2110,11 +2072,9 @@ class _CharacterSlot extends StatelessWidget {
   final void Function(int slotKey, int popupId) onPopupComplete;
   final AnimationController hitFlashController;
   final Color flashColor;
-  // Phase 4 拖招:头像 hitTest key(敌方槽挂,我方 null);拖招悬停命中高亮;
-  // 拖招者「蓄势」高亮(等待出手)。
+  // Phase 4 拖招:头像 hitTest key(敌方槽挂,我方 null);拖招悬停命中高亮。
   final GlobalKey? avatarKey;
   final bool hovered;
-  final bool charging;
 
   const _CharacterSlot({
     required this.character,
@@ -2129,7 +2089,6 @@ class _CharacterSlot extends StatelessWidget {
     required this.flashColor,
     this.avatarKey,
     this.hovered = false,
-    this.charging = false,
   });
 
   @override
@@ -2146,12 +2105,10 @@ class _CharacterSlot extends StatelessWidget {
             color: flashColor,
             child: _GlowAura(
               hovered: hovered,
-              charging: charging,
               // 第六阶段：staggerTicksRemaining>0 → 破绽集火高亮（绛红脉动）。
               // 仅限敌方（isLeftTeam==false）；我方被硬直不显示集火指示。
               staggered: !isLeftTeam && character.staggerTicksRemaining > 0,
               characterId: character.characterId,
-              schoolColor: WuxiaColors.schoolColor(character.school),
               child: CharacterAvatar(
                 key: avatarKey,
                 character: character,
@@ -2730,24 +2687,18 @@ class _ProjectileLayer extends StatelessWidget {
 
 /// Phase 4 拖招表现层:角色头像光晕。
 /// - [hovered](拖招悬停命中敌头像):静态浅金强光,优先级最高。
-/// - [charging](拖招者蓄势待发):流派色呼吸脉动(AnimationController 往返),
-///   区分于快进态,让「蓄势」有生命感。
 /// - 均不满足:无光晕,直接返回 child(等价旧 boxShadow 为空)。
 class _GlowAura extends StatefulWidget {
   final bool hovered;
-  final bool charging;
   // 第六阶段：破绽窗口集火指示（staggerTicksRemaining>0）。
   final bool staggered;
   // 用于给破绽高亮 DecoratedBox 挂 Key，供 widget 测查找。
   final int characterId;
-  final Color schoolColor;
   final Widget child;
   const _GlowAura({
     required this.hovered,
-    required this.charging,
     required this.staggered,
     required this.characterId,
-    required this.schoolColor,
     required this.child,
   });
 
@@ -2761,9 +2712,9 @@ class _GlowAuraState extends State<_GlowAura>
   // 此时树已 deactivate → createTicker 查 TickerMode 崩溃。
   late final AnimationController _pulse;
 
-  // hovered 优先级最高(静态强光),只有「蓄势且未被悬停」才脉动。
-  // 第六阶段：破绽窗口也驱动呼吸（绛红集火），优先级低于 hovered/charging。
-  bool get _pulsing => (widget.charging || widget.staggered) && !widget.hovered;
+  // hovered 优先级最高(静态强光),只有「破绽且未被悬停」才脉动。
+  // 第六阶段：破绽窗口驱动呼吸（绛红集火），优先级低于 hovered。
+  bool get _pulsing => widget.staggered && !widget.hovered;
 
   @override
   void initState() {
@@ -2795,26 +2746,16 @@ class _GlowAuraState extends State<_GlowAura>
 
   @override
   Widget build(BuildContext context) {
-    // 浅金静态强光(hovered) 优先;蓄势流派色呼吸次之;
-    // 第六阶段：破绽窗口绛红脉动（集火指示）再次；都无则裸 child。
+    // 浅金静态强光(hovered) 优先;
+    // 第六阶段：破绽窗口绛红脉动（集火指示）次之；都无则裸 child。
     if (widget.hovered) {
       return _box(WuxiaColors.resultHighlight, 0.85, 22.0, 4.0, widget.child);
     }
-    if (!widget.charging && !widget.staggered) return widget.child;
+    if (!widget.staggered) return widget.child;
     return AnimatedBuilder(
       animation: _pulse,
       builder: (context, child) {
         final t = Curves.easeInOut.transform(_pulse.value);
-        if (widget.charging) {
-          // 蓄势流派色呼吸脉动（原有逻辑）。
-          return _box(
-            widget.schoolColor,
-            0.45 + 0.4 * t, // alpha 0.45 → 0.85
-            13.0 + 9.0 * t, // blur 13 → 22
-            1.5 + 2.0 * t, // spread 1.5 → 3.5
-            child!,
-          );
-        }
         // 破绽窗口：绛红呼吸脉动（集火指示），水墨克制——稍弱于蓄势强光。
         return KeyedSubtree(
           key: ValueKey('stagger_highlight_${widget.characterId}'),

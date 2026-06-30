@@ -389,7 +389,6 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         autoStart: false,
         debugDragPreview: BattleDragPreview(
           dragCharId: 1,
-          rushActorId: 1,
           hoveredEnemyId: 11,
           origin: Offset(360, 600),
           pointer: Offset(980, 230),
