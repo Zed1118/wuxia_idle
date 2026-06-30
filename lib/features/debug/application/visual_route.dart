@@ -168,6 +168,7 @@ enum VisualRoute {
     'inventory_currency',
     '背包货币位目检·种银两+磨剑石+心血结晶,直开材料 tab:顶部货币位顶栏(银两X两) + 材料网格(磨剑石/心血结晶,银两不重复进网格)',
   ),
+  resourceOverview('resource_overview', '资源总览目检·五类资源混合库存 + 来源/用途/近期去向一屏扫读'),
   mainMenuShop(
     'main_menu_shop',
     '主菜单商店入口目检·种银两解锁:验「江湖商店」隐藏式入口木牌出现(§5.7,沿兵器谱体例)',
