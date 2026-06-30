@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -162,7 +164,7 @@ void main() {
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。
   group('buildVisualTarget · 战斗静态验收路由透传', () {
     setUpAll(() async {
-      await Isar.initializeIsarCore(download: true);
+      await _initializeIsarCoreForFlutterTest();
     });
 
     late Directory tempDir;
@@ -221,7 +223,7 @@ void main() {
       expect(launcher.previewPendingSkillId, 'dl_single_1');
     });
 
-    test('battle_tap_preview → 复用 battle_drag_preview 冻结预置态', () async {
+    test('battle_tap_preview → 复用点选冻结预置态', () async {
       final target = await buildVisualTarget(
         VisualRoute.battleTapPreview,
         IsarSetup.instance,
@@ -229,8 +231,10 @@ void main() {
       expect(target, isA<ScenarioLauncher>());
       final launcher = target as ScenarioLauncher;
       expect(launcher.autoStart, isFalse);
-      expect(launcher.debugDragPreview, isNotNull);
-      expect(launcher.debugDragPreview!.hoveredEnemyId, 11);
+      expect(launcher.allowPlayerIntervention, isTrue);
+      expect(launcher.startPaused, isTrue);
+      expect(launcher.previewPendingCharacterId, 1);
+      expect(launcher.previewPendingSkillId, 'dl_single_1');
     });
 
     test('skill_codex_locked_snackbar → snackbar preview route 接线', () async {
@@ -250,7 +254,7 @@ void main() {
   // 批一英雄镜头 preview：真数据(祖师 + 真 stage_01_05 Boss 名)接线回归。
   group('hero_camera preview · 真数据接线', () {
     setUpAll(() async {
-      await Isar.initializeIsarCore(download: true);
+      await _initializeIsarCoreForFlutterTest();
       if (!GameRepository.isLoaded) {
         await GameRepository.loadAllDefs(
           loader: (path) => File(path).readAsString(),
@@ -293,4 +297,51 @@ void main() {
       expect(find.text('祖师'), findsOneWidget, reason: '出镜英雄名号取祖师占位名');
     });
   });
+}
+
+Future<void> _initializeIsarCoreForFlutterTest() async {
+  await Isar.initializeIsarCore(
+    libraries: {Abi.current(): _resolveBundledIsarCorePath()},
+  );
+}
+
+String _resolveBundledIsarCorePath() {
+  final packageConfigFile = File('.dart_tool/package_config.json');
+  final packageConfigUri = packageConfigFile.absolute.uri;
+  final packageConfig =
+      jsonDecode(packageConfigFile.readAsStringSync()) as Map<String, dynamic>;
+  final packages = packageConfig['packages'] as List<dynamic>;
+
+  Uri? packageRootUri;
+  for (final package in packages) {
+    final packageMap = package as Map<String, dynamic>;
+    if (packageMap['name'] == 'isar_community_flutter_libs') {
+      final rootUri = Uri.parse(packageMap['rootUri'] as String);
+      packageRootUri = rootUri.isAbsolute
+          ? rootUri
+          : packageConfigUri.resolveUri(rootUri);
+      break;
+    }
+  }
+
+  if (packageRootUri == null) {
+    throw StateError('isar_community_flutter_libs not found in package config');
+  }
+  packageRootUri = packageRootUri.replace(
+    path: packageRootUri.path.endsWith('/')
+        ? packageRootUri.path
+        : '${packageRootUri.path}/',
+  );
+
+  final libraryPath = switch (Abi.current()) {
+    Abi.macosArm64 || Abi.macosX64 => 'macos/libisar.dylib',
+    Abi.linuxX64 => 'linux/libisar.so',
+    Abi.windowsX64 || Abi.windowsArm64 => 'windows/libisar.dll',
+    _ => throw UnsupportedError('Unsupported Isar test ABI: ${Abi.current()}'),
+  };
+  final libraryFile = File.fromUri(packageRootUri.resolve(libraryPath));
+  if (!libraryFile.existsSync()) {
+    throw StateError('Bundled IsarCore library not found: ${libraryFile.path}');
+  }
+  return libraryFile.path;
 }
