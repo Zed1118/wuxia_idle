@@ -202,7 +202,7 @@ void main() {
       expect(launcher.autoStart, isFalse, reason: '冻结画面,蓄势光晕脉动常驻不被 tick 推掉');
       final preview = launcher.debugDragPreview;
       expect(preview, isNotNull, reason: '静态验收必须预置拖招态,否则截图无引导线/光晕');
-      expect(preview!.rushActorId, 1, reason: '主控蓄势脉动');
+      expect(preview!.dragCharId, 1, reason: '主控蓄势脉动');
       expect(preview.hoveredEnemyId, 11, reason: '敌 11 悬停浅金高亮');
     });
   });

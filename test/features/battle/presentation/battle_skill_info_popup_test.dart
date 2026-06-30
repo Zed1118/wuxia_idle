@@ -9,10 +9,10 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 
-/// 第五阶段·主线一 批次 1.3：技能方块手势改造。
+/// 技能方块手势：两段点选下「长按方块 = 弹技能简介浮层」(直接读 SkillDef 活数据)。
 ///
-/// 点击方块 = 弹技能简介浮层(直接读 SkillDef 活数据);退掉旧的「裸单击直接下发」。
-/// 长按拖到目标下发(现有拖招机制)由 [battle_drag_skill_test] 守，不在此重复。
+/// 点击 = 释放(single 进待发态 / aoe 一键出手)由 [battle_drag_skill_test] 守，
+/// 不在此重复;这里只验「长按 = 简介浮层、不下发命令」。
 
 const _testAnim = AnimationNumbers(
   attackRushMs: 10,
@@ -105,14 +105,14 @@ Future<_TestBattleNotifier> _pumpWith(
 }
 
 void main() {
-  group('批次 1.3 点击技能方块 → 简介浮层', () {
-    testWidgets('点击单体技方块 → 浮层含 description + 倍率/耗内/CD/目标/特性',
+  group('长按技能方块 → 简介浮层', () {
+    testWidgets('长按单体技方块 → 浮层含 description + 倍率/耗内/CD/目标/特性',
         (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.longPress(find.byKey(const ValueKey('skill_cmd_1_single1')));
       await tester.pumpAndSettle();
 
       // 描述活文本。
@@ -126,29 +126,29 @@ void main() {
       expect(find.textContaining('破招'), findsWidgets);
     });
 
-    testWidgets('点击群体大招方块 → 浮层显示目标=群体', (tester) async {
+    testWidgets('长按群体大招方块 → 浮层显示目标=群体', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_aoe]);
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.longPress(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
       await tester.pumpAndSettle();
 
       expect(find.text('剑气漫天，覆盖全场之敌。'), findsOneWidget);
       expect(find.textContaining('群体'), findsWidgets);
     });
 
-    testWidgets('点击方块不再直接下发命令(只弹浮层)', (tester) async {
+    testWidgets('长按方块只弹浮层，不下发命令', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_aoe]);
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.longPress(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
       await tester.pumpAndSettle();
 
-      // 旧「裸单击直接下发」已退掉:点击不写 pending。
+      // 长按 = 查看简介,不下发命令。
       expect(notifier.state.pendingUltimates[1], isNull,
-          reason: '点击只弹浮层，不下发命令');
+          reason: '长按只弹浮层，不下发命令');
     });
   });
 }
