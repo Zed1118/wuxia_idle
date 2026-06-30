@@ -46,54 +46,76 @@ class _ResourceOverviewBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-      children: [
-        const Text(
-          UiStrings.resourceOverviewIntro,
-          style: TextStyle(
-            color: WuxiaColors.textMuted,
-            fontSize: 13,
-            height: 1.45,
-          ),
-        ),
-        const SizedBox(height: 16),
-        for (final section in sections) ...[
-          SectionHeader(_categoryTitle(section.category)),
-          const SizedBox(height: 4),
-          if (section.items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 18),
-              child: Text(
-                UiStrings.resourceOverviewEmpty,
-                style: TextStyle(color: WuxiaColors.textMuted),
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(bottom: 18),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final wide = constraints.maxWidth >= 760;
-                  return Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      for (final item in section.items)
-                        SizedBox(
-                          width: wide
-                              ? (constraints.maxWidth - 12) / 2
-                              : constraints.maxWidth,
-                          child: _ResourceCard(item: item),
-                        ),
-                    ],
-                  );
-                },
-              ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final contentWidth = constraints.maxWidth >= 1540
+            ? 1500.0
+            : constraints.maxWidth;
+        return Center(
+          child: SizedBox(
+            width: contentWidth,
+            height: constraints.maxHeight,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              children: [
+                const Text(
+                  UiStrings.resourceOverviewIntro,
+                  style: TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 13,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                for (final section in sections) ...[
+                  SectionHeader(_categoryTitle(section.category)),
+                  const SizedBox(height: 4),
+                  if (section.items.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 18),
+                      child: Text(
+                        UiStrings.resourceOverviewEmpty,
+                        style: TextStyle(color: WuxiaColors.textMuted),
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 18),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final columns = _resourceCardColumns(
+                            constraints.maxWidth,
+                          );
+                          final cardWidth =
+                              (constraints.maxWidth - (columns - 1) * 12) /
+                              columns;
+                          return Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: [
+                              for (final item in section.items)
+                                SizedBox(
+                                  width: cardWidth,
+                                  child: _ResourceCard(item: item),
+                                ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ],
             ),
-        ],
-      ],
+          ),
+        );
+      },
     );
+  }
+
+  int _resourceCardColumns(double width) {
+    if (width >= 1180) return 3;
+    if (width >= 760) return 2;
+    return 1;
   }
 
   String _categoryTitle(ResourceOverviewCategory category) {

@@ -158,44 +158,57 @@ class _SeclusionMapListScreenState
                   if (active != null)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-                      child: _ActiveBanner(session: active, mapDef: activeDef!),
+                      child: _CenteredSeclusionContent(
+                        child: _ActiveBanner(
+                          session: active,
+                          mapDef: activeDef!,
+                        ),
+                      ),
                     ),
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        final columns = constraints.maxWidth >= 940 ? 2 : 1;
-                        final cardHeight = columns == 2 ? 268.0 : 258.0;
+                        final contentWidth = _seclusionContentWidth(
+                          constraints.maxWidth,
+                        );
+                        final columns = _seclusionMapColumns(contentWidth);
+                        final cardHeight = columns == 1 ? 258.0 : 268.0;
                         final cardWidth =
-                            (constraints.maxWidth - 32 - (columns - 1) * 14) /
-                            columns;
-                        return GridView.builder(
-                          padding: const EdgeInsets.all(16),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: columns,
-                                mainAxisSpacing: 14,
-                                crossAxisSpacing: 14,
-                                childAspectRatio: cardWidth / cardHeight,
-                              ),
-                          itemCount: maps.length,
-                          itemBuilder: (context, i) {
-                            final def = maps[i];
-                            final isActive =
-                                active != null && active.mapType == def.mapType;
-                            final canEnter = SeclusionService.canEnterMap(
-                              mapType: def.mapType,
-                              charRealmTier: widget.charRealmTier,
-                              maps: maps,
-                            );
-                            return _MapCard(
-                              def: def,
-                              isActive: isActive,
-                              canEnter: canEnter,
-                              activeSession: isActive ? active : null,
-                              onTap: () => _onMapTap(context, def),
-                              currentRealm: widget.charRealmTier,
-                            );
-                          },
+                            (contentWidth - 32 - (columns - 1) * 14) / columns;
+                        return Center(
+                          child: SizedBox(
+                            width: contentWidth,
+                            child: GridView.builder(
+                              padding: const EdgeInsets.all(16),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: columns,
+                                    mainAxisSpacing: 14,
+                                    crossAxisSpacing: 14,
+                                    childAspectRatio: cardWidth / cardHeight,
+                                  ),
+                              itemCount: maps.length,
+                              itemBuilder: (context, i) {
+                                final def = maps[i];
+                                final isActive =
+                                    active != null &&
+                                    active.mapType == def.mapType;
+                                final canEnter = SeclusionService.canEnterMap(
+                                  mapType: def.mapType,
+                                  charRealmTier: widget.charRealmTier,
+                                  maps: maps,
+                                );
+                                return _MapCard(
+                                  def: def,
+                                  isActive: isActive,
+                                  canEnter: canEnter,
+                                  activeSession: isActive ? active : null,
+                                  onTap: () => _onMapTap(context, def),
+                                  currentRealm: widget.charRealmTier,
+                                );
+                              },
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -206,6 +219,37 @@ class _SeclusionMapListScreenState
           ),
         ),
       ),
+    );
+  }
+}
+
+double _seclusionContentWidth(double width) {
+  if (width >= 1540) return 1500;
+  return width;
+}
+
+int _seclusionMapColumns(double width) {
+  if (width >= 1320) return 3;
+  if (width >= 940) return 2;
+  return 1;
+}
+
+class _CenteredSeclusionContent extends StatelessWidget {
+  const _CenteredSeclusionContent({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Center(
+          child: SizedBox(
+            width: _seclusionContentWidth(constraints.maxWidth),
+            child: child,
+          ),
+        );
+      },
     );
   }
 }
