@@ -160,6 +160,10 @@ enum VisualRoute {
     'shop',
     '江湖商店主屏目检·种银两80(够磨剑石30两·不够心血结晶120):货币顶栏 + 固定货架分类 + 磨剑石可买(绿)/心血结晶不可买(红 disabled)两态',
   ),
+  shopBuyConfirm(
+    'shop_buy_confirm',
+    '商店购买确认弹窗打开态目检·真 ShopScreen 货架为背景 + 暗幕 + 复刻 _handleBuy 的 PaperDialog 确认弹窗(磨剑石 ×1 · 定价取真 def · 取消/购买木牌),冻结在弹窗打开态(静态截动态确认态)',
+  ),
   inventoryCurrency(
     'inventory_currency',
     '背包货币位目检·种银两+磨剑石+心血结晶,直开材料 tab:顶部货币位顶栏(银两X两) + 材料网格(磨剑石/心血结晶,银两不重复进网格)',
@@ -171,6 +175,10 @@ enum VisualRoute {
   itemUseInventory(
     'item_use_inventory',
     'P2 材料用途目检·背包物料 tab 直开:种经验丹三档(凝神/培元/大还,验 per-item 名不同)+ 秘籍(开碑手)+ 磨剑石,验丹/秘籍显「使用」按钮·磨剑石无按钮(仅可用道具显),点使用→确认弹窗→结果三态浮层',
+  ),
+  itemUseConfirmDialog(
+    'item_use_confirm_dialog',
+    '道具使用确认弹窗打开态目检·真 InventoryScreen 物料 tab 为背景 + 暗幕 + 复刻 _onUse 的 PaperDialog 使用确认弹窗(凝神丹 · 道具名取真 ItemDef · 取消/使用木牌),冻结在弹窗打开态(静态截动态确认态)',
   ),
   taohuaIsland(
     'taohua_island',
@@ -186,6 +194,10 @@ enum VisualRoute {
   skillCodexDetail(
     'skill_codex_detail',
     '武学详情屏目检·同步显招名+description+数值+所属心法+熟练阶',
+  ),
+  skillCodexLockedSnackbar(
+    'skill_codex_locked_snackbar',
+    '武学图鉴点剪影未解锁 snackbar 态目检·真混态图鉴(前6点亮+其余剪影)为背景,post-frame 触发与 _SilhouetteRow 一致的 ScaffoldMessenger snackbar「尚未习得」(守 §5.7 不泄解锁条件,延长 duration 驻留供截图)',
   ),
   zangjuange('zangjuange', '藏卷阁 Hub 目检·战绩册/兵器谱/奇遇录/藏经阁聚合入口 + 卷中线索'),
   redlineAudit('redline_audit', '数值红线审计·开发工具视图(PASS/WARN/FAIL + 当前最大值 + 来源)'),

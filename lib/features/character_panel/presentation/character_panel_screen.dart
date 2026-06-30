@@ -146,7 +146,7 @@ class _LineageTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -177,27 +177,27 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _ProfileHeaderCard(character: character),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _RealmCultivationSection(character: character),
           _BreakthroughBlockerSection(character: character),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _BaseAttributesSection(character: character),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _DerivedStatsSection(character: character),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _EquipmentSection(character: character),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _TechniqueSection(character: character),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _StatusEffectsSection(character: character),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           EncounterSkillSection(character: character),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _LineageSection(character: character),
         ],
       ),
@@ -224,7 +224,7 @@ class _ProfileHeaderCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const _SectionTitle(UiStrings.panelIdentity),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -297,7 +297,7 @@ class _RealmCultivationSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const _SectionTitle(UiStrings.panelRealmCultivation),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
             decoration: BoxDecoration(
@@ -343,7 +343,7 @@ class _RealmCultivationSection extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           _LevelChip(character: character),
         ],
       ),
