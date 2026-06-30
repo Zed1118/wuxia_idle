@@ -129,56 +129,68 @@ class StageListScreen extends ConsumerWidget {
               ],
             );
 
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              children: [
-                _StageJourneyMap(chapterIndex: chapterIndex, entries: entries),
-                _ChapterFarmSpotsPanel(entries: entries),
-                const SizedBox(height: 12),
-                // 章级周目选择控件(整章已通才显)。置于扫荡按钮上方:先选周目、
-                // 再扫荡,扫荡按钮随选定周目刷新标签与门槛。
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: CycleSelectControl(chapterKey: chapterKey),
-                ),
-                // 一键扫荡本章入口:本周目全关已通→醒目金按钮;未通→灰显+提示
-                // (§5.7 灰掉,告知玩家需先手工通关该周目全部关卡)。
-                _ChapterSweepButton(
-                  chapterIndex: chapterIndex,
-                  entries: entries,
-                  eligible:
-                      progress != null &&
-                      SweepEligibility.forChapter(
-                        clearedStageCycleKeys: progress.clearedStageCycleKeys,
-                        cycle: cycleFor(),
-                        chapterStageIds: [for (final e in entries) e.def.id],
-                      ),
-                  // 灰显门槛提示仅在本章至少通关过一次后出现;全新未通章仍隐藏
-                  // (不在每章顶堆砌锁定按钮)。覆盖用户真实困惑:通过一次后切周目不能扫。
-                  everCleared:
-                      progress != null &&
-                      MainlineProgressService.highestClearedCycleForChapter(
-                            progress,
-                            chapterKey,
-                          ) >=
-                          1,
+            final sweepEligible =
+                progress != null &&
+                SweepEligibility.forChapter(
+                  clearedStageCycleKeys: progress.clearedStageCycleKeys,
                   cycle: cycleFor(),
-                ),
-                _ChapterStageTimeline(
-                  entries: entries,
-                  statusFor: statusFor,
-                  targetCycle: cycleFor(),
-                  currentRealm: currentRealm,
-                  activeCharacters: activeCharacters,
-                  goalGuidance: currentGoal,
-                  onRunStage: (stage) => runStageFlow(
-                    context: context,
-                    ref: ref,
-                    stage: stage,
-                    targetCycle: cycleFor(),
+                  chapterStageIds: [for (final e in entries) e.def.id],
+                );
+            final everCleared =
+                progress != null &&
+                MainlineProgressService.highestClearedCycleForChapter(
+                      progress,
+                      chapterKey,
+                    ) >=
+                    1;
+
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                return Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1120),
+                    child: ListView(
+                      padding: EdgeInsets.fromLTRB(
+                        constraints.maxWidth >= 900 ? 24 : 16,
+                        16,
+                        constraints.maxWidth >= 900 ? 24 : 16,
+                        20,
+                      ),
+                      children: [
+                        _StageJourneyMap(
+                          chapterIndex: chapterIndex,
+                          entries: entries,
+                        ),
+                        _ChapterFarmSpotsPanel(entries: entries),
+                        const SizedBox(height: 12),
+                        _StageActionBand(
+                          chapterKey: chapterKey,
+                          chapterIndex: chapterIndex,
+                          entries: entries,
+                          eligible: sweepEligible,
+                          everCleared: everCleared,
+                          cycle: cycleFor(),
+                        ),
+                        _ChapterStageTimeline(
+                          entries: entries,
+                          statusFor: statusFor,
+                          targetCycle: cycleFor(),
+                          currentRealm: currentRealm,
+                          activeCharacters: activeCharacters,
+                          goalGuidance: currentGoal,
+                          onRunStage: (stage) => runStageFlow(
+                            context: context,
+                            ref: ref,
+                            stage: stage,
+                            targetCycle: cycleFor(),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                );
+              },
             );
           },
         ),
@@ -190,6 +202,58 @@ class StageListScreen extends ConsumerWidget {
 typedef _StageStatusResolver = StageStatus Function(StageEntry entry);
 typedef _StageRunCallback = void Function(StageDef stage);
 
+class _StageActionBand extends StatelessWidget {
+  const _StageActionBand({
+    required this.chapterKey,
+    required this.chapterIndex,
+    required this.entries,
+    required this.eligible,
+    required this.everCleared,
+    required this.cycle,
+  });
+
+  final String chapterKey;
+  final int chapterIndex;
+  final List<StageEntry> entries;
+  final bool eligible;
+  final bool everCleared;
+  final int cycle;
+
+  @override
+  Widget build(BuildContext context) {
+    final showSweep = eligible || everCleared;
+    if (!showSweep) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      decoration: BoxDecoration(
+        color: WuxiaColors.panel.withValues(alpha: 0.78),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.70)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // 章级周目选择控件(整章已通才显)。置于扫荡按钮上方:先选周目、
+          // 再扫荡,扫荡按钮随选定周目刷新标签与门槛。
+          CycleSelectControl(chapterKey: chapterKey),
+          // 一键扫荡本章入口:本周目全关已通→醒目金按钮;未通→灰显+提示
+          // (§5.7 灰掉,告知玩家需先手工通关该周目全部关卡)。
+          _ChapterSweepButton(
+            chapterIndex: chapterIndex,
+            entries: entries,
+            eligible: eligible,
+            // 灰显门槛提示仅在本章至少通关过一次后出现;全新未通章仍隐藏
+            // (不在每章顶堆砌锁定按钮)。覆盖用户真实困惑:通过一次后切周目不能扫。
+            everCleared: everCleared,
+            cycle: cycle,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _StageJourneyMap extends StatelessWidget {
   const _StageJourneyMap({required this.chapterIndex, required this.entries});
 
@@ -199,7 +263,7 @@ class _StageJourneyMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 214,
+      height: 224,
       decoration: BoxDecoration(
         color: WuxiaColors.panel,
         borderRadius: BorderRadius.circular(8),
@@ -227,7 +291,7 @@ class _StageJourneyMap extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -275,23 +339,44 @@ class _StageJourneyMap extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
-                Row(
-                  children: [
-                    for (var i = 0; i < entries.length; i++) ...[
-                      Expanded(
-                        child: _StageJourneyNode(
-                          stageIndex: i + 1,
-                          entry: entries[i],
-                        ),
-                      ),
-                      if (i != entries.length - 1)
-                        Container(
-                          width: 28,
-                          height: 2,
-                          color: WuxiaColors.textMuted.withValues(alpha: 0.45),
-                        ),
-                    ],
-                  ],
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final compact = constraints.maxWidth < 760;
+                    final route = Row(
+                      children: [
+                        for (var i = 0; i < entries.length; i++) ...[
+                          if (compact)
+                            SizedBox(
+                              width: 112,
+                              child: _StageJourneyNode(
+                                stageIndex: i + 1,
+                                entry: entries[i],
+                              ),
+                            )
+                          else
+                            Expanded(
+                              child: _StageJourneyNode(
+                                stageIndex: i + 1,
+                                entry: entries[i],
+                              ),
+                            ),
+                          if (i != entries.length - 1)
+                            Container(
+                              width: 30,
+                              height: 2,
+                              color: WuxiaColors.textMuted.withValues(
+                                alpha: 0.45,
+                              ),
+                            ),
+                        ],
+                      ],
+                    );
+                    if (!compact) return route;
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: route,
+                    );
+                  },
                 ),
               ],
             ),
@@ -330,12 +415,12 @@ class _ChapterStageTimeline extends StatelessWidget {
           UiStrings.stageListTimelineStopLabel(i + 1, entries[i].def.name),
       ].join(' · '),
       child: Padding(
-        padding: const EdgeInsets.only(top: 4),
+        padding: const EdgeInsets.only(top: 2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const _TimelineHeader(),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             for (var i = 0; i < entries.length; i++)
               _TimelineStageStop(
                 stageIndex: i + 1,
@@ -431,7 +516,7 @@ class _TimelineStageStop extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 54,
+          width: 58,
           child: _TimelineAxisMarker(
             stageIndex: stageIndex,
             status: status,
@@ -487,13 +572,13 @@ class _TimelineAxisMarker extends StatelessWidget {
     };
     final lineColor = WuxiaColors.textMuted.withValues(alpha: 0.34);
     return SizedBox(
-      height: 112,
+      height: 108,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Positioned(
             top: first ? 28 : 0,
-            bottom: last ? 74 : 0,
+            bottom: last ? 70 : 0,
             child: Container(width: 2, color: lineColor),
           ),
           Align(
