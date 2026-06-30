@@ -38,7 +38,7 @@ class MainMenuRetreatBanner extends ConsumerWidget {
     final isCapped = capMin <= plannedMin && elapsedMin >= capMin;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.only(top: 12),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
