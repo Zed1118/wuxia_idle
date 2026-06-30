@@ -385,6 +385,7 @@ class _ArchiveGlyph extends StatelessWidget {
       child: Icon(
         icon,
         size: 20,
+        // paper-text-audit: allow muted branch renders on dark sidebar fill
         color: muted ? WuxiaColors.textMuted : WuxiaUi.gold,
       ),
     );

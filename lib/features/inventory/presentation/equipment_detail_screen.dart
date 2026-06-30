@@ -443,12 +443,12 @@ class _InfoCard extends ConsumerWidget {
                 _Chip(text: EnumL10n.equipmentTier(def.tier), color: color),
                 _Chip(
                   text: EnumL10n.equipmentSlot(def.slot),
-                  color: WuxiaColors.textSecondary,
+                  color: WuxiaUi.muted,
                 ),
                 if (def.schoolBias != null)
                   _Chip(
                     text: EnumL10n.school(def.schoolBias!),
-                    color: WuxiaColors.textSecondary,
+                    color: WuxiaUi.muted,
                   ),
                 // W15 后波 fix:读 equipment 实例字段而非 def 字段(覆盖 def 自带 /
                 // 奇遇临时遗物 override / 师承 inheritFrom 三路,读 def 漏后两路)。
@@ -792,7 +792,7 @@ class _ForgingSpecialSkillSection extends StatelessWidget {
                 runSpacing: 8,
                 children: [
                   for (final chip in chips)
-                    _Chip(text: chip, color: WuxiaColors.textSecondary),
+                    _Chip(text: chip, color: WuxiaUi.muted),
                 ],
               ),
             ],

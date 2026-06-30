@@ -6,6 +6,7 @@ import '../../../data/isar_setup.dart';
 import '../../../data/slot_summary.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
@@ -95,10 +96,7 @@ class SaveSelectScreen extends ConsumerWidget {
     final r = await PaperDialog.show<bool>(
       context,
       title: title,
-      body: Text(
-        body,
-        style: const TextStyle(color: WuxiaColors.textSecondary),
-      ),
+      body: Text(body, style: const TextStyle(color: WuxiaUi.ink2)),
       actions: [
         Builder(
           builder: (ctx) => PlaqueButton(
@@ -130,7 +128,7 @@ class SaveSelectScreen extends ConsumerWidget {
         initialValue: currentName,
         onChanged: (value) => currentName = value,
         autofocus: true,
-        style: const TextStyle(color: WuxiaColors.textPrimary),
+        style: const TextStyle(color: WuxiaUi.ink),
         decoration: const InputDecoration(
           labelText: UiStrings.slotRenameInputLabel,
           helperText: UiStrings.slotRenameClearHint,
@@ -174,20 +172,17 @@ class SaveSelectScreen extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    body,
-                    style: const TextStyle(color: WuxiaColors.textSecondary),
-                  ),
+                  Text(body, style: const TextStyle(color: WuxiaUi.ink2)),
                   const SizedBox(height: 12),
                   Text(
                     UiStrings.slotDeleteProtectionValue(requiredName),
-                    style: const TextStyle(color: WuxiaColors.textMuted),
+                    style: const TextStyle(color: WuxiaUi.muted),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     autofocus: true,
                     onChanged: (value) => setState(() => typedName = value),
-                    style: const TextStyle(color: WuxiaColors.textPrimary),
+                    style: const TextStyle(color: WuxiaUi.ink),
                     decoration: const InputDecoration(
                       labelText: UiStrings.slotDeleteInputLabel,
                       helperText: UiStrings.slotDeleteProtectionHint,

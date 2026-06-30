@@ -359,9 +359,10 @@ class _RouteStep extends StatelessWidget {
             child: Text(
               text,
               style: const TextStyle(
-                color: WuxiaColors.textSecondary,
+                color: WuxiaUi.ink2,
                 fontSize: 13,
                 height: 1.32,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -386,7 +387,7 @@ class _MapEventLine extends StatelessWidget {
     final color = switch (event.kind) {
       RetreatMapEventKind.harvest => WuxiaUi.gold,
       RetreatMapEventKind.risk => WuxiaColors.gangMeng,
-      RetreatMapEventKind.trace => WuxiaColors.textSecondary,
+      RetreatMapEventKind.trace => WuxiaUi.muted,
     };
     return Container(
       margin: const EdgeInsets.only(top: 2, bottom: 7),
@@ -405,9 +406,10 @@ class _MapEventLine extends StatelessWidget {
             child: Text(
               '${UiStrings.seclusionMapEventHour(event.hourMark)} · $label：${event.text}',
               style: const TextStyle(
-                color: WuxiaColors.textPrimary,
+                color: WuxiaUi.ink2,
                 fontSize: 13,
                 height: 1.32,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

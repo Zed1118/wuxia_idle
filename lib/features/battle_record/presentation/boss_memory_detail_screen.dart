@@ -79,7 +79,7 @@ class BossMemoryDetailScreen extends StatelessWidget {
                       child: Text(
                         UiStrings.battleRecordPreRecord,
                         style: TextStyle(
-                          color: WuxiaColors.textMuted,
+                          color: WuxiaUi.muted,
                           fontSize: 13,
                           letterSpacing: 1,
                           fontStyle: FontStyle.italic,
@@ -90,7 +90,9 @@ class BossMemoryDetailScreen extends StatelessWidget {
                     // 完整态：渲染伤害/暴击/回合数字
                     if (memory.totalDamage != null)
                       _StatRow(
-                        label: UiStrings.battleRecordDamage(memory.totalDamage!),
+                        label: UiStrings.battleRecordDamage(
+                          memory.totalDamage!,
+                        ),
                       ),
                     if (memory.critCount != null)
                       _StatRow(
@@ -112,7 +114,9 @@ class BossMemoryDetailScreen extends StatelessWidget {
                   // 击败次数
                   const SizedBox(height: 4),
                   _StatRow(
-                    label: UiStrings.battleRecordDefeatCount(memory.defeatCount),
+                    label: UiStrings.battleRecordDefeatCount(
+                      memory.defeatCount,
+                    ),
                     muted: true,
                   ),
                 ],
@@ -127,13 +131,15 @@ class BossMemoryDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SectionHeader(UiStrings.battleRecordTopContributorTitle),
+                    const SectionHeader(
+                      UiStrings.battleRecordTopContributorTitle,
+                    ),
                     Row(
                       children: [
                         Text(
                           memory.topContributorName!,
                           style: const TextStyle(
-                            color: WuxiaColors.textPrimary,
+                            color: WuxiaUi.ink,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1,
@@ -172,7 +178,7 @@ class BossMemoryDetailScreen extends StatelessWidget {
                         Text(
                           memory.treasureName!,
                           style: const TextStyle(
-                            color: WuxiaColors.textPrimary,
+                            color: WuxiaUi.ink,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1,
@@ -183,7 +189,7 @@ class BossMemoryDetailScreen extends StatelessWidget {
                           Text(
                             EnumL10n.equipmentTier(memory.treasureTier!),
                             style: const TextStyle(
-                              color: WuxiaColors.textMuted,
+                              color: WuxiaUi.muted,
                               fontSize: 12,
                             ),
                           ),
@@ -262,11 +268,7 @@ class _BossPortraitHero extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.3)),
       ),
-      child: const Icon(
-        Icons.person_outline,
-        color: Colors.white24,
-        size: 56,
-      ),
+      child: const Icon(Icons.person_outline, color: Colors.white24, size: 56),
     );
   }
 }

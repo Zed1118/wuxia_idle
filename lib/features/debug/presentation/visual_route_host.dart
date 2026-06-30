@@ -876,48 +876,70 @@ class _VictoryFirstClearPreview extends StatelessWidget {
                   children: [
                     const _VictorySealMark(),
                     const SizedBox(height: 12),
-                    AlertDialog(
-                      title: const Text('風雨渡口 · 戰鬥勝利'),
-                      content: StageVictoryContent(
-                        firstClearTitle: UiStrings.stageVictoryBossFirstClear(
-                          '风雨渡口',
-                        ),
-                        drops: DropResult(
-                          equipments: [eq],
-                          items: const [
-                            ItemDropResult(
-                              defId: 'item_mojianshi',
-                              quantity: 8,
-                            ),
-                          ],
-                        ),
-                        advancements: const [
-                          AdvancementEntry(
-                            chName: '阴柔丙',
-                            result: AdvancementResult(
-                              layersGained: 1,
-                              tierBefore: RealmTier.xueTu,
-                              layerBefore: RealmLayer.qiMeng,
-                              tierAfter: RealmTier.xueTu,
-                              layerAfter: RealmLayer.ruMen,
-                              internalForceMaxBefore: 500,
-                              internalForceMaxAfter: 650,
+                    PaperPanel(
+                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+                      paperOpacity: 0.22,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            '風雨渡口 · 戰鬥勝利',
+                            style: TextStyle(
+                              color: WuxiaUi.ink,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 3,
                             ),
                           ),
-                        ],
-                        resonanceUpgrades: const [
-                          ResonanceUpgradeNotice(
-                            equipmentName: '天问剑',
-                            newStage: ResonanceStage.moQi,
+                          const SizedBox(height: 12),
+                          StageVictoryContent(
+                            firstClearTitle:
+                                UiStrings.stageVictoryBossFirstClear('风雨渡口'),
+                            drops: DropResult(
+                              equipments: [eq],
+                              items: const [
+                                ItemDropResult(
+                                  defId: 'item_mojianshi',
+                                  quantity: 8,
+                                ),
+                              ],
+                            ),
+                            advancements: const [
+                              AdvancementEntry(
+                                chName: '阴柔丙',
+                                result: AdvancementResult(
+                                  layersGained: 1,
+                                  tierBefore: RealmTier.xueTu,
+                                  layerBefore: RealmLayer.qiMeng,
+                                  tierAfter: RealmTier.xueTu,
+                                  layerAfter: RealmLayer.ruMen,
+                                  internalForceMaxBefore: 500,
+                                  internalForceMaxAfter: 650,
+                                ),
+                              ),
+                            ],
+                            resonanceUpgrades: const [
+                              ResonanceUpgradeNotice(
+                                equipmentName: '天问剑',
+                                newStage: ResonanceStage.moQi,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(minWidth: 112),
+                              child: PlaqueButton(
+                                label: UiStrings.stageVictoryConfirm,
+                                primary: true,
+                                onTap: () {},
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text(UiStrings.stageVictoryConfirm),
-                        ),
-                      ],
                     ),
                   ],
                 ),

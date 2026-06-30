@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../strings.dart';
 import '../../theme/colors.dart';
+import '../../theme/wuxia_tokens.dart';
 import 'paper_panel.dart';
 import 'plaque_button.dart';
 
@@ -16,12 +17,7 @@ import 'plaque_button.dart';
 /// 用 [WuxiaColors] / [PaperPanel] / [PlaqueButton],不硬编码颜色。空态请保持
 /// 各自的 `_EmptyHint`,本组件只负责「真出错」分支。
 class ErrorFallback extends StatelessWidget {
-  const ErrorFallback({
-    super.key,
-    this.message,
-    this.onRetry,
-    this.error,
-  });
+  const ErrorFallback({super.key, this.message, this.onRetry, this.error});
 
   /// 自定义提示文案;null 用 [UiStrings.errorFallbackMessage]。
   final String? message;
@@ -48,7 +44,7 @@ class ErrorFallback extends StatelessWidget {
                 message ?? UiStrings.errorFallbackMessage,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: WuxiaColors.textSecondary,
+                  color: WuxiaUi.ink2,
                   fontSize: 14,
                   height: 1.4,
                 ),
