@@ -32,25 +32,34 @@ class _MartialArtsTabState extends ConsumerState<MartialArtsTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _ManualSwitch(
-          selected: _section,
-          onSelect: (section) => setState(() => _section = section),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: _kCodexMaxWidth),
+        child: Column(
+          children: [
+            _ManualSwitch(
+              selected: _section,
+              onSelect: (section) => setState(() => _section = section),
+            ),
+            Expanded(
+              child: _section == _ManualSection.skills
+                  ? _SkillCodexBody(ref: ref)
+                  : _TechniqueCodexBody(
+                      tierFilter: _tierFilter,
+                      onTierFilterChanged: (tier) =>
+                          setState(() => _tierFilter = tier),
+                    ),
+            ),
+          ],
         ),
-        Expanded(
-          child: _section == _ManualSection.skills
-              ? _SkillCodexBody(ref: ref)
-              : _TechniqueCodexBody(
-                  tierFilter: _tierFilter,
-                  onTierFilterChanged: (tier) =>
-                      setState(() => _tierFilter = tier),
-                ),
-        ),
-      ],
+      ),
     );
   }
 }
+
+/// 图鉴列表内容最大宽度,与藏经阁(ZangjuangeScreen)等同类典藏页对齐,
+/// 宽屏(1280/1440/1920)下居中,消除右侧大片空黑。
+const double _kCodexMaxWidth = 760;
 
 class _SkillCodexBody extends StatelessWidget {
   const _SkillCodexBody({required this.ref});
