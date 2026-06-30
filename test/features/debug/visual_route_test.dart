@@ -127,6 +127,20 @@ void main() {
         VisualRoute.recruitmentDialog,
       );
     });
+    test('动态态 dedicated 路由 parse(确认弹窗 / 使用弹窗 / 未解锁 snackbar)', () {
+      expect(
+        parseVisualRoute('shop_buy_confirm'),
+        VisualRoute.shopBuyConfirm,
+      );
+      expect(
+        parseVisualRoute('item_use_confirm_dialog'),
+        VisualRoute.itemUseConfirmDialog,
+      );
+      expect(
+        parseVisualRoute('skill_codex_locked_snackbar'),
+        VisualRoute.skillCodexLockedSnackbar,
+      );
+    });
   });
 
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。

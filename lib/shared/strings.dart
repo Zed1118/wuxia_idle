@@ -26,7 +26,6 @@ class UiStrings {
   static const String errorFallbackMessage = '数据加载异常，请重试';
   static const String errorRetry = '重试';
   static const String errorNoSaveTitle = '卷宗未启';
-  static const String errorNoSaveAction = '返回';
 
   /// 战斗顶栏标题：`战斗 N v M`，N/M 为双方存活人数。
   static String battleTitle(int leftAlive, int rightAlive) =>
@@ -768,7 +767,6 @@ class UiStrings {
   static const String equipmentCardCoreStats = '核心属性';
   static const String equipmentCardRealmGate = '门槛';
   static const String equipmentCardStatusReady = '可装备';
-  static const String equipmentCardStatusFree = '未穿戴';
   static const String equipmentCardActionView = '查看';
 
   /// 装备详情共鸣行:`战斗 N 次`。

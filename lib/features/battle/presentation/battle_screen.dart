@@ -2265,8 +2265,8 @@ class _BottomBar extends StatelessWidget {
     ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
 
     return Container(
-      height: 104,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      height: 116,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       decoration: const BoxDecoration(
         color: WuxiaColors.panel,
         border: Border(top: BorderSide(color: WuxiaColors.border)),
@@ -2279,9 +2279,9 @@ class _BottomBar extends StatelessWidget {
             focusSlotIndex: focusSlotIndex,
             onSelectFocus: onSelectFocus,
           ),
-          const SizedBox(width: 10),
-          Container(width: 1, height: 68, color: WuxiaColors.border),
           const SizedBox(width: 12),
+          Container(width: 1, height: 76, color: WuxiaColors.border),
+          const SizedBox(width: 14),
           Expanded(
             child: focus == null
                 ? const SizedBox.shrink()
@@ -2305,13 +2305,13 @@ class _BottomBar extends StatelessWidget {
                             onDragEnd: onSkillDragEnd,
                             onDragCancel: onSkillDragCancel,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                         ],
                       ],
                     ),
                   ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 14),
           _FastForwardButton(onPressed: onFastForward, isActive: isFastForward),
         ],
       ),
@@ -2370,8 +2370,8 @@ class _FocusChip extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
       child: Container(
-        width: 52,
-        height: 66,
+        width: 54,
+        height: 72,
         decoration: BoxDecoration(
           color: selected ? color.withValues(alpha: 0.28) : WuxiaColors.sidebar,
           border: Border.all(
@@ -2671,8 +2671,8 @@ class _FastForwardButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 96,
-      height: 52,
+      width: 100,
+      height: 60,
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
