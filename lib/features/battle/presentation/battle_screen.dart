@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/battle_log.dart';
@@ -1220,8 +1221,24 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       child: child,
                     );
                   },
-                  child: Column(
-                    children: [
+                  child: Focus(
+                    autofocus: true,
+                    onKeyEvent: (node, event) {
+                      if (event is KeyDownEvent &&
+                          event.logicalKey == LogicalKeyboardKey.escape &&
+                          _pendingSkill != null) {
+                        _clearPending();
+                        return KeyEventResult.handled;
+                      }
+                      return KeyEventResult.ignored;
+                    },
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: () {
+                        if (_pendingSkill != null) _clearPending();
+                      },
+                      child: Column(
+                        children: [
                       if (widget.hint != null) _HintBanner(hint: widget.hint!),
                       if (widget.cycleHint != null)
                         _CycleHintBanner(hint: widget.cycleHint!),
@@ -1282,6 +1299,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                         onSkillTap: _onSkillTap,
                       ),
                     ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -1320,7 +1339,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             // 验收路由 startPaused 不挂全屏遮罩——否则会拦截顶栏「单步」点击
             // 并误触发恢复;此模式靠顶栏暂停/继续 + 单步按钮操作。
             // 待发态(_pendingSkill != null)的软暂停不挂遮罩——否则会拦截点敌头像
-            // 选目标的 tap;待发态靠再点同一技能取消(后续 task 补空白/ESC 取消)。
+            // 选目标的 tap;待发态靠再点同一技能 / 空白点击 / ESC 取消。
             if (_isPaused &&
                 _pendingSkill == null &&
                 state.result == null &&

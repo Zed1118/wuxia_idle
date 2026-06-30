@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/battle_providers.dart';
@@ -195,6 +196,22 @@ void main() {
       await tester.tap(enemy);
       await tester.pump();
       expect(notifier.interveneCount, 0, reason: '已取消');
+    });
+
+    testWidgets('待发态 ESC 键取消(点敌不出手)', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pump();
+      final enemy = find.byWidgetPredicate(
+        (w) => w is CharacterAvatar && w.character.characterId == 11,
+      );
+      await tester.tap(enemy);
+      await tester.pump();
+      expect(notifier.interveneCount, 0, reason: 'ESC 已取消待发,点敌不出手');
     });
   });
 
