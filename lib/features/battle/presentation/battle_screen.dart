@@ -141,7 +141,7 @@ double slotVerticalFraction(int slotIndex, int teamSize) {
   return (slotIndex + 0.5) / teamSize;
 }
 
-/// 拖招表现层静态验收预置态(仅 [BattleScreen.debugDragPreview] / battle_drag_preview
+/// 拖招表现层静态验收预置态(仅 [BattleScreen.debugDragPreview] / battle_tap_preview
 /// 路由用)。拖招引导线/蓄势光晕/悬停高亮都靠长按拖手势触发,Codex 鼠标合成无法重现,
 /// 故用这个免手势预置态截图验新样式。生产路径不构造。
 class BattleDragPreview {
@@ -219,7 +219,7 @@ class BattleScreen extends ConsumerStatefulWidget {
   final bool allowPlayerIntervention;
 
   /// 仅调试/验收用:预置拖招表现层静态态(引导线 + 蓄势光晕 + 悬停高亮),供
-  /// Codex 截图验新样式 —— 拖招手势靠长按拖,鼠标合成无法触发(见 battle_drag_preview
+  /// Codex 截图验新样式 —— 拖招手势靠长按拖,鼠标合成无法触发(见 battle_tap_preview
   /// 路由)。生产路径恒 null,不影响任何真实战斗。配 [autoStart] false 冻结画面。
   final BattleDragPreview? debugDragPreview;
 

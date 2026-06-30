@@ -355,7 +355,7 @@ class BattleScenarioData {
     return (left, right);
   }
 
-  /// 拖招交互真玩/验收专用(battle_drag_live 路由)。
+  /// 拖招交互真玩/验收专用(battle_tap_live 路由)。
   ///
   /// 配合 ScenarioLauncher(allowPlayerIntervention:true, autoStart:true):战斗自动
   /// 播放、拖招干预层已挂。**给足时间拖**是核心:
@@ -649,7 +649,7 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   final int? seed;
 
   /// 透传给 BattleScreen.allowPlayerIntervention(默认 false 现有静态验收用法不变);
-  /// true 时挂拖招干预层(技能按钮长按拖 + 引导线 + drop 命中),供 battle_drag_live
+  /// true 时挂拖招干预层(技能按钮长按拖 + 引导线 + drop 命中),供 battle_tap_live
   /// 路由真玩/Codex 验拖招手势。
   final bool allowPlayerIntervention;
 

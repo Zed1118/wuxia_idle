@@ -175,10 +175,10 @@ void main() {
       expect(launcher.autoStart, isFalse);
     });
 
-    test('battle_drag_live → allowPlayerIntervention:true + autoStart:true '
-        '(拖招干预层必须挂,守 ScenarioLauncher 透传缺口)', () async {
+    test('battle_tap_live → allowPlayerIntervention:true + autoStart:true '
+        '(两段点选干预层必须挂,守 ScenarioLauncher 透传缺口)', () async {
       final target = await buildVisualTarget(
-        VisualRoute.battleDragLive,
+        VisualRoute.battleTapLive,
         IsarSetup.instance,
       );
       expect(target, isA<ScenarioLauncher>());
@@ -191,10 +191,10 @@ void main() {
       expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,拖招随时干预');
     });
 
-    test('battle_drag_preview → autoStart:false + debugDragPreview 预置 '
-        '(拖招表现层静态验收;手势鼠标合成不出,守预置态透传)', () async {
+    test('battle_tap_preview → autoStart:false + debugDragPreview 预置 '
+        '(两段点选表现层静态验收;手势鼠标合成不出,守预置态透传)', () async {
       final target = await buildVisualTarget(
-        VisualRoute.battleDragPreview,
+        VisualRoute.battleTapPreview,
         IsarSetup.instance,
       );
       expect(target, isA<ScenarioLauncher>());
