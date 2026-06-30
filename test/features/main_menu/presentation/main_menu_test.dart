@@ -181,6 +181,19 @@ void main() {
     });
   }
 
+  testWidgets('宽屏主内容列限制最大宽度，避免入口横向摊开', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1600, 1000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(app());
+    await tester.pump();
+
+    final contentSize = tester.getSize(
+      find.byKey(const ValueKey('main-menu-content')),
+    );
+    expect(contentSize.width, lessThanOrEqualTo(1088));
+  });
+
   testWidgets('入口状态 chip：主线 / 爬塔 / 装备 / 心法 / 闭关', (tester) async {
     final now = DateTime(2026, 6, 7);
     final mainTechnique = Technique.create(
