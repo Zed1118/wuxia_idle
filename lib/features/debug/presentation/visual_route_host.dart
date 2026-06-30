@@ -47,6 +47,7 @@ import '../../seclusion/presentation/seclusion_setup_screen.dart';
 import '../../seclusion/presentation/offline_recap_card.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
+import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../application/phase2_seed_service.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
 import '../../battle/presentation/battle_scene_background.dart';
@@ -545,6 +546,17 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       await _seedInventoryItem(isar, 'item_mojianshi', 24);
       await _seedInventoryItem(isar, 'item_xinxuejiejing', 6);
       return const InventoryScreen(initialTab: 1);
+    case VisualRoute.resourceOverview:
+      // 资源总览目检:只种 debug 库存行,由 ResourceOverviewScreen 走真 provider
+      // 派生五类资源的来源/用途/近期去向。不改业务系统数值或结算路径。
+      await _seedInventoryItem(isar, 'item_silver', 360);
+      await _seedInventoryItem(isar, 'item_mojianshi', 90);
+      await _seedInventoryItem(isar, 'item_xinxuejiejing', 12);
+      await _seedInventoryItem(isar, 'item_jingtie', 60);
+      await _seedInventoryItem(isar, 'item_yaocao', 36);
+      await _seedInventoryItem(isar, 'item_jingyandan_small', 3);
+      await _seedInventoryItem(isar, 'item_scroll_kai_bei_shou', 1);
+      return const ResourceOverviewScreen();
     case VisualRoute.mainMenuShop:
       // 主菜单商店入口目检:种银两解锁商店 → 验「江湖商店」隐藏式入口木牌出现(§5.7)。
       await OnboardingService(

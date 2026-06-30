@@ -145,6 +145,12 @@ void main() {
         VisualRoute.skillCodexLockedSnackbar,
       );
     });
+    test('资源总览路由 parse', () {
+      expect(
+        parseVisualRoute('resource_overview'),
+        VisualRoute.resourceOverview,
+      );
+    });
   });
 
   // route 枚举 → buildVisualTarget → ScenarioLauncher 胶水回归。
