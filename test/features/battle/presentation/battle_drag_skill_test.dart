@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,12 +10,12 @@ import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 
-/// 战斗交互重做 Phase 4 拖招交互 widget/单元测试。
+/// 战斗交互重做：两段点选 tap 释放 widget 测试。
 ///
 /// 复用 [battle_command_console_test] 的 no-op advance notifier 体例，避免 Timer
-/// 触发时读 GameRepository 崩溃；主线二 2.3 后拖招走 `interveneNow` 立即插队出手
-/// (预支 AP 归零)属引擎层，由真玩 + Codex 验收，这里用 spy override `interveneNow`
-/// 只锁死「拖到敌头像→下发 targetId / aoe 点触 / 门控」UI 契约(不真结算)。
+/// 触发时读 GameRepository 崩溃；tap 释放走 `interveneNow` 立即插队出手(预支 AP
+/// 归零)属引擎层，由真玩 + Codex 验收，这里用 spy override `interveneNow` 只锁死
+/// 「点 aoe 一键出手 / 点 single 进待发态→点敌出手 targetId / 取消 / 门控」UI 契约。
 
 const _testAnim = AnimationNumbers(
   attackRushMs: 10,
@@ -120,114 +119,68 @@ Future<_TestBattleNotifier> _pumpWith(
   return notifier;
 }
 
-/// 在技能按钮上长按拖到目标全局坐标后松手。
-Future<void> _longPressDragTo(
-  WidgetTester tester,
-  Finder skill,
-  Offset target,
-) async {
-  final start = tester.getCenter(skill);
-  final g = await tester.startGesture(start);
-  await tester.pump(kLongPressTimeout + const Duration(milliseconds: 20));
-  await g.moveTo(target);
-  await tester.pump();
-  await g.up();
-  await tester.pump();
-}
-
 void main() {
-  group('hitTestEnemyId 纯函数', () {
-    test('指针落在某敌矩形内 → 返回该 enemyId', () {
-      final r = hitTestEnemyId(const Offset(50, 50), const [
-        (enemyId: 11, rect: Rect.fromLTWH(0, 0, 100, 100)),
-        (enemyId: 12, rect: Rect.fromLTWH(200, 0, 100, 100)),
-      ]);
-      expect(r, 11);
-    });
-
-    test('指针落在第二个敌矩形 → 返回 12', () {
-      final r = hitTestEnemyId(const Offset(250, 50), const [
-        (enemyId: 11, rect: Rect.fromLTWH(0, 0, 100, 100)),
-        (enemyId: 12, rect: Rect.fromLTWH(200, 0, 100, 100)),
-      ]);
-      expect(r, 12);
-    });
-
-    test('指针不在任何矩形 → null', () {
-      final r = hitTestEnemyId(const Offset(500, 500), const [
-        (enemyId: 11, rect: Rect.fromLTWH(0, 0, 100, 100)),
-      ]);
-      expect(r, isNull);
-    });
-
-    test('空目标列表 → null', () {
-      final r = hitTestEnemyId(const Offset(0, 0), const []);
-      expect(r, isNull);
-    });
-  });
-
-  group('C4 群体技拖招触发', () {
-    // 批次 1.3：退掉裸单击下发后，aoe 也走长按拖招（_onSkillDragEnd 对 aoe
-    // 忽略落点直接下发，targetId 为空走 AI 选）。点击改为弹简介浮层。
-    testWidgets('长按 aoe 技能方块松手 → 立即触发 pending（targetId 为空走 AI 选）',
-        (tester) async {
+  group('两段点选 · tap 释放', () {
+    testWidgets('点 aoe 技能按钮 → 立即出手(targetId 空走 AI)', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_aoe]);
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
-
-      // aoe 松手落点无关紧要（落在底栏空白处也下发）。
-      await _longPressDragTo(
-        tester,
-        find.byKey(const ValueKey('skill_cmd_1_aoe1')),
-        const Offset(640, 700),
-      );
-
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.pump();
       expect(notifier.lastInterveneSkill?.id, 'aoe1');
       expect(notifier.lastInterveneChar, 1);
-      expect(notifier.lastInterveneTarget, isNull,
-          reason: 'aoe 拖招不指定目标，targetId 为空');
+      expect(notifier.lastInterveneTarget, isNull);
     });
-  });
 
-  group('C3+C4 单体拖招命中下发 targetId', () {
-    testWidgets('单体技长按拖到存活敌头像 → interveneNow 立即出手指向该敌',
+    testWidgets('点 single 技能按钮进待发态(不出手) → 点敌头像出手指向该敌',
         (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
-
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      expect(notifier.interveneCount, 0, reason: '单体技点按钮只进待发态');
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );
-      expect(enemy, findsOneWidget);
-
-      await _longPressDragTo(
-        tester,
-        find.byKey(const ValueKey('skill_cmd_1_single1')),
-        tester.getCenter(enemy),
-      );
-
+      await tester.tap(enemy);
+      await tester.pump();
       expect(notifier.lastInterveneSkill?.id, 'single1');
       expect(notifier.lastInterveneTarget, 11);
     });
 
-    testWidgets('单体技拖到空白处(未命中敌) → 不下发', (tester) async {
+    testWidgets('非待发态点敌头像不出手', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
-
-      await _longPressDragTo(
-        tester,
-        find.byKey(const ValueKey('skill_cmd_1_single1')),
-        const Offset(640, 700), // 底栏附近空白，非敌头像
+      final enemy = find.byWidgetPredicate(
+        (w) => w is CharacterAvatar && w.character.characterId == 11,
       );
+      await tester.tap(enemy);
+      await tester.pump();
+      expect(notifier.interveneCount, 0);
+    });
 
-      expect(notifier.interveneCount, 0, reason: '未命中敌不下发');
+    testWidgets('待发态再点同一技能 → 取消(点敌不出手)', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      final btn = find.byKey(const ValueKey('skill_cmd_1_single1'));
+      await tester.tap(btn);
+      await tester.pump();
+      await tester.tap(btn);
+      await tester.pump();
+      final enemy = find.byWidgetPredicate(
+        (w) => w is CharacterAvatar && w.character.characterId == 11,
+      );
+      await tester.tap(enemy);
+      await tester.pump();
+      expect(notifier.interveneCount, 0, reason: '已取消');
     });
   });
 
   group('门控 allowPlayerIntervention', () {
-    testWidgets('false 时点技能不下发（群战纯自动）', (tester) async {
+    testWidgets('false 时点 aoe 不出手', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_aoe]);
       final notifier = await _pumpWith(
@@ -236,18 +189,15 @@ void main() {
         right,
         allowPlayerIntervention: false,
       );
-
-      // 按钮存在但禁用：tap 不写 pending。
       await tester.tap(
         find.byKey(const ValueKey('skill_cmd_1_aoe1')),
         warnIfMissed: false,
       );
       await tester.pump();
-
       expect(notifier.interveneCount, 0);
     });
 
-    testWidgets('false 时拖单体技也不下发', (tester) async {
+    testWidgets('false 时点 single 不进待发态、点敌不出手', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_single]);
       final notifier = await _pumpWith(
@@ -256,16 +206,16 @@ void main() {
         right,
         allowPlayerIntervention: false,
       );
-
+      await tester.tap(
+        find.byKey(const ValueKey('skill_cmd_1_single1')),
+        warnIfMissed: false,
+      );
+      await tester.pump();
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );
-      await _longPressDragTo(
-        tester,
-        find.byKey(const ValueKey('skill_cmd_1_single1')),
-        tester.getCenter(enemy),
-      );
-
+      await tester.tap(enemy);
+      await tester.pump();
       expect(notifier.interveneCount, 0);
     });
   });

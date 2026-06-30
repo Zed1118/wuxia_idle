@@ -324,33 +324,30 @@ void main() {
       expect(find.text('大招'), findsWidgets);
     });
 
-    // 批次 1.3：点击技能方块改为弹简介浮层，不再裸单击下发。
-    // 下发路径(requestUltimate / 「待发」印)改由长按拖招触发，
-    // 由 battle_drag_skill_test 守，这里只验「点击=浮层、不下发」。
-    testWidgets('点技能方块 → 弹简介浮层，不写 pending（批次 1.3 退掉裸单击下发）',
-        (tester) async {
+    // 两段点选：长按技能方块弹简介浮层(不下发);点击 = 释放由 battle_drag_skill_test 守。
+    testWidgets('长按技能方块 → 弹简介浮层，不写 pending', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_power, _ult]);
       final notifier =
           await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_p1')));
+      await tester.longPress(find.byKey(const ValueKey('skill_cmd_1_p1')));
       await tester.pumpAndSettle();
 
-      // 点击只弹浮层（关闭按钮「知道了」可见），不下发命令。
+      // 长按只弹浮层（关闭按钮「知道了」可见），不下发命令。
       expect(find.text('知道了'), findsOneWidget);
       expect(notifier.state.pendingUltimates[1], isNull);
     });
 
-    testWidgets('点技能方块不再盖「待发」印（批次 1.3）', (tester) async {
+    testWidgets('技能方块不盖 pendingUltimates「待发」印', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_power, _ult]);
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
       expect(find.text('待发'), findsNothing);
+      // 点击 single 技进待发态(本地 UI 态)，不写 pendingUltimates，故无按钮「待发」印。
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_p1')));
       await tester.pumpAndSettle();
-      // 裸单击不再下发，故无「待发」印。
       expect(find.text('待发'), findsNothing);
     });
 
