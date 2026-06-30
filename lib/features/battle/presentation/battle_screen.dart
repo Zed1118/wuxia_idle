@@ -132,30 +132,6 @@ double slotVerticalFraction(int slotIndex, int teamSize) {
   return (slotIndex + 0.5) / teamSize;
 }
 
-/// 拖招表现层静态验收预置态(仅 [BattleScreen.debugDragPreview] / battle_tap_preview
-/// 路由用)。拖招引导线/蓄势光晕/悬停高亮都靠长按拖手势触发,Codex 鼠标合成无法重现,
-/// 故用这个免手势预置态截图验新样式。生产路径不构造。
-class BattleDragPreview {
-  /// 引导线起手角色 charId(取其流派色画线)。
-  final int dragCharId;
-
-  /// 悬停命中高亮的敌人 charId(浅金静态强光);null 不高亮。
-  final int? hoveredEnemyId;
-
-  /// 引导线起点(全局坐标,技能按钮锚点)。
-  final Offset origin;
-
-  /// 引导线终点(全局坐标,当前指针/落点)。
-  final Offset pointer;
-
-  const BattleDragPreview({
-    required this.dragCharId,
-    required this.origin,
-    required this.pointer,
-    this.hoveredEnemyId,
-  });
-}
-
 class BattleScreen extends ConsumerStatefulWidget {
   final AnimationNumbers animConfig;
 
@@ -205,11 +181,6 @@ class BattleScreen extends ConsumerStatefulWidget {
   /// 引导线 —— `false` = 纯挂机不挂拖招层。
   final bool allowPlayerIntervention;
 
-  /// 仅调试/验收用:预置拖招表现层静态态(引导线 + 蓄势光晕 + 悬停高亮),供
-  /// Codex 截图验新样式 —— 拖招手势靠长按拖,鼠标合成无法触发(见 battle_tap_preview
-  /// 路由)。生产路径恒 null,不影响任何真实战斗。配 [autoStart] false 冻结画面。
-  final BattleDragPreview? debugDragPreview;
-
   /// 仅验收路由用(默认 false → 生产/现有调用零影响):起手即暂停,战斗冻结在
   /// startBattle seed 初态(timer 因 _isPaused 不启,与 [autoStart] 兼容)。
   /// **为 true 时**头栏额外渲染「单步」按钮(逐步推进战斗,供验收者拖招/看
@@ -241,7 +212,6 @@ class BattleScreen extends ConsumerStatefulWidget {
     this.bgmTrack = BgmTrack.battle,
     this.cycleHint,
     this.allowPlayerIntervention = false,
-    this.debugDragPreview,
     this.startPaused = false,
     this.startFastForward = false,
     this.autoStartOnMount = false,
@@ -365,7 +335,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         if (!mounted ||
             !widget.autoStart ||
             _isPaused ||
-            widget.debugDragPreview != null ||
             _playTimer != null) {
           return;
         }
@@ -1305,26 +1274,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 ),
               ),
             ),
-            // 调试/验收:预置引导线(拖招手势鼠标合成不出,给 Codex 截新样式)。
-            if (widget.debugDragPreview != null)
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: _DragGuideLayer(
-                    start: widget.debugDragPreview!.origin,
-                    end: widget.debugDragPreview!.pointer,
-                    color: WuxiaColors.schoolColor(
-                      state.leftTeam
-                          .firstWhere(
-                            (c) =>
-                                c.characterId ==
-                                widget.debugDragPreview!.dragCharId,
-                            orElse: () => state.leftTeam.first,
-                          )
-                          .school,
-                    ),
-                  ),
-                ),
-              ),
             Positioned.fill(child: ScreenFlashOverlay(key: _screenFlashKey)),
             Positioned.fill(
               child: UltimateCaptionOverlay(key: _ultimateCaptionKey),
@@ -2478,6 +2427,40 @@ class _SkillCommandButton extends StatelessWidget {
       ),
     );
 
+    // 单体/群体角标：右上角小 chip，区分目标类型让玩家一眼看出操作语义。
+    final badgeText = skill.targetType == TargetType.aoe
+        ? UiStrings.skillBadgeAoe
+        : UiStrings.skillBadgeSingle;
+    final badgeColor = skill.targetType == TargetType.aoe
+        ? WuxiaColors.resultHighlight // 群体用暖金色，醒目提示一键释放
+        : WuxiaColors.textMuted.withValues(alpha: 0.70); // 单体用静默灰，提示需选目标
+    final buttonWithBadge = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        button,
+        Positioned(
+          top: -4,
+          right: -4,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            decoration: BoxDecoration(
+              color: badgeColor,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              badgeText,
+              style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                color: WuxiaColors.textPrimary,
+                height: 1.2,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+
     // 两段点选:点击 = 释放(仅 enabled 时;single 进待发态 / aoe 一键出手),
     // 长按 = 弹简介浮层(始终可用,CD/内力不足/待发态亦可查看)。
     // ValueKey 移到外层 GestureDetector(它是命中目标);AbsorbPointer 拦掉内层
@@ -2487,7 +2470,7 @@ class _SkillCommandButton extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: enabled ? onTap : null,
       onLongPress: onShowInfo,
-      child: AbsorbPointer(child: button),
+      child: AbsorbPointer(child: buttonWithBadge),
     );
   }
 }
@@ -2559,7 +2542,7 @@ class _SkillInfoBody extends StatelessWidget {
           ),
         const SizedBox(height: 8),
         const Text(
-          UiStrings.skillInfoDragHint,
+          UiStrings.skillInfoTapHint,
           style: TextStyle(color: WuxiaUi.qing, fontSize: 11, letterSpacing: 1),
         ),
       ],
@@ -2744,64 +2727,6 @@ class _GlowAuraState extends State<_GlowAura>
 
 /// Phase 4 拖招引导线层:从技能按钮锚点到当前指针的流派色笔触线(实时跟手)。
 /// 纯表现层,IgnorePointer 不拦手势(手势由按钮的 LongPress 识别器持有)。
-class _DragGuideLayer extends StatelessWidget {
-  final Offset start;
-  final Offset end;
-  final Color color;
-  const _DragGuideLayer({
-    required this.start,
-    required this.end,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _DragGuidePainter(start: start, end: end, color: color),
-    );
-  }
-}
-
-class _DragGuidePainter extends CustomPainter {
-  final Offset start;
-  final Offset end;
-  final Color color;
-  _DragGuidePainter({
-    required this.start,
-    required this.end,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // 外发光层(柔和辉光,克制水墨)→ 主线(流派色)→ 末端落点(外环辉光 + 实心点 + 白心)。
-    final glow = Paint()
-      ..color = color.withValues(alpha: 0.3)
-      ..strokeWidth = 9.0
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0);
-    canvas.drawLine(start, end, glow);
-    final line = Paint()
-      ..color = color.withValues(alpha: 0.85)
-      ..strokeWidth = 4.0
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(start, end, line);
-    // 末端落点:外环辉光提亮 + 实心点 + 白色高光心(强化指引落点可读性)。
-    final endGlow = Paint()
-      ..color = color.withValues(alpha: 0.28)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
-    canvas.drawCircle(end, 11.0, endGlow);
-    final dot = Paint()..color = color.withValues(alpha: 0.95);
-    canvas.drawCircle(end, 7.0, dot);
-    final core = Paint()..color = Colors.white.withValues(alpha: 0.7);
-    canvas.drawCircle(end, 2.5, core);
-  }
-
-  @override
-  bool shouldRepaint(_DragGuidePainter old) =>
-      old.start != start || old.end != end || old.color != color;
-}
-
 class _EffectLayer extends StatelessWidget {
   final List<_EffectEntry> effects;
   const _EffectLayer({required this.effects});
