@@ -437,6 +437,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // H3 暂停:停 tick(_startTimer 内 _isPaused gate 兜住所有重启路径);
   // 恢复时若战斗未结束则重启自动播放。
   void _togglePause() {
+    if (_pendingSkill != null) {
+      _clearPending(); // 待发态下按暂停 = 取消待发(已恢复 tick),不额外进手动暂停
+      return;
+    }
     setState(() => _isPaused = !_isPaused);
     if (_isPaused) {
       _playTimer?.cancel();
@@ -917,6 +921,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       return;
     }
     if (skill.targetType == TargetType.aoe) {
+      if (_pendingSkill != null) _clearPending(); // 清掉残留 single 待发态,恢复 tick
       _onSkillCommand(characterId, skill); // 一键即放,AI 选目标
       return;
     }
