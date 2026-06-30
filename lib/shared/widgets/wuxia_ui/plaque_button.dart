@@ -19,6 +19,7 @@ class PlaqueButton extends StatefulWidget {
     required this.label,
     required this.onTap,
     this.primary = false,
+    this.destructive = false,
     this.disabled = false,
     this.autofocus = false,
   });
@@ -26,6 +27,7 @@ class PlaqueButton extends StatefulWidget {
   final String label;
   final VoidCallback? onTap;
   final bool primary;
+  final bool destructive;
   final bool disabled;
   final bool autofocus;
 
@@ -39,6 +41,7 @@ class PlaqueButton extends StatefulWidget {
 class _PlaqueButtonState extends State<PlaqueButton> {
   bool _pressed = false;
   bool _focused = false;
+  bool _hovered = false;
 
   void _setPressed(bool v) {
     if (_pressed != v) setState(() => _pressed = v);
@@ -53,22 +56,31 @@ class _PlaqueButtonState extends State<PlaqueButton> {
   @override
   Widget build(BuildContext context) {
     final disabled = widget.disabled || widget.onTap == null;
+    final destructive = widget.destructive && !widget.primary;
     final gradient = widget.primary
         ? const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [WuxiaUi.jiang, Color(0xFF6F201A)],
           )
+        : destructive
+        ? const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF9E4638), Color(0xFF6F2A22)],
+          )
         : const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [Color(0xFFCDB585), Color(0xFFB89A63)],
           );
-    final fg = widget.primary
+    final fg = widget.primary || destructive
         ? const Color(0xFFF3E2C0)
         : const Color(0xFF3A2C14);
     final borderColor = widget.primary
         ? const Color(0xFF491510)
+        : destructive
+        ? const Color(0xFF4B1914)
         : WuxiaUi.woodDark;
     return Semantics(
       button: true,
@@ -91,69 +103,91 @@ class _PlaqueButtonState extends State<PlaqueButton> {
         onShowFocusHighlight: (v) => setState(() => _focused = v),
         child: Opacity(
           opacity: disabled ? 0.4 : 1.0,
-          child: GestureDetector(
-            onTapDown: disabled ? null : (_) => _setPressed(true),
-            onTapUp: disabled ? null : (_) => _setPressed(false),
-            onTapCancel: disabled ? null : () => _setPressed(false),
-            onTap: disabled ? null : _activate,
-            child: Stack(
-              children: [
-                Container(
-                  constraints: const BoxConstraints(
-                    minWidth: PlaqueButton.minWidth,
-                    minHeight: PlaqueButton.minHeight,
-                  ),
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: 9,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: gradient,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: borderColor,
-                      width: WuxiaUi.borderWidth,
+          child: MouseRegion(
+            onEnter: disabled ? null : (_) => setState(() => _hovered = true),
+            onExit: disabled ? null : (_) => setState(() => _hovered = false),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: disabled ? null : (_) => _setPressed(true),
+              onTapUp: disabled ? null : (_) => _setPressed(false),
+              onTapCancel: disabled ? null : () => _setPressed(false),
+              onTap: disabled ? null : _activate,
+              child: Stack(
+                children: [
+                  Container(
+                    constraints: const BoxConstraints(
+                      minWidth: PlaqueButton.minWidth,
+                      minHeight: PlaqueButton.minHeight,
                     ),
-                  ),
-                  child: Text(
-                    widget.label,
-                    style: TextStyle(
-                      color: fg,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 22,
+                      vertical: 9,
                     ),
-                  ),
-                ),
-                // 按下暗层:替 InkWell 水波纹,木牌质感的「压下」反馈。
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: AnimatedOpacity(
-                      opacity: _pressed ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 90),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+                    decoration: BoxDecoration(
+                      gradient: gradient,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: _hovered ? WuxiaUi.gold : borderColor,
+                        width: WuxiaUi.borderWidth,
+                      ),
+                    ),
+                    child: Text(
+                      widget.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
+                      style: TextStyle(
+                        color: fg,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
                       ),
                     ),
                   ),
-                ),
-                // 键盘 focus 高亮:金边环(桌面键盘导航可见落点)。
-                if (_focused)
                   Positioned.fill(
                     child: IgnorePointer(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: WuxiaUi.gold, width: 2),
+                      child: AnimatedOpacity(
+                        opacity: _hovered && !_pressed ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 100),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: WuxiaUi.paper.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
                       ),
                     ),
                   ),
-              ],
+                  // 按下暗层:替 InkWell 水波纹,木牌质感的「压下」反馈。
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: AnimatedOpacity(
+                        opacity: _pressed ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 90),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 键盘 focus 高亮:金边环(桌面键盘导航可见落点)。
+                  if (_focused)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: WuxiaUi.gold, width: 2),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

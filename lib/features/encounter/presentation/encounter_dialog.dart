@@ -65,51 +65,60 @@ class _EncounterDialogState extends State<_EncounterDialog> {
   @override
   Widget build(BuildContext context) {
     final selected = _selected;
+    final size = MediaQuery.sizeOf(context);
+    final maxWidth = (size.width - 32).clamp(320.0, 640.0).toDouble();
+    final maxHeight = (size.height - 48).clamp(360.0, 720.0).toDouble();
     return Dialog(
       backgroundColor: WuxiaColors.panel,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: const BorderSide(color: WuxiaColors.border),
       ),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: Padding(
-          padding: const EdgeInsets.all(28),
+        constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
           child: AnimatedOpacity(
             opacity: _entered ? 1.0 : 0.0,
             duration: _entryDuration,
             curve: Curves.easeOut,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _TitleBar(
-                  title:
-                      widget.content.title ??
-                      UiStrings.encounterDialogTitleFallback,
-                ),
-                const SizedBox(height: 20),
-                AnimatedSwitcher(
-                  duration: _switchDuration,
-                  switchInCurve: Curves.easeIn,
-                  switchOutCurve: Curves.easeOut,
-                  transitionBuilder: (child, animation) =>
-                      FadeTransition(opacity: animation, child: child),
-                  child: selected == null
-                      ? _OpeningStage(
-                          key: const ValueKey('opening'),
-                          opening: widget.content.opening,
-                          choices: widget.content.choices,
-                          onSelect: (c) => setState(() => _selected = c),
-                        )
-                      : _OutcomeStage(
-                          key: const ValueKey('outcome'),
-                          choice: selected,
-                          onConfirm: () =>
-                              Navigator.of(context).pop(selected.outcomeId),
-                        ),
-                ),
-              ],
+            child: AnimatedSize(
+              duration: _switchDuration,
+              curve: Curves.easeOut,
+              alignment: Alignment.topCenter,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _TitleBar(
+                    title:
+                        widget.content.title ??
+                        UiStrings.encounterDialogTitleFallback,
+                  ),
+                  const SizedBox(height: 20),
+                  AnimatedSwitcher(
+                    duration: _switchDuration,
+                    switchInCurve: Curves.easeIn,
+                    switchOutCurve: Curves.easeOut,
+                    transitionBuilder: (child, animation) =>
+                        FadeTransition(opacity: animation, child: child),
+                    child: selected == null
+                        ? _OpeningStage(
+                            key: const ValueKey('opening'),
+                            opening: widget.content.opening,
+                            choices: widget.content.choices,
+                            onSelect: (c) => setState(() => _selected = c),
+                          )
+                        : _OutcomeStage(
+                            key: const ValueKey('outcome'),
+                            choice: selected,
+                            onConfirm: () =>
+                                Navigator.of(context).pop(selected.outcomeId),
+                          ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -138,9 +147,13 @@ class _OpeningStage extends StatelessWidget {
       children: [
         _OpeningText(text: opening),
         const SizedBox(height: 24),
-        ...choices.map(
-          (c) => _ChoiceButton(text: c.text, onTap: () => onSelect(c)),
-        ),
+        for (var i = 0; i < choices.length; i++) ...[
+          if (i > 0) const SizedBox(height: 10),
+          _ChoiceButton(
+            text: choices[i].text,
+            onTap: () => onSelect(choices[i]),
+          ),
+        ],
       ],
     );
   }
@@ -261,38 +274,37 @@ class _ChoiceButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
-          decoration: BoxDecoration(
-            color: WuxiaColors.sidebar,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(color: WuxiaColors.border),
-          ),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.chevron_right,
-                color: WuxiaColors.textMuted,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  text,
-                  style: const TextStyle(
-                    color: WuxiaColors.textPrimary,
-                    fontSize: 15,
-                    letterSpacing: 1,
-                  ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 52),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
+        decoration: BoxDecoration(
+          color: WuxiaColors.sidebar,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: WuxiaColors.inkPanelEdge),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.chevron_right,
+              color: WuxiaColors.resultHighlight,
+              size: 18,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                text,
+                style: const TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 15,
+                  height: 1.35,
+                  letterSpacing: 1,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -307,15 +319,13 @@ class _ConfirmButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.centerRight,
-      child: TextButton(
-        onPressed: onTap,
-        style: TextButton.styleFrom(
-          foregroundColor: WuxiaColors.resultHighlight,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        ),
-        child: const Text(
-          UiStrings.encounterDialogConfirmButton,
-          style: TextStyle(fontSize: 15, letterSpacing: 2),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 112),
+        child: PlaqueButton(
+          label: UiStrings.encounterDialogConfirmButton,
+          primary: true,
+          autofocus: true,
+          onTap: onTap,
         ),
       ),
     );

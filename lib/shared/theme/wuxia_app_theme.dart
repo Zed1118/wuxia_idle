@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'colors.dart';
+import 'wuxia_tokens.dart';
 
 ThemeData wuxiaAppTheme() {
   final scheme = const ColorScheme.dark(
@@ -47,6 +48,21 @@ ThemeData wuxiaAppTheme() {
       labelColor: WuxiaColors.resultHighlight,
       unselectedLabelColor: WuxiaColors.textMuted,
       dividerColor: WuxiaColors.border,
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: WuxiaColors.inkPanelTop,
+      contentTextStyle: const TextStyle(
+        color: WuxiaColors.textPrimary,
+        fontSize: 14,
+        letterSpacing: 1,
+        fontWeight: FontWeight.w600,
+      ),
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6),
+        side: const BorderSide(color: WuxiaUi.gold),
+      ),
     ),
   );
 }

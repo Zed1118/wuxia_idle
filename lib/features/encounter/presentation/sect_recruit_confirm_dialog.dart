@@ -5,6 +5,7 @@ import '../../../data/defs/sect_candidate_def.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 
 /// P4.1 1.1 Q6A · encounter-triggered 门派招收 confirm dialog。
 ///
@@ -20,27 +21,59 @@ Future<bool> showSectRecruitConfirmDialog(
   final confirmed = await showDialog<bool>(
     context: context,
     barrierDismissible: true,
-    builder: (_) => AlertDialog(
-      backgroundColor: WuxiaColors.panel,
-      title: const Text(
-        UiStrings.sectEncounterRecruitConfirmTitle,
-        style: TextStyle(color: WuxiaColors.textPrimary),
-      ),
-      content: _CandidateInfo(candidate: candidate),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text(UiStrings.sectEncounterRecruitDecline),
+    builder: (ctx) {
+      final size = MediaQuery.sizeOf(ctx);
+      final maxWidth = (size.width - 32).clamp(320.0, 460.0).toDouble();
+      return Dialog(
+        backgroundColor: WuxiaColors.panel,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: WuxiaColors.border),
         ),
-        TextButton(
-          style: TextButton.styleFrom(
-            foregroundColor: WuxiaColors.resultHighlight,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  UiStrings.sectEncounterRecruitConfirmTitle,
+                  style: TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _CandidateInfo(candidate: candidate),
+                const SizedBox(height: 20),
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    PlaqueButton(
+                      label: UiStrings.sectEncounterRecruitDecline,
+                      onTap: () => Navigator.of(ctx).pop(false),
+                    ),
+                    PlaqueButton(
+                      label: UiStrings.sectEncounterRecruitAccept,
+                      primary: true,
+                      autofocus: true,
+                      onTap: () => Navigator.of(ctx).pop(true),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text(UiStrings.sectEncounterRecruitAccept),
         ),
-      ],
-    ),
+      );
+    },
   );
   return confirmed ?? false;
 }
@@ -69,21 +102,26 @@ class _CandidateInfo extends StatelessWidget {
         ? WuxiaColors.textMuted
         : WuxiaColors.schoolColor(candidate.school!);
     final ap = candidate.attributeProfile;
-    return SizedBox(
-      width: 320,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 380),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (candidate.portraitPath != null) ...[
-            PortraitFrame(
-              portraitPath: candidate.portraitPath,
-              size: 96,
-              borderColor: schoolColor,
+            Center(
+              child: PortraitFrame(
+                portraitPath: candidate.portraitPath,
+                size: 88,
+                borderColor: schoolColor,
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
           ],
-          Row(
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: [
               Text(
                 candidate.name,
@@ -93,10 +131,8 @@ class _CandidateInfo extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(width: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   border: Border.all(color: schoolColor),
                   borderRadius: BorderRadius.circular(2),
@@ -114,17 +150,21 @@ class _CandidateInfo extends StatelessWidget {
             runSpacing: 4,
             children: [
               _AttrChip(
-                  label: UiStrings.recruitmentAttrConstitutionLabel,
-                  value: ap.constitution),
+                label: UiStrings.recruitmentAttrConstitutionLabel,
+                value: ap.constitution,
+              ),
               _AttrChip(
-                  label: UiStrings.recruitmentAttrEnlightenmentLabel,
-                  value: ap.enlightenment),
+                label: UiStrings.recruitmentAttrEnlightenmentLabel,
+                value: ap.enlightenment,
+              ),
               _AttrChip(
-                  label: UiStrings.recruitmentAttrAgilityLabel,
-                  value: ap.agility),
+                label: UiStrings.recruitmentAttrAgilityLabel,
+                value: ap.agility,
+              ),
               _AttrChip(
-                  label: UiStrings.recruitmentAttrFortuneLabel,
-                  value: ap.fortune),
+                label: UiStrings.recruitmentAttrFortuneLabel,
+                value: ap.fortune,
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -155,10 +195,7 @@ class _AttrChip extends StatelessWidget {
         children: [
           TextSpan(
             text: '$label ',
-            style: const TextStyle(
-              color: WuxiaColors.textMuted,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
           TextSpan(
             text: '$value',

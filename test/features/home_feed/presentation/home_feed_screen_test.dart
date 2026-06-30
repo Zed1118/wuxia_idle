@@ -6,6 +6,7 @@ import 'package:wuxia_idle/core/domain/game_event.dart';
 import 'package:wuxia_idle/features/home_feed/application/home_feed_providers.dart';
 import 'package:wuxia_idle/features/home_feed/presentation/home_feed_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 
 /// P1 #42 Phase 3 · HomeFeedScreen 红线契约(widget 层)。
 ///
@@ -13,18 +14,18 @@ import 'package:wuxia_idle/shared/strings.dart';
 /// 验证空态文案 + 快速领取按钮 visible 即可。
 void main() {
   testWidgets('空 feed 显占位文案 + 快速领取按钮 visible', (tester) async {
-    await tester.pumpWidget(const ProviderScope(
-      child: MaterialApp(home: HomeFeedScreen()),
-    ));
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: HomeFeedScreen())),
+    );
     await tester.pump();
     expect(find.text(UiStrings.homeFeedEmptyHint), findsOneWidget);
     expect(find.text(UiStrings.homeFeedQuickClaimLabel), findsOneWidget);
   });
 
   testWidgets('AppBar 标题 = 江湖见闻', (tester) async {
-    await tester.pumpWidget(const ProviderScope(
-      child: MaterialApp(home: HomeFeedScreen()),
-    ));
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: HomeFeedScreen())),
+    );
     await tester.pump();
     expect(find.text(UiStrings.homeFeedTitle), findsOneWidget);
   });
@@ -46,16 +47,51 @@ void main() {
         ..isRead = false,
     ];
 
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        gameEventsFeedProvider().overrideWith((ref) async => events),
-      ],
-      child: const MaterialApp(home: HomeFeedScreen()),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          gameEventsFeedProvider().overrideWith((ref) async => events),
+        ],
+        child: const MaterialApp(home: HomeFeedScreen()),
+      ),
+    );
     await tester.pump();
     expect(find.text('斩 黑面阎罗'), findsOneWidget);
     expect(find.text('闭关收功'), findsOneWidget);
     expect(find.text(UiStrings.homeFeedEmptyHint), findsNothing);
+  });
+
+  testWidgets('宽屏 feed 限制阅读列宽，快速领取使用木牌按钮', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1440, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final event = GameEvent()
+      ..eventType = GameEventType.retreatCompleted
+      ..title = '闭关收功'
+      ..summary = '主角 于「山林」闭关 6 时。'
+      ..occurredAt = DateTime.now()
+      ..isRead = false;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          gameEventsFeedProvider().overrideWith((ref) async => [event]),
+        ],
+        child: const MaterialApp(home: HomeFeedScreen()),
+      ),
+    );
+    await tester.pump();
+
+    final contentSize = tester.getSize(
+      find.byKey(const ValueKey('home-feed-content')),
+    );
+    final buttonSize = tester.getSize(
+      find.byKey(const ValueKey('home-feed-quick-claim-button')),
+    );
+
+    expect(contentSize.width, lessThanOrEqualTo(760));
+    expect(buttonSize.width, lessThanOrEqualTo(420));
+    expect(find.byType(PlaqueButton), findsOneWidget);
   });
 
   testWidgets('相对时间 helper:5 分钟内显刚才', (tester) async {
@@ -67,12 +103,14 @@ void main() {
       ..occurredAt = now.subtract(const Duration(minutes: 2))
       ..isRead = false;
 
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        gameEventsFeedProvider().overrideWith((ref) async => [event]),
-      ],
-      child: const MaterialApp(home: HomeFeedScreen()),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          gameEventsFeedProvider().overrideWith((ref) async => [event]),
+        ],
+        child: const MaterialApp(home: HomeFeedScreen()),
+      ),
+    );
     await tester.pump();
     expect(find.text('刚才'), findsOneWidget);
   });
@@ -86,12 +124,14 @@ void main() {
       ..occurredAt = now.subtract(const Duration(minutes: 30))
       ..isRead = false;
 
-    await tester.pumpWidget(ProviderScope(
-      overrides: [
-        gameEventsFeedProvider().overrideWith((ref) async => [event]),
-      ],
-      child: const MaterialApp(home: HomeFeedScreen()),
-    ));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          gameEventsFeedProvider().overrideWith((ref) async => [event]),
+        ],
+        child: const MaterialApp(home: HomeFeedScreen()),
+      ),
+    );
     await tester.pump();
     expect(find.text('30 分钟前'), findsOneWidget);
   });

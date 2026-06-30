@@ -24,7 +24,7 @@ class MainMenuStatusSummaryPanel extends ConsumerWidget {
       data: (items) {
         if (items.isEmpty) return const SizedBox.shrink();
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          padding: const EdgeInsets.only(top: 12),
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(

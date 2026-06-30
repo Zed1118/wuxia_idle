@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -157,9 +159,38 @@ void main() {
       expect(find.text(UiStrings.skillPendingStamp), findsNothing);
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
       await tester.pump();
-      expect(find.text(UiStrings.skillPendingStamp), findsOneWidget);
+      expect(find.text(UiStrings.skillPendingStamp), findsWidgets);
+      expect(
+        find.byKey(const ValueKey('skill_pending_stamp_badge')),
+        findsOneWidget,
+      );
       expect(notifier.state.pendingUltimates[1], isNull);
       expect(notifier.interveneCount, 0);
+    });
+
+    testWidgets('single 待发态敌头像显示可选提示，鼠标悬停目标显示锁定', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+
+      expect(find.text(UiStrings.skillTargetable), findsWidgets);
+      expect(
+        find.byKey(ValueKey('enemy_target_hint_${right.first.characterId}')),
+        findsOneWidget,
+      );
+
+      final enemy = find.byWidgetPredicate(
+        (w) => w is CharacterAvatar && w.character.characterId == 11,
+      );
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: tester.getCenter(enemy));
+      await tester.pump();
+
+      expect(find.text(UiStrings.skillTargetLocked), findsOneWidget);
+      await mouse.removePointer();
     });
 
     testWidgets('非待发态点敌头像不出手', (tester) async {
@@ -216,7 +247,7 @@ void main() {
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
       await tester.pump();
-      expect(find.text(UiStrings.skillPendingStamp), findsOneWidget);
+      expect(find.text(UiStrings.skillPendingStamp), findsWidgets);
 
       await tester.tapAt(const Offset(640, 280));
       await tester.pump();
@@ -236,7 +267,7 @@ void main() {
       final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
       await tester.pump();
-      expect(find.text(UiStrings.skillPendingStamp), findsOneWidget);
+      expect(find.text(UiStrings.skillPendingStamp), findsWidgets);
 
       await tester.tap(find.byKey(const ValueKey('battle_pause_toggle')));
       await tester.pump();

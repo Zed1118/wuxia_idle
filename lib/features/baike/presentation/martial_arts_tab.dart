@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../battle/domain/enum_localizations.dart';
 import '../application/martial_codex_provider.dart';
 import 'skill_codex_detail_screen.dart';
@@ -379,15 +380,16 @@ class _ManualSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 14, 24, 6),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(24, 14, 24, 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
         children: [
           _ToggleChip(
             label: UiStrings.skillCodexSectionSkills,
             active: selected == _ManualSection.skills,
             onTap: () => onSelect(_ManualSection.skills),
           ),
-          const SizedBox(width: 8),
           _ToggleChip(
             label: UiStrings.skillCodexSectionTechniques,
             active: selected == _ManualSection.techniques,
@@ -443,26 +445,36 @@ class _ToggleChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: active
-              ? WuxiaColors.resultHighlight.withValues(alpha: 0.18)
-              : WuxiaColors.panel,
-          border: Border.all(
-            color: active ? WuxiaColors.resultHighlight : WuxiaColors.border,
+    final borderRadius = BorderRadius.circular(5);
+    return Semantics(
+      button: true,
+      selected: active,
+      label: label,
+      child: InkWell(
+        onTap: onTap,
+        mouseCursor: SystemMouseCursors.click,
+        borderRadius: borderRadius,
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+          decoration: BoxDecoration(
+            color: active
+                ? WuxiaUi.paper.withValues(alpha: 0.16)
+                : WuxiaColors.inkPanelBottom,
+            border: Border.all(
+              color: active ? WuxiaColors.resultHighlight : WuxiaColors.border,
+            ),
+            borderRadius: borderRadius,
           ),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: active ? WuxiaColors.resultHighlight : WuxiaColors.textMuted,
-            fontSize: 13,
-            letterSpacing: 1,
-            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: active
+                  ? WuxiaColors.resultHighlight
+                  : WuxiaColors.textMuted,
+              fontSize: 13,
+              letterSpacing: 1,
+              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+            ),
           ),
         ),
       ),

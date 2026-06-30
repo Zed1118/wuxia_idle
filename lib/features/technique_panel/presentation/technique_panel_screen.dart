@@ -132,71 +132,154 @@ class _Body extends StatelessWidget {
       }
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _MeridianOverviewPanel(
-            character: character,
-            techniques: techniques,
-            mainTech: mainTech,
-          ),
-          const SizedBox(height: 16),
-          if (mainTech != null) ...[
-            _MainTechniqueHero(mainTech: mainTech),
-            const SizedBox(height: 16),
-          ],
-          _SchoolRelationPanel(mainSchool: mainTech?.school),
-          const SizedBox(height: 16),
-          for (final tier in sortedTiers) ...[
-            // 7 阶 tier 分组水墨文字头(2026-06-29 替原 tier_*.png 卷轴 cover):
-            // 原写实木轴卷轴 PNG 抠图白边残留,叠深底面板突兀(用户目检),
-            // 改纯绘制「两侧淡金线 + 居中淡金阶名」——呼应原卷轴金框梯度装帧意图,
-            // 深底可读、无破图风险,且彻底避抠图白边。淡金 resultHighlight 区别正文白。
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-              child: Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalPadding = constraints.maxWidth >= 1100 ? 24.0 : 16.0;
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(horizontalPadding),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1160),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: Container(
-                      height: 1,
-                      color: WuxiaColors.resultHighlight.withValues(
-                        alpha: 0.42,
-                      ),
-                    ),
+                  _MeridianOverviewPanel(
+                    character: character,
+                    techniques: techniques,
+                    mainTech: mainTech,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: Text(
-                      EnumL10n.techniqueTier(tier),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: WuxiaColors.resultHighlight,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 4,
-                      ),
+                  const SizedBox(height: 14),
+                  if (mainTech != null) ...[
+                    _MainTechniqueHero(mainTech: mainTech),
+                    const SizedBox(height: 14),
+                  ],
+                  _SchoolRelationPanel(mainSchool: mainTech?.school),
+                  const SizedBox(height: 16),
+                  for (final tier in sortedTiers) ...[
+                    _TechniqueTierSection(
+                      tier: tier,
+                      techniques: byTier[tier]!,
+                      character: character,
                     ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      height: 1,
-                      color: WuxiaColors.resultHighlight.withValues(
-                        alpha: 0.42,
-                      ),
-                    ),
-                  ),
+                    const SizedBox(height: 12),
+                  ],
                 ],
               ),
             ),
-            const SizedBox(height: 4),
-            for (final t in byTier[tier]!) ...[
-              _TechniqueTile(character: character, technique: t),
-              const SizedBox(height: 8),
-            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TechniqueTierSection extends StatelessWidget {
+  const _TechniqueTierSection({
+    required this.tier,
+    required this.techniques,
+    required this.character,
+  });
+
+  final TechniqueTier tier;
+  final List<Technique> techniques;
+  final Character character;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useTwoColumns =
+            constraints.maxWidth >= 900 && techniques.length > 1;
+        final tileWidth = useTwoColumns
+            ? (constraints.maxWidth - 12) / 2
+            : constraints.maxWidth;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _TechniqueTierHeader(tier: tier, count: techniques.length),
             const SizedBox(height: 8),
+            Wrap(
+              spacing: 12,
+              runSpacing: 10,
+              children: [
+                for (final t in techniques)
+                  SizedBox(
+                    width: tileWidth,
+                    child: _TechniqueTile(character: character, technique: t),
+                  ),
+              ],
+            ),
           ],
+        );
+      },
+    );
+  }
+}
+
+class _TechniqueTierHeader extends StatelessWidget {
+  const _TechniqueTierHeader({required this.tier, required this.count});
+
+  final TechniqueTier tier;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    // 7 阶 tier 分组水墨文字头(2026-06-29 替原 tier_*.png 卷轴 cover):
+    // 原写实木轴卷轴 PNG 抠图白边残留,叠深底面板突兀(用户目检),
+    // 改纯绘制「两侧淡金线 + 居中淡金阶名」——呼应原卷轴金框梯度装帧意图,
+    // 深底可读、无破图风险,且彻底避抠图白边。淡金 resultHighlight 区别正文白。
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(6, 2, 6, 2),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 1,
+              color: WuxiaColors.resultHighlight.withValues(alpha: 0.34),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: WuxiaColors.inkPanelBottom.withValues(alpha: 0.72),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: WuxiaColors.resultHighlight.withValues(alpha: 0.42),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  EnumL10n.techniqueTier(tier),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: WuxiaColors.resultHighlight,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 3,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  UiStrings.techniqueTierCount(count),
+                  style: const TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Container(
+              height: 1,
+              color: WuxiaColors.resultHighlight.withValues(alpha: 0.34),
+            ),
+          ),
         ],
       ),
     );
@@ -658,11 +741,27 @@ class _TechniqueTile extends ConsumerWidget {
     );
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(12, 11, 12, 12),
       decoration: BoxDecoration(
-        color: WuxiaColors.avatarFill.withValues(alpha: 0.82),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            WuxiaColors.avatarFill.withValues(alpha: isMain ? 0.94 : 0.82),
+            WuxiaColors.inkPanelBottom.withValues(alpha: 0.9),
+          ],
+        ),
         border: Border.all(color: borderColor, width: isMain ? 2 : 1.5),
         borderRadius: BorderRadius.circular(4),
+        boxShadow: isMain
+            ? [
+                BoxShadow(
+                  color: schoolColor.withValues(alpha: 0.18),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -760,6 +859,7 @@ class _TechniqueTile extends ConsumerWidget {
                     onPressed: () => _onSetAsMain(context, ref),
                     style: TextButton.styleFrom(
                       foregroundColor: schoolColor,
+                      backgroundColor: schoolColor.withValues(alpha: 0.08),
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       minimumSize: const Size(96, 38),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -770,7 +870,14 @@ class _TechniqueTile extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    child: const Text(UiStrings.setAsMainButton),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.swap_horiz, size: 15),
+                        SizedBox(width: 6),
+                        Text(UiStrings.setAsMainButton),
+                      ],
+                    ),
                   ),
                 ),
               // 根因A:主修可凝练领悟点(闭关挂机攒的 insightPoints)兑换修炼度。
@@ -786,6 +893,11 @@ class _TechniqueTile extends ConsumerWidget {
                     style: TextButton.styleFrom(
                       foregroundColor: schoolColor,
                       disabledForegroundColor: WuxiaColors.textMuted,
+                      backgroundColor:
+                          (character.insightPoints > 0
+                                  ? schoolColor
+                                  : WuxiaColors.buttonDisabled)
+                              .withValues(alpha: 0.1),
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       minimumSize: const Size(118, 38),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -800,12 +912,19 @@ class _TechniqueTile extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    child: Text(
-                      character.insightPoints > 0
-                          ? UiStrings.refineInsightButtonWithPoints(
-                              character.insightPoints,
-                            )
-                          : UiStrings.refineInsightButtonEmpty,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.auto_fix_high, size: 15),
+                        const SizedBox(width: 6),
+                        Text(
+                          character.insightPoints > 0
+                              ? UiStrings.refineInsightButtonWithPoints(
+                                  character.insightPoints,
+                                )
+                              : UiStrings.refineInsightButtonEmpty,
+                        ),
+                      ],
                     ),
                   ),
                 ),

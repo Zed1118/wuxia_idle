@@ -562,22 +562,22 @@ class _FilterChip extends StatelessWidget {
 }
 
 /// 物料/货币页响应式分组列数（窗宽增列：密度收紧、内容不再悬左上）。
-/// 1280 桌面保持单列（沿 widget 测的分组竖排顺序断言），≥1340 起增列。
+/// 1280 桌面起使用双列，避免视觉验收页大面积空白；窄窗仍保持单列。
 int _materialGroupColumns(double width) {
-  if (width >= 1700) return 3;
-  if (width >= 1340) return 2;
+  if (width >= 1580) return 3;
+  if (width >= 1000) return 2;
   return 1;
 }
 
 const double _materialColumnGap = 16;
 
-/// 居中内容最大宽度：单列 760，多列按 460/列 + 间隔封顶；不超过可用宽。
+/// 居中内容最大宽度：单列 760，多列按 430/列 + 间隔封顶；不超过可用宽。
 /// 货币顶栏与材料网格共用，保证左右边对齐、宽屏不再右侧大片空白。
 double _materialContentWidth(double available) {
   final columns = _materialGroupColumns(available);
   final cap = columns == 1
       ? 760.0
-      : columns * 460.0 + (columns - 1) * _materialColumnGap;
+      : columns * 430.0 + (columns - 1) * _materialColumnGap;
   return math.min(available, cap);
 }
 
@@ -1135,12 +1135,15 @@ class _MaterialList extends StatelessWidget {
       children: [
         for (var c = 0; c < columns; c++) ...[
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final type in cols[c])
-                  _MaterialGroup(type: type, items: groups[type]!),
-              ],
+            child: Padding(
+              padding: EdgeInsets.only(top: c == 0 ? 0 : 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final type in cols[c])
+                    _MaterialGroup(type: type, items: groups[type]!),
+                ],
+              ),
             ),
           ),
           if (c != columns - 1) const SizedBox(width: _materialColumnGap),
@@ -1196,7 +1199,7 @@ class _MaterialGroup extends StatelessWidget {
           ),
           // 格子网格（spacing 与装备 grid 保持一致）
           Wrap(
-            spacing: 12,
+            spacing: 10,
             runSpacing: 12,
             children: items
                 .map((it) => _MaterialGridTile(item: it, groupName: name))
@@ -1222,7 +1225,7 @@ class _MaterialGridTile extends ConsumerWidget {
   final InventoryItem item;
   final String groupName; // itemDef 缺失时退回的组名
 
-  static const double _size = 80;
+  static const double _size = 84;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1276,8 +1279,8 @@ class _MaterialGridTile extends ConsumerWidget {
                       '×${item.quantity}',
                       style: const TextStyle(
                         color: WuxiaUi.paper,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
                         shadows: [Shadow(blurRadius: 2, color: Colors.black54)],
                       ),
                     ),
@@ -1302,7 +1305,8 @@ class _MaterialGridTile extends ConsumerWidget {
                           style: TextStyle(
                             // paper-text-audit: allow black overlay label uses dark-surface text token
                             color: WuxiaColors.textPrimary,
-                            fontSize: 9,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -1318,7 +1322,11 @@ class _MaterialGridTile extends ConsumerWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: WuxiaUi.ink, fontSize: 11),
+            style: const TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           // 用途说明（T12：materialUsage）
           if (usage.isNotEmpty)
@@ -1361,14 +1369,20 @@ class _MaterialGridTile extends ConsumerWidget {
         ),
       ),
       actions: [
-        PlaqueButton(
-          label: UiStrings.commonCancel,
-          onTap: () => Navigator.of(context).pop(false),
+        SizedBox(
+          width: 104,
+          child: PlaqueButton(
+            label: UiStrings.commonCancel,
+            onTap: () => Navigator.of(context).pop(false),
+          ),
         ),
-        PlaqueButton(
-          label: UiStrings.itemUseButton,
-          primary: true,
-          onTap: () => Navigator.of(context).pop(true),
+        SizedBox(
+          width: 104,
+          child: PlaqueButton(
+            label: UiStrings.itemUseButton,
+            primary: true,
+            onTap: () => Navigator.of(context).pop(true),
+          ),
         ),
       ],
     );

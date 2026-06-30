@@ -98,6 +98,8 @@ class UiStrings {
   static const String skillGroupJoint = '共鸣';
   // 破招用 [battleInterruptSkill]='破招'、大招用 [ultimate]='大招'。
   static const String skillPendingStamp = '待发';
+  static const String skillTargetable = '可选';
+  static const String skillTargetLocked = '锁定';
   // 可用态：耗内 N · CD M（让玩家知道耗的是内力、看得到基础 CD）。
   static String skillCostShort(int cost, int cooldown) =>
       '耗内$cost · CD$cooldown';
@@ -1086,6 +1088,7 @@ class UiStrings {
   static const String techniquePanelTitle = '心法面板';
   static const String techniquePanelEmpty = '尚未学习任何心法';
   static const String techniquePanelMainHeroLabel = '主修心法';
+  static String techniqueTierCount(int count) => 'x$count';
   static const String techniqueMeridianOverviewTitle = '经脉总览';
   static String techniqueMeridianMain(String value) => '主脉：$value';
   static String techniqueMeridianAssist(int count, int total) =>
