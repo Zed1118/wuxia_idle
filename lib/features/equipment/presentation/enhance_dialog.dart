@@ -607,10 +607,13 @@ class _EnhanceActionBar extends StatelessWidget {
         ),
       );
     }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+    return OverflowBar(
+      alignment: MainAxisAlignment.end,
+      overflowAlignment: OverflowBarAlignment.end,
+      spacing: 8,
+      overflowSpacing: 8,
       children: [
-        if (crystalCost != null) ...[
+        if (crystalCost != null)
           TextButton.icon(
             onPressed: canGuarantee ? onGuarantee : null,
             icon: const Icon(Icons.verified_outlined, size: 16),
@@ -638,8 +641,6 @@ class _EnhanceActionBar extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
-        ],
         ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
             foregroundColor: WuxiaColors.inkPanelBottom,
