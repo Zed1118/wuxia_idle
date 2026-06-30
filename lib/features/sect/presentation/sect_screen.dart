@@ -118,11 +118,15 @@ class SectScreen extends ConsumerWidget {
                     child: TabBarView(
                       children: [
                         _ActiveEventList(
-                          events: (activeAsync.asData?.value ?? const <SectEvent>[]),
+                          events:
+                              (activeAsync.asData?.value ??
+                              const <SectEvent>[]),
                           sect: sect,
                         ),
                         _HistoricalEventList(
-                          events: (historyAsync.asData?.value ?? const <SectEvent>[]),
+                          events:
+                              (historyAsync.asData?.value ??
+                              const <SectEvent>[]),
                         ),
                         _MemberList(sect: sect),
                         _TerritoryGrid(sect: sect),
@@ -162,8 +166,7 @@ class _SectHeader extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: WuxiaColors.panel,
                   borderRadius: BorderRadius.circular(4),
@@ -184,8 +187,7 @@ class _SectHeader extends StatelessWidget {
             children: [
               const Text(
                 UiStrings.sectReputationLabel,
-                style:
-                    TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+                style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -194,7 +196,8 @@ class _SectHeader extends StatelessWidget {
                   minHeight: 8,
                   backgroundColor: WuxiaColors.panel,
                   valueColor: const AlwaysStoppedAnimation<Color>(
-                      WuxiaColors.hpHigh),
+                    WuxiaColors.hpHigh,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -210,8 +213,7 @@ class _SectHeader extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             UiStrings.sectTotalWinsLabel(sect.totalWins),
-            style:
-                const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+            style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
           ),
         ],
       ),
@@ -269,8 +271,7 @@ class _ActiveEventRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: WuxiaColors.border),
           ),
-          padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
               const Icon(Icons.circle, color: WuxiaColors.hpLow, size: 10),
@@ -289,7 +290,8 @@ class _ActiveEventRow extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       UiStrings.sectEventTriggeredAt(
-                          _formatDate(event.triggeredAt)),
+                        _formatDate(event.triggeredAt),
+                      ),
                       style: const TextStyle(
                         color: WuxiaColors.textMuted,
                         fontSize: 12,
@@ -336,8 +338,7 @@ class _HistoricalEventList extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: WuxiaColors.sidebar,
               borderRadius: BorderRadius.circular(6),
@@ -392,8 +393,10 @@ class _MemberList extends ConsumerWidget {
     return membersAsync.when(
       loading: () => const Center(child: InkLoadingIndicator()),
       error: (e, _) => Center(
-        child: Text(UiStrings.sectLoadFailed(e),
-            style: const TextStyle(color: WuxiaColors.textMuted)),
+        child: Text(
+          UiStrings.sectLoadFailed(e),
+          style: const TextStyle(color: WuxiaColors.textMuted),
+        ),
       ),
       data: (members) {
         if (members.isEmpty) {
@@ -404,12 +407,13 @@ class _MemberList extends ConsumerWidget {
             ),
           );
         }
-        final sorted = [...members]..sort((a, b) {
-          final rankA = a.sectRank?.index ?? -1;
-          final rankB = b.sectRank?.index ?? -1;
-          if (rankA != rankB) return rankB.compareTo(rankA);
-          return b.realmTier.index.compareTo(a.realmTier.index);
-        });
+        final sorted = [...members]
+          ..sort((a, b) {
+            final rankA = a.sectRank?.index ?? -1;
+            final rankB = b.sectRank?.index ?? -1;
+            if (rankA != rankB) return rankB.compareTo(rankA);
+            return b.realmTier.index.compareTo(a.realmTier.index);
+          });
         return Column(
           children: [
             Padding(
@@ -418,7 +422,10 @@ class _MemberList extends ConsumerWidget {
                 children: [
                   const Text(
                     '${UiStrings.sectMemberCountLabel}:',
-                    style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+                    style: TextStyle(
+                      color: WuxiaColors.textMuted,
+                      fontSize: 12,
+                    ),
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -432,12 +439,18 @@ class _MemberList extends ConsumerWidget {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: sorted.length,
-                itemBuilder: (ctx, i) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _MemberRow(member: sorted[i], sect: sect),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 960),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: sorted.length,
+                    itemBuilder: (ctx, i) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _MemberRow(member: sorted[i], sect: sect),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -471,7 +484,7 @@ class _MemberRow extends ConsumerWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: WuxiaColors.sidebar,
         borderRadius: BorderRadius.circular(8),
@@ -481,7 +494,7 @@ class _MemberRow extends ConsumerWidget {
         children: [
           PortraitFrame(
             portraitPath: member.portraitPath,
-            size: 48,
+            size: 56,
             borderColor: member.school == null
                 ? WuxiaColors.border
                 : WuxiaColors.schoolColor(member.school!),
@@ -562,11 +575,9 @@ class _MemberRow extends ConsumerWidget {
   }
 
   Future<void> _promote(BuildContext context, WidgetRef ref) async {
-    final result =
-        await ref.read(sectMemberMutationProvider.notifier).promoteRank(
-              characterId: member.id,
-              contribution: sect.totalWins,
-            );
+    final result = await ref
+        .read(sectMemberMutationProvider.notifier)
+        .promoteRank(characterId: member.id, contribution: sect.totalWins);
     if (!context.mounted) return;
     final msg = switch (result) {
       PromoteResult.success => UiStrings.sectPromoteSuccess,
@@ -638,8 +649,7 @@ class _TerritoryGrid extends ConsumerWidget {
         ),
         Expanded(
           child: GridView.builder(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 12,
@@ -725,10 +735,12 @@ class _TerritoryCell extends ConsumerWidget {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: () => isOwned ? _release(context, ref) : _claim(context, ref),
+              onPressed: () =>
+                  isOwned ? _release(context, ref) : _claim(context, ref),
               style: TextButton.styleFrom(
-                foregroundColor:
-                    isOwned ? WuxiaColors.hpLow : WuxiaColors.hpHigh,
+                foregroundColor: isOwned
+                    ? WuxiaColors.hpLow
+                    : WuxiaColors.hpHigh,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 visualDensity: VisualDensity.compact,
               ),
@@ -745,11 +757,9 @@ class _TerritoryCell extends ConsumerWidget {
   }
 
   Future<void> _claim(BuildContext context, WidgetRef ref) async {
-    final result =
-        await ref.read(territoryMutationProvider.notifier).claim(
-              sectId: sect.id,
-              territoryId: def.id,
-            );
+    final result = await ref
+        .read(territoryMutationProvider.notifier)
+        .claim(sectId: sect.id, territoryId: def.id);
     ref.invalidate(availableTerritoriesProvider);
     if (!context.mounted) return;
     final msg = switch (result) {
@@ -762,11 +772,9 @@ class _TerritoryCell extends ConsumerWidget {
   }
 
   Future<void> _release(BuildContext context, WidgetRef ref) async {
-    final result =
-        await ref.read(territoryMutationProvider.notifier).release(
-              sectId: sect.id,
-              territoryId: def.id,
-            );
+    final result = await ref
+        .read(territoryMutationProvider.notifier)
+        .release(sectId: sect.id, territoryId: def.id);
     ref.invalidate(availableTerritoriesProvider);
     if (!context.mounted) return;
     final msg = result == ReleaseResult.success
@@ -790,10 +798,7 @@ class _SmallChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: color, width: 0.8),
       ),
-      child: Text(
-        label,
-        style: TextStyle(color: color, fontSize: 11),
-      ),
+      child: Text(label, style: TextStyle(color: color, fontSize: 11)),
     );
   }
 }
