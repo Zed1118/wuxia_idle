@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
@@ -559,6 +561,26 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
+/// 物料/货币页响应式分组列数（窗宽增列：密度收紧、内容不再悬左上）。
+/// 1280 桌面保持单列（沿 widget 测的分组竖排顺序断言），≥1340 起增列。
+int _materialGroupColumns(double width) {
+  if (width >= 1700) return 3;
+  if (width >= 1340) return 2;
+  return 1;
+}
+
+const double _materialColumnGap = 16;
+
+/// 居中内容最大宽度：单列 760，多列按 460/列 + 间隔封顶；不超过可用宽。
+/// 货币顶栏与材料网格共用，保证左右边对齐、宽屏不再右侧大片空白。
+double _materialContentWidth(double available) {
+  final columns = _materialGroupColumns(available);
+  final cap = columns == 1
+      ? 760.0
+      : columns * 460.0 + (columns - 1) * _materialColumnGap;
+  return math.min(available, cap);
+}
+
 class _MaterialTab extends ConsumerWidget {
   const _MaterialTab();
 
@@ -574,43 +596,63 @@ class _MaterialTab extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // 货币位：银两余额顶栏
-        Container(
-          margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: WuxiaColors.panel,
-            border: Border.all(color: WuxiaColors.border),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.monetization_on_outlined,
-                size: 18,
-                color: WuxiaColors.textPrimary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                UiStrings.silverBalanceLabel(silverBalance),
-                style: const TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 104),
-                child: PlaqueButton(
-                  label: UiStrings.inventoryShopEntry,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => const ShopScreen()),
+        // 货币位：银两余额顶栏（与材料网格共用居中最大宽度，左右边对齐）
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = _materialContentWidth(constraints.maxWidth);
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: width,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: WuxiaColors.panel,
+                        border: Border.all(color: WuxiaColors.border),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.monetization_on_outlined,
+                            size: 18,
+                            color: WuxiaColors.textPrimary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            UiStrings.silverBalanceLabel(silverBalance),
+                            style: const TextStyle(
+                              color: WuxiaColors.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Spacer(),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(minWidth: 104),
+                            child: PlaqueButton(
+                              label: UiStrings.inventoryShopEntry,
+                              onTap: () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => const ShopScreen(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
         Expanded(
           child: async.when(
@@ -1051,14 +1093,62 @@ class _MaterialList extends StatelessWidget {
     }
     final types = groups.keys.toList()
       ..sort((a, b) => a.index.compareTo(b.index));
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      itemCount: types.length,
-      itemBuilder: (ctx, i) {
-        final type = types[i];
-        final rows = groups[type]!;
-        return _MaterialGroup(type: type, items: rows);
-      },
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final available = constraints.maxWidth;
+          final width = _materialContentWidth(available);
+          final columns = _materialGroupColumns(available);
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: width,
+                child: columns == 1
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (final type in types)
+                            _MaterialGroup(type: type, items: groups[type]!),
+                        ],
+                      )
+                    : _buildGroupColumns(types, groups, columns),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// 把分组按窗宽轮询铺进 N 列（round-robin 平衡各列高度），密度收紧。
+  Widget _buildGroupColumns(
+    List<ItemType> types,
+    Map<ItemType, List<InventoryItem>> groups,
+    int columns,
+  ) {
+    final cols = List.generate(columns, (_) => <ItemType>[]);
+    for (var i = 0; i < types.length; i++) {
+      cols[i % columns].add(types[i]);
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var c = 0; c < columns; c++) ...[
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final type in cols[c])
+                  _MaterialGroup(type: type, items: groups[type]!),
+              ],
+            ),
+          ),
+          if (c != columns - 1) const SizedBox(width: _materialColumnGap),
+        ],
+      ],
     );
   }
 }

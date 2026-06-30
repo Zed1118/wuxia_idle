@@ -145,8 +145,8 @@ class _IslandBodyState extends State<_IslandBody> {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       children: [
-        _IslandOverviewPanel(snapshot: snapshot),
-        const SizedBox(height: 18),
+        // 主地图置顶：核心交互场景进首屏第一视野（1280 高度下尤其），
+        // 「岛上总览」摘要下移到地图之后（仍可滚动；一并收取常驻 AppBar）。
         _IslandSceneHub(
           selectedType: _selectedType,
           snapshot: snapshot,
@@ -154,6 +154,8 @@ class _IslandBodyState extends State<_IslandBody> {
           cfg: cfg,
           onSelect: (type) => setState(() => _selectedType = type),
         ),
+        const SizedBox(height: 18),
+        _IslandOverviewPanel(snapshot: snapshot),
         const SizedBox(height: 18),
         _SectionHeader(
           label: UiStrings.taohuaIslandSelectedBuildingTitle(

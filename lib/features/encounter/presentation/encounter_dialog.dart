@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../data/game_repository.dart';
@@ -320,34 +322,143 @@ class _ConfirmButton extends StatelessWidget {
   }
 }
 
-/// outcome 应用后的摘要呈现(SnackBar,Phase 1 vertical slice 用)。
+/// outcome 应用后的「机缘入身」仪式浮层(P_NIGHT_UI 升级)。
 ///
-/// caller stage_entry_flow 在 [EncounterService.applyOutcome] 返回后调,
-/// SnackBar 在底部弹一句话告知玩家"领悟新招"/"机缘 +1"/"已达生涯上限"。
+/// caller(encounter_hook)在 [EncounterService.applyOutcome] 返回后调。
+/// 旧形态为底部 3 秒薄条 SnackBar,对「领悟新招」这类奖励大节点仪式感不足;
+/// 现升级为 **居中仪式浮层**:放大装帧的 [CeremonyImagePanel](宣纸底 + 仪式
+/// 底图 veil + 发光描边 + 投影)+ 淡入轻缩放入场 + 停留 ~3.2s 自动消失 +
+/// 轻触任意处提前关闭(不硬阻断挂机流)。投递方式与 skill_treasure_overlay /
+/// treasure_drop_overlay 一致:`showGeneralDialog` + 自管 AnimationController。
 ///
-/// W15 C-2 收尾:UnlockSkillApplied 摘要从 raw skillId 升级为 SkillDef.name
-/// 中文招名(玩家不再看见 `skill_encounter_xxx`)。GameRepository 未加载或
-/// id 未注册时降级回 raw id(test fixture 不全 / yaml race 兜底)。
+/// W15 C-2 语义保持:UnlockSkillApplied 摘要用 SkillDef.name 中文招名;
+/// GameRepository 未加载或 id 未注册时降级回 raw id(test fixture 不全 / race 兜底)。
+///
+/// fire-and-forget:浮层自管生命周期(auto-dismiss / tap 关闭后 Navigator.pop),
+/// caller 无需 await。
 void showEncounterOutcomeBanner({
   required BuildContext context,
   required OutcomeApplied applied,
 }) {
   final outcome = _EncounterOutcomePresentation.from(applied);
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: EncounterOutcomeToast(
+  unawaited(
+    showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.transparent,
+      transitionDuration: Duration.zero,
+      pageBuilder: (ctx, _, _) => EncounterOutcomeOverlay(
         title: outcome.title,
         message: outcome.message,
         icon: outcome.icon,
         color: outcome.color,
+        onDone: () => Navigator.of(ctx).pop(),
       ),
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      duration: const Duration(seconds: 3),
     ),
   );
 }
 
+/// 「机缘入身」居中仪式浮层(动画 + auto-dismiss + 轻触关闭)。
+///
+/// 结构对齐 [SkillTreasureOverlay]:
+/// - AnimationController 420ms 淡入 + 轻微缩放(0.92→1.0)入场
+/// - auto-dismiss([_holdDuration] 后,~3.2s)
+/// - 轻触任意处提前关闭
+/// - once-guard([_done])防 auto + tap 双触发
+///
+/// 纯展示层:不读写 BattleState / Isar。公开便于 widget test 直接 pump。
+class EncounterOutcomeOverlay extends StatefulWidget {
+  const EncounterOutcomeOverlay({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.icon,
+    required this.color,
+    required this.onDone,
+  });
+
+  final String title;
+  final String message;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onDone;
+
+  @override
+  State<EncounterOutcomeOverlay> createState() =>
+      _EncounterOutcomeOverlayState();
+}
+
+class _EncounterOutcomeOverlayState extends State<EncounterOutcomeOverlay>
+    with SingleTickerProviderStateMixin {
+  static const _holdDuration = Duration(milliseconds: 3200);
+
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+  late final Animation<double> _opacity;
+  bool _done = false;
+  Timer? _autoTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    );
+    final curve = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _scale = Tween<double>(begin: 0.92, end: 1.0).animate(curve);
+    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(curve);
+    _ctrl.forward();
+    _autoTimer = Timer(_holdDuration, _finish);
+  }
+
+  void _finish() {
+    if (_done) return;
+    _done = true;
+    widget.onDone();
+  }
+
+  @override
+  void dispose() {
+    _autoTimer?.cancel();
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _finish,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        color: const Color(0x99000000),
+        alignment: Alignment.center,
+        child: FadeTransition(
+          opacity: _opacity,
+          child: ScaleTransition(
+            scale: _scale,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: EncounterOutcomeToast(
+                title: widget.title,
+                message: widget.message,
+                icon: widget.icon,
+                color: widget.color,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 「机缘入身」仪式浮层静态内容(放大装帧 · 无动画)。
+///
+/// 居中竖排:放大图标盒 + 题字标题 + 摘要正文 + 轻触提示。装帧复用
+/// [CeremonyImagePanel](宣纸底 / 仪式底图 veil / 发光描边 / 投影),尺度
+/// 明显大于旧薄条(图标盒 32→56 / icon 19→32 / 标题 12→16 / 正文 14→20 /
+/// padding 12→28)。导出便于 widget test 直接 pump,不依赖 GameRepository。
 class EncounterOutcomeToast extends StatelessWidget {
   const EncounterOutcomeToast({
     super.key,
@@ -364,57 +475,65 @@ class EncounterOutcomeToast extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CeremonyImagePanel(
-      assetPath: WuxiaUi.ceremonyInsightBamboo,
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      borderColor: color.withValues(alpha: 0.62),
-      imageOpacity: 0.28,
-      paperVeilOpacity: 0.78,
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: color.withValues(alpha: 0.56)),
-            ),
-            child: Icon(icon, color: color, size: 19),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: WuxiaUi.ink,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                  ),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 420),
+      child: CeremonyImagePanel(
+        assetPath: WuxiaUi.ceremonyInsightBamboo,
+        padding: const EdgeInsets.fromLTRB(28, 26, 28, 22),
+        borderColor: color.withValues(alpha: 0.62),
+        imageOpacity: 0.30,
+        paperVeilOpacity: 0.74,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: color.withValues(alpha: 0.56),
+                  width: 1.4,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  message,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: WuxiaUi.ink,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
+              ),
+              child: Icon(icon, color: color, size: 32),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 4,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              UiStrings.splashTapToContinue,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: WuxiaUi.muted,
+                fontSize: 11,
+                letterSpacing: 3,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
