@@ -11,7 +11,7 @@ import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 
 /// 技能方块手势：两段点选下「长按方块 = 弹技能简介浮层」(直接读 SkillDef 活数据)。
 ///
-/// 点击 = 释放(single 进待发态 / aoe 一键出手)由 [battle_drag_skill_test] 守，
+/// 点击 = 释放(single 进待发态 / aoe 一键出手)由 [battle_tap_skill_test] 守，
 /// 不在此重复;这里只验「长按 = 简介浮层、不下发命令」。
 
 const _testAnim = AnimationNumbers(

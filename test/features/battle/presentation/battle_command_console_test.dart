@@ -324,7 +324,7 @@ void main() {
       expect(find.text('大招'), findsWidgets);
     });
 
-    // 两段点选：长按技能方块弹简介浮层(不下发);点击 = 释放由 battle_drag_skill_test 守。
+    // 两段点选：长按技能方块弹简介浮层(不下发);点击 = 释放由 battle_tap_skill_test 守。
     testWidgets('长按技能方块 → 弹简介浮层，不写 pending', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_power, _ult]);
