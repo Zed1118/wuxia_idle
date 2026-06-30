@@ -183,12 +183,12 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
     );
     final fucaiQty = fucaiAsync.value ?? 0;
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const MaterialSourceNote(itemIds: ['item_kaifeng_fucai']),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           for (int i = 1; i <= 3; i++) ...[
             _SlotCard(
               slotIndex: i,
@@ -205,7 +205,7 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
               onForge: (type) =>
                   _onForgeTap(slotIndex: i, type: type, fucaiQty: fucaiQty),
             ),
-            if (i < 3) const SizedBox(height: 8),
+            if (i < 3) const SizedBox(height: 10),
           ],
         ],
       ),
@@ -240,14 +240,18 @@ class _SlotCard extends StatelessWidget {
     final unlocked = equipment.enhanceLevel >= unlockAtEnhanceLevel;
     final forged = slot.unlocked;
     final isSpecialSkillSlot = slotIndex == 3;
+    final lacksMaterial = unlocked && !forged && fucaiQty < fucaiCost;
 
     Color borderColor;
+    Color accentColor;
     Widget body;
     if (forged) {
       borderColor = WuxiaColors.resultHighlight;
+      accentColor = WuxiaColors.resultHighlight;
       body = _ForgedBody(slot: slot);
     } else if (!unlocked) {
       borderColor = WuxiaColors.buttonDisabled;
+      accentColor = WuxiaColors.textMuted;
       body = _LockedBody(unlockAtEnhanceLevel: unlockAtEnhanceLevel);
     } else if (isSpecialSkillSlot &&
         def.specialSkillCandidates.isEmpty &&
@@ -255,9 +259,13 @@ class _SlotCard extends StatelessWidget {
         availableTypes.first == ForgingSlotType.specialSkill) {
       // 槽 3 仅 specialSkill 可选 + 候选为空 → 空状态
       borderColor = WuxiaColors.buttonDisabled;
+      accentColor = WuxiaColors.textMuted;
       body = const _NoSpecialSkillBody();
     } else {
-      borderColor = WuxiaColors.border;
+      borderColor = lacksMaterial ? WuxiaColors.hpLow : WuxiaColors.border;
+      accentColor = lacksMaterial
+          ? WuxiaColors.hpLow
+          : WuxiaColors.resultHighlight;
       body = _ChoicesBody(
         types: availableTypes,
         fucaiQty: fucaiQty,
@@ -267,23 +275,50 @@ class _SlotCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(12, 11, 12, 12),
       decoration: BoxDecoration(
-        color: WuxiaColors.avatarFill,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            WuxiaColors.avatarFill.withValues(alpha: forged ? 0.96 : 0.84),
+            WuxiaColors.inkPanelBottom.withValues(alpha: 0.9),
+          ],
+        ),
         border: Border.all(color: borderColor, width: 1.5),
         borderRadius: BorderRadius.circular(4),
+        boxShadow: forged
+            ? [
+                BoxShadow(
+                  color: WuxiaColors.resultHighlight.withValues(alpha: 0.16),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : const [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
+              Container(
+                width: 5,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: accentColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
               Text(
                 UiStrings.forgingSlotTitle(slotIndex),
-                style: const TextStyle(
-                  color: WuxiaColors.textSecondary,
+                style: TextStyle(
+                  color: forged
+                      ? WuxiaColors.resultHighlight
+                      : WuxiaColors.textSecondary,
                   fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(width: 6),
@@ -296,28 +331,64 @@ class _SlotCard extends StatelessWidget {
               ),
               if (forged) ...[
                 const Spacer(),
-                const Text(
-                  UiStrings.forgingForged,
-                  style: TextStyle(
-                    color: WuxiaColors.resultHighlight,
-                    fontSize: 11,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: WuxiaColors.resultHighlight.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: WuxiaColors.resultHighlight.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: const Text(
+                    UiStrings.forgingForged,
+                    style: TextStyle(
+                      color: WuxiaColors.resultHighlight,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ],
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           if (!forged && unlocked) ...[
-            Text(
-              UiStrings.forgingFucaiUsage(fucaiQty, fucaiCost),
-              style: TextStyle(
-                color: fucaiQty < fucaiCost
-                    ? WuxiaColors.hpLow
-                    : WuxiaColors.textMuted,
-                fontSize: 12,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color:
+                      (lacksMaterial
+                              ? WuxiaColors.hpLow
+                              : WuxiaColors.resultHighlight)
+                          .withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color:
+                        (lacksMaterial
+                                ? WuxiaColors.hpLow
+                                : WuxiaColors.resultHighlight)
+                            .withValues(alpha: 0.32),
+                  ),
+                ),
+                child: Text(
+                  UiStrings.forgingFucaiUsage(fucaiQty, fucaiCost),
+                  style: TextStyle(
+                    color: lacksMaterial
+                        ? WuxiaColors.hpLow
+                        : WuxiaColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
           ],
           body,
         ],
@@ -383,23 +454,46 @@ class _ChoicesBody extends StatelessWidget {
         style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
       );
     }
+    final enabled = fucaiQty >= fucaiCost;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
         for (final t in types)
-          OutlinedButton(
-            onPressed: fucaiQty >= fucaiCost ? () => onTap(t) : null,
+          OutlinedButton.icon(
+            onPressed: enabled ? () => onTap(t) : null,
+            icon: Icon(_iconFor(t), size: 15),
             style: OutlinedButton.styleFrom(
               foregroundColor: WuxiaColors.textPrimary,
-              side: const BorderSide(color: WuxiaColors.border),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              disabledForegroundColor: WuxiaColors.textMuted,
+              backgroundColor:
+                  (enabled
+                          ? WuxiaColors.resultHighlight
+                          : WuxiaColors.buttonDisabled)
+                      .withValues(alpha: 0.08),
+              side: BorderSide(
+                color:
+                    (enabled ? WuxiaColors.resultHighlight : WuxiaColors.border)
+                        .withValues(alpha: enabled ? 0.5 : 0.9),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
-            child: Text(EnumL10n.forgingSlotType(t)),
+            label: Text(EnumL10n.forgingSlotType(t)),
           ),
       ],
     );
   }
+
+  static IconData _iconFor(ForgingSlotType type) => switch (type) {
+    ForgingSlotType.attack => Icons.flash_on_outlined,
+    ForgingSlotType.speed => Icons.speed_outlined,
+    ForgingSlotType.lifesteal => Icons.bloodtype_outlined,
+    ForgingSlotType.pierce => Icons.gps_fixed_outlined,
+    ForgingSlotType.specialSkill => Icons.auto_awesome_outlined,
+  };
 }
 
 class _ForgedBody extends StatelessWidget {
@@ -417,24 +511,48 @@ class _ForgedBody extends StatelessWidget {
       );
     }
     if (type == ForgingSlotType.specialSkill) {
-      return Text(
-        UiStrings.forgingSpecialSkillLabel(
-          slot.specialSkillId == null
-              ? UiStrings.dashPlaceholder
-              : _skillName(slot.specialSkillId!),
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: WuxiaColors.resultHighlight.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: WuxiaColors.resultHighlight.withValues(alpha: 0.32),
+          ),
         ),
-        style: const TextStyle(color: WuxiaColors.textPrimary, fontSize: 13),
+        child: Text(
+          UiStrings.forgingSpecialSkillLabel(
+            slot.specialSkillId == null
+                ? UiStrings.dashPlaceholder
+                : _skillName(slot.specialSkillId!),
+          ),
+          style: const TextStyle(
+            color: WuxiaColors.textPrimary,
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       );
     }
-    return Text(
-      UiStrings.forgingBonusLabel(
-        EnumL10n.forgingSlotType(type),
-        slot.bonusValue,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: WuxiaColors.resultHighlight.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: WuxiaColors.resultHighlight.withValues(alpha: 0.32),
+        ),
       ),
-      style: const TextStyle(
-        color: WuxiaColors.textPrimary,
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
+      child: Text(
+        UiStrings.forgingBonusLabel(
+          EnumL10n.forgingSlotType(type),
+          slot.bonusValue,
+        ),
+        style: const TextStyle(
+          color: WuxiaColors.textPrimary,
+          fontSize: 14,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

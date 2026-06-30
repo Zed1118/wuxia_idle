@@ -1086,6 +1086,7 @@ class UiStrings {
   static const String techniquePanelTitle = '心法面板';
   static const String techniquePanelEmpty = '尚未学习任何心法';
   static const String techniquePanelMainHeroLabel = '主修心法';
+  static String techniqueTierCount(int count) => 'x$count';
   static const String techniqueMeridianOverviewTitle = '经脉总览';
   static String techniqueMeridianMain(String value) => '主脉：$value';
   static String techniqueMeridianAssist(int count, int total) =>
