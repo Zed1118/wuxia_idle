@@ -263,7 +263,7 @@ class _TechniqueTierHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'x$count',
+                  UiStrings.techniqueTierCount(count),
                   style: const TextStyle(
                     color: WuxiaColors.textMuted,
                     fontSize: 12,
