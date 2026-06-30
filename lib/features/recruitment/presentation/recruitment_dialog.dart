@@ -57,52 +57,58 @@ class _RecruitmentDialogState extends ConsumerState<RecruitmentDialog> {
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: Text(
-                  UiStrings.recruitmentDialogIntro,
-                  style: TextStyle(
-                    color: WuxiaColors.textSecondary,
-                    fontSize: 13,
-                    height: 1.6,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 760),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      UiStrings.recruitmentDialogIntro,
+                      style: TextStyle(
+                        color: WuxiaColors.textSecondary,
+                        fontSize: 13,
+                        height: 1.6,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              if (candidates.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: InkEmptyState(
-                    variant: InkEmptyStateVariant.unavailable,
-                    title: UiStrings.recruitmentCandidatesMissingTitle,
-                    body: UiStrings.recruitmentCandidatesMissingBody,
-                    icon: Icons.person_search_outlined,
-                  ),
-                )
-              else
-                for (var i = 0; i < candidates.length; i++) ...[
-                  if (i > 0) const SizedBox(height: 12),
-                  _CandidateCard(
-                    candidate: candidates[i],
-                    onAccept: _submitting
-                        ? null
-                        : () => _onAccept(candidates[i]),
+                  if (candidates.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: InkEmptyState(
+                        variant: InkEmptyStateVariant.unavailable,
+                        title: UiStrings.recruitmentCandidatesMissingTitle,
+                        body: UiStrings.recruitmentCandidatesMissingBody,
+                        icon: Icons.person_search_outlined,
+                      ),
+                    )
+                  else
+                    for (var i = 0; i < candidates.length; i++) ...[
+                      if (i > 0) const SizedBox(height: 12),
+                      _CandidateCard(
+                        candidate: candidates[i],
+                        onAccept: _submitting
+                            ? null
+                            : () => _onAccept(candidates[i]),
+                      ),
+                    ],
+                  const SizedBox(height: 24),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: PlaqueButton(
+                      label: UiStrings.recruitmentDeclineButton,
+                      disabled: _submitting,
+                      onTap: _submitting ? null : _onDecline,
+                    ),
                   ),
                 ],
-              const SizedBox(height: 24),
-              Align(
-                alignment: Alignment.centerRight,
-                child: PlaqueButton(
-                  label: UiStrings.recruitmentDeclineButton,
-                  disabled: _submitting,
-                  onTap: _submitting ? null : _onDecline,
-                ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -239,101 +245,142 @@ class _CandidateCard extends StatelessWidget {
     final schoolColor = candidate.school == null
         ? WuxiaColors.textMuted
         : WuxiaColors.schoolColor(candidate.school!);
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border.all(color: WuxiaColors.border),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final schoolLabel = _schoolLabel(candidate.school);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 420;
+        final portraitSize = compact ? 84.0 : 96.0;
+        final portrait = PortraitFrame(
+          portraitPath: candidate.portraitPath,
+          size: portraitSize,
+          borderColor: schoolColor,
+          placeholderText: candidate.name,
+        );
+        final summary = _CandidateSummary(
+          candidate: candidate,
+          schoolColor: schoolColor,
+          schoolLabel: schoolLabel,
+        );
+
+        return Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: WuxiaColors.panel,
+            border: Border.all(color: WuxiaColors.border),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              PortraitFrame(
-                portraitPath: candidate.portraitPath,
-                size: 96,
-                borderColor: schoolColor,
-                placeholderText: candidate.name,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
+              if (compact)
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          candidate.name,
-                          style: const TextStyle(
-                            color: WuxiaColors.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: schoolColor),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                          child: Text(
-                            _schoolLabel(candidate.school),
-                            style: TextStyle(color: schoolColor, fontSize: 11),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    _AttrRow(profile: candidate.attributeProfile),
+                    Center(child: portrait),
+                    const SizedBox(height: 12),
+                    summary,
                   ],
+                )
+              else
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    portrait,
+                    const SizedBox(width: 14),
+                    Expanded(child: summary),
+                  ],
+                ),
+              const SizedBox(height: 12),
+              _ChipRow(
+                label: UiStrings.recruitmentStartingTechniqueLabel,
+                items: candidate.startingTechniqueIds.isEmpty
+                    ? const [UiStrings.recruitmentNoStartingTechnique]
+                    : candidate.startingTechniqueIds.map(_techName).toList(),
+                itemColor: schoolColor,
+              ),
+              const SizedBox(height: 6),
+              _ChipRow(
+                label: UiStrings.recruitmentStartingEquipmentLabel,
+                items: candidate.startingEquipmentIds.map(_equipName).toList(),
+                itemColors: candidate.startingEquipmentIds
+                    .map(_equipTierColor)
+                    .toList(),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                candidate.lore,
+                style: const TextStyle(
+                  color: WuxiaColors.textSecondary,
+                  fontSize: 12,
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 112),
+                  child: PlaqueButton(
+                    label: UiStrings.recruitmentAcceptButton,
+                    primary: true,
+                    disabled: onAccept == null,
+                    onTap: onAccept,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          _ChipRow(
-            label: UiStrings.recruitmentStartingTechniqueLabel,
-            items: candidate.startingTechniqueIds.isEmpty
-                ? const [UiStrings.recruitmentNoStartingTechnique]
-                : candidate.startingTechniqueIds.map(_techName).toList(),
-            itemColor: schoolColor,
-          ),
-          const SizedBox(height: 6),
-          _ChipRow(
-            label: UiStrings.recruitmentStartingEquipmentLabel,
-            items: candidate.startingEquipmentIds.map(_equipName).toList(),
-            itemColors: candidate.startingEquipmentIds
-                .map(_equipTierColor)
-                .toList(),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            candidate.lore,
-            style: const TextStyle(
-              color: WuxiaColors.textSecondary,
-              fontSize: 12,
-              height: 1.6,
+        );
+      },
+    );
+  }
+}
+
+class _CandidateSummary extends StatelessWidget {
+  const _CandidateSummary({
+    required this.candidate,
+    required this.schoolColor,
+    required this.schoolLabel,
+  });
+
+  final RecruitCandidateDef candidate;
+  final Color schoolColor;
+  final String schoolLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 6,
+          children: [
+            Text(
+              candidate.name,
+              style: const TextStyle(
+                color: WuxiaColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: PlaqueButton(
-              label: UiStrings.recruitmentAcceptButton,
-              primary: true,
-              disabled: onAccept == null,
-              onTap: onAccept,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                border: Border.all(color: schoolColor),
+                borderRadius: BorderRadius.circular(2),
+              ),
+              child: Text(
+                schoolLabel,
+                style: TextStyle(color: schoolColor, fontSize: 11),
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        _AttrRow(profile: candidate.attributeProfile),
+      ],
     );
   }
 }
