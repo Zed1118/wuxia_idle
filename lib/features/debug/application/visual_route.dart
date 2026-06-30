@@ -122,6 +122,10 @@ enum VisualRoute {
     'battle_drag_preview',
     '拖招表现层静态验收(冻结画面预置态·Codex 截图:引导线外发光+末端白心 / 蓄势呼吸脉动光晕(截帧) / 悬停敌头像浅金高亮)',
   ),
+  battleTapPreview(
+    'battle_tap_preview',
+    '战斗点按/干预表现层兼容验收(复用 battle_drag_preview 冻结预置态:技能焦点、目标高亮、引导反馈同屏稳定截图)',
+  ),
   offlineRecapPassive(
     'offline_recap_passive',
     'M2 离线被动归来卡静态验收(无 active 闭关·涓流入库告知卡:水墨 PaperPanel + 离线时长/磨剑石/经验 + 仅「知道了」按钮,无领取按钮守 §5.1)',
