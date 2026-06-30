@@ -13,6 +13,7 @@ import '../../../shared/theme/tier_colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
+import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
 import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
@@ -62,17 +63,16 @@ class _WeaponCodexScreenState extends ConsumerState<WeaponCodexScreen> {
     );
   }
 
-  Widget _buildBody(
-    BuildContext context,
-    List<EquipmentCatalogEntry> entries,
-  ) {
+  Widget _buildBody(BuildContext context, List<EquipmentCatalogEntry> entries) {
     if (!GameRepository.isLoaded) {
       return const Center(
         child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Text(
-            UiStrings.weaponCodexEmptyHint,
-            style: TextStyle(color: WuxiaColors.textMuted, fontSize: 14),
+          padding: EdgeInsets.all(24),
+          child: InkEmptyState(
+            variant: InkEmptyStateVariant.empty,
+            title: UiStrings.weaponCodexTitle,
+            body: UiStrings.weaponCodexEmptyHint,
+            icon: Icons.hardware_outlined,
           ),
         ),
       );
@@ -83,10 +83,9 @@ class _WeaponCodexScreenState extends ConsumerState<WeaponCodexScreen> {
     final allDefs = GameRepository.instance.equipmentDefs.values;
 
     // slot 筛选
-    final filtered = (_slot == null
-            ? allDefs
-            : allDefs.where((d) => d.slot == _slot))
-        .toList(growable: false);
+    final filtered =
+        (_slot == null ? allDefs : allDefs.where((d) => d.slot == _slot))
+            .toList(growable: false);
 
     // 按 tier 分组（照 baike byTier 体例，EquipmentTier.values 顺序，只显非空档）
     final byTier = <EquipmentTier, List<EquipmentDef>>{};
@@ -99,37 +98,39 @@ class _WeaponCodexScreenState extends ConsumerState<WeaponCodexScreen> {
 
     final totalGot = filtered.where((d) => acquired.contains(d.id)).length;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-      children: [
-        // ── slot 筛选 chips ────────────────────────────────────────────
-        _FilterRow(
-          selected: _slot,
-          onSelect: (s) => setState(() => _slot = s),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 980),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+          children: [
+            _FilterRow(
+              selected: _slot,
+              onSelect: (s) => setState(() => _slot = s),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              UiStrings.weaponCodexProgress(totalGot, filtered.length),
+              style: const TextStyle(
+                color: WuxiaColors.resultHighlight,
+                fontSize: 13,
+                letterSpacing: 1,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            for (final tier in tiers) ...[
+              _TierPanel(
+                tier: tier,
+                defs: byTier[tier]!,
+                acquired: acquired,
+                entryMap: entryMap,
+              ),
+              const SizedBox(height: 14),
+            ],
+          ],
         ),
-        const SizedBox(height: 8),
-        // ── 总进度 ─────────────────────────────────────────────────────
-        Text(
-          UiStrings.weaponCodexProgress(totalGot, filtered.length),
-          style: const TextStyle(
-            color: WuxiaColors.resultHighlight,
-            fontSize: 13,
-            letterSpacing: 1,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 12),
-        // ── 分档面板 ───────────────────────────────────────────────────
-        for (final tier in tiers) ...[
-          _TierPanel(
-            tier: tier,
-            defs: byTier[tier]!,
-            acquired: acquired,
-            entryMap: entryMap,
-          ),
-          const SizedBox(height: 16),
-        ],
-      ],
+      ),
     );
   }
 }
@@ -186,29 +187,36 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          color: active
-              ? WuxiaColors.resultHighlight.withValues(alpha: 0.18)
-              : WuxiaColors.panel,
-          border: Border.all(
+    final borderRadius = BorderRadius.circular(5);
+    return Semantics(
+      button: true,
+      selected: active,
+      label: label,
+      child: InkWell(
+        onTap: onTap,
+        mouseCursor: SystemMouseCursors.click,
+        borderRadius: borderRadius,
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+          decoration: BoxDecoration(
             color: active
-                ? WuxiaColors.resultHighlight
-                : WuxiaColors.border,
+                ? WuxiaUi.paper.withValues(alpha: 0.16)
+                : WuxiaColors.inkPanelBottom,
+            border: Border.all(
+              color: active ? WuxiaColors.resultHighlight : WuxiaColors.border,
+            ),
+            borderRadius: borderRadius,
           ),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color:
-                active ? WuxiaColors.resultHighlight : WuxiaColors.textMuted,
-            fontSize: 13,
-            letterSpacing: 1,
-            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: active
+                  ? WuxiaColors.resultHighlight
+                  : WuxiaColors.textMuted,
+              fontSize: 13,
+              letterSpacing: 1,
+              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+            ),
           ),
         ),
       ),
@@ -277,7 +285,7 @@ class _TierPanel extends StatelessWidget {
 class _AcquiredTile extends StatelessWidget {
   const _AcquiredTile({required this.def, required this.entry});
 
-  static const double _tileWidth = 86;
+  static const double _tileWidth = 92;
 
   final EquipmentDef def;
   final EquipmentCatalogEntry entry;
@@ -285,22 +293,27 @@ class _AcquiredTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = tierColorForEquipment(def.tier);
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) =>
-              EquipmentCatalogDetailScreen(def: def, entry: entry),
-        ),
-      ),
+    final borderRadius = BorderRadius.circular(5);
+    return Semantics(
+      button: true,
+      label: def.name,
       child: SizedBox(
         width: _tileWidth,
-        child: IntrinsicHeight(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        child: InkWell(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) =>
+                  EquipmentCatalogDetailScreen(def: def, entry: entry),
+            ),
+          ),
+          mouseCursor: SystemMouseCursors.click,
+          borderRadius: borderRadius,
+          child: Ink(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 8),
             decoration: BoxDecoration(
-              color: WuxiaColors.panel,
-              border: Border.all(color: color.withValues(alpha: 0.7)),
-              borderRadius: BorderRadius.circular(4),
+              color: WuxiaColors.inkPanelBottom,
+              border: Border.all(color: color.withValues(alpha: 0.72)),
+              borderRadius: borderRadius,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -324,6 +337,7 @@ class _AcquiredTile extends StatelessWidget {
                   style: const TextStyle(
                     color: WuxiaColors.textPrimary,
                     fontSize: 12,
+                    height: 1.2,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -344,11 +358,7 @@ class _AcquiredTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(3),
         border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.3)),
       ),
-      child: const Icon(
-        Icons.shield_outlined,
-        color: Colors.white24,
-        size: 28,
-      ),
+      child: const Icon(Icons.shield_outlined, color: Colors.white24, size: 28),
     );
   }
 }
@@ -358,40 +368,51 @@ class _AcquiredTile extends StatelessWidget {
 class _LockedTile extends StatelessWidget {
   const _LockedTile();
 
-  static const double _tileWidth = 86;
+  static const double _tileWidth = 92;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(UiStrings.weaponCodexNotObtained)),
-      ),
+    final borderRadius = BorderRadius.circular(5);
+    return Semantics(
+      button: true,
+      enabled: true,
+      label: UiStrings.weaponCodexLockedItem,
       child: SizedBox(
         width: _tileWidth,
-        child: IntrinsicHeight(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        child: InkWell(
+          onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text(UiStrings.weaponCodexNotObtained)),
+          ),
+          mouseCursor: SystemMouseCursors.click,
+          borderRadius: borderRadius,
+          child: Ink(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 8),
             decoration: BoxDecoration(
               color: WuxiaColors.avatarFill,
               border: Border.all(
-                color: WuxiaColors.textMuted.withValues(alpha: 0.2),
+                color: WuxiaColors.textMuted.withValues(alpha: 0.22),
               ),
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: borderRadius,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 56,
-                  height: 56,
+                DecoratedBox(
                   decoration: BoxDecoration(
-                    color: WuxiaColors.textMuted.withValues(alpha: 0.15),
+                    color: WuxiaColors.textMuted.withValues(alpha: 0.13),
                     borderRadius: BorderRadius.circular(3),
+                    border: Border.all(
+                      color: WuxiaColors.textMuted.withValues(alpha: 0.16),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.help_outline,
-                    color: Colors.white24,
-                    size: 28,
+                  child: const SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: Icon(
+                      Icons.help_outline,
+                      color: Colors.white24,
+                      size: 28,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -401,6 +422,7 @@ class _LockedTile extends StatelessWidget {
                   style: TextStyle(
                     color: WuxiaColors.textMuted,
                     fontSize: 12,
+                    height: 1.2,
                     letterSpacing: 0.5,
                   ),
                 ),
