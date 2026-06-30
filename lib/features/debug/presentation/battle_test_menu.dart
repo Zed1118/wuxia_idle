@@ -649,15 +649,11 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
   final int? seed;
 
   /// 透传给 BattleScreen.allowPlayerIntervention(默认 false 现有静态验收用法不变);
-  /// true 时挂拖招干预层(技能按钮长按拖 + 引导线 + drop 命中),供 battle_tap_live
-  /// 路由真玩/Codex 验拖招手势。
+  /// true 时挂干预层(技能按钮点选 + 引导高亮),供 battle_tap_live 路由真玩/Codex 验证。
   final bool allowPlayerIntervention;
 
-  /// 透传给 BattleScreen.debugDragPreview(拖招表现层静态验收预置态)。
-  final BattleDragPreview? debugDragPreview;
-
   /// 透传给 BattleScreen.startPaused(默认 false 现有用法不变);true 时起手暂停,
-  /// 战斗冻结 seed 初态 + 顶栏出「单步」键供验收者逐步推进操作拖招。
+  /// 战斗冻结 seed 初态 + 顶栏出「单步」键供验收者逐步推进操作点选。
   final bool startPaused;
 
   const ScenarioLauncher({
@@ -667,7 +663,6 @@ class ScenarioLauncher extends ConsumerStatefulWidget {
     this.autoStart = true,
     this.seed,
     this.allowPlayerIntervention = false,
-    this.debugDragPreview,
     this.startPaused = false,
     super.key,
   });
@@ -695,7 +690,6 @@ class _ScenarioLauncherState extends ConsumerState<ScenarioLauncher> {
     sceneBackgroundPath: widget.sceneBackgroundPath,
     autoStart: widget.autoStart,
     allowPlayerIntervention: widget.allowPlayerIntervention,
-    debugDragPreview: widget.debugDragPreview,
     startPaused: widget.startPaused,
     onBattleEnd: () => Navigator.of(context).pop(),
   );

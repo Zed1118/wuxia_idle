@@ -119,8 +119,11 @@ class UiStrings {
   static const String skillTraitNone = '无';
   // 冷却值单位（回合）。
   static String skillInfoCooldownTurns(int turns) => '$turns 回合';
-  // 浮层底部操作提示：长按拖到敌人头像下发。
-  static const String skillInfoDragHint = '长按方块拖到目标头像下发';
+  // 浮层底部操作提示：点选交互说明。
+  static const String skillInfoTapHint = '轻点技能：单体技再点敌人出手，群体技一键即放';
+  // 技能按钮角标：区分单体 / 群体目标类型。
+  static const String skillBadgeSingle = '单';
+  static const String skillBadgeAoe = '群';
   // 浮层关闭按钮。
   static const String skillInfoClose = '知道了';
   // 角色头像内力条标签前缀（HpBar labelPrefix），如「内 100 / 100」。
@@ -1777,7 +1780,7 @@ class UiStrings {
   static String settingsVersionValue(String v) => '挂机武侠 · v$v';
   // 战斗交互重做 Phase 3:全局战斗模式默认开关(自动连续播放 / 允许拖招干预)。
   static const String settingsAutoPlayDefault = '自动战斗';
-  static const String settingsAutoPlayDefaultHint = '战斗自动连续播放(可逐关切「允许拖招」干预)';
+  static const String settingsAutoPlayDefaultHint = '战斗自动连续播放(可逐关切「允许点选」干预)';
   static const String settingsBattleSpeed = '战斗速度';
   static const String settingsBattleSpeedHint = '只调整播放节拍,不影响胜负和收益';
   static const String settingsBattleSpeedRelaxed = '舒缓';
@@ -1901,16 +1904,16 @@ class UiStrings {
     String fate,
     String originLine,
   ) => '$generationText · $school · $origin · $fate\n$originLine';
-  // 战斗交互重做 Phase 3:选关屏 per-stage「挂机自动 / 允许拖招」开关。
+  // 战斗交互重做 Phase 3:选关屏 per-stage「挂机自动 / 允许点选」开关。
   static const String stageAutoPlayAuto = '自动';
-  static const String stageAutoPlayManual = '拖招';
-  // 印章 glyph 单字(绛红方印 ·「自」=纯挂机自动 /「拖」=允许拖招;暂用现有字体,真小篆待补字体)。
+  static const String stageAutoPlayManual = '点选';
+  // 印章 glyph 单字(绛红方印 ·「自」=纯挂机自动 /「点」=允许点选;暂用现有字体,真小篆待补字体)。
   static const String stageAutoPlaySealAuto = '自';
-  static const String stageAutoPlaySealManual = '拖';
+  static const String stageAutoPlaySealManual = '点';
   static const String stageAutoPlayFollowSuffix = '随设置';
   static const String stageAutoPlayMenuFollow = '跟随设置';
   static const String stageAutoPlayMenuAuto = '挂机自动';
-  static const String stageAutoPlayMenuManual = '允许拖招';
+  static const String stageAutoPlayMenuManual = '允许点选';
   // 爬塔重打 dialog 内的开关标签(塔身布局固定高,toggle 走 dialog)。
   static const String stageAutoPlayPickLabel = '战斗方式';
 

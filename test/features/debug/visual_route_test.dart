@@ -191,20 +191,6 @@ void main() {
       expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,拖招随时干预');
     });
 
-    test('battle_tap_preview → autoStart:false + debugDragPreview 预置 '
-        '(两段点选表现层静态验收;手势鼠标合成不出,守预置态透传)', () async {
-      final target = await buildVisualTarget(
-        VisualRoute.battleTapPreview,
-        IsarSetup.instance,
-      );
-      expect(target, isA<ScenarioLauncher>());
-      final launcher = target as ScenarioLauncher;
-      expect(launcher.autoStart, isFalse, reason: '冻结画面,蓄势光晕脉动常驻不被 tick 推掉');
-      final preview = launcher.debugDragPreview;
-      expect(preview, isNotNull, reason: '静态验收必须预置拖招态,否则截图无引导线/光晕');
-      expect(preview!.dragCharId, 1, reason: '主控蓄势脉动');
-      expect(preview.hoveredEnemyId, 11, reason: '敌 11 悬停浅金高亮');
-    });
   });
 
   // 批一英雄镜头 preview：真数据(祖师 + 真 stage_01_05 Boss 名)接线回归。
