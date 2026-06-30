@@ -145,10 +145,16 @@ void main() {
         VisualRoute.skillCodexLockedSnackbar,
       );
     });
-    test('资源总览路由 parse', () {
+    test('resource overview route parse', () {
       expect(
         parseVisualRoute('resource_overview'),
         VisualRoute.resourceOverview,
+      );
+    });
+    test('battle_tap_preview route parse', () {
+      expect(
+        parseVisualRoute('battle_tap_preview'),
+        VisualRoute.battleTapPreview,
       );
     });
   });
@@ -213,6 +219,31 @@ void main() {
       expect(launcher.startPaused, isTrue);
       expect(launcher.previewPendingCharacterId, 1);
       expect(launcher.previewPendingSkillId, 'dl_single_1');
+    });
+
+    test('battle_tap_preview → 复用 battle_drag_preview 冻结预置态', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleTapPreview,
+        IsarSetup.instance,
+      );
+      expect(target, isA<ScenarioLauncher>());
+      final launcher = target as ScenarioLauncher;
+      expect(launcher.autoStart, isFalse);
+      expect(launcher.debugDragPreview, isNotNull);
+      expect(launcher.debugDragPreview!.hoveredEnemyId, 11);
+    });
+
+    test('skill_codex_locked_snackbar → snackbar preview route 接线', () async {
+      if (!GameRepository.isLoaded) {
+        await GameRepository.loadAllDefs(
+          loader: (path) => File(path).readAsString(),
+        );
+      }
+      final target = await buildVisualTarget(
+        VisualRoute.skillCodexLockedSnackbar,
+        IsarSetup.instance,
+      );
+      expect(target.runtimeType.toString(), '_SkillCodexLockedSnackbarPreview');
     });
   });
 

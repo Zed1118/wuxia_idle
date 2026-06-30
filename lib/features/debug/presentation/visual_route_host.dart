@@ -380,6 +380,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         startPaused: true,
       );
     case VisualRoute.battleTapPreview:
+      // 两段点选静态验收:冻结画面(autoStart false)预置 single 技能待发,
+      // 给截图稳定展示技能焦点、敌头像可选标记和单体/群体角标。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioDragLive,
         hint: UiStrings.battleTapPreviewHint,
