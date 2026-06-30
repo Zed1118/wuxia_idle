@@ -1367,12 +1367,9 @@ class GameRepository {
         founderCreation.fatePool.isEmpty) {
       return;
     }
+    enforceFounderSchoolUniqueness(founderCreation.schools);
     final schoolSet = <TechniqueSchool>{};
-    final schoolIds = <String>{};
     for (final option in founderCreation.schools) {
-      if (!schoolIds.add(option.id)) {
-        throw StateError('founder_creation schools id 重复:${option.id}');
-      }
       schoolSet.add(option.school);
       if (option.startingTechniqueIds.isEmpty) {
         throw StateError('founder_creation ${option.id} 未配置起手心法');
@@ -2194,6 +2191,28 @@ void enforceLineageOnboardingRedLines({
     if (j.narrativeId.isEmpty) {
       throw StateError(
         'lineage_onboarding stage_id=${j.stageId} narrative_id 为空',
+      );
+    }
+  }
+}
+
+/// 祖师塑形 schools 唯一性红线（可独立测试）。
+///
+/// id 与 school（流派枚举）必须各自唯一。覆盖度红线（必须含三流派）只看
+/// 去重后的集合大小，单独跑会把「同一流派配多条」静默吞掉（如 gangMeng×2 +
+/// lingQiao + yinRou 仍凑满 3 种而漏过），导致创建页流派选项重复、选择漂移。
+/// 本校验与 id 重复检查对称，在覆盖度校验前 fail-fast。
+void enforceFounderSchoolUniqueness(List<FounderSchoolOption> schools) {
+  final ids = <String>{};
+  final usedSchools = <TechniqueSchool>{};
+  for (final option in schools) {
+    if (!ids.add(option.id)) {
+      throw StateError('founder_creation schools id 重复:${option.id}');
+    }
+    if (!usedSchools.add(option.school)) {
+      throw StateError(
+        'founder_creation schools school 重复:${option.school.name}'
+        '（每个流派只能配一条 schools 项）',
       );
     }
   }
