@@ -5,48 +5,60 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
 
+const _bossFrameKey = ValueKey<String>('battle.bossAvatarFrame');
+
 BattleCharacter _char({required bool isBoss}) => BattleCharacter(
-      characterId: 1,
-      name: '黑风寨主',
-      realmTier: RealmTier.yiLiu,
-      realmLayer: RealmLayer.qiMeng,
-      school: TechniqueSchool.gangMeng,
-      maxHp: 100,
-      currentHp: 100,
-      maxInternalForce: 100,
-      currentInternalForce: 100,
-      speed: 100,
-      criticalRate: 0.05,
-      evasionRate: 0.05,
-      defenseRate: 0.1,
-      totalEquipmentAttack: 100,
-      mainCultivationLayer: CultivationLayer.daCheng,
-      availableSkills: const [],
-      skillCooldowns: const {},
-      activeBuffs: const [],
-      actionPoint: 0,
-      isAlive: true,
-      teamSide: 1,
-      slotIndex: 0,
-      isBoss: isBoss,
-    );
+  characterId: 1,
+  name: '黑风寨主',
+  realmTier: RealmTier.yiLiu,
+  realmLayer: RealmLayer.qiMeng,
+  school: TechniqueSchool.gangMeng,
+  maxHp: 100,
+  currentHp: 100,
+  maxInternalForce: 100,
+  currentInternalForce: 100,
+  speed: 100,
+  criticalRate: 0.05,
+  evasionRate: 0.05,
+  defenseRate: 0.1,
+  totalEquipmentAttack: 100,
+  mainCultivationLayer: CultivationLayer.daCheng,
+  availableSkills: const [],
+  skillCooldowns: const {},
+  activeBuffs: const [],
+  actionPoint: 0,
+  isAlive: true,
+  teamSide: 1,
+  slotIndex: 0,
+  isBoss: isBoss,
+);
+
+Finder _avatarCoreFinder() => find.byWidgetPredicate(
+  (widget) =>
+      widget is Container &&
+      widget.decoration is BoxDecoration &&
+      (widget.decoration as BoxDecoration).shape == BoxShape.circle,
+);
 
 Border _avatarBorder(WidgetTester tester) {
-  final container = tester
-      .widgetList<Container>(find.byType(Container))
-      .firstWhere((c) =>
-          c.decoration is BoxDecoration &&
-          (c.decoration as BoxDecoration).shape == BoxShape.circle);
+  final container = tester.widget<Container>(_avatarCoreFinder().first);
   return (container.decoration as BoxDecoration).border as Border;
 }
+
+Size _avatarCoreSize(WidgetTester tester) =>
+    tester.getSize(_avatarCoreFinder().first);
 
 void main() {
   Future<void> pump(WidgetTester tester, BattleCharacter c) async {
     await tester.binding.setSurfaceSize(const Size(400, 600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: Center(child: CharacterAvatar(character: c))),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(child: CharacterAvatar(character: c)),
+        ),
+      ),
+    );
   }
 
   testWidgets('普通敌人:流派色 4px 边框', (tester) async {
@@ -63,10 +75,25 @@ void main() {
     expect(b.top.width, 6.0);
   });
 
-  testWidgets('默认 avatarSize=110（P0-2 放大·适配 720p）', (tester) async {
+  testWidgets('普通头像布局尺寸保持默认 110（P0-2 放大·适配 720p）', (tester) async {
     await pump(tester, _char(isBoss: false));
-    final av = tester.widget<CharacterAvatar>(find.byType(CharacterAvatar));
-    expect(av.avatarSize, 110);
+    expect(find.byKey(_bossFrameKey), findsNothing);
+    expect(_avatarCoreSize(tester), const Size(110, 110));
+  });
+
+  testWidgets('Boss 外框参与布局且头像核心保持 110', (tester) async {
+    await pump(tester, _char(isBoss: true));
+
+    const avatarSize = 110.0;
+    const expectedFrameSize = avatarSize * 1.42;
+
+    expect(_avatarCoreSize(tester), const Size(avatarSize, avatarSize));
+
+    final frameSize = tester.getSize(find.byKey(_bossFrameKey));
+    expect(frameSize.width, greaterThan(avatarSize));
+    expect(frameSize.height, greaterThan(avatarSize));
+    expect(frameSize.width, closeTo(expectedFrameSize, 0.01));
+    expect(frameSize.height, closeTo(expectedFrameSize, 0.01));
   });
 
   testWidgets('死亡单位叠 grayscale ColorFiltered（P0-2）', (tester) async {

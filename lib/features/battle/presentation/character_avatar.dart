@@ -182,22 +182,20 @@ class _BossAvatarFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     final frameSize = avatarSize * 1.42;
     return SizedBox(
-      width: avatarSize,
-      height: avatarSize,
+      key: const ValueKey<String>('battle.bossAvatarFrame'),
+      width: frameSize,
+      height: frameSize,
       child: Stack(
-        clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
           child,
-          Positioned(
-            width: frameSize,
-            height: frameSize,
-            child: IgnorePointer(
-              child: WuxiaImage(
-                WuxiaUi.bossFrameLarge,
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
-              ),
+          IgnorePointer(
+            child: WuxiaImage(
+              WuxiaUi.bossFrameLarge,
+              width: frameSize,
+              height: frameSize,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
           ),
         ],
