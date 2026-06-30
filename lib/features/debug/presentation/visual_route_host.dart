@@ -380,6 +380,7 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         startPaused: true,
       );
     case VisualRoute.battleDragPreview:
+    case VisualRoute.battleTapPreview:
       // 拖招表现层静态验收:冻结画面(autoStart false)预置引导线 + 蓄势光晕 + 悬停高亮,
       // 给 Codex 截新样式(手势鼠标合成无法触发)。主控(id1 绛红刚猛)蓄势/起手,敌 11 悬停。
       return const ScenarioLauncher(

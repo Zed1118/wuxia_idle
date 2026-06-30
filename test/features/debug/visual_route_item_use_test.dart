@@ -65,11 +65,29 @@ void main() {
       );
     });
 
-    test('seed 道具各按 fromDefId 前缀匹配真映射(P2 前缀匹配回归哨兵)', () async {
-      await buildVisualTarget(
-        VisualRoute.itemUseInventory,
+    test('item_use_confirm_dialog → 使用确认 preview + 同一批道具 seed', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.itemUseConfirmDialog,
         IsarSetup.instance,
       );
+      expect(target.runtimeType.toString(), '_ItemUseConfirmPreview');
+      final isar = IsarSetup.instance;
+      expect(
+        (await isar.inventoryItems.getByDefId(
+          'item_jingyandan_small',
+        ))?.quantity,
+        3,
+      );
+      expect(
+        (await isar.inventoryItems.getByDefId(
+          'item_scroll_kai_bei_shou',
+        ))?.itemType,
+        ItemType.techniqueScroll,
+      );
+    });
+
+    test('seed 道具各按 fromDefId 前缀匹配真映射(P2 前缀匹配回归哨兵)', () async {
+      await buildVisualTarget(VisualRoute.itemUseInventory, IsarSetup.instance);
       final isar = IsarSetup.instance;
       // 经验丹三档共享 jingYanDan(item_jingyandan* 前缀),per-item 名靠 items.yaml。
       for (final defId in const [
@@ -85,8 +103,9 @@ void main() {
       }
       // 秘籍走 item_scroll_ 前缀。
       expect(
-        (await isar.inventoryItems.getByDefId('item_scroll_kai_bei_shou'))
-            ?.itemType,
+        (await isar.inventoryItems.getByDefId(
+          'item_scroll_kai_bei_shou',
+        ))?.itemType,
         ItemType.techniqueScroll,
         reason: 'item_scroll_ 前缀匹配,漏则丢「使用」按钮',
       );
@@ -98,10 +117,7 @@ void main() {
     });
 
     test('建祖师(founder 存在)→ 使用经验丹/秘籍有真目标非 noTarget', () async {
-      await buildVisualTarget(
-        VisualRoute.itemUseInventory,
-        IsarSetup.instance,
-      );
+      await buildVisualTarget(VisualRoute.itemUseInventory, IsarSetup.instance);
       final founder = await IsarSetup.instance.characters
           .filter()
           .isFounderEqualTo(true)

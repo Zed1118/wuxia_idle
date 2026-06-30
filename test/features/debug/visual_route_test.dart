@@ -128,10 +128,7 @@ void main() {
       );
     });
     test('动态态 dedicated 路由 parse(确认弹窗 / 使用弹窗 / 未解锁 snackbar)', () {
-      expect(
-        parseVisualRoute('shop_buy_confirm'),
-        VisualRoute.shopBuyConfirm,
-      );
+      expect(parseVisualRoute('shop_buy_confirm'), VisualRoute.shopBuyConfirm);
       expect(
         parseVisualRoute('item_use_confirm_dialog'),
         VisualRoute.itemUseConfirmDialog,
@@ -139,6 +136,12 @@ void main() {
       expect(
         parseVisualRoute('skill_codex_locked_snackbar'),
         VisualRoute.skillCodexLockedSnackbar,
+      );
+    });
+    test('battle_tap_preview 兼容路由 parse', () {
+      expect(
+        parseVisualRoute('battle_tap_preview'),
+        VisualRoute.battleTapPreview,
       );
     });
   });
@@ -204,6 +207,31 @@ void main() {
       expect(preview, isNotNull, reason: '静态验收必须预置拖招态,否则截图无引导线/光晕');
       expect(preview!.rushActorId, 1, reason: '主控蓄势脉动');
       expect(preview.hoveredEnemyId, 11, reason: '敌 11 悬停浅金高亮');
+    });
+
+    test('battle_tap_preview → 复用 battle_drag_preview 冻结预置态', () async {
+      final target = await buildVisualTarget(
+        VisualRoute.battleTapPreview,
+        IsarSetup.instance,
+      );
+      expect(target, isA<ScenarioLauncher>());
+      final launcher = target as ScenarioLauncher;
+      expect(launcher.autoStart, isFalse);
+      expect(launcher.debugDragPreview, isNotNull);
+      expect(launcher.debugDragPreview!.hoveredEnemyId, 11);
+    });
+
+    test('skill_codex_locked_snackbar → snackbar preview route 接线', () async {
+      if (!GameRepository.isLoaded) {
+        await GameRepository.loadAllDefs(
+          loader: (path) => File(path).readAsString(),
+        );
+      }
+      final target = await buildVisualTarget(
+        VisualRoute.skillCodexLockedSnackbar,
+        IsarSetup.instance,
+      );
+      expect(target.runtimeType.toString(), '_SkillCodexLockedSnackbarPreview');
     });
   });
 
