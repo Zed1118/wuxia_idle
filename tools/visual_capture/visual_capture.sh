@@ -165,6 +165,28 @@ end tell
 OSA
 }
 
+terminate_visual_app() {
+  osascript <<'OSA' >/dev/null 2>&1 || true
+tell application "System Events"
+  set candidates to {"wuxia_idle", "挂机武侠", "Runner"}
+  repeat with appName in candidates
+    if exists application process (appName as text) then
+      tell application (appName as text) to quit
+    end if
+  end repeat
+end tell
+OSA
+  local elapsed=0
+  while [[ "$elapsed" -lt 5 ]]; do
+    if ! pgrep -x "$APP_PROCESS_NAME" >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+  pkill -x "$APP_PROCESS_NAME" >/dev/null 2>&1 || true
+}
+
 wait_for_route_ready() {
   local route="$1"
   local log="$2"
@@ -197,6 +219,7 @@ run_capture() {
   fi
 
   mkdir -p "$dir"
+  terminate_visual_app
 
   local cmd=(
     flutter run -d macos
