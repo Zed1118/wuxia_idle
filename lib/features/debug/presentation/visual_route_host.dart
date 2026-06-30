@@ -48,7 +48,6 @@ import '../../seclusion/presentation/offline_recap_card.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../inventory/presentation/equipment_detail_screen.dart';
 import '../application/phase2_seed_service.dart';
-import '../../battle/presentation/battle_screen.dart';
 import '../../battle/presentation/ultimate_caption_overlay.dart';
 import '../../battle/presentation/battle_scene_background.dart';
 import '../../battle/presentation/victory_overlay.dart';
@@ -370,30 +369,25 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
         autoStart: false,
       );
-    case VisualRoute.battleDragLive:
-      // 拖招真玩/验收:真战斗 + 干预层挂上 + 高血耐久敌久撑(够时间拖)。
+    case VisualRoute.battleTapLive:
+      // 两段点选真玩/验收:真战斗 + 干预层挂上 + 高血耐久敌久撑。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioDragLive,
-        hint: '长按拖技能下发:单体拖到敌头像指定 · 群体技拖动松手即对全体触发 · 已暂停,点单步推进或继续自动',
+        hint: UiStrings.battleTapLiveHint,
         sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
         allowPlayerIntervention: true,
         startPaused: true,
       );
-    case VisualRoute.battleDragPreview:
-      // 拖招表现层静态验收:冻结画面(autoStart false)预置引导线 + 蓄势光晕 + 悬停高亮,
-      // 给 Codex 截新样式(手势鼠标合成无法触发)。主控(id1 绛红刚猛)蓄势/起手,敌 11 悬停。
+    case VisualRoute.battleTapPreview:
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioDragLive,
-        hint: '拖招表现层静态预置(引导线 / 蓄势脉动 / 悬停高亮)',
+        hint: UiStrings.battleTapPreviewHint,
         sceneBackgroundPath: 'assets/scenes/battle_citywall.png',
         autoStart: false,
-        debugDragPreview: BattleDragPreview(
-          dragCharId: 1,
-          rushActorId: 1,
-          hoveredEnemyId: 11,
-          origin: Offset(360, 600),
-          pointer: Offset(980, 230),
-        ),
+        allowPlayerIntervention: true,
+        startPaused: true,
+        previewPendingCharacterId: 1,
+        previewPendingSkillId: 'dl_single_1',
       );
     case VisualRoute.battleVictoryFirstClear:
       return const _VictoryFirstClearPreview();
@@ -441,11 +435,10 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
     case VisualRoute.battleBossPhase:
       // 第七阶段批二目检:真 stage_01_05 Boss(HP抬高给两阶段步数)vs 压低 DPS 玩家队。
       // **startPaused 起手暂停**:用顶栏「单步」逐拍推进,每步看清会心/转阶段/蓄力反扑动效
-      // (也可点「继续自动」放掉无聊段);已开干预层可长按拖技能。
+      // (也可点「继续自动」放掉无聊段);已开干预层可点选技能。
       return const ScenarioLauncher(
         teamsFactory: BattleScenarioData.scenarioBossPhase,
-        hint:
-            '已暂停。点顶栏「单步」逐拍推进:刚猛打 Boss 出「会心」(弱点×1.25)、灵巧伤害偏低(抗性×0.75)、Boss 半血触发「背水一击」转阶段 + 蓄力反扑。也可点继续自动 / 长按拖技能干预',
+        hint: UiStrings.battleBossPhaseHint,
         sceneBackgroundPath: WuxiaUi.battleBossEntranceBg,
         allowPlayerIntervention: true,
         startPaused: true,

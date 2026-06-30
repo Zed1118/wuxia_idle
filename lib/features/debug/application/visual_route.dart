@@ -114,13 +114,13 @@ enum VisualRoute {
     '主线选关·章层周目控件 + 拖招真关卡入口(整章 Ch1 cycle1 全通 → 章头显周目控件;点 tile 进真战斗验纯自动流+拖招)',
   ),
   towerCycle('tower_cycle', '爬塔·问鼎轮回验收(通关 30 层 cycle1 → 显当前轮回 + 挑战下一轮回入口)'),
-  battleDragLive(
-    'battle_drag_live',
-    '拖招交互真玩/验收(真战斗·已开干预·高血耐久敌久撑 → 长按拖 single 强力技到敌头像指定 + aoe 大招拖动松手即对全体触发)',
+  battleTapLive(
+    'battle_tap_live',
+    '两段点选交互真玩/验收(真战斗·已开干预·高血耐久敌久撑 → 点 single 强力技进待发态(软暂停)点敌头像出手 / 点 aoe 大招一键即对全体触发)',
   ),
-  battleDragPreview(
-    'battle_drag_preview',
-    '拖招表现层静态验收(冻结画面预置态·Codex 截图:引导线外发光+末端白心 / 蓄势呼吸脉动光晕(截帧) / 悬停敌头像浅金高亮)',
+  battleTapPreview(
+    'battle_tap_preview',
+    '两段点选交互静态预览(冻结态·single 技能待发高亮 + 敌头像可选标记 + 单体/群体角标)',
   ),
   offlineRecapPassive(
     'offline_recap_passive',
