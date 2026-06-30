@@ -132,7 +132,7 @@ class EquipmentCatalogDetailScreen extends StatelessWidget {
                       child: Text(
                         UiStrings.weaponCodexHistoryUnknown,
                         style: TextStyle(
-                          color: WuxiaColors.textMuted,
+                          color: WuxiaUi.muted,
                           fontSize: 13,
                           letterSpacing: 1,
                           fontStyle: FontStyle.italic,
@@ -230,7 +230,7 @@ class _ArchiveRow extends StatelessWidget {
             child: Text(
               label,
               style: const TextStyle(
-                color: WuxiaColors.textMuted,
+                color: WuxiaUi.muted,
                 fontSize: 13,
                 letterSpacing: 0.5,
               ),
@@ -240,7 +240,7 @@ class _ArchiveRow extends StatelessWidget {
             child: Text(
               value,
               style: const TextStyle(
-                color: WuxiaColors.textPrimary,
+                color: WuxiaUi.ink,
                 fontSize: 13,
                 letterSpacing: 0.5,
               ),
@@ -267,7 +267,7 @@ class _HistoryRow extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          color: muted ? WuxiaColors.textMuted : WuxiaColors.textPrimary,
+          color: muted ? WuxiaUi.muted : WuxiaUi.ink,
           fontSize: 13,
           letterSpacing: 0.5,
         ),

@@ -197,7 +197,8 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const _EncounterOutcomeBannerPreview();
     case VisualRoute.sectScreenNpc:
       await Phase2SeedService(isar: isar).seedSectWithFullNpc();
-      return const SectScreen();
+      // 验收意图=门派成员立绘,直达「成员」tab(index 2),否则默认停在空事件态。
+      return const SectScreen(initialTabIndex: 2);
     case VisualRoute.characterPanelProfile:
       await Phase2SeedService(
         isar: isar,
@@ -1106,18 +1107,17 @@ class _EncounterOutcomeBannerPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 居中仪式浮层真实形态:暗幕 + 放大装帧 CeremonyImagePanel(去掉旧
+    // maxWidth:520 假约束,改由 EncounterOutcomeToast 自身 maxWidth:420 收窄)。
+    // 静态验收用 onDone no-op,让浮层停在末态供截图。
     return Scaffold(
       backgroundColor: WuxiaColors.background,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: const EncounterOutcomeToast(
-            title: UiStrings.encounterOutcomeSkillTitle,
-            message: '领悟新招:听雨剑',
-            icon: Icons.auto_awesome,
-            color: WuxiaColors.resultHighlight,
-          ),
-        ),
+      body: EncounterOutcomeOverlay(
+        title: UiStrings.encounterOutcomeSkillTitle,
+        message: '领悟新招:听雨剑',
+        icon: Icons.auto_awesome,
+        color: WuxiaColors.resultHighlight,
+        onDone: () {},
       ),
     );
   }
