@@ -96,6 +96,13 @@ void main() {
     test('批一英雄镜头 overlay 路由 parse', () {
       expect(parseVisualRoute('hero_camera'), VisualRoute.heroCamera);
     });
+    test('两段点选双路由 parse', () {
+      expect(parseVisualRoute('battle_tap_live'), VisualRoute.battleTapLive);
+      expect(
+        parseVisualRoute('battle_tap_preview'),
+        VisualRoute.battleTapPreview,
+      );
+    });
     test('P4 战绩册路由 parse', () {
       expect(parseVisualRoute('battle_record'), VisualRoute.battleRecord);
       expect(
@@ -128,10 +135,7 @@ void main() {
       );
     });
     test('动态态 dedicated 路由 parse(确认弹窗 / 使用弹窗 / 未解锁 snackbar)', () {
-      expect(
-        parseVisualRoute('shop_buy_confirm'),
-        VisualRoute.shopBuyConfirm,
-      );
+      expect(parseVisualRoute('shop_buy_confirm'), VisualRoute.shopBuyConfirm);
       expect(
         parseVisualRoute('item_use_confirm_dialog'),
         VisualRoute.itemUseConfirmDialog,
@@ -175,10 +179,10 @@ void main() {
       expect(launcher.autoStart, isFalse);
     });
 
-    test('battle_drag_live → allowPlayerIntervention:true + autoStart:true '
-        '(拖招干预层必须挂,守 ScenarioLauncher 透传缺口)', () async {
+    test('battle_tap_live → allowPlayerIntervention:true + autoStart:true '
+        '(两段点选干预层必须挂,守 ScenarioLauncher 透传缺口)', () async {
       final target = await buildVisualTarget(
-        VisualRoute.battleDragLive,
+        VisualRoute.battleTapLive,
         IsarSetup.instance,
       );
       expect(target, isA<ScenarioLauncher>());
@@ -186,24 +190,23 @@ void main() {
       expect(
         launcher.allowPlayerIntervention,
         isTrue,
-        reason: '拖招验收路由必须开干预,否则技能按钮不挂拖手势(本次 FAIL 根因)',
+        reason: '两段点选验收路由必须开干预,否则技能按钮不接收点选',
       );
-      expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,拖招随时干预');
+      expect(launcher.autoStart, isTrue, reason: '真战斗自动播放,点选随时干预');
     });
 
-    test('battle_drag_preview → autoStart:false + debugDragPreview 预置 '
-        '(拖招表现层静态验收;手势鼠标合成不出,守预置态透传)', () async {
+    test('battle_tap_preview → 冻结态 + 纯 presentation 待发预览', () async {
       final target = await buildVisualTarget(
-        VisualRoute.battleDragPreview,
+        VisualRoute.battleTapPreview,
         IsarSetup.instance,
       );
       expect(target, isA<ScenarioLauncher>());
       final launcher = target as ScenarioLauncher;
-      expect(launcher.autoStart, isFalse, reason: '冻结画面,蓄势光晕脉动常驻不被 tick 推掉');
-      final preview = launcher.debugDragPreview;
-      expect(preview, isNotNull, reason: '静态验收必须预置拖招态,否则截图无引导线/光晕');
-      expect(preview!.rushActorId, 1, reason: '主控蓄势脉动');
-      expect(preview.hoveredEnemyId, 11, reason: '敌 11 悬停浅金高亮');
+      expect(launcher.allowPlayerIntervention, isTrue);
+      expect(launcher.autoStart, isFalse, reason: 'preview 必须冻结在预置态');
+      expect(launcher.startPaused, isTrue);
+      expect(launcher.previewPendingCharacterId, 1);
+      expect(launcher.previewPendingSkillId, 'dl_single_1');
     });
   });
 

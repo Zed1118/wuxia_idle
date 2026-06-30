@@ -407,7 +407,7 @@ void main() {
     );
   });
 
-  testWidgets('T1 点技能方块 → 弹简介浮层，不写 pending、不盖「待发」印（批次 1.3）', (
+  testWidgets('T1 长按技能方块 → 弹简介浮层，不写 pending、不盖「待发」印（点击改释放·简介改长按）', (
     WidgetTester tester,
   ) async {
     final notifier = await pumpBattle(tester);
@@ -415,8 +415,8 @@ void main() {
     const ultKey = ValueKey('skill_cmd_1_demo_ult_1');
     expect(find.text(UiStrings.skillPendingStamp), findsNothing);
 
-    // 点 left[0] 萧夜寒大招方块 → 弹简介浮层（不再下发命令 / 不写 pending）。
-    await tester.tap(find.byKey(ultKey));
+    // 长按 left[0] 萧夜寒大招方块 → 弹简介浮层（点击=释放，简介改长按；不写 pending）。
+    await tester.longPress(find.byKey(ultKey));
     await tester.pumpAndSettle();
 
     // 浮层出现：标题=招名、关闭按钮「知道了」可见。

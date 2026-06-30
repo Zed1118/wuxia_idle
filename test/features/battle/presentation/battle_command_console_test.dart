@@ -293,17 +293,52 @@ void main() {
       final notifier = await _pumpWith(tester, left, right);
 
       notifier.appendActions(const [
-        BattleAction(tick: 1, actorId: 1, targetId: 11, skill: _playerUlt, attackResult: _normalResult, description: 'u1'),
-        BattleAction(tick: 2, actorId: 2, targetId: 12, attackResult: _critResult, description: 'c1'),
-        BattleAction(tick: 3, actorId: 3, targetId: 13, skill: _playerUlt, attackResult: _normalResult, description: 'u2'),
-        BattleAction(tick: 4, actorId: 1, targetId: 11, attackResult: _critResult, description: 'c2'),
+        BattleAction(
+          tick: 1,
+          actorId: 1,
+          targetId: 11,
+          skill: _playerUlt,
+          attackResult: _normalResult,
+          description: 'u1',
+        ),
+        BattleAction(
+          tick: 2,
+          actorId: 2,
+          targetId: 12,
+          attackResult: _critResult,
+          description: 'c1',
+        ),
+        BattleAction(
+          tick: 3,
+          actorId: 3,
+          targetId: 13,
+          skill: _playerUlt,
+          attackResult: _normalResult,
+          description: 'u2',
+        ),
+        BattleAction(
+          tick: 4,
+          actorId: 1,
+          targetId: 11,
+          attackResult: _critResult,
+          description: 'c2',
+        ),
       ]);
       await tester.pump();
 
       // 最近 3 条关键：tick 2/3/4；tick1 的 u1 应被挤出。
-      expect(find.byKey(const ValueKey('battle_report_line_0')), findsOneWidget);
-      expect(find.byKey(const ValueKey('battle_report_line_1')), findsOneWidget);
-      expect(find.byKey(const ValueKey('battle_report_line_2')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('battle_report_line_0')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('battle_report_line_1')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('battle_report_line_2')),
+        findsOneWidget,
+      );
       expect(find.byKey(const ValueKey('battle_report_line_3')), findsNothing);
     });
   });
@@ -311,7 +346,9 @@ void main() {
   group('T1 战斗指令台', () {
     testWidgets('指令台暴露重点角色的全部可用技能（分组按钮）', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
-      final focus = left.first.copyWith(availableSkills: [_power, _break, _ult]);
+      final focus = left.first.copyWith(
+        availableSkills: [_power, _break, _ult],
+      );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
       // 重点角色默认 = 0 号，三类技能按钮都出现。
@@ -324,34 +361,31 @@ void main() {
       expect(find.text('大招'), findsWidgets);
     });
 
-    // 批次 1.3：点击技能方块改为弹简介浮层，不再裸单击下发。
-    // 下发路径(requestUltimate / 「待发」印)改由长按拖招触发，
-    // 由 battle_drag_skill_test 守，这里只验「点击=浮层、不下发」。
-    testWidgets('点技能方块 → 弹简介浮层，不写 pending（批次 1.3 退掉裸单击下发）',
-        (tester) async {
+    // 两段点选：长按技能方块弹简介浮层(不下发);点击 = 释放由 battle_tap_skill_test 守。
+    testWidgets('长按技能方块 → 弹简介浮层，不写 pending', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_power, _ult]);
-      final notifier =
-          await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_p1')));
+      await tester.longPress(find.byKey(const ValueKey('skill_cmd_1_p1')));
       await tester.pumpAndSettle();
 
-      // 点击只弹浮层（关闭按钮「知道了」可见），不下发命令。
+      // 长按只弹浮层（关闭按钮「知道了」可见），不下发命令。
       expect(find.text('知道了'), findsOneWidget);
       expect(notifier.state.pendingUltimates[1], isNull);
     });
 
-    testWidgets('点技能方块不再盖「待发」印（批次 1.3）', (tester) async {
+    testWidgets('点 single 技能方块显示本地「待发」印但不写 pendingUltimates', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(availableSkills: [_power, _ult]);
-      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
       expect(find.text('待发'), findsNothing);
+      // 点击 single 技进待发态(本地 UI 态)，按钮盖「待发」印，但 domain pending 仍为空。
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_p1')));
       await tester.pumpAndSettle();
-      // 裸单击不再下发，故无「待发」印。
-      expect(find.text('待发'), findsNothing);
+      expect(find.text('待发'), findsOneWidget);
+      expect(notifier.state.pendingUltimates[1], isNull);
     });
 
     testWidgets('可用态技能按钮显示「耗内N · CDM」（批次 1.2）', (tester) async {
@@ -365,10 +399,7 @@ void main() {
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
       // 耗内200 · CD2
-      expect(
-        find.text(UiStrings.skillCostShort(200, 2)),
-        findsOneWidget,
-      );
+      expect(find.text(UiStrings.skillCostShort(200, 2)), findsOneWidget);
       expect(find.textContaining('耗内200'), findsOneWidget);
       expect(find.textContaining('CD2'), findsOneWidget);
     });
@@ -427,11 +458,7 @@ void main() {
         chargingSkill: _chargeSkill,
         chargeTicksRemaining: 2,
       );
-      await _pumpWith(
-        tester,
-        [c0, c1, left[2]],
-        [charging, ...right.skip(1)],
-      );
+      await _pumpWith(tester, [c0, c1, left[2]], [charging, ...right.skip(1)]);
 
       // 未手动切焦点，但敌人蓄力 → 焦点自动落到 1 号（有可破招技）。
       expect(find.byKey(const ValueKey('skill_cmd_2_b1')), findsOneWidget);
@@ -440,7 +467,9 @@ void main() {
 
     testWidgets('指令台 + 危险条 + 战报条同屏 1280×720 不溢出', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
-      final focus = left.first.copyWith(availableSkills: [_power, _break, _ult]);
+      final focus = left.first.copyWith(
+        availableSkills: [_power, _break, _ult],
+      );
       final charging = right.first.copyWith(
         chargingSkill: _chargeSkill,
         chargeTicksRemaining: 3,
