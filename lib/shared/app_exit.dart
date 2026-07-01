@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'strings.dart';
 import 'theme/colors.dart';
 import 'widgets/wuxia_ui/paper_dialog.dart';
+import 'widgets/wuxia_ui/plaque_button.dart';
 
 /// 退出游戏的统一入口(桌面标配)。
 ///
@@ -34,15 +35,17 @@ class AppExit {
       ),
       actions: [
         Builder(
-          builder: (ctx) => TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text(UiStrings.quitCancelAction),
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.quitCancelAction,
+            onTap: () => Navigator.of(ctx).pop(false),
           ),
         ),
         Builder(
-          builder: (ctx) => TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(UiStrings.quitConfirmAction),
+          builder: (ctx) => PlaqueButton(
+            label: UiStrings.quitConfirmAction,
+            destructive: true,
+            autofocus: true,
+            onTap: () => Navigator.of(ctx).pop(true),
           ),
         ),
       ],

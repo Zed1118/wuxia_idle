@@ -117,11 +117,8 @@ void main() {
     await tester.pump();
   }
 
-  Finder assetImage(String path) => find.byWidgetPredicate(
-    (w) =>
-        w is Image &&
-        assetNameOf(w.image) == path,
-  );
+  Finder assetImage(String path) =>
+      find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
 
   // ── 用例 1：分组渲染 ──────────────────────────────────────────────────
 
@@ -243,6 +240,8 @@ void main() {
     expect(find.text('修炼度 800 → 400'), findsOneWidget);
     expect(find.text(UiStrings.dispelLayerWarning), findsOneWidget);
     expect(find.text(UiStrings.dispelDialogTitle), findsOneWidget);
+    expect(find.byType(PaperDialog), findsOneWidget);
+    expect(find.byType(PlaqueButton), findsNWidgets(2));
   });
 
   // ── 用例 4：二次确认取消不触发 dispel ────────────────────────────────
