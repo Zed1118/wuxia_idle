@@ -10,6 +10,7 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
+import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
 
 /// 批三战斗指令台（T1/T2/T3）widget 测试。
 ///
@@ -424,7 +425,7 @@ void main() {
       expect(find.textContaining('耗内'), findsNothing);
     });
 
-    testWidgets('冷却态技能按钮显示「冷却N」（批次 1.2 保持现状）', (tester) async {
+    testWidgets('冷却态技能按钮显读秒环 + 中心剩余拍数（不再显文字「冷却N」）', (tester) async {
       final (left, right) = BattleDemo.mockTeams();
       final focus = left.first.copyWith(
         availableSkills: [_power], // cd=2
@@ -434,8 +435,15 @@ void main() {
       );
       await _pumpWith(tester, [focus, ...left.skip(1)], right);
 
-      expect(find.text(UiStrings.skillCooldownShort(3)), findsOneWidget);
-      expect(find.text('冷却3'), findsOneWidget);
+      final ring = find.descendant(
+        of: find.byKey(const ValueKey('skill_cmd_1_p1')),
+        matching: find.byType(BeatCountdownRing),
+      );
+      expect(ring, findsOneWidget);
+      // 读秒环喂入剩余 = 该技能 CD(3)；渲染 ceil 值随节拍插值,由 countdown_ring 单测覆盖。
+      expect(tester.widget<BeatCountdownRing>(ring).remaining, 3);
+      expect(tester.widget<BeatCountdownRing>(ring).total, _power.cooldownTurns);
+      expect(find.text('冷却3'), findsNothing);
     });
 
     testWidgets('点头像切换重点角色，露出另一角色的技能', (tester) async {

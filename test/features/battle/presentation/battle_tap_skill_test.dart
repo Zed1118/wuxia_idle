@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
+import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 /// 战斗交互重做：两段点选 tap 释放 widget 测试。
@@ -336,6 +337,65 @@ void main() {
       await tester.tap(enemy);
       await tester.pump();
       expect(notifier.interveneCount, 0);
+    });
+  });
+
+  group('技能 CD 读秒环', () {
+    testWidgets('CD>0 技能按钮显读秒环 + 中心剩余拍数', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_single],
+        skillCooldowns: {'single1': 2},
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      final ring = find.descendant(
+        of: find.byKey(const ValueKey('skill_cmd_1_single1')),
+        matching: find.byType(BeatCountdownRing),
+      );
+      expect(ring, findsOneWidget);
+      // 读秒环喂入剩余 = 该技能 CD(2)；渲染 ceil 随节拍插值,由 countdown_ring 单测覆盖。
+      expect(tester.widget<BeatCountdownRing>(ring).remaining, 2);
+    });
+
+    testWidgets('CD=0 技能按钮无读秒环', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_single],
+        skillCooldowns: const {},
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('skill_cmd_1_single1')),
+          matching: find.byType(BeatCountdownRing),
+        ),
+        findsNothing,
+      );
+    });
+  });
+
+  group('读秒环端到端接线', () {
+    testWidgets('敌方蓄力 → 头像显读秒环(beat 穿 4 层到达头像)', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final charging = right.first.copyWith(
+        chargingSkill: _aoe,
+        chargeTicksRemaining: 3,
+      );
+      await _pumpWith(tester, left, [charging, ...right.skip(1)]);
+      // 蓄力敌头像内出现读秒环,证明 _beatCtrl 经 _BattleField→_TeamColumn→
+      // _CharacterSlot→CharacterAvatar 全链透传到达。
+      final enemyAvatar = find.byWidgetPredicate(
+        (w) =>
+            w is CharacterAvatar &&
+            w.character.characterId == charging.characterId,
+      );
+      expect(
+        find.descendant(
+          of: enemyAvatar,
+          matching: find.byType(BeatCountdownRing),
+        ),
+        findsOneWidget,
+      );
     });
   });
 }

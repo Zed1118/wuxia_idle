@@ -28,6 +28,7 @@ import 'battle_atmosphere_overlay.dart';
 import 'battle_effect_sprite.dart';
 import 'battle_scene_background.dart';
 import 'character_avatar.dart';
+import 'countdown_ring.dart';
 import 'damage_popup.dart';
 import 'hit_flash.dart';
 import 'boss_phase_presentation.dart';
@@ -239,6 +240,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // 命中特写 controller（大招暴击/击杀：缩放脉冲；快进/扫荡/拖招时抑制）。
   late final AnimationController _closeupCtrl;
 
+  // 读秒圆环节拍 controller（本拍内 0→1，供 CD/蓄力/破绽环平滑插值）。
+  // 随 _playTimer 每拍 forward(from:0) 对齐 remaining 递减，暂停/待发/结束时 stop 冻结。
+  late final AnimationController _beatCtrl;
+
   // 6 个受击闪 controller（slotKey 索引；静止 value=1.0 → 不显，命中 forward(from:0) 淡出）。
   late final List<AnimationController> _hitFlashControllers;
   // 受击闪颜色（slotKey→暴击绛红/普攻白），spawn 时写入，纯 UI state。
@@ -329,6 +334,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         duration: Duration(milliseconds: widget.animConfig.hitFlashMs),
       ),
     );
+    _beatCtrl = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: widget.animConfig.actionIntervalMs),
+    );
     // 验收路由 startPaused:起手即暂停 → _startTimer 内 _isPaused gate 兜住
     // 自动启动路径(autoStart=true 仍会 startBattle,但 timer 不启),战斗冻结
     // 在 seed 初态等手动单步/继续。生产恒 false 不受影响。
@@ -379,6 +388,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     }
     _shakeCtrl.dispose();
     _closeupCtrl.dispose();
+    _beatCtrl.dispose();
     super.dispose();
   }
 
@@ -389,7 +399,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // stale timer 二次 _startTimer 致节拍抖动）。
     _hitStopTimer?.cancel();
     _playTimer?.cancel();
-    if (_isPaused) return; // H3 暂停态:任何重启请求都不启动 timer。
+    if (_isPaused) {
+      _beatCtrl.stop(); // 暂停态冻结读秒环节拍在当前扫位。
+      return; // H3 暂停态:任何重启请求都不启动 timer。
+    }
     // 快进态:玩家手动开了快进。
     final rushing = _isFastForward;
     final gameplaySettings = _currentGameplaySettings;
@@ -398,8 +411,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         : gameplaySettings.scaledBattleIntervalMs(
             widget.animConfig.actionIntervalMs,
           );
+    // 读秒环节拍:与每拍对齐（本拍内 0→1，供环平滑插值）。起手先扫第一拍，
+    // 之后每次 advance 回调里 forward(from:0) 重启，使 remaining 递减与环无缝续扫。
+    _beatCtrl
+      ..duration = Duration(milliseconds: interval)
+      ..forward(from: 0);
     _playTimer = Timer.periodic(Duration(milliseconds: interval), (_) {
       if (!mounted) return;
+      _beatCtrl.forward(from: 0);
       final notifier = ref.read(battleProvider.notifier);
       if (rushing) {
         notifier.advance();
@@ -424,6 +443,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     setState(() => _isPaused = !_isPaused);
     if (_isPaused) {
       _playTimer?.cancel();
+      _beatCtrl.stop(); // 手动暂停冻结读秒环节拍。
     } else if (!ref.read(battleProvider).isFinished) {
       _startTimer();
     }
@@ -911,6 +931,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       _isPaused = true;
     });
     _playTimer?.cancel();
+    _beatCtrl.stop(); // 待发软暂停冻结读秒环节拍。
   }
 
   /// 待发态下点敌头像 → 对该敌出手 + 解除待发态 + 恢复 tick。
@@ -1110,6 +1131,17 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     } catch (_) {
       chargeMaxTicks = 3;
     }
+    // 破绽窗口时长(供破绽读秒环分母)；GameRepository 未初始化时回落 schema 默认 3。
+    int staggerWindowTicks;
+    try {
+      staggerWindowTicks = ref
+          .read(numbersConfigProvider)
+          .combat
+          .defenseBreak
+          .windowTicks;
+    } catch (_) {
+      staggerWindowTicks = 3;
+    }
 
     ref.listen<BattleState>(battleProvider, (prev, next) {
       // 1. 启动 Timer：team 从空 → 非空且未结束 → 自动连续播放(Phase 3:战斗
@@ -1125,6 +1157,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       // 2. 战斗结束：停 timer + 弹结算 dialog（postFrame 避免 build 期 setState）
       if ((prev?.result == null) && next.result != null) {
         _playTimer?.cancel();
+        _beatCtrl.stop(); // 战斗结束冻结读秒环节拍。
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _showResultDialog(next.result!, next);
         });
@@ -1251,6 +1284,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                   popups: _popups,
                                   animConfig: widget.animConfig,
                                   chargeMaxTicks: chargeMaxTicks,
+                                  beat: _beatCtrl,
+                                  staggerWindowTicks: staggerWindowTicks,
                                   onPopupComplete: _removePopup,
                                   hitFlashControllers: _hitFlashControllers,
                                   hitFlashColors: _hitFlashColors,
@@ -1298,6 +1333,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             pendingSkillId:
                                 _pendingSkill?.id ??
                                 widget.previewPendingSkillId,
+                            beat: _beatCtrl,
                           ),
                         ],
                       ),
@@ -1868,6 +1904,9 @@ class _BattleField extends StatelessWidget {
   final Map<int, List<_PopupEntry>> popups;
   final AnimationNumbers animConfig;
   final int chargeMaxTicks;
+  // 读秒环节拍 + 破绽窗口时长(供头像上蓄力/内伤/破绽环)。
+  final Animation<double> beat;
+  final int staggerWindowTicks;
   final void Function(int slotKey, int popupId) onPopupComplete;
   final List<AnimationController> hitFlashControllers;
   final Map<int, Color> hitFlashColors;
@@ -1883,6 +1922,8 @@ class _BattleField extends StatelessWidget {
     required this.popups,
     required this.animConfig,
     required this.chargeMaxTicks,
+    required this.beat,
+    required this.staggerWindowTicks,
     required this.onPopupComplete,
     required this.hitFlashControllers,
     required this.hitFlashColors,
@@ -1909,6 +1950,8 @@ class _BattleField extends StatelessWidget {
               popups: popups,
               animConfig: animConfig,
               chargeMaxTicks: chargeMaxTicks,
+              beat: beat,
+              staggerWindowTicks: staggerWindowTicks,
               onPopupComplete: onPopupComplete,
               hitFlashControllers: hitFlashControllers,
               hitFlashColors: hitFlashColors,
@@ -1929,6 +1972,8 @@ class _BattleField extends StatelessWidget {
               popups: popups,
               animConfig: animConfig,
               chargeMaxTicks: chargeMaxTicks,
+              beat: beat,
+              staggerWindowTicks: staggerWindowTicks,
               onPopupComplete: onPopupComplete,
               hitFlashControllers: hitFlashControllers,
               hitFlashColors: hitFlashColors,
@@ -1952,6 +1997,8 @@ class _TeamColumn extends StatelessWidget {
   final Map<int, List<_PopupEntry>> popups;
   final AnimationNumbers animConfig;
   final int chargeMaxTicks;
+  final Animation<double> beat;
+  final int staggerWindowTicks;
   final void Function(int slotKey, int popupId) onPopupComplete;
   final List<AnimationController> hitFlashControllers;
   final Map<int, Color> hitFlashColors;
@@ -1970,6 +2017,8 @@ class _TeamColumn extends StatelessWidget {
     required this.popups,
     required this.animConfig,
     required this.chargeMaxTicks,
+    required this.beat,
+    required this.staggerWindowTicks,
     required this.onPopupComplete,
     required this.hitFlashControllers,
     required this.hitFlashColors,
@@ -2005,6 +2054,8 @@ class _TeamColumn extends StatelessWidget {
                 slotPopups: popups[teamSide * 3 + i] ?? const [],
                 animConfig: animConfig,
                 chargeMaxTicks: chargeMaxTicks,
+                beat: beat,
+                staggerWindowTicks: staggerWindowTicks,
                 slotKey: teamSide * 3 + i,
                 onPopupComplete: onPopupComplete,
                 hitFlashController: hitFlashControllers[teamSide * 3 + i],
@@ -2035,6 +2086,8 @@ class _CharacterSlot extends StatelessWidget {
   final List<_PopupEntry> slotPopups;
   final AnimationNumbers animConfig;
   final int chargeMaxTicks;
+  final Animation<double> beat;
+  final int staggerWindowTicks;
   final int slotKey;
   final void Function(int slotKey, int popupId) onPopupComplete;
   final AnimationController hitFlashController;
@@ -2052,6 +2105,8 @@ class _CharacterSlot extends StatelessWidget {
     required this.slotPopups,
     required this.animConfig,
     required this.chargeMaxTicks,
+    required this.beat,
+    required this.staggerWindowTicks,
     required this.slotKey,
     required this.onPopupComplete,
     required this.hitFlashController,
@@ -2070,6 +2125,8 @@ class _CharacterSlot extends StatelessWidget {
         CharacterAvatar(
           character: character,
           chargeMaxTicks: chargeMaxTicks,
+          beat: beat,
+          staggerWindowTicks: staggerWindowTicks,
           avatarSize: 92,
           barWidth: 140,
         ),
@@ -2228,6 +2285,8 @@ class _BottomBar extends StatelessWidget {
   // 两段点选本地待发态:纯 presentation,不写 BattleState.pendingUltimates。
   final int? pendingCharacterId;
   final String? pendingSkillId;
+  // 读秒环节拍(供技能 CD 环平滑插值)。
+  final Animation<double> beat;
 
   const _BottomBar({
     required this.state,
@@ -2240,6 +2299,7 @@ class _BottomBar extends StatelessWidget {
     required this.onSkillTap,
     required this.pendingCharacterId,
     required this.pendingSkillId,
+    required this.beat,
   });
 
   /// 排序/分组秩：强力 0 → 破招 1 → 共鸣 2 → 大招 3（普攻 4，已被过滤）。
@@ -2319,6 +2379,7 @@ class _BottomBar extends StatelessWidget {
                                 highlight: enemyCharging && s.canInterrupt,
                                 allowPlayerIntervention:
                                     allowPlayerIntervention,
+                                beat: beat,
                                 onTap: () => onSkillTap(focus.characterId, s),
                                 onShowInfo: () => onShowSkillInfo(s),
                               );
@@ -2449,6 +2510,8 @@ class _SkillCommandButton extends StatelessWidget {
   final bool queuedAnother;
   final bool highlight;
   final bool allowPlayerIntervention;
+  // 读秒环节拍(供 CD 环平滑插值)。
+  final Animation<double> beat;
   // 两段点选:点击 = 释放(single 进待发态 / aoe 一键出手);长按 = 弹简介浮层。
   final VoidCallback onTap;
   final VoidCallback onShowInfo;
@@ -2461,6 +2524,7 @@ class _SkillCommandButton extends StatelessWidget {
     required this.queuedAnother,
     required this.highlight,
     required this.allowPlayerIntervention,
+    required this.beat,
     required this.onTap,
     required this.onShowInfo,
   });
@@ -2499,11 +2563,14 @@ class _SkillCommandButton extends StatelessWidget {
       bgColor = Color.lerp(WuxiaColors.sidebar, baseSchoolColor, 0.78)!;
     }
 
+    // CD 态(非待发):招名让位,中心浮现读秒环示剩余拍数。
+    final onCd = cd > 0 && !isPending;
+
     final String statusText;
     if (isPending) {
       statusText = UiStrings.skillPendingStamp; // 待发
     } else if (cd > 0) {
-      statusText = UiStrings.skillCooldownShort(cd); // 冷却 N
+      statusText = ''; // CD 态由读秒环示数,不再显「冷却 N」文字。
     } else if (character.currentInternalForce < skill.internalForceCost) {
       statusText = UiStrings.skillInsufficientForce; // 内力不足
     } else {
@@ -2541,7 +2608,9 @@ class _SkillCommandButton extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Center(
+            Opacity(
+              opacity: onCd ? 0.32 : 1.0, // CD 态招名让位给读秒环。
+              child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -2584,7 +2653,20 @@ class _SkillCommandButton extends StatelessWidget {
                   ),
                 ],
               ),
+              ),
             ),
+            if (onCd)
+              Positioned.fill(
+                child: Center(
+                  child: BeatCountdownRing(
+                    remaining: cd,
+                    total: skill.cooldownTurns,
+                    beat: beat,
+                    color: WuxiaColors.lingQiao,
+                    size: 44,
+                  ),
+                ),
+              ),
             if (isPending)
               const Positioned(top: -7, right: -7, child: _PendingStamp()),
           ],

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/avatar_status_tags.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
+import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 /// 批次 1.4:头像旁 buff/debuff 状态标签 + hover 释义。
@@ -15,6 +17,8 @@ BattleCharacter _char({
   InternalInjurySlot? internalInjury,
   int staggerTicksRemaining = 0,
   bool swordSongResonanceActive = false,
+  SkillDef? chargingSkill,
+  int chargeTicksRemaining = 0,
 }) =>
     BattleCharacter(
       characterId: 1,
@@ -42,7 +46,21 @@ BattleCharacter _char({
       internalInjury: internalInjury,
       staggerTicksRemaining: staggerTicksRemaining,
       swordSongResonanceActive: swordSongResonanceActive,
+      chargingSkill: chargingSkill,
+      chargeTicksRemaining: chargeTicksRemaining,
     );
+
+const _chargeSkill = SkillDef(
+  id: 'charge1',
+  name: '雷霆万钧',
+  description: '',
+  type: SkillType.ultimate,
+  powerMultiplier: 5000,
+  internalForceCost: 0,
+  cooldownTurns: 0,
+  requiresManualTrigger: false,
+  visualEffect: '',
+);
 
 void main() {
   Future<void> pump(WidgetTester tester, BattleCharacter c) async {
@@ -59,7 +77,7 @@ void main() {
     expect(find.byType(AvatarStatusTag), findsNothing);
   });
 
-  testWidgets('内伤 debuff 渲染「内伤」标签', (tester) async {
+  testWidgets('内伤 debuff 渲染读秒环 + 中心剩余拍数', (tester) async {
     await pump(
       tester,
       _char(
@@ -67,20 +85,34 @@ void main() {
             const InternalInjurySlot(remainingTurns: 3, damagePerTick: 200),
       ),
     );
-    expect(find.text(UiStrings.statusInternalInjuryLabel), findsOneWidget);
+    expect(find.byType(SteppedCountdownRing), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(SteppedCountdownRing),
+        matching: find.text('3'),
+      ),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('踉跄 debuff 渲染「踉跄」标签', (tester) async {
+  testWidgets('踉跄/破绽 debuff 渲染读秒环 + 中心剩余拍数', (tester) async {
     await pump(tester, _char(staggerTicksRemaining: 2));
-    expect(find.text(UiStrings.statusStaggerLabel), findsOneWidget);
+    expect(find.byType(BeatCountdownRing), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(BeatCountdownRing),
+        matching: find.text('2'),
+      ),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('剑鸣 buff 渲染「剑鸣」标签', (tester) async {
+  testWidgets('剑鸣 buff 保留文字药丸', (tester) async {
     await pump(tester, _char(swordSongResonanceActive: true));
     expect(find.text(UiStrings.statusSwordSongLabel), findsOneWidget);
   });
 
-  testWidgets('多状态按优先级排序:生死(内伤) > 操作(踉跄) > 纯数值(剑鸣)',
+  testWidgets('多状态按优先级排序:生死(内伤环) > 操作(破绽环) > 纯数值(剑鸣药丸)',
       (tester) async {
     await pump(
       tester,
@@ -91,19 +123,17 @@ void main() {
         swordSongResonanceActive: true,
       ),
     );
-    final injuryY = tester
-        .getTopLeft(find.text(UiStrings.statusInternalInjuryLabel))
-        .dx;
-    final staggerY =
-        tester.getTopLeft(find.text(UiStrings.statusStaggerLabel)).dx;
+    final injuryX =
+        tester.getTopLeft(find.byType(SteppedCountdownRing)).dx;
+    final staggerX = tester.getTopLeft(find.byType(BeatCountdownRing)).dx;
     final swordX =
         tester.getTopLeft(find.text(UiStrings.statusSwordSongLabel)).dx;
     // 同一水平排（Wrap）按 x 升序即视觉优先级顺序。
-    expect(injuryY, lessThan(staggerY));
-    expect(staggerY, lessThan(swordX));
+    expect(injuryX, lessThan(staggerX));
+    expect(staggerX, lessThan(swordX));
   });
 
-  testWidgets('状态标签挂 Tooltip 释义(hover/长按可触发)', (tester) async {
+  testWidgets('内伤读秒环挂 Tooltip 释义(hover/长按可触发)', (tester) async {
     await pump(
       tester,
       _char(
@@ -113,10 +143,27 @@ void main() {
     );
     final tip = tester.widget<Tooltip>(
       find.ancestor(
-        of: find.text(UiStrings.statusInternalInjuryLabel),
+        of: find.byType(SteppedCountdownRing),
         matching: find.byType(Tooltip),
       ),
     );
     expect(tip.message, UiStrings.statusInternalInjuryGloss);
+  });
+
+  testWidgets('蓄力中渲染读秒环 + 中心剩余拍数(替代进度条)', (tester) async {
+    await pump(
+      tester,
+      _char(chargingSkill: _chargeSkill, chargeTicksRemaining: 2),
+    );
+    expect(find.byType(BeatCountdownRing), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(BeatCountdownRing),
+        matching: find.text('2'),
+      ),
+      findsOneWidget,
+    );
+    // 保留「可破招」金标。
+    expect(find.byIcon(Icons.flash_on), findsOneWidget);
   });
 }
