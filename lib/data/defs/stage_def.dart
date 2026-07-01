@@ -195,14 +195,18 @@ class BossRecruitConfig {
 /// 护法结界配置(仅爬塔终局 Boss 用)。护法存活时主 Boss 承伤 ×damageTakenMult;
 /// guardianIds 全部阵亡 → 结界破,承伤恢复 ×1.0。见 spec 2026-07-01-floor30-guardian-ward。
 class GuardianWardDef {
-  final double damageTakenMult;   // 结界期间主 Boss 承伤乘子, ∈ (0, 1]
+  final double damageTakenMult; // 结界期间主 Boss 承伤乘子, ∈ (0, 1]
   final List<String> guardianIds; // 护法敌人 id(须在本 floor enemyTeam 存在)
-  const GuardianWardDef({required this.damageTakenMult, required this.guardianIds});
+  const GuardianWardDef({
+    required this.damageTakenMult,
+    required this.guardianIds,
+  });
   factory GuardianWardDef.fromYaml(Map<String, dynamic> y) => GuardianWardDef(
-        damageTakenMult: (y['damageTakenMult'] as num).toDouble(),
-        guardianIds: ((y['guardianIds'] as List?) ?? const [])
-            .map((e) => e as String).toList(growable: false),
-      );
+    damageTakenMult: (y['damageTakenMult'] as num).toDouble(),
+    guardianIds: ((y['guardianIds'] as List?) ?? const [])
+        .map((e) => e as String)
+        .toList(growable: false),
+  );
 }
 
 /// 敌人配置，作为 [StageDef.enemyTeam] 的内嵌。Def 层不引入 Isar，

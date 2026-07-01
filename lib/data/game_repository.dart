@@ -426,9 +426,6 @@ class GameRepository {
       itemDefs: itemDefs,
     );
     repo._enforceRedLines();
-    for (final floor in towerFloors) {
-      enforceGuardianWardReferences(floor.enemyTeam);
-    }
     await _validatePresetLoreReferences(equipmentDefs, load);
     await _validateEncounterEventReferences(encounterDefs, load);
     _instance = repo;
@@ -697,6 +694,16 @@ class GameRepository {
       numbers.combat.weakness.maxMult,
       towerFloors: towerFloors,
     );
+    // floor30 护法结界:guardianWard 引用完整性 + 值域 + 自引用（stage + tower 全覆盖）。
+    for (final s in stageDefs.values) {
+      enforceGuardianWardReferences(s.enemyTeam, location: 'stage ${s.id} ');
+    }
+    for (final f in towerFloors) {
+      enforceGuardianWardReferences(
+        f.enemyTeam,
+        location: 'tower floor ${f.floorIndex} ',
+      );
+    }
 
     // 波A build gate:破招技(canInterrupt=true)必须有 style 流派归属
     _enforceInterruptSkillRedLines();
@@ -1976,26 +1983,38 @@ class GameRepository {
     }
   }
 
-  /// 护法结界引用校验:主 Boss guardianIds 须在同 floor enemyTeam 存在,
-  /// damageTakenMult ∈ (0,1], guardianIds 非空。缺失/越界 fail-fast(spec §5)。
-  static void enforceGuardianWardReferences(List<EnemyDef> enemyTeam) {
+  /// 护法结界引用校验:主 Boss guardianIds 须在同队 enemyTeam 存在,
+  /// damageTakenMult ∈ (0,1], guardianIds 非空、不含自身 id。缺失/越界
+  /// fail-fast(spec §5)。静态方法便于单元测试独立调用(沿
+  /// [enforceWeaknessRedLines] 体例);[location] 非空时前缀进 StateError 便于定位
+  /// (如 `'stage foo '` / `'tower floor 30 '`),启动期 [_enforceRedLines] 传入。
+  static void enforceGuardianWardReferences(
+    List<EnemyDef> enemyTeam, {
+    String location = '',
+  }) {
     final ids = enemyTeam.map((e) => e.id).toSet();
     for (final e in enemyTeam) {
       final w = e.guardianWard;
       if (w == null) continue;
       if (w.guardianIds.isEmpty) {
-        throw StateError('敌人 ${e.id} guardianWard.guardianIds 为空');
+        throw StateError('$location敌人 ${e.id} guardianWard.guardianIds 为空');
       }
       if (w.damageTakenMult <= 0 || w.damageTakenMult > 1) {
         throw StateError(
-          '敌人 ${e.id} guardianWard.damageTakenMult=${w.damageTakenMult} '
-          '越界(须 ∈ (0,1])',
+          '$location敌人 ${e.id} guardianWard.damageTakenMult='
+          '${w.damageTakenMult} 越界(须 ∈ (0,1])',
         );
       }
       for (final gid in w.guardianIds) {
+        if (gid == e.id) {
+          throw StateError(
+            '$location敌人 ${e.id} guardianWard 引用自身 $gid'
+            '(Boss 不能作自己的护法,否则结界永不破)',
+          );
+        }
         if (!ids.contains(gid)) {
           throw StateError(
-            '敌人 ${e.id} guardianWard 引用 $gid 不在本 floor enemyTeam',
+            '$location敌人 ${e.id} guardianWard 引用 $gid 不在本队 enemyTeam',
           );
         }
       }
