@@ -22,10 +22,11 @@
 - **色板**：`PaperDialog` 浅纸底，hint 用 `WuxiaUi.muted`。
 - **红线**：纯文案 + body 组装，零结算改动。
 
-### S5 · 掉落结算材料行显具体道具名
-- **现状**：`stage_victory_dialog.dart:385` 材料行用 `EnumL10n.itemType(ItemType.fromDefId(item.defId))`，只显品类名"材料 xN"，获得感弱。
-- **改动**：抽 helper `_itemDisplayName(String defId)`：优先 `GameRepository.instance.itemDefs[defId]?.name`（如"磨剑石"），fallback 回原品类名（def 缺失时不崩）。材料行改调该 helper。
-- **红线**：纯展示取名，零掉落/结算改动。
+### S5 · 掉落结算材料行显具体道具名 —— ❌ 前提证伪，本轮不做
+- **审计原说法**：`stage_victory_dialog.dart:385` 只显品类名"材料 xN"，应改具体道具名。
+- **证伪（现读代码）**：`ItemType.fromDefId`（`enums.dart:347`）把所有已知材料映射到具名枚举——`item_mojianshi`→`ItemType.moJianShi`，`EnumL10n.itemType`（`enum_localizations.dart:201`）返回"磨剑石"；心血结晶/经验丹/秘籍/银两同理各有具名。仅未知 defId 兜底 `miscMaterial`→"杂项材料"（也非裸"材料"）。**新手期每个材料掉落本就显具名**。
+- **铁证**：`stage_victory_dialog_test.dart:199` 已断言 `find.textContaining('磨剑石 ×2')` findsOneWidget 且 `item_mojianshi` 裸串 findsNothing，基线全绿。
+- **结论**：审计 S5 说法错误。改用 `itemDefs[defId].name` 仅对 miscMaterial 项有边际差异（新手期无此路径），且给当前纯 widget 引入 `GameRepository` 耦合，弊大于利。**本轮不做**。
 
 ### S2 · 首胜装备掉落后整备轻提示
 - **现状**：`stage_victory_dialog.dart:242` 装备段展示掉落装备，但掉落后无任何"去整备"衔接。
@@ -34,14 +35,13 @@
 - **色板**：浅纸底 `WuxiaUi.muted`。
 - **红线**：纯展示层，零路由/状态流改动。
 
-### S4 · 选关页对新档隐藏复刷工具（门槛 = 通关 stage_01_05）
-- **现状**：`stage_list_screen.dart` 三个复刷工具入口对新档过早出现，稀释当前可挑战关卡的清晰度：
-  - 扫荡 Sweep：line 224 `showSweep = eligible || everCleared`
-  - 周目选择 CycleSelectControl：line 88–98
-  - 刷点推荐 Replay Reward：line 1248
-- **改动**：三入口各加门槛「已通关 `stage_01_05`」——与主菜单社交解锁 `main_menu.dart:125` `_socialUnlockStage='stage_01_05'` **同款判定**（`clearedStageIds.contains('stage_01_05')`）。通关第一章末 Boss 后自然展现。
-- **去魔法串**：抽一个共享常量（如 `MainlineProgress` 侧或 stage 常量层）承载 `'stage_01_05'` 新手复刷门槛，避免选关页散写魔法字符串（实装现查 `_socialUnlockStage` 能否复用/提取共享）。
-- **红线**：纯显示条件门控，零结算/解锁数值改动；扫荡/周目/刷点功能本身不动，仅隐藏其入口至门槛达成。
+### S4 · 选关页对新档隐藏 replay reward 提示行（门槛 = 通关 stage_01_05）
+- **前提证伪（写 plan 前现读代码核实）**：审计称"扫荡/周目/刷点三工具对新档过早出现"，实际核查 `stage_list_screen.dart`：
+  - **扫荡 Sweep + 周目选择 `CycleSelectControl`**：都在 `_StageActionBand`（line 224 `showSweep = eligible || everCleared`）内，章级门控——`everCleared`/`eligible` 对第一章均要求整章通关（含 stage_01_05），**新档 mid-ch1 本就隐藏，不过早**。**无需改动**。
+  - **刷点推荐 `_ReplayRewardRouteLine`**（line 991 `if (cleared)`）：`cleared`=**单关**状态（line 843 `status == StageStatus.cleared`），故**每通一关即在该关行显 replay 提示**——从刚通的 stage_01_01 起就出现，这才是真"过早"。
+- **改动（仅此一处）**：line 991 门控 `if (cleared)` → `if (cleared && replayRewardUnlocked)`，`replayRewardUnlocked = progress.clearedStageIds.contains('stage_01_05')`。bool 照 `goalGuidance` 同链透传：`_ChapterStageTimeline`(390) → `_TimelineStageStop`(488) → `_StageRow`(817)。通关第一章末 Boss 后所有 replay 行自然展现。
+- **去魔法串**：抽共享常量承载 `'stage_01_05'` 新手门槛（实装现查 `main_menu.dart:125` `_socialUnlockStage` 能否提取共享；否则新建常量）。
+- **红线**：纯显示条件门控，零结算/解锁数值改动；replay 功能本身不动，仅隐藏其提示行至门槛达成。
 
 ## 验收标准
 
@@ -50,9 +50,9 @@
 - 每切片配 targeted 测：
   - S1：确认区渲染含新提示串。
   - S3：普通关失败弹框 body 含 hint 串。
-  - S5：材料行显具体 def 名（掉 `item_mojianshi` 显"磨剑石"），def 缺失 fallback 品类名。
+  - ~~S5~~：证伪已删，无 targeted 测。
   - S2：`drops.equipments` 非空时提示串出现、空时不出现。
-  - S4：未通 `stage_01_05` 时三工具入口不渲染、通关后渲染（复用现有 progress fixture）。
+  - S4：已通某关但未通 `stage_01_05` 时该关行 replay 提示不渲染、通关 `stage_01_05` 后渲染（复用现有 progress fixture）。
 - UI 改动跑 1280×720 / 1440×900 常规视口 smoke（禁只超高视口）。
 - 红线守门：无中文散写进 Dart（全进 `UiStrings`）；`stage_victory_dialog` / `PaperDialog` 浅纸底色板、`founder_creation_screen` 深底色板不混。
 
