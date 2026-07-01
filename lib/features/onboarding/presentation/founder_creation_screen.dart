@@ -330,7 +330,9 @@ class _ChoiceCard extends StatelessWidget {
               height: 1.35,
             ),
           ),
-          const Spacer(),
+          // _ChoiceWrap 用 Wrap 排列(不等高),卡片拿到无界高度 → Spacer(flex)
+          // 在此崩 debug RenderFlex 断言、release 中塌成 0(no-op)。移除:卡片按
+          // 内容 shrink-wrap(AnimatedContainer minHeight:154 兜最小高),footer 紧随。
           const SizedBox(height: 8),
           Text(
             footer,

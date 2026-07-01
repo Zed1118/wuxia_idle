@@ -32,6 +32,7 @@ import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../../onboarding/application/onboarding_service.dart';
 import '../../onboarding/application/master_builder.dart';
+import '../../onboarding/presentation/founder_creation_screen.dart';
 import '../../lineage/presentation/disciple_join_overlay.dart';
 import '../../sect/presentation/sect_screen.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
@@ -673,8 +674,49 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
       return const ZangjuangeScreen();
     case VisualRoute.redlineAudit:
       return const RedlineAuditScreen();
+    case VisualRoute.founderCreation:
+      // S1 目检：祖师塑形创建页确认区决策可逆说明(深底 textMuted 提示行)。
+      return const FounderCreationScreen();
+    case VisualRoute.stageRetryDialog:
+      // S3 目检：普通关战败重试弹框非教学化短诊断(浅纸底 muted 提示行)。
+      // 静态复刻 _showStageRetryDialog 的 PaperDialog 开态(body=StageRetryDialogBody)。
+      return const _StageRetryDialogPreview();
     case VisualRoute.hub:
       return _AcceptanceHub(isar: isar);
+  }
+}
+
+/// S3 目检：普通关战败重试弹框开态静态复刻(照 _ItemUseConfirmPreview 体例)。
+/// title/actions 沿 _showStageRetryDialog(stage_entry_flow),body=StageRetryDialogBody
+/// (含非教学化短诊断行),ModalBarrier 冻结开态供截图。
+class _StageRetryDialogPreview extends StatelessWidget {
+  const _StageRetryDialogPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const ColoredBox(color: WuxiaColors.background),
+        const ModalBarrier(color: Color(0x99000000)),
+        Center(
+          child: PaperDialog(
+            title: UiStrings.stageRetryTitle,
+            body: const StageRetryDialogBody(),
+            actions: [
+              TextButton(
+                onPressed: () {},
+                child: const Text(UiStrings.stageRetryBackAction),
+              ),
+              TextButton(
+                onPressed: () {},
+                child: const Text(UiStrings.stageRetryAction),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
