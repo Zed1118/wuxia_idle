@@ -59,6 +59,9 @@ class AvatarStatusTags extends StatelessWidget {
       );
     }
     // ② 影响操作:破绽/踉跄(被破招后防御骤降)→ 读秒环(每全局拍减1,接节拍平滑扫)。
+    // 配色定夺(spec §3.4·2026-07-01 真机截图复核):破绽用暖金 lingQiao(机会),
+    // 非 hpLow 绛红——绛红已是敌蓄力(危险)用色,破绽是「破招后可乘之机」的进攻窗口;
+    // 且触发破绽的「可破招」⚡ 图标本就是 lingQiao,金色成链呼应,与绛红危险/暗绛内伤三态各自可读。
     if (character.staggerTicksRemaining > 0) {
       items.add(
         GlossaryTip(
@@ -67,7 +70,7 @@ class AvatarStatusTags extends StatelessWidget {
             remaining: character.staggerTicksRemaining,
             total: staggerWindowTicks,
             beat: beat,
-            color: WuxiaColors.hpLow,
+            color: WuxiaColors.lingQiao,
             size: 34,
           ),
         ),

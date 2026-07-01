@@ -391,7 +391,16 @@ class BattleScenarioData {
         ), // 共鸣
         _ultimate('cb_ult_1', '裂空斩', 250), // 大招
       ]),
-      player(2, '弟子甲', 1, [_normal('cb_normal_2', '基础招')]),
+      // 弟子甲 seed 成中内伤态 → 头像上显内伤读秒环(SteppedCountdownRing·暗绛),
+      // 让本验收路由一帧同显三类读秒环(蓄力/破绽/内伤)。
+      player(2, '弟子甲', 1, [
+        _normal('cb_normal_2', '基础招'),
+      ]).copyWith(
+        internalInjury: const InternalInjurySlot(
+          remainingTurns: 3,
+          damagePerTick: 200,
+        ),
+      ),
       player(3, '弟子乙', 2, [_normal('cb_normal_3', '基础招')]),
     ];
 
@@ -441,7 +450,14 @@ class BattleScenarioData {
 
     final right = [
       qingshan,
-      mob(12, '巷口杀手', 1, 'assets/enemies/killer_a.png'),
+      // 巷口杀手 seed 成破绽态 → 头像上显破绽读秒环(BeatCountdownRing·暖金机会色),
+      // 呼应路由名「ChargeBreak」应同显蓄力(青衫)+破绽(此)两态。
+      mob(
+        12,
+        '巷口杀手',
+        1,
+        'assets/enemies/killer_a.png',
+      ).copyWith(staggerTicksRemaining: 2),
       mob(13, '巷尾杀手', 2, 'assets/enemies/killer_b.png'),
     ];
 
