@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
+import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
 import 'package:wuxia_idle/shared/theme/colors.dart';
 
 const _bossFrameKey = ValueKey<String>('battle.bossAvatarFrame');
+
+const _chargeSkill = SkillDef(
+  id: 'test_charge',
+  name: '裂石掌',
+  description: '',
+  type: SkillType.ultimate,
+  powerMultiplier: 5000,
+  internalForceCost: 1000,
+  cooldownTurns: 5,
+  requiresManualTrigger: false,
+  visualEffect: '',
+);
 
 BattleCharacter _char({required bool isBoss}) => BattleCharacter(
   characterId: 1,
@@ -47,6 +61,9 @@ Border _avatarBorder(WidgetTester tester) {
 
 Size _avatarCoreSize(WidgetTester tester) =>
     tester.getSize(_avatarCoreFinder().first);
+
+Size _avatarFootprintSize(WidgetTester tester) =>
+    tester.getSize(find.byType(Opacity).first);
 
 void main() {
   Future<void> pump(WidgetTester tester, BattleCharacter c) async {
@@ -121,5 +138,27 @@ void main() {
     expect(find.text('内 80 / 120'), findsOneWidget);
     // HP 条仍是裸数值，不带「内 」前缀（现状不破坏）。
     expect(find.text('100 / 100'), findsOneWidget);
+  });
+
+  testWidgets('状态环与蓄力环预留稳定高度，避免同队槽位独立缩放', (tester) async {
+    await pump(tester, _char(isBoss: false));
+    final plainSize = _avatarFootprintSize(tester);
+
+    final dense = _char(isBoss: false).copyWith(
+      internalInjury: const InternalInjurySlot(
+        remainingTurns: 2,
+        damagePerTick: 200,
+      ),
+      staggerTicksRemaining: 2,
+      swordSongResonanceActive: true,
+      chargingSkill: _chargeSkill,
+      chargeTicksRemaining: 1,
+    );
+    await pump(tester, dense);
+    final denseSize = _avatarFootprintSize(tester);
+
+    expect(denseSize, plainSize);
+    expect(find.byType(BeatCountdownRing), findsNWidgets(2));
+    expect(find.byIcon(Icons.flash_on), findsOneWidget);
   });
 }

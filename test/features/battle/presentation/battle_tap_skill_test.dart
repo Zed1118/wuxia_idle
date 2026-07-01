@@ -147,7 +147,7 @@ void main() {
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );
-      await tester.tap(enemy);
+      await tester.tap(enemy, warnIfMissed: false);
       await tester.pump();
       expect(notifier.lastInterveneSkill?.id, 'single1');
       expect(notifier.lastInterveneTarget, 11);
@@ -201,7 +201,7 @@ void main() {
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );
-      await tester.tap(enemy);
+      await tester.tap(enemy, warnIfMissed: false);
       await tester.pump();
       expect(notifier.interveneCount, 0);
     });
@@ -220,7 +220,7 @@ void main() {
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );
-      await tester.tap(enemy);
+      await tester.tap(enemy, warnIfMissed: false);
       await tester.pump();
       expect(notifier.interveneCount, 1, reason: 'AOE 出手后待发态已清,点敌不再触发 single');
     });
@@ -237,7 +237,7 @@ void main() {
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );
-      await tester.tap(enemy);
+      await tester.tap(enemy, warnIfMissed: false);
       await tester.pump();
       expect(notifier.interveneCount, 0, reason: '已取消');
     });
@@ -257,7 +257,7 @@ void main() {
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );
-      await tester.tap(enemy);
+      await tester.tap(enemy, warnIfMissed: false);
       await tester.pump();
       expect(notifier.interveneCount, 0, reason: '空白点击已取消待发');
     });
@@ -277,7 +277,7 @@ void main() {
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );
-      await tester.tap(enemy);
+      await tester.tap(enemy, warnIfMissed: false);
       await tester.pump();
       expect(notifier.interveneCount, 0, reason: '暂停键已取消待发');
     });
@@ -293,7 +293,7 @@ void main() {
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );
-      await tester.tap(enemy);
+      await tester.tap(enemy, warnIfMissed: false);
       await tester.pump();
       expect(notifier.interveneCount, 0, reason: 'ESC 已取消待发,点敌不出手');
     });
@@ -334,7 +334,7 @@ void main() {
       final enemy = find.byWidgetPredicate(
         (w) => w is CharacterAvatar && w.character.characterId == 11,
       );
-      await tester.tap(enemy);
+      await tester.tap(enemy, warnIfMissed: false);
       await tester.pump();
       expect(notifier.interveneCount, 0);
     });
