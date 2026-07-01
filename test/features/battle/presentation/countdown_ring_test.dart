@@ -48,4 +48,44 @@ void main() {
     expect(find.byType(CustomPaint).evaluate().isNotEmpty, isTrue);
     expect(find.text('0'), findsNothing);
   });
+
+  testWidgets('BeatCountdownRing: beat=0 显整数剩余', (t) async {
+    final ctrl = AnimationController(
+      vsync: const TestVSync(),
+      value: 0.0,
+      duration: const Duration(seconds: 1),
+    );
+    addTearDown(ctrl.dispose);
+    await pump(
+      t,
+      BeatCountdownRing(
+        remaining: 3,
+        total: 3,
+        beat: ctrl,
+        color: Colors.amber,
+        size: 40,
+      ),
+    );
+    expect(find.text('3'), findsOneWidget);
+  });
+
+  testWidgets('BeatCountdownRing: beat=0.5 时 remaining3 显 3(ceil 2.5)', (t) async {
+    final ctrl = AnimationController(
+      vsync: const TestVSync(),
+      value: 0.5,
+      duration: const Duration(seconds: 1),
+    );
+    addTearDown(ctrl.dispose);
+    await pump(
+      t,
+      BeatCountdownRing(
+        remaining: 3,
+        total: 3,
+        beat: ctrl,
+        color: Colors.amber,
+        size: 40,
+      ),
+    );
+    expect(find.text('3'), findsOneWidget); // 3-0.5=2.5 → ceil 3
+  });
 }

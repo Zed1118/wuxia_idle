@@ -60,6 +60,44 @@ class CountdownRing extends StatelessWidget {
   }
 }
 
+/// 接共享节拍 [beat](本拍内 0→1)平滑插值：显示剩余 = `remaining - beat.value`，
+/// 每拍 state 里 `remaining` 减 1 时环无缝续扫。CD/敌蓄力/破绽用(均每全局拍减 1)。
+class BeatCountdownRing extends StatelessWidget {
+  const BeatCountdownRing({
+    super.key,
+    required this.remaining,
+    required this.total,
+    required this.beat,
+    required this.color,
+    this.size = 40,
+    this.strokeWidth = 3.5,
+  });
+
+  final int remaining;
+  final int total;
+  final Animation<double> beat;
+  final Color color;
+  final double size;
+  final double strokeWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: beat,
+      builder: (_, __) {
+        final disp = (remaining - beat.value).clamp(0.0, total.toDouble());
+        return CountdownRing(
+          remaining: disp,
+          total: total,
+          color: color,
+          size: size,
+          strokeWidth: strokeWidth,
+        );
+      },
+    );
+  }
+}
+
 class _CountdownRingPainter extends CustomPainter {
   _CountdownRingPainter({
     required this.frac,
