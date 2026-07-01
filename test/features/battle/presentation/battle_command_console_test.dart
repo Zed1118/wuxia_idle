@@ -384,7 +384,11 @@ void main() {
       // 点击 single 技进待发态(本地 UI 态)，按钮盖「待发」印，但 domain pending 仍为空。
       await tester.tap(find.byKey(const ValueKey('skill_cmd_1_p1')));
       await tester.pumpAndSettle();
-      expect(find.text('待发'), findsOneWidget);
+      expect(find.text('待发'), findsWidgets);
+      expect(
+        find.byKey(const ValueKey('skill_pending_stamp_badge')),
+        findsOneWidget,
+      );
       expect(notifier.state.pendingUltimates[1], isNull);
     });
 

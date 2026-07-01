@@ -189,12 +189,12 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     final layers = r.resultLayers();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
+          constraints: const BoxConstraints(maxWidth: 520),
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(26, 24, 26, 26),
             decoration: BoxDecoration(
               color: WuxiaColors.panel,
               borderRadius: BorderRadius.circular(8),
@@ -227,20 +227,17 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
                     ),
                   ),
                 ],
+                const SizedBox(height: 18),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    for (final line in overviewRows)
+                      _SweepOverviewPill(text: line),
+                  ],
+                ),
                 const SizedBox(height: 16),
-                for (final line in overviewRows)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      line,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: WuxiaColors.textSecondary,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 12),
                 for (final layer in layers) ...[
                   _SweepResultLayerSection(layer: layer),
                   const SizedBox(height: 8),
@@ -261,6 +258,32 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SweepOverviewPill extends StatelessWidget {
+  const _SweepOverviewPill({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.72)),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: WuxiaColors.textSecondary,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -337,79 +360,110 @@ class _SweepHud extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: WuxiaColors.panel.withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: WuxiaColors.border),
-              ),
-              child: Text(
-                progressLabel,
-                style: const TextStyle(
-                  color: WuxiaColors.resultHighlight,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // 周目徽章：连播中也让玩家一眼看到扫的是第几周目。
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: WuxiaColors.panel.withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: WuxiaColors.bossFrame),
-              ),
-              child: Text(
-                cycleLabel,
-                style: const TextStyle(
-                  color: WuxiaColors.bossFrame,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const Spacer(),
-            FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: WuxiaColors.sealCrimson,
-                foregroundColor: WuxiaColors.textPrimary,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 10,
-                ),
-              ),
-              onPressed: onStop,
-              icon: const Icon(Icons.stop_circle_outlined, size: 20),
-              label: const Text(
-                UiStrings.sweepStopButton,
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        if (towerRepeatNote) ...[
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: WuxiaColors.panel.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Text(
-              UiStrings.sweepTowerRepeatNote,
-              style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
-            ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaColors.background.withValues(alpha: 0.58),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.62)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.22),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
-      ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: WuxiaColors.panel.withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: WuxiaColors.border),
+                  ),
+                  child: Text(
+                    progressLabel,
+                    style: const TextStyle(
+                      color: WuxiaColors.resultHighlight,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                // 周目徽章：连播中也让玩家一眼看到扫的是第几周目。
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: WuxiaColors.panel.withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: WuxiaColors.bossFrame),
+                  ),
+                  child: Text(
+                    cycleLabel,
+                    style: const TextStyle(
+                      color: WuxiaColors.bossFrame,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: WuxiaColors.sealCrimson,
+                    foregroundColor: WuxiaColors.textPrimary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 11,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onPressed: onStop,
+                  icon: const Icon(Icons.stop_circle_outlined, size: 20),
+                  label: const Text(UiStrings.sweepStopButton),
+                ),
+              ],
+            ),
+            if (towerRepeatNote) ...[
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: WuxiaColors.panel.withValues(alpha: 0.72),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  UiStrings.sweepTowerRepeatNote,
+                  style: TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

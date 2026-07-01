@@ -291,6 +291,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // null = 无待发。AOE 不进待发态(点按钮直接出手)。
   SkillDef? _pendingSkill;
   int? _pendingCharId;
+  int? _hoveredPendingEnemyId;
 
   bool get _pendingActive =>
       _pendingSkill != null ||
@@ -926,9 +927,17 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     setState(() {
       _pendingSkill = null;
       _pendingCharId = null;
+      _hoveredPendingEnemyId = null;
       _isPaused = false;
     });
     if (!ref.read(battleProvider).isFinished) _startTimer();
+  }
+
+  void _onPendingEnemyHover(int enemyId, bool hovering) {
+    if (!_pendingActive) return;
+    setState(() {
+      _hoveredPendingEnemyId = hovering ? enemyId : null;
+    });
   }
 
   void _onSelectFocus(int slotIndex) {
@@ -1247,6 +1256,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                   hitFlashColors: _hitFlashColors,
                                   onEnemyTap: _onEnemyTap,
                                   pendingActive: _pendingActive,
+                                  hoveredEnemyId: _hoveredPendingEnemyId,
+                                  onEnemyHover: _onPendingEnemyHover,
                                 ),
                                 Positioned.fill(
                                   child: IgnorePointer(
@@ -1863,6 +1874,8 @@ class _BattleField extends StatelessWidget {
   // 两段点选:点敌头像出手回调(仅右队/敌方非空);待发态(敌头像可点 + 高亮)。
   final void Function(int enemyId) onEnemyTap;
   final bool pendingActive;
+  final int? hoveredEnemyId;
+  final void Function(int enemyId, bool hovering) onEnemyHover;
 
   const _BattleField({
     required this.state,
@@ -1875,16 +1888,19 @@ class _BattleField extends StatelessWidget {
     required this.hitFlashColors,
     required this.onEnemyTap,
     required this.pendingActive,
+    required this.hoveredEnemyId,
+    required this.onEnemyHover,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 46, vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Expanded(
+          SizedBox(
+            width: 168,
             child: _TeamColumn(
               team: state.leftTeam,
               isLeftTeam: true,
@@ -1898,10 +1914,13 @@ class _BattleField extends StatelessWidget {
               hitFlashColors: hitFlashColors,
               onEnemyTap: null,
               pendingActive: false,
+              hoveredEnemyId: null,
+              onEnemyHover: null,
             ),
           ),
-          const SizedBox(width: 24),
-          Expanded(
+          const Expanded(child: SizedBox.shrink()),
+          SizedBox(
+            width: 168,
             child: _TeamColumn(
               team: state.rightTeam,
               isLeftTeam: false,
@@ -1915,6 +1934,8 @@ class _BattleField extends StatelessWidget {
               hitFlashColors: hitFlashColors,
               onEnemyTap: onEnemyTap,
               pendingActive: pendingActive,
+              hoveredEnemyId: hoveredEnemyId,
+              onEnemyHover: onEnemyHover,
             ),
           ),
         ],
@@ -1938,6 +1959,8 @@ class _TeamColumn extends StatelessWidget {
   // pendingActive = 待发态(敌头像可点 + 全员存活敌高亮为可选目标)。
   final void Function(int enemyId)? onEnemyTap;
   final bool pendingActive;
+  final int? hoveredEnemyId;
+  final void Function(int enemyId, bool hovering)? onEnemyHover;
 
   const _TeamColumn({
     required this.team,
@@ -1952,6 +1975,8 @@ class _TeamColumn extends StatelessWidget {
     required this.hitFlashColors,
     required this.onEnemyTap,
     required this.pendingActive,
+    required this.hoveredEnemyId,
+    required this.onEnemyHover,
   });
 
   @override
@@ -1988,7 +2013,12 @@ class _TeamColumn extends StatelessWidget {
                 onTap: (onEnemyTap != null && pendingActive && team[i].isAlive)
                     ? () => onEnemyTap!(team[i].characterId)
                     : null,
-                hovered: pendingActive && team[i].isAlive,
+                hovered: hoveredEnemyId == team[i].characterId,
+                targetable: pendingActive && team[i].isAlive,
+                onHoverChanged:
+                    (onEnemyHover != null && pendingActive && team[i].isAlive)
+                    ? (hovering) => onEnemyHover!(team[i].characterId, hovering)
+                    : null,
               ),
             ),
           ),
@@ -2012,6 +2042,8 @@ class _CharacterSlot extends StatelessWidget {
   // 两段点选:待发态下敌头像点选目标的回调(null=不可点);待发态高亮。
   final VoidCallback? onTap;
   final bool hovered;
+  final bool targetable;
+  final ValueChanged<bool>? onHoverChanged;
 
   const _CharacterSlot({
     required this.character,
@@ -2026,10 +2058,30 @@ class _CharacterSlot extends StatelessWidget {
     required this.flashColor,
     this.onTap,
     this.hovered = false,
+    this.targetable = false,
+    this.onHoverChanged,
   });
 
   @override
   Widget build(BuildContext context) {
+    final avatarCore = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        CharacterAvatar(
+          character: character,
+          chargeMaxTicks: chargeMaxTicks,
+          avatarSize: 92,
+          barWidth: 140,
+        ),
+        if (targetable)
+          Positioned(
+            key: ValueKey('enemy_target_hint_${character.characterId}'),
+            top: -4,
+            right: -6,
+            child: _EnemyTargetHint(active: hovered),
+          ),
+      ],
+    );
     Widget avatar = AttackAnimationWidget(
       animation: attackController,
       isLeftTeam: isLeftTeam,
@@ -2043,10 +2095,7 @@ class _CharacterSlot extends StatelessWidget {
           // 仅限敌方（isLeftTeam==false）；我方被硬直不显示集火指示。
           staggered: !isLeftTeam && character.staggerTicksRemaining > 0,
           characterId: character.characterId,
-          child: CharacterAvatar(
-            character: character,
-            chargeMaxTicks: chargeMaxTicks,
-          ),
+          child: avatarCore,
         ),
       ),
     );
@@ -2054,6 +2103,13 @@ class _CharacterSlot extends StatelessWidget {
       avatar = GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
+        child: avatar,
+      );
+    }
+    if (onHoverChanged != null) {
+      avatar = MouseRegion(
+        onEnter: (_) => onHoverChanged!(true),
+        onExit: (_) => onHoverChanged!(false),
         child: avatar,
       );
     }
@@ -2090,6 +2146,59 @@ class _CharacterSlot extends StatelessWidget {
           data: entry.data,
           config: config,
           onComplete: () => onComplete(slotKey, entry.id),
+        ),
+      ),
+    );
+  }
+}
+
+class _EnemyTargetHint extends StatelessWidget {
+  const _EnemyTargetHint({required this.active});
+
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: active
+            ? WuxiaColors.resultHighlight
+            : WuxiaColors.panel.withValues(alpha: 0.86),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: active ? WuxiaColors.textPrimary : WuxiaColors.resultHighlight,
+          width: active ? 2 : 1,
+        ),
+        boxShadow: [
+          if (active)
+            BoxShadow(
+              color: WuxiaColors.resultHighlight.withValues(alpha: 0.5),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.my_location,
+              size: 10,
+              color: active ? WuxiaColors.panel : WuxiaColors.resultHighlight,
+            ),
+            const SizedBox(width: 3),
+            Text(
+              active ? UiStrings.skillTargetLocked : UiStrings.skillTargetable,
+              style: TextStyle(
+                color: active ? WuxiaColors.panel : WuxiaColors.resultHighlight,
+                fontSize: 9,
+                height: 1,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -2167,8 +2276,8 @@ class _BottomBar extends StatelessWidget {
     ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
 
     return Container(
-      height: 116,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      height: 124,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
       decoration: const BoxDecoration(
         color: WuxiaColors.panel,
         border: Border(top: BorderSide(color: WuxiaColors.border)),
@@ -2182,8 +2291,8 @@ class _BottomBar extends StatelessWidget {
             onSelectFocus: onSelectFocus,
           ),
           const SizedBox(width: 12),
-          Container(width: 1, height: 76, color: WuxiaColors.border),
-          const SizedBox(width: 14),
+          Container(width: 1, height: 82, color: WuxiaColors.border),
+          const SizedBox(width: 12),
           Expanded(
             child: focus == null
                 ? const SizedBox.shrink()
@@ -2215,13 +2324,13 @@ class _BottomBar extends StatelessWidget {
                               );
                             },
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                         ],
                       ],
                     ),
                   ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           _FastForwardButton(onPressed: onFastForward, isActive: isFastForward),
         ],
       ),
@@ -2280,8 +2389,8 @@ class _FocusChip extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
       child: Container(
-        width: 54,
-        height: 72,
+        width: 50,
+        height: 76,
         decoration: BoxDecoration(
           color: selected ? color.withValues(alpha: 0.28) : WuxiaColors.sidebar,
           border: Border.all(
@@ -2406,8 +2515,8 @@ class _SkillCommandButton extends StatelessWidget {
     }
 
     final button = SizedBox(
-      width: 112,
-      height: 82,
+      width: 102,
+      height: 86,
       child: ElevatedButton(
         // 两段点选:手势由外层 GestureDetector 接管(点击=释放 / 长按=简介);
         // 这里 onPressed 仅为保持「可用态」视觉(非空 → 不走 disabled 灰底),
@@ -2429,46 +2538,55 @@ class _SkillCommandButton extends StatelessWidget {
                 ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            Text(
-              _groupLabel(skill),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                height: 1.1,
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _groupLabel(skill),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    skill.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      height: 1.15,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    statusText,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      height: 1.1,
+                      fontWeight: isPending ? FontWeight.bold : FontWeight.w600,
+                      color: isPending
+                          ? WuxiaColors.resultHighlight
+                          : (enabled
+                                ? WuxiaColors.textPrimary
+                                : WuxiaColors.textMuted),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 3),
-            Text(
-              skill.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                height: 1.15,
-              ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              statusText,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                height: 1.1,
-                fontWeight: isPending ? FontWeight.bold : FontWeight.w600,
-                color: isPending
-                    ? WuxiaColors.resultHighlight
-                    : (enabled
-                          ? WuxiaColors.textPrimary
-                          : WuxiaColors.textMuted),
-              ),
-            ),
+            if (isPending)
+              const Positioned(top: -7, right: -7, child: _PendingStamp()),
           ],
         ),
       ),
@@ -2519,6 +2637,44 @@ class _SkillCommandButton extends StatelessWidget {
       onTap: enabled ? onTap : null,
       onLongPress: onShowInfo,
       child: AbsorbPointer(child: buttonWithBadge),
+    );
+  }
+}
+
+class _PendingStamp extends StatelessWidget {
+  const _PendingStamp();
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: -0.16,
+      child: DecoratedBox(
+        key: const ValueKey('skill_pending_stamp_badge'),
+        decoration: BoxDecoration(
+          color: WuxiaColors.resultHighlight.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(color: WuxiaColors.textPrimary, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: WuxiaColors.resultHighlight.withValues(alpha: 0.34),
+              blurRadius: 8,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          child: Text(
+            UiStrings.skillPendingStamp,
+            style: TextStyle(
+              color: WuxiaColors.panel,
+              fontSize: 10,
+              height: 1,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -57,33 +57,59 @@ class LeaderboardScreen extends ConsumerWidget {
         ),
       );
     }
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      children: [
+    final metrics = [
+      _MetricTile(
+        icon: Icons.flag_outlined,
+        label: UiStrings.leaderboardHighestLayer,
+        value: '${p.highestClearedFloor} ${UiStrings.leaderboardLayerSuffix}',
+        emphasized: true,
+      ),
+      _MetricTile(
+        icon: Icons.timer_outlined,
+        label: UiStrings.leaderboardBestClearTime,
+        value: p.bestClearTime == null
+            ? UiStrings.leaderboardNoData
+            : _formatDuration(p.bestClearTime!),
+      ),
+      _MetricTile(
+        icon: Icons.history_outlined,
+        label: UiStrings.leaderboardTotalAttempts,
+        value: '${p.totalAttempts}',
+      ),
+      if (p.totalDefeats > 0)
         _MetricTile(
-          label: UiStrings.leaderboardHighestLayer,
-          value: '${p.highestClearedFloor} ${UiStrings.leaderboardLayerSuffix}',
+          icon: Icons.percent_outlined,
+          label: UiStrings.leaderboardWinRate,
+          value: _formatWinRate(p),
         ),
-        const SizedBox(height: 12),
-        _MetricTile(
-          label: UiStrings.leaderboardBestClearTime,
-          value: p.bestClearTime == null
-              ? UiStrings.leaderboardNoData
-              : _formatDuration(p.bestClearTime!),
-        ),
-        const SizedBox(height: 12),
-        _MetricTile(
-          label: UiStrings.leaderboardTotalAttempts,
-          value: '${p.totalAttempts}',
-        ),
-        if (p.totalDefeats > 0) ...[
-          const SizedBox(height: 12),
-          _MetricTile(
-            label: UiStrings.leaderboardWinRate,
-            value: _formatWinRate(p),
-          ),
-        ],
-      ],
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth >= 920
+            ? 880.0
+            : constraints.maxWidth;
+        final tileWidth = constraints.maxWidth >= 760
+            ? (maxWidth - 12) / 2
+            : maxWidth;
+        return ListView(
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+          children: [
+            Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    for (final metric in metrics)
+                      SizedBox(width: tileWidth, child: metric),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -109,36 +135,71 @@ class LeaderboardScreen extends ConsumerWidget {
 }
 
 class _MetricTile extends StatelessWidget {
-  const _MetricTile({required this.label, required this.value});
+  const _MetricTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.emphasized = false,
+  });
 
+  final IconData icon;
   final String label;
   final String value;
+  final bool emphasized;
 
   @override
   Widget build(BuildContext context) {
+    final accent = emphasized
+        ? WuxiaColors.resultHighlight
+        : WuxiaColors.textSecondary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      constraints: const BoxConstraints(minHeight: 92),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
-        color: WuxiaColors.panel,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            emphasized
+                ? WuxiaColors.resultHighlight.withValues(alpha: 0.12)
+                : WuxiaColors.panel,
+            WuxiaColors.panel,
+          ],
+        ),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: WuxiaColors.border),
+        border: Border.all(
+          color: emphasized
+              ? WuxiaColors.resultHighlight.withValues(alpha: 0.58)
+              : WuxiaColors.border,
+        ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: WuxiaColors.textSecondary,
-                fontSize: 14,
+          Row(
+            children: [
+              Icon(icon, color: accent, size: 17),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: WuxiaColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
+          const SizedBox(height: 16),
           Text(
             value,
-            style: const TextStyle(
-              color: WuxiaColors.textPrimary,
-              fontSize: 18,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              color: emphasized
+                  ? WuxiaColors.resultHighlight
+                  : WuxiaColors.textPrimary,
+              fontSize: emphasized ? 22 : 19,
               fontWeight: FontWeight.bold,
             ),
           ),

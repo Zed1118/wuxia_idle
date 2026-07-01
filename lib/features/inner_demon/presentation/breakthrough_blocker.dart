@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../domain/inner_demon_panel.dart';
 
 /// 心魔成长瓶颈面板(P0-3 ③,泛化自旧 InnerDemonBreakthroughBlocker)。
@@ -37,8 +38,9 @@ class InnerDemonProgressPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress =
-        totalCount == 0 ? 0.0 : (clearedCount / totalCount).clamp(0.0, 1.0);
+    final progress = totalCount == 0
+        ? 0.0
+        : (clearedCount / totalCount).clamp(0.0, 1.0);
     final isBlocked = state == InnerDemonPanelState.blocked;
 
     return Material(
@@ -115,9 +117,13 @@ class InnerDemonProgressPanel extends StatelessWidget {
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                onPressed: onNavigate,
-                child: const Text(UiStrings.innerDemonBreakthroughCta),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 160),
+                child: PlaqueButton(
+                  label: UiStrings.innerDemonBreakthroughCta,
+                  onTap: onNavigate,
+                  destructive: true,
+                ),
               ),
             ),
           ],
@@ -127,15 +133,21 @@ class InnerDemonProgressPanel extends StatelessWidget {
           if (nextStageName != null)
             Text(
               UiStrings.innerDemonNextLabel(nextStageName!),
-              style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 12),
+              style: const TextStyle(
+                color: WuxiaColors.textMuted,
+                fontSize: 12,
+              ),
             ),
           if (onNavigate != null) ...[
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: onNavigate,
-                child: const Text(UiStrings.breakthroughGoToInnerDemon),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 180),
+                child: PlaqueButton(
+                  label: UiStrings.breakthroughGoToInnerDemon,
+                  onTap: onNavigate,
+                ),
               ),
             ),
           ],

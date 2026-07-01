@@ -64,6 +64,7 @@ class TowerFloorCard extends StatelessWidget {
             isAvailable: isAvailable,
             onTap: isLocked ? null : () => _handleTap(context),
             currentRealm: currentRealm,
+            compactStatus: constraints.maxWidth < 420,
           );
           if (!useTimeline) {
             return plaque;
@@ -79,14 +80,26 @@ class TowerFloorCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: isLeft
-                      ? Align(alignment: Alignment.centerRight, child: plaque)
+                      ? Align(
+                          alignment: Alignment.centerRight,
+                          child: FractionallySizedBox(
+                            widthFactor: 0.92,
+                            child: plaque,
+                          ),
+                        )
                       : const SizedBox.shrink(),
                 ),
                 _TowerStepMarker(entry: entry),
                 Expanded(
                   child: isLeft
                       ? const SizedBox.shrink()
-                      : Align(alignment: Alignment.centerLeft, child: plaque),
+                      : Align(
+                          alignment: Alignment.centerLeft,
+                          child: FractionallySizedBox(
+                            widthFactor: 0.92,
+                            child: plaque,
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -133,6 +146,7 @@ class _FloorPlaque extends StatelessWidget {
     required this.isCleared,
     required this.isAvailable,
     required this.onTap,
+    required this.compactStatus,
     this.currentRealm,
   });
 
@@ -141,13 +155,14 @@ class _FloorPlaque extends StatelessWidget {
   final bool isCleared;
   final bool isAvailable;
   final VoidCallback? onTap;
+  final bool compactStatus;
   final RealmTier? currentRealm;
 
   @override
   Widget build(BuildContext context) {
     final def = entry.def;
     final accent = _accentFor(entry);
-    final borderWidth = def.isBoss || isAvailable ? 1.8 : 1.0;
+    final borderWidth = def.isBoss || isAvailable ? 2.0 : 1.0;
     final titleColor = isLocked
         ? WuxiaColors.textMuted
         : WuxiaColors.textPrimary;
@@ -165,14 +180,14 @@ class _FloorPlaque extends StatelessWidget {
       gating: FirstClearGating.wholeChannel,
     );
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 720),
+      constraints: const BoxConstraints(maxWidth: 680),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(7),
           child: Container(
-            constraints: BoxConstraints(minHeight: def.isBoss ? 94 : 90),
+            constraints: BoxConstraints(minHeight: def.isBoss ? 98 : 92),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(7),
               border: Border.all(color: accent, width: borderWidth),
@@ -184,15 +199,20 @@ class _FloorPlaque extends StatelessWidget {
                   fillBottom.withValues(alpha: isLocked ? 0.82 : 1),
                 ],
               ),
-              boxShadow: isAvailable
-                  ? [
-                      BoxShadow(
-                        color: accent.withValues(alpha: 0.22),
-                        blurRadius: 18,
-                        spreadRadius: 1,
-                      ),
-                    ]
-                  : null,
+              boxShadow: [
+                if (isAvailable)
+                  BoxShadow(
+                    color: accent.withValues(alpha: 0.24),
+                    blurRadius: 20,
+                    spreadRadius: 1,
+                  ),
+                if (def.isBoss)
+                  BoxShadow(
+                    color: accent.withValues(alpha: isLocked ? 0.08 : 0.13),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+              ],
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(6),
@@ -220,7 +240,7 @@ class _FloorPlaque extends StatelessWidget {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(18, 12, 14, 8),
+                    padding: const EdgeInsets.fromLTRB(18, 12, 14, 10),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +314,11 @@ class _FloorPlaque extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            _StatusBadge(status: entry.status),
+                            _StatusBadge(
+                              status: entry.status,
+                              accent: accent,
+                              compact: compactStatus,
+                            ),
                           ],
                         ),
                         // ── 掉落传闻行：独立一行，位于卡片底部，不与标签区重叠 ──
@@ -364,7 +388,7 @@ class _TowerStepMarker extends StatelessWidget {
     final accent = _markerAccent(entry);
     final isBoss = entry.def.isBoss;
     return SizedBox(
-      width: 66,
+      width: 70,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -374,27 +398,27 @@ class _TowerStepMarker extends StatelessWidget {
             child: Container(
               width: isBoss ? 4 : 2,
               decoration: BoxDecoration(
-                color: WuxiaUi.paper2.withValues(alpha: 0.32),
+                color: WuxiaUi.paper2.withValues(alpha: 0.38),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           Container(
-            width: isBoss ? 42 : 32,
-            height: isBoss ? 42 : 32,
+            width: isBoss ? 44 : 34,
+            height: isBoss ? 44 : 34,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: WuxiaColors.background,
               borderRadius: BorderRadius.circular(isBoss ? 8 : 16),
               border: Border.all(color: accent, width: isBoss ? 2 : 1.5),
-              boxShadow: entry.status == TowerFloorStatus.available
-                  ? [
-                      BoxShadow(
-                        color: accent.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                      ),
-                    ]
-                  : null,
+              boxShadow: [
+                if (entry.status == TowerFloorStatus.available)
+                  BoxShadow(
+                    color: accent.withValues(alpha: 0.32),
+                    blurRadius: 14,
+                    spreadRadius: 1,
+                  ),
+              ],
             ),
             child: Text(
               '${entry.def.floorIndex}',
@@ -481,38 +505,89 @@ class _SmallChip extends StatelessWidget {
 }
 
 class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.status});
+  const _StatusBadge({
+    required this.status,
+    required this.accent,
+    required this.compact,
+  });
 
   final TowerFloorStatus status;
+  final Color accent;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return switch (status) {
-      TowerFloorStatus.cleared => const Icon(
+      TowerFloorStatus.cleared => _StatusPill(
         Icons.check_circle,
+        label: compact ? null : UiStrings.towerReplayTitle,
         color: WuxiaColors.hpHigh,
-        size: 20,
+        filled: false,
       ),
-      TowerFloorStatus.available => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          color: WuxiaColors.resultHighlight.withValues(alpha: 0.18),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Text(
-          UiStrings.towerFloorChallenge,
-          style: TextStyle(
-            color: WuxiaColors.resultHighlight,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+      TowerFloorStatus.available => _StatusPill(
+        Icons.sports_martial_arts_outlined,
+        label: compact ? null : UiStrings.towerFloorChallenge,
+        color: accent,
+        filled: true,
       ),
-      TowerFloorStatus.locked => const Icon(
+      TowerFloorStatus.locked => const _StatusPill(
         Icons.lock,
+        label: null,
         color: WuxiaColors.textMuted,
-        size: 18,
+        filled: false,
       ),
     };
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill(
+    this.icon, {
+    required this.label,
+    required this.color,
+    required this.filled,
+  });
+
+  final IconData icon;
+  final String? label;
+  final Color color;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: filled ? 0.20 : 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: color.withValues(alpha: filled ? 0.72 : 0.48),
+          width: 0.9,
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: label == null ? 7 : 9,
+          vertical: 4,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 15),
+            if (label != null) ...[
+              const SizedBox(width: 5),
+              Text(
+                label!,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  height: 1.0,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }

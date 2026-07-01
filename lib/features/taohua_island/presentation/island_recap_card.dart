@@ -36,9 +36,9 @@ class IslandRecapCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 420),
+      constraints: const BoxConstraints(maxWidth: 460),
       child: PaperPanel(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -53,15 +53,12 @@ class IslandRecapCard extends StatelessWidget {
                 letterSpacing: 4,
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
 
             // 内容区
-            if (harvest.isEmpty)
-              _buildEmptyState()
-            else
-              _buildItemList(),
+            if (harvest.isEmpty) _buildEmptyState() else _buildItemList(),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
 
             // 关闭按钮
             Row(
@@ -69,8 +66,7 @@ class IslandRecapCard extends StatelessWidget {
               children: [
                 PlaqueButton(
                   label: UiStrings.skillInfoClose,
-                  onTap: () => Navigator.of(context, rootNavigator: true)
-                      .pop(),
+                  onTap: () => Navigator.of(context, rootNavigator: true).pop(),
                   primary: true,
                 ),
               ],
@@ -84,11 +80,7 @@ class IslandRecapCard extends StatelessWidget {
   Widget _buildEmptyState() {
     return const Text(
       UiStrings.taohuaIslandRecapEmpty,
-      style: TextStyle(
-        color: WuxiaUi.muted,
-        fontSize: 13,
-        height: 1.7,
-      ),
+      style: TextStyle(color: WuxiaUi.muted, fontSize: 13, height: 1.7),
     );
   }
 
@@ -104,13 +96,16 @@ class IslandRecapCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: entries.map((e) {
-              final defId = e.key;
-              final qty = e.value;
-              final name = itemDefs[defId]?.name ?? defId;
-
-              return _ItemRow(name: name, qty: qty);
-            }).toList(),
+            children: [
+              for (var i = 0; i < entries.length; i++) ...[
+                _ItemRow(
+                  name: itemDefs[entries[i].key]?.name ?? entries[i].key,
+                  qty: entries[i].value,
+                  highlighted: i == 0,
+                ),
+                if (i != entries.length - 1) const SizedBox(height: 7),
+              ],
+            ],
           ),
         ),
       ),
@@ -120,51 +115,71 @@ class IslandRecapCard extends StatelessWidget {
 
 /// 单行物品条目：物品名 + count-up 数量动画。
 class _ItemRow extends StatelessWidget {
-  const _ItemRow({required this.name, required this.qty});
+  const _ItemRow({
+    required this.name,
+    required this.qty,
+    required this.highlighted,
+  });
 
   final String name;
   final int qty;
+  final bool highlighted;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        children: [
-          // 物品图标：当前道具多无图标资产，用 Icon glyph 规避缺图踩坑
-          const Icon(
-            Icons.inventory_2_outlined,
-            size: 16,
-            color: WuxiaUi.qing,
-          ),
-          const SizedBox(width: 8),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: highlighted
+            ? WuxiaUi.gold.withValues(alpha: 0.10)
+            : WuxiaUi.paper2.withValues(alpha: 0.28),
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(
+          color: highlighted
+              ? WuxiaUi.gold.withValues(alpha: 0.36)
+              : WuxiaUi.ink.withValues(alpha: 0.14),
+          width: WuxiaUi.borderWidth,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        child: Row(
+          children: [
+            // 物品图标：当前道具多无图标资产，用 Icon glyph 规避缺图踩坑
+            const Icon(
+              Icons.inventory_2_outlined,
+              size: 16,
+              color: WuxiaUi.qing,
+            ),
+            const SizedBox(width: 8),
 
-          // 物品名
-          Expanded(
-            child: Text(
-              name,
-              style: const TextStyle(
-                color: WuxiaUi.ink,
-                fontSize: 14,
+            // 物品名
+            Expanded(
+              child: Text(
+                name,
+                style: const TextStyle(
+                  color: WuxiaUi.ink,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
 
-          // 数量 count-up 动画（0 → qty, 600ms, easeOut）
-          TweenAnimationBuilder<int>(
-            tween: IntTween(begin: 0, end: qty),
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeOut,
-            builder: (_, value, _) => Text(
-              '×$value',
-              style: const TextStyle(
-                color: WuxiaUi.jiang,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+            // 数量 count-up 动画（0 → qty, 600ms, easeOut）
+            TweenAnimationBuilder<int>(
+              tween: IntTween(begin: 0, end: qty),
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeOut,
+              builder: (_, value, _) => Text(
+                '×$value',
+                style: const TextStyle(
+                  color: WuxiaUi.jiang,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -10,6 +10,9 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/forging_slot.dart';
 import 'package:wuxia_idle/features/equipment/presentation/forging_panel.dart';
+import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 
 /// T30 ForgingPanel widget 测试（phase2_tasks.md §458-459）。
 ///
@@ -122,6 +125,27 @@ void main() {
     expect(find.widgetWithText(OutlinedButton, '破甲'), findsWidgets);
   });
 
+  testWidgets('开锋确认弹窗使用 PaperDialog/PlaqueButton 且确认后仍能开锋', (tester) async {
+    final eq = mkEq(enhanceLevel: 10);
+    final def = mkDef();
+    await pumpPanel(tester, eq: eq, def: def);
+
+    await tester.tap(find.widgetWithText(OutlinedButton, '攻击').first);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PaperDialog), findsOneWidget);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(PlaqueButton), findsNWidgets(2));
+    expect(find.text(UiStrings.forgingConfirmTitle), findsOneWidget);
+
+    await tester.tap(find.text(UiStrings.forgingConfirmOk));
+    await tester.pumpAndSettle();
+
+    expect(eq.forgingSlots[0].unlocked, isTrue);
+    expect(eq.forgingSlots[0].type, ForgingSlotType.attack);
+    expect(find.text('攻击 +15%'), findsOneWidget);
+  });
+
   testWidgets('槽 3 enhanceLevel=19 + specialSkillCandidates 空 → 专属锋意空状态', (
     tester,
   ) async {
@@ -142,12 +166,17 @@ void main() {
 
     await tester.tap(find.widgetWithText(OutlinedButton, '专属技能'));
     await tester.pumpAndSettle();
+    expect(find.byType(PaperDialog), findsOneWidget);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.byType(PlaqueButton), findsOneWidget);
     expect(find.text('选择专属技能'), findsOneWidget);
     expect(find.text(skillName), findsOneWidget);
     expect(find.text('灵巧 · 第1阶 · 威力 1250'), findsOneWidget);
 
     await tester.tap(find.text(skillName));
     await tester.pumpAndSettle();
+    expect(find.byType(PaperDialog), findsOneWidget);
+    expect(find.byType(PlaqueButton), findsNWidgets(2));
     expect(find.text('确认开锋'), findsOneWidget);
 
     await tester.tap(find.text('确认'));

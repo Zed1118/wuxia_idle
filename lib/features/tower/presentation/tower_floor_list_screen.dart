@@ -148,50 +148,84 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
                               ),
                     orElse: () => null,
                   );
-              return Column(
-                children: [
-                  _ProgressCard(progress: progress, summary: summary),
-                  // 一键扫荡 30 层入口（醒目主按钮·本周目整塔已通才亮）。
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    child: _TowerSweepButton(
-                      entries: entries,
-                      cycleIndex: progress.currentCycleIndex,
-                      eligible: SweepEligibility.forTower(
-                        highestClearedFloor: progress.highestClearedFloor,
-                        floorCount: entries.length,
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final contentWidth = constraints.maxWidth >= 1120
+                      ? 1080.0
+                      : constraints.maxWidth;
+                  return Column(
+                    children: [
+                      _ProgressCard(progress: progress, summary: summary),
+                      Center(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: contentWidth),
+                          child: Column(
+                            children: [
+                              // 一键扫荡 30 层入口（醒目主按钮·本周目整塔已通才亮）。
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  8,
+                                  16,
+                                  0,
+                                ),
+                                child: _TowerSweepButton(
+                                  entries: entries,
+                                  cycleIndex: progress.currentCycleIndex,
+                                  eligible: SweepEligibility.forTower(
+                                    highestClearedFloor:
+                                        progress.highestClearedFloor,
+                                    floorCount: entries.length,
+                                  ),
+                                  // 灰显门槛提示仅在整塔至少通关过一次后出现;全新塔仍隐藏。
+                                  everCleared: progress.maxClearedCycle >= 1,
+                                ),
+                              ),
+                              // P1 周目进化 E2：爬塔轮回推进卡（30 层全通 + 未达上限时显示）。
+                              if (canAdvance)
+                                _TowerAdvanceCycleCard(
+                                  onAdvance: _onAdvanceCycle,
+                                ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  12,
+                                  16,
+                                  8,
+                                ),
+                                child: _TowerSpineOverview(
+                                  entries: entries,
+                                  summary: summary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      // 灰显门槛提示仅在整塔至少通关过一次后出现;全新塔仍隐藏。
-                      everCleared: progress.maxClearedCycle >= 1,
-                    ),
-                  ),
-                  // P1 周目进化 E2：爬塔轮回推进卡（30 层全通 + 未达上限时显示）。
-                  if (canAdvance)
-                    _TowerAdvanceCycleCard(onAdvance: _onAdvanceCycle),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                    child: _TowerSpineOverview(
-                      entries: entries,
-                      summary: summary,
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount: entries.length,
-                      itemBuilder: (ctx, i) => TowerFloorCard(
-                        key: ValueKey(entries[i].def.floorIndex),
-                        entry: entries[i],
-                        stepSide: i.isEven
-                            ? TowerFloorStepSide.left
-                            : TowerFloorStepSide.right,
-                        onChallenge: () =>
-                            _onChallenge(context, entries[i].def),
-                        currentRealm: currentRealm,
+                      Expanded(
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: contentWidth),
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              itemCount: entries.length,
+                              itemBuilder: (ctx, i) => TowerFloorCard(
+                                key: ValueKey(entries[i].def.floorIndex),
+                                entry: entries[i],
+                                stepSide: i.isEven
+                                    ? TowerFloorStepSide.left
+                                    : TowerFloorStepSide.right,
+                                onChallenge: () =>
+                                    _onChallenge(context, entries[i].def),
+                                currentRealm: currentRealm,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
+                    ],
+                  );
+                },
               );
             },
           ),
@@ -210,12 +244,12 @@ class _TowerSpineOverview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PaperPanel(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SectionHeader(UiStrings.towerSpineTitle),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -224,7 +258,7 @@ class _TowerSpineOverview extends StatelessWidget {
                   _TowerSpineNode(entry: entry, summary: summary),
                   if (entry.def.floorIndex != entries.last.def.floorIndex)
                     Container(
-                      width: 12,
+                      width: 10,
                       height: 2,
                       color: WuxiaUi.ink.withValues(alpha: 0.18),
                     ),
@@ -232,7 +266,7 @@ class _TowerSpineOverview extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           const Text(
             UiStrings.towerSpineLegend,
             // 浅宣纸底用墨色柔灰 WuxiaUi.muted；WuxiaColors.textMuted 是深色 UI 专用浅灰，叠浅底会糊。
@@ -272,13 +306,13 @@ class _TowerSpineNode extends StatelessWidget {
         ? 1.6
         : 1.1;
     return SizedBox(
-      width: isBoss ? 36 : 24,
+      width: isBoss ? 34 : 23,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: isBoss ? 32 : 22,
-            height: isBoss ? 32 : 22,
+            width: isBoss ? 31 : 21,
+            height: isBoss ? 31 : 21,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: color.withValues(alpha: isBoss ? 0.22 : 0.14),
