@@ -172,7 +172,7 @@ class _SeclusionMapListScreenState
                           constraints.maxWidth,
                         );
                         final columns = _seclusionMapColumns(contentWidth);
-                        final cardHeight = columns == 1 ? 258.0 : 268.0;
+                        final cardHeight = _seclusionMapCardHeight(columns);
                         final cardWidth =
                             (contentWidth - 32 - (columns - 1) * 14) / columns;
                         return Center(
@@ -232,6 +232,12 @@ int _seclusionMapColumns(double width) {
   if (width >= 1320) return 3;
   if (width >= 940) return 2;
   return 1;
+}
+
+double _seclusionMapCardHeight(int columns) {
+  if (columns >= 3) return 300;
+  if (columns == 1) return 258;
+  return 268;
 }
 
 class _CenteredSeclusionContent extends StatelessWidget {
@@ -456,109 +462,112 @@ class _MapCard extends StatelessWidget {
                   child: _MapStatusPill(label: statusLabel, color: statusColor),
                 ),
                 Positioned(
-                  left: 16,
-                  right: 16,
-                  bottom: 122,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        def.mapName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: locked ? WuxiaUi.muted : WuxiaUi.ink,
-                          fontSize: 23,
-                          fontWeight: FontWeight.w900,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.45),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 7),
-                      SeclusionMapTraitStrip(
-                        def: def,
-                        locked: locked,
-                        compact: true,
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
                   left: 12,
                   right: 12,
                   bottom: 12,
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
-                    decoration: BoxDecoration(
-                      color: WuxiaUi.paper.withValues(
-                        alpha: locked ? 0.78 : 0.88,
-                      ),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: traitColor.withValues(
-                          alpha: locked ? 0.2 : 0.42,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Text(
+                          def.mapName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: locked ? WuxiaUi.muted : WuxiaUi.ink,
+                            fontSize: 23,
+                            fontWeight: FontWeight.w900,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.45),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.24),
-                          blurRadius: 14,
-                          offset: const Offset(0, 6),
+                      const SizedBox(height: 7),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: SeclusionMapTraitStrip(
+                          def: def,
+                          locked: locked,
+                          compact: true,
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: _MapInfoLine(
-                                label: UiStrings.seclusionMapRealmGateLabel,
-                                value: gateText,
-                                accent: statusColor,
-                                locked: locked,
-                              ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
+                        decoration: BoxDecoration(
+                          color: WuxiaUi.paper.withValues(
+                            alpha: locked ? 0.78 : 0.88,
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: traitColor.withValues(
+                              alpha: locked ? 0.2 : 0.42,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _MapInfoLine(
-                                label: UiStrings.seclusionMapStatusLabel,
-                                value: statusDetail,
-                                accent: statusColor,
-                                locked: locked,
-                              ),
-                            ),
-                            const SizedBox(width: 2),
-                            Icon(
-                              isActive
-                                  ? Icons.arrow_forward_ios
-                                  : locked
-                                  ? Icons.lock
-                                  : Icons.login,
-                              color: locked ? WuxiaUi.muted : statusColor,
-                              size: 17,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.24),
+                              blurRadius: 14,
+                              offset: const Offset(0, 6),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 9),
-                        Text(
-                          UiStrings.seclusionMapExpectedOutputLabel,
-                          style: TextStyle(
-                            color: locked ? WuxiaUi.muted : WuxiaUi.ink2,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: _MapInfoLine(
+                                    label: UiStrings.seclusionMapRealmGateLabel,
+                                    value: gateText,
+                                    accent: statusColor,
+                                    locked: locked,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _MapInfoLine(
+                                    label: UiStrings.seclusionMapStatusLabel,
+                                    value: statusDetail,
+                                    accent: statusColor,
+                                    locked: locked,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                Icon(
+                                  isActive
+                                      ? Icons.arrow_forward_ios
+                                      : locked
+                                      ? Icons.lock
+                                      : Icons.login,
+                                  color: locked ? WuxiaUi.muted : statusColor,
+                                  size: 17,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 9),
+                            Text(
+                              UiStrings.seclusionMapExpectedOutputLabel,
+                              style: TextStyle(
+                                color: locked ? WuxiaUi.muted : WuxiaUi.ink2,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            SeclusionMapOutputStrip(def: def, locked: locked),
+                          ],
                         ),
-                        const SizedBox(height: 6),
-                        SeclusionMapOutputStrip(def: def, locked: locked),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],
