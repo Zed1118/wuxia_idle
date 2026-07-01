@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_demo.dart';
 import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/character_avatar.dart';
+import 'package:wuxia_idle/features/battle/presentation/countdown_ring.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 /// 战斗交互重做：两段点选 tap 释放 widget 测试。
@@ -336,6 +337,42 @@ void main() {
       await tester.tap(enemy);
       await tester.pump();
       expect(notifier.interveneCount, 0);
+    });
+  });
+
+  group('技能 CD 读秒环', () {
+    testWidgets('CD>0 技能按钮显读秒环 + 中心剩余拍数', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_single],
+        skillCooldowns: {'single1': 2},
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      final ring = find.descendant(
+        of: find.byKey(const ValueKey('skill_cmd_1_single1')),
+        matching: find.byType(BeatCountdownRing),
+      );
+      expect(ring, findsOneWidget);
+      expect(
+        find.descendant(of: ring, matching: find.text('2')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('CD=0 技能按钮无读秒环', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_single],
+        skillCooldowns: const {},
+      );
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('skill_cmd_1_single1')),
+          matching: find.byType(BeatCountdownRing),
+        ),
+        findsNothing,
+      );
     });
   });
 }

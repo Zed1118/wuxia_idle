@@ -28,6 +28,7 @@ import 'battle_atmosphere_overlay.dart';
 import 'battle_effect_sprite.dart';
 import 'battle_scene_background.dart';
 import 'character_avatar.dart';
+import 'countdown_ring.dart';
 import 'damage_popup.dart';
 import 'hit_flash.dart';
 import 'boss_phase_presentation.dart';
@@ -1319,6 +1320,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             pendingSkillId:
                                 _pendingSkill?.id ??
                                 widget.previewPendingSkillId,
+                            beat: _beatCtrl,
                           ),
                         ],
                       ),
@@ -2249,6 +2251,8 @@ class _BottomBar extends StatelessWidget {
   // 两段点选本地待发态:纯 presentation,不写 BattleState.pendingUltimates。
   final int? pendingCharacterId;
   final String? pendingSkillId;
+  // 读秒环节拍(供技能 CD 环平滑插值)。
+  final Animation<double> beat;
 
   const _BottomBar({
     required this.state,
@@ -2261,6 +2265,7 @@ class _BottomBar extends StatelessWidget {
     required this.onSkillTap,
     required this.pendingCharacterId,
     required this.pendingSkillId,
+    required this.beat,
   });
 
   /// 排序/分组秩：强力 0 → 破招 1 → 共鸣 2 → 大招 3（普攻 4，已被过滤）。
@@ -2340,6 +2345,7 @@ class _BottomBar extends StatelessWidget {
                                 highlight: enemyCharging && s.canInterrupt,
                                 allowPlayerIntervention:
                                     allowPlayerIntervention,
+                                beat: beat,
                                 onTap: () => onSkillTap(focus.characterId, s),
                                 onShowInfo: () => onShowSkillInfo(s),
                               );
@@ -2470,6 +2476,8 @@ class _SkillCommandButton extends StatelessWidget {
   final bool queuedAnother;
   final bool highlight;
   final bool allowPlayerIntervention;
+  // 读秒环节拍(供 CD 环平滑插值)。
+  final Animation<double> beat;
   // 两段点选:点击 = 释放(single 进待发态 / aoe 一键出手);长按 = 弹简介浮层。
   final VoidCallback onTap;
   final VoidCallback onShowInfo;
@@ -2482,6 +2490,7 @@ class _SkillCommandButton extends StatelessWidget {
     required this.queuedAnother,
     required this.highlight,
     required this.allowPlayerIntervention,
+    required this.beat,
     required this.onTap,
     required this.onShowInfo,
   });
@@ -2520,11 +2529,14 @@ class _SkillCommandButton extends StatelessWidget {
       bgColor = Color.lerp(WuxiaColors.sidebar, baseSchoolColor, 0.78)!;
     }
 
+    // CD 态(非待发):招名让位,中心浮现读秒环示剩余拍数。
+    final onCd = cd > 0 && !isPending;
+
     final String statusText;
     if (isPending) {
       statusText = UiStrings.skillPendingStamp; // 待发
     } else if (cd > 0) {
-      statusText = UiStrings.skillCooldownShort(cd); // 冷却 N
+      statusText = ''; // CD 态由读秒环示数,不再显「冷却 N」文字。
     } else if (character.currentInternalForce < skill.internalForceCost) {
       statusText = UiStrings.skillInsufficientForce; // 内力不足
     } else {
@@ -2562,7 +2574,9 @@ class _SkillCommandButton extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            Center(
+            Opacity(
+              opacity: onCd ? 0.32 : 1.0, // CD 态招名让位给读秒环。
+              child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -2605,7 +2619,20 @@ class _SkillCommandButton extends StatelessWidget {
                   ),
                 ],
               ),
+              ),
             ),
+            if (onCd)
+              Positioned.fill(
+                child: Center(
+                  child: BeatCountdownRing(
+                    remaining: cd,
+                    total: skill.cooldownTurns,
+                    beat: beat,
+                    color: WuxiaColors.lingQiao,
+                    size: 44,
+                  ),
+                ),
+              ),
             if (isPending)
               const Positioned(top: -7, right: -7, child: _PendingStamp()),
           ],
