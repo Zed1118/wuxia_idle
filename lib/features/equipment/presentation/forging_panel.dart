@@ -14,13 +14,15 @@ import '../application/forging_service.dart';
 import '../application/equipment_service_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 
 /// 开锋面板（phase2_tasks T30 §449-456）。
 ///
 /// 3 个槽位卡片：
 /// - 未解锁：灰色 + `强化到 +N 解锁`
 /// - 已解锁未开锋：词条选项 list（attack/speed/lifesteal/pierce[/specialSkill]）
-///   点击词条 → AlertDialog 二次确认 → `ForgingService.forge` in-place 改
+///   点击词条 → PaperDialog 二次确认 → `ForgingService.forge` in-place 改
 /// - 已开锋：显示 `<type 中文> +X%` + 灰色不可改
 ///
 /// 槽 2 互斥过滤、specialSkill 候选空兜底全部由 [ForgingService] 处理，
@@ -56,32 +58,31 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
     final fucaiCost = config.slotByIndex(slotIndex).fucaiCost;
     if (fucaiQty < fucaiCost) return;
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: WuxiaColors.panel,
-        title: const Text(
-          UiStrings.forgingConfirmTitle,
-          style: TextStyle(color: WuxiaColors.textPrimary),
-        ),
-        content: Text(
-          UiStrings.forgingConfirmBodyWithCost(fucaiCost),
-          style: const TextStyle(color: WuxiaColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(UiStrings.forgingConfirmCancel),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: WuxiaColors.resultHighlight,
-            ),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(UiStrings.forgingConfirmOk),
-          ),
-        ],
+    final confirmed = await PaperDialog.show<bool>(
+      context,
+      title: UiStrings.forgingConfirmTitle,
+      body: Text(
+        UiStrings.forgingConfirmBodyWithCost(fucaiCost),
+        style: const TextStyle(color: WuxiaColors.textSecondary, height: 1.5),
       ),
+      actions: [
+        SizedBox(
+          width: 104,
+          child: PlaqueButton(
+            label: UiStrings.forgingConfirmCancel,
+            onTap: () => Navigator.of(context).pop(false),
+          ),
+        ),
+        SizedBox(
+          width: 104,
+          child: PlaqueButton(
+            label: UiStrings.forgingConfirmOk,
+            destructive: true,
+            autofocus: true,
+            onTap: () => Navigator.of(context).pop(true),
+          ),
+        ),
+      ],
     );
     if (confirmed != true) return;
 
@@ -117,45 +118,42 @@ class _ForgingPanelState extends ConsumerState<ForgingPanel> {
   Future<String?> _pickSpecialSkill() async {
     final candidates = widget.def.specialSkillCandidates;
     if (candidates.isEmpty) return null;
-    return showDialog<String>(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: WuxiaColors.panel,
-        title: const Text(
-          UiStrings.forgingSpecialSkillPickerTitle,
-          style: TextStyle(color: WuxiaColors.textPrimary),
-        ),
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 360),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final id in candidates)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    _skillName(id),
-                    style: const TextStyle(color: WuxiaColors.textPrimary),
-                  ),
-                  subtitle: Text(
-                    _skillSummary(id),
-                    style: const TextStyle(
-                      color: WuxiaColors.textMuted,
-                      fontSize: 12,
-                    ),
-                  ),
-                  onTap: () => Navigator.of(context).pop(id),
+    return PaperDialog.show<String>(
+      context,
+      title: UiStrings.forgingSpecialSkillPickerTitle,
+      body: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final id in candidates)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  _skillName(id),
+                  style: const TextStyle(color: WuxiaColors.textPrimary),
                 ),
-            ],
+                subtitle: Text(
+                  _skillSummary(id),
+                  style: const TextStyle(
+                    color: WuxiaColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+                onTap: () => Navigator.of(context).pop(id),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        SizedBox(
+          width: 104,
+          child: PlaqueButton(
+            label: UiStrings.forgingConfirmCancel,
+            onTap: () => Navigator.of(context).pop(),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text(UiStrings.forgingConfirmCancel),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
