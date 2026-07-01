@@ -88,4 +88,20 @@ void main() {
     );
     expect(find.text('3'), findsOneWidget); // 3-0.5=2.5 → ceil 3
   });
+
+  testWidgets('SteppedCountdownRing: 首见 remaining=3 → 显 3', (t) async {
+    await pump(
+      t,
+      const SteppedCountdownRing(remaining: 3, color: Colors.red, size: 40),
+    );
+    expect(find.text('3'), findsOneWidget);
+  });
+
+  testWidgets('SteppedCountdownRing: remaining=0 不显数字', (t) async {
+    await pump(
+      t,
+      const SteppedCountdownRing(remaining: 0, color: Colors.red, size: 40),
+    );
+    expect(find.text('0'), findsNothing);
+  });
 }

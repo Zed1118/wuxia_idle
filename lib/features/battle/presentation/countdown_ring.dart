@@ -98,6 +98,85 @@ class BeatCountdownRing extends StatelessWidget {
   }
 }
 
+/// 内伤专用：state 无初始 total，用「激活期见过的最大剩余」作分母(max-seen)，
+/// 状态清零(remaining<=0)复位。`remaining` 变化时 ~250ms 短过渡扫一段(跳变，
+/// 不假装匀速——内伤按守方自己出手减 1，节奏不规则)。
+class SteppedCountdownRing extends StatefulWidget {
+  const SteppedCountdownRing({
+    super.key,
+    required this.remaining,
+    required this.color,
+    this.size = 40,
+    this.strokeWidth = 3.5,
+  });
+
+  final int remaining;
+  final Color color;
+  final double size;
+  final double strokeWidth;
+
+  @override
+  State<SteppedCountdownRing> createState() => _SteppedCountdownRingState();
+}
+
+class _SteppedCountdownRingState extends State<SteppedCountdownRing>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  int _maxSeen = 0;
+  double _from = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    if (widget.remaining > 0) _maxSeen = widget.remaining;
+    _from = widget.remaining.toDouble();
+    _ctrl.value = 1; // 静止态 disp == remaining
+  }
+
+  @override
+  void didUpdateWidget(SteppedCountdownRing old) {
+    super.didUpdateWidget(old);
+    if (old.remaining != widget.remaining) {
+      if (widget.remaining <= 0) {
+        _maxSeen = 0; // 清零复位分母
+      } else if (widget.remaining > _maxSeen) {
+        _maxSeen = widget.remaining; // 同源刷新 → 抬高分母
+      }
+      _from = old.remaining.toDouble();
+      _ctrl.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.remaining <= 0) return const SizedBox.shrink();
+    final total = _maxSeen <= 0 ? 1 : _maxSeen;
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, __) {
+        final disp = _from + (widget.remaining - _from) * _ctrl.value;
+        return CountdownRing(
+          remaining: disp,
+          total: total,
+          color: widget.color,
+          size: widget.size,
+          strokeWidth: widget.strokeWidth,
+        );
+      },
+    );
+  }
+}
+
 class _CountdownRingPainter extends CustomPainter {
   _CountdownRingPainter({
     required this.frac,
