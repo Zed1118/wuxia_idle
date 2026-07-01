@@ -6,6 +6,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'avatar_status_tags.dart';
+import 'countdown_ring.dart';
 import 'hp_bar.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 import '../../../shared/widgets/wuxia_image.dart';
@@ -26,8 +27,15 @@ class CharacterAvatar extends StatelessWidget {
   final double barWidth;
 
   /// Boss/敌人蓄力满值（`numbers.combat.bossCharge.defaultChargeTicks`）。
-  /// 用于把 [BattleCharacter.chargeTicksRemaining] 换算成蓄力进度条比例。
+  /// 用于把 [BattleCharacter.chargeTicksRemaining] 换算成蓄力读秒环比例。
   final int chargeMaxTicks;
+
+  /// 读秒环节拍（本拍内 0→1，供蓄力/破绽环平滑插值）。
+  /// null（测试/静态路径）时回落 [AlwaysStoppedAnimation]（0）冻结显整数。
+  final Animation<double>? beat;
+
+  /// 破绽窗口时长（破绽读秒环分母，`numbers.combat.defenseBreak.windowTicks`）。
+  final int staggerWindowTicks;
 
   const CharacterAvatar({
     super.key,
@@ -35,6 +43,8 @@ class CharacterAvatar extends StatelessWidget {
     this.avatarSize = 110,
     this.barWidth = 160,
     this.chargeMaxTicks = 3,
+    this.beat,
+    this.staggerWindowTicks = 3,
   });
 
   @override
@@ -84,13 +94,20 @@ class CharacterAvatar extends StatelessWidget {
         ? _BossAvatarFrame(avatarSize: avatarSize, child: avatarCore)
         : avatarCore;
 
+    // 读秒环节拍：null 路径回落 AlwaysStoppedAnimation(0) → 环冻结显整数。
+    final effBeat = beat ?? const AlwaysStoppedAnimation<double>(0.0);
+
     final content = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         avatar,
-        // 批次 1.4:buff/debuff 状态标签贴近头像(纯读 state,按生死>操作>纯数值排序)。
-        AvatarStatusTags(character: character),
+        // 批次 1.4:内伤/破绽读秒环 + 剑鸣 buff 药丸(纯读 state,按生死>操作>纯数值排序)。
+        AvatarStatusTags(
+          character: character,
+          beat: effBeat,
+          staggerWindowTicks: staggerWindowTicks,
+        ),
         const SizedBox(height: 6),
         Text(
           character.name,
@@ -127,13 +144,26 @@ class CharacterAvatar extends StatelessWidget {
             labelPrefix: UiStrings.internalForceShortLabel,
           ),
         ),
-        // P0 破招：敌人/Boss 蓄力中显蓄力进度条 + 「可破招」图标（纯读 state）。
+        // P0 破招：敌人/Boss 蓄力中显读秒环(还差几拍放招) + 「可破招」金标（纯读 state）。
         if (character.chargingSkill != null) ...[
           const SizedBox(height: 4),
-          _ChargeBar(
-            ticksRemaining: character.chargeTicksRemaining,
-            maxTicks: chargeMaxTicks,
-            width: barWidth,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              BeatCountdownRing(
+                remaining: character.chargeTicksRemaining,
+                total: chargeMaxTicks,
+                beat: effBeat,
+                color: WuxiaColors.hpLow,
+                size: 34,
+              ),
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.flash_on,
+                size: 14,
+                color: WuxiaColors.lingQiao,
+              ),
+            ],
           ),
         ],
       ],
@@ -196,65 +226,6 @@ class _BossAvatarFrame extends StatelessWidget {
               height: frameSize,
               fit: BoxFit.contain,
               errorBuilder: (_, _, _) => const SizedBox.shrink(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 蓄力进度条 + 「可破招」图标（P0 破招）。
-/// 进度 = 1 - ticksRemaining / maxTicks（蓄力将满 → 条接近满）；
-/// 末尾 [Icons.flash_on] 醒目色提示玩家此刻可破招。纯展示，不写 state。
-class _ChargeBar extends StatelessWidget {
-  final int ticksRemaining;
-  final int maxTicks;
-  final double width;
-
-  const _ChargeBar({
-    required this.ticksRemaining,
-    required this.maxTicks,
-    required this.width,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final progress = maxTicks <= 0
-        ? 0.0
-        : (1 - ticksRemaining / maxTicks).clamp(0.0, 1.0).toDouble();
-    const accent = WuxiaColors.resultHighlight;
-    final borderRadius = BorderRadius.circular(2);
-
-    return SizedBox(
-      width: width,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.flash_on, size: 13, color: accent),
-          const SizedBox(width: 3),
-          Expanded(
-            child: SizedBox(
-              height: 7,
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: WuxiaColors.barTrack,
-                      borderRadius: borderRadius,
-                    ),
-                  ),
-                  FractionallySizedBox(
-                    widthFactor: progress,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: accent,
-                        borderRadius: borderRadius,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ],

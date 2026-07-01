@@ -1131,6 +1131,17 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     } catch (_) {
       chargeMaxTicks = 3;
     }
+    // 破绽窗口时长(供破绽读秒环分母)；GameRepository 未初始化时回落 schema 默认 3。
+    int staggerWindowTicks;
+    try {
+      staggerWindowTicks = ref
+          .read(numbersConfigProvider)
+          .combat
+          .defenseBreak
+          .windowTicks;
+    } catch (_) {
+      staggerWindowTicks = 3;
+    }
 
     ref.listen<BattleState>(battleProvider, (prev, next) {
       // 1. 启动 Timer：team 从空 → 非空且未结束 → 自动连续播放(Phase 3:战斗
@@ -1273,6 +1284,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                   popups: _popups,
                                   animConfig: widget.animConfig,
                                   chargeMaxTicks: chargeMaxTicks,
+                                  beat: _beatCtrl,
+                                  staggerWindowTicks: staggerWindowTicks,
                                   onPopupComplete: _removePopup,
                                   hitFlashControllers: _hitFlashControllers,
                                   hitFlashColors: _hitFlashColors,
@@ -1891,6 +1904,9 @@ class _BattleField extends StatelessWidget {
   final Map<int, List<_PopupEntry>> popups;
   final AnimationNumbers animConfig;
   final int chargeMaxTicks;
+  // 读秒环节拍 + 破绽窗口时长(供头像上蓄力/内伤/破绽环)。
+  final Animation<double> beat;
+  final int staggerWindowTicks;
   final void Function(int slotKey, int popupId) onPopupComplete;
   final List<AnimationController> hitFlashControllers;
   final Map<int, Color> hitFlashColors;
@@ -1906,6 +1922,8 @@ class _BattleField extends StatelessWidget {
     required this.popups,
     required this.animConfig,
     required this.chargeMaxTicks,
+    required this.beat,
+    required this.staggerWindowTicks,
     required this.onPopupComplete,
     required this.hitFlashControllers,
     required this.hitFlashColors,
@@ -1932,6 +1950,8 @@ class _BattleField extends StatelessWidget {
               popups: popups,
               animConfig: animConfig,
               chargeMaxTicks: chargeMaxTicks,
+              beat: beat,
+              staggerWindowTicks: staggerWindowTicks,
               onPopupComplete: onPopupComplete,
               hitFlashControllers: hitFlashControllers,
               hitFlashColors: hitFlashColors,
@@ -1952,6 +1972,8 @@ class _BattleField extends StatelessWidget {
               popups: popups,
               animConfig: animConfig,
               chargeMaxTicks: chargeMaxTicks,
+              beat: beat,
+              staggerWindowTicks: staggerWindowTicks,
               onPopupComplete: onPopupComplete,
               hitFlashControllers: hitFlashControllers,
               hitFlashColors: hitFlashColors,
@@ -1975,6 +1997,8 @@ class _TeamColumn extends StatelessWidget {
   final Map<int, List<_PopupEntry>> popups;
   final AnimationNumbers animConfig;
   final int chargeMaxTicks;
+  final Animation<double> beat;
+  final int staggerWindowTicks;
   final void Function(int slotKey, int popupId) onPopupComplete;
   final List<AnimationController> hitFlashControllers;
   final Map<int, Color> hitFlashColors;
@@ -1993,6 +2017,8 @@ class _TeamColumn extends StatelessWidget {
     required this.popups,
     required this.animConfig,
     required this.chargeMaxTicks,
+    required this.beat,
+    required this.staggerWindowTicks,
     required this.onPopupComplete,
     required this.hitFlashControllers,
     required this.hitFlashColors,
@@ -2028,6 +2054,8 @@ class _TeamColumn extends StatelessWidget {
                 slotPopups: popups[teamSide * 3 + i] ?? const [],
                 animConfig: animConfig,
                 chargeMaxTicks: chargeMaxTicks,
+                beat: beat,
+                staggerWindowTicks: staggerWindowTicks,
                 slotKey: teamSide * 3 + i,
                 onPopupComplete: onPopupComplete,
                 hitFlashController: hitFlashControllers[teamSide * 3 + i],
@@ -2058,6 +2086,8 @@ class _CharacterSlot extends StatelessWidget {
   final List<_PopupEntry> slotPopups;
   final AnimationNumbers animConfig;
   final int chargeMaxTicks;
+  final Animation<double> beat;
+  final int staggerWindowTicks;
   final int slotKey;
   final void Function(int slotKey, int popupId) onPopupComplete;
   final AnimationController hitFlashController;
@@ -2075,6 +2105,8 @@ class _CharacterSlot extends StatelessWidget {
     required this.slotPopups,
     required this.animConfig,
     required this.chargeMaxTicks,
+    required this.beat,
+    required this.staggerWindowTicks,
     required this.slotKey,
     required this.onPopupComplete,
     required this.hitFlashController,
@@ -2093,6 +2125,8 @@ class _CharacterSlot extends StatelessWidget {
         CharacterAvatar(
           character: character,
           chargeMaxTicks: chargeMaxTicks,
+          beat: beat,
+          staggerWindowTicks: staggerWindowTicks,
           avatarSize: 92,
           barWidth: 140,
         ),
