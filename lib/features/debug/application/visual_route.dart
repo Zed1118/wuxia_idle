@@ -202,6 +202,14 @@ enum VisualRoute {
   ),
   zangjuange('zangjuange', '藏卷阁 Hub 目检·战绩册/兵器谱/奇遇录/藏经阁聚合入口 + 卷中线索'),
   redlineAudit('redline_audit', '数值红线审计·开发工具视图(PASS/WARN/FAIL + 当前最大值 + 来源)'),
+  founderCreation(
+    'founder_creation',
+    '祖师塑形创建页·确认区决策可逆说明验收(S1·深底 textMuted 提示行)',
+  ),
+  stageRetryDialog(
+    'stage_retry_dialog',
+    '普通关战败重试弹框·非教学化短诊断验收(S3·浅纸底 muted 提示行)',
+  ),
   hub('hub', '验收总入口·build 一次列出全部路由按钮点选(免每路由重 build,Codex 加速)');
 
   const VisualRoute(this.id, this.label);
