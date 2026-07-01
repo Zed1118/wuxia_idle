@@ -512,6 +512,9 @@ class StageBattleSetup {
       bossPhases: bossPhases,
       bossPhaseUnlockSkills: bossPhaseUnlockSkills,
       schoolDamageTakenMult: enemy.schoolDamageTakenMult ?? const {},
+      enemyDefId: enemy.id,
+      guardianWardMult: enemy.guardianWard?.damageTakenMult,
+      guardianDefIds: enemy.guardianWard?.guardianIds ?? const [],
     );
   }
 
