@@ -1898,6 +1898,8 @@ class UiStrings {
   static const String founderCreateFateFocus = '命盘侧重';
   static String founderCreateAttributeTotal(int total) => '总点 $total';
   static String founderCreateTechniqueName(String name) => '主修「$name」';
+  static const String founderCreateReversibleHint =
+      '起手选择只影响开局手感,日后可用装备、修炼补足,不必纠结。';
   static String founderCreateConfirmLine(
     String school,
     String origin,
