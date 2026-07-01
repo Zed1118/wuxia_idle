@@ -1377,6 +1377,7 @@ class UiStrings {
   static const String stageVictoryReportTitle = '战后卷宗';
   static const String stageVictoryExperienceSection = '经验 / 修为';
   static const String stageVictoryEquipmentSection = '装备';
+  static const String stageVictoryEquipmentHint = '可回行囊查看 / 整备新装备。';
   static const String stageVictoryManualSection = '秘籍 / 残页';
   static const String stageVictoryBattleSection = '战况';
   static const String stageVictoryInjurySection = '伤势 / 疗伤';

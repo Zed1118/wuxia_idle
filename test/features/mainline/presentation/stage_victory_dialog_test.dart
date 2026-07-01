@@ -582,6 +582,27 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    // S2·首胜装备掉落后整备轻提示
+    testWidgets('掉装备 → 显整备轻提示行；空掉落 → 不显', (tester) async {
+      // 有装备 → 提示可见
+      await _pumpContent(
+        tester,
+        _equipDrops(['weapon_xunchang_tie_jian']),
+        const [],
+      );
+      expect(
+        find.text(UiStrings.stageVictoryEquipmentHint),
+        findsOneWidget,
+      );
+
+      // 空掉落 → 提示不可见
+      await _pumpContent(tester, _emptyDrops(), const []);
+      expect(
+        find.text(UiStrings.stageVictoryEquipmentHint),
+        findsNothing,
+      );
+    });
+
     testWidgets('长掉落列表在卷轴层内可滚动且不溢出', (tester) async {
       tester.view.physicalSize = const Size(600, 360);
       tester.view.devicePixelRatio = 1;
@@ -772,6 +793,8 @@ void main() {
     });
 
     testWidgets('跨 tier + 装备掉落 → 只播 realmAdvance,reward 让位不叠响', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
       await open(
         tester,
         _equipDrops(['weapon_xunchang_tie_jian']),
