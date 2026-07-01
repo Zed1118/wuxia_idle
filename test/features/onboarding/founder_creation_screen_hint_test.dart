@@ -15,13 +15,6 @@ void main() {
   });
 
   testWidgets('祖师塑形确认区显示决策可逆提示', (tester) async {
-    // _ChoiceCard 用 Spacer 在 Wrap→SingleChildScrollView 的无界高度 Column 里
-    // 触发 Flutter 布局 assertion（debug-only）。这是屏自身的预存在问题，
-    // 与本测试目标（验证提示文案出现在 widget tree）无关，全量静默处理。
-    final origOnError = FlutterError.onError;
-    FlutterError.onError = (_) {};
-    addTearDown(() => FlutterError.onError = origOnError);
-
     await tester.binding.setSurfaceSize(const Size(1024, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
