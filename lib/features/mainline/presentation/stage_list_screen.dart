@@ -30,6 +30,7 @@ import '../application/mainline_providers.dart';
 import '../application/new_save_goal_guidance.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_replay_reward_route.dart';
+import '../domain/onboarding_gate.dart';
 import 'new_save_goal_guidance_view.dart';
 import 'stage_entry_flow.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
@@ -143,6 +144,9 @@ class StageListScreen extends ConsumerWidget {
                       chapterKey,
                     ) >=
                     1;
+            final replayRewardUnlocked =
+                progress != null &&
+                progress.clearedStageIds.contains(kFirstChapterFinalStageId);
 
             return LayoutBuilder(
               builder: (context, constraints) {
@@ -179,6 +183,7 @@ class StageListScreen extends ConsumerWidget {
                           currentRealm: currentRealm,
                           activeCharacters: activeCharacters,
                           goalGuidance: currentGoal,
+                          replayRewardUnlocked: replayRewardUnlocked,
                           onRunStage: (stage) => runStageFlow(
                             context: context,
                             ref: ref,
@@ -396,6 +401,7 @@ class _ChapterStageTimeline extends StatelessWidget {
     required this.activeCharacters,
     required this.onRunStage,
     this.goalGuidance,
+    this.replayRewardUnlocked = false,
   });
 
   final List<StageEntry> entries;
@@ -405,6 +411,7 @@ class _ChapterStageTimeline extends StatelessWidget {
   final List<Character> activeCharacters;
   final _StageRunCallback onRunStage;
   final NewSaveGoalGuidance? goalGuidance;
+  final bool replayRewardUnlocked;
 
   @override
   Widget build(BuildContext context) {
@@ -435,6 +442,7 @@ class _ChapterStageTimeline extends StatelessWidget {
                 goalGuidance: goalGuidance?.stage.id == entries[i].def.id
                     ? goalGuidance
                     : null,
+                replayRewardUnlocked: replayRewardUnlocked,
               ),
           ],
         ),
@@ -497,6 +505,7 @@ class _TimelineStageStop extends StatelessWidget {
     required this.activeCharacters,
     required this.onRunStage,
     this.goalGuidance,
+    this.replayRewardUnlocked = false,
   });
 
   final int stageIndex;
@@ -509,6 +518,7 @@ class _TimelineStageStop extends StatelessWidget {
   final List<Character> activeCharacters;
   final _StageRunCallback onRunStage;
   final NewSaveGoalGuidance? goalGuidance;
+  final bool replayRewardUnlocked;
 
   @override
   Widget build(BuildContext context) {
@@ -537,6 +547,7 @@ class _TimelineStageStop extends StatelessWidget {
               activeCharacters: activeCharacters,
               showMarker: false,
               goalGuidance: goalGuidance,
+              replayRewardUnlocked: replayRewardUnlocked,
               onTap: status == StageStatus.locked
                   ? null
                   : () => onRunStage(entry.def),
@@ -825,6 +836,7 @@ class _StageRow extends StatelessWidget {
     this.activeCharacters = const [],
     this.goalGuidance,
     this.showMarker = true,
+    this.replayRewardUnlocked = false,
   });
 
   final int stageIndex;
@@ -836,6 +848,7 @@ class _StageRow extends StatelessWidget {
   final List<Character> activeCharacters;
   final NewSaveGoalGuidance? goalGuidance;
   final bool showMarker;
+  final bool replayRewardUnlocked;
 
   @override
   Widget build(BuildContext context) {
@@ -988,7 +1001,7 @@ class _StageRow extends StatelessWidget {
                       enemyTeam: def.enemyTeam,
                       cleared: cleared,
                     ),
-                    if (cleared)
+                    if (cleared && replayRewardUnlocked)
                       _ReplayRewardRouteLine(
                         route: MainlineReplayRewardRoute.fromStage(def),
                       ),

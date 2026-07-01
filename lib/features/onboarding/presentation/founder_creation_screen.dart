@@ -434,6 +434,15 @@ class _PreviewPanel extends StatelessWidget {
               fontSize: 13,
             ),
           ),
+          const SizedBox(height: 6),
+          const Text(
+            UiStrings.founderCreateReversibleHint,
+            style: TextStyle(
+              color: WuxiaColors.textMuted,
+              fontSize: 12,
+              height: 1.4,
+            ),
+          ),
         ],
       ),
     );

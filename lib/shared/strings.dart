@@ -49,6 +49,7 @@ class UiStrings {
   // M3:普通关战败立即重试(Boss 关不给 · 试错免费无惩罚)。
   static const String stageRetryTitle = '功亏一篑';
   static const String stageRetryPrompt = '这一战未能取胜。要再试一次吗?';
+  static const String stageRetryHintLine = '可回行囊换装备,或先去别处历练再来。';
   static const String stageRetryAction = '再战';
   static const String stageRetryBackAction = '返回';
   static const String emptyLog = '（无动作）';
@@ -1376,6 +1377,7 @@ class UiStrings {
   static const String stageVictoryReportTitle = '战后卷宗';
   static const String stageVictoryExperienceSection = '经验 / 修为';
   static const String stageVictoryEquipmentSection = '装备';
+  static const String stageVictoryEquipmentHint = '可回行囊查看 / 整备新装备。';
   static const String stageVictoryManualSection = '秘籍 / 残页';
   static const String stageVictoryBattleSection = '战况';
   static const String stageVictoryInjurySection = '伤势 / 疗伤';
@@ -1898,6 +1900,8 @@ class UiStrings {
   static const String founderCreateFateFocus = '命盘侧重';
   static String founderCreateAttributeTotal(int total) => '总点 $total';
   static String founderCreateTechniqueName(String name) => '主修「$name」';
+  static const String founderCreateReversibleHint =
+      '起手选择只影响开局手感,日后可用装备、修炼补足,不必纠结。';
   static String founderCreateConfirmLine(
     String school,
     String origin,
