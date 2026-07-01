@@ -132,9 +132,27 @@ void main() {
       findsNothing,
       reason: '逐关战斗方式 chip 已删,全局开关在设置面板',
     );
-    expect(find.text(UiStrings.stageReplayRouteTitle), findsOneWidget);
-    expect(find.text(UiStrings.stageReplayRouteEquipment), findsOneWidget);
-    expect(find.text(UiStrings.stageReplayRouteMaterial), findsOneWidget);
+    // S4：仅通 stage_01_01（未通章末 stage_01_05）→ replay 提示行隐藏（新手门槛）。
+    expect(find.text(UiStrings.stageReplayRouteTitle), findsNothing);
+    expect(find.text(UiStrings.stageReplayRouteEquipment), findsNothing);
+    expect(find.text(UiStrings.stageReplayRouteMaterial), findsNothing);
+  });
+
+  testWidgets('S4：通关 stage_01_05 后已通关行恢复显示 replay 提示行', (tester) async {
+    await pumpScreen(
+      tester,
+      chapterIndex: 1,
+      progress: mkProgress(
+        cleared: const [
+          'stage_01_01',
+          'stage_01_02',
+          'stage_01_03',
+          'stage_01_04',
+          'stage_01_05',
+        ],
+      ),
+    );
+    expect(find.text(UiStrings.stageReplayRouteTitle), findsWidgets);
   });
 
   testWidgets('未通关主线行不显示重打收益路线', (tester) async {
