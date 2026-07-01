@@ -49,6 +49,7 @@ class UiStrings {
   // M3:普通关战败立即重试(Boss 关不给 · 试错免费无惩罚)。
   static const String stageRetryTitle = '功亏一篑';
   static const String stageRetryPrompt = '这一战未能取胜。要再试一次吗?';
+  static const String stageRetryHintLine = '可回行囊换装备,或先去别处历练再来。';
   static const String stageRetryAction = '再战';
   static const String stageRetryBackAction = '返回';
   static const String emptyLog = '（无动作）';

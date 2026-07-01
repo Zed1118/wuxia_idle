@@ -54,6 +54,7 @@ import '../../tutorial/application/tutorial_providers.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/utils/rng.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
@@ -428,7 +429,7 @@ Future<bool> _showStageRetryDialog(BuildContext context, StageDef stage) async {
   final retry = await PaperDialog.show<bool>(
     context,
     title: UiStrings.stageRetryTitle,
-    body: const Text(UiStrings.stageRetryPrompt),
+    body: const StageRetryDialogBody(),
     actions: [
       Builder(
         builder: (ctx) => TextButton(
@@ -1336,3 +1337,29 @@ class _FormationPickerDialog extends StatelessWidget {
 @visibleForTesting
 bool shouldSkipScrollDrop(String defId, {required bool isFirstClear}) =>
     isTechniqueScrollDefId(defId) && !isFirstClear;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// S3 新手体验打磨：普通关战败弹框正文 widget
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 普通关战败弹框正文：提示 + 非教学化补强短诊断（S3 新手打磨）。
+/// 抽成公开 widget 便于单测（对话框本体私有、测试 harness 注入替换）。
+class StageRetryDialogBody extends StatelessWidget {
+  const StageRetryDialogBody({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(UiStrings.stageRetryPrompt),
+        SizedBox(height: 8),
+        Text(
+          UiStrings.stageRetryHintLine,
+          style: TextStyle(color: WuxiaUi.muted, fontSize: 13),
+        ),
+      ],
+    );
+  }
+}
