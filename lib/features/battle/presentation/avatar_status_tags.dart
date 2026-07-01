@@ -4,6 +4,7 @@ import '../domain/battle_state.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/glossary_tip.dart';
+import 'countdown_ring.dart';
 
 /// 批次 1.4:战斗角色头像旁的 buff/debuff 状态标签条。
 ///
@@ -24,52 +25,74 @@ import '../../../shared/widgets/wuxia_ui/glossary_tip.dart';
 /// **蓄势/破招**不在此渲染:[CharacterAvatar] 已用 `_ChargeBar` 蓄力进度条 +
 /// flash_on 图标专门表现,不重复贴标签。
 class AvatarStatusTags extends StatelessWidget {
-  const AvatarStatusTags({super.key, required this.character});
+  const AvatarStatusTags({
+    super.key,
+    required this.character,
+    required this.beat,
+    this.staggerWindowTicks = 3,
+  });
 
   final BattleCharacter character;
 
+  /// 读秒环节拍(供破绽环平滑插值;内伤走 [SteppedCountdownRing] 不接节拍)。
+  final Animation<double> beat;
+
+  /// 破绽窗口时长(破绽读秒环分母)。
+  final int staggerWindowTicks;
+
   @override
   Widget build(BuildContext context) {
-    final tags = <AvatarStatusSpec>[];
+    final items = <Widget>[];
 
-    // ① 影响生死:内伤(持续掉血可致死)。
-    if (character.internalInjury != null) {
-      tags.add(
-        const AvatarStatusSpec(
-          label: UiStrings.statusInternalInjuryLabel,
-          gloss: UiStrings.statusInternalInjuryGloss,
-          color: WuxiaColors.yinRou,
+    // ① 影响生死:内伤(持续掉血可致死)→ 读秒环(守方出手减1的不规则节奏,值变过渡)。
+    final injury = character.internalInjury;
+    if (injury != null && injury.remainingTurns > 0) {
+      items.add(
+        GlossaryTip(
+          definition: UiStrings.statusInternalInjuryGloss,
+          child: SteppedCountdownRing(
+            remaining: injury.remainingTurns,
+            color: WuxiaColors.statDecrease,
+            size: 34,
+          ),
         ),
       );
     }
-    // ② 影响操作:踉跄(被破招后防御骤降、难还手)。
+    // ② 影响操作:破绽/踉跄(被破招后防御骤降)→ 读秒环(每全局拍减1,接节拍平滑扫)。
     if (character.staggerTicksRemaining > 0) {
-      tags.add(
-        AvatarStatusSpec(
-          label: UiStrings.statusStaggerLabel,
-          gloss: UiStrings.statusStaggerGloss,
-          color: WuxiaColors.hpLow,
+      items.add(
+        GlossaryTip(
+          definition: UiStrings.statusStaggerGloss,
+          child: BeatCountdownRing(
+            remaining: character.staggerTicksRemaining,
+            total: staggerWindowTicks,
+            beat: beat,
+            color: WuxiaColors.hpLow,
+            size: 34,
+          ),
         ),
       );
     }
-    // ③ 纯数值 buff:剑鸣(暴击附威能)。
+    // ③ 纯数值 buff:剑鸣(暴击附威能·非倒计时,保留文字药丸)。
     if (character.swordSongResonanceActive) {
-      tags.add(
-        const AvatarStatusSpec(
-          label: UiStrings.statusSwordSongLabel,
-          gloss: UiStrings.statusSwordSongGloss,
-          color: WuxiaColors.resultHighlight,
+      items.add(
+        const AvatarStatusTag(
+          spec: AvatarStatusSpec(
+            label: UiStrings.statusSwordSongLabel,
+            gloss: UiStrings.statusSwordSongGloss,
+            color: WuxiaColors.resultHighlight,
+          ),
         ),
       );
     }
 
-    if (tags.isEmpty) return const SizedBox.shrink();
+    if (items.isEmpty) return const SizedBox.shrink();
 
     return Wrap(
       spacing: 4,
       runSpacing: 3,
       alignment: WrapAlignment.center,
-      children: [for (final t in tags) AvatarStatusTag(spec: t)],
+      children: items,
     );
   }
 }

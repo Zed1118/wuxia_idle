@@ -353,10 +353,8 @@ void main() {
         matching: find.byType(BeatCountdownRing),
       );
       expect(ring, findsOneWidget);
-      expect(
-        find.descendant(of: ring, matching: find.text('2')),
-        findsOneWidget,
-      );
+      // 读秒环喂入剩余 = 该技能 CD(2)；渲染 ceil 随节拍插值,由 countdown_ring 单测覆盖。
+      expect(tester.widget<BeatCountdownRing>(ring).remaining, 2);
     });
 
     testWidgets('CD=0 技能按钮无读秒环', (tester) async {
