@@ -102,11 +102,17 @@ class CharacterAvatar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         avatar,
-        // 批次 1.4:内伤/破绽读秒环 + 剑鸣 buff 药丸(纯读 state,按生死>操作>纯数值排序)。
-        AvatarStatusTags(
-          character: character,
-          beat: effBeat,
-          staggerWindowTicks: staggerWindowTicks,
+        // 固定状态行高度，避免同队头像因内伤/破绽环显隐产生独立缩放。
+        SizedBox(
+          width: barWidth,
+          height: 38,
+          child: Center(
+            child: AvatarStatusTags(
+              character: character,
+              beat: effBeat,
+              staggerWindowTicks: staggerWindowTicks,
+            ),
+          ),
         ),
         const SizedBox(height: 6),
         Text(
@@ -144,28 +150,34 @@ class CharacterAvatar extends StatelessWidget {
             labelPrefix: UiStrings.internalForceShortLabel,
           ),
         ),
-        // P0 破招：敌人/Boss 蓄力中显读秒环(还差几拍放招) + 「可破招」金标（纯读 state）。
-        if (character.chargingSkill != null) ...[
-          const SizedBox(height: 4),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              BeatCountdownRing(
-                remaining: character.chargeTicksRemaining,
-                total: chargeMaxTicks,
-                beat: effBeat,
-                color: WuxiaColors.hpLow,
-                size: 34,
-              ),
-              const SizedBox(width: 4),
-              const Icon(
-                Icons.flash_on,
-                size: 14,
-                color: WuxiaColors.lingQiao,
-              ),
-            ],
+        // P0 破招：固定蓄力环行高度，避免蓄力态单槽挤压相邻头像。
+        const SizedBox(height: 4),
+        SizedBox(
+          width: barWidth,
+          height: 34,
+          child: Center(
+            child: character.chargingSkill == null
+                ? const SizedBox.shrink()
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      BeatCountdownRing(
+                        remaining: character.chargeTicksRemaining,
+                        total: chargeMaxTicks,
+                        beat: effBeat,
+                        color: WuxiaColors.hpLow,
+                        size: 34,
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.flash_on,
+                        size: 14,
+                        color: WuxiaColors.lingQiao,
+                      ),
+                    ],
+                  ),
           ),
-        ],
+        ),
       ],
     );
 
