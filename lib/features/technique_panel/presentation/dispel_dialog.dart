@@ -6,6 +6,8 @@ import '../../../core/domain/technique.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 
 /// 散功二次确认 dialog（phase2_tasks.md T31 §477-479）。
 ///
@@ -32,19 +34,14 @@ class DispelConfirmDialog extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final n = ref.watch(numbersConfigProvider);
     final ifBefore = character.internalForce;
-    final ifAfter =
-        (ifBefore * (1 - n.dispersionInternalForcePenalty)).toInt();
+    final ifAfter = (ifBefore * (1 - n.dispersionInternalForcePenalty)).toInt();
     final cultBefore = mainTech.cultivationProgress;
-    final cultAfter =
-        (cultBefore * (1 - n.dispersionCultivationPenalty)).toInt();
+    final cultAfter = (cultBefore * (1 - n.dispersionCultivationPenalty))
+        .toInt();
 
-    return AlertDialog(
-      backgroundColor: WuxiaColors.panel,
-      title: const Text(
-        UiStrings.dispelDialogTitle,
-        style: TextStyle(color: WuxiaColors.textPrimary),
-      ),
-      content: Column(
+    return PaperDialog(
+      title: UiStrings.dispelDialogTitle,
+      body: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -65,16 +62,15 @@ class DispelConfirmDialog extends ConsumerWidget {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text(UiStrings.forgingConfirmCancel),
+        PlaqueButton(
+          label: UiStrings.forgingConfirmCancel,
+          onTap: () => Navigator.of(context).pop(false),
         ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            foregroundColor: WuxiaColors.gangMeng,
-          ),
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text(UiStrings.dispelConfirm),
+        PlaqueButton(
+          label: UiStrings.dispelConfirm,
+          destructive: true,
+          autofocus: true,
+          onTap: () => Navigator.of(context).pop(true),
         ),
       ],
     );

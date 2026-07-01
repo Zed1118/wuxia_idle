@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/shared/app_exit.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 
 void main() {
   late int quitCalls;
@@ -22,6 +24,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(UiStrings.quitConfirmMessage), findsOneWidget);
+    expect(find.byType(PaperDialog), findsOneWidget);
+    expect(find.byType(PlaqueButton), findsNWidgets(2));
     expect(quitCalls, 0);
   });
 

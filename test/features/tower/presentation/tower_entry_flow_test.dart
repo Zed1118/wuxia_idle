@@ -8,6 +8,8 @@ import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_entry_flow.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 
 /// T43 runTowerFlow widget 测试（@visibleForTesting DI 注入）。
 ///
@@ -89,6 +91,8 @@ void main() {
       find.text(UiStrings.towerFirstClearCeremony(normalFloor.floorIndex)),
       findsOneWidget,
     );
+    expect(find.byType(PaperDialog), findsOneWidget);
+    expect(find.byType(PlaqueButton), findsOneWidget);
     await tester.tap(find.text(UiStrings.towerVictoryConfirm));
     await tester.pumpAndSettle();
 

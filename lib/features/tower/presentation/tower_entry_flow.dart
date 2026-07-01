@@ -56,6 +56,8 @@ import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/utils/rng.dart';
 import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
@@ -112,7 +114,11 @@ Future<void> runTowerFlow({
   } else if (battleRunnerForTest != null) {
     battleExit = (won: await battleRunnerForTest(), surrendered: false);
   } else {
-    battleExit = await _runTowerBattle(context: context, ref: ref, floor: floor);
+    battleExit = await _runTowerBattle(
+      context: context,
+      ref: ref,
+      floor: floor,
+    );
   }
   stopwatch.stop();
   final elapsedMs = stopwatch.elapsedMilliseconds;
@@ -354,32 +360,34 @@ Future<({bool won, bool surrendered})> _runTowerBattle({
 }) async {
   final completer = Completer<({bool won, bool surrendered})>();
   // 不 await push:胜利时 BattleScreen 留栈,由 runTowerFlow 播完仪式/结算后再 pop。
-  Navigator.of(context).push<void>(
-    MaterialPageRoute(
-      builder: (_) => _TowerBattleHost(
-        floor: floor,
-        onVictory: () {
-          if (!completer.isCompleted) {
-            completer.complete((won: true, surrendered: false));
-          }
-        },
-        onDefeat: () {
-          if (!completer.isCompleted) {
-            completer.complete((won: false, surrendered: false));
-          }
-        },
-        onSurrender: () {
-          if (!completer.isCompleted) {
-            completer.complete((won: false, surrendered: true));
-          }
-        },
-      ),
-    ),
-  ).then((_) {
-    if (!completer.isCompleted) {
-      completer.complete((won: false, surrendered: false));
-    }
-  });
+  Navigator.of(context)
+      .push<void>(
+        MaterialPageRoute(
+          builder: (_) => _TowerBattleHost(
+            floor: floor,
+            onVictory: () {
+              if (!completer.isCompleted) {
+                completer.complete((won: true, surrendered: false));
+              }
+            },
+            onDefeat: () {
+              if (!completer.isCompleted) {
+                completer.complete((won: false, surrendered: false));
+              }
+            },
+            onSurrender: () {
+              if (!completer.isCompleted) {
+                completer.complete((won: false, surrendered: true));
+              }
+            },
+          ),
+        ),
+      )
+      .then((_) {
+        if (!completer.isCompleted) {
+          completer.complete((won: false, surrendered: false));
+        }
+      });
   return completer.future;
 }
 
@@ -691,9 +699,10 @@ Future<void> _showVictoryDialog({
   // 第七阶段 批一:大Boss 首胜先弹英雄镜头，再走胜利仪式。
   // 用户拍板「爬塔大Boss」= major(10/20/30),小Boss(5/15/25)不弹(高光不滥)。
   if (shouldShowHeroCamera(
-      isBoss: floor.bossKind == TowerBossKind.major,
-      isFirstClear: isFirstClear,
-      data: heroCamera)) {
+    isBoss: floor.bossKind == TowerBossKind.major,
+    isFirstClear: isFirstClear,
+    data: heroCamera,
+  )) {
     await presentHeroCamera(context, heroCamera!);
     if (!context.mounted) return;
   }
@@ -705,8 +714,12 @@ Future<void> _showVictoryDialog({
   }
   // 胜利仪式分档:首通有重器→爆品镜头;首次利器→爆品镜头;否则(普通/重打)→简版勝。
   // realmAdvance 在仪式之后、随 dialog 出现时响,避免 fanfare 早响 1.3s。
-  await presentVictoryCeremony(context, drops,
-      treasureGate: isFirstClear, extraDisplayTiers: extraDisplayTiers);
+  await presentVictoryCeremony(
+    context,
+    drops,
+    treasureGate: isFirstClear,
+    extraDisplayTiers: extraDisplayTiers,
+  );
   if (!context.mounted) return;
   // 结算 jingle:跨 tier 大境界突破响 realmAdvance(首通限定)。
   if (isFirstClear && advancements.any((e) => e.result.crossedTier)) {
@@ -715,9 +728,9 @@ Future<void> _showVictoryDialog({
   await showDialog<void>(
     context: context,
     barrierDismissible: false,
-    builder: (ctx) => AlertDialog(
-      title: Text(UiStrings.towerFloorLabel(floor.floorIndex)),
-      content: TowerVictoryContent(
+    builder: (ctx) => PaperDialog(
+      title: UiStrings.towerFloorLabel(floor.floorIndex),
+      body: TowerVictoryContent(
         floor: floor,
         isFirstClear: isFirstClear,
         drops: drops,
@@ -727,12 +740,11 @@ Future<void> _showVictoryDialog({
         skillFragmentLine: skillFragmentLineFor(skillDrop),
       ),
       actions: [
-        TextButton(
-          style: TextButton.styleFrom(
-            foregroundColor: WuxiaColors.resultHighlight,
-          ),
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text(UiStrings.towerVictoryConfirm),
+        PlaqueButton(
+          label: UiStrings.towerVictoryConfirm,
+          primary: true,
+          autofocus: true,
+          onTap: () => Navigator.of(ctx).pop(),
         ),
       ],
     ),
@@ -854,14 +866,20 @@ class _TowerBattleHostState extends ConsumerState<_TowerBattleHost> {
         // D1: 读取当前周目（fresh save = 1，零回归）。
         _currentCycleIndex = progress.currentCycleIndex;
         // ── 入口决策:per-stage override + 全局 → auto / interactive ──
-        final override =
-            await ref.read(stageAutoPlayPrefServiceProvider).override(_battleKey);
+        final override = await ref
+            .read(stageAutoPlayPrefServiceProvider)
+            .override(_battleKey);
         if (!mounted) return;
-        final global =
-            (await ref.read(gameplaySettingsProvider.future)).autoPlayDefault;
+        final global = (await ref.read(
+          gameplaySettingsProvider.future,
+        )).autoPlayDefault;
         if (!mounted) return;
-        setState(() => _mode =
-            resolveAutoPlayMode(override: override, globalDefault: global));
+        setState(
+          () => _mode = resolveAutoPlayMode(
+            override: override,
+            globalDefault: global,
+          ),
+        );
 
         final (left, right) = await StageBattleSetup(
           isar: IsarSetup.instance,
