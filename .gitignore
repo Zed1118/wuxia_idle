@@ -96,3 +96,6 @@ docs/demos/
 # 外部工具目录 / 视觉验收截图产物(非源码,2026-06-29 handoff 处置)
 .workbuddy/
 docs/handoff/visual_capture_*/
+
+# 视觉验收证据包整目录不入库(throwaway · 1.57G · 2026-07-01 用户拍板扩忽略)
+docs/handoff/visual_acceptance*/
