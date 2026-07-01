@@ -10,7 +10,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../../shared/widgets/wuxia_image.dart';
+import '../../../shared/widgets/portrait_frame.dart';
 import '../../battle/domain/enum_localizations.dart';
 import 'lineage_widgets.dart';
 
@@ -133,28 +133,16 @@ class _HeroHeader extends StatelessWidget {
     final schoolColor = character.school == null
         ? WuxiaColors.textMuted
         : WuxiaColors.schoolColor(character.school!);
-    final portraitPath = character.portraitPath;
     return LineagePanelCard(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (portraitPath == null)
-            Container(width: 4, height: 60, color: schoolColor)
-          else
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                border: Border.all(color: schoolColor, width: 1),
-                color: WuxiaColors.avatarFill,
-              ),
-              child: WuxiaImage(
-                portraitPath,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) =>
-                    Container(color: WuxiaColors.avatarFill),
-              ),
-            ),
+          PortraitFrame(
+            portraitPath: character.portraitPath,
+            size: 80,
+            borderColor: schoolColor,
+            placeholderText: character.name,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

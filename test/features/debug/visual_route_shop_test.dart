@@ -54,51 +54,73 @@ void main() {
       }
     });
 
-    test('shop → ShopScreen + 种银两 80(itemType=silver 非 miscMaterial)', () async {
+    test(
+      'shop → ShopScreen + 种银两 80(itemType=silver 非 miscMaterial)',
+      () async {
+        final target = await buildVisualTarget(
+          VisualRoute.shop,
+          IsarSetup.instance,
+        );
+        expect(target, isA<ShopScreen>());
+        final silver = await IsarSetup.instance.inventoryItems.getByDefId(
+          'item_silver',
+        );
+        expect(silver, isNotNull);
+        expect(silver!.quantity, 80);
+        expect(
+          silver.itemType,
+          ItemType.silver,
+          reason:
+              '银两 seed 必须走 fromDefId 真映射为 silver,'
+              '落 miscMaterial 即本批已修 bug 回归',
+        );
+      },
+    );
+
+    test('shop_buy_confirm → 购买确认 preview + 种银两 80', () async {
       final target = await buildVisualTarget(
-        VisualRoute.shop,
+        VisualRoute.shopBuyConfirm,
         IsarSetup.instance,
       );
-      expect(target, isA<ShopScreen>());
-      final silver =
-          await IsarSetup.instance.inventoryItems.getByDefId('item_silver');
-      expect(silver, isNotNull);
-      expect(silver!.quantity, 80);
-      expect(
-        silver.itemType,
-        ItemType.silver,
-        reason: '银两 seed 必须走 fromDefId 真映射为 silver,'
-            '落 miscMaterial 即本批已修 bug 回归',
+      expect(target.runtimeType.toString(), '_ShopBuyConfirmPreview');
+      final silver = await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_silver',
       );
+      expect(silver?.quantity, 80);
+      expect(silver?.itemType, ItemType.silver);
     });
 
-    test('inventory_currency → InventoryScreen(initialTab=1) + 银两不入材料网格类型',
-        () async {
-      final target = await buildVisualTarget(
-        VisualRoute.inventoryCurrency,
-        IsarSetup.instance,
-      );
-      expect(target, isA<InventoryScreen>());
-      expect(
-        (target as InventoryScreen).initialTab,
-        1,
-        reason: '验收直开物料 tab 才能截到货币位顶栏',
-      );
-      // 三类物品各自入库,itemType 各按 fromDefId 真映射。
-      final isar = IsarSetup.instance;
-      expect(
-        (await isar.inventoryItems.getByDefId('item_silver'))?.itemType,
-        ItemType.silver,
-      );
-      expect(
-        (await isar.inventoryItems.getByDefId('item_mojianshi'))?.itemType,
-        ItemType.moJianShi,
-      );
-      expect(
-        (await isar.inventoryItems.getByDefId('item_xinxuejiejing'))?.itemType,
-        ItemType.xinXueJieJing,
-      );
-    });
+    test(
+      'inventory_currency → InventoryScreen(initialTab=1) + 银两不入材料网格类型',
+      () async {
+        final target = await buildVisualTarget(
+          VisualRoute.inventoryCurrency,
+          IsarSetup.instance,
+        );
+        expect(target, isA<InventoryScreen>());
+        expect(
+          (target as InventoryScreen).initialTab,
+          1,
+          reason: '验收直开物料 tab 才能截到货币位顶栏',
+        );
+        // 三类物品各自入库,itemType 各按 fromDefId 真映射。
+        final isar = IsarSetup.instance;
+        expect(
+          (await isar.inventoryItems.getByDefId('item_silver'))?.itemType,
+          ItemType.silver,
+        );
+        expect(
+          (await isar.inventoryItems.getByDefId('item_mojianshi'))?.itemType,
+          ItemType.moJianShi,
+        );
+        expect(
+          (await isar.inventoryItems.getByDefId(
+            'item_xinxuejiejing',
+          ))?.itemType,
+          ItemType.xinXueJieJing,
+        );
+      },
+    );
 
     test('main_menu_shop → MainMenu + 种银两 200 解锁商店入口', () async {
       final target = await buildVisualTarget(
@@ -106,8 +128,9 @@ void main() {
         IsarSetup.instance,
       );
       expect(target, isA<MainMenu>());
-      final silver =
-          await IsarSetup.instance.inventoryItems.getByDefId('item_silver');
+      final silver = await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_silver',
+      );
       expect(silver?.quantity, 200);
       expect(silver?.itemType, ItemType.silver);
     });

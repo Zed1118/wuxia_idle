@@ -84,8 +84,7 @@ class _NarrativeReaderScreenState extends State<NarrativeReaderScreen>
   Widget build(BuildContext context) {
     final c = widget.content;
     final title = c.title ?? widget.fallbackTitle;
-    final paragraphs =
-        c.paragraphs.isEmpty ? <String>[''] : c.paragraphs;
+    final paragraphs = c.paragraphs.isEmpty ? <String>[''] : c.paragraphs;
     final current = paragraphs[_currentIndex];
     final isLast = _currentIndex >= paragraphs.length - 1;
     final bg = widget.backgroundImagePath;
@@ -116,100 +115,137 @@ class _NarrativeReaderScreenState extends State<NarrativeReaderScreen>
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (c.isPlaceholder)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: WuxiaColors.hpMid.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        UiStrings.narrativePlaceholderHint,
-                        style: TextStyle(
-                          color: WuxiaColors.hpMid,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  if (widget.topBanner != null) widget.topBanner!,
-                  Expanded(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _next,
-                      // 2026-06-25:文字从垂直居中改为靠上对齐——短段落(一两句)原先
-                      // 漂在大片空白正中,上下都留白显空旷;靠上对齐后文字紧贴顶部、
-                      // 留白只在下方(符合阅读习惯),不再"剧情有空白"。长段落仍可滚动。
-                      child: Align(
-                        alignment: Alignment.topCenter,
-                        child: Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: hasBg
-                                ? WuxiaColors.background.withValues(alpha: 0.55)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: SingleChildScrollView(
-                            child: FadeTransition(
-                              opacity: _fade,
-                              child: Text(
-                                current,
-                                style: const TextStyle(
-                                  color: WuxiaColors.textPrimary,
-                                  fontSize: 16,
-                                  height: 1.7,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final contentWidth = constraints.maxWidth > 760
+                      ? 760.0
+                      : constraints.maxWidth;
+                  return Center(
+                    child: SizedBox(
+                      width: contentWidth,
+                      height: constraints.maxHeight,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (c.isPlaceholder)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                color: WuxiaColors.hpMid.withValues(
+                                  alpha: 0.18,
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                UiStrings.narrativePlaceholderHint,
+                                style: TextStyle(
+                                  color: WuxiaColors.hpMid,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          if (widget.topBanner != null) widget.topBanner!,
+                          Expanded(
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: _next,
+                              // 2026-06-25:文字从垂直居中改为靠上对齐——短段落(一两句)原先
+                              // 漂在大片空白正中,上下都留白显空旷;靠上对齐后文字紧贴顶部、
+                              // 留白只在下方(符合阅读习惯),不再"剧情有空白"。长段落仍可滚动。
+                              child: Align(
+                                alignment: Alignment.topCenter,
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: hasBg
+                                        ? WuxiaColors.background.withValues(
+                                            alpha: 0.55,
+                                          )
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: SingleChildScrollView(
+                                    child: FadeTransition(
+                                      opacity: _fade,
+                                      child: Text(
+                                        current,
+                                        style: const TextStyle(
+                                          color: WuxiaColors.textPrimary,
+                                          fontSize: 16,
+                                          height: 1.7,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
+                          // G4 · 首段轻点提示(§5.7 仅首段显一次,引导玩家轻点画面/按钮推进)。
+                          if (_currentIndex == 0) ...[
+                            const SizedBox(height: 8),
+                            const Center(
+                              child: Text(
+                                UiStrings.narrativeReaderTapHint,
+                                style: TextStyle(
+                                  color: WuxiaColors.textMuted,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 16),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                top: BorderSide(
+                                  color: WuxiaColors.border.withValues(
+                                    alpha: 0.65,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '${_currentIndex + 1} / ${paragraphs.length}',
+                                    style: const TextStyle(
+                                      color: WuxiaColors.textMuted,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: _next,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          WuxiaColors.resultHighlight,
+                                      foregroundColor: WuxiaColors.background,
+                                      minimumSize: const Size(112, 42),
+                                    ),
+                                    child: Text(
+                                      isLast
+                                          ? UiStrings.narrativeReaderFinish
+                                          : UiStrings.narrativeReaderContinue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  // G4 · 首段轻点提示(§5.7 仅首段显一次,引导玩家轻点画面/按钮推进)。
-                  if (_currentIndex == 0) ...[
-                    const SizedBox(height: 8),
-                    const Center(
-                      child: Text(
-                        UiStrings.narrativeReaderTapHint,
-                        style: TextStyle(
-                          color: WuxiaColors.textMuted,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${_currentIndex + 1} / ${paragraphs.length}',
-                        style: const TextStyle(
-                          color: WuxiaColors.textMuted,
-                          fontSize: 12,
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: _next,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: WuxiaColors.resultHighlight,
-                          foregroundColor: WuxiaColors.background,
-                        ),
-                        child: Text(
-                          isLast
-                              ? UiStrings.narrativeReaderFinish
-                              : UiStrings.narrativeReaderContinue,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),

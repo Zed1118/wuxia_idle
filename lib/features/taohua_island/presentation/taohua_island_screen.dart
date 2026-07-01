@@ -1146,47 +1146,59 @@ class _ProductionQueueIntel extends StatelessWidget {
   Widget build(BuildContext context) {
     final usages = _outputUsages();
     final usage = _usageSummary(usages);
+    final lines = [
+      _IntelTile(
+        icon: isProcessor ? Icons.receipt_long_outlined : Icons.grass_outlined,
+        text: isProcessor
+            ? outputName.isEmpty
+                  ? UiStrings.taohuaIslandCurrentRecipeNone
+                  : UiStrings.taohuaIslandCurrentRecipe(outputName)
+            : UiStrings.taohuaIslandCurrentGathering(outputName),
+        emphasized: true,
+      ),
+      _IntelTile(
+        icon: Icons.hourglass_bottom_outlined,
+        text: _nextOutputText(),
+      ),
+      _IntelTile(icon: Icons.inventory_2_outlined, text: _fullStorageText()),
+      if (usage.isNotEmpty)
+        _IntelTile(icon: Icons.call_split_outlined, text: usage),
+    ];
     return DecoratedBox(
       decoration: BoxDecoration(
         color: WuxiaUi.paper2.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(WuxiaUi.radius),
         border: Border.all(
           color: WuxiaUi.ink.withValues(alpha: 0.16),
           width: WuxiaUi.borderWidth,
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _IntelLine(
-              icon: isProcessor
-                  ? Icons.receipt_long_outlined
-                  : Icons.grass_outlined,
-              text: isProcessor
-                  ? outputName.isEmpty
-                        ? UiStrings.taohuaIslandCurrentRecipeNone
-                        : UiStrings.taohuaIslandCurrentRecipe(outputName)
-                  : UiStrings.taohuaIslandCurrentGathering(outputName),
-            ),
-            const SizedBox(height: 5),
-            _IntelLine(
-              icon: Icons.hourglass_bottom_outlined,
-              text: _nextOutputText(),
-            ),
-            const SizedBox(height: 5),
-            _IntelLine(
-              icon: Icons.inventory_2_outlined,
-              text: _fullStorageText(),
-            ),
-            if (usage.isNotEmpty) ...[
-              const SizedBox(height: 5),
-              _IntelLine(icon: Icons.call_split_outlined, text: usage),
-              const SizedBox(height: 7),
-              _UsageTagWrap(usages: usages),
-            ],
-          ],
+        padding: const EdgeInsets.all(9),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final twoColumn = constraints.maxWidth >= 520;
+            final tileWidth = twoColumn
+                ? (constraints.maxWidth - 8) / 2
+                : constraints.maxWidth;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final line in lines)
+                      SizedBox(width: tileWidth, child: line),
+                  ],
+                ),
+                if (usage.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  _UsageTagWrap(usages: usages),
+                ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -1228,6 +1240,54 @@ class _ProductionQueueIntel extends StatelessWidget {
     return summary.isEmpty
         ? UiStrings.taohuaIslandOutputUsageNone
         : UiStrings.taohuaIslandOutputUsage(summary);
+  }
+}
+
+class _IntelTile extends StatelessWidget {
+  const _IntelTile({
+    required this.icon,
+    required this.text,
+    this.emphasized = false,
+  });
+
+  final IconData icon;
+  final String text;
+  final bool emphasized;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = emphasized ? WuxiaUi.jiang : WuxiaUi.qing;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: WuxiaUi.paper.withValues(alpha: emphasized ? 0.42 : 0.28),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: accent.withValues(alpha: emphasized ? 0.34 : 0.22),
+          width: WuxiaUi.borderWidth,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 15, color: accent),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: emphasized ? WuxiaUi.ink : WuxiaUi.ink2,
+                  fontSize: 12,
+                  fontWeight: emphasized ? FontWeight.bold : FontWeight.w500,
+                  height: 1.25,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -33,12 +33,12 @@ class ChapterTransitionScreen extends StatelessWidget {
   /// 测试注入;生产走 [NarrativeLoader.loadChapter]。
   final Future<ChapterNarrative> Function(int chapterIndex)? loadOverride;
 
-  String get _chapterId =>
-      'chapter_${chapterIndex.toString().padLeft(2, '0')}';
+  String get _chapterId => 'chapter_${chapterIndex.toString().padLeft(2, '0')}';
 
   Future<ChapterNarrative> _load() =>
       (loadOverride ?? (_) => NarrativeLoader.loadChapter(_chapterId))(
-          chapterIndex);
+        chapterIndex,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -62,53 +62,70 @@ class ChapterTransitionScreen extends StatelessWidget {
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // 章首全宽水墨插图(出版美术 §5.3):无图 errorBuilder
-                        // shrink 折叠不留空,MJ 章节封面落位即显。
-                        WuxiaImage(
-                          chapterCoverPath(chapterIndex),
-                          height: 160,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 760),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // 章首全宽水墨插图(出版美术 §5.3):无图 errorBuilder
+                            // shrink 折叠不留空,MJ 章节封面落位即显。
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: WuxiaImage(
+                                chapterCoverPath(chapterIndex),
+                                height: 172,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) =>
+                                    const SizedBox.shrink(),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            _ScrollSection(
+                              label: UiStrings.chapterProloguelabel,
+                              body: c.isPlaceholder ? null : c.prologue,
+                            ),
+                            const SizedBox(height: 28),
+                            if (showEpilogue)
+                              _ScrollSection(
+                                label: UiStrings.chapterEpiloguelabel,
+                                body: c.isPlaceholder ? null : c.epilogue,
+                              )
+                            else
+                              const _LockedHint(),
+                          ],
                         ),
-                        const SizedBox(height: 24),
-                        _ScrollSection(
-                          label: UiStrings.chapterProloguelabel,
-                          body: c.isPlaceholder ? null : c.prologue,
-                        ),
-                        const SizedBox(height: 28),
-                        if (showEpilogue)
-                          _ScrollSection(
-                            label: UiStrings.chapterEpiloguelabel,
-                            body: c.isPlaceholder ? null : c.epilogue,
-                          )
-                        else
-                          const _LockedHint(),
-                      ],
+                      ),
                     ),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      // H1 批3:默认 M3 primary 偏蓝紫,违 §9 水墨基调 → 改刚猛红,
-                      // 与闭关结果「返回」按钮(retreat_result)统一。
-                      style: FilledButton.styleFrom(
-                        backgroundColor: WuxiaColors.gangMeng,
-                        foregroundColor: WuxiaColors.textPrimary,
-                      ),
-                      onPressed: () => Navigator.of(context).pushReplacement(
-                        MaterialPageRoute<void>(
-                          builder: (_) =>
-                              StageListScreen(chapterIndex: chapterIndex),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 760),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FilledButton(
+                          // H1 批3:默认 M3 primary 偏蓝紫,违 §9 水墨基调 → 改刚猛红,
+                          // 与闭关结果「返回」按钮(retreat_result)统一。
+                          style: FilledButton.styleFrom(
+                            backgroundColor: WuxiaColors.gangMeng,
+                            foregroundColor: WuxiaColors.textPrimary,
+                            minimumSize: const Size.fromHeight(44),
+                          ),
+                          onPressed: () =>
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => StageListScreen(
+                                    chapterIndex: chapterIndex,
+                                  ),
+                                ),
+                              ),
+                          child: const Text(UiStrings.chapterScrollEnter),
                         ),
                       ),
-                      child: const Text(UiStrings.chapterScrollEnter),
                     ),
                   ),
                 ),

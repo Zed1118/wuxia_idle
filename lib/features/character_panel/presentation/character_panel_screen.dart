@@ -178,28 +178,34 @@ class _Body extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _ProfileHeaderCard(character: character),
-          const SizedBox(height: 12),
-          _RealmCultivationSection(character: character),
-          _BreakthroughBlockerSection(character: character),
-          const SizedBox(height: 12),
-          _BaseAttributesSection(character: character),
-          const SizedBox(height: 12),
-          _DerivedStatsSection(character: character),
-          const SizedBox(height: 12),
-          _EquipmentSection(character: character),
-          const SizedBox(height: 12),
-          _TechniqueSection(character: character),
-          const SizedBox(height: 12),
-          _StatusEffectsSection(character: character),
-          const SizedBox(height: 12),
-          EncounterSkillSection(character: character),
-          const SizedBox(height: 12),
-          _LineageSection(character: character),
-        ],
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1160),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _ProfileHeaderCard(character: character),
+              const SizedBox(height: 12),
+              _RealmCultivationSection(character: character),
+              _BreakthroughBlockerSection(character: character),
+              const SizedBox(height: 12),
+              _BaseAttributesSection(character: character),
+              const SizedBox(height: 12),
+              _DerivedStatsSection(character: character),
+              const SizedBox(height: 12),
+              _EquipmentSection(character: character),
+              const SizedBox(height: 12),
+              _TechniqueSection(character: character),
+              const SizedBox(height: 12),
+              _StatusEffectsSection(character: character),
+              const SizedBox(height: 12),
+              EncounterSkillSection(character: character),
+              const SizedBox(height: 12),
+              _LineageSection(character: character),
+            ],
+          ),
+        ),
       ),
     );
   }
