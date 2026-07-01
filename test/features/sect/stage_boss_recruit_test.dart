@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -10,8 +11,11 @@ import 'package:wuxia_idle/features/sect/domain/sect_rank.dart' show SectRank;
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/data/narrative_loader.dart';
 import 'package:wuxia_idle/features/sect/application/sect_member_service.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
+import 'package:wuxia_idle/features/sect/presentation/stage_boss_recruit_hook.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
 
 /// P4.1 1.1 Q6B · stage_boss recruit B3 R5 测族(spec §7)。
 ///
@@ -31,14 +35,14 @@ void main() {
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
+      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
     }
   });
 
   setUp(() async {
-    tempDir = await Directory.systemTemp.createTemp('wuxia_stage_boss_recruit_');
+    tempDir = await Directory.systemTemp.createTemp(
+      'wuxia_stage_boss_recruit_',
+    );
     await IsarSetup.init(directory: tempDir, inspector: false);
   });
 
@@ -87,8 +91,7 @@ void main() {
   }
 
   group('R5.stages · production stages.yaml 6 Boss bossRecruit', () {
-    test('Ch1-6 章末 Boss bossRecruit 加载 + candidateRef 对应 + 默认 probability',
-        () {
+    test('Ch1-6 章末 Boss bossRecruit 加载 + candidateRef 对应 + 默认 probability', () {
       final repo = GameRepository.instance;
       final expectedMap = {
         'stage_01_05': 'bamboo_swordsman',
@@ -101,9 +104,16 @@ void main() {
       for (final entry in expectedMap.entries) {
         final stage = repo.stageDefs[entry.key];
         expect(stage, isNotNull, reason: '${entry.key} 应在 stages.yaml 中');
-        expect(stage!.isBossStage, true, reason: '${entry.key} 必 isBossStage=true');
-        expect(stage.bossRecruit, isNotNull,
-            reason: '${entry.key} 应配 bossRecruit(P4.1 1.1 Q6B PoC 3)');
+        expect(
+          stage!.isBossStage,
+          true,
+          reason: '${entry.key} 必 isBossStage=true',
+        );
+        expect(
+          stage.bossRecruit,
+          isNotNull,
+          reason: '${entry.key} 应配 bossRecruit(P4.1 1.1 Q6B PoC 3)',
+        );
         expect(stage.bossRecruit!.candidateRef, entry.value);
         // baseProbability 省略 → 默认 0.40
         expect(stage.bossRecruit!.baseProbability, 0.40);
@@ -116,11 +126,16 @@ void main() {
   group('R5.numbers · numbers.yaml stage_boss_recruit_prob', () {
     test('stage_boss_recruit_prob = 0.40 + BossRecruitConfig 默认', () {
       final repo = GameRepository.instance;
-      expect(repo.numbers.sectManagement.recruit.stageBossRecruitProb, 0.40,
-          reason: 'Q6B 战胜 Boss 招降概率');
+      expect(
+        repo.numbers.sectManagement.recruit.stageBossRecruitProb,
+        0.40,
+        reason: 'Q6B 战胜 Boss 招降概率',
+      );
       // 既存 stageBossFailRecoverProb 保留 0.30(P4.1 v1.10 战败收降留 P5+/1.1)
       expect(
-          repo.numbers.sectManagement.recruit.stageBossFailRecoverProb, 0.30);
+        repo.numbers.sectManagement.recruit.stageBossFailRecoverProb,
+        0.30,
+      );
       // BossRecruitConfig 默认 baseProbability 0.40 跟 numbers.yaml 一致
       const cfg = BossRecruitConfig(candidateRef: 'test');
       expect(cfg.baseProbability, 0.40);
@@ -145,6 +160,68 @@ void main() {
     });
   });
 
+  group('R5.hook · Boss 招降 hook 读取当前 SaveData 单例', () {
+    test(
+      '默认槽位下 victory hook 调用招降 flow 并写入 triggeredBossRecruitStageIds',
+      () async {
+        const stage = StageDef(
+          id: 'test_boss_recruit_hook',
+          name: '测试 Boss 关',
+          stageType: StageType.mainline,
+          requiredRealm: RealmTier.sanLiu,
+          enemyTeam: [],
+          isBossStage: true,
+          baseExpReward: 0,
+          difficultyMultiplier: 1,
+          bossRecruit: BossRecruitConfig(
+            candidateRef: 'bamboo_swordsman',
+            baseProbability: 1,
+          ),
+        );
+        var flowCalls = 0;
+        String? candidateId;
+        Future<void> Function()? markTriggered;
+        Future<void> recruitFlow({
+          required context,
+          required ref,
+          required isar,
+          required candidate,
+          required onMarkTriggered,
+          required onFallback,
+          required successSnackBar,
+          required capFullSnackBar,
+          required noSectSnackBar,
+        }) async {
+          flowCalls += 1;
+          candidateId = candidate.id;
+          markTriggered = onMarkTriggered;
+        }
+
+        await runStageBossRecruitHookAfterVictory(
+          context: _MountedBuildContext(),
+          ref: null,
+          rng: _AlwaysHitRng(),
+          stage: stage,
+          recruitFlow: recruitFlow,
+          loadNarrative: (id) async => NarrativeContent.placeholder(id),
+        );
+
+        final save = await IsarSetup.instance.saveDatas.get(0);
+        expect(save, isNotNull);
+        expect(flowCalls, 1);
+        expect(candidateId, 'bamboo_swordsman');
+        expect(markTriggered, isNotNull);
+        await markTriggered!();
+        expect(
+          (await IsarSetup.instance.saveDatas.get(
+            0,
+          ))!.triggeredBossRecruitStageIds,
+          contains('test_boss_recruit_hook'),
+        );
+      },
+    );
+  });
+
   group('R5.serviceTie · Boss candidate(mountain_hermit)走 service success', () {
     test('Character.create + SectMemberService.recruit → success + isInSect '
         '+ sectRank=initiate + isFounder=false + memberCount++', () async {
@@ -154,7 +231,9 @@ void main() {
           GameRepository.instance.sectCandidates['mountain_hermit']!;
       final repo = GameRepository.instance;
       final realmDef = repo.getRealm(
-          candidate.defaultRealm, candidate.defaultLayer);
+        candidate.defaultRealm,
+        candidate.defaultLayer,
+      );
       late RecruitResult result;
       late int newCharId;
       await isar.writeTxn(() async {
@@ -204,12 +283,14 @@ void main() {
     /// transform 模式:读 production stages.yaml 后字符串改 1 处 inject 触发红线,
     /// 不破其他 production 红线(`_enforceMainlineRedLines` 15 关 / chapterIndex 连续)。
     Future<String> Function(String) makeStagesLoader(
-        String Function(String original) transform) {
+      String Function(String original) transform,
+    ) {
       Future<String> loader(String path) async {
         final original = await File(path).readAsString();
         if (path == 'data/stages.yaml') return transform(original);
         return original;
       }
+
       return loader;
     }
 
@@ -217,50 +298,55 @@ void main() {
       // stage_01_01 是非 Boss 第一关 · '  - id: stage_01_01' 是 unique 锚
       // (F5/2026-06-23 删 dropEquipmentDefIds 占位字段后改锚 stage 声明行),注入 bossRecruit 段。
       String inject(String s) => s.replaceFirst(
-            '  - id: stage_01_01\n',
-            '  - id: stage_01_01\n    bossRecruit:\n'
-                '      candidateRef: bamboo_swordsman\n',
-          );
+        '  - id: stage_01_01\n',
+        '  - id: stage_01_01\n    bossRecruit:\n'
+            '      candidateRef: bamboo_swordsman\n',
+      );
       expect(
         GameRepository.loadAllDefs(loader: makeStagesLoader(inject)),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('isBossStage=false'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('isBossStage=false'),
+          ),
+        ),
       );
     });
 
-    test('② bossRecruit.candidateRef 不在 sectCandidates → 抛 StateError',
-        () async {
+    test('② bossRecruit.candidateRef 不在 sectCandidates → 抛 StateError', () async {
       // stage_01_05 已配 bossRecruit candidateRef=bamboo_swordsman(unique 锚 · 仅本 stage)
       String inject(String s) => s.replaceFirst(
-            'candidateRef: bamboo_swordsman',
-            'candidateRef: ghost_npc_not_loaded',
-          );
+        'candidateRef: bamboo_swordsman',
+        'candidateRef: ghost_npc_not_loaded',
+      );
       expect(
         GameRepository.loadAllDefs(loader: makeStagesLoader(inject)),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('ghost_npc_not_loaded'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('ghost_npc_not_loaded'),
+          ),
+        ),
       );
     });
 
     test('③ baseProbability 越界(1.5)→ 抛 StateError', () async {
       // stage_01_05 已配 bossRecruit · 加 baseProbability: 1.5 触发红线
       String inject(String s) => s.replaceFirst(
-            'candidateRef: bamboo_swordsman              # data/sect_candidates.yaml 已配(lingQiao 三系)',
-            'candidateRef: bamboo_swordsman\n      baseProbability: 1.5',
-          );
+        'candidateRef: bamboo_swordsman              # data/sect_candidates.yaml 已配(lingQiao 三系)',
+        'candidateRef: bamboo_swordsman\n      baseProbability: 1.5',
+      );
       expect(
         GameRepository.loadAllDefs(loader: makeStagesLoader(inject)),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('1.5'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('1.5'),
+          ),
+        ),
       );
     });
   });
@@ -281,43 +367,78 @@ void main() {
       }
     });
 
-    test('triggeredBossRecruitStageIds 由 victory/defeat 共用(先 mark → 另一方跳过)',
-        () async {
-      final isar = IsarSetup.instance;
-      await isar.writeTxn(() async {
+    test(
+      'triggeredBossRecruitStageIds 由 victory/defeat 共用(先 mark → 另一方跳过)',
+      () async {
+        final isar = IsarSetup.instance;
+        await isar.writeTxn(() async {
+          final save = await isar.saveDatas.get(0);
+          expect(save, isNotNull);
+          save!.triggeredBossRecruitStageIds = ['stage_01_05'];
+          await isar.saveDatas.put(save);
+        });
         final save = await isar.saveDatas.get(0);
-        expect(save, isNotNull);
-        save!.triggeredBossRecruitStageIds = ['stage_01_05'];
-        await isar.saveDatas.put(save);
-      });
-      final save = await isar.saveDatas.get(0);
-      expect(save!.triggeredBossRecruitStageIds, contains('stage_01_05'),
-          reason: 'victory mark 后 defeat 应 skip(共用 set)');
-    });
+        expect(
+          save!.triggeredBossRecruitStageIds,
+          contains('stage_01_05'),
+          reason: 'victory mark 后 defeat 应 skip(共用 set)',
+        );
+      },
+    );
 
     test('stageBossFailRecoverProb 在 (0, 1] 且 < stageBossRecruitProb', () {
       final recruit = GameRepository.instance.numbers.sectManagement.recruit;
       expect(recruit.stageBossFailRecoverProb, greaterThan(0));
       expect(recruit.stageBossFailRecoverProb, lessThanOrEqualTo(1));
-      expect(recruit.stageBossFailRecoverProb,
-          lessThan(recruit.stageBossRecruitProb),
-          reason: '战败收降概率应 < 战胜招降概率');
+      expect(
+        recruit.stageBossFailRecoverProb,
+        lessThan(recruit.stageBossRecruitProb),
+        reason: '战败收降概率应 < 战胜招降概率',
+      );
     });
   });
 
   group('R5.compat · 1.0 ship Boss 全 bossRecruit=null 兼容', () {
-    test('stage_01_04 / stage_02_04 / stage_03_04 等小 Boss 关 bossRecruit=null 不破 load',
-        () {
-      final repo = GameRepository.instance;
-      // 小 Boss 关本批未配 bossRecruit · 应为 null
-      final smallBosses = ['stage_01_04', 'stage_02_04', 'stage_03_04'];
-      for (final id in smallBosses) {
-        final stage = repo.stageDefs[id];
-        expect(stage, isNotNull);
-        expect(stage!.isBossStage, true, reason: '$id 是 isBossStage=true 小 Boss');
-        expect(stage.bossRecruit, isNull,
-            reason: '$id 本批未配 bossRecruit · 兼容现有 load 不破');
-      }
-    });
+    test(
+      'stage_01_04 / stage_02_04 / stage_03_04 等小 Boss 关 bossRecruit=null 不破 load',
+      () {
+        final repo = GameRepository.instance;
+        // 小 Boss 关本批未配 bossRecruit · 应为 null
+        final smallBosses = ['stage_01_04', 'stage_02_04', 'stage_03_04'];
+        for (final id in smallBosses) {
+          final stage = repo.stageDefs[id];
+          expect(stage, isNotNull);
+          expect(
+            stage!.isBossStage,
+            true,
+            reason: '$id 是 isBossStage=true 小 Boss',
+          );
+          expect(
+            stage.bossRecruit,
+            isNull,
+            reason: '$id 本批未配 bossRecruit · 兼容现有 load 不破',
+          );
+        }
+      },
+    );
   });
+}
+
+class _AlwaysHitRng implements Rng {
+  @override
+  int nextInt(int max) => 0;
+
+  @override
+  double nextDouble() => 0;
+
+  @override
+  T pick<T>(List<T> list) => list.first;
+}
+
+class _MountedBuildContext implements BuildContext {
+  @override
+  bool get mounted => true;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
