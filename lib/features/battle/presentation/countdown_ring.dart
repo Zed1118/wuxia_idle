@@ -84,7 +84,7 @@ class BeatCountdownRing extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: beat,
-      builder: (_, __) {
+      builder: (_, _) {
         final disp = (remaining - beat.value).clamp(0.0, total.toDouble());
         return CountdownRing(
           remaining: disp,
@@ -163,7 +163,7 @@ class _SteppedCountdownRingState extends State<SteppedCountdownRing>
     final total = _maxSeen <= 0 ? 1 : _maxSeen;
     return AnimatedBuilder(
       animation: _ctrl,
-      builder: (_, __) {
+      builder: (_, _) {
         final disp = _from + (widget.remaining - _from) * _ctrl.value;
         return CountdownRing(
           remaining: disp,
