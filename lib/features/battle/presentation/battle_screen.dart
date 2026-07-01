@@ -239,6 +239,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // 命中特写 controller（大招暴击/击杀：缩放脉冲；快进/扫荡/拖招时抑制）。
   late final AnimationController _closeupCtrl;
 
+  // 读秒圆环节拍 controller（本拍内 0→1，供 CD/蓄力/破绽环平滑插值）。
+  // 随 _playTimer 每拍 forward(from:0) 对齐 remaining 递减，暂停/待发/结束时 stop 冻结。
+  late final AnimationController _beatCtrl;
+
   // 6 个受击闪 controller（slotKey 索引；静止 value=1.0 → 不显，命中 forward(from:0) 淡出）。
   late final List<AnimationController> _hitFlashControllers;
   // 受击闪颜色（slotKey→暴击绛红/普攻白），spawn 时写入，纯 UI state。
@@ -329,6 +333,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         duration: Duration(milliseconds: widget.animConfig.hitFlashMs),
       ),
     );
+    _beatCtrl = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: widget.animConfig.actionIntervalMs),
+    );
     // 验收路由 startPaused:起手即暂停 → _startTimer 内 _isPaused gate 兜住
     // 自动启动路径(autoStart=true 仍会 startBattle,但 timer 不启),战斗冻结
     // 在 seed 初态等手动单步/继续。生产恒 false 不受影响。
@@ -379,6 +387,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     }
     _shakeCtrl.dispose();
     _closeupCtrl.dispose();
+    _beatCtrl.dispose();
     super.dispose();
   }
 
@@ -389,7 +398,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // stale timer 二次 _startTimer 致节拍抖动）。
     _hitStopTimer?.cancel();
     _playTimer?.cancel();
-    if (_isPaused) return; // H3 暂停态:任何重启请求都不启动 timer。
+    if (_isPaused) {
+      _beatCtrl.stop(); // 暂停态冻结读秒环节拍在当前扫位。
+      return; // H3 暂停态:任何重启请求都不启动 timer。
+    }
     // 快进态:玩家手动开了快进。
     final rushing = _isFastForward;
     final gameplaySettings = _currentGameplaySettings;
@@ -398,8 +410,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         : gameplaySettings.scaledBattleIntervalMs(
             widget.animConfig.actionIntervalMs,
           );
+    // 读秒环节拍:与每拍对齐（本拍内 0→1，供环平滑插值）。起手先扫第一拍，
+    // 之后每次 advance 回调里 forward(from:0) 重启，使 remaining 递减与环无缝续扫。
+    _beatCtrl
+      ..duration = Duration(milliseconds: interval)
+      ..forward(from: 0);
     _playTimer = Timer.periodic(Duration(milliseconds: interval), (_) {
       if (!mounted) return;
+      _beatCtrl.forward(from: 0);
       final notifier = ref.read(battleProvider.notifier);
       if (rushing) {
         notifier.advance();
@@ -424,6 +442,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     setState(() => _isPaused = !_isPaused);
     if (_isPaused) {
       _playTimer?.cancel();
+      _beatCtrl.stop(); // 手动暂停冻结读秒环节拍。
     } else if (!ref.read(battleProvider).isFinished) {
       _startTimer();
     }
@@ -911,6 +930,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       _isPaused = true;
     });
     _playTimer?.cancel();
+    _beatCtrl.stop(); // 待发软暂停冻结读秒环节拍。
   }
 
   /// 待发态下点敌头像 → 对该敌出手 + 解除待发态 + 恢复 tick。
@@ -1125,6 +1145,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       // 2. 战斗结束：停 timer + 弹结算 dialog（postFrame 避免 build 期 setState）
       if ((prev?.result == null) && next.result != null) {
         _playTimer?.cancel();
+        _beatCtrl.stop(); // 战斗结束冻结读秒环节拍。
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _showResultDialog(next.result!, next);
         });
