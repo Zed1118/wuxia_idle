@@ -2256,12 +2256,16 @@ class UiStrings {
   static const String ascensionCompletePromotedSuffix = ' · {0} 接掌门派';
 
   // P4.1 1.1 Q6B · Boss 战胜后招降 SnackBar(spec p4_1_q6b §4 · 沿 sectEncounterRecruit 体例)
+  static String stageBossRecruitFallbackTitle(String stageName) =>
+      '$stageName · 招降';
   static String stageBossRecruitSuccess(String name) =>
       '$name 折服于你的剑下,入门派任 [初入] 阶';
   static String stageBossRecruitCapFull(String name) => '门派人数已满,$name 婉言告别';
   static String stageBossRecruitNoSect(String name) => '尚未建派,$name 不知归处';
 
   // 1.1 战败收降 SnackBar(stageBossFailRecoverProb 0.30 · 沿 stageBossRecruit 体例)
+  static String stageBossFailRecoverFallbackTitle(String stageName) =>
+      '$stageName · 收降';
   static String stageBossFailRecoverSuccess(String name) =>
       '$name 感于你的血气,入门派任 [初入] 阶';
   static String stageBossFailRecoverCapFull(String name) => '门派人数已满,$name 转身离去';
