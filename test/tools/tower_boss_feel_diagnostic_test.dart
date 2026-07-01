@@ -64,8 +64,19 @@ void main() {
     Directory(_outputDir).createSync(recursive: true);
   });
 
-  test('爬塔 24→25、29→30 Boss 体感只读诊断', () async {
-    const sampleFloors = [24, 25, 29, 30];
+  test('爬塔全坡度 6 Boss 层 + 前驱普通层体感只读诊断', () async {
+    // 全 6 Boss 层(5/10/15/20/25/30 · minor/major 交替每 5 层)+ 各自前驱
+    // 普通层(4/9/14/19/24/29)成对采样,直接支撑 6 对 Boss no-regress 断言与
+    // 整塔难度坡度实测。
+    const bossPairs = [
+      [4, 5],
+      [9, 10],
+      [14, 15],
+      [19, 20],
+      [24, 25],
+      [29, 30],
+    ];
+    final sampleFloors = [for (final pair in bossPairs) ...pair];
     final floors = sampleFloors.map(repo.getTowerFloor).toList();
     final results = <_FloorResult>[];
 
@@ -78,7 +89,7 @@ void main() {
     }
 
     final summary = _summarize(results, floors);
-    final outPath = '$_outputDir/tower_boss_feel_2026-06-28.md';
+    final outPath = '$_outputDir/tower_boss_feel_2026-07-01.md';
     File(outPath).writeAsStringSync(summary);
     print(summary);
     print('tower_boss_feel_diagnostic done · summary=$outPath');
@@ -89,8 +100,13 @@ void main() {
     );
     expect(results.where((r) => r.result != 'timeout'), isNotEmpty);
 
-    _expectBossDoesNotRegress(repo.getTowerFloor(24), repo.getTowerFloor(25));
-    _expectBossDoesNotRegress(repo.getTowerFloor(29), repo.getTowerFloor(30));
+    // 全 6 Boss 层不得弱于其前驱普通层(总 baseHp/baseAttack 单调)。
+    for (final pair in bossPairs) {
+      _expectBossDoesNotRegress(
+        repo.getTowerFloor(pair[0]),
+        repo.getTowerFloor(pair[1]),
+      );
+    }
 
     final floor25 = repo.getTowerFloor(25).enemyTeam.firstWhere((e) => e.isBoss);
     final floor30 = repo.getTowerFloor(30).enemyTeam.firstWhere((e) => e.isBoss);
@@ -333,10 +349,11 @@ String _summarize(List<_FloorResult> results, List<TowerFloorDef> floors) {
   }
 
   final buf = StringBuffer();
-  buf.writeln('# 爬塔 Boss 体感诊断 · 2026-06-28');
+  buf.writeln('# 爬塔 Boss 体感诊断 · 2026-07-01');
   buf.writeln();
   buf.writeln(
-    '24→25 与 29→30 · ${_BuildProfile.values.length} profile × '
+    '全坡度 6 Boss 层(5/10/15/20/25/30)+ 各自前驱普通层(4/9/14/19/24/29) · '
+    '${_BuildProfile.values.length} profile × '
     '$_seeds seed · maxTicks=$_maxTicks · 只读模拟,不改数值。',
   );
   buf.writeln();
