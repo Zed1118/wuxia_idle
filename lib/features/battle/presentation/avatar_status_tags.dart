@@ -22,7 +22,7 @@ import 'countdown_ring.dart';
 /// 故不新建平行术语表,直接用最薄 tooltip——与本任务「优先复用、没有就用最薄
 /// hover tooltip」边界一致。
 ///
-/// **蓄势/破招**不在此渲染:[CharacterAvatar] 已用 `_ChargeBar` 蓄力进度条 +
+/// **蓄势/破招**不在此渲染:[CharacterAvatar] 已用 [BeatCountdownRing] +
 /// flash_on 图标专门表现,不重复贴标签。
 class AvatarStatusTags extends StatelessWidget {
   const AvatarStatusTags({

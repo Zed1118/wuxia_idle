@@ -442,7 +442,10 @@ void main() {
       expect(ring, findsOneWidget);
       // 读秒环喂入剩余 = 该技能 CD(3)；渲染 ceil 值随节拍插值,由 countdown_ring 单测覆盖。
       expect(tester.widget<BeatCountdownRing>(ring).remaining, 3);
-      expect(tester.widget<BeatCountdownRing>(ring).total, _power.cooldownTurns);
+      expect(
+        tester.widget<BeatCountdownRing>(ring).total,
+        _power.cooldownTurns,
+      );
       expect(find.text('冷却3'), findsNothing);
     });
 
@@ -506,6 +509,101 @@ void main() {
       expect(find.byKey(const ValueKey('battle_danger_bar')), findsOneWidget);
       expect(find.byKey(const ValueKey('battle_report_strip')), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('最大密度战斗 HUD 在 1280×720 同屏不挤爆战场', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(
+        availableSkills: [_power, _break, _ult],
+        currentInternalForce: 1600,
+        maxInternalForce: 1600,
+      );
+      final ally = left[1].copyWith(
+        internalInjury: const InternalInjurySlot(
+          remainingTurns: 2,
+          damagePerTick: 200,
+        ),
+        staggerTicksRemaining: 1,
+      );
+      final boss = right.first.copyWith(
+        isBoss: true,
+        chargingSkill: _chargeSkill,
+        chargeTicksRemaining: 1,
+        internalInjury: const InternalInjurySlot(
+          remainingTurns: 3,
+          damagePerTick: 200,
+        ),
+        staggerTicksRemaining: 2,
+        swordSongResonanceActive: true,
+      );
+      final enemy = right[1].copyWith(staggerTicksRemaining: 2);
+      final notifier = await _pumpWith(
+        tester,
+        [focus, ally, left[2]],
+        [boss, enemy, right[2]],
+      );
+
+      notifier.appendActions(const [
+        BattleAction(
+          tick: 1,
+          actorId: 1,
+          targetId: 11,
+          skill: _playerUlt,
+          attackResult: _critResult,
+          description: 'dense-ult',
+        ),
+        BattleAction(
+          tick: 2,
+          actorId: 2,
+          targetId: 12,
+          attackResult: _critResult,
+          description: 'dense-crit',
+          openedBreakWindow: true,
+        ),
+        BattleAction(
+          tick: 3,
+          actorId: 3,
+          targetId: 13,
+          skill: _playerUlt,
+          attackResult: _critResult,
+          description: 'dense-ult-2',
+        ),
+      ]);
+      await tester.pump();
+
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'before pending target hints',
+      );
+
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_p1')));
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('battle_danger_bar')), findsOneWidget);
+      expect(find.byKey(const ValueKey('battle_report_strip')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('battle_report_line_2')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('coop_burst_prompt_bar')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(ValueKey('enemy_target_hint_${boss.characterId}')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('battle.bossAvatarFrame')),
+        findsOneWidget,
+      );
+      final exception = tester.takeException();
+      expect(
+        exception,
+        isNull,
+        reason: exception is FlutterError ? exception.toStringDeep() : null,
+      );
     });
   });
 }
