@@ -192,6 +192,19 @@ class BossRecruitConfig {
       );
 }
 
+/// 护法结界配置(仅爬塔终局 Boss 用)。护法存活时主 Boss 承伤 ×damageTakenMult;
+/// guardianIds 全部阵亡 → 结界破,承伤恢复 ×1.0。见 spec 2026-07-01-floor30-guardian-ward。
+class GuardianWardDef {
+  final double damageTakenMult;   // 结界期间主 Boss 承伤乘子, ∈ (0, 1]
+  final List<String> guardianIds; // 护法敌人 id(须在本 floor enemyTeam 存在)
+  const GuardianWardDef({required this.damageTakenMult, required this.guardianIds});
+  factory GuardianWardDef.fromYaml(Map<String, dynamic> y) => GuardianWardDef(
+        damageTakenMult: (y['damageTakenMult'] as num).toDouble(),
+        guardianIds: ((y['guardianIds'] as List?) ?? const [])
+            .map((e) => e as String).toList(growable: false),
+      );
+}
+
 /// 敌人配置，作为 [StageDef.enemyTeam] 的内嵌。Def 层不引入 Isar，
 /// 因此这里是普通 plain class 而非 `@embedded`。
 class EnemyDef {
@@ -232,6 +245,11 @@ class EnemyDef {
   /// `combat.weakness` 定，加载期 `enforceWeaknessRedLines` 校（守 §5.4 ≤2.0）。
   final Map<TechniqueSchool, double>? schoolDamageTakenMult;
 
+  /// 护法结界配置(null = 无结界,向后兼容)。仅 [isBoss]=true 的敌人有意义;
+  /// guardianIds 引用的敌人须在同 floor enemyTeam 存在(启动期
+  /// `GameRepository.enforceGuardianWardReferences` 校验)。
+  final GuardianWardDef? guardianWard;
+
   const EnemyDef({
     required this.id,
     required this.name,
@@ -248,6 +266,7 @@ class EnemyDef {
     this.bossPhases,
     this.cycleBossPhases = const {},
     this.schoolDamageTakenMult,
+    this.guardianWard,
   });
 
   factory EnemyDef.fromYaml(Map<String, dynamic> y) {
@@ -277,6 +296,11 @@ class EnemyDef {
                 TechniqueSchool.values.byName(k as String),
                 (v as num).toDouble(),
               ),
+            ),
+      guardianWard: y['guardianWard'] == null
+          ? null
+          : GuardianWardDef.fromYaml(
+              Map<String, dynamic>.from(y['guardianWard'] as Map),
             ),
     );
   }

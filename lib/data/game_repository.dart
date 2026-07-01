@@ -426,6 +426,9 @@ class GameRepository {
       itemDefs: itemDefs,
     );
     repo._enforceRedLines();
+    for (final floor in towerFloors) {
+      enforceGuardianWardReferences(floor.enemyTeam);
+    }
     await _validatePresetLoreReferences(equipmentDefs, load);
     await _validateEncounterEventReferences(encounterDefs, load);
     _instance = repo;
@@ -1970,6 +1973,32 @@ class GameRepository {
     }
     for (final f in towerFloors) {
       check('tower floor ${f.floorIndex}', f.dropTable);
+    }
+  }
+
+  /// 护法结界引用校验:主 Boss guardianIds 须在同 floor enemyTeam 存在,
+  /// damageTakenMult ∈ (0,1], guardianIds 非空。缺失/越界 fail-fast(spec §5)。
+  static void enforceGuardianWardReferences(List<EnemyDef> enemyTeam) {
+    final ids = enemyTeam.map((e) => e.id).toSet();
+    for (final e in enemyTeam) {
+      final w = e.guardianWard;
+      if (w == null) continue;
+      if (w.guardianIds.isEmpty) {
+        throw StateError('敌人 ${e.id} guardianWard.guardianIds 为空');
+      }
+      if (w.damageTakenMult <= 0 || w.damageTakenMult > 1) {
+        throw StateError(
+          '敌人 ${e.id} guardianWard.damageTakenMult=${w.damageTakenMult} '
+          '越界(须 ∈ (0,1])',
+        );
+      }
+      for (final gid in w.guardianIds) {
+        if (!ids.contains(gid)) {
+          throw StateError(
+            '敌人 ${e.id} guardianWard 引用 $gid 不在本 floor enemyTeam',
+          );
+        }
+      }
     }
   }
 
