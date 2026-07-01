@@ -751,7 +751,7 @@ floors:
     dropTable:
       - equipmentDefId: weapon_liqi_long_quan
         dropChance: 1.0
-      - equipmentDefId: accessory_haojiahuo_yu_pei_lao
+      - equipmentDefId: accessory_liqi_fei_yu_pei
         dropChance: 1.0
       - inventoryItemDefId: item_xinxuejiejing
         quantity: [5, 8]
