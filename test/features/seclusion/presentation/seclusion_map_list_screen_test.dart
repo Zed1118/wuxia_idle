@@ -81,8 +81,9 @@ void main() {
     WidgetTester tester, {
     RealmTier charRealmTier = RealmTier.xueTu,
     _FakeSeclusionService? fakeService,
+    Size surfaceSize = const Size(1024, 1800),
   }) async {
-    await tester.binding.setSurfaceSize(const Size(1024, 1800));
+    await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
@@ -203,6 +204,30 @@ void main() {
     expect(find.text(UiStrings.seclusionOutputMojianshi), findsWidgets);
     expect(find.text(UiStrings.seclusionOutputExperience), findsWidgets);
     expect(find.text(UiStrings.activeRetreatRewardSilver), findsWidgets);
+  });
+
+  testWidgets('1440x900 三列地图卡无布局异常', (tester) async {
+    await pumpMapList(
+      tester,
+      charRealmTier: RealmTier.zongShi,
+      surfaceSize: const Size(1440, 900),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('山林'), findsOneWidget);
+    expect(find.text(UiStrings.seclusionMapExpectedOutputLabel), findsWidgets);
+  });
+
+  testWidgets('1280x720 双列地图卡无布局异常', (tester) async {
+    await pumpMapList(
+      tester,
+      charRealmTier: RealmTier.zongShi,
+      surfaceSize: const Size(1280, 720),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('山林'), findsOneWidget);
+    expect(find.text(UiStrings.seclusionMapExpectedOutputLabel), findsWidgets);
   });
 
   testWidgets('active 卡显示进行中状态与查看提示', (tester) async {
