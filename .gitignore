@@ -99,3 +99,11 @@ docs/handoff/visual_capture_*/
 
 # 视觉验收证据包整目录不入库(throwaway · 1.57G · 2026-07-01 用户拍板扩忽略)
 docs/handoff/visual_acceptance*/
+
+# docs/reviews + docs/art_ref 视觉验收/参考截图不入库(throwaway · 2026-07-02 filter-repo 已剥历史)
+docs/reviews/**/*.png
+docs/reviews/**/*.jpg
+docs/reviews/**/*.jpeg
+docs/art_ref/**/*.png
+docs/art_ref/**/*.jpg
+docs/art_ref/**/*.jpeg
