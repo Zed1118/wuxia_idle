@@ -1129,7 +1129,8 @@ class Phase2SeedService {
   /// Task 2 — 出版美术验收基建：武圣满境界 × 7 阶心法全覆盖。
   ///
   /// 造 1 个 wuSheng·dengFeng 角色（id=1） + 刚猛流 7 阶各 1 本心法，
-  /// 让 TechniquePanelScreen 一次显出 7 张卷轴 cover。
+  /// 让 TechniquePanelScreen 一次显出 7 阶分组头（水墨文字头，2026-06-29
+  /// 替原 tier_*.png 卷轴 cover，资产 2026-07-02 已删）。
   ///
   /// 用法：在 VisualRoute.masterAllTiers 路由挂载后调用，
   /// Task 3 的 VisualSeedService 会调用此方法。

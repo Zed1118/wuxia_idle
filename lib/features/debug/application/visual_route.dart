@@ -4,7 +4,7 @@ enum VisualRoute {
   mainMenu('main_menu', '主菜单(出版美术门面 bg + 题字 + 木牌)'),
   techniquePanelTierAll(
     'technique_panel_tier_all',
-    '心法面板·武圣满学 7 阶 cover 同屏(梯度验收)',
+    '心法面板·武圣满学 7 阶分组头同屏(水墨文字头梯度验收)',
   ),
   techniquePanelHero('technique_panel_hero', '心法面板·主修 hero 打坐内丹态'),
   techniqueRefineInsightDialog(

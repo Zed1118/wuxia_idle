@@ -7,9 +7,9 @@
 ## 批次 2 · 资产瘦身(拍板点:webp 转码质量抽验)
 
 - [ ] 210MB PNG → webp/jpeg 转码(实测探针 -85%,总分发包 ~230MB→60-80MB);**需用户目检抽验画质后全量执行**
-- [ ] 44.9MB 零引用资产清理(67 文件:`ui/mj/*_01` 旧稿 15 张 ~19MB / `techniques/tier_*.png` 7 张 3.7MB 约定未接线——tier_* 需拍板「接线 or 删」/ enemies 零引用若干)
+- [ ] 44.9MB 零引用资产清理(67 文件:`ui/mj/*_01` 旧稿 15 张 ~19MB / ~~`techniques/tier_*.png` 7 张 3.7MB~~ **✅已删(2026-07-02·用户拍板)**——**订正**:非"约定未接线",实为 2026-06-29(commit `16941355`)用户目检否决的卷轴 cover(写实木轴 PNG 抠图白边叠深底突兀),已由 `technique_panel_screen` `_TechniqueTierHeader` 纯绘制水墨文字头替代;同步删 pubspec `assets/techniques/` 声明 + 订正 technique_def/phase2_seed/visual_route 3 处 stale 注释 / enemies 零引用若干)
 - [ ] `docs/reviews/` 加 .gitignore + `git rm --cached`(26 张大 PNG,最大 25.8MB);2.4G 历史要不要 `git filter-repo` 清洗需拍板(单人仓 force push 成本低)
-- [ ] `assets/audio/_suno_candidates/` 75MB 定稿归档或删除(拍板)
+- [x] `assets/audio/_suno_candidates/` 75MB **✅已归档(2026-07-02·用户拍板)**:mv 出项目 → `~/Desktop/wuxia_suno_candidates_archive_2026-07-02`(已 gitignore·不进仓/不进包·可恢复)
 - [ ] 本地 `docs/handoff/` 2.7G 未跟踪 capture 目录清理(纯磁盘,零风险)
 
 ## 批次 3 · 死代码/死文案(拍板点:66 篇文案接线 vs 归档)
