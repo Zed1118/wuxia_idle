@@ -622,6 +622,59 @@ class BattleScenarioData {
     return (left, right);
   }
 
+  // ── 场景 护法结界：真 floor30 终局塔队(九霄魔尊 + 左使/右使)vs 宗师 on-level ──
+  //
+  // 右队 = **真 towers.yaml floor30 敌队**(不合成),Boss 的 guardianWard(0.15 /
+  // guardianIds=[左使,右使])随 EnemyDef 经 buildEnemyTeam 原样接线:两护法存活
+  // → Boss 头像旁「护法结界」护罩 pill(WuxiaColors.internalForce)+ boss 金边 +
+  // 流派克制标同屏堆叠(多 tag 验收)。startPaused 起手冻结在护罩生效帧供静态截图;
+  // 手动步进清完两护法 → 破界题字「结界破！」+ 破界闪白(复用相位通道)动效可看。
+  //
+  // 左队 = 3 宗师 dengFeng on-level(2 刚猛[boss 吃 ×1.25]+ 1 灵巧),真能逐步清护法
+  // 演出破界,不被秒杀也不打不动。纯展示 scenario·零碰 numbers/结算(承伤仍走真管线)。
+  static (List<BattleCharacter>, List<BattleCharacter>) scenarioGuardianWard() {
+    // 真 floor30 塔层(towerFloors 按 floorIndex 升序,索引 29 = 第 30 层)。
+    final floor30 = GameRepository.instance.towerFloors[29];
+    final right = StageBattleSetup.buildEnemyTeam(
+      floor30.enemyTeam,
+      isTower: true,
+    );
+
+    BattleCharacter player(
+      int id,
+      String name,
+      int slot,
+      TechniqueSchool school,
+    ) => _char(
+      id: id,
+      name: name,
+      tier: RealmTier.zongShi,
+      layer: RealmLayer.dengFeng,
+      school: school,
+      maxHp: 18000,
+      maxIf: 10000,
+      speed: 240,
+      critRate: 0.15,
+      eqAtk: 1500,
+      cultivation: CultivationLayer.yuanMan,
+      skills: [
+        _normal('gw_normal_$id', '基础招'),
+        _power('gw_power_$id', '重击', pm: 2400, cost: 800, cd: 3),
+        _ultimate('gw_ult_$id', '绝命式', 2000),
+      ],
+      teamSide: 0,
+      slotIndex: slot,
+    );
+
+    final left = [
+      player(1, '主控', 0, TechniqueSchool.gangMeng),
+      player(2, '弟子甲', 1, TechniqueSchool.gangMeng),
+      player(3, '弟子乙', 2, TechniqueSchool.lingQiao),
+    ];
+
+    return (left, right);
+  }
+
   // ── 场景 C：二流·圆熟 1v1，装备对比 ─────────────────────────────────────────
   //
   // 左：基础攻400 × 强化1.60 × 默契1.20 = 768

@@ -447,6 +447,17 @@ Future<Widget> buildVisualTarget(VisualRoute route, Isar isar) async {
         allowPlayerIntervention: true,
         startPaused: true,
       );
+    case VisualRoute.battleGuardianWard:
+      // floor30 护法结界目检:真终局塔队,startPaused 起手冻结在护罩生效帧
+      // (两护法存活 → Boss 头像旁「护法结界」pill + 金边 + 克制标多 tag 堆叠)。
+      // 手动步进清完两护法 → 「结界破！」题字 + 破界闪白;干预层可点选招式。
+      return const ScenarioLauncher(
+        teamsFactory: BattleScenarioData.scenarioGuardianWard,
+        hint: UiStrings.battleGuardianWardHint,
+        sceneBackgroundPath: 'assets/scenes/battle_innerrealm.png',
+        allowPlayerIntervention: true,
+        startPaused: true,
+      );
     case VisualRoute.discipleJoinCeremony:
       // 第七阶段批三目检:拜入立绘题字 overlay 动效。读真 lineage_onboarding 配置,
       // 大弟子/二弟子真立绘交替循环重播(GameRepository 已在 _prepare 加载完)。

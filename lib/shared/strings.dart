@@ -134,6 +134,8 @@ class UiStrings {
       '两段点选预览:单体技能已待发,敌头像为可选目标,技能角标区分单体/群体';
   static const String battleBossPhaseHint =
       '已暂停。点顶栏「单步」逐拍推进:刚猛打 Boss 出「会心」(弱点×1.25)、灵巧伤害偏低(抗性×0.75)、Boss 半血触发「背水一击」转阶段 + 蓄力反扑。也可点继续自动 / 点选技能干预';
+  static const String battleGuardianWardHint =
+      '已暂停在护罩生效帧:九霄魔尊头像旁「护法结界」pill(护法存活时刀枪不入)。点顶栏「单步」逐拍推进,先手清完左使/右使 → 结界破「结界破！」题字 + 破界闪白,主 Boss 恢复满承伤。也可点继续自动 / 点选技能干预';
   // 浮层关闭按钮。
   static const String skillInfoClose = '知道了';
   // 角色头像内力条标签前缀（HpBar labelPrefix），如「内 100 / 100」。

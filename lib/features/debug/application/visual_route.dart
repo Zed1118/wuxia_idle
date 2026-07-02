@@ -130,6 +130,10 @@ enum VisualRoute {
     'battle_boss_phase',
     '第七阶段批二目检·真 stage_01_05 撑伞高人 Boss(HP抬高)vs at-level 玩家队真玩:跌破50%背水一击转阶段+蓄力反扑 / 刚猛打弱点会心×1.25 / 灵巧吃抗性×0.75(已开干预层可拖招)',
   ),
+  battleGuardianWard(
+    'battle_guardian_ward',
+    'floor30 护法结界目检·真终局塔队(九霄魔尊+左使/右使)vs 宗师 on-level:起手冻结在护罩生效帧看「护法结界」pill(内力色)+ boss 金边 + 流派克制标多 tag 堆叠;手动步进清完两护法 → 「结界破！」题字 + 破界闪白动效(单帧截不出手感须真机步进看)',
+  ),
   discipleJoinCeremony(
     'disciple_join_ceremony',
     '第七阶段批三目检·拜入立绘题字 overlay 动效(读真 lineage_onboarding 配置:大弟子/二弟子真立绘交替循环滑入+放大+「XX 拜入门下」题字,自动重播;单帧截不出须真机看动效)',
