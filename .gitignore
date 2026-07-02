@@ -9,7 +9,7 @@
 .pub/
 build/
 
-# 生成代码不入库（CI 必须先跑 build_runner，见 phase1_tasks T01）
+# 生成代码不入库（fresh checkout / 新 worktree 必须先跑 build_runner；项目当前无 CI，2026-07-02 审查订正幽灵引用）
 *.g.dart
 *.freezed.dart
 
