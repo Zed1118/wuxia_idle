@@ -605,6 +605,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     final isEnemy = actor?.teamSide == 1;
     // 题字（多字 caption overlay，承载 4 字转阶段标题；单字 glyph 会裁切多字）。
     // 不触发 hit-stop：转阶段非打击命中，暂停 timer 无意义。
+    // 抢占中央焦点:触发转阶段的那一击若同 tick 弹了击杀「斩」字形,两套居中题字会
+    // 叠字(同破界 WARN 的同类现象);先清掉 in-flight 击杀字形,让转阶段题字独占中央。
+    _impactGlyphKey.currentState?.clear();
     _ultimateCaptionKey.currentState?.show(title, isEnemy: isEnemy);
     // 闪白 + 立绘抖动复用 2.4 heavy 档参数（转阶段是重场面）。GameRepository 未
     // 初始化（轻量 widget 测）时 cfg==null，仍保证题字触发、闪白/抖动跳过。
