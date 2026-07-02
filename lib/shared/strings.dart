@@ -152,6 +152,13 @@ class UiStrings {
   // glyph overlay box（200px / 72pt），区别于多字转阶段标题走 caption overlay。
   static const String weaknessHitGlyph = '会心';
 
+  // floor30 护法结界（Task 6）：结界生效中头像旁小标签 + hover 释义合一
+  // （AvatarStatusTag 药丸展示短文案，同串兼作 gloss，与 statusSwordSongLabel
+  // 等既有短状态标签用法一致）。破界瞬间走 UltimateCaptionOverlay 题字通道
+  // （复用转阶段题字机制，不另起平行系统）。
+  static const String guardianWardActive = '护法结界·刀枪不入';
+  static const String guardianWardBroken = '结界破！';
+
   // 第七阶段批二 ①：Boss 转阶段题字短标题（4 字水墨）。
   // BossPhaseDef.titleKey → 显示标题；未知 / null → 空串（调用方走
   // EnumL10n.bossPhaseTransition 通用兜底）。中文集中此 sink，不内联进 widget。
