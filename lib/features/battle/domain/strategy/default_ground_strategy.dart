@@ -45,11 +45,7 @@ class DefaultGroundStrategy implements BattleStrategy {
   /// (rng 只在 [_resolveAction] 消费,拆分 actor 循环不改消费顺序),由
   /// `battle_step_one_test` 红线锁死 + 全量战斗测兜底。
   @override
-  BattleState tick(
-    BattleState state,
-    NumbersConfig n, {
-    Random? rng,
-  }) {
+  BattleState tick(BattleState state, NumbersConfig n, {Random? rng}) {
     if (state.isFinished) return state;
     final r = rng ?? Random();
     // 边界步:推进 AP/CD + 排序 + 填队列(tick++,不结算)。
@@ -73,11 +69,7 @@ class DefaultGroundStrategy implements BattleStrategy {
   /// 拆分使「自动整 tick(tick)」「手动逐步(notifier.step)」「重放」三条路径
   /// 共用同一 actor 结算逻辑与同一 rng 消费顺序,确定性地基(spec §七)。
   @override
-  BattleState stepOne(
-    BattleState state,
-    NumbersConfig n, {
-    Random? rng,
-  }) {
+  BattleState stepOne(BattleState state, NumbersConfig n, {Random? rng}) {
     if (state.isFinished) return state;
 
     // === 队列空 = tick 边界:推进 AP/CD + 排序 + 填队列,不结算 actor ===
@@ -161,9 +153,7 @@ class DefaultGroundStrategy implements BattleStrategy {
     // P0:泛化为"玩家手动请求关键技"——接受 powerSkill/ultimate/jointSkill,
     // 拒绝 normalAttack(普攻不需手动)。
     if (skill.type == SkillType.normalAttack) {
-      throw ArgumentError.value(
-        skill, 'skill', '手动请求不接受 normalAttack',
-      );
+      throw ArgumentError.value(skill, 'skill', '手动请求不接受 normalAttack');
     }
     final newPending = Map<int, SkillDef>.from(state.pendingUltimates);
     newPending[characterId] = skill;
@@ -212,9 +202,17 @@ class DefaultGroundStrategy implements BattleStrategy {
     if (actor0.staggerTicksRemaining > 0 || actor0.chargingSkill != null) {
       return state;
     }
-    final pended = requestUltimate(state, characterId, skill, targetId: targetId);
-    final borrowed =
-        _findById(pended, characterId, 0)!.copyWith(actionPoint: 1000);
+    final pended = requestUltimate(
+      state,
+      characterId,
+      skill,
+      targetId: targetId,
+    );
+    final borrowed = _findById(
+      pended,
+      characterId,
+      0,
+    )!.copyWith(actionPoint: 1000);
     final left = pended.leftTeam.toList();
     final right = pended.rightTeam.toList();
     _replaceById(borrowed.teamSide == 0 ? left : right, borrowed);
@@ -283,7 +281,10 @@ class DefaultGroundStrategy implements BattleStrategy {
     var preState = state;
     final inj = actor.internalInjury;
     if (inj != null && inj.remainingTurns > 0) {
-      final hpAfterDot = (actor.currentHp - inj.damagePerTick).clamp(0, actor.maxHp);
+      final hpAfterDot = (actor.currentHp - inj.damagePerTick).clamp(
+        0,
+        actor.maxHp,
+      );
       final remaining = inj.remainingTurns - 1;
       preActor = actor.copyWith(
         currentHp: hpAfterDot,
@@ -445,9 +446,7 @@ class DefaultGroundStrategy implements BattleStrategy {
     for (final tid in targetIds) {
       final target = _findById(preState, tid, oppSide);
       if (target == null) {
-        throw StateError(
-          'BattleEngine._resolveAction: 找不到 targetId=$tid',
-        );
+        throw StateError('BattleEngine._resolveAction: 找不到 targetId=$tid');
       }
       // rng 消费点:每 target 逐个 roll 闪避+暴击(顺序锚 targetIds)。
       final result = _calculateInBattle(
@@ -456,11 +455,18 @@ class DefaultGroundStrategy implements BattleStrategy {
         skill: skill,
         n: n,
         rng: rng,
+        state: preState,
       );
       // 单 target 侧组装(伤害/内伤/破招/stagger + 反震触发值 + BattleAction),
       // 不碰 rng(result 已传入);各 target 都基于 preState/preActor 独立算。
-      final resolved =
-          _resolveOneTarget(preState, preActor, target, skill, result, n);
+      final resolved = _resolveOneTarget(
+        preState,
+        preActor,
+        target,
+        skill,
+        result,
+        n,
+      );
       targetAfters.add(resolved.targetAfter);
       actions.add(resolved.action);
       if (resolved.fanzhenTriggered != null) {
@@ -475,7 +481,10 @@ class DefaultGroundStrategy implements BattleStrategy {
     final newCd = Map<String, int>.from(preActor.skillCooldowns);
     // 可玩性 P1a:per-skill 熟练度 cooldown_delta 缩短有效 CD(下限 0)。
     final effCd = SkillProficiency.effectiveCooldown(
-        skill, preActor.skillUses[skill.id] ?? 0, n.skillProficiency);
+      skill,
+      preActor.skillUses[skill.id] ?? 0,
+      n.skillProficiency,
+    );
     if (effCd > 0) {
       newCd[skill.id] = effCd;
     }
@@ -490,8 +499,7 @@ class DefaultGroundStrategy implements BattleStrategy {
       internalInjury: actorFanzhen,
       // 开锋吸血:aoe 全部 target 命中回血累积后一次写回(clamp maxHp 防溢出)。
       // lifestealTotal=0 时 clamp 保持 currentHp 不变，zero-cost，无回归。
-      currentHp:
-          (preActor.currentHp + lifestealTotal).clamp(0, preActor.maxHp),
+      currentHp: (preActor.currentHp + lifestealTotal).clamp(0, preActor.maxHp),
     );
 
     // 写回队伍:actorAfter + 所有 targetAfters(逐个 _replaceById)。
@@ -561,7 +569,12 @@ class DefaultGroundStrategy implements BattleStrategy {
     List<BattleCharacter>? scan(List<BattleCharacter> team) {
       List<BattleCharacter>? mutated;
       for (var i = 0; i < team.length; i++) {
-        final advanced = _advancePhases(team[i], state.tick, extraActions, n: n);
+        final advanced = _advancePhases(
+          team[i],
+          state.tick,
+          extraActions,
+          n: n,
+        );
         if (!identical(advanced, team[i])) {
           mutated ??= team.toList();
           mutated[i] = advanced;
@@ -597,7 +610,8 @@ class DefaultGroundStrategy implements BattleStrategy {
       final hpPct = cur.currentHp / cur.maxHp;
       if (hpPct > phases[next].hpThresholdPct) break;
       // 并入解锁招(去重:已在 availableSkills 的不重复加)。
-      final unlocks = (cur.bossPhaseUnlockSkills != null &&
+      final unlocks =
+          (cur.bossPhaseUnlockSkills != null &&
               next < cur.bossPhaseUnlockSkills!.length)
           ? cur.bossPhaseUnlockSkills![next]
           : const <SkillDef>[];
@@ -633,13 +647,15 @@ class DefaultGroundStrategy implements BattleStrategy {
           );
         }
       }
-      actions.add(BattleAction(
-        tick: tick,
-        actorId: cur.characterId,
-        description: EnumL10n.bossPhaseTransition(cur.name, next),
-        bossPhaseTransitionTo: next,
-        bossPhaseTitleKey: phases[next].titleKey,
-      ));
+      actions.add(
+        BattleAction(
+          tick: tick,
+          actorId: cur.characterId,
+          description: EnumL10n.bossPhaseTransition(cur.name, next),
+          bossPhaseTransitionTo: next,
+          bossPhaseTitleKey: phases[next].titleKey,
+        ),
+      );
     }
     return cur;
   }
@@ -664,7 +680,8 @@ class DefaultGroundStrategy implements BattleStrategy {
     BattleCharacter targetAfter,
     InternalInjurySlot? fanzhenTriggered,
     BattleAction action,
-  }) _resolveOneTarget(
+  })
+  _resolveOneTarget(
     BattleState preState,
     BattleCharacter preActor,
     BattleCharacter target,
@@ -718,10 +735,13 @@ class DefaultGroundStrategy implements BattleStrategy {
     // 破招(现有):打断蓄力敌 → 加深减防 base × (1+power_pct),上限 clamp(封顶减防)。
     final interruptDef = brokeCharging
         ? (n.combat.bossCharge.staggerDefenseDown *
-                (1 +
-                    SkillProficiency.interruptPowerPct(skill,
-                        preActor.skillUses[skill.id] ?? 0, n.skillProficiency)))
-            .clamp(0.0, cap)
+                  (1 +
+                      SkillProficiency.interruptPowerPct(
+                        skill,
+                        preActor.skillUses[skill.id] ?? 0,
+                        n.skillProficiency,
+                      )))
+              .clamp(0.0, cap)
         : null;
     // 破防(新增):命中存活敌即开窗,不要求蓄力。减防上限 clamp 到同一 cap(红线 §5.4)。
     final opensBreak =
@@ -730,20 +750,25 @@ class DefaultGroundStrategy implements BattleStrategy {
     // 统一窗口:破招优先(更强/特定);否则破防;刷新不缩短:取 max,避免破防覆盖已有更长的破招窗口。
     final int newStaggerTicks = brokeCharging
         ? n.combat.bossCharge.defaultStaggerTicks +
-            SkillProficiency.interruptWindowBonus(
-                skill, preActor.skillUses[skill.id] ?? 0, n.skillProficiency)
+              SkillProficiency.interruptWindowBonus(
+                skill,
+                preActor.skillUses[skill.id] ?? 0,
+                n.skillProficiency,
+              )
         : opensBreak
-            ? (n.combat.defenseBreak.windowTicks > target.staggerTicksRemaining
-                ? n.combat.defenseBreak.windowTicks
-                : target.staggerTicksRemaining)
-            : target.staggerTicksRemaining;
+        ? (n.combat.defenseBreak.windowTicks > target.staggerTicksRemaining
+              ? n.combat.defenseBreak.windowTicks
+              : target.staggerTicksRemaining)
+        : target.staggerTicksRemaining;
     final double? newStaggerDef = brokeCharging
         ? interruptDef
         : opensBreak
-            // 刷新不叠加:与现有 override 取 max,不连乘穿透(防多人叠减防穿防)。
-            ? [breakDef!, target.staggerDefenseDownOverride ?? 0.0]
-                .reduce((a, b) => a > b ? a : b)
-            : target.staggerDefenseDownOverride;
+        // 刷新不叠加:与现有 override 取 max,不连乘穿透(防多人叠减防穿防)。
+        ? [
+            breakDef!,
+            target.staggerDefenseDownOverride ?? 0.0,
+          ].reduce((a, b) => a > b ? a : b)
+        : target.staggerDefenseDownOverride;
 
     final targetAfter = target.copyWith(
       currentHp: newTargetHp,
@@ -751,8 +776,7 @@ class DefaultGroundStrategy implements BattleStrategy {
       internalInjury: newInjury,
       skillCooldowns: Map.unmodifiable(targetCd),
       chargingSkill: brokeCharging ? null : target.chargingSkill,
-      chargeTicksRemaining:
-          brokeCharging ? 0 : target.chargeTicksRemaining,
+      chargeTicksRemaining: brokeCharging ? 0 : target.chargeTicksRemaining,
       staggerTicksRemaining: newStaggerTicks,
       staggerDefenseDownOverride: newStaggerDef,
     );
@@ -810,23 +834,30 @@ class DefaultGroundStrategy implements BattleStrategy {
     required SkillDef skill,
     required NumbersConfig n,
     required Random rng,
+    required BattleState state,
     bool forceCritical = false,
   }) {
     // P0 踉跄减防:踉跄期间防御率乘 (1 - staggerDefenseDown) → 增伤。
     // 波A:override 非 null 时用破招结算时写入的加深值(base × (1+power_pct))。
     var effDefRate = defender.defenseRate;
     if (defender.staggerTicksRemaining > 0) {
-      final down = defender.staggerDefenseDownOverride ??
+      final down =
+          defender.staggerDefenseDownOverride ??
           n.combat.bossCharge.staggerDefenseDown;
       effDefRate = defender.defenseRate * (1 - down);
     }
     // 可玩性 P1a:从攻方进场快照 skillUses 派生该招熟练度综合倍率(敌人空 → 1.0)。
     final uses = attacker.skillUses[skill.id] ?? 0;
-    final perSkillPct = skill.proficiency?.damagePctAt(
-            SkillProficiency.stageFor(uses, n.skillProficiency).id) ??
+    final perSkillPct =
+        skill.proficiency?.damagePctAt(
+          SkillProficiency.stageFor(uses, n.skillProficiency).id,
+        ) ??
         0.0;
-    final profMult =
-        SkillProficiency.combinedMult(uses, perSkillPct, n.skillProficiency);
+    final profMult = SkillProficiency.combinedMult(
+      uses,
+      perSkillPct,
+      n.skillProficiency,
+    );
     // 凝甲词条(C1):周目≥2 敌人携带 'cycle_ningjia' buff 时暴击增量减半。
     final critDamageTakenMult = defender.activeBuffs.contains('cycle_ningjia')
         ? n.cycleEvolution.traits.ningjia.critDamageTakenMult
@@ -857,6 +888,9 @@ class DefaultGroundStrategy implements BattleStrategy {
       // 批二②弱点/抗性:守方按攻方流派的受伤乘子(default 1.0=无)。已由
       // 加载期 enforceWeaknessRedLines 校到 numbers.yaml max_mult(守 §5.4),此处仅查表透传。
       defenderSchoolDamageMult: weaknessMultOf(attacker, defender),
+      // floor30 护法结界:守方为结界 Boss 且护法在同队存活 → 承伤乘子(减伤)。
+      // 用 preState 行动前快照判护法存活(与 aoe 同帧独立结算口径一致)。
+      defenderWardMult: wardMultOf(defender, state),
     );
   }
 
@@ -866,6 +900,25 @@ class DefaultGroundStrategy implements BattleStrategy {
   static double weaknessMultOf(
     BattleCharacter attacker,
     BattleCharacter defender,
-  ) =>
-      defender.schoolDamageTakenMult[attacker.school] ?? 1.0;
+  ) => defender.schoolDamageTakenMult[attacker.school] ?? 1.0;
+
+  /// 护法结界(floor30):defender 为结界单位(guardianWardMult != null)且其
+  /// guardianDefIds 中有护法在同队存活 → 返回 wardMult(减伤);否则 1.0。
+  /// 纯函数无 side effect,只读传入 state 快照(与 preState 行动前口径一致)。
+  ///
+  /// 表现层 `isGuardianWardActive`(guardian_ward_presentation.dart)镜像本函数
+  /// 的存活判定(ward 生效 ⟺ wardMultOf<1.0),由 guardian_ward_presentation_test
+  /// 的 drift 守卫锁死两者口径一致。改本函数判定条件时须同步那侧。
+  static double wardMultOf(BattleCharacter defender, BattleState state) {
+    final mult = defender.guardianWardMult;
+    if (mult == null || defender.guardianDefIds.isEmpty) return 1.0;
+    final team = defender.teamSide == 1 ? state.rightTeam : state.leftTeam;
+    final anyGuardianAlive = team.any(
+      (c) =>
+          c.isAlive &&
+          c.enemyDefId != null &&
+          defender.guardianDefIds.contains(c.enemyDefId),
+    );
+    return anyGuardianAlive ? mult : 1.0;
+  }
 }

@@ -32,6 +32,7 @@ import 'countdown_ring.dart';
 import 'damage_popup.dart';
 import 'hit_flash.dart';
 import 'boss_phase_presentation.dart';
+import 'guardian_ward_presentation.dart';
 import 'impact_profile.dart';
 import 'impact_glyph_overlay.dart';
 import 'screen_flash.dart';
@@ -623,6 +624,26 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     }
   }
 
+  /// floor30 护法结界（Task 6）破界演出：结界失效边沿（最后一名护法阵亡）
+  /// → 题字 + 闪白。复用 [_playBossPhaseTransition] 同一套题字 / 闪白通道
+  /// （[_ultimateCaptionKey] + [_screenFlashKey]），不另起平行系统；不触发
+  /// hit-stop / 抖动（非打击命中，护法之死已由其自身死亡动画表现）。
+  /// 纯读 [boss] 元数据，不写 BattleState（守 §5.4）。
+  void _playGuardianWardBreak(BattleCharacter boss) {
+    final isEnemy = boss.teamSide == 1;
+    _ultimateCaptionKey.currentState?.show(
+      UiStrings.guardianWardBroken,
+      isEnemy: isEnemy,
+    );
+    if (_reduceFlashing) return;
+    final cfg = _impactConfigOrNull();
+    if (cfg == null) return;
+    _screenFlashKey.currentState?.flash(
+      cfg.heavy.flashStrength,
+      color: WuxiaColors.internalForce,
+    );
+  }
+
   /// 读打击感配置；GameRepository 未初始化（轻量 widget 测）时返 null 跳过。
   ImpactFeedbackConfig? _impactConfigOrNull() {
     try {
@@ -1175,6 +1196,17 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       // 4. 破招机制 SFX：状态边沿触发（表现层纯读 state，不入 domain）。
       for (final sfx in chargeTransitionSfx(prev, next)) {
         SoundManager.instance.playSfx(sfx);
+      }
+
+      // 5. floor30 护法结界（Task 6）破界：结界失效边沿（最后一名护法阵亡）
+      //    → 题字 + 闪白。纯读 state 边沿触发，不入 domain（守 §5.4）。
+      final wardBreakIds = guardianWardBreakEvents(prev, next);
+      if (wardBreakIds.isNotEmpty) {
+        for (final c in [...next.leftTeam, ...next.rightTeam]) {
+          if (wardBreakIds.contains(c.characterId)) {
+            _playGuardianWardBreak(c);
+          }
+        }
       }
     });
 
@@ -1944,6 +1976,7 @@ class _BattleField extends StatelessWidget {
             width: 168,
             child: _TeamColumn(
               team: state.leftTeam,
+              battleState: state,
               isLeftTeam: true,
               alignment: CrossAxisAlignment.start,
               attackControllers: attackControllers,
@@ -1966,6 +1999,7 @@ class _BattleField extends StatelessWidget {
             width: 168,
             child: _TeamColumn(
               team: state.rightTeam,
+              battleState: state,
               isLeftTeam: false,
               alignment: CrossAxisAlignment.end,
               attackControllers: attackControllers,
@@ -1991,6 +2025,8 @@ class _BattleField extends StatelessWidget {
 
 class _TeamColumn extends StatelessWidget {
   final List<BattleCharacter> team;
+  // floor30 护法结界(Task 6):完整战场快照,逐槽透传给 CharacterAvatar 判定结界。
+  final BattleState battleState;
   final bool isLeftTeam;
   final CrossAxisAlignment alignment;
   final List<AnimationController> attackControllers;
@@ -2011,6 +2047,7 @@ class _TeamColumn extends StatelessWidget {
 
   const _TeamColumn({
     required this.team,
+    required this.battleState,
     required this.isLeftTeam,
     required this.alignment,
     required this.attackControllers,
@@ -2049,6 +2086,7 @@ class _TeamColumn extends StatelessWidget {
                   : Alignment.centerRight,
               child: _CharacterSlot(
                 character: team[i],
+                battleState: battleState,
                 isLeftTeam: isLeftTeam,
                 attackController: attackControllers[teamSide * 3 + i],
                 slotPopups: popups[teamSide * 3 + i] ?? const [],
@@ -2081,6 +2119,8 @@ class _TeamColumn extends StatelessWidget {
 /// 单个角色槽：攻击动画包 + 头像 + 飘字（Stack 叠加，clipBehavior: none 允许溢出）。
 class _CharacterSlot extends StatelessWidget {
   final BattleCharacter character;
+  // floor30 护法结界(Task 6):完整战场快照,透传给 CharacterAvatar 判定结界。
+  final BattleState battleState;
   final bool isLeftTeam;
   final AnimationController attackController;
   final List<_PopupEntry> slotPopups;
@@ -2100,6 +2140,7 @@ class _CharacterSlot extends StatelessWidget {
 
   const _CharacterSlot({
     required this.character,
+    required this.battleState,
     required this.isLeftTeam,
     required this.attackController,
     required this.slotPopups,
@@ -2124,6 +2165,7 @@ class _CharacterSlot extends StatelessWidget {
       children: [
         CharacterAvatar(
           character: character,
+          battleState: battleState,
           chargeMaxTicks: chargeMaxTicks,
           beat: beat,
           staggerWindowTicks: staggerWindowTicks,
@@ -2611,48 +2653,50 @@ class _SkillCommandButton extends StatelessWidget {
             Opacity(
               opacity: onCd ? 0.32 : 1.0, // CD 态招名让位给读秒环。
               child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    _groupLabel(skill),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      height: 1.1,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _groupLabel(skill),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        height: 1.1,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    skill.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      height: 1.15,
+                    const SizedBox(height: 3),
+                    Text(
+                      skill.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        height: 1.15,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    statusText,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 10,
-                      height: 1.1,
-                      fontWeight: isPending ? FontWeight.bold : FontWeight.w600,
-                      color: isPending
-                          ? WuxiaColors.resultHighlight
-                          : (enabled
-                                ? WuxiaColors.textPrimary
-                                : WuxiaColors.textMuted),
+                    const SizedBox(height: 3),
+                    Text(
+                      statusText,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10,
+                        height: 1.1,
+                        fontWeight: isPending
+                            ? FontWeight.bold
+                            : FontWeight.w600,
+                        color: isPending
+                            ? WuxiaColors.resultHighlight
+                            : (enabled
+                                  ? WuxiaColors.textPrimary
+                                  : WuxiaColors.textMuted),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               ),
             ),
             if (onCd)

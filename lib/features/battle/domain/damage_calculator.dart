@@ -52,11 +52,16 @@ class DamageCalculator {
     }
     // 可玩性 P1a:从攻方主修心法 skillUsageCount 派生该招熟练度综合倍率。
     final uses = ctx.attackerMainTech.skillUsageCount.countOf(ctx.skill.id);
-    final perSkillPct = ctx.skill.proficiency?.damagePctAt(
-            SkillProficiency.stageFor(uses, n.skillProficiency).id) ??
+    final perSkillPct =
+        ctx.skill.proficiency?.damagePctAt(
+          SkillProficiency.stageFor(uses, n.skillProficiency).id,
+        ) ??
         0.0;
-    final profMult =
-        SkillProficiency.combinedMult(uses, perSkillPct, n.skillProficiency);
+    final profMult = SkillProficiency.combinedMult(
+      uses,
+      perSkillPct,
+      n.skillProficiency,
+    );
     return calculateResolved(
       attackerInternalForce: ctx.attacker.internalForce,
       attackerEquipmentAttack: eqAtkSum,
@@ -69,8 +74,7 @@ class DamageCalculator {
       defenderRealmLayer: ctx.defender.realmLayer,
       defenderDefenseRate: defRate,
       defenderEvasionRate: CharacterDerivedStats.evasionRate(ctx.defender, n),
-      attackerCriticalRate:
-          CharacterDerivedStats.criticalRate(ctx.attacker, n),
+      attackerCriticalRate: CharacterDerivedStats.criticalRate(ctx.attacker, n),
       attackPowerMultiplier: 1.0,
       skill: ctx.skill,
       n: n,
@@ -116,22 +120,33 @@ class DamageCalculator {
     required Random rng,
     bool forceCritical = false,
     double proficiencyDamageMult = 1.0,
+
     /// 凝甲词条(C1):暴击增量衰减系数。default 1.0 = 无凝甲(零回归)。
     /// 0.5 时 effectiveCritMult = 1 + (critMult-1)*0.5，仅影响暴击增量部分。
     double defenderCritDamageTakenMult = 1.0,
+
     /// M6 心魔余毒:战斗输出乘数(default 1.0=无余毒,零回归)。
     /// 末端乘 mainDamage，与 attackPowerMultiplier / proficiencyDamageMult 并列。
     /// 值由调用方从 BattleCharacter.outputMultiplier 传入，本函数不硬编码 0.95。
     double outputMultiplier = 1.0,
+
     /// 批二②弱点/抗性:守方按攻方流派的受伤乘子(default 1.0=无弱点抗性,零回归)。
     /// 值由调用方从守方 schoolDamageTakenMult 表按攻方流派查得(>1.0 弱点/<1.0 抗性),
     /// 末端乘 mainDamage,沿 outputMultiplier 体例。§5.4 红线:弱点最大 ≤2.0,
     /// 叠乘后仍 <100万(numbers 值域 + 加载期 enforceWeaknessRedLines 双守)。
     double defenderSchoolDamageMult = 1.0,
+
+    /// 护法结界(floor30):守方为结界 Boss 且护法存活时的承伤乘子
+    /// (default 1.0=无结界/护法全灭,零回归)。值由调用方从守方 guardianWardMult
+    /// 结合护法存活判定传入(0.15=85% 减伤),末端乘 mainDamage,沿
+    /// defenderSchoolDamageMult 体例。仅减直击主伤害,不影响震伤等独立加值。
+    double defenderWardMult = 1.0,
+
     /// 开锋破甲(pierce)词条:绝对减防御率(default 0.0=无破甲,零回归)。
     /// effectiveDefRate = max(0, defenderDefenseRate - attackerPiercePct)。
     /// 招式级 piercesDefense(布尔全穿透)独立路径不动。
     double attackerPiercePct = 0.0,
+
     /// 开锋吸血(lifesteal)词条:命中后回血 = mainDamage × lifestealPct(floor)。
     /// 结果进 AttackResult.lifestealHeal;调用方负责将回血应用到战斗状态。
     double attackerLifestealPct = 0.0,
@@ -146,7 +161,8 @@ class DamageCalculator {
 
     // === 2. 基础伤害 ===
     final df = n.combat.damageFormula;
-    final base = attackerInternalForce * df.internalForceFactor +
+    final base =
+        attackerInternalForce * df.internalForceFactor +
         attackerEquipmentAttack * df.equipmentAttackFactor +
         skill.powerMultiplier;
 
@@ -160,41 +176,54 @@ class DamageCalculator {
     }
 
     // === 4. 流派克制 ===
-    final schoolMult =
-        n.schoolCounter.multiplierFor(attackerSchool, defenderSchool);
-    final extraEffect =
-        n.schoolCounter.extraEffectFor(attackerSchool, defenderSchool);
+    final schoolMult = n.schoolCounter.multiplierFor(
+      attackerSchool,
+      defenderSchool,
+    );
+    final extraEffect = n.schoolCounter.extraEffectFor(
+      attackerSchool,
+      defenderSchool,
+    );
 
     // === 5. 暴击 ===
     final isCritical = forceCritical || rng.nextDouble() < attackerCriticalRate;
     final critMult = isCritical
         ? (attackerSchool == TechniqueSchool.lingQiao
-            ? n.combat.critical.lingqiaoDamageMultiplier
-            : n.combat.critical.baseDamageMultiplier)
+              ? n.combat.critical.lingqiaoDamageMultiplier
+              : n.combat.critical.baseDamageMultiplier)
         : 1.0;
     // 凝甲词条(C1):守方携带 cycle_ningjia 时，暴击增量 × defenderCritDamageTakenMult。
     // 仅压缩暴击「加成部分」(critMult-1)，非暴击(critMult=1.0)时增量=0，乘 mult 无效。
     // default defenderCritDamageTakenMult=1.0 → effectiveCritMult=critMult（零回归）。
-    final effectiveCritMult =
-        isCritical ? (critMult - 1.0) * defenderCritDamageTakenMult + 1.0 : 1.0;
+    final effectiveCritMult = isCritical
+        ? (critMult - 1.0) * defenderCritDamageTakenMult + 1.0
+        : 1.0;
 
     // === 6. 防御率 ===
     // 破甲:开锋 pierce 绝对减防御率(穿透),clamp 0 下界不为负。招式级 piercesDefense
     // (布尔全穿透)独立路径不动。
-    final effectiveDefRate =
-        (defenderDefenseRate - attackerPiercePct).clamp(0.0, 1.0);
+    final effectiveDefRate = (defenderDefenseRate - attackerPiercePct).clamp(
+      0.0,
+      1.0,
+    );
     final defMult = 1.0 - effectiveDefRate;
 
     // === 7. 境界差修正 ===
     // RealmUtils.realmDiffModifier 返回 yaml 段原值 (attacker, defender)；
     // GDD §5.5：高打低用 attacker 放大；低打高用 defender 衰减；同境界 1.0。
-    final atkLevel =
-        RealmUtils.absoluteLevelOf(attackerRealmTier, attackerRealmLayer);
-    final defLevel =
-        RealmUtils.absoluteLevelOf(defenderRealmTier, defenderRealmLayer);
+    final atkLevel = RealmUtils.absoluteLevelOf(
+      attackerRealmTier,
+      attackerRealmLayer,
+    );
+    final defLevel = RealmUtils.absoluteLevelOf(
+      defenderRealmTier,
+      defenderRealmLayer,
+    );
     final tierDiff = attackerRealmTier.index - defenderRealmTier.index;
-    final mods =
-        RealmUtils.realmDiffModifier(attackerRealmTier, defenderRealmTier);
+    final mods = RealmUtils.realmDiffModifier(
+      attackerRealmTier,
+      defenderRealmTier,
+    );
     final realmAttackerMod = mods.$1;
     final realmDefenderMod = mods.$2;
     final double realmMult;
@@ -211,7 +240,8 @@ class DamageCalculator {
     // 体例,独立维度乘项不进 base 求和(P3.1.B 轻功/群战/恩怨烘焙)。
     // 凝甲:effectiveCritMult = 1+(critMult-1)*defenderCritDamageTakenMult
     //       default mult=1.0 → effectiveCritMult=critMult(零回归)。
-    final raw = base *
+    final raw =
+        base *
         cultMult *
         schoolMult *
         effectiveCritMult *
@@ -220,7 +250,8 @@ class DamageCalculator {
         attackPowerMultiplier *
         proficiencyDamageMult * // 可玩性 P1a:熟练度综合倍率(已含 130% cap)
         outputMultiplier * // M6 余毒:输出乘数(default 1.0=无余毒)
-        defenderSchoolDamageMult; // 批二②:弱点/抗性乘子(default 1.0=无)
+        defenderSchoolDamageMult * // 批二②:弱点/抗性乘子(default 1.0=无)
+        defenderWardMult; // floor30 护法结界:承伤减免(default 1.0=无)
     final mainDamage = raw.toInt();
 
     // === 9. 刚猛克阴柔附带震伤(§12.1 #7 v1.4 决议)===
@@ -242,7 +273,8 @@ class DamageCalculator {
     // 吸血量:实际主伤害 × 吸血率(震伤不计入)。闪避走 dodged 工厂 heal=0。
     final lifestealHeal = (mainDamage * attackerLifestealPct).floor();
 
-    final breakdown = '($attackerInternalForce*${_fmt(df.internalForceFactor)}'
+    final breakdown =
+        '($attackerInternalForce*${_fmt(df.internalForceFactor)}'
         ' + $attackerEquipmentAttack'
         ' + ${skill.powerMultiplier})'
         ' * ${_fmt(cultMult)}'
@@ -255,6 +287,7 @@ class DamageCalculator {
         '${proficiencyDamageMult != 1.0 ? ' * ${_fmt(proficiencyDamageMult)}' : ''}'
         '${outputMultiplier != 1.0 ? ' * ${_fmt(outputMultiplier)}(余毒)' : ''}'
         '${defenderSchoolDamageMult != 1.0 ? ' * ${_fmt(defenderSchoolDamageMult)}(弱点/抗性)' : ''}'
+        '${defenderWardMult != 1.0 ? ' * ${_fmt(defenderWardMult)}(护法结界)' : ''}'
         ' = $mainDamage'
         '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
         ' [atkLv=$atkLevel,defLv=$defLevel]';

@@ -228,6 +228,16 @@ class BattleCharacter {
   /// 开锋吸血率（全身装备 lifesteal 槽求和，烘焙自 fromCharacter）。0=无吸血。
   final double forgingLifestealPct;
 
+  /// 护法结界(floor30):敌人源 def id(仅敌方填充；玩家方 null)。护法结界据此
+  /// 判定护法存活（EnemyDef.id 透传，见 spec 2026-07-01-floor30-guardian-ward）。
+  final String? enemyDefId;
+
+  /// 护法结界:本单位(主 Boss)承伤乘子；null=非结界单位/无结界。
+  final double? guardianWardMult;
+
+  /// 护法结界:守护本单位的护法 def id 集合（空=无结界）。
+  final List<String> guardianDefIds;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -271,6 +281,9 @@ class BattleCharacter {
     this.lineageRole,
     this.forgingPiercePct = 0.0,
     this.forgingLifestealPct = 0.0,
+    this.enemyDefId,
+    this.guardianWardMult,
+    this.guardianDefIds = const [],
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -520,6 +533,9 @@ class BattleCharacter {
     LineageRole? lineageRole,
     double? forgingPiercePct,
     double? forgingLifestealPct,
+    String? enemyDefId,
+    double? guardianWardMult,
+    List<String>? guardianDefIds,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -583,6 +599,9 @@ class BattleCharacter {
       lineageRole: lineageRole ?? this.lineageRole,
       forgingPiercePct: forgingPiercePct ?? this.forgingPiercePct,
       forgingLifestealPct: forgingLifestealPct ?? this.forgingLifestealPct,
+      enemyDefId: enemyDefId ?? this.enemyDefId,
+      guardianWardMult: guardianWardMult ?? this.guardianWardMult,
+      guardianDefIds: guardianDefIds ?? this.guardianDefIds,
     );
   }
 
