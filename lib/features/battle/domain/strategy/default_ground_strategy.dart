@@ -905,6 +905,10 @@ class DefaultGroundStrategy implements BattleStrategy {
   /// 护法结界(floor30):defender 为结界单位(guardianWardMult != null)且其
   /// guardianDefIds 中有护法在同队存活 → 返回 wardMult(减伤);否则 1.0。
   /// 纯函数无 side effect,只读传入 state 快照(与 preState 行动前口径一致)。
+  ///
+  /// 表现层 `isGuardianWardActive`(guardian_ward_presentation.dart)镜像本函数
+  /// 的存活判定(ward 生效 ⟺ wardMultOf<1.0),由 guardian_ward_presentation_test
+  /// 的 drift 守卫锁死两者口径一致。改本函数判定条件时须同步那侧。
   static double wardMultOf(BattleCharacter defender, BattleState state) {
     final mult = defender.guardianWardMult;
     if (mult == null || defender.guardianDefIds.isEmpty) return 1.0;
