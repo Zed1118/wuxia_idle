@@ -1254,6 +1254,11 @@ festivals:
 # 8. 30 层爬塔"问鼎江湖"
 # =============================================================================
 # GDD §8.2：每天 5 次挑战次数，通关层数决定排行榜位置
+#
+# ⚠️ UNUSED（2026-07-03 六维审查批次3 证实）：本 `tower:` 整段未被 NumbersConfig.fromYaml
+# 解析为字段（见 numbers_config.dart:18-19「其余段…tower…保留 raw」），lib/ 无任何消费。
+# daily_attempts / difficulty_curve / boss_multiplier 均为设计意图记录：爬塔实际难度走
+# towers.yaml，每日 5 次限制未实装。保留作 GDD §8.2 设计锚，勿据此以为已生效；接线或删除需拍板。
 
 tower:
 
@@ -1376,6 +1381,10 @@ inheritance:
 # 10. 心法相生组合（GDD §4.5）
 # =============================================================================
 # 5 个隐藏组合的具体效果数值。组合判定逻辑见 SynergyDef，本段只给数值。
+#
+# ⚠️ UNUSED（2026-07-03 六维审查批次3 证实）：本 `synergies:` 整段未被 NumbersConfig.fromYaml
+# 解析，lib/ 无消费。相生组合真实数据源是独立文件 data/synergies.yaml（12 条目，multipliers
+# 格式，game_repository.dart:341 解析）。此处 5 条 effect_values 为历史残留，勿在此维护；删除需拍板。
 
 synergies:
 

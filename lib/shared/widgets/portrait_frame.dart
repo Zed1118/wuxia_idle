@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/colors.dart';
 import 'asset_fallback.dart';
+import 'wuxia_image.dart';
 
 /// 统一立绘框(sect 成员行 / 招募 dialog / debug 列表共用 · DRY)。
 ///
@@ -40,11 +41,8 @@ class PortraitFrame extends StatelessWidget {
       alignment: Alignment.center,
       child: portraitPath == null
           ? _placeholder()
-          : Image(
-              image: ExactAssetImage(
-                portraitPath!,
-                bundle: DefaultAssetBundle.of(context),
-              ),
+          : WuxiaImage(
+              portraitPath!,
               fit: fit,
               errorBuilder: wuxiaAssetErrorBuilder(
                 () => Container(color: WuxiaColors.avatarFill),

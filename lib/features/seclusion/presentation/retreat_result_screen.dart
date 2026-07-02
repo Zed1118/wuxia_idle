@@ -249,8 +249,8 @@ class _MapImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (path == null) return _fallback();
-    return Image(
-      image: ExactAssetImage(path!, bundle: DefaultAssetBundle.of(context)),
+    return WuxiaImage(
+      path!,
       fit: BoxFit.cover,
       errorBuilder: (_, _, _) => _fallback(),
     );

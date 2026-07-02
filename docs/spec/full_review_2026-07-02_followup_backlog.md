@@ -7,17 +7,17 @@
 ## 批次 2 · 资产瘦身(拍板点:webp 转码质量抽验)
 
 - [ ] 210MB PNG → webp/jpeg 转码(实测探针 -85%,总分发包 ~230MB→60-80MB);**需用户目检抽验画质后全量执行**
-- [ ] 44.9MB 零引用资产清理(67 文件:`ui/mj/*_01` 旧稿 15 张 ~19MB / ~~`techniques/tier_*.png` 7 张 3.7MB~~ **✅已删(2026-07-02·用户拍板)**——**订正**:非"约定未接线",实为 2026-06-29(commit `16941355`)用户目检否决的卷轴 cover(写实木轴 PNG 抠图白边叠深底突兀),已由 `technique_panel_screen` `_TechniqueTierHeader` 纯绘制水墨文字头替代;同步删 pubspec `assets/techniques/` 声明 + 订正 technique_def/phase2_seed/visual_route 3 处 stale 注释 / enemies 零引用若干)
-- [ ] `docs/reviews/` 加 .gitignore + `git rm --cached`(26 张大 PNG,最大 25.8MB);2.4G 历史要不要 `git filter-repo` 清洗需拍板(单人仓 force push 成本低)
+- [x] 零引用资产清理 **✅已删(2026-07-03·batch-123)**——**订正**:backlog 原记「44.9MB/67 文件」是 drift(webp 转码 + tier_* 已删后体积变小)。本波独立 grep 现算实为 **59 文件 8.0MB**:`ui/mj/*_01` 旧稿 **17 张**(fx_×10 + overlay_×4 + ui_frame_×2 + ceremony_red_seal_01·全 0 引用,已被 `*_blend` 版替代;entry_/menu_/其余 ceremony 的 *_01 均 1 引用=活,未动)+ `enemies/*.png` **42 张**(129 中 42 张 0 引用,移除史抽验 guard_c/shidi_a 均 commit `e73979ce`(06-28)删敌人定义时连带删 iconPath=废弃品)。iconPath 为静态全路径字面量(`assets/enemies/x.png`)无动态拼接,grep 验证可靠。~~`tier_*.png` 7 张~~ 早于 2026-07-02 删。
+- [x] `docs/reviews/` **✅已治理(上批 .git 瘦身)**——本波复核:仅 4KB tracked,.gitignore 已含 `docs/reviews/`(挡 PNG)。2.4G→658M 历史已 filter-repo 洗过(见 PROGRESS `5bd36fc1`),无需再洗。
 - [x] `assets/audio/_suno_candidates/` 75MB **✅已归档(2026-07-02·用户拍板)**:mv 出项目 → `~/Desktop/wuxia_suno_candidates_archive_2026-07-02`(已 gitignore·不进仓/不进包·可恢复)
-- [ ] 本地 `docs/handoff/` 2.7G 未跟踪 capture 目录清理(纯磁盘,零风险)
+- [ ] **⚠️需拍板** `docs/handoff/` 2.7G(**订正**:本波复核为 **tracked 416 文件**,非「未跟踪」;backlog drift)。选项:①只加 .gitignore 挡未来 ②`git rm --cached`+gitignore 移出跟踪(仍在历史) ③filter-repo 洗历史+force push(彻底但成本高)。涉历史/force push,拍板后做。
 
 ## 批次 3 · 死代码/死文案(拍板点:66 篇文案接线 vs 归档)
 
-- [ ] `battle_engine.dart`/`battle_demo.dart`/`stage_auto_play_control.dart` 三死文件删除 + 对应测试迁移到 strategy/真实入口
-- [ ] 66 篇不可达文案处置:`narratives/techniques/` 26 篇(拼音命名,与 techniques.yaml id 不联结,真孤儿)+ `insights/` 40 篇(`narrativeInsightId` 映射已填但无加载管线)——**接 UI or 移 _archive 需拍板**
-- [ ] numbers.yaml `tower` 段 + `synergies.effect_values` 段:0 消费死配置,砍掉或补 unused 头注
-- [ ] `home_feed_screen.dart` Screen 本体(providers/UiStrings 仍被 baike 活用,只删壳)/ `technique_learning.dart`(已文档化 deferred,Phase 5+ 用,建议留)
+- [x] ~~三死文件删除~~ **❌证伪·全部不删(2026-07-03·batch-123 Phase 0)**——同 tier_* 教训,backlog 误记为「死」。独立 grep 现查:① **`battle_engine.dart`** 被 `test/tools/*`(balance_simulator/tower_boss_feel/floor30_soft_gate 诊断)+ `test/balance/*_crosstier_redline`(跨阶红线)+ 战斗测试共 18 文件引用,是**平衡诊断/红线模拟引擎**,删=摧毁整个红线体系;② **`battle_demo.dart`** `BattleDemo.mockTeams()` 是 7+ 个 **BattleScreen 生产屏 widget 测试的核心夹具**(log/pause/cycle_hint/break_window/coop_burst/command_console),虽 `BattleDemoLauncher` 生产入口已被 battle_test_menu 取代,mockTeams 静态夹具活跃;③ **`stage_auto_play_control.dart`** 是「功能完成未接入入口」组件(接真实 auto-play provider·5 类选关屏挂机开关),`stage_list_screen_test:131` 断言其存在——**与 home_feed 同类,死活模糊需拍板不自主删**(见下条)。**结论:三者皆非死文件,不删。**
+- [ ] **⚠️需拍板** 66 篇不可达文案处置(2026-07-03 Phase 0 复核确认真孤儿):`data/narratives/techniques/` **26 篇**(拼音命名)+ `data/narratives/techniques/insights/` **40 篇**。证据:`NarrativeLoader._scanPaths` 仅含 `narratives/ + stages/ + ascension/ + chapters/`,**不含 techniques/**;`narrativeInsightId` 字段仅在 `skill_def.dart:44/128` 定义+解析,**lib/ 零消费**(无 loader 读)。pubspec 已声明(L61-62)故运行期可达,但无加载管线。选项:①移 `_archive/`(保留内容移出 asset,最保守) ②保持现状(Phase 5 武学领悟 UI 时接线) ③删除。**Phase 5 前接线属提前造轮子(违 §5.7),倾向 ①/②。**
+- [x] numbers.yaml `tower` 段 + `synergies` 段 **✅已补 unused 头注(2026-07-03·batch-123)**——证实 0 消费:`NumbersConfig.fromYaml`(numbers_config.dart:322+)不解析 `y['tower']`/`y['synergies']`(头注 L18-19「保留 raw」),lib/ 无 raw 访问。synergies 真实源=独立 `data/synergies.yaml`(12 条·multipliers 格式·game_repository:341)。两段各加醒目 UNUSED 头注(保留 tower 段作 GDD §8.2 设计锚·标注 daily_attempts 每日 5 次限制**未实装**)。删除仍需拍板,故留注不删。
+- [ ] **⚠️需拍板** `home_feed_screen.dart`(壳死·无路由引用·但 providers/`UiStrings.homeFeedRelativeTime` 被 baike 活用)+ `stage_auto_play_control.dart`(接真实 auto-play provider·未接入选关屏入口)两个「功能完成未接入」组件:删壳(迁复用逻辑)vs 保留待接入(Phase 5+)。`technique_learning.dart`=活 service(非 dead),留。
 
 ## 批次 4 · CI 搭建(拍板点:要不要 CI 本身)
 
@@ -29,9 +29,8 @@
 
 ## P2 零散(顺手做/低优)
 
-- [ ] §5.6 拍板 dev-facing 异常串豁免条款(383 行 fail-fast 中文串的字面违规悬置)
-- [ ] 玩家可见中文散写 ~11 处收敛 UiStrings/EnumL10n(半天,可并入任一批)
-- [ ] `0.95` 战斗三率 clamp ×4 进 numbers.yaml;factions/territories.yaml 补 `_enforce*`
-- [ ] `ExactAssetImage` ×5 迁 WuxiaImage;shop_screen.dart:606 死路径;恒真断言 ch6_r5:216 删除
-- [ ] battle 144Hz repaint rainbow 实测一次;243 测试文件 setUpAll 样板抽 `test/support/def_loading.dart`(防扩散)
-- [ ] README 重写;根目录 10 个退役 md 归档 docs/_archive/;CHANGELOG 处置(死文档);insights 测试白名单对齐(36 vs 40)
+- [x] ~~玩家可见中文散写 ~11 处~~ **✅证伪已达标(2026-07-03 复核)**:presentation/domain 层实为 0-2 处硬编码,~340 处中文均为 dev-facing 异常串(§5.6 已豁免)。无需做。
+- [ ] `0.95` 战斗三率 clamp ×4 进 numbers.yaml(`stage_battle_setup:343`/`light_foot_strategy`/`mass_battle_strategy` 各 clamp(0,0.95));factions/territories.yaml 补 `_enforce*`。**部分需拍板**:clamp 值迁移无拍板但需改 `NumbersConfig` 解析类加 3 cap 字段;factions/territories `_enforce` 校验范围/fail-fast 策略需拍板。归入下波(与 _enforce 一起)。
+- [x] `ExactAssetImage` ×5 迁 WuxiaImage **✅已迁(2026-07-03·batch-123)**(seclusion 4 屏 + portrait_frame·全仓 ExactAssetImage 归零·获 cacheWidth 收益);~~shop_screen.dart:606 死路径~~ **证伪已迁出**(现为 WuxiaImage);~~ch6_r5:216 恒真断言删除~~ **证伪=有意软红线下界放宽**(注释明「>=0 恒真·清线由 solo_mainline 覆盖」),不删。
+- [ ] battle 144Hz repaint rainbow 实测一次;252 测试文件 setUpAll 样板抽 `test/support/def_loading.dart`(**11-15h 大改动·缓做**,建议后续专项重构批·收益<成本本波不压)
+- [ ] **README 重写需拍板内容深度**(当前仅默认 Flutter 模板);根目录退役 md 归档 docs/_archive/(**⚠️先证伪依赖**:content_guide.md 被 wuxia-content/check-redlines skill 引用、AGENTS.md 是 codex 协作约定、data_schema.md 可能开发引用——不可盲归档);~~insights 白名单 36 vs 40~~ **证伪已自洽**(`encounter_skills_yaml_test` knownInsights 36=已映射 insight 数,非文件数)
