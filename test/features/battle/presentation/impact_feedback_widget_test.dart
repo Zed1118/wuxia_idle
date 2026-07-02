@@ -24,6 +24,29 @@ void main() {
     expect(find.text('震'), findsNothing);
   });
 
+  testWidgets('ImpactGlyphOverlay clear() 立即隐藏 in-flight 击杀字形（破界抢占）',
+      (tester) async {
+    final key = GlobalKey<ImpactGlyphOverlayState>();
+    await tester.pumpWidget(MaterialApp(home: ImpactGlyphOverlay(key: key)));
+    key.currentState!.show('斩', isEnemy: false);
+    await tester.pump(const Duration(milliseconds: 60));
+    expect(find.text('斩'), findsWidgets, reason: '停留期字形在场');
+    // 破界题字抢占 → clear() 同帧撤下击杀字形,让「结界破!」独占中央(不叠字)。
+    key.currentState!.clear();
+    await tester.pump();
+    expect(find.text('斩'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('ImpactGlyphOverlay clear() 无 in-flight 题字时为 no-op', (tester) async {
+    final key = GlobalKey<ImpactGlyphOverlayState>();
+    await tester.pumpWidget(MaterialApp(home: ImpactGlyphOverlay(key: key)));
+    key.currentState!.clear();
+    await tester.pump();
+    expect(find.text('斩'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('ScreenFlashOverlay idle 渲染 shrink（无 ColoredBox），flash 后出 ColoredBox',
       (tester) async {
     final key = GlobalKey<ScreenFlashOverlayState>();
