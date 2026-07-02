@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.28**
+> v1.28 变更摘要(2026-07-02 全面审查速修批 · 文档 drift 订正 + P0 资产声明修复):① **pubspec 补声明 `data/lore/sect_event/` 与 `data/narratives/`(P0)**:Flutter asset 目录声明不递归,两目录漏声明致 10 篇门派事件文案 + 14 篇爬塔 Boss/收徒叙事(narratives 根扁平文件)运行期 rootBundle 不可达、静默走兜底/占位,构建产物复核证实;新增 `test/data/pubspec_asset_declaration_test.dart` 守卫(data/ 下含 yaml 的非 `_archive` 目录必须逐个声明);② **§5.3 校验点符号订正**:`EquipmentRepository.canEquip()`/`TechniqueRepository.canPractice()` 两符号不存在,改指真实闸门(`Equipment.isEquippableAtRealm` + `EquipmentService.equip` / `TechniqueLearningService.learn`);③ **§8.1 口径订正**:「任一端缺失抛错」只对 encounters↔events、equipment↔lore 成立,stages↔narratives 实为 placeholder 兜底不抛,如实标注。源:`docs/audit/full_project_review_2026-07-02.md` P0-1/P2-1。
 > **版本:v1.27**
 > v1.27 变更摘要(2026-06-29 Codex→Claude 就绪信号 · git 原生标记 · 0 改代码):解决「codex 在多个 worktree 持续写时,Claude 分不清哪个分支冻结可评、哪个还在写(tip 随时变 / 工作区脏)」的并行 race。新增 §8.3:codex 任务写完须 ① 工作区干净(全 commit) ② 把分支 tip commit 消息前缀打成 `[READY]`(需用户拍板的打 `[BLOCKED]`,其余视为 WIP)。Claude 只评审/合并 tip 以 `[READY]` 开头且 worktree 干净的分支;codex 再提交→tip 不再是 `[READY]`→Claude 自动当其仍在写跳过(freeze 自动判定);`[BLOCKED]` 不合、汇报用户拍板。无新文件、单一事实源 git、主分支可见、零文档漂移。源:2026-06-29 4 个 codex 在途 worktree 实测(taohua 4min 前提交 / equipment-drop 脏未 commit)证明无就绪信号则只能逐个问用户。
 > **版本:v1.26**
@@ -126,7 +128,7 @@ project_root/
 新增任何"阶/品/级"概念前先问：能否复用 7 阶？不能 → 找人类讨论。
 
 ### 5.3 三系锁死同步（不可破，无例外）
-境界 ↔ 装备阶 ↔ 心法阶 一一对应。例：二流境界 → 最多装备「好家伙」、最多修「名家功」。**任何允许低境界使用更高阶装备/心法的设计都是错的**。在 `EquipmentRepository.canEquip()` / `TechniqueRepository.canPractice()` 这类校验点上保持硬约束。
+境界 ↔ 装备阶 ↔ 心法阶 一一对应。例：二流境界 → 最多装备「好家伙」、最多修「名家功」。**任何允许低境界使用更高阶装备/心法的设计都是错的**。校验点实符号(v1.28 订正,旧文引用的 `EquipmentRepository.canEquip()`/`TechniqueRepository.canPractice()` 不存在):装备侧 `Equipment.isEquippableAtRealm()`(`lib/core/domain/equipment.dart`,唯一换装路径 `EquipmentService.equip` 消费,战斗入场/飞升 auto-swap 再校验);心法侧 `TechniqueLearningService.learn`(`RealmUtils.techniqueTierCapOf` 硬拦;学心法 UI 属 Phase 5+,当前心法来源为种子/收徒,由 yaml 层 `_enforceMasterRedLines`/`_enforceRecruitCandidateRedLines` 兜底);奇遇招式侧 `EncounterService.canEquipEncounterSkillByTier`。在这些校验点上保持硬约束。
 
 **例外说明（v1.1 明确）**：
 - **师承遗物同样受锁死约束**：虽自带传承 buff（内力上限 +5%），但徒弟境界未达对应阶时不可装备，只能存放在背包等到达阶时才可装备。规则统一，无网开一面。
@@ -294,7 +296,7 @@ choices:
     outcome: practice
 ```
 
-同样规则适用于：装备 (`equipment.yaml` ↔ `lore/<equipment_id>.yaml`)、关卡 (`stages.yaml` ↔ `narratives/<stage_id>.yaml`)。
+同样的 fail-fast 规则适用于装备 (`equipment.yaml` ↔ `lore/<equipment_id>.yaml`,`_validatePresetLoreReferences` 启动期抛错)。**关卡叙事口径不同(v1.28 如实订正)**:`stages.yaml`/`towers.yaml` ↔ `narratives/<id>.yaml` 缺文件**不抛错**,`NarrativeLoader` 走「[剧情待补]」placeholder 兜底(见 `lib/data/narrative_loader.dart` 头注),完整性由 `test/tools/asset_audit.dart` 与 pubspec 声明守卫测兜底,不属加载期强校验。
 
 ### 8.2 Codex/Claude 协作交付门槛与合并 Gate
 

@@ -53,6 +53,8 @@ flutter:
     - data/events/
     - data/lore/
     - data/lore/_templates/
+    - data/lore/sect_event/
+    - data/narratives/
     - data/narratives/chapters/
     - data/narratives/stages/
     - data/narratives/codex/
