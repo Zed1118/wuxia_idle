@@ -143,6 +143,11 @@ List<String> _checksFor(VisualRoute route) {
     VisualRoute.zangjuange => const ['百科入口齐全', '卡片标题无溢出', '浅底文字用墨色'],
     VisualRoute.encounterCodex => const ['奇遇录分组齐全', '点亮/剪影态区分', '浅宣纸底对比足够'],
     VisualRoute.skillCodex => const ['武学图鉴分组齐全', '招式名无溢出', 'chip/状态条可读'],
+    VisualRoute.battleGuardianWard => const [
+      '「护法结界」护罩 pill 可辨(内力色·水墨克制不网游味)',
+      'Boss 金边 + 护罩 pill + 流派克制标多 tag 同屏不挤压/不遮头像',
+      '最低分辨率下多 tag 堆叠仍可读',
+    ],
     _ => [route.label],
   };
 }
