@@ -61,8 +61,8 @@ class AvatarStatusTags extends StatelessWidget {
       items.add(
         const AvatarStatusTag(
           spec: AvatarStatusSpec(
-            label: UiStrings.guardianWardActive,
-            gloss: UiStrings.guardianWardActive,
+            label: UiStrings.guardianWardActiveLabel,
+            gloss: UiStrings.guardianWardActiveGloss,
             color: WuxiaColors.internalForce,
           ),
         ),
