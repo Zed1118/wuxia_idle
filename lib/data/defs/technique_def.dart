@@ -18,9 +18,11 @@ class TechniqueDef {
   final int speedBonus;
   final List<String> acquireSourceTags;
 
-  /// M4 Stage 3 美术(2026-05-21):心法卷轴图 png 路径。
-  /// 仅 3 标志高阶心法在 yaml 配置(失传神功 / 传说神功 / 门派绝学);
-  /// 其余心法 null,UI 走 tier section banner cover(约定路径 `assets/techniques/tier_[name].png`)。
+  /// 心法个体卷轴图 png 路径(可选)。当前 techniques.yaml 无任一条目配置 `imagePath`,
+  /// 恒为 null;字段保留待未来心法个体立绘。tier 分组头为纯绘制水墨头
+  /// (`technique_panel_screen` `_TechniqueTierHeader`),不依赖资产图——
+  /// 原 `assets/techniques/tier_*.png` 卷轴 cover 因抠图白边叠深底突兀,
+  /// 2026-06-29(commit 16941355)目检否决改文字头,2026-07-02 资产已删。
   final String? imagePath;
 
   const TechniqueDef({
