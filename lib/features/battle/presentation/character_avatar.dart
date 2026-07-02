@@ -7,6 +7,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'avatar_status_tags.dart';
 import 'countdown_ring.dart';
+import 'guardian_ward_presentation.dart';
 import 'hp_bar.dart';
 import '../../../shared/widgets/asset_fallback.dart';
 import '../../../shared/widgets/wuxia_image.dart';
@@ -37,6 +38,11 @@ class CharacterAvatar extends StatelessWidget {
   /// 破绽窗口时长（破绽读秒环分母，`numbers.combat.defenseBreak.windowTicks`）。
   final int staggerWindowTicks;
 
+  /// floor30 护法结界(Task 6):完整战场快照,供判定 [character] 是否处于
+  /// 护法结界庇护中(需查同队护法存活状态,单个 character 字段不足以判定)。
+  /// null(测试/无结界场景)→ 跳过判定,不展示结界标签(零回归)。
+  final BattleState? battleState;
+
   const CharacterAvatar({
     super.key,
     required this.character,
@@ -45,6 +51,7 @@ class CharacterAvatar extends StatelessWidget {
     this.chargeMaxTicks = 3,
     this.beat,
     this.staggerWindowTicks = 3,
+    this.battleState,
   });
 
   @override
@@ -96,6 +103,9 @@ class CharacterAvatar extends StatelessWidget {
 
     // 读秒环节拍：null 路径回落 AlwaysStoppedAnimation(0) → 环冻结显整数。
     final effBeat = beat ?? const AlwaysStoppedAnimation<double>(0.0);
+    // floor30 护法结界(Task 6):battleState 未传(测试/无结界场景) → false。
+    final wardActive =
+        battleState != null && isGuardianWardActive(character, battleState!);
 
     final content = Column(
       mainAxisSize: MainAxisSize.min,
@@ -111,6 +121,7 @@ class CharacterAvatar extends StatelessWidget {
               character: character,
               beat: effBeat,
               staggerWindowTicks: staggerWindowTicks,
+              wardActive: wardActive,
             ),
           ),
         ),
