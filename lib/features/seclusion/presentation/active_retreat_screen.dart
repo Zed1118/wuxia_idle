@@ -9,6 +9,7 @@ import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/sound_manager.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
@@ -554,8 +555,8 @@ class _MapBackdrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (path == null) return _fallback();
-    return Image(
-      image: ExactAssetImage(path!, bundle: DefaultAssetBundle.of(context)),
+    return WuxiaImage(
+      path!,
       fit: BoxFit.cover,
       errorBuilder: (_, _, _) => _fallback(),
     );
