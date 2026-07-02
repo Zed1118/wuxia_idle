@@ -59,6 +59,17 @@ class ImpactGlyphOverlayState extends State<ImpactGlyphOverlay>
     _ctrl.forward(from: 0.0);
   }
 
+  /// 立即清除当前打击题字（若有）。供破界题字（[UltimateCaptionOverlay]）抢占
+  /// 中央焦点：最后一击击杀护法与「结界破！」同 tick 触发时，两套居中题字会叠字
+  /// （2026-07-02 目检 WARN）。破界前先 clear() 让「结界破！」独占中央。
+  /// 无 in-flight 题字时为 no-op。
+  void clear() {
+    _ctrl.stop();
+    if (_glyph != null) {
+      setState(() => _glyph = null);
+    }
+  }
+
   // 淡入(0→_fadeInEnd:opacity 0→1) / 停留(_fadeInEnd→_fadeOutStart:1) /
   // 淡出(_fadeOutStart→1:1→0)。断点全由 ms 派生。
   double get _opacity {

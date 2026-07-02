@@ -631,6 +631,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   /// 纯读 [boss] 元数据，不写 BattleState（守 §5.4）。
   void _playGuardianWardBreak(BattleCharacter boss) {
     final isEnemy = boss.teamSide == 1;
+    // 破界题字抢占中央焦点:最后一击击杀护法的「斩」字形与「结界破!」同 tick 触发,
+    // 两套居中题字会叠字(2026-07-02 目检 WARN)。先清掉 in-flight 击杀字形,
+    // 让「结界破!」独占中央,直达干净帧。
+    _impactGlyphKey.currentState?.clear();
     _ultimateCaptionKey.currentState?.show(
       UiStrings.guardianWardBroken,
       isEnemy: isEnemy,
