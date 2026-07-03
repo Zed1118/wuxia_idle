@@ -4,6 +4,8 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.29**
+> v1.29 变更摘要(2026-07-03 测试节奏收口 · 0 改代码):去掉「无脑全量 + `-j1`」的罚时。① **全量默认改并发**:`flutter test --no-pub`(不带 `-j1`)——10 核实测 **2m34s / 3587 pass 0 fail** vs `-j1` 9m42s(3.8× 提速·零覆盖损失·每文件独立 isolate + 每测试 `createTemp` 独立目录本就隔离);`-j1` 仅在排查隔离型 flaky(如 `drop_table_reference_redline`)时临时用。② **何时跑全量**(§8.0 执行纪律):自包含改动(纯资产/文案/单 feature 表现层)只 targeted + `analyze`,跨切面改动(numbers/结算/schema/saveVer/公式/全仓 sed/迁移)或批末合并才全量。③ **交接/开局不无脑全量**:`HEAD=origin/main` + 树干净 + 上会话验绿并 push 时只 `analyze`,绿状态已是 PROGRESS/session 记录的事实。源:2026-07-03 用户反馈「测试太频繁费时」+ 本会话并发实测。
 > **版本:v1.28**
 > v1.28 变更摘要(2026-07-02 全面审查速修批 · 文档 drift 订正 + P0 资产声明修复):① **pubspec 补声明 `data/lore/sect_event/` 与 `data/narratives/`(P0)**:Flutter asset 目录声明不递归,两目录漏声明致 10 篇门派事件文案 + 14 篇爬塔 Boss/收徒叙事(narratives 根扁平文件)运行期 rootBundle 不可达、静默走兜底/占位,构建产物复核证实;新增 `test/data/pubspec_asset_declaration_test.dart` 守卫(data/ 下含 yaml 的非 `_archive` 目录必须逐个声明);② **§5.3 校验点符号订正**:`EquipmentRepository.canEquip()`/`TechniqueRepository.canPractice()` 两符号不存在,改指真实闸门(`Equipment.isEquippableAtRealm` + `EquipmentService.equip` / `TechniqueLearningService.learn`);③ **§8.1 口径订正**:「任一端缺失抛错」只对 encounters↔events、equipment↔lore 成立,stages↔narratives 实为 placeholder 兜底不抛,如实标注。源:`docs/audit/full_project_review_2026-07-02.md` P0-1/P2-1。
 > **版本:v1.27**
@@ -251,7 +253,8 @@ Demo 必交付内容量（已全部达标）：
 - 每个子线程只处理一个明确切片,不要把设计、多个大功能、全量测试、合并都塞进同一线程。
 - 每完成一个可独立验证的小切片就 commit 一次,并同步更新计划文件的恢复点。
 - 接近中断、测试失败、依赖未满足或需要人类拍板时,先更新恢复点再停。
-- 先跑 targeted tests/analyze;全量 `flutter test` / 大范围视觉验收由主窗口在合并前统一安排。
+- **测试节奏(v1.29·别无脑全量)**:自包含改动(纯资产/文案/单 feature 表现层)只跑 targeted + `flutter analyze`,不跑全量;跨切面改动(numbers/结算/schema/saveVer/公式/全仓 sed/迁移)或批末合并才跑全量。全量默认用**并发** `flutter test --no-pub`(10 核实测 2m34s / 3587 pass 0 fail·2026-07-03),`-j1` 慢 3.8×,仅排查隔离型 flaky 时临时用。大范围视觉验收由主窗口在合并前统一安排。
+- **交接/开局不无脑全量**:session 开始若 `HEAD=origin/main` + 工作树干净 + 上会话已验绿并 push(PROGRESS/session 文档记录在案)→ 只 `flutter analyze` 即可,跳过全量(绿状态已是记录事实);仅当树脏、或要在此基础上做跨切面大改时才开局全量。
 - 依赖型任务不提前空转,不复制前置分支尚未稳定的 API;等待主窗口唤醒。
 
 | 端 | 工具 | 写什么 |
@@ -312,7 +315,7 @@ choices:
 
 **Claude 合并审核 Gate**(合每个 Codex 分支前逐项过):核上述 4 证据齐全 + UI 视口/视觉口径 + 外审项已证伪;另查 ⓐ 无中文文案 / 数值常量散写进 Dart ⓑ 无高频路径 debug 日志噪声(如 `build()` 内 `debugPrint` 随 rebuild 刷屏)ⓒ 无误提交(未清 worktree / 未跟踪文件 / capture 目录 / 临时文档 / `.g.dart` / log / 截图,**用户指定保留的 worktree/分支除外**)。
 
-**批次合并后必做**(每梯队/批末):`flutter analyze` 0 issue → 相关 targeted tests → 批末一次全量 `flutter test --no-pub -j1` → UI 密集改动至少一轮常规桌面视口 smoke → 清理或归档已合并 worktree/分支 + capture 文件(**用户指定保留的除外**)→ PROGRESS 顶段更新区分四态:**已完成 / 已验证 / 已知风险 / 下批建议**(避免 N 个分支各自堆叠进度段)。
+**批次合并后必做**(每梯队/批末):`flutter analyze` 0 issue → 相关 targeted tests → 批末一次全量 `flutter test --no-pub`(默认并发·10 核 ~2.5min;`-j1` 仅排查 flaky) → UI 密集改动至少一轮常规桌面视口 smoke → 清理或归档已合并 worktree/分支 + capture 文件(**用户指定保留的除外**)→ PROGRESS 顶段更新区分四态:**已完成 / 已验证 / 已知风险 / 下批建议**(避免 N 个分支各自堆叠进度段)。
 
 ### 8.3 Codex→Claude 就绪信号(git 原生标记)
 
