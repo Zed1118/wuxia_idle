@@ -571,11 +571,14 @@ git commit -m "docs: batch-2 爬塔应用收口（PROGRESS + plan 恢复点）"
 
 ## 恢复点（Resume Point）
 
-- **状态：** 未开始（plan 已写，待执行）。
-- **下一步：** Task 1（放宽校验 + 收口 batch-1 遗留标签/docstring）。
-- **环境：** worktree `endgame-boss-batch2-tower`（branch `worktree-endgame-boss-batch2-tower`，base=origin/main af4db5a2），dylib + pub get + build_runner 已预热。
+- **状态：** ✅ 批次2 全部完成（6/6 Task），Subagent-Driven，每 Task spec+quality 双审通过。
+- **提交序（11 commit，base=origin/main af4db5a2）：** Task1 `2f26dc84`+`1816d505`(review 修) / Task2 `ee8566ba` / Task3 `d14043e8`+`7c701457`(e2e 手动越护法)+`fbe4432f`(破招 scope-out 注释)+`1907eee9`(null gate parity) / Task4 `9fc91700` / Task5 `2d3f0fcb`+`40e834e4`(feel ceiling-only)+`e936a652`(诊断诚实标注+阈值收紧)。
+- **已验证（worktree 本会话实测）：** `flutter analyze lib/ test/` **0** · 全量 `flutter test --no-pub` **3629 pass / 1 skip / 0 fail**（基线 3621 + 8 新测，零回归）· 三诊断硬闸全绿（floor25 plumbing+A/B 2.66×+budget8 0.23 / floor30 taunt 集成 sanity + 软门槛 onLevel100%/underGear13.3%）。
+- **用户拍板（2 项）：** ① taunt 仅锁自动 AI、手动 pendingTargets 可越（ward减伤=越护法惩罚）② vuln 软门槛接受（零投入 on-level 40% 胜/看不到相位，feel 测相位不变量限 ceiling profile）。
 - **阻塞项：** 无。
-- **视觉验收（批末，可 defer 到合并前）：** floor30 护法墙 + 脆弱窗口的减伤反馈题字真机目检（非本批 TDD 范围，主窗口合并前统一安排）。
+- **已知风险：** floor30 taunt 在其自然 stat 下与最低血 AI 冗余（Boss 42000≫护法9000/8500）；taunt 真价值在 focus/aoe 路径 + 未来血比≤护法的 Boss；红线文档（GDD/CLAUDE §5.4 机制型例外）留批次5。
+- **待合 main：** worktree `endgame-boss-batch2-tower` 冻结待主窗口合并（视觉验收：floor30 护法墙 + 脆弱窗口减伤反馈题字真机目检，非本批 TDD 范围，合并前统一安排）。
+- **下一步（后续批次）：** 批次3 心魔（相位开窗 + 终关模块B 限时生存，改 isFinished 回归面大可 defer）/ 批次4 周目 cycleBossPhases 收窄窗口 / 批次5 §5.4 红线文档修订（需用户确认措辞）。
 
 ## 批次2 后续（不在本 plan）
 
