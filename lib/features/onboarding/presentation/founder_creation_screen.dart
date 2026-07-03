@@ -8,6 +8,7 @@ import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/utils/rng.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../application/onboarding_service.dart';
 import '../domain/founder_creation_selection.dart';
@@ -47,7 +48,7 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
   void _rollFounderName() {
     final name = generateFounderName(
       GameRepository.instance.founderNames,
-      DefaultRng(),
+      ref.read(rngProvider),
     );
     if (name.isNotEmpty) _founderNameController.text = name;
   }
@@ -55,7 +56,7 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
   void _rollSectName() {
     final name = generateSectName(
       GameRepository.instance.founderNames,
-      DefaultRng(),
+      ref.read(rngProvider),
     );
     if (name.isNotEmpty) _sectNameController.text = name;
   }
