@@ -7,10 +7,18 @@ class FounderCreationSelection {
   final FounderOriginOption origin;
   final FounderFateOption fate;
 
+  /// 玩家自定义祖师名;留空(null)则 seeding 回退默认「祖师」。
+  final String? founderName;
+
+  /// 玩家自定义门派名;留空(null)则 seeding 回退默认「我的门派」。
+  final String? sectName;
+
   const FounderCreationSelection({
     required this.school,
     required this.origin,
     required this.fate,
+    this.founderName,
+    this.sectName,
   });
 }
 

@@ -85,6 +85,7 @@ class OnboardingService {
         masters[0],
         now: now,
         attributeProfile: creation?.fate.attributeProfile,
+        nameOverride: creation?.founderName,
         founderCreationSchoolId: creation?.school.id,
         founderCreationOriginId: creation?.origin.id,
         founderCreationFateId: creation?.fate.id,
@@ -136,7 +137,7 @@ class OnboardingService {
       if (save != null) {
         save.activeCharacterIds = seeded.map((c) => c.id).toList();
         save.founderCharacterId = founder.id;
-        save.sectName ??= UiStrings.defaultSectName;
+        save.sectName = creation?.sectName ?? UiStrings.defaultSectName;
         await isar.saveDatas.put(save);
       }
 
