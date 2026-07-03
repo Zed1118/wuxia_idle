@@ -238,6 +238,10 @@ class BattleCharacter {
   /// 护法结界:守护本单位的护法 def id 集合（空=无结界）。
   final List<String> guardianDefIds;
 
+  /// 脆弱窗口(终局机制型 Boss):窗口外承伤乘子；null=无机制（旧行为，全额受伤）。
+  /// 由 StageBattleSetup 从 EnemyDef.vulnerability 灌入。
+  final double? vulnerabilityMult;
+
   const BattleCharacter({
     required this.characterId,
     required this.name,
@@ -284,6 +288,7 @@ class BattleCharacter {
     this.enemyDefId,
     this.guardianWardMult,
     this.guardianDefIds = const [],
+    this.vulnerabilityMult,
   });
 
   /// 从 Isar 实体构造战斗快照（phase1_tasks T11 §651）。
@@ -536,6 +541,7 @@ class BattleCharacter {
     String? enemyDefId,
     double? guardianWardMult,
     List<String>? guardianDefIds,
+    double? vulnerabilityMult,
   }) {
     return BattleCharacter(
       characterId: characterId ?? this.characterId,
@@ -602,6 +608,7 @@ class BattleCharacter {
       enemyDefId: enemyDefId ?? this.enemyDefId,
       guardianWardMult: guardianWardMult ?? this.guardianWardMult,
       guardianDefIds: guardianDefIds ?? this.guardianDefIds,
+      vulnerabilityMult: vulnerabilityMult ?? this.vulnerabilityMult,
     );
   }
 
