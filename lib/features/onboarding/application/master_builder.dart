@@ -30,6 +30,7 @@ Character buildMasterCharacter(
   MasterDef def, {
   required DateTime now,
   AttributeProfile? attributeProfile,
+  String? nameOverride,
   String? founderCreationSchoolId,
   String? founderCreationOriginId,
   String? founderCreationFateId,
@@ -40,7 +41,7 @@ Character buildMasterCharacter(
   );
   final profile = attributeProfile ?? def.attributeProfile;
   return Character.create(
-    name: defaultMasterName(def),
+    name: nameOverride ?? defaultMasterName(def),
     realmTier: def.defaultRealm,
     realmLayer: def.defaultLayer,
     attributes: Attributes()

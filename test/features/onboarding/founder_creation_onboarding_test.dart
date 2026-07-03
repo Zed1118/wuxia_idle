@@ -108,4 +108,42 @@ void main() {
     expect(founder.founderCreationOriginId, isNull);
     expect(founder.founderCreationFateId, isNull);
   });
+
+  test('自定义名 → founder.name / save.sectName', () async {
+    final config = GameRepository.instance.founderCreation;
+    final sel = FounderCreationSelection(
+      school: config.schools.first,
+      origin: config.origins.first,
+      fate: config.fatePool.first,
+      founderName: '慕容无咎',
+      sectName: '青城派',
+    );
+    await OnboardingService(
+      isar: IsarSetup.instance,
+    ).createFoundingMaster(selection: sel);
+
+    final isar = IsarSetup.instance;
+    final save = (await isar.saveDatas.get(0))!;
+    final founder = await isar.characters.get(save.founderCharacterId!);
+    expect(founder!.name, '慕容无咎');
+    expect(save.sectName, '青城派');
+  });
+
+  test('留空 founderName/sectName 回退默认「祖师」「我的门派」', () async {
+    final config = GameRepository.instance.founderCreation;
+    final sel = FounderCreationSelection(
+      school: config.schools.first,
+      origin: config.origins.first,
+      fate: config.fatePool.first,
+    );
+    await OnboardingService(
+      isar: IsarSetup.instance,
+    ).createFoundingMaster(selection: sel);
+
+    final isar = IsarSetup.instance;
+    final save = (await isar.saveDatas.get(0))!;
+    final founder = await isar.characters.get(save.founderCharacterId!);
+    expect(founder!.name, '祖师');
+    expect(save.sectName, '我的门派');
+  });
 }

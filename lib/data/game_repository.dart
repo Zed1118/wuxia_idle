@@ -10,6 +10,7 @@ import 'codex_loader.dart';
 import 'defs/equipment_def.dart';
 import 'defs/boss_phase_def.dart';
 import 'defs/founder_creation_def.dart';
+import 'defs/founder_names_def.dart';
 import 'defs/master_def.dart';
 import 'defs/recruit_candidate_def.dart';
 import 'defs/realm_def.dart';
@@ -73,6 +74,9 @@ class GameRepository {
 
   /// 新档祖师塑形配置(`data/founder_creation.yaml`)。
   final FounderCreationConfig founderCreation;
+
+  /// 祖师/门派随机取名素材(`data/founder_names.yaml`)。
+  final FounderNamesConfig founderNames;
 
   /// 收徒候选 NPC 列表(P1.1 A1 E.1,GDD §7.1)。
   /// 加载源:`data/recruit_candidates.yaml`,固定 3 候选(audit doc 方案 3 + D2.b)。
@@ -142,6 +146,7 @@ class GameRepository {
     required this.seclusionMaps,
     required this.masters,
     required this.founderCreation,
+    required this.founderNames,
     required this.recruitCandidates,
     required this.sectCandidates,
     required this.encounterDefs,
@@ -243,6 +248,13 @@ class GameRepository {
       'data/founder_creation.yaml',
       (raw) => FounderCreationConfig.fromYaml(parseYamlMap(raw)),
       fallback: FounderCreationConfig.empty,
+    );
+
+    final founderNames = await _loadOptionalAsset<FounderNamesConfig>(
+      load,
+      'data/founder_names.yaml',
+      (raw) => FounderNamesConfig.fromYaml(parseYamlMap(raw)),
+      fallback: FounderNamesConfig.empty,
     );
 
     // P1.1 A1 E.1:收徒候选 yaml(允许 test fixture 不带 → 空 map)。
@@ -414,6 +426,7 @@ class GameRepository {
       seclusionMaps: numbers.retreat.maps,
       masters: masters,
       founderCreation: founderCreation,
+      founderNames: founderNames,
       recruitCandidates: recruitCandidates,
       sectCandidates: sectCandidates,
       encounterDefs: encounterDefs,

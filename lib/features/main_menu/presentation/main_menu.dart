@@ -57,6 +57,8 @@ import '../../tutorial/domain/tutorial_hint_def.dart';
 import '../../tutorial/presentation/tutorial_banner_card.dart';
 import '../../tower/presentation/leaderboard_screen.dart';
 import 'main_menu_retreat_banner.dart';
+import 'sect_banner.dart';
+import '../application/main_menu_status_summary_provider.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../tower/application/tower_providers.dart';
 import '../../tower/domain/tower_progress.dart';
@@ -183,6 +185,11 @@ class MainMenu extends ConsumerWidget {
           progress: mainlineProgress,
           chapterIndex: taohuaUnlockChIdx + 1, // 0-based → stages.yaml 1-based
         );
+
+    // 门派名横幅(读当前存档 sectName;轻量 test / 无档时为 null 不显)。
+    final sectName = ref
+        .watch(mainMenuSaveSnapshotProvider)
+        .maybeWhen(data: (s) => s?.sectName, orElse: () => null);
 
     // P4 战绩册入口门控：首次击败任一 Boss 后解锁（§5.7 隐藏式）。
     final bossCount = ref
@@ -518,6 +525,10 @@ class MainMenu extends ConsumerWidget {
                             letterSpacing: 4,
                           ),
                         ),
+                        if (sectName != null && sectName.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          SectBanner(sectName: sectName),
+                        ],
                         const _TodayFestivalChip(),
                         if (activeHint != null)
                           TutorialBannerCard(

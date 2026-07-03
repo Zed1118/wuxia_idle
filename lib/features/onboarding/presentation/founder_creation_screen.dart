@@ -8,6 +8,7 @@ import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/utils/rng.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../../main_menu/presentation/main_menu.dart';
 import '../application/onboarding_service.dart';
 import '../domain/founder_creation_selection.dart';
@@ -27,12 +28,37 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
   int _originIndex = 0;
   int _fateIndex = 0;
   bool _submitting = false;
+  final _founderNameController = TextEditingController();
+  final _sectNameController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _config = GameRepository.instance.founderCreation;
     _fates = generateFounderFateChoices(config: _config, rng: DefaultRng());
+  }
+
+  @override
+  void dispose() {
+    _founderNameController.dispose();
+    _sectNameController.dispose();
+    super.dispose();
+  }
+
+  void _rollFounderName() {
+    final name = generateFounderName(
+      GameRepository.instance.founderNames,
+      ref.read(rngProvider),
+    );
+    if (name.isNotEmpty) _founderNameController.text = name;
+  }
+
+  void _rollSectName() {
+    final name = generateSectName(
+      GameRepository.instance.founderNames,
+      ref.read(rngProvider),
+    );
+    if (name.isNotEmpty) _sectNameController.text = name;
   }
 
   FounderSchoolOption get _school => _config.schools[_schoolIndex];
@@ -47,11 +73,15 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
   Future<void> _confirm() async {
     if (_submitting || !_hasConfig) return;
     setState(() => _submitting = true);
+    final founderName = _founderNameController.text.trim();
+    final sectName = _sectNameController.text.trim();
     await OnboardingService(isar: IsarSetup.instance).createFoundingMaster(
       selection: FounderCreationSelection(
         school: _school,
         origin: _origin,
         fate: _fate,
+        founderName: founderName.isEmpty ? null : founderName,
+        sectName: sectName.isEmpty ? null : sectName,
       ),
     );
     ref.invalidate(isarProvider);
@@ -157,6 +187,16 @@ class _FounderCreationScreenState extends ConsumerState<FounderCreationScreen> {
                           school: _school,
                           origin: _origin,
                           fate: _fate,
+                        ),
+                        const SizedBox(height: 16),
+                        _Section(
+                          title: UiStrings.founderCreateNameSection,
+                          child: _NameFields(
+                            founderController: _founderNameController,
+                            sectController: _sectNameController,
+                            onRollFounder: _rollFounderName,
+                            onRollSect: _rollSectName,
+                          ),
                         ),
                         const SizedBox(height: 20),
                         Align(
@@ -533,5 +573,92 @@ class _PreviewLine extends StatelessWidget {
         ),
       ],
     ),
+  );
+}
+
+class _NameFields extends StatelessWidget {
+  const _NameFields({
+    required this.founderController,
+    required this.sectController,
+    required this.onRollFounder,
+    required this.onRollSect,
+  });
+
+  final TextEditingController founderController;
+  final TextEditingController sectController;
+  final VoidCallback onRollFounder;
+  final VoidCallback onRollSect;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      _NameRow(
+        label: UiStrings.founderCreateFounderNameLabel,
+        hint: UiStrings.founderCreateFounderNameHint,
+        controller: founderController,
+        maxLength: 8,
+        onRoll: onRollFounder,
+      ),
+      const SizedBox(height: 12),
+      _NameRow(
+        label: UiStrings.founderCreateSectNameLabel,
+        hint: UiStrings.founderCreateSectNameHint,
+        controller: sectController,
+        maxLength: 12,
+        onRoll: onRollSect,
+      ),
+    ],
+  );
+}
+
+class _NameRow extends StatelessWidget {
+  const _NameRow({
+    required this.label,
+    required this.hint,
+    required this.controller,
+    required this.maxLength,
+    required this.onRoll,
+  });
+
+  final String label;
+  final String hint;
+  final TextEditingController controller;
+  final int maxLength;
+  final VoidCallback onRoll;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      SizedBox(
+        width: 64,
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: WuxiaColors.textSecondary,
+            fontSize: 14,
+          ),
+        ),
+      ),
+      Expanded(
+        child: TextField(
+          controller: controller,
+          maxLength: maxLength,
+          style: const TextStyle(color: WuxiaColors.textPrimary),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: WuxiaColors.textMuted),
+            counterText: '',
+            isDense: true,
+          ),
+        ),
+      ),
+      const SizedBox(width: 8),
+      TextButton.icon(
+        onPressed: onRoll,
+        icon: const Icon(Icons.casino_outlined, size: 18),
+        label: const Text(UiStrings.founderCreateRollName),
+      ),
+    ],
   );
 }

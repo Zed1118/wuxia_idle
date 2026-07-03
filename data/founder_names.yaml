@@ -1,0 +1,6 @@
+# 祖师/门派随机取名素材（组件式：姓+名 / 前缀+后缀）。
+# 加载:game_repository.loadAllDefs → FounderNamesConfig.fromYaml。无 schema 硬校验。
+founder_surnames: [慕容, 令狐, 独孤, 上官, 东方, 西门, 南宫, 欧阳, 司马, 叶, 楚, 沈, 苏, 秦, 萧]
+founder_given: [无咎, 惊鸿, 玄机, 拂尘, 问天, 归尘, 听澜, 挽风, 观澜, 望舒, 抱朴, 忘机, 若虚, 长歌]
+sect_prefixes: [青城, 昆仑, 天山, 桃花, 听雨, 落霞, 松风, 云隐, 寒江, 玄铁, 断崖, 流云, 碧水, 苍梧]
+sect_suffixes: [派, 门, 山庄, 阁, 洞, 观, 宗, 剑庄]
