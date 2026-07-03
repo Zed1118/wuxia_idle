@@ -990,6 +990,10 @@ floors:
         schoolDamageTakenMult:
           yinRou: 1.25
           gangMeng: 0.75
+        vulnerability:
+          outOfWindowDamageMult: 0.10   # 机制型:窗口外(未蓄招/未踉跄)仅受 10% 伤;
+                                        # 窗口靠 bossPhases chargeCounter 相位(0.70/0.50)开。
+                                        # 批次1 诊断(copyWith 0.10)验:满配20/20胜·ticks 2.66×。
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.70
