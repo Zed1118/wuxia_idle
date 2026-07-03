@@ -299,6 +299,29 @@ void main() {
         ),
       );
     });
+
+    test('2.5 机制型 Boss cycle-2 脆弱窗口 ∈ [0.05,1.0] 且不永久免疫', () {
+      for (final bossId in ['enemy_tower_boss_25', 'enemy_tower_boss_30']) {
+        final floor = int.parse(bossId.split('_').last);
+        final def = GameRepository.instance
+            .getTowerFloor(floor)
+            .enemyTeam
+            .firstWhere((e) => e.id == bossId);
+        final c2 = def.cycleVulnerability[2];
+        expect(c2, isNotNull, reason: '$bossId 应配 cycle-2 收窄');
+        expect(
+          c2!.outOfWindowDamageMult,
+          inInclusiveRange(0.05, 1.0),
+          reason: '$bossId cycle-2 vuln 守 schema 边界（减伤方向非属性 buff）',
+        );
+        // 收窄方向:cycle-2 严格低于 base(周目加压),但非 0 永久免疫。
+        expect(
+          c2.outOfWindowDamageMult,
+          lessThan(def.vulnerability!.outOfWindowDamageMult),
+          reason: '$bossId cycle-2 应比 base 更严',
+        );
+      }
+    });
   });
 
   // ════════════════════════════════════════════════════════════════════════════
