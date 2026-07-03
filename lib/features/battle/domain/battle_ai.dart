@@ -42,8 +42,9 @@ class BattleAI {
     // 破招锁定——aoe 本就含蓄力敌,且 pendingTargets 对 aoe 技不写,优先于
     // pending manualTargetId 单体逻辑。
     if (skill.targetType == TargetType.aoe) {
-      final targets = enemyTeam.where((e) => e.isAlive).toList()
-        ..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
+      final targets =
+          enemyTeam.where((e) => e.isAlive && !isGuardedBoss(e, state)).toList()
+            ..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
       return (skill, targets.map((e) => e.characterId).toList());
     }
 
@@ -61,6 +62,11 @@ class BattleAI {
     final charging =
         enemyTeam.where((e) => e.isAlive && e.chargingSkill != null);
     final int targetId;
+    // 注:此破招锁定路径**有意不加 isGuardedBoss 排除**(taunt 仅覆盖常规目标选择
+    // _pickTargetId/_pickFocusTargetId/_pickControlTargetId + aoe)。floor30 Boss 靠
+    // hp-threshold 相位蓄招,护法存活时 Boss 不掉血 → 不进蓄招态 → 此处 charging 不含
+    // 它,故对 floor30 不可达。破招是 P0 防御机制;未来若配 chargeSkillId(CD 蓄招)+
+    // 护法的 Boss,再拍板是否让破招穿透 taunt。
     if (skill.canInterrupt && charging.isNotEmpty) {
       // 破招锁定优先于集火(破招窗口比泛破绽更紧急)
       targetId = charging.first.characterId; // P0:破招技锁定蓄力敌人
@@ -154,6 +160,25 @@ class BattleAI {
     );
   }
 
+  /// 护法墙 taunt(floor30 模块 A):候选敌为被护法保护的 Boss —— guardianDefIds 非空
+  /// 且同队有护法(enemyDefId ∈ guardianDefIds)存活 —— 返 true,应从目标池排除。
+  /// 护法全灭 → false,Boss 进池。镜像 DefaultGroundStrategy.wardMultOf 的护法存活判定
+  /// (drift 守卫见 battle_ai_guardian_taunt_test)。taunt 优先于脆弱窗口:护法活着
+  /// Boss 打不到,无论其是否蓄招。
+  ///
+  /// gate 与 wardMultOf 逐字段一致:guardianWardMult 与 guardianDefIds 皆备才可能被
+  /// taunt 保护(二者今日同源共填,但显式镜像 gate 防未来 loader 单字段 desync)。
+  static bool isGuardedBoss(BattleCharacter candidate, BattleState state) {
+    if (candidate.guardianWardMult == null || candidate.guardianDefIds.isEmpty) {
+      return false;
+    }
+    final team = candidate.teamSide == 1 ? state.rightTeam : state.leftTeam;
+    return team.any((c) =>
+        c.isAlive &&
+        c.enemyDefId != null &&
+        candidate.guardianDefIds.contains(c.enemyDefId));
+  }
+
   /// 目标选择：对面活角色 currentHp 最低的；同 hp 选 slotIndex 小的（前排优先）。
   static int _pickTargetId(BattleCharacter actor, BattleState state) {
     final enemyTeam =
@@ -161,6 +186,7 @@ class BattleAI {
     BattleCharacter? best;
     for (final e in enemyTeam) {
       if (!e.isAlive) continue;
+      if (isGuardedBoss(e, state)) continue;
       if (best == null) {
         best = e;
         continue;
@@ -187,6 +213,7 @@ class BattleAI {
     BattleCharacter? best;
     for (final e in enemyTeam) {
       if (!e.isAlive || e.staggerTicksRemaining <= 0) continue;
+      if (isGuardedBoss(e, state)) continue;
       if (best == null ||
           e.currentHp < best.currentHp ||
           (e.currentHp == best.currentHp && e.slotIndex < best.slotIndex)) {
@@ -203,6 +230,7 @@ class BattleAI {
     BattleCharacter? best;
     for (final e in enemyTeam) {
       if (!e.isAlive || e.chargingSkill == null) continue;
+      if (isGuardedBoss(e, state)) continue;
       if (best == null ||
           e.chargeTicksRemaining < best.chargeTicksRemaining ||
           (e.chargeTicksRemaining == best.chargeTicksRemaining &&

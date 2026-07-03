@@ -240,10 +240,12 @@ void main() {
   });
 
   // ── 端到端:守 default_ground_strategy 结算路径确实透传 wardMultOf ──
-  // 真实跑 strategy.tick:玩家攻结界 Boss;护法存活 → Boss 承伤 ≈满伤 ×0.15,
+  // taunt(模块 A)下自动 AI **不会**选中存活护法保护的 Boss,故本测经
+  // pendingUltimates + pendingTargets **手动锁 Boss**,走「手动越护法直捶」路径
+  // (玩家点选可越 taunt)——护法存活 → Boss 承伤 =满伤 ×0.15(越护法惩罚),
   // 护法死亡 → 满伤。若有人删掉 `defenderWardMult: wardMultOf(...)` 实参,
   // 护法存活分支会退回满伤 → 本测失败(wiring 回归守卫)。
-  group('端到端 wiring:strategy 结算透传 wardMultOf', () {
+  group('端到端 wiring:strategy 结算透传 wardMultOf(手动越护法)', () {
     const profAtk = SkillDef(
       id: 'prof_atk',
       name: '普攻',
@@ -257,7 +259,7 @@ void main() {
     );
     const strategy = DefaultGroundStrategy();
 
-    // 玩家(快,先手)攻结界 Boss;Boss hp<护法 → AI 选最低血目标恒锁 Boss。
+    // 玩家(快,先手)手动锁 Boss(pendingUltimates+pendingTargets 越 taunt)。
     // 返回玩家首次命中 Boss(targetId==2)的 finalDamage。
     int firstBossHit({required bool guardianAlive}) {
       final n = GameRepository.instance.numbers;
@@ -280,7 +282,7 @@ void main() {
         guardianDefIds: const ['g'],
         speed: 1,
         maxHp: 100000,
-        currentHp: 40000, // < 护法 → AI 锁 Boss
+        currentHp: 40000, // 手动 pendingTargets 锁 Boss,不靠血量
         availableSkills: const [profAtk],
         slotIndex: 0,
       );
@@ -295,9 +297,15 @@ void main() {
         availableSkills: const [profAtk],
         slotIndex: 1,
       );
+      // 手动越护法:玩家(id 1)以 profAtk 手动锁定 Boss(id 2)。pendingUltimates
+      // 令 _pickSkill 返 profAtk 且满足 decide 手动分支 identical(skill, pending),
+      // pendingTargets 指定目标 Boss —— 手动分支不受 taunt 排除。
       var s = BattleState.initial(
         leftTeam: [player],
         rightTeam: [boss, guardian],
+      ).copyWith(
+        pendingUltimates: {1: profAtk},
+        pendingTargets: {1: 2},
       );
       final rng = Random(7);
       var guard = 0;

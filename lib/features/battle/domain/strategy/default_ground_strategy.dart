@@ -926,7 +926,8 @@ class DefaultGroundStrategy implements BattleStrategy {
   /// 脆弱窗口(终局机制型 Boss):defender 带 vulnerabilityMult 且当前不脆弱
   /// (未蓄招 chargingSkill==null 且未踉跄 staggerTicksRemaining==0) → 返 mult(减伤);
   /// 蓄招中/踉跄中(脆弱窗口)或无机制(null) → 1.0(全额)。
-  /// 窗口靠 chargeSkillId 的技能 CD 周期复发(§3.2)，此处只读状态不改状态。
+  /// 窗口复发靠现成机制:顶层 chargeSkillId 的技能 CD(§3.2)，或 bossPhases 的
+  /// chargeCounter 相位(跌破 hpThreshold 进蓄力态，floor25/30 用此路径)。此处只读状态不改状态。
   static double vulnerabilityMultOf(BattleCharacter defender, BattleState state) {
     final mult = defender.vulnerabilityMult;
     if (mult == null) return 1.0;

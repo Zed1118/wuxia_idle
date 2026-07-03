@@ -136,10 +136,11 @@ class DamageCalculator {
     /// 叠乘后仍 <100万(numbers 值域 + 加载期 enforceWeaknessRedLines 双守)。
     double defenderSchoolDamageMult = 1.0,
 
-    /// 护法结界(floor30):守方为结界 Boss 且护法存活时的承伤乘子
-    /// (default 1.0=无结界/护法全灭,零回归)。值由调用方从守方 guardianWardMult
-    /// 结合护法存活判定传入(0.15=85% 减伤),末端乘 mainDamage,沿
-    /// defenderSchoolDamageMult 体例。仅减直击主伤害,不影响震伤等独立加值。
+    /// 护法结界 × 脆弱窗口的合并承伤乘子(default 1.0=两者皆无,零回归)。承载两路减伤
+    /// 相乘:①floor30 护法结界 wardMultOf(守方为结界 Boss 且护法存活时,0.15=85% 减伤);
+    /// ②机制型 Boss 脆弱窗口 vulnerabilityMultOf(窗口外承伤减免,0.10=窗口外仅受 10% 伤)。
+    /// 值由调用方组合传入,末端乘 mainDamage,沿 defenderSchoolDamageMult 体例。
+    /// 仅减直击主伤害,不影响震伤等独立加值。
     double defenderWardMult = 1.0,
 
     /// 开锋破甲(pierce)词条:绝对减防御率(default 0.0=无破甲,零回归)。
@@ -251,7 +252,7 @@ class DamageCalculator {
         proficiencyDamageMult * // 可玩性 P1a:熟练度综合倍率(已含 130% cap)
         outputMultiplier * // M6 余毒:输出乘数(default 1.0=无余毒)
         defenderSchoolDamageMult * // 批二②:弱点/抗性乘子(default 1.0=无)
-        defenderWardMult; // floor30 护法结界:承伤减免(default 1.0=无)
+        defenderWardMult; // 护法结界×脆弱窗口 合并减伤(default 1.0=两者皆无)
     final mainDamage = raw.toInt();
 
     // === 9. 刚猛克阴柔附带震伤(§12.1 #7 v1.4 决议)===
@@ -287,7 +288,7 @@ class DamageCalculator {
         '${proficiencyDamageMult != 1.0 ? ' * ${_fmt(proficiencyDamageMult)}' : ''}'
         '${outputMultiplier != 1.0 ? ' * ${_fmt(outputMultiplier)}(余毒)' : ''}'
         '${defenderSchoolDamageMult != 1.0 ? ' * ${_fmt(defenderSchoolDamageMult)}(弱点/抗性)' : ''}'
-        '${defenderWardMult != 1.0 ? ' * ${_fmt(defenderWardMult)}(护法结界)' : ''}'
+        '${defenderWardMult != 1.0 ? ' * ${_fmt(defenderWardMult)}(防御乘子)' : ''}'
         ' = $mainDamage'
         '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
         ' [atkLv=$atkLevel,defLv=$defLevel]';
