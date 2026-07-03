@@ -339,8 +339,9 @@ class StageBattleSetup {
     if (newMaxIf > redLines.internalForceMax) {
       newMaxIf = redLines.internalForceMax;
     }
-    // W18-A1.2 加法叠加,clamp ≤ 0.95 防止减伤 100% 极端值
-    final newDefenseRate = (base.defenseRate + m.defensePct).clamp(0.0, 0.95);
+    // W18-A1.2 加法叠加,clamp 防止减伤 100% 极端值(上限走 red_lines.combined_rate_cap)
+    final newDefenseRate =
+        (base.defenseRate + m.defensePct).clamp(0.0, redLines.combinedRateCap);
     // currentHp 起点跟 maxHp 一致(战斗起点满血,fromCharacter 保证)
     final newCurHp = newMaxHp;
     // currentInternalForce 不超新 max(若原 currentInternalForce 已 ≤ maxIf 仍取原值)

@@ -93,7 +93,7 @@ class MassBattleStrategy extends BattleStrategy {
       return initial.copyWith(result: BattleResult.draw);
     }
     final r = rng ?? Random();
-    var s = _applyFormation(initial);
+    var s = _applyFormation(initial, n.combat.redLines.combinedRateCap);
 
     for (var w = 0; w < waveCount; w++) {
       // wave 入口:替换 rightTeam = 本 wave 敌方
@@ -136,10 +136,11 @@ class MassBattleStrategy extends BattleStrategy {
       _delegate.requestUltimate(state, characterId, ultimate,
           targetId: targetId);
 
-  BattleState _applyFormation(BattleState s) => applyFormationTo(
+  BattleState _applyFormation(BattleState s, double rateCap) => applyFormationTo(
         s,
         formation: formation,
         config: config,
+        rateCap: rateCap,
       );
 
   /// 烘焙 formation modifier 到**仅 leftTeam** BattleCharacter 入口快照。
@@ -157,10 +158,12 @@ class MassBattleStrategy extends BattleStrategy {
     BattleState s, {
     required Formation formation,
     required MassBattleDef config,
+    double rateCap = 0.95,
   }) {
     final m = config.formations[formation] ??
         MassBattleFormationModifier.neutral();
-    final newLeft = s.leftTeam.map((c) => _bake(c, m)).toList(growable: false);
+    final newLeft =
+        s.leftTeam.map((c) => _bake(c, m, rateCap)).toList(growable: false);
     return s.copyWith(
       leftTeam: List.unmodifiable(newLeft),
       // rightTeam 不动 — 阵型仅玩家战略,敌方不沾
@@ -176,11 +179,12 @@ class MassBattleStrategy extends BattleStrategy {
   static BattleCharacter _bake(
     BattleCharacter c,
     MassBattleFormationModifier m,
+    double rateCap,
   ) {
     return c.copyWith(
-      criticalRate: (c.criticalRate + m.criticalRateDelta).clamp(0.0, 0.95),
-      evasionRate: (c.evasionRate + m.evasionRateDelta).clamp(0.0, 0.95),
-      defenseRate: (c.defenseRate + m.defenseRateDelta).clamp(0.0, 0.95),
+      criticalRate: (c.criticalRate + m.criticalRateDelta).clamp(0.0, rateCap),
+      evasionRate: (c.evasionRate + m.evasionRateDelta).clamp(0.0, rateCap),
+      defenseRate: (c.defenseRate + m.defenseRateDelta).clamp(0.0, rateCap),
       attackPowerMultiplier: m.damageMultiplier,
     );
   }

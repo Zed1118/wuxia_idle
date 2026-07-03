@@ -68,7 +68,7 @@ class LightFootStrategy extends BattleStrategy {
     int maxTicks = 1000,
     Random? rng,
   }) {
-    final modified = _applyTerrain(initial);
+    final modified = _applyTerrain(initial, n.combat.redLines.combinedRateCap);
     return _delegate.runToEnd(modified, n, maxTicks: maxTicks, rng: rng);
   }
 
@@ -82,8 +82,12 @@ class LightFootStrategy extends BattleStrategy {
       _delegate.requestUltimate(state, characterId, ultimate,
           targetId: targetId);
 
-  BattleState _applyTerrain(BattleState s) =>
-      applyTerrainTo(s, terrainBiome: terrainBiome, config: config);
+  BattleState _applyTerrain(BattleState s, double rateCap) => applyTerrainTo(
+        s,
+        terrainBiome: terrainBiome,
+        config: config,
+        rateCap: rateCap,
+      );
 
   /// 烘焙 terrain modifier 到双方 BattleCharacter 入口快照。
   ///
@@ -98,27 +102,35 @@ class LightFootStrategy extends BattleStrategy {
     BattleState s, {
     required TerrainBiome terrainBiome,
     required LightFootDef config,
+    double rateCap = 0.95,
   }) {
     final m = config.terrainModifiers[terrainBiome] ??
         LightFootTerrainModifier.neutral();
-    final newLeft = s.leftTeam.map((c) => _bake(c, m)).toList(growable: false);
-    final newRight = s.rightTeam.map((c) => _bake(c, m)).toList(growable: false);
+    final newLeft =
+        s.leftTeam.map((c) => _bake(c, m, rateCap)).toList(growable: false);
+    final newRight =
+        s.rightTeam.map((c) => _bake(c, m, rateCap)).toList(growable: false);
     return s.copyWith(
       leftTeam: List.unmodifiable(newLeft),
       rightTeam: List.unmodifiable(newRight),
     );
   }
 
-  /// 单角色 stat bake:critRate/evasionRate/defenseRate 加 delta + clamp(0.0, 0.95);
+  /// 单角色 stat bake:critRate/evasionRate/defenseRate 加 delta + clamp(0.0, rateCap);
+  /// rateCap 走 red_lines.combined_rate_cap(默认 0.95,test fixture fallback)。
   /// attackPowerMultiplier 直接 set 为 terrain.damageMultiplier(P3.1.B · 双方对等)。
   ///
   /// 不动 maxHp/maxInternalForce/totalEquipmentAttack(§5.4 红线);
   /// 不动 speed(轻功对决用 terrain modifier 影响出手次数留 P3.2 群战)。
-  static BattleCharacter _bake(BattleCharacter c, LightFootTerrainModifier m) {
+  static BattleCharacter _bake(
+    BattleCharacter c,
+    LightFootTerrainModifier m,
+    double rateCap,
+  ) {
     return c.copyWith(
-      criticalRate: (c.criticalRate + m.criticalRateDelta).clamp(0.0, 0.95),
-      evasionRate: (c.evasionRate + m.evasionRateDelta).clamp(0.0, 0.95),
-      defenseRate: (c.defenseRate + m.defenseRateDelta).clamp(0.0, 0.95),
+      criticalRate: (c.criticalRate + m.criticalRateDelta).clamp(0.0, rateCap),
+      evasionRate: (c.evasionRate + m.evasionRateDelta).clamp(0.0, rateCap),
+      defenseRate: (c.defenseRate + m.defenseRateDelta).clamp(0.0, rateCap),
       attackPowerMultiplier: m.damageMultiplier,
     );
   }

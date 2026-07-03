@@ -94,6 +94,21 @@ void main() {
       expect(modified.leftTeam.first.criticalRate, closeTo(0.95, 1e-9));
     });
 
+    test('clamp 走 rateCap 配置:传 0.80 时 critRate 0.90+rooftop 0.10 → 0.80(证配置驱动非写死)', () {
+      final state = _makeState(criticalRate: 0.90);
+      final config = _testConfig();
+
+      final modified = LightFootStrategy.applyTerrainTo(
+        state,
+        terrainBiome: TerrainBiome.rooftop,
+        config: config,
+        rateCap: 0.80,
+      );
+
+      // 写死 0.95 时此断言必红;接 red_lines.combined_rate_cap 后 clamp 跟随传参。
+      expect(modified.leftTeam.first.criticalRate, closeTo(0.80, 1e-9));
+    });
+
     test('clamp ≤0.95:evasionRate 0.85 + bamboo +0.20 → 0.95(不破)', () {
       final state = _makeState(evasionRate: 0.85);
       final config = _testConfig();

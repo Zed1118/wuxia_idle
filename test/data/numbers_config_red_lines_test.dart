@@ -20,6 +20,7 @@ void main() {
         'skill_power_multiplier_max': 8000,
         'damage_readability_max': 1000000,
         'normal_damage_typical_target': 8000,
+        'combined_rate_cap': 0.95,
       });
       expect(rl.playerHpMax, 20000);
       expect(rl.internalForceMax, 15000);
@@ -28,6 +29,7 @@ void main() {
       expect(rl.skillPowerMultiplierMax, 8000);
       expect(rl.damageReadabilityMax, 1000000);
       expect(rl.normalDamageTypicalTarget, 8000);
+      expect(rl.combinedRateCap, closeTo(0.95, 1e-9));
     });
 
     test('R2 缺段 → §5.4 default 兜底(fixture 兼容)', () {
@@ -42,6 +44,11 @@ void main() {
         rl.normalDamageTypicalTarget,
         8000,
         reason: '§5.4 普通伤害典型目标 default',
+      );
+      expect(
+        rl.combinedRateCap,
+        closeTo(0.95, 1e-9),
+        reason: '派生率(暴击/闪避/防御)硬天花板 default',
       );
     });
   });
@@ -83,6 +90,11 @@ void main() {
         rl.normalDamageTypicalTarget,
         8000,
         reason: '§5.4 普通伤害典型目标 — 改前确认是有意调整,非 drift',
+      );
+      expect(
+        rl.combinedRateCap,
+        closeTo(0.95, 1e-9),
+        reason: '派生率硬天花板(防 100%)— 改前确认是有意调整,非 drift',
       );
     });
 

@@ -1418,6 +1418,11 @@ class RedLinesConfig {
   final int damageReadabilityMax;
   final int normalDamageTypicalTarget;
 
+  /// 派生概率率(暴击/闪避/防御)加 buff/阵型/轻功 delta 后的绝对硬天花板，
+  /// 防 100%(无敌/必中)。stage_battle_setup / light_foot / mass_battle 的
+  /// clamp 统一读此值（消 2026-05-29 起散落的 clamp(0.0, 0.95) 字面量）。
+  final double combinedRateCap;
+
   const RedLinesConfig({
     required this.playerHpMax,
     required this.internalForceMax,
@@ -1426,6 +1431,7 @@ class RedLinesConfig {
     required this.skillPowerMultiplierMax,
     required this.damageReadabilityMax,
     required this.normalDamageTypicalTarget,
+    this.combinedRateCap = 0.95,
   });
 
   factory RedLinesConfig.fromYaml(Map<String, dynamic> y) {
@@ -1441,6 +1447,8 @@ class RedLinesConfig {
           (y['damage_readability_max'] as num?)?.toInt() ?? 1000000,
       normalDamageTypicalTarget:
           (y['normal_damage_typical_target'] as num?)?.toInt() ?? 8000,
+      combinedRateCap:
+          (y['combined_rate_cap'] as num?)?.toDouble() ?? 0.95,
     );
   }
 }
