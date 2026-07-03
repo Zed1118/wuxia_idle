@@ -1296,16 +1296,13 @@ floors:
         schoolDamageTakenMult:
           gangMeng: 1.25
           lingQiao: 0.75
-        # [balance] 护法结界:护法(左使/右使)存活时主 Boss 承伤 ×0.15,
-        # 逼玩家先手清护法而非无脑打主 Boss;护法全灭结界破,承伤恢复 ×1.0。
-        # Task 5 诊断校准(test/tools/floor30_soft_gate_diagnostic_test.dart,30 seed):
-        #   现值(护法 9000/8500)→ onLevel 宗师满配 100% 胜 / underGear 绝顶-1阶
-        #   0强化 66.7% 胜(33% 败)= 软门槛甜点。护法 HP 提到 ≥9250 即崩到
-        #   13.3% 胜(离散悬崖),9000/8500 是「仍算软门槛」最软的可败点,不动。
-        #   ⚠ 全自动 lowest-HP 选敌下 Boss 在护法全灭前从不被攻击,故本
-        #   damageTakenMult 对自动战斗零实效——软门槛全由护法血墙+攻击压力构成;
-        #   0.15 仅对「手动越过护法直捶 Boss」的玩家生效。若要减伤对自动也咬合
-        #   需新机制(护法嘲讽/Boss 不可选),超出 [balance] 范围,留待拍板。
+        # [balance] 护法墙 taunt(批次2 Task3 实装):护法(左使/右使)存活时主 Boss
+        # 被 taunt 从自动目标池排除(BattleAI.isGuardedBoss),逼玩家先清护法;护法全灭
+        # 后 Boss 进池 + 脆弱窗口接管。damageTakenMult 0.15 仅对「手动越护法直捶」的玩家
+        # 生效(越护法惩罚),自动战斗下 Boss 护法灭前从不被攻击,故 0.15 对 auto 是纯手动惩罚。
+        # Task5 诊断(test/tools/floor30_soft_gate_diagnostic_test.dart,30 seed,taunt+vuln 0.20):
+        #   onLevel 宗师满配 100% 胜 / underGear 绝顶-1阶 0强化 13.3% 胜(86.7% 败)= 软门槛。
+        #   taunt 真生效实测:avgWardBreakTick=2.1,avgBossFirstDmgTick=2.3(护法全灭前 Boss 满血)。
         guardianWard:
           damageTakenMult: 0.15
           guardianIds:
@@ -1314,7 +1311,9 @@ floors:
         vulnerability:
           outOfWindowDamageMult: 0.20   # 机制型:护法墙(taunt)破后靠脆弱窗口打残局。
                                         # 窗口靠 bossPhases chargeCounter 相位(0.90/0.50)。
-                                        # 起点 0.20(比 floor25 宽:叠护法血墙+42000血),Task5 诊断校准。
+                                        # 0.20(比 floor25 宽:叠护法血墙+42000血)。Task5 诊断锁定:
+                                        # onLevel 100% 胜且非秒穿(avgTicks=4/phaseTrans=2.0/首伤在护法灭后),
+                                        # 机制真触发无需放宽,0.20 定稿。
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.90
