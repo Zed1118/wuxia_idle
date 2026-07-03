@@ -1311,6 +1311,10 @@ floors:
           guardianIds:
             - enemy_tower_30_cultist_a
             - enemy_tower_30_cultist_b
+        vulnerability:
+          outOfWindowDamageMult: 0.20   # 机制型:护法墙(taunt)破后靠脆弱窗口打残局。
+                                        # 窗口靠 bossPhases chargeCounter 相位(0.90/0.50)。
+                                        # 起点 0.20(比 floor25 宽:叠护法血墙+42000血),Task5 诊断校准。
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.90
