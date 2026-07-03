@@ -81,6 +81,47 @@ void main() {
     expect(find.text(UiStrings.swordSongHint), findsOneWidget);
   });
 
+  // durationMsOverride 消费:快档 clamp 后的短时长真替代 config.damagePopupMs(700)。
+  testWidgets('durationMsOverride 非空 → 按覆写时长结束(短于配置默认)', (tester) async {
+    var done = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: DamagePopup(
+            data: const DamagePopupData(id: 1, text: '500', type: PopupType.normal),
+            config: AnimationNumbers.defaults, // damagePopupMs = 700
+            durationMsOverride: 200,
+            onComplete: () => done = true,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+    expect(done, isFalse, reason: '200ms 覆写时长未到,不应结束');
+    await tester.pump(const Duration(milliseconds: 100)); // 累计 250ms > 200
+    expect(done, isTrue, reason: '超覆写 200ms 应结束(证明用的是覆写非默认 700)');
+  });
+
+  testWidgets('durationMsOverride 为 null → 走配置默认 700(250ms 未结束)', (tester) async {
+    var done = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: DamagePopup(
+            data: const DamagePopupData(id: 1, text: '500', type: PopupType.normal),
+            config: AnimationNumbers.defaults,
+            onComplete: () => done = true,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(done, isFalse, reason: '默认 700ms 下 250ms 不应结束(对照组)');
+    await tester.pump(const Duration(milliseconds: 500)); // 累计 750 > 700 收尾
+  });
+
   testWidgets('闪避 popup → 文本为闪避 + 无 ✦剑鸣 / 无 counter', (tester) async {
     await pumpPopup(
         tester,
