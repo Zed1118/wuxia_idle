@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/boss_phase_def.dart';
+import 'package:wuxia_idle/data/defs/boss_vulnerability_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
@@ -102,6 +103,26 @@ void main() {
           unlockSkillIds: ['skill_qingshan_qingfeng'],
         ),
       ],
+    },
+  );
+
+  const bossWithCycleVuln = EnemyDef(
+    id: 'test_boss_cycle_vuln',
+    name: '高周目脆弱Boss',
+    realmTier: RealmTier.yiLiu,
+    realmLayer: RealmLayer.qiMeng,
+    school: TechniqueSchool.gangMeng,
+    baseHp: 10000,
+    baseAttack: 800,
+    baseSpeed: 120,
+    skillIds: [],
+    iconPath: 'assets/enemies/stub.png',
+    isBoss: true,
+    chargeSkillId: 'skill_own_charge',
+    vulnerability: BossVulnerabilityDef(outOfWindowDamageMult: 0.20),
+    cycleVulnerability: {
+      2: BossVulnerabilityDef(outOfWindowDamageMult: 0.12),
+      4: BossVulnerabilityDef(outOfWindowDamageMult: 0.08),
     },
   );
 
@@ -422,6 +443,52 @@ void main() {
           );
         }
       }
+    });
+  });
+
+  group('vulnerabilityForCycle 解析', () {
+    test('cycle 1 返回基础 vulnerability', () {
+      expect(
+        bossWithCycleVuln.vulnerabilityForCycle(1)!.outOfWindowDamageMult,
+        0.20,
+      );
+    });
+    test('cycle 2 返回二周目覆盖', () {
+      expect(
+        bossWithCycleVuln.vulnerabilityForCycle(2)!.outOfWindowDamageMult,
+        0.12,
+      );
+    });
+    test('cycle 3 继承不超过当前周目的最高 key（=cycle 2 覆盖）', () {
+      expect(
+        bossWithCycleVuln.vulnerabilityForCycle(3)!.outOfWindowDamageMult,
+        0.12,
+      );
+    });
+    test('cycle 4 命中 key 4 覆盖', () {
+      expect(
+        bossWithCycleVuln.vulnerabilityForCycle(4)!.outOfWindowDamageMult,
+        0.08,
+      );
+    });
+    test('空 cycleVulnerability 回落基础', () {
+      const b = EnemyDef(
+        id: 'b', name: 'b', realmTier: RealmTier.yiLiu,
+        realmLayer: RealmLayer.qiMeng, school: TechniqueSchool.gangMeng,
+        baseHp: 100, baseAttack: 10, baseSpeed: 10, skillIds: [],
+        iconPath: 'x', isBoss: true, chargeSkillId: 's',
+        vulnerability: BossVulnerabilityDef(outOfWindowDamageMult: 0.10),
+      );
+      expect(b.vulnerabilityForCycle(2)!.outOfWindowDamageMult, 0.10);
+    });
+    test('无 vulnerability 时 resolver 返 null', () {
+      const b = EnemyDef(
+        id: 'b', name: 'b', realmTier: RealmTier.yiLiu,
+        realmLayer: RealmLayer.qiMeng, school: TechniqueSchool.gangMeng,
+        baseHp: 100, baseAttack: 10, baseSpeed: 10, skillIds: [],
+        iconPath: 'x',
+      );
+      expect(b.vulnerabilityForCycle(3), isNull);
     });
   });
 }

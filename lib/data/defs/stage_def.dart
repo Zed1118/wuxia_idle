@@ -260,6 +260,13 @@ class EnemyDef {
   /// onEnterMechanic: chargeCounter 相位（fromYaml 校验），否则永不开窗无解。
   final BossVulnerabilityDef? vulnerability;
 
+  /// 高周目脆弱窗口覆盖。key=周目数（2 起），value=该周目起使用的脆弱窗口
+  /// 配置。运行时取 `<= cycleIndex` 的最高 key；未命中回落 [vulnerability]。
+  /// cycle 1 不受影响。语义：周目越高，窗口外承伤乘子越低（收窄有效输出
+  /// 窗口）对满配加压。配此字段必须先配 [vulnerability]（基周目有机制，
+  /// cycle 仅收紧强度，fromYaml 校验）。
+  final Map<int, BossVulnerabilityDef> cycleVulnerability;
+
   const EnemyDef({
     required this.id,
     required this.name,
@@ -278,6 +285,7 @@ class EnemyDef {
     this.schoolDamageTakenMult,
     this.guardianWard,
     this.vulnerability,
+    this.cycleVulnerability = const {},
   });
 
   factory EnemyDef.fromYaml(Map<String, dynamic> y) {
@@ -300,6 +308,14 @@ class EnemyDef {
         'EnemyDef ${y['id']}: 配 vulnerability 必须有开窗途径'
         '（顶层 chargeSkillId 或 bossPhases 含 onEnterMechanic: chargeCounter），'
         '否则脆弱窗口永不开 = 永久免疫无解',
+      );
+    }
+    final cycleVulnerability =
+        _parseCycleVulnerability(y['cycleVulnerability'] as Map?);
+    if (cycleVulnerability.isNotEmpty && vulnerability == null) {
+      throw StateError(
+        'EnemyDef ${y['id']}: 配 cycleVulnerability 必须先配 vulnerability'
+        '（基周目须有脆弱机制，cycleVulnerability 仅收紧强度）',
       );
     }
     return EnemyDef(
@@ -333,6 +349,7 @@ class EnemyDef {
               Map<String, dynamic>.from(y['guardianWard'] as Map),
             ),
       vulnerability: vulnerability,
+      cycleVulnerability: cycleVulnerability,
     );
   }
 
@@ -361,6 +378,37 @@ class EnemyDef {
       }
     }
     return selectedCycle == null ? bossPhases : cycleBossPhases[selectedCycle];
+  }
+
+  static Map<int, BossVulnerabilityDef> _parseCycleVulnerability(Map? raw) {
+    if (raw == null || raw.isEmpty) return const {};
+    final result = <int, BossVulnerabilityDef>{};
+    for (final entry in raw.entries) {
+      final cycle = entry.key is int
+          ? entry.key as int
+          : int.parse(entry.key.toString());
+      if (cycle < 2) {
+        throw StateError('cycleVulnerability key 必须 >= 2（收到 $cycle）');
+      }
+      result[cycle] = BossVulnerabilityDef.fromYaml(
+        Map<String, dynamic>.from(entry.value as Map),
+      );
+    }
+    return Map.unmodifiable(result);
+  }
+
+  BossVulnerabilityDef? vulnerabilityForCycle(int cycleIndex) {
+    if (cycleIndex <= 1 || cycleVulnerability.isEmpty) return vulnerability;
+    int? selectedCycle;
+    for (final cycle in cycleVulnerability.keys) {
+      if (cycle <= cycleIndex &&
+          (selectedCycle == null || cycle > selectedCycle)) {
+        selectedCycle = cycle;
+      }
+    }
+    return selectedCycle == null
+        ? vulnerability
+        : cycleVulnerability[selectedCycle];
   }
 
   @override
