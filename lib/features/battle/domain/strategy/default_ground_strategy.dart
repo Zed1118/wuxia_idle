@@ -890,7 +890,8 @@ class DefaultGroundStrategy implements BattleStrategy {
       defenderSchoolDamageMult: weaknessMultOf(attacker, defender),
       // floor30 护法结界:守方为结界 Boss 且护法在同队存活 → 承伤乘子(减伤)。
       // 用 preState 行动前快照判护法存活(与 aoe 同帧独立结算口径一致)。
-      defenderWardMult: wardMultOf(defender, state),
+      defenderWardMult: wardMultOf(defender, state) *
+          vulnerabilityMultOf(defender, state),
     );
   }
 
@@ -920,5 +921,17 @@ class DefaultGroundStrategy implements BattleStrategy {
           defender.guardianDefIds.contains(c.enemyDefId),
     );
     return anyGuardianAlive ? mult : 1.0;
+  }
+
+  /// 脆弱窗口(终局机制型 Boss):defender 带 vulnerabilityMult 且当前不脆弱
+  /// (未蓄招 chargingSkill==null 且未踉跄 staggerTicksRemaining==0) → 返 mult(减伤);
+  /// 蓄招中/踉跄中(脆弱窗口)或无机制(null) → 1.0(全额)。
+  /// 窗口靠 chargeSkillId 的技能 CD 周期复发(§3.2)，此处只读状态不改状态。
+  static double vulnerabilityMultOf(BattleCharacter defender, BattleState state) {
+    final mult = defender.vulnerabilityMult;
+    if (mult == null) return 1.0;
+    final vulnerable =
+        defender.chargingSkill != null || defender.staggerTicksRemaining > 0;
+    return vulnerable ? 1.0 : mult;
   }
 }

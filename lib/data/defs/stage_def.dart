@@ -1,5 +1,6 @@
 import '../../core/domain/enums.dart';
 import 'boss_phase_def.dart';
+import 'boss_vulnerability_def.dart';
 import 'drop_entry.dart';
 
 /// 关卡配置（data_schema.md §5.4，纯 Dart，不入 Isar）。
@@ -254,6 +255,10 @@ class EnemyDef {
   /// `GameRepository.enforceGuardianWardReferences` 校验)。
   final GuardianWardDef? guardianWard;
 
+  /// 脆弱窗口配置（终局机制型 Boss，null = 无机制，向后兼容）。
+  /// 配此字段必须同时配 chargeSkillId（fromYaml 校验），否则永不开窗无解。
+  final BossVulnerabilityDef? vulnerability;
+
   const EnemyDef({
     required this.id,
     required this.name,
@@ -271,9 +276,21 @@ class EnemyDef {
     this.cycleBossPhases = const {},
     this.schoolDamageTakenMult,
     this.guardianWard,
+    this.vulnerability,
   });
 
   factory EnemyDef.fromYaml(Map<String, dynamic> y) {
+    final chargeSkillId = y['chargeSkillId'] as String?;
+    final vulnerability = y['vulnerability'] == null
+        ? null
+        : BossVulnerabilityDef.fromYaml(
+            Map<String, dynamic>.from(y['vulnerability'] as Map),
+          );
+    if (vulnerability != null && chargeSkillId == null) {
+      throw StateError(
+        'EnemyDef ${y['id']}: 配 vulnerability 必须同时配 chargeSkillId（否则永不开窗无解）',
+      );
+    }
     return EnemyDef(
       id: y['id'] as String,
       name: y['name'] as String,
@@ -288,7 +305,7 @@ class EnemyDef {
       ),
       iconPath: y['iconPath'] as String,
       isBoss: y['isBoss'] as bool? ?? false,
-      chargeSkillId: y['chargeSkillId'] as String?,
+      chargeSkillId: chargeSkillId,
       bossPhases: y['bossPhases'] == null
           ? null
           : BossPhaseDef.parseList(y['bossPhases'] as List),
@@ -306,6 +323,7 @@ class EnemyDef {
           : GuardianWardDef.fromYaml(
               Map<String, dynamic>.from(y['guardianWard'] as Map),
             ),
+      vulnerability: vulnerability,
     );
   }
 
