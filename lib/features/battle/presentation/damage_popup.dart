@@ -42,11 +42,16 @@ class DamagePopup extends StatefulWidget {
   final AnimationNumbers config;
   final VoidCallback onComplete;
 
+  /// 飘字时长覆写(ms):非空时替代 [config.damagePopupMs],用于快档按拍间隔
+  /// clamp 防跨拍重叠(见 [AnimationNumbers.effectivePopupMs])。null 走配置默认。
+  final int? durationMsOverride;
+
   const DamagePopup({
     super.key,
     required this.data,
     required this.config,
     required this.onComplete,
+    this.durationMsOverride,
   });
 
   @override
@@ -64,7 +69,9 @@ class _DamagePopupState extends State<DamagePopup>
     super.initState();
     _ctrl = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: widget.config.damagePopupMs),
+      duration: Duration(
+        milliseconds: widget.durationMsOverride ?? widget.config.damagePopupMs,
+      ),
     );
     _yOffset = Tween<double>(
       begin: 0,

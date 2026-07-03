@@ -1710,6 +1710,12 @@ class AnimationNumbers {
 
   int get attackTotalMs => attackRushMs + attackHoldMs + attackRetreatMs;
 
+  /// 飘字有效时长:不超过当前播放拍间隔 [intervalMs],防快档(rapid/快进)下
+  /// 固定 [damagePopupMs](700)> 拍长致跨拍重叠。慢档(700 ≤ 拍长)返回原值,
+  /// 手感不变。兑现 numbers.yaml `damage_popup_ms` 注释「≤ action_interval_ms
+  /// 防跨拍渗漏」的不变量(此前仅 normal 档手动成立,现全档代码 enforce)。
+  int effectivePopupMs(int intervalMs) => math.min(damagePopupMs, intervalMs);
+
   factory AnimationNumbers.fromYaml(Map<String, dynamic> y) {
     return AnimationNumbers(
       attackRushMs: (y['attack_rush_ms'] as num).toInt(),

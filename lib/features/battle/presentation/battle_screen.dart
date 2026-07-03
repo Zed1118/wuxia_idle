@@ -64,7 +64,13 @@ int playbackHoldMs({
 class _PopupEntry {
   final int id;
   final DamagePopupData data;
-  const _PopupEntry({required this.id, required this.data});
+  // 飘字有效时长:spawn 时按当前播放速度 clamp(≤ 拍间隔),防快档跨拍重叠。
+  final int popupDurationMs;
+  const _PopupEntry({
+    required this.id,
+    required this.data,
+    required this.popupDurationMs,
+  });
 }
 
 /// 单条弹道（攻击者→目标的笔触线，命令式 spawn，纯表现层）。
@@ -666,6 +672,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   bool get _reduceFlashing => _currentGameplaySettings.reduceFlashing;
 
+  /// 当前播放拍间隔(ms):快进态走 fastForwardIntervalMs,否则按玩家速度档缩放
+  /// actionIntervalMs(与 [_startTimer] 同源口径)。供飘字 spawn 时 clamp 时长,
+  /// 防快档(rapid/快进)固定 damagePopupMs 超拍致跨拍重叠。
+  int get _currentPlaybackIntervalMs => _isFastForward
+      ? widget.animConfig.fastForwardIntervalMs
+      : _currentGameplaySettings.scaledBattleIntervalMs(
+          widget.animConfig.actionIntervalMs,
+        );
+
   /// hit-stop：命中瞬间停播放 Timer，延后 [ms] 后复播。只动屏上播放节拍
   /// （advance 结算确定不变，守 §5.5）；_startTimer 内 _isPaused gate 兜住，
   /// 暂停态不会被复活。
@@ -847,7 +862,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   ) {
     final key = _slotKey(target.teamSide, target.slotIndex);
     final data = _buildPopupData(result, attacker);
-    final entry = _PopupEntry(id: _nextPopupId++, data: data);
+    final entry = _PopupEntry(
+      id: _nextPopupId++,
+      data: data,
+      popupDurationMs: widget.animConfig.effectivePopupMs(
+        _currentPlaybackIntervalMs,
+      ),
+    );
     setState(() {
       (_popups[key] ??= []).add(entry);
     });
@@ -2251,6 +2272,7 @@ class _CharacterSlot extends StatelessWidget {
           key: ValueKey(entry.id),
           data: entry.data,
           config: config,
+          durationMsOverride: entry.popupDurationMs,
           onComplete: () => onComplete(slotKey, entry.id),
         ),
       ),
