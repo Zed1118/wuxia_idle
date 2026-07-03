@@ -62,6 +62,11 @@ class BattleAI {
     final charging =
         enemyTeam.where((e) => e.isAlive && e.chargingSkill != null);
     final int targetId;
+    // 注:此破招锁定路径**有意不加 isGuardedBoss 排除**(taunt 仅覆盖常规目标选择
+    // _pickTargetId/_pickFocusTargetId/_pickControlTargetId + aoe)。floor30 Boss 靠
+    // hp-threshold 相位蓄招,护法存活时 Boss 不掉血 → 不进蓄招态 → 此处 charging 不含
+    // 它,故对 floor30 不可达。破招是 P0 防御机制;未来若配 chargeSkillId(CD 蓄招)+
+    // 护法的 Boss,再拍板是否让破招穿透 taunt。
     if (skill.canInterrupt && charging.isNotEmpty) {
       // 破招锁定优先于集火(破招窗口比泛破绽更紧急)
       targetId = charging.first.characterId; // P0:破招技锁定蓄力敌人
