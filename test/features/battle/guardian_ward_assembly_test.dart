@@ -57,4 +57,42 @@ void main() {
     expect(bc.guardianWardMult, isNull);
     expect(bc.guardianDefIds, isEmpty);
   });
+
+  test('_enemyToBattle 透传 vulnerability.outOfWindowDamageMult', () {
+    final boss = EnemyDef.fromYaml({
+      'id': 'enemy_boss_vuln',
+      'name': 'BV',
+      'realmTier': 'zongShi',
+      'realmLayer': 'dengFeng',
+      'school': 'yinRou',
+      'baseHp': 42000,
+      'baseAttack': 2800,
+      'baseSpeed': 245,
+      'skillIds': <String>[],
+      'iconPath': 'x.png',
+      'isBoss': true,
+      'chargeSkillId': 'skill_charge',
+      'vulnerability': {'outOfWindowDamageMult': 0.10},
+    });
+    final bc = StageBattleSetup.debugEnemyToBattle(enemy: boss, slotIndex: 0);
+    expect(bc.vulnerabilityMult, 0.10);
+  });
+
+  test('无 vulnerability 的敌人 → vulnerabilityMult 空', () {
+    final minion = EnemyDef.fromYaml({
+      'id': 'enemy_minion_no_vuln',
+      'name': 'M2',
+      'realmTier': 'zongShi',
+      'realmLayer': 'jingTong',
+      'school': 'gangMeng',
+      'baseHp': 4000,
+      'baseAttack': 700,
+      'baseSpeed': 220,
+      'skillIds': <String>[],
+      'iconPath': 'x.png',
+      'isBoss': false,
+    });
+    final bc = StageBattleSetup.debugEnemyToBattle(enemy: minion, slotIndex: 1);
+    expect(bc.vulnerabilityMult, isNull);
+  });
 }

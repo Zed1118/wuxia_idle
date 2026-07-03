@@ -516,6 +516,7 @@ class StageBattleSetup {
       enemyDefId: enemy.id,
       guardianWardMult: enemy.guardianWard?.damageTakenMult,
       guardianDefIds: enemy.guardianWard?.guardianIds ?? const [],
+      vulnerabilityMult: enemy.vulnerability?.outOfWindowDamageMult,
     );
   }
 
