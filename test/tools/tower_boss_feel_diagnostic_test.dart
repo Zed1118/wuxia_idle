@@ -120,15 +120,20 @@ void main() {
       isNotNull,
       reason: '30 层终关 Boss 应至少有二阶段,避免终关体感弱于前一普通层',
     );
-    // 相位触发不变量:vuln 机制型 Boss(25/30) 软门槛——窗口外承伤
-    // ×outOfWindowDamageMult(floor25 0.10 / floor30 0.20)让**零投入 on-level**
-    // (floor profile,0 强化 / 0 战意 / 无 buff)队 DPS 啃不到首相位 hp 阈值 →
-    // 触发不了相位(bootstrapping:要开窗须先跌破阈值,可跌破所需伤害又被窗口外折扣压住),
-    // 这是有意软门槛(用户 2026-07-03 拍板「接受为软门槛」)。故相位触发不变量**只对
-    // ceiling(满投入 on-level)成立**——保证正常养成玩家能看到完整相位战;零投入
-    // on-level 被 vuln 合法挡住,不硬断言其触发率(8/20 是噪声易漂的瞬时值,不写死;
-    // 守 memory red_line_test_semantics)。非 vuln Boss 不适用本豁免。
-    // floor profile 仍照跑模拟并进报告表(供观测),此处只是不 expect 它。
+    // 相位触发不变量**只对 ceiling(满投入 on-level)成立**——保证正常养成玩家能
+    // 看到完整相位战。floor(零投入 on-level:0 强化 / 0 战意 / 无 buff)profile 不硬
+    // 断言其触发率(仍照跑模拟并进报告表供观测,此处只是不 expect 它;不写死 8/20 那种
+    // 噪声易漂的瞬时值,守 memory red_line_test_semantics)。
+    //
+    // 为何豁免 floor profile(实测差异):
+    //   - **floor25(首相位阈值 0.70 深)**:窗口外承伤 ×0.10 让零投入队 DPS 啃不到
+    //     -30% 的首阈值 → 触发不了相位(bootstrapping:要开窗须先跌破阈值,而跌破所
+    //     需伤害又被窗口外 0.10 折扣压住)。实测 floor profile 仅 8/20 触发,材料上确
+    //     需豁免。这是有意软门槛(用户 2026-07-03 拍板「接受为软门槛」)。
+    //   - **floor30(首相位阈值 0.90 浅)**:只需啃到 -10% 即开窗,零投入队也啃得到,
+    //     实测 floor profile 20/20 触发,**本不受 vuln bootstrapping 困**;豁免对
+    //     floor30 无实际影响,只是统一 ceiling-only 断言口径。
+    // 非 vuln Boss 不适用本豁免。
     for (final floorIndex in [25, 30]) {
       final triggered = results
           .where((r) =>

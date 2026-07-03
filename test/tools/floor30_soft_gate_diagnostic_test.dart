@@ -25,13 +25,19 @@ import 'package:wuxia_idle/features/tower/domain/tower_floor_def.dart';
 ///   - onLevel   : 宗师(zongShi)满配 + 50% 强化 + 400 战意 + 创始 buff。意图必胜。
 ///   - underGear : 绝顶(jueDing,-1 阶)本阶装 + 0 强化 + 0 战意。意图可败。
 ///
-/// 三个硬闸(证机制在全自动战斗下真触发,非 no-op):
-///   ① taunt 真生效:护法(左使/右使)全灭前主 Boss 从不被选中攻击 → 首个 Boss
-///      掉血 tick >= 护法全灭 tick(bossFirstDamageTick >= wardBreakTick)。守 ward_noop:
-///      旧「护法存活时 Boss 减伤」在 auto 下 no-op(AI 先清低血护法);新 taunt 把 Boss
-///      从目标池排除才真咬合。
+/// 三个断言:
+///   ① 集成 sanity(**非 taunt 因果隔离**):真实 floor30 配置下,护法全灭前主 Boss
+///      从不掉血 → 首个 Boss 掉血 tick >= 护法全灭 tick(bossFirstDamageTick >=
+///      wardBreakTick)。这是有用的集成不变量(证真实关卡里玩家确实被逼先清护法),
+///      **但不隔离 taunt 的因果**:floor30 护法血(9000/8500)<< Boss 血(42000),
+///      既有的「最低血集火」AI 本就避开高血 Boss,故有无 taunt 此断言同结果
+///      (对抗验证:把 isGuardedBoss patch 成 return false,本诊断输出逐字节相同)。
+///      **taunt 的因果正确性由 test/features/battle/battle_ai_guardian_taunt_test.dart
+///      保证**——那里刻意设 Boss 血 < 护法血,去掉 taunt 就会选中 Boss,隔离出因果。
+///      本断言只测 onLevel(underGear 常在 maxTicks 内破不了护法,wardBreakTick=-1
+///      需特判,不纳入本不变量)。
 ///   ② 满配必胜:onLevel × 全 seed winRate == 100%(护法灭后靠脆弱窗口打残局,能打死)。
-///   ③ 软门槛:underGear × 全 seed winRate < 100%(跨阶欠配有真实败率)。
+///   ③ 软门槛:underGear × 全 seed 多数应败(跨阶欠配真实败率,半数语义界见断言处)。
 ///
 /// 逐 tick 采样(BattleEngine.tick + 单一 Random(seed),复刻 runToEnd 的确定性)
 /// 记录首个 Boss 掉血 tick / 护法全灭 tick / 相位转换 / 终局。
@@ -87,25 +93,27 @@ void main() {
     final onWins = onLevel.where((r) => r.result == 'leftWin').length;
     final underWins = underGear.where((r) => r.result == 'leftWin').length;
 
-    // ① taunt 真生效:每场护法全灭前 Boss 从不掉血。onLevel 会打死 Boss
-    //    (bossFirstDamageTick 必被记录),且该 tick >= wardBreakTick。
-    //    OBSERVED(30 seed):onLevel avgWardBreakTick=2.1 / avgBossFirstDmgTick=2.3,
-    //    全 seed bossFirstDamageTick >= wardBreakTick(护法灭前 Boss 满血,taunt 非 no-op)。
+    // ① 集成 sanity(非 taunt 因果隔离,见 docstring):真实 floor30 里护法全灭前
+    //    Boss 从不掉血。onLevel 会打死 Boss(bossFirstDamageTick 必被记录)且该 tick
+    //    >= wardBreakTick。⚠ 因 floor30 护法血 << Boss 血,最低血 AI 本就避开 Boss,
+    //    有无 taunt 同结果——taunt 因果由 battle_ai_guardian_taunt_test.dart 隔离证。
+    //    OBSERVED(30 seed):onLevel avgWardBreakTick=2.1 / avgBossFirstDmgTick=2.3。
     for (final r in onLevel) {
       expect(r.wardBreakTick, greaterThan(0),
           reason: 'onLevel 应打破护法墙(种子 ${r.seed})');
       expect(r.bossFirstDamageTick, greaterThanOrEqualTo(r.wardBreakTick),
-          reason: '护法全灭前 Boss 不应掉血(taunt 真排除,种子 ${r.seed}):'
+          reason: '护法全灭前 Boss 不应掉血(集成不变量,种子 ${r.seed}):'
               'bossFirstDmg=${r.bossFirstDamageTick} wardBreak=${r.wardBreakTick}');
     }
 
     // ② 满配必胜(护法灭后靠脆弱窗口打残局,能打死)。
     expect(onWins, _seeds, reason: 'onLevel 满配应全 seed 必胜');
 
-    // ③ 软门槛:跨阶欠配有真实败率(< 满配,且明显不是 100%)。
-    //    OBSERVED(30 seed):onLevel winRate=100% / underGear winRate=13.3%(86.7% 败)。
-    expect(underWins, lessThan(_seeds),
-        reason: 'underGear 跨阶欠配应有真实败率(软门槛真咬合)');
+    // ③ 软门槛:跨阶欠配多数应败(半数语义界,不写死瞬时胜率;守
+    //    red_line_test_semantics)。对齐 vulnerability_window_diagnostic_test 测 C 写法。
+    //    OBSERVED(30 seed):underGear winRate=13.3%(4/30 胜,86.7% 败)。
+    expect(underWins, lessThanOrEqualTo((_seeds * 0.5).floor()),
+        reason: 'underGear 跨阶欠配至少半数应败(软门槛真咬合,非仅「非 100%」)');
 
     expect(results.length, _Profile.values.length * _seeds);
   }, timeout: const Timeout(Duration(minutes: 10)));
