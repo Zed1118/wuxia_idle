@@ -44,9 +44,11 @@ Boss 脆弱 ⟺ (chargingSkill != null) OR (staggerTicksRemaining > 0)
 
 ### 3.2 窗口如何开（自动 robust 的关键）
 
-- **Boss 按 cadence 自蓄招**：新增 `chargeCadenceTicks`，让 `chargeCounter` 从「每阶段触发一次」改为「每 N tick 复发一次蓄招」。窗口靠 Boss 自身节奏开，**不依赖玩家持有破招技** → 永不卡死无解。
+**窗口复发靠现成机制，不造新轮子**（planning Phase 0 核实：`default_ground_strategy.dart:406-429` 起手蓄力路径）：
+- **Boss 起手蓄力已由 AI 按 `chargeSkillId` 的技能 CD 周期性触发**——AI 选中自己的 `chargeSkillId` → 进蓄力态（`chargeTicksRemaining` 拍）→ 放招 → 技能进 CD → CD 到再蓄。窗口频率 = 该蓄招技的 CD（`skills.yaml` 现成可调），**无需新 `chargeCadenceTicks` 字段/计数器**。相位 `chargeCounter` 额外在进阶时开一次窗（`_advancePhases:633-649` 现成）。
+- **硬前提**：机制型 Boss 必须有 `chargeSkillId`（否则永不开窗 = 永久免疫无解）。→ schema 跨字段校验：`vulnerability != null` 要求 `chargeSkillId != null`，启动期 fail-fast。
 - **自动战斗**：即便 AI 不「刻意」在窗口爆发，每 tick 普通输出在窗口内全额、窗口外 ×0.10 → 进度不摆、不 no-op（区别于护法减伤 no-op）。
-- **半手动**：玩家识别 telegraph → `canInterrupt` 破招（现成优先级）→ Boss 踉跄（`staggerTicksRemaining>0`）延长窗口 + 减防 → 集火倾泻。破招把窗口从「Boss 蓄招时长」延长到「蓄招 + 踉跄」，奖励主动参与。
+- **半手动**：玩家识别 telegraph → `canInterrupt` 破招（现成优先级）→ Boss 踉跄（`staggerTicksRemaining>0`）延长窗口 + 减防 → 集火倾泻。破招把窗口从「蓄招时长」延长到「蓄招 + 踉跄」，奖励主动参与。
 
 ### 3.3 满配为什么秒不了
 
@@ -58,17 +60,18 @@ Boss 脆弱 ⟺ (chargingSkill != null) OR (staggerTicksRemaining > 0)
 ```yaml
 vulnerability:
   outOfWindowDamageMult: 0.10   # 窗口外承伤乘子 ∈ (0, 1]；schema 校验 [0.05, 1.0]
-  chargeCadenceTicks: 6         # 每 N tick 复发蓄招 = 开窗节奏；schema 校验 [2, 30]
+# 需同时配 chargeSkillId（否则永不开窗 = 无解，schema fail-fast）
 ```
-脆弱条件不落 yaml（硬编码复用 chargingSkill/stagger），只配减伤强度与开窗节奏两个旋钮。
+脆弱条件不落 yaml（硬编码复用 chargingSkill/stagger），窗口节奏由 `chargeSkillId` 的技能 CD 控（现成），只配一个减伤强度旋钮。
 
-### 3.5 新增面
+### 3.5 新增面（批次 1 收窄后）
 
-- `lib/data/defs/boss_vulnerability_def.dart`（新 def 类 + schema 校验）。
-- `EnemyDef` 加可选 `vulnerability` 字段 + yaml 解析。
-- `default_ground_strategy.dart` `_resolveAction` 伤害闸：目标是带 vulnerability 的 Boss 且不脆弱 → 承伤 ×mult。
-- 蓄招复发：`_advanceTick` 里按 `chargeCadenceTicks` 让 Boss 重进蓄力态（不在蓄力/踉跄时）。
-- 表现层：`BattleAction` 加 `bossVulnerableWindowOpen`（或复用现有蓄招/踉跄事件）弹「破绽·全力」题字提示窗口。承伤 ×0.10 时弹「刀枪不入」类反馈（复用现有减伤表现）。
+- `lib/data/defs/boss_vulnerability_def.dart`（新 def 类，单字段 + schema 校验 [0.05,1.0]，镜像 `BossPhaseDef` 模式）。
+- `EnemyDef` 加可选 `vulnerability` 字段 + yaml 解析（镜像 `guardianWard`）+ 跨字段校验（有 vulnerability 必有 chargeSkillId）。
+- `BattleCharacter` 加运行时字段 `vulnerabilityMult`（double?，null=无机制）+ copyWith；`StageBattleSetup` 从 EnemyDef 灌入（镜像 `guardianWardMult` plumbing）。
+- `default_ground_strategy.dart` 新增 `vulnerabilityMultOf(defender,state)`（镜像 `wardMultOf:912-923`）：目标带 vulnerabilityMult 且不脆弱（`chargingSkill==null && staggerTicksRemaining==0`）→ 返 mult，否则 1.0；与 `wardMultOf` **相乘**传进 `defenderWardMult`（:891-894），零改伤害计算器。
+- **无蓄招复发新逻辑**（3.2 已明：CD 现成 governs）。
+- 表现层：承伤被 ×mult 折扣时弹「刀枪不入 / 结界未破」类反馈（复用现有减伤表现），可批次 1 末轻量做或并入爬塔批。
 
 ## 4. 模块 A：多目标墙（修护法 no-op）
 
@@ -119,7 +122,7 @@ winCondition:
 
 ## 9. 实装批次（依赖序，供 writing-plans 展开）
 
-1. **底座**（脆弱窗口）：def + schema + 伤害闸 + 蓄招复发 + 表现层 + 诊断测。**先证明底座在自动战斗下不 no-op**，再往下。
+1. **底座**（脆弱窗口）：def + schema + BattleCharacter 字段/plumbing + 伤害闸（`vulnerabilityMultOf`）+ 表现层 + 诊断测。**先证明底座在自动战斗下不 no-op**，再往下。（窗口复发用现成蓄招 CD，无新复发逻辑。）
 2. **爬塔应用**：25/30 配 vulnerability；30 叠模块 A（护法墙 taunt）。诊断测 on-level/under-gear/auto。
 3. **心魔应用**：相位开窗配置 + 终关模块 B（生存胜负条件）。
 4. **周目应用**：`cycleBossPhases` 收窄窗口。
