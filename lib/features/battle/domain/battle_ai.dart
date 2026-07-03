@@ -165,8 +165,13 @@ class BattleAI {
   /// 护法全灭 → false,Boss 进池。镜像 DefaultGroundStrategy.wardMultOf 的护法存活判定
   /// (drift 守卫见 battle_ai_guardian_taunt_test)。taunt 优先于脆弱窗口:护法活着
   /// Boss 打不到,无论其是否蓄招。
+  ///
+  /// gate 与 wardMultOf 逐字段一致:guardianWardMult 与 guardianDefIds 皆备才可能被
+  /// taunt 保护(二者今日同源共填,但显式镜像 gate 防未来 loader 单字段 desync)。
   static bool isGuardedBoss(BattleCharacter candidate, BattleState state) {
-    if (candidate.guardianDefIds.isEmpty) return false;
+    if (candidate.guardianWardMult == null || candidate.guardianDefIds.isEmpty) {
+      return false;
+    }
     final team = candidate.teamSide == 1 ? state.rightTeam : state.leftTeam;
     return team.any((c) =>
         c.isAlive &&
