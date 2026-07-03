@@ -256,7 +256,8 @@ class EnemyDef {
   final GuardianWardDef? guardianWard;
 
   /// 脆弱窗口配置（终局机制型 Boss，null = 无机制，向后兼容）。
-  /// 配此字段必须同时配 chargeSkillId（fromYaml 校验），否则永不开窗无解。
+  /// 配此字段必须有开窗途径：顶层 chargeSkillId 或 bossPhases 含
+  /// onEnterMechanic: chargeCounter 相位（fromYaml 校验），否则永不开窗无解。
   final BossVulnerabilityDef? vulnerability;
 
   const EnemyDef({
@@ -281,14 +282,24 @@ class EnemyDef {
 
   factory EnemyDef.fromYaml(Map<String, dynamic> y) {
     final chargeSkillId = y['chargeSkillId'] as String?;
+    final bossPhases = y['bossPhases'] == null
+        ? null
+        : BossPhaseDef.parseList(y['bossPhases'] as List);
     final vulnerability = y['vulnerability'] == null
         ? null
         : BossVulnerabilityDef.fromYaml(
             Map<String, dynamic>.from(y['vulnerability'] as Map),
           );
-    if (vulnerability != null && chargeSkillId == null) {
+    // 脆弱窗口需有开窗途径:顶层 chargeSkillId(蓄招技 CD 周期开窗)或 bossPhases
+    // 含 chargeCounter 相位(进阶跌破阈值时进蓄力态开窗)。二者皆无 → 永不开窗无解。
+    final hasChargePhase = bossPhases
+            ?.any((p) => p.onEnterMechanic == BossPhaseMechanic.chargeCounter) ??
+        false;
+    if (vulnerability != null && chargeSkillId == null && !hasChargePhase) {
       throw StateError(
-        'EnemyDef ${y['id']}: 配 vulnerability 必须同时配 chargeSkillId（否则永不开窗无解）',
+        'EnemyDef ${y['id']}: 配 vulnerability 必须有开窗途径'
+        '（顶层 chargeSkillId 或 bossPhases 含 onEnterMechanic: chargeCounter），'
+        '否则脆弱窗口永不开 = 永久免疫无解',
       );
     }
     return EnemyDef(
@@ -306,9 +317,7 @@ class EnemyDef {
       iconPath: y['iconPath'] as String,
       isBoss: y['isBoss'] as bool? ?? false,
       chargeSkillId: chargeSkillId,
-      bossPhases: y['bossPhases'] == null
-          ? null
-          : BossPhaseDef.parseList(y['bossPhases'] as List),
+      bossPhases: bossPhases,
       cycleBossPhases: _parseCycleBossPhases(y['cycleBossPhases'] as Map?),
       schoolDamageTakenMult: y['schoolDamageTakenMult'] == null
           ? null

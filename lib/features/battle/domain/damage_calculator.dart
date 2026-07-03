@@ -287,7 +287,7 @@ class DamageCalculator {
         '${proficiencyDamageMult != 1.0 ? ' * ${_fmt(proficiencyDamageMult)}' : ''}'
         '${outputMultiplier != 1.0 ? ' * ${_fmt(outputMultiplier)}(余毒)' : ''}'
         '${defenderSchoolDamageMult != 1.0 ? ' * ${_fmt(defenderSchoolDamageMult)}(弱点/抗性)' : ''}'
-        '${defenderWardMult != 1.0 ? ' * ${_fmt(defenderWardMult)}(护法结界)' : ''}'
+        '${defenderWardMult != 1.0 ? ' * ${_fmt(defenderWardMult)}(防御乘子)' : ''}'
         ' = $mainDamage'
         '${quakeDamage > 0 ? ' + 震伤 $quakeDamage = $finalDamage' : ''}'
         ' [atkLv=$atkLevel,defLv=$defLevel]';
