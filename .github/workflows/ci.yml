@@ -1,0 +1,52 @@
+name: CI
+
+# 挂机武侠持续集成:analyze + 代码生成 + 全量测试。
+# 平台 ubuntu-latest(纯 Dart 逻辑测试 + Isar `initializeIsarCore(download:true)` 跨平台拉 core,
+# 无 golden / 无 Android / 无 native build,故不需要 macOS runner)。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 同一 ref 新推送取消进行中的旧 run,省 Actions 额度
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # pubspec.lock 的包 url 锁定国内镜像 pub.flutter-io.cn,CI 对齐以命中 content-hash。
+  # 不设 FLUTTER_STORAGE_BASE_URL:让 flutter-action 从官方拉 SDK/engine(海外更稳)。
+  PUB_HOSTED_URL: https://pub.flutter-io.cn
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # 与本地开发环境对齐(Flutter 3.41.5 / Dart 3.11.3 stable),
+          # 钉死版本防「本地绿 / CI 红」的工具链漂移
+          flutter-version: 3.41.5
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # .g.dart 全部 gitignored,checkout 后不存在,必须先生成 Isar schema + Riverpod provider
+      - name: Generate code (build_runner)
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze
+        run: flutter analyze lib/ test/
+
+      # 默认并发(每文件独立 isolate,本就隔离);Isar core 由测试内 download:true 拉取
+      - name: Run tests
+        run: flutter test --no-pub
