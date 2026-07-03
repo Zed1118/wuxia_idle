@@ -1901,6 +1901,12 @@ class UiStrings {
   static const String founderCreatePreviewSection = '资质预览';
   static const String founderCreateConfirm = '立派入世';
   static const String founderCreateBack = '返回存档';
+  static const String founderCreateNameSection = '四 · 立名号';
+  static const String founderCreateFounderNameLabel = '祖师名';
+  static const String founderCreateSectNameLabel = '门派名';
+  static const String founderCreateRollName = '掷个名号';
+  static const String founderCreateFounderNameHint = '留空则称「祖师」';
+  static const String founderCreateSectNameHint = '留空则称「我的门派」';
   static const String founderCreateNoConfig = '祖师创建配置未加载';
   static const String founderCreateSelected = '已选';
   static const String founderCreateStartingTechnique = '起手心法';
