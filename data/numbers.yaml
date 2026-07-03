@@ -127,6 +127,7 @@ combat:
     skill_power_multiplier_max: 8000 # 招式倍率红线（§5.4，全局单线，配置基础表值）
     damage_readability_max: 1000000  # 软红线唯一硬线：实战可见伤害不进百万级膨胀
     normal_damage_typical_target: 8000 # 普通伤害典型 build 设计目标；满 build 极值可越过，但仍守 damage_readability_max
+    combined_rate_cap: 0.95          # 派生概率率(暴击/闪避/防御)加 buff/阵型/轻功 delta 后的绝对硬天花板，防 100%（无敌/必中）。统一 stage_battle_setup / light_foot / mass_battle 的 clamp(0.0, 0.95) 散落字面量（2026-07-03 迁入本块，兑现 2026-05-29 消 hardcode 意图）
 
   # P0 破招:Boss 蓄力/踉跄
   boss_charge:
