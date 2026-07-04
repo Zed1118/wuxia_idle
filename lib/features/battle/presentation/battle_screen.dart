@@ -21,6 +21,8 @@ import '../../../shared/effects/screen_shake.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
+import '../../../shared/widgets/wuxia_image.dart';
+import '../../../shared/widgets/asset_fallback.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import 'attack_animation.dart';
@@ -29,6 +31,7 @@ import 'battle_effect_sprite.dart';
 import 'battle_scene_background.dart';
 import 'character_avatar.dart';
 import 'countdown_ring.dart';
+import 'hp_bar.dart';
 import 'damage_popup.dart';
 import 'hit_flash.dart';
 import 'boss_phase_presentation.dart';
@@ -304,6 +307,9 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   SkillDef? _pendingSkill;
   int? _pendingCharId;
   int? _hoveredPendingEnemyId;
+
+  // 技能目标选择栏锚点:待发单体技的技能格 ↔ 其上方浮出的敌人快捷选择栏。
+  final LayerLink _skillTargetLink = LayerLink();
 
   bool get _pendingActive =>
       _pendingSkill != null ||
@@ -973,7 +979,22 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       _onSkillCommand(characterId, skill); // 一键即放,AI 选目标
       return;
     }
-    // single:进待发态 + 软暂停(等点敌头像指定目标)。
+    // single:按存活敌人数分流。
+    final aliveEnemies = s.rightTeam
+        .where((e) => e.isAlive)
+        .toList(growable: false);
+    if (aliveEnemies.isEmpty) return; // 战斗已结束,守卫。
+    if (aliveEnemies.length == 1) {
+      // 唯一敌人 → 点击即放:不进待发/不暂停/不选目标。
+      if (_pendingSkill != null) _clearPending();
+      _onSkillCommand(
+        characterId,
+        skill,
+        targetId: aliveEnemies.first.characterId,
+      );
+      return;
+    }
+    // ≥2 敌:进待发态 + 软暂停(选择栏在技能格上方冒出,右侧头像亦可点)。
     setState(() {
       _pendingSkill = skill;
       _pendingCharId = characterId;
@@ -1008,6 +1029,28 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     setState(() {
       _hoveredPendingEnemyId = hovering ? enemyId : null;
     });
+  }
+
+  /// 待发单体技的技能格上方浮出敌人快捷选择栏(仅 ≥2 存活敌人;1 敌走点击即放
+  /// 不进待发,不会到这里)。锚定被点技能格,右侧头像选目标通道并存。
+  Widget _buildTargetChipOverlay(BattleState state) {
+    final aliveEnemies = state.rightTeam
+        .where((e) => e.isAlive)
+        .toList(growable: false);
+    if (aliveEnemies.length < 2) return const SizedBox.shrink();
+    return CompositedTransformFollower(
+      link: _skillTargetLink,
+      showWhenUnlinked: false,
+      targetAnchor: Alignment.topCenter,
+      followerAnchor: Alignment.bottomCenter,
+      offset: const Offset(0, -8),
+      child: _TargetChipStrip(
+        enemies: aliveEnemies,
+        hoveredEnemyId: _hoveredPendingEnemyId,
+        onSelect: _onEnemyTap,
+        onHover: _onPendingEnemyHover,
+      ),
+    );
   }
 
   void _onSelectFocus(int slotIndex) {
@@ -1394,6 +1437,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                 _pendingSkill?.id ??
                                 widget.previewPendingSkillId,
                             beat: _beatCtrl,
+                            skillTargetLink: _skillTargetLink,
                           ),
                         ],
                       ),
@@ -1422,6 +1466,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 state.result == null &&
                 !widget.startPaused)
               Positioned.fill(child: _PauseOverlay(onResume: _togglePause)),
+            // 单体技待发 + ≥2 存活敌人:技能格正上方浮出快捷选择栏。
+            if (_pendingActive) _buildTargetChipOverlay(state),
           ],
         ),
       ),
@@ -2358,6 +2404,8 @@ class _BottomBar extends StatelessWidget {
   final String? pendingSkillId;
   // 读秒环节拍(供技能 CD 环平滑插值)。
   final Animation<double> beat;
+  // 待发单体技的技能格锚点(其上方浮出敌人快捷选择栏)。
+  final LayerLink skillTargetLink;
 
   const _BottomBar({
     required this.state,
@@ -2371,6 +2419,7 @@ class _BottomBar extends StatelessWidget {
     required this.pendingCharacterId,
     required this.pendingSkillId,
     required this.beat,
+    required this.skillTargetLink,
   });
 
   /// 排序/分组秩：强力 0 → 破招 1 → 共鸣 2 → 大招 3（普攻 4，已被过滤）。
@@ -2438,7 +2487,7 @@ class _BottomBar extends StatelessWidget {
                                   localPendingForFocus == s.id;
                               final domainPendingThis =
                                   domainPending?.id == s.id;
-                              return _SkillCommandButton(
+                              final button = _SkillCommandButton(
                                 character: focus,
                                 skill: s,
                                 isPending:
@@ -2454,6 +2503,13 @@ class _BottomBar extends StatelessWidget {
                                 onTap: () => onSkillTap(focus.characterId, s),
                                 onShowInfo: () => onShowSkillInfo(s),
                               );
+                              // 待发的单体技格挂锚点,供其上方浮出敌人快捷选择栏。
+                              return localPendingThis
+                                  ? CompositedTransformTarget(
+                                      link: skillTargetLink,
+                                      child: button,
+                                    )
+                                  : button;
                             },
                           ),
                           const SizedBox(width: 8),
@@ -3119,6 +3175,138 @@ class _EffectLayer extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// 单体技待发态时,在技能格上方冒出的敌人快捷选择栏(存活敌人按 slotIndex 升序)。
+class _TargetChipStrip extends StatelessWidget {
+  final List<BattleCharacter> enemies;
+  final int? hoveredEnemyId;
+  final void Function(int enemyId) onSelect;
+  final void Function(int enemyId, bool hovering) onHover;
+
+  const _TargetChipStrip({
+    required this.enemies,
+    required this.hoveredEnemyId,
+    required this.onSelect,
+    required this.onHover,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final sorted = [...enemies]
+      ..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
+    return Material(
+      color: Colors.transparent,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < sorted.length; i++) ...[
+            _TargetChip(
+              key: ValueKey('target_chip_${sorted[i].characterId}'),
+              enemy: sorted[i],
+              hovered: hoveredEnemyId == sorted[i].characterId,
+              onTap: () => onSelect(sorted[i].characterId),
+              onHover: (h) => onHover(sorted[i].characterId, h),
+            ),
+            if (i < sorted.length - 1) const SizedBox(width: 6),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// 单个敌人选择 chip:小头像(iconPath,缺图走首字降级) + 细血条。
+class _TargetChip extends StatelessWidget {
+  final BattleCharacter enemy;
+  final bool hovered;
+  final VoidCallback onTap;
+  final void Function(bool hovering) onHover;
+
+  const _TargetChip({
+    super.key,
+    required this.enemy,
+    required this.hovered,
+    required this.onTap,
+    required this.onHover,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = WuxiaColors.schoolColor(enemy.school);
+    final firstGlyph = enemy.name.isEmpty ? '?' : enemy.name.substring(0, 1);
+    final hasIcon = enemy.iconPath != null && enemy.iconPath!.isNotEmpty;
+    final glyph = Container(
+      width: 32,
+      height: 32,
+      alignment: Alignment.center,
+      color: WuxiaColors.avatarFill,
+      child: Text(
+        firstGlyph,
+        style: TextStyle(
+          fontSize: 16,
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+    return MouseRegion(
+      onEnter: (_) => onHover(true),
+      onExit: (_) => onHover(false),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 52,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: WuxiaColors.sidebar,
+            border: Border.all(
+              color: hovered ? color : WuxiaColors.border,
+              width: hovered ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x66000000),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipOval(
+                child: SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: hasIcon
+                      ? WuxiaImage(
+                          enemy.iconPath!,
+                          width: 32,
+                          height: 32,
+                          fit: BoxFit.cover,
+                          errorBuilder: wuxiaAssetErrorBuilder(() => glyph),
+                        )
+                      : glyph,
+                ),
+              ),
+              const SizedBox(height: 3),
+              SizedBox(
+                width: 40,
+                child: HpBar(
+                  current: enemy.currentHp,
+                  max: enemy.maxHp,
+                  height: 4,
+                  showLabel: false,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
