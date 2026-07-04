@@ -340,6 +340,11 @@ class UiStrings {
   static const String equipQuickViewLore = '查看典故';
   static const String equipLockedByRealm = '境界不足,无法装备(三系锁死)';
   static const String equipProtectedCurrent = '当前装备受保护,请先卸下或解锁';
+  static const String equipDirectActionEquip = '装备';
+  static const String equipDirectActionUnequip = '卸下';
+  static const String equipNoActiveCharacter = '暂无可装备角色';
+  static const String equipDirectSuccess = '已装备';
+  static const String equipDirectUnequipSuccess = '已卸下';
   // 装备槽对话框(2026-06-26 · 一步到位 + 全量对比两栏)。
   static const String equipSlotDialogConfirm = '确认更换';
   static const String equipSlotDialogEquip = '装备';
@@ -1862,6 +1867,7 @@ class UiStrings {
   static const String slotDeleteConfirm = '删除此存档？此举不可挽回。';
   static const String slotDeleteProtectionHint = '输入下方存档名后才可删除';
   static const String slotDeleteInputLabel = '存档名';
+  static const String slotDeleteRiskNotice = '将永久删除本卷全部角色、装备、心法、进度与离线记录。';
   static String slotDeleteConfirmFor(String name) => '删除「$name」？此举不可挽回。';
   static String slotDeleteProtectionValue(String name) => '请输入：$name';
   static const String slotRename = '重命名';
@@ -2423,6 +2429,7 @@ class UiStrings {
       '主线·第$chapter章重打';
   static const String cangjingTierLocked = '境界不足';
   static const String cangjingNotUnlocked = '未得真传,装配不得';
+  static const String cangjingGrowthLocked = '心法火候未到,此招尚不可用';
   static const String cangjingSecretGroupTitle = '秘传 · 真解残页';
   static const String cangjingPickerTitle = '选择招式';
   // 出战槽用途说明（玩家不查文档也懂每个槽的作用）。

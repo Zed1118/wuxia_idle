@@ -17,18 +17,20 @@ class PaperPanel extends StatelessWidget {
     this.padding = const EdgeInsets.all(14),
     this.paperOpacity = 0.18,
     this.showBorder = true,
+    this.fillColor,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
   final double paperOpacity;
   final bool showBorder;
+  final Color? fillColor;
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: WuxiaUi.panelFill,
+        color: fillColor ?? WuxiaUi.panelFill,
         borderRadius: BorderRadius.circular(WuxiaUi.radius),
         border: showBorder
             ? Border.all(color: WuxiaUi.ink, width: WuxiaUi.borderWidth)

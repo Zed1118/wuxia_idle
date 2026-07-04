@@ -111,8 +111,9 @@ void main() {
     expect(find.text(UiStrings.equipmentSourceSectionDivider), findsOneWidget);
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
     expect(find.byType(PaperPanel), findsWidgets);
-    // 高阶/稀有保护：神物详情只显示养成与锁定入口，不给出售/分解入口。
-    expect(find.byType(PlaqueButton), findsNWidgets(3));
+    // 高阶/稀有保护：神物详情只显示穿戴、养成与锁定入口，不给出售/分解入口。
+    expect(find.byType(PlaqueButton), findsNWidgets(4));
+    expect(find.text(UiStrings.equipDirectActionEquip), findsOneWidget);
     expect(find.text(UiStrings.equipmentSell), findsNothing);
     expect(find.text(UiStrings.equipmentDisassemble), findsNothing);
     // 首屏 info 区可见带强化等级的入口（不必滚到底部）

@@ -954,73 +954,83 @@ class _EquipmentSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 348,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: WuxiaUi.paper.withValues(alpha: 0.45),
-        border: Border.all(color: WuxiaColors.border.withValues(alpha: 0.75)),
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onView,
         borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          slot,
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: accent,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  '$tier · $slotLabel${schoolLabel == null ? '' : ' · $schoolLabel'}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
-                ),
-                const SizedBox(height: 4),
-                _EquipmentSummaryLine(
-                  label: UiStrings.equipmentCardRealmGate,
-                  value: realmGate,
-                ),
-                _EquipmentSummaryLine(
-                  label: UiStrings.equipmentCardCoreStats,
-                  value: coreStats.join(' / '),
-                ),
-                const SizedBox(height: 7),
-                Wrap(
-                  spacing: 5,
-                  runSpacing: 5,
+        child: Container(
+          width: 348,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: WuxiaUi.paper.withValues(alpha: 0.58),
+            border: Border.all(color: WuxiaUi.ink.withValues(alpha: 0.42)),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              slot,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (final status in statusLabels)
-                      _EquipmentStatusBadge(text: status, accent: accent),
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: accent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      '$tier · $slotLabel${schoolLabel == null ? '' : ' · $schoolLabel'}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: WuxiaUi.muted,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    _EquipmentSummaryLine(
+                      label: UiStrings.equipmentCardRealmGate,
+                      value: realmGate,
+                    ),
+                    _EquipmentSummaryLine(
+                      label: UiStrings.equipmentCardCoreStats,
+                      value: coreStats.join(' / '),
+                    ),
+                    const SizedBox(height: 7),
+                    Wrap(
+                      spacing: 5,
+                      runSpacing: 5,
+                      children: [
+                        for (final status in statusLabels)
+                          _EquipmentStatusBadge(text: status, accent: accent),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(minWidth: 96),
+                        child: PlaqueButton(
+                          label: UiStrings.equipmentCardActionView,
+                          onTap: onView,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minWidth: 96),
-                    child: PlaqueButton(
-                      label: UiStrings.equipmentCardActionView,
-                      onTap: onView,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1040,7 +1050,7 @@ class _EquipmentSummaryLine extends StatelessWidget {
         '$label：$value',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 11),
+        style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
       ),
     );
   }
@@ -1337,10 +1347,7 @@ class _MaterialGridTile extends ConsumerWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: WuxiaColors.textMuted,
-                  fontSize: 10,
-                ),
+                style: const TextStyle(color: WuxiaUi.muted, fontSize: 10),
               ),
             ),
         ],

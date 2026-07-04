@@ -48,57 +48,81 @@ class PaperDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseTheme = Theme.of(context);
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
-        child: PaperPanel(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        color: WuxiaUi.ink,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 4,
+      child: Theme(
+        data: baseTheme.copyWith(
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: WuxiaUi.paper2.withValues(alpha: 0.42),
+            labelStyle: const TextStyle(color: WuxiaUi.ink2),
+            helperStyle: const TextStyle(color: WuxiaUi.ink2),
+            hintStyle: const TextStyle(color: WuxiaUi.muted),
+            prefixStyle: const TextStyle(color: WuxiaUi.ink),
+            suffixStyle: const TextStyle(color: WuxiaUi.ink),
+            enabledBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: WuxiaUi.woodDark),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: const BorderSide(color: WuxiaUi.jiang, width: 1.6),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: PaperPanel(
+            padding: const EdgeInsets.all(20),
+            paperOpacity: 0.08,
+            fillColor: WuxiaUi.paper,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          color: WuxiaUi.ink,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 4,
+                        ),
                       ),
                     ),
-                  ),
-                  if (showSeal)
-                    SizedBox(
-                      width: 28,
-                      height: 28,
-                      child: WuxiaImage(
-                        WuxiaUi.sealRed,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    if (showSeal)
+                      SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: WuxiaImage(
+                          WuxiaUi.sealRed,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
                       ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              DefaultTextStyle.merge(
-                style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
-                child: body,
-              ),
-              if (actions.isNotEmpty) ...[
-                const SizedBox(height: 18),
-                Wrap(
-                  alignment: WrapAlignment.end,
-                  spacing: 10,
-                  runSpacing: 8,
-                  children: actions,
+                  ],
                 ),
+                const SizedBox(height: 12),
+                DefaultTextStyle.merge(
+                  style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
+                  child: body,
+                ),
+                if (actions.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 10,
+                    runSpacing: 8,
+                    children: actions,
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

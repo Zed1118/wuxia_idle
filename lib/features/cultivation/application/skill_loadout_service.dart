@@ -3,9 +3,11 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/skill_unlock_entry.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_loadout.dart';
+import 'package:wuxia_idle/features/cultivation/application/technique_skill_growth_gate.dart';
 
 enum SkillSlot { main1, main2, assist, resonance, ultimate, key }
 
@@ -36,6 +38,11 @@ class SlotEquipNotUnlocked extends EquipSlotResult {
   const SlotEquipNotUnlocked();
 }
 
+/// 心法自带招式尚未随修炼层解锁。
+class SlotEquipGrowthLocked extends EquipSlotResult {
+  const SlotEquipGrowthLocked();
+}
+
 /// 技能装配持久化（P1b）。装配 gate = SkillDef.canEquipAtRealm（§5.3 三系锁死）。
 class SkillLoadoutService {
   final Isar _isar;
@@ -58,6 +65,10 @@ class SkillLoadoutService {
       }
       if (!def.canEquipAtRealm(c.realmTier)) {
         result = const SlotEquipTierLocked();
+        return;
+      }
+      if (await _isTechniqueSkillGrowthLocked(c, def, repo)) {
+        result = const SlotEquipGrowthLocked();
         return;
       }
       // 波A 破招槽 gate:只能装 canInterrupt && style == 角色流派 的破招技。
@@ -84,6 +95,34 @@ class SkillLoadoutService {
       await _isar.characters.put(c);
     });
     return result;
+  }
+
+  Future<bool> _isTechniqueSkillGrowthLocked(
+    Character c,
+    SkillDef skill,
+    GameRepository repo,
+  ) async {
+    final parentDefId = skill.parentTechniqueDefId;
+    if (parentDefId == null || skill.source != SkillSource.technique) {
+      return false;
+    }
+    final techniqueDef = repo.techniqueDefs[parentDefId];
+    if (techniqueDef == null) return false;
+
+    final ownedIds = <int>[
+      if (c.mainTechniqueId != null) c.mainTechniqueId!,
+      ...c.assistTechniqueIds,
+    ];
+    for (final id in ownedIds) {
+      final technique = await _isar.techniques.get(id);
+      if (technique == null || technique.defId != parentDefId) continue;
+      return !isTechniqueSkillUnlockedByGrowth(
+        technique: technique,
+        techniqueDef: techniqueDef,
+        skill: skill,
+      );
+    }
+    return false;
   }
 
   Future<void> unequipSlot({

@@ -148,19 +148,25 @@ void main() {
     );
   });
 
-  test('stage_03_05 章末大 Boss：右队 1 名（solo 章末 Boss）+ isBossStage=true 不影响转换', () async {
-    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
-    final stage = GameRepository.instance.getStage('stage_03_05');
-    expect(stage.isBossStage, isTrue);
-    expect(stage.narrativeDefeatId, 'stage_03_05_defeat');
+  test(
+    'stage_03_05 章末大 Boss：右队 1 名（solo 章末 Boss）+ isBossStage=true 不影响转换',
+    () async {
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+      final stage = GameRepository.instance.getStage('stage_03_05');
+      expect(stage.isBossStage, isTrue);
+      expect(stage.narrativeDefeatId, 'stage_03_05_defeat');
 
-    final (_, right) = await StageBattleSetup(
-      isar: IsarSetup.instance,
-    ).buildTeams(stage);
-    expect(right.length, 1);
-    expect(right[0].name, '灰衣人');
-    expect(right[0].maxHp, 9000); // baseHp from yaml（2026-06-29 solo 11000→9000）
-  });
+      final (_, right) = await StageBattleSetup(
+        isar: IsarSetup.instance,
+      ).buildTeams(stage);
+      expect(right.length, 1);
+      expect(right[0].name, '灰衣人');
+      expect(
+        right[0].maxHp,
+        9000,
+      ); // baseHp from yaml（2026-06-29 solo 11000→9000）
+    },
+  );
 
   test('江湖恩怨：带 npcId 的 Boss 关进战斗时烘焙 APM 与来源', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
@@ -568,6 +574,12 @@ void main() {
     final before = await isar.characters.get(1);
     expect(before?.mainSkillId1, isNull);
 
+    await isar.writeTxn(() async {
+      final technique = (await isar.techniques.get(before!.mainTechniqueId!))!;
+      technique.cultivationLayer = CultivationLayer.chuKui;
+      await isar.techniques.put(technique);
+    });
+
     final stage = GameRepository.instance.getStage('stage_01_01');
     final (left, _) = await StageBattleSetup(isar: isar).buildTeams(stage);
 
@@ -575,8 +587,22 @@ void main() {
     final skillIds = player.availableSkills.map((s) => s.id).toSet();
 
     // autoFill 后走装配路径，availableSkills 是装配槽子集。
-    // P3 种子主修心法 tech_gangmeng_mingjia 有 3 招：basic/skill/ult。
-    // autoFill 按 powerMultiplier 分配到主修槽和大招槽，至少一招被装配。
+    // 心法成长门槛：初窥只开放第一招，第二招小成开放，大招大成开放。
+    expect(
+      skillIds,
+      contains('skill_gangmeng_mingjia_basic'),
+      reason: '新档不应开局直接带齐第二招和大招',
+    );
+    expect(
+      skillIds,
+      isNot(contains('skill_gangmeng_mingjia_skill')),
+      reason: '初窥主修不应自动装配第二招',
+    );
+    expect(
+      skillIds,
+      isNot(contains('skill_gangmeng_mingjia_ult')),
+      reason: '初窥主修不应自动装配大招',
+    );
     expect(
       skillIds.any((id) => id.startsWith('skill_gangmeng_mingjia_')),
       isTrue,

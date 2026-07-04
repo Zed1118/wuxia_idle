@@ -440,6 +440,12 @@ class _SlotTile extends ConsumerWidget {
       );
       return;
     }
+    if (result is SlotEquipGrowthLocked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.cangjingGrowthLocked)),
+      );
+      return;
+    }
     onChanged(character.id);
   }
 
@@ -756,6 +762,12 @@ class _LibrarySection extends ConsumerWidget {
     if (result is SlotEquipNotUnlocked) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(UiStrings.cangjingNotUnlocked)),
+      );
+      return;
+    }
+    if (result is SlotEquipGrowthLocked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.cangjingGrowthLocked)),
       );
       return;
     }
