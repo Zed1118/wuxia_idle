@@ -340,6 +340,11 @@ class UiStrings {
   static const String equipQuickViewLore = '查看典故';
   static const String equipLockedByRealm = '境界不足,无法装备(三系锁死)';
   static const String equipProtectedCurrent = '当前装备受保护,请先卸下或解锁';
+  static const String equipDirectActionEquip = '装备';
+  static const String equipDirectActionUnequip = '卸下';
+  static const String equipNoActiveCharacter = '暂无可装备角色';
+  static const String equipDirectSuccess = '已装备';
+  static const String equipDirectUnequipSuccess = '已卸下';
   // 装备槽对话框(2026-06-26 · 一步到位 + 全量对比两栏)。
   static const String equipSlotDialogConfirm = '确认更换';
   static const String equipSlotDialogEquip = '装备';

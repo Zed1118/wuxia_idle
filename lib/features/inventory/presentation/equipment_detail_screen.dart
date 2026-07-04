@@ -202,6 +202,73 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
     ref.invalidate(allEquipmentsProvider);
   }
 
+  Future<void> _toggleDirectEquip() async {
+    final service = EquipmentService(isar: IsarSetup.instance);
+    final currentOwnerId = widget.equipment.ownerCharacterId;
+
+    if (currentOwnerId != null) {
+      await service.unequip(
+        characterId: currentOwnerId,
+        slot: widget.equipment.slot,
+      );
+      if (!mounted) return;
+      setState(() {
+        widget.equipment.ownerCharacterId = null;
+      });
+      _invalidateEquipmentState(characterId: currentOwnerId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.equipDirectUnequipSuccess)),
+      );
+      return;
+    }
+
+    final activeIds =
+        ref.read(activeCharacterIdsProvider).value ?? const <int>[];
+    if (activeIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.equipNoActiveCharacter)),
+      );
+      return;
+    }
+
+    final targetCharacterId = activeIds.first;
+    final outcome = await service.equip(
+      characterId: targetCharacterId,
+      equipmentId: widget.equipment.id,
+    );
+    if (!mounted) return;
+
+    switch (outcome) {
+      case EquipOutcome.success:
+        setState(() {
+          widget.equipment.ownerCharacterId = targetCharacterId;
+        });
+        _invalidateEquipmentState(characterId: targetCharacterId);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiStrings.equipDirectSuccess)),
+        );
+        return;
+      case EquipOutcome.lockedByRealm:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiStrings.equipLockedByRealm)),
+        );
+        return;
+      case EquipOutcome.protectedCurrentEquipment:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(UiStrings.equipProtectedCurrent)),
+        );
+        return;
+      case EquipOutcome.notFound:
+        return;
+    }
+  }
+
+  void _invalidateEquipmentState({required int characterId}) {
+    ref.invalidate(allEquipmentsProvider);
+    ref.invalidate(equipmentByIdProvider(widget.equipment.id));
+    ref.invalidate(characterByIdProvider(characterId));
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = tierColorForEquipment(widget.def.tier);
@@ -256,6 +323,7 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
                   def: widget.def,
                   onEnhance: () => _openEnhance(0),
                   onForge: () => _openEnhance(1),
+                  onDirectEquip: _toggleDirectEquip,
                   onLockToggle: () => _setLocked(!widget.equipment.isLocked),
                   onSell: canDispose ? _onSell : null,
                   onDisassemble: canDispose ? _onDisassemble : null,
@@ -392,6 +460,7 @@ class _InfoCard extends ConsumerWidget {
     required this.def,
     required this.onEnhance,
     required this.onForge,
+    required this.onDirectEquip,
     required this.onLockToggle,
     this.onSell,
     this.onDisassemble,
@@ -403,6 +472,7 @@ class _InfoCard extends ConsumerWidget {
   /// T8:信息卡首屏强化/开锋入口(复用 detail 屏 _openEnhance(0/1))。
   final VoidCallback onEnhance;
   final VoidCallback onForge;
+  final VoidCallback onDirectEquip;
   final VoidCallback onLockToggle;
 
   /// null = 不显示出售按钮（已装备、师承遗物或锁定）。
@@ -427,6 +497,8 @@ class _InfoCard extends ConsumerWidget {
         : activeCharacters.first.realmTier;
     final realmLocked =
         playerRealm != null && !equipment.isEquippableAtRealm(playerRealm);
+    final equipped = equipment.ownerCharacterId != null;
+    final canDirectEquip = equipped || activeCharacters.isNotEmpty;
     return SizedBox(
       width: double.infinity,
       child: PaperPanel(
@@ -513,42 +585,58 @@ class _InfoCard extends ConsumerWidget {
             const SizedBox(height: 14),
             const SectionHeader(UiStrings.equipmentDetailActionSection),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 42,
-                    child: PlaqueButton(
-                      label:
-                          '${UiStrings.equipmentActionStrengthen} +${equipment.enhanceLevel}',
-                      primary: true,
-                      onTap: onEnhance,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final columns = constraints.maxWidth >= 640 ? 4 : 2;
+                final gap = 12.0;
+                final buttonWidth =
+                    (constraints.maxWidth - gap * (columns - 1)) / columns;
+                return Wrap(
+                  spacing: gap,
+                  runSpacing: 8,
+                  children: [
+                    SizedBox(
+                      width: buttonWidth,
+                      height: 42,
+                      child: PlaqueButton(
+                        label: equipped
+                            ? UiStrings.equipDirectActionUnequip
+                            : UiStrings.equipDirectActionEquip,
+                        primary: !equipped,
+                        disabled: !canDirectEquip,
+                        onTap: canDirectEquip ? onDirectEquip : null,
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SizedBox(
-                    height: 42,
-                    child: PlaqueButton(
-                      label: UiStrings.equipmentActionForge,
-                      onTap: onForge,
+                    SizedBox(
+                      width: buttonWidth,
+                      height: 42,
+                      child: PlaqueButton(
+                        label:
+                            '${UiStrings.equipmentActionStrengthen} +${equipment.enhanceLevel}',
+                        onTap: onEnhance,
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SizedBox(
-                    height: 42,
-                    child: PlaqueButton(
-                      label: equipment.isLocked
-                          ? UiStrings.equipmentUnlock
-                          : UiStrings.equipmentLock,
-                      onTap: onLockToggle,
+                    SizedBox(
+                      width: buttonWidth,
+                      height: 42,
+                      child: PlaqueButton(
+                        label: UiStrings.equipmentActionForge,
+                        onTap: onForge,
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                    SizedBox(
+                      width: buttonWidth,
+                      height: 42,
+                      child: PlaqueButton(
+                        label: equipment.isLocked
+                            ? UiStrings.equipmentUnlock
+                            : UiStrings.equipmentLock,
+                        onTap: onLockToggle,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             if (onSell != null && onDisassemble != null) ...[
               const SizedBox(height: 8),
