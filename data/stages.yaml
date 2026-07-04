@@ -1666,6 +1666,11 @@ stages:
     difficultyMultiplier: 7.5
     biome: innerRealm
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
+    winCondition:
+      type: surviveTicks
+      ticks: 15   # 实测下调(diagnostic test):40 在纯镜像(无脆弱窗口)下形同虚设——
+                  # 见 test/tools/inner_demon_survive_diagnostic_test.dart 文件头
+                  # 「发现2」,自然 TTK 上限 ~23 tick(§5.4 血红线 clamp 后无法再拖长)
 
   # ============================================================================
   # Light Foot · 轻功对决(1.0 P3.1 §12.3,GDD v1.11)
