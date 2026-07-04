@@ -7,9 +7,11 @@ import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_def.dart';
 
 /// 终局机制型 Boss 批次3 · Task 4 Part A：镜像脆弱窗口 + 蓄力技注入单元。
 ///
-/// 只对配了 mirror_vulnerability_per_stage 的关（05/06）注入
-/// vulnerabilityMult + chargeSkillId + 蓄力技进 availableSkills；
-/// 无 vuln 配置的关（01-04/07）保持纯镜像（三者全空/null）。
+/// 验注入逻辑本身：**在 mirror_vulnerability_per_stage 映射中**的关注入
+/// vulnerabilityMult + chargeSkillId + 蓄力技进 availableSkills；不在映射中的关
+/// 保持纯镜像（三者全空/null）。本单元用合成 def（此处只配 05/06）驱动，故下方
+/// 「未配」指该合成 def 未列的关（如 01-04）；生产真实数据 05/06/07 均配窗口
+/// （见 numbers.yaml `mirror_vulnerability_per_stage`），别据本合成 def 反推生产。
 
 InnerDemonDef _vulnDef() => InnerDemonDef.fromYaml(<String, dynamic>{
       'mirror_buff_per_stage': {
@@ -114,25 +116,27 @@ void main() {
       }
     });
 
-    test('Test2 stage 07 无 vuln → 纯镜像（三者全空/null）', () {
+    test('Test2 未配 vuln 的关（02，不在合成 def 映射）→ 纯镜像（三者全空/null）', () {
+      // 注：生产 07 已配窗口；此处用合成 def 未列的 02 验「不在映射→不注入」，
+      // 不再拿 07 当反例（曾误导，见文件头注）。
       final mirrors = InnerDemonService.buildMirrorEnemyTeam(
         playerTeam: _team(),
-        stageId: 'stage_inner_demon_07',
+        stageId: 'stage_inner_demon_02',
         innerDemonDef: _vulnDef(),
         mirrorChargeSkill: _chargeSkill,
       );
       for (final m in mirrors) {
-        expect(m.vulnerabilityMult, isNull, reason: '07 无脆弱窗口');
-        expect(m.chargeSkillId, isNull, reason: '07 无蓄力技 id');
+        expect(m.vulnerabilityMult, isNull, reason: '02 无脆弱窗口');
+        expect(m.chargeSkillId, isNull, reason: '02 无蓄力技 id');
         expect(
           m.availableSkills.any((s) => s.id == 'skill_inner_demon_charge'),
           isFalse,
-          reason: '07 availableSkills 不含蓄力技',
+          reason: '02 availableSkills 不含蓄力技',
         );
       }
     });
 
-    test('Test3 stage 01 无 vuln → 同 07 纯镜像', () {
+    test('Test3 stage 01 无 vuln → 同 02 纯镜像', () {
       final mirrors = InnerDemonService.buildMirrorEnemyTeam(
         playerTeam: _team(),
         stageId: 'stage_inner_demon_01',
