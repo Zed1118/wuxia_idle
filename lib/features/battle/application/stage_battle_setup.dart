@@ -58,6 +58,7 @@ class StageBattleSetup {
             playerTeam: left,
             stageId: stage.id,
             innerDemonDef: GameRepository.instance.numbers.innerDemon,
+            mirrorChargeSkill: _resolveInnerDemonChargeSkill(),
           )
         : buildEnemyTeam(
             stage.enemyTeam,
@@ -71,6 +72,15 @@ class StageBattleSetup {
       leftTeam: left,
       rightTeam: right,
     );
+  }
+
+  /// 心魔关脆弱窗口蓄力技解析（05/06 机制化心魔）。config 配了
+  /// `mirror_charge_skill_id` 时从 GameRepository 取 SkillDef 注入镜像；未配
+  /// （旧配置 / 无机制关）→ null。[InnerDemonService] 是纯函数不读 Isar，故在
+  /// 此 caller 侧解析后传入。
+  static SkillDef? _resolveInnerDemonChargeSkill() {
+    final id = GameRepository.instance.numbers.innerDemon.mirrorChargeSkillId;
+    return id != null ? GameRepository.instance.getSkill(id) : null;
   }
 
   /// 拼装 (left, right) 战斗双方，准备调 `startBattle`（爬塔版）。
