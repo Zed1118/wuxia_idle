@@ -994,6 +994,9 @@ floors:
           outOfWindowDamageMult: 0.10   # 机制型:窗口外(未蓄招/未踉跄)仅受 10% 伤;
                                         # 窗口靠 bossPhases chargeCounter 相位(0.70/0.50)开。
                                         # 批次1 诊断(copyWith 0.10)验:满配20/20胜·ticks 2.66×。
+        cycleVulnerability:
+          2:
+            outOfWindowDamageMult: 0.06   # 批次4:二周目收窄窗口(base 0.10)加压;诊断校准
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.70
@@ -1314,6 +1317,9 @@ floors:
                                         # 0.20(比 floor25 宽:叠护法血墙+42000血)。Task5 诊断锁定:
                                         # onLevel 100% 胜且非秒穿(avgTicks=4/phaseTrans=2.0/首伤在护法灭后),
                                         # 机制真触发无需放宽,0.20 定稿。
+        cycleVulnerability:
+          2:
+            outOfWindowDamageMult: 0.12   # 批次4:二周目收窄窗口(base 0.20 约减半)加压;诊断校准
         bossPhases:
           - hpThresholdPct: 1.0
           - hpThresholdPct: 0.90
