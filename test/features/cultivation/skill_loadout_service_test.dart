@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
@@ -23,9 +24,7 @@ void main() {
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
     if (!GameRepository.isLoaded) {
-      await GameRepository.loadAllDefs(
-        loader: (p) => File(p).readAsString(),
-      );
+      await GameRepository.loadAllDefs(loader: (p) => File(p).readAsString());
     }
   });
 
@@ -79,26 +78,26 @@ void main() {
     required String id,
     int powerMultiplier = 1000,
     int? tier,
-  }) =>
-      SkillDef(
-        id: id,
-        name: id,
-        description: '',
-        type: SkillType.powerSkill,
-        powerMultiplier: powerMultiplier,
-        internalForceCost: 50,
-        cooldownTurns: 2,
-        requiresManualTrigger: false,
-        visualEffect: 'none',
-        tier: tier,
-      );
+  }) => SkillDef(
+    id: id,
+    name: id,
+    description: '',
+    type: SkillType.powerSkill,
+    powerMultiplier: powerMultiplier,
+    internalForceCost: 50,
+    cooldownTurns: 2,
+    requiresManualTrigger: false,
+    visualEffect: 'none',
+    tier: tier,
+  );
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 测试 1: equipSkill 低境界装高 tier 招 → SlotEquipTierLocked，槽不变
   // ─────────────────────────────────────────────────────────────────────────────
   test('equipSkill 低境界装 tier-5 奇遇招 → SlotEquipTierLocked 且槽不变', () async {
     // tier-5 招需 realmTier.index >= 4（jueDing），xueTu.index=0 → 装不进
-    const tierHighSkillId = 'skill_encounter_water_qi'; // encounter_skills.yaml tier=5
+    const tierHighSkillId =
+        'skill_encounter_water_qi'; // encounter_skills.yaml tier=5
 
     final charId = await seedCharacter(realmTier: RealmTier.xueTu);
     final svc = SkillLoadoutService(IsarSetup.instance);
@@ -121,7 +120,8 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────────
   test('equipSkill 境界达标（tier-1 招 + xueTu）→ 槽写入 skillId', () async {
     // tier-1 招需 realmTier.index >= 0，xueTu.index=0 → 恰好通过
-    const tier1SkillId = 'skill_encounter_jichu_buxi'; // encounter_skills.yaml tier=1
+    const tier1SkillId =
+        'skill_encounter_jichu_buxi'; // encounter_skills.yaml tier=1
 
     final charId = await seedCharacter(realmTier: RealmTier.xueTu);
     final svc = SkillLoadoutService(IsarSetup.instance);
@@ -138,15 +138,67 @@ void main() {
     expect(c?.mainSkillId1, tier1SkillId);
   });
 
+  test('equipSkill 心法火候未到 → 第二招/大招不可手动装配', () async {
+    final charId = await seedCharacter(realmTier: RealmTier.xueTu);
+    final isar = IsarSetup.instance;
+
+    await isar.writeTxn(() async {
+      final c = (await isar.characters.get(charId))!;
+      final technique = Technique.create(
+        defId: 'tech_gangmeng_mingjia',
+        ownerCharacterId: charId,
+        tier: TechniqueTier.mingJiaGong,
+        school: TechniqueSchool.gangMeng,
+        role: TechniqueRole.main,
+        learnedAt: DateTime(2026, 1, 1),
+      );
+      final techniqueId = await isar.techniques.put(technique);
+      c.mainTechniqueId = techniqueId;
+      await isar.characters.put(c);
+    });
+
+    final svc = SkillLoadoutService(isar);
+
+    final locked = await svc.equipSkill(
+      characterId: charId,
+      slot: SkillSlot.main2,
+      skillId: 'skill_gangmeng_mingjia_skill',
+    );
+    expect(locked, isA<SlotEquipGrowthLocked>());
+
+    await isar.writeTxn(() async {
+      final c = (await isar.characters.get(charId))!;
+      final technique = (await isar.techniques.get(c.mainTechniqueId!))!;
+      technique.cultivationLayer = CultivationLayer.xiaoCheng;
+      await isar.techniques.put(technique);
+    });
+
+    final unlocked = await svc.equipSkill(
+      characterId: charId,
+      slot: SkillSlot.main2,
+      skillId: 'skill_gangmeng_mingjia_skill',
+    );
+    expect(unlocked, isA<SlotEquipSucceeded>());
+
+    final c = await isar.characters.get(charId);
+    expect(c?.mainSkillId2, 'skill_gangmeng_mingjia_skill');
+  });
+
   // ─────────────────────────────────────────────────────────────────────────────
   // 测试 3: applyAutoFill → 角色 5 槽按 autoFill 结果落库
   // ─────────────────────────────────────────────────────────────────────────────
   test('applyAutoFill → 角色 5 槽按 autoFill 结果落库', () async {
     // 直接构造 SkillDef，不依赖 GameRepository.skillDefs
     // ultimatePowerThreshold=1400，power>=1400 → 大招槽，power<1400 → 主修槽
-    final main1 = makeSkillDef(id: 'test_main_a', powerMultiplier: 1200); // < 1400
-    final main2 = makeSkillDef(id: 'test_main_b', powerMultiplier: 1100); // < 1400
-    final ult = makeSkillDef(id: 'test_ult', powerMultiplier: 1500);      // >= 1400
+    final main1 = makeSkillDef(
+      id: 'test_main_a',
+      powerMultiplier: 1200,
+    ); // < 1400
+    final main2 = makeSkillDef(
+      id: 'test_main_b',
+      powerMultiplier: 1100,
+    ); // < 1400
+    final ult = makeSkillDef(id: 'test_ult', powerMultiplier: 1500); // >= 1400
     final assist = makeSkillDef(id: 'test_assist', powerMultiplier: 900);
     final joint = makeSkillDef(id: 'test_joint', powerMultiplier: 800);
 

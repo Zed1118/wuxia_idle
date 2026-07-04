@@ -89,6 +89,7 @@ void main() {
     await tester.pumpAndSettle();
     // 确认弹窗渲染
     expect(find.text(UiStrings.slotDeleteConfirmFor('夜雨江湖')), findsOneWidget);
+    expect(find.text(UiStrings.slotDeleteRiskNotice), findsOneWidget);
     expect(
       find.text(UiStrings.slotDeleteProtectionValue('夜雨江湖')),
       findsOneWidget,

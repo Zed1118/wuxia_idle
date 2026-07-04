@@ -1209,7 +1209,7 @@ class _SegmentDivider extends StatelessWidget {
             child: Text(
               '· · ·',
               style: TextStyle(
-                color: WuxiaColors.textMuted,
+                color: WuxiaUi.muted,
                 fontSize: 14,
                 letterSpacing: 6,
               ),

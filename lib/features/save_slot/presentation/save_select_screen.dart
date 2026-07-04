@@ -174,9 +174,36 @@ class SaveSelectScreen extends ConsumerWidget {
                 children: [
                   Text(body, style: const TextStyle(color: WuxiaUi.ink2)),
                   const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: WuxiaUi.jiang.withValues(alpha: 0.10),
+                      border: Border.all(
+                        color: WuxiaUi.jiang.withValues(alpha: 0.64),
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      UiStrings.slotDeleteRiskNotice,
+                      style: TextStyle(
+                        color: WuxiaUi.ink,
+                        fontSize: 13,
+                        height: 1.45,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Text(
                     UiStrings.slotDeleteProtectionValue(requiredName),
-                    style: const TextStyle(color: WuxiaUi.muted),
+                    style: const TextStyle(
+                      color: WuxiaUi.ink,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   TextField(

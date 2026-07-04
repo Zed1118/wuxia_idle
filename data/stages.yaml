@@ -162,9 +162,9 @@ stages:
         realmTier: xueTu
         realmLayer: dengFeng
         school: lingQiao
-        baseHp: 2200     # production 单人线小 Boss:保留压迫,避免早于章末形成硬失败点
-        baseAttack: 100
-        baseSpeed: 140
+        baseHp: 2050     # production 单人线小 Boss:保留灵巧压迫,但不早于章末形成硬失败点
+        baseAttack: 75
+        baseSpeed: 105
         skillIds:
           - skill_lingqiao_jichu_basic
           - skill_lingqiao_jichu_skill
@@ -925,9 +925,9 @@ stages:
         realmTier: yiLiu
         realmLayer: jingTong
         school: gangMeng
-        baseHp: 8500
-        baseAttack: 800
-        baseSpeed: 195
+        baseHp: 8000
+        baseAttack: 720
+        baseSpeed: 180
         skillIds:
           - skill_gangmeng_menpai_basic
           - skill_gangmeng_menpai_skill
@@ -1435,9 +1435,9 @@ stages:
         realmTier: zongShi
         realmLayer: jingTong
         school: lingQiao
-        baseHp: 22000
-        baseAttack: 1500
-        baseSpeed: 268
+        baseHp: 20000
+        baseAttack: 1350
+        baseSpeed: 250
         skillIds:
           - skill_lingqiao_shichuan_basic
           - skill_lingqiao_shichuan_skill

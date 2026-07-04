@@ -188,26 +188,26 @@ class _WuxiaInkButtonState extends State<WuxiaInkButton> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          widget.label,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            color: WuxiaUi.ink,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ),
-                                      if (widget.status != null) ...[
-                                        const SizedBox(width: 8),
-                                        _InkButtonStatusChip(widget.status!),
-                                      ],
-                                    ],
+                                  Text(
+                                    widget.label,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: WuxiaUi.ink,
+                                      fontSize: 16,
+                                      height: 1.12,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
+                                  if (widget.status != null) ...[
+                                    const SizedBox(height: 5),
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: _InkButtonStatusChip(
+                                        widget.status!,
+                                      ),
+                                    ),
+                                  ],
                                   const SizedBox(height: 5),
                                   SizedBox(
                                     height: 30,

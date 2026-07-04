@@ -9,6 +9,7 @@ import '../../../core/domain/technique.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
+import 'technique_skill_growth_gate.dart';
 
 /// P1b Task5/Task9 共享：从持久化角色解析 autoFill 所需的三组招式源
 /// （主修招 / 辅修招 / joint 共鸣招），供 [SkillLoadoutService.applyAutoFill] 使用。
@@ -54,17 +55,20 @@ class SkillLoadoutResolver {
     final SaveData? save = await isar.saveDatas.get(0);
     if (save == null) return const [];
     final unlocked = save.skillUnlockProgress;
-    final result = repo.skillDefs.values
-        .where((s) =>
-            (s.source == SkillSource.mainlineDrop ||
-                s.source == SkillSource.fragment) &&
-            s.style == school &&
-            unlocked.isUnlocked(s.id))
-        .toList()
-      ..sort((a, b) {
-        final t = (a.tier ?? 0).compareTo(b.tier ?? 0);
-        return t != 0 ? t : a.id.compareTo(b.id);
-      });
+    final result =
+        repo.skillDefs.values
+            .where(
+              (s) =>
+                  (s.source == SkillSource.mainlineDrop ||
+                      s.source == SkillSource.fragment) &&
+                  s.style == school &&
+                  unlocked.isUnlocked(s.id),
+            )
+            .toList()
+          ..sort((a, b) {
+            final t = (a.tier ?? 0).compareTo(b.tier ?? 0);
+            return t != 0 ? t : a.id.compareTo(b.id);
+          });
     return result;
   }
 
@@ -88,6 +92,13 @@ class SkillLoadoutResolver {
     return techDef.skillIds
         .where(repo.skillDefs.containsKey)
         .map(repo.getSkill)
+        .where(
+          (skill) => isTechniqueSkillUnlockedByGrowth(
+            technique: tech,
+            techniqueDef: techDef,
+            skill: skill,
+          ),
+        )
         .toList();
   }
 
@@ -103,7 +114,15 @@ class SkillLoadoutResolver {
       final techDef = repo.techniqueDefs[tech.defId];
       if (techDef == null) continue;
       for (final id in techDef.skillIds) {
-        if (repo.skillDefs.containsKey(id)) result.add(repo.getSkill(id));
+        if (!repo.skillDefs.containsKey(id)) continue;
+        final skill = repo.getSkill(id);
+        if (isTechniqueSkillUnlockedByGrowth(
+          technique: tech,
+          techniqueDef: techDef,
+          skill: skill,
+        )) {
+          result.add(skill);
+        }
       }
     }
     return result;
@@ -129,7 +148,6 @@ class SkillLoadoutResolver {
     if (!repo.skillDefs.containsKey(jointSkillId)) return null;
     return repo.getSkill(jointSkillId);
   }
-
 }
 
 /// [SkillLoadoutResolver.resolve] 的解析结果三元组。
