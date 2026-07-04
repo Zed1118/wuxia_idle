@@ -1625,12 +1625,18 @@ inner_demon:
     stage_inner_demon_06: { tier: wuSheng, layer: huaJing }
     stage_inner_demon_07: { tier: wuSheng, layer: dengFeng }
 
-  # 终局机制型 Boss 批次3 · 高层心魔关镜像脆弱窗口（仅 05/06；07 走 survive 不配）。
+  # 终局机制型 Boss 批次3 · 高层心魔关镜像脆弱窗口。
+  # 05/06/07 均配窗口（Task5 修订：07 加窗口使 survive 有意义——窗口 gate 击杀，
+  # 高爆发 build 会被翻盘，survive 撑关成为真正的第二条「熬过去」通道）。
+  # 07 是终关/最难：窗口外承伤最低（0.08），配合 +40% 镜像使击杀最难、
+  # survive N 门槛成为真实「熬关」阈值（见 test/tools/inner_demon_survive_diagnostic_test.dart）。
   mirror_vulnerability_per_stage:
     stage_inner_demon_05:
       outOfWindowDamageMult: 0.12
     stage_inner_demon_06:
       outOfWindowDamageMult: 0.10
+    stage_inner_demon_07:
+      outOfWindowDamageMult: 0.08
   mirror_charge_skill_id: skill_inner_demon_charge
 
 # =============================================================================

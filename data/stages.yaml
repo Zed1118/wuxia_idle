@@ -1668,9 +1668,14 @@ stages:
     sceneBackgroundPath: assets/scenes/battle_innerrealm.png
     winCondition:
       type: surviveTicks
-      ticks: 15   # 实测下调(diagnostic test):40 在纯镜像(无脆弱窗口)下形同虚设——
-                  # 见 test/tools/inner_demon_survive_diagnostic_test.dart 文件头
-                  # 「发现2」,自然 TTK 上限 ~23 tick(§5.4 血红线 clamp 后无法再拖长)
+      ticks: 20   # 实测校准(diagnostic test)。07 现配脆弱窗口(numbers.yaml
+                  # mirror_vulnerability_per_stage 0.08)→ 窗口 gate 击杀,战斗
+                  # 大幅拉长,survive 成为真实「熬关」第二通道。N=20 落在:
+                  #   · 强攻 build 自然斩杀 tick(≤11)之上 → 击败通道稳定可达
+                  #   · 龟缩/耐战 build 自然斩杀 tick(≥29)之下 → survive 边界
+                  #     抢先触发(tick=20 存活且右队未团灭,非巧合式团灭)
+                  # 高爆发 BiS 在窗口下 ~20% 战败(死于 tick<20,survive 无法救)。
+                  # 见 test/tools/inner_demon_survive_diagnostic_test.dart 文件头。
 
   # ============================================================================
   # Light Foot · 轻功对决(1.0 P3.1 §12.3,GDD v1.11)
