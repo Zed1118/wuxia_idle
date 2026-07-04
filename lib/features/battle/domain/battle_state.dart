@@ -1,5 +1,6 @@
 import '../../../data/defs/boss_phase_def.dart';
 import '../../../data/defs/skill_def.dart';
+import '../../../data/defs/stage_win_condition.dart';
 import '../../../data/game_repository.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
@@ -686,6 +687,12 @@ class BattleState {
   /// 跨队重号,故带 teamSide)。
   final List<({int charId, int teamSide})> actorQueue;
 
+  /// 本场战斗胜负条件（终局机制型 Boss 批次3）。null = defeatAll（击败全部敌人
+  /// 即胜，现状语义）。surviveTicks 型由 strategy 在 tick 边界判定——
+  /// tick≥N 且左队存活 → leftWin（与「右队全灭→leftWin」并存，任一即胜）。
+  /// 由 [BattleState.initial] 从 StageDef.winCondition 灌入，全程不变。
+  final StageWinCondition? winCondition;
+
   BattleState({
     required this.leftTeam,
     required this.rightTeam,
@@ -695,6 +702,7 @@ class BattleState {
     this.pendingUltimates = const {},
     this.pendingTargets = const {},
     this.actorQueue = const [],
+    this.winCondition,
   }) {
     assert(_assertUniqueIds(leftTeam, 'leftTeam'));
     assert(_assertUniqueIds(rightTeam, 'rightTeam'));
@@ -721,6 +729,7 @@ class BattleState {
   factory BattleState.initial({
     required List<BattleCharacter> leftTeam,
     required List<BattleCharacter> rightTeam,
+    StageWinCondition? winCondition,
   }) {
     return BattleState(
       leftTeam: List.unmodifiable(leftTeam),
@@ -730,6 +739,7 @@ class BattleState {
       actionLog: const [],
       pendingUltimates: const {},
       pendingTargets: const {},
+      winCondition: winCondition,
     );
   }
 
@@ -755,6 +765,7 @@ class BattleState {
     Map<int, SkillDef>? pendingUltimates,
     Map<int, int>? pendingTargets,
     List<({int charId, int teamSide})>? actorQueue,
+    StageWinCondition? winCondition,
   }) {
     return BattleState(
       leftTeam: leftTeam ?? this.leftTeam,
@@ -765,6 +776,7 @@ class BattleState {
       pendingUltimates: pendingUltimates ?? this.pendingUltimates,
       pendingTargets: pendingTargets ?? this.pendingTargets,
       actorQueue: actorQueue ?? this.actorQueue,
+      winCondition: winCondition ?? this.winCondition,
     );
   }
 
