@@ -2,6 +2,7 @@ import '../../core/domain/enums.dart';
 import 'boss_phase_def.dart';
 import 'boss_vulnerability_def.dart';
 import 'drop_entry.dart';
+import 'stage_win_condition.dart';
 
 /// 关卡配置（data_schema.md §5.4，纯 Dart，不入 Isar）。
 ///
@@ -91,6 +92,11 @@ class StageDef {
   final String? dropSkillManualId;
   final String? dropSkillFragmentId;
 
+  /// 终局机制型 Boss 批次3 · 关卡胜负条件。null = defeatAll（击败全部敌人即胜，
+  /// 现状语义，所有旧关零影响）。仅特殊机制关（心魔终关 inner_demon_07）配
+  /// surviveTicks 型。透传进 BattleState.winCondition 供 strategy 逐 tick 判定。
+  final StageWinCondition? winCondition;
+
   const StageDef({
     required this.id,
     required this.name,
@@ -118,6 +124,7 @@ class StageDef {
     this.factionId,
     this.dropSkillManualId,
     this.dropSkillFragmentId,
+    this.winCondition,
   });
 
   factory StageDef.fromYaml(Map<String, dynamic> y) {
@@ -163,6 +170,11 @@ class StageDef {
           ? null
           : BossRecruitConfig.fromYaml(
               Map<String, dynamic>.from(y['bossRecruit'] as Map),
+            ),
+      winCondition: y['winCondition'] == null
+          ? null
+          : StageWinCondition.fromYaml(
+              Map<String, dynamic>.from(y['winCondition'] as Map),
             ),
     );
   }
