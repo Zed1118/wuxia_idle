@@ -157,4 +157,55 @@ void main() {
       expect(notifier.lastInterveneTarget, isNull);
     });
   });
+
+  group('单体技 · 多敌选择栏', () {
+    testWidgets('≥2 敌时点单体技 → 进待发 + 选择栏显 N 个 chip', (tester) async {
+      final (left, right) = BattleDemo.mockTeams(); // 3 敌
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      expect(notifier.interveneCount, 0, reason: '多敌先进待发,不立即出手');
+      // 仅存活敌人有 chip;死敌(mockTeams 右队 slot2 currentHp=0)不作目标。
+      for (final e in right.where((e) => e.currentHp > 0)) {
+        expect(
+          find.byKey(ValueKey('target_chip_${e.characterId}')),
+          findsOneWidget,
+        );
+      }
+      final dead = right.firstWhere((e) => e.currentHp <= 0);
+      expect(
+        find.byKey(ValueKey('target_chip_${dead.characterId}')),
+        findsNothing,
+        reason: '死敌无选择 chip',
+      );
+    });
+
+    testWidgets('点选择栏 chip → 对该敌出手并清待发', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_single]);
+      final notifier = await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_single1')));
+      await tester.pump();
+      // 点第 2 个敌人的 chip（characterId 12）。
+      await tester.tap(find.byKey(const ValueKey('target_chip_12')));
+      await tester.pump();
+      expect(notifier.lastInterveneSkill?.id, 'single1');
+      expect(notifier.lastInterveneTarget, 12);
+      expect(
+        find.text(UiStrings.skillPendingStamp),
+        findsNothing,
+        reason: '出手后清待发',
+      );
+    });
+
+    testWidgets('aoe 多敌 → 不显选择栏（立即放）', (tester) async {
+      final (left, right) = BattleDemo.mockTeams();
+      final focus = left.first.copyWith(availableSkills: [_aoe]);
+      await _pumpWith(tester, [focus, ...left.skip(1)], right);
+      await tester.tap(find.byKey(const ValueKey('skill_cmd_1_aoe1')));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('target_chip_11')), findsNothing);
+    });
+  });
 }
