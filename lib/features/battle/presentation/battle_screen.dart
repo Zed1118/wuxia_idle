@@ -973,7 +973,22 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       _onSkillCommand(characterId, skill); // 一键即放,AI 选目标
       return;
     }
-    // single:进待发态 + 软暂停(等点敌头像指定目标)。
+    // single:按存活敌人数分流。
+    final aliveEnemies = s.rightTeam
+        .where((e) => e.isAlive)
+        .toList(growable: false);
+    if (aliveEnemies.isEmpty) return; // 战斗已结束,守卫。
+    if (aliveEnemies.length == 1) {
+      // 唯一敌人 → 点击即放:不进待发/不暂停/不选目标。
+      if (_pendingSkill != null) _clearPending();
+      _onSkillCommand(
+        characterId,
+        skill,
+        targetId: aliveEnemies.first.characterId,
+      );
+      return;
+    }
+    // ≥2 敌:进待发态 + 软暂停(选择栏在技能格上方冒出,右侧头像亦可点)。
     setState(() {
       _pendingSkill = skill;
       _pendingCharId = characterId;
