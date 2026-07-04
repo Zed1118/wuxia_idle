@@ -3157,3 +3157,22 @@ skills:
       effects:
         shuLian: { damage_pct: 0.05 }
         huaJing: { cooldown_delta: -1 }
+
+  # ───────────────────────────────────────────
+  # 终局机制型 Boss 批次3 · 心魔镜像蓄力技（不进玩家技能池 / 不进 EnemyDef，
+  # 仅 InnerDemonService 注入 inner_demon_05/06 镜像，CD 复发开脆弱窗口）。
+  # ───────────────────────────────────────────
+  - id: skill_inner_demon_charge
+    name: 心魔·运劲
+    description: 心魔凝气蓄势,周身破绽毕露,一击既发势不可挡。
+    type: powerSkill
+    targetType: single
+    powerMultiplier: 4000
+    internalForceCost: 200
+    cooldownTurns: 4
+    requiresManualTrigger: false
+    parentTechniqueDefId: null
+    visualEffect: inner_demon_charge_surge
+    source: special
+    style: gangMeng
+    tier: 7

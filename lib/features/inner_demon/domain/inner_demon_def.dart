@@ -1,4 +1,5 @@
 import '../../../core/domain/enums.dart';
+import '../../../data/defs/boss_vulnerability_def.dart';
 
 /// 心魔系统配置（1.0 P2.2 §12.1，data/numbers.yaml `inner_demon` 段强类型化）。
 ///
@@ -32,6 +33,16 @@ class InnerDemonDef {
   /// wuSheng·qiMeng）。
   final Map<String, RealmCoord> requiredRealmLayer;
 
+  /// 终局机制型 Boss 批次3 · 高层心魔关（05/06/07）镜像脆弱窗口配置。
+  /// stage_id → 承伤乘子 def（窗口外 ×mult 减伤）。空 = 该关镜像无机制（01-04）。
+  /// 复用批次1 BossVulnerabilityDef（schema [0.05,1.0]）。
+  final Map<String, BossVulnerabilityDef> mirrorVulnerabilityPerStage;
+
+  /// 注入配了 vulnerability 的镜像的蓄力技 id（周期性蓄力开窗，CD 复发）。
+  /// null = 无机制化心魔关。配了 mirrorVulnerabilityPerStage 必配此项（否则永不
+  /// 开窗=永久免疫无解，fromYaml 跨字段校验 fail-fast）。
+  final String? mirrorChargeSkillId;
+
   const InnerDemonDef({
     required this.mirrorBuffPerStage,
     required this.mirrorCaps,
@@ -39,6 +50,8 @@ class InnerDemonDef {
     required this.residueDebuff,
     required this.unlockTriggers,
     required this.requiredRealmLayer,
+    this.mirrorVulnerabilityPerStage = const {},
+    this.mirrorChargeSkillId,
   });
 
   /// numbers.yaml 不含 `inner_demon` 段时的空值（fixture 兼容 + Demo 路径无心魔）。
@@ -66,6 +79,8 @@ class InnerDemonDef {
         ),
         unlockTriggers: {},
         requiredRealmLayer: {},
+        mirrorVulnerabilityPerStage: {},
+        mirrorChargeSkillId: null,
       );
 
   factory InnerDemonDef.fromYaml(Map<String, dynamic>? y) {
@@ -99,6 +114,23 @@ class InnerDemonDef {
       }
     }
 
+    final vuln = <String, BossVulnerabilityDef>{};
+    final vulnYaml = y['mirror_vulnerability_per_stage'] as Map?;
+    if (vulnYaml != null) {
+      for (final e in vulnYaml.entries) {
+        vuln[e.key as String] = BossVulnerabilityDef.fromYaml(
+          Map<String, dynamic>.from(e.value as Map),
+        );
+      }
+    }
+    final chargeSkillId = y['mirror_charge_skill_id'] as String?;
+    if (vuln.isNotEmpty && chargeSkillId == null) {
+      throw StateError(
+        'inner_demon: 配了 mirror_vulnerability_per_stage '
+        '(${vuln.keys.join(",")}) 但缺 mirror_charge_skill_id（永不开窗=无解）',
+      );
+    }
+
     return InnerDemonDef(
       mirrorBuffPerStage: mirror,
       mirrorCaps: InnerDemonMirrorCaps.fromYaml(
@@ -112,6 +144,8 @@ class InnerDemonDef {
       ),
       unlockTriggers: unlocks,
       requiredRealmLayer: required,
+      mirrorVulnerabilityPerStage: vuln,
+      mirrorChargeSkillId: chargeSkillId,
     );
   }
 }

@@ -7,6 +7,7 @@ import '../../features/battle/domain/strategy/battle_strategy.dart';
 import '../../features/battle/domain/strategy/default_ground_strategy.dart';
 import '../../data/defs/skill_def.dart';
 import '../../data/defs/stage_def.dart';
+import '../../data/defs/stage_win_condition.dart';
 import '../../data/game_repository.dart';
 import '../domain/character.dart';
 import '../domain/equipment.dart';
@@ -75,15 +76,22 @@ class BattleNotifier extends _$BattleNotifier {
   /// 半横版);P3 三战斗形态扩展时挂自己的 [BattleStrategy] 实装即可。
   /// [seed] 注入本场战斗随机种子(确定性地基):测试 / balance sim 传固定 seed
   /// 复刻;实战不传则生成一个种子。
+  /// [winCondition] 终局机制型 Boss 批次3:本场胜负条件,null=defeatAll 旧行为
+  /// (透传进 [BattleState.winCondition],由 strategy 逐 tick 判定)。
   void startBattle(
     List<BattleCharacter> leftTeam,
     List<BattleCharacter> rightTeam, {
     BattleStrategy? strategy,
     int? seed,
+    StageWinCondition? winCondition,
   }) {
     _strategy = strategy ?? const DefaultGroundStrategy();
     _rng = Random(seed ?? Random().nextInt(1 << 32));
-    state = BattleState.initial(leftTeam: leftTeam, rightTeam: rightTeam);
+    state = BattleState.initial(
+      leftTeam: leftTeam,
+      rightTeam: rightTeam,
+      winCondition: winCondition,
+    );
   }
 
   /// 玩家手动请求大招（phase1_tasks T16.2）。

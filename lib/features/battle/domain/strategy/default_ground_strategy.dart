@@ -2,6 +2,7 @@ import 'dart:math';
 
 import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
+import '../../../../data/defs/stage_win_condition.dart';
 import '../../../../core/domain/enums.dart';
 import '../../../../data/numbers_config.dart';
 import '../battle_ai.dart';
@@ -84,7 +85,7 @@ class DefaultGroundStrategy implements BattleStrategy {
         if (c.isAlive && c.actionPoint >= 1000) actors.add(c);
       }
       actors.sort(_actorOrder);
-      return state.copyWith(
+      final boundary = state.copyWith(
         leftTeam: List.unmodifiable(left),
         rightTeam: List.unmodifiable(right),
         tick: state.tick + 1,
@@ -92,6 +93,20 @@ class DefaultGroundStrategy implements BattleStrategy {
           actors.map((c) => (charId: c.characterId, teamSide: c.teamSide)),
         ),
       );
+      // 终局机制型 Boss 批次3:限时生存胜负条件。tick 边界逐 tick 判定——
+      // 撑满 N tick 且左队存活 → leftWin(与「右队全灭→leftWin」并存,任一即胜)。
+      // winCondition==null / defeatAll 时零行为变化。
+      final wc = boundary.winCondition;
+      if (wc != null &&
+          wc.type == StageWinConditionType.surviveTicks &&
+          boundary.tick >= wc.surviveTicksRequired! &&
+          boundary.leftTeam.any((c) => c.isAlive)) {
+        return boundary.copyWith(
+          result: BattleResult.leftWin,
+          actorQueue: const [],
+        );
+      }
+      return boundary;
     }
 
     // === 队列非空:结算队首一个 actor ===

@@ -544,6 +544,7 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
                   enemyTeamsPerWave: enemyWaves,
                   config: config,
                 ),
+                winCondition: widget.stage.winCondition,
               );
         } else if (widget.stage.stageType == StageType.lightFoot &&
             widget.stage.terrainBiome != null) {
@@ -556,9 +557,16 @@ class _StageBattleHostState extends ConsumerState<_StageBattleHost> {
                   terrainBiome: widget.stage.terrainBiome!,
                   config: GameRepository.instance.numbers.lightFoot,
                 ),
+                winCondition: widget.stage.winCondition,
               );
         } else {
-          ref.read(battleProvider.notifier).startBattle(left, right);
+          ref
+              .read(battleProvider.notifier)
+              .startBattle(
+                left,
+                right,
+                winCondition: widget.stage.winCondition,
+              );
         }
       } catch (e) {
         if (!mounted) return;
