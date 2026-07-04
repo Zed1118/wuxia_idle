@@ -33,8 +33,8 @@ class InnerDemonDef {
   /// wuSheng·qiMeng）。
   final Map<String, RealmCoord> requiredRealmLayer;
 
-  /// 终局机制型 Boss 批次3 · 高层心魔关（05/06）镜像脆弱窗口配置。
-  /// stage_id → 承伤乘子 def（窗口外 ×mult 减伤）。空 = 该关镜像无机制（01-04/07）。
+  /// 终局机制型 Boss 批次3 · 高层心魔关（05/06/07）镜像脆弱窗口配置。
+  /// stage_id → 承伤乘子 def（窗口外 ×mult 减伤）。空 = 该关镜像无机制（01-04）。
   /// 复用批次1 BossVulnerabilityDef（schema [0.05,1.0]）。
   final Map<String, BossVulnerabilityDef> mirrorVulnerabilityPerStage;
 

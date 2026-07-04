@@ -102,12 +102,12 @@ class InnerDemonService {
   /// （与 inner_demon_06 同强化）。BattleState slot ∈ [0,2] 限 3v3，6 副本超
   /// 上限；真正的双镜像（6v3 / 连战）留 Batch 2.5 R5 红线测时讨论。
   ///
-  /// **终局机制型 Boss 批次3 · 脆弱窗口注入（05/06）**：当 [stageId] 在
-  /// `mirrorVulnerabilityPerStage` 有配置时（仅 05/06），把该关的
+  /// **终局机制型 Boss 批次3 · 脆弱窗口注入（05/06/07）**：当 [stageId] 在
+  /// `mirrorVulnerabilityPerStage` 有配置时（05/06/07 均已配），把该关的
   /// `outOfWindowDamageMult` 注入镜像 `vulnerabilityMult`（窗口外承伤减免），
   /// 并把 [mirrorChargeSkill] 注入镜像 `chargeSkillId` + `availableSkills`
   /// （周期性蓄力开窗，CD 复发）。这是**有意的机制化心魔进阶形态**，非纯镜像：
-  /// 削弱「秒杀」，逼玩家在蓄力/踉跄窗口内爆发。01-04/07 无 vuln 配置 → 维持
+  /// 削弱「秒杀」，逼玩家在蓄力/踉跄窗口内爆发。01-04 无 vuln 配置 → 维持
   /// 纯镜像（[mirrorChargeSkill] 传入也不注入，只对有 vuln 条目的关生效）。
   ///
   /// [InnerDemonService] 保持纯函数（不读 Isar/GameRepository），故 SkillDef
@@ -209,7 +209,7 @@ class InnerDemonService {
         .round()
         .clamp(0, caps.attackPowerMax);
 
-    // 脆弱窗口机制关（05/06）：追加蓄力技进 availableSkills（去重），否则
+    // 脆弱窗口机制关（05/06/07）：追加蓄力技进 availableSkills（去重），否则
     // battle_ai._pickSkill 只迭代 availableSkills，永远选不到 chargeSkillId，
     // 蓄力=死机制、窗口永不开=永久免疫无解（镜像 stage_battle_setup.dart:448
     // 识破 pattern）。
