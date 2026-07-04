@@ -38,10 +38,11 @@ void main() {
       // + P0.5: 破势 + 青锋绝 = 168;波A: + 截影 + 拂脉(三流派破招技)= 170
       // + 波B 24 招内容批: 真解 5 + 塔残页 6 + 章末重打残页 3 = 184
       // + 开锋槽 3 装备专属技 21 = 205
-      // + 40 encounter_skills.yaml = 245 total
-      expect(repo.skillDefs.length, 245,
-          reason: '205 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
-              ' + 14 波B 真解残页 + 21 开锋专属技) + 40 奇遇招');
+      // + 终局机制型 Boss 批次3:心魔蓄力技 skill_inner_demon_charge = 206
+      // + 40 encounter_skills.yaml = 246 total
+      expect(repo.skillDefs.length, 246,
+          reason: '206 skills.yaml(147 心法 + 18 轻功 + 1 joint + 2 P0.5 + 2 波A 破招'
+              ' + 14 波B 真解残页 + 21 开锋专属技 + 1 心魔蓄力技) + 40 奇遇招');
       expect(repo.encounterSkillIds.length, 40,
           reason: 'encounter_skills.yaml 40 招(原 35 + T02 +5 武学领悟新招)');
       final mainlineCount = repo.stageDefs.values

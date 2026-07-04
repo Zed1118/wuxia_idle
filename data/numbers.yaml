@@ -1625,6 +1625,14 @@ inner_demon:
     stage_inner_demon_06: { tier: wuSheng, layer: huaJing }
     stage_inner_demon_07: { tier: wuSheng, layer: dengFeng }
 
+  # 终局机制型 Boss 批次3 · 高层心魔关镜像脆弱窗口（仅 05/06；07 走 survive 不配）。
+  mirror_vulnerability_per_stage:
+    stage_inner_demon_05:
+      outOfWindowDamageMult: 0.12
+    stage_inner_demon_06:
+      outOfWindowDamageMult: 0.10
+  mirror_charge_skill_id: skill_inner_demon_charge
+
 # =============================================================================
 # 轻功对决配置(1.0 P3.1 §12.3,GDD v1.11)
 # =============================================================================
