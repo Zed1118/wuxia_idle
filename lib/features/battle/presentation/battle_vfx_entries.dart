@@ -1,0 +1,60 @@
+import 'package:flutter/material.dart';
+
+import 'damage_popup.dart';
+
+/// 单个飘字条目（id + 数据）。
+class PopupEntry {
+  final int id;
+  final DamagePopupData data;
+  // 飘字有效时长:spawn 时按当前播放速度 clamp(≤ 拍间隔),防快档跨拍重叠。
+  final int popupDurationMs;
+  const PopupEntry({
+    required this.id,
+    required this.data,
+    required this.popupDurationMs,
+  });
+}
+
+/// 单条弹道（攻击者→目标的笔触线，命令式 spawn，纯表现层）。
+/// 坐标用战场比例（0..1），由 [ProjectileLayer] 在 LayoutBuilder 内解析为像素。
+class TrailEntry {
+  final int id;
+  final AnimationController ctrl;
+  final Offset startFrac;
+  final Offset endFrac;
+  final Color color;
+  final double strokeWidth;
+  bool disposed = false;
+  TrailEntry({
+    required this.id,
+    required this.ctrl,
+    required this.startFrac,
+    required this.endFrac,
+    required this.color,
+    required this.strokeWidth,
+  });
+}
+
+/// 单条 MJ 战斗特效贴片。纯表现层，坐标用战场比例，动画完成后移除。
+class EffectEntry {
+  final int id;
+  final AnimationController ctrl;
+  final Offset centerFrac;
+  final String assetPath;
+  final double size;
+  final double opacity;
+  final double rotation;
+  final bool mirrored;
+  bool disposed = false;
+
+  EffectEntry({
+    required this.id,
+    required this.ctrl,
+    required this.centerFrac,
+    required this.assetPath,
+    required this.size,
+    required this.opacity,
+    required this.rotation,
+    required this.mirrored,
+  });
+}

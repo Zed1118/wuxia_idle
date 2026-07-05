@@ -9,7 +9,6 @@ import '../domain/battle_state.dart';
 import '../domain/battle_stats.dart';
 import '../domain/battle_diagnosis.dart';
 import '../domain/damage_calculator.dart';
-import '../domain/enum_localizations.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/numbers_config.dart';
@@ -21,36 +20,33 @@ import '../../../shared/effects/screen_shake.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
-import '../../../shared/widgets/wuxia_image.dart';
-import '../../../shared/widgets/asset_fallback.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
-import 'attack_animation.dart';
 import 'battle_atmosphere_overlay.dart';
-import 'battle_effect_sprite.dart';
 import 'battle_scene_background.dart';
-import 'character_avatar.dart';
-import 'countdown_ring.dart';
-import 'hp_bar.dart';
 import 'damage_popup.dart';
-import 'hit_flash.dart';
 import 'boss_phase_presentation.dart';
 import 'guardian_ward_presentation.dart';
 import 'impact_profile.dart';
 import 'impact_glyph_overlay.dart';
 import 'screen_flash.dart';
-import 'projectile_trail.dart';
 import 'ultimate_caption_overlay.dart';
 import 'victory_overlay.dart';
 import '../../cangjingge/presentation/cangjingge_screen.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
-import '../../help/domain/help_topic.dart';
-import '../../help/presentation/context_help_button.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../settings/domain/gameplay_settings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
+import '../domain/battle_skill_utils.dart';
+import 'battle_vfx_entries.dart';
+import 'widgets/battle_banners.dart';
+import 'widgets/battle_header.dart';
+import 'widgets/battle_field.dart';
+import 'widgets/battle_bottom_bar.dart';
+import 'widgets/battle_vfx_layers.dart';
+import 'widgets/battle_target_chips.dart';
 
 /// 常速播放命中后的顿帧时长：关键帧（暴击/大招/合一/破招/击杀）取
 /// `profileHitStopMs` 与 `keyMomentHoldMs` 的大者，否则用 `profileHitStopMs`。
@@ -62,63 +58,6 @@ int playbackHoldMs({
 }) => isKey && keyMomentHoldMs > profileHitStopMs
     ? keyMomentHoldMs
     : profileHitStopMs;
-
-/// 单个飘字条目（id + 数据）。
-class _PopupEntry {
-  final int id;
-  final DamagePopupData data;
-  // 飘字有效时长:spawn 时按当前播放速度 clamp(≤ 拍间隔),防快档跨拍重叠。
-  final int popupDurationMs;
-  const _PopupEntry({
-    required this.id,
-    required this.data,
-    required this.popupDurationMs,
-  });
-}
-
-/// 单条弹道（攻击者→目标的笔触线，命令式 spawn，纯表现层）。
-/// 坐标用战场比例（0..1），由 [_ProjectileLayer] 在 LayoutBuilder 内解析为像素。
-class _TrailEntry {
-  final int id;
-  final AnimationController ctrl;
-  final Offset startFrac;
-  final Offset endFrac;
-  final Color color;
-  final double strokeWidth;
-  bool disposed = false;
-  _TrailEntry({
-    required this.id,
-    required this.ctrl,
-    required this.startFrac,
-    required this.endFrac,
-    required this.color,
-    required this.strokeWidth,
-  });
-}
-
-/// 单条 MJ 战斗特效贴片。纯表现层，坐标用战场比例，动画完成后移除。
-class _EffectEntry {
-  final int id;
-  final AnimationController ctrl;
-  final Offset centerFrac;
-  final String assetPath;
-  final double size;
-  final double opacity;
-  final double rotation;
-  final bool mirrored;
-  bool disposed = false;
-
-  _EffectEntry({
-    required this.id,
-    required this.ctrl,
-    required this.centerFrac,
-    required this.assetPath,
-    required this.size,
-    required this.opacity,
-    required this.rotation,
-    required this.mirrored,
-  });
-}
 
 /// 3v3 战斗主屏（phase1_tasks T14 静态布局 + T15 动画/飘字 + T16 Riverpod 串接）。
 ///
@@ -135,7 +74,7 @@ class _EffectEntry {
 /// 队列内某槽的竖直比例坐标(0..1),按**实际队伍人数** [teamSize] 均分:
 ///   1 人 → 0.5(居中);2 人 → 0.25 / 0.75(上下对称);3 人 → 1/6,3/6,5/6(原行为)。
 ///
-/// `_TeamColumn` 的视觉排布与 `_slotFrac` 的弹道坐标共用此式,保证头像位置与
+/// `TeamColumn` 的视觉排布与 `_slotFrac` 的弹道坐标共用此式,保证头像位置与
 /// 弹道/特效落点一致(分母从旧的硬编码 3 改为 teamSize 是本次「1 怪居中 / 2 怪对称」
 /// 的唯一改动点)。teamSize ≤ 0 兜底 0.5 防除零。纯函数,单测直接验证。
 double slotVerticalFraction(int slotIndex, int teamSize) {
@@ -260,15 +199,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   final Map<int, Color> _hitFlashColors = {};
 
   // 活跃弹道（命令式 spawn，完成后移除）。本地 state，不污染 BattleState。
-  final List<_TrailEntry> _activeTrails = [];
+  final List<TrailEntry> _activeTrails = [];
   int _nextTrailId = 0;
 
   // 活跃 MJ 特效贴片（命中/暴击/闪避/流派招式）。
-  final List<_EffectEntry> _activeEffects = [];
+  final List<EffectEntry> _activeEffects = [];
   int _nextEffectId = 0;
 
   // 飘字状态：slotKey → 活跃飘字列表
-  final Map<int, List<_PopupEntry>> _popups = {};
+  final Map<int, List<PopupEntry>> _popups = {};
   int _nextPopupId = 0;
 
   // 实时 tick 定时器（常速: advanceOneAction() / 快进: advance() 驱动）
@@ -719,7 +658,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       vsync: this,
       duration: Duration(milliseconds: widget.animConfig.projectileMs),
     );
-    final entry = _TrailEntry(
+    final entry = TrailEntry(
       id: _nextTrailId++,
       ctrl: ctrl,
       startFrac: _slotFrac(
@@ -836,7 +775,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       vsync: this,
       duration: const Duration(milliseconds: 520),
     );
-    final entry = _EffectEntry(
+    final entry = EffectEntry(
       id: _nextEffectId++,
       ctrl: ctrl,
       centerFrac: centerFrac,
@@ -868,7 +807,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   ) {
     final key = _slotKey(target.teamSide, target.slotIndex);
     final data = _buildPopupData(result, attacker);
-    final entry = _PopupEntry(
+    final entry = PopupEntry(
       id: _nextPopupId++,
       data: data,
       popupDurationMs: widget.animConfig.effectivePopupMs(
@@ -927,7 +866,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         break;
       }
     }
-    if (c == null || !_isSkillReady(c, skill)) return;
+    if (c == null || !isSkillReady(c, skill)) return;
     // 主线二 2.3:即放·真插队——立即出手(预支 AP 归零),不再标记 pending+C5 快进。
     ref
         .read(battleProvider.notifier)
@@ -941,7 +880,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     PaperDialog.show<void>(
       context,
       title: skill.name,
-      body: _SkillInfoBody(skill: skill),
+      body: SkillInfoBody(skill: skill),
       actions: [
         PlaqueButton(
           label: UiStrings.skillInfoClose,
@@ -966,7 +905,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         break;
       }
     }
-    if (c == null || !_isSkillReady(c, skill)) return;
+    if (c == null || !isSkillReady(c, skill)) return;
     // 待发态下再点同一技能 = 取消。
     if (skill.targetType != TargetType.aoe &&
         _pendingSkill?.id == skill.id &&
@@ -1044,7 +983,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       targetAnchor: Alignment.topCenter,
       followerAnchor: Alignment.bottomCenter,
       offset: const Offset(0, -8),
-      child: _TargetChipStrip(
+      child: TargetChipStrip(
         enemies: aliveEnemies,
         hoveredEnemyId: _hoveredPendingEnemyId,
         onSelect: _onEnemyTap,
@@ -1068,19 +1007,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       for (var i = 0; i < s.leftTeam.length; i++) {
         final c = s.leftTeam[i];
         final k = _findKeySkillOf(c);
-        if (k != null && _isSkillReady(c, k)) return i;
+        if (k != null && isSkillReady(c, k)) return i;
       }
     }
     if (_focusSlotIndex >= 0 && _focusSlotIndex < s.leftTeam.length) {
       return _focusSlotIndex;
     }
     return 0;
-  }
-
-  static bool _isSkillReady(BattleCharacter c, SkillDef skill) {
-    if (!c.isAlive) return false;
-    final cd = c.skillCooldowns[skill.id] ?? 0;
-    return c.currentInternalForce >= skill.internalForceCost && cd <= 0;
   }
 
   static SkillDef? _findKeySkillOf(BattleCharacter c) {
@@ -1362,10 +1295,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                       child: Column(
                         children: [
                           if (widget.hint != null)
-                            _HintBanner(hint: widget.hint!),
+                            HintBanner(hint: widget.hint!),
                           if (widget.cycleHint != null)
-                            _CycleHintBanner(hint: widget.cycleHint!),
-                          _Header(
+                            CycleHintBanner(hint: widget.cycleHint!),
+                          Header(
                             state: state,
                             onToggleLog: () =>
                                 setState(() => _logOpen = !_logOpen),
@@ -1377,11 +1310,11 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             // 单步按钮仅验收路由(startPaused)渲染;生产挂机恒 null 不出现。
                             onStepOnce: widget.startPaused ? _stepOnce : null,
                           ),
-                          _DangerBar(state: state),
+                          DangerBar(state: state),
                           Expanded(
                             child: Stack(
                               children: [
-                                _BattleField(
+                                BattleField(
                                   state: state,
                                   attackControllers: _attackControllers,
                                   popups: _popups,
@@ -1399,14 +1332,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                 ),
                                 Positioned.fill(
                                   child: IgnorePointer(
-                                    child: _ProjectileLayer(
+                                    child: ProjectileLayer(
                                       trails: _activeTrails,
                                     ),
                                   ),
                                 ),
                                 Positioned.fill(
                                   child: IgnorePointer(
-                                    child: _EffectLayer(
+                                    child: EffectLayer(
                                       effects: _activeEffects,
                                     ),
                                   ),
@@ -1414,13 +1347,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                               ],
                             ),
                           ),
-                          _BattleReportStrip(
+                          BattleReportStrip(
                             state: state,
                             onTap: () => setState(() => _logOpen = true),
                           ),
                           if (widget.allowPlayerIntervention)
-                            _CoopBurstPromptBar(state: state),
-                          _BottomBar(
+                            CoopBurstPromptBar(state: state),
+                          BottomBar(
                             state: state,
                             focusSlotIndex: _effectiveFocus(state),
                             allowPlayerIntervention:
@@ -1452,7 +1385,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             ),
             Positioned.fill(child: ImpactGlyphOverlay(key: _impactGlyphKey)),
             if (_logOpen)
-              _LogDrawer(
+              LogDrawer(
                 state: state,
                 onClose: () => setState(() => _logOpen = false),
               ),
@@ -1465,7 +1398,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 !_pendingActive &&
                 state.result == null &&
                 !widget.startPaused)
-              Positioned.fill(child: _PauseOverlay(onResume: _togglePause)),
+              Positioned.fill(child: PauseOverlay(onResume: _togglePause)),
             // 单体技待发 + ≥2 存活敌人:技能格正上方浮出快捷选择栏。
             if (_pendingActive) _buildTargetChipOverlay(state),
           ],
@@ -1498,1815 +1431,3 @@ BattleSceneBackgroundStyle _backgroundStyleForTrack(BgmTrack track) {
   }
 }
 
-// ─── 场景 hint 横幅（T17）─────────────────────────────────────────────────
-
-class _HintBanner extends StatelessWidget {
-  final String hint;
-  const _HintBanner({required this.hint});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      color: WuxiaColors.hintBannerBg,
-      child: Text(
-        hint,
-        style: const TextStyle(color: WuxiaColors.hintBannerText, fontSize: 13),
-      ),
-    );
-  }
-}
-
-// ─── 江湖记招提示横幅（P1 周目进化 E2）───────────────────────────────────────
-
-class _CycleHintBanner extends StatelessWidget {
-  final String hint;
-  const _CycleHintBanner({required this.hint});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-      color: WuxiaColors.cycleHintBg,
-      child: Text(
-        hint,
-        style: const TextStyle(color: WuxiaColors.cycleHintText, fontSize: 12),
-      ),
-    );
-  }
-}
-
-// ─── 破绽窗口指令栏提示（第六阶段 Task 5）─────────────────────────────────
-
-/// 指令栏上方薄提示条：右队（敌方）有存活角色处于破绽窗口（staggerTicksRemaining > 0）
-/// 时显示「破绽 · 该爆发了」，引导玩家拖招释放爆发技。
-///
-/// **只读 state**：不触碰 interveneNow / AP / 逻辑速度（红线 §5.5）。
-/// 窗口关闭（所有敌方 stagger=0）后自然消失（SizedBox.shrink）。
-class _CoopBurstPromptBar extends StatelessWidget {
-  final BattleState state;
-  const _CoopBurstPromptBar({required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    final hasBreakWindow = state.rightTeam.any(
-      (e) => e.isAlive && e.staggerTicksRemaining > 0,
-    );
-    if (!hasBreakWindow) return const SizedBox.shrink();
-
-    return Container(
-      key: const ValueKey('coop_burst_prompt_bar'),
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-      decoration: BoxDecoration(
-        color: WuxiaColors.resultHighlight.withValues(alpha: 0.12), // 浅金底，水墨克制
-        border: const Border(top: BorderSide(color: WuxiaColors.border)),
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.bolt_rounded,
-            size: 13,
-            color: WuxiaColors.resultHighlight,
-          ),
-          SizedBox(width: 5),
-          Text(
-            UiStrings.coopBurstPrompt,
-            style: TextStyle(
-              color: WuxiaColors.resultHighlight,
-              fontSize: 12,
-              letterSpacing: 1.0,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── 蓄力危险条（T2）──────────────────────────────────────────────────────
-
-/// 敌人蓄力大招时的顶部警示条。纯读 [BattleState.rightTeam]：取最临近发动
-/// （[chargeTicksRemaining] 最小）的存活蓄力敌人，显示招名 + 剩余回合，提示玩家
-/// 看准时机破招。无敌人蓄力时返回 [SizedBox.shrink]（不占高度、不渲染 key）。
-class _DangerBar extends StatelessWidget {
-  final BattleState state;
-  const _DangerBar({required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    BattleCharacter? imminent;
-    for (final e in state.rightTeam) {
-      if (!e.isAlive || e.chargingSkill == null) continue;
-      if (imminent == null ||
-          e.chargeTicksRemaining < imminent.chargeTicksRemaining) {
-        imminent = e;
-      }
-    }
-    if (imminent == null) return const SizedBox.shrink();
-
-    return Container(
-      key: const ValueKey('battle_danger_bar'),
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: WuxiaColors.danger.withValues(alpha: 0.18),
-        border: const Border(bottom: BorderSide(color: WuxiaColors.danger)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: WuxiaColors.danger,
-            size: 16,
-          ),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              UiStrings.battleDangerCharging(
-                imminent.name,
-                imminent.chargingSkill!.name,
-                imminent.chargeTicksRemaining,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: WuxiaColors.danger,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── 最近战报条（T3）──────────────────────────────────────────────────────
-
-/// 底部常驻的最近关键战报（大招/破招/暴击/击杀），最多 3 条，最新在上。
-/// 纯读 [BattleLog.recentKeyActions]；无关键战报时返回 [SizedBox.shrink]。
-/// 点击整条 → [onTap]（打开完整 [_LogDrawer]）。实时反馈仍靠飘字/弹道，
-/// 本条只做"刚刚发生了什么大事"的常驻速览。
-class _BattleReportStrip extends StatelessWidget {
-  final BattleState state;
-  final VoidCallback onTap;
-  const _BattleReportStrip({required this.state, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final keys = BattleLog.recentKeyActions(state);
-    if (keys.isEmpty) return const SizedBox.shrink();
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        key: const ValueKey('battle_report_strip'),
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: const BoxDecoration(
-            color: WuxiaColors.sidebar,
-            border: Border(top: BorderSide(color: WuxiaColors.border)),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.bolt, size: 14, color: WuxiaColors.textMuted),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (var i = 0; i < keys.length; i++)
-                      Text(
-                        BattleLog.formatActionCompact(keys[i], state),
-                        key: ValueKey('battle_report_line_$i'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: i == 0
-                              ? WuxiaColors.textSecondary
-                              : WuxiaColors.textMuted,
-                          fontSize: 11,
-                          height: 1.35,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.chevron_right,
-                size: 16,
-                color: WuxiaColors.textMuted,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── 顶栏 ──────────────────────────────────────────────────────────────────
-
-class _Header extends StatelessWidget {
-  final BattleState state;
-  final VoidCallback onToggleLog;
-  final VoidCallback onPause;
-  final bool isPaused;
-  final VoidCallback? onSurrender;
-
-  /// 验收路由(startPaused)专用:暂停态逐步推进。null = 生产挂机不渲染单步按钮。
-  final VoidCallback? onStepOnce;
-  const _Header({
-    required this.state,
-    required this.onToggleLog,
-    required this.onPause,
-    required this.isPaused,
-    this.onSurrender,
-    this.onStepOnce,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final aliveLeft = state.leftTeam.where((c) => c.isAlive).length;
-    final aliveRight = state.rightTeam.where((c) => c.isAlive).length;
-
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: const BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border(bottom: BorderSide(color: WuxiaColors.border)),
-      ),
-      child: Row(
-        children: [
-          Text(
-            UiStrings.battleTitle(aliveLeft, aliveRight),
-            style: const TextStyle(
-              color: WuxiaColors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Spacer(),
-          if (state.result != null) ...[
-            Text(
-              EnumL10n.battleResult(state.result!),
-              style: const TextStyle(
-                color: WuxiaColors.resultHighlight,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(width: 16),
-          ],
-          Text(
-            '${UiStrings.tickPrefix} ${state.tick}',
-            style: const TextStyle(
-              color: WuxiaColors.textSecondary,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(width: 8),
-          if (state.result == null)
-            _BattleHeaderIconButton(
-              key: const ValueKey('battle_pause_toggle'),
-              icon: isPaused ? Icons.play_arrow : Icons.pause,
-              tooltip: isPaused
-                  ? UiStrings.battleResume
-                  : UiStrings.battlePause,
-              onPressed: onPause,
-            ),
-          // 验收路由(startPaused)专用单步键:仅 onStepOnce 非空时渲染,生产挂机不出现。
-          if (state.result == null && onStepOnce != null)
-            _BattleHeaderIconButton(
-              key: const ValueKey('battle_step_once'),
-              icon: Icons.skip_next,
-              tooltip: UiStrings.battleStepOnce,
-              onPressed: onStepOnce,
-            ),
-          if (state.result == null && onSurrender != null)
-            _BattleHeaderIconButton(
-              key: const ValueKey('battle_surrender'),
-              icon: Icons.flag_outlined,
-              tooltip: UiStrings.battleSurrender,
-              onPressed: onSurrender,
-            ),
-          _BattleHeaderIconButton(
-            key: const ValueKey('battle_log_toggle'),
-            icon: Icons.list_alt,
-            tooltip: UiStrings.battleLog,
-            onPressed: onToggleLog,
-          ),
-          const SizedBox(width: 4),
-          const ContextHelpButton(topic: HelpTopic.combatAdvanced, size: 20),
-        ],
-      ),
-    );
-  }
-}
-
-class _BattleHeaderIconButton extends StatelessWidget {
-  const _BattleHeaderIconButton({
-    super.key,
-    required this.icon,
-    required this.tooltip,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      child: IconButton(
-        tooltip: tooltip,
-        onPressed: onPressed,
-        icon: Icon(icon, size: 19),
-        color: WuxiaColors.textSecondary,
-        disabledColor: WuxiaColors.textMuted,
-        constraints: const BoxConstraints.tightFor(width: 36, height: 36),
-        padding: EdgeInsets.zero,
-        splashRadius: 18,
-        style: IconButton.styleFrom(
-          backgroundColor: WuxiaColors.sidebar.withValues(alpha: 0.58),
-          hoverColor: WuxiaColors.resultHighlight.withValues(alpha: 0.10),
-          highlightColor: WuxiaColors.resultHighlight.withValues(alpha: 0.14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-            side: BorderSide(color: WuxiaColors.border.withValues(alpha: 0.78)),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// H3 暂停遮罩:半透明罩 +「已暂停」+ 继续(轻触任意处或按钮恢复)。
-class _PauseOverlay extends StatelessWidget {
-  const _PauseOverlay({required this.onResume});
-
-  final VoidCallback onResume;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onResume,
-      child: ColoredBox(
-        color: Colors.black54,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.pause_circle_outline,
-                color: WuxiaColors.textPrimary,
-                size: 56,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                UiStrings.battlePausedTitle,
-                style: TextStyle(
-                  color: WuxiaColors.textPrimary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 4,
-                ),
-              ),
-              const SizedBox(height: 20),
-              FilledButton(
-                onPressed: onResume,
-                child: const Text(UiStrings.battleResume),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── 日志折叠抽屉（P0-2 Task6）─────────────────────────────────────────────
-
-/// 战斗日志抽屉：默认收起，点顶栏按钮命令式叠在最外层 Stack 右侧。
-/// 实时反馈靠单位飘字/弹道/受击，日志只做事后查阅，不抢第一视觉。
-class _LogDrawer extends StatelessWidget {
-  final BattleState state;
-  final VoidCallback onClose;
-  const _LogDrawer({required this.state, required this.onClose});
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      key: const ValueKey('battle_log_drawer'),
-      child: GestureDetector(
-        onTap: onClose,
-        child: ColoredBox(
-          color: const Color(0x99000000),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: GestureDetector(
-              onTap: () {}, // 抽屉内点击不关闭
-              child: Container(
-                width: 280,
-                color: WuxiaColors.sidebar.withValues(alpha: 0.96),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      decoration: const BoxDecoration(
-                        color: WuxiaColors.panel,
-                        border: Border(
-                          bottom: BorderSide(color: WuxiaColors.border),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Text(
-                            UiStrings.battleLog,
-                            style: TextStyle(
-                              color: WuxiaColors.textPrimary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.close,
-                              color: WuxiaColors.textSecondary,
-                              size: 18,
-                            ),
-                            tooltip: UiStrings.close,
-                            onPressed: onClose,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: state.actionLog.isEmpty
-                          ? const Center(
-                              child: Text(
-                                UiStrings.emptyLog,
-                                style: TextStyle(
-                                  color: WuxiaColors.textMuted,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            )
-                          : ListView.separated(
-                              padding: const EdgeInsets.all(8),
-                              reverse: true,
-                              itemCount: state.actionLog.length,
-                              separatorBuilder: (_, _) =>
-                                  const SizedBox(height: 4),
-                              itemBuilder: (_, idx) {
-                                final i = state.actionLog.length - 1 - idx;
-                                final action = state.actionLog[i];
-                                return Text(
-                                  BattleLog.formatAction(action, state),
-                                  style: const TextStyle(
-                                    color: WuxiaColors.textSecondary,
-                                    fontSize: 12,
-                                    height: 1.4,
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── 战场区域 ──────────────────────────────────────────────────────────────
-
-class _BattleField extends StatelessWidget {
-  final BattleState state;
-  final List<AnimationController> attackControllers;
-  final Map<int, List<_PopupEntry>> popups;
-  final AnimationNumbers animConfig;
-  final int chargeMaxTicks;
-  // 读秒环节拍 + 破绽窗口时长(供头像上蓄力/内伤/破绽环)。
-  final Animation<double> beat;
-  final int staggerWindowTicks;
-  final void Function(int slotKey, int popupId) onPopupComplete;
-  final List<AnimationController> hitFlashControllers;
-  final Map<int, Color> hitFlashColors;
-  // 两段点选:点敌头像出手回调(仅右队/敌方非空);待发态(敌头像可点 + 高亮)。
-  final void Function(int enemyId) onEnemyTap;
-  final bool pendingActive;
-  final int? hoveredEnemyId;
-  final void Function(int enemyId, bool hovering) onEnemyHover;
-
-  const _BattleField({
-    required this.state,
-    required this.attackControllers,
-    required this.popups,
-    required this.animConfig,
-    required this.chargeMaxTicks,
-    required this.beat,
-    required this.staggerWindowTicks,
-    required this.onPopupComplete,
-    required this.hitFlashControllers,
-    required this.hitFlashColors,
-    required this.onEnemyTap,
-    required this.pendingActive,
-    required this.hoveredEnemyId,
-    required this.onEnemyHover,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 46, vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 168,
-            child: _TeamColumn(
-              team: state.leftTeam,
-              battleState: state,
-              isLeftTeam: true,
-              alignment: CrossAxisAlignment.start,
-              attackControllers: attackControllers,
-              popups: popups,
-              animConfig: animConfig,
-              chargeMaxTicks: chargeMaxTicks,
-              beat: beat,
-              staggerWindowTicks: staggerWindowTicks,
-              onPopupComplete: onPopupComplete,
-              hitFlashControllers: hitFlashControllers,
-              hitFlashColors: hitFlashColors,
-              onEnemyTap: null,
-              pendingActive: false,
-              hoveredEnemyId: null,
-              onEnemyHover: null,
-            ),
-          ),
-          const Expanded(child: SizedBox.shrink()),
-          SizedBox(
-            width: 168,
-            child: _TeamColumn(
-              team: state.rightTeam,
-              battleState: state,
-              isLeftTeam: false,
-              alignment: CrossAxisAlignment.end,
-              attackControllers: attackControllers,
-              popups: popups,
-              animConfig: animConfig,
-              chargeMaxTicks: chargeMaxTicks,
-              beat: beat,
-              staggerWindowTicks: staggerWindowTicks,
-              onPopupComplete: onPopupComplete,
-              hitFlashControllers: hitFlashControllers,
-              hitFlashColors: hitFlashColors,
-              onEnemyTap: onEnemyTap,
-              pendingActive: pendingActive,
-              hoveredEnemyId: hoveredEnemyId,
-              onEnemyHover: onEnemyHover,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TeamColumn extends StatelessWidget {
-  final List<BattleCharacter> team;
-  // floor30 护法结界(Task 6):完整战场快照,逐槽透传给 CharacterAvatar 判定结界。
-  final BattleState battleState;
-  final bool isLeftTeam;
-  final CrossAxisAlignment alignment;
-  final List<AnimationController> attackControllers;
-  final Map<int, List<_PopupEntry>> popups;
-  final AnimationNumbers animConfig;
-  final int chargeMaxTicks;
-  final Animation<double> beat;
-  final int staggerWindowTicks;
-  final void Function(int slotKey, int popupId) onPopupComplete;
-  final List<AnimationController> hitFlashControllers;
-  final Map<int, Color> hitFlashColors;
-  // 两段点选:点敌头像出手回调(仅右队/敌方非空,我方队为 null);
-  // pendingActive = 待发态(敌头像可点 + 全员存活敌高亮为可选目标)。
-  final void Function(int enemyId)? onEnemyTap;
-  final bool pendingActive;
-  final int? hoveredEnemyId;
-  final void Function(int enemyId, bool hovering)? onEnemyHover;
-
-  const _TeamColumn({
-    required this.team,
-    required this.battleState,
-    required this.isLeftTeam,
-    required this.alignment,
-    required this.attackControllers,
-    required this.popups,
-    required this.animConfig,
-    required this.chargeMaxTicks,
-    required this.beat,
-    required this.staggerWindowTicks,
-    required this.onPopupComplete,
-    required this.hitFlashControllers,
-    required this.hitFlashColors,
-    required this.onEnemyTap,
-    required this.pendingActive,
-    required this.hoveredEnemyId,
-    required this.onEnemyHover,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final teamSide = isLeftTeam ? 0 : 1;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: alignment,
-      children: [
-        // 2026-06-25:只渲染 team.length 个槽(去掉末尾空占位),Column 等分 → 1 怪
-        // 居中 / 2 怪上下对称 / 3 怪不变,与 _slotFrac 的 slotVerticalFraction 同步。
-        // P0-2 fix(2026-06-04 Codex 报 RenderFlex overflow @1280×720):每槽包
-        // Expanded+FittedBox(scaleDown)——大窗保持原尺寸,最小窗自动等比微缩不溢出;
-        // alignment 锁外缘,头像维持 0.12/0.88 与 projectile 比例坐标对齐。
-        for (var i = 0; i < team.length; i++)
-          Expanded(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: isLeftTeam
-                  ? Alignment.centerLeft
-                  : Alignment.centerRight,
-              child: _CharacterSlot(
-                character: team[i],
-                battleState: battleState,
-                isLeftTeam: isLeftTeam,
-                attackController: attackControllers[teamSide * 3 + i],
-                slotPopups: popups[teamSide * 3 + i] ?? const [],
-                animConfig: animConfig,
-                chargeMaxTicks: chargeMaxTicks,
-                beat: beat,
-                staggerWindowTicks: staggerWindowTicks,
-                slotKey: teamSide * 3 + i,
-                onPopupComplete: onPopupComplete,
-                hitFlashController: hitFlashControllers[teamSide * 3 + i],
-                flashColor: hitFlashColors[teamSide * 3 + i] ?? Colors.white,
-                // 待发态:存活敌头像可点选为目标 + 高亮提示。
-                onTap: (onEnemyTap != null && pendingActive && team[i].isAlive)
-                    ? () => onEnemyTap!(team[i].characterId)
-                    : null,
-                hovered: hoveredEnemyId == team[i].characterId,
-                targetable: pendingActive && team[i].isAlive,
-                onHoverChanged:
-                    (onEnemyHover != null && pendingActive && team[i].isAlive)
-                    ? (hovering) => onEnemyHover!(team[i].characterId, hovering)
-                    : null,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-/// 单个角色槽：攻击动画包 + 头像 + 飘字（Stack 叠加，clipBehavior: none 允许溢出）。
-class _CharacterSlot extends StatelessWidget {
-  final BattleCharacter character;
-  // floor30 护法结界(Task 6):完整战场快照,透传给 CharacterAvatar 判定结界。
-  final BattleState battleState;
-  final bool isLeftTeam;
-  final AnimationController attackController;
-  final List<_PopupEntry> slotPopups;
-  final AnimationNumbers animConfig;
-  final int chargeMaxTicks;
-  final Animation<double> beat;
-  final int staggerWindowTicks;
-  final int slotKey;
-  final void Function(int slotKey, int popupId) onPopupComplete;
-  final AnimationController hitFlashController;
-  final Color flashColor;
-  // 两段点选:待发态下敌头像点选目标的回调(null=不可点);待发态高亮。
-  final VoidCallback? onTap;
-  final bool hovered;
-  final bool targetable;
-  final ValueChanged<bool>? onHoverChanged;
-
-  const _CharacterSlot({
-    required this.character,
-    required this.battleState,
-    required this.isLeftTeam,
-    required this.attackController,
-    required this.slotPopups,
-    required this.animConfig,
-    required this.chargeMaxTicks,
-    required this.beat,
-    required this.staggerWindowTicks,
-    required this.slotKey,
-    required this.onPopupComplete,
-    required this.hitFlashController,
-    required this.flashColor,
-    this.onTap,
-    this.hovered = false,
-    this.targetable = false,
-    this.onHoverChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final avatarCore = Stack(
-      clipBehavior: Clip.none,
-      children: [
-        CharacterAvatar(
-          character: character,
-          battleState: battleState,
-          chargeMaxTicks: chargeMaxTicks,
-          beat: beat,
-          staggerWindowTicks: staggerWindowTicks,
-          avatarSize: 92,
-          barWidth: 140,
-        ),
-        if (targetable)
-          Positioned(
-            key: ValueKey('enemy_target_hint_${character.characterId}'),
-            top: -4,
-            right: -6,
-            child: _EnemyTargetHint(active: hovered),
-          ),
-      ],
-    );
-    Widget avatar = AttackAnimationWidget(
-      animation: attackController,
-      isLeftTeam: isLeftTeam,
-      config: animConfig,
-      child: HitFlash(
-        animation: hitFlashController,
-        color: flashColor,
-        child: _GlowAura(
-          hovered: hovered,
-          // 第六阶段：staggerTicksRemaining>0 → 破绽集火高亮（绛红脉动）。
-          // 仅限敌方（isLeftTeam==false）；我方被硬直不显示集火指示。
-          staggered: !isLeftTeam && character.staggerTicksRemaining > 0,
-          characterId: character.characterId,
-          child: avatarCore,
-        ),
-      ),
-    );
-    if (onTap != null) {
-      avatar = GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: avatar,
-      );
-    }
-    if (onHoverChanged != null) {
-      avatar = MouseRegion(
-        onEnter: (_) => onHoverChanged!(true),
-        onExit: (_) => onHoverChanged!(false),
-        child: avatar,
-      );
-    }
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        avatar,
-        for (var i = 0; i < slotPopups.length; i++)
-          _buildPopupPositioned(
-            i,
-            slotPopups[i],
-            animConfig,
-            slotKey,
-            onPopupComplete,
-          ),
-      ],
-    );
-  }
-
-  static Widget _buildPopupPositioned(
-    int index,
-    _PopupEntry entry,
-    AnimationNumbers config,
-    int slotKey,
-    void Function(int, int) onComplete,
-  ) {
-    return Positioned(
-      top: -36.0 - index * 28.0,
-      left: 0,
-      right: 0,
-      child: Center(
-        child: DamagePopup(
-          key: ValueKey(entry.id),
-          data: entry.data,
-          config: config,
-          durationMsOverride: entry.popupDurationMs,
-          onComplete: () => onComplete(slotKey, entry.id),
-        ),
-      ),
-    );
-  }
-}
-
-class _EnemyTargetHint extends StatelessWidget {
-  const _EnemyTargetHint({required this.active});
-
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: active
-            ? WuxiaColors.resultHighlight
-            : WuxiaColors.panel.withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: active ? WuxiaColors.textPrimary : WuxiaColors.resultHighlight,
-          width: active ? 2 : 1,
-        ),
-        boxShadow: [
-          if (active)
-            BoxShadow(
-              color: WuxiaColors.resultHighlight.withValues(alpha: 0.5),
-              blurRadius: 10,
-              spreadRadius: 1,
-            ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.my_location,
-              size: 10,
-              color: active ? WuxiaColors.panel : WuxiaColors.resultHighlight,
-            ),
-            const SizedBox(width: 3),
-            Text(
-              active ? UiStrings.skillTargetLocked : UiStrings.skillTargetable,
-              style: TextStyle(
-                color: active ? WuxiaColors.panel : WuxiaColors.resultHighlight,
-                fontSize: 9,
-                height: 1,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── 底栏 ──────────────────────────────────────────────────────────────────
-
-/// T1 战斗指令台：左侧重点角色选择器 + 该角色全部可用技能的分组指令按钮 + 快进。
-///
-/// 旧版每角色只暴露大招/破招两按钮；新版聚焦单个"重点角色"，把它的
-/// [BattleCharacter.availableSkills]（除普攻）全摊开成 强力/破招/共鸣/大招 分组按钮，
-/// 每按钮带内力消耗 / 冷却 / 待发 状态。点头像切重点角色；敌人蓄力时由
-/// [_BattleScreenState._effectiveFocus] 自动切到可破招者。两段点选:点技能按钮 →
-/// single 进待发态/aoe 一键出手,走 [BattleNotifier.interveneNow] 立即插队（主线二 2.3）。
-class _BottomBar extends StatelessWidget {
-  final BattleState state;
-  final int focusSlotIndex;
-  final bool allowPlayerIntervention;
-  final void Function(int slotIndex) onSelectFocus;
-  // 两段点选:长按技能方块 = 弹简介浮层(直接读 SkillDef 活数据);点击 = 释放(见 onSkillTap)。
-  final void Function(SkillDef skill) onShowSkillInfo;
-  final VoidCallback onFastForward;
-  final bool isFastForward;
-  // 两段点选:点技能按钮(single → 进待发态 / aoe → 一键出手 / 待发态再点同一技能取消)。
-  final void Function(int characterId, SkillDef skill) onSkillTap;
-  // 两段点选本地待发态:纯 presentation,不写 BattleState.pendingUltimates。
-  final int? pendingCharacterId;
-  final String? pendingSkillId;
-  // 读秒环节拍(供技能 CD 环平滑插值)。
-  final Animation<double> beat;
-  // 待发单体技的技能格锚点(其上方浮出敌人快捷选择栏)。
-  final LayerLink skillTargetLink;
-
-  const _BottomBar({
-    required this.state,
-    required this.focusSlotIndex,
-    required this.allowPlayerIntervention,
-    required this.onSelectFocus,
-    required this.onShowSkillInfo,
-    required this.onFastForward,
-    required this.isFastForward,
-    required this.onSkillTap,
-    required this.pendingCharacterId,
-    required this.pendingSkillId,
-    required this.beat,
-    required this.skillTargetLink,
-  });
-
-  /// 排序/分组秩：强力 0 → 破招 1 → 共鸣 2 → 大招 3（普攻 4，已被过滤）。
-  static int _groupRank(SkillDef s) {
-    if (s.canInterrupt) return 1;
-    return switch (s.type) {
-      SkillType.powerSkill => 0,
-      SkillType.jointSkill => 2,
-      SkillType.ultimate => 3,
-      SkillType.normalAttack => 4,
-    };
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final enemyCharging = state.rightTeam.any(
-      (e) => e.isAlive && e.chargingSkill != null,
-    );
-    final hasFocus =
-        focusSlotIndex >= 0 && focusSlotIndex < state.leftTeam.length;
-    final focus = hasFocus ? state.leftTeam[focusSlotIndex] : null;
-    final domainPending = focus == null
-        ? null
-        : state.pendingUltimates[focus.characterId];
-    final localPendingForFocus =
-        focus != null && pendingCharacterId == focus.characterId
-        ? pendingSkillId
-        : null;
-
-    final skills = <SkillDef>[
-      if (focus != null)
-        for (final s in focus.availableSkills)
-          if (s.type != SkillType.normalAttack) s,
-    ]..sort((a, b) => _groupRank(a).compareTo(_groupRank(b)));
-
-    return Container(
-      height: 124,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-      decoration: const BoxDecoration(
-        color: WuxiaColors.panel,
-        border: Border(top: BorderSide(color: WuxiaColors.border)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _FocusSelector(
-            team: state.leftTeam,
-            focusSlotIndex: focusSlotIndex,
-            onSelectFocus: onSelectFocus,
-          ),
-          const SizedBox(width: 12),
-          Container(width: 1, height: 82, color: WuxiaColors.border),
-          const SizedBox(width: 12),
-          Expanded(
-            child: focus == null
-                ? const SizedBox.shrink()
-                : SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        for (final s in skills) ...[
-                          Builder(
-                            builder: (context) {
-                              final localPendingThis =
-                                  localPendingForFocus == s.id;
-                              final domainPendingThis =
-                                  domainPending?.id == s.id;
-                              final button = _SkillCommandButton(
-                                character: focus,
-                                skill: s,
-                                isPending:
-                                    localPendingThis || domainPendingThis,
-                                pendingTapEnabled: localPendingThis,
-                                queuedAnother:
-                                    domainPending != null &&
-                                    domainPending.id != s.id,
-                                highlight: enemyCharging && s.canInterrupt,
-                                allowPlayerIntervention:
-                                    allowPlayerIntervention,
-                                beat: beat,
-                                onTap: () => onSkillTap(focus.characterId, s),
-                                onShowInfo: () => onShowSkillInfo(s),
-                              );
-                              // 待发的单体技格挂锚点,供其上方浮出敌人快捷选择栏。
-                              return localPendingThis
-                                  ? CompositedTransformTarget(
-                                      link: skillTargetLink,
-                                      child: button,
-                                    )
-                                  : button;
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                      ],
-                    ),
-                  ),
-          ),
-          const SizedBox(width: 12),
-          _FastForwardButton(onPressed: onFastForward, isActive: isFastForward),
-        ],
-      ),
-    );
-  }
-}
-
-/// 重点角色选择器：我方 3 槽小头像 chip，点选切重点角色。
-class _FocusSelector extends StatelessWidget {
-  final List<BattleCharacter> team;
-  final int focusSlotIndex;
-  final void Function(int slotIndex) onSelectFocus;
-
-  const _FocusSelector({
-    required this.team,
-    required this.focusSlotIndex,
-    required this.onSelectFocus,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < team.length; i++) ...[
-          _FocusChip(
-            key: ValueKey('focus_chip_$i'),
-            character: team[i],
-            selected: i == focusSlotIndex,
-            onTap: () => onSelectFocus(i),
-          ),
-          if (i < team.length - 1) const SizedBox(width: 6),
-        ],
-      ],
-    );
-  }
-}
-
-class _FocusChip extends StatelessWidget {
-  final BattleCharacter character;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _FocusChip({
-    super.key,
-    required this.character,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = WuxiaColors.schoolColor(character.school);
-    final dim = !character.isAlive;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Container(
-        width: 50,
-        height: 76,
-        decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.28) : WuxiaColors.sidebar,
-          border: Border.all(
-            color: selected ? color : WuxiaColors.border,
-            width: selected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: dim ? WuxiaColors.textMuted : color,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Text(
-                  character.name,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 10,
-                    height: 1.1,
-                    color: dim
-                        ? WuxiaColors.textMuted
-                        : (selected
-                              ? WuxiaColors.textPrimary
-                              : WuxiaColors.textSecondary),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 单个技能指令按钮：分组标签 + 招名 + 状态行（待发 / 冷却 N / 耗 N）。
-/// `isPending` 盖"待发"印且禁用；`queuedAnother`（同角色已排别的技能）也禁用；
-/// `highlight`（敌人蓄力 + 本技能可破招）换醒目金 + 白边。
-class _SkillCommandButton extends StatelessWidget {
-  final BattleCharacter character;
-  final SkillDef skill;
-  final bool isPending;
-  final bool pendingTapEnabled;
-  final bool queuedAnother;
-  final bool highlight;
-  final bool allowPlayerIntervention;
-  // 读秒环节拍(供 CD 环平滑插值)。
-  final Animation<double> beat;
-  // 两段点选:点击 = 释放(single 进待发态 / aoe 一键出手);长按 = 弹简介浮层。
-  final VoidCallback onTap;
-  final VoidCallback onShowInfo;
-
-  const _SkillCommandButton({
-    required this.character,
-    required this.skill,
-    required this.isPending,
-    required this.pendingTapEnabled,
-    required this.queuedAnother,
-    required this.highlight,
-    required this.allowPlayerIntervention,
-    required this.beat,
-    required this.onTap,
-    required this.onShowInfo,
-  });
-
-  static String _groupLabel(SkillDef s) {
-    if (s.canInterrupt) return UiStrings.battleInterruptSkill; // 破招
-    return switch (s.type) {
-      SkillType.powerSkill => UiStrings.skillGroupPower, // 强力
-      SkillType.jointSkill => UiStrings.skillGroupJoint, // 共鸣
-      SkillType.ultimate => UiStrings.ultimate, // 大招
-      SkillType.normalAttack => '',
-    };
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cd = character.skillCooldowns[skill.id] ?? 0;
-    final ready = _BattleScreenState._isSkillReady(character, skill);
-    final enabled =
-        ready &&
-        (!isPending || pendingTapEnabled) &&
-        !queuedAnother &&
-        allowPlayerIntervention;
-
-    final Color bgColor;
-    final baseSchoolColor = WuxiaColors.schoolColor(character.school);
-    if (!ready) {
-      bgColor = WuxiaColors.buttonDisabled;
-    } else if (highlight) {
-      bgColor = Color.lerp(
-        WuxiaColors.sidebar,
-        WuxiaColors.resultHighlight,
-        0.72,
-      )!; // 敌人蓄力中：醒目金, 但收敛到战斗面板色系。
-    } else {
-      bgColor = Color.lerp(WuxiaColors.sidebar, baseSchoolColor, 0.78)!;
-    }
-
-    // CD 态(非待发):招名让位,中心浮现读秒环示剩余拍数。
-    final onCd = cd > 0 && !isPending;
-
-    final String statusText;
-    if (isPending) {
-      statusText = UiStrings.skillPendingStamp; // 待发
-    } else if (cd > 0) {
-      statusText = ''; // CD 态由读秒环示数,不再显「冷却 N」文字。
-    } else if (character.currentInternalForce < skill.internalForceCost) {
-      statusText = UiStrings.skillInsufficientForce; // 内力不足
-    } else {
-      // 耗内 N · CD M
-      statusText = UiStrings.skillCostShort(
-        skill.internalForceCost,
-        skill.cooldownTurns,
-      );
-    }
-
-    final button = SizedBox(
-      width: 102,
-      height: 86,
-      child: ElevatedButton(
-        // 两段点选:手势由外层 GestureDetector 接管(点击=释放 / 长按=简介);
-        // 这里 onPressed 仅为保持「可用态」视觉(非空 → 不走 disabled 灰底),
-        // 外层 AbsorbPointer 拦掉本按钮自身的点击/涟漪,故此回调不会被触发。
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          // 背景已由 bgColor(!ready→buttonDisabled)表达,
-          // 前景按 enabled 手动切 muted/primary 保留「不可下发」灰态观感。
-          backgroundColor: bgColor,
-          foregroundColor: enabled
-              ? WuxiaColors.textPrimary
-              : WuxiaColors.textMuted,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          side: highlight && enabled
-              ? const BorderSide(color: WuxiaColors.textPrimary, width: 2)
-              : BorderSide(
-                  color: baseSchoolColor.withValues(alpha: 0.46),
-                  width: 1,
-                ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Opacity(
-              opacity: onCd ? 0.32 : 1.0, // CD 态招名让位给读秒环。
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      _groupLabel(skill),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        height: 1.1,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      skill.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        height: 1.15,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      statusText,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 10,
-                        height: 1.1,
-                        fontWeight: isPending
-                            ? FontWeight.bold
-                            : FontWeight.w600,
-                        color: isPending
-                            ? WuxiaColors.resultHighlight
-                            : (enabled
-                                  ? WuxiaColors.textPrimary
-                                  : WuxiaColors.textMuted),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (onCd)
-              Positioned.fill(
-                child: Center(
-                  child: BeatCountdownRing(
-                    remaining: cd,
-                    total: skill.cooldownTurns,
-                    beat: beat,
-                    color: WuxiaColors.lingQiao,
-                    size: 44,
-                  ),
-                ),
-              ),
-            if (isPending)
-              const Positioned(top: -7, right: -7, child: _PendingStamp()),
-          ],
-        ),
-      ),
-    );
-
-    // 单体/群体角标：右上角小 chip，区分目标类型让玩家一眼看出操作语义。
-    final badgeText = skill.targetType == TargetType.aoe
-        ? UiStrings.skillBadgeAoe
-        : UiStrings.skillBadgeSingle;
-    final badgeColor = skill.targetType == TargetType.aoe
-        ? WuxiaColors
-              .resultHighlight // 群体用暖金色，醒目提示一键释放
-        : WuxiaColors.textMuted.withValues(alpha: 0.70); // 单体用静默灰，提示需选目标
-    final buttonWithBadge = Stack(
-      clipBehavior: Clip.none,
-      children: [
-        button,
-        Positioned(
-          top: -4,
-          right: -4,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-            decoration: BoxDecoration(
-              color: badgeColor,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              badgeText,
-              style: const TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                color: WuxiaColors.textPrimary,
-                height: 1.2,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-
-    // 两段点选:点击 = 释放(仅 enabled 时;single 进待发态 / aoe 一键出手),
-    // 长按 = 弹简介浮层(始终可用,CD/内力不足/待发态亦可查看)。
-    // ValueKey 移到外层 GestureDetector(它是命中目标);AbsorbPointer 拦掉内层
-    // ElevatedButton 自身的点击/涟漪,保证手势进到外层识别器(且不抢横向滚动)。
-    return GestureDetector(
-      key: ValueKey('skill_cmd_${character.characterId}_${skill.id}'),
-      behavior: HitTestBehavior.opaque,
-      onTap: enabled ? onTap : null,
-      onLongPress: onShowInfo,
-      child: AbsorbPointer(child: buttonWithBadge),
-    );
-  }
-}
-
-class _PendingStamp extends StatelessWidget {
-  const _PendingStamp();
-
-  @override
-  Widget build(BuildContext context) {
-    return Transform.rotate(
-      angle: -0.16,
-      child: DecoratedBox(
-        key: const ValueKey('skill_pending_stamp_badge'),
-        decoration: BoxDecoration(
-          color: WuxiaColors.resultHighlight.withValues(alpha: 0.95),
-          borderRadius: BorderRadius.circular(3),
-          border: Border.all(color: WuxiaColors.textPrimary, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: WuxiaColors.resultHighlight.withValues(alpha: 0.34),
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-          child: Text(
-            UiStrings.skillPendingStamp,
-            style: TextStyle(
-              color: WuxiaColors.panel,
-              fontSize: 10,
-              height: 1,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 批次 1.3:技能简介浮层正文(直接读 [SkillDef] 活数据)。
-/// 描述 + 字段表(类型/目标/倍率/耗内/冷却/特性)+ 拖招提示。
-/// 不走 HelpCatalog/CodexIndex,纯活数据 + [EnumL10n] 枚举显示名。
-class _SkillInfoBody extends StatelessWidget {
-  final SkillDef skill;
-  const _SkillInfoBody({required this.skill});
-
-  static String _traitText(SkillDef s) {
-    if (s.canInterrupt) return UiStrings.skillTraitInterrupt; // 破招(可打断蓄力)
-    return UiStrings.skillTraitNone; // 无
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final rows = <(String, String)>[
-      (UiStrings.skillInfoType, EnumL10n.skillType(skill.type)),
-      (UiStrings.skillInfoTarget, EnumL10n.targetType(skill.targetType)),
-      (UiStrings.skillInfoPower, '${skill.powerMultiplier}'),
-      (UiStrings.skillInfoCost, '${skill.internalForceCost}'),
-      (
-        UiStrings.skillInfoCooldown,
-        UiStrings.skillInfoCooldownTurns(skill.cooldownTurns),
-      ),
-      (UiStrings.skillInfoTrait, _traitText(skill)),
-    ];
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // 描述活文本(SkillDef.description)。
-        Text(
-          skill.description,
-          style: const TextStyle(color: WuxiaUi.ink, fontSize: 13, height: 1.5),
-        ),
-        const SizedBox(height: 14),
-        for (final (label, value) in rows)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 56,
-                  child: Text(
-                    label,
-                    style: const TextStyle(
-                      color: WuxiaUi.muted,
-                      fontSize: 12,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    value,
-                    style: const TextStyle(
-                      color: WuxiaUi.ink,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        const SizedBox(height: 8),
-        const Text(
-          UiStrings.skillInfoTapHint,
-          style: TextStyle(color: WuxiaUi.qing, fontSize: 11, letterSpacing: 1),
-        ),
-      ],
-    );
-  }
-}
-
-class _FastForwardButton extends StatelessWidget {
-  final VoidCallback onPressed;
-  final bool isActive;
-  const _FastForwardButton({required this.onPressed, required this.isActive});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 100,
-      height: 60,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: isActive
-              ? WuxiaColors.resultHighlight
-              : WuxiaColors.textPrimary,
-          side: BorderSide(
-            color: isActive
-                ? WuxiaColors.resultHighlight
-                : WuxiaColors.textSecondary,
-          ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        ),
-        child: const Text(
-          UiStrings.fastForward,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
-}
-
-// ─── 弹道层（P0-2 Task7）────────────────────────────────────────────────────
-
-/// 把活跃弹道的战场比例坐标解析为像素并渲染（叠在 _BattleField 上方）。
-/// 纯表现层：只读 [_TrailEntry] 几何，由 AnimationController 驱动。
-class _ProjectileLayer extends StatelessWidget {
-  final List<_TrailEntry> trails;
-  const _ProjectileLayer({required this.trails});
-
-  @override
-  Widget build(BuildContext context) {
-    if (trails.isEmpty) return const SizedBox.shrink();
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final w = constraints.maxWidth;
-        final h = constraints.maxHeight;
-        return Stack(
-          children: [
-            for (final t in trails)
-              ProjectileTrail(
-                key: ValueKey(t.id),
-                animation: t.ctrl,
-                color: t.color,
-                strokeWidth: t.strokeWidth,
-                start: Offset(t.startFrac.dx * w, t.startFrac.dy * h),
-                end: Offset(t.endFrac.dx * w, t.endFrac.dy * h),
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-/// Phase 4 拖招表现层:角色头像光晕。
-/// - [hovered](拖招悬停命中敌头像):静态浅金强光,优先级最高。
-/// - 均不满足:无光晕,直接返回 child(等价旧 boxShadow 为空)。
-class _GlowAura extends StatefulWidget {
-  final bool hovered;
-  // 第六阶段：破绽窗口集火指示（staggerTicksRemaining>0）。
-  final bool staggered;
-  // 用于给破绽高亮 DecoratedBox 挂 Key，供 widget 测查找。
-  final int characterId;
-  final Widget child;
-  const _GlowAura({
-    required this.hovered,
-    required this.staggered,
-    required this.characterId,
-    required this.child,
-  });
-
-  @override
-  State<_GlowAura> createState() => _GlowAuraState();
-}
-
-class _GlowAuraState extends State<_GlowAura>
-    with SingleTickerProviderStateMixin {
-  // eager 初始化(非 late):懒初始化会在非蓄势 slot 的 dispose() 才首次构造,
-  // 此时树已 deactivate → createTicker 查 TickerMode 崩溃。
-  late final AnimationController _pulse;
-
-  // hovered 优先级最高(静态强光),只有「破绽且未被悬停」才脉动。
-  // 第六阶段：破绽窗口驱动呼吸（绛红集火），优先级低于 hovered。
-  bool get _pulsing => widget.staggered && !widget.hovered;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulse = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 950),
-    );
-    if (_pulsing) _pulse.repeat(reverse: true);
-  }
-
-  @override
-  void didUpdateWidget(_GlowAura old) {
-    super.didUpdateWidget(old);
-    if (_pulsing && !_pulse.isAnimating) {
-      _pulse.repeat(reverse: true);
-    } else if (!_pulsing && _pulse.isAnimating) {
-      _pulse
-        ..stop()
-        ..value = 0.0;
-    }
-  }
-
-  @override
-  void dispose() {
-    _pulse.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // 浅金静态强光(hovered) 优先;
-    // 第六阶段：破绽窗口绛红脉动（集火指示）次之；都无则裸 child。
-    if (widget.hovered) {
-      return _box(WuxiaColors.resultHighlight, 0.85, 22.0, 4.0, widget.child);
-    }
-    if (!widget.staggered) return widget.child;
-    return AnimatedBuilder(
-      animation: _pulse,
-      builder: (context, child) {
-        final t = Curves.easeInOut.transform(_pulse.value);
-        // 破绽窗口：绛红呼吸脉动（集火指示），水墨克制——稍弱于蓄势强光。
-        return KeyedSubtree(
-          key: ValueKey('stagger_highlight_${widget.characterId}'),
-          child: _box(
-            WuxiaColors.gangMeng, // 绛红 = WuxiaColors.gangMeng（刚猛流派色 / 攻击色）
-            0.35 + 0.35 * t, // alpha 0.35 → 0.70（克制，不刺眼）
-            10.0 + 8.0 * t, // blur 10 → 18
-            1.0 + 1.5 * t, // spread 1.0 → 2.5
-            child!,
-          ),
-        );
-      },
-      child: widget.child,
-    );
-  }
-
-  Widget _box(
-    Color color,
-    double alpha,
-    double blur,
-    double spread,
-    Widget child,
-  ) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: alpha),
-            blurRadius: blur,
-            spreadRadius: spread,
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-/// Phase 4 拖招引导线层:从技能按钮锚点到当前指针的流派色笔触线(实时跟手)。
-/// 纯表现层,IgnorePointer 不拦手势(手势由按钮的 LongPress 识别器持有)。
-class _EffectLayer extends StatelessWidget {
-  final List<_EffectEntry> effects;
-  const _EffectLayer({required this.effects});
-
-  @override
-  Widget build(BuildContext context) {
-    if (effects.isEmpty) return const SizedBox.shrink();
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final w = constraints.maxWidth;
-        final h = constraints.maxHeight;
-        return Stack(
-          clipBehavior: Clip.none,
-          children: [
-            for (final e in effects)
-              Positioned(
-                left: e.centerFrac.dx * w - e.size / 2,
-                top: e.centerFrac.dy * h - e.size / 2,
-                width: e.size,
-                height: e.size,
-                child: BattleEffectSprite(
-                  key: ValueKey(e.id),
-                  assetPath: e.assetPath,
-                  animation: e.ctrl,
-                  size: e.size,
-                  opacity: e.opacity,
-                  rotation: e.rotation,
-                  mirrored: e.mirrored,
-                ),
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-/// 单体技待发态时,在技能格上方冒出的敌人快捷选择栏(存活敌人按 slotIndex 升序)。
-class _TargetChipStrip extends StatelessWidget {
-  final List<BattleCharacter> enemies;
-  final int? hoveredEnemyId;
-  final void Function(int enemyId) onSelect;
-  final void Function(int enemyId, bool hovering) onHover;
-
-  const _TargetChipStrip({
-    required this.enemies,
-    required this.hoveredEnemyId,
-    required this.onSelect,
-    required this.onHover,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final sorted = [...enemies]
-      ..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
-    return Material(
-      color: Colors.transparent,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (var i = 0; i < sorted.length; i++) ...[
-            _TargetChip(
-              key: ValueKey('target_chip_${sorted[i].characterId}'),
-              enemy: sorted[i],
-              hovered: hoveredEnemyId == sorted[i].characterId,
-              onTap: () => onSelect(sorted[i].characterId),
-              onHover: (h) => onHover(sorted[i].characterId, h),
-            ),
-            if (i < sorted.length - 1) const SizedBox(width: 6),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// 单个敌人选择 chip:小头像(iconPath,缺图走首字降级) + 细血条。
-class _TargetChip extends StatelessWidget {
-  final BattleCharacter enemy;
-  final bool hovered;
-  final VoidCallback onTap;
-  final void Function(bool hovering) onHover;
-
-  const _TargetChip({
-    super.key,
-    required this.enemy,
-    required this.hovered,
-    required this.onTap,
-    required this.onHover,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = WuxiaColors.schoolColor(enemy.school);
-    final firstGlyph = enemy.name.isEmpty ? '?' : enemy.name.substring(0, 1);
-    final hasIcon = enemy.iconPath != null && enemy.iconPath!.isNotEmpty;
-    final glyph = Container(
-      width: 32,
-      height: 32,
-      alignment: Alignment.center,
-      color: WuxiaColors.avatarFill,
-      child: Text(
-        firstGlyph,
-        style: TextStyle(
-          fontSize: 16,
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-    return MouseRegion(
-      onEnter: (_) => onHover(true),
-      onExit: (_) => onHover(false),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 52,
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: WuxiaColors.sidebar,
-            border: Border.all(
-              color: hovered ? color : WuxiaColors.border,
-              width: hovered ? 2 : 1,
-            ),
-            borderRadius: BorderRadius.circular(6),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x66000000),
-                blurRadius: 6,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipOval(
-                child: SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: hasIcon
-                      ? WuxiaImage(
-                          enemy.iconPath!,
-                          width: 32,
-                          height: 32,
-                          fit: BoxFit.cover,
-                          errorBuilder: wuxiaAssetErrorBuilder(() => glyph),
-                        )
-                      : glyph,
-                ),
-              ),
-              const SizedBox(height: 3),
-              SizedBox(
-                width: 40,
-                child: HpBar(
-                  current: enemy.currentHp,
-                  max: enemy.maxHp,
-                  height: 4,
-                  showLabel: false,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
