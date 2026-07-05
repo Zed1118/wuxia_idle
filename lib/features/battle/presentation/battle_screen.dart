@@ -68,17 +68,9 @@ int playbackHoldMs({
 ///
 /// [animConfig] 默认 [AnimationNumbers.defaults]（与 numbers.yaml 同值）；
 /// 测试可注入更短时序加速。
-/// 队列内某槽的竖直比例坐标(0..1),按**实际队伍人数** [teamSize] 均分:
-///   1 人 → 0.5(居中);2 人 → 0.25 / 0.75(上下对称);3 人 → 1/6,3/6,5/6(原行为)。
 ///
-/// `TeamColumn` 的视觉排布与 `_slotFrac` 的弹道坐标共用此式,保证头像位置与
-/// 弹道/特效落点一致(分母从旧的硬编码 3 改为 teamSize 是本次「1 怪居中 / 2 怪对称」
-/// 的唯一改动点)。teamSize ≤ 0 兜底 0.5 防除零。纯函数,单测直接验证。
-double slotVerticalFraction(int slotIndex, int teamSize) {
-  if (teamSize <= 0) return 0.5;
-  return (slotIndex + 0.5) / teamSize;
-}
-
+/// 竖直槽位比例坐标 `slotVerticalFraction` 已移到
+/// `domain/battle_skill_utils.dart`（纯 Dart 数学，破 controller↔screen 循环 import）。
 class BattleScreen extends ConsumerStatefulWidget {
   final AnimationNumbers animConfig;
 

@@ -12,7 +12,6 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../settings/domain/gameplay_settings.dart';
-import 'battle_screen.dart' show slotVerticalFraction;
 import 'battle_vfx_entries.dart';
 import 'damage_popup.dart';
 import 'ultimate_caption_overlay.dart';
@@ -32,6 +31,7 @@ class BattlePlaybackController {
     required WidgetRef ref,
     required void Function(VoidCallback fn) rebuild,
     required AnimationNumbers animConfig,
+    // 预留:Task 2 拍钟调度消费(_isPaused/_isFastForward 初值)
     bool startPaused = false,
     bool startFastForward = false,
   }) : _vsync = vsync,
