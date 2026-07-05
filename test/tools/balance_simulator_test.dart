@@ -43,6 +43,7 @@ import 'package:wuxia_idle/features/battle/application/stage_battle_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_engine.dart';
 import 'package:wuxia_idle/features/battle/domain/battle_state.dart';
 import 'package:wuxia_idle/features/battle/domain/derived_stats.dart' show RealmUtils;
+import 'package:wuxia_idle/features/cultivation/application/technique_skill_growth_gate.dart';
 
 const int _seedsPerStage = 50;
 const int _maxTicks = 200;
@@ -441,6 +442,64 @@ void main() {
 
     expect(ch456, isNotEmpty, reason: 'Ch4-6 应有 mainline 战斗关');
   }, timeout: const Timeout(Duration(minutes: 15)));
+
+  // 夜间批 K(2026-07-05):早期 solo 剖面常驻读数。真实早期弧=祖师单人(收徒
+  // 扩队前),3p 满编 on-level 全表 100% 掩盖早期难度(特征化报告
+  // docs/audit/early_difficulty_gate_characterization_2026-07-05.md);门控
+  // (gateSkillsByGrowth)按修炼层过滤心法招,对齐生产 autoFill。断言写约束语义
+  // 不钉具体百分比:修炼层单调性(中成 ≥ 初窥 − 容噪),硬墙只 print 供人工判读。
+  test('早期 solo 剖面:Ch1-2 × floor(初窥1招/中成2招·gated) × 25 seed', () async {
+    const seeds = 25;
+    final early = repo.stageDefs.values
+        .where((s) =>
+            s.stageType == StageType.mainline &&
+            s.enemyTeam.isNotEmpty &&
+            (s.chapterIndex == 1 || s.chapterIndex == 2))
+        .toList()
+      ..sort((a, b) => a.id.compareTo(b.id));
+    expect(early, isNotEmpty, reason: 'Ch1-2 应有 mainline 战斗关');
+
+    int winsAt(StageDef stage, CultivationLayer layer) {
+      var w = 0;
+      for (var seed = 0; seed < seeds; seed++) {
+        final r = _simulateStage(stage, seed, repo, _BuildProfile.floor,
+            soloFounder: true,
+            gateSkillsByGrowth: true,
+            cultivationLayerOverride: layer);
+        if (r.result == 'leftWin') w++;
+      }
+      return w;
+    }
+
+    final buf = StringBuffer()
+      ..writeln('# 早期 solo 剖面 · Ch1-2(常驻读数)')
+      ..writeln()
+      ..writeln('祖师单人 · floor 装备档 · 成长门控生效 · $seeds seed/格')
+      ..writeln()
+      ..writeln('| stage | Boss | 初窥(1招) | 中成(2招) |')
+      ..writeln('|---|---|---|---|');
+    final walls = <String>[];
+    for (final stage in early) {
+      final chu = winsAt(stage, CultivationLayer.chuKui);
+      final zhong = winsAt(stage, CultivationLayer.zhongCheng);
+      buf.writeln('| ${stage.id} | ${stage.isBossStage ? "Boss" : "—"} | '
+          '${(chu / seeds * 100).round()}% | ${(zhong / seeds * 100).round()}% |');
+      if (zhong == 0) walls.add(stage.id);
+      // 约束语义:更高修炼层(多 1 招 + 修炼度加成)不应显著更弱;容噪 3 seed(12pt)。
+      expect(zhong, greaterThanOrEqualTo(chu - 3),
+          reason: '${stage.id} 中成 solo 不应明显弱于初窥(rng 容噪 3 seed)');
+    }
+    buf
+      ..writeln()
+      ..writeln('中成(2招)0% 硬墙关:${walls.isEmpty ? "无 ✅" : walls.join(" / ")}')
+      ..writeln()
+      ..writeln('判读口径:初窥低胜率仅当玩家真会在该关仍处初窥时才是问题'
+          '(修炼节奏未建模);中成 0% 硬墙才是红灯,进挂账待拍板。');
+    final outPath = '$_outputDir/solo_early_ch12.md';
+    File(outPath).writeAsStringSync(buf.toString());
+    print('=== 早期 solo 剖面(Ch1-2 · gated) ===');
+    print(buf.toString());
+  }, timeout: const Timeout(Duration(minutes: 10)));
 }
 
 class _SimResult {
@@ -483,7 +542,11 @@ _SimResult _simulateStage(
     int cycleIndex = 1,
     bool isTower = false,
     bool soloFounder = false,
-    RealmTier? playerTierOverride}) {
+    RealmTier? playerTierOverride,
+    // 夜间批 K(2026-07-05):早期 solo 剖面用——修炼层覆盖(初窥/小成等) +
+    // 按成长门控过滤心法招(对齐生产 autoFill;fromCharacter fallback 不过门控)。
+    CultivationLayer? cultivationLayerOverride,
+    bool gateSkillsByGrowth = false}) {
   // 玩家境界 = stage.requiredRealm(on-level 诚实基线 · 2026-05-29 去 +1 confound):
   // 原 +1「玩家超阶」是旧假 _synthPlayer 时代的补偿 hack;真 build 下 +1 与同阶
   // 敌人叠加 → 玩家凭空 1 阶优势(差1阶 attacker×1.4/defender×0.7)把后段全冲成
@@ -498,14 +561,20 @@ _SimResult _simulateStage(
   final players = [
     _buildRealPlayer(repo, playerTier,
         slot: 0, name: '玩家', isFounder: true, profile: profile,
-        proficiencyUses: proficiencyUses),
+        proficiencyUses: proficiencyUses,
+        cultivationLayerOverride: cultivationLayerOverride,
+        gateSkillsByGrowth: gateSkillsByGrowth),
     if (!soloFounder) ...[
       _buildRealPlayer(repo, playerTier,
           slot: 1, name: '徒弟一', isFounder: false, profile: profile,
-          proficiencyUses: proficiencyUses),
+          proficiencyUses: proficiencyUses,
+          cultivationLayerOverride: cultivationLayerOverride,
+          gateSkillsByGrowth: gateSkillsByGrowth),
       _buildRealPlayer(repo, playerTier,
           slot: 2, name: '徒弟二', isFounder: false, profile: profile,
-          proficiencyUses: proficiencyUses),
+          proficiencyUses: proficiencyUses,
+          cultivationLayerOverride: cultivationLayerOverride,
+          gateSkillsByGrowth: gateSkillsByGrowth),
     ],
   ];
   final enemies = StageBattleSetup.buildEnemyTeam(stage.enemyTeam,
@@ -588,6 +657,8 @@ BattleCharacter _buildRealPlayer(
   required bool isFounder,
   required _BuildProfile profile,
   int proficiencyUses = 0,
+  CultivationLayer? cultivationLayerOverride,
+  bool gateSkillsByGrowth = false,
 }) {
   final extreme = profile == _BuildProfile.extreme;
   final ceiling = profile == _BuildProfile.ceiling;
@@ -673,10 +744,12 @@ BattleCharacter _buildRealPlayer(
     school: school,
     role: TechniqueRole.main,
     learnedAt: DateTime(2026, 5, 29),
-    // extreme 极境(×3.0 顶层修炼度)/ ceiling 大成 / floor 中成(§4.3 修炼度 9 层)
-    cultivationLayer: extreme
-        ? CultivationLayer.jiJing
-        : (ceiling ? CultivationLayer.daCheng : CultivationLayer.zhongCheng),
+    // extreme 极境(×3.0 顶层修炼度)/ ceiling 大成 / floor 中成(§4.3 修炼度 9 层);
+    // cultivationLayerOverride 供早期 solo 剖面钉初窥/小成。
+    cultivationLayer: cultivationLayerOverride ??
+        (extreme
+            ? CultivationLayer.jiJing
+            : (ceiling ? CultivationLayer.daCheng : CultivationLayer.zhongCheng)),
   );
   // 可玩性 P1a:seed 主修各招 skillUsageCount → fromCharacter 快照 skillUses
   // → 战中按熟练阶应用伤害倍率。默认 0(fresh · 不扰既有 sweep)。
@@ -710,7 +783,7 @@ BattleCharacter _buildRealPlayer(
 
   // ceiling=玩家在门派、祖师在世 → 全员享 founder buff(§12.2 #11
   // apply_to_disciples_only=false);floor=未享(没怎么投入门派)。
-  return BattleCharacter.fromCharacter(
+  var bc = BattleCharacter.fromCharacter(
     character: character,
     equipped: equipped,
     mainTechnique: mainTech,
@@ -719,6 +792,20 @@ BattleCharacter _buildRealPlayer(
     slotIndex: slot,
     founderBuffActive: ceiling || extreme,
   );
+  // 成长门控过滤(生产 autoFill 等价):fromCharacter 无显式装配槽时 fallback 直取
+  // 心法全部 skillIds 不过门控(battle_state.dart techDef.skillIds 分支),此处按
+  // 修炼层过滤;非本心法招(自动注入的破招技等)gate 函数恒放行。
+  if (gateSkillsByGrowth) {
+    final kept = bc.availableSkills
+        .where((s) => isTechniqueSkillUnlockedByGrowth(
+              technique: mainTech,
+              techniqueDef: techDef,
+              skill: s,
+            ))
+        .toList();
+    bc = bc.copyWith(availableSkills: kept);
+  }
+  return bc;
 }
 
 void _writeCsv(String path, List<_SimResult> results) {
@@ -783,20 +870,15 @@ String _summarize(List<_SimResult> results, List<StageDef> stages) {
     }
   }
   buf.writeln('');
-  buf.writeln('- **过易**(连 floor 欠配置玩家都 > 90%):欠配置玩家都碾压 → 数值偏低,下调候选(尤其 Boss)');
-  for (final id in floorWin.keys) {
-    if (floorWin[id]! > 0.90) {
-      buf.writeln('  - $id:floor ${(floorWin[id]! * 100).toStringAsFixed(0)}% / '
-          'ceiling ${(ceilWin[id]! * 100).toStringAsFixed(0)}%');
-    }
-  }
+  // 口径修正(2026-07-05 夜间批 K · 早期难度特征化实证):3p 满编 on-level 全表
+  // 100/100 是**有意结构**(挂机爽感主旋律),不再把 floor>90% 全表误标「下调候选」
+  // ——真实难度守门 = 单人段(收徒前)/爬塔机制型/跨阶/心魔,见 solo 剖面读数与
+  // docs/audit/early_difficulty_gate_characterization_2026-07-05.md。
+  buf.writeln('- **3p 满编口径说明**:floor/ceiling 全高 = 有意结构(满编主线是'
+      '挂机爽感面,非难度面),不构成下调候选;难度守门在单人段(solo 剖面读数)、'
+      '爬塔机制型 Boss、跨阶与心魔。');
   buf.writeln('');
-  buf.writeln('- **健康**:floor 偏低-中 + ceiling 中高-高 = 配装/投入有意义(欠配置有挑战、满配顺畅)。');
-  buf.writeln('');
-  buf.writeln('## 期望区间(参考)');
-  buf.writeln('');
-  buf.writeln('- 普通关:floor ∈ [40%, 75%] · ceiling ∈ [75%, 95%]');
-  buf.writeln('- Boss 关:floor ∈ [20%, 55%] · ceiling ∈ [55%, 85%]');
+  buf.writeln('- **健康**:过难列表为空 ∧ solo 剖面无 0% 硬墙。');
   buf.writeln('');
   buf.writeln('## 数据局限');
   buf.writeln('');
