@@ -59,7 +59,10 @@
 | 奇遇录无 AppBar(批5 P3) | P3 | **❌ 误报(同 B7)** | 同 baike_screen 承载,有 AppBar |
 | B6 关卡双 Boss 节点 | P2 待复核 | **✅ 非 bug(数据如实)** | stages.yaml `stage_01_04` + `stage_01_05` **都** `isBossStage:true`;节点忠实渲染,「每章仅1 Boss」是错误假设 |
 | B2 商店缺图/暗图标 | P1 | **✅ 真(保留)** | shop 路由用真 `ShopScreen()` 仅种银两,无假货架 → 真商品缺 icon 走 errorBuilder「缺图」 |
-| B4 默契进度条空填充 | P2 待复现 | **⚠️ 疑真(需 widget 复核)** | equipment_detail 路由 seed `battleCount:1240`(数据在),文案显 62% 但条空 → 填充绑定存疑,非假数据问题 |
+| B4 默契进度条空填充 | P2 待复现 | **✅ 非 bug(语义差)** | `equipment_detail_screen.dart:729-732` ratio=`(battleCount−当前阶起点)/span` 阶内进度;文案「1240/2000」是绝对值。刚进阶时阶内进度低→条近空**正确**,子代理误把绝对文案当条比率 |
+| B5 首胜「共鸣晋阶：」悬空冒号 | P2 待复现 | **✅ 非功能 bug(段标签)** | `stage_victory_dialog.dart:990-1005` 是「——— 共鸣晋阶：」分隔线右侧段标签,晋阶内容在别处渲染;冒号收尾 P3 cosmetic 非断链 |
+
+**B 类净结论**:7 条断链线索复核后**仅 B2(商店缺图标)是真未修功能问题**;B3(离线单位)已修→`night-visual-quickfix`;其余 5 条 = harness 假象(B1/B7)/数据如实(B6)/语义误读(B4/B5)。**「按钮逻辑不联通」类基本盘干净**,唯一真项=商店部分商品缺 icon 资源(需补素材/映射,非快修)。
 
 **A 类(字体不清晰)不受影响**:对比度/色板由 widget 渲染决定,与路由 seed 无关,静态截图如实反映生产观感——**A1 浅底淡金字 11 屏仍全部有效**。
 
