@@ -7,3 +7,15 @@ bool isSkillReady(BattleCharacter c, SkillDef skill) {
   final cd = c.skillCooldowns[skill.id] ?? 0;
   return c.currentInternalForce >= skill.internalForceCost && cd <= 0;
 }
+
+int slotKey(int teamSide, int slotIndex) => teamSide * 3 + slotIndex;
+
+BattleCharacter? findCharacter(int characterId, BattleState s) {
+  for (final c in s.leftTeam) {
+    if (c.characterId == characterId) return c;
+  }
+  for (final c in s.rightTeam) {
+    if (c.characterId == characterId) return c;
+  }
+  return null;
+}

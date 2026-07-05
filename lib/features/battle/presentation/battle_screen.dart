@@ -431,13 +431,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // ─── 动画 / 飘字 ─────────────────────────────────────────────────────────
 
   void _playAction(BattleAction action, BattleState s) {
-    final actor = _findCharacter(action.actorId, s);
+    final actor = findCharacter(action.actorId, s);
     if (actor != null) {
-      final key = _slotKey(actor.teamSide, actor.slotIndex);
+      final key = slotKey(actor.teamSide, actor.slotIndex);
       _attackControllers[key].forward(from: 0.0);
     }
     if (action.attackResult != null && action.targetId != null) {
-      final target = _findCharacter(action.targetId!, s);
+      final target = findCharacter(action.targetId!, s);
       if (target != null) {
         _spawnPopup(target, action.attackResult!, actor);
         if (actor != null) _spawnTrail(actor, target, action);
@@ -641,7 +641,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
   void _triggerHitFlash(BattleCharacter target, bool isCritical) {
     if (_reduceFlashing) return;
-    final key = _slotKey(target.teamSide, target.slotIndex);
+    final key = slotKey(target.teamSide, target.slotIndex);
     setState(() {
       _hitFlashColors[key] = isCritical ? WuxiaColors.gangMeng : Colors.white;
     });
@@ -805,7 +805,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     AttackResult result,
     BattleCharacter? attacker,
   ) {
-    final key = _slotKey(target.teamSide, target.slotIndex);
+    final key = slotKey(target.teamSide, target.slotIndex);
     final data = _buildPopupData(result, attacker);
     final entry = PopupEntry(
       id: _nextPopupId++,
@@ -1113,8 +1113,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   // ─── 工具方法 ─────────────────────────────────────────────────────────────
 
-  static int _slotKey(int teamSide, int slotIndex) => teamSide * 3 + slotIndex;
-
   /// 战场比例坐标（0..1）：左队 x=0.12 / 右队 x=0.88；竖直按队伍人数 [teamSize]
   /// 均分(见 [slotVerticalFraction]):1 怪居中 / 2 怪对称 / 3 怪 1/6,3/6,5/6。
   /// 弹道层在 LayoutBuilder 内解析为像素，避免依赖 RenderBox（widget test 稳定）。
@@ -1127,16 +1125,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   int _teamSizeOf(int teamSide) {
     final s = ref.read(battleProvider);
     return teamSide == 0 ? s.leftTeam.length : s.rightTeam.length;
-  }
-
-  BattleCharacter? _findCharacter(int characterId, BattleState s) {
-    for (final c in s.leftTeam) {
-      if (c.characterId == characterId) return c;
-    }
-    for (final c in s.rightTeam) {
-      if (c.characterId == characterId) return c;
-    }
-    return null;
   }
 
   // ─── build ────────────────────────────────────────────────────────────────
