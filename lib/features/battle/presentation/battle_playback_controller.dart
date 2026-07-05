@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -31,13 +33,23 @@ class BattlePlaybackController {
     required WidgetRef ref,
     required void Function(VoidCallback fn) rebuild,
     required AnimationNumbers animConfig,
-    // 预留:Task 2 拍钟调度消费(_isPaused/_isFastForward 初值)
+    // 拍钟调度初值(Task 2):startPaused 起手即暂停;startFastForward 起手即快进。
     bool startPaused = false,
     bool startFastForward = false,
   }) : _vsync = vsync,
        _ref = ref,
        _rebuild = rebuild,
        _animConfig = animConfig {
+    // 读秒圆环节拍 controller（本拍内 0→1，供 CD/蓄力/破绽环平滑插值）。
+    // 随 _playTimer 每拍 forward(from:0) 对齐 remaining 递减，暂停/待发/结束时 stop 冻结。
+    _beatCtrl = AnimationController(
+      vsync: _vsync,
+      duration: Duration(milliseconds: _animConfig.actionIntervalMs),
+    );
+    // 验收路由 startPaused:起手即暂停 → startTimer 内 _isPaused gate 兜住自动启动。
+    if (startPaused) _isPaused = true;
+    // 一键扫荡 startFastForward:起手即快进态。
+    _isFastForward = startFastForward;
     // 6 个攻击动画 controller（slotKey = teamSide*3 + slotIndex）
     _attackControllers = List.generate(
       6,
@@ -62,6 +74,16 @@ class BattlePlaybackController {
   final void Function(VoidCallback) _rebuild;
   final AnimationNumbers _animConfig;
   bool _disposed = false;
+
+  // ─── 拍钟调度（Task 2：beat/timer/hit-stop/pause/fast-forward） ──────────────
+  // 读秒圆环节拍 controller（构造体内据 _animConfig 初始化）。
+  late final AnimationController _beatCtrl;
+  // 实时 tick 定时器（常速: advanceOneAction() / 快进: advance() 驱动）。
+  Timer? _playTimer;
+  // hit-stop 复播计时器（命中顿帧后延时重启 timer）。
+  Timer? _hitStopTimer;
+  bool _isPaused = false;
+  bool _isFastForward = false; // 构造时据 startFastForward 置初值
 
   late final List<AnimationController> _attackControllers;
   late final List<AnimationController> _hitFlashControllers;
@@ -88,6 +110,12 @@ class BattlePlaybackController {
   List<EffectEntry> get activeEffects => _activeEffects;
   Map<int, List<PopupEntry>> get popups => _popups;
 
+  // 拍钟调度只读 getter（供 build props / 交互条件读取）。
+  AnimationController get beatCtrl => _beatCtrl;
+  bool get isPaused => _isPaused;
+  bool get isFastForward => _isFastForward;
+  bool get hasTimer => _playTimer != null;
+
   // 临时副本:Task 4 全移完后 State 侧副本删除
   GameplaySettings get _currentGameplaySettings => _ref
       .read(gameplaySettingsProvider)
@@ -95,6 +123,15 @@ class BattlePlaybackController {
 
   // 临时副本:Task 4 全移完后 State 侧副本删除
   bool get _reduceFlashing => _currentGameplaySettings.reduceFlashing;
+
+  /// 当前播放拍间隔(ms):快进态走 fastForwardIntervalMs,否则按玩家速度档缩放
+  /// actionIntervalMs(与 [startTimer] 同源口径)。供飘字 spawn 时 clamp 时长,
+  /// 防快档(rapid/快进)固定 damagePopupMs 超拍致跨拍重叠。
+  int get _currentPlaybackIntervalMs => _isFastForward
+      ? _animConfig.fastForwardIntervalMs
+      : _currentGameplaySettings.scaledBattleIntervalMs(
+          _animConfig.actionIntervalMs,
+        );
 
   /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
   void triggerHitFlash(BattleCharacter target, bool isCritical) {
@@ -258,24 +295,20 @@ class BattlePlaybackController {
     ctrl.forward(from: 0.0);
   }
 
-  /// 飘字：命中目标 slot spawn 一条飘字（伤害数字/闪避/暴击样式）。
-  ///
-  /// [playbackIntervalMs]：relocation 必需的签名扩展——原 `_spawnPopup` 读
-  /// State 独有的 `_currentPlaybackIntervalMs`（依赖 `_isFastForward`，该字段
-  /// 要到 Task 2 才移交控制器，本任务不提前搬）。取值/公式不变，只是由调用方
-  /// （State 的 `_playAction`）算好当前播放拍间隔后传入，而非控制器自行读取。
+  /// 飘字：命中目标 slot spawn 一条飘字（伤害数字/闪避/暴击样式）。飘字时长按
+  /// [_currentPlaybackIntervalMs] clamp，防快档（rapid/快进）固定 damagePopupMs
+  /// 超拍致跨拍重叠。
   void spawnPopup(
     BattleCharacter target,
     AttackResult result,
-    BattleCharacter? attacker, {
-    required int playbackIntervalMs,
-  }) {
+    BattleCharacter? attacker,
+  ) {
     final key = slotKey(target.teamSide, target.slotIndex);
     final data = _buildPopupData(result, attacker);
     final entry = PopupEntry(
       id: _nextPopupId++,
       data: data,
-      popupDurationMs: _animConfig.effectivePopupMs(playbackIntervalMs),
+      popupDurationMs: _animConfig.effectivePopupMs(_currentPlaybackIntervalMs),
     );
     _rebuild(() {
       (_popups[key] ??= []).add(entry);
@@ -327,8 +360,90 @@ class BattlePlaybackController {
     return teamSide == 0 ? s.leftTeam.length : s.rightTeam.length;
   }
 
+  // ─── 拍钟调度（Task 2） ─────────────────────────────────────────────────────
+
+  void startTimer() {
+    // 任何显式启动都作废挂起的 hit-stop 复播（避免快进/暂停切换撞 hit-stop 时
+    // stale timer 二次 startTimer 致节拍抖动）。
+    _hitStopTimer?.cancel();
+    _playTimer?.cancel();
+    if (_isPaused) {
+      _beatCtrl.stop(); // 暂停态冻结读秒环节拍在当前扫位。
+      return; // H3 暂停态:任何重启请求都不启动 timer。
+    }
+    // 快进态:玩家手动开了快进。
+    final rushing = _isFastForward;
+    final gameplaySettings = _currentGameplaySettings;
+    final interval = rushing
+        ? _animConfig.fastForwardIntervalMs
+        : gameplaySettings.scaledBattleIntervalMs(
+            _animConfig.actionIntervalMs,
+          );
+    // 读秒环节拍:与每拍对齐（本拍内 0→1，供环平滑插值）。起手先扫第一拍，
+    // 之后每次 advance 回调里 forward(from:0) 重启，使 remaining 递减与环无缝续扫。
+    _beatCtrl
+      ..duration = Duration(milliseconds: interval)
+      ..forward(from: 0);
+    _playTimer = Timer.periodic(Duration(milliseconds: interval), (_) {
+      if (_disposed) return;
+      _beatCtrl.forward(from: 0);
+      final notifier = _ref.read(battleProvider.notifier);
+      if (rushing) {
+        notifier.advance();
+      } else {
+        notifier.advanceOneAction();
+      }
+    });
+  }
+
+  void toggleFastForward() {
+    _rebuild(() => _isFastForward = !_isFastForward);
+    if (_playTimer != null) startTimer();
+  }
+
+  /// H3 暂停:停 tick(startTimer 内 _isPaused gate 兜住所有重启路径)、冻结读秒环。
+  void pause() {
+    _rebuild(() => _isPaused = true);
+    _playTimer?.cancel();
+    _beatCtrl.stop();
+  }
+
+  /// 恢复:解除暂停,战斗未结束则重启自动播放。
+  void resume() {
+    _rebuild(() => _isPaused = false);
+    if (!_ref.read(battleProvider).isFinished) startTimer();
+  }
+
+  /// 战斗结束边沿:停 timer + 冻结读秒环节拍（结算 dialog 由 State 侧 postFrame 弹）。
+  void onBattleFinished() {
+    _playTimer?.cancel();
+    _beatCtrl.stop();
+  }
+
+  /// 玩法设置变更边沿:若 timer 在跑且战斗未结束 → 重启以应用新速度。
+  void onGameplaySettingsChanged() {
+    if (_playTimer != null && !_ref.read(battleProvider).isFinished) {
+      startTimer();
+    }
+  }
+
+  /// hit-stop：命中瞬间停播放 Timer，延后 [ms] 后复播。只动屏上播放节拍
+  /// （advance 结算确定不变，守 §5.5）；startTimer 内 _isPaused gate 兜住，
+  /// 暂停态不会被复活。
+  void applyHitStop(int ms) {
+    if (_isPaused) return;
+    _playTimer?.cancel();
+    _hitStopTimer?.cancel();
+    _hitStopTimer = Timer(Duration(milliseconds: ms), () {
+      if (!_disposed && !_ref.read(battleProvider).isFinished) startTimer();
+    });
+  }
+
   void dispose() {
     _disposed = true;
+    _playTimer?.cancel();
+    _hitStopTimer?.cancel();
+    _beatCtrl.dispose();
     for (final c in _attackControllers) {
       c.dispose();
     }

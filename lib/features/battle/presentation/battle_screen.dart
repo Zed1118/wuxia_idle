@@ -175,19 +175,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   // 命中特写 controller（大招暴击/击杀：缩放脉冲；快进/扫荡/拖招时抑制）。
   late final AnimationController _closeupCtrl;
 
-  // 读秒圆环节拍 controller（本拍内 0→1，供 CD/蓄力/破绽环平滑插值）。
-  // 随 _playTimer 每拍 forward(from:0) 对齐 remaining 递减，暂停/待发/结束时 stop 冻结。
-  late final AnimationController _beatCtrl;
-
   // VFX 反应原语（飘字/弹道/特效贴片/攻击-受击闪 controller）：BattleScreen
   // 拆分批一（Task 1）抽到 BattlePlaybackController，rebuild 用 setState 保持
   // 重绘粒度不变。
   late final BattlePlaybackController _playback;
-
-  // 实时 tick 定时器（常速: advanceOneAction() / 快进: advance() 驱动）
-  Timer? _playTimer;
-  bool _isFastForward = false; // initState 据 widget.startFastForward 置初值
-  bool _isPaused = false;
 
   // T1 指令台：当前"重点角色"槽位（玩家手动选定的基线）。敌人蓄力时由
   // [_effectiveFocus] 临时覆盖到可破招者，但不改写这个手动基线。
@@ -210,7 +201,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       GlobalKey<ImpactGlyphOverlayState>();
   final GlobalKey<ScreenFlashOverlayState> _screenFlashKey =
       GlobalKey<ScreenFlashOverlayState>();
-  Timer? _hitStopTimer;
   // 批次 2.4 当前重击屏震振幅（profile 分档；0=不抖）。复用既有 _shakeCtrl。
   double _impactShakeAmplitude = 0.0;
 
@@ -234,7 +224,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   @override
   void initState() {
     super.initState();
-    _isFastForward = widget.startFastForward;
     _playback = BattlePlaybackController(
       vsync: this,
       ref: ref,
@@ -253,16 +242,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         milliseconds: widget.animConfig.hitTier.closeupPulseMs,
       ),
     );
-    _beatCtrl = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: widget.animConfig.actionIntervalMs),
-    );
-    // 验收路由 startPaused:起手即暂停 → _startTimer 内 _isPaused gate 兜住
-    // 自动启动路径(autoStart=true 仍会 startBattle,但 timer 不启),战斗冻结
-    // 在 seed 初态等手动单步/继续。生产恒 false 不受影响。
-    if (widget.startPaused) {
-      _isPaused = true;
-    }
+    // _beatCtrl / _isPaused / _isFastForward 初值由 _playback 构造器据
+    // startPaused / startFastForward 处理（Task 2）。
     // Timer 不在 initState 同步启动:常规流程(stage/tower host)先挂本屏(空团)再在
     // postFrame 调 startBattle,由 build 内 `ref.listen` 的 empty→非空边沿起 timer。
     //
@@ -273,11 +254,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // 后保持冻结,由测试/验收显式推进),零回归。
     if (widget.autoStartOnMount) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || !widget.autoStart || _isPaused || _playTimer != null) {
+        if (!mounted ||
+            !widget.autoStart ||
+            _playback.isPaused ||
+            _playback.hasTimer) {
           return;
         }
         final s = ref.read(battleProvider);
-        if (s.leftTeam.isNotEmpty && !s.isFinished) _startTimer();
+        if (s.leftTeam.isNotEmpty && !s.isFinished) _playback.startTimer();
       });
     }
   }
@@ -291,69 +275,26 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   @override
   void dispose() {
-    _playTimer?.cancel();
-    _hitStopTimer?.cancel();
     _playback.dispose();
     _shakeCtrl.dispose();
     _closeupCtrl.dispose();
-    _beatCtrl.dispose();
     super.dispose();
   }
 
   // ─── Timer / advance 驱动 ────────────────────────────────────────────────
 
-  void _startTimer() {
-    // 任何显式启动都作废挂起的 hit-stop 复播（避免快进/暂停切换撞 hit-stop 时
-    // stale timer 二次 _startTimer 致节拍抖动）。
-    _hitStopTimer?.cancel();
-    _playTimer?.cancel();
-    if (_isPaused) {
-      _beatCtrl.stop(); // 暂停态冻结读秒环节拍在当前扫位。
-      return; // H3 暂停态:任何重启请求都不启动 timer。
-    }
-    // 快进态:玩家手动开了快进。
-    final rushing = _isFastForward;
-    final gameplaySettings = _currentGameplaySettings;
-    final interval = rushing
-        ? widget.animConfig.fastForwardIntervalMs
-        : gameplaySettings.scaledBattleIntervalMs(
-            widget.animConfig.actionIntervalMs,
-          );
-    // 读秒环节拍:与每拍对齐（本拍内 0→1，供环平滑插值）。起手先扫第一拍，
-    // 之后每次 advance 回调里 forward(from:0) 重启，使 remaining 递减与环无缝续扫。
-    _beatCtrl
-      ..duration = Duration(milliseconds: interval)
-      ..forward(from: 0);
-    _playTimer = Timer.periodic(Duration(milliseconds: interval), (_) {
-      if (!mounted) return;
-      _beatCtrl.forward(from: 0);
-      final notifier = ref.read(battleProvider.notifier);
-      if (rushing) {
-        notifier.advance();
-      } else {
-        notifier.advanceOneAction();
-      }
-    });
-  }
-
-  void _toggleFastForward() {
-    setState(() => _isFastForward = !_isFastForward);
-    if (_playTimer != null) _startTimer();
-  }
-
-  // H3 暂停:停 tick(_startTimer 内 _isPaused gate 兜住所有重启路径);
-  // 恢复时若战斗未结束则重启自动播放。
+  // H3 暂停:停 tick(_playback.startTimer 内 _isPaused gate 兜住所有重启路径);
+  // 恢复时若战斗未结束则重启自动播放。拍钟本体在 BattlePlaybackController（Task 2）;
+  // 此处只保留「待发态优先取消」的交互分流,其余委托 _playback.pause/resume。
   void _togglePause() {
     if (_pendingSkill != null) {
       _clearPending(); // 待发态下按暂停 = 取消待发(已恢复 tick),不额外进手动暂停
       return;
     }
-    setState(() => _isPaused = !_isPaused);
-    if (_isPaused) {
-      _playTimer?.cancel();
-      _beatCtrl.stop(); // 手动暂停冻结读秒环节拍。
-    } else if (!ref.read(battleProvider).isFinished) {
-      _startTimer();
+    if (_playback.isPaused) {
+      _playback.resume();
+    } else {
+      _playback.pause();
     }
   }
 
@@ -395,12 +336,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     if (action.attackResult != null && action.targetId != null) {
       final target = findCharacter(action.targetId!, s);
       if (target != null) {
-        _playback.spawnPopup(
-          target,
-          action.attackResult!,
-          actor,
-          playbackIntervalMs: _currentPlaybackIntervalMs,
-        );
+        _playback.spawnPopup(target, action.attackResult!, actor);
         if (actor != null) _playback.spawnTrail(actor, target, action);
         _playback.spawnBattleEffects(actor, target, action);
         if (!action.attackResult!.isDodged) {
@@ -482,10 +418,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
           );
         }
         // hit-stop + 镜头震：快进态跳过（守 2.3 时序 + 保快进顺滑）。
-        if (!_isFastForward) {
+        if (!_playback.isFastForward) {
           _impactShakeAmplitude = profile.shakeMagnitude;
           _shakeCtrl.forward(from: 0.0);
-          _applyHitStop(
+          _playback.applyHitStop(
             playbackHoldMs(
               isKey: BattleLog.isKeyAction(action, s),
               profileHitStopMs: profile.hitStopMs,
@@ -498,7 +434,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
     // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡抑制（守在线=离线）。
     // 独立于 profile != null 块：普攻击杀无 profile 也须触发特写。
-    if (!_isFastForward && hitClimaxFor(action, s) != HitClimax.none) {
+    if (!_playback.isFastForward && hitClimaxFor(action, s) != HitClimax.none) {
       _closeupCtrl.forward(from: 0.0).then((_) {
         if (mounted) _closeupCtrl.reverse();
       });
@@ -532,7 +468,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         );
       }
       // 抖动同 2.4：快进态跳过（保顺滑）。
-      if (!_isFastForward) {
+      if (!_playback.isFastForward) {
         _impactShakeAmplitude = cfg.heavy.shakeMagnitude;
         _shakeCtrl.forward(from: 0.0);
       }
@@ -577,27 +513,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       .maybeWhen(data: (s) => s, orElse: () => const GameplaySettings());
 
   bool get _reduceFlashing => _currentGameplaySettings.reduceFlashing;
-
-  /// 当前播放拍间隔(ms):快进态走 fastForwardIntervalMs,否则按玩家速度档缩放
-  /// actionIntervalMs(与 [_startTimer] 同源口径)。供飘字 spawn 时 clamp 时长,
-  /// 防快档(rapid/快进)固定 damagePopupMs 超拍致跨拍重叠。
-  int get _currentPlaybackIntervalMs => _isFastForward
-      ? widget.animConfig.fastForwardIntervalMs
-      : _currentGameplaySettings.scaledBattleIntervalMs(
-          widget.animConfig.actionIntervalMs,
-        );
-
-  /// hit-stop：命中瞬间停播放 Timer，延后 [ms] 后复播。只动屏上播放节拍
-  /// （advance 结算确定不变，守 §5.5）；_startTimer 内 _isPaused gate 兜住，
-  /// 暂停态不会被复活。
-  void _applyHitStop(int ms) {
-    if (_isPaused) return;
-    _playTimer?.cancel();
-    _hitStopTimer?.cancel();
-    _hitStopTimer = Timer(Duration(milliseconds: ms), () {
-      if (mounted && !ref.read(battleProvider).isFinished) _startTimer();
-    });
-  }
 
   // ─── 指令台（T1） ──────────────────────────────────────────────────────────
 
@@ -686,10 +601,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     setState(() {
       _pendingSkill = skill;
       _pendingCharId = characterId;
-      _isPaused = true;
     });
-    _playTimer?.cancel();
-    _beatCtrl.stop(); // 待发软暂停冻结读秒环节拍。
+    _playback.pause(); // 待发软暂停:置暂停 + 停 tick + 冻结读秒环节拍。
   }
 
   /// 待发态下点敌头像 → 对该敌出手 + 解除待发态 + 恢复 tick。
@@ -707,9 +620,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       _pendingSkill = null;
       _pendingCharId = null;
       _hoveredPendingEnemyId = null;
-      _isPaused = false;
     });
-    if (!ref.read(battleProvider).isFinished) _startTimer();
+    _playback.resume(); // 解除软暂停 + 战斗未结束则重启自动播放。
   }
 
   void _onPendingEnemyHover(int enemyId, bool hovering) {
@@ -897,13 +809,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
           wasEmpty &&
           next.leftTeam.isNotEmpty &&
           !next.isFinished) {
-        _startTimer();
+        _playback.startTimer();
       }
 
       // 2. 战斗结束：停 timer + 弹结算 dialog（postFrame 避免 build 期 setState）
       if ((prev?.result == null) && next.result != null) {
-        _playTimer?.cancel();
-        _beatCtrl.stop(); // 战斗结束冻结读秒环节拍。
+        _playback.onBattleFinished(); // 停 timer + 冻结读秒环节拍。
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _showResultDialog(next.result!, next);
         });
@@ -936,8 +847,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     });
 
     ref.listen(gameplaySettingsProvider, (_, _) {
-      final s = ref.read(battleProvider);
-      if (_playTimer != null && !s.isFinished) _startTimer();
+      _playback.onGameplaySettingsChanged();
     });
 
     // team 空时（startBattle 还未调用）渲染 placeholder
@@ -1024,7 +934,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             onToggleLog: () =>
                                 setState(() => _logOpen = !_logOpen),
                             onPause: _togglePause,
-                            isPaused: _isPaused,
+                            isPaused: _playback.isPaused,
                             onSurrender: widget.onSurrender == null
                                 ? null
                                 : _confirmSurrender,
@@ -1041,7 +951,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                   popups: _playback.popups,
                                   animConfig: widget.animConfig,
                                   chargeMaxTicks: chargeMaxTicks,
-                                  beat: _beatCtrl,
+                                  beat: _playback.beatCtrl,
                                   staggerWindowTicks: staggerWindowTicks,
                                   onPopupComplete: _playback.removePopup,
                                   hitFlashControllers:
@@ -1082,8 +992,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                 widget.allowPlayerIntervention,
                             onSelectFocus: _onSelectFocus,
                             onShowSkillInfo: _showSkillInfo,
-                            onFastForward: _toggleFastForward,
-                            isFastForward: _isFastForward,
+                            onFastForward: _playback.toggleFastForward,
+                            isFastForward: _playback.isFastForward,
                             onSkillTap: _onSkillTap,
                             pendingCharacterId:
                                 _pendingCharId ??
@@ -1091,7 +1001,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             pendingSkillId:
                                 _pendingSkill?.id ??
                                 widget.previewPendingSkillId,
-                            beat: _beatCtrl,
+                            beat: _playback.beatCtrl,
                             skillTargetLink: _skillTargetLink,
                           ),
                         ],
@@ -1116,7 +1026,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             // 并误触发恢复;此模式靠顶栏暂停/继续 + 单步按钮操作。
             // 待发态(_pendingActive)的软暂停不挂遮罩——否则会拦截点敌头像
             // 选目标的 tap;待发态靠再点同一技能 / 空白点击 / ESC 取消。
-            if (_isPaused &&
+            if (_playback.isPaused &&
                 !_pendingActive &&
                 state.result == null &&
                 !widget.startPaused)
