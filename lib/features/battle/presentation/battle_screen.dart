@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../domain/battle_log.dart';
 import '../domain/battle_state.dart';
 import '../domain/battle_stats.dart';
 import '../domain/battle_diagnosis.dart';
@@ -23,7 +22,6 @@ import '../../../shared/theme/colors.dart';
 import 'battle_atmosphere_overlay.dart';
 import 'battle_scene_background.dart';
 import 'guardian_ward_presentation.dart';
-import 'impact_profile.dart';
 import 'impact_glyph_overlay.dart';
 import 'screen_flash.dart';
 import 'ultimate_caption_overlay.dart';
@@ -32,7 +30,6 @@ import '../../cangjingge/presentation/cangjingge_screen.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
-import '../../settings/domain/gameplay_settings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 import '../domain/battle_skill_utils.dart';
@@ -43,17 +40,6 @@ import 'widgets/battle_field.dart';
 import 'widgets/battle_bottom_bar.dart';
 import 'widgets/battle_vfx_layers.dart';
 import 'widgets/battle_target_chips.dart';
-
-/// 常速播放命中后的顿帧时长：关键帧（暴击/大招/合一/破招/击杀）取
-/// `profileHitStopMs` 与 `keyMomentHoldMs` 的大者，否则用 `profileHitStopMs`。
-/// 纯函数便于单测（节奏手感本身走真机目检）。
-int playbackHoldMs({
-  required bool isKey,
-  required int profileHitStopMs,
-  required int keyMomentHoldMs,
-}) => isKey && keyMomentHoldMs > profileHitStopMs
-    ? keyMomentHoldMs
-    : profileHitStopMs;
 
 /// 3v3 战斗主屏（phase1_tasks T14 静态布局 + T15 动画/飘字 + T16 Riverpod 串接）。
 ///
@@ -294,140 +280,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     );
     if (ok == true) widget.onSurrender?.call();
   }
-
-  // ─── 动画 / 飘字 ─────────────────────────────────────────────────────────
-
-  void _playAction(BattleAction action, BattleState s) {
-    final actor = findCharacter(action.actorId, s);
-    if (actor != null) {
-      final key = slotKey(actor.teamSide, actor.slotIndex);
-      _playback.attackControllers[key].forward(from: 0.0);
-    }
-    if (action.attackResult != null && action.targetId != null) {
-      final target = findCharacter(action.targetId!, s);
-      if (target != null) {
-        _playback.spawnPopup(target, action.attackResult!, actor);
-        if (actor != null) _playback.spawnTrail(actor, target, action);
-        _playback.spawnBattleEffects(actor, target, action);
-        if (!action.attackResult!.isDodged) {
-          _playback.triggerHitFlash(target, action.attackResult!.isCritical);
-        }
-      }
-    }
-    if (isUltimateCaptionSkill(action.skill)) {
-      final climax = hitClimaxFor(action, s);
-      final isCrit = action.attackResult?.isCritical ?? false;
-      _playback.ultimateCaptionKey.currentState?.show(
-        action.skill!.name,
-        isEnemy: actor?.teamSide == 1,
-        fontSize: climax == HitClimax.ultimateCrit
-            ? widget.animConfig.hitTier.captionPeakSize.toDouble()
-            : 56,
-        glowBlur: isCrit ? widget.animConfig.hitTier.captionGlowBlur : 0,
-      );
-    }
-    // B3 破招:打断蓄力 → 弹「破！」题字(破招方暖金/敌方绛红,纯读 state)。
-    if (action.interrupted) {
-      _playback.ultimateCaptionKey.currentState?.show(
-        UiStrings.interruptCaption,
-        isEnemy: actor?.teamSide == 1,
-      );
-    }
-    final sfx = sfxForAction(
-      action: action,
-      isUltimate: isUltimateCaptionSkill(action.skill),
-    );
-    if (sfx != null) {
-      // 平A 按出手单位放固定变体音色（我方轻击系/敌方重击系）；其余槽位单文件。
-      if (sfx == SfxId.battleHit && actor != null) {
-        SoundManager.instance.playSfxPath(
-          battleHitAssetPath(
-            teamSide: actor.teamSide,
-            slotIndex: actor.slotIndex,
-          ),
-        );
-      } else {
-        SoundManager.instance.playSfx(sfx);
-      }
-    }
-    // ── 第七阶段批二 ① Boss 转阶段表现层（题字 + 闪白 + 立绘抖动）。 ──
-    // 转阶段动作无 attackResult，上面 2.4 重击路径对其天然 no-op；此处独立触发。
-    // 纯读 action 元数据，不写 BattleState、不参与结算（守 §5.4）。
-    _playback.playBossPhaseTransition(action, actor);
-
-    // ── 第七阶段批二 ② 会心题字（命中守方弱点流派）。纯读 action 元数据，不写
-    //    BattleState、不参与结算（守 §5.4）。「会心」2 字适配单字 glyph overlay。
-    //    优先级：本帧若同时有 profile 单字（斩/震/断）也只弹会心一字，避免两 glyph
-    //    同帧叠播（会心更能传达「打中弱点」语义）；flash/shake 仍由下方 profile 路径
-    //    照常触发。无 profile 的普攻弱点命中也能弹（下方块 no-op，此处兜底）。
-    final weaknessGlyphShown = action.weaknessHit;
-    if (weaknessGlyphShown) {
-      _playback.impactGlyphKey.currentState?.show(
-        UiStrings.weaknessHitGlyph,
-        isEnemy: actor?.teamSide == 1,
-      );
-    }
-
-    // ── 批次 2.4 打击感表现层（重击分级）。纯表现层，不写 state。 ──
-    final cfg = _impactConfigOrNull();
-    if (cfg != null) {
-      final profile = impactProfileFor(action, cfg);
-      if (profile != null) {
-        final isEnemy = actor?.teamSide == 1;
-        // 会心已占用本帧 glyph 通道 → profile 单字跳过，不双弹（flash/shake 照常）。
-        if (profile.glyph != null && !weaknessGlyphShown) {
-          _playback.impactGlyphKey.currentState?.show(
-            profile.glyph!,
-            isEnemy: isEnemy,
-          );
-        }
-        if (!_reduceFlashing) {
-          _playback.screenFlashKey.currentState?.flash(
-            profile.flashStrength,
-            // profile 非空 ⇒ attackResult 非空（见 impactProfileFor 的 null 契约）。
-            color: action.attackResult!.isCritical
-                ? WuxiaColors.gangMeng
-                : Colors.white,
-          );
-        }
-        // hit-stop + 镜头震：快进态跳过（守 2.3 时序 + 保快进顺滑）。
-        if (!_playback.isFastForward) {
-          _playback.impactShakeAmplitude = profile.shakeMagnitude;
-          _playback.shakeCtrl.forward(from: 0.0);
-          _playback.applyHitStop(
-            playbackHoldMs(
-              isKey: BattleLog.isKeyAction(action, s),
-              profileHitStopMs: profile.hitStopMs,
-              keyMomentHoldMs: widget.animConfig.keyMomentHoldMs,
-            ),
-          );
-        }
-      }
-    }
-
-    // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡抑制（守在线=离线）。
-    // 独立于 profile != null 块：普攻击杀无 profile 也须触发特写。
-    if (!_playback.isFastForward && hitClimaxFor(action, s) != HitClimax.none) {
-      _playback.closeupCtrl.forward(from: 0.0).then((_) {
-        if (mounted) _playback.closeupCtrl.reverse();
-      });
-    }
-  }
-
-  /// 读打击感配置；GameRepository 未初始化（轻量 widget 测）时返 null 跳过。
-  ImpactFeedbackConfig? _impactConfigOrNull() {
-    try {
-      return ref.read(numbersConfigProvider).combat.impactFeedback;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  GameplaySettings get _currentGameplaySettings => ref
-      .read(gameplaySettingsProvider)
-      .maybeWhen(data: (s) => s, orElse: () => const GameplaySettings());
-
-  bool get _reduceFlashing => _currentGameplaySettings.reduceFlashing;
 
   // ─── 指令台（T1） ──────────────────────────────────────────────────────────
 
@@ -740,7 +592,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       if (prev != null && next.actionLog.length > prev.actionLog.length) {
         final newActions = next.actionLog.sublist(prev.actionLog.length);
         for (final a in newActions) {
-          _playAction(a, next);
+          _playback.playAction(a, next);
         }
       }
 

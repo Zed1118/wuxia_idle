@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../domain/battle_log.dart';
 import '../domain/battle_state.dart';
 import '../domain/battle_skill_utils.dart';
 import '../domain/damage_calculator.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/numbers_config.dart';
 import '../../../core/application/battle_providers.dart';
+import '../../../shared/audio/audio_assets.dart';
+import '../../../shared/audio/sound_manager.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
@@ -18,18 +21,21 @@ import 'battle_vfx_entries.dart';
 import 'boss_phase_presentation.dart';
 import 'damage_popup.dart';
 import 'impact_glyph_overlay.dart';
+import 'impact_profile.dart';
 import 'screen_flash.dart';
 import 'ultimate_caption_overlay.dart';
 
-/// BattleScreen 拆分批一（Task 1）：VFX 反应原语——命中后的飘字 / 弹道 / MJ 特效
-/// 贴片 / 受击闪。从 `_BattleScreenState` 近似原样搬迁，机制不变：
+/// BattleScreen 表现层播放控制器：从 `_BattleScreenState` 抽离的战斗屏动画/播放
+/// 编排全体。持有并驱动 —— VFX 反应原语（飘字 / 弹道 / MJ 特效贴片 / 受击闪，
+/// Task 1）、拍钟调度（beat/timer/hit-stop/pause/fast-forward，Task 2）、overlay
+/// 编排 / 屏震（shake/closeup/overlay keys，Task 3）、以及 actionLog 边沿的
+/// [playAction] 本体（Task 4）。机制不变：
 /// - 不用 `ChangeNotifier`，由 [rebuild]（State 的 `setState`）驱动重绘粒度，
-///   与搬迁前完全一致的重绘粒度。
+///   与抽离前完全一致的重绘粒度。
 /// - `_disposed` 替代 State 的 `mounted` 判断（AnimationController 状态回调场景）。
 ///
-/// Task 2（拍/计时器）、Task 3（overlay 编排）、Task 4（`_playAction` 本体）
-/// 陆续接管更多职责；本任务只搬「反应原语」，不动 beat/timer/hitstop/overlay-keys/
-/// shake/closeup/`_playAction`。
+/// State 侧仅保留 build props 透传（读公开 getter）+ 交互分流（暂停/待发/单步）+
+/// 生命周期（构造 / dispose）+ 结算 dialog。
 class BattlePlaybackController {
   BattlePlaybackController({
     required TickerProvider vsync,
@@ -112,7 +118,7 @@ class BattlePlaybackController {
 
   // 批次 2.4 当前重击屏震振幅（profile 分档；0=不抖）。复用既有 _shakeCtrl。
   // 公开字段（非 getter/setter 包装,避免 unnecessary_getters_setters lint）：
-  // State 侧 `_playAction`（Task 4 前）直接读写触发屏震振幅。
+  // [playAction] 内直接写触发屏震振幅，build 内 AnimatedBuilder 读取。
   double impactShakeAmplitude = 0.0;
 
   // B2 大招题字 overlay 的 key(命令式 show)
@@ -151,7 +157,7 @@ class BattlePlaybackController {
   bool get isFastForward => _isFastForward;
   bool get hasTimer => _playTimer != null;
 
-  // overlay 编排 / 屏震只读 getter（供仍在 State 的 `_playAction`/build 读取）。
+  // overlay 编排 / 屏震只读 getter（供 build 读取；[playAction] 内直接用私有字段）。
   AnimationController get shakeCtrl => _shakeCtrl;
   AnimationController get closeupCtrl => _closeupCtrl;
   GlobalKey<UltimateCaptionOverlayState> get ultimateCaptionKey =>
@@ -159,17 +165,13 @@ class BattlePlaybackController {
   GlobalKey<ImpactGlyphOverlayState> get impactGlyphKey => _impactGlyphKey;
   GlobalKey<ScreenFlashOverlayState> get screenFlashKey => _screenFlashKey;
 
-  // 临时副本:Task 4 全移完后 State 侧副本删除
   GameplaySettings get _currentGameplaySettings => _ref
       .read(gameplaySettingsProvider)
       .maybeWhen(data: (s) => s, orElse: () => const GameplaySettings());
 
-  // 临时副本:Task 4 全移完后 State 侧副本删除
   bool get _reduceFlashing => _currentGameplaySettings.reduceFlashing;
 
-  // 临时副本(Task 3 新增依赖，同 _currentGameplaySettings/_reduceFlashing 的
-  // "State 侧仍有一份，Task 4 全移完后删除" 套路):读打击感配置；GameRepository
-  // 未初始化（轻量 widget 测）时返 null 跳过。
+  /// 读打击感配置；GameRepository 未初始化（轻量 widget 测）时返 null 跳过。
   ImpactFeedbackConfig? _impactConfigOrNull() {
     try {
       return _ref.read(numbersConfigProvider).combat.impactFeedback;
@@ -188,7 +190,7 @@ class BattlePlaybackController {
         );
 
   /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
-  void triggerHitFlash(BattleCharacter target, bool isCritical) {
+  void _triggerHitFlash(BattleCharacter target, bool isCritical) {
     if (_reduceFlashing) return;
     final key = slotKey(target.teamSide, target.slotIndex);
     _rebuild(() {
@@ -198,7 +200,7 @@ class BattlePlaybackController {
   }
 
   /// 弹道：攻击者 slot → 目标 slot 的笔触线（流派色；大招更粗）。命令式 spawn。
-  void spawnTrail(
+  void _spawnTrail(
     BattleCharacter actor,
     BattleCharacter target,
     BattleAction action,
@@ -239,7 +241,7 @@ class BattlePlaybackController {
     ctrl.forward(from: 0.0);
   }
 
-  void spawnBattleEffects(
+  void _spawnBattleEffects(
     BattleCharacter? actor,
     BattleCharacter target,
     BattleAction action,
@@ -253,7 +255,7 @@ class BattlePlaybackController {
     );
 
     if (result.isDodged) {
-      spawnEffect(
+      _spawnEffect(
         assetPath: WuxiaUi.fxDodgeShadow,
         centerFrac: targetFrac,
         size: 230,
@@ -265,7 +267,7 @@ class BattlePlaybackController {
 
     if (actor != null) {
       final isUltimate = isUltimateCaptionSkill(action.skill);
-      spawnEffect(
+      _spawnEffect(
         assetPath: _schoolFx(actor.school, isUltimate: isUltimate),
         centerFrac: targetFrac,
         size: isUltimate ? 360 : 250,
@@ -276,7 +278,7 @@ class BattlePlaybackController {
     }
 
     if (result.isCritical) {
-      spawnEffect(
+      _spawnEffect(
         assetPath: WuxiaUi.fxCriticalHit,
         centerFrac: targetFrac,
         size: 220,
@@ -284,7 +286,7 @@ class BattlePlaybackController {
       );
     }
     if (result.defenseRate >= 0.22) {
-      spawnEffect(
+      _spawnEffect(
         assetPath: WuxiaUi.fxArmorBreak,
         centerFrac: targetFrac,
         size: 210,
@@ -292,7 +294,7 @@ class BattlePlaybackController {
       );
     }
     if (result.appliedEffects.contains('internal_injury')) {
-      spawnEffect(
+      _spawnEffect(
         assetPath: WuxiaUi.fxInternalInjury,
         centerFrac: targetFrac,
         size: 230,
@@ -312,7 +314,7 @@ class BattlePlaybackController {
     };
   }
 
-  void spawnEffect({
+  void _spawnEffect({
     required String assetPath,
     required Offset centerFrac,
     required double size,
@@ -352,7 +354,7 @@ class BattlePlaybackController {
   /// 飘字：命中目标 slot spawn 一条飘字（伤害数字/闪避/暴击样式）。飘字时长按
   /// [_currentPlaybackIntervalMs] clamp，防快档（rapid/快进）固定 damagePopupMs
   /// 超拍致跨拍重叠。
-  void spawnPopup(
+  void _spawnPopup(
     BattleCharacter target,
     AttackResult result,
     BattleCharacter? attacker,
@@ -367,7 +369,7 @@ class BattlePlaybackController {
     _rebuild(() {
       (_popups[key] ??= []).add(entry);
     });
-    // 屏震触发已上移至 _playAction（批次 2.4 分档屏震集中触发）。
+    // 屏震触发已上移至 [playAction]（批次 2.4 分档屏震集中触发）。
   }
 
   DamagePopupData _buildPopupData(
@@ -484,7 +486,7 @@ class BattlePlaybackController {
   /// hit-stop：命中瞬间停播放 Timer，延后 [ms] 后复播。只动屏上播放节拍
   /// （advance 结算确定不变，守 §5.5）；startTimer 内 _isPaused gate 兜住，
   /// 暂停态不会被复活。
-  void applyHitStop(int ms) {
+  void _applyHitStop(int ms) {
     if (_isPaused) return;
     _playTimer?.cancel();
     _hitStopTimer?.cancel();
@@ -498,9 +500,7 @@ class BattlePlaybackController {
   /// 不另起平行系统。纯读 action 元数据，不写 BattleState（守 §5.4）；后台挂机
   /// 不进此屏播放路径（守 §5.5）。
   ///
-  /// 临时 PUBLIC（Task 3）：仍由 State 侧保留的 `_playAction` 调用；Task 4 全移完
-  /// `_playAction` 后收回 private。
-  void playBossPhaseTransition(BattleAction action, BattleCharacter? actor) {
+  void _playBossPhaseTransition(BattleAction action, BattleCharacter? actor) {
     if (action.bossPhaseTransitionTo == null) return;
     final bossName = actor?.name ?? '';
     final title = bossPhaseTitleFor(action, bossName);
@@ -536,7 +536,7 @@ class BattlePlaybackController {
   /// hit-stop / 抖动（非打击命中，护法之死已由其自身死亡动画表现）。
   /// 纯读 [boss] 元数据，不写 BattleState（守 §5.4）。
   ///
-  /// 临时 PUBLIC（Task 3）：仍由 build 内 `ref.listen` 边沿调用；Task 4 收回 private。
+  /// PUBLIC：由 build 内 `ref.listen` 的护法结界破界边沿调用。
   void playGuardianWardBreak(BattleCharacter boss) {
     final isEnemy = boss.teamSide == 1;
     // 破界题字抢占中央焦点:最后一击击杀护法的「斩」字形与「结界破!」同 tick 触发,
@@ -554,6 +554,127 @@ class BattlePlaybackController {
       cfg.heavy.flashStrength,
       color: WuxiaColors.internalForce,
     );
+  }
+
+  /// actionLog 新增边沿:据单条 [action] 触发本屏所有表现层反应(攻击动画/飘字/
+  /// 弹道/特效/受击闪/大招题字/破招/SFX/Boss 转阶段/会心/打击感分级/命中特写)。
+  /// 纯读 [action] + [s] 元数据,不写 BattleState(守 §5.4)。State 侧 build 内
+  /// `ref.listen` 逐条转发。
+  void playAction(BattleAction action, BattleState s) {
+    final actor = findCharacter(action.actorId, s);
+    if (actor != null) {
+      final key = slotKey(actor.teamSide, actor.slotIndex);
+      _attackControllers[key].forward(from: 0.0);
+    }
+    if (action.attackResult != null && action.targetId != null) {
+      final target = findCharacter(action.targetId!, s);
+      if (target != null) {
+        _spawnPopup(target, action.attackResult!, actor);
+        if (actor != null) _spawnTrail(actor, target, action);
+        _spawnBattleEffects(actor, target, action);
+        if (!action.attackResult!.isDodged) {
+          _triggerHitFlash(target, action.attackResult!.isCritical);
+        }
+      }
+    }
+    if (isUltimateCaptionSkill(action.skill)) {
+      final climax = hitClimaxFor(action, s);
+      final isCrit = action.attackResult?.isCritical ?? false;
+      _ultimateCaptionKey.currentState?.show(
+        action.skill!.name,
+        isEnemy: actor?.teamSide == 1,
+        fontSize: climax == HitClimax.ultimateCrit
+            ? _animConfig.hitTier.captionPeakSize.toDouble()
+            : 56,
+        glowBlur: isCrit ? _animConfig.hitTier.captionGlowBlur : 0,
+      );
+    }
+    // B3 破招:打断蓄力 → 弹「破！」题字(破招方暖金/敌方绛红,纯读 state)。
+    if (action.interrupted) {
+      _ultimateCaptionKey.currentState?.show(
+        UiStrings.interruptCaption,
+        isEnemy: actor?.teamSide == 1,
+      );
+    }
+    final sfx = sfxForAction(
+      action: action,
+      isUltimate: isUltimateCaptionSkill(action.skill),
+    );
+    if (sfx != null) {
+      // 平A 按出手单位放固定变体音色（我方轻击系/敌方重击系）；其余槽位单文件。
+      if (sfx == SfxId.battleHit && actor != null) {
+        SoundManager.instance.playSfxPath(
+          battleHitAssetPath(
+            teamSide: actor.teamSide,
+            slotIndex: actor.slotIndex,
+          ),
+        );
+      } else {
+        SoundManager.instance.playSfx(sfx);
+      }
+    }
+    // ── 第七阶段批二 ① Boss 转阶段表现层（题字 + 闪白 + 立绘抖动）。 ──
+    // 转阶段动作无 attackResult，上面 2.4 重击路径对其天然 no-op；此处独立触发。
+    // 纯读 action 元数据，不写 BattleState、不参与结算（守 §5.4）。
+    _playBossPhaseTransition(action, actor);
+
+    // ── 第七阶段批二 ② 会心题字（命中守方弱点流派）。纯读 action 元数据，不写
+    //    BattleState、不参与结算（守 §5.4）。「会心」2 字适配单字 glyph overlay。
+    //    优先级：本帧若同时有 profile 单字（斩/震/断）也只弹会心一字，避免两 glyph
+    //    同帧叠播（会心更能传达「打中弱点」语义）；flash/shake 仍由下方 profile 路径
+    //    照常触发。无 profile 的普攻弱点命中也能弹（下方块 no-op，此处兜底）。
+    final weaknessGlyphShown = action.weaknessHit;
+    if (weaknessGlyphShown) {
+      _impactGlyphKey.currentState?.show(
+        UiStrings.weaknessHitGlyph,
+        isEnemy: actor?.teamSide == 1,
+      );
+    }
+
+    // ── 批次 2.4 打击感表现层（重击分级）。纯表现层，不写 state。 ──
+    final cfg = _impactConfigOrNull();
+    if (cfg != null) {
+      final profile = impactProfileFor(action, cfg);
+      if (profile != null) {
+        final isEnemy = actor?.teamSide == 1;
+        // 会心已占用本帧 glyph 通道 → profile 单字跳过，不双弹（flash/shake 照常）。
+        if (profile.glyph != null && !weaknessGlyphShown) {
+          _impactGlyphKey.currentState?.show(
+            profile.glyph!,
+            isEnemy: isEnemy,
+          );
+        }
+        if (!_reduceFlashing) {
+          _screenFlashKey.currentState?.flash(
+            profile.flashStrength,
+            // profile 非空 ⇒ attackResult 非空（见 impactProfileFor 的 null 契约）。
+            color: action.attackResult!.isCritical
+                ? WuxiaColors.gangMeng
+                : Colors.white,
+          );
+        }
+        // hit-stop + 镜头震：快进态跳过（守 2.3 时序 + 保快进顺滑）。
+        if (!_isFastForward) {
+          impactShakeAmplitude = profile.shakeMagnitude;
+          _shakeCtrl.forward(from: 0.0);
+          _applyHitStop(
+            playbackHoldMs(
+              isKey: BattleLog.isKeyAction(action, s),
+              profileHitStopMs: profile.hitStopMs,
+              keyMomentHoldMs: _animConfig.keyMomentHoldMs,
+            ),
+          );
+        }
+      }
+    }
+
+    // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡抑制（守在线=离线）。
+    // 独立于 profile != null 块：普攻击杀无 profile 也须触发特写。
+    if (!_isFastForward && hitClimaxFor(action, s) != HitClimax.none) {
+      _closeupCtrl.forward(from: 0.0).then((_) {
+        if (!_disposed) _closeupCtrl.reverse();
+      });
+    }
   }
 
   void dispose() {
