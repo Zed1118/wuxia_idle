@@ -26,10 +26,9 @@ import 'screen_flash.dart';
 import 'ultimate_caption_overlay.dart';
 
 /// BattleScreen 表现层播放控制器：从 `_BattleScreenState` 抽离的战斗屏动画/播放
-/// 编排全体。持有并驱动 —— VFX 反应原语（飘字 / 弹道 / MJ 特效贴片 / 受击闪，
-/// Task 1）、拍钟调度（beat/timer/hit-stop/pause/fast-forward，Task 2）、overlay
-/// 编排 / 屏震（shake/closeup/overlay keys，Task 3）、以及 actionLog 边沿的
-/// [playAction] 本体（Task 4）。机制不变：
+/// 编排全体。持有并驱动 —— VFX 反应原语（飘字 / 弹道 / MJ 特效贴片 / 受击闪）、
+/// 拍钟调度（beat/timer/hit-stop/pause/fast-forward）、overlay 编排 / 屏震
+/// （shake/closeup/overlay keys）、以及 actionLog 边沿的 [playAction] 本体。机制不变：
 /// - 不用 `ChangeNotifier`，由 [rebuild]（State 的 `setState`）驱动重绘粒度，
 ///   与抽离前完全一致的重绘粒度。
 /// - `_disposed` 替代 State 的 `mounted` 判断（AnimationController 状态回调场景）。
@@ -42,7 +41,7 @@ class BattlePlaybackController {
     required WidgetRef ref,
     required void Function(VoidCallback fn) rebuild,
     required AnimationNumbers animConfig,
-    // 拍钟调度初值(Task 2):startPaused 起手即暂停;startFastForward 起手即快进。
+    // 拍钟调度初值:startPaused 起手即暂停;startFastForward 起手即快进。
     bool startPaused = false,
     bool startFastForward = false,
   }) : _vsync = vsync,
@@ -94,7 +93,7 @@ class BattlePlaybackController {
   final AnimationNumbers _animConfig;
   bool _disposed = false;
 
-  // ─── 拍钟调度（Task 2：beat/timer/hit-stop/pause/fast-forward） ──────────────
+  // ─── 拍钟调度字段（beat/timer/hit-stop/pause/fast-forward） ──────────────────
   // 读秒圆环节拍 controller（构造体内据 _animConfig 初始化）。
   late final AnimationController _beatCtrl;
   // 实时 tick 定时器（常速: advanceOneAction() / 快进: advance() 驱动）。
@@ -109,7 +108,7 @@ class BattlePlaybackController {
   // 受击闪颜色（slotKey→暴击绛红/普攻白），spawn 时写入，纯 UI state。
   final Map<int, Color> _hitFlashColors = {};
 
-  // ─── overlay 编排 / 屏震（Task 3） ──────────────────────────────────────────
+  // ─── overlay 编排 / 屏震字段 ────────────────────────────────────────────────
   // 屏震 controller（暴击时触发）
   late final AnimationController _shakeCtrl;
 
@@ -416,7 +415,7 @@ class BattlePlaybackController {
     return teamSide == 0 ? s.leftTeam.length : s.rightTeam.length;
   }
 
-  // ─── 拍钟调度（Task 2） ─────────────────────────────────────────────────────
+  // ─── 拍钟调度 ───────────────────────────────────────────────────────────────
 
   void startTimer() {
     // 任何显式启动都作废挂起的 hit-stop 复播（避免快进/暂停切换撞 hit-stop 时
