@@ -47,6 +47,22 @@
 - 塔节点条第30层(当前层)被面板右缘裁半、chapter_list 第2章「未至」徽章裁半、装备图鉴 2 张抠图残留(白底块/直线切割碎片)、encounter/skill 详情面板未限宽右半大片空白。
 - 标点半/全角混用(离线残毒/奇遇招/藏卷阁副标题/character_growth 等 ~6处)、术语不统一(悟 vs 悟性、周目 vs 轮回)、名字+身份徽章重复显示(祖师/门派)。
 
+## ★ 复核 pass(2026-07-06 05:xx · 主会话逐条证伪 B 类)
+
+> 静态套件用 **VISUAL_ROUTE debug 路由**,部分路由 seed 假数据 / 裸渲染剥导航 chrome。
+> 逐条查 `visual_route_host.dart` + 生产容器后,B 类断链**过半是 harness 假象非生产 bug**。防幻觉:改前必证伪。
+
+| # | 原判 | 复核结论 | 依据 |
+|---|---|---|---|
+| B1 奇遇录 raw defId | P1 待复现 | **❌ 误报(harness stub)** | `visual_route_host.dart:740` 故意 `titles={d.id:'（已际遇）${d.id}'}` 当占位;真 app 走事件 yaml,详情屏正确显「暗巷一影」 |
+| B7 技能库无返回入口 | P2 待复现 | **❌ 误报(剥 chrome)** | 真容器 `baike_screen.dart:35-43` 有 Scaffold+AppBar+TabBar(含返回);visual 路由 `_buildSkillCodexVisual` 裸渲染 tab 供干净截图 |
+| 奇遇录无 AppBar(批5 P3) | P3 | **❌ 误报(同 B7)** | 同 baike_screen 承载,有 AppBar |
+| B6 关卡双 Boss 节点 | P2 待复核 | **✅ 非 bug(数据如实)** | stages.yaml `stage_01_04` + `stage_01_05` **都** `isBossStage:true`;节点忠实渲染,「每章仅1 Boss」是错误假设 |
+| B2 商店缺图/暗图标 | P1 | **✅ 真(保留)** | shop 路由用真 `ShopScreen()` 仅种银两,无假货架 → 真商品缺 icon 走 errorBuilder「缺图」 |
+| B4 默契进度条空填充 | P2 待复现 | **⚠️ 疑真(需 widget 复核)** | equipment_detail 路由 seed `battleCount:1240`(数据在),文案显 62% 但条空 → 填充绑定存疑,非假数据问题 |
+
+**A 类(字体不清晰)不受影响**:对比度/色板由 widget 渲染决定,与路由 seed 无关,静态截图如实反映生产观感——**A1 浅底淡金字 11 屏仍全部有效**。
+
 ## 建议(留拍板 · 分三档)
 
 1. **安全批量修(推荐先做)**:A1 浅底淡金字→`WuxiaUi.ink/muted` 全扫(单一根因、参照物明确、纯色 token 替换、有 `audit_paper_text_contrast_test` 门禁兜底);标点全角统一。
