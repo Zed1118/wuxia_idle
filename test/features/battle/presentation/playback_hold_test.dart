@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
+import 'package:wuxia_idle/features/battle/presentation/impact_profile.dart';
 
 void main() {
   test('非关键帧 → 用 profile hitStop', () {

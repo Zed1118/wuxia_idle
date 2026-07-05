@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/features/battle/presentation/battle_screen.dart';
+import 'package:wuxia_idle/features/battle/domain/battle_skill_utils.dart';
 
 /// `slotVerticalFraction` 纯函数测(2026-06-25「1 怪居中 / 2 怪上下对称」)。
 ///

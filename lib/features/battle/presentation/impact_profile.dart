@@ -65,6 +65,17 @@ ImpactProfile? impactProfileFor(BattleAction action, ImpactFeedbackConfig cfg) {
   );
 }
 
+/// 常速播放命中后的顿帧时长：关键帧（暴击/大招/合一/破招/击杀）取
+/// `profileHitStopMs` 与 `keyMomentHoldMs` 的大者，否则用 `profileHitStopMs`。
+/// 纯函数便于单测（节奏手感本身走真机目检）。
+int playbackHoldMs({
+  required bool isKey,
+  required int profileHitStopMs,
+  required int keyMomentHoldMs,
+}) => isKey && keyMomentHoldMs > profileHitStopMs
+    ? keyMomentHoldMs
+    : profileHitStopMs;
+
 /// 命中峰值类型（特写触发源）。none=不特写。
 enum HitClimax { none, ultimateCrit, kill }
 

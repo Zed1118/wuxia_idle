@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../domain/battle_log.dart';
 import '../domain/battle_state.dart';
 import '../domain/battle_stats.dart';
 import '../domain/battle_diagnosis.dart';
-import '../domain/damage_calculator.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/numbers_config.dart';
@@ -21,13 +19,9 @@ import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/theme/colors.dart';
-import '../../../shared/theme/wuxia_tokens.dart';
 import 'battle_atmosphere_overlay.dart';
 import 'battle_scene_background.dart';
-import 'damage_popup.dart';
-import 'boss_phase_presentation.dart';
 import 'guardian_ward_presentation.dart';
-import 'impact_profile.dart';
 import 'impact_glyph_overlay.dart';
 import 'screen_flash.dart';
 import 'ultimate_caption_overlay.dart';
@@ -36,28 +30,16 @@ import '../../cangjingge/presentation/cangjingge_screen.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../inventory/presentation/inventory_screen.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
-import '../../settings/domain/gameplay_settings.dart';
 import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 import '../domain/battle_skill_utils.dart';
-import 'battle_vfx_entries.dart';
+import 'battle_playback_controller.dart';
 import 'widgets/battle_banners.dart';
 import 'widgets/battle_header.dart';
 import 'widgets/battle_field.dart';
 import 'widgets/battle_bottom_bar.dart';
 import 'widgets/battle_vfx_layers.dart';
 import 'widgets/battle_target_chips.dart';
-
-/// 常速播放命中后的顿帧时长：关键帧（暴击/大招/合一/破招/击杀）取
-/// `profileHitStopMs` 与 `keyMomentHoldMs` 的大者，否则用 `profileHitStopMs`。
-/// 纯函数便于单测（节奏手感本身走真机目检）。
-int playbackHoldMs({
-  required bool isKey,
-  required int profileHitStopMs,
-  required int keyMomentHoldMs,
-}) => isKey && keyMomentHoldMs > profileHitStopMs
-    ? keyMomentHoldMs
-    : profileHitStopMs;
 
 /// 3v3 战斗主屏（phase1_tasks T14 静态布局 + T15 动画/飘字 + T16 Riverpod 串接）。
 ///
@@ -71,17 +53,9 @@ int playbackHoldMs({
 ///
 /// [animConfig] 默认 [AnimationNumbers.defaults]（与 numbers.yaml 同值）；
 /// 测试可注入更短时序加速。
-/// 队列内某槽的竖直比例坐标(0..1),按**实际队伍人数** [teamSize] 均分:
-///   1 人 → 0.5(居中);2 人 → 0.25 / 0.75(上下对称);3 人 → 1/6,3/6,5/6(原行为)。
 ///
-/// `TeamColumn` 的视觉排布与 `_slotFrac` 的弹道坐标共用此式,保证头像位置与
-/// 弹道/特效落点一致(分母从旧的硬编码 3 改为 teamSize 是本次「1 怪居中 / 2 怪对称」
-/// 的唯一改动点)。teamSize ≤ 0 兜底 0.5 防除零。纯函数,单测直接验证。
-double slotVerticalFraction(int slotIndex, int teamSize) {
-  if (teamSize <= 0) return 0.5;
-  return (slotIndex + 0.5) / teamSize;
-}
-
+/// 竖直槽位比例坐标 `slotVerticalFraction` 已移到
+/// `domain/battle_skill_utils.dart`（纯 Dart 数学，破 controller↔screen 循环 import）。
 class BattleScreen extends ConsumerStatefulWidget {
   final AnimationNumbers animConfig;
 
@@ -180,40 +154,11 @@ class BattleScreen extends ConsumerStatefulWidget {
 
 class _BattleScreenState extends ConsumerState<BattleScreen>
     with TickerProviderStateMixin {
-  // 6 个攻击动画 controller（slotKey = teamSide*3 + slotIndex）
-  late final List<AnimationController> _attackControllers;
-
-  // 屏震 controller（暴击时触发）
-  late final AnimationController _shakeCtrl;
-
-  // 命中特写 controller（大招暴击/击杀：缩放脉冲；快进/扫荡/拖招时抑制）。
-  late final AnimationController _closeupCtrl;
-
-  // 读秒圆环节拍 controller（本拍内 0→1，供 CD/蓄力/破绽环平滑插值）。
-  // 随 _playTimer 每拍 forward(from:0) 对齐 remaining 递减，暂停/待发/结束时 stop 冻结。
-  late final AnimationController _beatCtrl;
-
-  // 6 个受击闪 controller（slotKey 索引；静止 value=1.0 → 不显，命中 forward(from:0) 淡出）。
-  late final List<AnimationController> _hitFlashControllers;
-  // 受击闪颜色（slotKey→暴击绛红/普攻白），spawn 时写入，纯 UI state。
-  final Map<int, Color> _hitFlashColors = {};
-
-  // 活跃弹道（命令式 spawn，完成后移除）。本地 state，不污染 BattleState。
-  final List<TrailEntry> _activeTrails = [];
-  int _nextTrailId = 0;
-
-  // 活跃 MJ 特效贴片（命中/暴击/闪避/流派招式）。
-  final List<EffectEntry> _activeEffects = [];
-  int _nextEffectId = 0;
-
-  // 飘字状态：slotKey → 活跃飘字列表
-  final Map<int, List<PopupEntry>> _popups = {};
-  int _nextPopupId = 0;
-
-  // 实时 tick 定时器（常速: advanceOneAction() / 快进: advance() 驱动）
-  Timer? _playTimer;
-  bool _isFastForward = false; // initState 据 widget.startFastForward 置初值
-  bool _isPaused = false;
+  // VFX 反应原语（飘字/弹道/特效贴片/攻击-受击闪 controller，Task 1）+ 拍钟调度
+  // （beat/timer/hit-stop/pause/fast-forward，Task 2）+ overlay 编排/屏震
+  // （shake/closeup/overlay keys，Task 3）：均已抽到 BattlePlaybackController，
+  // rebuild 用 setState 保持重绘粒度不变。
+  late final BattlePlaybackController _playback;
 
   // T1 指令台：当前"重点角色"槽位（玩家手动选定的基线）。敌人蓄力时由
   // [_effectiveFocus] 临时覆盖到可破招者，但不改写这个手动基线。
@@ -226,19 +171,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   // 战斗结算 dialog 已显示标志，避免 result 字段连续触发多次弹窗
   bool _resultDialogShown = false;
-
-  // B2 大招题字 overlay 的 key(命令式 show)
-  final GlobalKey<UltimateCaptionOverlayState> _ultimateCaptionKey =
-      GlobalKey<UltimateCaptionOverlayState>();
-
-  // 批次 2.4 打击感 overlay key + hit-stop 计时器（命令式触发，纯表现层）。
-  final GlobalKey<ImpactGlyphOverlayState> _impactGlyphKey =
-      GlobalKey<ImpactGlyphOverlayState>();
-  final GlobalKey<ScreenFlashOverlayState> _screenFlashKey =
-      GlobalKey<ScreenFlashOverlayState>();
-  Timer? _hitStopTimer;
-  // 批次 2.4 当前重击屏震振幅（profile 分档；0=不抖）。复用既有 _shakeCtrl。
-  double _impactShakeAmplitude = 0.0;
 
   // ─── 两段点选 tap 释放 ───────────────────────────────────────────────────
   // 待发态(纯 UI,不写 BattleState):已点选待发的单体技与其角色 charId。
@@ -260,42 +192,16 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   @override
   void initState() {
     super.initState();
-    _isFastForward = widget.startFastForward;
-    _attackControllers = List.generate(
-      6,
-      (_) => AnimationController(
-        vsync: this,
-        duration: Duration(milliseconds: widget.animConfig.attackTotalMs),
-      ),
-    );
-    _shakeCtrl = AnimationController(
+    _playback = BattlePlaybackController(
       vsync: this,
-      duration: Duration(milliseconds: widget.animConfig.shakeDurationMs),
+      ref: ref,
+      rebuild: setState,
+      animConfig: widget.animConfig,
+      startPaused: widget.startPaused,
+      startFastForward: widget.startFastForward,
     );
-    _closeupCtrl = AnimationController(
-      vsync: this,
-      duration: Duration(
-        milliseconds: widget.animConfig.hitTier.closeupPulseMs,
-      ),
-    );
-    _hitFlashControllers = List.generate(
-      6,
-      (_) => AnimationController(
-        vsync: this,
-        value: 1.0, // 静止满值 → HitFlash alpha=0 不显
-        duration: Duration(milliseconds: widget.animConfig.hitFlashMs),
-      ),
-    );
-    _beatCtrl = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: widget.animConfig.actionIntervalMs),
-    );
-    // 验收路由 startPaused:起手即暂停 → _startTimer 内 _isPaused gate 兜住
-    // 自动启动路径(autoStart=true 仍会 startBattle,但 timer 不启),战斗冻结
-    // 在 seed 初态等手动单步/继续。生产恒 false 不受影响。
-    if (widget.startPaused) {
-      _isPaused = true;
-    }
+    // _beatCtrl / _isPaused / _isFastForward 初值由 _playback 构造器据
+    // startPaused / startFastForward 处理（Task 2）。
     // Timer 不在 initState 同步启动:常规流程(stage/tower host)先挂本屏(空团)再在
     // postFrame 调 startBattle,由 build 内 `ref.listen` 的 empty→非空边沿起 timer。
     //
@@ -306,11 +212,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // 后保持冻结,由测试/验收显式推进),零回归。
     if (widget.autoStartOnMount) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || !widget.autoStart || _isPaused || _playTimer != null) {
+        if (!mounted ||
+            !widget.autoStart ||
+            _playback.isPaused ||
+            _playback.hasTimer) {
           return;
         }
         final s = ref.read(battleProvider);
-        if (s.leftTeam.isNotEmpty && !s.isFinished) _startTimer();
+        if (s.leftTeam.isNotEmpty && !s.isFinished) _playback.startTimer();
       });
     }
   }
@@ -324,80 +233,24 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   @override
   void dispose() {
-    _playTimer?.cancel();
-    _hitStopTimer?.cancel();
-    for (final c in _attackControllers) {
-      c.dispose();
-    }
-    for (final c in _hitFlashControllers) {
-      c.dispose();
-    }
-    for (final e in _activeTrails) {
-      if (!e.disposed) e.ctrl.dispose();
-    }
-    for (final e in _activeEffects) {
-      if (!e.disposed) e.ctrl.dispose();
-    }
-    _shakeCtrl.dispose();
-    _closeupCtrl.dispose();
-    _beatCtrl.dispose();
+    _playback.dispose();
     super.dispose();
   }
 
   // ─── Timer / advance 驱动 ────────────────────────────────────────────────
 
-  void _startTimer() {
-    // 任何显式启动都作废挂起的 hit-stop 复播（避免快进/暂停切换撞 hit-stop 时
-    // stale timer 二次 _startTimer 致节拍抖动）。
-    _hitStopTimer?.cancel();
-    _playTimer?.cancel();
-    if (_isPaused) {
-      _beatCtrl.stop(); // 暂停态冻结读秒环节拍在当前扫位。
-      return; // H3 暂停态:任何重启请求都不启动 timer。
-    }
-    // 快进态:玩家手动开了快进。
-    final rushing = _isFastForward;
-    final gameplaySettings = _currentGameplaySettings;
-    final interval = rushing
-        ? widget.animConfig.fastForwardIntervalMs
-        : gameplaySettings.scaledBattleIntervalMs(
-            widget.animConfig.actionIntervalMs,
-          );
-    // 读秒环节拍:与每拍对齐（本拍内 0→1，供环平滑插值）。起手先扫第一拍，
-    // 之后每次 advance 回调里 forward(from:0) 重启，使 remaining 递减与环无缝续扫。
-    _beatCtrl
-      ..duration = Duration(milliseconds: interval)
-      ..forward(from: 0);
-    _playTimer = Timer.periodic(Duration(milliseconds: interval), (_) {
-      if (!mounted) return;
-      _beatCtrl.forward(from: 0);
-      final notifier = ref.read(battleProvider.notifier);
-      if (rushing) {
-        notifier.advance();
-      } else {
-        notifier.advanceOneAction();
-      }
-    });
-  }
-
-  void _toggleFastForward() {
-    setState(() => _isFastForward = !_isFastForward);
-    if (_playTimer != null) _startTimer();
-  }
-
-  // H3 暂停:停 tick(_startTimer 内 _isPaused gate 兜住所有重启路径);
-  // 恢复时若战斗未结束则重启自动播放。
+  // H3 暂停:停 tick(_playback.startTimer 内 _isPaused gate 兜住所有重启路径);
+  // 恢复时若战斗未结束则重启自动播放。拍钟本体在 BattlePlaybackController（Task 2）;
+  // 此处只保留「待发态优先取消」的交互分流,其余委托 _playback.pause/resume。
   void _togglePause() {
     if (_pendingSkill != null) {
       _clearPending(); // 待发态下按暂停 = 取消待发(已恢复 tick),不额外进手动暂停
       return;
     }
-    setState(() => _isPaused = !_isPaused);
-    if (_isPaused) {
-      _playTimer?.cancel();
-      _beatCtrl.stop(); // 手动暂停冻结读秒环节拍。
-    } else if (!ref.read(battleProvider).isFinished) {
-      _startTimer();
+    if (_playback.isPaused) {
+      _playback.resume();
+    } else {
+      _playback.pause();
     }
   }
 
@@ -426,428 +279,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       ],
     );
     if (ok == true) widget.onSurrender?.call();
-  }
-
-  // ─── 动画 / 飘字 ─────────────────────────────────────────────────────────
-
-  void _playAction(BattleAction action, BattleState s) {
-    final actor = _findCharacter(action.actorId, s);
-    if (actor != null) {
-      final key = _slotKey(actor.teamSide, actor.slotIndex);
-      _attackControllers[key].forward(from: 0.0);
-    }
-    if (action.attackResult != null && action.targetId != null) {
-      final target = _findCharacter(action.targetId!, s);
-      if (target != null) {
-        _spawnPopup(target, action.attackResult!, actor);
-        if (actor != null) _spawnTrail(actor, target, action);
-        _spawnBattleEffects(actor, target, action);
-        if (!action.attackResult!.isDodged) {
-          _triggerHitFlash(target, action.attackResult!.isCritical);
-        }
-      }
-    }
-    if (isUltimateCaptionSkill(action.skill)) {
-      final climax = hitClimaxFor(action, s);
-      final isCrit = action.attackResult?.isCritical ?? false;
-      _ultimateCaptionKey.currentState?.show(
-        action.skill!.name,
-        isEnemy: actor?.teamSide == 1,
-        fontSize: climax == HitClimax.ultimateCrit
-            ? widget.animConfig.hitTier.captionPeakSize.toDouble()
-            : 56,
-        glowBlur: isCrit ? widget.animConfig.hitTier.captionGlowBlur : 0,
-      );
-    }
-    // B3 破招:打断蓄力 → 弹「破！」题字(破招方暖金/敌方绛红,纯读 state)。
-    if (action.interrupted) {
-      _ultimateCaptionKey.currentState?.show(
-        UiStrings.interruptCaption,
-        isEnemy: actor?.teamSide == 1,
-      );
-    }
-    final sfx = sfxForAction(
-      action: action,
-      isUltimate: isUltimateCaptionSkill(action.skill),
-    );
-    if (sfx != null) {
-      // 平A 按出手单位放固定变体音色（我方轻击系/敌方重击系）；其余槽位单文件。
-      if (sfx == SfxId.battleHit && actor != null) {
-        SoundManager.instance.playSfxPath(
-          battleHitAssetPath(
-            teamSide: actor.teamSide,
-            slotIndex: actor.slotIndex,
-          ),
-        );
-      } else {
-        SoundManager.instance.playSfx(sfx);
-      }
-    }
-    // ── 第七阶段批二 ① Boss 转阶段表现层（题字 + 闪白 + 立绘抖动）。 ──
-    // 转阶段动作无 attackResult，上面 2.4 重击路径对其天然 no-op；此处独立触发。
-    // 纯读 action 元数据，不写 BattleState、不参与结算（守 §5.4）。
-    _playBossPhaseTransition(action, actor);
-
-    // ── 第七阶段批二 ② 会心题字（命中守方弱点流派）。纯读 action 元数据，不写
-    //    BattleState、不参与结算（守 §5.4）。「会心」2 字适配单字 glyph overlay。
-    //    优先级：本帧若同时有 profile 单字（斩/震/断）也只弹会心一字，避免两 glyph
-    //    同帧叠播（会心更能传达「打中弱点」语义）；flash/shake 仍由下方 profile 路径
-    //    照常触发。无 profile 的普攻弱点命中也能弹（下方块 no-op，此处兜底）。
-    final weaknessGlyphShown = action.weaknessHit;
-    if (weaknessGlyphShown) {
-      _impactGlyphKey.currentState?.show(
-        UiStrings.weaknessHitGlyph,
-        isEnemy: actor?.teamSide == 1,
-      );
-    }
-
-    // ── 批次 2.4 打击感表现层（重击分级）。纯表现层，不写 state。 ──
-    final cfg = _impactConfigOrNull();
-    if (cfg != null) {
-      final profile = impactProfileFor(action, cfg);
-      if (profile != null) {
-        final isEnemy = actor?.teamSide == 1;
-        // 会心已占用本帧 glyph 通道 → profile 单字跳过，不双弹（flash/shake 照常）。
-        if (profile.glyph != null && !weaknessGlyphShown) {
-          _impactGlyphKey.currentState?.show(profile.glyph!, isEnemy: isEnemy);
-        }
-        if (!_reduceFlashing) {
-          _screenFlashKey.currentState?.flash(
-            profile.flashStrength,
-            // profile 非空 ⇒ attackResult 非空（见 impactProfileFor 的 null 契约）。
-            color: action.attackResult!.isCritical
-                ? WuxiaColors.gangMeng
-                : Colors.white,
-          );
-        }
-        // hit-stop + 镜头震：快进态跳过（守 2.3 时序 + 保快进顺滑）。
-        if (!_isFastForward) {
-          _impactShakeAmplitude = profile.shakeMagnitude;
-          _shakeCtrl.forward(from: 0.0);
-          _applyHitStop(
-            playbackHoldMs(
-              isKey: BattleLog.isKeyAction(action, s),
-              profileHitStopMs: profile.hitStopMs,
-              keyMomentHoldMs: widget.animConfig.keyMomentHoldMs,
-            ),
-          );
-        }
-      }
-    }
-
-    // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡抑制（守在线=离线）。
-    // 独立于 profile != null 块：普攻击杀无 profile 也须触发特写。
-    if (!_isFastForward && hitClimaxFor(action, s) != HitClimax.none) {
-      _closeupCtrl.forward(from: 0.0).then((_) {
-        if (mounted) _closeupCtrl.reverse();
-      });
-    }
-  }
-
-  /// 第七阶段批二 ① Boss 转阶段表现层：题字（短标题，未知 key 走 EnumL10n
-  /// 兜底）+ 全屏闪白 + Boss 立绘抖动。复用 2.4 的 glyph / flash / shake 通道，
-  /// 不另起平行系统。纯读 action 元数据，不写 BattleState（守 §5.4）；后台挂机
-  /// 不进此屏播放路径（守 §5.5）。
-  void _playBossPhaseTransition(BattleAction action, BattleCharacter? actor) {
-    if (action.bossPhaseTransitionTo == null) return;
-    final bossName = actor?.name ?? '';
-    final title = bossPhaseTitleFor(action, bossName);
-    if (title == null) return;
-    final isEnemy = actor?.teamSide == 1;
-    // 题字（多字 caption overlay，承载 4 字转阶段标题；单字 glyph 会裁切多字）。
-    // 不触发 hit-stop：转阶段非打击命中，暂停 timer 无意义。
-    // 抢占中央焦点:触发转阶段的那一击若同 tick 弹了击杀「斩」字形,两套居中题字会
-    // 叠字(同破界 WARN 的同类现象);先清掉 in-flight 击杀字形,让转阶段题字独占中央。
-    _impactGlyphKey.currentState?.clear();
-    _ultimateCaptionKey.currentState?.show(title, isEnemy: isEnemy);
-    // 闪白 + 立绘抖动复用 2.4 heavy 档参数（转阶段是重场面）。GameRepository 未
-    // 初始化（轻量 widget 测）时 cfg==null，仍保证题字触发、闪白/抖动跳过。
-    final cfg = _impactConfigOrNull();
-    if (cfg != null) {
-      if (!_reduceFlashing) {
-        _screenFlashKey.currentState?.flash(
-          cfg.heavy.flashStrength,
-          color: WuxiaColors.gangMeng,
-        );
-      }
-      // 抖动同 2.4：快进态跳过（保顺滑）。
-      if (!_isFastForward) {
-        _impactShakeAmplitude = cfg.heavy.shakeMagnitude;
-        _shakeCtrl.forward(from: 0.0);
-      }
-    }
-  }
-
-  /// floor30 护法结界（Task 6）破界演出：结界失效边沿（最后一名护法阵亡）
-  /// → 题字 + 闪白。复用 [_playBossPhaseTransition] 同一套题字 / 闪白通道
-  /// （[_ultimateCaptionKey] + [_screenFlashKey]），不另起平行系统；不触发
-  /// hit-stop / 抖动（非打击命中，护法之死已由其自身死亡动画表现）。
-  /// 纯读 [boss] 元数据，不写 BattleState（守 §5.4）。
-  void _playGuardianWardBreak(BattleCharacter boss) {
-    final isEnemy = boss.teamSide == 1;
-    // 破界题字抢占中央焦点:最后一击击杀护法的「斩」字形与「结界破!」同 tick 触发,
-    // 两套居中题字会叠字(2026-07-02 目检 WARN)。先清掉 in-flight 击杀字形,
-    // 让「结界破!」独占中央,直达干净帧。
-    _impactGlyphKey.currentState?.clear();
-    _ultimateCaptionKey.currentState?.show(
-      UiStrings.guardianWardBroken,
-      isEnemy: isEnemy,
-    );
-    if (_reduceFlashing) return;
-    final cfg = _impactConfigOrNull();
-    if (cfg == null) return;
-    _screenFlashKey.currentState?.flash(
-      cfg.heavy.flashStrength,
-      color: WuxiaColors.internalForce,
-    );
-  }
-
-  /// 读打击感配置；GameRepository 未初始化（轻量 widget 测）时返 null 跳过。
-  ImpactFeedbackConfig? _impactConfigOrNull() {
-    try {
-      return ref.read(numbersConfigProvider).combat.impactFeedback;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  GameplaySettings get _currentGameplaySettings => ref
-      .read(gameplaySettingsProvider)
-      .maybeWhen(data: (s) => s, orElse: () => const GameplaySettings());
-
-  bool get _reduceFlashing => _currentGameplaySettings.reduceFlashing;
-
-  /// 当前播放拍间隔(ms):快进态走 fastForwardIntervalMs,否则按玩家速度档缩放
-  /// actionIntervalMs(与 [_startTimer] 同源口径)。供飘字 spawn 时 clamp 时长,
-  /// 防快档(rapid/快进)固定 damagePopupMs 超拍致跨拍重叠。
-  int get _currentPlaybackIntervalMs => _isFastForward
-      ? widget.animConfig.fastForwardIntervalMs
-      : _currentGameplaySettings.scaledBattleIntervalMs(
-          widget.animConfig.actionIntervalMs,
-        );
-
-  /// hit-stop：命中瞬间停播放 Timer，延后 [ms] 后复播。只动屏上播放节拍
-  /// （advance 结算确定不变，守 §5.5）；_startTimer 内 _isPaused gate 兜住，
-  /// 暂停态不会被复活。
-  void _applyHitStop(int ms) {
-    if (_isPaused) return;
-    _playTimer?.cancel();
-    _hitStopTimer?.cancel();
-    _hitStopTimer = Timer(Duration(milliseconds: ms), () {
-      if (mounted && !ref.read(battleProvider).isFinished) _startTimer();
-    });
-  }
-
-  /// 受击闪：命中目标 slot 触发淡出（暴击绛红/普攻白）。纯 UI，不写 state。
-  void _triggerHitFlash(BattleCharacter target, bool isCritical) {
-    if (_reduceFlashing) return;
-    final key = _slotKey(target.teamSide, target.slotIndex);
-    setState(() {
-      _hitFlashColors[key] = isCritical ? WuxiaColors.gangMeng : Colors.white;
-    });
-    _hitFlashControllers[key].forward(from: 0.0);
-  }
-
-  /// 弹道：攻击者 slot → 目标 slot 的笔触线（流派色；大招更粗）。命令式 spawn。
-  void _spawnTrail(
-    BattleCharacter actor,
-    BattleCharacter target,
-    BattleAction action,
-  ) {
-    final ctrl = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: widget.animConfig.projectileMs),
-    );
-    final entry = TrailEntry(
-      id: _nextTrailId++,
-      ctrl: ctrl,
-      startFrac: _slotFrac(
-        actor.teamSide,
-        actor.slotIndex,
-        _teamSizeOf(actor.teamSide),
-      ),
-      endFrac: _slotFrac(
-        target.teamSide,
-        target.slotIndex,
-        _teamSizeOf(target.teamSide),
-      ),
-      color: WuxiaColors.schoolColor(actor.school),
-      strokeWidth: isUltimateCaptionSkill(action.skill) ? 5.0 : 3.0,
-    );
-    ctrl.addStatusListener((status) {
-      if (status == AnimationStatus.completed && !entry.disposed) {
-        entry.disposed = true;
-        if (mounted) {
-          setState(() => _activeTrails.remove(entry));
-        } else {
-          _activeTrails.remove(entry);
-        }
-        // 推迟到当帧末释放，等 AnimatedBuilder 解除监听后再 dispose。
-        WidgetsBinding.instance.addPostFrameCallback((_) => ctrl.dispose());
-      }
-    });
-    setState(() => _activeTrails.add(entry));
-    ctrl.forward(from: 0.0);
-  }
-
-  void _spawnBattleEffects(
-    BattleCharacter? actor,
-    BattleCharacter target,
-    BattleAction action,
-  ) {
-    final result = action.attackResult;
-    if (result == null) return;
-    final targetFrac = _slotFrac(
-      target.teamSide,
-      target.slotIndex,
-      _teamSizeOf(target.teamSide),
-    );
-
-    if (result.isDodged) {
-      _spawnEffect(
-        assetPath: WuxiaUi.fxDodgeShadow,
-        centerFrac: targetFrac,
-        size: 230,
-        opacity: 0.64,
-        mirrored: target.teamSide == 1,
-      );
-      return;
-    }
-
-    if (actor != null) {
-      final isUltimate = isUltimateCaptionSkill(action.skill);
-      _spawnEffect(
-        assetPath: _schoolFx(actor.school, isUltimate: isUltimate),
-        centerFrac: targetFrac,
-        size: isUltimate ? 360 : 250,
-        opacity: isUltimate ? 0.76 : 0.64,
-        rotation: actor.teamSide == 0 ? -0.08 : 0.08,
-        mirrored: actor.teamSide == 1,
-      );
-    }
-
-    if (result.isCritical) {
-      _spawnEffect(
-        assetPath: WuxiaUi.fxCriticalHit,
-        centerFrac: targetFrac,
-        size: 220,
-        opacity: 0.7,
-      );
-    }
-    if (result.defenseRate >= 0.22) {
-      _spawnEffect(
-        assetPath: WuxiaUi.fxArmorBreak,
-        centerFrac: targetFrac,
-        size: 210,
-        opacity: 0.58,
-      );
-    }
-    if (result.appliedEffects.contains('internal_injury')) {
-      _spawnEffect(
-        assetPath: WuxiaUi.fxInternalInjury,
-        centerFrac: targetFrac,
-        size: 230,
-        opacity: 0.62,
-      );
-    }
-  }
-
-  static String _schoolFx(TechniqueSchool school, {required bool isUltimate}) {
-    return switch (school) {
-      TechniqueSchool.gangMeng =>
-        isUltimate ? WuxiaUi.fxGangmengUltimate : WuxiaUi.fxGangmengStrike,
-      TechniqueSchool.lingQiao =>
-        isUltimate ? WuxiaUi.fxLingqiaoUltimate : WuxiaUi.fxLingqiaoSlash,
-      TechniqueSchool.yinRou =>
-        isUltimate ? WuxiaUi.fxYinrouUltimate : WuxiaUi.fxYinrouPalm,
-    };
-  }
-
-  void _spawnEffect({
-    required String assetPath,
-    required Offset centerFrac,
-    required double size,
-    required double opacity,
-    double rotation = 0,
-    bool mirrored = false,
-  }) {
-    final ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 520),
-    );
-    final entry = EffectEntry(
-      id: _nextEffectId++,
-      ctrl: ctrl,
-      centerFrac: centerFrac,
-      assetPath: assetPath,
-      size: size,
-      opacity: opacity,
-      rotation: rotation,
-      mirrored: mirrored,
-    );
-    ctrl.addStatusListener((status) {
-      if (status == AnimationStatus.completed && !entry.disposed) {
-        entry.disposed = true;
-        if (mounted) {
-          setState(() => _activeEffects.remove(entry));
-        } else {
-          _activeEffects.remove(entry);
-        }
-        WidgetsBinding.instance.addPostFrameCallback((_) => ctrl.dispose());
-      }
-    });
-    setState(() => _activeEffects.add(entry));
-    ctrl.forward(from: 0.0);
-  }
-
-  void _spawnPopup(
-    BattleCharacter target,
-    AttackResult result,
-    BattleCharacter? attacker,
-  ) {
-    final key = _slotKey(target.teamSide, target.slotIndex);
-    final data = _buildPopupData(result, attacker);
-    final entry = PopupEntry(
-      id: _nextPopupId++,
-      data: data,
-      popupDurationMs: widget.animConfig.effectivePopupMs(
-        _currentPlaybackIntervalMs,
-      ),
-    );
-    setState(() {
-      (_popups[key] ??= []).add(entry);
-    });
-    // 屏震触发已上移至 _playAction（批次 2.4 分档屏震集中触发）。
-  }
-
-  DamagePopupData _buildPopupData(
-    AttackResult result,
-    BattleCharacter? attacker,
-  ) {
-    if (result.isDodged) {
-      return DamagePopupData(
-        id: _nextPopupId,
-        text: UiStrings.dodge,
-        type: PopupType.dodge,
-      );
-    }
-    // P1.1 候选 3-c:仅暴击 + attacker 主修武器 xinJianTongLing → 剑鸣浮字
-    final hasSwordSong =
-        result.isCritical && (attacker?.swordSongResonanceActive ?? false);
-    return DamagePopupData(
-      id: _nextPopupId,
-      text: result.finalDamage.toString(),
-      type: result.isCritical ? PopupType.critical : PopupType.normal,
-      hasCounterUp: result.schoolCounterMultiplier > 1.0,
-      hasCounterDown: result.schoolCounterMultiplier < 1.0,
-      hasSwordSong: hasSwordSong,
-    );
-  }
-
-  void _removePopup(int slotKey, int popupId) {
-    setState(() {
-      _popups[slotKey]?.removeWhere((e) => e.id == popupId);
-    });
   }
 
   // ─── 指令台（T1） ──────────────────────────────────────────────────────────
@@ -937,10 +368,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     setState(() {
       _pendingSkill = skill;
       _pendingCharId = characterId;
-      _isPaused = true;
     });
-    _playTimer?.cancel();
-    _beatCtrl.stop(); // 待发软暂停冻结读秒环节拍。
+    _playback.pause(); // 待发软暂停:置暂停 + 停 tick + 冻结读秒环节拍。
   }
 
   /// 待发态下点敌头像 → 对该敌出手 + 解除待发态 + 恢复 tick。
@@ -958,9 +387,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       _pendingSkill = null;
       _pendingCharId = null;
       _hoveredPendingEnemyId = null;
-      _isPaused = false;
     });
-    if (!ref.read(battleProvider).isFinished) _startTimer();
+    _playback.resume(); // 解除软暂停 + 战斗未结束则重启自动播放。
   }
 
   void _onPendingEnemyHover(int enemyId, bool hovering) {
@@ -1111,34 +539,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
   }
 
-  // ─── 工具方法 ─────────────────────────────────────────────────────────────
-
-  static int _slotKey(int teamSide, int slotIndex) => teamSide * 3 + slotIndex;
-
-  /// 战场比例坐标（0..1）：左队 x=0.12 / 右队 x=0.88；竖直按队伍人数 [teamSize]
-  /// 均分(见 [slotVerticalFraction]):1 怪居中 / 2 怪对称 / 3 怪 1/6,3/6,5/6。
-  /// 弹道层在 LayoutBuilder 内解析为像素，避免依赖 RenderBox（widget test 稳定）。
-  static Offset _slotFrac(int teamSide, int slotIndex, int teamSize) {
-    final x = teamSide == 0 ? 0.12 : 0.88;
-    return Offset(x, slotVerticalFraction(slotIndex, teamSize));
-  }
-
-  /// 取某队当前人数(供 [_slotFrac] 竖直均分)。死亡单位保留在队列(灰显)故长度稳定。
-  int _teamSizeOf(int teamSide) {
-    final s = ref.read(battleProvider);
-    return teamSide == 0 ? s.leftTeam.length : s.rightTeam.length;
-  }
-
-  BattleCharacter? _findCharacter(int characterId, BattleState s) {
-    for (final c in s.leftTeam) {
-      if (c.characterId == characterId) return c;
-    }
-    for (final c in s.rightTeam) {
-      if (c.characterId == characterId) return c;
-    }
-    return null;
-  }
-
   // ─── build ────────────────────────────────────────────────────────────────
 
   @override
@@ -1176,13 +576,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
           wasEmpty &&
           next.leftTeam.isNotEmpty &&
           !next.isFinished) {
-        _startTimer();
+        _playback.startTimer();
       }
 
       // 2. 战斗结束：停 timer + 弹结算 dialog（postFrame 避免 build 期 setState）
       if ((prev?.result == null) && next.result != null) {
-        _playTimer?.cancel();
-        _beatCtrl.stop(); // 战斗结束冻结读秒环节拍。
+        _playback.onBattleFinished(); // 停 timer + 冻结读秒环节拍。
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) _showResultDialog(next.result!, next);
         });
@@ -1193,7 +592,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       if (prev != null && next.actionLog.length > prev.actionLog.length) {
         final newActions = next.actionLog.sublist(prev.actionLog.length);
         for (final a in newActions) {
-          _playAction(a, next);
+          _playback.playAction(a, next);
         }
       }
 
@@ -1208,15 +607,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       if (wardBreakIds.isNotEmpty) {
         for (final c in [...next.leftTeam, ...next.rightTeam]) {
           if (wardBreakIds.contains(c.characterId)) {
-            _playGuardianWardBreak(c);
+            _playback.playGuardianWardBreak(c);
           }
         }
       }
     });
 
     ref.listen(gameplaySettingsProvider, (_, _) {
-      final s = ref.read(battleProvider);
-      if (_playTimer != null && !s.isFinished) _startTimer();
+      _playback.onGameplaySettingsChanged();
     });
 
     // team 空时（startBattle 还未调用）渲染 placeholder
@@ -1257,21 +655,21 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             ),
             SafeArea(
               child: AnimatedBuilder(
-                animation: _closeupCtrl,
+                animation: _playback.closeupCtrl,
                 builder: (context, child) {
                   final scale =
                       1.0 +
                       (widget.animConfig.hitTier.closeupScale - 1.0) *
-                          _closeupCtrl.value;
+                          _playback.closeupCtrl.value;
                   return Transform.scale(scale: scale, child: child);
                 },
                 child: AnimatedBuilder(
-                  animation: _shakeCtrl,
+                  animation: _playback.shakeCtrl,
                   builder: (ctx, child) {
                     return Transform.translate(
                       offset: screenShakeOffset(
-                        t: _shakeCtrl.value,
-                        amplitude: _impactShakeAmplitude,
+                        t: _playback.shakeCtrl.value,
+                        amplitude: _playback.impactShakeAmplitude,
                       ),
                       child: child,
                     );
@@ -1303,7 +701,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             onToggleLog: () =>
                                 setState(() => _logOpen = !_logOpen),
                             onPause: _togglePause,
-                            isPaused: _isPaused,
+                            isPaused: _playback.isPaused,
                             onSurrender: widget.onSurrender == null
                                 ? null
                                 : _confirmSurrender,
@@ -1316,15 +714,16 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                               children: [
                                 BattleField(
                                   state: state,
-                                  attackControllers: _attackControllers,
-                                  popups: _popups,
+                                  attackControllers: _playback.attackControllers,
+                                  popups: _playback.popups,
                                   animConfig: widget.animConfig,
                                   chargeMaxTicks: chargeMaxTicks,
-                                  beat: _beatCtrl,
+                                  beat: _playback.beatCtrl,
                                   staggerWindowTicks: staggerWindowTicks,
-                                  onPopupComplete: _removePopup,
-                                  hitFlashControllers: _hitFlashControllers,
-                                  hitFlashColors: _hitFlashColors,
+                                  onPopupComplete: _playback.removePopup,
+                                  hitFlashControllers:
+                                      _playback.hitFlashControllers,
+                                  hitFlashColors: _playback.hitFlashColors,
                                   onEnemyTap: _onEnemyTap,
                                   pendingActive: _pendingActive,
                                   hoveredEnemyId: _hoveredPendingEnemyId,
@@ -1333,14 +732,14 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                 Positioned.fill(
                                   child: IgnorePointer(
                                     child: ProjectileLayer(
-                                      trails: _activeTrails,
+                                      trails: _playback.activeTrails,
                                     ),
                                   ),
                                 ),
                                 Positioned.fill(
                                   child: IgnorePointer(
                                     child: EffectLayer(
-                                      effects: _activeEffects,
+                                      effects: _playback.activeEffects,
                                     ),
                                   ),
                                 ),
@@ -1360,8 +759,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                                 widget.allowPlayerIntervention,
                             onSelectFocus: _onSelectFocus,
                             onShowSkillInfo: _showSkillInfo,
-                            onFastForward: _toggleFastForward,
-                            isFastForward: _isFastForward,
+                            onFastForward: _playback.toggleFastForward,
+                            isFastForward: _playback.isFastForward,
                             onSkillTap: _onSkillTap,
                             pendingCharacterId:
                                 _pendingCharId ??
@@ -1369,7 +768,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                             pendingSkillId:
                                 _pendingSkill?.id ??
                                 widget.previewPendingSkillId,
-                            beat: _beatCtrl,
+                            beat: _playback.beatCtrl,
                             skillTargetLink: _skillTargetLink,
                           ),
                         ],
@@ -1379,11 +778,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 ),
               ),
             ),
-            Positioned.fill(child: ScreenFlashOverlay(key: _screenFlashKey)),
             Positioned.fill(
-              child: UltimateCaptionOverlay(key: _ultimateCaptionKey),
+              child: ScreenFlashOverlay(key: _playback.screenFlashKey),
             ),
-            Positioned.fill(child: ImpactGlyphOverlay(key: _impactGlyphKey)),
+            Positioned.fill(
+              child: UltimateCaptionOverlay(key: _playback.ultimateCaptionKey),
+            ),
+            Positioned.fill(
+              child: ImpactGlyphOverlay(key: _playback.impactGlyphKey),
+            ),
             if (_logOpen)
               LogDrawer(
                 state: state,
@@ -1394,7 +797,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             // 并误触发恢复;此模式靠顶栏暂停/继续 + 单步按钮操作。
             // 待发态(_pendingActive)的软暂停不挂遮罩——否则会拦截点敌头像
             // 选目标的 tap;待发态靠再点同一技能 / 空白点击 / ESC 取消。
-            if (_isPaused &&
+            if (_playback.isPaused &&
                 !_pendingActive &&
                 state.result == null &&
                 !widget.startPaused)
