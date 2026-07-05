@@ -15,7 +15,10 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../settings/application/gameplay_settings_provider.dart';
 import '../../settings/domain/gameplay_settings.dart';
 import 'battle_vfx_entries.dart';
+import 'boss_phase_presentation.dart';
 import 'damage_popup.dart';
+import 'impact_glyph_overlay.dart';
+import 'screen_flash.dart';
 import 'ultimate_caption_overlay.dart';
 
 /// BattleScreen 拆分批一（Task 1）：VFX 反应原语——命中后的飘字 / 弹道 / MJ 特效
@@ -67,6 +70,16 @@ class BattlePlaybackController {
         duration: Duration(milliseconds: _animConfig.hitFlashMs),
       ),
     );
+    // 屏震 controller（暴击时触发）
+    _shakeCtrl = AnimationController(
+      vsync: _vsync,
+      duration: Duration(milliseconds: _animConfig.shakeDurationMs),
+    );
+    // 命中特写 controller（大招暴击/击杀：缩放脉冲；快进/扫荡/拖招时抑制）。
+    _closeupCtrl = AnimationController(
+      vsync: _vsync,
+      duration: Duration(milliseconds: _animConfig.hitTier.closeupPulseMs),
+    );
   }
 
   final TickerProvider _vsync;
@@ -89,6 +102,28 @@ class BattlePlaybackController {
   late final List<AnimationController> _hitFlashControllers;
   // 受击闪颜色（slotKey→暴击绛红/普攻白），spawn 时写入，纯 UI state。
   final Map<int, Color> _hitFlashColors = {};
+
+  // ─── overlay 编排 / 屏震（Task 3） ──────────────────────────────────────────
+  // 屏震 controller（暴击时触发）
+  late final AnimationController _shakeCtrl;
+
+  // 命中特写 controller（大招暴击/击杀：缩放脉冲；快进/扫荡/拖招时抑制）。
+  late final AnimationController _closeupCtrl;
+
+  // 批次 2.4 当前重击屏震振幅（profile 分档；0=不抖）。复用既有 _shakeCtrl。
+  // 公开字段（非 getter/setter 包装,避免 unnecessary_getters_setters lint）：
+  // State 侧 `_playAction`（Task 4 前）直接读写触发屏震振幅。
+  double impactShakeAmplitude = 0.0;
+
+  // B2 大招题字 overlay 的 key(命令式 show)
+  final GlobalKey<UltimateCaptionOverlayState> _ultimateCaptionKey =
+      GlobalKey<UltimateCaptionOverlayState>();
+
+  // 批次 2.4 打击感 overlay key + hit-stop 计时器（命令式触发，纯表现层）。
+  final GlobalKey<ImpactGlyphOverlayState> _impactGlyphKey =
+      GlobalKey<ImpactGlyphOverlayState>();
+  final GlobalKey<ScreenFlashOverlayState> _screenFlashKey =
+      GlobalKey<ScreenFlashOverlayState>();
 
   // 活跃弹道（命令式 spawn，完成后移除）。本地 state，不污染 BattleState。
   final List<TrailEntry> _activeTrails = [];
@@ -116,6 +151,14 @@ class BattlePlaybackController {
   bool get isFastForward => _isFastForward;
   bool get hasTimer => _playTimer != null;
 
+  // overlay 编排 / 屏震只读 getter（供仍在 State 的 `_playAction`/build 读取）。
+  AnimationController get shakeCtrl => _shakeCtrl;
+  AnimationController get closeupCtrl => _closeupCtrl;
+  GlobalKey<UltimateCaptionOverlayState> get ultimateCaptionKey =>
+      _ultimateCaptionKey;
+  GlobalKey<ImpactGlyphOverlayState> get impactGlyphKey => _impactGlyphKey;
+  GlobalKey<ScreenFlashOverlayState> get screenFlashKey => _screenFlashKey;
+
   // 临时副本:Task 4 全移完后 State 侧副本删除
   GameplaySettings get _currentGameplaySettings => _ref
       .read(gameplaySettingsProvider)
@@ -123,6 +166,17 @@ class BattlePlaybackController {
 
   // 临时副本:Task 4 全移完后 State 侧副本删除
   bool get _reduceFlashing => _currentGameplaySettings.reduceFlashing;
+
+  // 临时副本(Task 3 新增依赖，同 _currentGameplaySettings/_reduceFlashing 的
+  // "State 侧仍有一份，Task 4 全移完后删除" 套路):读打击感配置；GameRepository
+  // 未初始化（轻量 widget 测）时返 null 跳过。
+  ImpactFeedbackConfig? _impactConfigOrNull() {
+    try {
+      return _ref.read(numbersConfigProvider).combat.impactFeedback;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// 当前播放拍间隔(ms):快进态走 fastForwardIntervalMs,否则按玩家速度档缩放
   /// actionIntervalMs(与 [startTimer] 同源口径)。供飘字 spawn 时 clamp 时长,
@@ -439,11 +493,76 @@ class BattlePlaybackController {
     });
   }
 
+  /// 第七阶段批二 ① Boss 转阶段表现层：题字（短标题，未知 key 走 EnumL10n
+  /// 兜底）+ 全屏闪白 + Boss 立绘抖动。复用 2.4 的 glyph / flash / shake 通道，
+  /// 不另起平行系统。纯读 action 元数据，不写 BattleState（守 §5.4）；后台挂机
+  /// 不进此屏播放路径（守 §5.5）。
+  ///
+  /// 临时 PUBLIC（Task 3）：仍由 State 侧保留的 `_playAction` 调用；Task 4 全移完
+  /// `_playAction` 后收回 private。
+  void playBossPhaseTransition(BattleAction action, BattleCharacter? actor) {
+    if (action.bossPhaseTransitionTo == null) return;
+    final bossName = actor?.name ?? '';
+    final title = bossPhaseTitleFor(action, bossName);
+    if (title == null) return;
+    final isEnemy = actor?.teamSide == 1;
+    // 题字（多字 caption overlay，承载 4 字转阶段标题；单字 glyph 会裁切多字）。
+    // 不触发 hit-stop：转阶段非打击命中，暂停 timer 无意义。
+    // 抢占中央焦点:触发转阶段的那一击若同 tick 弹了击杀「斩」字形,两套居中题字会
+    // 叠字(同破界 WARN 的同类现象);先清掉 in-flight 击杀字形,让转阶段题字独占中央。
+    _impactGlyphKey.currentState?.clear();
+    _ultimateCaptionKey.currentState?.show(title, isEnemy: isEnemy);
+    // 闪白 + 立绘抖动复用 2.4 heavy 档参数（转阶段是重场面）。GameRepository 未
+    // 初始化（轻量 widget 测）时 cfg==null，仍保证题字触发、闪白/抖动跳过。
+    final cfg = _impactConfigOrNull();
+    if (cfg != null) {
+      if (!_reduceFlashing) {
+        _screenFlashKey.currentState?.flash(
+          cfg.heavy.flashStrength,
+          color: WuxiaColors.gangMeng,
+        );
+      }
+      // 抖动同 2.4：快进态跳过（保顺滑）。
+      if (!_isFastForward) {
+        impactShakeAmplitude = cfg.heavy.shakeMagnitude;
+        _shakeCtrl.forward(from: 0.0);
+      }
+    }
+  }
+
+  /// floor30 护法结界（Task 6）破界演出：结界失效边沿（最后一名护法阵亡）
+  /// → 题字 + 闪白。复用 [playBossPhaseTransition] 同一套题字 / 闪白通道
+  /// （[_ultimateCaptionKey] + [_screenFlashKey]），不另起平行系统；不触发
+  /// hit-stop / 抖动（非打击命中，护法之死已由其自身死亡动画表现）。
+  /// 纯读 [boss] 元数据，不写 BattleState（守 §5.4）。
+  ///
+  /// 临时 PUBLIC（Task 3）：仍由 build 内 `ref.listen` 边沿调用；Task 4 收回 private。
+  void playGuardianWardBreak(BattleCharacter boss) {
+    final isEnemy = boss.teamSide == 1;
+    // 破界题字抢占中央焦点:最后一击击杀护法的「斩」字形与「结界破!」同 tick 触发,
+    // 两套居中题字会叠字(2026-07-02 目检 WARN)。先清掉 in-flight 击杀字形,
+    // 让「结界破!」独占中央,直达干净帧。
+    _impactGlyphKey.currentState?.clear();
+    _ultimateCaptionKey.currentState?.show(
+      UiStrings.guardianWardBroken,
+      isEnemy: isEnemy,
+    );
+    if (_reduceFlashing) return;
+    final cfg = _impactConfigOrNull();
+    if (cfg == null) return;
+    _screenFlashKey.currentState?.flash(
+      cfg.heavy.flashStrength,
+      color: WuxiaColors.internalForce,
+    );
+  }
+
   void dispose() {
     _disposed = true;
     _playTimer?.cancel();
     _hitStopTimer?.cancel();
     _beatCtrl.dispose();
+    _shakeCtrl.dispose();
+    _closeupCtrl.dispose();
     for (final c in _attackControllers) {
       c.dispose();
     }

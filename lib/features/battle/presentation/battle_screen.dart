@@ -22,7 +22,6 @@ import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/theme/colors.dart';
 import 'battle_atmosphere_overlay.dart';
 import 'battle_scene_background.dart';
-import 'boss_phase_presentation.dart';
 import 'guardian_ward_presentation.dart';
 import 'impact_profile.dart';
 import 'impact_glyph_overlay.dart';
@@ -169,15 +168,10 @@ class BattleScreen extends ConsumerStatefulWidget {
 
 class _BattleScreenState extends ConsumerState<BattleScreen>
     with TickerProviderStateMixin {
-  // 屏震 controller（暴击时触发）
-  late final AnimationController _shakeCtrl;
-
-  // 命中特写 controller（大招暴击/击杀：缩放脉冲；快进/扫荡/拖招时抑制）。
-  late final AnimationController _closeupCtrl;
-
-  // VFX 反应原语（飘字/弹道/特效贴片/攻击-受击闪 controller）：BattleScreen
-  // 拆分批一（Task 1）抽到 BattlePlaybackController，rebuild 用 setState 保持
-  // 重绘粒度不变。
+  // VFX 反应原语（飘字/弹道/特效贴片/攻击-受击闪 controller，Task 1）+ 拍钟调度
+  // （beat/timer/hit-stop/pause/fast-forward，Task 2）+ overlay 编排/屏震
+  // （shake/closeup/overlay keys，Task 3）：均已抽到 BattlePlaybackController，
+  // rebuild 用 setState 保持重绘粒度不变。
   late final BattlePlaybackController _playback;
 
   // T1 指令台：当前"重点角色"槽位（玩家手动选定的基线）。敌人蓄力时由
@@ -191,18 +185,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
 
   // 战斗结算 dialog 已显示标志，避免 result 字段连续触发多次弹窗
   bool _resultDialogShown = false;
-
-  // B2 大招题字 overlay 的 key(命令式 show)
-  final GlobalKey<UltimateCaptionOverlayState> _ultimateCaptionKey =
-      GlobalKey<UltimateCaptionOverlayState>();
-
-  // 批次 2.4 打击感 overlay key + hit-stop 计时器（命令式触发，纯表现层）。
-  final GlobalKey<ImpactGlyphOverlayState> _impactGlyphKey =
-      GlobalKey<ImpactGlyphOverlayState>();
-  final GlobalKey<ScreenFlashOverlayState> _screenFlashKey =
-      GlobalKey<ScreenFlashOverlayState>();
-  // 批次 2.4 当前重击屏震振幅（profile 分档；0=不抖）。复用既有 _shakeCtrl。
-  double _impactShakeAmplitude = 0.0;
 
   // ─── 两段点选 tap 释放 ───────────────────────────────────────────────────
   // 待发态(纯 UI,不写 BattleState):已点选待发的单体技与其角色 charId。
@@ -231,16 +213,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       animConfig: widget.animConfig,
       startPaused: widget.startPaused,
       startFastForward: widget.startFastForward,
-    );
-    _shakeCtrl = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: widget.animConfig.shakeDurationMs),
-    );
-    _closeupCtrl = AnimationController(
-      vsync: this,
-      duration: Duration(
-        milliseconds: widget.animConfig.hitTier.closeupPulseMs,
-      ),
     );
     // _beatCtrl / _isPaused / _isFastForward 初值由 _playback 构造器据
     // startPaused / startFastForward 处理（Task 2）。
@@ -276,8 +248,6 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
   @override
   void dispose() {
     _playback.dispose();
-    _shakeCtrl.dispose();
-    _closeupCtrl.dispose();
     super.dispose();
   }
 
@@ -347,7 +317,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     if (isUltimateCaptionSkill(action.skill)) {
       final climax = hitClimaxFor(action, s);
       final isCrit = action.attackResult?.isCritical ?? false;
-      _ultimateCaptionKey.currentState?.show(
+      _playback.ultimateCaptionKey.currentState?.show(
         action.skill!.name,
         isEnemy: actor?.teamSide == 1,
         fontSize: climax == HitClimax.ultimateCrit
@@ -358,7 +328,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     }
     // B3 破招:打断蓄力 → 弹「破！」题字(破招方暖金/敌方绛红,纯读 state)。
     if (action.interrupted) {
-      _ultimateCaptionKey.currentState?.show(
+      _playback.ultimateCaptionKey.currentState?.show(
         UiStrings.interruptCaption,
         isEnemy: actor?.teamSide == 1,
       );
@@ -383,7 +353,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // ── 第七阶段批二 ① Boss 转阶段表现层（题字 + 闪白 + 立绘抖动）。 ──
     // 转阶段动作无 attackResult，上面 2.4 重击路径对其天然 no-op；此处独立触发。
     // 纯读 action 元数据，不写 BattleState、不参与结算（守 §5.4）。
-    _playBossPhaseTransition(action, actor);
+    _playback.playBossPhaseTransition(action, actor);
 
     // ── 第七阶段批二 ② 会心题字（命中守方弱点流派）。纯读 action 元数据，不写
     //    BattleState、不参与结算（守 §5.4）。「会心」2 字适配单字 glyph overlay。
@@ -392,7 +362,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     //    照常触发。无 profile 的普攻弱点命中也能弹（下方块 no-op，此处兜底）。
     final weaknessGlyphShown = action.weaknessHit;
     if (weaknessGlyphShown) {
-      _impactGlyphKey.currentState?.show(
+      _playback.impactGlyphKey.currentState?.show(
         UiStrings.weaknessHitGlyph,
         isEnemy: actor?.teamSide == 1,
       );
@@ -406,10 +376,13 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         final isEnemy = actor?.teamSide == 1;
         // 会心已占用本帧 glyph 通道 → profile 单字跳过，不双弹（flash/shake 照常）。
         if (profile.glyph != null && !weaknessGlyphShown) {
-          _impactGlyphKey.currentState?.show(profile.glyph!, isEnemy: isEnemy);
+          _playback.impactGlyphKey.currentState?.show(
+            profile.glyph!,
+            isEnemy: isEnemy,
+          );
         }
         if (!_reduceFlashing) {
-          _screenFlashKey.currentState?.flash(
+          _playback.screenFlashKey.currentState?.flash(
             profile.flashStrength,
             // profile 非空 ⇒ attackResult 非空（见 impactProfileFor 的 null 契约）。
             color: action.attackResult!.isCritical
@@ -419,8 +392,8 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
         }
         // hit-stop + 镜头震：快进态跳过（守 2.3 时序 + 保快进顺滑）。
         if (!_playback.isFastForward) {
-          _impactShakeAmplitude = profile.shakeMagnitude;
-          _shakeCtrl.forward(from: 0.0);
+          _playback.impactShakeAmplitude = profile.shakeMagnitude;
+          _playback.shakeCtrl.forward(from: 0.0);
           _playback.applyHitStop(
             playbackHoldMs(
               isKey: BattleLog.isKeyAction(action, s),
@@ -435,68 +408,10 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
     // 命中特写：仅峰值（大招暴击/击杀），快进/扫荡抑制（守在线=离线）。
     // 独立于 profile != null 块：普攻击杀无 profile 也须触发特写。
     if (!_playback.isFastForward && hitClimaxFor(action, s) != HitClimax.none) {
-      _closeupCtrl.forward(from: 0.0).then((_) {
-        if (mounted) _closeupCtrl.reverse();
+      _playback.closeupCtrl.forward(from: 0.0).then((_) {
+        if (mounted) _playback.closeupCtrl.reverse();
       });
     }
-  }
-
-  /// 第七阶段批二 ① Boss 转阶段表现层：题字（短标题，未知 key 走 EnumL10n
-  /// 兜底）+ 全屏闪白 + Boss 立绘抖动。复用 2.4 的 glyph / flash / shake 通道，
-  /// 不另起平行系统。纯读 action 元数据，不写 BattleState（守 §5.4）；后台挂机
-  /// 不进此屏播放路径（守 §5.5）。
-  void _playBossPhaseTransition(BattleAction action, BattleCharacter? actor) {
-    if (action.bossPhaseTransitionTo == null) return;
-    final bossName = actor?.name ?? '';
-    final title = bossPhaseTitleFor(action, bossName);
-    if (title == null) return;
-    final isEnemy = actor?.teamSide == 1;
-    // 题字（多字 caption overlay，承载 4 字转阶段标题；单字 glyph 会裁切多字）。
-    // 不触发 hit-stop：转阶段非打击命中，暂停 timer 无意义。
-    // 抢占中央焦点:触发转阶段的那一击若同 tick 弹了击杀「斩」字形,两套居中题字会
-    // 叠字(同破界 WARN 的同类现象);先清掉 in-flight 击杀字形,让转阶段题字独占中央。
-    _impactGlyphKey.currentState?.clear();
-    _ultimateCaptionKey.currentState?.show(title, isEnemy: isEnemy);
-    // 闪白 + 立绘抖动复用 2.4 heavy 档参数（转阶段是重场面）。GameRepository 未
-    // 初始化（轻量 widget 测）时 cfg==null，仍保证题字触发、闪白/抖动跳过。
-    final cfg = _impactConfigOrNull();
-    if (cfg != null) {
-      if (!_reduceFlashing) {
-        _screenFlashKey.currentState?.flash(
-          cfg.heavy.flashStrength,
-          color: WuxiaColors.gangMeng,
-        );
-      }
-      // 抖动同 2.4：快进态跳过（保顺滑）。
-      if (!_playback.isFastForward) {
-        _impactShakeAmplitude = cfg.heavy.shakeMagnitude;
-        _shakeCtrl.forward(from: 0.0);
-      }
-    }
-  }
-
-  /// floor30 护法结界（Task 6）破界演出：结界失效边沿（最后一名护法阵亡）
-  /// → 题字 + 闪白。复用 [_playBossPhaseTransition] 同一套题字 / 闪白通道
-  /// （[_ultimateCaptionKey] + [_screenFlashKey]），不另起平行系统；不触发
-  /// hit-stop / 抖动（非打击命中，护法之死已由其自身死亡动画表现）。
-  /// 纯读 [boss] 元数据，不写 BattleState（守 §5.4）。
-  void _playGuardianWardBreak(BattleCharacter boss) {
-    final isEnemy = boss.teamSide == 1;
-    // 破界题字抢占中央焦点:最后一击击杀护法的「斩」字形与「结界破!」同 tick 触发,
-    // 两套居中题字会叠字(2026-07-02 目检 WARN)。先清掉 in-flight 击杀字形,
-    // 让「结界破!」独占中央,直达干净帧。
-    _impactGlyphKey.currentState?.clear();
-    _ultimateCaptionKey.currentState?.show(
-      UiStrings.guardianWardBroken,
-      isEnemy: isEnemy,
-    );
-    if (_reduceFlashing) return;
-    final cfg = _impactConfigOrNull();
-    if (cfg == null) return;
-    _screenFlashKey.currentState?.flash(
-      cfg.heavy.flashStrength,
-      color: WuxiaColors.internalForce,
-    );
   }
 
   /// 读打击感配置；GameRepository 未初始化（轻量 widget 测）时返 null 跳过。
@@ -840,7 +755,7 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
       if (wardBreakIds.isNotEmpty) {
         for (final c in [...next.leftTeam, ...next.rightTeam]) {
           if (wardBreakIds.contains(c.characterId)) {
-            _playGuardianWardBreak(c);
+            _playback.playGuardianWardBreak(c);
           }
         }
       }
@@ -888,21 +803,21 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
             ),
             SafeArea(
               child: AnimatedBuilder(
-                animation: _closeupCtrl,
+                animation: _playback.closeupCtrl,
                 builder: (context, child) {
                   final scale =
                       1.0 +
                       (widget.animConfig.hitTier.closeupScale - 1.0) *
-                          _closeupCtrl.value;
+                          _playback.closeupCtrl.value;
                   return Transform.scale(scale: scale, child: child);
                 },
                 child: AnimatedBuilder(
-                  animation: _shakeCtrl,
+                  animation: _playback.shakeCtrl,
                   builder: (ctx, child) {
                     return Transform.translate(
                       offset: screenShakeOffset(
-                        t: _shakeCtrl.value,
-                        amplitude: _impactShakeAmplitude,
+                        t: _playback.shakeCtrl.value,
+                        amplitude: _playback.impactShakeAmplitude,
                       ),
                       child: child,
                     );
@@ -1011,11 +926,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen>
                 ),
               ),
             ),
-            Positioned.fill(child: ScreenFlashOverlay(key: _screenFlashKey)),
             Positioned.fill(
-              child: UltimateCaptionOverlay(key: _ultimateCaptionKey),
+              child: ScreenFlashOverlay(key: _playback.screenFlashKey),
             ),
-            Positioned.fill(child: ImpactGlyphOverlay(key: _impactGlyphKey)),
+            Positioned.fill(
+              child: UltimateCaptionOverlay(key: _playback.ultimateCaptionKey),
+            ),
+            Positioned.fill(
+              child: ImpactGlyphOverlay(key: _playback.impactGlyphKey),
+            ),
             if (_logOpen)
               LogDrawer(
                 state: state,
