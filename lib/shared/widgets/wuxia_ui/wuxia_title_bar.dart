@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../strings.dart';
 import '../../theme/wuxia_tokens.dart';
 import '../wuxia_image.dart';
+import 'panel_surface.dart';
 
 /// 宣纸顶栏（UI kit · demo `.titlebar`）：替 Material AppBar。
 ///
@@ -40,6 +41,7 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = PanelSurface.of(context);
     return Container(
       height: 52,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -70,8 +72,8 @@ class WuxiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: WuxiaUi.ink,
+              style: TextStyle(
+                color: surface.primary,
                 fontSize: 19,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 6,
