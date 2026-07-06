@@ -2632,8 +2632,10 @@ class UiStrings {
   static const String passiveRecapTitle = '闭关之外，亦有精进';
 
   /// 被动卡正文（含离开时长 / 磨剑石 / 修为三项产出）
+  // 单位为「小时」：hours 传入即小时数，与 offlineRecapAwayLine / 总览「游历时长」
+  // 统一（旧文案误写「时辰」，1 时辰=2 小时，与同卡总览的小时数矛盾，2026-07-06 修）。
   static String passiveRecapBody(int hours, int moji, int exp) =>
-      '离去约 $hours 时辰。这些时日你未曾松懈，行功走架之间，'
+      '离去约 $hours 小时。这些时日你未曾松懈，行功走架之间，'
       '得磨剑石 $moji、修为 $exp，已收入囊中。';
 
   /// 被动卡总览
