@@ -791,8 +791,6 @@ class _ResonanceDetailsSection extends StatelessWidget {
             ratio: ratio,
             currentEffect: UiStrings.equipmentDetailResonanceBonus(bonusPct),
             nextEffect: nextEffect,
-            // 浅底装备详情:下一阶用绛红(默认金叠浅纸糊)。
-            nextEffectColor: WuxiaUi.jiang,
             progressText: progressText,
           ),
           // 解锁招标记（人剑合一 / 剑鸣），保留信息性 callout。

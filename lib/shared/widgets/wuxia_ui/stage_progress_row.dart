@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/wuxia_tokens.dart';
 import 'glossary_tip.dart';
 import 'meridian_bar.dart';
+import 'panel_surface.dart';
 
 /// 养成进度「五要素」标准化展示行（D · 2026-06-12）。
 ///
@@ -53,10 +54,6 @@ class StageProgressRow extends StatelessWidget {
   /// 悬停/长按气泡）。用于「修炼度 / 共鸣度」等养成进度术语释义。
   final String? glossaryDefinition;
 
-  /// 「下一阶」效果文字色。默认金 [WuxiaUi.gold]（深底如 DarkParchmentPanel 上可读）；
-  /// 浅宣纸底调用方应传 [WuxiaUi.jiang]（金叠浅底会糊，绛红作强调可读）。
-  final Color nextEffectColor;
-
   const StageProgressRow({
     super.key,
     required this.ratio,
@@ -69,11 +66,11 @@ class StageProgressRow extends StatelessWidget {
     this.tagHighlighted = false,
     this.onTap,
     this.glossaryDefinition,
-    this.nextEffectColor = WuxiaUi.gold,
   });
 
   @override
   Widget build(BuildContext context) {
+    final surface = PanelSurface.of(context);
     final hasBottom =
         currentEffect != null || nextEffect != null || progressText != null;
 
@@ -92,8 +89,8 @@ class StageProgressRow extends StatelessWidget {
                   child: glossaryDefinition == null
                       ? Text(
                           title ?? stageName ?? '',
-                          style: const TextStyle(
-                            color: WuxiaUi.ink,
+                          style: TextStyle(
+                            color: surface.primary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -102,8 +99,8 @@ class StageProgressRow extends StatelessWidget {
                       : GlossaryLabel(
                           label: title ?? stageName ?? '',
                           definition: glossaryDefinition!,
-                          style: const TextStyle(
-                            color: WuxiaUi.ink,
+                          style: TextStyle(
+                            color: surface.primary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -155,8 +152,8 @@ class StageProgressRow extends StatelessWidget {
                   Expanded(
                     child: Text(
                       currentEffect ?? '',
-                      style: const TextStyle(
-                        color: WuxiaUi.muted,
+                      style: TextStyle(
+                        color: surface.secondary,
                         fontSize: 11,
                       ),
                     ),
@@ -171,7 +168,7 @@ class StageProgressRow extends StatelessWidget {
                           Text(
                             nextEffect!,
                             style: TextStyle(
-                              color: nextEffectColor,
+                              color: surface.accent,
                               fontSize: 11,
                             ),
                           ),
@@ -179,7 +176,7 @@ class StageProgressRow extends StatelessWidget {
                           Text(
                             progressText!,
                             style: TextStyle(
-                              color: WuxiaUi.ink.withValues(alpha: 0.5),
+                              color: surface.primary.withValues(alpha: 0.5),
                               fontSize: 10,
                             ),
                           ),
