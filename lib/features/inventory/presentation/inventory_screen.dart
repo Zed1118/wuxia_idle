@@ -1342,8 +1342,11 @@ class _MaterialGridTile extends ConsumerWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
+              // 物料格子直接坐在深屏底(无浅底卡),文字用深底色板 WuxiaColors.text*,
+              // 不用浅纸 token ink/muted(深墨叠深底 dim)。分区标题走 textPrimary 白,
+              // 此处名称 textSecondary 略降一档保层级。
               style: const TextStyle(
-                color: WuxiaUi.ink,
+                color: WuxiaColors.textSecondary,
                 fontSize: 11.5,
                 fontWeight: FontWeight.w600,
               ),
@@ -1358,7 +1361,8 @@ class _MaterialGridTile extends ConsumerWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: WuxiaUi.muted, fontSize: 10),
+                // 深屏底次要说明用深底色板 textMuted(浅灰),非浅纸 muted(叠深底更暗)。
+                style: const TextStyle(color: WuxiaColors.textMuted, fontSize: 10),
               ),
             ),
         ],
