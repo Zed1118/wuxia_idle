@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../strings.dart';
 import '../../theme/wuxia_tokens.dart';
+import 'panel_surface.dart';
 import 'paper_dialog.dart';
 import 'plaque_button.dart';
 
@@ -119,7 +120,9 @@ class GlossaryLabel extends StatelessWidget {
               child: Text(
                 marker,
                 style: TextStyle(
-                  color: markerColor ?? WuxiaUi.muted,
+                  // 「?」标记直接排在父面板纸底上（inline），随所在面板底
+                  // 翻转取次要色；调用方显式传 markerColor 则优先。
+                  color: markerColor ?? PanelSurface.of(context).secondary,
                   fontSize: markerSize.toDouble(),
                   fontWeight: FontWeight.w700,
                 ),
