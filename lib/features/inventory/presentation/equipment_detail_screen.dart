@@ -604,7 +604,6 @@ class _InfoCard extends ConsumerWidget {
                 n,
               ),
               enhanceLevel: equipment.enhanceLevel,
-              color: color,
             ),
             const SizedBox(height: 8),
             // D：共鸣度五要素 Row（StageProgressRow：阶段名 + 进度条 +
@@ -792,6 +791,8 @@ class _ResonanceDetailsSection extends StatelessWidget {
             ratio: ratio,
             currentEffect: UiStrings.equipmentDetailResonanceBonus(bonusPct),
             nextEffect: nextEffect,
+            // 浅底装备详情:下一阶用绛红(默认金叠浅纸糊)。
+            nextEffectColor: WuxiaUi.jiang,
             progressText: progressText,
           ),
           // 解锁招标记（人剑合一 / 剑鸣），保留信息性 callout。
@@ -1000,7 +1001,6 @@ class _StatRow extends StatelessWidget {
     required this.effectiveHealth,
     required this.effectiveSpeed,
     required this.enhanceLevel,
-    required this.color,
   });
 
   final int attack;
@@ -1013,7 +1013,6 @@ class _StatRow extends StatelessWidget {
   final int effectiveSpeed;
 
   final int enhanceLevel;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -1026,8 +1025,9 @@ class _StatRow extends StatelessWidget {
         _stat(UiStrings.equipStatSpeed, speed, effectiveSpeed),
         Text(
           UiStrings.enhanceLevel(enhanceLevel),
-          style: TextStyle(
-            color: color,
+          style: const TextStyle(
+            // 强化等级=养成高亮值,浅底用绛红强调(tier 金叠浅纸糊)。
+            color: WuxiaUi.jiang,
             fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
@@ -1047,7 +1047,8 @@ class _StatRow extends StatelessWidget {
           '$effective',
           style: TextStyle(
             // 实战值高于 base 时高亮,直观传达"已被强化/共鸣加成"。
-            color: boosted ? color : WuxiaUi.ink,
+            // 浅底用绛红强调(原 tier 金叠浅纸糊·2026-07-06)。
+            color: boosted ? WuxiaUi.jiang : WuxiaUi.ink,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),

@@ -19,7 +19,9 @@ class WuxiaUi {
   static const Color qing = Color(0xFF566B63); // 青灰（内息/辅）
   static const Color jiang = Color(0xFF8A2B21); // 绛红（点缀/主行动）
   static const Color gold = Color(0xFFB08A47); // 金线（仅高阶装帧）
-  static const Color muted = Color(0xFF7D7160); // 柔灰（浅底次要/副描述文字 sink）
+  static const Color muted = Color(
+    0xFF6A5E4C,
+  ); // 柔灰（浅底次要/副描述文字 sink · 2026-07-06 从 #7D7160 深一档，浅底小字对比 ~3:1→~4:1）
   static const Color woodLight = Color(0xFF6E5532); // 木牌亮边
   static const Color woodDark = Color(0xFF4F3C22); // 木牌暗边
 
