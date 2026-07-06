@@ -145,7 +145,7 @@ tools/visual_capture/final_gate_check.sh docs/handoff/visual_acceptance_2026-06-
 python3 tools/audit_paper_text_contrast.py --root .
 ```
 
-它会扫描 `PaperPanel` / `PaperDialog` / `CeremonyImagePanel` 和显式纸色填充容器，
+它会扫描 `LightPaperPanel` / `PaperDialog` / `CeremonyImagePanel` 和显式纸色填充容器，
 禁止在这些浅底区域继续使用深色场景专用的 `WuxiaColors.textPrimary` /
 `textSecondary` / `textMuted`。确实嵌套了深色遮罩的个别场景，需在同行或上一行写
 `// paper-text-audit: allow <reason>` 并说明原因。

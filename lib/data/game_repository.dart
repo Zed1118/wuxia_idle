@@ -441,6 +441,12 @@ class GameRepository {
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);
     await _validateEncounterEventReferences(encounterDefs, load);
+    _validateFactionTerritoryReferences(
+      stageDefs,
+      encounterDefs,
+      factionAlignments,
+      territoryDefs,
+    );
     _instance = repo;
     return repo;
   }
@@ -555,6 +561,63 @@ class GameRepository {
             '不在 outcomeMapping,resolveOutcome 会静默丢失奖励 (GDD §8.1)',
           );
         }
+      }
+    }
+  }
+
+  /// P1.2/P4.1 门派声望 + 山头领地引用/自洽的启动期强校验(仿 lore/encounter
+  /// `_validate*References`,补 factions/territories 缺 fail-fast 的历史空白)。
+  /// 纯函数 of 已加载的 4 个 map,`loadAllDefs` 末尾调。三类断言:
+  ///  ① faction alignment 仅 orthodox/neutral/evil(factions.yaml 头注不变量);
+  ///  ② stages/encounters 引的 factionId 必须存在于 factions.yaml,否则
+  ///     ReputationService 会静默兜底(factions.yaml 头注 → 'yiLiu'),声望 wire 失灵;
+  ///  ③ territory baseDefenseLevel ∈ [1,7](§5.3 七阶映射)。
+  /// **graceful**:test fixture 不带 factions.yaml 时 [factionAlignments] 空 →
+  /// 跳过 ② 引用校验(否则带 stage 不带 faction 的 fixture 会误抛);① ③ 对空 map
+  /// 天然 no-op。
+  static void _validateFactionTerritoryReferences(
+    Map<String, StageDef> stageDefs,
+    Map<String, EncounterDef> encounterDefs,
+    Map<String, String> factionAlignments,
+    Map<String, TerritoryDef> territoryDefs,
+  ) {
+    const validAlignments = {'orthodox', 'neutral', 'evil'};
+    for (final entry in factionAlignments.entries) {
+      if (!validAlignments.contains(entry.value)) {
+        throw StateError(
+          'faction ${entry.key} alignment="${entry.value}" 非法'
+          '(仅 orthodox/neutral/evil · P1.2 §6)',
+        );
+      }
+    }
+
+    if (factionAlignments.isNotEmpty) {
+      for (final s in stageDefs.values) {
+        final fid = s.factionId;
+        if (fid != null && !factionAlignments.containsKey(fid)) {
+          throw StateError(
+            'stage ${s.id} factionId="$fid" 不在 factions.yaml,'
+            '声望 wire 会静默兜底 (P1.2 §6)',
+          );
+        }
+      }
+      for (final e in encounterDefs.values) {
+        final fid = e.affectsReputation?.factionId;
+        if (fid != null && !factionAlignments.containsKey(fid)) {
+          throw StateError(
+            'encounter ${e.id} affectsReputation.factionId="$fid" '
+            '不在 factions.yaml,声望 wire 会静默兜底 (P1.2 §6)',
+          );
+        }
+      }
+    }
+
+    for (final t in territoryDefs.values) {
+      if (t.baseDefenseLevel < 1 || t.baseDefenseLevel > 7) {
+        throw StateError(
+          'territory ${t.id} baseDefenseLevel=${t.baseDefenseLevel} '
+          '越界 [1,7] (§5.3 七阶)',
+        );
       }
     }
   }
