@@ -812,7 +812,7 @@ class _EquipmentGridTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final eq = equipment;
-    final color = tierColorForEquipment(eq.tier);
+    final color = paperTierColorForEquipment(eq.tier);
     final def = GameRepository.instance.equipmentDefs[eq.defId];
     final locked = playerRealm != null && !eq.isEquippableAtRealm(playerRealm!);
     final equipped = isEquipmentEquippedBySlot(eq, equippedIds);

@@ -549,7 +549,7 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
       );
     }
     final def = GameRepository.instance.getEquipment(widget.equipment.defId);
-    final color = _paperTierColorForEquipment(def.tier);
+    final color = paperTierColorForEquipment(def.tier);
     final sources = EquipmentSourceLookup(
       GameRepository.instance,
     ).sourcesFor(def.id);
@@ -742,19 +742,6 @@ class _EquipmentDropRowState extends State<_EquipmentDropRow> {
     }
     return UiStrings.equipmentDropLockAdviceCommon;
   }
-}
-
-Color _paperTierColorForEquipment(EquipmentTier tier) {
-  return switch (tier) {
-    EquipmentTier.xunChang => WuxiaUi.ink2,
-    EquipmentTier.xiangYang => WuxiaUi.muted,
-    EquipmentTier.shenWu => _paperReadableTierColor(WuxiaUi.gold),
-    _ => _paperReadableTierColor(tierColorForEquipment(tier)),
-  };
-}
-
-Color _paperReadableTierColor(Color color) {
-  return Color.lerp(color, WuxiaUi.ink, 0.34)!;
 }
 
 class _DropBadge extends StatelessWidget {
