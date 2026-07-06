@@ -134,7 +134,7 @@ class StageProgressRow extends StatelessWidget {
                   else
                     Text(
                       tag!,
-                      style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
+                      style: TextStyle(color: surface.secondary, fontSize: 11),
                     ),
                 ],
               ],

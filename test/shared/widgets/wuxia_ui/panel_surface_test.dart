@@ -27,4 +27,24 @@ void main() {
     expect(s.primary, WuxiaUi.ink);
     expect(PanelSurface.maybeOf(t.element(find.byType(SizedBox))), isNull);
   });
+  test('updateShouldNotify 按三色比较', () {
+    const child = SizedBox.shrink();
+    const base = PanelSurface(
+        primary: Color(0xFF111111),
+        secondary: Color(0xFF222222),
+        accent: Color(0xFF333333),
+        child: child);
+    const same = PanelSurface(
+        primary: Color(0xFF111111),
+        secondary: Color(0xFF222222),
+        accent: Color(0xFF333333),
+        child: child);
+    const diffAccent = PanelSurface(
+        primary: Color(0xFF111111),
+        secondary: Color(0xFF222222),
+        accent: Color(0xFF999999),
+        child: child);
+    expect(base.updateShouldNotify(same), isFalse);
+    expect(base.updateShouldNotify(diffAccent), isTrue);
+  });
 }
