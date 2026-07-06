@@ -27,6 +27,7 @@ import '../../equipment/presentation/enhance_dialog.dart';
 import '../../help/domain/help_topic.dart';
 import '../../help/presentation/context_help_button.dart';
 import '../../shop/application/shop_providers.dart';
+import 'material_source_sheet.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/tier_colors.dart';
@@ -149,18 +150,55 @@ class _EquipmentDetailScreenState extends ConsumerState<EquipmentDetailScreen> {
     final confirmed = await PaperDialog.show<bool>(
       context,
       title: UiStrings.equipmentDisassemble,
-      body: Text(
-        UiStrings.disassembleSingleConfirmBody(
-          widget.def.name,
-          rewards.mojianshi,
-          rewards.xinxuejiejing,
-        ),
-        style: const TextStyle(
-          color: WuxiaUi.ink,
-          fontSize: 14,
-          height: 1.8,
-          letterSpacing: 1,
-        ),
+      body: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            UiStrings.disassembleSingleConfirmBody(
+              widget.def.name,
+              rewards.mojianshi,
+              rewards.xinxuejiejing,
+            ),
+            style: const TextStyle(
+              color: WuxiaUi.ink,
+              fontSize: 14,
+              height: 1.8,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 6),
+          // 材料来源反查一期：返还材料旁小「来源」文字按钮（弹窗嵌弹窗体例
+          // 别扭，spec 拍板改文字按钮 → bottom sheet 叠在确认弹窗之上）。
+          Wrap(
+            spacing: 4,
+            children: [
+              for (final matId in const [
+                'item_mojianshi',
+                'item_xinxuejiejing',
+              ])
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: WuxiaUi.jiang,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  onPressed: () =>
+                      MaterialSourceSheet.show(context, itemId: matId),
+                  child: Text(
+                    UiStrings.materialSourceLinkNamed(
+                      GameRepository.instance.itemDefs[matId]?.name ?? matId,
+                    ),
+                    style: const TextStyle(fontSize: 12.5),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
       actions: [
         PlaqueButton(

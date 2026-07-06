@@ -10,6 +10,7 @@ import '../../../core/domain/forging_slot.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../inventory/presentation/material_source_note.dart';
+import '../../inventory/presentation/material_source_sheet.dart';
 import '../application/forging_service.dart';
 import '../application/equipment_service_providers.dart';
 import '../../../shared/strings.dart';
@@ -357,31 +358,46 @@ class _SlotCard extends StatelessWidget {
           if (!forged && unlocked) ...[
             Align(
               alignment: Alignment.centerLeft,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color:
-                      (lacksMaterial
-                              ? WuxiaColors.hpLow
-                              : WuxiaColors.resultHighlight)
-                          .withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color:
-                        (lacksMaterial
-                                ? WuxiaColors.hpLow
-                                : WuxiaColors.resultHighlight)
-                            .withValues(alpha: 0.32),
+              child: Material(
+                type: MaterialType.transparency,
+                child: InkWell(
+                  // 材料来源反查一期：点辅材行弹 MaterialSourceSheet。
+                  onTap: () => MaterialSourceSheet.show(
+                    context,
+                    itemId: 'item_kaifeng_fucai',
+                    quantity: fucaiQty,
                   ),
-                ),
-                child: Text(
-                  UiStrings.forgingFucaiUsage(fucaiQty, fucaiCost),
-                  style: TextStyle(
-                    color: lacksMaterial
-                        ? WuxiaColors.hpLow
-                        : WuxiaColors.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                  borderRadius: BorderRadius.circular(4),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          (lacksMaterial
+                                  ? WuxiaColors.hpLow
+                                  : WuxiaColors.resultHighlight)
+                              .withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color:
+                            (lacksMaterial
+                                    ? WuxiaColors.hpLow
+                                    : WuxiaColors.resultHighlight)
+                                .withValues(alpha: 0.32),
+                      ),
+                    ),
+                    child: Text(
+                      UiStrings.forgingFucaiUsage(fucaiQty, fucaiCost),
+                      style: TextStyle(
+                        color: lacksMaterial
+                            ? WuxiaColors.hpLow
+                            : WuxiaColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
               ),

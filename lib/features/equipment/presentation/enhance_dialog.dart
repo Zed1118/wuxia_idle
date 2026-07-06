@@ -10,6 +10,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../inventory/presentation/material_source_note.dart';
+import '../../inventory/presentation/material_source_sheet.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/enhancement_service.dart';
 import '../application/equipment_service_providers.dart';
@@ -466,15 +467,30 @@ class _MetricsRow extends StatelessWidget {
           label: UiStrings.metricMaterial,
           value: UiStrings.mojianshiUsage(mojianshiQty, mojianshiCost),
           low: mojianshiQty < mojianshiCost,
+          onTap: () => MaterialSourceSheet.show(
+            context,
+            itemId: 'item_mojianshi',
+            quantity: mojianshiQty,
+          ),
         ),
         _StatChip(
           label: UiStrings.metricForgingMaterial,
           value: UiStrings.duancaiUsage(duancaiQty, duancaiCost),
           low: duancaiQty < duancaiCost,
+          onTap: () => MaterialSourceSheet.show(
+            context,
+            itemId: 'item_duancai',
+            quantity: duancaiQty,
+          ),
         ),
         _StatChip(
           label: UiStrings.metricCrystal,
           value: UiStrings.crystalAvailable(crystalQty),
+          onTap: () => MaterialSourceSheet.show(
+            context,
+            itemId: 'item_xinxuejiejing',
+            quantity: crystalQty,
+          ),
         ),
       ],
     );
@@ -487,12 +503,16 @@ class _StatChip extends StatelessWidget {
     required this.value,
     this.low = false,
     this.emphasized = false,
+    this.onTap,
   });
 
   final String label;
   final String value;
   final bool low;
   final bool emphasized;
+
+  /// 材料来源反查一期：非 null 时整 chip 可点（弹 MaterialSourceSheet）。
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -501,7 +521,7 @@ class _StatChip extends StatelessWidget {
         : emphasized
         ? WuxiaColors.resultHighlight
         : WuxiaColors.textPrimary;
-    return Container(
+    final chip = Container(
       constraints: const BoxConstraints(minWidth: 148),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
@@ -526,6 +546,15 @@ class _StatChip extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+    if (onTap == null) return chip;
+    return Material(
+      type: MaterialType.transparency,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: chip,
       ),
     );
   }

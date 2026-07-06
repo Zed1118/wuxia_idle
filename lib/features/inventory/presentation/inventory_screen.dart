@@ -41,6 +41,7 @@ import '../../help/presentation/context_help_button.dart';
 import '../../shop/application/shop_providers.dart';
 import 'bulk_disposal_dialog.dart';
 import 'equipment_detail_screen.dart';
+import 'material_source_sheet.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 Set<int> _watchActiveEquippedIds(WidgetRef ref) {
@@ -1327,15 +1328,25 @@ class _MaterialGridTile extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           // 名称 × 数量（UiStrings.materialQuantity 格式，test find.text 兼容）
-          Text(
-            UiStrings.materialQuantity(displayName, item.quantity),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: WuxiaUi.ink,
-              fontSize: 11.5,
-              fontWeight: FontWeight.w600,
+          // 材料来源反查一期：名称行可点 → MaterialSourceSheet（格子 tap 保留
+          // 原「使用」流程，两入口互不干扰）。
+          InkWell(
+            onTap: () => MaterialSourceSheet.show(
+              context,
+              itemId: item.defId,
+              quantity: item.quantity,
+            ),
+            borderRadius: BorderRadius.circular(3),
+            child: Text(
+              UiStrings.materialQuantity(displayName, item.quantity),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           // 用途说明（T12：materialUsage）

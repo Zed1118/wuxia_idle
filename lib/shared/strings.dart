@@ -3297,4 +3297,24 @@ class UiStrings {
       '软红线：典型目标 $typicalTarget，满 build 极值可越过；唯一硬线是不进百万。';
   static const String redlineNoteUltimateCrit =
       '软红线：使用当前最高 ultimate 倍率和满 build 暴击探针；真实战斗峰值仍由 balance_simulator 兜底。';
+
+  // ── 材料来源反查一期（MaterialSourceSheet · 夜间批 L 2026-07-05）──────────
+  static const String materialSourceSheetSourcesTitle = '来源';
+  static const String materialSourceSheetUsagesTitle = '用途';
+  static const String materialSourceSheetEmptySources = '来源未明，且待日后探寻。';
+  static const String materialSourceSheetEmptyUsages = '暂无既定用途。';
+  static String materialSourceSheetOwned(int qty) => '当前持有 ×$qty';
+
+  /// 来源行：`来源类别 · 具体明细`；无明细时只显类别。
+  static String materialSourceLine(String kindLabel, String? detail) =>
+      (detail == null || detail.isEmpty) ? kindLabel : '$kindLabel · $detail';
+  static String materialSourceMainlineDetail(
+    int chapterIndex,
+    String stageName,
+  ) => '第$chapterIndex章 $stageName';
+  static String materialSourceTowerDetail(int floorIndex) => '第$floorIndex层';
+  static const String materialSourceBossSuffix = '（首领）';
+
+  /// 分解确认弹窗返还材料旁的小来源按钮：`磨剑石来源`。
+  static String materialSourceLinkNamed(String name) => '$name来源';
 }

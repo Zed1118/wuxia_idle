@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/character.dart';
+import '../../../core/domain/enums.dart';
 import '../../../core/domain/item_usage.dart';
 import '../../../data/defs/shop_item_def.dart';
 import '../../../data/game_repository.dart';
@@ -19,6 +20,7 @@ import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../battle/domain/enum_localizations.dart';
+import '../../inventory/presentation/material_source_sheet.dart';
 import '../application/shop_need_hint_service.dart';
 import '../application/shop_providers.dart';
 import '../application/shop_service.dart';
@@ -582,6 +584,16 @@ class _ShopItemTile extends StatelessWidget {
   final int silver;
   final VoidCallback onBuy;
 
+  /// 材料来源反查一期：仅材料类货架条目可点弹来源 sheet。
+  /// 磨剑石/心血结晶/miscMaterial（锻材/开锋辅材/岛产物等）必含；
+  /// 丹药/秘籍/银两不算材料。
+  static bool _isMaterial(ItemType type) => switch (type) {
+    ItemType.moJianShi ||
+    ItemType.xinXueJieJing ||
+    ItemType.miscMaterial => true,
+    ItemType.jingYanDan || ItemType.techniqueScroll || ItemType.silver => false,
+  };
+
   @override
   Widget build(BuildContext context) {
     final def = entry.def;
@@ -599,64 +611,86 @@ class _ShopItemTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 商品图标（材料多无专图，走 fallback glyph）
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: WuxiaImage(
-              'assets/images/items/${def.itemDefId}.png',
-              width: 48,
-              height: 48,
-              fit: BoxFit.cover,
-              errorBuilder: wuxiaAssetErrorBuilder(
-                () => Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: WuxiaColors.panel,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: WuxiaUi.ink.withValues(alpha: 0.3),
+          // 图标 + 名称区（材料类可点 → 材料来源反查 sheet）
+          Expanded(
+            child: Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                onTap: _isMaterial(def.itemType)
+                    ? () => MaterialSourceSheet.show(
+                        context,
+                        itemId: def.itemDefId,
+                        quantity: entry.ownedQuantity,
+                      )
+                    : null,
+                borderRadius: BorderRadius.circular(4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // 商品图标（材料多无专图，走 fallback glyph）
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: WuxiaImage(
+                        'assets/images/items/${def.itemDefId}.png',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: wuxiaAssetErrorBuilder(
+                          () => Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: WuxiaColors.panel,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: WuxiaUi.ink.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.inventory_2_outlined,
+                              color: Colors.white38,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: const Icon(
-                    Icons.inventory_2_outlined,
-                    color: Colors.white38,
-                    size: 24,
-                  ),
+                    const SizedBox(width: 12),
+                    // 名称 + 用途
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            entry.displayName,
+                            style: const TextStyle(
+                              // 浅宣纸底用墨色 WuxiaUi.ink；white 叠浅底几乎不可见。
+                              color: WuxiaUi.ink,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          _ShopNeedHintLines(hint: entry.hint),
+                          if (entry.hint?.hasAnyHint == true)
+                            const SizedBox(height: 4),
+                          Text(
+                            UiStrings.shopItemPurpose(def.itemDefId),
+                            style: const TextStyle(
+                              color: WuxiaUi.muted,
+                              fontSize: 13,
+                              height: 1.4,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // 名称 + 用途
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  entry.displayName,
-                  style: const TextStyle(
-                    // 浅宣纸底用墨色 WuxiaUi.ink；white 叠浅底几乎不可见。
-                    color: WuxiaUi.ink,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                _ShopNeedHintLines(hint: entry.hint),
-                if (entry.hint?.hasAnyHint == true) const SizedBox(height: 4),
-                Text(
-                  UiStrings.shopItemPurpose(def.itemDefId),
-                  style: const TextStyle(
-                    color: WuxiaUi.muted,
-                    fontSize: 13,
-                    height: 1.4,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
             ),
           ),
           const SizedBox(width: 14),
