@@ -126,6 +126,8 @@ class SkillCodexDetailScreen extends StatelessWidget {
                     ratio: proficiencySummary.ratio,
                     currentEffect: proficiencySummary.currentEffect,
                     nextEffect: proficiencySummary.nextEffect,
+                    // 浅宣纸底(PaperPanel):下一阶用绛红(默认金叠浅纸糊)。
+                    nextEffectColor: WuxiaUi.jiang,
                     progressText: proficiencySummary.progressText,
                   ),
                 ],
