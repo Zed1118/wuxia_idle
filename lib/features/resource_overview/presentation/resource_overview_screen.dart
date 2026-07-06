@@ -189,7 +189,7 @@ class _ResourceCard extends StatelessWidget {
                     Text(
                       UiStrings.resourceOverviewQuantity(item.quantity),
                       style: const TextStyle(
-                        color: WuxiaUi.ink,
+                        color: WuxiaUi.jiang,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),

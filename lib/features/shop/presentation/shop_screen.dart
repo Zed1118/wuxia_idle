@@ -522,7 +522,7 @@ class _ShelfGroupPanel extends StatelessWidget {
                 child: Text(
                   group.label,
                   style: const TextStyle(
-                    color: WuxiaUi.ink,
+                    color: WuxiaUi.jiang,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 2,
