@@ -183,7 +183,7 @@ class _ActiveRetreatScreenState extends ConsumerState<ActiveRetreatScreen> {
                       padding: const EdgeInsets.all(24),
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 720),
-                        child: PaperPanel(
+                        child: LightPaperPanel(
                           padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
                           paperOpacity: 0.42,
                           child: Column(

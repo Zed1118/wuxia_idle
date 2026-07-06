@@ -124,7 +124,7 @@ enum VisualRoute {
   ),
   offlineRecapPassive(
     'offline_recap_passive',
-    'M2 离线被动归来卡静态验收(无 active 闭关·涓流入库告知卡:水墨 PaperPanel + 离线时长/磨剑石/经验 + 仅「知道了」按钮,无领取按钮守 §5.1)',
+    'M2 离线被动归来卡静态验收(无 active 闭关·涓流入库告知卡:水墨 LightPaperPanel + 离线时长/磨剑石/经验 + 仅「知道了」按钮,无领取按钮守 §5.1)',
   ),
   battleBossPhase(
     'battle_boss_phase',

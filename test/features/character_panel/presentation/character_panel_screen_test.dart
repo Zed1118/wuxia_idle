@@ -16,8 +16,8 @@ import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_providers.dart';
 import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_progress.dart';
-import 'package:wuxia_idle/shared/widgets/wuxia_paper_panel.dart';
-import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_panel.dart';
+import 'package:wuxia_idle/shared/widgets/dark_parchment_panel.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/light_paper_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_tab.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/glossary_tip.dart';
@@ -213,7 +213,7 @@ void main() {
 
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
     expect(find.byType(PlaqueTab), findsOneWidget);
-    expect(find.byType(PaperPanel), findsWidgets);
+    expect(find.byType(LightPaperPanel), findsWidgets);
     expect(find.byType(SectionHeader), findsWidgets);
     expect(find.byType(PlaqueButton), findsOneWidget);
     expect(find.byType(PortraitFrame), findsOneWidget);
@@ -1072,7 +1072,7 @@ void main() {
       techniques: {50: tech},
     );
     expect(find.text(realName), findsOneWidget);
-    expect(find.byType(WuxiaPaperPanel), findsWidgets);
+    expect(find.byType(DarkParchmentPanel), findsWidgets);
     expect(find.byType(StageProgressRow), findsWidgets);
     expect(tester.takeException(), isNull);
   });

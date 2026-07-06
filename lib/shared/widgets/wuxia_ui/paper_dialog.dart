@@ -4,7 +4,7 @@ import '../../audio/sound_manager.dart';
 import '../../audio/audio_assets.dart';
 import '../../theme/wuxia_tokens.dart';
 import '../wuxia_image.dart';
-import 'paper_panel.dart';
+import 'light_paper_panel.dart';
 
 /// 卷轴/册页弹窗（UI kit · demo `.report`）：替 Material AlertDialog。
 ///
@@ -74,7 +74,7 @@ class PaperDialog extends StatelessWidget {
         ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
-          child: PaperPanel(
+          child: LightPaperPanel(
             padding: const EdgeInsets.all(20),
             paperOpacity: 0.08,
             fillColor: WuxiaUi.paper,

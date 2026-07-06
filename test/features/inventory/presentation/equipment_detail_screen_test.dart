@@ -110,7 +110,7 @@ void main() {
     expect(find.text('速度'), findsOneWidget);
     expect(find.text(UiStrings.equipmentSourceSectionDivider), findsOneWidget);
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
-    expect(find.byType(PaperPanel), findsWidgets);
+    expect(find.byType(LightPaperPanel), findsWidgets);
     // 高阶/稀有保护：神物详情只显示穿戴、养成与锁定入口，不给出售/分解入口。
     expect(find.byType(PlaqueButton), findsNWidgets(4));
     expect(find.text(UiStrings.equipDirectActionEquip), findsOneWidget);

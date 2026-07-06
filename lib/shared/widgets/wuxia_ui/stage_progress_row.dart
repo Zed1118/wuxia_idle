@@ -53,7 +53,7 @@ class StageProgressRow extends StatelessWidget {
   /// 悬停/长按气泡）。用于「修炼度 / 共鸣度」等养成进度术语释义。
   final String? glossaryDefinition;
 
-  /// 「下一阶」效果文字色。默认金 [WuxiaUi.gold]（深底如 WuxiaPaperPanel 上可读）；
+  /// 「下一阶」效果文字色。默认金 [WuxiaUi.gold]（深底如 DarkParchmentPanel 上可读）；
   /// 浅宣纸底调用方应传 [WuxiaUi.jiang]（金叠浅底会糊，绛红作强调可读）。
   final Color nextEffectColor;
 

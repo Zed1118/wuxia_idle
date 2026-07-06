@@ -53,7 +53,7 @@ class SkillProficiencyRow extends StatelessWidget {
       ratio: summary.ratio,
       currentEffect: summary.currentEffect,
       nextEffect: summary.nextEffect,
-      // 藏经阁武学库在浅宣纸底(PaperPanel):下一阶用绛红(默认金叠浅纸糊)。
+      // 藏经阁武学库在浅宣纸底(LightPaperPanel):下一阶用绛红(默认金叠浅纸糊)。
       nextEffectColor: WuxiaUi.jiang,
       progressText: summary.progressText,
       tag: equipped ? UiStrings.cangjingEquippedTag : null,

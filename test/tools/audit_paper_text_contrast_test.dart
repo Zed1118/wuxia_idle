@@ -25,10 +25,10 @@ void main() {
     return dir;
   }
 
-  test('reports dark-surface text token inside PaperPanel', () async {
+  test('reports dark-surface text token inside LightPaperPanel', () async {
     final root = createFixture(r'''
-class PaperPanel {
-  const PaperPanel({required this.child});
+class LightPaperPanel {
+  const LightPaperPanel({required this.child});
   final Object child;
 }
 class Text {
@@ -40,7 +40,7 @@ class TextStyle {
 class WuxiaColors {
   static const textSecondary = Object();
 }
-final widget = PaperPanel(
+final widget = LightPaperPanel(
   child: Text(
     'bad',
     style: TextStyle(color: WuxiaColors.textSecondary),
@@ -51,14 +51,14 @@ final widget = PaperPanel(
     final result = await runAudit(root);
 
     expect(result.exitCode, 1);
-    expect(result.stdout.toString(), contains('PaperPanel'));
+    expect(result.stdout.toString(), contains('LightPaperPanel'));
     expect(result.stdout.toString(), contains('WuxiaColors.textSecondary'));
   });
 
   test('passes paper-surface text when WuxiaUi ink token is used', () async {
     final root = createFixture(r'''
-class PaperPanel {
-  const PaperPanel({required this.child});
+class LightPaperPanel {
+  const LightPaperPanel({required this.child});
   final Object child;
 }
 class Text {
@@ -70,7 +70,7 @@ class TextStyle {
 class WuxiaUi {
   static const ink = Object();
 }
-final widget = PaperPanel(
+final widget = LightPaperPanel(
   child: Text(
     'good',
     style: TextStyle(color: WuxiaUi.ink),

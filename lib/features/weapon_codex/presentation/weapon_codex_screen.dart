@@ -14,7 +14,7 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/ink_empty_state.dart';
-import '../../../shared/widgets/wuxia_ui/paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import 'equipment_catalog_detail_screen.dart';
@@ -27,7 +27,7 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 ///   - 已获得 → [_AcquiredTile] 点亮卡（图标 + 名 + tier 色边），点击进详情。
 ///   - 未获得 → [_LockedTile] 水墨剪影占位（藏名「未得之器」），点击弹「尚未得手」。
 ///
-/// 顶部 slot 筛选 chips（全部/兵器/护甲/饰品）+ 总进度。每档 PaperPanel
+/// 顶部 slot 筛选 chips（全部/兵器/护甲/饰品）+ 总进度。每档 LightPaperPanel
 /// 自带该档进度小计。
 class WeaponCodexScreen extends ConsumerStatefulWidget {
   const WeaponCodexScreen({super.key});
@@ -243,7 +243,7 @@ class _TierPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final got = defs.where((d) => acquired.contains(d.id)).length;
 
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

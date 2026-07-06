@@ -59,7 +59,7 @@ Future<void> showStageVictoryDialog({
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 620),
-        child: PaperPanel(
+        child: LightPaperPanel(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
           paperOpacity: 0.22,
           child: Column(

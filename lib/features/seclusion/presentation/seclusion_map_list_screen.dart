@@ -276,7 +276,7 @@ class _ActiveBanner extends StatelessWidget {
     final planned = session.durationHours * 60;
     final remaining = (planned - elapsed).clamp(0, planned);
 
-    return PaperPanel(
+    return LightPaperPanel(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       paperOpacity: 0.28,
       child: Row(
