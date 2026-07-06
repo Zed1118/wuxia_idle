@@ -160,7 +160,7 @@ class _ClueTile extends StatelessWidget {
             Text(
               clue.summary,
               style: const TextStyle(
-                color: WuxiaColors.textSecondary,
+                color: WuxiaUi.ink,
                 fontSize: 13,
                 height: 1.35,
               ),

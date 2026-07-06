@@ -433,12 +433,14 @@ Future<bool> _showStageRetryDialog(BuildContext context, StageDef stage) async {
     actions: [
       Builder(
         builder: (ctx) => TextButton(
+          style: TextButton.styleFrom(foregroundColor: WuxiaUi.muted),
           onPressed: () => Navigator.of(ctx).pop(false),
           child: const Text(UiStrings.stageRetryBackAction),
         ),
       ),
       Builder(
         builder: (ctx) => TextButton(
+          style: TextButton.styleFrom(foregroundColor: WuxiaUi.jiang),
           onPressed: () => Navigator.of(ctx).pop(true),
           child: const Text(UiStrings.stageRetryAction),
         ),

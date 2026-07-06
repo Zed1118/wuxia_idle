@@ -1646,7 +1646,7 @@ class _MainTechniqueTile extends ConsumerWidget {
                       Text(
                         EnumL10n.techniqueTier(t.tier),
                         style: const TextStyle(
-                          color: WuxiaColors.textSecondary,
+                          color: WuxiaUi.muted,
                           fontSize: 12,
                         ),
                       ),

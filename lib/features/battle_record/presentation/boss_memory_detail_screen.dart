@@ -303,7 +303,7 @@ class _RosterChip extends StatelessWidget {
         Text(
           name,
           style: const TextStyle(
-            color: WuxiaColors.textSecondary,
+            color: WuxiaUi.ink,
             fontSize: 13,
             letterSpacing: 0.5,
           ),
@@ -340,7 +340,7 @@ class _StatRow extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-          color: muted ? WuxiaColors.textMuted : WuxiaColors.textPrimary,
+          color: muted ? WuxiaUi.muted : WuxiaUi.ink,
           fontSize: 13,
           letterSpacing: 0.5,
         ),

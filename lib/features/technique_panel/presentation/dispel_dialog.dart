@@ -6,6 +6,7 @@ import '../../../core/domain/technique.dart';
 import '../../../core/application/battle_providers.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 
@@ -47,12 +48,12 @@ class DispelConfirmDialog extends ConsumerWidget {
         children: [
           Text(
             UiStrings.dispelCostInternalForce(ifBefore, ifAfter),
-            style: const TextStyle(color: WuxiaColors.textSecondary),
+            style: const TextStyle(color: WuxiaUi.muted),
           ),
           const SizedBox(height: 6),
           Text(
             UiStrings.dispelCostCultivation(cultBefore, cultAfter),
-            style: const TextStyle(color: WuxiaColors.textSecondary),
+            style: const TextStyle(color: WuxiaUi.muted),
           ),
           const SizedBox(height: 6),
           const Text(

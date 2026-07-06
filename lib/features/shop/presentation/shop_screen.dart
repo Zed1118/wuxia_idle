@@ -522,7 +522,7 @@ class _ShelfGroupPanel extends StatelessWidget {
                 child: Text(
                   group.label,
                   style: const TextStyle(
-                    color: WuxiaColors.resultHighlight,
+                    color: WuxiaUi.ink,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 2,
@@ -707,9 +707,7 @@ class _ShopItemTile extends StatelessWidget {
                       : UiStrings.shopItemPrice(effectivePrice),
                   textAlign: TextAlign.right,
                   style: TextStyle(
-                    color: canAfford
-                        ? WuxiaColors.resultHighlight
-                        : WuxiaColors.hpLow,
+                    color: canAfford ? WuxiaUi.ink : WuxiaColors.hpLow,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
